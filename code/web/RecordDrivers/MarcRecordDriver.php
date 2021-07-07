@@ -849,21 +849,26 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 	function getFormat()
 	{
 		//Rather than loading formats here, let's leverage the work we did at index time
-		$recordDetails = $this->getGroupedWorkDriver()->getSolrField('record_details');
-		if ($recordDetails) {
-			if (!is_array($recordDetails)) {
-				$recordDetails = array($recordDetails);
-			}
-			foreach ($recordDetails as $recordDetailRaw) {
-				$recordDetail = explode('|', $recordDetailRaw);
-				if ($recordDetail[0] == $this->getIdWithSource()) {
-					return array($recordDetail[1]);
-				}
-			}
-			//We did not find a record for this in the index.  It's probably been deleted.
-			return array('Unknown');
+		$relatedRecord = $this->getGroupedWorkDriver()->getRelatedRecord($this->getIdWithSource());
+		if ($relatedRecord != null){
+			return array($relatedRecord->format);
 		} else {
-			return array('Unknown');
+			$recordDetails = $this->getGroupedWorkDriver()->getSolrField('record_details');
+			if ($recordDetails) {
+				if (!is_array($recordDetails)) {
+					$recordDetails = array($recordDetails);
+				}
+				foreach ($recordDetails as $recordDetailRaw) {
+					$recordDetail = explode('|', $recordDetailRaw);
+					if ($recordDetail[0] == $this->getIdWithSource()) {
+						return array($recordDetail[1]);
+					}
+				}
+				//We did not find a record for this in the index.  It's probably been deleted.
+				return array('Unknown');
+			} else {
+				return array('Unknown');
+			}
 		}
 	}
 
@@ -891,6 +896,8 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 				$this->_actions = array_merge($this->_actions, $user->getCirculatedRecordActions($this->getIndexingProfile()->name, $this->id));
 			}
 
+			$treatVolumeHoldsAsItemHolds = $this->getCatalogDriver()->treatVolumeHoldsAsItemHolds();
+
 			if (isset($interface)) {
 				if ($interface->getVariable('displayingSearchResults')) {
 					$showHoldButton = $interface->getVariable('showHoldButtonInSearchResults');
@@ -916,7 +923,10 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 			if ($isHoldable && $showHoldButton) {
 				$source = $this->profileType;
 				$id = $this->id;
-				if (!is_null($volumeData) && count($volumeData) > 0) {
+				if ($volumeData == null) {
+					$volumeData = $relatedRecord->getVolumeData();
+				}
+				if (!is_null($volumeData) && count($volumeData) > 0 && !$treatVolumeHoldsAsItemHolds) {
 					//Check the items to see which volumes are holdable
 					$hasItemsWithoutVolumes = false;
 					$holdableVolumes = [];
@@ -1044,17 +1054,24 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 		return $this->_actions;
 	}
 
-	static $catalogDriver = null;
+	private $catalogDriver = null;
 
 	/**
 	 * @return AbstractIlsDriver
 	 */
-	protected static function getCatalogDriver()
+	public function getCatalogDriver()
 	{
-		if (MarcRecordDriver::$catalogDriver == null) {
+		if ($this->catalogDriver == null) {
 			try {
+				$indexingProfile = $this->getIndexingProfile();
+				$accountProfileForSource = new AccountProfile();
+				$accountProfileForSource->recordSource = $indexingProfile->name;
 				require_once ROOT_DIR . '/CatalogFactory.php';
-				MarcRecordDriver::$catalogDriver = CatalogFactory::getCatalogConnectionInstance();
+				if ($accountProfileForSource->find(true)){
+					$this->catalogDriver = CatalogFactory::getCatalogConnectionInstance($accountProfileForSource->driver, $accountProfileForSource);
+				}else {
+					$this->catalogDriver = CatalogFactory::getCatalogConnectionInstance();
+				}
 			} catch (PDOException $e) {
 				// What should we do with this error?
 				if (IPAddress::showDebuggingInformation()) {
@@ -1065,7 +1082,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 				return null;
 			}
 		}
-		return MarcRecordDriver::$catalogDriver->driver;
+		return $this->catalogDriver->driver;
 	}
 
 	/**
@@ -1258,6 +1275,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 		$links = $this->getLinks();
 		$interface->assign('links', $links);
 		$interface->assign('show856LinksAsTab', $library->getGroupedWorkDisplaySettings()->show856LinksAsTab);
+		$interface->assign('showItemDueDates', $library->getGroupedWorkDisplaySettings()->showItemDueDates);
 
 		if ($library->getGroupedWorkDisplaySettings()->show856LinksAsTab && count($links) > 0) {
 			$moreDetailsOptions['links'] = array(
@@ -1942,6 +1960,13 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 			}
 		}
 		$timer->logTime("Loaded uploaded file info");
+	}
+
+	/**
+	 * @return Grouping_Record|null
+	 */
+	public function getRelatedRecord() {
+		return $this->getGroupedWorkDriver()->getRelatedRecord($this->getIdWithSource());
 	}
 }
 

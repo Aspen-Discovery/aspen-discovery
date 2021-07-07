@@ -1150,15 +1150,23 @@ class CatalogConnection
 	 * Loads any contact information that is not stored by Aspen Discovery from the ILS. Updates the user object.
 	 *
 	 * @param User $user
-	 * @return mixed
 	 */
 	public function loadContactInformation(User $user)
 	{
-		return $this->driver->loadContactInformation($user);
+		$this->driver->loadContactInformation($user);
 	}
 
 	public function getILSMessages(User $user)
 	{
 		return $this->driver->getILSMessages($user);
+	}
+
+	public function confirmHold(User $user, $recordId, $confirmationId)
+	{
+		return $this->driver->confirmHold($user, $recordId, $confirmationId);
+	}
+
+	public function treatVolumeHoldsAsItemHolds() {
+		return $this->driver->treatVolumeHoldsAsItemHolds();
 	}
 }

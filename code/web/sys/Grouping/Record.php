@@ -6,7 +6,7 @@ require_once ROOT_DIR . '/sys/Grouping/Item.php';
 class Grouping_Record
 {
 	public $id;
-	public $variationId;
+	public $databaseId;
 
 	public $format;
 	public $formatCategory;
@@ -28,12 +28,11 @@ class Grouping_Record
 	public $_volumeHolds;
 	public $_hasLocalItem = false;
 	public $_holdRatio = 0;
-	public $_locationLabel = '';
 	public $_shelfLocation = '';
 	public $_bookable = false;
 	public $_holdable = false;
 	public $_itemSummary = [];
-	public $_itemsDisplayedByDefault = [];
+	public $_itemsDisplayedByDefault = null;
 	public $_itemDetails = [];
 
 	public $source;
@@ -47,26 +46,40 @@ class Grouping_Record
 
 	/**
 	 * Grouping_Record constructor.
+	 * @param string $recordId
 	 * @param array $recordDetails
 	 * @param GroupedWorkSubDriver $recordDriver
 	 * @param IlsVolumeInfo[] $volumeData
 	 * @param string $source
+	 * @param bool $useAssociativeArray
 	 */
-	public function __construct($recordDetails, $recordDriver, $volumeData, $source)
+	public function __construct($recordId, $recordDetails, $recordDriver, $volumeData, $source, $useAssociativeArray = false)
 	{
-		$this->id = $recordDetails[0];
 		$this->_driver = $recordDriver;
 		$this->_url = $recordDriver != null ? $recordDriver->getRecordUrl() : '';
-		$this->format = $recordDetails[1];
-		$this->formatCategory = $recordDetails[2];
-		$this->edition = $recordDetails[3];
-		$this->language = $recordDetails[4];
+		$this->id = $recordId;
+		if ($useAssociativeArray){
+			$this->format = $recordDetails['format'];
+			$this->formatCategory = $recordDetails['formatCategory'];
+			$this->databaseId = $recordDetails['id'];
+			$this->edition = $recordDetails['edition'];
+			$this->publisher = $recordDetails['publisher'];
+			$this->publicationDate = $recordDetails['publicationDate'];
+			$this->physical = $recordDetails['physicalDescription'];
+			$this->language = $recordDetails['language'];
+		}else{
+			$this->format = $recordDetails[1];
+			$this->formatCategory = $recordDetails[2];
+			$this->edition = $recordDetails[3];
+			$this->language = $recordDetails[4];
+			$this->publisher = $recordDetails[5];
+			$this->publicationDate = $recordDetails[6];
+			$this->physical = $recordDetails[7];
+		}
+
 		if ($this->language == '') {
 			$this->language = 'English';
 		}
-		$this->publisher = $recordDetails[5];
-		$this->publicationDate = $recordDetails[6];
-		$this->physical = $recordDetails[7];
 		$this->source = $source;
 		$this->_statusInformation = new Grouping_StatusInformation();
 		$this->_statusInformation->setNumHolds($recordDriver != null ? $recordDriver->getNumHolds() : 0);
@@ -84,6 +97,7 @@ class Grouping_Record
 
 	function addItem(Grouping_Item $item)
 	{
+		$item->setRecord($this);
 		$this->_items[] = $item;
 		//Update the record with information from the item and from scoping.
 		if ($item->isEContent) {
@@ -115,6 +129,25 @@ class Grouping_Record
 		} else {
 			$this->addCopies($item->numCopies);
 		}
+		$searchLocation = Location::getSearchLocation();
+		if ($searchLocation != null){
+			if ($item->locallyOwned) {
+				$this->_statusInformation->addLocalCopies($item->numCopies);
+				if ($item->available){
+					$this->_statusInformation->addLocalCopies($item->numCopies);
+					$this->_statusInformation->setAvailableHere(true);
+				}
+			}
+		}else{
+			if ($item->libraryOwned) {
+				$this->_statusInformation->addLocalCopies($item->numCopies);
+				if ($item->available){
+					$this->_statusInformation->addAvailableCopies($item->numCopies);
+					$this->_statusInformation->setAvailableLocally(true);
+				}
+			}
+		}
+
 		$this->_statusInformation->setGroupedStatus(GroupedWorkDriver::keepBestGroupedStatus($this->getStatusInformation()->getGroupedStatus(), $item->groupedStatus));
 
 		if (!empty($this->_volumeData)){
@@ -335,11 +368,25 @@ class Grouping_Record
 	 */
 	public function getItemSummary(): array
 	{
+		if (empty($this->_itemSummary)){
+			foreach ($this->_items as $item){
+				$key = $item->getSummaryKey();
+				$itemSummary = $item->getSummary();
+				$this->addItemDetails($key, $itemSummary);
+				$this->addItemSummary($key, $itemSummary, $item->groupedStatus);
+			}
+			$this->sortItemDetails();
+			$this->sortItemSummary();
+		}
 		return $this->_itemSummary;
 	}
 
 	public function getItemsDisplayedByDefault(): array
 	{
+		if ($this->_itemsDisplayedByDefault == null) {
+			//Make sure everything gets initialized
+			$this->getItemDetails();
+		}
 		return $this->_itemsDisplayedByDefault;
 	}
 
@@ -366,6 +413,9 @@ class Grouping_Record
 			$this->_itemSummary[$key] = $itemSummaryInfo;
 		}
 
+		if ($this->_itemsDisplayedByDefault == null) {
+			$this->_itemsDisplayedByDefault = [];
+		}
 		if ($itemSummaryInfo['displayByDefault']){
 			if (isset($this->_itemsDisplayedByDefault[$key])){
 				$this->_itemsDisplayedByDefault[$key]['totalCopies'] += $itemSummaryInfo['totalCopies'];
@@ -392,6 +442,16 @@ class Grouping_Record
 	 */
 	public function getItemDetails(): array
 	{
+		if (empty($this->_itemDetails)){
+			foreach ($this->_items as $item){
+				$key = $item->getSummaryKey();
+				$itemSummary = $item->getSummary();
+				$this->addItemDetails($key, $itemSummary);
+				$this->addItemSummary($key, $itemSummary, $item->groupedStatus);
+			}
+			$this->sortItemDetails();
+			$this->sortItemSummary();
+		}
 		return $this->_itemDetails;
 	}
 
@@ -445,10 +505,17 @@ class Grouping_Record
 	public function getActions(): array
 	{
 		if ($this->_allActions == null) {
+			//TODO: Add volume information
+			$this->setActions($this->_driver->getRecordActions($this, $this->getStatusInformation()->isAvailableLocally() || $this->getStatusInformation()->isAvailableOnline(), $this->isHoldable(), $this->isBookable(), []));
+			
 			$actionsToReturn = $this->_actions;
-			foreach ($this->_items as $item) {
-				$actionsToReturn = array_merge($actionsToReturn, $item->getActions());
+			if (empty($this->_actions) && $this->_driver != null){
+				foreach ($this->_items as $item) {
+					$item->setActions($this->_driver->getItemActions($item));
+					$actionsToReturn = array_merge($actionsToReturn, $item->getActions());
+				}
 			}
+
 			$this->_allActions = $actionsToReturn;
 		}
 
@@ -564,5 +631,10 @@ class Grouping_Record
 	public function getItems()
 	{
 		return $this->_items;
+	}
+
+	public function getVolumeData()
+	{
+		return $this->_volumeData;
 	}
 }

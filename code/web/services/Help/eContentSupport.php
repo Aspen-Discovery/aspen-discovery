@@ -14,6 +14,10 @@ class eContentSupport extends Action
 			require_once ROOT_DIR . '/sys/Email/Mailer.php';
 			$mail = new Mailer();
 			$userLibrary = Library::getPatronHomeLibrary();
+			if ($userLibrary == null){
+				global $library;
+				$userLibrary = $library;
+			}
 			if (!empty($userLibrary->eContentSupportAddress)){
 				$to = $userLibrary->eContentSupportAddress;
 			}elseif (!empty($configArray['Site']['email'])){
@@ -46,7 +50,7 @@ class eContentSupport extends Action
 			$interface->assign('email', $patronEmail);
 
 			$body = $interface->fetch('Help/eContentSupportEmail.tpl');
-			$emailResult = $mail->send($to, $subject, $body, $patronEmail);
+			$emailResult = $mail->send($to, $subject, $body);
 			if (PEAR::isError($emailResult)) {
 				echo(json_encode(array(
 					'title' => "Support Request Not Sent",

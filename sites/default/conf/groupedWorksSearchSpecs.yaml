@@ -134,6 +134,10 @@ AuthorProper:
       - [onephrase, 350]
     - auth_author2:
       - [onephrase, 100]
+    - author2:
+      - [ onephrase, 100 ]
+    - author_additional:
+      - [onephrase, 50]
 
 ISN:
   QueryFields:

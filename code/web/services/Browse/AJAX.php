@@ -54,7 +54,12 @@ class Browse_AJAX extends Action {
 			$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
 			$libraryId = $library == null ? -1 : $library->libraryId;
 			$browseCategories->whereAdd("sharing = 'everyone'");
-			$browseCategories->whereAdd("sharing = 'library' AND libraryId = " . $libraryId, 'OR');
+			if ($libraryId == -1) {
+				//For Aspen admin, show all categories
+				$browseCategories->whereAdd("sharing = 'library'", 'OR');
+			}else{
+				$browseCategories->whereAdd("sharing = 'library' AND libraryId = " . $libraryId, 'OR');
+			}
 			$browseCategories->find();
 			$browseCategoryList = [];
 			while ($browseCategories->fetch()){
@@ -156,8 +161,8 @@ class Browse_AJAX extends Action {
 		global $library;
 		global $locationSingleton;
 		$searchLocation = $locationSingleton->getSearchLocation();
-		$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
-		$libraryId = $library == null ? -1 : $library->libraryId;
+		$patronHomeLibrary = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
+		$libraryId = $patronHomeLibrary == null ? $library->libraryId : $patronHomeLibrary->libraryId;
 		$categoryName = isset($_REQUEST['categoryName']) ? $_REQUEST['categoryName'] : '';
 		// value of zero means nothing was selected.
 		$addAsSubCategoryOf = isset($_REQUEST['addAsSubCategoryOf']) && !empty($_REQUEST['addAsSubCategoryOf']) ? $_REQUEST['addAsSubCategoryOf'] : null;
@@ -184,8 +189,8 @@ class Browse_AJAX extends Action {
 		if (!$textIdPrefixed){
 			if ($searchLocation) {
 				$textId = $searchLocation->code . '_' . $textId;
-			} elseif ($library) {
-				$textId = $library->subdomain . '_' . $textId;
+			} elseif ($patronHomeLibrary) {
+				$textId = $patronHomeLibrary->subdomain . '_' . $textId;
 			}
 		}
 
@@ -227,7 +232,11 @@ class Browse_AJAX extends Action {
 
 			$browseCategory->label = $categoryName;
 			$browseCategory->userId = UserAccount::getActiveUserId();
-			$browseCategory->sharing = 'library';
+			if ($patronHomeLibrary == null) {
+				$browseCategory->sharing = 'everyone';
+			}else{
+				$browseCategory->sharing = 'library';
+			}
 			$browseCategory->libraryId = $libraryId;
 			$browseCategory->description = '';
 
@@ -235,7 +244,7 @@ class Browse_AJAX extends Action {
 			if (!$browseCategory->insert()){
 				return array(
 					'success' => false,
-					'message' => "There was an error saving the category.  Please contact Marmot."
+					'message' => "There was an error saving the category. "
 				);
 			}elseif ($addAsSubCategoryOf) {
 				$id = $browseCategory->id; // get from above insertion operation
@@ -254,6 +263,7 @@ class Browse_AJAX extends Action {
 			if ($searchLocation != null){
 				$activeBrowseCategoryGroup = $searchLocation->getBrowseCategoryGroup();
 			}else{
+				//Always add to the active location
 				$activeBrowseCategoryGroup = $library->getBrowseCategoryGroup();
 			}
 
@@ -495,25 +505,28 @@ class Browse_AJAX extends Action {
 			if (!empty($_REQUEST['subCategoryTextId'])) {
 				$subCategoryTextId = $_REQUEST['subCategoryTextId'];
 			} else {
-				$firstSubCategory = reset($subCategories);
-				$subCategory = new BrowseCategory();
-				$subCategory->id = $firstSubCategory->subCategoryId;
-				//Get the first sub category that is valid for display
-				while ($subCategory->find(true)) {
-					if ($subCategory->isValidForDisplay()){
-						$subCategoryTextId = $subCategory->textId;
-						break;
+				foreach ($subCategories as $subCategoryId) {
+					$subCategory = new BrowseCategory();
+					$subCategory->id = $subCategoryId->subCategoryId;
+					//Get the first sub category that is valid for display
+					if ($subCategory->find(true)) {
+						if ($subCategory->isValidForDisplay()){
+							$subCategoryTextId = $subCategory->textId;
+							break;
+						}
 					}
 				}
 			}
-			$response['subCategoryTextId'] = $subCategoryTextId;
+			if (!empty($subCategoryTextId)) {
+				$response['subCategoryTextId'] = $subCategoryTextId;
 
-			// Set the main category label before we fetch the sub-categories main results
-			$response['label']  = translate($this->browseCategory->label);
+				// Set the main category label before we fetch the sub-categories main results
+				$response['label']  = translate($this->browseCategory->label);
 
-			// Reset Main Category with SubCategory to fetch main results
-			$this->setTextId($subCategoryTextId);
-			$this->getBrowseCategory(true); // load sub-category
+				// Reset Main Category with SubCategory to fetch main results
+				$this->setTextId($subCategoryTextId);
+				$this->getBrowseCategory(true); // load sub-category
+			}
 		}
 
 		// Get the Browse Results for the Selected Category

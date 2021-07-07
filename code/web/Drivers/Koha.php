@@ -401,35 +401,74 @@ class Koha extends AbstractIlsDriver
 			$curCheckout->renewIndicator = $curRow['itemnumber'];
 			$curCheckout->renewCount = $curRow['renewals'];
 
-			$curCheckout->canRenew = !$curRow['auto_renew'] && $opacRenewalAllowed;
-			$curCheckout->autoRenew = $curRow['auto_renew'];
-			$autoRenewError = $curRow['auto_renew_error'];
+			$renewPrefSql = "SELECT autorenew_checkouts FROM borrowers WHERE borrowernumber = {$patron->username}";
+			$renewPrefResults = mysqli_query($this->dbConnection, $renewPrefSql);
+			if ($renewPrefRow = $renewPrefResults->fetch_assoc()) {
+				$renewPref = $renewPrefRow['autorenew_checkouts'];
 
-			if ($autoRenewError) {
-				if ($autoRenewError == 'on_reserve') {
-					$autoRenewError = translate(['text' => 'koha_auto_renew_on_reserve', 'defaultText' => 'Cannot auto renew, on hold for another user']);
-				} elseif ($autoRenewError == 'too_many') {
-					$autoRenewError = translate(['text' => 'koha_auto_renew_too_many', 'defaultText' => 'Cannot auto renew, too many renewals']);
-				} elseif ($autoRenewError == 'auto_account_expired') {
-					$autoRenewError = translate(['text' => 'koha_auto_renew_auto_account_expired', 'defaultText' => 'Cannot auto renew, your account has expired']);
-				} elseif ($autoRenewError == 'auto_too_soon') {
-					$autoRenewError = translate(['text' => 'koha_auto_renew_auto', 'defaultText' => 'If eligible, this item wil renew on<br/>%1%', '1' => $renewalDate]);
+				if ($renewPref == 0) {
+					$curCheckout->autoRenew = "0";
+				} else {
+					$curCheckout->autoRenew = $curRow['auto_renew'];
 				}
 			}
-			$curCheckout->autoRenewError = $autoRenewError;
+
+			$curCheckout->canRenew = !$curCheckout->autoRenew && $opacRenewalAllowed;
+
+			if ($curCheckout->autoRenew == 1){
+				$autoRenewError = $curRow['auto_renew_error'];
+				if ($autoRenewError == 'null') {
+					$curCheckout->autoRenewError = translate(['text' => 'koha_auto_renew_auto', 'defaultText' => 'If eligible, this item will renew on<br/>%1%', '1' => $renewalDate]);
+				}
+			}
+
+			//Get the number of holds on current checkout, if any
+			$holdsSql = "SELECT *  FROM biblio b  LEFT JOIN reserves h ON (b.biblionumber=h.biblionumber) WHERE b.biblionumber = {$curRow['biblionumber']} GROUP BY b.biblionumber HAVING count(h.reservedate) >= 1";
+			$holdsResults = mysqli_query($this->dbConnection, $holdsSql);
+			$holdsCount = $holdsResults->num_rows;
+			if ($holdsCount >= 1 && $curCheckout->autoRenew == 1) {
+				$curCheckout->autoRenewError = translate(['text' => 'koha_auto_renew_on_reserve', 'defaultText' => 'Cannot auto renew, on hold for another user']);
+			} else if ($holdsCount >= 1 && $curCheckout->canRenew == 1 && $curCheckout->autoRenew == 0) {
+				$curCheckout->canRenew = "0";
+				$curCheckout->renewError = translate(['text' => 'koha_on_hold', 'defaultText' => 'On hold for another user']);
+			}
 
 			//Get the max renewals by figuring out what rule the checkout was issued under
 			$patronType = $patron->patronType;
 			$itemType = $curRow['itype'];
 			$checkoutBranch = $curRow['branchcode'];
 			/** @noinspection SqlResolve */
-			$issuingRulesSql = "SELECT renewalsallowed FROM issuingrules where categorycode IN ('{$patronType}', '*') and itemtype IN('{$itemType}', '*') and branchcode IN ('{$checkoutBranch}', '*') order by branchcode desc, categorycode desc, itemtype desc limit 1";
+			$issuingRulesSql = "SELECT *  FROM circulation_rules where rule_name =  'renewalsallowed' AND (categorycode IN ('{$patronType}', '*') OR categorycode IS NULL) and (itemtype IN('{$itemType}', '*') OR itemtype is null) and (branchcode IN ('{$checkoutBranch}', '*') OR branchcode IS NULL) order by branchcode desc, categorycode desc, itemtype desc limit 1";
 			$issuingRulesRS = mysqli_query($this->dbConnection, $issuingRulesSql);
 			if ($issuingRulesRS !== false) {
 				if ($issuingRulesRow = $issuingRulesRS->fetch_assoc()) {
-					$curCheckout->maxRenewals = $issuingRulesRow['renewalsallowed'];
+					$curCheckout->maxRenewals = $issuingRulesRow['rule_value'];
+
+					if ($curCheckout->autoRenew == 1) {
+						if ($curCheckout->maxRenewals == $curCheckout->renewCount) {
+								$curCheckout->autoRenewError = translate(['text' => 'koha_auto_renew_too_many', 'defaultText' => 'Cannot auto renew, too many renewals']);
+						}
+					} else if ($curCheckout->maxRenewals == $curCheckout->renewCount) {
+						$curCheckout->canRenew = "0";
+						$curCheckout->renewError = translate(['text' => 'koha_too_many_renews', 'defaultText' => 'Renewed too many times']);
+					}
 				}
 				$issuingRulesRS->close();
+			}
+
+			//Get the patron expiration date to check for active card
+			if ($curCheckout->autoRenew == 1){
+				$patronExpirationSql = "SELECT dateexpiry FROM borrowers WHERE borrowernumber = {$patron->username}";
+				$patronExpirationResults = mysqli_query($this->dbConnection, $patronExpirationSql);
+
+				if ($patronExpirationRow = $patronExpirationResults->fetch_assoc()) {
+					$expirationDate = strtotime($patronExpirationRow['dateexpiry']);
+					$today = date("Y-m-d");
+
+					if ($expirationDate < $today) {
+						$curCheckout->autoRenewError = translate(['text' => 'koha_auto_renew_auto_account_expired', 'defaultText' => 'Cannot auto renew, your account has expired']);
+					}
+				}
 			}
 
 			$checkouts[$curCheckout->source . $curCheckout->sourceId . $curCheckout->userId] = $curCheckout;
@@ -945,7 +984,6 @@ class Koha extends AbstractIlsDriver
 			$hold_result['message'] = 'Unable to find a valid record for this title.  Please try your search again.';
 			return $hold_result;
 		}
-		$marcRecord = $recordDriver->getMarcRecord();
 
 		//Check to see if the patron already has that record checked out
 		$allowHoldsOnCheckedOutTitles = $this->getKohaSystemPreference('AllowHoldsOnPatronsPossessions');
@@ -959,118 +997,45 @@ class Koha extends AbstractIlsDriver
 			}
 		}
 
-		//Check to see if the title requires item level holds
-		/** @var File_MARC_Data_Field[] $holdTypeFields */
-		$itemLevelHoldAllowed = false;
-		$itemLevelHoldOnly = false;
-		$indexingProfile = $this->getIndexingProfile();
-		$holdTypeFields = $marcRecord->getFields($indexingProfile->itemTag);
-		foreach ($holdTypeFields as $holdTypeField) {
-			if ($holdTypeField->getSubfield('r') != null) {
-				if ($holdTypeField->getSubfield('r')->getData() == 'itemtitle') {
-					$itemLevelHoldAllowed = true;
-				} else if ($holdTypeField->getSubfield('r')->getData() == 'item') {
-					$itemLevelHoldAllowed = true;
-					$itemLevelHoldOnly = true;
-				}
+		//Just a regular bib level hold
+		$hold_result['title'] = $recordDriver->getTitle();
+
+		global $active_ip;
+		$holdParams = [
+			'service' => 'HoldTitle',
+			'patron_id' => $patron->username,
+			'bib_id' => $recordDriver->getId(),
+			'request_location' => $active_ip,
+			'pickup_location' => $pickupBranch
+		];
+
+		if ($cancelDate != null) {
+			if ($this->getKohaVersion() >= 20.05) {
+				$holdParams['expiry_date'] = $this->aspenDateToKohaDate($cancelDate);
+			}else{
+				$holdParams['needed_before_date'] = $this->aspenDateToKohaDate($cancelDate);
 			}
 		}
 
-		//Get the items the user can place a hold on
-		if ($itemLevelHoldAllowed) {
-			//Need to prompt for an item level hold
-			$items = array();
-			if (!$itemLevelHoldOnly) {
-				//Add a first title returned
-				$items[-1] = array(
-					'itemNumber' => -1,
-					'location' => 'Next available copy',
-					'callNumber' => '',
-					'status' => '',
-				);
-			}
+		$placeHoldURL = $this->getWebServiceUrl() . '/cgi-bin/koha/ilsdi.pl?' . http_build_query($holdParams);
+		$placeHoldResponse = $this->getXMLWebServiceResponse($placeHoldURL);
 
-			$hold_result['title'] = $recordDriver->getTitle();
-			$hold_result['items'] = $items;
-			if (count($items) > 0) {
-				$message = 'This title allows item level holds, please select an item to place a hold on.';
-			} else {
-				if (!isset($message)) {
-					$message = 'There are no holdable items for this title.';
-				}
-			}
-			$hold_result['success'] = false;
-			$hold_result['message'] = $message;
-			return $hold_result;
+		//If the hold is successful we go back to the account page and can see
+
+		$hold_result['id'] = $recordId;
+		if ($placeHoldResponse->title) {
+			//everything seems to be good
+			$hold_result = $this->getHoldMessageForSuccessfulHold($patron, $recordDriver->getId(), $hold_result);
+			$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
+			$patron->forceReloadOfHolds();
 		} else {
-			//Just a regular bib level hold
-			$hold_result['title'] = $recordDriver->getTitle();
-
-			global $active_ip;
-			$holdParams = [
-				'service' => 'HoldTitle',
-				'patron_id' => $patron->username,
-				'bib_id' => $recordDriver->getId(),
-				'request_location' => $active_ip,
-				'pickup_location' => $pickupBranch
-			];
-
-			if ($cancelDate != null) {
-				if ($this->getKohaVersion() >= 20.05) {
-					$holdParams['expiry_date'] = $this->aspenDateToKohaDate($cancelDate);
-				}else{
-					$holdParams['needed_before_date'] = $this->aspenDateToKohaDate($cancelDate);
-				}
-			}
-
-			$placeHoldURL = $this->getWebServiceUrl() . '/cgi-bin/koha/ilsdi.pl?' . http_build_query($holdParams);
-			$placeHoldResponse = $this->getXMLWebServiceResponse($placeHoldURL);
-
-			//If the hold is successful we go back to the account page and can see
-
-			$hold_result['id'] = $recordId;
-			if ($placeHoldResponse->title) {
-				//everything seems to be good
-				$hold_result = $this->getHoldMessageForSuccessfulHold($patron, $recordDriver->getId(), $hold_result);
-				$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
-				$patron->forceReloadOfHolds();
-			} else {
-				$error = $placeHoldResponse->code;
-				$hold_result['success'] = false;
-				$message = 'The item could not be placed on hold: ';
-				if($error == "damaged") {
-					$message .= 'Item damaged';
-				} elseif ($error == "ageRestricted") {
-					$message .= 'Age restricted';
-				} elseif ($error == "tooManyHoldsForThisRecord") {
-					$message .= 'Exceeded max holds per record';
-				} elseif ($error == "tooManyReservesToday") {
-					$message .= 'Exceeded hold limit for patron';
-				} elseif ($error == "tooManyReserves") {
-					$message .= 'Too many holds';
-				} elseif ($error == "notReservable") {
-					$message .= 'Not holdable';
-				} elseif ($error == "cannotReserveFromOtherBranches") {
-					$message .= 'Patron is from different library';
-				} elseif ($error == "branchNotInHoldGroup") {
-					$message .= 'Cannot place hold from patron\'s library';
-				} elseif ($error == "itemAlreadyOnHold") {
-					$message .= 'Patron already has hold for this item';
-				} elseif ($error == "cannotBeTransferred") {
-					$message .= 'Cannot be transferred to pickup library';
-				} elseif ($error == "pickupNotInHoldGroup") {
-					$message .= 'Only pickup locations within the same hold group are allowed';
-				} elseif ($error == "noReservesAllowed") {
-					$message .= 'No reserves are allowed on this item';
-				} elseif ($error == "libraryNotPickupLocation") {
-					$message .= 'Library is not a pickup location';
-				} else {
-					$message = 'The item could not be placed on hold';
-				}
-				$hold_result['message'] = translate($message);
-			}
-			return $hold_result;
+			$error = $placeHoldResponse->code;
+			$hold_result['success'] = false;
+			$message = 'The item could not be placed on hold: ';
+			$message = $this->getHoldErrorMessage($error, $message);
+			$hold_result['message'] = translate($message);
 		}
+		return $hold_result;
 	}
 
 
@@ -1184,7 +1149,11 @@ class Koha extends AbstractIlsDriver
 			'pickup_location' => $pickupBranch
 		];
 		if ($cancelDate != null) {
-			$holdParams['needed_before_date'] = $this->aspenDateToKohaDate($cancelDate);
+			if ($this->getKohaVersion() >= 20.05) {
+				$holdParams['expiry_date'] = $this->aspenDateToKohaDate($cancelDate);
+			}else{
+				$holdParams['needed_before_date'] = $this->aspenDateToKohaDate($cancelDate);
+			}
 		}
 
 		$placeHoldURL = $this->getWebServiceUrl() . '/cgi-bin/koha/ilsdi.pl?' . http_build_query($holdParams);
@@ -1198,7 +1167,10 @@ class Koha extends AbstractIlsDriver
 		} else {
 			$hold_result['success'] = false;
 			//Look for an alert message
-			$hold_result['message'] = 'Your hold could not be placed. ' . $placeHoldResponse->code;
+			$error = $placeHoldResponse->code;
+			$message = 'The item could not be placed on hold: ';
+			$message = $this->getHoldErrorMessage($error, $message);
+			$hold_result['message'] = translate($message);
 		}
 		return $hold_result;
 	}
@@ -1419,20 +1391,46 @@ class Koha extends AbstractIlsDriver
 
 	public function renewCheckout($patron, $recordId, $itemId = null, $itemIndex = null)
 	{
+		$this->initDatabaseConnection();
+		/** @noinspection SqlResolve */
+		$renewSql = "SELECT issues.*, items.biblionumber, items.itype, items.itemcallnumber, items.enumchron, title, author, issues.renewals from issues left join items on items.itemnumber = issues.itemnumber left join biblio ON items.biblionumber = biblio.biblionumber where borrowernumber = {$patron->username} AND issues.itemnumber = {$itemId} limit 1";
+		$renewResults = mysqli_query($this->dbConnection, $renewSql);
+		$maxRenewals = 0;
+
 		$params = [
 			'service' => 'RenewLoan',
 			'patron_id' => $patron->username,
 			'item_id' => $itemId,
 		];
 
+		require_once ROOT_DIR . '/sys/User/Checkout.php';;
 		$renewURL = $this->getWebServiceUrl() . '/cgi-bin/koha/ilsdi.pl?' . http_build_query($params);
 		$renewResponse = $this->getXMLWebServiceResponse($renewURL);
 
 		//Parse the result
 		if (isset($renewResponse->success) && ($renewResponse->success == 1)) {
+
+			while ($curRow = mysqli_fetch_assoc($renewResults)) {
+				$patronType = $patron->patronType;
+				$itemType = $curRow['itype'];
+				$checkoutBranch = $curRow['branchcode'];
+				$renewCount = $curRow['renewals'] + 1;
+				/** @noinspection SqlResolve */
+				$issuingRulesSql = "SELECT *  FROM circulation_rules where rule_name =  'renewalsallowed' AND (categorycode IN ('{$patronType}', '*') OR categorycode IS NULL) and (itemtype IN('{$itemType}', '*') OR itemtype is null) and (branchcode IN ('{$checkoutBranch}', '*') OR branchcode IS NULL) order by branchcode desc, categorycode desc, itemtype desc limit 1";
+				$issuingRulesRS = mysqli_query($this->dbConnection, $issuingRulesSql);
+				if ($issuingRulesRS !== false) {
+					if ($issuingRulesRow = $issuingRulesRS->fetch_assoc()) {
+						$maxRenewals = $issuingRulesRow['rule_value'];
+					}
+				}
+				$issuingRulesRS->close();
+			} $renewResults->close();
+
+			$renewsRemaining = ($maxRenewals - $renewCount);
 			//We renewed the hold
 			$success = true;
-			$message = 'Your item was successfully renewed';
+			$message = 'Your item was successfully renewed.';
+			$message .= ' ' . $renewsRemaining . ' of ' . $maxRenewals . ' renewals remaining.';
 			$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
 			$patron->forceReloadOfCheckouts();
 		} else {
@@ -1629,6 +1627,12 @@ class Koha extends AbstractIlsDriver
 			], true);
 			$response = $this->apiCurlWrapper->curlPostBodyData($apiUrl, $postParams, false);
 			if (!$response) {
+				if ($this->apiCurlWrapper->getResponseCode() != 204) {
+					$result['message'] = translate(['text'=>'ils_freeze_hold_success', 'defaultText' => 'Your hold was frozen successfully.']);
+					$result['success'] = true;
+					$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
+					$patron->forceReloadOfHolds();
+				}
 				return $result;
 			} else {
 				$hold_response = json_decode($response, false);
@@ -3626,5 +3630,44 @@ class Koha extends AbstractIlsDriver
 		}
 
 		return $messages;
+	}
+
+	/**
+	 * @param SimpleXMLElement $error
+	 * @param string $message
+	 * @return string
+	 */
+	protected function getHoldErrorMessage(SimpleXMLElement $error, string $message): string
+	{
+		if ($error == "damaged") {
+			$message .= 'Item damaged';
+		} elseif ($error == "ageRestricted") {
+			$message .= 'Age restricted';
+		} elseif ($error == "tooManyHoldsForThisRecord") {
+			$message .= 'Exceeded max holds per record';
+		} elseif ($error == "tooManyReservesToday") {
+			$message .= 'Exceeded hold limit for patron';
+		} elseif ($error == "tooManyReserves") {
+			$message .= 'Too many holds';
+		} elseif ($error == "notReservable") {
+			$message .= 'Not holdable';
+		} elseif ($error == "cannotReserveFromOtherBranches") {
+			$message .= 'Patron is from different library';
+		} elseif ($error == "branchNotInHoldGroup") {
+			$message .= 'Cannot place hold from patron\'s library';
+		} elseif ($error == "itemAlreadyOnHold") {
+			$message .= 'Patron already has hold for this item';
+		} elseif ($error == "cannotBeTransferred") {
+			$message .= 'Cannot be transferred to pickup library';
+		} elseif ($error == "pickupNotInHoldGroup") {
+			$message .= 'Only pickup locations within the same hold group are allowed';
+		} elseif ($error == "noReservesAllowed") {
+			$message .= 'No reserves are allowed on this item';
+		} elseif ($error == "libraryNotPickupLocation") {
+			$message .= 'Library is not a pickup location';
+		} else {
+			$message = "The item could not be placed on hold ($error)";
+		}
+		return $message;
 	}
 }

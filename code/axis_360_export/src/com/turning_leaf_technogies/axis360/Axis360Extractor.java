@@ -210,8 +210,8 @@ public class Axis360Extractor {
 				}
 
 			} catch (JSONException e) {
-				logger.error("Error parsing response", e);
-				logEntry.addNote("Error parsing response: " + e);
+				logger.error("Error parsing response for " + itemDetailsUrl, e);
+				logEntry.addNote("Error parsing response for " + itemDetailsUrl + ": " + e);
 			}
 		}
 		if (groupedWorkIndexer != null) {

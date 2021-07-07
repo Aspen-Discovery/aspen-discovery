@@ -60,17 +60,16 @@ class WebBuilder_SubmitForm extends Action
 				if (!empty($this->form->emailResultsTo)) {
 					global $interface;
 					require_once ROOT_DIR . '/sys/Email/Mailer.php';
-					$replyTo = null;
 					if (UserAccount::isLoggedIn()) {
-						$replyTo = UserAccount::getActiveUserObj()->email;
 						$interface->assign('patronName', UserAccount::getUserDisplayName());
+						$interface->assign('replyTo', UserAccount::getActiveUserObj()->email);
 					}
 					$mail = new Mailer();
 					$interface->assign('formTitle', $this->form->title);
 					$interface->assign('htmlData', $htmlData);
 
 					$emailBody = $interface->fetch('WebBuilder/customFormSubmissionEmail.tpl');
-					$emailResult = $mail->send($this->form->emailResultsTo, $this->form->title . ' Submission', $emailBody, $replyTo, true);
+					$emailResult = $mail->send($this->form->emailResultsTo, $this->form->title . ' Submission', $emailBody, null, true);
 					global $logger;
 					if (($emailResult instanceof AspenError)) {
 						$logger->log("Could not email form submission: {$emailResult->getMessage()}.", Logger::LOG_ERROR);

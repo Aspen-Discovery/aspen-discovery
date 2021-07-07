@@ -67,16 +67,57 @@ public class GroupedWorkIndexer {
 	private PreparedStatement markScheduledWorkProcessedStmt;
 	private PreparedStatement addScheduledWorkStmt;
 
-//	private PreparedStatement removeRecordForWorkStmt;
-//	private PreparedStatement removeItemsForRecordStmt;
-//	private PreparedStatement removeScopesForItemsStmt;
-//	private PreparedStatement addRecordsForWorkStmt;
-//	private PreparedStatement addItemsForRecordStmt;
-//	private PreparedStatement addScopesForItemsStmt;
+	private PreparedStatement getExistingScopesStmt;
+	private PreparedStatement addScopeStmt;
+	private PreparedStatement updateScopeStmt;
+	private PreparedStatement removeScopeStmt;
 
-	//private static PreparedStatement deleteGroupedWorkStmt;
+	private PreparedStatement getExistingRecordsForWorkStmt;
+	private PreparedStatement addRecordForWorkStmt;
+	private PreparedStatement removeRecordForWorkStmt;
+	private PreparedStatement getExistingVariationsForWorkStmt;
+	private PreparedStatement addVariationForWorkStmt;
+	private PreparedStatement removeVariationStmt;
+	private PreparedStatement getExistingItemsForRecordStmt;
+	private PreparedStatement removeItemStmt;
+	private PreparedStatement addItemForRecordStmt;
+	private PreparedStatement getExistingScopesForItemStmt;
+	private PreparedStatement removeItemScopeStmt;
+	private PreparedStatement addScopeForItemStmt;
+	private PreparedStatement updateScopeForItemStmt;
+	private PreparedStatement getRecordSourceStmt;
+	private PreparedStatement getRecordSourceWithNoSubSourceStmt;
+	private PreparedStatement addRecordSourceStmt;
+	private PreparedStatement getFormatCategoryStmt;
+	private PreparedStatement addFormatCategoryStmt;
+	private PreparedStatement getFormatStmt;
+	private PreparedStatement addFormatStmt;
+	private PreparedStatement getLanguageStmt;
+	private PreparedStatement addLanguageStmt;
+	private PreparedStatement getEditionStmt;
+	private PreparedStatement addEditionStmt;
+	private PreparedStatement getPublisherStmt;
+	private PreparedStatement addPublisherStmt;
+	private PreparedStatement getPublicationDateStmt;
+	private PreparedStatement addPublicationDateStmt;
+	private PreparedStatement getPhysicalDescriptionStmt;
+	private PreparedStatement addPhysicalDescriptionStmt;
+	private PreparedStatement getEContentSourceStmt;
+	private PreparedStatement addEContentSourceStmt;
+	private PreparedStatement getShelfLocationStmt;
+	private PreparedStatement addShelfLocationStmt;
+	private PreparedStatement getCallNumberStmt;
+	private PreparedStatement addCallNumberStmt;
+	private PreparedStatement getStatusStmt;
+	private PreparedStatement addStatusStmt;
+	private PreparedStatement getLocationCodeStmt;
+	private PreparedStatement addLocationCodeStmt;
+	private PreparedStatement getSubLocationCodeStmt;
+	private PreparedStatement addSubLocationCodeStmt;
 
 	private boolean removeRedundantHooplaRecords = false;
+
+	private boolean storeRecordDetailsInSolr = false;
 
 	public GroupedWorkIndexer(String serverName, Connection dbConn, Ini configIni, boolean fullReindex, boolean clearIndex, BaseLogEntry logEntry, Logger logger) {
 		indexStartTime = new Date().getTime() / 1000;
@@ -103,6 +144,19 @@ public class GroupedWorkIndexer {
 			logEntry.incErrors("Could not load last index time from variables table ", e);
 		}
 
+		//Check to see if we should store record details in Solr
+		try{
+			PreparedStatement systemVariablesStmt = dbConn.prepareStatement("SELECT storeRecordDetailsInSolr from system_variables");
+			ResultSet systemVariablesRS = systemVariablesStmt.executeQuery();
+			if (systemVariablesRS.next()){
+				this.storeRecordDetailsInSolr = systemVariablesRS.getBoolean("storeRecordDetailsInSolr");
+			}
+			systemVariablesRS.close();
+			systemVariablesStmt.close();
+		} catch (Exception e){
+			logEntry.incErrors("Could not load last index time from variables table ", e);
+		}
+
 		//Load a few statements we will need later
 		try{
 			getGroupedWorkPrimaryIdentifiers = dbConn.prepareStatement("SELECT * FROM grouped_work_primary_identifiers where grouped_work_id = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
@@ -115,9 +169,54 @@ public class GroupedWorkIndexer {
 			markScheduledWorkProcessedStmt = dbConn.prepareStatement("UPDATE grouped_work_scheduled_index set processed = 1 where id = ?");
 			addScheduledWorkStmt = dbConn.prepareStatement("INSERT INTO grouped_work_scheduled_index (permanent_id, indexAfter) VALUES (?, ?)");
 
-//			removeRecordForWorkStmt = dbConn.prepareStatement("UPDATE grouped_work_records where groupedWorkId = ? AND source = ? and subSource = ? and recordIdentifier = ? SET deleted = 1, dateDeleted = ?");
-//			removeItemsForRecordStmt = dbConn.prepareStatement("DELETE from grouped_work_record_items where groupedWorkId = ?");
-//			removeScopesForItemsStmt = dbConn.prepareStatement("DELETE from grouped_work_record_item_scopes where groupedWorkId = ?");
+			getExistingScopesStmt = dbConn.prepareStatement("SELECT * from scope", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+			addScopeStmt = dbConn.prepareStatement("INSERT INTO scope (name, isLibraryScope, isLocationScope) VALUES (?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
+			updateScopeStmt = dbConn.prepareStatement("UPDATE scope set isLibraryScope = ?, isLocationScope = ? WHERE id = ?");
+			removeScopeStmt = dbConn.prepareStatement("DELETE FROM scope where id = ?");
+			getExistingRecordsForWorkStmt = dbConn.prepareStatement("SELECT id, sourceId, recordIdentifier from grouped_work_records where groupedWorkId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+			addRecordForWorkStmt = dbConn.prepareStatement("INSERT INTO grouped_work_records (groupedWorkId, sourceId, recordIdentifier, editionId, publisherId, publicationDateId, physicalDescriptionId, formatId, formatCategoryId, languageId) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY " +
+					"UPDATE editionId = VALUES(editionId), publisherId = VALUES(publisherId), publicationDateId = VALUES(publicationDateId), physicalDescriptionId = VALUES(physicalDescriptionId), formatId = VALUES(formatId), formatCategoryId = VALUES(formatCategoryId), languageId = VALUES(languageId)", PreparedStatement.RETURN_GENERATED_KEYS);
+			removeRecordForWorkStmt = dbConn.prepareStatement("DELETE FROM grouped_work_records where id = ?");
+			getExistingVariationsForWorkStmt = dbConn.prepareStatement("SELECT * from grouped_work_variation where groupedWorkId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+			addVariationForWorkStmt = dbConn.prepareStatement("INSERT INTO grouped_work_variation (groupedWorkId, primaryLanguageId, eContentSourceId, formatId, formatCategoryId) VALUES (?, ?, ?, ?, ?)", PreparedStatement.RETURN_GENERATED_KEYS);
+			removeVariationStmt = dbConn.prepareStatement("DELETE FROM grouped_work_variation WHERE id = ?");
+			getExistingItemsForRecordStmt = dbConn.prepareStatement("SELECT itemId, id from grouped_work_record_items WHERE groupedWorkRecordId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+			addItemForRecordStmt = dbConn.prepareStatement("INSERT INTO grouped_work_record_items (groupedWorkRecordId, groupedWorkVariationId, itemId, shelfLocationId, callNumberId, sortableCallNumberId, numCopies, isOrderItem, statusId, dateAdded, locationCodeId, subLocationCodeId, lastCheckInDate) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE " +
+					"groupedWorkVariationId = VALUES(groupedWorkVariationId), shelfLocationId = VALUES(shelfLocationId), callNumberId = VALUES(callNumberId), sortableCallNumberId = VALUES(sortableCallNumberId), numCopies = VALUES(numCopies), isOrderItem = VALUES(isOrderItem), statusId = VALUES(statusId), dateAdded = VALUES(dateAdded), locationCodeId = VALUES(locationCodeId), subLocationCodeId = VALUES(subLocationCodeId), lastCheckInDate = VALUES(lastCheckInDate)", PreparedStatement.RETURN_GENERATED_KEYS);
+			removeItemStmt = dbConn.prepareStatement("DELETE FROM grouped_work_record_items WHERE id = ?");
+			getExistingScopesForItemStmt = dbConn.prepareStatement("SELECT * from grouped_work_record_scope WHERE groupedWorkItemId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+			removeItemScopeStmt = dbConn.prepareStatement("DELETE FROM grouped_work_record_scope WHERE id = ?");
+			addScopeForItemStmt = dbConn.prepareStatement("INSERT INTO grouped_work_record_scope (groupedWorkItemId, scopeId, groupedStatusId, statusId, available, holdable, inLibraryUseOnly, localUrl, locallyOwned, libraryOwned) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+			updateScopeForItemStmt = dbConn.prepareStatement("UPDATE grouped_work_record_scope set groupedStatusId = ?, statusId = ?, available = ?, holdable = ?, inLibraryUseOnly = ?, localUrl = ?, locallyOwned = ?, libraryOwned = ? where id = ?");
+			getRecordSourceStmt = dbConn.prepareStatement("SELECT id from indexed_record_source where source = ? and subSource = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+			getRecordSourceWithNoSubSourceStmt = dbConn.prepareStatement("SELECT id from indexed_record_source where source = ? and subSource IS NULL", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+			addRecordSourceStmt = dbConn.prepareStatement("INSERT INTO indexed_record_source (source, subSource) VALUES (?, ?)", Statement.RETURN_GENERATED_KEYS);
+			getFormatCategoryStmt = dbConn.prepareStatement("SELECT id from indexed_format_category where formatCategory = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+			addFormatCategoryStmt = dbConn.prepareStatement("INSERT INTO indexed_format_category (formatCategory) VALUES (?)", Statement.RETURN_GENERATED_KEYS);
+			getFormatStmt = dbConn.prepareStatement("SELECT id from indexed_format where format = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+			addFormatStmt = dbConn.prepareStatement("INSERT INTO indexed_format (format) VALUES (?)", Statement.RETURN_GENERATED_KEYS);
+			getLanguageStmt = dbConn.prepareStatement("SELECT id from indexed_language where language = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+			addLanguageStmt = dbConn.prepareStatement("INSERT INTO indexed_language (language) VALUES (?)", Statement.RETURN_GENERATED_KEYS);
+			getEditionStmt = dbConn.prepareStatement("SELECT id from indexed_edition where edition = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+			addEditionStmt = dbConn.prepareStatement("INSERT INTO indexed_edition (edition) VALUES (?)", Statement.RETURN_GENERATED_KEYS);
+			getPublisherStmt = dbConn.prepareStatement("SELECT id from indexed_publisher where publisher = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+			addPublisherStmt = dbConn.prepareStatement("INSERT INTO indexed_publisher (publisher) VALUES (?)", Statement.RETURN_GENERATED_KEYS);
+			getPublicationDateStmt = dbConn.prepareStatement("SELECT id from indexed_publicationDate where publicationDate = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+			addPublicationDateStmt = dbConn.prepareStatement("INSERT INTO indexed_publicationDate (publicationDate) VALUES (?)", Statement.RETURN_GENERATED_KEYS);
+			getPhysicalDescriptionStmt = dbConn.prepareStatement("SELECT id from indexed_physicalDescription where physicalDescription = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+			addPhysicalDescriptionStmt = dbConn.prepareStatement("INSERT INTO indexed_physicalDescription (physicalDescription) VALUES (?)", Statement.RETURN_GENERATED_KEYS);
+			getEContentSourceStmt = dbConn.prepareStatement("SELECT id from indexed_eContentSource where eContentSource = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+			addEContentSourceStmt = dbConn.prepareStatement("INSERT INTO indexed_eContentSource (eContentSource) VALUES (?)", Statement.RETURN_GENERATED_KEYS);
+			getShelfLocationStmt = dbConn.prepareStatement("SELECT id from indexed_shelfLocation where shelfLocation = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+			addShelfLocationStmt = dbConn.prepareStatement("INSERT INTO indexed_shelfLocation (shelfLocation) VALUES (?)", Statement.RETURN_GENERATED_KEYS);
+			getCallNumberStmt = dbConn.prepareStatement("SELECT id from indexed_callNumber where callNumber = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+			addCallNumberStmt = dbConn.prepareStatement("INSERT INTO indexed_callNumber (callNumber) VALUES (?)", Statement.RETURN_GENERATED_KEYS);
+			getStatusStmt = dbConn.prepareStatement("SELECT id from indexed_status where status = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+			addStatusStmt = dbConn.prepareStatement("INSERT INTO indexed_status (status) VALUES (?)", Statement.RETURN_GENERATED_KEYS);
+			getLocationCodeStmt = dbConn.prepareStatement("SELECT id from indexed_locationCode where locationCode = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+			addLocationCodeStmt = dbConn.prepareStatement("INSERT INTO indexed_locationCode (locationCode) VALUES (?)", Statement.RETURN_GENERATED_KEYS);
+			getSubLocationCodeStmt = dbConn.prepareStatement("SELECT id from indexed_subLocationCode where subLocationCode = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+			addSubLocationCodeStmt = dbConn.prepareStatement("INSERT INTO indexed_subLocationCode (subLocationCode) VALUES (?)", Statement.RETURN_GENERATED_KEYS);
 		} catch (Exception e){
 			logEntry.incErrors("Could not load statements to get identifiers ", e);
 			this.okToIndex = false;
@@ -152,6 +251,25 @@ public class GroupedWorkIndexer {
 				return;
 			}else{
 				logger.info("Loaded " + scopes.size() + " scopes");
+			}
+
+			HashMap<String, ExistingScopeInfo> existingScopes = this.getExistingScopes();
+			for (Scope scope : scopes){
+				String scopeKey = scope.getScopeName();
+				ExistingScopeInfo scopeInfo = existingScopes.get(scopeKey);
+				if (scopeInfo != null){
+					scope.setId(scopeInfo.id);
+					if (scopeInfo.isLocationScope != scope.isLocationScope() || scopeInfo.isLibraryScope != scope.isLibraryScope()){
+						this.updateScope(scope);
+					}
+					existingScopes.remove(scopeKey);
+				}else {
+					Long scopeId = this.saveScope(scope);
+					scope.setId(scopeId);
+				}
+			}
+			for (ExistingScopeInfo scope : existingScopes.values()){
+				this.removeScope(scope.id);
 			}
 		}catch (Exception e) {
 			logEntry.incErrors("Error loading scopes", e);
@@ -574,7 +692,7 @@ public class GroupedWorkIndexer {
 				updateServer.commit(false, false, true);
 			}
 		} catch (Exception e) {
-			logEntry.incErrors("Error indexing grouped work by id", e);
+			logEntry.incErrors("Error indexing grouped work " + permanentId + " by id", e);
 		}
 
 	}
@@ -640,6 +758,7 @@ public class GroupedWorkIndexer {
 
 			//Write the record to Solr.
 			try {
+				groupedWork.saveRecordsToDatabase(id, logEntry);
 				SolrInputDocument inputDocument = groupedWork.getSolrDocument(logEntry);
 				UpdateResponse response = updateServer.add(inputDocument);
 				if (response.getException() != null){
@@ -966,8 +1085,786 @@ public class GroupedWorkIndexer {
 		return this.scopes;
 	}
 
-	private void addRecordsItemsAndScopesToDatabase(BaseLogEntry logEntry){
+	public HashMap<String, Long> getExistingRecordsForGroupedWork(long groupedWorkId)
+	{
+		HashMap<String, Long> existingRecords = new HashMap<>();
+		try {
+			getExistingRecordsForWorkStmt.setLong(1, groupedWorkId);
+			ResultSet getExistingRecordsForWorkRS = getExistingRecordsForWorkStmt.executeQuery();
+			while (getExistingRecordsForWorkRS.next()){
+				String key = getExistingRecordsForWorkRS.getString("sourceId") + ":" + getExistingRecordsForWorkRS.getString("recordIdentifier");
+				existingRecords.put(key, getExistingRecordsForWorkRS.getLong("id"));
+			}
+		} catch (SQLException e) {
+			logEntry.incErrors("Error loading existing records for grouped works", e);
+		}
+
+		return existingRecords;
+	}
+
+	public long saveGroupedWorkRecord(long groupedWorkId, RecordInfo recordInfo, long recordId) {
+		try {
+			addRecordForWorkStmt.setLong(1, groupedWorkId);
+			addRecordForWorkStmt.setLong(2, getSourceId(recordInfo.getSource(), recordInfo.getSubSource()));
+			addRecordForWorkStmt.setString(3, recordInfo.getRecordIdentifier());
+			addRecordForWorkStmt.setLong(4, getEditionId(recordInfo.getEdition()));
+			addRecordForWorkStmt.setLong(5, getPublisherId(recordInfo.getPublisher()));
+			addRecordForWorkStmt.setLong(6, getPublicationDateId(recordInfo.getPublicationDate()));
+			addRecordForWorkStmt.setLong(7, getPhysicalDescriptionId(recordInfo.getPhysicalDescription()));
+			addRecordForWorkStmt.setLong(8, getFormatId(recordInfo.getPrimaryFormat()));
+			addRecordForWorkStmt.setLong(9, getFormatCategoryId(recordInfo.getPrimaryFormatCategory()));
+			addRecordForWorkStmt.setLong(10, getLanguageId(recordInfo.getPrimaryLanguage()));
+			addRecordForWorkStmt.executeUpdate();
+			ResultSet addRecordForWorkRS = addRecordForWorkStmt.getGeneratedKeys();
+			if (addRecordForWorkRS.next()){
+				recordId = addRecordForWorkRS.getLong(1);
+			}
+		} catch (SQLException e) {
+			logEntry.incErrors("Error saving grouped work record", e);
+		}
+
+		return recordId;
+	}
+
+	private final HashMap<String, Long> sourceIds = new HashMap<>();
+	long getSourceId(String source, String subSource) {
+		String key = source + ":" + (subSource == null ? "" : subSource);
+		Long sourceId = sourceIds.get(key);
+		if (sourceId == null){
+			try {
+				ResultSet getRecordSourceRS;
+				if (subSource == null) {
+					getRecordSourceWithNoSubSourceStmt.setString(1, source);
+					getRecordSourceRS = getRecordSourceWithNoSubSourceStmt.executeQuery();
+				}else{
+					getRecordSourceStmt.setString(1, source);
+					getRecordSourceStmt.setString(2, subSource);
+					getRecordSourceRS = getRecordSourceStmt.executeQuery();
+				}
+				if (getRecordSourceRS.next()){
+					sourceId = getRecordSourceRS.getLong("id");
+				}else {
+					addRecordSourceStmt.setString(1, source);
+					addRecordSourceStmt.setString(2, subSource);
+					addRecordSourceStmt.executeUpdate();
+					ResultSet addRecordSourceRS = addRecordSourceStmt.getGeneratedKeys();
+					if (addRecordSourceRS.next()) {
+						sourceId = addRecordSourceRS.getLong(1);
+					} else {
+						logEntry.incErrors("Could not add source");
+						sourceId = -1L;
+					}
+				}
+			} catch (SQLException e) {
+				logEntry.incErrors("Error getting source id", e);
+				sourceId = -1L;
+			}
+			sourceIds.put(key, sourceId);
+		}
+		return sourceId;
+	}
+
+	private final HashMap<String, Long> formatCategoryIds = new HashMap<>();
+	private long getFormatCategoryId(String formatCategory) {
+		if (formatCategory == null){
+			return -1;
+		}
+		Long id = formatCategoryIds.get(formatCategory);
+		if (id == null){
+			try {
+				getFormatCategoryStmt.setString(1, formatCategory);
+				ResultSet getFormatCategoryRS = getFormatCategoryStmt.executeQuery();
+				if (getFormatCategoryRS.next()){
+					id = getFormatCategoryRS.getLong("id");
+				}else {
+					addFormatCategoryStmt.setString(1, formatCategory);
+					addFormatCategoryStmt.executeUpdate();
+					ResultSet addFormatCategoryRS = addFormatCategoryStmt.getGeneratedKeys();
+					if (addFormatCategoryRS.next()) {
+						id = addFormatCategoryRS.getLong(1);
+					} else {
+						logEntry.incErrors("Could not add format category");
+						id = -1L;
+					}
+				}
+			} catch (SQLException e) {
+				logEntry.incErrors("Error getting format category id", e);
+				id = -1L;
+			}
+			formatCategoryIds.put(formatCategory, id);
+		}
+		return id;
+	}
+
+	private final HashMap<String, Long> formatIds = new HashMap<>();
+	private long getFormatId(String format) {
+		if (format == null){
+			return -1;
+		}
+		Long id = formatIds.get(format);
+		if (id == null){
+			try {
+				getFormatStmt.setString(1, format);
+				ResultSet getFormatRS = getFormatStmt.executeQuery();
+				if (getFormatRS.next()){
+					id = getFormatRS.getLong("id");
+				}else {
+					addFormatStmt.setString(1, format);
+					addFormatStmt.executeUpdate();
+					ResultSet addFormatRS = addFormatStmt.getGeneratedKeys();
+					if (addFormatRS.next()) {
+						id = addFormatRS.getLong(1);
+					} else {
+						logEntry.incErrors("Could not add format");
+						id = -1L;
+					}
+				}
+			} catch (SQLException e) {
+				logEntry.incErrors("Error getting format id", e);
+				id = -1L;
+			}
+			formatIds.put(format, id);
+		}
+		return id;
+	}
+
+	private final HashMap<String, Long> languageIds = new HashMap<>();
+	private long getLanguageId(String language) {
+		if (language == null){
+			return -1;
+		}
+		Long id = languageIds.get(language);
+		if (id == null){
+			try {
+				getLanguageStmt.setString(1, language);
+				ResultSet getLanguageRS = getLanguageStmt.executeQuery();
+				if (getLanguageRS.next()){
+					id = getLanguageRS.getLong("id");
+				}else {
+					addLanguageStmt.setString(1, language);
+					addLanguageStmt.executeUpdate();
+					ResultSet addLanguageRS = addLanguageStmt.getGeneratedKeys();
+					if (addLanguageRS.next()) {
+						id = addLanguageRS.getLong(1);
+					} else {
+						logEntry.incErrors("Could not add language");
+						id = -1L;
+					}
+				}
+			} catch (SQLException e) {
+				logEntry.incErrors("Error getting language id", e);
+				id = -1L;
+			}
+			languageIds.put(language, id);
+		}
+		return id;
+	}
+
+	private final HashMap<String, Long> editionIds = new HashMap<>();
+	private long getEditionId(String edition) {
+		if (edition == null){
+			return -1;
+		}
+		Long id = editionIds.get(edition);
+		if (id == null){
+			try {
+				getEditionStmt.setString(1, edition);
+				ResultSet getEditionRS = getEditionStmt.executeQuery();
+				if (getEditionRS.next()){
+					id = getEditionRS.getLong("id");
+				}else {
+					addEditionStmt.setString(1, edition);
+					addEditionStmt.executeUpdate();
+					ResultSet addEditionRS = addEditionStmt.getGeneratedKeys();
+					if (addEditionRS.next()) {
+						id = addEditionRS.getLong(1);
+					} else {
+						logEntry.incErrors("Could not add edition");
+						id = -1L;
+					}
+				}
+			} catch (SQLException e) {
+				logEntry.incErrors("Error getting edition id for edition (" + edition.length() + "): " + edition, e);
+				id = -1L;
+			}
+			editionIds.put(edition, id);
+		}
+		return id;
+	}
+
+	private final HashMap<String, Long> publisherIds = new HashMap<>();
+	private long getPublisherId(String publisher) {
+		if (publisher == null){
+			return -1;
+		}
+		Long id = publisherIds.get(publisher);
+		if (id == null){
+			try {
+				getPublisherStmt.setString(1, publisher);
+				ResultSet getPublisherRS = getPublisherStmt.executeQuery();
+				if (getPublisherRS.next()){
+					id = getPublisherRS.getLong("id");
+				}else {
+					addPublisherStmt.setString(1, publisher);
+					addPublisherStmt.executeUpdate();
+					ResultSet addPublisherRS = addPublisherStmt.getGeneratedKeys();
+					if (addPublisherRS.next()) {
+						id = addPublisherRS.getLong(1);
+					} else {
+						logEntry.incErrors("Could not add publisher");
+						id = -1L;
+					}
+				}
+			} catch (SQLException e) {
+				logEntry.incErrors("Error getting publisher id", e);
+				id = -1L;
+			}
+			publisherIds.put(publisher, id);
+		}
+		return id;
+	}
+
+	private final HashMap<String, Long> publicationDateIds = new HashMap<>();
+	private long getPublicationDateId(String publicationDate) {
+		if (publicationDate == null){
+			return -1;
+		}
+		Long id = publicationDateIds.get(publicationDate);
+		if (id == null){
+			try {
+				getPublicationDateStmt.setString(1, publicationDate);
+				ResultSet getPublicationDateRS = getPublicationDateStmt.executeQuery();
+				if (getPublicationDateRS.next()){
+					id = getPublicationDateRS.getLong("id");
+				}else {
+					addPublicationDateStmt.setString(1, publicationDate);
+					addPublicationDateStmt.executeUpdate();
+					ResultSet addPublicationDateRS = addPublicationDateStmt.getGeneratedKeys();
+					if (addPublicationDateRS.next()) {
+						id = addPublicationDateRS.getLong(1);
+					} else {
+						logEntry.incErrors("Could not add publicationDate");
+						id = -1L;
+					}
+				}
+			} catch (SQLException e) {
+				logEntry.incErrors("Error getting publicationDate id", e);
+				id = -1L;
+			}
+			publicationDateIds.put(publicationDate, id);
+		}
+		return id;
+	}
+
+	private final HashMap<String, Long> physicalDescriptionIds = new HashMap<>();
+	private long getPhysicalDescriptionId(String physicalDescription) {
+		if (physicalDescription == null){
+			return -1;
+		}
+		if (physicalDescription.length() > 1000) {
+			physicalDescription = physicalDescription.substring(0, 1000);
+		}
+		Long id = physicalDescriptionIds.get(physicalDescription);
+		if (id == null){
+			try {
+				getPhysicalDescriptionStmt.setString(1, physicalDescription);
+				ResultSet getPhysicalDescriptionRS = getPhysicalDescriptionStmt.executeQuery();
+				if (getPhysicalDescriptionRS.next()){
+					id = getPhysicalDescriptionRS.getLong("id");
+				}else {
+					addPhysicalDescriptionStmt.setString(1, physicalDescription);
+					addPhysicalDescriptionStmt.executeUpdate();
+					ResultSet addPhysicalDescriptionRS = addPhysicalDescriptionStmt.getGeneratedKeys();
+					if (addPhysicalDescriptionRS.next()) {
+						id = addPhysicalDescriptionRS.getLong(1);
+					} else {
+						logEntry.incErrors("Could not add physicalDescription");
+						id = -1L;
+					}
+				}
+			} catch (SQLException e) {
+				logEntry.incErrors("Error getting physicalDescription id (" + physicalDescription.length() + "):" + physicalDescription, e);
+				id = -1L;
+			}
+			physicalDescriptionIds.put(physicalDescription, id);
+		}
+		return id;
+	}
+
+	private final HashMap<String, Long> eContentSourceIds = new HashMap<>();
+	private long getEContentSourceId(String eContentSource) {
+		if (eContentSource == null){
+			return -1;
+		}
+		Long id = eContentSourceIds.get(eContentSource);
+		if (id == null){
+			try {
+				getEContentSourceStmt.setString(1, eContentSource);
+				ResultSet getEContentSourceRS = getEContentSourceStmt.executeQuery();
+				if (getEContentSourceRS.next()){
+					id = getEContentSourceRS.getLong("id");
+				}else {
+					addEContentSourceStmt.setString(1, eContentSource);
+					addEContentSourceStmt.executeUpdate();
+					ResultSet addEContentSourceRS = addEContentSourceStmt.getGeneratedKeys();
+					if (addEContentSourceRS.next()) {
+						id = addEContentSourceRS.getLong(1);
+					} else {
+						logEntry.incErrors("Could not add eContentSource");
+						id = -1L;
+					}
+				}
+			} catch (SQLException e) {
+				logEntry.incErrors("Error getting eContentSource id", e);
+				id = -1L;
+			}
+			eContentSourceIds.put(eContentSource, id);
+		}
+		return id;
+	}
+
+	private final HashMap<String, Long> shelfLocationIds = new HashMap<>();
+	private long getShelfLocationId(String shelfLocation) {
+		if (shelfLocation == null){
+			return -1;
+		}
+		Long id = shelfLocationIds.get(shelfLocation);
+		if (id == null){
+			try {
+				getShelfLocationStmt.setString(1, shelfLocation);
+				ResultSet getShelfLocationRS = getShelfLocationStmt.executeQuery();
+				if (getShelfLocationRS.next()){
+					id = getShelfLocationRS.getLong("id");
+				}else {
+					addShelfLocationStmt.setString(1, shelfLocation);
+					addShelfLocationStmt.executeUpdate();
+					ResultSet addShelfLocationRS = addShelfLocationStmt.getGeneratedKeys();
+					if (addShelfLocationRS.next()) {
+						id = addShelfLocationRS.getLong(1);
+					} else {
+						logEntry.incErrors("Could not add shelfLocation");
+						id = -1L;
+					}
+				}
+			} catch (SQLException e) {
+				logEntry.incErrors("Error getting shelfLocation id", e);
+				id = -1L;
+			}
+			shelfLocationIds.put(shelfLocation, id);
+		}
+		return id;
+	}
+
+	private final HashMap<String, Long> callNumberIds = new HashMap<>();
+	private long getCallNumberId(String callNumber) {
+		if (callNumber == null){
+			return -1;
+		}
+		Long id = callNumberIds.get(callNumber);
+		if (id == null){
+			try {
+				getCallNumberStmt.setString(1, callNumber);
+				ResultSet getCallNumberRS = getCallNumberStmt.executeQuery();
+				if (getCallNumberRS.next()){
+					id = getCallNumberRS.getLong("id");
+				}else {
+					addCallNumberStmt.setString(1, callNumber);
+					addCallNumberStmt.executeUpdate();
+					ResultSet addCallNumberRS = addCallNumberStmt.getGeneratedKeys();
+					if (addCallNumberRS.next()) {
+						id = addCallNumberRS.getLong(1);
+					} else {
+						logEntry.incErrors("Could not add callNumber");
+						id = -1L;
+					}
+				}
+			} catch (SQLException e) {
+				logEntry.incErrors("Error getting callNumber id", e);
+				id = -1L;
+			}
+			callNumberIds.put(callNumber, id);
+		}
+		return id;
+	}
+
+	private final HashMap<String, Long> statusIds = new HashMap<>();
+	private long getStatusId(String status) {
+		if (status == null){
+			return -1;
+		}
+		Long id = statusIds.get(status);
+		if (id == null){
+			try {
+				getStatusStmt.setString(1, status);
+				ResultSet getStatusRS = getStatusStmt.executeQuery();
+				if (getStatusRS.next()){
+					id = getStatusRS.getLong("id");
+				}else {
+					addStatusStmt.setString(1, status);
+					addStatusStmt.executeUpdate();
+					ResultSet addStatusRS = addStatusStmt.getGeneratedKeys();
+					if (addStatusRS.next()) {
+						id = addStatusRS.getLong(1);
+					} else {
+						logEntry.incErrors("Could not add status");
+						id = -1L;
+					}
+				}
+			} catch (SQLException e) {
+				logEntry.incErrors("Error getting status id", e);
+				id = -1L;
+			}
+			statusIds.put(status, id);
+		}
+		return id;
+	}
+
+	private final HashMap<String, Long> locationCodeIds = new HashMap<>();
+	private long getLocationCodeId(String locationCode) {
+		if (locationCode == null){
+			return -1;
+		}
+		Long id = locationCodeIds.get(locationCode);
+		if (id == null){
+			try {
+				getLocationCodeStmt.setString(1, locationCode);
+				ResultSet getLocationCodeRS = getLocationCodeStmt.executeQuery();
+				if (getLocationCodeRS.next()){
+					id = getLocationCodeRS.getLong("id");
+				}else {
+					addLocationCodeStmt.setString(1, locationCode);
+					addLocationCodeStmt.executeUpdate();
+					ResultSet addLocationCodeRS = addLocationCodeStmt.getGeneratedKeys();
+					if (addLocationCodeRS.next()) {
+						id = addLocationCodeRS.getLong(1);
+					} else {
+						logEntry.incErrors("Could not add locationCode");
+						id = -1L;
+					}
+				}
+			} catch (SQLException e) {
+				logEntry.incErrors("Error getting locationCode id", e);
+				id = -1L;
+			}
+			locationCodeIds.put(locationCode, id);
+		}
+		return id;
+	}
+
+	private final HashMap<String, Long> subLocationCodeIds = new HashMap<>();
+	private long getSubLocationCodeId(String subLocationCode) {
+		if (subLocationCode == null){
+			return -1;
+		}
+		Long id = subLocationCodeIds.get(subLocationCode);
+		if (id == null){
+			try {
+				getSubLocationCodeStmt.setString(1, subLocationCode);
+				ResultSet getSubLocationCodeRS = getSubLocationCodeStmt.executeQuery();
+				if (getSubLocationCodeRS.next()){
+					id = getSubLocationCodeRS.getLong("id");
+				}else {
+					addSubLocationCodeStmt.setString(1, subLocationCode);
+					addSubLocationCodeStmt.executeUpdate();
+					ResultSet addSubLocationCodeRS = addSubLocationCodeStmt.getGeneratedKeys();
+					if (addSubLocationCodeRS.next()) {
+						id = addSubLocationCodeRS.getLong(1);
+					} else {
+						logEntry.incErrors("Could not add subLocationCode");
+						id = -1L;
+					}
+				}
+			} catch (SQLException e) {
+				logEntry.incErrors("Error getting subLocationCode id", e);
+				id = -1L;
+			}
+			subLocationCodeIds.put(subLocationCode, id);
+		}
+		return id;
+	}
+
+	void removeGroupedWorkRecord(long recordId) {
+		try {
+			removeRecordForWorkStmt.setLong(1, recordId);
+			removeRecordForWorkStmt.executeUpdate();
+		}catch (SQLException e){
+			logEntry.incErrors("Could not delete record", e);
+		}
+	}
+
+	HashMap<VariationInfo, Long> getExistingVariationsForGroupedWork(long groupedWorkId) {
+		HashMap<VariationInfo, Long> existingVariations = new HashMap<>();
+		try {
+			getExistingVariationsForWorkStmt.setLong(1, groupedWorkId);
+			ResultSet getExistingVariationsForWorkRS = getExistingVariationsForWorkStmt.executeQuery();
+			while (getExistingVariationsForWorkRS.next()){
+				VariationInfo variation = new VariationInfo();
+				variation.id = getExistingVariationsForWorkRS.getLong("id");
+				variation.primaryLanguageId = getExistingVariationsForWorkRS.getLong("primaryLanguageId");
+				variation.eContentSourceId = getExistingVariationsForWorkRS.getLong("eContentSourceId");
+				variation.formatId = getExistingVariationsForWorkRS.getLong("formatId");
+				variation.formatCategoryId = getExistingVariationsForWorkRS.getLong("formatCategoryId");
+				existingVariations.put(variation, variation.id);
+			}
+		}catch (SQLException e){
+			logEntry.incErrors("Could not get existing variations for grouped work", e);
+		}
+		return existingVariations;
+	}
+
+	long saveGroupedWorkVariation(HashMap<VariationInfo, Long> existingVariations, long groupedWorkId, RecordInfo recordInfo, ItemInfo itemInfo) {
+		VariationInfo curVariationInfo = new VariationInfo();
+		curVariationInfo.primaryLanguageId = getLanguageId(recordInfo.getPrimaryLanguage());
+		curVariationInfo.eContentSourceId = this.getEContentSourceId(itemInfo.geteContentSource());
+		String format = itemInfo.getFormat() == null ? recordInfo.getPrimaryFormat() : itemInfo.getFormat();
+		curVariationInfo.formatId = this.getFormatId(format);
+		String formatCategory = itemInfo.getFormatCategory() == null ? recordInfo.getPrimaryFormatCategory() : itemInfo.getFormatCategory();
+		curVariationInfo.formatCategoryId = this.getFormatCategoryId(formatCategory);
+		Long existingId = existingVariations.get(curVariationInfo);
+		if (existingId != null){
+			return existingId;
+		}else{
+			//Add it to the database and return the id
+			try {
+				addVariationForWorkStmt.setLong(1, groupedWorkId);
+				addVariationForWorkStmt.setLong(2, curVariationInfo.primaryLanguageId);
+				addVariationForWorkStmt.setLong(3, curVariationInfo.eContentSourceId);
+				addVariationForWorkStmt.setLong(4, curVariationInfo.formatId);
+				addVariationForWorkStmt.setLong(5, curVariationInfo.formatCategoryId);
+				addVariationForWorkStmt.executeUpdate();
+				ResultSet addVariationForWorkRS = addVariationForWorkStmt.getGeneratedKeys();
+				if (addVariationForWorkRS.next()){
+					curVariationInfo.id = addVariationForWorkRS.getLong(1);
+					existingVariations.put(curVariationInfo, curVariationInfo.id);
+					return curVariationInfo.id;
+				}
+			} catch (SQLException e) {
+				logEntry.incErrors("Error saving grouped work variation", e);
+			}
+		}
+		return -1L;
+	}
+
+	void removeGroupedWorkVariation(Long existingVariationId) {
+		try {
+			removeVariationStmt.setLong(1, existingVariationId);
+			removeVariationStmt.executeUpdate();
+		}catch (SQLException e) {
+			logEntry.incErrors("Error removing grouped work variation", e);
+		}
 
 	}
 
+	HashMap<String, Long> getExistingItemsForRecord(long recordId) {
+		HashMap<String, Long> existingItems = new HashMap<>();
+		try{
+			getExistingItemsForRecordStmt.setLong(1, recordId);
+			ResultSet getExistingItemsForRecordRS = getExistingItemsForRecordStmt.executeQuery();
+			while (getExistingItemsForRecordRS.next()){
+				existingItems.put(getExistingItemsForRecordRS.getString("itemId"), getExistingItemsForRecordRS.getLong("id"));
+			}
+		}catch (SQLException e){
+			logEntry.incErrors("Error loading existing items for record");
+		}
+		return existingItems;
+	}
+
+	void removeRecordItem(Long itemId) {
+		try {
+			removeItemStmt.setLong(1, itemId);
+			removeItemStmt.executeUpdate();
+		}catch (SQLException e) {
+			logEntry.incErrors("Error removing item for record", e);
+		}
+	}
+
+	long saveItemForRecord(long recordId, long variationId, ItemInfo itemInfo, HashMap<String, Long> existingItems) {
+		Long itemId = existingItems.get(itemInfo.getItemIdentifier());
+		if (itemId == null){
+			itemId = -1L;
+		}
+		try {
+			addItemForRecordStmt.setLong(1, recordId);
+			addItemForRecordStmt.setLong(2, variationId);
+			addItemForRecordStmt.setString(3, itemInfo.getItemIdentifier());
+			addItemForRecordStmt.setLong(4, this.getShelfLocationId(itemInfo.getDetailedLocation()));
+			addItemForRecordStmt.setLong(5, this.getCallNumberId(itemInfo.getCallNumber()));
+			addItemForRecordStmt.setLong(6, this.getCallNumberId(itemInfo.getSortableCallNumber()));
+			addItemForRecordStmt.setLong(7, itemInfo.getNumCopies());
+			addItemForRecordStmt.setBoolean(8, itemInfo.isOrderItem());
+			addItemForRecordStmt.setLong(9, this.getStatusId(itemInfo.getDetailedStatus()));
+			if (itemInfo.getDateAdded() == null) {
+				addItemForRecordStmt.setNull(10, Types.BIGINT);
+			}else{
+				addItemForRecordStmt.setLong(10, itemInfo.getDateAdded().getTime() / 1000);
+			}
+			addItemForRecordStmt.setLong(11, this.getLocationCodeId(itemInfo.getLocationCode()));
+			addItemForRecordStmt.setLong(12, this.getSubLocationCodeId(itemInfo.getSubLocationCode()));
+			if (itemInfo.getLastCheckinDate() ==  null){
+				addItemForRecordStmt.setNull(13, Types.INTEGER);
+			}else {
+				addItemForRecordStmt.setLong(13, itemInfo.getLastCheckinDate().getTime() / 1000);
+			}
+			addItemForRecordStmt.executeUpdate();
+			ResultSet addItemForWorkRS = addItemForRecordStmt.getGeneratedKeys();
+			if (addItemForWorkRS.next()){
+				itemId = addItemForWorkRS.getLong(1);
+				existingItems.put(itemInfo.getItemIdentifier(), itemId);
+			}
+		} catch (SQLException e) {
+			logEntry.incErrors("Error saving grouped work item", e);
+		}
+
+		return itemId;
+	}
+
+	HashMap<Long, SavedScopingInfo> getExistingScopesForItem(long itemId) {
+		HashMap<Long, SavedScopingInfo> existingScopes = new HashMap<>();
+		try{
+			getExistingScopesForItemStmt.setLong(1, itemId);
+			ResultSet getExistingScopesForItemRS = getExistingScopesForItemStmt.executeQuery();
+			while (getExistingScopesForItemRS.next()){
+				existingScopes.put(getExistingScopesForItemRS.getLong("scopeId"), new SavedScopingInfo(getExistingScopesForItemRS));
+			}
+		}catch (SQLException e){
+			logEntry.incErrors("Error loading existing scopes for item");
+		}
+		return existingScopes;
+	}
+
+	void saveScopeForItem(long itemId, ScopingInfo scopingInfo, HashMap<Long, SavedScopingInfo> existingScopes) {
+		SavedScopingInfo savedScopingInfo = existingScopes.get(scopingInfo.getScope().getId());
+		if (savedScopingInfo == null){
+			try {
+				addScopeForItemStmt.setLong(1, itemId);
+				addScopeForItemStmt.setLong(2, scopingInfo.getScope().getId());
+				addScopeForItemStmt.setLong(3, this.getStatusId(scopingInfo.getGroupedStatus()));
+				addScopeForItemStmt.setLong(4, this.getStatusId(scopingInfo.getStatus()));
+				addScopeForItemStmt.setBoolean(5, scopingInfo.isAvailable());
+				addScopeForItemStmt.setBoolean(6, scopingInfo.isHoldable());
+				addScopeForItemStmt.setBoolean(7, scopingInfo.isInLibraryUseOnly());
+				addScopeForItemStmt.setString(8, scopingInfo.getLocalUrl());
+				addScopeForItemStmt.setBoolean(9, scopingInfo.isLocallyOwned());
+				addScopeForItemStmt.setBoolean(10, scopingInfo.isLibraryOwned());
+				addScopeForItemStmt.executeUpdate();
+			} catch (SQLException e) {
+				logEntry.incErrors("Error saving grouped work scope", e);
+			}
+		}else{
+			long groupedStatusId = this.getStatusId(scopingInfo.getGroupedStatus());
+			long statusId = this.getStatusId(scopingInfo.getStatus());
+			if (savedScopingInfo.hasChanged(groupedStatusId, statusId, scopingInfo)) {
+				try {
+					updateScopeForItemStmt.setLong(1, groupedStatusId);
+					updateScopeForItemStmt.setLong(2, statusId);
+					updateScopeForItemStmt.setBoolean(3, scopingInfo.isAvailable());
+					updateScopeForItemStmt.setBoolean(4, scopingInfo.isHoldable());
+					updateScopeForItemStmt.setBoolean(5, scopingInfo.isInLibraryUseOnly());
+					updateScopeForItemStmt.setString(6, scopingInfo.getLocalUrl());
+					updateScopeForItemStmt.setBoolean(7, scopingInfo.isLocallyOwned());
+					updateScopeForItemStmt.setBoolean(8, scopingInfo.isLibraryOwned());
+					updateScopeForItemStmt.setLong(9, savedScopingInfo.id);
+					updateScopeForItemStmt.executeUpdate();
+				} catch (SQLException e) {
+					logEntry.incErrors("Error updating grouped work scope", e);
+				}
+			}
+		}
+
+
+		//return scopeId;
+	}
+
+	void removeScope(Long scopeId) {
+		try {
+			removeScopeStmt.setLong(1, scopeId);
+			removeScopeStmt.executeUpdate();
+		}catch (SQLException e) {
+			logEntry.incErrors("Error removing scope", e);
+		}
+	}
+
+	void updateScope(Scope scope) {
+		try {
+			updateScopeStmt.setBoolean(1, scope.isLibraryScope());
+			updateScopeStmt.setBoolean(2, scope.isLocationScope());
+			updateScopeStmt.setLong(3, scope.getId());
+			updateScopeStmt.executeUpdate();
+		} catch (SQLException e) {
+			logEntry.incErrors("Error updating scope", e);
+		}
+	}
+
+	Long saveScope(Scope scope) {
+		long scopeId = -1;
+		try {
+			addScopeStmt.setString(1, scope.getScopeName());
+			addScopeStmt.setBoolean(2, scope.isLibraryScope());
+			addScopeStmt.setBoolean(3, scope.isLocationScope());
+			addScopeStmt.executeUpdate();
+			ResultSet addScopeRS = addScopeStmt.getGeneratedKeys();
+			if (addScopeRS.next()){
+				scopeId = addScopeRS.getLong(1);
+			}
+		} catch (SQLException e) {
+			logEntry.incErrors("Error saving scope", e);
+		}
+
+		return scopeId;
+	}
+
+	HashMap<String, ExistingScopeInfo> getExistingScopes() {
+		HashMap<String, ExistingScopeInfo> existingScopes = new HashMap<>();
+		try {
+			ResultSet getExistingScopesRS = getExistingScopesStmt.executeQuery();
+			while (getExistingScopesRS.next()){
+				ExistingScopeInfo scopeInfo = new ExistingScopeInfo();
+				scopeInfo.id = getExistingScopesRS.getLong("id");
+				scopeInfo.scopeName = getExistingScopesRS.getString("name");
+				scopeInfo.isLibraryScope = getExistingScopesRS.getBoolean("isLibraryScope");
+				scopeInfo.isLocationScope = getExistingScopesRS.getBoolean("isLocationScope");
+				existingScopes.put(scopeInfo.scopeName, scopeInfo);
+			}
+		} catch (SQLException e) {
+			logEntry.incErrors("Error loading existing scopes", e);
+		}
+
+		return existingScopes;
+	}
+
+	public void removeItemScope(long scopeId) {
+		try {
+			removeItemScopeStmt.setLong(1, scopeId);
+			removeItemScopeStmt.executeUpdate();
+		}catch (SQLException e) {
+			logEntry.incErrors("Error removing scope for item", e);
+		}
+	}
+
+	public int disabledAutoCommitCounter = 0;
+	void disableAutoCommit(){
+		disabledAutoCommitCounter++;
+		if (disabledAutoCommitCounter == 1) {
+			try {
+				dbConn.setAutoCommit(false);
+			} catch (SQLException throwables) {
+				logEntry.incErrors("Error disabling auto commit", throwables);
+			}
+		}
+	}
+
+	void enableAutoCommit() {
+		disabledAutoCommitCounter--;
+		if (disabledAutoCommitCounter == 0){
+			try{
+				dbConn.setAutoCommit(true);
+			} catch (SQLException throwables) {
+				logEntry.incErrors("Error enabling auto commit", throwables);
+			}
+		}
+	}
+
+	public boolean isStoreRecordDetailsInSolr(){
+		return storeRecordDetailsInSolr;
+	}
 }

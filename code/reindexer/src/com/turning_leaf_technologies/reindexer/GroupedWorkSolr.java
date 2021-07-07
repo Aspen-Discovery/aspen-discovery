@@ -472,15 +472,15 @@ public class GroupedWorkSolr implements Cloneable {
 		HashMap <String, HashSet<String>> multiValuedScopedFields = new HashMap<>();
 		int numScopesForWork = 0;
 		for (RecordInfo curRecord : relatedRecords.values()) {
-			doc.addField("record_details", curRecord.getDetails());
+			if (groupedWorkIndexer.isStoreRecordDetailsInSolr()) { doc.addField("record_details", curRecord.getDetails()); }
 			for (ItemInfo curItem : curRecord.getRelatedItems()) {
-				doc.addField("item_details", curItem.getDetails(logEntry));
+				if (groupedWorkIndexer.isStoreRecordDetailsInSolr()) { doc.addField("item_details", curItem.getDetails(logEntry)); }
 				HashMap<String, ScopingInfo> curScopingInfo = curItem.getScopingInfo();
 				Set<String> scopingNames = curScopingInfo.keySet();
 				for (String curScopeName : scopingNames) {
 					numScopesForWork++;
 					ScopingInfo curScope = curScopingInfo.get(curScopeName);
-					setScopedField(multiValuedScopedFields, "scoping_details_" + curScopeName, curScope.getScopingDetails());
+					if (groupedWorkIndexer.isStoreRecordDetailsInSolr()) { setScopedField(multiValuedScopedFields, "scoping_details_" + curScopeName, curScope.getScopingDetails()); }
 					//if we do that, we don't need to filter within PHP
 					setScopedField(multiValuedScopedFields, "scope_has_related_records", curScopeName);
 					HashSet<String> formats = new HashSet<>();
@@ -499,6 +499,10 @@ public class GroupedWorkSolr implements Cloneable {
 					//eAudiobooks are considered both Audiobooks and eBooks by some people
 					if (formats.contains("eAudiobook")) {
 						formatCategories.add("eBook");
+					}
+					if (formats.contains("CD + Book")) {
+						formatCategories.add("Books");
+						formatCategories.add("Audio Books");
 					}
 					if (formats.contains("VOX Books")) {
 						formatCategories.add("Books");
@@ -1802,4 +1806,70 @@ public class GroupedWorkSolr implements Cloneable {
 		this.userNotInterestedLink.add(userId);
 	}
 
+	public void saveRecordsToDatabase(long groupedWorkId, BaseLogEntry logEntry) {
+		groupedWorkIndexer.disableAutoCommit();
+		//Get a list of all existing records for the grouped work
+		HashMap<String, Long> existingRecords = groupedWorkIndexer.getExistingRecordsForGroupedWork(groupedWorkId);
+		HashMap<VariationInfo, Long> existingVariations = groupedWorkIndexer.getExistingVariationsForGroupedWork(groupedWorkId);
+		HashSet<Long> foundVariations = new HashSet<>();
+
+		//Save all the records
+		for (RecordInfo recordInfo : relatedRecords.values()){
+			String relatedRecordKey = groupedWorkIndexer.getSourceId(recordInfo.getSource(), recordInfo.getSubSource()) + ":" + recordInfo.getRecordIdentifier();
+			long recordId = -1;
+			if (existingRecords.containsKey(relatedRecordKey)){
+				recordId = existingRecords.get(relatedRecordKey);
+				existingRecords.remove(relatedRecordKey);
+			}
+			recordId = groupedWorkIndexer.saveGroupedWorkRecord(groupedWorkId, recordInfo, recordId);
+
+			if (recordId != -1) {
+				//Get existing items for the record
+				HashMap<String, Long> existingItems = groupedWorkIndexer.getExistingItemsForRecord(recordId);
+
+				//Save all the items
+				HashSet<Long> foundItems = new HashSet<>();
+				for (ItemInfo itemInfo : recordInfo.getRelatedItems()) {
+					//Get the variation for the item
+					long variationId = groupedWorkIndexer.saveGroupedWorkVariation(existingVariations, groupedWorkId, recordInfo, itemInfo);
+					foundVariations.add(variationId);
+
+					long itemId = groupedWorkIndexer.saveItemForRecord(recordId, variationId, itemInfo, existingItems);
+					if (itemId != -1) {
+						//Save scopes for the items
+						HashMap<Long, SavedScopingInfo> existingScopes = groupedWorkIndexer.getExistingScopesForItem(itemId);
+
+						for (ScopingInfo scopingInfo : itemInfo.getScopingInfo().values()) {
+							groupedWorkIndexer.saveScopeForItem(itemId, scopingInfo, existingScopes);
+							existingScopes.remove(scopingInfo.getScope().getId());
+						}
+						for (SavedScopingInfo savedScopingInfo : existingScopes.values()) {
+							groupedWorkIndexer.removeItemScope(savedScopingInfo.id);
+						}
+
+						foundItems.add(itemId);
+					}
+				}
+
+				//Remove remaining items that no longer exist
+				for (Long itemId : existingItems.values()) {
+					if (!foundItems.contains(itemId)) {
+						groupedWorkIndexer.removeRecordItem(itemId);
+					}
+				}
+			}
+		}
+		//Anything left over should be removed
+		//Remove remaining records
+		for (Long existingRecordId : existingRecords.values()){
+			groupedWorkIndexer.removeGroupedWorkRecord(existingRecordId);
+		}
+		//Remove remaining variations
+		for (Long existingVariationId : existingVariations.values()) {
+			if (!foundVariations.contains(existingVariationId)) {
+				groupedWorkIndexer.removeGroupedWorkVariation(existingVariationId);
+			}
+		}
+		groupedWorkIndexer.enableAutoCommit();
+	}
 }

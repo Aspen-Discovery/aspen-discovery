@@ -456,10 +456,10 @@ public class OaiIndexerMain {
 										solrRecord.setType(textContent);
 										break;
 									case "dc:subject":
-										String[] subjects = textContent.split("\\s+;\\s+");
+										String[] subjects = textContent.split("\\s*;\\s*");
 										//Clean the subjects up
 										for (int subjectIdx = 0; subjectIdx < subjects.length; subjectIdx++) {
-											subjects[subjectIdx] = subjects[subjectIdx].trim();
+											subjects[subjectIdx] = subjects[subjectIdx].replaceAll("\\[info:.*?\\]", "").trim();
 										}
 										solrRecord.addSubjects(subjects);
 										Collections.addAll(collectionSubjects, subjects);

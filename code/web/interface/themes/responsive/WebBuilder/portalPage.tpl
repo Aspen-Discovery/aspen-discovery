@@ -12,7 +12,7 @@
 							{if $row->makeAccordion == '0'}<h2>{$row->rowTitle}</h2>{else}{$row->rowTitle}{/if}
 							{if $row->makeAccordion == '1'}</div>{/if}
 					</div>
-				</div>
+					</a></div>
 		{/if}
 		<div class="row {if $row->makeAccordion == '1'}panel-collapse collapse{/if}" {if $row->makeAccordion == '1'}id="{$row->id}-PanelBody"{/if}{*style="display: flex; flex-direction: row"*}>
 			{if $row->makeAccordion == '1'}<div class="panel-body">{/if}
@@ -23,6 +23,6 @@
 			{/foreach}
 				{if $row->makeAccordion == '1'}</div>{/if}
 		</div>
-	{/foreach}
 		{if $row->makeAccordion == '1'}</div>{/if}
+	{/foreach}
 </div>

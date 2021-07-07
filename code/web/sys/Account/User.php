@@ -1503,6 +1503,14 @@ class User extends DataObject
 		return $result;
 	}
 
+	function confirmHold($recordId, $confirmationId) {
+		$result = $this->getCatalogDriver()->confirmHold($this, $recordId, $confirmationId);
+		if ($result['success']){
+			$this->clearCache();
+		}
+		return $result;
+	}
+
 	function bookMaterial($recordId, $startDate, $startTime, $endDate, $endTime){
 		$result = $this->getCatalogDriver()->bookMaterial($this, $recordId, $startDate, $startTime, $endDate, $endTime);
 		if ($result['success']){
@@ -1634,6 +1642,153 @@ class User extends DataObject
 		$result = $this->getCatalogDriver()->freezeHold($this, $recordId, $holdId, $reactivationDate);
 		$this->clearCache();
 		return $result;
+	}
+
+	function freezeAllHolds() {
+		$user = UserAccount::getLoggedInUser();
+		$tmpResult = array( // set default response
+			'success' => false,
+			'message' => 'Error modifying hold.'
+		);
+
+		$allHolds = $user->getHolds(true, 'sortTitle', 'expire', 'all');
+		$allUnavailableHolds = $allHolds['unavailable'];
+		$success = 0;
+		$failed = 0;
+		$total = count($allHolds['unavailable']);
+
+		if ($total >= 1) {
+			foreach ($allUnavailableHolds as $hold) {
+				$frozen = $hold->frozen;
+				$canFreeze = $hold->canFreeze;
+				$recordId = $hold->sourceId;
+				$holdId = $hold->cancelId;
+				$holdType = $hold->source;
+
+				if ($frozen == 0 && $canFreeze == 1) {
+					if ($holdType == 'ils') {
+						$tmpResult = $user->freezeHold($recordId, $holdId, false);
+						if ($tmpResult['success']) {
+							$success++;
+						}
+					} else if ($holdType == 'axis360') {
+						require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
+						$driver = new Axis360Driver();
+						$tmpResult = $driver->freezeHold($user, $recordId);
+						if ($tmpResult['success']) {
+							$success++;
+						}
+					} else if ($holdType == 'overdrive') {
+						require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
+						$driver = new OverDriveDriver();
+						$tmpResult = $driver->freezeHold($user, $recordId);
+						if ($tmpResult['success']) {
+							$success++;
+						}
+					} else if ($holdType == 'cloud_library') {
+						require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
+						$driver = new CloudLibraryDriver();
+						$tmpResult = $driver->freezeHold($user, $recordId);
+						if ($tmpResult['success']) {
+							$success++;
+						}
+					} else {
+						$failed++;
+						$tmpResult['message'] = '<div class="alert alert-warning">Hold not available</div>';
+					}
+
+				} else if ($canFreeze == 0) {
+					$failed++;
+				} else {
+					$tmpResult['message'] = '<div class="alert alert-warning">All holds already frozen</div>';
+				}
+			}
+		} else {
+			$tmpResult['message'] = 'No holds available to freeze.';
+		}
+
+		if ($success >= 1) {
+			$message = '<div class="alert alert-success">' . $success . ' of ' . $total . ' holds were frozen.</div>';
+
+			if ($failed >= 1) {
+				$message .= '<div class="alert alert-warning">' . $failed . ' holds failed to freeze.</div>';
+			}
+
+			$tmpResult['message'] = $message;
+		} else {
+			$tmpResult['message'] = '<div class="alert alert-warning">All holds already frozen</div>';
+		}
+
+		return $tmpResult;
+	}
+	function thawAllHolds(){
+		$user = UserAccount::getLoggedInUser();
+		$tmpResult = array( // set default response
+			'success' => false,
+			'message' => 'Error modifying hold.'
+		);
+
+		$allHolds = $user->getHolds(true, 'sortTitle', 'expire', 'all');
+		$allUnavailableHolds = $allHolds['unavailable'];
+		$success = 0;
+		$failed = 0;
+		$total = count($allHolds['unavailable']);
+
+		if ($total >= 1) {
+			foreach ($allUnavailableHolds as $hold) {
+				$frozen = $hold->frozen;
+				$canFreeze = $hold->canFreeze;
+				$recordId = $hold->sourceId;
+				$holdId = $hold->cancelId;
+				$holdType = $hold->source;
+
+				if ($frozen == 1 && $canFreeze == 1) {
+					if ($holdType == 'ils') {
+						$tmpResult = $user->thawHold($recordId, $holdId);
+						if($tmpResult['success']){$success++;}
+					} else if ($holdType == 'axis360') {
+						require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
+						$driver = new Axis360Driver();
+						$tmpResult = $driver->thawHold($user, $recordId);
+						if($tmpResult['success']){$success++;}
+					} else if ($holdType == 'overdrive') {
+						require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
+						$driver = new OverDriveDriver();
+						$tmpResult = $driver->thawHold($user, $recordId);
+						if($tmpResult['success']){$success++;}
+					} else if ($holdType == 'cloud_library') {
+						require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
+						$driver = new CloudLibraryDriver();
+						$tmpResult = $driver->thawHold($user, $recordId);
+						if($tmpResult['success']){$success++;}
+					} else {
+						$failed++;
+						$tmpResult['message'] = '<div class="alert alert-warning">Hold not available</div>';
+					}
+
+				} else if ($canFreeze == 0) {
+					$failed++;
+				} else if ($frozen == 1) {
+					$failed++;
+				}
+
+				if ($success >= 1 ){
+					$message = '<div class="alert alert-success">' . $success . ' of ' . $total . ' holds were thawed.</div>';
+
+					if ($failed >= 1) {
+						$message .= '<div class="alert alert-warning">' . $failed . ' holds failed to thaw.</div>';
+					}
+
+					$tmpResult['message'] = $message;
+				} else {
+					$tmpResult['message'] = '<div class="alert alert-warning">All holds already thawed</div>';
+				}
+			}
+		} else {
+			$tmpResult['message'] = 'No holds available to thaw.';
+		}
+
+		return $tmpResult;
 	}
 
 	function thawHold($recordId, $holdId){
@@ -2050,6 +2205,27 @@ class User extends DataObject
 		return $this->getHomeLocation()->code;
 	}
 
+	function getPickupLocationCode(){
+		if ($this->rememberHoldPickupLocation){
+			if ($this->pickupLocationId != $this->homeLocationId) {
+				$pickupBranch = $this->pickupLocationId;
+				$locationLookup = new Location();
+				$locationLookup->locationId = $pickupBranch;
+				if ($locationLookup->find(true)) {
+					$pickupBranch = $locationLookup->code;
+				} else {
+					$pickupBranch = $this->getHomeLocation()->code;
+				}
+			} else {
+				$pickupBranch = $this->getHomeLocation()->code;
+			}
+		} else {
+			$pickupBranch = $this->getHomeLocation()->code;
+		}
+
+		return $pickupBranch;
+	}
+
 	/**
 	 * @param string $pickupBranch
 	 * @return bool
@@ -2132,6 +2308,13 @@ class User extends DataObject
 		if ($this->hasIlsConnection()) {
 			$this->getCatalogDriver()->logout($this);
 		}
+	}
+
+	public function treatVolumeHoldsAsItemHolds() {
+		if ($this->hasIlsConnection()) {
+			return $this->getCatalogDriver()->treatVolumeHoldsAsItemHolds();
+		}
+		return false;
 	}
 
 	public function getAdminActions(){
@@ -2250,10 +2433,14 @@ class User extends DataObject
 		}
 		$sections['third_party_enrichment']->addAction(new AdminAction('Novelist Settings', 'Define settings for integrating Novelist within Aspen Discovery.', '/Enrichment/NovelistSettings'), 'Administer Third Party Enrichment API Keys');
 		$sections['third_party_enrichment']->addAction(new AdminAction('OMDB Settings', 'Define settings for integrating OMDB within Aspen Discovery.', '/Enrichment/OMDBSettings'), 'Administer Third Party Enrichment API Keys');
+		$sections['third_party_enrichment']->addAction(new AdminAction('Quipu eCARD Settings', 'Define settings for integrating Quipu eCARD within Aspen Discovery.', '/Enrichment/QuipuECardSettings'), 'Administer Third Party Enrichment API Keys');
 		$sections['third_party_enrichment']->addAction(new AdminAction('reCAPTCHA Settings', 'Define settings for using reCAPTCHA within Aspen Discovery.', '/Enrichment/RecaptchaSettings'), 'Administer Third Party Enrichment API Keys');
 		$sections['third_party_enrichment']->addAction(new AdminAction('Rosen LevelUP Settings', 'Define settings for allowing students and parents to register for Rosen LevelUP.', '/Rosen/RosenLevelUPSettings'), 'Administer Third Party Enrichment API Keys');
 		$sections['third_party_enrichment']->addAction(new AdminAction('Syndetics Settings', 'Define settings for Syndetics integration.', '/Enrichment/SyndeticsSettings'), 'Administer Third Party Enrichment API Keys');
 		$sections['third_party_enrichment']->addAction(new AdminAction('Wikipedia Integration', 'Modify which Wikipedia content is displayed for authors.', '/Admin/AuthorEnrichment'), 'Administer Wikipedia Integration');
+
+		$sections['ecommerce'] = new AdminSection('eCommerce Settings');
+		$sections['ecommerce']->addAction(new AdminAction('Comprise Settings', 'Define Settings for Comprise SMARTPAY.', '/Admin/CompriseSettings'), 'Administer Comprise');
 
 		$sections['ils_integration'] = new AdminSection('ILS Integration');
 		$indexingProfileAction = new AdminAction('Indexing Profiles', 'Define how records from the ILS are loaded into Aspen Discovery.', '/ILS/IndexingProfiles');

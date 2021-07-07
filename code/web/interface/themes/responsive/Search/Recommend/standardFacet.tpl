@@ -7,7 +7,7 @@
 		{/if}
 	{/foreach}
 	{* Show more list *}
-	<div class="facetValue" id="more{$title}"><a href="#" onclick="AspenDiscovery.ResultsList.moreFacetPopup('More {$cluster.label}{if substr($cluster.label, -1) != 's'}s{/if}', '{$title}'); return false;">{translate text='more'} ...</a></div>
+	<div class="facetValue" id="more{$title}"><a href="#" onclick="AspenDiscovery.ResultsList.moreFacetPopup('More {$cluster.displayNamePlural}', '{$title}'); return false;">{translate text='more'} ...</a></div>
 	<div id="moreFacetPopup_{$title}" style="display:none">
 		<p>{translate text="more_facet_popup_descriptions" defaultText="Please select one of the items below to narrow your search by %1%." 1=$cluster.label}</p>
 		<div class="container-12">

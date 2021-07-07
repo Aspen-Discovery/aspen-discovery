@@ -88,7 +88,7 @@ class Pager
 			$linksText .= '<div class="pagination btn-group btn-group-sm justify-content-end">';
 			if ($this->getCurrentPage() != 1) {
 				$linksText .= $this->renderLink(1) . '[1]</a>';
-				$linksText .= $this->renderLink(1) . '&laquo; ' . translate('Prev') . '</a>';
+				$linksText .= $this->renderLink($this->_currentPage - 1) . '&laquo; ' . translate('Prev') . '</a>';
 			}
 
 			//Print links to pages before and after the current

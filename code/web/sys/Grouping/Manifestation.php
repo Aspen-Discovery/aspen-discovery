@@ -12,8 +12,6 @@ class Grouping_Manifestation
 	private $_statusInformation = null;
 
 	//Information calculated at runtime
-	private $_shelfLocation = [];
-	private $_callNumber = [];
 	private $_isEContent = false;
 
 	private $_hideByDefault = false;
@@ -26,14 +24,24 @@ class Grouping_Manifestation
 
 	/**
 	 * Grouping_Manifestation constructor.
-	 * @param Grouping_Record $record
+	 * @param Grouping_Record|array $record
 	 */
 	function __construct($record)
 	{
-		$this->format = $record->format;
-		$this->formatCategory = $record->formatCategory;
 		$this->_statusInformation = new Grouping_StatusInformation();
-		$this->addRecord($record);
+		if (is_array($record)) {
+			$this->format = $record['format'];
+			$this->formatCategory = $record['formatCategory'];
+		}else{
+			$this->format = $record->format;
+			$this->formatCategory = $record->formatCategory;
+			$this->addRecord($record);
+		}
+	}
+
+	function addVariation(Grouping_Variation $variation){
+		$variation->manifestation = $this;
+		$this->_variations[] = $variation;
 	}
 
 	function addRecord(Grouping_Record $record)
@@ -58,12 +66,6 @@ class Grouping_Manifestation
 			$this->_isEContent = true;
 		}
 
-		if ($record->getShelfLocation()) {
-			$this->_shelfLocation[$record->getShelfLocation()] = $record->getShelfLocation();
-		}
-		if ($record->getCallNumber()) {
-			$this->_callNumber[$record->getCallNumber()] = $record->getCallNumber();
-		}
 		$this->_relatedRecords[] = $record;
 	}
 
@@ -339,7 +341,7 @@ class Grouping_Manifestation
 			require_once ROOT_DIR . '/sys/Utils/GroupingUtils.php';
 			$itemsDisplayedByDefault = [];
 			foreach ($this->_variations as $variation) {
-				$itemsDisplayedByDefault = mergeItemSummary($itemsDisplayedByDefault, $variation->getItemsDisplayedByDefault(false));
+				$itemsDisplayedByDefault = mergeItemSummary($itemsDisplayedByDefault, $variation->getItemsDisplayedByDefault());
 			}
 			ksort($itemsDisplayedByDefault);
 			$this->_itemsDisplayedByDefault = $itemsDisplayedByDefault;

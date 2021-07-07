@@ -29,6 +29,7 @@ $jsonBrowseCat    = json_decode(file_get_contents($browseCategories), true);
 # ****************************************************************************************************************************
 # * loop over result set, add the parent value then include any subcategories as well
 # ****************************************************************************************************************************
+$firstBrowseCategory = null;
 foreach($jsonBrowseCat['result'] as $obj){
   
 # ****************************************************************************************************************************
@@ -42,17 +43,23 @@ foreach($jsonBrowseCat['result'] as $obj){
   if (count($obj['subCategories']) > 0) {
     foreach($obj['subCategories'] as $subCats){
       if (strcmp($subCats['source'], 'List') == 0) { continue; } 	
-      $browseCatList['Items'][] = array('title' => $subCats['display_label'], 'reference' => $subCats['text_id']); 
+      $browseCatList['Items'][] = array('title' => $subCats['display_label'], 'reference' => $subCats['text_id']);
+      if (empty($firstBrowseCategory)){
+      	$firstBrowseCategory = $subCats['text_id'];
+      }
     }
   } else { 
-    $browseCatList['Items'][] = array('title' => $obj['display_label'], 'reference' => $obj['text_id']); 
+    $browseCatList['Items'][] = array('title' => $obj['display_label'], 'reference' => $obj['text_id']);
+    if (empty($firstBrowseCategory)){
+      $firstBrowseCategory = $obj['text_id'];
+    }
   }
 }
 
 # ****************************************************************************************************************************
 # * give the system a default browse category to show
 # ****************************************************************************************************************************
-$browseCatList['default'] = 'main_new_this_week';
+$browseCatList['default'] = $firstBrowseCategory;
 
 # ****************************************************************************************************************************
 # * Output to JSON

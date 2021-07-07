@@ -42,7 +42,7 @@
 				</span>
 			{/if}
 		</td>
-		{if $hasDueDate}
+		{if $hasDueDate && $showItemDueDates}
 			<td>
 				{$holding.dueDate|date_format:"%B %e, %Y"}
 			</td>
