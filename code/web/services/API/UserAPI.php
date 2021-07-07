@@ -41,7 +41,7 @@ class UserAPI extends Action
 		echo $output;
 	}
 
-	private function getCatalogConnection() : CatalogConnection
+	private function getCatalogConnection() : ?CatalogConnection
 	{
 		if ($this->catalog == null) {
 			// Connect to Catalog
