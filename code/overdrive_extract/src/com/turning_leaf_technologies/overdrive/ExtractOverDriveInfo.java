@@ -122,25 +122,29 @@ class ExtractOverDriveInfo {
 						}
 					}
 					int numRecordsDeleted = 0;
-					if (!this.hadTimeoutsFromOverDrive && totalRecordsToDelete > 0 && (settings.isAllowLargeDeletes() || (totalRecordsToDelete < 500 && allProductsInOverDrive.size() > 0 && (((float)totalRecordsToDelete / allProductsInOverDrive.size()) < .05)))) {
-						for (String overDriveId : existingProductsInAspen.keySet()) {
-							OverDriveDBInfo dbInfo = existingProductsInAspen.get(overDriveId);
+					if (!this.errorsWhileLoadingProducts && !this.hadTimeoutsFromOverDrive) {
+						if (totalRecordsToDelete > 0 && (settings.isAllowLargeDeletes() || (totalRecordsToDelete < 500 && allProductsInOverDrive.size() > 0 && (((float) totalRecordsToDelete / allProductsInOverDrive.size()) < .05)))) {
+							for (String overDriveId : existingProductsInAspen.keySet()) {
+								OverDriveDBInfo dbInfo = existingProductsInAspen.get(overDriveId);
 
-							//If the record is already deleted, don't bother re-deleting it.
-							if (!dbInfo.isDeleted()) {
-								deleteProduct(overDriveId, dbInfo);
-								numRecordsDeleted++;
+								//If the record is already deleted, don't bother re-deleting it.
+								if (!dbInfo.isDeleted()) {
+									deleteProduct(overDriveId, dbInfo);
+									numRecordsDeleted++;
+								}
+								if (numRecordsDeleted % 100 == 0) {
+									logEntry.saveResults();
+								}
 							}
-							if (numRecordsDeleted % 100 == 0){
-								logEntry.saveResults();
-							}
+						} else if (!settings.isAllowLargeDeletes() && totalRecordsToDelete >= 500) {
+							logEntry.incErrors("There were more than 500 records to delete, detected " + totalRecordsToDelete + ", not deleting records");
+						} else if (!settings.isAllowLargeDeletes() && (((float) totalRecordsToDelete / allProductsInOverDrive.size()) >= .05)) {
+							logEntry.incErrors("More than 5% of the collection was marked as being deleted. Detected " + totalRecordsToDelete + ", not deleting records");
 						}
-					}else if (!settings.isAllowLargeDeletes() && totalRecordsToDelete >= 500) {
-						logEntry.incErrors("There were more than 500 records to delete, detected " + totalRecordsToDelete + ", not deleting records");
-					}else if (!settings.isAllowLargeDeletes() && (((float)totalRecordsToDelete / allProductsInOverDrive.size()) >= .05)) {
-						logEntry.incErrors("More than 5% of the collection was marked as being deleted. Detected " + totalRecordsToDelete + ", not deleting records");
+						logger.info("Deleted " + numRecordsDeleted + " records that no longer exist");
+					}else{
+						logger.info("Did not delete " + numRecordsDeleted + " records that no longer exist because we received errors from OverDrive.");
 					}
-					logger.info("Deleted " + numRecordsDeleted + " records that no longer exist");
 
 					//We now have a list of all products in all collections, but we need to know what needs availability
 					//and metadata updated for it.  So we need to call 2 more times to figure out which records have
