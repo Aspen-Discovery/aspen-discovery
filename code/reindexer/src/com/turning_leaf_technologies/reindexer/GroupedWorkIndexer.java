@@ -1265,6 +1265,9 @@ public class GroupedWorkIndexer {
 		if (edition == null){
 			return -1;
 		}
+		if (edition.length() > 255) {
+			edition = edition.substring(0, 255);
+		}
 		Long id = editionIds.get(edition);
 		if (id == null){
 			try {
