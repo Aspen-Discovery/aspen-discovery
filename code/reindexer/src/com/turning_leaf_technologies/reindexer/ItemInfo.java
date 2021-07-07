@@ -188,7 +188,7 @@ public class ItemInfo{
 			}
 			//Cache the part that doesn't change depending on the scope
 			baseDetails = recordInfo.getFullIdentifier() + "|" +
-					Util.getCleanDetailValue(itemIdentifier) + "|" +
+					Util.getCleanDetailValue(getItemIdentifier()) + "|" +
 					Util.getCleanDetailValue(detailedLocation) + "|" +
 					Util.getCleanDetailValue(callNumber) + "|" +
 					Util.getCleanDetailValue(format) + "|" +
