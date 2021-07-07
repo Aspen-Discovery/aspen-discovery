@@ -4,10 +4,6 @@ require_once ROOT_DIR . '/CatalogConnection.php';
 
 class UserAPI extends Action
 {
-
-	/** @var CatalogConnection */
-	private $catalog;
-
 	/**
 	 * Processes method to determine return type and calls the correct method.
 	 * Should not be called directly.
@@ -28,7 +24,7 @@ class UserAPI extends Action
 		header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
 
 		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
-		if ($method != 'getCatalogConnection' && $method != 'getUserForApiCall' && method_exists($this, $method)) {
+		if ($method != 'getUserForApiCall' && method_exists($this, $method)) {
 			$result = [
 				'result' => $this->$method()
 			];
@@ -39,15 +35,6 @@ class UserAPI extends Action
 			$output = json_encode(array('error' => 'invalid_method'));
 		}
 		echo $output;
-	}
-
-	private function getCatalogConnection() : ?CatalogConnection
-	{
-		if ($this->catalog == null) {
-			// Connect to Catalog
-			$this->catalog = CatalogFactory::getCatalogConnectionInstance();
-		}
-		return $this->catalog;
 	}
 
 	/**
@@ -354,8 +341,7 @@ class UserAPI extends Action
 				}
 			}
 
-			$catalogConnection = $this->getCatalogConnection();
-			$accountSummary = $catalogConnection->getAccountSummary($user);
+			$accountSummary = $user->getAccountSummary();
 			$userData->numCheckedOutIls = (int)$accountSummary->numCheckedOut;
 			$userData->numHoldsIls =(int) $accountSummary->getNumHolds();
 			$userData->numHoldsAvailableIls = (int) ($accountSummary->numAvailableHolds == null ? 0 : $accountSummary->numAvailableHolds);
@@ -702,7 +688,6 @@ class UserAPI extends Action
 	 * <ul>
 	 * <li>username - The barcode of the user.  Can be truncated to the last 7 or 9 digits.</li>
 	 * <li>password - The pin number for the user.</li>
-	 * <li>includeMessages - Whether or not messages to the user should be included within list of fines. (optional, defaults to false)</li>
 	 * </ul>
 	 *
 	 * Sample Call:
@@ -733,10 +718,9 @@ class UserAPI extends Action
 	 */
 	function getPatronFines() : array
 	{
-		$includeMessages = $_REQUEST['includeMessages'] ?? false;
 		$user = $this->getUserForApiCall();
 		if ($user && !($user instanceof AspenError)) {
-			$fines = $this->getCatalogConnection()->getFines($user, $includeMessages);
+			$fines = $user->getFines();
 			$totalOwed = 0;
 			foreach ($fines as &$fine) {
 				if (isset($fine['amountOutstandingVal'])) {
@@ -896,7 +880,7 @@ class UserAPI extends Action
 		$user = UserAccount::validateAccount($username, $password);
 		if ($user && !($user instanceof AspenError)) {
 			require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
-			$renewalMessage = $this->getCatalogConnection()->renewCheckout($user, $recordId, $itemBarcode, $itemIndex);
+			$renewalMessage = $user->renewCheckout($recordId, $itemBarcode, $itemIndex);
 			if ($renewalMessage['success']){
 				require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
 				APIUsage::incrementStat('UserAPI', 'successfulRenewals');
@@ -914,7 +898,7 @@ class UserAPI extends Action
 		$itemBarcode = $_REQUEST['itemBarcode'];
 		$user = UserAccount::validateAccount($username, $password);
 		if ($user && !($user instanceof AspenError)) {
-			$renewalMessage = $this->getCatalogConnection()->renewCheckout($user, $itemBarcode);
+			$renewalMessage = $user->renewCheckout($user, $itemBarcode);
 			if ($renewalMessage['success']){
 				require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
 				APIUsage::incrementStat('UserAPI', 'successfulRenewals');
@@ -1399,6 +1383,7 @@ class UserAPI extends Action
 		}
 	}
 
+	/** @noinspection PhpUnused */
 	function freezeAllHolds() {
 		list($username, $password) = $this->loadUsernameAndPassword();
 		$user = UserAccount::validateAccount($username, $password);
@@ -1460,6 +1445,7 @@ class UserAPI extends Action
 		}
 	}
 
+	/** @noinspection PhpUnused */
 	function activateAllHolds() {
 		list($username, $password) = $this->loadUsernameAndPassword();
 		$user = UserAccount::validateAccount($username, $password);
@@ -1537,7 +1523,7 @@ class UserAPI extends Action
 			list($username, $password) = $this->loadUsernameAndPassword();
 			$user = UserAccount::validateAccount($username, $password);
 			if ($user && !($user instanceof AspenError)) {
-				$readingHistory = $this->getCatalogConnection()->getReadingHistory($user);
+				$readingHistory = $user->getReadingHistory();
 
 				return array('success' => true, 'readingHistory' => $readingHistory['titles']);
 			} else {
@@ -1556,7 +1542,7 @@ class UserAPI extends Action
 			list($username, $password) = $this->loadUsernameAndPassword();
 			$user = UserAccount::validateAccount($username, $password);
 			if ($user && !($user instanceof AspenError)) {
-				$this->getCatalogConnection()->updateReadingHistoryBasedOnCurrentCheckouts($user);
+				$user->updateReadingHistoryBasedOnCurrentCheckouts();
 
 				return array('success' => true);
 			} else {
@@ -1597,7 +1583,7 @@ class UserAPI extends Action
 		list($username, $password) = $this->loadUsernameAndPassword();
 		$user = UserAccount::validateAccount($username, $password);
 		if ($user && !($user instanceof AspenError)) {
-			$this->getCatalogConnection()->doReadingHistoryAction($user, 'optIn', array());
+			$user->doReadingHistoryAction( 'optIn', array());
 			return array('success' => true);
 		} else {
 			return array('success' => false, 'message' => 'Login unsuccessful');
@@ -1635,7 +1621,7 @@ class UserAPI extends Action
 		list($username, $password) = $this->loadUsernameAndPassword();
 		$user = UserAccount::validateAccount($username, $password);
 		if ($user && !($user instanceof AspenError)) {
-			$this->getCatalogConnection()->doReadingHistoryAction($user, 'optOut', array());
+			$user->doReadingHistoryAction( 'optOut', array());
 			return array('success' => true);
 		} else {
 			return array('success' => false, 'message' => 'Login unsuccessful');
@@ -1673,7 +1659,7 @@ class UserAPI extends Action
 		list($username, $password) = $this->loadUsernameAndPassword();
 		$user = UserAccount::validateAccount($username, $password);
 		if ($user && !($user instanceof AspenError)) {
-			$this->getCatalogConnection()->doReadingHistoryAction($user, 'deleteAll', array());
+			$user->doReadingHistoryAction( 'deleteAll', array());
 			return array('success' => true);
 		} else {
 			return array('success' => false, 'message' => 'Login unsuccessful');
@@ -1713,7 +1699,7 @@ class UserAPI extends Action
 		$selectedTitles = $_REQUEST['selected'];
 		$user = UserAccount::validateAccount($username, $password);
 		if ($user && !($user instanceof AspenError)) {
-			$this->getCatalogConnection()->doReadingHistoryAction($user, 'deleteMarked', $selectedTitles);
+			$user->doReadingHistoryAction( 'deleteMarked', $selectedTitles);
 			return array('success' => true);
 		} else {
 			return array('success' => false, 'message' => 'Login unsuccessful');

@@ -1853,8 +1853,8 @@ class User extends DataObject
 		return $renewAllResults;
 	}
 
-	public function getReadingHistory($page, $recordsPerPage, $selectedSortOption, $filter, $forExport) {
-		return $this->getCatalogDriver()->getReadingHistory($this, $page, $recordsPerPage, $selectedSortOption, $filter, $forExport);
+	public function getReadingHistory($page = 1, $recordsPerPage = 20, $sortOption = "checkedOut", $filter = "", $forExport = false) {
+		return $this->getCatalogDriver()->getReadingHistory($this, $page, $recordsPerPage, $sortOption, $filter, $forExport);
 	}
 
 	public function doReadingHistoryAction($readingHistoryAction, $selectedTitles){
@@ -1865,6 +1865,10 @@ class User extends DataObject
 
 	public function deleteReadingHistoryEntryByTitleAuthor($title, $author) {
 		return $this->getCatalogDriver()->deleteReadingHistoryEntryByTitleAuthor($this, $title, $author);
+	}
+
+	public function updateReadingHistoryBasedOnCurrentCheckouts() {
+		$this->getCatalogDriver()->updateReadingHistoryBasedOnCurrentCheckouts($this);
 	}
 
 	/**
@@ -2673,6 +2677,15 @@ class User extends DataObject
 			}
 		}
 		return false;
+	}
+
+	public function getAccountSummary()
+	{
+		if ($this->hasIlsConnection()){
+			return $this->getCatalogDriver()->getAccountSummary($this);
+		}else {
+			return [];
+		}
 	}
 
 	public function getCachedAccountSummary(string $source)
