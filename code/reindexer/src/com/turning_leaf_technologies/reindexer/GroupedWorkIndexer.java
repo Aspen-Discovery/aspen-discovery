@@ -1300,6 +1300,9 @@ public class GroupedWorkIndexer {
 		if (publisher == null){
 			return -1;
 		}
+		if (publisher.length() > 500) {
+			publisher = publisher.substring(0, 500);
+		}
 		Long id = publisherIds.get(publisher);
 		if (id == null){
 			try {
@@ -1319,7 +1322,7 @@ public class GroupedWorkIndexer {
 					}
 				}
 			} catch (SQLException e) {
-				logEntry.incErrors("Error getting publisher id", e);
+				logEntry.incErrors("Error getting publisher id (" + publisher.length() + ") " + publisher, e);
 				id = -1L;
 			}
 			publisherIds.put(publisher, id);
