@@ -6564,8 +6564,7 @@ AspenDiscovery.Account = (function(){
 			if (url === false) {
 				// Do nothing; there was an error that should be displayed
 			} else {
-				$(finesFormId).attr('action', url).submit();
-				return true;
+				window.location.href = url;
 			}
 		},
 

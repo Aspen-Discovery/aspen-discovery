@@ -2976,22 +2976,28 @@ class MyAccount_AJAX extends JSON_Action
 			return $result;
 		} else {
 			/** @var Library $userLibrary */
+			/** @var UserPayment $payment */
 			/** @var User $patron */
 			list($userLibrary, $payment, $purchaseUnits, $patron) = $result;
 			require_once ROOT_DIR . '/sys/ECommerce/CompriseSetting.php';
 			$compriseSettings = new CompriseSetting();
 			$compriseSettings->id = $userLibrary->compriseSettingId;
 			if ($compriseSettings->find(true)) {
-				$paymentRequestUrl = 'https://smartpayapi.comprisesmartterminal.com/smartpayapi/websmartpay.dll?GetCreditForm';
+				$paymentRequestUrl = 'https://smartpayapi2.comprisesmartterminal.com/smartpayapi/websmartpay.dll?GetCreditForm';
+				$paymentRequestUrl .= "&LocationID=" . $compriseSettings->username;
 				$paymentRequestUrl .= "&CustomerID=" . $compriseSettings->customerId;
 				$paymentRequestUrl .= "&PatronID=" . $patron->getBarcode();
 				$paymentRequestUrl .= '&UserName=' . urlencode($compriseSettings->username);
-				$paymentRequestUrl .= '&Password=' . urlencode($compriseSettings->password);
+				$paymentRequestUrl .= '&Password=' . $compriseSettings->password;
 				$paymentRequestUrl .= '&Amount=' . $payment->totalPaid;
 				$paymentRequestUrl .= "&URLPostBack=" . urlencode($configArray['Site']['url'] . '/MyAccount/Fines/' . $payment->id);
 				$paymentRequestUrl .= "&URLReturn=" . urlencode($configArray['Site']['url'] . '/MyAccount/Fines');
 				$paymentRequestUrl .= "&URLCancel=" . urlencode($configArray['Site']['url'] . '/MyAccount/CompriseCancel?payment=' . $payment->id);
 				$paymentRequestUrl .= '&INVNUM=' . $payment->id;
+				$paymentRequestUrl .= '&Field1=';
+				$paymentRequestUrl .= '&Field2=';
+				$paymentRequestUrl .= '&Field3=';
+				$paymentRequestUrl .= '&ItemsData=';
 
 				return ['success' => true, 'message' => 'Redirecting to payment processor', 'paymentRequestUrl' => $paymentRequestUrl];
 			}else{
