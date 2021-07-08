@@ -15,6 +15,7 @@ class SystemVariables extends DataObject
 	public $allowHtmlInMarkdownFields;
 	public $useHtmlEditorRatherThanMarkdown;
 	public $storeRecordDetailsInSolr;
+	public $storeRecordDetailsInDatabase;
 
 	static function getObjectStructure() : array {
 		return [
@@ -25,6 +26,7 @@ class SystemVariables extends DataObject
 			'currencyCode' => array('property' => 'currencyCode', 'type' => 'enum', 'values' => ['USD' => 'USD', 'CAD' => 'CAD', 'EUR' => 'EUR', 'GBP' => 'GBP'], 'label' => 'Currency Code', 'description' => 'Currency code to use when formatting money', 'required' => true, 'default' => 'USD' ),
 			'runNightlyFullIndex' => array('property' => 'runNightlyFullIndex', 'type' => 'checkbox', 'label' => 'Run full index tonight', 'description' => 'Whether or not a full index should be run in the middle of the night', 'default' => false),
 			'storeRecordDetailsInSolr' => array('property' => 'storeRecordDetailsInSolr', 'type' => 'checkbox', 'label' => 'Store Record Details In Solr', 'description' => 'Whether or not a record details should be stored in solr (for backwards compatibility with 21.07)', 'default' => false),
+			'storeRecordDetailsInDatabase' => array('property' => 'storeRecordDetailsInDatabase', 'type' => 'checkbox', 'label' => 'Store Record Details in Database', 'description' => 'Whether or not a record details should be stored in the database', 'default' => true),
 			'loadCoversFrom020z' => array('property' => 'loadCoversFrom020z', 'type' => 'checkbox', 'label' => 'Load covers from cancelled & invalid ISBNs (020$z)', 'description' => 'Whether or not covers can be loaded from the 020z', 'default' => false),
 			'allowableHtmlTags' => array('property' => 'allowableHtmlTags', 'type' => 'text', 'label' => 'Allowable HTML Tags (blank to allow all, separate tags with pipes)', 'description' => 'HTML Tags to allow in HTML and Markdown fields', 'maxLength' => 512, 'default'=>'p|div|span|a|b|em|strong|i|ul|ol|li|br|h1|h2|h3|h4|h5|h6', 'hideInLists'=>true),
 			'allowHtmlInMarkdownFields' => array('property' => 'allowHtmlInMarkdownFields', 'type' => 'checkbox', 'label' => 'Allow HTML in Markdown fields', 'description' => 'Whether or administrators can add HTML to a Markdown field, if disabled, all tags will be stripped', 'default' => false),
