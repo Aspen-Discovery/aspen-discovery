@@ -118,6 +118,7 @@ public class GroupedWorkIndexer {
 	private boolean removeRedundantHooplaRecords = false;
 
 	private boolean storeRecordDetailsInSolr = false;
+	private boolean storeRecordDetailsInDatabase = true;
 
 	public GroupedWorkIndexer(String serverName, Connection dbConn, Ini configIni, boolean fullReindex, boolean clearIndex, BaseLogEntry logEntry, Logger logger) {
 		indexStartTime = new Date().getTime() / 1000;
@@ -146,10 +147,11 @@ public class GroupedWorkIndexer {
 
 		//Check to see if we should store record details in Solr
 		try{
-			PreparedStatement systemVariablesStmt = dbConn.prepareStatement("SELECT storeRecordDetailsInSolr from system_variables");
+			PreparedStatement systemVariablesStmt = dbConn.prepareStatement("SELECT storeRecordDetailsInSolr, storeRecordDetailsInDatabase from system_variables");
 			ResultSet systemVariablesRS = systemVariablesStmt.executeQuery();
 			if (systemVariablesRS.next()){
 				this.storeRecordDetailsInSolr = systemVariablesRS.getBoolean("storeRecordDetailsInSolr");
+				this.storeRecordDetailsInDatabase = systemVariablesRS.getBoolean("storeRecordDetailsInDatabase");
 			}
 			systemVariablesRS.close();
 			systemVariablesStmt.close();
@@ -758,7 +760,9 @@ public class GroupedWorkIndexer {
 
 			//Write the record to Solr.
 			try {
-				groupedWork.saveRecordsToDatabase(id, logEntry);
+				if (this.isStoreRecordDetailsInDatabase()) {
+					groupedWork.saveRecordsToDatabase(id, logEntry);
+				}
 				SolrInputDocument inputDocument = groupedWork.getSolrDocument(logEntry);
 				UpdateResponse response = updateServer.add(inputDocument);
 				if (response.getException() != null){
@@ -1873,5 +1877,9 @@ public class GroupedWorkIndexer {
 
 	public boolean isStoreRecordDetailsInSolr(){
 		return storeRecordDetailsInSolr;
+	}
+
+	public boolean isStoreRecordDetailsInDatabase() {
+		return storeRecordDetailsInDatabase;
 	}
 }
