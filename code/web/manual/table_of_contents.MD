@@ -137,6 +137,8 @@
 
 ### Development
 -  [Setting Up Your Development Environment](/Admin/HelpManual?page=Development-Environment)
+-  [Installing on Linux or Mac OS X](/Admin/HelpManual?page=Installing-Aspen-Linux)
+-  [Installing on Windows](/Admin/HelpManual?page=Installing-Aspen-Windows)
 
 ### Troubleshooting
   - [Administration Issues](/Admin/HelpManual?page=Troubleshooting-Administration)
