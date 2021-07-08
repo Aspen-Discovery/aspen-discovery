@@ -135,6 +135,9 @@
   - [Search History](/Admin/HelpManual?page=Search-History)
   - [User Lists](/Admin/HelpManual?page=User-Lists)
 
-## Troubleshooting
+### Development
+-  [Setting Up Your Development Environment](/Admin/HelpManual?page=Development-Environment)
+
+### Troubleshooting
   - [Administration Issues](/Admin/HelpManual?page=Troubleshooting-Administration)
   - [End User Issues](/Admin/HelpManual?page=Troubleshooting-End-User)
