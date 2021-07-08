@@ -1017,8 +1017,13 @@ class Millennium extends AbstractIlsDriver
 
 	public function _getLoginFormValues(User $patron){
 		$loginData = array();
-		$loginData['name'] = $patron->cat_username;
-		$loginData['code'] = $patron->cat_password;
+		if ($this->accountProfile->loginConfiguration == 'barcode_pin'){
+			$loginData['code'] = $patron->cat_username;
+			$loginData['pin'] = $patron->cat_password;
+		}else {
+			$loginData['name'] = $patron->cat_username;
+			$loginData['code'] = $patron->cat_password;
+		}
 
 		return $loginData;
 	}
@@ -1100,6 +1105,7 @@ class Millennium extends AbstractIlsDriver
 					if (preg_match_all('/<td.*?>(.*?)<\/td>/si', $rowContents, $colDetails, PREG_SET_ORDER) > 0){
 						$curFine['reason'] = trim(strip_tags($colDetails[1][1]));
 						$curFine['amount'] = trim($colDetails[2][1]);
+						$curFine['amountVal'] = (float)(str_replace('$', '', $curFine['amount']));
 					}
 				}else if ($rowType == 'patFuncFinesDetailDate'){
 					if (preg_match_all('/<td.*?>(.*?)<\/td>/si', $rowContents, $colDetails, PREG_SET_ORDER) > 0){
