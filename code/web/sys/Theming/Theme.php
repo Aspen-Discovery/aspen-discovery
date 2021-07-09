@@ -462,7 +462,7 @@ class Theme extends DataObject
 				'openPanelBackgroundColor' => ['property' => 'openPanelBackgroundColor', 'type' => 'color', 'label' => 'Open Panel Background Color', 'description' => 'Panel Category Background Color while open', 'required' => false, 'hideInLists' => true, 'default' => '#4DACDE', 'checkContrastWith'=>'openPanelForegroundColor'],
 				'openPanelForegroundColor' => ['property' => 'openPanelForegroundColor', 'type' => 'color', 'label' => 'Open Panel Text Color', 'description' => 'Panel Category Foreground Color while open', 'required' => false, 'hideInLists' => true, 'default' => '#303030', 'checkContrastWith'=>'openPanelBackgroundColor'],
 				'panelBodyBackgroundColor' => ['property' => 'panelBodyBackgroundColor', 'type' => 'color', 'label' => 'Panel Body Background Color', 'description' => 'Panel Body Background Color', 'required' => false, 'hideInLists' => true, 'default' => '#f8f8f8', 'checkContrastWith'=>'panelBodyForegroundColor'],
-				'panelBodyForegroundColor' => ['property' => 'panelBodyForegroundColor', 'type' => 'color', 'label' => 'Open Panel Text Color', 'description' => 'Panel Body Foreground Color', 'required' => false, 'hideInLists' => true, 'default' => '#404040', 'checkContrastWith'=>'panelBodyBackgroundColor'],
+				'panelBodyForegroundColor' => ['property' => 'panelBodyForegroundColor', 'type' => 'color', 'label' => 'Panel Body Text Color', 'description' => 'Panel Body Foreground Color', 'required' => false, 'hideInLists' => true, 'default' => '#404040', 'checkContrastWith'=>'panelBodyBackgroundColor'],
 			]],
 
 			'buttonSection' =>['property'=>'buttonSection', 'type' => 'section', 'label' =>'Buttons', 'hideInLists' => true, 'properties' => [

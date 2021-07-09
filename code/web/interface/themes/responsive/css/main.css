@@ -8568,12 +8568,15 @@ hr.menu {
   padding: 12px 16px;
   z-index: 3;
 }
+#header-menu #logoutLink {
+  margin-top: 1em;
+}
 .header-menu-option {
   margin-bottom: 3px;
   cursor: pointer;
 }
-.header-menu-option i {
-  float: right;
+.header-menu-option i + span {
+  margin-left: 0.5em;
 }
 #account-menu {
   display: none;
@@ -8594,8 +8597,15 @@ hr.menu {
   margin-bottom: 3px;
   cursor: pointer;
 }
-.header-menu-section i {
-  float: right;
+#aspenLanguagesMenuSection {
+  font-weight: bold;
+  margin-top: 1em;
+}
+.header-menu-option.languageSelect {
+  margin-left: 2em;
+}
+.header-menu-option.languageSelected {
+  margin-left: 0.5em;
 }
 #library-name-header {
   font-size: 26px;
@@ -10236,6 +10246,9 @@ a.browse-thumbnail-sorted.active {
   .top-facet {
     display: none;
   }
+}
+.applied-filters .facetValue {
+  padding-left: 0;
 }
 #results-sort {
   width: 80%;

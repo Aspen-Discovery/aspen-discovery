@@ -2235,6 +2235,13 @@ class Koha extends AbstractIlsDriver
 			}
 		}
 
+		$patronReasonSQL = "SELECT * FROM authorised_values where category = 'OPAC_SUG' order by lib_opac";
+		$patronReasonRS = mysqli_query($this->dbConnection, $patronReasonSQL);
+		$patronReasons = [];
+		while ($curRow = $patronReasonRS->fetch_assoc()) {
+			$patronReasons[$curRow['authorised_value']] = $curRow['lib_opac'];
+		}
+
 		global $interface;
 		$allowPurchaseSuggestionBranchChoice = $this->getKohaSystemPreference('AllowPurchaseSuggestionBranchChoice');
 		$pickupLocations = [];
@@ -2267,6 +2274,10 @@ class Koha extends AbstractIlsDriver
 			array('property' => 'branchcode', 'type' => 'enum', 'values' => $pickupLocations, 'label' => 'Library', 'description' => '', 'required' => false, 'default' => $user->getHomeLocation()->code),
 			array('property' => 'note', 'type' => 'textarea', 'label' => 'Note', 'description' => '', 'required' => false),
 		];
+
+		if (!empty($patronReasons)) {
+			array_push($fields,['property' => 'patronreason', 'type' => 'enum', 'values' => $patronReasons, 'label' => 'Reason for Purchase']);
+		}
 
 		foreach ($fields as &$field) {
 			if (array_key_exists($field['property'], $mandatoryFields)) {
@@ -2312,6 +2323,7 @@ class Koha extends AbstractIlsDriver
 				'itemtype' => $_REQUEST['itemtype'],
 				'branchcode' => $_REQUEST['branchcode'],
 				'note' => $_REQUEST['note'],
+				'patronreason' => $_REQUEST['patronreason'],
 				'negcap' => '',
 				'suggested_by_anyone' => 0,
 				'op' => 'add_confirm'
