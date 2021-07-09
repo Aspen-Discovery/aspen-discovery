@@ -190,7 +190,7 @@ class UserList extends DataObject
 		$listEntry->__destruct();
 		$listEntry = null;
 
-		if(($entryPosition != '') || ($entryPosition != null)){
+		if($interface != null && ($entryPosition != '') || ($entryPosition != null)){
 			$interface->assign('listEntryCount', $entryPosition);
 		}
 

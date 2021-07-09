@@ -9,5 +9,5 @@ We recommend the following tools for Aspen development due to their ease of use 
 PhpStorm does have a small subscription fee, but we find it to be very worthwhile. 
   
 Once you have setup your LAMP/WAMP stack and your development tools, you can proceed to:
-- [Installing Aspen on Linux or Mac OSX](/Admin/HelpManual?page=Installing-Aspen-Windows)
 - [Installing Aspen on Linux or Mac OSX](/Admin/HelpManual?page=Installing-Aspen-Linux)
+- [Installing Aspen on Windows](/Admin/HelpManual?page=Installing-Aspen-Windows)
