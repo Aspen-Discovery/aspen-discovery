@@ -401,6 +401,7 @@ class Koha extends AbstractIlsDriver
 			$curCheckout->renewIndicator = $curRow['itemnumber'];
 			$curCheckout->renewCount = $curRow['renewals'];
 
+			/** @noinspection SqlResolve */
 			$renewPrefSql = "SELECT autorenew_checkouts FROM borrowers WHERE borrowernumber = {$patron->username}";
 			$renewPrefResults = mysqli_query($this->dbConnection, $renewPrefSql);
 			if ($renewPrefRow = $renewPrefResults->fetch_assoc()) {
@@ -423,6 +424,7 @@ class Koha extends AbstractIlsDriver
 			}
 
 			//Get the number of holds on current checkout, if any
+			/** @noinspection SqlResolve */
 			$holdsSql = "SELECT *  FROM biblio b  LEFT JOIN reserves h ON (b.biblionumber=h.biblionumber) WHERE b.biblionumber = {$curRow['biblionumber']} GROUP BY b.biblionumber HAVING count(h.reservedate) >= 1";
 			$holdsResults = mysqli_query($this->dbConnection, $holdsSql);
 			$holdsCount = $holdsResults->num_rows;
@@ -458,6 +460,7 @@ class Koha extends AbstractIlsDriver
 
 			//Get the patron expiration date to check for active card
 			if ($curCheckout->autoRenew == 1){
+				/** @noinspection SqlResolve */
 				$patronExpirationSql = "SELECT dateexpiry FROM borrowers WHERE borrowernumber = {$patron->username}";
 				$patronExpirationResults = mysqli_query($this->dbConnection, $patronExpirationSql);
 
@@ -815,6 +818,10 @@ class Koha extends AbstractIlsDriver
 		$this->apiCurlWrapper = null;
 
 		//Cleanup any connections we have to other systems
+		$this->closeDatabaseConnection();
+	}
+
+	function closeDatabaseConnection() {
 		if ($this->dbConnection != null) {
 			mysqli_close($this->dbConnection);
 			$this->dbConnection = null;
@@ -1422,9 +1429,10 @@ class Koha extends AbstractIlsDriver
 					if ($issuingRulesRow = $issuingRulesRS->fetch_assoc()) {
 						$maxRenewals = $issuingRulesRow['rule_value'];
 					}
+					$issuingRulesRS->close();
 				}
-				$issuingRulesRS->close();
-			} $renewResults->close();
+			}
+			$renewResults->close();
 
 			$renewsRemaining = ($maxRenewals - $renewCount);
 			//We renewed the hold
@@ -2183,16 +2191,21 @@ class Koha extends AbstractIlsDriver
 			}
 		}else{
 			//Check to see if the email is duplicate
-			if (isset($_REQUEST['borrower_email']) && $this->getKohaSystemPreference('PatronSelfRegistrationEmailMustBeUnique') == '1'){
+			$autobarcode = $this->getKohaSystemPreference('autoMemberNum');
+			$verificationRequired = $this->getKohaSystemPreference('PatronSelfRegistrationVerifyByEmail');
+			$selfRegistrationEmailMustBeUnique = $this->getKohaSystemPreference('PatronSelfRegistrationEmailMustBeUnique');
+			if (!empty($_REQUEST['borrower_email']) && $selfRegistrationEmailMustBeUnique == '1'){
+				$this->initDatabaseConnection();
+				/** @noinspection SqlResolve */
 				$sql = "SELECT * FROM borrowers where email = '{$_REQUEST['borrower_email']}';";
 				$results = mysqli_query($this->dbConnection, $sql);
-				$hasDuplicateEmail = false;
-				if ($results->fetch_assoc()) {
-					$hasDuplicateEmail = true;
+				if ($results) {
+					$hasDuplicateEmail = false;
+					if ($results->fetch_assoc()) {
+						$hasDuplicateEmail = true;
+					}
+					$results->close();
 				}
-				$results->close();
-				mysqli_close($this->dbConnection);
-				$this->dbConnection = null;
 
 				if ($hasDuplicateEmail){
 					$result['success'] = false;
@@ -2292,12 +2305,10 @@ class Koha extends AbstractIlsDriver
 				} else {
 					$jsonResponse = json_decode($response);
 					$result['username'] = $jsonResponse->userid;
-					$verificationRequired = $this->getKohaSystemPreference('PatronSelfRegistrationVerifyByEmail');
 					$result['success'] = true;
 					if ($verificationRequired != "0") {
 						$result['message'] = "Your account was registered, and a confirmation email will be sent to the email you provided. Your account will not be activated until you follow the link provided in the confirmation email.";
 					}else{
-						$autobarcode = $this->getKohaSystemPreference('autoMemberNum');
 						if ($autobarcode == "1"){
 							$result['barcode'] = $jsonResponse->cardnumber;
 							$patronId = $jsonResponse->patron_id;
