@@ -116,14 +116,18 @@ hr.menu{
   box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
   padding: 12px 16px;
   z-index: 3;
+
+  #logoutLink {
+    margin-top: 1em;
+  }
 }
 
 .header-menu-option{
   margin-bottom: 3px;
   cursor: pointer;
 
-  i {
-    float:right;
+  i + span {
+    margin-left: .5em;
   }
 }
 
@@ -148,11 +152,21 @@ hr.menu{
 .header-menu-section{
   margin-bottom: 3px;
   cursor: pointer;
-
-  i {
-    float:right;
-  }
 }
+
+#aspenLanguagesMenuSection {
+  font-weight: bold;
+  margin-top: 1em;
+}
+
+.header-menu-option.languageSelect {
+  margin-left: 2em;
+}
+
+.header-menu-option.languageSelected {
+  margin-left: .5em;
+}
+
 #library-name-header{
   font-size: @library-display-name-font-size;
   color: @library-display-name-color;
