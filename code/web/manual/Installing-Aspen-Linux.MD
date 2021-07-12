@@ -5,7 +5,7 @@ These instructions are designed for CentOS 7.  Other environments may require so
 ### Installation Steps
 1. Update the server`sudo yum check-update`
 1. Install git `sudo yum -y install git` 
-1. Install the Aspen Discovery code (if you will be doing code development, you will want to create a clone of the git repository)   
+1. Install the Aspen Discovery code (if you will be doing code development, you will want to create your own fork of the [main git repository](https://github.com/mdnoble73/aspen-discovery))   
    `cd /usr/local`  
    `sudo git clone https://github.com/mdnoble73/aspen-discovery.git`  
    Checkout the current branch:  
