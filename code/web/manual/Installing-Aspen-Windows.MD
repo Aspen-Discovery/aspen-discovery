@@ -4,6 +4,7 @@ Aspen can run for development on Windows. We do not recommend using Windows for 
 For Windows, we also recommend using [GitHub Desktop](https://desktop.github.com/) to make working with git easier.  
 
 ### Installation Steps
+1. Make a fork of the main Aspen Discovery Code from [https://github.com/mdnoble73/aspen-discovery](https://github.com/mdnoble73/aspen-discovery).
 1. Install the Aspen Discovery code by cloning the repository to `c:\web\`.   
 1. The next step will be easier if you have connection information to your ILS. For Koha you will need ODBC and REST API connection information. 
 1. Setup the site  
