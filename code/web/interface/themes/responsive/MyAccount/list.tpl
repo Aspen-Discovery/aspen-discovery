@@ -30,6 +30,13 @@
 							</div>
 						</div>
 						{if $userList->getCleanDescription()}<div class="listDescription text-left" id="listDescription">{$userList->getCleanDescription()}</div>{/if}
+						{if !empty($userList->nytListModified)}
+							<div class="text-left">
+								<p class="text-muted">
+									<small>{translate text='Last Updated by New York Times on'}  {$userList->nytListModified}</small>
+								</p>
+							</div>
+						{/if}
 					{if $allowEdit}
 							<div id="listEditControls" style="display:none" class="collapse">
 								<div class="form-group">

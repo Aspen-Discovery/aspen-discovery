@@ -366,6 +366,16 @@ AspenDiscovery.Admin = (function(){
 					$("#title").removeAttr('required');
 				}
 			});
-		}
+		},
+
+		deleteNYTList: function(id){
+			var listId = id;
+			if (confirm("Are you sure you want to delete this list?")){
+				$.getJSON(Globals.path + '/Admin/AJAX?method=deleteNYTList&id=' + listId, function (data) {
+					AspenDiscovery.showMessage("Success", data.message, true, true);
+				})
+			}
+			return false;
+		},
 	};
 }(AspenDiscovery.Admin || {}));
