@@ -2206,10 +2206,12 @@ class MyAccount_AJAX extends JSON_Action
 				$showPosition = ($ils == 'Horizon' || $ils == 'Koha' || $ils == 'Symphony' || $ils == 'CarlX');
 				$suspendRequiresReactivationDate = ($ils == 'Horizon' || $ils == 'CarlX' || $ils == 'Symphony' || $ils == 'Koha');
 				$interface->assign('suspendRequiresReactivationDate', $suspendRequiresReactivationDate);
-				$canChangePickupLocation = ($ils != 'Koha');
-				$interface->assign('canChangePickupLocation', $canChangePickupLocation);
 				$showPlacedColumn = ($ils == 'Symphony');
 				$interface->assign('showPlacedColumn', $showPlacedColumn);
+
+				$location = new Location();
+				$pickupBranches = $location->getPickupBranches($user);
+				$interface->assign('numPickupBranches', count($pickupBranches));
 
 				// Define sorting options
 				$unavailableHoldSortOptions = array(
@@ -2990,7 +2992,7 @@ class MyAccount_AJAX extends JSON_Action
 				$paymentRequestUrl .= '&UserName=' . urlencode($compriseSettings->username);
 				$paymentRequestUrl .= '&Password=' . $compriseSettings->password;
 				$paymentRequestUrl .= '&Amount=' . $payment->totalPaid;
-				$paymentRequestUrl .= "&URLPostBack=" . urlencode($configArray['Site']['url'] . '/MyAccount/Fines/' . $payment->id);
+				$paymentRequestUrl .= "&URLPostBack=" . urlencode($configArray['Site']['url'] . '/MyAccount/AJAX?method=completeComprisePayment');
 				$paymentRequestUrl .= "&URLReturn=" . urlencode($configArray['Site']['url'] . '/MyAccount/Fines');
 				$paymentRequestUrl .= "&URLCancel=" . urlencode($configArray['Site']['url'] . '/MyAccount/CompriseCancel?payment=' . $payment->id);
 				$paymentRequestUrl .= '&INVNUM=' . $payment->id;
@@ -3003,6 +3005,12 @@ class MyAccount_AJAX extends JSON_Action
 			}else{
 				return ['success' => false, 'message' => 'Comprise was not properly configured'];
 			}
+		}
+	}
+
+	function completeComprisePayment() {
+		if (!empty($_POST['INVNUMBER'])) {
+
 		}
 	}
 

@@ -196,7 +196,7 @@
 									<button onclick="return AspenDiscovery.Account.freezeHold('{$record->userId}', '{$record->sourceId}', '{$record->cancelId}', {if $suspendRequiresReactivationDate}true{else}false{/if}, this);" class="btn btn-sm btn-default">{translate text="Freeze Hold"}</button>
 								{/if}
 							{/if}
-							{if $record->locationUpdateable}
+							{if $record->locationUpdateable && $numPickupBranches > 1}
 								<button onclick="return AspenDiscovery.Account.changeHoldPickupLocation('{$record->userId}', '{$record->sourceId}', '{$record->cancelId}', '{$record->pickupLocationId}');" class="btn btn-sm btn-default">{translate text="Change Pickup Loc."}</button>
 							{/if}
 						{/if}
