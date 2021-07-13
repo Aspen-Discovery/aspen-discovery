@@ -74,6 +74,7 @@ public class GroupedWorkIndexer {
 
 	private PreparedStatement getExistingRecordsForWorkStmt;
 	private PreparedStatement addRecordForWorkStmt;
+	private PreparedStatement getIdForRecordStmt;
 	private PreparedStatement removeRecordForWorkStmt;
 	private PreparedStatement getExistingVariationsForWorkStmt;
 	private PreparedStatement addVariationForWorkStmt;
@@ -177,8 +178,9 @@ public class GroupedWorkIndexer {
 			removeScopeStmt = dbConn.prepareStatement("DELETE FROM scope where id = ?");
 			getExistingRecordsForWorkStmt = dbConn.prepareStatement("SELECT id, sourceId, recordIdentifier from grouped_work_records where groupedWorkId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			addRecordForWorkStmt = dbConn.prepareStatement("INSERT INTO grouped_work_records (groupedWorkId, sourceId, recordIdentifier, editionId, publisherId, publicationDateId, physicalDescriptionId, formatId, formatCategoryId, languageId) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY " +
-					"UPDATE editionId = VALUES(editionId), publisherId = VALUES(publisherId), publicationDateId = VALUES(publicationDateId), physicalDescriptionId = VALUES(physicalDescriptionId), formatId = VALUES(formatId), formatCategoryId = VALUES(formatCategoryId), languageId = VALUES(languageId)", PreparedStatement.RETURN_GENERATED_KEYS);
+					"UPDATE groupedWorkId = VALUES(groupedWorkId), editionId = VALUES(editionId), publisherId = VALUES(publisherId), publicationDateId = VALUES(publicationDateId), physicalDescriptionId = VALUES(physicalDescriptionId), formatId = VALUES(formatId), formatCategoryId = VALUES(formatCategoryId), languageId = VALUES(languageId)", PreparedStatement.RETURN_GENERATED_KEYS);
 			removeRecordForWorkStmt = dbConn.prepareStatement("DELETE FROM grouped_work_records where id = ?");
+			getIdForRecordStmt = dbConn.prepareStatement("SELECT id from grouped_work_records where sourceId = ? and recordIdentifier = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			getExistingVariationsForWorkStmt = dbConn.prepareStatement("SELECT * from grouped_work_variation where groupedWorkId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			addVariationForWorkStmt = dbConn.prepareStatement("INSERT INTO grouped_work_variation (groupedWorkId, primaryLanguageId, eContentSourceId, formatId, formatCategoryId) VALUES (?, ?, ?, ?, ?)", PreparedStatement.RETURN_GENERATED_KEYS);
 			removeVariationStmt = dbConn.prepareStatement("DELETE FROM grouped_work_variation WHERE id = ?");
@@ -1109,7 +1111,8 @@ public class GroupedWorkIndexer {
 	public long saveGroupedWorkRecord(long groupedWorkId, RecordInfo recordInfo, long recordId) {
 		try {
 			addRecordForWorkStmt.setLong(1, groupedWorkId);
-			addRecordForWorkStmt.setLong(2, getSourceId(recordInfo.getSource(), recordInfo.getSubSource()));
+			long sourceId = getSourceId(recordInfo.getSource(), recordInfo.getSubSource());
+			addRecordForWorkStmt.setLong(2, sourceId);
 			addRecordForWorkStmt.setString(3, recordInfo.getRecordIdentifier());
 			addRecordForWorkStmt.setLong(4, getEditionId(recordInfo.getEdition()));
 			addRecordForWorkStmt.setLong(5, getPublisherId(recordInfo.getPublisher()));
@@ -1122,6 +1125,13 @@ public class GroupedWorkIndexer {
 			ResultSet addRecordForWorkRS = addRecordForWorkStmt.getGeneratedKeys();
 			if (addRecordForWorkRS.next()){
 				recordId = addRecordForWorkRS.getLong(1);
+			}else{
+				getIdForRecordStmt.setLong(1, sourceId);
+				getIdForRecordStmt.setString(2, recordInfo.getRecordIdentifier());
+				ResultSet getIdForRecordRS = getIdForRecordStmt.executeQuery();
+				if (getIdForRecordRS.next()){
+					recordId = getIdForRecordRS.getLong("id");
+				}
 			}
 		} catch (SQLException e) {
 			logEntry.incErrors("Error saving grouped work record", e);
