@@ -955,7 +955,8 @@ class Library extends DataObject
 			'holidays' => array(
 				'property' => 'holidays',
 				'type' => 'oneToMany',
-				'label' => '<h2>Holidays</h2>',
+				'label' => 'Holidays',
+				'renderAsHeading' => true,
 				'description' => 'Holidays',
 				'keyThis' => 'libraryId',
 				'keyOther' => 'libraryId',
@@ -969,7 +970,8 @@ class Library extends DataObject
 			'libraryLinks' => array(
 				'property' => 'libraryLinks',
 				'type' => 'oneToMany',
-				'label' => '<h2>Menu Links</h2>',
+				'label' => 'Menu Links',
+				'renderAsHeading' => true,
 				'description' => 'Links To Show in the menu',
 				'keyThis' => 'libraryId',
 				'keyOther' => 'libraryId',
@@ -985,7 +987,8 @@ class Library extends DataObject
 			'recordsOwned' => array(
 				'property' => 'recordsOwned',
 				'type' => 'oneToMany',
-				'label' => '<h2>Records Owned</h2>',
+				'label' => 'Records Owned',
+				'renderAsHeading' => true,
 				'description' => 'Information about what records are owned by the library',
 				'keyThis' => 'libraryId',
 				'keyOther' => 'libraryId',
@@ -1002,7 +1005,8 @@ class Library extends DataObject
 			'recordsToInclude' => array(
 				'property' => 'recordsToInclude',
 				'type' => 'oneToMany',
-				'label' => '<h2>Records To Include</h2>',
+				'label' => 'Records To Include',
+				'renderAsHeading' => true,
 				'description' => 'Information about what records to include in this scope',
 				'keyThis' => 'libraryId',
 				'keyOther' => 'libraryId',
@@ -1019,7 +1023,8 @@ class Library extends DataObject
 			'sideLoadScopes' => array(
 				'property' => 'sideLoadScopes',
 				'type' => 'oneToMany',
-				'label' => '<h2>Side Loaded eContent Scopes</h2>',
+				'label' => 'Side Loaded eContent Scopes',
+				'renderAsHeading' => true,
 				'description' => 'Information about what Side Loads to include in this scope',
 				'keyThis' => 'libraryId',
 				'keyOther' => 'libraryId',

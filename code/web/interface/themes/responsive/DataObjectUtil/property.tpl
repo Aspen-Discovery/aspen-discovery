@@ -23,14 +23,22 @@
 		{elseif $property.type == 'oneToMany' && !empty($property.helpLink)}
 			<div class="row">
 				<div class="col-xs-11">
+				{if $property.renderAsHeading == true}
+					<h2>{$property.label|translate}</h2>
+				{else}
 					<label for='{$propName}'{if $property.description} title="{$property.description}"{/if}>{$property.label|translate}</label>
+				{/if}
 				</div>
 				<div class="col-xs-1">
 					<a href="{$property.helpLink}" target="_blank"><img src="/interface/themes/responsive/images/help.png" alt="Help"></a>
 				</div>
 			</div>
 		{elseif $property.type != 'section' && $property.type != 'checkbox' && $property.type != 'hidden'}
-			<label for='{$propName}'{if $property.description} title="{$property.description}"{/if}>{$property.label|translate} {if $property.required && $objectAction != 'edit'}({translate text="required"}){/if}</label>
+			{if $property.renderAsHeading == true}
+				<h2>{$property.label|translate}</h2>
+			{else}
+				<label for='{$propName}'{if $property.description} title="{$property.description}"{/if}>{$property.label|translate} {if $property.required && $objectAction != 'edit'}({translate text="required"}){/if}</label>
+			{/if}
 		{/if}
 		{if !empty($property.showDescription)}
 			<div class='propertyDescription'><em>{$property.description}</em></div>
