@@ -122,25 +122,29 @@ class ExtractOverDriveInfo {
 						}
 					}
 					int numRecordsDeleted = 0;
-					if (!this.hadTimeoutsFromOverDrive && totalRecordsToDelete > 0 && (settings.isAllowLargeDeletes() || (totalRecordsToDelete < 500 && allProductsInOverDrive.size() > 0 && (((float)totalRecordsToDelete / allProductsInOverDrive.size()) < .05)))) {
-						for (String overDriveId : existingProductsInAspen.keySet()) {
-							OverDriveDBInfo dbInfo = existingProductsInAspen.get(overDriveId);
+					if (!this.errorsWhileLoadingProducts && !this.hadTimeoutsFromOverDrive) {
+						if (totalRecordsToDelete > 0 && (settings.isAllowLargeDeletes() || (totalRecordsToDelete < 500 && allProductsInOverDrive.size() > 0 && (((float) totalRecordsToDelete / allProductsInOverDrive.size()) < .05)))) {
+							for (String overDriveId : existingProductsInAspen.keySet()) {
+								OverDriveDBInfo dbInfo = existingProductsInAspen.get(overDriveId);
 
-							//If the record is already deleted, don't bother re-deleting it.
-							if (!dbInfo.isDeleted()) {
-								deleteProduct(overDriveId, dbInfo);
-								numRecordsDeleted++;
+								//If the record is already deleted, don't bother re-deleting it.
+								if (!dbInfo.isDeleted()) {
+									deleteProduct(overDriveId, dbInfo);
+									numRecordsDeleted++;
+								}
+								if (numRecordsDeleted % 100 == 0) {
+									logEntry.saveResults();
+								}
 							}
-							if (numRecordsDeleted % 100 == 0){
-								logEntry.saveResults();
-							}
+						} else if (!settings.isAllowLargeDeletes() && totalRecordsToDelete >= 500) {
+							logEntry.incErrors("There were more than 500 records to delete, detected " + totalRecordsToDelete + ", not deleting records");
+						} else if (!settings.isAllowLargeDeletes() && (((float) totalRecordsToDelete / allProductsInOverDrive.size()) >= .05)) {
+							logEntry.incErrors("More than 5% of the collection was marked as being deleted. Detected " + totalRecordsToDelete + ", not deleting records");
 						}
-					}else if (!settings.isAllowLargeDeletes() && totalRecordsToDelete >= 500) {
-						logEntry.incErrors("There were more than 500 records to delete, detected " + totalRecordsToDelete + ", not deleting records");
-					}else if (!settings.isAllowLargeDeletes() && (((float)totalRecordsToDelete / allProductsInOverDrive.size()) >= .05)) {
-						logEntry.incErrors("More than 5% of the collection was marked as being deleted. Detected " + totalRecordsToDelete + ", not deleting records");
+						logger.info("Deleted " + numRecordsDeleted + " records that no longer exist");
+					}else{
+						logger.info("Did not delete " + numRecordsDeleted + " records that no longer exist because we received errors from OverDrive.");
 					}
-					logger.info("Deleted " + numRecordsDeleted + " records that no longer exist");
 
 					//We now have a list of all products in all collections, but we need to know what needs availability
 					//and metadata updated for it.  So we need to call 2 more times to figure out which records have
@@ -228,7 +232,7 @@ class ExtractOverDriveInfo {
 
 			//Mark the new last update time if we did not get errors loading products from the database
 			if (errorsWhileLoadingProducts || this.logEntry.hasErrors()) {
-				logger.warn("Not setting last extract time since there were problems extracting products from the API");
+				this.logEntry.addNote("Not setting last extract time since there were problems extracting products from the API");
 			} else {
 				PreparedStatement updateExtractTime;
 				String columnToUpdate = "lastUpdateOfChangedRecords";
@@ -238,7 +242,7 @@ class ExtractOverDriveInfo {
 				updateExtractTime = dbConn.prepareStatement("UPDATE overdrive_settings set " + columnToUpdate + " = ?");
 				updateExtractTime.setLong(1, extractStartTime / 1000);
 				updateExtractTime.executeUpdate();
-				logger.debug("Setting last extract time to " + extractStartTime + " " + new Date(extractStartTime).toString());
+				logger.debug("Setting last extract time to " + extractStartTime + " " + new Date(extractStartTime));
 			}
 		} catch (SQLException e) {
 			// handle any errors
@@ -1183,7 +1187,11 @@ class ExtractOverDriveInfo {
 			WebServiceResponse availabilityResponse = callOverDriveURL(url, false);
 
 			//404 is a message that availability has been deleted.
-			if (availabilityResponse.getResponseCode() != 200 && availabilityResponse.getResponseCode() != 404){
+			if (availabilityResponse.getResponseCode() == 404) {
+				logEntry.incErrors("Got a 404 availability response code for " + url + " not updating");
+				logEntry.incSkipped();
+				return;
+			}else if (availabilityResponse.getResponseCode() != 200){
 				//We got an error calling the OverDrive API, do nothing.
 				if (singleWork) {
 					logEntry.addNote("Found availability for api key " + apiKey);
@@ -1382,10 +1390,17 @@ class ExtractOverDriveInfo {
 						logger.warn("Timeout waiting to retry call to OverDrive", e);
 					}
 				}else{
-					if (!response.isCallTimedOut() && response.getResponseCode() != 500) {
+					//Retry on 404 errors because OverDrive occasionally returns a 404 for a record that is really there
+					// they suggested retrying.
+					if (!response.isCallTimedOut() && response.getResponseCode() != 500 && response.getResponseCode() != 404) {
 						break;
 					}
 				}
+			}
+			if (response.isCallTimedOut() || response.getResponseCode() == 500){
+				//If we get a 500 on any call (3 times in a row due to repetition), make sure that we don't process deletes
+				// do this because the 500 seems to indicate that the server is down/having issues
+				this.errorsWhileLoadingProducts = true;
 			}
 			return response;
 		}else{

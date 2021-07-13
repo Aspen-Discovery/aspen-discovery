@@ -226,6 +226,9 @@ function readConfig()
 		} else {
 			$mainArray['Site']['url'] = "http://" . $_SERVER['SERVER_NAME'];
 		}
+		if (isset($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] != 80 && $_SERVER['SERVER_PORT'] != 443){
+			$mainArray['Site']['url'] .= ":" . $_SERVER['SERVER_PORT'];
+		}
 	}
 
 	return $mainArray;

@@ -99,7 +99,11 @@ class Mailer {
 			$message->addReplyTo($replyTo);
 		}
 		$message->setSubject($subject);
-		$message->setMessageFromString($body, $htmlMessage);
+		if ($htmlMessage){
+			$message->setMessageFromString(null, $body);
+		}else{
+			$message->setMessageFromString($body, null);
+		}
 
 		$response = $amazonSesSettings->sendEmail($message, false, false);
 		if ($response == false){

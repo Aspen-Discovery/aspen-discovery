@@ -1,4 +1,4 @@
-package com.turning_leaf_technologies.symphony;
+package com.turning_leaf_technologies.indexing;
 
 import com.turning_leaf_technologies.strings.StringUtils;
 

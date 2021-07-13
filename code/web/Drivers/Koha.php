@@ -401,35 +401,77 @@ class Koha extends AbstractIlsDriver
 			$curCheckout->renewIndicator = $curRow['itemnumber'];
 			$curCheckout->renewCount = $curRow['renewals'];
 
-			$curCheckout->canRenew = !$curRow['auto_renew'] && $opacRenewalAllowed;
-			$curCheckout->autoRenew = $curRow['auto_renew'];
-			$autoRenewError = $curRow['auto_renew_error'];
+			/** @noinspection SqlResolve */
+			$renewPrefSql = "SELECT autorenew_checkouts FROM borrowers WHERE borrowernumber = {$patron->username}";
+			$renewPrefResults = mysqli_query($this->dbConnection, $renewPrefSql);
+			if ($renewPrefRow = $renewPrefResults->fetch_assoc()) {
+				$renewPref = $renewPrefRow['autorenew_checkouts'];
 
-			if ($autoRenewError) {
-				if ($autoRenewError == 'on_reserve') {
-					$autoRenewError = translate(['text' => 'koha_auto_renew_on_reserve', 'defaultText' => 'Cannot auto renew, on hold for another user']);
-				} elseif ($autoRenewError == 'too_many') {
-					$autoRenewError = translate(['text' => 'koha_auto_renew_too_many', 'defaultText' => 'Cannot auto renew, too many renewals']);
-				} elseif ($autoRenewError == 'auto_account_expired') {
-					$autoRenewError = translate(['text' => 'koha_auto_renew_auto_account_expired', 'defaultText' => 'Cannot auto renew, your account has expired']);
-				} elseif ($autoRenewError == 'auto_too_soon') {
-					$autoRenewError = translate(['text' => 'koha_auto_renew_auto', 'defaultText' => 'If eligible, this item wil renew on<br/>%1%', '1' => $renewalDate]);
+				if ($renewPref == 0) {
+					$curCheckout->autoRenew = "0";
+				} else {
+					$curCheckout->autoRenew = $curRow['auto_renew'];
 				}
 			}
-			$curCheckout->autoRenewError = $autoRenewError;
+
+			$curCheckout->canRenew = !$curCheckout->autoRenew && $opacRenewalAllowed;
+
+			if ($curCheckout->autoRenew == 1){
+				$autoRenewError = $curRow['auto_renew_error'];
+				if ($autoRenewError == 'null') {
+					$curCheckout->autoRenewError = translate(['text' => 'koha_auto_renew_auto', 'defaultText' => 'If eligible, this item will renew on<br/>%1%', '1' => $renewalDate]);
+				}
+			}
+
+			//Get the number of holds on current checkout, if any
+			/** @noinspection SqlResolve */
+			$holdsSql = "SELECT *  FROM biblio b  LEFT JOIN reserves h ON (b.biblionumber=h.biblionumber) WHERE b.biblionumber = {$curRow['biblionumber']} GROUP BY b.biblionumber HAVING count(h.reservedate) >= 1";
+			$holdsResults = mysqli_query($this->dbConnection, $holdsSql);
+			$holdsCount = $holdsResults->num_rows;
+			if ($holdsCount >= 1 && $curCheckout->autoRenew == 1) {
+				$curCheckout->autoRenewError = translate(['text' => 'koha_auto_renew_on_reserve', 'defaultText' => 'Cannot auto renew, on hold for another user']);
+			} else if ($holdsCount >= 1 && $curCheckout->canRenew == 1 && $curCheckout->autoRenew == 0) {
+				$curCheckout->canRenew = "0";
+				$curCheckout->renewError = translate(['text' => 'koha_on_hold', 'defaultText' => 'On hold for another user']);
+			}
 
 			//Get the max renewals by figuring out what rule the checkout was issued under
 			$patronType = $patron->patronType;
 			$itemType = $curRow['itype'];
 			$checkoutBranch = $curRow['branchcode'];
 			/** @noinspection SqlResolve */
-			$issuingRulesSql = "SELECT renewalsallowed FROM issuingrules where categorycode IN ('{$patronType}', '*') and itemtype IN('{$itemType}', '*') and branchcode IN ('{$checkoutBranch}', '*') order by branchcode desc, categorycode desc, itemtype desc limit 1";
+			$issuingRulesSql = "SELECT *  FROM circulation_rules where rule_name =  'renewalsallowed' AND (categorycode IN ('{$patronType}', '*') OR categorycode IS NULL) and (itemtype IN('{$itemType}', '*') OR itemtype is null) and (branchcode IN ('{$checkoutBranch}', '*') OR branchcode IS NULL) order by branchcode desc, categorycode desc, itemtype desc limit 1";
 			$issuingRulesRS = mysqli_query($this->dbConnection, $issuingRulesSql);
 			if ($issuingRulesRS !== false) {
 				if ($issuingRulesRow = $issuingRulesRS->fetch_assoc()) {
-					$curCheckout->maxRenewals = $issuingRulesRow['renewalsallowed'];
+					$curCheckout->maxRenewals = $issuingRulesRow['rule_value'];
+
+					if ($curCheckout->autoRenew == 1) {
+						if ($curCheckout->maxRenewals == $curCheckout->renewCount) {
+								$curCheckout->autoRenewError = translate(['text' => 'koha_auto_renew_too_many', 'defaultText' => 'Cannot auto renew, too many renewals']);
+						}
+					} else if ($curCheckout->maxRenewals == $curCheckout->renewCount) {
+						$curCheckout->canRenew = "0";
+						$curCheckout->renewError = translate(['text' => 'koha_too_many_renews', 'defaultText' => 'Renewed too many times']);
+					}
 				}
 				$issuingRulesRS->close();
+			}
+
+			//Get the patron expiration date to check for active card
+			if ($curCheckout->autoRenew == 1){
+				/** @noinspection SqlResolve */
+				$patronExpirationSql = "SELECT dateexpiry FROM borrowers WHERE borrowernumber = {$patron->username}";
+				$patronExpirationResults = mysqli_query($this->dbConnection, $patronExpirationSql);
+
+				if ($patronExpirationRow = $patronExpirationResults->fetch_assoc()) {
+					$expirationDate = strtotime($patronExpirationRow['dateexpiry']);
+					$today = date("Y-m-d");
+
+					if ($expirationDate < $today) {
+						$curCheckout->autoRenewError = translate(['text' => 'koha_auto_renew_auto_account_expired', 'defaultText' => 'Cannot auto renew, your account has expired']);
+					}
+				}
 			}
 
 			$checkouts[$curCheckout->source . $curCheckout->sourceId . $curCheckout->userId] = $curCheckout;
@@ -776,6 +818,10 @@ class Koha extends AbstractIlsDriver
 		$this->apiCurlWrapper = null;
 
 		//Cleanup any connections we have to other systems
+		$this->closeDatabaseConnection();
+	}
+
+	function closeDatabaseConnection() {
 		if ($this->dbConnection != null) {
 			mysqli_close($this->dbConnection);
 			$this->dbConnection = null;
@@ -945,7 +991,6 @@ class Koha extends AbstractIlsDriver
 			$hold_result['message'] = 'Unable to find a valid record for this title.  Please try your search again.';
 			return $hold_result;
 		}
-		$marcRecord = $recordDriver->getMarcRecord();
 
 		//Check to see if the patron already has that record checked out
 		$allowHoldsOnCheckedOutTitles = $this->getKohaSystemPreference('AllowHoldsOnPatronsPossessions');
@@ -959,118 +1004,45 @@ class Koha extends AbstractIlsDriver
 			}
 		}
 
-		//Check to see if the title requires item level holds
-		/** @var File_MARC_Data_Field[] $holdTypeFields */
-		$itemLevelHoldAllowed = false;
-		$itemLevelHoldOnly = false;
-		$indexingProfile = $this->getIndexingProfile();
-		$holdTypeFields = $marcRecord->getFields($indexingProfile->itemTag);
-		foreach ($holdTypeFields as $holdTypeField) {
-			if ($holdTypeField->getSubfield('r') != null) {
-				if ($holdTypeField->getSubfield('r')->getData() == 'itemtitle') {
-					$itemLevelHoldAllowed = true;
-				} else if ($holdTypeField->getSubfield('r')->getData() == 'item') {
-					$itemLevelHoldAllowed = true;
-					$itemLevelHoldOnly = true;
-				}
+		//Just a regular bib level hold
+		$hold_result['title'] = $recordDriver->getTitle();
+
+		global $active_ip;
+		$holdParams = [
+			'service' => 'HoldTitle',
+			'patron_id' => $patron->username,
+			'bib_id' => $recordDriver->getId(),
+			'request_location' => $active_ip,
+			'pickup_location' => $pickupBranch
+		];
+
+		if ($cancelDate != null) {
+			if ($this->getKohaVersion() >= 20.05) {
+				$holdParams['expiry_date'] = $this->aspenDateToKohaDate($cancelDate);
+			}else{
+				$holdParams['needed_before_date'] = $this->aspenDateToKohaDate($cancelDate);
 			}
 		}
 
-		//Get the items the user can place a hold on
-		if ($itemLevelHoldAllowed) {
-			//Need to prompt for an item level hold
-			$items = array();
-			if (!$itemLevelHoldOnly) {
-				//Add a first title returned
-				$items[-1] = array(
-					'itemNumber' => -1,
-					'location' => 'Next available copy',
-					'callNumber' => '',
-					'status' => '',
-				);
-			}
+		$placeHoldURL = $this->getWebServiceUrl() . '/cgi-bin/koha/ilsdi.pl?' . http_build_query($holdParams);
+		$placeHoldResponse = $this->getXMLWebServiceResponse($placeHoldURL);
 
-			$hold_result['title'] = $recordDriver->getTitle();
-			$hold_result['items'] = $items;
-			if (count($items) > 0) {
-				$message = 'This title allows item level holds, please select an item to place a hold on.';
-			} else {
-				if (!isset($message)) {
-					$message = 'There are no holdable items for this title.';
-				}
-			}
-			$hold_result['success'] = false;
-			$hold_result['message'] = $message;
-			return $hold_result;
+		//If the hold is successful we go back to the account page and can see
+
+		$hold_result['id'] = $recordId;
+		if ($placeHoldResponse->title) {
+			//everything seems to be good
+			$hold_result = $this->getHoldMessageForSuccessfulHold($patron, $recordDriver->getId(), $hold_result);
+			$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
+			$patron->forceReloadOfHolds();
 		} else {
-			//Just a regular bib level hold
-			$hold_result['title'] = $recordDriver->getTitle();
-
-			global $active_ip;
-			$holdParams = [
-				'service' => 'HoldTitle',
-				'patron_id' => $patron->username,
-				'bib_id' => $recordDriver->getId(),
-				'request_location' => $active_ip,
-				'pickup_location' => $pickupBranch
-			];
-
-			if ($cancelDate != null) {
-				if ($this->getKohaVersion() >= 20.05) {
-					$holdParams['expiry_date'] = $this->aspenDateToKohaDate($cancelDate);
-				}else{
-					$holdParams['needed_before_date'] = $this->aspenDateToKohaDate($cancelDate);
-				}
-			}
-
-			$placeHoldURL = $this->getWebServiceUrl() . '/cgi-bin/koha/ilsdi.pl?' . http_build_query($holdParams);
-			$placeHoldResponse = $this->getXMLWebServiceResponse($placeHoldURL);
-
-			//If the hold is successful we go back to the account page and can see
-
-			$hold_result['id'] = $recordId;
-			if ($placeHoldResponse->title) {
-				//everything seems to be good
-				$hold_result = $this->getHoldMessageForSuccessfulHold($patron, $recordDriver->getId(), $hold_result);
-				$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
-				$patron->forceReloadOfHolds();
-			} else {
-				$error = $placeHoldResponse->code;
-				$hold_result['success'] = false;
-				$message = 'The item could not be placed on hold: ';
-				if($error == "damaged") {
-					$message .= 'Item damaged';
-				} elseif ($error == "ageRestricted") {
-					$message .= 'Age restricted';
-				} elseif ($error == "tooManyHoldsForThisRecord") {
-					$message .= 'Exceeded max holds per record';
-				} elseif ($error == "tooManyReservesToday") {
-					$message .= 'Exceeded hold limit for patron';
-				} elseif ($error == "tooManyReserves") {
-					$message .= 'Too many holds';
-				} elseif ($error == "notReservable") {
-					$message .= 'Not holdable';
-				} elseif ($error == "cannotReserveFromOtherBranches") {
-					$message .= 'Patron is from different library';
-				} elseif ($error == "branchNotInHoldGroup") {
-					$message .= 'Cannot place hold from patron\'s library';
-				} elseif ($error == "itemAlreadyOnHold") {
-					$message .= 'Patron already has hold for this item';
-				} elseif ($error == "cannotBeTransferred") {
-					$message .= 'Cannot be transferred to pickup library';
-				} elseif ($error == "pickupNotInHoldGroup") {
-					$message .= 'Only pickup locations within the same hold group are allowed';
-				} elseif ($error == "noReservesAllowed") {
-					$message .= 'No reserves are allowed on this item';
-				} elseif ($error == "libraryNotPickupLocation") {
-					$message .= 'Library is not a pickup location';
-				} else {
-					$message = 'The item could not be placed on hold';
-				}
-				$hold_result['message'] = translate($message);
-			}
-			return $hold_result;
+			$error = $placeHoldResponse->code;
+			$hold_result['success'] = false;
+			$message = 'The item could not be placed on hold: ';
+			$message = $this->getHoldErrorMessage($error, $message);
+			$hold_result['message'] = translate($message);
 		}
+		return $hold_result;
 	}
 
 
@@ -1184,7 +1156,11 @@ class Koha extends AbstractIlsDriver
 			'pickup_location' => $pickupBranch
 		];
 		if ($cancelDate != null) {
-			$holdParams['needed_before_date'] = $this->aspenDateToKohaDate($cancelDate);
+			if ($this->getKohaVersion() >= 20.05) {
+				$holdParams['expiry_date'] = $this->aspenDateToKohaDate($cancelDate);
+			}else{
+				$holdParams['needed_before_date'] = $this->aspenDateToKohaDate($cancelDate);
+			}
 		}
 
 		$placeHoldURL = $this->getWebServiceUrl() . '/cgi-bin/koha/ilsdi.pl?' . http_build_query($holdParams);
@@ -1198,7 +1174,10 @@ class Koha extends AbstractIlsDriver
 		} else {
 			$hold_result['success'] = false;
 			//Look for an alert message
-			$hold_result['message'] = 'Your hold could not be placed. ' . $placeHoldResponse->code;
+			$error = $placeHoldResponse->code;
+			$message = 'The item could not be placed on hold: ';
+			$message = $this->getHoldErrorMessage($error, $message);
+			$hold_result['message'] = translate($message);
 		}
 		return $hold_result;
 	}
@@ -1419,20 +1398,47 @@ class Koha extends AbstractIlsDriver
 
 	public function renewCheckout($patron, $recordId, $itemId = null, $itemIndex = null)
 	{
+		$this->initDatabaseConnection();
+		/** @noinspection SqlResolve */
+		$renewSql = "SELECT issues.*, items.biblionumber, items.itype, items.itemcallnumber, items.enumchron, title, author, issues.renewals from issues left join items on items.itemnumber = issues.itemnumber left join biblio ON items.biblionumber = biblio.biblionumber where borrowernumber = {$patron->username} AND issues.itemnumber = {$itemId} limit 1";
+		$renewResults = mysqli_query($this->dbConnection, $renewSql);
+		$maxRenewals = 0;
+
 		$params = [
 			'service' => 'RenewLoan',
 			'patron_id' => $patron->username,
 			'item_id' => $itemId,
 		];
 
+		require_once ROOT_DIR . '/sys/User/Checkout.php';;
 		$renewURL = $this->getWebServiceUrl() . '/cgi-bin/koha/ilsdi.pl?' . http_build_query($params);
 		$renewResponse = $this->getXMLWebServiceResponse($renewURL);
 
 		//Parse the result
 		if (isset($renewResponse->success) && ($renewResponse->success == 1)) {
+
+			while ($curRow = mysqli_fetch_assoc($renewResults)) {
+				$patronType = $patron->patronType;
+				$itemType = $curRow['itype'];
+				$checkoutBranch = $curRow['branchcode'];
+				$renewCount = $curRow['renewals'] + 1;
+				/** @noinspection SqlResolve */
+				$issuingRulesSql = "SELECT *  FROM circulation_rules where rule_name =  'renewalsallowed' AND (categorycode IN ('{$patronType}', '*') OR categorycode IS NULL) and (itemtype IN('{$itemType}', '*') OR itemtype is null) and (branchcode IN ('{$checkoutBranch}', '*') OR branchcode IS NULL) order by branchcode desc, categorycode desc, itemtype desc limit 1";
+				$issuingRulesRS = mysqli_query($this->dbConnection, $issuingRulesSql);
+				if ($issuingRulesRS !== false) {
+					if ($issuingRulesRow = $issuingRulesRS->fetch_assoc()) {
+						$maxRenewals = $issuingRulesRow['rule_value'];
+					}
+					$issuingRulesRS->close();
+				}
+			}
+			$renewResults->close();
+
+			$renewsRemaining = ($maxRenewals - $renewCount);
 			//We renewed the hold
 			$success = true;
-			$message = 'Your item was successfully renewed';
+			$message = 'Your item was successfully renewed.';
+			$message .= ' ' . $renewsRemaining . ' of ' . $maxRenewals . ' renewals remaining.';
 			$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
 			$patron->forceReloadOfCheckouts();
 		} else {
@@ -1629,6 +1635,12 @@ class Koha extends AbstractIlsDriver
 			], true);
 			$response = $this->apiCurlWrapper->curlPostBodyData($apiUrl, $postParams, false);
 			if (!$response) {
+				if ($this->apiCurlWrapper->getResponseCode() != 204) {
+					$result['message'] = translate(['text'=>'ils_freeze_hold_success', 'defaultText' => 'Your hold was frozen successfully.']);
+					$result['success'] = true;
+					$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
+					$patron->forceReloadOfHolds();
+				}
 				return $result;
 			} else {
 				$hold_response = json_decode($response, false);
@@ -2086,95 +2098,232 @@ class Koha extends AbstractIlsDriver
 			'success' => false,
 		];
 
-		$catalogUrl = $this->accountProfile->vendorOpacUrl;
-		$selfRegPage = $this->getKohaPage($catalogUrl . '/cgi-bin/koha/opac-memberentry.pl');
-		$captcha = '';
-		$captchaDigest = '';
-		$captchaInfo = [];
-		if (preg_match('%<span class="hint">(?:.*)<strong>(.*?)</strong></span>%s', $selfRegPage, $captchaInfo)) {
-			$captcha = $captchaInfo[1];
-		}
-		$captchaInfo = [];
-		if (preg_match('%<input type="hidden" name="captcha_digest" value="(.*?)" />%s', $selfRegPage, $captchaInfo)) {
-			$captchaDigest = $captchaInfo[1];
-		}
+		if ($this->getKohaVersion() < 20.05) {
+			$catalogUrl = $this->accountProfile->vendorOpacUrl;
+			$selfRegPage = $this->getKohaPage($catalogUrl . '/cgi-bin/koha/opac-memberentry.pl');
+			$captcha = '';
+			$captchaDigest = '';
+			$captchaInfo = [];
+			if (preg_match('%<span class="hint">(?:.*)<strong>(.*?)</strong></span>%s', $selfRegPage, $captchaInfo)) {
+				$captcha = $captchaInfo[1];
+			}
+			$captchaInfo = [];
+			if (preg_match('%<input type="hidden" name="captcha_digest" value="(.*?)" />%s', $selfRegPage, $captchaInfo)) {
+				$captchaDigest = $captchaInfo[1];
+			}
 
-		$postFields = [];
-		$postFields = $this->setPostField($postFields, 'borrower_branchcode', $library->useAllCapsWhenSubmittingSelfRegistration);
-		$postFields = $this->setPostField($postFields, 'borrower_title', $library->useAllCapsWhenSubmittingSelfRegistration);
-		$postFields = $this->setPostField($postFields, 'borrower_surname', $library->useAllCapsWhenSubmittingSelfRegistration);
-		$postFields = $this->setPostField($postFields, 'borrower_firstname', $library->useAllCapsWhenSubmittingSelfRegistration);
-		if (isset($_REQUEST['borrower_dateofbirth'])) {
-			$postFields['borrower_dateofbirth'] = str_replace('-', '/', $_REQUEST['borrower_dateofbirth']);
-		}
-		$postFields = $this->setPostField($postFields, 'borrower_initials', $library->useAllCapsWhenSubmittingSelfRegistration);
-		$postFields = $this->setPostField($postFields, 'borrower_othernames', $library->useAllCapsWhenSubmittingSelfRegistration);
-		$postFields = $this->setPostField($postFields, 'borrower_sex', $library->useAllCapsWhenSubmittingSelfRegistration);
-		$postFields = $this->setPostField($postFields, 'borrower_address', $library->useAllCapsWhenSubmittingSelfRegistration);
-		$postFields = $this->setPostField($postFields, 'borrower_address2', $library->useAllCapsWhenSubmittingSelfRegistration);
-		$postFields = $this->setPostField($postFields, 'borrower_city', $library->useAllCapsWhenSubmittingSelfRegistration);
-		$postFields = $this->setPostField($postFields, 'borrower_state', $library->useAllCapsWhenSubmittingSelfRegistration);
-		$postFields = $this->setPostField($postFields, 'borrower_zipcode', $library->useAllCapsWhenSubmittingSelfRegistration);
-		$postFields = $this->setPostField($postFields, 'borrower_country', $library->useAllCapsWhenSubmittingSelfRegistration);
-		$postFields = $this->setPostField($postFields, 'borrower_phone', $library->useAllCapsWhenSubmittingSelfRegistration, $library->requireNumericPhoneNumbersWhenUpdatingProfile);
-		$postFields = $this->setPostField($postFields, 'borrower_email', $library->useAllCapsWhenSubmittingSelfRegistration);
-		$postFields = $this->setPostField($postFields, 'borrower_phonepro', $library->useAllCapsWhenSubmittingSelfRegistration, $library->requireNumericPhoneNumbersWhenUpdatingProfile);
-		$postFields = $this->setPostField($postFields, 'borrower_mobile', $library->useAllCapsWhenSubmittingSelfRegistration, $library->requireNumericPhoneNumbersWhenUpdatingProfile);
-		$postFields = $this->setPostField($postFields, 'borrower_emailpro', $library->useAllCapsWhenSubmittingSelfRegistration);
-		$postFields = $this->setPostField($postFields, 'borrower_fax', $library->useAllCapsWhenSubmittingSelfRegistration, $library->requireNumericPhoneNumbersWhenUpdatingProfile);
-		$postFields = $this->setPostField($postFields, 'borrower_B_address', $library->useAllCapsWhenSubmittingSelfRegistration);
-		$postFields = $this->setPostField($postFields, 'borrower_B_address2', $library->useAllCapsWhenSubmittingSelfRegistration);
-		$postFields = $this->setPostField($postFields, 'borrower_B_city', $library->useAllCapsWhenSubmittingSelfRegistration);
-		$postFields = $this->setPostField($postFields, 'borrower_B_state', $library->useAllCapsWhenSubmittingSelfRegistration);
-		$postFields = $this->setPostField($postFields, 'borrower_B_zipcode', $library->useAllCapsWhenSubmittingSelfRegistration);
-		$postFields = $this->setPostField($postFields, 'borrower_B_country', $library->useAllCapsWhenSubmittingSelfRegistration);
-		$postFields = $this->setPostField($postFields, 'borrower_B_phone', $library->useAllCapsWhenSubmittingSelfRegistration, $library->requireNumericPhoneNumbersWhenUpdatingProfile);
-		$postFields = $this->setPostField($postFields, 'borrower_B_email', $library->useAllCapsWhenSubmittingSelfRegistration);
-		$postFields = $this->setPostField($postFields, 'borrower_contactnote', $library->useAllCapsWhenSubmittingSelfRegistration);
-		$postFields = $this->setPostField($postFields, 'borrower_altcontactsurname', $library->useAllCapsWhenSubmittingSelfRegistration);
-		$postFields = $this->setPostField($postFields, 'borrower_altcontactfirstname', $library->useAllCapsWhenSubmittingSelfRegistration);
-		$postFields = $this->setPostField($postFields, 'borrower_altcontactaddress1', $library->useAllCapsWhenSubmittingSelfRegistration);
-		$postFields = $this->setPostField($postFields, 'borrower_altcontactaddress2', $library->useAllCapsWhenSubmittingSelfRegistration);
-		$postFields = $this->setPostField($postFields, 'borrower_altcontactaddress3', $library->useAllCapsWhenSubmittingSelfRegistration);
-		$postFields = $this->setPostField($postFields, 'borrower_altcontactstate', $library->useAllCapsWhenSubmittingSelfRegistration);
-		$postFields = $this->setPostField($postFields, 'borrower_altcontactzipcode', $library->useAllCapsWhenSubmittingSelfRegistration);
-		$postFields = $this->setPostField($postFields, 'borrower_altcontactcountry', $library->useAllCapsWhenSubmittingSelfRegistration);
-		$postFields = $this->setPostField($postFields, 'borrower_altcontactphone', $library->useAllCapsWhenSubmittingSelfRegistration, $library->requireNumericPhoneNumbersWhenUpdatingProfile);
-		$postFields = $this->setPostField($postFields, 'borrower_password');
-		$postFields = $this->setPostField($postFields, 'borrower_password2');
-		$postFields['captcha'] = $captcha;
-		$postFields['captcha_digest'] = $captchaDigest;
-		$postFields['action'] = 'create';
-		$headers = [
-			'Content-Type: application/x-www-form-urlencoded'
-		];
-		$this->opacCurlWrapper->addCustomHeaders($headers, false);
-		$selfRegPageResponse = $this->postToKohaPage($catalogUrl . '/cgi-bin/koha/opac-memberentry.pl', $postFields);
+			$postFields = [];
+			$postFields = $this->setPostField($postFields, 'borrower_branchcode', $library->useAllCapsWhenSubmittingSelfRegistration);
+			$postFields = $this->setPostField($postFields, 'borrower_title', $library->useAllCapsWhenSubmittingSelfRegistration);
+			$postFields = $this->setPostField($postFields, 'borrower_surname', $library->useAllCapsWhenSubmittingSelfRegistration);
+			$postFields = $this->setPostField($postFields, 'borrower_firstname', $library->useAllCapsWhenSubmittingSelfRegistration);
+			if (isset($_REQUEST['borrower_dateofbirth'])) {
+				$postFields['borrower_dateofbirth'] = str_replace('-', '/', $_REQUEST['borrower_dateofbirth']);
+			}
+			$postFields = $this->setPostField($postFields, 'borrower_initials', $library->useAllCapsWhenSubmittingSelfRegistration);
+			$postFields = $this->setPostField($postFields, 'borrower_othernames', $library->useAllCapsWhenSubmittingSelfRegistration);
+			$postFields = $this->setPostField($postFields, 'borrower_sex', $library->useAllCapsWhenSubmittingSelfRegistration);
+			$postFields = $this->setPostField($postFields, 'borrower_address', $library->useAllCapsWhenSubmittingSelfRegistration);
+			$postFields = $this->setPostField($postFields, 'borrower_address2', $library->useAllCapsWhenSubmittingSelfRegistration);
+			$postFields = $this->setPostField($postFields, 'borrower_city', $library->useAllCapsWhenSubmittingSelfRegistration);
+			$postFields = $this->setPostField($postFields, 'borrower_state', $library->useAllCapsWhenSubmittingSelfRegistration);
+			$postFields = $this->setPostField($postFields, 'borrower_zipcode', $library->useAllCapsWhenSubmittingSelfRegistration);
+			$postFields = $this->setPostField($postFields, 'borrower_country', $library->useAllCapsWhenSubmittingSelfRegistration);
+			$postFields = $this->setPostField($postFields, 'borrower_phone', $library->useAllCapsWhenSubmittingSelfRegistration, $library->requireNumericPhoneNumbersWhenUpdatingProfile);
+			$postFields = $this->setPostField($postFields, 'borrower_email', $library->useAllCapsWhenSubmittingSelfRegistration);
+			$postFields = $this->setPostField($postFields, 'borrower_phonepro', $library->useAllCapsWhenSubmittingSelfRegistration, $library->requireNumericPhoneNumbersWhenUpdatingProfile);
+			$postFields = $this->setPostField($postFields, 'borrower_mobile', $library->useAllCapsWhenSubmittingSelfRegistration, $library->requireNumericPhoneNumbersWhenUpdatingProfile);
+			$postFields = $this->setPostField($postFields, 'borrower_emailpro', $library->useAllCapsWhenSubmittingSelfRegistration);
+			$postFields = $this->setPostField($postFields, 'borrower_fax', $library->useAllCapsWhenSubmittingSelfRegistration, $library->requireNumericPhoneNumbersWhenUpdatingProfile);
+			$postFields = $this->setPostField($postFields, 'borrower_B_address', $library->useAllCapsWhenSubmittingSelfRegistration);
+			$postFields = $this->setPostField($postFields, 'borrower_B_address2', $library->useAllCapsWhenSubmittingSelfRegistration);
+			$postFields = $this->setPostField($postFields, 'borrower_B_city', $library->useAllCapsWhenSubmittingSelfRegistration);
+			$postFields = $this->setPostField($postFields, 'borrower_B_state', $library->useAllCapsWhenSubmittingSelfRegistration);
+			$postFields = $this->setPostField($postFields, 'borrower_B_zipcode', $library->useAllCapsWhenSubmittingSelfRegistration);
+			$postFields = $this->setPostField($postFields, 'borrower_B_country', $library->useAllCapsWhenSubmittingSelfRegistration);
+			$postFields = $this->setPostField($postFields, 'borrower_B_phone', $library->useAllCapsWhenSubmittingSelfRegistration, $library->requireNumericPhoneNumbersWhenUpdatingProfile);
+			$postFields = $this->setPostField($postFields, 'borrower_B_email', $library->useAllCapsWhenSubmittingSelfRegistration);
+			$postFields = $this->setPostField($postFields, 'borrower_contactnote', $library->useAllCapsWhenSubmittingSelfRegistration);
+			$postFields = $this->setPostField($postFields, 'borrower_altcontactsurname', $library->useAllCapsWhenSubmittingSelfRegistration);
+			$postFields = $this->setPostField($postFields, 'borrower_altcontactfirstname', $library->useAllCapsWhenSubmittingSelfRegistration);
+			$postFields = $this->setPostField($postFields, 'borrower_altcontactaddress1', $library->useAllCapsWhenSubmittingSelfRegistration);
+			$postFields = $this->setPostField($postFields, 'borrower_altcontactaddress2', $library->useAllCapsWhenSubmittingSelfRegistration);
+			$postFields = $this->setPostField($postFields, 'borrower_altcontactaddress3', $library->useAllCapsWhenSubmittingSelfRegistration);
+			$postFields = $this->setPostField($postFields, 'borrower_altcontactstate', $library->useAllCapsWhenSubmittingSelfRegistration);
+			$postFields = $this->setPostField($postFields, 'borrower_altcontactzipcode', $library->useAllCapsWhenSubmittingSelfRegistration);
+			$postFields = $this->setPostField($postFields, 'borrower_altcontactcountry', $library->useAllCapsWhenSubmittingSelfRegistration);
+			$postFields = $this->setPostField($postFields, 'borrower_altcontactphone', $library->useAllCapsWhenSubmittingSelfRegistration, $library->requireNumericPhoneNumbersWhenUpdatingProfile);
+			$postFields = $this->setPostField($postFields, 'borrower_password');
+			$postFields = $this->setPostField($postFields, 'borrower_password2');
+			$postFields['captcha'] = $captcha;
+			$postFields['captcha_digest'] = $captchaDigest;
+			$postFields['action'] = 'create';
+			$headers = [
+				'Content-Type: application/x-www-form-urlencoded'
+			];
+			$this->opacCurlWrapper->addCustomHeaders($headers, false);
+			$selfRegPageResponse = $this->postToKohaPage($catalogUrl . '/cgi-bin/koha/opac-memberentry.pl', $postFields);
 
-		$matches = [];
-		if (preg_match('%<h1>Registration Complete!</h1>.*?<span id="patron-userid">(.*?)</span>.*?<span id="patron-password">(.*?)</span>.*?<span id="patron-cardnumber">(.*?)</span>%s', $selfRegPageResponse, $matches)) {
-			$username = $matches[1];
-			$password = $matches[2];
-			$barcode = $matches[3];
-			$result['success'] = true;
-			$result['username'] = $username;
-			$result['password'] = $password;
-			$result['barcode'] = $barcode;
-		}elseif (preg_match('%<h1>Registration Complete!</h1>.*?<span id="patron-userid">(.*?)</span>.*?<span id="patron-password">(.*?)</span>%s', $selfRegPageResponse, $matches)) {
-			$username = $matches[1];
-			$password = $matches[2];
-			$result['success'] = true;
-			$result['username'] = $username;
-			$result['password'] = $password;
-		}elseif (preg_match('%<h1>Registration Complete!</h1>%s', $selfRegPageResponse, $matches)) {
-			$result['success'] = true;
-			$result['message'] = "Your account was registered, but a barcode was not provided, please contact your library for barcode and password to use when logging in.";
-		}elseif (preg_match('%<h1>Please confirm your registration</h1>%s', $selfRegPageResponse, $matches)) {
-			//Load the patron's username and barcode
-			$result['success'] = true;
-			$result['message'] = "Your account was registered, and a confirmation email will be sent to the email you provided. Your account will not be activated until you follow the link provided in the confirmation email.";
-		}elseif (preg_match('%This email address already exists in our database.%', $selfRegPageResponse)){
-			$result['message'] = 'This email address already exists in our database. Please contact your library for account information or use a different email.';
+			$matches = [];
+			if (preg_match('%<h1>Registration Complete!</h1>.*?<span id="patron-userid">(.*?)</span>.*?<span id="patron-password">(.*?)</span>.*?<span id="patron-cardnumber">(.*?)</span>%s', $selfRegPageResponse, $matches)) {
+				$username = $matches[1];
+				$password = $matches[2];
+				$barcode = $matches[3];
+				$result['success'] = true;
+				$result['username'] = $username;
+				$result['password'] = $password;
+				$result['barcode'] = $barcode;
+			} elseif (preg_match('%<h1>Registration Complete!</h1>.*?<span id="patron-userid">(.*?)</span>.*?<span id="patron-password">(.*?)</span>%s', $selfRegPageResponse, $matches)) {
+				$username = $matches[1];
+				$password = $matches[2];
+				$result['success'] = true;
+				$result['username'] = $username;
+				$result['password'] = $password;
+			} elseif (preg_match('%<h1>Registration Complete!</h1>%s', $selfRegPageResponse, $matches)) {
+				$result['success'] = true;
+				$result['message'] = "Your account was registered, but a barcode was not provided, please contact your library for barcode and password to use when logging in.";
+			} elseif (preg_match('%<h1>Please confirm your registration</h1>%s', $selfRegPageResponse, $matches)) {
+				//Load the patron's username and barcode
+				$result['success'] = true;
+				$result['message'] = "Your account was registered, and a confirmation email will be sent to the email you provided. Your account will not be activated until you follow the link provided in the confirmation email.";
+			} elseif (preg_match('%This email address already exists in our database.%', $selfRegPageResponse)) {
+				$result['message'] = 'This email address already exists in our database. Please contact your library for account information or use a different email.';
+			}
+		}else{
+			//Check to see if the email is duplicate
+			$autobarcode = $this->getKohaSystemPreference('autoMemberNum');
+			$verificationRequired = $this->getKohaSystemPreference('PatronSelfRegistrationVerifyByEmail');
+			$selfRegistrationEmailMustBeUnique = $this->getKohaSystemPreference('PatronSelfRegistrationEmailMustBeUnique');
+			if (!empty($_REQUEST['borrower_email']) && $selfRegistrationEmailMustBeUnique == '1'){
+				$this->initDatabaseConnection();
+				/** @noinspection SqlResolve */
+				$sql = "SELECT * FROM borrowers where email = '{$_REQUEST['borrower_email']}';";
+				$results = mysqli_query($this->dbConnection, $sql);
+				if ($results) {
+					$hasDuplicateEmail = false;
+					if ($results->fetch_assoc()) {
+						$hasDuplicateEmail = true;
+					}
+					$results->close();
+				}
+
+				if ($hasDuplicateEmail){
+					$result['success'] = false;
+					$result['message'] = 'This email address already exists in our database. Please contact your library for account information or use a different email.';
+					return $result;
+				}
+			}
+
+			//Use self registration API
+			$postVariables = [];
+			$postVariables = $this->setPostFieldWithDifferentName($postVariables,'address', 'borrower_address', $library->useAllCapsWhenUpdatingProfile);
+			$postVariables = $this->setPostFieldWithDifferentName($postVariables,'address', 'borrower_address', $library->useAllCapsWhenUpdatingProfile);
+			$postVariables = $this->setPostFieldWithDifferentName($postVariables,'address2', 'borrower_address2', $library->useAllCapsWhenUpdatingProfile);
+			$postVariables = $this->setPostFieldWithDifferentName($postVariables,'altaddress_address', 'borrower_B_address', $library->useAllCapsWhenUpdatingProfile);
+			$postVariables = $this->setPostFieldWithDifferentName($postVariables,'altaddress_address2', 'borrower_B_address2', $library->useAllCapsWhenUpdatingProfile);
+			$postVariables = $this->setPostFieldWithDifferentName($postVariables,'altaddress_city', 'borrower_B_city', $library->useAllCapsWhenUpdatingProfile);
+			$postVariables = $this->setPostFieldWithDifferentName($postVariables,'altaddress_country', 'borrower_B_country', $library->useAllCapsWhenUpdatingProfile);
+			$postVariables = $this->setPostFieldWithDifferentName($postVariables,'altaddress_email', 'borrower_B_email', $library->useAllCapsWhenUpdatingProfile);
+			//altaddress_notes
+			$postVariables = $this->setPostFieldWithDifferentName($postVariables,'altaddress_phone', 'borrower_B_phone', $library->useAllCapsWhenUpdatingProfile, $library->requireNumericPhoneNumbersWhenUpdatingProfile);
+			$postVariables = $this->setPostFieldWithDifferentName($postVariables,'altaddress_postal_code', 'borrower_B_zipcode', $library->useAllCapsWhenUpdatingProfile);
+			$postVariables = $this->setPostFieldWithDifferentName($postVariables,'altaddress_state', 'borrower_B_state', $library->useAllCapsWhenUpdatingProfile);
+			//altaddress_street_number
+			//altaddress_street_type
+			$postVariables = $this->setPostFieldWithDifferentName($postVariables,'altcontact_address', 'borrower_altcontactaddress1', $library->useAllCapsWhenUpdatingProfile);
+			$postVariables = $this->setPostFieldWithDifferentName($postVariables,'altcontact_address2', 'borrower_altcontactaddress2', $library->useAllCapsWhenUpdatingProfile);
+			$postVariables = $this->setPostFieldWithDifferentName($postVariables,'altcontact_city', 'borrower_altcontactaddress3', $library->useAllCapsWhenUpdatingProfile);
+			$postVariables = $this->setPostFieldWithDifferentName($postVariables,'altcontact_country', 'borrower_altcontactcountry', $library->useAllCapsWhenUpdatingProfile);
+			$postVariables = $this->setPostFieldWithDifferentName($postVariables,'altcontact_firstname', 'borrower_altcontactfirstname', $library->useAllCapsWhenUpdatingProfile);
+			$postVariables = $this->setPostFieldWithDifferentName($postVariables,'altcontact_phone', 'borrower_altcontactphone', $library->useAllCapsWhenUpdatingProfile, $library->requireNumericPhoneNumbersWhenUpdatingProfile);
+			$postVariables = $this->setPostFieldWithDifferentName($postVariables,'altcontact_postal_code', 'borrower_altcontactzipcode', $library->useAllCapsWhenUpdatingProfile);
+			$postVariables = $this->setPostFieldWithDifferentName($postVariables,'altcontact_state', 'borrower_altcontactstate', $library->useAllCapsWhenUpdatingProfile);
+			$postVariables = $this->setPostFieldWithDifferentName($postVariables,'altcontact_surname', 'borrower_altcontactsurname', $library->useAllCapsWhenUpdatingProfile);
+			$postVariables = $this->setPostFieldWithDifferentName($postVariables,'city', 'borrower_city', $library->useAllCapsWhenUpdatingProfile);
+			$postVariables = $this->setPostFieldWithDifferentName($postVariables,'country', 'borrower_country', $library->useAllCapsWhenUpdatingProfile);
+			if (!empty($_REQUEST['borrower_dateofbirth'])) {
+				$postVariables['date_of_birth'] = $_REQUEST['borrower_dateofbirth'];
+			}
+			$postVariables = $this->setPostFieldWithDifferentName($postVariables,'email', 'borrower_email', $library->useAllCapsWhenUpdatingProfile);
+			$postVariables = $this->setPostFieldWithDifferentName($postVariables,'fax', 'borrower_fax', $library->useAllCapsWhenUpdatingProfile, $library->requireNumericPhoneNumbersWhenUpdatingProfile);
+			$postVariables = $this->setPostFieldWithDifferentName($postVariables,'firstname', 'borrower_firstname', $library->useAllCapsWhenUpdatingProfile);
+			$postVariables = $this->setPostFieldWithDifferentName($postVariables,'gender', 'borrower_sex', $library->useAllCapsWhenUpdatingProfile);
+			$postVariables = $this->setPostFieldWithDifferentName($postVariables,'initials', 'borrower_initials', $library->useAllCapsWhenUpdatingProfile);
+			if (!isset($_REQUEST['borrower_branchcode']) || $_REQUEST['borrower_branchcode'] == -1){
+				$postVariables['library_id'] = $library->code;
+			}else {
+				$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'library_id', 'borrower_branchcode', $library->useAllCapsWhenUpdatingProfile);
+			}
+			$postVariables = $this->setPostFieldWithDifferentName($postVariables,'mobile', 'borrower_mobile', $library->useAllCapsWhenUpdatingProfile);
+			$postVariables = $this->setPostFieldWithDifferentName($postVariables,'opac_notes', 'borrower_contactnote', $library->useAllCapsWhenUpdatingProfile);
+			$postVariables = $this->setPostFieldWithDifferentName($postVariables,'other_name', 'borrower_othernames', $library->useAllCapsWhenUpdatingProfile);
+			$postVariables = $this->setPostFieldWithDifferentName($postVariables,'phone', 'borrower_phone', $library->useAllCapsWhenUpdatingProfile, $library->requireNumericPhoneNumbersWhenUpdatingProfile);
+			$postVariables = $this->setPostFieldWithDifferentName($postVariables,'postal_code', 'borrower_zipcode', $library->useAllCapsWhenUpdatingProfile);
+			$postVariables = $this->setPostFieldWithDifferentName($postVariables,'secondary_email', 'borrower_emailpro', $library->useAllCapsWhenUpdatingProfile);
+			$postVariables = $this->setPostFieldWithDifferentName($postVariables,'secondary_phone', 'borrower_phonepro', $library->useAllCapsWhenUpdatingProfile, $library->requireNumericPhoneNumbersWhenUpdatingProfile);
+			$postVariables = $this->setPostFieldWithDifferentName($postVariables,'state', 'borrower_state', $library->useAllCapsWhenUpdatingProfile);
+			$postVariables = $this->setPostFieldWithDifferentName($postVariables,'surname', 'borrower_surname', $library->useAllCapsWhenUpdatingProfile);
+			$postVariables = $this->setPostFieldWithDifferentName($postVariables,'title', 'borrower_title', $library->useAllCapsWhenUpdatingProfile);
+			$postVariables['category_id'] = $this->getKohaSystemPreference('PatronSelfRegistrationDefaultCategory');
+
+			$oauthToken = $this->getOAuthToken();
+			if ($oauthToken == false) {
+				$result['messages'][] = translate(['text' => 'unable_to_authenticate', 'defaultText' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.']);
+			} else {
+				$apiUrl = $this->getWebServiceURL() . "/api/v1/patrons";
+				$postParams = json_encode($postVariables);
+
+				$this->apiCurlWrapper->addCustomHeaders([
+					'Authorization: Bearer ' . $oauthToken,
+					'User-Agent: Aspen Discovery',
+					'Accept: */*',
+					'Cache-Control: no-cache',
+					'Content-Type: application/json;charset=UTF-8',
+					'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
+				], true);
+				//$this->apiCurlWrapper->setupDebugging();
+				$response = $this->apiCurlWrapper->curlSendPage($apiUrl, 'POST', $postParams);
+				if ($this->apiCurlWrapper->getResponseCode() != 201) {
+					if (strlen($response) > 0) {
+						$jsonResponse = json_decode($response);
+						if ($jsonResponse) {
+							if (!empty($jsonResponse->error)) {
+								$result['messages'][] = $jsonResponse->error;
+							}else{
+								foreach ($jsonResponse->errors as $error) {
+									$result['messages'][] = $error->message;
+								}
+							}
+						} else {
+							$result['messages'][] = $response;
+						}
+					} else {
+						$result['messages'][] = "Error {$this->apiCurlWrapper->getResponseCode()} updating your account.";
+					}
+					$result['message'] = "Could not create you account. " . implode($result['messages']);
+
+				} else {
+					$jsonResponse = json_decode($response);
+					$result['username'] = $jsonResponse->userid;
+					$result['success'] = true;
+					if ($verificationRequired != "0") {
+						$result['message'] = "Your account was registered, and a confirmation email will be sent to the email you provided. Your account will not be activated until you follow the link provided in the confirmation email.";
+					}else{
+						if ($autobarcode == "1"){
+							$result['barcode'] = $jsonResponse->cardnumber;
+							$patronId = $jsonResponse->patron_id;
+							if (isset($_REQUEST['borrower_password'])) {
+								$tmpResult = $this->resetPinInKoha($patronId, $_REQUEST['borrower_password'], $oauthToken);
+								if ($tmpResult['success']){
+									$result['password'] = $_REQUEST['borrower_password'];
+								}
+							}
+						}else{
+							$result['message'] = "Your account was registered, but a barcode was not provided, please contact your library for barcode and password to use when logging in.";
+						}
+					}
+				}
+			}
 		}
 		return $result;
 	}
@@ -2231,6 +2380,13 @@ class Koha extends AbstractIlsDriver
 			}
 		}
 
+		$patronReasonSQL = "SELECT * FROM authorised_values where category = 'OPAC_SUG' order by lib_opac";
+		$patronReasonRS = mysqli_query($this->dbConnection, $patronReasonSQL);
+		$patronReasons = [];
+		while ($curRow = $patronReasonRS->fetch_assoc()) {
+			$patronReasons[$curRow['authorised_value']] = $curRow['lib_opac'];
+		}
+
 		global $interface;
 		$allowPurchaseSuggestionBranchChoice = $this->getKohaSystemPreference('AllowPurchaseSuggestionBranchChoice');
 		$pickupLocations = [];
@@ -2263,6 +2419,10 @@ class Koha extends AbstractIlsDriver
 			array('property' => 'branchcode', 'type' => 'enum', 'values' => $pickupLocations, 'label' => 'Library', 'description' => '', 'required' => false, 'default' => $user->getHomeLocation()->code),
 			array('property' => 'note', 'type' => 'textarea', 'label' => 'Note', 'description' => '', 'required' => false),
 		];
+
+		if (!empty($patronReasons)) {
+			array_push($fields,['property' => 'patronreason', 'type' => 'enum', 'values' => $patronReasons, 'label' => 'Reason for Purchase']);
+		}
 
 		foreach ($fields as &$field) {
 			if (array_key_exists($field['property'], $mandatoryFields)) {
@@ -2308,6 +2468,7 @@ class Koha extends AbstractIlsDriver
 				'itemtype' => $_REQUEST['itemtype'],
 				'branchcode' => $_REQUEST['branchcode'],
 				'note' => $_REQUEST['note'],
+				'patronreason' => $_REQUEST['patronreason'],
 				'negcap' => '',
 				'suggested_by_anyone' => 0,
 				'op' => 'add_confirm'
@@ -3626,5 +3787,44 @@ class Koha extends AbstractIlsDriver
 		}
 
 		return $messages;
+	}
+
+	/**
+	 * @param SimpleXMLElement $error
+	 * @param string $message
+	 * @return string
+	 */
+	protected function getHoldErrorMessage(SimpleXMLElement $error, string $message): string
+	{
+		if ($error == "damaged") {
+			$message .= 'Item damaged';
+		} elseif ($error == "ageRestricted") {
+			$message .= 'Age restricted';
+		} elseif ($error == "tooManyHoldsForThisRecord") {
+			$message .= 'Exceeded max holds per record';
+		} elseif ($error == "tooManyReservesToday") {
+			$message .= 'Exceeded hold limit for patron';
+		} elseif ($error == "tooManyReserves") {
+			$message .= 'Too many holds';
+		} elseif ($error == "notReservable") {
+			$message .= 'Not holdable';
+		} elseif ($error == "cannotReserveFromOtherBranches") {
+			$message .= 'Patron is from different library';
+		} elseif ($error == "branchNotInHoldGroup") {
+			$message .= 'Cannot place hold from patron\'s library';
+		} elseif ($error == "itemAlreadyOnHold") {
+			$message .= 'Patron already has hold for this item';
+		} elseif ($error == "cannotBeTransferred") {
+			$message .= 'Cannot be transferred to pickup library';
+		} elseif ($error == "pickupNotInHoldGroup") {
+			$message .= 'Only pickup locations within the same hold group are allowed';
+		} elseif ($error == "noReservesAllowed") {
+			$message .= 'No reserves are allowed on this item';
+		} elseif ($error == "libraryNotPickupLocation") {
+			$message .= 'Library is not a pickup location';
+		} else {
+			$message = "The item could not be placed on hold ($error)";
+		}
+		return $message;
 	}
 }

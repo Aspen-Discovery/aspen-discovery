@@ -220,15 +220,16 @@ public class RecordGroupingProcessor {
 	 * @param groupedWork       Information about the work itself
 	 */
 	void addGroupedWorkToDatabase(RecordIdentifier primaryIdentifier, GroupedWork groupedWork, boolean primaryDataChanged, String originalGroupedWorkId) {
-		//Check to see if we need to ungroup this
+		String groupedWorkPermanentId = groupedWork.getPermanentId();
+
+		//Check to see if we need to ungroup the record.
 		String primaryIdentifierString = primaryIdentifier.toString();
 		if (recordsToNotGroup.contains(primaryIdentifierString.toLowerCase())) {
 			groupedWork.makeUnique(primaryIdentifierString);
+			groupedWorkPermanentId = groupedWork.getPermanentId();
+		}else{
+			groupedWorkPermanentId = checkForAlternateTitleAuthor(groupedWork, groupedWorkPermanentId);
 		}
-
-		String groupedWorkPermanentId = groupedWork.getPermanentId();
-
-		groupedWorkPermanentId = checkForAlternateTitleAuthor(groupedWork, groupedWorkPermanentId);
 
 		//Check to see if the record is already on an existing work.  If so, remove from the old work.
 		boolean addPrimaryIdentifierToWork = true;

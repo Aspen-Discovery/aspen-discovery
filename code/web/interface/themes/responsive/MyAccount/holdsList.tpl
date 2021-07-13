@@ -58,7 +58,15 @@
 <br>
 <div class="holdsWithSelected{$sectionKey}">
 	<form id="withSelectedHoldsFormBottom{$sectionKey}" action="{$fullPath}">
-		<div>
+		<div class="btn-group">
+			<a href="#" onclick="AspenDiscovery.Account.cancelHoldSelectedTitles()" class="btn btn-sm btn-default btn-warning">{translate text="Cancel Selected"}</a>
+			<a href="#" onclick="AspenDiscovery.Account.cancelHoldAll()" class="btn btn-sm btn-default btn-warning">{translate text="Cancel All"}</a>
+			<a href="#" onclick="AspenDiscovery.Account.freezeHoldSelected()" class="btn btn-sm btn-default">{translate text="Freeze Selected"}</a>
+			<a href="#" onclick="AspenDiscovery.Account.freezeHoldAll('{$userId}')" class="btn btn-sm btn-default">{translate text="Freeze All"}</a>
+			<a href="#" onclick="AspenDiscovery.Account.thawHoldSelected()" class="btn btn-sm btn-default">{translate text="Thaw Selected"}</a>
+			<a href="#" onclick="AspenDiscovery.Account.thawHoldAll('{$userId}')" class="btn btn-sm btn-default">{translate text="Thaw All"}</a>
+		</div>
+		<div class="btn-group">
 			<input type="hidden" name="withSelectedAction" value="">
 			<div id="holdsUpdateSelected{$sectionKey}Bottom" class="holdsUpdateSelected{$sectionKey}">
 				<button type="submit" class="btn btn-sm btn-default" id="exportToExcel" name="exportToExcel" onclick="return AspenDiscovery.Account.exportHolds('{$source}', $('#availableHoldSort_{$source} option:selected').val(), $('#unavailableHoldSort_{$source} option:selected').val());">{translate text="Export to Excel"}</button>

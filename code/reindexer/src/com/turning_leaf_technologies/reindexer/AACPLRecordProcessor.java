@@ -9,6 +9,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.regex.Pattern;
@@ -107,7 +108,7 @@ class AACPLRecordProcessor extends IlsRecordProcessor {
 	}
 
 	@Override
-	protected void loadLiteraryForms(GroupedWorkSolr groupedWork, Record record, HashSet<ItemInfo> printItems, String identifier) {
+	protected void loadLiteraryForms(GroupedWorkSolr groupedWork, Record record, ArrayList<ItemInfo> printItems, String identifier) {
 		//For Arlington we can load the literary forms based off of the location code:
 		// ??f?? = Fiction
 		// ??n?? = Non-Fiction

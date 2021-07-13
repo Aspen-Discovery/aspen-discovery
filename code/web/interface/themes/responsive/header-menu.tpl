@@ -1,15 +1,17 @@
 {strip}
 <div id="header-menu" class="dropdownMenu" style="display: none">
-	<div id="hamburger-menu-my-account" class="header-menu-option">
-		<a href="/MyAccount/Home">
-			<i class="fas fa-user"></i>{translate text='My Account'}
-		</a>
-	</div>
+	{if $showLoginButton}
+		<div id="hamburger-menu-my-account" class="header-menu-option">
+			<a href="/MyAccount/Home">
+				<i class="fas fa-user fa-fw"></i><span>{translate text='My Account'}</span>
+			</a>
+		</div>
+	{/if}
 
 	{if !empty($userPermissions)}
 		<div id="home-page-home-button" class="header-menu-option">
 			<a href="/Admin/Home">
-				<i class="fas fa-tools"></i>{translate text='Aspen Administration'}
+				<i class="fas fa-tools fa-fw"></i><span>{translate text='Aspen Administration'}</span>
 			</a>
 		</div>
 	{/if}
@@ -17,7 +19,7 @@
 	{if !empty($homeLink)}
 		<a href="{$homeLink}">
 			<div id="home-page-home-button" class="header-menu-option">
-				<i class="fas fa-landmark"></i>{translate text='Library Home Page'}
+				<i class="fas fa-landmark fa-fw"></i><span>{translate text='Library Home Page'}</span>
 			</div>
 		</a>
 	{/if}
@@ -25,7 +27,8 @@
 	{if $showLibraryHoursAndLocationsLink}
 		<a href="/AJAX/JSON?method=getHoursAndLocations" data-title="{translate text="Library Hours and Locations" inAttribute=true}" class="modalDialogTrigger">
 			<div id="home-page-hours-locations" class="header-menu-option">
-				<i class="fas fa-map-marker-alt"></i>
+				<i class="fas fa-map-marker-alt fa-fw"></i>
+				<span>
 				{if $numLocations == 1}
 					{if !isset($hasValidHours) || $hasValidHours}
 						{translate text="Library Hours &amp; Location"}
@@ -39,6 +42,7 @@
 						{translate text="Locations"}
 					{/if}
 				{/if}
+				</span>
 			</div>
 		</a>
 	{/if}
@@ -65,10 +69,10 @@
 								<div class="header-menu-option {if $categoryName && !preg_match('/none-\\d+/', $categoryName)}childMenuItem{/if}">
 									<a href="{$link->url}" {if $link->openInNewTab}target="_blank"{/if}>
 										{if !empty($link->iconName)}
-											<i class="fas fa-{$link->iconName} fa-lg"></i>
+											<i class="fas fa-{$link->iconName} fa-fw"></i>
 										{/if}
 										{if $link->published == 0}<em>{/if}
-										{$linkName|translate}
+											<span>{$linkName|translate}</span>
 										{if $link->published == 0}</em>{/if}
 									</a>
 								</div>
@@ -84,10 +88,10 @@
 							<a href="{$link->url}" {if $link->openInNewTab}target="_blank"{/if}>
 								<div class="header-menu-option {if $link->showInTopMenu || $link->alwaysShowIconInTopMenu}hidden-lg{/if}">
 									{if !empty($link->iconName)}
-										<i class="fas fa-{$link->iconName} fa-lg"></i>
+										<i class="fas fa-{$link->iconName} fa-fw"></i>
 									{/if}
 									{if $link->published == 0}<em>{/if}
-									{$linkName|translate}
+										<span>{$linkName|translate}</span>
 									{if $link->published == 0}</em>{/if}
 								</div>
 							</a>
@@ -100,17 +104,18 @@
 
 	{if count($validLanguages) > 1}
 		<div class="header-menu-section" id="aspenLanguagesMenuSection">
-			<i class="fas fa-globe"></i>{translate text="Language"}
+			<i class="fas fa-globe fa-fw"></i>{translate text="Language"}
 		</div>
+
 		{foreach from=$validLanguages key=languageCode item=language}
 			{if $userLang->code!=$languageCode}
 			<a onclick="return AspenDiscovery.setLanguage('{$languageCode}')">
 			{/if}
-				<div class="header-menu-option">
+				<div class="header-menu-option languageSelect{if $userLang->code==$languageCode}ed{/if}">
 					{if $userLang->code==$languageCode}
-						<i class="fas fa-check"></i>
+						<i class="fas fa-check fa-fw"></i>&nbsp;
 					{/if}
-					&nbsp;&nbsp;{$language->displayName}
+					{$language->displayName}
 				</div>
 			{if $userLang->code!=$languageCode}
 			</a>

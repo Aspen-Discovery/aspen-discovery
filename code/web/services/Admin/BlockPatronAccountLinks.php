@@ -96,6 +96,7 @@ class Admin_BlockPatronAccountLinks extends ObjectEditor
 // 		<span class="glyphicon glyphicon-warning-sign" aria-hidden="true"></span> Blocking a patron from linking accounts will not prevent a user from manually logging into other accounts.
 // 		If you suspect that someone has been accessing other accounts incorrectly, you should issue new cards or change PINs for the accounts they have accessed in addition to blocking them.
 //		</p>';
+		return '';
 	}
 
 	function getBreadcrumbs() : array

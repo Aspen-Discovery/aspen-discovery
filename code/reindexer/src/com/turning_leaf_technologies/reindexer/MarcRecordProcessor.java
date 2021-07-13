@@ -330,7 +330,7 @@ abstract class MarcRecordProcessor {
 
 	}
 
-	void updateGroupedWorkSolrDataBasedOnStandardMarcData(GroupedWorkSolr groupedWork, Record record, HashSet<ItemInfo> printItems, String identifier, String format) {
+	void updateGroupedWorkSolrDataBasedOnStandardMarcData(GroupedWorkSolr groupedWork, Record record, ArrayList<ItemInfo> printItems, String identifier, String format) {
 		loadTitles(groupedWork, record, format);
 		loadAuthors(groupedWork, record, identifier);
 		loadSubjects(groupedWork, record);
@@ -532,7 +532,11 @@ abstract class MarcRecordProcessor {
 		}
 	}
 
-	protected void loadTargetAudiences(GroupedWorkSolr groupedWork, Record record, HashSet<ItemInfo> printItems, String identifier) {
+	protected void loadTargetAudiences(GroupedWorkSolr groupedWork, Record record, ArrayList<ItemInfo> printItems, String identifier) {
+		loadTargetAudiences(groupedWork, record, printItems, identifier, "Unknown");
+	}
+
+	protected void loadTargetAudiences(GroupedWorkSolr groupedWork, Record record, ArrayList<ItemInfo> printItems, String identifier, String unknownAudienceLabel) {
 		Set<String> targetAudiences = new LinkedHashSet<>();
 		try {
 			String leader = record.getLeader().toString();
@@ -566,26 +570,36 @@ abstract class MarcRecordProcessor {
 						targetAudiences.add(Character.toString(targetAudienceChar));
 					}
 				} else if (targetAudiences.size() == 0) {
-					targetAudiences.add("Unknown");
+					targetAudiences.add(unknownAudienceLabel);
 				}
 			} else {
-				targetAudiences.add("Unknown");
+				targetAudiences.add(unknownAudienceLabel);
 			}
 		} catch (Exception e) {
 			// leader not long enough to get target audience
 			logger.debug("ERROR in getTargetAudience ", e);
-			targetAudiences.add("Unknown");
+			targetAudiences.add(unknownAudienceLabel);
 		}
 
 		if (targetAudiences.size() == 0) {
-			targetAudiences.add("Unknown");
+			targetAudiences.add(unknownAudienceLabel);
 		}
 
-		groupedWork.addTargetAudiences(indexer.translateSystemCollection("target_audience", targetAudiences, identifier));
-		groupedWork.addTargetAudiencesFull(indexer.translateSystemCollection("target_audience_full", targetAudiences, identifier));
+		LinkedHashSet<String> translatedAudiences = indexer.translateSystemCollection("target_audience", targetAudiences, identifier);
+		if (!unknownAudienceLabel.equals("Unknown") && translatedAudiences.contains("Unknown")){
+			translatedAudiences.remove("Unknown");
+			translatedAudiences.add(unknownAudienceLabel);
+		}
+		groupedWork.addTargetAudiences(translatedAudiences);
+		LinkedHashSet<String> translatedAudiencesFull = indexer.translateSystemCollection("target_audience_full", targetAudiences, identifier);
+		if (!unknownAudienceLabel.equals("Unknown") && translatedAudiencesFull.contains("Unknown")){
+			translatedAudiencesFull.remove("Unknown");
+			translatedAudiencesFull.add(unknownAudienceLabel);
+		}
+		groupedWork.addTargetAudiencesFull(translatedAudiencesFull);
 	}
 
-	protected void loadLiteraryForms(GroupedWorkSolr groupedWork, Record record, HashSet<ItemInfo> printItems, String identifier) {
+	protected void loadLiteraryForms(GroupedWorkSolr groupedWork, Record record, ArrayList<ItemInfo> printItems, String identifier) {
 		//First get the literary Forms from the 008.  These need translation
 		LinkedHashSet<String> literaryForms = new LinkedHashSet<>();
 		try {
@@ -1066,7 +1080,7 @@ abstract class MarcRecordProcessor {
 			if (printFormats.size() > 1){
 				logger.info("Found more than 1 format for " + recordInfo.getFullIdentifier() + " looking at just 007");
 			}
-			if (printFormats.size() == 0) {
+			if (printFormats.size() == 0 || (printFormats.size() == 1 && printFormats.contains("Book"))) {
 				getFormatFromLeader(printFormats, leader, fixedField);
 				if (printFormats.size() > 1){
 					logger.info("Found more than 1 format for " + recordInfo.getFullIdentifier() + " looking at just the leader");
@@ -1113,6 +1127,11 @@ abstract class MarcRecordProcessor {
 		if (printFormats.contains("Archival Materials")){
 			printFormats.clear();
 			printFormats.add("Archival Materials");
+			return;
+		}
+		if (printFormats.contains("LibraryOfThings")){
+			printFormats.clear();
+			printFormats.add("LibraryOfThings");
 			return;
 		}
 		if (printFormats.contains("SoundCassette") && printFormats.contains("MusicRecording")){
@@ -1192,6 +1211,13 @@ abstract class MarcRecordProcessor {
 			printFormats.add("SoundDisc");
 		}
 
+		if (printFormats.contains("Book") && printFormats.contains("Serial")){
+			printFormats.remove("Book");
+		}
+		if (printFormats.contains("BookClubKit") && printFormats.contains("LargePrint")){
+			printFormats.clear();
+			printFormats.add("BookClubKitLarge");
+		}
 		if (printFormats.contains("Book") && printFormats.contains("LargePrint")){
 			printFormats.remove("Book");
 		}
@@ -1248,6 +1274,10 @@ abstract class MarcRecordProcessor {
 			printFormats.remove("Blu-ray");
 			printFormats.remove("Blu-ray/DVD");
 			printFormats.remove("DVD");
+			printFormats.remove("CD+Book");
+			printFormats.remove("Book+CD");
+			printFormats.remove("Book+DVD");
+			printFormats.remove("SoundDisc");
 		}
 	}
 
@@ -1349,7 +1379,7 @@ abstract class MarcRecordProcessor {
 		}
 	}
 
-	Pattern audioDiscPattern = Pattern.compile(".*\\b(sound|audio|compact) discs?\\b.*");
+	Pattern audioDiscPattern = Pattern.compile(".*\\b(cd|cds|(sound|audio|compact) discs?)\\b.*");
 	private void getFormatFromPhysicalDescription(Record record, Set<String> result) {
 		List<DataField> physicalDescriptions = MarcUtil.getDataFields(record, "300");
 		for (DataField field : physicalDescriptions) {
@@ -1378,9 +1408,22 @@ abstract class MarcRecordProcessor {
 					} else if (physicalDescriptionData.contains("mp3")) {
 						result.add("MP3Disc");
 					} else if (audioDiscPattern.matcher(physicalDescriptionData).matches()) {
-						result.add("SoundDisc");
-					} else if (subfield.getCode() == 'a' && physicalDescriptionData.matches("^\\d+\\s+(p\\.|pages)[\\s\\W]*$")){
-						result.add("Book");
+						//Check to see if there is a subfield e.  If so, this could be a combined format
+						Subfield subfieldE = field.getSubfield('e');
+						if (subfieldE != null && subfieldE.getData().toLowerCase().contains("book")){
+							result.add("CD+Book");
+						}else{
+							result.add("SoundDisc");
+						}
+					} else if (subfield.getCode() == 'a' && physicalDescriptionData.matches("^.*?\\b\\d+\\s+(p\\.|pages)[\\s\\W]*$")){
+						Subfield subfieldE = field.getSubfield('e');
+						if (subfieldE != null && subfieldE.getData().toLowerCase().contains("dvd")){
+							result.add("Book+DVD");
+						}else if (subfieldE != null && subfieldE.getData().toLowerCase().contains("cd")){
+							result.add("Book+CD");
+						}else{
+							result.add("Book");
+						}
 					}
 					//Since this is fairly generic, only use it if we have no other formats yet
 					if (result.size() == 0 && subfield.getCode() == 'f' && physicalDescriptionData.matches("^.*?\\d+\\s+(p\\.|pages).*$")) {
@@ -1555,6 +1598,8 @@ abstract class MarcRecordProcessor {
 						String subfieldData = subfield.getData().toLowerCase();
 						if (subfieldData.contains("large type")) {
 							result.add("LargePrint");
+						}else if (subfieldData.contains("library of things")){
+							result.add("LibraryOfThings");
 						}else if (subfieldData.contains("playaway")) {
 							result.add("Playaway");
 						}else if (subfieldData.contains("graphic novel")) {

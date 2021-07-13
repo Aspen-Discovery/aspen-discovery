@@ -8,6 +8,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.regex.Pattern;
 
 public class OverDriveRecordGrouper extends RecordGroupingProcessor {
 	private PreparedStatement getOverDriveProductInfoStmt;
@@ -22,6 +23,7 @@ public class OverDriveRecordGrouper extends RecordGroupingProcessor {
 		}
 	}
 
+	Pattern wordsInParensPattern = Pattern.compile("\\(.*?\\)", Pattern.CASE_INSENSITIVE);
 	public String processOverDriveRecord(String overdriveId) {
 		try {
 			getOverDriveProductInfoStmt.setString(1, overdriveId);
@@ -29,6 +31,7 @@ public class OverDriveRecordGrouper extends RecordGroupingProcessor {
 			if (overDriveRecordRS.next()) {
 				String mediaType = overDriveRecordRS.getString("mediaType");
 				String title = overDriveRecordRS.getString("title");
+				title = wordsInParensPattern.matcher(title).replaceAll("");
 				String subtitle = overDriveRecordRS.getString("subtitle");
 				String series = overDriveRecordRS.getString("series");
 				String author = overDriveRecordRS.getString("primaryCreatorName");

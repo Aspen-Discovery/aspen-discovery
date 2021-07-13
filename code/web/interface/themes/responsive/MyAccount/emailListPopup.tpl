@@ -12,7 +12,7 @@
 		<div class="form-group">
 			<label for="from" class="control-label col-xs-2">{translate text='From'}</label>
 			<div class="col-xs-10">
-				<input type="text" name="from" id="from" size="40" class="required email form-control">
+				<input type="text" name="from" id="from" size="40" maxlength="100" class="form-control">
 			</div>
 		</div>
 		<div class="form-group">

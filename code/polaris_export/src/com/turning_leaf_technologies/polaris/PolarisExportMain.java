@@ -752,9 +752,8 @@ public class PolarisExportMain {
 			numChanges += response.numChanges;
 			//Polaris has an issue where if there are more than 100 suppressed titles, it will return 0 as the lastId.  We need to account for that
 			long lastIdLong = Long.parseLong(response.lastId);
-			if (lastIdLong == 0){
-				highestIdProcessed = lastIdForThisBatch + 100;
-			}else if (lastIdLong > highestIdProcessed){
+			//MDN this seems to be normal if nothing has changed since the last extract.
+			if (lastIdLong == 0 || lastIdLong > highestIdProcessed){
 				highestIdProcessed = lastIdLong;
 			}
 			lastId = Long.toString(highestIdProcessed);
@@ -1009,11 +1008,12 @@ public class PolarisExportMain {
 				JSONObject itemInfo = itemInfoRows.getJSONObject(0);
 				bibForItem = Long.toString(itemInfo.getLong("BibliographicRecordID"));
 			}else{
-				logEntry.incErrors("Failed to get bib id for item id" + itemId + ", could not find the item.");
+				//This does not look like an error, just return a null bib.
+				logEntry.addNote("Failed to get bib id for item id " + itemId + ", could not find the item.");
 				logEntry.addNote(getItemResponse.getMessage());
 			}
 		}else{
-			logEntry.incErrors("Failed to get bib id for item id" + itemId + ", response was not successful.");
+			logEntry.incErrors("Failed to get bib id for item id " + itemId + ", response was not successful.");
 		}
 		return bibForItem;
 	}

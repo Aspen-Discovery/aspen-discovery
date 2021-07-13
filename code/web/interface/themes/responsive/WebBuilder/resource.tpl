@@ -9,7 +9,7 @@
         <div class="col-sm-8">
             <h2>{$title}</h2>
             {$description}
-            <a href="{$url}" class="btn btn-primary" target="_blank">{translate text="Open Resource"}</a>
+            <a href="{$url}" class="btn btn-primary" target="_blank"><i class="fas fa-external-link-alt"></i> {translate text="Open Resource"}</a>
         </div>
     </div>
 

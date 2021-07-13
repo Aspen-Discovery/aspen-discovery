@@ -1,9 +1,14 @@
 {strip}
 	{* Overall hold *}
 	<div class="result row ilsHold_{$record->sourceId|escapeCSS}_{$record->cancelId|escapeCSS}">
+		{if $section != 'available'}
+		<div class="selectTitle col-xs-12 col-sm-1">
+			<input type="checkbox" name="selected[{$record->userId}|{$record->sourceId}|{$record->cancelId}]" class="titleSelect" id="selected{$record->cancelId}">
+		</div>
+		{/if}
 		{* Cover column *}
 		{if $showCovers}
-			<div class="col-xs-4 col-sm-3">
+			<div class="{if $section == 'available'}col-xs-4 col-sm-3{else}col-xs-3 col-sm-2{/if}">
 				<div class="{*col-xs-10 *}text-center">
 					{if !empty($record->getCoverUrl())}
 						{if !empty($record->getLinkUrl())}
@@ -20,7 +25,7 @@
 		{/if}
 
 		{* Details Column*}
-		<div class="{if $showCovers}col-xs-8 col-sm-9{else}col-xs-12{/if}">
+		<div class="{if $showCovers}col-xs-8 col-sm-9{else}{if $section != 'available'}col-xs-11{else}col-xs-12{/if}{/if}">
 			{* Title *}
 			<div class="row">
 				<div class="col-xs-12">

@@ -39,6 +39,7 @@ public class ItemInfo{
 	private String dueDate;
 	private String collection;
 	private Date lastCheckinDate;
+	private String volumeField;
 	private RecordInfo recordInfo;
 
 	private final HashMap<String, ScopingInfo> scopingInfo = new HashMap<>();
@@ -98,7 +99,11 @@ public class ItemInfo{
 	}
 
 	String getItemIdentifier() {
-		return itemIdentifier;
+		if (itemIdentifier == null || itemIdentifier.length() == 0) {
+			return recordInfo.getRecordIdentifier() + "-" + recordInfo.getRelatedItems().indexOf(this);
+		}else {
+			return itemIdentifier;
+		}
 	}
 
 	void setItemIdentifier(String itemIdentifier) {
@@ -183,7 +188,7 @@ public class ItemInfo{
 			}
 			//Cache the part that doesn't change depending on the scope
 			baseDetails = recordInfo.getFullIdentifier() + "|" +
-					Util.getCleanDetailValue(itemIdentifier) + "|" +
+					Util.getCleanDetailValue(getItemIdentifier()) + "|" +
 					Util.getCleanDetailValue(detailedLocation) + "|" +
 					Util.getCleanDetailValue(callNumber) + "|" +
 					Util.getCleanDetailValue(format) + "|" +
@@ -412,5 +417,17 @@ public class ItemInfo{
 			ScopingInfo clonedScope = addScope(curScopingInfo.getScope());
 			clonedScope.copyFrom(curScopingInfo);
 		}
+	}
+
+	public String getDetailedStatus() {
+		return detailedStatus;
+	}
+
+	public void setVolumeField(String volumeField) {
+		this.volumeField = volumeField;
+	}
+
+	public String getVolumeField() {
+		return this.volumeField;
 	}
 }

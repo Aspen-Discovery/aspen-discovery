@@ -671,7 +671,7 @@ class GroupedWork_AJAX extends JSON_Action
 		global $interface;
 
 		$to = strip_tags($_REQUEST['to']);
-		$from = strip_tags($_REQUEST['from']);
+		$from = isset($_REQUEST['from']) ? strip_tags($_REQUEST['from']) : '';
 		$message = $_REQUEST['message'];
 
 		$id = $_REQUEST['id'];
@@ -711,7 +711,7 @@ class GroupedWork_AJAX extends JSON_Action
 
 			require_once ROOT_DIR . '/sys/Email/Mailer.php';
 			$mail = new Mailer();
-			$emailResult = $mail->send($to, $subject, $body, $from);
+			$emailResult = $mail->send($to, $subject, $body);
 
 			if ($emailResult === true){
 				$result = array(

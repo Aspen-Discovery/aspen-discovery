@@ -74,6 +74,8 @@ class Hold extends CircEntry
 		$hold['user'] = $this->getUserName();
 		$hold['create'] = (int)$hold['createDate'];
 		$hold['expire'] = $hold['expirationDate'];
+		$hold['frozen'] = (boolean)$hold['frozen'];
+		$hold['cancelable'] = (boolean)$hold['cancelable'];
 		$hold['automaticCancellation'] = $hold['automaticCancellationDate'];
 		if ($this->type == 'ils' || $this->type == 'overdrive') {
 			$hold['format'] = $this->getFormats();
@@ -109,7 +111,7 @@ class Hold extends CircEntry
 				return 'Unknown';
 			}
 		}else{
-			return $this->format;
+			return [$this->format];
 		}
 	}
 

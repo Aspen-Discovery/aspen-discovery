@@ -149,6 +149,8 @@ AspenDiscovery.Record = (function(){
 							AspenDiscovery.Account.loadMenuData();
 						}
 					}
+				}else if (data.confirmationNeeded){
+					AspenDiscovery.showMessageWithButtons('Place Hold?', data.message, data.modalButtons);
 				}else{
 					AspenDiscovery.showMessage('Hold Failed', data.message, false, false);
 				}
@@ -201,6 +203,26 @@ AspenDiscovery.Record = (function(){
 					AspenDiscovery.showMessage('Hold Failed', data.message, false, autoLogOut);
 				}
 			}).fail(AspenDiscovery.ajaxFail);
+		},
+
+		confirmHold: function (module, bibId, confirmationId) {
+			var params = {
+				'method': 'confirmHold',
+				confirmationId: confirmationId
+			};
+			$.getJSON(Globals.path + "/" + module +  "/" + bibId + "/AJAX", params, function(data){
+				if (data.success){
+					if (data.needsItemLevelHold){
+						$('.modal-body').html(data.message);
+					}else{
+						AspenDiscovery.showMessage('Hold Placed Successfully', data.message, false);
+						AspenDiscovery.Account.loadMenuData();
+					}
+				}else{
+					AspenDiscovery.showMessage('Hold Failed', data.message, false);
+				}
+			}).fail(AspenDiscovery.ajaxFail);
+			return false;
 		},
 
 		moreContributors: function(){
@@ -326,6 +348,7 @@ AspenDiscovery.Record = (function(){
 					$("#staffViewPlaceHolder").replaceWith(data.staffView);
 				}
 			});
-		}
+		},
+
 	};
 }(AspenDiscovery.Record || {}));

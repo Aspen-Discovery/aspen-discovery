@@ -119,16 +119,16 @@
 				<div class="col-xs-9 col-sm-8 col-md-4 col-lg-3">
 					<div class="btn-group btn-group-vertical btn-block">
 						{if $record->overdriveRead}
-							<a href="#" onclick="return AspenDiscovery.OverDrive.followOverDriveDownloadLink('{$record->userId}', '{$record->recordId}', 'ebook-overdrive')" class="btn btn-sm btn-action">{translate text="Read&nbsp;Online"}</a>
+							<a href="#" onclick="return AspenDiscovery.OverDrive.followOverDriveDownloadLink('{$record->userId}', '{$record->recordId}', 'ebook-overdrive')" class="btn btn-sm btn-action"><i class="fas fa-external-link-alt"></i> {translate text="Read&nbsp;Online"}</a>
 						{/if}
 						{if $record->overdriveListen}
-							<a href="#" onclick="return AspenDiscovery.OverDrive.followOverDriveDownloadLink('{$record->userId}', '{$record->recordId}', 'audiobook-overdrive')" class="btn btn-sm btn-action">{translate text="Listen&nbsp;Online"}</a>
+							<a href="#" onclick="return AspenDiscovery.OverDrive.followOverDriveDownloadLink('{$record->userId}', '{$record->recordId}', 'audiobook-overdrive')" class="btn btn-sm btn-action"><i class="fas fa-external-link-alt"></i> {translate text="Listen&nbsp;Online"}</a>
 						{/if}
 						{if !empty($record->overdriveVideo)}
-							<a href="#" onclick="return AspenDiscovery.OverDrive.followOverDriveDownloadLink('{$record->userId}', '{$record->recordId}', 'video-streaming')" class="btn btn-sm btn-action">{translate text="Watch&nbsp;Online"}</a>
+							<a href="#" onclick="return AspenDiscovery.OverDrive.followOverDriveDownloadLink('{$record->userId}', '{$record->recordId}', 'video-streaming')" class="btn btn-sm btn-action"><i class="fas fa-external-link-alt"></i> {translate text="Watch&nbsp;Online"}</a>
 						{/if}
 						{if $record->overdriveMagazine}
-							<a href="#" onclick="return AspenDiscovery.OverDrive.followOverDriveDownloadLink('{$record->userId}', '{$record->recordId}', 'magazine-overdrive')" class="btn btn-sm btn-action">{translate text="Read&nbsp;Online"}</a>
+							<a href="#" onclick="return AspenDiscovery.OverDrive.followOverDriveDownloadLink('{$record->userId}', '{$record->recordId}', 'magazine-overdrive')" class="btn btn-sm btn-action"><i class="fas fa-external-link-alt"></i> {translate text="Read&nbsp;Online"}</a>
 						{/if}
 						{if $record->formatSelected && empty($record->overdriveVideo)}
 							<a href="#" onclick="return AspenDiscovery.OverDrive.followOverDriveDownloadLink('{$record->userId}', '{$record->recordId}', '{$record->selectedFormatValue}')" class="btn btn-sm btn-action">{translate text="Download&nbsp;Again"}</a>

@@ -82,12 +82,13 @@ class IndexingProfile extends DataObject
 	public /** @noinspection PhpUnused */ $doAutomaticEcontentSuppression;
 	public /** @noinspection PhpUnused */ $determineAudienceBy;
 	public /** @noinspection PhpUnused */ $audienceSubfield;
-	public $regroupAllRecords;
+	public /** @noinspection PhpUnused */ $treatUnknownAudienceAs;
+	public /** @noinspection PhpUnused */ $regroupAllRecords;
 	public $runFullUpdate;
 	public $lastUpdateOfChangedRecords;
 	public $lastUpdateOfAllRecords;
-	public $lastChangeProcessed;
-	public $fullMarcExportRecordIdThreshold;
+	public /** @noinspection PhpUnused */ $lastChangeProcessed;
+	public /** @noinspection PhpUnused */ $fullMarcExportRecordIdThreshold;
 	public /** @noinspection PhpUnused */ $lastUpdateFromMarcExport;
 	public /** @noinspection PhpUnused */$lastVolumeExportTimestamp;
 	public /** @noinspection PhpUnused */$lastUpdateOfAuthorities;
@@ -138,6 +139,7 @@ class IndexingProfile extends DataObject
 
 			'determineAudienceBy' => ['property' => 'determineAudienceBy', 'type' => 'enum', 'values' => ['0' => 'By Bib Record Data', '1' => 'Item Collection using audience map', '2' => 'Item Shelf Location using audience map', '3' => 'Specified Item subfield using audience map'], 'label' => 'Determine Audience By', 'description' => 'How to determine the audience for each record', 'default' => '0', 'onchange'=>'return AspenDiscovery.Admin.updateIndexingProfileFields();'],
 			'audienceSubfield' => ['property' => 'audienceSubfield', 'type' => 'text', 'label' => 'Audience Subfield', 'maxLength' => 1, 'description' => 'Subfield to use when determining the audience', 'default' => ''],
+			'treatUnknownAudienceAs' => ['property' => 'treatUnknownAudienceAs', 'type'=>'enum', 'label' => 'Treat Unknown Audience As', 'values' => ['General' => 'General', 'Adult' => 'Adult', 'Unknown' => 'Unknown'], 'description' => 'Records with an Unknown Audience will use this audience instead.', 'default' => 'Unknown', 'forcesReindex' => true],
 
 			'itemSection' => ['property' => 'itemSection', 'type' => 'section', 'label' => 'Item Information', 'hideInLists' => true, 'properties' => [
 				'suppressItemlessBibs' => array('property' => 'suppressItemlessBibs', 'type' => 'checkbox', 'label' => 'Suppress Itemless Bibs', 'description' => 'Whether or not Itemless Bibs can be suppressed', 'forcesReindex' => true),

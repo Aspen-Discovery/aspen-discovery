@@ -45,8 +45,8 @@ class Polaris extends AbstractIlsDriver
 			//TODO: Account for electronic items
 			$summary->numCheckedOut = $basicDataResponse->ItemsOutCount;
 			$summary->numOverdue = $basicDataResponse->ItemsOverdueCount;
-			$summary->numAvailableHolds = $basicDataResponse->HoldRequestsCurrentCount + $basicDataResponse->HoldRequestsShippedCount;
-			$summary->numUnavailableHolds = $basicDataResponse->HoldRequestsHeldCount;
+			$summary->numAvailableHolds =  $basicDataResponse->HoldRequestsHeldCount;
+			$summary->numUnavailableHolds = $basicDataResponse->HoldRequestsCurrentCount + $basicDataResponse->HoldRequestsShippedCount;
 			$summary->totalFines = $basicDataResponse->ChargeBalance;
 
 			$polarisCirculateBlocksUrl = "/PAPIService/REST/public/v1/1033/100/1/patron/{$patron->getBarcode()}/circulationblocks";
@@ -81,6 +81,58 @@ class Polaris extends AbstractIlsDriver
 	public function hasNativeReadingHistory()
 	{
 		return true;
+	}
+
+	public function getReadingHistory($patron, $page = 1, $recordsPerPage = -1, $sortOption = "checkedOut")
+	{
+		//Get preferences for the barcode
+		$readingHistoryEnabled = false;
+		$polarisUrl = "/PAPIService/REST/public/v1/1033/100/1/patron/{$patron->getBarcode()}/preferences";
+		$response = $this->getWebServiceResponse($polarisUrl, 'GET', $this->getAccessToken($patron->getBarcode(), $patron->getPasswordOrPin()));
+		if ($response && $this->lastResponseCode == 200){
+			$jsonResponse = json_decode($response);
+			$readingHistoryEnabled = $jsonResponse->PatronPreferences->ReadingListEnabled;
+		}
+
+		if ($readingHistoryEnabled) {
+			$readingHistoryTitles = array();
+			$polarisUrl = "/PAPIService/REST/public/v1/1033/100/1/patron/{$patron->getBarcode()}/readinghistory?rowsperpage=5&page=0";
+			$response = $this->getWebServiceResponse($polarisUrl, 'GET', $this->getAccessToken($patron->getBarcode(), $patron->getPasswordOrPin()));
+			if ($response && $this->lastResponseCode == 200) {
+				$jsonResponse = json_decode($response);
+				$readingHistoryList = $jsonResponse->PatronReadingHistoryGetRows;
+				foreach ($readingHistoryList as $readingHistoryItem) {
+					$checkOutDate = $this->parsePolarisDate($readingHistoryItem->CheckOutDate);
+					$curTitle = array();
+					$curTitle['id'] = $readingHistoryItem->BibID;
+					$curTitle['shortId'] = $readingHistoryItem->BibID;
+					$curTitle['recordId'] = $readingHistoryItem->BibID;
+					$curTitle['title'] = $readingHistoryItem->Title;
+					$curTitle['author'] = $readingHistoryItem->Author;
+					$curTitle['format'] = $readingHistoryItem->FormatDescription;
+					$curTitle['checkout'] = $checkOutDate;
+					$curTitle['checkin'] = null; //Polaris doesn't indicate when things are checked in
+					$curTitle['ratingData'] = null;
+					$curTitle['permanentId'] = null;
+					$curTitle['linkUrl'] = null;
+					$curTitle['coverUrl'] = null;
+					require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+					$recordDriver = new MarcRecordDriver($this->accountProfile->recordSource . ':' . $curTitle['recordId']);
+					if ($recordDriver->isValid()) {
+						$curTitle['ratingData'] = $recordDriver->getRatingData();
+						$curTitle['permanentId'] = $recordDriver->getPermanentId();
+						$curTitle['linkUrl'] = $recordDriver->getGroupedWorkDriver()->getLinkUrl();
+						$curTitle['coverUrl'] = $recordDriver->getBookcoverUrl('medium', true);
+						$curTitle['format'] = $recordDriver->getFormats();
+						$curTitle['author'] = $recordDriver->getPrimaryAuthor();
+					}
+					$recordDriver = null;
+					$readingHistoryTitles[] = $curTitle;
+				}
+			}
+		}
+
+		return array('historyActive' => $readingHistoryEnabled, 'titles' => $readingHistoryTitles, 'numTitles' => count($readingHistoryTitles));
 	}
 
 	public function getCheckouts(User $patron)
@@ -419,10 +471,19 @@ class Polaris extends AbstractIlsDriver
 			$body->BibID = (int)$recordId;
 			if (!empty($itemId)) {
 				$body->ItemBarcode = $itemId;
+
+				//Check to see if we also have a volume
+				$relatedRecord = $record->getRelatedRecord();
+				foreach ($relatedRecord->getItems() as $item){
+					if ($item->itemId == $itemId){
+						if (!empty($item->volume)) {
+							$body->VolumeNumber = $item->volume;
+						}
+						break;
+					}
+				}
 			}
 			$body->PickupOrgID = (int)$pickupBranch;
-			//TODO: Volume holds
-			//$body->VolumeNumber = '';
 			//Need to set the Workstation
 			$body->WorkstationID = $this->getWorkstationID($patron);
 			//Get the ID of the staff user
@@ -430,37 +491,96 @@ class Polaris extends AbstractIlsDriver
 			$body->UserID = (int)$staffUserInfo['polarisId'];
 			$body->RequestingOrgID = (int)$patron->getHomeLocationCode();
 			$response = $this->getWebServiceResponse($polarisUrl, 'POST', '', json_encode($body));
-			$hold_result = array();
-			if ($response && $this->lastResponseCode == 200) {
-				$jsonResult = json_decode($response);
-				if ($jsonResult->PAPIErrorCode != 0){
-					$hold_result['success'] = false;
-					$hold_result['message'] = 'Your hold could not be placed. ';
-					if (IPAddress::showDebuggingInformation()){
-						$hold_result['message'] .= " ({$jsonResult->PAPIErrorCode})";
-					}
-				}else {
-					$hold_result['success'] = true;
-					$hold_result['message'] = translate(['text' => "ils_hold_success", 'defaultText' => "Your hold was placed successfully."]);
-					if (isset($jsonResult->QueuePosition)) {
-						$hold_result['message'] .= translate(['text'=>"ils_hold_success_position", 'defaultText'=>"&nbsp;You are number <b>%1%</b> in the queue.", '1' => $jsonResult->QueuePosition]);
-					}
-					$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
-					$patron->forceReloadOfHolds();
-				}
-			} else {
-				$hold_result['success'] = false;
-				$hold_result['message'] = 'Your hold could not be placed. ';
-				if (IPAddress::showDebuggingInformation()){
-					$hold_result['message'] .= " (HTTP Code: {$this->lastResponseCode})";
-				}
-			}
+			$hold_result = $this->processHoldRequestResponse($response, $patron);
 
 			$hold_result['title'] = $title;
 			$hold_result['bid']   = $shortId;
 
 			return $hold_result;
 		}
+	}
+
+	public function placeVolumeHold($patron, $recordId, $volumeId, $pickupBranch)
+	{
+		if (strpos($recordId, ':') !== false){
+			list(,$shortId) = explode(':', $recordId);
+		}else{
+			$shortId = $recordId;
+		}
+
+		require_once ROOT_DIR . '/RecordDrivers/RecordDriverFactory.php';
+		$record = RecordDriverFactory::initRecordDriverById($this->accountProfile->recordSource . ':' . $shortId);
+		if (!$record) {
+			$title = null;
+		} else {
+			$title = $record->getTitle();
+		}
+
+		//Get
+
+		$polarisUrl = "/PAPIService/REST/public/v1/1033/100/1/holdrequest";
+		$body = new stdClass();
+		$body->PatronID = (int)$patron->username;
+		$body->BibID = (int)$recordId;
+		$body->PickupOrgID = (int)$pickupBranch;
+		$body->VolumeNumber = $volumeId;
+		//Need to set the Workstation
+		$body->WorkstationID = $this->getWorkstationID($patron);
+		//Get the ID of the staff user
+		$staffUserInfo = $this->getStaffUserInfo();
+		$body->UserID = (int)$staffUserInfo['polarisId'];
+		$body->RequestingOrgID = (int)$patron->getHomeLocationCode();
+		$response = $this->getWebServiceResponse($polarisUrl, 'POST', '', json_encode($body));
+		$hold_result = $this->processHoldRequestResponse($response, $patron);
+
+		$hold_result['title'] = $title;
+		$hold_result['bid']   = $shortId;
+
+		return $hold_result;
+	}
+
+	public function confirmHold(User $patron, $recordId, $confirmationId)
+	{
+		if (strpos($recordId, ':') !== false){
+			list(,$shortId) = explode(':', $recordId);
+		}else{
+			$shortId = $recordId;
+		}
+
+		require_once ROOT_DIR . '/RecordDrivers/RecordDriverFactory.php';
+		$record = RecordDriverFactory::initRecordDriverById($this->accountProfile->recordSource . ':' . $shortId);
+		if (!$record) {
+			$title = null;
+		} else {
+			$title = $record->getTitle();
+		}
+		$result = [
+			'success' => false,
+			'message' => 'Unknown error confirming the hold'
+		];
+		require_once ROOT_DIR . '/sys/ILS/HoldRequestConfirmation.php';
+		$holdRequestConfirmation = new HoldRequestConfirmation();
+		$holdRequestConfirmation->id = $confirmationId;
+		if ($holdRequestConfirmation->find(true)){
+			$polarisUrl = "/PAPIService/REST/public/v1/1033/100/1/holdrequest/" . $holdRequestConfirmation->requestId;
+			$confirmationInfo = json_decode($holdRequestConfirmation->additionalParams);
+			$body = new stdClass();
+			$body->TxnGroupQualifier = $confirmationInfo->groupQualifier;
+			$body->TxnQualifier = $confirmationInfo->qualifier;
+			$body->RequestingOrgID = (int)$patron->getHomeLocationCode();
+			$body->Answer = 1;
+			$body->State = $confirmationInfo->state;
+			$response = $this->getWebServiceResponse($polarisUrl, 'PUT', '', json_encode($body));
+
+			$result = $this->processHoldRequestResponse($response, $patron);
+
+			$result['title'] = $title;
+			$result['bid']   = $shortId;
+
+		}else{
+			$result['message'] = 'Could not find information about the hold to be confirmed, it may have been confirmed already';
+		}
+		return $result;
 	}
 
 	function cancelHold($patron, $recordId, $cancelId = null)
@@ -552,6 +672,7 @@ class Polaris extends AbstractIlsDriver
 				$user->lastname = isset($lastName) ? $lastName : '';
 				$forceDisplayNameUpdate = true;
 			}
+			$user->_fullname = $user->firstname . " " . $user->lastname;
 			if ($forceDisplayNameUpdate) {
 				$user->displayName = '';
 			}
@@ -651,6 +772,15 @@ class Polaris extends AbstractIlsDriver
 			if ($userExistsInDB) {
 				$user->update();
 			} else {
+				//New user check to see if they have reading history
+				//Get preferences for the barcode
+				$polarisUrl = "/PAPIService/REST/public/v1/1033/100/1/patron/{$user->getBarcode()}/preferences";
+				$response = $this->getWebServiceResponse($polarisUrl, 'GET', $this->getAccessToken($user->getBarcode(), $user->getPasswordOrPin()));
+				if ($response && $this->lastResponseCode == 200){
+					$jsonResponse = json_decode($response);
+					$user->trackReadingHistory = $jsonResponse->PatronPreferences->ReadingListEnabled;
+				}
+
 				$user->created = date('Y-m-d');
 				$user->insert();
 			}
@@ -874,6 +1004,11 @@ class Polaris extends AbstractIlsDriver
 		return $fines;
 	}
 
+	function showOutstandingFines()
+	{
+		return true;
+	}
+
 	public function getWebServiceResponse($query, $method = 'GET', $patronPassword = '', $body = false){
 		// auth has to be in GMT, otherwise use config-level TZ
 		$site_config_TZ = date_default_timezone_get();
@@ -958,5 +1093,66 @@ class Polaris extends AbstractIlsDriver
 			return (int)$homeLibrary->workstationId;
 		}
 
+	}
+
+	/**
+	 * @param $response
+	 * @param User $patron
+	 * @return array
+	 */
+	private function processHoldRequestResponse($response, User $patron): array
+	{
+		$hold_result = array();
+		if ($response && $this->lastResponseCode == 200) {
+			$jsonResult = json_decode($response);
+			if ($jsonResult->PAPIErrorCode != 0) {
+				$hold_result['success'] = false;
+				$hold_result['message'] = 'Your hold could not be placed. ';
+				if (IPAddress::showDebuggingInformation()) {
+					$hold_result['message'] .= " ({$jsonResult->PAPIErrorCode})";
+				}
+			} else {
+				if ($jsonResult->StatusType == 1) {
+					$hold_result['success'] = false;
+					$hold_result['message'] = translate('Your hold could not be placed. ' . $jsonResult->Message);
+				} else if ($jsonResult->StatusType == 2) {
+					$hold_result['success'] = true;
+					$hold_result['message'] = translate(['text' => "ils_hold_success", 'defaultText' => "Your hold was placed successfully."]);
+					if (isset($jsonResult->QueuePosition)) {
+						$hold_result['message'] .= translate(['text' => "ils_hold_success_position", 'defaultText' => "&nbsp;You are number <b>%1%</b> in the queue.", '1' => $jsonResult->QueuePosition]);
+					}
+					$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
+					$patron->forceReloadOfHolds();
+				} else if ($jsonResult->StatusType == 3) {
+					$hold_result['success'] = false;
+					$hold_result['confirmationNeeded'] = true;
+					require_once ROOT_DIR . '/sys/ILS/HoldRequestConfirmation.php';
+					$holdRequestConfirmation = new HoldRequestConfirmation();
+					$holdRequestConfirmation->userId = $patron->id;
+					$holdRequestConfirmation->requestId = $jsonResult->RequestGUID;
+					$holdRequestConfirmation->additionalParams = json_encode([
+						'requestId' => $jsonResult->RequestGUID,
+						'groupQualifier' => $jsonResult->TxnGroupQualifer,
+						'qualifier' => $jsonResult->TxnQualifier,
+						'state' => $jsonResult->StatusValue
+					]);
+					$holdRequestConfirmation->insert();
+					$hold_result['confirmationId'] = $holdRequestConfirmation->id;
+
+					$hold_result['message'] = translate($jsonResult->Message);
+				}
+			}
+		} else {
+			$hold_result['success'] = false;
+			$hold_result['message'] = 'Your hold could not be placed. ';
+			if (IPAddress::showDebuggingInformation()) {
+				$hold_result['message'] .= " (HTTP Code: {$this->lastResponseCode})";
+			}
+		}
+		return $hold_result;
+	}
+
+	public function treatVolumeHoldsAsItemHolds() {
+		return true;
 	}
 }

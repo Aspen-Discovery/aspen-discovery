@@ -1,5 +1,6 @@
 package com.turning_leaf_technologies.reindexer;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.TreeMap;
@@ -22,7 +23,7 @@ public class RecordInfo {
 	private String publicationDate;
 	private String physicalDescription;
 
-	private final HashSet<ItemInfo> relatedItems = new HashSet<>();
+	private final ArrayList<ItemInfo> relatedItems = new ArrayList<>();
 	public RecordInfo(String source, String recordIdentifier){
 		this.source = source;
 		this.recordIdentifier = recordIdentifier;
@@ -34,6 +35,10 @@ public class RecordInfo {
 
 	void setSubSource(String subSource) {
 		this.subSource = subSource;
+	}
+
+	public String getSubSource(){
+		return this.subSource;
 	}
 
 	public long getFormatBoost() {
@@ -50,6 +55,10 @@ public class RecordInfo {
 		this.edition = edition;
 	}
 
+	public String getEdition(){
+		return edition;
+	}
+
 	void setPrimaryLanguage(String primaryLanguage) {
 		this.primaryLanguage = primaryLanguage;
 	}
@@ -62,15 +71,23 @@ public class RecordInfo {
 		this.publisher = publisher;
 	}
 
+	public String getPublisher() {
+		return this.publisher;
+	}
+
 	void setPublicationDate(String publicationDate) {
 		this.publicationDate = publicationDate;
+	}
+
+	public String getPublicationDate() {
+		return this.publicationDate;
 	}
 
 	void setPhysicalDescription(String physicalDescription) {
 		this.physicalDescription = physicalDescription;
 	}
 
-	HashSet<ItemInfo> getRelatedItems() {
+	ArrayList<ItemInfo> getRelatedItems() {
 		return relatedItems;
 	}
 
@@ -130,7 +147,7 @@ public class RecordInfo {
 		return primaryFormat;
 	}
 
-	private String getPrimaryFormatCategory() {
+	public String getPrimaryFormatCategory() {
 		HashMap<String, Integer> relatedFormats = new HashMap<>();
 		for (String format : formatCategories){
 			relatedFormats.put(format, 1);
@@ -320,5 +337,9 @@ public class RecordInfo {
 			addItem(clonedItem);
 			clonedItem.copyFrom(itemInfo);
 		}
+	}
+
+	public String getPhysicalDescription() {
+		return physicalDescription;
 	}
 }

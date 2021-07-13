@@ -102,6 +102,7 @@ class Library extends DataObject
 	public $proPayAgencyCode;
 	public $symphonyPaymentType;
 	public $symphonyPaymentPolicy;
+	public $compriseSettingId;
 
 	public /** @noinspection PhpUnused */ $repeatSearchOption;
 	public /** @noinspection PhpUnused */ $repeatInOnlineCollection;
@@ -280,6 +281,12 @@ class Library extends DataObject
 		'list'  => 'List',
 	);
 
+	public function getNumericColumnNames() : array {
+		return [
+			'compriseSettingId'
+		];
+	}
+
 	static function getObjectStructure() : array {
 		// get the structure for the library system's holidays
 		$holidaysStructure = Holiday::getObjectStructure();
@@ -385,6 +392,16 @@ class Library extends DataObject
 			$layoutSettings[$layoutSetting->id] = $layoutSetting->name;
 		}
 
+		require_once ROOT_DIR . '/sys/ECommerce/CompriseSetting.php';
+		$compriseSetting = new CompriseSetting();
+		$compriseSetting->orderBy('customerName');
+		$compriseSettings = [];
+		$compriseSetting->find();
+		$compriseSettings[-1] = 'none';
+		while ($compriseSetting->fetch()){
+			$compriseSettings[$compriseSetting->id] = $compriseSetting->customerName;
+		}
+
 		require_once ROOT_DIR . '/sys/Hoopla/HooplaScope.php';
 		$hooplaScope = new HooplaScope();
 		$hooplaScope->orderBy('name');
@@ -461,6 +478,13 @@ class Library extends DataObject
 			"MSI" => "MSI",
 		];
 
+		$validSelfRegistrationOptions = [0 => 'No Self Registration', 1 => 'ILS Based Self Registration', 2 => 'Redirect to Self Registration URL'];
+		require_once ROOT_DIR . '/sys/Enrichment/QuipuECardSetting.php';
+		$quipuECardSettings = new QuipuECardSetting();
+		if ($quipuECardSettings->find(true)){
+			$validSelfRegistrationOptions[3] = 'Quipu eCARD';
+		}
+
 		/** @noinspection HtmlRequiredAltAttribute */
 		/** @noinspection RequiredAttributes */
 		$structure = array(
@@ -469,8 +493,8 @@ class Library extends DataObject
 			'subdomain' => array('property'=>'subdomain', 'type'=>'text', 'label'=>'Subdomain', 'description'=>'A unique id to identify the library within the system', 'uniqueProperty' => true, 'forcesReindex' => true, 'required' => true, 'permissions' => ['Library Domain Settings']),
 			'baseUrl' => array('property'=>'baseUrl', 'type'=>'text', 'label'=>'Base URL (include http:// or https:// as appropriate)', 'description'=>'The Base URL for the library instance including the protocol (http or https).', 'permissions' => ['Library Domain Settings']),
 			'displayName' => array('property'=>'displayName', 'type'=>'text', 'label'=>'Display Name', 'description'=>'A name to identify the library within the system', 'size'=>'40', 'uniqueProperty' => true, 'forcesReindex' => true, 'required' => true, 'editPermissions' => ['Library Domain Settings']),
-			'showDisplayNameInHeader' => array('property'=>'showDisplayNameInHeader', 'type'=>'checkbox', 'label'=>'Show Display Name in Header', 'description'=>'Whether or not the display name should be shown in the header next to the logo', 'hideInLists' => true, 'default'=>false, 'permissions' => ['Library Display Settings']),
-			'systemMessage' => array('property'=>'systemMessage', 'type'=>'html', 'label'=>'System Message', 'description'=>'A message to be displayed at the top of the screen', 'size'=>'80', 'maxLength' =>'512', 'allowableTags' => "<a><b><em><div><span><p><strong><sub><sup><script>", 'hideInLists' => true, 'permissions' => ['Library Display Settings']),
+			'showDisplayNameInHeader' => array('property'=>'showDisplayNameInHeader', 'type'=>'checkbox', 'label'=>'Show Display Name in Header', 'description'=>'Whether or not the display name should be shown in the header next to the logo', 'hideInLists' => true, 'default'=>false, 'permissions' => ['Library Theme Configuration']),
+			'systemMessage' => array('property'=>'systemMessage', 'type'=>'html', 'label'=>'System Message', 'description'=>'A message to be displayed at the top of the screen', 'size'=>'80', 'maxLength' =>'512', 'allowableTags' => "<a><b><em><div><span><p><strong><sub><sup><script>", 'hideInLists' => true, 'permissions' => ['Library Theme Configuration']),
 			'generateSitemap' => array('property'=>'generateSitemap', 'type'=>'checkbox', 'label'=>'Generate Sitemap', 'description'=>'Whether or not a sitemap should be generated for the library.', 'hideInLists' => true, 'permissions' => ['Library Domain Settings']),
 
 			// Basic Display //
@@ -573,7 +597,7 @@ class Library extends DataObject
 					'showDebarmentNotes' => array('property'=>'showDebarmentNotes', 'type'=>'checkbox', 'label'=>'Show Debarment Notes', 'description'=>'Whether or not Debarment Messages from the ILS should be shown', 'hideInLists' => true, 'default' => 0),
 				)),
 				'selfRegistrationSection' => array('property' => 'selfRegistrationSection', 'type' => 'section', 'label' => 'Self Registration', 'hideInLists' => true, 'permissions' => ['Library Self Registration'], 'properties' => array(
-					'enableSelfRegistration' => array('property'=>'enableSelfRegistration', 'type'=>'enum', 'values' => [0 => 'No Self Registration', 1 => 'ILS Based Self Registration', 2 => 'Redirect to Self Registration URL'], 'label'=>'Enable Self Registration', 'description'=>'Whether or not patrons can self register on the site', 'hideInLists' => true),
+					'enableSelfRegistration' => array('property'=>'enableSelfRegistration', 'type'=>'enum', 'values' => $validSelfRegistrationOptions, 'label'=>'Enable Self Registration', 'description'=>'Whether or not patrons can self register on the site', 'hideInLists' => true),
 					'selfRegistrationLocationRestrictions' => ['property' => 'selfRegistrationLocationRestrictions', 'type' => 'enum', 'values' => [0 => 'No Restrictions', 1 => 'All Library Locations', 2 => 'All Hold Pickup Locations', 3 => 'Pickup Locations for the library'], 'label' => 'Valid Registration Locations', 'description' => 'Indicates which locations are valid pickup locations', 'hideInLists' => true],
 					'selfRegistrationPasswordNotes' => array('property'=>'selfRegistrationPasswordNotes', 'type'=>'text', 'label'=>'Self Registration Password Notes', 'description'=>'Notes to be displayed when setting the password for self registration', 'hideInLists' => true, 'default' => ''),
 					'promptForBirthDateInSelfReg' => array('property' => 'promptForBirthDateInSelfReg', 'type' => 'checkbox', 'label' => 'Prompt For Birth Date', 'description'=>'Whether or not to prompt for birth date when self registering'),
@@ -593,7 +617,7 @@ class Library extends DataObject
 			)),
 
 			'ecommerceSection' => array('property'=>'ecommerceSection', 'type' => 'section', 'label' =>'Fines/e-commerce', 'hideInLists' => true, 'helpLink'=>'', 'permissions' => ['Library eCommerce Options'], 'properties' => array(
-				'finePaymentType' => array('property'=>'finePaymentType', 'type'=>'enum', 'label'=>'Show E-Commerce Link', 'values' => array(0 => 'No Payment', 1 => 'Link to ILS', 2 => 'PayPal', 3 => 'MSB'), 'description'=>'Whether or not users should be allowed to pay fines', 'hideInLists' => true,),
+				'finePaymentType' => array('property'=>'finePaymentType', 'type'=>'enum', 'label'=>'Show E-Commerce Link', 'values' => array(0 => 'No Payment', 1 => 'Link to ILS', 2 => 'PayPal', 3 => 'MSB', 4 => 'Comprise SMARTPAY'), 'description'=>'Whether or not users should be allowed to pay fines', 'hideInLists' => true,),
 				'finesToPay' => array('property'=>'finesToPay', 'type'=>'enum', 'label'=>'Which fines should be paid', 'values' => array(0 => 'All Fines', 1 => 'Selected Fines', 2 => 'Partial payment of selected fines'), 'description'=>'The fines that should be paid', 'hideInLists' => true,),
 				'finePaymentOrder' => array('property'=>'finePaymentOrder', 'type'=>'text', 'label'=>'Fine Payment Order by type (separated with pipes)', 'description'=>'The order fines should be paid in separated by pipes', 'hideInLists' => true, 'default' => 'default', 'size' => 80),
 				'payFinesLink' => array('property'=>'payFinesLink', 'type'=>'text', 'label'=>'Pay Fines Link', 'description'=>'The link to pay fines.  Leave as default to link to classic (should have eCommerce link enabled)', 'hideInLists' => true, 'default' => 'default', 'size' => 80),
@@ -603,6 +627,7 @@ class Library extends DataObject
 				'payPalSandboxMode' => array('property'=>'payPalSandboxMode', 'type'=>'checkbox', 'label'=>'Use PayPal Sandbox', 'description'=>'Whether or not users to use PayPal in Sandbox mode', 'hideInLists' => true,),
 				'payPalClientId' => array('property'=>'payPalClientId', 'type'=>'text', 'label'=>'PayPal ClientID', 'description'=>'The Client ID to use when paying fines.', 'hideInLists' => true, 'default' => '', 'size' => 80),
 				'payPalClientSecret' => array('property'=>'payPalClientSecret', 'type'=>'storedPassword', 'label'=>'PayPal Client Secret', 'description'=>'The Client Secret to use when paying fines.', 'hideInLists' => true, 'default' => '', 'size' => 80),
+				'compriseSettingId'  => array('property' => 'compriseSettingId', 'type' => 'enum', 'values' => $compriseSettings, 'label' => 'Comprise SMARTPAY Settings', 'description' => 'The Comprise SMARTPAY settings to use', 'hideInLists' => true, 'default' => -1),
 				'msbUrl' => array('property'=>'msbUrl', 'type'=>'text', 'label'=>'MSB URL', 'description'=>'The MSB payment form URL and path (but NOT the query or parameters)', 'hideInLists' => true, 'default'=>'', 'size'=>80),
 				'proPayAccountNumber' => array('property'=>'proPayAccountNumber', 'type'=>'storedPassword', 'label'=>'ProPay Account Number', 'description'=>'The Account Number to use when making ProPay payments.', 'hideInLists' => true, 'default' => '', 'maxLength' => 10),
 				'proPayAgencyCode' => array('property'=>'proPayAgencyCode', 'type'=>'text', 'label'=>'ProPay Agency Code', 'description'=>'The Agency Code to use when making ProPay payments.', 'hideInLists' => true, 'default' => '', 'maxLength' => 4),
