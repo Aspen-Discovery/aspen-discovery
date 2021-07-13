@@ -821,11 +821,12 @@ class ListAPI extends Action
 		if (!$listExistsInAspen) {
 			$nytList = new UserList();
 			$nytList->title = $selectedListTitle;
-			$nytList->description = "New York Times - $selectedListTitleShort $lastModifiedDay<br/>{$listTitles->copyright}";
+			$nytList->description = "New York Times - $selectedListTitleShort<br/>{$listTitles->copyright}";
 			$nytList->public = 1;
 			$nytList->searchable = 1;
 			$nytList->defaultSort = 'custom';
 			$nytList->user_id = $nytListUser->id;
+			$nytList->nytListModified = $lastModifiedDay;
 			$success = $nytList->insert();
 			$nytList->find(true);
 
@@ -852,8 +853,10 @@ class ListAPI extends Action
 
 		} else {
 			$listID = $nytList->id;
-			$newDescription = "New York Times - $selectedListTitleShort $lastModifiedDay<br/>{$listTitles->copyright}";
-			if ($nytList->description == $newDescription){
+			$newDescription = "New York Times - $selectedListTitleShort<br/>{$listTitles->copyright}";
+			$nytList->nytListModified = $lastModifiedDay;
+			$nytList->update();
+			if ($nytList->nytListModified == $lastModifiedDay){
 				$nytUpdateLog->numSkipped++;
 				//Nothing has changed, no need to update
 				return array(
@@ -862,7 +865,7 @@ class ListAPI extends Action
 				);
 			}
 			$nytUpdateLog->numUpdated++;
-			$nytList->description = "New York Times - $selectedListTitleShort $lastModifiedDay<br/>{$listTitles->copyright}";
+			$nytList->description = "New York Times - $selectedListTitleShort<br/>{$listTitles->copyright}";
 			$results = array(
 				'success' => true,
 				'message' => "Updated list <a href='/MyAccount/MyList/{$listID}'>{$selectedListTitle}</a>"

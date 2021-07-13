@@ -32,14 +32,19 @@
 					Name
 				</th>
 				<th>Last Updated</th>
+				<th>Delete?</th>
 			</tr>
 			{foreach from=$existingLists item="existingList"}
 				<tr>
 					<td>
-						<a href="/MyAccount/MyList/{$existingList->id}">{$existingList->title} ({$existingList->numValidListItems()})</a>
+						<a href="/MyAccount/MyList/{$existingList->id}">{$existingList->title} ({$existingList->numValidListItems()})</a><br>
 					</td>
 					<td>
-						{$existingList->dateUpdated|date_format}
+						{$existingList->dateUpdated|date_format}<br>
+						{if !empty($existingList->nytListModified)}<small>({$existingList->nytListModified})</small>{/if}
+					</td>
+					<td>
+						<button onclick="return AspenDiscovery.Admin.deleteNYTList({$existingList->id})" class="btn btn-danger">{translate text="Delete"}</button>
 					</td>
 				</tr>
 			{/foreach}

@@ -62,6 +62,7 @@ class Enrichment_NYTLists extends Admin_Admin
 				$nyTimesUserLists = new UserList();
 				$nyTimesUserLists->user_id = $nyTimesUser->id;
 				$nyTimesUserLists->whereAdd('title like "NYT - %"');
+				$nyTimesUserLists->deleted = 0;
 				$nyTimesUserLists->orderBy('title');
 				$existingLists = $nyTimesUserLists->fetchAll();
 
