@@ -190,4 +190,21 @@ class WebsiteIndexSetting extends DataObject
 		$locationWebsiteIndexing->settingId = $this->id;
 		return $locationWebsiteIndexing->delete(true);
 	}
+
+	public function isValidForSearching() {
+		global $library;
+		$searchLocation = Location::getSearchLocation();
+		if ($searchLocation != null) {
+			$locations = $this->getLocations();
+			if (array_key_exists($searchLocation->locationId, $locations)){
+				return true;
+			}
+		}else{
+			$libraries = $this->getLibraries();
+			if (array_key_exists($library->libraryId, $libraries)){
+				return true;
+			}
+		}
+		return false;
+	}
 }

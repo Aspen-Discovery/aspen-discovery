@@ -212,18 +212,17 @@ class SearchSources{
 		if (array_key_exists('Web Indexer', $enabledModules)){
 			require_once ROOT_DIR . '/sys/WebsiteIndexing/WebsiteIndexSetting.php';
 			$websiteSetting = new WebsiteIndexSetting();
-			$websiteSetting->selectAdd(null);
-			$websiteSetting->selectAdd('searchCategory');
-			$websiteSetting->groupBy('searchCategory');
 			$websiteSetting->find();
 			//TODO: Need to deal with searching different collections
 			while ($websiteSetting->fetch()) {
-				$searchOptions['websites'] = array(
-					'name' => $websiteSetting->searchCategory,
-					'description' => $websiteSetting->searchCategory,
-					'catalogType' => 'websites',
-					'hasAdvancedSearch' => false
-				);
+				if ($websiteSetting->isValidForSearching()) {
+					$searchOptions['websites'] = array(
+						'name' => 'Library Website',
+						'description' => 'Library Website',
+						'catalogType' => 'websites',
+						'hasAdvancedSearch' => false
+					);
+				}
 			}
 			//Local search, activate if we have at least one page
 			if ($library->enableWebBuilder) {
