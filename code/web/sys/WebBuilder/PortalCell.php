@@ -36,9 +36,10 @@ class PortalCell extends DataObject
 			'baseline' => 'Baseline'
 		];
 		$horizontalJustificationOptions = [
-			'start' => 'Left',
+			'left' => 'Left',
 			'center' => 'Center',
-			'end' => 'Right'
+			'right' => 'Right',
+			'justify' => 'Justified'
 		];
 		$sourceOptions = [
 			'markdown' => 'Text/Images',
