@@ -7,7 +7,7 @@ function getUpdates21_09_00() : array
 			'title' => 'Store the date a NYT List was last modified',
 			'description' => 'Store the date that a NYT List was last modified by NYT',
 			'sql' => [
-				'ALTER TABLE user_list ADD COLUMN nytListModified int(11) DEFAULT NULL',
+				'ALTER TABLE user_list ADD COLUMN nytListModified varchar(20) DEFAULT NULL',
 			]
 		], //storeNYTLastUpdated
 		'fileUploadsThumb' => [
