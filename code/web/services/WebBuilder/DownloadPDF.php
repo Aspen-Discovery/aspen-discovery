@@ -18,7 +18,7 @@ class WebBuilder_DownloadPDF extends Action{
 		}
 
 		global $serverName;
-		$dataPath = '/usr/local/aspen-discovery-data/' . $serverName . '/uploads/web_builder_pdf/';
+		$dataPath = '/data/aspen-discovery/' . $serverName . '/uploads/web_builder_pdf/';
 		if (file_exists($uploadedFile->fullPath)){
 			$fullPath = $uploadedFile->fullPath;
 		}else{

@@ -55,7 +55,7 @@ class WebBuilder_PDFs extends ObjectEditor
 		unset($objectStructure['type']);
 		$fileProperty = $objectStructure['fullPath'];
 		global $serverName;
-		$dataPath = '/usr/local/aspen-discovery-data/' . $serverName . '/uploads/web_builder_pdf/';
+		$dataPath = '/data/aspen-discovery/' . $serverName . '/uploads/web_builder_pdf/';
 		$fileProperty['path'] = $dataPath;
 		$fileProperty['validTypes'] = ['application/pdf'];
 		$objectStructure['fullPath'] = $fileProperty;
