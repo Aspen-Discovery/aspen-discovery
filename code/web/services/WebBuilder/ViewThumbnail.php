@@ -1,7 +1,6 @@
 <?php
 
-
-class WebBuilder_DownloadPDF extends Action{
+class WebBuilder_ViewThumbnail extends Action{
 	function launch()
 	{
 		global $interface;
@@ -18,24 +17,16 @@ class WebBuilder_DownloadPDF extends Action{
 		}
 
 		global $serverName;
-		$dataPath = '/usr/local/aspen-discovery-data/' . $serverName . '/uploads/web_builder_pdf/';
-		if (file_exists($uploadedFile->fullPath)){
-			$fullPath = $uploadedFile->fullPath;
-		}else{
-			$fullPath = $dataPath . $uploadedFile->fullPath;
-		}
-
-		if (file_exists($fullPath)) {
+		$dataPath = '/data/aspen-discovery/' . $serverName . '/uploads/web_builder_image/';
+		$fullPath = $uploadedFile->thumbFullPath;
+		if (file_exists($fullPath)){
 			set_time_limit(300);
 			$chunkSize = 2 * (1024 * 1024);
-
 			$size = intval(sprintf("%u", filesize($fullPath)));
 
-			header('Content-Type: application/octet-stream');
+			header('Content-Type: image/jpg');
 			header('Content-Transfer-Encoding: binary');
 			header('Content-Length: ' . $size);
-			$fileName = basename($fullPath);
-			header('Content-Disposition: attachment;filename="' . $fileName . '"');
 
 			if ($size > $chunkSize) {
 				$handle = fopen($fullPath, 'rb');
@@ -54,7 +45,8 @@ class WebBuilder_DownloadPDF extends Action{
 			}
 
 			die();
-		} else {
+		}
+		else{
 			AspenError::raiseError(new AspenError("File $id does not exist"));
 		}
 
@@ -62,6 +54,12 @@ class WebBuilder_DownloadPDF extends Action{
 
 	function getBreadcrumbs() : array
 	{
-		return [];
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/', 'Home');
+		$breadcrumbs[] = new Breadcrumb('', $this->uploadedFile->title, true);
+		if (UserAccount::userHasPermission('Administer All Web Content')){
+			$breadcrumbs[] = new Breadcrumb('/WebBuilder/PDFs?id=' . $this->uploadedFile->id . '&objectAction=edit', 'Edit', true);
+		}
+		return $breadcrumbs;
 	}
 }

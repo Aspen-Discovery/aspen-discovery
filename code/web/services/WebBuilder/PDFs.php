@@ -55,7 +55,7 @@ class WebBuilder_PDFs extends ObjectEditor
 		unset($objectStructure['type']);
 		$fileProperty = $objectStructure['fullPath'];
 		global $serverName;
-		$dataPath = '/data/aspen-discovery/' . $serverName . '/uploads/web_builder_pdf/';
+		$dataPath = '/usr/local/aspen-discovery-data/' . $serverName . '/uploads/web_builder_pdf/';
 		$fileProperty['path'] = $dataPath;
 		$fileProperty['validTypes'] = ['application/pdf'];
 		$objectStructure['fullPath'] = $fileProperty;
@@ -87,6 +87,10 @@ class WebBuilder_PDFs extends ObjectEditor
 			$objectActions[] = [
 				'text' => 'Download PDF',
 				'url' => '/WebBuilder/DownloadPDF?id=' . $existingObject->id,
+			];
+			$objectActions[] = [
+				'text' => 'View Thumbnail',
+				'url' => '/WebBuilder/ViewThumbnail?id=' . $existingObject->id,
 			];
 		}
 		return $objectActions;
