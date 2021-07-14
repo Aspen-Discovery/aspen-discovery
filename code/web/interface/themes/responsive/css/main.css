@@ -8547,6 +8547,10 @@ hr.menu {
   display: inline-block;
   text-align: center;
 }
+#select-language.dropdown-menu {
+  left: unset;
+  right: 0;
+}
 #menuToggleButton.selected {
   background-color: #ededed;
 }
