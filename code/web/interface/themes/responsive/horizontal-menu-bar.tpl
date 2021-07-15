@@ -54,7 +54,8 @@
 	</div>
 	<div class="menu-section menu-section-right">
 		{if $loggedIn}{* Logged In *}
-			<a id="accountMenuToggleButton" href="/MyAccount/Home" onclick="return AspenDiscovery.toggleAccountMenu();" id="mobile-menu-account-icon" class="menu-icon menu-bar-option" title="Account">
+			<div class="dropdown menuToggleButton accountMenu" style="display:inline-block;">
+			<a id="accountMenuToggleButton" id="mobile-menu-account-icon" class="dropdown-toggle menu-icon menu-bar-option" role="button" title="{translate text="Account" inAttribute=true}" aria-haspopup="true" data-bs-auto-close="outside" aria-expanded="false" id="account-menu-dropdown">
 				{if $masqueradeMode}
 					<i class="fas fa-theater-masks fa-lg"></i>
 				{else}
@@ -69,6 +70,7 @@
 				</span>
 			</a>
 			{include file="account-menu.tpl"}
+			</div>
 		{else} {* Not Logged In *}
 			{if $showLoginButton}
 			<a href="/MyAccount/Home" id="loginLink" onclick="{if $isLoginPage}$('#username').focus();return false;{else}return AspenDiscovery.Account.followLinkIfLoggedIn(this);{/if}" data-login="true" class="menu-icon menu-bar-option" title="{translate text='Login' inAttribute=true}">
@@ -77,9 +79,10 @@
 			{/if}
 		{/if}
 
-		<a id="menuToggleButton" onclick="return AspenDiscovery.toggleMenu();" class="menu-icon menu-bar-option" title="{translate text="Show Menu" inAttribute=true}">
+		<div class="dropdown menuToggleButton headerMenu" style="display:inline-block;"><a class="dropdown-toggle menu-icon menu-bar-option" role="button" title="{translate text="Show Menu" inAttribute=true}"  aria-haspopup="true" data-auto-close="outside" aria-expanded="false" id="header-menu-dropdown">
 			<i class="fas fa-bars fa-lg"></i>
 		</a>
 		{include file="header-menu.tpl"}
+		</div>
 	</div>
 {/strip}

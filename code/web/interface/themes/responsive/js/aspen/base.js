@@ -9,6 +9,7 @@ var AspenDiscovery = (function(){
 		AspenDiscovery.initializeModalDialogs();
 		AspenDiscovery.setupFieldSetToggles();
 		AspenDiscovery.initCarousels();
+		AspenDiscovery.toggleMenu();
 
 		$("#modalDialog").modal({show:false});
 		$('[data-toggle="tooltip"]').tooltip();
@@ -541,38 +542,27 @@ var AspenDiscovery = (function(){
 			return false;
 		},
 		toggleMenu: function() {
-			var headerMenu = $('#header-menu');
-			var menuButton = $('#menuToggleButton');
-			var menuButtonIcon = $('#menuToggleButton > i');
-			if (headerMenu.is(':visible')){
-				this.closeMenu();
-			}else{
-				this.closeAccountMenu();
-				$('.dropdownMenu').slideUp('slow');
-				var menuButtonPosition = menuButton.position();
-				headerMenu.css('left', menuButtonPosition.left + menuButton.outerWidth() - headerMenu.outerWidth() + 5);
-				headerMenu.css('top', menuButtonPosition.top + menuButton.outerHeight());
-				menuButton.addClass('selected');
-				headerMenu.slideDown('slow');
-				menuButtonIcon.removeClass('fa-bars');
-				menuButtonIcon.addClass('fa-times');
-			}
+			// fixed bootstrap account-menu toggle
+			$('div.dropdown.menuToggleButton.accountMenu a').on('click', function (event) {
+				$(this).parent().toggleClass('open');
+			});
+			$(document).on('click', function (e) {
+				var $trigger = $("div.dropdown.menuToggleButton.accountMenu");
+				if($trigger !== event.target && !$trigger.has(event.target).length){
+					$('div.dropdown.menuToggleButton.accountMenu').removeClass('open');
+				}
+			});
+			// fixed bootstrap header-menu toggle
+			$('div.dropdown.menuToggleButton.headerMenu a').on('click', function (event) {
+				$(this).parent().toggleClass('open');
+			});
+			$(document).on('click', function (e) {
+				var $trigger = $("div.dropdown.menuToggleButton.headerMenu");
+				if($trigger !== event.target && !$trigger.has(event.target).length){
+					$('div.dropdown.menuToggleButton.headerMenu').removeClass('open');
+				}
+			});
 
-			$('#header-menu.dropdownMenu').mouseleave(function() {
-				setTimeout(function () {
-					$('#header-menu.dropdownMenu').slideUp('slow');
-					menuButton.removeClass('selected');
-					menuButtonIcon.removeClass('fa-times');
-					menuButtonIcon.addClass('fa-bars');
-				}, 1000);
-			})
-
-			$(document).on('touchstart', function(e) {
-				$('#header-menu.dropdownMenu').slideUp('slow');
-				menuButton.removeClass('selected');
-				menuButtonIcon.removeClass('fa-times');
-				menuButtonIcon.addClass('fa-bars');
-			})
 			return false;
 		},
 		closeMenu: function(){
@@ -599,44 +589,8 @@ var AspenDiscovery = (function(){
 
 			return false;
 		},
-		toggleAccountMenu: function() {
-			var accountMenu = $('#account-menu');
-			var accountMenuButton = $('#accountMenuToggleButton');
-			if (accountMenu.is(':visible')){
-				this.closeAccountMenu();
-			}else{
-				this.closeMenu();
-				$('.dropdownMenu').slideUp('slow');
-				var accountMenuButtonPosition = accountMenuButton.position();
-				accountMenu.css('left', accountMenuButtonPosition.left + accountMenuButton.outerWidth() - accountMenu.outerWidth() + 4);
-				accountMenu.css('top', accountMenuButtonPosition.top + accountMenuButton.outerHeight());
-				accountMenuButton.addClass('selected');
-				accountMenu.slideDown('slow');
-			}
-
-			$('#account-menu.dropdownMenu').mouseleave(function() {
-				setTimeout(function () {
-					accountMenuButton.removeClass('selected');
-					$('#account-menu.dropdownMenu').slideUp('slow');
-				}, 1000);
-			})
-
-			$(document).on('touchstart', function(e) {
-				accountMenuButton.removeClass('selected');
-				$('#account-menu.dropdownMenu').slideUp('slow');
-			})
-
-			return false;
-		},
-		closeAccountMenu: function(){
-			var accountMenu = $('#account-menu');
-			var accountMenuButton = $('#accountMenuToggleButton');
-			accountMenu.slideUp('slow');
-			accountMenuButton.removeClass('selected');
-		},
 		showCustomMenu: function (menuName) {
 			this.closeMenu();
-			this.closeAccountMenu();
 			var customMenu = $('#' + menuName + '-menu');
 			if (customMenu.is(':visible')){
 				customMenu.slideUp('slow');

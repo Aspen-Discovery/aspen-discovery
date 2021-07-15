@@ -5,7 +5,6 @@
 		<div id="home-account-links" class="sidebar-links row">
 			<div class="panel-group accordion" id="account-link-accordion">
 				{* My Account *}
-				<a id="account-menu"></a>
 				{if $module == 'MyAccount' || ($module == 'Search' && $action == 'Home') || ($module == 'MaterialsRequest' && $action == 'MyRequests')}
 					{assign var="curSection" value=true}
 				{else}

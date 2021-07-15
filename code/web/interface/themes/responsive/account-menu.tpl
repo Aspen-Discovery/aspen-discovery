@@ -2,7 +2,7 @@
 	{if $loggedIn}
 		{* Setup the accoridon *}
 		<!--suppress HtmlUnknownTarget -->
-		<div id="account-menu" class="dropdownMenu" style="display: none">
+		<div id="account-menu" class="dropdown-menu dropdownMenu" aria-labelledby="account-menu-dropdown">
 			<span class="expirationFinesNotice-placeholder"></span>
 			{if $userHasCatalogConnection}
 				<a href="/MyAccount/CheckedOut">
@@ -60,7 +60,7 @@
 			{/if}
 			<a onclick="return AspenDiscovery.toggleMenuSection('accountSettings');">
 				<div class="header-menu-section" id="accountSettingsMenuSection">
-					<i class="fas fa-caret-right"></i>{translate text='Account Settings'}
+					<i class="fas fa-caret-right"></i> {translate text='Account Settings'}
 				</div>
 			</a>
 			<div id="accountSettingsMenuSectionBody" class="menuSectionBody" style="display: none">

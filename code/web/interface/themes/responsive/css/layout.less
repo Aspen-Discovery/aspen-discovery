@@ -88,7 +88,7 @@ hr.menu{
   display: inline-block;
   padding-right: 10px;
 }
-#menuToggleButton{
+#menuToggleButton, .menuToggleButton a.menu-bar {
   width: 36px;
   display: inline-block;
   text-align: center;
@@ -114,13 +114,15 @@ hr.menu{
 }
 
 #header-menu {
-  display: none;
-  position: absolute;
+  left: unset;
+  right: 0;
   background-color: #ededed;
   min-width: 220px;
   box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
   padding: 12px 16px;
   z-index: 3;
+  top: 35px;
+  margin: 0;
 
   #logoutLink {
     margin-top: 1em;
@@ -137,13 +139,15 @@ hr.menu{
 }
 
 #account-menu {
-  display: none;
-  position: absolute;
+  left: unset;
+  right: 0;
   background-color: #ededed;
   min-width: 220px;
-  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
   padding: 12px 16px;
   z-index: 3;
+  top: 35px;
+  margin: 0;
 }
 
 #accountMenuToggleButton.selected{
