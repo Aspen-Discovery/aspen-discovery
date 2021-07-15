@@ -7126,16 +7126,25 @@ body > .container {
   font-size: 14px;
 }
 .fieldset-collapsible-label:before {
-  content: "▼ ";
+  font-family: "Font Awesome 5 Free";
+  content: '\f078';
+  font-weight: bold;
+  padding-right: 0.25em;
 }
 .fieldset-collapsed .fieldset-collapsible-label {
   background-position: 4px 4px;
 }
 .fieldset-collapsed .fieldset-collapsible-label:before {
-  content: "► ";
+  font-family: "Font Awesome 5 Free";
+  content: '\f105';
+  font-weight: bold;
+  padding-right: 0.25em;
 }
 .accordion .panel-title.collapsed:before {
-  content: "► ";
+  font-family: "Font Awesome 5 Free";
+  content: '\f105';
+  font-weight: bold;
+  padding-right: 0.25em;
 }
 @media print {
   .accordion .panel-title.collapsed:before {
@@ -7143,7 +7152,10 @@ body > .container {
   }
 }
 .accordion .panel-title.expanded:before {
-  content: "▼ ";
+  font-family: "Font Awesome 5 Free";
+  content: '\f078';
+  font-weight: bold;
+  padding-right: 0.25em;
 }
 @media print {
   .accordion .panel-title.expanded:before {
@@ -7151,7 +7163,10 @@ body > .container {
   }
 }
 .panel .panel-title:before {
-  content: "► ";
+  font-family: "Font Awesome 5 Free";
+  content: '\f105';
+  font-weight: bold;
+  padding-right: 0.25em;
 }
 @media print {
   .panel .panel-title:before {
@@ -7159,7 +7174,10 @@ body > .container {
   }
 }
 .panel.active .panel-title:before {
-  content: "▼ ";
+  font-family: "Font Awesome 5 Free";
+  content: '\f078';
+  font-weight: bold;
+  padding-right: 0.25em;
 }
 @media print {
   .panel.active .panel-title:before {
