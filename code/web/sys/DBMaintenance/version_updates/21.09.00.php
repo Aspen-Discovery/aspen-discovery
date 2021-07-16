@@ -162,7 +162,7 @@ function getUpdates21_09_00() : array
 				      grouped_work_record_scope_details.locallyOwned = grouped_work_record_scope.locallyOwned and  
 				      grouped_work_record_scope_details.libraryOwned = grouped_work_record_scope.libraryOwned
 				   SET scopeDetailsId = grouped_work_record_scope_details.id",
-				"ALTER TABLE grouped_work_record_scope DROP COLUMN groupedStatusId, DROP COLUMN statusId, DROP COLUMN available, DROP COLUMN holdable, inLibraryUseOnly, localUrl, DROP COLUMN locallyOwned, DROP COLUMN libraryOwned, DROP COLUMN id",
+				"ALTER TABLE grouped_work_record_scope DROP groupedStatusId, DROP statusId, DROP available, DROP holdable, DROP inLibraryUseOnly, DROP localUrl, DROP locallyOwned, DROP libraryOwned, DROP id",
 				"OPTIMIZE table grouped_work_record_scope"
 			]
 		], //normalize_scope_data
