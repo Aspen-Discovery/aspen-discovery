@@ -3,13 +3,11 @@ package com.turning_leaf_technologies.marc;
 import com.turning_leaf_technologies.logging.BaseLogEntry;
 import org.apache.logging.log4j.Logger;
 import com.turning_leaf_technologies.strings.StringUtils;
-import org.marc4j.MarcException;
-import org.marc4j.MarcPermissiveStreamReader;
-import org.marc4j.MarcStreamReader;
-import org.marc4j.MarcStreamWriter;
+import org.marc4j.*;
 import org.marc4j.marc.*;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
@@ -563,6 +561,26 @@ public class MarcUtil {
 			}
 		}catch (Exception e){
 			logEntry.incErrors("Could not read marc file " + marcFile.getAbsolutePath(), e);
+		}
+
+		return null;
+	}
+
+	public static Record readIndividualRecord(String identifier, String marcContents, BaseLogEntry logEntry){
+		try {
+			InputStream marcFileStream = new ByteArrayInputStream(marcContents.getBytes(StandardCharsets.UTF_8));
+
+			MarcReader streamReader = new MarcJsonReader(marcFileStream);
+			try{
+				Record marcRecord = streamReader.next();
+				marcFileStream.close();
+				return marcRecord;
+			}catch (MarcException me){
+				//Could not read the marc record, there likely was not a record in the file, but ignore and use the permissive read.
+			}
+			marcFileStream.close();
+		}catch (Exception e){
+			logEntry.incErrors("Could not parse marc in json format for " + identifier, e);
 		}
 
 		return null;

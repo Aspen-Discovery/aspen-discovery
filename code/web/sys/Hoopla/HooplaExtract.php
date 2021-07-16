@@ -19,4 +19,9 @@ class HooplaExtract extends DataObject
 
 	public $__table = 'hoopla_export';
 
+	public function getCompressedColumnNames(): array
+	{
+		return ['rawResponse'];
+	}
+
 }

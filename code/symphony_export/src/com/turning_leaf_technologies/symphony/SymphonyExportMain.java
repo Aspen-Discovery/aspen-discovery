@@ -2,7 +2,6 @@ package com.turning_leaf_technologies.symphony;
 
 import com.turning_leaf_technologies.config.ConfigUtil;
 import com.turning_leaf_technologies.file.JarUtil;
-import com.turning_leaf_technologies.grouping.BaseMarcRecordGrouper;
 import com.turning_leaf_technologies.grouping.MarcRecordGrouper;
 import com.turning_leaf_technologies.grouping.RemoveRecordFromWorkResult;
 import com.turning_leaf_technologies.indexing.*;
@@ -536,6 +535,7 @@ public class SymphonyExportMain {
 			}
 		}
 
+		GroupedWorkIndexer reindexer = getGroupedWorkIndexer(dbConn);
 		for (File curBibFile : exportedMarcFiles) {
 			logEntry.addNote("Processing file " + curBibFile.getAbsolutePath());
 
@@ -573,20 +573,20 @@ public class SymphonyExportMain {
 								}
 							} else if (!recordIdentifier.isSuppressed()) {
 								String recordNumber = recordIdentifier.getIdentifier();
-								BaseMarcRecordGrouper.MarcStatus marcStatus;
+								GroupedWorkIndexer.MarcStatus marcStatus;
 								if (lastIdentifier != null && lastIdentifier.equals(recordIdentifier)) {
-									marcStatus = recordGroupingProcessor.appendItemsToExistingRecord(indexingProfile, curBib, recordNumber, logger);
+									marcStatus = reindexer.appendItemsToExistingRecord(indexingProfile, curBib, recordNumber, logger);
 								} else {
-									marcStatus = recordGroupingProcessor.writeIndividualMarc(indexingProfile, curBib, recordNumber, logger);
+									marcStatus = reindexer.saveMarcRecordToDatabase(indexingProfile, recordNumber, curBib);
 								}
 
-								if (marcStatus != BaseMarcRecordGrouper.MarcStatus.UNCHANGED || indexingProfile.isRunFullUpdate()) {
-									String permanentId = recordGroupingProcessor.processMarcRecord(curBib, marcStatus != BaseMarcRecordGrouper.MarcStatus.UNCHANGED, null);
+								if (marcStatus != GroupedWorkIndexer.MarcStatus.UNCHANGED || indexingProfile.isRunFullUpdate()) {
+									String permanentId = recordGroupingProcessor.processMarcRecord(curBib, marcStatus != GroupedWorkIndexer.MarcStatus.UNCHANGED, null);
 									if (permanentId == null) {
 										//Delete the record since it is suppressed
 										deleteRecord = true;
 									} else {
-										if (marcStatus == BaseMarcRecordGrouper.MarcStatus.NEW) {
+										if (marcStatus == GroupedWorkIndexer.MarcStatus.NEW) {
 											logEntry.incAdded();
 										} else {
 											logEntry.incUpdated();
@@ -716,7 +716,7 @@ public class SymphonyExportMain {
 				dbConn = null;
 			}
 		} catch (Exception e) {
-			System.out.println("Error closing aspen connection: " + e.toString());
+			System.out.println("Error closing aspen connection: " + e);
 			e.printStackTrace();
 		}
 	}

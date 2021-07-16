@@ -380,14 +380,14 @@ public class CarlXExportMain {
 						}else if (!recordIdentifier.isSuppressed()) {
 							String recordNumber = recordIdentifier.getIdentifier();
 
-							BaseMarcRecordGrouper.MarcStatus marcStatus = recordGroupingProcessor.writeIndividualMarc(indexingProfile, curBib, recordNumber, logger);
-							if (marcStatus != BaseMarcRecordGrouper.MarcStatus.UNCHANGED || indexingProfile.isRunFullUpdate()) {
-								String permanentId = recordGroupingProcessor.processMarcRecord(curBib, marcStatus != BaseMarcRecordGrouper.MarcStatus.UNCHANGED, null);
+							GroupedWorkIndexer.MarcStatus marcStatus = groupedWorkIndexer.saveMarcRecordToDatabase(indexingProfile, recordNumber, curBib);
+							if (marcStatus != GroupedWorkIndexer.MarcStatus.UNCHANGED || indexingProfile.isRunFullUpdate()) {
+								String permanentId = recordGroupingProcessor.processMarcRecord(curBib, marcStatus != GroupedWorkIndexer.MarcStatus.UNCHANGED, null);
 								if (permanentId == null){
 									//Delete the record since it is suppressed
 									deleteRecord = true;
 								}else {
-									if (marcStatus == BaseMarcRecordGrouper.MarcStatus.NEW){
+									if (marcStatus == GroupedWorkIndexer.MarcStatus.NEW){
 										logEntry.incAdded();
 									}else {
 										logEntry.incUpdated();

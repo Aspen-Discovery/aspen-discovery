@@ -2505,6 +2505,7 @@ class GroupedWorkDriver extends IndexRecordDriver
 								  grouped_work_record_items.groupedWorkRecordId, grouped_work_record_items.groupedWorkVariationId, grouped_work_record_items.itemId, indexed_callNumber.callNumber, indexed_shelfLocation.shelfLocation, numCopies, isOrderItem, dateAdded, 
        							  indexed_locationCode.locationCode, indexed_subLocationCode.subLocationCode, lastCheckInDate
 								  FROM grouped_work_record_scope 
+								  LEFT JOIN grouped_work_record_scope_details ON grouped_work_record_scope.scopeDetailsId = grouped_work_record_scope_details.id
 								  LEFT JOIN indexed_status as groupedStatusTbl on groupedStatusId = groupedStatusTbl.id 
 								  LEFT JOIN indexed_status as statusTbl on statusId = statusTbl.id 
 								  LEFT JOIN grouped_work_record_items ON groupedWorkItemId = grouped_work_record_items.id

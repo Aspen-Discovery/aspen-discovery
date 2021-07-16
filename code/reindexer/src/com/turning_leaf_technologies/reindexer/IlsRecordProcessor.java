@@ -1,5 +1,6 @@
 package com.turning_leaf_technologies.reindexer;
 
+import com.turning_leaf_technologies.indexing.IndexingProfile;
 import com.turning_leaf_technologies.indexing.Scope;
 import com.turning_leaf_technologies.indexing.TranslationMap;
 import com.turning_leaf_technologies.marc.MarcUtil;
@@ -19,7 +20,6 @@ import java.util.regex.Pattern;
 abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	protected boolean fullReindex;
 	String marcPath;
-	String profileType;
 
 	private String recordNumberTag;
 	String itemTag;
@@ -86,9 +86,10 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	protected boolean suppressRecordsWithNoCollection = true;
 
 	IlsRecordProcessor(GroupedWorkIndexer indexer, Connection dbConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
-		super(indexer, logger);
+		super(indexer, dbConn, logger);
 		this.fullReindex = fullReindex;
 		try {
+			settings = new IndexingProfile(indexingProfileRS);
 			profileType = indexingProfileRS.getString("name");
 			individualMarcPath = indexingProfileRS.getString("individualMarcPath");
 			marcPath = indexingProfileRS.getString("marcPath");
@@ -562,6 +563,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		boolean hasLocationBasedShelfLocation = false;
 		boolean hasSystemBasedShelfLocation = false;
 		String originalUrl = itemInfo.geteContentUrl();
+		String fullKey = profileType + location;
 		for (Scope scope: indexer.getScopes()){
 			Scope.InclusionResult result = scope.isItemPartOfScope(profileType, location, "", null, audiences, format, true, true, false, record, originalUrl);
 			if (result.isIncluded){
@@ -571,9 +573,9 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 					continue;
 				}
 				if (scope.isLocationScope()) {
-					scopingInfo.setLocallyOwned(scope.isItemOwnedByScope(profileType, location, ""));
+					scopingInfo.setLocallyOwned(scope.isItemOwnedByScope(fullKey, profileType, location, ""));
 					if (scope.getLibraryScope() != null) {
-						boolean libraryOwned = scope.getLibraryScope().isItemOwnedByScope(profileType, location, "");
+						boolean libraryOwned = scope.getLibraryScope().isItemOwnedByScope(fullKey, profileType, location, "");
 						scopingInfo.setLibraryOwned(libraryOwned);
 					}else{
 						//Check to see if the scope is both a library and location scope
@@ -584,7 +586,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 					}
 				}
 				if (scope.isLibraryScope()) {
-					boolean libraryOwned = scope.isItemOwnedByScope(profileType, location, "");
+					boolean libraryOwned = scope.isItemOwnedByScope(fullKey, profileType, location, "");
 					scopingInfo.setLibraryOwned(libraryOwned);
 					//TODO: Should this be here or should this only happen for consortia?
 					if (libraryOwned && itemInfo.getShelfLocation().equals("On Order")){
@@ -892,6 +894,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	private void loadScopeInfoForEContentItem(GroupedWorkSolr groupedWork, ItemInfo itemInfo, Record record) {
 		String itemLocation = itemInfo.getLocationCode();
 		String originalUrl = itemInfo.geteContentUrl();
+		String fullKey = profileType + itemLocation;
 		for (Scope curScope : indexer.getScopes()){
 			String format = itemInfo.getFormat();
 			if (format == null){
@@ -905,13 +908,13 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 				scopingInfo.setGroupedStatus("Available Online");
 				scopingInfo.setHoldable(false);
 				if (curScope.isLocationScope()) {
-					scopingInfo.setLocallyOwned(curScope.isItemOwnedByScope(profileType, itemLocation, ""));
+					scopingInfo.setLocallyOwned(curScope.isItemOwnedByScope(fullKey, profileType, itemLocation, ""));
 					if (curScope.getLibraryScope() != null) {
-						scopingInfo.setLibraryOwned(curScope.getLibraryScope().isItemOwnedByScope(profileType, itemLocation, ""));
+						scopingInfo.setLibraryOwned(curScope.getLibraryScope().isItemOwnedByScope(fullKey, profileType, itemLocation, ""));
 					}
 				}
 				if (curScope.isLibraryScope()) {
-					scopingInfo.setLibraryOwned(curScope.isItemOwnedByScope(profileType, itemLocation, ""));
+					scopingInfo.setLibraryOwned(curScope.isItemOwnedByScope(fullKey, profileType, itemLocation, ""));
 				}
 				//Check to see if we need to do url rewriting
 				if (originalUrl != null && !originalUrl.equals(result.localUrl)){
@@ -939,6 +942,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		boolean isHoldableUnscoped = isItemHoldableUnscoped(itemInfo);
 		String originalUrl = itemInfo.geteContentUrl();
 		String primaryFormat = recordInfo.getPrimaryFormat();
+		String fullKey = profileType + itemLocation + itemSublocation;
 		for (Scope curScope : indexer.getScopes()) {
 			//Check to see if the record is holdable for this scope
 			boolean isHoldable = isItemHoldable(itemInfo, curScope, isHoldableUnscoped);
@@ -959,7 +963,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 				if (curScope.isLocationScope()) {
 					scopingInfo.setLocallyOwned(result.isOwned);
 					if (curScope.getLibraryScope() != null) {
-						scopingInfo.setLibraryOwned(curScope.getLibraryScope().isItemOwnedByScope(profileType, itemLocation, itemSublocation));
+						scopingInfo.setLibraryOwned(curScope.getLibraryScope().isItemOwnedByScope(fullKey, profileType, itemLocation, itemSublocation));
 					}
 				}
 				if (curScope.isLibraryScope()) {

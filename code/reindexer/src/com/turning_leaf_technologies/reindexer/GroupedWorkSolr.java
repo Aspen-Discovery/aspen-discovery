@@ -1809,19 +1809,19 @@ public class GroupedWorkSolr implements Cloneable {
 	public void saveRecordsToDatabase(long groupedWorkId, BaseLogEntry logEntry) {
 		groupedWorkIndexer.disableAutoCommit();
 		//Get a list of all existing records for the grouped work
-		HashMap<String, Long> existingRecords = groupedWorkIndexer.getExistingRecordsForGroupedWork(groupedWorkId);
+		HashMap<String, SavedRecordInfo> existingRecords = groupedWorkIndexer.getExistingRecordsForGroupedWork(groupedWorkId);
 		HashMap<VariationInfo, Long> existingVariations = groupedWorkIndexer.getExistingVariationsForGroupedWork(groupedWorkId);
 		HashSet<Long> foundVariations = new HashSet<>();
-
+		HashSet<String> foundRecords = new HashSet<>();
 		//Save all the records
 		for (RecordInfo recordInfo : relatedRecords.values()){
 			String relatedRecordKey = groupedWorkIndexer.getSourceId(recordInfo.getSource(), recordInfo.getSubSource()) + ":" + recordInfo.getRecordIdentifier();
-			long recordId = -1;
+			SavedRecordInfo savedRecord = null;
 			if (existingRecords.containsKey(relatedRecordKey)){
-				recordId = existingRecords.get(relatedRecordKey);
+				savedRecord = existingRecords.get(relatedRecordKey);
 				existingRecords.remove(relatedRecordKey);
 			}
-			recordId = groupedWorkIndexer.saveGroupedWorkRecord(groupedWorkId, recordInfo, recordId);
+			long recordId = groupedWorkIndexer.saveGroupedWorkRecord(groupedWorkId, recordInfo, savedRecord);
 
 			if (recordId != -1) {
 				//Get existing items for the record
@@ -1837,14 +1837,14 @@ public class GroupedWorkSolr implements Cloneable {
 					long itemId = groupedWorkIndexer.saveItemForRecord(recordId, variationId, itemInfo, existingItems);
 					if (itemId != -1) {
 						//Save scopes for the items
-						HashMap<Long, SavedScopingInfo> existingScopes = groupedWorkIndexer.getExistingScopesForItem(itemId);
+						HashMap<Long, ItemScopeInfo> existingScopes = groupedWorkIndexer.getExistingScopesForItem(itemId);
 
 						for (ScopingInfo scopingInfo : itemInfo.getScopingInfo().values()) {
 							groupedWorkIndexer.saveScopeForItem(itemId, scopingInfo, existingScopes);
 							existingScopes.remove(scopingInfo.getScope().getId());
 						}
-						for (SavedScopingInfo savedScopingInfo : existingScopes.values()) {
-							groupedWorkIndexer.removeItemScope(savedScopingInfo.id);
+						for (ItemScopeInfo savedScopingInfo : existingScopes.values()) {
+							groupedWorkIndexer.removeItemScope(itemId, savedScopingInfo.scopeId);
 						}
 
 						foundItems.add(itemId);
@@ -1861,8 +1861,8 @@ public class GroupedWorkSolr implements Cloneable {
 		}
 		//Anything left over should be removed
 		//Remove remaining records
-		for (Long existingRecordId : existingRecords.values()){
-			groupedWorkIndexer.removeGroupedWorkRecord(existingRecordId);
+		for (SavedRecordInfo existingRecord : existingRecords.values()){
+			groupedWorkIndexer.removeGroupedWorkRecord(existingRecord.id);
 		}
 		//Remove remaining variations
 		for (Long existingVariationId : existingVariations.values()) {

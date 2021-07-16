@@ -19,8 +19,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 
 class HooplaProcessor {
-	private GroupedWorkIndexer indexer;
-	private Logger logger;
+	private final GroupedWorkIndexer indexer;
+	private final Logger logger;
 
 	private PreparedStatement getProductInfoStmt;
 
@@ -29,7 +29,7 @@ class HooplaProcessor {
 		this.logger = logger;
 
 		try {
-			getProductInfoStmt = dbConn.prepareStatement("SELECT * from hoopla_export where hooplaId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+			getProductInfoStmt = dbConn.prepareStatement("SELECT id, hooplaId, active, title, kind, pa, demo, profanity, rating, abridged, children, price, rawChecksum, UNCOMPRESS(rawResponse) as rawResponse, dateFirstDetected from hoopla_export where hooplaId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 		} catch (SQLException e) {
 			logger.error("Error setting up hoopla processor", e);
 		}

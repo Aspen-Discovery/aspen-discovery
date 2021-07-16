@@ -1,20 +1,32 @@
 package com.turning_leaf_technologies.reindexer;
 
+import com.turning_leaf_technologies.indexing.BaseIndexingSettings;
 import com.turning_leaf_technologies.logging.BaseLogEntry;
 import com.turning_leaf_technologies.marc.MarcUtil;
 import com.turning_leaf_technologies.strings.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.marc4j.MarcJsonWriter;
+import org.marc4j.MarcStreamWriter;
+import org.marc4j.MarcWriter;
 import org.marc4j.marc.*;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import java.util.zip.CRC32;
 
 abstract class MarcRecordProcessor {
 	protected Logger logger;
 	protected GroupedWorkIndexer indexer;
+	protected BaseIndexingSettings settings;
+	protected String profileType;
 	private static final Pattern mpaaRatingRegex1 = Pattern.compile("(?:.*?)Rated\\s(G|PG-13|PG|R|NC-17|NR|X)(?:.*)", Pattern.CANON_EQ);
 	private static final Pattern mpaaRatingRegex2 = Pattern.compile("(?:.*?)(G|PG-13|PG|R|NC-17|NR|X)\\sRated(?:.*)", Pattern.CANON_EQ);
 	private static final Pattern mpaaRatingRegex3 = Pattern.compile("(?:.*?)MPAA rating:\\s(G|PG-13|PG|R|NC-17|NR|X)(?:.*)", Pattern.CANON_EQ);
@@ -31,9 +43,16 @@ abstract class MarcRecordProcessor {
 	String treatUnknownLanguageAs = null;
 	String treatUndeterminedLanguageAs = null;
 
-	MarcRecordProcessor(GroupedWorkIndexer indexer, Logger logger) {
+	PreparedStatement addRecordToDBStmt;
+
+	MarcRecordProcessor(GroupedWorkIndexer indexer, Connection dbConn, Logger logger) {
 		this.indexer = indexer;
 		this.logger = logger;
+		try {
+			addRecordToDBStmt = dbConn.prepareStatement("INSERT INTO ils_records set ilsId = ?, source = ?, checksum = ?, dateFirstDetected = ?, deleted = 0, suppressed = 0, sourceData = COMPRESS(?), lastModified = ? ON DUPLICATE KEY UPDATE sourceData = VALUES(sourceData), lastModified = VALUES(lastModified)");
+		}catch (Exception e){
+			logger.error("Error setting up prepared statements for loading MARC from the DB", e);
+		}
 	}
 
 	/**
@@ -45,7 +64,13 @@ abstract class MarcRecordProcessor {
 	 * @param logEntry the log entry to store any errors
 	 */
 	public void processRecord(GroupedWorkSolr groupedWork, String identifier, BaseLogEntry logEntry){
-		Record record = loadMarcRecordFromDisk(identifier, logEntry);
+		Record record = indexer.loadMarcRecordFromDatabase(this.profileType, identifier, logEntry);
+		if (record == null) {
+			record = loadMarcRecordFromDisk(identifier, logEntry);
+			if (record != null){
+				indexer.saveMarcRecordToDatabase(settings, identifier, record);
+			}
+		}
 
 		if (record != null){
 			try{
