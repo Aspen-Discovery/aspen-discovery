@@ -11,3 +11,5 @@ PhpStorm does have a small subscription fee, but we find it to be very worthwhil
 Once you have setup your LAMP/WAMP stack and your development tools, you can proceed to:
 - [Installing Aspen on Linux or Mac OSX](/Admin/HelpManual?page=Installing-Aspen-Linux)
 - [Installing Aspen on Windows](/Admin/HelpManual?page=Installing-Aspen-Windows)
+
+*Note after installing Bitnami for Windows, you will want to [add the PHP runtime to your path](https://www.google.com/search?q=adding+a+file+to+windows+path) to make running scripts from Aspen Discovery easier.  After adding PHP to your path, you will need to restart Windows. 
