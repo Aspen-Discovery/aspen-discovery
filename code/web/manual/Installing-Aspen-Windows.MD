@@ -8,7 +8,7 @@ For Windows, we also recommend using [GitHub Desktop](https://desktop.github.com
 1. Install the Aspen Discovery code by cloning the repository to `c:\web\`.   
 1. The next step will be easier if you have connection information to your ILS. For Koha you will need ODBC and REST API connection information. 
 1. Setup the site  
-   `cd c:\aspen-discovery\install\`  
+   `cd c:\web\aspen-discovery\install\`  
    `php createSite.php`
 1. Run database updates by logging in with the aspen_admin user you created while setting up the site and then going to:
    System Admin -> DB Maintenance -> run
