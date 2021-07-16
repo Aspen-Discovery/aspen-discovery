@@ -187,5 +187,12 @@ function getUpdates21_09_00() : array
 				'ALTER TABLE web_builder_portal_cell ADD COLUMN pdfView varchar(12) DEFAULT NULL',
 			]
 		], //pdfView
+		'increase_volumeId_length' => [
+			'title' => 'Increase Volume Id length',
+			'description' => 'Increase volume id length for polaris',
+			'sql' => [
+				'ALTER TABLE ils_volume_info CHANGE volumeId volumeId VARCHAR(100) NOT NULL'
+			]
+		], //increase_volumeId_length
 	];
 }
