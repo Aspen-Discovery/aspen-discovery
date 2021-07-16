@@ -92,8 +92,9 @@ public class Scope implements Comparable<Scope>{
 	 * @return                  Whether or not the item is included within the scope
 	 */
 	public InclusionResult isItemPartOfScope(@NotNull String recordType, @NotNull String locationCode, @NotNull String subLocationCode, String iType, TreeSet<String> audiences, String format, boolean isHoldable, boolean isOnOrder, boolean isEContent, Record marcRecord, String econtentUrl){
+		String fullKey = recordType + locationCode + subLocationCode;
 		for(OwnershipRule curRule: ownershipRules){
-			if (curRule.isItemOwned(recordType, locationCode, subLocationCode)){
+			if (curRule.isItemOwned(fullKey, recordType, locationCode, subLocationCode)){
 				return new InclusionResult(true, true, econtentUrl);
 			}
 		}
@@ -115,14 +116,16 @@ public class Scope implements Comparable<Scope>{
 	 * Determine if the item is part of the current scope based on location code and pType
 	 *
 	 *
+	 *
+	 * @param fullKey
 	 * @param recordType        The type of record being checked based on profile
 	 * @param locationCode      The location code for the item.  Set to blank if location codes
 	 * @param subLocationCode   The sub location code to check.  Set to blank if no sub location code
 	 * @return                  Whether or not the item is included within the scope
 	 */
-	public boolean isItemOwnedByScope(@NotNull String recordType, @NotNull String locationCode, @NotNull String subLocationCode){
+	public boolean isItemOwnedByScope(String fullKey, @NotNull String recordType, @NotNull String locationCode, @NotNull String subLocationCode){
 		for(OwnershipRule curRule: ownershipRules){
-			if (curRule.isItemOwned(recordType, locationCode, subLocationCode)){
+			if (curRule.isItemOwned(fullKey, recordType, locationCode, subLocationCode)){
 				return true;
 			}
 		}

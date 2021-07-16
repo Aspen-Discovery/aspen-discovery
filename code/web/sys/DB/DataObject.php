@@ -56,6 +56,14 @@ abstract class DataObject
 		return [];
 	}
 
+	/**
+	 * @return string[]
+	 */
+	public function getCompressedColumnNames() : array
+	{
+		return [];
+	}
+
 	function __toString()
 	{
 		$stringProperty = $this->__primaryKey;
@@ -254,6 +262,7 @@ abstract class DataObject
 		$numericColumns = $this->getNumericColumnNames();
 		$encryptedFields = $this->getEncryptedFieldNames();
 		$serializedFields = $this->getSerializedFieldNames();
+		$compressedFields = $this->getCompressedColumnNames();
 
 		$properties = get_object_vars($this);
 		$propertyNames = '';
@@ -283,6 +292,12 @@ abstract class DataObject
 					}else{
 						$propertyValues .= "''";
 					}
+				}elseif (in_array($name, $compressedFields)) {
+					if (!empty($value)) {
+						$propertyValues .= 'COMPRESS(' . $aspen_db->quote(serialize($value)) . ')';
+					}else{
+						$propertyValues .= "''";
+					}
 				} else {
 					$propertyValues .= $aspen_db->quote($value);
 				}
@@ -294,6 +309,17 @@ abstract class DataObject
 				$propertyNames .= $name;
 				if (!empty($value)) {
 					$propertyValues .= $aspen_db->quote(serialize($value));
+				}else{
+					$propertyValues .= "''";
+				}
+			}elseif (is_array($value) && in_array($name, $compressedFields)){
+				if (strlen($propertyNames) != 0) {
+					$propertyNames .= ', ';
+					$propertyValues .= ', ';
+				}
+				$propertyNames .= $name;
+				if (!empty($value)) {
+					$propertyValues .= 'COMPRESS(' . $aspen_db->quote(serialize($value)) . ')';
 				}else{
 					$propertyValues .= "''";
 				}
@@ -325,6 +351,7 @@ abstract class DataObject
 		$numericColumns = $this->getNumericColumnNames();
 		$encryptedFields = $this->getEncryptedFieldNames();
 		$serializedFields = $this->getSerializedFieldNames();
+		$compressedFields = $this->getCompressedColumnNames();
 
 		$properties = get_object_vars($this);
 		$updates = '';
@@ -351,12 +378,24 @@ abstract class DataObject
 					}else{
 						$updates .= $name . ' = ' .  $aspen_db->quote('');
 					}
+				}elseif (in_array($name, $compressedFields)) {
+					if (!empty($value)) {
+						$updates .= $name . ' = COMPRESS(' . $aspen_db->quote(serialize($value)) . ')';
+					}else{
+						$updates .= $name . ' = ' .  $aspen_db->quote('');
+					}
 				} else {
 					$updates .= $name . ' = ' . $aspen_db->quote($value);
 				}
 			}elseif (is_array($value) && in_array($name, $serializedFields)){
 				if (!empty($value)) {
 					$updates .= $name . ' = ' . $aspen_db->quote(serialize($value));
+				}else{
+					$updates .= $name . ' = ' .  $aspen_db->quote('');
+				}
+			}elseif (is_array($value) && in_array($name, $compressedFields)){
+				if (!empty($value)) {
+					$updates .= $name . ' = COMPRESS(' . $aspen_db->quote(serialize($value)) . ')';
 				}else{
 					$updates .= $name . ' = ' .  $aspen_db->quote('');
 				}
@@ -553,20 +592,39 @@ abstract class DataObject
 	 */
 	public function getSelectQuery(PDO $aspen_db): string
 	{
-		$selectClause = $this->__table . '.*';
+		$properties = get_object_vars($this);
+		$compressedFields = $this->getCompressedColumnNames();
+		if (count($compressedFields) == 0){
+			$selectClause = $this->__table . '.*';
+		}else{
+			$selectClause = '';
+			foreach ($properties as $name => $value) {
+				if ($name[0] != '_') {
+					if (!empty($selectClause)) {
+						$selectClause .= ', ';
+					}
+					if (in_array($name, $compressedFields)) {
+						$selectClause .= 'UNCOMPRESS(' . $this->__table . '.' . $name . ') as ' . $name;
+					} else {
+						$selectClause .= $this->__table . '.' . $name;
+					}
+				}
+			}
+		}
+
 		if (count($this->__additionalSelects) > 0) {
 			$selectClause = implode($this->__additionalSelects, ',');
 			if ($this->__selectAllColumns) {
 				$selectClause = '*, ' . $selectClause;
 			}
 		}
+
 		$query = 'SELECT ' . $selectClause . ' from ' . $this->__table;
 
 		foreach ($this->__joins as $join) {
 			$query .= $this->getJoinQuery($join);
 		}
 
-		$properties = get_object_vars($this);
 		$where = '';
 		foreach ($properties as $name => $value) {
 			if ($value !== null && $name[0] != '_') {

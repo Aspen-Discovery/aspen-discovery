@@ -2,6 +2,7 @@ package com.turning_leaf_technologies.reindexer;
 
 import com.turning_leaf_technologies.indexing.Scope;
 import com.turning_leaf_technologies.indexing.SideLoadScope;
+import com.turning_leaf_technologies.indexing.SideLoadSettings;
 import com.turning_leaf_technologies.marc.MarcUtil;
 import org.apache.logging.log4j.Logger;
 import org.marc4j.marc.Record;
@@ -13,15 +14,15 @@ import java.util.*;
 
 class SideLoadedEContentProcessor extends MarcRecordProcessor{
 	private long sideLoadId;
-	private String profileType;
 	protected boolean fullReindex;
 	private PreparedStatement getDateAddedStmt;
 
 	SideLoadedEContentProcessor(GroupedWorkIndexer indexer, Connection dbConn, ResultSet sideLoadSettingsRS, Logger logger, boolean fullReindex) {
-		super(indexer, logger);
+		super(indexer, dbConn, logger);
 		this.fullReindex = fullReindex;
 
 		try{
+			settings = new SideLoadSettings(sideLoadSettingsRS);
 			sideLoadId = sideLoadSettingsRS.getLong("id");
 			profileType = sideLoadSettingsRS.getString("name");
 			numCharsToCreateFolderFrom = sideLoadSettingsRS.getInt("numCharsToCreateFolderFrom");
@@ -35,7 +36,7 @@ class SideLoadedEContentProcessor extends MarcRecordProcessor{
 			treatUnknownLanguageAs = sideLoadSettingsRS.getString("treatUnknownLanguageAs");
 			treatUndeterminedLanguageAs = sideLoadSettingsRS.getString("treatUndeterminedLanguageAs");
 
-			getDateAddedStmt = dbConn.prepareStatement("SELECT dateFirstDetected FROM ils_marc_checksums WHERE source = ? and ilsId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			getDateAddedStmt = dbConn.prepareStatement("SELECT dateFirstDetected FROM ils_records WHERE source = ? and ilsId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 		}catch (Exception e){
 			logger.error("Error setting up side load processor");
 		}

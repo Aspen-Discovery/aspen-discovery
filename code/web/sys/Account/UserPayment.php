@@ -10,6 +10,7 @@ class UserPayment extends DataObject
 	public $paymentType;
 	public $orderId;
 	public $completed;
+	public $cancelled;
 	public $finesPaid;
 	public $totalPaid;
 	public $transactionDate;

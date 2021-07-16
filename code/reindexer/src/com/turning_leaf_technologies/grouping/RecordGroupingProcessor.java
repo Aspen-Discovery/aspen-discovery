@@ -6,6 +6,7 @@ import com.turning_leaf_technologies.logging.BaseLogEntry;
 import org.apache.logging.log4j.Logger;
 import org.marc4j.marc.*;
 
+import javax.xml.transform.Result;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
@@ -38,6 +39,9 @@ public class RecordGroupingProcessor {
 	private PreparedStatement getAuthorAuthorityIdStmt;
 	private PreparedStatement getAuthoritativeAuthorStmt;
 	private PreparedStatement getTitleAuthorityStmt;
+	private boolean lookupAuthorAuthoritiesInDB = true;
+	private boolean lookupTitleAuthoritiesInDB = true;
+	private HashMap<String, String> titleAuthorities = new HashMap<>();
 
 	private PreparedStatement markWorkAsNeedingReindexStmt;
 
@@ -177,7 +181,27 @@ public class RecordGroupingProcessor {
 			getPermanentIdByWorkIdStmt = dbConnection.prepareStatement("SELECT permanent_id from grouped_work WHERE id = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 
 			getAuthorAuthorityIdStmt = dbConnection.prepareStatement("SELECT authorId from author_authority_alternative where normalized = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			PreparedStatement getNumAuthorAuthoritiesStmt = dbConnection.prepareStatement("SELECT count(*) as numAuthorities from author_authority", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			ResultSet numAuthorAuthoritiesRS = getNumAuthorAuthoritiesStmt.executeQuery();
+			if (numAuthorAuthoritiesRS.next()) {
+				if (numAuthorAuthoritiesRS.getLong("numAuthorities") == 0) {
+					lookupAuthorAuthoritiesInDB = false;
+				}
+			}
 			getAuthoritativeAuthorStmt = dbConnection.prepareStatement("SELECT normalized from author_authority where id = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			PreparedStatement getNumTitleAuthoritiesStmt = dbConnection.prepareStatement("SELECT count(*) as numAuthorities from title_authorities", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			ResultSet numTitleAuthoritiesRS = getNumTitleAuthoritiesStmt.executeQuery();
+			if (numTitleAuthoritiesRS.next()){
+				if (numTitleAuthoritiesRS.getLong("numAuthorities") <= 100){
+					lookupTitleAuthoritiesInDB = false;
+					//Just get all the authorities up front
+					PreparedStatement getAllTitleAuthoritiesStmt = dbConnection.prepareStatement("SELECT * from title_authorities", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+					ResultSet getAllTitleAuthoritiesRS = getAllTitleAuthoritiesStmt.executeQuery();
+					while (getAllTitleAuthoritiesRS.next()){
+						titleAuthorities.put(getAllTitleAuthoritiesRS.getString("originalName"), getAllTitleAuthoritiesRS.getString("authoritativeName"));
+					}
+				}
+			}
 			getTitleAuthorityStmt = dbConnection.prepareStatement("SELECT * from title_authorities where originalName = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 
 			getGroupedWorkIdByPermanentIdStmt = dbConnection.prepareStatement("SELECT id from grouped_work WHERE permanent_id = ?");
@@ -778,31 +802,40 @@ public class RecordGroupingProcessor {
 	}
 
 	String getAuthoritativeAuthor(String originalAuthor) {
-		try {
-			getAuthorAuthorityIdStmt.setString(1, originalAuthor);
-			ResultSet authorityRS = getAuthorAuthorityIdStmt.executeQuery();
-			if (authorityRS.next()) {
-				getAuthoritativeAuthorStmt.setLong(1, authorityRS.getLong("authorId"));
-				ResultSet authoritativeAuthorRS = getAuthoritativeAuthorStmt.executeQuery();
-				if (authoritativeAuthorRS.next()) {
-					return authoritativeAuthorRS.getString("normalized");
+		if (lookupAuthorAuthoritiesInDB) {
+			try {
+				getAuthorAuthorityIdStmt.setString(1, originalAuthor);
+				ResultSet authorityRS = getAuthorAuthorityIdStmt.executeQuery();
+				if (authorityRS.next()) {
+					getAuthoritativeAuthorStmt.setLong(1, authorityRS.getLong("authorId"));
+					ResultSet authoritativeAuthorRS = getAuthoritativeAuthorStmt.executeQuery();
+					if (authoritativeAuthorRS.next()) {
+						return authoritativeAuthorRS.getString("normalized");
+					}
 				}
+			} catch (SQLException e) {
+				logEntry.incErrors("Error getting authoritative author", e);
 			}
-		} catch (SQLException e) {
-			logEntry.incErrors("Error getting authoritative author", e);
 		}
 		return originalAuthor;
 	}
 
 	String getAuthoritativeTitle(String originalTitle) {
-		try {
-			getTitleAuthorityStmt.setString(1, originalTitle);
-			ResultSet authorityRS = getTitleAuthorityStmt.executeQuery();
-			if (authorityRS.next()) {
-				return authorityRS.getString("authoritativeName");
+		if (lookupTitleAuthoritiesInDB) {
+			try {
+				getTitleAuthorityStmt.setString(1, originalTitle);
+				ResultSet authorityRS = getTitleAuthorityStmt.executeQuery();
+				if (authorityRS.next()) {
+					return authorityRS.getString("authoritativeName");
+				}
+			} catch (SQLException e) {
+				logEntry.incErrors("Error getting authoritative title", e);
 			}
-		} catch (SQLException e) {
-			logEntry.incErrors("Error getting authoritative title", e);
+		}else{
+			String authority = titleAuthorities.get(originalTitle);
+			if (authority != null){
+				return authority;
+			}
 		}
 		return originalTitle;
 	}

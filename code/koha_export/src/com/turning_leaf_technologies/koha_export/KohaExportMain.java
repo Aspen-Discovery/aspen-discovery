@@ -1201,11 +1201,11 @@ public class KohaExportMain {
 	private static void updateBibRecord(String curBibId) throws FileNotFoundException, SQLException {
 		//Load the existing marc record from file
 		try {
-			File marcFile = indexingProfile.getFileForIlsRecord(curBibId);
-			if (!marcFile.getParentFile().exists()) {
-				//noinspection ResultOfMethodCallIgnored
-				marcFile.getParentFile().mkdirs();
-			}
+//			File marcFile = indexingProfile.getFileForIlsRecord(curBibId);
+//			if (!marcFile.getParentFile().exists()) {
+//				//noinspection ResultOfMethodCallIgnored
+//				marcFile.getParentFile().mkdirs();
+//			}
 
 			//Create a new record from data in the database (faster and more reliable than using ILSDI or OAI export)
 			getBaseMarcRecordStmt.setString(1, curBibId);
@@ -1264,14 +1264,18 @@ public class KohaExportMain {
 						marcRecord.addVariableField(itemField);
 					}
 
-					if (marcFile.exists()) {
+					GroupedWorkIndexer.MarcStatus saveMarcResult = getGroupedWorkIndexer().saveMarcRecordToDatabase(indexingProfile, curBibId, marcRecord);
+					if (saveMarcResult == GroupedWorkIndexer.MarcStatus.CHANGED){
 						logEntry.incUpdated();
-					} else {
+					}else if (saveMarcResult == GroupedWorkIndexer.MarcStatus.NEW){
 						logEntry.incAdded();
+					}else{
+						//No change has been made, we could skip this
+						if (!indexingProfile.isRunFullUpdate()){
+							logEntry.incSkipped();
+							return;
+						}
 					}
-					MarcWriter writer = new MarcStreamWriter(new FileOutputStream(marcFile), "UTF-8", true);
-					writer.write(marcRecord);
-					writer.close();
 
 					//Regroup the record
 					String groupedWorkId = groupKohaRecord(marcRecord);

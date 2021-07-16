@@ -222,7 +222,7 @@ public class SideLoadingMain {
 
 				//Get a list of existing IDs for the side load
 				try {
-					PreparedStatement existingRecordsStmt = aspenConn.prepareStatement("select ilsId from ils_marc_checksums where source = ?");
+					PreparedStatement existingRecordsStmt = aspenConn.prepareStatement("select ilsId from ils_records where source = ?");
 					existingRecordsStmt.setString(1, settings.getName());
 					ResultSet existingRecordsRS = existingRecordsStmt.executeQuery();
 					while (existingRecordsRS.next()){
@@ -256,7 +256,7 @@ public class SideLoadingMain {
 
 				//Remove any records that no longer exist
 				try {
-					PreparedStatement deleteFromIlsMarcChecksums = aspenConn.prepareStatement("DELETE FROM ils_marc_checksums where source = ? and ilsId = ?");
+					PreparedStatement deleteFromIlsMarcChecksums = aspenConn.prepareStatement("DELETE FROM ils_records where source = ? and ilsId = ?");
 					for (String existingIdentifier : existingRecords) {
 						//Delete from ils_marc_checksums
 						RemoveRecordFromWorkResult result = recordGrouper.removeRecordFromGroupedWork(settings.getName(), existingIdentifier);
@@ -342,6 +342,7 @@ public class SideLoadingMain {
 		try {
 			logEntry.addNote("Processing " + fileToProcess.getName());
 			SideLoadedRecordGrouper recordGrouper = getRecordGroupingProcessor(settings);
+			GroupedWorkIndexer reindexer = getGroupedWorkIndexer();
 			MarcReader marcReader = new MarcPermissiveStreamReader(new FileInputStream(fileToProcess), true, true, settings.getMarcEncoding());
 			while (marcReader.hasNext()) {
 				try {
@@ -352,14 +353,14 @@ public class SideLoadingMain {
 						logEntry.incNumProducts(1);
 						boolean deleteRecord = false;
 						String recordNumber = recordIdentifier.getIdentifier();
-						BaseMarcRecordGrouper.MarcStatus marcStatus = recordGrouper.writeIndividualMarc(settings, marcRecord, recordNumber, logger);
-						if (marcStatus != BaseMarcRecordGrouper.MarcStatus.UNCHANGED || settings.isRunFullUpdate()) {
-							String permanentId = recordGrouper.processMarcRecord(marcRecord, marcStatus != BaseMarcRecordGrouper.MarcStatus.UNCHANGED, null);
+						GroupedWorkIndexer.MarcStatus marcStatus = reindexer.saveMarcRecordToDatabase(settings, recordNumber, marcRecord);
+						if (marcStatus != GroupedWorkIndexer.MarcStatus.UNCHANGED || settings.isRunFullUpdate()) {
+							String permanentId = recordGrouper.processMarcRecord(marcRecord, marcStatus != GroupedWorkIndexer.MarcStatus.UNCHANGED, null);
 							if (permanentId == null) {
 								//Delete the record since it is suppressed
 								deleteRecord = true;
 							} else {
-								if (marcStatus == BaseMarcRecordGrouper.MarcStatus.NEW) {
+								if (marcStatus == GroupedWorkIndexer.MarcStatus.NEW) {
 									logEntry.incAdded();
 								} else {
 									logEntry.incUpdated();

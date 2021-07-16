@@ -220,7 +220,7 @@ public class IndexingUtils {
 
 	private static void loadLocationScopes(TreeSet<Scope> scopes, HashMap<Long, GroupedWorkDisplaySettings> groupedWorkDisplaySettings, HashMap<Long, OverDriveScope> overDriveScopes, HashMap<Long, HooplaScope> hooplaScopes, HashMap<Long, RbdigitalScope> rbdigitalScopes, HashMap<Long, CloudLibraryScope> cloudLibraryScopes, HashMap<Long, Axis360Scope> axis360Scopes, HashMap<Long, SideLoadScope> sideLoadScopes, Connection dbConn, Logger logger) throws SQLException {
 		//To minimize the amount of data in the index, only load locations that have more than one location within the library.
-		PreparedStatement librariesWithMoreThanOneLocationStmt = dbConn.prepareStatement("select libraryId, count(*) as numLocations from location group by libraryId having numLocations > 1", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+		PreparedStatement librariesWithMoreThanOneLocationStmt = dbConn.prepareStatement("select libraryId, count(*) as numLocations from location WHERE createSearchInterface = 1 group by libraryId having numLocations > 1", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 		ResultSet librariesWithMoreThanOneLocation = librariesWithMoreThanOneLocationStmt.executeQuery();
 		String librariesToFetch = new String();
 		while (librariesWithMoreThanOneLocation.next()){
@@ -480,7 +480,7 @@ public class IndexingUtils {
 						"displayName, facetLabel, pTypes, restrictOwningBranchesAndSystems, publicListsToInclude, " +
 						"additionalLocationsToShowAvailabilityFor, overDriveScopeId, " +
 						"groupedWorkDisplaySettingId, hooplaScopeId, rbdigitalScopeId, axis360ScopeId " +
-						"FROM library ORDER BY ilsCode ASC",
+						"FROM library WHERE createSearchInterface = 1 ORDER BY ilsCode ASC",
 				ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 		PreparedStatement numLocationsForLibraryStmt = dbConn.prepareStatement("SELECT count(locationId) as numLocations from location where libraryId = ?")
 ;		PreparedStatement libraryOwnedRecordRulesStmt = dbConn.prepareStatement("SELECT library_records_owned.*, indexing_profiles.name from library_records_owned INNER JOIN indexing_profiles ON indexingProfileId = indexing_profiles.id WHERE libraryId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);

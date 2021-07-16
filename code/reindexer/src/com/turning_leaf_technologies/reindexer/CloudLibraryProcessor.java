@@ -25,7 +25,8 @@ class CloudLibraryProcessor extends MarcRecordProcessor {
 	private PreparedStatement getAvailabilityStmt;
 
 	CloudLibraryProcessor(GroupedWorkIndexer groupedWorkIndexer, Connection dbConn, Logger logger) {
-		super(groupedWorkIndexer, logger);
+		super(groupedWorkIndexer, dbConn, logger);
+		this.profileType = "cloud_library";
 
 		try {
 			getProductInfoStmt = dbConn.prepareStatement("SELECT * from cloud_library_title where cloudLibraryId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);

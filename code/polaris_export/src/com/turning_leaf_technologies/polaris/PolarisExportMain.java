@@ -122,14 +122,21 @@ public class PolarisExportMain {
 					logger.error("Please provide database_aspen_jdbc within config.pwd.ini");
 					System.exit(1);
 				}
-				domain = ConfigUtil.cleanIniValue(configIni.get("Catalog", "domain"));
-				staffUsername = ConfigUtil.cleanIniValue(configIni.get("Catalog", "staffUsername"));
-				staffPassword = ConfigUtil.cleanIniValue(configIni.get("Catalog", "staffPassword"));
+
 				dbConn = DriverManager.getConnection(databaseConnectionInfo);
 				if (dbConn == null) {
 					logger.error("Could not establish connection to database at " + databaseConnectionInfo);
 					System.exit(1);
 				}
+				PreparedStatement accountProfileStmt = dbConn.prepareStatement("SELECT * from account_profiles WHERE ils = 'polaris'");
+				ResultSet accountProfileRS = accountProfileStmt.executeQuery();
+				if (accountProfileRS.next()){
+					domain = accountProfileRS.getString("domain");
+					staffUsername = accountProfileRS.getString( "staffUsername");
+					staffPassword = accountProfileRS.getString( "staffPassword");
+				}
+				accountProfileRS.close();
+
 
 				logEntry = new IlsExtractLogEntry(dbConn, profileToLoad, logger);
 				//Remove log entries older than 45 days
@@ -926,21 +933,19 @@ public class PolarisExportMain {
 													}
 												}
 
-												//Save the file
-												File marcFile = indexingProfile.getFileForIlsRecord(bibliographicRecordId);
-												if (!marcFile.getParentFile().exists()) {
-													//noinspection ResultOfMethodCallIgnored
-													marcFile.getParentFile().mkdirs();
+												GroupedWorkIndexer.MarcStatus saveMarcResult = getGroupedWorkIndexer().saveMarcRecordToDatabase(indexingProfile, bibliographicRecordId, marcRecord);
+												if (saveMarcResult == GroupedWorkIndexer.MarcStatus.CHANGED){
+													logEntry.incUpdated();
+												}else if (saveMarcResult == GroupedWorkIndexer.MarcStatus.NEW){
+													logEntry.incAdded();
+												}else{
+													//No change has been made, we could skip this
+													if (!indexingProfile.isRunFullUpdate()){
+														logEntry.incSkipped();
+														continue;
+													}
 												}
 
-												if (marcFile.exists()) {
-													logEntry.incUpdated();
-												} else {
-													logEntry.incAdded();
-												}
-												MarcWriter writer = new MarcStreamWriter(new FileOutputStream(marcFile), "UTF-8", true);
-												writer.write(marcRecord);
-												writer.close();
 												//Regroup the record
 												String groupedWorkId = groupPolarisRecord(marcRecord);
 												if (groupedWorkId != null) {
