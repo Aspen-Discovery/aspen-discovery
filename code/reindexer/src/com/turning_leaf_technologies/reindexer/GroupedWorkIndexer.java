@@ -347,7 +347,7 @@ public class GroupedWorkIndexer {
 							logEntry.incErrors("Unknown indexing class " + ilsIndexingClassString);
 							break;
 					}
-				}else if (!curType.equals("cloud_library") && !curType.equals("rbdigital") && !curType.equals("rbdigital_magazine") && !curType.equals("hoopla") && !curType.equals("overdrive") && !curType.equals("axis360")) {
+				}else if (!curType.equals("cloud_library")  && !curType.equals("hoopla") && !curType.equals("overdrive") && !curType.equals("axis360")) {
 					getSideLoadSettings.setString(1, curType);
 					ResultSet getSideLoadSettingsRS = getSideLoadSettings.executeQuery();
 					if (getSideLoadSettingsRS.next()){
@@ -738,7 +738,7 @@ public class GroupedWorkIndexer {
 		groupedWorkPrimaryIdentifiers.close();
 
 		if (numPrimaryIdentifiers > 0) {
-			//Strip out any hoopla records that have the same format as an rbdigital or overdrive record
+			//Strip out any hoopla records that have the same format as another econtent record with apis
 			if (removeRedundantHooplaRecords) {
 				groupedWork.removeRedundantHooplaRecords();
 			}

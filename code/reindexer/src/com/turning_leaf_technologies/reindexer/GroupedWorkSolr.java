@@ -1734,7 +1734,7 @@ public class GroupedWorkSolr implements Cloneable {
 	}
 
 	/**
-	 * Removes any hoopla records where the equivalent format exists in OverDrive or Rbdigital
+	 * Removes any hoopla records where the equivalent format exists in another eContent format with APIs
 	 */
 	void removeRedundantHooplaRecords() {
 		if (relatedRecords.size() > 1) {

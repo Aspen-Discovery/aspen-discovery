@@ -22,15 +22,14 @@ public class IndexingUtils {
 		try {
 			HashMap<Long, OverDriveScope> overDriveScopes = loadOverDriveScopes(dbConn, logger);
 			HashMap<Long, HooplaScope> hooplaScopes = loadHooplaScopes(dbConn, logger);
-			HashMap<Long, RbdigitalScope> rbdigitalScopes = loadRbdigitalScopes(dbConn, logger);
 			HashMap<Long, Axis360Scope> axis360Scopes = loadAxis360Scopes(dbConn, logger);
 			HashMap<Long, CloudLibraryScope> cloudLibraryScopes = loadCloudLibraryScopes(dbConn, logger);
 			HashMap<Long, SideLoadScope> sideLoadScopes = loadSideLoadScopes(dbConn, logger);
 			HashMap<Long, GroupedWorkDisplaySettings> groupedWorkDisplaySettings = loadGroupedWorkDisplaySettings(dbConn, logger);
 
-			loadLibraryScopes(scopes, groupedWorkDisplaySettings, overDriveScopes, hooplaScopes, rbdigitalScopes, cloudLibraryScopes, axis360Scopes, sideLoadScopes, dbConn, logger);
+			loadLibraryScopes(scopes, groupedWorkDisplaySettings, overDriveScopes, hooplaScopes, cloudLibraryScopes, axis360Scopes, sideLoadScopes, dbConn, logger);
 
-			loadLocationScopes(scopes, groupedWorkDisplaySettings, overDriveScopes, hooplaScopes, rbdigitalScopes, cloudLibraryScopes, axis360Scopes, sideLoadScopes, dbConn, logger);
+			loadLocationScopes(scopes, groupedWorkDisplaySettings, overDriveScopes, hooplaScopes, cloudLibraryScopes, axis360Scopes, sideLoadScopes, dbConn, logger);
 		} catch (SQLException e) {
 			logger.error("Error setting up scopes", e);
 			return null;
@@ -96,31 +95,6 @@ public class IndexingUtils {
 			logger.error("Error loading hoopla scopes", e);
 		}
 		return hooplaScopes;
-	}
-
-	private static HashMap<Long, RbdigitalScope> loadRbdigitalScopes(Connection dbConn, Logger logger) {
-		HashMap<Long, RbdigitalScope> rbdigitalScopes = new HashMap<>();
-		try {
-			PreparedStatement rbdigitalScopeStmt = dbConn.prepareStatement("SELECT * from rbdigital_scopes", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-			ResultSet rbdigitalScopesRS = rbdigitalScopeStmt.executeQuery();
-
-			while (rbdigitalScopesRS.next()) {
-				RbdigitalScope rbdigitalScope = new RbdigitalScope();
-				rbdigitalScope.setId(rbdigitalScopesRS.getLong("id"));
-				rbdigitalScope.setName(rbdigitalScopesRS.getString("name"));
-				rbdigitalScope.setSettingId(rbdigitalScopesRS.getLong("settingId"));
-				rbdigitalScope.setIncludeEBooks(rbdigitalScopesRS.getBoolean("includeEBooks"));
-				rbdigitalScope.setIncludeEMagazines(rbdigitalScopesRS.getBoolean("includeEMagazines"));
-				rbdigitalScope.setIncludeEAudiobook(rbdigitalScopesRS.getBoolean("includeEAudiobook"));
-				rbdigitalScope.setRestrictToChildrensMaterial(rbdigitalScopesRS.getBoolean("restrictToChildrensMaterial"));
-
-				rbdigitalScopes.put(rbdigitalScope.getId(), rbdigitalScope);
-			}
-
-		} catch (SQLException e) {
-			logger.error("Error loading RBdigital scopes", e);
-		}
-		return rbdigitalScopes;
 	}
 
 	private static HashMap<Long, Axis360Scope> loadAxis360Scopes(Connection dbConn, Logger logger) {
@@ -218,7 +192,7 @@ public class IndexingUtils {
 		return sideLoadScopes;
 	}
 
-	private static void loadLocationScopes(TreeSet<Scope> scopes, HashMap<Long, GroupedWorkDisplaySettings> groupedWorkDisplaySettings, HashMap<Long, OverDriveScope> overDriveScopes, HashMap<Long, HooplaScope> hooplaScopes, HashMap<Long, RbdigitalScope> rbdigitalScopes, HashMap<Long, CloudLibraryScope> cloudLibraryScopes, HashMap<Long, Axis360Scope> axis360Scopes, HashMap<Long, SideLoadScope> sideLoadScopes, Connection dbConn, Logger logger) throws SQLException {
+	private static void loadLocationScopes(TreeSet<Scope> scopes, HashMap<Long, GroupedWorkDisplaySettings> groupedWorkDisplaySettings, HashMap<Long, OverDriveScope> overDriveScopes, HashMap<Long, HooplaScope> hooplaScopes, HashMap<Long, CloudLibraryScope> cloudLibraryScopes, HashMap<Long, Axis360Scope> axis360Scopes, HashMap<Long, SideLoadScope> sideLoadScopes, Connection dbConn, Logger logger) throws SQLException {
 		//To minimize the amount of data in the index, only load locations that have more than one location within the library.
 		PreparedStatement librariesWithMoreThanOneLocationStmt = dbConn.prepareStatement("select libraryId, count(*) as numLocations from location WHERE createSearchInterface = 1 group by libraryId having numLocations > 1", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 		ResultSet librariesWithMoreThanOneLocation = librariesWithMoreThanOneLocationStmt.executeQuery();
@@ -242,7 +216,6 @@ public class IndexingUtils {
 						"location.includeLibraryRecordsToInclude, " +
 						"library.overDriveScopeId as overDriveScopeIdLibrary, location.overDriveScopeId as overDriveScopeIdLocation, " +
 						"library.hooplaScopeId as hooplaScopeLibrary, location.hooplaScopeId as hooplaScopeLocation, " +
-						"library.rbdigitalScopeId as rbdigitalScopeLibrary, location.rbdigitalScopeId as rbdigitalScopeLocation, " +
 						"library.axis360ScopeId as axis360ScopeLibrary, location.axis360ScopeId as axis360ScopeLocation " +
 						"FROM location INNER JOIN library on library.libraryId = location.libraryId WHERE location.libraryId IN (" + librariesToFetch + ") ORDER BY code ASC",
 				ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
@@ -323,16 +296,6 @@ public class IndexingUtils {
 				}
 			} else if (hooplaScopeLocation != -2) {
 				locationScopeInfo.setHooplaScope(hooplaScopes.get(hooplaScopeLocation));
-			}
-
-			long rbdigitalScopeLocation = locationInformationRS.getLong("rbdigitalScopeLocation");
-			long rbdigitalScopeLibrary = locationInformationRS.getLong("rbdigitalScopeLibrary");
-			if (rbdigitalScopeLocation == -1) {
-				if (rbdigitalScopeLibrary != -1) {
-					locationScopeInfo.setRbdigitalScope(rbdigitalScopes.get(rbdigitalScopeLibrary));
-				}
-			} else if (rbdigitalScopeLocation != -2) {
-				locationScopeInfo.setRbdigitalScope(rbdigitalScopes.get(rbdigitalScopeLocation));
 			}
 
 			locationCloudLibraryScopesStmt.setLong(1, locationId);
@@ -475,11 +438,11 @@ public class IndexingUtils {
 		}
 	}
 
-	private static void loadLibraryScopes(TreeSet<Scope> scopes, HashMap<Long, GroupedWorkDisplaySettings> groupedWorkDisplaySettings, HashMap<Long, OverDriveScope> overDriveScopes, HashMap<Long, HooplaScope> hooplaScopes, HashMap<Long, RbdigitalScope> rbdigitalScopes, HashMap<Long, CloudLibraryScope> cloudLibraryScopes, HashMap<Long, Axis360Scope> axis360Scopes, HashMap<Long, SideLoadScope> sideLoadScopes, Connection dbConn, Logger logger) throws SQLException {
+	private static void loadLibraryScopes(TreeSet<Scope> scopes, HashMap<Long, GroupedWorkDisplaySettings> groupedWorkDisplaySettings, HashMap<Long, OverDriveScope> overDriveScopes, HashMap<Long, HooplaScope> hooplaScopes, HashMap<Long, CloudLibraryScope> cloudLibraryScopes, HashMap<Long, Axis360Scope> axis360Scopes, HashMap<Long, SideLoadScope> sideLoadScopes, Connection dbConn, Logger logger) throws SQLException {
 		PreparedStatement libraryInformationStmt = dbConn.prepareStatement("SELECT libraryId, ilsCode, subdomain, " +
 						"displayName, facetLabel, pTypes, restrictOwningBranchesAndSystems, publicListsToInclude, " +
 						"additionalLocationsToShowAvailabilityFor, overDriveScopeId, " +
-						"groupedWorkDisplaySettingId, hooplaScopeId, rbdigitalScopeId, axis360ScopeId " +
+						"groupedWorkDisplaySettingId, hooplaScopeId, axis360ScopeId " +
 						"FROM library WHERE createSearchInterface = 1 ORDER BY ilsCode ASC",
 				ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 		PreparedStatement numLocationsForLibraryStmt = dbConn.prepareStatement("SELECT count(locationId) as numLocations from location where libraryId = ?")
@@ -545,11 +508,6 @@ public class IndexingUtils {
 			long hooplaScopeLibrary = libraryInformationRS.getLong("hooplaScopeId");
 			if (hooplaScopeLibrary != -1) {
 				newScope.setHooplaScope(hooplaScopes.get(hooplaScopeLibrary));
-			}
-
-			long rbdigitalScopeLibrary = libraryInformationRS.getLong("rbdigitalScopeId");
-			if (rbdigitalScopeLibrary != -1) {
-				newScope.setRbdigitalScope(rbdigitalScopes.get(rbdigitalScopeLibrary));
 			}
 
 			libraryCloudLibraryScopesStmt.setLong(1, libraryId);

@@ -166,7 +166,7 @@ public class MarcRecordGrouper extends BaseMarcRecordGrouper {
 					for (DataField linkField : linkFields) {
 						if (linkField.getSubfield('u') != null) {
 							//Check the url to see if it is from OverDrive
-							//TODO: Suppress Rbdigital and Hoopla records as well?
+							//TODO: Suppress other eContent records as well?
 							String linkData = linkField.getSubfield('u').getData().trim();
 							if (MarcRecordGrouper.overdrivePattern.matcher(linkData).matches()) {
 								identifier.setSuppressed();
