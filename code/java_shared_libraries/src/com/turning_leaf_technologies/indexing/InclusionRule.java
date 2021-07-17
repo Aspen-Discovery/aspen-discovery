@@ -14,6 +14,7 @@ class InclusionRule {
 	private final boolean matchAllLocations;
 	private final Pattern locationCodePattern;
 	private Pattern locationsToExcludePattern = null;
+	private final boolean matchAllSubLocations;
 	private final Pattern subLocationCodePattern;
 	private Pattern subLocationsToExcludePattern = null;
 	private final Pattern iTypePattern;
@@ -46,6 +47,7 @@ class InclusionRule {
 		if (subLocationCode.length() == 0){
 			subLocationCode = ".*";
 		}
+		matchAllSubLocations = subLocationCode.equals(".*");
 		this.subLocationCodePattern = Pattern.compile(subLocationCode, Pattern.CASE_INSENSITIVE);
 
 		if (locationsToExclude.length() > 0){
@@ -158,13 +160,13 @@ class InclusionRule {
 		boolean isIncluded;
 
 		if (!hasCachedValue){
-			if (locationCodePattern.matcher(locationCode).lookingAt() &&
-					(subLocationCode == null || subLocationCodePattern.matcher(subLocationCode).lookingAt()) &&
-					(matchAllFormats || format == null || formatPattern.matcher(format).lookingAt())
+			if (locationCodePattern.matcher(locationCode).matches() &&
+					(subLocationCode == null || matchAllSubLocations || subLocationCodePattern.matcher(subLocationCode).matches()) &&
+					(matchAllFormats || format == null || formatPattern.matcher(format).matches())
 					){
 
 				//We got a match based on location check formats iTypes etc
-				if (!matchAlliTypes && iType != null && !iTypePattern.matcher(iType).lookingAt()){
+				if (!matchAlliTypes && iType != null && !iTypePattern.matcher(iType).matches()){
 					isIncluded =  false;
 				}else{
 					boolean audienceMatched = false;
@@ -172,7 +174,7 @@ class InclusionRule {
 						audienceMatched = true;
 					}else {
 						for (String audience : audiences) {
-							if (audiencePattern.matcher(audience).lookingAt()) {
+							if (audiencePattern.matcher(audience).matches()) {
 								audienceMatched = true;
 								break;
 							}
@@ -193,7 +195,7 @@ class InclusionRule {
 			boolean hasMatch = false;
 			Set<String> marcValuesToCheck = MarcUtil.getFieldList(marcRecord, marcTagToMatch);
 			for (String marcValueToCheck : marcValuesToCheck) {
-				if (marcValueToMatchPattern.matcher(marcValueToCheck).lookingAt()) {
+				if (marcValueToMatchPattern.matcher(marcValueToCheck).matches()) {
 					hasMatch = true;
 					break;
 				}
@@ -202,10 +204,10 @@ class InclusionRule {
 		}
 		//Make sure that we are not excluding the result
 		if (isIncluded && locationCode.length() > 0 && locationsToExcludePattern != null) {
-			isIncluded = !locationsToExcludePattern.matcher(locationCode).lookingAt();
+			isIncluded = !locationsToExcludePattern.matcher(locationCode).matches();
 		}
 		if (isIncluded && subLocationCode != null && subLocationsToExcludePattern != null) {
-			isIncluded = !subLocationsToExcludePattern.matcher(subLocationCode).lookingAt();
+			isIncluded = !subLocationsToExcludePattern.matcher(subLocationCode).matches();
 		}
 		return isIncluded;
 	}

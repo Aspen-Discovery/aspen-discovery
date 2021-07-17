@@ -1824,7 +1824,7 @@ public class GroupedWorkSolr implements Cloneable {
 
 			if (recordId != -1) {
 				//Get existing items for the record
-				HashMap<String, Long> existingItems = groupedWorkIndexer.getExistingItemsForRecord(recordId);
+				HashMap<String, SavedItemInfo> existingItems = groupedWorkIndexer.getExistingItemsForRecord(recordId);
 
 				//Save all the items
 				HashSet<Long> foundItems = new HashSet<>();
@@ -1835,25 +1835,14 @@ public class GroupedWorkSolr implements Cloneable {
 
 					long itemId = groupedWorkIndexer.saveItemForRecord(recordId, variationId, itemInfo, existingItems);
 					if (itemId != -1) {
-						//Save scopes for the items
-						HashMap<Long, ItemScopeInfo> existingScopes = groupedWorkIndexer.getExistingScopesForItem(itemId);
-
-						for (ScopingInfo scopingInfo : itemInfo.getScopingInfo().values()) {
-							groupedWorkIndexer.saveScopeForItem(itemId, scopingInfo, existingScopes);
-							existingScopes.remove(scopingInfo.getScope().getId());
-						}
-						for (ItemScopeInfo savedScopingInfo : existingScopes.values()) {
-							groupedWorkIndexer.removeItemScope(itemId, savedScopingInfo.scopeId);
-						}
-
 						foundItems.add(itemId);
 					}
 				}
 
 				//Remove remaining items that no longer exist
-				for (Long itemId : existingItems.values()) {
-					if (!foundItems.contains(itemId)) {
-						groupedWorkIndexer.removeRecordItem(itemId);
+				for (SavedItemInfo existingItem : existingItems.values()) {
+					if (!foundItems.contains(existingItem.id)) {
+						groupedWorkIndexer.removeRecordItem(existingItem.id);
 					}
 				}
 			}

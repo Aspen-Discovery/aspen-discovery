@@ -132,6 +132,14 @@ function getUpdates21_09_00() : array
 				"ALTER TABLE location ADD COLUMN createSearchInterface TINYINT(1) DEFAULT 1",
 			]
 		], //createSearchInterface_libraries_locations
+		'fix_dates_in_item_details' => [
+			'title' => 'Fix dates in Item Details',
+			'description' => 'Fix dates in Item Details',
+			'sql' => [
+				'ALTER TABLE grouped_work_record_items CHANGE COLUMN dateAdded dateAdded BIGINT',
+				'ALTER TABLE grouped_work_record_items CHANGE COLUMN lastCheckInDate lastCheckInDate BIGINT',
+			]
+		], //fix_dates_in_item_details
 		'normalize_scope_data' => [
 			'title' => 'Normalize Scope Data',
 			'description' => 'Normalize Scope Data to minimize data stored and speed insertions',
@@ -190,6 +198,24 @@ function getUpdates21_09_00() : array
 				'ALTER TABLE grouped_work_record_scope_details DROP groupedStatusId, DROP statusId, DROP available, DROP holdable, DROP inLibraryUseOnly',
 			]
 		], //move_unchanged_scope_data_to_item
+		'store_scope_details_in_concatenated_fields' => [
+			'title' => 'Store scope details within concatenated fields',
+			'description' => 'Update scoping to add scoped details within the item table rather than a separate table',
+			'sql' => [
+				'ALTER TABLE grouped_work_record_items ADD COLUMN locationOwnedScopes VARCHAR(500)',
+				'ALTER TABLE grouped_work_record_items ADD COLUMN libraryOwnedScopes VARCHAR(500)',
+				'ALTER TABLE grouped_work_record_items ADD COLUMN recordIncludedScopes VARCHAR(500)'
+			]
+		], //move_unchanged_scope_data_to_item
+		//TODO: Do some form of conversion from the scoped data to scope information stored at item leve
+		'remove_scope_tables' => [
+			'title' => 'Remove Scope Tables',
+			'description' => 'remove scope tables that are no longer used',
+			'sql' => [
+				'DROP TABLE grouped_work_record_scope',
+				'DROP TABLE grouped_work_record_scope_details',
+			]
+		], //remove_scope_tables
 		'storeNYTLastUpdated' => [
 			'title' => 'Store the date a NYT List was last modified',
 			'description' => 'Store the date that a NYT List was last modified by NYT',

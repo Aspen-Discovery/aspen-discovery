@@ -2443,16 +2443,41 @@ class GroupedWorkDriver extends IndexRecordDriver
 				$groupedWork->permanent_id = $this->getUniqueID();
 				if (!empty($groupedWork->permanent_id) && $groupedWork->find(true)) {
 					global $aspen_db;
+					//Get the scopeId for the active scope
+					$scopeIdQuery = "SELECT id from scope where name = '$solrScope'";
+					$scopeId = -1;
+					$results = $aspen_db->query($scopeIdQuery, PDO::FETCH_ASSOC);
+					if ($scopeResults = $results->fetch()) {
+						$scopeId = $scopeResults['id'];
+					}
+
+					//Get the ids of all the variations, records, and items attached to the work
+					$getIdsQuery = "select groupedWorkId, groupedWorkVariationId, groupedWorkRecordId, grouped_work_record_items.id as groupedRecordItemId FROM 
+										grouped_work_record_items inner join grouped_work_records on groupedWorkRecordId = grouped_work_records.id where 
+										(locationOwnedScopes like '%~$scopeId~%' OR libraryOwnedScopes like '%~$scopeId~%' OR recordIncludedScopes LIKE '%~$scopeId~%') and groupedWorkId = {$groupedWork->id}";
+					$results = $aspen_db->query($getIdsQuery, PDO::FETCH_ASSOC);
+					$allIds = $results->fetchAll();
+					$results->closeCursor();
+
+					$uniqueVariationIds = [];
+					$uniqueRecordIds = [];
+					$uniqueItemIds = [];
+					foreach ($allIds as $id) {
+						$uniqueVariationIds[$id['groupedWorkVariationId']] = $id['groupedWorkVariationId'];
+						$uniqueRecordIds[$id['groupedWorkRecordId']] = $id['groupedWorkRecordId'];
+						$uniqueItemIds[$id['groupedRecordItemId']] = $id['groupedRecordItemId'];
+					}
+					$uniqueVariationsIdsString = implode(',', $uniqueVariationIds);
+					$uniqueRecordIdsString = implode(',', $uniqueRecordIds);
+					$uniqueItemIdsString = implode(',', $uniqueItemIds);
+
 					//Load manifestation and variation information
 					$variationQuery = "SELECT grouped_work_variation.id, indexed_language.language, indexed_eContentSource.eContentSource, indexed_format.format, indexed_format_category.formatCategory FROM grouped_work_variation 
 									  LEFT JOIN indexed_language on primaryLanguageId = indexed_language.id
 									  LEFT JOIN indexed_eContentSource on eContentSourceId = indexed_eContentSource.id
 									  LEFT JOIN indexed_format on formatId = indexed_format.id
 									  LEFT JOIN indexed_format_category on formatCategoryId = indexed_format_category.id
-									  where grouped_work_variation.id IN (SELECT DISTINCT grouped_work_record_items.groupedWorkVariationId
-									  FROM grouped_work_record_scope 
-									  JOIN grouped_work_record_items ON groupedWorkItemId = grouped_work_record_items.id
-									  where scopeId = (SELECT id from scope where name = '$solrScope') AND groupedWorkItemId IN (SELECT id from grouped_work_record_items WHERE groupedWorkRecordId IN (SELECT id from grouped_work_records where groupedWorkId = {$groupedWork->id})))";
+									  where grouped_work_variation.id IN ($uniqueVariationsIdsString)";
 					$results = $aspen_db->query($variationQuery, PDO::FETCH_ASSOC);
 					$variations = $results->fetchAll();
 					$results->closeCursor();
@@ -2478,10 +2503,7 @@ class GroupedWorkDriver extends IndexRecordDriver
 								  LEFT JOIN indexed_format on formatId = indexed_format.id
 								  LEFT JOIN indexed_format_category on formatCategoryId = indexed_format_category.id
 								  LEFT JOIN indexed_language on languageId = indexed_language.id
-								  where grouped_work_records.id IN (SELECT DISTINCT grouped_work_record_items.groupedWorkRecordId
-								  FROM grouped_work_record_scope 
-								  JOIN grouped_work_record_items ON groupedWorkItemId = grouped_work_record_items.id
-								  where scopeId = (SELECT id from scope where name = '$solrScope') AND groupedWorkItemId IN (SELECT id from grouped_work_record_items WHERE groupedWorkRecordId IN (SELECT id from grouped_work_records where groupedWorkId = {$groupedWork->id})))";
+								  where grouped_work_records.id IN ($uniqueRecordIdsString)";
 					$results = $aspen_db->query($recordQuery, PDO::FETCH_ASSOC);
 					$records = $results->fetchAll();
 					$results->closeCursor();
@@ -2501,19 +2523,17 @@ class GroupedWorkDriver extends IndexRecordDriver
 					}
 
 					//Load item/scope information
-					$scopeQuery = "SELECT grouped_work_record_scope.groupedWorkItemId, scopeId, available, holdable, inLibraryUseOnly, locallyOwned, libraryOwned, localUrl, groupedStatusTbl.status as groupedStatus, statusTbl.status as status, 
+					$scopeQuery = "SELECT grouped_work_record_items.id as groupedWorkItemId, available, holdable, inLibraryUseOnly, locationOwnedScopes, libraryOwnedScopes, groupedStatusTbl.status as groupedStatus, statusTbl.status as status, 
 								  grouped_work_record_items.groupedWorkRecordId, grouped_work_record_items.groupedWorkVariationId, grouped_work_record_items.itemId, indexed_callNumber.callNumber, indexed_shelfLocation.shelfLocation, numCopies, isOrderItem, dateAdded, 
        							  indexed_locationCode.locationCode, indexed_subLocationCode.subLocationCode, lastCheckInDate
-								  FROM grouped_work_record_scope
-								  LEFT JOIN grouped_work_record_items ON groupedWorkItemId = grouped_work_record_items.id
-								  LEFT JOIN grouped_work_record_scope_details ON grouped_work_record_scope.scopeDetailsId = grouped_work_record_scope_details.id
+								  FROM grouped_work_record_items
 								  LEFT JOIN indexed_status as groupedStatusTbl on groupedStatusId = groupedStatusTbl.id 
 								  LEFT JOIN indexed_status as statusTbl on statusId = statusTbl.id 
 								  LEFT JOIN indexed_callNumber ON callNumberId = indexed_callNumber.id
 								  LEFT JOIN indexed_shelfLocation ON shelfLocationId = indexed_shelfLocation.id
 								  LEFT JOIN indexed_locationCode on locationCodeId = indexed_locationCode.id
 								  LEFT JOIN indexed_subLocationCode on subLocationCodeId = indexed_subLocationCode.id
-								  where scopeId = (SELECT id from scope where name = '$solrScope') AND groupedWorkItemId IN (SELECT id from grouped_work_record_items WHERE groupedWorkRecordId IN (SELECT id from grouped_work_records where groupedWorkId = {$groupedWork->id}))";
+								  where grouped_work_record_items.id IN ($uniqueItemIdsString)";
 					$results = $aspen_db->query($scopeQuery, PDO::FETCH_ASSOC);
 					$scopedItems = $results->fetchAll();
 					foreach ($scopedItems as $scopedItem) {
@@ -2521,6 +2541,7 @@ class GroupedWorkDriver extends IndexRecordDriver
 						$relatedVariation = $allVariations[$scopedItem['groupedWorkVariationId']];
 						$scopedItem['isEcontent'] = $relatedVariation->isEcontent;
 						$scopedItem['eContentSource'] = $relatedVariation->econtentSource;
+						$scopedItem['scopeId'] = $scopeId;
 						$itemData = new Grouping_Item($scopedItem, null, $searchLocation, $library);
 						$relatedRecord->addItem($itemData);
 					}

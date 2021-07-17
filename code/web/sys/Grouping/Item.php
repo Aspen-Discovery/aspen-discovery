@@ -83,8 +83,8 @@ class Grouping_Item
 			}
 			$this->groupedStatus = $itemDetails['groupedStatus'];
 			$this->status = $itemDetails['status'];
-			$this->locallyOwned = $itemDetails['locallyOwned'] == "1";
-			$this->libraryOwned = $itemDetails['libraryOwned'] == "1";
+			$this->locallyOwned = strpos($itemDetails['locationOwnedScopes'], "~{$itemDetails['scopeId']}~") !== false;
+			$this->libraryOwned = $this->locallyOwned || strpos($itemDetails['libraryOwnedScopes'], "~{$itemDetails['scopeId']}~") !== false;
 			$this->available = $itemDetails['available'] == "1";
 			$this->holdable = $itemDetails['holdable'] == "1";
 			$this->bookable = false;

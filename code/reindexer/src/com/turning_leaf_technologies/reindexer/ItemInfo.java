@@ -479,4 +479,46 @@ public class ItemInfo{
 	public String getVolumeField() {
 		return this.volumeField;
 	}
+
+	private StringBuffer locationOwnedScopes = null;
+	private StringBuffer libraryOwnedScopes = null;
+	private StringBuffer recordsIncludedScopes = null;
+	public String getLocationOwnedScopes() {
+		if (this.locationOwnedScopes == null){
+			this.createScopingStrings();
+		}
+		return locationOwnedScopes.toString();
+	}
+
+	public String getLibraryOwnedScopes() {
+		if (this.libraryOwnedScopes == null){
+			this.createScopingStrings();
+		}
+		return libraryOwnedScopes.toString();
+	}
+
+	public String getRecordsIncludedScopes() {
+		if (this.recordsIncludedScopes == null){
+			this.createScopingStrings();
+		}
+		return recordsIncludedScopes.toString();
+	}
+
+	private void createScopingStrings() {
+		locationOwnedScopes = new StringBuffer("~");
+		libraryOwnedScopes = new StringBuffer("~");
+		recordsIncludedScopes = new StringBuffer("~");
+		for (ScopingInfo scope : scopingInfo.values()){
+			if (scope.isLocallyOwned()){
+				locationOwnedScopes.append(scope.getScope().getId()).append("~");
+			}else if (scope.isLibraryOwned()){
+				libraryOwnedScopes.append(scope.getScope().getId()).append("~");
+			}else {
+				recordsIncludedScopes.append(scope.getScope().getId()).append("~");
+			}
+		}
+	}
+
+
+
 }

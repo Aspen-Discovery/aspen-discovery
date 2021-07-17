@@ -1,6 +1,5 @@
 package com.turning_leaf_technologies.reindexer;
 
-import com.mysql.cj.x.protobuf.MysqlxDatatypes;
 import com.turning_leaf_technologies.indexing.BaseIndexingSettings;
 import com.turning_leaf_technologies.indexing.IndexingProfile;
 import com.turning_leaf_technologies.indexing.IndexingUtils;
@@ -91,13 +90,14 @@ public class GroupedWorkIndexer {
 	private PreparedStatement getExistingItemsForRecordStmt;
 	private PreparedStatement removeItemStmt;
 	private PreparedStatement addItemForRecordStmt;
-	private PreparedStatement getExistingScopeDetailsStmt;
-	private PreparedStatement getExistingScopeDetailsWithNullUrlStmt;
-	private PreparedStatement getExistingScopesForItemStmt;
-	private PreparedStatement removeItemScopeStmt;
-	private PreparedStatement addScopeDetailsStmt;
-	private PreparedStatement addScopeForItemStmt;
-	private PreparedStatement updateScopeForItemStmt;
+	private PreparedStatement updateItemForRecordStmt;
+//	private PreparedStatement getExistingScopeDetailsStmt;
+//	private PreparedStatement getExistingScopeDetailsWithNullUrlStmt;
+//	private PreparedStatement getExistingScopesForItemStmt;
+//	private PreparedStatement removeItemScopeStmt;
+//	private PreparedStatement addScopeDetailsStmt;
+//	private PreparedStatement addScopeForItemStmt;
+//	private PreparedStatement updateScopeForItemStmt;
 	private PreparedStatement getRecordSourceStmt;
 	private PreparedStatement getRecordSourceWithNoSubSourceStmt;
 	private PreparedStatement addRecordSourceStmt;
@@ -203,17 +203,19 @@ public class GroupedWorkIndexer {
 			getExistingVariationsForWorkStmt = dbConn.prepareStatement("SELECT * from grouped_work_variation where groupedWorkId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			addVariationForWorkStmt = dbConn.prepareStatement("INSERT INTO grouped_work_variation (groupedWorkId, primaryLanguageId, eContentSourceId, formatId, formatCategoryId) VALUES (?, ?, ?, ?, ?)", PreparedStatement.RETURN_GENERATED_KEYS);
 			removeVariationStmt = dbConn.prepareStatement("DELETE FROM grouped_work_variation WHERE id = ?");
-			getExistingItemsForRecordStmt = dbConn.prepareStatement("SELECT itemId, id from grouped_work_record_items WHERE groupedWorkRecordId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
-			addItemForRecordStmt = dbConn.prepareStatement("INSERT INTO grouped_work_record_items (groupedWorkRecordId, groupedWorkVariationId, itemId, shelfLocationId, callNumberId, sortableCallNumberId, numCopies, isOrderItem, statusId, dateAdded, locationCodeId, subLocationCodeId, lastCheckInDate, groupedStatusId, available, holdable, inLibraryUseOnly) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE " +
-					"groupedWorkVariationId = VALUES(groupedWorkVariationId), shelfLocationId = VALUES(shelfLocationId), callNumberId = VALUES(callNumberId), sortableCallNumberId = VALUES(sortableCallNumberId), numCopies = VALUES(numCopies), isOrderItem = VALUES(isOrderItem), statusId = VALUES(statusId), dateAdded = VALUES(dateAdded), locationCodeId = VALUES(locationCodeId), subLocationCodeId = VALUES(subLocationCodeId), lastCheckInDate = VALUES(lastCheckInDate), groupedStatusId = VALUES(groupedStatusId), available = VALUES(available), holdable = VALUES(holdable), inLibraryUseOnly = VALUES(inLibraryUseOnly)", PreparedStatement.RETURN_GENERATED_KEYS);
+			getExistingItemsForRecordStmt = dbConn.prepareStatement("SELECT * from grouped_work_record_items WHERE groupedWorkRecordId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+			addItemForRecordStmt = dbConn.prepareStatement("INSERT INTO grouped_work_record_items (groupedWorkRecordId, groupedWorkVariationId, itemId, shelfLocationId, callNumberId, sortableCallNumberId, numCopies, isOrderItem, statusId, dateAdded, locationCodeId, subLocationCodeId, lastCheckInDate, groupedStatusId, available, holdable, inLibraryUseOnly, locationOwnedScopes, libraryOwnedScopes, recordIncludedScopes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", PreparedStatement.RETURN_GENERATED_KEYS);
+			updateItemForRecordStmt = dbConn.prepareStatement("UPDATE grouped_work_record_items set groupedWorkVariationId = ?, shelfLocationId = ?, callNumberId = ?, sortableCallNumberId = ?, numCopies = ?, isOrderItem = ?, statusId = ?, dateAdded = ?, " +
+					"locationCodeId = ?, subLocationCodeId = ?, lastCheckInDate = ?, groupedStatusId = ?, available = ?, holdable = ?, inLibraryUseOnly = ?, locationOwnedScopes = ?, libraryOwnedScopes = ?, recordIncludedScopes = ? WHERE id = ?");
 			removeItemStmt = dbConn.prepareStatement("DELETE FROM grouped_work_record_items WHERE id = ?");
-			getExistingScopeDetailsStmt = dbConn.prepareStatement("SELECT id from grouped_work_record_scope_details WHERE localUrl =? AND locallyOwned =? AND libraryOwned =?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
-			getExistingScopeDetailsWithNullUrlStmt = dbConn.prepareStatement("SELECT id from grouped_work_record_scope_details WHERE localUrl IS NULL AND locallyOwned =? AND libraryOwned =?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
-			getExistingScopesForItemStmt = dbConn.prepareStatement("SELECT * from grouped_work_record_scope WHERE groupedWorkItemId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
-			removeItemScopeStmt = dbConn.prepareStatement("DELETE FROM grouped_work_record_scope WHERE groupedWorkItemId = ? AND scopeId = ?");
-			addScopeDetailsStmt = dbConn.prepareStatement("INSERT INTO grouped_work_record_scope_details (localUrl, locallyOwned, libraryOwned) VALUES (?, ?, ?)", PreparedStatement.RETURN_GENERATED_KEYS);
-			addScopeForItemStmt = dbConn.prepareStatement("INSERT INTO grouped_work_record_scope (groupedWorkItemId, scopeId, scopeDetailsId) VALUES (?, ?, ?)");
-			updateScopeForItemStmt = dbConn.prepareStatement("UPDATE grouped_work_record_scope set scopeDetailsId = ? where groupedWorkItemId = ? AND scopeId = ?");getRecordSourceStmt = dbConn.prepareStatement("SELECT id from indexed_record_source where source = ? and subSource = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+//			getExistingScopeDetailsStmt = dbConn.prepareStatement("SELECT id from grouped_work_record_scope_details WHERE localUrl =? AND locallyOwned =? AND libraryOwned =?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+//			getExistingScopeDetailsWithNullUrlStmt = dbConn.prepareStatement("SELECT id from grouped_work_record_scope_details WHERE localUrl IS NULL AND locallyOwned =? AND libraryOwned =?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+//			getExistingScopesForItemStmt = dbConn.prepareStatement("SELECT * from grouped_work_record_scope WHERE groupedWorkItemId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+//			removeItemScopeStmt = dbConn.prepareStatement("DELETE FROM grouped_work_record_scope WHERE groupedWorkItemId = ? AND scopeId = ?");
+//			addScopeDetailsStmt = dbConn.prepareStatement("INSERT INTO grouped_work_record_scope_details (localUrl, locallyOwned, libraryOwned) VALUES (?, ?, ?)", PreparedStatement.RETURN_GENERATED_KEYS);
+//			addScopeForItemStmt = dbConn.prepareStatement("INSERT INTO grouped_work_record_scope (groupedWorkItemId, scopeId, scopeDetailsId) VALUES (?, ?, ?)");
+//			updateScopeForItemStmt = dbConn.prepareStatement("UPDATE grouped_work_record_scope set scopeDetailsId = ? where groupedWorkItemId = ? AND scopeId = ?");
+			getRecordSourceStmt = dbConn.prepareStatement("SELECT id from indexed_record_source where source = ? and subSource = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			getRecordSourceWithNoSubSourceStmt = dbConn.prepareStatement("SELECT id from indexed_record_source where source = ? and subSource IS NULL", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			addRecordSourceStmt = dbConn.prepareStatement("INSERT INTO indexed_record_source (source, subSource) VALUES (?, ?)", Statement.RETURN_GENERATED_KEYS);
 			getFormatCategoryStmt = dbConn.prepareStatement("SELECT id from indexed_format_category where formatCategory = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
@@ -1709,16 +1711,16 @@ public class GroupedWorkIndexer {
 
 	}
 
-	HashMap<String, Long> getExistingItemsForRecord(long recordId) {
-		HashMap<String, Long> existingItems = new HashMap<>();
+	HashMap<String, SavedItemInfo> getExistingItemsForRecord(long recordId) {
+		HashMap<String, SavedItemInfo> existingItems = new HashMap<>();
 		try{
 			getExistingItemsForRecordStmt.setLong(1, recordId);
 			ResultSet getExistingItemsForRecordRS = getExistingItemsForRecordStmt.executeQuery();
 			while (getExistingItemsForRecordRS.next()){
-				existingItems.put(getExistingItemsForRecordRS.getString("itemId"), getExistingItemsForRecordRS.getLong("id"));
+				existingItems.put(getExistingItemsForRecordRS.getString("itemId"), new SavedItemInfo(getExistingItemsForRecordRS));
 			}
 		}catch (SQLException e){
-			logEntry.incErrors("Error loading existing items for record");
+			logEntry.incErrors("Error loading existing items for record", e);
 		}
 		return existingItems;
 	}
@@ -1732,42 +1734,90 @@ public class GroupedWorkIndexer {
 		}
 	}
 
-	long saveItemForRecord(long recordId, long variationId, ItemInfo itemInfo, HashMap<String, Long> existingItems) {
-		Long itemId = existingItems.get(itemInfo.getItemIdentifier());
-		if (itemId == null){
-			itemId = -1L;
+	long saveItemForRecord(long recordId, long variationId, ItemInfo itemInfo, HashMap<String, SavedItemInfo> existingItems) {
+		SavedItemInfo savedItem = existingItems.get(itemInfo.getItemIdentifier());
+		long itemId = -1;
+		if (savedItem != null){
+			itemId = savedItem.id;
 		}
 		try {
-			addItemForRecordStmt.setLong(1, recordId);
-			addItemForRecordStmt.setLong(2, variationId);
-			addItemForRecordStmt.setString(3, itemInfo.getItemIdentifier());
-			addItemForRecordStmt.setLong(4, this.getShelfLocationId(itemInfo.getDetailedLocation()));
-			addItemForRecordStmt.setLong(5, this.getCallNumberId(itemInfo.getCallNumber()));
-			addItemForRecordStmt.setLong(6, this.getCallNumberId(itemInfo.getSortableCallNumber()));
-			addItemForRecordStmt.setLong(7, itemInfo.getNumCopies());
-			addItemForRecordStmt.setBoolean(8, itemInfo.isOrderItem());
-			addItemForRecordStmt.setLong(9, this.getStatusId(itemInfo.getDetailedStatus()));
-			if (itemInfo.getDateAdded() == null) {
-				addItemForRecordStmt.setNull(10, Types.BIGINT);
+			long shelfLocationId = this.getShelfLocationId(itemInfo.getDetailedLocation());
+			long callNumberId = this.getCallNumberId(itemInfo.getCallNumber());
+			long sortableCallNumberId;
+			if (StringUtils.compareStrings(itemInfo.getCallNumber(), itemInfo.getSortableCallNumber())){
+				sortableCallNumberId = callNumberId;
 			}else{
-				addItemForRecordStmt.setLong(10, itemInfo.getDateAdded().getTime() / 1000);
+				sortableCallNumberId = this.getCallNumberId(itemInfo.getSortableCallNumber());
 			}
-			addItemForRecordStmt.setLong(11, this.getLocationCodeId(itemInfo.getLocationCode()));
-			addItemForRecordStmt.setLong(12, this.getSubLocationCodeId(itemInfo.getSubLocationCode()));
-			if (itemInfo.getLastCheckinDate() ==  null){
-				addItemForRecordStmt.setNull(13, Types.INTEGER);
-			}else {
-				addItemForRecordStmt.setLong(13, itemInfo.getLastCheckinDate().getTime() / 1000);
-			}
-			addItemForRecordStmt.setLong(14, this.getStatusId(itemInfo.getGroupedStatus()));
-			addItemForRecordStmt.setBoolean(15, itemInfo.isAvailable());
-			addItemForRecordStmt.setBoolean(16, itemInfo.isHoldable());
-			addItemForRecordStmt.setBoolean(17, itemInfo.isInLibraryUseOnly());
-			addItemForRecordStmt.executeUpdate();
-			ResultSet addItemForWorkRS = addItemForRecordStmt.getGeneratedKeys();
-			if (addItemForWorkRS.next()){
-				itemId = addItemForWorkRS.getLong(1);
-				existingItems.put(itemInfo.getItemIdentifier(), itemId);
+			long statusId = this.getStatusId(itemInfo.getDetailedStatus());
+			long locationCodeId = this.getLocationCodeId(itemInfo.getLocationCode());
+			long subLocationId = this.getSubLocationCodeId(itemInfo.getSubLocationCode());
+			long groupedStatusId = this.getStatusId(itemInfo.getGroupedStatus());
+			if (savedItem == null) {
+				addItemForRecordStmt.setLong(1, recordId);
+				addItemForRecordStmt.setLong(2, variationId);
+				addItemForRecordStmt.setString(3, itemInfo.getItemIdentifier());
+				addItemForRecordStmt.setLong(4, shelfLocationId);
+				addItemForRecordStmt.setLong(5, callNumberId);
+				addItemForRecordStmt.setLong(6, sortableCallNumberId);
+				addItemForRecordStmt.setLong(7, itemInfo.getNumCopies());
+				addItemForRecordStmt.setBoolean(8, itemInfo.isOrderItem());
+				addItemForRecordStmt.setLong(9, statusId);
+				if (itemInfo.getDateAdded() == null) {
+					addItemForRecordStmt.setNull(10, Types.BIGINT);
+				} else {
+					addItemForRecordStmt.setLong(10, itemInfo.getDateAdded().getTime() / 1000);
+				}
+				addItemForRecordStmt.setLong(11, locationCodeId);
+				addItemForRecordStmt.setLong(12, subLocationId);
+				if (itemInfo.getLastCheckinDate() == null) {
+					addItemForRecordStmt.setNull(13, Types.INTEGER);
+				} else {
+					addItemForRecordStmt.setLong(13, itemInfo.getLastCheckinDate().getTime() / 1000);
+				}
+				addItemForRecordStmt.setLong(14, groupedStatusId);
+				addItemForRecordStmt.setBoolean(15, itemInfo.isAvailable());
+				addItemForRecordStmt.setBoolean(16, itemInfo.isHoldable());
+				addItemForRecordStmt.setBoolean(17, itemInfo.isInLibraryUseOnly());
+				addItemForRecordStmt.setString(18, itemInfo.getLocationOwnedScopes());
+				addItemForRecordStmt.setString(19, itemInfo.getLibraryOwnedScopes());
+				addItemForRecordStmt.setString(20, itemInfo.getRecordsIncludedScopes());
+				addItemForRecordStmt.executeUpdate();
+				ResultSet addItemForWorkRS = addItemForRecordStmt.getGeneratedKeys();
+				if (addItemForWorkRS.next()) {
+					itemId = addItemForWorkRS.getLong(1);
+				}
+			}else if (savedItem.hasChanged(recordId, variationId, itemInfo.getItemIdentifier(), shelfLocationId, callNumberId, sortableCallNumberId, itemInfo.getNumCopies(),
+					itemInfo.isOrderItem(), statusId, itemInfo.getDateAdded(), locationCodeId, subLocationId, itemInfo.getLastCheckinDate(), groupedStatusId, itemInfo.isAvailable(),
+					itemInfo.isHoldable(), itemInfo.isInLibraryUseOnly(), itemInfo.getLocationOwnedScopes(), itemInfo.getLibraryOwnedScopes(), itemInfo.getRecordsIncludedScopes())){
+				updateItemForRecordStmt.setLong(1, variationId);
+				updateItemForRecordStmt.setLong(2, shelfLocationId);
+				updateItemForRecordStmt.setLong(3, callNumberId);
+				updateItemForRecordStmt.setLong(4, sortableCallNumberId);
+				updateItemForRecordStmt.setLong(5, itemInfo.getNumCopies());
+				updateItemForRecordStmt.setBoolean(6, itemInfo.isOrderItem());
+				updateItemForRecordStmt.setLong(7, statusId);
+				if (itemInfo.getDateAdded() == null) {
+					updateItemForRecordStmt.setNull(8, Types.BIGINT);
+				} else {
+					updateItemForRecordStmt.setLong(8, itemInfo.getDateAdded().getTime() / 1000);
+				}
+				updateItemForRecordStmt.setLong(9, locationCodeId);
+				updateItemForRecordStmt.setLong(10, subLocationId);
+				if (itemInfo.getLastCheckinDate() == null) {
+					updateItemForRecordStmt.setNull(11, Types.INTEGER);
+				} else {
+					updateItemForRecordStmt.setLong(11, itemInfo.getLastCheckinDate().getTime() / 1000);
+				}
+				updateItemForRecordStmt.setLong(12, groupedStatusId);
+				updateItemForRecordStmt.setBoolean(13, itemInfo.isAvailable());
+				updateItemForRecordStmt.setBoolean(14, itemInfo.isHoldable());
+				updateItemForRecordStmt.setBoolean(15, itemInfo.isInLibraryUseOnly());
+				updateItemForRecordStmt.setString(16, itemInfo.getLocationOwnedScopes());
+				updateItemForRecordStmt.setString(17, itemInfo.getLibraryOwnedScopes());
+				updateItemForRecordStmt.setString(18, itemInfo.getRecordsIncludedScopes());
+				updateItemForRecordStmt.setLong(19, itemId);
+				updateItemForRecordStmt.executeUpdate();
 			}
 		} catch (SQLException e) {
 			logEntry.incErrors("Error saving grouped work item", e);
@@ -1776,97 +1826,97 @@ public class GroupedWorkIndexer {
 		return itemId;
 	}
 
-	HashMap<Long, ItemScopeInfo> getExistingScopesForItem(long itemId) {
-		HashMap<Long, ItemScopeInfo> existingScopes = new HashMap<>();
-		try{
-			getExistingScopesForItemStmt.setLong(1, itemId);
-			ResultSet getExistingScopesForItemRS = getExistingScopesForItemStmt.executeQuery();
-			while (getExistingScopesForItemRS.next()){
-				existingScopes.put(getExistingScopesForItemRS.getLong("scopeId"), new ItemScopeInfo(getExistingScopesForItemRS));
-			}
-		}catch (SQLException e){
-			logEntry.incErrors("Error loading existing scopes for item");
-		}
-		return existingScopes;
-	}
-
-	MaxSizeHashMap<SavedScopeDetails, Long> existingScopeDetails = new MaxSizeHashMap<>(1000);
-	long getScopeDetailsId(SavedScopeDetails details){
-		Long existingScopeDetailsId = existingScopeDetails.get(details);
-		if (existingScopeDetailsId != null){
-			return existingScopeDetailsId;
-		}else{
-			try {
-				ResultSet getExistingScopeDetailsRS;
-				if (details.localUrl == null) {
-					getExistingScopeDetailsWithNullUrlStmt.setBoolean(1, details.locallyOwned);
-					getExistingScopeDetailsWithNullUrlStmt.setBoolean(2, details.libraryOwned);
-					getExistingScopeDetailsRS = getExistingScopeDetailsWithNullUrlStmt.executeQuery();
-				}else{
-					getExistingScopeDetailsStmt.setString(1, details.localUrl);
-					getExistingScopeDetailsStmt.setBoolean(2, details.locallyOwned);
-					getExistingScopeDetailsStmt.setBoolean(3, details.libraryOwned);
-					getExistingScopeDetailsRS = getExistingScopeDetailsStmt.executeQuery();
-				}
-
-				if (getExistingScopeDetailsRS.next()){
-					details.id = getExistingScopeDetailsRS.getLong("id");
-					existingScopeDetails.put(details, details.id);
-				}else{
-					if (details.localUrl == null) {
-						addScopeDetailsStmt.setNull(1, Types.VARCHAR);
-					}else{
-						addScopeDetailsStmt.setString(1, details.localUrl);
-					}
-					addScopeDetailsStmt.setBoolean(2, details.locallyOwned);
-					addScopeDetailsStmt.setBoolean(3, details.libraryOwned);
-					addScopeDetailsStmt.executeUpdate();
-					ResultSet addScopeDetailsRS = addScopeDetailsStmt.getGeneratedKeys();
-					if (addScopeDetailsRS.next()) {
-						details.id = addScopeDetailsRS.getLong(1);
-						existingScopeDetails.put(details, details.id);
-					}
-				}
-			}catch (SQLException e){
-				logEntry.incErrors("Could not get Existing Scope Details", e);
-			}
-		}
-		return details.id;
-	}
-
-	void saveScopeForItem(long itemId, ScopingInfo scopingInfo, HashMap<Long, ItemScopeInfo> existingScopes) {
-		SavedScopeDetails scopeDetails = new SavedScopeDetails(
-			scopingInfo.getLocalUrl(),
-			scopingInfo.isLocallyOwned(),
-			scopingInfo.isLibraryOwned()
-		);
-		long scopedDetailsId = getScopeDetailsId(scopeDetails);
-		ItemScopeInfo savedScopingInfo = existingScopes.get(scopingInfo.getScope().getId());
-		if (savedScopingInfo == null){
-			try {
-				addScopeForItemStmt.setLong(1, itemId);
-				addScopeForItemStmt.setLong(2, scopingInfo.getScope().getId());
-				addScopeForItemStmt.setLong(3, scopedDetailsId);
-				addScopeForItemStmt.executeUpdate();
-			} catch (SQLException e) {
-				logEntry.incErrors("Error saving grouped work scope", e);
-			}
-		}else{
-			if (savedScopingInfo.scopeDetailsId != scopedDetailsId) {
-				try {
-					updateScopeForItemStmt.setLong(1, scopedDetailsId);
-					updateScopeForItemStmt.setLong(2, itemId);
-					updateScopeForItemStmt.setLong(3, scopingInfo.getScope().getId());
-					updateScopeForItemStmt.executeUpdate();
-				} catch (SQLException e) {
-					logEntry.incErrors("Error updating grouped work scope", e);
-				}
-			}
-		}
-
-
-		//return scopeId;
-	}
+//	HashMap<Long, ItemScopeInfo> getExistingScopesForItem(long itemId) {
+//		HashMap<Long, ItemScopeInfo> existingScopes = new HashMap<>();
+//		try{
+//			getExistingScopesForItemStmt.setLong(1, itemId);
+//			ResultSet getExistingScopesForItemRS = getExistingScopesForItemStmt.executeQuery();
+//			while (getExistingScopesForItemRS.next()){
+//				existingScopes.put(getExistingScopesForItemRS.getLong("scopeId"), new ItemScopeInfo(getExistingScopesForItemRS));
+//			}
+//		}catch (SQLException e){
+//			logEntry.incErrors("Error loading existing scopes for item");
+//		}
+//		return existingScopes;
+//	}
+//
+//	MaxSizeHashMap<SavedScopeDetails, Long> existingScopeDetails = new MaxSizeHashMap<>(1000);
+//	long getScopeDetailsId(SavedScopeDetails details){
+//		Long existingScopeDetailsId = existingScopeDetails.get(details);
+//		if (existingScopeDetailsId != null){
+//			return existingScopeDetailsId;
+//		}else{
+//			try {
+//				ResultSet getExistingScopeDetailsRS;
+//				if (details.localUrl == null) {
+//					getExistingScopeDetailsWithNullUrlStmt.setBoolean(1, details.locallyOwned);
+//					getExistingScopeDetailsWithNullUrlStmt.setBoolean(2, details.libraryOwned);
+//					getExistingScopeDetailsRS = getExistingScopeDetailsWithNullUrlStmt.executeQuery();
+//				}else{
+//					getExistingScopeDetailsStmt.setString(1, details.localUrl);
+//					getExistingScopeDetailsStmt.setBoolean(2, details.locallyOwned);
+//					getExistingScopeDetailsStmt.setBoolean(3, details.libraryOwned);
+//					getExistingScopeDetailsRS = getExistingScopeDetailsStmt.executeQuery();
+//				}
+//
+//				if (getExistingScopeDetailsRS.next()){
+//					details.id = getExistingScopeDetailsRS.getLong("id");
+//					existingScopeDetails.put(details, details.id);
+//				}else{
+//					if (details.localUrl == null) {
+//						addScopeDetailsStmt.setNull(1, Types.VARCHAR);
+//					}else{
+//						addScopeDetailsStmt.setString(1, details.localUrl);
+//					}
+//					addScopeDetailsStmt.setBoolean(2, details.locallyOwned);
+//					addScopeDetailsStmt.setBoolean(3, details.libraryOwned);
+//					addScopeDetailsStmt.executeUpdate();
+//					ResultSet addScopeDetailsRS = addScopeDetailsStmt.getGeneratedKeys();
+//					if (addScopeDetailsRS.next()) {
+//						details.id = addScopeDetailsRS.getLong(1);
+//						existingScopeDetails.put(details, details.id);
+//					}
+//				}
+//			}catch (SQLException e){
+//				logEntry.incErrors("Could not get Existing Scope Details", e);
+//			}
+//		}
+//		return details.id;
+//	}
+//
+//	void saveScopeForItem(long itemId, ScopingInfo scopingInfo, HashMap<Long, ItemScopeInfo> existingScopes) {
+//		SavedScopeDetails scopeDetails = new SavedScopeDetails(
+//			scopingInfo.getLocalUrl(),
+//			scopingInfo.isLocallyOwned(),
+//			scopingInfo.isLibraryOwned()
+//		);
+//		long scopedDetailsId = getScopeDetailsId(scopeDetails);
+//		ItemScopeInfo savedScopingInfo = existingScopes.get(scopingInfo.getScope().getId());
+//		if (savedScopingInfo == null){
+//			try {
+//				addScopeForItemStmt.setLong(1, itemId);
+//				addScopeForItemStmt.setLong(2, scopingInfo.getScope().getId());
+//				addScopeForItemStmt.setLong(3, scopedDetailsId);
+//				addScopeForItemStmt.executeUpdate();
+//			} catch (SQLException e) {
+//				logEntry.incErrors("Error saving grouped work scope", e);
+//			}
+//		}else{
+//			if (savedScopingInfo.scopeDetailsId != scopedDetailsId) {
+//				try {
+//					updateScopeForItemStmt.setLong(1, scopedDetailsId);
+//					updateScopeForItemStmt.setLong(2, itemId);
+//					updateScopeForItemStmt.setLong(3, scopingInfo.getScope().getId());
+//					updateScopeForItemStmt.executeUpdate();
+//				} catch (SQLException e) {
+//					logEntry.incErrors("Error updating grouped work scope", e);
+//				}
+//			}
+//		}
+//
+//
+//		//return scopeId;
+//	}
 
 	void removeScope(Long scopeId) {
 		try {
@@ -1924,16 +1974,16 @@ public class GroupedWorkIndexer {
 
 		return existingScopes;
 	}
-
-	public void removeItemScope(long itemId, long scopeId) {
-		try {
-			removeItemScopeStmt.setLong(1, itemId);
-			removeItemScopeStmt.setLong(2, scopeId);
-			removeItemScopeStmt.executeUpdate();
-		}catch (SQLException e) {
-			logEntry.incErrors("Error removing scope for item", e);
-		}
-	}
+//
+//	public void removeItemScope(long itemId, long scopeId) {
+//		try {
+//			removeItemScopeStmt.setLong(1, itemId);
+//			removeItemScopeStmt.setLong(2, scopeId);
+//			removeItemScopeStmt.executeUpdate();
+//		}catch (SQLException e) {
+//			logEntry.incErrors("Error removing scope for item", e);
+//		}
+//	}
 
 	public int disabledAutoCommitCounter = 0;
 	void disableAutoCommit(){
