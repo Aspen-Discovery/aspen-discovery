@@ -239,11 +239,15 @@ class HooplaProcessor {
 				itemInfo.setFormatCategory(formatCategory);
 				//Hoopla is always 1 copy unlimited use
 				itemInfo.setNumCopies(1);
+				itemInfo.setAvailable(true);
+				itemInfo.setDetailedStatus("Available Online");
+				itemInfo.setGroupedStatus("Available Online");
+				itemInfo.setHoldable(false);
+				itemInfo.setInLibraryUseOnly(false);
 
 				Date dateAdded = new Date(productRS.getLong("dateFirstDetected") * 1000);
 				itemInfo.setDateAdded(dateAdded);
 
-				itemInfo.setDetailedStatus("Available Online");
 				boolean abridged = productRS.getBoolean("abridged");
 				boolean pa = productRS.getBoolean("pa");
 				boolean profanity = productRS.getBoolean("profanity");
@@ -296,13 +300,8 @@ class HooplaProcessor {
 					}
 					if (okToAdd) {
 						ScopingInfo scopingInfo = itemInfo.addScope(scope);
-						scopingInfo.setAvailable(true);
-						scopingInfo.setStatus("Available Online");
-						scopingInfo.setGroupedStatus("Available Online");
-						scopingInfo.setHoldable(false);
 						scopingInfo.setLibraryOwned(true);
 						scopingInfo.setLocallyOwned(true);
-						scopingInfo.setInLibraryUseOnly(false);
 					}
 				}
 

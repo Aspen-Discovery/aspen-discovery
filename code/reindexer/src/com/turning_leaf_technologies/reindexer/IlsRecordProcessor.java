@@ -371,7 +371,6 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			loadPhysicalDescription(groupedWork, record, allRelatedRecords);
 			loadLanguageDetails(groupedWork, record, allRelatedRecords, identifier);
 			loadPublicationDetails(groupedWork, record, allRelatedRecords);
-			loadSystemLists(groupedWork, record);
 
 			if (record.getControlNumber() != null){
 				groupedWork.addKeywords(record.getControlNumber());
@@ -429,13 +428,9 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			//Suppress if the url is an overdrive or hoopla url
 			if (eContentUrlPattern.matcher(url).find()){
 				return true;
-			};
+			}
 		}
 		return false;
-	}
-
-	protected void loadSystemLists(GroupedWorkSolr groupedWork, Record record) {
-		//By default, do nothing
 	}
 
 	protected String getSubfieldData(DataField dataField, char subfield){
@@ -606,10 +601,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 						}*/
 					}
 				}
-				scopingInfo.setAvailable(false);
-				scopingInfo.setHoldable(true);
-				scopingInfo.setStatus("On Order");
-				scopingInfo.setGroupedStatus("On Order");
+
 				if (originalUrl != null && !originalUrl.equals(result.localUrl)){
 					scopingInfo.setLocalUrl(result.localUrl);
 				}
@@ -729,6 +721,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		}
 
 		itemInfo.setDetailedStatus("Available Online");
+		itemInfo.setGroupedStatus("Available Online");
 
 		//If we don't get a URL, return null since it isn't valid
 		if (itemInfo.geteContentUrl() == null || itemInfo.geteContentUrl().length() == 0){
@@ -882,8 +875,16 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	private void scopeItems(RecordInfo recordInfo, GroupedWorkSolr groupedWork, Record record){
 		for (ItemInfo itemInfo : recordInfo.getRelatedItems()){
 			if (itemInfo.isOrderItem()){
+				itemInfo.setAvailable(false);
+				itemInfo.setHoldable(true);
+				itemInfo.setDetailedStatus("On Order");
+				itemInfo.setGroupedStatus("On Order");
 				loadScopeInfoForOrderItem(itemInfo.getLocationCode(), recordInfo.getPrimaryFormat(), groupedWork.getTargetAudiences(), itemInfo, record);
 			}else if (itemInfo.isEContent()){
+				itemInfo.setAvailable(true);
+				itemInfo.setDetailedStatus("Available Online");
+				itemInfo.setGroupedStatus("Available Online");
+				itemInfo.setHoldable(false);
 				loadScopeInfoForEContentItem(groupedWork, itemInfo, record);
 			}else{
 				loadScopeInfoForPrintIlsItem(recordInfo, groupedWork.getTargetAudiences(), itemInfo, record);
@@ -903,10 +904,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			Scope.InclusionResult result = curScope.isItemPartOfScope(profileType, itemLocation, "", null, groupedWork.getTargetAudiences(), format, false, false, true, record, originalUrl);
 			if (result.isIncluded){
 				ScopingInfo scopingInfo = itemInfo.addScope(curScope);
-				scopingInfo.setAvailable(true);
-				scopingInfo.setStatus("Available Online");
-				scopingInfo.setGroupedStatus("Available Online");
-				scopingInfo.setHoldable(false);
+
 				if (curScope.isLocationScope()) {
 					scopingInfo.setLocallyOwned(curScope.isItemOwnedByScope(fullKey, profileType, itemLocation, ""));
 					if (curScope.getLibraryScope() != null) {
@@ -936,27 +934,28 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			available = false;
 		}
 
+		itemInfo.setAvailable(available);
+
+
+		itemInfo.setInLibraryUseOnly(determineLibraryUseOnly(itemInfo));
+
+		itemInfo.setDetailedStatus(displayStatus);
+		itemInfo.setGroupedStatus(groupedDisplayStatus);
+
 		String itemLocation = itemInfo.getLocationCode();
 		String itemSublocation = itemInfo.getSubLocationCode();
 
 		boolean isHoldableUnscoped = isItemHoldableUnscoped(itemInfo);
+		itemInfo.setHoldable(isHoldableUnscoped);
 		String originalUrl = itemInfo.geteContentUrl();
 		String primaryFormat = recordInfo.getPrimaryFormat();
 		String fullKey = profileType + itemLocation + itemSublocation;
 		for (Scope curScope : indexer.getScopes()) {
-			//Check to see if the record is holdable for this scope
-			boolean isHoldable = isItemHoldable(itemInfo, curScope, isHoldableUnscoped);
 
-			Scope.InclusionResult result = curScope.isItemPartOfScope(profileType, itemLocation, itemSublocation, itemInfo.getITypeCode(), audiences, primaryFormat, isHoldable, false, false, record, originalUrl);
+			Scope.InclusionResult result = curScope.isItemPartOfScope(profileType, itemLocation, itemSublocation, itemInfo.getITypeCode(), audiences, primaryFormat, isHoldableUnscoped, false, false, record, originalUrl);
 			if (result.isIncluded){
 				ScopingInfo scopingInfo = itemInfo.addScope(curScope);
-				scopingInfo.setAvailable(available);
-				scopingInfo.setHoldable(isHoldable);
 
-				scopingInfo.setInLibraryUseOnly(determineLibraryUseOnly(itemInfo, curScope));
-
-				scopingInfo.setStatus(displayStatus);
-				scopingInfo.setGroupedStatus(groupedDisplayStatus);
 				if (originalUrl != null && !originalUrl.equals(result.localUrl)){
 					scopingInfo.setLocalUrl(result.localUrl);
 				}
@@ -973,7 +972,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		}
 	}
 
-	protected boolean determineLibraryUseOnly(ItemInfo itemInfo, Scope curScope) {
+	protected boolean determineLibraryUseOnly(ItemInfo itemInfo) {
 		if (inLibraryUseOnlyStatuses.contains(itemInfo.getStatusCode())){
 			return true;
 		}
@@ -1202,14 +1201,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		if (format == null){
 			format = itemInfo.getRecordInfo().getPrimaryFormat();
 		}
-		if (nonHoldableFormats.contains(format.toUpperCase())){
-			return false;
-		}
-		return true;
-	}
-
-	protected boolean isItemHoldable(ItemInfo itemInfo, Scope curScope, boolean isHoldableUnscoped){
-		return isHoldableUnscoped;
+		return !nonHoldableFormats.contains(format.toUpperCase());
 	}
 
 	String getShelfLocationForItem(DataField itemField, String identifier) {
@@ -1405,7 +1397,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		}*/
 		HashSet<String> translatedFormats = translateCollection("format", printFormats, recordInfo.getRecordIdentifier());
 		if (translatedFormats.size() == 0){
-			logger.warn("Did not find a format for " + recordInfo.getRecordIdentifier() + " using standard format method " + printFormats.toString());
+			logger.warn("Did not find a format for " + recordInfo.getRecordIdentifier() + " using standard format method " + printFormats);
 		}
 		HashSet<String> translatedFormatCategories = translateCollection("format_category", printFormats, recordInfo.getRecordIdentifier());
 		recordInfo.addFormats(translatedFormats);

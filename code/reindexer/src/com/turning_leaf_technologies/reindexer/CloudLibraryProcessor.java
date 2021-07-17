@@ -94,24 +94,7 @@ class CloudLibraryProcessor extends MarcRecordProcessor {
 					logEntry.incErrors("Error getting MARC record for Cloud Library record from database");
 				}
 
-				ItemInfo itemInfo = new ItemInfo();
-				itemInfo.setItemIdentifier(identifier); //Make sure we have an item identifier
-				itemInfo.setFormat(primaryFormat);
-				itemInfo.setFormatCategory(formatCategory);
-				itemInfo.seteContentSource("Cloud Library");
-				itemInfo.setIsEContent(true);
-				itemInfo.setShelfLocation("Online Cloud Library Collection");
-				itemInfo.setDetailedLocation("Online Cloud Library Collection");
-				itemInfo.setCallNumber("Online Cloud Library");
-				itemInfo.setSortableCallNumber("Online Cloud Library");
-
-				Date dateAdded = new Date(productRS.getLong("dateFirstDetected") * 1000);
-				itemInfo.setDateAdded(dateAdded);
-
-				itemInfo.setDetailedStatus("Available Online");
-
-				boolean isChildrens = groupedWork.getTargetAudiences().contains("Children");
-
+				//Update to create one item per settings so we can have uniform availability at the item level
 				getAvailabilityStmt.setString(1, identifier);
 				ResultSet availabilityRS = getAvailabilityStmt.executeQuery();
 				while (availabilityRS.next()) {
@@ -120,14 +103,38 @@ class CloudLibraryProcessor extends MarcRecordProcessor {
 					if (availabilityRS.wasNull()){
 						continue;
 					}
+
+					ItemInfo itemInfo = new ItemInfo();
+					itemInfo.setItemIdentifier(identifier + ":" + settingId); //Make sure we have an item identifier
+					itemInfo.setFormat(primaryFormat);
+					itemInfo.setFormatCategory(formatCategory);
+					itemInfo.seteContentSource("Cloud Library");
+					itemInfo.setIsEContent(true);
+					itemInfo.setShelfLocation("Online Cloud Library Collection");
+					itemInfo.setDetailedLocation("Online Cloud Library Collection");
+					itemInfo.setCallNumber("Online Cloud Library");
+					itemInfo.setSortableCallNumber("Online Cloud Library");
+					itemInfo.setHoldable(true);
+					itemInfo.setInLibraryUseOnly(false);
+
+					Date dateAdded = new Date(productRS.getLong("dateFirstDetected") * 1000);
+					itemInfo.setDateAdded(dateAdded);
+
+					itemInfo.setDetailedStatus("Available Online");
+
+					boolean isChildrens = groupedWork.getTargetAudiences().contains("Children");
+
 					int totalCopies = availabilityRS.getInt("totalCopies");
 					itemInfo.setNumCopies(totalCopies);
 					int totalLoanCopies = availabilityRS.getInt("totalLoanCopies");
 					boolean available = totalCopies > totalLoanCopies;
+					itemInfo.setAvailable(available);
 					if (available) {
 						itemInfo.setDetailedStatus("Available Online");
+						itemInfo.setGroupedStatus("Available Online");
 					} else {
 						itemInfo.setDetailedStatus("Checked Out");
+						itemInfo.setGroupedStatus("Checked Out");
 					}
 					for (Scope scope : indexer.getScopes()) {
 						boolean okToAdd = false;
@@ -144,23 +151,15 @@ class CloudLibraryProcessor extends MarcRecordProcessor {
 						}
 						if (okToAdd) {
 							ScopingInfo scopingInfo = itemInfo.addScope(scope);
-							scopingInfo.setAvailable(available);
-							if (available) {
-								scopingInfo.setStatus("Available Online");
-								scopingInfo.setGroupedStatus("Available Online");
-							} else {
-								scopingInfo.setStatus("Checked Out");
-								scopingInfo.setGroupedStatus("Checked Out");
-							}
-							scopingInfo.setHoldable(true);
+
+
 							scopingInfo.setLibraryOwned(true);
 							scopingInfo.setLocallyOwned(true);
-							scopingInfo.setInLibraryUseOnly(false);
+
 						}
 					}
+					cloudLibraryRecord.addItem(itemInfo);
 				}
-				cloudLibraryRecord.addItem(itemInfo);
-
 			}
 			productRS.close();
 		} catch (NullPointerException e) {

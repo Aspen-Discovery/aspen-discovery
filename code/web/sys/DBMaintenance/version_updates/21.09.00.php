@@ -166,6 +166,29 @@ function getUpdates21_09_00() : array
 				"OPTIMIZE table grouped_work_record_scope"
 			]
 		], //normalize_scope_data
+		'move_unchanged_scope_data_to_item' => [
+			'title' => 'Move scope data that does not vary to item',
+			'description' => 'Move scope data that does not vary to item',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE grouped_work_record_items ADD COLUMN groupedStatusId INT(11)',
+				'ALTER TABLE grouped_work_record_items ADD COLUMN available TINYINT(1)',
+				'ALTER TABLE grouped_work_record_items ADD COLUMN holdable TINYINT(1)',
+				'ALTER TABLE grouped_work_record_items ADD COLUMN inLibraryUseOnly TINYINT(1)',
+				'UPDATE grouped_work_record_items as dest, 
+					(SELECT groupedWorkItemId, groupedStatusId, statusId, available, holdable, inLibraryUseOnly from 
+					  grouped_work_record_scope
+					  inner join grouped_work_record_scope_details on scopeDetailsId = grouped_work_record_scope_details.id 
+					  group by groupedWorkItemId, grouped_work_record_scope_details.groupedStatusId, grouped_work_record_scope_details.statusId, grouped_work_record_scope_details.available, grouped_work_record_scope_details.holdable, grouped_work_record_scope_details.inLibraryUseOnly) as src
+					set dest.groupedStatusId = src.groupedStatusId, 
+					  dest.statusId = src.statusId,
+					  dest.available = src.available, 
+					  dest.holdable = src.holdable, 
+					  dest.inLibraryUseOnly = src.inLibraryUseOnly
+					where dest.id = src.groupedWorkItemId',
+				'ALTER TABLE grouped_work_record_scope_details DROP COLUMN groupedStatusId, DROP COLUMN statusId, DROP COLUMN available, DROP COLUMN holdable, DROP COLUMN inLibraryUseOnly',
+			]
+		], //move_unchanged_scope_data_to_item
 		'storeNYTLastUpdated' => [
 			'title' => 'Store the date a NYT List was last modified',
 			'description' => 'Store the date that a NYT List was last modified by NYT',

@@ -1,5 +1,6 @@
 package com.turning_leaf_technologies.reindexer;
 
+import com.mysql.cj.x.protobuf.MysqlxDatatypes;
 import com.turning_leaf_technologies.indexing.BaseIndexingSettings;
 import com.turning_leaf_technologies.indexing.IndexingProfile;
 import com.turning_leaf_technologies.indexing.IndexingUtils;
@@ -37,8 +38,6 @@ public class GroupedWorkIndexer {
 	private final HashMap<String, MarcRecordProcessor> ilsRecordProcessors = new HashMap<>();
 	private final HashMap<String, SideLoadedEContentProcessor> sideLoadProcessors = new HashMap<>();
 	private OverDriveProcessor overDriveProcessor;
-	private RbdigitalProcessor rbdigitalProcessor;
-	private RbdigitalMagazineProcessor rbdigitalMagazineProcessor;
 	private CloudLibraryProcessor cloudLibraryProcessor;
 	private Axis360Processor axis360Processor;
 	private HooplaProcessor hooplaProcessor;
@@ -205,14 +204,14 @@ public class GroupedWorkIndexer {
 			addVariationForWorkStmt = dbConn.prepareStatement("INSERT INTO grouped_work_variation (groupedWorkId, primaryLanguageId, eContentSourceId, formatId, formatCategoryId) VALUES (?, ?, ?, ?, ?)", PreparedStatement.RETURN_GENERATED_KEYS);
 			removeVariationStmt = dbConn.prepareStatement("DELETE FROM grouped_work_variation WHERE id = ?");
 			getExistingItemsForRecordStmt = dbConn.prepareStatement("SELECT itemId, id from grouped_work_record_items WHERE groupedWorkRecordId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
-			addItemForRecordStmt = dbConn.prepareStatement("INSERT INTO grouped_work_record_items (groupedWorkRecordId, groupedWorkVariationId, itemId, shelfLocationId, callNumberId, sortableCallNumberId, numCopies, isOrderItem, statusId, dateAdded, locationCodeId, subLocationCodeId, lastCheckInDate) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE " +
-					"groupedWorkVariationId = VALUES(groupedWorkVariationId), shelfLocationId = VALUES(shelfLocationId), callNumberId = VALUES(callNumberId), sortableCallNumberId = VALUES(sortableCallNumberId), numCopies = VALUES(numCopies), isOrderItem = VALUES(isOrderItem), statusId = VALUES(statusId), dateAdded = VALUES(dateAdded), locationCodeId = VALUES(locationCodeId), subLocationCodeId = VALUES(subLocationCodeId), lastCheckInDate = VALUES(lastCheckInDate)", PreparedStatement.RETURN_GENERATED_KEYS);
+			addItemForRecordStmt = dbConn.prepareStatement("INSERT INTO grouped_work_record_items (groupedWorkRecordId, groupedWorkVariationId, itemId, shelfLocationId, callNumberId, sortableCallNumberId, numCopies, isOrderItem, statusId, dateAdded, locationCodeId, subLocationCodeId, lastCheckInDate, groupedStatusId, available, holdable, inLibraryUseOnly) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE " +
+					"groupedWorkVariationId = VALUES(groupedWorkVariationId), shelfLocationId = VALUES(shelfLocationId), callNumberId = VALUES(callNumberId), sortableCallNumberId = VALUES(sortableCallNumberId), numCopies = VALUES(numCopies), isOrderItem = VALUES(isOrderItem), statusId = VALUES(statusId), dateAdded = VALUES(dateAdded), locationCodeId = VALUES(locationCodeId), subLocationCodeId = VALUES(subLocationCodeId), lastCheckInDate = VALUES(lastCheckInDate), groupedStatusId = VALUES(groupedStatusId), available = VALUES(available), holdable = VALUES(holdable), inLibraryUseOnly = VALUES(inLibraryUseOnly)", PreparedStatement.RETURN_GENERATED_KEYS);
 			removeItemStmt = dbConn.prepareStatement("DELETE FROM grouped_work_record_items WHERE id = ?");
-			getExistingScopeDetailsStmt = dbConn.prepareStatement("SELECT id from grouped_work_record_scope_details WHERE groupedStatusId =? AND statusId =? AND available =? AND holdable =? AND inLibraryUseOnly =? AND localUrl =? AND locallyOwned =? AND libraryOwned =?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
-			getExistingScopeDetailsWithNullUrlStmt = dbConn.prepareStatement("SELECT id from grouped_work_record_scope_details WHERE groupedStatusId =? AND statusId =? AND available =? AND holdable =? AND inLibraryUseOnly =? AND localUrl IS NULL AND locallyOwned =? AND libraryOwned =?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+			getExistingScopeDetailsStmt = dbConn.prepareStatement("SELECT id from grouped_work_record_scope_details WHERE localUrl =? AND locallyOwned =? AND libraryOwned =?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+			getExistingScopeDetailsWithNullUrlStmt = dbConn.prepareStatement("SELECT id from grouped_work_record_scope_details WHERE localUrl IS NULL AND locallyOwned =? AND libraryOwned =?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			getExistingScopesForItemStmt = dbConn.prepareStatement("SELECT * from grouped_work_record_scope WHERE groupedWorkItemId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			removeItemScopeStmt = dbConn.prepareStatement("DELETE FROM grouped_work_record_scope WHERE groupedWorkItemId = ? AND scopeId = ?");
-			addScopeDetailsStmt = dbConn.prepareStatement("INSERT INTO grouped_work_record_scope_details (groupedStatusId, statusId, available, holdable, inLibraryUseOnly, localUrl, locallyOwned, libraryOwned) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", PreparedStatement.RETURN_GENERATED_KEYS);
+			addScopeDetailsStmt = dbConn.prepareStatement("INSERT INTO grouped_work_record_scope_details (localUrl, locallyOwned, libraryOwned) VALUES (?, ?, ?)", PreparedStatement.RETURN_GENERATED_KEYS);
 			addScopeForItemStmt = dbConn.prepareStatement("INSERT INTO grouped_work_record_scope (groupedWorkItemId, scopeId, scopeDetailsId) VALUES (?, ?, ?)");
 			updateScopeForItemStmt = dbConn.prepareStatement("UPDATE grouped_work_record_scope set scopeDetailsId = ? where groupedWorkItemId = ? AND scopeId = ?");getRecordSourceStmt = dbConn.prepareStatement("SELECT id from indexed_record_source where source = ? and subSource = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			getRecordSourceWithNoSubSourceStmt = dbConn.prepareStatement("SELECT id from indexed_record_source where source = ? and subSource IS NULL", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
@@ -379,10 +378,6 @@ public class GroupedWorkIndexer {
 		}
 		overDriveProcessor = new OverDriveProcessor(this, dbConn, logger);
 
-		rbdigitalProcessor = new RbdigitalProcessor(this, dbConn, logger);
-
-		rbdigitalMagazineProcessor = new RbdigitalMagazineProcessor(this, dbConn, logger);
-
 		cloudLibraryProcessor = new CloudLibraryProcessor(this, dbConn, logger);
 
 		hooplaProcessor = new HooplaProcessor(this, dbConn, logger);
@@ -418,8 +413,6 @@ public class GroupedWorkIndexer {
 		ilsRecordProcessors.clear();
 		sideLoadProcessors.clear();
 		overDriveProcessor = null;
-		rbdigitalProcessor = null;
-		rbdigitalMagazineProcessor = null;
 		cloudLibraryProcessor = null;
 		axis360Processor = null;
 		hooplaProcessor = null;
@@ -969,12 +962,6 @@ public class GroupedWorkIndexer {
 		switch (type) {
 			case "overdrive":
 				overDriveProcessor.processRecord(groupedWork, identifier, logEntry);
-				break;
-			case "rbdigital":
-				rbdigitalProcessor.processRecord(groupedWork, identifier, logEntry);
-				break;
-			case "rbdigital_magazine":
-				rbdigitalMagazineProcessor.processRecord(groupedWork, identifier, logEntry);
 				break;
 			case "hoopla":
 				hooplaProcessor.processRecord(groupedWork, identifier, logEntry);
@@ -1772,6 +1759,10 @@ public class GroupedWorkIndexer {
 			}else {
 				addItemForRecordStmt.setLong(13, itemInfo.getLastCheckinDate().getTime() / 1000);
 			}
+			addItemForRecordStmt.setLong(14, this.getStatusId(itemInfo.getGroupedStatus()));
+			addItemForRecordStmt.setBoolean(15, itemInfo.isAvailable());
+			addItemForRecordStmt.setBoolean(16, itemInfo.isHoldable());
+			addItemForRecordStmt.setBoolean(17, itemInfo.isInLibraryUseOnly());
 			addItemForRecordStmt.executeUpdate();
 			ResultSet addItemForWorkRS = addItemForRecordStmt.getGeneratedKeys();
 			if (addItemForWorkRS.next()){
@@ -1799,7 +1790,7 @@ public class GroupedWorkIndexer {
 		return existingScopes;
 	}
 
-	MaxSizeHashMap<SavedScopeDetails, Long> existingScopeDetails = new MaxSizeHashMap<SavedScopeDetails, Long>(1000);
+	MaxSizeHashMap<SavedScopeDetails, Long> existingScopeDetails = new MaxSizeHashMap<>(1000);
 	long getScopeDetailsId(SavedScopeDetails details){
 		Long existingScopeDetailsId = existingScopeDetails.get(details);
 		if (existingScopeDetailsId != null){
@@ -1808,23 +1799,13 @@ public class GroupedWorkIndexer {
 			try {
 				ResultSet getExistingScopeDetailsRS;
 				if (details.localUrl == null) {
-					getExistingScopeDetailsWithNullUrlStmt.setLong(1, details.groupedStatusId);
-					getExistingScopeDetailsWithNullUrlStmt.setLong(2, details.statusId);
-					getExistingScopeDetailsWithNullUrlStmt.setBoolean(3, details.available);
-					getExistingScopeDetailsWithNullUrlStmt.setBoolean(4, details.holdable);
-					getExistingScopeDetailsWithNullUrlStmt.setBoolean(5, details.inLibraryUseOnly);
-					getExistingScopeDetailsWithNullUrlStmt.setBoolean(6, details.locallyOwned);
-					getExistingScopeDetailsWithNullUrlStmt.setBoolean(7, details.libraryOwned);
+					getExistingScopeDetailsWithNullUrlStmt.setBoolean(1, details.locallyOwned);
+					getExistingScopeDetailsWithNullUrlStmt.setBoolean(2, details.libraryOwned);
 					getExistingScopeDetailsRS = getExistingScopeDetailsWithNullUrlStmt.executeQuery();
 				}else{
-					getExistingScopeDetailsStmt.setLong(1, details.groupedStatusId);
-					getExistingScopeDetailsStmt.setLong(2, details.statusId);
-					getExistingScopeDetailsStmt.setBoolean(3, details.available);
-					getExistingScopeDetailsStmt.setBoolean(4, details.holdable);
-					getExistingScopeDetailsStmt.setBoolean(5, details.inLibraryUseOnly);
-					getExistingScopeDetailsStmt.setString(6, details.localUrl);
-					getExistingScopeDetailsStmt.setBoolean(7, details.locallyOwned);
-					getExistingScopeDetailsStmt.setBoolean(8, details.libraryOwned);
+					getExistingScopeDetailsStmt.setString(1, details.localUrl);
+					getExistingScopeDetailsStmt.setBoolean(2, details.locallyOwned);
+					getExistingScopeDetailsStmt.setBoolean(3, details.libraryOwned);
 					getExistingScopeDetailsRS = getExistingScopeDetailsStmt.executeQuery();
 				}
 
@@ -1832,18 +1813,13 @@ public class GroupedWorkIndexer {
 					details.id = getExistingScopeDetailsRS.getLong("id");
 					existingScopeDetails.put(details, details.id);
 				}else{
-					addScopeDetailsStmt.setLong(1, details.groupedStatusId);
-					addScopeDetailsStmt.setLong(2, details.statusId);
-					addScopeDetailsStmt.setBoolean(3, details.available);
-					addScopeDetailsStmt.setBoolean(4, details.holdable);
-					addScopeDetailsStmt.setBoolean(5, details.inLibraryUseOnly);
 					if (details.localUrl == null) {
-						addScopeDetailsStmt.setNull(6, Types.VARCHAR);
+						addScopeDetailsStmt.setNull(1, Types.VARCHAR);
 					}else{
-						addScopeDetailsStmt.setString(6, details.localUrl);
+						addScopeDetailsStmt.setString(1, details.localUrl);
 					}
-					addScopeDetailsStmt.setBoolean(7, details.locallyOwned);
-					addScopeDetailsStmt.setBoolean(8, details.libraryOwned);
+					addScopeDetailsStmt.setBoolean(2, details.locallyOwned);
+					addScopeDetailsStmt.setBoolean(3, details.libraryOwned);
 					addScopeDetailsStmt.executeUpdate();
 					ResultSet addScopeDetailsRS = addScopeDetailsStmt.getGeneratedKeys();
 					if (addScopeDetailsRS.next()) {
@@ -1860,11 +1836,6 @@ public class GroupedWorkIndexer {
 
 	void saveScopeForItem(long itemId, ScopingInfo scopingInfo, HashMap<Long, ItemScopeInfo> existingScopes) {
 		SavedScopeDetails scopeDetails = new SavedScopeDetails(
-			this.getStatusId(scopingInfo.getGroupedStatus()),
-			this.getStatusId(scopingInfo.getStatus()),
-			scopingInfo.isAvailable(),
-			scopingInfo.isHoldable(),
-			scopingInfo.isInLibraryUseOnly(),
 			scopingInfo.getLocalUrl(),
 			scopingInfo.isLocallyOwned(),
 			scopingInfo.isLibraryOwned()
@@ -2000,7 +1971,7 @@ public class GroupedWorkIndexer {
 		UNCHANGED, CHANGED, NEW
 	}
 
-	public MarcStatus appendItemsToExistingRecord(IndexingProfile indexingSettings, Record recordWithAdditionalItems, String recordNumber, Logger logger) {
+	public MarcStatus appendItemsToExistingRecord(IndexingProfile indexingSettings, Record recordWithAdditionalItems, String recordNumber) {
 		MarcStatus marcRecordStatus = MarcStatus.UNCHANGED;
 		//Copy the record to the individual marc path
 		if (recordNumber != null) {

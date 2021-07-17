@@ -548,7 +548,7 @@ public class GroupedWorkSolr implements Cloneable {
 					}
 
 					if (curScope.isLocallyOwned() || curScope.isLibraryOwned()) {
-						if (curScope.isAvailable()) {
+						if (curItem.isAvailable()) {
 							updateMaxValueField(doc, "lib_boost_" + curScopeName, GroupedWorkIndexer.availableAtBoostValue);
 						} else {
 							updateMaxValueField(doc, "lib_boost_" + curScopeName, GroupedWorkIndexer.ownedByBoostValue);
@@ -605,7 +605,7 @@ public class GroupedWorkSolr implements Cloneable {
 		if (curItem.isEContent()){
 			//If the item is eContent, we will count it as part of the collection since it will be available.
 			availabilityToggleValues.add("local");
-			if (curScope.isAvailable()){
+			if (curItem.isAvailable()){
 				if (curScopeDetails.getGroupedWorkDisplaySettings().isIncludeOnlineMaterialsInAvailableToggle()) {
 					availabilityToggleValues.add("available");
 				}
@@ -621,7 +621,7 @@ public class GroupedWorkSolr implements Cloneable {
 				addLocationOwnership = true;
 				addLibraryOwnership = true;
 				availabilityToggleValues.add("local");
-				if (curScope.isAvailable()){
+				if (curItem.isAvailable()){
 					availabilityToggleValues.add("available");
 				}
 			}
@@ -630,14 +630,14 @@ public class GroupedWorkSolr implements Cloneable {
 					if (!curScopeDetails.getGroupedWorkDisplaySettings().isBaseAvailabilityToggleOnLocalHoldingsOnly()) {
 						addLibraryOwnership = true;
 						availabilityToggleValues.add("local");
-						if (curScope.isAvailable()) {
+						if (curItem.isAvailable()) {
 							availabilityToggleValues.add("available");
 						}
 					}
 				} else {
 					addLibraryOwnership = true;
 					availabilityToggleValues.add("local");
-					if (curScope.isLibraryOwned() && curScope.isAvailable()) {
+					if (curScope.isLibraryOwned() && curItem.isAvailable()) {
 						availabilityToggleValues.add("available");
 					}
 				}
@@ -658,7 +658,7 @@ public class GroupedWorkSolr implements Cloneable {
 			//Save values for this scope
 			setScopedField(multiValuedScopedFields, "owning_location_" + curScopeName, owningLocationValue);
 
-			if (curScope.isAvailable()) {
+			if (curItem.isAvailable()) {
 				addAvailableAtValues(curRecord, curScopeName, owningLocationValue, multiValuedScopedFields);
 			}
 
@@ -667,7 +667,7 @@ public class GroupedWorkSolr implements Cloneable {
 				if (curScopeDetails.getLibraryScope() != null && !curScopeDetails.getLibraryScope().getScopeName().equals(curScopeName)) {
 					setScopedField(multiValuedScopedFields,"owning_location_" + curScopeDetails.getLibraryScope().getScopeName(), owningLocationValue);
 					addAvailabilityToggleValues(curRecord, curScopeDetails.getLibraryScope().getScopeName(), availabilityToggleValues, multiValuedScopedFields);
-					if (curScope.isAvailable()) {
+					if (curItem.isAvailable()) {
 						addAvailableAtValues(curRecord, curScopeDetails.getLibraryScope().getScopeName(), owningLocationValue, multiValuedScopedFields);
 					}
 				}
@@ -685,7 +685,7 @@ public class GroupedWorkSolr implements Cloneable {
 										addAvailabilityToggleValues(curRecord, otherScopeName, availabilityToggleValues, multiValuedScopedFields);
 									}
 									setScopedField(multiValuedScopedFields, "owning_location_" + otherScopeName, owningLocationValue);
-									if (curScope.isAvailable()) {
+									if (curItem.isAvailable()) {
 										addAvailableAtValues(curRecord, otherScopeName, owningLocationValue, multiValuedScopedFields);
 									}
 								}
@@ -703,7 +703,7 @@ public class GroupedWorkSolr implements Cloneable {
 							if (otherScopeDetails.getAdditionalLocationsToShowAvailabilityForPattern().matcher(curScopeName).matches()) {
 								addAvailabilityToggleValues(curRecord, otherScopeName, availabilityToggleValues, multiValuedScopedFields);
 								setScopedField(multiValuedScopedFields, "owning_location_" + otherScopeName, owningLocationValue);
-								if (curScope.isAvailable()) {
+								if (curItem.isAvailable()) {
 									addAvailableAtValues(curRecord, otherScopeName, owningLocationValue, multiValuedScopedFields);
 								}
 							}
@@ -721,7 +721,7 @@ public class GroupedWorkSolr implements Cloneable {
 						addAvailabilityToggleValues(curRecord, scopeToShowAll.getScope().getScopeName(), availabilityToggleValues, multiValuedScopedFields);
 					}
 					setScopedField(multiValuedScopedFields, "owning_location_" + scopeToShowAll.getScope().getScopeName(), owningLocationValue);
-					if (curScope.isAvailable()) {
+					if (curItem.isAvailable()) {
 						addAvailableAtValues(curRecord, scopeToShowAll.getScope().getScopeName(), owningLocationValue, multiValuedScopedFields);
 					}
 				}
@@ -1743,7 +1743,7 @@ public class GroupedWorkSolr implements Cloneable {
 			for (RecordInfo relatedRecord : relatedRecords.values()) {
 				if (relatedRecord.getSource().equals("hoopla")) {
 					hooplaRecordsAsArray.add(relatedRecord);
-				} else if (relatedRecord.getSource().equals("overdrive") || relatedRecord.getSource().equals("rbdigital") || relatedRecord.getSource().equals("cloud_library")) {
+				} else if (relatedRecord.getSource().equals("overdrive") || relatedRecord.getSource().equals("axis36") || relatedRecord.getSource().equals("cloud_library")) {
 					otherRecordsAsArray.add(relatedRecord);
 				}
 			}
@@ -1757,26 +1757,25 @@ public class GroupedWorkSolr implements Cloneable {
 					if (record1.getPrimaryFormat().equals(record2.getPrimaryFormat()) && record1.getPrimaryLanguage().equals(record2.getPrimaryLanguage())) {
 						//Remove the hoopla record from any scope where there is an available replacement
 						for (ItemInfo curItem2 : record2.getRelatedItems()){
-							for (String curScopeName2 : curItem2.getScopingInfo().keySet()){
-								ScopingInfo curScope2 = curItem2.getScopingInfo().get(curScopeName2);
-								if (curScope2.isAvailable()){
-									for (ItemInfo curItem1 : record1.getRelatedItems()){
-										curItem1.getScopingInfo().remove(curScope2.getScope().getScopeName());
+							if (curItem2.isAvailable()){
+								for (ItemInfo curItem1 : record1.getRelatedItems()){
+									for (String scopeName : curItem2.getScopingInfo().keySet()) {
+										curItem1.getScopingInfo().remove(scopeName);
 									}
-									boolean changeMade = true;
-									while (changeMade){
-										changeMade = false;
-										for (ItemInfo curItem1 : record1.getRelatedItems()){
-											if (curItem1.getScopingInfo().size() == 0){
-												record1.getRelatedItems().remove(curItem1);
-												changeMade = true;
-												break;
-											}
+								}
+								boolean changeMade = true;
+								while (changeMade){
+									changeMade = false;
+									for (ItemInfo curItem1 : record1.getRelatedItems()){
+										if (curItem1.getScopingInfo().size() == 0){
+											record1.getRelatedItems().remove(curItem1);
+											changeMade = true;
+											break;
 										}
 									}
-									if (record1.getRelatedItems().size() == 0){
-										relatedRecords.remove(record1.getFullIdentifier());
-									}
+								}
+								if (record1.getRelatedItems().size() == 0){
+									relatedRecords.remove(record1.getFullIdentifier());
 								}
 							}
 						}

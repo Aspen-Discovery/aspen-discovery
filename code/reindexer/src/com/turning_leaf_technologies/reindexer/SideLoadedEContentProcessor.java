@@ -91,13 +91,9 @@ class SideLoadedEContentProcessor extends MarcRecordProcessor{
 				boolean itemPartOfScope = sideLoadScope.isItemPartOfScope(record);
 				if (itemPartOfScope) {
 					ScopingInfo scopingInfo = itemInfo.addScope(curScope);
-					scopingInfo.setAvailable(true);
-					scopingInfo.setStatus("Available Online");
-					scopingInfo.setGroupedStatus("Available Online");
-					scopingInfo.setHoldable(false);
+
 					scopingInfo.setLibraryOwned(true);
 					scopingInfo.setLocallyOwned(true);
-					scopingInfo.setInLibraryUseOnly(false);
 
 					//Check to see if we need to do url rewriting
 					if (originalUrl != null) {
@@ -132,6 +128,11 @@ class SideLoadedEContentProcessor extends MarcRecordProcessor{
 
 		//No Collection for Side loaded eContent
 		//itemInfo.setCollection(translateValue("collection", getItemSubfieldData(collectionSubfield, itemField), identifier));
+		itemInfo.setAvailable(true);
+		itemInfo.setDetailedStatus("Available Online");
+		itemInfo.setGroupedStatus("Available Online");
+		itemInfo.setHoldable(false);
+		itemInfo.setInLibraryUseOnly(false);
 
 		itemInfo.seteContentSource(profileType);
 
@@ -141,7 +142,7 @@ class SideLoadedEContentProcessor extends MarcRecordProcessor{
 
 		loadEContentFormatInformation(record, relatedRecord, itemInfo);
 
-		itemInfo.setDetailedStatus("Available Online");
+
 
 		return relatedRecord;
 	}

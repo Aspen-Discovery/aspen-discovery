@@ -352,15 +352,22 @@ class OverDriveProcessor {
 							//Add copies since non-shared records are distinct from shared collection
 							totalCopiesOwned += copiesOwned;
 
-							if (available) {
-								itemInfo.setDetailedStatus("Available Online");
-							} else {
-								itemInfo.setDetailedStatus("Checked Out");
-							}
-
 							if (copiesOwned == 0 && libraryId != -1){
 								//Don't add advantage info if the library does not own additional copies (or have additional copies shared with it)
 								continue;
+							}
+							itemInfo.setAvailable(available);
+							itemInfo.setHoldable(true);
+
+							if (isOnOrder) {
+								itemInfo.setDetailedStatus("On Order");
+								itemInfo.setGroupedStatus("On Order");
+							} else if (available) {
+								itemInfo.setDetailedStatus("Available Online");
+								itemInfo.setGroupedStatus("Available Online");
+							} else {
+								itemInfo.setDetailedStatus("Checked Out");
+								itemInfo.setGroupedStatus("Checked Out");
 							}
 
 							overDriveRecord.addItem(itemInfo);
@@ -384,19 +391,6 @@ class OverDriveProcessor {
 										}
 										if (okToInclude) {
 											ScopingInfo scopingInfo = itemInfo.addScope(scope);
-											scopingInfo.setAvailable(available);
-											scopingInfo.setHoldable(true);
-
-											if (isOnOrder) {
-												scopingInfo.setStatus("On Order");
-												scopingInfo.setGroupedStatus("On Order");
-											} else if (available) {
-												scopingInfo.setStatus("Available Online");
-												scopingInfo.setGroupedStatus("Available Online");
-											} else {
-												scopingInfo.setStatus("Checked Out");
-												scopingInfo.setGroupedStatus("Checked Out");
-											}
 										}
 									}
 								}
@@ -419,24 +413,12 @@ class OverDriveProcessor {
 										}
 										if (okToInclude) {
 											ScopingInfo scopingInfo = itemInfo.addScope(curScope);
-											scopingInfo.setAvailable(available);
-											scopingInfo.setHoldable(true);
 											if (curScope.isLocationScope()) {
 												scopingInfo.setLocallyOwned(true);
 												scopingInfo.setLibraryOwned(true);
 											}
 											if (curScope.isLibraryScope()) {
 												scopingInfo.setLibraryOwned(true);
-											}
-											if (isOnOrder) {
-												scopingInfo.setStatus("On Order");
-												scopingInfo.setGroupedStatus("On Order");
-											} else if (available) {
-												scopingInfo.setStatus("Available Online");
-												scopingInfo.setGroupedStatus("Available Online");
-											} else {
-												scopingInfo.setStatus("Checked Out");
-												scopingInfo.setGroupedStatus("Checked Out");
 											}
 										}
 									}

@@ -575,7 +575,7 @@ public class SymphonyExportMain {
 								String recordNumber = recordIdentifier.getIdentifier();
 								GroupedWorkIndexer.MarcStatus marcStatus;
 								if (lastIdentifier != null && lastIdentifier.equals(recordIdentifier)) {
-									marcStatus = reindexer.appendItemsToExistingRecord(indexingProfile, curBib, recordNumber, logger);
+									marcStatus = reindexer.appendItemsToExistingRecord(indexingProfile, curBib, recordNumber);
 								} else {
 									marcStatus = reindexer.saveMarcRecordToDatabase(indexingProfile, recordNumber, curBib);
 								}
