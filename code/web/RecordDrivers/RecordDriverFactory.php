@@ -152,12 +152,6 @@ class RecordDriverFactory {
 		} elseif ($recordType == 'axis360') {
 			require_once ROOT_DIR . '/RecordDrivers/Axis360RecordDriver.php';
 			$recordDriver = new Axis360RecordDriver($recordId, $groupedWork);
-		} elseif ($recordType == 'rbdigital') {
-			require_once ROOT_DIR . '/RecordDrivers/RBdigitalRecordDriver.php';
-			$recordDriver = new RBdigitalRecordDriver($recordId, $groupedWork);
-		}elseif ($recordType == 'rbdigital_magazine'){
-			require_once ROOT_DIR . '/RecordDrivers/RBdigitalMagazineDriver.php';
-			$recordDriver = new RBdigitalMagazineDriver($recordId, $groupedWork);
 		}elseif ($recordType == 'cloud_library'){
 			require_once ROOT_DIR . '/RecordDrivers/CloudLibraryRecordDriver.php';
 			$recordDriver = new CloudLibraryRecordDriver($recordId, $groupedWork);

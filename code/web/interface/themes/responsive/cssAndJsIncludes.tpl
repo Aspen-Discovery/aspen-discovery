@@ -61,9 +61,6 @@
 			{if array_key_exists('Hoopla', $enabledModules)}
 				Globals.hasHooplaConnection = true;
 			{/if}
-			{if array_key_exists('RBdigital', $enabledModules)}
-				Globals.hasRBdigitalConnection = true;
-			{/if}
 			{if array_key_exists('OverDrive', $enabledModules)}
 				Globals.hasOverDriveConnection = true;
 			{/if}

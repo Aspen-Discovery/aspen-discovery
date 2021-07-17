@@ -16,7 +16,6 @@ var Globals = (function () {
 		hasAxis360Connection: false,
 		hasCloudLibraryConnection: false,
 		hasHooplaConnection: false,
-		hasOverDriveConnection: false,
-		hasRBdigitalConnection: false
+		hasOverDriveConnection: false
 	}
 })(Globals || {});

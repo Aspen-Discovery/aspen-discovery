@@ -61,14 +61,6 @@
 												</a>
 											</li>
 										{/if}
-										{if $user->isValidForEContentSource('rbdigital')}
-											<li class="myAccountLink">
-												&nbsp;&nbsp;&raquo;&nbsp;
-												<a href="/MyAccount/CheckedOut?tab=rbdigital" id="checkedOutRBdigital">
-													{translate text="RBdigital"} {if !$offline}<span class="badge"><span class="rbdigital-checkouts-placeholder">??</span></span>{/if}
-												</a>
-											</li>
-										{/if}
 										{if $user->isValidForEContentSource('cloud_library')}
 											<li class="myAccountLink">
 											&nbsp;&nbsp;&raquo;&nbsp;
@@ -96,14 +88,6 @@
 												&nbsp;&nbsp;&raquo;&nbsp;
 												<a href="/MyAccount/Holds?tab=overdrive" id="holdsOverDrive">
 													{translate text="OverDrive"} {if !$offline}<span class="badge"><span class="overdrive-holds-placeholder">??</span></span> <span class="overdrive-available-holds" style="display: none"> <span class="label label-success"><span class="overdrive-available-holds-placeholder"></span> {translate text="Available Now"}</span></span>{/if}
-												</a>
-											</li>
-										{/if}
-										{if $user->isValidForEContentSource('rbdigital')}
-											<li class="myAccountLink">
-												&nbsp;&nbsp;&raquo;&nbsp;
-												<a href="/MyAccount/Holds?tab=rbdigital" id="holdsRBdigital">
-													{translate text="RBdigital"} {if !$offline}<span class="badge"><span class="rbdigital-holds-placeholder">??</span></span>{/if}
 												</a>
 											</li>
 										{/if}

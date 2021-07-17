@@ -186,7 +186,8 @@ function getUpdates21_09_00() : array
 					  dest.holdable = src.holdable, 
 					  dest.inLibraryUseOnly = src.inLibraryUseOnly
 					where dest.id = src.groupedWorkItemId',
-				'ALTER TABLE grouped_work_record_scope_details DROP COLUMN groupedStatusId, DROP COLUMN statusId, DROP COLUMN available, DROP COLUMN holdable, DROP COLUMN inLibraryUseOnly',
+				'ALTER TABLE grouped_work_record_scope_details DROP INDEX groupedStatusId',
+				'ALTER TABLE grouped_work_record_scope_details DROP groupedStatusId, DROP statusId, DROP available, DROP holdable, DROP inLibraryUseOnly',
 			]
 		], //move_unchanged_scope_data_to_item
 		'storeNYTLastUpdated' => [
@@ -217,5 +218,20 @@ function getUpdates21_09_00() : array
 				'ALTER TABLE ils_volume_info CHANGE volumeId volumeId VARCHAR(100) NOT NULL'
 			]
 		], //increase_volumeId_length
+		'remove_rbdigital' => [
+			'title' => 'Remove RBdigital content',
+			'description' => 'Remove RBdigital content form the database',
+			'sql' => [
+				'ALTER TABLE user drop column rbdigitalId',
+				'ALTER TABLE user drop column rbdigitalLastAccountCheck',
+				'ALTER TABLE user drop column rbdigitalPassword',
+				'ALTER TABLE user drop column rbdigitalUsername',
+				'ALTER TABLE library drop column rbdigitalScopeId',
+				'ALTER TABLE location drop column rbdigitalScopeId',
+				'DROP TABLE rbdigital_scopes',
+				'DROP TABLE rbdigital_settings',
+				'DROP TABLE rbdigital_export_log',
+			]
+		], //remove_rbdigital
 	];
 }

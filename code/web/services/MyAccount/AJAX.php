@@ -1364,44 +1364,6 @@ class MyAccount_AJAX extends JSON_Action
 	}
 
 	/** @noinspection PhpUnused */
-	function getMenuDataRBdigital()
-	{
-		global $timer;
-		$result = [
-			'success' => false,
-			'message' => 'Unknown error'
-		];
-		if (UserAccount::isLoggedIn()) {
-			$user = UserAccount::getActiveUserObj();
-			if ($user->isValidForEContentSource('rbdigital')) {
-				require_once ROOT_DIR . '/Drivers/RBdigitalDriver.php';
-				$driver = new RBdigitalDriver();
-				$rbdigitalSummary = $driver->getAccountSummary($user);
-				if ($user->getLinkedUsers() != null) {
-					/** @var User $user */
-					foreach ($user->getLinkedUsers() as $linkedUser) {
-						if ($linkedUser->isValidForEContentSource('rbdigital')){
-							$linkedUserSummary = $driver->getAccountSummary($linkedUser);
-							$rbdigitalSummary->numCheckedOut += $linkedUserSummary->numCheckedOut;
-							$rbdigitalSummary->numUnavailableHolds += $linkedUserSummary->numUnavailableHolds;
-						}
-					}
-				}
-				$timer->logTime("Loaded RBdigital Summary for User and linked users");
-				$result = [
-					'success' => true,
-					'summary' => $rbdigitalSummary->toArray()
-				];
-			} else {
-				$result['message'] = 'Invalid for RBdigital';
-			}
-		} else {
-			$result['message'] = 'You must be logged in to get menu data';
-		}
-		return $result;
-	}
-
-	/** @noinspection PhpUnused */
 	function getMenuDataCloudLibrary()
 	{
 		global $timer;
@@ -1767,10 +1729,6 @@ class MyAccount_AJAX extends JSON_Action
 		}
 
 		$allHolds = $user->getHolds(true, $selectedUnavailableSortOption, $selectedAvailableSortOption, $source);
-		if ($source == 'rbdigital') {
-			//RBdigital automatically checks out records so don't show the available section
-			unset($allHolds['available']);
-		}
 
 		$showDateWhenSuspending = ($ils == 'Horizon' || $ils == 'CarlX' || $ils == 'Symphony' || $ils == 'Koha');
 
@@ -2219,13 +2177,11 @@ class MyAccount_AJAX extends JSON_Action
 					'author' => 'Author',
 					'format' => 'Format',
 				);
-				if ($source != 'rbdigital') {
-					$unavailableHoldSortOptions['status'] = 'Status';
-				}
+				$unavailableHoldSortOptions['status'] = 'Status';
 				if ($source == 'all' || $source == 'ils') {
 					$unavailableHoldSortOptions['location'] = 'Pickup Location';
 				}
-				if ($showPosition && $source != 'rbdigital') {
+				if ($showPosition) {
 					$unavailableHoldSortOptions['position'] = 'Position';
 				}
 				if ($showPlacedColumn) {
@@ -2275,10 +2231,6 @@ class MyAccount_AJAX extends JSON_Action
 				if (!$offlineMode) {
 					if ($user) {
 						$allHolds = $user->getHolds(true, $selectedUnavailableSortOption, $selectedAvailableSortOption, $source);
-						if ($source == 'rbdigital') {
-							//RBdigital automatically checks out records so don't show the available section
-							unset($allHolds['available']);
-						}
 						$interface->assign('recordList', $allHolds);
 					}
 				}

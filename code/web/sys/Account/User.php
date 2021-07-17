@@ -34,11 +34,7 @@ class User extends DataObject
 	public $hooplaCheckOutConfirmation;
 	public $preferredLibraryInterface;
 	public $noPromptForUserReviews; //tinyint(1)
-    public $rbdigitalId;
-	public $rbdigitalUsername;
-	public $rbdigitalPassword;
-	public $rbdigitalLastAccountCheck;
-	public $lockedFacets;
+    public $lockedFacets;
 	public $alternateLibraryCard;
 	public $alternateLibraryCardPassword;
 	public $hideResearchStarters;
@@ -97,9 +93,6 @@ class User extends DataObject
 	private $_numCheckedOutOverDrive = 0;
 	private $_numHoldsOverDrive = 0;
 	private $_numHoldsAvailableOverDrive = 0;
-	private $_numCheckedOutRBdigital = 0;
-    private $_numHoldsRBdigital = 0;
-    private $_numHoldsAvailableRBdigital = 0;
 	private $_numCheckedOutHoopla = 0;
 	public $_numBookings;
 	public $_notices;
@@ -119,7 +112,7 @@ class User extends DataObject
 	}
 
 	function getEncryptedFieldNames() : array {
-		return ['password', 'firstname', 'lastname', 'email', 'displayName', 'phone', 'overdriveEmail', 'rbdigitalPassword', 'alternateLibraryCardPassword', $this->getPasswordOrPinField()];
+		return ['password', 'firstname', 'lastname', 'email', 'displayName', 'phone', 'overdriveEmail', 'alternateLibraryCardPassword', $this->getPasswordOrPinField()];
 	}
 
 	function getLists() {
@@ -507,27 +500,10 @@ class User extends DataObject
 					return array_key_exists('OverDrive', $enabledModules) && $userHomeLibrary->overDriveScopeId > 0;
 				} elseif ($source == 'hoopla') {
 					return array_key_exists('Hoopla', $enabledModules) && $userHomeLibrary->hooplaLibraryID > 0;
-				} elseif ($source == 'rbdigital') {
-					return array_key_exists('RBdigital', $enabledModules) && ($userHomeLibrary->rbdigitalScopeId > 0);
 				} elseif ($source == 'cloud_library') {
 					return array_key_exists('Cloud Library', $enabledModules) && (count($userHomeLibrary->cloudLibraryScopes) > 0);
 				} elseif ($source == 'axis360') {
 					return array_key_exists('Axis 360', $enabledModules) && ($userHomeLibrary->axis360ScopeId > 0);
-				}
-			}
-		}
-		return false;
-	}
-
-	public function showRBdigitalHolds(){
-		if ($this->parentUser == null || ($this->getBarcode() != $this->parentUser->getBarcode())) {
-			$userHomeLibrary = Library::getPatronHomeLibrary($this);
-			if ($userHomeLibrary->rbdigitalScopeId > 0){
-				require_once ROOT_DIR . '/sys/RBdigital/RBdigitalScope.php';
-				$scope = new RBdigitalScope();
-				$scope->id = $userHomeLibrary->rbdigitalScopeId;
-				if ($scope->find(true)){
-					return $scope->includeEAudiobook || $scope->includeEBooks;
 				}
 			}
 		}
@@ -745,18 +721,6 @@ class User extends DataObject
 		$this->update();
 	}
 
-	public function updateRbdigitalOptions()
-	{
-		if (isset($_REQUEST['rbdigitalUsername'])){
-			$this->rbdigitalUsername = strip_tags($_REQUEST['rbdigitalUsername']);
-		}
-		if (isset($_REQUEST['rbdigitalPassword'])){
-			$this->rbdigitalPassword = strip_tags($_REQUEST['rbdigitalPassword']);
-		}
-		$this->update();
-		return true;
-	}
-
 	function updateStaffSettings(){
 		if (isset($_REQUEST['bypassAutoLogout']) && ($_REQUEST['bypassAutoLogout'] == 'yes' || $_REQUEST['bypassAutoLogout'] == 'on')){
 			$this->bypassAutoLogout = 1;
@@ -900,7 +864,7 @@ class User extends DataObject
 	/** @noinspection PhpUnused */
 	public function getNumHoldsAvailableTotal($includeLinkedUsers = true){
 		$this->updateRuntimeInformation();
-		$myHolds = $this->_numHoldsAvailableIls + $this->_numHoldsAvailableOverDrive + $this->_numHoldsAvailableRBdigital;
+		$myHolds = $this->_numHoldsAvailableIls + $this->_numHoldsAvailableOverDrive;
 		if ($includeLinkedUsers){
 			if ($this->getLinkedUsers() != null) {
 				foreach ($this->linkedUsers as $user) {
@@ -1002,17 +966,6 @@ class User extends DataObject
 				$timer->logTime("Loaded transactions from hoopla. {$this->id}");
 				if ($source == 'all' || $source == 'hoopla') {
 					$checkoutsToReturn = array_merge($checkoutsToReturn, $hooplaCheckedOutItems);
-				}
-			}
-
-			if ($this->isValidForEContentSource('rbdigital')) {
-				require_once ROOT_DIR . '/Drivers/RBdigitalDriver.php';
-				$rbdigitalDriver = new RBdigitalDriver();
-				$rbdigitalCheckedOutItems = $rbdigitalDriver->getCheckouts($this);
-				$allCheckedOut = array_merge($allCheckedOut, $rbdigitalCheckedOutItems);
-				$timer->logTime("Loaded transactions from rbdigital. {$this->id}");
-				if ($source == 'all' || $source == 'rbdigital') {
-					$checkoutsToReturn = array_merge($checkoutsToReturn, $rbdigitalCheckedOutItems);
 				}
 			}
 
@@ -1126,17 +1079,6 @@ class User extends DataObject
 				$allHolds = array_merge_recursive($allHolds, $overDriveHolds);
 				if ($source == 'all' || $source == 'overdrive') {
 					$holdsToReturn = array_merge_recursive($holdsToReturn, $overDriveHolds);
-				}
-			}
-
-			//Get holds from RBdigital
-			if ($this->isValidForEContentSource('rbdigital') && $this->showRBdigitalHolds()) {
-				require_once ROOT_DIR . '/Drivers/RBdigitalDriver.php';
-				$driver = new RBdigitalDriver();
-				$rbdigitalHolds = $driver->getHolds($this);
-				$allHolds = array_merge_recursive($allHolds, $rbdigitalHolds);
-				if ($source == 'all' || $source == 'rbdigital') {
-					$holdsToReturn = array_merge_recursive($holdsToReturn, $rbdigitalHolds);
 				}
 			}
 
@@ -2528,14 +2470,6 @@ class User extends DataObject
 
 		if (array_key_exists('RBdigital', $enabledModules)) {
 			$sections['rbdigital'] = new AdminSection('RBdigital');
-			$rbdigitalSettingsAction = new AdminAction('Settings', 'Define connection information between RBdigital and Aspen Discovery.', '/RBdigital/Settings');
-			$rbdigitalScopesAction = new AdminAction('Scopes', 'Define which records are loaded for each library and location.', '/RBdigital/Scopes');
-			if ($sections['rbdigital']->addAction($rbdigitalSettingsAction, 'Administer RBdigital')) {
-				$rbdigitalSettingsAction->addSubAction($rbdigitalScopesAction, 'Administer RBdigital');
-			} else {
-				$sections['rbdigital']->addAction($rbdigitalScopesAction, 'Administer RBdigital');
-			}
-			$sections['rbdigital']->addAction(new AdminAction('Indexing Log', 'View the indexing log for RBdigital.', '/RBdigital/IndexingLog'), ['View System Reports', 'View Indexing Logs']);
 			$sections['rbdigital']->addAction(new AdminAction('Dashboard', 'View the usage dashboard for RBdigital integration.', '/RBdigital/Dashboard'), ['View Dashboards', 'View System Reports']);
 		}
 

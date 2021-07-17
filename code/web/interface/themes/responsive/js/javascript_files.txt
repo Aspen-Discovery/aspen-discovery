@@ -43,7 +43,6 @@ aspen/open-archives.js
 aspen/hoopla.js
 aspen/prospector.js
 aspen/ratings.js
-aspen/rbdigital.js
 aspen/reading-history.js
 aspen/record.js
 aspen/responsive.js
