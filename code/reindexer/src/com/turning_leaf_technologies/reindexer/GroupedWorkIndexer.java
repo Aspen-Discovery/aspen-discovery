@@ -2071,13 +2071,12 @@ public class GroupedWorkIndexer {
 						marcRecordCache.put(key, marcRecord);
 					}
 				}
+				getRecordForIdentifierRS.close();
 			} catch (Exception e) {
 				logEntry.incErrors("Error loading MARC record from database", e);
 			}
-			return null;
-		}else{
-			return marcRecord;
 		}
+		return marcRecord;
 
 	}
 }
