@@ -567,20 +567,17 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 					logger.error("Could not add scoping information for " + scope.getScopeName() + " for item " + itemInfo.getFullRecordIdentifier());
 					continue;
 				}
-				if (scope.isLocationScope()) {
-					scopingInfo.setLocallyOwned(scope.isItemOwnedByScope(fullKey, profileType, location, ""));
-					if (scope.getLibraryScope() != null) {
-						boolean libraryOwned = scope.getLibraryScope().isItemOwnedByScope(fullKey, profileType, location, "");
-						scopingInfo.setLibraryOwned(libraryOwned);
-					}else{
-						//Check to see if the scope is both a library and location scope
-						if (!scope.isLibraryScope()){
-							logger.warn("Location scope " + scope.getScopeName() + " does not have an associated library getting scope for order item " + itemInfo.getItemIdentifier() + " - " + itemInfo.getFullRecordIdentifier());
-							continue;
+				if (scope.isLocationScope()) { //Either a location scope or both library and location scope
+					boolean itemIsOwned = scope.isItemOwnedByScope(fullKey, profileType, location, "");
+					scopingInfo.setLocallyOwned(itemIsOwned);
+					if (scope.isLibraryScope()){
+						scopingInfo.setLibraryOwned(itemIsOwned);
+						if (itemIsOwned && itemInfo.getShelfLocation().equals("On Order")){
+							itemInfo.setShelfLocation("On Order");
+							itemInfo.setDetailedLocation(scopingInfo.getScope().getFacetLabel() + " On Order");
 						}
 					}
-				}
-				if (scope.isLibraryScope()) {
+				}else if (scope.isLibraryScope()) {
 					boolean libraryOwned = scope.isItemOwnedByScope(fullKey, profileType, location, "");
 					scopingInfo.setLibraryOwned(libraryOwned);
 					//TODO: Should this be here or should this only happen for consortia?
@@ -905,13 +902,13 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			if (result.isIncluded){
 				ScopingInfo scopingInfo = itemInfo.addScope(curScope);
 
-				if (curScope.isLocationScope()) {
-					scopingInfo.setLocallyOwned(curScope.isItemOwnedByScope(fullKey, profileType, itemLocation, ""));
-					if (curScope.getLibraryScope() != null) {
-						scopingInfo.setLibraryOwned(curScope.getLibraryScope().isItemOwnedByScope(fullKey, profileType, itemLocation, ""));
+				if (curScope.isLocationScope()) {  //Either a location scope or both library and location scope
+					boolean itemIsOwned = curScope.isItemOwnedByScope(fullKey, profileType, itemLocation, "");
+					scopingInfo.setLocallyOwned(itemIsOwned);
+					if (curScope.isLibraryScope()){
+						scopingInfo.setLibraryOwned(itemIsOwned);
 					}
-				}
-				if (curScope.isLibraryScope()) {
+				}else if (curScope.isLibraryScope()) {
 					scopingInfo.setLibraryOwned(curScope.isItemOwnedByScope(fullKey, profileType, itemLocation, ""));
 				}
 				//Check to see if we need to do url rewriting

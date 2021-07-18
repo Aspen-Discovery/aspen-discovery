@@ -19,7 +19,9 @@ class ScopingInfo{
 	}
 
 	void setLocallyOwned(boolean locallyOwned) {
-		this.locallyOwned = locallyOwned;
+		if (locallyOwned) {
+			this.locallyOwned = locallyOwned;
+		}
 	}
 
 	public Scope getScope() {
@@ -32,7 +34,9 @@ class ScopingInfo{
 	}
 
 	void setLibraryOwned(boolean libraryOwned) {
-		this.libraryOwned = libraryOwned;
+		if (libraryOwned){
+			this.libraryOwned = libraryOwned;
+		}
 	}
 
 	String scopingDetails = null;
