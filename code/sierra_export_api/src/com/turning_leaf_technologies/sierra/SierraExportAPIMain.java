@@ -307,8 +307,7 @@ public class SierraExportAPIMain {
 			while (getRecordsToReloadRS.next()) {
 				long recordToReloadId = getRecordsToReloadRS.getLong("id");
 				String recordIdentifier = getRecordsToReloadRS.getString("identifier");
-				File marcFile = indexingProfile.getFileForIlsRecord(recordIdentifier);
-				Record marcRecord = MarcUtil.readIndividualRecord(marcFile, logEntry);
+				Record marcRecord = getGroupedWorkIndexer().loadMarcRecordFromDatabase(indexingProfile.getName(), recordIdentifier, logEntry);
 				if (marcRecord != null){
 					//Regroup the record
 					String groupedWorkId = groupSierraRecord(marcRecord);

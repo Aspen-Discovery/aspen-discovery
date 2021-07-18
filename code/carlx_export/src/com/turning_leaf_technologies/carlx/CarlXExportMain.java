@@ -10,7 +10,6 @@ import java.util.Date;
 
 import com.turning_leaf_technologies.config.ConfigUtil;
 import com.turning_leaf_technologies.file.JarUtil;
-import com.turning_leaf_technologies.grouping.BaseMarcRecordGrouper;
 import com.turning_leaf_technologies.grouping.MarcRecordGrouper;
 import com.turning_leaf_technologies.grouping.RemoveRecordFromWorkResult;
 import com.turning_leaf_technologies.indexing.*;
@@ -256,7 +255,7 @@ public class CarlXExportMain {
 				long recordToReloadId = getRecordsToReloadRS.getLong("id");
 				String recordIdentifier = getRecordsToReloadRS.getString("identifier");
 				File marcFile = indexingProfile.getFileForIlsRecord(recordIdentifier);
-				Record marcRecord = MarcUtil.readIndividualRecord(marcFile, logEntry);
+				Record marcRecord = getGroupedWorkIndexer(dbConn).loadMarcRecordFromDatabase(indexingProfile.getName(), recordIdentifier, logEntry);
 				if (marcRecord != null) {
 					//Regroup the record
 					String groupedWorkId = getRecordGroupingProcessor(dbConn).processMarcRecord(marcRecord, true, null);

@@ -18,8 +18,6 @@ import org.apache.logging.log4j.Logger;
 import org.ini4j.Ini;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.marc4j.MarcStreamWriter;
-import org.marc4j.MarcWriter;
 import org.marc4j.MarcXmlReader;
 import org.marc4j.marc.DataField;
 import org.marc4j.marc.MarcFactory;
@@ -555,8 +553,7 @@ public class PolarisExportMain {
 			while (getRecordsToReloadRS.next()) {
 				long recordToReloadId = getRecordsToReloadRS.getLong("id");
 				String recordIdentifier = getRecordsToReloadRS.getString("identifier");
-				File marcFile = indexingProfile.getFileForIlsRecord(recordIdentifier);
-				Record marcRecord = MarcUtil.readIndividualRecord(marcFile, logEntry);
+				Record marcRecord = groupedWorkIndexer.loadMarcRecordFromDatabase(indexingProfile.getName(), recordIdentifier, logEntry);
 				if (marcRecord != null){
 					logEntry.incRecordsRegrouped();
 					//Regroup the record

@@ -216,6 +216,15 @@ function getUpdates21_09_00() : array
 				'DROP TABLE grouped_work_record_scope_details',
 			]
 		], //remove_scope_tables
+		'record_suppression_no_marc' => [
+			'title' => 'Setup ils record suppression for not having marc data',
+			'description' => 'Setup ils record suppression for not having marc data',
+			'sql' => [
+				'ALTER TABLE ils_records DROP COLUMN suppressionReason',
+				'ALTER TABLE ils_records CHANGE COLUMN suppressed suppressedNoMarcAvailable TINYINT(1)',
+				'DROP TABLE ils_suppression_reasons'
+			]
+		], //record_suppression_no_marc
 		'storeNYTLastUpdated' => [
 			'title' => 'Store the date a NYT List was last modified',
 			'description' => 'Store the date that a NYT List was last modified by NYT',

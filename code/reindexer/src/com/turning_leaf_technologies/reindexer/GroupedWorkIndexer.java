@@ -91,13 +91,6 @@ public class GroupedWorkIndexer {
 	private PreparedStatement removeItemStmt;
 	private PreparedStatement addItemForRecordStmt;
 	private PreparedStatement updateItemForRecordStmt;
-//	private PreparedStatement getExistingScopeDetailsStmt;
-//	private PreparedStatement getExistingScopeDetailsWithNullUrlStmt;
-//	private PreparedStatement getExistingScopesForItemStmt;
-//	private PreparedStatement removeItemScopeStmt;
-//	private PreparedStatement addScopeDetailsStmt;
-//	private PreparedStatement addScopeForItemStmt;
-//	private PreparedStatement updateScopeForItemStmt;
 	private PreparedStatement getRecordSourceStmt;
 	private PreparedStatement getRecordSourceWithNoSubSourceStmt;
 	private PreparedStatement addRecordSourceStmt;
@@ -208,13 +201,6 @@ public class GroupedWorkIndexer {
 			updateItemForRecordStmt = dbConn.prepareStatement("UPDATE grouped_work_record_items set groupedWorkVariationId = ?, shelfLocationId = ?, callNumberId = ?, sortableCallNumberId = ?, numCopies = ?, isOrderItem = ?, statusId = ?, dateAdded = ?, " +
 					"locationCodeId = ?, subLocationCodeId = ?, lastCheckInDate = ?, groupedStatusId = ?, available = ?, holdable = ?, inLibraryUseOnly = ?, locationOwnedScopes = ?, libraryOwnedScopes = ?, recordIncludedScopes = ? WHERE id = ?");
 			removeItemStmt = dbConn.prepareStatement("DELETE FROM grouped_work_record_items WHERE id = ?");
-//			getExistingScopeDetailsStmt = dbConn.prepareStatement("SELECT id from grouped_work_record_scope_details WHERE localUrl =? AND locallyOwned =? AND libraryOwned =?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
-//			getExistingScopeDetailsWithNullUrlStmt = dbConn.prepareStatement("SELECT id from grouped_work_record_scope_details WHERE localUrl IS NULL AND locallyOwned =? AND libraryOwned =?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
-//			getExistingScopesForItemStmt = dbConn.prepareStatement("SELECT * from grouped_work_record_scope WHERE groupedWorkItemId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
-//			removeItemScopeStmt = dbConn.prepareStatement("DELETE FROM grouped_work_record_scope WHERE groupedWorkItemId = ? AND scopeId = ?");
-//			addScopeDetailsStmt = dbConn.prepareStatement("INSERT INTO grouped_work_record_scope_details (localUrl, locallyOwned, libraryOwned) VALUES (?, ?, ?)", PreparedStatement.RETURN_GENERATED_KEYS);
-//			addScopeForItemStmt = dbConn.prepareStatement("INSERT INTO grouped_work_record_scope (groupedWorkItemId, scopeId, scopeDetailsId) VALUES (?, ?, ?)");
-//			updateScopeForItemStmt = dbConn.prepareStatement("UPDATE grouped_work_record_scope set scopeDetailsId = ? where groupedWorkItemId = ? AND scopeId = ?");
 			getRecordSourceStmt = dbConn.prepareStatement("SELECT id from indexed_record_source where source = ? and subSource = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			getRecordSourceWithNoSubSourceStmt = dbConn.prepareStatement("SELECT id from indexed_record_source where source = ? and subSource IS NULL", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			addRecordSourceStmt = dbConn.prepareStatement("INSERT INTO indexed_record_source (source, subSource) VALUES (?, ?)", Statement.RETURN_GENERATED_KEYS);
@@ -1826,98 +1812,6 @@ public class GroupedWorkIndexer {
 		return itemId;
 	}
 
-//	HashMap<Long, ItemScopeInfo> getExistingScopesForItem(long itemId) {
-//		HashMap<Long, ItemScopeInfo> existingScopes = new HashMap<>();
-//		try{
-//			getExistingScopesForItemStmt.setLong(1, itemId);
-//			ResultSet getExistingScopesForItemRS = getExistingScopesForItemStmt.executeQuery();
-//			while (getExistingScopesForItemRS.next()){
-//				existingScopes.put(getExistingScopesForItemRS.getLong("scopeId"), new ItemScopeInfo(getExistingScopesForItemRS));
-//			}
-//		}catch (SQLException e){
-//			logEntry.incErrors("Error loading existing scopes for item");
-//		}
-//		return existingScopes;
-//	}
-//
-//	MaxSizeHashMap<SavedScopeDetails, Long> existingScopeDetails = new MaxSizeHashMap<>(1000);
-//	long getScopeDetailsId(SavedScopeDetails details){
-//		Long existingScopeDetailsId = existingScopeDetails.get(details);
-//		if (existingScopeDetailsId != null){
-//			return existingScopeDetailsId;
-//		}else{
-//			try {
-//				ResultSet getExistingScopeDetailsRS;
-//				if (details.localUrl == null) {
-//					getExistingScopeDetailsWithNullUrlStmt.setBoolean(1, details.locallyOwned);
-//					getExistingScopeDetailsWithNullUrlStmt.setBoolean(2, details.libraryOwned);
-//					getExistingScopeDetailsRS = getExistingScopeDetailsWithNullUrlStmt.executeQuery();
-//				}else{
-//					getExistingScopeDetailsStmt.setString(1, details.localUrl);
-//					getExistingScopeDetailsStmt.setBoolean(2, details.locallyOwned);
-//					getExistingScopeDetailsStmt.setBoolean(3, details.libraryOwned);
-//					getExistingScopeDetailsRS = getExistingScopeDetailsStmt.executeQuery();
-//				}
-//
-//				if (getExistingScopeDetailsRS.next()){
-//					details.id = getExistingScopeDetailsRS.getLong("id");
-//					existingScopeDetails.put(details, details.id);
-//				}else{
-//					if (details.localUrl == null) {
-//						addScopeDetailsStmt.setNull(1, Types.VARCHAR);
-//					}else{
-//						addScopeDetailsStmt.setString(1, details.localUrl);
-//					}
-//					addScopeDetailsStmt.setBoolean(2, details.locallyOwned);
-//					addScopeDetailsStmt.setBoolean(3, details.libraryOwned);
-//					addScopeDetailsStmt.executeUpdate();
-//					ResultSet addScopeDetailsRS = addScopeDetailsStmt.getGeneratedKeys();
-//					if (addScopeDetailsRS.next()) {
-//						details.id = addScopeDetailsRS.getLong(1);
-//						existingScopeDetails.put(details, details.id);
-//					}
-//				}
-//			}catch (SQLException e){
-//				logEntry.incErrors("Could not get Existing Scope Details", e);
-//			}
-//		}
-//		return details.id;
-//	}
-//
-//	void saveScopeForItem(long itemId, ScopingInfo scopingInfo, HashMap<Long, ItemScopeInfo> existingScopes) {
-//		SavedScopeDetails scopeDetails = new SavedScopeDetails(
-//			scopingInfo.getLocalUrl(),
-//			scopingInfo.isLocallyOwned(),
-//			scopingInfo.isLibraryOwned()
-//		);
-//		long scopedDetailsId = getScopeDetailsId(scopeDetails);
-//		ItemScopeInfo savedScopingInfo = existingScopes.get(scopingInfo.getScope().getId());
-//		if (savedScopingInfo == null){
-//			try {
-//				addScopeForItemStmt.setLong(1, itemId);
-//				addScopeForItemStmt.setLong(2, scopingInfo.getScope().getId());
-//				addScopeForItemStmt.setLong(3, scopedDetailsId);
-//				addScopeForItemStmt.executeUpdate();
-//			} catch (SQLException e) {
-//				logEntry.incErrors("Error saving grouped work scope", e);
-//			}
-//		}else{
-//			if (savedScopingInfo.scopeDetailsId != scopedDetailsId) {
-//				try {
-//					updateScopeForItemStmt.setLong(1, scopedDetailsId);
-//					updateScopeForItemStmt.setLong(2, itemId);
-//					updateScopeForItemStmt.setLong(3, scopingInfo.getScope().getId());
-//					updateScopeForItemStmt.executeUpdate();
-//				} catch (SQLException e) {
-//					logEntry.incErrors("Error updating grouped work scope", e);
-//				}
-//			}
-//		}
-//
-//
-//		//return scopeId;
-//	}
-
 	void removeScope(Long scopeId) {
 		try {
 			removeScopeStmt.setLong(1, scopeId);
@@ -1974,16 +1868,6 @@ public class GroupedWorkIndexer {
 
 		return existingScopes;
 	}
-//
-//	public void removeItemScope(long itemId, long scopeId) {
-//		try {
-//			removeItemScopeStmt.setLong(1, itemId);
-//			removeItemScopeStmt.setLong(2, scopeId);
-//			removeItemScopeStmt.executeUpdate();
-//		}catch (SQLException e) {
-//			logEntry.incErrors("Error removing scope for item", e);
-//		}
-//	}
 
 	public int disabledAutoCommitCounter = 0;
 	void disableAutoCommit(){
@@ -2117,7 +2001,7 @@ public class GroupedWorkIndexer {
 				if (getRecordForIdentifierRS.next()) {
 					String marcRecordRaw = getRecordForIdentifierRS.getString("sourceData");
 					if (marcRecordRaw != null && marcRecordRaw.length() > 0) {
-						marcRecord = MarcUtil.readIndividualRecord(identifier, marcRecordRaw, logEntry);
+						marcRecord = MarcUtil.readJsonFormattedRecord(identifier, marcRecordRaw, logEntry);
 						marcRecordCache.put(key, marcRecord);
 					}
 				}

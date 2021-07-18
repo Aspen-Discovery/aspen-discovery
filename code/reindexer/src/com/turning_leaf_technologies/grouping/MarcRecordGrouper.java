@@ -207,8 +207,7 @@ public class MarcRecordGrouper extends BaseMarcRecordGrouper {
 			logEntry.incRecordsRegrouped();
 			String recordIdentifier = allRecordsToRegroupRS.getString("identifier");
 			String originalGroupedWorkId = allRecordsToRegroupRS.getString("permanent_id");
-			File marcFile = indexingProfile.getFileForIlsRecord(recordIdentifier);
-			Record marcRecord = MarcUtil.readIndividualRecord(marcFile, logEntry);
+			Record marcRecord = indexer.loadMarcRecordFromDatabase(indexingProfile.getName(), recordIdentifier, logEntry);
 			if (marcRecord != null) {
 				String groupedWorkId = processMarcRecord(marcRecord, false, originalGroupedWorkId);
 				if (originalGroupedWorkId == null || !originalGroupedWorkId.equals(groupedWorkId)) {

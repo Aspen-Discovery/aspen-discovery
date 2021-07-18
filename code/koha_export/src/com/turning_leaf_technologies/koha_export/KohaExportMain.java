@@ -1174,8 +1174,7 @@ public class KohaExportMain {
 			while (getRecordsToReloadRS.next()) {
 				long recordToReloadId = getRecordsToReloadRS.getLong("id");
 				String recordIdentifier = getRecordsToReloadRS.getString("identifier");
-				File marcFile = indexingProfile.getFileForIlsRecord(recordIdentifier);
-				Record marcRecord = MarcUtil.readIndividualRecord(marcFile, logEntry);
+				Record marcRecord = groupedWorkIndexer.loadMarcRecordFromDatabase(indexingProfile.getName(), recordIdentifier, logEntry);
 				if (marcRecord != null){
 					logEntry.incRecordsRegrouped();
 					//Regroup the record
