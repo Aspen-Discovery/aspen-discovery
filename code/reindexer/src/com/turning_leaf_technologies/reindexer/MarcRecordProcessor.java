@@ -62,7 +62,7 @@ abstract class MarcRecordProcessor {
 	 * @param identifier the identifier to load information for
 	 * @param logEntry the log entry to store any errors
 	 */
-	public void processRecord(GroupedWorkSolr groupedWork, String identifier, BaseLogEntry logEntry){
+	public synchronized void processRecord(GroupedWorkSolr groupedWork, String identifier, BaseLogEntry logEntry){
 		//Check to be sure the record is not suppressed
 		boolean isSuppressed = false;
 		try {
@@ -74,6 +74,7 @@ abstract class MarcRecordProcessor {
 					isSuppressed = true;
 				}
 			}
+			getRecordSuppressionInformationRS.close();
 		}catch (Exception e){
 			logEntry.incErrors("Error loading suppression information for record", e);
 		}

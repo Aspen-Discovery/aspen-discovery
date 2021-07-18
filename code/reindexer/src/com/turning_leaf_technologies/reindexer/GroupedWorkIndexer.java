@@ -231,10 +231,10 @@ public class GroupedWorkIndexer {
 			getSubLocationCodeStmt = dbConn.prepareStatement("SELECT id from indexed_subLocationCode where subLocationCode = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			addSubLocationCodeStmt = dbConn.prepareStatement("INSERT INTO indexed_subLocationCode (subLocationCode) VALUES (?)", Statement.RETURN_GENERATED_KEYS);
 
-			getExistingRecordInfoForIdentifierStmt = dbConn.prepareStatement("SELECT id, checksum, UNCOMPRESSED_LENGTH(sourceData) as sourceDataLength FROM ils_records where ilsId = ? and source = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			getExistingRecordInfoForIdentifierStmt = dbConn.prepareStatement("SELECT id, checksum, deleted, UNCOMPRESSED_LENGTH(sourceData) as sourceDataLength FROM ils_records where ilsId = ? and source = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			getRecordForIdentifierStmt = dbConn.prepareStatement("SELECT UNCOMPRESS(sourceData) as sourceData FROM ils_records where ilsId = ? and source = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			addRecordToDBStmt = dbConn.prepareStatement("INSERT INTO ils_records set ilsId = ?, source = ?, checksum = ?, dateFirstDetected = ?, deleted = 0, suppressed = 0, sourceData = COMPRESS(?), lastModified = ?", PreparedStatement.RETURN_GENERATED_KEYS);
-			updateRecordInDBStmt = dbConn.prepareStatement("UPDATE ils_records set checksum = ?, sourceData = COMPRESS(?), lastModified = ? WHERE id = ?", PreparedStatement.RETURN_GENERATED_KEYS);
+			updateRecordInDBStmt = dbConn.prepareStatement("UPDATE ils_records set checksum = ?, sourceData = COMPRESS(?), lastModified = ?, deleted = 0, suppressedNoMarcAvailable = 0 WHERE id = ?", PreparedStatement.RETURN_GENERATED_KEYS);
 		} catch (Exception e){
 			logEntry.incErrors("Could not load statements to get identifiers ", e);
 			this.okToIndex = false;
@@ -477,7 +477,7 @@ public class GroupedWorkIndexer {
 		}
 	}
 
-	public void deleteRecord(String permanentId) {
+	public synchronized void deleteRecord(String permanentId) {
 		logger.info("Clearing existing work " + permanentId + " from index");
 		try {
 			updateServer.deleteById(permanentId);
@@ -665,7 +665,7 @@ public class GroupedWorkIndexer {
 		logger.info("Finished processing grouped works.  Processed a total of " + numWorksProcessed + " grouped works");
 	}
 
-	public void processGroupedWork(String permanentId) {
+	public synchronized void processGroupedWork(String permanentId) {
 		try{
 			getGroupedWorkInfoStmt.setString(1, permanentId);
 			ResultSet getGroupedWorkInfoRS = getGroupedWorkInfoStmt.executeQuery();
@@ -685,7 +685,7 @@ public class GroupedWorkIndexer {
 
 	}
 
-	void processGroupedWork(Long id, String permanentId, String grouping_category) throws SQLException {
+	synchronized void processGroupedWork(Long id, String permanentId, String grouping_category) throws SQLException {
 		//Create a solr record for the grouped work
 		GroupedWorkSolr groupedWork = new GroupedWorkSolr(this, logger);
 		groupedWork.setId(permanentId);
@@ -1931,7 +1931,7 @@ public class GroupedWorkIndexer {
 	 * @param marcRecord - The contents of the marc record
 	 * @return int 0 if the marc has not changed, 1 if the marc is new, and 2 if the marc has changes
 	 */
-	public MarcStatus saveMarcRecordToDatabase(BaseIndexingSettings indexingProfile, String ilsId, Record marcRecord) {
+	public synchronized MarcStatus saveMarcRecordToDatabase(BaseIndexingSettings indexingProfile, String ilsId, Record marcRecord) {
 		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 		MarcWriter writer = new MarcJsonWriter(outputStream);
 		writer.write(marcRecord);
@@ -1948,8 +1948,9 @@ public class GroupedWorkIndexer {
 			if (getExistingRecordInfoForIdentifierRS.next()){
 				long existingChecksum = getExistingRecordInfoForIdentifierRS.getLong("checksum");
 				long uncompressedLength = getExistingRecordInfoForIdentifierRS.getLong("sourceDataLength");
+				boolean deleted = getExistingRecordInfoForIdentifierRS.getBoolean("deleted");
 				//String marcAsString = new String(marcAsBytes);
-				if ((marcAsBytes.length != uncompressedLength) || (existingChecksum != checksumCalculator.getValue())){
+				if (deleted || (marcAsBytes.length != uncompressedLength) || (existingChecksum != checksumCalculator.getValue())){
 					long curTime = new Date().getTime() / 1000;
 					updateRecordInDBStmt.setLong(1, checksumCalculator.getValue());
 					updateRecordInDBStmt.setBlob(2, new ByteArrayInputStream(marcAsBytes));
