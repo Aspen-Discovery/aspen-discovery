@@ -622,6 +622,13 @@ public class PolarisExportMain {
 					getRecordGroupingProcessor().loadExistingTitles(logEntry);
 				}
 
+				//Check to see if we should regroup all records
+				if (indexingProfile.isRegroupAllRecords()){
+					//Regrouping takes a long time and we don't need koha DB connection so close it while we regroup
+					MarcRecordGrouper recordGrouper = getRecordGroupingProcessor();
+					recordGrouper.regroupAllRecords(dbConn, indexingProfile, getGroupedWorkIndexer(), logEntry);
+				}
+
 				//Update records
 				totalChanges += extractAllBibs(lastExtractTime);
 				if (!indexingProfile.isRunFullUpdate()) {
