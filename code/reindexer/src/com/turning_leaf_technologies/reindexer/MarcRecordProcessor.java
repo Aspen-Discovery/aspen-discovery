@@ -70,7 +70,7 @@ abstract class MarcRecordProcessor {
 			getRecordSuppressionInformationStmt.setString(2, identifier);
 			ResultSet getRecordSuppressionInformationRS = getRecordSuppressionInformationStmt.executeQuery();
 			if (getRecordSuppressionInformationRS.next()){
-				if (!getRecordSuppressionInformationRS.getBoolean("suppressedNoMarcAvailable")){
+				if (getRecordSuppressionInformationRS.getBoolean("suppressedNoMarcAvailable")){
 					isSuppressed = true;
 				}
 			}
