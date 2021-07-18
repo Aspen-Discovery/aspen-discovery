@@ -2472,15 +2472,19 @@ class GroupedWorkDriver extends IndexRecordDriver
 					$uniqueItemIdsString = implode(',', $uniqueItemIds);
 
 					//Load manifestation and variation information
-					$variationQuery = "SELECT grouped_work_variation.id, indexed_language.language, indexed_eContentSource.eContentSource, indexed_format.format, indexed_format_category.formatCategory FROM grouped_work_variation 
+					if (count($uniqueVariationIds) == 0) {
+						$variations = [];
+					}else{
+						$variationQuery = "SELECT grouped_work_variation.id, indexed_language.language, indexed_eContentSource.eContentSource, indexed_format.format, indexed_format_category.formatCategory FROM grouped_work_variation 
 									  LEFT JOIN indexed_language on primaryLanguageId = indexed_language.id
 									  LEFT JOIN indexed_eContentSource on eContentSourceId = indexed_eContentSource.id
 									  LEFT JOIN indexed_format on formatId = indexed_format.id
 									  LEFT JOIN indexed_format_category on formatCategoryId = indexed_format_category.id
 									  where grouped_work_variation.id IN ($uniqueVariationsIdsString)";
-					$results = $aspen_db->query($variationQuery, PDO::FETCH_ASSOC);
-					$variations = $results->fetchAll();
-					$results->closeCursor();
+						$results = $aspen_db->query($variationQuery, PDO::FETCH_ASSOC);
+						$variations = $results->fetchAll();
+						$results->closeCursor();
+					}
 					$this->_relatedManifestations = array();
 					/** @var  $allVariations Grouping_Variation[] */
 					$allVariations = [];
@@ -2494,7 +2498,10 @@ class GroupedWorkDriver extends IndexRecordDriver
 					}
 
 					//Load record information
-					$recordQuery = "SELECT grouped_work_records.id, recordIdentifier, indexed_record_source.source, indexed_record_source.subSource, indexed_edition.edition, indexed_publisher.publisher, indexed_publicationDate.publicationDate, indexed_physicalDescription.physicalDescription, indexed_format.format, indexed_format_category.formatCategory, indexed_language.language FROM grouped_work_records 
+					if (count($uniqueRecordIds) == 0){
+						$records = [];
+					}else {
+						$recordQuery = "SELECT grouped_work_records.id, recordIdentifier, indexed_record_source.source, indexed_record_source.subSource, indexed_edition.edition, indexed_publisher.publisher, indexed_publicationDate.publicationDate, indexed_physicalDescription.physicalDescription, indexed_format.format, indexed_format_category.formatCategory, indexed_language.language FROM grouped_work_records 
 								  LEFT JOIN indexed_record_source ON sourceId = indexed_record_source.id
 								  LEFT JOIN indexed_edition ON editionId = indexed_edition.id
 								  LEFT JOIN indexed_publisher ON publisherId = indexed_publisher.id
@@ -2504,9 +2511,10 @@ class GroupedWorkDriver extends IndexRecordDriver
 								  LEFT JOIN indexed_format_category on formatCategoryId = indexed_format_category.id
 								  LEFT JOIN indexed_language on languageId = indexed_language.id
 								  where grouped_work_records.id IN ($uniqueRecordIdsString)";
-					$results = $aspen_db->query($recordQuery, PDO::FETCH_ASSOC);
-					$records = $results->fetchAll();
-					$results->closeCursor();
+						$results = $aspen_db->query($recordQuery, PDO::FETCH_ASSOC);
+						$records = $results->fetchAll();
+						$results->closeCursor();
+					}
 					$allRecords = [];
 					foreach ($records as $record){
 						/** GroupedWorkSubDriver $recordDriver */
@@ -2523,7 +2531,10 @@ class GroupedWorkDriver extends IndexRecordDriver
 					}
 
 					//Load item/scope information
-					$scopeQuery = "SELECT grouped_work_record_items.id as groupedWorkItemId, available, holdable, inLibraryUseOnly, locationOwnedScopes, libraryOwnedScopes, groupedStatusTbl.status as groupedStatus, statusTbl.status as status, 
+					if (count($uniqueItemIds) == 0){
+						$scopedItems = [];
+					}else {
+						$scopeQuery = "SELECT grouped_work_record_items.id as groupedWorkItemId, available, holdable, inLibraryUseOnly, locationOwnedScopes, libraryOwnedScopes, groupedStatusTbl.status as groupedStatus, statusTbl.status as status, 
 								  grouped_work_record_items.groupedWorkRecordId, grouped_work_record_items.groupedWorkVariationId, grouped_work_record_items.itemId, indexed_callNumber.callNumber, indexed_shelfLocation.shelfLocation, numCopies, isOrderItem, dateAdded, 
        							  indexed_locationCode.locationCode, indexed_subLocationCode.subLocationCode, lastCheckInDate
 								  FROM grouped_work_record_items
@@ -2534,8 +2545,9 @@ class GroupedWorkDriver extends IndexRecordDriver
 								  LEFT JOIN indexed_locationCode on locationCodeId = indexed_locationCode.id
 								  LEFT JOIN indexed_subLocationCode on subLocationCodeId = indexed_subLocationCode.id
 								  where grouped_work_record_items.id IN ($uniqueItemIdsString)";
-					$results = $aspen_db->query($scopeQuery, PDO::FETCH_ASSOC);
-					$scopedItems = $results->fetchAll();
+						$results = $aspen_db->query($scopeQuery, PDO::FETCH_ASSOC);
+						$scopedItems = $results->fetchAll();
+					}
 					foreach ($scopedItems as $scopedItem) {
 						$relatedRecord = $allRecords[$scopedItem['groupedWorkRecordId']];
 						$relatedVariation = $allVariations[$scopedItem['groupedWorkVariationId']];
