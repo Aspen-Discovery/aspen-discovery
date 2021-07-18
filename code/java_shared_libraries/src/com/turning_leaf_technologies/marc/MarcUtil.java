@@ -534,7 +534,8 @@ public class MarcUtil {
 			}
 			marcFileStream.close();
 		}catch (FileNotFoundException fne){
-			logEntry.addNote("Could not find marcFile " + marcFile.getAbsolutePath());
+			//These will now show up in the suppression so we don't need to add them to notes. 
+			//logEntry.addNote("Could not find marcFile " + marcFile.getAbsolutePath());
 			return null;
 		}catch (Exception e){
 			//This happens if the file has too many items. Ignore and read with permissive handler.
