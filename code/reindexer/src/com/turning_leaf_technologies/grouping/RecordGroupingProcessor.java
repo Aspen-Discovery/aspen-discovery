@@ -259,6 +259,7 @@ public class RecordGroupingProcessor {
 		boolean addPrimaryIdentifierToWork = true;
 
 		if (originalGroupedWorkId == null){
+			//Try to look up the original id
 			try {
 				groupedWorkForIdentifierStmt.setString(1, primaryIdentifier.getType());
 				groupedWorkForIdentifierStmt.setString(2, primaryIdentifier.getIdentifier());
@@ -273,6 +274,9 @@ public class RecordGroupingProcessor {
 			} catch (SQLException e) {
 				logEntry.incErrors("Error determining existing grouped work for identifier", e);
 			}
+		}else if (originalGroupedWorkId.equals("false")) {
+			//A value of false means we prevalidated that there was not an existing id
+			originalGroupedWorkId = null;
 		}
 
 		if (originalGroupedWorkId != null && !originalGroupedWorkId.equals(groupedWorkPermanentId)) {
