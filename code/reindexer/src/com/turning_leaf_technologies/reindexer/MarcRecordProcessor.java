@@ -48,7 +48,7 @@ abstract class MarcRecordProcessor {
 		try {
 			addRecordToDBStmt = dbConn.prepareStatement("INSERT INTO ils_records set ilsId = ?, source = ?, checksum = ?, dateFirstDetected = ?, deleted = 0, suppressed = 0, sourceData = COMPRESS(?), lastModified = ? ON DUPLICATE KEY UPDATE sourceData = VALUES(sourceData), lastModified = VALUES(lastModified)");
 			marcRecordAsSuppressedNoMarcStmt = dbConn.prepareStatement("UPDATE ils_records set suppressedNoMarcAvailable = 1 where source = ? and ilsId = ?");
-			getRecordSuppressionInformationStmt = dbConn.prepareStatement("SELECT suppressedNoMarcAvailable where source = ? and ilsId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			getRecordSuppressionInformationStmt = dbConn.prepareStatement("SELECT suppressedNoMarcAvailable from ils_records where source = ? and ilsId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 		}catch (Exception e){
 			logger.error("Error setting up prepared statements for loading MARC from the DB", e);
 		}
@@ -67,7 +67,7 @@ abstract class MarcRecordProcessor {
 		boolean isSuppressed = false;
 		try {
 			getRecordSuppressionInformationStmt.setString(1, this.profileType);
-			getRecordSuppressionInformationStmt.setString(1, identifier);
+			getRecordSuppressionInformationStmt.setString(2, identifier);
 			ResultSet getRecordSuppressionInformationRS = getRecordSuppressionInformationStmt.executeQuery();
 			if (getRecordSuppressionInformationRS.next()){
 				if (!getRecordSuppressionInformationRS.getBoolean("suppressedNoMarcAvailable")){
@@ -75,7 +75,7 @@ abstract class MarcRecordProcessor {
 				}
 			}
 		}catch (Exception e){
-			logEntry.addNote("Error loading suppression information for record");
+			logEntry.incErrors("Error loading suppression information for record", e);
 		}
 		if (!isSuppressed) {
 			Record record = indexer.loadMarcRecordFromDatabase(this.profileType, identifier, logEntry);

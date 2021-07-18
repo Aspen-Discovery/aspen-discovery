@@ -534,7 +534,7 @@ public class MarcUtil {
 			}
 			marcFileStream.close();
 		}catch (FileNotFoundException fne){
-			//These will now show up in the suppression so we don't need to add them to notes. 
+			//These will now show up in the suppression so we don't need to add them to notes.
 			//logEntry.addNote("Could not find marcFile " + marcFile.getAbsolutePath());
 			return null;
 		}catch (Exception e){

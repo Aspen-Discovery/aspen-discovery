@@ -216,6 +216,15 @@ function getUpdates21_09_00() : array
 				'DROP TABLE grouped_work_record_scope_details',
 			]
 		], //remove_scope_tables
+		'remove_scope_triggers' => [
+			'title' => 'Remove Scope Triggers',
+			'description' => 'Remove Triggers related to old scope tables',
+			'continueOnError' => true,
+			'sql' => [
+				'DROP TRIGGER after_grouped_work_record_items_delete',
+				'DROP TRIGGER after_scope_delete',
+			]
+		], //remove_scope_triggers
 		'record_suppression_no_marc' => [
 			'title' => 'Setup ils record suppression for not having marc data',
 			'description' => 'Setup ils record suppression for not having marc data',
