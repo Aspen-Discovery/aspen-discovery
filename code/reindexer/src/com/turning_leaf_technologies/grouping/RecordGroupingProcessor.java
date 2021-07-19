@@ -116,7 +116,7 @@ public class RecordGroupingProcessor {
 	 * @param source - The source of the record being removed
 	 * @param id     - The id of the record being removed
 	 */
-	public RemoveRecordFromWorkResult removeRecordFromGroupedWork(String source, String id) {
+	public synchronized RemoveRecordFromWorkResult removeRecordFromGroupedWork(String source, String id) {
 		RemoveRecordFromWorkResult result = new RemoveRecordFromWorkResult();
 		try {
 			//Check to see if the identifier is in the grouped work primary identifiers table
@@ -243,7 +243,7 @@ public class RecordGroupingProcessor {
 	 * @param primaryIdentifier The primary identifier we are updating the work for
 	 * @param groupedWork       Information about the work itself
 	 */
-	void addGroupedWorkToDatabase(RecordIdentifier primaryIdentifier, GroupedWork groupedWork, boolean primaryDataChanged, String originalGroupedWorkId) {
+	synchronized void addGroupedWorkToDatabase(RecordIdentifier primaryIdentifier, GroupedWork groupedWork, boolean primaryDataChanged, String originalGroupedWorkId) {
 		String groupedWorkPermanentId = groupedWork.getPermanentId();
 
 		//Check to see if we need to ungroup the record.
@@ -259,6 +259,7 @@ public class RecordGroupingProcessor {
 		boolean addPrimaryIdentifierToWork = true;
 
 		if (originalGroupedWorkId == null){
+			//Try to look up the original id
 			try {
 				groupedWorkForIdentifierStmt.setString(1, primaryIdentifier.getType());
 				groupedWorkForIdentifierStmt.setString(2, primaryIdentifier.getIdentifier());
@@ -273,6 +274,9 @@ public class RecordGroupingProcessor {
 			} catch (SQLException e) {
 				logEntry.incErrors("Error determining existing grouped work for identifier", e);
 			}
+		}else if (originalGroupedWorkId.equals("false")) {
+			//A value of false means we prevalidated that there was not an existing id
+			originalGroupedWorkId = null;
 		}
 
 		if (originalGroupedWorkId != null && !originalGroupedWorkId.equals(groupedWorkPermanentId)) {

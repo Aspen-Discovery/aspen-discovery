@@ -40,6 +40,13 @@ public class ItemInfo{
 	private String collection;
 	private Date lastCheckinDate;
 	private String volumeField;
+	private String status;
+	private String groupedStatus;
+	private boolean available;
+	private boolean holdable;
+	private boolean bookable = false;
+	private boolean inLibraryUseOnly;
+
 	private RecordInfo recordInfo;
 
 	private final HashMap<String, ScopingInfo> scopingInfo = new HashMap<>();
@@ -384,6 +391,42 @@ public class ItemInfo{
 		}
 	}
 
+	void setGroupedStatus(String groupedStatus) {
+		this.groupedStatus = groupedStatus;
+	}
+
+	public String getGroupedStatus() {
+		return this.groupedStatus;
+	}
+
+	public boolean isAvailable() {
+		return available;
+	}
+
+	public void setAvailable(boolean available) {
+		this.available = available;
+	}
+
+	void setHoldable(boolean holdable) {
+		this.holdable = holdable;
+	}
+
+	public boolean isHoldable() {
+		return holdable;
+	}
+
+	public boolean isBookable() {
+		return false;
+	}
+
+	void setInLibraryUseOnly(boolean inLibraryUseOnly) {
+		this.inLibraryUseOnly = inLibraryUseOnly;
+	}
+
+	public boolean isInLibraryUseOnly() {
+		return inLibraryUseOnly;
+	}
+
 	public void copyFrom(ItemInfo itemInfo) {
 		this.itemIdentifier = itemInfo.itemIdentifier;
 		this.locationCode = itemInfo.locationCode;
@@ -412,6 +455,12 @@ public class ItemInfo{
 		this.shelfLocationCode = itemInfo.shelfLocationCode;
 		this.autoReindexTime = itemInfo.autoReindexTime;
 		this.marcField = itemInfo.marcField;
+		this.status = itemInfo.status;
+		this.groupedStatus = itemInfo.groupedStatus;
+		this.available = itemInfo.available;
+		this.holdable = itemInfo.holdable;
+		this.bookable = itemInfo.bookable;
+		this.inLibraryUseOnly = itemInfo.inLibraryUseOnly;
 		for (String scope : itemInfo.scopingInfo.keySet()){
 			ScopingInfo curScopingInfo = itemInfo.scopingInfo.get(scope);
 			ScopingInfo clonedScope = addScope(curScopingInfo.getScope());
@@ -430,4 +479,46 @@ public class ItemInfo{
 	public String getVolumeField() {
 		return this.volumeField;
 	}
+
+	private StringBuffer locationOwnedScopes = null;
+	private StringBuffer libraryOwnedScopes = null;
+	private StringBuffer recordsIncludedScopes = null;
+	public String getLocationOwnedScopes() {
+		if (this.locationOwnedScopes == null){
+			this.createScopingStrings();
+		}
+		return locationOwnedScopes.toString();
+	}
+
+	public String getLibraryOwnedScopes() {
+		if (this.libraryOwnedScopes == null){
+			this.createScopingStrings();
+		}
+		return libraryOwnedScopes.toString();
+	}
+
+	public String getRecordsIncludedScopes() {
+		if (this.recordsIncludedScopes == null){
+			this.createScopingStrings();
+		}
+		return recordsIncludedScopes.toString();
+	}
+
+	private void createScopingStrings() {
+		locationOwnedScopes = new StringBuffer("~");
+		libraryOwnedScopes = new StringBuffer("~");
+		recordsIncludedScopes = new StringBuffer("~");
+		for (ScopingInfo scope : scopingInfo.values()){
+			if (scope.isLocallyOwned()){
+				locationOwnedScopes.append(scope.getScope().getId()).append("~");
+			}else if (scope.isLibraryOwned()){
+				libraryOwnedScopes.append(scope.getScope().getId()).append("~");
+			}else {
+				recordsIncludedScopes.append(scope.getScope().getId()).append("~");
+			}
+		}
+	}
+
+
+
 }

@@ -14,7 +14,7 @@
 			</div>
 		</div>
 
-		{if count($transList) > 1 && ($source=='all' || $source=='ils' || $source=='rbdigital')}
+		{if count($transList) > 1 && ($source=='all' || $source=='ils')}
 			<div class="row">
 				<div class="col-xs-12">
 					<label for="selectAll_{$source}" class="control-label checkbox"> {translate text="Select/Deselect All"} <input id="selectAll_{$source}" type="checkbox" onclick="$('#renewForm_{$source} .titleSelect').prop('checked', $('#selectAll_{$source}').is(':checked'));"></label>
@@ -30,12 +30,6 @@
 					{include file="MyAccount/overdriveCheckedOutTitle.tpl" record=$checkedOutTitle resultIndex=$smarty.foreach.checkedOutTitleLoop.iteration}
 				{elseif $checkedOutTitle->type == 'hoopla'}
 					{include file="MyAccount/hooplaCheckedOutTitle.tpl" record=$checkedOutTitle resultIndex=$smarty.foreach.checkedOutTitleLoop.iteration}
-				{elseif $checkedOutTitle->type == 'rbdigital'}
-					{if $checkedOutTitle->source == 'rbdigital'}
-						{include file="MyAccount/rbdigitalCheckedOutTitle.tpl" record=$checkedOutTitle resultIndex=$smarty.foreach.checkedOutTitleLoop.iteration}
-					{elseif $checkedOutTitle->source == 'rbdigital_magazine'}
-						{include file="MyAccount/rbdigitalCheckedOutMagazine.tpl" record=$checkedOutTitle resultIndex=$smarty.foreach.checkedOutTitleLoop.iteration}
-					{/if}
 				{elseif $checkedOutTitle->type == 'cloud_library'}
 					{include file="MyAccount/cloudLibraryCheckedOutTitle.tpl" record=$checkedOutTitle resultIndex=$smarty.foreach.checkedOutTitleLoop.iteration}
 				{elseif $checkedOutTitle->type == 'axis360'}
@@ -52,7 +46,7 @@
 
 		<div class="btn-group">
 			{if $renewableCheckouts >= 1}
-				{if $source=='all' || $source=='ils' || $source=='rbdigital'}
+				{if $source=='all' || $source=='ils'}
 					<a href="#" onclick="AspenDiscovery.Account.renewSelectedTitles()" class="btn btn-sm btn-default">{translate text="Renew Selected Items"}</a>
 					<a href="#" onclick="AspenDiscovery.Account.renewAll()" class="btn btn-sm btn-default">{translate text="Renew All"}</a>
 				{/if}

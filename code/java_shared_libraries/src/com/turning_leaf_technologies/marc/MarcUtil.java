@@ -520,7 +520,7 @@ public class MarcUtil {
 		return timeAdded;
 	}
 
-	public static Record readIndividualRecord(File marcFile, BaseLogEntry logEntry){
+	public static Record readMarcRecordFromFile(File marcFile, BaseLogEntry logEntry){
 		try {
 			FileInputStream marcFileStream = new FileInputStream(marcFile);
 
@@ -534,7 +534,8 @@ public class MarcUtil {
 			}
 			marcFileStream.close();
 		}catch (FileNotFoundException fne){
-			logEntry.addNote("Could not find marcFile " + marcFile.getAbsolutePath());
+			//These will now show up in the suppression so we don't need to add them to notes.
+			//logEntry.addNote("Could not find marcFile " + marcFile.getAbsolutePath());
 			return null;
 		}catch (Exception e){
 			//This happens if the file has too many items. Ignore and read with permissive handler.
@@ -543,10 +544,10 @@ public class MarcUtil {
 
 		//If we got here, it didn't read successfully.  Try again using the Permissinve Reader
 		//The Permissive Reader allows reading large files.
-		return readIndividualRecordPermissive(marcFile, logEntry);
+		return readMarcRecordFromFilePermissive(marcFile, logEntry);
 	}
 
-	private static Record readIndividualRecordPermissive(File marcFile, BaseLogEntry logEntry){
+	private static Record readMarcRecordFromFilePermissive(File marcFile, BaseLogEntry logEntry){
 		try {
 			FileInputStream marcFileStream = new FileInputStream(marcFile);
 
@@ -566,7 +567,7 @@ public class MarcUtil {
 		return null;
 	}
 
-	public static Record readIndividualRecord(String identifier, String marcContents, BaseLogEntry logEntry){
+	public static Record readJsonFormattedRecord(String identifier, String marcContents, BaseLogEntry logEntry){
 		try {
 			InputStream marcFileStream = new ByteArrayInputStream(marcContents.getBytes(StandardCharsets.UTF_8));
 
@@ -577,6 +578,7 @@ public class MarcUtil {
 				return marcRecord;
 			}catch (MarcException me){
 				//Could not read the marc record, there likely was not a record in the file, but ignore and use the permissive read.
+				logEntry.incErrors("Could not read MARC for " + identifier, me);
 			}
 			marcFileStream.close();
 		}catch (Exception e){

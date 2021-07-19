@@ -56,14 +56,6 @@
 											</a>
 										</li>
 									{/if}
-									{if $user->isValidForEContentSource('rbdigital')}
-										<li class="myAccountLink">
-											&nbsp;&nbsp;&raquo;&nbsp;
-											<a href="/MyAccount/CheckedOut?tab=rbdigital" id="checkedOutRBdigital" title="View checkouts from RBdigital">
-												{translate text="RBdigital"} {if !$offline}<span class="badge"><span class="rbdigital-checkouts-placeholder">??</span></span>{/if}
-											</a>
-										</li>
-									{/if}
 									{if $user->isValidForEContentSource('cloud_library')}
 										<li class="myAccountLink">
 										&nbsp;&nbsp;&raquo;&nbsp;
@@ -99,14 +91,6 @@
 											&nbsp;&nbsp;&raquo;&nbsp;
 											<a href="/MyAccount/Holds?tab=overdrive" id="holdsOverDrive" title="View holds from OverDrive">
 												{translate text="OverDrive"} {if !$offline}<span class="badge"><span class="overdrive-holds-placeholder">??</span></span> <span class="overdrive-available-holds" style="display: none"> <span class="label label-success"><span class="overdrive-available-holds-placeholder"></span> {translate text="Available Now"}</span></span>{/if}
-											</a>
-										</li>
-									{/if}
-									{if $user->isValidForEContentSource('rbdigital') && $user->showRBdigitalHolds()}
-										<li class="myAccountLink">
-											&nbsp;&nbsp;&raquo;&nbsp;
-											<a href="/MyAccount/Holds?tab=rbdigital" id="holdsRBdigital" title="View holds from RBdigital">
-												{translate text="RBdigital"} {if !$offline}<span class="badge"><span class="rbdigital-holds-placeholder">??</span></span>{/if}
 											</a>
 										</li>
 									{/if}
@@ -185,9 +169,6 @@
 								{if $user->isValidForEContentSource('overdrive')}
 									<li class="myAccountLink">&nbsp;&nbsp;&raquo;&nbsp;<a href="/MyAccount/OverDriveOptions">{translate text='OverDrive Options'}</a></li>
 								{/if}
-{*								{if $user->isValidForEContentSource('rbdigital')}*}
-{*									<li class="myAccountLink">&nbsp;&nbsp;&raquo;&nbsp;<a href="/MyAccount/RBdigitalOptions">{translate text='RBdigital Options'}</a></li>*}
-{*								{/if}*}
 								{if $user->isValidForEContentSource('hoopla')}
 									<li class="myAccountLink">&nbsp;&nbsp;&raquo;&nbsp;<a href="/MyAccount/HooplaOptions">{translate text='Hoopla Options'}</a></li>
 								{/if}

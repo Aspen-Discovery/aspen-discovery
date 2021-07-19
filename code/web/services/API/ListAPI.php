@@ -87,6 +87,7 @@ class ListAPI extends Action
 					'title' => $list->title,
 					'description' => $list->description,
 					'numTitles' => $numTitles,
+					'dateUpdated' => $list->dateUpdated,
 				);
 			}
 		}
@@ -373,7 +374,8 @@ class ListAPI extends Action
 							'image' => $imageUrl,
 							'small_image' => $smallImageUrl,
 							'title' => $suggestion['titleInfo']['title'],
-							'author' => $suggestion['titleInfo']['author']
+							'author' => $suggestion['titleInfo']['author'],
+
 						);
 					}
 					return array('success' => true, 'listTitle' => $systemList['title'], 'listDescription' => $systemList['description'], 'titles' => $titles);

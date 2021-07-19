@@ -40,7 +40,6 @@ public class Scope implements Comparable<Scope>{
 	private GroupedWorkDisplaySettings groupedWorkDisplaySettings;
 	private OverDriveScope overDriveScope;
 	private HooplaScope hooplaScope;
-	private RbdigitalScope rbdigitalScope;
 	private final HashMap<Long, CloudLibraryScope> cloudLibraryScopes = new HashMap<>();
 	private Axis360Scope axis360Scope;
 
@@ -271,14 +270,6 @@ public class Scope implements Comparable<Scope>{
 	void setHooplaScope(HooplaScope hooplaScope) {
 		this.hooplaScope = hooplaScope;
 	}
-
-    void setRbdigitalScope(RbdigitalScope rbdigitalScope) {
-        this.rbdigitalScope = rbdigitalScope;
-    }
-
-    public RbdigitalScope getRbdigitalScope() {
-        return rbdigitalScope;
-    }
 
 	void addCloudLibraryScope(CloudLibraryScope cloudLibraryScope) {
 		this.cloudLibraryScopes.put(cloudLibraryScope.getSettingId(), cloudLibraryScope);

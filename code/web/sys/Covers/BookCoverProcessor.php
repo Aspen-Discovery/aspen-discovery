@@ -81,16 +81,6 @@ class BookCoverProcessor{
 				if ($this->getHooplaCover($this->id)) {
 					return true;
 				}
-			} else if ($this->type == 'rbdigital') {
-				//Will exit if we find a cover
-				if ($this->getRBdigitalCover($this->id)) {
-					return true;
-				}
-			} else if ($this->type == 'rbdigital_magazine') {
-				//Will exit if we find a cover
-				if ($this->getRBdigitalMagazineCover($this->id)) {
-					return true;
-				}
 			} else if ($this->type == 'cloud_library') {
 				//Will exit if we find a cover
 				if ($this->getCloudLibraryCover($this->id, true)) {
@@ -299,34 +289,6 @@ class BookCoverProcessor{
 					}
 				}
 			}
-		}
-		return false;
-	}
-
-	private function getRBdigitalCover($id)
-	{
-		if (strpos($id, ':') !== false) {
-			list(, $id) = explode(":", $id);
-		}
-		require_once ROOT_DIR . '/RecordDrivers/RBdigitalRecordDriver.php';
-		$driver = new RBdigitalRecordDriver($id);
-		if ($driver) {
-			$coverUrl = $driver->getRBdigitalBookcoverUrl('large');
-			return $this->processImageURL('rbdigital', $coverUrl, true);
-		}
-		return false;
-	}
-
-	private function getRBdigitalMagazineCover($id)
-	{
-		if (strpos($id, ':') !== false) {
-			list(, $id) = explode(":", $id);
-		}
-		require_once ROOT_DIR . '/RecordDrivers/RBdigitalMagazineDriver.php';
-		$driver = new RBdigitalMagazineDriver($id);
-		if ($driver) {
-			$coverUrl = $driver->getRBdigitalBookcoverUrl();
-			return $this->processImageURL('rbdigital_magazine', $coverUrl, true);
 		}
 		return false;
 	}
@@ -1138,14 +1100,6 @@ class BookCoverProcessor{
 					}
 				}elseif (strcasecmp($relatedRecord->source, 'Hoopla') == 0){
 					if ($this->getHooplaCover($relatedRecord->id)){
-						return true;
-					}
-				} elseif (strcasecmp($relatedRecord->source, 'rbdigital_magazine') == 0){
-					if ($this->getRBdigitalMagazineCover($relatedRecord->id)) {
-						return true;
-					}
-				} elseif (strcasecmp($relatedRecord->source, 'rbdigital') == 0){
-					if ($this->getRBdigitalCover($relatedRecord->id)) {
 						return true;
 					}
 				} elseif (strcasecmp($relatedRecord->source, 'cloud_library') == 0){

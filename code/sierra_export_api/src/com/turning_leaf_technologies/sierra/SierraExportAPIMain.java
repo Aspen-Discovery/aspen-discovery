@@ -134,6 +134,7 @@ public class SierraExportAPIMain {
 				Connection sierraConn = null;
 				SierraInstanceInformation sierraInstanceInformation = initializeSierraConnection(dbConn);
 				indexingProfile = IndexingProfile.loadIndexingProfile(dbConn, sierraInstanceInformation.indexingProfileName, logger);
+				logEntry.setIsFullUpdate(indexingProfile.isRunFullUpdate());
 
 				if (sierraInstanceInformation.sierraConnection == null) {
 					logEntry.incErrors("Could not connect to the Sierra database");
@@ -307,8 +308,7 @@ public class SierraExportAPIMain {
 			while (getRecordsToReloadRS.next()) {
 				long recordToReloadId = getRecordsToReloadRS.getLong("id");
 				String recordIdentifier = getRecordsToReloadRS.getString("identifier");
-				File marcFile = indexingProfile.getFileForIlsRecord(recordIdentifier);
-				Record marcRecord = MarcUtil.readIndividualRecord(marcFile, logEntry);
+				Record marcRecord = getGroupedWorkIndexer().loadMarcRecordFromDatabase(indexingProfile.getName(), recordIdentifier, logEntry);
 				if (marcRecord != null){
 					//Regroup the record
 					String groupedWorkId = groupSierraRecord(marcRecord);
@@ -1149,6 +1149,7 @@ public class SierraExportAPIMain {
 						try {
 							Record marcRecord = marcReader.next();
 							RecordIdentifier identifier = getRecordGroupingProcessor().getPrimaryIdentifierFromMarcRecord(marcRecord, indexingProfile.getName(), indexingProfile.isDoAutomaticEcontentSuppression());
+							logEntry.setCurrentId(identifier.getIdentifier());
 							File marcFile = indexingProfile.getFileForIlsRecord(identifier.getIdentifier());
 							if (!marcFile.getParentFile().exists()) {
 								if (!marcFile.getParentFile().mkdirs()) {
@@ -1356,7 +1357,7 @@ public class SierraExportAPIMain {
 					sierraAPIExpiration = new Date().getTime() + (parser.getLong("expires_in") * 1000) - 10000;
 					//logger.debug("Sierra token is " + sierraAPIToken);
 				}catch (JSONException jse){
-					logger.error("Error parsing response to json " + response.toString(), jse);
+					logger.error("Error parsing response to json " + response, jse);
 					return false;
 				}
 

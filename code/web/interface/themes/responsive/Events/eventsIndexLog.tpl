@@ -18,7 +18,7 @@
 				</span>
 			</div>
 		</form>
-		<div id="rbdigitalExportLogContainer">
+		<div id="eventsExportLogContainer">
 			<table class="logEntryDetails table table-condensed table-hover">
 				<thead>
 					<tr><th>Id</th><th>Name</th><th>Started</th><th>Last Update</th><th>Finished</th><th>Elapsed</th><th>Total Events</th><th>Num Errors</th><th>Pages Added</th><th>Pages Deleted</th><th>Pages Updated</th><th>Notes</th></tr>

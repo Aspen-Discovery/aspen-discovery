@@ -51,19 +51,19 @@ class OwnershipRule {
 		if (this.recordType.equals(recordType)){
 			if (locationCode == null ){
 				if (matchAllLocations) {
-					isOwned =  (matchAllSubLocations || subLocationCode == null || subLocationCodePattern.matcher(subLocationCode).lookingAt());
+					isOwned =  (matchAllSubLocations || subLocationCode == null || subLocationCodePattern.matcher(subLocationCode).matches());
 				}else{
 					isOwned = false;
 				}
 			}else{
-				isOwned = locationCodePattern.matcher(locationCode).lookingAt() && (matchAllSubLocations || subLocationCode == null || subLocationCodePattern.matcher(subLocationCode).lookingAt());
+				isOwned = locationCodePattern.matcher(locationCode).matches() && (matchAllSubLocations || subLocationCode == null || subLocationCodePattern.matcher(subLocationCode).matches());
 			}
 			//Make sure that we are not excluding the result
 			if (isOwned && locationCode != null && locationsToExcludePattern != null) {
-				isOwned = !locationsToExcludePattern.matcher(locationCode).lookingAt();
+				isOwned = !locationsToExcludePattern.matcher(locationCode).matches();
 			}
 			if (isOwned && subLocationCode != null && subLocationsToExcludePattern != null) {
-				isOwned = !subLocationsToExcludePattern.matcher(subLocationCode).lookingAt();
+				isOwned = !subLocationsToExcludePattern.matcher(subLocationCode).matches();
 			}
 		}else{
 			isOwned = false;

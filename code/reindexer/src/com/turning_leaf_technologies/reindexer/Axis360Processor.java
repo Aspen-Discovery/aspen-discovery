@@ -149,11 +149,16 @@ class Axis360Processor {
 					int ownedQty = availabilityRS.getInt("ownedQty");
 					itemInfo.setNumCopies(ownedQty);
 					long settingId = availabilityRS.getLong("settingId");
+					itemInfo.setAvailable(available);
 					if (available) {
 						itemInfo.setDetailedStatus("Available Online");
+						itemInfo.setGroupedStatus("Available Online");
 					} else {
 						itemInfo.setDetailedStatus("Checked Out");
+						itemInfo.setGroupedStatus("Checked Out");
 					}
+					itemInfo.setHoldable(true);
+					itemInfo.setInLibraryUseOnly(false);
 					for (Scope scope : indexer.getScopes()) {
 						boolean okToAdd = false;
 						Axis360Scope axis360Scope = scope.getAxis360Scope();
@@ -164,18 +169,9 @@ class Axis360Processor {
 						}
 						if (okToAdd) {
 							ScopingInfo scopingInfo = itemInfo.addScope(scope);
-							scopingInfo.setAvailable(available);
-							if (available) {
-								scopingInfo.setStatus("Available Online");
-								scopingInfo.setGroupedStatus("Available Online");
-							} else {
-								scopingInfo.setStatus("Checked Out");
-								scopingInfo.setGroupedStatus("Checked Out");
-							}
-							scopingInfo.setHoldable(true);
+
 							scopingInfo.setLibraryOwned(true);
 							scopingInfo.setLocallyOwned(true);
-							scopingInfo.setInLibraryUseOnly(false);
 						}
 					}
 				}

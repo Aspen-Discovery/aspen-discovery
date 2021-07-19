@@ -182,8 +182,6 @@ AspenDiscovery.Account = (function(){
 					label = 'OverDrive Checkouts';
 				}else if (source === 'hoopla'){
 					label = 'Hoopla Checkouts';
-				}else if (source === 'rbdigital'){
-					label = 'RBdigital Checkouts';
 				}else if (source === 'cloud_library'){
 					label = 'Cloud Library Checkouts';
 				}else if (source === 'axis360'){
@@ -252,8 +250,6 @@ AspenDiscovery.Account = (function(){
 					label = 'Physical Holds';
 				}else if (source === 'overdrive'){
 					label = 'OverDrive Holds';
-				}else if (source === 'rbdigital'){
-					label = 'RBdigital Holds';
 				}else if (source === 'cloud_library'){
 					label = 'Cloud Library Holds';
 				}else if (source === 'axis360'){
@@ -363,19 +359,6 @@ AspenDiscovery.Account = (function(){
 						$(".materialsRequests-placeholder").html(data.summary.materialsRequests);
 						$(".bookings-placeholder").html(data.summary.bookings);
 						$(".expirationFinesNotice-placeholder").html(data.summary.expirationFinesNotice);
-					}
-				});
-			}
-			if (Globals.hasRBdigitalConnection) {
-				var rbdigitalUrl = Globals.path + "/MyAccount/AJAX?method=getMenuDataRBdigital&activeModule=" + Globals.activeModule + '&activeAction=' + Globals.activeAction;
-				$.getJSON(rbdigitalUrl, function (data) {
-					if (data.success) {
-						$(".rbdigital-checkouts-placeholder").html(data.summary.numCheckedOut);
-						totalCheckouts += parseInt(data.summary.numCheckedOut);
-						$(".checkouts-placeholder").html(totalCheckouts);
-						$(".rbdigital-holds-placeholder").html(data.summary.numUnavailableHolds);
-						totalHolds += parseInt(data.summary.numUnavailableHolds);
-						$(".holds-placeholder").html(totalHolds);
 					}
 				});
 			}

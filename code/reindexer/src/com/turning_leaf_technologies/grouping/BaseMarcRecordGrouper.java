@@ -555,19 +555,25 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 	public boolean loadExistingTitles(BaseLogEntry logEntry) {
 		try {
 			if (existingRecords == null) existingRecords = new HashMap<>();
-			PreparedStatement getAllExistingRecordsStmt = dbConn.prepareStatement("SELECT ilsId, checksum, dateFirstDetected FROM ils_records where source = ?;");
+			PreparedStatement getAllExistingRecordsStmt = dbConn.prepareStatement("SELECT ilsId, checksum, dateFirstDetected, deleted FROM ils_records where source = ?;");
 			getAllExistingRecordsStmt.setString(1, baseSettings.getName());
 			ResultSet allRecordsRS = getAllExistingRecordsStmt.executeQuery();
+			int numDeletedTitles = 0;
 			while (allRecordsRS.next()) {
 				String ilsId = allRecordsRS.getString("ilsId");
 				IlsTitle newTitle = new IlsTitle(
 						allRecordsRS.getLong("checksum"),
-						allRecordsRS.getLong("dateFirstDetected")
+						allRecordsRS.getLong("dateFirstDetected"),
+						allRecordsRS.getBoolean("deleted")
 				);
 				existingRecords.put(ilsId, newTitle);
+				if (newTitle.isDeleted()){
+					numDeletedTitles++;
+				}
 			}
 			allRecordsRS.close();
 			getAllExistingRecordsStmt.close();
+			logEntry.addNote("There are " + existingRecords.size() + " records that have already been loaded " + numDeletedTitles + " are deleted, and " + (existingRecords.size() - numDeletedTitles) + " are active");
 			return true;
 		} catch (SQLException e) {
 			logEntry.incErrors("Error loading existing titles", e);

@@ -43,7 +43,6 @@ class Checkout extends CircEntry
 	public $supplementalMaterials; //This gets serialized when saved and loaded
 	public $formats; //This gets serialized when saved and loaded
 
-	//For RBdigital
 	public $downloadUrl;
 
 	//For Axis360

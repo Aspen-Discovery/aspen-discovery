@@ -10,7 +10,6 @@ import java.util.Date;
 
 import com.turning_leaf_technologies.config.ConfigUtil;
 import com.turning_leaf_technologies.file.JarUtil;
-import com.turning_leaf_technologies.grouping.BaseMarcRecordGrouper;
 import com.turning_leaf_technologies.grouping.MarcRecordGrouper;
 import com.turning_leaf_technologies.grouping.RemoveRecordFromWorkResult;
 import com.turning_leaf_technologies.indexing.*;
@@ -140,6 +139,7 @@ public class CarlXExportMain {
 				}
 
 				indexingProfile = IndexingProfile.loadIndexingProfile(dbConn, profileToLoad, logger);
+				logEntry.setIsFullUpdate(indexingProfile.isRunFullUpdate());
 				if (!extractSingleWork && indexingProfile.isRegroupAllRecords()) {
 					MarcRecordGrouper recordGrouper = getRecordGroupingProcessor(dbConn);
 					recordGrouper.regroupAllRecords(dbConn, indexingProfile, getGroupedWorkIndexer(dbConn), logEntry);
@@ -256,8 +256,9 @@ public class CarlXExportMain {
 				long recordToReloadId = getRecordsToReloadRS.getLong("id");
 				String recordIdentifier = getRecordsToReloadRS.getString("identifier");
 				File marcFile = indexingProfile.getFileForIlsRecord(recordIdentifier);
-				Record marcRecord = MarcUtil.readIndividualRecord(marcFile, logEntry);
+				Record marcRecord = getGroupedWorkIndexer(dbConn).loadMarcRecordFromDatabase(indexingProfile.getName(), recordIdentifier, logEntry);
 				if (marcRecord != null) {
+					logEntry.incRecordsRegrouped();
 					//Regroup the record
 					String groupedWorkId = getRecordGroupingProcessor(dbConn).processMarcRecord(marcRecord, true, null);
 					//Reindex the record
@@ -757,6 +758,7 @@ public class CarlXExportMain {
 							for (int i = 1; i < l; i++) { // (skip first node because it is the response status)
 								try {
 									String currentBibID = updatedBibCopy.get(i - 1);
+									logEntry.setCurrentId(currentBibID);
 									bibsNotFound.remove(currentBibID);
 									String currentFullBibID = getFileIdForRecordNumber(currentBibID);
 

@@ -8,8 +8,7 @@ class IlsRecord extends DataObject {
 	public $dateFirstDetected;
 	public $deleted;
 	public $dateDeleted;
-	public $suppressed;
-	public $suppressionReason;
+	public $suppressedNoMarcAvailable;
 	public $source;
 	public $sourceData;
 	public $lastModified;

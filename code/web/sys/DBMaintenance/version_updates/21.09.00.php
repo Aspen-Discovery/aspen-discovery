@@ -132,6 +132,14 @@ function getUpdates21_09_00() : array
 				"ALTER TABLE location ADD COLUMN createSearchInterface TINYINT(1) DEFAULT 1",
 			]
 		], //createSearchInterface_libraries_locations
+		'fix_dates_in_item_details' => [
+			'title' => 'Fix dates in Item Details',
+			'description' => 'Fix dates in Item Details',
+			'sql' => [
+				'ALTER TABLE grouped_work_record_items CHANGE COLUMN dateAdded dateAdded BIGINT',
+				'ALTER TABLE grouped_work_record_items CHANGE COLUMN lastCheckInDate lastCheckInDate BIGINT',
+			]
+		], //fix_dates_in_item_details
 		'normalize_scope_data' => [
 			'title' => 'Normalize Scope Data',
 			'description' => 'Normalize Scope Data to minimize data stored and speed insertions',
@@ -166,6 +174,66 @@ function getUpdates21_09_00() : array
 				"OPTIMIZE table grouped_work_record_scope"
 			]
 		], //normalize_scope_data
+		'move_unchanged_scope_data_to_item' => [
+			'title' => 'Move scope data that does not vary to item',
+			'description' => 'Move scope data that does not vary to item',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE grouped_work_record_items ADD COLUMN groupedStatusId INT(11)',
+				'ALTER TABLE grouped_work_record_items ADD COLUMN available TINYINT(1)',
+				'ALTER TABLE grouped_work_record_items ADD COLUMN holdable TINYINT(1)',
+				'ALTER TABLE grouped_work_record_items ADD COLUMN inLibraryUseOnly TINYINT(1)',
+				'UPDATE grouped_work_record_items as dest, 
+					(SELECT groupedWorkItemId, groupedStatusId, statusId, available, holdable, inLibraryUseOnly from 
+					  grouped_work_record_scope
+					  inner join grouped_work_record_scope_details on scopeDetailsId = grouped_work_record_scope_details.id 
+					  group by groupedWorkItemId, grouped_work_record_scope_details.groupedStatusId, grouped_work_record_scope_details.statusId, grouped_work_record_scope_details.available, grouped_work_record_scope_details.holdable, grouped_work_record_scope_details.inLibraryUseOnly) as src
+					set dest.groupedStatusId = src.groupedStatusId, 
+					  dest.statusId = src.statusId,
+					  dest.available = src.available, 
+					  dest.holdable = src.holdable, 
+					  dest.inLibraryUseOnly = src.inLibraryUseOnly
+					where dest.id = src.groupedWorkItemId',
+				'ALTER TABLE grouped_work_record_scope_details DROP INDEX groupedStatusId',
+				'ALTER TABLE grouped_work_record_scope_details DROP groupedStatusId, DROP statusId, DROP available, DROP holdable, DROP inLibraryUseOnly',
+			]
+		], //move_unchanged_scope_data_to_item
+		'store_scope_details_in_concatenated_fields' => [
+			'title' => 'Store scope details within concatenated fields',
+			'description' => 'Update scoping to add scoped details within the item table rather than a separate table',
+			'sql' => [
+				'ALTER TABLE grouped_work_record_items ADD COLUMN locationOwnedScopes VARCHAR(500)',
+				'ALTER TABLE grouped_work_record_items ADD COLUMN libraryOwnedScopes VARCHAR(500)',
+				'ALTER TABLE grouped_work_record_items ADD COLUMN recordIncludedScopes VARCHAR(500)'
+			]
+		], //move_unchanged_scope_data_to_item
+		//TODO: Do some form of conversion from the scoped data to scope information stored at item leve
+		'remove_scope_tables' => [
+			'title' => 'Remove Scope Tables',
+			'description' => 'remove scope tables that are no longer used',
+			'sql' => [
+				'DROP TABLE grouped_work_record_scope',
+				'DROP TABLE grouped_work_record_scope_details',
+			]
+		], //remove_scope_tables
+		'remove_scope_triggers' => [
+			'title' => 'Remove Scope Triggers',
+			'description' => 'Remove Triggers related to old scope tables',
+			'continueOnError' => true,
+			'sql' => [
+				'DROP TRIGGER after_grouped_work_record_items_delete',
+				'DROP TRIGGER after_scope_delete',
+			]
+		], //remove_scope_triggers
+		'record_suppression_no_marc' => [
+			'title' => 'Setup ils record suppression for not having marc data',
+			'description' => 'Setup ils record suppression for not having marc data',
+			'sql' => [
+				'ALTER TABLE ils_records DROP COLUMN suppressionReason',
+				'ALTER TABLE ils_records CHANGE COLUMN suppressed suppressedNoMarcAvailable TINYINT(1)',
+				'DROP TABLE ils_suppression_reasons'
+			]
+		], //record_suppression_no_marc
 		'storeNYTLastUpdated' => [
 			'title' => 'Store the date a NYT List was last modified',
 			'description' => 'Store the date that a NYT List was last modified by NYT',
@@ -194,5 +262,28 @@ function getUpdates21_09_00() : array
 				'ALTER TABLE ils_volume_info CHANGE volumeId volumeId VARCHAR(100) NOT NULL'
 			]
 		], //increase_volumeId_length
+		'remove_rbdigital' => [
+			'title' => 'Remove RBdigital content',
+			'description' => 'Remove RBdigital content form the database',
+			'sql' => [
+				'ALTER TABLE user drop column rbdigitalId',
+				'ALTER TABLE user drop column rbdigitalLastAccountCheck',
+				'ALTER TABLE user drop column rbdigitalPassword',
+				'ALTER TABLE user drop column rbdigitalUsername',
+				'ALTER TABLE library drop column rbdigitalScopeId',
+				'ALTER TABLE location drop column rbdigitalScopeId',
+				'DROP TABLE rbdigital_scopes',
+				'DROP TABLE rbdigital_settings',
+				'DROP TABLE rbdigital_export_log',
+			]
+		], //remove_rbdigital
+		'additional_index_logging' => [
+			'title' => 'Add additional information to ils index log',
+			'description' => 'Add additional information for ILS index log',
+			'sql' => [
+				'ALTER TABLE ils_extract_log ADD COLUMN isFullUpdate TINYINT(1)',
+				'ALTER TABLE ils_extract_log ADD COLUMN currentId VARCHAR(36)'
+			]
+		]
 	];
 }

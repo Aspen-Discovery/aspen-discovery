@@ -4,12 +4,10 @@ import com.turning_leaf_technologies.indexing.IlsExtractLogEntry;
 import com.turning_leaf_technologies.indexing.IndexingProfile;
 import com.turning_leaf_technologies.indexing.RecordIdentifier;
 import com.turning_leaf_technologies.logging.BaseLogEntry;
-import com.turning_leaf_technologies.marc.MarcUtil;
 import com.turning_leaf_technologies.reindexer.GroupedWorkIndexer;
 import org.apache.logging.log4j.Logger;
 import org.marc4j.marc.*;
 
-import java.io.File;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -166,7 +164,7 @@ public class MarcRecordGrouper extends BaseMarcRecordGrouper {
 					for (DataField linkField : linkFields) {
 						if (linkField.getSubfield('u') != null) {
 							//Check the url to see if it is from OverDrive
-							//TODO: Suppress Rbdigital and Hoopla records as well?
+							//TODO: Suppress other eContent records as well?
 							String linkData = linkField.getSubfield('u').getData().trim();
 							if (MarcRecordGrouper.overdrivePattern.matcher(linkData).matches()) {
 								identifier.setSuppressed();
@@ -200,17 +198,26 @@ public class MarcRecordGrouper extends BaseMarcRecordGrouper {
 
 	public void regroupAllRecords(Connection dbConn, IndexingProfile indexingProfile, GroupedWorkIndexer indexer, IlsExtractLogEntry logEntry)  throws SQLException {
 		logEntry.addNote("Starting to regroup all records");
-		PreparedStatement getAllRecordsToRegroupStmt = dbConn.prepareStatement("SELECT identifier, permanent_id from grouped_work_primary_identifiers left join grouped_work on grouped_work_id = grouped_work.id WHERE type = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+		PreparedStatement getAllRecordsToRegroupStmt = dbConn.prepareStatement("SELECT ilsId from ils_records where source = ? and deleted = 0", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+		PreparedStatement getOriginalPermanentIdForRecordStmt = dbConn.prepareStatement("SELECT permanent_id from grouped_work_primary_identifiers join grouped_work on grouped_work_id = grouped_work.id WHERE type = ? and identifier = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 		getAllRecordsToRegroupStmt.setString(1, indexingProfile.getName());
 		ResultSet allRecordsToRegroupRS = getAllRecordsToRegroupStmt.executeQuery();
 		while (allRecordsToRegroupRS.next()) {
 			logEntry.incRecordsRegrouped();
-			String recordIdentifier = allRecordsToRegroupRS.getString("identifier");
-			String originalGroupedWorkId = allRecordsToRegroupRS.getString("permanent_id");
-			File marcFile = indexingProfile.getFileForIlsRecord(recordIdentifier);
-			Record marcRecord = MarcUtil.readIndividualRecord(marcFile, logEntry);
+			String recordIdentifier = allRecordsToRegroupRS.getString("ilsId");
+			String originalGroupedWorkId;
+			getOriginalPermanentIdForRecordStmt.setString(1, indexingProfile.getName());
+			getOriginalPermanentIdForRecordStmt.setString(2, recordIdentifier);
+			ResultSet getOriginalPermanentIdForRecordRS = getOriginalPermanentIdForRecordStmt.executeQuery();
+			if (getOriginalPermanentIdForRecordRS.next()){
+				originalGroupedWorkId = getOriginalPermanentIdForRecordRS.getString("permanent_id");
+			}else{
+				originalGroupedWorkId = "false";
+			}
+			Record marcRecord = indexer.loadMarcRecordFromDatabase(indexingProfile.getName(), recordIdentifier, logEntry);
 			if (marcRecord != null) {
-				String groupedWorkId = processMarcRecord(marcRecord, false, originalGroupedWorkId);
+				//Pass null to processMarcRecord.  It will do the lookup to see if there is an existing id there.
+				String groupedWorkId = processMarcRecord(marcRecord, false, null);
 				if (originalGroupedWorkId == null || !originalGroupedWorkId.equals(groupedWorkId)) {
 					logEntry.incChangedAfterGrouping();
 				}

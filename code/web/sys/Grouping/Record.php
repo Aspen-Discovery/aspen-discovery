@@ -506,7 +506,9 @@ class Grouping_Record
 	{
 		if ($this->_allActions == null) {
 			//TODO: Add volume information
-			$this->setActions($this->_driver->getRecordActions($this, $this->getStatusInformation()->isAvailableLocally() || $this->getStatusInformation()->isAvailableOnline(), $this->isHoldable(), $this->isBookable(), []));
+			if ($this->_driver != null) {
+				$this->setActions($this->_driver->getRecordActions($this, $this->getStatusInformation()->isAvailableLocally() || $this->getStatusInformation()->isAvailableOnline(), $this->isHoldable(), $this->isBookable(), []));
+			}
 			
 			$actionsToReturn = $this->_actions;
 			if (empty($this->_actions) && $this->_driver != null){

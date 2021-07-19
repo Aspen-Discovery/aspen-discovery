@@ -54,7 +54,6 @@ class Location extends DataObject
 	public $restrictSearchByLocation;
 	public /** @noinspection PhpUnused */ $overDriveScopeId;
 	public /** @noinspection PhpUnused */ $hooplaScopeId;
-	public /** @noinspection PhpUnused */ $rbdigitalScopeId;
 	public /** @noinspection PhpUnused */ $axis360ScopeId;
 	public $showHoldButton;
 	public $repeatSearchOption;
@@ -219,17 +218,6 @@ class Location extends DataObject
 			$overDriveScopes[$overDriveScope->id] = $overDriveScope->name;
 		}
 
-		require_once ROOT_DIR . '/sys/RBdigital/RBdigitalScope.php';
-		$rbdigitalScope = new RBdigitalScope();
-		$rbdigitalScope->orderBy('name');
-		$rbdigitalScopes = [];
-		$rbdigitalScope->find();
-		$rbdigitalScopes[-2] = 'None';
-		$rbdigitalScopes[-1] = 'Use Library Setting';
-		while ($rbdigitalScope->fetch()) {
-			$rbdigitalScopes[$rbdigitalScope->id] = $rbdigitalScope->name;
-		}
-
 		$structure = array(
 			'locationId' => array('property' => 'locationId', 'type' => 'label', 'label' => 'Location Id', 'description' => 'The unique id of the location within the database'),
 			'subdomain' => array('property' => 'subdomain', 'type' => 'text', 'label' => 'Subdomain', 'description' => 'The subdomain to use while identifying this branch.  Can be left if it matches the code.', 'required' => false, 'forcesReindex' => true, 'canBatchUpdate'=>false, 'permissions' => ['Location Domain Settings']),
@@ -353,10 +341,6 @@ class Location extends DataObject
 				'hooplaScopeId' => array('property' => 'hooplaScopeId', 'type' => 'enum', 'values' => $hooplaScopes, 'label' => 'Hoopla Scope', 'description' => 'The hoopla scope to use', 'hideInLists' => true, 'default' => -1, 'forcesReindex' => true),
 			)),
 
-			'rbdigitalSection' => array('property' => 'rbdigitalSection', 'type' => 'section', 'label' => 'RBdigital', 'hideInLists' => true, 'renderAsHeading' => true, 'permissions' => ['Location Records included in Catalog'], 'properties' => array(
-				'rbdigitalScopeId' => array('property' => 'rbdigitalScopeId', 'type' => 'enum', 'values' => $rbdigitalScopes, 'label' => 'RBdigital Scope', 'description' => 'The RBdigital scope to use', 'hideInLists' => true, 'default' => -1, 'forcesReindex' => true),
-			)),
-
 			'overdriveSection' => array('property' => 'overdriveSection', 'type' => 'section', 'label' => 'OverDrive', 'hideInLists' => true, 'renderAsHeading' => true, 'permissions' => ['Location Records included in Catalog'], 'properties' => array(
 				'overDriveScopeId'               => array('property' => 'overDriveScopeId', 'type' => 'enum', 'values' => $overDriveScopes, 'label' => 'OverDrive Scope', 'description' => 'The OverDrive scope to use', 'hideInLists' => true, 'default' => -1, 'forcesReindex' => true),
 			)),
@@ -443,9 +427,6 @@ class Location extends DataObject
 		}
 		if (!array_key_exists('Hoopla', $enabledModules)){
 			unset($structure['hooplaSection']);
-		}
-		if (!array_key_exists('RBdigital', $enabledModules)){
-			unset($structure['rbdigitalSection']);
 		}
 		if (!array_key_exists('Cloud Library', $enabledModules)){
 			unset($structure['cloudLibrarySection']);

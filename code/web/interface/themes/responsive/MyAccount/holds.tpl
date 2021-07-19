@@ -27,9 +27,6 @@
 				{if $user->isValidForEContentSource('overdrive')}
 					<li role="presentation"{if $tab=='overdrive'} class="active"{/if}><a href="#overdrive" aria-controls="overdrive" role="tab" data-toggle="tab">{translate text="OverDrive"} <span class="badge"><span class="overdrive-holds-placeholder">&nbsp;</span></span></a></li>
 				{/if}
-				{if $user->isValidForEContentSource('rbdigital') && $user->showRBdigitalHolds()}
-					<li role="presentation"{if $tab=='rbdigital'} class="active"{/if}><a href="#rbdigital" aria-controls="rbdigital" role="tab" data-toggle="tab">{translate text="RBdigital"} <span class="badge"><span class="rbdigital-holds-placeholder">&nbsp;</span></span></a></li>
-				{/if}
 				{if $user->isValidForEContentSource('cloud_library')}
 					<li role="presentation"{if $tab=='cloud_library'} class="active"{/if}><a href="#cloud_library" aria-controls="cloud_library" role="tab" data-toggle="tab">{translate text="Cloud Library"} <span class="badge"><span class="cloud_library-holds-placeholder">&nbsp;</span></span></a></li>
 				{/if}
@@ -47,9 +44,6 @@
 				<div role="tabpanel" class="tab-pane{if $tab=='ils'} active{/if}" id="ils"><div id="ilsHoldsPlaceholder" aria-label="List of Holds on Physical Materials">{translate text="Loading holds of physical materials"}</div></div>
 				{if $user->isValidForEContentSource('overdrive')}
 					<div role="tabpanel" class="tab-pane{if $tab=='overdrive'} active{/if}" id="overdrive" aria-label="List of Holds on OverDrive Titles"><div id="overdriveHoldsPlaceholder">{translate text="Loading holds from OverDrive"}</div></div>
-				{/if}
-				{if $user->isValidForEContentSource('rbdigital')}
-					<div role="tabpanel" class="tab-pane{if $tab=='rbdigital'} active{/if}" id="rbdigital" aria-label="List of Holds on RBdigital Titles"><div id="rbdigitalHoldsPlaceholder">{translate text="Loading holds from RBdigital"}</div></div>
 				{/if}
 				{if $user->isValidForEContentSource('cloud_library')}
 					<div role="tabpanel" class="tab-pane{if $tab=='cloud_library'} active{/if}" id="cloud_library" aria-label="List of Holds on Cloud Library Titles"><div id="cloud_libraryHoldsPlaceholder">{translate text="Loading holds from Cloud Library"}</div></div>
@@ -69,9 +63,6 @@
 					});
 					$("a[href='#overdrive']").on('show.bs.tab', function (e) {
 						AspenDiscovery.Account.loadHolds('overdrive');
-					});
-					$("a[href='#rbdigital']").on('show.bs.tab', function (e) {
-						AspenDiscovery.Account.loadHolds('rbdigital');
 					});
 					$("a[href='#cloud_library']").on('show.bs.tab', function (e) {
 						AspenDiscovery.Account.loadHolds('cloud_library');

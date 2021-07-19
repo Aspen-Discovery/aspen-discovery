@@ -5,22 +5,17 @@ import com.turning_leaf_technologies.logging.BaseLogEntry;
 import com.turning_leaf_technologies.marc.MarcUtil;
 import com.turning_leaf_technologies.strings.StringUtils;
 import org.apache.logging.log4j.Logger;
-import org.marc4j.MarcJsonWriter;
-import org.marc4j.MarcStreamWriter;
-import org.marc4j.MarcWriter;
 import org.marc4j.marc.*;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
-import java.util.zip.CRC32;
 
 abstract class MarcRecordProcessor {
 	protected Logger logger;
@@ -44,12 +39,16 @@ abstract class MarcRecordProcessor {
 	String treatUndeterminedLanguageAs = null;
 
 	PreparedStatement addRecordToDBStmt;
+	PreparedStatement marcRecordAsSuppressedNoMarcStmt;
+	PreparedStatement getRecordSuppressionInformationStmt;
 
 	MarcRecordProcessor(GroupedWorkIndexer indexer, Connection dbConn, Logger logger) {
 		this.indexer = indexer;
 		this.logger = logger;
 		try {
 			addRecordToDBStmt = dbConn.prepareStatement("INSERT INTO ils_records set ilsId = ?, source = ?, checksum = ?, dateFirstDetected = ?, deleted = 0, suppressed = 0, sourceData = COMPRESS(?), lastModified = ? ON DUPLICATE KEY UPDATE sourceData = VALUES(sourceData), lastModified = VALUES(lastModified)");
+			marcRecordAsSuppressedNoMarcStmt = dbConn.prepareStatement("UPDATE ils_records set suppressedNoMarcAvailable = 1 where source = ? and ilsId = ?");
+			getRecordSuppressionInformationStmt = dbConn.prepareStatement("SELECT suppressedNoMarcAvailable from ils_records where source = ? and ilsId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 		}catch (Exception e){
 			logger.error("Error setting up prepared statements for loading MARC from the DB", e);
 		}
@@ -63,27 +62,53 @@ abstract class MarcRecordProcessor {
 	 * @param identifier the identifier to load information for
 	 * @param logEntry the log entry to store any errors
 	 */
-	public void processRecord(GroupedWorkSolr groupedWork, String identifier, BaseLogEntry logEntry){
-		Record record = indexer.loadMarcRecordFromDatabase(this.profileType, identifier, logEntry);
-		if (record == null) {
-			record = loadMarcRecordFromDisk(identifier, logEntry);
-			if (record != null){
-				indexer.saveMarcRecordToDatabase(settings, identifier, record);
+	public synchronized void processRecord(GroupedWorkSolr groupedWork, String identifier, BaseLogEntry logEntry){
+		//Check to be sure the record is not suppressed
+		boolean isSuppressed = false;
+		try {
+			getRecordSuppressionInformationStmt.setString(1, this.profileType);
+			getRecordSuppressionInformationStmt.setString(2, identifier);
+			ResultSet getRecordSuppressionInformationRS = getRecordSuppressionInformationStmt.executeQuery();
+			if (getRecordSuppressionInformationRS.next()){
+				if (getRecordSuppressionInformationRS.getBoolean("suppressedNoMarcAvailable")){
+					isSuppressed = true;
+				}
 			}
+			getRecordSuppressionInformationRS.close();
+		}catch (Exception e){
+			logEntry.incErrors("Error loading suppression information for record", e);
 		}
+		if (!isSuppressed) {
+			Record record = indexer.loadMarcRecordFromDatabase(this.profileType, identifier, logEntry);
+			if (record == null) {
+				record = loadMarcRecordFromDisk(identifier, logEntry);
+				if (record != null) {
+					indexer.saveMarcRecordToDatabase(settings, identifier, record);
+				} else {
+					try {
+						//We don't have data for this MARC record, mark it as suppressed for not having MARC data
+						marcRecordAsSuppressedNoMarcStmt.setString(1, this.profileType);
+						marcRecordAsSuppressedNoMarcStmt.setString(2, identifier);
+						marcRecordAsSuppressedNoMarcStmt.executeUpdate();
+					} catch (SQLException e) {
+						logEntry.incErrors("Error marking record as suppressed for not having MARC", e);
+					}
+				}
+			}
 
-		if (record != null){
-			try{
-				updateGroupedWorkSolrDataBasedOnMarc(groupedWork, record, identifier);
-			}catch (Exception e) {
-				logger.error("Error updating solr based on marc record", e);
+			if (record != null) {
+				try {
+					updateGroupedWorkSolrDataBasedOnMarc(groupedWork, record, identifier);
+				} catch (Exception e) {
+					logger.error("Error updating solr based on marc record", e);
+				}
 			}
 		}
 	}
 
 	private Record loadMarcRecordFromDisk(String identifier, BaseLogEntry logEntry) {
 		String individualFilename = getFileForIlsRecord(identifier);
-		return MarcUtil.readIndividualRecord(new File(individualFilename), logEntry);
+		return MarcUtil.readMarcRecordFromFile(new File(individualFilename), logEntry);
 	}
 
 	private String getFileForIlsRecord(String recordNumber) {
@@ -1197,6 +1222,16 @@ abstract class MarcRecordProcessor {
 			printFormats.add("GoReader");
 			return;
 		}
+		if (printFormats.contains("VoxBooks")){
+			printFormats.clear();
+			printFormats.add("VoxBooks");
+			return;
+		}
+		if (printFormats.contains("Kit")){
+			printFormats.clear();
+			printFormats.add("Kit");
+			return;
+		}
 		if (printFormats.contains("Video") && printFormats.contains("DVD")){
 			printFormats.remove("Video");
 		}
@@ -1432,6 +1467,8 @@ abstract class MarcRecordProcessor {
 						result.add("SoundCassette");
 					} else if (physicalDescriptionData.contains("mp3")) {
 						result.add("MP3Disc");
+					} else if (physicalDescriptionData.matches(".*\\bkit\\b.*")) {
+						result.add("Kit");
 					} else if (audioDiscPattern.matcher(physicalDescriptionData).matches()) {
 						//Check to see if there is a subfield e.  If so, this could be a combined format
 						Subfield subfieldE = field.getSubfield('e');

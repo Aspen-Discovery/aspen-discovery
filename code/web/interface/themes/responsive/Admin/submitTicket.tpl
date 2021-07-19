@@ -101,9 +101,6 @@
 					<input type="checkbox" name=component[]"  value="OverDrive" id="OverDrive"><label for="OverDrive">OverDrive</label>
 				</div>
 				<div class="checkbox col-xs-12 col-sm-6 col-md-4 col-lg-3">
-					<input type="checkbox" name=component[]"  value="RBdigital" id="WRBdigital"><label for="RBdigital">RBdigital</label>
-				</div>
-				<div class="checkbox col-xs-12 col-sm-6 col-md-4 col-lg-3">
 					<input type="checkbox" name=component[]"  value="Reading History" id="Reading History"><label for="Reading History">Reading History</label>
 				</div>
 				<div class="checkbox col-xs-12 col-sm-6 col-md-4 col-lg-3">

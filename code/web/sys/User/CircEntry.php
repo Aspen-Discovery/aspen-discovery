@@ -59,20 +59,6 @@ abstract class CircEntry extends DataObject
 				if (!$this->_recordDriver->isValid()){
 					$this->_recordDriver = false;
 				}
-			} elseif ($this->type == 'rbdigital') {
-				if ($this->source == 'rbdigital'){
-					require_once ROOT_DIR . '/RecordDrivers/RBdigitalRecordDriver.php';
-					$this->_recordDriver = new RBdigitalRecordDriver($this->recordId);
-					if (!$this->_recordDriver->isValid()){
-						$this->_recordDriver = false;
-					}
-				} elseif ($this->source == 'rbdigital_magazine') {
-					require_once ROOT_DIR . '/RecordDrivers/RBdigitalMagazineDriver.php';
-					$this->_recordDriver = new RBdigitalMagazineDriver($this->recordId);
-					if (!$this->_recordDriver->isValid()) {
-						$this->_recordDriver = false;
-					}
-				}
 			} else {
 				$this->_recordDriver = false;
 			}

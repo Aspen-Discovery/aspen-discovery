@@ -9,8 +9,10 @@ class IlsExtractLogEntry extends BaseLogEntry
 	public $indexingProfile;
 	public $lastUpdate;
 	public $notes;
+	public $isFullUpdate;
 	public $numRegrouped;
 	public $numChangedAfterGrouping;
+	public $currentId;
 	public $numProducts;
 	public $numErrors;
 	public $numAdded;
