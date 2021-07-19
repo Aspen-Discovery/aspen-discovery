@@ -631,31 +631,36 @@ public class PolarisExportMain {
 				}
 
 				//Update records
+				boolean allowDeletingExistingRecords = indexingProfile.getLastChangeProcessed() == 0;
 				totalChanges += extractAllBibs(lastExtractTime);
 				if (!indexingProfile.isRunFullUpdate()) {
 					//Process deleted bibs
 					totalChanges += extractDeletedBibs(lastExtractTime);
 				} else {
 					//Loop through remaining records and delete them
-					logEntry.addNote("Starting to delete records that no longer exist");
-					GroupedWorkIndexer groupedWorkIndexer = getGroupedWorkIndexer();
-					MarcRecordGrouper recordGroupingProcessor = getRecordGroupingProcessor();
-					for (String ilsId : recordGroupingProcessor.getExistingRecords().keySet()) {
-						RemoveRecordFromWorkResult result = recordGroupingProcessor.removeRecordFromGroupedWork(indexingProfile.getName(), ilsId);
-						if (result.permanentId != null) {
-							if (result.reindexWork) {
-								groupedWorkIndexer.processGroupedWork(result.permanentId);
-							} else if (result.deleteWork) {
-								//Delete the work from solr and the database
-								groupedWorkIndexer.deleteRecord(result.permanentId);
-							}
-							logEntry.incDeleted();
-							if (logEntry.getNumDeleted() % 250 == 0) {
-								logEntry.saveResults();
+					if (allowDeletingExistingRecords) {
+						logEntry.addNote("Starting to delete records that no longer exist");
+						GroupedWorkIndexer groupedWorkIndexer = getGroupedWorkIndexer();
+						MarcRecordGrouper recordGroupingProcessor = getRecordGroupingProcessor();
+						for (String ilsId : recordGroupingProcessor.getExistingRecords().keySet()) {
+							RemoveRecordFromWorkResult result = recordGroupingProcessor.removeRecordFromGroupedWork(indexingProfile.getName(), ilsId);
+							if (result.permanentId != null) {
+								if (result.reindexWork) {
+									groupedWorkIndexer.processGroupedWork(result.permanentId);
+								} else if (result.deleteWork) {
+									//Delete the work from solr and the database
+									groupedWorkIndexer.deleteRecord(result.permanentId);
+								}
+								logEntry.incDeleted();
+								if (logEntry.getNumDeleted() % 250 == 0) {
+									logEntry.saveResults();
+								}
 							}
 						}
+						logEntry.addNote("Finished deleting records that no longer exist");
+					}else{
+						logEntry.addNote("Skipping deleting records that no longer exist because we skipped some records at the start");
 					}
-					logEntry.addNote("Finished deleting records that no longer exist");
 				}
 			}
 		} catch (Exception e) {
@@ -770,7 +775,9 @@ public class PolarisExportMain {
 			long lastIdLong = Long.parseLong(response.lastId);
 			logEntry.setCurrentId(response.lastId);
 			//MDN this seems to be normal if nothing has changed since the last extract.
-			if (lastIdLong == 0 || lastIdLong > highestIdProcessed){
+			if (lastIdLong == 0) {
+				highestIdProcessed = maxBibId;
+			}else  if (lastIdLong > highestIdProcessed){
 				highestIdProcessed = lastIdLong;
 			}
 			lastId = Long.toString(highestIdProcessed);
