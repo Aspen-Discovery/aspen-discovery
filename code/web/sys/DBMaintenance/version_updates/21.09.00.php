@@ -281,9 +281,8 @@ function getUpdates21_09_00() : array
 			'title' => 'Add additional information to ils index log',
 			'description' => 'Add additional information for ILS index log',
 			'sql' => [
-				'ALTER TABLE ils_extract_log ADD COLUMN isFullIndex TINYINT(1)',
-				'ALTER TABLE ils_extract_log ADD COLUMN numRecordsToReload INT(11)',
-				'ALTER TABLE ils_extract_log ADD COLUMN recordsReloaded INT(11)',
+				'ALTER TABLE ils_extract_log ADD COLUMN isFullUpdate TINYINT(1)',
+				'ALTER TABLE ils_extract_log ADD COLUMN currentId VARCHAR(36)'
 			]
 		]
 	];

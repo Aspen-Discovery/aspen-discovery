@@ -121,6 +121,7 @@ public class KohaExportMain {
 				}
 
 				indexingProfile = IndexingProfile.loadIndexingProfile(dbConn, profileToLoad, logger);
+				logEntry.setIsFullUpdate(indexingProfile.isRunFullUpdate());
 
 				if (!extractSingleWork) {
 					updateBranchInfo(dbConn, kohaConn);
@@ -1076,6 +1077,7 @@ public class KohaExportMain {
 				logEntry.addNote("Skipping the first " + indexingProfile.getLastChangeProcessed() + " records because they were processed previously see (Last Record ID Processed for the Indexing Profile).");
 			}
 			for (String curBibId : changedBibIds) {
+				logEntry.setCurrentId(curBibId);
 				if ((singleWorkId != null) || (numProcessed >= indexingProfile.getLastChangeProcessed())) {
 					//Update the marc record
 					updateBibRecord(curBibId);

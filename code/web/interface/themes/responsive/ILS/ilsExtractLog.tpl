@@ -6,15 +6,17 @@
 		<div>
 			<table class="logEntryDetails table table-bordered table-striped">
 				<thead>
-					<tr><th>Id</th><th>Indexing Profile</th><th>Started</th><th>Last Update</th><th>Finished</th><th>Elapsed</th><th>Products Regrouped</th><th>Products Changed After Grouping</th><th>Total Products</th><th>Num Errors</th><th>Products Added</th><th>Products Deleted</th><th>Products Updated</th><th>Products Skipped</th><th>Notes</th></tr>
+					<tr><th>Id</th><th>Indexing Profile</th><th>Full Update?</th><th>Started</th><th>Last Update</th><th>Current Id</th><th>Finished</th><th>Elapsed</th><th>Products Regrouped</th><th>Products Changed After Grouping</th><th>Total Products</th><th>Num Errors</th><th>Products Added</th><th>Products Deleted</th><th>Products Updated</th><th>Products Skipped</th><th>Notes</th></tr>
 				</thead>
 				<tbody>
 				{foreach from=$logEntries item=logEntry}
 					<tr>
 						<td>{$logEntry->id}</td>
 						<td>{$logEntry->indexingProfile}</td>
+						<td>{if $logEntry->isFullUpdate == 1}{translate text='Yes'}{else}{translate text='No'}{/if}</td>
 						<td>{$logEntry->startTime|date_format:"%D %T"}</td>
 						<td>{$logEntry->lastUpdate|date_format:"%D %T"}</td>
+						<td>{$logEntry->currentId}</td>
 						<td>{$logEntry->endTime|date_format:"%D %T"}</td>
 						<td>{$logEntry->getElapsedTime()}</td>
 						<td>{$logEntry->numRegrouped}</td>

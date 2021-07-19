@@ -139,6 +139,7 @@ public class CarlXExportMain {
 				}
 
 				indexingProfile = IndexingProfile.loadIndexingProfile(dbConn, profileToLoad, logger);
+				logEntry.setIsFullUpdate(indexingProfile.isRunFullUpdate());
 				if (!extractSingleWork && indexingProfile.isRegroupAllRecords()) {
 					MarcRecordGrouper recordGrouper = getRecordGroupingProcessor(dbConn);
 					recordGrouper.regroupAllRecords(dbConn, indexingProfile, getGroupedWorkIndexer(dbConn), logEntry);
@@ -257,6 +258,7 @@ public class CarlXExportMain {
 				File marcFile = indexingProfile.getFileForIlsRecord(recordIdentifier);
 				Record marcRecord = getGroupedWorkIndexer(dbConn).loadMarcRecordFromDatabase(indexingProfile.getName(), recordIdentifier, logEntry);
 				if (marcRecord != null) {
+					logEntry.incRecordsRegrouped();
 					//Regroup the record
 					String groupedWorkId = getRecordGroupingProcessor(dbConn).processMarcRecord(marcRecord, true, null);
 					//Reindex the record
@@ -756,6 +758,7 @@ public class CarlXExportMain {
 							for (int i = 1; i < l; i++) { // (skip first node because it is the response status)
 								try {
 									String currentBibID = updatedBibCopy.get(i - 1);
+									logEntry.setCurrentId(currentBibID);
 									bibsNotFound.remove(currentBibID);
 									String currentFullBibID = getFileIdForRecordNumber(currentBibID);
 

@@ -96,6 +96,7 @@ public class SymphonyExportMain {
 			//TODO: Load the account profile with additional information about Symphony connection if needed.
 
 			indexingProfile = IndexingProfile.loadIndexingProfile(dbConn, profileToLoad, logger);
+			logEntry.setIsFullUpdate(indexingProfile.isRunFullUpdate());
 
 			//Check for new marc out
 			exportVolumes(dbConn, indexingProfile, profileToLoad);
@@ -171,6 +172,7 @@ public class SymphonyExportMain {
 				String recordIdentifier = getRecordsToReloadRS.getString("identifier");
 				Record marcRecord = indexer.loadMarcRecordFromDatabase(indexingProfile.getName(), recordIdentifier, logEntry);
 				if (marcRecord != null) {
+					logEntry.incRecordsRegrouped();
 					//Regroup the record
 					String permanentId = recordGroupingProcessor.processMarcRecord(marcRecord, true, null);
 					//Reindex the record
