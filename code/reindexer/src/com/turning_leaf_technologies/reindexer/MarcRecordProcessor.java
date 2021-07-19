@@ -1227,6 +1227,11 @@ abstract class MarcRecordProcessor {
 			printFormats.add("VoxBooks");
 			return;
 		}
+		if (printFormats.contains("Kit")){
+			printFormats.clear();
+			printFormats.add("Kit");
+			return;
+		}
 		if (printFormats.contains("Video") && printFormats.contains("DVD")){
 			printFormats.remove("Video");
 		}
@@ -1462,6 +1467,8 @@ abstract class MarcRecordProcessor {
 						result.add("SoundCassette");
 					} else if (physicalDescriptionData.contains("mp3")) {
 						result.add("MP3Disc");
+					} else if (physicalDescriptionData.matches(".*\\bkit\\b.*")) {
+						result.add("Kit");
 					} else if (audioDiscPattern.matcher(physicalDescriptionData).matches()) {
 						//Check to see if there is a subfield e.  If so, this could be a combined format
 						Subfield subfieldE = field.getSubfield('e');
