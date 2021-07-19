@@ -238,7 +238,7 @@ function getUpdates21_09_00() : array
 			'title' => 'Fix ils record indexes',
 			'description' => 'Drop index of just ilsId since it is not unique and we have source and ilsId indexed together',
 			'sql' => [
-				'ALTER TABLE ils_record DROP INDEX ilsId',
+				'ALTER TABLE ils_records DROP INDEX ilsId',
 			]
 		], //fix_ils_record_indexes
 		'storeNYTLastUpdated' => [
