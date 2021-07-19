@@ -234,6 +234,13 @@ function getUpdates21_09_00() : array
 				'DROP TABLE ils_suppression_reasons'
 			]
 		], //record_suppression_no_marc
+		'fix_ils_record_indexes' => [
+			'title' => 'Fix ils record indexes',
+			'description' => 'Drop index of just ilsId since it is not unique and we have source and ilsId indexed together',
+			'sql' => [
+				'ALTER TABLE ils_record DROP INDEX ilsId',
+			]
+		], //fix_ils_record_indexes
 		'storeNYTLastUpdated' => [
 			'title' => 'Store the date a NYT List was last modified',
 			'description' => 'Store the date that a NYT List was last modified by NYT',
