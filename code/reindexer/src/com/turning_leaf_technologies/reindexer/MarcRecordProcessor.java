@@ -1222,6 +1222,11 @@ abstract class MarcRecordProcessor {
 			printFormats.add("GoReader");
 			return;
 		}
+		if (printFormats.contains("VoxBooks")){
+			printFormats.clear();
+			printFormats.add("VoxBooks");
+			return;
+		}
 		if (printFormats.contains("Video") && printFormats.contains("DVD")){
 			printFormats.remove("Video");
 		}
