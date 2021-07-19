@@ -35,7 +35,7 @@
 		<div id="language-selection-header" class="hidden-tn col-xs-4 col-sm-4 col-md-4 col-lg-4 pull-right">
 			<div class="btn-group" role="group">
 			{foreach from=$validLanguages key=languageCode item=language}
-				<div class="availableLanguage btn btn-xs btn-default {if $userLang->code==$languageCode}active{/if}">
+				<div class="availableLanguage btn btn-sm btn-default {if $userLang->code==$languageCode}active{/if}">
 				{if $userLang->code!=$languageCode}
 				<a onclick="return AspenDiscovery.setLanguage('{$languageCode}')">
 				{/if}
@@ -49,11 +49,11 @@
 			{/foreach}
 			</div>
 			{if $loggedIn && in_array('Translate Aspen', $userPermissions)}
-				<div id="translationMode">
+				<div id="translationMode" style="padding-top:.5em">
 					{if $translationModeActive}
-						<a onclick="return AspenDiscovery.changeTranslationMode(false)">{translate text="Exit Translation Mode"}</a>
+						<a onclick="return AspenDiscovery.changeTranslationMode(false)" class="btn btn-primary btn-xs active">{translate text="Exit Translation Mode"}</a>
 					{else}
-						<a onclick="return AspenDiscovery.changeTranslationMode(true)">{translate text="Start Translation Mode"}</a>
+						<a onclick="return AspenDiscovery.changeTranslationMode(true)" class="btn btn-primary btn-xs">{translate text="Start Translation Mode"}</a>
 					{/if}
 				</div>
 			{/if}
