@@ -1941,12 +1941,14 @@ public class GroupedWorkIndexer {
 
 		checksumCalculator.update(marcAsBytes);
 		MarcStatus returnValue = MarcStatus.UNCHANGED;
+		boolean foundExisting = false;
 		try {
 			//check to see if we need to make an update
 			getExistingRecordInfoForIdentifierStmt.setString(1, ilsId);
 			getExistingRecordInfoForIdentifierStmt.setString(2, indexingProfile.getName());
 			ResultSet getExistingRecordInfoForIdentifierRS = getExistingRecordInfoForIdentifierStmt.executeQuery();
 			if (getExistingRecordInfoForIdentifierRS.next()){
+				foundExisting = true;
 				long existingChecksum = getExistingRecordInfoForIdentifierRS.getLong("checksum");
 				long uncompressedLength = getExistingRecordInfoForIdentifierRS.getLong("sourceDataLength");
 				boolean deleted = getExistingRecordInfoForIdentifierRS.getBoolean("deleted");
@@ -1983,7 +1985,7 @@ public class GroupedWorkIndexer {
 			}
 
 		}catch (Exception e){
-			logEntry.incErrors("Error saving MARC record to database", e);
+			logEntry.incErrors("Error saving MARC record to database for " + ilsId + " found existing? " + foundExisting, e);
 		}
 		marcRecordCache.put(indexingProfile.getName() + ilsId, marcRecord);
 
