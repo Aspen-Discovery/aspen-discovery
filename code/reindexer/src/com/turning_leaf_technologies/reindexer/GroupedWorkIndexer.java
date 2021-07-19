@@ -1152,6 +1152,7 @@ public class GroupedWorkIndexer {
 					updateRecordForWorkStmt.setLong(7, formatCategoryId);
 					updateRecordForWorkStmt.setLong(8, languageId);
 					updateRecordForWorkStmt.setLong(9, existingRecord.id);
+					updateRecordForWorkStmt.executeUpdate();
 				}
 			}
 		} catch (SQLException e) {
