@@ -79,6 +79,7 @@ public class GroupedWorkIndexer {
 	private PreparedStatement updateScopeStmt;
 	private PreparedStatement removeScopeStmt;
 
+	private PreparedStatement marcIlsRecordAsDeletedStmt;
 	private PreparedStatement getExistingRecordsForWorkStmt;
 	private PreparedStatement addRecordForWorkStmt;
 	private PreparedStatement updateRecordForWorkStmt;
@@ -91,6 +92,7 @@ public class GroupedWorkIndexer {
 	private PreparedStatement removeItemStmt;
 	private PreparedStatement addItemForRecordStmt;
 	private PreparedStatement updateItemForRecordStmt;
+	private PreparedStatement addItemUrlStmt;
 	private PreparedStatement getRecordSourceStmt;
 	private PreparedStatement getRecordSourceWithNoSubSourceStmt;
 	private PreparedStatement addRecordSourceStmt;
@@ -183,6 +185,7 @@ public class GroupedWorkIndexer {
 			markScheduledWorkProcessedStmt = dbConn.prepareStatement("UPDATE grouped_work_scheduled_index set processed = 1 where id = ?");
 			addScheduledWorkStmt = dbConn.prepareStatement("INSERT INTO grouped_work_scheduled_index (permanent_id, indexAfter) VALUES (?, ?)");
 
+			marcIlsRecordAsDeletedStmt = dbConn.prepareStatement("UPDATE ils_records set deleted = 1, dateDeleted = ? where source = ? and ilsId = ?");
 			getExistingScopesStmt = dbConn.prepareStatement("SELECT * from scope", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			addScopeStmt = dbConn.prepareStatement("INSERT INTO scope (name, isLibraryScope, isLocationScope) VALUES (?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
 			updateScopeStmt = dbConn.prepareStatement("UPDATE scope set isLibraryScope = ?, isLocationScope = ? WHERE id = ?");
@@ -201,6 +204,7 @@ public class GroupedWorkIndexer {
 			updateItemForRecordStmt = dbConn.prepareStatement("UPDATE grouped_work_record_items set groupedWorkVariationId = ?, shelfLocationId = ?, callNumberId = ?, sortableCallNumberId = ?, numCopies = ?, isOrderItem = ?, statusId = ?, dateAdded = ?, " +
 					"locationCodeId = ?, subLocationCodeId = ?, lastCheckInDate = ?, groupedStatusId = ?, available = ?, holdable = ?, inLibraryUseOnly = ?, locationOwnedScopes = ?, libraryOwnedScopes = ?, recordIncludedScopes = ? WHERE id = ?");
 			removeItemStmt = dbConn.prepareStatement("DELETE FROM grouped_work_record_items WHERE id = ?");
+			addItemUrlStmt = dbConn.prepareStatement("INSERT INTO grouped_work_record_item_url (groupedWorkItemId, scopeId, url) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE url = VALUES(url) ");
 			getRecordSourceStmt = dbConn.prepareStatement("SELECT id from indexed_record_source where source = ? and subSource = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			getRecordSourceWithNoSubSourceStmt = dbConn.prepareStatement("SELECT id from indexed_record_source where source = ? and subSource IS NULL", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			addRecordSourceStmt = dbConn.prepareStatement("INSERT INTO indexed_record_source (source, subSource) VALUES (?, ?)", Statement.RETURN_GENERATED_KEYS);
@@ -1806,6 +1810,25 @@ public class GroupedWorkIndexer {
 				updateItemForRecordStmt.setLong(19, itemId);
 				updateItemForRecordStmt.executeUpdate();
 			}
+
+			if (itemInfo.geteContentUrl() != null){
+				addItemUrlStmt.setLong(1, itemId);
+				addItemUrlStmt.setLong(2, -1);
+				addItemUrlStmt.setString(3, itemInfo.geteContentUrl());
+				addItemUrlStmt.executeUpdate();
+
+				//Check to see if we need to save local urls
+				for (ScopingInfo scopingInfo : itemInfo.getScopingInfo().values()) {
+					String localUrl = scopingInfo.getLocalUrl();
+					if (localUrl != null && localUrl.length() > 0 && !localUrl.equals(itemInfo.geteContentUrl())) {
+						addItemUrlStmt.setLong(1, itemId);
+						addItemUrlStmt.setLong(2, -1);
+						addItemUrlStmt.setString(3, itemInfo.geteContentUrl());
+						addItemUrlStmt.executeUpdate();
+					}
+				}
+			}
+
 		} catch (SQLException e) {
 			logEntry.incErrors("Error saving grouped work item", e);
 		}
@@ -1900,6 +1923,17 @@ public class GroupedWorkIndexer {
 
 	public boolean isStoreRecordDetailsInDatabase() {
 		return storeRecordDetailsInDatabase;
+	}
+
+	public void markIlsRecordAsDeleted(String name, String existingIdentifier) {
+		try {
+			marcIlsRecordAsDeletedStmt.setLong(1, new Date().getTime() / 1000);
+			marcIlsRecordAsDeletedStmt.setString(2, name);
+			marcIlsRecordAsDeletedStmt.setString(3, existingIdentifier);
+			marcIlsRecordAsDeletedStmt.executeUpdate();
+		}catch (Exception e) {
+			logEntry.incErrors("Could not mark ils record as deleted", e);
+		}
 	}
 
 	public enum MarcStatus {

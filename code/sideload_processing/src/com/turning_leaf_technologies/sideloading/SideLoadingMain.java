@@ -2,7 +2,6 @@ package com.turning_leaf_technologies.sideloading;
 
 import com.turning_leaf_technologies.config.ConfigUtil;
 import com.turning_leaf_technologies.file.JarUtil;
-import com.turning_leaf_technologies.grouping.BaseMarcRecordGrouper;
 import com.turning_leaf_technologies.grouping.RecordGroupingProcessor;
 import com.turning_leaf_technologies.grouping.RemoveRecordFromWorkResult;
 import com.turning_leaf_technologies.grouping.SideLoadedRecordGrouper;
@@ -258,6 +257,7 @@ public class SideLoadingMain {
 
 							//Delete from ils_marc_checksums
 							RemoveRecordFromWorkResult result = recordGrouper.removeRecordFromGroupedWork(settings.getName(), existingIdentifier);
+							getGroupedWorkIndexer().markIlsRecordAsDeleted(settings.getName(), existingIdentifier);
 							if (result.reindexWork) {
 								getGroupedWorkIndexer().processGroupedWork(result.permanentId);
 							} else if (result.deleteWork) {
@@ -378,6 +378,7 @@ public class SideLoadingMain {
 								//Delete the work from solr and the database
 								getGroupedWorkIndexer().deleteRecord(result.permanentId);
 							}
+							getGroupedWorkIndexer().markIlsRecordAsDeleted(settings.getName(), recordIdentifier.getIdentifier());
 							logEntry.incDeleted();
 						}
 						if (logEntry.getNumProducts() % 250 == 0) {

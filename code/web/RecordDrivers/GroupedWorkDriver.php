@@ -2550,12 +2550,21 @@ class GroupedWorkDriver extends IndexRecordDriver
 						$results = $aspen_db->query($scopeQuery, PDO::FETCH_ASSOC);
 						$scopedItems = $results->fetchAll();
 					}
+					$results->closeCursor();
 					foreach ($scopedItems as $scopedItem) {
 						$relatedRecord = $allRecords[$scopedItem['groupedWorkRecordId']];
 						$relatedVariation = $allVariations[$scopedItem['groupedWorkVariationId']];
 						$scopedItem['isEcontent'] = $relatedVariation->isEcontent;
 						$scopedItem['eContentSource'] = $relatedVariation->econtentSource;
 						$scopedItem['scopeId'] = $scopeId;
+						//Look for urls for the item
+						$itemUrlQuery = "SELECT url from grouped_work_record_item_url where groupedWorkItemId = {$scopedItem['groupedWorkItemId']} AND (scopeId = -1 OR scopeId = $scopeId) ORDER BY scopeId desc limit 1";
+						$results = $aspen_db->query($itemUrlQuery, PDO::FETCH_ASSOC);
+						$itemUrls = $results->fetchAll();
+						if (count($itemUrls) > 0){
+							$scopedItem['localUrl'] = $itemUrls[0]['url'];
+						}
+						$results->closeCursor();
 						$itemData = new Grouping_Item($scopedItem, null, $searchLocation, $library);
 						$relatedRecord->addItem($itemData);
 					}
@@ -2566,7 +2575,7 @@ class GroupedWorkDriver extends IndexRecordDriver
 						$this->_relatedManifestations[$record->format]->addRecord($record);
 					}
 
-					$results->closeCursor();
+
 
 					//Sort Records within each manifestation and variation
 					foreach ($this->_relatedManifestations as $manifestation){
