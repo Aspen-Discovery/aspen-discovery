@@ -1095,7 +1095,7 @@ abstract class MarcRecordProcessor {
 	LinkedHashSet<String> getFormatsFromBib(Record record, RecordInfo recordInfo){
 		LinkedHashSet<String> printFormats = new LinkedHashSet<>();
 		String leader = record.getLeader().toString();
-		char leaderBit;
+		char leaderBit = ' ';
 		ControlField fixedField = (ControlField) record.getVariableField("008");
 
 		// check for music recordings quickly so we can figure out if it is music
@@ -1108,7 +1108,7 @@ abstract class MarcRecordProcessor {
 			}
 		}
 		//Check for braille
-		if (fixedField != null){
+		if (fixedField != null && (leaderBit == 'a' || leaderBit == 't' || leaderBit == 'A' || leaderBit == 'T')){
 			if (fixedField.getData().length() >= 23){
 				if (fixedField.getData().charAt(23) == 'f'){
 					printFormats.add("Braille");

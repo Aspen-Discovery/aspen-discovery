@@ -32,6 +32,8 @@ abstract class DataObject
 
 	protected $_data = [];
 
+	protected $_changedFields = [];
+
 	/**
 	 * @return string[]
 	 */
@@ -817,6 +819,7 @@ abstract class DataObject
 	{
 		$propertyChanged = $this->$propertyName != $newValue || (is_null($this->$propertyName) && !is_null($newValue));
 		if ($propertyChanged) {
+			$this->_changedFields[] = $propertyName;
 			$oldValue = $this->$propertyName;
 			if ($propertyStructure['type'] == 'checkbox'){
 				if ($newValue == 'off' || $newValue == false){

@@ -224,19 +224,21 @@ class GroupedWorkDriver extends IndexRecordDriver
 	 */
 	static function compareLocalAvailableItemsForRecords($a, $b)
 	{
-		if (($a->getStatusInformation()->isAvailableHere() || $a->getStatusInformation()->isAvailableOnline()) && ($b->getStatusInformation()->isAvailableHere() || $b->getStatusInformation()->isAvailableOnline())) {
-			if (($a->getStatusInformation()->isAvailableLocally() || $a->getStatusInformation()->isAvailableOnline()) && ($b->getStatusInformation()->isAvailableLocally() || $b->getStatusInformation()->isAvailableOnline())) {
+		$statusA = $a->getStatusInformation();
+		$statusB = $b->getStatusInformation();
+		if (($statusA->isAvailableHere() || $statusA->isAvailableOnline()) && ($statusB->isAvailableHere() || $statusB->isAvailableOnline())) {
+			if (($statusA->isAvailableLocally() || $statusA->isAvailableOnline()) && ($statusB->isAvailableLocally() || $statusB->isAvailableOnline())) {
 				return 0;
-			} elseif ($a->getStatusInformation()->isAvailableLocally() || $a->getStatusInformation()->isAvailableOnline()) {
+			} elseif ($statusA->isAvailableLocally() || $statusA->isAvailableOnline()) {
 				return -1;
-			} elseif ($b->getStatusInformation()->isAvailableLocally() || $b->getStatusInformation()->isAvailableOnline()) {
+			} elseif ($statusB->isAvailableLocally() || $statusB->isAvailableOnline()) {
 				return 1;
 			} else {
 				return 0;
 			}
-		} elseif ($a->getStatusInformation()->isAvailableHere() || $a->getStatusInformation()->isAvailableOnline()) {
+		} elseif ($statusA->isAvailableHere() || $statusA->isAvailableOnline()) {
 			return -1;
-		} elseif ($b->getStatusInformation()->isAvailableHere() || $b->getStatusInformation()->isAvailableOnline()) {
+		} elseif ($statusB->isAvailableHere() || $statusB->isAvailableOnline()) {
 			return 1;
 		} else {
 			return 0;
@@ -2565,6 +2567,22 @@ class GroupedWorkDriver extends IndexRecordDriver
 					}
 
 					$results->closeCursor();
+
+					//Sort Records within each manifestation and variation
+					foreach ($this->_relatedManifestations as $manifestation){
+						$relatedRecordsForManifestation = $manifestation->getRelatedRecords();
+						if (count($relatedRecordsForManifestation) > 1) {
+							uasort($relatedRecordsForManifestation, array($this, "compareRelatedRecords"));
+							$manifestation->setSortedRelatedRecords($relatedRecordsForManifestation);
+							foreach ($manifestation->getVariations() as $variation) {
+								$relatedRecordsForVariation = $variation->getRelatedRecords();
+								if (count($relatedRecordsForVariation) > 1){
+									uasort($relatedRecordsForVariation, array($this, "compareRelatedRecords"));
+									$variation->setSortedRelatedRecords($relatedRecordsForVariation);
+								}
+							}
+						}
+					}
 				}
 			}
 

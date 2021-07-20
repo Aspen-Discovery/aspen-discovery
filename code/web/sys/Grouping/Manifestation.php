@@ -69,6 +69,10 @@ class Grouping_Manifestation
 		$this->_relatedRecords[] = $record;
 	}
 
+	function setSortedRelatedRecords($relatedRecords){
+		$this->_relatedRecords = $relatedRecords;
+	}
+
 	/**
 	 * @return Grouping_Variation[]
 	 */

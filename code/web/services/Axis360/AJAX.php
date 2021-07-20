@@ -76,12 +76,12 @@ class Axis360_AJAX extends JSON_Action
 				);
 		} else {
 			// No Axis 360 Account Found, let the user create one if they want
-			return array(
-					'promptNeeded' => true,
-					'promptTitle' => 'No Account Found',
-					'prompts' => "Sorry, you don't have access to Axis 360",
-					'buttons' => ''
-				);
+			return [
+				'promptNeeded' => true,
+				'promptTitle' => 'Error',
+				'prompts' => 'Your account is not valid for Axis360, please contact your local library.',
+				'buttons' => ''
+			];
 		}
 	}
 
@@ -111,12 +111,12 @@ class Axis360_AJAX extends JSON_Action
 				);
 		} else {
 			// No Axis 360 Account Found, let the user create one if they want
-			return array(
-					'promptNeeded' => true,
-					'promptTitle' => 'Create an Account',
-					'prompts' => $interface->fetch('Axis360/ajax-create-account-prompt.tpl'),
-					'buttons' => '<input class="btn btn-primary" type="submit" name="submit" value="Create Account" onclick="return AspenDiscovery.Axis360.createAccount(\'checkout\', ' . $user->id . ', ' . $id . ');">'
-				);
+			return [
+				'promptNeeded' => true,
+				'promptTitle' => 'Error',
+				'prompts' => 'Your account is not valid for Axis360, please contact your local library.',
+				'buttons' => ''
+			];
 		}
 	}
 

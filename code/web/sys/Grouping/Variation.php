@@ -88,6 +88,10 @@ class Grouping_Variation
 		return $this->_records;
 	}
 
+	public function setSortedRelatedRecords($relatedRecords){
+		$this->_records = $relatedRecords;
+	}
+
 	/**
 	 * @return Grouping_StatusInformation
 	 */
