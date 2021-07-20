@@ -291,6 +291,13 @@ function getUpdates21_09_00() : array
 				'ALTER TABLE ils_extract_log ADD COLUMN isFullUpdate TINYINT(1)',
 				'ALTER TABLE ils_extract_log ADD COLUMN currentId VARCHAR(36)'
 			]
-		]
+		], //additional_index_logging
+		'add_records_to_delete_for_sideloads' => [
+			'title' => 'Add Records To Delete For SideLoads',
+			'description' => 'Allow specifying a list of deleted records ids',
+			'sql' => [
+				'ALTER TABLE sideloads ADD COLUMN deletedRecordsIds MEDIUMTEXT'
+			]
+		], //add_records_to_delete_for_sideloads
 	];
 }

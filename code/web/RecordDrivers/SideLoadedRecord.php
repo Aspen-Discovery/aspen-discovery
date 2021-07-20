@@ -15,7 +15,6 @@ class SideLoadedRecord extends BaseEContentDriver {
 	}
 
 	function getRecordUrl(){
-		global $configArray;
 		$recordId = $this->getUniqueID();
 
 		/** @var IndexingProfile[] $indexingProfiles */

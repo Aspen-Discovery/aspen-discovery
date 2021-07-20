@@ -6,6 +6,7 @@ import com.turning_leaf_technologies.grouping.BaseMarcRecordGrouper;
 import com.turning_leaf_technologies.grouping.RecordGroupingProcessor;
 import com.turning_leaf_technologies.grouping.RemoveRecordFromWorkResult;
 import com.turning_leaf_technologies.grouping.SideLoadedRecordGrouper;
+import com.turning_leaf_technologies.indexing.IlsTitle;
 import com.turning_leaf_technologies.indexing.IndexingUtils;
 import com.turning_leaf_technologies.indexing.RecordIdentifier;
 import com.turning_leaf_technologies.indexing.SideLoadSettings;
@@ -216,24 +217,14 @@ public class SideLoadingMain {
 				}
 			}
 
-			HashSet<String> existingRecords = new HashSet<>();
+			HashMap<String, IlsTitle> existingRecords;
+
 			if (settings.isRunFullUpdate() || changesMade){
 				logEntry.addUpdatedSideLoad(settings.getName());
 
-				//Get a list of existing IDs for the side load
-				try {
-					PreparedStatement existingRecordsStmt = aspenConn.prepareStatement("select ilsId from ils_records where source = ?");
-					existingRecordsStmt.setString(1, settings.getName());
-					ResultSet existingRecordsRS = existingRecordsStmt.executeQuery();
-					while (existingRecordsRS.next()){
-						existingRecords.add(existingRecordsRS.getString("ilsId"));
-					}
-					existingRecordsStmt.close();
-				}catch (Exception e){
-					logEntry.incErrors("Error loading existing records for " + settings.getName(), e);
-				}
-
-				RecordGroupingProcessor recordGrouper = getRecordGroupingProcessor(settings);
+				SideLoadedRecordGrouper recordGrouper = getRecordGroupingProcessor(settings);
+				recordGrouper.loadExistingTitles(logEntry);
+				existingRecords = recordGrouper.getExistingRecords();
 
 				for (SideLoadFile curFile : filesToProcess){
 					try {
@@ -256,21 +247,26 @@ public class SideLoadingMain {
 
 				//Remove any records that no longer exist
 				try {
-					PreparedStatement deleteFromIlsMarcChecksums = aspenConn.prepareStatement("DELETE FROM ils_records where source = ? and ilsId = ?");
-					for (String existingIdentifier : existingRecords) {
-						//Delete from ils_marc_checksums
-						RemoveRecordFromWorkResult result = recordGrouper.removeRecordFromGroupedWork(settings.getName(), existingIdentifier);
-						if (result.reindexWork) {
-							getGroupedWorkIndexer().processGroupedWork(result.permanentId);
-						} else if (result.deleteWork) {
-							//Delete the work from solr and the database
-							getGroupedWorkIndexer().deleteRecord(result.permanentId);
-						}
+					PreparedStatement deleteFromIlsMarcChecksums = aspenConn.prepareStatement("UPDATE ils_records set deleted = 1, dateDeleted = ? where source = ? and ilsId = ?");
+					for (String existingIdentifier : existingRecords.keySet()) {
+						IlsTitle title = existingRecords.get(existingIdentifier);
+						if (!title.isDeleted()) {
+							deleteFromIlsMarcChecksums.setLong(1, new Date().getTime() / 1000);
+							deleteFromIlsMarcChecksums.setString(2, settings.getName());
+							deleteFromIlsMarcChecksums.setString(3, existingIdentifier);
+							deleteFromIlsMarcChecksums.executeUpdate();
 
-						deleteFromIlsMarcChecksums.setString(1, settings.getName());
-						deleteFromIlsMarcChecksums.setString(2, existingIdentifier);
-						deleteFromIlsMarcChecksums.executeUpdate();
-						logEntry.incDeleted();
+							//Delete from ils_marc_checksums
+							RemoveRecordFromWorkResult result = recordGrouper.removeRecordFromGroupedWork(settings.getName(), existingIdentifier);
+							if (result.reindexWork) {
+								getGroupedWorkIndexer().processGroupedWork(result.permanentId);
+							} else if (result.deleteWork) {
+								//Delete the work from solr and the database
+								getGroupedWorkIndexer().deleteRecord(result.permanentId);
+							}
+
+							logEntry.incDeleted();
+						}
 					}
 					deleteFromIlsMarcChecksums.close();
 				} catch (Exception e) {
@@ -338,7 +334,7 @@ public class SideLoadingMain {
 		}
 	}
 
-	private static void processSideLoadFile(File fileToProcess, HashSet<String> existingRecords, SideLoadSettings settings) {
+	private static void processSideLoadFile(File fileToProcess, HashMap<String, IlsTitle> existingRecords, SideLoadSettings settings) {
 		try {
 			logEntry.addNote("Processing " + fileToProcess.getName());
 			SideLoadedRecordGrouper recordGrouper = getRecordGroupingProcessor(settings);
@@ -352,23 +348,27 @@ public class SideLoadingMain {
 						existingRecords.remove(recordIdentifier.getIdentifier());
 						logEntry.incNumProducts(1);
 						boolean deleteRecord = false;
-						String recordNumber = recordIdentifier.getIdentifier();
-						GroupedWorkIndexer.MarcStatus marcStatus = reindexer.saveMarcRecordToDatabase(settings, recordNumber, marcRecord);
-						if (marcStatus != GroupedWorkIndexer.MarcStatus.UNCHANGED || settings.isRunFullUpdate()) {
-							String permanentId = recordGrouper.processMarcRecord(marcRecord, marcStatus != GroupedWorkIndexer.MarcStatus.UNCHANGED, null);
-							if (permanentId == null) {
-								//Delete the record since it is suppressed
-								deleteRecord = true;
-							} else {
-								if (marcStatus == GroupedWorkIndexer.MarcStatus.NEW) {
-									logEntry.incAdded();
+						if (settings.getDeletedIds().contains(recordIdentifier.getIdentifier())){
+							deleteRecord = true;
+						}else {
+							String recordNumber = recordIdentifier.getIdentifier();
+							GroupedWorkIndexer.MarcStatus marcStatus = reindexer.saveMarcRecordToDatabase(settings, recordNumber, marcRecord);
+							if (marcStatus != GroupedWorkIndexer.MarcStatus.UNCHANGED || settings.isRunFullUpdate()) {
+								String permanentId = recordGrouper.processMarcRecord(marcRecord, marcStatus != GroupedWorkIndexer.MarcStatus.UNCHANGED, null);
+								if (permanentId == null) {
+									//Delete the record since it is suppressed
+									deleteRecord = true;
 								} else {
-									logEntry.incUpdated();
+									if (marcStatus == GroupedWorkIndexer.MarcStatus.NEW) {
+										logEntry.incAdded();
+									} else {
+										logEntry.incUpdated();
+									}
+									getGroupedWorkIndexer().processGroupedWork(permanentId);
 								}
-								getGroupedWorkIndexer().processGroupedWork(permanentId);
+							} else {
+								logEntry.incSkipped();
 							}
-						} else {
-							logEntry.incSkipped();
 						}
 						if (deleteRecord) {
 							RemoveRecordFromWorkResult result = recordGrouper.removeRecordFromGroupedWork(settings.getName(), recordIdentifier.getIdentifier());

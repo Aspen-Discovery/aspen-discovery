@@ -2570,10 +2570,10 @@ class GroupedWorkDriver extends IndexRecordDriver
 
 					//Sort Records within each manifestation and variation
 					foreach ($this->_relatedManifestations as $manifestation){
-						$relatedRecords = $manifestation->getRelatedRecords();
-						if (count($relatedRecords) > 1) {
-							uasort($relatedRecords, array($this, "compareRelatedRecords"));
-							$manifestation->setSortedRelatedRecords($relatedRecords);
+						$relatedRecordsForManifestation = $manifestation->getRelatedRecords();
+						if (count($relatedRecordsForManifestation) > 1) {
+							uasort($relatedRecordsForManifestation, array($this, "compareRelatedRecords"));
+							$manifestation->setSortedRelatedRecords($relatedRecordsForManifestation);
 							foreach ($manifestation->getVariations() as $variation) {
 								$relatedRecordsForVariation = $variation->getRelatedRecords();
 								if (count($relatedRecordsForVariation) > 1){
