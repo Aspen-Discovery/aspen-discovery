@@ -26,7 +26,7 @@
 								<a href="{$thisFacet.url|escape}">
 									<div class="row">
 										<div class="col-xs-6">
-											<img src="{img filename=$thisFacet.imageName}" alt="{translate inAttribute=true text=$thisFacet.value|escape}">
+											<img src="{img filename=$thisFacet.imageName}" alt="Filter Format by {translate inAttribute=true text=$thisFacet.value|escape}">
 										</div>
 										<div class="col-xs-6 formatCategoryLabel">
 											{translate text=$thisFacet.display|escape}<br>({$thisFacet.count|number_format:0:".":","})

@@ -2,7 +2,7 @@
 	{if $loggedIn}
 		{* Setup the accoridon *}
 		<!--suppress HtmlUnknownTarget -->
-		<div id="account-menu" class="dropdown-menu dropdownMenu" aria-labelledby="account-menu-dropdown">
+		<div id="account-menu" class="dropdown-menu dropdownMenu" aria-labelledby="account-menu-dropdown" aria-label="Account Menu">
 			<span class="expirationFinesNotice-placeholder"></span>
 			{if $userHasCatalogConnection}
 				<a href="/MyAccount/CheckedOut">
@@ -102,7 +102,7 @@
 			{/if}
 
 			{if $loggedIn}
-				<a href="/MyAccount/Logout" id="logoutLink" title="{translate text="Sign Out" inAttribute=true}" class="btn btn-default btn-sm btn-block">
+				<a href="/MyAccount/Logout" id="logoutLink" class="btn btn-default btn-sm btn-block">
 					{translate text="Sign Out"}
 				</a>
 			{/if}

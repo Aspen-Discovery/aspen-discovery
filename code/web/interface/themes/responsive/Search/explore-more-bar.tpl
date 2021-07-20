@@ -26,7 +26,7 @@
 								<figure class="thumbnail" title="{$exploreMoreCategory.label|escape}">
 									<div class="explore-more-image">
 										<a href='{$exploreMoreCategory.link}' {if $exploreMoreCategory.onclick}onclick="{$exploreMoreCategory.onclick}"{/if} {if $exploreMoreCategory.openInNewWindow}target="_blank" {/if}>
-											<img src="{$exploreMoreCategory.image}" alt="{$exploreMoreCategory.label|escape}">
+											<img src="{$exploreMoreCategory.image}" alt="{translate text="Explore more on"  inAttribute=true} {$exploreMoreCategory.label|escape}">
 											<figcaption class="explore-more-category-title">
 												<strong>{$exploreMoreCategory.label|truncate:30}</strong>
 											</figcaption>

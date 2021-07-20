@@ -1,10 +1,10 @@
 {strip}
 <div id="openArchivesResult{$resultIndex|escape}" class="resultsList row">
 	{if $showCovers}
-		<div class="coversColumn col-xs-3 col-sm-3 col-md-3 col-lg-2 text-center">
+		<div class="coversColumn col-xs-3 col-sm-3 col-md-3 col-lg-2 text-center" aria-hidden="true" role="presentation">
 			{if $disableCoverArt != 1}
-				<a href="{$openArchiveUrl}" class="alignleft listResultImage" onclick="AspenDiscovery.OpenArchives.trackUsage('{$id}')" target="_blank">
-					<img src="{$bookCoverUrl}" class="listResultImage img-thumbnail" alt="{translate text='Cover Image' inAttribute=true}">
+				<a href="{$openArchiveUrl}" class="alignleft listResultImage" onclick="AspenDiscovery.OpenArchives.trackUsage('{$id}')" target="_blank" tabindex="-1">
+					<img src="{$bookCoverUrl}" class="listResultImage img-thumbnail" alt="{$title|removeTrailingPunctuation|highlight|truncate:180:"..."}">
 				</a>
 			{/if}
 		</div>

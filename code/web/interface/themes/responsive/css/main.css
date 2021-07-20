@@ -9301,10 +9301,16 @@ a.placard-link {
   text-decoration: none;
 }
 #browse-category-picker a.jcarousel-control-next:after {
-  content: "›";
+  font-family: "Font Awesome 5 Free";
+  content: "\f054";
+  font-weight: bold;
+  font-size: 35px;
 }
 #browse-category-picker a.jcarousel-control-prev:before {
-  content: "‹";
+  font-family: "Font Awesome 5 Free";
+  content: "\f053";
+  font-weight: bold;
+  font-size: 35px;
 }
 #browse-category-picker .jcarousel-pagination a,
 #browse-category-picker .jcarousel-pagination a:hover,
@@ -10587,6 +10593,12 @@ a.browse-thumbnail-sorted.active {
 }
 #more-details-accordion .panel-title {
   font-size: 13px;
+}
+#more-details-accordion .panel-title h2 {
+  font-size: 13px;
+  margin: unset;
+  font-weight: unset;
+  display: unset;
 }
 #more-details-accordion .panel-body {
   font-size: 12px;

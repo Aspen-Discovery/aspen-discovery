@@ -138,7 +138,7 @@ body .container, #home-page-browse-content{ldelim}
 
 .exploreMoreBar{ldelim}
     border-color: {$primaryBackgroundColor};
-    background: {$primaryBackgroundColor}10;
+    background: {$primaryBackgroundColor}07;
 {rdelim}
 .exploreMoreBar .label-top, .exploreMoreBar .label-top img{ldelim}
     background-color: {$primaryBackgroundColor};

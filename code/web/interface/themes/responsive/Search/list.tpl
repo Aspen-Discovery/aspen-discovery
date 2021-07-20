@@ -1,4 +1,4 @@
-<h1 class="hiddenTitle">{translate text='Catalog Search Results'}</h1>
+<h2 aria-label="Catalog Search Results" style="font-size:0;margin:0;line-height:0;"><span class="hidden">{translate text='Catalog Search Results'}</h2>
 <div id="searchInfo">
 	{* Recommendations *}
 	{if $topRecommendations}

@@ -40,7 +40,7 @@
 		{/if}
 		<div class="facetValue">
 			<label for="{$title}_{$thisFacet.value|escapeCSS}">
-				<input type="checkbox" {if $thisFacet.isApplied}checked{/if} name="{$title}_{$thisFacet.value|escapeCSS}" id="{$title}_{$thisFacet.value|escapeCSS}" onclick="document.location = '{if $thisFacet.isApplied}{$thisFacet.removalUrl|escape}{else}{$thisFacet.url|escape}{/if}';">
+				<input type="checkbox" {if $thisFacet.isApplied}checked{/if} name="{$title}_{$thisFacet.value|escapeCSS}" id="{$title}_{$thisFacet.value|escapeCSS}" onclick="document.location = '{if $thisFacet.isApplied}{$thisFacet.removalUrl|escape}{else}{$thisFacet.url|escape}{/if}';" onkeypress="document.location = '{if $thisFacet.isApplied}{$thisFacet.removalUrl|escape}{else}{$thisFacet.url|escape}{/if}';">
 				{$thisFacet.display}{if $thisFacet.count != ''}&nbsp;({$thisFacet.count|number_format}){/if}
 			</label>
 		</div>

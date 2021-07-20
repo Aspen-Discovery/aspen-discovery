@@ -19,7 +19,7 @@
 					<a href="#" class="jcarousel-control-prev" aria-label="{translate text="Previous Category" inAttribute=true}"></a>
 					<a href="#" class="jcarousel-control-next" aria-label="{translate text="Next Category" inAttribute=true}"></a>
 
-					<p class="jcarousel-pagination"></p>
+					<p class="jcarousel-pagination hidden-xs"></p>
 				</div>
 				<div class="clearfix"></div>
 			</div>
@@ -67,7 +67,7 @@
 				</div>
 			</div>
 
-			<a onclick="return AspenDiscovery.Browse.getMoreResults()" role="button" title="{translate text='Get More Results' inAttribute=true}">
+			<a onclick="return AspenDiscovery.Browse.getMoreResults()" onkeypress="return AspenDiscovery.Browse.getMoreResults()" role="button" title="{translate text='Get More Results' inAttribute=true}" tabindex="0">
 				<div class="row" id="more-browse-results">
 					<span class="glyphicon glyphicon-chevron-down" aria-label="{translate text='Get More Results' inAttribute=true}"></span>
 				</div>

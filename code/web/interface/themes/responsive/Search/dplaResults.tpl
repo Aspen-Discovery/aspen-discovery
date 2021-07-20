@@ -9,8 +9,8 @@
 				{if $showCovers}
 					<div class="col-xs-2">
 						{if $result.object}
-							<a href="{$result.link}">
-								<img src="{$result.object}" class="listResultImage img-thumbnail img-responsive" alt="{translate text='Resource Image'}"/>
+							<a href="{$result.link}" aria-hidden="true">
+								<img src="{$result.object}" class="listResultImage img-thumbnail img-responsive" alt="{$result.title}{if !empty($result.publisher)} from {$result.publisher}{/if}"/>
 							</a>
 						{/if}
 					</div>

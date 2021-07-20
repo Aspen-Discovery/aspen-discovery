@@ -546,7 +546,16 @@ var AspenDiscovery = (function(){
 			$('div.dropdown.menuToggleButton.accountMenu a').on('click', function (event) {
 				$(this).parent().toggleClass('open');
 			});
+			$('div.dropdown.menuToggleButton.accountMenu').on('keyup', function (event) {
+				$(this).addClass('open');
+			});
 			$(document).on('click', function (e) {
+				var $trigger = $("div.dropdown.menuToggleButton.accountMenu");
+				if($trigger !== event.target && !$trigger.has(event.target).length){
+					$('div.dropdown.menuToggleButton.accountMenu').removeClass('open');
+				}
+			});
+			$(document).on('keyup', function (e) {
 				var $trigger = $("div.dropdown.menuToggleButton.accountMenu");
 				if($trigger !== event.target && !$trigger.has(event.target).length){
 					$('div.dropdown.menuToggleButton.accountMenu').removeClass('open');
@@ -556,6 +565,11 @@ var AspenDiscovery = (function(){
 			$('div.dropdown.menuToggleButton.headerMenu a').on('click', function (event) {
 				$(this).parent().toggleClass('open');
 			});
+
+			$('div.dropdown.menuToggleButton.headerMenu').on('keyup', function (event) {
+				$(this).addClass('open');
+			});
+
 			$(document).on('click', function (e) {
 				var $trigger = $("div.dropdown.menuToggleButton.headerMenu");
 				if($trigger !== event.target && !$trigger.has(event.target).length){
@@ -563,6 +577,12 @@ var AspenDiscovery = (function(){
 				}
 			});
 
+			$(document).on('keyup', function (e) {
+				var $trigger = $("div.dropdown.menuToggleButton.headerMenu");
+				if($trigger !== event.target && !$trigger.has(event.target).length){
+					$('div.dropdown.menuToggleButton.headerMenu').removeClass('open');
+				}
+			});
 			return false;
 		},
 		closeMenu: function(){
