@@ -299,5 +299,18 @@ function getUpdates21_09_00() : array
 				'ALTER TABLE sideloads ADD COLUMN deletedRecordsIds MEDIUMTEXT'
 			]
 		], //add_records_to_delete_for_sideloads
+		'local_urls' => [
+			'title' => 'Setup local URLs',
+			'description' => 'Setup a local urls table to track URLs for sideloads',
+			'sql' => [
+				'CREATE TABLE IF NOT EXISTS grouped_work_record_item_url (
+					id int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					groupedWorkItemId INT(11),
+					scopeId INT(11),
+					url VARCHAR(1000),
+					UNIQUE (groupedWorkItemId, scopeId)
+				) ENGINE INNODB'
+			]
+		]
 	];
 }

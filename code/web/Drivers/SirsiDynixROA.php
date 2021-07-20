@@ -2187,4 +2187,43 @@ class SirsiDynixROA extends HorizonAPI
 		}
 		return array('historyActive' => $historyActive, 'titles' => $readingHistoryTitles, 'numTitles' => count($readingHistoryTitles));
 	}
+
+	public function performsReadingHistoryUpdatesOfILS(){
+		return true;
+	}
+
+	public function doReadingHistoryAction(User $patron, $action, $selectedTitles)
+	{
+		if ($action == 'optIn' || $action == 'optOut') {
+			$sessionToken = $this->getStaffSessionToken();
+			if ($sessionToken) {
+				$webServiceURL = $this->getWebServiceURL();
+				if ($userID = $patron->username) {
+					//To update the patron, we need to load the patron from Symphony so we only overwrite changed values.
+					$updatePatronInfoParametersClass = $this->getWebServiceResponse($this->getWebServiceURL() . '/user/patron/key/' . $userID .'?includeFields=*,preferredAddress,address1,address2,address3', null, $sessionToken );
+					if ($updatePatronInfoParametersClass) {
+						//Convert from stdClass to associative array
+						$updatePatronInfoParameters = json_decode(json_encode($updatePatronInfoParametersClass), true);
+						if ($action == 'optOut') {
+							$updatePatronInfoParameters['keepCircHistory'] = 'NOHISTORY';
+						} elseif ($action == 'optIn') {
+							$updatePatronInfoParameters['keepCircHistory'] = 'ALLCHARGES';
+						}
+
+						$updateAccountInfoResponse = $this->getWebServiceResponse($webServiceURL . '/user/patron/key/' . $userID.'?includeFields=*,preferredAddress,address1,address2,address3', $updatePatronInfoParameters, $sessionToken, 'PUT');
+
+						if (isset($updateAccountInfoResponse->messageList)) {
+							foreach ($updateAccountInfoResponse->messageList as $message) {
+								$result['messages'][] = $message->message;
+							}
+							global $logger;
+							$logger->log('Symphony Driver - Patron Info Update Error - Error updating reading history : ' . implode(';', $result['messages']), Logger::LOG_ERROR);
+						} else {
+							$patron->update();
+						}
+					}
+				}
+			}
+		}
+	}
 }
