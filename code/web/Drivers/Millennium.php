@@ -361,9 +361,9 @@ class Millennium extends AbstractIlsDriver
 		return $millenniumReadingHistory->getReadingHistory($patron, $page, $recordsPerPage, $sortOption);
 	}
 
-    public function performsReadingHistoryUpdatesOfILS(){
-        return true;
-    }
+	public function performsReadingHistoryUpdatesOfILS(){
+		return true;
+	}
 	/**
 	 * Do an update or edit of reading history information.  Current actions are:
 	 * deleteMarked
