@@ -311,6 +311,13 @@ function getUpdates21_09_00() : array
 					UNIQUE (groupedWorkItemId, scopeId)
 				) ENGINE INNODB'
 			]
+		], //add_footerLogoAlt
+		'add_footerLogoAlt' => [
+			'title' => 'Add footerLogoAlt',
+			'description' => 'Store alt text for the footer logo image',
+			'sql' => [
+				'ALTER TABLE themes ADD COLUMN footerLogoAlt VARCHAR(255)'
+			]
 		]
 	];
 }

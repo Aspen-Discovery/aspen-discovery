@@ -388,6 +388,11 @@ class UInterface extends Smarty
 				$this->assign('footerLogoLink', $footerLogoLink);
 			}
 
+			$footerLogoAlt = $theme->footerLogoAlt;
+			if ($footerLogoAlt) {
+				$this->assign('footerLogoAlt', $footerLogoAlt);
+			}
+
 			//Get favicon
 			$favicon = null;
 			foreach ($allAppliedThemes as $theme) {

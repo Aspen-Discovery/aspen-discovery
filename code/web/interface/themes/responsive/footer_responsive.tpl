@@ -19,7 +19,7 @@
 					{if $footerLogoLink}
 						<a href="{$footerLogoLink}">
 					{/if}
-					<img src="{$footerLogo}" aria-hidden="true" alt="{$librarySystemName}"/>
+					<img src="{$footerLogo}" aria-hidden="true" alt="{if $footerLogoAlt}{$footerLogoAlt}{else}{$librarySystemName}{/if}"/>
 					{if $footerLogoLink}
 						</a>
 					{/if}
