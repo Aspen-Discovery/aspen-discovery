@@ -3,9 +3,9 @@
 	<div id="similarTitlesNovelist" class="striped div-striped">
 		{foreach from=$similarTitles item=similarTitle name="recordLoop"}
 			<div class="novelist-similar-item row">
-				<div class="coversColumn col-xs-3 col-sm-3 col-md-3 col-lg-2 text-center">
+				<div class="coversColumn col-xs-3 col-sm-3 col-md-3 col-lg-2 text-center" aria-hidden="true" role="presentation">
 					{if isset($similarTitle.fullRecordLink)}
-						<a href='{$similarTitle.fullRecordLink}' aria-hidden="true"><img src="{$similarTitle.smallCover}" alt="{translate text='Cover Image' inAttribute=true}" class="listResultImage img-thumbnail"/></a>
+						<a href='{$similarTitle.fullRecordLink}'><img src="{$similarTitle.smallCover}" alt="{translate text='Cover Image' inAttribute=true}" class="listResultImage img-thumbnail"/></a>
 					{/if}
 				</div>
 				<div class="col-xs-9 col-lg-10">

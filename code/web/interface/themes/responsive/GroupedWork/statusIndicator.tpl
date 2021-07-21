@@ -56,7 +56,5 @@
 	{/if}
 {/if}
 {if ($statusInformation->getNumHolds() > 0 || $statusInformation->getOnOrderCopies() > 0) && ($showGroupedHoldCopiesCount || $viewingIndividualRecord == 1)}
-	<div class="smallText">
 		{$statusInformation->getNumberOfCopiesMessage()}
-	</div>
 {/if}

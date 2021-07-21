@@ -10,6 +10,7 @@
 		</div>
 		{* Heading Info Div *}
 		<div id="headingInfo" class="hidden-xs hidden-sm col-md-5 col-lg-5">
+			<h1 style="line-height:0; font-size: 0;"><span class="hidden">{$librarySystemName}</span></h1>
 			{if $showDisplayNameInHeader && $librarySystemName}
 				<span id="library-name-header" class="hidden-xs visible-sm">
 					{if strlen($librarySystemName) < 30}<br/>{/if} {* Move the library system name down a little if it won't wrap *}
@@ -35,9 +36,9 @@
 		<div id="language-selection-header" class="hidden-tn col-xs-4 col-sm-4 col-md-4 col-lg-4 pull-right">
 			<div class="btn-group" role="group">
 			{foreach from=$validLanguages key=languageCode item=language}
-				<div class="availableLanguage btn btn-xs btn-default {if $userLang->code==$languageCode}active{/if}">
+				<div class="availableLanguage btn btn-sm btn-default {if $userLang->code==$languageCode}active{/if}">
 				{if $userLang->code!=$languageCode}
-				<a onclick="return AspenDiscovery.setLanguage('{$languageCode}')">
+				<a onclick="return AspenDiscovery.setLanguage('{$languageCode}')" role="button">
 				{/if}
 					<div>
 						{$language->displayName}
@@ -49,11 +50,11 @@
 			{/foreach}
 			</div>
 			{if $loggedIn && in_array('Translate Aspen', $userPermissions)}
-				<div id="translationMode">
+				<div id="translationMode" style="padding-top:.5em">
 					{if $translationModeActive}
-						<a onclick="return AspenDiscovery.changeTranslationMode(false)">{translate text="Exit Translation Mode"}</a>
+						<a onclick="return AspenDiscovery.changeTranslationMode(false)" class="btn btn-primary btn-xs active" role="button">{translate text="Exit Translation Mode"}</a>
 					{else}
-						<a onclick="return AspenDiscovery.changeTranslationMode(true)">{translate text="Start Translation Mode"}</a>
+						<a onclick="return AspenDiscovery.changeTranslationMode(true)" class="btn btn-primary btn-xs" role="button">{translate text="Start Translation Mode"}</a>
 					{/if}
 				</div>
 			{/if}
@@ -67,16 +68,16 @@
 		</button>
 		<ul id="select-language" class="dropdown-menu" aria-labelledby="language-selection-dropdown">
 			{foreach from=$validLanguages key=languageCode item=language}
-			<li><a onclick="return AspenDiscovery.setLanguage('{$languageCode}')">{$language->displayName}</li>
+			<li><a onclick="return AspenDiscovery.setLanguage('{$languageCode}')" role="button">{$language->displayName}</li>
 			{/foreach}
 		</ul>
 	</div>
 		{if $loggedIn && in_array('Translate Aspen', $userPermissions)}
 			<div id="translationMode">
 				{if $translationModeActive}
-					<a onclick="return AspenDiscovery.changeTranslationMode(false)" class="btn btn-primary btn-xs active">{translate text="Exit Translation Mode"}</a>
+					<a onclick="return AspenDiscovery.changeTranslationMode(false)" class="btn btn-primary btn-xs active" role="button">{translate text="Exit Translation Mode"}</a>
 				{else}
-					<a onclick="return AspenDiscovery.changeTranslationMode(true)" class="btn btn-primary btn-xs">{translate text="Start Translation Mode"}</a>
+					<a onclick="return AspenDiscovery.changeTranslationMode(true)" class="btn btn-primary btn-xs" role="button">{translate text="Start Translation Mode"}</a>
 				{/if}
 			</div>
 		{/if}

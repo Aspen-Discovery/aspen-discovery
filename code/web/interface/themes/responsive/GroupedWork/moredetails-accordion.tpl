@@ -5,7 +5,7 @@
 				<a data-toggle="collapse" href="#{$moreDetailsKey}PanelBody">
 					<div class="panel-heading">
 						<div class="panel-title">
-							{$moreDetailsOption.label|translate}
+							<h2>{$moreDetailsOption.label|translate}</h2>
 						</div>
 					</div>
 				</a>

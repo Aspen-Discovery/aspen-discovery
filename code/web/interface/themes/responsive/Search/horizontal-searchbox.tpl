@@ -19,18 +19,23 @@
 		<div class="col-xs-12 col-sm-10 col-md-11">
 			<div class="row">
 				<div class="{if $hiddenSearchSource}col-lg-10 col-md-10{else}col-lg-7 col-md-7{/if} col-sm-12 col-xs-12">
-					<label for="lookfor" class="label" id="lookfor-label"><i class="fas fa-search fa-2x"></i></label>
+					{* <div class="input-group"> *}
+					<label for="lookfor" class="label" id="lookfor-label"><i class="fas fa-search fa-2x" style="vertical-align: middle"></i><span class="hidden">Look for:</span></label>
 					{* Main Search Term Box *}
-					<input type="text" class="form-control"{/strip}
+					<input type="text" class="form-control" style="border-right:0"{/strip}
 						id="lookfor"
 						name="lookfor"
 						title="Enter one or more terms to search for.	Surrounding a term with quotes will limit result to only those that exactly match the term."
 						onfocus="$(this).select()"
 						autocomplete="off"
-						aria-labelledby="horizontal-search-label"
+						aria-labelledby="lookfor-label"
 
 						{if !empty($lookfor)}value="{$lookfor|escape:"html"}"{/if}
 					{strip}>
+						{*<span class="input-group-btn">
+							<button class="btn btn-default" type="button" onclick="return AspenDiscovery.resetSearchBox();"><i class="fas fa-times"></i></button>
+						</span>*}
+					{*</div>*}
 				</div>
 
 				{* Search Type *}

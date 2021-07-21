@@ -1,13 +1,14 @@
 {strip}
 {if $filterList || $sideFacetSet}
 	<div id="searchFilterContainer">
+		<h2 aria-label="Filter Results" class="hiddenTitle">{translate text="Filter Results"}</h2>
 		{* Filters that have been applied *}
 		{if $filterList}
 			<div id="remove-search-label" class="sidebar-label">{translate text='Applied Filters'}</div>
 			<div class="applied-filters">
 			{foreach from=$filterList item=filters key=field }
 				{foreach from=$filters item=filter}
-					<div class="facetValue">{translate text=$field}: {$filter.display} <a href="{$filter.removalUrl|escape}"><i class="fas fa-minus-circle fa-lg text-danger" style="display:inline; vertical-align: middle"></i></a></div>
+					<div class="facetValue">{translate text=$field}: {$filter.display} <a href="{$filter.removalUrl|escape}" aria-label="{translate text="Remove Filter" inAttribute=true}"><i class="fas fa-minus-circle fa-lg text-danger" style="display:inline; vertical-align: middle"></i></a></div>
 				{/foreach}
 			{/foreach}
 			</div>
@@ -20,7 +21,7 @@
 				{foreach from=$sideFacetSet item=cluster key=title name=facetSet}
 					{if count($cluster.list) > 0}
 						<div class="facetList">
-							<div class="facetTitle panel-title {if $cluster.collapseByDefault && !$cluster.hasApplied}collapsed{else}expanded{/if}" onclick="$(this).toggleClass('expanded');$(this).toggleClass('collapsed');$('#facetDetails_{$title}').toggle()">
+							<div class="facetTitle panel-title {if $cluster.collapseByDefault && !$cluster.hasApplied}collapsed{else}expanded{/if}" onclick="$(this).toggleClass('expanded');$(this).toggleClass('collapsed');$('#facetDetails_{$title}').toggle()" onkeypress="$(this).toggleClass('expanded');$(this).toggleClass('collapsed');$('#facetDetails_{$title}').toggle()" tabindex="0" role="group">
 								{translate text=$cluster.label}
 
 								{if $cluster.canLock}

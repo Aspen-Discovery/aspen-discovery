@@ -2,10 +2,10 @@
 <div id="record{$summId|escape}" class="resultsList">
 	<div class="row">
 		{if $showCovers}
-			<div class="coversColumn col-xs-3 col-sm-3{if !empty($viewingCombinedResults)} col-md-3 col-lg-2{/if} text-center">
-				<a href="/Person/{$summId}">
+			<div class="coversColumn col-xs-3 col-sm-3{if !empty($viewingCombinedResults)} col-md-3 col-lg-2{/if} text-center" aria-hidden="true" role="presentation">
+				<a href="/Person/{$summId}" tabindex="-1">
 					{if $summPicture}
-					<img src="/files/thumbnail/{$summPicture}" class="alignleft listResultImage" alt="{translate text='Picture' inAttribute=true}"/><br />
+					<img src="/files/thumbnail/{$summPicture}" class="alignleft listResultImage" alt="{$summTitle|removeTrailingPunctuation|truncate:180:"..."|highlight}"/><br />
 					{else}
 					<img src="/interface/themes/responsive/images/person.png" class="alignleft listResultImage" alt="{translate text='No Cover Image' inAttribute=true}"/><br />
 					{/if}

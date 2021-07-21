@@ -19,7 +19,7 @@
 					{if $footerLogoLink}
 						<a href="{$footerLogoLink}">
 					{/if}
-					<img src="{$footerLogo}" aria-hidden="true" alt="Branding Image"/>
+					<img src="{$footerLogo}" aria-hidden="true" alt="{if $footerLogoAlt}{$footerLogoAlt}{else}{$librarySystemName}{/if}"/>
 					{if $footerLogoLink}
 						</a>
 					{/if}
@@ -30,28 +30,28 @@
 				{if $twitterLink || $facebookLink || !empty($generalContactLink) || $youtubeLink || $instagramLink || $pinterestLink || $goodreadsLink || $tiktokLink}
 					<span id="connect-with-us-label" class="large">{translate text='CONNECT WITH US'}</span>
 					{if $twitterLink}
-						<a href="{$twitterLink}" class="connect-icon" target="_blank"><i class='fab fa-twitter fa-lg' alt='{translate text="Follow us on Twitter" inAttribute=true}'></i></a>
+						<a href="{$twitterLink}" class="connect-icon" target="_blank" title="{translate text="Follow us on Twitter" inAttribute=true}"><i class='fab fa-twitter fa-lg' alt='{translate text="Follow us on Twitter" inAttribute=true}'></i></a>
 					{/if}
 					{if $facebookLink}
-						<a href="{$facebookLink}" class="connect-icon" target="_blank"><i class='fab fa-facebook fa-lg' alt='{translate text="Like us on Facebook" inAttribute=true}'></i></a>
+						<a href="{$facebookLink}" class="connect-icon" target="_blank" title="{translate text="Like us on Facebook" inAttribute=true}"><i class='fab fa-facebook fa-lg' alt='{translate text="Like us on Facebook" inAttribute=true}'></i></a>
 					{/if}
 					{if $youtubeLink}
-						<a href="{$youtubeLink}" class="connect-icon" target="_blank"><i class='fab fa-youtube fa-lg' alt='{translate text="Subscribe to our YouTube Channel" inAttribute=true}'></i></a>
+						<a href="{$youtubeLink}" class="connect-icon" target="_blank" title="{translate text="Subscribe to our YouTube Channel" inAttribute=true}"><i class='fab fa-youtube fa-lg' alt='{translate text="Subscribe to our YouTube Channel" inAttribute=true}'></i></a>
 					{/if}
 					{if $instagramLink}
-						<a href="{$instagramLink}" class="connect-icon" target="_blank"><i class='fab fa-instagram fa-lg' alt='{translate text="Follow us on Instagram" inAttribute=true}'></i></a>
+						<a href="{$instagramLink}" class="connect-icon" target="_blank" title="{translate text="Follow us on Instagram" inAttribute=true}"><i class='fab fa-instagram fa-lg' alt='{translate text="Follow us on Instagram" inAttribute=true}'></i></a>
 					{/if}
 					{if $pinterestLink}
-						<a href="{$pinterestLink}" class="connect-icon" target="_blank"><i class='fab fa-pinterest fa-lg' alt='{translate text="Follow us on Pinterest" inAttribute=true}'></i></a>
+						<a href="{$pinterestLink}" class="connect-icon" target="_blank" title="{translate text="Follow us on Pinterest" inAttribute=true}"><i class='fab fa-pinterest fa-lg' alt='{translate text="Follow us on Pinterest" inAttribute=true}'></i></a>
 					{/if}
 					{if $goodreadsLink}
-						<a href="{$goodreadsLink}" class="connect-icon" target="_blank"><i class='fab fa-goodreads fa-lg' alt='{translate text="Follow us on Goodreads" inAttribute=true}'></i></a>
+						<a href="{$goodreadsLink}" class="connect-icon" target="_blank" title="{translate text="Follow us on Goodreads" inAttribute=true}"><i class='fab fa-goodreads fa-lg' alt='{translate text="Follow us on Goodreads" inAttribute=true}'></i></a>
 					{/if}
 					{if $tiktokLink}
-						<a href="{$tiktokLink}" class="connect-icon" target="_blank"><i class='fab fa-tiktok fa-lg' alt='{translate text="Follow us on TikTok" inAttribute=true}'></i></a>
+						<a href="{$tiktokLink}" class="connect-icon" target="_blank" title="{translate text="Follow us on TikTok" inAttribute=true}"><i class='fab fa-tiktok fa-lg' alt='{translate text="Follow us on TikTok" inAttribute=true}'></i></a>
 					{/if}
 					{if !empty($generalContactLink)}
-						<a href="{$generalContactLink}" class="connect-icon" target="_blank"><i class='fas fa-envelope-open fa-lg' alt='{translate text="Contact Us" inAttribute=true}'></i></a>
+						<a href="{$generalContactLink}" class="connect-icon" target="_blank" title="{translate text="Contact Us" inAttribute=true}"><i class='fas fa-envelope-open fa-lg' alt='{translate text="Contact Us" inAttribute=true}'></i></a>
 					{/if}
 				{/if}
 			</div>

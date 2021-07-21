@@ -3189,7 +3189,7 @@ input[type="button"].btn-block {
   top: 100%;
   left: 0;
   z-index: 1000;
-  display: none;
+  display: block !important;
   float: left;
   min-width: 160px;
   padding: 5px 0;
@@ -3203,6 +3203,15 @@ input[type="button"].btn-block {
   -webkit-box-shadow: 0 6px 12px rgba(0, 0, 0, 0.175);
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.175);
   background-clip: padding-box;
+  -webkit-transition: max-height 2s, opacity 0.2s 0.1s, visibility 0s 2s !important;
+  -moz-transition: max-height 2s, opacity 0.2s 0.1s, visibility 0s 2s !important;
+  -ms-transition: max-height 2s, opacity 0.2s 0.1s, visibility 0s 2s !important;
+  -o-transition: max-height 2s, opacity 0.2s 0.1s, visibility 0s 2s !important;
+  transition: max-height 2s, opacity 0.2s 0.1s, visibility 0s 2s !important;
+  overflow: hidden !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  max-height: 0 !important;
 }
 .dropdown-menu.pull-right {
   right: 0;
@@ -3251,7 +3260,14 @@ input[type="button"].btn-block {
   cursor: not-allowed;
 }
 .open > .dropdown-menu {
-  display: block;
+  -webkit-transition: max-height 2s, opacity 0.2s, visibility 0s !important;
+  -moz-transition: max-height 2s, opacity 0.2s, visibility 0s !important;
+  -ms-transition: max-height 2s, opacity 0.2s, visibility 0s !important;
+  -o-transition: max-height 2s, opacity 0.2s, visibility 0s !important;
+  transition: max-height 2s, opacity 0.2s, visibility 0s !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  max-height: 800px !important;
 }
 .open > a {
   outline: 0;
@@ -5045,6 +5061,11 @@ a.list-group-item.active:focus .list-group-item-text {
 }
 .panel-title > a {
   color: inherit;
+}
+.panel-title h2 {
+  font-size: 13px;
+  display: unset;
+  margin: unset;
 }
 .panel-footer {
   padding: 10px 15px;
@@ -7110,16 +7131,25 @@ body > .container {
   font-size: 14px;
 }
 .fieldset-collapsible-label:before {
-  content: "▼ ";
+  font-family: "Font Awesome 5 Free";
+  content: '\f078';
+  font-weight: bold;
+  padding-right: 0.25em;
 }
 .fieldset-collapsed .fieldset-collapsible-label {
   background-position: 4px 4px;
 }
 .fieldset-collapsed .fieldset-collapsible-label:before {
-  content: "► ";
+  font-family: "Font Awesome 5 Free";
+  content: '\f105';
+  font-weight: bold;
+  padding-right: 0.25em;
 }
 .accordion .panel-title.collapsed:before {
-  content: "► ";
+  font-family: "Font Awesome 5 Free";
+  content: '\f105';
+  font-weight: bold;
+  padding-right: 0.25em;
 }
 @media print {
   .accordion .panel-title.collapsed:before {
@@ -7127,7 +7157,10 @@ body > .container {
   }
 }
 .accordion .panel-title.expanded:before {
-  content: "▼ ";
+  font-family: "Font Awesome 5 Free";
+  content: '\f078';
+  font-weight: bold;
+  padding-right: 0.25em;
 }
 @media print {
   .accordion .panel-title.expanded:before {
@@ -7135,7 +7168,10 @@ body > .container {
   }
 }
 .panel .panel-title:before {
-  content: "► ";
+  font-family: "Font Awesome 5 Free";
+  content: '\f105';
+  font-weight: bold;
+  padding-right: 0.25em;
 }
 @media print {
   .panel .panel-title:before {
@@ -7143,7 +7179,10 @@ body > .container {
   }
 }
 .panel.active .panel-title:before {
-  content: "▼ ";
+  font-family: "Font Awesome 5 Free";
+  content: '\f078';
+  font-weight: bold;
+  padding-right: 0.25em;
 }
 @media print {
   .panel.active .panel-title:before {
@@ -8542,7 +8581,8 @@ hr.menu {
   display: inline-block;
   padding-right: 10px;
 }
-#menuToggleButton {
+#menuToggleButton,
+.menuToggleButton a.menu-bar {
   width: 36px;
   display: inline-block;
   text-align: center;
@@ -8564,13 +8604,15 @@ hr.menu {
   z-index: 3;
 }
 #header-menu {
-  display: none;
-  position: absolute;
+  left: unset;
+  right: 0;
   background-color: #ededed;
   min-width: 220px;
   box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.2);
   padding: 12px 16px;
   z-index: 3;
+  top: 35px;
+  margin: 0;
 }
 #header-menu #logoutLink {
   margin-top: 1em;
@@ -8583,13 +8625,15 @@ hr.menu {
   margin-left: 0.5em;
 }
 #account-menu {
-  display: none;
-  position: absolute;
+  left: unset;
+  right: 0;
   background-color: #ededed;
   min-width: 220px;
-  box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.2);
   padding: 12px 16px;
   z-index: 3;
+  top: 35px;
+  margin: 0;
 }
 #accountMenuToggleButton.selected {
   background-color: #ededed;
@@ -9262,10 +9306,16 @@ a.placard-link {
   text-decoration: none;
 }
 #browse-category-picker a.jcarousel-control-next:after {
-  content: "›";
+  font-family: "Font Awesome 5 Free";
+  content: "\f054";
+  font-weight: bold;
+  font-size: 35px;
 }
 #browse-category-picker a.jcarousel-control-prev:before {
-  content: "‹";
+  font-family: "Font Awesome 5 Free";
+  content: "\f053";
+  font-weight: bold;
+  font-size: 35px;
 }
 #browse-category-picker .jcarousel-pagination a,
 #browse-category-picker .jcarousel-pagination a:hover,
@@ -10548,6 +10598,12 @@ a.browse-thumbnail-sorted.active {
 }
 #more-details-accordion .panel-title {
   font-size: 13px;
+}
+#more-details-accordion .panel-title h2 {
+  font-size: 13px;
+  margin: unset;
+  font-weight: unset;
+  display: unset;
 }
 #more-details-accordion .panel-body {
   font-size: 12px;
