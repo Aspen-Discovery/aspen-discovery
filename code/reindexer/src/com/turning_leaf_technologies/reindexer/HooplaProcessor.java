@@ -98,8 +98,7 @@ class HooplaProcessor {
 
 				String fullTitle = title + " " + subTitle;
 				fullTitle = fullTitle.trim();
-				groupedWork.setTitle(title, title, title, primaryFormat);
-				groupedWork.setSubTitle(subTitle);
+				groupedWork.setTitle(title, subTitle, title, title, primaryFormat);
 				groupedWork.addFullTitle(fullTitle);
 
 

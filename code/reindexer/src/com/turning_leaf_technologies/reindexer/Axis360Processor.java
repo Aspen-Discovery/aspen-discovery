@@ -72,11 +72,12 @@ class Axis360Processor {
 
 				JSONObject rawResponse = new JSONObject(productRS.getString("rawResponse"));
 
-				groupedWork.setTitle(title, title, title, primaryFormat);
+				String subTitle = "";
 				if (rawResponse.has("subTitle")) {
-					String subtitle = rawResponse.getString("subTitle");
-					groupedWork.setSubTitle(subtitle);
+					subTitle = rawResponse.getString("subTitle");
 				}
+				groupedWork.setTitle(title, subTitle, title, title, primaryFormat);
+
 				String primaryAuthor = productRS.getString("primaryAuthor");
 				groupedWork.setAuthor(primaryAuthor);
 				groupedWork.setAuthAuthor(primaryAuthor);
