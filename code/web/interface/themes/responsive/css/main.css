@@ -5062,6 +5062,11 @@ a.list-group-item.active:focus .list-group-item-text {
 .panel-title > a {
   color: inherit;
 }
+.panel-title h2 {
+  font-size: 13px;
+  display: unset;
+  margin: unset;
+}
 .panel-footer {
   padding: 10px 15px;
   background-color: #f5f5f5;
