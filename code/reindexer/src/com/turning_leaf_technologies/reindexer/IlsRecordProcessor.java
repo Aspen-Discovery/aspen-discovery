@@ -1214,15 +1214,24 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	}
 
 	protected String getDetailedLocationForItem(ItemInfo itemInfo, DataField itemField, String identifier) {
+		String location;
+		if (includeLocationNameInDetailedLocation) {
+			String locationCode = getItemSubfieldData(locationSubfieldIndicator, itemField);
+			location = translateValue("location", locationCode, identifier);
+		}else{
+			location = "";
+		}
 		String shelfLocation = null;
 		if (itemField != null) {
 			shelfLocation = getItemSubfieldData(locationSubfieldIndicator, itemField);
 		}
-		if (shelfLocation == null || shelfLocation.length() == 0 || shelfLocation.equals("none")){
-			return "";
-		}else {
-			return translateValue("shelf_location", shelfLocation, identifier);
+		if (shelfLocation != null && shelfLocation.length() > 0 && !shelfLocation.equals("none")){
+			if (location.length() > 0) {
+				location += " - ";
+			}
+			location += translateValue("shelf_location", shelfLocation, identifier);
 		}
+		return location;
 	}
 
 	protected String getItemStatus(DataField itemField, String recordIdentifier){
