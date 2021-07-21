@@ -1,27 +1,21 @@
 {strip}
-<div id="header-menu" class="dropdownMenu" style="display: none">
+<div id="header-menu" class="dropdown-menu dropdownMenu" aria-labelledby="header-menu-dropdown">
 	{if $showLoginButton}
 		<div id="hamburger-menu-my-account" class="header-menu-option">
-			<a href="/MyAccount/Home">
-				<i class="fas fa-user fa-fw"></i><span>{translate text='My Account'}</span>
-			</a>
+			<a href="/MyAccount/Home"><i class="fas fa-user fa-fw"></i><span>{translate text='My Account'}</span></a>
 		</div>
 	{/if}
 
 	{if !empty($userPermissions)}
 		<div id="home-page-home-button" class="header-menu-option">
-			<a href="/Admin/Home">
-				<i class="fas fa-tools fa-fw"></i><span>{translate text='Aspen Administration'}</span>
-			</a>
+			<a href="/Admin/Home"><i class="fas fa-tools fa-fw"></i><span>{translate text='Aspen Administration'}</span></a>
 		</div>
 	{/if}
 
 	{if !empty($homeLink)}
-		<a href="{$homeLink}">
-			<div id="home-page-home-button" class="header-menu-option">
-				<i class="fas fa-landmark fa-fw"></i><span>{translate text='Library Home Page'}</span>
-			</div>
-		</a>
+		<div id="home-page-home-button" class="header-menu-option">
+			<a href="{$homeLink}"><i class="fas fa-landmark fa-fw"></i><span>{translate text='Library Home Page'}</span></a>
+		</div>
 	{/if}
 
 	{if $showLibraryHoursAndLocationsLink}

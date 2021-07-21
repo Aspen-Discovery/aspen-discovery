@@ -45,6 +45,7 @@ class Theme extends DataObject
 
 	public $footerLogo;
 	public $footerLogoLink;
+	public $footerLogoAlt;
 	public $footerBackgroundColor;
 	public /** @noinspection PhpUnused */ $footerBackgroundColorDefault;
 	public $footerForegroundColor;
@@ -396,6 +397,8 @@ class Theme extends DataObject
 			'footerForegroundColor' => ['property' => 'footerForegroundColor', 'type' => 'color', 'label' => 'Footer Text Color', 'description' => 'Footer Foreground Color', 'required' => false, 'hideInLists' => true, 'default' => '#303030', 'checkContrastWith'=>'footerBackgroundColor'],
 			'footerImage' => ['property' => 'footerLogo', 'type' => 'image', 'label' => 'Footer Image (250px x 150px max)', 'description' => 'An image to be displayed in the footer', 'required' => false, 'maxWidth' => 250, 'maxHeight' => 150, 'hideInLists' => true],
 			'footerImageLink' => ['property' => 'footerLogoLink', 'type' => 'url', 'label' => 'Footer Image Link', 'description' => 'A link to be added to the footer logo', 'required' => false, 'hideInLists' => true],
+			'footerImageAlt' => ['property' => 'footerLogoAlt', 'type' => 'text', 'label' => 'Footer Image Alternative Text', 'description' => 'The text to be used for screen readers', 'required' => false, 'hideInLists' => true],
+
 			//Primary Color
 			'primaryBackgroundColor' => ['property' => 'primaryBackgroundColor', 'type' => 'color', 'label' => 'Primary Background Color', 'description' => 'Primary Background Color', 'required' => false, 'hideInLists' => true, 'default' => '#0a7589', 'checkContrastWith'=>'primaryForegroundColor'],
 			'primaryForegroundColor' => ['property' => 'primaryForegroundColor', 'type' => 'color', 'label' => 'Primary Text Color', 'description' => 'Primary Foreground Color', 'required' => false, 'hideInLists' => true, 'default' => '#ffffff', 'checkContrastWith'=>'primaryBackgroundColor'],

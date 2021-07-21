@@ -9,6 +9,7 @@ var AspenDiscovery = (function(){
 		AspenDiscovery.initializeModalDialogs();
 		AspenDiscovery.setupFieldSetToggles();
 		AspenDiscovery.initCarousels();
+		AspenDiscovery.toggleMenu();
 
 		$("#modalDialog").modal({show:false});
 		$('[data-toggle="tooltip"]').tooltip();
@@ -541,38 +542,47 @@ var AspenDiscovery = (function(){
 			return false;
 		},
 		toggleMenu: function() {
-			var headerMenu = $('#header-menu');
-			var menuButton = $('#menuToggleButton');
-			var menuButtonIcon = $('#menuToggleButton > i');
-			if (headerMenu.is(':visible')){
-				this.closeMenu();
-			}else{
-				this.closeAccountMenu();
-				$('.dropdownMenu').slideUp('slow');
-				var menuButtonPosition = menuButton.position();
-				headerMenu.css('left', menuButtonPosition.left + menuButton.outerWidth() - headerMenu.outerWidth() + 5);
-				headerMenu.css('top', menuButtonPosition.top + menuButton.outerHeight());
-				menuButton.addClass('selected');
-				headerMenu.slideDown('slow');
-				menuButtonIcon.removeClass('fa-bars');
-				menuButtonIcon.addClass('fa-times');
-			}
+			// fixed bootstrap account-menu toggle
+			$('div.dropdown.menuToggleButton.accountMenu a').on('click', function (event) {
+				$(this).parent().toggleClass('open');
+			});
+			$('div.dropdown.menuToggleButton.accountMenu').on('keyup', function (event) {
+				$(this).addClass('open');
+			});
+			$(document).on('click', function (e) {
+				var $trigger = $("div.dropdown.menuToggleButton.accountMenu");
+				if($trigger !== event.target && !$trigger.has(event.target).length){
+					$('div.dropdown.menuToggleButton.accountMenu').removeClass('open');
+				}
+			});
+			$(document).on('keyup', function (e) {
+				var $trigger = $("div.dropdown.menuToggleButton.accountMenu");
+				if($trigger !== event.target && !$trigger.has(event.target).length){
+					$('div.dropdown.menuToggleButton.accountMenu').removeClass('open');
+				}
+			});
+			// fixed bootstrap header-menu toggle
+			$('div.dropdown.menuToggleButton.headerMenu a').on('click', function (event) {
+				$(this).parent().toggleClass('open');
+			});
 
-			$('#header-menu.dropdownMenu').mouseleave(function() {
-				setTimeout(function () {
-					$('#header-menu.dropdownMenu').slideUp('slow');
-					menuButton.removeClass('selected');
-					menuButtonIcon.removeClass('fa-times');
-					menuButtonIcon.addClass('fa-bars');
-				}, 1000);
-			})
+			$('div.dropdown.menuToggleButton.headerMenu').on('keyup', function (event) {
+				$(this).addClass('open');
+			});
 
-			$(document).on('touchstart', function(e) {
-				$('#header-menu.dropdownMenu').slideUp('slow');
-				menuButton.removeClass('selected');
-				menuButtonIcon.removeClass('fa-times');
-				menuButtonIcon.addClass('fa-bars');
-			})
+			$(document).on('click', function (e) {
+				var $trigger = $("div.dropdown.menuToggleButton.headerMenu");
+				if($trigger !== event.target && !$trigger.has(event.target).length){
+					$('div.dropdown.menuToggleButton.headerMenu').removeClass('open');
+				}
+			});
+
+			$(document).on('keyup', function (e) {
+				var $trigger = $("div.dropdown.menuToggleButton.headerMenu");
+				if($trigger !== event.target && !$trigger.has(event.target).length){
+					$('div.dropdown.menuToggleButton.headerMenu').removeClass('open');
+				}
+			});
 			return false;
 		},
 		closeMenu: function(){
@@ -599,66 +609,17 @@ var AspenDiscovery = (function(){
 
 			return false;
 		},
-		toggleAccountMenu: function() {
-			var accountMenu = $('#account-menu');
-			var accountMenuButton = $('#accountMenuToggleButton');
-			if (accountMenu.is(':visible')){
-				this.closeAccountMenu();
-			}else{
-				this.closeMenu();
-				$('.dropdownMenu').slideUp('slow');
-				var accountMenuButtonPosition = accountMenuButton.position();
-				accountMenu.css('left', accountMenuButtonPosition.left + accountMenuButton.outerWidth() - accountMenu.outerWidth() + 4);
-				accountMenu.css('top', accountMenuButtonPosition.top + accountMenuButton.outerHeight());
-				accountMenuButton.addClass('selected');
-				accountMenu.slideDown('slow');
-			}
-
-			$('#account-menu.dropdownMenu').mouseleave(function() {
-				setTimeout(function () {
-					accountMenuButton.removeClass('selected');
-					$('#account-menu.dropdownMenu').slideUp('slow');
-				}, 1000);
-			})
-
-			$(document).on('touchstart', function(e) {
-				accountMenuButton.removeClass('selected');
-				$('#account-menu.dropdownMenu').slideUp('slow');
-			})
-
-			return false;
-		},
-		closeAccountMenu: function(){
-			var accountMenu = $('#account-menu');
-			var accountMenuButton = $('#accountMenuToggleButton');
-			accountMenu.slideUp('slow');
-			accountMenuButton.removeClass('selected');
-		},
 		showCustomMenu: function (menuName) {
-			this.closeMenu();
-			this.closeAccountMenu();
-			var customMenu = $('#' + menuName + '-menu');
-			if (customMenu.is(':visible')){
-				customMenu.slideUp('slow');
-			}else{
-				$('.dropdownMenu').slideUp('slow');
-				var customMenuTrigger = $('#' + menuName + '-menu-trigger')
-				var customMenuTriggerPosition = customMenuTrigger.position();
-				customMenu.css('left', customMenuTriggerPosition.left);
-				customMenu.css('top', customMenuTriggerPosition.top + customMenuTrigger.outerHeight());
-				customMenu.slideDown('slow');
-			}
-
-			$(customMenu).mouseleave(function() {
-				setTimeout(function () {
-					$(customMenu).slideUp('slow');
-				}, 1000)
-			})
-
-			$(document).on('touchstart', function(e) {
-				$(customMenu).slideUp('slow');
-			})
-			return false;
+			// fixed bootstrap custom menu toggles
+			$('div.dropdown.menuToggleButton.' + menuName + 'Menu a').on('click', function (event) {
+				$(this).parent().toggleClass('open');
+			});
+			$(document).on('click', function (e) {
+				var trigger = $('div.dropdown.menuToggleButton.' + menuName + 'Menu');
+				if(trigger !== event.target && !trigger.has(event.target).length){
+					$('div.dropdown.menuToggleButton.' + menuName + 'Menu').removeClass('open');
+				}
+			});
 		},
 		formatCurrency: function(currencyValue, elementToUpdate){
 			var url = Globals.path + "/AJAX/JSON";
@@ -676,6 +637,9 @@ var AspenDiscovery = (function(){
 				}
 			).fail(AspenDiscovery.ajaxFail);
 			return false;
+		},
+		resetSearchBox: function() {
+			document.getElementById("lookfor").value = "";
 		}
 	}
 

@@ -5,73 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="64b30edf-4a70-42c6-b752-8518712fb864" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/interface/themes/responsive/Error/410.tpl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../cron/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../cron/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/watcherTasks.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/watcherTasks.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Drivers/RBdigitalDriver.php" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Drivers/SirsiDynixROA.php" beforeDir="false" afterPath="$PROJECT_DIR$/Drivers/SirsiDynixROA.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/RecordDrivers/RBdigitalMagazineDriver.php" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/RecordDrivers/RBdigitalRecordDriver.php" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/RecordDrivers/RecordDriverFactory.php" beforeDir="false" afterPath="$PROJECT_DIR$/RecordDrivers/RecordDriverFactory.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/interface/themes/responsive/Admin/submitTicket.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/interface/themes/responsive/Admin/submitTicket.tpl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/interface/themes/responsive/Events/eventsIndexLog.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/interface/themes/responsive/Events/eventsIndexLog.tpl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/interface/themes/responsive/MyAccount/account-sidebar.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/interface/themes/responsive/MyAccount/account-sidebar.tpl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/interface/themes/responsive/MyAccount/checkedout.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/interface/themes/responsive/MyAccount/checkedout.tpl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/interface/themes/responsive/MyAccount/checkoutsList.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/interface/themes/responsive/MyAccount/checkoutsList.tpl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/interface/themes/responsive/MyAccount/holds.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/interface/themes/responsive/MyAccount/holds.tpl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/interface/themes/responsive/MyAccount/holdsList.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/interface/themes/responsive/MyAccount/holdsList.tpl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/interface/themes/responsive/MyAccount/paypalPayments.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/interface/themes/responsive/MyAccount/paypalPayments.tpl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/interface/themes/responsive/MyAccount/rbdigitalCheckedOutMagazine.tpl" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/interface/themes/responsive/MyAccount/rbdigitalCheckedOutTitle.tpl" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/interface/themes/responsive/MyAccount/rbdigitalHold.tpl" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/interface/themes/responsive/MyAccount/rbdigitalOptions.tpl" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/interface/themes/responsive/RBdigital/ajax-checkout-prompt.tpl" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/interface/themes/responsive/RBdigital/ajax-create-account-prompt.tpl" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/interface/themes/responsive/RBdigital/ajax-hold-prompt.tpl" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/interface/themes/responsive/RBdigital/full-record.tpl" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/interface/themes/responsive/RBdigital/largeCover.tpl" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/interface/themes/responsive/RBdigital/rbdigitalExportLog.tpl" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/interface/themes/responsive/RBdigital/view-more-details.tpl" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/interface/themes/responsive/RBdigital/view-title-details.tpl" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/interface/themes/responsive/RBdigitalMagazine/full-record.tpl" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/interface/themes/responsive/RBdigitalMagazine/view-title-details.tpl" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/interface/themes/responsive/RecordDrivers/RBdigital/staff-view.tpl" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/interface/themes/responsive/RecordDrivers/RBdigital/view-subjects.tpl" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/interface/themes/responsive/css/main.css" beforeDir="false" afterPath="$PROJECT_DIR$/interface/themes/responsive/css/main.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/interface/themes/responsive/cssAndJsIncludes.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/interface/themes/responsive/cssAndJsIncludes.tpl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/interface/themes/responsive/js/aspen.js" beforeDir="false" afterPath="$PROJECT_DIR$/interface/themes/responsive/js/aspen.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/interface/themes/responsive/js/aspen/account.js" beforeDir="false" afterPath="$PROJECT_DIR$/interface/themes/responsive/js/aspen/account.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/interface/themes/responsive/js/aspen/globals.js" beforeDir="false" afterPath="$PROJECT_DIR$/interface/themes/responsive/js/aspen/globals.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/interface/themes/responsive/js/aspen/rbdigital.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/interface/themes/responsive/js/javascript_files.txt" beforeDir="false" afterPath="$PROJECT_DIR$/interface/themes/responsive/js/javascript_files.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/interface/themes/responsive/webmenu.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/interface/themes/responsive/webmenu.tpl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/release_notes/21.09.00.MD" beforeDir="false" afterPath="$PROJECT_DIR$/release_notes/21.09.00.MD" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/services/Admin/AJAX.php" beforeDir="false" afterPath="$PROJECT_DIR$/services/Admin/AJAX.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/services/MyAccount/AJAX.php" beforeDir="false" afterPath="$PROJECT_DIR$/services/MyAccount/AJAX.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/services/MyAccount/CompriseCancel.php" beforeDir="false" afterPath="$PROJECT_DIR$/services/MyAccount/CompriseCancel.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/services/MyAccount/RBdigitalOptions.php" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/services/RBdigital/AJAX.php" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/services/RBdigital/AccessOnline.php" beforeDir="false" afterPath="$PROJECT_DIR$/services/RBdigital/AccessOnline.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/services/RBdigital/Home.php" beforeDir="false" afterPath="$PROJECT_DIR$/services/RBdigital/Home.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/services/RBdigital/IndexingLog.php" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/services/RBdigital/Scopes.php" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/services/RBdigital/Settings.php" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/services/RBdigitalMagazine/AJAX.php" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/services/RBdigitalMagazine/AccessOnline.php" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/services/RBdigitalMagazine/Home.php" beforeDir="false" afterPath="$PROJECT_DIR$/services/RBdigitalMagazine/Home.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sys/Account/User.php" beforeDir="false" afterPath="$PROJECT_DIR$/sys/Account/User.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sys/CloudLibrary/CloudLibraryScope.php" beforeDir="false" afterPath="$PROJECT_DIR$/sys/CloudLibrary/CloudLibraryScope.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sys/Covers/BookCoverProcessor.php" beforeDir="false" afterPath="$PROJECT_DIR$/sys/Covers/BookCoverProcessor.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sys/DBMaintenance/version_updates/21.09.00.php" beforeDir="false" afterPath="$PROJECT_DIR$/sys/DBMaintenance/version_updates/21.09.00.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sys/Grouping/NonGroupedRecord.php" beforeDir="false" afterPath="$PROJECT_DIR$/sys/Grouping/NonGroupedRecord.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sys/Indexing/SideLoadScope.php" beforeDir="false" afterPath="$PROJECT_DIR$/sys/Indexing/SideLoadScope.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sys/LibraryLocation/Library.php" beforeDir="false" afterPath="$PROJECT_DIR$/sys/LibraryLocation/Library.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sys/LibraryLocation/Location.php" beforeDir="false" afterPath="$PROJECT_DIR$/sys/LibraryLocation/Location.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sys/RBdigital/RBdigitalExportLogEntry.php" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/sys/RBdigital/RBdigitalScope.php" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/sys/RBdigital/RBdigitalSetting.php" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/sys/User/Checkout.php" beforeDir="false" afterPath="$PROJECT_DIR$/sys/User/Checkout.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sys/User/CircEntry.php" beforeDir="false" afterPath="$PROJECT_DIR$/sys/User/CircEntry.php" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -100,6 +35,24 @@
       <filtered-out-file-type name="TAG" />
       <filtered-out-file-type name="COMMIT_BY_MESSAGE" />
     </file-type-list>
+  </component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="file://$PROJECT_DIR$/Drivers/AbstractDriver.php" root0="FORCE_HIGHLIGHTING" root1="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/interface/themes/responsive/MyAccount/cancelHold.tpl" root0="FORCE_HIGHLIGHTING" root1="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/interface/themes/responsive/MyAccount/ilsHold.tpl" root0="FORCE_HIGHLIGHTING" root1="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Drivers/Koha.php" root0="FORCE_HIGHLIGHTING" root1="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Drivers/AbstractIlsDriver.php" root0="FORCE_HIGHLIGHTING" root1="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/services/MyAccount/AJAX.php" root0="FORCE_HIGHLIGHTING" root1="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/sys/User/Hold.php" root0="FORCE_HIGHLIGHTING" root1="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/RecordDrivers/GroupedWorkDriver.php" root0="FORCE_HIGHLIGHTING" root1="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/sys/Grouping/GroupedWorkMoreDetails.php" root0="FORCE_HIGHLIGHTING" root1="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/sys/SearchObject/SearchObjectFactory.php" root0="FORCE_HIGHLIGHTING" root1="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/sys/ConfigArray.php" root0="FORCE_HIGHLIGHTING" root1="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/sys/Grouping/Item.php" root0="FORCE_HIGHLIGHTING" root1="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Drivers/HooplaDriver.php" root0="FORCE_HIGHLIGHTING" root1="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/sys/Account/User.php" root0="FORCE_HIGHLIGHTING" root1="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/interface/themes/responsive/js/aspen/account.js" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Drivers/AbstractEContentDriver.php" root0="FORCE_HIGHLIGHTING" root1="FORCE_HIGHLIGHTING" />
   </component>
   <component name="JsBowerSettings">
     <node-interpreter value="project" />
@@ -236,7 +189,7 @@
       <recent name="C:\web\aspen-discovery\code\web\interface\themes\responsive\MyAccount" />
     </key>
   </component>
-  <component name="RunManager" selected="PHP Script.updateNYTLists">
+  <component name="RunManager" selected="PHP Script.mergeJavascript">
     <configuration default="true" type="PhpLocalRunConfigurationType" factoryName="PHP Console" path="$PROJECT_DIR$/../cron/updateNYTLists.sh" scriptParameters="basinlibraries.localhost">
       <method v="2" />
     </configuration>
@@ -282,7 +235,7 @@
     <configuration name="mergeJavascript" type="PhpLocalRunConfigurationType" factoryName="PHP Console" path="$PROJECT_DIR$/interface/themes/responsive/js/merge_javascript.php">
       <CommandLine workingDirectory="$PROJECT_DIR$/interface/themes/responsive/js/">
         <PhpTestInterpreterSettings>
-          <option name="interpreterName" value="PHP 7.3" />
+          <option name="interpreterName" value="PHP" />
         </PhpTestInterpreterSettings>
       </CommandLine>
       <method v="2" />

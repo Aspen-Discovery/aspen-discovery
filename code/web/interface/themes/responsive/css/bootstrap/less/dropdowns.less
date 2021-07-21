@@ -31,7 +31,7 @@
   top: 100%;
   left: 0;
   z-index: @zindex-dropdown;
-  display: none; // none by default, but block on "open" of the menu
+  display: block !important; // none by default, but block on "open" of the menu -- changed to default block to support animation
   float: left;
   min-width: 160px;
   padding: 5px 0;
@@ -44,6 +44,15 @@
   border-radius: @border-radius-base;
   .box-shadow(0 6px 12px rgba(0,0,0,.175));
   background-clip: padding-box;
+  -webkit-transition: max-height 2s, opacity 0.2s 0.1s, visibility 0s 2s !important;
+  -moz-transition: max-height 2s, opacity 0.2s 0.1s, visibility 0s 2s !important;
+  -ms-transition: max-height 2s, opacity 0.2s 0.1s, visibility 0s 2s !important;
+  -o-transition: max-height 2s, opacity 0.2s 0.1s, visibility 0s 2s !important;
+  transition: max-height 2s, opacity 0.2s 0.1s, visibility 0s 2s !important;
+  overflow: hidden !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  max-height: 0 !important;
 
   // Aligns the dropdown menu to right
   &.pull-right {
@@ -117,7 +126,15 @@
 .open {
   // Show the menu
   > .dropdown-menu {
-    display: block;
+    //display: block; // disabled to support animations
+    -webkit-transition: max-height 2s, opacity 0.2s, visibility 0s !important;
+    -moz-transition: max-height 2s, opacity 0.2s, visibility 0s !important;
+    -ms-transition: max-height 2s, opacity 0.2s, visibility 0s !important;
+    -o-transition: max-height 2s, opacity 0.2s, visibility 0s !important;
+    transition: max-height 2s, opacity 0.2s, visibility 0s !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    max-height: 800px !important;
   }
 
   // Remove the outline when :focus is triggered
