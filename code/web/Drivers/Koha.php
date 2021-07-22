@@ -1208,6 +1208,8 @@ class Koha extends AbstractIlsDriver
 
 		$this->initDatabaseConnection();
 
+		$showHoldPosition = $this->getKohaSystemPreference('OPACShowHoldQueueDetails', 'holds');
+
 		/** @noinspection SqlResolve */
 		$sql = "SELECT reserves.*, biblio.title, biblio.author, items.itemcallnumber, items.enumchron FROM reserves inner join biblio on biblio.biblionumber = reserves.biblionumber left join items on items.itemnumber = reserves.itemnumber where borrowernumber = {$patron->username}";
 		$results = mysqli_query($this->dbConnection, $sql);
@@ -1259,7 +1261,9 @@ class Koha extends AbstractIlsDriver
 				$curHold->pickupLocationName = $curPickupBranch->code;
 			}
 			$curHold->locationUpdateable = false;
-			$curHold->position = $curRow['priority'];
+			if ($showHoldPosition != 'none') {
+				$curHold->position = $curRow['priority'];
+			}
 			$curHold->frozen = false;
 			$curHold->canFreeze = false;
 			$curHold->cancelable = true;
