@@ -30,14 +30,15 @@
 					<div class="panel-body">
 						{foreach from=$resources item=resource}
 							<div class="row">
-								<div class="coversColumn col-xs-3 col-sm-3 col-md-3 col-lg-2 text-center">
-									{if !empty($resource->logo)}
-										<a href="/WebBuilder/WebResource?id={$resource->id}">
+								{if !empty($resource->logo)}
+								<div class="coversColumn col-xs-3 col-sm-3 col-md-3 col-lg-2 text-center" aria-hidden="true" role="presentation">
+										<a href="/WebBuilder/WebResource?id={$resource->id}" tabindex="-1">
 											<img src='/files/thumbnail/{$resource->logo}' alt="{$resource->name}" class="img-responsive img-thumbnail">
 										</a>
-									{/if}
+
 								</div>
-								<div class="col-xs-9 col-sm-9 col-md-9 col-lg-10">
+								{/if}
+								<div class="{if !empty($resource->logo)}col-xs-9 col-sm-9 col-md-9 col-lg-10{else}col-xs-12 col-sm-12 col-md-12 col-lg-12{/if}">
 									<div>
 										<a href="/WebBuilder/WebResource?id={$resource->id}" class="result-title">
 											{$resource->name}
