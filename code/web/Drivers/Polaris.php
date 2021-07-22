@@ -468,7 +468,7 @@ class Polaris extends AbstractIlsDriver
 			$polarisUrl = "/PAPIService/REST/public/v1/1033/100/1/holdrequest";
 			$body = new stdClass();
 			$body->PatronID = (int)$patron->username;
-			$body->BibID = (int)$recordId;
+			$body->BibID = (int)$shortId;
 			if (!empty($itemId)) {
 				$body->ItemBarcode = $itemId;
 
