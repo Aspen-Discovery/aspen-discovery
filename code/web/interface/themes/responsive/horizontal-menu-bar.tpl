@@ -13,29 +13,46 @@
 			{assign var=topCategory value=$menuCategory|@reset}
 			{if $topCategory->showInTopMenu || $topCategory->alwaysShowIconInTopMenu}
 				{if count($menuCategory) > 1}
-					<a id="{$topCategory->getEscapedCategory()}-menu-trigger" onclick="return AspenDiscovery.showCustomMenu('{$topCategory->getEscapedCategory()}')" class="menu-icon menu-bar-option {if !$topCategory->alwaysShowIconInTopMenu}visible-inline-block-lg{/if}" title="{translate text=$categoryName inAttribute=true}" aria-label="{translate text=$categoryName inAttribute=true}">
-						{if !empty($topCategory->iconName)}
-							<i class="fas fa-{$topCategory->iconName} fa-lg"></i>
-						{/if}
-						<span class="menu-bar-label visible-inline-block-lg">
-							{if $topCategory->published == 0}<em>{/if}
+				{literal}
+					<script type="application/javascript">
+							var menuName = '{/literal}{$topCategory->getEscapedCategory()}{literal}';
+							// fixed bootstrap custom menu toggles
+							$('div.dropdown.menuToggleButton.' + menuName + 'Menu a').on('click', function (event) {
+								$(this).parent().toggleClass('open');
+							});
+							$(document).on('click', function (e) {
+								var trigger = $('div.dropdown.menuToggleButton.' + menuName + 'Menu');
+								if (trigger !== event.target && !trigger.has(event.target).length) {
+									$('div.dropdown.menuToggleButton.' + menuName + 'Menu').removeClass('open');
+								}
+							});
+					</script>
+				{/literal}
+					<div class="dropdown menuToggleButton {$topCategory->getEscapedCategory()}Menu" style="display:inline-block;">
+						<a id="{$topCategory->getEscapedCategory()}-menu-trigger" tabindex="0" class="dropdown-toggle menu-icon menu-bar-option {if !$topCategory->alwaysShowIconInTopMenu}visible-inline-block-lg{/if}" aria-label="{translate text=$categoryName inAttribute=true}"  aria-haspopup="true" aria-expanded="false" role="link">
+							{if !empty($topCategory->iconName)}
+								<i class="fas fa-{$topCategory->iconName} fa-lg"></i>
+							{/if}
+							<span class="menu-bar-label visible-inline-block-lg">
+								{if $topCategory->published == 0}<em>{/if}
 								{$topCategory->category|translate}
 								{if $topCategory->published == 0}</em>{/if}
-						</span>
-					</a>
-					<div id="{$topCategory->getEscapedCategory()}-menu" class="dropdownMenu" style="display: none">
-						{foreach from=$menuCategory item=link key=linkName}
-							{* Only render HTML contents in the header menu *}
-							{if empty($link->htmlContents)}
-								<div class="header-menu-option childMenuItem">
-									<a href="{$link->url}" {if $link->openInNewTab}target="_blank"{/if}>
-										{if $link->published == 0}<em>{/if}
+							</span>
+						</a>
+						<div id="{$topCategory->getEscapedCategory()}-menu" class="dropdown-menu dropdownMenu" aria-labelledby="{$topCategory->getEscapedCategory()}-menu-trigger">
+							{foreach from=$menuCategory item=link key=linkName}
+								{* Only render HTML contents in the header menu *}
+								{if empty($link->htmlContents)}
+									<div class="header-menu-option childMenuItem">
+										<a href="{$link->url}" {if $link->openInNewTab}target="_blank"{/if} aria-label="{$linkName|translate}">
+											{if $link->published == 0}<em>{/if}
 											{$linkName|translate}
 											{if $link->published == 0}</em>{/if}
-									</a>
-								</div>
-							{/if}
-						{/foreach}
+										</a>
+									</div>
+								{/if}
+							{/foreach}
+						</div>
 					</div>
 				{else}
 					<a href="{$topCategory->url}" role="link" class="menu-icon menu-bar-option {if !$topCategory->alwaysShowIconInTopMenu}visible-inline-block-lg{/if}" aria-label="{translate text=$categoryName inAttribute=true}" {if $topCategory->openInNewTab}target="_blank"{/if} tabindex="0">
@@ -48,7 +65,6 @@
 							{if $topCategory->published == 0}</em>{/if}
 						</span>
 					</a>
-
 				{/if}
 			{/if}
 		{/foreach}
