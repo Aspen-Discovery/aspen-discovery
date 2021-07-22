@@ -82,6 +82,10 @@ class OverDriveDriver extends AbstractEContentDriver{
 		return $this->settings;
 	}
 
+	public function getTokenData() {
+		return $this->_connectToAPI(true);
+	}
+
 	private function _connectToAPI($forceNewConnection = false){
 		global $memCache;
 		$settings = $this->getSettings();
