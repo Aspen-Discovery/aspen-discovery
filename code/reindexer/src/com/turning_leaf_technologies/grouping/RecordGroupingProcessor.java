@@ -148,7 +148,7 @@ public class RecordGroupingProcessor {
 		return result;
 	}
 
-	public String getPermanentIdForRecord(String source, String id) {
+	public synchronized String getPermanentIdForRecord(String source, String id) {
 		String permanentId = null;
 		try {
 			getWorkForPrimaryIdentifierStmt.setString(1, source);
@@ -163,7 +163,7 @@ public class RecordGroupingProcessor {
 				}
 			}
 		} catch (Exception e) {
-			logEntry.incErrors("Error processing deleted bibs", e);
+			logEntry.incErrors("Error getting permanent id for record " + source + " " + id, e);
 		}
 		return permanentId;
 	}

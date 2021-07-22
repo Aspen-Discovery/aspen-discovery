@@ -667,11 +667,15 @@ public class GroupedWorkSolr implements Cloneable {
 
 			if (curScopeDetails.isLocationScope()) {
 				//Also add the location to the system
-				if (curScopeDetails.getLibraryScope() != null && !curScopeDetails.getLibraryScope().getScopeName().equals(curScopeName)) {
-					setScopedField(multiValuedScopedFields,"owning_location_".concat(curScopeDetails.getLibraryScope().getScopeName()), owningLocationValue);
-					addAvailabilityToggleValues(curRecord, curScopeDetails.getLibraryScope().getScopeName(), availabilityToggleValues, multiValuedScopedFields);
-					if (curItem.isAvailable()) {
-						addAvailableAtValues(curRecord, curScopeDetails.getLibraryScope().getScopeName(), owningLocationValue, multiValuedScopedFields);
+				if (curScopeDetails.getLibraryScope() != null){
+					Scope libraryScope = curScopeDetails.getLibraryScope();
+					String libraryScopeName = curScopeDetails.getLibraryScope().getScopeName();
+					if (!libraryScopeName.equals(curScopeName)){
+						setScopedField(multiValuedScopedFields, "owning_location_".concat(libraryScopeName), owningLocationValue);
+						addAvailabilityToggleValues(curRecord, libraryScopeName, availabilityToggleValues, multiValuedScopedFields);
+						if (curItem.isAvailable()) {
+							addAvailableAtValues(curRecord, libraryScopeName, owningLocationValue, multiValuedScopedFields);
+						}
 					}
 				}
 
@@ -760,19 +764,21 @@ public class GroupedWorkSolr implements Cloneable {
 
 	private void addAvailableAtValues(RecordInfo curRecord, String curScopeName, String owningLocationValue, HashMap<String, HashSet<String>> multiValuedScopedFields) {
 		setScopedField(multiValuedScopedFields, "available_at_" + curScopeName, owningLocationValue);
+		String availableAtFormatScope = "available_at_by_format_".concat(curScopeName).concat("_");
 		for (String format : curRecord.getAllSolrFieldEscapedFormats()) {
-			setScopedField(multiValuedScopedFields, "available_at_by_format_" + curScopeName + "_" + format, owningLocationValue);
+			setScopedField(multiValuedScopedFields, availableAtFormatScope.concat(format), owningLocationValue);
 		}
 		for (String formatCategory : curRecord.getAllSolrFieldEscapedFormatCategories()) {
-			setScopedField(multiValuedScopedFields, "available_at_by_format_" + curScopeName + "_" + formatCategory, owningLocationValue);
+			setScopedField(multiValuedScopedFields, availableAtFormatScope.concat(formatCategory), owningLocationValue);
 		}
 	}
 
 	private void addAvailabilityToggleValues(RecordInfo curRecord, String curScopeName, HashSet<String> availabilityToggleValues, HashMap<String, HashSet<String>> multiValuedScopedFields) {
-		setScopedField(multiValuedScopedFields, "availability_toggle_" + curScopeName, availabilityToggleValues);
+		setScopedField(multiValuedScopedFields, "availability_toggle_".concat(curScopeName), availabilityToggleValues);
 		HashSet<String> allFormats = curRecord.getAllSolrFieldEscapedFormats();
+		String availabilityByFormatScope = "availability_by_format_".concat(curScopeName).concat("_");
 		for (String format : allFormats) {
-			setScopedField(multiValuedScopedFields, "availability_by_format_" + curScopeName + "_" + format, availabilityToggleValues);
+			setScopedField(multiValuedScopedFields,  availabilityByFormatScope.concat(format), availabilityToggleValues);
 		}
 		HashSet<String> allFormatCategories = curRecord.getAllSolrFieldEscapedFormatCategories();
 		if (allFormats.contains("eaudiobook")) {
@@ -783,7 +789,7 @@ public class GroupedWorkSolr implements Cloneable {
 			allFormatCategories.add("audio_books");
 		}
 		for (String formatCategory : allFormatCategories) {
-			setScopedField(multiValuedScopedFields, "availability_by_format_" + curScopeName + "_" + formatCategory, availabilityToggleValues);
+			setScopedField(multiValuedScopedFields, availabilityByFormatScope.concat(formatCategory), availabilityToggleValues);
 		}
 	}
 

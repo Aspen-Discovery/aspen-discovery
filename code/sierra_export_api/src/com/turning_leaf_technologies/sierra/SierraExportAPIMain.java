@@ -617,7 +617,7 @@ public class SierraExportAPIMain {
 			}
 			logEntry.incDeleted();
 		} catch (Exception e) {
-			logger.error("Error processing deleted bibs", e);
+			logger.error("Error removing record from grouped work", e);
 		}
 	}
 

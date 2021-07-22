@@ -28,6 +28,7 @@ class OverDriveProcessor {
 	private PreparedStatement getProductFormatsStmt;
 	private final SimpleDateFormat publishDateFormatter = new SimpleDateFormat("MM/dd/yyyy");
 	private final SimpleDateFormat publishDateFormatter2 = new SimpleDateFormat("MM/yyyy");
+	private final SimpleDateFormat publishDateFormatter3 = new SimpleDateFormat("yyyy-MM-dd");
 	private final Pattern publishDatePattern = Pattern.compile("([a-zA-Z]{3})\\s([\\s\\d]\\d)\\s(\\d{4}).*");
 	private final Pattern publishDateFullMonthPattern = Pattern.compile("(january|february|march|april|may|june|july|august|september|october|november|december),?\\s(\\d{4}).*", Pattern.CASE_INSENSITIVE);
 
@@ -101,7 +102,7 @@ class OverDriveProcessor {
 
 						HashMap<String, String> metadata = loadOverDriveMetadata(groupedWork, productId, primaryFormat);
 
-						if (!metadata.containsKey("rawMetadata")){
+						if (!metadata.containsKey("rawMetadata") || (metadata.get("rawMetadata") == null)){
 							//We didn't get metadata for the title.  This shouldn't happen in normal cases, but if it does,
 							//we should just skip processing this record.
 							logEntry.addNote("OverDrive record " + identifier + " did not have metadata, skipping");
@@ -143,108 +144,115 @@ class OverDriveProcessor {
 												isOnOrder = true;
 											}
 										} catch (ParseException e2) {
-											Matcher publishDateMatcher = publishDatePattern.matcher(publishDateText);
-											if (publishDateMatcher.matches()) {
-												String month = publishDateMatcher.group(1).toLowerCase();
-												String day = publishDateMatcher.group(2).trim();
-												String year = publishDateMatcher.group(3);
-												GregorianCalendar publishCal = new GregorianCalendar();
-												int monthInt = 1;
-												switch (month) {
-													case "jan":
-														monthInt = Calendar.JANUARY;
-														break;
-													case "feb":
-														monthInt = Calendar.FEBRUARY;
-														break;
-													case "mar":
-														monthInt = Calendar.MARCH;
-														break;
-													case "apr":
-														monthInt = Calendar.APRIL;
-														break;
-													case "may":
-														monthInt = Calendar.MAY;
-														break;
-													case "jun":
-														monthInt = Calendar.JUNE;
-														break;
-													case "jul":
-														monthInt = Calendar.JULY;
-														break;
-													case "aug":
-														monthInt = Calendar.AUGUST;
-														break;
-													case "sep":
-														monthInt = Calendar.SEPTEMBER;
-														break;
-													case "oct":
-														monthInt = Calendar.OCTOBER;
-														break;
-													case "nov":
-														monthInt = Calendar.NOVEMBER;
-														break;
-													case "dec":
-														monthInt = Calendar.DECEMBER;
-														break;
-												}
-												publishCal.set(Integer.parseInt(year), monthInt, (Integer.parseInt(day)));
-												publishDate = publishCal.getTime();
+											try{
+												publishDate = publishDateFormatter3.parse(publishDateText);
 												if (publishDate.after(new Date())) {
 													isOnOrder = true;
 												}
-											} else {
-												Matcher publishDateFullMonthMatcher = publishDateFullMonthPattern.matcher(publishDateText);
-												if (publishDateFullMonthMatcher.matches()){
-													String month = publishDateFullMonthMatcher.group(1).toLowerCase();
-													String year = publishDateFullMonthMatcher.group(2);
+											} catch (ParseException e3) {
+												Matcher publishDateMatcher = publishDatePattern.matcher(publishDateText);
+												if (publishDateMatcher.matches()) {
+													String month = publishDateMatcher.group(1).toLowerCase();
+													String day = publishDateMatcher.group(2).trim();
+													String year = publishDateMatcher.group(3);
 													GregorianCalendar publishCal = new GregorianCalendar();
 													int monthInt = 1;
 													switch (month) {
-														case "january":
+														case "jan":
 															monthInt = Calendar.JANUARY;
 															break;
-														case "february":
+														case "feb":
 															monthInt = Calendar.FEBRUARY;
 															break;
-														case "march":
+														case "mar":
 															monthInt = Calendar.MARCH;
 															break;
-														case "april":
+														case "apr":
 															monthInt = Calendar.APRIL;
 															break;
 														case "may":
 															monthInt = Calendar.MAY;
 															break;
-														case "june":
+														case "jun":
 															monthInt = Calendar.JUNE;
 															break;
-														case "july":
+														case "jul":
 															monthInt = Calendar.JULY;
 															break;
-														case "august":
+														case "aug":
 															monthInt = Calendar.AUGUST;
 															break;
-														case "september":
+														case "sep":
 															monthInt = Calendar.SEPTEMBER;
 															break;
-														case "october":
+														case "oct":
 															monthInt = Calendar.OCTOBER;
 															break;
-														case "november":
+														case "nov":
 															monthInt = Calendar.NOVEMBER;
 															break;
-														case "december":
+														case "dec":
 															monthInt = Calendar.DECEMBER;
 															break;
 													}
-													publishCal.set(Integer.parseInt(year), monthInt, 1);
+													publishCal.set(Integer.parseInt(year), monthInt, (Integer.parseInt(day)));
 													publishDate = publishCal.getTime();
 													if (publishDate.after(new Date())) {
 														isOnOrder = true;
 													}
-												}else {
-													logEntry.addNote("Error parsing publication date " + publishDateText);
+												} else {
+													Matcher publishDateFullMonthMatcher = publishDateFullMonthPattern.matcher(publishDateText);
+													if (publishDateFullMonthMatcher.matches()) {
+														String month = publishDateFullMonthMatcher.group(1).toLowerCase();
+														String year = publishDateFullMonthMatcher.group(2);
+														GregorianCalendar publishCal = new GregorianCalendar();
+														int monthInt = 1;
+														switch (month) {
+															case "january":
+																monthInt = Calendar.JANUARY;
+																break;
+															case "february":
+																monthInt = Calendar.FEBRUARY;
+																break;
+															case "march":
+																monthInt = Calendar.MARCH;
+																break;
+															case "april":
+																monthInt = Calendar.APRIL;
+																break;
+															case "may":
+																monthInt = Calendar.MAY;
+																break;
+															case "june":
+																monthInt = Calendar.JUNE;
+																break;
+															case "july":
+																monthInt = Calendar.JULY;
+																break;
+															case "august":
+																monthInt = Calendar.AUGUST;
+																break;
+															case "september":
+																monthInt = Calendar.SEPTEMBER;
+																break;
+															case "october":
+																monthInt = Calendar.OCTOBER;
+																break;
+															case "november":
+																monthInt = Calendar.NOVEMBER;
+																break;
+															case "december":
+																monthInt = Calendar.DECEMBER;
+																break;
+														}
+														publishCal.set(Integer.parseInt(year), monthInt, 1);
+														publishDate = publishCal.getTime();
+														if (publishDate.after(new Date())) {
+															isOnOrder = true;
+														}
+													} else {
+														logEntry.addNote("Error parsing publication date " + publishDateText);
+													}
 												}
 											}
 										}

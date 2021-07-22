@@ -236,7 +236,7 @@ function getUpdates21_09_00() : array
 		], //record_suppression_no_marc
 		'fix_ils_record_indexes' => [
 			'title' => 'Fix ils record indexes',
-			'description' => 'Drop index of just ilsId since it is not unique and we have source and ilsId indexed together',
+			'description' => 'Drop ilsId index since it is not unique and we have source and ilsId indexed together',
 			'sql' => [
 				'ALTER TABLE ils_records DROP INDEX ilsId',
 			]
