@@ -610,16 +610,29 @@ var AspenDiscovery = (function(){
 			return false;
 		},
 		showCustomMenu: function (menuName) {
-			// fixed bootstrap custom menu toggles
-			$('div.dropdown.menuToggleButton.' + menuName + 'Menu a').on('click', function (event) {
-				$(this).parent().toggleClass('open');
-			});
-			$(document).on('click', function (e) {
-				var trigger = $('div.dropdown.menuToggleButton.' + menuName + 'Menu');
-				if(trigger !== event.target && !trigger.has(event.target).length){
-					$('div.dropdown.menuToggleButton.' + menuName + 'Menu').removeClass('open');
-				}
-			});
+			this.closeMenu();
+			var customMenu = $('#' + menuName + '-menu');
+			if (customMenu.is(':visible')){
+				customMenu.slideUp('slow');
+			}else{
+				$('.dropdownMenu').slideUp('slow');
+				var customMenuTrigger = $('#' + menuName + '-menu-trigger')
+				var customMenuTriggerPosition = customMenuTrigger.position();
+				customMenu.css('left', customMenuTriggerPosition.left);
+				customMenu.css('top', customMenuTriggerPosition.top + customMenuTrigger.outerHeight());
+				customMenu.slideDown('slow');
+			}
+
+			$(customMenu).mouseleave(function() {
+				setTimeout(function () {
+					$(customMenu).slideUp('slow');
+				}, 1000)
+			})
+
+			$(document).on('touchstart', function(e) {
+				$(customMenu).slideUp('slow');
+			})
+			return false;
 		},
 		formatCurrency: function(currencyValue, elementToUpdate){
 			var url = Globals.path + "/AJAX/JSON";
