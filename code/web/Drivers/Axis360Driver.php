@@ -563,7 +563,7 @@ class Axis360Driver extends AbstractEContentDriver
 				$hold->status = "Frozen";
 			}
 		}else{
-			$hold->expire = strtotime($rawHold->reservedEndDate);
+			$hold->expirationDate = strtotime($rawHold->reservedEndDate);
 		}
 
 		require_once ROOT_DIR . '/RecordDrivers/Axis360RecordDriver.php';
