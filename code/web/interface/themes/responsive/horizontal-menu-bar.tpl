@@ -13,21 +13,6 @@
 			{assign var=topCategory value=$menuCategory|@reset}
 			{if $topCategory->showInTopMenu || $topCategory->alwaysShowIconInTopMenu}
 				{if count($menuCategory) > 1}
-				{literal}
-					<script type="application/javascript">
-							var menuName = '{/literal}{$topCategory->getEscapedCategory()}{literal}';
-							// fixed bootstrap custom menu toggles
-							$('div.dropdown.menuToggleButton.' + menuName + 'Menu a').on('click', function (event) {
-								$(this).parent().toggleClass('open');
-							});
-							$(document).on('click', function (e) {
-								var trigger = $('div.dropdown.menuToggleButton.' + menuName + 'Menu');
-								if (trigger !== event.target && !trigger.has(event.target).length) {
-									$('div.dropdown.menuToggleButton.' + menuName + 'Menu').removeClass('open');
-								}
-							});
-					</script>
-				{/literal}
 					<div class="dropdown menuToggleButton {$topCategory->getEscapedCategory()}Menu" style="display:inline-block;">
 						<a id="{$topCategory->getEscapedCategory()}-menu-trigger" tabindex="0" class="dropdown-toggle menu-icon menu-bar-option {if !$topCategory->alwaysShowIconInTopMenu}visible-inline-block-lg{/if}" aria-label="{translate text=$categoryName inAttribute=true}"  aria-haspopup="true" aria-expanded="false" role="link">
 							{if !empty($topCategory->iconName)}
@@ -54,6 +39,21 @@
 							{/foreach}
 						</div>
 					</div>
+				{literal}
+					<script type="application/javascript">
+						var menuName = '{/literal}{$topCategory->getEscapedCategory()}{literal}';
+						// fixed bootstrap custom menu toggles
+						$('div.dropdown.menuToggleButton.' + menuName + 'Menu a').on('click', function (event) {
+							$(this).parent().toggleClass('open');
+						});
+						$(document).on('click', function (e) {
+							var trigger = $('div.dropdown.menuToggleButton.' + menuName + 'Menu');
+							if (trigger !== event.target && !trigger.has(event.target).length) {
+								$('div.dropdown.menuToggleButton.' + menuName + 'Menu').removeClass('open');
+							}
+						});
+					</script>
+				{/literal}
 				{else}
 					<a href="{$topCategory->url}" role="link" class="menu-icon menu-bar-option {if !$topCategory->alwaysShowIconInTopMenu}visible-inline-block-lg{/if}" aria-label="{translate text=$categoryName inAttribute=true}" {if $topCategory->openInNewTab}target="_blank"{/if} tabindex="0">
 						{if !empty($topCategory->iconName)}
