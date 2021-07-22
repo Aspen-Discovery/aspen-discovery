@@ -855,9 +855,6 @@ class ListAPI extends Action
 
 		} else {
 			$listID = $nytList->id;
-			$newDescription = "New York Times - $selectedListTitleShort<br/>{$listTitles->copyright}";
-			$nytList->nytListModified = $lastModifiedDay;
-			$nytList->update();
 			if ($nytList->nytListModified == $lastModifiedDay){
 				$nytUpdateLog->numSkipped++;
 				//Nothing has changed, no need to update
@@ -868,6 +865,8 @@ class ListAPI extends Action
 			}
 			$nytUpdateLog->numUpdated++;
 			$nytList->description = "New York Times - $selectedListTitleShort<br/>{$listTitles->copyright}";
+			$nytList->nytListModified = $lastModifiedDay;
+			$nytList->update();
 			$results = array(
 				'success' => true,
 				'message' => "Updated list <a href='/MyAccount/MyList/{$listID}'>{$selectedListTitle}</a>"
