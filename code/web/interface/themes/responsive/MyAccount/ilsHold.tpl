@@ -160,7 +160,11 @@
 							<div class="row">
 								<div class="result-label col-tn-4">{translate text='Position'}</div>
 								<div class="col-tn-8 result-value">
-									{$record->position}
+									{if $record->holdQueueLength}
+										{translate text="%1% of %2%" 1=$record->position 2=$record->holdQueueLength}
+									{else}
+                                        {$record->position}
+									{/if}
 								</div>
 							</div>
 						{/if}
