@@ -957,11 +957,11 @@ public class GroupedWorkSolr implements Cloneable {
 	private final static Pattern commonSubtitlePattern = Pattern.compile("(?i)((?:[(])?(?:a )?graphic novel|audio cd|book club kit|large print(?:[)])?)$");
 	private final static Pattern punctuationPattern = Pattern.compile("[.\\\\/()\\[\\]:;]");
 
-	void setTitle(String shortTitle, String displayTitle, String sortableTitle, String recordFormat) {
-		this.setTitle(shortTitle, displayTitle, sortableTitle, recordFormat, false);
+	void setTitle(String shortTitle, String subTitle, String displayTitle, String sortableTitle, String recordFormat) {
+		this.setTitle(shortTitle, subTitle, displayTitle, sortableTitle, recordFormat, false);
 	}
 
-	void setTitle(String shortTitle, String displayTitle, String sortableTitle, String recordFormat, boolean forceUpdate) {
+	void setTitle(String shortTitle, String subTitle, String displayTitle, String sortableTitle, String recordFormat, boolean forceUpdate) {
 		if (shortTitle != null) {
 			shortTitle = StringUtils.trimTrailingPunctuation(shortTitle);
 
@@ -1036,6 +1036,9 @@ public class GroupedWorkSolr implements Cloneable {
 					displayTitle = tmpTitle;
 				}
 				this.displayTitle = displayTitle.trim();
+
+				//SubTitle only gets set based on the main title.
+				setSubTitle(subTitle);
 			}
 
 			//Create an alternate title for searching by replacing ampersands with the word and.
@@ -1049,7 +1052,7 @@ public class GroupedWorkSolr implements Cloneable {
 	}
 
 
-	void setSubTitle(String subTitle) {
+	private void setSubTitle(String subTitle) {
 		if (subTitle != null) {
 			subTitle = StringUtils.trimTrailingPunctuation(subTitle);
 			//TODO: determine if the subtitle should be changed?
@@ -1060,9 +1063,9 @@ public class GroupedWorkSolr implements Cloneable {
 			}
 			//Remove common formats
 			tmpTitle = commonSubtitlePattern.matcher(subTitle).replaceAll("").trim();
-			if (tmpTitle.length() > 0) {
-				subTitle = tmpTitle;
-			}
+//			if (tmpTitle.length() > 0) {
+//				subTitle = tmpTitle;
+//			}
 			this.subTitle = subTitle;
 			keywords.add(subTitle);
 		}

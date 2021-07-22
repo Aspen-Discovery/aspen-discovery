@@ -992,10 +992,8 @@ abstract class MarcRecordProcessor {
 		//title (full title done by index process by concatenating short and subtitle
 
 		//title short
-		groupedWork.setTitle(MarcUtil.getFirstFieldVal(record, "245a"), MarcUtil.getFirstFieldVal(record, "245abnp"), this.getSortableTitle(record), format);
-		//title sub
-		//MDN 2/6/2016 add np to subtitle #ARL-163
-		groupedWork.setSubTitle(MarcUtil.getFirstFieldVal(record, "245bnp"));
+		String subTitle = MarcUtil.getFirstFieldVal(record, "245bnp");
+		groupedWork.setTitle(MarcUtil.getFirstFieldVal(record, "245a"), subTitle, MarcUtil.getFirstFieldVal(record, "245abnp"), this.getSortableTitle(record), format);
 		//title full
 		String authorInTitleField = MarcUtil.getFirstFieldVal(record, "245c");
 		String standardAuthorData = MarcUtil.getFirstFieldVal(record, "100abcdq:110ab");
@@ -1409,7 +1407,7 @@ abstract class MarcRecordProcessor {
 		for (DataField publicationInfo : publicationFields) {
 			for (Subfield publisherSubField : publicationInfo.getSubfields('b')){
 				String sysDetailsValue = publisherSubField.getData().toLowerCase();
-				if (sysDetailsValue.contains("playaway") || sysDetailsValue.contains("findaway")) {
+				if (sysDetailsValue.contains("playaway")) {
 					result.add("Playaway");
 				} else if (sysDetailsValue.contains("go reader")) {
 					result.add("GoReader");

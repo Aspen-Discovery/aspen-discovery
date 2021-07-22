@@ -9,17 +9,6 @@ class SirsiDynixROA extends HorizonAPI
 	private static $sessionIdsForUsers = array();
 	private static $logAllAPICalls = false;
 
-	private function staffOrPatronSessionTokenSwitch()
-	{
-		$useStaffAccountForWebServices = true;
-		global $configArray;
-		if (isset($configArray['Catalog']['useStaffSessionTokens'])) {
-			$useStaffAccountForWebServices = $configArray['Catalog']['useStaffSessionTokens'];
-		}
-		return $useStaffAccountForWebServices;
-
-	}
-
 	// $customRequest is for curl, can be 'PUT', 'DELETE', 'POST'
 	public function getWebServiceResponse($url, $params = null, $sessionToken = null, $customRequest = null, $additionalHeaders = null)
 	{
@@ -1083,8 +1072,7 @@ class SirsiDynixROA extends HorizonAPI
 
 	function cancelHold($patron, $recordId, $cancelId = null)
 	{
-//		$sessionToken = $this->getStaffSessionToken();
-		$sessionToken = $this->staffOrPatronSessionTokenSwitch() ? $this->getStaffSessionToken() : $this->getSessionToken($patron);
+		$sessionToken = $this->getSessionToken($patron);
 		if (!$sessionToken) {
 			return array(
 				'success' => false,
@@ -1282,7 +1270,7 @@ class SirsiDynixROA extends HorizonAPI
 	 */
 	public function renewCheckout($patron, $recordId, $itemId = null, $itemIndex = null)
 	{
-		$sessionToken = $this->staffOrPatronSessionTokenSwitch() ? $this->getStaffSessionToken() : $this->getSessionToken($patron);
+		$sessionToken = $this->getSessionToken($patron);
 		if (!$sessionToken) {
 			return array(
 				'success' => false,

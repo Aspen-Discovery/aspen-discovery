@@ -2575,8 +2575,6 @@ class GroupedWorkDriver extends IndexRecordDriver
 						$this->_relatedManifestations[$record->format]->addRecord($record);
 					}
 
-
-
 					//Sort Records within each manifestation and variation
 					foreach ($this->_relatedManifestations as $manifestation){
 						$relatedRecordsForManifestation = $manifestation->getRelatedRecords();
@@ -2592,6 +2590,8 @@ class GroupedWorkDriver extends IndexRecordDriver
 							}
 						}
 					}
+
+					uasort($this->_relatedManifestations, array($this, "compareRelatedManifestations"));
 				}
 			}
 

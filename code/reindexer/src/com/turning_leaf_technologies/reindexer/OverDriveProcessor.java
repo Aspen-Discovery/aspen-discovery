@@ -255,8 +255,7 @@ class OverDriveProcessor {
 
 						String fullTitle = title + " " + subtitle;
 						fullTitle = fullTitle.trim();
-						groupedWork.setTitle(title, title, metadata.get("sortTitle"), primaryFormat);
-						groupedWork.setSubTitle(subtitle);
+						groupedWork.setTitle(title, subtitle, title, metadata.get("sortTitle"), primaryFormat);
 						groupedWork.addFullTitle(fullTitle);
 
 						if (series != null && series.length() > 0) {
@@ -282,6 +281,19 @@ class OverDriveProcessor {
 						HashSet<String> validFormats = loadOverDriveFormats(productId, identifier);
 						if (validFormats.contains("Kindle Book")){
 							hasKindle = true;
+						}
+						if (rawMetadataDecoded != null) {
+							if (rawMetadataDecoded.has("subjects")) {
+								JSONArray subjects = rawMetadataDecoded.getJSONArray("subjects");
+								for (int i = 0; i < subjects.length(); i++) {
+									String curSubject = subjects.getJSONObject(i).getString("value");
+									if (curSubject.equals("Comic and Graphic Books")) {
+										validFormats.remove("eBook");
+										validFormats.add("eComic");
+										primaryFormat = "eComic";
+									}
+								}
+							}
 						}
 						String detailedFormats = Util.getCsvSeparatedString(validFormats);
 						//overDriveRecord.addFormats(validFormats);
@@ -344,7 +356,7 @@ class OverDriveProcessor {
 							itemInfo.setFormatCategory(formatCategory);
 
 							//Need to set an identifier based on the scope so we can filter later.
-							itemInfo.setItemIdentifier(identifier + ":" + libraryId + ":" + primaryFormat);
+							itemInfo.setItemIdentifier(identifier + ":" + libraryId + ":" + primaryFormat + ":" + availabilityRS.getLong("id"));
 
 							//TODO: Check to see if this is a pre-release title.  If not, suppress if the record has 0 copies owned
 							int copiesOwned = availabilityRS.getInt("copiesOwned");
