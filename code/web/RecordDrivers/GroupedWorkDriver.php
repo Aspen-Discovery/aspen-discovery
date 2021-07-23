@@ -2389,16 +2389,6 @@ class GroupedWorkDriver extends IndexRecordDriver
 				$user = UserAccount::getActiveUserObj();
 
 				$searchLocation = Location::getSearchLocation();
-				$activePTypes = array();
-				if ($user) {
-					$activePTypes = array_merge($activePTypes, $user->getRelatedPTypes());
-				}
-				if ($searchLocation) {
-					$activePTypes[$searchLocation->defaultPType] = $searchLocation->defaultPType;
-				}
-				if ($library) {
-					$activePTypes[$library->defaultPType] = $library->defaultPType;
-				}
 				list($scopingInfo, $validRecordIds, $validItemIds) = $this->loadScopingDetails($solrScope);
 				$timer->logTime("Loaded Scoping Details from the index");
 				$memoryWatcher->logMemory("Loaded scoping details from the index");
@@ -2422,7 +2412,7 @@ class GroupedWorkDriver extends IndexRecordDriver
 					if ($groupedWork->find(true)) {
 						//Generate record information based on the information we have in the index
 						foreach ($recordsFromIndex as $recordDetails) {
-							$relatedRecord = $this->setupRelatedRecordDetails($recordDetails, $groupedWork, $timer, $scopingInfo, $activePTypes, $searchLocation, $library, $forCovers);
+							$relatedRecord = $this->setupRelatedRecordDetails($recordDetails, $groupedWork, $timer, $scopingInfo, $searchLocation, $library, $forCovers);
 							if ($relatedRecord != null) {
 								$relatedRecords[$relatedRecord->id] = $relatedRecord;
 								$memoryWatcher->logMemory("Setup related record details for " . $relatedRecord->id);
@@ -2659,13 +2649,12 @@ class GroupedWorkDriver extends IndexRecordDriver
 	 * @param GroupedWork $groupedWork
 	 * @param Timer $timer
 	 * @param $scopingInfo
-	 * @param $activePTypes
 	 * @param Location $searchLocation
 	 * @param Library $library
 	 * @param bool $forCovers Optimization if we are only loading info for the covers
 	 * @return Grouping_Record
 	 */
-	protected function setupRelatedRecordDetails($recordDetails, $groupedWork, $timer, $scopingInfo, $activePTypes, $searchLocation, $library, $forCovers = false)
+	protected function setupRelatedRecordDetails($recordDetails, $groupedWork, $timer, $scopingInfo, $searchLocation, $library, $forCovers = false)
 	{
 		global $memoryWatcher;
 		//Check to see if we have any volume data for the record

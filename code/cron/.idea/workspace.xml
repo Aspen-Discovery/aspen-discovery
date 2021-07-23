@@ -5,58 +5,39 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="9a7bc6aa-b294-4e08-985c-3b6e4b5b29e4" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/../web/interface/themes/responsive/Error/410.tpl" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../axis_360_export/axis_360_export.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../axis_360_export/axis_360_export.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../carlx_export/carlx_export.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../carlx_export/carlx_export.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../cloud_library_export/cloud_library_export.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../cloud_library_export/cloud_library_export.jar" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cron.jar" beforeDir="false" afterPath="$PROJECT_DIR$/cron.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../events_indexer/events_indexer.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../events_indexer/events_indexer.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../hoopla_export/hoopla_export.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../hoopla_export/hoopla_export.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../horizon_export/horizon_export.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../horizon_export/horizon_export.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java_shared_libraries/src/com/turning_leaf_technologies/indexing/IndexingUtils.java" beforeDir="false" afterPath="$PROJECT_DIR$/../java_shared_libraries/src/com/turning_leaf_technologies/indexing/IndexingUtils.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java_shared_libraries/src/com/turning_leaf_technologies/indexing/Scope.java" beforeDir="false" afterPath="$PROJECT_DIR$/../java_shared_libraries/src/com/turning_leaf_technologies/indexing/Scope.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../koha_export/koha_export.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../koha_export/koha_export.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../oai_indexer/oai_indexer.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../oai_indexer/oai_indexer.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../overdrive_extract/overdrive_extract.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../overdrive_extract/overdrive_extract.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../polaris_export/polaris_export.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../polaris_export/polaris_export.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../rbdigital_export/rbdigital_export.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../rbdigital_export/rbdigital_export.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../reindexer/reindexer.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../reindexer/reindexer.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/OverDriveProcessor.java" beforeDir="false" afterPath="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/OverDriveProcessor.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../sideload_processing/sideload_processing.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../sideload_processing/sideload_processing.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../sierra_export_api/sierra_export_api.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../sierra_export_api/sierra_export_api.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../symphony_export/symphony_export.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../symphony_export/symphony_export.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../user_list_indexer/user_list_indexer.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../user_list_indexer/user_list_indexer.jar" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../web/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../web/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/Drivers/RBdigitalDriver.php" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/Drivers/SirsiDynixROA.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/Drivers/SirsiDynixROA.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/RecordDrivers/RBdigitalMagazineDriver.php" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/RecordDrivers/RBdigitalRecordDriver.php" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/RecordDrivers/RecordDriverFactory.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/RecordDrivers/RecordDriverFactory.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/interface/themes/responsive/Admin/submitTicket.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/../web/interface/themes/responsive/Admin/submitTicket.tpl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/interface/themes/responsive/Events/eventsIndexLog.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/../web/interface/themes/responsive/Events/eventsIndexLog.tpl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/interface/themes/responsive/MyAccount/account-sidebar.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/../web/interface/themes/responsive/MyAccount/account-sidebar.tpl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/interface/themes/responsive/MyAccount/checkedout.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/../web/interface/themes/responsive/MyAccount/checkedout.tpl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/interface/themes/responsive/MyAccount/checkoutsList.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/../web/interface/themes/responsive/MyAccount/checkoutsList.tpl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/interface/themes/responsive/MyAccount/holds.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/../web/interface/themes/responsive/MyAccount/holds.tpl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/interface/themes/responsive/MyAccount/holdsList.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/../web/interface/themes/responsive/MyAccount/holdsList.tpl" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/Drivers/Millennium.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/Drivers/Millennium.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/RecordDrivers/GroupedWorkDriver.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/RecordDrivers/GroupedWorkDriver.php" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../web/interface/themes/responsive/MyAccount/paypalPayments.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/../web/interface/themes/responsive/MyAccount/paypalPayments.tpl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/interface/themes/responsive/MyAccount/rbdigitalCheckedOutMagazine.tpl" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/interface/themes/responsive/MyAccount/rbdigitalCheckedOutTitle.tpl" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/interface/themes/responsive/MyAccount/rbdigitalHold.tpl" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/interface/themes/responsive/MyAccount/rbdigitalOptions.tpl" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/interface/themes/responsive/RBdigital/ajax-checkout-prompt.tpl" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/interface/themes/responsive/RBdigital/ajax-create-account-prompt.tpl" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/interface/themes/responsive/RBdigital/ajax-hold-prompt.tpl" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/interface/themes/responsive/RBdigital/full-record.tpl" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/interface/themes/responsive/RBdigital/largeCover.tpl" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/interface/themes/responsive/RBdigital/rbdigitalExportLog.tpl" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/interface/themes/responsive/RBdigital/view-more-details.tpl" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/interface/themes/responsive/RBdigital/view-title-details.tpl" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/interface/themes/responsive/css/main.css" beforeDir="false" afterPath="$PROJECT_DIR$/../web/interface/themes/responsive/css/main.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/interface/themes/responsive/js/aspen.js" beforeDir="false" afterPath="$PROJECT_DIR$/../web/interface/themes/responsive/js/aspen.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/interface/themes/responsive/js/aspen/account.js" beforeDir="false" afterPath="$PROJECT_DIR$/../web/interface/themes/responsive/js/aspen/account.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/interface/themes/responsive/js/javascript_files.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../web/interface/themes/responsive/js/javascript_files.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../web/release_notes/21.09.00.MD" beforeDir="false" afterPath="$PROJECT_DIR$/../web/release_notes/21.09.00.MD" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../web/services/MyAccount/AJAX.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/services/MyAccount/AJAX.php" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../web/services/MyAccount/CompriseCancel.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/services/MyAccount/CompriseCancel.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/services/MyAccount/RBdigitalOptions.php" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/services/RBdigital/AJAX.php" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/services/RBdigital/AccessOnline.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/services/RBdigital/AccessOnline.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/services/RBdigital/Home.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/services/RBdigital/Home.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/services/RBdigital/IndexingLog.php" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/services/RBdigital/Scopes.php" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/services/RBdigital/Settings.php" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/services/RBdigitalMagazine/AJAX.php" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/services/RBdigitalMagazine/AccessOnline.php" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/services/RBdigitalMagazine/Home.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/services/RBdigitalMagazine/Home.php" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../web/sys/Account/User.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/sys/Account/User.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/sys/CloudLibrary/CloudLibraryScope.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/sys/CloudLibrary/CloudLibraryScope.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/sys/Covers/BookCoverProcessor.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/sys/Covers/BookCoverProcessor.php" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../web/sys/DBMaintenance/version_updates/21.09.00.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/sys/DBMaintenance/version_updates/21.09.00.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/sys/LibraryLocation/Library.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/sys/LibraryLocation/Library.php" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../web/sys/LibraryLocation/Location.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/sys/LibraryLocation/Location.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/sys/RBdigital/RBdigitalScope.php" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/sys/RBdigital/RBdigitalSetting.php" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web_indexer/web_indexer.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../web_indexer/web_indexer.jar" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -154,7 +135,7 @@
       <recent name="com.turning_leaf_technologies.indexing" />
     </key>
   </component>
-  <component name="RunManager" selected="Application.Reindexer Full">
+  <component name="RunManager" selected="Application.Reindexer Single Work">
     <configuration name="Axis 360 Export" type="Application" factoryName="Application">
       <option name="MAIN_CLASS_NAME" value="com.turning_leaf_technogies.axis360.Axis360ExportMain" />
       <module name="axis_360_export" />
@@ -247,16 +228,7 @@
     <configuration name="Polaris Export" type="Application" factoryName="Application">
       <option name="MAIN_CLASS_NAME" value="com.turning_leaf_technologies.polaris.PolarisExportMain" />
       <module name="polaris_export" />
-      <option name="PROGRAM_PARAMETERS" value="blackgold.localhost" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/../polaris_export" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="Rbdigital Export" type="Application" factoryName="Application">
-      <option name="MAIN_CLASS_NAME" value="com.turning_leaf_technologies.rbdigital.RbdigitalExportMain" />
-      <module name="rbdigital_export" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/../rbdigital_export" />
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
@@ -273,7 +245,7 @@
     <configuration name="Reindexer Full" type="Application" factoryName="Application">
       <option name="MAIN_CLASS_NAME" value="com.turning_leaf_technologies.reindexer.GroupedReindexMain" />
       <module name="reindexer" />
-      <option name="PROGRAM_PARAMETERS" value="blackgold.localhost full" />
+      <option name="PROGRAM_PARAMETERS" value="portercounty.localhost full" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/../reindexer" />
       <method v="2">
         <option name="Make" enabled="true" />
@@ -282,7 +254,7 @@
     <configuration name="Reindexer Single Work" type="Application" factoryName="Application">
       <option name="MAIN_CLASS_NAME" value="com.turning_leaf_technologies.reindexer.GroupedReindexMain" />
       <module name="reindexer" />
-      <option name="PROGRAM_PARAMETERS" value="model.localhost singleWork" />
+      <option name="PROGRAM_PARAMETERS" value="ajax.localhost singleWork" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/../reindexer" />
       <method v="2">
         <option name="Make" enabled="true" />
@@ -291,7 +263,7 @@
     <configuration name="Side Load Processing" type="Application" factoryName="Application">
       <option name="MAIN_CLASS_NAME" value="com.turning_leaf_technologies.sideloading.SideLoadingMain" />
       <module name="sideload_processing" />
-      <option name="PROGRAM_PARAMETERS" value="model.localhost" />
+      <option name="PROGRAM_PARAMETERS" value="swan.localhost" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/../sideload_processing" />
       <method v="2">
         <option name="Make" enabled="true" />
@@ -340,10 +312,9 @@
       <item itemvalue="Application.Genealogy Cleanup/Reindex" />
       <item itemvalue="Application.Hoopla Export" />
       <item itemvalue="Application.Koha Export" />
-      <item itemvalue="Application.Polaris Export" />
       <item itemvalue="Application.OAI Indexer" />
       <item itemvalue="Application.OverDrive Export" />
-      <item itemvalue="Application.Rbdigital Export" />
+      <item itemvalue="Application.Polaris Export" />
       <item itemvalue="Application.Reindexer - Is Nightly Index Running" />
       <item itemvalue="Application.Reindexer Full" />
       <item itemvalue="Application.Reindexer Single Work" />
@@ -380,38 +351,74 @@
       <is-autoscroll-to-source value="true" />
     </todo-panel>
   </component>
+  <component name="Vcs.Log.History.Properties">
+    <option name="COLUMN_ID_ORDER">
+      <list>
+        <option value="Default.Root" />
+        <option value="Default.Author" />
+        <option value="Default.Date" />
+        <option value="Default.Subject" />
+      </list>
+    </option>
+  </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/GroupedWorkIndexer.java</url>
-          <line>1169</line>
+          <line>1162</line>
           <option name="timeStamp" value="4" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/GroupedWorkIndexer.java</url>
-          <line>1851</line>
-          <option name="timeStamp" value="12" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/GroupedWorkIndexer.java</url>
-          <line>1830</line>
-          <option name="timeStamp" value="16" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/grouping/RecordGroupingProcessor.java</url>
-          <line>825</line>
+          <line>829</line>
           <option name="timeStamp" value="24" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/GroupedWorkIndexer.java</url>
-          <line>1130</line>
-          <option name="timeStamp" value="29" />
+          <line>1713</line>
+          <option name="timeStamp" value="55" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/../cloud_library_export/src/com/turning_leaf_technologies/cloud_library/CloudLibraryExportMain.java</url>
+          <line>116</line>
+          <option name="timeStamp" value="68" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/grouping/MarcRecordGrouper.java</url>
+          <line>200</line>
+          <option name="timeStamp" value="69" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/../polaris_export/src/com/turning_leaf_technologies/polaris/PolarisExportMain.java</url>
+          <line>661</line>
+          <option name="timeStamp" value="83" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/../polaris_export/src/com/turning_leaf_technologies/polaris/PolarisExportMain.java</url>
+          <line>641</line>
+          <option name="timeStamp" value="84" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/GroupedWorkIndexer.java</url>
-          <line>1815</line>
-          <option name="timeStamp" value="44" />
+          <line>1637</line>
+          <option name="timeStamp" value="111" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <condition expression="recordId == 24078850" language="JAVA" />
+          <url>file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/GroupedWorkSolr.java</url>
+          <line>1838</line>
+          <option name="timeStamp" value="115" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/../overdrive_extract/src/com/turning_leaf_technologies/overdrive/ExtractOverDriveInfo.java</url>
+          <line>565</line>
+          <option name="timeStamp" value="137" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/OverDriveProcessor.java</url>
+          <line>274</line>
+          <option name="timeStamp" value="138" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
