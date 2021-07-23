@@ -43,7 +43,7 @@ class Location extends DataObject
 	public $description;
 	public $isMainBranch; // tinyint(1)
 	public $showInLocationsAndHoursList;
-	public $validHoldPickupBranch;    //'1' => 'Valid for all patrons', '0' => 'Valid for patrons of this branch only', '2' => 'Not Valid'
+	public $validHoldPickupBranch;    //'1' => 'Valid for all patrons', '0' => 'Valid for patrons of this branch only', '2' => 'Not Valid', '3' => 'Valid for patrons of this library only'
 	public $nearbyLocation1;        //int(11)
 	public $nearbyLocation2;        //int(11)
 	public $scope;
@@ -62,7 +62,6 @@ class Location extends DataObject
 	public $repeatInWorldCat;
 	public $systemsToRepeatIn;
 	public $homeLink;
-	public $defaultPType;
 	public $ptypesToAllowRenewals;
 	public /** @noinspection PhpUnused */ $publicListsToInclude;
 	public $automaticTimeoutLength;
@@ -249,10 +248,9 @@ class Location extends DataObject
 			'ilsSection' => array('property' => 'ilsSection', 'type' => 'section', 'label' => 'ILS/Account Integration', 'hideInLists' => true, 'properties' => array(
 				'scope' => array('property' => 'scope', 'type' => 'text', 'label' => 'Scope', 'description' => 'The scope for the system in Millennium to refine holdings to the branch.  If there is no scope defined for the branch, this can be set to 0.', 'default' => 0, 'forcesReindex' => true, 'permissions' => ['Location ILS Connection']),
 				'useScope' => array('property' => 'useScope', 'type' => 'checkbox', 'label' => 'Use Scope?', 'description' => 'Whether or not the scope should be used when displaying holdings.', 'hideInLists' => true, 'forcesReindex' => true, 'permissions' => ['Location ILS Connection']),
-				array('property' => 'defaultPType', 'type' => 'text', 'label' => 'Default P-Type', 'description' => 'The P-Type to use when accessing a subdomain if the patron is not logged in.  Use -1 to use the library default PType.', 'default' => -1, 'forcesReindex' => true, 'permissions' => ['Location ILS Connection']),
-				array('property' => 'validHoldPickupBranch', 'type' => 'enum', 'values' => array('1' => 'Valid for all patrons', '0' => 'Valid for patrons of this branch only', '2' => 'Not Valid'), 'label' => 'Valid Hold Pickup Branch?', 'description' => 'Determines if the location can be used as a pickup location if it is not the patrons home location or the location they are in.', 'hideInLists' => true, 'default' => 1, 'permissions' => ['Location ILS Options']),
+				array('property' => 'validHoldPickupBranch', 'type' => 'enum', 'values' => array('1' => 'Valid for all patrons', '3' => 'Valid for patrons of this library only', '0' => 'Valid for patrons of this branch only', '2' => 'Not Valid'), 'label' => 'Valid Hold Pickup Branch?', 'description' => 'Determines if the location can be used as a pickup location if it is not the patrons home location or the location they are in.', 'hideInLists' => true, 'default' => '1', 'permissions' => ['Location ILS Options']),
 				array('property' => 'showHoldButton', 'type' => 'checkbox', 'label' => 'Show Hold Button', 'description' => 'Whether or not the hold button is displayed so patrons can place holds on items', 'hideInLists' => true, 'default' => true, 'permissions' => ['Location ILS Options']),
-				array('property' => 'ptypesToAllowRenewals', 'type' => 'text', 'label' => 'PTypes that can renew', 'description' => 'A list of P-Types that can renew items or * to allow all P-Types to renew items.', 'hideInLists' => true, 'default' => '*', 'permissions' => ['Location ILS Connection']),
+				array('property' => 'ptypesToAllowRenewals', 'type' => 'text', 'label' => 'PTypes that can renew (Millennium/Sierra)', 'description' => 'A list of P-Types that can renew items or * to allow all P-Types to renew items.', 'hideInLists' => true, 'default' => '*', 'permissions' => ['Location ILS Connection']),
 			)),
 
 			//Grouped Work Display
@@ -478,10 +476,11 @@ class Location extends DataObject
 			} else {
 				/** Only this system is valid */
 				$this->whereAdd("libraryId = {$homeLibrary->libraryId}", 'AND');
-				$this->whereAdd("validHoldPickupBranch = 1", 'AND');
+				$this->whereAdd("validHoldPickupBranch = 1 OR validHoldPickupBranch = 3", 'AND');
 			}
 		} else {
 			$this->whereAdd("validHoldPickupBranch = 1");
+			$this->whereAdd("validHoldPickupBranch = 3 AND libraryId = {$homeLibrary->libraryId}", 'OR');
 		}
 
 		$this->orderBy('displayName');
@@ -496,7 +495,10 @@ class Location extends DataObject
 			if ($patronProfile) {
 				$tmpLocation->pickupUsers[] = $patronProfile->id;
 			}
-			if (($tmpLocation->validHoldPickupBranch == 1) || ($tmpLocation->validHoldPickupBranch == 0 && !empty($patronProfile) && $patronProfile->homeLocationId == $tmpLocation->locationId)) {
+			if (($tmpLocation->validHoldPickupBranch == 1) ||
+				($tmpLocation->validHoldPickupBranch == 0 && !empty($patronProfile) && $patronProfile->homeLocationId == $tmpLocation->locationId) ||
+				($tmpLocation->validHoldPickupBranch == 3 && !empty($patronProfile) && $patronProfile->getHomeLibrary()->libraryId == $tmpLocation->libraryId)
+				) {
 				// Each location is prepended with a number to keep precedence for given locations when sorted below
 				if (isset($physicalLocation) && $physicalLocation->locationId == $tmpLocation->locationId) {
 					//If the user is in a branch, those holdings come first.

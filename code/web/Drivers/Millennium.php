@@ -677,48 +677,6 @@ class Millennium extends AbstractIlsDriver
 		return $result;
 	}
 
-	/** @var  int[] */
-	var $pTypes;
-	/**
-	 * returns the patron type identifier if a patron is logged in or if the patron
-	 * is not logged in, it will return the default PType for the library domain.
-	 * If a domain is not in use it will return -1.
-	 *
-	 * @return int[]
-	 */
-	public function getPTypes(){
-		if ($this->pTypes == null){
-			$this->pTypes = array();
-			/** @var $user User */
-			$user = UserAccount::getLoggedInUser();
-			global $locationSingleton;
-			$searchLocation = $locationSingleton->getSearchLocation();
-			$searchLibrary = Library::getSearchLibrary();
-			if (isset($user) && $user != false){
-				if (is_numeric($user->patronType)){
-					$this->pTypes[] = $user->patronType;
-				}else{
-					$this->pTypes[] = -1;
-				}
-				//Add PTypes for any linked accounts
-				foreach ($user->getLinkedUsers() as $tmpUser){
-					if (is_numeric($tmpUser->patronType)){
-						$this->pTypes[] = $tmpUser->patronType;
-					}else{
-						$this->pTypes[] = -1;
-					}
-				}
-			}else if (isset($searchLocation) && $searchLocation->defaultPType >= 0){
-				$this->pTypes[] = $searchLocation->defaultPType;
-			}else if (isset($searchLibrary) && $searchLibrary->defaultPType >= 0){
-				$this->pTypes[] = $searchLibrary->defaultPType;
-			}else{
-				$this->pTypes[] = -1;
-			}
-		}
-		return $this->pTypes;
-	}
-
 	/**
 	 * @param null|User $patron
 	 * @return mixed

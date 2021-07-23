@@ -14,7 +14,6 @@ public class Scope implements Comparable<Scope>{
 	private String scopeName;
 	private String facetLabel;
 
-	private final HashSet<Long> relatedNumericPTypes = new HashSet<>();
 	private Long libraryId;
 
 	//Determine if this is a library scope or location scope and store related information
@@ -62,27 +61,12 @@ public class Scope implements Comparable<Scope>{
 		this.scopeName = this.scopeName.replaceAll("[^a-zA-Z0-9_]", "");
 	}
 
-	void setRelatedPTypes(String[] relatedPTypes) {
-		for (String relatedPType : relatedPTypes) {
-			relatedPType = relatedPType.trim();
-			if (relatedPType.length() > 0) {
-				try{
-					Long numericPType = Long.parseLong(relatedPType);
-					relatedNumericPTypes.add(numericPType);
-				} catch (Exception e){
-					//No need to do anything here.
-				}
-
-			}
-		}
-	}
-
 	void setFacetLabel(String facetLabel) {
 		this.facetLabel = facetLabel.trim();
 	}
 
 	/**
-	 * Determine if the item is part of the current scope based on location code and pType
+	 * Determine if the item is part of the current scope based on location code and other information
 	 *
 	 *
 	 * @param recordType        The type of record being checked based on profile
@@ -112,7 +96,7 @@ public class Scope implements Comparable<Scope>{
 	}
 
 	/**
-	 * Determine if the item is part of the current scope based on location code and pType
+	 * Determine if the item is part of the current scope based on location code and other information
 	 *
 	 *
 	 *
@@ -180,10 +164,6 @@ public class Scope implements Comparable<Scope>{
 		inclusionRules.add(inclusionRule);
 	}
 
-	public HashSet<Long> getRelatedNumericPTypes() {
-		return relatedNumericPTypes;
-	}
-
 	void addLocationScope(Scope locationScope) {
 		this.locationScopes.add(locationScope);
 	}
@@ -246,14 +226,6 @@ public class Scope implements Comparable<Scope>{
 
 	public Pattern getAdditionalLocationsToShowAvailabilityForPattern() {
 		return additionalLocationsToShowAvailabilityForPattern;
-	}
-
-	private Boolean isUnscoped = null;
-	public boolean isUnscoped() {
-		if (isUnscoped == null){
-			isUnscoped = relatedNumericPTypes.contains(-1L);
-		}
-		return isUnscoped;
 	}
 
 	public OverDriveScope getOverDriveScope() {

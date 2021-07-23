@@ -937,7 +937,7 @@ class MyAccount_AJAX extends JSON_Action
 		$interface->assign('recordId', $_REQUEST['recordId']);
 
 		$ils = $configArray['Catalog']['ils'];
-		$reactivateDateNotRequired = ($ils == 'Symphony' || $ils == 'Koha');
+		$reactivateDateNotRequired = ($ils == 'Symphony' || $ils == 'Koha' || $ils == 'Polaris');
 		$interface->assign('reactivateDateNotRequired', $reactivateDateNotRequired);
 
 		$title = translate('Freeze Hold'); // language customization
@@ -2161,7 +2161,7 @@ class MyAccount_AJAX extends JSON_Action
 				$interface->assign('allowFreezeHolds', true);
 
 				$ils = $configArray['Catalog']['ils'];
-				$showPosition = ($ils == 'Horizon' || $ils == 'Koha' || $ils == 'Symphony' || $ils == 'CarlX');
+				$showPosition = ($ils == 'Horizon' || $ils == 'Koha' || $ils == 'Symphony' || $ils == 'CarlX' || 'Polaris');
 				$suspendRequiresReactivationDate = ($ils == 'Horizon' || $ils == 'CarlX' || $ils == 'Symphony' || $ils == 'Koha');
 				$interface->assign('suspendRequiresReactivationDate', $suspendRequiresReactivationDate);
 				$showPlacedColumn = ($ils == 'Symphony');
