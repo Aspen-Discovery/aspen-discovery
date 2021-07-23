@@ -9,6 +9,37 @@
 		</div>
 	{/if}
 
+	{if $recordDriver->getDetailedContributors()}
+		<div class="row">
+			<div class="result-label col-tn-3">{translate text='Contributors'}</div>
+			<div class="col-tn-9 result-value">
+				{foreach from=$recordDriver->getDetailedContributors() item=contributor name=loop}
+					{if $smarty.foreach.loop.index == 5}
+						<div id="showAdditionalContributorsLink">
+							<a onclick="AspenDiscovery.Record.moreContributors(); return false;" href="#">{translate text='more'} ...</a>
+						</div>
+						{*create hidden div*}
+						<div id="additionalContributors" style="display:none">
+					{/if}
+					<a href='/Author/Home?author="{$contributor.name|trim|escape:"url"}"'>{$contributor.name|escape}</a>
+					{if !empty($contributor.roles)}
+						&nbsp;{implode subject=$contributor.roles glue=", " translate=true}
+					{/if}
+					{if $contributor.title}
+						&nbsp;<a href="/Search/Results?lookfor={$contributor.title}&amp;searchIndex=Title">{$contributor.title}</a>
+					{/if}
+				<br/>
+				{/foreach}
+				{if $smarty.foreach.loop.index >= 5}
+					<div>
+						<a href="#" onclick="AspenDiscovery.Record.lessContributors(); return false;">{translate text='less'} ...</a>
+					</div>
+					</div>{* closes hidden div *}
+				{/if}
+			</div>
+		</div>
+	{/if}
+
 	{if $showSeries}
 		<div class="series row" id="seriesPlaceholder{$recordDriver->getPermanentId()}"></div>
 	{/if}
