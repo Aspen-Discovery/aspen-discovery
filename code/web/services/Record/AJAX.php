@@ -140,12 +140,12 @@ class Record_AJAX extends Action
 					$shortId = $id;
 				}
 				if ($holdType == 'item' && isset($_REQUEST['selectedItem'])) {
-					$results = $user->placeItemHold($id, $_REQUEST['selectedItem'], $user->_homeLocationCode);
+					$results = $user->placeItemHold($id, $_REQUEST['selectedItem'], $user->getPickupLocationCode());
 				} else {
 					if (isset($_REQUEST['volume'])) {
-						$results = $user->placeVolumeHold($shortId, $_REQUEST['volume'], $user->_homeLocationCode);
+						$results = $user->placeVolumeHold($shortId, $_REQUEST['volume'], $user->getPickupLocationCode());
 					} else {
-						$results = $user->placeHold($id, $user->_homeLocationCode);
+						$results = $user->placeHold($id, $user->getPickupLocationCode());
 					}
 				}
 				$results['holdFormBypassed'] = true;
