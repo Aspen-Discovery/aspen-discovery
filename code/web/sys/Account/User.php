@@ -2254,6 +2254,8 @@ class User extends DataObject
 		if ($this->hasIlsConnection()) {
 			$this->getCatalogDriver()->logout($this);
 		}
+		$this->lastLoginValidation = 0;
+		$this->update();
 	}
 
 	public function treatVolumeHoldsAsItemHolds() {

@@ -210,7 +210,7 @@ public class IndexingUtils {
 		}
 
 		PreparedStatement locationInformationStmt = dbConn.prepareStatement("SELECT library.libraryId, locationId, code, subLocation, ilsCode, " +
-						"library.subdomain, location.facetLabel, location.displayName, library.pTypes, library.restrictOwningBranchesAndSystems, location.publicListsToInclude, " +
+						"library.subdomain, location.facetLabel, location.displayName, library.restrictOwningBranchesAndSystems, location.publicListsToInclude, " +
 						"location.additionalLocationsToShowAvailabilityFor, includeAllLibraryBranchesInFacets, " +
 						"location.groupedWorkDisplaySettingId as groupedWorkDisplaySettingIdLocation, library.groupedWorkDisplaySettingId as groupedWorkDisplaySettingIdLibrary, " +
 						"location.includeLibraryRecordsToInclude, " +
@@ -242,8 +242,6 @@ public class IndexingUtils {
 			//Determine if we need to build a scope for this location
 			long libraryId = locationInformationRS.getLong("libraryId");
 			long locationId = locationInformationRS.getLong("locationId");
-			String pTypes = locationInformationRS.getString("pTypes");
-			if (pTypes == null) pTypes = "";
 
 			Scope locationScopeInfo = new Scope();
 			locationScopeInfo.setIsLibraryScope(false);
@@ -254,7 +252,6 @@ public class IndexingUtils {
 			}
 			locationScopeInfo.setScopeName(scopeName);
 			locationScopeInfo.setLibraryId(libraryId);
-			locationScopeInfo.setRelatedPTypes(pTypes.split(","));
 			locationScopeInfo.setFacetLabel(facetLabel);
 			locationScopeInfo.setRestrictOwningLibraryAndLocationFacets(locationInformationRS.getBoolean("restrictOwningBranchesAndSystems"));
 			locationScopeInfo.setIlsCode(code);
@@ -440,7 +437,7 @@ public class IndexingUtils {
 
 	private static void loadLibraryScopes(TreeSet<Scope> scopes, HashMap<Long, GroupedWorkDisplaySettings> groupedWorkDisplaySettings, HashMap<Long, OverDriveScope> overDriveScopes, HashMap<Long, HooplaScope> hooplaScopes, HashMap<Long, CloudLibraryScope> cloudLibraryScopes, HashMap<Long, Axis360Scope> axis360Scopes, HashMap<Long, SideLoadScope> sideLoadScopes, Connection dbConn, Logger logger) throws SQLException {
 		PreparedStatement libraryInformationStmt = dbConn.prepareStatement("SELECT libraryId, ilsCode, subdomain, " +
-						"displayName, facetLabel, pTypes, restrictOwningBranchesAndSystems, publicListsToInclude, " +
+						"displayName, facetLabel, restrictOwningBranchesAndSystems, publicListsToInclude, " +
 						"additionalLocationsToShowAvailabilityFor, overDriveScopeId, " +
 						"groupedWorkDisplaySettingId, hooplaScopeId, axis360ScopeId " +
 						"FROM library WHERE createSearchInterface = 1 ORDER BY ilsCode ASC",
@@ -461,10 +458,6 @@ public class IndexingUtils {
 			}
 			//These options determine how scoping is done
 			long libraryId = libraryInformationRS.getLong("libraryId");
-			String pTypes = libraryInformationRS.getString("pTypes");
-			if (pTypes == null) {
-				pTypes = "";
-			}
 
 			//Get number of locations for the library
 			int numLocations = 0;
@@ -489,7 +482,6 @@ public class IndexingUtils {
 			newScope.setScopeName(subdomain);
 			newScope.setLibraryId(libraryId);
 			newScope.setFacetLabel(facetLabel);
-			newScope.setRelatedPTypes(pTypes.split(","));
 			newScope.setPublicListsToInclude(libraryInformationRS.getInt("publicListsToInclude"));
 			newScope.setAdditionalLocationsToShowAvailabilityFor(libraryInformationRS.getString("additionalLocationsToShowAvailabilityFor"));
 			long groupedWorkDisplaySettingId = libraryInformationRS.getLong("groupedWorkDisplaySettingId");

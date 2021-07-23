@@ -311,12 +311,21 @@ function getUpdates21_09_00() : array
 					UNIQUE (groupedWorkItemId, scopeId)
 				) ENGINE INNODB'
 			]
-		], //add_footerLogoAlt
+		], //local_urls
 		'add_footerLogoAlt' => [
 			'title' => 'Add footerLogoAlt',
 			'description' => 'Store alt text for the footer logo image',
 			'sql' => [
 				'ALTER TABLE themes ADD COLUMN footerLogoAlt VARCHAR(255)'
+			]
+		], //add_footerLogoAlt
+		'remove_ptype_from_library_location' => [
+			'title' => 'Remove PType from Library and Location',
+			'description' => 'Remove PType information from library and location tables',
+			'sql' => [
+				'ALTER TABLE library DROP COLUMN defaultPType',
+				'ALTER TABLE library DROP COLUMN pTypes',
+				'ALTER TABLE location DROP COLUMN defaultPType',
 			]
 		]
 	];
