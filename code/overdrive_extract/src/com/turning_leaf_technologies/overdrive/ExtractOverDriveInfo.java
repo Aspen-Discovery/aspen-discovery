@@ -229,11 +229,15 @@ class ExtractOverDriveInfo {
 									}
 									//Reindex the record
 									getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
+									logEntry.incUpdated();
+
 									numChanges[0]++;
 									if (numChanges[0] % 250 == 0) {
 										logger.info("Processed " + numChanges[0]);
 										logEntry.saveResults();
 									}
+								}else{
+									logEntry.incSkipped();
 								}
 							}catch (Exception e){
 								logEntry.incErrors("Error processing record", e);
@@ -581,10 +585,6 @@ class ExtractOverDriveInfo {
 				updateProductChangeTimeStmt.setString(2, overDriveId);
 
 				updateProductChangeTimeStmt.executeUpdate();
-
-				logEntry.incUpdated();
-			} else {
-				logEntry.incSkipped();
 			}
 		} catch (SQLException e) {
 			logEntry.incErrors("Error updating overdrive product " + overDriveId, e);
@@ -1260,9 +1260,11 @@ class ExtractOverDriveInfo {
 
 			//404 is a message that availability has been deleted.
 			if (availabilityResponse.getResponseCode() == 404) {
-				logEntry.incErrors("Got a 404 availability response code for " + url + " not updating");
-				logEntry.incSkipped();
-				return;
+				//Add a note and skip to the next collection, in reality, this is probably deleted,
+				//but Nashville was having issues with 404s coming incorrectly so we can just keep retrying 
+				logEntry.addNote("Got a 404 availability response code for " + url + " not updating for " + collectionInfo.getName());
+//				logEntry.incSkipped();
+//				return;
 			}else if (availabilityResponse.getResponseCode() != 200){
 				//We got an error calling the OverDrive API, do nothing.
 				if (singleWork) {
