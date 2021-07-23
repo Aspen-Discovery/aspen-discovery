@@ -183,10 +183,14 @@ class ExtractOverDriveInfo {
 					//Do some counts of numbers of records that will be updated for logging purposes
 					int numRecordsToUpdateMetadata = 0;
 					int numRecordsToUpdateAvailability = 0;
+					int numNewRecords = 0;
 					int totalRecordsWithChanges = 0;
 					for (OverDriveRecordInfo curRecord : allProductsInOverDrive.values()) {
 						//Extract data from overdrive and update the database
-						if (curRecord.isNew || curRecord.hasMetadataChanges) {
+						if (curRecord.isNew){
+							numNewRecords++;
+						}
+						if (curRecord.hasMetadataChanges) {
 							numRecordsToUpdateMetadata++;
 						}
 						if (curRecord.hasAvailabilityChanges) {
@@ -197,7 +201,7 @@ class ExtractOverDriveInfo {
 							totalRecordsWithChanges++;
 						}
 					}
-					logEntry.addNote("Preparing to update records.  There are " + allProductsInOverDrive.size() + " total records, " + numRecordsToUpdateMetadata + " need metadata updates and " + numRecordsToUpdateAvailability + " need availability updates.");
+					logEntry.addNote("Preparing to update records.  There are " + allProductsInOverDrive.size() + " total records, " + numNewRecords + " are new, " + numRecordsToUpdateMetadata + " need metadata updates and " + numRecordsToUpdateAvailability + " need availability updates.");
 					logEntry.setNumProducts(totalRecordsWithChanges);
 					logEntry.saveResults();
 
@@ -969,7 +973,7 @@ class ExtractOverDriveInfo {
 											logger.warn("Found new product loading metadata and availability " + curRecord.getId());
 										}
 									} else {
-										previouslyLoadedProduct.hasAvailabilityChanges = true;
+										previouslyLoadedProduct.hasMetadataChanges = true;
 										previouslyLoadedProduct.hasAvailabilityChanges = true;
 									}
 								}
@@ -1261,7 +1265,7 @@ class ExtractOverDriveInfo {
 			//404 is a message that availability has been deleted.
 			if (availabilityResponse.getResponseCode() == 404) {
 				//Add a note and skip to the next collection, in reality, this is probably deleted,
-				//but Nashville was having issues with 404s coming incorrectly so we can just keep retrying 
+				//but Nashville was having issues with 404s coming incorrectly so we can just keep retrying
 				logEntry.addNote("Got a 404 availability response code for " + url + " not updating for " + collectionInfo.getName());
 //				logEntry.incSkipped();
 //				return;
