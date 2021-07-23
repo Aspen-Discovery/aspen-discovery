@@ -273,6 +273,19 @@ class OverDriveProcessor {
 						groupedWork.setAuthor(productRS.getString("primaryCreatorName"));
 						groupedWork.setAuthAuthor(productRS.getString("primaryCreatorName"));
 						groupedWork.setAuthorDisplay(productRS.getString("primaryCreatorName"));
+						if (rawMetadataDecoded != null) {
+							//Loop through all creators and add them as alternate author names
+							JSONArray creators = rawMetadataDecoded.getJSONArray("creators");
+							HashSet<String> authors = new HashSet<>();
+							HashSet<String> authorsWithRole = new HashSet<>();
+							for (int i = 0; i < creators.length(); i++){
+								JSONObject creator = creators.getJSONObject(i);
+								authors.add(creator.getString("fileAs"));
+								authorsWithRole.add(creator.getString("fileAs") + "|" + creator.getString("role"));
+							}
+							groupedWork.addAuthor2(authors);
+							groupedWork.addAuthor2Role(authorsWithRole);
+						}
 
 						Date dateAdded = new Date(productRS.getLong("dateAdded") * 1000);
 

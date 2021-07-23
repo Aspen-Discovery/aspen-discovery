@@ -619,7 +619,32 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver
 
 	public function getContributors()
 	{
-		return array();
+		$contributors = [];
+		$rawData = $this->getOverDriveMetaData()->getDecodedRawData();
+		foreach ($rawData->creators as $creator){
+			$contributors[$creator->fileAs] = $creator->fileAs;
+		}
+		return $contributors;
+	}
+
+	private $detailedContributors = null;
+	public function getDetailedContributors()
+	{
+		if ($this->detailedContributors == null) {
+			$this->detailedContributors = [];
+			$rawData = $this->getOverDriveMetaData()->getDecodedRawData();
+			foreach ($rawData->creators as $creator){
+				if (!array_key_exists($creator->fileAs, $this->detailedContributors)){
+					$this->detailedContributors[$creator->fileAs] = array(
+						'name' => $creator->fileAs,
+						'title' => '',
+						'roles' => []
+					);
+				}
+				$this->detailedContributors[$creator->fileAs]['roles'][] = $creator->role;
+			}
+		}
+		return $this->detailedContributors;
 	}
 
 	public function getBookcoverUrl($size = 'small', $absolutePath = false)
