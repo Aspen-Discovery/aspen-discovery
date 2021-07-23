@@ -318,6 +318,21 @@ function getUpdates21_09_00() : array
 			'sql' => [
 				'ALTER TABLE themes ADD COLUMN footerLogoAlt VARCHAR(255)'
 			]
-		]
-	];
+		], //rebuildThemes21_09
+			'rebuildThemes21_09' => [
+				'title' => 'Rebuild Themes for 21.09',
+				'description' => 'Rebuild Themes for 21.09',
+				'sql' => [
+					"updateAllThemes"
+				]
+			],
+		];
 }
+
+	function updateAllThemes(){
+		$theme = new Theme();
+		$theme->find();
+		while ($theme->fetch()){
+			$theme->generateCss(true);
+		}
+	}
