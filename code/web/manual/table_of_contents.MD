@@ -90,7 +90,7 @@
 - Email
 - Events
   - Library Calendar
-- Explore More
+- [Explore More](/Admin/HelpManual?page=Explore-More)
 - Full Record Pages
 - [Genealogy](/Admin/HelpManual?page=Genealogy)
 - Interlibrary Loans
