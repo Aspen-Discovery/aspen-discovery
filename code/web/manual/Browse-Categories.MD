@@ -43,7 +43,7 @@ In addition to browse categories, you can also create nested sub-browse categori
 
 2. Click **Create Category**. Your sub-category will now appear underneath the selected browse catergory displayed on your home landing page.
 
-### :new: Updating an Existing Browse Category
+### Updating an Existing Browse Category
 
 In addition to creating new browse categories, you can also choose to update an existing browse category.
 
@@ -57,7 +57,7 @@ In addition to creating new browse categories, you can also choose to update an 
 
 3. Click **Update Category**. Your browse category will now display with your changes.
 
-### :new: Adding Start and End Dates
+### Adding Start and End Dates
 
 If you want a browse category to only display temporarily -- for example, holidays or current events -- you can specify a start and end date for your browse category. Your browse category will only be visible from the main landing page during the date range specified.
 
