@@ -1346,7 +1346,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 				$subjectFieldsToShow = $configArray['Content']['subjectFieldsToShow'];
 				$subjectFields = explode(',', $subjectFieldsToShow);
 
-				$lcSubjectTagNumbers = array(600, 610, 611, 630, 650, 651); // Official LC subject Tags (from CMU)
+				$lcSubjectTagNumbers = array(600, 610, 611, 630, 650, 651, 655); 
 				foreach ($subjectFields as $subjectField) {
 					/** @var File_MARC_Data_Field[] $marcFields */
 					$marcFields = $marcRecord->getFields($subjectField);
@@ -1355,12 +1355,16 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 							$subject = array();
 							//Determine the type of the subject
 							$type = 'other';
-							if (in_array($subjectField, $lcSubjectTagNumbers) && $marcField->getIndicator(2) == 0) {
-								$type = 'lc';
+							if (in_array($subjectField, $lcSubjectTagNumbers)){
+								if ($marcField->getIndicator(2) == 0) {
+									$type = 'lc';
+								}
 							}
 							$subjectSource = $marcField->getSubfield('2');
 							if ($subjectSource != null) {
-								if (preg_match('/bisac/i', $subjectSource->getData())) {
+								if ($subjectSource->getData() == 'lcgft') {
+									$type = 'lc';
+								} elseif (preg_match('/bisac/i', $subjectSource->getData())) {
 									$type = 'bisac';
 								} elseif (preg_match('/fast/i', $subjectSource->getData())) {
 									$type = 'fast';
