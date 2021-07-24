@@ -51,7 +51,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 //TODO: Load dates closed
-//TODO: Process a single record
 
 public class PolarisExportMain {
 	private static Logger logger;
