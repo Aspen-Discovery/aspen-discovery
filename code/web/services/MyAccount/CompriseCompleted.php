@@ -20,6 +20,7 @@ class CompriseCompleted extends MyAccount
 				}else{
 					if (empty($userPayment->message)){
 						$error = 'Your payment has not been marked as complete within the system, please contact the library with your receipt to have the payment credited to your account.';
+						$error .= '<br/>' . $_SERVER['HTTP_REFERER'];
 					}else {
 						$error = $userPayment->message;
 					}
