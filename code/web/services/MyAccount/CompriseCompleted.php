@@ -25,7 +25,7 @@ class CompriseCompleted extends MyAccount
 						$query = parse_url($refererUrl);
 						$error .= '<br/>'. print_r($query, true);
 						$queryComponents = [];
-						parse_str($query, $queryComponents['path']);
+						parse_str($query['query'], $queryComponents);
 						$error .= '<br/>'. print_r($queryComponents, true);
 						$result = UserPayment::completeComprisePayment($queryComponents);
 						if ($result['success']){
