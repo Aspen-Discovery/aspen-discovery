@@ -2929,6 +2929,16 @@ class MyAccount_AJAX extends JSON_Action
 		if (array_key_exists('success', $result) && $result['success'] === false) {
 			return $result;
 		} else {
+			global $activeLanguage;
+			$currencyCode = 'USD';
+			$variables = new SystemVariables();
+			if ($variables->find(true)){
+				$currencyCode = $variables->currencyCode;
+			}
+
+			$currencyFormatter = new NumberFormatter( $activeLanguage->locale . '@currency=' . $currencyCode, NumberFormatter::CURRENCY );
+			$currencyFormatter->setSymbol(NumberFormatter::CURRENCY_SYMBOL, '');
+
 			/** @var Library $userLibrary */
 			/** @var UserPayment $payment */
 			/** @var User $patron */
@@ -2943,7 +2953,7 @@ class MyAccount_AJAX extends JSON_Action
 				$paymentRequestUrl .= "&PatronID=" . $patron->getBarcode();
 				$paymentRequestUrl .= '&UserName=' . urlencode($compriseSettings->username);
 				$paymentRequestUrl .= '&Password=' . $compriseSettings->password;
-				$paymentRequestUrl .= '&Amount=' . $payment->totalPaid;
+				$paymentRequestUrl .= '&Amount=' . $currencyFormatter->format($payment->totalPaid);
 				$paymentRequestUrl .= "&URLPostBack=" . urlencode($configArray['Site']['url'] . '/MyAccount/AJAX?method=completeComprisePayment');
 				$paymentRequestUrl .= "&URLReturn=" . urlencode($configArray['Site']['url'] . '/MyAccount/CompriseCompleted?payment=' . $payment->id);
 				$paymentRequestUrl .= "&URLCancel=" . urlencode($configArray['Site']['url'] . '/MyAccount/CompriseCancel?payment=' . $payment->id);
