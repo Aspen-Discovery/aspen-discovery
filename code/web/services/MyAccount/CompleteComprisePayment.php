@@ -5,6 +5,7 @@ class CompleteComprisePayment extends MyAccount
 {
 	public function launch(){
 		global $interface;
+		$success = false;
 		$error = '';
 		$message = '';
 		if (empty($_REQUEST['INVNUM'])) {
@@ -70,6 +71,11 @@ class CompleteComprisePayment extends MyAccount
 				}
 
 				$userPayment->update();
+				if ($userPayment->error){
+					$error = $userPayment->message;
+				}else{
+					$message = $userPayment->message;
+				}
 			}else{
 				$error = 'Incorrect Payment ID provided';
 				//TODO: log that an error occurred.
@@ -77,8 +83,13 @@ class CompleteComprisePayment extends MyAccount
 		}
 		$interface->assign('error', $error);
 		$interface->assign('message', $message);
-		//This is just a post back so don't really need to display a message
-		$this->display('paymentCompleted.tpl', 'Payment Completed');
+		header('Content-type: application/json');
+		header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
+		header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
+		json_encode([
+			'success' => $success,
+			'message' => $success ? $message : $error
+		]);
 	}
 
 	function getBreadcrumbs() : array
