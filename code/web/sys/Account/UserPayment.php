@@ -47,31 +47,14 @@ class UserPayment extends DataObject
 
 					if ($result == 0) {
 						if ($user->find(true)){
-							//Make sure the payment is for the active user or one of the users the primary user is linked to
-							$userIsValid = false;
-							if ($user->id == UserAccount::getActiveUserId()){
-								$userIsValid = true;
-							}else{
-								$activeUser = UserAccount::getActiveUserObj();
-								foreach ($activeUser->getLinkedUsers() as $linkedUser){
-									if ($linkedUser->id == $user->id){
-										$userIsValid = true;
-									}
-								}
-							}
-							if ($userIsValid) {
-								$finePaymentCompleted = $user->completeFinePayment($userPayment);
-								if ($finePaymentCompleted['success']) {
-									$success = true;
-									$message = 'Your payment has been completed. ';
-									$userPayment->message .= "Payment completed, TROUTD = $troutD, AUTHCODE = $authCode, CCNUMBER = $ccNumber. ";
-								} else {
-									$userPayment->error = true;
-									$userPayment->message .= $finePaymentCompleted['message'];
-								}
-							}else{
+							$finePaymentCompleted = $user->completeFinePayment($userPayment);
+							if ($finePaymentCompleted['success']) {
+								$success = true;
+								$message = 'Your payment has been completed. ';
+								$userPayment->message .= "Payment completed, TROUTD = $troutD, AUTHCODE = $authCode, CCNUMBER = $ccNumber. ";
+							} else {
 								$userPayment->error = true;
-								$userPayment->message .= 'Incorrect user was found, could not update the ILS. ';
+								$userPayment->message .= $finePaymentCompleted['message'];
 							}
 						}else{
 							$userPayment->error = true;
