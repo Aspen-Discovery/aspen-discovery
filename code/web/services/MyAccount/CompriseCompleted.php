@@ -18,7 +18,11 @@ class CompriseCompleted extends MyAccount
 				if ($userPayment->completed == true){
 					$message = 'Your payment has been completed.';
 				}else{
-					$error = $userPayment->message;
+					if (empty($userPayment->message)){
+						$error = 'Your payment has not been marked as complete within the system, please contact the library with your receipt to have the payment credited to your account.';
+					}else {
+						$error = $userPayment->message;
+					}
 				}
 			}else{
 				$error = 'Incorrect Payment ID provided';
