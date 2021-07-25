@@ -5,6 +5,8 @@ class CompleteComprisePayment extends MyAccount
 {
 	public function launch(){
 		global $interface;
+		global $logger;
+		$logger->log("Starting CompleteComprisePayment method", Logger::LOG_ERROR);
 		$success = false;
 		$error = '';
 		$message = '';
