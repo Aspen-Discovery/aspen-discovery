@@ -29,7 +29,7 @@ class CompriseCompleted extends MyAccount
 						if ($result['success']){
 							$message = $result['message'];
 						}else{
-							$error = $result['message'];
+							$error .= '<br/>' . $result['message'];
 						}
 					}else {
 						$error = $userPayment->message;
