@@ -327,6 +327,14 @@ function getUpdates21_09_00() : array
 				'ALTER TABLE library DROP COLUMN pTypes',
 				'ALTER TABLE location DROP COLUMN defaultPType',
 			]
-		]
+		], //remove_ptype_from_library_location
+		'add_error_to_user_payments' => [
+			'title' => 'Add error and message information to user payments',
+			'description' => 'Add error and message info to user payments table',
+			'sql' => [
+				'ALTER TABLE user_payments ADD COLUMN error TINYINT(1)',
+				'ALTER TABLE user_payments ADD COLUMN message VARCHAR(500)',
+			]
+		], //add_error_to_user_payments
 	];
 }

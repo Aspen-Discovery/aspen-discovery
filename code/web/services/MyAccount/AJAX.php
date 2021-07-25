@@ -2690,21 +2690,15 @@ class MyAccount_AJAX extends JSON_Action
 						if (!is_numeric($fineAmount) || $fineAmount <= 0 || $fineAmount > $maxFineAmount) {
 							return ['success' => false, 'message' => translate(['text' => 'payment_invalid_amount', 'defaultText' => 'Invalid amount entered for fine. Please enter an amount over 0 and less than the total amount owed.'])];
 						}
+						$finesPaid .= '|' . $fineAmount;
 						if ($fineAmount != $maxFineAmount) {
 							//Record this is a partially paid fine
-							$finesPaid .= '|' . $fineAmount;
 							$finePayment = 1;
-						} else {
-							if ($ils == 'CarlX') { // CarlX SIP2 Fee Paid requires amount 
-								$finesPaid .= '|' . $fineAmount;
-							}
 						}
 
 					} else {
 						$fineAmount = $useOutstanding ? $fine['amountOutstandingVal'] : $fine['amountVal'];
-						if ($ils == 'CarlX') { // CarlX SIP2 Fee Paid requires amount
-							$finesPaid .= '|' . $fineAmount;
-						}
+						$finesPaid .= '|' . $fineAmount;
 					}
 
 					$purchaseUnits['items'][] = [
@@ -2954,7 +2948,7 @@ class MyAccount_AJAX extends JSON_Action
 				$paymentRequestUrl .= '&UserName=' . urlencode($compriseSettings->username);
 				$paymentRequestUrl .= '&Password=' . $compriseSettings->password;
 				$paymentRequestUrl .= '&Amount=' . $currencyFormatter->format($payment->totalPaid);
-				$paymentRequestUrl .= "&URLPostBack=" . urlencode($configArray['Site']['url'] . '/MyAccount/AJAX?method=completeComprisePayment');
+				$paymentRequestUrl .= "&URLPostBack=" . urlencode($configArray['Site']['url'] . '/MyAccount/CompleteComprisePayment');
 				$paymentRequestUrl .= "&URLReturn=" . urlencode($configArray['Site']['url'] . '/MyAccount/CompriseCompleted?payment=' . $payment->id);
 				$paymentRequestUrl .= "&URLCancel=" . urlencode($configArray['Site']['url'] . '/MyAccount/CompriseCancel?payment=' . $payment->id);
 				$paymentRequestUrl .= '&INVNUM=' . $payment->id;
@@ -2972,9 +2966,7 @@ class MyAccount_AJAX extends JSON_Action
 
 	function completeComprisePayment() {
 		if (!empty($_REQUEST['INVNUMBER'])) {
-			$result = $_REQUEST['RESULT'];
-			$payment = $_REQUEST['INVNUMBER'];
-			$message = $_REQUEST['RESPMSG'];
+
 			global $logger;
 			$logger->log(print_r($_REQUEST, true), Logger::LOG_ERROR);
 		}
