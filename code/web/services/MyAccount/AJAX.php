@@ -2945,7 +2945,7 @@ class MyAccount_AJAX extends JSON_Action
 				$paymentRequestUrl .= '&Password=' . $compriseSettings->password;
 				$paymentRequestUrl .= '&Amount=' . $payment->totalPaid;
 				$paymentRequestUrl .= "&URLPostBack=" . urlencode($configArray['Site']['url'] . '/MyAccount/AJAX?method=completeComprisePayment');
-				$paymentRequestUrl .= "&URLReturn=" . urlencode($configArray['Site']['url'] . '/MyAccount/Fines');
+				$paymentRequestUrl .= "&URLReturn=" . urlencode($configArray['Site']['url'] . '/MyAccount/CompriseCompleted?payment=' . $payment->id);
 				$paymentRequestUrl .= "&URLCancel=" . urlencode($configArray['Site']['url'] . '/MyAccount/CompriseCancel?payment=' . $payment->id);
 				$paymentRequestUrl .= '&INVNUM=' . $payment->id;
 				$paymentRequestUrl .= '&Field1=';
@@ -2961,8 +2961,12 @@ class MyAccount_AJAX extends JSON_Action
 	}
 
 	function completeComprisePayment() {
-		if (!empty($_POST['INVNUMBER'])) {
-
+		if (!empty($_REQUEST['INVNUMBER'])) {
+			$result = $_REQUEST['RESULT'];
+			$payment = $_REQUEST['INVNUMBER'];
+			$message = $_REQUEST['RESPMSG'];
+			global $logger;
+			$logger->log(print_r($_REQUEST, true), Logger::LOG_ERROR);
 		}
 	}
 
