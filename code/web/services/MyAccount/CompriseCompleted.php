@@ -15,9 +15,11 @@ class CompriseCompleted extends MyAccount
 			$userPayment = new UserPayment();
 			$userPayment->id = $paymentId;
 			if ($userPayment->find(true)){
-				$userPayment->completed = true;
-				$userPayment->update();
-				$message = 'Your payment has been completed.';
+				if ($userPayment->completed = true){
+					$message = 'Your payment has been completed.';
+				}else{
+					$error = $userPayment->message;
+				}
 			}else{
 				$error = 'Incorrect Payment ID provided';
 			}

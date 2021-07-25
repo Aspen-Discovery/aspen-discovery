@@ -50,6 +50,7 @@ class CompleteComprisePayment extends MyAccount
 							if ($userIsValid) {
 								$finePaymentCompleted = $user->completeFinePayment($userPayment);
 								if ($finePaymentCompleted['success']) {
+									$success = true;
 									$message = 'Your payment has been completed. ';
 									$userPayment->message .= "Payment completed, TROUTD = $troutD, AUTHCODE = $authCode, CCNUMBER = $ccNumber. ";
 								} else {
