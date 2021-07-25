@@ -79,7 +79,8 @@ class CompleteComprisePayment extends MyAccount
 				}
 			}else{
 				$error = 'Incorrect Payment ID provided';
-				//TODO: log that an error occurred.
+				global $logger;
+				$logger->log('Incorrect Payment ID provided', Logger::LOG_ERROR);
 			}
 		}
 		$interface->assign('error', $error);
@@ -91,6 +92,8 @@ class CompleteComprisePayment extends MyAccount
 			'success' => $success,
 			'message' => $success ? $message : $error
 		]);
+		global $logger;
+		$logger->log(print_r($result, true), Logger::LOG_ERROR);
 		echo $result;
 		die();
 	}

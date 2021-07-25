@@ -15,7 +15,7 @@ class CompriseCompleted extends MyAccount
 			$userPayment = new UserPayment();
 			$userPayment->id = $paymentId;
 			if ($userPayment->find(true)){
-				if ($userPayment->completed = true){
+				if ($userPayment->completed == true){
 					$message = 'Your payment has been completed.';
 				}else{
 					$error = $userPayment->message;
