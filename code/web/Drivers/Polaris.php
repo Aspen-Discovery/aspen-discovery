@@ -1049,6 +1049,9 @@ class Polaris extends AbstractIlsDriver
 			];
 		}
 
+		global $logger;
+		$logger->log("Marked fines as paid within Polaris for user {$patron->id}, {$result['message']}", Logger::LOG_ERROR);
+
 		return $result;
 	}
 
