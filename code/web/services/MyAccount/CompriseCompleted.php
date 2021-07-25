@@ -21,9 +21,11 @@ class CompriseCompleted extends MyAccount
 					if (empty($userPayment->message)){
 						$error = 'Your payment has not been marked as complete within the system, please contact the library with your receipt to have the payment credited to your account.';
 						$refererUrl = $_SERVER['HTTP_REFERER'];
-						$query = parse_url($refererUrl, PHP_URL_PATH);
+						$error .= '<br/>'. $refererUrl;
+						$query = parse_url($refererUrl);
+						$error .= '<br/>'. print_r($query, true);
 						$queryComponents = [];
-						parse_str($query, $queryComponents);
+						parse_str($query, $queryComponents['path']);
 						$error .= '<br/>'. print_r($queryComponents, true);
 						$result = UserPayment::completeComprisePayment($queryComponents);
 						if ($result['success']){
