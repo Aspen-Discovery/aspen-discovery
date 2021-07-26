@@ -590,6 +590,7 @@ class SirsiDynixROA extends HorizonAPI
 
 	protected function loginViaWebService($username, $password)
 	{
+		/** @var Memcache $memCache */
 		global $memCache;
 		global $library;
 		$memCacheKey = "sirsiROA_session_token_info_{$library->libraryId}_$username";
@@ -623,6 +624,7 @@ class SirsiDynixROA extends HorizonAPI
 				}
 				$logger->log($errorMessage, Logger::LOG_ERROR);
 				$logger->log(print_r($loginUserResponse, true), Logger::LOG_ERROR);
+				$session = array(false, '', '');
 			}
 		}
 		return $session;

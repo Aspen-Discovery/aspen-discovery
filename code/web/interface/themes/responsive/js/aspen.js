@@ -5317,7 +5317,7 @@ AspenDiscovery.Account = (function(){
 				$('.modal-body').html("Loading...");
 				$(".modal-content").load(dialogDestination);
 				$(".modal-title").text(dialogTitle);
-				modalDialog.removeClass('image-popup')
+				modalDialog.removeClass('image-popup');
 				modalDialog.modal("show");
 			}
 			return false;
@@ -5519,7 +5519,7 @@ AspenDiscovery.Account = (function(){
 				selectedUser: selectedUser,
 				sort: sort,
 				showCovers: showCovers,
-				readingHistoryFilter: filter,
+				readingHistoryFilter: filter
 			};
 			var newUrl = AspenDiscovery.buildUrl(document.location.origin + document.location.pathname, 'selectedUser', selectedUser);
 			newUrl = AspenDiscovery.buildUrl(newUrl, 'page', page);
@@ -5700,12 +5700,13 @@ AspenDiscovery.Account = (function(){
 				var module = Globals.activeModule;
 				var action = Globals.activeAction;
 
-				if ((module == "WebBuilder") && ((action == "BasicPage") || (action == "PortalPage"))){
-					var referer = "MyAccount/Home";
-				} else if ((module == "Search") && (action == "Home")) {
-					var referer = "MyAccount/Home";
+				var referer;
+				if ((module === "WebBuilder") && ((action === "BasicPage") || (action === "PortalPage"))){
+					referer = "MyAccount/Home";
+				} else if ((module === "Search") && (action === "Home")) {
+					referer = "MyAccount/Home";
 				} else {
-					var referer = window.location;
+					referer = window.location;
 				}
 
 				loginErrorElem.hide();
@@ -6185,7 +6186,6 @@ AspenDiscovery.Account = (function(){
 
 		freezeHoldAll: function(userId, caller){
 			if (Globals.loggedIn) {
-				var userId = userId;
 				var popUpBoxTitle = $(caller).text() || "Freezing Holds";
 				if (confirm('Freeze all holds?')) {
 					AspenDiscovery.loadingMessage();
@@ -6235,7 +6235,6 @@ AspenDiscovery.Account = (function(){
 
 		thawHoldAll: function(userId, caller){
 			if (Globals.loggedIn) {
-				var userId = userId;
 				var popUpBoxTitle = $(caller).text() || "Thawing Holds";
 				if (confirm('Thaw all holds?')) {
 					AspenDiscovery.loadingMessage();
@@ -6274,9 +6273,6 @@ AspenDiscovery.Account = (function(){
 			return queryString;
 		},
 		getSelectedLists: function(promptForSelectAll){
-			if (promptForSelectAll === undefined){
-				promptForSelectAll = true;
-			}
 			var selectedLists = $("input.listSelect:checked ");
 			// noinspection UnnecessaryLocalVariableJS
 			var queryString = selectedLists.map(function() {
@@ -6431,7 +6427,7 @@ AspenDiscovery.Account = (function(){
 		enableAccountLinking: function(){
 			var url = Globals.path + "/MyAccount/AJAX";
 			var params = {
-				method: "enableAccountLinking",
+				method: "enableAccountLinking"
 			};
 			// noinspection JSUnresolvedFunction
 			$.getJSON(url, params).fail(AspenDiscovery.ajaxFail);
@@ -6441,7 +6437,7 @@ AspenDiscovery.Account = (function(){
 		stopAccountLinking: function(){
 			var url = Globals.path + "/MyAccount/AJAX";
 			var params = {
-				method: "stopAccountLinking",
+				method: "stopAccountLinking"
 			};
 			// noinspection JSUnresolvedFunction
 			$.getJSON(url, params).fail(AspenDiscovery.ajaxFail);
@@ -6452,7 +6448,7 @@ AspenDiscovery.Account = (function(){
 			var url = Globals.path + "/MyAccount/AJAX";
 			var params = {
 				method: "create" + paymentType + "Order",
-				patronId: $(finesFormId + " input[name=patronId]").val(),
+				patronId: $(finesFormId + " input[name=patronId]").val()
 			};
 			$(finesFormId + " .selectedFine:checked").each(
 				function() {
@@ -6479,11 +6475,13 @@ AspenDiscovery.Account = (function(){
 						AspenDiscovery.showMessage("Error", response.message);
 						return false;
 					}else{
-						if(paymentType == 'PayPal') {
+						if(paymentType === 'PayPal') {
 							orderInfo = response.orderID;
-						} else if(paymentType == 'MSB') {
+						} else if(paymentType === 'MSB') {
 							orderInfo = response.paymentRequestUrl;
-						} else if(paymentType == 'Comprise') {
+						} else if(paymentType === 'Comprise') {
+							orderInfo = response.paymentRequestUrl;
+						} else if(paymentType === 'ProPay') {
 							orderInfo = response.paymentRequestUrl;
 						}
 					}
@@ -6514,12 +6512,21 @@ AspenDiscovery.Account = (function(){
 			}
 		},
 
+		createProPayOrder: function(finesFormId) {
+			var url = this.createGenericOrder(finesFormId, 'ProPay');
+			if (url === false) {
+				// Do nothing; there was an error that should be displayed
+			} else {
+				window.location.href = url;
+			}
+		},
+
 		completePayPalOrder: function(orderId, patronId) {
 			var url = Globals.path + "/MyAccount/AJAX";
 			var params = {
 				method: "completePayPalOrder",
 				patronId: patronId,
-				orderId: orderId,
+				orderId: orderId
 			};
 			// noinspection JSUnresolvedFunction
 			$.getJSON(url, params, function(data){
@@ -6555,7 +6562,7 @@ AspenDiscovery.Account = (function(){
 			var params = {
 				method: "dismissPlacard",
 				placardId: placardId,
-				patronId: patronId,
+				patronId: patronId
 			};
 			// noinspection JSUnresolvedFunction
 			$.getJSON(url, params, function(data){
@@ -6573,7 +6580,7 @@ AspenDiscovery.Account = (function(){
 			var params = {
 				method: "updateAutoRenewal",
 				allowAutoRenewal: $('#allowAutoRenewal').prop("checked"),
-				patronId: patronId,
+				patronId: patronId
 			};
 			// noinspection JSUnresolvedFunction
 			$.getJSON(url, params, function(data){
@@ -6594,7 +6601,7 @@ AspenDiscovery.Account = (function(){
 					method: "getSaveToListForm",
 					sourceId: id,
 					source: source
-				}
+				};
 				// noinspection JSUnresolvedFunction
 				$.getJSON(url, params, function(data){
 					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
@@ -6632,7 +6639,7 @@ AspenDiscovery.Account = (function(){
 		deleteAll: function(id){
 			if (confirm("Are you sure you want to delete all items in this list?")){
 				var url = Globals.path + '/MyAccount/AJAX?method=deleteListItems&id=' + id;
-				$.getJSON(url, function(data){
+				$.getJSON(url, function(){
 					location.reload();
 				});
 			}
@@ -6642,20 +6649,22 @@ AspenDiscovery.Account = (function(){
 			var selectedTitles = AspenDiscovery.getSelectedTitles();
 			if (selectedTitles) {
 				if (confirm("Are you sure you want to delete the selected items from this list?")){
-					$.getJSON(Globals.path + '/MyAccount/AJAX?method=deleteListItems&id=' + id + '&' + selectedTitles, function (data) {
+					$.getJSON(Globals.path + '/MyAccount/AJAX?method=deleteListItems&id=' + id + '&' + selectedTitles, function () {
 						location.reload();
-					})
-				}}
+					});
+				}
+			}
 			return false;
 		},
 		deleteSelectedLists: function(id){
 			var selectedLists = AspenDiscovery.getSelectedLists();
 			if (selectedLists) {
 				if (confirm("Are you sure you want to delete the selected lists?")){
-					$.getJSON(Globals.path + '/MyAccount/AJAX?method=deleteList&id=' + id + '&' + selectedLists, function (data) {
+					$.getJSON(Globals.path + '/MyAccount/AJAX?method=deleteList&id=' + id + '&' + selectedLists, function () {
 						location.reload();
-					})
-				}}
+					});
+				}
+			}
 			return false;
 		},
 		getEditListForm: function(listEntryId, listId) {

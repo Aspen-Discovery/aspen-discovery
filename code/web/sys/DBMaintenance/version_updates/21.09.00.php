@@ -63,6 +63,25 @@ function getUpdates21_09_00() : array
 				"ALTER TABLE library ADD COLUMN proPaySettingId INT(11) DEFAULT -1"
 			]
 		], //propay_settings
+		'propay_accountId_to_user' => [
+			'title' => 'Move ProPay Account ID to user',
+			'description' => 'Move ProPay Account ID to user',
+			'sql' => [
+				'ALTER TABLE propay_settings DROP COLUMN payerAccountId',
+				'ALTER TABLE propay_settings CHANGE COLUMN billerAccountId billerAccountId BIGINT',
+				'ALTER TABLE propay_settings CHANGE COLUMN merchantProfileId merchantProfileId BIGINT',
+				'ALTER TABLE user ADD COLUMN proPayPayerAccountId BIGINT',
+			]
+		], //propay_accountId_to_user
+		'propay_settings_additional_fields' => [
+			'title' => 'Add Additional Fields to ProPay Settings to create merchant profiles',
+			'description' => 'Add Additional Fields to ProPay Settings to create merchant profiles',
+			'sql' => [
+				'ALTER TABLE propay_settings ADD COLUMN certStr VARCHAR(20)',
+				'ALTER TABLE propay_settings ADD COLUMN accountNum VARCHAR(20)',
+				'ALTER TABLE propay_settings ADD COLUMN termId VARCHAR(20)',
+			]
+		], //propay_accountId_to_user
 		'paypal_settings' => [
 			'title' => 'Add settings for PayPal',
 			'description' => 'Add settings for PayPal integration',
@@ -336,5 +355,6 @@ function getUpdates21_09_00() : array
 				'ALTER TABLE user_payments ADD COLUMN message VARCHAR(500)',
 			]
 		], //add_error_to_user_payments
+
 	];
 }

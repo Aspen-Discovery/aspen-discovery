@@ -60,6 +60,8 @@ class User extends DataObject
 	public $updateMessage;
 	public $updateMessageIsError;
 
+	public $proPayPayerAccountId;
+
 	/** @var User $parentUser */
 	private $parentUser;
 	/** @var User[] $linkedUsers */
