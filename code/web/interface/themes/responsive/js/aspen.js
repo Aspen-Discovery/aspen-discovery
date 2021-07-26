@@ -10734,6 +10734,9 @@ AspenDiscovery.Record = (function(){
 		},
 
 		submitHoldForm: function(){
+			$('#requestTitleButton').prop('disabled', true);
+			$('#requestTitleButton').addClass('disabled');
+			document.querySelector('.fa-spinner').classList.remove('hidden');
 			var id = $('#id').val();
 			var autoLogOut = $('#autologout').prop('checked');
 			var selectedItem = $('#selectedItem');

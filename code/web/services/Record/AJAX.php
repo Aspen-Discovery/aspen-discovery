@@ -203,7 +203,7 @@ class Record_AJAX extends Action
 					'success' => true
 				);
 				if ($holdType != 'none') {
-					$results['modalButtons'] = "<button type='submit' name='submit' id='requestTitleButton' class='btn btn-primary' onclick='return AspenDiscovery.Record.submitHoldForm();'>" . translate("Submit Hold Request") . "</button>";
+					$results['modalButtons'] = "<button type='submit' name='submit' id='requestTitleButton' class='btn btn-primary' onclick='return AspenDiscovery.Record.submitHoldForm();'><i class='fas fa-spinner fa-spin hidden' role='status' aria-hidden='true'></i>&nbsp;" . translate("Submit Hold Request") . "</button>";
 				}
 			}
 		} else {
