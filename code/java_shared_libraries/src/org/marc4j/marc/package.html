@@ -1,0 +1,136 @@
+<html>
+  <head>
+    <title>org.marc4j.marc</title>
+  </head>
+  <!--
+  /*
+   * Copyright (C) 2004-2006 Bas Peters. All rights reserved.
+   *
+   */
+  -->
+  <body>
+    <p>Interfaces for the record object model.</p>
+    <p>The goal of the <code>org.marc4j.marc</code> package is to provide a clean and simple to use interface to 
+    create, store and edit MARC records or parts of records as objects. 
+    See the examples below to get started using the object model.</p>
+    <h3>Reading records</h3>
+    <p>The {@link org.marc4j.marc.Record}&nbsp;interface provides access to the 
+    leader and variable fields for each record returned by the {@link org.marc4j.MarcReader}&nbsp;implementation.</p>
+    <p>The following example retrieves all control fields (tags 001 through 009):<p>
+    <pre>
+    List fields = record.getControlFields();
+    </pre>
+    <p>This method retuns the fields as a {@link java.util.List}, thus enabling the use of the standard Java collections 
+    framework to iterate over collections of records, fields or subfields. 
+    The following code snippet prints the tag and data for each control field to standard output:</p>
+    <pre>
+    Iterator i = fields.iterator();
+    while (i.hasNext()) {
+    	ControlField field = (ControlField) i.next();
+    	System.out.println("Tag: " + field.getTag() + " Data: " + field.getData());
+    }
+    </pre>
+    <p>The <code>getDataFields()</code> method returns all data fields (tags 010 through 999). 
+    An {@link org.marc4j.marc.DataField}&nbsp;provides access to the tag, the indicators and the subfields.
+    For example to write all the data field information to standard output:</p>
+    <pre>
+    List fields = record.getDataFields();
+    Iterator i = fields.iterator();
+    while (i.hasNext()) {
+        DataField field = (ControlField) i.next();
+        System.out.println("Tag: " + field.getTag() + " ind1: " + field.getIndicator1() + 
+            " ind2: " + field.getIndicator2());
+        List subfields = field.getSubfields();
+        Iterator j = subfields.iterator();
+        while (j.hasNext()) {
+            Subfield subfield = (Subfield) j.next();
+            System.out.println("Subfield code: " + subfield.getCode() + 
+                "Data: " + subfield.getData());
+        }
+    }
+    </pre>
+    <p>If you want to retrieve specific fields you can use one of the following methods:</p>
+    <pre>
+    // get the first field occurence for a given tag
+    DataField title = (DataField)record.getVariableField("245");
+    
+    // get all occurences for a particular tag
+    List subjects = record.getVariableFields("650");
+    
+    // get all occurences for a given list of tags
+    String[] tags = {"010", "100", "245", "250", "260", "300"};
+    List fields = record.getVariableFields(tags);
+    </pre>
+    <p>In addition you can use simple searches using the <code>find()</code> methods 
+    to retrieve fields that meet certain criteria. The search capabilities are very 
+    limited, but they can be useful when processing records. The following code snippet 
+    provides some examples:</p>
+    <pre>
+    // find any field containing 'Chabon'
+    List fields = record.find("Chabon");
+    
+    // find 'Summerland' in a title field
+    List fields = record.find("245", "Summerland");
+    
+    // find 'Graham, Paul' in main or added entries for a personal name:
+    String tags = {"100", "600"};
+    List fields = record.find(tags, "Graham, Paul")  
+    </pre>
+    <p>The find method is also useful if you want to retrieve records that meet 
+    certain criteria, such as a specific control number, title words or a particular publisher 
+    or subject. The example below checks if the cataloging agency is DLC. The example also shows 
+    how you can extend the find capailities to specific subfields, a feature not directly available 
+    in MARC4J, since it is easy to accomplish using the record model together with the standard Java API's.</p>
+    <pre>
+    InputStream input = new FileInputStream("file.mrc");
+    MarcReader reader = new MarcStreamReader(input);
+    while (reader.hasNext()) {
+    	Record record = reader.next();
+    	
+    	// check if the cataloging agency is DLC
+    	List result = record.find("040", "DLC");
+    	if (result.size() > 0)
+            System.out.println("Agency for this record is DLC");
+    	
+    	// there is no specific find for a specific subfield
+    	// so to check if it is the orignal cataloging agency
+    	DataField field = (DataField)result.get(0);
+    	String agency = field.getSubfield('a').getData();
+    	if (agency.matches("DLC"))
+            System.out.println("DLC is the original agency");    	
+    	
+    }
+    </pre>
+    <p>By using <code>find()</code> you can also implement a kind of search and replace to batch 
+    update records that meet certain criteria. You can use Java regular expressions in <code>find()</code> methods. 
+    Check the 
+    <a href="http://java.sun.com/j2se/1.4.2/docs/api/java/util/regex/package-summary.html">java.util.regex</a> 
+    package for more information and examples.</p>
+    <h3>Creating or updating records</h3>
+	<p>You can also create or update records using the {@link org.marc4j.marc.MarcFactory}. For example:</p>
+	<pre>
+    // create a factory instance
+    MarcFactory factory = MarcFactory.newInstance();
+	
+    // create a record with leader
+    Record record = factory.newRecord("00000cam a2200000 a 4500");
+	
+    // add a control field
+    record.addVariableField(factory.newControlField("001", "12883376"));
+	
+    // add a data field
+    DataField df = factory.newDataField("245", '1', '0');
+    df.addSubfield(factory.newSubfield('a', "Summerland /"));
+    df.addSubfield(factory.newSubfield('c', "Michael Chabon."));
+    record.addVariableField(df);
+    </pre>
+  	<p>You can use a {@link org.marc4j.MarcWriter} implementation to serialize your records for example to MARC or MARC XML.
+  	The code snippet below writes a single record in MARC format to standard output:</p>
+  	<pre>
+    MarcWriter writer = new MarcStreamWriter(System.out);
+    writer.write(record);
+    writer.close(); 
+    </pre>
+    <p>Check the Javadoc for {@link org.marc4j.MarcStreamWriter}&nbsp;and {@link org.marc4j.MarcXmlWriter}&nbsp;for more information.</p>
+  </body>
+</html>

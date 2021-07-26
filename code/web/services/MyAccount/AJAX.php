@@ -2690,21 +2690,15 @@ class MyAccount_AJAX extends JSON_Action
 						if (!is_numeric($fineAmount) || $fineAmount <= 0 || $fineAmount > $maxFineAmount) {
 							return ['success' => false, 'message' => translate(['text' => 'payment_invalid_amount', 'defaultText' => 'Invalid amount entered for fine. Please enter an amount over 0 and less than the total amount owed.'])];
 						}
+						$finesPaid .= '|' . $fineAmount;
 						if ($fineAmount != $maxFineAmount) {
 							//Record this is a partially paid fine
-							$finesPaid .= '|' . $fineAmount;
 							$finePayment = 1;
-						} else {
-							if ($ils == 'CarlX') { // CarlX SIP2 Fee Paid requires amount 
-								$finesPaid .= '|' . $fineAmount;
-							}
 						}
 
 					} else {
 						$fineAmount = $useOutstanding ? $fine['amountOutstandingVal'] : $fine['amountVal'];
-						if ($ils == 'CarlX') { // CarlX SIP2 Fee Paid requires amount
-							$finesPaid .= '|' . $fineAmount;
-						}
+						$finesPaid .= '|' . $fineAmount;
 					}
 
 					$purchaseUnits['items'][] = [
@@ -2929,6 +2923,16 @@ class MyAccount_AJAX extends JSON_Action
 		if (array_key_exists('success', $result) && $result['success'] === false) {
 			return $result;
 		} else {
+			global $activeLanguage;
+			$currencyCode = 'USD';
+			$variables = new SystemVariables();
+			if ($variables->find(true)){
+				$currencyCode = $variables->currencyCode;
+			}
+
+			$currencyFormatter = new NumberFormatter( $activeLanguage->locale . '@currency=' . $currencyCode, NumberFormatter::CURRENCY );
+			$currencyFormatter->setSymbol(NumberFormatter::CURRENCY_SYMBOL, '');
+
 			/** @var Library $userLibrary */
 			/** @var UserPayment $payment */
 			/** @var User $patron */
@@ -2943,9 +2947,9 @@ class MyAccount_AJAX extends JSON_Action
 				$paymentRequestUrl .= "&PatronID=" . $patron->getBarcode();
 				$paymentRequestUrl .= '&UserName=' . urlencode($compriseSettings->username);
 				$paymentRequestUrl .= '&Password=' . $compriseSettings->password;
-				$paymentRequestUrl .= '&Amount=' . $payment->totalPaid;
-				$paymentRequestUrl .= "&URLPostBack=" . urlencode($configArray['Site']['url'] . '/MyAccount/AJAX?method=completeComprisePayment');
-				$paymentRequestUrl .= "&URLReturn=" . urlencode($configArray['Site']['url'] . '/MyAccount/Fines');
+				$paymentRequestUrl .= '&Amount=' . $currencyFormatter->format($payment->totalPaid);
+				$paymentRequestUrl .= "&URLPostBack=" . urlencode($configArray['Site']['url'] . '/Comprise/Complete');
+				$paymentRequestUrl .= "&URLReturn=" . urlencode($configArray['Site']['url'] . '/MyAccount/CompriseCompleted?payment=' . $payment->id);
 				$paymentRequestUrl .= "&URLCancel=" . urlencode($configArray['Site']['url'] . '/MyAccount/CompriseCancel?payment=' . $payment->id);
 				$paymentRequestUrl .= '&INVNUM=' . $payment->id;
 				$paymentRequestUrl .= '&Field1=';
@@ -2957,12 +2961,6 @@ class MyAccount_AJAX extends JSON_Action
 			}else{
 				return ['success' => false, 'message' => 'Comprise was not properly configured'];
 			}
-		}
-	}
-
-	function completeComprisePayment() {
-		if (!empty($_POST['INVNUMBER'])) {
-
 		}
 	}
 

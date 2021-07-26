@@ -311,28 +311,30 @@ function getUpdates21_09_00() : array
 					UNIQUE (groupedWorkItemId, scopeId)
 				) ENGINE INNODB'
 			]
-		], //add_footerLogoAlt
+		], //local_urls
 		'add_footerLogoAlt' => [
 			'title' => 'Add footerLogoAlt',
 			'description' => 'Store alt text for the footer logo image',
 			'sql' => [
 				'ALTER TABLE themes ADD COLUMN footerLogoAlt VARCHAR(255)'
 			]
-		], //rebuildThemes21_09
-			'rebuildThemes21_09' => [
-				'title' => 'Rebuild Themes for 21.09',
-				'description' => 'Rebuild Themes for 21.09',
-				'sql' => [
-					"updateAllThemes"
-				]
-			],
-		];
+		], //add_footerLogoAlt
+		'remove_ptype_from_library_location' => [
+			'title' => 'Remove PType from Library and Location',
+			'description' => 'Remove PType information from library and location tables',
+			'sql' => [
+				'ALTER TABLE library DROP COLUMN defaultPType',
+				'ALTER TABLE library DROP COLUMN pTypes',
+				'ALTER TABLE location DROP COLUMN defaultPType',
+			]
+		], //remove_ptype_from_library_location
+		'add_error_to_user_payments' => [
+			'title' => 'Add error and message information to user payments',
+			'description' => 'Add error and message info to user payments table',
+			'sql' => [
+				'ALTER TABLE user_payments ADD COLUMN error TINYINT(1)',
+				'ALTER TABLE user_payments ADD COLUMN message VARCHAR(500)',
+			]
+		], //add_error_to_user_payments
+	];
 }
-
-	function updateAllThemes(){
-		$theme = new Theme();
-		$theme->find();
-		while ($theme->fetch()){
-			$theme->generateCss(true);
-		}
-	}

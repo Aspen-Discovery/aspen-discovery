@@ -1,7 +1,6 @@
 <?php
 
 //TODO: Update patron info
-//TODO: Load reading history from Polaris
 //TODO: Load lists from Polaris
 //TODO: Cancel all holds
 //TODO: Freeze all holds
@@ -1011,6 +1010,49 @@ class Polaris extends AbstractIlsDriver
 	function showOutstandingFines()
 	{
 		return true;
+	}
+
+	public function completeFinePayment(User $patron, UserPayment $payment)
+	{
+		$staffUserInfo = $this->getStaffUserInfo();
+		$result = [
+			'success' => false,
+			'message' => ''
+		];
+		$finePayments = explode(',', $payment->finesPaid);
+		$allPaymentsSucceed = true;
+		foreach ($finePayments as $finePayment){
+			list($fineId, $paymentAmount) = explode('|', $finePayment);
+			$polarisUrl = "/PAPIService/REST/protected/v1/1033/100/1/{$staffUserInfo['accessToken']}/patron/{$patron->getBarcode()}/account/{$fineId}/pay?wsid={$this->getWorkstationID($patron)}&userid={$staffUserInfo['polarisId']}";
+			$body = new stdClass();
+			$body->TxnAmount = $paymentAmount;
+			$body->PaymentMethodID = 12;
+			$body->FreeTextNote = 'Paid Online via Aspen Discovery';
+
+			$response = $this->getWebServiceResponse($polarisUrl, 'PUT', $staffUserInfo['accessSecret'], json_encode($body));
+
+			if ($response && $this->lastResponseCode == 200) {
+				$jsonResponse = json_decode($response);
+				if ($jsonResponse->PAPIErrorCode != 0) {
+					$result['message'] .= $jsonResponse->ErrorMessage . '. ';
+					$allPaymentsSucceed = false;
+				}
+			}else{
+				$result['message'] .= 'Error paying fine in Polaris ' . $this->lastResponseCode . '. ';
+				$allPaymentsSucceed = false;
+			}
+		}
+		if ($allPaymentsSucceed){
+			$result = [
+				'success' => true,
+				'message' => 'Your fines have been paid successfully, thank you.'
+			];
+		}
+
+		global $logger;
+		$logger->log("Marked fines as paid within Polaris for user {$patron->id}, {$result['message']}", Logger::LOG_ERROR);
+
+		return $result;
 	}
 
 	public function getWebServiceResponse($query, $method = 'GET', $patronPassword = '', $body = false){
