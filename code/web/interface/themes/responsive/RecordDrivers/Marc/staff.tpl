@@ -64,7 +64,7 @@
 		<tbody>
 		{foreach from=$uploadedPDFs item=uploadedPDF}
 			<tr>
-				<td>{$uploadedPDF->title}</td>
+				<td>{$uploadedPDF->title|truncate:30}</td>
 				<td>{$uploadedPDF->getFileName()}</td>
 				{if $loggedIn && in_array('Upload PDFs', $userPermissions)}
 					<td><button class="btn btn-sm btn-danger" onclick="AspenDiscovery.Record.deleteUploadedFile('{$recordDriver->getId()}', '{$uploadedPDF->id}')">{translate text="Delete"}</button></td>
