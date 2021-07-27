@@ -3,6 +3,45 @@
 function getUpdates21_09_00() : array
 {
 	return [
+		'store_marc_in_db' => [
+			'title' => 'Store MARC data in DB',
+			'description' => 'Update to store MARC data in the database',
+			'sql' => [
+				"RENAME TABLE ils_marc_checksums TO ils_records",
+				"ALTER TABLE ils_records ADD COLUMN deleted TINYINT(1)",
+				"ALTER TABLE ils_records ADD COLUMN dateDeleted INT(11)",
+				"ALTER TABLE ils_records ADD COLUMN suppressed TINYINT(1)",
+				"ALTER TABLE ils_records ADD COLUMN suppressionReason INT(11)",
+				"ALTER TABLE ils_records ADD COLUMN sourceData MEDIUMBLOB",
+				"CREATE TABLE ils_suppression_reasons (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, 
+					reason VARCHAR(100) UNIQUE
+				) ENGINE INNODB"
+			]
+		], //store_marc_in_db
+		'marc_last_modified' => [
+			'title' => 'MARC last modified',
+			'description' => 'Add last modified date to ils_records',
+			'sql' => [
+				'ALTER TABLE ils_records ADD COLUMN lastModified INT(11)'
+			]
+		], //marc_last_modified
+		'record_suppression_no_marc' => [
+			'title' => 'Setup ils record suppression for not having marc data',
+			'description' => 'Setup ils record suppression for not having marc data',
+			'sql' => [
+				'ALTER TABLE ils_records DROP COLUMN suppressionReason',
+				'ALTER TABLE ils_records CHANGE COLUMN suppressed suppressedNoMarcAvailable TINYINT(1)',
+				'DROP TABLE ils_suppression_reasons'
+			]
+		], //record_suppression_no_marc
+		'fix_ils_record_indexes' => [
+			'title' => 'Fix ils record indexes',
+			'description' => 'Drop ilsId index since it is not unique and we have source and ilsId indexed together',
+			'sql' => [
+				'ALTER TABLE ils_records DROP INDEX ilsId',
+			]
+		], //fix_ils_record_indexes
 		'compress_novelist_fields' => [
 			'title' => 'Add Compression for Novelist fields',
 			'description' => 'Add Compression for fields that store metadata especially fields that are infrequently used',
@@ -135,29 +174,6 @@ function getUpdates21_09_00() : array
 				"ALTER TABLE library CHANGE COLUMN worldPalSettingId worldPaySettingId INT(11) DEFAULT -1"
 			]
 		], //worldpay_setting_typo
-		'store_marc_in_db' => [
-			'title' => 'Store MARC data in DB',
-			'description' => 'Update to store MARC data in the database',
-			'sql' => [
-				"RENAME TABLE ils_marc_checksums TO ils_records",
-				"ALTER TABLE ils_records ADD COLUMN deleted TINYINT(1)",
-				"ALTER TABLE ils_records ADD COLUMN dateDeleted INT(11)",
-				"ALTER TABLE ils_records ADD COLUMN suppressed TINYINT(1)",
-				"ALTER TABLE ils_records ADD COLUMN suppressionReason INT(11)",
-				"ALTER TABLE ils_records ADD COLUMN sourceData MEDIUMBLOB",
-				"CREATE TABLE ils_suppression_reasons (
-					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, 
-					reason VARCHAR(100) UNIQUE
-				) ENGINE INNODB"
-			]
-		], //store_marc_in_db
-		'marc_last_modified' => [
-			'title' => 'MARC last modified',
-			'description' => 'Add last modified date to ils_records',
-			'sql' => [
-				'ALTER TABLE ils_records ADD COLUMN lastModified INT(11)'
-			]
-		], //marc_last_modified
 		'createSearchInterface_libraries_locations' => [
 			'title' => 'Allow Libraries and Locations with no search interface',
 			'description' => 'Allow some libraries and locations to be non-searchable to save memory and indexing time',
@@ -325,22 +341,6 @@ function getUpdates21_09_00() : array
 				'DROP TRIGGER after_scope_delete',
 			]
 		], //remove_scope_triggers
-		'record_suppression_no_marc' => [
-			'title' => 'Setup ils record suppression for not having marc data',
-			'description' => 'Setup ils record suppression for not having marc data',
-			'sql' => [
-				'ALTER TABLE ils_records DROP COLUMN suppressionReason',
-				'ALTER TABLE ils_records CHANGE COLUMN suppressed suppressedNoMarcAvailable TINYINT(1)',
-				'DROP TABLE ils_suppression_reasons'
-			]
-		], //record_suppression_no_marc
-		'fix_ils_record_indexes' => [
-			'title' => 'Fix ils record indexes',
-			'description' => 'Drop ilsId index since it is not unique and we have source and ilsId indexed together',
-			'sql' => [
-				'ALTER TABLE ils_records DROP INDEX ilsId',
-			]
-		], //fix_ils_record_indexes
 		'storeNYTLastUpdated' => [
 			'title' => 'Store the date a NYT List was last modified',
 			'description' => 'Store the date that a NYT List was last modified by NYT',
