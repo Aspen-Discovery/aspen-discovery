@@ -186,14 +186,8 @@ function getUpdates21_09_00() : array
 			'title' => 'Fix dates in Item Details',
 			'description' => 'Fix dates in Item Details',
 			'sql' => [
-				'ALTER TABLE grouped_work_record_items CHANGE COLUMN dateAdded dateAddedOld LONG',
-				'ALTER TABLE grouped_work_record_items ADD COLUMN dateAdded BIGINT',
-				'ALTER TABLE grouped_work_record_items CHANGE COLUMN lastCheckInDate lastCheckInDateOld LONG',
-				'ALTER TABLE grouped_work_record_items ADD COLUMN lastCheckInDate BIGINT',
-				'UPDATE grouped_work_record_items set dateAdded = dateAddedOld',
-				'UPDATE grouped_work_record_items set lastCheckInDate = lastCheckInDateOld',
-				'ALTER TABLE grouped_work_record_items DROP COLUMN dateAddedOld',
-				'ALTER TABLE grouped_work_record_items DROP COLUMN lastCheckInDateOld',
+				'ALTER TABLE grouped_work_record_items CHANGE COLUMN dateAdded dateAdded BIGINT',
+				'ALTER TABLE grouped_work_record_items CHANGE COLUMN lastCheckInDate lastCheckInDate BIGINT',
 			]
 		], //fix_dates_in_item_details
 

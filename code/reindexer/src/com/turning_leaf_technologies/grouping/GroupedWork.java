@@ -107,6 +107,7 @@ class GroupedWork implements Cloneable {
 
 	void makeUnique(String primaryIdentifier) {
 		uniqueIdentifier = primaryIdentifier;
+		this.permanentId = null;
 	}
 
 	private String normalizeAuthor(String author) {
