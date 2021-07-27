@@ -316,6 +316,7 @@ function getUpdates21_09_00() : array
 					url VARCHAR(1000),
 					UNIQUE (groupedWorkItemId, scopeId)
 				) ENGINE INNODB',
+				"ALTER TABLE grouped_work_record_scope add index (localUrl)",
 				'INSERT INTO grouped_work_record_item_url (groupedWorkItemId, scopeId, url) SELECT groupedWorkItemId, scopeId, localUrl as url from grouped_work_record_scope where localUrl is not null',
 			]
 		], //local_urls

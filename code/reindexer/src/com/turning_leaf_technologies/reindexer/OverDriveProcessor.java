@@ -115,6 +115,7 @@ class OverDriveProcessor {
 							rawMetadataDecoded = new JSONObject(metadata.get("rawMetadata"));
 						} catch (JSONException e) {
 							logEntry.incErrors("Error loading raw data for OverDrive MetaData", e);
+							rawMetadataDecoded = null;
 						}
 
 						boolean isOnOrder = false;
@@ -336,10 +337,12 @@ class OverDriveProcessor {
 						}
 						overDriveRecord.setFormatBoost(maxFormatBoost);
 
-						if (rawMetadataDecoded.has("edition")){
-							overDriveRecord.setEdition(rawMetadataDecoded.getString("edition"));
-						}else {
-							overDriveRecord.setEdition("");
+						if (rawMetadataDecoded != null) {
+							if (rawMetadataDecoded.has("edition")) {
+								overDriveRecord.setEdition(rawMetadataDecoded.getString("edition"));
+							} else {
+								overDriveRecord.setEdition("");
+							}
 						}
 						overDriveRecord.setPrimaryLanguage(primaryLanguage);
 						overDriveRecord.setPublisher(StringUtils.trimTrailingPunctuation(metadata.get("publisher")));
