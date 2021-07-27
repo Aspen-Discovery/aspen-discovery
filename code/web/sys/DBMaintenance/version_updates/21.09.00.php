@@ -289,6 +289,8 @@ function getUpdates21_09_00() : array
 				"ALTER TABLE grouped_work_record_items ADD COLUMN locationOwnedScopes VARCHAR(500) DEFAULT '~'",
 				"ALTER TABLE grouped_work_record_items ADD COLUMN libraryOwnedScopes VARCHAR(500) DEFAULT '~'",
 				"ALTER TABLE grouped_work_record_items ADD COLUMN recordIncludedScopes VARCHAR(500) DEFAULT '~'",
+				"ALTER TABLE grouped_work_record_scope add index (locallyOwned)",
+				"ALTER TABLE grouped_work_record_scope add index (libraryOwned)",
 				"UPDATE grouped_work_record_items as dest, 
 				  (SELECT groupedWorkItemId, concat('~', group_concat(scopeId SEPARATOR '~'), '~') as locationOwnedScopes from grouped_work_record_scope where locallyOwned = 1 group by groupedWorkItemId) as src
 				  set dest.locationOwnedScopes = src.locationOwnedScopes 
