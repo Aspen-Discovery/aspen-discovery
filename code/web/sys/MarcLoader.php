@@ -46,9 +46,11 @@ class MarcLoader{
 		$ilsRecord->ilsId = $ilsId;
 		$checkFileSystem = true;
 		if ($ilsRecord->find(true)){
-			$marcRecord = new File_MARC_Record();
-			$marcRecord->jsonDecode($ilsRecord->sourceData);
-			$checkFileSystem = false;
+			if (!empty($ilsRecord->sourceData)) {
+				$marcRecord = new File_MARC_Record();
+				$marcRecord->jsonDecode($ilsRecord->sourceData);
+				$checkFileSystem = false;
+			}
 		}
 		if ($checkFileSystem) {
 			if (array_key_exists($recordType, $indexingProfiles)) {
