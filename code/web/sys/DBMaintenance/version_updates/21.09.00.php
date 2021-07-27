@@ -420,6 +420,15 @@ function getUpdates21_09_00() : array
 				'ALTER TABLE user_payments ADD COLUMN message VARCHAR(500)',
 			]
 		], //add_error_to_user_payments
-
+		'add_colors_to_web_builder' => [
+			'title' => 'Add colors to web builder',
+			'description' => 'Add background and foreground colors to web builder rows and cells',
+			'sql' => [
+				'ALTER TABLE web_builder_portal_cell ADD COLUMN colorScheme VARCHAR(25) DEFAULT "default"',
+				'ALTER TABLE web_builder_portal_cell ADD COLUMN invertColor TINYINT(1) DEFAULT 0',
+				'ALTER TABLE web_builder_portal_row ADD COLUMN colorScheme VARCHAR(25) DEFAULT "default"',
+				'ALTER TABLE web_builder_portal_row ADD COLUMN invertColor TINYINT(1) DEFAULT 0',
+			]
+		], //add_colors_to_web_builder
 	];
 }

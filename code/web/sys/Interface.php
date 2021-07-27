@@ -409,6 +409,14 @@ class UInterface extends Smarty
 				$themeCss = $primaryTheme->generatedCss;
 				$this->assign('themeCss', $themeCss);
 				$this->assign('primaryThemeObject', $primaryTheme);
+				$this->assign('bodyBackgroundColor', $primaryTheme->bodyBackgroundColor);
+				$this->assign('bodyTextColor', $primaryTheme->bodyTextColor);
+				$this->assign('primaryBackgroundColor', $primaryTheme->primaryBackgroundColor);
+				$this->assign('primaryForegroundColor', $primaryTheme->primaryForegroundColor);
+				$this->assign('secondaryBackgroundColor', $primaryTheme->secondaryBackgroundColor);
+				$this->assign('secondaryForegroundColor', $primaryTheme->secondaryForegroundColor);
+				$this->assign('tertiaryBackgroundColor', $primaryTheme->tertiaryBackgroundColor);
+				$this->assign('tertiaryForegroundColor', $primaryTheme->tertiaryForegroundColor);
 			}
 		}catch (PDOException $e){
 			global $logger;
