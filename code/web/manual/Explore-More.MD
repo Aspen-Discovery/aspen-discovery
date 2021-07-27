@@ -2,13 +2,13 @@
 
 The Explore More box is an informative box that displays beneath the second search result when there is an applicable resource or list elsewhere in Aspen that the patron may find interesting or useful based on what they are searching. 
 
-![Explore More](/manual/images/Explore-More01.jpg)
+![Explore More](/manual/images/Explore-More01.png)
 
 **How does the Explore More box work?**
 
 Essentially whenever you do a search in the catalog (or any other search), if you were to do the same search in any of your other other indexed searches that are integrated into Aspen Discovery and results would return then we will display those results in the Explore More box. For example, in Arlington Public Library’s catalog when I do a search for ‘Four Winds’ the Explore More box shows me several staff and New York Times lists related to Four Winds. 
 
-![Explore More](/manual/images/Explore-More02.jpg)
+![Explore More](/manual/images/Explore-More02.png)
 
 These lists are displayed because when I do the same exact search - ‘Four Winds’ in their list search, I will find lists that are applicable.
 
@@ -19,12 +19,12 @@ The content in the Explore More box is randomly generated based on all of the di
 
 The Explore More will display results from any of your indexed searches. Indexed searches are anything that have their own search category when you click the down arrow next to ‘in Library Catalog’. So if you had every single integration enabled in Aspen Discovery, the Explore More could contain catalog results, EBSCO EDS results (Articles & Databases), Lists, Library Website pages, History & Archives (digital or open archives), and genealogy records. 
 
-![Explore More](/manual/images/Explore-More03.jpg)
+![Explore More](/manual/images/Explore-More03.png)
 
 **Where does the Explore More live?**
 The Explore More box is always going to show below the second result in any of your searches. Although we typically associate the Explore More box with catalog searches, the Explore More box can show on any of your indexed searches. For example, when we were searching in Arlington Public Library’s lists for ‘Four Winds’ the list results displayed an Explore More box with applicable catalog results!
 
-![Explore More](/manual/images/Explore-More04.jpg)
+![Explore More](/manual/images/Explore-More04.png)
 
 **How do I customize the color of my Explore More box?**
 

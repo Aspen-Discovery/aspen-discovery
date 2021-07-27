@@ -2917,6 +2917,7 @@ class MyAccount_AJAX extends JSON_Action
 		}
 	}
 
+	/** @noinspection PhpUnused */
 	function createCompriseOrder() {
 		global $configArray;
 		$result = $this->createGenericOrder('comprise');
@@ -2960,6 +2961,158 @@ class MyAccount_AJAX extends JSON_Action
 				return ['success' => true, 'message' => 'Redirecting to payment processor', 'paymentRequestUrl' => $paymentRequestUrl];
 			}else{
 				return ['success' => false, 'message' => 'Comprise was not properly configured'];
+			}
+		}
+	}
+
+	/** @noinspection PhpUnused */
+	function createProPayOrder() {
+		global $configArray;
+		$result = $this->createGenericOrder('propay');
+		if (array_key_exists('success', $result) && $result['success'] === false) {
+			return $result;
+		} else {
+			global $activeLanguage;
+			$currencyCode = 'USD';
+			$variables = new SystemVariables();
+			if ($variables->find(true)){
+				$currencyCode = $variables->currencyCode;
+			}
+
+			$currencyFormatter = new NumberFormatter( $activeLanguage->locale . '@currency=' . $currencyCode, NumberFormatter::CURRENCY );
+			$currencyFormatter->setSymbol(NumberFormatter::CURRENCY_SYMBOL, '');
+
+			/** @var Library $userLibrary */
+			/** @var UserPayment $payment */
+			/** @var User $patron */
+			list($userLibrary, $payment, $purchaseUnits, $patron) = $result;
+			require_once ROOT_DIR . '/sys/ECommerce/ProPaySetting.php';
+			$proPaySetting = new ProPaySetting();
+			$proPaySetting->id = $userLibrary->proPaySettingId;
+			if ($proPaySetting->find(true)) {
+				$curlWrapper = new CurlWrapper();
+				$authorization = $proPaySetting->billerAccountId . ':' . $proPaySetting->authenticationToken;
+				$authorization = 'Basic ' . base64_encode($authorization);
+				$curlWrapper->addCustomHeaders([
+					'User-Agent: Aspen Discovery',
+					'Accept: application/json',
+					'Cache-Control: no-cache',
+					'Content-Type: application/json',
+					'Accept-Encoding: gzip, deflate',
+					'Authorization: ' . $authorization
+				], true);
+
+				//Create the payer if one doesn't exist already.
+				if (empty($patron->proPayPayerAccountId)){
+					$createPayer = new stdClass();
+					$createPayer->EmailAddress = $patron->email;
+					$createPayer->ExternalId = $patron->id;
+					$createPayer->Name = $patron->_fullname;
+
+					//Issue PUT request to
+					if ($proPaySetting->useTestSystem) {
+						$url = 'https://xmltestapi.propay.com/protectpay/Payers/';
+					}else{
+						$url = 'https://api.propay.com/protectpay/Payers/';
+					}
+
+					$createPayerResponse = $curlWrapper->curlSendPage($url, 'PUT', json_encode($createPayer));
+					if ($createPayerResponse && $curlWrapper->getResponseCode() == 200){
+						$jsonResponse = json_decode($createPayerResponse);
+						$patron->proPayPayerAccountId = $jsonResponse->ExternalAccountID;
+						$patron->update();
+					}
+				}
+
+				if (empty($proPaySetting->merchantProfileId) || $proPaySetting->merchantProfileId == 0){
+					//Create a merchant profile id
+					global $library;
+					$createMerchantProfile = new stdClass();
+					$createMerchantProfile->ProfileName = $proPaySetting->name;
+					$createMerchantProfile->PaymentProcessor = 'LegacyProPay';
+					$createMerchantProfile->ProcessorData = [];
+					$certStrField = new stdClass();
+					$certStrField->ProcessorField = 'certStr';
+					$certStrField->Value = $proPaySetting->certStr;
+					$createMerchantProfile->ProcessorData[] = $certStrField;
+//					$accountNumField = new stdClass();
+//					$accountNumField->ProcessorField = 'accountNum';
+//					$accountNumField->Value = empty($proPaySetting->accountNum) ? $library->libraryId : $proPaySetting->accountNum;
+//					$createMerchantProfile->ProcessorData[] = $accountNumField;
+					$termIdField = new stdClass();
+					$termIdField->ProcessorField = 'termId';
+					$termIdField->Value = $proPaySetting->termId;
+					$createMerchantProfile->ProcessorData[] = $termIdField;
+
+					//Issue PUT request to
+					if ($proPaySetting->useTestSystem) {
+						$url = 'https://xmltestapi.propay.com/protectpay/Payers/';
+					}else{
+						$url = 'https://api.propay.com/protectpay/Payers/';
+					}
+
+					$createMerchantProfileResponse = $curlWrapper->curlSendPage($url, 'PUT', json_encode($createMerchantProfile));
+					if ($createMerchantProfileResponse && $curlWrapper->getResponseCode() == 200){
+						$jsonResponse = json_decode($createMerchantProfileResponse);
+						$proPaySetting->merchantProfileId = $jsonResponse->ExternalAccountID;
+						$proPaySetting->update();
+					}
+				}
+
+				if (!empty($patron->proPayPayerAccountId)) {
+					//Create the Hosted Transaction Instance
+					$requestElements = new stdClass();
+					$requestElements->Amount = $payment->totalPaid;
+					$requestElements->AuthOnly = false;
+					$requestElements->AvsRequirementType = 2;
+					$requestElements->BillerAccountId = $proPaySetting->billerAccountId;
+					$requestElements->CardHolderNameRequirementType = 1;
+					$requestElements->CssUrl = $configArray['Site']['url'] . '/interface/themes/responsive/css/main.css';
+					$requestElements->CurrencyCode = $currencyCode;
+					$requestElements->InvoiceNumber = $payment->id;
+					$requestElements->MerchantProfileId = $proPaySetting->merchantProfileId;
+					$requestElements->PaymentTypeId = 0;
+					$requestElements->PayerAccountId = $patron->proPayPayerAccountId;
+					$requestElements->ProcessCard = true;
+					$requestElements->ReturnURL = $configArray['Site']['url'] . '/MyAccount/ProPayCompleted?payment=' . $payment->id;
+					$requestElements->SecurityCodeRequirementType = 1;
+					$requestElements->StoreCard = false;
+					$patron->loadContactInformation();
+					$requestElements->Address1 = $patron->_address1;
+					$requestElements->Address2 = $patron->_address2;
+					$requestElements->City = $patron->_city;
+					$requestElements->Name = $patron->_fullname;
+					$requestElements->State = $patron->_state;
+					$requestElements->ZipCode = $patron->_zipcode;
+
+					//Issue PUT request to
+					if ($proPaySetting->useTestSystem) {
+						$url = 'https://xmltestapi.propay.com/protectpay/HostedTransactions/';
+					} else {
+						$url = 'https://api.propay.com/protectpay/HostedTransactions/';
+					}
+
+					$response = $curlWrapper->curlSendPage($url, 'PUT', json_encode($requestElements));
+					if ($response && $curlWrapper->getResponseCode() == 200) {
+						$jsonResponse = json_decode($response);
+						$transactionIdentifier = $jsonResponse->HostedTransactionIdentifier;
+
+						if ($proPaySetting->useTestSystem) {
+							$paymentRequestUrl = 'https://protectpaytest.propay.com/hpp/v2/' . $transactionIdentifier;
+						} else {
+							$paymentRequestUrl = 'https://protectpay.propay.com/hpp/v2/' . $transactionIdentifier;
+						}
+
+						return ['success' => true, 'message' => 'Redirecting to payment processor', 'paymentRequestUrl' => $paymentRequestUrl];
+					} else {
+						return ['success' => false, 'message' => 'Could not connect to the payment processor'];
+					}
+				}else{
+					return ['success' => false, 'message' => 'Payer Account ID could not be determined.'];
+				}
+
+			}else{
+				return ['success' => false, 'message' => 'ProPay was not properly configured'];
 			}
 		}
 	}

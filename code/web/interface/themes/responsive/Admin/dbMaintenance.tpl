@@ -1,17 +1,17 @@
 {strip}
-	<h1>Database Maintenance</h1>
+	<h1>{translate text="Database Maintenance"}</h1>
 	<div id="maintenanceOptions"></div>
-	<form id="dbMaintenance" action="/Admin/{$action}" method="post">
+	<form id="dbMaintenanceForm" action="/Admin/{$action}" method="post">
 		<div>
 			<table class="table" aria-label="List of Database Updates to Run">
 				<thead>
 					<tr>
 						<th><input type="checkbox" id="selectAll" onclick="AspenDiscovery.toggleCheckboxes('.selectedUpdate:visible', '#selectAll');" checked="checked" title="Select All Rows"></th>
-						<th>Name</th>
-						<th>Description</th>
-						<th>Already Run?</th>
+						<th>{translate text="Name"}</th>
+						<th>{translate text="Description"}</th>
+						<th>{translate text="Already Run?"}</th>
 						{if $showStatus}
-						<th>Status</th>
+						<th>{translate text="Status"}</th>
 						{/if}
 					</tr>
 				</thead>
@@ -33,13 +33,25 @@
 			</table>
 			<div class="form-inline">
 				<div class="form-group">
-					<input type="submit" name="submit" class="btn btn-primary" value="Run Selected Updates">
+					{literal}
+					<script type="text/javascript">
+						function submitDBMaintenance() {
+							var startDBUpdatesButton = $('#startDBUpdates');
+							startDBUpdatesButton.prop('disabled', true);
+							startDBUpdatesButton.addClass('disabled');
+							$('#startDBUpdates .fa-spinner').removeClass('hidden');
+							$('#dbMaintenanceForm').submit();
+							return true;
+						}
+					</script>
+					{/literal}
+					<button type="submit" id="startDBUpdates" name="submit" class="btn btn-primary" onclick="return submitDBMaintenance();" onkeypress="return submitDBMaintenance();"><i class='fas fa-spinner fa-spin hidden' role='status' aria-hidden='true'></i>&nbsp;{translate text="Run Selected Updates"}</button>
 				</div>
 				<div class="form-group checkbox checkbox-inline">
 					&nbsp; &nbsp;
 					<label for="hideUpdatesThatWereRun">
 						<input type="checkbox" name="hideUpdatesThatWereRun" id="hideUpdatesThatWereRun" checked="checked"
-						       onclick="$('.updateRun').toggle();"> Hide updates that have been run
+						       onclick="$('.updateRun').toggle();"> {translate text="Hide updates that have been run"}
 					</label>
 				</div>
 			</div>

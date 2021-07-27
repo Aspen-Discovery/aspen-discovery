@@ -18,7 +18,7 @@ class Admin_DBMaintenance extends Admin_Admin
 
 		$availableUpdates = $this->getSQLUpdates();
 
-		if (isset($_REQUEST['submit'])) {
+		if (isset($_REQUEST['selected']) && !empty($_REQUEST['selected'])) {
 			$interface->assign('showStatus', true);
 
 			//Process the updates

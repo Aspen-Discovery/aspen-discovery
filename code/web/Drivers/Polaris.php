@@ -799,42 +799,64 @@ class Polaris extends AbstractIlsDriver
 	 *
 	 * @return array
 	 */
-	protected function loginViaWebService($username, $password) : array
+	protected function loginViaWebService(&$username, $password) : array
 	{
 		if (array_key_exists($username, Polaris::$accessTokensForUsers)){
 			return Polaris::$accessTokensForUsers[$username];
 		}else {
+			$staffUserInfo = $this->getStaffUserInfo();
+
 			$session = array(
 				'userValid' => false,
 				'accessToken' => false,
 				'patronId' => false
 			);
+
+			//Validate that the patron exists. This can also be used to get the barcode for the user based on username
+			$validatePatronResponseRaw = $this->getWebServiceResponse('/PAPIService/REST/public/v1/1033/100/1/patron/' . $username, 'GET', $staffUserInfo['accessSecret'], false, true);
+			$patronValidationDone = false;
+			if ($validatePatronResponseRaw){
+				$validationResponse = json_decode($validatePatronResponseRaw);
+				if ($validationResponse->PAPIErrorCode == -3000){
+					$patronValidationDone = true;
+					$session = array(
+						'userValid' => true,
+						'accessToken' => '',
+						'patronId' => ''
+					);
+				}else if (!empty($validationResponse->PatronBarcode) && $validationResponse->PatronBarcode != $username){
+					$username = $validationResponse->PatronBarcode;
+				}
+			}
+
 			$authenticationData = new stdClass();
 			$authenticationData->Barcode = $username;
 			$authenticationData->Password = $password;
 
-			$body = json_encode($authenticationData);
-			$authenticationResponseRaw = $this->getWebServiceResponse('/PAPIService/REST/public/v1/1033/100/1/authenticator/patron', 'POST', '', $body);
-			if ($authenticationResponseRaw) {
-				$authenticationResponse = json_decode($authenticationResponseRaw);
-				if ($authenticationResponse->PAPIErrorCode == 0) {
-					$accessToken = $authenticationResponse->AccessToken;
-					$patronId = $authenticationResponse->PatronID;
-					$session = array(
-						'userValid' => true,
-						'accessToken' => $accessToken,
-						'patronId' => $patronId
-					);
+			if (!$patronValidationDone) {
+				$body = json_encode($authenticationData);
+				$authenticationResponseRaw = $this->getWebServiceResponse('/PAPIService/REST/public/v1/1033/100/1/authenticator/patron', 'POST', '', $body);
+				if ($authenticationResponseRaw) {
+					$authenticationResponse = json_decode($authenticationResponseRaw);
+					if ($authenticationResponse->PAPIErrorCode == 0) {
+						$accessToken = $authenticationResponse->AccessToken;
+						$patronId = $authenticationResponse->PatronID;
+						$session = array(
+							'userValid' => true,
+							'accessToken' => $accessToken,
+							'patronId' => $patronId
+						);
+					} else {
+						global $logger;
+						$logger->log($authenticationResponse->ErrorMessage, Logger::LOG_ERROR);
+						$logger->log(print_r($authenticationResponse, true), Logger::LOG_ERROR);
+					}
 				} else {
 					global $logger;
-					$logger->log($authenticationResponse->ErrorMessage, Logger::LOG_ERROR);
-					$logger->log(print_r($authenticationResponse, true), Logger::LOG_ERROR);
+					$errorMessage = 'Polaris Authentication Error: ' . $this->lastResponseCode;
+					$logger->log($errorMessage, Logger::LOG_ERROR);
+					$logger->log(print_r($authenticationResponseRaw, true), Logger::LOG_ERROR);
 				}
-			} else {
-				global $logger;
-				$errorMessage = 'Polaris Authentication Error: ' . $this->lastResponseCode;
-				$logger->log($errorMessage, Logger::LOG_ERROR);
-				$logger->log(print_r($authenticationResponseRaw, true), Logger::LOG_ERROR);
 			}
 			Polaris::$accessTokensForUsers[$username] = $session;
 			return $session;
@@ -1055,7 +1077,7 @@ class Polaris extends AbstractIlsDriver
 		return $result;
 	}
 
-	public function getWebServiceResponse($query, $method = 'GET', $patronPassword = '', $body = false){
+	public function getWebServiceResponse($query, $method = 'GET', $patronPassword = '', $body = false, $actAsStaff = false){
 		// auth has to be in GMT, otherwise use config-level TZ
 		$site_config_TZ = date_default_timezone_get();
 		date_default_timezone_set('GMT');
@@ -1076,6 +1098,12 @@ class Polaris extends AbstractIlsDriver
 			"PolarisDate: $date",
 			"Authorization: $auth_token"
 		], true);
+		if ($actAsStaff){
+			$staffUserInfo = $this->getStaffUserInfo();
+			$this->apiCurlWrapper->addCustomHeaders([
+				'X-PAPI-AccessToken:' . $staffUserInfo['accessToken']
+			], false);
+		}
 
 		if ($method == 'GET'){
 			$response = $this->apiCurlWrapper->curlGetPage($url);
