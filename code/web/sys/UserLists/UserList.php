@@ -16,6 +16,7 @@ class UserList extends DataObject
 	public $dateUpdated;
 	public $defaultSort;
 	public $importedFrom;
+	public $nytListModified;
 
 	public static function getSourceListsForBrowsingAndCarousels()
 	{
@@ -190,7 +191,7 @@ class UserList extends DataObject
 		$listEntry->__destruct();
 		$listEntry = null;
 
-		if($interface != null && ($entryPosition != '') || ($entryPosition != null)){
+		if(($interface != null) && (($entryPosition != '') || ($entryPosition != null))){
 			$interface->assign('listEntryCount', $entryPosition);
 		}
 
