@@ -8,6 +8,7 @@ function getUpdates21_09_00() : array
 			'description' => 'Add Compression for fields that store metadata especially fields that are infrequently used',
 			'sql' => [
 				'ALTER TABLE novelist_data change column jsonResponse jsonResponse MEDIUMBLOB',
+				//'ALTER TABLE novelist_data add column jsonResponseCompressed TINYINT(1) DEFAULT 0',
 				'UPDATE novelist_data set jsonResponse = COMPRESS(jsonResponse)',
 				'OPTIMIZE TABLE novelist_data',
 			]
@@ -18,6 +19,7 @@ function getUpdates21_09_00() : array
 			'sql' => [
 				'ALTER TABLE hoopla_export change column rawResponse rawResponse MEDIUMBLOB',
 				'UPDATE hoopla_export set rawResponse = COMPRESS(rawResponse)',
+				//'ALTER TABLE hoopla_export add column rawResponseCompressed TINYINT(1) DEFAULT 0',
 				'OPTIMIZE TABLE hoopla_export',
 			]
 		], //compress_hoopla_fields
@@ -26,10 +28,23 @@ function getUpdates21_09_00() : array
 			'description' => 'Add Compression for fields that store metadata especially fields that are infrequently used',
 			'sql' => [
 				'ALTER TABLE overdrive_api_product_metadata change column rawData rawData MEDIUMBLOB',
+				//'ALTER TABLE overdrive_api_product_metadata add column rawResponseCompressed TINYINT(1) DEFAULT 0',
 				'UPDATE overdrive_api_product_metadata set rawData = COMPRESS(rawData)',
 				'OPTIMIZE TABLE overdrive_api_product_metadata',
 			]
-		], //compress_hoopla_fields
+		], //compress_overdrive_fields
+//		'fix_field_compression' => [
+//			'title' => 'Fix Compressed Fields (Expect this to fail)',
+//			'description' => 'Originally the database updates compressed fields which was slow so we will do lazy compression now',
+//			'sql' => [
+//				'ALTER TABLE novelist_data add column jsonResponseCompressed TINYINT(1) DEFAULT 0',
+//				'UPDATE novelist_data set jsonResponseCompressed = 1',
+//				'ALTER TABLE hoopla_export add column rawResponseCompressed TINYINT(1) DEFAULT 0',
+//				'UPDATE hoopla_export set rawResponseCompressed = 1',
+//				'ALTER TABLE overdrive_api_product_metadata add column rawResponseCompressed TINYINT(1) DEFAULT 0',
+//				'UPDATE overdrive_api_product_metadata set rawResponseCompressed = 1',
+//			]
+//		], //fix_field_compression
 		'user_payments_cancelled' => [
 			'title' => 'User payments add cancelled field',
 			'description' => 'Add cancelled field for user payments',
@@ -155,84 +170,150 @@ function getUpdates21_09_00() : array
 			'title' => 'Fix dates in Item Details',
 			'description' => 'Fix dates in Item Details',
 			'sql' => [
-				'ALTER TABLE grouped_work_record_items CHANGE COLUMN dateAdded dateAdded BIGINT',
-				'ALTER TABLE grouped_work_record_items CHANGE COLUMN lastCheckInDate lastCheckInDate BIGINT',
+				'ALTER TABLE grouped_work_record_items CHANGE COLUMN dateAdded dateAddedOld LONG',
+				'ALTER TABLE grouped_work_record_items ADD COLUMN dateAdded BIGINT',
+				'ALTER TABLE grouped_work_record_items CHANGE COLUMN lastCheckInDate lastCheckInDateOld LONG',
+				'ALTER TABLE grouped_work_record_items ADD COLUMN lastCheckInDate BIGINT',
+				'UPDATE grouped_work_record_items set dateAdded = dateAddedOld',
+				'UPDATE grouped_work_record_items set lastCheckInDate = lastCheckInDateOld',
+				'ALTER TABLE grouped_work_record_items DROP COLUMN dateAddedOld',
+				'ALTER TABLE grouped_work_record_items DROP COLUMN lastCheckInDateOld',
 			]
 		], //fix_dates_in_item_details
-		'normalize_scope_data' => [
-			'title' => 'Normalize Scope Data',
-			'description' => 'Normalize Scope Data to minimize data stored and speed insertions',
-			'sql' => [
-				'CREATE TABLE IF NOT EXISTS grouped_work_record_scope_details (
-					id int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
-					groupedStatusId INT(11),
-					statusId INT(11),
-					available TINYINT(1),
-					holdable TINYINT(1),
-					inLibraryUseOnly TINYINT(1),
-					localUrl VARCHAR(1000),
-					locallyOwned TINYINT(1),
-					libraryOwned TINYINT(1),
-					UNIQUE (groupedStatusId, statusId, available, holdable, inLibraryUseOnly, localUrl, locallyOwned, libraryOwned)
-				) ENGINE INNODB',
-				"INSERT INTO grouped_work_record_scope_details (groupedStatusId, statusId, available, holdable, inLibraryUseOnly, localUrl, locallyOwned, libraryOwned) select groupedStatusId, statusId, available, holdable, inLibraryUseOnly, localUrl, locallyOwned, libraryOwned from grouped_work_record_scope group by groupedStatusId, statusId, available, holdable, inLibraryUseOnly, localUrl, locallyOwned, libraryOwned",
-				"DROP INDEX groupedWorkItemId on grouped_work_record_scope",
-				"DROP INDEX scopeId on grouped_work_record_scope",
-				"ALTER TABLE grouped_work_record_scope ADD COLUMN scopeDetailsId INT(11)",
-				"update grouped_work_record_scope inner join grouped_work_record_scope_details on 
-				      grouped_work_record_scope_details.groupedStatusId = grouped_work_record_scope.groupedStatusId and 
-				      grouped_work_record_scope_details.statusId = grouped_work_record_scope.statusId and 
-				      grouped_work_record_scope_details.available = grouped_work_record_scope.available and
-				      grouped_work_record_scope_details.holdable = grouped_work_record_scope.holdable and 
-				      grouped_work_record_scope_details.inLibraryUseOnly = grouped_work_record_scope.inLibraryUseOnly and
-				      (grouped_work_record_scope_details.localUrl = grouped_work_record_scope.localUrl OR  ( grouped_work_record_scope_details.localUrl is null and grouped_work_record_scope.localUrl is null)) and
-				      grouped_work_record_scope_details.locallyOwned = grouped_work_record_scope.locallyOwned and  
-				      grouped_work_record_scope_details.libraryOwned = grouped_work_record_scope.libraryOwned
-				   SET scopeDetailsId = grouped_work_record_scope_details.id",
-				"ALTER TABLE grouped_work_record_scope DROP groupedStatusId, DROP statusId, DROP available, DROP holdable, DROP inLibraryUseOnly, DROP localUrl, DROP locallyOwned, DROP libraryOwned, DROP id",
-				"OPTIMIZE table grouped_work_record_scope"
-			]
-		], //normalize_scope_data
+
+		//This is the old (slow) way of doing the update
+//		'normalize_scope_data' => [
+//			'title' => 'Normalize Scope Data',
+//			'description' => 'Normalize Scope Data to minimize data stored and speed insertions',
+//			'sql' => [
+//				'CREATE TABLE IF NOT EXISTS grouped_work_record_scope_details (
+//					id int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+//					groupedStatusId INT(11),
+//					statusId INT(11),
+//					available TINYINT(1),
+//					holdable TINYINT(1),
+//					inLibraryUseOnly TINYINT(1),
+//					localUrl VARCHAR(1000),
+//					locallyOwned TINYINT(1),
+//					libraryOwned TINYINT(1),
+//					UNIQUE (groupedStatusId, statusId, available, holdable, inLibraryUseOnly, localUrl, locallyOwned, libraryOwned)
+//				) ENGINE INNODB',
+//				"INSERT INTO grouped_work_record_scope_details (groupedStatusId, statusId, available, holdable, inLibraryUseOnly, localUrl, locallyOwned, libraryOwned) select groupedStatusId, statusId, available, holdable, inLibraryUseOnly, localUrl, locallyOwned, libraryOwned from grouped_work_record_scope group by groupedStatusId, statusId, available, holdable, inLibraryUseOnly, localUrl, locallyOwned, libraryOwned",
+//				"DROP INDEX groupedWorkItemId on grouped_work_record_scope",
+//				"DROP INDEX scopeId on grouped_work_record_scope",
+//				"ALTER TABLE grouped_work_record_scope ADD COLUMN scopeDetailsId INT(11)",
+//				"update grouped_work_record_scope inner join grouped_work_record_scope_details on
+//				      grouped_work_record_scope_details.groupedStatusId = grouped_work_record_scope.groupedStatusId and
+//				      grouped_work_record_scope_details.statusId = grouped_work_record_scope.statusId and
+//				      grouped_work_record_scope_details.available = grouped_work_record_scope.available and
+//				      grouped_work_record_scope_details.holdable = grouped_work_record_scope.holdable and
+//				      grouped_work_record_scope_details.inLibraryUseOnly = grouped_work_record_scope.inLibraryUseOnly and
+//				      (grouped_work_record_scope_details.localUrl = grouped_work_record_scope.localUrl OR  ( grouped_work_record_scope_details.localUrl is null and grouped_work_record_scope.localUrl is null)) and
+//				      grouped_work_record_scope_details.locallyOwned = grouped_work_record_scope.locallyOwned and
+//				      grouped_work_record_scope_details.libraryOwned = grouped_work_record_scope.libraryOwned
+//				   SET scopeDetailsId = grouped_work_record_scope_details.id",
+//				"ALTER TABLE grouped_work_record_scope DROP groupedStatusId, DROP statusId, DROP available, DROP holdable, DROP inLibraryUseOnly, DROP localUrl, DROP locallyOwned, DROP libraryOwned, DROP id",
+//				"OPTIMIZE table grouped_work_record_scope"
+//			]
+//		], //normalize_scope_data
+//		'move_unchanged_scope_data_to_item' => [
+//			'title' => 'Move scope data that does not vary to item',
+//			'description' => 'Move scope data that does not vary to item',
+//			'continueOnError' => true,
+//			'sql' => [
+//				'ALTER TABLE grouped_work_record_items ADD COLUMN groupedStatusId INT(11)',
+//				'ALTER TABLE grouped_work_record_items ADD COLUMN available TINYINT(1)',
+//				'ALTER TABLE grouped_work_record_items ADD COLUMN holdable TINYINT(1)',
+//				'ALTER TABLE grouped_work_record_items ADD COLUMN inLibraryUseOnly TINYINT(1)',
+//				'UPDATE grouped_work_record_items as dest,
+//					(SELECT groupedWorkItemId, groupedStatusId, statusId, available, holdable, inLibraryUseOnly from
+//					  grouped_work_record_scope
+//					  inner join grouped_work_record_scope_details on scopeDetailsId = grouped_work_record_scope_details.id
+//					  group by groupedWorkItemId, grouped_work_record_scope_details.groupedStatusId, grouped_work_record_scope_details.statusId, grouped_work_record_scope_details.available, grouped_work_record_scope_details.holdable, grouped_work_record_scope_details.inLibraryUseOnly) as src
+//					set dest.groupedStatusId = src.groupedStatusId,
+//					  dest.statusId = src.statusId,
+//					  dest.available = src.available,
+//					  dest.holdable = src.holdable,
+//					  dest.inLibraryUseOnly = src.inLibraryUseOnly
+//					where dest.id = src.groupedWorkItemId',
+//				'ALTER TABLE grouped_work_record_scope_details DROP INDEX groupedStatusId',
+//				'ALTER TABLE grouped_work_record_scope_details DROP groupedStatusId, DROP statusId, DROP available, DROP holdable, DROP inLibraryUseOnly',
+//			]
+//		], //move_unchanged_scope_data_to_item
+//		'store_scope_details_in_concatenated_fields' => [
+//			'title' => 'Store scope details within concatenated fields',
+//			'description' => 'Update scoping to add scoped details within the item table rather than a separate table',
+//			'sql' => [
+//				'ALTER TABLE grouped_work_record_items ADD COLUMN locationOwnedScopes VARCHAR(500)',
+//				'ALTER TABLE grouped_work_record_items ADD COLUMN libraryOwnedScopes VARCHAR(500)',
+//				'ALTER TABLE grouped_work_record_items ADD COLUMN recordIncludedScopes VARCHAR(500)'
+//			]
+//		], //move_unchanged_scope_data_to_item
+
+		//We are going to reuse an existing name from the old way so the conversion isn't done twice
 		'move_unchanged_scope_data_to_item' => [
-			'title' => 'Move scope data that does not vary to item',
-			'description' => 'Move scope data that does not vary to item',
-			'continueOnError' => true,
+			'title' => 'Move Unchanged Scope Data to items',
+			'description' => 'Move scope data out of a separate table into items',
 			'sql' => [
 				'ALTER TABLE grouped_work_record_items ADD COLUMN groupedStatusId INT(11)',
 				'ALTER TABLE grouped_work_record_items ADD COLUMN available TINYINT(1)',
 				'ALTER TABLE grouped_work_record_items ADD COLUMN holdable TINYINT(1)',
 				'ALTER TABLE grouped_work_record_items ADD COLUMN inLibraryUseOnly TINYINT(1)',
-				'UPDATE grouped_work_record_items as dest, 
-					(SELECT groupedWorkItemId, groupedStatusId, statusId, available, holdable, inLibraryUseOnly from 
+				'UPDATE grouped_work_record_items as dest,
+					(SELECT groupedWorkItemId, groupedStatusId, statusId, available, holdable, inLibraryUseOnly from
 					  grouped_work_record_scope
-					  inner join grouped_work_record_scope_details on scopeDetailsId = grouped_work_record_scope_details.id 
-					  group by groupedWorkItemId, grouped_work_record_scope_details.groupedStatusId, grouped_work_record_scope_details.statusId, grouped_work_record_scope_details.available, grouped_work_record_scope_details.holdable, grouped_work_record_scope_details.inLibraryUseOnly) as src
-					set dest.groupedStatusId = src.groupedStatusId, 
+					  group by groupedWorkItemId, groupedStatusId, statusId, available, holdable, inLibraryUseOnly) as src
+					set dest.groupedStatusId = src.groupedStatusId,
 					  dest.statusId = src.statusId,
-					  dest.available = src.available, 
-					  dest.holdable = src.holdable, 
+					  dest.available = src.available,
+					  dest.holdable = src.holdable,
 					  dest.inLibraryUseOnly = src.inLibraryUseOnly
 					where dest.id = src.groupedWorkItemId',
-				'ALTER TABLE grouped_work_record_scope_details DROP INDEX groupedStatusId',
-				'ALTER TABLE grouped_work_record_scope_details DROP groupedStatusId, DROP statusId, DROP available, DROP holdable, DROP inLibraryUseOnly',
 			]
 		], //move_unchanged_scope_data_to_item
 		'store_scope_details_in_concatenated_fields' => [
 			'title' => 'Store scope details within concatenated fields',
 			'description' => 'Update scoping to add scoped details within the item table rather than a separate table',
+			'continueOnError' => 'true',
 			'sql' => [
-				'ALTER TABLE grouped_work_record_items ADD COLUMN locationOwnedScopes VARCHAR(500)',
-				'ALTER TABLE grouped_work_record_items ADD COLUMN libraryOwnedScopes VARCHAR(500)',
-				'ALTER TABLE grouped_work_record_items ADD COLUMN recordIncludedScopes VARCHAR(500)'
+				"ALTER TABLE grouped_work_record_items ADD COLUMN locationOwnedScopes VARCHAR(500) DEFAULT '~'",
+				"ALTER TABLE grouped_work_record_items ADD COLUMN libraryOwnedScopes VARCHAR(500) DEFAULT '~'",
+				"ALTER TABLE grouped_work_record_items ADD COLUMN recordIncludedScopes VARCHAR(500) DEFAULT '~'",
+				"UPDATE grouped_work_record_items as dest, 
+				  (SELECT groupedWorkItemId, concat('~', group_concat(scopeId SEPARATOR '~'), '~') as locationOwnedScopes from grouped_work_record_scope where locallyOwned = 1 group by groupedWorkItemId) as src
+				  set dest.locationOwnedScopes = src.locationOwnedScopes 
+				  where dest.id = src.groupedWorkItemId",
+				"UPDATE grouped_work_record_items as dest, 
+				  (SELECT groupedWorkItemId, concat('~', group_concat(scopeId SEPARATOR '~'), '~') as libraryOwnedScopes from grouped_work_record_scope where libraryOwned = 1 and locallyOwned = 0 group by groupedWorkItemId) as src
+				  set dest.libraryOwnedScopes = src.libraryOwnedScopes 
+				  where dest.id = src.groupedWorkItemId",
+				"UPDATE grouped_work_record_items as dest, 
+				  (SELECT groupedWorkItemId, concat('~', group_concat(scopeId SEPARATOR '~'), '~') as recordIncludedScopes from grouped_work_record_scope where libraryOwned = 0 and locallyOwned = 0 group by groupedWorkItemId) as src
+				  set dest.recordIncludedScopes = src.recordIncludedScopes 
+				  where dest.id = src.groupedWorkItemId",
 			]
-		], //move_unchanged_scope_data_to_item
-		//TODO: Do some form of conversion from the scoped data to scope information stored at item leve
+		], //store_scope_details_in_concatenated_fields
+		'local_urls' => [
+			'title' => 'Setup local URLs',
+			'description' => 'Setup a local urls table to track URLs for sideloads',
+			'sql' => [
+				'CREATE TABLE IF NOT EXISTS grouped_work_record_item_url (
+					id int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					groupedWorkItemId INT(11),
+					scopeId INT(11),
+					url VARCHAR(1000),
+					UNIQUE (groupedWorkItemId, scopeId)
+				) ENGINE INNODB',
+				'INSERT INTO grouped_work_record_item_url (groupedWorkItemId, scopeId, url) SELECT groupedWorkItemId, scopeId, localUrl as url from grouped_work_record_scope where localUrl is not null',
+			]
+		], //local_urls
+
 		'remove_scope_tables' => [
 			'title' => 'Remove Scope Tables',
 			'description' => 'remove scope tables that are no longer used',
 			'sql' => [
 				'DROP TABLE grouped_work_record_scope',
-				'DROP TABLE grouped_work_record_scope_details',
+				'DROP TABLE IF EXISTS grouped_work_record_scope_details',
 			]
 		], //remove_scope_tables
 		'remove_scope_triggers' => [
@@ -318,19 +399,6 @@ function getUpdates21_09_00() : array
 				'ALTER TABLE sideloads ADD COLUMN deletedRecordsIds MEDIUMTEXT'
 			]
 		], //add_records_to_delete_for_sideloads
-		'local_urls' => [
-			'title' => 'Setup local URLs',
-			'description' => 'Setup a local urls table to track URLs for sideloads',
-			'sql' => [
-				'CREATE TABLE IF NOT EXISTS grouped_work_record_item_url (
-					id int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
-					groupedWorkItemId INT(11),
-					scopeId INT(11),
-					url VARCHAR(1000),
-					UNIQUE (groupedWorkItemId, scopeId)
-				) ENGINE INNODB'
-			]
-		], //local_urls
 		'add_footerLogoAlt' => [
 			'title' => 'Add footerLogoAlt',
 			'description' => 'Store alt text for the footer logo image',
