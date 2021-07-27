@@ -251,7 +251,17 @@
 					<input type='checkbox' name='{$propName}' id='{$propName}' {if ($propValue == 1)}checked='checked'{/if} {if $property.required && $objectAction != 'edit'}required{/if} {if !empty($property.readOnly)}readonly{/if}> {$property.label}
 				</label>
 			</div>
-
+		{elseif $property.type == 'webBuilderColor'}
+			<section style="display: flex; flex-flow: row wrap; margin-top: 2rem;">
+				{foreach from=$property.colorOptions item=colorOption}
+				<div style="flex: 1; padding: 0.5rem; height: 100px">
+					<input type="radio" id="{$propName}_{$colorOption}" name="{$propName}" value="{$colorOption}" {if ($propValue == $colorOption)}checked{/if}>
+					<label for="{$propName}_{$colorOption}" style="background-color: {if $colorOption == 'primary'}{$primaryBackgroundColor}{elseif $colorOption == 'secondary'}{$secondaryBackgroundColor}{elseif $colorOption == 'tertiary'}{$tertiaryBackgroundColor}{else}inherit{/if}">
+						<span style="font-size: 18px; font-weight: bold; color: inherit; text-transform: capitalize">{$colorOption}</span>
+					</label>
+				</div>
+				{/foreach}
+			</section>
 		{elseif $property.type == 'oneToMany'}
 			{include file="DataObjectUtil/oneToMany.tpl"}
 		{elseif $property.type == 'portalRow'}

@@ -55,6 +55,13 @@ class PortalCell extends DataObject
 			'hours_locations' => 'Library Hours and Locations',
 			'web_resource' => 'Web Resource',
 		];
+		$colorOptions = [
+			'default' => 'default',
+			'primary' => 'primary',
+			'secondary' => 'secondary',
+			'tertiary' => 'tertiary',
+		];
+
 		return [
 			'id' => ['property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id within the database'],
 			'portalRowId' => ['property'=>'portalRowId', 'type'=>'label', 'label'=>'Portal Row', 'description'=>'The parent row'],
@@ -69,6 +76,10 @@ class PortalCell extends DataObject
 				'verticalAlignment' => ['property'=>'verticalAlignment', 'type'=>'enum', 'values'=>$verticalAlignmentOptions, 'label'=>'Vertical Alignment', 'description'=>'Vertical alignment of the cell', 'default'=>'stretch'],
 				'horizontalJustification' => ['property'=>'horizontalJustification', 'type'=>'enum', 'values'=>$horizontalJustificationOptions, 'label'=>'Horizontal Justification', 'description'=>'Horizontal Justification of the cell', 'default'=>'start'],
 				'makeCellAccordion' => ['property' => 'makeCellAccordion', 'type' => 'checkbox', 'label' => 'Make cell accordion (Title is required to use)', 'description' => 'Make the entire cell contents an accordion box', 'onchange'=>'return AspenDiscovery.Admin.updateMakeCellAccordion();'],
+			]],
+			'designSettingsSection' => ['property' => 'designSettingsSection', 'type' => 'section', 'label' => 'Design Options', 'hideInLists' => true, 'properties' => [
+				'colorScheme' => ['property'=>'colorScheme', 'type'=>'webBuilderColor', 'label'=>'Select a Color Scheme for Cell', 'colorOptions'=>$colorOptions, 'description'=>'Pick the colors from on theme settings'],
+				'invertColor' => ['property' => 'invertColor', 'type' => 'checkbox', 'label' => 'Invert background and foreground colors', 'description' => 'Changes the background to be the text color and text color to be the background'],
 			]],
 			'sourceType' => ['property'=>'sourceType', 'type'=>'enum', 'values'=>$sourceOptions, 'label'=>'Source Type', 'description'=>'Source type for the content of cell', 'onchange' => 'return AspenDiscovery.WebBuilder.getPortalCellValuesForSource();'],
 			'sourceId' => ['property'=>'sourceId', 'type'=>'enum', 'values'=>[], 'label'=>'Source Id', 'description'=>'Source for the content of cell'],
