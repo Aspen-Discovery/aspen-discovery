@@ -234,8 +234,9 @@ class DataObjectUtil
 
 		}else if ($property['type'] == 'checkbox'){
 			$object->setProperty($propertyName,isset($_REQUEST[$propertyName]) && $_REQUEST[$propertyName] == 'on' ? 1 : 0, $property);
-
-		}else if ($property['type'] == 'multiSelect'){
+		} else if ($property['type'] == 'webBuilderColor') {
+			$object->setProperty($propertyName,$_REQUEST[$propertyName], $property);
+		} else if ($property['type'] == 'multiSelect'){
 			if (isset($_REQUEST[$propertyName]) && is_array($_REQUEST[$propertyName])){
 				$object->setProperty($propertyName, $_REQUEST[$propertyName], $property);
 			}else{

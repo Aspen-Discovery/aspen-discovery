@@ -18,7 +18,37 @@
 				<div class="row{if $row->makeAccordion == '1'} panel-collapse collapse{/if}" {if $row->makeAccordion == '1'}id="{$row->id}-PanelBody"{else} style="display:flex; flex-wrap: wrap;"{/if}>
 					{if $row->makeAccordion == '1'}<div class="panel-body" style="display:flex; flex-wrap: wrap;">{/if}
 					{foreach from=$row->getCells() item=cell}
-						<div class="portal-cell col-tn-{$cell->widthTiny} col-xs-{$cell->widthXs} col-sm-{$cell->widthSm} col-md-{$cell->widthMd} col-lg-{$cell->widthLg}" style="align-self: {if $cell->verticalAlignment != ''}{$cell->verticalAlignment}{else}flex-start{/if}; {if $cell->horizontalJustification != ''}text-align:{$cell->horizontalJustification}{/if}">
+						{if $cell->colorScheme == 'default'}
+							{assign var="backgroundColor" value='default'}
+							{assign var="foregroundColor" value='default'}
+							{if $cell->invertColor == '1'}
+								{assign var="backgroundColor" value=$bodyTextColor}
+								{assign var="foregroundColor" value=$bodyBackgroundColor}
+							{/if}
+						{elseif $cell->colorScheme == 'primary'}
+							{assign var="backgroundColor" value=$primaryBackgroundColor}
+							{assign var="foregroundColor" value=$primaryForegroundColor}
+							{if $cell->invertColor == '1'}
+								{assign var="backgroundColor" value=$primaryForegroundColor}
+								{assign var="foregroundColor" value=$primaryBackgroundColor}
+							{/if}
+						{elseif $cell->colorScheme == 'secondary'}
+							{assign var="backgroundColor" value=$secondaryBackgroundColor}
+							{assign var="foregroundColor" value=$secondaryForegroundColor}
+							{if $cell->invertColor == '1'}
+								{assign var="backgroundColor" value=$secondaryForegroundColor}
+								{assign var="foregroundColor" value=$secondaryBackgroundColor}
+							{/if}
+						{elseif $cell->colorScheme == 'tertiary'}
+							{assign var="backgroundColor" value=$tertiaryBackgroundColor}
+							{assign var="foregroundColor" value=$tertiaryForegroundColor}
+							{if $cell->invertColor == '1'}
+								{assign var="backgroundColor" value=$tertiaryForegroundColor}
+								{assign var="foregroundColor" value=$tertiaryBackgroundColor}
+							{/if}
+						{/if}
+					{literal}<style>div#customColor-cell{/literal}{$cell->id}{literal}{color: {/literal}{$foregroundColor}{literal}; background-color: {/literal}{$backgroundColor}{literal}; padding:10px;} div#customColor-cell{/literal}{$cell->id}{literal} a{color: {/literal}{$foregroundColor}{literal}}</style>{/literal}
+						<div id="customColor-cell{$cell->id}" class="portal-cell col-tn-{$cell->widthTiny} col-xs-{$cell->widthXs} col-sm-{$cell->widthSm} col-md-{$cell->widthMd} col-lg-{$cell->widthLg}" style="align-self: {if $cell->verticalAlignment != ''}{$cell->verticalAlignment}{else}flex-start{/if}; {if $cell->horizontalJustification != ''}text-align:{$cell->horizontalJustification}{/if}">
 							{$cell->getContents()}
 						</div>
 					{/foreach}
