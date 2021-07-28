@@ -2507,6 +2507,7 @@ class GroupedWorkDriver extends IndexRecordDriver
 						$records = $results->fetchAll();
 						$results->closeCursor();
 					}
+					/** @var Grouping_Record[] $allRecords */
 					$allRecords = [];
 					foreach ($records as $record){
 						/** GroupedWorkSubDriver $recordDriver */
@@ -2562,7 +2563,12 @@ class GroupedWorkDriver extends IndexRecordDriver
 					//Finally add records to the correct manifestation (so status updates properly)
 					foreach ($allRecords as $record) {
 						//Add to the correct manifestation
-						$this->_relatedManifestations[$record->format]->addRecord($record);
+						$manifestation = $this->_relatedManifestations[$record->format];
+						if ($manifestation == null) {
+							AspenError::raiseError("Manifestation not found for record {$record->id} {$record->format}");
+						}else {
+							$this->_relatedManifestations[$record->format]->addRecord($record);
+						}
 					}
 
 					//Sort Records within each manifestation and variation
