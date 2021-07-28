@@ -2566,6 +2566,8 @@ class GroupedWorkDriver extends IndexRecordDriver
 						if (isset( $this->_relatedManifestations[$record->format])) {
 							$this->_relatedManifestations[$record->format]->addRecord($record);
 						}else{
+							$manifestation = new Grouping_Manifestation($record);
+							$this->_relatedManifestations[$record->format] = $manifestation;
 							//AspenError::raiseError("Manifestation not found for record {$record->id} {$record->format}");
 						}
 					}
