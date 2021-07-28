@@ -2120,7 +2120,7 @@ class SirsiDynixROA extends HorizonAPI
 		$staffSessionToken = $this->getStaffSessionToken();
 		if (!empty($staffSessionToken)) {
 			$webServiceURL = $this->getWebServiceURL();
-			$includeFields = urlEncode("keepCircHistory,circHistoryRecordList{*,bib{title,author}}");
+			$includeFields = urlEncode("keepCircHistory,circHistoryRecordList{checkInDate,checkOutDate,itemType,bib,title,author}");
 			$getCircHistoryUrl = $webServiceURL . '/user/patron/barcode/' . $patron->getBarcode() . '?includeFields=' . $includeFields;
 			$getCircHistoryResponse = $this->getWebServiceResponse($getCircHistoryUrl, null, $staffSessionToken);
 			if ($getCircHistoryResponse && !isset($getCircHistoryResponse->messageList)) {
@@ -2137,6 +2137,10 @@ class SirsiDynixROA extends HorizonAPI
 				}
 				if ($historyActive){
 					$readingHistoryTitles = array();
+					$systemVariables = SystemVariables::getSystemVariables();
+					global $aspen_db;
+					require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+
 					foreach ( $getCircHistoryResponse->fields->circHistoryRecordList as $circEntry){
 						$historyEntry = array();
 						$bibId = 'a' . $circEntry->fields->bib->key;
@@ -2147,29 +2151,51 @@ class SirsiDynixROA extends HorizonAPI
 						$historyEntry['permanentId'] = null;
 						$historyEntry['linkUrl'] = null;
 						$historyEntry['coverUrl'] = null;
+						$historyEntry['title'] = $circEntry->fields->title;
+						$historyEntry['author'] = $circEntry->fields->author;
+						$historyEntry['format'] = $circEntry->fields->itemType->key;
+						$historyEntry['checkout'] = strtotime($circEntry->fields->checkOutDate);
+						$historyEntry['checkin'] = strtotime($circEntry->fields->checkInDate);
 						if (!empty($historyEntry['recordId'])) {
-							require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
-							$recordDriver = new MarcRecordDriver($this->accountProfile->recordSource . ':' . $historyEntry['recordId']);
-							if ($recordDriver->isValid()) {
-								$historyEntry['ratingData'] = $recordDriver->getRatingData();
-								$historyEntry['permanentId'] = $recordDriver->getPermanentId();
-								$historyEntry['linkUrl'] = $recordDriver->getGroupedWorkDriver()->getLinkUrl();
-								$historyEntry['coverUrl'] = $recordDriver->getBookcoverUrl('medium', true);
-								$historyEntry['format'] = $recordDriver->getFormats();
-								$historyEntry['title'] = $recordDriver->getTitle();
-								$historyEntry['author'] = $recordDriver->getPrimaryAuthor();
-							}else{
-								//No point keeping this since we don't know what the title is?
-								$historyEntry['title'] = $circEntry->fields->bib->fields->title;
-								$historyEntry['author'] = $circEntry->fields->itemType->key;
-								$historyEntry['format'] = $circEntry->fields->bib->fields->author;
+							if ($systemVariables->storeRecordDetailsInDatabase){
+								$getRecordDetailsQuery = 'SELECT permanent_id, indexed_format.format FROM grouped_work_records 
+								  LEFT JOIN grouped_work ON groupedWorkId = grouped_work.id
+								  LEFT JOIN indexed_record_source ON sourceId = indexed_record_source.id
+								  LEFT JOIN indexed_format on formatId = indexed_format.id
+								  where source = ' . $aspen_db->quote($this->accountProfile->recordSource) . ' and recordIdentifier = ' . $aspen_db->quote($bibId) ;
+								$results = $aspen_db->query($getRecordDetailsQuery, PDO::FETCH_ASSOC);
+								if ($results){
+									$result = $results->fetch();
+									if ($result) {
+										$groupedWorkDriver = new GroupedWorkDriver($result['permanent_id']);
+										if ($groupedWorkDriver->isValid()) {
+											$historyEntry['ratingData'] = $groupedWorkDriver->getRatingData();
+											$historyEntry['permanentId'] = $groupedWorkDriver->getPermanentId();
+											$historyEntry['linkUrl'] = $groupedWorkDriver->getLinkUrl();
+											$historyEntry['coverUrl'] = $groupedWorkDriver->getBookcoverUrl('medium', true);
+											$historyEntry['format'] = $result['format'];
+											$historyEntry['title'] = $groupedWorkDriver->getTitle();
+											$historyEntry['author'] = $groupedWorkDriver->getPrimaryAuthor();
+										}
+									}
+								}
+							}else {
+								require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+								$recordDriver = new MarcRecordDriver($this->accountProfile->recordSource . ':' . $historyEntry['recordId']);
+								if ($recordDriver->isValid()) {
+									$historyEntry['ratingData'] = $recordDriver->getRatingData();
+									$historyEntry['permanentId'] = $recordDriver->getPermanentId();
+									$historyEntry['linkUrl'] = $recordDriver->getGroupedWorkDriver()->getLinkUrl();
+									$historyEntry['coverUrl'] = $recordDriver->getBookcoverUrl('medium', true);
+									$historyEntry['format'] = $recordDriver->getFormats();
+									$historyEntry['title'] = $recordDriver->getTitle();
+									$historyEntry['author'] = $recordDriver->getPrimaryAuthor();
+								}
 							}
 							$recordDriver = null;
 						}else{
 							continue;
 						}
-						$historyEntry['checkout'] = strtotime($circEntry->fields->checkOutDate);
-						$historyEntry['checkin'] = strtotime($circEntry->fields->checkInDate);
 						$readingHistoryTitles[] = $historyEntry;
 					}
 				}
