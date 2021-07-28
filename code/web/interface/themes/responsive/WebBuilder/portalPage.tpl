@@ -39,7 +39,7 @@
 				{assign var="rowForegroundColor" value=$bodyBackgroundColor}
 			{/if}
 		{/if}
-	{literal}<style>div#customColor-row{/literal}{$row->id}{literal}{color: {/literal}{$rowForegroundColor}{literal}; background-color: {/literal}{$rowBackgroundColor}{literal};} div#customColor-row{/literal}{$row->id}{literal} a{color: {/literal}{$rowForegroundColor}{literal}}</style>{/literal}
+	{literal}<style>div#customColor-row{/literal}{$row->id}{literal}{color: {/literal}{$rowForegroundColor}{literal}; background-color: {/literal}{$rowBackgroundColor}{literal};} div#customColor-row{/literal}{$row->id}{literal} a:not(.btn){color: {/literal}{$rowForegroundColor}{literal}}</style>{/literal}
 		{if !empty($row->rowTitle)}
 			{if $row->makeAccordion == '1'}<div class="panel customAccordionRow" id="{$row->id}-Panel">{/if}
 			{if $row->makeAccordion != '1'}<div id="customColor-row{$row->id}" class="row" style="display:flex; flex-wrap: wrap;">{/if}
@@ -84,7 +84,7 @@
 								{assign var="foregroundColor" value=$tertiaryBackgroundColor}
 							{/if}
 						{/if}
-					{literal}<style>div#customColor-cell{/literal}{$cell->id}{literal}{color: {/literal}{$foregroundColor}{literal}; background-color: {/literal}{$backgroundColor}{literal};} div#customColor-cell{/literal}{$cell->id}{literal} a{color: {/literal}{$foregroundColor}{literal}}</style>{/literal}
+					{literal}<style>div#customColor-cell{/literal}{$cell->id}{literal}{color: {/literal}{$foregroundColor}{literal}; background-color: {/literal}{$backgroundColor}{literal};} div#customColor-cell{/literal}{$cell->id}{literal} a:not(.btn){color: {/literal}{$foregroundColor}{literal}}</style>{/literal}
 						<div id="customColor-cell{$cell->id}" class="portal-cell col-tn-{$cell->widthTiny} col-xs-{$cell->widthXs} col-sm-{$cell->widthSm} col-md-{$cell->widthMd} col-lg-{$cell->widthLg}" style="align-self: {if $cell->verticalAlignment != ''}{$cell->verticalAlignment}{else}flex-start{/if}; {if $cell->horizontalJustification != ''}text-align:{$cell->horizontalJustification}{/if}">
 							{$cell->getContents()}
 						</div>
