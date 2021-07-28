@@ -2564,10 +2564,10 @@ class GroupedWorkDriver extends IndexRecordDriver
 					foreach ($allRecords as $record) {
 						//Add to the correct manifestation
 						$manifestation = $this->_relatedManifestations[$record->format];
-						if ($manifestation == null) {
-							AspenError::raiseError("Manifestation not found for record {$record->id} {$record->format}");
-						}else {
+						if ($manifestation != null) {
 							$this->_relatedManifestations[$record->format]->addRecord($record);
+						}else{
+							//AspenError::raiseError("Manifestation not found for record {$record->id} {$record->format}");
 						}
 					}
 
