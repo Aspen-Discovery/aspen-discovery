@@ -1822,8 +1822,8 @@ public class GroupedWorkIndexer {
 					String localUrl = scopingInfo.getLocalUrl();
 					if (localUrl != null && localUrl.length() > 0 && !localUrl.equals(itemInfo.geteContentUrl())) {
 						addItemUrlStmt.setLong(1, itemId);
-						addItemUrlStmt.setLong(2, -1);
-						addItemUrlStmt.setString(3, itemInfo.geteContentUrl());
+						addItemUrlStmt.setLong(2, scopingInfo.getScope().getId());
+						addItemUrlStmt.setString(3, localUrl);
 						addItemUrlStmt.executeUpdate();
 					}
 				}
