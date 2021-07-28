@@ -2563,8 +2563,7 @@ class GroupedWorkDriver extends IndexRecordDriver
 					//Finally add records to the correct manifestation (so status updates properly)
 					foreach ($allRecords as $record) {
 						//Add to the correct manifestation
-						$manifestation = $this->_relatedManifestations[$record->format];
-						if ($manifestation != null) {
+						if (isset( $this->_relatedManifestations[$record->format])) {
 							$this->_relatedManifestations[$record->format]->addRecord($record);
 						}else{
 							//AspenError::raiseError("Manifestation not found for record {$record->id} {$record->format}");
