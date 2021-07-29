@@ -40,13 +40,14 @@ public class EncryptionUtils {
 	}
 
 	static final int GCM_TAG_LENGTH = 16;
-	public static String decryptString(String stringToDecrypt, String serverName, BaseLogEntry logEntry){
+	public static String decryptString(String stringToDecrypt, String serverName, BaseLogEntry logEntry) throws Exception {
 		EncryptionKey key = loadKey(serverName, logEntry);
 		if (key == null){
 			return stringToDecrypt;
 		}else{
 			if (stringToDecrypt != null && stringToDecrypt.length() > 4 && stringToDecrypt.startsWith("AEF~")){
 				InputStream cipherInputStream = null;
+				Exception decryptionException;
 				try {
 					Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
 					byte[] decodedData = Base64.getDecoder().decode(stringToDecrypt.substring(4));
@@ -63,7 +64,8 @@ public class EncryptionUtils {
 					String decryptedString = new String(decryptedData, "UTF-8");
 					return decryptedString;
 				} catch (Exception e) {
-					logEntry.incErrors("Could not decrypt text", e);
+					logEntry.addNote("Could not decrypt text " + e.toString());
+					decryptionException = e;
 				} finally {
 					if (cipherInputStream != null) {
 						try {
@@ -72,6 +74,9 @@ public class EncryptionUtils {
 							logEntry.incErrors("Could not decrypt text", e);
 						}
 					}
+				}
+				if (decryptionException != null){
+					throw decryptionException;
 				}
 				return stringToDecrypt;
 			}else{
