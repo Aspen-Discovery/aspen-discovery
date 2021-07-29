@@ -374,6 +374,7 @@ class AJAX_JSON extends Action {
 		);
 	}
 
+	/** @noinspection PhpUnused */
 	function formatCurrency(){
 		$currencyValue = isset($_REQUEST['currencyValue']) ? $_REQUEST['currencyValue'] : 0;
 

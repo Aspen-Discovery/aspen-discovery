@@ -3046,15 +3046,15 @@ class MyAccount_AJAX extends JSON_Action
 
 					//Issue PUT request to
 					if ($proPaySetting->useTestSystem) {
-						$url = 'https://xmltestapi.propay.com/protectpay/Payers/';
+						$url = 'https://xmltestapi.propay.com/protectpay/MerchantProfiles/';
 					}else{
-						$url = 'https://api.propay.com/protectpay/Payers/';
+						$url = 'https://api.propay.com/protectpay/MerchantProfiles/';
 					}
 
 					$createMerchantProfileResponse = $curlWrapper->curlSendPage($url, 'PUT', json_encode($createMerchantProfile));
 					if ($createMerchantProfileResponse && $curlWrapper->getResponseCode() == 200){
 						$jsonResponse = json_decode($createMerchantProfileResponse);
-						$proPaySetting->merchantProfileId = $jsonResponse->ExternalAccountID;
+						$proPaySetting->merchantProfileId = $jsonResponse->ProfileId;
 						$proPaySetting->update();
 					}
 				}
@@ -3083,7 +3083,7 @@ class MyAccount_AJAX extends JSON_Action
 					$requestElements->City = $patron->_city;
 					$requestElements->Name = $patron->_fullname;
 					$requestElements->State = $patron->_state;
-					$requestElements->ZipCode = $patron->_zipcode;
+					$requestElements->ZipCode = $patron->_zip;
 
 					//Issue PUT request to
 					if ($proPaySetting->useTestSystem) {

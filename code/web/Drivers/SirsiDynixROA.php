@@ -1352,7 +1352,9 @@ class SirsiDynixROA extends HorizonAPI
 
 					}
 					$fines[] = array(
+						'fineId' => str_replace(':', '_', $block->key),
 						'reason' => $fine->block->key,
+						'type' => $fine->block->key,
 						'amount' => $fine->amount->amount,
 						'amountVal' => $fine->amount->amount,
 						'message' => $title,
