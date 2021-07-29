@@ -66,7 +66,7 @@ public class UpdateReadingHistory implements IProcessHandler {
 					try{
 						cat_password = EncryptionUtils.decryptString(userResults.getString("cat_password"), servername, processLog);
 					}catch (Exception e){
-						processLog.addNote("Could not decrypt password for " + cat_username);
+						processLog.addNote("Could not decrypt password for " + cat_username + " " + e);
 					}
 
 					if (cat_password == null || cat_password.length() == 0) {

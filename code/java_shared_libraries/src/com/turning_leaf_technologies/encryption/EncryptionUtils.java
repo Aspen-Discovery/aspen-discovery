@@ -64,7 +64,7 @@ public class EncryptionUtils {
 					String decryptedString = new String(decryptedData, "UTF-8");
 					return decryptedString;
 				} catch (Exception e) {
-					logEntry.addNote("Could not decrypt text " + e.toString());
+					//logEntry.addNote("Could not decrypt text " + e.toString());
 					decryptionException = e;
 				} finally {
 					if (cipherInputStream != null) {

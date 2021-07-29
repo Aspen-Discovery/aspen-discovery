@@ -62,8 +62,8 @@ public class CronLogEntry implements BaseLogEntry {
 			notesText.append("<li>").append(cleanedNote).append("</li>");
 		}
 		notesText.append("</ol>");
-		if (notesText.length() > 64000){
-			notesText.substring(0, 64000);
+		if (notesText.length() > 25000){
+			notesText.substring(0, 25000);
 		}
 		return notesText.toString();
 	}
