@@ -75,4 +75,8 @@ class ScopingInfo{
 	public String getLocalUrl() {
 		return localUrl;
 	}
+
+	public ItemInfo getItem(){
+		return item;
+	}
 }

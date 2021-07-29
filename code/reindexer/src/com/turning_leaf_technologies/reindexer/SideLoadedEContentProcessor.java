@@ -71,19 +71,19 @@ class SideLoadedEContentProcessor extends MarcRecordProcessor{
 
 			groupedWork.addHoldings(1);
 
-			scopeItems(recordInfo, record);
+			scopeItems(groupedWork, recordInfo, record);
 		}catch (Exception e){
 			logger.error("Error updating grouped work for side loaded eContent MARC record with identifier " + identifier, e);
 		}
 	}
 
-	private void scopeItems(RecordInfo recordInfo, Record record){
+	private void scopeItems(GroupedWorkSolr groupedWork, RecordInfo recordInfo, Record record){
 		for (ItemInfo itemInfo : recordInfo.getRelatedItems()){
-			loadScopeInfoForEContentItem(itemInfo, record);
+			loadScopeInfoForEContentItem(groupedWork, itemInfo, record);
 		}
 	}
 
-	private void loadScopeInfoForEContentItem(ItemInfo itemInfo, Record record) {
+	private void loadScopeInfoForEContentItem(GroupedWorkSolr groupedWork, ItemInfo itemInfo, Record record) {
 		String originalUrl = itemInfo.geteContentUrl();
 		for (Scope curScope : indexer.getScopes()){
 			SideLoadScope sideLoadScope = curScope.getSideLoadScope(sideLoadId);
@@ -91,6 +91,7 @@ class SideLoadedEContentProcessor extends MarcRecordProcessor{
 				boolean itemPartOfScope = sideLoadScope.isItemPartOfScope(record);
 				if (itemPartOfScope) {
 					ScopingInfo scopingInfo = itemInfo.addScope(curScope);
+					groupedWork.addScopingInfo(curScope.getScopeName(), scopingInfo);
 
 					scopingInfo.setLibraryOwned(true);
 					scopingInfo.setLocallyOwned(true);

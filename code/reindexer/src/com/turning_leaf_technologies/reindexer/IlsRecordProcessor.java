@@ -553,7 +553,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		return true;
 	}
 
-	private void loadScopeInfoForOrderItem(String location, String format, TreeSet<String> audiences, ItemInfo itemInfo, Record record) {
+	private void loadScopeInfoForOrderItem(GroupedWorkSolr groupedWork, String location, String format, TreeSet<String> audiences, ItemInfo itemInfo, Record record) {
 		//Shelf Location also include the name of the ordering branch if possible
 		boolean hasLocationBasedShelfLocation = false;
 		boolean hasSystemBasedShelfLocation = false;
@@ -567,6 +567,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 					logger.error("Could not add scoping information for " + scope.getScopeName() + " for item " + itemInfo.getFullRecordIdentifier());
 					continue;
 				}
+				groupedWork.addScopingInfo(scope.getScopeName(), scopingInfo);
 				if (scope.isLocationScope()) { //Either a location scope or both library and location scope
 					boolean itemIsOwned = scope.isItemOwnedByScope(fullKey, profileType, location, "");
 					scopingInfo.setLocallyOwned(itemIsOwned);
@@ -876,7 +877,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 				itemInfo.setHoldable(true);
 				itemInfo.setDetailedStatus("On Order");
 				itemInfo.setGroupedStatus("On Order");
-				loadScopeInfoForOrderItem(itemInfo.getLocationCode(), recordInfo.getPrimaryFormat(), groupedWork.getTargetAudiences(), itemInfo, record);
+				loadScopeInfoForOrderItem(groupedWork, itemInfo.getLocationCode(), recordInfo.getPrimaryFormat(), groupedWork.getTargetAudiences(), itemInfo, record);
 			}else if (itemInfo.isEContent()){
 				itemInfo.setAvailable(true);
 				itemInfo.setDetailedStatus("Available Online");
@@ -884,7 +885,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 				itemInfo.setHoldable(false);
 				loadScopeInfoForEContentItem(groupedWork, itemInfo, record);
 			}else{
-				loadScopeInfoForPrintIlsItem(recordInfo, groupedWork.getTargetAudiences(), itemInfo, record);
+				loadScopeInfoForPrintIlsItem(groupedWork, recordInfo, groupedWork.getTargetAudiences(), itemInfo, record);
 			}
 		}
 	}
@@ -901,7 +902,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			Scope.InclusionResult result = curScope.isItemPartOfScope(profileType, itemLocation, "", null, groupedWork.getTargetAudiences(), format, false, false, true, record, originalUrl);
 			if (result.isIncluded){
 				ScopingInfo scopingInfo = itemInfo.addScope(curScope);
-
+				groupedWork.addScopingInfo(curScope.getScopeName(), scopingInfo);
 				if (curScope.isLocationScope()) {  //Either a location scope or both library and location scope
 					boolean itemIsOwned = curScope.isItemOwnedByScope(fullKey, profileType, itemLocation, "");
 					scopingInfo.setLocallyOwned(itemIsOwned);
@@ -919,7 +920,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		}
 	}
 
-	private void loadScopeInfoForPrintIlsItem(RecordInfo recordInfo, TreeSet<String> audiences, ItemInfo itemInfo, Record record) {
+	private void loadScopeInfoForPrintIlsItem(GroupedWorkSolr groupedWork, RecordInfo recordInfo, TreeSet<String> audiences, ItemInfo itemInfo, Record record) {
 		//Determine Availability
 		boolean available = isItemAvailable(itemInfo);
 
@@ -952,6 +953,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			Scope.InclusionResult result = curScope.isItemPartOfScope(profileType, itemLocation, itemSublocation, itemInfo.getITypeCode(), audiences, primaryFormat, isHoldableUnscoped, false, false, record, originalUrl);
 			if (result.isIncluded){
 				ScopingInfo scopingInfo = itemInfo.addScope(curScope);
+				groupedWork.addScopingInfo(curScope.getScopeName(), scopingInfo);
 
 				if (originalUrl != null && !originalUrl.equals(result.localUrl)){
 					scopingInfo.setLocalUrl(result.localUrl);

@@ -427,6 +427,7 @@ class OverDriveProcessor {
 										}
 										if (okToInclude) {
 											ScopingInfo scopingInfo = itemInfo.addScope(scope);
+											groupedWork.addScopingInfo(scope.getScopeName(), scopingInfo);
 										}
 									}
 								}
@@ -449,6 +450,7 @@ class OverDriveProcessor {
 										}
 										if (okToInclude) {
 											ScopingInfo scopingInfo = itemInfo.addScope(curScope);
+											groupedWork.addScopingInfo(curScope.getScopeName(), scopingInfo);
 											if (curScope.isLocationScope()) {
 												scopingInfo.setLocallyOwned(true);
 												scopingInfo.setLibraryOwned(true);

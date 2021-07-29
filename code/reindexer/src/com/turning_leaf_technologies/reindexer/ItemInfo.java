@@ -321,10 +321,6 @@ public class ItemInfo{
 		return scopingInfo;
 	}
 
-	boolean isValidForScope(Scope scope){
-		return scopingInfo.containsKey(scope.getScopeName());
-	}
-
 	boolean isValidForScope(String scopeName){
 		return scopingInfo.containsKey(scopeName);
 	}

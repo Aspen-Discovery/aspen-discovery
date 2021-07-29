@@ -98,6 +98,9 @@ public class GroupedWorkSolr implements Cloneable {
 	private final HashSet<Long> userRatingLink = new HashSet<>();
 	private final HashSet<Long> userNotInterestedLink = new HashSet<>();
 
+	//Store a list of scopes for the work
+	private HashMap<String, ArrayList<ScopingInfo>> relatedScopes = new HashMap<>();
+
 	public GroupedWorkSolr(GroupedWorkIndexer groupedWorkIndexer, Logger logger) {
 		this.logger = logger;
 		this.groupedWorkIndexer = groupedWorkIndexer;
@@ -198,6 +201,8 @@ public class GroupedWorkSolr implements Cloneable {
 		clonedWork.upcs = (HashMap<String, Long>) upcs.clone();
 		// noinspection unchecked
 		clonedWork.systemLists = (HashSet<String>) systemLists.clone();
+		// noinspection unchecked
+		clonedWork.relatedScopes = (HashMap<String, ArrayList<ScopingInfo>>) relatedScopes.clone();
 
 		return clonedWork;
 	}
@@ -412,6 +417,11 @@ public class GroupedWorkSolr implements Cloneable {
 		return doc;
 	}
 
+	public void addScopingInfo(String scopeName, ScopingInfo scopingInfo){
+		ArrayList<ScopingInfo> scopingInfoForScope = relatedScopes.computeIfAbsent(scopeName, k -> new ArrayList<>());
+		scopingInfoForScope.add(scopingInfo);
+	}
+
 	private String getPrimaryUpc() {
 		String primaryUpc = null;
 		long maxUsage = 0;
@@ -469,36 +479,47 @@ public class GroupedWorkSolr implements Cloneable {
 	private void addScopedFieldsToDocument(SolrInputDocument doc, BaseLogEntry logEntry) {
 		//Load information based on scopes.  This has some pretty severe performance implications since we potentially
 		//have a lot of scopes and a lot of items & records.
-		HashMap <String, HashSet<String>> multiValuedScopedFields = new HashMap<>();
-		int numScopesForWork = 0;
-		for (RecordInfo curRecord : relatedRecords.values()) {
-			if (groupedWorkIndexer.isStoreRecordDetailsInSolr()) { doc.addField("record_details", curRecord.getDetails()); }
-			for (ItemInfo curItem : curRecord.getRelatedItems()) {
-				if (groupedWorkIndexer.isStoreRecordDetailsInSolr()) { doc.addField("item_details", curItem.getDetails(logEntry)); }
+		if (groupedWorkIndexer.isStoreRecordDetailsInSolr()) {
+			for (RecordInfo curRecord : relatedRecords.values()) {
+				doc.addField("record_details", curRecord.getDetails());
+				for (ItemInfo curItem : curRecord.getRelatedItems()) {
+					doc.addField("item_details", curItem.getDetails(logEntry));
+				}
+			}
+		}
 
-				HashSet<String> formats = new HashSet<>();
+		doc.setField("scope_has_related_records", relatedScopes.keySet());
+		for (String scopeName : relatedScopes.keySet()){
+			HashSet<String> formatsForScope = new HashSet<>();
+			HashSet<String> formatCategoriesForScope = new HashSet<>();
+			HashSet<String> collectionsForScope = new HashSet<>();
+			HashSet<String> detailedLocationsForScope = new HashSet<>();
+			HashSet<String> shelfLocationsForScope = new HashSet<>();
+			HashSet<String> iTypesForScope = new HashSet<>();
+			HashSet<String> eContentSourcesForScope = new HashSet<>();
+			HashSet<String> localCallNumbersForScope = new HashSet<>();
+			String sortableCallNumberForScope = null;
+			Long daysSinceAddedForScope = null;
+			long libBoost = 1;
+
+
+			HashMap<String, HashSet<String>> multiValuedScopedFields = new HashMap<>();
+			ArrayList<ScopingInfo> scopingInfoForScope = relatedScopes.get(scopeName);
+			for (ScopingInfo scopingInfo : scopingInfoForScope) {
+				if (groupedWorkIndexer.isStoreRecordDetailsInSolr()) {
+					setScopedField(multiValuedScopedFields, "scoping_details_" + scopeName, scopingInfo.getScopingDetails());
+				}
+
+				ItemInfo curItem = scopingInfo.getItem();
 				if (curItem.getFormat() != null) {
-					formats.add(curItem.getFormat());
+					formatsForScope.add(curItem.getFormat());
 				} else {
-					formats = curRecord.getFormats();
+					formatsForScope = curItem.getRecordInfo().getFormats();
 				}
-				HashSet<String> formatCategories = new HashSet<>();
 				if (curItem.getFormatCategory() != null) {
-					formatCategories.add(curItem.getFormatCategory());
+					formatCategoriesForScope.add(curItem.getFormatCategory());
 				} else {
-					formatCategories = curRecord.getFormatCategories();
-				}
-				//eAudiobooks are considered both Audiobooks and eBooks by some people
-				if (formats.contains("eAudiobook")) {
-					formatCategories.add("eBook");
-				}
-				if (formats.contains("CD + Book")) {
-					formatCategories.add("Books");
-					formatCategories.add("Audio Books");
-				}
-				if (formats.contains("VOX Books")) {
-					formatCategories.add("Books");
-					formatCategories.add("Audio Books");
+					formatCategoriesForScope = curItem.getRecordInfo().getFormatCategories();
 				}
 
 				Long daysSinceAdded;
@@ -525,68 +546,84 @@ public class GroupedWorkSolr implements Cloneable {
 					}
 				}
 
-				HashMap<String, ScopingInfo> curScopingInfo = curItem.getScopingInfo();
-				Set<String> scopingNames = curScopingInfo.keySet();
-				for (String curScopeName : scopingNames) {
-					numScopesForWork++;
-					ScopingInfo curScope = curScopingInfo.get(curScopeName);
-					if (groupedWorkIndexer.isStoreRecordDetailsInSolr()) { setScopedField(multiValuedScopedFields, "scoping_details_" + curScopeName, curScope.getScopingDetails()); }
-					//if we do that, we don't need to filter within PHP
-					setScopedField(multiValuedScopedFields, "scope_has_related_records", curScopeName);
+				//Setup ownership & availability toggle values
+				setupAvailabilityToggleAndOwnershipForItemWithinScope(curItem.getRecordInfo(), curItem, scopeName, scopingInfo, multiValuedScopedFields);
 
-					setScopedField(multiValuedScopedFields, "format_".concat(curScopeName), formats);
-					setScopedField(multiValuedScopedFields,  "format_category_".concat(curScopeName), formatCategories);
+				if (scopingInfo.isLocallyOwned() || scopingInfo.isLibraryOwned() || scopingInfo.getScope().getGroupedWorkDisplaySettings().isIncludeAllRecordsInShelvingFacets()) {
+					collectionsForScope.add(curItem.getCollection());
+					detailedLocationsForScope.add(curItem.getDetailedLocation());
+					shelfLocationsForScope.add(curItem.getShelfLocation());
 
-					//Setup ownership & availability toggle values
-					setupAvailabilityToggleAndOwnershipForItemWithinScope(curRecord, curItem, curScopeName, curScope, multiValuedScopedFields);
-
-					Scope curScopeDetails = curScope.getScope();
-					if (curScope.isLocallyOwned() || curScope.isLibraryOwned() || curScopeDetails.getGroupedWorkDisplaySettings().isIncludeAllRecordsInShelvingFacets()) {
-						setScopedField(multiValuedScopedFields, "collection_".concat(curScopeName), curItem.getCollection());
-						setScopedField(multiValuedScopedFields, "detailed_location_".concat(curScopeName), curItem.getDetailedLocation());
-						setScopedField(multiValuedScopedFields, "shelf_location_".concat(curScopeName), curItem.getShelfLocation());
+				}
+				if (curItem.isEContent() || scopingInfo.isLocallyOwned() || scopingInfo.isLibraryOwned() || scopingInfo.getScope().getGroupedWorkDisplaySettings().isIncludeAllRecordsInDateAddedFacets()) {
+					if (daysSinceAddedForScope == null || daysSinceAdded > daysSinceAddedForScope){
+						daysSinceAddedForScope = daysSinceAdded;
 					}
-					if (curItem.isEContent() || curScope.isLocallyOwned() || curScope.isLibraryOwned() || curScopeDetails.getGroupedWorkDisplaySettings().isIncludeAllRecordsInDateAddedFacets()) {
-						updateMaxValueField(doc, "local_days_since_added_".concat(curScopeName), daysSinceAdded);
-					}
+				}
 
-					if (curScope.isLocallyOwned() || curScope.isLibraryOwned()) {
-						if (curItem.isAvailable()) {
-							updateMaxValueField(doc, "lib_boost_".concat(curScopeName), GroupedWorkIndexer.availableAtBoostValue);
-						} else {
-							updateMaxValueField(doc, "lib_boost_".concat(curScopeName), GroupedWorkIndexer.ownedByBoostValue);
+				if (scopingInfo.isLocallyOwned() || scopingInfo.isLibraryOwned()) {
+					if (curItem.isAvailable()) {
+						if (libBoost < GroupedWorkIndexer.availableAtBoostValue){
+							libBoost = GroupedWorkIndexer.availableAtBoostValue;
 						}
 					} else {
-						//Make sure we have a minimum value so we don't multiply relevance by 0
-						updateMaxValueField(doc, "lib_boost_".concat(curScopeName), 1);
+						if (libBoost < GroupedWorkIndexer.ownedByBoostValue){
+							libBoost = GroupedWorkIndexer.ownedByBoostValue;
+						}
 					}
+				}
 
-					setScopedField(multiValuedScopedFields, "itype_".concat(curScopeName), curItem.getTrimmedIType());
-					if (curItem.isEContent()) {
-						setScopedField(multiValuedScopedFields, "econtent_source_".concat(curScopeName), curItem.getTrimmedEContentSource());
-					}
-					if (curScope.isLocallyOwned() || curScope.isLibraryOwned() || !curScopeDetails.isRestrictOwningLibraryAndLocationFacets()) {
-						setScopedField(multiValuedScopedFields, "local_callnumber_".concat(curScopeName), curItem.getCallNumber());
-						setSingleValuedFieldValue(doc, "callnumber_sort_".concat(curScopeName), curItem.getSortableCallNumber());
+				iTypesForScope.add(curItem.getTrimmedIType());
+
+				if (curItem.isEContent()) {
+					eContentSourcesForScope.add(curItem.getTrimmedEContentSource());
+				}
+				if (scopingInfo.isLocallyOwned() || scopingInfo.isLibraryOwned() || !scopingInfo.getScope().isRestrictOwningLibraryAndLocationFacets()) {
+					localCallNumbersForScope.add(curItem.getCallNumber());
+					if (sortableCallNumberForScope == null) {
+						sortableCallNumberForScope = curItem.getSortableCallNumber();
 					}
 				}
 			}
-		}
-		//Set the scoped fields in the document now that they have been collected
-		for(String fieldName : multiValuedScopedFields.keySet()){
-			doc.addField(fieldName, multiValuedScopedFields.get(fieldName));
-		}
 
-		logger.info("Work " + id + " processed " + numScopesForWork + " scopes");
+			//eAudiobooks are considered both Audiobooks and eBooks by some people
+			if (formatsForScope.contains("eAudiobook")) {
+				formatCategoriesForScope.add("eBook");
+			}
+			if (formatsForScope.contains("CD + Book")) {
+				formatCategoriesForScope.add("Books");
+				formatCategoriesForScope.add("Audio Books");
+			}
+			if (formatsForScope.contains("VOX Books")) {
+				formatCategoriesForScope.add("Books");
+				formatCategoriesForScope.add("Audio Books");
+			}
+			doc.addField("format_".concat(scopeName), formatsForScope);
+			doc.addField("format_category_".concat(scopeName), formatCategoriesForScope);
+			doc.addField("collection_".concat(scopeName), collectionsForScope);
+			doc.addField("detailed_location_".concat(scopeName), detailedLocationsForScope);
+			doc.addField("shelf_location_".concat(scopeName), shelfLocationsForScope);
+			if (daysSinceAddedForScope != null){
+				doc.addField("local_days_since_added_".concat(scopeName), daysSinceAddedForScope);
+			}
+			doc.addField("lib_boost_".concat(scopeName), libBoost);
+			doc.addField("itype_".concat(scopeName), iTypesForScope);
+			doc.addField("local_callnumber_".concat(scopeName), localCallNumbersForScope);
+			doc.addField("callnumber_sort_".concat(scopeName), sortableCallNumberForScope);
+			doc.addField("econtent_source_".concat(scopeName), eContentSourcesForScope);
 
-		//Now that we know the latest number of days added for each scope, we can set the time since added facet
-		for (Scope scope : groupedWorkIndexer.getScopes()) {
-			SolrInputField field = doc.getField("local_days_since_added_".concat(scope.getScopeName()));
+			for (String fieldName : multiValuedScopedFields.keySet()){
+				doc.addField(fieldName, multiValuedScopedFields.get(fieldName));
+			}
+
+			SolrInputField field = doc.getField("local_days_since_added_".concat(scopeName));
 			if (field != null) {
 				Long daysSinceAdded = (Long) field.getFirstValue();
-				doc.addField("local_time_since_added_".concat(scope.getScopeName()), DateUtils.getTimeSinceAdded(daysSinceAdded));
+				doc.addField("local_time_since_added_".concat(scopeName), DateUtils.getTimeSinceAdded(daysSinceAdded));
 			}
 		}
+
+		logger.info("Work " + id + " processed " + relatedScopes.size() + " scopes");
 	}
 
 	private void setScopedField(HashMap<String, HashSet<String>> scopedFields, String fieldName, String newValues) {
