@@ -74,6 +74,7 @@ class Library extends DataObject
 	public $allowHomeLibraryUpdates;
 	public $allowUsernameUpdates;
 	public $allowFreezeHolds;   //tinyint(4)
+	public $maxDaysToFreeze;
 	public $showHoldButton;
 	public $showHoldButtonInSearchResults;
 	public $showHoldButtonForUnavailableOnly;
@@ -590,6 +591,7 @@ class Library extends DataObject
 					'allowRememberPickupLocation'       => array('property'=>'allowRememberPickupLocation', 'type'=>'checkbox','label'=>'Allow Patrons to remember their preferred pickup location', 'description'=>'Whether or not patrons can remember their preferred pickup location when placing holds', 'hideInLists' => true, 'default', 'true'),
 					'showHoldCancelDate'                => array('property'=>'showHoldCancelDate', 'type'=>'checkbox', 'label'=>'Show Cancellation Date', 'description'=>'Whether or not the patron should be able to set a cancellation date (not needed after date) when placing holds.', 'hideInLists' => true, 'default' => 1),
 					'allowFreezeHolds'                  => array('property'=>'allowFreezeHolds', 'type'=>'checkbox', 'label'=>'Allow Freezing Holds', 'description'=>'Whether or not the user can freeze their holds.', 'hideInLists' => true, 'default' => 1),
+					'maxDaysToFreeze'                  => array('property'=>'maxDaysToFreeze', 'type'=>'integer', 'label'=>'Max Days to Freeze Holds', 'description'=>'Number of days that a user can suspend a hold for. Use -1 for no limit.', 'hideInLists' => true),
 					'defaultNotNeededAfterDays'         => array('property'=>'defaultNotNeededAfterDays', 'type'=>'integer', 'label'=>'Default Not Needed After Days', 'description'=>'Number of days to use for not needed after date by default. Use -1 for no default.', 'hideInLists' => true,),
 					'showDetailedHoldNoticeInformation' => array('property' => 'showDetailedHoldNoticeInformation', 'type' => 'checkbox', 'label' => 'Show Detailed Hold Notice Information', 'description' => 'Whether or not the user should be presented with detailed hold notification information, i.e. you will receive an email/phone call to xxx when the hold is available', 'hideInLists' => true, 'default' => 1, 'permissions' => ['Library ILS Connection']),
 					'inSystemPickupsOnly'               => array('property'=>'inSystemPickupsOnly', 'type'=>'checkbox', 'label'=>'In System Pickups Only', 'description'=>'Restrict pickup locations to only locations within this library system.', 'hideInLists' => true, 'default' => true, 'permissions' => ['Library ILS Connection']),

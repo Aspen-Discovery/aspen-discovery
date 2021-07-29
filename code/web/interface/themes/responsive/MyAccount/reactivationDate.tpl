@@ -5,7 +5,7 @@
 		<input type="hidden" name="recordId" value="{$recordId}" id="recordId">
 		<div class="form-group">
 			<label for="reactivationDate">Select the date when you want the hold {translate text="thawed"}.</label>
-			<input type="text" name="reactivationDate" id="reactivationDate" class="form-control input-sm{if !$reactivateDateNotRequired} required{/if}">
+			<input type="date" name="reactivationDate" id="reactivationDate" min="{$smarty.now|date_format:"%Y-%m-%d"}" {if $allowMaxDaysToFreeze > -1}max="{$maxDaysToFreeze|date_format:"%Y-%m-%d"}"{/if} class="form-control{if !$reactivateDateNotRequired} required{/if}">
 		</div>
 		{if $reactivateDateNotRequired}
 			<p class="alert alert-info">
@@ -20,10 +20,6 @@
 				submitHandler: function(){
 					AspenDiscovery.Account.doFreezeHoldWithReactivationDate('#doFreezeHoldWithReactivationDate');
 				}
-			});
-			$( "#reactivationDate" ).datepicker({
-				startDate: Date(),
-				orientation:"top"
 			});
 		});
 		{/literal}

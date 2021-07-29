@@ -1623,7 +1623,7 @@ class Koha extends AbstractIlsDriver
 			$postParams = "";
 			if (strlen($dateToReactivate) > 0) {
 				$postParams = [];
-				list($month, $day, $year) = explode('/', $dateToReactivate);
+				list($year,$month,$day) = explode('-', $dateToReactivate);
 				$postParams['end_date'] = "$year-$month-$day";
 				$postParams = json_encode($postParams);
 			}
