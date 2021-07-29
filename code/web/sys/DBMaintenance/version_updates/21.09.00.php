@@ -305,6 +305,15 @@ function getUpdates21_09_00() : array
 				  where dest.id = src.groupedWorkItemId",
 			]
 		], //store_scope_details_in_concatenated_fields
+		'increase_scoping_field_lengths' => [
+			'title' => 'Increase Scoping Field Lengths',
+			'description' => 'Increase Scoping Field Lengths for libraries with lots of locations',
+			'sql' => [
+				"ALTER TABLE grouped_work_record_items CHANGE COLUMN locationOwnedScopes locationOwnedScopes VARCHAR(1000) DEFAULT '~'",
+				"ALTER TABLE grouped_work_record_items CHANGE COLUMN libraryOwnedScopes libraryOwnedScopes VARCHAR(1000) DEFAULT '~'",
+				"ALTER TABLE grouped_work_record_items CHANGE COLUMN recordIncludedScopes recordIncludedScopes VARCHAR(1000) DEFAULT '~'",
+			]
+		], //increase_scoping_field_lengths
 		'local_urls' => [
 			'title' => 'Setup local URLs',
 			'description' => 'Setup a local urls table to track URLs for sideloads',
