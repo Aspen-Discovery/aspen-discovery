@@ -35,17 +35,17 @@
 				<div class="form-group">
 					{literal}
 					<script type="text/javascript">
+						var form = document.getElementById('dbMaintenanceForm');
+						form.addEventListener('submit', submitDBMaintenance);
 						function submitDBMaintenance() {
-							var startDBUpdatesButton = $('#startDBUpdates');
-							startDBUpdatesButton.prop('disabled', true);
-							startDBUpdatesButton.addClass('disabled');
+							$('#startDBUpdates').prop('disabled', true);
+							$('#startDBUpdates').addClass('disabled');
 							$('#startDBUpdates .fa-spinner').removeClass('hidden');
-							$('#dbMaintenanceForm').submit();
 							return true;
 						}
 					</script>
 					{/literal}
-					<button type="submit" id="startDBUpdates" name="submit" class="btn btn-primary" onclick="return submitDBMaintenance();" onkeypress="return submitDBMaintenance();"><i class='fas fa-spinner fa-spin hidden' role='status' aria-hidden='true'></i>&nbsp;{translate text="Run Selected Updates"}</button>
+					<button type="submit" id="startDBUpdates" name="submit" class="btn btn-primary"><i class='fas fa-spinner fa-spin hidden' role='status' aria-hidden='true'></i>&nbsp;{translate text="Run Selected Updates"}</button>
 				</div>
 				<div class="form-group checkbox checkbox-inline">
 					&nbsp; &nbsp;
