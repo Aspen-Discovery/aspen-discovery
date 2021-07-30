@@ -34,6 +34,7 @@ public class HooplaExportMain {
 
 	private static Connection aspenConn;
 	private static PreparedStatement getAllExistingHooplaItemsStmt;
+	private static PreparedStatement addHooplaTitleToDB = null;
 	private static PreparedStatement updateHooplaTitleInDB = null;
 	private static PreparedStatement deleteHooplaItemStmt;
 
@@ -234,7 +235,8 @@ public class HooplaExportMain {
 						allRecordsRS.getLong("id"),
 						hooplaId,
 						allRecordsRS.getLong("rawChecksum"),
-						allRecordsRS.getBoolean("active")
+						allRecordsRS.getBoolean("active"),
+						allRecordsRS.getLong("rawResponseLength")
 				);
 				existingRecords.put(hooplaId, newTitle);
 			}
@@ -405,7 +407,7 @@ public class HooplaExportMain {
 				boolean recordUpdated = false;
 				if (existingTitle != null) {
 					//Record exists
-					if (existingTitle.getChecksum() != rawChecksum){
+					if ((existingTitle.getChecksum() != rawChecksum) || (existingTitle.getRawResponseLength() != rawResponse.length())){
 						recordUpdated = true;
 						logEntry.incUpdated();
 						if (existingTitle.isActive() != curTitleActive) {
@@ -442,21 +444,45 @@ public class HooplaExportMain {
 					deleteHooplaItemStmt.setLong(1, existingTitle.getId());
 					deleteHooplaItemStmt.executeUpdate();
 				}else {
-					if (recordUpdated || doFullReload){
-						updateHooplaTitleInDB.setLong(1, hooplaId);
-						updateHooplaTitleInDB.setBoolean(2, true);
-						updateHooplaTitleInDB.setString(3, curTitle.getString("title"));
-						updateHooplaTitleInDB.setString(4, curTitle.getString("kind"));
-						updateHooplaTitleInDB.setBoolean(5, curTitle.getBoolean("pa"));
-						updateHooplaTitleInDB.setBoolean(6, curTitle.getBoolean("demo"));
-						updateHooplaTitleInDB.setBoolean(7, curTitle.getBoolean("profanity"));
-						updateHooplaTitleInDB.setString(8, curTitle.has("rating") ? curTitle.getString("rating") : "");
-						updateHooplaTitleInDB.setBoolean(9, curTitle.getBoolean("abridged"));
-						updateHooplaTitleInDB.setBoolean(10, curTitle.getBoolean("children"));
-						updateHooplaTitleInDB.setDouble(11, curTitle.getDouble("price"));
-						updateHooplaTitleInDB.setLong(12, rawChecksum);
-						updateHooplaTitleInDB.setString(13, rawResponse);
-						updateHooplaTitleInDB.setLong(14, startTimeForLogging);
+					if (existingTitle == null){
+						addHooplaTitleToDB.setLong(1, hooplaId);
+						addHooplaTitleToDB.setBoolean(2, true);
+						addHooplaTitleToDB.setString(3, curTitle.getString("title"));
+						addHooplaTitleToDB.setString(4, curTitle.getString("kind"));
+						addHooplaTitleToDB.setBoolean(5, curTitle.getBoolean("pa"));
+						addHooplaTitleToDB.setBoolean(6, curTitle.getBoolean("demo"));
+						addHooplaTitleToDB.setBoolean(7, curTitle.getBoolean("profanity"));
+						addHooplaTitleToDB.setString(8, curTitle.has("rating") ? curTitle.getString("rating") : "");
+						addHooplaTitleToDB.setBoolean(9, curTitle.getBoolean("abridged"));
+						addHooplaTitleToDB.setBoolean(10, curTitle.getBoolean("children"));
+						addHooplaTitleToDB.setDouble(11, curTitle.getDouble("price"));
+						addHooplaTitleToDB.setLong(12, rawChecksum);
+						addHooplaTitleToDB.setString(13, rawResponse);
+						addHooplaTitleToDB.setLong(14, startTimeForLogging);
+						try {
+							addHooplaTitleToDB.executeUpdate();
+
+							String groupedWorkId = groupRecord(curTitle, hooplaId);
+							indexRecord(groupedWorkId);
+						}catch (DataTruncation e) {
+							logEntry.addNote("Record " + hooplaId + " " + curTitle.getString("title") + " contained invalid data " + e.toString());
+						}catch (SQLException e){
+							logEntry.incErrors("Error updating hoopla data in database for record " + hooplaId + " " + curTitle.getString("title"), e);
+						}
+					}else if (recordUpdated || doFullReload){
+						updateHooplaTitleInDB.setBoolean(1, true);
+						updateHooplaTitleInDB.setString(2, curTitle.getString("title"));
+						updateHooplaTitleInDB.setString(3, curTitle.getString("kind"));
+						updateHooplaTitleInDB.setBoolean(4, curTitle.getBoolean("pa"));
+						updateHooplaTitleInDB.setBoolean(5, curTitle.getBoolean("demo"));
+						updateHooplaTitleInDB.setBoolean(6, curTitle.getBoolean("profanity"));
+						updateHooplaTitleInDB.setString(7, curTitle.has("rating") ? curTitle.getString("rating") : "");
+						updateHooplaTitleInDB.setBoolean(8, curTitle.getBoolean("abridged"));
+						updateHooplaTitleInDB.setBoolean(9, curTitle.getBoolean("children"));
+						updateHooplaTitleInDB.setDouble(10, curTitle.getDouble("price"));
+						updateHooplaTitleInDB.setLong(11, rawChecksum);
+						updateHooplaTitleInDB.setString(12, rawResponse);
+						updateHooplaTitleInDB.setLong(13, existingTitle.getId());
 						try {
 							updateHooplaTitleInDB.executeUpdate();
 
@@ -557,10 +583,10 @@ public class HooplaExportMain {
 			String databaseConnectionInfo = ConfigUtil.cleanIniValue(configIni.get("Database", "database_aspen_jdbc"));
 			if (databaseConnectionInfo != null) {
 				aspenConn = DriverManager.getConnection(databaseConnectionInfo);
-				getAllExistingHooplaItemsStmt = aspenConn.prepareStatement("SELECT id, hooplaId, rawChecksum, active from hoopla_export");
-				updateHooplaTitleInDB = aspenConn.prepareStatement("INSERT INTO hoopla_export (hooplaId, active, title, kind, pa, demo, profanity, rating, abridged, children, price, rawChecksum, rawResponse, dateFirstDetected) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,COMPRESS(?),?) ON DUPLICATE KEY " +
-						"UPDATE active = VALUES(active), title = VALUES(title), kind = VALUES(kind), pa = VALUES(pa), demo = VALUES(demo), profanity = VALUES(profanity), " +
-						"rating = VALUES(rating), abridged = VALUES(abridged), children = VALUES(children), price = VALUES(price), rawChecksum = VALUES(rawChecksum), rawResponse = VALUES(rawResponse)");
+				getAllExistingHooplaItemsStmt = aspenConn.prepareStatement("SELECT id, hooplaId, rawChecksum, active, UNCOMPRESSED_LENGTH(rawResponse) as rawResponseLength from hoopla_export");
+				addHooplaTitleToDB = aspenConn.prepareStatement("INSERT INTO hoopla_export (hooplaId, active, title, kind, pa, demo, profanity, rating, abridged, children, price, rawChecksum, rawResponse, dateFirstDetected) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,COMPRESS(?),?) ");
+				updateHooplaTitleInDB = aspenConn.prepareStatement("UPDATE hoopla_export set active = ?, title = ?, kind = ?, pa = ?, demo = ?, profanity = ?, " +
+						"rating = ?, abridged = ?, children = ?, price = ?, rawChecksum = ?, rawResponse = COMPRESS(?) where id = ?");
 				deleteHooplaItemStmt = aspenConn.prepareStatement("DELETE FROM hoopla_export where id = ?");
 			}else{
 				logger.error("Aspen database connection information was not provided");
@@ -575,6 +601,8 @@ public class HooplaExportMain {
 
 	private static void disconnectDatabase(Connection aspenConn) {
 		try{
+			addHooplaTitleToDB.close();
+			addHooplaTitleToDB = null;
 			updateHooplaTitleInDB.close();
 			updateHooplaTitleInDB = null;
 			deleteHooplaItemStmt.close();
