@@ -201,7 +201,7 @@ public class HooplaExportMain {
 		int numDeleted = 0;
 		try {
 			for (HooplaTitle hooplaTitle : existingRecords.values()) {
-				if (hooplaTitle.isActive()) {
+				if (!hooplaTitle.isFoundInExport() && hooplaTitle.isActive()) {
 					deleteHooplaItemStmt.setLong(1, hooplaTitle.getId());
 					deleteHooplaItemStmt.executeUpdate();
 					RemoveRecordFromWorkResult result = getRecordGroupingProcessor().removeRecordFromGroupedWork("hoopla", Long.toString(hooplaTitle.getHooplaId()));
@@ -420,7 +420,7 @@ public class HooplaExportMain {
 							logEntry.incUpdated();
 						}
 					}
-					existingRecords.remove(hooplaId);
+					existingTitle.setFoundInExport(true);
 				}else{
 					if (!curTitleActive){
 						logEntry.incSkipped();

@@ -6,6 +6,7 @@ class HooplaTitle {
 	private long checksum;
 	private boolean active;
 	private long rawResponseLength;
+	private boolean foundInExport;
 
 	HooplaTitle(long id, long hooplaId, long checksum, boolean active, long rawResponseLength) {
 		this.id = id;
@@ -34,4 +35,12 @@ class HooplaTitle {
 	long getRawResponseLength() {
 	    return rawResponseLength;
     }
+
+	public boolean isFoundInExport() {
+		return foundInExport;
+	}
+
+	public void setFoundInExport(boolean foundInExport) {
+		this.foundInExport = foundInExport;
+	}
 }

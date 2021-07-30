@@ -56,6 +56,8 @@ class ExtractOverDriveInfo {
 	private PreparedStatement isProductAvailableInOtherSettingsStmt;
 	private PreparedStatement deleteProductStmt;
 	private PreparedStatement updateProductMetadataStmt;
+	private PreparedStatement getExistingMetadataIdStmt;
+	private PreparedStatement addMetadataStmt;
 	private PreparedStatement updateMetaDataStmt;
 	private PreparedStatement clearFormatsStmt;
 	private PreparedStatement addFormatStmt;
@@ -478,9 +480,9 @@ class ExtractOverDriveInfo {
 		deleteProductStmt = dbConn.prepareStatement("UPDATE overdrive_api_products SET deleted = 1, dateDeleted = ? where id = ?");
 		isProductAvailableInOtherSettingsStmt = dbConn.prepareStatement("SELECT count(*) as availabilityCount from overdrive_api_product_availability where productId = ? and settingId <> ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 		updateProductMetadataStmt = dbConn.prepareStatement("UPDATE overdrive_api_products SET lastMetadataCheck = ?, lastMetadataChange = ? where id = ?");
-		updateMetaDataStmt = dbConn.prepareStatement("INSERT INTO overdrive_api_product_metadata set productId = ?, checksum = ?, sortTitle = ?, publisher = ?, publishDate = ?, isPublicDomain = ?, isPublicPerformanceAllowed = ?, shortDescription = ?, fullDescription = ?, starRating = ?, popularity =?, thumbnail=?, cover=?, isOwnedByCollections=?, rawData=COMPRESS(?) " +
-				"ON DUPLICATE KEY UPDATE " +
-				"checksum = VALUES(checksum), sortTitle = VALUES(sortTitle), publisher = VALUES(publisher), publishDate = VALUES(publishDate), isPublicDomain = VALUES(isPublicDomain), isPublicPerformanceAllowed = VALUES(isPublicPerformanceAllowed), shortDescription = VALUES(shortDescription), fullDescription = VALUES(fullDescription), starRating = VALUES(starRating), popularity = VALUES(popularity), thumbnail=VALUES(thumbnail), cover=VALUES(cover), isOwnedByCollections=VALUES(isOwnedByCollections), rawData=VALUES(rawData)");
+		getExistingMetadataIdStmt = dbConn.prepareStatement("SELECT id, UNCOMPRESSED_LENGTH(rawData) as rawDataLength from overdrive_api_product_metadata where productId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+		addMetadataStmt = dbConn.prepareStatement("INSERT INTO overdrive_api_product_metadata (productId, checksum, sortTitle, publisher, publishDate, isPublicDomain, isPublicPerformanceAllowed, shortDescription, fullDescription, starRating, popularity, thumbnail, cover, isOwnedByCollections, rawData) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,COMPRESS(?))");
+		updateMetaDataStmt = dbConn.prepareStatement("UPDATE overdrive_api_product_metadata SET checksum = ?, sortTitle = ?, publisher = ?, publishDate = ?, isPublicDomain = ?, isPublicPerformanceAllowed = ?, shortDescription = ?, fullDescription = ?, starRating = ?, popularity = ?, thumbnail=?, cover=?, isOwnedByCollections=?, rawData=COMPRESS(?) WHERE id = ?");
 		clearFormatsStmt = dbConn.prepareStatement("DELETE FROM overdrive_api_product_formats where productId = ?");
 		addFormatStmt = dbConn.prepareStatement("INSERT INTO overdrive_api_product_formats set id = NULL, productId = ?, textId = ?, numericId = ?, name = ?, fileName = ?, fileSize = ?, partCount = ?, sampleSource_1 = ?, sampleUrl_1 = ?, sampleSource_2 = ?, sampleUrl_2 = ? ON DUPLICATE KEY update id = id", PreparedStatement.RETURN_GENERATED_KEYS);
 		clearIdentifiersStmt = dbConn.prepareStatement("DELETE FROM overdrive_api_product_identifiers where productId = ?");
@@ -1106,46 +1108,95 @@ class ExtractOverDriveInfo {
 			}
 
 			int curCol = 0;
-			updateMetaDataStmt.setLong(++curCol, overDriveInfo.getDatabaseId());
-			updateMetaDataStmt.setLong(++curCol, metadataChecksum);
-			updateMetaDataStmt.setString(++curCol, metaData.has("sortTitle") ? metaData.getString("sortTitle") : "");
-			updateMetaDataStmt.setString(++curCol, metaData.has("publisher") ? metaData.getString("publisher") : "");
-			//Grab the textual version of publish date rather than the actual date
-			if (metaData.has("publishDateText")){
-				String publishDateText = metaData.getString("publishDateText");
-				if (publishDateText.matches("\\d{2}/\\d{2}/\\d{4}")){
-					publishDateText = publishDateText.substring(6, 10);
-					updateMetaDataStmt.setLong(++curCol, Long.parseLong(publishDateText));
+			//Check to see if we have metadata saved already
+			getExistingMetadataIdStmt.setLong(1, overDriveInfo.getDatabaseId());
+			ResultSet getExistingMetadataIdRS = getExistingMetadataIdStmt.executeQuery();
+			if (getExistingMetadataIdRS.next()){
+				long metadataId = getExistingMetadataIdRS.getLong("id");
+
+				updateMetaDataStmt.setLong(++curCol, metadataChecksum);
+				updateMetaDataStmt.setString(++curCol, metaData.has("sortTitle") ? metaData.getString("sortTitle") : "");
+				updateMetaDataStmt.setString(++curCol, metaData.has("publisher") ? metaData.getString("publisher") : "");
+				//Grab the textual version of publish date rather than the actual date
+				if (metaData.has("publishDateText")){
+					String publishDateText = metaData.getString("publishDateText");
+					if (publishDateText.matches("\\d{2}/\\d{2}/\\d{4}")){
+						publishDateText = publishDateText.substring(6, 10);
+						updateMetaDataStmt.setLong(++curCol, Long.parseLong(publishDateText));
+					}else{
+						updateMetaDataStmt.setNull(++curCol, Types.INTEGER);
+					}
 				}else{
 					updateMetaDataStmt.setNull(++curCol, Types.INTEGER);
 				}
+
+				updateMetaDataStmt.setBoolean(++curCol, metaData.has("isPublicDomain") && metaData.getBoolean("isPublicDomain"));
+				updateMetaDataStmt.setBoolean(++curCol, metaData.has("isPublicPerformanceAllowed") && metaData.getBoolean("isPublicPerformanceAllowed"));
+				updateMetaDataStmt.setString(++curCol, metaData.has("shortDescription") ? metaData.getString("shortDescription") : "");
+				updateMetaDataStmt.setString(++curCol, metaData.has("fullDescription") ? metaData.getString("fullDescription") : "");
+				updateMetaDataStmt.setDouble(++curCol, metaData.has("starRating") ? metaData.getDouble("starRating") : 0);
+				updateMetaDataStmt.setInt(++curCol, metaData.has("popularity") ? metaData.getInt("popularity") : 0);
+				String thumbnail = "";
+				String cover = "";
+				if (metaData.has("images")){
+					JSONObject imagesData = metaData.getJSONObject("images");
+					if (imagesData.has("thumbnail")){
+						thumbnail = imagesData.getJSONObject("thumbnail").getString("href");
+					}
+					if (imagesData.has("cover")){
+						cover = imagesData.getJSONObject("cover").getString("href");
+					}
+				}
+				updateMetaDataStmt.setString(++curCol, thumbnail);
+				updateMetaDataStmt.setString(++curCol, cover);
+				updateMetaDataStmt.setBoolean(++curCol, metaData.has("isOwnedByCollections") && metaData.getBoolean("isOwnedByCollections"));
+				updateMetaDataStmt.setString(++curCol, metaData.toString(2));
+				updateMetaDataStmt.setLong(++curCol, metadataId);
+
+				updateMetaDataStmt.executeUpdate();
 			}else{
-				updateMetaDataStmt.setNull(++curCol, Types.INTEGER);
-			}
-
-			updateMetaDataStmt.setBoolean(++curCol, metaData.has("isPublicDomain") && metaData.getBoolean("isPublicDomain"));
-			updateMetaDataStmt.setBoolean(++curCol, metaData.has("isPublicPerformanceAllowed") && metaData.getBoolean("isPublicPerformanceAllowed"));
-			updateMetaDataStmt.setString(++curCol, metaData.has("shortDescription") ? metaData.getString("shortDescription") : "");
-			updateMetaDataStmt.setString(++curCol, metaData.has("fullDescription") ? metaData.getString("fullDescription") : "");
-			updateMetaDataStmt.setDouble(++curCol, metaData.has("starRating") ? metaData.getDouble("starRating") : 0);
-			updateMetaDataStmt.setInt(++curCol, metaData.has("popularity") ? metaData.getInt("popularity") : 0);
-			String thumbnail = "";
-			String cover = "";
-			if (metaData.has("images")){
-				JSONObject imagesData = metaData.getJSONObject("images");
-				if (imagesData.has("thumbnail")){
-					thumbnail = imagesData.getJSONObject("thumbnail").getString("href");
+				addMetadataStmt.setLong(++curCol, overDriveInfo.getDatabaseId());
+				addMetadataStmt.setLong(++curCol, metadataChecksum);
+				addMetadataStmt.setString(++curCol, metaData.has("sortTitle") ? metaData.getString("sortTitle") : "");
+				addMetadataStmt.setString(++curCol, metaData.has("publisher") ? metaData.getString("publisher") : "");
+				//Grab the textual version of publish date rather than the actual date
+				if (metaData.has("publishDateText")){
+					String publishDateText = metaData.getString("publishDateText");
+					if (publishDateText.matches("\\d{2}/\\d{2}/\\d{4}")){
+						publishDateText = publishDateText.substring(6, 10);
+						addMetadataStmt.setLong(++curCol, Long.parseLong(publishDateText));
+					}else{
+						addMetadataStmt.setNull(++curCol, Types.INTEGER);
+					}
+				}else{
+					addMetadataStmt.setNull(++curCol, Types.INTEGER);
 				}
-				if (imagesData.has("cover")){
-					cover = imagesData.getJSONObject("cover").getString("href");
-				}
-			}
-			updateMetaDataStmt.setString(++curCol, thumbnail);
-			updateMetaDataStmt.setString(++curCol, cover);
-			updateMetaDataStmt.setBoolean(++curCol, metaData.has("isOwnedByCollections") && metaData.getBoolean("isOwnedByCollections"));
-			updateMetaDataStmt.setString(++curCol, metaData.toString(2));
 
-			updateMetaDataStmt.executeUpdate();
+				addMetadataStmt.setBoolean(++curCol, metaData.has("isPublicDomain") && metaData.getBoolean("isPublicDomain"));
+				addMetadataStmt.setBoolean(++curCol, metaData.has("isPublicPerformanceAllowed") && metaData.getBoolean("isPublicPerformanceAllowed"));
+				addMetadataStmt.setString(++curCol, metaData.has("shortDescription") ? metaData.getString("shortDescription") : "");
+				addMetadataStmt.setString(++curCol, metaData.has("fullDescription") ? metaData.getString("fullDescription") : "");
+				addMetadataStmt.setDouble(++curCol, metaData.has("starRating") ? metaData.getDouble("starRating") : 0);
+				addMetadataStmt.setInt(++curCol, metaData.has("popularity") ? metaData.getInt("popularity") : 0);
+				String thumbnail = "";
+				String cover = "";
+				if (metaData.has("images")){
+					JSONObject imagesData = metaData.getJSONObject("images");
+					if (imagesData.has("thumbnail")){
+						thumbnail = imagesData.getJSONObject("thumbnail").getString("href");
+					}
+					if (imagesData.has("cover")){
+						cover = imagesData.getJSONObject("cover").getString("href");
+					}
+				}
+				addMetadataStmt.setString(++curCol, thumbnail);
+				addMetadataStmt.setString(++curCol, cover);
+				addMetadataStmt.setBoolean(++curCol, metaData.has("isOwnedByCollections") && metaData.getBoolean("isOwnedByCollections"));
+				addMetadataStmt.setString(++curCol, metaData.toString(2));
+
+				addMetadataStmt.executeUpdate();
+			}
+			getExistingMetadataIdRS.close();
 
 			clearFormatsStmt.setLong(1, overDriveInfo.getDatabaseId());
 			clearFormatsStmt.executeUpdate();
