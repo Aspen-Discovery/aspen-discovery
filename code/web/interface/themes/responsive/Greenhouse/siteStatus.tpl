@@ -6,7 +6,7 @@
 	</div>
 
 	<div class='adminTableRegion'>
-		<table class="adminTable table table-striped table-condensed smallText table-sticky" id="adminTable" aria-label="List of Objects">
+		<table class="table table-striped table-condensed smallText table-sticky" id="siteStatusTable" aria-label="List of sites with status">
 			<thead>
 				<tr>
 					<th>Name</th>
