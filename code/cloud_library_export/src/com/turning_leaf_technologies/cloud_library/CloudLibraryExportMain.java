@@ -94,7 +94,7 @@ public class CloudLibraryExportMain {
 	private static int extractCloudLibraryData() {
 		final int[] numChanges = {0};
 		//Process each setting in order.
-		ThreadPoolExecutor es = (ThreadPoolExecutor) Executors.newFixedThreadPool(10);
+		ThreadPoolExecutor es = (ThreadPoolExecutor) Executors.newFixedThreadPool(1);
 		try {
 			PreparedStatement getSettingsStmt = aspenConn.prepareStatement("SELECT * from cloud_library_settings");
 			ResultSet getSettingsRS = getSettingsStmt.executeQuery();
