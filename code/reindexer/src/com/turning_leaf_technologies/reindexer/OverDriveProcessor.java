@@ -26,6 +26,8 @@ class OverDriveProcessor {
 	private PreparedStatement getProductMetadataStmt;
 	private PreparedStatement getProductAvailabilityStmt;
 	private PreparedStatement getProductFormatsStmt;
+	private PreparedStatement doubleDecodeRawMetadataStmt;
+	private PreparedStatement updateRawMetadataStmt;
 	private final SimpleDateFormat publishDateFormatter = new SimpleDateFormat("MM/dd/yyyy");
 	private final SimpleDateFormat publishDateFormatter2 = new SimpleDateFormat("MM/yyyy");
 	private final SimpleDateFormat publishDateFormatter3 = new SimpleDateFormat("yyyy-MM-dd");
@@ -41,6 +43,8 @@ class OverDriveProcessor {
 			getProductMetadataStmt = dbConn.prepareStatement("SELECT id, productId, checksum, sortTitle, publisher, publishDate, isPublicDomain, isPublicPerformanceAllowed, shortDescription, fullDescription, starRating, popularity, UNCOMPRESS(rawData) as rawData, thumbnail, cover, isOwnedByCollections from overdrive_api_product_metadata where productId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			getProductAvailabilityStmt = dbConn.prepareStatement("SELECT * from overdrive_api_product_availability where productId = ? and shared = 0", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			getProductFormatsStmt = dbConn.prepareStatement("SELECT * from overdrive_api_product_formats where productId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			doubleDecodeRawMetadataStmt = dbConn.prepareStatement("SELECT UNCOMPRESS(UNCOMPRESS(rawMetadata)) as rawMetadata from overdrive_api_product_metadata where id = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+			updateRawMetadataStmt = dbConn.prepareStatement("UPDATE overdrive_api_product_metadata SET rawMetadata = COMPRESS(rawMetadata) where id = ?");
 		} catch (SQLException e) {
 			logger.error("Error setting up overdrive processor", e);
 		}
@@ -109,10 +113,17 @@ class OverDriveProcessor {
 							productRS.close();
 							return;
 						}
+						String rawMetadataString = metadata.get("rawMetadata");
+						if (rawMetadataString.charAt(0) != '{'){
+							rawMetadataString = fixOverDriveMetaData(productId);
+							if (rawMetadataString == null){
+								logEntry.incErrors("Could not read or correct raw OverDrive Metadata for " + identifier);
+							}
+						}
 						//Decode JSON data to get a little more information
 						JSONObject rawMetadataDecoded = null;
 						try {
-							rawMetadataDecoded = new JSONObject(metadata.get("rawMetadata"));
+							rawMetadataDecoded = new JSONObject(rawMetadataString);
 						} catch (JSONException e) {
 							logEntry.incErrors("Error loading raw data for OverDrive MetaData", e);
 							rawMetadataDecoded = null;
@@ -483,6 +494,24 @@ class OverDriveProcessor {
 			logEntry.incErrors("Error loading information from Database for overdrive title", e);
 		}
 
+	}
+
+	private String fixOverDriveMetaData(long productId) throws SQLException {
+		doubleDecodeRawMetadataStmt.setLong(1, productId);
+		ResultSet doubleDecodeRawResponseRS = doubleDecodeRawMetadataStmt.executeQuery();
+		if (doubleDecodeRawResponseRS.next()){
+			String rawResponseString = doubleDecodeRawResponseRS.getString("rawResponse");
+			char rawResponseFirstChar = rawResponseString.charAt(0);
+			if (rawResponseFirstChar == '{'){
+				updateRawMetadataStmt.setString(1, rawResponseString);
+				updateRawMetadataStmt.setLong(2, productId);
+				updateRawMetadataStmt.executeUpdate();
+				return rawResponseString;
+			}
+		}
+		doubleDecodeRawResponseRS.close();
+
+		return null;
 	}
 
 	private void loadOverDriveIdentifiers(GroupedWorkSolr groupedWork, JSONObject productMetadata, String primaryFormat) throws JSONException {
