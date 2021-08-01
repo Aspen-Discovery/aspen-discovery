@@ -52,7 +52,6 @@ public class PolarisRecordProcessor extends IlsRecordProcessor{
 			}
 		}
 		//Save the volumes to the database
-		indexer.disableAutoCommit();
 		try {
 
 			if (volumesForRecord.size() == 0){
@@ -95,7 +94,6 @@ public class PolarisRecordProcessor extends IlsRecordProcessor{
 		}catch (Exception e){
 			logger.error("Error updating volumes for record ", e);
 		}
-		indexer.enableAutoCommit();
 	}
 
 	@Override

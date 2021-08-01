@@ -180,6 +180,7 @@
 		<dynamicField name="scoping_details_*" type="unchanged_string" indexed="false" stored="true" multiValued="true"/>
 		<!-- The popularity of a title in terms of circulation activity -->
 		<field name="popularity" type="integer" indexed="true" stored="false" default="0"/>
+		<field name="total_holds" type="integer" indexed="true" stored="false" default="0"/>
 
 		<!-- Format information -->
 		<field name="grouping_category" type="unchanged_string" indexed="true" stored="true" multiValued="false"/>

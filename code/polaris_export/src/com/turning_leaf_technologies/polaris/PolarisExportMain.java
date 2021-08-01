@@ -71,6 +71,7 @@ public class PolarisExportMain {
 	private static String staffPassword;
 	private static String accessToken;
 	private static String accessSecret;
+	private static PreparedStatement addIlsHoldSummary;
 
 	public static void main(String[] args) {
 		boolean extractSingleWork = false;
@@ -101,7 +102,7 @@ public class PolarisExportMain {
 		String processName = "polaris_export";
 		logger = LoggingUtil.setupLogging(serverName, processName);
 
-		//Get the checksum of the JAR when it was started so we can stop if it has changed.
+		//Get the checksum of the JAR when it was started, so we can stop if it has changed.
 		long myChecksumAtStart = JarUtil.getChecksumForJar(logger, processName, "./" + processName + ".jar");
 		long reindexerChecksumAtStart = JarUtil.getChecksumForJar(logger, "reindexer", "../reindexer/reindexer.jar");
 
@@ -432,6 +433,7 @@ public class PolarisExportMain {
 
 			Long shelfLocationMapId = getTranslationMapId(createTranslationMapStmt, getTranslationMapStmt, "shelf_location");
 			HashMap<String, String> existingShelfLocations = getExistingTranslationMapValues(getExistingValuesForMapStmt, shelfLocationMapId);
+			//noinspection SpellCheckingInspection
 			String getShelfLocationsUrl = "/PAPIService/REST/public/v1/1033/100/1/shelflocations";
 			WebServiceResponse shelfLocationsResponse = callPolarisAPI(getShelfLocationsUrl, null, "GET", "application/json", null);
 			if (shelfLocationsResponse.isSuccess()){
@@ -609,6 +611,7 @@ public class PolarisExportMain {
 			//Get the time the last extract was done
 			logger.info("Starting to load changed records from Polaris using the APIs");
 
+			addIlsHoldSummary = dbConn.prepareStatement("INSERT INTO ils_hold_summary (ilsId, numHolds) VALUES (?, ?) ON DUPLICATE KEY UPDATE numHolds = VALUES(numHolds)");
 			if (singleWorkId != null){
 				updateBibFromPolaris(singleWorkId, null, 0, true);
 			}else {
@@ -624,7 +627,7 @@ public class PolarisExportMain {
 
 				//Check to see if we should regroup all records
 				if (indexingProfile.isRegroupAllRecords()){
-					//Regrouping takes a long time and we don't need koha DB connection so close it while we regroup
+					//Regrouping takes a long time, and we don't need koha DB connection so close it while we regroup
 					MarcRecordGrouper recordGrouper = getRecordGroupingProcessor();
 					recordGrouper.regroupAllRecords(dbConn, indexingProfile, getGroupedWorkIndexer(), logEntry);
 				}
@@ -679,6 +682,7 @@ public class PolarisExportMain {
 		logEntry.addNote("Checking for deleted records since " + deleteDate);
 		boolean doneLoading = false;
 		while (!doneLoading) {
+			@SuppressWarnings("SpellCheckingInspection")
 			String getBibsUrl = "/PAPIService/REST/protected/v1/1033/100/1/" + accessToken + "/synch/bibs/deleted/paged?lastID=" + lastId + "&deletedate=" + URLEncoder.encode(deleteDate, "UTF-8") + "&nrecs=100";
 			int numTries = 0;
 			boolean successfulResponse = false;
@@ -748,6 +752,7 @@ public class PolarisExportMain {
 		}
 		formattedLastExtractTime = URLEncoder.encode(formattedLastExtractTime, "UTF-8");
 		//Get the highest bib from Polaris
+		@SuppressWarnings("SpellCheckingInspection")
 		WebServiceResponse maxBibResponse = callPolarisAPI("/PAPIService/REST/protected/v1/1033/100/1/" + accessToken + "/synch/bibs/maxid", null, "GET", "application/json", accessSecret);
 		long maxBibId = -1;
 		if (maxBibResponse.isSuccess()){
@@ -758,14 +763,17 @@ public class PolarisExportMain {
 		boolean doneLoading = false;
 		long highestIdProcessed = 0;
 		while (!doneLoading) {
-			//Polaris has an include items field, but it does not seem to contain all information we need for Aspen.
+			//Polaris has an "include items" field, but it does not seem to contain all information we need for Aspen.
 			long lastIdForThisBatch = Long.parseLong(lastId);
 			if (lastIdForThisBatch > highestIdProcessed){
 				highestIdProcessed = lastIdForThisBatch;
 			}
+			@SuppressWarnings("SpellCheckingInspection")
 			String getBibsUrl = "/PAPIService/REST/protected/v1/1033/100/1/" + accessToken + "/synch/bibs/MARCXML/paged?nrecs=100&lastID=" + lastId;
 			if (!indexingProfile.isRunFullUpdate() && lastExtractTime != 0){
+				//noinspection SpellCheckingInspection
 				getBibsUrl += "&startdatecreated=" + formattedLastExtractTime;
+				//noinspection SpellCheckingInspection
 				getBibsUrl += "&startdatemodified=" + formattedLastExtractTime;
 			}
 			ProcessBibRequestResponse response = processGetBibsRequest(getBibsUrl, marcFactory, lastExtractTime, true);
@@ -798,7 +806,7 @@ public class PolarisExportMain {
 			String formattedLastItemExtractTime = URLEncoder.encode(itemDateFormatter.format(Instant.ofEpochSecond(lastExtractTime)), "UTF-8");
 			logEntry.addNote("Getting a list of all items that have been updated");
 			logEntry.saveResults();
-			//String getItemsUrl = "/PAPIService/REST/protected/v1/1033/100/1/" + accessToken + "/synch/items/updated/paged?updatedate=" + formattedLastItemExtractTime + "&lastid=" + lastId + "&nrecs=100";
+			//noinspection SpellCheckingInspection
 			String getItemsUrl = "/PAPIService/REST/protected/v1/1033/100/1/" + accessToken + "/synch/items/updated?updatedate=" + formattedLastItemExtractTime;
 			WebServiceResponse pagedItems = callPolarisAPI(getItemsUrl, null, "GET", "application/json", accessSecret);
 			if (pagedItems.isSuccess()) {
@@ -842,11 +850,13 @@ public class PolarisExportMain {
 
 	private static int updateBibFromPolaris(String bibNumber, MarcFactory marcFactory, long lastExtractTime, boolean incrementProductsInLog) {
 		//Get the bib record
+		//noinspection SpellCheckingInspection
 		String getBibUrl = "/PAPIService/REST/protected/v1/1033/100/1/" + accessToken + "/synch/bibs/MARCXML?bibids=" + bibNumber;
 		ProcessBibRequestResponse response = processGetBibsRequest(getBibUrl, marcFactory, lastExtractTime, incrementProductsInLog);
 		return response.numChanges;
 	}
 
+	@SuppressWarnings("SpellCheckingInspection")
 	static SimpleDateFormat polarisDateParser = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
 	static SimpleDateFormat dateCreatedFormatter = new SimpleDateFormat("yyyy-MM-dd");
 	static Pattern polarisDatePattern = Pattern.compile("/Date\\((-?\\d+)(-\\d{4})\\)/");
@@ -885,14 +895,12 @@ public class PolarisExportMain {
 						response.doneLoading = true;
 					}
 
-					//Use multiple threads to update each bib record so we can make multiple calls to Polaris to get items
+					//Use multiple threads to update each bib record, so we can make multiple calls to Polaris to get items
 					ThreadPoolExecutor es = (ThreadPoolExecutor) Executors.newFixedThreadPool(10);
 					MarcFactory finalMarcFactory = marcFactory;
 					for (int i = 0; i < bibsPagedRows.getLength(); i++) {
 						int finalI = i;
-						es.execute(() -> {
-							processPolarisBibAndReindex(finalMarcFactory, lastExtractTime, incrementProductsInLog, response, bibsPagedRows, finalI);
-						});
+						es.execute(() -> processPolarisBibAndReindex(finalMarcFactory, lastExtractTime, incrementProductsInLog, response, bibsPagedRows, finalI));
 					}
 					es.shutdown();
 					while (true) {
@@ -941,6 +949,26 @@ public class PolarisExportMain {
 				}catch (ParseException e){
 					logEntry.incErrors("Could not parse creation or modification date", e);
 					return;
+				}
+			}
+			//Get a count of the holds for the record
+			String getBibUrl = "/PAPIService/REST/public/v1/1033/100/1/bib/" + bibliographicRecordId;
+			WebServiceResponse getBibResponse = callPolarisAPI(getBibUrl, null, "GET", "application/json", null);
+			if (getBibResponse.isSuccess()){
+				JSONObject bibInfo = getBibResponse.getJSONResponse();
+				JSONArray bibRows = bibInfo.getJSONArray("BibGetRows");
+				for (int j = 0; j < bibRows.length(); j++){
+					JSONObject bibRow = bibRows.getJSONObject(j);
+					if (bibRow.getInt("ElementID") == 8){
+						int numHolds = Integer.parseInt(bibRow.getString("Value"));
+						try {
+							addIlsHoldSummary.setString(1, bibliographicRecordId);
+							addIlsHoldSummary.setInt(2, numHolds);
+							addIlsHoldSummary.executeUpdate();
+						} catch (SQLException e) {
+							logEntry.incErrors("Unable to update hold summary", e);
+						}
+					}
 				}
 			}
 			try {

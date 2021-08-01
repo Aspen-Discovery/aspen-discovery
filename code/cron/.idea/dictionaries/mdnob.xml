@@ -24,6 +24,7 @@
       <w>bcode</w>
       <w>bdigital</w>
       <w>bestguess</w>
+      <w>bibid</w>
       <w>biblio</w>
       <w>biblionumber</w>
       <w>bisac</w>
@@ -129,6 +130,7 @@
       <w>longoverdue</w>
       <w>marcout</w>
       <w>marcs</w>
+      <w>materialtypes</w>
       <w>mclauth</w>
       <w>mcpld</w>
       <w>mediado</w>
@@ -159,6 +161,7 @@
       <w>overdriveid</w>
       <w>overidden</w>
       <w>patronbarcode</w>
+      <w>patroncodes</w>
       <w>photonegative</w>
       <w>physicalobject</w>
       <w>pika</w>
@@ -204,6 +207,7 @@
       <w>subfields</w>
       <w>sublocation</w>
       <w>subpurpose</w>
+      <w>synch</w>
       <w>tapecartridge</w>
       <w>tapecassette</w>
       <w>taperecording</w>
@@ -212,6 +216,7 @@
       <w>transbid</w>
       <w>transcode</w>
       <w>transitem</w>
+      <w>unencoded</w>
       <w>unscoped</w>
       <w>upcs</w>
       <w>validationstatus</w>

@@ -74,8 +74,6 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	private char orderStatusSubfield;
 	private char orderCode3Subfield;
 
-	private final HashMap<String, Integer> numberOfHoldsByIdentifier = new HashMap<>();
-
 	private final HashMap<String, TranslationMap> translationMaps = new HashMap<>();
 	private final ArrayList<TimeToReshelve> timesToReshelve = new ArrayList<>();
 	protected final HashSet<String> formatsToSuppress = new HashSet<>();
@@ -84,6 +82,8 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	private final HashSet<String> inLibraryUseOnlyStatuses = new HashSet<>();
 	private final HashSet<String> nonHoldableFormats = new HashSet<>();
 	protected boolean suppressRecordsWithNoCollection = true;
+
+	private PreparedStatement loadHoldsStmt;
 
 	IlsRecordProcessor(GroupedWorkIndexer indexer, Connection dbConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
 		super(indexer, dbConn, logger);
@@ -207,8 +207,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			audienceSubfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "audienceSubfield");
 			treatUnknownAudienceAs = indexingProfileRS.getString("treatUnknownAudienceAs");
 
-			//loadAvailableItemBarcodes(marcRecordPath, logger);
-			loadHoldsByIdentifier(dbConn, logger);
+			loadHoldsStmt = dbConn.prepareStatement("SELECT ilsId, numHolds from ils_hold_summary where ilsId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 
 			loadTranslationMapsForProfile(dbConn, indexingProfileRS.getLong("id"));
 
@@ -296,19 +295,6 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			itemGroupedStatusMap.addValue(status, statusMapRS.getString("groupedStatus"));
 		}
 		statusMapRS.close();
-	}
-
-	private void loadHoldsByIdentifier(Connection dbConn, Logger logger) {
-		try{
-			PreparedStatement loadHoldsStmt = dbConn.prepareStatement("SELECT ilsId, numHolds from ils_hold_summary", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-			ResultSet holdsRS = loadHoldsStmt.executeQuery();
-			while (holdsRS.next()) {
-				numberOfHoldsByIdentifier.put(holdsRS.getString("ilsId"), holdsRS.getInt("numHolds"));
-			}
-
-		} catch (Exception e){
-			logger.error("Unable to load hold data", e);
-		}
 	}
 
 	@Override
@@ -1318,12 +1304,25 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	private void loadPopularity(GroupedWorkSolr groupedWork, String recordIdentifier) {
 		//Add popularity based on the number of holds (we have already done popularity for prior checkouts)
 		//Active holds indicate that a title is more interesting so we will count each hold at double value
-		double popularity = 2 * getIlsHoldsForTitle(recordIdentifier);
+		int numHolds = getIlsHoldsForTitle(recordIdentifier);
+		groupedWork.addHolds(numHolds);
+		double popularity = 2 * numHolds;
 		groupedWork.addPopularity(popularity);
 	}
 
 	private int getIlsHoldsForTitle(String recordIdentifier) {
-		return numberOfHoldsByIdentifier.getOrDefault(recordIdentifier, 0);
+		int numHolds = 0;
+		try{
+			loadHoldsStmt.setString(1, recordIdentifier);
+			ResultSet holdsRS = loadHoldsStmt.executeQuery();
+			if (holdsRS.next()) {
+				numHolds = holdsRS.getInt("numHolds");
+			}
+
+		} catch (Exception e){
+			logger.error("Unable to load hold data", e);
+		}
+		return numHolds;
 	}
 
 	protected boolean isItemSuppressed(DataField curItem) {

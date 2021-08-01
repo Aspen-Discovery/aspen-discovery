@@ -355,7 +355,9 @@ class OverDriveProcessor {
 						ResultSet availabilityRS = getProductAvailabilityStmt.executeQuery();
 
 						int totalCopiesOwned = 0;
+						int numHolds = 0;
 						while (availabilityRS.next()) {
+							numHolds = availabilityRS.getInt("numberOfHolds");
 							//Just create one item for each with a list of sub formats.
 							ItemInfo itemInfo = new ItemInfo();
 							itemInfo.seteContentSource("OverDrive");
@@ -465,6 +467,7 @@ class OverDriveProcessor {
 							}//End processing availability
 						}
 						groupedWork.addHoldings(totalCopiesOwned);
+						groupedWork.addHolds(numHolds);
 
 						if (hasKindle){
 							RecordInfo kindleRecord = groupedWork.addRelatedRecord("overdrive", "kindle", identifier);
