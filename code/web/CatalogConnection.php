@@ -734,6 +734,7 @@ class CatalogConnection
 			return;
 		}
 
+		require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
 		require_once ROOT_DIR . '/sys/ReadingHistoryEntry.php';
 		//Note, include deleted titles here so they are not added multiple times.
 		$readingHistoryDB = new ReadingHistoryEntry();
@@ -769,8 +770,8 @@ class CatalogConnection
 
 				$historyEntryDB->source = $source;
 				$historyEntryDB->sourceId = $sourceId;
-				$historyEntryDB->title = substr($checkout->title, 0, 150);
-				$historyEntryDB->author = isset($checkout->author) ? substr($checkout->author, 0, 75) : "";
+				$historyEntryDB->title = StringUtils::trimStringToLengthAtWordBoundary($checkout->title, 150, true);
+				$historyEntryDB->author = isset($checkout->author) ? StringUtils::trimStringToLengthAtWordBoundary($checkout->author, 75, true) : "";
 				$historyEntryDB->format = substr($checkout->format, 0, 50);
 				$historyEntryDB->checkOutDate = time();
 				if (!$historyEntryDB->insert()) {

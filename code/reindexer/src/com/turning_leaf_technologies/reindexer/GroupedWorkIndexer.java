@@ -1936,6 +1936,10 @@ public class GroupedWorkIndexer {
 		}
 	}
 
+	public BaseLogEntry getLogEntry() {
+		return logEntry;
+	}
+
 	public enum MarcStatus {
 		UNCHANGED, CHANGED, NEW
 	}

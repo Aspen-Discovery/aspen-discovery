@@ -50,7 +50,7 @@ abstract class MarcRecordProcessor {
 			marcRecordAsSuppressedNoMarcStmt = dbConn.prepareStatement("UPDATE ils_records set suppressedNoMarcAvailable = 1 where source = ? and ilsId = ?");
 			getRecordSuppressionInformationStmt = dbConn.prepareStatement("SELECT suppressedNoMarcAvailable from ils_records where source = ? and ilsId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 		}catch (Exception e){
-			logger.error("Error setting up prepared statements for loading MARC from the DB", e);
+			indexer.getLogEntry().incErrors("Error setting up prepared statements for loading MARC from the DB", e);
 		}
 	}
 
@@ -100,7 +100,7 @@ abstract class MarcRecordProcessor {
 				try {
 					updateGroupedWorkSolrDataBasedOnMarc(groupedWork, record, identifier);
 				} catch (Exception e) {
-					logger.error("Error updating solr based on marc record", e);
+					logEntry.incErrors("Error updating solr based on marc record", e);
 				}
 			}
 		}
@@ -684,11 +684,7 @@ abstract class MarcRecordProcessor {
 				literaryForms.add("Unknown");
 			}
 		} catch (Exception e) {
-			logger.error("Unexpected error", e);
-		}
-		if (literaryForms.size() > 1){
-			//Uh oh, we have a problem
-			logger.warn("Received multiple literary forms for a single marc record");
+			indexer.getLogEntry().incErrors("Unexpected error loading literary forms", e);
 		}
 		groupedWork.addLiteraryForms(indexer.translateSystemCollection("literary_form", literaryForms, identifier));
 		groupedWork.addLiteraryFormsFull(indexer.translateSystemCollection("literary_form_full", literaryForms, identifier));

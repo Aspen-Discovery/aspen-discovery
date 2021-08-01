@@ -467,7 +467,7 @@ public class HooplaExportMain {
 						}catch (DataTruncation e) {
 							logEntry.addNote("Record " + hooplaId + " " + curTitle.getString("title") + " contained invalid data " + e.toString());
 						}catch (SQLException e){
-							logEntry.incErrors("Error updating hoopla data in database for record " + hooplaId + " " + curTitle.getString("title"), e);
+							logEntry.incErrors("Error adding hoopla title to database record " + hooplaId + " " + curTitle.getString("title"), e);
 						}
 					}else if (recordUpdated || doFullReload){
 						updateHooplaTitleInDB.setBoolean(1, true);
