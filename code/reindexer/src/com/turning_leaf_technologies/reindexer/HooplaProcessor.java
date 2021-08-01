@@ -93,7 +93,7 @@ class HooplaProcessor {
 				hooplaRecord.addFormatCategory(formatCategory);
 
 				String rawResponseString = productRS.getString("rawResponse");
-				if (rawResponseString.charAt(0) != '{'){
+				if (rawResponseString.charAt(0) != '{' || rawResponseString.charAt(rawResponseString.length() -1) != '}'){
 					//If the first char is not { check to see if it has been double encoded
 					rawResponseString = fixHooplaData(productRS.getLong("id"));
 					if (rawResponseString == null){
@@ -333,8 +333,7 @@ class HooplaProcessor {
 		ResultSet doubleDecodeRawResponseRS = doubleDecodeRawResponseStmt.executeQuery();
 		if (doubleDecodeRawResponseRS.next()){
 			String rawResponseString = doubleDecodeRawResponseRS.getString("rawResponse");
-			char rawResponseFirstChar = rawResponseString.charAt(0);
-			if (rawResponseFirstChar == '{'){
+			if (rawResponseString.charAt(0) == '{' && rawResponseString.charAt(rawResponseString.length() -1) == '}'){
 				updateRawResponseStmt.setString(1, rawResponseString);
 				updateRawResponseStmt.setLong(2, id);
 				updateRawResponseStmt.executeUpdate();

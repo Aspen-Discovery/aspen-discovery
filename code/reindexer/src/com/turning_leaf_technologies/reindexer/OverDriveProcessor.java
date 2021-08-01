@@ -114,7 +114,7 @@ class OverDriveProcessor {
 							return;
 						}
 						String rawMetadataString = metadata.get("rawMetadata");
-						if (rawMetadataString.charAt(0) != '{'){
+						if (rawMetadataString.charAt(0) != '{' || rawMetadataString.charAt(rawMetadataString.length() -1) != '}'){
 							rawMetadataString = fixOverDriveMetaData(productId);
 							if (rawMetadataString == null){
 								logEntry.incErrors("Could not read or correct raw OverDrive Metadata for " + identifier);
@@ -501,8 +501,7 @@ class OverDriveProcessor {
 		ResultSet doubleDecodeRawResponseRS = doubleDecodeRawMetadataStmt.executeQuery();
 		if (doubleDecodeRawResponseRS.next()){
 			String rawResponseString = doubleDecodeRawResponseRS.getString("rawResponse");
-			char rawResponseFirstChar = rawResponseString.charAt(0);
-			if (rawResponseFirstChar == '{'){
+			if (rawResponseString.charAt(0) == '{' && rawResponseString.charAt(rawResponseString.length() -1) == '}'){
 				updateRawMetadataStmt.setString(1, rawResponseString);
 				updateRawMetadataStmt.setLong(2, productId);
 				updateRawMetadataStmt.executeUpdate();
