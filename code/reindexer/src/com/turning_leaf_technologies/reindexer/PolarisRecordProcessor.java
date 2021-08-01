@@ -52,9 +52,7 @@ public class PolarisRecordProcessor extends IlsRecordProcessor{
 			}
 		}
 		//Save the volumes to the database
-		indexer.disableAutoCommit();
 		try {
-
 			if (volumesForRecord.size() == 0){
 				deleteAllVolumesStmt.setString(1, recordInfo.getFullIdentifier());
 				deleteAllVolumesStmt.executeUpdate();
@@ -65,6 +63,7 @@ public class PolarisRecordProcessor extends IlsRecordProcessor{
 				while (existingVolumesRS.next()) {
 					existingVolumes.put(existingVolumesRS.getString("volumeId"), existingVolumesRS.getLong("id"));
 				}
+				indexer.disableAutoCommit();
 				int numVolumes = 0;
 				for (String volume : volumesForRecord.keySet()) {
 					VolumeInfo volumeInfo = volumesForRecord.get(volume);
@@ -74,6 +73,7 @@ public class PolarisRecordProcessor extends IlsRecordProcessor{
 							updateVolumeStmt.setString(2, volumeInfo.getRelatedItemsAsString());
 							updateVolumeStmt.setLong(3, ++numVolumes);
 							updateVolumeStmt.setLong(4, existingVolumes.get(volume));
+							updateVolumeStmt.executeUpdate();
 							existingVolumes.remove(volume);
 						} else {
 							addVolumeStmt.setString(1, recordInfo.getFullIdentifier());
@@ -84,18 +84,18 @@ public class PolarisRecordProcessor extends IlsRecordProcessor{
 							addVolumeStmt.executeUpdate();
 						}
 					}catch (Exception e){
-						logger.error("Error updating volume for record " + recordInfo.getFullIdentifier() + " (" + volume.length() + ") " + volume , e);
+						indexer.getLogEntry().incErrors("Error updating volume for record " + recordInfo.getFullIdentifier() + " (" + volume.length() + ") " + volume , e);
 					}
 				}
 				for (String volume : existingVolumes.keySet()) {
 					deleteVolumeStmt.setLong(1, existingVolumes.get(volume));
 					deleteVolumeStmt.executeUpdate();
 				}
+				indexer.enableAutoCommit();
 			}
 		}catch (Exception e){
-			logger.error("Error updating volumes for record ", e);
+			indexer.getLogEntry().incErrors("Error updating volumes for record ", e);
 		}
-		indexer.enableAutoCommit();
 	}
 
 	@Override
