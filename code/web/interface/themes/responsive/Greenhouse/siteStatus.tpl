@@ -12,7 +12,8 @@
 					<th>Name</th>
 					<th>Implementation Status</th>
 					<th>Alive</th>
-					{foreach from=$allChecks item=checkName key=checkType}
+					<th>Version</th>
+                    {foreach from=$allChecks item=checkName key=checkType}
 						<th>{$checkName}</th>
 					{/foreach}
 				</tr>
@@ -28,6 +29,9 @@
 						</td>
 						<td {if $siteStatus.alive}style="background-color: lightgreen"{else}style="background-color: #D50000;color:white;font-weight: bold"{/if}>
 							&nbsp;
+						</td>
+						<td>
+                            {$siteStatus.version}
 						</td>
 						{foreach from=$allChecks item=checkName key=checkType}
 							{if array_key_exists($checkType,$siteStatus.checks)}
