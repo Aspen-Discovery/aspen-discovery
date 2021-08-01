@@ -7,10 +7,12 @@ import com.turning_leaf_technologies.grouping.RemoveRecordFromWorkResult;
 import com.turning_leaf_technologies.indexing.IlsExtractLogEntry;
 import com.turning_leaf_technologies.indexing.IndexingProfile;
 import com.turning_leaf_technologies.indexing.IndexingUtils;
+import com.turning_leaf_technologies.indexing.VolumeInfo;
 import com.turning_leaf_technologies.logging.LoggingUtil;
 import com.turning_leaf_technologies.net.NetworkUtils;
 import com.turning_leaf_technologies.net.WebServiceResponse;
 import com.turning_leaf_technologies.reindexer.GroupedWorkIndexer;
+import com.turning_leaf_technologies.reindexer.ItemInfo;
 import com.turning_leaf_technologies.strings.StringUtils;
 import org.apache.commons.net.util.Base64;
 import org.apache.logging.log4j.Logger;
@@ -21,6 +23,7 @@ import org.marc4j.MarcXmlReader;
 import org.marc4j.marc.DataField;
 import org.marc4j.marc.MarcFactory;
 import org.marc4j.marc.Record;
+import org.marc4j.marc.Subfield;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -72,6 +75,11 @@ public class PolarisExportMain {
 	private static String accessToken;
 	private static String accessSecret;
 	private static PreparedStatement addIlsHoldSummary;
+	private static PreparedStatement getExistingVolumesStmt;
+	private static PreparedStatement addVolumeStmt;
+	private static PreparedStatement deleteAllVolumesStmt;
+	private static PreparedStatement deleteVolumeStmt;
+	private static PreparedStatement updateVolumeStmt;
 
 	public static void main(String[] args) {
 		boolean extractSingleWork = false;
@@ -612,6 +620,11 @@ public class PolarisExportMain {
 			logger.info("Starting to load changed records from Polaris using the APIs");
 
 			addIlsHoldSummary = dbConn.prepareStatement("INSERT INTO ils_hold_summary (ilsId, numHolds) VALUES (?, ?) ON DUPLICATE KEY UPDATE numHolds = VALUES(numHolds)");
+			getExistingVolumesStmt = dbConn.prepareStatement("SELECT id, volumeId from ils_volume_info where recordId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			addVolumeStmt = dbConn.prepareStatement("INSERT INTO ils_volume_info (recordId, volumeId, displayLabel, relatedItems, displayOrder) VALUES (?,?,?,?, ?) ON DUPLICATE KEY update recordId = VALUES(recordId), displayLabel = VALUES(displayLabel), relatedItems = VALUES(relatedItems), displayOrder = VALUES(displayOrder)");
+			updateVolumeStmt = dbConn.prepareStatement("UPDATE ils_volume_info SET displayLabel = ?, relatedItems = ?, displayOrder = ? WHERE id = ?");
+			deleteAllVolumesStmt = dbConn.prepareStatement("DELETE from ils_volume_info where recordId = ?");
+			deleteVolumeStmt = dbConn.prepareStatement("DELETE from ils_volume_info where id = ?");
 			if (singleWorkId != null){
 				updateBibFromPolaris(singleWorkId, null, 0, true);
 			}else {
@@ -993,6 +1006,8 @@ public class PolarisExportMain {
 							}
 						}
 
+						updateVolumeInfoForIdentifier(marcRecord, bibliographicRecordId);
+
 						//Regroup the record
 						String groupedWorkId = groupPolarisRecord(marcRecord);
 						if (groupedWorkId != null) {
@@ -1016,6 +1031,81 @@ public class PolarisExportMain {
 				getGroupedWorkIndexer().deleteRecord(result.permanentId);
 			}
 			logEntry.incDeleted();
+		}
+	}
+
+	private static synchronized void updateVolumeInfoForIdentifier(Record marcRecord, String bibliographicRecordId) {
+		String fullIdentifier = indexingProfile.getName() + ":" + bibliographicRecordId;
+		TreeMap<String, VolumeInfo> volumesForRecord = new TreeMap<>();
+		List<DataField> itemFields = marcRecord.getDataFields(indexingProfile.getItemTag());
+		for (DataField curItem : itemFields){
+			Subfield volumeSubfield = curItem.getSubfield(indexingProfile.getVolume());
+			if (volumeSubfield != null) {
+				String volume = volumeSubfield.getData();
+				if (volume != null && volume.trim().length() > 0) {
+					volume = volume.trim();
+					VolumeInfo volumeInfo = volumesForRecord.get(volume);
+					if (volumeInfo == null) {
+						volumeInfo = new VolumeInfo();
+						volumeInfo.bibNumber = fullIdentifier;
+						volumeInfo.volume = volume;
+						volumeInfo.volumeIdentifier = volume;
+						volumesForRecord.put(volume, volumeInfo);
+					}
+					String itemNumber = "";
+					Subfield itemNumberSubfield = curItem.getSubfield(indexingProfile.getItemRecordNumberSubfield());
+					if (itemNumberSubfield != null){
+						itemNumber = itemNumberSubfield.getData();
+					}else{
+						Subfield barcodeSubfield = curItem.getSubfield(indexingProfile.getBarcodeSubfield());
+						itemNumber = barcodeSubfield.getData();
+					}
+					volumeInfo.relatedItems.add(itemNumber);
+				}
+			}
+		}
+		//Save the volumes to the database
+		try {
+
+			if (volumesForRecord.size() == 0){
+				deleteAllVolumesStmt.setString(1, fullIdentifier);
+				deleteAllVolumesStmt.executeUpdate();
+			}else {
+				HashMap<String, Long> existingVolumes = new HashMap<>();
+				getExistingVolumesStmt.setString(1, fullIdentifier);
+				ResultSet existingVolumesRS = getExistingVolumesStmt.executeQuery();
+				while (existingVolumesRS.next()) {
+					existingVolumes.put(existingVolumesRS.getString("volumeId"), existingVolumesRS.getLong("id"));
+				}
+				int numVolumes = 0;
+				for (String volume : volumesForRecord.keySet()) {
+					VolumeInfo volumeInfo = volumesForRecord.get(volume);
+					try {
+						if (existingVolumes.containsKey(volume)) {
+							updateVolumeStmt.setString(1, volumeInfo.volumeIdentifier);
+							updateVolumeStmt.setString(2, volumeInfo.getRelatedItemsAsString());
+							updateVolumeStmt.setLong(3, ++numVolumes);
+							updateVolumeStmt.setLong(4, existingVolumes.get(volume));
+							existingVolumes.remove(volume);
+						} else {
+							addVolumeStmt.setString(1, fullIdentifier);
+							addVolumeStmt.setString(2, volumeInfo.volume);
+							addVolumeStmt.setString(3, volumeInfo.volumeIdentifier);
+							addVolumeStmt.setString(4, volumeInfo.getRelatedItemsAsString());
+							addVolumeStmt.setLong(5, ++numVolumes);
+							addVolumeStmt.executeUpdate();
+						}
+					}catch (Exception e){
+						logger.error("Error updating volume for record " + fullIdentifier + " (" + volume.length() + ") " + volume , e);
+					}
+				}
+				for (String volume : existingVolumes.keySet()) {
+					deleteVolumeStmt.setLong(1, existingVolumes.get(volume));
+					deleteVolumeStmt.executeUpdate();
+				}
+			}
+		}catch (Exception e){
+			logger.error("Error updating volumes for record ", e);
 		}
 	}
 
