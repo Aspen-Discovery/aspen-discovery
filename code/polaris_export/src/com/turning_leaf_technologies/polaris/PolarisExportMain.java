@@ -1071,33 +1071,44 @@ public class PolarisExportMain {
 				deleteAllVolumesStmt.setString(1, fullIdentifier);
 				deleteAllVolumesStmt.executeUpdate();
 			}else {
+				logger.info(fullIdentifier + " has volumes " + volumesForRecord.size());
 				HashMap<String, Long> existingVolumes = new HashMap<>();
 				getExistingVolumesStmt.setString(1, fullIdentifier);
 				ResultSet existingVolumesRS = getExistingVolumesStmt.executeQuery();
 				while (existingVolumesRS.next()) {
 					existingVolumes.put(existingVolumesRS.getString("volumeId"), existingVolumesRS.getLong("id"));
 				}
+				logger.info(" -- existing volume count " + existingVolumes.size());
 				int numVolumes = 0;
 				for (String volume : volumesForRecord.keySet()) {
 					VolumeInfo volumeInfo = volumesForRecord.get(volume);
 					try {
 						if (existingVolumes.containsKey(volume)) {
+							logger.info(" -- updating " + volume);
 							updateVolumeStmt.setString(1, volumeInfo.volumeIdentifier);
 							updateVolumeStmt.setString(2, volumeInfo.getRelatedItemsAsString());
 							updateVolumeStmt.setLong(3, ++numVolumes);
 							updateVolumeStmt.setLong(4, existingVolumes.get(volume));
+							updateVolumeStmt.executeUpdate();
 							existingVolumes.remove(volume);
 						} else {
+							logger.info(" -- adding " + volume);
 							addVolumeStmt.setString(1, fullIdentifier);
 							addVolumeStmt.setString(2, volumeInfo.volume);
 							addVolumeStmt.setString(3, volumeInfo.volumeIdentifier);
 							addVolumeStmt.setString(4, volumeInfo.getRelatedItemsAsString());
 							addVolumeStmt.setLong(5, ++numVolumes);
-							addVolumeStmt.executeUpdate();
+							int updateVal = addVolumeStmt.executeUpdate();
+							if (updateVal == 0){
+								logger.info(" -- Inserting " + volume + " did not work");
+							}
 						}
 					}catch (Exception e){
-						logger.error("Error updating volume for record " + fullIdentifier + " (" + volume.length() + ") " + volume , e);
+						logEntry.incErrors("Error updating volume for record " + fullIdentifier + " (" + volume.length() + ") " + volume , e);
 					}
+				}
+				if (existingVolumes.size() > 0){
+					logger.info(" -- removing volumes that no longer exist " + existingVolumes.size());
 				}
 				for (String volume : existingVolumes.keySet()) {
 					deleteVolumeStmt.setLong(1, existingVolumes.get(volume));
@@ -1105,7 +1116,7 @@ public class PolarisExportMain {
 				}
 			}
 		}catch (Exception e){
-			logger.error("Error updating volumes for record ", e);
+			logEntry.incErrors("Error updating volumes for record ", e);
 		}
 	}
 
