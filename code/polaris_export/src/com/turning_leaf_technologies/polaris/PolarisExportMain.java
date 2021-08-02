@@ -1084,6 +1084,7 @@ public class PolarisExportMain {
 					VolumeInfo volumeInfo = volumesForRecord.get(volume);
 					try {
 						if (existingVolumes.containsKey(volume)) {
+							logger.info(" -- updating " + volume);
 							updateVolumeStmt.setString(1, volumeInfo.volumeIdentifier);
 							updateVolumeStmt.setString(2, volumeInfo.getRelatedItemsAsString());
 							updateVolumeStmt.setLong(3, ++numVolumes);
@@ -1091,6 +1092,7 @@ public class PolarisExportMain {
 							updateVolumeStmt.executeUpdate();
 							existingVolumes.remove(volume);
 						} else {
+							logger.info(" -- adding " + volume);
 							addVolumeStmt.setString(1, fullIdentifier);
 							addVolumeStmt.setString(2, volumeInfo.volume);
 							addVolumeStmt.setString(3, volumeInfo.volumeIdentifier);
@@ -1098,7 +1100,7 @@ public class PolarisExportMain {
 							addVolumeStmt.setLong(5, ++numVolumes);
 							int updateVal = addVolumeStmt.executeUpdate();
 							if (updateVal == 0){
-								logger.info("Inserting " + fullIdentifier + volumeInfo.volumeIdentifier + " did not work");
+								logger.info(" -- Inserting " + volume + " did not work");
 							}
 						}
 					}catch (Exception e){
@@ -1114,7 +1116,7 @@ public class PolarisExportMain {
 				}
 			}
 		}catch (Exception e){
-			logger.error("Error updating volumes for record ", e);
+			logEntry.incErrors("Error updating volumes for record ", e);
 		}
 	}
 
