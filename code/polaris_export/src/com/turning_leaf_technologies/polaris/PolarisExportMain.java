@@ -1068,9 +1068,11 @@ public class PolarisExportMain {
 		try {
 
 			if (volumesForRecord.size() == 0){
+				logger.info(fullIdentifier + " does not have volumes");
 				deleteAllVolumesStmt.setString(1, fullIdentifier);
 				deleteAllVolumesStmt.executeUpdate();
 			}else {
+				logger.info(fullIdentifier + " has volumes");
 				HashMap<String, Long> existingVolumes = new HashMap<>();
 				getExistingVolumesStmt.setString(1, fullIdentifier);
 				ResultSet existingVolumesRS = getExistingVolumesStmt.executeQuery();
