@@ -1088,6 +1088,7 @@ public class PolarisExportMain {
 							updateVolumeStmt.setString(2, volumeInfo.getRelatedItemsAsString());
 							updateVolumeStmt.setLong(3, ++numVolumes);
 							updateVolumeStmt.setLong(4, existingVolumes.get(volume));
+							updateVolumeStmt.executeUpdate();
 							existingVolumes.remove(volume);
 						} else {
 							addVolumeStmt.setString(1, fullIdentifier);
@@ -1095,10 +1096,13 @@ public class PolarisExportMain {
 							addVolumeStmt.setString(3, volumeInfo.volumeIdentifier);
 							addVolumeStmt.setString(4, volumeInfo.getRelatedItemsAsString());
 							addVolumeStmt.setLong(5, ++numVolumes);
-							addVolumeStmt.executeUpdate();
+							int updateVal = addVolumeStmt.executeUpdate();
+							if (updateVal == 0){
+								logger.info("Inserting " + fullIdentifier + volumeInfo.volumeIdentifier + " did not work");
+							}
 						}
 					}catch (Exception e){
-						logger.error("Error updating volume for record " + fullIdentifier + " (" + volume.length() + ") " + volume , e);
+						logEntry.incErrors("Error updating volume for record " + fullIdentifier + " (" + volume.length() + ") " + volume , e);
 					}
 				}
 				if (existingVolumes.size() > 0){
