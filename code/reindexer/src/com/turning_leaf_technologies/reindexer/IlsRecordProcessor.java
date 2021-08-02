@@ -3,6 +3,7 @@ package com.turning_leaf_technologies.reindexer;
 import com.turning_leaf_technologies.indexing.IndexingProfile;
 import com.turning_leaf_technologies.indexing.Scope;
 import com.turning_leaf_technologies.indexing.TranslationMap;
+import com.turning_leaf_technologies.logging.BaseLogEntry;
 import com.turning_leaf_technologies.marc.MarcUtil;
 import com.turning_leaf_technologies.strings.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -74,8 +75,6 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	private char orderStatusSubfield;
 	private char orderCode3Subfield;
 
-	private final HashMap<String, Integer> numberOfHoldsByIdentifier = new HashMap<>();
-
 	private final HashMap<String, TranslationMap> translationMaps = new HashMap<>();
 	private final ArrayList<TimeToReshelve> timesToReshelve = new ArrayList<>();
 	protected final HashSet<String> formatsToSuppress = new HashSet<>();
@@ -84,6 +83,8 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	private final HashSet<String> inLibraryUseOnlyStatuses = new HashSet<>();
 	private final HashSet<String> nonHoldableFormats = new HashSet<>();
 	protected boolean suppressRecordsWithNoCollection = true;
+
+	private PreparedStatement loadHoldsStmt;
 
 	IlsRecordProcessor(GroupedWorkIndexer indexer, Connection dbConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
 		super(indexer, dbConn, logger);
@@ -115,7 +116,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 					nonHoldableLocations = Pattern.compile("^(" + pattern + ")$");
 				}
 			}catch (Exception e){
-				logger.error("Could not load non holdable locations", e);
+				indexer.getLogEntry().incErrors("Could not load non holdable locations", e);
 			}
 			subLocationSubfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "subLocation");
 			shelvingLocationSubfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "shelvingLocation");
@@ -154,7 +155,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 					nonHoldableStatuses = Pattern.compile("^(" + pattern + ")$");
 				}
 			}catch (Exception e){
-				logger.error("Could not load non holdable statuses", e);
+				indexer.getLogEntry().incErrors("Could not load non holdable statuses", e);
 			}
 
 			dueDateSubfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "dueDate");
@@ -174,7 +175,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 					nonHoldableITypes = Pattern.compile("^(" + pattern + ")$");
 				}
 			}catch (Exception e){
-				logger.error("Could not load non holdable iTypes", e);
+				indexer.getLogEntry().incErrors("Could not load non holdable iTypes", e);
 			}
 
 			dateCreatedSubfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "dateCreated");
@@ -207,14 +208,13 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			audienceSubfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "audienceSubfield");
 			treatUnknownAudienceAs = indexingProfileRS.getString("treatUnknownAudienceAs");
 
-			//loadAvailableItemBarcodes(marcRecordPath, logger);
-			loadHoldsByIdentifier(dbConn, logger);
+			loadHoldsStmt = dbConn.prepareStatement("SELECT ilsId, numHolds from ils_hold_summary where ilsId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 
 			loadTranslationMapsForProfile(dbConn, indexingProfileRS.getLong("id"));
 
 			loadTimeToReshelve(dbConn, indexingProfileRS.getLong("id"));
 		}catch (Exception e){
-			logger.error("Error loading indexing profile information from database", e);
+			indexer.getLogEntry().incErrors("Error loading indexing profile information from database", e);
 		}
 	}
 
@@ -298,18 +298,6 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		statusMapRS.close();
 	}
 
-	private void loadHoldsByIdentifier(Connection dbConn, Logger logger) {
-		try{
-			PreparedStatement loadHoldsStmt = dbConn.prepareStatement("SELECT ilsId, numHolds from ils_hold_summary", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-			ResultSet holdsRS = loadHoldsStmt.executeQuery();
-			while (holdsRS.next()) {
-				numberOfHoldsByIdentifier.put(holdsRS.getString("ilsId"), holdsRS.getInt("numHolds"));
-			}
-
-		} catch (Exception e){
-			logger.error("Unable to load hold data", e);
-		}
-	}
 
 	@Override
 	protected void updateGroupedWorkSolrDataBasedOnMarc(GroupedWorkSolr groupedWork, Record record, String identifier) {
@@ -398,7 +386,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 				scopeItems(recordInfoTmp, groupedWork, record);
 			}
 		}catch (Exception e){
-			logger.error("Error updating grouped work " + groupedWork.getId() + " for MARC record with identifier " + identifier, e);
+			indexer.getLogEntry().incErrors("Error updating grouped work " + groupedWork.getId() + " for MARC record with identifier " + identifier, e);
 		}
 	}
 
@@ -483,7 +471,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 								copies = Integer.parseInt(tmpLocation.substring(1, tmpLocation.indexOf(")")));
 								curLocation = tmpLocation.substring(tmpLocation.indexOf(")") + 1).trim();
 							} catch (StringIndexOutOfBoundsException e) {
-								logger.error("Error parsing copies and location for order item " + tmpLocation);
+								indexer.getLogEntry().incErrors("Error parsing copies and location for order item " + tmpLocation);
 							}
 						} else {
 							//If we only get one location in the detailed copies, we need to read the copies subfield rather than
@@ -495,11 +483,11 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 									try {
 										copies = Integer.parseInt(copiesData);
 									} catch (StringIndexOutOfBoundsException e) {
-										logger.error("StringIndexOutOfBoundsException loading number of copies " + copiesData, e);
+										indexer.getLogEntry().incErrors("StringIndexOutOfBoundsException loading number of copies " + copiesData, e);
 									} catch (Exception e) {
-										logger.error("Exception loading number of copies " + copiesData, e);
+										indexer.getLogEntry().incErrors("Exception loading number of copies " + copiesData, e);
 									} catch (Error e) {
-										logger.error("Error loading number of copies " + copiesData, e);
+										indexer.getLogEntry().incErrors("Error loading number of copies " + copiesData + " " + e);
 									}
 								}
 							}
@@ -564,7 +552,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			if (result.isIncluded){
 				ScopingInfo scopingInfo = itemInfo.addScope(scope);
 				if (scopingInfo == null){
-					logger.error("Could not add scoping information for " + scope.getScopeName() + " for item " + itemInfo.getFullRecordIdentifier());
+					indexer.getLogEntry().incErrors("Could not add scoping information for " + scope.getScopeName() + " for item " + itemInfo.getFullRecordIdentifier());
 					continue;
 				}
 				groupedWork.addScopingInfo(scope.getScopeName(), scopingInfo);
@@ -743,7 +731,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 					logger.info("Date Added was never");
 				}
 			} catch (ParseException e) {
-				logger.error("Error processing date added for record identifier " + recordIdentifier + " profile " + profileType + " using format " + dateAddedFormat, e);
+				indexer.getLogEntry().addNote("Error processing date added for record identifier " + recordIdentifier + " profile " + profileType + " using format " + dateAddedFormat + " " + e);
 			}
 		}
 	}
@@ -1270,7 +1258,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 							okToAdd = true;
 						}
 					}catch (Exception e){
-						logger.error("Error determining if the new value is already part of the string", e);
+						indexer.getLogEntry().incErrors("Error determining if the new value is already part of the string", e);
 					}
 					if (okToAdd) {
 						if (subfieldData.length() > 0 && subfieldData.charAt(subfieldData.length() - 1) != ' ') {
@@ -1318,12 +1306,25 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	private void loadPopularity(GroupedWorkSolr groupedWork, String recordIdentifier) {
 		//Add popularity based on the number of holds (we have already done popularity for prior checkouts)
 		//Active holds indicate that a title is more interesting so we will count each hold at double value
-		double popularity = 2 * getIlsHoldsForTitle(recordIdentifier);
+		int numHolds = getIlsHoldsForTitle(recordIdentifier);
+		groupedWork.addHolds(numHolds);
+		double popularity = 2 * numHolds;
 		groupedWork.addPopularity(popularity);
 	}
 
 	private int getIlsHoldsForTitle(String recordIdentifier) {
-		return numberOfHoldsByIdentifier.getOrDefault(recordIdentifier, 0);
+		int numHolds = 0;
+		try{
+			loadHoldsStmt.setString(1, recordIdentifier);
+			ResultSet holdsRS = loadHoldsStmt.executeQuery();
+			if (holdsRS.next()) {
+				numHolds = holdsRS.getInt("numHolds");
+			}
+
+		} catch (Exception e){
+			logger.error("Unable to load hold data", e);
+		}
+		return numHolds;
 	}
 
 	protected boolean isItemSuppressed(DataField curItem) {
@@ -1420,7 +1421,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 				}
 			} catch (NumberFormatException e) {
 				if (!unableToTranslateWarnings.contains("no_format_boost_" + tmpFormatBoost)){
-					logger.error("Could not load format boost for format " + tmpFormatBoost + " profile " + profileType);
+					indexer.getLogEntry().addNote("Could not load format boost for format " + tmpFormatBoost + " profile " + profileType);
 					unableToTranslateWarnings.add("no_format_boost_" + tmpFormatBoost);
 				}
 			}
@@ -1478,7 +1479,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			//Error handling
 			if (!translationMaps.containsKey(mapName)) {
 				if (!unableToTranslateWarnings.contains("unable_to_find_" + mapName)) {
-					logger.error("Unable to find translation map for " + mapName);
+					indexer.getLogEntry().addNote("Unable to find translation map for " + mapName);
 					unableToTranslateWarnings.add("unable_to_find_" + mapName);
 				}
 			} else {

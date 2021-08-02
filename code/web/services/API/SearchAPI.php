@@ -332,9 +332,12 @@ class SearchAPI extends Action
 			}
 		}
 
+		global $interface;
+		$gitBranch = $interface->getVariable('gitBranch');
 		if ($hasCriticalErrors || $hasWarnings) {
 			$result = array(
 				'aspen_health_status' => $hasCriticalErrors ? self::STATUS_CRITICAL : self::STATUS_WARN, // Critical warnings trump Warnings;
+				'version' => $gitBranch,
 				'message' => "Errors have been found",
 				'checks' => $checks,
 				'serverStats' => $serverStats
@@ -342,6 +345,7 @@ class SearchAPI extends Action
 		} else {
 			$result = array(
 				'aspen_health_status' => self::STATUS_OK,
+				'version' => $gitBranch,
 				'message' => "Everything is current",
 				'checks' => $checks,
 				'serverStats' => $serverStats

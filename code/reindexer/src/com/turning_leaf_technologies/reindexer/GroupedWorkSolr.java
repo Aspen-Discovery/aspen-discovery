@@ -71,6 +71,8 @@ public class GroupedWorkSolr implements Cloneable {
 	private HashSet<String> oclcs = new HashSet<>();
 	private HashSet<String> physicals = new HashSet<>();
 	private double popularity;
+	private long totalHolds;
+
 	private HashSet<String> publishers = new HashSet<>();
 	private HashSet<String> publicationDates = new HashSet<>();
 	private float rating = -1f;
@@ -398,6 +400,7 @@ public class GroupedWorkSolr implements Cloneable {
 		doc.addField("callnumber-subject", callNumberSubject);
 		//relevance determiners
 		doc.addField("popularity", Long.toString((long) popularity));
+		doc.addField("total_holds", Long.toString(totalHolds));
 		doc.addField("num_holdings", numHoldings);
 		//aspen-discovery enrichment
 		doc.addField("rating", rating == -1f ? 2.5 : rating);
@@ -1854,7 +1857,7 @@ public class GroupedWorkSolr implements Cloneable {
 		this.userNotInterestedLink.add(userId);
 	}
 
-	public void saveRecordsToDatabase(long groupedWorkId, BaseLogEntry logEntry) {
+	public synchronized void saveRecordsToDatabase(long groupedWorkId, BaseLogEntry logEntry) {
 		groupedWorkIndexer.disableAutoCommit();
 		//Get a list of all existing records for the grouped work
 		HashMap<String, SavedRecordInfo> existingRecords = groupedWorkIndexer.getExistingRecordsForGroupedWork(groupedWorkId);
@@ -1908,5 +1911,9 @@ public class GroupedWorkSolr implements Cloneable {
 			}
 		}
 		groupedWorkIndexer.enableAutoCommit();
+	}
+
+	public void addHolds(int numHolds) {
+		this.totalHolds += numHolds;
 	}
 }

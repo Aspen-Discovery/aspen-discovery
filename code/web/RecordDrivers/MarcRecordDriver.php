@@ -1539,7 +1539,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 				$this->numHolds = 0;
 			}
 		} else {
-			require_once ROOT_DIR . '/Drivers/marmot_inc/IlsHoldSummary.php';
+			require_once ROOT_DIR . '/sys/ILS/IlsHoldSummary.php';
 			$holdSummary = new IlsHoldSummary();
 			$holdSummary->ilsId = $this->getUniqueID();
 			if ($holdSummary->find(true)) {

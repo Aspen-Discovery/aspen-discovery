@@ -8,7 +8,6 @@ import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.json.JSONString;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -23,6 +22,8 @@ class HooplaProcessor {
 	private final Logger logger;
 
 	private PreparedStatement getProductInfoStmt;
+	private PreparedStatement doubleDecodeRawResponseStmt;
+	private PreparedStatement updateRawResponseStmt;
 
 	HooplaProcessor(GroupedWorkIndexer indexer, Connection dbConn, Logger logger) {
 		this.indexer = indexer;
@@ -30,6 +31,8 @@ class HooplaProcessor {
 
 		try {
 			getProductInfoStmt = dbConn.prepareStatement("SELECT id, hooplaId, active, title, kind, pa, demo, profanity, rating, abridged, children, price, rawChecksum, UNCOMPRESS(rawResponse) as rawResponse, dateFirstDetected from hoopla_export where hooplaId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+			doubleDecodeRawResponseStmt = dbConn.prepareStatement("SELECT UNCOMPRESS(UNCOMPRESS(rawResponse)) as rawResponse from hoopla_export where id = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+			updateRawResponseStmt = dbConn.prepareStatement("UPDATE hoopla_export SET rawResponse = COMPRESS(?) where id = ?");
 		} catch (SQLException e) {
 			logger.error("Error setting up hoopla processor", e);
 		}
@@ -89,7 +92,15 @@ class HooplaProcessor {
 				hooplaRecord.addFormat(primaryFormat);
 				hooplaRecord.addFormatCategory(formatCategory);
 
-				JSONObject rawResponse = new JSONObject(productRS.getString("rawResponse"));
+				String rawResponseString = productRS.getString("rawResponse");
+				if (rawResponseString.charAt(0) != '{' || rawResponseString.charAt(rawResponseString.length() -1) != '}'){
+					//If the first char is not { check to see if it has been double encoded
+					rawResponseString = fixHooplaData(productRS.getLong("id"));
+					if (rawResponseString == null){
+						logEntry.incErrors("Could not read or correct Hoopla raw response for " + identifier);
+					}
+				}
+				JSONObject rawResponse = new JSONObject(rawResponseString);
 
 				if (rawResponse.has("titleTitle")){
 					title = rawResponse.getString("titleTitle");
@@ -186,7 +197,7 @@ class HooplaProcessor {
 				HashMap<String, Integer> literaryForm = new HashMap<>();
 				HashMap<String, Integer> literaryFormFull = new HashMap<>();
 				if (rawResponse.has("fiction")){
-					if (rawResponse.getBoolean("fiction") == true){
+					if (rawResponse.getBoolean("fiction")){
 						Util.addToMapWithCount(literaryForm, "Fiction");
 						Util.addToMapWithCount(literaryFormFull, "Fiction");
 					}else{
@@ -316,6 +327,23 @@ class HooplaProcessor {
 		} catch (SQLException e) {
 			logEntry.incErrors("Error loading information from Database for Hoopla title " + identifier, e);
 		}
+	}
+
+	private String fixHooplaData(long id) throws SQLException{
+		doubleDecodeRawResponseStmt.setLong(1, id);
+		ResultSet doubleDecodeRawResponseRS = doubleDecodeRawResponseStmt.executeQuery();
+		if (doubleDecodeRawResponseRS.next()){
+			String rawResponseString = doubleDecodeRawResponseRS.getString("rawResponse");
+			if (rawResponseString.charAt(0) == '{' && rawResponseString.charAt(rawResponseString.length() -1) == '}'){
+				updateRawResponseStmt.setString(1, rawResponseString);
+				updateRawResponseStmt.setLong(2, id);
+				updateRawResponseStmt.executeUpdate();
+				return rawResponseString;
+			}
+		}
+		doubleDecodeRawResponseRS.close();
+
+		return null;
 	}
 
 }
