@@ -12,7 +12,6 @@ import com.turning_leaf_technologies.logging.LoggingUtil;
 import com.turning_leaf_technologies.net.NetworkUtils;
 import com.turning_leaf_technologies.net.WebServiceResponse;
 import com.turning_leaf_technologies.reindexer.GroupedWorkIndexer;
-import com.turning_leaf_technologies.reindexer.ItemInfo;
 import com.turning_leaf_technologies.strings.StringUtils;
 import org.apache.commons.net.util.Base64;
 import org.apache.logging.log4j.Logger;
@@ -621,7 +620,7 @@ public class PolarisExportMain {
 
 			addIlsHoldSummary = dbConn.prepareStatement("INSERT INTO ils_hold_summary (ilsId, numHolds) VALUES (?, ?) ON DUPLICATE KEY UPDATE numHolds = VALUES(numHolds)");
 			getExistingVolumesStmt = dbConn.prepareStatement("SELECT id, volumeId from ils_volume_info where recordId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-			addVolumeStmt = dbConn.prepareStatement("INSERT INTO ils_volume_info (recordId, volumeId, displayLabel, relatedItems, displayOrder) VALUES (?,?,?,?, ?) ON DUPLICATE KEY update recordId = VALUES(recordId), displayLabel = VALUES(displayLabel), relatedItems = VALUES(relatedItems), displayOrder = VALUES(displayOrder)");
+			addVolumeStmt = dbConn.prepareStatement("INSERT INTO ils_volume_info (recordId, volumeId, displayLabel, relatedItems, displayOrder) VALUES (?,?,?,?,?)");
 			updateVolumeStmt = dbConn.prepareStatement("UPDATE ils_volume_info SET displayLabel = ?, relatedItems = ?, displayOrder = ? WHERE id = ?");
 			deleteAllVolumesStmt = dbConn.prepareStatement("DELETE from ils_volume_info where recordId = ?");
 			deleteVolumeStmt = dbConn.prepareStatement("DELETE from ils_volume_info where id = ?");
@@ -1052,7 +1051,7 @@ public class PolarisExportMain {
 						volumeInfo.volumeIdentifier = volume;
 						volumesForRecord.put(volume, volumeInfo);
 					}
-					String itemNumber = "";
+					String itemNumber;
 					Subfield itemNumberSubfield = curItem.getSubfield(indexingProfile.getItemRecordNumberSubfield());
 					if (itemNumberSubfield != null){
 						itemNumber = itemNumberSubfield.getData();
