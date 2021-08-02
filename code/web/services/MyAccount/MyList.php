@@ -246,7 +246,7 @@ class MyAccount_MyList extends MyAccount {
 
 	}
 
-	function bulkAddTitles($list){
+	function bulkAddTitles(UserList $list){
 		$totalRecords = $list->numValidListItems();
 		$numAdded = 0;
 		$notes = array();
