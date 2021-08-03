@@ -1229,4 +1229,103 @@ class Polaris extends AbstractIlsDriver
 	public function treatVolumeHoldsAsItemHolds() {
 		return true;
 	}
+
+	/**
+	 * Import Lists from the ILS
+	 *
+	 * @param User $patron
+	 * @return array - an array of results including the names of the lists that were imported as well as number of titles.
+	 */
+	function importListsFromIls($patron)
+	{
+		require_once ROOT_DIR . '/sys/UserLists/UserList.php';
+		require_once ROOT_DIR . '/sys/Grouping/GroupedWorkPrimaryIdentifier.php';
+		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
+		require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
+
+		$results = array(
+			'totalTitles' => 0,
+			'totalLists' => 0
+		);
+
+		//Get a list of all lists for the user
+		$polarisUrl = "/PAPIService/REST/public/v1/1033/100/1/patron/{$patron->getBarcode()}/patronaccountgettitlelists";
+		$response = $this->getWebServiceResponse($polarisUrl, 'GET', $this->getAccessToken($patron->getBarcode(), $patron->getPasswordOrPin()));
+		if ($response && $this->lastResponseCode == 200) {
+			$jsonResponse = json_decode($response);
+			foreach ($jsonResponse->PatronAccountTitleListsRows as $listsRow) {
+				$listId = $listsRow->RecordStoreID;
+				$listName = $listsRow->RecordStoreName;
+				$newList = new UserList();
+				$newList->user_id = $patron->id;
+				$newList->title = $listName;
+				if (!$newList->find(true)) {
+					$newList->insert();
+				}elseif ($newList->deleted == 1){
+					$newList->removeAllListEntries(true);
+					$newList->deleted = 0;
+					$newList->update();
+				}
+				$results['totalLists']++;
+				//Get titles currently on the list
+				$currentListTitles = $newList->getListTitles();
+
+				//Get the titles for the list
+				$getListTitlesUrl = "/PAPIService/REST/public/v1/1033/100/1/patron/{$patron->getBarcode()}/patrontitlelistgettitles?list=$listId";
+				$getListTitlesResponse = $this->getWebServiceResponse($getListTitlesUrl, 'GET', $this->getAccessToken($patron->getBarcode(), $patron->getPasswordOrPin()));
+				if ($getListTitlesResponse && $this->lastResponseCode == 200) {
+					$getListTitlesJson = json_decode($getListTitlesResponse);
+					foreach ($getListTitlesJson->PatronTitleListTitleRows as $titleListTitleRow) {
+						$bibNumber = $titleListTitleRow->LocalControlNumber;
+						$title = $titleListTitleRow->Name;
+						$primaryIdentifier = new GroupedWorkPrimaryIdentifier();
+						$groupedWork = new GroupedWork();
+						$primaryIdentifier->identifier = $bibNumber;
+						$primaryIdentifier->type = $this->accountProfile->recordSource;
+
+						if ($primaryIdentifier->find(true)) {
+							$groupedWork->id = $primaryIdentifier->grouped_work_id;
+							if ($groupedWork->find(true)) {
+								//Check to see if this title is already on the list.
+								$resourceOnList = false;
+								foreach ($currentListTitles as $currentTitle) {
+									if ($currentTitle->source == 'GroupedWork' && $currentTitle->sourceId == $groupedWork->permanent_id) {
+										$resourceOnList = true;
+										break;
+									}
+								}
+
+								if (!$resourceOnList) {
+									$listEntry = new UserListEntry();
+									$listEntry->source = 'GroupedWork';
+									$listEntry->sourceId = $groupedWork->permanent_id;
+									$listEntry->listId = $newList->id;
+									$listEntry->notes = '';
+									$listEntry->dateAdded = time();
+									$listEntry->title = StringUtils::trimStringToLengthAtWordBoundary($title, 50, true);
+									$listEntry->insert();
+									$currentListTitles[] = $listEntry;
+								}
+								$results['totalTitles']++;
+							} else {
+								if (!isset($results['errors'])) {
+									$results['errors'] = array();
+								}
+								$results['errors'][] = "\"$bibNumber\" on list $title could not be found in the catalog and was not imported.";
+							}
+						} else {
+							//The title is not in the resources, add an error to the results
+							if (!isset($results['errors'])) {
+								$results['errors'] = array();
+							}
+							$results['errors'][] = "\"$bibNumber\" on list $title could not be found in the catalog and was not imported.";
+						}
+					}
+				}
+			}
+		}
+
+
+		return $results;
+	}
 }
