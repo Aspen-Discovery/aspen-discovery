@@ -349,6 +349,11 @@ class UInterface extends Smarty
 				$this->appliedTheme = $primaryTheme;
 			}
 
+			//Get extended theme info
+			if($theme->extendsTheme){
+				$this->assign('extendedTheme', $theme->extendsTheme);
+			}
+
 			//Get Logo
 			$logoName = null;
 			foreach ($allAppliedThemes as $theme) {
