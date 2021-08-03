@@ -11,6 +11,7 @@ class UserListEntry extends DataObject{
 	public $dateAdded;                       // timestamp(19)  not_null unsigned zerofill binary timestamp
 	public $weight;                          //Where to position the entry in the overall list
 	public $importedFrom;
+	public $title;
 
 	/**
 	 * @param bool $updateBrowseCategories

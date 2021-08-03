@@ -448,7 +448,7 @@ class Millennium extends AbstractIlsDriver
 	 *                                  If an error occurs, return a AspenError
 	 * @access  public
 	 */
-	function placeVolumeHold($patron, $recordId, $volumeId, $pickupBranch) {
+	function placeVolumeHold(User $patron, $recordId, $volumeId, $pickupBranch) {
 		require_once ROOT_DIR . '/Drivers/marmot_inc/MillenniumHolds.php';
 		$millenniumHolds = new MillenniumHolds($this);
 		return $millenniumHolds->placeVolumeHold($patron, $recordId, $volumeId, $pickupBranch);

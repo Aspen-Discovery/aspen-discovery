@@ -1179,7 +1179,7 @@ class GroupedWorkDriver extends IndexRecordDriver
 		$timer->logTime('Finished Loading Description');
 		if ($this->hasCachedSeries()) {
 			$interface->assign('ajaxSeries', false);
-			$interface->assign('summSeries', $this->getSeries());
+			$interface->assign('summSeries', $this->getSeries(false));
 		} else {
 			$interface->assign('ajaxSeries', true);
 			$interface->assign('summSeries', '');

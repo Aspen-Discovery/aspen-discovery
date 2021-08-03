@@ -1053,7 +1053,7 @@ class Koha extends AbstractIlsDriver
 	 * @param string $pickupBranch
 	 * @return array
 	 */
-	public function placeVolumeHold($patron, $recordId, $volumeId, $pickupBranch)
+	public function placeVolumeHold(User $patron, $recordId, $volumeId, $pickupBranch)
 	{
 		$result = [
 			'success' => false,

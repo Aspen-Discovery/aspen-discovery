@@ -875,7 +875,7 @@ class CatalogConnection
 		}
 	}
 
-	public function placeVolumeHold($patron, $recordId, $volumeId, $pickupBranch)
+	public function placeVolumeHold(User $patron, $recordId, $volumeId, $pickupBranch)
 	{
 		return $this->driver->placeVolumeHold($patron, $recordId, $volumeId, $pickupBranch);
 	}

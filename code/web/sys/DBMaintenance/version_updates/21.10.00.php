@@ -28,6 +28,15 @@ function getUpdates21_10_00() : array
 				"ALTER TABLE collection_spotlight_lists CHANGE COLUMN defaultSort defaultSort ENUM('relevance', 'popularity', 'newest_to_oldest', 'oldest_to_newest', 'author', 'title', 'user_rating', 'holds', 'publication_year_desc', 'publication_year_asc') default 'relevance'",
 				"ALTER TABLE browse_category CHANGE COLUMN defaultSort defaultSort ENUM('relevance', 'popularity', 'newest_to_oldest', 'oldest_to_newest', 'author', 'title', 'user_rating', 'holds', 'publication_year_desc', 'publication_year_asc') default 'relevance'"
 			]
+		], //add_sorts_for_browsable_objects
+		'fix_ils_volume_indexes' => [
+			'title' => 'Fix ILS Volume Indexes',
+			'description' => 'Allow Volume Ids to be non unique',
+			'sql' => [
+				'ALTER TABLE ils_volume_info DROP index volumeId',
+				'ALTER TABLE ils_volume_info DROP index recordId',
+				'ALTER TABLE ils_volume_info Add unique index recordVolume(recordId, volumeId)',
+			]
 		]
 	];
 }

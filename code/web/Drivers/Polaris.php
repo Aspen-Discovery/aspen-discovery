@@ -1,11 +1,9 @@
 <?php
 
 //TODO: Update patron info
-//TODO: Load lists from Polaris
 //TODO: Cancel all holds
 //TODO: Freeze all holds
 //TODO: Self Register
-//TODO: Update PIN
 
 class Polaris extends AbstractIlsDriver
 {
@@ -49,7 +47,7 @@ class Polaris extends AbstractIlsDriver
 			$summary->totalFines = $basicDataResponse->ChargeBalance;
 
 			$polarisCirculateBlocksUrl = "/PAPIService/REST/public/v1/1033/100/1/patron/{$patron->getBarcode()}/circulationblocks";
-			$circulateBlocksResponse = $this->getWebServiceResponse($polarisCirculateBlocksUrl, 'GET', Polaris::$accessTokensForUsers[$patron->getBarcode()]['accessToken']);
+			$circulateBlocksResponse = $this->getWebServiceResponse($polarisCirculateBlocksUrl, 'GET', Polaris::$accessTokensForUsers[$patron->getBarcode()]['accessToken'], false, UserAccount::isUserMasquerading());
 			if ($circulateBlocksResponse && $this->lastResponseCode == 200) {
 				$circulateBlocksResponse = json_decode($circulateBlocksResponse);
 				$expireTime = $this->parsePolarisDate($circulateBlocksResponse->ExpirationDate);
@@ -63,12 +61,12 @@ class Polaris extends AbstractIlsDriver
 	/**
 	 * @param string $patronBarcode
 	 * @param string $password
-	 *
+	 * @param bool $fromMasquerade - true if we are calling this while initiating masquerade mode
 	 * @return stdClass|null
 	 */
-	private function getBasicDataResponse(string $patronBarcode, string $password){
+	private function getBasicDataResponse(string $patronBarcode, string $password, bool $fromMasquerade = false){
 		$polarisUrl = "/PAPIService/REST/public/v1/1033/100/1/patron/{$patronBarcode}/basicdata?addresses=1";
-		$response = $this->getWebServiceResponse($polarisUrl, 'GET', $this->getAccessToken($patronBarcode, $password));
+		$response = $this->getWebServiceResponse($polarisUrl, 'GET', $this->getAccessToken($patronBarcode, $password), false, $fromMasquerade);
 		if ($response && $this->lastResponseCode == 200){
 			$jsonResponse = json_decode($response);
 			return $jsonResponse->PatronBasicData;
@@ -87,7 +85,7 @@ class Polaris extends AbstractIlsDriver
 		//Get preferences for the barcode
 		$readingHistoryEnabled = false;
 		$polarisUrl = "/PAPIService/REST/public/v1/1033/100/1/patron/{$patron->getBarcode()}/preferences";
-		$response = $this->getWebServiceResponse($polarisUrl, 'GET', $this->getAccessToken($patron->getBarcode(), $patron->getPasswordOrPin()));
+		$response = $this->getWebServiceResponse($polarisUrl, 'GET', $this->getAccessToken($patron->getBarcode(), $patron->getPasswordOrPin()), false, UserAccount::isUserMasquerading());
 		if ($response && $this->lastResponseCode == 200){
 			$jsonResponse = json_decode($response);
 			$readingHistoryEnabled = $jsonResponse->PatronPreferences->ReadingListEnabled;
@@ -96,7 +94,7 @@ class Polaris extends AbstractIlsDriver
 		if ($readingHistoryEnabled) {
 			$readingHistoryTitles = array();
 			$polarisUrl = "/PAPIService/REST/public/v1/1033/100/1/patron/{$patron->getBarcode()}/readinghistory?rowsperpage=5&page=0";
-			$response = $this->getWebServiceResponse($polarisUrl, 'GET', $this->getAccessToken($patron->getBarcode(), $patron->getPasswordOrPin()));
+			$response = $this->getWebServiceResponse($polarisUrl, 'GET', $this->getAccessToken($patron->getBarcode(), $patron->getPasswordOrPin()), false, UserAccount::isUserMasquerading());
 			if ($response && $this->lastResponseCode == 200) {
 				$jsonResponse = json_decode($response);
 				$readingHistoryList = $jsonResponse->PatronReadingHistoryGetRows;
@@ -140,7 +138,7 @@ class Polaris extends AbstractIlsDriver
 		$checkedOutTitles = array();
 
 		$polarisUrl = "/PAPIService/REST/public/v1/1033/100/1/patron/{$patron->getBarcode()}/itemsout/all";
-		$response = $this->getWebServiceResponse($polarisUrl, 'GET', $this->getAccessToken($patron->getBarcode(), $patron->getPasswordOrPin()));
+		$response = $this->getWebServiceResponse($polarisUrl, 'GET', $this->getAccessToken($patron->getBarcode(), $patron->getPasswordOrPin()), false, UserAccount::isUserMasquerading());
 		if ($response && $this->lastResponseCode == 200){
 			$jsonResponse = json_decode($response);
 			$itemsOutList = $jsonResponse->PatronItemsOutGetRows;
@@ -209,7 +207,7 @@ class Polaris extends AbstractIlsDriver
 			'Total' => $accountSummary->numCheckedOut
 		);
 
-		$response = $this->getWebServiceResponse($polarisUrl, 'PUT', $this->getAccessToken($patron->getBarcode(), $patron->getPasswordOrPin()), json_encode($body));
+		$response = $this->getWebServiceResponse($polarisUrl, 'PUT', $this->getAccessToken($patron->getBarcode(), $patron->getPasswordOrPin()), json_encode($body), UserAccount::isUserMasquerading());
 		if ($response && $this->lastResponseCode == 200) {
 			$jsonResponse = json_decode($response);
 			if ($jsonResponse->PAPIErrorCode == 0 || $jsonResponse->PAPIErrorCode == -3) {
@@ -258,7 +256,7 @@ class Polaris extends AbstractIlsDriver
 		$body->RenewData = new stdClass();
 		$body->RenewData->IgnoreOverrideErrors = false;
 
-		$response = $this->getWebServiceResponse($polarisUrl, 'PUT', $this->getAccessToken($patron->getBarcode(), $patron->getPasswordOrPin()), json_encode($body));
+		$response = $this->getWebServiceResponse($polarisUrl, 'PUT', $this->getAccessToken($patron->getBarcode(), $patron->getPasswordOrPin()), json_encode($body), UserAccount::isUserMasquerading());
 		if ($response && $this->lastResponseCode == 200) {
 			$jsonResponse = json_decode($response);
 			if ($jsonResponse->PAPIErrorCode == 0) {
@@ -319,7 +317,7 @@ class Polaris extends AbstractIlsDriver
 			'unavailable' => $unavailableHolds
 		);
 		$polarisUrl = "/PAPIService/REST/public/v1/1033/100/1/patron/{$patron->getBarcode()}/holdrequests/all";
-		$response = $this->getWebServiceResponse($polarisUrl, 'GET', $this->getAccessToken($patron->getBarcode(), $patron->getPasswordOrPin()));
+		$response = $this->getWebServiceResponse($polarisUrl, 'GET', $this->getAccessToken($patron->getBarcode(), $patron->getPasswordOrPin()), false, UserAccount::isUserMasquerading());
 		if ($response && $this->lastResponseCode == 200){
 			$jsonResponse = json_decode($response);
 			$holdsList = $jsonResponse->PatronHoldRequestsGetRows;
@@ -503,7 +501,7 @@ class Polaris extends AbstractIlsDriver
 		}
 	}
 
-	public function placeVolumeHold($patron, $recordId, $volumeId, $pickupBranch)
+	public function placeVolumeHold(User $patron, $recordId, $volumeId, $pickupBranch)
 	{
 		if (strpos($recordId, ':') !== false){
 			list(,$shortId) = explode(':', $recordId);
@@ -590,7 +588,7 @@ class Polaris extends AbstractIlsDriver
 	{
 		$staffInfo = $this->getStaffUserInfo();
 		$polarisUrl = "/PAPIService/REST/public/v1/1033/100/1/patron/{$patron->getBarcode()}/holdrequests/$cancelId/cancelled?wsid={$this->getWorkstationID($patron)}&userid={$staffInfo['polarisId']}";
-		$response = $this->getWebServiceResponse($polarisUrl, 'PUT', $this->getAccessToken($patron->getBarcode(), $patron->getPasswordOrPin()));
+		$response = $this->getWebServiceResponse($polarisUrl, 'PUT', $this->getAccessToken($patron->getBarcode(), $patron->getPasswordOrPin()), false, UserAccount::isUserMasquerading());
 		if ($response && $this->lastResponseCode == 200) {
 			$jsonResponse = json_decode($response);
 			if ($jsonResponse->PAPIErrorCode == 0) {
@@ -650,9 +648,9 @@ class Polaris extends AbstractIlsDriver
 		return null;
 	}
 
-	private function loadPatronBasicData(string $patronBarcode, string $password, $patronId)
+	private function loadPatronBasicData(string $patronBarcode, string $password, $patronId, bool $fromMasquerade = false)
 	{
-		$patronBasicData = $this->getBasicDataResponse($patronBarcode, $password);
+		$patronBasicData = $this->getBasicDataResponse($patronBarcode, $password, $fromMasquerade);
 		if ($patronBasicData != null){
 			$userExistsInDB = false;
 			$user = new User();
@@ -699,7 +697,7 @@ class Polaris extends AbstractIlsDriver
 			}
 
 			$polarisCirculateBlocksUrl = "/PAPIService/REST/public/v1/1033/100/1/patron/{$patronBarcode}/circulationblocks";
-			$circulateBlocksResponse = $this->getWebServiceResponse($polarisCirculateBlocksUrl, 'GET', Polaris::$accessTokensForUsers[$patronBarcode]['accessToken']);
+			$circulateBlocksResponse = $this->getWebServiceResponse($polarisCirculateBlocksUrl, 'GET', Polaris::$accessTokensForUsers[$patronBarcode]['accessToken'], false, $fromMasquerade);
 			if ($circulateBlocksResponse && $this->lastResponseCode == 200) {
 				$circulateBlocksResponse = json_decode($circulateBlocksResponse);
 				//Load home library
@@ -778,7 +776,7 @@ class Polaris extends AbstractIlsDriver
 				//New user check to see if they have reading history
 				//Get preferences for the barcode
 				$polarisUrl = "/PAPIService/REST/public/v1/1033/100/1/patron/{$user->getBarcode()}/preferences";
-				$response = $this->getWebServiceResponse($polarisUrl, 'GET', $this->getAccessToken($user->getBarcode(), $user->getPasswordOrPin()));
+				$response = $this->getWebServiceResponse($polarisUrl, 'GET', $this->getAccessToken($user->getBarcode(), $user->getPasswordOrPin()), false, $fromMasquerade);
 				if ($response && $this->lastResponseCode == 200){
 					$jsonResponse = json_decode($response);
 					$user->trackReadingHistory = $jsonResponse->PatronPreferences->ReadingListEnabled;
@@ -799,7 +797,7 @@ class Polaris extends AbstractIlsDriver
 	 *
 	 * @return array
 	 */
-	protected function loginViaWebService(&$username, $password) : array
+	protected function loginViaWebService(&$username, $password, $fromMasquerade = false) : array
 	{
 		if (array_key_exists($username, Polaris::$accessTokensForUsers)){
 			return Polaris::$accessTokensForUsers[$username];
@@ -835,7 +833,7 @@ class Polaris extends AbstractIlsDriver
 
 			if (!$patronValidationDone) {
 				$body = json_encode($authenticationData);
-				$authenticationResponseRaw = $this->getWebServiceResponse('/PAPIService/REST/public/v1/1033/100/1/authenticator/patron', 'POST', '', $body);
+				$authenticationResponseRaw = $this->getWebServiceResponse('/PAPIService/REST/public/v1/1033/100/1/authenticator/patron', 'POST', '', $body, $fromMasquerade);
 				if ($authenticationResponseRaw) {
 					$authenticationResponse = json_decode($authenticationResponseRaw);
 					if ($authenticationResponse->PAPIErrorCode == 0) {
@@ -890,7 +888,7 @@ class Polaris extends AbstractIlsDriver
 			$body->ActivationDate = $dateToReactivate;
 		}
 
-		$response = $this->getWebServiceResponse($polarisUrl, 'PUT', $this->getAccessToken($patron->getBarcode(), $patron->getPasswordOrPin()), json_encode($body));
+		$response = $this->getWebServiceResponse($polarisUrl, 'PUT', $this->getAccessToken($patron->getBarcode(), $patron->getPasswordOrPin()), json_encode($body), UserAccount::isUserMasquerading());
 		if ($response && $this->lastResponseCode == 200) {
 			$jsonResponse = json_decode($response);
 			if ($jsonResponse->PAPIErrorCode == 0) {
@@ -924,7 +922,7 @@ class Polaris extends AbstractIlsDriver
 		$polarisUrl = "/PAPIService/REST/public/v1/1033/100/1/patron/{$patron->getBarcode()}/holdrequests/$itemToThawId/active";
 		$body = new stdClass();
 		$body->UserID = $staffInfo['polarisId'];
-		$response = $this->getWebServiceResponse($polarisUrl, 'PUT', $this->getAccessToken($patron->getBarcode(), $patron->getPasswordOrPin()), json_encode($body));
+		$response = $this->getWebServiceResponse($polarisUrl, 'PUT', $this->getAccessToken($patron->getBarcode(), $patron->getPasswordOrPin()), json_encode($body), UserAccount::isUserMasquerading());
 		if ($response && $this->lastResponseCode == 200) {
 			$jsonResponse = json_decode($response);
 			if ($jsonResponse->PAPIErrorCode == 0) {
@@ -958,7 +956,7 @@ class Polaris extends AbstractIlsDriver
 		$polarisUrl = "/PAPIService/REST/public/v1/1033/100/1/patron/{$patron->getBarcode()}/holdrequests/$itemToUpdateId/pickupbranch?wsid={$this->getWorkstationID($patron)}&userid={$staffInfo['polarisId']}&pickupbranchid=$newPickupLocation";
 		$body = new stdClass();
 		$body->UserID = $staffInfo['polarisId'];
-		$response = $this->getWebServiceResponse($polarisUrl, 'PUT', $this->getAccessToken($patron->getBarcode(), $patron->getPasswordOrPin()));
+		$response = $this->getWebServiceResponse($polarisUrl, 'PUT', $this->getAccessToken($patron->getBarcode(), $patron->getPasswordOrPin()), false, UserAccount::isUserMasquerading());
 		if ($response && $this->lastResponseCode == 200) {
 			$jsonResponse = json_decode($response);
 			if ($jsonResponse->PAPIErrorCode == 0) {
@@ -986,9 +984,128 @@ class Polaris extends AbstractIlsDriver
 		}
 	}
 
-	function updatePatronInfo(User $patron, $canUpdateContactInfo)
+	/**
+	 * @param User $patron
+	 * @param bool $canUpdateContactInfo
+	 * @return array
+	 */
+	function updatePatronInfo($patron, $canUpdateContactInfo)
 	{
-		// TODO: Implement updatePatronInfo() method.
+		$result = [
+			'success' => false,
+			'messages' => []
+		];
+		if ($canUpdateContactInfo) {
+			$staffInfo = $this->getStaffUserInfo();
+			$polarisUrl = "/PAPIService/REST/public/v1/1033/100/1/patron/{$patron->getBarcode()}";
+			$body = new stdClass();
+			$body->LogonBranchID = $patron->getHomeLocationCode();
+			$body->LogonUserID = (string)$staffInfo['polarisId'];
+			$body->LogonWorkstationID = $this->getWorkstationID($patron);
+			if (isset($_REQUEST['email'])) {
+				$body->EmailAddress = $_REQUEST['email'];
+				$patron->email = $_REQUEST['email'];
+			}
+
+			if (isset($_REQUEST['phone'])) {
+				$body->PhoneVoice1 = $_REQUEST['phone'];
+				$patron->phone = $_REQUEST['phone'];
+			}
+
+			$patronBasicData = $this->getBasicDataResponse($patron->getBarcode(), $patron->getPasswordOrPin());
+			//Get the ID of the address to update
+			$addresses = $patronBasicData->PatronAddresses;
+			if (count($addresses) > 0){
+				$address = reset($addresses);
+				$body->AddressID = $address->AddressID;
+				$body->FreeTextID = $address->FreeTextLabel;
+			}
+
+			if (isset($_REQUEST['address1'])) {
+				$body->StreetOne = $_REQUEST['address1'];
+				$patron->_address1 = $_REQUEST['address1'];
+			}
+
+			if (isset($_REQUEST['address2'])) {
+				$body->StreetTwo = $_REQUEST['address2'];
+				$patron->_address2 = $_REQUEST['address2'];
+			}
+
+			if (isset($_REQUEST['city'])) {
+				$body->City = $_REQUEST['city'];
+				$patron->_city = $_REQUEST['city'];
+			}
+
+			if (isset($_REQUEST['state'])) {
+				$body->State = $_REQUEST['state'];
+				$patron->_state = $_REQUEST['state'];
+			}
+
+			if (isset($_REQUEST['zip'])) {
+				$body->PostalCode = $_REQUEST['zip'];
+				$patron->_zip = $_REQUEST['zip'];
+			}
+
+			if (count($addresses) > 0){
+				$address = reset($addresses);
+				$body->AddressTypeID = $address->AddressTypeID;
+			}
+
+			// Update Home Location
+			if (!empty($_REQUEST['pickupLocation'])) {
+				$homeLibraryLocation = new Location();
+				if ($homeLibraryLocation->get('code', $_REQUEST['pickupLocation'])) {
+					$homeBranchCode = strtoupper($homeLibraryLocation->code);
+					$body->RequestPickupBranchID = $homeBranchCode;
+				}
+			}
+			$response = $this->getWebServiceResponse($polarisUrl, 'PUT', $this->getAccessToken($patron->getBarcode(), $patron->getPasswordOrPin()), json_encode($body), UserAccount::isUserMasquerading());
+			if ($response && $this->lastResponseCode == 200) {
+				$jsonResponse = json_decode($response);
+				if ($jsonResponse->PAPIErrorCode == 0) {
+					$result['success'] = true;
+					$result['messages'][] = 'Your account was updated successfully.';
+					$patron->update();
+				}else{
+					$result['messages'][] = "Error updating profile information (Error {$jsonResponse->PAPIErrorCode}).";
+				}
+			}else{
+				$result['messages'][] = "Error updating profile information ({$this->lastResponseCode}).";
+			}
+		} else {
+			$result['messages'][] = 'You do not have permission to update profile information.';
+		}
+		return $result;
+	}
+
+	function updatePin(User $patron, string $oldPin, string $newPin)
+	{
+		if ($patron->cat_password != $oldPin) {
+			return ['success' => false, 'message' => "The old PIN provided is incorrect."];
+		}
+		$result = ['success' => false, 'message' => "Unknown error updating password."];
+		$staffInfo = $this->getStaffUserInfo();
+		$polarisUrl = "/PAPIService/REST/public/v1/1033/100/1/patron/{$patron->getBarcode()}";
+		$body = new stdClass();
+		$body->LogonBranchID = $patron->getHomeLocationCode();
+		$body->LogonUserID = (string)$staffInfo['polarisId'];
+		$body->LogonWorkstationID = $this->getWorkstationID($patron);
+		$body->Password = $newPin;
+		$response = $this->getWebServiceResponse($polarisUrl, 'PUT', $this->getAccessToken($patron->getBarcode(), $patron->getPasswordOrPin()), json_encode($body), UserAccount::isUserMasquerading());
+		if ($response && $this->lastResponseCode == 200) {
+			$jsonResponse = json_decode($response);
+			if ($jsonResponse->PAPIErrorCode == 0) {
+				$result['success'] = true;
+				$result['message'] = 'Your password was updated successfully.';
+				$patron->cat_password = $newPin;
+				$patron->update();
+			}else{
+				$result['message'] = "Error updating your password. (Error {$jsonResponse->PAPIErrorCode}).";
+			}
+		}else{
+			$result['messages'] = "Error updating your password. ({$this->lastResponseCode}).";
+		}
+		return $result;
 	}
 
 	public function getFines(User $patron, $includeMessages = false)
@@ -1006,7 +1123,7 @@ class Polaris extends AbstractIlsDriver
 		$currencyFormatter = new NumberFormatter( $activeLanguage->locale . '@currency=' . $currencyCode, NumberFormatter::CURRENCY );
 
 		$polarisUrl = "/PAPIService/REST/public/v1/1033/100/1/patron/{$patron->getBarcode()}/account/outstanding";
-		$response = $this->getWebServiceResponse($polarisUrl, 'GET', $this->getAccessToken($patron->getBarcode(), $patron->getPasswordOrPin()));
+		$response = $this->getWebServiceResponse($polarisUrl, 'GET', $this->getAccessToken($patron->getBarcode(), $patron->getPasswordOrPin()), false, UserAccount::isUserMasquerading());
 		$fines = [];
 		if ($response && $this->lastResponseCode == 200){
 			$jsonResponse = json_decode($response);
@@ -1051,7 +1168,7 @@ class Polaris extends AbstractIlsDriver
 			$body->PaymentMethodID = 12;
 			$body->FreeTextNote = 'Paid Online via Aspen Discovery';
 
-			$response = $this->getWebServiceResponse($polarisUrl, 'PUT', $staffUserInfo['accessSecret'], json_encode($body));
+			$response = $this->getWebServiceResponse($polarisUrl, 'PUT', $staffUserInfo['accessSecret'], json_encode($body), UserAccount::isUserMasquerading());
 
 			if ($response && $this->lastResponseCode == 200) {
 				$jsonResponse = json_decode($response);
@@ -1086,6 +1203,10 @@ class Polaris extends AbstractIlsDriver
 
 		$url = $this->getWebServiceURL() . $query;
 
+		if ($actAsStaff){
+			$staffUserInfo = $this->getStaffUserInfo();
+			$patronPassword = $staffUserInfo['accessSecret'];
+		}
 		$signature_text = $method . $url . $date . $patronPassword;
 		$signature = base64_encode(
 			hash_hmac('sha1', $signature_text, $this->accountProfile->oAuthClientSecret, true)
@@ -1121,7 +1242,7 @@ class Polaris extends AbstractIlsDriver
 	{
 		if (preg_match('%/Date\((\d{13})([+-]\d{4})\)/%i', $polarisDate, $matches)) {
 			$timestamp = $matches[1] / 1000;
-			$timezoneOffset = $matches[2];
+			//$timezoneOffset = $matches[2];
 			//TODO: Adjust for timezone offset
 			return $timestamp;
 		} else {
@@ -1154,8 +1275,27 @@ class Polaris extends AbstractIlsDriver
 	}
 
 	public function findNewUser($patronBarcode){
-		//TODO: Implement findNewUser to allow masquerade
-		return false;
+		$staffUserInfo = $this->getStaffUserInfo();
+
+		//Validate that the patron exists. This can also be used to get the barcode for the user based on username
+		$validatePatronResponseRaw = $this->getWebServiceResponse('/PAPIService/REST/public/v1/1033/100/1/patron/' . $patronBarcode, 'GET', $staffUserInfo['accessSecret'], false, true);
+		$patronId = false;
+		if ($validatePatronResponseRaw){
+			$validationResponse = json_decode($validatePatronResponseRaw);
+			if ($validationResponse->PAPIErrorCode != -3000){
+				if (!empty($validationResponse->PatronBarcode) && $validationResponse->PatronBarcode != $patronBarcode){
+					$patronBarcode = $validationResponse->PatronBarcode;
+				}
+				$patronId = $validationResponse->PatronID;
+			}
+		}
+
+		//Load user data
+		if ($patronId != false) {
+			return $this->loadPatronBasicData($patronBarcode, '', $patronId, true);
+		}else{
+			return false;
+		}
 	}
 
 	private function getWorkstationID(User $patron) : int
@@ -1228,5 +1368,104 @@ class Polaris extends AbstractIlsDriver
 
 	public function treatVolumeHoldsAsItemHolds() {
 		return true;
+	}
+
+	/**
+	 * Import Lists from the ILS
+	 *
+	 * @param User $patron
+	 * @return array - an array of results including the names of the lists that were imported as well as number of titles.
+	 */
+	function importListsFromIls($patron)
+	{
+		require_once ROOT_DIR . '/sys/UserLists/UserList.php';
+		require_once ROOT_DIR . '/sys/Grouping/GroupedWorkPrimaryIdentifier.php';
+		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
+		require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
+
+		$results = array(
+			'totalTitles' => 0,
+			'totalLists' => 0
+		);
+
+		//Get a list of all lists for the user
+		$polarisUrl = "/PAPIService/REST/public/v1/1033/100/1/patron/{$patron->getBarcode()}/patronaccountgettitlelists";
+		$response = $this->getWebServiceResponse($polarisUrl, 'GET', $this->getAccessToken($patron->getBarcode(), $patron->getPasswordOrPin()), false, UserAccount::isUserMasquerading());
+		if ($response && $this->lastResponseCode == 200) {
+			$jsonResponse = json_decode($response);
+			foreach ($jsonResponse->PatronAccountTitleListsRows as $listsRow) {
+				$listId = $listsRow->RecordStoreID;
+				$listName = $listsRow->RecordStoreName;
+				$newList = new UserList();
+				$newList->user_id = $patron->id;
+				$newList->title = $listName;
+				if (!$newList->find(true)) {
+					$newList->insert();
+				}elseif ($newList->deleted == 1){
+					$newList->removeAllListEntries(true);
+					$newList->deleted = 0;
+					$newList->update();
+				}
+				$results['totalLists']++;
+				//Get titles currently on the list
+				$currentListTitles = $newList->getListTitles();
+
+				//Get the titles for the list
+				$getListTitlesUrl = "/PAPIService/REST/public/v1/1033/100/1/patron/{$patron->getBarcode()}/patrontitlelistgettitles?list=$listId";
+				$getListTitlesResponse = $this->getWebServiceResponse($getListTitlesUrl, 'GET', $this->getAccessToken($patron->getBarcode(), $patron->getPasswordOrPin()), false, UserAccount::isUserMasquerading());
+				if ($getListTitlesResponse && $this->lastResponseCode == 200) {
+					$getListTitlesJson = json_decode($getListTitlesResponse);
+					foreach ($getListTitlesJson->PatronTitleListTitleRows as $titleListTitleRow) {
+						$bibNumber = $titleListTitleRow->LocalControlNumber;
+						$title = $titleListTitleRow->Name;
+						$primaryIdentifier = new GroupedWorkPrimaryIdentifier();
+						$groupedWork = new GroupedWork();
+						$primaryIdentifier->identifier = $bibNumber;
+						$primaryIdentifier->type = $this->accountProfile->recordSource;
+
+						if ($primaryIdentifier->find(true)) {
+							$groupedWork->id = $primaryIdentifier->grouped_work_id;
+							if ($groupedWork->find(true)) {
+								//Check to see if this title is already on the list.
+								$resourceOnList = false;
+								foreach ($currentListTitles as $currentTitle) {
+									if ($currentTitle->source == 'GroupedWork' && $currentTitle->sourceId == $groupedWork->permanent_id) {
+										$resourceOnList = true;
+										break;
+									}
+								}
+
+								if (!$resourceOnList) {
+									$listEntry = new UserListEntry();
+									$listEntry->source = 'GroupedWork';
+									$listEntry->sourceId = $groupedWork->permanent_id;
+									$listEntry->listId = $newList->id;
+									$listEntry->notes = '';
+									$listEntry->dateAdded = time();
+									$listEntry->title = StringUtils::trimStringToLengthAtWordBoundary($title, 50, true);
+									$listEntry->insert();
+									$currentListTitles[] = $listEntry;
+								}
+								$results['totalTitles']++;
+							} else {
+								if (!isset($results['errors'])) {
+									$results['errors'] = array();
+								}
+								$results['errors'][] = "\"$bibNumber\" on list $title could not be found in the catalog and was not imported.";
+							}
+						} else {
+							//The title is not in the resources, add an error to the results
+							if (!isset($results['errors'])) {
+								$results['errors'] = array();
+							}
+							$results['errors'][] = "\"$bibNumber\" on list $title could not be found in the catalog and was not imported.";
+						}
+					}
+				}
+			}
+		}
+
+
+		return $results;
 	}
 }
