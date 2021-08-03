@@ -1,7 +1,6 @@
 <?php
 
 //TODO: Update patron info
-//TODO: Load lists from Polaris
 //TODO: Cancel all holds
 //TODO: Freeze all holds
 //TODO: Self Register
@@ -986,9 +985,128 @@ class Polaris extends AbstractIlsDriver
 		}
 	}
 
-	function updatePatronInfo(User $patron, $canUpdateContactInfo)
+	/**
+	 * @param User $patron
+	 * @param bool $canUpdateContactInfo
+	 * @return array
+	 */
+	function updatePatronInfo($patron, $canUpdateContactInfo)
 	{
-		// TODO: Implement updatePatronInfo() method.
+		$result = [
+			'success' => false,
+			'messages' => []
+		];
+		if ($canUpdateContactInfo) {
+			$staffInfo = $this->getStaffUserInfo();
+			$polarisUrl = "/PAPIService/REST/public/v1/1033/100/1/patron/{$patron->getBarcode()}";
+			$body = new stdClass();
+			$body->LogonBranchID = $patron->getHomeLocationCode();
+			$body->LogonUserID = (string)$staffInfo['polarisId'];
+			$body->LogonWorkstationID = $this->getWorkstationID($patron);
+			if (isset($_REQUEST['email'])) {
+				$body->EmailAddress = $_REQUEST['email'];
+				$patron->email = $_REQUEST['email'];
+			}
+
+			if (isset($_REQUEST['phone'])) {
+				$body->PhoneVoice1 = $_REQUEST['phone'];
+				$patron->phone = $_REQUEST['phone'];
+			}
+
+			$patronBasicData = $this->getBasicDataResponse($patron->getBarcode(), $patron->getPasswordOrPin());
+			//Get the ID of the address to update
+			$addresses = $patronBasicData->PatronAddresses;
+			if (count($addresses) > 0){
+				$address = reset($addresses);
+				$body->AddressID = $address->AddressID;
+				$body->FreeTextID = $address->FreeTextLabel;
+			}
+
+			if (isset($_REQUEST['address1'])) {
+				$body->StreetOne = $_REQUEST['address1'];
+				$patron->_address1 = $_REQUEST['address1'];
+			}
+
+			if (isset($_REQUEST['address2'])) {
+				$body->StreetTwo = $_REQUEST['address2'];
+				$patron->_address2 = $_REQUEST['address2'];
+			}
+
+			if (isset($_REQUEST['city'])) {
+				$body->City = $_REQUEST['city'];
+				$patron->_city = $_REQUEST['city'];
+			}
+
+			if (isset($_REQUEST['state'])) {
+				$body->State = $_REQUEST['state'];
+				$patron->_state = $_REQUEST['state'];
+			}
+
+			if (isset($_REQUEST['zip'])) {
+				$body->PostalCode = $_REQUEST['zip'];
+				$patron->_zip = $_REQUEST['zip'];
+			}
+
+			if (count($addresses) > 0){
+				$address = reset($addresses);
+				$body->AddressTypeID = $address->AddressTypeID;
+			}
+
+			// Update Home Location
+			if (!empty($_REQUEST['pickupLocation'])) {
+				$homeLibraryLocation = new Location();
+				if ($homeLibraryLocation->get('code', $_REQUEST['pickupLocation'])) {
+					$homeBranchCode = strtoupper($homeLibraryLocation->code);
+					$body->RequestPickupBranchID = $homeBranchCode;
+				}
+			}
+			$response = $this->getWebServiceResponse($polarisUrl, 'PUT', $this->getAccessToken($patron->getBarcode(), $patron->getPasswordOrPin()), json_encode($body));
+			if ($response && $this->lastResponseCode == 200) {
+				$jsonResponse = json_decode($response);
+				if ($jsonResponse->PAPIErrorCode == 0) {
+					$result['success'] = true;
+					$result['messages'][] = 'Your account was updated successfully.';
+					$patron->update();
+				}else{
+					$result['messages'][] = "Error updating profile information (Error {$jsonResponse->PAPIErrorCode}).";
+				}
+			}else{
+				$result['messages'][] = "Error updating profile information ({$this->lastResponseCode}).";
+			}
+		} else {
+			$result['messages'][] = 'You do not have permission to update profile information.';
+		}
+		return $result;
+	}
+
+	function updatePin(User $patron, string $oldPin, string $newPin)
+	{
+		if ($patron->cat_password != $oldPin) {
+			return ['success' => false, 'message' => "The old PIN provided is incorrect."];
+		}
+		$result = ['success' => false, 'message' => "Unknown error updating password."];
+		$staffInfo = $this->getStaffUserInfo();
+		$polarisUrl = "/PAPIService/REST/public/v1/1033/100/1/patron/{$patron->getBarcode()}";
+		$body = new stdClass();
+		$body->LogonBranchID = $patron->getHomeLocationCode();
+		$body->LogonUserID = (string)$staffInfo['polarisId'];
+		$body->LogonWorkstationID = $this->getWorkstationID($patron);
+		$body->Password = $newPin;
+		$response = $this->getWebServiceResponse($polarisUrl, 'PUT', $this->getAccessToken($patron->getBarcode(), $patron->getPasswordOrPin()), json_encode($body));
+		if ($response && $this->lastResponseCode == 200) {
+			$jsonResponse = json_decode($response);
+			if ($jsonResponse->PAPIErrorCode == 0) {
+				$result['success'] = true;
+				$result['message'] = 'Your password was updated successfully.';
+				$patron->cat_password = $newPin;
+				$patron->update();
+			}else{
+				$result['message'] = "Error updating your password. (Error {$jsonResponse->PAPIErrorCode}).";
+			}
+		}else{
+			$result['messages'] = "Error updating your password. ({$this->lastResponseCode}).";
+		}
+		return $result;
 	}
 
 	public function getFines(User $patron, $includeMessages = false)
