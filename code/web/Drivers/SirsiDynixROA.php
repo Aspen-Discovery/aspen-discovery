@@ -1040,7 +1040,7 @@ class SirsiDynixROA extends HorizonAPI
 		}
 	}
 
-	public function placeVolumeHold($patron, $recordId, $volumeId, $pickupBranch)
+	public function placeVolumeHold(User $patron, $recordId, $volumeId, $pickupBranch)
 	{
 		//To place a volume hold in Symphony, we just need to place a hold on one of the items for the volume.
 		require_once ROOT_DIR . '/sys/ILS/IlsVolumeInfo.php';

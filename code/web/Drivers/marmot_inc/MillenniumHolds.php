@@ -714,7 +714,7 @@ class MillenniumHolds{
 	 *                                If an error occurs, return a AspenError
 	 * @access  public
 	 */
-	function placeVolumeHold($patron, $recordId, $volumeId, $pickupBranch) {
+	function placeVolumeHold(User $patron, $recordId, $volumeId, $pickupBranch) {
 		global $logger;
 
 		if (strpos($recordId, ':')){

@@ -4,7 +4,6 @@
 //TODO: Cancel all holds
 //TODO: Freeze all holds
 //TODO: Self Register
-//TODO: Update PIN
 
 class Polaris extends AbstractIlsDriver
 {
@@ -48,7 +47,7 @@ class Polaris extends AbstractIlsDriver
 			$summary->totalFines = $basicDataResponse->ChargeBalance;
 
 			$polarisCirculateBlocksUrl = "/PAPIService/REST/public/v1/1033/100/1/patron/{$patron->getBarcode()}/circulationblocks";
-			$circulateBlocksResponse = $this->getWebServiceResponse($polarisCirculateBlocksUrl, 'GET', Polaris::$accessTokensForUsers[$patron->getBarcode()]['accessToken']);
+			$circulateBlocksResponse = $this->getWebServiceResponse($polarisCirculateBlocksUrl, 'GET', Polaris::$accessTokensForUsers[$patron->getBarcode()]['accessToken'], false, UserAccount::isUserMasquerading());
 			if ($circulateBlocksResponse && $this->lastResponseCode == 200) {
 				$circulateBlocksResponse = json_decode($circulateBlocksResponse);
 				$expireTime = $this->parsePolarisDate($circulateBlocksResponse->ExpirationDate);
@@ -62,12 +61,12 @@ class Polaris extends AbstractIlsDriver
 	/**
 	 * @param string $patronBarcode
 	 * @param string $password
-	 *
+	 * @param bool $fromMasquerade - true if we are calling this while initiating masquerade mode
 	 * @return stdClass|null
 	 */
-	private function getBasicDataResponse(string $patronBarcode, string $password){
+	private function getBasicDataResponse(string $patronBarcode, string $password, bool $fromMasquerade = false){
 		$polarisUrl = "/PAPIService/REST/public/v1/1033/100/1/patron/{$patronBarcode}/basicdata?addresses=1";
-		$response = $this->getWebServiceResponse($polarisUrl, 'GET', $this->getAccessToken($patronBarcode, $password));
+		$response = $this->getWebServiceResponse($polarisUrl, 'GET', $this->getAccessToken($patronBarcode, $password), false, $fromMasquerade);
 		if ($response && $this->lastResponseCode == 200){
 			$jsonResponse = json_decode($response);
 			return $jsonResponse->PatronBasicData;
@@ -86,7 +85,7 @@ class Polaris extends AbstractIlsDriver
 		//Get preferences for the barcode
 		$readingHistoryEnabled = false;
 		$polarisUrl = "/PAPIService/REST/public/v1/1033/100/1/patron/{$patron->getBarcode()}/preferences";
-		$response = $this->getWebServiceResponse($polarisUrl, 'GET', $this->getAccessToken($patron->getBarcode(), $patron->getPasswordOrPin()));
+		$response = $this->getWebServiceResponse($polarisUrl, 'GET', $this->getAccessToken($patron->getBarcode(), $patron->getPasswordOrPin()), false, UserAccount::isUserMasquerading());
 		if ($response && $this->lastResponseCode == 200){
 			$jsonResponse = json_decode($response);
 			$readingHistoryEnabled = $jsonResponse->PatronPreferences->ReadingListEnabled;
@@ -95,7 +94,7 @@ class Polaris extends AbstractIlsDriver
 		if ($readingHistoryEnabled) {
 			$readingHistoryTitles = array();
 			$polarisUrl = "/PAPIService/REST/public/v1/1033/100/1/patron/{$patron->getBarcode()}/readinghistory?rowsperpage=5&page=0";
-			$response = $this->getWebServiceResponse($polarisUrl, 'GET', $this->getAccessToken($patron->getBarcode(), $patron->getPasswordOrPin()));
+			$response = $this->getWebServiceResponse($polarisUrl, 'GET', $this->getAccessToken($patron->getBarcode(), $patron->getPasswordOrPin()), false, UserAccount::isUserMasquerading());
 			if ($response && $this->lastResponseCode == 200) {
 				$jsonResponse = json_decode($response);
 				$readingHistoryList = $jsonResponse->PatronReadingHistoryGetRows;
@@ -139,7 +138,7 @@ class Polaris extends AbstractIlsDriver
 		$checkedOutTitles = array();
 
 		$polarisUrl = "/PAPIService/REST/public/v1/1033/100/1/patron/{$patron->getBarcode()}/itemsout/all";
-		$response = $this->getWebServiceResponse($polarisUrl, 'GET', $this->getAccessToken($patron->getBarcode(), $patron->getPasswordOrPin()));
+		$response = $this->getWebServiceResponse($polarisUrl, 'GET', $this->getAccessToken($patron->getBarcode(), $patron->getPasswordOrPin()), false, UserAccount::isUserMasquerading());
 		if ($response && $this->lastResponseCode == 200){
 			$jsonResponse = json_decode($response);
 			$itemsOutList = $jsonResponse->PatronItemsOutGetRows;
@@ -208,7 +207,7 @@ class Polaris extends AbstractIlsDriver
 			'Total' => $accountSummary->numCheckedOut
 		);
 
-		$response = $this->getWebServiceResponse($polarisUrl, 'PUT', $this->getAccessToken($patron->getBarcode(), $patron->getPasswordOrPin()), json_encode($body));
+		$response = $this->getWebServiceResponse($polarisUrl, 'PUT', $this->getAccessToken($patron->getBarcode(), $patron->getPasswordOrPin()), json_encode($body), UserAccount::isUserMasquerading());
 		if ($response && $this->lastResponseCode == 200) {
 			$jsonResponse = json_decode($response);
 			if ($jsonResponse->PAPIErrorCode == 0 || $jsonResponse->PAPIErrorCode == -3) {
@@ -257,7 +256,7 @@ class Polaris extends AbstractIlsDriver
 		$body->RenewData = new stdClass();
 		$body->RenewData->IgnoreOverrideErrors = false;
 
-		$response = $this->getWebServiceResponse($polarisUrl, 'PUT', $this->getAccessToken($patron->getBarcode(), $patron->getPasswordOrPin()), json_encode($body));
+		$response = $this->getWebServiceResponse($polarisUrl, 'PUT', $this->getAccessToken($patron->getBarcode(), $patron->getPasswordOrPin()), json_encode($body), UserAccount::isUserMasquerading());
 		if ($response && $this->lastResponseCode == 200) {
 			$jsonResponse = json_decode($response);
 			if ($jsonResponse->PAPIErrorCode == 0) {
@@ -318,7 +317,7 @@ class Polaris extends AbstractIlsDriver
 			'unavailable' => $unavailableHolds
 		);
 		$polarisUrl = "/PAPIService/REST/public/v1/1033/100/1/patron/{$patron->getBarcode()}/holdrequests/all";
-		$response = $this->getWebServiceResponse($polarisUrl, 'GET', $this->getAccessToken($patron->getBarcode(), $patron->getPasswordOrPin()));
+		$response = $this->getWebServiceResponse($polarisUrl, 'GET', $this->getAccessToken($patron->getBarcode(), $patron->getPasswordOrPin()), false, UserAccount::isUserMasquerading());
 		if ($response && $this->lastResponseCode == 200){
 			$jsonResponse = json_decode($response);
 			$holdsList = $jsonResponse->PatronHoldRequestsGetRows;
@@ -502,7 +501,7 @@ class Polaris extends AbstractIlsDriver
 		}
 	}
 
-	public function placeVolumeHold($patron, $recordId, $volumeId, $pickupBranch)
+	public function placeVolumeHold(User $patron, $recordId, $volumeId, $pickupBranch)
 	{
 		if (strpos($recordId, ':') !== false){
 			list(,$shortId) = explode(':', $recordId);
@@ -589,7 +588,7 @@ class Polaris extends AbstractIlsDriver
 	{
 		$staffInfo = $this->getStaffUserInfo();
 		$polarisUrl = "/PAPIService/REST/public/v1/1033/100/1/patron/{$patron->getBarcode()}/holdrequests/$cancelId/cancelled?wsid={$this->getWorkstationID($patron)}&userid={$staffInfo['polarisId']}";
-		$response = $this->getWebServiceResponse($polarisUrl, 'PUT', $this->getAccessToken($patron->getBarcode(), $patron->getPasswordOrPin()));
+		$response = $this->getWebServiceResponse($polarisUrl, 'PUT', $this->getAccessToken($patron->getBarcode(), $patron->getPasswordOrPin()), false, UserAccount::isUserMasquerading());
 		if ($response && $this->lastResponseCode == 200) {
 			$jsonResponse = json_decode($response);
 			if ($jsonResponse->PAPIErrorCode == 0) {
@@ -649,9 +648,9 @@ class Polaris extends AbstractIlsDriver
 		return null;
 	}
 
-	private function loadPatronBasicData(string $patronBarcode, string $password, $patronId)
+	private function loadPatronBasicData(string $patronBarcode, string $password, $patronId, bool $fromMasquerade = false)
 	{
-		$patronBasicData = $this->getBasicDataResponse($patronBarcode, $password);
+		$patronBasicData = $this->getBasicDataResponse($patronBarcode, $password, $fromMasquerade);
 		if ($patronBasicData != null){
 			$userExistsInDB = false;
 			$user = new User();
@@ -698,7 +697,7 @@ class Polaris extends AbstractIlsDriver
 			}
 
 			$polarisCirculateBlocksUrl = "/PAPIService/REST/public/v1/1033/100/1/patron/{$patronBarcode}/circulationblocks";
-			$circulateBlocksResponse = $this->getWebServiceResponse($polarisCirculateBlocksUrl, 'GET', Polaris::$accessTokensForUsers[$patronBarcode]['accessToken']);
+			$circulateBlocksResponse = $this->getWebServiceResponse($polarisCirculateBlocksUrl, 'GET', Polaris::$accessTokensForUsers[$patronBarcode]['accessToken'], false, $fromMasquerade);
 			if ($circulateBlocksResponse && $this->lastResponseCode == 200) {
 				$circulateBlocksResponse = json_decode($circulateBlocksResponse);
 				//Load home library
@@ -777,7 +776,7 @@ class Polaris extends AbstractIlsDriver
 				//New user check to see if they have reading history
 				//Get preferences for the barcode
 				$polarisUrl = "/PAPIService/REST/public/v1/1033/100/1/patron/{$user->getBarcode()}/preferences";
-				$response = $this->getWebServiceResponse($polarisUrl, 'GET', $this->getAccessToken($user->getBarcode(), $user->getPasswordOrPin()));
+				$response = $this->getWebServiceResponse($polarisUrl, 'GET', $this->getAccessToken($user->getBarcode(), $user->getPasswordOrPin()), false, $fromMasquerade);
 				if ($response && $this->lastResponseCode == 200){
 					$jsonResponse = json_decode($response);
 					$user->trackReadingHistory = $jsonResponse->PatronPreferences->ReadingListEnabled;
@@ -798,7 +797,7 @@ class Polaris extends AbstractIlsDriver
 	 *
 	 * @return array
 	 */
-	protected function loginViaWebService(&$username, $password) : array
+	protected function loginViaWebService(&$username, $password, $fromMasquerade = false) : array
 	{
 		if (array_key_exists($username, Polaris::$accessTokensForUsers)){
 			return Polaris::$accessTokensForUsers[$username];
@@ -834,7 +833,7 @@ class Polaris extends AbstractIlsDriver
 
 			if (!$patronValidationDone) {
 				$body = json_encode($authenticationData);
-				$authenticationResponseRaw = $this->getWebServiceResponse('/PAPIService/REST/public/v1/1033/100/1/authenticator/patron', 'POST', '', $body);
+				$authenticationResponseRaw = $this->getWebServiceResponse('/PAPIService/REST/public/v1/1033/100/1/authenticator/patron', 'POST', '', $body, $fromMasquerade);
 				if ($authenticationResponseRaw) {
 					$authenticationResponse = json_decode($authenticationResponseRaw);
 					if ($authenticationResponse->PAPIErrorCode == 0) {
@@ -889,7 +888,7 @@ class Polaris extends AbstractIlsDriver
 			$body->ActivationDate = $dateToReactivate;
 		}
 
-		$response = $this->getWebServiceResponse($polarisUrl, 'PUT', $this->getAccessToken($patron->getBarcode(), $patron->getPasswordOrPin()), json_encode($body));
+		$response = $this->getWebServiceResponse($polarisUrl, 'PUT', $this->getAccessToken($patron->getBarcode(), $patron->getPasswordOrPin()), json_encode($body), UserAccount::isUserMasquerading());
 		if ($response && $this->lastResponseCode == 200) {
 			$jsonResponse = json_decode($response);
 			if ($jsonResponse->PAPIErrorCode == 0) {
@@ -923,7 +922,7 @@ class Polaris extends AbstractIlsDriver
 		$polarisUrl = "/PAPIService/REST/public/v1/1033/100/1/patron/{$patron->getBarcode()}/holdrequests/$itemToThawId/active";
 		$body = new stdClass();
 		$body->UserID = $staffInfo['polarisId'];
-		$response = $this->getWebServiceResponse($polarisUrl, 'PUT', $this->getAccessToken($patron->getBarcode(), $patron->getPasswordOrPin()), json_encode($body));
+		$response = $this->getWebServiceResponse($polarisUrl, 'PUT', $this->getAccessToken($patron->getBarcode(), $patron->getPasswordOrPin()), json_encode($body), UserAccount::isUserMasquerading());
 		if ($response && $this->lastResponseCode == 200) {
 			$jsonResponse = json_decode($response);
 			if ($jsonResponse->PAPIErrorCode == 0) {
@@ -957,7 +956,7 @@ class Polaris extends AbstractIlsDriver
 		$polarisUrl = "/PAPIService/REST/public/v1/1033/100/1/patron/{$patron->getBarcode()}/holdrequests/$itemToUpdateId/pickupbranch?wsid={$this->getWorkstationID($patron)}&userid={$staffInfo['polarisId']}&pickupbranchid=$newPickupLocation";
 		$body = new stdClass();
 		$body->UserID = $staffInfo['polarisId'];
-		$response = $this->getWebServiceResponse($polarisUrl, 'PUT', $this->getAccessToken($patron->getBarcode(), $patron->getPasswordOrPin()));
+		$response = $this->getWebServiceResponse($polarisUrl, 'PUT', $this->getAccessToken($patron->getBarcode(), $patron->getPasswordOrPin()), false, UserAccount::isUserMasquerading());
 		if ($response && $this->lastResponseCode == 200) {
 			$jsonResponse = json_decode($response);
 			if ($jsonResponse->PAPIErrorCode == 0) {
@@ -1060,7 +1059,7 @@ class Polaris extends AbstractIlsDriver
 					$body->RequestPickupBranchID = $homeBranchCode;
 				}
 			}
-			$response = $this->getWebServiceResponse($polarisUrl, 'PUT', $this->getAccessToken($patron->getBarcode(), $patron->getPasswordOrPin()), json_encode($body));
+			$response = $this->getWebServiceResponse($polarisUrl, 'PUT', $this->getAccessToken($patron->getBarcode(), $patron->getPasswordOrPin()), json_encode($body), UserAccount::isUserMasquerading());
 			if ($response && $this->lastResponseCode == 200) {
 				$jsonResponse = json_decode($response);
 				if ($jsonResponse->PAPIErrorCode == 0) {
@@ -1092,7 +1091,7 @@ class Polaris extends AbstractIlsDriver
 		$body->LogonUserID = (string)$staffInfo['polarisId'];
 		$body->LogonWorkstationID = $this->getWorkstationID($patron);
 		$body->Password = $newPin;
-		$response = $this->getWebServiceResponse($polarisUrl, 'PUT', $this->getAccessToken($patron->getBarcode(), $patron->getPasswordOrPin()), json_encode($body));
+		$response = $this->getWebServiceResponse($polarisUrl, 'PUT', $this->getAccessToken($patron->getBarcode(), $patron->getPasswordOrPin()), json_encode($body), UserAccount::isUserMasquerading());
 		if ($response && $this->lastResponseCode == 200) {
 			$jsonResponse = json_decode($response);
 			if ($jsonResponse->PAPIErrorCode == 0) {
@@ -1124,7 +1123,7 @@ class Polaris extends AbstractIlsDriver
 		$currencyFormatter = new NumberFormatter( $activeLanguage->locale . '@currency=' . $currencyCode, NumberFormatter::CURRENCY );
 
 		$polarisUrl = "/PAPIService/REST/public/v1/1033/100/1/patron/{$patron->getBarcode()}/account/outstanding";
-		$response = $this->getWebServiceResponse($polarisUrl, 'GET', $this->getAccessToken($patron->getBarcode(), $patron->getPasswordOrPin()));
+		$response = $this->getWebServiceResponse($polarisUrl, 'GET', $this->getAccessToken($patron->getBarcode(), $patron->getPasswordOrPin()), false, UserAccount::isUserMasquerading());
 		$fines = [];
 		if ($response && $this->lastResponseCode == 200){
 			$jsonResponse = json_decode($response);
@@ -1169,7 +1168,7 @@ class Polaris extends AbstractIlsDriver
 			$body->PaymentMethodID = 12;
 			$body->FreeTextNote = 'Paid Online via Aspen Discovery';
 
-			$response = $this->getWebServiceResponse($polarisUrl, 'PUT', $staffUserInfo['accessSecret'], json_encode($body));
+			$response = $this->getWebServiceResponse($polarisUrl, 'PUT', $staffUserInfo['accessSecret'], json_encode($body), UserAccount::isUserMasquerading());
 
 			if ($response && $this->lastResponseCode == 200) {
 				$jsonResponse = json_decode($response);
@@ -1204,6 +1203,10 @@ class Polaris extends AbstractIlsDriver
 
 		$url = $this->getWebServiceURL() . $query;
 
+		if ($actAsStaff){
+			$staffUserInfo = $this->getStaffUserInfo();
+			$patronPassword = $staffUserInfo['accessSecret'];
+		}
 		$signature_text = $method . $url . $date . $patronPassword;
 		$signature = base64_encode(
 			hash_hmac('sha1', $signature_text, $this->accountProfile->oAuthClientSecret, true)
@@ -1239,7 +1242,7 @@ class Polaris extends AbstractIlsDriver
 	{
 		if (preg_match('%/Date\((\d{13})([+-]\d{4})\)/%i', $polarisDate, $matches)) {
 			$timestamp = $matches[1] / 1000;
-			$timezoneOffset = $matches[2];
+			//$timezoneOffset = $matches[2];
 			//TODO: Adjust for timezone offset
 			return $timestamp;
 		} else {
@@ -1272,8 +1275,27 @@ class Polaris extends AbstractIlsDriver
 	}
 
 	public function findNewUser($patronBarcode){
-		//TODO: Implement findNewUser to allow masquerade
-		return false;
+		$staffUserInfo = $this->getStaffUserInfo();
+
+		//Validate that the patron exists. This can also be used to get the barcode for the user based on username
+		$validatePatronResponseRaw = $this->getWebServiceResponse('/PAPIService/REST/public/v1/1033/100/1/patron/' . $patronBarcode, 'GET', $staffUserInfo['accessSecret'], false, true);
+		$patronId = false;
+		if ($validatePatronResponseRaw){
+			$validationResponse = json_decode($validatePatronResponseRaw);
+			if ($validationResponse->PAPIErrorCode != -3000){
+				if (!empty($validationResponse->PatronBarcode) && $validationResponse->PatronBarcode != $patronBarcode){
+					$patronBarcode = $validationResponse->PatronBarcode;
+				}
+				$patronId = $validationResponse->PatronID;
+			}
+		}
+
+		//Load user data
+		if ($patronId != false) {
+			return $this->loadPatronBasicData($patronBarcode, '', $patronId, true);
+		}else{
+			return false;
+		}
 	}
 
 	private function getWorkstationID(User $patron) : int
@@ -1368,7 +1390,7 @@ class Polaris extends AbstractIlsDriver
 
 		//Get a list of all lists for the user
 		$polarisUrl = "/PAPIService/REST/public/v1/1033/100/1/patron/{$patron->getBarcode()}/patronaccountgettitlelists";
-		$response = $this->getWebServiceResponse($polarisUrl, 'GET', $this->getAccessToken($patron->getBarcode(), $patron->getPasswordOrPin()));
+		$response = $this->getWebServiceResponse($polarisUrl, 'GET', $this->getAccessToken($patron->getBarcode(), $patron->getPasswordOrPin()), false, UserAccount::isUserMasquerading());
 		if ($response && $this->lastResponseCode == 200) {
 			$jsonResponse = json_decode($response);
 			foreach ($jsonResponse->PatronAccountTitleListsRows as $listsRow) {
@@ -1390,7 +1412,7 @@ class Polaris extends AbstractIlsDriver
 
 				//Get the titles for the list
 				$getListTitlesUrl = "/PAPIService/REST/public/v1/1033/100/1/patron/{$patron->getBarcode()}/patrontitlelistgettitles?list=$listId";
-				$getListTitlesResponse = $this->getWebServiceResponse($getListTitlesUrl, 'GET', $this->getAccessToken($patron->getBarcode(), $patron->getPasswordOrPin()));
+				$getListTitlesResponse = $this->getWebServiceResponse($getListTitlesUrl, 'GET', $this->getAccessToken($patron->getBarcode(), $patron->getPasswordOrPin()), false, UserAccount::isUserMasquerading());
 				if ($getListTitlesResponse && $this->lastResponseCode == 200) {
 					$getListTitlesJson = json_decode($getListTitlesResponse);
 					foreach ($getListTitlesJson->PatronTitleListTitleRows as $titleListTitleRow) {

@@ -272,7 +272,7 @@ abstract class AbstractIlsDriver extends AbstractDriver
 		return [];
 	}
 
-	public function placeVolumeHold($patron, $recordId, $volumeId, $pickupBranch)
+	public function placeVolumeHold(User $patron, $recordId, $volumeId, $pickupBranch)
 	{
 		return array(
 			'success' => false,
