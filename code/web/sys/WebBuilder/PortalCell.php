@@ -141,7 +141,10 @@ class PortalCell extends DataObject
 			$customForm = new CustomForm();
 			$customForm->id = $this->sourceId;
 			if ($customForm->find(true)){
+				$oldId = $interface->getVariable("id");
+				$interface->assign("id", $customForm->id);
 				$contents .= $customForm->getFormattedFields();
+				$interface->assign("id", $oldId);
 			}
 		}elseif ($this->sourceType == 'vimeo_video'){
 			$sourceInfo = $this->sourceInfo;
