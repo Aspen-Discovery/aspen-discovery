@@ -77,7 +77,7 @@ class Grouping_Record
 			$this->physical = $recordDetails[7];
 		}
 
-		if ($this->language == '') {
+		if (empty($this->language)) {
 			$this->language = 'English';
 		}
 		$this->source = $source;
