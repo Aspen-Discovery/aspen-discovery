@@ -2623,8 +2623,6 @@ class MyAccount_AJAX extends JSON_Action
 	function createGenericOrder($paymentType = '')
 	{
 		$transactionDate = time();
-		global $configArray;
-		$ils = $configArray['Catalog']['ils'];
 		$user = UserAccount::getLoggedInUser();
 		if ($user == null) {
 			return ['success' => false, 'message' => translate(['text' => 'payment_not_signed_in', 'defaultText' => 'You must be signed in to pay fines, please sign in.'])];
@@ -3035,10 +3033,10 @@ class MyAccount_AJAX extends JSON_Action
 					$certStrField->ProcessorField = 'certStr';
 					$certStrField->Value = $proPaySetting->certStr;
 					$createMerchantProfile->ProcessorData[] = $certStrField;
-//					$accountNumField = new stdClass();
-//					$accountNumField->ProcessorField = 'accountNum';
-//					$accountNumField->Value = empty($proPaySetting->accountNum) ? $library->libraryId : $proPaySetting->accountNum;
-//					$createMerchantProfile->ProcessorData[] = $accountNumField;
+					$accountNumField = new stdClass();
+					$accountNumField->ProcessorField = 'accountNum';
+					$accountNumField->Value = $proPaySetting->accountNum;
+					$createMerchantProfile->ProcessorData[] = $accountNumField;
 					$termIdField = new stdClass();
 					$termIdField->ProcessorField = 'termId';
 					$termIdField->Value = $proPaySetting->termId;
@@ -3062,19 +3060,19 @@ class MyAccount_AJAX extends JSON_Action
 				if (!empty($patron->proPayPayerAccountId)) {
 					//Create the Hosted Transaction Instance
 					$requestElements = new stdClass();
-					$requestElements->Amount = $payment->totalPaid;
+					$requestElements->Amount = (int)($payment->totalPaid * 100);
 					$requestElements->AuthOnly = false;
 					$requestElements->AvsRequirementType = 2;
 					$requestElements->BillerAccountId = $proPaySetting->billerAccountId;
 					$requestElements->CardHolderNameRequirementType = 1;
 					$requestElements->CssUrl = $configArray['Site']['url'] . '/interface/themes/responsive/css/main.css';
 					$requestElements->CurrencyCode = $currencyCode;
-					$requestElements->InvoiceNumber = $payment->id;
-					$requestElements->MerchantProfileId = $proPaySetting->merchantProfileId;
-					$requestElements->PaymentTypeId = 0;
-					$requestElements->PayerAccountId = $patron->proPayPayerAccountId;
+					$requestElements->InvoiceNumber = (string)$payment->id;
+					$requestElements->MerchantProfileId = (int)$proPaySetting->merchantProfileId;
+					$requestElements->PaymentTypeId = "0";
+					$requestElements->PayerAccountId = (int)$patron->proPayPayerAccountId;
 					$requestElements->ProcessCard = true;
-					$requestElements->ReturnURL = $configArray['Site']['url'] . '/MyAccount/ProPayCompleted?payment=' . $payment->id;
+					$requestElements->ReturnURL = $configArray['Site']['url'] . "/ProPay/{$payment->id}/Complete";
 					$requestElements->SecurityCodeRequirementType = 1;
 					$requestElements->StoreCard = false;
 					$patron->loadContactInformation();
@@ -3096,6 +3094,9 @@ class MyAccount_AJAX extends JSON_Action
 					if ($response && $curlWrapper->getResponseCode() == 200) {
 						$jsonResponse = json_decode($response);
 						$transactionIdentifier = $jsonResponse->HostedTransactionIdentifier;
+
+						$payment->orderId = $transactionIdentifier;
+						$payment->update();
 
 						if ($proPaySetting->useTestSystem) {
 							$paymentRequestUrl = 'https://protectpaytest.propay.com/hpp/v2/' . $transactionIdentifier;
