@@ -271,6 +271,7 @@ class CloudLibraryRecordDriver extends MarcRecordDriver {
 
 		global $interface;
 		$interface->assign('og_title', $this->getTitle());
+		$interface->assign('og_description', $this->getDescriptionFast());
 		$interface->assign('og_type', $this->getGroupedWorkDriver()->getOGType());
 		$interface->assign('og_image', $this->getBookcoverUrl('medium'));
 		$interface->assign('og_url', $this->getAbsoluteUrl());

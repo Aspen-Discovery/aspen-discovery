@@ -1890,9 +1890,11 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 			//Open graph data (goes in meta tags)
 			global $interface;
 			$interface->assign('og_title', $this->getTitle());
+			$interface->assign('og_description', $this->getDescriptionFast());
 			$interface->assign('og_type', $this->getGroupedWorkDriver()->getOGType());
 			$interface->assign('og_image', $this->getBookcoverUrl('medium', true));
 			$interface->assign('og_url', $this->getAbsoluteUrl());
+			$interface->assign('dc_creator', $this->getPrimaryAuthor());
 			return $semanticData;
 		}else{
 			//AspenError::raiseError('MARC Record did not have an associated record in grouped work ' . $this->getPermanentId());

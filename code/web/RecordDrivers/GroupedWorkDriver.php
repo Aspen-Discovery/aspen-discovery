@@ -1780,6 +1780,7 @@ class GroupedWorkDriver extends IndexRecordDriver
 		//Open graph data (goes in meta tags)
 		global $interface;
 		$interface->assign('og_title', $this->getTitle());
+		$interface->assign('og_description', $this->getDescriptionFast());
 		$interface->assign('og_type', $this->getOGType());
 		$interface->assign('og_image', $this->getBookcoverUrl('medium', true));
 		$interface->assign('og_url', $this->getLinkUrl(true));
