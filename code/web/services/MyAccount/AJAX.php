@@ -2158,6 +2158,13 @@ class MyAccount_AJAX extends JSON_Action
 			if (UserAccount::isLoggedIn() == false || empty($user)){
 				$result['message'] = translate(['text' => 'login_expired', 'defaultText' => "Your login has timed out. Please login again."]);
 			}else {
+				$allowFreezeHolds = $user->getHomeLibrary()->allowFreezeHolds;
+				if($allowFreezeHolds) {
+					$interface->assign('allowFreezeAllHolds', true);
+				} else {
+					$interface->assign('allowFreezeAllHolds', false);
+				}
+
 				$interface->assign('allowFreezeHolds', true);
 
 				$ils = $configArray['Catalog']['ils'];
