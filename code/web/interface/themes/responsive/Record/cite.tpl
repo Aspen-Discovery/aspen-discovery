@@ -48,7 +48,7 @@
 	</div>
 	<div class="alert alert-warning">
 		<strong>Note! </strong>
-		Citation formats are based on standards as of July 2010.  Citations contain only title, author, edition, publisher, and year published. Citations should be used as a guideline and should be double checked for accuracy.
+		Citation formats are based on standards as of August 2021.  Citations contain only title, author, edition, publisher, and year published. Citations should be used as a guideline and should be double checked for accuracy.
 	</div>
 {/if}
 {if $lightbox}
