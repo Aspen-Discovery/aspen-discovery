@@ -8700,6 +8700,7 @@ hr.menu {
 }
 .connect-icon {
   padding: 0 3px 0 3px;
+  color: inherit !important;
 }
 #navigation-controls {
   border-top: 8px solid #088ec6;
