@@ -142,6 +142,29 @@
 					{/if}
 				</div>
 			</div>
+			{assign var=fetchDefaultColor value='default|cat:$propName'}
+		{literal}
+			<script type="text/javascript">
+				var setDefaultColor = $('#{/literal}{$propName}{literal}-default');
+				$('#{/literal}{$propName}{literal}-default').on("click", function() {
+
+					if($(this).is(":checked")) {
+						$(this).attr("checked", true);
+						AspenDiscovery.Admin.getDefaultColor('{/literal}{$propName}{literal}','{/literal}{$fetchDefaultColor}{literal}');
+						{/literal}
+						{if !empty($property.checkContrastWith)}AspenDiscovery.Admin.checkContrast('{$propName}', '{$property.checkContrastWith}');{/if}
+						{literal}
+					} else {
+						$(this).attr("checked", false);
+						document.getElementById('{/literal}{$propName}{literal}').value = '{/literal}{$propValue}{literal}';
+						document.getElementById('{/literal}{$propName}{literal}Hex').value = '{/literal}{$propValue}{literal}';
+						{/literal}
+						{if !empty($property.checkContrastWith)}AspenDiscovery.Admin.checkContrast('{$propName}', '{$property.checkContrastWith}');{/if}
+						{literal}
+					}
+				});
+			</script>
+		{/literal}
 		{elseif $property.type == 'font'}
 			<div class="row">
 				<div class="col-sm-4">

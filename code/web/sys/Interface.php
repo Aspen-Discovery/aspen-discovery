@@ -349,6 +349,11 @@ class UInterface extends Smarty
 				$this->appliedTheme = $primaryTheme;
 			}
 
+			//Get extended theme info
+			if($theme->extendsTheme){
+				$this->assign('extendedTheme', $theme->extendsTheme);
+			}
+
 			//Get Logo
 			$logoName = null;
 			foreach ($allAppliedThemes as $theme) {
@@ -515,6 +520,12 @@ class UInterface extends Smarty
 
 		$this->assign('showItsHere', $library->showItsHere);
 		$this->assign('enableMaterialsBooking', $library->enableMaterialsBooking);
+
+		$this->assign('allowMaxDaysToFreeze', $library->maxDaysToFreeze);
+		if($library->maxDaysToFreeze > -1) {
+			$this->assign('maxDaysToFreeze', strtotime('+'.$library->maxDaysToFreeze.' days'));
+		}
+
 		$this->assign('showHoldButtonForUnavailableOnly', $library->showHoldButtonForUnavailableOnly);
 		$this->assign('showHoldCancelDate', $library->showHoldCancelDate);
 		$this->assign('allowMasqueradeMode', $library->allowMasqueradeMode);
