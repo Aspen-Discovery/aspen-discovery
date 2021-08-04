@@ -37,6 +37,13 @@ function getUpdates21_10_00() : array
 				'ALTER TABLE ils_volume_info DROP index recordId',
 				'ALTER TABLE ils_volume_info Add unique index recordVolume(recordId, volumeId)',
 			]
+		], //add_maxDaysToFreeze
+		'add_maxDaysToFreeze' => [
+			'title' => 'Add max days to freeze option in library settings',
+			'description' => 'Allow libraries to limit the amount of days out a user can freeze a hold',
+			'sql' => [
+				'ALTER TABLE library ADD COLUMN maxDaysToFreeze INT(11) DEFAULT -1'
+			]
 		]
 	];
 }
