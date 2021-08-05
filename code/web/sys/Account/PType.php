@@ -37,4 +37,16 @@ class PType extends DataObject
 		}
 		return $structure;
 	}
+
+	static function getPatronTypeList(): array
+	{
+		$patronType = new pType();
+		$patronType->orderBy('pType');
+		$patronType->find();
+		$patronTypeList = [];
+		while ($patronType->fetch()) {
+			$patronTypeList[$patronType->id] = $patronType->pType;
+		}
+		return $patronTypeList;
+	}
 }

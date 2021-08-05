@@ -12337,7 +12337,24 @@ AspenDiscovery.WebBuilder = (function () {
 				modalDialog.modal('show');
 				return false;
 			}
-		}
+		},
+
+		updateWebBuilderFields: function () {
+			var requireLogin = $('#requireLogin');
+			if(requireLogin.is(":checked")) {
+				$("#propertyRowallowAccess").show();
+			} else {
+				$("#propertyRowallowAccess").hide();
+			}
+
+			$(requireLogin).click(function() {
+				if(requireLogin.is(":checked")){
+					$("#propertyRowallowAccess").show();
+				}else{
+					$("#propertyRowallowAccess").hide();
+				}
+			});
+		},
 	};
 }(AspenDiscovery.WebBuilder || {}));
 AspenDiscovery.Websites = (function () {
