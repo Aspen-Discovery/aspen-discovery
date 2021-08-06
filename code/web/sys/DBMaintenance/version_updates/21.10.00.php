@@ -89,6 +89,13 @@ function getUpdates21_10_00() : array
 			'sql' => [
 				'ALTER TABLE library ADD COLUMN displayItemBarcode TINYINT(1) DEFAULT 0'
 			]
-		],
+		], //check_titles_in_user_list_entries
+		'check_titles_in_user_list_entries' => [
+			'title' => 'Check for titles in user list entries',
+			'description' => 'If missing, populate existing user list entries with grouped work titles',
+			'sql' => [
+				"UPDATE user_list_entry SET user_list_entry.title=(SELECT LEFT(grouped_work.full_title, 50) FROM grouped_work WHERE grouped_work.permanent_id = user_list_entry.sourceId)",
+			]
+		]
 	];
 }
