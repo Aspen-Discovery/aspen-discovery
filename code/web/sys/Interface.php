@@ -521,6 +521,8 @@ class UInterface extends Smarty
 		$this->assign('showItsHere', $library->showItsHere);
 		$this->assign('enableMaterialsBooking', $library->enableMaterialsBooking);
 
+		$this->assign('displayItemBarcode', $library->displayItemBarcode);
+
 		$this->assign('allowMaxDaysToFreeze', $library->maxDaysToFreeze);
 		if($library->maxDaysToFreeze > -1) {
 			$this->assign('maxDaysToFreeze', strtotime('+'.$library->maxDaysToFreeze.' days'));

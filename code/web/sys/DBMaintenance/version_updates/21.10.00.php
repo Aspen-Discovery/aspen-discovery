@@ -82,6 +82,13 @@ function getUpdates21_10_00() : array
 			'sql' => [
 				'ALTER TABLE web_builder_basic_page ADD COLUMN requireLogin TINYINT(1) DEFAULT 0'
 			]
+		], //add_displayItemBarcode
+		'add_displayItemBarcode' => [
+			'title' => 'Add ability to display barcodes for items checked out',
+			'description' => 'Allow libraries to display barcodes for items that are checked out',
+			'sql' => [
+				'ALTER TABLE library ADD COLUMN displayItemBarcode TINYINT(1) DEFAULT 0'
+			]
 		],
 	];
 }
