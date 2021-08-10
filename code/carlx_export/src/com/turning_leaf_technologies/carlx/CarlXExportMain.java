@@ -349,7 +349,7 @@ public class CarlXExportMain {
 					}
 				}
 			} catch (Exception e) {
-				logEntry.incErrors("Error loading CARL.X bibs on record " + numRecordsRead + " in profile " + indexingProfile.getName() + " the last record processed was " + lastRecordProcessed + " file " + curBibFile.getAbsolutePath(), e);
+				logEntry.incErrors("Error validating export marc file in updateRecordsUsingMarcExtract " + numRecordsRead + " in profile " + indexingProfile.getName() + " the last record processed was " + lastRecordProcessed + " file " + curBibFile.getAbsolutePath(), e);
 				logEntry.addNote("Not processing MARC export due to error reading MARC files.");
 				return totalChanges;
 			}
@@ -419,6 +419,8 @@ public class CarlXExportMain {
 						}
 					}catch (MarcException me){
 						logEntry.incErrors("Error processing individual record  on record " + numRecordsRead + " of " + curBibFile.getAbsolutePath() + " the last record processed was " + lastRecordProcessed + " trying to continue", me);
+					}catch (Exception e){
+						logEntry.incErrors("Non MarcException processing individual record  on record " + numRecordsRead + " of " + curBibFile.getAbsolutePath() + " the last record processed was " + lastRecordProcessed + " trying to continue", e);
 					}
 					numRecordsRead++;
 					if (numRecordsRead % 250 == 0) {
