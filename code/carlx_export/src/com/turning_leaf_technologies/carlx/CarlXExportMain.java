@@ -349,7 +349,7 @@ public class CarlXExportMain {
 					}
 				}
 			} catch (Exception e) {
-				logEntry.incErrors("Error loading CARL.X bibs on record " + numRecordsRead + " in profile " + indexingProfile.getName() + " the last record processed was " + lastRecordProcessed + " file " + curBibFile.getAbsolutePath(), e);
+				logEntry.incErrors("Error validating export marc file in updateRecordsUsingMarcExtract " + numRecordsRead + " in profile " + indexingProfile.getName() + " the last record processed was " + lastRecordProcessed + " file " + curBibFile.getAbsolutePath(), e);
 				logEntry.addNote("Not processing MARC export due to error reading MARC files.");
 				return totalChanges;
 			}
@@ -360,6 +360,7 @@ public class CarlXExportMain {
 			return totalChanges;
 		}
 
+		GroupedWorkIndexer indexer = getGroupedWorkIndexer(dbConn);
 		for (File curBibFile : exportedMarcFiles) {
 			int numRecordsRead = 0;
 			String lastRecordProcessed = "";
@@ -381,7 +382,7 @@ public class CarlXExportMain {
 						}else if (!recordIdentifier.isSuppressed()) {
 							String recordNumber = recordIdentifier.getIdentifier();
 
-							GroupedWorkIndexer.MarcStatus marcStatus = groupedWorkIndexer.saveMarcRecordToDatabase(indexingProfile, recordNumber, curBib);
+							GroupedWorkIndexer.MarcStatus marcStatus = indexer.saveMarcRecordToDatabase(indexingProfile, recordNumber, curBib);
 							if (marcStatus != GroupedWorkIndexer.MarcStatus.UNCHANGED || indexingProfile.isRunFullUpdate()) {
 								String permanentId = recordGroupingProcessor.processMarcRecord(curBib, marcStatus != GroupedWorkIndexer.MarcStatus.UNCHANGED, null);
 								if (permanentId == null){
@@ -393,7 +394,7 @@ public class CarlXExportMain {
 									}else {
 										logEntry.incUpdated();
 									}
-									getGroupedWorkIndexer(dbConn).processGroupedWork(permanentId);
+									indexer.processGroupedWork(permanentId);
 									totalChanges++;
 								}
 							}else{
@@ -409,16 +410,18 @@ public class CarlXExportMain {
 						if (deleteRecord){
 							RemoveRecordFromWorkResult result = recordGroupingProcessor.removeRecordFromGroupedWork(indexingProfile.getName(), recordIdentifier.getIdentifier());
 							if (result.reindexWork){
-								getGroupedWorkIndexer(dbConn).processGroupedWork(result.permanentId);
+								indexer.processGroupedWork(result.permanentId);
 							}else if (result.deleteWork){
 								//Delete the work from solr and the database
-								getGroupedWorkIndexer(dbConn).deleteRecord(result.permanentId);
+								indexer.deleteRecord(result.permanentId);
 							}
 							logEntry.incDeleted();
 							totalChanges++;
 						}
 					}catch (MarcException me){
 						logEntry.incErrors("Error processing individual record  on record " + numRecordsRead + " of " + curBibFile.getAbsolutePath() + " the last record processed was " + lastRecordProcessed + " trying to continue", me);
+					}catch (Exception e){
+						logEntry.incErrors("Non MarcException processing individual record  on record " + numRecordsRead + " of " + curBibFile.getAbsolutePath() + " the last record processed was " + lastRecordProcessed + " trying to continue", e);
 					}
 					numRecordsRead++;
 					if (numRecordsRead % 250 == 0) {
@@ -437,10 +440,10 @@ public class CarlXExportMain {
 			RemoveRecordFromWorkResult result = recordGroupingProcessor.removeRecordFromGroupedWork(indexingProfile.getName(), ilsId);
 			if (result.permanentId != null) {
 				if (result.reindexWork) {
-					getGroupedWorkIndexer(dbConn).processGroupedWork(result.permanentId);
+					indexer.processGroupedWork(result.permanentId);
 				} else if (result.deleteWork) {
 					//Delete the work from solr and the database
-					getGroupedWorkIndexer(dbConn).deleteRecord(result.permanentId);
+					indexer.deleteRecord(result.permanentId);
 				}
 				logEntry.incDeleted();
 				if (logEntry.getNumDeleted() % 250 == 0) {
