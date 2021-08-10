@@ -96,6 +96,18 @@ function getUpdates21_10_00() : array
 			'sql' => [
 				"UPDATE user_list_entry SET user_list_entry.title=(SELECT LEFT(grouped_work.full_title, 50) FROM grouped_work WHERE grouped_work.permanent_id = user_list_entry.sourceId)",
 			]
-		]
+		], //add_library_links_access
+		'add_library_links_access' => [
+			'title' => 'Store patron types allowed to access menu links',
+			'description' => 'Allow libraries to limit access to menu links based on patron type',
+			'sql' => [
+				'CREATE TABLE IF NOT EXISTS library_links_access (
+							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+							libraryLinkId INT(11) NOT NULL, 
+							patronTypeId INT(11) NOT NULL,
+							UNIQUE INDEX (libraryLinkId, patronTypeId)
+						) ENGINE INNODB'
+			]
+		],
 	];
 }

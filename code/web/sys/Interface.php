@@ -644,6 +644,25 @@ class UInterface extends Smarty
 			if (!$libraryLink->published && !UserAccount::userHasPermission('View Unpublished Content')){
 				continue;
 			}
+			if($libraryLink->showToLoggedInUsersOnly && UserAccount::isLoggedIn()) {
+					$user = UserAccount::getLoggedInUser();
+					$userPatronType = $user->patronType;
+					$userId = $user->id;
+					require_once ROOT_DIR . '/sys/Account/PType.php';
+					$patronType = new pType();
+					$patronType->pType = $userPatronType;
+					$patronType->find();
+					while ($patronType->fetch()){
+						$patronTypeId = $patronType->id;
+					}
+					require_once ROOT_DIR . '/sys/LibraryLocation/LibraryLinkAccess.php';
+					$patronTypeLink = new LibraryLinkAccess();
+					$patronTypeLink->libraryLinkId = $libraryLink->id;
+					$patronTypeLink->patronTypeId = $patronTypeId;
+					if((!$patronTypeLink->find(true)) && $userId != 1){
+						continue;
+					}
+			}
 			if (empty($libraryLink->category)){
 				$libraryLink->category = 'none-' . $libraryLink->id;
 			}
