@@ -125,6 +125,7 @@ class Library extends DataObject
 	public /** @noinspection PhpUnused */ $enableGenealogy;
 	public $showHoldCancelDate;
 	public /** @noinspection PhpUnused */ $enableCourseReserves;
+	public $displayItemBarcode;
 	public $enableSelfRegistration;
 	public $selfRegistrationPasswordNotes;
 	public $selfRegistrationUrl;
@@ -551,6 +552,7 @@ class Library extends DataObject
 				'allowLinkedAccounts' => array('property'=>'allowLinkedAccounts', 'type'=>'checkbox', 'label'=>'Allow Linked Accounts', 'description' => 'Whether or not users can link multiple library cards under a single Aspen Discovery account.', 'hideInLists' => true, 'default' => 1, 'permissions' => ['Library ILS Options']),
 				'showLibraryHoursNoticeOnAccountPages' => array('property'=>'showLibraryHoursNoticeOnAccountPages', 'type'=>'checkbox', 'label'=>'Show Library Hours Notice on Account Pages', 'description'=>'Whether or not the Library Hours notice should be shown at the top of My Account\'s Checked Out, Holds and Bookings pages.', 'hideInLists' => true, 'default'=>true, 'permissions' => ['Library ILS Options']),
 				'enableCourseReserves' => array('property'=>'enableCourseReserves', 'type'=>'checkbox', 'label'=>'Enable Repeat Search in Course Reserves', 'description'=>'Whether or not patrons can repeat searches within course reserves.', 'hideInLists' => true, 'permissions' => ['Library ILS Connection']),
+				'displayItemBarcode' => array('property'=>'displayItemBarcode', 'type'=>'checkbox', 'label'=>'Display item barcodes in patron checkouts', 'description'=>'Whether or not patrons can see item barcodes to materials they have checked out.', 'hideInLists' => true, 'permissions' => ['Library ILS Connection']),
 				'barcodeSection' => array('property' => 'barcodeSection', 'type' => 'section', 'label' => 'Barcode', 'hideInLists' => true, 'permissions' => ['Library ILS Options'], 'properties' => array(
 					'libraryCardBarcodeStyle' => array('property' => 'libraryCardBarcodeStyle', 'type'=>'enum', 'values'=>$barcodeTypes, 'label'=>'Library Barcode Style', 'description'=>'The style to show for the barcode on the Library Card page', 'hideInLists' => true, 'default' => 'none'),
 					'minBarcodeLength' => array('property'=>'minBarcodeLength', 'type'=>'integer', 'label'=>'Min Barcode Length', 'description'=>'A minimum length the patron barcode is expected to be. Leave as 0 to extra processing of barcodes.', 'hideInLists' => true, 'default'=>0),

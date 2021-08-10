@@ -329,7 +329,7 @@ class Koha extends AbstractIlsDriver
 		$opacRenewalAllowed = $this->getKohaSystemPreference('OpacRenewalAllowed');
 
 		/** @noinspection SqlResolve */
-		$sql = "SELECT issues.*, items.biblionumber, items.itype, items.itemcallnumber, items.enumchron, title, author, auto_renew, auto_renew_error from issues left join items on items.itemnumber = issues.itemnumber left join biblio ON items.biblionumber = biblio.biblionumber where borrowernumber = {$patron->username}";
+		$sql = "SELECT issues.*, items.biblionumber, items.itype, items.itemcallnumber, items.enumchron, title, author, auto_renew, auto_renew_error, items.barcode from issues left join items on items.itemnumber = issues.itemnumber left join biblio ON items.biblionumber = biblio.biblionumber where borrowernumber = {$patron->username}";
 		$results = mysqli_query($this->dbConnection, $sql);
 		while ($curRow = $results->fetch_assoc()) {
 			$curCheckout = new Checkout();
@@ -340,6 +340,7 @@ class Koha extends AbstractIlsDriver
 
 			$curCheckout->recordId = $curRow['biblionumber'];
 			$curCheckout->shortId = $curRow['biblionumber'];
+			$curCheckout->barcode = $curRow['barcode'];
 
 			$recordDriver = RecordDriverFactory::initRecordDriverById($this->getIndexingProfile()->name . ':' . $curCheckout->recordId);
 			if ($recordDriver->isValid()){

@@ -34,7 +34,7 @@
 			</div>
 
 			{if $ratingData.average > 0}{* Only show histogram when there is rating data *}
-			<div class="rating-graph">
+			<div class="rating-graph hidden-xs">
 				<div class="row">
 					<div class="col-xs-4">5 star</div>
 					<div class="col-xs-5"><div class="graph-bar" style="width:{$ratingData.barWidth5Star}%">&nbsp;</div></div>

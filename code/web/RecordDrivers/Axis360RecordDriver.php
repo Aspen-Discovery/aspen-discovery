@@ -378,6 +378,7 @@ class Axis360RecordDriver extends GroupedWorkSubDriver
 
 			global $interface;
 			$interface->assign('og_title', $this->getTitle());
+			$interface->assign('og_description', $this->getDescription());
 			$interface->assign('og_type', $this->getGroupedWorkDriver()->getOGType());
 			$interface->assign('og_image', $this->getBookcoverUrl('medium'));
 			$interface->assign('og_url', $this->getAbsoluteUrl());

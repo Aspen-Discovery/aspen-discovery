@@ -44,6 +44,58 @@ function getUpdates21_10_00() : array
 			'sql' => [
 				'ALTER TABLE library ADD COLUMN maxDaysToFreeze INT(11) DEFAULT -1'
 			]
+		], //add_web_builder_portal_page_access
+		'add_web_builder_portal_page_access' => [
+			'title' => 'Store patron types allowed to access a custom page',
+			'description' => 'Allow libraries to limit access to web builder custom pages based on patron type',
+			'sql' => [
+				'CREATE TABLE IF NOT EXISTS web_builder_portal_page_access (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					portalPageId INT(11) NOT NULL, 
+					patronTypeId INT(11) NOT NULL,
+					UNIQUE INDEX (portalPageId, patronTypeId)
+				) ENGINE INNODB'
+			]
+		], //add_requireLogin_to_portal_page
+		'add_requireLogin_to_portal_page' => [
+			'title' => 'Add require login option to web builder custom pages',
+			'description' => 'Allow libraries to require login to access custom pages',
+			'sql' => [
+				'ALTER TABLE web_builder_portal_page ADD COLUMN requireLogin TINYINT(1) DEFAULT 0'
+			]
+		], //add_web_builder_basic_page_access
+		'add_web_builder_basic_page_access' => [
+			'title' => 'Store patron types allowed to access a basic page',
+			'description' => 'Allow libraries to limit access to web builder basic pages based on patron type',
+			'sql' => [
+				'CREATE TABLE IF NOT EXISTS web_builder_basic_page_access (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					basicPageId INT(11) NOT NULL, 
+					patronTypeId INT(11) NOT NULL,
+					UNIQUE INDEX (basicPageId, patronTypeId)
+				) ENGINE INNODB'
+			]
+		], //add_requireLogin_to_basic_page
+		'add_requireLogin_to_basic_page' => [
+			'title' => 'Add require login option to web builder basic pages',
+			'description' => 'Allow libraries to require login to access basic pages',
+			'sql' => [
+				'ALTER TABLE web_builder_basic_page ADD COLUMN requireLogin TINYINT(1) DEFAULT 0'
+			]
+		], //add_displayItemBarcode
+		'add_displayItemBarcode' => [
+			'title' => 'Add ability to display barcodes for items checked out',
+			'description' => 'Allow libraries to display barcodes for items that are checked out',
+			'sql' => [
+				'ALTER TABLE library ADD COLUMN displayItemBarcode TINYINT(1) DEFAULT 0'
+			]
+		], //check_titles_in_user_list_entries
+		'check_titles_in_user_list_entries' => [
+			'title' => 'Check for titles in user list entries',
+			'description' => 'If missing, populate existing user list entries with grouped work titles',
+			'sql' => [
+				"UPDATE user_list_entry SET user_list_entry.title=(SELECT LEFT(grouped_work.full_title, 50) FROM grouped_work WHERE grouped_work.permanent_id = user_list_entry.sourceId)",
+			]
 		]
 	];
 }

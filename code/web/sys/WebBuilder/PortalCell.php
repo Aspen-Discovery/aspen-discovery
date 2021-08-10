@@ -144,8 +144,8 @@ class PortalCell extends DataObject
 				$oldId = $interface->getVariable("id");
 				$interface->assign("id", $customForm->id);
 				$contents .= $customForm->getFormattedFields();
-				$interface->assign("id", $oldId);
 			}
+			$interface->assign("id", $oldId);
 		}elseif ($this->sourceType == 'vimeo_video'){
 			$sourceInfo = $this->sourceInfo;
 			if (preg_match('~https://vimeo\.com/(.*?)/.*~', $sourceInfo, $matches)){

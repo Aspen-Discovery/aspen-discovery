@@ -17,8 +17,14 @@
 		{if !empty($og_title)}
 			<meta property="og:title" content="{$og_title|removeTrailingPunctuation|escape:html}"/>
 		{/if}
+		{if !empty($og_description)}
+			<meta property="og:description" content="{$og_description|escape:html}"/>
+		{/if}
 		{if !empty($og_type)}
 			<meta property="og:type" content="{$og_type|escape:html}"/>
+		{/if}
+		{if !empty($dc_creator)}
+			<meta property="DC.Creator" content="{$dc_creator|escape:html}">
 		{/if}
 		{if !empty($og_image)}
 			<meta property="og:image" content="{$og_image|escape:html}"/>

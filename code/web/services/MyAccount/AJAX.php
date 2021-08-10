@@ -741,6 +741,8 @@ class MyAccount_AJAX extends JSON_Action
 					$list->insert();
 				}
 
+				$totalRecords = $list->numValidListItems();
+
 				if (!empty($_REQUEST['sourceId']) && !is_array($_REQUEST['sourceId'])) {
 					$sourceId = urldecode($_REQUEST['sourceId']);
 					$source = urldecode($_REQUEST['source']);
@@ -750,8 +752,45 @@ class MyAccount_AJAX extends JSON_Action
 					$userListEntry->listId = $list->id;
 					$userListEntry->source = $source;
 					$userListEntry->sourceId = $sourceId;
+					$userListEntry->weight = $totalRecords++;
 					if (!$userListEntry->find(true)) {
 						$userListEntry->dateAdded = time();
+						if($userListEntry->source == 'GroupedWork') {
+							require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
+							$groupedWork = new GroupedWork();
+							$groupedWork->permanent_id = $userListEntry->sourceId;
+							if ($groupedWork->find(true)) {
+								$userListEntry->title = substr($groupedWork->full_title, 0, 50);
+							}
+						}elseif($userListEntry->source == 'Lists') {
+							require_once ROOT_DIR . '/sys/UserLists/UserList.php';
+							$list = new UserList();
+							$list->id  = $userListEntry->sourceId;
+							if ($list->find(true)) {
+								$userListEntry->title = substr($list->title, 0, 50);
+							}
+						}elseif($userListEntry->source == 'OpenArchives') {
+							require_once ROOT_DIR . '/RecordDrivers/OpenArchivesRecordDriver.php';
+							$recordDriver = new OpenArchivesRecordDriver($userListEntry->sourceId);
+							if ($recordDriver->isValid()){
+								$title = $recordDriver->getTitle();
+								$userListEntry->title = substr($title, 0, 50);
+							}
+						}elseif($userListEntry->source == 'Genealogy') {
+							require_once ROOT_DIR . '/sys/Genealogy/Person.php';
+							$person = new Person();
+							$person->personId = $userListEntry->sourceId;
+							if ($person->find(true)) {
+								$userListEntry->title = substr($person->firstName . $person->middleName . $person->lastName, 0, 50);
+							}
+						}elseif($userListEntry->source == 'EbscoEds') {
+							require_once ROOT_DIR . '/RecordDrivers/EbscoRecordDriver.php';
+							$recordDriver = new EbscoRecordDriver($userListEntry->sourceId);
+							if ($recordDriver->isValid()) {
+								$title = $recordDriver->getTitle();
+								$userListEntry->title = substr($title, 0, 50);
+							}
+						}
 						$userListEntry->insert();
 					}
 				}
@@ -2158,6 +2197,13 @@ class MyAccount_AJAX extends JSON_Action
 			if (UserAccount::isLoggedIn() == false || empty($user)){
 				$result['message'] = translate(['text' => 'login_expired', 'defaultText' => "Your login has timed out. Please login again."]);
 			}else {
+				$allowFreezeHolds = $user->getHomeLibrary()->allowFreezeHolds;
+				if($allowFreezeHolds) {
+					$interface->assign('allowFreezeAllHolds', true);
+				} else {
+					$interface->assign('allowFreezeAllHolds', false);
+				}
+
 				$interface->assign('allowFreezeHolds', true);
 
 				$ils = $configArray['Catalog']['ils'];

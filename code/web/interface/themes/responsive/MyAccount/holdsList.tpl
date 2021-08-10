@@ -59,10 +59,12 @@
 		<div class="btn-group">
 			<a href="#" onclick="AspenDiscovery.Account.cancelHoldSelectedTitles()" class="btn btn-sm btn-default btn-warning">{translate text="Cancel Selected"}</a>
 			<a href="#" onclick="AspenDiscovery.Account.cancelHoldAll()" class="btn btn-sm btn-default btn-warning">{translate text="Cancel All"}</a>
+			{if $allowFreezeAllHolds}
 			<a href="#" onclick="AspenDiscovery.Account.freezeHoldSelected()" class="btn btn-sm btn-default">{translate text="Freeze Selected"}</a>
 			<a href="#" onclick="AspenDiscovery.Account.freezeHoldAll('{$userId}')" class="btn btn-sm btn-default">{translate text="Freeze All"}</a>
 			<a href="#" onclick="AspenDiscovery.Account.thawHoldSelected()" class="btn btn-sm btn-default">{translate text="Thaw Selected"}</a>
 			<a href="#" onclick="AspenDiscovery.Account.thawHoldAll('{$userId}')" class="btn btn-sm btn-default">{translate text="Thaw All"}</a>
+			{/if}
 		</div>
 		<div class="btn-group">
 			<input type="hidden" name="withSelectedAction" value="">

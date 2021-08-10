@@ -10569,13 +10569,15 @@ a.browse-thumbnail-sorted.active {
   margin-bottom: 10px;
 }
 .share-tools {
-  background-color: #e6e6e6;
   color: #666565;
-  border-bottom: 1px solid #adadad;
   font-weight: bold;
   text-align: left;
   padding: 5px 10px;
   display: inline-block;
+}
+.share-tools i {
+  width: 1em;
+  vertical-align: middle;
 }
 .share-tools img {
   margin-left: 2px;
