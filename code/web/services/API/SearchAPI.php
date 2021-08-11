@@ -311,6 +311,37 @@ class SearchAPI extends Action
 			$this->addCheck($checks, "Sitemap");
 		}
 
+		//Check third party enrichment to see if it is enabled
+		require_once ROOT_DIR . '/sys/Enrichment/NovelistSetting.php';
+		$novelistSetting = new NovelistSetting();
+		if ($novelistSetting->find(true)){
+			$this->addCheck($checks, "Novelist");
+		}
+
+		require_once ROOT_DIR . '/sys/Enrichment/SyndeticsSetting.php';
+		$syndeticsSetting = new SyndeticsSetting();
+		if ($syndeticsSetting->find(true)){
+			$this->addCheck($checks, "Syndetics");
+		}
+
+		require_once ROOT_DIR . '/sys/Enrichment/ContentCafeSetting.php';
+		$contentCafeSetting = new ContentCafeSetting();
+		if ($contentCafeSetting->find(true)){
+			$this->addCheck($checks, "Content Cafe");
+		}
+
+		require_once ROOT_DIR . '/sys/Enrichment/CoceServerSetting.php';
+		$coceSetting = new CoceServerSetting();
+		if ($coceSetting->find(true)){
+			$this->addCheck($checks, "Coce");
+		}
+
+		require_once ROOT_DIR . '/sys/Enrichment/OMDBSetting.php';
+		$omdbSetting = new OMDBSetting();
+		if ($omdbSetting->find(true)){
+			$this->addCheck($checks, "OMDB");
+		}
+
 		// Unprocessed Offline Holds //
 		$offlineHoldEntry = new OfflineHold();
 		$offlineHoldEntry->status = 'Not Processed';
