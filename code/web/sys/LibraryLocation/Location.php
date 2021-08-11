@@ -480,7 +480,9 @@ class Location extends DataObject
 			}
 		} else {
 			$this->whereAdd("validHoldPickupBranch = 1");
-			$this->whereAdd("validHoldPickupBranch = 3 AND libraryId = {$homeLibrary->libraryId}", 'OR');
+			if ($homeLibrary !== null) {
+				$this->whereAdd("validHoldPickupBranch = 3 AND libraryId = {$homeLibrary->libraryId}", 'OR');
+			}
 		}
 
 		$this->orderBy('displayName');
