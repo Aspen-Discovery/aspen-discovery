@@ -673,5 +673,22 @@ AspenDiscovery.Admin = (function(){
 			}
 			return false;
 		},
+
+		updateLibraryLinksFields: function () {
+			var requireLogin = $('#showToLoggedInUsersOnly');
+			if(requireLogin.is(":checked")) {
+				$("#propertyRowallowAccess").show();
+			} else {
+				$("#propertyRowallowAccess").hide();
+			}
+
+			$(requireLogin).click(function() {
+				if(requireLogin.is(":checked")){
+					$("#propertyRowallowAccess").show();
+				}else{
+					$("#propertyRowallowAccess").hide();
+				}
+			});
+		},
 	};
 }(AspenDiscovery.Admin || {}));

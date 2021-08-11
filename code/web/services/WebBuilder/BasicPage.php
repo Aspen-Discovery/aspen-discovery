@@ -89,7 +89,6 @@ class WebBuilder_BasicPage extends Action{
 		}
 
 	}
-
 	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];

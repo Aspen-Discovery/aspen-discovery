@@ -63,13 +63,18 @@ class Admin_LibraryLinks extends ObjectEditor
 		if (!empty($this->activeObject) && $this->activeObject instanceof LibraryLink){
 			$breadcrumbs[] = new Breadcrumb('/Admin/Libraries?objectAction=edit&id=' . $this->activeObject->libraryId, 'Library');
 		}
-		$breadcrumbs[] = new Breadcrumb('', 'Sidebar Link');
+		$breadcrumbs[] = new Breadcrumb('', 'Library Link');
 		return $breadcrumbs;
 	}
 
 	function getActiveAdminSection() : string
 	{
 		return 'primary_configuration';
+	}
+
+	function getInitializationJs() : string
+	{
+		return 'AspenDiscovery.Admin.updateLibraryLinksFields()';
 	}
 
 	function canView() : bool
