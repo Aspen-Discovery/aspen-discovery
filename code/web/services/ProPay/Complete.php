@@ -30,7 +30,6 @@ class Complete extends MyAccount
 
 						if ($proPaySetting->find(true)) {
 							$proPayResult = $_REQUEST['result'];
-							$proPayMessage = $_REQUEST['message'];
 
 							//Get results from ProPay
 							$proPayHostedTransactionIdentifier = $userPayment->orderId;
@@ -55,12 +54,13 @@ class Complete extends MyAccount
 							$hostedTransactionResultsResponse = $curlWrapper->curlGetPage($url);
 							if ($hostedTransactionResultsResponse && $curlWrapper->getResponseCode() == 200){
 								$jsonResponse = json_decode($hostedTransactionResultsResponse);
-
+								
 							}
 
 							if ($proPayResult == 'Failure') {
 								$userPayment->completed = true;
 								$userPayment->error = true;
+								$proPayMessage = $_REQUEST['message'];
 								$userPayment->message = $proPayMessage;
 								$userPayment->update();
 								$error = $userPayment->message;

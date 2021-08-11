@@ -28,7 +28,7 @@ class ProPaySetting extends DataObject
 			'authenticationToken' => array('property'=>'authenticationToken', 'type'=>'text', 'label'=>'Authentication Token', 'description'=>'The Authentication Token to use when paying fines.', 'hideInLists' => true, 'default' => '', 'maxLength' => 36),
 			'billerAccountId' => array('property'=>'billerAccountId', 'type'=>'integer', 'label'=>'Biller Account ID', 'description'=>'The Biller Account ID to use when paying fines.', 'hideInLists' => true),
 			'merchantProfileId' => array('property'=>'merchantProfileId', 'type'=>'integer', 'label'=>'Merchant Profile ID', 'description'=>'The Merchant Profile ID to use when paying fines.', 'hideInLists' => true),
-			'certStr' => array('property'=>'certStr', 'type'=>'text', 'label'=>'Cert String', 'description'=>'The Cert String Provided by ProPay.', 'hideInLists' => true, 'maxLength' => 20),
+			'certStr' => array('property'=>'certStr', 'type'=>'text', 'label'=>'Cert String', 'description'=>'The Cert String Provided by ProPay.', 'hideInLists' => true, 'maxLength' => 32),
 			'accountNum' => array('property'=>'accountNum', 'type'=>'text', 'label'=>'Account Num', 'description'=>'The Account Number Provided by ProPay.', 'hideInLists' => true, 'maxLength' => 20),
 			'termId' => array('property'=>'termId', 'type'=>'text', 'label'=>'Term Id', 'description'=>'The Terminal ID provided by ProPay.', 'hideInLists' => true, 'maxLength' => 20),
 

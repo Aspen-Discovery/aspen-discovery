@@ -120,6 +120,7 @@ function getUpdates21_09_00() : array
 		'propay_accountId_to_user' => [
 			'title' => 'Move ProPay Account ID to user',
 			'description' => 'Move ProPay Account ID to user',
+			'continueOnError' => true,
 			'sql' => [
 				'ALTER TABLE propay_settings DROP COLUMN payerAccountId',
 				'ALTER TABLE propay_settings CHANGE COLUMN billerAccountId billerAccountId BIGINT',
