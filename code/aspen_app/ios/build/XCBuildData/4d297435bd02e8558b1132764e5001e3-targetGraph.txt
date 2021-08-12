@@ -1,0 +1,264 @@
+Target dependency graph (53 targets)
+DoubleConversion in Pods
+UMCore in Pods
+EXApplication in Pods, depends on:
+UMCore in Pods (explicit)
+ExpoModulesCore in Pods, depends on:
+UMCore in Pods (explicit)
+EXConstants in Pods, depends on:
+ExpoModulesCore in Pods (explicit)
+UMCore in Pods (explicit)
+EXErrorRecovery in Pods, depends on:
+UMCore in Pods (explicit)
+EXFileSystem in Pods, depends on:
+ExpoModulesCore in Pods (explicit)
+UMCore in Pods (explicit)
+EXFont in Pods, depends on:
+ExpoModulesCore in Pods (explicit)
+UMCore in Pods (explicit)
+boost-for-react-native in Pods
+glog in Pods
+Folly in Pods, depends on:
+DoubleConversion in Pods (explicit)
+boost-for-react-native in Pods (explicit)
+glog in Pods (explicit)
+React-Core-AccessibilityResources in Pods
+React-callinvoker in Pods
+React-jsinspector in Pods
+React-cxxreact in Pods, depends on:
+DoubleConversion in Pods (explicit)
+Folly in Pods (explicit)
+React-callinvoker in Pods (explicit)
+React-jsinspector in Pods (explicit)
+boost-for-react-native in Pods (explicit)
+glog in Pods (explicit)
+React-jsi in Pods, depends on:
+DoubleConversion in Pods (explicit)
+Folly in Pods (explicit)
+boost-for-react-native in Pods (explicit)
+glog in Pods (explicit)
+React-jsiexecutor in Pods, depends on:
+DoubleConversion in Pods (explicit)
+Folly in Pods (explicit)
+React-cxxreact in Pods (explicit)
+React-jsi in Pods (explicit)
+glog in Pods (explicit)
+Yoga in Pods
+React-Core in Pods, depends on:
+Folly in Pods (explicit)
+React-Core-AccessibilityResources in Pods (explicit)
+React-cxxreact in Pods (explicit)
+React-jsi in Pods (explicit)
+React-jsiexecutor in Pods (explicit)
+React-jsinspector in Pods (explicit)
+Yoga in Pods (explicit)
+glog in Pods (explicit)
+EXImageLoader in Pods, depends on:
+ExpoModulesCore in Pods (explicit)
+React-Core in Pods (explicit)
+UMCore in Pods (explicit)
+EXKeepAwake in Pods, depends on:
+UMCore in Pods (explicit)
+EXSplashScreen in Pods, depends on:
+React-Core in Pods (explicit)
+UMCore in Pods (explicit)
+EXStructuredHeaders in Pods, depends on:
+UMCore in Pods (explicit)
+EXUpdatesInterface in Pods
+EXUpdates in Pods, depends on:
+EXStructuredHeaders in Pods (explicit)
+EXUpdatesInterface in Pods (explicit)
+React-Core in Pods (explicit)
+UMCore in Pods (explicit)
+FBLazyVector in Pods
+RCTRequired in Pods
+RCTTypeSafety in Pods, depends on:
+FBLazyVector in Pods (explicit)
+Folly in Pods (explicit)
+RCTRequired in Pods (explicit)
+React-Core in Pods (explicit)
+ReactCommon in Pods, depends on:
+DoubleConversion in Pods (explicit)
+Folly in Pods (explicit)
+React-Core in Pods (explicit)
+React-callinvoker in Pods (explicit)
+React-cxxreact in Pods (explicit)
+React-jsi in Pods (explicit)
+glog in Pods (explicit)
+FBReactNativeSpec in Pods, depends on:
+Folly in Pods (explicit)
+RCTRequired in Pods (explicit)
+RCTTypeSafety in Pods (explicit)
+React-Core in Pods (explicit)
+React-jsi in Pods (explicit)
+ReactCommon in Pods (explicit)
+RNCAsyncStorage in Pods, depends on:
+React-Core in Pods (explicit)
+React-RCTActionSheet in Pods, depends on:
+React-Core in Pods (explicit)
+React-RCTAnimation in Pods, depends on:
+FBReactNativeSpec in Pods (explicit)
+Folly in Pods (explicit)
+RCTTypeSafety in Pods (explicit)
+React-Core in Pods (explicit)
+React-jsi in Pods (explicit)
+ReactCommon in Pods (explicit)
+React-RCTNetwork in Pods, depends on:
+FBReactNativeSpec in Pods (explicit)
+Folly in Pods (explicit)
+RCTTypeSafety in Pods (explicit)
+React-Core in Pods (explicit)
+React-jsi in Pods (explicit)
+ReactCommon in Pods (explicit)
+React-RCTBlob in Pods, depends on:
+FBReactNativeSpec in Pods (explicit)
+Folly in Pods (explicit)
+React-Core in Pods (explicit)
+React-RCTNetwork in Pods (explicit)
+React-jsi in Pods (explicit)
+ReactCommon in Pods (explicit)
+React-RCTImage in Pods, depends on:
+FBReactNativeSpec in Pods (explicit)
+Folly in Pods (explicit)
+RCTTypeSafety in Pods (explicit)
+React-Core in Pods (explicit)
+React-RCTNetwork in Pods (explicit)
+React-jsi in Pods (explicit)
+ReactCommon in Pods (explicit)
+React-RCTLinking in Pods, depends on:
+FBReactNativeSpec in Pods (explicit)
+React-Core in Pods (explicit)
+React-jsi in Pods (explicit)
+ReactCommon in Pods (explicit)
+React-RCTSettings in Pods, depends on:
+FBReactNativeSpec in Pods (explicit)
+Folly in Pods (explicit)
+RCTTypeSafety in Pods (explicit)
+React-Core in Pods (explicit)
+React-jsi in Pods (explicit)
+ReactCommon in Pods (explicit)
+React-RCTText in Pods, depends on:
+React-Core in Pods (explicit)
+React-RCTVibration in Pods, depends on:
+FBReactNativeSpec in Pods (explicit)
+Folly in Pods (explicit)
+React-Core in Pods (explicit)
+React-jsi in Pods (explicit)
+ReactCommon in Pods (explicit)
+React in Pods, depends on:
+React-Core in Pods (explicit)
+React-RCTActionSheet in Pods (explicit)
+React-RCTAnimation in Pods (explicit)
+React-RCTBlob in Pods (explicit)
+React-RCTImage in Pods (explicit)
+React-RCTLinking in Pods (explicit)
+React-RCTNetwork in Pods (explicit)
+React-RCTSettings in Pods (explicit)
+React-RCTText in Pods (explicit)
+React-RCTVibration in Pods (explicit)
+RNCMaskedView in Pods, depends on:
+React in Pods (explicit)
+RNCPicker in Pods, depends on:
+React-Core in Pods (explicit)
+RNGestureHandler in Pods, depends on:
+React-Core in Pods (explicit)
+React-CoreModules in Pods, depends on:
+FBReactNativeSpec in Pods (explicit)
+Folly in Pods (explicit)
+RCTTypeSafety in Pods (explicit)
+React-Core in Pods (explicit)
+React-RCTImage in Pods (explicit)
+React-jsi in Pods (explicit)
+ReactCommon in Pods (explicit)
+RNReanimated in Pods, depends on:
+DoubleConversion in Pods (explicit)
+FBLazyVector in Pods (explicit)
+FBReactNativeSpec in Pods (explicit)
+Folly in Pods (explicit)
+RCTRequired in Pods (explicit)
+RCTTypeSafety in Pods (explicit)
+React in Pods (explicit)
+React-Core in Pods (explicit)
+React-CoreModules in Pods (explicit)
+React-RCTActionSheet in Pods (explicit)
+React-RCTAnimation in Pods (explicit)
+React-RCTBlob in Pods (explicit)
+React-RCTImage in Pods (explicit)
+React-RCTLinking in Pods (explicit)
+React-RCTNetwork in Pods (explicit)
+React-RCTSettings in Pods (explicit)
+React-RCTText in Pods (explicit)
+React-RCTVibration in Pods (explicit)
+React-callinvoker in Pods (explicit)
+React-cxxreact in Pods (explicit)
+React-jsi in Pods (explicit)
+React-jsiexecutor in Pods (explicit)
+React-jsinspector in Pods (explicit)
+ReactCommon in Pods (explicit)
+Yoga in Pods (explicit)
+glog in Pods (explicit)
+RNScreens in Pods, depends on:
+React-Core in Pods (explicit)
+RNVectorIcons in Pods, depends on:
+React-Core in Pods (explicit)
+UMAppLoader in Pods
+UMReactNativeAdapter in Pods, depends on:
+ExpoModulesCore in Pods (explicit)
+React-Core in Pods (explicit)
+UMCore in Pods (explicit)
+UMTaskManagerInterface in Pods, depends on:
+UMCore in Pods (explicit)
+react-native-safe-area-context in Pods, depends on:
+React-Core in Pods (explicit)
+Pods-AspenDiscoveryMobileApp in Pods, depends on:
+DoubleConversion in Pods (explicit)
+EXApplication in Pods (explicit)
+EXConstants in Pods (explicit)
+EXErrorRecovery in Pods (explicit)
+EXFileSystem in Pods (explicit)
+EXFont in Pods (explicit)
+EXImageLoader in Pods (explicit)
+EXKeepAwake in Pods (explicit)
+EXSplashScreen in Pods (explicit)
+EXStructuredHeaders in Pods (explicit)
+EXUpdates in Pods (explicit)
+EXUpdatesInterface in Pods (explicit)
+ExpoModulesCore in Pods (explicit)
+FBLazyVector in Pods (explicit)
+FBReactNativeSpec in Pods (explicit)
+Folly in Pods (explicit)
+RCTRequired in Pods (explicit)
+RCTTypeSafety in Pods (explicit)
+RNCAsyncStorage in Pods (explicit)
+RNCMaskedView in Pods (explicit)
+RNCPicker in Pods (explicit)
+RNGestureHandler in Pods (explicit)
+RNReanimated in Pods (explicit)
+RNScreens in Pods (explicit)
+RNVectorIcons in Pods (explicit)
+React in Pods (explicit)
+React-Core in Pods (explicit)
+React-CoreModules in Pods (explicit)
+React-RCTActionSheet in Pods (explicit)
+React-RCTAnimation in Pods (explicit)
+React-RCTBlob in Pods (explicit)
+React-RCTImage in Pods (explicit)
+React-RCTLinking in Pods (explicit)
+React-RCTNetwork in Pods (explicit)
+React-RCTSettings in Pods (explicit)
+React-RCTText in Pods (explicit)
+React-RCTVibration in Pods (explicit)
+React-callinvoker in Pods (explicit)
+React-cxxreact in Pods (explicit)
+React-jsi in Pods (explicit)
+React-jsiexecutor in Pods (explicit)
+React-jsinspector in Pods (explicit)
+ReactCommon in Pods (explicit)
+UMAppLoader in Pods (explicit)
+UMCore in Pods (explicit)
+UMReactNativeAdapter in Pods (explicit)
+UMTaskManagerInterface in Pods (explicit)
+Yoga in Pods (explicit)
+boost-for-react-native in Pods (explicit)
+glog in Pods (explicit)
+react-native-safe-area-context in Pods (explicit)
