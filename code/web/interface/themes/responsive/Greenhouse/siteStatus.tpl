@@ -44,33 +44,33 @@
 								<td {if $check.status == 'okay'}style="background-color: lightgreen;text-align: center"{elseif $check.status == 'warning'}style="background-color: lightpink;text-align: center"{else}style="background-color: #D50000;color:white;font-weight: bold;text-align: center"{/if} {if !empty($check.note)}title="{$check.note|escape:css}" {/if}>
 									{if $check.status != 'okay'}
 										{if $checkType == 'overdrive'}
-											<a href="{$siteStatus.baseUrl}/OverDrive/IndexingLog" target="_blank">Log</a>
+											<a href="{$siteStatus.baseUrl}/OverDrive/IndexingLog" target="_blank">{$check.status}</a>
 										{elseif $checkType == 'koha' || $checkType == 'carl_x' || $checkType == 'symphony' || $checkType == 'sierra' || $checkType == 'polaris'}
-											<a href="{$siteStatus.baseUrl}/ILS/IndexingLog" target="_blank">Log</a>
+											<a href="{$siteStatus.baseUrl}/ILS/IndexingLog" target="_blank">{$check.status}</a>
 										{elseif $checkType == 'axis_360'}
-											<a href="{$siteStatus.baseUrl}/Axis360/IndexingLog" target="_blank">Log</a>
+											<a href="{$siteStatus.baseUrl}/Axis360/IndexingLog" target="_blank">{$check.status}</a>
 										{elseif $checkType == 'hoopla'}
-											<a href="{$siteStatus.baseUrl}/Hoopla/IndexingLog" target="_blank">Log</a>
+											<a href="{$siteStatus.baseUrl}/Hoopla/IndexingLog" target="_blank">{$check.status}</a>
 										{elseif $checkType == 'cloud_library'}
-											<a href="{$siteStatus.baseUrl}/CloudLibrary/IndexingLog" target="_blank">Log</a>
+											<a href="{$siteStatus.baseUrl}/CloudLibrary/IndexingLog" target="_blank">{$check.status}</a>
 										{elseif $checkType == 'web_indexer' || $checkType == 'web_builder'}
-											<a href="{$siteStatus.baseUrl}/Websites/IndexingLog" target="_blank">Log</a>
+											<a href="{$siteStatus.baseUrl}/Websites/IndexingLog" target="_blank">{$check.status}</a>
 										{elseif $checkType == 'cron'}
-											<a href="{$siteStatus.baseUrl}/Admin/CronLog" target="_blank">Log</a>
+											<a href="{$siteStatus.baseUrl}/Admin/CronLog" target="_blank">{$check.status}</a>
 										{elseif $checkType == 'nightly_index'}
-											<a href="{$siteStatus.baseUrl}/Admin/ReindexLog" target="_blank">Log</a>
+											<a href="{$siteStatus.baseUrl}/Admin/ReindexLog" target="_blank">{$check.status}</a>
 										{elseif $checkType == 'side_loads'}
-											<a href="{$siteStatus.baseUrl}/SideLoads/IndexingLog" target="_blank">Log</a>
+											<a href="{$siteStatus.baseUrl}/SideLoads/IndexingLog" target="_blank">{$check.status}</a>
 										{else}
-											&nbsp;
+											{$check.status}
 										{/if}
 									{else}
-										&nbsp;
+										{$check.status}
 									{/if}
 								</td>
 							{else}
 								<td>
-									&nbsp;
+									{$check.status}
 								</td>
 							{/if}
 						{/foreach}
@@ -80,3 +80,9 @@
 		</table>
 	</div>
 {/strip}
+
+<script type="text/javascript">
+{literal}
+	$("#siteStatusTable").tablesorter({cssAsc: 'sortAscHeader', cssDesc: 'sortDescHeader', cssHeader: 'unsortedHeader', widgets:['zebra', 'filter'] });
+{/literal}
+</script>
