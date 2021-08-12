@@ -10,8 +10,8 @@
 			<thead>
 				<tr>
 					<th>Name</th>
-					<th>Implementation Status</th>
 					<th>DB Maintenance</th>
+					<th>Implementation Status</th>
 					<th>Alive</th>
 					<th>Version</th>
                     {foreach from=$allChecks item=checkName key=checkType}
