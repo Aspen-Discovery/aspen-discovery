@@ -5,7 +5,7 @@
 		</div>
 	</div>
 
-	<div class='siteStatusRegion'>
+	<div class="siteStatusRegion">
 		<table class="table table-striped table-condensed smallText table-sticky" id="siteStatusTable" aria-label="List of sites with status">
 			<thead>
 				<tr>
