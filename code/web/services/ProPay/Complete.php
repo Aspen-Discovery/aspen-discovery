@@ -21,7 +21,7 @@ class Complete extends MyAccount
 		}
 		$interface->assign('error', $error);
 		$interface->assign('message', $message);
-		$this->display('../MyAccount/paymentCompleted.tpl', 'Payment Completed');
+		$this->display('paymentCompleted.tpl', 'Payment Completed');
 	}
 
 	function getBreadcrumbs() : array
