@@ -1,8 +1,8 @@
 <?php
 header('Content-type: text/plain');
 date_default_timezone_set('America/Denver');
-$mergeListFile = fopen("./javascript_files.txt", 'r');
-$mergedFile = fopen("./aspen.js", 'w');
+$mergeListFile = fopen("/usr/local/aspen-discovery/code/web/interface/themes/responsive/js/javascript_files.txt", 'r');
+$mergedFile = fopen("/usr/local/aspen-discovery/code/web/interface/themes/responsive/js/aspen.js", 'w');
 while (($fileToMerge = fgets($mergeListFile)) !== false){
 	$fileToMerge = trim($fileToMerge);
 	if (strpos($fileToMerge, '#') !== 0){
