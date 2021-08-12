@@ -1,14 +1,39 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ProjectTasksOptions">
+    <TaskOptions isEnabled="false">
+      <option name="arguments" value="$FileName$ -o $FileNameWithoutExtension$.min.css" />
+      <option name="checkSyntaxErrors" value="true" />
+      <option name="description" />
+      <option name="exitCodeBehavior" value="ERROR" />
+      <option name="fileExtension" value="css" />
+      <option name="immediateSync" value="true" />
+      <option name="name" value="YUI Compressor CSS" />
+      <option name="output" value="$FileNameWithoutExtension$.min.css" />
+      <option name="outputFilters">
+        <array />
+      </option>
+      <option name="outputFromStdout" value="false" />
+      <option name="program" value="yuicompressor" />
+      <option name="runOnExternalChanges" value="true" />
+      <option name="scopeName" value="main.css files" />
+      <option name="trackOnlyRoot" value="true" />
+      <option name="workingDir" value="$FileDir$" />
+      <envs />
+    </TaskOptions>
+<<<<<<< Updated upstream
+    <TaskOptions isEnabled="false">
+      <option name="arguments" value="C:\web\aspen-discovery\code\web\interface\themes\responsive\js\merge_javascript.php" />
+=======
     <TaskOptions isEnabled="true">
       <option name="arguments" value="$PROJECT_DIR$/interface/themes/responsive/js/merge_javascript.php" />
-      <option name="checkSyntaxErrors" value="false" />
+>>>>>>> Stashed changes
+      <option name="checkSyntaxErrors" value="true" />
       <option name="description" />
-      <option name="exitCodeBehavior" value="ALWAYS" />
+      <option name="exitCodeBehavior" value="ERROR" />
       <option name="fileExtension" value="js" />
       <option name="immediateSync" value="true" />
-      <option name="name" value="JavaScript Merge" />
+      <option name="name" value="Javascript Merge" />
       <option name="output" value="" />
       <option name="outputFilters">
         <array />
@@ -16,9 +41,9 @@
       <option name="outputFromStdout" value="false" />
       <option name="program" value="$PROJECT_DIR$/../../../../bin/php" />
       <option name="runOnExternalChanges" value="true" />
-      <option name="scopeName" value="Project Files" />
+      <option name="scopeName" value="Local Javascript" />
       <option name="trackOnlyRoot" value="false" />
-      <option name="workingDir" value="" />
+      <option name="workingDir" value="$PROJECT_DIR$/interface/themes/responsive/js/" />
       <envs />
     </TaskOptions>
     <enabled-global>

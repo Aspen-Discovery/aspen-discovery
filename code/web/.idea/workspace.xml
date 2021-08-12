@@ -5,30 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="64b30edf-4a70-42c6-b752-8518712fb864" name="Default Changelist" comment="">
-<<<<<<< Updated upstream
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/RecordDrivers/MarcRecordDriver.php" beforeDir="false" afterPath="$PROJECT_DIR$/RecordDrivers/MarcRecordDriver.php" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/release_notes/21.09.00.MD" beforeDir="false" afterPath="$PROJECT_DIR$/release_notes/21.09.00.MD" afterDir="false" />
-=======
-<<<<<<< Updated upstream
-      <change beforePath="$PROJECT_DIR$/.idea/watcherTasks.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/watcherTasks.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-=======
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources.local.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources.local.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/watcherTasks.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/watcherTasks.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/fonts/GothicA1-Regular.ttf" beforeDir="false" afterPath="$PROJECT_DIR$/fonts/GothicA1-Regular.ttf" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/interface/themes/responsive/Search/horizontal-searchbox.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/interface/themes/responsive/Search/horizontal-searchbox.tpl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/interface/themes/responsive/header-menu.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/interface/themes/responsive/header-menu.tpl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/interface/themes/responsive/header_responsive.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/interface/themes/responsive/header_responsive.tpl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/interface/themes/responsive/horizontal-menu-bar.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/interface/themes/responsive/horizontal-menu-bar.tpl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/interface/themes/responsive/js/aspen.js" beforeDir="false" afterPath="$PROJECT_DIR$/interface/themes/responsive/js/aspen.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/interface/themes/responsive/js/aspen/base.js" beforeDir="false" afterPath="$PROJECT_DIR$/interface/themes/responsive/js/aspen/base.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/interface/themes/responsive/theme.css.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/interface/themes/responsive/theme.css.tpl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/services/WebBuilder/PDFs.php" beforeDir="false" afterPath="$PROJECT_DIR$/services/WebBuilder/PDFs.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sys/File/FileUpload.php" beforeDir="false" afterPath="$PROJECT_DIR$/sys/File/FileUpload.php" afterDir="false" />
->>>>>>> Stashed changes
->>>>>>> Stashed changes
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -151,24 +130,16 @@
       <server host="122.nashville.aspenlocal" id="d3c6fcf6-35ba-48d9-97fe-9a9961926a2b" name="122.nashville.aspenlocal" />
       <server host="blackgold.localhost" id="9673c659-6d1c-47d2-a4b7-6cec532dd79f" name="blackgold.localhost" />
       <server host="slo.blackgold.localhost" id="07677dc6-da41-4e81-9f7d-bb3bce24c6b4" name="slo.blackgold.localhost" />
-<<<<<<< Updated upstream
       <server host="portercounty.localhost" id="86f97bc9-847d-4b75-ae6e-1bad3b2e2ccb" name="portercounty.localhost" />
       <server host="catalog.vokal.localhost" id="6887d857-743d-4db4-9f73-6e1f243248e9" name="catalog.vokal.localhost" />
       <server host="carnegie.localhost" id="9d1f4e87-aadb-48d0-b280-b795e7c377c7" name="carnegie.localhost" />
       <server host="brownell-aspen.vokal.localhost" id="7d06cd8f-d1f0-4db6-ab00-40cf89cc77f5" name="brownell-aspen.vokal.localhost" />
-=======
-      <server host="demo.localhost" id="9ac92be3-4df5-4879-a6ee-6d9e411a0b7f" name="demo.localhost" port="8888" />
->>>>>>> Stashed changes
     </servers>
   </component>
   <component name="PhpWebServerValidation" path_to_validation_script="C:\web\aspen-discovery\code\web" selected_validation_type="LOCAL" web_path_to_validation_script="http://basinlibraries.localhost" />
   <component name="PhpWorkspaceProjectConfiguration" interpreter_name="PHP 7.3">
     <include_path>
       <path value="C:/Bitnami/wampstack-7.3.3-1/php" />
-<<<<<<< Updated upstream
-=======
-      <path value="$PROJECT_DIR$/../../../../Bitnami/wampstack-7.3.3-1/php" />
->>>>>>> Stashed changes
     </include_path>
   </component>
   <component name="ProjectId" id="1OW1o0nR89VagBknOyBYfpbOOIz" />
@@ -202,11 +173,7 @@
     <property name="nodejs_package_manager_path" value="npm" />
     <property name="php.override.implement.member.chooser.php.doc" value="NONE" />
     <property name="run.code.analysis.last.selected.profile" value="pProject Default" />
-<<<<<<< Updated upstream
     <property name="settings.editor.selected.configurable" value="reference.settingsdialog.IDE.editor.colors.General" />
-=======
-    <property name="settings.editor.selected.configurable" value="watcher.settings" />
->>>>>>> Stashed changes
     <property name="vue.rearranger.settings.migration" value="true" />
   </component>
   <component name="RecentsManager">
@@ -372,21 +339,10 @@
       <workItem from="1623076753021" duration="1371000" />
       <workItem from="1623245569287" duration="15657000" />
       <workItem from="1623334786455" duration="11194000" />
-<<<<<<< Updated upstream
       <workItem from="1625664350864" duration="47442000" />
       <workItem from="1626321630727" duration="5360000" />
       <workItem from="1626329765019" duration="27902000" />
-<<<<<<< Updated upstream
       <workItem from="1627170212124" duration="793000" />
-=======
-=======
-      <workItem from="1623678716566" duration="88486000" />
-      <workItem from="1624629613545" duration="55723000" />
-      <workItem from="1625002381515" duration="46599000" />
-      <workItem from="1625589745990" duration="111860000" />
-      <workItem from="1626384236993" duration="11012000" />
->>>>>>> Stashed changes
->>>>>>> Stashed changes
     </task>
     <servers />
   </component>
@@ -473,7 +429,6 @@
       <breakpoints>
         <line-breakpoint enabled="true" type="php">
           <url>file://$PROJECT_DIR$/Drivers/marmot_inc/MillenniumHolds.php</url>
-<<<<<<< Updated upstream
           <line>14</line>
           <option name="timeStamp" value="1144" />
         </line-breakpoint>
@@ -481,241 +436,6 @@
           <url>file://$PROJECT_DIR$/Drivers/marmot_inc/MillenniumHolds.php</url>
           <line>326</line>
           <option name="timeStamp" value="1145" />
-=======
-          <line>500</line>
-          <option name="timeStamp" value="3" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/sys/LocalEnrichment/Placard.php</url>
-          <line>280</line>
-          <option name="timeStamp" value="35" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/sys/LocalEnrichment/Placard.php</url>
-          <line>286</line>
-          <option name="timeStamp" value="37" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/sys/LocalEnrichment/Placard.php</url>
-          <line>289</line>
-          <option name="timeStamp" value="38" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/services/Record/AJAX.php</url>
-          <line>572</line>
-          <option name="timeStamp" value="64" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/services/MaterialsRequest/AJAX.php</url>
-          <line>617</line>
-          <option name="timeStamp" value="83" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/sys/SystemLogging/AspenUsage.php</url>
-          <line>9</line>
-          <option name="timeStamp" value="106" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/Drivers/Millennium.php</url>
-          <line>452</line>
-          <option name="timeStamp" value="114" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/sys/DBMaintenance/cloud_library_updates.php</url>
-          <line>160</line>
-          <option name="timeStamp" value="117" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/services/ILS/Dashboard.php</url>
-          <line>117</line>
-          <option name="timeStamp" value="119" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/sys/DBMaintenance/ebsco_updates.php</url>
-          <line>82</line>
-          <option name="timeStamp" value="120" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/services/Axis360/Graphs.php</url>
-          <line>42</line>
-          <option name="timeStamp" value="128" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/Drivers/SirsiDynixROA.php</url>
-          <line>1707</line>
-          <option name="timeStamp" value="130" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/Drivers/SirsiDynixROA.php</url>
-          <line>1623</line>
-          <option name="timeStamp" value="131" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/Drivers/SirsiDynixROA.php</url>
-          <line>1725</line>
-          <option name="timeStamp" value="146" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/Drivers/SirsiDynixROA.php</url>
-          <line>1735</line>
-          <option name="timeStamp" value="147" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/Drivers/SirsiDynixROA.php</url>
-          <line>1741</line>
-          <option name="timeStamp" value="148" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/Drivers/SirsiDynixROA.php</url>
-          <line>1742</line>
-          <option name="timeStamp" value="149" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/Drivers/SirsiDynixROA.php</url>
-          <line>91</line>
-          <option name="timeStamp" value="163" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/services/Record/AJAX.php</url>
-          <line>260</line>
-          <option name="timeStamp" value="184" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/sys/DBMaintenance/cloud_library_updates.php</url>
-          <line>167</line>
-          <option name="timeStamp" value="225" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/sys/Account/User.php</url>
-          <line>762</line>
-          <option name="timeStamp" value="240" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/sys/SearchObject/SolrSearcher.php</url>
-          <line>608</line>
-          <option name="timeStamp" value="297" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/Drivers/OverDriveDriver.php</url>
-          <line>1007</line>
-          <option name="timeStamp" value="317" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/services/CloudLibrary/AJAX.php</url>
-          <line>244</line>
-          <option name="timeStamp" value="348" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/Drivers/Koha.php</url>
-          <line>163</line>
-          <option name="timeStamp" value="350" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/Drivers/Koha.php</url>
-          <line>2063</line>
-          <option name="timeStamp" value="352" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/Drivers/Koha.php</url>
-          <line>2593</line>
-          <option name="timeStamp" value="354" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/Drivers/Koha.php</url>
-          <line>2610</line>
-          <option name="timeStamp" value="357" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/Drivers/Koha.php</url>
-          <line>2613</line>
-          <option name="timeStamp" value="358" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/RecordDrivers/MarcRecordDriver.php</url>
-          <line>744</line>
-          <option name="timeStamp" value="363" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/sys/BotChecker.php</url>
-          <line>40</line>
-          <option name="timeStamp" value="366" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/Drivers/CarlX.php</url>
-          <line>749</line>
-          <option name="timeStamp" value="369" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/Drivers/CloudLibraryDriver.php</url>
-          <line>564</line>
-          <option name="timeStamp" value="433" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/services/CloudLibrary/AJAX.php</url>
-          <line>113</line>
-          <option name="timeStamp" value="435" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/sys/SearchObject/SolrSearcher.php</url>
-          <line>336</line>
-          <option name="timeStamp" value="448" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/services/MaterialsRequest/ManageRequests.php</url>
-          <line>197</line>
-          <option name="timeStamp" value="476" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/services/MaterialsRequest/ManageRequests.php</url>
-          <line>186</line>
-          <option name="timeStamp" value="478" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <condition expression="strlen($returnValue) &gt; 256" language="PHP" />
-          <url>file://$PROJECT_DIR$/sys/Utils/EncryptionUtils.php</url>
-          <line>17</line>
-          <option name="timeStamp" value="494" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/sys/Indexing/IndexingProfile.php</url>
-          <line>14</line>
-          <option name="timeStamp" value="526" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/Drivers/RBdigitalDriver.php</url>
-          <line>59</line>
-          <option name="timeStamp" value="545" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/RecordDrivers/MarcRecordDriver.php</url>
-          <line>93</line>
-          <option name="timeStamp" value="570" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/sys/MarcLoader.php</url>
-          <line>39</line>
-          <option name="timeStamp" value="572" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/sys/Grouping/Variation.php</url>
-          <line>175</line>
-          <option name="timeStamp" value="594" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/sys/Grouping/Variation.php</url>
-          <line>185</line>
-          <option name="timeStamp" value="595" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/sys/SolrConnector/Solr.php</url>
-          <line>194</line>
-          <option name="timeStamp" value="626" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/sys/SolrConnector/Solr.php</url>
-          <line>238</line>
-          <option name="timeStamp" value="628" />
->>>>>>> Stashed changes
         </line-breakpoint>
         <line-breakpoint enabled="true" type="php">
           <url>file://$PROJECT_DIR$/Drivers/marmot_inc/MillenniumHolds.php</url>
@@ -729,7 +449,6 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="php">
           <url>file://$PROJECT_DIR$/Drivers/Koha.php</url>
-<<<<<<< Updated upstream
           <line>2303</line>
           <option name="timeStamp" value="1154" />
         </line-breakpoint>
@@ -752,303 +471,16 @@
           <url>file://$PROJECT_DIR$/sys/WebsiteIndexing/WebsiteIndexSetting.php</url>
           <line>177</line>
           <option name="timeStamp" value="1177" />
-=======
-          <line>2868</line>
-          <option name="timeStamp" value="650" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/services/API/SearchAPI.php</url>
-          <line>952</line>
-          <option name="timeStamp" value="651" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/Drivers/Koha.php</url>
-          <line>3353</line>
-          <option name="timeStamp" value="697" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/sys/User/Checkout.php</url>
-          <line>33</line>
-          <option name="timeStamp" value="765" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/sys/User/CircEntry.php</url>
-          <line>11</line>
-          <option name="timeStamp" value="766" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/services/MyAccount/AJAX.php</url>
-          <line>2012</line>
-          <option name="timeStamp" value="773" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/services/MyAccount/AJAX.php</url>
-          <line>1894</line>
-          <option name="timeStamp" value="778" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/sys/Account/User.php</url>
-          <line>1251</line>
-          <option name="timeStamp" value="782" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/Drivers/CarlX.php</url>
-          <line>378</line>
-          <option name="timeStamp" value="790" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/Drivers/SirsiDynixROA.php</url>
-          <line>735</line>
-          <option name="timeStamp" value="822" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/sys/DB/DataObject.php</url>
-          <line>292</line>
-          <option name="timeStamp" value="846" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/services/ExternalEContent/AccessOnline.php</url>
-          <line>34</line>
-          <option name="timeStamp" value="848" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/services/ExternalEContent/AccessOnline.php</url>
-          <line>9</line>
-          <option name="timeStamp" value="849" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/services/Record/AccessOnline.php</url>
-          <line>10</line>
-          <option name="timeStamp" value="850" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/sys/Account/User.php</url>
-          <line>2233</line>
-          <option name="timeStamp" value="918" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <condition expression="$returnDate-&gt;getTimestamp() &gt; 2147483647" language="PHP" />
-          <url>file://$PROJECT_DIR$/Drivers/Koha.php</url>
-          <line>914</line>
-          <option name="timeStamp" value="939" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <condition expression="$checkOutDate-&gt;getTimestamp() &gt; 2147483647" language="PHP" />
-          <url>file://$PROJECT_DIR$/Drivers/Koha.php</url>
-          <line>912</line>
-          <option name="timeStamp" value="941" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/Drivers/Koha.php</url>
-          <line>923</line>
-          <option name="timeStamp" value="972" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/interface/plugins/function.js.php</url>
-          <line>81</line>
-          <option name="timeStamp" value="987" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/migrations/importBiblioCommonsData.php</url>
-          <line>302</line>
-          <option name="timeStamp" value="994" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/migrations/importBiblioCommonsData.php</url>
-          <line>152</line>
-          <option name="timeStamp" value="996" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/RecordDrivers/GroupedWorkDriver.php</url>
-          <line>802</line>
-          <option name="timeStamp" value="1006" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/sys/Recommend/AuthorFacets.php</url>
-          <line>122</line>
-          <option name="timeStamp" value="1034" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/sys/Recommend/AuthorFacets.php</url>
-          <line>136</line>
-          <option name="timeStamp" value="1035" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/sys/Recommend/AuthorFacets.php</url>
-          <line>51</line>
-          <option name="timeStamp" value="1036" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/Drivers/SirsiDynixROA.php</url>
-          <line>2145</line>
-          <option name="timeStamp" value="1065" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/Drivers/SirsiDynixROA.php</url>
-          <line>2172</line>
-          <option name="timeStamp" value="1069" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/Drivers/SirsiDynixROA.php</url>
-          <line>2142</line>
-          <option name="timeStamp" value="1070" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/services/CloudLibrary/Scopes.php</url>
-          <line>147</line>
-          <option name="timeStamp" value="1097" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/migrations/mapSierraPatronIdsToKoha.php</url>
-          <line>14</line>
-          <option name="timeStamp" value="1098" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/migrations/mapSierraPatronIdsToKoha.php</url>
-          <line>38</line>
-          <option name="timeStamp" value="1100" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/Drivers/Polaris.php</url>
-          <line>491</line>
-          <option name="timeStamp" value="1107" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/Drivers/marmot_inc/MillenniumHolds.php</url>
-          <line>59</line>
-          <option name="timeStamp" value="1109" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/sys/Email/AmazonSesSetting.php</url>
-          <line>68</line>
-          <option name="timeStamp" value="1116" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/sys/Email/AmazonSesSetting.php</url>
-          <line>86</line>
-          <option name="timeStamp" value="1120" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/sys/Email/AmazonSesSetting.php</url>
-          <line>90</line>
-          <option name="timeStamp" value="1121" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/services/Record/AJAX.php</url>
-          <line>1153</line>
-          <option name="timeStamp" value="1131" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/Drivers/Koha.php</url>
-          <line>1637</line>
-          <option name="timeStamp" value="1182" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/sys/CurlWrapper.php</url>
-          <line>196</line>
-          <option name="timeStamp" value="1184" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/services/Record/AJAX.php</url>
-          <line>288</line>
-          <option name="timeStamp" value="1243" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/services/Record/AJAX.php</url>
-          <line>284</line>
-          <option name="timeStamp" value="1244" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/services/Record/AJAX.php</url>
-          <line>517</line>
-          <option name="timeStamp" value="1245" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/sys/User/Hold.php</url>
-          <line>84</line>
-          <option name="timeStamp" value="1274" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/sys/User/Hold.php</url>
-          <line>85</line>
-          <option name="timeStamp" value="1275" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/sys/User/Hold.php</url>
-          <line>95</line>
-          <option name="timeStamp" value="1276" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/Drivers/Koha.php</url>
-          <line>1147</line>
-          <option name="timeStamp" value="1281" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/services/API/SearchAPI.php</url>
-          <line>779</line>
-          <option name="timeStamp" value="1293" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/services/API/SearchAPI.php</url>
-          <line>792</line>
-          <option name="timeStamp" value="1294" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/services/API/SearchAPI.php</url>
-          <line>802</line>
-          <option name="timeStamp" value="1297" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/services/Author/AJAX.php</url>
-          <line>89</line>
-          <option name="timeStamp" value="1309" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/services/Author/AJAX.php</url>
-          <line>80</line>
-          <option name="timeStamp" value="1311" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/services/Author/AJAX.php</url>
-          <line>79</line>
-          <option name="timeStamp" value="1314" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/Drivers/Koha.php</url>
-          <line>2090</line>
-          <option name="timeStamp" value="1317" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/Drivers/Koha.php</url>
-          <line>2209</line>
-          <option name="timeStamp" value="1318" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/Drivers/Koha.php</url>
-          <line>2095</line>
-          <option name="timeStamp" value="1319" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/Drivers/Koha.php</url>
-          <line>2303</line>
-          <option name="timeStamp" value="1320" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/services/MyAccount/SelfReg.php</url>
-          <line>8</line>
-          <option name="timeStamp" value="1321" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/cron/updateNYTLists.php</url>
-          <line>42</line>
-          <option name="timeStamp" value="1327" />
->>>>>>> Stashed changes
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
     <watches-manager>
       <configuration name="index.php">
-        <watch expression="$savedSearch-&gt;displayQuery()" />
+        <watch expression="$locationSingleton" />
+        <watch expression="$getCircHistoryResponse-&gt;fields-&gt;circHistoryRecordList[0]-&gt;fields-&gt;item" />
+        <watch expression="$e-&gt;line" />
+        <watch expression="$this" />
+        <watch expression="$response" />
       </configuration>
       <configuration name="PhpLocalRunConfigurationType">
         <watch expression="$listTitlesRaw" />
