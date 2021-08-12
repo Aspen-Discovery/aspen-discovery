@@ -5,12 +5,13 @@
 		</div>
 	</div>
 
-	<div class='adminTableRegion'>
+	<div class='siteStatusRegion'>
 		<table class="table table-striped table-condensed smallText table-sticky" id="siteStatusTable" aria-label="List of sites with status">
 			<thead>
 				<tr>
 					<th>Name</th>
 					<th>Implementation Status</th>
+					<th>DB Maintenance</th>
 					<th>Alive</th>
 					<th>Version</th>
                     {foreach from=$allChecks item=checkName key=checkType}
@@ -22,7 +23,10 @@
 				{foreach from=$siteStatuses item="siteStatus"}
 					<tr>
 						<td {if $siteStatus.aspen_health_status == 'okay'}style="background-color: lightgreen"{elseif $siteStatus.aspen_health_status == 'warning'}style="background-color: lightgoldenrodyellow"{else}style="background-color: #D50000;color:white;font-weight: bold"{/if}>
-							{$siteStatus.name}
+							<a href="{$siteStatus.baseUrl}" target="_blank">{$siteStatus.name}</a>
+						</td>
+						<td>
+							<a href="{$siteStatus.baseUrl}/Admin/DBMaintenance" target="_blank">{translate text="Update"}</a>
 						</td>
 						<td>
 							{$siteStatus.implementationStatus}
