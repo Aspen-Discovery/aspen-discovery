@@ -17,7 +17,7 @@
 			</label>
 			<input type="text" class="form-control" id="selected-file-label" readonly>
 		</div>
-		<small id="supplementalFileHelp" class="form-text text-muted">File must be {$max_file_size}MB or less and must be one of the following types: <br/>.CSV, .DOC, .DOCX, .ODP, .ODS, .ODT, .PPT, .PPTX, .XLS, .XLSX</small>
+		<small id="supplementalFileHelp" class="form-text text-muted">File must be {$max_file_size}MB or less and must be one of the following types: <br/>.CSV, .DOC, .DOCX, .ODP, .ODS, .ODT, .PDF, .PPT, .PPTX, .XLS, .XLSX</small>
 	</div>
 </form>
 	<script type="application/javascript">

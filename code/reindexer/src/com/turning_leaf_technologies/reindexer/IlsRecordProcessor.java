@@ -1208,6 +1208,9 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		if (includeLocationNameInDetailedLocation) {
 			String locationCode = getItemSubfieldData(locationSubfieldIndicator, itemField);
 			location = translateValue("location", locationCode, identifier);
+			if (location == null){
+				location = "";
+			}
 		}else{
 			location = "";
 		}

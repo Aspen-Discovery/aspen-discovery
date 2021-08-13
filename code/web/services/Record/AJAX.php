@@ -810,7 +810,7 @@ class Record_AJAX extends Action
 							}elseif ($fileType = 'application/octect-stream'){
 								$fileExtension = $uploadedFile["name"];
 								$fileExtension = strtolower(substr($fileExtension, strrpos($fileExtension, '.') + 1));
-								if (in_array($fileExtension, ['csv', 'doc', 'docx', 'odp', 'ods', 'odt', 'ppt', 'pptx', 'xls', 'xlsx'])){
+								if (in_array($fileExtension, ['csv', 'doc', 'docx', 'odp', 'ods', 'odt', 'pdf', 'ppt', 'pptx', 'xls', 'xlsx'])){
 									$fileOk = true;
 								}
 							}
@@ -836,7 +836,7 @@ class Record_AJAX extends Action
 									$result['message'] = 'Could not save the file on the server';
 								}
 							} else {
-								$result['message'] = "Incorrect file type ($fileType).  Please upload one of the following files: .CSV, .DOC, .DOCX, .ODP, .ODS, .ODT, .PPT, .PPTX, .XLS, .XLSX";
+								$result['message'] = "Incorrect file type ($fileType).  Please upload one of the following files: .CSV, .DOC, .DOCX, .ODP, .ODS, .ODT, .PDF, .PPT, .PPTX, .XLS, .XLSX";
 							}
 						}else{
 							$result['message'] = 'A file with this name already exists. Please rename your file.';

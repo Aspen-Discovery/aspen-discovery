@@ -2259,6 +2259,8 @@ class SirsiDynixROA extends HorizonAPI
 			$currencyCode = $systemVariables->currencyCode;
 		}
 
+		global $library;
+		$paymentType = empty($library->symphonyPaymentType) ? 'CREDITCARD' : $library->symphonyPaymentType;
 		$sessionToken = $this->getStaffSessionToken();
 		if ($sessionToken) {
 			$finePayments = explode(',', $payment->finesPaid);
@@ -2273,7 +2275,7 @@ class SirsiDynixROA extends HorizonAPI
 					],
 					'paymentType' => [
 						'resource' => '/policy/paymentType',
-						'key' => 'CREDITCARD'
+						'key' => $paymentType
 					],
 					//We could include the actual transaction id from the processor, but it's limited to 30 chars so we can just use Aspen ID.
 					'vendorTransactionID' => $payment->id,
