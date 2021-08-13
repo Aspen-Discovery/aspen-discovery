@@ -11289,6 +11289,11 @@ a.browse-thumbnail-sorted.active {
   width: 100%;
   overflow-x: auto;
 }
+.siteStatusRegion {
+  overflow-x: auto;
+  max-height: 70vh;
+  overflow-y: auto;
+}
 .oneToManyTable {
   overflow-x: auto;
   max-height: 70vh;

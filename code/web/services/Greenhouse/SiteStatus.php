@@ -19,6 +19,7 @@ class SiteStatus extends Action
 				$allChecks[$key] = $check['name'];
 			}
 		}
+		asort($allChecks);
 		global $interface;
 		$interface->assign('allChecks', $allChecks);
 		$interface->assign('siteStatuses', $siteStatuses);

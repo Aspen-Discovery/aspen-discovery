@@ -296,7 +296,7 @@ abstract class DataObject
 					}
 				}elseif (in_array($name, $compressedFields)) {
 					if (!empty($value)) {
-						$propertyValues .= 'COMPRESS(' . $aspen_db->quote(serialize($value)) . ')';
+						$propertyValues .= 'COMPRESS(' . $aspen_db->quote($value) . ')';
 					}else{
 						$propertyValues .= "''";
 					}
@@ -321,7 +321,7 @@ abstract class DataObject
 				}
 				$propertyNames .= $name;
 				if (!empty($value)) {
-					$propertyValues .= 'COMPRESS(' . $aspen_db->quote(serialize($value)) . ')';
+					$propertyValues .= 'COMPRESS(' . $aspen_db->quote($value) . ')';
 				}else{
 					$propertyValues .= "''";
 				}
@@ -382,7 +382,7 @@ abstract class DataObject
 					}
 				}elseif (in_array($name, $compressedFields)) {
 					if (!empty($value)) {
-						$updates .= $name . ' = COMPRESS(' . $aspen_db->quote(serialize($value)) . ')';
+						$updates .= $name . ' = COMPRESS(' . $aspen_db->quote($value) . ')';
 					}else{
 						$updates .= $name . ' = ' .  $aspen_db->quote('');
 					}
@@ -397,7 +397,7 @@ abstract class DataObject
 				}
 			}elseif (is_array($value) && in_array($name, $compressedFields)){
 				if (!empty($value)) {
-					$updates .= $name . ' = COMPRESS(' . $aspen_db->quote(serialize($value)) . ')';
+					$updates .= $name . ' = COMPRESS(' . $aspen_db->quote($value) . ')';
 				}else{
 					$updates .= $name . ' = ' .  $aspen_db->quote('');
 				}
@@ -867,6 +867,7 @@ abstract class DataObject
 		foreach ($encryptedFields as $fieldName){
 			$this->$fieldName = EncryptionUtils::decryptField($this->$fieldName);
 		}
+		//compressed fields also get serialized automatically
 		$serializedFields = $this->getSerializedFieldNames();
 		foreach ($serializedFields as $fieldName) {
 			if (!empty($this->$fieldName) && $this->$fieldName !== null && is_string($this->$fieldName)) {
