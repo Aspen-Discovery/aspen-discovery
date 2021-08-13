@@ -327,7 +327,6 @@ class UInterface extends Smarty
 
 	function loadDisplayOptions(){
 		global $library;
-		/** @var Location $locationSingleton */
 		global $locationSingleton;
 		global $configArray;
 
@@ -645,23 +644,26 @@ class UInterface extends Smarty
 				continue;
 			}
 			if($libraryLink->showToLoggedInUsersOnly && UserAccount::isLoggedIn()) {
-					$user = UserAccount::getLoggedInUser();
-					$userPatronType = $user->patronType;
-					$userId = $user->id;
-					require_once ROOT_DIR . '/sys/Account/PType.php';
-					$patronType = new pType();
-					$patronType->pType = $userPatronType;
-					$patronType->find();
-					while ($patronType->fetch()){
-						$patronTypeId = $patronType->id;
+				$user = UserAccount::getLoggedInUser();
+				$userPatronType = $user->patronType;
+				$userId = $user->id;
+				require_once ROOT_DIR . '/sys/Account/PType.php';
+				$patronType = new pType();
+				$patronType->pType = $userPatronType;
+				if ($patronType->find(true)){
+					$patronTypeId = $patronType->id;
+					try{
+						require_once ROOT_DIR . '/sys/LibraryLocation/LibraryLinkAccess.php';
+						$patronTypeLink = new LibraryLinkAccess();
+						$patronTypeLink->libraryLinkId = $libraryLink->id;
+						$patronTypeLink->patronTypeId = $patronTypeId;
+						if((!$patronTypeLink->find(true)) && $userId != 1){
+							continue;
+						}
+					}catch (Exception $e){
+						//This happens before the table has been defined, ignore it
 					}
-					require_once ROOT_DIR . '/sys/LibraryLocation/LibraryLinkAccess.php';
-					$patronTypeLink = new LibraryLinkAccess();
-					$patronTypeLink->libraryLinkId = $libraryLink->id;
-					$patronTypeLink->patronTypeId = $patronTypeId;
-					if((!$patronTypeLink->find(true)) && $userId != 1){
-						continue;
-					}
+				}
 			}
 			if (empty($libraryLink->category)){
 				$libraryLink->category = 'none-' . $libraryLink->id;
