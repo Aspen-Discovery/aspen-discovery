@@ -96,7 +96,7 @@ class UserPayment extends DataObject
 		$userPayment = new UserPayment();
 		$userPayment->id = $paymentId;
 		if ($userPayment->find(true)){
-			if (false && $userPayment->completed == true){
+			if ($userPayment->completed == true){
 				$success = true;
 				$message = 'Your payment has been completed.';
 			}else{
@@ -144,7 +144,12 @@ class UserPayment extends DataObject
 							$userPayment->message = $proPayMessage;
 							$userPayment->update();
 							$error = $userPayment->message;
-						} else {
+						} else if ($proPayResult == 'Cancel') {
+							$userPayment->completed = true;
+							$userPayment->message = "Your payment has been cancelled";
+							$userPayment->update();
+							$error = $userPayment->message;
+						} else if ($proPayResult == 'Success') {
 							$userPayment->completed = true;
 							if ($jsonResponse == null){
 								$userPayment->error = true;
@@ -189,6 +194,9 @@ class UserPayment extends DataObject
 
 								$userPayment->completed = true;
 							}
+						}else{
+							$userPayment->error = true;
+							$userPayment->message = "Unknown result, processing payment " . $proPayResult;
 						}
 						if (empty($userPayment->message)) {
 							$error = 'Your payment has not been marked as complete within the system, please contact the library with your receipt to have the payment credited to your account.';
