@@ -21,7 +21,7 @@
 					</label>
 					<input type="text" class="form-control" id="selected-marc-label" readonly>
 				</div>
-				<small id="marcFileHelp" class="form-text text-muted">Zip Files, GZip Files, MRC, and MARC Files can be uploaded.</small>
+				<small id="marcFileHelp" class="form-text text-muted">Zip Files, GZip Files, MRC, and MARC Files can be uploaded, must be {$max_file_size}MB or less.</small>
 			</div>
 			<div class="form-group">
 				<label for="replaceExisting"><input type="checkbox" name="replaceExisting" id="replaceExisting"> Replace Existing Files?</label>

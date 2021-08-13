@@ -590,7 +590,6 @@ class SirsiDynixROA extends HorizonAPI
 
 	protected function loginViaWebService($username, $password)
 	{
-		/** @var Memcache $memCache */
 		global $memCache;
 		global $library;
 		$memCacheKey = "sirsiROA_session_token_info_{$library->libraryId}_$username";
@@ -2160,6 +2159,7 @@ class SirsiDynixROA extends HorizonAPI
 						$historyEntry['checkin'] = strtotime($circEntry->fields->checkInDate);
 						if (!empty($historyEntry['recordId'])) {
 							if ($systemVariables->storeRecordDetailsInDatabase){
+								/** @noinspection SqlResolve */
 								$getRecordDetailsQuery = 'SELECT permanent_id, indexed_format.format FROM grouped_work_records 
 								  LEFT JOIN grouped_work ON groupedWorkId = grouped_work.id
 								  LEFT JOIN indexed_record_source ON sourceId = indexed_record_source.id
@@ -2243,5 +2243,63 @@ class SirsiDynixROA extends HorizonAPI
 				}
 			}
 		}
+	}
+
+	public function completeFinePayment(User $patron, UserPayment $payment)
+	{
+		$result = [
+			'success' => false,
+			'message' => ''
+		];
+
+		$currencyCode = 'USD';
+		$systemVariables = SystemVariables::getSystemVariables();
+
+		if (!empty($systemVariables->currencyCode)) {
+			$currencyCode = $systemVariables->currencyCode;
+		}
+
+		$sessionToken = $this->getStaffSessionToken();
+		if ($sessionToken) {
+			$finePayments = explode(',', $payment->finesPaid);
+			$allPaymentsSucceed = true;
+			foreach ($finePayments as $finePayment) {
+				list($fineId, $paymentAmount) = explode('|', $finePayment);
+				$creditRequestBody = [
+					'blockKey' => str_replace('_', ':', $fineId),
+					'amount' => [
+						'amount' => $paymentAmount,
+						'currencyCode' => $currencyCode
+					],
+					'paymentType' => [
+						'resource' => '/policy/paymentType',
+						'key' => 'CREDITCARD'
+					],
+					//We could include the actual transaction id from the processor, but it's limited to 30 chars so we can just use Aspen ID.
+					'vendorTransactionID' => $payment->id,
+					'creditReason' => [
+						'resource' => '/policy/creditReason',
+						'key' => 'PAYMENT'
+					]
+				];
+				$postCreditResponse = $this->getWebServiceResponse($this->getWebServiceURL() . '/circulation/block/addPayment', $creditRequestBody, $sessionToken, 'POST');
+				if (isset($postCreditResponse->messageList)){
+					$messages = [];
+					foreach ($postCreditResponse->messageList as $message){
+						$messages[] = $message->message;
+					}
+					$result['message'] = implode("<br/>", $messages);
+					$allPaymentsSucceed = false;
+				}
+			}
+			$result['success'] = $allPaymentsSucceed;
+		}else{
+			$result['message'] = 'Could not connect to Symphony APIs';
+		}
+
+		global $logger;
+		$logger->log("Marked fines as paid within Polaris for user {$patron->id}, {$result['message']}", Logger::LOG_ERROR);
+
+		return $result;
 	}
 }
