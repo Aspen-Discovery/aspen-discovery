@@ -41,15 +41,14 @@
 					</div>
 				{literal}
 					<script type="application/javascript">
-						var menuName = '{/literal}{$topCategory->getEscapedCategory()}{literal}';
 						// fixed bootstrap custom menu toggles
-						$('div.dropdown.menuToggleButton.' + menuName + 'Menu a').on('click', function (event) {
+						$('div.dropdown.menuToggleButton.{/literal}{$topCategory->getEscapedCategory()}{literal}Menu a').on('click', function (event) {
 							$(this).parent().toggleClass('open');
 						});
 						$(document).on('click', function (e) {
-							var trigger = $('div.dropdown.menuToggleButton.' + menuName + 'Menu');
+							var trigger = $('div.dropdown.menuToggleButton.{/literal}{$topCategory->getEscapedCategory()}{literal}Menu');
 							if (trigger !== event.target && !trigger.has(event.target).length) {
-								$('div.dropdown.menuToggleButton.' + menuName + 'Menu').removeClass('open');
+								$('div.dropdown.menuToggleButton.{/literal}{$topCategory->getEscapedCategory()}{literal}Menu').removeClass('open');
 							}
 						});
 					</script>

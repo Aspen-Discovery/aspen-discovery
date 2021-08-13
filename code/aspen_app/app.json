@@ -1,7 +1,8 @@
 {
   "expo": {
     "name": "Aspen Discovery Mobile App",
-    "slug": "aspen_discovery_mobile",
+    "slug": "aspen-discovery-mobile",
+    "owner": "bywater-solutions",
     "privacy": "public",
     "platforms": [
       "ios",
