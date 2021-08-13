@@ -70,7 +70,7 @@
 								</td>
 							{else}
 								<td>
-									{$check.status}
+									-
 								</td>
 							{/if}
 						{/foreach}
