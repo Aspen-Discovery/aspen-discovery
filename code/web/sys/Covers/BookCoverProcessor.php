@@ -1308,6 +1308,11 @@ class BookCoverProcessor{
 			require_once ROOT_DIR . '/sys/CurlWrapper.php';
 			$curlWrapper = new CurlWrapper();
 			$pageContents = $curlWrapper->curlGetPage($url);
+			$curlInfo = curl_getinfo($curlWrapper->curl_connection);
+			if ($curlInfo['url'] != $url){
+				//If these don't match, some form of redirect was done.
+				$url = $curlInfo['url'];
+			}
 			$curlWrapper->close_curl();
 			$matches = [];
 			if (preg_match('~<meta property="og:image" content="(.*?)" />~', $pageContents, $matches)) {
@@ -1333,6 +1338,7 @@ class BookCoverProcessor{
 					$urlComponents = parse_url($url);
 					$bookcoverUrl = $urlComponents['scheme'] . '://' . $urlComponents['host'] . '/digital' . $bookcoverUrl;
 				}
+				$bookcoverUrl = str_replace('\/', '/', $bookcoverUrl);
 				return $this->processImageURL('open_archives', $bookcoverUrl, true);
 			}
 		}
