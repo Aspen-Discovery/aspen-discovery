@@ -951,16 +951,7 @@ public class SierraExportAPIMain {
 				getItemsForBib(sierraInstanceInformation, id, marcRecord);
 				logger.debug("Processed items for Bib");
 				RecordIdentifier identifier = getRecordGroupingProcessor().getPrimaryIdentifierFromMarcRecord(marcRecord, indexingProfile.getName(), indexingProfile.isDoAutomaticEcontentSuppression());
-				File marcFile = indexingProfile.getFileForIlsRecord(identifier.getIdentifier());
-				if (!marcFile.getParentFile().exists()) {
-					if (!marcFile.getParentFile().mkdirs()) {
-						logEntry.incErrors("Could not create directories for " + marcFile.getAbsolutePath());
-					}
-				}
-				MarcWriter marcWriter = new MarcStreamWriter(new FileOutputStream(marcFile, false), "UTF-8", true);
-				marcWriter.write(marcRecord);
-				marcWriter.close();
-				logger.debug("Wrote marc record for " + identifier.getIdentifier());
+				GroupedWorkIndexer.MarcStatus marcStatus = getGroupedWorkIndexer().saveMarcRecordToDatabase(indexingProfile, identifier.getIdentifier(), marcRecord);
 
 				//Setup the grouped work for the record.  This will take care of either adding it to the proper grouped work
 				//or creating a new grouped work
@@ -1150,16 +1141,7 @@ public class SierraExportAPIMain {
 							Record marcRecord = marcReader.next();
 							RecordIdentifier identifier = getRecordGroupingProcessor().getPrimaryIdentifierFromMarcRecord(marcRecord, indexingProfile.getName(), indexingProfile.isDoAutomaticEcontentSuppression());
 							logEntry.setCurrentId(identifier.getIdentifier());
-							File marcFile = indexingProfile.getFileForIlsRecord(identifier.getIdentifier());
-							if (!marcFile.getParentFile().exists()) {
-								if (!marcFile.getParentFile().mkdirs()) {
-									logger.error("Could not create directories for " + marcFile.getAbsolutePath());
-								}
-							}
-							MarcWriter marcWriter = new MarcStreamWriter(new FileOutputStream(marcFile, false), "UTF-8", true);
-							marcWriter.write(marcRecord);
-							marcWriter.close();
-							logger.debug("Wrote marc record for " + identifier.getIdentifier());
+							getGroupedWorkIndexer().saveMarcRecordToDatabase(indexingProfile, identifier.getIdentifier(), marcRecord);
 
 							//Setup the grouped work for the record.  This will take care of either adding it to the proper grouped work
 							//or creating a new grouped work
