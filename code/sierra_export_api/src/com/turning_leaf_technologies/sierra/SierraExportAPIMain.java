@@ -1062,6 +1062,10 @@ public class SierraExportAPIMain {
 						if (fixedFields.has("60") && indexingProfile.getICode2Subfield() != ' '){
 							itemField.addSubfield(marcFactory.newSubfield(indexingProfile.getICode2Subfield(), fixedFields.getJSONObject("60").getString("value")));
 						}
+						//opac note
+						if (fixedFields.has("108") && indexingProfile.getNoteSubfield() != ' '){
+							itemField.addSubfield(marcFactory.newSubfield(indexingProfile.getNoteSubfield(), fixedFields.getJSONObject("108").getString("value")));
+						}
 
 						//Process variable fields
 						for (int j = 0; j < varFields.length(); j++){

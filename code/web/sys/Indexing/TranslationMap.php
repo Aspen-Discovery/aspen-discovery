@@ -8,6 +8,8 @@ class TranslationMap extends DataObject{
 	public $indexingProfileId;
 	public $name;
 	public /** @noinspection PhpUnused */ $usesRegularExpressions;
+	/** @var TranslationMapValue[] */
+	private $_translationMapValues;
 
     static function getObjectStructure() : array{
 		$indexingProfiles = array();
@@ -44,28 +46,32 @@ class TranslationMap extends DataObject{
 
 	public function __get($name){
 		if ($name == "translationMapValues") {
-			if (!isset($this->translationMapValues)){
-				//Get the list of translation maps
-				if ($this->id){
-					$this->translationMapValues = array();
-					$value = new TranslationMapValue();
-					$value->translationMapId = $this->id;
-					$value->orderBy('value ASC');
-					$value->find();
-					while($value->fetch()){
-						$this->translationMapValues[$value->id] = clone($value);
-					}
-				}
-			}
-			return $this->translationMapValues;
+			return $this->getTranslationMapValues();
 		}
 		return null;
+	}
+
+	public function getTranslationMapValues() : ?array{
+		if (!isset($this->_translationMapValues)){
+			//Get the list of translation maps
+			if ($this->id){
+				$this->_translationMapValues = array();
+				$value = new TranslationMapValue();
+				$value->translationMapId = $this->id;
+				$value->orderBy('value ASC');
+				$value->find();
+				while($value->fetch()){
+					$this->_translationMapValues[$value->id] = clone($value);
+				}
+			}
+		}
+		return $this->_translationMapValues;
 	}
 
 	public function __set($name, $value){
 		if ($name == "translationMapValues") {
 			/** @noinspection PhpUndefinedFieldInspection */
-			$this->translationMapValues = $value;
+			$this->_translationMapValues = $value;
 		}
 	}
 
@@ -100,9 +106,9 @@ class TranslationMap extends DataObject{
 	}
 
 	public function saveMapValues(){
-		if (isset ($this->translationMapValues)){
+		if (isset ($this->_translationMapValues)){
 			/** @var TranslationMapValue $value */
-			foreach ($this->translationMapValues as $value){
+			foreach ($this->_translationMapValues as $value){
 				if (isset($value->deleteOnSave) && $value->deleteOnSave == true){
 					$value->delete();
 				}else{
@@ -115,7 +121,7 @@ class TranslationMap extends DataObject{
 				}
 			}
 			//Clear the translation maps so they are reloaded the next time
-			unset($this->translationMapValues);
+			unset($this->_translationMapValues);
 		}
 	}
 

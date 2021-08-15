@@ -1662,6 +1662,12 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 			$dueDateFormatPHP = str_replace('yy', 'y', $dueDateFormatPHP);
 			$dueDateFormatPHP = str_replace('MM', 'm', $dueDateFormatPHP);
 			$dueDateFormatPHP = str_replace('dd', 'd', $dueDateFormatPHP);
+			$noteTranslationMap = new TranslationMap();
+			$noteTranslationMap->indexingProfileId = $indexingProfile->id;
+			$noteTranslationMap->name = 'note';
+			if (!$noteTranslationMap->find(true)){
+				$noteTranslationMap = null;
+			}
 			//Load copy information from the grouped work rather than from the driver.
 			//Since everyone is using real-time indexing now, the delays are acceptable,
 			// but include when the last index was completed for reference
@@ -1699,8 +1705,26 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 							$copyInfo['note'] = '';
 							if (!empty($itemField)) {
 								$noteSubfield = $itemField->getSubfield($indexingProfile->noteSubfield);
-								if (!empty($noteSubfield)) {
-									$copyInfo['note'] = $noteSubfield->getData();
+								if ($noteSubfield != null && !empty($noteSubfield->getData())) {
+									//Check to see if this needs to be translated
+									$note = $noteSubfield->getData();
+									if ($noteTranslationMap != null){
+
+										foreach ($noteTranslationMap->getTranslationMapValues() as $translationMapValue){
+											if ($noteTranslationMap->usesRegularExpressions){
+												if (preg_match('~' . $translationMapValue->value . '~', $note)) {
+													$note = $translationMapValue->translation;
+													break;
+												}
+											}else {
+												if ($translationMapValue->value == $note) {
+													$note = $translationMapValue->translation;
+													break;
+												}
+											}
+										}
+									}
+									$copyInfo['note'] = $note;
 								}
 							}
 						}

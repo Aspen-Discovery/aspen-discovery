@@ -47,6 +47,7 @@ public class IndexingProfile extends BaseIndexingSettings {
 	private char subLocationSubfield;
 	private int determineAudienceBy;
 	private char audienceSubfield;
+	private char noteSubfield;
 	private long lastUpdateOfAuthorities;
 	private long lastChangeProcessed;
 
@@ -107,6 +108,8 @@ public class IndexingProfile extends BaseIndexingSettings {
 
 		this.setDetermineAudienceBy(indexingProfileRS.getInt("determineAudienceBy"));
 		this.setAudienceSubfield(getCharFromRecordSet(indexingProfileRS, "audienceSubfield"));
+
+		this.setNoteSubfield(getCharFromRecordSet(indexingProfileRS, "noteSubfield"));
 
 		this.setLastUpdateOfChangedRecords(indexingProfileRS.getLong("lastUpdateOfChangedRecords"));
 		this.setLastUpdateOfAllRecords(indexingProfileRS.getLong("lastUpdateOfAllRecords"));
@@ -400,6 +403,14 @@ public class IndexingProfile extends BaseIndexingSettings {
 
 	private void setICode2Subfield(char iCode2Subfield) {
 		this.iCode2Subfield = iCode2Subfield;
+	}
+
+	public char getNoteSubfield() {
+		return noteSubfield;
+	}
+
+	private void setNoteSubfield(char noteSubfield){
+		this.noteSubfield = noteSubfield;
 	}
 
 	public char getCallNumberCutterSubfield() {
