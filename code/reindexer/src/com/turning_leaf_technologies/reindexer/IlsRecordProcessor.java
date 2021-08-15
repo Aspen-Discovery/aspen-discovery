@@ -720,18 +720,31 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	protected void loadDateAdded(String recordIdentifier, DataField itemField, ItemInfo itemInfo) {
 		String dateAddedStr = getItemSubfieldData(dateCreatedSubfield, itemField);
 		if (dateAddedStr != null && dateAddedStr.length() > 0) {
-			try {
-				if (dateAddedFormatter == null){
-					dateAddedFormatter = new SimpleDateFormat(dateAddedFormat);
-				}
-				if (!dateAddedStr.equals("NEVER")) {
+			if (dateAddedStr.equals("NEVER")) {
+				logger.info("Date Added was never");
+			}else {
+				try {
+					if (dateAddedFormatter == null) {
+						dateAddedFormatter = new SimpleDateFormat(dateAddedFormat);
+					}
+
 					Date dateAdded = dateAddedFormatter.parse(dateAddedStr);
 					itemInfo.setDateAdded(dateAdded);
-				}else{
-					logger.info("Date Added was never");
+				} catch (ParseException e) {
+					if (dateAddedStr.length() == 6) {
+						if (dateAddedFormatter2 == null) {
+							dateAddedFormatter2 = new SimpleDateFormat("yyMMdd");
+						}
+						try {
+							Date dateAdded = dateAddedFormatter2.parse(dateAddedStr);
+							itemInfo.setDateAdded(dateAdded);
+						}catch (ParseException e2){
+							indexer.getLogEntry().addNote("Error processing date added for record identifier " + recordIdentifier + " profile " + profileType + " using format " + dateAddedFormat + " and yyMMdd " + e2);
+						}
+					}else {
+						indexer.getLogEntry().addNote("Error processing date added for record identifier " + recordIdentifier + " profile " + profileType + " using format " + dateAddedFormat + " " + e);
+					}
 				}
-			} catch (ParseException e) {
-				indexer.getLogEntry().addNote("Error processing date added for record identifier " + recordIdentifier + " profile " + profileType + " using format " + dateAddedFormat + " " + e);
 			}
 		}
 	}
@@ -741,6 +754,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	}
 
 	private SimpleDateFormat dateAddedFormatter = null;
+	private SimpleDateFormat dateAddedFormatter2 = null;
 	private SimpleDateFormat lastCheckInFormatter = null;
 	private final HashSet<String> unhandledFormatBoosts = new HashSet<>();
 	ItemInfo createPrintIlsItem(GroupedWorkSolr groupedWork, RecordInfo recordInfo, Record record, DataField itemField) {
