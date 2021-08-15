@@ -798,7 +798,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		if (lastCheckInFormatter != null) {
 			String lastCheckInDate = getItemSubfieldData(lastCheckInSubfield, itemField);
 			Date lastCheckIn = null;
-			if (lastCheckInDate != null && lastCheckInDate.length() > 0) {
+			if (lastCheckInDate != null && lastCheckInDate.length() > 0 && !lastCheckInDate.equals("-  -")) {
 				try {
 					lastCheckIn = lastCheckInFormatter.parse(lastCheckInDate);
 				} catch (ParseException e) {

@@ -116,5 +116,12 @@ function getUpdates21_10_00() : array
 						) ENGINE INNODB'
 			]
 		], //add_library_links_access
+		'update_item_status' => [
+			'title' => 'Update Item Status data type',
+			'description' => 'Enlarge Item Status data type',
+			'sql' => [
+				'ALTER TABLE grouped_work_record_items CHANGE COLUMN statusId statusId INT(11)'
+			]
+		]
 	];
 }

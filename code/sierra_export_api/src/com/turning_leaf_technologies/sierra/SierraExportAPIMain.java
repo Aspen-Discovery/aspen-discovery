@@ -87,7 +87,10 @@ public class SierraExportAPIMain {
 		}
 
 		if (extractSingleRecord){
-			String recordToExtract = StringUtils.getInputFromCommandLine("Enter the id of the record to extract, do not include the .b or the check digit for Sierra/Millennium systems");
+			String recordToExtract = StringUtils.getInputFromCommandLine("Enter the id of the record to extract, can optionally include the .b or the check digit for Sierra/Millennium systems");
+			if (recordToExtract.substring(0, 2).equals(".b")){
+				recordToExtract = recordToExtract.substring(2, recordToExtract.length() -1);
+			}
 			allBibsToUpdate.add(recordToExtract);
 		}
 
@@ -1141,7 +1144,7 @@ public class SierraExportAPIMain {
 							Record marcRecord = marcReader.next();
 							RecordIdentifier identifier = getRecordGroupingProcessor().getPrimaryIdentifierFromMarcRecord(marcRecord, indexingProfile.getName(), indexingProfile.isDoAutomaticEcontentSuppression());
 							logEntry.setCurrentId(identifier.getIdentifier());
-							getGroupedWorkIndexer().saveMarcRecordToDatabase(indexingProfile, identifier.getIdentifier(), marcRecord);
+							GroupedWorkIndexer.MarcStatus status = getGroupedWorkIndexer().saveMarcRecordToDatabase(indexingProfile, identifier.getIdentifier(), marcRecord);
 
 							//Setup the grouped work for the record.  This will take care of either adding it to the proper grouped work
 							//or creating a new grouped work
