@@ -446,7 +446,7 @@ class Grouping_Record
 			foreach ($this->_items as $item){
 				$key = $item->getSummaryKey();
 				$itemSummary = $item->getSummary();
-				$this->addItemDetails($key, $itemSummary);
+				$this->addItemDetails($key . $item->itemId, $itemSummary);
 				$this->addItemSummary($key, $itemSummary, $item->groupedStatus);
 			}
 			$this->sortItemDetails();
