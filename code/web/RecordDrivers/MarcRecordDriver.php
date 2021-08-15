@@ -1656,6 +1656,12 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 	{
 		if (!$this->copiesInfoLoaded) {
 			$this->copiesInfoLoaded = true;
+			$indexingProfile = $this->getIndexingProfile();
+			$dueDateFormatPHP = $indexingProfile->dueDateFormat;
+			$dueDateFormatPHP = str_replace('yyyy', 'Y', $dueDateFormatPHP);
+			$dueDateFormatPHP = str_replace('yy', 'y', $dueDateFormatPHP);
+			$dueDateFormatPHP = str_replace('MM', 'm', $dueDateFormatPHP);
+			$dueDateFormatPHP = str_replace('dd', 'd', $dueDateFormatPHP);
 			//Load copy information from the grouped work rather than from the driver.
 			//Since everyone is using real-time indexing now, the delays are acceptable,
 			// but include when the last index was completed for reference
@@ -1666,7 +1672,6 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 					//Divide the items into sections and create the status summary
 					$this->holdings = $recordFromIndex->getItemDetails();
 					$this->holdingSections = array();
-					$indexingProfile = $this->getIndexingProfile();
 					$itemsFromMarc = [];
 					if (!empty($indexingProfile->noteSubfield) || !empty($indexingProfile->dueDate)){
 						//Get items from the marc record
@@ -1705,8 +1710,13 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 							$copyInfo['dueDate'] = '';
 							if (!empty($itemField)) {
 								$dueDateSubfield = $itemField->getSubfield($indexingProfile->dueDate);
-								if (!empty($dueDateSubfield)) {
-									$copyInfo['dueDate'] = strtotime($dueDateSubfield->getData());
+								if ($dueDateSubfield != null && !empty($dueDateSubfield->getData())) {
+									$dueDateTime = DateTime::createFromFormat($dueDateFormatPHP, $dueDateSubfield->getData());
+									if ($dueDateTime != false){
+										$copyInfo['dueDate'] = $dueDateTime->getTimestamp();
+									}else{
+										$copyInfo['dueDate'] = strtotime($dueDateSubfield->getData());
+									}
 								}
 							}
 						}
