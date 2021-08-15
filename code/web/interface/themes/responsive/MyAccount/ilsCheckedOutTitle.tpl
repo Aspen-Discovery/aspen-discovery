@@ -90,17 +90,6 @@
 						</div>
                     {/if}
 
-					{if $displayItemBarcode == 1}
-						{if !empty($record->barcode)}
-							<div class="row">
-								<div class="result-label col-tn-4 col-lg-3">{translate text='Barcode'}</div>
-								<div class="col-tn-8 col-lg-9 result-value">
-									{$record->barcode}
-								</div>
-							</div>
-						{/if}
-					{/if}
-
 					{if $showOut}
 						<div class="row">
 							<div class="result-label col-tn-4 col-lg-3">{translate text='Checked Out'}</div>
@@ -112,6 +101,17 @@
 						<div class="result-label col-tn-4 col-lg-3">{translate text='Format'}</div>
 						<div class="result-value col-tn-8 col-lg-9">{implode subject=$record->getFormats()}</div>
 					</div>
+
+					{if $displayItemBarcode == 1}
+						{if !empty($record->barcode)}
+							<div class="row">
+								<div class="result-label col-tn-4 col-lg-3">{translate text='Barcode'}</div>
+								<div class="col-tn-8 col-lg-9 result-value">
+									{$record->barcode}
+								</div>
+							</div>
+						{/if}
+					{/if}
 
 					{if $showRatings && $record->getGroupedWorkId() && $record->getRatingData()}
 						<div class="row">

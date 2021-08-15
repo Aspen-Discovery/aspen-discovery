@@ -691,7 +691,7 @@ class SirsiDynixROA extends HorizonAPI
 		//Now that we have the session token, get holds information
 		$webServiceURL = $this->getWebServiceURL();
 		//Get a list of holds for the user
-		$includeFields = urlencode('circRecordList{*,item{bib{title,author},itemType,call{dispCallNumber}}}');
+		$includeFields = urlencode('circRecordList{*,item{barcode,bib{title,author},itemType,call{dispCallNumber}}}');
 		$patronCheckouts = $this->getWebServiceResponse($webServiceURL . '/user/patron/key/' . $patron->username . '?includeFields=' . $includeFields, null, $sessionToken);
 
 		if (!empty($patronCheckouts->fields->circRecordList)) {
@@ -717,6 +717,7 @@ class SirsiDynixROA extends HorizonAPI
 					$curCheckout->canRenew = $checkout->fields->seenRenewalsRemaining > 0;
 					$curCheckout->renewalId = $checkout->fields->item->key;
 					$curCheckout->renewIndicator = $checkout->fields->item->key;
+					$curCheckout->barcode = $checkout->fields->item->fields->barcode;
 
 					$recordDriver = RecordDriverFactory::initRecordDriverById($this->getIndexingProfile()->name . ':' . $curCheckout->recordId);
 					if ($recordDriver->isValid()){
