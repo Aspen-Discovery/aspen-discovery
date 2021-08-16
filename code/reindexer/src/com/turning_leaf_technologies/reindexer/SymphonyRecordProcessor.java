@@ -51,16 +51,20 @@ class SymphonyRecordProcessor extends IlsRecordProcessor {
 		}
 		if (shelfLocationData.equalsIgnoreCase("Z-ON-ORDER") || shelfLocationData.equalsIgnoreCase("ON-ORDER")) {
 			statusFieldData = "On Order";
-		}else if (hasTranslation("item_status", shelfLocationData)){
-			statusFieldData = shelfLocationData;
 		}else {
 			if (statusFieldData == null) {
-				statusFieldData = "ONSHELF";
-			} else {
-				if (!hasTranslation("item_status", statusFieldData.toLowerCase())){
+				if (hasTranslation("item_status", shelfLocationData)){
+					statusFieldData = shelfLocationData;
+				}else{
+					statusFieldData = "ONSHELF";
+				}
+			}else{
+				if (hasTranslation("item_status", statusFieldData)){
+					statusFieldData = statusFieldData;
+				}else {
 					if (!shelfLocationData.equalsIgnoreCase(statusFieldData)) {
 						statusFieldData = "Checked Out";
-					}else {
+					}else{
 						statusFieldData = "ONSHELF";
 					}
 				}
@@ -83,11 +87,21 @@ class SymphonyRecordProcessor extends IlsRecordProcessor {
 	protected String getDetailedLocationForItem(ItemInfo itemInfo, DataField itemField, String identifier) {
 		String locationCode = getItemSubfieldData(locationSubfieldIndicator, itemField);
 		String location = translateValue("location", locationCode, identifier);
-		String shelvingLocation = itemInfo.getShelfLocationCode();
-		if (location == null){
-			location = translateValue("shelf_location", shelvingLocation, identifier);
+
+		String status = getItemSubfieldData(statusSubfieldIndicator, itemField);
+		if (status == null || status.equals("CHECKEDOUT") || status.equals("HOLDS") || status.equals("INTRANSIT")) {
+			String shelvingLocation = itemInfo.getShelfLocationCode();
+			if (location == null) {
+				location = translateValue("shelf_location", shelvingLocation, identifier);
+			} else {
+				location += " - " + translateValue("shelf_location", shelvingLocation, identifier);
+			}
 		}else {
-			location += " - " + translateValue("shelf_location", shelvingLocation, identifier);
+			if (location == null) {
+				location = translateValue("shelf_location", status, identifier);
+			} else {
+				location += " - " + translateValue("shelf_location", status, identifier);
+			}
 		}
 		return location;
 	}
