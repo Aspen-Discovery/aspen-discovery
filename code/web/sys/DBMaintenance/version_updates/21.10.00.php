@@ -38,6 +38,13 @@ function getUpdates21_10_00() : array
 				'ALTER TABLE ils_volume_info Add unique index recordVolume(recordId, volumeId)',
 			]
 		], //fix_ils_volume_indexes
+		'make_volumes_case_sensitive' => [
+			'title' => 'Make Volumes Case Sensitive',
+			'description' => 'Make Volumes Case Sensitive',
+			'sql' => [
+				'ALTER TABLE ils_volume_info CHANGE COLUMN  volumeId volumeId VARCHAR(100) not null COLLATE utf8_bin',
+			]
+		], //fix_ils_volume_indexes
 		'add_maxDaysToFreeze' => [
 			'title' => 'Add max days to freeze option in library settings',
 			'description' => 'Allow libraries to limit the amount of days out a user can freeze a hold',
