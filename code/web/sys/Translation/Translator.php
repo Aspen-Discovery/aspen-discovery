@@ -79,82 +79,87 @@ class Translator
 				$translationKey = $activeLanguage->id . '_' . ($translationMode ? 1 : 0) . '_' . $phrase;
 				$existingTranslation = array_key_exists($translationKey, $this->cachedTranslations) ? $this->cachedTranslations[$translationKey] : false;
 				if ($existingTranslation == false || isset($_REQUEST['reload'])) {
-					//Search for the term
-					$translationTerm = new TranslationTerm();
-					$translationTerm->term = $phrase;
-					$defaultTextChanged = false;
-					if (!$translationTerm->find(true)) {
-						$translationTerm->defaultText = $defaultText;
-						//Insert the translation term
-						$translationTerm->samplePageUrl = $_SERVER['REQUEST_URI'];
-						try {
-							$translationTerm->insert();
-						} catch (Exception $e) {
-							if (UserAccount::isLoggedIn() && UserAccount::userHasPermission('Translate Aspen')) {
-								//Just show the phrase for now, maybe show the error in debug mode?
-								if (IPAddress::showDebuggingInformation()){
-									return "TERM TOO LONG for translation \"$phrase\"";
-								}else {
+					if ($activeLanguage->code == 'pig') {
+						$fullTranslation = $this->getPigLatinTranslation($phrase);
+					}elseif ($activeLanguage->code == 'ubb') {
+						$fullTranslation = $this->getUbbiDubbiTranslation($phrase);
+					}else {
+						//Search for the term
+						$translationTerm = new TranslationTerm();
+						$translationTerm->term = $phrase;
+						$defaultTextChanged = false;
+						if (!$translationTerm->find(true)) {
+							$translationTerm->defaultText = $defaultText;
+							//Insert the translation term
+							$translationTerm->samplePageUrl = $_SERVER['REQUEST_URI'];
+							try {
+								$translationTerm->insert();
+							} catch (Exception $e) {
+								if (UserAccount::isLoggedIn() && UserAccount::userHasPermission('Translate Aspen')) {
+									//Just show the phrase for now, maybe show the error in debug mode?
+									if (IPAddress::showDebuggingInformation()) {
+										return "TERM TOO LONG for translation \"$phrase\"";
+									} else {
+										return $phrase;
+									}
+								} else {
 									return $phrase;
 								}
-							} else {
-								return $phrase;
 							}
+						} elseif ($defaultText != $translationTerm->defaultText) {
+							$defaultTextChanged = true;
+							$translationTerm->defaultText = $defaultText;
+							$translationTerm->update();
 						}
-					} elseif ($defaultText != $translationTerm->defaultText) {
-						$defaultTextChanged = true;
-						$translationTerm->defaultText = $defaultText;
-						$translationTerm->update();
-					}
 
-					//Search for the translation
-					$translation = new Translation();
-					$translation->termId = $translationTerm->id;
-					$translation->languageId = $activeLanguage->id;
-					if (!$translation->find(true)) {
-						if (!empty($defaultText)) {
-							$defaultTranslation = $defaultText;
-							$translation->translated = ($activeLanguage->id == 1) ? 1 : 0;
-						} else {
-							//We don't have a translation in the database, load a default from the ini file if possible
-							$this->loadTranslationsFromIniFile();
-							if (isset($this->words[$phrase])) {
-								$defaultTranslation = $this->words[$phrase];
-								$translation->translated = 1;
-							} else {
+						//Search for the translation
+						$translation = new Translation();
+						$translation->termId = $translationTerm->id;
+						$translation->languageId = $activeLanguage->id;
+						if (!$translation->find(true)) {
+							if (!empty($defaultText)) {
+								$defaultTranslation = $defaultText;
 								$translation->translated = ($activeLanguage->id == 1) ? 1 : 0;
-								//Nothing in the ini, just return default
-								if ($this->debug) {
-									$defaultTranslation = "translate_index_not_found($phrase)";
+							} else {
+								//We don't have a translation in the database, load a default from the ini file if possible
+								$this->loadTranslationsFromIniFile();
+								if (isset($this->words[$phrase])) {
+									$defaultTranslation = $this->words[$phrase];
+									$translation->translated = 1;
 								} else {
-									$defaultTranslation = $phrase;
+									$translation->translated = ($activeLanguage->id == 1) ? 1 : 0;
+									//Nothing in the ini, just return default
+									if ($this->debug) {
+										$defaultTranslation = "translate_index_not_found($phrase)";
+									} else {
+										$defaultTranslation = $phrase;
+									}
 								}
 							}
+
+							$translation->translation = $defaultTranslation;
+							$ret = $translation->update();
+							if (!$ret) {
+								global $logger;
+								$logger->log("Could not update translation", Logger::LOG_ERROR);
+							}
+						} else if ($defaultTextChanged) {
+							$translation->needsReview = 1;
+							$translation->update();
 						}
 
-						$translation->translation = $defaultTranslation;
-						$ret = $translation->update();
-						if (!$ret) {
-							global $logger;
-							$logger->log("Could not update translation", Logger::LOG_ERROR);
-						}
-					} else if ($defaultTextChanged) {
-						$translation->needsReview = 1;
-						$translation->update();
-					}
-
-					if ($translationMode) {
-						if ($translation->translated) {
-							$translationStatus = 'translated';
+						if ($translationMode) {
+							if ($translation->translated) {
+								$translationStatus = 'translated';
+							} else {
+								$translationStatus = 'not_translated';
+							}
+							$translationIdentifier = "<span class='translation_id translation_id_{$translation->id} {$translationStatus}' onclick=\"event.stopPropagation();return AspenDiscovery.showTranslateForm('{$translationTerm->id}');\">{$translationTerm->id}</span> ";
+							$fullTranslation = "<span class='term_{$translationTerm->id}'>$translation->translation</span> $translationIdentifier";
 						} else {
-							$translationStatus = 'not_translated';
+							$fullTranslation = $translation->translation;
 						}
-						$translationIdentifier = "<span class='translation_id translation_id_{$translation->id} {$translationStatus}' onclick=\"event.stopPropagation();return AspenDiscovery.showTranslateForm('{$translationTerm->id}');\">{$translationTerm->id}</span> ";
-						$fullTranslation = "<span class='term_{$translationTerm->id}'>$translation->translation</span> $translationIdentifier";
-					} else {
-						$fullTranslation = $translation->translation;
 					}
-
 					$this->cachedTranslations[$translationKey] = $fullTranslation;
 					$returnString = $fullTranslation;
 				} else {
@@ -236,5 +241,59 @@ class Translator
 			$this->translationModeActive = $translationModeActive;
 		}
 		return $this->translationModeActive;
+	}
+
+	private static $vowels = ['a', 'e', 'i', 'o', 'u', 'A', 'E', 'I', 'O', 'U'];
+	private function getPigLatinTranslation(string $phrase)
+	{
+		$translation = '';
+		$words = explode(' ', $phrase);
+		foreach ($words as $word){
+			if (preg_match('/%\d+%/', $word)){
+				$translation .= $word . ' ';
+			}elseif (in_array($word[0], Translator::$vowels)){
+				$translation .= $word . 'way ';
+			}elseif (strlen($word) >= 2 && !in_array($word[0], Translator::$vowels) && !in_array($word[1], Translator::$vowels)){
+				$translation .= substr($word, 2) . $word[0] . $word[1] . 'ay ';
+			}else{
+				$translation .= substr($word, 1) . $word[0] . 'ay ';
+			}
+		}
+		$translation = strtolower($translation);
+		if (preg_match('/[A-Z]/', $phrase[0])){
+			$translation = ucfirst($translation);
+		}
+		return trim($translation);
+	}
+
+	private function getUbbiDubbiTranslation(string $phrase) {
+		$translation = '';
+		$words = explode(' ', $phrase);
+		foreach ($words as $word){
+			if (preg_match('/%\d+%/', $word)){
+				$translation .= $word . ' ';
+			}else {
+				$translatedWord = '';
+				$lastCharWasVowel = false;
+				for ($i = 0; $i < strlen($word); $i++){
+					$char = $word[$i];
+					if (in_array($char, Translator::$vowels)) {
+						if (!$lastCharWasVowel) {
+							$translatedWord .= 'ub';
+						}
+						$lastCharWasVowel = true;
+					} else {
+						$lastCharWasVowel = false;
+					}
+					$translatedWord .= $char;
+				}
+				$translation .= $translatedWord . ' ';
+			}
+		}
+		$translation = strtolower($translation);
+		if (preg_match('/[A-Z]/', $phrase[0])){
+			$translation = ucfirst($translation);
+		}
+		return trim($translation);
 	}
 }
