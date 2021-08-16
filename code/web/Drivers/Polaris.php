@@ -58,6 +58,37 @@ class Polaris extends AbstractIlsDriver
 		return $summary;
 	}
 
+	public function getILSMessages(User $user)
+	{
+		$messages = [];
+		$library = $user->getHomeLibrary();
+		if ($library == null){
+			return $messages;
+		}
+
+		$polarisCirculateBlocksUrl = "/PAPIService/REST/public/v1/1033/100/1/patron/{$user->getBarcode()}/circulationblocks";
+		$circulateBlocksResponse = $this->getWebServiceResponse($polarisCirculateBlocksUrl, 'GET', $this->getAccessToken($user->getBarcode(), $user->getPasswordOrPin()), false, UserAccount::isUserMasquerading());
+		if ($circulateBlocksResponse && $this->lastResponseCode == 200) {
+			$circulateBlocksResponse = json_decode($circulateBlocksResponse);
+			foreach ($circulateBlocksResponse->Blocks as $block){
+				if (!empty($block->BlockDescription)) {
+					$messages[] = [
+						'message' => $block->BlockDescription,
+						'messageStyle' => 'fanger'
+					];
+				}
+			}
+			if (!$circulateBlocksResponse->CanPatronCirculate && empty($messages)){
+				$messages[] = [
+					'message' => "Your account has been frozen.  Please contact the library for more information.",
+					'messageStyle' => 'danger',
+				];
+			}
+		}
+
+		return $messages;
+	}
+
 	/**
 	 * @param string $patronBarcode
 	 * @param string $password
