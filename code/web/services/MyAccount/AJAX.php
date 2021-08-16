@@ -2815,6 +2815,10 @@ class MyAccount_AJAX extends JSON_Action
 				}
 			}
 
+			if ($totalFines < $userLibrary->minimumFineAmount) {
+				return ['success' => false, 'message' => translate(['text' => 'You must select at least %1% in fines to pay.', 1 => sprintf('$%01.2f', $userLibrary->minimumFineAmount)])];
+			}
+
 			$purchaseUnits['amount'] = [
 				'currency_code' => $currencyCode,
 				'value' => round($totalFines, 2),
