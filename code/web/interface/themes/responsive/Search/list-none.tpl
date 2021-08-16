@@ -13,19 +13,19 @@
 	{* Return to Advanced Search Link *}
 	{if $searchType == 'advanced'}
 		<h5>
-			<a href="/Search/Advanced">Edit This Advanced Search</a>
+			<a href="/Search/Advanced">{translate text="Edit This Advanced Search"}</a>
 		</h5>
 	{/if}
 
 	{if !empty($solrSearchDebug)}
-		<div id="solrSearchOptionsToggle" onclick="$('#solrSearchOptions').toggle()">Show Search Options</div>
+		<div id="solrSearchOptionsToggle" onclick="$('#solrSearchOptions').toggle()">{translate text="Show Search Options"}</div>
 		<div id="solrSearchOptions" style="display:none">
 			<pre>Search options: {$solrSearchDebug}</pre>
 		</div>
 	{/if}
 
 	{if !empty($solrLinkDebug)}
-		<div id='solrLinkToggle' onclick='$("#solrLink").toggle()'>Show Solr Link</div>
+		<div id='solrLinkToggle' onclick='$("#solrLink").toggle()'>{translate text="Show Solr Link"}</div>
 		<div id='solrLink' style='display:none'>
 			<pre>{$solrLinkDebug}</pre>
 		</div>
@@ -57,9 +57,9 @@
 			<div id="explore-more-bar-placeholder"></div>
 			<script type="text/javascript">
 				$(document).ready(
-						function () {ldelim}
-	                        AspenDiscovery.Searches.loadExploreMoreBar('{$exploreMoreSection}', '{$exploreMoreSearchTerm|escape:"html"}');
-							{rdelim}
+					function () {ldelim}
+						AspenDiscovery.Searches.loadExploreMoreBar('{$exploreMoreSection}', '{$exploreMoreSearchTerm|escape:"html"}');
+					{rdelim}
 				);
 			</script>
 		{/if}

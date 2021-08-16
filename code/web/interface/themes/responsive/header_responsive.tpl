@@ -5,7 +5,7 @@
     {if ($showDisplayNameInHeader && !empty($librarySystemName)) || !empty($headerText)}
 		<div class="col-tn-12 col-xs-8 col-sm-8 col-md-3 col-lg-3" id="header-logo-container">
 			<a href="{$logoLink}/">
-				<img src="{if $responsiveLogo}{$responsiveLogo}{else}{img filename="logo_responsive.png"}{/if}" alt="{$librarySystemName}" title="{$logoAlt}" id="header-logo" {if $showDisplayNameInHeader && $librarySystemName}class="pull-left"{/if}>
+				<img src="{if $responsiveLogo}{$responsiveLogo}{else}{img filename="logo_responsive.png"}{/if}" alt="{$librarySystemName}" title="{translate text=$logoAlt inAttribute=true}" id="header-logo" {if $showDisplayNameInHeader && $librarySystemName}class="pull-left"{/if}>
 			</a>
 		</div>
 		{* Heading Info Div *}
@@ -28,13 +28,13 @@
 		{* Show the logo full width *}
 		<div class="col-tn-12 col-xs-8 col-sm-8 col-md-8 col-lg-8" id="header-logo-container">
 			<a href="{$logoLink}/">
-				<img src="{if $responsiveLogo}{$responsiveLogo}{else}{img filename="logo_responsive.png"}{/if}" alt="{$librarySystemName}" title="{$logoAlt}" id="header-logo" {if $showDisplayNameInHeader && $librarySystemName}class="pull-left"{/if}>
+				<img src="{if $responsiveLogo}{$responsiveLogo}{else}{img filename="logo_responsive.png"}{/if}" alt="{$librarySystemName}" title="{translate text=$logoAlt inAttribute=true}" id="header-logo" {if $showDisplayNameInHeader && $librarySystemName}class="pull-left"{/if}>
 			</a>
 		</div>
 	{/if}
 	{if count($validLanguages) > 1 && count($validLanguages) <= 2}
 		<div id="language-selection-header" class="hidden-tn col-xs-4 col-sm-4 col-md-4 col-lg-4 pull-right">
-			<div class="btn-group" role="group">
+			<div class="btn-group btn-group-sm" role="group">
 			{foreach from=$validLanguages key=languageCode item=language}
 				<div class="availableLanguage btn btn-sm btn-default {if $userLang->code==$languageCode}active{/if}">
 				{if $userLang->code!=$languageCode}
@@ -63,7 +63,7 @@
 	{if count($validLanguages) >= 3}
 		<div id="language-selection-header" class="hidden-tn col-xs-4 col-sm-4 col-md-4 col-lg-4 pull-right">
 	<div class="dropdown">
-		<button class="btn btn-default dropdown-toggle" type="button" id="language-selection-dropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+		<button class="btn btn-default btn-sm dropdown-toggle" type="button" id="language-selection-dropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
 			{translate text="Translate"}&nbsp;<span class="caret"></span>
 		</button>
 		<ul id="select-language" class="dropdown-menu" aria-labelledby="language-selection-dropdown">

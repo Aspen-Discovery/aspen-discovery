@@ -10,14 +10,14 @@
 <p class="alert alert-info">{translate text='nohit_prefix'} - <b>{$lookfor|escape:"html"}</b> - {translate text='nohit_suffix'}</p>
 
 {if !empty($solrSearchDebug)}
-    <div id="solrSearchOptionsToggle" onclick="$('#solrSearchOptions').toggle()">Show Search Options</div>
+    <div id="solrSearchOptionsToggle" onclick="$('#solrSearchOptions').toggle()">{translate text="Show Search Options"}</div>
     <div id="solrSearchOptions" style="display:none">
         <pre>Search options: {$solrSearchDebug}</pre>
     </div>
 {/if}
 
 {if !empty($solrLinkDebug)}
-    <div id='solrLinkToggle' onclick='$("#solrLink").toggle()'>Show Solr Link</div>
+    <div id='solrLinkToggle' onclick='$("#solrLink").toggle()'>{translate text="Show Solr Link"}</div>
     <div id='solrLink' style='display:none'>
         <pre>{$solrLinkDebug}</pre>
     </div>

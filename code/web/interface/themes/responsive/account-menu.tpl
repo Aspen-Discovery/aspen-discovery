@@ -58,38 +58,31 @@
 					<a href="/MyAccount/Lists">{translate text='Lists'}</a>
 				</div>
 			{/if}
-			<a onclick="return AspenDiscovery.toggleMenuSection('accountSettings');">
-				<div class="header-menu-section" id="accountSettingsMenuSection">
-					<i class="fas fa-caret-right"></i> {translate text='Account Settings'}
-				</div>
-			</a>
-			<div id="accountSettingsMenuSectionBody" class="menuSectionBody" style="display: none">
-				{if $userHasCatalogConnection}
-					<div class="header-menu-option childMenuItem" ><a href="/MyAccount/LibraryCard">{if $showAlternateLibraryCard}{translate text='My Library Card(s)'}{else}{translate text='My Library Card'}{/if}</a></div>
-				{/if}
-				<div class="header-menu-option childMenuItem" ><a href="/MyAccount/MyPreferences">{translate text='My Preferences'}</a></div>
-				<div class="header-menu-option childMenuItem" ><a href="/MyAccount/ContactInformation">{translate text='Contact Information'}</a></div>
-				{if $user->showMessagingSettings()}
-					<div class="header-menu-option childMenuItem" ><a href="/MyAccount/MessagingSettings">{translate text='Messaging Settings'}</a></div>
-				{/if}
-				{if $allowAccountLinking}
-					<div class="header-menu-option childMenuItem" ><a href="/MyAccount/LinkedAccounts">{translate text='Linked Accounts'}</a></div>
-				{/if}
-				{if $allowPinReset && !$offline}
-					<div class="header-menu-option childMenuItem" ><a href="/MyAccount/ResetPinPage">{translate text='Reset PIN/Password'}</a></div>
-				{/if}
-				{if $user->isValidForEContentSource('overdrive')}
-					<div class="header-menu-option childMenuItem" ><a href="/MyAccount/OverDriveOptions">{translate text='OverDrive Options'}</a></div>
-				{/if}
-				{if $user->isValidForEContentSource('hoopla')}
-					<div class="header-menu-option childMenuItem" ><a href="/MyAccount/HooplaOptions">{translate text='Hoopla Options'}</a></div>
-				{/if}
-				{if $userIsStaff}
-					<div class="header-menu-option childMenuItem" ><a href="/MyAccount/StaffSettings">{translate text='Staff Settings'}</a></div>
-				{/if}
-			</div>
+			{if $userHasCatalogConnection}
+				<div class="header-menu-option" ><a href="/MyAccount/LibraryCard">{if $showAlternateLibraryCard}{translate text='My Library Card(s)'}{else}{translate text='My Library Card'}{/if}</a></div>
+			{/if}
+			<div class="header-menu-option" ><a href="/MyAccount/MyPreferences">{translate text='My Preferences'}</a></div>
+			<div class="header-menu-option" ><a href="/MyAccount/ContactInformation">{translate text='Contact Information'}</a></div>
+			{if $user->showMessagingSettings()}
+				<div class="header-menu-option" ><a href="/MyAccount/MessagingSettings">{translate text='Messaging Settings'}</a></div>
+			{/if}
+			{if $allowAccountLinking}
+				<div class="header-menu-option" ><a href="/MyAccount/LinkedAccounts">{translate text='Linked Accounts'}</a></div>
+			{/if}
+			{if $allowPinReset && !$offline}
+				<div class="header-menu-option" ><a href="/MyAccount/ResetPinPage">{translate text='Reset PIN/Password'}</a></div>
+			{/if}
+			{if $user->isValidForEContentSource('overdrive')}
+				<div class="header-menu-option" ><a href="/MyAccount/OverDriveOptions">{translate text='OverDrive Options'}</a></div>
+			{/if}
+			{if $user->isValidForEContentSource('hoopla')}
+				<div class="header-menu-option" ><a href="/MyAccount/HooplaOptions">{translate text='Hoopla Options'}</a></div>
+			{/if}
+			{if $userIsStaff}
+				<div class="header-menu-option" ><a href="/MyAccount/StaffSettings">{translate text='Staff Settings'}</a></div>
+			{/if}
 			{* Only highlight saved searches as active if user is logged in: *}
-			<div class="header-menu-option" ><a href="/Search/History?require_login">{translate text='history_saved_searches'}</a></div>
+			<div class="header-menu-option" ><a href="/Search/History?require_login">{translate text='Search History'}</a></div>
 
 			{if $allowMasqueradeMode && !$masqueradeMode}
 				{if $canMasquerade}
