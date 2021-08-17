@@ -517,12 +517,12 @@ public class GroupedWorkSolr implements Cloneable {
 				if (curItem.getFormat() != null) {
 					formatsForScope.add(curItem.getFormat());
 				} else {
-					formatsForScope = curItem.getRecordInfo().getFormats();
+					formatsForScope.addAll(curItem.getRecordInfo().getFormats());
 				}
 				if (curItem.getFormatCategory() != null) {
 					formatCategoriesForScope.add(curItem.getFormatCategory());
 				} else {
-					formatCategoriesForScope = curItem.getRecordInfo().getFormatCategories();
+					formatCategoriesForScope.addAll(curItem.getRecordInfo().getFormatCategories());
 				}
 
 				Long daysSinceAdded;

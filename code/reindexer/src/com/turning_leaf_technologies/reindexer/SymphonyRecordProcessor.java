@@ -54,12 +54,14 @@ class SymphonyRecordProcessor extends IlsRecordProcessor {
 		}else {
 			if (statusFieldData == null) {
 				if (hasTranslation("item_status", shelfLocationData)){
+					//We are treating the shelf location as a status i.e. DISPLAY
 					statusFieldData = shelfLocationData;
 				}else{
 					statusFieldData = "ONSHELF";
 				}
 			}else{
 				if (hasTranslation("item_status", statusFieldData)){
+					//The status is provided and is in the translation table so we use the status
 					statusFieldData = statusFieldData;
 				}else {
 					if (!shelfLocationData.equalsIgnoreCase(statusFieldData)) {
@@ -97,6 +99,7 @@ class SymphonyRecordProcessor extends IlsRecordProcessor {
 				location += " - " + translateValue("shelf_location", shelvingLocation, identifier);
 			}
 		}else {
+			//In this case, the status is the current location of the item.
 			if (location == null) {
 				location = translateValue("shelf_location", status, identifier);
 			} else {
