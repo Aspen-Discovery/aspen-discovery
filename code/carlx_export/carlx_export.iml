@@ -36,7 +36,6 @@
         <SOURCES />
       </library>
     </orderEntry>
-    <orderEntry type="module" module-name="marc4j" />
     <orderEntry type="module" module-name="reindexer" />
   </component>
 </module>

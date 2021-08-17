@@ -18,6 +18,5 @@
         <jarDirectory url="file://$MODULE_DIR$/../java_shared_libraries" recursive="false" />
       </library>
     </orderEntry>
-    <orderEntry type="module" module-name="marc4j" />
   </component>
 </module>

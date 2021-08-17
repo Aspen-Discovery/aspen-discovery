@@ -1,9 +1,0 @@
-<component name="libraryTable">
-  <library name="oai_indexer">
-    <CLASSES>
-      <root url="jar://$PROJECT_DIR$/../oai_indexer/oai_indexer.jar!/" />
-    </CLASSES>
-    <JAVADOC />
-    <SOURCES />
-  </library>
-</component>

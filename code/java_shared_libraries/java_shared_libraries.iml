@@ -15,7 +15,6 @@
     <orderEntry type="library" name="opencsv-4.5" level="project" />
     <orderEntry type="library" name="commons-beanutils-1.9.3" level="project" />
     <orderEntry type="library" name="commons-codec-1.12" level="project" />
-    <orderEntry type="module" module-name="marc4j" />
     <orderEntry type="module-library">
       <library>
         <CLASSES>

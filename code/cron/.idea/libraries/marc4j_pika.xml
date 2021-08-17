@@ -1,9 +1,0 @@
-<component name="libraryTable">
-  <library name="marc4j-pika">
-    <CLASSES>
-      <root url="jar://$PROJECT_DIR$/../marc4j/marc4j-pika.jar!/" />
-    </CLASSES>
-    <JAVADOC />
-    <SOURCES />
-  </library>
-</component>

@@ -487,14 +487,14 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 		return null;
 	}
 
-	private void assignTitleInfoFromMarcField(GroupedWork workForTitle, DataField field245, int nonFilingCharactersIndicator) {
-		String fullTitle = field245.getSubfield('a').getData();
+	private void assignTitleInfoFromMarcField(GroupedWork workForTitle, DataField titleField, int nonFilingCharactersIndicator) {
+		String fullTitle = titleField.getSubfield('a').getData();
 
 		char nonFilingCharacters;
 		if (nonFilingCharactersIndicator == 1){
-			nonFilingCharacters = field245.getIndicator1();
+			nonFilingCharacters = titleField.getIndicator1();
 		}else {
-			nonFilingCharacters = field245.getIndicator2();
+			nonFilingCharacters = titleField.getIndicator2();
 		}
 		if (nonFilingCharacters == ' ') nonFilingCharacters = '0';
 		int numNonFilingCharacters = 0;
@@ -502,21 +502,38 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 			numNonFilingCharacters = Integer.parseInt(Character.toString(nonFilingCharacters));
 		}
 
+		boolean isUniformTitle = false;
+		if (titleField.getTag().equals("130")){
+			isUniformTitle = true;
+		}
+
 		//Add in subtitle (subfield b as well to avoid problems with gov docs, etc)
 		StringBuilder groupingSubtitle = new StringBuilder();
-		if (field245.getSubfield('b') != null) {
-			groupingSubtitle.append(field245.getSubfield('b').getData());
+		if (titleField.getSubfield('b') != null) {
+			groupingSubtitle.append(titleField.getSubfield('b').getData());
 		}
 
 		//Group volumes, seasons, etc. independently
 		StringBuilder partInfo = new StringBuilder();
-		if (field245.getSubfield('n') != null) {
+		if (isUniformTitle && titleField.getSubfield('m') != null){
 			if (partInfo.length() > 0) partInfo.append(" ");
-			partInfo.append(field245.getSubfield('n').getData());
+			partInfo.append(titleField.getSubfield('m').getData());
 		}
-		if (field245.getSubfield('p') != null) {
+		if (titleField.getSubfield('n') != null) {
 			if (partInfo.length() > 0) partInfo.append(" ");
-			partInfo.append(field245.getSubfield('p').getData());
+			partInfo.append(titleField.getSubfield('n').getData());
+		}
+		if (isUniformTitle && titleField.getSubfield('o') != null){
+			if (partInfo.length() > 0) partInfo.append(" ");
+			partInfo.append(titleField.getSubfield('o').getData());
+		}
+		if (titleField.getSubfield('p') != null) {
+			if (partInfo.length() > 0) partInfo.append(" ");
+			partInfo.append(titleField.getSubfield('p').getData());
+		}
+		if (isUniformTitle && titleField.getSubfield('s') != null){
+			if (partInfo.length() > 0) partInfo.append(" ");
+			partInfo.append(titleField.getSubfield('s').getData());
 		}
 
 		workForTitle.setTitle(fullTitle, numNonFilingCharacters, groupingSubtitle.toString(), partInfo.toString());
