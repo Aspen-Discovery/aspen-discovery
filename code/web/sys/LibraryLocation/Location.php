@@ -1195,19 +1195,7 @@ class Location extends DataObject
 	public function saveRecordsToInclude()
 	{
 		if (isset ($this->_recordsToInclude) && is_array($this->_recordsToInclude)) {
-			/** @var LocationRecordOwned $object */
-			foreach ($this->_recordsToInclude as $object) {
-				if (isset($object->deleteOnSave) && $object->deleteOnSave == true) {
-					$object->delete();
-				} else {
-					if (isset($object->id) && is_numeric($object->id)) {
-						$object->update();
-					} else {
-						$object->locationId = $this->locationId;
-						$object->insert();
-					}
-				}
-			}
+			$this->saveOneToManyOptions($this->_recordsToInclude, 'locationId');
 			unset($this->_recordsToInclude);
 		}
 	}
