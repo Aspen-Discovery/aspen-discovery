@@ -111,7 +111,9 @@ class OverDriveDriver extends AbstractEContentDriver{
 				curl_close($ch);
 				$tokenData = json_decode($return);
 				if ($tokenData){
-					$memCache->set('overdrive_token_' . $settings->id . '_' . $this->scope->id, $tokenData, $tokenData->expires_in - 10);
+					if (!isset($tokenData->error)){
+						$memCache->set('overdrive_token_' . $settings->id . '_' . $this->scope->id, $tokenData, $tokenData->expires_in - 10);
+					}
 				}else{
 					$this->incrementStat('numConnectionFailures');
 				}
