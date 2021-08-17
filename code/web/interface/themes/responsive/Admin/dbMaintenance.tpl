@@ -23,7 +23,7 @@
 						<td><input type="checkbox" name="selected[{$updateKey}]"{if !$update.alreadyRun} checked="checked"{/if} class="selectedUpdate" id="{$updateKey}"></td>
 						<td><label for="{$updateKey}">{$update.title}</label></td>
 						<td>{$update.description}</td>
-						<td>{if $update.alreadyRun}Yes{else}No{/if}</td>
+						<td>{if $update.alreadyRun}{translate text="Yes"}{else}{translate text="No"}{/if}</td>
 						{if $showStatus}
 						<td>{if !empty($update.status)}{$update.status}{/if}</td>
 						{/if}

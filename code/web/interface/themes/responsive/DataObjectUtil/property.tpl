@@ -129,7 +129,7 @@
 						{assign var=useDefault value=$object->$defaultVariableName}
 					{/if}
 
-					<input type="checkbox" name='{$propName}-default' id='{$propName}-default' {if $useDefault == '1'}checked="checked"{/if} {if !empty($property.readOnly)}readonly{/if}/><label for='{$propName}-default'>Use Default</label>
+					<input type="checkbox" name='{$propName}-default' id='{$propName}-default' {if $useDefault == '1'}checked="checked"{/if} {if !empty($property.readOnly)}readonly{/if}/><label for='{$propName}-default'>{translate text="Use Default"}</label>
 				</div>
 				<div class="col-tn-3">
 					{if !empty($property.checkContrastWith)}
@@ -182,7 +182,7 @@
 						{assign var=useDefault value=$object->$defaultVariableName}
 					{/if}
 
-					<input type="checkbox" name='{$propName}-default' id='{$propName}-default' {if $useDefault == '1'}checked="checked"{/if} {if !empty($property.readOnly)}readonly{/if}/><label for='{$propName}-default'>Use Default</label>
+					<input type="checkbox" name='{$propName}-default' id='{$propName}-default' {if $useDefault == '1'}checked="checked"{/if} {if !empty($property.readOnly)}readonly{/if}/><label for='{$propName}-default'>{translate text="Use Default"}</label>
 				</div>
 				<div class="col-sm-5">
 					<div id="{$propName}-sample-text" style="font-family: {$propValue},arial; font-size: {if $property.previewFontSize}{$property.previewFontSize}{else}12px{/if}">
@@ -200,7 +200,7 @@
 				<div class="col-sm-7">
 					<input type="file" name='{$propName}' id='{$propName}' size="80">
 					{if $propValue}
-						Existing font: {$propValue} <input type='checkbox' name='remove{$propName}' id='remove{$propName}'> <label for="remove{$propName}">Remove</label>
+						{translate text="Existing font"} {$propValue} <input type='checkbox' name='remove{$propName}' id='remove{$propName}'> <label for="remove{$propName}">Remove</label>
 					{/if}
 				</div>
 				<div class="col-sm-5">
@@ -258,7 +258,7 @@
 						{/if}
 						{$propValue} &nbsp;
 					{/if}
-					<input type='checkbox' name='remove{$propName}' id='remove{$propName}'> <label for="remove{$propName}">Remove image</label>
+					<input type='checkbox' name='remove{$propName}' id='remove{$propName}'> <label for="remove{$propName}">{translate text="Remove image"}</label>
 					<br>
 				{else}
 					Existing file: {$propValue}
@@ -271,7 +271,7 @@
 		{elseif $property.type == 'checkbox'}
 			<div class="checkbox">
 				<label for='{$propName}'{if $property.description} title="{$property.description}"{/if}>
-					<input type='checkbox' name='{$propName}' id='{$propName}' {if ($propValue == 1)}checked='checked'{/if} {if $property.required && $objectAction != 'edit'}required{/if} {if !empty($property.readOnly)}readonly{/if}> {$property.label}
+					<input type='checkbox' name='{$propName}' id='{$propName}' {if ($propValue == 1)}checked='checked'{/if} {if $property.required && $objectAction != 'edit'}required{/if} {if !empty($property.readOnly)}readonly{/if}> {$property.label|translate}
 				</label>
 			</div>
 		{elseif $property.type == 'webBuilderColor'}

@@ -232,7 +232,7 @@ class Admin_DBMaintenance extends Admin_Admin
 		try {
 			$aspen_db->query($sql);
 			if (!isset($update['status'])) {
-				$update['status'] = 'Update succeeded';
+				$update['status'] = translate('Update succeeded');
 			}
 		} catch (PDOException $e) {
 			if (isset($update['continueOnError']) && $update['continueOnError']) {

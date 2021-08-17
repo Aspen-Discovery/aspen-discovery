@@ -100,6 +100,14 @@ class Record_AJAX extends Action
 						break;
 					}
 				}
+				if ($holdType == 'either'){
+					//Check for an override at the library level
+					if ($library->treatBibOrItemHoldsAs == 2){
+						$holdType = 'bib';
+					}elseif ($library->treatBibOrItemHoldsAs == 3){
+						$holdType = 'item';
+					}
+				}
 
 				//Check to see if we need to override this to an item hold because there are volumes being handled with an item level hold
 				if ($holdType == 'bib') {
@@ -198,7 +206,7 @@ class Record_AJAX extends Action
 			} else {
 				$results = array(
 					'holdFormBypassed' => false,
-					'title' => empty($title) ? 'Place Hold' : 'Place Hold on ' . $title,
+					'title' => empty($title) ? translate('Place Hold') : translate(['text'=>'Place Hold on %1%', 1=> $title]),
 					'modalBody' => $interface->fetch("Record/hold-popup.tpl"),
 					'success' => true
 				);
@@ -238,14 +246,14 @@ class Record_AJAX extends Action
 			$relatedManifestations = $relatedManifestations[$format[0]];
 			$interface->assign('relatedManifestation', $relatedManifestations);
 			$results = array(
-				'title' => 'Place Hold on Alternate Edition?',
+				'title' => translate('Place Hold on Alternate Edition?'),
 				'modalBody' => $interface->fetch('Record/hold-select-edition-popup.tpl'),
 				'modalButtons' => '<a href="#" class="btn btn-primary" onclick="return AspenDiscovery.Record.showPlaceHold(\'Record\', \'' . $recordSource . '\', \'' . $id . '\');">No, place a hold on this edition</a>'
 			);
 		} else {
 			$results = array(
-				'title' => 'Please login',
-				'modalBody' => "You must be logged in.  Please close this dialog and login before placing your hold.",
+				'title' => translate('Please login'),
+				'modalBody' => translate("You must be logged in.  Please close this dialog and login before placing your hold."),
 				'modalButtons' => ''
 			);
 		}

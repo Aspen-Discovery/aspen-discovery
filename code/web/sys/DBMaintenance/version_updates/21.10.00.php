@@ -44,7 +44,7 @@ function getUpdates21_10_00() : array
 			'sql' => [
 				'ALTER TABLE ils_volume_info CHANGE COLUMN  volumeId volumeId VARCHAR(100) not null COLLATE utf8_bin',
 			]
-		], //fix_ils_volume_indexes
+		], //make_volumes_case_sensitive
 		'add_maxDaysToFreeze' => [
 			'title' => 'Add max days to freeze option in library settings',
 			'description' => 'Allow libraries to limit the amount of days out a user can freeze a hold',
@@ -129,6 +129,13 @@ function getUpdates21_10_00() : array
 			'sql' => [
 				'ALTER TABLE grouped_work_record_items CHANGE COLUMN statusId statusId INT(11)'
 			]
-		]
+		], //update_item_status
+		'treatBibOrItemHoldsAs' => [
+			'title' => 'Library Settings - How to treat bibs and item holds',
+			'description' => 'Add an override at the library level for how to treat bib and item holds',
+			'sql' => [
+				'ALTER TABLE library ADD COLUMN treatBibOrItemHoldsAs TINYINT(1) DEFAULT 1',
+			]
+		], //treatBibOrItemHoldsAs
 	];
 }
