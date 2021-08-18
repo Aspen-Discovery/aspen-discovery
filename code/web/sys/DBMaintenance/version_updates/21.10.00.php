@@ -137,5 +137,13 @@ function getUpdates21_10_00() : array
 				'ALTER TABLE library ADD COLUMN treatBibOrItemHoldsAs TINYINT(1) DEFAULT 1',
 			]
 		], //treatBibOrItemHoldsAs
+		'ecommerce_report_permissions' => [
+			'title' => 'Add settings for WorldPay',
+			'description' => 'Add settings for WorldPay integration',
+			'sql' => [
+				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES ('eCommerce', 'View eCommerce Reports', '', 5, 'Controls if the user can view eCommerce payment information.')",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='View eCommerce Reports'))",
+			]
+		], //ecommerce_report_permissions
 	];
 }

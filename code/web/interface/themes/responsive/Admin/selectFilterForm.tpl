@@ -5,7 +5,7 @@
 			<select id="fieldSelector" name="fieldSelector" class="form-control">
 				<option value="">{translate text="Select a field"}</option>
 				{foreach from=$availableFilters item=field}
-					<option value="{$field.property}">{$field.label}</option>
+					<option value="{$field.property}">{$field.label|translate}</option>
 				{/foreach}
 			</select>
 		</div>

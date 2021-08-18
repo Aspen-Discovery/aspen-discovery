@@ -468,7 +468,7 @@ class Admin_AJAX extends JSON_Action
 				$modalBody = $interface->fetch('Admin/selectFilterForm.tpl');
 				return [
 					'success' => true,
-					'title' => 'Filter by',
+					'title' => translate('Filter by'),
 					'modalBody' => $modalBody,
 					'modalButtons' => "<button onclick=\"return AspenDiscovery.Admin.getNewFilterRow('{$moduleName}', '{$toolName}');\" class=\"modal-buttons btn btn-primary\">" . translate('Add Filter') . "</button>"
 				];
@@ -506,15 +506,15 @@ class Admin_AJAX extends JSON_Action
 			}else{
 				return [
 					'success' => false,
-					'title' => 'Error',
-					'message' => "Cannot filter by the selected field",
+					'title' => translate('Error'),
+					'message' => translate("Cannot filter by the selected field"),
 				];
 			}
 		}else{
 			return [
 				'success' => false,
-				'title' => 'Error',
-				'message' => "Sorry, this form cannot be filtered",
+				'title' => translate('Error'),
+				'message' => translate("Sorry, this form cannot be filtered"),
 			];
 		}
 	}
@@ -522,7 +522,7 @@ class Admin_AJAX extends JSON_Action
 	function deleteNYTList() {
 		$result = [
 			'success' => false,
-			'message' => 'Something went wrong.'
+			'message' => translate('Something went wrong.')
 		];
 
 		require_once ROOT_DIR . '/sys/UserLists/UserList.php';

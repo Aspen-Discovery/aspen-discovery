@@ -17,6 +17,59 @@ class UserPayment extends DataObject
 	public $totalPaid;
 	public $transactionDate;
 
+	public static function getObjectStructure(){
+		return [
+			'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id within the database'),
+			'paymentType' => ['property' => 'paymentType', 'type' => 'text', 'label' => 'Payment Type', 'description' => 'The system the payment was made with', 'readOnly' => true],
+			'transactionDate' => ['property' => 'transactionDate', 'type' => 'timestamp', 'label' => 'Transaction Date', 'description' => 'The date the payment was started', 'readOnly' => true],
+			'user' => ['property' => 'user', 'type' => 'text', 'label' => 'User', 'description' => 'The user who made the payment', 'readOnly' => true],
+			'library' => ['property' => 'library', 'type' => 'text', 'label' => 'Library', 'description' => 'The patron\'s home library', 'readOnly' => true],
+			'orderId' => ['property' => 'orderId', 'type' => 'text', 'label' => 'Order ID', 'description' => 'The ID of the order within the payment system', 'readOnly' => true],
+			'totalPaid' => ['property' => 'totalPaid', 'type' => 'currency', 'label' => 'Total Paid', 'description' => 'A list of fines paid as part of this transaction', 'displayFormat'=>'%0.2f', 'readOnly' => true],
+			'finesPaid' => ['property' => 'finesPaid', 'type' => 'text', 'label' => 'Fines Paid', 'description' => 'The ID of the order within the payment system', 'readOnly' => true],
+			'completed' => array('property' => 'completed', 'type' => 'checkbox', 'label' => 'Completed?', 'description' => 'Whether or not the payment has been completed', 'readOnly' => true),
+			'cancelled' => array('property' => 'cancelled', 'type' => 'checkbox', 'label' => 'Cancelled?', 'description' => 'Whether or not the user cancelled the payment', 'readOnly' => true),
+			'error' => array('property' => 'error', 'type' => 'checkbox', 'label' => 'Error?', 'description' => 'Whether or not an error occurred during processing of the payment', 'readOnly' => true),
+			'message' => ['property' => 'message', 'type' => 'text', 'label' => 'Message', 'description' => 'A message returned by the payment system', 'readOnly' => true],
+		];
+	}
+
+	/** @var User[] */
+	private static $usersById = [];
+	function __get($name){
+		if ($name == 'user'){
+			if (empty($this->_data['user'])){
+				if (!array_key_exists($this->userId, UserPayment::$usersById)){
+					$user = new User();
+					$user->id = $this->userId;
+					if ($user->find(true)) {
+						UserPayment::$usersById[$this->userId] = $user;
+					}
+				}
+				if (array_key_exists($this->userId, UserPayment::$usersById)){
+					$user = UserPayment::$usersById[$this->userId];
+					if (!empty($user->displayName)) {
+						$this->_data['user'] = $user->displayName . ' (' . $user->getBarcode() . ')';
+					} else {
+						$this->_data['user'] = $user->firstname . ' ' . $user->lastname . ' (' . $user->getBarcode() . ')';
+					}
+				}else{
+					$this->_data['user'] = translate('Unknown');
+				}
+
+			}
+		}elseif ($name == 'library'){
+			if (empty($this->_data['library'])){
+				if (array_key_exists($this->userId, UserPayment::$usersById)){
+					$this->_data['library'] = UserPayment::$usersById[$this->userId]->getHomeLibrary()->displayName;
+				}else {
+					$this->_data['library'] = 'Unknown';
+				}
+			}
+		}
+		return $this->_data[$name];
+	}
+
 	public static function completeComprisePayment($queryParams){
 		$success = false;
 		$error = '';

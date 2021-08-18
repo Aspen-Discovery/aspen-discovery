@@ -2,7 +2,7 @@
 {assign var=filterName value=$filterField.property}
 <div class="row" id="filter_{$filterField.property}">
 	<div class="col-xs-3">
-		<label>{$filterField.label}</label>
+		<label>{$filterField.label|translate}</label>
 	</div>
 	{if !empty($appliedFilters.$filterName)}
 		{assign var=appliedFilter value=$appliedFilters.$filterName}

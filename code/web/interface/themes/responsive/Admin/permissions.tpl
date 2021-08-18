@@ -24,7 +24,7 @@
 			<thead class="permissionsHeader">
 				<tr>
 					<th>{translate text="Permission"}</th>
-					<th>{$selectedRole->name}</th>
+					<th>{$selectedRole->name|translate}</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -37,10 +37,10 @@
 					{foreach from=$sectionPermissions item=permission}
 						<tr class="permissionRow">
 							<td>
-								<div class="permissionName">{$permission->name}</div>
-								<div class="permissionDescription">{$permission->description}</div>
+								<div class="permissionName">{$permission->name|translate}</div>
+								<div class="permissionDescription">{$permission->description|translate}</div>
 							</td>
-							<td><input type="checkbox" name="permission[{$permission->id}]" title="Toggle {$permission->name} for {$selectedRole->name}" {if $selectedRole->hasPermission($permission->name)}checked{/if}/></td>
+							<td><input type="checkbox" name="permission[{$permission->id}]" title="{translate text="Toggle %1% for %2%" 1=$permission->name 2=$selectedRole->name inAttribute=true}" {if $selectedRole->hasPermission($permission->name)}checked{/if}/></td>
 						</tr>
 					{/foreach}
 				{/foreach}

@@ -1,15 +1,15 @@
 {strip}
 	<div id="main-content" class="col-md-12">
-		<h1>Website Indexing Log</h1>
+		<h1>{translate text="Website Indexing Log"}</h1>
 		<hr>
 
-		<h4>Filter by</h4>
+		<h4>{translate text="Filter by"}</h4>
 
         {include file='Admin/exportLogFilters.tpl'}
 		<div id="websiteExportLogContainer">
 			<table class="logEntryDetails table table-condensed table-hover">
 				<thead>
-					<tr><th>Id</th><th>Name</th><th>Started</th><th>Last Update</th><th>Finished</th><th>Elapsed</th><th>Total Pages</th><th>Num Errors</th><th>Pages Added</th><th>Pages Deleted</th><th>Pages Updated</th><th>Notes</th></tr>
+					<tr><th>{translate text="Id"}</th><th>{translate text="Name"}</th><th>{translate text="Started"}</th><th>{translate text="Last Update"}</th><th>{translate text="Finished"}</th><th>{translate text="Elapsed"}</th><th>{translate text="Total Pages"}</th><th>{translate text="Num Errors"}</th><th>{translate text="Pages Added"}</th><th>{translate text="Pages Deleted"}</th><th>{translate text="Pages Updated"}</th><th>{translate text="Notes"}</th></tr>
 				</thead>
 				<tbody>
 					{foreach from=$logEntries item=logEntry}
@@ -25,7 +25,7 @@
 							<td>{$logEntry->numAdded}</td>
 							<td>{$logEntry->numDeleted}</td>
 							<td>{$logEntry->numUpdated}</td>
-							<td><a href="#" onclick="return AspenDiscovery.Admin.showExtractNotes('{$logEntry->id}', 'website');">Show Notes</a></td>
+							<td><a href="#" onclick="return AspenDiscovery.Admin.showExtractNotes('{$logEntry->id}', 'website');">{translate text="Show Notes"}</a></td>
 						</tr>
 					{/foreach}
 				</tbody>
