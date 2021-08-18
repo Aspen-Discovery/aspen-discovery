@@ -138,8 +138,8 @@ function getUpdates21_10_00() : array
 			]
 		], //treatBibOrItemHoldsAs
 		'ecommerce_report_permissions' => [
-			'title' => 'Add settings for WorldPay',
-			'description' => 'Add settings for WorldPay integration',
+			'title' => 'Add eCommerce Report Permissions',
+			'description' => 'Add eCommerce Report Permissions',
 			'sql' => [
 				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES ('eCommerce', 'View eCommerce Reports', '', 5, 'Controls if the user can view eCommerce payment information.')",
 				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='View eCommerce Reports'))",
