@@ -183,8 +183,8 @@
 							</div>
 							<div class="placeHolder">
                                 <p>Thank you for checking out from your school library.</p>
-                                <p>Books are due in 3 weeks.</p>
-                                <p>DVDs are due in 3 weeks.</p>
+                                <p>Books are due in 2 weeks.</p>
+                                <p>DVDs are due in 1 week.</p>
                                 <p>Check your account online at https://limitlesslibraries.org</p>
 							</div>
 							<div class="item">
