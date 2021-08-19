@@ -1,7 +1,8 @@
 <?php
 
 require_once ROOT_DIR . '/sys/Greenhouse/AspenSite.php';
-class SiteStatus extends Action
+require_once ROOT_DIR . '/services/Admin/Admin.php';
+class SiteStatus extends Admin_Admin
 {
 
 	function launch()
@@ -33,5 +34,20 @@ class SiteStatus extends Action
 		$breadcrumbs[] = new Breadcrumb('/Greenhouse/Sites', 'Sites');
 		$breadcrumbs[] = new Breadcrumb('', 'Status');
 		return $breadcrumbs;
+	}
+
+	function getActiveAdminSection() : string
+	{
+		return 'system_reports';
+	}
+
+	function canView() : bool
+	{
+		if (UserAccount::isLoggedIn()){
+			if (UserAccount::getActiveUserObj()->source = 'admin' && UserAccount::getActiveUserObj()->cat_username == 'aspen_admin'){
+				return true;
+			}
+		}
+		return false;
 	}
 }

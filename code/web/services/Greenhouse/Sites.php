@@ -93,6 +93,11 @@ class Greenhouse_Sites extends ObjectEditor
 
 	function canView() : bool
 	{
-		return true;
+		if (UserAccount::isLoggedIn()){
+			if (UserAccount::getActiveUserObj()->source = 'admin' && UserAccount::getActiveUserObj()->cat_username == 'aspen_admin'){
+				return true;
+			}
+		}
+		return false;
 	}
 }
