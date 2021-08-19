@@ -32,7 +32,7 @@ class Grouping_Variation
 		if (is_array($record)){
 			$this->isEcontent = $record['eContentSource'] != null;
 			$this->econtentSource = $record['eContentSource'];
-			$this->language = $record['language'] ==  null ? 'English' : $record['language'];
+			$this->language = $record['language'] ==  null ? 'Unknown' : $record['language'];
 			$this->databaseId = $record['id'];
 		}else {
 			$this->isEcontent = $record->isEContent();
