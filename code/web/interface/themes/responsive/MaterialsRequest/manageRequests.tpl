@@ -39,8 +39,8 @@
 						<fieldset class="form-group fieldset-collapsible">
 							<legend>Date:</legend>
 							<div class="form-group">
-								<label for="startDate">From</label> <input type="text" id="startDate" name="startDate" value="{$startDate}" size="8">
-								<label for="endDate">To</label> <input type="text" id="endDate" name="endDate" value="{$endDate}" size="8">
+								<label for="startDate">From</label> <input type="date" id="startDate" name="startDate" value="{$startDate}" size="8" max="{$smarty.now|date_format:"%Y-%m-%d"}">
+								<label for="endDate">To</label> <input type="date" id="endDate" name="endDate" value="{$endDate}" size="8" max="{$smarty.now|date_format:"%Y-%m-%d"}">
 							</div>
 						</fieldset>
 						<fieldset class="form-group fieldset-collapsible">
@@ -285,8 +285,6 @@
 
 <script type="text/javascript">
 $(function () {ldelim}
-	$("#startDate").datepicker();
-	$("#endDate").datepicker();
 	$("#requestedMaterials").tablesorter({ldelim}
 		cssAsc: 'sortAscHeader',
 		cssDesc: 'sortDescHeader',

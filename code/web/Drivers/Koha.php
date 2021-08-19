@@ -3799,9 +3799,11 @@ class Koha extends AbstractIlsDriver
 	 * @param string $message
 	 * @return string
 	 */
-	protected function getHoldErrorMessage(SimpleXMLElement $error, string $message): string
+	protected function getHoldErrorMessage(?SimpleXMLElement $error, string $message): string
 	{
-		if ($error == "damaged") {
+		if ($error == null) {
+			$message .= 'Unknown Error';
+		}elseif ($error == "damaged") {
 			$message .= 'Item damaged';
 		} elseif ($error == "ageRestricted") {
 			$message .= 'Age restricted';

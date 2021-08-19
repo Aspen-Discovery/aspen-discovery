@@ -133,12 +133,7 @@
 					{if $showHoldCancelDate == 1}
 						<div id="cancelHoldDate" class="form-group">
 							<label class="control-label" for="cancelDate">{translate text="Automatically cancel this hold if not filled by"}:</label>
-							<div class="input-group input-append date controls" id="cancelDatePicker">
-								{* data-provide attribute loads the datepicker through bootstrap data api *}
-								<input type="text" name="cancelDate" id="cancelDate" placeholder="mm/dd/yyyy" class="form-control" size="10"
-									   data-provide="datepicker" data-date-format="mm/dd/yyyy" data-date-start-date="0d">
-								<span class="input-group-addon"><span class="glyphicon glyphicon-calendar" onclick="$('#cancelDate').focus().datepicker('show')" aria-hidden="true"></span></span>
-							</div>
+							<input type="date" name="cancelDate" id="cancelDate" placeholder="mm/dd/yyyy" class="form-control" size="10" min="{$smarty.now|date_format:"%Y-%m-%d"}">
 							<div class="loginFormRow">
 								<i>{translate text="automatic_cancellation_notice"}</i>
 							</div>
