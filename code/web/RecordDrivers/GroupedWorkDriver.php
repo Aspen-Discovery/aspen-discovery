@@ -2751,11 +2751,14 @@ class GroupedWorkDriver extends IndexRecordDriver
 				if ($libraryCallNumber == null) {
 					$libraryCallNumber = $item->callNumber;
 				}
-				if ($item->available && !$item->isEContent) {
+				//We don't want to set this if we are in a location scope and it isn't available at that branch
+				//if it was, location owned would be set
+				if ($item->available && !$item->isEContent && empty($physicalLocation)) {
 					$relatedRecord->getStatusInformation()->setAvailableLocally(true);
 				}
 				$relatedRecord->addLocalCopies($item->numCopies);
-				if ($searchLocation == null || $item->isEContent) {
+				//If we are inside a branch, we only set that it has a local item if locationOwned is true
+				if (empty($physicalLocation) && ($searchLocation == null || $item->isEContent)) {
 					$relatedRecord->setHasLocalItem(true);
 				}
 				$key = '5 ' . $key;

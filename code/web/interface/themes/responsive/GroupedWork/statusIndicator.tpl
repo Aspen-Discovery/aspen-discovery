@@ -1,11 +1,14 @@
 {if $statusInformation->isEContent()}
+	{* eContent, easy to handle *}
 	{if $statusInformation->isAvailableOnline()}
 		<div class="related-manifestation-shelf-status label label-success">{translate text='Available Online'}</div>
 	{else}
 		<div class="related-manifestation-shelf-status label label-danger">{translate text='Checked Out'}</div>
 	{/if}
 {else}
+	{* Physical materials, these get trickier *}
 	{if $statusInformation->isAvailableHere()}
+		{* We are at a local branch, viewing a physical copy *}
 		{if $statusInformation->isAllLibraryUseOnly()}
 			<div class="related-manifestation-shelf-status label label-success">{translate text="It's Here (library use only)"}</div>
 		{else}
