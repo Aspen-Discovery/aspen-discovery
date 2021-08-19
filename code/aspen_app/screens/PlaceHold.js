@@ -105,8 +105,8 @@ export default class PlaceHold extends Component {
       <View>
         <ModalSelector
           data = { data }
-          initValue = "Select your pick up location "
-          supportedOrientations = {['landscape']}
+          initValue = "Select your pick up location"
+          supportedOrientations = {['landscape', 'portrait']}
           animationType = 'fade'
           accessible = {true}
           scrollViewAccessibilityLabel = {'Scrollable options'}
@@ -116,7 +116,7 @@ export default class PlaceHold extends Component {
           <TextInput
             style={ Stylesheet.modalSelector }
             editable = {false}
-            placeholder = "Your Pick Up Location"
+            placeholder = "Select your pick up location ▼"
             value = {this.state.pickUpLabel} />
         </ModalSelector>
       </View>

@@ -134,7 +134,7 @@ export default class Discovery extends Component {
       );
     }else if (this.state.hasError) {
       return (
-        <View>
+        <View style={ Stylesheet.activityIndicator }>
           <Text>{this.state.error}.</Text>
         </View>
       );
