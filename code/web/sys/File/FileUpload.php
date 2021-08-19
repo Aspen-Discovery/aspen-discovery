@@ -29,20 +29,28 @@ class FileUpload extends DataObject
 	{
 		if($this->type == 'web_builder_pdf'){
 			$destFullPath = $this->fullPath;
-			$thumb = new Imagick($destFullPath);
-			if ($thumb) {
-				$thumb->setResolution(150, 150);
-				$thumb->setImageBackgroundColor('white');
-				$thumb->setImageAlphaChannel(11);
-				$thumb->mergeImageLayers(Imagick::LAYERMETHOD_FLATTEN);
-				$thumb->readImage($destFullPath . '[0]');
-				$thumb->writeImage($destFullPath . '.jpg');
-				$thumb->destroy();
-				$thumbFullPath = $destFullPath . '.jpg';
-			}
+			$thumbFullPath = '';
+			if (extension_loaded('imagick')) {
+				try {
+					$thumb = new Imagick($destFullPath);
+					if ($thumb) {
+						$thumb->setResolution(150, 150);
+						$thumb->setImageBackgroundColor('white');
+						$thumb->setImageAlphaChannel(11);
+						$thumb->mergeImageLayers(Imagick::LAYERMETHOD_FLATTEN);
+						$thumb->readImage($destFullPath . '[0]');
+						$thumb->writeImage($destFullPath . '.jpg');
+						$thumb->destroy();
+						$thumbFullPath = $destFullPath . '.jpg';
+					}
 
-			$this->thumbFullPath = $thumbFullPath;
-			$this->update();
+					$this->thumbFullPath = $thumbFullPath;
+					$this->update();
+				} catch (Exception $e) {
+					global $logger;
+					$logger->log("Imagick not installed", $e);
+				}
+			}
 			return $thumbFullPath;
 		} else {
 			die();
