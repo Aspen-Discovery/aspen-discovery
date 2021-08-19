@@ -252,26 +252,6 @@ abstract class AbstractIlsDriver extends AbstractDriver
 		];
 	}
 
-	public function bookMaterial($patron, $recordId, $startDate, $startTime, $endDate, $endTime)
-	{
-		return array('success' => false, 'message' => 'Not Implemented.');
-	}
-
-	public function cancelBookedMaterial($patron, $cancelIds)
-	{
-		return array('success' => false, 'message' => 'Not Implemented.');
-	}
-
-	public function cancelAllBookedMaterial($patron)
-	{
-		return array('success' => false, 'message' => 'Not Implemented.');
-	}
-
-	public function getMyBookings(User $patron)
-	{
-		return [];
-	}
-
 	public function placeVolumeHold(User $patron, $recordId, $volumeId, $pickupBranch)
 	{
 		return array(

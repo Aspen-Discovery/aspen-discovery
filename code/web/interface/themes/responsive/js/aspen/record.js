@@ -67,40 +67,6 @@ AspenDiscovery.Record = (function(){
 			return false;
 		},
 
-		showBookMaterial: function(module, id){
-			if (Globals.loggedIn){
-				AspenDiscovery.loadingMessage();
-				//var source; // source not used for booking at this time
-				if (id.indexOf(":") > 0){
-					var idParts = id.split(":", 2);
-					//source = idParts[0];
-					id = idParts[1];
-				//}else{
-				//	source = 'ils';
-				}
-				$.getJSON(Globals.path + "/" + module + "/" + id + "/AJAX?method=getBookMaterialForm", function(data){
-					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
-				}).fail(AspenDiscovery.ajaxFail)
-			}else{
-				AspenDiscovery.Account.ajaxLogin(null, function(){
-					AspenDiscovery.Record.showBookMaterial(id);
-				}, false)
-			}
-			return false;
-		},
-
-		submitBookMaterialForm: function(){
-			var params = $('#bookMaterialForm').serialize();
-			var module = $('#module').val();
-			AspenDiscovery.showMessage('Scheduling', 'Processing, please wait.');
-			$.getJSON(Globals.path + "/" + module +"/AJAX", params+'&method=bookMaterial', function(data){
-				if (data.modalBody) AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
-					// For errors that can be fixed by the user, the form will be re-displayed
-				if (data.success) AspenDiscovery.showMessage('Success', data.message/*, true*/);
-				else if (data.message) AspenDiscovery.showMessage('Error', data.message);
-			}).fail(AspenDiscovery.ajaxFail);
-		},
-
 		submitHoldForm: function(){
 			$('#requestTitleButton').prop('disabled', true);
 			$('#requestTitleButton').addClass('disabled');

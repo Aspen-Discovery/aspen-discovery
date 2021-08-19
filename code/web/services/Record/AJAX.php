@@ -16,11 +16,6 @@ class Record_AJAX extends Action
 			// Methods intend to return JSON data
 			if ($method == 'downloadMarc') {
 				echo $this->$method();
-			} else if (in_array($method, array('getBookingCalendar'))) {
-				header('Content-type: text/html');
-				header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
-				header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
-				echo $this->$method();
 			} else {
 				header('Content-type: application/json');
 				header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
@@ -325,76 +320,6 @@ class Record_AJAX extends Action
 			);
 		}
 		return $results;
-	}
-
-	/** @noinspection PhpUnused */
-	function getBookMaterialForm($errorMessage = null) : array
-	{
-		global $interface;
-		if (UserAccount::isLoggedIn()) {
-			$id = $_REQUEST['id'];
-
-			require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
-			$marcRecord = new MarcRecordDriver($id);
-			$title = $marcRecord->getTitle();
-			$interface->assign('id', $id);
-			if ($errorMessage) $interface->assign('errorMessage', $errorMessage);
-			$results = array(
-				'title' => 'Schedule ' . $title,
-				'modalBody' => $interface->fetch("Record/book-materials-form.tpl"),
-				'modalButtons' => '<button class="btn btn-primary" onclick="$(\'#bookMaterialForm\').submit()">Schedule Item</button>'
-				// Clicking invokes submit event, which allows the validator to act before calling the ajax handler
-			);
-		} else {
-			$results = array(
-				'title' => 'Please login',
-				'modalBody' => "You must be logged in.  Please close this dialog and login before scheduling this item.",
-				'modalButtons' => ""
-			);
-		}
-		return $results;
-	}
-
-	/** @noinspection PhpUnused */
-	function getBookingCalendar()
-	{
-		$recordId = $_REQUEST['id'];
-		if (strpos($recordId, ':') !== false) list(, $recordId) = explode(':', $recordId, 2); // remove any prefix from the recordId
-		if (!empty($recordId)) {
-			$user = UserAccount::getLoggedInUser();
-			$catalog = $user->getCatalogDriver();
-			return $catalog->getBookingCalendar($recordId);
-		}
-		return null;
-	}
-
-	/** @noinspection PhpUnused */
-	function bookMaterial()
-	{
-		if (!empty($_REQUEST['id'])) {
-			$recordId = $_REQUEST['id'];
-			if (strpos($recordId, ':') !== false) list(, $recordId) = explode(':', $recordId, 2); // remove any prefix from the recordId
-		}
-		if (empty($recordId)) {
-			return array('success' => false, 'message' => 'Item ID is required.');
-		}
-		if (isset($_REQUEST['startDate'])) {
-			$startDate = $_REQUEST['startDate'];
-		} else {
-			return array('success' => false, 'message' => 'Start Date is required.');
-		}
-
-		$startTime = empty($_REQUEST['startTime']) ? null : $_REQUEST['startTime'];
-		$endDate = empty($_REQUEST['endDate']) ? null : $_REQUEST['endDate'];
-		$endTime = empty($_REQUEST['endTime']) ? null : $_REQUEST['endTime'];
-
-		$user = UserAccount::getLoggedInUser();
-		if ($user) { // The user is already logged in
-			return $user->bookMaterial($recordId, $startDate, $startTime, $endDate, $endTime);
-
-		} else {
-			return array('success' => false, 'message' => 'User not logged in.');
-		}
 	}
 
 	function placeHold() : array

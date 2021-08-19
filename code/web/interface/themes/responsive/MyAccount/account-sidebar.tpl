@@ -112,13 +112,6 @@
 									{/if}
 								</ul>
 
-								{if $enableMaterialsBooking}
-									<div class="myAccountLink">
-										<a href="/MyAccount/Bookings" id="bookings">
-											{translate text="Scheduled Items"} {if !$offline}<span class="badge"><span class="bookings-placeholder">??</span></span>{/if}
-										</a>
-									</div>
-								{/if}
 								<div class="myAccountLink">
 									<a href="/MyAccount/ReadingHistory">
 										{translate text="Reading History"} {if !$offline}<span class="badge"><span class="readingHistory-placeholder">??</span></span>{/if}

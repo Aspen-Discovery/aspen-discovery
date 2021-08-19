@@ -145,5 +145,13 @@ function getUpdates21_10_00() : array
 				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='View eCommerce Reports'))",
 			]
 		], //ecommerce_report_permissions
+		'remove_bookings' => [
+			'title' => 'Remove Unused Bookings code',
+			'description' => 'Remove Unused Bookings code',
+			'sql' => [
+				'ALTER TABLE library DROP COLUMN enableMaterialsBooking',
+				'ALTER TABLE user_account_summary DROP COLUMN numBookings'
+			]
+		], //remove_bookings
 	];
 }

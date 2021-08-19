@@ -362,65 +362,6 @@ class MyAccount_AJAX extends JSON_Action
 		return $tmpResult;
 	}
 
-	/** @noinspection PhpUnused */
-	function cancelBooking()
-	{
-		$totalCancelled = null;
-		$numCancelled = null;
-		try {
-			$user = UserAccount::getLoggedInUser();
-
-			if (!empty($_REQUEST['cancelAll']) && $_REQUEST['cancelAll'] == 1) {
-				$result = $user->cancelAllBookedMaterial();
-			} else {
-				$cancelIds = !empty($_REQUEST['cancelId']) ? $_REQUEST['cancelId'] : array();
-
-				$totalCancelled = 0;
-				$numCancelled = 0;
-				$result = array(
-					'success' => true,
-					'message' => 'Your scheduled items were successfully canceled.'
-				);
-				foreach ($cancelIds as $userId => $cancelId) {
-					$patron = $user->getUserReferredTo($userId);
-					$userResult = $patron->cancelBookedMaterial($cancelId);
-					$numCancelled += $userResult['success'] ? count($cancelId) : count($cancelId) - count($userResult['message']);
-					$totalCancelled += count($cancelId);
-					// either all were canceled or total canceled minus the number of errors (1 error per failure)
-
-					if (!$userResult['success']) {
-						if ($result['success']) { // the first failure
-							$result = $userResult;
-						} else { // additional failures
-							$result['message'] = array_merge($result['message'], $userResult['message']);
-						}
-					}
-				}
-			}
-		} catch (PDOException $e) {
-			global $logger;
-			$logger->log('Booking : ' . $e->getMessage(), Logger::LOG_ERROR);
-
-			$result = array(
-				'success' => false,
-				'message' => 'We could not connect to the circulation system, please try again later.'
-			);
-		}
-		$failed = (!$result['success'] && is_array($result['message']) && !empty($result['message'])) ? array_keys($result['message']) : null; //returns failed id for javascript function
-
-		global $interface;
-		$interface->assign('cancelResults', $result);
-		$interface->assign('numCancelled', $numCancelled);
-		$interface->assign('totalCancelled', $totalCancelled);
-
-		return array(
-			'title' => 'Cancel Booking',
-			'modalBody' => $interface->fetch('MyAccount/cancelBooking.tpl'),
-			'success' => $result['success'],
-			'failed' => $failed
-		);
-	}
-
 	function freezeHold()
 	{
 		$user = UserAccount::getLoggedInUser();
@@ -1372,11 +1313,6 @@ class MyAccount_AJAX extends JSON_Action
 				$timer->logTime("Loaded ILS Summary for User and linked users");
 
 				$ilsSummary->setReadingHistory($user->getReadingHistorySize());
-
-				global $library;
-				if ($library->enableMaterialsBooking) {
-					$ilsSummary->numBookings = $user->getNumBookingsTotal();
-				}
 
 				//Expiration and fines
 				$interface->assign('ilsSummary', $ilsSummary);

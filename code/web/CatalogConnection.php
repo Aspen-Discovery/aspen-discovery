@@ -605,36 +605,6 @@ class CatalogConnection
 		return $result;
 	}
 
-	function bookMaterial($patron, $recordId, $startDate, $startTime = null, $endDate = null, $endTime = null)
-	{
-		return $this->driver->bookMaterial($patron, $recordId, $startDate, $startTime, $endDate, $endTime);
-	}
-
-	function cancelBookedMaterial($patron, $cancelIds)
-	{
-		return $this->driver->cancelBookedMaterial($patron, $cancelIds);
-	}
-
-	function cancelAllBookedMaterial($patron)
-	{
-		return $this->driver->cancelAllBookedMaterial($patron);
-	}
-
-	/**
-	 * @param User $patron
-	 *
-	 * @return array
-	 */
-	function getMyBookings($patron)
-	{
-		$bookings = $this->driver->getMyBookings($patron);
-		foreach ($bookings as &$booking) {
-			$booking['user'] = $patron->getNameAndLibraryLabel();
-			$booking['userId'] = $patron->id;
-		}
-		return $bookings;
-	}
-
 	function selfRegister()
 	{
 		$result = $this->driver->selfRegister();
@@ -822,13 +792,6 @@ class CatalogConnection
 	function changeHoldPickupLocation(User $patron, $recordId, $itemToUpdateId, $newPickupLocation)
 	{
 		return $this->driver->changeHoldPickupLocation($patron, $recordId, $itemToUpdateId, $newPickupLocation);
-	}
-
-	public function getBookingCalendar($recordId)
-	{
-		// Graceful degradation -- return null if method not supported by driver.
-		return method_exists($this->driver, 'getBookingCalendar') ?
-			$this->driver->getBookingCalendar($recordId) : null;
 	}
 
 	public function renewCheckout($patron, $recordId, $itemId = null, $itemIndex = null)

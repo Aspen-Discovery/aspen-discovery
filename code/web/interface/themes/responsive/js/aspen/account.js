@@ -357,7 +357,6 @@ AspenDiscovery.Account = (function(){
 						}
 						$(".readingHistory-placeholder").html(data.summary.readingHistory);
 						$(".materialsRequests-placeholder").html(data.summary.materialsRequests);
-						$(".bookings-placeholder").html(data.summary.bookings);
 						$(".expirationFinesNotice-placeholder").html(data.summary.expirationFinesNotice);
 					}
 				});
@@ -719,98 +718,6 @@ AspenDiscovery.Account = (function(){
 			} else {
 				this.ajaxLogin(null, this.cancelHoldAll, true);
 				//auto close so that if user opts out of canceling, the login window closes; if the users continues, follow-up operations will reopen modal
-			}
-			return false;
-		},
-
-		cancelBooking: function(patronId, cancelId){
-			if (confirm("Are you sure you want to cancel this scheduled item?")){
-				if (Globals.loggedIn) {
-					AspenDiscovery.loadingMessage();
-					var c = {};
-					c[patronId] = cancelId;
-					// noinspection JSUnresolvedFunction
-					$.getJSON(Globals.path + "/MyAccount/AJAX", {method:"cancelBooking", cancelId:c}, function(data){
-						AspenDiscovery.showMessage(data.title, data.modalBody, data.success); // automatically close when successful
-						if (data.success) {
-							// remove canceled item from page
-							var escapedId = cancelId.replace(/:/g, "\\:"); // needed for jquery selector to work correctly
-							// first backslash for javascript escaping, second for css escaping (within jquery)
-							$('div.result').has('#selected'+escapedId).remove();
-						}
-					}).fail(AspenDiscovery.ajaxFail)
-				} else {
-					this.ajaxLogin(null, function () {
-						AspenDiscovery.Account.cancelBooking(cancelId)
-					}, false);
-				}
-			}
-
-			return false
-		},
-
-		cancelSelectedBookings: function(){
-			if (Globals.loggedIn) {
-				var selectedTitles = this.getSelectedTitles();
-				var numBookings = $("input.titleSelect:checked").length;
-				// if numBookings equals 0, quit because user has canceled in getSelectedTitles()
-				if (numBookings > 0 && confirm('Cancel ' + numBookings + ' selected scheduled item' + (numBookings > 1 ? 's' : '') + '?')) {
-					AspenDiscovery.loadingMessage();
-					// noinspection JSUnresolvedFunction
-					$.getJSON(Globals.path + "/MyAccount/AJAX?method=cancelBooking&"+selectedTitles, function(data){
-						AspenDiscovery.showMessage(data.title, data.modalBody, data.success); // automatically close when successful
-						if (data.success) {
-							// remove canceled items from page
-							$("input.titleSelect:checked").closest('div.result').remove();
-						} else {
-							if (data.failed) { // remove items that didn't fail
-								var searchArray = data.failed.map(function(ele){return ele.toString()});
-								// convert any number values to string, this is needed bcs inArray() below does strict comparisons
-								// & id will be a string. (sometimes the id values are of type number )
-								$("input.titleSelect:checked").each(function(){
-									var id = $(this).attr('id').replace(/selected/g, ''); //strip down to just the id part
-									if ($.inArray(id, searchArray) === -1) // if the item isn't one of the failed cancels, get rid of its containing div.
-										$(this).closest('div.result').remove();
-								});
-							}
-						}
-					}).fail(AspenDiscovery.ajaxFail);
-				}
-			} else {
-				this.ajaxLogin(null, AspenDiscovery.Account.cancelSelectedBookings, false);
-			}
-			return false;
-
-		},
-
-		cancelAllBookings: function(){
-			if (Globals.loggedIn) {
-				if (confirm('Cancel all of your scheduled items?')) {
-					AspenDiscovery.loadingMessage();
-					// noinspection JSUnresolvedFunction
-					$.getJSON(Globals.path + "/MyAccount/AJAX?method=cancelBooking&cancelAll=1", function(data){
-						AspenDiscovery.showMessage(data.title, data.modalBody, data.success); // automatically close when successful
-						if (data.success) {
-							// remove canceled items from page
-							$("input.titleSelect").closest('div.result').remove();
-						} else {
-							if (data.failed) { // remove items that didn't fail
-								var searchArray = data.failed.map(function (ele) {
-									return ele.toString()
-								});
-								// convert any number values to string, this is needed bcs inArray() below does strict comparisons
-								// & id will be a string. (sometimes the id values are of type number )
-								$("input.titleSelect").each(function () {
-									var id = $(this).attr('id').replace(/selected/g, ''); //strip down to just the id part
-									if ($.inArray(id, searchArray) === -1) // if the item isn't one of the failed cancels, get rid of its containing div.
-										$(this).closest('div.result').remove();
-								});
-							}
-						}
-					}).fail(AspenDiscovery.ajaxFail);
-				}
-			} else {
-				this.ajaxLogin(null, AspenDiscovery.Account.cancelAllBookings, false);
 			}
 			return false;
 		},
