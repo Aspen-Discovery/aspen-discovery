@@ -275,6 +275,7 @@ class Library extends DataObject
 	public $enableWebBuilder;
 
 	private $_cloudLibraryScopes;
+	private $_libraryLinks;
 
 	static $archiveRequestFormFieldOptions = array('Hidden', 'Optional', 'Required');
 
@@ -1238,17 +1239,17 @@ class Library extends DataObject
 		}elseif ($name == "archiveSearchFacets") {
 			return $this->getArchiveSearchFacets();
 		}elseif ($name == 'libraryLinks'){
-			if (!isset($this->libraryLinks) && $this->libraryId){
-				$this->libraryLinks = array();
+			if (!isset($this->_libraryLinks) && $this->libraryId){
+				$this->_libraryLinks = array();
 				$libraryLink = new LibraryLink();
 				$libraryLink->libraryId = $this->libraryId;
 				$libraryLink->orderBy('weight');
 				$libraryLink->find();
 				while ($libraryLink->fetch()){
-					$this->libraryLinks[$libraryLink->id] = clone($libraryLink);
+					$this->_libraryLinks[$libraryLink->id] = clone($libraryLink);
 				}
 			}
-			return $this->libraryLinks;
+			return $this->_libraryLinks;
 		}elseif ($name == 'recordsOwned'){
 			if (!isset($this->recordsOwned) && $this->libraryId){
 				$this->recordsOwned = array();
@@ -1332,8 +1333,7 @@ class Library extends DataObject
 		}elseif ($name == "archiveSearchFacets") {
 			$this->_archiveSearchFacets = $value;
 		}elseif ($name == 'libraryLinks'){
-			/** @noinspection PhpUndefinedFieldInspection */
-			$this->libraryLinks = $value;
+			$this->_libraryLinks = $value;
 		}elseif ($name == 'recordsOwned'){
 			/** @noinspection PhpUndefinedFieldInspection */
 			$this->recordsOwned = $value;
@@ -1451,9 +1451,9 @@ class Library extends DataObject
 	}
 
 	public function saveLibraryLinks(){
-		if (isset ($this->libraryLinks) && is_array($this->libraryLinks)){
-			$this->saveOneToManyOptions($this->libraryLinks, 'libraryId');
-			unset($this->libraryLinks);
+		if (isset ($this->_libraryLinks) && is_array($this->_libraryLinks)){
+			$this->saveOneToManyOptions($this->_libraryLinks, 'libraryId');
+			unset($this->_libraryLinks);
 		}
 	}
 
@@ -1489,7 +1489,7 @@ class Library extends DataObject
 		if (isset ($this->_materialsRequestFormats) && is_array($this->_materialsRequestFormats)){
 			/** @var MaterialsRequestFormats $object */
 			foreach ($this->_materialsRequestFormats as $object){
-				if (isset($object->deleteOnSave) && $object->deleteOnSave == true){
+				if ($object->_deleteOnSave == true){
 					$deleteCheck = $object->delete();
 					if (!$deleteCheck) {
 						$errorString = 'Materials Request(s) are present for the format "' . $object->format . '".';

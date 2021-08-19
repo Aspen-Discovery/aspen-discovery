@@ -107,9 +107,8 @@ class TranslationMap extends DataObject{
 
 	public function saveMapValues(){
 		if (isset ($this->_translationMapValues)){
-			/** @var TranslationMapValue $value */
 			foreach ($this->_translationMapValues as $value){
-				if (isset($value->deleteOnSave) && $value->deleteOnSave == true){
+				if ($value->_deleteOnSave == true){
 					$value->delete();
 				}else{
 					if (isset($value->id) && is_numeric($value->id)){

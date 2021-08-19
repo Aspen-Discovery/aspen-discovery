@@ -5,14 +5,14 @@
 			<thead>
 			<tr>
 				{if $property.sortable}
-					<th>Sort</th>
+					<th>{translate text="Sort"}</th>
 				{/if}
 				{foreach from=$property.structure item=subProperty}
 					{if in_array($subProperty.type, array('text', 'regularExpression', 'enum', 'date', 'checkbox', 'integer', 'textarea', 'html')) || ($subProperty.type == 'multiSelect' && $subProperty.listStyle == 'checkboxList') }
-						<th{if in_array($subProperty.type, array('text', 'regularExpression', 'enum', 'html', 'multiSelect'))} style="min-width:150px"{/if}>{$subProperty.label}</th>
+						<th{if in_array($subProperty.type, array('text', 'regularExpression', 'enum', 'html', 'multiSelect'))} style="min-width:150px"{/if}>{$subProperty.label|translate}</th>
 					{/if}
 				{/foreach}
-				<th>Actions</th>
+				<th>{translate text="Actions"}</th>
 			</tr>
 			</thead>
 			<tbody>

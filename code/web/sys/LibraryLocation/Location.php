@@ -1177,7 +1177,7 @@ class Location extends DataObject
 		if (isset ($this->_recordsOwned) && is_array($this->_recordsOwned)) {
 			/** @var LocationRecordOwned $object */
 			foreach ($this->_recordsOwned as $object) {
-				if (isset($object->deleteOnSave) && $object->deleteOnSave == true) {
+				if ( $object->_deleteOnSave == true) {
 					$object->delete();
 				} else {
 					if (isset($object->id) && is_numeric($object->id)) {

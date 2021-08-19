@@ -166,7 +166,7 @@ class Placard extends DataObject
 		if (isset ($this->triggers) && is_array($this->triggers)) {
 			/** @var PlacardTrigger $trigger */
 			foreach ($this->triggers as $trigger) {
-				if (isset($trigger->deleteOnSave) && $trigger->deleteOnSave == true) {
+				if ($trigger->_deleteOnSave == true) {
 					$trigger->delete();
 				} else {
 					if (isset($trigger->id) && is_numeric($trigger->id)) {

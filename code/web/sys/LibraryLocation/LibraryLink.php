@@ -83,12 +83,16 @@ class LibraryLink extends DataObject{
 	public function __get($name){
 		if ($name == "allowAccess") {
 			return $this->getAccess();
+		}else{
+			return $this->_data[$name];
 		}
 	}
 
 	public function __set($name, $value){
 		if ($name == "allowAccess") {
 			$this->_allowAccess = $value;
+		}else{
+			$this->_data[$name] = $value;
 		}
 	}
 

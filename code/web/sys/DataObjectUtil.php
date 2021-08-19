@@ -519,7 +519,7 @@ class DataObjectUtil
 
 					$deleted = isset($deletions[$id]) ? $deletions[$id] : false;
 					if ($deleted == 'true'){
-						$subObject->deleteOnSave = true;
+						$subObject->_deleteOnSave = true;
 					}else{
 						//Update properties of each associated object
 						foreach ($subStructure as $subProperty){

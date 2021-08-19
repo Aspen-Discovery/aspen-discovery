@@ -351,7 +351,7 @@ class CollectionSpotlight extends DataObject
 	{
 		if ($this->_lists != null) {
 			foreach ($this->_lists as $list) {
-				if (isset($list->deleteOnSave) && $list->deleteOnSave == true) {
+				if ($list->_deleteOnSave == true) {
 					$list->delete();
 				} else {
 					if (isset($list->id) && is_numeric($list->id)) {
@@ -382,7 +382,7 @@ class CollectionSpotlight extends DataObject
 
 		if ($this->_lists != null){
 			foreach ($this->_lists as $list) {
-				if (isset($list->deleteOnSave) && $list->deleteOnSave == true) {
+				if ($list->_deleteOnSave == true) {
 					//Don't validate
 				} else {
 					//Check to make sure that all list names are unique

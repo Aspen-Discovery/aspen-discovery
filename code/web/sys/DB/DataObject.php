@@ -34,6 +34,8 @@ abstract class DataObject
 
 	protected $_changedFields = [];
 
+	public $_deleteOnSave;
+
 	/**
 	 * @return string[]
 	 */
@@ -724,7 +726,7 @@ abstract class DataObject
 	{
 		/** @var DataObject $oneToManyDBObject */
 		foreach ($oneToManySettings as $oneToManyDBObject) {
-			if (isset($oneToManyDBObject->deleteOnSave) && $oneToManyDBObject->deleteOnSave == true){
+			if ( $oneToManyDBObject->_deleteOnSave == true){
 				$oneToManyDBObject->delete();
 			}else{
 				if (isset($oneToManyDBObject->{$oneToManyDBObject->__primaryKey}) && is_numeric($oneToManyDBObject->{$oneToManyDBObject->__primaryKey})){ // (negative ids need processed with insert)

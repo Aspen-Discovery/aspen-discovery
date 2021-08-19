@@ -450,7 +450,7 @@ class IndexingProfile extends DataObject
 		if (isset ($this->_translationMaps)) {
 			/** @var TranslationMap $translationMap */
 			foreach ($this->_translationMaps as $translationMap) {
-				if (isset($translationMap->deleteOnSave) && $translationMap->deleteOnSave == true) {
+				if ($translationMap->_deleteOnSave = true) {
 					$translationMap->delete();
 				} else {
 					if (isset($translationMap->id) && is_numeric($translationMap->id)) {
@@ -471,7 +471,7 @@ class IndexingProfile extends DataObject
 		if (isset ($this->_timeToReshelve)) {
 			/** @var TimeToReshelve $timeToReshelve */
 			foreach ($this->_timeToReshelve as $timeToReshelve) {
-				if (isset($timeToReshelve->deleteOnSave) && $timeToReshelve->deleteOnSave == true) {
+				if ($timeToReshelve->_deleteOnSave == true) {
 					$timeToReshelve->delete();
 				} else {
 					if (isset($timeToReshelve->id) && is_numeric($timeToReshelve->id)) {
@@ -492,7 +492,7 @@ class IndexingProfile extends DataObject
 		if (isset ($this->_sierraFieldMappings)) {
 			/** @var SierraExportFieldMapping $sierraFieldMapping */
 			foreach ($this->_sierraFieldMappings as $sierraFieldMapping) {
-				if (isset($sierraFieldMapping->deleteOnSave) && $sierraFieldMapping->deleteOnSave == true) {
+				if ($sierraFieldMapping->_deleteOnSave == true) {
 					$sierraFieldMapping->delete();
 				} else {
 					if (isset($sierraFieldMapping->id) && is_numeric($sierraFieldMapping->id)) {
@@ -513,7 +513,7 @@ class IndexingProfile extends DataObject
 		if (isset ($this->_statusMap)) {
 			/** @var StatusMapValue $statusMapValue */
 			foreach ($this->_statusMap as $statusMapValue) {
-				if (isset($statusMapValue->deleteOnSave) && $statusMapValue->deleteOnSave == true) {
+				if ($statusMapValue->_deleteOnSave == true) {
 					$statusMapValue->delete();
 				} else {
 					if (isset($statusMapValue->id) && is_numeric($statusMapValue->id)) {
@@ -534,7 +534,7 @@ class IndexingProfile extends DataObject
 		if (isset ($this->_formatMap)) {
 			/** @var FormatMapValue $formatMapValue */
 			foreach ($this->_formatMap as $formatMapValue) {
-				if (isset($formatMapValue->deleteOnSave) && $formatMapValue->deleteOnSave == true) {
+				if ($formatMapValue->_deleteOnSave == true) {
 					$formatMapValue->delete();
 				} else {
 					if (isset($formatMapValue->id) && is_numeric($formatMapValue->id)) {

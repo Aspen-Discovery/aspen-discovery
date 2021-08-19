@@ -137,7 +137,7 @@ class BrowseCategory extends BaseBrowsable
 			/** @var SubBrowseCategories[] $subBrowseCategories */
 			/** @var SubBrowseCategories $subCategory */
 			foreach ($this->_subBrowseCategories as $subCategory) {
-				if (isset($subCategory->deleteOnSave) && $subCategory->deleteOnSave == true) {
+				if ($subCategory->_deleteOnSave == true) {
 					$subCategory->delete();
 				} else {
 					if (isset($subCategory->id) && is_numeric($subCategory->id)) {
