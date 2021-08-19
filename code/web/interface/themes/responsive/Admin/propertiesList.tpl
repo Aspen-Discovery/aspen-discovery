@@ -143,7 +143,7 @@
 										Not set
 									{/if}
 								{elseif $property.type == 'checkbox'}
-									{if ($propValue == 1)}{translate text="Yes"}{elseif ($propValue == 1)}{translate text="No"}{else}{$propValue}{/if}
+									{if ($propValue == 1)}{translate text="Yes"}{elseif ($propValue == 0)}{translate text="No"}{else}{$propValue}{/if}
 								{elseif $property.type == 'image'}
 									<img src="{$property.displayUrl}{$dataItem->id}" class="img-responsive" alt="{$propName}">
 								{else}
