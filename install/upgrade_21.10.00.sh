@@ -1,2 +1,2 @@
 #!/bin/sh
-yum install php-pecl-imagick
+yum -y install php-pecl-imagick
