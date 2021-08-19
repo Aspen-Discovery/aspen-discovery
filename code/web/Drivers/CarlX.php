@@ -516,9 +516,12 @@ class CarlX extends AbstractIlsDriver{
 	}
 
 	function freezeHold(User $patron, $recordId, $itemToFreezeId, $dateToReactivate) {
-		$unavailableHoldViaSIP = $this->getUnavailableHoldViaSIP($patron, $recordId);
+		$unavailableHoldViaSIP = $this->getUnavailableHoldViaSIP($patron, $recordId); // "unavailable hold" is CarlX-speak for holds not yet on the hold shelf, i.e., "holds not yet ready for pickup"
 		$queuePosition = $unavailableHoldViaSIP['queuePosition'];
 		$pickupLocation = $unavailableHoldViaSIP['pickupLocation']; // NB branchcode not branchnumber
+		if (preg_match('/\d{4}-\d{2}-\d{2}/', $dateToReactivate)) { // Aspen 21.10 set YYYY-MM-DD as reactivationDate format; CarlX 9.6.8 expects MM/DD/YYYY
+			$dateToReactivate = preg_replace('/(\d{4})-(\d{2})-(\d{2})/', '$2/$3/$1', $dateToReactivate);
+		}
 		$freezeReactivationDate = $dateToReactivate . 'B';
 		$result = $this->placeHoldViaSIP($patron, $recordId, $pickupLocation, null, 'update', $queuePosition, 'freeze', $freezeReactivationDate);
 		return $result;
