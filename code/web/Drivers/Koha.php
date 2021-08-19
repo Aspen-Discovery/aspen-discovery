@@ -1018,10 +1018,8 @@ class Koha extends AbstractIlsDriver
 		];
 
 		if ($cancelDate != null) {
-			if ($this->getKohaVersion() >= 21.05) {
+			if ($this->getKohaVersion() >= 20.05) {
 				$holdParams['expiry_date'] = str_replace('/', '-', $this->aspenDateToKohaDate($cancelDate));
-			}elseif ($this->getKohaVersion() >= 20.05) {
-				$holdParams['expiry_date'] = $this->aspenDateToKohaDate($cancelDate);
 			}else{
 				$holdParams['needed_before_date'] = $this->aspenDateToKohaDate($cancelDate);
 			}
@@ -1163,10 +1161,8 @@ class Koha extends AbstractIlsDriver
 			'pickup_location' => $pickupBranch
 		];
 		if ($cancelDate != null) {
-			if ($this->getKohaVersion() >= 21.05) {
+			if ($this->getKohaVersion() >= 20.05) {
 				$holdParams['expiry_date'] = str_replace('/', '-', $this->aspenDateToKohaDate($cancelDate));
-			}elseif ($this->getKohaVersion() >= 20.05) {
-				$holdParams['expiry_date'] = $this->aspenDateToKohaDate($cancelDate);
 			}else{
 				$holdParams['needed_before_date'] = $this->aspenDateToKohaDate($cancelDate);
 			}
