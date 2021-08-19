@@ -1626,6 +1626,13 @@ class Library extends DataObject
 		return $location->count();
 	}
 
+	public function getNumSearchLocationsForLibrary(){
+		$location = new Location;
+		$location->libraryId = $this->libraryId;
+		$location->createSearchInterface = 1;
+		return $location->count();
+	}
+
 	public function getArchiveRequestFormStructure() {
 		$defaultForm = ArchiveRequest::getObjectStructure();
 		foreach ($defaultForm as $index => &$formField) {
