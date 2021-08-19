@@ -12,7 +12,6 @@ class AccountSummary extends DataObject
 	public $numOverdue;
 	public $numAvailableHolds;
 	public $numUnavailableHolds;
-	public $numBookings;
 	public $totalFines;
 	public $expirationDate;
 	public $lastLoaded;
@@ -22,7 +21,7 @@ class AccountSummary extends DataObject
 
 	public function getNumericColumnNames() : array
 	{
-		return ['userId','numCheckedOut','numCheckoutsRemaining','numOverdue','numAvailableHolds','numUnavailableHolds','numBookings','totalFines','expirationDate','lastLoaded'];
+		return ['userId','numCheckedOut','numCheckoutsRemaining','numOverdue','numAvailableHolds','numUnavailableHolds','totalFines','expirationDate','lastLoaded'];
 	}
 
 	/**
@@ -128,7 +127,6 @@ class AccountSummary extends DataObject
 		$this->numOverdue = 0;
 		$this->numAvailableHolds = 0;
 		$this->numUnavailableHolds = 0;
-		$this->numBookings = 0;
 		$this->totalFines = 0;
 		$this->expirationDate = 0;
 	}

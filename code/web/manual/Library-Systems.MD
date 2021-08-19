@@ -22,7 +22,7 @@
     - The checkbox 'Show Expiration Warnings' will warn patrons when their accounts are set to expire soon.
     - The checkbox 'Show While You Wait' allows Aspen to give patrons recommendations on items when placing holds. Reference the section of the manual on 'While You Wait' for more information.
     - The checkbox 'Allow Linked Accounts' tells Aspen that relationships between patron accounts in your ILS are present and can be allowed in Aspen, as well. For example, if your ILS has guarantor and guarantee relationships.
-    - The checkbox 'Show Library Hours Notice on Account Pages' determines whether or not the library hours should show My Account's Checked Out, Holds, and Bookings page.
+    - The checkbox 'Show Library Hours Notice on Account Pages' determines whether or not the library hours should show My Account's Checked Out, and Holds page.
   - Barcode
     - You can let Aspen know what your minimum and maximum length on patron barcodes.
     - If you define a Barcode Prefix, patrons can login with their cardnumber without the prefix. This is useful when patrons are more familiar with their unique id instead of the entire cardnumber.

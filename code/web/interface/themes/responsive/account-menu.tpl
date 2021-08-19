@@ -16,13 +16,6 @@
 					</a>
 				</div>
 
-				{if $enableMaterialsBooking}
-					<div class="header-menu-option" >
-						<a href="/MyAccount/Bookings" id="bookings">
-							{translate text="Scheduled Items"}
-						</a>
-					</div>
-				{/if}
 				<div class="header-menu-option" >
 					<a href="/MyAccount/ReadingHistory">
 						{translate text="Reading History"}

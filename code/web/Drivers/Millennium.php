@@ -522,39 +522,6 @@ class Millennium extends AbstractIlsDriver
 		return $result;
 	}
 
-	public function bookMaterial($patron, $recordId, $startDate, $startTime = null, $endDate = null, $endTime = null) {
-		require_once ROOT_DIR . '/Drivers/marmot_inc/MillenniumBooking.php';
-		$millenniumBooking = new MillenniumBooking($this);
-		return $millenniumBooking->bookMaterial($patron, $recordId, $startDate, $startTime, $endDate, $endTime);
-	}
-
-	/**
-	 * @param User $user  User to cancel for
-	 * @param $cancelIds  array uses a specific id for canceling a booking, rather than a record Id.
-	 * @return array data for client-side AJAX responses
-	 */
-	public function cancelBookedMaterial($user, $cancelIds) {
-		require_once ROOT_DIR . '/Drivers/marmot_inc/MillenniumBooking.php';
-		$millenniumBooking = new MillenniumBooking($this);
-		return $millenniumBooking->cancelBookedMaterial($user, $cancelIds);
-	}
-
-	/**
-	 * @param  User $patron
-	 * @return array      data for client-side AJAX responses
-	 */
-	public function cancelAllBookedMaterial($patron) {
-		require_once ROOT_DIR . '/Drivers/marmot_inc/MillenniumBooking.php';
-		$millenniumBooking = new MillenniumBooking($this);
-		return $millenniumBooking->cancelAllBookedMaterial($patron);
-	}
-
-	public function getBookingCalendar($recordId) {
-		require_once ROOT_DIR . '/Drivers/marmot_inc/MillenniumBooking.php';
-		$millenniumBooking = new MillenniumBooking($this);
-		return $millenniumBooking->getBookingCalendar($recordId);
-	}
-
 	/**
 	 * @param User $patron                     The User Object to make updates to
 	 * @param boolean $canUpdateContactInfo  Permission check that updating is allowed
@@ -765,12 +732,6 @@ class Millennium extends AbstractIlsDriver
 		}else{
 			return null;
 		}
-	}
-
-	public function getMyBookings($patron){
-		require_once ROOT_DIR . '/Drivers/marmot_inc/MillenniumBooking.php';
-		$millenniumBookings = new MillenniumBooking($this);
-		return $millenniumBookings->getMyBookings($patron);
 	}
 
 	function getCheckInGrid($id, $checkInGridId){
@@ -1590,7 +1551,6 @@ class Millennium extends AbstractIlsDriver
 		$user->_numHoldsIls = isset($patronDump) ? (isset($patronDump['HOLD']) ? count($patronDump['HOLD']) : 0) : '?';
 		$user->_numHoldsAvailableIls = $numHoldsAvailable;
 		$user->_numHoldsRequestedIls = $numHoldsRequested;
-		$user->_numBookings = isset($patronDump) ? (isset($patronDump['BOOKING']) ? count($patronDump['BOOKING']) : 0) : '?';
 
 		$noticeLabels = array(
 			//'-' => 'Mail',  // officially None in Sierra, as in No Preference Selected.

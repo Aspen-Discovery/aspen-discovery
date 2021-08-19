@@ -518,7 +518,6 @@ class UInterface extends Smarty
 		$this->assign('showWhileYouWait', $library->showWhileYouWait);
 
 		$this->assign('showItsHere', $library->showItsHere);
-		$this->assign('enableMaterialsBooking', $library->enableMaterialsBooking);
 
 		$this->assign('displayItemBarcode', $library->displayItemBarcode);
 

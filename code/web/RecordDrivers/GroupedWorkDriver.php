@@ -2576,18 +2576,22 @@ class GroupedWorkDriver extends IndexRecordDriver
 					}
 
 					//Sort Records within each manifestation and variation
-					foreach ($this->_relatedManifestations as $manifestation){
+					foreach ($this->_relatedManifestations as $manifestationKey => $manifestation){
 						$relatedRecordsForManifestation = $manifestation->getRelatedRecords();
 						if (count($relatedRecordsForManifestation) > 1) {
 							uasort($relatedRecordsForManifestation, array($this, "compareRelatedRecords"));
 							$manifestation->setSortedRelatedRecords($relatedRecordsForManifestation);
-							foreach ($manifestation->getVariations() as $variation) {
+							foreach ($manifestation->getVariations() as $variationKey => $variation) {
 								$relatedRecordsForVariation = $variation->getRelatedRecords();
 								if (count($relatedRecordsForVariation) > 1){
 									uasort($relatedRecordsForVariation, array($this, "compareRelatedRecords"));
 									$variation->setSortedRelatedRecords($relatedRecordsForVariation);
+								}elseif (count($relatedRecordsForVariation) == 0){
+									$manifestation->removeVariation($variationKey);
 								}
 							}
+						}elseif (count($relatedRecordsForManifestation) == 0){
+							unset($this->_relatedManifestations[$manifestationKey]);
 						}
 					}
 
@@ -2751,11 +2755,14 @@ class GroupedWorkDriver extends IndexRecordDriver
 				if ($libraryCallNumber == null) {
 					$libraryCallNumber = $item->callNumber;
 				}
-				if ($item->available && !$item->isEContent) {
+				//We don't want to set this if we are in a location scope and it isn't available at that branch
+				//if it was, location owned would be set
+				if ($item->available && !$item->isEContent && empty($physicalLocation)) {
 					$relatedRecord->getStatusInformation()->setAvailableLocally(true);
 				}
 				$relatedRecord->addLocalCopies($item->numCopies);
-				if ($searchLocation == null || $item->isEContent) {
+				//If we are inside a branch, we only set that it has a local item if locationOwned is true
+				if (empty($physicalLocation) && ($searchLocation == null || $item->isEContent)) {
 					$relatedRecord->setHasLocalItem(true);
 				}
 				$key = '5 ' . $key;

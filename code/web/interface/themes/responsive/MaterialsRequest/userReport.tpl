@@ -71,8 +71,6 @@
 
 <script type="text/javascript">
 {literal}
-	$("#startDate").datepicker();
-	$("#endDate").datepicker();
 	$("#summaryTable").tablesorter({cssAsc: 'sortAscHeader', cssDesc: 'sortDescHeader', cssHeader: 'unsortedHeader', headers: { 0: { sorter: 'date'} } });
 {/literal}
 </script>

@@ -96,7 +96,6 @@ class User extends DataObject
 	private $_numHoldsOverDrive = 0;
 	private $_numHoldsAvailableOverDrive = 0;
 	private $_numCheckedOutHoopla = 0;
-	public $_numBookings;
 	public $_notices;
 	public $_noticePreferenceLabel;
 	private $_numMaterialsRequests = 0;
@@ -878,19 +877,6 @@ class User extends DataObject
 		return $myHolds;
 	}
 
-	public function getNumBookingsTotal($includeLinkedUsers = true){
-		$myBookings = $this->_numBookings;
-		if ($includeLinkedUsers){
-			if ($this->getLinkedUsers() != null) {
-				foreach ($this->linkedUsers as $user) {
-					$myBookings += $user->getNumBookingsTotal(false);
-				}
-			}
-		}
-
-		return $myBookings;
-	}
-
 	private $totalFinesForLinkedUsers = -1;
 	/** @noinspection PhpUnused */
 	public function getTotalFines($includeLinkedUsers = true){
@@ -1293,22 +1279,6 @@ class User extends DataObject
 		return $actions;
 	}
 
-	public function getMyBookings($includeLinkedUsers = true){
-		$ilsBookings = $this->getCatalogDriver()->getMyBookings($this);
-		if ($ilsBookings instanceof AspenError) {
-			$ilsBookings = array();
-		}
-
-		if ($includeLinkedUsers) {
-			if ($this->getLinkedUsers() != null) {
-				foreach ($this->getLinkedUsers() as $user) {
-					$ilsBookings = array_merge_recursive($ilsBookings, $user->getMyBookings(false));
-				}
-			}
-		}
-		return $ilsBookings;
-	}
-
 	private $ilsFinesForUser;
 	public function getFines($includeLinkedUsers = true){
 
@@ -1455,14 +1425,6 @@ class User extends DataObject
 		return $result;
 	}
 
-	function bookMaterial($recordId, $startDate, $startTime, $endDate, $endTime){
-		$result = $this->getCatalogDriver()->bookMaterial($this, $recordId, $startDate, $startTime, $endDate, $endTime);
-		if ($result['success']){
-			$this->clearCache();
-		}
-		return $result;
-	}
-
 	function updateAltLocationForHold($pickupBranch){
 		if ($this->_homeLocationCode != $pickupBranch) {
 			global $logger;
@@ -1484,35 +1446,6 @@ class User extends DataObject
 				$logger->log("Could not find location for $pickupBranch", Logger::LOG_ERROR);
 			}
 		}
-	}
-
-	function cancelBookedMaterial($cancelId){
-		$result = $this->getCatalogDriver()->cancelBookedMaterial($this, $cancelId);
-		$this->clearCache();
-		return $result;
-	}
-
-	function cancelAllBookedMaterial($includeLinkedUsers = true){
-		$result = $this->getCatalogDriver()->cancelAllBookedMaterial($this);
-		$this->clearCache();
-
-		if ($includeLinkedUsers) {
-			if ($this->getLinkedUsers() != null) {
-				foreach ($this->getLinkedUsers() as $user) {
-
-					$additionalResults = $user->cancelAllBookedMaterial(false);
-					if (!$additionalResults['success']) { // if we received failures
-						if ($result['success']) {
-							$result = $additionalResults; // first set of failures, overwrite currently successful results
-						} else { // if there were already failures, add the extra failure messages
-							$result['message'] = array_merge($result['message'], $additionalResults['message']);
-						}
-					}
-				}
-			}
-		}
-
-		return $result;
 	}
 
 	/**

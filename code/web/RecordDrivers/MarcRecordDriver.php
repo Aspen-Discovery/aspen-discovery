@@ -970,15 +970,6 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 					);
 				}
 			}
-			if ($isBookable && $library->enableMaterialsBooking) {
-				$this->_actions[] = array(
-					'title' => 'Schedule Item',
-					'url' => '',
-					'onclick' => "return AspenDiscovery.Record.showBookMaterial('{$this->getModule()}', '{$this->getId()}');",
-					'requireLogin' => false,
-					'type' => 'ils_booking'
-				);
-			}
 
 			//Check to see if a PDF has been uploaded for the record
 			$uploadedPDFs = $this->getUploadedPDFs();

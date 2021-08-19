@@ -44,6 +44,9 @@ class Grouping_Manifestation
 		$this->_variations[] = $variation;
 	}
 
+	function removeVariation($variationKey){
+		unset($this->_variations[$variationKey]);
+	}
 	function addRecord(Grouping_Record $record)
 	{
 		//Check our variations to see if we need to create a new one

@@ -25,8 +25,8 @@ require_once '../bootstrap_aspen.php';
 # ****************************************************************************************************************************
 # * grab the passed location parameter, then find the path
 # ****************************************************************************************************************************
-$library = $_GET['library'];
-$locationInfo = urlPath($library);
+$libraryInfo = $_GET['library'];
+$locationInfo = urlPath($libraryInfo);
 $urlPath = $locationInfo[0];
 $shortname = $locationInfo[1];
 

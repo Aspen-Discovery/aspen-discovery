@@ -10,11 +10,11 @@
 						<div  class="form-horizontal">
 							<div class="form-group">
 								<label for="startDate" class="control-label col-sm-2">Start Date</label>
-								<input type="text" name="startDate" id="startDate" size="10" value="{$startDate|date_format:'%m/%d/%Y'}" class="form-control col-sm-3" style="width: auto;"/>
+								<input type="date" name="startDate" id="startDate" size="10" value="{$startDate|date_format:'%Y-%m-%d'}" max="{$smarty.now|date_format:"%Y-%m-%d"}" class="form-control col-sm-3" style="width: auto;"/>
 							</div>
 							<div class="form-group">
 								<label for="endDate" class="control-label col-sm-2">End Date</label>
-								<input type="text" name="endDate" id="endDate" size="10" value="{$endDate|date_format:'%m/%d/%Y'}" class="form-control col-sm-3" style="width: auto;"/>
+								<input type="date" name="endDate" id="endDate" size="10" value="{$endDate|date_format:'%Y-%m-%d'}" max="{$smarty.now|date_format:"%Y-%m-%d"}" class="form-control col-sm-3" style="width: auto;"/>
 							</div>
 							<div class="form-group">
 								<label class="control-label col-sm-2">Status</label>
@@ -63,8 +63,6 @@
 	<script	type="text/javascript">
 		{literal}
 		$(function() {
-			$( "#startDate" ).datepicker({ showOn: "button", buttonImage: "/images/silk/calendar.png", numberOfMonths: 2,	buttonImageOnly: true});
-			$( "#endDate" ).datepicker({ showOn: "button", buttonImage: "/images/silk/calendar.png", numberOfMonths: 2,	buttonImageOnly: true});
 			$("#offlineHoldsReport").tablesorter({cssAsc: 'sortAscHeader', cssDesc: 'sortDescHeader', cssHeader: 'unsortedHeader', widgets:['zebra', 'filter'] });
 		});
 		{/literal}

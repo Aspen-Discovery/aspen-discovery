@@ -60,17 +60,6 @@
 {/strip}
 {if $promptForBirthDateInSelfReg}
 <script type="text/javascript">
-	{* #borrower_note is birthdate for anythink *}
-	{* this is bootstrap datepicker, not jquery ui *}
-	{literal}
-	$(document).ready(function(){
-		$('input.dateAspen').datepicker({
-			format: "mm-dd-yyyy"
-			,endDate: "+0d"
-			,startView: 2
-		});
-	});
-	{/literal}
 	{* Pin Validation for CarlX, Sirsi *}
 	{literal}
 	if ($('#pin').length > 0 && $('#pin1').length > 0) {

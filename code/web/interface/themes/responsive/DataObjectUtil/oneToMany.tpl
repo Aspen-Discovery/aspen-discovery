@@ -31,8 +31,10 @@
 							<td>
 								{assign var=subPropName value=$subProperty.property}
 								{assign var=subPropValue value=$subObject->$subPropName}
-								{if $subProperty.type=='text' || $subProperty.type=='regularExpression' || $subProperty.type=='date' || $subProperty.type=='integer' || $subProperty.type=='html'}
-									<input type="text" name="{$propName}_{$subPropName}[{$subObject->id}]" value="{$subPropValue|escape}" class="form-control{if $subProperty.type=='date'} datepicker{elseif $subProperty.type=="integer"} integer{/if}{if $subProperty.required == true} required{/if}">
+								{if $subProperty.type=='text' || $subProperty.type=='regularExpression' || $subProperty.type=='integer' || $subProperty.type=='html'}
+									<input type="text" name="{$propName}_{$subPropName}[{$subObject->id}]" value="{$subPropValue|escape}" class="form-control{if $subProperty.type=="integer"} integer{/if}{if $subProperty.required == true} required{/if}">
+								{elseif $subProperty.type=='date'}
+									<input type="date" name="{$propName}_{$subPropName}[{$subObject->id}]" value="{$subPropValue|escape}" class="form-control{if $subProperty.required == true} required{/if}">
 								{elseif $subProperty.type=='textarea'}
 									<textarea name="{$propName}_{$subPropName}[{$subObject->id}]" class="form-control">{$subPropValue|escape}</textarea>
 								{elseif $subProperty.type=='checkbox'}
@@ -117,7 +119,6 @@
 			});
 			{/literal}
 			{/if}
-			{literal}$('.datepicker').datepicker({format: "yyyy-mm-dd"});{/literal}
 		{literal}});{/literal}
 		var numAdditional{$propName} = 0;
 
@@ -136,8 +137,10 @@
 			newRow += "<td>";
 			{assign var=subPropName value=$subProperty.property}
 			{assign var=subPropValue value=$subObject->$subPropName}
-			{if $subProperty.type=='text' || $subProperty.type=='regularExpression' || $subProperty.type=='date' || $subProperty.type=='integer' || $subProperty.type=='textarea' || $subProperty.type=='html'}
-			newRow += "<input type='text' name='{$propName}_{$subPropName}[" + numAdditional{$propName} + "]' value='{if $subProperty.default}{$subProperty.default}{/if}' class='form-control{if $subProperty.type=="date"} datepicker{elseif $subProperty.type=="integer"} integer{/if}{if $subProperty.required == true} required{/if}'>";
+			{if $subProperty.type=='text' || $subProperty.type=='regularExpression' || $subProperty.type=='integer' || $subProperty.type=='textarea' || $subProperty.type=='html'}
+			newRow += "<input type='text' name='{$propName}_{$subPropName}[" + numAdditional{$propName} + "]' value='{if $subProperty.default}{$subProperty.default}{/if}' class='form-control{if $subProperty.type=="integer"} integer{/if}{if $subProperty.required == true} required{/if}'>";
+			{elseif $subProperty.type=='date'}
+			newRow += "<input type='date' name='{$propName}_{$subPropName}[" + numAdditional{$propName} + "]' value='{if $subProperty.default}{$subProperty.default}{/if}' class='form-control{if $subProperty.required == true} required{/if}'>";
 			{elseif $subProperty.type=='checkbox'}
 			newRow += "<input type='checkbox' name='{$propName}_{$subPropName}[" + numAdditional{$propName} + "]' {if $subProperty.default == 1}checked='checked'{/if}>";
 			{else}
@@ -166,7 +169,6 @@
 			newRow += "</tr>";
 			{literal}
 			$('#{/literal}{$propName}{literal} tr:last').after(newRow);
-			$('.datepicker').datepicker({format: "yyyy-mm-dd"});
 			return false;
 		}
 		{/literal}

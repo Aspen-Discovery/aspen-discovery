@@ -16,8 +16,8 @@
 				</div>
 				<div class="form-group">
 					Date:
-						<label for="startDate"> From</label> <input type="text" id="startDate" name="startDate" value="{$startDate}" size="8">
-						<label for="endDate">To</label> <input type="text" id="endDate" name="endDate" value="{$endDate}" size="8">
+						<label for="startDate"> From</label> <input type="date" id="startDate" name="startDate" value="{$startDate}" size="8" max="{$smarty.now|date_format:"%Y-%m-%d"}">
+						<label for="endDate">To</label> <input type="date" id="endDate" name="endDate" value="{$endDate}" size="8" max="{$smarty.now|date_format:"%Y-%m-%d"}">
 				</div>
 				<div class="form-group">
 					<input type="submit" name="submit" value="Update Filters" class="btn btn-default">
@@ -82,8 +82,6 @@
 
 <script type="text/javascript">
 {literal}
-	$("#startDate").datepicker();
-	$("#endDate").datepicker();
 	$("#summaryTable").tablesorter({cssAsc: 'sortAscHeader', cssDesc: 'sortDescHeader', cssHeader: 'unsortedHeader', headers: { 0: { sorter: 'date'} } });
 
 var ctx = document.getElementById('chart');

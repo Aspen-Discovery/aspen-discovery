@@ -442,7 +442,7 @@ public class IndexingUtils {
 						"groupedWorkDisplaySettingId, hooplaScopeId, axis360ScopeId " +
 						"FROM library WHERE createSearchInterface = 1 ORDER BY ilsCode ASC",
 				ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-		PreparedStatement numLocationsForLibraryStmt = dbConn.prepareStatement("SELECT count(locationId) as numLocations from location where libraryId = ?")
+		PreparedStatement numLocationsForLibraryStmt = dbConn.prepareStatement("SELECT count(locationId) as numLocations from location where libraryId = ? and createSearchInterface = 1")
 ;		PreparedStatement libraryOwnedRecordRulesStmt = dbConn.prepareStatement("SELECT library_records_owned.*, indexing_profiles.name from library_records_owned INNER JOIN indexing_profiles ON indexingProfileId = indexing_profiles.id WHERE libraryId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 		PreparedStatement libraryRecordInclusionRulesStmt = dbConn.prepareStatement("SELECT library_records_to_include.*, indexing_profiles.name from library_records_to_include INNER JOIN indexing_profiles ON indexingProfileId = indexing_profiles.id WHERE libraryId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 		ResultSet libraryInformationRS = libraryInformationStmt.executeQuery();
