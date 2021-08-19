@@ -403,9 +403,9 @@ class Record_AJAX extends Action
 						if ($homeLibrary->defaultNotNeededAfterDays <= 0) {
 							$cancelDate = null;
 						} else {
-							//Default to a date 6 months (half a year) in the future.
+							//Default to a date based on the default not needed after days in the library configuration.
 							$nnaDate = time() + $homeLibrary->defaultNotNeededAfterDays * 24 * 60 * 60;
-							$cancelDate = date('m/d/Y', $nnaDate);
+							$cancelDate = date('Y-m-d', $nnaDate);
 						}
 					}
 
