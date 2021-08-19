@@ -1018,7 +1018,9 @@ class Koha extends AbstractIlsDriver
 		];
 
 		if ($cancelDate != null) {
-			if ($this->getKohaVersion() >= 20.05) {
+			if ($this->getKohaVersion() >= 21.05) {
+				$holdParams['expiry_date'] = str_replace('/', '-', $this->aspenDateToKohaDate($cancelDate));
+			}elseif ($this->getKohaVersion() >= 20.05) {
 				$holdParams['expiry_date'] = $this->aspenDateToKohaDate($cancelDate);
 			}else{
 				$holdParams['needed_before_date'] = $this->aspenDateToKohaDate($cancelDate);
@@ -1031,13 +1033,17 @@ class Koha extends AbstractIlsDriver
 		//If the hold is successful we go back to the account page and can see
 
 		$hold_result['id'] = $recordId;
-		if ($placeHoldResponse->title) {
+		if ($placeHoldResponse != false && $placeHoldResponse->title) {
 			//everything seems to be good
 			$hold_result = $this->getHoldMessageForSuccessfulHold($patron, $recordDriver->getId(), $hold_result);
 			$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
 			$patron->forceReloadOfHolds();
 		} else {
-			$error = $placeHoldResponse->code;
+			if ($placeHoldResponse == false) {
+				$error = 'Unknown error placing hold';
+			}else{
+				$error = $placeHoldResponse->code;
+			}
 			$hold_result['success'] = false;
 			$message = 'The item could not be placed on hold: ';
 			$message = $this->getHoldErrorMessage($error, $message);
@@ -1157,7 +1163,9 @@ class Koha extends AbstractIlsDriver
 			'pickup_location' => $pickupBranch
 		];
 		if ($cancelDate != null) {
-			if ($this->getKohaVersion() >= 20.05) {
+			if ($this->getKohaVersion() >= 21.05) {
+				$holdParams['expiry_date'] = str_replace('/', '-', $this->aspenDateToKohaDate($cancelDate));
+			}elseif ($this->getKohaVersion() >= 20.05) {
 				$holdParams['expiry_date'] = $this->aspenDateToKohaDate($cancelDate);
 			}else{
 				$holdParams['needed_before_date'] = $this->aspenDateToKohaDate($cancelDate);
