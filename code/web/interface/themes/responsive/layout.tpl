@@ -52,10 +52,10 @@
 				<button type="button" class="close" data-dismiss="alert" aria-label="Close" onclick="AspenDiscovery.Account.dismissMessage({$message->id})"><span aria-hidden="true">&times;</span></button>
 				{$message->message|translate}
 				{if !empty($message->action1Title) && !empty($message->action1)}
-					&nbsp;<a data-dismiss="alert" class="btn btn-default" onclick="{$message->action1}">{$message->action1Title}</a>
+					&nbsp;<a data-dismiss="alert" class="btn btn-default" onclick="{$message->action1}">{$message->action1Title|translate}</a>
 				{/if}
 				{if !empty($message->action2Title) && !empty($message->action2)}
-					<a data-dismiss="alert" class="btn btn-default" onclick="{$message->action2}">{$message->action2Title}</a>
+					<a data-dismiss="alert" class="btn btn-default" onclick="{$message->action2}">{$message->action2Title|translate}</a>
 				{/if}
 			</div>
 		{/foreach}
