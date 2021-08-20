@@ -21,6 +21,13 @@ function getUpdates21_10_00() : array
 				) ENGINE INNODB'
 			]
 		], //aspen_sites
+		'aspen_site_internal_name' => [
+			'title' => 'Add Internal Server Name to Aspen Site',
+			'description' => 'Add Internal Server Name to Aspen Site',
+			'sql' => [
+				'ALTER TABLE aspen_sites ADD COLUMN internalServerName VARCHAR(50)'
+			]
+		], //aspen_site_internal_name
 		'add_sorts_for_browsable_objects'=>[
 			'title' => 'Add Sorts for Browsable Objects',
 			'description' => 'Add new sorts for Browse Categories and Collection Spotlights',
