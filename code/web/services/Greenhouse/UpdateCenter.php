@@ -2,29 +2,23 @@
 
 require_once ROOT_DIR . '/sys/Greenhouse/AspenSite.php';
 require_once ROOT_DIR . '/services/Admin/Admin.php';
-class Greenhouse_SiteStatus extends Admin_Admin
+class Greenhouse_UpdateCenter extends Admin_Admin
 {
 
 	function launch()
 	{
 		$sites = new AspenSite();
 		$sites->whereAdd('implementationStatus != 4 AND implementationStatus != 0');
-		$sites->orderBy('siteType ASC, implementationStatus DESC, name ASC');
+		$sites->orderBy('implementationStatus ASC, name ASC');
 		$sites->find();
-		$siteStatuses = [];
-		$allChecks = [];
+		$allSites = [];
 		while ($sites->fetch()){
-			$siteStatus = $sites->getStatus();
-			$siteStatuses[] = $siteStatus;
-			foreach ($siteStatus['checks'] as $key => $check){
-				$allChecks[$key] = $check['name'];
-			}
+			$allSites[] = clone $sites;
 		}
-		asort($allChecks);
+		asort($allSites);
 		global $interface;
-		$interface->assign('allChecks', $allChecks);
-		$interface->assign('siteStatuses', $siteStatuses);
-		$this->display('siteStatus.tpl', 'Aspen Site Status',false);
+		$interface->assign('allSites', $allSites);
+		$this->display('updateCenter.tpl', 'Aspen Upgrade Center',false);
 	}
 
 	function getBreadcrumbs(): array
@@ -32,7 +26,7 @@ class Greenhouse_SiteStatus extends Admin_Admin
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Greenhouse/Home', 'Greenhouse Home');
 		$breadcrumbs[] = new Breadcrumb('/Greenhouse/Sites', 'Sites');
-		$breadcrumbs[] = new Breadcrumb('', 'Status');
+		$breadcrumbs[] = new Breadcrumb('', 'Upgrade Center');
 		return $breadcrumbs;
 	}
 
