@@ -86,4 +86,8 @@ class AspenSite extends DataObject
 		$return['implementationStatus'] = AspenSite::$_implementationStatuses[$this->implementationStatus];
 		return $return;
 	}
+
+	public function getImplementationStatusName(){
+		return AspenSite::$_implementationStatuses[$this->implementationStatus];
+	}
 }

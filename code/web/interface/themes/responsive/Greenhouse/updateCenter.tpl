@@ -26,7 +26,7 @@
 							{$site->getCurrentVersion()}
 						</td>
 						<td>
-							{$site->implementationStatus}
+							{$site->getImplementationStatusName()}
 						</td>
 						<td>
 							<input type="text" class="form-control" value="cd /usr/local/aspen-discovery/install; sudo ./upgrade.sh {$site->internalServerName} 21.10.00" onfocus="this.select()"/>
