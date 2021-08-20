@@ -9,7 +9,7 @@ class Greenhouse_UpdateCenter extends Admin_Admin
 	{
 		$sites = new AspenSite();
 		$sites->whereAdd('implementationStatus != 4 AND implementationStatus != 0');
-		$sites->orderBy('siteType DESC, implementationStatus ASC, name ASC');
+		$sites->orderBy('implementationStatus ASC, name ASC');
 		$sites->find();
 		$allSites = [];
 		while ($sites->fetch()){
