@@ -66,7 +66,7 @@ class AspenSite extends DataObject
 		if (!empty($this->baseUrl)){
 			$versionUrl = $this->baseUrl . '/API/SystemAPI?method=getCurrentVersion';
 			try {
-				$versionRaw = file_get_contents($versionUrl);
+				$versionRaw = @file_get_contents($versionUrl);
 				if ($versionRaw) {
 					$versionJson = json_decode($versionRaw, true);
 					if ($versionJson && isset($versionJson['result'])) {
