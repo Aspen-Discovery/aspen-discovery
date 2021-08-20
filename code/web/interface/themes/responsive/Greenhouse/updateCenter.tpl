@@ -11,6 +11,7 @@
 				<tr>
 					<th>Name</th>
 					<th>Version</th>
+					<th>Implementation Status</th>
 					<th>Upgrade Command</th>
 					<th>DB Maintenance</th>
 				</tr>
@@ -23,6 +24,9 @@
 						</td>
 						<td>
 							{$site->getCurrentVersion()}
+						</td>
+						<td>
+							{$site->implementationStatus}
 						</td>
 						<td>
 							<input type="text" class="form-control" value="cd /usr/local/aspen-discovery/install; sudo ./upgrade.sh {$site->internalServerName} 21.10.00" onfocus="this.select()"/>
