@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Alert, Image, KeyboardAvoidingView, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Alert, Image, KeyboardAvoidingView, Text, TextInput, TouchableOpacity, View, ScrollView } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import ModalSelector from 'react-native-modal-selector-searchable';
 import Stylesheet from './Stylesheet';
@@ -29,10 +29,10 @@ export default class Login extends Component {
   showLocationPulldown = () => {
  
     const data = [
-        { key: 0, section: true, label: 'Select your Library' },
+        //{ key: 0, section: true, label: 'Select your Library' },
         { key: 'https://aspen-test.bywatersolutions.com|test', label: 'ByWater Test' },
         { key: 'https://discover.ajaxlibrary.ca|ajax', label: 'AJAX Public Library, Ontario' },
-        { key: 'https://discovery.arcadialibrary.org|arcadia', label: 'Arlington Public Library, Virginia' },
+        { key: 'https://discovery.arcadialibrary.org|arcadia', label: 'Arcadia Public Library, California' },
         { key: 'https://libcat.arlingtonva.us|arlingtonva', label: 'Arlington Public Library, Virginia' },
         { key: 'https://discovery.benbrooklibrary.org|benbrook', label: 'Benbrook Public Library, Texas'},
         { key: 'https://pathfinder.catalog.ckls.org|ckls', label: 'Central Kansas Library System, Kansas'},
@@ -59,16 +59,18 @@ export default class Login extends Component {
         <ModalSelector
           data = {data}
           initValue = "Select your Library"
-          supportedOrientations = {['landscape']}
+          supportedOrientations = {['portrait', 'landscape']}
           animationType = 'fade'
           accessible = {true}
+          cancelText = "Cancel"
           scrollViewAccessibilityLabel = {'Scrollable options'}
           cancelButtonAccessibilityLabel = {'Cancel Button'}
           onChange = {(option) => { this.setState({pickUpLabel: option.label, pickUpLocation:option.key})}}>
           <TextInput
             style={ Stylesheet.modalSelector }
             editable = {false}
-            placeholder = "Select your Library"
+            placeholder = "Select Your Library ▼"
+            placeholderTextColor = "#000"
             value = {this.state.pickUpLabel} />
         </ModalSelector>
       </View>
@@ -110,7 +112,7 @@ export default class Login extends Component {
         </View>
         <View style={ Stylesheet.btnContainer }>
           <TouchableOpacity style={ Stylesheet.btnFormatSmall } onPress={ this.clearText }>
-            <Text style={ Stylesheet.btnText }>Reset form</Text>
+            <Text style={ Stylesheet.btnTextGray }>Reset</Text>
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>

@@ -56,7 +56,7 @@ export default StyleSheet.create({
   },
   btnFormat: {
     backgroundColor: '#00b5d4',
-    borderRadius: 20,
+    borderRadius: 4,
     margin: 5,
     overflow: 'hidden', //needed for border radius to work on IOS
     padding: 15,
@@ -64,7 +64,7 @@ export default StyleSheet.create({
   },
   btnFormatSmall: {
     backgroundColor: '#2f373a',
-    borderRadius: 20,
+    borderRadius: 4,
     margin: 5,
     opacity: 0.75,
     overflow: 'hidden', //needed for border radius to work on IOS
@@ -73,10 +73,15 @@ export default StyleSheet.create({
   },
   btnText: {
     color: '#2f373a',
-    fontSize: 18,
+    fontSize: 21,
     fontWeight: 'bold',
     textAlign: 'center',
   },
+btnTextGray: {
+  color: '#fff',
+  fontSize: 16,
+  textAlign: 'center',
+},
   cardContainer: {
     alignItems: 'center',
     backgroundColor: '#ffffff',
@@ -186,7 +191,7 @@ export default StyleSheet.create({
   },
   input: {
     backgroundColor: '#2f373a',
-    borderRadius: 20,
+    borderRadius: 4,
     color: '#fff',
     marginBottom: 10,
     marginTop: 10,
@@ -227,9 +232,13 @@ export default StyleSheet.create({
   },
   modalSelector: {
     borderWidth: 1, 
-    borderColor:'#ccc', 
+    borderColor:'black',
     padding: 10, 
-    height: 50
+    height: 50,
+    borderRadius: 4,
+    fontWeight: 'bold',
+    margin: 5,
+     textAlign: 'center'
   },
   newsImage: {
     aspectRatio: 0.75,
