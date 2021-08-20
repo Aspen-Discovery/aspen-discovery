@@ -450,7 +450,7 @@ class IndexingProfile extends DataObject
 		if (isset ($this->_translationMaps)) {
 			/** @var TranslationMap $translationMap */
 			foreach ($this->_translationMaps as $translationMap) {
-				if ($translationMap->_deleteOnSave = true) {
+				if ($translationMap->_deleteOnSave == true) {
 					$translationMap->delete();
 				} else {
 					if (isset($translationMap->id) && is_numeric($translationMap->id)) {
