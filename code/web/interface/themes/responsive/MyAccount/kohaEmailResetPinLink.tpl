@@ -17,7 +17,7 @@
 			<div class="form-group">
 				<label for="email" class="control-label col-xs-12 col-sm-4">{translate text="Email"}</label>
 				<div class="col-xs-12 col-sm-8">
-					<input id="email" name="email" type="text" class="form-control" maxlength="50" size="40" {if !empty($email)}value="{$email}"{/if}>
+					<input id="email" name="email" type="text" class="form-control" maxlength="254" size="40" {if !empty($email)}value="{$email}"{/if}>
 				</div>
 			</div>
 			<div class="form-group">
