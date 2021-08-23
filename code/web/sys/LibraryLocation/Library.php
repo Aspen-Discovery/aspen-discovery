@@ -190,6 +190,7 @@ class Library extends DataObject
 	public $alternateLibraryCardPasswordLabel;
 
 	public $econtentLocationsToInclude;
+	public $showCardExpirationDate;
 	public $showExpirationWarnings;
 	public /** @noinspection PhpUnused */ $loginFormUsernameLabel;
 	public $loginFormPasswordLabel;
@@ -545,6 +546,7 @@ class Library extends DataObject
 				'workstationId' => array('property'=>'workstationId', 'type'=>'text','label'=>'Workstation Id (Polaris)', 'maxLength' => 10, 'description'=>'Optional workstation ID for transactions. If different than main workstation ID set for the account profile.', 'permissions' => ['Library ILS Connection']),
 				'scope' => array('property'=>'scope', 'type'=>'text', 'label'=>'Scope', 'description'=>'The scope for the system in Millennium to refine holdings for the user.', 'size'=>'4', 'hideInLists' => true,'default'=>0, 'forcesReindex' => true, 'permissions' => ['Library ILS Connection']),
 				'useScope' => array('property'=>'useScope', 'type'=>'checkbox', 'label'=>'Use Scope', 'description'=>'Whether or not the scope should be used when displaying holdings.', 'hideInLists' => true, 'permissions' => ['Library ILS Connection']),
+				'showCardExpirationDate' => array('property'=>'showCardExpirationDate', 'type'=>'checkbox', 'label'=>'Show Card Expiration Date', 'description'=>'Whether or not the user should be shown their cards expiration date on the My Library Card Page.', 'hideInLists' => true, 'default' => 1, 'permissions' => ['Library ILS Options']),
 				'showExpirationWarnings' => array('property'=>'showExpirationWarnings', 'type'=>'checkbox', 'label'=>'Show Expiration Warnings', 'description'=>'Whether or not the user should be shown expiration warnings if their card is nearly expired.', 'hideInLists' => true, 'default' => 1, 'permissions' => ['Library ILS Options']),
 				'expirationNearMessage' => array('property'=>'expirationNearMessage', 'type'=>'text', 'label'=>'Expiration Near Message (use the token %date% to insert the expiration date)', 'description'=>'A message to show in the menu when the user account will expire soon', 'hideInLists' => true, 'default' => '', 'permissions' => ['Library ILS Options']),
 				'expiredMessage' => array('property'=>'expiredMessage', 'type'=>'text', 'label'=>'Expired Message (use the token %date% to insert the expiration date)', 'description'=>'A message to show in the menu when the user account has expired', 'hideInLists' => true, 'default' => '', 'permissions' => ['Library ILS Options']),

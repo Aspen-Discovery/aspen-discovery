@@ -25,6 +25,9 @@
 			{if count($linkedCards) > 0}
 				<div>{$profile->displayName}</div>
 			{/if}
+			{if $showCardExpirationDate && !empty($expirationDate)}
+				{translate text="Expires %1%" 1=$expirationDate|date_format:"%D"}
+			{/if}
 		</div>
 	</div>
 
@@ -74,6 +77,9 @@
 						{$linkedCard.barcode}
 					</div>
 					<div>{$linkedCard.fullName}</div>
+					{if $showCardExpirationDate && !empty($linkedCard.expirationDate)}
+						{translate text="Expires %1%" 1=$linkedCard.expirationDate|date_format:"%D"}
+					{/if}
 				</div>
 			</div>
 		{/foreach}
