@@ -290,7 +290,7 @@ img {
   vertical-align: middle;
 }
 .img-responsive {
-  display: block;
+  display: inline-block;
   max-width: 100%;
   height: auto;
 }
@@ -4680,7 +4680,7 @@ a.list-group-item.active > .badge,
 }
 .thumbnail > img,
 .thumbnail a > img {
-  display: block;
+  display: inline-block;
   max-width: 100%;
   height: auto;
   margin-left: auto;
@@ -5578,7 +5578,7 @@ button.close {
 }
 .carousel-inner > .item > img,
 .carousel-inner > .item > a > img {
-  display: block;
+  display: inline-block;
   max-width: 100%;
   height: auto;
   line-height: 1;
@@ -8806,7 +8806,7 @@ a.placard-link {
 }
 .browse-thumbnail > img,
 .browse-thumbnail a > img {
-  display: block;
+  display: inline-block;
   max-width: 100%;
   height: auto;
   margin-left: auto;
@@ -8842,7 +8842,7 @@ a.browse-thumbnail.active {
 }
 .browse-thumbnail-sorted > img,
 .browse-thumbnail-sorted a > img {
-  display: block;
+  display: inline-block;
   max-width: 100%;
   height: auto;
   margin-left: auto;
@@ -9606,6 +9606,7 @@ a.browse-thumbnail-sorted.active {
   font-weight: bold;
   display: inline-block;
   margin-bottom: 3px;
+  white-space: normal;
 }
 .related_record_status {
   font-size: 13px;
