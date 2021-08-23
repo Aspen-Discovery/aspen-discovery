@@ -86,7 +86,7 @@
 				{if $showRatings == 1}
 					{if $record.existsInCatalog && $record.ratingData}
 						<div class="row">
-							<div class="result-label col-tn-3">Rating&nbsp;</div>
+							<div class="result-label col-tn-3">{translate text="Rating"}</div>
 							<div class="result-value col-tn-9">
 								{include file="GroupedWork/title-rating.tpl" id=$record.permanentId ratingData=$record.ratingData showNotInterested=false}
 							</div>
@@ -106,7 +106,7 @@
 				{if $showWhileYouWait}
 					<div class="btn-group btn-group-vertical btn-block">
 						{if $record.existsInCatalog}
-							<button onclick="return AspenDiscovery.GroupedWork.getYouMightAlsoLike('{$record.permanentId}');" class="btn btn-sm btn-default">{translate text="You Might Also Like"}</button>
+							<button onclick="return AspenDiscovery.GroupedWork.getYouMightAlsoLike('{$record.permanentId}');" class="btn btn-sm btn-default btn-wrap">{translate text="You Might Also Like"}</button>
 						{/if}
 					</div>
 				{/if}
