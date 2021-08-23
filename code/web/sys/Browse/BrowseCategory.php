@@ -258,6 +258,15 @@ class BrowseCategory extends BaseBrowsable
 		if ($this->endDate != 0 && $this->endDate < $curTime){
 			return false;
 		}
+		if ($this->textId == 'system_recommended_for_you'){
+			if (UserAccount::isLoggedIn()) {
+				$user = UserAccount::getActiveUserObj();
+				if (!$user->hasRatings()) {
+					return true;
+				}
+			}
+			return false;
+		}
 		return true;
 	}
 }

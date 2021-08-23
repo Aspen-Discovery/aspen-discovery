@@ -69,11 +69,6 @@ class Search_Home extends Action {
 				$browseCategory->find(true);
 				if($browseCategory->isValidForDisplay()){
 					// Only Show the Recommended for You browse category if the user is logged in and has rated titles
-					if (($browseCategory->textId == 'system_recommended_for_you' && (!$user || !$user->hasRatings()))) {
-						unset($localBrowseCategories[$index]);
-						continue;
-					}
-
 					if ($browseCategory->isValidForDisplay()) {
 						$browseCategories[] = clone($browseCategory);
 					}
