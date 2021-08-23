@@ -152,7 +152,7 @@ class Grouping_Record
 
 		if (!empty($this->_volumeData)){
 			foreach ($this->_volumeData as $volumeInfo){
-				if ((strlen($volumeInfo->relatedItems) == 0) || (strpos($volumeInfo->relatedItems, $item->itemId) !== false)) {
+				if ((strlen($volumeInfo->relatedItems) != 0) && (strpos($volumeInfo->relatedItems, $item->itemId) !== false)) {
 					$item->volume = $volumeInfo->displayLabel;
 					$item->volumeId = $volumeInfo->volumeId;
 					$item->volumeOrder = $volumeInfo->displayOrder;
