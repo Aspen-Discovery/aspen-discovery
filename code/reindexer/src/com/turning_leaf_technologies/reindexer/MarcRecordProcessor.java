@@ -651,7 +651,10 @@ abstract class MarcRecordProcessor {
 
 	protected void loadLiteraryForms(GroupedWorkSolr groupedWork, Record record, ArrayList<ItemInfo> printItems, String identifier) {
 		//First get the literary Forms from the 008.  These need translation
+		//Now get literary forms from the subjects, these don't need translation
 		LinkedHashSet<String> literaryForms = new LinkedHashSet<>();
+		HashMap<String, Integer> literaryFormsWithCount = new HashMap<>();
+		HashMap<String, Integer> literaryFormsFull = new HashMap<>();
 		try {
 			String leader = record.getLeader().toString();
 
@@ -677,21 +680,13 @@ abstract class MarcRecordProcessor {
 						literaryForms.add(Character.toString(literaryFormChar));
 					}
 				}
-				if (literaryForms.size() == 0) {
-					literaryForms.add(" ");
-				}
-			} else {
-				literaryForms.add("Unknown");
 			}
 		} catch (Exception e) {
 			indexer.getLogEntry().incErrors("Unexpected error loading literary forms", e);
 		}
-		groupedWork.addLiteraryForms(indexer.translateSystemCollection("literary_form", literaryForms, identifier));
-		groupedWork.addLiteraryFormsFull(indexer.translateSystemCollection("literary_form_full", literaryForms, identifier));
+		addToMapWithCount(literaryFormsWithCount, indexer.translateSystemCollection("literary_form", literaryForms, identifier), 2);
+		addToMapWithCount(literaryFormsFull, indexer.translateSystemCollection("literary_form_full", literaryForms, identifier), 2);
 
-		//Now get literary forms from the subjects, these don't need translation
-		HashMap<String, Integer> literaryFormsWithCount = new HashMap<>();
-		HashMap<String, Integer> literaryFormsFull = new HashMap<>();
 		//Check the subjects
 		Set<String> subjectFormData = MarcUtil.getFieldList(record, "650v:651v");
 		for(String subjectForm : subjectFormData){
@@ -820,11 +815,21 @@ abstract class MarcRecordProcessor {
 		groupedWork.addLiteraryFormsFull(literaryFormsFull);
 	}
 
+	private void addToMapWithCount(HashMap<String, Integer> map, HashSet<String> elementsToAdd, int numberToAdd){
+		for (String elementToAdd : elementsToAdd) {
+			addToMapWithCount(map, elementToAdd, numberToAdd);
+		}
+	}
+
 	private void addToMapWithCount(HashMap<String, Integer> map, String elementToAdd){
+		addToMapWithCount(map, elementToAdd, 1);
+	}
+
+	private void addToMapWithCount(HashMap<String, Integer> map, String elementToAdd, int numberToAdd){
 		if (map.containsKey(elementToAdd)){
-			map.put(elementToAdd, map.get(elementToAdd) + 1);
+			map.put(elementToAdd, map.get(elementToAdd) + numberToAdd);
 		}else{
-			map.put(elementToAdd, 1);
+			map.put(elementToAdd, numberToAdd);
 		}
 	}
 
@@ -1103,7 +1108,7 @@ abstract class MarcRecordProcessor {
 		}
 		//Check for braille
 		if (fixedField != null && (leaderBit == 'a' || leaderBit == 't' || leaderBit == 'A' || leaderBit == 'T')){
-			if (fixedField.getData().length() >= 23){
+			if (fixedField.getData().length() > 23){
 				if (fixedField.getData().charAt(23) == 'f'){
 					printFormats.add("Braille");
 				}
