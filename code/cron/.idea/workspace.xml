@@ -6,26 +6,43 @@
   <component name="ChangeListManager">
     <list default="true" id="9a7bc6aa-b294-4e08-985c-3b6e4b5b29e4" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/../axis_360_export/axis_360_export.iml" beforeDir="false" afterPath="$PROJECT_DIR$/../axis_360_export/axis_360_export.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../axis_360_export/axis_360_export.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../axis_360_export/axis_360_export.jar" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../carlx_export/carlx_export.iml" beforeDir="false" afterPath="$PROJECT_DIR$/../carlx_export/carlx_export.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../carlx_export/carlx_export.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../carlx_export/carlx_export.jar" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../cloud_library_export/cloud_library_export.iml" beforeDir="false" afterPath="$PROJECT_DIR$/../cloud_library_export/cloud_library_export.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../cloud_library_export/cloud_library_export.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../cloud_library_export/cloud_library_export.jar" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cron.jar" beforeDir="false" afterPath="$PROJECT_DIR$/cron.jar" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../events_indexer/events_indexer.iml" beforeDir="false" afterPath="$PROJECT_DIR$/../events_indexer/events_indexer.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../events_indexer/events_indexer.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../events_indexer/events_indexer.jar" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../hoopla_export/hoopla_export.iml" beforeDir="false" afterPath="$PROJECT_DIR$/../hoopla_export/hoopla_export.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../hoopla_export/hoopla_export.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../hoopla_export/hoopla_export.jar" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../horizon_export/horizon_export.iml" beforeDir="false" afterPath="$PROJECT_DIR$/../horizon_export/horizon_export.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../horizon_export/horizon_export.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../horizon_export/horizon_export.jar" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../java_shared_libraries/java_shared_libraries.iml" beforeDir="false" afterPath="$PROJECT_DIR$/../java_shared_libraries/java_shared_libraries.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../koha_export/koha_export.iml" beforeDir="false" afterPath="$PROJECT_DIR$/../koha_export/koha_export.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../koha_export/koha_export.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../koha_export/koha_export.jar" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../oai_indexer/oai_indexer.iml" beforeDir="false" afterPath="$PROJECT_DIR$/../oai_indexer/oai_indexer.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../oai_indexer/oai_indexer.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../oai_indexer/oai_indexer.jar" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../overdrive_extract/overdrive_extract.iml" beforeDir="false" afterPath="$PROJECT_DIR$/../overdrive_extract/overdrive_extract.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../overdrive_extract/overdrive_extract.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../overdrive_extract/overdrive_extract.jar" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../polaris_export/polaris_export.iml" beforeDir="false" afterPath="$PROJECT_DIR$/../polaris_export/polaris_export.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../polaris_export/src/com/turning_leaf_technologies/polaris/PolarisExportMain.java" beforeDir="false" afterPath="$PROJECT_DIR$/../polaris_export/src/com/turning_leaf_technologies/polaris/PolarisExportMain.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../polaris_export/polaris_export.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../polaris_export/polaris_export.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../rbdigital_export/rbdigital_export.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../rbdigital_export/rbdigital_export.jar" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../reindexer/reindexer.iml" beforeDir="false" afterPath="$PROJECT_DIR$/../reindexer/reindexer.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../reindexer/reindexer.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../reindexer/reindexer.jar" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/GroupedReindexMain.java" beforeDir="false" afterPath="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/GroupedReindexMain.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../sideload_processing/sideload_processing.iml" beforeDir="false" afterPath="$PROJECT_DIR$/../sideload_processing/sideload_processing.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../sideload_processing/sideload_processing.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../sideload_processing/sideload_processing.jar" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../sierra_export_api/sierra_export_api.iml" beforeDir="false" afterPath="$PROJECT_DIR$/../sierra_export_api/sierra_export_api.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../sierra_export_api/sierra_export_api.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../sierra_export_api/sierra_export_api.jar" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../symphony_export/symphony_export.iml" beforeDir="false" afterPath="$PROJECT_DIR$/../symphony_export/symphony_export.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../symphony_export/symphony_export.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../symphony_export/symphony_export.jar" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../user_list_indexer/user_list_indexer.iml" beforeDir="false" afterPath="$PROJECT_DIR$/../user_list_indexer/user_list_indexer.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../user_list_indexer/user_list_indexer.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../user_list_indexer/user_list_indexer.jar" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../web/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../web/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../web_indexer/web_indexer.iml" beforeDir="false" afterPath="$PROJECT_DIR$/../web_indexer/web_indexer.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web_indexer/web_indexer.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../web_indexer/web_indexer.jar" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -123,7 +140,7 @@
       <recent name="com.turning_leaf_technologies.indexing" />
     </key>
   </component>
-  <component name="RunManager" selected="Application.Polaris Export">
+  <component name="RunManager" selected="Application.Reindexer Full">
     <configuration name="Axis 360 Export" type="Application" factoryName="Application">
       <option name="MAIN_CLASS_NAME" value="com.turning_leaf_technogies.axis360.Axis360ExportMain" />
       <module name="axis_360_export" />
@@ -233,7 +250,7 @@
     <configuration name="Reindexer Full" type="Application" factoryName="Application">
       <option name="MAIN_CLASS_NAME" value="com.turning_leaf_technologies.reindexer.GroupedReindexMain" />
       <module name="reindexer" />
-      <option name="PROGRAM_PARAMETERS" value="portercounty.localhost full" />
+      <option name="PROGRAM_PARAMETERS" value="basinlibraries.localhost nightly" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/../reindexer" />
       <method v="2">
         <option name="Make" enabled="true" />
@@ -412,6 +429,21 @@
           <url>file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/GroupedWorkSolr.java</url>
           <line>207</line>
           <option name="timeStamp" value="139" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/GroupedReindexMain.java</url>
+          <line>230</line>
+          <option name="timeStamp" value="140" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/GroupedReindexMain.java</url>
+          <line>219</line>
+          <option name="timeStamp" value="141" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/GroupedReindexMain.java</url>
+          <line>224</line>
+          <option name="timeStamp" value="142" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

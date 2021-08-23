@@ -218,25 +218,25 @@ public class GroupedReindexMain {
 			ResultSet arSettingsRS = arSettingsStmt.executeQuery();
 			if (arSettingsRS.next()){
 				long lastFetched = arSettingsRS.getLong("lastFetched");
-				//Update if we have never updated or if we last updated more than a week ago
-				//If we are updating, update the settings table right away so multiple processors don't update at the same time
-				if (lastFetched < ((new java.util.Date().getTime() / 1000) - (7 * 23 * 60 * 60))){
-					logEntry.addNote("Updating Accelerated Reader Data");
+
+				String arExportPath = arSettingsRS.getString("arExportPath");
+				File localFile = new File(arExportPath + "/RLI-ARDATA-XML.ZIP");
+
+				long existingFileLastModified = localFile.lastModified();
+
+				//Fetch the file if we have never updated or if we last updated more than a week ago
+				boolean updateDB = false;
+				if (existingFileLastModified < (new java.util.Date().getTime() - (7 * 23 * 60 * 60))){
+					updateDB = true;
+					logEntry.addNote("Fetching new Accelerated Reader Data");
 					logEntry.saveResults();
-
-					PreparedStatement updateSettingsStmt = dbConn.prepareStatement("UPDATE accelerated_reading_settings SET lastFetched = ?");
-					updateSettingsStmt.setLong(1, (new Date().getTime() / 1000));
-
-					updateSettingsStmt.executeUpdate();
 
 					//Fetch the latest file from the SFTP server
 					String ftpServer = arSettingsRS.getString("ftpServer");
 					String ftpUser = arSettingsRS.getString("ftpUser");
 					String ftpPassword = arSettingsRS.getString("ftpPassword");
-					String arExportPath = arSettingsRS.getString("arExportPath");
 
 					String remoteFile = "/RLI-ARDATA-XML.ZIP";
-					File localFile = new File(arExportPath + "/RLI-ARDATA-XML.ZIP");
 
 					JSch jsch = new JSch();
 					Session session;
@@ -255,29 +255,45 @@ public class GroupedReindexMain {
 
 						logEntry.addNote("Retrieved new file from FTP server");
 						logEntry.saveResults();
+
+						if (localFile.exists()) {
+							UnzipUtility.unzip(localFile.getPath(), arExportPath);
+						}
 					} catch (JSchException e) {
 						logEntry.incErrors("JSch Error retrieving accelerated reader file from server", e);
 					} catch (SftpException e) {
 						logEntry.incErrors("Sftp Error retrieving accelerated reader file from server", e);
 					}
-
-					if (localFile.exists()){
-						UnzipUtility.unzip(localFile.getPath(), arExportPath);
-
-						//Update the database
-						//Load the ar_titles xml file
-						File arTitles = new File(arExportPath + "/ar_titles.xml");
-						loadAcceleratedReaderTitlesXMLFile(arTitles);
-
-						//Load the ar_titles_isbn xml file
-						File arTitlesIsbn = new File(arExportPath + "/ar_titles_isbn.xml");
-						loadAcceleratedReaderTitlesIsbnXMLFile(arTitlesIsbn);
-
-						logEntry.addNote("Done updating Accelerated Reader Data");
-						logEntry.saveResults();
-						infoReloaded = true;
+				}else{
+					//We didn't have to fetch the file, but we will still update the database if the file is newer
+					//than when we last fetched
+					if ((existingFileLastModified / 1000) > lastFetched) {
+						updateDB = true;
 					}
 				}
+
+				if (localFile.exists() && updateDB) {
+					PreparedStatement updateSettingsStmt = dbConn.prepareStatement("UPDATE accelerated_reading_settings SET lastFetched = ?");
+					updateSettingsStmt.setLong(1, (new Date().getTime() / 1000));
+					updateSettingsStmt.executeUpdate();
+
+					logEntry.addNote("Updating Accelerated Reader Data");
+					logEntry.saveResults();
+
+					//Update the database
+					//Load the ar_titles xml file
+					File arTitles = new File(arExportPath + "/ar_titles.xml");
+					loadAcceleratedReaderTitlesXMLFile(arTitles);
+
+					//Load the ar_titles_isbn xml file
+					File arTitlesIsbn = new File(arExportPath + "/ar_titles_isbn.xml");
+					loadAcceleratedReaderTitlesIsbnXMLFile(arTitlesIsbn);
+
+					logEntry.addNote("Done updating Accelerated Reader Data");
+					logEntry.saveResults();
+					infoReloaded = true;
+				}
+
 			}
 		}catch (Exception e){
 			logEntry.incErrors("Error loading accelerated reader data", e);
