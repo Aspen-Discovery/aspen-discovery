@@ -8,14 +8,14 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="log4j-api-2.11.2" level="project" />
-    <orderEntry type="library" name="ini4j-0.5.5-SNAPSHOT" level="project" />
-    <orderEntry type="library" name="log4j-core-2.11.2" level="project" />
-    <orderEntry type="library" name="mysql-connector-java-8.0.15" level="project" />
-    <orderEntry type="library" name="opencsv-4.5" level="project" />
-    <orderEntry type="library" name="commons-beanutils-1.9.3" level="project" />
-    <orderEntry type="library" name="commons-codec-1.12" level="project" />
-    <orderEntry type="module-library">
+    <orderEntry type="library" scope="PROVIDED" name="log4j-api-2.11.2" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="ini4j-0.5.5-SNAPSHOT" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="log4j-core-2.11.2" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="mysql-connector-java-8.0.15" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="opencsv-4.5" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="commons-beanutils-1.9.3" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="commons-codec-1.12" level="project" />
+    <orderEntry type="module-library" scope="PROVIDED">
       <library>
         <CLASSES>
           <root url="jar://$MODULE_DIR$/commons-net-3.6.jar!/" />

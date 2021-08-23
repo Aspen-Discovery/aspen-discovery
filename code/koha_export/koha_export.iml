@@ -7,11 +7,10 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="log4j-api-2.11.2" level="project" />
-    <orderEntry type="library" name="ini4j-0.5.5-SNAPSHOT" level="project" />
-    <orderEntry type="module" module-name="java_shared_libraries" />
-    <orderEntry type="module" module-name="reindexer" />
-    <orderEntry type="module-library">
+    <orderEntry type="library" scope="PROVIDED" name="log4j-api-2.11.2" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="ini4j-0.5.5-SNAPSHOT" level="project" />
+    <orderEntry type="module" module-name="java_shared_libraries" scope="PROVIDED" />
+    <orderEntry type="module-library" scope="PROVIDED">
       <library>
         <CLASSES>
           <root url="jar://$MODULE_DIR$/../java_shared_libraries/jsch-0.1.55.jar!/" />
@@ -29,6 +28,17 @@
         </CLASSES>
         <JAVADOC />
         <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" scope="PROVIDED">
+      <library>
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/../reindexer/reindexer.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES>
+          <root url="jar://$MODULE_DIR$/../reindexer/reindexer.jar!/src" />
+        </SOURCES>
       </library>
     </orderEntry>
   </component>

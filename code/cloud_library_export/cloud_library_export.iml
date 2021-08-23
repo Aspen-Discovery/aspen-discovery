@@ -8,7 +8,7 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="java_shared_libraries" />
-    <orderEntry type="module-library">
+    <orderEntry type="module-library" scope="PROVIDED">
       <library>
         <CLASSES>
           <root url="jar://$MODULE_DIR$/../java_shared_libraries/jsch-0.1.55.jar!/" />
@@ -28,6 +28,16 @@
         <SOURCES />
       </library>
     </orderEntry>
-    <orderEntry type="module" module-name="reindexer" />
+    <orderEntry type="module-library" scope="PROVIDED">
+      <library>
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/../reindexer/reindexer.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES>
+          <root url="jar://$MODULE_DIR$/../reindexer/reindexer.jar!/src" />
+        </SOURCES>
+      </library>
+    </orderEntry>
   </component>
 </module>

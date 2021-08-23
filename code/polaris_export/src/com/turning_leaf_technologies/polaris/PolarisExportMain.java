@@ -35,7 +35,9 @@ import javax.crypto.spec.SecretKeySpec;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.sql.*;
@@ -44,8 +46,8 @@ import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
 import java.util.Date;
+import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -1097,18 +1099,12 @@ public class PolarisExportMain {
 							addVolumeStmt.setString(3, volumeInfo.volumeIdentifier);
 							addVolumeStmt.setString(4, volumeInfo.getRelatedItemsAsString());
 							addVolumeStmt.setLong(5, ++numVolumes);
-							int updateVal = addVolumeStmt.executeUpdate();
-//							if (updateVal == 0){
-//								logger.info(" -- Inserting " + volume + " did not work");
-//							}
+							addVolumeStmt.executeUpdate();
 						}
 					}catch (Exception e){
 						logEntry.incErrors("Error updating volume for record " + fullIdentifier + " (" + volume.length() + ") " + volume , e);
 					}
 				}
-//				if (existingVolumes.size() > 0){
-//					logger.info(" -- removing volumes that no longer exist " + existingVolumes.size());
-//				}
 				for (String volume : existingVolumes.keySet()) {
 					deleteVolumeStmt.setLong(1, existingVolumes.get(volume));
 					deleteVolumeStmt.executeUpdate();
