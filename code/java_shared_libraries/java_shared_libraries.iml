@@ -3,8 +3,26 @@
   <component name="NewModuleRootManager" inherit-compiler-output="true">
     <exclude-output />
     <content url="file://$MODULE_DIR$">
-      <sourceFolder url="file://$MODULE_DIR$" type="java-resource" />
       <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/com" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/com/turning_leaf_technologies" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/com/turning_leaf_technologies/config" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/com/turning_leaf_technologies/dates" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/com/turning_leaf_technologies/encryption" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/com/turning_leaf_technologies/file" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/com/turning_leaf_technologies/indexing" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/com/turning_leaf_technologies/logging" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/com/turning_leaf_technologies/marc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/com/turning_leaf_technologies/net" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/com/turning_leaf_technologies/strings" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/com/turning_leaf_technologies/util" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/org" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/org/json" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/org/marc4j" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/org/marc4j/converter" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/org/marc4j/marc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/org/marc4j/samples" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/org/marc4j/util" isTestSource="false" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
