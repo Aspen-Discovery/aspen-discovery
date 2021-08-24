@@ -10076,7 +10076,7 @@ AspenDiscovery.MaterialsRequest = (function(){
 			//Update labels as needed
 			if (AspenDiscovery.MaterialsRequest.authorLabels){
 				if (AspenDiscovery.MaterialsRequest.authorLabels[selectedFormat]) {
-					$("#authorFieldLabel").html(AspenDiscovery.MaterialsRequest.authorLabels[selectedFormat] + ': ');
+					$("#authorFieldLabel").html(AspenDiscovery.MaterialsRequest.authorLabels[selectedFormat]);
 				//	TODO: Set when required
 				}
 			}
@@ -10086,12 +10086,14 @@ AspenDiscovery.MaterialsRequest = (function(){
 				$("#acceptCopyrightYes").addClass('required');
 				$("#copyright").show();
 				$("#supplementalDetails").hide();
-				$("#titleLabel").html("Article Title <span class='requiredIndicator'>*</span>");
+				$("#titleLabel").hide();
+				$("#articleTitleLabel").show();
 			}else{
 				$("#magazineTitle,#acceptCopyrightYes").removeClass('required');
 				$("#copyright").hide();
 				$("#supplementalDetails").show();
-				$("#titleLabel").html("Title <span class='requiredIndicator'>*</span>");
+				$("#titleLabel").show();
+				$("#articleTitleLabel").hide();
 			}
 
 		},

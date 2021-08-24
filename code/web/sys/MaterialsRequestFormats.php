@@ -167,31 +167,38 @@ class MaterialsRequestFormats extends DataObject
 
 	static function getAuthorLabelsAndSpecialFields($libraryId) {
 		// Format Labels
-		$formats = new self();
+		$formats = new MaterialsRequestFormats();
 		$formats->libraryId = $libraryId;
 		$usingDefaultFormats = $formats->count() == 0;
 
 		// Get Author Labels for all Formats
-		$specialFieldFormats = $formatAuthorLabels = array();
+		$specialFieldFormats = [];
+		$formatAuthorLabels = [];
 		if ($usingDefaultFormats) {
 			$defaultFormats = self::getDefaultMaterialRequestFormats();
 			/** @var MaterialsRequestFormats $format */
 			foreach ($defaultFormats as $format) {
 				// Gather default Author Labels and default special Fields
-				$formatAuthorLabels[$format->format] = $format->authorLabel;
+				$formatAuthorLabels[$format->format] = translate($format->authorLabel);
 				if (!empty($format->specialFields)) {
 					$specialFieldFormats[$format->format] = $format->specialFields;
 				}
 			}
 
 		} else {
-			$formatAuthorLabels = $formats->fetchAll('format', 'authorLabel');
+			$formats->find();
+			while ($formats->fetch()) {
+				$formatAuthorLabels[$formats->format] = translate($formats->authorLabel);
+			}
 
 			// Get Formats that use Special Fields
-			$formats = new self();
+			$formats = new MaterialsRequestFormats();
 			$formats->libraryId = $libraryId;
-			$formats->whereAdd('`specialFields` IS NOT NULL');
-			$specialFieldFormats = $formats->fetchAll('format', 'specialFields');
+			$formats->whereAdd('specialFields IS NOT NULL');
+			$formats->find();
+			while ($formats->fetch()) {
+				$specialFieldFormats[$formats->format] = $formats->specialFields;
+			}
 		}
 
 		return array($formatAuthorLabels, $specialFieldFormats);

@@ -64,34 +64,17 @@
 				</div>
 
 				{* Ebook Format Fields *}
-				{if $showEbookFormatField}
-					<div class="form-group ebookField specialFormatField">
-						<label for="ebookFormat" class="col-sm-3 control-label">{translate text='E-book format'} </label>
-						<div class="col-sm-9">
-							<select name="ebookFormat" id="ebookFormat" class="form-control">
-								<option value="epub" {if $materialsRequest->subFormat=='epub'}selected='selected'{/if}>{translate text='EPUB' inAttribute=true}</option>
-								<option value="kindle" {if $materialsRequest->subFormat=='kindle'}selected='selected'{/if}>{translate text='Kindle' inAttribute=true}</option>
-								<option value="pdf" {if $materialsRequest->subFormat=='pdf'}selected='selected'{/if}>{translate text='PDF' inAttribute=true}</option>
-								<option value="other" {if $materialsRequest->subFormat=='other'}selected='selected'{/if}>{translate text='Other - please specify in comments' inAttribute=true}</option>
-							</select>
-						</div>
+				<div class="form-group ebookField specialFormatField">
+					<label for="ebookFormat" class="col-sm-3 control-label">{translate text='E-book format'} </label>
+					<div class="col-sm-9">
+						<select name="ebookFormat" id="ebookFormat" class="form-control">
+							<option value="epub" {if $materialsRequest->subFormat=='epub'}selected='selected'{/if}>{translate text='EPUB' inAttribute=true}</option>
+							<option value="kindle" {if $materialsRequest->subFormat=='kindle'}selected='selected'{/if}>{translate text='Kindle' inAttribute=true}</option>
+							<option value="pdf" {if $materialsRequest->subFormat=='pdf'}selected='selected'{/if}>{translate text='PDF' inAttribute=true}</option>
+							<option value="other" {if $materialsRequest->subFormat=='other'}selected='selected'{/if}>{translate text='Other - please specify in comments' inAttribute=true}</option>
+						</select>
 					</div>
-				{/if}
-
-				{*E-audio Format Fields *}
-		{* Hiding this option.
-				{if $showEaudioFormatField}
-					<div class="form-group eaudioField specialFormatField">{* eaudioField class used for both special field handling and the older format controlling * }
-						<label for="eaudioFormat" class="col-sm-3 control-label">{translate text='E-audio format'} </label>
-						<div class="col-sm-9">
-							<select name="eaudioFormat" id="eaudioFormat" class="form-control">
-								<option value="wma" {if $materialsRequest->subFormat=='wma'}selected='selected'{/if}>{translate text='WMA'}</option>
-								<option value="mp3" {if $materialsRequest->subFormat=='mp3'}selected='selected'{/if}>{translate text='MP3'}</option>
-								<option value="other" {if $materialsRequest->subFormat=='other'}selected='selected'{/if}>{translate text='Other - please specify in comments'}</option>
-							</select>
-						</div>
-					</div>
-				{/if}*}
+				</div>
 
 				{* Abridged Fields *}
 				<div class="form-group abridgedField specialFormatField">
@@ -167,14 +150,12 @@
 					</div>
 				</div>
 
-
 				{* Required Regular Input Field *}
-			{elseif
-			$formField->fieldType == 'title'}
-{translate text=$formField->fieldLabel}
+			{elseif $formField->fieldType == 'title'}
 				{assign var="materialRequestTableColumnName" value=$formField->fieldType}
 				<div class="row form-group">
-					<label id="titleLabel" for="{$materialRequestTableColumnName}" class="control-label col-sm-3">{translate text=$formField->fieldLabel}<span class='requiredIndicator'>*</span></label>
+					<label id="titleLabel" for="{$materialRequestTableColumnName}" class="control-label col-sm-3">{translate text=$formField->fieldLabel} <span class='requiredIndicator'>*</span></label>
+					<label id="articleTitleLabel" for="{$materialRequestTableColumnName}" class="control-label col-sm-3">{translate text="Article Title"} <span class='requiredIndicator'>*</span></label>
 					<div class="request_detail_field_value col-sm-9">
 						<input name="{$materialRequestTableColumnName}" id="{$materialRequestTableColumnName}" size="90" maxlength="255" class="required form-control" value="{$materialsRequest->$materialRequestTableColumnName}">
 					</div>
@@ -199,15 +180,13 @@
 				</div>
 
 				{* Text Area Fields*}
-			{elseif
-			$formField->fieldType == 'comments' ||
-			$formField->fieldType == 'about'}
+			{elseif $formField->fieldType == 'comments' || $formField->fieldType == 'staffComments' || $formField->fieldType == 'about'}
 
 				{assign var="materialRequestTableColumnName" value=$formField->fieldType}
 				<div class="row form-group">
 					<label for="{$materialRequestTableColumnName}" class="control-label col-sm-3">{translate text=$formField->fieldLabel} </label>
 					<div class="request_detail_field_value col-sm-9">
-							<textarea name="{$materialRequestTableColumnName}" id="{$materialRequestTableColumnName}" rows="3" cols="80" class="form-control {if $formField->fieldType == 'about' && $requireAboutField} required{/if}">
+							<textarea name="{$materialRequestTableColumnName}" id="{$materialRequestTableColumnName}" rows="3" cols="80" class="form-control">
 								{$materialsRequest->$materialRequestTableColumnName}
 							</textarea>
 					</div>
@@ -251,11 +230,11 @@
 					<div class="request_detail_field_value col-sm-9">
 
 						<label for="{$materialRequestTableColumnName}Yes" class="radio-inline">
-							<input type="radio" name="{$materialRequestTableColumnName}" value="1" id="{$materialRequestTableColumnName}Yes"{if $materialsRequest->$materialRequestTableColumnName == 1} checked="checked"{/if}>{translate text='Yes'}
+							<input type="radio" name="{$materialRequestTableColumnName}" value="1" id="{$materialRequestTableColumnName}Yes"{if $materialsRequest->$materialRequestTableColumnName === "1"} checked="checked"{/if}>{translate text='Yes'}
 						</label>
 						&nbsp;&nbsp;
 						<label for="{$materialRequestTableColumnName}No" class="radio-inline">
-							<input type="radio" name="{$materialRequestTableColumnName}" value="0" id="{$materialRequestTableColumnName}No"{if $materialsRequest->$materialRequestTableColumnName == 0} checked="checked"{/if}>{translate text='No'}
+							<input type="radio" name="{$materialRequestTableColumnName}" value="0" id="{$materialRequestTableColumnName}No"{if $materialsRequest->$materialRequestTableColumnName === "0"} checked="checked"{/if}>{translate text='No'}
 						</label>
 
 					</div>
@@ -299,11 +278,11 @@
 						<div class="request_detail_field_value col-sm-9">
 
 							<label for="{$materialRequestTableColumnName}Yes" class="radio-inline">
-								<input type="radio" name="{$materialRequestTableColumnName}" value="1" id="{$materialRequestTableColumnName}Yes"{if $materialsRequest->$materialRequestTableColumnName == 1} checked="checked"{/if} onchange="AspenDiscovery.MaterialsRequest.updateHoldOptions()">{translate text='Yes'}
+								<input type="radio" name="{$materialRequestTableColumnName}" value="1" id="{$materialRequestTableColumnName}Yes"{if $materialsRequest->$materialRequestTableColumnName === "1"} checked="checked"{/if} onchange="AspenDiscovery.MaterialsRequest.updateHoldOptions()">{translate text='Yes'}
 							</label>
 							&nbsp;&nbsp;
 							<label for="{$materialRequestTableColumnName}No" class="radio-inline">
-								<input type="radio" name="{$materialRequestTableColumnName}" value="0" id="{$materialRequestTableColumnName}No"{if $materialsRequest->$materialRequestTableColumnName == 0} checked="checked"{/if} onchange="AspenDiscovery.MaterialsRequest.updateHoldOptions()">{translate text='No'}
+								<input type="radio" name="{$materialRequestTableColumnName}" value="0" id="{$materialRequestTableColumnName}No"{if $materialsRequest->$materialRequestTableColumnName === "0"} checked="checked"{/if} onchange="AspenDiscovery.MaterialsRequest.updateHoldOptions()">{translate text='No'}
 							</label>
 
 						</div>
@@ -317,7 +296,7 @@
 						<div class=" request_detail_field_value col-sm-9">
 							<select name="holdPickupLocation" id="pickupLocation" onchange="AspenDiscovery.MaterialsRequest.updateHoldOptions();" class="form-control">
 								{foreach from=$pickupLocations item=location}
-									<option value="{$location.id}" {if $location.selected}selected="selected"{/if}>{translate text=$location.displayName}</option>
+									<option value="{$location.id}" {if $location.selected}selected="selected"{/if}>{$location.displayName}</option>
 								{/foreach}
 							</select>
 						</div>

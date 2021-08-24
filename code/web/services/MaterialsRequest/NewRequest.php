@@ -14,7 +14,6 @@ class MaterialsRequest_NewRequest extends Action
 		global $configArray;
 		global $interface;
 		global $library;
-		global $locationSingleton;
 
 		if (!UserAccount::isLoggedIn()) {
 			header('Location: /MyAccount/Home?followupModule=MaterialsRequest&followupAction=NewRequest');
@@ -22,7 +21,8 @@ class MaterialsRequest_NewRequest extends Action
 		} else {
 			// Hold Pick-up Locations
 			$user = UserAccount::getActiveUserObj();
-			$locations = $locationSingleton->getPickupBranches($user);
+			$location = new Location();
+			$locations = $location->getPickupBranches($user);
 
 			$pickupLocations = array();
 			foreach ($locations as $curLocation) {
@@ -63,10 +63,6 @@ class MaterialsRequest_NewRequest extends Action
 			}
 
 			$interface->assign('materialsRequest', $request);
-
-			$interface->assign('showEbookFormatField', $configArray['MaterialsRequest']['showEbookFormatField']);
-//			$interface->assign('showEaudioFormatField', $configArray['MaterialsRequest']['showEaudioFormatField']);
-			$interface->assign('requireAboutField', $configArray['MaterialsRequest']['requireAboutField']);
 
 			$useWorldCat = false;
 			if (isset($configArray['WorldCat']) && isset($configArray['WorldCat']['apiKey'])) {

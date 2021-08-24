@@ -36,16 +36,6 @@ class MaterialsRequest_Submit extends Action
 		if ($processForm){
 			//Check to see if the user type is ok to submit a request
 			$enableMaterialsRequest = true;
-			if (isset($configArray['MaterialsRequest']['allowablePatronTypes'])){
-				//Check to see if we need to do additional restrictions by patron type
-				$allowablePatronTypes = $configArray['MaterialsRequest']['allowablePatronTypes'];
-				$user = UserAccount::getLoggedInUser();
-				if (strlen($allowablePatronTypes) > 0 && $user){
-					if (!preg_match("/^$allowablePatronTypes$/i", $user->patronType)){
-						$enableMaterialsRequest = false;
-					}
-				}
-			}
 			if (!$enableMaterialsRequest){
 				$interface->assign('success', false);
 				$interface->assign('error', 'Sorry, only residents may submit '. translate('materials request') .'s at this time.');

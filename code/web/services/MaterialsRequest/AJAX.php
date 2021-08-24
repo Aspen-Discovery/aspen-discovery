@@ -157,10 +157,6 @@ class MaterialsRequest_AJAX extends Action{
 									$interface->assign('formatAuthorLabelsJSON', json_encode($formatAuthorLabels));
 									$interface->assign('specialFieldFormatsJSON', json_encode($specialFieldFormats));
 
-									$interface->assign('showEbookFormatField', $configArray['MaterialsRequest']['showEbookFormatField']);
-//									$interface->assign('showEaudioFormatField', $configArray['MaterialsRequest']['showEaudioFormatField']);
-									$interface->assign('requireAboutField', $configArray['MaterialsRequest']['requireAboutField']);
-
 									$interface->assign('materialsRequest', $materialsRequest);
 									$interface->assign('showUserInformation', true);
 
@@ -169,11 +165,13 @@ class MaterialsRequest_AJAX extends Action{
 									$locationList = $location->getPickupBranches($requestUser);
 									$pickupLocations = array();
 									foreach ($locationList as $curLocation) {
-										$pickupLocations[] = array(
-											'id' => $curLocation->locationId,
-											'displayName' => $curLocation->displayName,
-											'selected' => is_object($curLocation) ? ($curLocation->locationId == $materialsRequest->holdPickupLocation ? 'selected' : '') : '',
-										);
+										if (is_object($curLocation)) {
+											$pickupLocations[] = array(
+												'id' => $curLocation->locationId,
+												'displayName' => $curLocation->displayName,
+												'selected' => is_object($curLocation) ? ($curLocation->locationId == $materialsRequest->holdPickupLocation ? 'selected' : '') : '',
+											);
+										}
 									}
 
 									// Add bookmobile Stop to the pickup locations if that form field is being used.
@@ -233,7 +231,7 @@ class MaterialsRequest_AJAX extends Action{
 		return array(
 			'title' => 'Update Materials Request',
 			'modalBody' => $interface->fetch('MaterialsRequest/ajax-update-request.tpl'),
-			'modalButtons' => $interface->get_template_vars('error') == null ?  "<button class='btn btn-primary' onclick='$(\"#materialsRequestUpdateForm\").submit();'>Update Request</button>" : ''
+			'modalButtons' => $interface->get_template_vars('error') == null ?  "<button class='btn btn-primary' onclick='$(\"#materialsRequestUpdateForm\").submit();'>" . translate("Update Request") . "</button>" : ''
 		);
 	}
 
@@ -546,7 +544,6 @@ class MaterialsRequest_AJAX extends Action{
 								$materialRequest->abridged = ($sheet->getCellByColumnAndRow($curCol++, $rowNum)->getValue() == 'Unabridged' ? 0 : ($sheet->getCellByColumnAndRow($curCol++, $rowNum)->getValue() == 'Abridged' ? 1 : 2));
 								$materialRequest->about = $sheet->getCellByColumnAndRow($curCol++, $rowNum)->getValue();
 								$materialRequest->comments = $sheet->getCellByColumnAndRow($curCol++, $rowNum)->getValue();
-								/** @noinspection PhpUnusedLocalVariableInspection */
 								$username = $sheet->getCellByColumnAndRow($curCol++, $rowNum)->getValue();
 								$barcode = $sheet->getCellByColumnAndRow($curCol++, $rowNum)->getFormattedValue();
 								$email = $sheet->getCellByColumnAndRow($curCol++, $rowNum)->getFormattedValue();
