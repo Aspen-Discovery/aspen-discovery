@@ -843,7 +843,7 @@ class GroupedWorkDriver extends IndexRecordDriver
 			$description = $this->getDescriptionFast();
 		}
 		if ($description == null || strlen($description) == 0) {
-			$description = 'Description Not Provided';
+			$description = translate('Description Not Provided');
 		}
 		return $description;
 	}
@@ -940,37 +940,7 @@ class GroupedWorkDriver extends IndexRecordDriver
 
 	public function getExploreMoreInfo()
 	{
-		global $interface;
-		global $configArray;
-		$exploreMoreOptions = array();
-		if ($configArray['Catalog']['showExploreMoreForFullRecords']) {
-			$interface->assign('showMoreLikeThisInExplore', true);
-			$interface->assign('showExploreMore', true);
-			if ($this->getCleanISBN()) {
-				if ($interface->getVariable('showSimilarTitles')) {
-					$exploreMoreOptions['similarTitles'] = array(
-						'label' => 'Similar Titles From NoveList',
-						'body' => '<div id="novelistTitlesPlaceholder"></div>',
-						'hideByDefault' => true
-					);
-				}
-				if ($interface->getVariable('showSimilarAuthors')) {
-					$exploreMoreOptions['similarAuthors'] = array(
-						'label' => 'Similar Authors From NoveList',
-						'body' => '<div id="novelistAuthorsPlaceholder"></div>',
-						'hideByDefault' => true
-					);
-				}
-				if ($interface->getVariable('showSimilarTitles')) {
-					$exploreMoreOptions['similarSeries'] = array(
-						'label' => 'Similar Series From NoveList',
-						'body' => '<div id="novelistSeriesPlaceholder"></div>',
-						'hideByDefault' => true
-					);
-				}
-			}
-		}
-		return $exploreMoreOptions;
+		return [];
 	}
 
 	public function getFountasPinnellLevel()
@@ -1231,6 +1201,31 @@ class GroupedWorkDriver extends IndexRecordDriver
 		}else{
 			$result['formattedTitle']= $interface->fetch('CollectionSpotlight/formattedTitle.tpl');
 		}
+
+		return $result;
+	}
+
+	public function getSuggestionSpotlightResult(string $index){
+		global $interface;
+		$interface->assign('showRatings', false);
+
+		$interface->assign('key', $index);
+
+		$imageUrl = $this->getBookcoverUrl('medium');
+
+		$interface->assign('title', $this->getTitle());
+		$interface->assign('author', $this->getPrimaryAuthor());
+		$interface->assign('description', $this->getDescriptionFast());
+		$interface->assign('shortId', $this->getId());
+		$interface->assign('id', $this->getId());
+		$interface->assign('titleURL', $this->getRecordUrl());
+		$interface->assign('imageUrl', $imageUrl);
+
+		$result = [
+			'title' => $this->getTitle(),
+			'author' => $this->getPrimaryAuthor(),
+		];
+		$result['formattedTitle'] = $interface->fetch('CollectionSpotlight/formattedHorizontalCarouselTitle.tpl');
 
 		return $result;
 	}
