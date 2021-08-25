@@ -252,11 +252,6 @@ class Record_Home extends GroupedWorkSubRecordHomeAction{
 		$interface->assign('semanticData', json_encode($this->recordDriver->getSemanticData()));
 
 		// Display Page
-		global $configArray;
-		if ($configArray['Catalog']['showExploreMoreForFullRecords']) {
-			$interface->assign('showExploreMore', true);
-		}
-
 		$this->display('full-record.tpl', $this->recordDriver->getTitle(), '', false);
 
 	}

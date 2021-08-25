@@ -401,14 +401,7 @@ class EbscoRecordDriver extends RecordInterface
 
 	public function getExploreMoreInfo()
 	{
-		global $configArray;
-		$exploreMoreOptions = array();
-		if ($configArray['Catalog']['showExploreMoreForFullRecords']) {
-			require_once ROOT_DIR . '/sys/ExploreMore.php';
-			$exploreMore = new ExploreMore();
-			$exploreMore->loadExploreMoreSidebar('ebsco_eds', $this);
-		}
-		return $exploreMoreOptions;
+		return [];
 	}
 
 	public function getAllSubjectHeadings()

@@ -149,14 +149,14 @@ abstract class RecordInterface
 			'openByDefault' => true
 		);
 		$timer->logTime('Loaded Series Data');
-		if (!$configArray['Catalog']['showExploreMoreForFullRecords']) {
-			$moreDetailsOptions['moreLikeThis'] = array(
-				'label' => 'More Like This',
-				'body' => $interface->fetch('GroupedWork/moreLikeThis.tpl'),
-				'hideByDefault' => false,
-				'openByDefault' => true
-			);
-		}
+
+		$moreDetailsOptions['moreLikeThis'] = array(
+			'label' => 'More Like This',
+			'body' => $interface->fetch('GroupedWork/moreLikeThis.tpl'),
+			'hideByDefault' => false,
+			'openByDefault' => true
+		);
+
 		$timer->logTime('Loaded More Like This');
 		if ($interface->getVariable('enableProspectorIntegration')) {
 			$moreDetailsOptions['prospector'] = array(
@@ -207,28 +207,27 @@ abstract class RecordInterface
 					'body' => '<div id="goodReadsPlaceHolder">Loading GoodReads Reviews.</div>'
 				);
 			}
-			if (!$configArray['Catalog']['showExploreMoreForFullRecords']) {
-				if ($interface->getVariable('showSimilarTitles')) {
-					$moreDetailsOptions['similarTitles'] = array(
-						'label' => 'Similar Titles From NoveList',
-						'body' => '<div id="novelistTitlesPlaceholder"></div>',
-						'hideByDefault' => true
-					);
-				}
-				if ($interface->getVariable('showSimilarAuthors')) {
-					$moreDetailsOptions['similarAuthors'] = array(
-						'label' => 'Similar Authors From NoveList',
-						'body' => '<div id="novelistAuthorsPlaceholder"></div>',
-						'hideByDefault' => true
-					);
-				}
-				if ($interface->getVariable('showSimilarTitles')) {
-					$moreDetailsOptions['similarSeries'] = array(
-						'label' => 'Similar Series From NoveList',
-						'body' => '<div id="novelistSeriesPlaceholder"></div>',
-						'hideByDefault' => true
-					);
-				}
+
+			if ($interface->getVariable('showSimilarTitles')) {
+				$moreDetailsOptions['similarTitles'] = array(
+					'label' => 'Similar Titles From NoveList',
+					'body' => '<div id="novelistTitlesPlaceholder"></div>',
+					'hideByDefault' => true
+				);
+			}
+			if ($interface->getVariable('showSimilarAuthors')) {
+				$moreDetailsOptions['similarAuthors'] = array(
+					'label' => 'Similar Authors From NoveList',
+					'body' => '<div id="novelistAuthorsPlaceholder"></div>',
+					'hideByDefault' => true
+				);
+			}
+			if ($interface->getVariable('showSimilarTitles')) {
+				$moreDetailsOptions['similarSeries'] = array(
+					'label' => 'Similar Series From NoveList',
+					'body' => '<div id="novelistSeriesPlaceholder"></div>',
+					'hideByDefault' => true
+				);
 			}
 		}
 		//Do the filtering and sorting here so subclasses can use this directly
