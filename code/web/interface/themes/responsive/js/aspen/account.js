@@ -353,6 +353,8 @@ AspenDiscovery.Account = (function(){
 						if (data.summary.numAvailableHolds > 0) {
 							$(".ils-available-holds-placeholder").html(data.summary.numAvailableHolds);
 							$(".ils-available-holds").show();
+						}else{
+							$(".ils-available-holds-placeholder").html("0");
 						}
 						$(".readingHistory-placeholder").html(data.summary.readingHistory);
 						$(".materialsRequests-placeholder").html(data.summary.materialsRequests);
