@@ -57,6 +57,9 @@ class Translator
 
 	//Cache any translations that have already been loaded.
 	private $cachedTranslations = [];
+
+	private $greenhouseCurlWrapper = null;
+
 	/**
 	 * Translate the phrase
 	 *
@@ -103,8 +106,10 @@ class Translator
 							require_once ROOT_DIR . '/sys/SystemVariables.php';
 							$systemVariables = SystemVariables::getSystemVariables();
 							if ($systemVariables && !empty($systemVariables->greenhouseUrl)) {
-								require_once ROOT_DIR . '/sys/CurlWrapper.php';
-								$curl = new CurlWrapper();
+								if ($this->greenhouseCurlWrapper == null) {
+									require_once ROOT_DIR . '/sys/CurlWrapper.php';
+									$this->greenhouseCurlWrapper = new CurlWrapper();
+								}
 								$body = [
 									'term' => $phrase,
 									'isPublicFacing' => $isPublicFacing,
@@ -112,7 +117,7 @@ class Translator
 									'isMetadata' => $isMetadata,
 									'isAdminEnteredData' => $isAdminEnteredData,
 								];
-								$curl->curlPostPage($systemVariables->greenhouseUrl . '/API/GreenhouseAPI?method=addTranslationTerm', $body);
+								$this->greenhouseCurlWrapper->curlPostPage($systemVariables->greenhouseUrl . '/API/GreenhouseAPI?method=addTranslationTerm', $body);
 							}
 						} catch (Exception $e) {
 							if (UserAccount::isLoggedIn() && UserAccount::userHasPermission('Translate Aspen')) {
@@ -169,18 +174,44 @@ class Translator
 								$defaultTranslation = $defaultText;
 								$translation->translated = ($activeLanguage->id == 1) ? 1 : 0;
 							} else {
-								//We don't have a translation in the database, load a default from the ini file if possible
-								$this->loadTranslationsFromIniFile();
-								if (isset($this->words[$phrase])) {
-									$defaultTranslation = $this->words[$phrase];
-									$translation->translated = 1;
-								} else {
-									$translation->translated = ($activeLanguage->id == 1) ? 1 : 0;
-									//Nothing in the ini, just return default
-									if ($this->debug) {
-										$defaultTranslation = "translate_index_not_found($phrase)";
+								//Check the greenhouse to see if there is a translation there
+								$translatedInGreenhouse = false;
+								require_once ROOT_DIR . '/sys/SystemVariables.php';
+								$systemVariables = SystemVariables::getSystemVariables();
+								if ($systemVariables && !empty($systemVariables->greenhouseUrl)) {
+									if ($this->greenhouseCurlWrapper == null) {
+										require_once ROOT_DIR . '/sys/CurlWrapper.php';
+										$this->greenhouseCurlWrapper = new CurlWrapper();
+									}
+									$body = [
+										'term' => $phrase,
+										'languageCode' => $activeLanguage->code,
+									];
+									$response = $this->greenhouseCurlWrapper->curlPostPage($systemVariables->greenhouseUrl . '/API/GreenhouseAPI?method=getDefaultTranslation', $body);
+									if ($response !== false) {
+										$jsonResponse = json_decode($response);
+										if ($jsonResponse['success']){
+											$translation->translated = 1;
+											$translation->translation = $jsonResponse['translation'];
+											$translation->update();
+											$translatedInGreenhouse = true;
+										}
+									}
+								}
+								if (!$translatedInGreenhouse) {
+									//We don't have a translation in the database, load a default from the ini file if possible
+									$this->loadTranslationsFromIniFile();
+									if (isset($this->words[$phrase])) {
+										$defaultTranslation = $this->words[$phrase];
+										$translation->translated = 1;
 									} else {
-										$defaultTranslation = $phrase;
+										$translation->translated = ($activeLanguage->id == 1) ? 1 : 0;
+										//Nothing in the ini, just return default
+										if ($this->debug) {
+											$defaultTranslation = "translate_index_not_found($phrase)";
+										} else {
+											$defaultTranslation = $phrase;
+										}
 									}
 								}
 							}
