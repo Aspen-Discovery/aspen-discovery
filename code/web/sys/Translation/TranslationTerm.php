@@ -14,6 +14,16 @@ class TranslationTerm extends DataObject
 	public $defaultText;
 	public $parameterNotes;
 	public $samplePageUrl;
+	public $isPublicFacing;
+	public $isAdminFacing;
+	public $isMetadata;
+	public $isAdminEnteredData;
+	public $lastUpdate;
+
+	public function getNumericColumnNames(): array
+	{
+		return ['isPublicFacing', 'isAdminFacing', 'isMetadata', 'isAdminEnteredData', 'lastUpdate'];
+	}
 
 	public function getDefaultText()
 	{

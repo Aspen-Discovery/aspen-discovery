@@ -38,7 +38,7 @@ class Role extends DataObject
 		$role->find();
 		$roleList = [];
 		while ($role->fetch()) {
-			$roleList[$role->roleId] = $role->name . ' - ' . $role->description;
+			$roleList[$role->roleId] = translate(['text'=>$role->name, 'inAttribute'=>true,'isAdminFacing'=>true,'isAdminEnteredData'=>true]) . ' - ' . translate(['text'=>$role->description, 'inAttribute'=>true,'isAdminFacing'=>true,'isAdminEnteredData'=>true]);
 		}
 		return $roleList;
 	}
