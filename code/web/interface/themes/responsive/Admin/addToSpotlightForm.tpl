@@ -5,7 +5,7 @@
 			{if count($existingCollectionSpotlights) > 0}
 				You may either add this {$source} to an existing collection spotlight as a new tab, <br> or you may create a new spotlight to display this {$source} in.
 			{else}
-			{translate text="Please enter a name for the spotlight to be created."}
+				{translate text="Please enter a name for the spotlight to be created." }
 			{/if}
 		</p>
 	</div>

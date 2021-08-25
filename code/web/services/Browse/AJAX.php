@@ -37,7 +37,7 @@ class Browse_AJAX extends Action {
 		$interface->assign('searchId', strip_tags($_REQUEST['searchId']));
 
 		return array(
-			'title' => 'Add as Browse Category to Home Page',
+			'title' => translate(['text'=>'Add as Browse Category to Home Page', 'isAdminFacing'=>'true']),
 			'modalBody' => $interface->fetch('Browse/addBrowseCategory.tpl'),
 			'modalButtons' => ""
 		);
@@ -77,9 +77,9 @@ class Browse_AJAX extends Action {
 
 		$interface->assign('searchId', strip_tags($_REQUEST['searchId']));
 		return array(
-			'title' => 'Update Existing Browse Category',
+			'title' => translate(['text'=>'Update Existing Browse Category','isAdminFacing'=>true]),
 			'modalBody' => $interface->fetch('Browse/updateBrowseCategoryForm.tpl'),
-			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#updateBrowseCategory\").submit();'>Update Category</button>"
+			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#updateBrowseCategory\").submit();'>" . translate(['text'=>'Update Category','isAdminFacing'=>true]) . "</button>"
 		);
 	}
 
@@ -100,9 +100,9 @@ class Browse_AJAX extends Action {
 		// Display Page
 		$interface->assign('searchId', strip_tags($_REQUEST['searchId']));
 		return array(
-			'title' => 'Add as New Browse Category',
+			'title' => translate(['text'=>'Add as New Browse Category', 'isAdminFacing'=>'true']),
 			'modalBody' => $interface->fetch('Browse/newBrowseCategoryForm.tpl'),
-			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#createBrowseCategory\").submit();'>Create Category</button>"
+			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#createBrowseCategory\").submit();'>" . translate(['text'=>'Create Category', 'isAdminFacing'=>'true']) . "</button>"
 		);
 	}
 
