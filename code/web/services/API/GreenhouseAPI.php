@@ -53,7 +53,7 @@ class GreenhouseAPI extends Action
 	/** @noinspection PhpUnused */
 	public function addTranslationTerm() : array {
 		$translationTerm = new TranslationTerm();
-		$translationTerm->term = $_POST['term'];
+		$translationTerm->term = $_REQUEST['term'];
 		if (!$translationTerm->find(true)) {
 			$translationTerm->isPublicFacing = $_REQUEST['isPublicFacing'];
 			$translationTerm->isAdminFacing = $_REQUEST['isAdminFacing'];
@@ -113,7 +113,7 @@ class GreenhouseAPI extends Action
 		];
 		$translationTerm = new TranslationTerm();
 		$translationTerm->term = $_REQUEST['term'];
-		if (!$translationTerm->find(true)) {
+		if ($translationTerm->find(true)) {
 			$language = new Language();
 			$language->code = $_REQUEST['languageCode'];
 			if ($language->find(true)){
