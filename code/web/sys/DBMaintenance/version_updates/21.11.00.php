@@ -27,6 +27,13 @@ function getUpdates21_11_00() : array
 				'ALTER TABLE translation_terms ADD COLUMN isAdminEnteredData TINYINT(1) DEFAULT 0',
 				'ALTER TABLE translation_terms ADD COLUMN lastUpdate INT(11) DEFAULT 0',
 			]
+		],
+		'addGreenhouseUrl' => [
+			'title' => 'Add Greenhouse URL',
+			'description' => 'Add a link to the Greenhouse',
+			'sql' => [
+				'ALTER TABLE system_variables ADD COLUMN greenhouseUrl VARCHAR(128)'
+			]
 		]
 	];
 }

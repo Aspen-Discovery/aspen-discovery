@@ -98,6 +98,22 @@ class Translator
 						$translationTerm->lastUpdate = time();
 						try {
 							$translationTerm->insert();
+							//Send this to the Greenhouse as well
+
+							require_once ROOT_DIR . '/sys/SystemVariables.php';
+							$systemVariables = SystemVariables::getSystemVariables();
+							if ($systemVariables && !empty($systemVariables->greenhouseUrl)) {
+								require_once ROOT_DIR . '/sys/CurlWrapper.php';
+								$curl = new CurlWrapper();
+								$body = [
+									'term' => $phrase,
+									'isPublicFacing' => $isPublicFacing,
+									'isAdminFacing' => $isAdminFacing,
+									'isMetadata' => $isMetadata,
+									'isAdminEnteredData' => $isAdminEnteredData,
+								];
+								$curl->curlPostPage($systemVariables->greenhouseUrl . '/API/Greenhouse?method=addTranslationTerm', $body);
+							}
 						} catch (Exception $e) {
 							if (UserAccount::isLoggedIn() && UserAccount::userHasPermission('Translate Aspen')) {
 								//Just show the phrase for now, maybe show the error in debug mode?

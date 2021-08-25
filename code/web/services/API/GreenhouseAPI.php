@@ -50,6 +50,71 @@ class GreenhouseAPI extends Action
 		return $return;
 	}
 
+	/** @noinspection PhpUnused */
+	public function addTranslationTerm() : array {
+		$translationTerm = new TranslationTerm();
+		$translationTerm->term = $_REQUEST['term'];
+		if (!$translationTerm->find(true)) {
+			$translationTerm->isPublicFacing = $_REQUEST['isPublicFacing'];
+			$translationTerm->isAdminFacing = $_REQUEST['isAdminFacing'];
+			$translationTerm->isMetadata = $_REQUEST['isMetadata'];
+			$translationTerm->isAdminEnteredData = $_REQUEST['isAdminEnteredData'];
+			$translationTerm->lastUpdate = time();
+			try {
+				$translationTerm->insert();
+				$result = [
+					'success' => true,
+					'message' => translate(['text' => 'The term was added.', 'isAdminFacing' => true])
+				];
+			}catch (Exception $e){
+				$result = [
+					'success' => false,
+					'message' => translate(['text' => 'Could not update term. %1%', 'isAdminFacing'=> true, 1=>(string)$e])
+				];
+			}
+		}else{
+			$termChanged = false;
+			if ($_REQUEST['isPublicFacing'] && !$translationTerm->isPublicFacing) {
+				$translationTerm->isPublicFacing = $_REQUEST['isPublicFacing'];
+				$termChanged = true;
+			}
+			if ($_REQUEST['isAdminFacing'] && !$translationTerm->isAdminFacing) {
+				$translationTerm->isAdminFacing = $_REQUEST['isAdminFacing'];
+				$termChanged = true;
+			}
+			if ($_REQUEST['isAdminFacing'] && !$translationTerm->isMetadata) {
+				$translationTerm->isMetadata = $_REQUEST['isAdminFacing'];
+				$termChanged = true;
+			}
+			if ($_REQUEST['isAdminEnteredData'] && !$translationTerm->isAdminEnteredData) {
+				$translationTerm->isAdminEnteredData = $_REQUEST['isAdminEnteredData'];
+				$termChanged = true;
+			}
+			if ($termChanged) {
+				$translationTerm->lastUpdate = time();
+				$translationTerm->update();
+				$result = [
+					'success' => true,
+					'message' => translate(['text' => 'The term was updated.', 'isAdminFacing'=> true])
+				];
+			}else{
+				$result = [
+					'success' => true,
+					'message' => translate(['text' => 'The term already existed.', 'isAdminFacing'=> true])
+				];
+			}
+		}
+		return $result;
+	}
+
+	public function getDefaultTranslation() {
+
+	}
+
+	public function addTranslation() {
+
+	}
+
 	function getBreadcrumbs() : array
 	{
 		return [];
