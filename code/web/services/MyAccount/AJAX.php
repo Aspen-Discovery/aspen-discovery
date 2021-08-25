@@ -3777,4 +3777,27 @@ class MyAccount_AJAX extends JSON_Action
 		}
 		return $result;
 	}
+
+	function getSuggestionsSpotlight() {
+		$result = array(
+			'success' => false,
+			'message' => 'Error loading suggestions spotlight.'
+		);
+
+		if (!UserAccount::isLoggedIn()) {
+			$result['message'] = 'You must be logged in to view suggestions.  Please close this dialog and login again.';
+		} else {
+			require_once ROOT_DIR . '/sys/Suggestions.php';
+			require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+			$suggestions = Suggestions::getSuggestions(UserAccount::getActiveUserId());
+			foreach ($suggestions as $index => $suggestionInfo) {
+				$groupedWorkDriver = new GroupedWorkDriver($suggestionInfo['titleInfo']);
+				$result['suggestions'][] = $groupedWorkDriver->getSuggestionSpotlightResult($index);
+			}
+			$result['success'] = true;
+			$result['message'] = '';
+		}
+
+		return $result;
+	}
 }
