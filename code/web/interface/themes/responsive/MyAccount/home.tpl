@@ -21,22 +21,41 @@
 				{else}
 					<div class="row">
 						<div class="col-tn-6">
-							<div class="dashboardLabel"><a href="/MyAccount/CheckedOut">{translate text="Checked Out"}</a></div>
-							<div class="dashboardValue"><a href="/MyAccount/CheckedOut"><span class="checkouts-placeholder"><img src="/images/loading.gif" alt="loading"></span></a></div>
+							<div class="btn btn-block btn-default">
+								<a href="/MyAccount/CheckedOut">
+									<div class="dashboardLabel">{translate text="Checked Out"}</div>
+									<div class="dashboardValue"><span class="checkouts-placeholder"><img src="/images/loading.gif" alt="loading"></span></div>
+								</a>
+							</div>
 						</div>
 						<div class="col-tn-6">
-							<div class="dashboardLabel"><a href="/MyAccount/CheckedOut">{translate text="Overdue"}</a></div>
-							<div class="dashboardValue"><a href="/MyAccount/CheckedOut"><span class="ils-overdue-placeholder"><img src="/images/loading.gif" alt="loading"></span></a></div>
+							<div class="btn btn-block btn-default">
+								<a href="/MyAccount/CheckedOut">
+									<div class="dashboardLabel">{translate text="Overdue"}</div>
+									<div class="dashboardValue"><span class="ils-overdue-placeholder"><img src="/images/loading.gif" alt="loading"></span></div>
+								</a>
+							</div>
 						</div>
 					</div>
 					<div class="row">
+						<div class="col-sm-12">&nbsp;</div>
+					</div>
+					<div class="row">
 						<div class="col-tn-6">
-							<div class="dashboardLabel"><a href="/MyAccount/Holds">{translate text="Holds"}</a></div>
-							<div class="dashboardValue"><a href="/MyAccount/Holds"><span class="holds-placeholder"><img src="/images/loading.gif" alt="loading"></span></a></div>
+							<div class="btn btn-block btn-default">
+								<a href="/MyAccount/Holds">
+									<div class="dashboardLabel">{translate text="Holds"}</div>
+									<div class="dashboardValue"><span class="holds-placeholder"><img src="/images/loading.gif" alt="loading"></span></div>
+								</a>
+							</div>
 						</div>
 						<div class="col-tn-6">
-							<div class="dashboardLabel"><a href="/MyAccount/Holds">{translate text="Ready For Pickup"}</a></div>
-							<div class="dashboardValue"><a href="/MyAccount/Holds"><span class="ils-available-holds-placeholder"><img src="/images/loading.gif" alt="loading"></span></a></div>
+							<div class="btn btn-block btn-default">
+								<a href="/MyAccount/Holds">
+									<div class="dashboardLabel">{translate text="Ready For Pickup"}</div>
+									<div class="dashboardValue"><span class="ils-available-holds-placeholder"><img src="/images/loading.gif" alt="loading"></span></div>
+								</a>
+							</div>
 						</div>
 					</div>
 				{/if}
