@@ -111,7 +111,7 @@ class GreenhouseAPI extends Action
 		$result = [
 			'success' => false
 		];
-		if (isset($_REQUEST['term']) && isset($_REQUEST['languageCode'])) {
+		if (!empty($_REQUEST['term']) && !empty($_REQUEST['languageCode'])) {
 			$translationTerm = new TranslationTerm();
 			$translationTerm->term = $_REQUEST['term'];
 			if ($translationTerm->find(true)) {
@@ -124,9 +124,17 @@ class GreenhouseAPI extends Action
 					if ($translation->find(true)) {
 						$result['success'] = true;
 						$result['translation'] = $translation->translation;
+					}else{
+						$result['message'] = 'No translation found';
 					}
+				}else{
+					$result['message'] = 'Could not find language';
 				}
+			}else{
+				$result['message'] = 'Could not find term';
 			}
+		}else{
+			$result['message'] = 'Term and/or languageCode not provided';
 		}
 		return $result;
 	}
