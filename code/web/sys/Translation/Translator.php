@@ -112,7 +112,7 @@ class Translator
 									'isMetadata' => $isMetadata,
 									'isAdminEnteredData' => $isAdminEnteredData,
 								];
-								$curl->curlPostPage($systemVariables->greenhouseUrl . '/API/Greenhouse?method=addTranslationTerm', $body);
+								$curl->curlPostPage($systemVariables->greenhouseUrl . '/API/GreenhouseAPI?method=addTranslationTerm', $body);
 							}
 						} catch (Exception $e) {
 							if (UserAccount::isLoggedIn() && UserAccount::userHasPermission('Translate Aspen')) {
