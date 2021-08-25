@@ -55,10 +55,10 @@ class GreenhouseAPI extends Action
 		$translationTerm = new TranslationTerm();
 		$translationTerm->term = $_POST['term'];
 		if (!$translationTerm->find(true)) {
-			$translationTerm->isPublicFacing = $_POST['isPublicFacing'];
-			$translationTerm->isAdminFacing = $_POST['isAdminFacing'];
-			$translationTerm->isMetadata = $_POST['isMetadata'];
-			$translationTerm->isAdminEnteredData = $_POST['isAdminEnteredData'];
+			$translationTerm->isPublicFacing = $_REQUEST['isPublicFacing'];
+			$translationTerm->isAdminFacing = $_REQUEST['isAdminFacing'];
+			$translationTerm->isMetadata = $_REQUEST['isMetadata'];
+			$translationTerm->isAdminEnteredData = $_REQUEST['isAdminEnteredData'];
 			$translationTerm->lastUpdate = time();
 			try {
 				$translationTerm->insert();
@@ -75,19 +75,19 @@ class GreenhouseAPI extends Action
 		}else{
 			$termChanged = false;
 			if ($_REQUEST['isPublicFacing'] && !$translationTerm->isPublicFacing) {
-				$translationTerm->isPublicFacing = $_POST['isPublicFacing'];
+				$translationTerm->isPublicFacing = $_REQUEST['isPublicFacing'];
 				$termChanged = true;
 			}
 			if ($_REQUEST['isAdminFacing'] && !$translationTerm->isAdminFacing) {
-				$translationTerm->isAdminFacing = $_POST['isAdminFacing'];
+				$translationTerm->isAdminFacing = $_REQUEST['isAdminFacing'];
 				$termChanged = true;
 			}
 			if ($_REQUEST['isAdminFacing'] && !$translationTerm->isMetadata) {
-				$translationTerm->isMetadata = $_POST['isAdminFacing'];
+				$translationTerm->isMetadata = $_REQUEST['isAdminFacing'];
 				$termChanged = true;
 			}
 			if ($_REQUEST['isAdminEnteredData'] && !$translationTerm->isAdminEnteredData) {
-				$translationTerm->isAdminEnteredData = $_POST['isAdminEnteredData'];
+				$translationTerm->isAdminEnteredData = $_REQUEST['isAdminEnteredData'];
 				$termChanged = true;
 			}
 			if ($termChanged) {
@@ -112,10 +112,10 @@ class GreenhouseAPI extends Action
 			'success' => false
 		];
 		$translationTerm = new TranslationTerm();
-		$translationTerm->term = $_POST['term'];
+		$translationTerm->term = $_REQUEST['term'];
 		if (!$translationTerm->find(true)) {
 			$language = new Language();
-			$language->code = $_POST['languageCode'];
+			$language->code = $_REQUEST['languageCode'];
 			if ($language->find(true)){
 				$translation = new Translation();
 				$translation->termId= $translationTerm->id;

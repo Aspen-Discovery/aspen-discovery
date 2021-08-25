@@ -190,9 +190,9 @@ class Translator
 									$response = $this->greenhouseCurlWrapper->curlPostPage($systemVariables->greenhouseUrl . '/API/GreenhouseAPI?method=getDefaultTranslation', $body);
 									if ($response !== false) {
 										$jsonResponse = json_decode($response);
-										if ($jsonResponse['success']){
+										if ($jsonResponse->result->success){
 											$translation->translated = 1;
-											$translation->translation = $jsonResponse['translation'];
+											$translation->translation = $jsonResponse->result->translation;
 											$translation->update();
 											$translatedInGreenhouse = true;
 										}
