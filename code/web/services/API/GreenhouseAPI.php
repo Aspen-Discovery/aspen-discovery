@@ -111,18 +111,20 @@ class GreenhouseAPI extends Action
 		$result = [
 			'success' => false
 		];
-		$translationTerm = new TranslationTerm();
-		$translationTerm->term = $_REQUEST['term'];
-		if ($translationTerm->find(true)) {
-			$language = new Language();
-			$language->code = $_REQUEST['languageCode'];
-			if ($language->find(true)){
-				$translation = new Translation();
-				$translation->termId= $translationTerm->id;
-				$translation->languageId = $language->id;
-				if ($translation->find(true)){
-					$result['success'] = true;
-					$result['translation'] = $translation->translation;
+		if (isset($_REQUEST['term']) && isset($_REQUEST['languageCode'])) {
+			$translationTerm = new TranslationTerm();
+			$translationTerm->term = $_REQUEST['term'];
+			if ($translationTerm->find(true)) {
+				$language = new Language();
+				$language->code = $_REQUEST['languageCode'];
+				if ($language->find(true)) {
+					$translation = new Translation();
+					$translation->termId = $translationTerm->id;
+					$translation->languageId = $language->id;
+					if ($translation->find(true)) {
+						$result['success'] = true;
+						$result['translation'] = $translation->translation;
+					}
 				}
 			}
 		}
