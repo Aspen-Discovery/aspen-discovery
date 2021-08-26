@@ -10,14 +10,16 @@ abstract class Admin_Dashboard extends Admin_Admin {
 	protected $lastYear;
 
 	/**
+	 * @param string $statsClassname The name of the class to load instance information for
 	 * @return string selected instance
 	 */
-	function loadInstanceInformation($statsClassname){
+	function loadInstanceInformation(string $statsClassname){
 		global $interface;
 
 		//Get a list of instances that we have stats for.
 		$allInstances = [];
-		$allInstances[''] = 'All';
+		$allInstances[''] = translate(['text'=>'All', 'isAdminFacing'=>true, 'inAttribute'=>true]);
+		/** @var DataObject $statsInstance */
 		$statsInstance = new $statsClassname();
 		$statsInstance->selectAdd(null);
 		$statsInstance->selectAdd("DISTINCT(instance) as instance");

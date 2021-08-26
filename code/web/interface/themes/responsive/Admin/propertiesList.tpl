@@ -3,7 +3,7 @@
 		<h1 id="pageTitle">{$pageTitleShort}</h1>
 	</div>
 	<div class="col-xs-12 col-md-3 help-link">
-        {if $instructions}<a href="{$instructions}"><img src="/images/silk/help.png" alt="Help" /> Documentation</a>{/if}
+        {if $instructions}<a href="{$instructions}"><i class="fas fa-question-circle"></i>&nbsp;{translate text="Documentation" isAdminFacing=true}</a>{/if}
 	</div>
 </div>
 
@@ -19,13 +19,13 @@
 	{if $canSort && count($sortableFields) > 0}
 		<div class="row">
 			<div class="col-xs-12">
-				<label for="sort">{translate text='Sort by'}</label>
+				<label for="sort">{translate text='Sort by' isAdminFacing=true}</label>
 				<select name="sort" id="sort" onchange="return AspenDiscovery.changeSort();" class="form-control form-control-sm">
 					{foreach from=$sortableFields item=field}
 						{capture assign=fieldValueAsc}{$field.property} asc{/capture}
                         {capture assign=fieldValueDesc}{$field.property} desc{/capture}
-						<option value="{$fieldValueAsc}" {if $fieldValueAsc == $sort}selected="selected"{/if}>{$field.label} {translate text="Ascending"}</option>
-						<option value="{$fieldValueDesc}" {if $fieldValueDesc == $sort}selected="selected"{/if}>{$field.label} {translate text="Descending"}</option>
+						<option value="{$fieldValueAsc}" {if $fieldValueAsc == $sort}selected="selected"{/if}>{translate text="%1% Ascending" 1=$field.label|translate isAdminFacing=true}</option>
+						<option value="{$fieldValueDesc}" {if $fieldValueDesc == $sort}selected="selected"{/if}>{translate text="%1% Descending" 1=$field.label|translate  isAdminFacing=true}</option>
 					{/foreach}
 				</select>
 			</div>
@@ -38,7 +38,7 @@
 					<a data-toggle="collapse" href="#filtersPanelBody">
 						<div class="panel-heading">
 							<div class="panel-title">
-								{translate text="Filters"}
+								{translate text="Filters" isAdminFacing=true}
 							</div>
 						</div>
 					</a>
@@ -52,8 +52,8 @@
 							</div>
 							<div id="filterActions">
 								<div class="row">
-									<div class="col-tn-5 col-xs-3"><button class="btn btn-default btn-sm" onclick="return AspenDiscovery.Admin.addFilterRow('{$module}', '{$toolName}');">{translate text="Add Filter"}</button></div>
-									<div class="col-tn-5 col-xs-3 col-tn-offset-2 col-xs-offset-6 text-right"><button class="btn btn-default btn-sm" onclick="$('#objectAction').val('list');$('#propertiesListForm').submit();">{translate text="Apply Filters"}</button></div>
+									<div class="col-tn-5 col-xs-3"><button class="btn btn-default btn-sm" onclick="return AspenDiscovery.Admin.addFilterRow('{$module}', '{$toolName}');">{translate text="Add Filter" isAdminFacing=true}</button></div>
+									<div class="col-tn-5 col-xs-3 col-tn-offset-2 col-xs-offset-6 text-right"><button class="btn btn-default btn-sm" onclick="$('#objectAction').val('list');$('#propertiesListForm').submit();">{translate text="Apply Filters" isAdminFacing=true}</button></div>
 								</div>
 							</div>
 						</div>
@@ -68,14 +68,14 @@
 			<thead>
 				<tr>
 					{if $canCompare || $canBatchUpdate}
-						<th>{translate text='Select'}</th>
+						<th>{translate text='Select' isAdminFacing=true}</th>
 					{/if}
 					{foreach from=$structure item=property key=id}
 						{if !isset($property.hideInLists) || $property.hideInLists == false}
-						<th><span title='{$property.description}'>{$property.label|translate}</span></th>
+						<th><span title='{$property.description}'>{translate text=$property.label isAdminFacing=true}</span></th>
 						{/if}
 					{/foreach}
-					<th>{translate text='Actions'}</th>
+					<th>{translate text='Actions' isAdminFacing=true}</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -106,9 +106,9 @@
 								{elseif $property.type == 'timestamp'}
 									{if $propValue == 0}
 										{if empty($property.unsetLabel)}
-											{translate text="Never"}
+											{translate text="Never" isAdminFacing=true}
 										{else}
-											{translate text=$property.unsetLabel}
+											{translate text=$property.unsetLabel isAdminFacing=true}
 										{/if}
 									{else}
 										{$propValue|date_format:"%D %T"}
@@ -143,7 +143,7 @@
 										Not set
 									{/if}
 								{elseif $property.type == 'checkbox'}
-									{if ($propValue == 1)}{translate text="Yes"}{elseif ($propValue == 0)}{translate text="No"}{else}{$propValue}{/if}
+									{if ($propValue == 1)}{translate text="Yes" isAdminFacing=true}{elseif ($propValue == 0)}{translate text="No" isAdminFacing=true}{else}{$propValue}{/if}
 								{elseif $property.type == 'image'}
 									<img src="{$property.displayUrl}{$dataItem->id}" class="img-responsive" alt="{$propName}">
 								{else}
@@ -155,11 +155,11 @@
 						{if $dataItem->class != 'objectDeleted'}
 							<td>
 								<div class="btn-group-vertical">
-								<a href='/{$module}/{$toolName}?objectAction=edit&amp;id={$id}' class="btn btn-default btn-sm" aria-label="Edit Item {$id}">{translate text="Edit"}</a>
-								<a href='/{$module}/{$toolName}?objectAction=history&amp;id={$id}' class="btn btn-default btn-sm" aria-label="History for Item {$id}">{translate text="History"}</a>
+								<a href='/{$module}/{$toolName}?objectAction=edit&amp;id={$id}' class="btn btn-default btn-sm" aria-label="Edit Item {$id}">{translate text="Edit" isAdminFacing=true}</a>
+								<a href='/{$module}/{$toolName}?objectAction=history&amp;id={$id}' class="btn btn-default btn-sm" aria-label="History for Item {$id}">{translate text="History" isAdminFacing=true}</a>
 								{if $additionalActions}
 									{foreach from=$additionalActions item=action}
-										<a href='{$action.path}&amp;id={$id}' class="btn btn-default btn-sm" aria-label="{$action.name} for Item {$id}">{$action.name|translate}</a>
+										<a href='{$action.path}&amp;id={$id}' class="btn btn-default btn-sm" aria-label="{$action.name} for Item {$id}">{translate text=$action.name isAdminFacing=true}</a>
 									{/foreach}
 								{/if}
 								</div>
@@ -177,25 +177,25 @@
 	<input type='hidden' name='objectAction' id='objectAction' value='' />
 	{if $canCompare}
 		<div class="btn-group">
-			<button type='submit' value='compare' class="btn btn-default" onclick="$('#objectAction').val('compare');return AspenDiscovery.Admin.validateCompare();">{translate text='Compare'}</button>
+			<button type='submit' value='compare' class="btn btn-default" onclick="$('#objectAction').val('compare');return AspenDiscovery.Admin.validateCompare();">{translate text='Compare' isAdminFacing=true}</button>
 		</div>
 	{/if}
 	{if $canBatchUpdate}
 		<div class="btn-group">
-			<button type='submit' value='batchUpdate' class="btn btn-default" onclick="return AspenDiscovery.Admin.showBatchUpdateFieldForm('{$module}', '{$toolName}', 'selected')">{translate text='Batch Update Selected'}</button>
+			<button type='submit' value='batchUpdate' class="btn btn-default" onclick="return AspenDiscovery.Admin.showBatchUpdateFieldForm('{$module}', '{$toolName}', 'selected')">{translate text='Batch Update Selected' isAdminFacing=true}</button>
 		</div>
 		<div class="btn-group">
-			<button type='submit' value='batchUpdate' class="btn btn-default" onclick="return AspenDiscovery.Admin.showBatchUpdateFieldForm('{$module}', '{$toolName}', 'all')">{translate text='Batch Update All'}</button>
+			<button type='submit' value='batchUpdate' class="btn btn-default" onclick="return AspenDiscovery.Admin.showBatchUpdateFieldForm('{$module}', '{$toolName}', 'all')">{translate text='Batch Update All' isAdminFacing=true}</button>
 		</div>
 	{/if}
 	{if $canAddNew}
 		<div class="btn-group">
-			<button type='submit' value='addNew' class="btn btn-primary" onclick="$('#objectAction').val('addNew')">{translate text='Add New'}</button>
+			<button type='submit' value='addNew' class="btn btn-primary" onclick="$('#objectAction').val('addNew')">{translate text='Add New' isAdminFacing=true}</button>
 		</div>
 	{/if}
 	<div class="btn-group">
 		{foreach from=$customListActions item=customAction}
-			<button type='submit' value='{$customAction.action}' class="btn btn-default" onclick="$('#objectAction').val('{$customAction.action}')">{$customAction.label}</button>
+			<button type='submit' value='{$customAction.action}' class="btn btn-default" onclick="$('#objectAction').val('{$customAction.action}')">{translate text=$customAction.label isAdminFacing=true}</button>
 		{/foreach}
 	</div>
 {if $canCompare || $canAddNew || $canBatchUpdate || $canFilter|| !empty($customListActions)}

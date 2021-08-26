@@ -528,9 +528,9 @@ abstract class ObjectEditor extends Admin_Admin
 			$historyEntry->objectType = get_class($curObject);
 			$historyEntry->objectId = $curObject->$primaryField;
 			if ($displayNameColumn != null){
-				$title = 'History for ' . $curObject->$displayNameColumn;
+				$title = translate(["text"=>'History for %1%', 1=>$curObject->$displayNameColumn, "isAdminFacing"=>true]);
 			}else{
-				$title = 'History for ' . $historyEntry->objectType . ' - ' . $historyEntry->objectId;
+				$title = translate(["text"=>'History for %1%', 1=>$historyEntry->objectType . ' - ' . $historyEntry->objectId, "isAdminFacing"=>true]);
 			}
 			$interface->assign('title', $title);
 			$historyEntry->orderBy('changeDate desc');

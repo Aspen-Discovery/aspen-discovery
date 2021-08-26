@@ -1,11 +1,11 @@
 {strip}
 	<div id="main-content" class="col-md-12">
-		<h1>{translate text='Cron Log'}</h1>
+		<h1>{translate text='Cron Log' isAdminFacing=true}</h1>
 		
 		<div id="econtentAttachLogContainer">
 			<table class="logEntryDetails table table-hover table-condensed" aria-label="Cron Log">
 				<thead>
-					<tr><th>Id</th><th>Started</th><th>Finished</th><th>Elapsed</th><th>Processes Run</th><th>Num Errors</th><th>Had Errors?</th><th>Notes</th></tr>
+					<tr><th>{translate text='Id' isAdminFacing=true}</th><th>{translate text='Started' isAdminFacing=true}</th><th>{translate text='Finished' isAdminFacing=true}</th><th>{translate text='Elapsed' isAdminFacing=true}</th><th>{translate text='Processes Run' isAdminFacing=true}</th><th>{translate text='Num Errors' isAdminFacing=true}</th><th>{translate text='Had Errors?' isAdminFacing=true}</th><th>{translate text='Notes' isAdminFacing=true}</th></tr>
 				</thead>
 				<tbody>
 					{foreach from=$logEntries item=logEntry}
@@ -16,14 +16,14 @@
 							<td>{$logEntry->getElapsedTime()}</td>
 							<td>{$logEntry->getNumProcesses()}</td>
 							<td>{$logEntry->numErrors}</td>
-							<td>{if $logEntry->getHadErrors()}Yes{else}No{/if}</td>
-							<td><a href="#" onclick="return AspenDiscovery.Admin.showCronNotes('{$logEntry->id}');">Show Notes</a></td>
+							<td>{if $logEntry->getHadErrors()}{translate text='Yes' isAdminFacing=true}{else}{translate text='No' isAdminFacing=true}{/if}</td>
+							<td><a href="#" onclick="return AspenDiscovery.Admin.showCronNotes('{$logEntry->id}');">{translate text='Show Notes' isAdminFacing=true}</a></td>
 						</tr>
 						<tr class="logEntryProcessDetails" id="processInfo{$logEntry->id}" style="display:none">
 							<td colspan="7">
 								<table class="logEntryProcessDetails table table-striped table-condensed">
 									<thead>
-										<tr><th>Process Name</th><th>Started</th><th>End Time</th><th>Elapsed</th><th>Updates</th><th>Skipped</th><th>Errors</th><th>Notes</th></tr>
+										<tr><th>{translate text='Process Name' isAdminFacing=true}</th><th>{translate text='Started' isAdminFacing=true}</th><th>{translate text='End Time' isAdminFacing=true}</th><th>{translate text='Elapsed' isAdminFacing=true}</th><th>{translate text='Updates' isAdminFacing=true}</th><th>{translate text='Skipped' isAdminFacing=true}</th><th>{translate text='Errors' isAdminFacing=true}</th><th>{translate text='Notes' isAdminFacing=true}</th></tr>
 									</thead>
 									<tbody>
 									{foreach from=$logEntry->processes() item=process}
@@ -35,7 +35,7 @@
 											<td>{$process->numUpdates}</td>
 											<td>{$process->numSkipped}</td>
 											<td>{$process->numErrors}</td>
-											<td><a href="#" onclick="return AspenDiscovery.Admin.showCronProcessNotes('{$process->id}');">Show Notes</a></td>
+											<td><a href="#" onclick="return AspenDiscovery.Admin.showCronProcessNotes('{$process->id}');">{translate text='Show Notes' isAdminFacing=true}</a></td>
 										</tr>
 									{/foreach}
 									</tbody>

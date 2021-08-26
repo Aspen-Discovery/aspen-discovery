@@ -18,15 +18,15 @@ class Admin_AJAX extends JSON_Action
 			'modalButtons' => ''
 		);
 		if ($reindexProcess->find(true)) {
-			$results['title'] = "Reindex Notes";
+			$results['title'] = translate(['text'=>"Reindex Notes", 'isAdminFacing'=>true]);
 			if (strlen(trim($reindexProcess->notes)) == 0) {
-				$results['modalBody'] = "No notes have been entered yet";
+				$results['modalBody'] = translate(['text'=>"No notes have been entered yet", 'isAdminFacing'=>true]);
 			} else {
 				$results['modalBody'] = "<div class='helpText'>{$reindexProcess->notes}</div>";
 			}
 		} else {
-			$results['title'] = "Error";
-			$results['modalBody'] = "We could not find a reindex entry with that id.  No notes available.";
+			$results['title'] = translate(['text'=>"Error", 'isAdminFacing'=>true]);
+			$results['modalBody'] = translate(['text'=>"We could not find a reindex entry with that id.  No notes available.", 'isAdminFacing'=>true]);
 		}
 		return $results;
 	}
@@ -43,15 +43,15 @@ class Admin_AJAX extends JSON_Action
 			'modalButtons' => ""
 		);
 		if ($cronProcess->find(true)) {
-			$results['title'] = "{$cronProcess->processName} Notes";
+			$results['title'] = translate(['text'=>"%1% Notes",1=>$cronProcess->processName, 'isAdminFacing'=>true]);
 			if (strlen($cronProcess->notes) == 0) {
-				$results['modalBody'] = "No notes have been entered for this process";
+				$results['modalBody'] = translate(['text'=>"No notes have been entered for this process", 'isAdminFacing'=>true]);
 			} else {
 				$results['modalBody'] = "<div class='helpText'>{$cronProcess->notes}</div>";
 			}
 		} else {
 			$results['title'] = "Error";
-			$results['modalBody'] = "We could not find a process with that id.  No notes available.";
+			$results['modalBody'] = translate(['text'=>"We could not find a process with that id.  No notes available.", 'isAdminFacing'=>true]);
 		}
 		return $results;
 	}
@@ -69,15 +69,15 @@ class Admin_AJAX extends JSON_Action
 			'modalButtons' => ""
 		);
 		if ($cronLog->find(true)) {
-			$results['title'] = "Cron Process {$cronLog->id} Notes";
+			$results['title'] = translate(['text'=>"Cron Process %1% Notes", 1=>$cronLog->id, 'isAdminFacing'=>true]);
 			if (strlen($cronLog->notes) == 0) {
-				$results['modalBody'] = "No notes have been entered for this cron run";
+				$results['modalBody'] = translate(['text'=>"No notes have been entered for this cron run", 'isAdminFacing'=>true]);
 			} else {
 				$results['modalBody'] = "<div class='helpText'>{$cronLog->notes}</div>";
 			}
 		} else {
-			$results['title'] = "Error";
-			$results['modalBody'] = "We could not find a cron entry with that id.  No notes available.";
+			$results['title'] = translate(['text'=>"Error", 'isAdminFacing'=>true]);
+			$results['modalBody'] = translate(['text'=>"We could not find a cron entry with that id.  No notes available.", 'isAdminFacing'=>true]);
 		}
 		return $results;
 	}
@@ -121,8 +121,8 @@ class Admin_AJAX extends JSON_Action
 		}
 
 		if ($extractLog == null) {
-			$results['title'] = "Error";
-			$results['modalBody'] = "Invalid source for loading notes.";
+			$results['title'] = translate(['text'=>"Error", 'isAdminFacing'=>true]);
+			$results['modalBody'] = translate(['text'=>"Invalid source for loading notes.", 'isAdminFacing'=>true]);
 		} else {
 			$extractLog->id = $id;
 			$results = array(
@@ -131,15 +131,15 @@ class Admin_AJAX extends JSON_Action
 				'modalButtons' => ""
 			);
 			if ($extractLog->find(true)) {
-				$results['title'] = "Extract {$extractLog->id} Notes";
+				$results['title'] = translate(['text'=>"Extract %1% Notes", 1=>$extractLog->id, 'isAdminFacing'=>true]);
 				if (strlen($extractLog->notes) == 0) {
-					$results['modalBody'] = "No notes have been entered for this run";
+					$results['modalBody'] = translate(['text'=>"No notes have been entered for this run", 'isAdminFacing'=>true]);
 				} else {
 					$results['modalBody'] = "<div class='helpText'>{$extractLog->notes}</div>";
 				}
 			} else {
-				$results['title'] = "Error";
-				$results['modalBody'] = "We could not find an extract entry with that id.  No notes available.";
+				$results['title'] = translate(['text'=>"Error", 'isAdminFacing'=>true]);
+				$results['modalBody'] = translate(['text'=>"We could not find an extract entry with that id.  No notes available.", 'isAdminFacing'=>true]);
 			}
 		}
 
