@@ -47,7 +47,6 @@
 			{* Set Search Result Display Mode on Searchbox *}
 			{if !$onInternalIP}
 			AspenDiscovery.Searches.getPreferredDisplayMode();
-			AspenDiscovery.Archive.getPreferredDisplayMode();
 			{/if}
 			{if $userHasCatalogConnection}
 				Globals.hasILSConnection = true;
