@@ -139,8 +139,42 @@ class GreenhouseAPI extends Action
 		return $result;
 	}
 
-	public function addTranslation() {
-
+	public function setTranslation() {
+		$result = [
+			'success' => false
+		];
+		if (!empty($_REQUEST['term']) && !empty($_REQUEST['languageCode']) && !empty($_REQUEST['translation'])) {
+			$translationTerm = new TranslationTerm();
+			$translationTerm->term = $_REQUEST['term'];
+			if ($translationTerm->find(true)) {
+				$language = new Language();
+				$language->code = $_REQUEST['languageCode'];
+				if ($language->find(true)) {
+					$translation = new Translation();
+					$translation->termId = $translationTerm->id;
+					$translation->languageId = $language->id;
+					if ($translation->find(true)) {
+						if (!$translation->translated) {
+							$translation->translation = $_REQUEST['translation'];
+							$translation->translated = 1;
+							$translation->update();
+							$result['success'] = true;
+						}else{
+							$result['message'] = 'Term already translated';
+						}
+					}else{
+						$result['message'] = 'No translation found';
+					}
+				}else{
+					$result['message'] = 'Could not find language';
+				}
+			}else{
+				$result['message'] = 'Could not find term';
+			}
+		}else{
+			$result['message'] = 'Term, languageCode, and/or translation  not provided';
+		}
+		return $result;
 	}
 
 	function getBreadcrumbs() : array

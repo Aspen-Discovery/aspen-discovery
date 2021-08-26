@@ -8,6 +8,7 @@ class Translation_Translations extends Admin_Admin
 	function launch()
 	{
 		global $interface;
+		/** @var Translator $translator */
 		global $translator;
 		global $activeLanguage;
 		$translationModeActive = $translator->translationModeActive();
