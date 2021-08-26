@@ -531,7 +531,7 @@ var AspenDiscovery = (function(){
 						$("#term_" + termId ).hide();
 						AspenDiscovery.closeLightbox();
 					} else {
-						AspenDiscovery.showMessage("Error", data.message);
+						AspenDiscovery.showMessage(data.title, data.message);
 					}
 				}
 			).fail(AspenDiscovery.ajaxFail);

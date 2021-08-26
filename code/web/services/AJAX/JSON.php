@@ -43,12 +43,13 @@ class AJAX_JSON extends Action {
 		if ($numDeleted == 0){
 			return [
 				'success' => false,
-				'message' => 'Nothing was deleted, may have been deleted already.'
+				'message' => translate(['text'=>'Nothing was deleted, may have been deleted already.', 'isAdminFacing'=>true])
 			];
 		}else{
 			return [
+				'title' => translate(['text'=>'Error.', 'isAdminFacing'=>true]),
 				'success' => true,
-				'message' => 'The term was deleted successfully.'
+				'message' => translate(['text'=>'The term was deleted successfully.', 'isAdminFacing'=>true])
 			];
 		}
 	}
@@ -98,9 +99,9 @@ class AJAX_JSON extends Action {
 				}
 
 				$result = [
-					'title' => translate('Translate a term'),
+					'title' => translate(['text'=>'Translate a term', 'isAdminFacing'=>true]),
 					'modalBody' => $interface->fetch('Translation/termTranslationForm.tpl'),
-					'modalButtons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.saveTranslation()'>" . translate('Update Translation') . "</button>"
+					'modalButtons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.saveTranslation()'>" . translate(['text'=>'Update Translation', 'isAdminFacing'=>true]) . "</button>"
 				];
 			}else{
 				$result = [
@@ -342,9 +343,9 @@ class AJAX_JSON extends Action {
 		global $interface;
 		$masqueradeMode = UserAccount::isUserMasquerading();
 		return array(
-			'title'        => 'Still There?',
+			'title'        => translate(['text'=>'Still There?','isPublicFacing'=>true]),
 			'modalBody'    => $interface->fetch('AJAX/autoLogoutPrompt.tpl'),
-			'modalButtons' => "<div id='continueSession' class='btn btn-primary' onclick='continueSession();'>Continue</div>" .
+			'modalButtons' => "<div id='continueSession' class='btn btn-primary' onclick='continueSession();'>" . translate(['text'=>'Continue','isPublicFacing'=>true]) . "</div>" .
 				( $masqueradeMode ?
 						"<div id='endSession' class='btn btn-primary' onclick='AspenDiscovery.Account.endMasquerade()'>End Masquerade</div>" .
 						"<div id='endSession' class='btn btn-warning' onclick='endSession()'>Logout</div>"
@@ -358,9 +359,9 @@ class AJAX_JSON extends Action {
 	function getReturnToHomePrompt(){
 		global $interface;
 		return array(
-				'title'        => 'Still There?',
+				'title'        => translate(['text'=>'Still There?','isPublicFacing'=>true]),
 				'modalBody'    => $interface->fetch('AJAX/autoReturnToHomePrompt.tpl'),
-				'modalButtons' => "<a id='continueSession' class='btn btn-primary' onclick='continueSession();'>Continue</a>"
+				'modalButtons' => "<a id='continueSession' class='btn btn-primary' onclick='continueSession();'>" . translate(['text'=>'Continue','isPublicFacing'=>true]) . "</a>"
 		);
 	}
 
@@ -368,7 +369,7 @@ class AJAX_JSON extends Action {
 	function getPayFinesAfterAction(){
 		global $interface;
 		return array(
-				'title'        => 'Pay Fines',
+				'title'        => translate(['text'=>'Pay Fines','isPublicFacing'=>true]),
 				'modalBody'    => $interface->fetch('AJAX/refreshFinesAccountInfo.tpl'),
 				'modalButtons' => '<a class="btn btn-primary" href="/MyAccount/Fines?reload">Refresh My Fines Information</a>'
 		);
