@@ -173,9 +173,9 @@ class Admin_AJAX extends JSON_Action
 		$interface->assign('existingCollectionSpotlightLists', $existingCollectionSpotlightLists);
 		$interface->assign('existingCollectionSpotlights', $existingCollectionSpotlights);
 		return array(
-			'title' => 'Create a Spotlight',
+			'title' => translate(["text"=>'Create a Spotlight', "isAdminFacing"=>true]),
 			'modalBody' => $interface->fetch('Admin/addToSpotlightForm.tpl'),
-			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#addSpotlight\").submit();'>Create Spotlight</button>"
+			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#addSpotlight\").submit();'>" . translate(["text"=>"Create Spotlight", "isAdminFacing"=>true]) . "</button>"
 		);
 	}
 
