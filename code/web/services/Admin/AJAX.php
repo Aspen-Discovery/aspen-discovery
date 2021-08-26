@@ -246,14 +246,14 @@ class Admin_AJAX extends JSON_Action
 		global $interface;
 		if (UserAccount::userHasPermission('Administer Permissions')) {
 			return [
-				'title' => 'Create a Spotlight',
+				'title' => translate(['text'=>'Create New Role','isAdminFacing'=>true]),
 				'modalBody' => $interface->fetch('Admin/createRoleForm.tpl'),
-				'modalButtons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.Admin.createRole();'>Create Role</button>"
+				'modalButtons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.Admin.createRole();'>" . translate(['text'=>"Create Role",'isAdminFacing'=>true]) , "</button>"
 			];
 		}else{
 			return [
 				'success' => false,
-				'message' => "Sorry, you don't have permissions to add roles",
+				'message' => translate(['text'=>"Sorry, you don't have permissions to add roles",'isAdminFacing'=>true]),
 			];
 		}
 	}
@@ -292,7 +292,7 @@ class Admin_AJAX extends JSON_Action
 		}else{
 			return [
 				'success' => false,
-				'message' => "Sorry, you don't have permissions to add roles",
+				'message' => translate(['text'=>"Sorry, you don't have permissions to add roles",'isAdminFacing'=>true]),
 			];
 		}
 	}

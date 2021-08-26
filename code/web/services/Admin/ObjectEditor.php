@@ -494,9 +494,17 @@ abstract class ObjectEditor extends Admin_Admin
 	function getPropertyValue($property, $propertyValue, $propertyType)
 	{
 		if ($propertyType == 'oneToMany' || $propertyType == 'multiSelect') {
-			return implode('<br/>', $propertyValue);
+			if ($propertyValue == null){
+				return 'null';
+			}else {
+				return implode('<br/>', $propertyValue);
+			}
 		}elseif ($propertyType == 'enum') {
-			return $property['values'][$propertyValue];
+			if (isset($property['values'][$propertyValue])){
+				return $property['values'][$propertyValue];
+			}else{
+				return translate(['text'=>'Undefined value %1%',1=>$propertyValue,'isAdminFacing'=>true]);
+			}
 		} else {
 			return is_array($propertyValue) ? implode(', ', $propertyValue) : (is_object($propertyValue) ? (string)$propertyValue : $propertyValue);
 		}
