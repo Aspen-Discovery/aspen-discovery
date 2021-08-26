@@ -2338,7 +2338,6 @@ class User extends DataObject
 			$sections['ils_integration']->addAction($translationMapsAction, 'Administer Translation Maps');
 		}
 		$sections['ils_integration']->addAction(new AdminAction('Indexing Log', 'View the indexing log for ILS records.', '/ILS/IndexingLog'), 'View Indexing Logs');
-		$sections['ils_integration']->addAction(new AdminAction('Offline Holds Report', 'View a report of holds that were submitted while the ILS was offline.', '/Circa/OfflineHoldsReport'), 'View Offline Holds Report');
 		$sections['ils_integration']->addAction(new AdminAction('Dashboard', 'View the usage dashboard for ILS integration.', '/ILS/Dashboard'), ['View Dashboards', 'View System Reports']);
 
 		$sections['circulation_reports'] = new AdminSection('Circulation Reports');
