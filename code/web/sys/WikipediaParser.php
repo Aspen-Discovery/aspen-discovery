@@ -5,6 +5,9 @@ class WikipediaParser {
 
 	public function __construct($lang){
 		if ($lang) {
+			if ($lang == 'pi' || $lang == 'ub'){
+				$lang = 'en';
+			}
 			$this->lang = $lang;
 		}else{
 			$this->lang = 'en';

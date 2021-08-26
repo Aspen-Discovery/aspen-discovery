@@ -83,20 +83,26 @@
 		<div id='dplaSearchResultsPlaceholder'></div>
 	{/if}
 
-	{if $materialRequestType == 1}
-		<h2>{translate text="Didn't find it?"}</h2>
-		<p>{translate text="Can't find what you are looking for?"} <a href="/MaterialsRequest/NewRequest?lookfor={$lookfor}&searchIndex={$searchIndex}" onclick="return AspenDiscovery.Account.followLinkIfLoggedIn(this);">{translate text='Suggest a purchase'}</a>.</p>
+	{if $materialRequestType == 1 }
+		<h2>{translate text="Didn't find it?" isPublicFacing=true}</h2>
+		<p>
+			{translate text="Can't find what you are looking for? Try our Materials Request Service." isPublicFacing=true} <a href="/MaterialsRequest/NewRequest" class="btn btn-sm btn-info" onclick="return AspenDiscovery.Account.followLinkIfLoggedIn(this);">{translate text='Submit Request' isPublicFacing=true}</a>
+		</p>
 	{elseif $materialRequestType == 2}
-		<h2>{translate text="Didn't find it?"}</h2>
-		<p>{translate text="Can't find what you are looking for?"} <a href="/MaterialsRequest/NewRequestIls?lookfor={$lookfor}&searchIndex={$searchIndex}" onclick="return AspenDiscovery.Account.followLinkIfLoggedIn(this);">{translate text='Suggest a purchase'}</a>.</p>
+		<h2>{translate text="Didn't find it?" isPublicFacing=true}</h2>
+		<p>
+			{translate text="Can't find what you are looking for? Try our Materials Request Service." isPublicFacing=true} <a href="/MaterialsRequest/NewRequestIls" class="btn btn-sm btn-info" onclick="return AspenDiscovery.Account.followLinkIfLoggedIn(this);">{translate text='Submit Request' isPublicFacing=true}</a>
+		</p>
 	{elseif $materialRequestType == 3}
-		<h2>{translate text="Didn't find it?"}</h2>
-		<p>{translate text="Can't find what you are looking for?"} <a href="{$externalMaterialsRequestUrl}">{translate text='Suggest a purchase'}</a>.</p>
+		<h2>{translate text="Didn't find it?" isPublicFacing=true}</h2>
+		<p>
+			{translate text="Can't find what you are looking for? Try our Materials Request Service." isPublicFacing=true} <a href="{$externalMaterialsRequestUrl}" class="btn btn-sm btn-info">{translate text='Submit Request' isPublicFacing=true}</a>
+		</p>
 	{/if}
 
 	{if $showSearchTools || ($loggedIn && count($userPermissions) > 0)}
 	<div class="search_tools well small">
-		<strong>{translate text='Search Tools'} </strong>
+		<strong>{translate text='Search Tools' isPublicFacing=true} </strong>
 		{if $showSearchTools}
 			<a href="{$rssLink|escape}">{translate text='Get RSS Feed'}</a>
 			<a href="#" onclick="return AspenDiscovery.Account.ajaxLightbox('/Search/AJAX?method=getEmailForm', true);">{translate text='Email this Search'}</a>
