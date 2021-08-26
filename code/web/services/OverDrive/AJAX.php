@@ -454,7 +454,7 @@ class OverDrive_AJAX extends JSON_Action
 		$interface->assign('id', $id);
 
 		return array(
-			'title' => 'Cover Image',
+			'title' => translate(['text'=>'Cover Image', 'isPublicFacing'=>true]),
 			'modalBody' => $interface->fetch("OverDrive/largeCover.tpl"),
 			'modalButtons' => ""
 		);

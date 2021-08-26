@@ -10,7 +10,7 @@
 				<div class="coversColumn col-xs-3 text-center">
 					{if $disableCoverArt != 1}
 						<a href="{$summUrl}" aria-hidden="true">
-							<img src="{$bookCoverUrl}" class="listResultImage img-thumbnail" alt="{translate text='Cover Image' inAttribute=true}">
+							<img src="{$bookCoverUrl}" class="listResultImage img-thumbnail" alt="{translate text='Cover Image' inAttribute=true isPublicFacing=true}">
 						</a>
 					{/if}
 				</div>

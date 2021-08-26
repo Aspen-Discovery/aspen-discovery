@@ -1593,7 +1593,7 @@ class GroupedWork_AJAX extends JSON_Action
 		$interface->assign('groupedWorkId', $groupedWorkId);
 
 		return array(
-			'title' => 'Cover Image',
+			'title' => translate(['text'=>'Cover Image', 'isPublicFacing'=>true]),
 			'modalBody' => $interface->fetch("GroupedWork/largeCover.tpl"),
 			'modalButtons' => ""
 		);

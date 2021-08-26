@@ -97,12 +97,12 @@ class Axis360_AJAX extends JSON_Action
 		$usersWithAxis360Access = $this->getAxis360Users($user);
 
 		if (count($usersWithAxis360Access) > 1) {
-			$promptTitle = 'Axis 360 Checkout Options';
+			$promptTitle = translate(['text' => 'Axis 360 Checkout Options', 'isPublicFacing'=>true]);
 			return array(
 					'promptNeeded' => true,
 					'promptTitle' => $promptTitle,
 					'prompts' => $interface->fetch('Axis360/ajax-checkout-prompt.tpl'),
-					'buttons' => '<input class="btn btn-primary" type="submit" name="submit" value="Checkout Title" onclick="return AspenDiscovery.Axis360.processCheckoutPrompts();">'
+					'buttons' => '<input class="btn btn-primary" type="submit" name="submit" value="' . translate(['text' => 'Checkout Title', 'inAttribute'=>true, 'isPublicFacing'=>true]) . '" onclick="return AspenDiscovery.Axis360.processCheckoutPrompts();">'
 				);
 		} elseif (count($usersWithAxis360Access) == 1) {
 			return array(
@@ -113,8 +113,8 @@ class Axis360_AJAX extends JSON_Action
 			// No Axis 360 Account Found, let the user create one if they want
 			return [
 				'promptNeeded' => true,
-				'promptTitle' => 'Error',
-				'prompts' => 'Your account is not valid for Axis360, please contact your local library.',
+				'promptTitle' => translate(['Error', 'isPublicFacing'=>true]),
+				'prompts' => translate(['Your account is not valid for Axis360, please contact your local library.', 'isPublicFacing'=>true]),
 				'buttons' => ''
 			];
 		}
@@ -291,7 +291,7 @@ class Axis360_AJAX extends JSON_Action
 		$interface->assign('id', $id);
 
 		return array(
-			'title' => 'Cover Image',
+			'title' => translate(['text'=>'Cover Image', 'isPublicFacing'=>true]),
 			'modalBody' => $interface->fetch("Axis360/largeCover.tpl"),
 			'modalButtons' => ""
 		);

@@ -5,7 +5,7 @@
 		<input type="hidden" id="checkoutType" name="checkoutType" value="{$checkoutType}">
 		{if count($users) > 1} {* Linked Users contains the active user as well*}
 			<div class="form-group">
-				<label class="control-label" for="patronId">{translate text="Checkout to account"}: </label>
+				<label class="control-label" for="patronId">{translate text="Checkout to account" isPublicFacing=true} </label>
 				<div class="controls">
 					<select name="patronId" id="patronId" class="form-control">
 						{foreach from=$users item=tmpUser}
