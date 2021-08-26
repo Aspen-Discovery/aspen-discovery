@@ -2,7 +2,7 @@
 <div>
 	<div id="createBrowseCategoryComments">
 		<p class="alert alert-info">
-			{translate text="Please enter a name for the browse category to be created."}
+			{translate text="Please enter a name for the browse category to be created." isAdminFacing=true}
 		</p>
 	</div>
 	<form method="post" name="createBrowseCategory" id="createBrowseCategory" action="/Browse/AJAX" class="form">
@@ -14,12 +14,12 @@
 			{/if}
 			<input type="hidden" name="method" value="createBrowseCategory">
 			<div class="form-group">
-				<label for="categoryName" class="control-label">{translate text="New Category Name"}</label>
+				<label for="categoryName" class="control-label">{translate text="New Category Name" isAdminFacing=true}</label>
 				<input type="text" id="categoryName" name="categoryName" value="" class="form-control required">
 			</div>
 			{if $property} {* If data for Select tag is present, use the object editor template to build the <select> *}
 			<div class="form-group">
-				<label for="make-as-a-sub-category-ofSelect" class="control-label">{translate text="Add as a Sub-Category to (optional)"} </label>
+				<label for="make-as-a-sub-category-ofSelect" class="control-label">{translate text="Add as a Sub-Category to (optional)" isAdminFacing=true} </label>
 				{include file="DataObjectUtil/enum.tpl"} {* create select list *}
 			</div>
 			{/if}
