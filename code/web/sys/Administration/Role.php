@@ -108,7 +108,6 @@ class Role extends DataObject
 				'Administer Hoopla',
 				'Administer IP Addresses',
 				'Administer Indexing Profiles',
-				'Administer Islandora Archive',
 				'Administer Languages',
 				'Administer Library Calendar Settings',
 				'Administer List Indexing Settings',
@@ -148,7 +147,6 @@ class Role extends DataObject
 				'View Indexing Logs',
 				'View ILS records in native OPAC',
 				'View ILS records in native Staff Client',
-				'View Islandora Archive Usage',
 				'View New York Times Lists',
 				'View Offline Holds Report',
 				'View OverDrive Test Interface',
@@ -235,12 +233,6 @@ class Role extends DataObject
 				'View ILS records in native OPAC',
 				'View ILS records in native Staff Client',
 				'View Indexing Logs',
-			];
-		case 'archives':
-			return [
-				'Administer Islandora Archive',
-				'View Archive Authorship Claims',
-				'View Archive Material Requests',
 			];
 		case 'circulationReports':
 			return [

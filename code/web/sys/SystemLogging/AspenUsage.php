@@ -17,7 +17,6 @@ class AspenUsage extends DataObject
 	public $coverViews;
 	public $genealogySearches;
 	public $groupedWorkSearches;
-	public $islandoraSearches;
 	public $openArchivesSearches;
 	public $userListSearches;
 	public $websiteSearches;
@@ -39,7 +38,6 @@ class AspenUsage extends DataObject
 			'coverViews',
 			'genealogySearches',
 			'groupedWorkSearches',
-			'islandoraSearches',
 			'openArchivesSearches',
 			'userListSearches',
 			'websiteSearches',

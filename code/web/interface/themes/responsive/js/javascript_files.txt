@@ -25,7 +25,6 @@ aspen/globals.js
 aspen/base.js
 aspen/account.js
 aspen/admin.js
-aspen/archive.js
 aspen/authors.js
 aspen/axis360.js
 aspen/browse.js

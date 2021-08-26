@@ -21,9 +21,6 @@ class SearchSources{
 			case 'genealogy':
 				$searchObject = SearchObjectFactory::initSearchObject('Genealogy');
 				break;
-			case 'islandora':
-				$searchObject = SearchObjectFactory::initSearchObject('Islandora');
-				break;
 			case 'lists':
 				$searchObject = SearchObjectFactory::initSearchObject('Lists');
 				break;
@@ -82,7 +79,6 @@ class SearchSources{
 
 		$searchGenealogy = array_key_exists('Genealogy', $enabledModules) && $library->enableGenealogy;
 		$repeatCourseReserves = $library->enableCourseReserves == 1;
-		$searchArchive = $library->enableArchive == 1;
 		$searchEbsco = array_key_exists('EBSCO EDS', $enabledModules) && $library->edsSettingsId != -1;
 		$searchOpenArchives = array_key_exists('Open Archives', $enabledModules) && $library->enableOpenArchives == 1;
 
@@ -232,15 +228,6 @@ class SearchSources{
 					'catalogType' => 'websites'
 				);
 			}
-		}
-
-		if ($searchArchive){
-			$searchOptions['islandora'] = array(
-				'name' => 'Local Digital Archive',
-				'description' => 'Local Digital Archive for the library',
-				'catalogType' => 'islandora',
-				'hasAdvancedSearch' => false
-			);
 		}
 
 		if ($searchOpenArchives){

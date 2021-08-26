@@ -32,9 +32,7 @@ class Union_AJAX extends JSON_Action {
 		$this->setShowCovers();
 
 		$fullResultsLink = $sectionObject->getResultsLink($searchTerm, $searchType);
-		if ($source == 'archive'){
-			$results = $this->getResultsFromArchive($numberOfResults, $searchType, $searchTerm, $fullResultsLink);
-		}elseif ($source == 'catalog') {
+		if ($source == 'catalog') {
 			$results = $this->getResultsFromSolrSearcher('GroupedWork', $searchTerm, $numberOfResults, $fullResultsLink);
 		}elseif ($source == 'dpla'){
 			$results = $this->getResultsFromDPLA($searchTerm, $numberOfResults, $fullResultsLink);
@@ -136,51 +134,6 @@ class Union_AJAX extends JSON_Action {
 			}
 		}
 
-		return $results;
-	}
-
-	/**
-	 * @param $numberOfResults
-	 * @param $searchType
-	 * @param $searchTerm
-	 * @param $fullResultsLink
-	 * @return string
-	 */
-	private function getResultsFromArchive($numberOfResults, $searchType, $searchTerm, $fullResultsLink)
-	{
-		global $interface;
-		$interface->assign('viewingCombinedResults', true);
-		/** @var SearchObject_IslandoraSearcher $searchObject */
-		$searchObject = SearchObjectFactory::initSearchObject('Islandora');
-		$searchObject->init();
-		$searchObject->addHiddenFilter('!RELS_EXT_isViewableByRole_literal_ms', "administrator");
-		$searchObject->addHiddenFilter('!mods_extension_marmotLocal_pikaOptions_showInSearchResults_ms', "no");
-		$searchObject->setLimit($numberOfResults);
-		if ($searchType == 'Title') {
-			$searchType = 'IslandoraTitle';
-		} elseif ($searchType == 'Subject') {
-			$searchType = 'IslandoraSubject';
-		} else {
-			$searchType = 'IslandoraKeyword';
-		}
-		$searchObject->setSearchTerms(array(
-				'index' => $searchType,
-				'lookfor' => $searchTerm
-		));
-		$searchObject->processSearch(true, false);
-		$summary = $searchObject->getResultSummary();
-		$records = $searchObject->getCombinedResultHTML();
-		if ($summary['resultTotal'] == 0){
-			$results = '<div class="clearfix"></div><div>No results match your search.</div>';
-		}else {
-			$formattedNumResults = number_format($summary['resultTotal']);
-			$results = "<a href='{$fullResultsLink}' class='btn btn-default combined-results-button'>See all {$formattedNumResults} results <i class='fas fa-chevron-right fa-lg'></i></a><div class='clearfix'></div>";
-
-			global $interface;
-			$interface->assign('recordSet', $records);
-			$interface->assign('showExploreMoreBar', false);
-			$results .= $interface->fetch('Search/list-list.tpl');
-		}
 		return $results;
 	}
 

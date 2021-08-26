@@ -28,9 +28,6 @@
 			{if $loggedIn && in_array('Download MARC Records', $userPermissions)}
 				<a href="/{$recordDriver->getModule()}/{$id|escape:"url"}/AJAX?method=downloadMarc" class="btn btn-sm btn-default">{translate text="Download Marc"}</a>
 			{/if}
-			{if $loggedIn && $enableArchive && in_array('Administer Islandora Archive', $userPermissions)}
-				<button onclick="return AspenDiscovery.GroupedWork.reloadIslandora('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">Clear Islandora Cache</button>
-			{/if}
 		</div>
 	</div>
 {/if}

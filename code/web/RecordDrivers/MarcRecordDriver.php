@@ -1030,16 +1030,6 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 				}
 			}
 
-			$archiveLink = GroupedWorkDriver::getArchiveLinkForWork($this->getGroupedWorkId());
-			if ($archiveLink != null) {
-				$this->_actions[] = array(
-					'title' => 'View Online',
-					'url' => $archiveLink,
-					'requireLogin' => false,
-					'type' => 'view_online'
-				);
-			}
-
 			global $timer;
 			$timer->logTime("Done loading actions for MarcRecordDriver");
 		}

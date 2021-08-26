@@ -1012,32 +1012,6 @@ class GroupedWork_AJAX extends JSON_Action
 	}
 
 	/** @noinspection PhpUnused */
-	function reloadIslandora(){
-		$id = $_REQUEST['id'];
-		$sameCatalogRecordCleared = false;
-		$cacheMessage = '';
-		require_once ROOT_DIR . '/sys/Islandora/IslandoraSamePikaCache.php';
-		//Check for cached links
-		$sameCatalogRecordCache = new IslandoraSamePikaCache();
-		$sameCatalogRecordCache->groupedWorkId = $id;
-		if ($sameCatalogRecordCache->find(true)){
-			if ($sameCatalogRecordCache->delete() == 1){
-				$sameCatalogRecordCleared = true;
-			}else{
-				$cacheMessage = 'Could not delete same record cache';
-			}
-
-		}else{
-			$cacheMessage = 'Data not cached for same record link';
-		}
-
-		return array(
-			'success' => $sameCatalogRecordCleared,
-			'message' => $cacheMessage
-		);
-	}
-
-	/** @noinspection PhpUnused */
 	function getCopyDetails(){
 		global $interface;
 

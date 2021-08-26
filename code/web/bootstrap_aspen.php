@@ -44,8 +44,6 @@ function loadSearchInformation(){
 			//Use a default search source
 			if ($module == 'Person'){
 				$searchSource = 'genealogy';
-			}elseif ($module == 'Archive'){
-				$searchSource = 'islandora';
 			}elseif ($module == 'OpenArchives'){
 				$searchSource = 'open_archives';
 			}elseif ($module == 'List'){

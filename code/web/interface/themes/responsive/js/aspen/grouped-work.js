@@ -270,15 +270,6 @@ AspenDiscovery.GroupedWork = (function(){
 			AspenDiscovery.GroupedWork.loadEnrichmentInfo(id, true);
 		},
 
-		reloadIslandora: function(id){
-			var url = Globals.path + '/GroupedWork/' + id + '/AJAX?method=reloadIslandora';
-			$.getJSON(url, function (data){
-					AspenDiscovery.showMessage("Success", data.message, true, true);
-				}
-			);
-			return false;
-		},
-
 		saveReview: function(id){
 			if (!Globals.loggedIn){
 				AspenDiscovery.Account.ajaxLogin(null, function(){

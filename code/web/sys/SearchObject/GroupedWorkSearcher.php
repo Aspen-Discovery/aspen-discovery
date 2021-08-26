@@ -377,7 +377,6 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 				$allWorkIds[] = $this->indexResult['response']['docs'][$x]['id'];
 			}
 			require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
-			GroupedWorkDriver::loadArchiveLinksForWorks($allWorkIds);
 			$timer->logTime('Loaded archive links');
 			for ($x = 0; $x < count($this->indexResult['response']['docs']); $x++) {
 				$memoryWatcher->logMemory("Started loading record information for index $x");
