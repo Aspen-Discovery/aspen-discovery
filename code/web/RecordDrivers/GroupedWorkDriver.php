@@ -424,85 +424,6 @@ class GroupedWorkDriver extends IndexRecordDriver
 
 	private $archiveLink = 'unset';
 
-	function getArchiveLink()
-	{
-		if ($this->archiveLink === 'unset') {
-			$this->archiveLink = GroupedWorkDriver::getArchiveLinkForWork($this->getUniqueID());
-		}
-		return $this->archiveLink;
-	}
-
-	static function getArchiveLinkForWork($groupedWorkId)
-	{
-		//Check to see if the record is available within the archive
-		global $library;
-		global $timer;
-		$archiveLink = '';
-		if ($library->enableArchive) {
-			if (array_key_exists($groupedWorkId, GroupedWorkDriver::$archiveLinksForWorkIds)) {
-				$archiveLink = GroupedWorkDriver::$archiveLinksForWorkIds[$groupedWorkId];
-			} else {
-				require_once ROOT_DIR . '/sys/Islandora/IslandoraSamePikaCache.php';
-				//Check for cached links
-				$sameCatalogRecordCache = new IslandoraSamePikaCache();
-				$sameCatalogRecordCache->groupedWorkId = $groupedWorkId;
-				$foundLink = false;
-				if ($sameCatalogRecordCache->find(true)) {
-					GroupedWorkDriver::$archiveLinksForWorkIds[$groupedWorkId] = $sameCatalogRecordCache->archiveLink;
-					$archiveLink = $sameCatalogRecordCache->archiveLink;
-					$foundLink = true;
-				} else {
-					GroupedWorkDriver::$archiveLinksForWorkIds[$groupedWorkId] = false;
-					$sameCatalogRecordCache->archiveLink = '';
-					$sameCatalogRecordCache->insert();
-				}
-
-				if (!$foundLink || isset($_REQUEST['reload'])) {
-					/** @var SearchObject_IslandoraSearcher $searchObject */
-					$searchObject = SearchObjectFactory::initSearchObject('Islandora');
-					$searchObject->init();
-					$searchObject->disableLogging();
-					$searchObject->setDebugging(false, false);
-					$searchObject->setBasicQuery("mods_extension_marmotLocal_externalLink_samePika_link_s:*" . $groupedWorkId);
-					//Clear existing filters so search filters don't apply to this query
-					$searchObject->clearFilters();
-					$searchObject->clearFacets();
-
-					$searchObject->setLimit(1);
-
-					$response = $searchObject->processSearch(true, false, true);
-
-					if ($response && isset($response['response'])) {
-						//Get information about each project
-						if ($searchObject->getResultTotal() > 0) {
-							$firstObjectDriver = RecordDriverFactory::initRecordDriver($response['response']['docs'][0]);
-
-							$archiveLink = $firstObjectDriver->getRecordUrl();
-
-							$sameCatalogRecordCache = new IslandoraSamePikaCache();
-							$sameCatalogRecordCache->groupedWorkId = $groupedWorkId;
-							if ($sameCatalogRecordCache->find(true) && $sameCatalogRecordCache->archiveLink != $archiveLink) {
-								$sameCatalogRecordCache->archiveLink = $archiveLink;
-								$sameCatalogRecordCache->pid = $firstObjectDriver->getUniqueID();
-								$numUpdates = $sameCatalogRecordCache->update();
-								if ($numUpdates == 0) {
-									global $logger;
-									$logger->log("Did not update same catalog record cache " . print_r($sameCatalogRecordCache->getLastError(), true), Logger::LOG_ERROR);
-								}
-							}
-							GroupedWorkDriver::$archiveLinksForWorkIds[$groupedWorkId] = $archiveLink;
-							$timer->logTime("Loaded archive link for work $groupedWorkId");
-						}
-					}
-
-					$searchObject = null;
-					unset($searchObject);
-				}
-			}
-		}
-		return $archiveLink;
-	}
-
 	/**
 	 * Get the authors of the work.
 	 *
@@ -843,7 +764,7 @@ class GroupedWorkDriver extends IndexRecordDriver
 			$description = $this->getDescriptionFast();
 		}
 		if ($description == null || strlen($description) == 0) {
-			$description = 'Description Not Provided';
+			$description = translate('Description Not Provided');
 		}
 		return $description;
 	}
@@ -940,37 +861,7 @@ class GroupedWorkDriver extends IndexRecordDriver
 
 	public function getExploreMoreInfo()
 	{
-		global $interface;
-		global $configArray;
-		$exploreMoreOptions = array();
-		if ($configArray['Catalog']['showExploreMoreForFullRecords']) {
-			$interface->assign('showMoreLikeThisInExplore', true);
-			$interface->assign('showExploreMore', true);
-			if ($this->getCleanISBN()) {
-				if ($interface->getVariable('showSimilarTitles')) {
-					$exploreMoreOptions['similarTitles'] = array(
-						'label' => 'Similar Titles From NoveList',
-						'body' => '<div id="novelistTitlesPlaceholder"></div>',
-						'hideByDefault' => true
-					);
-				}
-				if ($interface->getVariable('showSimilarAuthors')) {
-					$exploreMoreOptions['similarAuthors'] = array(
-						'label' => 'Similar Authors From NoveList',
-						'body' => '<div id="novelistAuthorsPlaceholder"></div>',
-						'hideByDefault' => true
-					);
-				}
-				if ($interface->getVariable('showSimilarTitles')) {
-					$exploreMoreOptions['similarSeries'] = array(
-						'label' => 'Similar Series From NoveList',
-						'body' => '<div id="novelistSeriesPlaceholder"></div>',
-						'hideByDefault' => true
-					);
-				}
-			}
-		}
-		return $exploreMoreOptions;
+		return [];
 	}
 
 	public function getFountasPinnellLevel()
@@ -1231,6 +1122,31 @@ class GroupedWorkDriver extends IndexRecordDriver
 		}else{
 			$result['formattedTitle']= $interface->fetch('CollectionSpotlight/formattedTitle.tpl');
 		}
+
+		return $result;
+	}
+
+	public function getSuggestionSpotlightResult(string $index){
+		global $interface;
+		$interface->assign('showRatings', false);
+
+		$interface->assign('key', $index);
+
+		$imageUrl = $this->getBookcoverUrl('medium');
+
+		$interface->assign('title', $this->getTitle());
+		$interface->assign('author', $this->getPrimaryAuthor());
+		$interface->assign('description', $this->getDescriptionFast());
+		$interface->assign('shortId', $this->getId());
+		$interface->assign('id', $this->getId());
+		$interface->assign('titleURL', $this->getRecordUrl());
+		$interface->assign('imageUrl', $imageUrl);
+
+		$result = [
+			'title' => $this->getTitle(),
+			'author' => $this->getPrimaryAuthor(),
+		];
+		$result['formattedTitle'] = $interface->fetch('CollectionSpotlight/formattedHorizontalCarouselTitle.tpl');
 
 		return $result;
 	}
@@ -2220,87 +2136,6 @@ class GroupedWorkDriver extends IndexRecordDriver
 			return $groupedStatus;
 		} else {
 			return $groupedStatus1;
-		}
-	}
-
-	static $archiveLinksForWorkIds = array();
-
-	/**
-	 * @param string[] $groupedWorkIds
-	 */
-	static function loadArchiveLinksForWorks($groupedWorkIds)
-	{
-		global $library;
-		global $timer;
-		if ($library->enableArchive && count($groupedWorkIds) > 0) {
-			require_once ROOT_DIR . '/sys/Islandora/IslandoraSamePikaCache.php';
-			$groupedWorkIdsToSearch = array();
-			foreach ($groupedWorkIds as $groupedWorkId) {
-				//Check for cached links
-				$sameCatalogRecordCache = new IslandoraSamePikaCache();
-				$sameCatalogRecordCache->groupedWorkId = $groupedWorkId;
-				if ($sameCatalogRecordCache->find(true)) {
-					GroupedWorkDriver::$archiveLinksForWorkIds[$groupedWorkId] = $sameCatalogRecordCache->archiveLink;
-				} else {
-					GroupedWorkDriver::$archiveLinksForWorkIds[$groupedWorkId] = false;
-					$sameCatalogRecordCache->archiveLink = '';
-					$sameCatalogRecordCache->insert();
-					$groupedWorkIdsToSearch[] = $groupedWorkId;
-				}
-			}
-
-			if (isset($_REQUEST['reload'])) {
-				$groupedWorkIdsToSearch = $groupedWorkIds;
-			}
-			/** @var SearchObject_IslandoraSearcher $searchObject */
-			$searchObject = SearchObjectFactory::initSearchObject('Islandora');
-			$searchObject->init();
-			if ($searchObject->pingServer(false)) {
-				$searchObject->disableLogging();
-				$searchObject->setDebugging(false, false);
-				$query = 'mods_extension_marmotLocal_externalLink_samePika_link_s:*' . implode('* OR mods_extension_marmotLocal_externalLink_samePika_link_s:*', $groupedWorkIdsToSearch) . '*';
-				$searchObject->setBasicQuery($query);
-				//Clear existing filters so search filters don't apply to this query
-				$searchObject->clearFilters();
-				$searchObject->clearFacets();
-				$searchObject->addFieldsToReturn(array('mods_extension_marmotLocal_externalLink_samePika_link_s'));
-
-				$searchObject->setLimit(count($groupedWorkIdsToSearch));
-
-				$response = $searchObject->processSearch(true, false, true);
-
-				if ($response && isset($response['response'])) {
-					//Get information about each project
-					if ($searchObject->getResultTotal() > 0) {
-						foreach ($response['response']['docs'] as $doc) {
-							$firstObjectDriver = RecordDriverFactory::initRecordDriver($doc);
-
-							$archiveLink = $firstObjectDriver->getRecordUrl();
-							foreach ($groupedWorkIdsToSearch as $groupedWorkId) {
-								if (strpos($doc['mods_extension_marmotLocal_externalLink_samePika_link_s'], $groupedWorkId) !== false) {
-									$sameCatalogRecordCache = new IslandoraSamePikaCache();
-									$sameCatalogRecordCache->groupedWorkId = $groupedWorkId;
-									if ($sameCatalogRecordCache->find(true) && $sameCatalogRecordCache->archiveLink != $archiveLink) {
-										$sameCatalogRecordCache->archiveLink = $archiveLink;
-										$sameCatalogRecordCache->pid = $firstObjectDriver->getUniqueID();
-										$numUpdates = $sameCatalogRecordCache->update();
-										if ($numUpdates == 0) {
-											global $logger;
-											$logger->log("Did not update same catalog record cache " . print_r($sameCatalogRecordCache->getLastError(), true), Logger::LOG_ERROR);
-										}
-									}
-									GroupedWorkDriver::$archiveLinksForWorkIds[$groupedWorkId] = $archiveLink;
-									break;
-								}
-							}
-						}
-					}
-				}
-			}
-			$timer->logTime("Loaded archive links for work " . count($groupedWorkIds) . " works");
-
-			$searchObject = null;
-			unset($searchObject);
 		}
 	}
 

@@ -26,9 +26,24 @@ class Translation extends DataObject
 		$term = new TranslationTerm();
 		$term->id = $this->termId;
 		$term->find(true);
+		/** @var Memcache $memCache */
 		global $memCache;
 		global $activeLanguage;
 		$memCache->delete('translation_' . $activeLanguage->id . '_0_' . $term->term);
 		$memCache->delete('translation_' . $activeLanguage->id . '_1_' . $term->term);
+
+		//Send the translation to the greenhouse
+		require_once ROOT_DIR . '/sys/SystemVariables.php';
+		$systemVariables = SystemVariables::getSystemVariables();
+		if ($systemVariables && !empty($systemVariables->greenhouseUrl)) {
+			require_once ROOT_DIR . '/sys/CurlWrapper.php';
+			$curl = new CurlWrapper();
+			$body = [
+				'term' => $term->term,
+				'translation' => $translation,
+				'languageCode' => $activeLanguage->code,
+			];
+			$curl->curlPostPage($systemVariables->greenhouseUrl . '/API/GreenhouseAPI?method=setTranslation', $body);
+		}
 	}
 }

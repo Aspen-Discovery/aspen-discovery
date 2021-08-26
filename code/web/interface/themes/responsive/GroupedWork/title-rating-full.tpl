@@ -25,7 +25,7 @@
 								{*  Show Reviews is enabled and the user hasn't opted out or user hasn't logged in yet. *}
 							{/if}
 							>
-				<div class="rating-label col-xs-12 col-sm-5">{translate text="Average Rating"}</div>
+				<div class="rating-label col-xs-12 col-sm-5">{translate text="Average Rating" }</div>
 				<div class="col-xs-12 col-sm-6">
 			<span class="ui-rater-starsOff" style="width:90px">
 					<span class="ui-rater-starsOn" style="width:{math equation="90*rating/5" rating=$ratingData.average}px"></span>

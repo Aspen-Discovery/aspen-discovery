@@ -110,13 +110,13 @@ class Admin_Administrators extends ObjectEditor
 			//See if we can fetch the user from the ils
 			$newAdmin = UserAccount::findNewUser($login);
 			if ($newAdmin == false){
-				$interface->assign('error', 'Could not find a user with that barcode.');
+				$interface->assign('error', translate(['text' => 'Could not find a user with that barcode.', 'isAdminFacing'=>true]));
 			}
 		}elseif ($numResults == 1){
 			$newAdmin->fetch();
 		}elseif ($numResults > 1){
 			$newAdmin = false;
-			$interface->assign('error', "Found multiple ({$numResults}) users with that barcode. (The database needs to be cleaned up.)");
+			$interface->assign('error', translate(['text' => "Found multiple (%1%) users with that barcode. (The database needs to be cleaned up.)", 'isAdminFacing'=>true]));
 		}
 
 		if ($newAdmin != false) {

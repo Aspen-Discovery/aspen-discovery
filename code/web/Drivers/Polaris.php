@@ -1371,6 +1371,7 @@ class Polaris extends AbstractIlsDriver
 				} else if ($jsonResult->StatusType == 3) {
 					$hold_result['success'] = false;
 					$hold_result['confirmationNeeded'] = true;
+					$hold_result['title'] = translate("Place Hold?");
 					require_once ROOT_DIR . '/sys/ILS/HoldRequestConfirmation.php';
 					$holdRequestConfirmation = new HoldRequestConfirmation();
 					$holdRequestConfirmation->userId = $patron->id;
@@ -1498,5 +1499,13 @@ class Polaris extends AbstractIlsDriver
 
 
 		return $results;
+	}
+
+	function getPasswordPinValidationRules(){
+		return [
+			'minLength' => 4,
+			'maxLength' => 14,
+			'onlyDigitsAllowed' => false,
+		];
 	}
 }

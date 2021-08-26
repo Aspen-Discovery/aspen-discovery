@@ -280,41 +280,7 @@ abstract class GroupedWorkSubDriver extends RecordInterface
 
 	public function getExploreMoreInfo()
 	{
-		global $interface;
-		global $configArray;
-		$exploreMoreOptions = array();
-		if ($configArray['Catalog']['showExploreMoreForFullRecords']) {
-			$interface->assign('showMoreLikeThisInExplore', true);
-
-			if ($this->getCleanISBN()) {
-				if ($interface->getVariable('showSimilarTitles')) {
-					$exploreMoreOptions['similarTitles'] = array(
-						'label' => 'Similar Titles From NoveList',
-						'body' => '<div id="novelistTitlesPlaceholder"></div>',
-						'hideByDefault' => true
-					);
-				}
-				if ($interface->getVariable('showSimilarAuthors')) {
-					$exploreMoreOptions['similarAuthors'] = array(
-						'label' => 'Similar Authors From NoveList',
-						'body' => '<div id="novelistAuthorsPlaceholder"></div>',
-						'hideByDefault' => true
-					);
-				}
-				if ($interface->getVariable('showSimilarTitles')) {
-					$exploreMoreOptions['similarSeries'] = array(
-						'label' => 'Similar Series From NoveList',
-						'body' => '<div id="novelistSeriesPlaceholder"></div>',
-						'hideByDefault' => true
-					);
-				}
-			}
-
-			require_once ROOT_DIR . '/sys/ExploreMore.php';
-			$exploreMore = new ExploreMore();
-			$exploreMore->loadExploreMoreSidebar('catalog', $this);
-		}
-		return $exploreMoreOptions;
+		return [];
 	}
 
 	/**

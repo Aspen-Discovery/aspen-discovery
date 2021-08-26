@@ -16,10 +16,12 @@ class SystemVariables extends DataObject
 	public $useHtmlEditorRatherThanMarkdown;
 	public $storeRecordDetailsInSolr;
 	public $storeRecordDetailsInDatabase;
+	public $greenhouseUrl;
 
 	static function getObjectStructure() : array {
 		return [
 			'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id'),
+			'greenhouseUrl' => array('property' => 'greenhouseUrl', 'type' => 'url', 'label' => 'Greenhouse URL', 'description' => 'URL of the Greenhouse to store shared content', 'maxLength' => 128),
 			'errorEmail' => array('property' => 'errorEmail', 'type' => 'text', 'label' => 'Error Email Address', 'description' => 'Email Address to send errors to', 'maxLength' => 128),
 			'ticketEmail' => array('property' => 'ticketEmail', 'type' => 'text', 'label' => 'Ticket Email Address', 'description' => 'Email Address to send tickets from administrators to', 'maxLength' => 128),
 			'searchErrorEmail' => array('property' => 'searchErrorEmail', 'type' => 'text', 'label' => 'Search Error Email Address', 'description' => 'Email Address to send errors to', 'maxLength' => 128),

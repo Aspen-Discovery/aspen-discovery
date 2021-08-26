@@ -61,7 +61,7 @@ class GroupedWork_AJAX extends JSON_Action
 		if ($recordDriver->isValid()){
 			$description = $recordDriver->getDescription();
 			if (strlen($description) == 0){
-				$description = 'Description not provided';
+				$description = translate('Description not provided');
 			}
 			$description = strip_tags($description, '<a><b><p><i><em><strong><ul><li><ol>');
 			$result['success'] = true;
@@ -107,31 +107,19 @@ class GroupedWork_AJAX extends JSON_Action
 			//Process other data from novelist
 			if ($novelistData->getSimilarTitleCount() > 0) {
 				$interface->assign('similarTitles', $novelistData->getSimilarTitles());
-				if ($configArray['Catalog']['showExploreMoreForFullRecords']) {
-					$enrichmentResult['similarTitlesNovelist'] = $interface->fetch('GroupedWork/similarTitlesNovelistSidebar.tpl');
-				} else {
-					$enrichmentResult['similarTitlesNovelist'] = $interface->fetch('GroupedWork/similarTitlesNovelist.tpl');
-				}
+				$enrichmentResult['similarTitlesNovelist'] = $interface->fetch('GroupedWork/similarTitlesNovelist.tpl');
 			}
 			$memoryWatcher->logMemory('Loaded Similar titles from Novelist');
 
 			if ($novelistData->getAuthorCount()) {
 				$interface->assign('similarAuthors', $novelistData->getAuthors());
-				if ($configArray['Catalog']['showExploreMoreForFullRecords']) {
-					$enrichmentResult['similarAuthorsNovelist'] = $interface->fetch('GroupedWork/similarAuthorsNovelistSidebar.tpl');
-				} else {
-					$enrichmentResult['similarAuthorsNovelist'] = $interface->fetch('GroupedWork/similarAuthorsNovelist.tpl');
-				}
+				$enrichmentResult['similarAuthorsNovelist'] = $interface->fetch('GroupedWork/similarAuthorsNovelist.tpl');
 			}
 			$memoryWatcher->logMemory('Loaded Similar authors from Novelist');
 
 			if ($novelistData->getSimilarSeriesCount()) {
 				$interface->assign('similarSeries', $novelistData->getSimilarSeries());
-				if ($configArray['Catalog']['showExploreMoreForFullRecords']) {
-					$enrichmentResult['similarSeriesNovelist'] = $interface->fetch('GroupedWork/similarSeriesNovelistSidebar.tpl');
-				} else {
-					$enrichmentResult['similarSeriesNovelist'] = $interface->fetch('GroupedWork/similarSeriesNovelist.tpl');
-				}
+				$enrichmentResult['similarSeriesNovelist'] = $interface->fetch('GroupedWork/similarSeriesNovelist.tpl');
 			}
 			$memoryWatcher->logMemory('Loaded Similar series from Novelist');
 		}
@@ -1021,32 +1009,6 @@ class GroupedWork_AJAX extends JSON_Action
 			$result['message'] = 'Your cover has been uploaded successfully';
 		}
 		return $result;
-	}
-
-	/** @noinspection PhpUnused */
-	function reloadIslandora(){
-		$id = $_REQUEST['id'];
-		$sameCatalogRecordCleared = false;
-		$cacheMessage = '';
-		require_once ROOT_DIR . '/sys/Islandora/IslandoraSamePikaCache.php';
-		//Check for cached links
-		$sameCatalogRecordCache = new IslandoraSamePikaCache();
-		$sameCatalogRecordCache->groupedWorkId = $id;
-		if ($sameCatalogRecordCache->find(true)){
-			if ($sameCatalogRecordCache->delete() == 1){
-				$sameCatalogRecordCleared = true;
-			}else{
-				$cacheMessage = 'Could not delete same record cache';
-			}
-
-		}else{
-			$cacheMessage = 'Data not cached for same record link';
-		}
-
-		return array(
-			'success' => $sameCatalogRecordCleared,
-			'message' => $cacheMessage
-		);
 	}
 
 	/** @noinspection PhpUnused */

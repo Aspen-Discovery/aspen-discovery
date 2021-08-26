@@ -1,11 +1,11 @@
 <form id="batchUpdateFieldForm" class="form-horizontal" role="form">
 	<div class="form-group">
-		<label for="fieldSelector" class="col-xs-12">{translate text="Field to Update"}</label>
+		<label for="fieldSelector" class="col-xs-12">{translate text="Field to Update" isAdminFacing=true}</label>
 		<div class="col-xs-12">
 			<select id="fieldSelector" name="fieldSelector" class="form-control" onchange="$('.batch-update-field').hide();$('#batch-update-field-' + $('#fieldSelector').val()).show()">
-				<option value="">{translate text="Select a field"}</option>
+				<option value="">{translate text="Select a field" isAdminFacing=true}</option>
 				{foreach from=$batchFormatFields item=field}
-					<option value="{$field.property}">{$field.label}</option>
+					<option value="{$field.property}">{translate text=$field.label isAdminFacing=true}</option>
 				{/foreach}
 			</select>
 		</div>

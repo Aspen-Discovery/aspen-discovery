@@ -2424,16 +2424,6 @@ class User extends DataObject
 			$sections['side_loads']->addAction(new AdminAction('Dashboard', 'View the usage dashboard for Side Loads integration.', '/SideLoads/Dashboard'), ['View Dashboards', 'View System Reports']);
 		}
 
-		if ($configArray['Islandora']['enabled'] && array_key_exists('Islandora Archives', $enabledModules)){
-			$sections['islandora_archive'] = new AdminSection('Islandora Archives');
-			$sections['islandora_archive']->addAction(new AdminAction('Authorship Claims', 'View submissions from users that they are the author of materials within the archive.', '/Admin/AuthorshipClaims'), 'View Archive Authorship Claims');
-			$sections['islandora_archive']->addAction(new AdminAction('Clear Cache', 'Clear Archive information that has been cached within Aspen Discovery.', '/Admin/ClearArchiveCache'), 'Administer Islandora Archive');
-			$sections['islandora_archive']->addAction(new AdminAction('Material Requests', 'View requests for copies of materials from the archive.', '/Admin/ArchiveRequests'), 'View Archive Material Requests');
-			$sections['islandora_archive']->addAction(new AdminAction('Subject Control', 'Determine how subjects are handled when loading explore more information from the archive.', '/Admin/ArchiveSubjects'), 'Administer Islandora Archive');
-			$sections['islandora_archive']->addAction(new AdminAction('Private Collections', 'Setup collections within the archive that should not be private.', '/Admin/ArchivePrivateCollections'), 'Administer Islandora Archive');
-			$sections['islandora_archive']->addAction(new AdminAction('Usage Statistics', 'View statistics for number of records and drive space used by each library contributing content to the archive.', '/Admin/ArchiveUsage'), 'View Islandora Archive Usage');
-		}
-
 		if (array_key_exists('Open Archives', $enabledModules)){
 			$sections['open_archives'] = new AdminSection('Open Archives');
 			$sections['open_archives']->addAction(new AdminAction('Collections', 'Define collections to be loaded into Aspen Discovery.', '/OpenArchives/Collections'), 'Administer Open Archives');

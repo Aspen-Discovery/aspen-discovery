@@ -559,16 +559,18 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 	public function getSortableTitle()
 	{
 		/** @var File_MARC_Data_Field $titleField */
-		$titleField = $this->getMarcRecord()->getField('245');
-		if ($titleField != null) {
-			$subFieldA = $titleField->getSubfield('a');
-			if ($subFieldA != null && $titleField->getSubfield('a') != false) {
-				$untrimmedTitle = $subFieldA->getData();
-				$charsToTrim = $titleField->getIndicator(2);
-				if (is_numeric($charsToTrim)) {
-					return substr($untrimmedTitle, $charsToTrim);
-				} else {
-					return $untrimmedTitle;
+		if ($this->getMarcRecord() != null) {
+			$titleField = $this->getMarcRecord()->getField('245');
+			if ($titleField != null) {
+				$subFieldA = $titleField->getSubfield('a');
+				if ($subFieldA != null && $titleField->getSubfield('a') != false) {
+					$untrimmedTitle = $subFieldA->getData();
+					$charsToTrim = $titleField->getIndicator(2);
+					if (is_numeric($charsToTrim)) {
+						return substr($untrimmedTitle, $charsToTrim);
+					} else {
+						return $untrimmedTitle;
+					}
 				}
 			}
 		}
@@ -728,7 +730,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 
 		if (!$this->getMarcRecord()) {
 			$descriptionArray = array();
-			$description = "Description Not Provided";
+			$description = translate("Description Not Provided");
 			$descriptionArray['description'] = $description;
 			return $descriptionArray;
 		}
@@ -796,7 +798,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 				if ($marcDescription != null) {
 					$descriptionArray['description'] = $marcDescription;
 				} else {
-					$description = "Description Not Provided";
+					$description = translate("Description Not Provided");
 					$descriptionArray['description'] = $description;
 				}
 			}
@@ -1026,16 +1028,6 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 						'type' => 'download_supplemental_file'
 					);
 				}
-			}
-
-			$archiveLink = GroupedWorkDriver::getArchiveLinkForWork($this->getGroupedWorkId());
-			if ($archiveLink != null) {
-				$this->_actions[] = array(
-					'title' => 'View Online',
-					'url' => $archiveLink,
-					'requireLogin' => false,
-					'type' => 'view_online'
-				);
 			}
 
 			global $timer;

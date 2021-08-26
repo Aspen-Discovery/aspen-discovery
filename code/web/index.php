@@ -74,8 +74,6 @@ global $library;
 global $offlineMode;
 global $configArray;
 
-$interface->assign('islandoraEnabled', $configArray['Islandora']['enabled']);
-
 //Get the name of the active instance
 //$inLibrary, is used to pre-select auto-logout on place hold forms;
 // to hide the remember me option on login pages;
@@ -465,10 +463,6 @@ if ($action == "AJAX" || $action == "JSON" || $module == 'API'){
 
 	if ($library->enableGenealogy){
 		$interface->assign('enableGenealogy', true);
-	}
-
-	if ($library->enableArchive){
-		$interface->assign('enableArchive', true);
 	}
 
 	if ($library->enableOpenArchives) {

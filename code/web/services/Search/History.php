@@ -6,7 +6,6 @@ class History extends Action {
 	var $catalog;
 	private  static $searchSourceLabels = array(
 		'local' => 'Catalog',
-		'islandora' => 'Archive',
 		'genealogy' => 'Genealogy'
 	);
 

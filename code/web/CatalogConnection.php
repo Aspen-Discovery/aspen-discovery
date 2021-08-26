@@ -994,7 +994,9 @@ class CatalogConnection
 
 	public function completeFinePayment(User $patron, UserPayment $payment)
 	{
-		return $this->driver->completeFinePayment($patron, $payment);
+		$result = $this->driver->completeFinePayment($patron, $payment);
+		$patron->clearCachedAccountSummaryForSource($this->driver->getIndexingProfile()->name);
+		return $result;
 	}
 
 	public function patronEligibleForHolds(User $patron)

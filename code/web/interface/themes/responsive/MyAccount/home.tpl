@@ -14,23 +14,51 @@
 			<h1>{translate text='My Account'}</h1>
 			{if $userHasCatalogConnection}
 				<h2>{translate text='Account Summary'}</h2>
-				<div>
-					{if $offline}
+				{if $offline}
+					<div>
 						<div class="alert alert-warning">{translate text=offline_notice defaultText="<strong>The library system is currently offline.</strong> We are unable to retrieve information about your account at this time."}</div>
-					{else}
-
-						{translate text='You currently have'}
-						<ul>
-							<li><strong><span class="checkouts-placeholder"><img src="/images/loading.gif" alt="loading"></span></strong> titles <a href="/MyAccount/CheckedOut">checked out</a></li>
-							<li><strong><span class="holds-placeholder"><img src="/images/loading.gif" alt="loading"></span></strong> titles on <a href="/MyAccount/Holds">hold</a>
-							<ul class="ils-available-holds" style="display: none">
-								<li><strong><span class="ils-available-holds-placeholder"><img src="/images/loading.gif" alt="loading"></span></strong> ready for pickup</li>
-							</ul>
-							</li>
-						</ul>
-						{* TODO: Show an alert if any titles are expired or are going to expire *}
-					{/if}
-				</div>
+					</div>
+				{else}
+					<div class="row">
+						<div class="col-tn-6">
+							<div class="btn btn-block btn-default">
+								<a href="/MyAccount/CheckedOut">
+									<div class="dashboardLabel">{translate text="Checked Out"}</div>
+									<div class="dashboardValue"><span class="checkouts-placeholder"><img src="/images/loading.gif" alt="loading"></span></div>
+								</a>
+							</div>
+						</div>
+						<div class="col-tn-6">
+							<div class="btn btn-block btn-default">
+								<a href="/MyAccount/CheckedOut">
+									<div class="dashboardLabel">{translate text="Overdue"}</div>
+									<div class="dashboardValue"><span class="ils-overdue-placeholder"><img src="/images/loading.gif" alt="loading"></span></div>
+								</a>
+							</div>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-sm-12">&nbsp;</div>
+					</div>
+					<div class="row">
+						<div class="col-tn-6">
+							<div class="btn btn-block btn-default">
+								<a href="/MyAccount/Holds">
+									<div class="dashboardLabel">{translate text="Holds"}</div>
+									<div class="dashboardValue"><span class="holds-placeholder"><img src="/images/loading.gif" alt="loading"></span></div>
+								</a>
+							</div>
+						</div>
+						<div class="col-tn-6">
+							<div class="btn btn-block btn-default">
+								<a href="/MyAccount/Holds">
+									<div class="dashboardLabel">{translate text="Ready For Pickup"}</div>
+									<div class="dashboardValue"><span class="ils-available-holds-placeholder"><img src="/images/loading.gif" alt="loading"></span></div>
+								</a>
+							</div>
+						</div>
+					</div>
+				{/if}
 			{/if}
 			{if $showRatings}
 				<h2>{translate text='Recommended for you'}</h2>
@@ -42,11 +70,29 @@
 						{translate text ='If you rate titles, we can provide you with suggestions for titles you might like to read. Suggestions are based on titles you like and information within the catalog. Library staff does not have access to your suggestions.'}
 					</p>
 				{else}
-					<p>Based on the titles you have <a href="/MyAccount/MyRatings">rated</a>, we have <a href="/MyAccount/SuggestedTitles">suggestions for you</a>.  To improve your suggestions keep rating more titles.</p>
+					<div id="recommendedForYouInfo" class="row">
+						<div class="col-sm-12">
+							<div class="jcarousel-wrapper recommendationsWrapper">
+								<div class="jcarousel horizontalCarouselSpotlight" id="recommendationsCarousel">
+									<div class="loading">{translate text="Loading recommendations..."}</div>
+								</div>
+
+								<a href="#" class="jcarousel-control-prev" aria-label="{translate text="Previous Item" inAttribute=true}"><i class="fas fa-caret-left"></i></a>
+								<a href="#" class="jcarousel-control-next" aria-label="{translate text="Next Item" inAttribute=true}"><i class="fas fa-caret-right"></i></a>
+							</div>
+						</div>
+					</div>
+					<script type="text/javascript">
+						{literal}
+							$(document).ready(function (){
+								AspenDiscovery.Account.loadRecommendations();
+							});
+						{/literal}
+					</script>
 				{/if}
 			{/if}
 		{else}
-			You must sign in to view this information. Click <a href="/MyAccount/Login">here</a> to sign in.
+			{translate text="You must sign in to view this information. Click <a href='/MyAccount/Login'>here</a> to sign in."}
 		{/if}
 	</div>
 {/strip}

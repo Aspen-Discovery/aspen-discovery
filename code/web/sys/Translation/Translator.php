@@ -57,6 +57,9 @@ class Translator
 
 	//Cache any translations that have already been loaded.
 	private $cachedTranslations = [];
+
+	private $greenhouseCurlWrapper = null;
+
 	/**
 	 * Translate the phrase
 	 *
@@ -64,9 +67,13 @@ class Translator
 	 * @param string $defaultText           - The default text for a phrase that is just a key for a longer phrase
 	 * @param string[] $replacementValues   - Values to replace within the string
 	 * @param bool $inAttribute             - Whether or not we are in an attribute. If we are, we can't show the span
+	 * @param bool $isPublicFacing          - Whether or not the public will see this
+	 * @param bool $isAdminFacing           - Whether or not this is in the admin interface
+	 * @param bool $isMetadata              - Whether or not this is a translation of metadata in a MARC record, OverDrive, Axis360, etc
+	 * @param bool $isAdminEnteredData      - Whether or not this is data an administrator entered (System message, etc)
 	 * @return  string                      - The translated phrase
 	 */
-	function translate($phrase, $defaultText = '', $replacementValues = [], $inAttribute = false)
+	function translate($phrase, $defaultText = '', $replacementValues = [], $inAttribute = false, $isPublicFacing = false, $isAdminFacing = false, $isMetadata = false, $isAdminEnteredData = false)
 	{
 		if ($phrase == '' || is_numeric($phrase)){
 			return $phrase;
@@ -79,39 +86,85 @@ class Translator
 				$translationKey = $activeLanguage->id . '_' . ($translationMode ? 1 : 0) . '_' . $phrase;
 				$existingTranslation = array_key_exists($translationKey, $this->cachedTranslations) ? $this->cachedTranslations[$translationKey] : false;
 				if ($existingTranslation == false || isset($_REQUEST['reload'])) {
+					//Search for the term
+					$translationTerm = new TranslationTerm();
+					$translationTerm->term = $phrase;
+					$defaultTextChanged = false;
+					if (!$translationTerm->find(true)) {
+						$translationTerm->defaultText = $defaultText;
+						//Insert the translation term
+						$translationTerm->samplePageUrl = $_SERVER['REQUEST_URI'];
+						$translationTerm->isPublicFacing = $isPublicFacing;
+						$translationTerm->isAdminFacing = $isAdminFacing;
+						$translationTerm->isMetadata = $isMetadata;
+						$translationTerm->isAdminEnteredData = $isAdminEnteredData;
+						$translationTerm->lastUpdate = time();
+						try {
+							$translationTerm->insert();
+							//Send this to the Greenhouse as well
+
+							require_once ROOT_DIR . '/sys/SystemVariables.php';
+							$systemVariables = SystemVariables::getSystemVariables();
+							if ($systemVariables && !empty($systemVariables->greenhouseUrl)) {
+								if ($this->greenhouseCurlWrapper == null) {
+									require_once ROOT_DIR . '/sys/CurlWrapper.php';
+									$this->greenhouseCurlWrapper = new CurlWrapper();
+								}
+								$body = [
+									'term' => $phrase,
+									'isPublicFacing' => $isPublicFacing,
+									'isAdminFacing' => $isAdminFacing,
+									'isMetadata' => $isMetadata,
+									'isAdminEnteredData' => $isAdminEnteredData,
+								];
+								$this->greenhouseCurlWrapper->curlPostPage($systemVariables->greenhouseUrl . '/API/GreenhouseAPI?method=addTranslationTerm', $body);
+							}
+						} catch (Exception $e) {
+							if (UserAccount::isLoggedIn() && UserAccount::userHasPermission('Translate Aspen')) {
+								//Just show the phrase for now, maybe show the error in debug mode?
+								if (IPAddress::showDebuggingInformation()) {
+									return "TERM TOO LONG for translation \"$phrase\"";
+								} else {
+									return $phrase;
+								}
+							} else {
+								return $phrase;
+							}
+						}
+					} else {
+						$termChanged = false;
+						if ($defaultText != $translationTerm->defaultText) {
+							$translationTerm->defaultText = $defaultText;
+							$defaultTextChanged = true;
+							$termChanged = true;
+						}
+						if ($isPublicFacing && !$translationTerm->isPublicFacing) {
+							$translationTerm->isPublicFacing = $isPublicFacing;
+							$termChanged = true;
+						}
+						if ($isAdminFacing && !$translationTerm->isAdminFacing) {
+							$translationTerm->isAdminFacing = $isAdminFacing;
+							$termChanged = true;
+						}
+						if ($isMetadata && !$translationTerm->isMetadata) {
+							$translationTerm->isMetadata = $isMetadata;
+							$termChanged = true;
+						}
+						if ($isAdminEnteredData && !$translationTerm->isAdminEnteredData) {
+							$translationTerm->isAdminEnteredData = $isAdminEnteredData;
+							$termChanged = true;
+						}
+						if ($termChanged) {
+							$translationTerm->lastUpdate = time();
+							$translationTerm->update();
+						}
+					}
+
 					if ($activeLanguage->code == 'pig') {
 						$fullTranslation = $this->getPigLatinTranslation($phrase);
 					}elseif ($activeLanguage->code == 'ubb') {
 						$fullTranslation = $this->getUbbiDubbiTranslation($phrase);
 					}else {
-						//Search for the term
-						$translationTerm = new TranslationTerm();
-						$translationTerm->term = $phrase;
-						$defaultTextChanged = false;
-						if (!$translationTerm->find(true)) {
-							$translationTerm->defaultText = $defaultText;
-							//Insert the translation term
-							$translationTerm->samplePageUrl = $_SERVER['REQUEST_URI'];
-							try {
-								$translationTerm->insert();
-							} catch (Exception $e) {
-								if (UserAccount::isLoggedIn() && UserAccount::userHasPermission('Translate Aspen')) {
-									//Just show the phrase for now, maybe show the error in debug mode?
-									if (IPAddress::showDebuggingInformation()) {
-										return "TERM TOO LONG for translation \"$phrase\"";
-									} else {
-										return $phrase;
-									}
-								} else {
-									return $phrase;
-								}
-							}
-						} elseif ($defaultText != $translationTerm->defaultText) {
-							$defaultTextChanged = true;
-							$translationTerm->defaultText = $defaultText;
-							$translationTerm->update();
-						}
-
 						//Search for the translation
 						$translation = new Translation();
 						$translation->termId = $translationTerm->id;
@@ -121,18 +174,43 @@ class Translator
 								$defaultTranslation = $defaultText;
 								$translation->translated = ($activeLanguage->id == 1) ? 1 : 0;
 							} else {
-								//We don't have a translation in the database, load a default from the ini file if possible
-								$this->loadTranslationsFromIniFile();
-								if (isset($this->words[$phrase])) {
-									$defaultTranslation = $this->words[$phrase];
-									$translation->translated = 1;
-								} else {
-									$translation->translated = ($activeLanguage->id == 1) ? 1 : 0;
-									//Nothing in the ini, just return default
-									if ($this->debug) {
-										$defaultTranslation = "translate_index_not_found($phrase)";
+								//Check the greenhouse to see if there is a translation there
+								$translatedInGreenhouse = false;
+								require_once ROOT_DIR . '/sys/SystemVariables.php';
+								$systemVariables = SystemVariables::getSystemVariables();
+								if ($systemVariables && !empty($systemVariables->greenhouseUrl)) {
+									if ($this->greenhouseCurlWrapper == null) {
+										require_once ROOT_DIR . '/sys/CurlWrapper.php';
+										$this->greenhouseCurlWrapper = new CurlWrapper();
+									}
+									$body = [
+										'term' => $phrase,
+										'languageCode' => $activeLanguage->code,
+									];
+									$response = $this->greenhouseCurlWrapper->curlPostPage($systemVariables->greenhouseUrl . '/API/GreenhouseAPI?method=getDefaultTranslation', $body);
+									if ($response !== false) {
+										$jsonResponse = json_decode($response);
+										if ($jsonResponse->result->success){
+											$translation->translated = 1;
+											$defaultTranslation = $jsonResponse->result->translation;
+											$translatedInGreenhouse = true;
+										}
+									}
+								}
+								if (!$translatedInGreenhouse) {
+									//We don't have a translation in the database, load a default from the ini file if possible
+									$this->loadTranslationsFromIniFile();
+									if (isset($this->words[$phrase])) {
+										$defaultTranslation = $this->words[$phrase];
+										$translation->translated = 1;
 									} else {
-										$defaultTranslation = $phrase;
+										$translation->translated = ($activeLanguage->id == 1) ? 1 : 0;
+										//Nothing in the ini, just return default
+										if ($this->debug) {
+											$defaultTranslation = "translate_index_not_found($phrase)";
+										} else {
+											$defaultTranslation = $phrase;
+										}
 									}
 								}
 							}
@@ -160,6 +238,7 @@ class Translator
 							$fullTranslation = $translation->translation;
 						}
 					}
+
 					$this->cachedTranslations[$translationKey] = $fullTranslation;
 					$returnString = $fullTranslation;
 				} else {

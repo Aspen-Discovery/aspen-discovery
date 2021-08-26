@@ -24,11 +24,7 @@ var AspenDiscovery = (function(){
 
 		$(window).on("popstate", function () {
 			// if the state is the page you expect, pull the name and load it.
-			if (history.state && history.state.page === "MapExhibit") {
-				AspenDiscovery.Archive.handleMapClick(history.state.marker, history.state.exhibitPid, history.state.placePid, history.state.label, false, history.state.showTimeline);
-			}else if (history.state && history.state.page === "Book") {
-				AspenDiscovery.Archive.handleBookClick(history.state.bookPid, history.state.pagePid, history.state.viewer);
-			}else if (history.state && history.state.page === "Checkouts") {
+			if (history.state && history.state.page === "Checkouts") {
 				var selector1 = '#checkoutsTab a[href="#' + history.state.source + '"]';
 				$(selecto1r).tab('show');
 			}else if (history.state && history.state.page === "Holds") {
@@ -535,7 +531,7 @@ var AspenDiscovery = (function(){
 						$("#term_" + termId ).hide();
 						AspenDiscovery.closeLightbox();
 					} else {
-						AspenDiscovery.showMessage("Error", data.message);
+						AspenDiscovery.showMessage(data.title, data.message);
 					}
 				}
 			).fail(AspenDiscovery.ajaxFail);

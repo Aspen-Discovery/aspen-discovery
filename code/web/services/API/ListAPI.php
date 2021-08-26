@@ -550,7 +550,6 @@ class ListAPI extends Action
 	 * <li>password - The pin number for the user. </li>
 	 * <li>listId   - The id of the list to add items to.</li>
 	 * <li>recordIds - The id of the record(s) to add to the list.</li>
-	 * <li>tags   - A comma separated string of tags to apply to the titles within the list. (optional)</li>
 	 * <li>notes  - descriptive text to apply to the titles.  Can be viewed while on the list.  Notes will apply to all titles being added.  (optional)</li>
 	 * </ul>
 	 *

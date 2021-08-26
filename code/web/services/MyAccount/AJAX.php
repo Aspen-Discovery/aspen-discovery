@@ -46,9 +46,9 @@ class MyAccount_AJAX extends JSON_Action
 		// Display Page
 		$interface->assign('listId', strip_tags($_REQUEST['listId']));
 		return array(
-			'title' => 'Add as Browse Category to Home Page',
+			'title' => translate(['text'=>'Add as Browse Category to Home Page', 'isAdminFacing'=>'true']),
 			'modalBody' => $interface->fetch('Browse/newBrowseCategoryForm.tpl'),
-			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#createBrowseCategory\").submit();'>Create Category</button>"
+			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#createBrowseCategory\").submit();'>" . translate(['text'=>'Create Category', 'isAdminFacing'=>'true']) . "</button>"
 		);
 	}
 
@@ -3775,6 +3775,29 @@ class MyAccount_AJAX extends JSON_Action
 		}else{
 			$result['message'] = 'You must be logged in to move a list entry';
 		}
+		return $result;
+	}
+
+	function getSuggestionsSpotlight() {
+		$result = array(
+			'success' => false,
+			'message' => 'Error loading suggestions spotlight.'
+		);
+
+		if (!UserAccount::isLoggedIn()) {
+			$result['message'] = 'You must be logged in to view suggestions.  Please close this dialog and login again.';
+		} else {
+			require_once ROOT_DIR . '/sys/Suggestions.php';
+			require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+			$suggestions = Suggestions::getSuggestions(UserAccount::getActiveUserId());
+			foreach ($suggestions as $index => $suggestionInfo) {
+				$groupedWorkDriver = new GroupedWorkDriver($suggestionInfo['titleInfo']);
+				$result['suggestions'][] = $groupedWorkDriver->getSuggestionSpotlightResult($index);
+			}
+			$result['success'] = true;
+			$result['message'] = '';
+		}
+
 		return $result;
 	}
 }

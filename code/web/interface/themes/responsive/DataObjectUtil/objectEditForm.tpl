@@ -29,15 +29,15 @@
 
 			<div>
 				{if $saveButtonText}
-					<button type="submit" name="submit" value="{$saveButtonText}" class="btn btn-primary">{$saveButtonText|translate}</button>
+					<button type="submit" name="submit" value="{$saveButtonText}" class="btn btn-primary">{translate text=$saveButtonText isAdminFacing=true}</button>
 				{else}
 					<div id="objectEditorSaveButtons">
-					<button type="submit" name="submitReturnToList" value="Save Changes and Return" class="btn btn-primary">{translate text="Save Changes and Return"}</button>
+					<button type="submit" name="submitReturnToList" value="Save Changes and Return" class="btn btn-primary">{translate text="Save Changes and Return" isAdminFacing=true}</button>
 					{if $id}
-						<button type="submit" name="submitStay" value="Save Changes and Stay Here" class="btn">{translate text="Save Changes and Stay Here"}</button>
+						<button type="submit" name="submitStay" value="Save Changes and Stay Here" class="btn">{translate text="Save Changes and Stay Here" isAdminFacing=true}</button>
 					{else}
-						<button type="submit" name="submitStay" value="Save Changes and Continue Editing" class="btn">{translate text="Save Changes and Continue Editing"}</button>
-						<button type="submit" name="submitAddAnother" value="Save Changes and Add Another" class="btn">{translate text="Save Changes and Add Another"}</button>
+						<button type="submit" name="submitStay" value="Save Changes and Continue Editing" class="btn">{translate text="Save Changes and Continue Editing" isAdminFacing=true}</button>
+						<button type="submit" name="submitAddAnother" value="Save Changes and Add Another" class="btn">{translate text="Save Changes and Add Another" isAdminFacing=true}</button>
 					{/if}
 					</div>
 				{/if}

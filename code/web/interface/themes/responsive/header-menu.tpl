@@ -25,13 +25,13 @@
 				<span>
 				{if $numLocations == 1}
 					{if !isset($hasValidHours) || $hasValidHours}
-						{translate text="Library Hours &amp; Location"}
+						{translate text="Library Hours & Location"}
 					{else}
 						{translate text="Location"}
 					{/if}
 				{else}
 					{if !isset($hasValidHours) || $hasValidHours}
-						{translate text="Library Hours &amp; Location"}
+						{translate text="Library Hours & Location"}
 					{else}
 						{translate text="Locations"}
 					{/if}

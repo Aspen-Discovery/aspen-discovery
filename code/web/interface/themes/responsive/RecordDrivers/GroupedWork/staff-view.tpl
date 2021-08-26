@@ -14,9 +14,6 @@
 {if $loggedIn && in_array('Manually Group and Ungroup Works', $userPermissions)}
 	<button onclick="return AspenDiscovery.GroupedWork.getGroupWithForm(this, '{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">{translate text="Group With Work"}</button>
 {/if}
-{if $loggedIn && $enableArchive && in_array('Administer Islandora Archive', $userPermissions)}
-	<button onclick="return AspenDiscovery.GroupedWork.reloadIslandora('{$recordDriver->getUniqueID()}')" class="btn btn-sm btn-default">{translate text="Clear Islandora Cache"}</button>
-{/if}
 
 {include file="RecordDrivers/GroupedWork/grouping-information.tpl"}
 

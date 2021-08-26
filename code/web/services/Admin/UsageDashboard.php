@@ -51,7 +51,6 @@ class Admin_UsageDashboard extends Admin_Dashboard
 		$usage->selectAdd('SUM(ajaxRequests) as totalAsyncRequests');
 		$usage->selectAdd('SUM(genealogySearches) as totalGenealogySearches');
 		$usage->selectAdd('SUM(groupedWorkSearches) as totalGroupedWorkSearches');
-		$usage->selectAdd('SUM(islandoraSearches) as totalIslandoraSearches');
 		$usage->selectAdd('SUM(openArchivesSearches) as totalOpenArchivesSearches');
 		$usage->selectAdd('SUM(userListSearches) as totalUserListSearches');
 		$usage->selectAdd('SUM(websiteSearches) as totalWebsiteSearches');
@@ -73,7 +72,6 @@ class Admin_UsageDashboard extends Admin_Dashboard
 			'totalAsyncRequests' => $usage->totalAsyncRequests,
 			'totalGenealogySearches' => $usage->totalGenealogySearches,
 			'totalGroupedWorkSearches' => $usage->totalGroupedWorkSearches,
-			'totalIslandoraSearches' => $usage->totalIslandoraSearches,
 			'totalOpenArchivesSearches' => $usage->totalOpenArchivesSearches,
 			'totalUserListSearches' => $usage->totalUserListSearches,
 			'totalWebsiteSearches' => $usage->totalWebsiteSearches,

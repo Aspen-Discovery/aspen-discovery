@@ -123,11 +123,6 @@ class UInterface extends Smarty
 		global $enabledModules;
 		$this->assign('enabledModules', $enabledModules);
 
-		if (isset($configArray['Islandora']['repositoryUrl'])) {
-			$this->assign('repositoryUrl', $configArray['Islandora']['repositoryUrl']);
-			$this->assign('encodedRepositoryUrl', str_replace('/', '\/', $configArray['Islandora']['repositoryUrl']));
-		}
-
 		$this->assign('fullPath', str_replace('&', '&amp;', $_SERVER['REQUEST_URI']));
 		$this->assign('requestHasParams', strpos($_SERVER['REQUEST_URI'], '?') > 0);
 		if (isset($configArray['Site']['email'])) {
@@ -270,12 +265,12 @@ class UInterface extends Smarty
 		return $this->getVariable('pageTemplate');
 	}
 
-	function setPageTitle($title, $translateTitle = true)
+	function setPageTitle($title, $translateTitle = true, $isPatronFacing = false, $isAdminFacing = false)
 	{
 		//Marmot override, add the name of the site to the title unless we are using the mobile interface.
 		if ($translateTitle){
-			$translatedTitle = translate($title);
-			$translatedTitleAttribute = translate(['text'=>$title, 'inAttribute'=>true]);
+			$translatedTitle = translate(['text'=>$title, 'inAttribute'=>false, 'isPatronFacing' => $isPatronFacing, 'isAdminFacing' => $isAdminFacing]);
+			$translatedTitleAttribute = translate(['text'=>$title, 'inAttribute'=>true, 'isPatronFacing' => $isPatronFacing, 'isAdminFacing' => $isAdminFacing]);
 		}else{
 			$translatedTitle = $title;
 			$translatedTitleAttribute = $title;
@@ -759,13 +754,16 @@ function translate($params) {
 	if (is_array($params)) {
 		$defaultText = isset($params['defaultText']) ? $params['defaultText'] : null;
 		$inAttribute = isset($params['inAttribute']) ? $params['inAttribute'] : false;
+		$isPublicFacing = isset($params['isPublicFacing']) ? $params['isPublicFacing'] : false;
+		$isAdminFacing = isset($params['isAdminFacing']) ? $params['isAdminFacing'] : false;
+		$isMetadata = isset($params['isMetadata']) ? $params['isMetadata'] : false;
 		$replacementValues = [];
 		foreach ($params as $index => $param){
 			if (is_numeric($index)){
 				$replacementValues[$index] = $param;
 			}
 		}
-		return $translator->translate($params['text'], $defaultText, $replacementValues, $inAttribute);
+		return $translator->translate($params['text'], $defaultText, $replacementValues, $inAttribute, $isPublicFacing, $isAdminFacing, $isMetadata);
 	} else {
 		return $translator->translate($params, null, [], false);
 	}

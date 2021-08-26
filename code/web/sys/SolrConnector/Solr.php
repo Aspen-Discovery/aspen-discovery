@@ -1081,10 +1081,6 @@ abstract class Solr
 				$handler = 'TitleProper';
 			} else if ($handler == 'Series') {
 				$handler = 'SeriesProper';
-			} else if ($handler == 'IslandoraKeyword') {
-				$handler = 'IslandoraKeywordProper';
-			} else if ($handler == 'IslandoraSubject') {
-				$handler = 'IslandoraSubjectProper';
 			}
 		}
 

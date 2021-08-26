@@ -63,85 +63,6 @@ class Admin_Libraries extends ObjectEditor
 	}
 
 	/** @noinspection PhpUnused */
-	function copyArchiveSearchFacetsFromLibrary(){
-		$libraryId = $_REQUEST['id'];
-		if (isset($_REQUEST['submit'])){
-			$library = new Library();
-			$library->libraryId = $libraryId;
-			$library->find(true);
-			$library->clearArchiveSearchFacets();
-
-			$libraryToCopyFromId = $_REQUEST['libraryToCopyFrom'];
-			$libraryToCopyFrom = new Library();
-			$libraryToCopyFrom->libraryId = $libraryToCopyFromId;
-			$library->find(true);
-
-			$facetsToCopy = $libraryToCopyFrom->getArchiveSearchFacets();
-			foreach ($facetsToCopy as $facetKey => $facet){
-				$facet->libraryId = $libraryId;
-				$facet->id = null;
-				$facetsToCopy[$facetKey] = $facet;
-			}
-			$library->setArchiveSearchFacets($facetsToCopy);
-			$library->update();
-			header("Location: /Admin/Libraries?objectAction=edit&id=" . $libraryId);
-		}else{
-			//Prompt user for the library to copy from
-			$allLibraries = $this->getAllObjects(1, 5000);
-
-			unset($allLibraries[$libraryId]);
-			foreach ($allLibraries as $key => $library){
-				if (count($library->archiveSearchFacets) == 0){
-					unset($allLibraries[$key]);
-				}
-			}
-			global $interface;
-			$interface->assign('allLibraries', $allLibraries);
-			$interface->assign('id', $libraryId);
-			$interface->assign('facetType', 'archive search');
-			$interface->assign('objectAction', 'copyArchiveSearchFacetsFromLibrary');
-			$interface->setTemplate('../Admin/copyLibraryFacets.tpl');
-		}
-	}
-
-	/** @noinspection PhpUnused */
-	function resetArchiveSearchFacetsToDefault(){
-		$library = new Library();
-		$libraryId = $_REQUEST['id'];
-		$library->libraryId = $libraryId;
-		if ($library->find(true)){
-			$library->clearArchiveSearchFacets();
-
-			$defaultFacets = Library::getDefaultArchiveSearchFacets($libraryId);
-
-			$library->setArchiveSearchFacets($defaultFacets);
-			$library->update();
-
-			$_REQUEST['objectAction'] = 'edit';
-		}
-		header("Location: /Admin/Libraries?objectAction=edit&id=" . $libraryId);
-	}
-
-	/** @noinspection PhpUnused */
-	function resetArchiveMoreDetailsToDefault(){
-		$library = new Library();
-		$libraryId = $_REQUEST['id'];
-		$library->libraryId = $libraryId;
-		if ($library->find(true)){
-			$library->clearArchiveMoreDetailsOptions();
-
-			require_once ROOT_DIR . '/sys/LibraryArchiveMoreDetails.php';
-			$defaultArchiveMoreDetailsOptions = LibraryArchiveMoreDetails::getDefaultOptions($libraryId);
-
-			$library->setArchiveMoreDetailsOptions($defaultArchiveMoreDetailsOptions);
-			$library->update();
-
-			$_REQUEST['objectAction'] = 'edit';
-		}
-		header("Location: /Admin/Libraries?objectAction=edit&id=" . $libraryId);
-	}
-
-	/** @noinspection PhpUnused */
 	function defaultMaterialsRequestForm(){
 		$library = new Library();
 		$libraryId = $_REQUEST['id'];
@@ -168,20 +89,6 @@ class Admin_Libraries extends ObjectEditor
 
 			$defaultMaterialsRequestFormats = MaterialsRequestFormats::getDefaultMaterialRequestFormats($libraryId);
 			$library->setMaterialsRequestFormats($defaultMaterialsRequestFormats);
-			$library->update();
-		}
-		header("Location: /Admin/Libraries?objectAction=edit&id=" . $libraryId);
-		die();
-	}
-
-	/** @noinspection PhpUnused */
-	function defaultArchiveExploreMoreOptions(){
-		$library = new Library();
-		$libraryId = $_REQUEST['id'];
-		$library->libraryId = $libraryId;
-		if ($library->find(true)){
-			$library->clearExploreMoreBar();
-			$library->setExploreMoreBar(ArchiveExploreMoreBar::getDefaultArchiveExploreMoreOptions($libraryId));
 			$library->update();
 		}
 		header("Location: /Admin/Libraries?objectAction=edit&id=" . $libraryId);

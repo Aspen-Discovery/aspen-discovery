@@ -329,7 +329,6 @@ AspenDiscovery.Account = (function(){
 			var url = Globals.path + "/MyAccount/AJAX?method=getRatingsData&activeModule=" + Globals.activeModule + '&activeAction=' + Globals.activeAction;
 			$.getJSON(url, function(data){
 				$(".ratings-placeholder").html(data.ratings);
-				$(".recommendations-placeholder").html(data.recommendations);
 			});
 			return false;
 		},
@@ -354,6 +353,8 @@ AspenDiscovery.Account = (function(){
 						if (data.summary.numAvailableHolds > 0) {
 							$(".ils-available-holds-placeholder").html(data.summary.numAvailableHolds);
 							$(".ils-available-holds").show();
+						}else{
+							$(".ils-available-holds-placeholder").html("0");
 						}
 						$(".readingHistory-placeholder").html(data.summary.readingHistory);
 						$(".materialsRequests-placeholder").html(data.summary.materialsRequests);
@@ -1372,6 +1373,36 @@ AspenDiscovery.Account = (function(){
 				processData: false
 			});
 			return false;
+		},
+		loadRecommendations: function () {
+			var url = Globals.path + "/MyAccount/AJAX",
+				params = {'method':'getSuggestionsSpotlight'};
+			$.getJSON(url, params, function(data) {
+				try{
+					var suggestionsData = data.suggestions;
+					if (suggestionsData && suggestionsData.length > 0) {
+						//Create an unordered list for display
+						var html = '<ul>';
+
+						$.each(suggestionsData, function() {
+							html += '<li class="carouselTitleWrapper">' + this.formattedTitle + '</li>';
+						});
+
+						html += '</ul>';
+
+						var carouselElement = $('#recommendationsCarousel');
+						carouselElement.html(html);
+						var jCarousel = carouselElement.jcarousel({wrap:null});
+
+						// Reload carousel
+						jCarousel.jcarousel('reload');
+					}else{
+						$('#recommendedForYouInfo').hide();
+					}
+				} catch (e) {
+					alert("error loading enrichment: " + e);
+				}
+			});
 		}
 	};
 }(AspenDiscovery.Account || {}));
