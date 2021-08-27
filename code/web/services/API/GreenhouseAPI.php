@@ -52,14 +52,29 @@ class GreenhouseAPI extends Action
 				$fetchLibraryUrl = $sites->baseUrl.'API/GreenhouseAPI?method=getGeolocation';
 				$data = file_get_contents($fetchLibraryUrl);
 				$searchData = json_decode($data);
-				foreach($searchData as $findLibrary) {
-					$libraryLatitude = $findLibrary['latitude'];
-					$libraryLongitude = $findLibrary['longitude'];
-					$libraryUnit = $findLibrary['unit'];
-
-					if (($userLatitude == $libraryLatitude) && ($userLongitude == $libraryLongitude)) {
-						$distance = 0;
+				foreach($searchData->geolocation as $findLibrary) {
+					if($findLibrary->latitude) {
+						$libraryLatitude = $findLibrary->latitude;
 					} else {
+						$libraryLatitude = 0;
+					}
+
+					if($findLibrary->longitude) {
+						$libraryLongitude = $findLibrary->longitude;
+					} else {
+						$libraryLongitude = 0;
+					}
+
+					$libraryUnit = $findLibrary->unit;
+
+					if ($userLatitude == 0 && $userLongitude == 0) {
+						$return['libraries'][] = [
+							'name' => $sites->name,
+							'baseUrl' => $sites->baseUrl,
+							'accessLevel' => $sites->appAccess,
+						];
+					}
+					else {
 						$theta = ($userLongitude - $libraryLongitude);
 						$distance = sin(deg2rad($userLatitude)) * sin(deg2rad($libraryLatitude)) + cos(deg2rad($userLatitude)) * cos(deg2rad($libraryLatitude)) * cos(deg2rad($theta));
 
@@ -70,16 +85,16 @@ class GreenhouseAPI extends Action
 							$distance = $distance * 1.609344;
 						}
 						$distance = round($distance,2);
+						if ($distance <= 60) {
+							$return['libraries'][] = [
+								'name' => $sites->name,
+								'baseUrl' => $sites->baseUrl,
+								'accessLevel' => $sites->appAccess,
+								'distance' => $distance,
+							];
+						}
 					}
 
-					if ($distance <= 30) {
-						$return['libraries'][] = [
-							'name' => $sites->name,
-							'baseUrl' => $sites->baseUrl,
-							'accessLevel' => $sites->appAccess,
-							'distance' => $distance,
-						];
-					}
 				}
 			}
 		}
@@ -97,33 +112,36 @@ class GreenhouseAPI extends Action
 		$libraryLocation->find();
 		while($libraryLocation->fetch()) {
 			$rawAddress = $libraryLocation->address;
-			$fullAddress = str_replace("\r\n", ",", $rawAddress);
-			$address = explode(',', $fullAddress)[0];
-			$address = str_replace(" ", "%20", $address);
-			$city = explode(',', $fullAddress)[1];
-			$city = str_replace(" ", "%20", $city);
-			$state = explode(' ', trim(explode(',', $fullAddress)[2]))[0];
-			$zip = explode(' ', trim(explode(',', $fullAddress)[2]))[1];
+			if($rawAddress != NULL) {
+				$fullAddress = str_replace("\r\n", ",", $rawAddress);
+				$address = explode(',', $fullAddress)[0];
+				$address = str_replace(" ", "%20", $address);
+				$city = explode(',', $fullAddress)[1];
+				$city = str_replace(" ", "%20", $city);
+				$state = explode(' ', trim(explode(',', $fullAddress)[2]))[0];
+				$zip = explode(' ', trim(explode(',', $fullAddress)[2]))[1];
 
-			// fetch mapquest data
-			$url = 'http://www.mapquestapi.com/geocoding/v1/address?key=mg5OqJEzdXEBcgsTOyHfZUScBlSg6krp&street='.$address.'&city='.$city.'&state='.$state.'&postalCode='.$zip;
-			$data = file_get_contents($url);
-			$findCoords = json_decode($data);
-			$libraryLatitude = $findCoords->results[0]->locations[0]->latLng->lat;
-			$libraryLongitude = $findCoords->results[0]->locations[0]->latLng->lng;
-			$libraryCountry = $findCoords->results[0]->locations[0]->adminArea1;
+				// fetch mapquest data
+				$url = 'http://www.mapquestapi.com/geocoding/v1/address?key=mg5OqJEzdXEBcgsTOyHfZUScBlSg6krp&street='.$address.'&city='.$city.'&state='.$state.'&postalCode='.$zip;
+				$data = file_get_contents($url);
+				$findCoords = json_decode($data);
+				$libraryLatitude = $findCoords->results[0]->locations[0]->latLng->lat;
+				$libraryLongitude = $findCoords->results[0]->locations[0]->latLng->lng;
+				$libraryCountry = $findCoords->results[0]->locations[0]->adminArea1;
 
-			if($libraryCountry == 'CA') {
-				$unit = 'Km';
-			} else {
-				$unit = 'Mi';
+				if($libraryCountry == 'CA') {
+					$unit = 'Km';
+				} else {
+					$unit = 'Mi';
+				}
+
+				$return['geolocation'][] = [
+					'latitude' => $libraryLatitude,
+					'longitude' => $libraryLongitude,
+					'unit' => $unit,
+				];
 			}
 
-			$return['geolocation'][] = [
-				'latitude' => $libraryLatitude,
-				'longitude' => $libraryLongitude,
-				'unit' => $unit,
-			];
 		}
 
 		return $return;
