@@ -1,4 +1,4 @@
-<br/><textarea name='{$propName}' id='{$propName}' rows='{$property.rows}' cols='{$property.cols}' title='{$property.description}' class='{if $property.required}required{/if}'>{$propValue|escape}</textarea>
+<br/><textarea name='{$propName}' id='{$propName}' rows='{$property.rows}' cols='{$property.cols}' title='{trasnslate text=$property.description inAttribute=true isAdminFacing=true}' class='{if $property.required}required{/if}'>{$propValue|escape}</textarea>
 <script type="text/javascript">
 {literal}
 CKEDITOR.replace( '{/literal}{$propName}{literal}',

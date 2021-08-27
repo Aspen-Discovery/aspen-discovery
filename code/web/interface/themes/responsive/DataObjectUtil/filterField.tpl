@@ -23,13 +23,15 @@
 		</div>
 	{elseif $filterField.type == 'timestamp'}
 		<div class="col-xs-3">
-			<select name="filterType[{$filterField.property}]" class="form-control form-control-sm filterType" aria-label="Type of filtering for {$filterField.label|escape:css}">
-				<option value="afterTime" {if !empty($appliedFilter) && $appliedFilter.filterType == 'afterTime'}selected="selected"{/if}>{translate text="After"}</option>
-				<option value="beforeTime" {if !empty($appliedFilter) && $appliedFilter.filterType == 'beforeTime'}selected="selected"{/if}>{translate text="Before"}</option>
+			{assign var=label value='Type of filtering for '+$filterField.label}
+			<select name="filterType[{$filterField.property}]" class="form-control form-control-sm filterType" aria-label="{translate text=$label inAttribute=true isAdminFacing=true}">
+				<option value="afterTime" {if !empty($appliedFilter) && $appliedFilter.filterType == 'afterTime'}selected="selected"{/if}>{translate text="After" isAdminFacing=true}</option>
+				<option value="beforeTime" {if !empty($appliedFilter) && $appliedFilter.filterType == 'beforeTime'}selected="selected"{/if}>{translate text="Before" isAdminFacing=true}</option>
 			</select>
 		</div>
 		<div class="col-xs-5">
-			<input type="text" name="filterValue[{$filterField.property}]" id="filterValue_{$filterField.property}" class="form-control form-control-sm filterValue" aria-label="Filtering for {$filterField.label|escape:css}" {if !empty($appliedFilter)}value="{$appliedFilter.filterValue|date_format:"%Y-%m-%d %H:%M"}"{/if}/>
+			{assign var=label value='Filtering for '+$filterField.label}
+			<input type="text" name="filterValue[{$filterField.property}]" id="filterValue_{$filterField.property}" class="form-control form-control-sm filterValue" aria-label="" {if !empty($appliedFilter)}value="{$appliedFilter.filterValue|date_format:"%Y-%m-%d %H:%M"}"{/if}/>
 			<script type="text/javascript">
 				$(document).ready(function(){ldelim}
 					rome(filterValue_{$filterField.property});
@@ -38,28 +40,30 @@
 		</div>
 	{elseif $filterField.type == 'checkbox'}
 		<div class="col-xs-8">
+			{assign var=label value='Type of filtering for '+$filterField.label}
 			<input type="hidden" name="filterType[{$filterField.property}]" id="filterType_{$filterField.property}" value="matches"/>
-			<select name="filterValue[{$filterField.property}]" class="form-control form-control-sm filterType" aria-label="Type of filtering for {$filterField.label|escape:css}">
-				<option value="1" {if !empty($appliedFilter) && $appliedFilter.filterValue == '1'}selected="selected"{/if}>{translate text="Selected"}</option>
-				<option value="0" {if !empty($appliedFilter) && $appliedFilter.filterValue == '0'}selected="selected"{/if}>{translate text="Deselected"}</option>
+			<select name="filterValue[{$filterField.property}]" class="form-control form-control-sm filterType" aria-label="{translate text=$label inAttribute=true isAdminFacing=true}">
+				<option value="1" {if !empty($appliedFilter) && $appliedFilter.filterValue == '1'}selected="selected"{/if}>{translate text="Selected" isAdminFacing=true}</option>
+				<option value="0" {if !empty($appliedFilter) && $appliedFilter.filterValue == '0'}selected="selected"{/if}>{translate text="Deselected" isAdminFacing=true}</option>
 			</select>
 		</div>
 	{elseif $filterField.type == 'enum'}
 		<div class="col-xs-8">
 			<input type="hidden" name="filterType[{$filterField.property}]" id="filterType_{$filterField.property}" value="matches"/>
-			<select name="filterValue[{$filterField.property}]" class="form-control form-control-sm filterType" aria-label="Type of filtering for {$filterField.label|escape:css}">
+			{assign var=label value='Filtering for '+$filterField.label}
+			<select name="filterValue[{$filterField.property}]" class="form-control form-control-sm filterType" aria-label="{translate text=$label inAttribute=true isAdminFacing=true}">
 				{foreach from=$filterField.values item=propertyName key=propertyValue}
-					<option value="{$propertyValue}" {if !empty($appliedFilter) && $appliedFilter.filterValue == $propertyValue}selected="selected"{/if}>{$propertyName}</option>
+					<option value="{$propertyValue}" {if !empty($appliedFilter) && $appliedFilter.filterValue == $propertyValue}selected="selected"{/if}>{if !empty($property.translateValues)}{translate text=$propertyName inAttribute=true isPublicFacing=$property.isPublicFacing isAdminFacing=$property.isAdminFacing }{else}{$propertyName}{/if}</option>
 				{/foreach}
 			</select>
 		</div>
 	{else}
 		<div class="col-xs-8">
-			&nbsp;Unhandled filter type {$filterField.type}
+			{translate text="Unhandled filter type %1%" 1=$filterField.type isAdminFacing=true}
 		</div>
 	{/if}
 	<div class="col-xs-1 text-right">
-		<button class="btn btn-sm btn-danger" onclick="$('#filter_{$filterField.property}').remove();return false;" aria-label="{translate text="Delete"}"><i class="fas fa-sm fa-trash-alt"></i></button>
+		<button class="btn btn-sm btn-danger" onclick="$('#filter_{$filterField.property}').remove();return false;" aria-label="{translate text="Delete" isAdminFacing=true}"><i class="fas fa-sm fa-trash-alt"></i></button>
 	</div>
 </div>
 {/strip}

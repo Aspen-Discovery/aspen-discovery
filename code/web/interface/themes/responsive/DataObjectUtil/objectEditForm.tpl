@@ -8,7 +8,7 @@
 {/if}
 
 {* Create the base form *}
-<form id='objectEditor' method="post" {if !empty($contentType)}enctype="{$contentType}"{/if} action="{$submitUrl}" role="form" onsubmit="setFormSubmitting();" aria-label="{$formLabel}">
+<form id='objectEditor' method="post" {if !empty($contentType)}enctype="{$contentType}"{/if} action="{$submitUrl}" role="form" onsubmit="setFormSubmitting();" aria-label="{translate text=$formLabel isAdminFacing=true inAttribute=true}">
 	<div class='editor'>
 		<input type='hidden' name='objectAction' value='save' />
 		{if !empty($id)}
@@ -57,7 +57,7 @@
 				var re = new RegExp(regexp);
 				return this.optional(element) || re.test(value);
 			},
-			"Please check your input."
+			"{/literal}{translate text="Please check your input." isAdminFacing=true inAttribute=true}{literal}"
 		);
 		$(document).ready(function(){
 			var objectEditorObject = $('#objectEditor');
@@ -82,7 +82,7 @@
 					// if form state change show warning box, else don't show it.
 					var objectEditorObject = $('#objectEditor');
 					if (objectEditorObject.serialize() !== objectEditorObject.data('serialize')) {
-						return 'You have made changes to the configuration, would you like to save them before continuing?';
+						return "{/literal}{translate text="You have made changes to the configuration, would you like to save them before continuing?" isAdminFacing=true inAttribute=true}{literal}";
 					} else {
 						e = null;
 					}

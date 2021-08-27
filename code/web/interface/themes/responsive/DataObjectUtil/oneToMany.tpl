@@ -5,14 +5,14 @@
 			<thead>
 			<tr>
 				{if $property.sortable}
-					<th>{translate text="Sort"}</th>
+					<th>{translate text="Sort" isAdminFacing=true}</th>
 				{/if}
 				{foreach from=$property.structure item=subProperty}
 					{if in_array($subProperty.type, array('text', 'regularExpression', 'enum', 'date', 'checkbox', 'integer', 'textarea', 'html')) || ($subProperty.type == 'multiSelect' && $subProperty.listStyle == 'checkboxList') }
-						<th{if in_array($subProperty.type, array('text', 'regularExpression', 'enum', 'html', 'multiSelect'))} style="min-width:150px"{/if}>{$subProperty.label|translate}</th>
+						<th{if in_array($subProperty.type, array('text', 'regularExpression', 'enum', 'html', 'multiSelect'))} style="min-width:150px"{/if}>{translate text=$subProperty.label isAdminFacing=true}</th>
 					{/if}
 				{/foreach}
-				<th>{translate text="Actions"}</th>
+				<th>{translate text="Actions" isAdminFacing=true}</th>
 			</tr>
 			</thead>
 			<tbody>
@@ -67,23 +67,23 @@
 					<td>
 						{if $property.editLink neq ''}
 							<a href='{$property.editLink}?objectAction=edit&widgetListId={$subObject->id}&widgetId={$widgetid}' class="btn btn-sm btn-default" title="edit">
-								{translate text="Edit"}
+								{translate text="Edit" isAdminFacing=true}
 							</a>
 						{elseif $property.canEdit}
 							{if method_exists($subObject, 'getEditLink')}
 								<a href='{$subObject->getEditLink()}' title='Edit' class="btn btn-sm btn-default">
-									{translate text="Edit"}
+									{translate text="Edit" isAdminFacing=true}
 								</a>
 							{else}
-								Please add a getEditLink method to this object
+								{translate text="Please add a getEditLink method to this object" isAdminFacing=true}
 							{/if}
 						{/if}
 						{* link to delete*}
 						<input type="hidden" id="{$propName}Deleted_{$subObject->id}" name="{$propName}Deleted[{$subObject->id}]" value="false">
 						{* link to delete *}
-						<a href="#" class="btn btn-sm btn-warning" onclick="if (confirm('Are you sure you want to delete this?')){literal}{{/literal}$('#{$propName}Deleted_{$subObject->id}').val('true');$('#{$propName}{$subObject->id}').hide().find('.required').removeClass('required'){literal}}{/literal};return false;">
+						<a href="#" class="btn btn-sm btn-warning" onclick="if (confirm('{translate text='Are you sure you want to delete this?' inAttribute=true isAdminFacing=true})'){literal}{{/literal}$('#{$propName}Deleted_{$subObject->id}').val('true');$('#{$propName}{$subObject->id}').hide().find('.required').removeClass('required'){literal}}{/literal};return false;">
 							{* On delete action, also remove class 'required' to turn off form validation of the deleted input; so that the form can be submitted by the user  *}
-							{translate text="Delete"}
+							{translate text="Delete" isAdminFacing=true}
 						</a>
 					</td>
 				</tr>

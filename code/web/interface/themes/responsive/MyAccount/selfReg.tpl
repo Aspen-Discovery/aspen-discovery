@@ -9,7 +9,7 @@
 				{translate text='selfreg_success' defaultText='Congratulations, you have successfully registered for a new library card. You will have limited privileges initially.<br>	Please bring a valid ID to the library to receive a physical library card with full privileges.'}
 			{/if}
 		</div>
-		<div class="alert alert-info">
+		<div id="selfRegAccountInfo" class="alert alert-info">
 			{if !empty($selfRegResult.barcode)}
 				<p>{translate text='Your library card number is <strong>%1%</strong>' 1=$selfRegResult.barcode}</p>
 			{/if}

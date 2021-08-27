@@ -19,14 +19,14 @@
 	<div {if $addFormGroupToProperty !== false}class="form-group"{/if} id="propertyRow{$propName}">
 		{* Output the label *}
 		{if $property.type == 'enum'}
-			<label for='{$propName}Select'{if $property.description} title="{$property.description}"{/if}>{$property.label|translate} {if $property.required && $objectAction != 'edit'}({translate text="required"}){/if}</label>
+			<label for='{$propName}Select'{if $property.description} title="{translate text=$property.description isAdminFacing=true inAttribute=true}"{/if}>{translate text=$property.label isAdminFacing=true} {if $property.required && $objectAction != 'edit'}({translate text="required" isAdminFacing=true}){/if}</label>
 		{elseif $property.type == 'oneToMany' && !empty($property.helpLink)}
 			<div class="row">
 				<div class="col-xs-11">
 				{if $property.renderAsHeading == true}
-					<h2>{$property.label|translate}</h2>
+					<h2>{translate text=$property.label isAdminFacing=true}</h2>
 				{else}
-					<label for='{$propName}'{if $property.description} title="{$property.description}"{/if}>{$property.label|translate}</label>
+					<label for='{$propName}'{if $property.description} title="{translate text=$property.description isAdminFacing=true inAttribute=true}"{/if}>{translate text=$property.label isAdminFacing=true}</label>
 				{/if}
 				</div>
 				<div class="col-xs-1">
@@ -35,9 +35,9 @@
 			</div>
 		{elseif $property.type != 'section' && $property.type != 'checkbox' && $property.type != 'hidden'}
 			{if $property.renderAsHeading == true}
-				<h2>{$property.label|translate}</h2>
+				<h2>{translate text=$property.label isAdminFacing=true}</h2>
 			{else}
-				<label for='{$propName}'{if $property.description} title="{$property.description}"{/if}>{$property.label|translate} {if $property.required && $objectAction != 'edit'}({translate text="required"}){/if}</label>
+				<label for='{$propName}'{if $property.description} title="{$property.description}"{/if}>{translate text=$property.label isAdminFacing=true} {if $property.required && $objectAction != 'edit'}({translate text="required" isAdminFacing=true}){/if}</label>
 			{/if}
 		{/if}
 		{if !empty($property.showDescription)}
@@ -49,7 +49,7 @@
 				<div class="row">
 					<div class="col-xs-12">
 						{if !empty($property.label)}
-							<h2>{$property.label|translate}</h2>
+							<h2>{translate text=$property.label isAdminFacing=true}</h2>
 						{/if}
 
 						{foreach from=$property.properties item=property}
@@ -63,7 +63,7 @@
 						<div class="panel-heading row">
 							<div class="panel-title col-xs-11">
 								<a data-toggle="collapse" data-parent="#accordion_{$property.label|escapeCSS}" href="#accordion_body_{$property.label|escapeCSS}">
-									{$property.label|translate}
+									{translate text=$property.label isAdminFacing=true}
 								</a>
 							</div>
 							{if $property.helpLink}
@@ -129,11 +129,11 @@
 						{assign var=useDefault value=$object->$defaultVariableName}
 					{/if}
 
-					<input type="checkbox" name='{$propName}-default' id='{$propName}-default' {if $useDefault == '1'}checked="checked"{/if} {if !empty($property.readOnly)}readonly{/if}/><label for='{$propName}-default'>{translate text="Use Default"}</label>
+					<input type="checkbox" name='{$propName}-default' id='{$propName}-default' {if $useDefault == '1'}checked="checked"{/if} {if !empty($property.readOnly)}readonly{/if}/><label for='{$propName}-default'>{translate text="Use Default" isAdminFacing=true}</label>
 				</div>
 				<div class="col-tn-3">
 					{if !empty($property.checkContrastWith)}
-						&nbsp;{translate text='Contrast Ratio'}&nbsp;<span id="contrast_{$propName}" class="contrast_warning"></span>
+						&nbsp;{translate text='Contrast Ratio' isAdminFacing=true}&nbsp;<span id="contrast_{$propName}" class="contrast_warning"></span>
 						<script type="text/javascript">
 							$(document).ready(function(){ldelim}
 								AspenDiscovery.Admin.checkContrast('{$propName}', '{$property.checkContrastWith}'{if !empty($property.checkContrastOneWay) && $property.checkContrastOneWay==true},true{/if});
@@ -182,7 +182,7 @@
 						{assign var=useDefault value=$object->$defaultVariableName}
 					{/if}
 
-					<input type="checkbox" name='{$propName}-default' id='{$propName}-default' {if $useDefault == '1'}checked="checked"{/if} {if !empty($property.readOnly)}readonly{/if}/><label for='{$propName}-default'>{translate text="Use Default"}</label>
+					<input type="checkbox" name='{$propName}-default' id='{$propName}-default' {if $useDefault == '1'}checked="checked"{/if} {if !empty($property.readOnly)}readonly{/if}/><label for='{$propName}-default'>{translate text="Use Default" isAdminFacing=true}</label>
 				</div>
 				<div class="col-sm-5">
 					<div id="{$propName}-sample-text" style="font-family: {$propValue},arial; font-size: {if $property.previewFontSize}{$property.previewFontSize}{else}12px{/if}">
@@ -200,7 +200,7 @@
 				<div class="col-sm-7">
 					<input type="file" name='{$propName}' id='{$propName}' size="80">
 					{if $propValue}
-						{translate text="Existing font"} {$propValue} <input type='checkbox' name='remove{$propName}' id='remove{$propName}'> <label for="remove{$propName}">Remove</label>
+						{translate text="Existing font" isAdminFacing=true} {$propValue} <input type='checkbox' name='remove{$propName}' id='remove{$propName}'> <label for="remove{$propName}">{translate text="Remove"  isAdminFacing=true}</label>
 					{/if}
 				</div>
 				<div class="col-sm-5">
@@ -257,10 +257,10 @@
 						{/if}
 						{$propValue} &nbsp;
 					{/if}
-					<input type='checkbox' name='remove{$propName}' id='remove{$propName}'> <label for="remove{$propName}">{translate text="Remove image"}</label>
+					<input type='checkbox' name='remove{$propName}' id='remove{$propName}'> <label for="remove{$propName}">{translate text="Remove image" isAdminFacing=true}</label>
 					<br>
 				{else}
-					Existing file: {$propValue}
+					{translate text="Existing file %1%" 1=$propValue isAdminFacing=true}
 					<input type='hidden' name='{$propName}_existing' id='{$propName}_existing' value='{$propValue|escape}'>
 
 				{/if}
@@ -270,7 +270,7 @@
 		{elseif $property.type == 'checkbox'}
 			<div class="checkbox">
 				<label for='{$propName}'{if $property.description} title="{$property.description}"{/if}>
-					<input type='checkbox' name='{$propName}' id='{$propName}' {if ($propValue == 1)}checked='checked'{/if} {if $property.required && $objectAction != 'edit'}required{/if} {if !empty($property.readOnly)}readonly{/if}> {$property.label|translate}
+					<input type='checkbox' name='{$propName}' id='{$propName}' {if ($propValue == 1)}checked='checked'{/if} {if $property.required && $objectAction != 'edit'}required{/if} {if !empty($property.readOnly)}readonly{/if}> {translate text=$property.label isAdminFacing=true}
 				</label>
 			</div>
 		{elseif $property.type == 'webBuilderColor'}
