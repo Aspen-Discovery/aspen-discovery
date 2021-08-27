@@ -88,6 +88,7 @@ class GreenhouseAPI extends Action
 							if ($distance <= 60) {
 								$return['libraries'][] = [
 									'name' => $findLibrary->locationName,
+									'librarysystem' => $sites->name,
 									'baseUrl' => $sites->baseUrl,
 									'accessLevel' => $sites->appAccess,
 									'distance' => $distance,
