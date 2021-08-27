@@ -5036,7 +5036,7 @@ var AspenDiscovery = (function(){
 						$("#term_" + termId ).hide();
 						AspenDiscovery.closeLightbox();
 					} else {
-						AspenDiscovery.showMessage("Error", data.message);
+						AspenDiscovery.showMessage(data.title, data.message);
 					}
 				}
 			).fail(AspenDiscovery.ajaxFail);
@@ -10233,14 +10233,17 @@ AspenDiscovery.Record = (function(){
 								AspenDiscovery.showMessage(data.title, data.message, false, false);
 								AspenDiscovery.Account.loadMenuData();
 							}
+						}else if (data.confirmationNeeded){
+							AspenDiscovery.showMessageWithButtons(data.title, data.message, data.modalButtons);
 						} else {
 							AspenDiscovery.showMessage(data.title, data.message, false, false);
 						}
-					}
-					if (data.success){
-						AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
-					}else{
-						AspenDiscovery.showMessage(data.title, data.message);
+					}else {
+						if (data.success) {
+							AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+						} else {
+							AspenDiscovery.showMessage(data.title, data.message);
+						}
 					}
 				}).fail(AspenDiscovery.ajaxFail);
 			}else{

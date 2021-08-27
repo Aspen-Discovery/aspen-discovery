@@ -68,8 +68,8 @@ class Record_AJAX extends Action
 			if (!$this->setupHoldForm($recordSource, $rememberHoldPickupLocation, $marcRecord, $locations)){
 				return array(
 					'holdFormBypassed' => false,
-					'title' => 'Unable to place hold',
-					'message' => '<p>This account is not associated with a library, please contact your library.</p>',
+					'title' => translate('Unable to place hold'),
+					'message' => '<p>' . translate('This account is not associated with a library, please contact your library.') . '</p>',
 					'success' => false
 				);
 			}
@@ -151,6 +151,13 @@ class Record_AJAX extends Action
 						$results = $user->placeHold($id, $user->getPickupLocationCode());
 					}
 				}
+				if ($results['success']){
+					if (empty($results['needsItemLevelHold'])){
+						$results['title'] = translate('Hold Placed Successfully');
+					}
+				}else{
+					$results['title'] = translate('Hold Failed');
+				}
 				$results['holdFormBypassed'] = true;
 
 				//If the result was successful, add a message for where the hold can be picked up with a link to the preferences page.
@@ -162,12 +169,17 @@ class Record_AJAX extends Action
 						$pickupLocationName = $pickupLocation->displayName;
 					}
 					if (count($locations) > 1) {
-						$results['message'] .= '<br/>' . translate(['text'=>"When ready, your hold will be available at %1%, you can change your default pickup location <a href='/MyAccount/MyPreferences'>here</a>.", 1=>$pickupLocationName]);
+						$results['message'] .= '<br/>' . translate(['text'=>"When ready, your hold will be available at %1%, you can change your default pickup location <a href='/MyAccount/MyPreferences'>here</a>.", 1=>$pickupLocationName, 'isPublicFacing'=>true]);
 					}else{
-						$results['message'] .= '<br/>' . translate(['text'=>'When ready, your hold will be available at %1%', 1=>$pickupLocationName]);
+						$results['message'] .= '<br/>' . translate(['text'=>'When ready, your hold will be available at %1%', 1=>$pickupLocationName, 'isPublicFacing'=>true]);
 					}
 					$results['message'] = "<div class='alert alert-success'>" . $results['message'] . '</div>';
+				}else{
+					if ($results['confirmationNeeded']){
+						$results['modalButtons'] = '<a href="#" class="btn btn-primary" onclick="return AspenDiscovery.Record.confirmHold(\'Record\', \'' . $shortId . '\', ' . $results['confirmationId'] . ')">' . translate(['text'=>'Yes, Place Hold','isPublicFacing'=>true]) . '</a>';
+					}
 				}
+
 
 				if ($results['success'] && $library->showWhileYouWait) {
 					$recordDriver = RecordDriverFactory::initRecordDriverById($id);
@@ -180,7 +192,7 @@ class Record_AJAX extends Action
 						$interface->assign('whileYouWaitTitles', $whileYouWaitTitles);
 
 						if (count($whileYouWaitTitles) > 0) {
-							$results['message'] .= "<h3>" . translate("While You Wait") . "</h3>";
+							$results['message'] .= "<h3>" . translate(['text'=>"While You Wait", 'isPublicFacing'=>true]) . "</h3>";
 							$results['message'] .= $interface->fetch('GroupedWork/whileYouWait.tpl');
 						}
 					}
@@ -194,14 +206,14 @@ class Record_AJAX extends Action
 			} else if (count($locations) == 0) {
 				$results = array(
 					'holdFormBypassed' => false,
-					'title' => 'Unable to place hold',
-					'message' => '<p>Sorry, no copies of this title are available to your account.</p>',
+					'title' => translate(['text'=>'Unable to place hold', 'isPublicFacing'=>true]),
+					'message' => '<p>' . translate(['text'=>'Sorry, no copies of this title are available to your account.', 'isPublicFacing'=>true]) . '</p>',
 					'success' => false
 				);
 			} else {
 				$results = array(
 					'holdFormBypassed' => false,
-					'title' => empty($title) ? translate('Place Hold') : translate(['text'=>'Place Hold on %1%', 1=> $title]),
+					'title' => empty($title) ? translate(['text'=>'Place Hold', 'isPublicFacing'=>true]) : translate(['text'=>'Place Hold on %1%', 1=> $title, 'isPublicFacing'=>true]),
 					'modalBody' => $interface->fetch("Record/hold-popup.tpl"),
 					'success' => true
 				);
@@ -212,8 +224,8 @@ class Record_AJAX extends Action
 		} else {
 			$results = array(
 				'holdFormBypassed' => false,
-				'title' => 'Please login',
-				'message' => "You must be logged in.  Please close this dialog and login before placing your hold.",
+				'title' => translate(['text'=>'Please login', 'isPublicFacing'=>true]),
+				'message' => translate(['text'=>"You must be logged in.  Please close this dialog and login before placing your hold.", 'isPublicFacing'=>true]),
 				'success' => false
 			);
 		}

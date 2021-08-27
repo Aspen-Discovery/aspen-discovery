@@ -3161,13 +3161,13 @@ class Koha extends AbstractIlsDriver
 	{
 		$holds = $this->getHolds($patron, 1, -1, 'title');
 		$hold_result['success'] = true;
-		$hold_result['message'] = translate(['text'=>"ils_hold_success", 'defaultText'=>"Your hold was placed successfully."]);
+		$hold_result['message'] = translate(['text'=>"Your hold was placed successfully.", 'isPublicFacing'=>true]);
 		//Find the correct hold (will be unavailable)
 		/** @var Hold $holdInfo */
 		foreach ($holds['unavailable'] as $holdInfo) {
 			if ($holdInfo->sourceId == $recordId) {
 				if (isset($holdInfo->position)) {
-					$hold_result['message'] .= translate(['text'=>"ils_hold_success_position", 'defaultText'=>"&nbsp;You are number <b>%1%</b> in the queue.", '1' => $holdInfo->position]);
+					$hold_result['message'] .= '&nbsp;' . translate(['text'=>"You are number <b>%1%</b> in the queue.", '1' => $holdInfo->position, 'isPublicFacing'=>true]);
 				}
 				//Show the number of holds the patron has used.
 				$accountSummary = $this->getAccountSummary($patron);
@@ -3175,9 +3175,9 @@ class Koha extends AbstractIlsDriver
 				$totalHolds = $accountSummary->getNumHolds();
 				$remainingHolds = $maxReserves - $totalHolds;
 				if ($remainingHolds <= 3){
-					$hold_result['message'] .= translate(['text'=>"ils_hold_success_total_remaining_holds", 'defaultText'=>"<br/>You have %1% holds currently and can place %2% additional holds.", 1=>$totalHolds, 2=>$remainingHolds]);
+					$hold_result['message'] .= '<br/>' . translate(['text'=>"You have %1% holds currently and can place %2% additional holds.", 1=>$totalHolds, 2=>$remainingHolds, 'isPublicFacing'=>true]);
 				}else{
-					$hold_result['message'] .= translate(['text'=>"ils_hold_success_total_holds", 'defaultText'=>"<br/>You have %1% holds currently.", 1 => $totalHolds]);
+					$hold_result['message'] .= '<br/>' . translate(['text'=>"<br/>You have %1% holds currently.", 1 => $totalHolds, 'isPublicFacing'=>true]);
 				}
 
 				break;
