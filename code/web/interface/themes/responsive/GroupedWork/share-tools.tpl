@@ -1,7 +1,7 @@
 {strip}
 	{if $showEmailThis == 1 || $showShareOnExternalSites == 1}
 	<div class="share-tools">
-		<span class="share-tools-label hidden-inline-xs">{translate text=SHARE}</span>
+		<span class="share-tools-label hidden-inline-xs">{translate text="SHARE" isPublicFacing=true}</span>
 		{if $showEmailThis == 1}
 			<a href="#" onclick="return AspenDiscovery.GroupedWork.showEmailForm(this, '{$recordDriver->getPermanentId()|escape:"url"}')" title="{translate text="Share via email" inAttribute=true}">
 				<i class="fas fa-envelope-square fa-2x fa-fw"></i>

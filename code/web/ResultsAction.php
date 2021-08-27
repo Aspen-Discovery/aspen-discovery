@@ -10,7 +10,7 @@ abstract class ResultsAction extends Action
 		$breadcrumbs[] = new Breadcrumb(null, $searchType);
 		$recordCount = $interface->getVariable('recordCount');
 		if (empty($recordCount)) {
-			$resultCountText = translate(["No Results Found", "isPublicFacing" => true]);
+			$resultCountText = translate(['text'=>"No Results Found", "isPublicFacing" => true]);
 		}else{
 			if ($interface->getVariable('displayMode') == 'covers') {
 				$resultCountText = translate(['text' => "There are %1% total results.", 1=>number_format($recordCount), "isPublicFacing" => true]);

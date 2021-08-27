@@ -20,7 +20,7 @@
 		{if !empty($solrSearchDebug)}
 			<div id="solrSearchOptionsToggle" onclick="$('#solrSearchOptions').toggle()">Show Search Options</div>
 			<div id="solrSearchOptions" style="display:none">
-				<pre>Search options: {$solrSearchDebug}</pre>
+				<pre>{translate text="Search options" isPublicFacing=true} {$solrSearchDebug}</pre>
 			</div>
 		{/if}
 
@@ -65,22 +65,22 @@
 
 	{if $showSearchTools || ($loggedIn && count($userPermissions) > 0)}
 	<div class="search_tools well small">
-		<strong>{translate text='Search Tools'}:</strong>
+		<strong>{translate text='Search Tools'} </strong>
 		{if $showSearchTools}
 			<a href="{$rssLink|escape}">{translate text='Get RSS Feed'}</a>
-			<a href="#" onclick="return AspenDiscovery.Account.ajaxLightbox('/Search/AJAX?method=getEmailForm', true);">{translate text='Email this Search'}</a>
+			<a href="#" onclick="return AspenDiscovery.Account.ajaxLightbox('/Search/AJAX?method=getEmailForm', true);">{translate text='Email this Search' isPublicFacing=true}</a>
 			{if $savedSearch}
-				<a href="#" onclick="return AspenDiscovery.Account.saveSearch('{$searchId}')">{translate text='save_search_remove'}</a>
+				<a href="#" onclick="return AspenDiscovery.Account.saveSearch('{$searchId}')">{translate text="Remove Saved Search" isPublicFacing=true}</a>
 			{else}
-				<a href="#" onclick="return AspenDiscovery.Account.saveSearch('{$searchId}')">{translate text='save_search'}</a>
+				<a href="#" onclick="return AspenDiscovery.Account.saveSearch('{$searchId}')">{translate text='Save Search' isPublicFacing=true}</a>
 			{/if}
-			<a href="{$excelLink|escape}">{translate text='Export To Excel'}</a>
+			<a href="{$excelLink|escape}">{translate text='Export To Excel' isPublicFacing=true}</a>
 		{/if}
 		{if $loggedIn && (in_array('Administer All Collection Spotlights', $userPermissions) || in_array('Administer Library Collection Spotlights', $userPermissions))}
 			<a href="#" onclick="return AspenDiscovery.CollectionSpotlights.createSpotlightFromSearch('{$searchId}')">{translate text='Create Spotlight' isAdminFacing=true}</a>
 		{/if}
 		{if $loggedIn && (in_array('Administer All Browse Categories', $userPermissions) || in_array('Administer Library Browse Categories', $userPermissions))}
-			<a href="#" onclick="return AspenDiscovery.Browse.addToHomePage('{$searchId}')">{translate text='Add To Browse'}</a>
+			<a href="#" onclick="return AspenDiscovery.Browse.addToHomePage('{$searchId}')">{translate text='Add To Browse' isPublicFacing=true}</a>
 		{/if}
 	</div>
 	{/if}

@@ -13,19 +13,19 @@
 					</div>
 					<div class="row">
 						<div class="col-tn-6">
-							<div class="dashboardLabel">{translate text="This Month"}</div>
+							<div class="dashboardLabel">{translate text="This Month" isAdminFacing=true}</div>
 							<div class="dashboardValue">{$activeRecordsThisMonth.$websiteId.numRecordViewed}</div>
 						</div>
 						<div class="col-tn-6">
-							<div class="dashboardLabel">{translate text="Last Month"}</div>
+							<div class="dashboardLabel">{translate text="Last Month" isAdminFacing=true}</div>
 							<div class="dashboardValue">{$activeRecordsLastMonth.$websiteId.numRecordViewed}</div>
 						</div>
 						<div class="col-tn-6">
-							<div class="dashboardLabel">{translate text="This Year"}</div>
+							<div class="dashboardLabel">{translate text="This Year" isAdminFacing=true}</div>
 							<div class="dashboardValue">{$activeRecordsThisYear.$websiteId.numRecordViewed}</div>
 						</div>
 						<div class="col-tn-6">
-							<div class="dashboardLabel">{translate text="All Time"}</div>
+							<div class="dashboardLabel">{translate text="All Time" isAdminFacing=true}</div>
 							<div class="dashboardValue">{$activeRecordsAllTime.$websiteId.numRecordViewed}</div>
 						</div>
 					</div>
@@ -39,19 +39,19 @@
 					</div>
 					<div class="row">
 						<div class="col-tn-6">
-							<div class="dashboardLabel">{translate text="This Month"}</div>
+							<div class="dashboardLabel">{translate text="This Month" isAdminFacing=true}</div>
 							<div class="dashboardValue">{$activeRecordsThisMonth.$websiteId.numRecordsUsed}</div>
 						</div>
 						<div class="col-tn-6">
-							<div class="dashboardLabel">{translate text="Last Month"}</div>
+							<div class="dashboardLabel">{translate text="Last Month" isAdminFacing=true}</div>
 							<div class="dashboardValue">{$activeRecordsLastMonth.$websiteId.numRecordsUsed}</div>
 						</div>
 						<div class="col-tn-6">
-							<div class="dashboardLabel">{translate text="This Year"}</div>
+							<div class="dashboardLabel">{translate text="This Year" isAdminFacing=true}</div>
 							<div class="dashboardValue">{$activeRecordsThisYear.$websiteId.numRecordsUsed}</div>
 						</div>
 						<div class="col-tn-6">
-							<div class="dashboardLabel">{translate text="All Time"}</div>
+							<div class="dashboardLabel">{translate text="All Time" isAdminFacing=true}</div>
 							<div class="dashboardValue">{$activeRecordsAllTime.$websiteId.numRecordsUsed}</div>
 						</div>
 					</div>
@@ -65,19 +65,19 @@
 					</div>
 					<div class="row">
 						<div class="col-tn-6">
-							<div class="dashboardLabel">{translate text="This Month"}</div>
+							<div class="dashboardLabel">{translate text="This Month" isAdminFacing=true}</div>
 							<div class="dashboardValue">{$activeUsersThisMonth.$websiteId}</div>
 						</div>
 						<div class="col-tn-6">
-							<div class="dashboardLabel">{translate text="Last Month"}</div>
+							<div class="dashboardLabel">{translate text="Last Month" isAdminFacing=true}</div>
 							<div class="dashboardValue">{$activeUsersLastMonth.$websiteId}</div>
 						</div>
 						<div class="col-tn-6">
-							<div class="dashboardLabel">{translate text="This Year"}</div>
+							<div class="dashboardLabel">{translate text="This Year" isAdminFacing=true}</div>
 							<div class="dashboardValue">{$activeUsersThisYear.$websiteId}</div>
 						</div>
 						<div class="col-tn-6">
-							<div class="dashboardLabel">{translate text="All Time"}</div>
+							<div class="dashboardLabel">{translate text="All Time" isAdminFacing=true}</div>
 							<div class="dashboardValue">{$activeUsersAllTime.$websiteId}</div>
 						</div>
 					</div>

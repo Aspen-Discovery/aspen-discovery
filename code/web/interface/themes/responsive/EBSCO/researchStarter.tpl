@@ -2,7 +2,7 @@
 	<div class="researchStarter" id="researchStarter-{$id}">
 		<div class="label-top">
 			<div class="col-tn-10 col-md-11">
-				{translate text='RESEARCH STARTER'}
+				{translate text='RESEARCH STARTER' isPublicFacing=true}
 			</div>
 			<div class="col-tn-2 col-md-1 text-right">
 				<div class="btn btn-xs btn-warning researchStarter-dismiss" onclick="return AspenDiscovery.EBSCO.dismissResearchStarter('{$id}')">{translate text="X"}</div>
