@@ -60,17 +60,18 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 		}
 
 		// Load sort preferences (or defaults if none in .ini file):
-		if (isset($searchSettings['Sorting'])) {
-			$this->sortOptions = $searchSettings['Sorting'];
-		} else {
-			$this->sortOptions = array(
-				'relevance' => 'sort_relevance',
-				'popularity' => 'sort_popularity',
-				'year' => 'sort_year', 'year asc' => 'sort_year asc',
-				'callnumber' => 'sort_callnumber', 'author' => 'sort_author',
-				'title' => 'sort_title'
-			);
-		}
+		$this->sortOptions = array(
+			'relevance' => 'Best Match',
+			'year desc,title asc' => "Publication Year Desc",
+			'year asc,title asc' => "Publication Year Asc",
+			'author asc,title asc' => "Author",
+			'title' => 'Title',
+			'days_since_added asc' => "Date Purchased Desc",
+			'callnumber_sort' => 'sort_callnumber',
+			'popularity desc' => 'sort_popularity',
+			'rating desc' => 'sort_rating',
+			'total_holds desc' => "Number of Holds"
+		);
 
 		$this->indexEngine->debug = $this->debug;
 		$this->indexEngine->debugSolrQuery = $this->debugSolrQuery;

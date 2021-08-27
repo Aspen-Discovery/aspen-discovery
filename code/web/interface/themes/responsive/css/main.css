@@ -9520,10 +9520,6 @@ a.browse-thumbnail-sorted.active {
 .applied-filters .facetValue {
   padding-left: 0;
 }
-#results-sort {
-  width: 80%;
-  margin: 5px 10%;
-}
 .result-head {
   font-size: smaller;
   color: #3174AF;
@@ -9746,7 +9742,6 @@ a.browse-thumbnail-sorted.active {
   padding: 2px 5px;
   border-radius: 3px;
   border: 1px solid #ababab;
-  float: left;
   font-size: 12px;
 }
 .graph-bar {

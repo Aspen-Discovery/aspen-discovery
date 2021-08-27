@@ -48,9 +48,9 @@
 
 		{if $showSearchTools || ($loggedIn && count($userPermissions) > 0)}
 			<div class="search_tools well small">
-				<strong>{translate text='Search Tools'} </strong>
+				<strong>{translate text='Search Tools' isPublicFacing=true} </strong>
 				{if $showSearchTools}
-					<a href="{$rssLink|escape}">{translate text='Get RSS Feed'}</a>
+					<a href="{$rssLink|escape}">{translate text='Get RSS Feed' isPublicFacing=true}</a>
 					<a href="#" onclick="return AspenDiscovery.Account.ajaxLightbox('/Search/AJAX?method=getEmailForm', true);">{translate text='Email this Search' isPublicFacing=true}</a>
 					{if $savedSearch}
 						<a href="#" onclick="return AspenDiscovery.Account.saveSearch('{$searchId}')">{translate text="Remove Saved Search" isPublicFacing=true}</a>

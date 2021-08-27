@@ -1,0 +1,3 @@
+<component name="DependencyValidationManager">
+  <scope name=".less files" pattern="file[web]:interface/themes//*/*.less" />
+</component>

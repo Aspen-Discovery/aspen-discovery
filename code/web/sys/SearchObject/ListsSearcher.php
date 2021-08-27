@@ -43,13 +43,10 @@ class SearchObject_ListsSearcher extends SearchObject_SolrSearcher
 		}
 
 		// Load sort preferences (or defaults if none in .ini file):
-		if (isset($searchSettings['Sorting'])) {
-			$this->sortOptions = $searchSettings['Sorting'];
-		} else {
-			$this->sortOptions = array('relevance' => 'sort_relevance',
-				'year' => 'sort_year', 'year asc' => 'sort_year asc',
-				'title' => 'sort_title');
-		}
+		$this->sortOptions = array(
+			'relevance' => 'Best Match',
+			'title' => 'Title'
+		);
 
 		// Debugging
 		$this->indexEngine->debug = $this->debug;

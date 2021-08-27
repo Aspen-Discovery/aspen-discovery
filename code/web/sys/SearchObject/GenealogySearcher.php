@@ -52,13 +52,15 @@ class SearchObject_GenealogySearcher extends SearchObject_SolrSearcher
 		}
 
 		// Load sort preferences (or defaults if none in .ini file):
-		if (isset($searchSettings['Sorting'])) {
-			$this->sortOptions = $searchSettings['Sorting'];
-		} else {
-			$this->sortOptions = array('relevance' => 'sort_relevance',
-				'year' => 'sort_year', 'year asc' => 'sort_year asc',
-				'title' => 'sort_title');
-		}
+		$this->sortOptions = array(
+			'relevance' => 'Best Match',
+			'lastName' => 'Last Name',
+			'firstName' => 'First Name',
+			'deathYear desc' => 'Year of Death',
+			'deathYear asc' => "Year of Death Asc",
+			'birthYear desc' => 'Year of Birth',
+			'birthYear asc' => "Year of Birth Asc",
+		);
 
 		// Debugging
 		$this->indexEngine->debug = $this->debug;

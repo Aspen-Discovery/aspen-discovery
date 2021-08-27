@@ -1,34 +1,34 @@
 {strip}
-<h1>{translate text=calendar_heading defaultText="Events Calendar for %1%" 1=$calendarMonth}</h1>
+<h1>{translate text='Events Calendar' isPublicFacing=true}</h1>
 
 	<div class="calendar">
 		<div class="row calendar-nav">
-			<div class="calendar-nav-cell col-tn-2 col-sm-1"><a class="btn btn-default" href="{$prevLink}">&laquo; Prev</a></div>
+			<div class="calendar-nav-cell col-tn-2 col-sm-1 align"><a class="btn btn-default" href="{$prevLink}" style="position:absolute;left: 0;"><i class="fas fa-caret-left"></i> {translate text="Previous" isPublicFacing=true}</a></div>
 			<div class="calendar-nav-cell col-tn-8 col-sm-10 text-center calendar-current-month">{$calendarMonth}</div>
-			<div class="calendar-nav-cell col-tn-2 col-sm-1"><a class="btn btn-default" href="{$nextLink}">Next &raquo;</a></div>
+			<div class="calendar-nav-cell col-tn-2 col-sm-1"><a class="btn btn-default" href="{$nextLink}" style="position:absolute;right: 0">{translate text="Next" isPublicFacing=true} <i class="fas fa-caret-right"></i></a></div>
 		</div>
 
 		<div class="calendar-header">
 			<div class="calendar-header-cell">
-				{translate text=Sunday}
+				{translate text=Sunday isPublicFacing=true}
 			</div>
 			<div class="calendar-header-cell">
-	            {translate text=Monday}
+	            {translate text=Monday isPublicFacing=true}
 			</div>
 			<div class="calendar-header-cell">
-	            {translate text=Tuesday}
+	            {translate text=Tuesday isPublicFacing=true}
 			</div>
 			<div class="calendar-header-cell">
-	            {translate text=Wednesday}
+	            {translate text=Wednesday isPublicFacing=true}
 			</div>
 			<div class="calendar-header-cell">
-	            {translate text=Thursday}
+	            {translate text=Thursday isPublicFacing=true}
 			</div>
 			<div class="calendar-header-cell">
-	            {translate text=Friday}
+	            {translate text=Friday isPublicFacing=true}
 			</div>
 			<div class="calendar-header-cell">
-	            {translate text=Saturday}
+	            {translate text=Saturday isPublicFacing=true}
 			</div>
 		</div>
 		{foreach from=$weeks item=week}
@@ -49,7 +49,7 @@
 									</div>
 									{if $event.isCancelled}
 										<div class="label label-danger calendar-event-state">
-											{translate text="Cancelled"}
+											{translate text="Cancelled" isPublicFacing=true}
 										</div>
 									{/if}
 								</div>

@@ -3,7 +3,7 @@
 		<h1>{translate text="Website Indexing Log"}</h1>
 		<hr>
 
-		<h4>{translate text="Filter by"}</h4>
+		<h4>{translate text="Filter by" isAdminFacing=true}</h4>
 
         {include file='Admin/exportLogFilters.tpl'}
 		<div id="websiteExportLogContainer">

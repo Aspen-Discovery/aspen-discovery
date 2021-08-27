@@ -12,8 +12,8 @@
 
 		{if !empty($replacementTerm)}
 			<div id="replacement-search-info-block">
-				<div id="replacement-search-info"><span class="replacement-search-info-text">Showing Results for</span> {$replacementTerm}</div>
-				<div id="original-search-info"><span class="replacement-search-info-text">Search instead for </span><a href="{$oldSearchUrl}">{$oldTerm}</a></div>
+				<div id="replacement-search-info"><span class="replacement-search-info-text">{translate text="Showing Results for" isPublicFacing=true}</span> {$replacementTerm}</div>
+				<div id="original-search-info"><span class="replacement-search-info-text">{translate text="Search instead for" isPublicFacing=true} </span><a href="{$oldSearchUrl}">{$oldTerm}</a></div>
 			</div>
 		{/if}
 
@@ -53,9 +53,9 @@
 
 	{if $displayMode == 'covers'}
 		{if $recordEnd < $recordCount}
-			<a onclick="return AspenDiscovery.Searches.getMoreResults()" role="button" title="{translate text='Get More Results' inAttribute=true}">
+			<a onclick="return AspenDiscovery.Searches.getMoreResults()" role="button" title="{translate text='Get More Results' inAttribute=true isPublicFacing=true}">
 				<div class="row" id="more-browse-results">
-					<span class="glyphicon glyphicon-chevron-down" aria-hidden="true" aria-label="{translate text='Get More Results' inAttribute=true}"></span>
+					<span class="glyphicon glyphicon-chevron-down" aria-hidden="true" aria-label="{translate text='Get More Results' inAttribute=true isPublicFacing=true}"></span>
 				</div>
 			</a>
 		{/if}
@@ -70,9 +70,9 @@
 
 	{if $showSearchTools || ($loggedIn && count($userPermissions) > 0)}
 	<div class="search_tools well small">
-		<strong>{translate text='Search Tools'} </strong>
+		<strong>{translate text='Search Tools' isPublicFacing=true} </strong>
 		{if $showSearchTools}
-			<a href="{$rssLink|escape}">{translate text='Get RSS Feed'}</a>
+			<a href="{$rssLink|escape}">{translate text='Get RSS Feed' isPublicFacing=true}</a>
 			<a href="#" onclick="return AspenDiscovery.Account.ajaxLightbox('/Search/AJAX?method=getEmailForm', true);">{translate text='Email this Search' isPublicFacing=true}</a>
 			{if $savedSearch}
 				<a href="#" onclick="return AspenDiscovery.Account.saveSearch('{$searchId}')">{translate text="Remove Saved Search" isPublicFacing=true}</a>
