@@ -2,7 +2,8 @@
 <html lang="{$userLang->code}" class="embeddedCollectionSpotlight">
 {strip}
 	<head>
-		<title>{$collectionSpotlight->name}</title>
+		{assign var='spotlightName' value=$collectionSpotlight->name}
+		<title>{translate text=$spotlightName isPublicFacing=true isAdminEnteredData=true}</title>
 		<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 
 		{include file="cssAndJsIncludes.tpl" includeAutoLogoutCode=false}

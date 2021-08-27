@@ -2,20 +2,20 @@
 {if $showCollectionSpotlightTitle || $showViewMoreLink}
 	<div id="list-{$wrapperId}Header" class="titleScrollerHeader">
 		{if $showCollectionSpotlightTitle && !empty($scrollerTitle)}
-			<span class="listTitle resultInformationLabel">{if $scrollerTitle}{$scrollerTitle|escape:"html"}{/if}</span>
+			<span class="listTitle resultInformationLabel">{if $scrollerTitle}{translate text=$scrollerTitle isPublicFacing=true isAdminEnteredData=true}{/if}</span>
 		{/if}
 		{if $showViewMoreLink}
-			<div id="titleScrollerViewMore{$scrollerName}" class="titleScrollerViewMore"><a href="{$fullListLink}">View More</a></div>
+			<div id="titleScrollerViewMore{$scrollerName}" class="titleScrollerViewMore"><a href="{$fullListLink}">{translate text="View More" isPublicFacing=true}</a></div>
 		{/if}
 	</div>
 {/if}
 <div class="jcarousel-wrapper horizontalCarouselSpotlightWrapper">
 	<div class="jcarousel horizontalCarouselSpotlight {if $collectionSpotlight->coverSize == 'medium'}mediumScroller{/if}" id="collectionSpotlightCarousel{$list->id}">
-		<div class="loading">{translate text="Loading carousel items..."}</div>
+		<div class="loading">{translate text="Loading carousel items..." isPublicFacing=true }</div>
 	</div>
 
-	<a href="#" class="jcarousel-control-prev" aria-label="{translate text="Previous Item" inAttribute=true}"><i class="fas fa-caret-left"></i></a>
-	<a href="#" class="jcarousel-control-next" aria-label="{translate text="Next Item" inAttribute=true}"><i class="fas fa-caret-right"></i></a>
+	<a href="#" class="jcarousel-control-prev" aria-label="{translate text="Previous Item" isPublicFacing=true inAttribute=true}"><i class="fas fa-caret-left"></i></a>
+	<a href="#" class="jcarousel-control-next" aria-label="{translate text="Next Item" isPublicFacing=true inAttribute=true}"><i class="fas fa-caret-right"></i></a>
 </div>
 <script type="text/javascript">
 	$(document).ready(function(){ldelim}

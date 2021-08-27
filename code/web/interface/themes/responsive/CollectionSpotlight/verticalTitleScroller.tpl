@@ -4,23 +4,23 @@
 		{if $showCollectionSpotlightTitle || $showViewMoreLink}
 			<div id="list-{$wrapperId}Header" class="titleScrollerHeader">
 				{if $showCollectionSpotlightTitle && !empty($scrollerTitle)}
-					<span class="listTitle resultInformationLabel">{if $scrollerTitle}{$scrollerTitle|escape:"html"}{/if}</span>
+					<span class="listTitle resultInformationLabel">{if $scrollerTitle}{translate text=$scrollerTitle isPublicFacing=true isAdminEnteredData=true}{/if}</span>
 				{/if}
 				{if $showViewMoreLink}
-					<div id="titleScrollerViewMore{$scrollerName}" class="titleScrollerViewMore"><a href="{$fullListLink}">View More</a></div>
+					<div id="titleScrollerViewMore{$scrollerName}" class="titleScrollerViewMore"><a href="{$fullListLink}">{translate text="View More" isPublicFacing=true}</a></div>
 				{/if}
 			</div>
 		{/if}
 		<div id="titleScroller{$scrollerName}" class="titleScrollerBody">
-			<div class="scrollerButtonUp btn btn-primary" onclick="{$scrollerVariable}.scrollToLeft();" aria-label="Scroll Up"><i class="glyphicon glyphicon-chevron-up"></i></div>
+			<div class="scrollerButtonUp btn btn-primary" onclick="{$scrollerVariable}.scrollToLeft();" aria-label="{translate text="Scroll Up" inAttribute=true isPublicFacing=true}"><i class="glyphicon glyphicon-chevron-up"></i></div>
 			<div class="scrollerBodyContainer">
 				<div class="scrollerBody" style="display:none"></div>
 				<div class="scrollerLoadingContainer">
-					<img id="scrollerLoadingImage{$scrollerName}" class="scrollerLoading" src="{img filename="loading_large.gif"}" alt="Loading..." />
+					<img id="scrollerLoadingImage{$scrollerName}" class="scrollerLoading" src="{img filename="loading_large.gif"}" alt="{translate text="Loading..." isPublicFacing=true inAttribute=true}" />
 				</div>
 			</div>
 			<div class="clearer"></div>
-			<div class="scrollerButtonDown btn btn-primary" onclick="{$scrollerVariable}.scrollToRight();" aria-label="Scroll Down"><i class="glyphicon glyphicon-chevron-down"></i></div>
+			<div class="scrollerButtonDown btn btn-primary" onclick="{$scrollerVariable}.scrollToRight();" aria-label="{translate text="Scroll Down" inAttribute=true isPublicFacing=true}"><i class="glyphicon glyphicon-chevron-down"></i></div>
 		</div>
 	</div>
 </div>
