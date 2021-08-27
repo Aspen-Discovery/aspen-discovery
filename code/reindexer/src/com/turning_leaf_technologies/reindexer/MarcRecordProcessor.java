@@ -1062,7 +1062,7 @@ abstract class MarcRecordProcessor {
 
 		String title = MarcUtil.getFirstFieldVal(record, "245abnp");
 		if (title == null){
-			return null;
+			return "";
 		}
 		title = title.toLowerCase();
 
@@ -1072,7 +1072,7 @@ abstract class MarcRecordProcessor {
 		}
 
 		if (title.length() == 0) {
-			return null;
+			return "";
 		}
 
 		return title;

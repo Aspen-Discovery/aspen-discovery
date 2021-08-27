@@ -2,7 +2,7 @@
 {assign var=filterName value=$filterField.property}
 <div class="row" id="filter_{$filterField.property}">
 	<div class="col-xs-3">
-		<label>{$filterField.label|translate}</label>
+		<label>{translate text=$filterField.label isAdminFacing=true}</label>
 	</div>
 	{if !empty($appliedFilters.$filterName)}
 		{assign var=appliedFilter value=$appliedFilters.$filterName}
@@ -11,10 +11,11 @@
 	{/if}
 	{if $filterField.type == 'text' || $filterField.type == 'label'}
 		<div class="col-xs-3">
-			<select name="filterType[{$filterField.property}]" class="form-control form-control-sm filterType" aria-label="Type of filtering for {$filterField.label|escape:css}">
-				<option value="contains" {if !empty($appliedFilter) && $appliedFilter.filterType == 'contains'}selected="selected"{/if}>{translate text="Contains"}</option>
-				<option value="matches" {if !empty($appliedFilter) && $appliedFilter.filterType == 'matches'}selected="selected"{/if}>{translate text="Matches"}</option>
-				<option value="startsWith" {if !empty($appliedFilter) && $appliedFilter.filterType == 'startsWith'}selected="selected"{/if}>{translate text="Starts With"}</option>
+			{assign var=label value='Type of filtering for '+$filterField.label}
+			<select name="filterType[{$filterField.property}]" class="form-control form-control-sm filterType" aria-label="{translate text=$label inAttribute=true isAdminFacing=true}">
+				<option value="contains" {if !empty($appliedFilter) && $appliedFilter.filterType == 'contains'}selected="selected"{/if}>{translate text="Contains" isAdminFacing=true}</option>
+				<option value="matches" {if !empty($appliedFilter) && $appliedFilter.filterType == 'matches'}selected="selected"{/if}>{translate text="Matches" isAdminFacing=true}</option>
+				<option value="startsWith" {if !empty($appliedFilter) && $appliedFilter.filterType == 'startsWith'}selected="selected"{/if}>{translate text="Starts With" isAdminFacing=true}</option>
 			</select>
 		</div>
 		<div class="col-xs-5">

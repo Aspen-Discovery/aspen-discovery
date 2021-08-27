@@ -8,17 +8,17 @@
 					{assign var="active" value=$smarty.foreach.spotlightList.first}
 					{if $list->displayFor == 'all' || ($list->displayFor == 'loggedIn' && $loggedIn) || ($list->displayFor == 'notLoggedIn' && !$loggedIn)}
 					<li {if $active}class="active"{/if}>
-						<a id="spotlightTab{$list->id}" href="#list-{$list->name|regex_replace:'/\W/':''|escape:url}" role="tab" data-toggle="tab" data-index="{$smarty.foreach.spotlightList.index}" data-carouselid="{$list->id}">{$list->name}</a>
+						<a id="spotlightTab{$list->id}" href="#list-{$list->name|regex_replace:'/\W/':''|escape:url}" role="tab" data-toggle="tab" data-index="{$smarty.foreach.spotlightList.index}" data-carouselid="{$list->id}">{translate text=$list->name isPublicFacing=true isAdminEnteredData=true}</a>
 					</li>
 					{/if}
 				{/foreach}
 			</ul>
 		{else}
 			<div class="collectionSpotlightSelector">
-				<select class="availableLists" id="availableLists{$collectionSpotlight->id}" onchange="changeSelectedList();return false;" aria-label="Select a list to display">
+				<select class="availableLists" id="availableLists{$collectionSpotlight->id}" onchange="changeSelectedList();return false;" aria-label="{translate text="Select a list to display" isPublicFacing=true inAttribute=true}">
 					{foreach from=$collectionSpotlight->lists item=list}
 					{if $list->displayFor == 'all' || ($list->displayFor == 'loggedIn' && $loggedIn) || ($list->displayFor == 'notLoggedIn' && !$loggedIn)}
-					<option value="list-{$list->name|regex_replace:'/\W/':''|escape:url}">{$list->name}</option>
+					<option value="list-{$list->name|regex_replace:'/\W/':''|escape:url}">{translate text=$list->name isPublicFacing=true isAdminEnteredData=true inAttribute=true}</option>
 					{/if}
 					{/foreach}
 				</select>
@@ -39,11 +39,7 @@
 				{assign var="scrollerName" value="$listName"}
 				{assign var="wrapperId" value="$listName"}
 				{assign var="scrollerVariable" value="listScroller$listName"}
-				{if $list->links}
-					{assign var="Links" value=$list->links}
-				{else}
-					{assign var="fullListLink" value=$list->fullListLink()}
-				{/if}
+				{assign var="fullListLink" value=$list->fullListLink()}
 
 				{if count($collectionSpotlight->lists) == 1}
 					{assign var="scrollerTitle" value=$list->name}

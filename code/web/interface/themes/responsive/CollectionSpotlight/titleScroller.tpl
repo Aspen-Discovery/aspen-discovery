@@ -4,30 +4,24 @@
 		{if !empty($showCollectionSpotlightTitle) || !empty($showViewMoreLink) || !empty($Links)}
 			<div id="list-{$wrapperId}Header" class="titleScrollerHeader">
 				{if !empty($showCollectionSpotlightTitle)}
-					<span class="listTitle resultInformationLabel">{if $scrollerTitle}{$scrollerTitle|escape:"html"}{/if}</span>
+					<span class="listTitle resultInformationLabel">{if $scrollerTitle}{translate text=$scrollerTitle isPublicFacing=true isAdminEnteredData=true}{/if}</span>
 				{/if}
 
-				{if !empty($Links)}
-					{foreach from=$Links item=link}
-						<div class="linkTab">
-							<a href='{$link->link}'><span class="seriesLink">{$link->name}</span></a>
-						</div>
-					{/foreach}
-				{elseif !empty($showViewMoreLink) && strlen($fullListLink) > 0}
+				{if !empty($showViewMoreLink) && strlen($fullListLink) > 0}
 					<div class="linkTab" style="float:right">
-						<a href='{$fullListLink}'><span class="seriesLink">View More</span></a>
+						<a href='{$fullListLink}'><span class="seriesLink">{translate text="View More" isPublicFacing=true}</span></a>
 					</div>
 				{/if}
 
 			</div>
 		{/if}
 		<div id="titleScroller{$scrollerName}" class="titleScrollerBody">
-			<div class="leftScrollerButton enabled btn" onclick="{$scrollerVariable}.scrollToLeft();" aria-label="Scroll Left"><i class="glyphicon glyphicon-chevron-left"></i></div>
-			<div class="rightScrollerButton btn" onclick="{$scrollerVariable}.scrollToRight();" aria-label="Scroll Right"><i class="glyphicon glyphicon-chevron-right"></i></div>
+			<div class="leftScrollerButton enabled btn" onclick="{$scrollerVariable}.scrollToLeft();" aria-label="{translate text="Scroll Left" inAttribute=true isPublicFacing=true}"><i class="glyphicon glyphicon-chevron-left"></i></div>
+			<div class="rightScrollerButton btn" onclick="{$scrollerVariable}.scrollToRight();" aria-label="{translate text="Scroll Right" inAttribute=true isPublicFacing=true}"><i class="glyphicon glyphicon-chevron-right"></i></div>
 			<div class="scrollerBodyContainer">
 				<div class="scrollerBody" style="display:none"></div>
 				<div class="scrollerLoadingContainer">
-					<img id="scrollerLoadingImage{$scrollerName}" class="scrollerLoading" src="{img filename="loading_large.gif"}" alt="Loading..." />
+					<img id="scrollerLoadingImage{$scrollerName}" class="scrollerLoading" src="{img filename="loading_large.gif"}" alt="{translate text="Loading..." isPublicFacing=true inAttribute=true}" />
 				</div>
 			</div>
 			<div class="clearer"></div>

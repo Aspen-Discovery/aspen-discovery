@@ -47,7 +47,9 @@ class CollectionSpotlightList extends BaseBrowsable
 				'type' => 'enum',
 				'values' => array('all' => 'Everyone', 'loggedIn' => 'Only when a user is logged in', 'notLoggedIn' => 'Only when no one is logged in'),
 				'label' => 'Display For',
-				'description' => 'Who this list should be displayed for.'
+				'description' => 'Who this list should be displayed for.',
+				'translateValues'=>true,
+				'isAdminFacing' => true,
 			),
 			'source' => array(
 				'property' => 'source',
@@ -56,12 +58,14 @@ class CollectionSpotlightList extends BaseBrowsable
 				'label' => 'Source',
 				'description' => 'The source of the list.',
 				'required' => true,
-				'onchange' => "return AspenDiscovery.Admin.updateBrowseSearchForSource();"
+				'onchange' => "return AspenDiscovery.Admin.updateBrowseSearchForSource();",
+				'translateValues'=>true,
+				'isAdminFacing' => true,
 			),
 			'searchTerm' => array('property' => 'searchTerm', 'type' => 'text', 'label' => 'Search Term', 'description' => 'A default search term to apply to the category', 'default' => '', 'hideInLists' => true, 'maxLength' => 500),
 			'defaultFilter' => array('property' => 'defaultFilter', 'type' => 'textarea', 'label' => 'Default Filter(s)', 'description' => 'Filters to apply to the search by default.', 'hideInLists' => true, 'rows' => 3, 'cols' => 80),
-			'sourceListId' => array('property' => 'sourceListId', 'type' => 'enum', 'values' => $sourceLists, 'label' => 'Source List', 'description' => 'A public list to display titles from'),
-			'defaultSort' => array('property' => 'defaultSort', 'type' => 'enum', 'label' => 'Default Sort', 'values' => array('relevance' => 'Best Match', 'popularity' => 'Popularity', 'newest_to_oldest' => 'Date Added', 'author' => 'Author', 'title' => 'Title', 'user_rating' => 'Rating'), 'description' => 'The default sort for the search if none is specified', 'default' => 'relevance', 'hideInLists' => true),
+			'sourceListId' => array('property' => 'sourceListId', 'type' => 'enum', 'values' => $sourceLists, 'label' => 'Source List', 'description' => 'A public list to display titles from', 'translateValues'=>true, 'isAdminFacing' => true),
+			'defaultSort' => array('property' => 'defaultSort', 'type' => 'enum', 'label' => 'Default Sort', 'values' => array('relevance' => 'Best Match', 'popularity' => 'Popularity', 'newest_to_oldest' => 'Date Added', 'author' => 'Author', 'title' => 'Title', 'user_rating' => 'Rating'), 'description' => 'The default sort for the search if none is specified', 'default' => 'relevance', 'hideInLists' => true, 'translateValues'=>true, 'isAdminFacing' => true),
 		);
 	}
 

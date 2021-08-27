@@ -322,7 +322,7 @@ class Translator
 		return $this->translationModeActive;
 	}
 
-	private static $vowels = ['a', 'e', 'i', 'o', 'u', 'A', 'E', 'I', 'O', 'U'];
+	private static $vowels = ['a', 'e', 'i', 'o', 'u','y', 'A', 'E', 'I', 'O', 'U'];
 	private function getPigLatinTranslation(string $phrase)
 	{
 		$translation = '';

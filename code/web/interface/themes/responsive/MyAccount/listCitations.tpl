@@ -22,8 +22,8 @@
 	{translate text='This list does not have any titles to build citations for.'}
 {/if}
 <div class="alert alert-info">
-	<p>{translate text="Citation formats are based on standards as of August 2021.  Citations contain only title, author, edition, publisher, and year published."}</p>
-	<p>{translate text="Citations should be used as a guideline and should be double checked for accuracy."}</p>
-	<p>{translate text="For titles that are available in multiple formats you can view more detailed citations by viewing the record for the specific format."}</p>
+	<p>{translate text="Citation formats are based on standards as of August 2021.  Citations contain only title, author, edition, publisher, and year published." isPublicFacing=true}</p>
+	<p>{translate text="Citations should be used as a guideline and should be double checked for accuracy." isPublicFacing=true}</p>
+	<p>{translate text="For titles that are available in multiple formats you can view more detailed citations by viewing the record for the specific format." isPublicFacing=true}</p>
 </div>
 
