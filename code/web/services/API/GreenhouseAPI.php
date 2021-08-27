@@ -49,10 +49,10 @@ class GreenhouseAPI extends Action
 		$sites->find();
 		while($sites->fetch()) {
 			if(($sites->appAccess == 1) || ($sites->appAccess == 3)) {
-				$fetchLibraryUrl = $sites->baseUrl.'API/GreenhouseAPI?method=getGeolocation';
+				$fetchLibraryUrl = $sites->baseUrl.'API/GreenhouseAPI?method=getLibrary';
 				if($data = file_get_contents($fetchLibraryUrl)) {
 					$searchData = json_decode($data);
-					foreach ($searchData->geolocation as $findLibrary) {
+					foreach ($searchData->library as $findLibrary) {
 						if ($findLibrary->latitude) {
 							$libraryLatitude = $findLibrary->latitude;
 						} else {
@@ -67,12 +67,18 @@ class GreenhouseAPI extends Action
 
 						$libraryUnit = $findLibrary->unit;
 
+						$baseUrl = $findLibrary->baseUrl;
+						if($baseUrl == NULL) {
+							$baseUrl = $sites->baseUrl;
+						}
+
 						if ($userLatitude == 0 && $userLongitude == 0) {
 							$return['libraries'][] = [
 								'name' => $findLibrary->locationName,
-								'librarysystem' => $sites->name,
-								'baseUrl' => $sites->baseUrl,
+								'librarySystem' => $sites->name,
+								'baseUrl' => $baseUrl,
 								'accessLevel' => $sites->appAccess,
+								'solrScope' => $findLibrary->solrScope,
 							];
 						} else {
 							$theta = ($userLongitude - $libraryLongitude);
@@ -88,10 +94,11 @@ class GreenhouseAPI extends Action
 							if ($distance <= 60) {
 								$return['libraries'][] = [
 									'name' => $findLibrary->locationName,
-									'librarysystem' => $sites->name,
-									'baseUrl' => $sites->baseUrl,
+									'librarySystem' => $sites->name,
+									'baseUrl' => $baseUrl,
 									'accessLevel' => $sites->appAccess,
 									'distance' => $distance,
+									'solrScope' => $findLibrary->solrScope,
 								];
 							}
 						}
@@ -103,16 +110,24 @@ class GreenhouseAPI extends Action
 		return $return;
 	}
 
-	public function getGeolocation() : array {
+	public function getLibrary() : array {
 		$return = [
 			'success' => true,
-			'geolocation' => [],
+			'library' => [],
 		];
 		require_once ROOT_DIR . '/sys/LibraryLocation/Location.php';
-		$libraryLocation = new Location();
-		$libraryLocation->find();
-		while($libraryLocation->fetch()) {
-			$rawAddress = $libraryLocation->address;
+		$location = new Location();
+		$location->find();
+		while($location->fetch()) {
+			$libraryId = $location->libraryId;
+			$library = new Library();
+			$library->libraryId = $libraryId;
+			if($library->find(true)){
+				$baseUrl = $library->baseUrl;
+				$searchSource = $library->subdomain;
+			}
+
+			$rawAddress = $location->address;
 			if($rawAddress != NULL) {
 				$fullAddress = str_replace("\r\n", ",", $rawAddress);
 				$address = explode(',', $fullAddress)[0];
@@ -136,13 +151,50 @@ class GreenhouseAPI extends Action
 					$unit = 'Mi';
 				}
 
-				$return['geolocation'][] = [
-					'latitude' => $libraryLatitude,
-					'longitude' => $libraryLongitude,
-					'unit' => $unit,
-					'locationName' => $libraryLocation->displayName,
-				];
+			} else {
+				$libraryLatitude = 0;
+				$libraryLongitude = 0;
+				$libraryCountry = 'US';
+				$unit = 'Mi';
 			}
+
+			global $solrScope;
+			global $scopeType;
+			global $isGlobalScope;
+			$solrScope = false;
+			$scopeType = '';
+			$isGlobalScope = false;
+
+			$searchLibrary = Library::getSearchLibrary($searchSource);
+			$searchLocation = Location::getSearchLocation($searchSource);
+			if ($searchLibrary){
+				$solrScope = $searchLibrary->subdomain;
+				$scopeType = 'Library';
+				if (!$searchLibrary->restrictOwningBranchesAndSystems){
+					$isGlobalScope = true;
+				}
+			}
+			if ($searchLocation && $searchLibrary->getNumSearchLocationsForLibrary() > 1){
+				if ($searchLibrary && strtolower($searchLocation->code) == $solrScope){
+					$solrScope .= 'loc';
+				}else{
+					$solrScope = strtolower($searchLocation->code);
+				}
+				if (!empty($searchLocation->subLocation)){
+					$solrScope = strtolower($searchLocation->subLocation);
+				}
+				$scopeType = 'Location';
+			}
+
+			$return['library'][] = [
+				'latitude' => $libraryLatitude,
+				'longitude' => $libraryLongitude,
+				'unit' => $unit,
+				'locationName' => $location->displayName,
+				'solrScope' => $solrScope,
+				'baseUrl' => $baseUrl,
+			];
+
 
 		}
 
