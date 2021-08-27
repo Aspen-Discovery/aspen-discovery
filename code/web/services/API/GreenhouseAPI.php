@@ -69,7 +69,8 @@ class GreenhouseAPI extends Action
 
 						if ($userLatitude == 0 && $userLongitude == 0) {
 							$return['libraries'][] = [
-								'name' => $sites->name,
+								'name' => $findLibrary->locationName,
+								'librarysystem' => $sites->name,
 								'baseUrl' => $sites->baseUrl,
 								'accessLevel' => $sites->appAccess,
 							];
@@ -86,7 +87,7 @@ class GreenhouseAPI extends Action
 							$distance = round($distance, 2);
 							if ($distance <= 60) {
 								$return['libraries'][] = [
-									'name' => $sites->name,
+									'name' => $findLibrary->locationName,
 									'baseUrl' => $sites->baseUrl,
 									'accessLevel' => $sites->appAccess,
 									'distance' => $distance,
@@ -138,6 +139,7 @@ class GreenhouseAPI extends Action
 					'latitude' => $libraryLatitude,
 					'longitude' => $libraryLongitude,
 					'unit' => $unit,
+					'locationName' => $libraryLocation->displayName,
 				];
 			}
 
