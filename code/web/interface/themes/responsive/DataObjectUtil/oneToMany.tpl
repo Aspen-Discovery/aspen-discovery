@@ -42,7 +42,7 @@
 								{else}
 									<select name='{$propName}_{$subPropName}[{$subObject->id}]' id='{$propName}{$subPropName}_{$subObject->id}' class='form-control {if $subProperty.required == true} required{/if}' {if !empty($subProperty.onchange)}onchange="{$subProperty.onchange}"{/if}>
 										{foreach from=$subProperty.values item=propertyName key=propertyValue}
-											<option value='{$propertyValue}' {if $subPropValue == $propertyValue}selected='selected'{/if}>{$propertyName}</option>
+											<option value='{$propertyValue}' {if $subPropValue == $propertyValue}selected='selected'{/if}>{if !empty($subProperty.translateValues)}{translate text=$propertyName inAttribute=true isPublicFacing=$subProperty.isPublicFacing isAdminFacing=$subProperty.isAdminFacing }{else}{$propertyName}{/if}</option>
 										{/foreach}
 									</select>
 								{/if}
