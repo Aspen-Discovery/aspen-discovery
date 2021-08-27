@@ -60,7 +60,7 @@
 				{if $arData.interestLevel}
 					{$arData.interestLevel|escape}<br/>
 				{/if}
-				Level {$arData.readingLevel|escape}, {$arData.pointValue|escape} Points
+				{translate text="Level %1%, %2% Points" 1=$arData.readingLevel|escape 2=$arData.pointValue|escape isPublicFacing=true}
 			</div>
 		</div>
 	{/if}

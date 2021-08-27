@@ -420,14 +420,21 @@ class Axis360RecordDriver extends GroupedWorkSubDriver
 	function loadSubjects()
 	{
 		$subjects = [];
-		if (!empty($this->axis360RawMetadata->subjects)) {
-			$subjects = explode('# ', $this->axis360RawMetadata->subjects);
-			foreach ($subjects as $key => $subject){
-				$subjects[$key] = str_replace('/', ' -- ', $subject);
-			}
+		$rawSubjects = $this->getMetadataFieldArray('subject');
+		foreach ($rawSubjects as $key => $subject){
+			$subjects[$key] = str_replace('/', ' -- ', $subject);
 		}
 		global $interface;
 		$interface->assign('subjects', $subjects);
+	}
+
+	function getMetadataFieldArray($fieldName){
+		foreach ($this->axis360RawMetadata->fields as $fieldInfo){
+			if ($fieldInfo->name == $fieldName){
+				return $fieldInfo->values;
+			}
+		}
+		return [];
 	}
 
 	/**

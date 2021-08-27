@@ -260,9 +260,9 @@ class AJAX extends Action {
 	function getEmailForm(){
 		global $interface;
 		return array(
-			'title' => 'Email Search',
+			'title' => translate(['text' => 'Email Search', 'isPublicFacing' => true]),
 			'modalBody' => $interface->fetch('Search/email.tpl'),
-			'modalButtons' => "<span class='tool btn btn-primary' onclick='$(\"#emailSearchForm\").submit();'>Send Email</span>"
+			'modalButtons' => "<span class='tool btn btn-primary' onclick='$(\"#emailSearchForm\").submit();'>". translate(['text' => "Send Email", 'isPublicFacing' => true]) . "</span>"
 		);
 	}
 

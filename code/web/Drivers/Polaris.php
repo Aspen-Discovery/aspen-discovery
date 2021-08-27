@@ -994,17 +994,17 @@ class Polaris extends AbstractIlsDriver
 				$patron->forceReloadOfHolds();
 				return array(
 					'success' => true,
-					'message' => translate(['text'=>'ils_change_pickup_location_success', 'The pickup location of your hold was changed successfully.'])
+					'message' => translate(['text'=>'The pickup location of your hold was changed successfully.', 'isPublicFacing'=>true])
 				);
 			}else{
-				$message = translate(['text'=>'ils_change_pickup_location_failed', 'Sorry, the pickup location of your hold could not be changed.']) . " {$jsonResponse->ErrorMessage}";;
+				$message = translate(['text'=>'Sorry, the pickup location of your hold could not be changed.', 'isPublicFacing'=>true]) . " {$jsonResponse->ErrorMessage}";;
 				return array(
 					'success' => false,
 					'message' => $message
 				);
 			}
 		}else{
-			$message = translate(['text'=>'ils_change_pickup_location_failed', 'Sorry, the pickup location of your hold could not be changed.']);
+			$message = translate(['text'=>'Sorry, the pickup location of your hold could not be changed.', 'isPublicFacing'=>true]);
 			if (IPAddress::showDebuggingInformation()){
 				$message .= " (HTTP Code: {$this->lastResponseCode})";
 			}
@@ -1359,19 +1359,19 @@ class Polaris extends AbstractIlsDriver
 			} else {
 				if ($jsonResult->StatusType == 1) {
 					$hold_result['success'] = false;
-					$hold_result['message'] = translate('Your hold could not be placed. ' . $jsonResult->Message);
+					$hold_result['message'] = translate(['text'=>'Your hold could not be placed. ' . $jsonResult->Message, 'isPublicFacing'=>true]);
 				} else if ($jsonResult->StatusType == 2) {
 					$hold_result['success'] = true;
-					$hold_result['message'] = translate(['text' => "ils_hold_success", 'defaultText' => "Your hold was placed successfully."]);
+					$hold_result['message'] = translate(['text' => "Your hold was placed successfully.", 'isPublicFacing'=>true]);
 					if (isset($jsonResult->QueuePosition)) {
-						$hold_result['message'] .= translate(['text' => "ils_hold_success_position", 'defaultText' => "&nbsp;You are number <b>%1%</b> in the queue.", '1' => $jsonResult->QueuePosition]);
+						$hold_result['message'] .= '&nbsp;' . translate(['text' => "You are number <b>%1%</b> in the queue.", '1' => $jsonResult->QueuePosition, 'isPublicFacing'=>true]);
 					}
 					$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
 					$patron->forceReloadOfHolds();
 				} else if ($jsonResult->StatusType == 3) {
 					$hold_result['success'] = false;
 					$hold_result['confirmationNeeded'] = true;
-					$hold_result['title'] = translate("Place Hold?");
+					$hold_result['title'] = translate(['text'=>"Place Hold?", 'isPublicFacing'=>true]);
 					require_once ROOT_DIR . '/sys/ILS/HoldRequestConfirmation.php';
 					$holdRequestConfirmation = new HoldRequestConfirmation();
 					$holdRequestConfirmation->userId = $patron->id;
@@ -1385,12 +1385,12 @@ class Polaris extends AbstractIlsDriver
 					$holdRequestConfirmation->insert();
 					$hold_result['confirmationId'] = $holdRequestConfirmation->id;
 
-					$hold_result['message'] = translate($jsonResult->Message);
+					$hold_result['message'] = translate(['text'=>$jsonResult->Message, 'isPublicFacing'=>true]);
 				}
 			}
 		} else {
 			$hold_result['success'] = false;
-			$hold_result['message'] = 'Your hold could not be placed. ';
+			$hold_result['message'] =  translate(['text'=>'Your hold could not be placed. ', 'isPublicFacing'=>true]);
 			if (IPAddress::showDebuggingInformation()) {
 				$hold_result['message'] .= " (HTTP Code: {$this->lastResponseCode})";
 			}

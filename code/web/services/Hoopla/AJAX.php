@@ -191,7 +191,7 @@ class Hoopla_AJAX extends Action
 		$interface->assign('id', $id);
 
 		return array(
-			'title' => 'Cover Image',
+			'title' => translate(['text'=>'Cover Image', 'isPublicFacing'=>true]),
 			'modalBody' => $interface->fetch("Hoopla/largeCover.tpl"),
 			'modalButtons' => ""
 		);

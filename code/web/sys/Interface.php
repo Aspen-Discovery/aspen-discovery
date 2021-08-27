@@ -265,12 +265,12 @@ class UInterface extends Smarty
 		return $this->getVariable('pageTemplate');
 	}
 
-	function setPageTitle($title, $translateTitle = true, $isPatronFacing = false, $isAdminFacing = false)
+	function setPageTitle($title, $translateTitle = true, $isPublicFacing = false, $isAdminFacing = false)
 	{
 		//Marmot override, add the name of the site to the title unless we are using the mobile interface.
 		if ($translateTitle){
-			$translatedTitle = translate(['text'=>$title, 'inAttribute'=>false, 'isPatronFacing' => $isPatronFacing, 'isAdminFacing' => $isAdminFacing]);
-			$translatedTitleAttribute = translate(['text'=>$title, 'inAttribute'=>true, 'isPatronFacing' => $isPatronFacing, 'isAdminFacing' => $isAdminFacing]);
+			$translatedTitle = translate(['text'=>$title, 'inAttribute'=>false, 'isPublicFacing' => $isPublicFacing, 'isAdminFacing' => $isAdminFacing]);
+			$translatedTitleAttribute = translate(['text'=>$title, 'inAttribute'=>true, 'isPublicFacing' => $isPublicFacing, 'isAdminFacing' => $isAdminFacing]);
 		}else{
 			$translatedTitle = $title;
 			$translatedTitleAttribute = $title;

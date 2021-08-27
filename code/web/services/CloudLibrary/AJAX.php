@@ -284,7 +284,7 @@ class CloudLibrary_AJAX extends JSON_Action
 		$interface->assign('id', $id);
 
 		return array(
-			'title' => 'Cover Image',
+			'title' => translate(['text'=>'Cover Image', 'isPublicFacing'=>true]),
 			'modalBody' => $interface->fetch("CloudLibrary/largeCover.tpl"),
 			'modalButtons' => ""
 		);

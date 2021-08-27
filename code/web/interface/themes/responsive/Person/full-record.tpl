@@ -40,7 +40,7 @@
 					{if $person->picture}
 						<a target='_blank' href='/files/original/{$person->picture|escape}' aria-hidden="true"><img src="/files/medium/{$person->picture|escape}" class="alignleft listResultImage" alt="{translate text='Picture' inAttribute=true}"></a><br>
 					{else}
-						<img src="/interface/themes/responsive/images/person.png" class="alignleft listResultImage" alt="{translate text='No Cover Image' inAttribute=true}" aria-hidden="true"><br>
+						<img src="/interface/themes/responsive/images/person.png" class="alignleft listResultImage" alt="{translate text='No Cover Image' inAttribute=true isPublicFacing=true}" aria-hidden="true"><br>
 					{/if}
 				</div>
 			{/if}

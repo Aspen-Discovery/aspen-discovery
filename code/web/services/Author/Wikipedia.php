@@ -17,6 +17,9 @@ class Author_Wikipedia {
 	 */
 	public function getWikipedia($author, $lang = 'en')
 	{
+		if ($lang == 'ub' || $lang == 'pi'){
+			$lang = 'en';
+		}
 		$wikipediaParser = new WikipediaParser($lang);
 
 		$author = trim(str_replace('"','',$author));
