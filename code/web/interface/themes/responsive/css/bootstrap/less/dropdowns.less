@@ -135,7 +135,8 @@
     opacity: 1 !important;
     visibility: visible !important;
     max-height: 600px !important;
-    overflow: scroll !important; // allow scrolling for lists with content longer than 600px
+    overflow: auto;
+    overflow-y: scroll; // allow scrolling for lists with content longer than 600px
   }
 
   // Remove the outline when :focus is triggered
