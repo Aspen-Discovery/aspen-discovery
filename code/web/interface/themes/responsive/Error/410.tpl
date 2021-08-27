@@ -1,5 +1,5 @@
 {strip}
-	<h1>{translate text="No longer available"}</h1>
+	<h1>{translate text="No longer available" isPublicFacing=true}</h1>
 	<p><strong>{$message|translate}</strong></p>
 
 {/strip}
