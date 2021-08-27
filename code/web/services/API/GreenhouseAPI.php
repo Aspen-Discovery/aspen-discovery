@@ -50,51 +50,50 @@ class GreenhouseAPI extends Action
 		while($sites->fetch()) {
 			if(($sites->appAccess == 1) || ($sites->appAccess == 3)) {
 				$fetchLibraryUrl = $sites->baseUrl.'API/GreenhouseAPI?method=getGeolocation';
-				$data = file_get_contents($fetchLibraryUrl);
-				$searchData = json_decode($data);
-				foreach($searchData->geolocation as $findLibrary) {
-					if($findLibrary->latitude) {
-						$libraryLatitude = $findLibrary->latitude;
-					} else {
-						$libraryLatitude = 0;
-					}
-
-					if($findLibrary->longitude) {
-						$libraryLongitude = $findLibrary->longitude;
-					} else {
-						$libraryLongitude = 0;
-					}
-
-					$libraryUnit = $findLibrary->unit;
-
-					if ($userLatitude == 0 && $userLongitude == 0) {
-						$return['libraries'][] = [
-							'name' => $sites->name,
-							'baseUrl' => $sites->baseUrl,
-							'accessLevel' => $sites->appAccess,
-						];
-					}
-					else {
-						$theta = ($userLongitude - $libraryLongitude);
-						$distance = sin(deg2rad($userLatitude)) * sin(deg2rad($libraryLatitude)) + cos(deg2rad($userLatitude)) * cos(deg2rad($libraryLatitude)) * cos(deg2rad($theta));
-
-						$distance = acos($distance);
-						$distance = rad2deg($distance);
-						$distance = $distance * 60 * 1.1515;
-						if($libraryUnit == "Km") {
-							$distance = $distance * 1.609344;
+				if($data = file_get_contents($fetchLibraryUrl)) {
+					$searchData = json_decode($data);
+					foreach ($searchData->geolocation as $findLibrary) {
+						if ($findLibrary->latitude) {
+							$libraryLatitude = $findLibrary->latitude;
+						} else {
+							$libraryLatitude = 0;
 						}
-						$distance = round($distance,2);
-						if ($distance <= 60) {
+
+						if ($findLibrary->longitude) {
+							$libraryLongitude = $findLibrary->longitude;
+						} else {
+							$libraryLongitude = 0;
+						}
+
+						$libraryUnit = $findLibrary->unit;
+
+						if ($userLatitude == 0 && $userLongitude == 0) {
 							$return['libraries'][] = [
 								'name' => $sites->name,
 								'baseUrl' => $sites->baseUrl,
 								'accessLevel' => $sites->appAccess,
-								'distance' => $distance,
 							];
+						} else {
+							$theta = ($userLongitude - $libraryLongitude);
+							$distance = sin(deg2rad($userLatitude)) * sin(deg2rad($libraryLatitude)) + cos(deg2rad($userLatitude)) * cos(deg2rad($libraryLatitude)) * cos(deg2rad($theta));
+
+							$distance = acos($distance);
+							$distance = rad2deg($distance);
+							$distance = $distance * 60 * 1.1515;
+							if ($libraryUnit == "Km") {
+								$distance = $distance * 1.609344;
+							}
+							$distance = round($distance, 2);
+							if ($distance <= 60) {
+								$return['libraries'][] = [
+									'name' => $sites->name,
+									'baseUrl' => $sites->baseUrl,
+									'accessLevel' => $sites->appAccess,
+									'distance' => $distance,
+								];
+							}
 						}
 					}
-
 				}
 			}
 		}
