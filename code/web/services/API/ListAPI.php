@@ -718,7 +718,7 @@ class ListAPI extends Action
 	 * @return array
 	 * @throws Exception
 	 */
-	public function createUserListFromNYT($selectedList = null, $nytUpdateLog): array
+	public function createUserListFromNYT($selectedList = null, $nytUpdateLog = null): array
 	{
 		if ($selectedList == null) {
 			$selectedList = $_REQUEST['listToUpdate'];
@@ -727,7 +727,9 @@ class ListAPI extends Action
 		require_once ROOT_DIR . '/sys/Enrichment/NewYorkTimesSetting.php';
 		$nytSettings = new NewYorkTimesSetting();
 		if (!$nytSettings->find(true)) {
-			$nytUpdateLog->addError("API Key missing");
+			if ($nytUpdateLog != null) {
+				$nytUpdateLog->addError("API Key missing");
+			}
 			return array(
 				'success' => false,
 				'message' => 'API Key missing'
@@ -739,7 +741,9 @@ class ListAPI extends Action
 		$nytListUser = new User();
 		$nytListUser->username = 'nyt_user';
 		if (!$nytListUser->find(true)) {
-			$nytUpdateLog->addError("NY Times user has not been created");
+			if ($nytUpdateLog != null) {
+				$nytUpdateLog->addError("NY Times user has not been created");
+			}
 			return array(
 				'success' => false,
 				'message' => 'NY Times user has not been created'
@@ -766,7 +770,9 @@ class ListAPI extends Action
 			}
 		}
 		if (empty($selectedListTitleShort)) {
-			$nytUpdateLog->addError("We did not find list '{$selectedList}' in The New York Times API");
+			if ($nytUpdateLog != null) {
+				$nytUpdateLog->addError("We did not find list '{$selectedList}' in The New York Times API");
+			}
 			return array(
 				'success' => false,
 				'message' => "We did not find list '{$selectedList}' in The New York Times API"
@@ -790,13 +796,19 @@ class ListAPI extends Action
 						if ($retry){
 							sleep(60);
 						}else{
-							$nytUpdateLog->addError("Did not get a good response from the API. {$listTitles->fault->faultstring}");
+							if ($nytUpdateLog != null) {
+								$nytUpdateLog->addError("Did not get a good response from the API. {$listTitles->fault->faultstring}");
+							}
 						}
 					} else {
-						$nytUpdateLog->addError("Did not get a good response from the API. {$listTitles->fault->faultstring}");
+						if ($nytUpdateLog != null) {
+							$nytUpdateLog->addError("Did not get a good response from the API. {$listTitles->fault->faultstring}");
+						}
 					}
 				} else {
-					$nytUpdateLog->addError("Did not get a good response from the API");
+					if ($nytUpdateLog != null) {
+						$nytUpdateLog->addError("Did not get a good response from the API");
+					}
 				}
 			}
 		}
@@ -836,7 +848,9 @@ class ListAPI extends Action
 				$listID = $nytList->id;
 				global $logger;
 				$logger->log('Created list: ' . $selectedListTitle, Logger::LOG_NOTICE);
-				$nytUpdateLog->numAdded++;
+				if ($nytUpdateLog != null) {
+					$nytUpdateLog->numAdded++;
+				}
 				$results = array(
 					'success' => true,
 					'message' => "Created list <a href='/MyAccount/MyList/{$listID}'>{$selectedListTitle}</a>"
@@ -845,7 +859,9 @@ class ListAPI extends Action
 				//Update log that this failed
                 global $logger;
                 $logger->log('Could not create list: ' . $selectedListTitle, Logger::LOG_ERROR);
-				$nytUpdateLog->addError('Could not create list: ' . $selectedListTitle);
+				if ($nytUpdateLog != null) {
+					$nytUpdateLog->addError('Could not create list: ' . $selectedListTitle);
+				}
 				return array(
 					'success' => false,
 					'message' => 'Could not create list'
@@ -855,14 +871,18 @@ class ListAPI extends Action
 		} else {
 			$listID = $nytList->id;
 			if ($nytList->nytListModified == $lastModifiedDay){
-				$nytUpdateLog->numSkipped++;
+				if ($nytUpdateLog != null) {
+					$nytUpdateLog->numSkipped++;
+				}
 				//Nothing has changed, no need to update
 				return array(
 					'success' => true,
 					'message' => "List <a href='/MyAccount/MyList/{$listID}'>{$selectedListTitle}</a> has not changed since it was last loaded."
 				);
 			}
-			$nytUpdateLog->numUpdated++;
+			if ($nytUpdateLog != null) {
+				$nytUpdateLog->numUpdated++;
+			}
 			$nytList->description = "New York Times - $selectedListTitleShort<br/>{$listTitles->copyright}";
 			$nytList->nytListModified = $lastModifiedDay;
 			$nytList->update();

@@ -24,8 +24,14 @@ class Enrichment_NYTLists extends Admin_Admin
 
 			//Get the raw response from the API with a list of all the names
 			$availableListsRaw = $nyt_api->get_list('names');
+
 			//Convert into an object that can be processed
 			$availableLists = json_decode($availableListsRaw);
+			$availableListsCompareFunction = function ($subjectArray0, $subjectArray1) {
+				return strcasecmp($subjectArray0->display_name, $subjectArray1->display_name);
+			};
+			$availableLists = $availableLists->results;
+			usort($availableLists, $availableListsCompareFunction);
 
 			$interface->assign('availableLists', $availableLists);
 
@@ -40,7 +46,7 @@ class Enrichment_NYTLists extends Admin_Admin
 					require_once ROOT_DIR . '/services/API/ListAPI.php';
 					$listApi = new ListAPI();
 					try{
-						$results = $listApi->createUserListFromNYT($selectedList, $nytUpdateLog);
+						$results = $listApi->createUserListFromNYT($selectedList, null);
 						if ($results['success'] == false) {
 							$interface->assign('error', $results['message']);
 						} else {
