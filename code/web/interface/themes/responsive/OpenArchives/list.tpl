@@ -32,7 +32,7 @@
 		{/if}
 
 		{if !empty($debugTiming)}
-			<div id='solrTimingToggle' onclick='$("#solrTiming").toggle()'>{translate text="Show Solr Timing"}</div>
+			<div id='solrTimingToggle' onclick='$("#solrTiming").toggle()'>{translate text="Show Solr Timing" isPublicFacing=true}</div>
 			<div id='solrTiming' style='display:none'>
 				<pre>{$debugTiming}</pre>
 			</div>

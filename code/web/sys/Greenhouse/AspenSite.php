@@ -65,7 +65,7 @@ class AspenSite extends DataObject
 	}
 
 	public function getCurrentVersion() {
-		$version = 'Unknown';
+		$version = translate(['text'=>'Unknown','isAdminFacing'=>true]);
 		if (!empty($this->baseUrl)){
 			$versionUrl = $this->baseUrl . '/API/SystemAPI?method=getCurrentVersion';
 			try {

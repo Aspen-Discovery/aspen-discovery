@@ -7,7 +7,14 @@
 {/if}
 
 <h1>{translate text="No Results Found" isPublicFacing=true}</h1>
-<p class="alert alert-info">{translate text='nohit_prefix'} - <b>{$lookfor|escape:"html"}</b> - {translate text='nohit_suffix'}</p>
+
+<p class="alert alert-info">
+    {if (empty($lookfor))}
+        {translate text="Your search - <b>&lt;empty&gt;</b> - did not match any resources." isPublicFacing=true}
+    {else}
+        {translate text="Your search - <b>%1%</b> - did not match any resources." 1=$lookfor|escape:html isPublicFacing=true}
+    {/if}
+</p>
 
 {if !empty($solrSearchDebug)}
     <div id="solrSearchOptionsToggle" onclick="$('#solrSearchOptions').toggle()">{translate text="Show Search Options" isPublicFacing=true}</div>
@@ -34,6 +41,6 @@
 {include file="Search/searchSuggestions.tpl"}
 
 {if $userIsAdmin}
-    <a href='/Admin/People?objectAction=addNew' class='btn btn-sm btn-info'>Add someone new</a>
+    <a href='/Admin/People?objectAction=addNew' class='btn btn-sm btn-info'>{translate text="Add someone new" isPublicFacing=true}</a>
 {/if}
 {/strip}

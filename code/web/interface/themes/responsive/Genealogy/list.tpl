@@ -24,19 +24,13 @@
 			{/if}
 
 			{if !empty($debugTiming)}
-				<div id='solrTimingToggle' onclick='$("#solrTiming").toggle()'>{translate text="Show Solr Timing"}</div>
+				<div id='solrTimingToggle' onclick='$("#solrTiming").toggle()'>{translate text="Show Solr Timing" isPublicFacing=true}</div>
 				<div id='solrTiming' style='display:none'>
 					<pre>{$debugTiming}</pre>
 				</div>
 			{/if}
 
-			{if $spellingSuggestions}
-				<br /><br /><div class="correction"><strong>{translate text='spell_suggest'}</strong>:<br/>
-				{foreach from=$spellingSuggestions item=details key=term name=termLoop}
-					{$term|escape} &raquo; {foreach from=$details.suggestions item=data key=word name=suggestLoop}<a href="{$data.replace_url|escape}">{$data.phrase|escape}</a>{if $data.expand_url} <a href="{$data.expand_url|escape}"><img src="/images/silk/expand.png" alt="{translate text='spell_expand_alt'}"/></a> {/if}{if !$smarty.foreach.suggestLoop.last}, {/if}{/foreach}{if !$smarty.foreach.termLoop.last}<br/>{/if}
-				{/foreach}
-				</div>
-			{/if}
+            {include file="Search/spellingSuggestions.tpl"}
 		</div>
 	</div>
 	{* End Listing Options *}
