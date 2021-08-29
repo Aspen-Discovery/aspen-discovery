@@ -1,15 +1,15 @@
 <table class="table table-striped">
 	<th>
-		Title
+		{translate text="Title" isPublicFacing=true}
 	</th>
 	<th>
-		Author
+		{translate text="Author" isPublicFacing=true}
 	</th>
 	<th>
-		Pub. Date
+		{translate text="Pub. Date" isPublicFacing=true}
 	</th>
 	<th>
-		Format
+		{translate text="Format" isPublicFacing=true}
 	</th>
   {foreach from=$prospectorResults item=prospectorTitle}
 	  {if $similar.recordId != -1}

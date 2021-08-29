@@ -124,7 +124,7 @@ class CloudLibraryDriver extends AbstractEContentDriver
 	 */
 	public function returnCheckout($patron, $recordId)
 	{
-		$result = ['success' => false, 'message' => 'Unknown error'];
+		$result = ['success' => false, 'message' => translate(['text'=>'Unknown Error', 'isPublicFacing'=>true])];
 		$settings = $this->getSettings($patron);
 		$patronId = str_replace(' ', '', $patron->getBarcode());
 		$apiPath = "/cirrus/library/{$settings->libraryId}/checkin";
@@ -228,7 +228,7 @@ class CloudLibraryDriver extends AbstractEContentDriver
 	 */
 	function placeHold($patron, $recordId, $pickupBranch = null, $cancelDate = null)
 	{
-		$result = ['success' => false, 'message' => 'Unknown error'];
+		$result = ['success' => false, 'message' => translate(['text'=>'Unknown Error', 'isPublicFacing'=>true])];
 		$settings = $this->getSettings($patron);
 		$patronId = str_replace(' ', '', $patron->getBarcode());
 		$password = $patron->getPasswordOrPin();
@@ -302,7 +302,7 @@ class CloudLibraryDriver extends AbstractEContentDriver
 	 */
 	function cancelHold($patron, $recordId, $cancelId = null)
 	{
-		$result = ['success' => false, 'message' => 'Unknown error'];
+		$result = ['success' => false, 'message' => translate(['text'=>'Unknown Error', 'isPublicFacing'=>true])];
 		$settings = $this->getSettings($patron);
 		$patronId = str_replace(' ', '', $patron->getBarcode());
 		$apiPath = "/cirrus/library/{$settings->libraryId}/cancelhold";
@@ -371,7 +371,7 @@ class CloudLibraryDriver extends AbstractEContentDriver
 	 */
 	public function checkOutTitle($patron, $titleId, $fromRenew = false)
 	{
-		$result = ['success' => false, 'message' => 'Unknown error'];
+		$result = ['success' => false, 'message' => translate(['text'=>'Unknown Error', 'isPublicFacing'=>true])];
 
 		$settings = $this->getSettings($patron);
 		$patronId = str_replace(' ', '', $patron->getBarcode());

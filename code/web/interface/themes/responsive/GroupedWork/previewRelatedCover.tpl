@@ -6,7 +6,7 @@
 		<input type="hidden" name="method" value="setRelatedCover"/>
 		<div class="form-group">
 			<div id="recordCover" class="text-center row">
-				<img alt="{translate text='Book Cover' isPublicFacing=true isPublicFacing=true}" class="img-thumbnail" src="/bookcover.php?id={$recordId}&size=medium&type={$recordType}">
+				<img alt="{translate text='Book Cover' inAttribute=true isPublicFacing=true}" class="img-thumbnail" src="/bookcover.php?id={$recordId}&size=medium&type={$recordType}">
 			</div>
 
 		</div>

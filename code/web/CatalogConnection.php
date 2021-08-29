@@ -399,7 +399,7 @@ class CatalogConnection
 	{
 		$result = [
 			'success' => false,
-			'message' => translate('Unknown error')
+			'message' => translate(['text'=>'Unknown Error', 'isPublicFacing'=>true])
 		];
 		if ($action == 'deleteMarked') {
 			//Remove titles from database (do not remove from ILS)

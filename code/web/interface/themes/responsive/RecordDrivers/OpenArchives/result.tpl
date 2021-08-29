@@ -55,7 +55,7 @@
 
 		{if !empty($date)}
 			<div class="row">
-				<div class="result-label col-tn-3">{translate text="Date"} </div>
+				<div class="result-label col-tn-3">{translate text="Date" isPublicFacing=true} </div>
 				<div class="result-value col-tn-8 notranslate">
 					{implode subject=$date}
 				</div>

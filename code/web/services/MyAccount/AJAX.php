@@ -1291,7 +1291,7 @@ class MyAccount_AJAX extends JSON_Action
 
 		$result = [
 			'success' => false,
-			'message' => 'Unknown error'
+			'message' => translate(['text'=>'Unknown Error', 'isPublicFacing'=>true])
 		];
 		if (UserAccount::isLoggedIn()) {
 			$user = UserAccount::getActiveUserObj();
@@ -1330,7 +1330,7 @@ class MyAccount_AJAX extends JSON_Action
 					'summary' => $ilsSummary->toArray()
 				];
 			} else {
-				$result['message'] = 'Unknown error';
+				$result['message'] = translate(['text'=>'Unknown Error', 'isPublicFacing'=>true]);
 			}
 		} else {
 			$result['message'] = 'You must be logged in to get menu data';
@@ -1344,7 +1344,7 @@ class MyAccount_AJAX extends JSON_Action
 		global $timer;
 		$result = [
 			'success' => false,
-			'message' => 'Unknown error'
+			'message' => translate(['text'=>'Unknown Error', 'isPublicFacing'=>true])
 		];
 		if (UserAccount::isLoggedIn()) {
 			$user = UserAccount::getActiveUserObj();
@@ -1367,7 +1367,7 @@ class MyAccount_AJAX extends JSON_Action
 					'summary' => $cloudLibrarySummary->toArray()
 				];
 			} else {
-				$result['message'] = 'Unknown error';
+				$result['message'] = translate(['text'=>'Unknown Error', 'isPublicFacing'=>true]);
 			}
 		} else {
 			$result['message'] = 'You must be logged in to get menu data';
@@ -1381,7 +1381,7 @@ class MyAccount_AJAX extends JSON_Action
 		global $timer;
 		$result = [
 			'success' => false,
-			'message' => 'Unknown error'
+			'message' => translate(['text'=>'Unknown Error', 'isPublicFacing'=>true])
 		];
 		if (UserAccount::isLoggedIn()) {
 			$user = UserAccount::getActiveUserObj();
@@ -1404,7 +1404,7 @@ class MyAccount_AJAX extends JSON_Action
 					'summary' => $axis360Summary->toArray()
 				];
 			} else {
-				$result['message'] = 'Unknown error';
+				$result['message'] = translate(['text'=>'Unknown Error', 'isPublicFacing'=>true]);
 			}
 		} else {
 			$result['message'] = 'You must be logged in to get menu data';
@@ -1418,7 +1418,7 @@ class MyAccount_AJAX extends JSON_Action
 		global $timer;
 		$result = [
 			'success' => false,
-			'message' => 'Unknown error'
+			'message' => translate(['text'=>'Unknown Error', 'isPublicFacing'=>true])
 		];
 		if (UserAccount::isLoggedIn()) {
 			$user = UserAccount::getActiveUserObj();
@@ -1457,7 +1457,7 @@ class MyAccount_AJAX extends JSON_Action
 		global $timer;
 		$result = [
 			'success' => false,
-			'message' => 'Unknown error'
+			'message' => translate(['text'=>'Unknown Error', 'isPublicFacing'=>true])
 		];
 		if (UserAccount::isLoggedIn()) {
 			$user = UserAccount::getActiveUserObj();
@@ -2031,7 +2031,7 @@ class MyAccount_AJAX extends JSON_Action
 
 		$result = [
 			'success' => false,
-			'message' => 'Unknown error',
+			'message' => translate(['text'=>'Unknown Error', 'isPublicFacing'=>true]),
 		];
 
 		global $offlineMode;
@@ -2115,7 +2115,7 @@ class MyAccount_AJAX extends JSON_Action
 
 		$result = [
 			'success' => false,
-			'message' => 'Unknown error',
+			'message' => translate(['text'=>'Unknown Error', 'isPublicFacing'=>true]),
 		];
 
 		global $offlineMode;
@@ -2248,7 +2248,7 @@ class MyAccount_AJAX extends JSON_Action
 
 		$result = [
 			'success' => false,
-			'message' => 'Unknown error',
+			'message' => translate(['text'=>'Unknown Error', 'isPublicFacing'=>true]),
 		];
 
 
@@ -2426,7 +2426,7 @@ class MyAccount_AJAX extends JSON_Action
 		$result = [
 			'success' => false,
 			'title' => translate('Error'),
-			'message' => translate('Unknown error'),
+			'message' => translate(['text'=>'Unknown Error', 'isPublicFacing'=>true]),
 		];
 
 		$user = UserAccount::getActiveUserObj();
@@ -2453,7 +2453,7 @@ class MyAccount_AJAX extends JSON_Action
 		$result = [
 			'success' => false,
 			'title' => translate('Error'),
-			'message' => translate('Unknown error'),
+			'message' => translate(['text'=>'Unknown Error', 'isPublicFacing'=>true]),
 		];
 
 		$user = UserAccount::getActiveUserObj();
@@ -3111,7 +3111,7 @@ class MyAccount_AJAX extends JSON_Action
 
 		$result = [
 			'success' => false,
-			'message' => 'Unknown Error',
+			'message' => translate(['text'=>'Unknown Error', 'isPublicFacing'=>true]),
 		];
 
 		if ($patronId != UserAccount::getActiveUserId()){

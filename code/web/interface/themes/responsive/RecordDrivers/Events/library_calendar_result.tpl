@@ -38,7 +38,7 @@
 			{/if}
 
 			<div class="row">
-				<div class="result-label col-tn-3">{translate text="Date"} </div>
+				<div class="result-label col-tn-3">{translate text="Date" isPublicFacing=true} </div>
 				<div class="result-value col-tn-8 notranslate">
 					{$start_date|date_format:"%a %b %e, %Y from %l:%M%p"} to {$end_date|date_format:"%l:%M%p"}
                     {if $isCancelled}

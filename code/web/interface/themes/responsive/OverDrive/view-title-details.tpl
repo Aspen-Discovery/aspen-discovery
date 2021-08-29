@@ -2,7 +2,7 @@
 	{* Display more information about the title*}
 	{if $recordDriver->getAuthor()}
 		<div class="row">
-			<div class="result-label col-tn-3">{translate text="Author"} </div>
+			<div class="result-label col-tn-3">{translate text="Author" isPublicFacing=true} </div>
 			<div class="col-tn-9 result-value">
 				<a href='/Author/Home?author="{$recordDriver->getAuthor()|escape:"url"}"'>{$recordDriver->getAuthor()|highlight}</a>
 			</div>

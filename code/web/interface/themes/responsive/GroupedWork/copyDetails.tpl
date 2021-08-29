@@ -3,9 +3,9 @@
 	<table class="table table-striped table-condensed itemSummaryTable">
 		<thead>
 		<tr>
-			<th>{translate text="Avail. Copies"}</th>
-			<th>{translate text="quick_copy_location" defaultText="Location"}</th>
-			<th>{translate text="Call #"}</th>
+			<th>{translate text="Avail. Copies" isPublicFacing=true}</th>
+			<th>{translate text="quick_copy_location" defaultText="Location" isPublicFacing=true}</th>
+			<th>{translate text="Call #" isPublicFacing=true}</th>
 		</tr>
 		</thead>
 		<tbody>
@@ -14,12 +14,12 @@
 			<tr {if $item.availableCopies}class="available" {/if}>
 				{if $item.onOrderCopies > 0}
 					{if $showOnOrderCounts}
-						<td>{translate text="%1% on order" 1=$item.onOrderCopies}</td>
+						<td>{translate text="%1% on order" 1=$item.onOrderCopies isPublicFacing=true}</td>
 					{else}
-						<td>{translate text="Copies on order"}</td>
+						<td>{translate text="Copies on order" isPublicFacing=true}</td>
 					{/if}
 				{else}
-					<td>{translate text="%1% of %2%" 1=$item.availableCopies 2=$item.totalCopies}</td>
+					<td>{translate text="%1% of %2%" 1=$item.availableCopies 2=$item.totalCopies isPublicFacing=true}</td>
 				{/if}
 				<td class="notranslate">{$item.shelfLocation}</td>
 				<td class="notranslate">

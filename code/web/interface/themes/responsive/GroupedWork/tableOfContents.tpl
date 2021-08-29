@@ -12,7 +12,7 @@
 			AspenDiscovery.GroupedWork.hasTableOfContentsInRecord = true;
 		</script>
 	{else}
-		Loading Table Of Contents...
+		{translate text="Loading Table Of Contents..." isPublicFacing=true}
 	{/if}
 
 	</div>

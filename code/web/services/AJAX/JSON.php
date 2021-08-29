@@ -128,7 +128,7 @@ class AJAX_JSON extends Action {
 		$translation->id = $translationId;
 		$result = [
 			'success' => false,
-			'message' => 'Unknown Error'
+			'message' => translate(['text'=>'Unknown Error', 'isPublicFacing'=>true])
 		];
 		if (UserAccount::userHasPermission('Translate Aspen')){
 			if ($translation->find(true)){

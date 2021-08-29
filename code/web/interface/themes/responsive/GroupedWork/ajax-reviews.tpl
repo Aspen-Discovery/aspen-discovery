@@ -1,1 +1,0 @@
-<Reviews><![CDATA[{include file="GroupedWork/view-reviews.tpl"}]]></Reviews>

@@ -5,7 +5,7 @@
 	<div class="form-group">
 		<div class="form-group">
 			<label for="title">
-				{translate text="Title"}<span class="required-input">*</span>
+				{translate text="Title" isPublicFacing=true}<span class="required-input">*</span>
 			</label>
 			<input type="text" class="form-control required" id="title" name="title" maxlength="255">
 		</div>

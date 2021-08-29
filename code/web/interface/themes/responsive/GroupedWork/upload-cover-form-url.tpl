@@ -3,10 +3,10 @@
 	<input type="hidden" name="id" value="{$id}"/>
 	<input type="hidden" name="method" value="uploadCoverByURL"/>
 	<div class="form-group">
-		<label for="coverFileURL">Image URL</label>
+		<label for="coverFileURL">{translate text="Image URL" isAdminFacing=true}</label>
 		<input type="text" class="form-control" name="coverFileURL" id="coverFileURL">
 	</div>
-		<small id="coverFileHelp" class="form-text text-muted">JPG/JPEG, GIF, and PNG Files can be uploaded.</small>
+		<small id="coverFileHelp" class="form-text text-muted">{translate text="JPG/JPEG, GIF, and PNG Files can be uploaded." isAdminFacing=true}</small>
 </form>
 	<script type="application/javascript">
 		{literal}

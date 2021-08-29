@@ -37,7 +37,7 @@
 							</div>
 						</fieldset>
 						<fieldset class="form-group fieldset-collapsible">
-							<legend>{translate text="Date"}</legend>
+							<legend>{translate text="Date" isPublicFacing=true}</legend>
 							<div class="form-group">
 								<label for="startDate">{translate text="From"}</label> <input type="date" id="startDate" name="startDate" value="{$startDate}" size="8" max="{$smarty.now|date_format:"%Y-%m-%d"}">
 								<label for="endDate">{translate text="To"}</label> <input type="date" id="endDate" name="endDate" value="{$endDate}" size="8" max="{$smarty.now|date_format:"%Y-%m-%d"}">

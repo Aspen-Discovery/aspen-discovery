@@ -11,15 +11,15 @@
 				<div class='reviewCopyright'><small>{$review.Copyright}</small></div>
 
 				{if $provider == "syndetics"}
-					<div class='reviewProvider'><small>{translate text="Powered by Syndetics"}</small></div>
+					<div class='reviewProvider'><small>{translate text="Powered by Syndetics" isPublicFacing=true}</small></div>
 				{elseif $provider == "contentCafe"}
-					<div class='reviewProvider'><small>{translate text="Powered by Content Cafe"}</small></div>
+					<div class='reviewProvider'><small>{translate text="Powered by Content Cafe" isPublicFacing=true}</small></div>
 				{/if}
 			</div>
 			{/if}
 			</div>
 		{/foreach}
 	{foreachelse}
-		<p>No syndicated reviews currently exist.</p>
+		<p>{translate text="No syndicated reviews currently exist." isPublicFacing=true}</p>
 	{/foreach}
 {/strip}

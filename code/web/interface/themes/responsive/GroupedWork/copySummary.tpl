@@ -3,7 +3,7 @@
 		{if $recordViewUrl && $showQuickCopy}
 			<div class="itemSummary">
 				&nbsp;&nbsp;<a href="{$recordViewUrl}#copiesPanelBody">
-					{translate text="Quick Copy View"}
+					{translate text="Quick Copy View" isPublicFacing=true}
 				</a>
 			</div>
 		{/if}
@@ -16,9 +16,9 @@
 					<div class="col-xs-{if $item.isEContent == false}7{else}11{/if}">
 						<span class="notranslate"><strong>{$item.shelfLocation}</strong>
 							{if $item.availableCopies > 9999}
-								&nbsp;has unlimited
+								&nbsp;{translate text="has unlimited" isPublicFacing=true}
 							{elseif $item.availableCopies > 1}
-								&nbsp;has&nbsp;{$item.availableCopies}
+								&nbsp;{translate text="has %1%" 1=$item.availableCopies isPublicFacing=true}
 							{/if}
 						</span>
 					</div>
@@ -39,13 +39,13 @@
 					<div class="itemSummary">
 						{* showElementInPopup('Copy Summary', '#itemSummaryPopup_{$itemSummaryId|escapeCSS}_{$relatedManifestation->format|escapeCSS}'{if !empty($recordViewUrl)}, '#itemSummaryPopupButtons_{$itemSummaryId|escapeCSS}_{$relatedManifestation->format|escapeCSS}'{/if}); *}
 						<a href="#" onclick="return AspenDiscovery.GroupedWork.showCopyDetails('{$workId}', '{$relatedManifestation->format}', '{$itemSummaryId}');">
-							{translate text="Quick Copy View"}
+							{translate text="Quick Copy View" isPublicFacing=true}
 						</a>
 					</div>
 				{/if}
 				{if !empty($recordViewUrl)}
 					<div id="itemSummaryPopupButtons_{$itemSummaryId|escapeCSS}_{$relatedManifestation->format|escapeCSS}" style="display: none">
-						<a href="{$recordViewUrl}" class="btn btn-primary" role="button">{translate text="See Full Copy Details"}</a>
+						<a href="{$recordViewUrl}" class="btn btn-primary" role="button">{translate text="See Full Copy Details" isPublicFacing=true}</a>
 					</div>
 				{/if}
 			{/if}

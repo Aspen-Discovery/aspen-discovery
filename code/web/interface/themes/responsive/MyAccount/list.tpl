@@ -40,7 +40,7 @@
 					{if $allowEdit}
 							<div id="listEditControls" style="display:none" class="collapse">
 								<div class="form-group">
-									<label for="listTitleEdit" class="control-label">{translate text="Title"}</label>
+									<label for="listTitleEdit" class="control-label">{translate text="Title" isPublicFacing=true}</label>
 									<input type="text" id="listTitleEdit" name="newTitle" value="{$userList->title|escape:"html"}" maxlength="255" size="80" class="form-control">
 								</div>
 								<div class="form-group">

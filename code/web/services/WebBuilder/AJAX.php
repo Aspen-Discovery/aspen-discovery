@@ -7,7 +7,7 @@ class WebBuilder_AJAX extends JSON_Action
 	function getPortalCellValuesForSource() {
 		$result = [
 			'success' => false,
-			'message' => 'Unknown error'
+			'message' => translate(['text'=>'Unknown Error', 'isPublicFacing'=>true])
 		];
 
 		$sourceType = $_REQUEST['sourceType'];

@@ -1,5 +1,5 @@
 {strip}
-	<div class="alert alert-info">{translate text="NoveList provides detailed suggestions for titles you might like if you enjoyed this book.  Suggestions are based on recommendations from librarians and other contributors."}</div>
+	<div class="alert alert-info">{translate text="NoveList provides detailed suggestions for titles you might like if you enjoyed this book.  Suggestions are based on recommendations from librarians and other contributors." isPublicFacing=true}</div>
 	<div id="similarTitlesNovelist" class="striped div-striped">
 		{foreach from=$similarTitles item=similarTitle name="recordLoop"}
 			<div class="novelist-similar-item row">

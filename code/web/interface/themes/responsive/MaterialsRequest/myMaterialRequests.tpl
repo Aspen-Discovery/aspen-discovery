@@ -42,8 +42,8 @@
 			<table id="requestedMaterials" class="table table-striped table-condensed tablesorter">
 				<thead>
 					<tr>
-						<th>{translate text="Title"}</th>
-						<th>{translate text="Author"}</th>
+						<th>{translate text="Title" isPublicFacing=true}</th>
+						<th>{translate text="Author" isPublicFacing=true}</th>
 						<th>{translate text="Format"}</th>
 						<th>{translate text="Status"}</th>
 						<th>{translate text="Created"}</th>

@@ -186,7 +186,7 @@ class Admin_AJAX extends JSON_Action
 	function ungroupRecord(){
 		$results = [
 			'success' => false,
-			'message' => 'Unknown Error'
+			'message' => translate(['text'=>'Unknown Error', 'isPublicFacing'=>true])
 		];
 		if (UserAccount::isLoggedIn() && (UserAccount::userHasPermission('Manually Group and Ungroup Works'))) {
 			require_once ROOT_DIR . '/sys/Grouping/NonGroupedRecord.php';
@@ -216,7 +216,7 @@ class Admin_AJAX extends JSON_Action
 			}
 
 		}else{
-			$results['message'] = "You do not have the correct permissions for this operation";
+			$results['message'] = translate(['text'=>"You do not have the correct permissions for this operation", 'isAdminFacing'=>true]);
 		}
 		return $results;
 	}

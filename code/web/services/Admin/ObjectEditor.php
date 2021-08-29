@@ -146,7 +146,7 @@ abstract class ObjectEditor extends Admin_Admin
 				if ($newObject->getLastError()) {
 					$errorDescription = $newObject->getLastError();
 				} else {
-					$errorDescription = 'Unknown error';
+					$errorDescription = translate(['text'=>'Unknown Error', 'isPublicFacing'=>true]);
 				}
 				$logger->log('Could not insert new object ' . $ret . ' ' . $errorDescription, Logger::LOG_DEBUG);
 				$user = UserAccount::getActiveUserObj();
@@ -281,7 +281,7 @@ abstract class ObjectEditor extends Admin_Admin
 							if ($curObject->_lastError) {
 								$errorDescription = $curObject->_lastError->getUserInfo();
 							} else {
-								$errorDescription = 'Unknown error';
+								$errorDescription = translate(['text'=>'Unknown Error', 'isPublicFacing'=>true]);
 							}
 							$user->updateMessage = "An error occurred updating {$this->getObjectType()} with id of $id <br/>{$errorDescription}";
 							$user->updateMessageIsError = true;

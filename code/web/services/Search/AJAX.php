@@ -129,7 +129,7 @@ class AJAX extends Action {
 		$prospectorLink = $prospector->getSearchLink($searchObject->getSearchTerms());
 		$interface->assign('prospectorLink', $prospectorLink);
 		$timer->logTime('load Prospector titles');
-		echo $interface->fetch('Search/ajax-prospector.tpl');
+		echo $interface->fetch('Search/ajax-innreach.tpl');
 	}
 
 	/**
@@ -376,7 +376,7 @@ class AJAX extends Action {
 	function lockFacet(){
 		$response = [
 			'success' => false,
-			'message' => 'Unknown error'
+			'message' => translate(['text'=>'Unknown Error', 'isPublicFacing'=>true])
 		];
 		$facetToLock = $_REQUEST['facet'];
 
@@ -423,7 +423,7 @@ class AJAX extends Action {
 	function unlockFacet(){
 		$response = [
 			'success' => false,
-			'message' => 'Unknown error'
+			'message' => translate(['text'=>'Unknown Error', 'isPublicFacing'=>true])
 		];
 
 		//Get the filters from the active search

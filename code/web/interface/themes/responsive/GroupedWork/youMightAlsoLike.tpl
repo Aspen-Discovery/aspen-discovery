@@ -1,6 +1,6 @@
 {strip}
 {if $numTitles == 0}
-	<div class="alert alert-info">Sorry, we could not find any additional titles.</div>
+	<div class="alert alert-info">{translate text="Sorry, we could not find any additional titles." isPublicFacing=true}</div>
 {else}
 	<div class="row">
 		{foreach from=$youMightAlsoLikeTitles item=title}

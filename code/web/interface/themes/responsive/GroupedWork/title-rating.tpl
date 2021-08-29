@@ -15,7 +15,7 @@
 			</span>
 		</div>
 		{if $showNotInterested == true}
-			<button id="notInterested{$summId}" class="button notInterested" title="Select if you don't want to see this title recommended to you." onclick="return AspenDiscovery.GroupedWork.markNotInterested('{$summId}');">{translate text="Don't Recommend"}</button>
+			<button id="notInterested{$summId}" class="button notInterested" title="{translate text="Select if you don't want to see this title recommended to you." inAttribute=true isPublicFacing=true }" onclick="return AspenDiscovery.GroupedWork.markNotInterested('{$summId}');">{translate text="Don't Recommend" isPublicFacing=true}</button>
 		{/if}
 	</div>
 {/if}

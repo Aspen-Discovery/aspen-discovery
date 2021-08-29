@@ -37,7 +37,7 @@
 										<div class=" request_detail_field_value col-sm-9">{$materialsRequest->magazineTitle}</div>
 									</div>
 									<div class=" request_detail_field row">
-										<label class="request_detail_field_label col-sm-3">{translate text="Date"}</label>
+										<label class="request_detail_field_label col-sm-3">{translate text="Date" isPublicFacing=true}</label>
 										<div class=" request_detail_field_value col-sm-9">{$materialsRequest->magazineDate}</div>
 									</div>
 									<div class=" request_detail_field row">

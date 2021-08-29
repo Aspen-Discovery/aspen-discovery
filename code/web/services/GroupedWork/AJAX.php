@@ -74,7 +74,6 @@ class GroupedWork_AJAX extends JSON_Action
 	/** @noinspection PhpUnused */
 	function getEnrichmentInfo()
 	{
-		global $configArray;
 		global $interface;
 		global $memoryWatcher;
 
@@ -212,7 +211,7 @@ class GroupedWork_AJAX extends JSON_Action
 
 		return [
 			'success' => true,
-			'title' => translate('While You Wait'),
+			'title' => translate(['text'=>'While You Wait', 'isPublicFacing'=>'true']),
 			'body' => $interface->fetch('GroupedWork/whileYouWait.tpl'),
 		];
 	}
@@ -236,10 +235,8 @@ class GroupedWork_AJAX extends JSON_Action
 			/** @var SearchObject_GroupedWorkSearcher $db */
 			$searchObject = SearchObjectFactory::initSearchObject();
 			$searchObject->init();
-			/** @noinspection PhpPossiblePolymorphicInvocationInspection */
 			$searchObject->disableScoping();
 			UserAccount::getActiveUserObj();
-			/** @noinspection PhpPossiblePolymorphicInvocationInspection */
 			$similar = $searchObject->getMoreLikeThis($id, false, false, 3);
 			$memoryWatcher->logMemory('Loaded More Like This data from Solr');
 			// Send the similar items to the template; if there is only one, we need
@@ -260,7 +257,7 @@ class GroupedWork_AJAX extends JSON_Action
 
 		return [
 			'success' => true,
-			'title' => translate('You Might Also Like'),
+			'title' => translate(['text'=>'You Might Also Like', 'isPublicFacing'=>true]),
 			'body' => $interface->fetch('GroupedWork/youMightAlsoLike.tpl'),
 		];
 	}
@@ -320,7 +317,7 @@ class GroupedWork_AJAX extends JSON_Action
 					</div>
 					<div class=\"row related-manifestation\">
 						<div class=\"col-sm-12\">
-							The library does not own any copies of this title.
+							" . translate(['text'=>"The library does not own any copies of this title.", 'isPublicFacing'=>true]) ."
 						</div>
 					</div>
 				</div>";
@@ -402,7 +399,7 @@ class GroupedWork_AJAX extends JSON_Action
 			'title' => "<a href='$url'>{$recordDriver->getTitle()}</a>",
 			'modalBody' => $modalBody,
 			'modalButtons' => "<button onclick=\"return AspenDiscovery.Account.showSaveToListForm(this, 'GroupedWork', '$escapedId');\" class=\"modal-buttons btn btn-primary\" style='float: left'>$buttonLabel</button>"
-				."<a href='$url'><button class='modal-buttons btn btn-primary'>" . translate("More Info") . "</button></a>"
+				."<a href='$url'><button class='modal-buttons btn btn-primary'>" . translate(['text'=>"More Info", 'isPublicFacing'=>true]) . "</button></a>"
 		);
 	}
 
@@ -410,13 +407,13 @@ class GroupedWork_AJAX extends JSON_Action
 	function rateTitle(){
 		require_once(ROOT_DIR . '/sys/LocalEnrichment/UserWorkReview.php');
 		if (!UserAccount::isLoggedIn()){
-			return array('error'=>'Please login to rate this title.');
+			return array('error'=>translate(['text'=>'Please login to rate this title.', 'isPublicFacing'=>true]));
 		}
 		if (empty($_REQUEST['id'])) {
-			return array('error'=>'ID for the item to rate is required.');
+			return array('error'=>translate(['text'=>'ID for the item to rate is required.', 'isPublicFacing'=>true]));
 		}
 		if (empty($_REQUEST['rating']) || !ctype_digit($_REQUEST['rating'])) {
-			return array('error'=>'Invalid value for rating.');
+			return array('error'=>translate(['text'=>'Invalid value for rating.', 'isPublicFacing'=>true]));
 		}
 		$rating = $_REQUEST['rating'];
 		//Save the rating
@@ -451,12 +448,13 @@ class GroupedWork_AJAX extends JSON_Action
 
 			return array('rating'=>$rating);
 		} else {
-			return array('error'=>'Unable to save your rating.');
+			return array('error'=>translate(['text'=>'Unable to save your rating.', 'isPublicFacing'=>'true']));
 		}
 	}
 
 	private function clearMySuggestionsBrowseCategoryCache(){
 		// Reset any cached suggestion browse category for the user
+		/** @var Memcache $memCache */
 		global $memCache;
 		global $solrScope;
 		foreach (array('0', '1') as $browseMode) { // (Browse modes are set in class Browse_AJAX)
@@ -511,9 +509,9 @@ class GroupedWork_AJAX extends JSON_Action
 				if (!empty($id)) {
 					$results = array(
 						'prompt' => true,
-						'title' => 'Add a Review',
+						'title' => translate(['text'=>'Add a Review', 'isPublicFacing'=>true]),
 						'modalBody' => $interface->fetch("GroupedWork/prompt-for-review-form.tpl"),
-						'modalButtons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.GroupedWork.showReviewForm(this, \"{$id}\");'>Submit A Review</button>"
+						'modalButtons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.GroupedWork.showReviewForm(this, \"{$id}\");'>" . translate(['text'=>"Submit A Review", 'isPublicFacing'=>true]) . "</button>"
 					);
 				} else {
 					$results = array(
@@ -565,17 +563,15 @@ class GroupedWork_AJAX extends JSON_Action
 				$interface->assign('userReview', $groupedWorkReview->review);
 			}
 
-//			$title   = ($library->showFavorites && !$library->showComments) ? 'Rating' : 'Review'; // the library object doesn't seem to have the up-to-date settings.
-			$title   = ($interface->get_template_vars('showRatings') && !$interface->get_template_vars('showComments')) ? 'Rating' : 'Review';
 			$results = array(
-				'title' => $title,
+				'title' => translate(['text'=>'Review', 'isPublicFacing'=>true]),
 				'modalBody' => $interface->fetch("GroupedWork/review-form-body.tpl"),
-				'modalButtons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.GroupedWork.saveReview(\"{$id}\");'>Submit $title</button>"
+				'modalButtons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.GroupedWork.saveReview(\"{$id}\");'>". translate(['text'=>"Submit Review", 'isPublicFacing'=>true]) . "</button>"
 			);
 		} else {
 			$results = array(
 				'error' => true,
-				'message' => 'Invalid ID.'
+				'message' => translate(['text'=>'Invalid ID.', 'isPublicFacing'=>true])
 			);
 		}
 		return $results;
@@ -587,10 +583,10 @@ class GroupedWork_AJAX extends JSON_Action
 
 		if (UserAccount::isLoggedIn() == false) {
 			$result['success'] = false;
-			$result['message'] = 'Please login before adding a review.';
+			$result['message'] = translate(['text'=>'Please login before adding a review.', 'isPublicFacing'=>true]);
 		}elseif (empty($_REQUEST['id'])) {
 			$result['success'] = false;
-			$result['message'] = 'ID for the item to review is required.';
+			$result['message'] = translate(['text'=>'ID for the item to review is required.', 'isPublicFacing'=>true]);
 		} else {
 			require_once ROOT_DIR . '/sys/LocalEnrichment/UserWorkReview.php';
 			$id        = $_REQUEST['id'];
@@ -619,7 +615,7 @@ class GroupedWork_AJAX extends JSON_Action
 			}
 			if (!$success) { // if sql save didn't work, let user know.
 				$result['success']  = false;
-				$result['message'] = 'Failed to save rating or review.';
+				$result['message'] = translate(['text'=>'Failed to save rating or review.', 'isPublicFacing'=>true]);
 			} else { // successfully saved
 				$result['success']    = true;
 				$result['newReview'] = $newReview;
@@ -647,9 +643,9 @@ class GroupedWork_AJAX extends JSON_Action
 		$relatedRecords = $recordDriver->getRelatedRecords();
 		$interface->assign('relatedRecords', $relatedRecords);
 		return array(
-			'title' => 'Share via Email',
+			'title' => translate(['text'=>'Share via Email', 'isPublicFacing'=>true]),
 			'modalBody' => $interface->fetch("GroupedWork/email-form-body.tpl"),
-			'modalButtons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.GroupedWork.sendEmail(\"{$id}\"); return false;'>Send Email</button>"
+			'modalButtons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.GroupedWork.sendEmail(\"{$id}\"); return false;'>" . translate(['text'=>'Send Email', 'isPublicFacing'=>true]) . "</button>"
 		);
 	}
 
@@ -704,23 +700,23 @@ class GroupedWork_AJAX extends JSON_Action
 			if ($emailResult === true){
 				$result = array(
 					'result' => true,
-					'message' => 'Your email was sent successfully.'
+					'message' => translate(['text'=>'Your email was sent successfully.', 'isPublicFacing'=>'true'])
 				);
 			}elseif (($emailResult instanceof AspenError)){
 				$result = array(
 					'result' => false,
-					'message' => "Your email message could not be sent: {$emailResult->getMessage()}."
+					'message' => translate(['text'=>"Your email message could not be sent: %1%.", 1=>$emailResult->getMessage(), 'isPublicFacing'=>'true'])
 				);
 			}else{
 				$result = array(
 					'result' => false,
-					'message' => 'Your email message could not be sent due to an unknown error.'
+					'message' => translate(['text'=>'Your email message could not be sent due to an unknown error.', 'isPublicFacing'=>'true'])
 				);
 			}
 		}else{
 			$result = array(
 				'result' => false,
-				'message' => 'Sorry, we can&apos;t send emails with html or other data in it.'
+				'message' => translate(['text'=>'Sorry, we can&apos;t send emails with html or other data in it.', 'isPublicFacing'=>'true'])
 			);
 		}
 		return $result;
@@ -748,19 +744,19 @@ class GroupedWork_AJAX extends JSON_Action
 
 					$result = array(
 						'result' => true,
-						'message' => "You won't be shown this title in the future. It may take a few minutes before the title is removed from your recommendations.",
+						'message' => translate(['text'=>"You won't be shown this title in the future. It may take a few minutes before the title is removed from your recommendations.", 'isPublicFacing'=>'true']),
 					);
 				}
 			}else{
 				$result = array(
 					'result' => false,
-					'message' => "This record was already marked as something you aren't interested in.",
+					'message' => translate(['text'=>"This record was already marked as something you aren't interested in.", 'isPublicFacing'=>'true']),
 				);
 			}
 		}else{
 			$result = array(
 				'result' => false,
-				'message' => "Please log in.",
+				'message' => translate(['text'=>"Please log in.", 'isPublicFacing'=>'true']),
 			);
 		}
 		return $result;
@@ -817,7 +813,7 @@ class GroupedWork_AJAX extends JSON_Action
 
 		return array(
 			'numTitles' => count($prospectorResults),
-			'formattedData' => $interface->fetch('GroupedWork/ajax-prospector.tpl')
+			'formattedData' => $interface->fetch('GroupedWork/ajax-innreach.tpl')
 		);
 	}
 
@@ -832,7 +828,7 @@ class GroupedWork_AJAX extends JSON_Action
 		$series = $recordDriver->getSeries();
 		$result = [
 			'result' => false,
-			'message' => 'No series exist for this record'
+			'message' => translate(['text'=>'No series exist for this record', 'isPublicFacing'=>'true'])
 		];
 		if (!empty($indexedSeries) || !empty($series)){
 			global $library;
@@ -888,7 +884,7 @@ class GroupedWork_AJAX extends JSON_Action
 			}
 		}
 
-		return array('success' => true, 'message' => 'Covers have been reloaded.  You may need to refresh the page to clear your local cache.');
+		return array('success' => true, 'message' => translate(['text'=>'Covers have been reloaded.  You may need to refresh the page to clear your local cache.', 'isPublicFacing'=>true]));
 	}
 
 	/** @noinspection PhpUnused */
@@ -899,9 +895,9 @@ class GroupedWork_AJAX extends JSON_Action
 		$interface->assign('id', $id);
 
 		return array(
-			'title' => 'Upload a New Cover',
+			'title' => translate(['text'=>'Upload a New Cover', 'isPublicFacing'=>'true']),
 			'modalBody' => $interface->fetch("GroupedWork/upload-cover-form.tpl"),
-			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#uploadCoverForm\").submit()'>Upload Cover</button>"
+			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#uploadCoverForm\").submit()'>" . translate(['text'=>'Upload Cover', 'isPublicFacing'=>'true']) . "</button>"
 		);
 	}
 
@@ -909,16 +905,16 @@ class GroupedWork_AJAX extends JSON_Action
 	function uploadCover(){
 		$result = [
 			'success' => false,
-			'title' => 'Uploading custom cover',
-			'message' => 'Sorry your cover could not be uploaded'
+			'title' => translate(['text'=>'Uploading custom cover', 'isPublicFacing'=>'true']),
+			'message' => translate(['text'=>'Sorry your cover could not be uploaded', 'isAdminFacing=true'])
 		];
 		if (UserAccount::isLoggedIn() && (UserAccount::userHasPermission('Upload Covers'))){
 			if (isset($_FILES['coverFile'])) {
 				$uploadedFile = $_FILES['coverFile'];
 				if (isset($uploadedFile["error"]) && $uploadedFile["error"] == 4) {
-					$result['message'] = "No Cover file was uploaded";
+					$result['message'] = translate(['text'=>"No Cover file was uploaded", 'isAdminFacing'=>true]);
 				} else if (isset($uploadedFile["error"]) && $uploadedFile["error"] > 0) {
-					$result['message'] =  "Error in file upload for cover " . $uploadedFile["error"];
+					$result['message'] =  translate(['text'=>"Error in file upload for cover %1%", 1=>$uploadedFile["error"], "isAdminFacing"=>true]);
 				} else {
 					$id = $_REQUEST['id'];
 					global $configArray;
@@ -931,28 +927,28 @@ class GroupedWork_AJAX extends JSON_Action
 					}elseif ($fileType == 'image/gif'){
 						$imageResource = @imagecreatefromgif($uploadedFile["tmp_name"]);
 						if (!$imageResource){
-							$result['message'] = 'Unable to process this image, please try processing in an image editor and reloading';
+							$result['message'] = translate(['text'=>'Unable to process this image, please try processing in an image editor and reloading', 'isAdminFacing'=>true]);
 						}else if (@imagepng( $imageResource, $destFullPath, 9)){
 							$result['success'] = true;
 						}
 					}elseif ($fileType == 'image/jpg' || $fileType == 'image/jpeg'){
 						$imageResource = @imagecreatefromjpeg($uploadedFile["tmp_name"]);
 						if (!$imageResource){
-							$result['message'] = 'Unable to process this image, please try processing in an image editor and reloading';
+							$result['message'] = translate(['text'=>'Unable to process this image, please try processing in an image editor and reloading', 'isAdminFacing'=>true]);
 						}else if (@imagepng( $imageResource, $destFullPath, 9)){
 							$result['success'] = true;
 						}
 					}else{
-						$result['message'] = 'Incorrect image type.  Please upload a PNG, GIF, or JPEG';
+						$result['message'] = translate(['text'=>'Incorrect image type.  Please upload a PNG, GIF, or JPEG', 'isAdminFacing'=>true]);
 					}
 				}
 			} else {
-				$result['message'] = 'No cover was uploaded, please try again.';
+				$result['message'] = translate(['text'=>'No cover was uploaded, please try again.', 'isAdminFacing'=>true]);
 			}
 		}
 		if ($result['success']){
 			$this->reloadCover();
-			$result['message'] = 'Your cover has been uploaded successfully';
+			$result['message'] = translate(['text'=>'Your cover has been uploaded successfully', 'isAdminFacing'=>true]);
 		}
 		return $result;
 	}
@@ -965,9 +961,9 @@ class GroupedWork_AJAX extends JSON_Action
 		$interface->assign('id', $id);
 
 		return array(
-			'title' => 'Upload a New Cover by URL',
+			'title' => translate(['text'=>'Upload a New Cover by URL', 'isAdminFacing'=>true]),
 			'modalBody' => $interface->fetch("GroupedWork/upload-cover-form-url.tpl"),
-			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#uploadCoverFormByURL\").submit()'>Upload Cover</button>"
+			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#uploadCoverFormByURL\").submit()'>" . translate(['text'=>"Upload Cover", 'isAdminFacing'=>true]) . "</button>"
 		);
 	}
 
@@ -975,8 +971,8 @@ class GroupedWork_AJAX extends JSON_Action
 	function uploadCoverByURL(){
 		$result = [
 			'success' => false,
-			'title' => 'Uploading custom cover',
-			'message' => 'Sorry your cover could not be uploaded'
+			'title' => translate(['text'=>'Uploading custom cover', 'isAdminFacing'=>true]),
+			'message' => translate(['text'=>'Sorry your cover could not be uploaded', 'isAdminFacing'=>true])
 		];
 		if (isset($_POST['coverFileURL'])) {
 			$url = $_POST['coverFileURL'];
@@ -984,9 +980,9 @@ class GroupedWork_AJAX extends JSON_Action
 			$uploadedFile = file_get_contents($url);
 
 			if (isset($uploadedFile["error"]) && $uploadedFile["error"] == 4) {
-				$result['message'] = "No Cover file was uploaded";
+				$result['message'] = translate(['text'=>"No Cover file was uploaded", 'isAdminFacing'=>true]);
 			} else if (isset($uploadedFile["error"]) && $uploadedFile["error"] > 0) {
-				$result['message'] = "Error in file upload for cover " . $uploadedFile["error"];
+				$result['message'] = translate(['text'=>"Error in file upload for cover %1%", 1=>$uploadedFile["error"], 'isAdminFacing'=>true]);
 			}
 
 			$id = $_REQUEST['id'];
@@ -998,15 +994,15 @@ class GroupedWork_AJAX extends JSON_Action
 				if ($upload) {
 					$result['success'] = true;
 				} else {
-					$result['message'] = 'Incorrect image type.  Please upload a PNG, GIF, or JPEG';
+					$result['message'] = translate(['text'=>'Incorrect image type.  Please upload a PNG, GIF, or JPEG', 'isAdminFacing'=>true]);
 				}
 			}
 		}else{
-			$result['message'] = 'No cover was uploaded, please try again.';
+			$result['message'] = translate(['text'=>'No cover was uploaded, please try again.', 'isAdminFacing'=>true]);
 		}
 		if ($result['success']){
 			$this->reloadCover();
-			$result['message'] = 'Your cover has been uploaded successfully';
+			$result['message'] = translate(['text'=>'Your cover has been uploaded successfully', 'isAdminFacing'=>true]);
 		}
 		return $result;
 	}
@@ -1052,7 +1048,7 @@ class GroupedWork_AJAX extends JSON_Action
 
 		$modalBody = $interface->fetch('GroupedWork/copyDetails.tpl');
 		return array(
-			'title' => translate("Copy Summary"),
+			'title' => translate(['text'=>"Copy Summary", 'isPublicFacing'=>true]),
 			'modalBody' => $modalBody,
 		);
 	}
@@ -1061,7 +1057,7 @@ class GroupedWork_AJAX extends JSON_Action
 	function getGroupWithForm(){
 		$results = [
 			'success' => false,
-			'message' => 'Unknown Error'
+			'message' => translate(['text'=>'Unknown Error', 'isPublicFacing'=>true])
 		];
 
 		if (UserAccount::isLoggedIn() && (UserAccount::userHasPermission('Manually Group and Ungroup Works'))) {
@@ -1075,15 +1071,15 @@ class GroupedWork_AJAX extends JSON_Action
 				$interface->assign('groupedWork', $groupedWork);
 				$results = array(
 					'success' => true,
-					'title' => translate("Group this with another work"),
+					'title' => translate(['text'=>"Group this with another work", 'isAdminFacing'=>true]),
 					'modalBody' => $interface->fetch("GroupedWork/groupWithForm.tpl"),
-					'modalButtons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.GroupedWork.processGroupWithForm()'>Group</button>"
+					'modalButtons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.GroupedWork.processGroupWithForm()'>" . translate(['text'=>"Group", 'isAdminFacing'=>true]) . "</button>"
 				);
 			} else {
-				$results['message'] = "Could not find a work with that id";
+				$results['message'] = translate(['text'=>"Could not find a work with that id", 'isAdminFacing'=>true]);
 			}
 		}else{
-			$results['message'] = "You do not have the correct permissions for this operation";
+			$results['message'] = translate(['text'=>"You do not have the correct permissions for this operation", 'isAdminFacing'=>true]);
 		}
 		return $results;
 	}
@@ -1092,7 +1088,7 @@ class GroupedWork_AJAX extends JSON_Action
 	function getGroupWithInfo(){
 		$results = [
 			'success' => false,
-			'message' => 'Unknown Error'
+			'message' => translate(['text'=>'Unknown Error', 'isAdminFacing'=>true])
 		];
 		if (UserAccount::isLoggedIn() && (UserAccount::userHasPermission('Manually Group and Ungroup Works'))) {
 			require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
@@ -1101,13 +1097,13 @@ class GroupedWork_AJAX extends JSON_Action
 			$groupedWork->permanent_id = $id;
 			if ($groupedWork->find(true)) {
 				$results['success'] = true;
-				$results['message'] = "<div class='row'><div class='col-tn-3'>Title</div><div class='col-tn-9'><strong>{$groupedWork->full_title}</strong></div></div>";
-				$results['message'] .= "<div class='row'><div class='col-tn-3'>Author</div><div class='col-tn-9'><strong>{$groupedWork->author}</strong></div></div>";
+				$results['message'] = "<div class='row'><div class='col-tn-3'>" . translate(['text'=>'Title', 'isAdminFacing'=>true]) ."</div><div class='col-tn-9'><strong>{$groupedWork->full_title}</strong></div></div>";
+				$results['message'] .= "<div class='row'><div class='col-tn-3'>" . translate(['text'=>'Author', 'isAdminFacing'=>true]) . "</div><div class='col-tn-9'><strong>{$groupedWork->author}</strong></div></div>";
 			} else {
-				$results['message'] = "Could not find a work with that id";
+				$results['message'] = translate(['text'=>"Could not find a work with that id", 'isAdminFacing'=>true]);
 			}
 		}else{
-			$results['message'] = "You do not have the correct permissions for this operation";
+			$results['message'] = translate(['text'=>"You do not have the correct permissions for this operation", 'isAdminFacing'=>true]);
 		}
 		return $results;
 	}
@@ -1116,7 +1112,7 @@ class GroupedWork_AJAX extends JSON_Action
 	function processGroupWithForm(){
 		$results = [
 			'success' => false,
-			'message' => 'Unknown Error'
+			'message' => translate(['text'=>'Unknown Error', 'isPublicFacing'=>true])
 		];
 		if (UserAccount::isLoggedIn() && (UserAccount::userHasPermission('Manually Group and Ungroup Works'))) {
 			require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
@@ -1130,7 +1126,7 @@ class GroupedWork_AJAX extends JSON_Action
 				$workToGroupWith->permanent_id = $workToGroupWithId;
 				if (!empty($workToGroupWithId) && $workToGroupWith->find(true)){
 					if ($originalGroupedWork->grouping_category != $workToGroupWith->grouping_category){
-						$results['message'] = "These are different categories of works, cannot group.";
+						$results['message'] = translate(['text'=>"These are different categories of works, cannot group.", 'isAdminFacing'=>true]);
 					}else{
 						require_once ROOT_DIR . '/sys/Grouping/GroupedWorkAlternateTitle.php';
 						$groupedWorkAlternateTitle = new GroupedWorkAlternateTitle();
@@ -1142,17 +1138,17 @@ class GroupedWork_AJAX extends JSON_Action
 						$groupedWorkAlternateTitle->insert();
 						$originalGroupedWork->forceReindex(true);
 						$results['success'] = true;
-						$results['message'] = "Your works have been grouped successfully, the index will update shortly.";
+						$results['message'] = translate(['text'=>"Your works have been grouped successfully, the index will update shortly.", 'isAdminFacing'=>true]);
 					}
 				}else{
-					$results['message'] = "Could not find work to group with";
+					$results['message'] = translate(['text'=>"Could not find work to group with", 'isAdminFacing'=>true]);
 				}
 			}else{
-				$results['message'] = "Could not find work for original id";
+				$results['message'] = translate(['text'=>"Could not find work for original id", 'isAdminFacing'=>true]);
 			}
 
 		}else{
-			$results['message'] = "You do not have the correct permissions for this operation";
+			$results['message'] = translate(['text'=>"You do not have the correct permissions for this operation", 'isAdminFacing'=>true]);
 		}
 		return $results;
 	}
@@ -1161,7 +1157,7 @@ class GroupedWork_AJAX extends JSON_Action
 	function getGroupWithSearchForm(){
 		$results = [
 			'success' => false,
-			'message' => 'Unknown Error'
+			'message' => translate(['text'=>'Unknown Error', 'isAdminFacing'=>true])
 		];
 
 		if (UserAccount::isLoggedIn() && (UserAccount::userHasPermission('Manually Group and Ungroup Works'))) {
@@ -1186,7 +1182,7 @@ class GroupedWork_AJAX extends JSON_Action
 
 				$searchResults = $searchObject->processSearch(false, false);
 				$availableRecords = [];
-				$availableRecords[-1] = translate("Select the primary work");
+				$availableRecords[-1] = translate(['text'=>"Select the primary work", 'isAdminFacing'=>true]);
 				$recordIndex = ($searchObject->getPage() - 1) * $searchObject->getLimit();
 				foreach ($searchResults['response']['docs'] as $doc){
 					$recordIndex++;
@@ -1204,15 +1200,15 @@ class GroupedWork_AJAX extends JSON_Action
 
 				$results = array(
 					'success' => true,
-					'title' => translate("Group this with another work"),
+					'title' => translate(['text'=>"Group this with another work", 'isAdminFacing'=>true]),
 					'modalBody' => $interface->fetch("GroupedWork/groupWithSearchForm.tpl"),
-					'modalButtons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.GroupedWork.processGroupWithForm()'>Group</button>"
+					'modalButtons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.GroupedWork.processGroupWithForm()'>" . translate(['text'=>"Group", 'isAdminFacing'=>true]) . "</button>"
 				);
 			} else {
-				$results['message'] = "Could not find a work with that id";
+				$results['message'] = translate(['text'=>"Could not find a work with that id", 'isAdminFacing'=>true]);
 			}
 		}else{
-			$results['message'] = "You do not have the correct permissions for this operation";
+			$results['message'] = translate(['text'=>"You do not have the correct permissions for this operation", 'isAdminFacing'=>true]);
 		}
 		return $results;
 	}
@@ -1220,7 +1216,7 @@ class GroupedWork_AJAX extends JSON_Action
 	function getStaffView(){
 		$result = [
 			'success' => false,
-			'message' => 'Unknown error loading staff view'
+			'message' => translate(['text'=>'Unknown error loading staff view', 'isPublicFacing'=>true])
 		];
 		$id = $_REQUEST['id'];
 		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
@@ -1233,7 +1229,7 @@ class GroupedWork_AJAX extends JSON_Action
 				'staffView' => $interface->fetch($recordDriver->getStaffView())
 			];
 		}else{
-			$result['message'] = 'Could not find that record';
+			$result['message'] = translate(['text'=>'Could not find that record', 'isPublicFacing'=>true]);
 		}
 		return $result;
 	}
@@ -1242,7 +1238,7 @@ class GroupedWork_AJAX extends JSON_Action
 	function deleteAlternateTitle(){
 		$result = [
 			'success' => false,
-			'message' => 'Unknown error deleting alternate title'
+			'message' => translate(['text'=>'Unknown error deleting alternate title', 'isAdminFacing'=>true])
 		];
 		if (UserAccount::isLoggedIn() && (UserAccount::userHasPermission('Set Grouped Work Display Information'))) {
 			$id = $_REQUEST['id'];
@@ -1253,13 +1249,13 @@ class GroupedWork_AJAX extends JSON_Action
 				$alternateTitle->delete();
 				$result = [
 					'success' => true,
-					'message' => "Successfully deleted the alternate title"
+					'message' => translate(['text'=>"Successfully deleted the alternate title", 'isAdminFacing'=>true])
 				];
 			}else{
-				$result['message'] = "Could not find the alternate title to delete";
+				$result['message'] = translate(['text'=>"Could not find the alternate title to delete", 'isAdminFacing'=>true]);
 			}
 		}else{
-			$result['message'] = "You do not have the correct permissions for this operation";
+			$result['message'] = translate(['text'=>"You do not have the correct permissions for this operation", 'isAdminFacing'=>true]);
 		}
 		return $result;
 	}
@@ -1268,7 +1264,7 @@ class GroupedWork_AJAX extends JSON_Action
 	function getDisplayInfoForm(){
 		$results = [
 			'success' => false,
-			'message' => 'Unknown Error'
+			'message' => translate(['text'=>'Unknown Error', 'isAdminFacing'=>true])
 		];
 		if (UserAccount::isLoggedIn() && (UserAccount::userHasPermission('Set Grouped Work Display Information'))) {
 			require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
@@ -1305,15 +1301,15 @@ class GroupedWork_AJAX extends JSON_Action
 
 				$results = array(
 					'success' => true,
-					'title' => translate("Set display information"),
+					'title' => translate(['text'=>"Set display information", 'isAdminFacing'=>true]),
 					'modalBody' => $interface->fetch("GroupedWork/groupedWorkDisplayInfoForm.tpl"),
-					'modalButtons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.GroupedWork.processGroupedWorkDisplayInfoForm(\"{$id}\")'>" . translate("Set Display Info") . "</button>"
+					'modalButtons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.GroupedWork.processGroupedWorkDisplayInfoForm(\"{$id}\")'>" . translate(['text'=>"Set Display Info", 'isAdminFacing'=>true]) . "</button>"
 				);
 			} else {
-				$results['message'] = "Could not find a work with that id";
+				$results['message'] = translate(['text'=>"Could not find a work with that id", 'isAdminFacing'=>true]);
 			}
 		}else{
-			$results['message'] = "You do not have the correct permissions for this operation";
+			$results['message'] = translate(['text'=>"You do not have the correct permissions for this operation", 'isAdminFacing'=>true]);
 		}
 		return $results;
 	}
@@ -1322,7 +1318,7 @@ class GroupedWork_AJAX extends JSON_Action
 	function processDisplayInfoForm(){
 		$results = [
 			'success' => false,
-			'message' => 'Unknown Error'
+			'message' => translate(['text'=>'Unknown Error', 'isAdminFacing'=>true])
 		];
 		if (UserAccount::isLoggedIn() && (UserAccount::userHasPermission('Set Grouped Work Display Information'))) {
 			require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
@@ -1338,7 +1334,7 @@ class GroupedWork_AJAX extends JSON_Action
 					$seriesDisplayOrder = '0';
 				}
 				if (empty($title) && empty($author) && empty($seriesName) && empty($seriesDisplayOrder)){
-					$results['message'] = "Please specify at least one piece of information";
+					$results['message'] = translate(['text'=>"Please specify at least one piece of information", 'isAdminFacing'=>true]);
 				}else{
 					require_once ROOT_DIR . '/sys/Grouping/GroupedWorkDisplayInfo.php';
 					$existingDisplayInfo  = new GroupedWorkDisplayInfo();
@@ -1361,14 +1357,14 @@ class GroupedWork_AJAX extends JSON_Action
 
 					$results = [
 						'success' => true,
-						'message' => 'The display information has been set and the index will update shortly.'
+						'message' => translate(['text'=>'The display information has been set and the index will update shortly.', 'isAdminFacing'=>true])
 					];
 				}
 			} else {
-				$results['message'] = "Could not find a work with that id";
+				$results['message'] = translate(['text'=>"Could not find a work with that id", 'isAdminFacing'=>true]);
 			}
 		}else{
-			$results['message'] = "You do not have the correct permissions for this operation";
+			$results['message'] = translate(['text'=>"You do not have the correct permissions for this operation", 'isAdminFacing'=>true]);
 		}
 		return $results;
 	}
@@ -1377,8 +1373,8 @@ class GroupedWork_AJAX extends JSON_Action
 	function deleteDisplayInfo(){
 		$result = [
 			'success' => false,
-			'title' => 'Deleting display information',
-			'message' => 'Unknown error deleting display info'
+			'title' => translate(['text'=>'Deleting display information', 'isAdminFacing'=>true]),
+			'message' => translate(['text'=>'Unknown error deleting display info', 'isAdminFacing'=>true])
 		];
 		if (UserAccount::isLoggedIn() && (UserAccount::userHasPermission('Set Grouped Work Display Information'))) {
 			$id = $_REQUEST['id'];
@@ -1395,13 +1391,13 @@ class GroupedWork_AJAX extends JSON_Action
 				}
 				$result = [
 					'success' => true,
-					'message' => "Successfully deleted the display info, the index will update shortly."
+					'message' => translate(['text'=>"Successfully deleted the display info, the index will update shortly.", 'isAdminFacing'=>true])
 				];
 			}else{
-				$result['message'] = "Could not find the display info to delete, it's likely been deleted already";
+				$result['message'] = translate(['text'=>"Could not find the display info to delete, it's likely been deleted already", 'isAdminFacing'=>true]);
 			}
 		}else{
-			$result['message'] = "You do not have the correct permissions for this operation";
+			$result['message'] = translate(['text'=>"You do not have the correct permissions for this operation", 'isAdminFacing'=>true]);
 		}
 		return $result;
 	}
@@ -1445,19 +1441,19 @@ class GroupedWork_AJAX extends JSON_Action
 			$interface->assign('validFiles', $validFiles);
 
 			if ($fileType == 'RecordPDF') {
-				$buttonTitle = translate('Download PDF');
+				$buttonTitle = translate(['text'=>'Download PDF', 'isAdminFacing'=>true]);
 			} else {
-				$buttonTitle = translate('Download Supplemental File');
+				$buttonTitle = translate(['text'=>'Download Supplemental File', 'isAdminFacing'=>true]);
 			}
 			return [
-				'title' => 'Select File to download',
+				'title' => translate(['text'=>'Select File to download', 'isAdminFacing'=>true]),
 				'modalBody' => $interface->fetch("GroupedWork/select-download-file-form.tpl"),
 				'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#downloadFile\").submit()'>{$buttonTitle}</button>"
 			];
 		} else {
 			return [
-				'title' => 'Error',
-				'modalBody' => "<div class='alert alert-danger'>Could not find that record</div>",
+				'title' => translate(['text'=>'Error', 'isAdminFacing'=>true]),
+				'modalBody' => "<div class='alert alert-danger'>" . translate(['text'=>"Could not find that record", 'isAdminFacing'=>true]) . "</div>",
 				'modalButtons' => ""
 			];
 		}
@@ -1501,16 +1497,16 @@ class GroupedWork_AJAX extends JSON_Action
 			asort($validFiles);
 			$interface->assign('validFiles', $validFiles);
 
-			$buttonTitle = translate('View PDF');
+			$buttonTitle = translate(['text'=>'View PDF', 'isAdminFacing'=>true]);
 			return [
-				'title' => 'Select File to View',
+				'title' => translate(['text'=>'Select File to View', 'isAdminFacing'=>true]),
 				'modalBody' => $interface->fetch("GroupedWork/select-view-file-form.tpl"),
 				'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#viewFile\").submit()'>{$buttonTitle}</button>"
 			];
 		} else {
 			return [
-				'title' => 'Error',
-				'modalBody' => "<div class='alert alert-danger'>Could not find that record</div>",
+				'title' => translate(['text'=>'Error', 'isAdminFacing'=>true]),
+				'modalBody' => "<div class='alert alert-danger'>" . translate(['text'=>"Could not find that record", 'isAdminFacing'=>true]) . "</div>",
 				'modalButtons' => ""
 			];
 		}
@@ -1528,9 +1524,9 @@ class GroupedWork_AJAX extends JSON_Action
 		$interface->assign('recordType', $recordType);
 
 		return array(
-			'title' => 'Previewing Related Cover',
+			'title' => translate(['text'=>'Previewing Related Cover', 'isAdminFacing'=>true]),
 			'modalBody' => $interface->fetch("GroupedWork/previewRelatedCover.tpl"),
-			'modalButtons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.GroupedWork.setRelatedCover(\"{$recordId}\",\"{$groupedWorkId}\",\"{$recordType}\")'>Use Cover</button>"
+			'modalButtons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.GroupedWork.setRelatedCover(\"{$recordId}\",\"{$groupedWorkId}\",\"{$recordType}\")'>" . translate(['text'=>"Use Cover", 'isAdminFacing'=>true]) . "</button>"
 		);
 	}
 
@@ -1538,8 +1534,8 @@ class GroupedWork_AJAX extends JSON_Action
 	function setRelatedCover(){
 		$result = [
 			'success' => false,
-			'title' => 'Previewing cover from related work',
-			'message' => 'Sorry the cover could not be set.'
+			'title' => translate(['text'=>'Previewing cover from related work', 'isAdminFacing'=>true]),
+			'message' => translate(['text'=>'Sorry the cover could not be set.', 'isAdminFacing'=>true])
 		];
 		if (UserAccount::isLoggedIn() && (UserAccount::userHasPermission('Upload Covers'))){
 			require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
@@ -1554,15 +1550,15 @@ class GroupedWork_AJAX extends JSON_Action
 				if ($groupedWork->update()) {
 					$result['success'] = true;
 				}else{
-					$result['message'] .= " Could not update the related cover.";
+					$result['message'] .= translate(['text'=>" Could not update the related cover.", 'isAdminFacing'=>true]);
 				}
 			}else{
-				$result['message'] .= " Could not find the work to update.";
+				$result['message'] .= translate(['text'=>" Could not find the work to update.", 'isAdminFacing'=>true]);
 			}
 		}
 		if ($result['success']){
 			$this->reloadCover();
-			$result['message'] = 'Your cover has been set successfully';
+			$result['message'] = translate(['text'=>'Your cover has been set successfully', 'isAdminFacing'=>true]);
 		}
 		return $result;
 	}
@@ -1579,9 +1575,9 @@ class GroupedWork_AJAX extends JSON_Action
 			$groupedWork->update();
 			$this->reloadCover();
 
-			return array('success' => true, 'message' => 'The cover has been reset');
+			return array('success' => true, 'message' => translate(['text'=>'The cover has been reset', 'isAdminFacing'=>true]));
 		}else{
-			return array('success' => false, 'message' => 'Unable to reset the cover');
+			return array('success' => false, 'message' => translate(['text'=>'Unable to reset the cover', 'isAdminFacing'=>true]));
 		}
 	}
 
