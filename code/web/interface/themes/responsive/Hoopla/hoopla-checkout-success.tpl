@@ -1,13 +1,22 @@
 {strip}
 	{if !empty($hooplaUser)}{* Linked User that is not the main user *}
 		<p>
-			Using card for {$hooplaUser->getNameAndLibraryLabel()} :
+			{translate text="Using card for %1%" 1=$hooplaUser->getNameAndLibraryLabel() isPublicFacing=true}
 		</p>
 	{/if}
 	{if $hooplaPatronStatus}
 		<div class="alert alert-info">
-			You have <span class="badge">{$hooplaPatronStatus->numCheckedOut}</span> Hoopla title{if $hooplaPatronStatus->numCheckedOut > 1}s{/if} currently checked out. <br>
-			You can borrow <span class="badge">{$hooplaPatronStatus->numCheckoutsRemaining}</span> more Hoopla title{if $hooplaPatronStatus->numCheckoutsRemaining != 1}s{/if} this month.
+			{if $hooplaPatronStatus->numCheckedOut == 1}
+				{translate text="You have 1 Hoopla title currently checked out." isPublicFacing=true}
+			{else}
+				{translate text="You have %1% Hoopla titles currently checked out." 1=$hooplaPatronStatus->numCheckedOut isPublicFacing=true}
+			{/if}
+			<br>
+			{if $hooplaPatronStatus->numCheckoutsRemaining == 1}
+				{translate text="You can borrow 1 more Hoopla title this month." isPublicFacing=true}
+			{else}
+				{translate text="You can borrow %1% more Hoopla titles this month." 1=$hooplaPatronStatus->numCheckoutsRemaining isPublicFacing=true}
+			{/if}
 		</div>
 	{/if}
 {/strip}

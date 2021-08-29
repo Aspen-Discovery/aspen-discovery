@@ -1,12 +1,12 @@
 {strip}
 	<div id="main-content" class="col-sm-12">
-		<h1>{translate text="Hoopla Dashboard"}</h1>
+		<h1>{translate text="Hoopla Dashboard" isAdminFacing=true}</h1>
 		{include file="Admin/selectInterfaceForm.tpl"}
 		<div class="row">
 			<div class="dashboardCategory col-sm-6">
 				<div class="row">
 					<div class="col-sm-10 col-sm-offset-1">
-						<h2 class="dashboardCategoryLabel">Active Users</h2>
+						<h2 class="dashboardCategoryLabel">{translate text="Active Users" isAdminFacing=true}</h2>
 					</div>
 				</div>
 				<div class="row">
@@ -32,7 +32,7 @@
 			<div class="dashboardCategory col-sm-6">
 				<div class="row">
 					<div class="col-sm-10 col-sm-offset-1">
-						<h2 class="dashboardCategoryLabel">Records With Usage</h2>
+						<h2 class="dashboardCategoryLabel">{translate text="Records With Usage" isAdminFacing=true}</h2>
 					</div>
 				</div>
 				<div class="row">
@@ -58,7 +58,7 @@
 			<div class="dashboardCategory col-sm-6">
 				<div class="row">
 					<div class="col-sm-10 col-sm-offset-1">
-						<h2 class="dashboardCategoryLabel">Loans</h2>
+						<h2 class="dashboardCategoryLabel">{translate text="Loans" isAdminFacing=true}</h2>
 					</div>
 				</div>
 				<div class="row">

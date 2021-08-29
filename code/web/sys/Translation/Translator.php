@@ -176,24 +176,26 @@ class Translator
 							} else {
 								//Check the greenhouse to see if there is a translation there
 								$translatedInGreenhouse = false;
-								require_once ROOT_DIR . '/sys/SystemVariables.php';
-								$systemVariables = SystemVariables::getSystemVariables();
-								if ($systemVariables && !empty($systemVariables->greenhouseUrl)) {
-									if ($this->greenhouseCurlWrapper == null) {
-										require_once ROOT_DIR . '/sys/CurlWrapper.php';
-										$this->greenhouseCurlWrapper = new CurlWrapper();
-									}
-									$body = [
-										'term' => $phrase,
-										'languageCode' => $activeLanguage->code,
-									];
-									$response = $this->greenhouseCurlWrapper->curlPostPage($systemVariables->greenhouseUrl . '/API/GreenhouseAPI?method=getDefaultTranslation', $body);
-									if ($response !== false) {
-										$jsonResponse = json_decode($response);
-										if ($jsonResponse->result->success){
-											$translation->translated = 1;
-											$defaultTranslation = $jsonResponse->result->translation;
-											$translatedInGreenhouse = true;
+								if ($activeLanguage->code != 'en') {
+									require_once ROOT_DIR . '/sys/SystemVariables.php';
+									$systemVariables = SystemVariables::getSystemVariables();
+									if ($systemVariables && !empty($systemVariables->greenhouseUrl)) {
+										if ($this->greenhouseCurlWrapper == null) {
+											require_once ROOT_DIR . '/sys/CurlWrapper.php';
+											$this->greenhouseCurlWrapper = new CurlWrapper();
+										}
+										$body = [
+											'term' => $phrase,
+											'languageCode' => $activeLanguage->code,
+										];
+										$response = $this->greenhouseCurlWrapper->curlPostPage($systemVariables->greenhouseUrl . '/API/GreenhouseAPI?method=getDefaultTranslation', $body);
+										if ($response !== false) {
+											$jsonResponse = json_decode($response);
+											if ($jsonResponse->result->success) {
+												$translation->translated = 1;
+												$defaultTranslation = $jsonResponse->result->translation;
+												$translatedInGreenhouse = true;
+											}
 										}
 									}
 								}
