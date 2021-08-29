@@ -1640,11 +1640,13 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 		if (!$this->copiesInfoLoaded) {
 			$this->copiesInfoLoaded = true;
 			$indexingProfile = $this->getIndexingProfile();
-			$dueDateFormatPHP = $indexingProfile->dueDateFormat;
-			$dueDateFormatPHP = str_replace('yyyy', 'Y', $dueDateFormatPHP);
-			$dueDateFormatPHP = str_replace('yy', 'y', $dueDateFormatPHP);
-			$dueDateFormatPHP = str_replace('MM', 'm', $dueDateFormatPHP);
-			$dueDateFormatPHP = str_replace('dd', 'd', $dueDateFormatPHP);
+			if ($indexingProfile instanceof IndexingProfile) {
+				$dueDateFormatPHP = $indexingProfile->dueDateFormat;
+				$dueDateFormatPHP = str_replace('yyyy', 'Y', $dueDateFormatPHP);
+				$dueDateFormatPHP = str_replace('yy', 'y', $dueDateFormatPHP);
+				$dueDateFormatPHP = str_replace('MM', 'm', $dueDateFormatPHP);
+				$dueDateFormatPHP = str_replace('dd', 'd', $dueDateFormatPHP);
+			}
 			$noteTranslationMap = new TranslationMap();
 			$noteTranslationMap->indexingProfileId = $indexingProfile->id;
 			$noteTranslationMap->name = 'note';

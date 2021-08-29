@@ -1,5 +1,5 @@
 {strip}
 	<div id="recordCover" class="text-center row">
-		<img alt="{translate text='Book Cover' inAttribute=true}" class="img-thumbnail" src="/bookcover.php?id={$groupedWorkId}&size=large&type=grouped_work">
+		<img alt="{translate text='Book Cover' isPublicFacing=true isPublicFacing=true}" class="img-thumbnail" src="/bookcover.php?id={$groupedWorkId}&size=large&type=grouped_work">
 	</div>
 {/strip}
