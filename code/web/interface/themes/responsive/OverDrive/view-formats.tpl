@@ -40,10 +40,6 @@
 		</div>
 	</div>
 	{/foreach}
-	<div id="formatHelp">
-		Need Help?<br />
-		{include file='OverDrive/overdrive-help.tpl'}
-	</div>
 {else}
 	No Copies Found
 {/if}

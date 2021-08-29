@@ -145,7 +145,6 @@ class Library extends DataObject
 
 	public /** @noinspection PhpUnused */ $publicListsToInclude;
 	public /** @noinspection PhpUnused */ $showWikipediaContent;
-	public $eContentSupportAddress;
 	public $restrictOwningBranchesAndSystems;
 	public $allowPatronAddressUpdates;
 	public $allowPatronPhoneNumberUpdates;
@@ -476,7 +475,6 @@ class Library extends DataObject
 
 			// Contact Links //
 			'contactSection' => array('property'=>'contact', 'type' => 'section', 'label' =>'Contact Links', 'hideInLists' => true, 'permissions' => ['Library Contact Settings'] ,'properties' => array(
-				'eContentSupportAddress' => array('property' => 'eContentSupportAddress', 'type' => 'multiemail', 'label' => 'E-Content Support Address', 'description' => 'An email address to receive support requests for patrons with eContent problems.', 'size' => '80', 'hideInLists' => true, 'default' => ''),
 				'facebookLink' => array('property'=>'facebookLink', 'type'=>'text', 'label'=>'Facebook Link Url', 'description'=>'The url to Facebook (leave blank if the library does not have a Facebook account', 'size'=>'40', 'maxLength' => 255, 'hideInLists' => true),
 				'twitterLink' => array('property'=>'twitterLink', 'type'=>'text', 'label'=>'Twitter Link Url', 'description'=>'The url to Twitter (leave blank if the library does not have a Twitter account', 'size'=>'40', 'maxLength' => 255, 'hideInLists' => true),
 				'youtubeLink' => array('property'=>'youtubeLink', 'type'=>'text', 'label'=>'Youtube Link Url', 'description'=>'The url to Youtube (leave blank if the library does not have a Youtube account', 'size'=>'40', 'maxLength' => 255, 'hideInLists' => true),
