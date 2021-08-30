@@ -17,10 +17,8 @@ require_once '../bootstrap_aspen.php';
 # ****************************************************************************************************************************
 # * grab the passed location parameter, then find the path
 # ****************************************************************************************************************************
-$libraryInfo = $_GET['library'];
-$locationInfo = urlPath($libraryInfo);
-$urlPath = $locationInfo[0];
-$shortname = $locationInfo[1];
+$urlPath = $_SERVER['SERVER_NAME'];
+$shortname = $_GET['library'];
 
 # ****************************************************************************************************************************
 # * give the number of results to return from the search - needed to accomodate for the culling of Hoopla and Kanopy
@@ -32,7 +30,7 @@ $searchLimit = 100;
 # ****************************************************************************************************************************
 $browseCat = $_GET['limiter'];
 if (empty($browseCat)) {
-	$browseCat = 'main_new_this_week';
+	$browseCat = 'all_everyone';
 }
 
 # ****************************************************************************************************************************

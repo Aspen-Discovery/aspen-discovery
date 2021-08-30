@@ -9,21 +9,20 @@
 # ****************************************************************************************************************************
 # * include the helper file that holds the URL information by client
 # ****************************************************************************************************************************
-include_once 'config.php';
+//include_once 'config.php';
 
 
 # ****************************************************************************************************************************
 # * grab the passed location parameter, then find the path
 # ****************************************************************************************************************************
-$libraryInfo      = $_GET['library'];
-$locationInfo = urlPath($libraryInfo);
-$urlPath      = $locationInfo[0];
-$libraryID    = $locationInfo[2];
+$urlPath = $_SERVER['SERVER_NAME'];
+$shortname = $_GET['library'];
+$libraryId = $_GET['libraryId'];
 
 # ****************************************************************************************************************************
 # * assemble the login API URL
 # ****************************************************************************************************************************
-$libraryInfo = $urlPath . '/API/SystemAPI?method=getLocationInfo&id=' . $libraryID;
+$libraryInfo = $urlPath . '/API/SystemAPI?method=getLocationInfo&id=' . $libraryId;
 
 # ****************************************************************************************************************************
 # * grab the library info
