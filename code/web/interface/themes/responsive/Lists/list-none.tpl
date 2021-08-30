@@ -39,9 +39,9 @@
 			<div id="explore-more-bar-placeholder"></div>
 			<script type="text/javascript">
 				$(document).ready(
-						function () {ldelim}
-							AspenDiscovery.Searches.loadExploreMoreBar('lists', '{$exploreMoreSearchTerm|escape:"html"}');
-							{rdelim}
+					function () {ldelim}
+						AspenDiscovery.Searches.loadExploreMoreBar('lists', '{$exploreMoreSearchTerm|escape:"html"}');
+					{rdelim}
 				);
 			</script>
 		{/if}
