@@ -25,7 +25,7 @@
 		</p>
 		<div class="btn-group">
 			{foreach from=$additionalObjectActions item=action}
-				<a class="btn btn-default btn-sm"{if $action.url} href='{$action.url}'{/if}{if $action.onclick} onclick="{$action.onclick}"{/if}>{$action.text}</a>
+				<a class="btn btn-default btn-sm"{if $action.url} href='{$action.url}'{/if}{if $action.onclick} onclick="{$action.onclick}"{/if}>{translate text=$action.text isAdminFacing=true}</a>
 			{/foreach}
 		</div>
 		{if empty('formLabel')}

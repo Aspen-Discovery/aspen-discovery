@@ -268,6 +268,9 @@ class Translator
 				$returnString = str_replace('%' . $index . '%', $replacementValue, $returnString);
 			}
 		}
+		if (IPAddress::showDebuggingInformation() && !$isPublicFacing && !$isAdminFacing && !$isMetadata && !$isAdminEnteredData) {
+			$returnString .= ' Translation metadata not set properly';
+		}
 		return $returnString;
 	}
 
