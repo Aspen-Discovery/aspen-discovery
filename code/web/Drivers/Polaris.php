@@ -37,7 +37,7 @@ class Polaris extends AbstractIlsDriver
 		$summary->source = 'ils';
 		$summary->resetCounters();
 
-		$basicDataResponse = $this->getBasicDataResponse($patron->getBarcode(), $patron->getPasswordOrPin());
+		$basicDataResponse = $this->getBasicDataResponse($patron->getBarcode(), $patron->getPasswordOrPin(), UserAccount::isUserMasquerading());
 		if ($basicDataResponse != null){
 			//TODO: Account for electronic items
 			$summary->numCheckedOut = $basicDataResponse->ItemsOutCount;
@@ -97,7 +97,7 @@ class Polaris extends AbstractIlsDriver
 	 */
 	private function getBasicDataResponse(string $patronBarcode, string $password, bool $fromMasquerade = false){
 		$polarisUrl = "/PAPIService/REST/public/v1/1033/100/1/patron/{$patronBarcode}/basicdata?addresses=1";
-		$response = $this->getWebServiceResponse($polarisUrl, 'GET', $this->getAccessToken($patronBarcode, $password), false, $fromMasquerade);
+		$response = $this->getWebServiceResponse($polarisUrl, 'GET', $this->getAccessToken($patronBarcode, $password, $fromMasquerade), false, $fromMasquerade);
 		if ($response && $this->lastResponseCode == 200){
 			$jsonResponse = json_decode($response);
 			return $jsonResponse->PatronBasicData;
@@ -892,13 +892,13 @@ class Polaris extends AbstractIlsDriver
 		}
 	}
 
-	private function getAccessToken(string $barcode, string $password)
+	private function getAccessToken(string $barcode, string $password, bool $fromMasquerade = false)
 	{
 		//Get the session token for the user
 		if (isset(Polaris::$accessTokensForUsers[$barcode])) {
 			return Polaris::$accessTokensForUsers[$barcode]['accessToken'];
 		} else {
-			$sessionInfo = $this->loginViaWebService($barcode, $password);
+			$sessionInfo = $this->loginViaWebService($barcode, $password, $fromMasquerade);
 			return $sessionInfo['accessToken'];
 		}
 	}
