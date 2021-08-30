@@ -16,6 +16,10 @@ var Globals = (function () {
 		hasAxis360Connection: false,
 		hasCloudLibraryConnection: false,
 		hasHooplaConnection: false,
-		hasOverDriveConnection: false
+		hasOverDriveConnection: false,
+		loadingTitle: 'Loading',
+		loadingBody: 'Loading, please wait',
+		requestFailedTitle: 'Request Failed',
+		requestFailedBody: 'There was an error with this AJAX Request.'
 	}
 })(Globals || {});

@@ -56,7 +56,7 @@ class Koha extends AbstractIlsDriver
 		];
 		$oauthToken = $this->getOAuthToken();
 		if ($oauthToken == false) {
-			$result['messages'][] = translate(['text' => 'unable_to_authenticate', 'defaultText' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.']);
+			$result['messages'][] = translate(['text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.', 'isPublicFacing'=>true]);
 		} else {
 			$apiUrl = $this->getWebServiceURL() . "/api/v1/patrons/{$patron->username}";
 			$postParams = json_encode($postVariables);
@@ -186,7 +186,7 @@ class Koha extends AbstractIlsDriver
 
 				$oauthToken = $this->getOAuthToken();
 				if ($oauthToken == false) {
-					$result['messages'][] = translate(['text' => 'unable_to_authenticate', 'defaultText' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.']);
+					$result['messages'][] = translate(['text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.', 'isPublicFacing'=>true]);
 				} else {
 					$apiUrl = $this->getWebServiceURL() . "/api/v1/patrons/{$patron->username}";
 					$postParams = json_encode($postVariables);
@@ -420,7 +420,7 @@ class Koha extends AbstractIlsDriver
 			if ($curCheckout->autoRenew == 1){
 				$autoRenewError = $curRow['auto_renew_error'];
 				if ($autoRenewError == 'null') {
-					$curCheckout->autoRenewError = translate(['text' => 'koha_auto_renew_auto', 'defaultText' => 'If eligible, this item will renew on<br/>%1%', '1' => $renewalDate]);
+					$curCheckout->autoRenewError = translate(['text' => 'If eligible, this item will renew on<br/>%1%', '1' => $renewalDate,'isPublicFacing'=>true]);
 				}
 			}
 
@@ -430,10 +430,10 @@ class Koha extends AbstractIlsDriver
 			$holdsResults = mysqli_query($this->dbConnection, $holdsSql);
 			$holdsCount = $holdsResults->num_rows;
 			if ($holdsCount >= 1 && $curCheckout->autoRenew == 1) {
-				$curCheckout->autoRenewError = translate(['text' => 'koha_auto_renew_on_reserve', 'defaultText' => 'Cannot auto renew, on hold for another user']);
+				$curCheckout->autoRenewError = translate(['text' => 'Cannot auto renew, on hold for another user','isPublicFacing'=>true]);
 			} else if ($holdsCount >= 1 && $curCheckout->canRenew == 1 && $curCheckout->autoRenew == 0) {
 				$curCheckout->canRenew = "0";
-				$curCheckout->renewError = translate(['text' => 'koha_on_hold', 'defaultText' => 'On hold for another user']);
+				$curCheckout->renewError = translate(['text' => 'On hold for another user','isPublicFacing'=>true]);
 			}
 
 			//Get the max renewals by figuring out what rule the checkout was issued under
@@ -449,11 +449,11 @@ class Koha extends AbstractIlsDriver
 
 					if ($curCheckout->autoRenew == 1) {
 						if ($curCheckout->maxRenewals == $curCheckout->renewCount) {
-								$curCheckout->autoRenewError = translate(['text' => 'koha_auto_renew_too_many', 'defaultText' => 'Cannot auto renew, too many renewals']);
+								$curCheckout->autoRenewError = translate(['text' => 'Cannot auto renew, too many renewals','isPublicFacing'=>true]);
 						}
 					} else if ($curCheckout->maxRenewals == $curCheckout->renewCount) {
 						$curCheckout->canRenew = "0";
-						$curCheckout->renewError = translate(['text' => 'koha_too_many_renews', 'defaultText' => 'Renewed too many times']);
+						$curCheckout->renewError = translate(['text' => 'Renewed too many times','isPublicFacing'=>true]);
 					}
 				}
 				$issuingRulesRS->close();
@@ -470,7 +470,7 @@ class Koha extends AbstractIlsDriver
 					$today = date("Y-m-d");
 
 					if ($expirationDate < $today) {
-						$curCheckout->autoRenewError = translate(['text' => 'koha_auto_renew_auto_account_expired', 'defaultText' => 'Cannot auto renew, your account has expired']);
+						$curCheckout->autoRenewError = translate(['text' => 'Cannot auto renew, your account has expired','isPublicFacing'=>true]);
 					}
 				}
 			}
@@ -1067,7 +1067,7 @@ class Koha extends AbstractIlsDriver
 
 		$oauthToken = $this->getOAuthToken();
 		if ($oauthToken == false) {
-			$result['message'] = translate(['text' => 'unable_to_authenticate', 'defaultText' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.']);
+			$result['message'] = translate(['text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.', 'isPublicFacing'=>true]);
 		} else {
 			$apiUrl = $this->getWebServiceUrl() . "/api/v1/holds";
 			$postParams = [
@@ -1622,7 +1622,7 @@ class Koha extends AbstractIlsDriver
 
 		$oauthToken = $this->getOAuthToken();
 		if ($oauthToken == false) {
-			$result['message'] = translate(['text' => 'unable_to_authenticate', 'defaultText' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.']);
+			$result['message'] = translate(['text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.', 'isPublicFacing'=>true]);
 		} else {
 			$apiUrl = $this->getWebServiceUrl() . "/api/v1/holds/$itemToFreezeId/suspension";
 			$postParams = "";
@@ -1677,7 +1677,7 @@ class Koha extends AbstractIlsDriver
 
 		$oauthToken = $this->getOAuthToken();
 		if ($oauthToken == false) {
-			$result['message'] = translate(['text' => 'unable_to_authenticate', 'defaultText' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.']);
+			$result['message'] = translate(['text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.', 'isPublicFacing'=>true]);
 		} else {
 			$apiUrl = $this->getWebServiceUrl() . "/api/v1/holds/$itemToThawId/suspension";
 
@@ -1714,7 +1714,7 @@ class Koha extends AbstractIlsDriver
 
 		$oauthToken = $this->getOAuthToken();
 		if ($oauthToken == false) {
-			$result['message'] = translate(['text' => 'unable_to_authenticate', 'defaultText' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.']);
+			$result['message'] = translate(['text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.', 'isPublicFacing'=>true]);
 		} else {
 			$this->apiCurlWrapper->addCustomHeaders([
 				'Authorization: Bearer ' . $oauthToken,
@@ -1742,11 +1742,17 @@ class Koha extends AbstractIlsDriver
 
 				$apiUrl = $this->getWebServiceUrl() . "/api/v1/holds/$itemToUpdateId";
 				$postParams = [];
-				$postParams['branchcode'] = $newPickupLocation;
+
 				$postParams['pickup_library_id'] = $newPickupLocation;
 				$postParams['priority'] = $currentHold->priority;
 				$postParams = json_encode($postParams);
-				$response = $this->apiCurlWrapper->curlSendPage($apiUrl, 'PUT', $postParams);
+				if ($this->getKohaVersion() >= 21.05){
+					$method = 'PATCH';
+				}else{
+					$method = 'PUT';
+					$postParams['branchcode'] = $newPickupLocation;
+				}
+				$response = $this->apiCurlWrapper->curlSendPage($apiUrl, $method, $postParams);
 				if (!$response) {
 					return $result;
 				} else {
@@ -1755,10 +1761,10 @@ class Koha extends AbstractIlsDriver
 						$result['message'] = $hold_response->error;
 						$result['success'] = true;
 					} elseif ($hold_response->pickup_library_id != $newPickupLocation) {
-						$result['message'] = translate(['text'=>'ils_change_pickup_location_failed', 'Sorry, the pickup location of your hold could not be changed.']);
+						$result['message'] = translate(['text'=>'Sorry, the pickup location of your hold could not be changed.', 'isPublicFacing'=>true]);
 						$result['success'] = true;
 					} else {
-						$result['message'] = translate(['text'=>'ils_change_pickup_location_success', 'The pickup location of your hold was changed successfully.']);
+						$result['message'] = translate(['text'=>'The pickup location of your hold was changed successfully.', 'isPublicFacing'=>true]);
 						$result['success'] = true;
 						$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
 						$patron->forceReloadOfHolds();
@@ -2277,7 +2283,7 @@ class Koha extends AbstractIlsDriver
 
 			$oauthToken = $this->getOAuthToken();
 			if ($oauthToken == false) {
-				$result['messages'][] = translate(['text' => 'unable_to_authenticate', 'defaultText' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.']);
+				$result['messages'][] = translate(['text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.', 'isPublicFacing'=>true]);
 			} else {
 				$apiUrl = $this->getWebServiceURL() . "/api/v1/patrons";
 				$postParams = json_encode($postVariables);
@@ -2345,7 +2351,7 @@ class Koha extends AbstractIlsDriver
 		$result = ['success' => false, 'message' => "Unknown error updating password."];
 		$oauthToken = $this->getOAuthToken();
 		if ($oauthToken == false) {
-			$result['message'] = translate(['text' => 'unable_to_authenticate', 'defaultText' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.']);
+			$result['message'] = translate(['text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.', 'isPublicFacing'=>true]);
 		} else {
 			$borrowerNumber = $patron->username;
 			$result = $this->resetPinInKoha($borrowerNumber, $newPin, $oauthToken);
@@ -3053,6 +3059,17 @@ class Koha extends AbstractIlsDriver
 				case "Item_Checkout":
 					$messageType['label'] = 'Item checkout';
 					break;
+				case "Ill_ready":
+					$messageType['label'] = 'ILL ready';
+					break;
+				case "Ill_unavailable":
+					$messageType['label'] = 'ILL unavailable';
+					break;
+				case "Auto_Renewals":
+					$messageType['label'] = 'Auto Renewals';
+					break;
+				default:
+					$messageType['label'] = $messageType['message_name'];
 			}
 			$messageAttributes[] = $messageType;
 		}
@@ -3203,7 +3220,7 @@ class Koha extends AbstractIlsDriver
 
 		$oauthToken = $this->getOAuthToken();
 		if ($oauthToken == false) {
-			$result['message'] = translate(['text' => 'unable_to_authenticate', 'defaultText' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.']);
+			$result['message'] = translate(['text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.', 'isPublicFacing'=>true]);
 			$logger->log('Unable to authenticate with Koha while completing fine payment', Logger::LOG_ERROR);
 		} else {
 			$accountLinesPaid = explode(',', $payment->finesPaid);
@@ -3432,7 +3449,7 @@ class Koha extends AbstractIlsDriver
 
 		$oauthToken = $this->getOAuthToken();
 		if ($oauthToken == false) {
-			$result['message'] = translate(['text' => 'unable_to_authenticate', 'defaultText' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.']);
+			$result['message'] = translate(['text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.', 'isPublicFacing'=>true]);
 		} else {
 			$apiUrl = $this->getWebServiceURL() . "/api/v1/patrons/{$patron->username}";
 			$postParams = json_encode($postVariables);
@@ -3539,7 +3556,7 @@ class Koha extends AbstractIlsDriver
 			}else{
 				$oauthToken = $this->getOAuthToken();
 				if ($oauthToken == false) {
-					$result['message'] = translate(['text' => 'unable_to_authenticate', 'defaultText' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.']);
+					$result['message'] = translate(['text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.', 'isPublicFacing'=>true]);
 				} else {
 					$result = $this->resetPinInKoha($borrowerNumber, $_REQUEST['pin1'], $oauthToken);
 					if ($result['success'] == false){
@@ -3696,7 +3713,7 @@ class Koha extends AbstractIlsDriver
 
 		$oauthToken = $this->getOAuthToken();
 		if ($oauthToken == false) {
-			$result['message'] = translate(['text' => 'unable_to_authenticate', 'defaultText' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.']);
+			$result['message'] = translate(['text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.', 'isPublicFacing'=>true]);
 		} else {
 			$apiUrl = $this->getWebServiceURL() . "/api/v1/patrons/{$patron->username}";
 			$postParams = json_encode($postVariables);

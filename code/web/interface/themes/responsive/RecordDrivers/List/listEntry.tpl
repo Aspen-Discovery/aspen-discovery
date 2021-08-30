@@ -24,7 +24,7 @@
 				<div class="col-xs-12">
 					<span class="result-index">{$resultIndex})</span>&nbsp;
 					<a href="/MyAccount/MyList/{$summShortId}" class="result-title notranslate">
-						{if !$summTitle|removeTrailingPunctuation}{translate text='Title not available'}{else}{$summTitle|removeTrailingPunctuation|highlight|truncate:180:"..."}{/if}
+						{if !$summTitle|removeTrailingPunctuation} {translate text='Title not available' isPublicFacing=true}{else}{$summTitle|removeTrailingPunctuation|highlight|truncate:180:"..."}{/if}
 					</a>
 					{if isset($summScore)}
 						&nbsp;(<a href="#" onclick="return AspenDiscovery.showElementInPopup('Score Explanation', '#scoreExplanationValue{$summId|escape}');">{$summScore}</a>)

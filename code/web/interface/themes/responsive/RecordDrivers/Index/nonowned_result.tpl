@@ -11,7 +11,7 @@
 				<div class="col-xs-12">
 					<span class="result-index">{$resultIndex})</span>&nbsp;
 					<span class="result-title notranslate">
-					{if !$record.title|removeTrailingPunctuation}{translate text='Title not available'}{else}{$record.title|removeTrailingPunctuation|truncate:180:"..."|highlight}{/if}
+					{if !$record.title|removeTrailingPunctuation} {translate text='Title not available' isPublicFacing=true}{else}{$record.title|removeTrailingPunctuation|truncate:180:"..."|highlight}{/if}
 					{if $record.volume}
 						, {$record.series}{if $record.volume}<strong> {translate text="volume %1%" 1=$record.volume}</strong>{/if}&nbsp;
 					{/if}

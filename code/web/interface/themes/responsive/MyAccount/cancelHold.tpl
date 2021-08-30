@@ -10,7 +10,7 @@
 			{if is_array($cancelResults.message)}
 				{*assign var=numFailed value=$cancelResults.message|@count*}
 				{assign var=totalCancelled value=$cancelResults.titles|@count}
-				<div class="alert alert-warning"><strong>{$cancelResults.numCancelled} of {$totalCancelled}</strong> holds were cancelled successfully.</div>
+				<div class="alert alert-warning">{translate text="%1% of %2% holds were cancelled successfully." 1=$cancelResults.numCancelled 2=$totalCancelled isPublicFacing=true}</div>
 				{foreach from=$cancelResults.message item=message}
 					<div class="alert alert-danger">{$message}</div>
 				{/foreach}

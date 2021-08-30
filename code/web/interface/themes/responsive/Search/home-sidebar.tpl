@@ -4,7 +4,7 @@
 		{if !empty($userPermissions)}
 			<a href="/Admin/Home">
 				<div class="sidebar-button custom-sidebar-button">
-					{translate text="Aspen Administration"}
+					{translate text="Aspen Administration" isAdminFacing=true}
 				</div>
 			</a>
 		{/if}

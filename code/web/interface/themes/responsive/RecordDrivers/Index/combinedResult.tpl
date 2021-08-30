@@ -21,7 +21,7 @@
 					<div class="col-xs-12">
 						<span class="result-index">{$resultIndex})</span>&nbsp;
 						<a href="{$summUrl}" class="result-title notranslate">
-							{if !$summTitle|removeTrailingPunctuation}{translate text='Title not available'}{else}{$summTitle|removeTrailingPunctuation|highlight|truncate:180:"..."}{/if}
+							{if !$summTitle|removeTrailingPunctuation} {translate text='Title not available' isPublicFacing=true}{else}{$summTitle|removeTrailingPunctuation|highlight|truncate:180:"..."}{/if}
 							{if $summSubTitle|removeTrailingPunctuation}: {$summSubTitle|removeTrailingPunctuation|highlight|truncate:180:"..."}{/if}
 						</a>
 						{if isset($summScore)}

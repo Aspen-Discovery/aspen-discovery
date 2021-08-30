@@ -152,7 +152,6 @@ class MyAccount_AJAX extends JSON_Action
 		global $interface;
 		// Display Page
 		$interface->assign('listId', strip_tags($_REQUEST['listId']));
-		$interface->assign('popupTitle', 'Add titles to list');
 		return array(
 			'title' => translate(['text'=>'Add titles to list','isPublicFacing'=>true]),
 			'modalBody' => $interface->fetch('MyAccount/bulkAddToListPopup.tpl'),
@@ -197,10 +196,10 @@ class MyAccount_AJAX extends JSON_Action
 		$patronId = $_REQUEST['patronId'];
 		$recordId = $_REQUEST['recordId'];
 		$cancelId = $_REQUEST['cancelId'];
-		$cancelButtonLabel = translate('Confirm Cancel Hold');
+		$cancelButtonLabel = translate(['text'=>'Confirm Cancel Hold','isPublicFacing'=>true]);
 		return array(
-			'title' => translate('Cancel Hold'),
-			'body' => translate("Are you sure you want to cancel this hold?"),
+			'title' => translate(['text'=>'Cancel Hold','isPublicFacing'=>true]),
+			'body' => translate(['text'=>"Are you sure you want to cancel this hold?",'isPublicFacing'=>true]),
 			'buttons' => "<span class='tool btn btn-primary' onclick='AspenDiscovery.Account.cancelHold(\"$patronId\", \"$recordId\", \"$cancelId\")'>$cancelButtonLabel</span>",
 		);
 	}
@@ -209,11 +208,11 @@ class MyAccount_AJAX extends JSON_Action
 	{
 		$result = array(
 			'success' => false,
-			'message' => 'Error cancelling hold.'
+			'message' => translate(['text'=>'Error cancelling hold.','isPublicFacing'=>true])
 		);
 
 		if (!UserAccount::isLoggedIn()) {
-			$result['message'] = 'You must be logged in to cancel a hold.  Please close this dialog and login again.';
+			$result['message'] = translate(['text'=>'You must be logged in to cancel a hold.  Please close this dialog and login again.','isPublicFacing'=>true]);;
 		} else {
 			//Determine which user the hold is on so we can cancel it.
 			$patronId = $_REQUEST['patronId'];
@@ -221,11 +220,11 @@ class MyAccount_AJAX extends JSON_Action
 			$patronOwningHold = $user->getUserReferredTo($patronId);
 
 			if ($patronOwningHold == false) {
-				$result['message'] = 'Sorry, you do not have access to cancel holds for the supplied user.';
+				$result['message'] = translate(['text'=>'Sorry, you do not have access to cancel holds for the supplied user.','isPublicFacing'=>true]);;
 			} else {
 				//MDN 9/20/2015 The recordId can be empty for Prospector holds
 				if (empty($_REQUEST['cancelId']) && empty($_REQUEST['recordId'])) {
-					$result['message'] = 'Information about the hold to be cancelled was not provided.';
+					$result['message'] = translate(['text'=>'Information about the hold to be cancelled was not provided.','isPublicFacing'=>true]);;
 				} else {
 					$cancelId = $_REQUEST['cancelId'];
 					$recordId = $_REQUEST['recordId'];
@@ -244,7 +243,7 @@ class MyAccount_AJAX extends JSON_Action
 		$interface->assign('cancelResults', $result);
 
 		return array(
-			'title' => 'Cancel Hold',
+			'title' => translate(['text'=>'Cancel Hold','isPublicFacing'=>true]),
 			'body' => $interface->fetch('MyAccount/cancelHold.tpl'),
 			'success' => $result['success']
 		);
@@ -890,14 +889,14 @@ class MyAccount_AJAX extends JSON_Action
 			$interface->assign('pickupLocations', $pickupBranches);
 
 			$results = array(
-				'title' => 'Change Hold Location',
+				'title' => translate(['text'=>'Change Hold Location','isPublicFacing'=>true]),
 				'modalBody' => $interface->fetch("MyAccount/changeHoldLocation.tpl"),
-				'modalButtons' => '<span class="tool btn btn-primary" onclick="AspenDiscovery.Account.doChangeHoldLocation(); return false;">Change Location</span>'
+				'modalButtons' => '<span class="tool btn btn-primary" onclick="AspenDiscovery.Account.doChangeHoldLocation(); return false;">' . translate(['text'=>'Change Location','isPublicFacing'=>true]) . '</span>'
 			);
 		} else {
 			$results = array(
 				'title' => 'Please login',
-				'modalBody' => "You must be logged in.  Please close this dialog and login before changing your hold's pick-up location.",
+				'modalBody' => translate(['text'=>"You must be logged in.  Please close this dialog and login before changing your hold's pick-up location.",'isPublicFacing'=>true]),
 				'modalButtons' => ""
 			);
 		}
@@ -945,19 +944,19 @@ class MyAccount_AJAX extends JSON_Action
 					}else{
 						return array(
 							'result' => false,
-							'message' => 'The selected pickup location is not valid.'
+							'message' => translate(['text'=>'The selected pickup location is not valid.','isPublicFacing'=>true])
 						);
 					}
 				}else{
 					return array(
 						'result' => false,
-						'message' => 'The logged in user does not have permission to change hold location for the specified user, please login as that user.'
+						'message' => translate(['text'=>'The logged in user does not have permission to change hold location for the specified user, please login as that user.','isPublicFacing'=>true])
 					);
 				}
 			} else {
 				return $results = array(
-					'title' => 'Please login',
-					'modalBody' => "You must be logged in.  Please close this dialog and login to change this hold's pick up location.",
+					'title' => translate(['text'=>'Please login','isPublicFacing'=>true]),
+					'modalBody' => translate(['text'=>"You must be logged in.  Please close this dialog and login to change this hold's pick up location.",'isPublicFacing'=>true]),
 					'modalButtons' => ""
 				);
 			}
@@ -972,7 +971,7 @@ class MyAccount_AJAX extends JSON_Action
 		}
 		return array(
 			'result' => false,
-			'message' => 'We could not connect to the circulation system, please try again later.'
+			'message' => translate(['text'=>'We could not connect to the circulation system, please try again later.','isPublicFacing'=>true])
 		);
 	}
 
@@ -989,15 +988,14 @@ class MyAccount_AJAX extends JSON_Action
 	function getCitationFormatsForm()
 	{
 		global $interface;
-		$interface->assign('popupTitle', 'Please select a citation format');
 		$interface->assign('listId', $_REQUEST['listId']);
 		$citationFormats = CitationBuilder::getCitationFormats();
 		$interface->assign('citationFormats', $citationFormats);
 		$pageContent = $interface->fetch('MyAccount/getCitationFormatPopup.tpl');
 		return array(
-			'title' => 'Select Citation Format',
+			'title' => translate(['text'=>'Select Citation Format','isPublicFacing'=>true]),
 			'modalBody' => $pageContent,
-			'modalButtons' => '<input class="btn btn-primary" onclick="AspenDiscovery.Lists.processCiteListForm(); return false;" value="' . translate('Generate Citations') . '">'
+			'modalButtons' => '<input class="btn btn-primary" onclick="AspenDiscovery.Lists.processCiteListForm(); return false;" value="' . translate(['text'=>'Generate Citations','isPublicFacing'=>true, 'inAttribute'=>true]) . '">'
 		);
 	}
 
@@ -3174,9 +3172,9 @@ class MyAccount_AJAX extends JSON_Action
 		UserList::getUserListsForSaveForm($source, $sourceId);
 
 		return array(
-			'title' => 'Add To List',
+			'title' => translate(['text'=>'Add To List','isPublicFacing'=>true]),
 			'modalBody' => $interface->fetch("MyAccount/saveToList.tpl"),
-			'modalButtons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.Account.saveToList(); return false;'>" . translate("Save To List") . "</button>"
+			'modalButtons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.Account.saveToList(); return false;'>" . translate(['text'=>"Save To List",'isPublicFacing'=>true]) . "</button>"
 		);
 	}
 
@@ -3186,7 +3184,7 @@ class MyAccount_AJAX extends JSON_Action
 
 		if (!UserAccount::isLoggedIn()) {
 			$result['success'] = false;
-			$result['message'] = 'Please login before adding a title to list.';
+			$result['message'] = translate(['text'=>'Please login before adding a title to list.','isPublicFacing'=>true]);
 		}else{
 			require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 			require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
@@ -3200,7 +3198,7 @@ class MyAccount_AJAX extends JSON_Action
 			$userList = new UserList();
 			$listOk = true;
 			if (empty($listId)){
-				$userList->title = "My Favorites";
+				$userList->title = translate(['text'=>"My Favorites",'isPublicFacing'=>true]);
 				$userList->user_id = UserAccount::getActiveUserId();
 				$userList->public = 0;
 				$userList->description = '';
@@ -3210,7 +3208,7 @@ class MyAccount_AJAX extends JSON_Action
 				$totalRecords = $userList->numValidListItems();
 				if (!$userList->find(true)){
 					$result['success'] = false;
-					$result['message'] = 'Sorry, we could not find that list in the system.';
+					$result['message'] = translate(['text'=>'Sorry, we could not find that list in the system.','isPublicFacing'=>true]);
 					$listOk = false;
 				}
 			}
@@ -3223,11 +3221,11 @@ class MyAccount_AJAX extends JSON_Action
 				$isValid = true;
 				if (!$isValid) {
 					$result['success'] = false;
-					$result['message'] = 'Sorry, that is not a valid entry for the list.';
+					$result['message'] = translate(['text'=>'Sorry, that is not a valid entry for the list.','isPublicFacing'=>true]);
 				}else {
 					if (empty($sourceId) || empty($source)){
 						$result['success'] = false;
-						$result['message'] = 'Unable to add that to a list, not correctly specified.';
+						$result['message'] = translate(['text'=>'Unable to add that to a list, not correctly specified.','isPublicFacing'=>true]);
 					}else {
 						$userListEntry->source = $source;
 						$userListEntry->sourceId = $sourceId;
@@ -3288,7 +3286,7 @@ class MyAccount_AJAX extends JSON_Action
 							$userObject->update();
 						}
 						$result['success'] = true;
-						$result['message'] = 'This title was saved to your list successfully.';
+						$result['message'] = translate(['text'=>'This title was saved to your list successfully.','isPublicFacing'=>true]);
 					}
 				}
 			}
@@ -3600,14 +3598,14 @@ class MyAccount_AJAX extends JSON_Action
 			}
 
 			return array(
-				'title' => 'Edit List Item',
+				'title' => translate(['text'=>'Edit List Item','isPublicFacing'=>true]),
 				'modalBody' => $interface->fetch('MyAccount/editListTitle.tpl'),
-				'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#listEntryEditForm\").submit()'>Save</button>",
+				'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#listEntryEditForm\").submit()'>" . translate(['text'=>'Save','isPublicFacing'=>true]) . "</button>",
 			);
 		} else {
 			return [
 				'success' => false,
-				'message' => 'You must provide the id of the list to email'
+				'message' => translate(['text'=>'You must provide the id of the list to email','isPublicFacing'=>true])
 			];
 		}
 	}
@@ -3617,8 +3615,8 @@ class MyAccount_AJAX extends JSON_Action
 	{
 		$result = [
 			'success' => false,
-			'title' => 'Updating list entry',
-			'message' => 'Sorry your list entry could not be updated'
+			'title' => translate(['text'=>'Updating list entry','isPublicFacing'=>true]),
+			'message' => translate(['text'=>'Sorry your list entry could not be updated','isPublicFacing'=>true])
 		];
 		require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 		require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
@@ -3712,7 +3710,7 @@ class MyAccount_AJAX extends JSON_Action
 		}
 
 		if ($result['success']){
-			$result['message'] = 'List item updated successfully';
+			$result['message'] = translate(['text'=>'List item updated successfully','isPublicFacing'=>true]);
 		}
 
 		return $result;
@@ -3722,7 +3720,7 @@ class MyAccount_AJAX extends JSON_Action
 	function updateWeight() {
 		$result = [
 			'success' => false,
-			'message' => 'Unknown error moving list entry'
+			'message' => translate(['text'=>'Unknown error moving list entry','isPublicFacing'=>true])
 		];
 		if (UserAccount::isLoggedIn()) {
 			$user = UserAccount::getLoggedInUser();

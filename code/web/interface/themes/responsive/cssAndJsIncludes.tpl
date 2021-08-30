@@ -63,6 +63,10 @@
 			{if array_key_exists('OverDrive', $enabledModules)}
 				Globals.hasOverDriveConnection = true;
 			{/if}
+			Globals.loadingTitle = '{translate text="Loading" inAttribute=true isPublicFacing=true}';
+			Globals.loadingBody = '{translate text="Loading, please wait" inAttribute=true isPublicFacing=true}';
+			Globals.requestFailedTitle = '{translate text="Request Failed" inAttribute=true isPublicFacing=true}';
+			Globals.requestFailedBody = '{translate text="There was an error with this AJAX Request." inAttribute=true isPublicFacing=true}';
 			{literal}
 		});
 		{/literal}

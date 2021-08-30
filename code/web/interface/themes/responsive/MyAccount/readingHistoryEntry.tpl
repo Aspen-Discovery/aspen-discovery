@@ -20,9 +20,9 @@
 			<div class="col-xs-12 result-title notranslate">
 				{$record.index})&nbsp;
 				{if $record.linkUrl}
-					<a href="{$record.linkUrl}" class="title">{if !$record.title|removeTrailingPunctuation}{translate text='Title not available'}{else}{$record.title|removeTrailingPunctuation|truncate:180:"..."|highlight}{/if}</a>
+					<a href="{$record.linkUrl}" class="title">{if !$record.title|removeTrailingPunctuation} {translate text='Title not available' isPublicFacing=true}{else}{$record.title|removeTrailingPunctuation|truncate:180:"..."|highlight}{/if}</a>
 				{else}
-					{if !$record.title|removeTrailingPunctuation}{translate text='Title not available'}{else}{$record.title|removeTrailingPunctuation}{/if}
+					{if !$record.title|removeTrailingPunctuation} {translate text='Title not available' isPublicFacing=true}{else}{$record.title|removeTrailingPunctuation}{/if}
 				{/if}
 				{if !empty($record.title2)}
 					<div class="searchResultSectionInfo">

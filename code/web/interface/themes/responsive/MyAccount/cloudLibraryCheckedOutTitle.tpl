@@ -97,9 +97,9 @@
 							<a href="{$accessOnlineLink}" target="_blank" class="btn btn-sm btn-action btn-wrap"><i class="fas fa-external-link-alt"></i> {translate text='Open in Cloud Library' isPublicFacing=true}</a>
 						{/if}
 						{if $record->canRenew}
-							<a href="#" onclick="return AspenDiscovery.CloudLibrary.renewCheckout('{$record->userId}', '{$record->recordId}');" class="btn btn-sm btn-info">{translate text='Renew Checkout' isPublicFacing=true}</a>
+							<a href="#" onclick="return AspenDiscovery.CloudLibrary.renewCheckout('{$record->userId}', '{$record->recordId}');" class="btn btn-sm btn-info btn-wrap">{translate text='Renew Checkout' isPublicFacing=true}</a>
 						{/if}
-						<a href="#" onclick="return AspenDiscovery.CloudLibrary.returnCheckout('{$record->userId}', '{$record->recordId}');" class="btn btn-sm btn-warning">{translate text='Return Now' isPublicFacing=true}</a>
+						<a href="#" onclick="return AspenDiscovery.CloudLibrary.returnCheckout('{$record->userId}', '{$record->recordId}');" class="btn btn-sm btn-warning btn-wrap">{translate text='Return Now' isPublicFacing=true}</a>
 					</div>
 					{if $showWhileYouWait}
 						<div class="btn-group btn-group-vertical btn-block">

@@ -18,7 +18,7 @@ class JSON_Action extends Action
 			if (empty($result)){
 				$result = array(
 					'result' => false,
-					'message' => 'Method did not return results'
+					'message' => translate(['text'=>'Method did not return results','isPublicFacing'=>true])
 				);
 			}
 			$this->outputEncodedResult($result);

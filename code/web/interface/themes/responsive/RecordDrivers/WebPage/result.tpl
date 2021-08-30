@@ -18,7 +18,7 @@
 			<div class="col-xs-12">
 				<span class="result-index">{$resultIndex})</span>&nbsp;
 				<a href="{$pageUrl}" class="result-title notranslate" onclick="AspenDiscovery.Websites.trackUsage('{$id}')">
-					{if !$title|removeTrailingPunctuation}{translate text='Title not available'}{else}{$title|removeTrailingPunctuation|highlight|truncate:180:"..."}{/if}
+					{if !$title|removeTrailingPunctuation} {translate text='Title not available' isPublicFacing=true}{else}{$title|removeTrailingPunctuation|highlight|truncate:180:"..."}{/if}
 				</a>
 				{if isset($summScore)}
 					&nbsp;(<a href="#" onclick="return AspenDiscovery.showElementInPopup('Score Explanation', '#scoreExplanationValue{$summId|escape}');">{$summScore}</a>)

@@ -19,7 +19,7 @@
 							<div class="col-xs-12">
 								<span class="result-index">{$smarty.foreach.recordLoop.iteration})</span>&nbsp;
 								<a href="{$result.link}" class="result-title notranslate">
-									{if !$result.title|removeTrailingPunctuation}{translate text='Title not available'}{else}{$result.title|removeTrailingPunctuation|truncate:180:"..."|highlight}{/if}
+									{if !$result.title|removeTrailingPunctuation} {translate text='Title not available' isPublicFacing=true}{else}{$result.title|removeTrailingPunctuation|truncate:180:"..."|highlight}{/if}
 								</a>
 							</div>
 						</div>

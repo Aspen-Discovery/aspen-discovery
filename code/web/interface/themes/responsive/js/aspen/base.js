@@ -369,12 +369,12 @@ var AspenDiscovery = (function(){
 
 		// common loading message for lightbox while waiting for AJAX processes to complete.
 		loadingMessage: function() {
-			AspenDiscovery.showMessage('Loading', 'Loading, please wait.')
+			AspenDiscovery.showMessage(Globals.loadingTitle, Globals.loadingBody)
 		},
 
 		// common message for when an AJAX call has failed.
 		ajaxFail: function() {
-			if (!Globals.LeavingPage) AspenDiscovery.showMessage('Request Failed', 'There was an error with this AJAX Request.');
+			if (!Globals.LeavingPage) AspenDiscovery.showMessage(Globals.requestFailedTitle, Globals.requestFailedBody);
 		},
 
 		showElementInPopup: function(title, elementId, buttonsElementId){
