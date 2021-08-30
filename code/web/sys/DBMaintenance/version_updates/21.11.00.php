@@ -42,5 +42,14 @@ function getUpdates21_11_00() : array
 				'ALTER TABLE location ADD COLUMN enableAppAccess TINYINT(1) DEFAULT 0'
 			]
 		],
+		'addGeolocation' => [
+			'title' => 'Add geolocation data',
+			'description' => 'Add coordinates to library addresses',
+			'sql' => [
+				'ALTER TABLE location ADD COLUMN latitude VARCHAR(75) DEFAULT 0',
+				'ALTER TABLE location ADD COLUMN longitude VARCHAR(75) DEFAULT 0',
+				'ALTER TABLE location ADD COLUMN unit VARCHAR(3) DEFAULT NULL'
+			]
+		],
 	];
 }
