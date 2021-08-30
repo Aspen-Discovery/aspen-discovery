@@ -95,6 +95,7 @@ class GreenhouseAPI extends Action
 								$return['libraries'][] = [
 									'name' => $findLibrary->locationName,
 									'librarySystem' => $sites->name,
+									'libraryId' => $findLibrary->libraryId,
 									'baseUrl' => $baseUrl,
 									'accessLevel' => $sites->appAccess,
 									'distance' => $distance,
@@ -191,6 +192,7 @@ class GreenhouseAPI extends Action
 				'longitude' => $libraryLongitude,
 				'unit' => $unit,
 				'locationName' => $location->displayName,
+				'libraryId' => $libraryId,
 				'solrScope' => $solrScope,
 				'baseUrl' => $baseUrl,
 			];
