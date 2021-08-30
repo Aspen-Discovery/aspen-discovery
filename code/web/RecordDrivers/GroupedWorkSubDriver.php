@@ -94,7 +94,7 @@ abstract class GroupedWorkSubDriver extends RecordInterface
 	public function getCitation($format)
 	{
 		require_once ROOT_DIR . '/sys/CitationBuilder.php';
-
+		global $interface;
 		// Build author list:
 		$authors = array();
 		$primary = $this->getPrimaryAuthor();
@@ -117,6 +117,9 @@ abstract class GroupedWorkSubDriver extends RecordInterface
 			'edition' => $this->getEditions(),
 			'format' => $this->getFormats()
 		);
+
+		$interface->assign('dc_pubName', count($publishers) > 0 ? $publishers[0] : null);
+		$interface->assign('dc_pubDate', count($pubDates) > 0 ? $pubDates[0] : null);
 
 		// Build the citation:
 		$citation = new CitationBuilder($details);

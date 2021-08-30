@@ -26,6 +26,12 @@
 		{if !empty($dc_creator)}
 			<meta property="DC.Creator" content="{$dc_creator|escape:html}">
 		{/if}
+		{if !empty($dc_pubName)}
+		<meta property="DC.publisher" content="{$dc_pubName}">
+		{/if}
+		{if !empty($dc_pubDate)}
+		<meta property="DC.date.issued" content="{$dc_pubDate}">
+		{/if}
 		{if !empty($og_image)}
 			<meta property="og:image" content="{$og_image|escape:html}"/>
 		{/if}
