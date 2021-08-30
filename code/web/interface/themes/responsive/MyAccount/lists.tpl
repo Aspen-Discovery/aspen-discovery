@@ -1,20 +1,20 @@
 {strip}
-	<h1>{translate text="My Lists"}</h1>
+	<h1>{translate text="My Lists" isPublicFacing=true}</h1>
 	{if empty($lists)}
 		<div class="alert alert-info">
-			{translate text="You have not created any lists yet."}
+			{translate text="You have not created any lists yet." isPublicFacing=true}
 		</div>
 	{else}
 		<div class="row">
-				<select id="results-sort" name="sort" aria-label="{translate text='Sort'}" onchange="document.location.href = this.options[this.selectedIndex].value;" class="input-medium">
-					<option value="?sort=title"{if $sortedBy == "title"} selected="selected"{/if}>{translate text='Sort by'} {translate text='Title'}</option>
-					<option value="?sort=created"{if $sortedBy == "created"} selected="selected"{/if}>{translate text='Sort by'} {translate text='Most Recently Created'}</option>
-					<option value="?sort=dateUpdated"{if $sortedBy == "dateUpdated"} selected="selected"{/if}>{translate text='Sort by'} {translate text='Most Recently Updated'}</option>
+				<select id="results-sort" name="sort" aria-label="{translate text='Sort' isPublicFacing=true}" onchange="document.location.href = this.options[this.selectedIndex].value;" class="input-medium">
+					<option value="?sort=title"{if $sortedBy == "title"} selected="selected"{/if}>{translate text='Sort by Title' isPublicFacing=true}</option>
+					<option value="?sort=created"{if $sortedBy == "created"} selected="selected"{/if}>{translate text='Sort by Most Recently Created' isPublicFacing=true}</option>
+					<option value="?sort=dateUpdated"{if $sortedBy == "dateUpdated"} selected="selected"{/if}>{translate text='Sort by Most Recently Updated' isPublicFacing=true}</option>
 				</select>
 
 			<div id="selected-browse-label">
 				<div class="btn-group" id="hideSearchCoversSwitch"{if $displayMode != 'list'} style="display: none;"{/if}>
-					<label for="hideCovers" class="checkbox{* control-label*}"> {translate text='Hide Covers'}
+					<label for="hideCovers" class="checkbox{* control-label*}"> {translate text='Hide Covers' isPublicFacing=true}
 						<input id="hideCovers" type="checkbox" onclick="AspenDiscovery.Account.toggleShowCovers(!$(this).is(':checked'))" {if $showCovers == false}checked="checked"{/if}>
 					</label>
 				</div>
@@ -23,9 +23,9 @@
 		<div class="row">
 			<div class="col-xs-12">
 				<div class="btn-toolbar">
-					<button class="btn btn-sm btn-default" onclick="return AspenDiscovery.Account.showCreateListForm('{$source|escape:"url"}', '{$sourceId|escape:"url"}')">{translate text="Create a New List"}</button>
+					<button class="btn btn-sm btn-default" onclick="return AspenDiscovery.Account.showCreateListForm('{$source|escape:"url"}', '{$sourceId|escape:"url"}')">{translate text="Create a New List" isPublicFacing=true}</button>
 					{if count($lists) > 0}
-						<button onclick="return AspenDiscovery.Account.deleteSelectedLists({$listSelected})" class="btn btn-sm btn-danger">{translate text="Delete Selected Lists"}</button>
+						<button onclick="return AspenDiscovery.Account.deleteSelectedLists({$listSelected})" class="btn btn-sm btn-danger">{translate text="Delete Selected Lists" isPublicFacing=true}</button>
 					{/if}
 				</div>
 			</div>

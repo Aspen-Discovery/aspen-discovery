@@ -5527,6 +5527,8 @@ AspenDiscovery.Account = (function(){
 						if (data.summary.numOverdue > 0) {
 							$(".ils-overdue-placeholder").html(data.summary.numOverdue);
 							$(".ils-overdue").show();
+						}else{
+							$(".ils-overdue-placeholder").html("0");
 						}
 						$(".ils-holds-placeholder").html(data.summary.numHolds);
 						totalHolds += parseInt(data.summary.numHolds);

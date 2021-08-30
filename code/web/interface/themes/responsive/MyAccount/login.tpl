@@ -1,9 +1,9 @@
 {strip}
 <div id="page-content" class="col-xs-12">
-	<h1>{translate text='Sign in to your account'}</h1>
+	<h1>{translate text='Sign in to your account' isPublicFacing=true}</h1>
 	<div id="loginFormWrapper">
 		{if $message}{* Errors for Full Login Page *}
-			<p class="alert alert-danger" id="loginError" >{translate text=$message isPublicFacing=true}</p>
+			<p class="alert alert-danger" id="loginError" >{translate text=$message isPublicFacing=true isPublicFacing=true}</p>
 		{else}
 			<p class="alert alert-danger" id="loginError" style="display: none"></p>
 		{/if}
@@ -22,7 +22,7 @@
 			</div>
 		{else}
 			<form method="post" action="/MyAccount/Home" id="loginForm" class="form-horizontal">
-				<div id="missingLoginPrompt" style="display: none">{translate text="Please enter both %1% and %2%." 1=$usernameLabel|translate 2=$passwordLabel|translate}</div>
+				<div id="missingLoginPrompt" style="display: none">{translate text="Please enter both %1% and %2%." 1=$usernameLabel 2=$passwordLabel translateParameters=true isPublicFacing=true}</div>
 				<div id="loginFormFields">
 					<div id="loginUsernameRow" class="form-group">
 						<label for="username" class="control-label col-xs-12 col-sm-4">{translate text="$usernameLabel" isPublicFacing=true} </label>
@@ -36,7 +36,7 @@
 							<input type="password" name="password" id="password" size="28" onkeypress="return AspenDiscovery.submitOnEnter(event, '#loginForm');" class="form-control" maxlength="60">
 							{if $forgotPasswordType != 'null' && $forgotPasswordType != 'none'}
 								<p class="text-muted help-block">
-									<strong>{translate text="forgot_pin" defaultText="Forgot %1%?" 1=$passwordLabel isPublicFacing=true}</strong>&nbsp;&nbsp;
+									<strong>{translate text="Forgot %1%?" 1=$passwordLabel isPublicFacing=true}</strong>&nbsp;&nbsp;
 									{if $forgotPasswordType == 'emailResetLink'}
 										<a href="/MyAccount/EmailResetPin">{translate text="Reset My %1%" 1=$passwordLabel isPublicFacing=true}</a>
 									{else}

@@ -1059,7 +1059,11 @@ public class PolarisExportMain {
 						itemNumber = itemNumberSubfield.getData();
 					}else{
 						Subfield barcodeSubfield = curItem.getSubfield(indexingProfile.getBarcodeSubfield());
-						itemNumber = barcodeSubfield.getData();
+						if (barcodeSubfield == null) {
+							continue;
+						}else{
+							itemNumber = barcodeSubfield.getData();
+						}
 					}
 					volumeInfo.relatedItems.add(itemNumber);
 				}
