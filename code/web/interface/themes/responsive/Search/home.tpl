@@ -1,5 +1,5 @@
 {strip}
-	<h1 class="hiddenTitle">{translate text='Browse the Catalog'}</h1>
+	<h1 class="hiddenTitle">{translate text='Browse the Catalog' isPublicFacing=true}</h1>
 	<div id="home-page-browse-header" class="row">
 		<div class="col-sm-12">
 			<div class="row text-center" id="browse-category-picker">
@@ -9,15 +9,15 @@
 							{foreach from=$browseCategories item=browseCategory name="browseCategoryLoop"}
 								<li id="browse-category-{$browseCategory->textId}" class="browse-category {if (!$selectedBrowseCategory && $smarty.foreach.browseCategoryLoop.index == 0) || $selectedBrowseCategory && $selectedBrowseCategory->textId == $browseCategory->textId} selected{/if}" data-category-id="{$browseCategory->textId}">
 									<div >
-										{translate text=$browseCategory->label}
+										{translate text=$browseCategory->label isPublicFacing=true}
 									</div>
 								</li>
 							{/foreach}
 						</ul>
 					</div>
 
-					<a href="#" class="jcarousel-control-prev" aria-label="{translate text="Previous Category" inAttribute=true}"></a>
-					<a href="#" class="jcarousel-control-next" aria-label="{translate text="Next Category" inAttribute=true}"></a>
+					<a href="#" class="jcarousel-control-prev" aria-label="{translate text="Previous Category" inAttribute=true isPublicFacing=true}"></a>
+					<a href="#" class="jcarousel-control-next" aria-label="{translate text="Next Category" inAttribute=true isPublicFacing=true}"></a>
 
 					<p class="jcarousel-pagination hidden-xs"></p>
 				</div>
@@ -38,10 +38,10 @@
 
 				<div class="btn-group btn-group-sm" data-toggle="buttons">
 					<label for="covers" title="Covers" class="btn btn-sm btn-default"><input onchange="AspenDiscovery.Browse.toggleBrowseMode(this.id)" type="radio" id="covers">
-						<span class="thumbnail-icon"></span><span> {translate text='Covers'}</span>
+						<span class="thumbnail-icon"></span><span> {translate text='Covers' isPublicFacing=true}</span>
 					</label>
 					<label for="grid" title="Grid" class="btn btn-sm btn-default"><input onchange="AspenDiscovery.Browse.toggleBrowseMode(this.id);" type="radio" id="grid">
-						<span class="grid-icon"></span><span> {translate text='Grid'}</span>
+						<span class="grid-icon"></span><span> {translate text='Grid' isPublicFacing=true}</span>
 					</label>
 				</div>
 

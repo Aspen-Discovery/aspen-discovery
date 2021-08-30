@@ -757,6 +757,7 @@ function translate($params) {
 		$isPublicFacing = isset($params['isPublicFacing']) ? $params['isPublicFacing'] : false;
 		$isAdminFacing = isset($params['isAdminFacing']) ? $params['isAdminFacing'] : false;
 		$isMetadata = isset($params['isMetadata']) ? $params['isMetadata'] : false;
+		$isAdminEnteredData = isset($params['isAdminEnteredData']) ? $params['isAdminEnteredData'] : false;
 		$translateParameters = isset($params['translateParameters']) ? $params['translateParameters'] : false;
 		$replacementValues = [];
 		foreach ($params as $index => $param){
@@ -764,7 +765,7 @@ function translate($params) {
 				$replacementValues[$index] = $param;
 			}
 		}
-		return $translator->translate($params['text'], $defaultText, $replacementValues, $inAttribute, $isPublicFacing, $isAdminFacing, $isMetadata, $translateParameters);
+		return $translator->translate($params['text'], $defaultText, $replacementValues, $inAttribute, $isPublicFacing, $isAdminFacing, $isMetadata, $isAdminEnteredData, $translateParameters);
 	} else {
 		return $translator->translate($params, null, [], false);
 	}

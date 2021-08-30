@@ -58,7 +58,17 @@ function smarty_function_implode($params, &$smarty)
 		$implodedValue = implode($params['glue'], $subject);
 	}else{
 		if ($translate){
-			$implodedValue = translate($subject);
+			if (isset($params['isPublicFacing'])) {
+				$isPublicFacing = $params['isPublicFacing'];
+			}else{
+				$isPublicFacing = false;
+			}
+			if (isset($params['isAdminFacing'])) {
+				$isAdminFacing = $params['isAdminFacing'];
+			}else{
+				$isAdminFacing = false;
+			}
+			$implodedValue = translate(['text' => $subject, 'isPublicFacing'=>$isPublicFacing, 'isAdminFacing'=>$isAdminFacing]);
 		}else{
 			$implodedValue = $subject;
 		}
