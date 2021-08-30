@@ -76,6 +76,7 @@ class GreenhouseAPI extends Action
 							$return['libraries'][] = [
 								'name' => $findLibrary->locationName,
 								'librarySystem' => $sites->name,
+								'libraryId' => $findLibrary->libraryId,
 								'baseUrl' => $baseUrl,
 								'accessLevel' => $sites->appAccess,
 								'solrScope' => $findLibrary->solrScope,
@@ -111,6 +112,7 @@ class GreenhouseAPI extends Action
 		return $return;
 	}
 
+	/** @noinspection PhpUnused */
 	public function getLibrary() : array {
 		$return = [
 			'success' => true,
@@ -120,84 +122,86 @@ class GreenhouseAPI extends Action
 		$location = new Location();
 		$location->find();
 		while($location->fetch()) {
-			$libraryId = $location->libraryId;
-			$library = new Library();
-			$library->libraryId = $libraryId;
-			if($library->find(true)){
-				$baseUrl = $library->baseUrl;
-				$searchSource = $library->subdomain;
-			}
+			if ($location->enableAppAccess == 1){
+				$libraryId = $location->libraryId;
+				$library = new Library();
+				$library->libraryId = $libraryId;
+				if ($library->find(true)) {
+					$baseUrl = $library->baseUrl;
+					$searchSource = $library->subdomain;
+				}
 
-			$rawAddress = $location->address;
-			if($rawAddress != NULL) {
-				$fullAddress = str_replace("\r\n", ",", $rawAddress);
-				$address = explode(',', $fullAddress)[0];
-				$address = str_replace(" ", "%20", $address);
-				$city = explode(',', $fullAddress)[1];
-				$city = str_replace(" ", "%20", $city);
-				$state = explode(' ', trim(explode(',', $fullAddress)[2]))[0];
-				$zip = explode(' ', trim(explode(',', $fullAddress)[2]))[1];
+				$rawAddress = $location->address;
+				if ($rawAddress != NULL) {
+					$fullAddress = str_replace("\r\n", ",", $rawAddress);
+					$address = explode(',', $fullAddress)[0];
+					$address = str_replace(" ", "%20", $address);
+					$city = explode(',', $fullAddress)[1];
+					$city = str_replace(" ", "%20", $city);
+					$state = explode(' ', trim(explode(',', $fullAddress)[2]))[0];
+					$zip = explode(' ', trim(explode(',', $fullAddress)[2]))[1];
 
-				// fetch mapquest data
-				$url = 'http://www.mapquestapi.com/geocoding/v1/address?key=mg5OqJEzdXEBcgsTOyHfZUScBlSg6krp&street='.$address.'&city='.$city.'&state='.$state.'&postalCode='.$zip;
-				$data = file_get_contents($url);
-				$findCoords = json_decode($data);
-				$libraryLatitude = $findCoords->results[0]->locations[0]->latLng->lat;
-				$libraryLongitude = $findCoords->results[0]->locations[0]->latLng->lng;
-				$libraryCountry = $findCoords->results[0]->locations[0]->adminArea1;
+					// fetch mapquest data
+					$url = 'http://www.mapquestapi.com/geocoding/v1/address?key=mg5OqJEzdXEBcgsTOyHfZUScBlSg6krp&street=' . $address . '&city=' . $city . '&state=' . $state . '&postalCode=' . $zip;
+					$data = file_get_contents($url);
+					$findCoords = json_decode($data);
+					$libraryLatitude = $findCoords->results[0]->locations[0]->latLng->lat;
+					$libraryLongitude = $findCoords->results[0]->locations[0]->latLng->lng;
+					$libraryCountry = $findCoords->results[0]->locations[0]->adminArea1;
 
-				if($libraryCountry == 'CA') {
-					$unit = 'Km';
+					if ($libraryCountry == 'CA') {
+						$unit = 'Km';
+					} else {
+						$unit = 'Mi';
+					}
+
 				} else {
+					$libraryLatitude = 0;
+					$libraryLongitude = 0;
+					$libraryCountry = 'US';
 					$unit = 'Mi';
 				}
 
-			} else {
-				$libraryLatitude = 0;
-				$libraryLongitude = 0;
-				$libraryCountry = 'US';
-				$unit = 'Mi';
-			}
+				global $solrScope;
+				global $scopeType;
+				global $isGlobalScope;
+				$solrScope = false;
+				$scopeType = '';
+				$isGlobalScope = false;
 
-			global $solrScope;
-			global $scopeType;
-			global $isGlobalScope;
-			$solrScope = false;
-			$scopeType = '';
-			$isGlobalScope = false;
-
-			$searchLibrary = Library::getSearchLibrary($searchSource);
-			$searchLocation = Location::getSearchLocation($searchSource);
-			if ($searchLibrary){
-				$solrScope = $searchLibrary->subdomain;
-				$scopeType = 'Library';
-				if (!$searchLibrary->restrictOwningBranchesAndSystems){
-					$isGlobalScope = true;
+				$searchLibrary = Library::getSearchLibrary($searchSource);
+				$searchLocation = Location::getSearchLocation($searchSource);
+				if ($searchLibrary) {
+					$solrScope = $searchLibrary->subdomain;
+					$scopeType = 'Library';
+					if (!$searchLibrary->restrictOwningBranchesAndSystems) {
+						$isGlobalScope = true;
+					}
 				}
-			}
-			if ($searchLocation && $searchLibrary->getNumSearchLocationsForLibrary() > 1){
-				if ($searchLibrary && strtolower($searchLocation->code) == $solrScope){
-					$solrScope .= 'loc';
-				}else{
-					$solrScope = strtolower($searchLocation->code);
+				if ($searchLocation && $searchLibrary->getNumSearchLocationsForLibrary() > 1) {
+					if ($searchLibrary && strtolower($searchLocation->code) == $solrScope) {
+						$solrScope .= 'loc';
+					} else {
+						$solrScope = strtolower($searchLocation->code);
+					}
+					if (!empty($searchLocation->subLocation)) {
+						$solrScope = strtolower($searchLocation->subLocation);
+					}
+					$scopeType = 'Location';
 				}
-				if (!empty($searchLocation->subLocation)){
-					$solrScope = strtolower($searchLocation->subLocation);
-				}
-				$scopeType = 'Location';
+
+				$return['library'][] = [
+					'latitude' => $libraryLatitude,
+					'longitude' => $libraryLongitude,
+					'unit' => $unit,
+					'locationName' => $location->displayName,
+					'libraryId' => $libraryId,
+					'solrScope' => $solrScope,
+					'baseUrl' => $baseUrl,
+				];
+
+
 			}
-
-			$return['library'][] = [
-				'latitude' => $libraryLatitude,
-				'longitude' => $libraryLongitude,
-				'unit' => $unit,
-				'locationName' => $location->displayName,
-				'libraryId' => $libraryId,
-				'solrScope' => $solrScope,
-				'baseUrl' => $baseUrl,
-			];
-
-
 		}
 
 		return $return;

@@ -18,7 +18,7 @@ function getUpdates21_11_00() : array
 			]
 		],
 		'additionalTranslationTermInfo' => [
-			'title' => 'Add categorizing of translation termsm',
+			'title' => 'Add categorizing of translation terms',
 			'description' =>  'Add additional information to translation terms to be able categorize them',
 			'sql' => [
 				'ALTER TABLE translation_terms ADD COLUMN isPublicFacing TINYINT(1) DEFAULT 0',
@@ -34,6 +34,13 @@ function getUpdates21_11_00() : array
 			'sql' => [
 				'ALTER TABLE system_variables ADD COLUMN greenhouseUrl VARCHAR(128)'
 			]
-		]
+		],
+		'enableAppAccess' => [
+			'title' => 'Enable app access per location',
+			'description' => 'Turn on/off app access per location',
+			'sql' => [
+				'ALTER TABLE location ADD COLUMN enableAppAccess TINYINT(1) DEFAULT 0'
+			]
+		],
 	];
 }
