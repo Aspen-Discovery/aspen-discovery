@@ -15,10 +15,8 @@ include_once 'config.php';
 # ****************************************************************************************************************************
 # * grab the passed location parameter, then find the path
 # ****************************************************************************************************************************
-$libraryInfo      = $_GET['library'];
-$locationInfo = urlPath($libraryInfo);
-$urlPath      = $locationInfo[0];
-$shortname    = $locationInfo[1];
+$urlPath = $_SERVER['SERVER_NAME'];
+$shortname = $_GET['library'];
 
 # ****************************************************************************************************************************
 # * Prep the patron information for checking - dummy out something just in case
