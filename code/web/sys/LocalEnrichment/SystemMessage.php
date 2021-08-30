@@ -228,9 +228,9 @@ class SystemMessage extends DataObject
 			require_once ROOT_DIR . '/sys/Parsedown/AspenParsedown.php';
 			$parsedown = AspenParsedown::instance();
 			$parsedown->setBreaksEnabled(true);
-			return translate($parsedown->parse($this->message));
+			return translate(['text'=>$parsedown->parse($this->message),'isPublicFacing'=>true]);
 		}else{
-			return translate($this->_preFormattedMessage);
+			return translate(['text'=>$this->_preFormattedMessage,'isPublicFacing'=>true]);
 		}
 	}
 

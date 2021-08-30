@@ -5706,7 +5706,7 @@ AspenDiscovery.Account = (function(){
 					data: {username: username, password: password},
 					success: function (response) {
 						if (response.result === true) {
-							AspenDiscovery.showMessage("Account to Manage", response.message ? response.message : "Successfully linked the account.", true, true);
+							AspenDiscovery.showMessage(response.title, response.message ? response.message : "Successfully linked the account.", true, true);
 						} else {
 							loginErrorElem.text(response.message);
 							loginErrorElem.show();
@@ -9291,28 +9291,6 @@ AspenDiscovery.CollectionSpotlights = (function(){
 }(AspenDiscovery.CollectionSpotlights || {}));
 AspenDiscovery.MaterialsRequest = (function(){
 	return {
-		getWorldCatIdentifiers: function(){
-			var title = $("#title").val();
-			var author = $("#author").val();
-			var format = $("#format").val();
-			if (title == '' && author == ''){
-				alert("Please enter a title and author before checking for an ISBN and OCLC Number");
-			}else{
-				var requestUrl = Globals.path + "/MaterialsRequest/AJAX?method=GetWorldCatIdentifiers&title=" + encodeURIComponent(title) + "&author=" + encodeURIComponent(author)  + "&format=" + encodeURIComponent(format);
-				$.getJSON(requestUrl, function(data){
-					if (data.success == true){
-						//Dislay the results of the suggestions
-						var suggestedIdentifiers = $("#suggestedIdentifiers");
-						suggestedIdentifiers.html(data.formattedSuggestions);
-						suggestedIdentifiers.slideDown();
-					}else{
-						alert(data.error);
-					}
-				});
-			}
-			return false;
-		},
-
 		cancelMaterialsRequest: function(id){
 			if (confirm("Are you sure you want to cancel this request?")){
 				var url = Globals.path + "/MaterialsRequest/AJAX?method=cancelRequest&id=" + id;

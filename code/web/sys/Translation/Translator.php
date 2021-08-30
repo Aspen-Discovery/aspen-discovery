@@ -71,9 +71,10 @@ class Translator
 	 * @param bool $isAdminFacing           - Whether or not this is in the admin interface
 	 * @param bool $isMetadata              - Whether or not this is a translation of metadata in a MARC record, OverDrive, Axis360, etc
 	 * @param bool $isAdminEnteredData      - Whether or not this is data an administrator entered (System message, etc)
+	 * @param bool $translateParameters     - Whether or not parameters should be translated
 	 * @return  string                      - The translated phrase
 	 */
-	function translate($phrase, $defaultText = '', $replacementValues = [], $inAttribute = false, $isPublicFacing = false, $isAdminFacing = false, $isMetadata = false, $isAdminEnteredData = false)
+	function translate($phrase, $defaultText = '', $replacementValues = [], $inAttribute = false, $isPublicFacing = false, $isAdminFacing = false, $isMetadata = false, $isAdminEnteredData = false, $translateParameters=false)
 	{
 		if ($phrase == '' || is_numeric($phrase)){
 			return $phrase;
@@ -265,6 +266,9 @@ class Translator
 		}
 		if (count($replacementValues) > 0){
 			foreach ($replacementValues as $index => $replacementValue){
+				if ($translateParameters){
+					$replacementValue = $this->translate($replacementValue, '', [], true, $isPublicFacing, $isAdminFacing, $isMetadata, $isAdminEnteredData, $translateParameters);
+				}
 				$returnString = str_replace('%' . $index . '%', $replacementValue, $returnString);
 			}
 		}

@@ -1,57 +1,57 @@
 {strip}
 	<div class="modal-header">
 		<button type="button" class="close" data-dismiss="modal">×</button>
-		<h4 class="modal-title" id="myModalLabel">{translate text="Sign In"}</h4>
+		<h4 class="modal-title" id="myModalLabel">{translate text="Sign In" isPublicFacing=true}</h4>
 	</div>
 	<div class="modal-body">
 		<p class="alert alert-danger" id="loginError" style="display: none"></p>
-		<p class="alert alert-danger" id="cookiesError" style="display: none">{translate text="It appears that you do not have cookies enabled on this computer.  Cookies are required to access account information."}</p>
+		<p class="alert alert-danger" id="cookiesError" style="display: none">{translate text="It appears that you do not have cookies enabled on this computer.  Cookies are required to access account information." isPublicFacing=true}</p>
 		<p class="alert alert-info" id="loading" style="display: none">
-			{translate text="Logging you in now. Please wait."}
+			{translate text="Logging you in now. Please wait." isPublicFacing=true}
 		</p>
 		{if $offline && !$enableLoginWhileOffline}
 			<div class="alert alert-warning">
 				<p>
-					{translate text="The Library’s accounts system is down. Tech support is working to assess and fix the problem as quickly as possible."}
+					{translate text="The Library’s accounts system is down. Tech support is working to assess and fix the problem as quickly as possible." isPublicFacing=true}
 				</p>
 				<p>
-					{translate text="Thank you for your patience and understanding."}
+					{translate text="Thank you for your patience and understanding." isPublicFacing=true}
 				</p>
 			</div>
 		{else}
 			<form method="post" action="/MyAccount/Home" id="loginForm" class="form-horizontal" role="form" onsubmit="return AspenDiscovery.Account.processAjaxLogin()">
-				<div id="missingLoginPrompt" style="display: none">{translate text="Please enter both %1% and %2%." 1=$usernameLabel 2=$passwordLabel}</div>
+				<div id="missingLoginPrompt" style="display: none">{translate text="Please enter both %1% and %2%." 1=$usernameLabel 2=$passwordLabel isPublicFacing=true translateParameters=true}</div>
 				<div id="loginUsernameRow" class="form-group">
-					<label for="username" class="control-label col-xs-12 col-sm-4">{translate text=$usernameLabel}</label>
+					<label for="username" class="control-label col-xs-12 col-sm-4">{translate text=$usernameLabel isPublicFacing=true}</label>
 					<div class="col-xs-12 col-sm-8">
 						<input type="text" name="username" id="username" value="{if !empty($username)}{$username|escape}{/if}" size="28" class="form-control" maxlength="60">
 					</div>
 				</div>
 				<div id="loginPasswordRow" class="form-group">
-					<label for="password" class="control-label col-xs-12 col-sm-4">{translate text=$passwordLabel} </label>
+					<label for="password" class="control-label col-xs-12 col-sm-4">{translate text=$passwordLabel isPublicFacing=true} </label>
 					<div class="col-xs-12 col-sm-8">
 						<input type="password" name="password" id="password" size="28" onkeypress="return AspenDiscovery.submitOnEnter(event, '#loginForm');" class="form-control" maxlength="60">
 						{if $forgotPasswordType != 'null' && $forgotPasswordType != 'none'}
 							<p class="text-muted help-block">
-								<strong>{translate text="forgot_pin" defaultText="Forgot %1%?" 1=$passwordLabel}</strong>&nbsp;
+								<strong>{translate text="Forgot %1%?" 1=$passwordLabel isPublicFacing=true translateParameters=true}</strong>&nbsp;
 								{if $forgotPasswordType == 'emailResetLink'}
-									<a href="/MyAccount/EmailResetPin">{translate text="reset_pin" defaultText="Reset My %1%" 1=$passwordLabel}</a>
+									<a href="/MyAccount/EmailResetPin">{translate text="Reset My %1%" 1=$passwordLabel isPublicFacing=true}</a>
 								{else}
-									<a href="/MyAccount/EmailPin">{translate text="email_pin" defaultText="Email my %1%" 1=$passwordLabel}</a>
+									<a href="/MyAccount/EmailPin">{translate text="Email my %1%" 1=$passwordLabel isPublicFacing=true}</a>
 								{/if}
 							</p>
 						{/if}
 						{if $enableSelfRegistration == 1}
 							<p class="help-block">
-								{translate text="Don't have a library card?"} <a href="/MyAccount/SelfReg">{translate text="Register for a new Library Card"}</a>.
+								{translate text="Don't have a library card?" isPublicFacing=true} <a href="/MyAccount/SelfReg">{translate text="Register for a new Library Card" isPublicFacing=true}</a>.
 							</p>
 						{elseif $enableSelfRegistration == 2}
 							<p class="help-block">
-								{translate text="Don't have a library card?"} <a href="{$selfRegistrationUrl}">{translate text="Register for a new Library Card"}</a>.
+								{translate text="Don't have a library card?" isPublicFacing=true} <a href="{$selfRegistrationUrl}">{translate text="Register for a new Library Card" isPublicFacing=true}</a>.
 							</p>
 						{elseif $enableSelfRegistration == 3}
 							<p class="help-block">
-								{translate text="Don't have a library card?"} <a href="/MyAccount/eCARD">{translate text="Register for a new Library Card"}</a>.
+								{translate text="Don't have a library card?" isPublicFacing=true} <a href="/MyAccount/eCARD">{translate text="Register for a new Library Card" isPublicFacing=true}</a>.
 							</p>
 						{/if}
 					</div>
@@ -59,7 +59,7 @@
 				{if !(empty($loginNotes))}
 					<div id="loginNotes" class="form-group">
 						<div class="col-xs-12 col-sm-offset-4 col-sm-8">
-							{translate text=$loginNotes}
+							{translate text=$loginNotes isPublicFacing=true}
 						</div>
 					</div>
 				{/if}
@@ -67,13 +67,13 @@
 					<div class="col-xs-12 col-sm-offset-4 col-sm-8">
 						<label for="showPwd" class="checkbox">
 							<input type="checkbox" id="showPwd" name="showPwd" onclick="return AspenDiscovery.pwdToText('password')">
-							{translate text="Reveal Password"}
+							{translate text="Reveal Password" isPublicFacing=true}
 						</label>
 
 						{if !$isOpac}
 							<label for="rememberMe" class="checkbox">
 								<input type="checkbox" id="rememberMe" name="rememberMe">
-								{translate text="Remember Me"}
+								{translate text="Remember Me" isPublicFacing=true}
 							</label>
 						{/if}
 					</div>
@@ -82,10 +82,10 @@
 		{/if}
 	</div>
 	<div class="modal-footer">
-		<button class="btn" data-dismiss="modal" id="modalClose">{translate text=Close}</button>
+		<button class="btn" data-dismiss="modal" id="modalClose">{translate text=Close isPublicFacing=true}</button>
 		<span class="modal-buttons">
 		<input type="hidden" id="multiStep" name="multiStep" value="{if !empty($multiStep)}true{else}false{/if}"/>
-		<input type="submit" name="submit" value="{if !empty($multiStep)}{translate text="Continue"}{else}{translate text="Sign In"}{/if}" id="loginFormSubmit" class="btn btn-primary extraModalButton" onclick="return AspenDiscovery.Account.processAjaxLogin()">
+		<input type="submit" name="submit" value="{if !empty($multiStep)}{translate text="Continue" isPublicFacing=true inAttribute=true}{else}{translate text="Sign In" isPublicFacing=true inAttribute=true}{/if}" id="loginFormSubmit" class="btn btn-primary extraModalButton" onclick="return AspenDiscovery.Account.processAjaxLogin()">
 	</span>
 	</div>
 {/strip}

@@ -1,27 +1,5 @@
 AspenDiscovery.MaterialsRequest = (function(){
 	return {
-		getWorldCatIdentifiers: function(){
-			var title = $("#title").val();
-			var author = $("#author").val();
-			var format = $("#format").val();
-			if (title == '' && author == ''){
-				alert("Please enter a title and author before checking for an ISBN and OCLC Number");
-			}else{
-				var requestUrl = Globals.path + "/MaterialsRequest/AJAX?method=GetWorldCatIdentifiers&title=" + encodeURIComponent(title) + "&author=" + encodeURIComponent(author)  + "&format=" + encodeURIComponent(format);
-				$.getJSON(requestUrl, function(data){
-					if (data.success == true){
-						//Dislay the results of the suggestions
-						var suggestedIdentifiers = $("#suggestedIdentifiers");
-						suggestedIdentifiers.html(data.formattedSuggestions);
-						suggestedIdentifiers.slideDown();
-					}else{
-						alert(data.error);
-					}
-				});
-			}
-			return false;
-		},
-
 		cancelMaterialsRequest: function(id){
 			if (confirm("Are you sure you want to cancel this request?")){
 				var url = Globals.path + "/MaterialsRequest/AJAX?method=cancelRequest&id=" + id;

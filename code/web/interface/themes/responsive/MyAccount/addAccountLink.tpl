@@ -1,15 +1,15 @@
 {strip}
 	<p class="alert alert-danger" id="loginError" style="display: none"></p>
 	<form method="post" action="{if !empty($loginReferer)}{$loginReferer}{else}/MyAccount/Home{/if}" id="loginForm" class="form-horizontal" role="form" onsubmit="return AspenDiscovery.Account.processAjaxLogin()">
-		<div id="missingLoginPrompt" style="display: none">Please enter both {$usernameLabel} and {$passwordLabel}.</div>
+		<div id="missingLoginPrompt" style="display: none">{translate text="Please enter both %1% and %2%." 1=$usernameLabel|translate 2=$passwordLabel|translate isPublicFacing=true}</div>
 		<div id='loginUsernameRow' class='form-group'>
-			<label for="username" class='control-label col-xs-12 col-sm-4'>{$usernameLabel}</label>
+			<label for="username" class='control-label col-xs-12 col-sm-4'>{translate text=$usernameLabel isPublicFacing=true}</label>
 			<div class='col-xs-12 col-sm-8'>
 				<input type="text" name="username" id="username" value="{$username|escape}" size="28" class="form-control"/>
 			</div>
 		</div>
 		<div id='loginPasswordRow' class='form-group'>
-			<label for="password" class='control-label col-xs-12 col-sm-4'>{$passwordLabel} </label>
+			<label for="password" class='control-label col-xs-12 col-sm-4'>{translate text=$passwordLabel isPublicFacing=true} </label>
 			<div class='col-xs-12 col-sm-8'>
 				<input type="password" name="password" id="password" size="28" onkeypress="return AspenDiscovery.submitOnEnter(event, '#loginForm');" class="form-control"/>
 			</div>
@@ -18,7 +18,7 @@
 			<div class='col-xs-12 col-sm-offset-4 col-sm-8'>
 				<label for="showPwd" class="checkbox">
 					<input type="checkbox" id="showPwd" name="showPwd" onclick="return AspenDiscovery.pwdToText('password')"/>
-					{translate text="Reveal Password"}
+					{translate text="Reveal Password" isPublicFacing=true}
 				</label>
 			</div>
 		</div>

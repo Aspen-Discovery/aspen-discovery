@@ -64,12 +64,6 @@ class MaterialsRequest_NewRequest extends Action
 
 			$interface->assign('materialsRequest', $request);
 
-			$useWorldCat = false;
-			if (isset($configArray['WorldCat']) && isset($configArray['WorldCat']['apiKey'])) {
-				$useWorldCat = strlen($configArray['WorldCat']['apiKey']) > 0;
-			}
-			$interface->assign('useWorldCat', $useWorldCat);
-
 			// Get the Fields to Display for the form
 			$requestFormFields = $request->getRequestFormFields($library->libraryId);
 			$interface->assign('requestFormFields', $requestFormFields);

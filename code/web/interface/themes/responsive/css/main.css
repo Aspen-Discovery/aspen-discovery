@@ -3205,7 +3205,8 @@ input[type="button"].btn-block {
   -ms-transition: max-height 2s, opacity 0.2s 0.1s, visibility 0s 2s !important;
   -o-transition: max-height 2s, opacity 0.2s 0.1s, visibility 0s 2s !important;
   transition: max-height 2s, opacity 0.2s 0.1s, visibility 0s 2s !important;
-  overflow: hidden !important;
+  overflow-x: hidden;
+  overflow-y: auto;
   opacity: 0 !important;
   visibility: hidden !important;
   max-height: 0 !important;
@@ -3265,8 +3266,6 @@ input[type="button"].btn-block {
   opacity: 1 !important;
   visibility: visible !important;
   max-height: 600px !important;
-  overflow: auto;
-  overflow-y: scroll;
 }
 .open > a {
   outline: 0;

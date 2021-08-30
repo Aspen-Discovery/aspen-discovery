@@ -5,7 +5,7 @@
     {if ($showDisplayNameInHeader && !empty($librarySystemName)) || !empty($headerText)}
 		<div class="col-tn-12 col-xs-8 col-sm-8 col-md-3 col-lg-3" id="header-logo-container">
 			<a href="{$logoLink}/">
-				<img src="{if $responsiveLogo}{$responsiveLogo}{else}{img filename="logo_responsive.png"}{/if}" alt="{$librarySystemName}" title="{translate text=$logoAlt inAttribute=true}" id="header-logo" {if $showDisplayNameInHeader && $librarySystemName}class="pull-left"{/if}>
+				<img src="{if $responsiveLogo}{$responsiveLogo}{else}{img filename="logo_responsive.png"}{/if}" alt="{$librarySystemName}" title="{translate text=$logoAlt inAttribute=true isPublicFacing=true}" id="header-logo" {if $showDisplayNameInHeader && $librarySystemName}class="pull-left"{/if}>
 			</a>
 		</div>
 		{* Heading Info Div *}
@@ -28,7 +28,7 @@
 		{* Show the logo full width *}
 		<div class="col-tn-12 col-xs-8 col-sm-8 col-md-8 col-lg-8" id="header-logo-container">
 			<a href="{$logoLink}/">
-				<img src="{if $responsiveLogo}{$responsiveLogo}{else}{img filename="logo_responsive.png"}{/if}" alt="{$librarySystemName}" title="{translate text=$logoAlt inAttribute=true}" id="header-logo" {if $showDisplayNameInHeader && $librarySystemName}class="pull-left"{/if}>
+				<img src="{if $responsiveLogo}{$responsiveLogo}{else}{img filename="logo_responsive.png"}{/if}" alt="{$librarySystemName}" title="{translate text=$logoAlt inAttribute=true isPublicFacing=true}" id="header-logo" {if $showDisplayNameInHeader && $librarySystemName}class="pull-left"{/if}>
 			</a>
 		</div>
 	{/if}
@@ -52,9 +52,9 @@
 			{if $loggedIn && in_array('Translate Aspen', $userPermissions)}
 				<div id="translationMode" style="padding-top:.5em">
 					{if $translationModeActive}
-						<a onclick="return AspenDiscovery.changeTranslationMode(false)" class="btn btn-primary btn-xs active" role="button">{translate text="Exit Translation Mode"}</a>
+						<a onclick="return AspenDiscovery.changeTranslationMode(false)" class="btn btn-primary btn-xs active" role="button">{translate text="Exit Translation Mode" isPublicFacing=true}</a>
 					{else}
-						<a onclick="return AspenDiscovery.changeTranslationMode(true)" class="btn btn-primary btn-xs" role="button">{translate text="Start Translation Mode"}</a>
+						<a onclick="return AspenDiscovery.changeTranslationMode(true)" class="btn btn-primary btn-xs" role="button">{translate text="Start Translation Mode" isPublicFacing=true}</a>
 					{/if}
 				</div>
 			{/if}
@@ -64,7 +64,7 @@
 		<div id="language-selection-header" class="hidden-tn col-xs-4 col-sm-4 col-md-4 col-lg-4 pull-right">
 	<div class="dropdown">
 		<button class="btn btn-default btn-sm dropdown-toggle" type="button" id="language-selection-dropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-			{translate text="Translate"}&nbsp;<span class="caret"></span>
+			{translate text="Translate" isPublicFacing=true}&nbsp;<span class="caret"></span>
 		</button>
 		<ul id="select-language" class="dropdown-menu" aria-labelledby="language-selection-dropdown">
 			{foreach from=$validLanguages key=languageCode item=language}
@@ -75,9 +75,9 @@
 		{if $loggedIn && in_array('Translate Aspen', $userPermissions)}
 			<div id="translationMode">
 				{if $translationModeActive}
-					<a onclick="return AspenDiscovery.changeTranslationMode(false)" class="btn btn-primary btn-xs active" role="button">{translate text="Exit Translation Mode"}</a>
+					<a onclick="return AspenDiscovery.changeTranslationMode(false)" class="btn btn-primary btn-xs active" role="button">{translate text="Exit Translation Mode" isPublicFacing=true}</a>
 				{else}
-					<a onclick="return AspenDiscovery.changeTranslationMode(true)" class="btn btn-primary btn-xs" role="button">{translate text="Start Translation Mode"}</a>
+					<a onclick="return AspenDiscovery.changeTranslationMode(true)" class="btn btn-primary btn-xs" role="button">{translate text="Start Translation Mode" isPublicFacing=true}</a>
 				{/if}
 			</div>
 		{/if}

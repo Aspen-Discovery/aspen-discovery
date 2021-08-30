@@ -58,7 +58,7 @@ class MyAccount_AJAX extends JSON_Action
 		if (!UserAccount::isLoggedIn()) {
 			$result = array(
 				'result' => false,
-				'message' => 'Sorry, you must be logged in to manage accounts.'
+				'message' => translate(['text'=>'Sorry, you must be logged in to manage accounts.', 'isPublicFacing'=>true])
 			);
 		} else {
 			$username = $_REQUEST['username'];
@@ -70,7 +70,7 @@ class MyAccount_AJAX extends JSON_Action
 			if (!UserAccount::isLoggedIn()) {
 				$result = array(
 					'result' => false,
-					'message' => 'You must be logged in to link accounts, please login again'
+					'message' => translate(['text'=>'You must be logged in to link accounts, please login again', 'isPublicFacing'=>true])
 				);
 			} elseif ($accountToLink) {
 				if ($accountToLink->id != $user->id) {
@@ -78,24 +78,24 @@ class MyAccount_AJAX extends JSON_Action
 					if ($addResult === true) {
 						$result = array(
 							'result' => true,
-							'message' => 'Successfully linked accounts.'
+							'message' => translate(['text'=>'Successfully linked accounts.', 'isPublicFacing'=>true])
 						);
 					} else { // insert failure or user is blocked from linking account or account & account to link are the same account
 						$result = array(
 							'result' => false,
-							'message' => 'Sorry, we could not link to that account.  Accounts cannot be linked if all libraries do not allow account linking.  Please contact your local library if you have questions.'
+							'message' => translate(['text'=>'Sorry, we could not link to that account.  Accounts cannot be linked if all libraries do not allow account linking.  Please contact your local library if you have questions.', 'isPublicFacing'=>true])
 						);
 					}
 				} else {
 					$result = array(
 						'result' => false,
-						'message' => 'You cannot link to yourself.'
+						'message' => translate(['text'=>'You cannot link to yourself.', 'isPublicFacing'=>true])
 					);
 				}
 			} else {
 				$result = array(
 					'result' => false,
-					'message' => 'Sorry, we could not find a user with that information to link to.'
+					'message' => translate(['text'=>'Sorry, we could not find a user with that information to link to.', 'isPublicFacing'=>true])
 				);
 			}
 		}
@@ -109,7 +109,7 @@ class MyAccount_AJAX extends JSON_Action
 		if (!UserAccount::isLoggedIn()) {
 			$result = array(
 				'result' => false,
-				'message' => 'Sorry, you must be logged in to manage accounts.'
+				'message' => translate(['text'=>'Sorry, you must be logged in to manage accounts.', 'isPublicFacing'=>true])
 			);
 		} else {
 			$accountToRemove = $_REQUEST['idToRemove'];
@@ -117,12 +117,12 @@ class MyAccount_AJAX extends JSON_Action
 			if ($user->removeLinkedUser($accountToRemove)) {
 				$result = array(
 					'result' => true,
-					'message' => 'Successfully removed linked account.'
+					'message' => translate(['text'=>'Successfully removed linked account.', 'isPublicFacing'=>true])
 				);
 			} else {
 				$result = array(
 					'result' => false,
-					'message' => 'Sorry, we could remove that account.'
+					'message' => translate(['text'=>'Sorry, we could remove that account.', 'isPublicFacing'=>true])
 				);
 			}
 		}
@@ -140,9 +140,9 @@ class MyAccount_AJAX extends JSON_Action
 		$interface->assign('passwordLabel', str_replace('Your', '', $library->loginFormPasswordLabel ? $library->loginFormPasswordLabel : 'Library Card Number'));
 		// Display Page
 		return array(
-			'title' => 'Account to Manage',
+			'title' => translate(['text'=>'Account to Manage','isPublicFacing'=>true]),
 			'modalBody' => $interface->fetch('MyAccount/addAccountLink.tpl'),
-			'modalButtons' => "<span class='tool btn btn-primary' onclick='AspenDiscovery.Account.processAddLinkedUser(); return false;'>Add Account</span>"
+			'modalButtons' => "<span class='tool btn btn-primary' onclick='AspenDiscovery.Account.processAddLinkedUser(); return false;'>" . translate(['text'=>"Add Account",'isPublicFacing'=>true]) . "</span>"
 		);
 	}
 
@@ -154,9 +154,9 @@ class MyAccount_AJAX extends JSON_Action
 		$interface->assign('listId', strip_tags($_REQUEST['listId']));
 		$interface->assign('popupTitle', 'Add titles to list');
 		return array(
-			'title' => 'Add titles to list',
+			'title' => translate(['text'=>'Add titles to list','isPublicFacing'=>true]),
 			'modalBody' => $interface->fetch('MyAccount/bulkAddToListPopup.tpl'),
-			'modalButtons' => "<span class='tool btn btn-primary' onclick='AspenDiscovery.Lists.processBulkAddForm(); return false;'>Add To List</span>"
+			'modalButtons' => "<span class='tool btn btn-primary' onclick='AspenDiscovery.Lists.processBulkAddForm(); return false;'>" . translate(['text'=>"Add To List",'isPublicFacing'=>true]) . "</span>"
 		);
 	}
 
@@ -837,9 +837,9 @@ class MyAccount_AJAX extends JSON_Action
 	{
 		global $interface;
 		return array(
-			'title' => translate('Masquerade As'),
+			'title' => translate(['text'=>'Masquerade As','isPublicFacing'=>true]),
 			'modalBody' => $interface->fetch("MyAccount/ajax-masqueradeAs.tpl"),
-			'modalButtons' => '<button class="tool btn btn-primary" onclick="$(\'#masqueradeForm\').submit()">Start</button>'
+			'modalButtons' => '<button class="tool btn btn-primary" onclick="$(\'#masqueradeForm\').submit()">' . translate(['text'=>'Start','isPublicFacing'=>true]) . '</button>'
 		);
 	}
 

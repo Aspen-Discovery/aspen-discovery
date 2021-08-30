@@ -62,12 +62,6 @@ class MaterialsRequest_AJAX extends Action{
 		global $interface;
 		global $configArray;
 
-		$useWorldCat = false;
-		if (isset($configArray['WorldCat']) && isset($configArray['WorldCat']['apiKey'])){
-			$useWorldCat = strlen($configArray['WorldCat']['apiKey']) > 0;
-		}
-		$interface->assign('useWorldCat', $useWorldCat);
-
 		if (!isset($_REQUEST['id'])){
 			$interface->assign('error', 'Please provide an id of the '. translate('materials request') .' to view.');
 		}else {
@@ -330,41 +324,6 @@ class MaterialsRequest_AJAX extends Action{
 				'title'        => translate('Materials Request Details'),
 				'modalBody'    => $interface->fetch('MaterialsRequest/ajax-request-details.tpl'),
 				'modalButtons' => '' //TODO idea: add Update Request button (for staff only?)
-		);
-	}
-
-	/** @noinspection PhpUnused */
-	function GetWorldCatIdentifiers(){
-		$worldCatTitles = $this->GetWorldCatTitles();
-		if ($worldCatTitles['success'] == false){
-			return $worldCatTitles;
-		}else{
-			$suggestedIdentifiers = array();
-			foreach ($worldCatTitles['titles'] as $title){
-				$identifier = null;
-				if (isset($title['ISBN'])){
-					//Get the first 13 digit ISBN if available
-					foreach ($title['ISBN'] as $isbn){
-						$identifier = $isbn;
-						if (strlen($isbn) == 13){
-							break;
-						}
-					}
-					$title['isbn'] = $identifier;
-				}elseif (isset($title['oclcNumber'])){
-					$identifier = $title['oclcNumber'];
-				}
-				if (!is_null($identifier) && !array_key_exists($identifier, $suggestedIdentifiers)){
-					$suggestedIdentifiers[$identifier] = $title;
-				}
-			}
-		}
-		global $interface;
-		$interface->assign('suggestedIdentifiers', $suggestedIdentifiers);
-		return array(
-			'success' => true,
-			'identifiers' => $suggestedIdentifiers,
-			'formattedSuggestions' => $interface->fetch('MaterialsRequest/ajax-suggested-identifiers.tpl')
 		);
 	}
 

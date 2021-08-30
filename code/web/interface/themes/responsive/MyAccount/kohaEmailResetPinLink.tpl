@@ -1,8 +1,8 @@
 {strip}
 	<div id="page-content" class="col-xs-12">
 
-		<h1>{translate text='Reset My PIN'}</h1>
-		<div class="alert alert-info">{translate text="reset_pin_instructions_koha" defaultText="To reset your PIN, enter your barcode or your email address.  You must have an email associated with your account to reset your PIN.  If you do not, please contact the library."}</div>
+		<h1>{translate text='Reset My PIN' isPublicFacing=true}</h1>
+		<div class="alert alert-info">{translate text="To reset your PIN, enter your barcode or your email address.  You must have an email associated with your account to reset your PIN.  If you do not, please contact the library." isPublicFacing=true}</div>
 
 		<form id="emailResetPin" method="POST" action="/MyAccount/EmailResetPin" class="form-horizontal">
 			{if !empty($resendEmail)}
