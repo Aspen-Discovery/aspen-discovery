@@ -259,6 +259,7 @@ class MillenniumReadingHistory {
 				if (stripos($sKeys[$i],"Checked Out") > -1) {
 					$checkoutTime = DateTime::createFromFormat('m-d-Y', strip_tags($sCols[$i]))->getTimestamp();
 					$historyEntry['checkout'] = $checkoutTime;
+					$historyEntry['checkin'] = $checkoutTime;
 				}
 				if (stripos($sKeys[$i],"Details") > -1) {
 					$historyEntry['details'] = strip_tags($sCols[$i]);
