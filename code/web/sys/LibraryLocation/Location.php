@@ -841,37 +841,6 @@ class Location extends DataObject
 		return $this->sublocationCode;
 	}
 
-	function setCoordinates()
-	{
-		if($this->address != NULL) {
-			$fullAddress = str_replace("\r\n", ",", $this->address);
-			$address = explode(',', $fullAddress)[0];
-			$address = str_replace(" ", "%20", $address);
-			$city = explode(',', $fullAddress)[1];
-			$city = str_replace(" ", "%20", $city);
-			$state = explode(' ', trim(explode(',', $fullAddress)[2]))[0];
-			$zip = explode(' ', trim(explode(',', $fullAddress)[2]))[1];
-
-			// fetch mapquest data
-			$url = 'http://www.mapquestapi.com/geocoding/v1/address?key=mg5OqJEzdXEBcgsTOyHfZUScBlSg6krp&street=' . $address . '&city=' . $city . '&state=' . $state . '&postalCode=' . $zip;
-			$data = file_get_contents($url);
-			$findCoords = json_decode($data);
-			$this->latitude = $findCoords->results[0]->locations[0]->latLng->lat;
-			$this->longitude = $findCoords->results[0]->locations[0]->latLng->lng;
-			$this->longitude->set();
-			$results['latitude'] = $findCoords->results[0]->locations[0]->latLng->lat;
-			$results['longitude'] = $findCoords->results[0]->locations[0]->latLng->lng;
-
-			$libraryCountry = $findCoords->results[0]->locations[0]->adminArea1;
-			if ($libraryCountry == 'CA') {
-				$results['unit'] = 'Km';
-			} else {
-				$results['unit'] = 'Mi';
-			}
-		}
-		return $results;
-	}
-
 	/**
 	 * @param $libraryId
 	 * @return string[]
@@ -1009,7 +978,7 @@ class Location extends DataObject
 			$this->saveSideLoadScopes();
 			$this->saveCombinedResultSections();
 			$this->saveCloudLibraryScopes();
-			$this->setCoordinates();
+			$this->saveCoordinates();
 		}
 		return $ret;
 	}
@@ -1030,7 +999,7 @@ class Location extends DataObject
 			$this->saveSideLoadScopes();
 			$this->saveCombinedResultSections();
 			$this->saveCloudLibraryScopes();
-			$this->setCoordinates();
+			$this->saveCoordinates();
 		}
 		return $ret;
 	}
@@ -1248,6 +1217,55 @@ class Location extends DataObject
 		if (isset ($this->_sideLoadScopes) && is_array($this->_sideLoadScopes)) {
 			$this->saveOneToManyOptions($this->_sideLoadScopes, 'locationId');
 			unset($this->_sideLoadScopes);
+		}
+	}
+
+	public function saveCoordinates(){
+		if($this->address){
+			$address = str_replace("\r\n", ",", $this->address);
+			$address = str_replace(" ", "+", $address);
+
+			require_once ROOT_DIR . '/sys/Enrichment/GoogleApiSetting.php';
+			$googleSettings = new GoogleApiSetting();
+			$apiKey = null;
+			if ($googleSettings->find(true)) {
+				if (!empty($googleSettings->googleMapsKey)) {
+					$apiKey = $googleSettings->googleMapsKey;
+				}
+			}
+
+			$url = 'https://maps.googleapis.com/maps/api/geocode/json?address='. $address . '&key=' . $apiKey;
+
+			$location = new Location();
+			$location->locationId = $this->locationId;
+
+			// fetch google geocode data
+			$ch = curl_init();
+			curl_setopt($ch, CURLOPT_URL, $url);
+			curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+			$response = curl_exec($ch);
+			curl_close($ch);
+			$data = json_decode($response);
+
+			if($data->status == 'OK') {
+				$location->longitude = $data->results[0]->geometry->location->lng;
+				$location->latitude = $data->results[0]->geometry->location->lat;
+				$components = $data->results[0]->address_components;
+
+				foreach ($components as $component) {
+					if ($component->type[0] == 'country') {
+						$country = $component->short_name;
+					}
+				}
+
+				if ($country == 'CA') {
+					$location->unit = 'Km';
+				} else {
+					$location->unit = 'Mi';
+				}
+			}
+
+			$location->update();
 		}
 	}
 
