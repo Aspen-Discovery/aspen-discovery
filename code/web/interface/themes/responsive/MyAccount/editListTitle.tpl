@@ -14,7 +14,7 @@
 			{if $list->defaultSort == 'custom'}
 			<div class="form-group">
 				<label for="listPosition" class="col-sm-3">{translate text='Position' isPublicFacing=true} </label>
-				<div class="col-sm-9"><input type="number" class="form-control" value="{$listEntry->weight}" name="position" min="1"></div>
+				<div class="col-sm-9"><input type="number" class="form-control" value="{$listEntry->weight}" name="position" min="1" max="{$maxListPosition}"></div>
 			</div>
 			{/if}
 
