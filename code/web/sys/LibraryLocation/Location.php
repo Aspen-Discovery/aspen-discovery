@@ -1222,7 +1222,11 @@ class Location extends DataObject
 		if($this->address){
 			$address = str_replace("\r\n", ",", $this->address);
 			$address = str_replace(" ", "+", $address);
-			$apiKey = 'AIzaSyCAT19nhQvgz9mSF6hFWSsgVjPemAreZX8';
+
+			new Enrichment_GoogleApiSettings();
+
+			}
+			$apiKey = '';
 			$url = 'https://maps.googleapis.com/maps/api/geocode/json?address='. $address . '&key=' . $apiKey;
 
 			$location = new Location();
