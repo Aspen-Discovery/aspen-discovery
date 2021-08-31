@@ -7,16 +7,30 @@ class MyAccount_SelectInterface extends Action{
 
 		$libraries = array();
 		$library = new Library();
+		$library->createSearchInterface = 1;
+		$library->showInSelectInterface = 1;
 		$library->orderBy('displayName');
 		$library->find();
 		while ($library->fetch()){
-			if ($library->createSearchInterface) {
-				$libraries[$library->libraryId] = array(
-					'id' => $library->libraryId,
-					'displayName' => $library->displayName,
-					'library' => clone $library,
-				);
-			}
+			$libraries[$library->libraryId] = array(
+				'id' => $library->libraryId,
+				'displayName' => $library->displayName,
+				'library' => clone $library,
+				'isLibrary' => true,
+			);
+		}
+		$location = new Location();
+		$location->createSearchInterface = 1;
+		$location->showInSelectInterface = 1;
+		$location->orderBy('displayName');
+		$location->find();
+		while ($location->fetch()){
+			$libraries[$location->locationId] = array(
+				'id' => $location->locationId,
+				'displayName' => $location->displayName,
+				'location' => clone $location,
+				'isLibrary' => false,
+			);
 		}
 		$interface->assign('libraries', $libraries);
 

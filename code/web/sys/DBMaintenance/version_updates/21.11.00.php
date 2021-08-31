@@ -79,6 +79,14 @@ function getUpdates21_11_00() : array
 				"ALTER TABLE `library` DROP COLUMN eContentSupportAddress",
 			),
 		), //remove_econtent_support_address
+		'showInSelectInterface' => [
+			'title' => 'Show in Select Interface',
+			'description' => 'Add showInSelectInterface to library and location tables',
+			'sql' => [
+				'ALTER TABLE location ADD COLUMN showInSelectInterface TINYINT(1) DEFAULT 0',
+				'ALTER TABLE library ADD COLUMN showInSelectInterface TINYINT(1) DEFAULT 1',
+			]
+		], //addGeolocation
 		'enableAppAccess' => [
 			'title' => 'Enable app access per location',
 			'description' => 'Turn on/off app access per location',
