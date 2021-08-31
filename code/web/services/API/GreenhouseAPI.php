@@ -53,21 +53,12 @@ class GreenhouseAPI extends Action
 				if($data = file_get_contents($fetchLibraryUrl)) {
 					$searchData = json_decode($data);
 					foreach ($searchData->library as $findLibrary) {
-						if ($findLibrary->latitude) {
-							$libraryLatitude = $findLibrary->latitude;
-						} else {
-							$libraryLatitude = 0;
-						}
 
-						if ($findLibrary->longitude) {
-							$libraryLongitude = $findLibrary->longitude;
-						} else {
-							$libraryLongitude = 0;
-						}
-
+						$libraryLatitude = $findLibrary->latitude;
+						$libraryLongitude = $findLibrary->longitude;
 						$libraryUnit = $findLibrary->unit;
-
 						$baseUrl = $findLibrary->baseUrl;
+
 						if($baseUrl == NULL) {
 							$baseUrl = $sites->baseUrl;
 						}
