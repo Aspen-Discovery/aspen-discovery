@@ -1223,10 +1223,15 @@ class Location extends DataObject
 			$address = str_replace("\r\n", ",", $this->address);
 			$address = str_replace(" ", "+", $address);
 
-			new Enrichment_GoogleApiSettings();
-
+			require_once ROOT_DIR . '/sys/Enrichment/GoogleApiSetting.php';
+			$googleSettings = new GoogleApiSetting();
+			$apiKey = null;
+			if ($googleSettings->find(true)) {
+				if (!empty($googleSettings->googleMapsKey)) {
+					$apiKey = $googleSettings->googleMapsKey;
+				}
 			}
-			$apiKey = '';
+
 			$url = 'https://maps.googleapis.com/maps/api/geocode/json?address='. $address . '&key=' . $apiKey;
 
 			$location = new Location();
