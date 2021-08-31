@@ -16,9 +16,9 @@ function getUpdates21_11_00() : array
 			'sql' => [
 				'ALTER TABLE materials_request ADD COLUMN staffComments TEXT'
 			]
-		],
+		], //materialsRequestStaffComments
 		'additionalTranslationTermInfo' => [
-			'title' => 'Add categorizing of translation termsm',
+			'title' => 'Add categorizing of translation terms',
 			'description' =>  'Add additional information to translation terms to be able categorize them',
 			'sql' => [
 				'ALTER TABLE translation_terms ADD COLUMN isPublicFacing TINYINT(1) DEFAULT 0',
@@ -27,14 +27,14 @@ function getUpdates21_11_00() : array
 				'ALTER TABLE translation_terms ADD COLUMN isAdminEnteredData TINYINT(1) DEFAULT 0',
 				'ALTER TABLE translation_terms ADD COLUMN lastUpdate INT(11) DEFAULT 0',
 			]
-		],
+		], //additionalTranslationTermInfo
 		'addGreenhouseUrl' => [
 			'title' => 'Add Greenhouse URL',
 			'description' => 'Add a link to the Greenhouse',
 			'sql' => [
 				'ALTER TABLE system_variables ADD COLUMN greenhouseUrl VARCHAR(128)'
 			]
-		],
+		], //addGreenhouseUrl
 		'removeIslandoraTables' => [
 			'title' => 'Remove Islandora Tables',
 			'description' => 'Remove unused Islandora Tables',
@@ -70,7 +70,7 @@ function getUpdates21_11_00() : array
 				'ALTER TABLE library DROP COLUMN archiveRequestFieldPurpose',
 				'ALTER TABLE library DROP COLUMN archiveMoreDetailsRelatedObjectsOrEntitiesDisplayMode',
 			]
-		],
+		], //removeIslandoraTables
 		'remove_econtent_support_address' => array(
 			'title' => 'Remove eContent Support Address',
 			'description' => 'Remove unused support email address for eContent problems.',
@@ -78,6 +78,13 @@ function getUpdates21_11_00() : array
 			'sql' => array(
 				"ALTER TABLE `library` DROP COLUMN eContentSupportAddress",
 			),
-		),
+		), //remove_econtent_support_address
+		'enableAppAccess' => [
+			'title' => 'Enable app access per location',
+			'description' => 'Turn on/off app access per location',
+			'sql' => [
+				'ALTER TABLE location ADD COLUMN enableAppAccess TINYINT(1) DEFAULT 0'
+			]
+		], //enableAppAccess
 	];
 }

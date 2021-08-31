@@ -34,11 +34,15 @@ class Location extends DataObject
 	public $subLocation;
 	public $displayName;            //varchar(40)
 	public $createSearchInterface;
+	public $enableAppAccess;
 	public $theme;
 	public $showDisplayNameInHeader;
 	public $headerText;
 	public $address;
 	public $phone;
+	public $latitude;
+	public $longitude;
+	public $unit;
 	public $tty;
 	public $description;
 	public $isMainBranch; // tinyint(1)
@@ -225,6 +229,7 @@ class Location extends DataObject
 			'subLocation' => array('property' => 'subLocation', 'type' => 'text', 'label' => 'Sub Location Code', 'description' => 'The sub location or collection used to identify this ', 'forcesReindex' => true, 'canBatchUpdate'=>false, 'permissions' => ['Location Domain Settings']),
 			'displayName' => array('property' => 'displayName', 'type' => 'text', 'label' => 'Display Name', 'description' => 'The full name of the location for display to the user', 'size' => '40', 'forcesReindex' => true, 'canBatchUpdate'=>false, 'editPermissions' => ['Location Domain Settings']),
 			'createSearchInterface' => array('property' => 'createSearchInterface', 'type' => 'checkbox', 'label' => 'Create Search Interface', 'description' => 'Whether or not a search interface is created.  Things like lockers and drive through windows dow not need search interfaces.', 'forcesReindex' => true, 'editPermissions' => ['Location Domain Settings'], 'default' => true),
+			'enableAppAccess' => array('property' => 'enableAppAccess', 'type' => 'checkbox', 'label' => 'Enable app access', 'description' => 'Whether or not the location is available in the app.', 'editPermissions' => ['Location Domain Settings'], 'default' => false),
 			'theme' => array('property' => 'theme', 'type' => 'enum', 'label' => 'Theme', 'values' => $availableThemes, 'description' => 'The theme which should be used for the library', 'hideInLists' => true, 'default' => 'default', 'editPermissions' => ['Location Theme Configuration']),
 			'showDisplayNameInHeader' => array('property' => 'showDisplayNameInHeader', 'type' => 'checkbox', 'label' => 'Show Display Name in Header', 'description' => 'Whether or not the display name should be shown in the header next to the logo', 'hideInLists' => true, 'default' => false, 'permissions' => ['Location Theme Configuration']),
 			'libraryId' => array('property' => 'libraryId', 'type' => 'enum', 'values' => $libraryList, 'label' => 'Library', 'description' => 'A link to the library which the location belongs to', 'editPermissions' => ['Location Domain Settings']),
@@ -232,6 +237,9 @@ class Location extends DataObject
 			'showInLocationsAndHoursList' => array('property' => 'showInLocationsAndHoursList', 'type' => 'checkbox', 'label' => 'Show In Locations And Hours List', 'description' => 'Whether or not this location should be shown in the list of library hours and locations', 'hideInLists' => true, 'default' => true, 'editPermissions' => ['Location Address and Hours Settings']),
 			'address' => array('property' => 'address', 'type' => 'textarea', 'label' => 'Address', 'description' => 'The address of the branch.', 'hideInLists' => true, 'editPermissions' => ['Location Address and Hours Settings']),
 			'phone' => array('property' => 'phone', 'type' => 'text', 'label' => 'Phone Number', 'description' => 'The main phone number for the site .', 'maxLength' => '25', 'hideInLists' => true, 'editPermissions' => ['Location Address and Hours Settings']),
+			'latitude' => array('property' => 'latitude', 'type' => 'text', 'label' => 'Address Latitude', 'description' => 'The latitude of the address provided.', 'maxLength' => '25', 'hideInLists' => true, 'editPermissions' => ['Location Address and Hours Settings']),
+			'longitude' => array('property' => 'longitude', 'type' => 'text', 'label' => 'Address Longitude', 'description' => 'The longitude of the address provided', 'maxLength' => '25', 'hideInLists' => true, 'editPermissions' => ['Location Address and Hours Settings']),
+			'unit' => array('property' => 'unit', 'type' => 'text', 'label' => 'Units for Distance (Mi/Km)', 'description' => 'The unit of measurement for distance', 'maxLength' => '2', 'hideInLists' => true, 'editPermissions' => ['Location Address and Hours Settings']),
 			'tty' => array('property' => 'tty', 'type' => 'text', 'label' => 'TTY Number', 'description' => 'The tty number for the site .', 'maxLength' => '25', 'hideInLists' => true, 'editPermissions' => ['Location Address and Hours Settings']),
 			'description' => array('property' => 'description', 'type' => 'markdown', 'label' => 'Description', 'description' => 'Allows the display of a description in the Location and Hours dialog', 'hideInLists' => true, 'editPermissions' => ['Location Address and Hours Settings']),
 			'nearbyLocation1' => array('property' => 'nearbyLocation1', 'type' => 'enum', 'values' => $locationLookupList, 'label' => 'Nearby Location 1', 'description' => 'A secondary location which is nearby and could be used for pickup of materials.', 'hideInLists' => true, 'permissions' => ['Location Catalog Options']),
@@ -831,6 +839,37 @@ class Location extends DataObject
 		return $this->sublocationCode;
 	}
 
+	function setCoordinates()
+	{
+		if($this->address != NULL) {
+			$fullAddress = str_replace("\r\n", ",", $this->address);
+			$address = explode(',', $fullAddress)[0];
+			$address = str_replace(" ", "%20", $address);
+			$city = explode(',', $fullAddress)[1];
+			$city = str_replace(" ", "%20", $city);
+			$state = explode(' ', trim(explode(',', $fullAddress)[2]))[0];
+			$zip = explode(' ', trim(explode(',', $fullAddress)[2]))[1];
+
+			// fetch mapquest data
+			$url = 'http://www.mapquestapi.com/geocoding/v1/address?key=mg5OqJEzdXEBcgsTOyHfZUScBlSg6krp&street=' . $address . '&city=' . $city . '&state=' . $state . '&postalCode=' . $zip;
+			$data = file_get_contents($url);
+			$findCoords = json_decode($data);
+			$this->latitude = $findCoords->results[0]->locations[0]->latLng->lat;
+			$this->longitude = $findCoords->results[0]->locations[0]->latLng->lng;
+			$this->longitude->set();
+			$results['latitude'] = $findCoords->results[0]->locations[0]->latLng->lat;
+			$results['longitude'] = $findCoords->results[0]->locations[0]->latLng->lng;
+
+			$libraryCountry = $findCoords->results[0]->locations[0]->adminArea1;
+			if ($libraryCountry == 'CA') {
+				$results['unit'] = 'Km';
+			} else {
+				$results['unit'] = 'Mi';
+			}
+		}
+		return $results;
+	}
+
 	/**
 	 * @param $libraryId
 	 * @return string[]
@@ -968,6 +1007,7 @@ class Location extends DataObject
 			$this->saveSideLoadScopes();
 			$this->saveCombinedResultSections();
 			$this->saveCloudLibraryScopes();
+			$this->setCoordinates();
 		}
 		return $ret;
 	}
@@ -988,6 +1028,7 @@ class Location extends DataObject
 			$this->saveSideLoadScopes();
 			$this->saveCombinedResultSections();
 			$this->saveCloudLibraryScopes();
+			$this->setCoordinates();
 		}
 		return $ret;
 	}

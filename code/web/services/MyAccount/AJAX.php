@@ -3664,8 +3664,14 @@ class MyAccount_AJAX extends JSON_Action
 							}
 						}
 					}
-					$desiredPosition->weight = $newPosition - 1;
-					$desiredPosition->update();
+
+					if ($desiredPosition != 1) {
+						$desiredPosition->weight = $newPosition - 1;
+						$desiredPosition->update();
+					} else {
+						$desiredPosition->weight = $newPosition + 1;
+						$desiredPosition->update();
+					}
 
 					$userListEntry->weight = $newPosition;
 					$userListEntry->update();
