@@ -15,7 +15,7 @@
 
 			<h1>{translate text='Reset PIN/Password'}</h1>
 			{if $offline}
-				<div class="alert alert-warning">{translate text=offline_notice defaultText="<strong>The library system is currently offline.</strong> We are unable to retrieve information about your account at this time."}</div>
+				<div class="alert alert-warning"><strong>{translate text="The library system is currently offline." isPublicFacing=true}</strong> {translate text="We are unable to retrieve information about your account at this time." isPublicFacing=true}</div>
 			{else}
 				{if !empty($profileUpdateErrors)}
 					{foreach from=$profileUpdateErrors item=errorMsg}
@@ -77,7 +77,7 @@
 			{/if}
 		{else}
 			<div class="page">
-				You must sign in to view this information. Click <a href="/MyAccount/Login">here</a> to sign in.
+				{translate text="You must sign in to view this information." isPublicFacing=true}<a href='/MyAccount/Login' class="btn btn-primary">{translate text="Sign In" isPublicFacing=true}</a>
 			</div>
 		{/if}
 	</div>

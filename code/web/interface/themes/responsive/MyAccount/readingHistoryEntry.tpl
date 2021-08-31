@@ -37,7 +37,7 @@
 
 				{if $record.author}
 					<div class="row">
-						<div class="result-label col-tn-3">{translate text='Author'}</div>
+						<div class="result-label col-tn-3"> {translate text='Author' isPublicFacing=true}</div>
 						<div class="result-value col-tn-9">
 							{if is_array($record.author)}
 								{foreach from=$summAuthor item=author}

@@ -75,8 +75,6 @@ class Admin_DBMaintenance extends Admin_Admin
 		$collection_spotlight_updates = getCollectionSpotlightUpdates();
 		require_once ROOT_DIR . '/sys/DBMaintenance/indexing_updates.php';
 		$indexing_updates = getIndexingUpdates();
-		require_once ROOT_DIR . '/sys/DBMaintenance/islandora_updates.php';
-		$islandora_updates = getIslandoraUpdates();
 		require_once ROOT_DIR . '/sys/DBMaintenance/hoopla_updates.php';
 		$hoopla_updates = getHooplaUpdates();
 		require_once ROOT_DIR . '/sys/DBMaintenance/rbdigital_updates.php';
@@ -121,7 +119,6 @@ class Admin_DBMaintenance extends Admin_Admin
 			$browse_updates,
 			$collection_spotlight_updates,
 			$indexing_updates,
-			$islandora_updates,
 			$overdrive_updates,
 			$ebscoUpdates,
 			$axis360Updates,

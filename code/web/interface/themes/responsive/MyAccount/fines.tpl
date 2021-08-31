@@ -13,7 +13,7 @@
 
 	<h1>{translate text='Fines'}</h1>
 	{if $offline}
-		<div class="alert alert-warning">{translate text=offline_notice defaultText="<strong>The library system is currently offline.</strong> We are unable to retrieve information about your account at this time."}</div>
+		<div class="alert alert-warning"><strong>{translate text="The library system is currently offline." isPublicFacing=true}</strong> {translate text="We are unable to retrieve information about your account at this time." isPublicFacing=true}</div>
 	{else}
 		{if $finePaymentResult}
 			<div class="alert alert-{if $finePaymentResult->success === true}success{else}danger{/if}" id="finePaymentResult">{$finePaymentResult->message}</div>
@@ -37,12 +37,12 @@
 									<th><input type="checkbox" checked name="selectAllFines{$userId}" id="selectAllFines{$userId}" aria-label="Select all fines" onclick="$('#fines{$userId} .selectedFine').prop('checked', $('#selectAllFines{$userId}').prop('checked'));AspenDiscovery.Account.updateFineTotal('#fines{$userId}', '{$userId}', '{$finesToPay}');"></th>
 								{/if}
 								{if $showDate}
-									<th>{translate text="Date"}</th>
+									<th>{translate text="Date" isPublicFacing=true}</th>
 								{/if}
 								{if $showReason}
 									<th>{translate text="Reason"}</th>
 								{/if}
-								<th>{translate text="Title"}</th>
+								<th>{translate text="Title" isPublicFacing=true}</th>
 								{if $showSystem}
 									<th>{translate text="fine_system" defaultText="System"}</th>
 								{/if}
@@ -160,5 +160,5 @@
 		{/if}
 	{/if}
 {else}
-	You must sign in to view this information. Click <a href="/MyAccount/Login">here</a> to sign in.
+	{translate text="You must sign in to view this information." isPublicFacing=true}<a href='/MyAccount/Login' class="btn btn-primary">{translate text="Sign In" isPublicFacing=true}</a>
 {/if}
