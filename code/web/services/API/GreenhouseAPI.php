@@ -131,37 +131,6 @@ class GreenhouseAPI extends Action
 					$searchSource = $library->subdomain;
 				}
 
-				$rawAddress = $location->address;
-				if ($rawAddress != NULL) {
-					$fullAddress = str_replace("\r\n", ",", $rawAddress);
-					$address = explode(',', $fullAddress)[0];
-					$address = str_replace(" ", "%20", $address);
-					$city = explode(',', $fullAddress)[1];
-					$city = str_replace(" ", "%20", $city);
-					$state = explode(' ', trim(explode(',', $fullAddress)[2]))[0];
-					$zip = explode(' ', trim(explode(',', $fullAddress)[2]))[1];
-
-					// fetch mapquest data
-					$url = 'http://www.mapquestapi.com/geocoding/v1/address?key=mg5OqJEzdXEBcgsTOyHfZUScBlSg6krp&street=' . $address . '&city=' . $city . '&state=' . $state . '&postalCode=' . $zip;
-					$data = file_get_contents($url);
-					$findCoords = json_decode($data);
-					$libraryLatitude = $findCoords->results[0]->locations[0]->latLng->lat;
-					$libraryLongitude = $findCoords->results[0]->locations[0]->latLng->lng;
-					$libraryCountry = $findCoords->results[0]->locations[0]->adminArea1;
-
-					if ($libraryCountry == 'CA') {
-						$unit = 'Km';
-					} else {
-						$unit = 'Mi';
-					}
-
-				} else {
-					$libraryLatitude = 0;
-					$libraryLongitude = 0;
-					$libraryCountry = 'US';
-					$unit = 'Mi';
-				}
-
 				global $solrScope;
 				global $scopeType;
 				global $isGlobalScope;
@@ -191,9 +160,9 @@ class GreenhouseAPI extends Action
 				}
 
 				$return['library'][] = [
-					'latitude' => $libraryLatitude,
-					'longitude' => $libraryLongitude,
-					'unit' => $unit,
+					'latitude' => $location->latitude,
+					'longitude' => $location->longitude,
+					'unit' => $location->unit,
 					'locationName' => $location->displayName,
 					'libraryId' => $libraryId,
 					'solrScope' => $solrScope,
