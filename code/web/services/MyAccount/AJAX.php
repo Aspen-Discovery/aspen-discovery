@@ -3587,10 +3587,14 @@ class MyAccount_AJAX extends JSON_Action
 								require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
 								$userListEntry = new UserListEntry();
 								$userListEntry->id = $listEntryId;
+
 								if ($userListEntry->find(true)) {
 									$interface->assign('listEntry', $userListEntry);
 									$interface->assign('recordDriver', $userListEntry->getRecordDriver());
 								}
+								$userListEntryCount = new UserListEntry();
+								$userListEntryCount->listId = $listId;
+								$interface->assign('maxListPosition', $userListEntryCount->count());
 							}
 						}
 					}
@@ -3620,6 +3624,7 @@ class MyAccount_AJAX extends JSON_Action
 		];
 		require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 		require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
+		global $interface;
 
 		$userListEntry = new UserListEntry();
 		$userListEntry->id = $_REQUEST['listEntry'];
@@ -3647,30 +3652,39 @@ class MyAccount_AJAX extends JSON_Action
 				if ($desiredPosition->find(true)){
 					$entriesToSwap = new UserListEntry();
 					$entriesToSwap->listId = $_REQUEST['listId'];
+					$maxPosition = $entriesToSwap->count();
 					$entriesToSwap->find();
 					while ($entriesToSwap->fetch()){
 						if($newPosition > $currentPosition){
 							// move up
-							if ($entriesToSwap->weight < $newPosition) {
+							if ($entriesToSwap->weight == 1) {
+								$entriesToSwap->weight = $entriesToSwap->weight + 1;
+								$entriesToSwap->update();
+							}
+							elseif ($entriesToSwap->weight == $maxPosition) {
+								$entriesToSwap->weight = $entriesToSwap->weight - 1;
+								$entriesToSwap->update();
+							}
+							elseif ($entriesToSwap->weight < $newPosition) {
 								$entriesToSwap->weight = $entriesToSwap->weight - 1;
 								$entriesToSwap->update();
 							}
 						}
 						if($newPosition < $currentPosition){
 							// move down
-							if ($entriesToSwap->weight > $newPosition) {
+							if ($entriesToSwap->weight == 1) {
+								$entriesToSwap->weight = $entriesToSwap->weight + 1;
+								$entriesToSwap->update();
+							}
+							elseif ($entriesToSwap->weight == $maxPosition) {
+								$entriesToSwap->weight = $entriesToSwap->weight - 1;
+								$entriesToSwap->update();
+							}
+							elseif ($entriesToSwap->weight > $newPosition) {
 								$entriesToSwap->weight = $entriesToSwap->weight + 1;
 								$entriesToSwap->update();
 							}
 						}
-					}
-
-					if ($desiredPosition != 1) {
-						$desiredPosition->weight = $newPosition - 1;
-						$desiredPosition->update();
-					} else {
-						$desiredPosition->weight = $newPosition + 1;
-						$desiredPosition->update();
 					}
 
 					$userListEntry->weight = $newPosition;
