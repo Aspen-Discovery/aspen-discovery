@@ -1236,9 +1236,6 @@ class Location extends DataObject
 
 			$url = 'https://maps.googleapis.com/maps/api/geocode/json?address='. $address . '&key=' . $apiKey;
 
-			$location = new Location();
-			$location->locationId = $this->locationId;
-
 			// fetch google geocode data
 			$ch = curl_init();
 			curl_setopt($ch, CURLOPT_URL, $url);
@@ -1248,8 +1245,8 @@ class Location extends DataObject
 			$data = json_decode($response);
 
 			if($data->status == 'OK') {
-				$location->longitude = $data->results[0]->geometry->location->lng;
-				$location->latitude = $data->results[0]->geometry->location->lat;
+				$this->longitude = $data->results[0]->geometry->location->lng;
+				$this->latitude = $data->results[0]->geometry->location->lat;
 				$components = $data->results[0]->address_components;
 
 				foreach ($components as $component) {
@@ -1259,13 +1256,12 @@ class Location extends DataObject
 				}
 
 				if ($country == 'CA') {
-					$location->unit = 'Km';
+					$this->unit = 'Km';
 				} else {
-					$location->unit = 'Mi';
+					$this->unit = 'Mi';
 				}
+				parent::update();
 			}
-
-			$location->update();
 		}
 	}
 
