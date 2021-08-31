@@ -1,4 +1,4 @@
-<h1 class="hiddenTitle">{translate text='Open Archives Search Results'}</h1>
+<h1 class="hiddenTitle">{translate text='Open Archives Search Results' isPublicFacing=true}</h1>
 <div id="searchInfo">
 	{* Recommendations *}
 	{if $topRecommendations}
@@ -85,7 +85,7 @@
 			<a href="#" onclick="return AspenDiscovery.CollectionSpotlights.createSpotlightFromSearch('{$searchId}')">{translate text='Create Spotlight' isAdminFacing=true}</a>
 		{/if}
 		{if $loggedIn && (in_array('Administer All Browse Categories', $userPermissions) || in_array('Administer Library Browse Categories', $userPermissions))}
-			<a href="#" onclick="return AspenDiscovery.Browse.addToHomePage('{$searchId}')">{translate text='Add To Browse' isPublicFacing=true}</a>
+			<a href="#" onclick="return AspenDiscovery.Browse.addToHomePage('{$searchId}')">{translate text='Add To Browse' isAdminFacing=true}</a>
 		{/if}
 	</div>
 	{/if}

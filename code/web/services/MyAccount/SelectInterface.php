@@ -10,11 +10,13 @@ class MyAccount_SelectInterface extends Action{
 		$library->orderBy('displayName');
 		$library->find();
 		while ($library->fetch()){
-			$libraries[$library->libraryId] = array(
-				'id' => $library->libraryId,
-				'displayName' => $library->displayName,
-				'library' => clone $library,
-			);
+			if ($library->createSearchInterface) {
+				$libraries[$library->libraryId] = array(
+					'id' => $library->libraryId,
+					'displayName' => $library->displayName,
+					'library' => clone $library,
+				);
+			}
 		}
 		$interface->assign('libraries', $libraries);
 
@@ -58,7 +60,7 @@ class MyAccount_SelectInterface extends Action{
 				$baseUrl = $configArray['Site']['url'];
 				$urlPortions = explode('://', $baseUrl);
 				//Get rid of extra portions of the url
-				$subdomain = $selectedLibrary['subdomain'];
+				$subdomain = $selectedLibrary->subdomain;
 				if (strpos($urlPortions[1], 'opac2') !== false){
 					$urlPortions[1] = str_replace('opac2.', '', $urlPortions[1]);
 					$subdomain .= '2';

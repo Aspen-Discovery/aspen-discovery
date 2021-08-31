@@ -13,7 +13,7 @@
 				{include file='ilsMessages.tpl' messages=$ilsMessages}
 			{/if}
 
-			<h1>{translate text='Reset PIN/Password'}</h1>
+			<h1>{translate text='Reset PIN/Password' isPublicFacing=true}</h1>
 			{if $offline}
 				<div class="alert alert-warning"><strong>{translate text="The library system is currently offline." isPublicFacing=true}</strong> {translate text="We are unable to retrieve information about your account at this time." isPublicFacing=true}</div>
 			{else}
@@ -32,26 +32,26 @@
 				<form action="" method="post" class="form-horizontal" id="pinForm">
 					<input type="hidden" name="updateScope" value="pin">
 					<div class="form-group">
-						<div class="col-xs-4"><label for="pin" class="control-label">{translate text='Old %1%' 1=$passwordLabel}</label></div>
+						<div class="col-xs-4"><label for="pin" class="control-label">{translate text='Old %1%' 1=$passwordLabel translateParameters=true isPublicFacing=true}</label></div>
 						<div class="col-xs-8">
 							<input type="password" name="pin" id="pin" value="" size="{$pinValidationRules.minLength}" maxlength="60" class="form-control required {if $pinValidationRules.onlyDigitsAllowed}digits{/if}">
 						</div>
 					</div>
 					<div class="form-group">
-						<div class="col-xs-4"><label for="pin1" class="control-label">{translate text='New %1%' 1=$passwordLabel}</label></div>
+						<div class="col-xs-4"><label for="pin1" class="control-label">{translate text='New %1%' 1=$passwordLabel translateParameters=true isPublicFacing=true}</label></div>
 						<div class="col-xs-8">
 							<input type="password" name="pin1" id="pin1" value="" size="{$pinValidationRules.minLength}" maxlength="{$pinValidationRules.maxLength}" class="form-control required {if $pinValidationRules.onlyDigitsAllowed}digits{/if}">
 						</div>
 					</div>
 					<div class="form-group">
-						<div class="col-xs-4"><label for="pin2" class="control-label">{translate text='Re-enter New %1%' 1=$passwordLabel}</label></div>
+						<div class="col-xs-4"><label for="pin2" class="control-label">{translate text='Re-enter New %1%' 1=$passwordLabel translateParameters=true isPublicFacing=true}</label></div>
 						<div class="col-xs-8">
 								<input type="password" name="pin2" id="pin2" value="" size="{$pinValidationRules.minLength}" maxlength="{$pinValidationRules.maxLength}" class="form-control required {if $pinValidationRules.onlyDigitsAllowed}digits{/if}">
 						</div>
 					</div>
 					<div class="form-group">
 						<div class="col-xs-8 col-xs-offset-4">
-							<button type="submit" name="update" class="btn btn-primary">{translate text="Update"}</button>
+							<button type="submit" name="update" class="btn btn-primary">{translate text="Update" isPublicFacing=true}</button>
 						</div>
 					</div>
 					<script type="text/javascript">

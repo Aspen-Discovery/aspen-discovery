@@ -51,21 +51,21 @@
 				{/if}
 
 				<div class="row">
-					<div class="result-label col-tn-3">{translate text='Format'}</div>
+					<div class="result-label col-tn-3">{translate text='Format' isPublicFacing=true}</div>
 					<div class="result-value col-tn-9">
 						{if is_array($record.format)}
-							{implode subject=$record.format glue=", " translate=true}
+							{implode subject=$record.format glue=", " translate=true isPublicFacing=true}
 						{else}
-							{$record.format|translate}
+							{translate text=$record.format isPublicFacing=true}
 						{/if}
 					</div>
 				</div>
 
 				<div class="row">
-					<div class="result-label col-tn-3">{translate text='Last Used'}</div>
+					<div class="result-label col-tn-3">{translate text='Last Used' isPublicFacing=true}</div>
 					<div class="result-value col-tn-9">
 						{if $record.checkedOut}
-							{translate text="In Use"}
+							{translate text="In Use" isPublicFacing=true}
 						{else}
 							{if is_numeric($record.checkout)}
 								{$record.checkout|date_format:"%b %Y"}
@@ -77,7 +77,7 @@
 				</div>
 
 				<div class="row">
-					<div class="result-label col-tn-3">{translate text='Times Used'}</div>
+					<div class="result-label col-tn-3">{translate text='Times Used' isPublicFacing=true}</div>
 					<div class="result-value col-tn-9">
 						{$record.timesUsed}
 					</div>
@@ -86,7 +86,7 @@
 				{if $showRatings == 1}
 					{if $record.existsInCatalog && $record.ratingData}
 						<div class="row">
-							<div class="result-label col-tn-3">{translate text="Rating"}</div>
+							<div class="result-label col-tn-3">{translate text="Rating" isPublicFacing=true}</div>
 							<div class="result-value col-tn-9">
 								{include file="GroupedWork/title-rating.tpl" id=$record.permanentId ratingData=$record.ratingData showNotInterested=false}
 							</div>
@@ -98,15 +98,15 @@
 			<div class="col-xs-12 col-md-3">
 				<div class="btn-group btn-group-vertical btn-block">
 					{if empty($record.permanentId)}
-						<a href="#" onclick="return AspenDiscovery.Account.ReadingHistory.deleteEntryByTitleAuthor('{$selectedUser}', '{$record.title}', '{$record.author}');" class="btn btn-sm btn-primary">{translate text='Delete'}</a>
+						<a href="#" onclick="return AspenDiscovery.Account.ReadingHistory.deleteEntryByTitleAuthor('{$selectedUser}', '{$record.title}', '{$record.author}');" class="btn btn-sm btn-primary">{translate text='Delete' isPublicFacing=true}</a>
 					{else}
-						<a href="#" onclick="return AspenDiscovery.Account.ReadingHistory.deleteEntry('{$selectedUser}', '{$record.permanentId}');" class="btn btn-sm btn-primary">{translate text='Delete'}</a>
+						<a href="#" onclick="return AspenDiscovery.Account.ReadingHistory.deleteEntry('{$selectedUser}', '{$record.permanentId}');" class="btn btn-sm btn-primary">{translate text='Delete' isPublicFacing=true}</a>
 					{/if}
 				</div>
 				{if $showWhileYouWait}
 					<div class="btn-group btn-group-vertical btn-block">
 						{if $record.existsInCatalog}
-							<button onclick="return AspenDiscovery.GroupedWork.getYouMightAlsoLike('{$record.permanentId}');" class="btn btn-sm btn-default btn-wrap">{translate text="You Might Also Like"}</button>
+							<button onclick="return AspenDiscovery.GroupedWork.getYouMightAlsoLike('{$record.permanentId}');" class="btn btn-sm btn-default btn-wrap">{translate text="You Might Also Like" isPublicFacing=true}</button>
 						{/if}
 					</div>
 				{/if}

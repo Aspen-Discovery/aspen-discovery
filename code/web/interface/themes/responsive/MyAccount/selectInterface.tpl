@@ -1,6 +1,6 @@
 <div id="page-content" class="content">
 	<br/>
-	<div class="alert alert-info">{translate text='Select the Library Catalog you wish to use'}</div>
+	<div class="alert alert-info">{translate text='Select the Library Catalog you wish to use' isPublicFacing=true}</div>
 	<div id="selectLibraryMenu">
 		<form id="selectLibrary" method="get" action="/MyAccount/SelectInterface" class="form">
 			<div>
@@ -16,10 +16,10 @@
 				<div class="col-xs-12">
 					{if !$noRememberThis}
 						<div class="selectLibraryOption">
-							<label for="rememberThis"><input type="checkbox" name="rememberThis" checked="checked" id="rememberThis"> <b>Remember This</b></label>
+							<label for="rememberThis"><input type="checkbox" name="rememberThis" checked="checked" id="rememberThis"> <b>{translate text="Remember This" isPublicFacing=true}</b></label>
 						</div>
 					{/if}
-					<input type="submit" name="submit" value="Select Library Catalog" id="submitButton" class="btn btn-primary"/>
+					<input type="submit" name="submit" value="{translate text="Select Library Catalog" isPublicFacing=true inAttribute=true}" id="submitButton" class="btn btn-primary"/>
 				</div>
 
 				<div class="clearfix"></div>

@@ -6,7 +6,7 @@
 			<div class="col-tn-12">
 				<form action="{$actionPath}" method="get" class="form form-inline">
 					<div id="linkedUserOptions" class="form-group">
-						<label class="control-label" for="patronId">{$label|translate}&nbsp;</label>
+						<label class="control-label" for="patronId">{translate text=$label isPublicFacing=true}&nbsp;</label>
 
 						<select name="patronId" id="patronId" class="form-control" onchange="AspenDiscovery.Account.changeLinkedAccount()">
 							{foreach from=$linkedUsers item=tmpUser}

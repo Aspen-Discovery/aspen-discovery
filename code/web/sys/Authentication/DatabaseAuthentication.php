@@ -8,7 +8,7 @@ class DatabaseAuthentication implements Authentication {
 
 	public function authenticate($validatedViaSSO) {
 		if (!isset($_POST['username']) || !isset($_POST['password'])){
-			return new AspenError('authentication_error_blank');
+			return new AspenError('Login information cannot be blank.');
 		}
 		$username = $_POST['username'];
 		$password = $_POST['password'];
@@ -21,7 +21,7 @@ class DatabaseAuthentication implements Authentication {
 
 	private function login($username, $password){
 		if (($username == '') || ($password == '')) {
-			$user = new AspenError('authentication_error_blank');
+			$user = new AspenError('Login information cannot be blank.');
 		} else {
 			$user = new User();
 			$user->username = $username;
@@ -29,7 +29,7 @@ class DatabaseAuthentication implements Authentication {
 				$user = null;
 			}else{
 				if ($user->password != $password){
-					$user = new AspenError('authentication_error_invalid');
+					$user = new AspenError('Sorry that login information was not recognized, please try again.');
 				}
 			}
 		}
