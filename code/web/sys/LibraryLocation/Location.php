@@ -1234,12 +1234,10 @@ class Location extends DataObject
 					$url = 'https://maps.googleapis.com/maps/api/geocode/json?address='. $address . '&key=' . $apiKey;
 
 					// fetch google geocode data
-					$ch = curl_init();
-					curl_setopt($ch, CURLOPT_URL, $url);
-					curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-					$response = curl_exec($ch);
-					curl_close($ch);
+					$curl = new CurlWrapper();
+					$response = $curl->curlGetPage($url);
 					$data = json_decode($response);
+					$curl->close_curl();
 
 					if($data->status == 'OK') {
 						$this->longitude = $data->results[0]->geometry->location->lng;
