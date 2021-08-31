@@ -1221,7 +1221,7 @@ class Location extends DataObject
 	}
 
 	public function saveCoordinates(){
-		if($this->address){
+		if($this->address && empty($this->latitude) && empty($this->longitude)){
 			$address = str_replace("\r\n", ",", $this->address);
 			$address = str_replace(" ", "+", $address);
 
@@ -1231,36 +1231,35 @@ class Location extends DataObject
 			if ($googleSettings->find(true)) {
 				if (!empty($googleSettings->googleMapsKey)) {
 					$apiKey = $googleSettings->googleMapsKey;
-				}
-			}
+					$url = 'https://maps.googleapis.com/maps/api/geocode/json?address='. $address . '&key=' . $apiKey;
 
-			$url = 'https://maps.googleapis.com/maps/api/geocode/json?address='. $address . '&key=' . $apiKey;
+					// fetch google geocode data
+					$ch = curl_init();
+					curl_setopt($ch, CURLOPT_URL, $url);
+					curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+					$response = curl_exec($ch);
+					curl_close($ch);
+					$data = json_decode($response);
 
-			// fetch google geocode data
-			$ch = curl_init();
-			curl_setopt($ch, CURLOPT_URL, $url);
-			curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-			$response = curl_exec($ch);
-			curl_close($ch);
-			$data = json_decode($response);
+					if($data->status == 'OK') {
+						$this->longitude = $data->results[0]->geometry->location->lng;
+						$this->latitude = $data->results[0]->geometry->location->lat;
+						$components = $data->results[0]->address_components;
 
-			if($data->status == 'OK') {
-				$this->longitude = $data->results[0]->geometry->location->lng;
-				$this->latitude = $data->results[0]->geometry->location->lat;
-				$components = $data->results[0]->address_components;
+						foreach ($components as $component) {
+							if ($component->type[0] == 'country') {
+								$country = $component->short_name;
+							}
+						}
 
-				foreach ($components as $component) {
-					if ($component->type[0] == 'country') {
-						$country = $component->short_name;
+						if ($country == 'CA') {
+							$this->unit = 'Km';
+						} else {
+							$this->unit = 'Mi';
+						}
+						parent::update();
 					}
 				}
-
-				if ($country == 'CA') {
-					$this->unit = 'Km';
-				} else {
-					$this->unit = 'Mi';
-				}
-				parent::update();
 			}
 		}
 	}
