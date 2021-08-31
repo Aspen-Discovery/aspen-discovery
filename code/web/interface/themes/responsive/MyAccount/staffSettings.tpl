@@ -12,7 +12,7 @@
 
 			<h1>{translate text='Staff Settings'}</h1>
 			{if $offline}
-				<div class="alert alert-warning">{translate text=offline_notice defaultText="<strong>The library system is currently offline.</strong> We are unable to retrieve information about your account at this time."}</div>
+				<div class="alert alert-warning"><strong>{translate text="The library system is currently offline." isPublicFacing=true}</strong> {translate text="We are unable to retrieve information about your account at this time." isPublicFacing=true}</div>
 			{else}
 {* MDN 7/26/2019 Do not allow access for linked users *}
 {*				{include file="MyAccount/switch-linked-user-form.tpl" label="View Account Settings for" actionPath="/MyAccount/StaffSettings"}*}
@@ -46,7 +46,7 @@
 								{if $edit == true}
 									<input type="checkbox" name="bypassAutoLogout" id="bypassAutoLogout" {if $profile->bypassAutoLogout==1}checked='checked'{/if} data-switch="">
 								{else}
-									{if $profile->bypassAutoLogout==0}{translate text="No"}{else}{translate text="Yes"}{/if}
+									{if $profile->bypassAutoLogout==0} {translate text='No' isPublicFacing=true}{else} {translate text='Yes' isPublicFacing=true}{/if}
 								{/if}
 							</div>
 						</div>
@@ -101,7 +101,7 @@
 			{/if}
 		{else}
 			<div class="page">
-				You must sign in to view this information. Click <a href="/MyAccount/Login">here</a> to sign in.
+				{translate text="You must sign in to view this information." isPublicFacing=true}<a href='/MyAccount/Login' class="btn btn-primary">{translate text="Sign In" isPublicFacing=true}</a>
 			</div>
 		{/if}
 	</div>

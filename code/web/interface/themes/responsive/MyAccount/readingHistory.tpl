@@ -56,7 +56,7 @@
 		{/strip}
 	{else}
 		<div class="page">
-			You must sign in to view this information. Click <a href="/MyAccount/Login">here</a> to sign in.
+			{translate text="You must sign in to view this information." isPublicFacing=true}<a href='/MyAccount/Login' class="btn btn-primary">{translate text="Sign In" isPublicFacing=true}</a>
 		</div>
 	{/if}
 </div>
