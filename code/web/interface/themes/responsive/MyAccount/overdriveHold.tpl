@@ -49,7 +49,7 @@
 				<div class="resultDetails col-xs-12 col-md-8 col-lg-9">
 					{if !empty($record->getAuthor())}
 						<div class="row">
-							<div class="result-label col-tn-4">{translate text='Author'}</div>
+							<div class="result-label col-tn-4"> {translate text='Author' isPublicFacing=true}</div>
 							<div class="col-tn-8 result-value">
 								{if is_array($record->getAuthor())}
 									{foreach from=$record->getAuthor() item=author}
@@ -63,24 +63,24 @@
 					{/if}
 
 					<div class="row">
-						<div class="result-label col-tn-4">{translate text='Source'}</div>
+						<div class="result-label col-tn-4">{translate text='Source' isPublicFacing=true}</div>
 						<div class="col-tn-8 result-value">
-							{translate text="OverDrive"}
+							{translate text="OverDrive" isPublicFacing=true}
 						</div>
 					</div>
 
 					{if $record->getFormats()}
 						<div class="row">
-							<div class="result-label col-tn-4">{translate text='Format'}</div>
+							<div class="result-label col-tn-4">{translate text='Format' isPublicFacing=true}</div>
 							<div class="col-tn-8 result-value">
-								{implode subject=$record->getFormats() glue=", "}
+								{implode subject=$record->getFormats() glue=", " translate=true isPublicFacing=true}
 							</div>
 						</div>
 					{/if}
 
 					{if $hasLinkedUsers}
 					<div class="row">
-						<div class="result-label col-tn-4">{translate text='On Hold For'}</div>
+						<div class="result-label col-tn-4">{translate text='On Hold For' isPublicFacing=true}</div>
 						<div class="col-tn-8 result-value">
 							{$record->getUserName()}
 						</div>
@@ -89,7 +89,7 @@
 
 					{if $record->createDate}
 						<div class="row">
-							<div class="result-label col-tn-4">{translate text='Date Placed'}</div>
+							<div class="result-label col-tn-4">{translate text='Date Placed' isPublicFacing=true}</div>
 							<div class="col-tn-8 result-value">
 								{$record->createDate|date_format:"%b %d, %Y"}
 							</div>
@@ -99,7 +99,7 @@
 					{if $section == 'available'}
 					{* Available Hold *}
 						<div class="row">
-							<div class="result-label col-tn-4">{translate text='Expires'}</div>
+							<div class="result-label col-tn-4">{translate text='Expires' isPublicFacing=true}</div>
 							<div class="col-tn-8 result-value">
 								<strong>{$record->expirationDate|date_format:"%b %d, %Y at %l:%M %p"}</strong>
 							</div>
@@ -108,14 +108,14 @@
 						{* Unavailable hold *}
 						<div class="row">
 							{if $record->frozen}
-								<div class="result-label col-tn-4">{translate text='Status'}</div>
+								<div class="result-label col-tn-4">{translate text='Status' isPublicFacing=true}</div>
 								<div class="col-tn-8 result-value">
-									<span class="frozenHold label label-warning">{$record->status|translate}</span>
+									<span class="frozenHold label label-warning">{translate text=$record->status isPublicFacing=true}</span>
 								</div>
 							{else}
-								<div class="result-label col-tn-4">{translate text='Position'}</div>
+								<div class="result-label col-tn-4">{translate text='Position' isPublicFacing=true}</div>
 								<div class="col-tn-8 result-value">
-									{translate text="%1% out of %2%" 1=$record->position 2=$record->holdQueueLength}
+									{translate text="%1% out of %2%" 1=$record->position 2=$record->holdQueueLength isPublicFacing=true}
 								</div>
 							{/if}
 						</div>
@@ -126,14 +126,14 @@
 				<div class="col-xs-9 col-sm-8 col-md-4 col-lg-3">
 					<div class="btn-group btn-group-vertical btn-block">
 						{if $section == 'available'}
-							<button onclick="return AspenDiscovery.OverDrive.doOverDriveCheckout('{$record->userId}', '{$record->sourceId}');" class="btn btn-sm btn-action">{translate text="Checkout"}</button>
+							<button onclick="return AspenDiscovery.OverDrive.doOverDriveCheckout('{$record->userId}', '{$record->sourceId}');" class="btn btn-sm btn-action btn-wrap">{translate text="Checkout" isPublicFacing=true}</button>
 						{/if}
-						<button onclick="return AspenDiscovery.OverDrive.cancelOverDriveHold('{$record->userId}', '{$record->sourceId}');" class="btn btn-sm btn-warning">{translate text="Cancel Hold"}</button>
+						<button onclick="return AspenDiscovery.OverDrive.cancelOverDriveHold('{$record->userId}', '{$record->sourceId}');" class="btn btn-sm btn-warning btn-wrap">{translate text="Cancel Hold" isPublicFacing=true}</button>
 						{if $record->canFreeze}
 							{if $record->frozen}
-								<button onclick="return AspenDiscovery.OverDrive.thawHold('{$record->userId}', '{$record->sourceId}', this);" class="btn btn-sm btn-default">{translate text="Thaw Hold"}</button>
+								<button onclick="return AspenDiscovery.OverDrive.thawHold('{$record->userId}', '{$record->sourceId}', this);" class="btn btn-sm btn-default btn-wrap">{translate text="Thaw Hold" isPublicFacing=true}</button>
 							{elseif $record->canFreeze}
-								<button onclick="return AspenDiscovery.OverDrive.freezeHold('{$record->userId}', '{$record->sourceId}');" class="btn btn-sm btn-default">{translate text="Freeze Hold"}</button>
+								<button onclick="return AspenDiscovery.OverDrive.freezeHold('{$record->userId}', '{$record->sourceId}');" class="btn btn-sm btn-default btn-wrap">{translate text="Freeze Hold" isPublicFacing=true}</button>
 							{/if}
 						{/if}
 					</div>
@@ -141,9 +141,9 @@
 						<div class="btn-group btn-group-vertical btn-block">
 							{foreach from=$record->getPreviewActions() item=curAction}
 								{if $curAction.url && strlen($curAction.url) > 0}
-									<a href="{$curAction.url}" class="btn btn-sm {if empty($curAction.btnType)}btn-action{else}{$curAction.btnType}{/if} btn-wrap" onclick="{if $curAction.requireLogin}return AspenDiscovery.Account.followLinkIfLoggedIn(this, '{$curAction.url}');{/if}" {if $curAction.alt}title="{translate text=$curAction.alt inAttribute=true}"{/if}>{$curAction.title|translate}</a>
+									<a href="{$curAction.url}" class="btn btn-sm {if empty($curAction.btnType)}btn-action{else}{$curAction.btnType}{/if} btn-wrap" onclick="{if $curAction.requireLogin}return AspenDiscovery.Account.followLinkIfLoggedIn(this, '{$curAction.url}');{/if}" {if $curAction.alt}title="{translate text=$curAction.alt inAttribute=true isPublicFacing=true}"{/if}>{translate text=$curAction.title isPublicFacing=true}</a>
 								{else}
-									<a href="#" class="btn btn-sm {if empty($curAction.btnType)}btn-action{else}{$curAction.btnType}{/if} btn-wrap" onclick="{$curAction.onclick}" {if $curAction.alt}title="{translate text=$curAction.alt inAttribute=true}"{/if}>{$curAction.title|translate}</a>
+									<a href="#" class="btn btn-sm {if empty($curAction.btnType)}btn-action{else}{$curAction.btnType}{/if} btn-wrap" onclick="{$curAction.onclick}" {if $curAction.alt}title="{translate text=$curAction.alt inAttribute=true isPublicFacing=true}"{/if}>{translate text=$curAction.title isPublicFacing=true}</a>
 								{/if}
 							{/foreach}
 						</div>
@@ -151,7 +151,7 @@
 					{if $showWhileYouWait}
 						<div class="btn-group btn-group-vertical btn-block">
 							{if !empty($record->getGroupedWorkId())}
-								<button onclick="return AspenDiscovery.GroupedWork.getWhileYouWait('{$record->getGroupedWorkId()}');" class="btn btn-sm btn-default btn-wrap">{translate text="While You Wait"}</button>
+								<button onclick="return AspenDiscovery.GroupedWork.getWhileYouWait('{$record->getGroupedWorkId()}');" class="btn btn-sm btn-default btn-wrap">{translate text="While You Wait" isPublicFacing=true}</button>
 							{/if}
 						</div>
 					{/if}
