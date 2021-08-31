@@ -553,7 +553,7 @@ class Koha extends AbstractIlsDriver
 					global $logger;
 					$logger->log("MySQL did not return a result for getUserInfoStmt", Logger::LOG_ERROR);
 					if ($i == count($barcodesToTest) - 1) {
-						return new AspenError('authentication_error_technical');
+						return new AspenError('We cannot log you in at this time.  Please try again later.');
 					}
 				} else {
 					return $result;
@@ -588,7 +588,7 @@ class Koha extends AbstractIlsDriver
 			}
 		}
 		if ($userExistsInDB) {
-			return new AspenError('authentication_error_denied');
+			return new AspenError('Sorry that login information was not correct, please try again.');
 		} else {
 			return null;
 		}

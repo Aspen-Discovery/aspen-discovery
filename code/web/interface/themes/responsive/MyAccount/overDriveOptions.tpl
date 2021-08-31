@@ -39,12 +39,12 @@
 					<h2>{translate text="Default Lending Periods" isPublicFacing=true}</h2>
 					{foreach from=$options.lendingPeriods item=lendingPeriod}
 						<div class="form-group">
-							<div class="col-xs-4"><label class="control-label">{$lendingPeriod.formatType}</label></div>
+							<div class="col-xs-4"><label class="control-label">{translate text=$lendingPeriod.formatType isPublcFacing=true}}</label></div>
 							<div class="col-xs-8">
 								<div class="btn-group btn-group-toggle" data-toggle="buttons">
 									{foreach from=$lendingPeriod.options key=value item=optionName}
 										<label class="btn btn-default {if $optionName == $lendingPeriod.lendingPeriod}active{/if}">
-											<input type="radio" value="{$optionName}" name="{$lendingPeriod.formatType}" {if $optionName == $lendingPeriod.lendingPeriod}checked{/if} >{$optionName} days
+											<input type="radio" value="{$optionName}" name="{$lendingPeriod.formatType}" {if $optionName == $lendingPeriod.lendingPeriod}checked{/if} >{translate text="%1% days" 1=$optionName isPublicFacing=true}
 										</label>
 									{/foreach}
 								</div>
@@ -54,7 +54,7 @@
 					{if !$offline && $edit == true}
 						<div class="form-group">
 							<div class="col-xs-8 col-xs-offset-4">
-								<button type="submit" name="updateOverDrive" class="btn btn-primary">{translate text="Update Options"}</button>
+								<button type="submit" name="updateOverDrive" class="btn btn-primary">{translate text="Update Options" isPublicFacing=true}</button>
 							</div>
 						</div>
 					{/if}

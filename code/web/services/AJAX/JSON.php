@@ -187,7 +187,7 @@ class AJAX_JSON extends Action {
 					// General Login Error
 					/** @var AspenError $error */
 					$error = $user;
-					$message = ($user instanceof AspenError) ? translate($error->getMessage()) : translate("Sorry that login information was not recognized, please try again.");
+					$message = ($user instanceof AspenError) ? translate(['text'=>$error->getMessage(),'isPublicFacing'=>true]) : translate(['text'=>"Sorry that login information was not recognized, please try again.",'isPublicFacing'=>true]);
 					return array(
 						'success' => false,
 						'message' => $message

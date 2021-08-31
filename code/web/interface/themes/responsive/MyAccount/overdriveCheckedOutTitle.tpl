@@ -119,19 +119,19 @@
 				<div class="col-xs-9 col-sm-8 col-md-4 col-lg-3">
 					<div class="btn-group btn-group-vertical btn-block">
 						{if $record->overdriveRead}
-							<a href="#" onclick="return AspenDiscovery.OverDrive.followOverDriveDownloadLink('{$record->userId}', '{$record->recordId}', 'ebook-overdrive')" class="btn btn-sm btn-action"><i class="fas fa-external-link-alt"></i> {translate text="Read Online" isPublicFacing=true}</a>
+							<a href="#" onclick="return AspenDiscovery.OverDrive.followOverDriveDownloadLink('{$record->userId}', '{$record->recordId}', 'ebook-overdrive')" class="btn btn-sm btn-action btn-wrap"><i class="fas fa-external-link-alt"></i> {translate text="Read Online" isPublicFacing=true}</a>
 						{/if}
 						{if $record->overdriveListen}
-							<a href="#" onclick="return AspenDiscovery.OverDrive.followOverDriveDownloadLink('{$record->userId}', '{$record->recordId}', 'audiobook-overdrive')" class="btn btn-sm btn-action"><i class="fas fa-external-link-alt"></i> {translate text="Listen Online" isPublicFacing=true}</a>
+							<a href="#" onclick="return AspenDiscovery.OverDrive.followOverDriveDownloadLink('{$record->userId}', '{$record->recordId}', 'audiobook-overdrive')" class="btn btn-sm btn-action btn-wrap"><i class="fas fa-external-link-alt"></i> {translate text="Listen Online" isPublicFacing=true}</a>
 						{/if}
 						{if !empty($record->overdriveVideo)}
-							<a href="#" onclick="return AspenDiscovery.OverDrive.followOverDriveDownloadLink('{$record->userId}', '{$record->recordId}', 'video-streaming')" class="btn btn-sm btn-action"><i class="fas fa-external-link-alt"></i> {translate text="Watch Online" isPublicFacing=true}</a>
+							<a href="#" onclick="return AspenDiscovery.OverDrive.followOverDriveDownloadLink('{$record->userId}', '{$record->recordId}', 'video-streaming')" class="btn btn-sm btn-action btn-wrap"><i class="fas fa-external-link-alt"></i> {translate text="Watch Online" isPublicFacing=true}</a>
 						{/if}
 						{if $record->overdriveMagazine}
-							<a href="#" onclick="return AspenDiscovery.OverDrive.followOverDriveDownloadLink('{$record->userId}', '{$record->recordId}', 'magazine-overdrive')" class="btn btn-sm btn-action"><i class="fas fa-external-link-alt"></i> {translate text="Read Online" isPublicFacing=true}</a>
+							<a href="#" onclick="return AspenDiscovery.OverDrive.followOverDriveDownloadLink('{$record->userId}', '{$record->recordId}', 'magazine-overdrive')" class="btn btn-sm btn-action btn-wrap"><i class="fas fa-external-link-alt"></i> {translate text="Read Online" isPublicFacing=true}</a>
 						{/if}
 						{if $record->formatSelected && empty($record->overdriveVideo)}
-							<a href="#" onclick="return AspenDiscovery.OverDrive.followOverDriveDownloadLink('{$record->userId}', '{$record->recordId}', '{$record->selectedFormatValue}')" class="btn btn-sm btn-action">{translate text="Download Again" isPublicFacing=true}</a>
+							<a href="#" onclick="return AspenDiscovery.OverDrive.followOverDriveDownloadLink('{$record->userId}', '{$record->recordId}', '{$record->selectedFormatValue}')" class="btn btn-sm btn-action btn-wrap">{translate text="Download Again" isPublicFacing=true}</a>
 						{/if}
 						{if !empty($record->supplementalMaterials)}
 							{foreach from=$record->supplementalMaterials item=supplement}
@@ -139,10 +139,10 @@
 							{/foreach}
 						{/if}
 						{if $record->canRenew}
-							<a href="#" onclick="return AspenDiscovery.OverDrive.renewCheckout('{$record->userId}', '{$record->recordId}');" class="btn btn-sm btn-info">{translate text='Renew Checkout' isPublicFacing=true}</a>
+							<a href="#" onclick="return AspenDiscovery.OverDrive.renewCheckout('{$record->userId}', '{$record->recordId}');" class="btn btn-sm btn-info btn-wrap">{translate text='Renew Checkout' isPublicFacing=true}</a>
 						{/if}
 						{if $record->canReturnEarly}
-							<a href="#" onclick="return AspenDiscovery.OverDrive.returnCheckout('{$record->userId}', '{$record->recordId}');" class="btn btn-sm btn-warning">{translate text="Return Now" isPublicFacing=true}</a>
+							<a href="#" onclick="return AspenDiscovery.OverDrive.returnCheckout('{$record->userId}', '{$record->recordId}');" class="btn btn-sm btn-warning btn-wrap">{translate text="Return Now" isPublicFacing=true}</a>
 						{/if}
 					</div>
 					{if $showWhileYouWait}

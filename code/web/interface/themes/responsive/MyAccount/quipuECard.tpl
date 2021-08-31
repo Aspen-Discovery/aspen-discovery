@@ -1,9 +1,9 @@
 {strip}
-<h1>{translate text='Register for a Library Card'}</h1>
+<h1>{translate text='Register for a Library Card' isPublicFacing=true}</h1>
 <div class="page">
 	{if !empty($eCardSettings)}
 		{if $selfRegistrationFormMessage}
-			{translate text=$selfRegistrationFormMessage}
+			{translate text=$selfRegistrationFormMessage isPublicFacing=true isAdminEnteredData=true}
 		{/if}
 		<!-- The following script tags can be placed in the library's <head> or <body> tag -->
 		<script src="https://{$eCardSettings->server}/js/eCARDEmbed.js"></script>
@@ -12,7 +12,7 @@
 		<!-- The following <div> tag should be placed on the web page where you the library would like the registration form to display -->
 		<div id="eCARD" data-language="{$userLang->code}" data-branchid=""></div>
 	{else}
-		{translate text="eCARD functionality is not properly configured."}
+		{translate text="eCARD functionality is not properly configured." isPublicFacing=true}
 	{/if}
 </div>
 {/strip}

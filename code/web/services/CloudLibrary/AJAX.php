@@ -220,7 +220,7 @@ class CloudLibrary_AJAX extends JSON_Action
 			if ($result['success']) {
 				/** @noinspection HtmlUnknownTarget */
 				$result['title'] = translate("Title Checked Out Successfully");
-				$result['buttons'] = '<a class="btn btn-primary" href="/MyAccount/CheckedOut" role="button">' . translate('View My Check Outs') . '</a>';
+				$result['buttons'] = '<a class="btn btn-primary" href="/MyAccount/CheckedOut" role="button">' . translate(['text'=>'View My Check Outs', 'isPublicFacing'=>true]) . '</a>';
 			} else {
 				$result['title'] = translate("Error Checking Out Title");
 			}

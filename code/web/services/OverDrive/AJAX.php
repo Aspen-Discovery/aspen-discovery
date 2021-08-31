@@ -100,7 +100,7 @@ class OverDrive_AJAX extends JSON_Action
 				$result = $driver->checkOutTitle($patron, $overDriveId);
 				//$logger->log("Checkout result = $result", Logger::LOG_NOTICE);
 				if ($result['success']) {
-					$result['buttons'] = '<a class="btn btn-primary" href="/MyAccount/CheckedOut" role="button">' . translate('View My Check Outs') . '</a>';
+					$result['buttons'] = '<a class="btn btn-primary" href="/MyAccount/CheckedOut" role="button">' . translate(['text'=>'View My Check Outs', 'isPublicFacing'=>true]) . '</a>';
 				}
 				return $result;
 			} else {
