@@ -10157,6 +10157,9 @@ input[type="radio"][name="colorScheme"]:checked + label::after {
   border-radius: 50%;
   background: white;
 }
+.webResourceRow {
+  margin-bottom: 4px;
+}
 .researchStarter {
   border: solid 1px #00a4e3;
   margin: 10px 5px 15px;
