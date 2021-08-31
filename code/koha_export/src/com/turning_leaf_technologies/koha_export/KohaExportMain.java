@@ -260,12 +260,35 @@ public class KohaExportMain {
 		}
 	}
 
+	private static float kohaVersion = -1;
+	private static float getKohaVersion(Connection kohaConn){
+		if (kohaVersion == -1) {
+			try {
+				PreparedStatement getKohaVersionStmt = kohaConn.prepareStatement("SELECT value FROM systempreferences WHERE variable='Version'", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+				ResultSet kohaVersionRS = getKohaVersionStmt.executeQuery();
+				while (kohaVersionRS.next()){
+					kohaVersion = kohaVersionRS.getFloat("value");
+				}
+			} catch (SQLException e) {
+				logEntry.incErrors("Error exporting book covers", e);
+			}
+		}
+		return kohaVersion;
+	}
+
 	private static void exportBookCovers(Connection dbConn, Connection kohaConn) {
 		//Get a list of all images within the Koha database
 		int numCoversExported = 0;
 		try{
-			PreparedStatement getKohaCoversStmt = kohaConn.prepareStatement("SELECT imagenumber, biblionumber from biblioimages", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-			PreparedStatement getKohaCoverStmt = kohaConn.prepareStatement("SELECT imagefile, mimetype from biblioimages  where imagenumber = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			PreparedStatement getKohaCoversStmt;
+			PreparedStatement getKohaCoverStmt;
+			if (getKohaVersion(kohaConn) >= 21.05) {
+				getKohaCoversStmt = kohaConn.prepareStatement("SELECT timestamp, imagenumber, biblionumber from cover_images", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+				getKohaCoverStmt = kohaConn.prepareStatement("SELECT imagefile, mimetype from cover_images  where imagenumber = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			}else{
+				getKohaCoversStmt = kohaConn.prepareStatement("SELECT imagenumber, biblionumber from biblioimages", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+				getKohaCoverStmt = kohaConn.prepareStatement("SELECT imagefile, mimetype from biblioimages  where imagenumber = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			}
 			PreparedStatement getGroupedWorkForRecordStmt = dbConn.prepareStatement("SELECT permanent_id from grouped_work inner join grouped_work_primary_identifiers on grouped_work.id = grouped_work_id where type = ? and identifier = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			PreparedStatement clearBookCoverInfoStmt = dbConn.prepareStatement("UPDATE bookcover_info set imageSource = '', thumbnailLoaded=0, mediumLoaded=0, largeLoaded= 0 where recordType = 'grouped_work' and recordId = ?");
 
@@ -279,7 +302,8 @@ public class KohaExportMain {
 					//Check to see if we have an existing uploaded record
 					String groupedWorkId = getGroupedWorkForRecordRS.getString("permanent_id");
 					File coverFile = new File(coversPath + groupedWorkId + ".png");
-					if (!coverFile.exists() || coverFile.length() == 0) {
+					Timestamp kohaCoverTimestamp = kohaCoversRS.getTimestamp("timestamp");
+					if (!coverFile.exists() || coverFile.length() == 0 || coverFile.lastModified() < kohaCoverTimestamp.getTime()) {
 						getKohaCoverStmt.setLong(1, kohaCoversRS.getLong("imagenumber"));
 						ResultSet kohaCoverRS = getKohaCoverStmt.executeQuery();
 						if (kohaCoverRS.next()){
