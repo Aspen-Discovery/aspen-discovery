@@ -25,13 +25,17 @@ class MyAccount_SelectInterface extends Action{
 		$location->orderBy('displayName');
 		$location->find();
 		while ($location->fetch()){
-			$libraries[$location->locationId] = array(
+			$libraries['location' . $location->locationId] = array(
 				'id' => $location->locationId,
 				'displayName' => $location->displayName,
 				'location' => clone $location,
 				'isLibrary' => false,
 			);
 		}
+		$sortLibraries = function ($library1, $library2){
+			return strcasecmp($library1['displayName'], $library2['displayName']);
+		};
+		usort($libraries, $sortLibraries);
 		$interface->assign('libraries', $libraries);
 
 		global $locationSingleton;
@@ -65,39 +69,67 @@ class MyAccount_SelectInterface extends Action{
 
 		if ($redirectLibrary != null){
 			$logger->log("Selected library $redirectLibrary", Logger::LOG_DEBUG);
-			/** @var Library $selectedLibrary */
-			$selectedLibrary = $libraries[$redirectLibrary]['library'];
-			if (!empty($selectedLibrary->baseUrl)){
-				$baseUrl = $selectedLibrary->baseUrl;
-			}else{
-				global $configArray;
-				$baseUrl = $configArray['Site']['url'];
-				$urlPortions = explode('://', $baseUrl);
-				//Get rid of extra portions of the url
-				$subdomain = $selectedLibrary->subdomain;
-				if (strpos($urlPortions[1], 'opac2') !== false){
-					$urlPortions[1] = str_replace('opac2.', '', $urlPortions[1]);
-					$subdomain .= '2';
-				}
-				$urlPortions[1] = str_replace('opac.', '', $urlPortions[1]);
-				$baseUrl = $urlPortions[0] . '://' . $subdomain . '.' . $urlPortions[1];
-			}
 
-			if ($gotoModule){
+			if ($libraries[$redirectLibrary]['isLibrary']) {
+				/** @var Library $selectedLibrary */
+				$selectedLibrary = $libraries[$redirectLibrary]['library'];
+				if (!empty($selectedLibrary->baseUrl)) {
+					$baseUrl = $selectedLibrary->baseUrl;
+				} else {
+					global $configArray;
+					$baseUrl = $configArray['Site']['url'];
+					$urlPortions = explode('://', $baseUrl);
+					//Get rid of extra portions of the url
+					$subdomain = $selectedLibrary->subdomain;
+					if (strpos($urlPortions[1], 'opac2') !== false) {
+						$urlPortions[1] = str_replace('opac2.', '', $urlPortions[1]);
+						$subdomain .= '2';
+					}
+					$urlPortions[1] = str_replace('opac.', '', $urlPortions[1]);
+					$baseUrl = $urlPortions[0] . '://' . $subdomain . '.' . $urlPortions[1];
+				}
+			}else{
+				/** @var Location $selectedLocation */
+				$selectedLocation = $libraries[$redirectLibrary]['location'];
+				if (!empty($selectedLocation->baseUrl)) {
+					$baseUrl = $selectedLocation->baseUrl;
+				} else {
+					global $configArray;
+					$baseUrl = $configArray['Site']['url'];
+					$branch = '';
+					$urlPortions = explode('://', $baseUrl);
+					//Get rid of extra portions of the url
+					$subdomain = $selectedLocation->subdomain;
+					if (empty($subdomain)){
+						$subdomain = $selectedLocation->getParentLibrary()->subdomain;
+						$branch = $selectedLocation->code;
+					}
+					if (strpos($urlPortions[1], 'opac2') !== false) {
+						$urlPortions[1] = str_replace('opac2.', '', $urlPortions[1]);
+						$subdomain .= '2';
+					}
+					$urlPortions[1] = str_replace('opac.', '', $urlPortions[1]);
+					$baseUrl = $urlPortions[0] . '://' . $subdomain . '.' . $urlPortions[1];
+					if (!empty($branch)){
+						$baseUrl .= '?branch=' . $branch;
+					}
+				}
+			}
+			if ($gotoModule) {
 				$baseUrl .= '/' . $gotoModule;
 			}
-			if ($gotoAction){
+			if ($gotoAction) {
 				$baseUrl .= '/' . $gotoAction;
 			}
-			if (isset($_REQUEST['rememberThis']) && isset($_REQUEST['submit'])){
-				if ($user){
+			if (isset($_REQUEST['rememberThis']) && isset($_REQUEST['submit'])) {
+				if ($user) {
 					$user->preferredLibraryInterface = $redirectLibrary;
 					$user->update();
 					$_SESSION['userinfo'] = serialize($user);
 				}
 				//Set a cookie to remember the location when not logged in
 				//Remember for a year
-				setcookie('PreferredLibrarySystem', $redirectLibrary, time() + 60*60*24*365, '/');
+				setcookie('PreferredLibrarySystem', $redirectLibrary, time() + 60 * 60 * 24 * 365, '/');
 			}
 
 			header('Location:' . $baseUrl);
