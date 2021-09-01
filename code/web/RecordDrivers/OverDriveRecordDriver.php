@@ -148,14 +148,14 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver
 				$checkoutLink = "return AspenDiscovery.OverDrive.checkOutTitle('{$this->getUniqueID()}');";
 				$item->links[] = array(
 					'onclick' => $checkoutLink,
-					'text' => translate('Check Out'),
+					'text' => 'Check Out',
 					'overDriveId' => $this->getUniqueID(),
 					'action' => 'CheckOut'
 				);
 			} else if ($addPlaceHoldLink) {
 				$item->links[] = array(
 					'onclick' => "return AspenDiscovery.OverDrive.placeHold('{$this->getUniqueID()}');",
-					'text' => translate('Place Hold'),
+					'text' => 'Place Hold',
 					'overDriveId' => $this->getUniqueID(),
 					'action' => 'Hold'
 				);

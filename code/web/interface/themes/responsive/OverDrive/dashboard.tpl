@@ -1,17 +1,17 @@
 {strip}
 	<div id="main-content" class="col-sm-12">
-		<h1>{translate text="OverDrive Dashboard"}</h1>
+		<h1>{translate text="OverDrive Dashboard" isAdminFacing=true}</h1>
 		{include file="Admin/selectInterfaceForm.tpl"}
 		<div class="row">
 			<div class="col-xs-12">
-				<a href="/OverDrive/Graphs?instance={$selectedInstance}" title="{translate text="Show Graph" inAttribute="true"}"><i class="fas fa-chart-line"></i> {translate text="View as graph"}</a>
+				<a href="/OverDrive/Graphs?instance={$selectedInstance}" title="{translate text="Show Graph" inAttribute="true" isAdminFacing=true}"><i class="fas fa-chart-line"></i> {translate text="View as graph" isAdminFacing=true}</a>
 			</div>
 		</div>
 		<div class="row">
 			<div class="dashboardCategory col-sm-6">
 				<div class="row">
 					<div class="col-sm-10 col-sm-offset-1">
-						<h2 class="dashboardCategoryLabel">{translate text="Active Users"}</h2>
+						<h2 class="dashboardCategoryLabel">{translate text="Active Users" isAdminFacing=true}</h2>
 					</div>
 				</div>
 				<div class="row">
@@ -37,7 +37,7 @@
 			<div class="dashboardCategory col-sm-6">
 				<div class="row">
 					<div class="col-sm-10 col-sm-offset-1">
-						<h2 class="dashboardCategoryLabel">{translate text="Records With Usage"}</h2>
+						<h2 class="dashboardCategoryLabel">{translate text="Records With Usage" isAdminFacing=true}</h2>
 					</div>
 				</div>
 				<div class="row">
@@ -63,7 +63,7 @@
 			<div class="dashboardCategory col-sm-6">
 				<div class="row">
 					<div class="col-sm-10 col-sm-offset-1">
-						<h2 class="dashboardCategoryLabel">{translate text="Loans"}</h2>
+						<h2 class="dashboardCategoryLabel">{translate text="Loans" isAdminFacing=true}</h2>
 					</div>
 				</div>
 				<div class="row">
@@ -89,7 +89,7 @@
 			<div class="dashboardCategory col-sm-6">
 				<div class="row">
 					<div class="col-sm-10 col-sm-offset-1">
-						<h2 class="dashboardCategoryLabel">{translate text="Failed Loans"}</h2>
+						<h2 class="dashboardCategoryLabel">{translate text="Failed Loans" isAdminFacing=true}</h2>
 					</div>
 				</div>
 				<div class="row">
@@ -115,7 +115,7 @@
 			<div class="dashboardCategory col-sm-6">
 				<div class="row">
 					<div class="col-sm-10 col-sm-offset-1">
-						<h2 class="dashboardCategoryLabel">{translate text="Renewals"}</h2>
+						<h2 class="dashboardCategoryLabel">{translate text="Renewals" isAdminFacing=true}</h2>
 					</div>
 				</div>
 				<div class="row">
@@ -141,7 +141,7 @@
 			<div class="dashboardCategory col-sm-6">
 				<div class="row">
 					<div class="col-sm-10 col-sm-offset-1">
-						<h2 class="dashboardCategoryLabel">{translate text="Early Returns"}</h2>
+						<h2 class="dashboardCategoryLabel">{translate text="Early Returns" isAdminFacing=true}</h2>
 					</div>
 				</div>
 				<div class="row">
@@ -167,7 +167,7 @@
 			<div class="dashboardCategory col-sm-6">
 				<div class="row">
 					<div class="col-sm-10 col-sm-offset-1">
-						<h2 class="dashboardCategoryLabel">{translate text="Holds"}</h2>
+						<h2 class="dashboardCategoryLabel">{translate text="Holds" isAdminFacing=true}</h2>
 					</div>
 				</div>
 				<div class="row">
@@ -193,7 +193,7 @@
 			<div class="dashboardCategory col-sm-6">
 				<div class="row">
 					<div class="col-sm-10 col-sm-offset-1">
-						<h2 class="dashboardCategoryLabel">{translate text="Failed Holds"}</h2>
+						<h2 class="dashboardCategoryLabel">{translate text="Failed Holds" isAdminFacing=true}</h2>
 					</div>
 				</div>
 				<div class="row">
@@ -219,7 +219,7 @@
 			<div class="dashboardCategory col-sm-6">
 				<div class="row">
 					<div class="col-sm-10 col-sm-offset-1">
-						<h2 class="dashboardCategoryLabel">{translate text="Cancelled Holds"}</h2>
+						<h2 class="dashboardCategoryLabel">{translate text="Cancelled Holds" isAdminFacing=true}</h2>
 					</div>
 				</div>
 				<div class="row">
@@ -245,7 +245,7 @@
 			<div class="dashboardCategory col-sm-6">
 				<div class="row">
 					<div class="col-sm-10 col-sm-offset-1">
-						<h2 class="dashboardCategoryLabel">{translate text="Holds Frozen"}</h2>
+						<h2 class="dashboardCategoryLabel">{translate text="Holds Frozen" isAdminFacing=true}</h2>
 					</div>
 				</div>
 				<div class="row">
@@ -271,7 +271,7 @@
 			<div class="dashboardCategory col-sm-6">
 				<div class="row">
 					<div class="col-sm-10 col-sm-offset-1">
-						<h2 class="dashboardCategoryLabel">{translate text="Holds Thawed"}</h2>
+						<h2 class="dashboardCategoryLabel">{translate text="Holds Thawed" isAdminFacing=true}</h2>
 					</div>
 				</div>
 				<div class="row">
@@ -297,7 +297,7 @@
 			<div class="dashboardCategory col-sm-6">
 				<div class="row">
 					<div class="col-sm-10 col-sm-offset-1">
-						<h2 class="dashboardCategoryLabel">{translate text="Downloads"}</h2>
+						<h2 class="dashboardCategoryLabel">{translate text="Downloads" isAdminFacing=true}</h2>
 					</div>
 				</div>
 				<div class="row">
@@ -323,7 +323,7 @@
 			<div class="dashboardCategory col-sm-6">
 				<div class="row">
 					<div class="col-sm-10 col-sm-offset-1">
-						<h2 class="dashboardCategoryLabel">{translate text="Previews"}</h2>
+						<h2 class="dashboardCategoryLabel">{translate text="Previews" isAdminFacing=true}</h2>
 					</div>
 				</div>
 				<div class="row">
@@ -349,7 +349,7 @@
 			<div class="dashboardCategory col-sm-6">
 				<div class="row">
 					<div class="col-sm-10 col-sm-offset-1">
-						<h2 class="dashboardCategoryLabel">{translate text="Options Updates"}</h2>
+						<h2 class="dashboardCategoryLabel">{translate text="Options Updates" isAdminFacing=true}</h2>
 					</div>
 				</div>
 				<div class="row">
@@ -375,7 +375,7 @@
 			<div class="dashboardCategory col-sm-6">
 				<div class="row">
 					<div class="col-sm-10 col-sm-offset-1">
-						<h2 class="dashboardCategoryLabel">{translate text="API Errors"}</h2>
+						<h2 class="dashboardCategoryLabel">{translate text="API Errors" isAdminFacing=true}</h2>
 					</div>
 				</div>
 				<div class="row">
@@ -401,7 +401,7 @@
 			<div class="dashboardCategory col-sm-6">
 				<div class="row">
 					<div class="col-sm-10 col-sm-offset-1">
-						<h2 class="dashboardCategoryLabel">{translate text="Connection Failures"}</h2>
+						<h2 class="dashboardCategoryLabel">{translate text="Connection Failures" isAdminFacing=true}</h2>
 					</div>
 				</div>
 				<div class="row">

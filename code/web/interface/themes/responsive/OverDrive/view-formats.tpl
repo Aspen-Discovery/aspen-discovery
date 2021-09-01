@@ -26,22 +26,22 @@
 		</div>
 		<div class="eContentHoldingActions">
 			{if $overDriveFormat->sampleUrl_1}
-				<a href="{$overDriveFormat->sampleUrl_1}" class="btn btn-sm btn-default">{translate text="Sample"}{if $overDriveFormat->sampleName_1}: {$overDriveFormat->sampleName_1}{/if}</a>
+				<a href="{$overDriveFormat->sampleUrl_1}" class="btn btn-sm btn-default">{translate text="Sample" isPublicFacing=true}{if $overDriveFormat->sampleName_1}: {$overDriveFormat->sampleName_1}{/if}</a>
 				&nbsp;
 			{/if}
 			{if $overDriveFormat->sampleUrl_2}
-				<a href="{$overDriveFormat->sampleUrl_2}" class="btn btn-sm btn-default">{translate text="Sample"}{if $overDriveFormat->sampleName_2}: {$overDriveFormat->sampleName_2}{/if}</a>
+				<a href="{$overDriveFormat->sampleUrl_2}" class="btn btn-sm btn-default">{translate text="Sample" isPublicFacing=true}{if $overDriveFormat->sampleName_2}: {$overDriveFormat->sampleName_2}{/if}</a>
 				&nbsp;
 			{/if}
 			{* Options for the user to view online or download *}
 			{foreach from=$overDriveFormat->links item=link}
-				<a href="{if $link.url}{$link.url}{else}#{/if}" {if $link.onclick}onclick="{$link.onclick}"{/if} class="btn btn-sm btn-primary">{$link.text}</a>
+				<a href="{if $link.url}{$link.url}{else}#{/if}" {if $link.onclick}onclick="{$link.onclick}"{/if} class="btn btn-sm btn-primary">{translate text=$link.text isPublicFacing=true}</a>
 			{/foreach}
 		</div>
 	</div>
 	{/foreach}
 {else}
-	No Copies Found
+	{translate text="No Copies Found" isPublicFacing=true}
 {/if}
 
 {/strip}
