@@ -22,7 +22,7 @@ $shortname = $_GET['library'];
 # ****************************************************************************************************************************
 # * Grab the browse categories
 # ****************************************************************************************************************************
-$browseCategories = $urlPath . '/API/SearchAPI?method=getActiveBrowseCategories&includeSubCategories=true';
+$browseCategories = $urlPath . '/API/SearchAPI?method=getActiveBrowseCategories&includeSubCategories=false';
 $jsonBrowseCat    = json_decode(file_get_contents($browseCategories), true);
 
 # ****************************************************************************************************************************
