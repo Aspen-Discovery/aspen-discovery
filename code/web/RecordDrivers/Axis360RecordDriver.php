@@ -195,7 +195,7 @@ class Axis360RecordDriver extends GroupedWorkSubDriver
 	}
 
 	protected $_actions = null;
-	public function getRecordActions($relatedRecord, $isAvailable, $isHoldable, $isBookable, $volumeData = null)
+	public function getRecordActions($relatedRecord, $isAvailable, $isHoldable, $volumeData = null)
 	{
 		if ($this->_actions === null) {
 			$this->_actions = array();

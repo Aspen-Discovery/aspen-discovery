@@ -886,7 +886,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 	}
 
 	protected $_actions = null;
-	public function getRecordActions($relatedRecord, $isAvailable, $isHoldable, $isBookable, $volumeData = null)
+	public function getRecordActions($relatedRecord, $isAvailable, $isHoldable, $volumeData = null)
 	{
 		if ($this->_actions === null) {
 			$this->_actions = array();
@@ -944,7 +944,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 					if (count($holdableVolumes) > 3 || $hasItemsWithoutVolumes) {
 						//Show a dialog to enable the patron to select a volume to place a hold on
 						$this->_actions[] = array(
-							'title' => 'Place Hold',
+							'title' => translate(['text' => 'Place Hold', 'isPublicFacing'=>true]),
 							'url' => '',
 							'onclick' => "return AspenDiscovery.Record.showPlaceHoldVolumes('{$this->getModule()}', '$source', '$id');",
 							'requireLogin' => false,
@@ -954,7 +954,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 						ksort($holdableVolumes);
 						foreach ($holdableVolumes as $volumeId => $volumeName) {
 							$this->_actions[] = array(
-								'title' => 'Hold ' . $volumeName,
+								'title' => translate(['text' => 'Hold %1%', 1=> $volumeName, 'isPublicFacing'=>true]),
 								'url' => '',
 								'onclick' => "return AspenDiscovery.Record.showPlaceHold('{$this->getModule()}', '$source', '$id', '$volumeId');",
 								'requireLogin' => false,
@@ -964,7 +964,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 					}
 				} else {
 					$this->_actions[] = array(
-						'title' => translate('Place Hold'),
+						'title' => translate(['text' => 'Place Hold', 'isPublicFacing'=>true]),
 						'url' => '',
 						'onclick' => "return AspenDiscovery.Record.showPlaceHold('{$this->getModule()}', '$source', '$id');",
 						'requireLogin' => false,
@@ -979,13 +979,13 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 				if (count($uploadedPDFs) == 1) {
 					$recordFile = reset($uploadedPDFs);
 					$this->_actions[] = array(
-						'title' => 'View PDF',
+						'title' => translate(['text' => 'View PDF', 'isPublicFacing'=>true]),
 						'url' => "/Files/{$recordFile->id}/ViewPDF",
 						'requireLogin' => false,
 						'type' => 'view_pdf'
 					);
 					$this->_actions[] = array(
-						'title' => 'Download PDF',
+						'title' => translate(['text' => 'Download PDF', 'isPublicFacing'=>true]),
 						'url' => "/Record/{$this->getId()}/DownloadPDF?fileId={$recordFile->id}",
 						'requireLogin' => false,
 						'type' => 'download_pdf'

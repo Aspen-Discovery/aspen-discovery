@@ -109,6 +109,7 @@ class GreenhouseAPI extends Action
 			'success' => true,
 			'library' => [],
 		];
+		global $configArray;
 		require_once ROOT_DIR . '/sys/LibraryLocation/Location.php';
 		$location = new Location();
 		$location->find();
@@ -119,48 +120,41 @@ class GreenhouseAPI extends Action
 				$library->libraryId = $libraryId;
 				if ($library->find(true)) {
 					$baseUrl = $library->baseUrl;
-					$searchSource = $library->subdomain;
-				}
-
-				global $solrScope;
-				global $scopeType;
-				global $isGlobalScope;
-				$solrScope = false;
-				$scopeType = '';
-				$isGlobalScope = false;
-
-				$searchLibrary = Library::getSearchLibrary($searchSource);
-				$searchLocation = Location::getSearchLocation($searchSource);
-				if ($searchLibrary) {
-					$solrScope = $searchLibrary->subdomain;
-					$scopeType = 'Library';
-					if (!$searchLibrary->restrictOwningBranchesAndSystems) {
-						$isGlobalScope = true;
+					if (empty($baseUrl)){
+						$baseUrl = $configArray['Site']['url'];
 					}
-				}
-				if ($searchLocation && $searchLibrary->getNumSearchLocationsForLibrary() > 1) {
-					if ($searchLibrary && strtolower($searchLocation->code) == $solrScope) {
-						$solrScope .= 'loc';
-					} else {
-						$solrScope = strtolower($searchLocation->code);
+
+					$solrScope = false;
+
+					$searchLibrary = $library;
+					if ($searchLibrary) {
+						$solrScope = $searchLibrary->subdomain;
 					}
-					if (!empty($searchLocation->subLocation)) {
-						$solrScope = strtolower($searchLocation->subLocation);
-					}
-					$scopeType = 'Location';
+
+					//TODO: We will eventually want to be able to search individual library branches in the app.
+					// i.e. for schools
+					//$searchLocation = $location;
+					/*if ($searchLocation && $searchLibrary->getNumSearchLocationsForLibrary() > 1) {
+						if ($searchLibrary && strtolower($searchLocation->code) == $solrScope) {
+							$solrScope .= 'loc';
+						} else {
+							$solrScope = strtolower($searchLocation->code);
+						}
+						if (!empty($searchLocation->subLocation)) {
+							$solrScope = strtolower($searchLocation->subLocation);
+						}
+					}*/
+
+					$return['library'][] = [
+						'latitude' => $location->latitude,
+						'longitude' => $location->longitude,
+						'unit' => $location->unit,
+						'locationName' => $location->displayName,
+						'libraryId' => $libraryId,
+						'solrScope' => $solrScope,
+						'baseUrl' => $baseUrl,
+					];
 				}
-
-				$return['library'][] = [
-					'latitude' => $location->latitude,
-					'longitude' => $location->longitude,
-					'unit' => $location->unit,
-					'locationName' => $location->displayName,
-					'libraryId' => $libraryId,
-					'solrScope' => $solrScope,
-					'baseUrl' => $baseUrl,
-				];
-
-
 			}
 		}
 

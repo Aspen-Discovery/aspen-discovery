@@ -42,7 +42,7 @@ abstract class BaseEContentDriver  extends MarcRecordDriver {
 		}
 	}
 
-	public function getRecordActions($relatedRecord, $isAvailable, $isHoldable, $isBookable, $volumeData = null){
+	public function getRecordActions($relatedRecord, $isAvailable, $isHoldable, $volumeData = null){
 		return [];
 	}
 

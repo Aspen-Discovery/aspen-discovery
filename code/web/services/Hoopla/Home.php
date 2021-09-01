@@ -34,7 +34,7 @@ class Hoopla_Home extends GroupedWorkSubRecordHomeAction{
 			$interface->assign('holdingsSummary', $holdingsSummary);
 
 			//Get actions
-			$interface->assign('actions', $this->recordDriver->getRecordActions(null, $holdingsSummary['available'], true, false, null));
+			$interface->assign('actions', $this->recordDriver->getRecordActions(null, $holdingsSummary['available'], true, null));
 
 			//Load the citations
 			$this->loadCitations();

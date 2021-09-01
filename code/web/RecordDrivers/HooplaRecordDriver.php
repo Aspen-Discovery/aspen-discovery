@@ -205,7 +205,7 @@ class HooplaRecordDriver extends GroupedWorkSubDriver {
 	}
 
 	protected $_actions = null;
-	function getRecordActions($relatedRecord, $recordAvailable, $recordHoldable, $recordBookable, $volumeData = null){
+	function getRecordActions($relatedRecord, $recordAvailable, $recordHoldable, $volumeData = null){
 		if ($this->_actions === null) {
 			$this->_actions = array();
 			//Check to see if the title is on hold or checked out to the patron.

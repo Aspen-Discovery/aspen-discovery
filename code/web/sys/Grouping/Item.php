@@ -25,8 +25,6 @@ class Grouping_Item
 	public $locallyOwned;
 	/** @var bool */
 	public $holdable;
-	/** @var bool */
-	public $bookable;
 	/**
 	 * @var bool
 	 */
@@ -87,7 +85,6 @@ class Grouping_Item
 			$this->libraryOwned = $this->locallyOwned || strpos($itemDetails['libraryOwnedScopes'], "~{$itemDetails['scopeId']}~") !== false;
 			$this->available = $itemDetails['available'] == "1";
 			$this->holdable = $itemDetails['holdable'] == "1";
-			$this->bookable = false;
 			$this->inLibraryUseOnly = $itemDetails['inLibraryUseOnly'] == "1";
 			$this->locationCode = $itemDetails['locationCode'];
 			$this->subLocation = $itemDetails['subLocationCode'];
@@ -128,7 +125,6 @@ class Grouping_Item
 			$this->locallyOwned = $scopingDetails[4] == 'true';
 			$this->available = $scopingDetails[5] == 'true';
 			$this->holdable = $scopingDetails[6] == 'true';
-			$this->bookable = $scopingDetails[7] == 'true';
 			$this->inLibraryUseOnly = $scopingDetails[8] == 'true';
 			$this->libraryOwned = $scopingDetails[9] == 'true';
 			$this->locationCode = isset($itemDetails[15]) ? $itemDetails[15] : '';
@@ -247,7 +243,6 @@ class Grouping_Item
 			'statusFull' => $this->status,
 			'available' => $this->available,
 			'holdable' => $this->holdable,
-			'bookable' => $this->bookable,
 			'sectionId' => $sectionId,
 			'section' => $section,
 			'relatedUrls' => $this->getRelatedUrls(),

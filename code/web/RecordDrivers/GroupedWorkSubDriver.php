@@ -438,12 +438,10 @@ abstract class GroupedWorkSubDriver extends RecordInterface
 	 * @param Grouping_Record $relatedRecord
 	 * @param boolean $isAvailable
 	 * @param boolean $isHoldable
-	 * @param boolean $isBookable
-	 * @param null|string[] $relatedUrls
 	 * @param null|IlsVolumeInfo[] $volumeData
 	 * @return array
 	 */
-	public abstract function getRecordActions($relatedRecord, $isAvailable, $isHoldable, $isBookable, $volumeData = null);
+	public abstract function getRecordActions($relatedRecord, $isAvailable, $isHoldable, $volumeData = null);
 
 	/**
 	 * Load Record actions when we don't have detailed information about the record yet

@@ -2628,7 +2628,6 @@ class GroupedWorkDriver extends IndexRecordDriver
 				'statusFull' => $item->status,
 				'available' => $item->available,
 				'holdable' => $item->holdable,
-				'bookable' => $item->bookable,
 				'sectionId' => $sectionId,
 				'section' => $section,
 				'relatedUrls' => $item->getRelatedUrls(),
@@ -2668,7 +2667,7 @@ class GroupedWorkDriver extends IndexRecordDriver
 		$memoryWatcher->logMemory("Setup record items");
 
 		if (!$forCovers) {
-			$relatedRecord->setActions($recordDriver != null ? $recordDriver->getRecordActions($relatedRecord, $relatedRecord->getStatusInformation()->isAvailableLocally() || $relatedRecord->getStatusInformation()->isAvailableOnline(), $relatedRecord->isHoldable(), $relatedRecord->isBookable(), $volumeData) : array());
+			$relatedRecord->setActions($recordDriver != null ? $recordDriver->getRecordActions($relatedRecord, $relatedRecord->getStatusInformation()->isAvailableLocally() || $relatedRecord->getStatusInformation()->isAvailableOnline(), $relatedRecord->isHoldable(), $volumeData) : array());
 			$timer->logTime("Loaded actions");
 			$memoryWatcher->logMemory("Loaded actions");
 		}

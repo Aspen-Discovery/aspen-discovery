@@ -29,7 +29,6 @@ class Grouping_Record
 	public $_hasLocalItem = false;
 	public $_holdRatio = 0;
 	public $_shelfLocation = '';
-	public $_bookable = false;
 	public $_holdable = false;
 	public $_itemSummary = [];
 	public $_itemsDisplayedByDefault = null;
@@ -120,9 +119,6 @@ class Grouping_Record
 		}
 		if ($item->holdable) {
 			$this->_holdable = true;
-		}
-		if ($item->bookable) {
-			$this->_bookable = true;
 		}
 		if ($item->isOrderItem) {
 			$this->addOnOrderCopies($item->numCopies);
@@ -297,22 +293,6 @@ class Grouping_Record
 	public function setHoldable(bool $holdable): void
 	{
 		$this->_holdable = $holdable;
-	}
-
-	/**
-	 * @return bool
-	 */
-	public function isBookable(): bool
-	{
-		return $this->_bookable;
-	}
-
-	/**
-	 * @param bool $bookable
-	 */
-	public function setBookable(bool $bookable): void
-	{
-		$this->_bookable = $bookable;
 	}
 
 	/**
@@ -507,7 +487,7 @@ class Grouping_Record
 		if ($this->_allActions == null) {
 			//TODO: Add volume information
 			if ($this->_driver != null) {
-				$this->setActions($this->_driver->getRecordActions($this, $this->getStatusInformation()->isAvailableLocally() || $this->getStatusInformation()->isAvailableOnline(), $this->isHoldable(), $this->isBookable(), []));
+				$this->setActions($this->_driver->getRecordActions($this, $this->getStatusInformation()->isAvailableLocally() || $this->getStatusInformation()->isAvailableOnline(), $this->isHoldable(), []));
 			}
 			
 			$actionsToReturn = $this->_actions;

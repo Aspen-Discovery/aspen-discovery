@@ -353,7 +353,6 @@ class ItemAPI extends Action {
 						'type' => 'holding',
 						'availability' => $copy['available'],
 						'holdable' => ($copy['holdable'] && $library->showHoldButton) ? 1 : 0,
-						'bookable' => $copy['bookable'] ? 1 : 0,
 						'libraryDisplayName' => $copy['shelfLocation'],
 						'section' => $copy['section'],
 						'sectionId' => $copy['sectionId'],
