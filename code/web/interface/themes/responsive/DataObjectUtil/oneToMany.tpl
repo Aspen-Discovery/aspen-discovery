@@ -100,7 +100,7 @@
 		{if $property.additionalOneToManyActions && $id}{* Only display these actions for an existing object *}
 			<div class="btn-group pull-right">
 				{foreach from=$property.additionalOneToManyActions item=action}
-					<a class="btn {if $action.class}{$action.class}{else}btn-default{/if} btn-sm" href="{$action.url|replace:'$id':$id}">{translate $action.text isPublicFacing=true}</a>
+					<a class="btn {if $action.class}{$action.class}{else}btn-default{/if} btn-sm" href="{$action.url|replace:'$id':$id}">{translate text=$action.text isPublicFacing=true}</a>
 				{/foreach}
 			</div>
 		{/if}
