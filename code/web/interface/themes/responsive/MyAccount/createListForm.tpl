@@ -1,5 +1,5 @@
 {strip}
-	{if $listError}<p class="error">{$listError|translate}</p>{/if}
+	{if $listError}<p class="error">{translate text=$listError isPublicFacing=true}</p>{/if}
 	<form method="post" action="" name="listForm" class="form form-horizontal" id="addListForm">
 		<div class="form-group">
 			<label for="listTitle" class="col-sm-3 control-label">{translate text="List" isPublicFacing=true}</label>

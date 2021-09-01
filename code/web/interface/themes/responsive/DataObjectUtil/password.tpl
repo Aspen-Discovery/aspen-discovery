@@ -1,5 +1,5 @@
 <input type='password' name='{$propName}' id='{$propName}' {if $propValue && $property.type != 'storedPassword'}value='{$propValue|escape}'{/if} {if $property.maxLength}maxlength='{$property.maxLength}'{/if} {if !empty($property.size)}size='{$property.size}'{/if} class='form-control {if $property.required}required{/if}' {if !empty($property.readOnly)}readonly{/if} {if $property.type == 'storedPassword' && !empty($propValue)}placeholder="{translate text='Use previously saved value' inAttribute=true isAdminFacing=true}"{/if}/>
 {if !isset($property.showConfirm) || $property.showConfirm == true}
-{translate text="Confirm %1%" 1=$property.label|translate isAdminFacing=true}
+{translate text="Confirm %1%" 1=$property.label translateParameters=true isAdminFacing=true}
 <input type='password' name='{$propName}Repeat' id='{$propName}Repeat' {if $propValue && $property.type != 'storedPassword'}value='{$propValue|escape}'{/if} {if $property.maxLength}maxlength='{$property.maxLength}'{/if} {if !empty($property.size)}size='{$property.size}'{/if} class='form-control repeat' {if !empty($property.readOnly)}readonly{/if} />
 {/if}

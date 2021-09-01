@@ -86,7 +86,7 @@
 							{if is_array($summLanguage)}
 								{implode subject=$summLanguage glue=', ' translate=true isPublicFacing=true}
 							{else}
-								{$summLanguage|translate}
+								{translate text=$summLanguage isPublicFacing=true}
 							{/if}
 						</div>
 					</div>

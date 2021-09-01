@@ -5,7 +5,7 @@
 	<div>
 		{foreach from=$requestFormFields key=category item=formFields}
 			<fieldset>
-				<legend>{$category|translate}</legend>
+				<legend>{translate text=$category isPublicFacing=true isAdminFacing=true}</legend>
 				{foreach from=$formFields item=formField}
 					{if $formField->fieldType == 'format'}
 						{assign var="materialRequestTableColumnName" value=$formField->fieldType}

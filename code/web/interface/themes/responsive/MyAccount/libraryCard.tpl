@@ -32,7 +32,7 @@
 	</div>
 
 	{if $showAlternateLibraryCard}
-		<h1>{$alternateLibraryCardLabel|translate}</h1>
+		<h1>{translate text=$alternateLibraryCardLabel isPublicFacing=true isAdminEnteredData=true}</h1>
 		{if $alternateLibraryCardStyle != 'none'}
 			<div class="row">
 				<div class="col-xs-12 text-center" id="library-alternateLibraryCard" style="display: none">

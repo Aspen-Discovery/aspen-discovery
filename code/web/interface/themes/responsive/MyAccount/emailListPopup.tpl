@@ -1,5 +1,5 @@
 <div align="left">
-	{if $message}<div class="error">{$message|translate}</div>{/if}
+	{if $message}<div class="error">{translate text=$message isPublicFacing=true}</div>{/if}
 
 	<form id="emailListForm" class="form form-horizontal">
 		<div class="form-group">

@@ -54,7 +54,7 @@
 		{/if}
 	{else}
 		<div class="related-manifestation-shelf-status label label-danger label-wrap">
-			{if $statusInformation->getGroupedStatus()}{$statusInformation->getGroupedStatus()|translate}{else}{translate text="Withdrawn / Unavailable" isPublicFacing=true}{/if}
+			{if $statusInformation->getGroupedStatus()}{translate text=$statusInformation->getGroupedStatus() isPublicFacing=true}{else}{translate text="Withdrawn / Unavailable" isPublicFacing=true}{/if}
 		</div>
 	{/if}
 {/if}

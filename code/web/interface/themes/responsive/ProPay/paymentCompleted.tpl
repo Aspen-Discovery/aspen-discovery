@@ -15,14 +15,14 @@
 	{if !empty($error)}
 		<div class="row">
 			<div class="col-xs-12">
-				<div class="alert alert-danger">{$error|translate}</div>
+				<div class="alert alert-danger">{translate text=$error isPublicFacing=true isMetadata=true}</div>
 			</div>
 		</div>
 	{/if}
 	{if !empty($message)}
 		<div class="row">
 			<div class="col-xs-12">
-				<div class="alert alert-success">{$message|translate}</div>
+				<div class="alert alert-success">{translate text=$message isPublicFacing=true isMetadata=true}</div>
 			</div>
 		</div>
 	{/if}

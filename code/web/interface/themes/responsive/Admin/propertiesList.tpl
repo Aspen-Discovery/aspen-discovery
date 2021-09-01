@@ -24,8 +24,8 @@
 					{foreach from=$sortableFields item=field}
 						{capture assign=fieldValueAsc}{$field.property} asc{/capture}
                         {capture assign=fieldValueDesc}{$field.property} desc{/capture}
-						<option value="{$fieldValueAsc}" {if $fieldValueAsc == $sort}selected="selected"{/if}>{translate text="%1% Ascending" 1=$field.label|translate isAdminFacing=true}</option>
-						<option value="{$fieldValueDesc}" {if $fieldValueDesc == $sort}selected="selected"{/if}>{translate text="%1% Descending" 1=$field.label|translate  isAdminFacing=true}</option>
+						<option value="{$fieldValueAsc}" {if $fieldValueAsc == $sort}selected="selected"{/if}>{translate text="%1% Ascending" 1=$field.label translateParameters=true isAdminFacing=true}</option>
+						<option value="{$fieldValueDesc}" {if $fieldValueDesc == $sort}selected="selected"{/if}>{translate text="%1% Descending" 1=$field.label translateParameters=true  isAdminFacing=true}</option>
 					{/foreach}
 				</select>
 			</div>

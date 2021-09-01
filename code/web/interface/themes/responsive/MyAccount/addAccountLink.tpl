@@ -1,7 +1,7 @@
 {strip}
 	<p class="alert alert-danger" id="loginError" style="display: none"></p>
 	<form method="post" action="{if !empty($loginReferer)}{$loginReferer}{else}/MyAccount/Home{/if}" id="loginForm" class="form-horizontal" role="form" onsubmit="return AspenDiscovery.Account.processAjaxLogin()">
-		<div id="missingLoginPrompt" style="display: none">{translate text="Please enter both %1% and %2%." 1=$usernameLabel|translate 2=$passwordLabel|translate isPublicFacing=true}</div>
+		<div id="missingLoginPrompt" style="display: none">{translate text="Please enter both %1% and %2%." 1=$usernameLabel 2=$passwordLabel translateParameters=true isPublicFacing=true}</div>
 		<div id='loginUsernameRow' class='form-group'>
 			<label for="username" class='control-label col-xs-12 col-sm-4'>{translate text=$usernameLabel isPublicFacing=true}</label>
 			<div class='col-xs-12 col-sm-8'>

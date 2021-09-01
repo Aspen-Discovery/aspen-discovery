@@ -104,7 +104,7 @@
 						<tr>
 							<th><input type="checkbox" name="selectAll" id="selectAll" onchange="AspenDiscovery.toggleCheckboxes('.select', '#selectAll');"></th>
 							{foreach from=$columnsToDisplay item=label}
-								<th>{$label|translate}</th>
+								<th>{translate text=$label isAdminFacing=true}</th>
 							{/foreach}
 							<th>&nbsp;</th> {* Action Buttons Column *}
 						</tr>
