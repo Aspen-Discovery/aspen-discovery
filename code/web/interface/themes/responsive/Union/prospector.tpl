@@ -25,16 +25,6 @@
 						<div class="col-tn-9 result-value">{$prospectorResult.format|escape}</div>
 					</div>
 				{/if}
-
-				{* if $prospectorResult.pubDate}
-					<div class="row">
-
-						<div class="result-label col-tn-3">Published: </div>
-						<div class="col-tn-9 result-value">
-							{$prospectorResult.pubDate}
-						</div>
-					</div>
-				{/if *}
 			</div>
 		</div>
 	</div>

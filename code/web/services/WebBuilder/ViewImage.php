@@ -14,7 +14,12 @@ class WebBuilder_ViewImage extends Action{
 		$this->uploadedImage = new ImageUpload();
 		$this->uploadedImage->id = $id;
 		if (!$this->uploadedImage->find(true)){
-			$this->display('../Record/invalidPage.tpl', 'Invalid Image');
+			global $interface;
+			$interface->assign('module','Error');
+			$interface->assign('action','Handle404');
+			require_once ROOT_DIR . "/services/Error/Handle404.php";
+			$actionClass = new Error_Handle404();
+			$actionClass->launch();
 			die();
 		}
 

@@ -1,19 +1,19 @@
 {strip}
 	<div id="main-content" class="col-sm-12">
-		<h1>{translate text="Website Page Statistics"}</h1>
+		<h1>{translate text="Website Page Statistics" isAdminFacing=true}</h1>
 		<h2>{$websiteName}</h2>
 		<table class="table table-striped" id="page_stats">
 			<thead>
 				<tr>
-					<th>{translate text="URL"}</th>
-					<th>{translate text="In Search This Month"}</th>
-					<th>{translate text="Clicked This Month"}</th>
-					<th>{translate text="In Search Last Month"}</th>
-					<th>{translate text="Clicked Last Month"}</th>
-					<th>{translate text="In Search This Year"}</th>
-					<th>{translate text="Clicked This Year"}</th>
-					<th>{translate text="In Search All Time"}</th>
-					<th>{translate text="Clicked All Time"}</th>
+					<th>{translate text="URL" isAdminFacing=true}</th>
+					<th>{translate text="In Search This Month" isAdminFacing=true}</th>
+					<th>{translate text="Clicked This Month" isAdminFacing=true}</th>
+					<th>{translate text="In Search Last Month" isAdminFacing=true}</th>
+					<th>{translate text="Clicked Last Month" isAdminFacing=true}</th>
+					<th>{translate text="In Search This Year" isAdminFacing=true}</th>
+					<th>{translate text="Clicked This Year" isAdminFacing=true}</th>
+					<th>{translate text="In Search All Time" isAdminFacing=true}</th>
+					<th>{translate text="Clicked All Time" isAdminFacing=true}</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -39,8 +39,7 @@
 				.tablesorter({
 					cssAsc: 'sortAscHeader',
 					cssDesc: 'sortDescHeader',
-					cssHeader: 'unsortedHeader',
-
+					cssHeader: 'unsortedHeader'
 				})
 		});
 		{/literal}

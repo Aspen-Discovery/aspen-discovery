@@ -13,7 +13,12 @@ class WebBuilder_DownloadPDF extends Action{
 		$uploadedFile = new FileUpload();
 		$uploadedFile->id = $id;
 		if (!$uploadedFile->find(true)){
-			$this->display('../Record/invalidPage.tpl', 'Invalid Page');
+			global $interface;
+			$interface->assign('module','Error');
+			$interface->assign('action','Handle404');
+			require_once ROOT_DIR . "/services/Error/Handle404.php";
+			$actionClass = new Error_Handle404();
+			$actionClass->launch();
 			die();
 		}
 

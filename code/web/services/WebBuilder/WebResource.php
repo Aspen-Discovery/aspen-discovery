@@ -21,7 +21,12 @@ class WebBuilder_WebResource extends Action{
 		$this->webResource = new WebResource();
 		$this->webResource->id = $id;
 		if (!$this->webResource->find(true)){
-			$this->display('../Record/invalidPage.tpl', 'Invalid Page');
+			global $interface;
+			$interface->assign('module','Error');
+			$interface->assign('action','Handle404');
+			require_once ROOT_DIR . "/services/Error/Handle404.php";
+			$actionClass = new Error_Handle404();
+			$actionClass->launch();
 			die();
 		}
 

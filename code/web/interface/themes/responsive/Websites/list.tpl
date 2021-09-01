@@ -1,4 +1,4 @@
-<h1 class="hiddenTitle">{translate text='Website Search Results'}</h1>
+<h1 class="hiddenTitle">{translate text='Website Search Results' isPublicFacing=true}</h1>
 <div id="searchInfo">
 	{* Recommendations *}
 	{if $topRecommendations}
@@ -18,21 +18,21 @@
 		{/if}
 
 		{if !empty($solrSearchDebug)}
-			<div id="solrSearchOptionsToggle" onclick="$('#solrSearchOptions').toggle()">Show Search Options</div>
+			<div id="solrSearchOptionsToggle" onclick="$('#solrSearchOptions').toggle()">{translate text="Show Search Options" isPublicFacing=true}</div>
 			<div id="solrSearchOptions" style="display:none">
 				<pre>{translate text="Search options" isPublicFacing=true} {$solrSearchDebug}</pre>
 			</div>
 		{/if}
 
 		{if !empty($solrLinkDebug)}
-			<div id='solrLinkToggle' onclick='$("#solrLink").toggle()'>Show Solr Link</div>
+			<div id='solrLinkToggle' onclick='$("#solrLink").toggle()'>{translate text="Show Solr Link" isPublicFacing=true}</div>
 			<div id='solrLink' style='display:none'>
 				<pre>{$solrLinkDebug}</pre>
 			</div>
 		{/if}
 
 		{if !empty($debugTiming)}
-			<div id='solrTimingToggle' onclick='$("#solrTiming").toggle()'>Show Solr Timing</div>
+			<div id='solrTimingToggle' onclick='$("#solrTiming").toggle()'>{translate text="Show Solr Timing" isPublicFacing=true}</div>
 			<div id='solrTiming' style='display:none'>
 				<pre>{$debugTiming}</pre>
 			</div>

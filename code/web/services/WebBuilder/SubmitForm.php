@@ -11,7 +11,12 @@ class WebBuilder_SubmitForm extends Action
 		$this->form = new CustomForm();
 		$this->form->id = $id;
 		if (!$this->form->find(true)){
-			$this->display('../Record/invalidPage.tpl', 'Invalid Page');
+			global $interface;
+			$interface->assign('module','Error');
+			$interface->assign('action','Handle404');
+			require_once ROOT_DIR . "/services/Error/Handle404.php";
+			$actionClass = new Error_Handle404();
+			$actionClass->launch();
 			die();
 		}
 		global $interface;

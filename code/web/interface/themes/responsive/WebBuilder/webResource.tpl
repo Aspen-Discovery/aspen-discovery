@@ -3,7 +3,7 @@
     {if $loggedIn && (array_key_exists('Administer All Web Resources', $userPermissions) || array_key_exists('Administer Library Web Resources', $userPermissions))}
 		<div class="row">
 			<div class="col-xs-12">
-				<a href="/WebBuilder/WebResources?id={$id}&objectAction=edit" class="btn btn-default btn-sm">{translate text=Edit}</a>
+				<a href="/WebBuilder/WebResources?id={$id}&objectAction=edit" class="btn btn-default btn-sm">{translate text=Edit isAdminFacing=true}</a>
 			</div>
 		</div>
 
@@ -19,22 +19,22 @@
 
 			{if $webResource->requiresLibraryCard}
 				<p><em>
-					{translate text="web_requires_library_card" defaultText="This resource requires a library card to use it."}
+					{translate text="This resource requires a library card to use it." isPublicFacing=true}
 				</em></p>
 			{/if}
 
 			{if $webResource->inLibraryUseOnly}
 				<p><em>
-					{translate text="web_resource_in_library_use" defaultText="This resource requires you to be in the library to use it."}
+					{translate text="This resource requires you to be in the library to use it." isPublicFacing=true}
 				</em></p>
 			{/if}
-			<a href="{$webResource->url}" class="btn btn-primary" {if $webResource->openInNewTab}target="_blank"{/if}>{translate text="Open Resource"}</a>
+			<a href="{$webResource->url}" class="btn btn-primary" {if $webResource->openInNewTab}target="_blank"{/if}>{translate text="Open Resource" isPublicFacing=true}</a>
 		</div>
 		<div class="col-sm-12 col-md-3">
 			{if !empty($webResource->getAudiences())}
 				<div class="panel active">
 					<div class="panel-heading">
-						{translate text="Audience"}
+						{translate text="Audience" isPublicFacing=true}
 					</div>
 
 					<div class="panel-body">
@@ -50,7 +50,7 @@
 			{if !empty($webResource->getCategories())}
 				<div class="panel active">
 					<div class="panel-heading">
-						{translate text="Category"}
+						{translate text="Category" isPublicFacing=true}
 					</div>
 					<div class="panel-body">
 						{foreach from=$webResource->getCategories() item=category}

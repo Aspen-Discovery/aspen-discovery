@@ -86,13 +86,13 @@
 
 		{if $materialRequestType == 1}
 			<h2>{translate text="Didn't find it?" isPublicFacing=true}</h2>
-			<p>{translate text="Can't find what you are looking for?" isPublicFacing=true} <a href="/MaterialsRequest/NewRequest?lookfor={$lookfor}&searchIndex={$searchIndex}" onclick="return AspenDiscovery.Account.followLinkIfLoggedIn(this);">{translate text='Suggest a purchase' isPublicFacing=true}</a>.</p>
+			<p>{translate text="Can't find what you are looking for?" isPublicFacing=true} <a href="/MaterialsRequest/NewRequest?lookfor={$lookfor}&searchIndex={$searchIndex}" onclick="return AspenDiscovery.Account.followLinkIfLoggedIn(this);" class="btn btn-info">{translate text='Suggest a purchase' isPublicFacing=true}</a></p>
 		{elseif $materialRequestType == 2}
 			<h2>{translate text="Didn't find it?" isPublicFacing=true}</h2>
-			<p>{translate text="Can't find what you are looking for?" isPublicFacing=true} <a href="/MaterialsRequest/NewRequestIls?lookfor={$lookfor}&searchIndex={$searchIndex}" onclick="return AspenDiscovery.Account.followLinkIfLoggedIn(this);">{translate text='Suggest a purchase' isPublicFacing=true}</a>.</p>
+			<p>{translate text="Can't find what you are looking for?" isPublicFacing=true} <a href="/MaterialsRequest/NewRequestIls?lookfor={$lookfor}&searchIndex={$searchIndex}" onclick="return AspenDiscovery.Account.followLinkIfLoggedIn(this);" class="btn btn-info">{translate text='Suggest a purchase' isPublicFacing=true}</a></p>
 		{elseif $materialRequestType == 3}
 			<h2>{translate text="Didn't find it?" isPublicFacing=true}</h2>
-			<p>{translate text="Can't find what you are looking for?" isPublicFacing=true} <a href="{$externalMaterialsRequestUrl}">{translate text='Suggest a purchase' isPublicFacing=true}</a>.</p>
+			<p>{translate text="Can't find what you are looking for?" isPublicFacing=true} <a href="{$externalMaterialsRequestUrl}" class="btn btn-info">{translate text='Suggest a purchase' isPublicFacing=true}</a></p>
 		{/if}
 
 		{if $showSearchTools || ($loggedIn && count($userPermissions) > 0)}

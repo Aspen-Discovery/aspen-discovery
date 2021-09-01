@@ -22,7 +22,7 @@
 				<a data-toggle="collapse" href="#{$category|regex_replace:'/\W/':''|escape:css}PanelBody">
 					<div class="panel-heading">
 						<div class="panel-title">
-							{$category|translate}
+							{translate text=$category isPublicFacing=true}
 						</div>
 					</div>
 				</a>

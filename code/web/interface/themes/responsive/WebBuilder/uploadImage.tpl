@@ -6,12 +6,12 @@
 			<div class="input-group">
 				<label class="input-group-btn">
 				<span class="btn btn-primary">
-					{translate text="Select Image"}&hellip; <input type="file" style="display: none;" name="imageFile" id="imageFile">
+					{translate text="Select Image" isAdminFacing=true}&hellip; <input type="file" style="display: none;" name="imageFile" id="imageFile">
 				</span>
 				</label>
 				<input type="text" class="form-control" id="selected-image-label" readonly>
 			</div>
-			<small id="imageFileHelp" class="form-text text-muted">JPG, GIF, and PNG Files can be uploaded.</small>
+			<small id="imageFileHelp" class="form-text text-muted">{translate text="JPG, GIF, and PNG Files can be uploaded." isAdminFacing=true}</small>
 		</div>
 	</form>
 	<script type="application/javascript">
