@@ -28,23 +28,23 @@
 
 		{if strlen($summFormats)}
 			<div class="row">
-				<div class="result-label col-tn-3">Format: </div>
+				<div class="result-label col-tn-3">{translate text="Format" isPublicFacing=true}</div>
 				<div class="col-tn-9 result-value">
-					<span>{translate text=$summFormats}</span>
+					<span>{translate text=$summFormats isPublicFacing=true}</span>
 				</div>
 			</div>
 		{/if}
 
 		<div class="row">
-			<div class="result-label col-tn-3">{translate text='Full Text'}:</div>
+			<div class="result-label col-tn-3">{translate text='Full Text' isPublicFacing=true}</div>
 			<div class="col-tn-9 result-value">{if $summHasFullText}Full text available{else}Full text not available{/if}</div>
 		</div>
 
 		{if $summDescription}
 			{* Standard Description *}
 			<div class="row visible-xs">
-				<div class="result-label col-tn-3">{translate text='Description'}</div>
-				<div class="result-value col-tn-8"><a id="descriptionLink{$summId|escape}" href="#" onclick="$('#descriptionValue{$summId|escape},#descriptionLink{$summId|escape}').toggleClass('hidden-xs');return false;">Click to view</a></div>
+				<div class="result-label col-tn-3">{translate text='Description' isPublicFacing=true}</div>
+				<div class="result-value col-tn-8"><a id="descriptionLink{$summId|escape}" href="#" onclick="$('#descriptionValue{$summId|escape},#descriptionLink{$summId|escape}').toggleClass('hidden-xs');return false;">{translate text="Click to view" isPublicFacing=true}</a></div>
 			</div>
 
 			{* Mobile Description *}

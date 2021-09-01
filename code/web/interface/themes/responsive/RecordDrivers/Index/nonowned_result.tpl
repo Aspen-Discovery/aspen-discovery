@@ -13,7 +13,7 @@
 					<span class="result-title notranslate">
 					{if !$record.title|removeTrailingPunctuation} {translate text='Title not available' isPublicFacing=true}{else}{$record.title|removeTrailingPunctuation|truncate:180:"..."|highlight}{/if}
 					{if $record.volume}
-						, {$record.series}{if $record.volume}<strong> {translate text="volume %1%" 1=$record.volume}</strong>{/if}&nbsp;
+						, {$record.series}{if $record.volume}<strong> {translate text="volume %1%" 1=$record.volume isPublicFacing=true}</strong>{/if}&nbsp;
 					{/if}
 					</span>
 				</div>
@@ -43,12 +43,12 @@
 
 			<div class="row related-manifestations-header">
 				<div class="col-xs-12 result-label related-manifestations-label">
-					{translate text="Choose a Format"}
+					{translate text="Choose a Format" isPublicFacing=true}
 				</div>
 			</div>
 			<div class="row related-manifestation">
 				<div class="col-sm-12">
-					The library does not own any copies of this title.
+					{translate text="The library does not own any copies of this title." isPublicFacing=true}
 				</div>
 			</div>
 		</div>

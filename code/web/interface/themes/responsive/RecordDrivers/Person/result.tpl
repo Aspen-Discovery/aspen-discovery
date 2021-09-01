@@ -31,31 +31,31 @@
 				<div class="resultDetails col-md-9">
 					{if $birthDate}
 						<div class="row">
-							<div class='result-label col-md-3'>{translate text="Born"} </div>
+							<div class='result-label col-md-3'>{translate text="Born" isPublicFacing=true} </div>
 							<div class="col-md-9 result-value">{$birthDate}</div>
 						</div>
 					{/if}
 					{if $deathDate}
 						<div class="row">
-							<div class='result-label col-md-3'>{translate text="Died"} </div>
+							<div class='result-label col-md-3'>{translate text="Died" isPublicFacing=true} </div>
 							<div class="col-md-9 result-value">{$deathDate}</div>
 						</div>
 					{/if}
 					{if $numObits}
 						<div class="row">
-							<div class='result-label col-md-3'>{translate text="Num. Obits"} </div>
+							<div class='result-label col-md-3'>{translate text="Num. Obits" isPublicFacing=true} </div>
 							<div class="col-md-9 result-value">{$numObits}</div>
 						</div>
 					{/if}
 					{if $dateAdded}
 						<div class="row">
-							<div class='result-label col-md-3'>{translate text="Added"} </div>
+							<div class='result-label col-md-3'>{translate text="Added" isPublicFacing=true} </div>
 							<div class="col-md-9 result-value">{$dateAdded|date_format}</div>
 						</div>
 					{/if}
 					{if $lastUpdate}
 						<div class="row">
-							<div class='result-label col-md-3'>{translate text="Last Updated"} </div>
+							<div class='result-label col-md-3'>{translate text="Last Updated" isPublicFacing=true} </div>
 							<div class="col-md-9 result-value">{$lastUpdate|date_format}</div>
 						</div>
 					{/if}

@@ -55,13 +55,13 @@
 					{assign var=indexedSeries value=$recordDriver->getIndexedSeries()}
 					{if $summSeries || $indexedSeries}
 						<div class="series{$summISBN} row">
-							<div class="result-label col-tn-3">{translate text="Series"} </div>
+							<div class="result-label col-tn-3">{translate text="Series" isPublicFacing=true} </div>
 							<div class="result-value col-tn-8">
 								{if $summSeries}
 									{if $summSeries.fromNovelist}
-										<a href="/GroupedWork/{$summId}/Series">{$summSeries.seriesTitle}</a>{if $summSeries.volume} <strong>{translate text=volume} {$summSeries.volume}</strong>{/if}<br>
+										<a href="/GroupedWork/{$summId}/Series">{$summSeries.seriesTitle}</a>{if $summSeries.volume} <strong>{translate text=volume isPublicFacing=true} {$summSeries.volume}</strong>{/if}<br>
 									{else}
-										<a href="/Search/Results?searchIndex=Series&lookfor={$summSeries.seriesTitle}&sort=year+asc%2Ctitle+asc">{$summSeries.seriesTitle}</a>{if $summSeries.volume}<strong> {translate text="volume %1%" 1=$summSeries.volume}</strong>{/if}<br>
+										<a href="/Search/Results?searchIndex=Series&lookfor={$summSeries.seriesTitle}&sort=year+asc%2Ctitle+asc">{$summSeries.seriesTitle}</a>{if $summSeries.volume}<strong> {translate text="volume %1%" 1=$summSeries.volume isPublicFacing=true}</strong>{/if}<br>
 									{/if}
 								{/if}
 								{if $indexedSeries}
@@ -70,10 +70,10 @@
 										{if !isset($summSeries.seriesTitle) || ((strpos(strtolower($seriesItem.seriesTitle), strtolower($summSeries.seriesTitle)) === false) && (strpos(strtolower($summSeries.seriesTitle), strtolower($seriesItem.seriesTitle)) === false))}
 											{assign var=numSeriesShown value=$numSeriesShown+1}
 											{if $numSeriesShown == 4}
-												<a onclick="$('#moreSeries_{$summId}').show();$('#moreSeriesLink_{$summId}').hide();" id="moreSeriesLink_{$summId}">{translate text='More Series...'}</a>
+												<a onclick="$('#moreSeries_{$summId}').show();$('#moreSeriesLink_{$summId}').hide();" id="moreSeriesLink_{$summId}">{translate text='More Series...' isPublicFacing=true}</a>
 												<div id="moreSeries_{$summId}" style="display:none">
 											{/if}
-											<a href="/Search/Results?searchIndex=Series&lookfor=%22{$seriesItem.seriesTitle|escape:"url"}%22&sort=year+asc%2Ctitle+asc">{$seriesItem.seriesTitle|escape}</a>{if $seriesItem.volume}<strong> {translate text="volume %1%" 1=$seriesItem.volume}</strong>{/if}<br>
+											<a href="/Search/Results?searchIndex=Series&lookfor=%22{$seriesItem.seriesTitle|escape:"url"}%22&sort=year+asc%2Ctitle+asc">{$seriesItem.seriesTitle|escape}</a>{if $seriesItem.volume}<strong> {translate text="volume %1%" 1=$seriesItem.volume isPublicFacing=true}</strong>{/if}<br>
 										{/if}
 									{/foreach}
 									{if $numSeriesShown >= 4}
@@ -88,12 +88,12 @@
 				{if !empty($showPublisher) && $showPublisher}
 					{if $alwaysShowSearchResultsMainDetails || $summPublisher}
 						<div class="row">
-							<div class="result-label col-tn-3">{translate text="Publisher"} </div>
+							<div class="result-label col-tn-3">{translate text="Publisher" isPublicFacing=true} </div>
 							<div class="result-value col-tn-8">
 								{if $summPublisher}
 									{$summPublisher}
 								{elseif $alwaysShowSearchResultsMainDetails}
-									{translate text="Not Supplied"}
+									{translate text="Not Supplied" isPublicFacing=true}
 								{/if}
 							</div>
 						</div>
@@ -103,12 +103,12 @@
 				{if !empty($showPublicationDate) && $showPublicationDate}
 					{if $alwaysShowSearchResultsMainDetails || $summPubDate}
 						<div class="row">
-							<div class="result-label col-tn-3">{translate text="Pub. Date"} </div>
+							<div class="result-label col-tn-3">{translate text="Pub. Date" isPublicFacing=true} </div>
 							<div class="result-value col-tn-8">
 								{if $summPubDate}
 									{$summPubDate|escape}
 								{elseif $alwaysShowSearchResultsMainDetails}
-									{translate text="Not Supplied"}
+									{translate text="Not Supplied" isPublicFacing=true}
 								{/if}
 							</div>
 						</div>
@@ -118,12 +118,12 @@
 				{if !empty($showEditions)}
 					{if $alwaysShowSearchResultsMainDetails || $summEdition}
 						<div class="row">
-							<div class="result-label col-tn-3">{translate text="Edition"} </div>
+							<div class="result-label col-tn-3">{translate text="Edition" isPublicFacing=true} </div>
 							<div class="result-value col-tn-8">
 								{if $summEdition}
 									{$summEdition}
 								{elseif $alwaysShowSearchResultsMainDetails}
-									{translate text="Not Supplied"}
+									{translate text="Not Supplied" isPublicFacing=true}
 								{/if}
 							</div>
 						</div>
@@ -132,7 +132,7 @@
 
 				{if !empty($showArInfo) && $summArInfo}
 					<div class="row">
-						<div class="result-label col-tn-3">{translate text='Accelerated Reader'} </div>
+						<div class="result-label col-tn-3">{translate text='Accelerated Reader' isPublicFacing=true} </div>
 						<div class="result-value col-tn-8">
 							{$summArInfo}
 						</div>
@@ -141,7 +141,7 @@
 
 				{if !empty($showLexileInfo) && $summLexileInfo}
 					<div class="row">
-						<div class="result-label col-tn-3">{translate text='Lexile measure'} </div>
+						<div class="result-label col-tn-3">{translate text='Lexile measure' isPublicFacing=true} </div>
 						<div class="result-value col-tn-8">
 							{$summLexileInfo}
 						</div>
@@ -150,7 +150,7 @@
 
 				{if !empty($showFountasPinnell) && $summFountasPinnell}
 					<div class="row">
-						<div class="result-label col-tn-3">{translate text='Fountas &amp; Pinnell'} </div>
+						<div class="result-label col-tn-3">{translate text='Fountas &amp; Pinnell' isPublicFacing=true} </div>
 						<div class="result-value col-tn-8">
 							{$summFountasPinnell}
 						</div>
@@ -160,12 +160,12 @@
 				{if !empty($showPhysicalDescriptions)}
 					{if $alwaysShowSearchResultsMainDetails || $summPhysicalDesc}
 						<div class="row">
-							<div class="result-label col-tn-3">{translate text='Physical Desc'} </div>
+							<div class="result-label col-tn-3">{translate text='Physical Desc' isPublicFacing=true} </div>
 							<div class="result-value col-tn-8">
 								{if $summPhysicalDesc}
 									{$summPhysicalDesc}
 								{elseif $alwaysShowSearchResultsMainDetails}
-									{translate text="Not Supplied"}
+									{translate text="Not Supplied" isPublicFacing=true}
 								{/if}
 							</div>
 						</div>
@@ -174,26 +174,15 @@
 
 				{if $showLanguages && $summLanguage}
 					<div class="row">
-						<div class="result-label col-tn-3">{translate text="Language"} </div>
+						<div class="result-label col-tn-3">{translate text="Language" isPublicFacing=true} </div>
 						<div class="result-value col-tn-8">
 							{if is_array($summLanguage)}
-								{implode subject=$summLanguage glue=', ' translate=true}
+								{implode subject=$summLanguage glue=', ' translate=true isPublicFacing=true}
 							{else}
-								{$summLanguage|translate}
+								{translate text=$summLanguage isPublicFacing=true}
 							{/if}
 						</div>
 					</div>
-				{/if}
-
-				{if $summSnippets}
-					{foreach from=$summSnippets item=snippet}
-						<div class="row">
-							<div class="result-label col-tn-3">{translate text=$snippet.caption} </div>
-							<div class="result-value col-tn-8">
-								{if !empty($snippet.snippet)}<span class="quotestart">&#8220;</span>...{$snippet.snippet|highlight}...<span class="quoteend">&#8221;</span><br>{/if}
-							</div>
-						</div>
-					{/foreach}
 				{/if}
 
 				{include file="GroupedWork/relatedLists.tpl"}
@@ -215,7 +204,7 @@
 					   won't have any hidden formats and will be displayed *}
 					{if !$hasHiddenFormats && count($relatedManifestations) != 1}
 						<div class="hidethisdiv{$summId|escape} result-label col-tn-3">
-							{translate text="Formats"}
+							{translate text="Formats" isPublicFacing=true}
 						</div>
 						<div class="hidethisdiv{$summId|escape} result-value col-tn-8">
 							<a onclick="$('#relatedManifestationsValue{$summId|escape},.hidethisdiv{$summId|escape}').toggleClass('hidden-xs');return false;" role="button">
@@ -241,8 +230,8 @@
 					{if $summDescription}
 						{* Standard Description *}
 						<div class="row visible-xs">
-							<div class="result-label col-tn-3">Description</div>
-							<div class="result-value col-tn-8"><a id="descriptionLink{$summId|escape}" href="#" onclick="$('#descriptionValue{$summId|escape},#descriptionLink{$summId|escape}').toggleClass('hidden-xs');return false;">{translate text="Read Description"}</a></div>
+							<div class="result-label col-tn-3">{translate text="Description" isPublicFacing=true}</div>
+							<div class="result-value col-tn-8"><a id="descriptionLink{$summId|escape}" href="#" onclick="$('#descriptionValue{$summId|escape},#descriptionLink{$summId|escape}').toggleClass('hidden-xs');return false;">{translate text="Read Description" isPublicFacing=true}</a></div>
 						</div>
 
 						{* Mobile Description *}

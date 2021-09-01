@@ -47,24 +47,6 @@ class WebResourceRecordDriver extends IndexRecordDriver
 			$interface->assign('description', '');
 		}
 		$interface->assign('source', isset($this->fields['source']) ? $this->fields['source'] : '');
-		// Obtain and assign snippet (highlighting) information:
-		$snippets = $this->getHighlightedSnippets();
-		$interface->assign('summSnippets', $snippets);
-
-//		require_once ROOT_DIR . '/sys/WebsiteIndexing/WebPageUsage.php';
-//		$webPageUsage = new WebPageUsage();
-//		$webPageUsage->instance = $_SERVER['SERVER_NAME'];
-//		$webPageUsage->webPageId = str_replace('WebPage:', '', $this->getUniqueID());
-//		$webPageUsage->year = date('Y');
-//		$webPageUsage->month = date('n');
-//		if ($webPageUsage->find(true)) {
-//			$webPageUsage->timesViewedInSearch++;
-//			$webPageUsage->update();
-//		} else {
-//			$webPageUsage->timesViewedInSearch = 1;
-//			$webPageUsage->timesUsed = 0;
-//			$webPageUsage->insert();
-//		}
 
 		return 'RecordDrivers/WebPage/result.tpl';
 	}

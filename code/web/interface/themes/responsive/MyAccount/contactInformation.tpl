@@ -235,7 +235,7 @@
 									{if $edit == true}
 										<input type="checkbox" name="comingDueNotice" id="comingDueNotice" {if $profile->_comingDueNotice==1}checked='checked'{/if} data-switch="">
 									{else}
-										{if $profile->_comingDueNotice==0}No{else}Yes{/if}
+										{if $profile->_comingDueNotice==0}{translate text="No" isPublicFacing=true}{else}{translate text="Yes" isPublicFacing=true}{/if}
 									{/if}
 								</div>
 							</div>

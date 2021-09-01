@@ -26,23 +26,12 @@
 				</div>
 			</div>
 
-			{if !empty($summSnippets)}
-				{foreach from=$summSnippets item=snippet}
-					<div class="row">
-						<div class="result-label col-tn-3 col-xs-3">{translate text=$snippet.caption} </div>
-						<div class="result-value col-tn-9 col-xs-9">
-							{if !empty($snippet.snippet)}<span class="quotestart">&#8220;</span>...{$snippet.snippet|highlight}...<span class="quoteend">&#8221;</span><br />{/if}
-						</div>
-					</div>
-				{/foreach}
-			{/if}
-
 			<div class="row">
 				<div class="result-label col-tn-3">{translate text="Date" isPublicFacing=true} </div>
 				<div class="result-value col-tn-8 notranslate">
 					{$start_date|date_format:"%a %b %e, %Y from %l:%M%p"} to {$end_date|date_format:"%l:%M%p"}
                     {if $isCancelled}
-						&nbsp;<span class="label label-danger">{translate text="Cancelled"}</span>
+						&nbsp;<span class="label label-danger">{translate text="Cancelled" isPublicFacing=true}</span>
                     {/if}
 				</div>
 			</div>
@@ -50,8 +39,8 @@
 			{* Description Section *}
 			{if $description}
 				<div class="row visible-xs">
-					<div class="result-label col-tn-3 col-xs-3">{translate text="Description"}</div>
-					<div class="result-value col-tn-9 col-xs-9"><a id="descriptionLink{$resultIndex|escape}" href="#" onclick="$('#descriptionValue{$resultIndex|escape},#descriptionLink{$resultIndex|escape}').toggleClass('hidden-xs');return false;">Click to view</a></div>
+					<div class="result-label col-tn-3 col-xs-3">{translate text="Description" isPublicFacing=true}</div>
+					<div class="result-value col-tn-9 col-xs-9"><a id="descriptionLink{$resultIndex|escape}" href="#" onclick="$('#descriptionValue{$resultIndex|escape},#descriptionLink{$resultIndex|escape}').toggleClass('hidden-xs');return false;">{translate text="Click to view" isPublicFacing=true}</a></div>
 				</div>
 
 				<div class="row">

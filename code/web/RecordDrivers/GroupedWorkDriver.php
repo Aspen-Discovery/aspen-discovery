@@ -1574,11 +1574,6 @@ class GroupedWorkDriver extends IndexRecordDriver
 		$timer->logTime("Finished assignment of main data");
 		$memoryWatcher->logMemory("Finished assignment of main data");
 
-		// Obtain and assign snippet (highlighting) information:
-		$snippets = $this->getHighlightedSnippets();
-		$interface->assign('summSnippets', $snippets);
-		$timer->logTime("Loaded highlighted snippets");
-
 		//Check to see if there are lists the record is on
 		require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 		$appearsOnLists = UserList::getUserListsForRecord('GroupedWork', $this->getPermanentId());

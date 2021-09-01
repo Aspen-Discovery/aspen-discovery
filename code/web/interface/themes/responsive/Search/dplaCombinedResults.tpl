@@ -26,26 +26,10 @@
 
 						{if $result.format}
 							<div class="row">
-								<div class="result-label col-tn-3">{translate text='Format'}:</div>
-								<div class="col-tn-9 result-value">{$result.format|escape}</div>
+								<div class="result-label col-tn-3">{translate text='Format' isPublicFacing=true}:</div>
+								<div class="col-tn-9 result-value">{translate text=$result.format|escape isPublicFacing=true}</div>
 							</div>
 						{/if}
-
-						{*
-						{if $result.publisher}
-							<div class="row">
-								<div class="result-label col-tn-3">{translate text='Publisher'}:</div>
-								<div class="col-tn-9 result-value">{$result.publisher|escape}</div>
-							</div>
-						{/if}
-
-						{if $result.date}
-							<div class="row">
-								<div class="result-label col-tn-3">{translate text='Date'}:</div>
-								<div class="col-tn-9 result-value">{$result.date|escape}</div>
-							</div>
-						{/if}
-						*}
 
 						{if $result.description}
 							<div class="row well-small">

@@ -28,7 +28,7 @@
 
 		{if $summAuthor}
 			<div class="row">
-				<div class="result-label col-tn-3">{translate text="Created By"} </div>
+				<div class="result-label col-tn-3">{translate text="Created By" isPublicFacing=true} </div>
 				<div class="result-value col-tn-9 notranslate">
 					{if is_array($summAuthor)}
 						{foreach from=$summAuthor item=author}
@@ -43,7 +43,7 @@
 
 		{if $summNumTitles}
 			<div class="row">
-				<div class="result-label col-tn-3">{translate text="Number of Titles"} </div>
+				<div class="result-label col-tn-3">{translate text="Number of Titles" isPublicFacing=true} </div>
 				<div class="result-value col-tn-9 notranslate">
 					{translate text="%1% titles are in this list." 1=$summNumTitles}
 				</div>
@@ -54,9 +54,9 @@
 			<div class="row">
 				<div class="result-label col-tn-3">
 					{if count($appearsOnLists) > 1}
-						{translate text="Appears on these lists"}
+						{translate text="Appears on these lists" isPublicFacing=true}
 					{else}
-						{translate text="Appears on list"}
+						{translate text="Appears on list" isPublicFacing=true}
 					{/if}
 				</div>
 				<div class="result-value col-tn-8">
@@ -67,7 +67,7 @@
 					{foreach from=$appearsOnLists item=appearsOnList name=loop}
 					<a href="{$appearsOnList.link}">{$appearsOnList.title}</a><br/>
 					{if !empty($showMoreLists) && $smarty.foreach.loop.iteration == 3}
-					<a onclick="$('#moreLists_List{$recordDriver->getId()}').show();$('#moreListsLink_List{$recordDriver->getId()}').hide();" id="moreListsLink_List{$recordDriver->getId()}">{translate text="More Lists..."}</a>
+					<a onclick="$('#moreLists_List{$recordDriver->getId()}').show();$('#moreListsLink_List{$recordDriver->getId()}').hide();" id="moreListsLink_List{$recordDriver->getId()}">{translate text="More Lists..." isPublicFacing=true}</a>
 					<div id="moreLists_List{$recordDriver->getId()}" style="display:none">
 						{/if}
 						{/foreach}
@@ -78,22 +78,11 @@
 			</div>
 		{/if}
 
-		{if $summSnippets}
-			{foreach from=$summSnippets item=snippet}
-				<div class="row">
-					<div class="result-label col-tn-3 col-xs-3">{translate text=$snippet.caption} </div>
-					<div class="result-value col-tn-9 col-xs-9">
-						{if !empty($snippet.snippet)}<span class="quotestart">&#8220;</span>...{$snippet.snippet|highlight}...<span class="quoteend">&#8221;</span><br />{/if}
-					</div>
-				</div>
-			{/foreach}
-		{/if}
-
 		{* Description Section *}
 		{if $summDescription}
 			<div class="row visible-xs">
-				<div class="result-label col-tn-3 col-xs-3">{translate text="Description"}</div>
-				<div class="result-value col-tn-9 col-xs-9"><a id="descriptionLink{$summId|escape}" href="#" onclick="$('#descriptionValue{$summId|escape},#descriptionLink{$summId|escape}').toggleClass('hidden-xs');return false;">Click to view</a></div>
+				<div class="result-label col-tn-3 col-xs-3">{translate text="Description" isPublicFacing=true}</div>
+				<div class="result-value col-tn-9 col-xs-9"><a id="descriptionLink{$summId|escape}" href="#" onclick="$('#descriptionValue{$summId|escape},#descriptionLink{$summId|escape}').toggleClass('hidden-xs');return false;">{translate text="Click to view" isPublicFacing=true}</a></div>
 			</div>
 
 			<div class="row">

@@ -32,7 +32,7 @@
 
 				{if $summAuthor}
 					<div class="row">
-						<div class="result-label col-tn-3">Author: </div>
+						<div class="result-label col-tn-3">{translate text="Author" isPublicFacing=true}</div>
 						<div class="result-value col-tn-8 notranslate">
 							{if is_array($summAuthor)}
 								{foreach from=$summAuthor item=author}
@@ -56,10 +56,10 @@
 					{/foreach}
 
 					<div class="result-label col-tn-3">
-						Format{if count($relatedManifestations) > 1}s{/if}:
+                        {if count($relatedManifestations) > 1}{translate text="Formats" isPublicFacing=true}{else}{translate text="Format" isPublicFacing=true}{/if}:
 					</div>
 					<div class="result-value col-tn-8">
-						{implode subject=$relatedManifestations|@array_keys glue=", "}
+						{implode subject=$relatedManifestations|@array_keys glue=", " translate=true isPublicFacing=true}
 					</div>
 
 				</div>

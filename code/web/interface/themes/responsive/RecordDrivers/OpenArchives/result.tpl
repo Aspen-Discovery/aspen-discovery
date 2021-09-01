@@ -28,7 +28,7 @@
 
 		{if !empty($type)}
 			<div class="row">
-				<div class="result-label col-tn-3">{translate text="Type"} </div>
+				<div class="result-label col-tn-3">{translate text="Type" isPublicFacing=true} </div>
 				<div class="result-value col-tn-8 notranslate">
 					{implode subject=$type}
 				</div>
@@ -37,7 +37,7 @@
 
 		{if !empty($source)}
 			<div class="row">
-				<div class="result-label col-tn-3">{translate text="Source"} </div>
+				<div class="result-label col-tn-3">{translate text="Source" isPublicFacing=true} </div>
 				<div class="result-value col-tn-8 notranslate">
 					{implode subject=$source glue="<br/>"}
 				</div>
@@ -46,7 +46,7 @@
 
 		{if !empty($publisher)}
 			<div class="row">
-				<div class="result-label col-tn-3">{translate text="Publisher"} </div>
+				<div class="result-label col-tn-3">{translate text="Publisher" isPublicFacing=true} </div>
 				<div class="result-value col-tn-8 notranslate">
 					{implode subject=$publisher}
 				</div>
@@ -66,9 +66,9 @@
 			<div class="row">
 				<div class="result-label col-tn-3">
 					{if count($appearsOnLists) > 1}
-						{translate text="Appears on these lists"}
+						{translate text="Appears on these lists" isPublicFacing=true}
 					{else}
-						{translate text="Appears on list"}
+						{translate text="Appears on list" isPublicFacing=true}
 					{/if}
 				</div>
 				<div class="result-value col-tn-8">
@@ -79,7 +79,7 @@
 					{foreach from=$appearsOnLists item=appearsOnList name=loop}
 						<a href="{$appearsOnList.link}">{$appearsOnList.title}</a><br/>
 						{if !empty($showMoreLists) && $smarty.foreach.loop.iteration == 3}
-							<a onclick="$('#moreLists_OpenArchives{$recordDriver->getId()}').show();$('#moreListsLink_OpenArchives{$recordDriver->getId()}').hide();" id="moreListsLink_OpenArchives{$recordDriver->getId()}">{translate text="More Lists..."}</a>
+							<a onclick="$('#moreLists_OpenArchives{$recordDriver->getId()}').show();$('#moreListsLink_OpenArchives{$recordDriver->getId()}').hide();" id="moreListsLink_OpenArchives{$recordDriver->getId()}">{translate text="More Lists..." isPublicFacing=true}</a>
 							<div id="moreLists_OpenArchives{$recordDriver->getId()}" style="display:none">
 						{/if}
 					{/foreach}
@@ -93,8 +93,8 @@
 		{* Description Section *}
 		{if $description}
 			<div class="row visible-xs">
-				<div class="result-label col-tn-3 col-xs-3">{translate text="Description"}</div>
-				<div class="result-value col-tn-9 col-xs-9"><a id="descriptionLink{$resultIndex|escape}" href="#" onclick="$('#descriptionValue{$resultIndex|escape},#descriptionLink{$resultIndex|escape}').toggleClass('hidden-xs');return false;">Click to view</a></div>
+				<div class="result-label col-tn-3 col-xs-3">{translate text="Description" isPublicFacing=true}</div>
+				<div class="result-value col-tn-9 col-xs-9"><a id="descriptionLink{$resultIndex|escape}" href="#" onclick="$('#descriptionValue{$resultIndex|escape},#descriptionLink{$resultIndex|escape}').toggleClass('hidden-xs');return false;">{translate text="Click to view" isPublicFacing=true}</a></div>
 			</div>
 
 			<div class="row">

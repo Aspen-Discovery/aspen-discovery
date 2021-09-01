@@ -29,7 +29,7 @@
 
 		{if strlen($summSourceDatabase)}
 			<div class="row hidden-phone">
-				<div class="result-label col-tn-3">{translate text='Found in'}:</div>
+				<div class="result-label col-tn-3">{translate text='Found in' isPublicFacing=true}</div>
 				<div class="col-tn-9 result-value">{$summSourceDatabase|escape}</div>
 			</div>
 		{/if}
@@ -37,7 +37,7 @@
 		{if !empty($summPublicationDates) || !empty($summPublishers) || !empty($summPublicationPlaces)}
 			<div class="row">
 
-				<div class="result-label col-tn-3">{translate text='Published'}</div>
+				<div class="result-label col-tn-3">{translate text='Published' isPublicFacing=true}</div>
 				<div class="col-tn-9 result-value">
 					{$summPublicationPlaces.0|escape}{$summPublishers.0|escape}{$summPublicationDates.0|escape}
 				</div>
@@ -46,32 +46,32 @@
 
 		{if strlen($summFormats)}
 			<div class="row">
-				<div class="result-label col-tn-3">{translate text='Format'}</div>
+				<div class="result-label col-tn-3">{translate text='Format' isPublicFacing=true}</div>
 				<div class="col-tn-9 result-value">
-					<span>{translate text=$summFormats}</span>
+					<span>{translate text=$summFormats isPublicFacing=true}</span>
 				</div>
 			</div>
 		{/if}
 
 		{if !empty($summPhysical)}
 			<div class="row hidden-phone">
-				<div class="result-label col-tn-3">{translate text='Physical Desc'}</div>
+				<div class="result-label col-tn-3">{translate text='Physical Desc' isPublicFacing=true}</div>
 				<div class="col-tn-9 result-value">{$summPhysical.0|escape}</div>
 			</div>
 		{/if}
 
 		<div class="row hidden-phone">
-			<div class="result-label col-tn-3">{translate text='Full Text'}</div>
-			<div class="col-tn-9 result-value">{if $summHasFullText}Yes{else}No{/if}</div>
+			<div class="result-label col-tn-3">{translate text='Full Text' isPublicFacing=true}</div>
+			<div class="col-tn-9 result-value">{if $summHasFullText}{translate text="Yes" isPublicFacing=true}{else}{translate text="No" isPublicFacing=true}{/if}</div>
 		</div>
 
 		{if count($appearsOnLists) > 0}
 			<div class="row">
 				<div class="result-label col-tn-3">
 					{if count($appearsOnLists) > 1}
-						{translate text="Appears on these lists"}
+						{translate text="Appears on these lists" isPublicFacing=true}
 					{else}
-						{translate text="Appears on list"}
+						{translate text="Appears on list" isPublicFacing=true}
 					{/if}
 				</div>
 				<div class="result-value col-tn-8">
@@ -82,7 +82,7 @@
 					{foreach from=$appearsOnLists item=appearsOnList name=loop}
 						<a href="{$appearsOnList.link}">{$appearsOnList.title}</a><br/>
 						{if !empty($showMoreLists) && $smarty.foreach.loop.iteration == 3}
-							<a onclick="$('#moreLists_OpenArchives{$recordDriver->getId()}').show();$('#moreListsLink_OpenArchives{$recordDriver->getId()}').hide();" id="moreListsLink_OpenArchives{$recordDriver->getId()}">{translate text="More Lists..."}</a>
+							<a onclick="$('#moreLists_OpenArchives{$recordDriver->getId()}').show();$('#moreListsLink_OpenArchives{$recordDriver->getId()}').hide();" id="moreListsLink_OpenArchives{$recordDriver->getId()}">{translate text="More Lists..." isPublicFacing=true}</a>
 							<div id="moreLists_OpenArchives{$recordDriver->getId()}" style="display:none">
 						{/if}
 					{/foreach}
@@ -96,8 +96,8 @@
 		{if $summDescription}
 			{* Standard Description *}
 			<div class="row visible-xs">
-				<div class="result-label col-tn-3">{translate text='Description'}</div>
-				<div class="result-value col-tn-8"><a id="descriptionLink{$summId|escape}" href="#" onclick="$('#descriptionValue{$summId|escape},#descriptionLink{$summId|escape}').toggleClass('hidden-xs');return false;">Click to view</a></div>
+				<div class="result-label col-tn-3">{translate text='Description' isPublicFacing=true}</div>
+				<div class="result-value col-tn-8"><a id="descriptionLink{$summId|escape}" href="#" onclick="$('#descriptionValue{$summId|escape},#descriptionLink{$summId|escape}').toggleClass('hidden-xs');return false;">{translate text="Click to view" isPublicFacing=true}</a></div>
 			</div>
 
 			{* Mobile Description *}

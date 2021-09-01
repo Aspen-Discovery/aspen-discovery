@@ -34,7 +34,7 @@
 
 			{if $summAuthor}
 				<div class="row">
-					<div class="result-label col-tn-3">{translate text="Created By"} </div>
+					<div class="result-label col-tn-3">{translate text="Created By" isPublicFacing=true} </div>
 					<div class="result-value col-tn-9 notranslate">
 						{if is_array($summAuthor)}
 							{foreach from=$summAuthor item=author}
@@ -49,16 +49,16 @@
 
 			{if $summNumTitles}
 				<div class="row">
-					<div class="result-label col-tn-3">{translate text="Number of Titles"} </div>
+					<div class="result-label col-tn-3">{translate text="Number of Titles" isPublicFacing=true} </div>
 					<div class="result-value col-tn-9 notranslate">
-						{translate text="%1% titles are in this list." 1=$summNumTitles}
+						{translate text="%1% titles are in this list." 1=$summNumTitles isPublicFacing=true}
 					</div>
 				</div>
 			{/if}
 
 			{if $listEntryNotes}
 				<div class="row">
-					<div class="result-label col-md-3">{translate text="Notes"} </div>
+					<div class="result-label col-md-3">{translate text="Notes" isPublicFacing=true} </div>
 					<div class="user-list-entry-note result-value col-md-9">
 						{$listEntryNotes}
 					</div>
@@ -68,8 +68,8 @@
 			{* Description Section *}
 			{if $summDescription}
 				<div class="row visible-xs">
-					<div class="result-label col-tn-3 col-xs-3">{translate text="Description"}</div>
-					<div class="result-value col-tn-9 col-xs-9"><a id="descriptionLink{$summId|escape}" href="#" onclick="$('#descriptionValue{$summId|escape},#descriptionLink{$summId|escape}').toggleClass('hidden-xs');return false;">Click to view</a></div>
+					<div class="result-label col-tn-3 col-xs-3">{translate text="Description" isPublicFacing=true}</div>
+					<div class="result-value col-tn-9 col-xs-9"><a id="descriptionLink{$summId|escape}" href="#" onclick="$('#descriptionValue{$summId|escape},#descriptionLink{$summId|escape}').toggleClass('hidden-xs');return false;">{translate text="Click to view" isPublicFacing=true}</a></div>
 				</div>
 
 				<div class="row">
@@ -87,16 +87,15 @@
 		</div>
 
 		{if $listEditAllowed}
-		<div class="col-xs-2 col-sm-2 col-md-2 col-lg-2 text-right">
+			<div class="col-xs-2 col-sm-2 col-md-2 col-lg-2 text-right">
 				<div class="btn-group-vertical" role="group">
-					{if $userSort && $resultIndex != '1'}<span class="btn btn-xs btn-default" onclick="return AspenDiscovery.Lists.changeWeight('{$listEntryId}', 'up');" title="{translate text="Move Up"}">&#x25B2;</span>{/if}
-					<a href="/MyAccount/Edit?listEntryId={$listEntryId|escape:"url"}{if !is_null($listSelected)}&amp;listId={$listSelected|escape:"url"}{/if}" class="btn btn-default">{translate text='Edit'}</a>
+					{if $userSort && $resultIndex != '1'}<span class="btn btn-xs btn-default" onclick="return AspenDiscovery.Lists.changeWeight('{$listEntryId}', 'up');" title="{translate text="Move Up" isPublicFacing=true}">&#x25B2;</span>{/if}
+					<a href="/MyAccount/Edit?listEntryId={$listEntryId|escape:"url"}{if !is_null($listSelected)}&amp;listId={$listSelected|escape:"url"}{/if}" class="btn btn-default">{translate text='Edit' isPublicFacing=true}</a>
 					{* Use a different delete URL if we're removing from a specific list or the overall favorites: *}
-					<a href="/MyAccount/MyList/{$listSelected|escape:"url"}?delete={$listEntryId|escape:"url"}" onclick="return confirm('Are you sure you want to delete this?');" class="btn btn-danger">{translate text='Delete'}</a>
-					{if $userSort && ($resultIndex != $listEntryCount)}<span class="btn btn-xs btn-default" onclick="return AspenDiscovery.Lists.changeWeight('{$listEntryId}', 'down');" title="{translate text="Move Down"}">&#x25BC;</span>{/if}
+					<a href="/MyAccount/MyList/{$listSelected|escape:"url"}?delete={$listEntryId|escape:"url"}" onclick="return confirm('Are you sure you want to delete this?');" class="btn btn-danger">{translate text='Delete' isPublicFacing=true}</a>
+					{if $userSort && ($resultIndex != $listEntryCount)}<span class="btn btn-xs btn-default" onclick="return AspenDiscovery.Lists.changeWeight('{$listEntryId}', 'down');" title="{translate text="Move Down" isPublicFacing=true}">&#x25BC;</span>{/if}
 				</div>
-
-		</div>
+			</div>
 		{/if}
 	</div>
 </div>
