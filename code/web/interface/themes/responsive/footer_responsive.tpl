@@ -7,7 +7,7 @@
 				{if !$productionServer}
 					<small class='location_info'>{$physicalLocation}{if $debug} ({$activeIp}){/if} - {$deviceName}</small>
 				{/if}
-				<small class='version_info'>{if !$productionServer} / {/if}{translate text="v. " 1=$gitBranch isPublicFacing=true}</small>
+				<small class='version_info'>{if !$productionServer} / {/if}{translate text="v. %1%" 1=$gitBranch isPublicFacing=true}</small>
 				{if $debug}
 					<small class='session_info'> / {translate text="session %1%" 1=$session isAdminFacing=true}</small>
 					<small class='scope_info'> / {translate text="scope %1%" 1=$solrScope isAdminFacing=true}</small>
