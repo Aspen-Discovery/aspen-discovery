@@ -96,7 +96,7 @@
 		</table>
 	</div>
 	<div class="{$propName}Actions">
-		<a href="#" onclick="addNew{$propName}();return false;" class="btn btn-primary btn-sm">{translate text="Add New"}</a>
+		<a href="#" onclick="addNew{$propName}();return false;" class="btn btn-primary btn-sm">{translate text="Add New" isAdminFacing=true}</a>
 		{if $property.additionalOneToManyActions && $id}{* Only display these actions for an existing object *}
 			<div class="btn-group pull-right">
 				{foreach from=$property.additionalOneToManyActions item=action}
