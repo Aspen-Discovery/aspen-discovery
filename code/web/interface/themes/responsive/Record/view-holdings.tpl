@@ -1,6 +1,6 @@
 {strip}
 {if $offline}
-	<div class="alert alert-warning">{translate text="The circulation system is currently offline.  Holdings information is based on information from before the system went offline."}</div>
+	<div class="alert alert-warning">{translate text="The circulation system is currently offline.  Holdings information is based on information from before the system went offline." isPublicFacing=true}</div>
 {/if}
 {* ils check & last checkin date *}
 {if ($ils == 'Sierra' || $ils == 'Millennium')}
@@ -36,7 +36,7 @@
 						</table>
 					</div>
 					{if count($section.holdings) > 5}
-						<a onclick="$(this).remove();$('.hiddenCopy').show()" role="button" class="btn btn-default btn-sm" style="cursor: pointer;">{translate text="Show All Copies"}</a>
+						<a onclick="$(this).remove();$('.hiddenCopy').show()" role="button" class="btn btn-default btn-sm" style="cursor: pointer;">{translate text="Show All Copies" isPublicFacing=true}</a>
 					{/if}
 				</div>
 
@@ -46,14 +46,14 @@
 		{/if}
 	{/foreach}
 {else}
-	{translate text="No Copies Found"}
+	{translate text="No Copies Found" isPublicFacing=true}
 {/if}
 
 {if !$show856LinksAsTab && count($links)}
 	<div id="title_links">
 		<div class="row">
 			<div class="col-xs-12">
-				<strong style="text-decoration: underline">{translate text="Links"}</strong>
+				<strong style="text-decoration: underline">{translate text="Links" isPublicFacing=true}</strong>
 			</div>
 		</div>
 		{include file="Record/view-links.tpl"}

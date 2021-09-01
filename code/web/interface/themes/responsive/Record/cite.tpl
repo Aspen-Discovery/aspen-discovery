@@ -11,7 +11,7 @@
 {else}
 	<div style="text-align: left;">
 		{if false && $ama}
-			<b>{translate text="AMA Citation"}</b>
+			<b>{translate text="AMA Citation" isPublicFacing=true}</b>
 			<p style="width: 95%; padding-left: 25px; text-indent: -25px;">
 				{include file=$ama}
 			</p>

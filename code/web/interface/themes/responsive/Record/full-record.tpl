@@ -18,7 +18,7 @@
 				{* Title includes the title section *}
 				{$recordDriver->getTitle()|removeTrailingPunctuation}
 				{if $recordDriver->getFormats()}
-					<br><small>({implode subject=$recordDriver->getFormats() glue=", ", translate=true})</small>
+					<br><small>({implode subject=$recordDriver->getFormats() glue=", ", translate=true isPublicFacing=true})</small>
 				{/if}
 			</h1>
 

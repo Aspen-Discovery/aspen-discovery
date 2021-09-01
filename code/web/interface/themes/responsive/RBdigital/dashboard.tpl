@@ -1,12 +1,12 @@
 {strip}
 	<div id="main-content" class="col-sm-12">
-		<h1>{translate text="RBdigital Dashboard"}</h1>
+		<h1>{translate text="RBdigital Dashboard" isAdminFacing=true}</h1>
 		{include file="Admin/selectInterfaceForm.tpl"}
 		<div>
 			<div class="dashboardCategory col-sm-6">
 				<div class="row">
 					<div class="col-sm-10 col-sm-offset-1">
-						<h2 class="dashboardCategoryLabel">{translate text="Active Users"}</h2>
+						<h2 class="dashboardCategoryLabel">{translate text="Active Users" isAdminFacing=true}</h2>
 					</div>
 				</div>
 				<div class="row">
@@ -32,7 +32,7 @@
 			<div class="dashboardCategory col-sm-6">
 				<div class="row">
 					<div class="col-sm-10 col-sm-offset-1">
-						<h2 class="dashboardCategoryLabel">{translate text="Records With Usage"}</h2>
+						<h2 class="dashboardCategoryLabel">{translate text="Records With Usage" isAdminFacing=true}</h2>
 					</div>
 				</div>
 				<div class="row">
@@ -58,7 +58,7 @@
 			<div class="dashboardCategory col-sm-6">
 				<div class="row">
 					<div class="col-sm-10 col-sm-offset-1">
-						<h2 class="dashboardCategoryLabel">{translate text="Loans"}</h2>
+						<h2 class="dashboardCategoryLabel">{translate text="Loans" isAdminFacing=true}</h2>
 					</div>
 				</div>
 				<div class="row">
@@ -84,7 +84,7 @@
 			<div class="dashboardCategory col-sm-6">
 				<div class="row">
 					<div class="col-sm-10 col-sm-offset-1">
-						<h2 class="dashboardCategoryLabel">{translate text="Holds"}</h2>
+						<h2 class="dashboardCategoryLabel">{translate text="Holds" isAdminFacing=true}</h2>
 					</div>
 				</div>
 				<div class="row">
@@ -110,7 +110,7 @@
 			<div class="dashboardCategory col-sm-6">
 				<div class="row">
 					<div class="col-sm-10 col-sm-offset-1">
-						<h2 class="dashboardCategoryLabel">{translate text="Magazines With Usage"}</h2>
+						<h2 class="dashboardCategoryLabel">{translate text="Magazines With Usage" isAdminFacing=true}</h2>
 					</div>
 				</div>
 				<div class="row">
@@ -136,7 +136,7 @@
 			<div class="dashboardCategory col-sm-6">
 				<div class="row">
 					<div class="col-sm-10 col-sm-offset-1">
-						<h2 class="dashboardCategoryLabel">{translate text="Magazine Checkouts"}</h2>
+						<h2 class="dashboardCategoryLabel">{translate text="Magazine Checkouts" isAdminFacing=true}</h2>
 					</div>
 				</div>
 				<div class="row">

@@ -5,7 +5,7 @@
 	<div class="form-group">
 		<div class="form-group">
 			<label for="title">
-				{translate text="Title" isPublicFacing=true}<span class="required-input">*</span>
+				{translate text="Title" isAdminFacing=true}<span class="required-input">*</span>
 			</label>
 			<input type="text" class="form-control required" id="title" name="title" maxlength="255">
 		</div>
@@ -17,7 +17,7 @@
 			</label>
 			<input type="text" class="form-control" id="selected-pdf-label" readonly>
 		</div>
-		<small id="pdfFileHelp" class="form-text text-muted">PDF must be {$max_file_size}MB or less.</small>
+		<small id="pdfFileHelp" class="form-text text-muted">{translate text="PDF must be %1%MB or less." 1=$max_file_size isAdminFacing=true}</small>
 	</div>
 </form>
 	<script type="application/javascript">

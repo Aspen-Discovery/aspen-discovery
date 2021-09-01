@@ -1,12 +1,12 @@
 <h1>{translate text='Invalid Record'}</h1>
 <p class="alert alert-warning">
 	{if empty($invalidWork)}
-		{translate text='Sorry, we could not find a record with an id of <b>%1%</b> in our catalog.	Please try your search again.' 1=$id}
+		{translate text='Sorry, we could not find a record with an id of <b>%1%</b> in our catalog.	Please try your search again.' 1=$id isPublicFacing=true}
 	{else}
 		{if $invalidWork}
-			{translate text='Sorry, this title (<b>%1%</b>) no longer exists in our catalog. Please try searching for other titles.' 1=$id}
+			{translate text='Sorry, this title (<b>%1%</b>) no longer exists in our catalog. Please try searching for other titles.' 1=$id isPublicFacing=true}
 		{else}
-			{translate text='Sorry, we could not find a record with an id of <b>%1%</b> in our catalog, the record was not grouped properly. Please try your search again.' 1=$id}
+			{translate text='Sorry, we could not find a record with an id of <b>%1%</b> in our catalog, the record was not grouped properly. Please try your search again.' 1=$id isPublicFacing=true}
 		{/if}
 	{/if}
 </p>

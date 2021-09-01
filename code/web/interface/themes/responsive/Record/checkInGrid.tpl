@@ -5,7 +5,7 @@
 				<div class='issueInfo'>{$checkInCell.issueDate}{if $checkInCell.issueNumber} ({$checkInCell.issueNumber}){/if}</div>
 				<div class='status'><span class="{$checkInCell.class}">{$checkInCell.status}</span> on {$checkInCell.statusDate}</div>
 				{if $checkInCell.copies}
-					<div class='copies'>{$checkInCell.copies} {if $checkInCell.copies > 1}Copies{else}Copy{/if}</div>
+					<div class='copies'>{$checkInCell.copies} {if $checkInCell.copies > 1}{translate text="Copies" isPublicFacing=true}{else}{translate text="Copy" isPublicFacing=true}{/if}</div>
 				{/if}
 			</div>
 		{/foreach}
