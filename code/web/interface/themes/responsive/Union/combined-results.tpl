@@ -1,5 +1,5 @@
 {strip}
-	<h1 class="hiddenTitle">{translate text="Combined Results"}</h1>
+	<h1 class="hiddenTitle">{translate text="Combined Results" isPublicFacing=true}</h1>
 	<div class="result-head">
 		<br/>
 		<div class="clearer"></div>
@@ -12,7 +12,7 @@
 				{if ($smarty.foreach.searchSection.index%2 == $smarty.section.column.index)}
 					<div class="combined-results-section combined-results-column-{$smarty.section.column.index}">
 						<h2 class="combined-results-section-title">
-							{$combinedResultSection->displayName}
+							{translate text=$combinedResultSection->displayName isPublicFacing=true isAdminEnteredData=true}
 						</h2>
 						<div class="combined-results-section-results" id="combined-results-section-results-{$combinedResultSection->id}">
 							<img src="/images/loading.gif" alt="loading">

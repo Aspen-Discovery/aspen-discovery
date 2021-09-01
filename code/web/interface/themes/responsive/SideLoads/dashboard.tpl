@@ -1,6 +1,6 @@
 {strip}
 	<div id="main-content" class="col-sm-12">
-		<h1>Side Loading Dashboard</h1>
+		<h1>{translate text="Side Loading Dashboard" isAdminFacing=true}</h1>
 		{include file="Admin/selectInterfaceForm.tpl"}
 
 		{foreach from=$profiles item=profileName key=profileId}
@@ -9,7 +9,7 @@
 				<div class="dashboardCategory col-sm-6">
 					<div class="row">
 						<div class="col-sm-10 col-sm-offset-1">
-							<h3 class="dashboardCategoryLabel">Active Users</h3>
+							<h3 class="dashboardCategoryLabel">{translate text="Active Users" isAdminFacing=true}</h3>
 						</div>
 					</div>
 					<div class="row">
@@ -35,7 +35,7 @@
 				<div class="dashboardCategory col-sm-6">
 					<div class="row">
 						<div class="col-sm-10 col-sm-offset-1">
-							<h3 class="dashboardCategoryLabel">Records Accessed Online</h3>
+							<h3 class="dashboardCategoryLabel">{translate text="Records Accessed Online" isAdminFacing=true}</h3>
 						</div>
 					</div>
 					<div class="row">

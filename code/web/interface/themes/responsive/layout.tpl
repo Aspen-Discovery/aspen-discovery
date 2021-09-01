@@ -71,7 +71,7 @@
 		</div>
 
 		<div id="horizontal-menu-bar-wrapper" class="row">
-			<div id="horizontal-menu-bar-container" class="col-tn-12 col-xs-12 menu-bar" role="navigation" aria-label="{translate text="Top Navigation" isPublicFacing=true}">
+			<div id="horizontal-menu-bar-container" class="col-tn-12 col-xs-12 menu-bar" role="navigation" aria-label="{translate text="Top Navigation" isPublicFacing=true inAttribute=true}">
 				{include file='horizontal-menu-bar.tpl'}
 			</div>
 			<div id="horizontal-search-container" class="col-tn-12" role="search">
@@ -88,7 +88,7 @@
 					</div>
 					<div class="col-tn-12 col-xs-12 col-sm-8 col-md-9 col-lg-9" id="main-content-with-sidebar">
 						{if $showBreadcrumbs}
-							<div role="navigation" aria-label="{translate text="Breadcrumbs" isPublicFacing=true}">
+							<div role="navigation" aria-label="{translate text="Breadcrumbs" isPublicFacing=true inAttribute=true}">
 							{include file="breadcrumbs.tpl"}
 							</div>
 						{/if}
@@ -103,7 +103,7 @@
 				{else} {* Main Content Only, no sidebar *}
 					<div class="col-xs-12" id="main-content">
 						{if $showBreadcrumbs}
-							<div role="navigation" aria-label="{translate text="Breadcrumbs" isPublicFacing=true}">
+							<div role="navigation" aria-label="{translate text="Breadcrumbs" isPublicFacing=true inAttribute=true}">
 							{include file="breadcrumbs.tpl"}
 							</div>
 						{/if}

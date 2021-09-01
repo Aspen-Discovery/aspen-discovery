@@ -21,7 +21,7 @@
 
 				{if $prospectorResult.format}
 					<div class="row">
-						<div class="result-label col-tn-3">{translate text='Format'}:</div>
+						<div class="result-label col-tn-3">{translate text='Format' isPublicFacing=true}</div>
 						<div class="col-tn-9 result-value">{$prospectorResult.format|escape}</div>
 					</div>
 				{/if}

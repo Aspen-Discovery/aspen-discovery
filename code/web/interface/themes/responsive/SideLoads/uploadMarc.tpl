@@ -1,6 +1,6 @@
 {strip}
 	<div id="main-content" class="col-md-12">
-		<h1>Upload MARC Record</h1>
+		<h1>{translate text="Upload MARC Record" isAdminFacing=true}</h1>
 		{if !empty($error)}
 			<div class="alert alert-warning">
 				{$error}
@@ -16,18 +16,18 @@
 				<div class="input-group">
 					<label class="input-group-btn">
 					<span class="btn btn-primary">
-						{translate text="Select MARC File"}&hellip; <input type="file" style="display: none;" name="marcFile" id="marcFile">
+						{translate text="Select MARC File" isAdminFacing=true}&hellip; <input type="file" style="display: none;" name="marcFile" id="marcFile">
 					</span>
 					</label>
 					<input type="text" class="form-control" id="selected-marc-label" readonly>
 				</div>
-				<small id="marcFileHelp" class="form-text text-muted">Zip Files, GZip Files, MRC, and MARC Files can be uploaded, must be {$max_file_size}MB or less.</small>
+				<small id="marcFileHelp" class="form-text text-muted">{translate text="Zip Files, GZip Files, MRC, and MARC Files can be uploaded, must be %1%MB or less." 1=$max_file_size isAdminFacing=true}</small>
 			</div>
 			<div class="form-group">
-				<label for="replaceExisting"><input type="checkbox" name="replaceExisting" id="replaceExisting"> Replace Existing Files?</label>
+				<label for="replaceExisting"><input type="checkbox" name="replaceExisting" id="replaceExisting"> {translate text="Replace Existing Files?" isAdminFacing=true}</label>
 			</div>
 			<div class="form-group">
-				<button type="submit" class="btn btn-primary">Upload File</button>
+				<button type="submit" class="btn btn-primary">{translate text="Upload File" isAdminFacing=true}</button>
 			</div>
 		</form>
 	</div>

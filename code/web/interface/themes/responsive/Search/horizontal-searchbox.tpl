@@ -25,7 +25,7 @@
 					<input type="text" class="form-control" style="border-right:0"{/strip}
 						id="lookfor"
 						name="lookfor"
-						title="{translate text="Enter one or more terms to search for.	Surrounding a term with quotes will limit result to only those that exactly match the term." isPublicFacing=true}"
+						title="{translate text="Enter one or more terms to search for.	Surrounding a term with quotes will limit result to only those that exactly match the term." isPublicFacing=true inAttribute=true}"
 						onfocus="$(this).select()"
 						autocomplete="off"
 						aria-labelledby="lookfor-label"

@@ -29,7 +29,7 @@
 								{* Only render HTML contents in the header menu *}
 								{if empty($link->htmlContents)}
 									<div class="header-menu-option childMenuItem">
-										<a href="{$link->url}" {if $link->openInNewTab}target="_blank"{/if} aria-label="{translate text=$linkName isPublicFacing=true}">
+										<a href="{$link->url}" {if $link->openInNewTab}target="_blank"{/if} aria-label="{translate text=$linkName isPublicFacing=true inAttribute=true}">
 											{if $link->published == 0}<em>{/if}
 											{translate text=$linkName isPublicFacing=true}
 											{if $link->published == 0}</em>{/if}
