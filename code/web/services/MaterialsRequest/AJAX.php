@@ -60,7 +60,6 @@ class MaterialsRequest_AJAX extends Action{
 	/** @noinspection PhpUnused */
 	function updateMaterialsRequest(){
 		global $interface;
-		global $configArray;
 
 		if (!isset($_REQUEST['id'])){
 			$interface->assign('error', 'Please provide an id of the '. translate('materials request') .' to view.');
@@ -72,7 +71,6 @@ class MaterialsRequest_AJAX extends Action{
 					$staffLibrary = $user->getHomeLibrary(); // staff member's home library
 
 					if (!empty($staffLibrary)) {
-
 						// Material Request
 						$materialsRequest = new MaterialsRequest();
 						$materialsRequest->id = $id;

@@ -8,7 +8,7 @@
 			{if $formField->fieldType == 'format'}
 				{assign var="materialRequestTableColumnName" value=$formField->fieldType}
 				<div class="row form-group">
-					<label class="control-label col-sm-3" for="format">{translate text=$formField->fieldLabel isPublicFacing=true isAdminEnteredData} <span class="requiredIndicator">*</span></label>
+					<label class="control-label col-sm-3" for="format">{translate text=$formField->fieldLabel isPublicFacing=true isAdminEnteredData=true} <span class="requiredIndicator">*</span></label>
 					<div class="request_detail_field_value col-sm-9">
 
 						<select name="format" class="required form-control" id="format" onchange="AspenDiscovery.MaterialsRequest.setFieldVisibility();">
