@@ -308,11 +308,7 @@ class OverDrive_AJAX extends JSON_Action
 					$reactivationDate = isset($_REQUEST['reactivationDate']) ? $_REQUEST['reactivationDate'] : null;
 					$result = $patronOwningHold->freezeOverDriveHold($overDriveId, $reactivationDate);
 					if ($result['success']) {
-						$notice = translate('freeze_info_notice');
-						if (translate('frozen') != 'frozen') {
-							$notice = str_replace('frozen', translate('frozen'), $notice);  // Translate the phrase frozen from the notice.
-						}
-						$message = '<div class="alert alert-success">' . $result['message'] . '</div>' . ($notice ? '<div class="alert alert-info">' . $notice . '</div>' : '');
+						$message = '<div class="alert alert-success">' . $result['message'] . '</div>';
 						$result['message'] = $message;
 					}
 
@@ -343,7 +339,7 @@ class OverDrive_AJAX extends JSON_Action
 		$interface->assign('patronId', UserAccount::getActiveUserId());
 		$interface->assign('overDriveId', $_REQUEST['overDriveId']);
 
-		$title = translate('Freeze Hold'); // language customization
+		$title = translate(translate(['text' => 'Freeze Hold', 'isPublicFacing'=>true])); // language customization
 		return array(
 			'title' => $title,
 			'modalBody' => $interface->fetch("OverDrive/reactivationDate.tpl"),
@@ -356,20 +352,20 @@ class OverDrive_AJAX extends JSON_Action
 		$user = UserAccount::getLoggedInUser();
 		$result = array( // set default response
 			'success' => false,
-			'message' => 'Error thawing hold.'
+			'message' => translate(['text' => 'Error thawing hold.', 'isPublicFacing'=>true])
 		);
 
 		if (!$user) {
-			$result['message'] = 'You must be logged in to ' . translate('thaw') . ' a hold.  Please close this dialog and login again.';
+			$result['message'] = translate(['text' => 'You must be logged in to thaw a hold.  Please close this dialog and login again.', 'isPublicFacing'=>true]);
 		} elseif (!empty($_REQUEST['patronId'])) {
 			$patronId = $_REQUEST['patronId'];
 			$patronOwningHold = $user->getUserReferredTo($patronId);
 
 			if ($patronOwningHold == false) {
-				$result['message'] = 'Sorry, you do not have access to ' . translate('thaw') . ' holds for the supplied user.';
+				$result['message'] = translate(['text' => 'Sorry, you do not have access to thaw holds for the supplied user.', 'isPublicFacing'=>true]);
 			} else {
 				if (empty($_REQUEST['overDriveId'])) {
-					$result['message'] = 'Information about the hold to be ' . translate('thawed') . ' was not provided.';
+					$result['message'] = translate(['text' => 'Information about the hold to be thawed was not provided.', 'isPublicFacing'=>true]);
 				} else {
 					$overDriveId = $_REQUEST['overDriveId'];
 					$result = $patronOwningHold->thawOverDriveHold($overDriveId);

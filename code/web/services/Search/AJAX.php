@@ -26,7 +26,7 @@ class AJAX extends Action {
 	{
 		global $interface;
 
-		$subject = translate('Library Catalog Search Result');
+		$subject = translate(['text' => 'Library Catalog Search Result', 'isPublicFacing'=>true]);
 		$url = $_REQUEST['sourceUrl'];
 		$to = $_REQUEST['to'];
 		$from = isset($_REQUEST['from']) ? $_REQUEST['from'] : '';
@@ -73,6 +73,7 @@ class AJAX extends Action {
 		require_once ROOT_DIR . '/sys/SearchSuggestions.php';
 		global $timer;
 		global $configArray;
+		/** @var Memcache $memCache */
 		global $memCache;
 		$searchTerm = isset($_REQUEST['searchTerm']) ? $_REQUEST['searchTerm'] : $_REQUEST['q'];
 		$searchIndex = isset($_REQUEST['searchIndex']) ? $_REQUEST['searchIndex'] : '';
@@ -320,10 +321,13 @@ class AJAX extends Action {
 		$displayTemplate = 'Search/covers-list.tpl'; // structure for bookcover tiles
 
 		// Rating Settings
-		global $library, $location;
+		global $library;
+		/** @var Location $locationSingleton */
+		global $locationSingleton;
+		$activeLocation = $locationSingleton->getActiveLocation();
 		$browseCategoryRatingsMode = null;
-		if ($location) {
-			$browseCategoryRatingsMode = $location->getBrowseCategoryGroup()->browseCategoryRatingsMode;
+		if ($activeLocation != null) {
+			$browseCategoryRatingsMode = $activeLocation->getBrowseCategoryGroup()->browseCategoryRatingsMode;
 		}else{
 			$browseCategoryRatingsMode = $library->getBrowseCategoryGroup()->browseCategoryRatingsMode;
 		}

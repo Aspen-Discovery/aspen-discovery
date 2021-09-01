@@ -388,11 +388,7 @@ class MyAccount_AJAX extends JSON_Action
 					$reactivationDate = isset($_REQUEST['reactivationDate']) ? $_REQUEST['reactivationDate'] : null;
 					$result = $patronOwningHold->freezeHold($recordId, $holdId, $reactivationDate);
 					if ($result['success']) {
-						$notice = translate('freeze_info_notice');
-						if (translate('frozen') != 'frozen') {
-							$notice = str_replace('frozen', translate('frozen'), $notice);  // Translate the phrase frozen from the notice.
-						}
-						$message = '<div class="alert alert-success">' . $result['message'] . '</div>' . ($notice ? '<div class="alert alert-info">' . $notice . '</div>' : '');
+						$message = '<div class="alert alert-success">' . $result['message'] . '</div>';
 						$result['message'] = $message;
 					}
 
@@ -552,7 +548,6 @@ class MyAccount_AJAX extends JSON_Action
 		if (!UserAccount::isLoggedIn()) {
 			$result['message'] = 'You must be logged in to thaw a hold.  Please close this dialog and login again.';
 		} else {
-			$failure_messages = array();
 			$success = 0;
 			$failed = 0;
 			$user = UserAccount::getLoggedInUser();
@@ -1508,6 +1503,7 @@ class MyAccount_AJAX extends JSON_Action
 		global $timer;
 		global $interface;
 		global $configArray;
+		/** @var Memcache $memCache */
 		global $memCache;
 		$result = array();
 		if (UserAccount::isLoggedIn()) {
@@ -3008,7 +3004,6 @@ class MyAccount_AJAX extends JSON_Action
 
 				if (empty($proPaySetting->merchantProfileId) || $proPaySetting->merchantProfileId == 0){
 					//Create a merchant profile id
-					global $library;
 					$createMerchantProfile = new stdClass();
 					$createMerchantProfile->ProfileName = $proPaySetting->name;
 					$createMerchantProfile->PaymentProcessor = 'LegacyProPay';

@@ -37,7 +37,7 @@ class MaterialsRequestFormats extends DataObject
 		$defaultFormat = new MaterialsRequestFormats();
 		$defaultFormat->libraryId = $libraryId;
 		$defaultFormat->format = 'book';
-		$defaultFormat->formatLabel = translate('Book');
+		$defaultFormat->formatLabel = 'Book';
 		$defaultFormat->authorLabel = 'Author';
 		$defaultFormat->specialFields = array(); // (Abridged/Unabridged,Article Field,Eaudio format,Ebook format,Season')
 		$defaultFormat->weight = count($defaultFormats) + 1;
@@ -46,7 +46,7 @@ class MaterialsRequestFormats extends DataObject
 		$defaultFormat = new MaterialsRequestFormats();
 		$defaultFormat->libraryId = $libraryId;
 		$defaultFormat->format = 'largePrint';
-		$defaultFormat->formatLabel = translate('Large Print');
+		$defaultFormat->formatLabel = 'Large Print';
 		$defaultFormat->authorLabel = 'Author';
 		$defaultFormat->specialFields = array(); // (Abridged/Unabridged,Article Field,Eaudio format,Ebook format,Season')
 		$defaultFormat->weight = count($defaultFormats) + 1;
@@ -55,7 +55,7 @@ class MaterialsRequestFormats extends DataObject
 		$defaultFormat = new MaterialsRequestFormats();
 		$defaultFormat->libraryId = $libraryId;
 		$defaultFormat->format = 'dvd';
-		$defaultFormat->formatLabel = translate('DVD');
+		$defaultFormat->formatLabel = 'DVD';
 		$defaultFormat->authorLabel = 'Actor / Director';
 		$defaultFormat->specialFields = array('Season'); // (Abridged/Unabridged,Article Field,Eaudio format,Ebook format,Season')
 		$defaultFormat->weight = count($defaultFormats) + 1;
@@ -64,7 +64,7 @@ class MaterialsRequestFormats extends DataObject
 		$defaultFormat = new MaterialsRequestFormats();
 		$defaultFormat->libraryId = $libraryId;
 		$defaultFormat->format = 'bluray';
-		$defaultFormat->formatLabel = translate('Blu-ray');
+		$defaultFormat->formatLabel = 'Blu-ray';
 		$defaultFormat->authorLabel = 'Actor / Director';
 		$defaultFormat->specialFields = array('Season'); // (Abridged/Unabridged,Article Field,Eaudio format,Ebook format,Season')
 		$defaultFormat->weight = count($defaultFormats) + 1;
@@ -73,7 +73,7 @@ class MaterialsRequestFormats extends DataObject
 		$defaultFormat = new MaterialsRequestFormats();
 		$defaultFormat->libraryId = $libraryId;
 		$defaultFormat->format = 'cdAudio';
-		$defaultFormat->formatLabel = translate('CD Audio Book');
+		$defaultFormat->formatLabel = 'CD Audio Book';
 		$defaultFormat->authorLabel = 'Author';
 		$defaultFormat->specialFields = array('Abridged/Unabridged'); // (Abridged/Unabridged,Article Field,Eaudio format,Ebook format,Season')
 		$defaultFormat->weight = count($defaultFormats) + 1;
@@ -82,7 +82,7 @@ class MaterialsRequestFormats extends DataObject
 		$defaultFormat = new MaterialsRequestFormats();
 		$defaultFormat->libraryId = $libraryId;
 		$defaultFormat->format = 'cdMusic';
-		$defaultFormat->formatLabel = translate('Music CD');
+		$defaultFormat->formatLabel = 'Music CD';
 		$defaultFormat->authorLabel = 'Artist / Composer';
 		$defaultFormat->specialFields = array(); // (Abridged/Unabridged,Article Field,Eaudio format,Ebook format,Season')
 		$defaultFormat->weight = count($defaultFormats) + 1;
@@ -91,7 +91,7 @@ class MaterialsRequestFormats extends DataObject
 		$defaultFormat = new MaterialsRequestFormats();
 		$defaultFormat->libraryId = $libraryId;
 		$defaultFormat->format = 'ebook';
-		$defaultFormat->formatLabel = translate('eBook');
+		$defaultFormat->formatLabel = 'eBook';
 		$defaultFormat->authorLabel = 'Author';
 		$defaultFormat->specialFields = array('Ebook format'); // (Abridged/Unabridged,Article Field,Eaudio format,Ebook format,Season')
 		$defaultFormat->weight = count($defaultFormats) + 1;
@@ -100,7 +100,7 @@ class MaterialsRequestFormats extends DataObject
 		$defaultFormat = new MaterialsRequestFormats();
 		$defaultFormat->libraryId = $libraryId;
 		$defaultFormat->format = 'eaudio';
-		$defaultFormat->formatLabel = translate('eAudio');
+		$defaultFormat->formatLabel = 'eAudio';
 		$defaultFormat->authorLabel = 'Author';
 		$defaultFormat->specialFields = array('Eaudio format','Abridged/Unabridged'); // (Abridged/Unabridged,Article Field,Eaudio format,Ebook format,Season')
 		$defaultFormat->weight = count($defaultFormats) + 1;
@@ -109,7 +109,7 @@ class MaterialsRequestFormats extends DataObject
 		$defaultFormat = new MaterialsRequestFormats();
 		$defaultFormat->libraryId = $libraryId;
 		$defaultFormat->format = 'playaway';
-		$defaultFormat->formatLabel = translate('Playaway');
+		$defaultFormat->formatLabel = 'Playaway';
 		$defaultFormat->authorLabel = 'Author';
 		$defaultFormat->specialFields = array('Abridged/Unabridged'); // (Abridged/Unabridged,Article Field,Eaudio format,Ebook format,Season')
 		$defaultFormat->weight = count($defaultFormats) + 1;
@@ -118,7 +118,7 @@ class MaterialsRequestFormats extends DataObject
 		$defaultFormat = new MaterialsRequestFormats();
 		$defaultFormat->libraryId = $libraryId;
 		$defaultFormat->format = 'article';
-		$defaultFormat->formatLabel = translate('Article');
+		$defaultFormat->formatLabel = 'Article';
 		$defaultFormat->authorLabel = 'Author';
 		$defaultFormat->specialFields = array('Article Field'); // (Abridged/Unabridged,Article Field,Eaudio format,Ebook format,Season')
 		$defaultFormat->weight = count($defaultFormats) + 1;
@@ -127,7 +127,7 @@ class MaterialsRequestFormats extends DataObject
 		$defaultFormat = new MaterialsRequestFormats();
 		$defaultFormat->libraryId = $libraryId;
 		$defaultFormat->format = 'cassette';
-		$defaultFormat->formatLabel = translate('Cassette');
+		$defaultFormat->formatLabel = 'Cassette';
 		$defaultFormat->authorLabel = 'Artist / Composer';
 		$defaultFormat->specialFields = array('Abridged/Unabridged'); // (Abridged/Unabridged,Article Field,Eaudio format,Ebook format,Season')
 		$defaultFormat->weight = count($defaultFormats) + 1;
@@ -136,7 +136,7 @@ class MaterialsRequestFormats extends DataObject
 		$defaultFormat = new MaterialsRequestFormats();
 		$defaultFormat->libraryId = $libraryId;
 		$defaultFormat->format = 'vhs';
-		$defaultFormat->formatLabel = translate('VHS');
+		$defaultFormat->formatLabel = 'VHS';
 		$defaultFormat->authorLabel = 'Actor / Director';
 		$defaultFormat->specialFields = array('Season'); // (Abridged/Unabridged,Article Field,Eaudio format,Ebook format,Season')
 		$defaultFormat->weight = count($defaultFormats) + 1;
@@ -150,16 +150,6 @@ class MaterialsRequestFormats extends DataObject
 		$defaultFormat->specialFields = array(); // (Abridged/Unabridged,Article Field,Eaudio format,Ebook format,Season')
 		$defaultFormat->weight = count($defaultFormats) + 1;
 		$defaultFormats[] = $defaultFormat;
-
-
-//		$defaultFormat = new MaterialsRequestFormats();
-//		$defaultFormat->libraryId = $libraryId;
-//		$defaultFormat->format = '';
-//		$defaultFormat->formatLabel = '';
-//		$defaultFormat->authorLabel = 'Author';
-//		$defaultFormat->specialFields = array(); // (Abridged/Unabridged,Article Field,Eaudio format,Ebook format,Season')
-//		$defaultFormat->weight = count($defaultFormats) + 1;
-//		$defaultFormats[] = $defaultFormat;
 
 		return $defaultFormats;
 	}
