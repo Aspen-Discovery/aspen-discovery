@@ -48,7 +48,7 @@
 			<div class="correction">
 			<h3>{translate text="Try a Keyword Search?" isPublicFacing=true}</h3>
                 {translate text="Your search type is not set to Keyword.  There are <strong>%1%</strong> results when searching by keyword." 1= keywordResultsCount isPublicFacing=true}
-				<a class='btn btn-primary' href="{$keywordResultsLink}">Search by Keyword</a>.
+				<a class='btn btn-primary' href="{$keywordResultsLink}">{translate text="Search by Keyword" isPublicFacing=true}</a>.
 			</div>
 		{/if}
 
@@ -85,14 +85,14 @@
 		{/if}
 
 		{if $materialRequestType == 1}
-			<h2>{translate text="Didn't find it?"}</h2>
-			<p>{translate text="Can't find what you are looking for?"} <a href="/MaterialsRequest/NewRequest?lookfor={$lookfor}&searchIndex={$searchIndex}" onclick="return AspenDiscovery.Account.followLinkIfLoggedIn(this);">{translate text='Suggest a purchase'}</a>.</p>
+			<h2>{translate text="Didn't find it?" isPublicFacing=true}</h2>
+			<p>{translate text="Can't find what you are looking for?" isPublicFacing=true} <a href="/MaterialsRequest/NewRequest?lookfor={$lookfor}&searchIndex={$searchIndex}" onclick="return AspenDiscovery.Account.followLinkIfLoggedIn(this);">{translate text='Suggest a purchase' isPublicFacing=true}</a>.</p>
 		{elseif $materialRequestType == 2}
-			<h2>{translate text="Didn't find it?"}</h2>
-			<p>{translate text="Can't find what you are looking for?"} <a href="/MaterialsRequest/NewRequestIls?lookfor={$lookfor}&searchIndex={$searchIndex}" onclick="return AspenDiscovery.Account.followLinkIfLoggedIn(this);">{translate text='Suggest a purchase'}</a>.</p>
+			<h2>{translate text="Didn't find it?" isPublicFacing=true}</h2>
+			<p>{translate text="Can't find what you are looking for?" isPublicFacing=true} <a href="/MaterialsRequest/NewRequestIls?lookfor={$lookfor}&searchIndex={$searchIndex}" onclick="return AspenDiscovery.Account.followLinkIfLoggedIn(this);">{translate text='Suggest a purchase' isPublicFacing=true}</a>.</p>
 		{elseif $materialRequestType == 3}
-			<h2>{translate text="Didn't find it?"}</h2>
-			<p>{translate text="Can't find what you are looking for?"} <a href="{$externalMaterialsRequestUrl}">{translate text='Suggest a purchase'}</a>.</p>
+			<h2>{translate text="Didn't find it?" isPublicFacing=true}</h2>
+			<p>{translate text="Can't find what you are looking for?" isPublicFacing=true} <a href="{$externalMaterialsRequestUrl}">{translate text='Suggest a purchase' isPublicFacing=true}</a>.</p>
 		{/if}
 
 		{if $showSearchTools || ($loggedIn && count($userPermissions) > 0)}

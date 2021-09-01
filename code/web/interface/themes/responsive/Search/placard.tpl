@@ -26,7 +26,7 @@
 		<div class="row">
 			<div class="col-xs-12 text-right">
 				{if !empty($placard->dismissable) && $loggedIn}
-					<div class="btn btn-sm btn-warning placard-dismiss" onclick="return AspenDiscovery.Account.dismissPlacard('{$activeUserId}', '{$placard->id}')">{translate text="Don't show this again"}</div>
+					<div class="btn btn-sm btn-warning placard-dismiss" onclick="return AspenDiscovery.Account.dismissPlacard('{$activeUserId}', '{$placard->id}')">{translate text="Don't show this again" isPublicFacing=true}</div>
 				{/if}
 			</div>
 		</div>

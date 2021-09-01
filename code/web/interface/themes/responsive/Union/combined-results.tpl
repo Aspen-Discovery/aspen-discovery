@@ -1,10 +1,6 @@
 {strip}
 	<h1 class="hiddenTitle">{translate text="Combined Results"}</h1>
 	<div class="result-head">
-		{* User's viewing mode toggle switch *}
-		{*
-		{include file="Union/results-displayMode-toggle.tpl"}
-		*}
 		<br/>
 		<div class="clearer"></div>
 	</div>
