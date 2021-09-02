@@ -174,48 +174,6 @@ const LoginNavigator = createStackNavigator({
    }
    });
 
-export class getPermissionsScreen extends Component {
-    constructor(props) {
-        super(props);
-        this._loadData();
-    }
-
-
-    componentWillUnmount() {
-        this.mounted = false;
-    }
-
-    componentDidMount = async() => {
-           let fetchingData = '0';
-           await AsyncStorage.setItem('isFetchingData', fetchingData);
-    }
-
-
-
-
-
-    render() {
-
-        return(
-          <View style={ Stylesheet.activityIndicator }>
-            <>
-              <ActivityIndicator size='large' color='#2F373A' />
-              <Text>Checking permissions...</Text>
-            </>
-          </View>
-        )
-
-    }
-
-      _loadData = async() => {
-          const doneFetch = await AsyncStorage.getItem('isFetchingData');
-          this.props.navigation.navigate(doneFetch !==  '1' ? 'Permissions' : 'Auth')
-      }
-
-
-
-}
-
 class AuthLoadingScreen extends Component {
   constructor (props) {
    super(props);
@@ -242,7 +200,6 @@ class AuthLoadingScreen extends Component {
 
 export default createAppContainer(createSwitchNavigator(
   {
-    PermissionCheck: getPermissionsScreen,
     AuthLoading: AuthLoadingScreen,
     App: MainNavigator,
     Auth: LoginNavigator,

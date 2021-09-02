@@ -5,16 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="9a5f64f5-13b8-49ff-9316-5e5798ffbd47" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/aspen_app.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/aspen_app.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/App.js" beforeDir="false" afterPath="$PROJECT_DIR$/App.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app.json" beforeDir="false" afterPath="$PROJECT_DIR$/app.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/screens/ListHold.js" beforeDir="false" afterPath="$PROJECT_DIR$/screens/ListHold.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/screens/Login.js" beforeDir="false" afterPath="$PROJECT_DIR$/screens/Login.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/screens/Stylesheet.js" beforeDir="false" afterPath="$PROJECT_DIR$/screens/Stylesheet.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../web/.idea/dataSources.local.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../web/.idea/dataSources.local.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../web/.idea/watcherTasks.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../web/.idea/watcherTasks.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../web/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../web/.idea/workspace.xml" afterDir="false" />
