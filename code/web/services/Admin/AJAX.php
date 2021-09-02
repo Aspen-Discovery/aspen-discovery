@@ -516,7 +516,7 @@ class Admin_AJAX extends JSON_Action
 		}else{
 			return [
 				'success' => false,
-				'title' => translate(['text' => 'Error'),
+				'title' => translate(['text' => 'Error', 'isAdminFacing'=>true]),
 				'message' => translate(['text' => "Sorry, this form cannot be filtered", 'isAdminFacing'=>true]),
 			];
 		}
