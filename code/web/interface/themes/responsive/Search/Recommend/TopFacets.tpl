@@ -40,15 +40,17 @@
 				<div class="clearfix"></div>
 			</div>
 		{elseif $cluster.isAvailabilityToggle}
-			<div id="availabilityControlContainer" class="row text-center top-facet">
-				<div id="availabilityControl" class="btn-group" data-toggle="buttons-radio">
-					{foreach from=$cluster.list item=thisFacet name="narrowLoop"}
-						{if $thisFacet.isApplied}
-							<button type="button" id="{$thisFacet.value|escape|regex_replace:'/[()\s]/':''}" class="btn btn-primary" name="availabilityControls">{translate text=$thisFacet.display isPublicFacing=true}{if $thisFacet.count > 0} ({$thisFacet.count|number_format:0:".":","}){/if}</button>
-						{else}
-							<button type="button" id="{$thisFacet.value|escape|regex_replace:'/[()\s]/':''}" class="btn btn-default" name="availabilityControls" data-url="{$thisFacet.url|escape}" onclick="window.location = $(this).data('url')" >{translate text=$thisFacet.display isPublicFacing=true}{if $thisFacet.count > 0} ({$thisFacet.count|number_format:0:".":","}){/if}</button>
-						{/if}
-					{/foreach}
+			<div id="availabilityControlContainer" class="row top-facet" >
+				<div id="availabilityControlCell" class="col-xs-12">
+					<div id="availabilityControl" class="btn-group" data-toggle="buttons-radio" style="display: flex;align-items: center;justify-content: center;">
+						{foreach from=$cluster.list item=thisFacet name="narrowLoop"}
+							{if $thisFacet.isApplied}
+								<button type="button" id="{$thisFacet.value|escape|regex_replace:'/[()\s]/':''}" class="btn btn-primary btn-wrap" name="availabilityControls">{translate text=$thisFacet.display isPublicFacing=true}{if $thisFacet.count > 0} ({$thisFacet.count|number_format:0:".":","}){/if}</button>
+							{else}
+								<button type="button" id="{$thisFacet.value|escape|regex_replace:'/[()\s]/':''}" class="btn btn-default btn-wrap" name="availabilityControls" data-url="{$thisFacet.url|escape}" onclick="window.location = $(this).data('url')" >{translate text=$thisFacet.display isPublicFacing=true}{if $thisFacet.count > 0} ({$thisFacet.count|number_format:0:".":","}){/if}</button>
+							{/if}
+						{/foreach}
+					</div>
 				</div>
 			</div>
 		{/if}
