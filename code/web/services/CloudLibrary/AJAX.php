@@ -214,7 +214,7 @@ class CloudLibrary_AJAX extends JSON_Action
 
 		//Before we place the hold, check the status since Cloud Library doesn't always update properly
 		$itemStatus = $driver->getItemStatus($id, $patron);
-		if ($itemStatus == 'CAN_LOAN') {
+		if ($itemStatus == 'CAN_LOAN' || $itemStatus == 'RESERVATION') {
 			$result = $driver->checkoutTitle($patron, $id);
 			//$logger->log("Checkout result = $result", Logger::LOG_NOTICE);
 			if ($result['success']) {

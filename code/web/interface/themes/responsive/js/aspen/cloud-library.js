@@ -23,7 +23,7 @@ AspenDiscovery.CloudLibrary = (function () {
 			});
 		},
 
-		checkOutTitle: function (id) {
+		checkOutTitle: function (patronId, id) {
 			if (Globals.loggedIn) {
 				//Get any prompts needed for checking out a title
 				var promptInfo = AspenDiscovery.CloudLibrary.getCheckOutPrompts(id);
@@ -33,7 +33,7 @@ AspenDiscovery.CloudLibrary = (function () {
 				}
 			} else {
 				AspenDiscovery.Account.ajaxLogin(null, function () {
-					AspenDiscovery.CloudLibrary.checkOutTitle(id);
+					AspenDiscovery.CloudLibrary.checkOutTitle(patronId, id);
 				});
 			}
 			return false;

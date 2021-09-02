@@ -377,7 +377,7 @@ class CloudLibraryDriver extends AbstractEContentDriver
 		$patronId = str_replace(' ', '', $patron->getBarcode());
 		$password = $patron->getPasswordOrPin();
 		if (!$patron->eligibleForHolds()){
-			$result['message'] = translate(['text' => 'cl_outstanding_fine_limit', 'defaultText' => 'Sorry, your account has too many outstanding fines to use Cloud Library.']);
+			$result['message'] = translate(['text' => 'Sorry, your account has too many outstanding fines to use Cloud Library.', 'isPublicFacing'=>true]);
 			return $result;
 		}
 
@@ -400,9 +400,9 @@ class CloudLibraryDriver extends AbstractEContentDriver
 
 				$result['success'] = true;
 				if ($fromRenew){
-					$result['message'] = translate(['text' => 'cloud_library-renew-success', 'defaultText' => 'Your title was renewed successfully.']);
+					$result['message'] = translate(['text' => 'Your title was renewed successfully.', 'isPublicFacing'=>true]);
 				}else {
-					$result['message'] = translate(['text' => 'cloud_library-checkout-success', 'defaultText' => 'Your title was checked out successfully. You can read or listen to the title from your account.']);
+					$result['message'] = translate(['text' => 'Your title was checked out successfully. You can read or listen to the title from your account.', 'isPublicFacing'=>true]);
 				}
 
 				$patron->clearCachedAccountSummaryForSource('cloud_library');
