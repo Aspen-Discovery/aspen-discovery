@@ -28,7 +28,7 @@ abstract class SIP2Driver extends AbstractIlsDriver{
 					'cat_password' => $password,
 					'email' => $user->email,
 					'patronType' => $user->patronType,
-					'web_note' => translate('The catalog is currently down.  You will have limited access to circulation information.'));
+					'web_note' => translate(['text' => 'The catalog is currently down.  You will have limited access to circulation information.', 'isPublicFacing'=>true]));
 				$timer->logTime("patron logged in successfully");
 				return $returnVal;
 			} else {

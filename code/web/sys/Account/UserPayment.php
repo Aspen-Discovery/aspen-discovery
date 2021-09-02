@@ -54,7 +54,7 @@ class UserPayment extends DataObject
 						$this->_data['user'] = $user->firstname . ' ' . $user->lastname . ' (' . $user->getBarcode() . ')';
 					}
 				}else{
-					$this->_data['user'] = translate('Unknown');
+					$this->_data['user'] = translate(['text' => 'Unknown', 'isPublicFacing'=>true]);
 				}
 
 			}

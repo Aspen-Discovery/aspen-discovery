@@ -218,7 +218,7 @@ class Record_AJAX extends Action
 					'success' => true
 				);
 				if ($holdType != 'none') {
-					$results['modalButtons'] = "<button type='submit' name='submit' id='requestTitleButton' class='btn btn-primary' onclick='return AspenDiscovery.Record.submitHoldForm();'><i class='fas fa-spinner fa-spin hidden' role='status' aria-hidden='true'></i>&nbsp;" . translate("Submit Hold Request") . "</button>";
+					$results['modalButtons'] = "<button type='submit' name='submit' id='requestTitleButton' class='btn btn-primary' onclick='return AspenDiscovery.Record.submitHoldForm();'><i class='fas fa-spinner fa-spin hidden' role='status' aria-hidden='true'></i>&nbsp;" . translate(['text' => "Submit Hold Request", 'isPublicFacing'=>true]) . "</button>";
 				}
 			}
 		} else {
@@ -919,9 +919,9 @@ class Record_AJAX extends Action
 		asort($validFiles);
 		$interface->assign('validFiles', $validFiles);
 
-		$buttonTitle = translate('View PDF');
+		$buttonTitle = translate(['text' => 'View PDF', 'isPublicFacing'=>true]);
 		return [
-			'title' => 'Select PDF to View',
+			'title' => translate(['text' => 'Select PDF to View', 'isPublicFacing'=>true]),
 			'modalBody' => $interface->fetch("Record/select-view-file-form.tpl"),
 			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#viewFile\").submit()'>$buttonTitle</button>"
 		];
@@ -1112,7 +1112,7 @@ class Record_AJAX extends Action
 			'needsItemLevelHold' => true,
 			'message' => $interface->fetch('Record/item-hold-popup.tpl'),
 			'title' => $return['title'] ?? '',
-			'modalButtons' => "<button type='submit' name='submit' id='requestTitleButton' class='btn btn-primary' onclick='return AspenDiscovery.Record.submitHoldForm();'>" . translate("Submit Hold Request") . "</button>"
+			'modalButtons' => "<button type='submit' name='submit' id='requestTitleButton' class='btn btn-primary' onclick='return AspenDiscovery.Record.submitHoldForm();'>" . translate(['text' => "Submit Hold Request", 'isPublicFacing'=>true]) . "</button>"
 		);
 	}
 }

@@ -137,20 +137,20 @@ class CloudLibraryDriver extends AbstractEContentDriver
 		$responseCode = $this->curlWrapper->getResponseCode();
 		if ($responseCode == '200'){
 			$result['success'] = true;
-			$result['message'] = translate("Your title was returned successfully.");
+			$result['message'] = translate(['text' => "Your title was returned successfully.", 'isPublicFacing'=>true]);
 
 			$patron->clearCachedAccountSummaryForSource('cloud_library');
 			$patron->forceReloadOfCheckouts();
 		}else if ($responseCode == '400'){
-			$result['message'] = translate("Bad Request returning checkout.");
+			$result['message'] = translate(['text' => "Bad Request returning checkout.", 'isPublicFacing'=>true]);
 			global $configArray;
 			if (IPAddress::showDebuggingInformation()){
 				$result['message'] .= "\r\n" . $requestBody;
 			}
 		}else if ($responseCode == '403'){
-			$result['message'] = translate("Unable to authenticate.");
+			$result['message'] = translate(['text' => "Unable to authenticate.", 'isPublicFacing'=>true]);
 		}else if ($responseCode == '404'){
-			$result['message'] = translate("Checkout was not found.");
+			$result['message'] = translate(['text' => "Checkout was not found.", 'isPublicFacing'=>true]);
 		}
 		return $result;
 	}
@@ -268,7 +268,7 @@ class CloudLibraryDriver extends AbstractEContentDriver
 					global $interface;
 					if (count($whileYouWaitTitles) > 0) {
 						$interface->assign('whileYouWaitTitles', $whileYouWaitTitles);
-						$result['message'] .= '<h3>' . translate('While You Wait') . '</h3>';
+						$result['message'] .= '<h3>' . translate(['text' => 'While You Wait', 'isPublicFacing'=>true]) . '</h3>';
 						$result['message'] .= $interface->fetch('GroupedWork/whileYouWait.tpl');
 						$result['hasWhileYouWait'] = true;
 					}
@@ -278,17 +278,17 @@ class CloudLibraryDriver extends AbstractEContentDriver
 			$patron->clearCachedAccountSummaryForSource('cloud_library');
 			$patron->forceReloadOfHolds();
 		}else if ($responseCode == '405'){
-			$result['message'] = translate("Bad Request placing hold.");
+			$result['message'] = translate(['text' => "Bad Request placing hold.", 'isPublicFacing'=>true]);
 			global $configArray;
 			if (IPAddress::showDebuggingInformation()){
 				$result['message'] .= "\r\n" . $requestBody;
 			}
 		}else if ($responseCode == '403'){
-			$result['message'] = translate("Unable to authenticate.");
+			$result['message'] = translate(['text' => "Unable to authenticate.", 'isPublicFacing'=>true]);
 		}else if ($responseCode == '404'){
-			$result['message'] = translate("Item was not found.");
+			$result['message'] = translate(['text' => "Item was not found.", 'isPublicFacing'=>true]);
 		}else if ($responseCode == '404'){
-			$result['message'] = translate(['text'=>'cloud_library_already_checked_out', 'defaultText'=>'Could not place hold.  Already on hold or the item can be checked out']);
+			$result['message'] = translate(['text'=>'Could not place hold.  Already on hold or the item can be checked out', 'isPublicFacing'=>true]]);
 		}
 		return $result;
 	}
@@ -315,19 +315,19 @@ class CloudLibraryDriver extends AbstractEContentDriver
 		$responseCode = $this->curlWrapper->getResponseCode();
 		if ($responseCode == '200'){
 			$result['success'] = true;
-			$result['message'] = translate("Your hold was cancelled successfully.");
+			$result['message'] = translate(['text' => "Your hold was cancelled successfully.", 'isPublicFacing'=>true]);
 
 			$patron->clearCachedAccountSummaryForSource('cloud_library');
 			$patron->forceReloadOfHolds();
 		}else if ($responseCode == '400'){
-			$result['message'] = translate("Bad Request cancelling hold.");
+			$result['message'] = translate(['text' => "Bad Request cancelling hold.", 'isPublicFacing'=>true]);
 			if (IPAddress::showDebuggingInformation()){
 				$result['message'] .= "\r\n" . $requestBody;
 			}
 		}else if ($responseCode == '403'){
-			$result['message'] = translate("Unable to authenticate.");
+			$result['message'] = translate(['text' => "Unable to authenticate.", 'isPublicFacing'=>true]);
 		}else if ($responseCode == '404'){
-			$result['message'] = translate("Item was not found.");
+			$result['message'] = translate(['text' => "Item was not found.", 'isPublicFacing'=>true]);
 		}
 		return $result;
 	}
