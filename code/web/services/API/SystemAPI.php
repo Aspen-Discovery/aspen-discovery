@@ -80,7 +80,7 @@ class SystemAPI extends Action
 	/** @noinspection PhpUnused */
 	public function getCurrentVersion() : array {
 		global $interface;
-		$gitBranch = $interface->getVariable('gitBranch');
+		$gitBranch = $interface->getVariable('gitBranchWithCommit');
 		return [
 			'version' => $gitBranch
 		];

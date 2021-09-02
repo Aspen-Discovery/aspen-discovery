@@ -364,7 +364,7 @@ class SearchAPI extends Action
 		}
 
 		global $interface;
-		$gitBranch = $interface->getVariable('gitBranch');
+		$gitBranch = $interface->getVariable('gitBranchWithCommit');
 		if ($hasCriticalErrors || $hasWarnings) {
 			$result = array(
 				'aspen_health_status' => $hasCriticalErrors ? self::STATUS_CRITICAL : self::STATUS_WARN, // Critical warnings trump Warnings;

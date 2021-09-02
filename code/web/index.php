@@ -786,11 +786,13 @@ function getGitBranch(){
 
 	$gitName = $configArray['System']['gitVersionFile'];
 	$branchName = 'Unknown';
+	$branchNameWithCommit = 'Unknown';
 	if ($gitName == 'HEAD'){
 		$stringFromFile = file('../../.git/HEAD', FILE_USE_INCLUDE_PATH);
 		$stringFromFile = $stringFromFile[0]; //get the string from the array
 		$explodedString = explode("/", $stringFromFile); //separate out by the "/" in the string
 		$branchName = trim($explodedString[2]); //get the one that is always the branch name
+		$branchNameWithCommit = $branchName;
 	}else{
 		if (file_exists('../../.git/FETCH_HEAD')) {
 			$stringFromFile = file('../../.git/FETCH_HEAD', FILE_USE_INCLUDE_PATH);
@@ -799,16 +801,20 @@ function getGitBranch(){
 				if (preg_match('/(.*?)\s+branch\s+\'(.*?)\'.*/', $stringFromFile, $matches)) {
 					if (IPAddress::showDebuggingInformation()) {
 						$branchName = $matches[2] . ' (' . $matches[1] . ')'; //get the branch name
+						$branchNameWithCommit = $matches[2] . ' (' . substr($matches[1], 0,7) . ')'; //get the branch name
 					} else {
 						$branchName = $matches[2]; //get the branch name
+						$branchNameWithCommit = $branchName;
 					}
 				}
 			}
 		}else{
 			$branchName = 'Unknown';
+			$branchNameWithCommit = 'Unknown';
 		}
 	}
 	$interface->assign('gitBranch', $branchName);
+	$interface->assign('gitBranchWithCommit', $branchNameWithCommit);
 }
 // Set up autoloader (needed for YAML)
 function aspen_autoloader($class) {
