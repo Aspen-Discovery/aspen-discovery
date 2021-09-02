@@ -1,11 +1,12 @@
-import React, {Component} from 'react';
-import { ActivityIndicator, Text, View } from 'react-native';
+import React, {Component, setState, useState, useEffect} from 'react';
+import { ActivityIndicator, Text, View, Platform, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createAppContainer, createSwitchNavigator } from 'react-navigation';
 import { createStackNavigator } from 'react-navigation-stack';
 import { createBottomTabNavigator } from 'react-navigation-tabs';
 import Icon from 'react-native-vector-icons/Entypo';
 import Stylesheet from './screens/Stylesheet';
+import * as Location from 'expo-location';
 
 // import helper files
 import AccountDetails from './screens/AccountDetails';
@@ -165,19 +166,26 @@ const MainNavigator = createStackNavigator({
 // provides a login screen path to ensure that the account is logged into and can't be backed out of
 const LoginNavigator = createStackNavigator({
   Home: { screen: Login },
-});
+},
+ {
+   headerMode: 'none',
+   navigationOptions: {
+     headerVisible: false,
+   }
+   });
 
 class AuthLoadingScreen extends Component {
   constructor (props) {
-    super(props);
-    this._loadData();
+   super(props);
+   this._loadData();
   }
 
   render() {
+
     return(
       <View style={ Stylesheet.activityIndicator }>
         <>
-          <Text>Setting up the auth screen</Text>
+          <Text>Loading...</Text>
             <ActivityIndicator size='large' color='#2F373A' />
         </>
       </View>
@@ -200,3 +208,69 @@ export default createAppContainer(createSwitchNavigator(
     initialRouteName: 'AuthLoading',
   }
 ));
+
+export function GetGeolocation()  {
+const [location, setLocation] = useState(null);
+const [latitude, setLatitude] = useState(null);
+const [longitude, setLongitude]= useState(null);
+const [errorMsg, setErrorMsg] = useState(null);
+
+useEffect(() => {
+    (async () => {
+    try {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        setErrorMsg('Permission to access location was denied');
+        Alert.alert(
+            "User location not detected",
+            "You haven't granted permission to detect your location.",
+            [{ text: 'OK', onPress: () => console.log('OK Pressed') }])
+      }
+    try {
+        let isLocationServicesEnabled = await Location.hasServicesEnabledAsync();
+        let location = await Location.getCurrentPositionAsync({
+            maximumAge: 60000, // only for Android
+            accuracy: Location.Accuracy.Low});
+
+        await AsyncStorage.setItem('latitude', JSON.stringify(location.coords.latitude));
+        await AsyncStorage.setItem('longitude', JSON.stringify(location.coords.longitude));
+        let fetchedData = '1';
+        await AsyncStorage.setItem('isFetchingData', fetchedData);
+      } catch (error) {
+        console.log('getCurrentPositionAsync error',error);
+        let location = await Location.getLastKnownPositionAsync();
+            if (location == null) {
+              Alert.alert(
+                "Geolocation failed",
+                "Your position could not be detected",
+                [{ text: "OK", onPress: () => console.log("OK Pressed") }]
+              );
+            } else {
+              await AsyncStorage.setItem('latitude', JSON.stringify(location.coords.latitude));
+              await AsyncStorage.setItem('longitude', JSON.stringify(location.coords.longitude));
+              let fetchedData = '1';
+              await AsyncStorage.setItem('isFetchingData', fetchedData);
+            }
+        }
+      } catch (error) {
+       console.log('askAsync error',error);
+      }
+  }, []);
+});
+
+  let text = 'Making fresh cookies...';
+  var userLatitude =  latitude
+  var userLongitude =  longitude
+  let greenhouseUrl = 'https://aspen-test.bywatersolutions.com/API/GreenhouseAPI?method=getLibraries&latitude=' + userLatitude + '&longitude=' + userLongitude
+
+  if (errorMsg) {
+    text = errorMsg;
+  } else if (location) {
+    text = greenhouseUrl
+    global.greenhouseUrl = greenhouseUrl
+
+  }
+
+  return (<View><Text>{text}</Text></View>);
+
+}

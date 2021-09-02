@@ -60,7 +60,7 @@ export default StyleSheet.create({
     margin: 5,
     overflow: 'hidden', //needed for border radius to work on IOS
     padding: 15,
-    width: '80%',
+    //width: '80%',
   },
   btnFormatSmall: {
     backgroundColor: '#2f373a',
@@ -69,11 +69,11 @@ export default StyleSheet.create({
     opacity: 0.75,
     overflow: 'hidden', //needed for border radius to work on IOS
     padding: 5,
-    width: '80%',
+    //width: '80%',
   },
   btnText: {
     color: '#2f373a',
-    fontSize: 21,
+    fontSize: 16,
     fontWeight: 'bold',
     textAlign: 'center',
   },
@@ -119,7 +119,7 @@ btnTextGray: {
   },
   discoveryPickerView: {
     backgroundColor: '#fff',
-    borderRadius: 20,
+    borderRadius: 0,
     fontSize: 16,
     height: 50,
     marginBottom: 5,

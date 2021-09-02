@@ -9,7 +9,7 @@
       "android",
       "web"
     ],
-    "version": "21.08.0",
+    "version": "21.01.00",
     "orientation": "portrait",
     "icon": "./assets/aspenNoTransparency.png",
     "splash": {
@@ -24,15 +24,19 @@
       "**/*"
     ],
     "ios": {
-      "buildNumber": "2",
+      "buildNumber": "3",
       "bundleIdentifier": "org.aspendiscovery.mobile",
       "supportsTablet": true,
       "icon": "./assets/aspenLogo.png"
     },
     "android": {
       "package": "org.aspendiscovery.mobile",
-      "versionCode": 2,
-      "permissions": [],
+      "versionCode": 3,
+      "permissions": [
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION",
+        "FOREGROUND_SERVICE"
+      ],
       "adaptiveIcon": {
         "foregroundImage": "./assets/aspenLogo.png",
         "backgroundColor": "#FFFFFF"
