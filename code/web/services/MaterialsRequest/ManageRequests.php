@@ -393,7 +393,7 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 				}
 				$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $value);
 
-				$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, translate($request->status));
+				$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, translate(['text'=>$request->status,'isPublicFacing'=>true,'isMetadata'=>true]));
 				$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, date('m/d/Y', $request->dateCreated));
 				$activeSheet->setCellValueByColumnAndRow($curCol, $curRow, $request->assignedTo);
 			}

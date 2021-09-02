@@ -1864,7 +1864,7 @@ class MyAccount_AJAX extends JSON_Action
 							->setCellValue('F' . $curRow, $availableDate)
 							->setCellValue('G' . $curRow, $expireDate);
 						if ($userPosition != null){
-							$objPHPExcel->getActiveSheet()->setCellValue($userPosition . $curRow, translate($row->getUserName()));
+							$objPHPExcel->getActiveSheet()->setCellValue($userPosition . $curRow, $row->getUserName());
 						}
 					} else {
 						if (isset($row->status)) {
@@ -1910,7 +1910,7 @@ class MyAccount_AJAX extends JSON_Action
 							$objPHPExcel->getActiveSheet()->setCellValue($expiresPosition . $curRow, $expireDate);
 						}
 						if ($userPosition != null){
-							$objPHPExcel->getActiveSheet()->setCellValue($userPosition . $curRow, translate($row->getUserName()));
+							$objPHPExcel->getActiveSheet()->setCellValue($userPosition . $curRow, $row->getUserName());
 						}
 					}
 					$curRow++;

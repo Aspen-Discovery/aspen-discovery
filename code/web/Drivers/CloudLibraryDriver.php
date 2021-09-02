@@ -483,7 +483,6 @@ class CloudLibraryDriver extends AbstractEContentDriver
 	{
 		require_once ROOT_DIR . '/sys/CloudLibrary/UserCloudLibraryUsage.php';
 		$userUsage = new UserCloudLibraryUsage();
-		/** @noinspection DuplicatedCode */
 		$userUsage->userId = $user->id;
 		$userUsage->year = date('Y');
 		$userUsage->month = date('n');

@@ -210,14 +210,14 @@ class Axis360RecordDriver extends GroupedWorkSubDriver
 			if ($loadDefaultActions) {
 				if ($isAvailable) {
 					$this->_actions[] = array(
-						'title' => 'Check Out Axis 360',
+						'title' => translate(['text'=>'Check Out Axis 360','isPublicFacing'=>true]),
 						'onclick' => "return AspenDiscovery.Axis360.checkOutTitle('{$this->id}');",
 						'requireLogin' => false,
 						'type' => 'axis360_checkout'
 					);
 				} else {
 					$this->_actions[] = array(
-						'title' => 'Place Hold Axis 360',
+						'title' => translate(['text'=>'Place Hold Axis 360','isPublicFacing'=>true]),
 						'onclick' => "return AspenDiscovery.Axis360.placeHold('{$this->id}');",
 						'requireLogin' => false,
 						'type' => 'axis360_hold'

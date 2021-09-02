@@ -212,7 +212,7 @@ class OverDrive_AJAX extends JSON_Action
 			return [
 				'success' => true,
 				'promptNeeded' => true,
-				'promptTitle' => translate($promptTitle),
+				'promptTitle' => translate(['text'=>$promptTitle,'isPublicFacing'=>true]),
 				'prompts' => $interface->fetch('OverDrive/ajax-hold-prompt.tpl'),
 				'buttons' => '<button class="btn btn-primary" type="submit" name="submit" onclick="return AspenDiscovery.OverDrive.processOverDriveHoldPrompts();">' . translate(['text' => 'Place Hold', 'isPublicFacing'=>true]) . '</button>'
 			];

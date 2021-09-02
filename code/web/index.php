@@ -285,7 +285,7 @@ if ($isLoggedIn) {
 	if ($user instanceof AspenError) {
 		require_once ROOT_DIR . '/services/MyAccount/Login.php';
 		$launchAction = new MyAccount_Login();
-		$error_msg    = translate($user->getMessage());
+		$error_msg    = translate(['text'=>$user->getMessage(),'isPublicFacing'=>true]);
 		$launchAction->launch($error_msg);
 		exit();
 	}elseif(!$user){

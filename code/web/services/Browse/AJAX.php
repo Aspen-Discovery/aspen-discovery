@@ -493,7 +493,7 @@ class Browse_AJAX extends Action {
 		$response['textId'] = $textId;
 
 		$activeCategory = $this->getBrowseCategory(); // load sub-category
-		$response['label']  = translate($this->browseCategory->label);
+		$response['label']  = translate(['text'=>$this->browseCategory->label,'isPublicFacing'=>true]);
 
 		// Get Any Subcategories for the subcategory menu
 		$response['subcategories'] = $this->getSubCategories();
@@ -521,7 +521,7 @@ class Browse_AJAX extends Action {
 				$response['subCategoryTextId'] = $subCategoryTextId;
 
 				// Set the main category label before we fetch the sub-categories main results
-				$response['label']  = translate($this->browseCategory->label);
+				$response['label']  = translate(['text'=>$this->browseCategory->label,'isPublicFacing'=>true]);
 
 				// Reset Main Category with SubCategory to fetch main results
 				$this->setTextId($subCategoryTextId);

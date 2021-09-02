@@ -84,7 +84,7 @@ class MaterialsRequest_UserReport extends Admin_Admin {
 		$statuses = array();
 		foreach ($userData as $userInfo){
 			foreach ($userInfo['requestsByStatus'] as $status => $numRequests){
-				$statuses[$status] = translate($status);
+				$statuses[$status] = translate(['text'=>$status, 'isAdminFacing'=>true]);
 			}
 		}
 		$interface->assign('statuses', $statuses);

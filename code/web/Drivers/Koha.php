@@ -1045,7 +1045,7 @@ class Koha extends AbstractIlsDriver
 			$hold_result['success'] = false;
 			$message = 'The item could not be placed on hold: ';
 			$message = $this->getHoldErrorMessage($error, $message);
-			$hold_result['message'] = translate($message);
+			$hold_result['message'] = translate(['text'=>$message,'isPublicFacing'=>true]);
 		}
 		return $hold_result;
 	}
@@ -1182,7 +1182,7 @@ class Koha extends AbstractIlsDriver
 			$error = $placeHoldResponse->code;
 			$message = 'The item could not be placed on hold: ';
 			$message = $this->getHoldErrorMessage($error, $message);
-			$hold_result['message'] = translate($message);
+			$hold_result['message'] = translate(['text'=>$message,'isPublicFacing'=>true]);
 		}
 		return $hold_result;
 	}

@@ -146,7 +146,7 @@ class MaterialsRequest_SummaryReport extends Admin_Admin {
 		$statuses = array();
 		foreach ($periodData as $periodInfo){
 			foreach ($periodInfo as $status => $numRequests){
-				$statuses[$status] = translate($status);
+				$statuses[$status] = translate(['text'=>$status, 'isAdminFacing'=>true]);
 			}
 		}
 		$interface->assign('statuses', $statuses);

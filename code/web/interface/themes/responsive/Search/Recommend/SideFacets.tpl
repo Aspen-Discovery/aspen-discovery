@@ -25,7 +25,7 @@
 								{translate text=$cluster.label isPublicFacing=true}
 
 								{if $cluster.canLock}
-									<span class="facetLock pull-right" id="facetLock_{$title}" {if !$cluster.hasApplied}style="display: none"{/if} title="{translate text="Locking a facet will retain the selected filters in new searches until they are cleared" inAttribute=true isPublicFacing=true}>
+									<span class="facetLock pull-right" id="facetLock_{$title}" {if !$cluster.hasApplied}style="display: none"{/if} title="{translate text="Locking a facet will retain the selected filters in new searches until they are cleared" inAttribute=true isPublicFacing=true}">
 										<a id="facetLock_lockIcon_{$title}" {if $cluster.locked}style="display: none"{/if} onclick="return AspenDiscovery.Searches.lockFacet('{$title}');"><i class="fas fa-lock-open fa-lg fa-fw" style="vertical-align: middle"></i></a>
 										<a id="facetLock_unlockIcon_{$title}" {if !$cluster.locked}style="display: none"{/if} onclick="return AspenDiscovery.Searches.unlockFacet('{$title}');"><i class="fas fa-lock fa-lg fa-fw" style="vertical-align: middle"></i></a>
 									</span>
