@@ -200,7 +200,7 @@ class WikipediaParser {
 
 		// Fix pronunciation guides
 		$pattern[] = '/({{)pron-en\|([^}]*)(}})/Us';
-		$replacement[] = translate("pronounced") . " /$2/";
+		$replacement[] = translate(['text' => "pronounced", 'isPublicFacing'=>true]) . " /$2/";
 
 		// Removes citations
 		$pattern[] = '/({{)[^}]*(}})/Us';

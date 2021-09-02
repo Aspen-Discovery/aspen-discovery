@@ -48,7 +48,7 @@ class Lists extends MyAccount
 
 			$interface->assign('pageLinks', $pager->getLinks());
 
-		$this->display('../MyAccount/lists.tpl', translate('My Lists'));
+		$this->display('../MyAccount/lists.tpl', 'My Lists');
 
 	}
 

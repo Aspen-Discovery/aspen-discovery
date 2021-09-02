@@ -214,7 +214,7 @@ class OverDrive_AJAX extends JSON_Action
 				'promptNeeded' => true,
 				'promptTitle' => translate($promptTitle),
 				'prompts' => $interface->fetch('OverDrive/ajax-hold-prompt.tpl'),
-				'buttons' => '<button class="btn btn-primary" type="submit" name="submit" onclick="return AspenDiscovery.OverDrive.processOverDriveHoldPrompts();">' . translate('Place Hold') . '</button>'
+				'buttons' => '<button class="btn btn-primary" type="submit" name="submit" onclick="return AspenDiscovery.OverDrive.processOverDriveHoldPrompts();">' . translate(['text' => 'Place Hold', 'isPublicFacing'=>true]) . '</button>'
 			];
 		} else {
 			return [
@@ -289,20 +289,20 @@ class OverDrive_AJAX extends JSON_Action
 		$user = UserAccount::getLoggedInUser();
 		$result = array(
 			'success' => false,
-			'message' => 'Error ' . translate('freezing') . ' hold.'
+			'message' => 'Error freezing hold.'
 		);
 		if (!$user) {
-			$result['message'] = 'You must be logged in to ' . translate('freeze') . ' a hold.  Please close this dialog and login again.';
+			$result['message'] = translate(['text' => 'You must be logged in to freeze a hold.  Please close this dialog and login again.', 'isPublicFacing'=>true]);
 		} elseif (!empty($_REQUEST['patronId'])) {
 			$patronId = $_REQUEST['patronId'];
 			$patronOwningHold = $user->getUserReferredTo($patronId);
 
 			if ($patronOwningHold == false) {
-				$result['message'] = 'Sorry, you do not have access to ' . translate('freeze') . ' holds for the supplied user.';
+				$result['message'] = translate(['text' => 'Sorry, you do not have access to freeze holds for the supplied user.', 'isPublicFacing'=>true]);
 			} else {
 				if (empty($_REQUEST['overDriveId'])) {
 					// We aren't getting all the expected data, so make a log entry & tell user.
-					$result['message'] = 'Information about the hold to be ' . translate('frozen') . ' was not provided.';
+					$result['message'] = translate(['text' => 'Information about the hold to be frozen was not provided.', 'isPublicFacing'=>true]);
 				} else {
 					$overDriveId = $_REQUEST['overDriveId'];
 					$reactivationDate = isset($_REQUEST['reactivationDate']) ? $_REQUEST['reactivationDate'] : null;
@@ -325,7 +325,7 @@ class OverDrive_AJAX extends JSON_Action
 			// We aren't getting all the expected data, so make a log entry & tell user.
 			global $logger;
 			$logger->log('Freeze Hold, no patron Id was passed in AJAX call.', Logger::LOG_ERROR);
-			$result['message'] = 'No Patron was specified.';
+			$result['message'] = translate(['text' => 'No Patron was specified.', 'isPublicFacing'=>true]);
 		}
 
 		return $result;
@@ -430,7 +430,7 @@ class OverDrive_AJAX extends JSON_Action
 				$overDriveDriver->incrementStat('numPreviews');
 
 				$result['modalBody'] = "<iframe src='{$sampleUrl}' class='previewFrame'></iframe>";
-				$result['modalButtons'] = "<a class='tool btn btn-primary' id='viewPreviewFullSize' href='$sampleUrl' target='_blank'>" . translate("View Full Screen"). "</a>";
+				$result['modalButtons'] = "<a class='tool btn btn-primary' id='viewPreviewFullSize' href='$sampleUrl' target='_blank'>" . translate(['text' => "View Full Screen", 'isPublicFacing'=>true]). "</a>";
 			}else{
 				$result['message'] = 'The specified Format was not valid';
 			}

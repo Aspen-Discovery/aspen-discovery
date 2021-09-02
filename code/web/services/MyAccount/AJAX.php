@@ -173,7 +173,7 @@ class MyAccount_AJAX extends JSON_Action
 					$search->user_id = UserAccount::getActiveUserId();
 					$search->saved = 1;
 					$saveOk = ($search->update() !== FALSE);
-					$message = $saveOk ? 'Your search was saved successfully.  You can view the saved search by clicking on <a href="/Search/History?require_login">Search History</a> within ' . translate('My Account') . '.' : "Sorry, we could not save that search for you.  It may have expired.";
+					$message = $saveOk ? 'Your search was saved successfully.  You can view the saved search by clicking on Search History within the Account Menu.' . '<a href="/Search/History?require_login">' . 'View Saved Searches' . '</a>' : "Sorry, we could not save that search for you.  It may have expired.";
 				} else {
 					$saveOk = true;
 					$message = "That search was already saved.";
@@ -366,22 +366,22 @@ class MyAccount_AJAX extends JSON_Action
 		$user = UserAccount::getLoggedInUser();
 		$result = array(
 			'success' => false,
-			'message' => 'Error ' . translate('freezing') . ' hold.'
+			'message' => translate(['text' => 'Error freezing hold.', 'isPublicFacing'=>true])
 		);
 		if (!$user) {
-			$result['message'] = 'You must be logged in to ' . translate('freeze') . ' a hold.  Please close this dialog and login again.';
+			$result['message'] = translate(['text' => 'You must be logged in to freeze a hold.  Please close this dialog and login again.', 'isPublicFacing'=>true]);
 		} elseif (!empty($_REQUEST['patronId'])) {
 			$patronId = $_REQUEST['patronId'];
 			$patronOwningHold = $user->getUserReferredTo($patronId);
 
 			if ($patronOwningHold == false) {
-				$result['message'] = 'Sorry, you do not have access to ' . translate('freeze') . ' holds for the supplied user.';
+				$result['message'] = translate(['text' => 'Sorry, you do not have access to freeze holds for the supplied user.', 'isPublicFacing'=>true]);
 			} else {
 				if (empty($_REQUEST['recordId']) || empty($_REQUEST['holdId'])) {
 					// We aren't getting all the expected data, so make a log entry & tell user.
 					global $logger;
 					$logger->log('Freeze Hold, no record or hold Id was passed in AJAX call.', Logger::LOG_ERROR);
-					$result['message'] = 'Information about the hold to be ' . translate('frozen') . ' was not provided.';
+					$result['message'] = translate(['text' => 'Information about the hold to be frozen was not provided.', 'isPublicFacing'=>true]);
 				} else {
 					$recordId = $_REQUEST['recordId'];
 					$holdId = $_REQUEST['holdId'];
@@ -405,7 +405,7 @@ class MyAccount_AJAX extends JSON_Action
 			// We aren't getting all the expected data, so make a log entry & tell user.
 			global $logger;
 			$logger->log('Freeze Hold, no patron Id was passed in AJAX call.', Logger::LOG_ERROR);
-			$result['message'] = 'No Patron was specified.';
+			$result['message'] = translate(['text' => 'No Patron was specified.', 'isPublicFacing'=>true]);
 		}
 
 		return $result;
@@ -456,13 +456,14 @@ class MyAccount_AJAX extends JSON_Action
 							} else if ($holdType == 'overdrive') {
 								require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
 								$driver = new OverDriveDriver();
-								$tmpResult = $driver->freezeHold($user, $recordId);
+								$tmpResult = $driver->freezeHold($user, $recordId, null);
 								if($tmpResult['success']){$success++;}else{$failed++;}
-							} else if ($holdType == 'cloud_library') {
-								require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
-								$driver = new CloudLibraryDriver();
-								$tmpResult = $driver->freezeHold($user, $recordId);
-								if($tmpResult['success']){$success++;}else{$failed++;}
+							//Cloud Library holds can't be frozen
+//							} else if ($holdType == 'cloud_library') {
+//								require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
+//								$driver = new CloudLibraryDriver();
+//								$tmpResult = $driver->freezeHold($user, $recordId);
+//								if($tmpResult['success']){$success++;}else{$failed++;}
 							} else {
 								$failed++;
 							}
@@ -509,16 +510,16 @@ class MyAccount_AJAX extends JSON_Action
 		);
 
 		if (!$user) {
-			$result['message'] = 'You must be logged in to ' . translate('thaw') . ' a hold.  Please close this dialog and login again.';
+			$result['message'] = translate(['text' => 'You must be logged in to thaw a hold.  Please close this dialog and login again.', 'isPublicFacing'=>true]);
 		} elseif (!empty($_REQUEST['patronId'])) {
 			$patronId = $_REQUEST['patronId'];
 			$patronOwningHold = $user->getUserReferredTo($patronId);
 
 			if ($patronOwningHold == false) {
-				$result['message'] = 'Sorry, you do not have access to ' . translate('thaw') . ' holds for the supplied user.';
+				$result['message'] = translate(['text' => 'Sorry, you do not have access to thaw holds for the supplied user.', 'isPublicFacing'=>true]);
 			} else {
 				if (empty($_REQUEST['recordId']) || empty($_REQUEST['holdId'])) {
-					$result['message'] = 'Information about the hold to be ' . translate('thawed') . ' was not provided.';
+					$result['message'] = translate(['text' => 'Information about the hold to be thawed was not provided.', 'isPublicFacing'=>true]);
 				} else {
 					$recordId = $_REQUEST['recordId'];
 					$holdId = $_REQUEST['holdId'];
@@ -533,7 +534,7 @@ class MyAccount_AJAX extends JSON_Action
 			// We aren't getting all the expected data, so make a log entry & tell user.
 			global $logger;
 			$logger->log('Thaw Hold, no patron Id was passed in AJAX call.', Logger::LOG_ERROR);
-			$result['message'] = 'No Patron was specified.';
+			$result['message'] = translate(['text' => 'No Patron was specified.', 'isPublicFacing'=>true]);
 		}
 
 		return $result;
@@ -914,7 +915,7 @@ class MyAccount_AJAX extends JSON_Action
 		$reactivateDateNotRequired = ($ils == 'Symphony' || $ils == 'Koha' || $ils == 'Polaris');
 		$interface->assign('reactivateDateNotRequired', $reactivateDateNotRequired);
 
-		$title = translate('Freeze Hold'); // language customization
+		$title = translate(translate(['text' => 'Freeze Hold', 'isPublicFacing'=>true])); // language customization
 		return array(
 			'title' => $title,
 			'modalBody' => $interface->fetch("MyAccount/reactivationDate.tpl"),
@@ -1141,7 +1142,7 @@ class MyAccount_AJAX extends JSON_Action
 		global $interface;
 		$interface->assign('renewResults', $renewResults);
 		return array(
-			'title' => translate('Renew') . ' Item',
+			'title' => translate(['text' => 'Renew Item', 'isPublicFacing'=>true]),
 			'modalBody' => $interface->fetch('MyAccount/renew-item-results.tpl'),
 			'success' => $renewResults['success']
 		);
@@ -1213,7 +1214,7 @@ class MyAccount_AJAX extends JSON_Action
 		$interface->assign('renew_message_data', $renewResults);
 
 		return array(
-			'title' => translate('Renew') . ' Selected Items',
+			'title' => translate(['text' => 'Renew Selected Items', 'isPublicFacing'=>true]),
 			'modalBody' => $interface->fetch('Record/renew-results.tpl'),
 			'success' => $renewResults['success'],
 			'renewed' => isset($renewResults['Renewed']) ? $renewResults['Renewed'] : []
@@ -1236,7 +1237,7 @@ class MyAccount_AJAX extends JSON_Action
 		global $interface;
 		$interface->assign('renew_message_data', $renewResults);
 		return array(
-			'title' => translate('Renew') . ' All',
+			'title' => translate(['text' => 'Renew All', 'isPublicFacing'=>true]),
 			'modalBody' => $interface->fetch('Record/renew-results.tpl'),
 			'success' => $renewResults['success'],
 			'renewed' => $renewResults['Renewed']
@@ -1730,28 +1731,28 @@ class MyAccount_AJAX extends JSON_Action
 					$objPHPExcel->setActiveSheetIndex(0)->setCellValue('A' . $curRow, 'Holds - ' . ucfirst($exportType));
 					$curRow += 2;
 
-					$objPHPExcel->getActiveSheet()->setCellValue('A' . $curRow, 'Title')
-						->setCellValue('B' . $curRow, 'Author')
-						->setCellValue('C' . $curRow, 'Format')
-						->setCellValue('D' . $curRow, 'Placed')
-						->setCellValue('E' . $curRow, 'Pickup')
-						->setCellValue('F' . $curRow, 'Available')
-						->setCellValue('G' . $curRow, translate('Pickup By'));
+					$objPHPExcel->getActiveSheet()->setCellValue('A' . $curRow, translate(['text' => 'Title', 'isPublicFacing'=>true]))
+						->setCellValue('B' . $curRow, translate(['text' => 'Author', 'isPublicFacing'=>true]))
+						->setCellValue('C' . $curRow, translate(['text' => 'Format', 'isPublicFacing'=>true]))
+						->setCellValue('D' . $curRow, translate(['text' => 'Placed', 'isPublicFacing'=>true]))
+						->setCellValue('E' . $curRow, translate(['text' => 'Pickup', 'isPublicFacing'=>true]))
+						->setCellValue('F' . $curRow, translate(['text' => 'Available', 'isPublicFacing'=>true]))
+						->setCellValue('G' . $curRow, translate(['text' => 'Pickup By', 'isPublicFacing'=>true]));
 					if ($hasLinkedUsers){
 						$userPosition = 'H';
-						$objPHPExcel->getActiveSheet()->setCellValue('H' . $curRow, translate('User'));
+						$objPHPExcel->getActiveSheet()->setCellValue('H' . $curRow, translate(['text' => 'User', 'isPublicFacing'=>true]));
 					}
 				} else {
-					$objPHPExcel->setActiveSheetIndex(0)->setCellValue('A' . $curRow, 'Holds - ' . ucfirst($exportType));
+					$objPHPExcel->setActiveSheetIndex(0)->setCellValue('A' . $curRow, translate(['text' => 'Holds - ' . ucfirst($exportType), 'isPublicFacing'=>true]));
 					$curRow += 2;
-					$objPHPExcel->getActiveSheet()->setCellValue('A' . $curRow, 'Title')
-						->setCellValue('B' . $curRow, 'Author')
-						->setCellValue('C' . $curRow, 'Format')
-						->setCellValue('D' . $curRow, 'Placed')
-						->setCellValue('E' . $curRow, 'Pickup');
+					$objPHPExcel->getActiveSheet()->setCellValue('A' . $curRow, translate(['text' => 'Title', 'isPublicFacing'=>true]))
+						->setCellValue('B' . $curRow, translate(['text' => 'Author', 'isPublicFacing'=>true]))
+						->setCellValue('C' . $curRow, translate(['text' => 'Format', 'isPublicFacing'=>true]))
+						->setCellValue('D' . $curRow, translate(['text' => 'Placed', 'isPublicFacing'=>true]))
+						->setCellValue('E' . $curRow, translate(['text' => 'Pickup', 'isPublicFacing'=>true]));
 
 					if ($showPosition) {
-						$objPHPExcel->getActiveSheet()->setCellValue('F' . $curRow, 'Position');
+						$objPHPExcel->getActiveSheet()->setCellValue('F' . $curRow, translate(['text' => 'Position', 'isPublicFacing'=>true]));
 						$statusPosition = 'G';
 						if ($showExpireTime) {
 							$expiresPosition = 'H';
@@ -1777,12 +1778,12 @@ class MyAccount_AJAX extends JSON_Action
 							}
 						}
 					}
-					$objPHPExcel->getActiveSheet()->setCellValue($statusPosition . $curRow, 'Status');
+					$objPHPExcel->getActiveSheet()->setCellValue($statusPosition . $curRow, translate(['text' => 'Status', 'isPublicFacing'=>true]));
 					if ($expiresPosition != null) {
-						$objPHPExcel->getActiveSheet()->setCellValue($expiresPosition . $curRow, 'Expires');
+						$objPHPExcel->getActiveSheet()->setCellValue($expiresPosition . $curRow, translate(['text' => 'Expires', 'isPublicFacing'=>true]));
 					}
 					if ($userPosition != null){
-						$objPHPExcel->getActiveSheet()->setCellValue($userPosition . $curRow, translate('User'));
+						$objPHPExcel->getActiveSheet()->setCellValue($userPosition . $curRow, translate(['text' => 'User', 'isPublicFacing'=>true]));
 					}
 				}
 
@@ -1926,7 +1927,7 @@ class MyAccount_AJAX extends JSON_Action
 			$objPHPExcel->getActiveSheet()->getColumnDimension('H')->setAutoSize(true);
 
 			// Rename sheet
-			$objPHPExcel->getActiveSheet()->setTitle('Holds');
+			$objPHPExcel->getActiveSheet()->setTitle(translate(['text' => 'Holds', 'isPublicFacing'=>true]));
 
 			// Redirect output to a client's web browser (Excel5)
 			header('Content-Type: application/vnd.ms-excel');
@@ -1976,7 +1977,7 @@ class MyAccount_AJAX extends JSON_Action
 
 					$format = is_array($row['format']) ? implode(',', $row['format']) : $row['format'];
 					if ($row['checkedOut']) {
-						$lastCheckout = translate('In Use');
+						$lastCheckout = translate(['text' => 'In Use', 'isPublicFacing'=>true]);
 					} else {
 						if (is_numeric($row['checkout'])) {
 							$lastCheckout = date('M Y', $row['checkout']);
@@ -2097,7 +2098,7 @@ class MyAccount_AJAX extends JSON_Action
 				$result['checkouts'] = $interface->fetch('MyAccount/checkoutsList.tpl');
 			}
 		} else {
-			$result['message'] = translate('The catalog is offline');
+			$result['message'] = translate(['text' => 'The catalog is offline', 'isPublicFacing'=>true]);
 		}
 
 		return $result;
@@ -2228,7 +2229,7 @@ class MyAccount_AJAX extends JSON_Action
 				$result['holds'] = $interface->fetch('MyAccount/holdsList.tpl');
 			}
 		} else {
-			$result['message'] = translate('The catalog is offline');
+			$result['message'] = translate(['text' => 'The catalog is offline', 'isPublicFacing'=>true]);
 		}
 
 		return $result;
@@ -2419,7 +2420,7 @@ class MyAccount_AJAX extends JSON_Action
 	{
 		$result = [
 			'success' => false,
-			'title' => translate('Error'),
+			'title' => translate(['text' => 'Error', 'isPublicFacing'=>true]),
 			'message' => translate(['text'=>'Unknown Error', 'isPublicFacing'=>true]),
 		];
 
@@ -2446,7 +2447,7 @@ class MyAccount_AJAX extends JSON_Action
 	{
 		$result = [
 			'success' => false,
-			'title' => translate('Error'),
+			'title' => translate(['text' => 'Error', 'isPublicFacing'=>true]),
 			'message' => translate(['text'=>'Unknown Error', 'isPublicFacing'=>true]),
 		];
 
@@ -2885,6 +2886,7 @@ class MyAccount_AJAX extends JSON_Action
 		if (array_key_exists('success', $result) && $result['success'] === false) {
 			return $result;
 		} else {
+			/** @noinspection PhpUnusedLocalVariableInspection */
 			list($userLibrary, $payment, $purchaseUnits) = $result;
 			$paymentRequestUrl = $userLibrary->msbUrl;
 			$paymentRequestUrl .= "?ReferenceID=" . $payment->id;
@@ -2915,6 +2917,7 @@ class MyAccount_AJAX extends JSON_Action
 			/** @var Library $userLibrary */
 			/** @var UserPayment $payment */
 			/** @var User $patron */
+			/** @noinspection PhpUnusedLocalVariableInspection */
 			list($userLibrary, $payment, $purchaseUnits, $patron) = $result;
 			require_once ROOT_DIR . '/sys/ECommerce/CompriseSetting.php';
 			$compriseSettings = new CompriseSetting();
@@ -2963,6 +2966,7 @@ class MyAccount_AJAX extends JSON_Action
 			/** @var Library $userLibrary */
 			/** @var UserPayment $payment */
 			/** @var User $patron */
+			/** @noinspection PhpUnusedLocalVariableInspection */
 			list($userLibrary, $payment, $purchaseUnits, $patron) = $result;
 			require_once ROOT_DIR . '/sys/ECommerce/ProPaySetting.php';
 			$proPaySetting = new ProPaySetting();
@@ -3198,6 +3202,7 @@ class MyAccount_AJAX extends JSON_Action
 				$userList->public = 0;
 				$userList->description = '';
 				$userList->insert();
+				$totalRecords = 0;
 			}else{
 				$userList->id = $listId;
 				$totalRecords = $userList->numValidListItems();
@@ -3224,7 +3229,7 @@ class MyAccount_AJAX extends JSON_Action
 					}else {
 						$userListEntry->source = $source;
 						$userListEntry->sourceId = $sourceId;
-						$userListEntry->weight = $totalRecords++;
+						$userListEntry->weight = $totalRecords +1;
 
 						if($userListEntry->source == 'GroupedWork') {
 							require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
@@ -3321,9 +3326,9 @@ class MyAccount_AJAX extends JSON_Action
 		$interface->assign('id', $id);
 
 		return array(
-			'title' => translate('Upload a New List Cover'),
+			'title' => translate(['text' => 'Upload a New List Cover', 'isPublicFacing'=>true]),
 			'modalBody' => $interface->fetch("Lists/upload-cover-form.tpl"),
-			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#uploadListCoverForm\").submit()'>" . translate("Upload Cover") . "</button>"
+			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#uploadListCoverForm\").submit()'>" . translate(['text' => "Upload Cover", 'isPublicFacing'=>true]) . "</button>"
 		);
 	}
 
@@ -3387,9 +3392,9 @@ class MyAccount_AJAX extends JSON_Action
 		$interface->assign('id', $id);
 
 		return array(
-			'title' => translate('Upload a New List Cover by URL'),
+			'title' => translate(['text' => 'Upload a New List Cover by URL', 'isPublicFacing'=>true]),
 			'modalBody' => $interface->fetch("Lists/upload-cover-form-url.tpl"),
-			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#uploadListCoverFormByURL\").submit()'>" . translate("Upload Cover") . "</button>"
+			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#uploadListCoverFormByURL\").submit()'>" . translate(['text' => "Upload Cover", 'isPublicFacing'=>true]) . "</button>"
 		);
 	}
 
@@ -3619,7 +3624,6 @@ class MyAccount_AJAX extends JSON_Action
 		];
 		require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 		require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
-		global $interface;
 
 		$userListEntry = new UserListEntry();
 		$userListEntry->id = $_REQUEST['listEntry'];

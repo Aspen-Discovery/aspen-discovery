@@ -357,9 +357,9 @@ class Admin_AJAX extends JSON_Action
 			$modalBody = $interface->fetch('Admin/batchUpdateFieldForm.tpl');
 			return [
 				'success' => true,
-				'title' => "Batch Update {$tool->getPageTitle()}",
+				'title' => translate(['text' => "Batch Update {$tool->getPageTitle()}", 'isAdminFacing'=>true]),
 				'modalBody' => $modalBody,
-				'modalButtons' => "<button onclick=\"return AspenDiscovery.Admin.processBatchUpdateFieldForm('{$moduleName}', '{$toolName}', '{$batchUpdateScope}');\" class=\"modal-buttons btn btn-primary\">" . translate('Update') . "</button>"
+				'modalButtons' => "<button onclick=\"return AspenDiscovery.Admin.processBatchUpdateFieldForm('{$moduleName}', '{$toolName}', '{$batchUpdateScope}');\" class=\"modal-buttons btn btn-primary\">" . translate(['text' => 'Update', 'isAdminFacing'=>true]) . "</button>"
 			];
 		}else{
 			return [
@@ -471,9 +471,9 @@ class Admin_AJAX extends JSON_Action
 				$modalBody = $interface->fetch('Admin/selectFilterForm.tpl');
 				return [
 					'success' => true,
-					'title' => translate('Filter by'),
+					'title' => translate(['text' => 'Filter by', 'isAdminFacing'=>true]),
 					'modalBody' => $modalBody,
-					'modalButtons' => "<button onclick=\"return AspenDiscovery.Admin.getNewFilterRow('{$moduleName}', '{$toolName}');\" class=\"modal-buttons btn btn-primary\">" . translate('Add Filter') . "</button>"
+					'modalButtons' => "<button onclick=\"return AspenDiscovery.Admin.getNewFilterRow('{$moduleName}', '{$toolName}');\" class=\"modal-buttons btn btn-primary\">" . translate(['text' => 'Add Filter', 'isAdminFacing'=>true]) . "</button>"
 				];
 			}
 		}else{
@@ -509,15 +509,15 @@ class Admin_AJAX extends JSON_Action
 			}else{
 				return [
 					'success' => false,
-					'title' => translate('Error'),
-					'message' => translate("Cannot filter by the selected field"),
+					'title' => translate(['text' => 'Error', 'isAdminFacing'=>true]),
+					'message' => translate(['text' => "Cannot filter by the selected field", 'isAdminFacing'=>true]),
 				];
 			}
 		}else{
 			return [
 				'success' => false,
-				'title' => translate('Error'),
-				'message' => translate("Sorry, this form cannot be filtered"),
+				'title' => translate(['text' => 'Error'),
+				'message' => translate(['text' => "Sorry, this form cannot be filtered", 'isAdminFacing'=>true]),
 			];
 		}
 	}
@@ -525,7 +525,7 @@ class Admin_AJAX extends JSON_Action
 	function deleteNYTList() {
 		$result = [
 			'success' => false,
-			'message' => translate('Something went wrong.')
+			'message' => translate(['text' => 'Something went wrong.', 'isAdminFacing'=>true])
 		];
 
 		require_once ROOT_DIR . '/sys/UserLists/UserList.php';
