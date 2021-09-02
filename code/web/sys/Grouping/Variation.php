@@ -41,7 +41,7 @@ class Grouping_Variation
 		}
 		$this->label = $this->econtentSource;
 		if ($this->language != 'English' || !$this->isEcontent) {
-			$this->label = trim($this->econtentSource . ' ' . translate($this->language));
+			$this->label = trim(translate(['text'=>$this->econtentSource,'isPublicFacing'=>true]) . ' ' . translate(['text'=>$this->language,'isPublicFacing'=>true]));
 		}
 		$this->id = trim($this->econtentSource . ' ' . $this->language);
 		$this->_statusInformation = new Grouping_StatusInformation();
