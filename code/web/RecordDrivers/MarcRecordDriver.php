@@ -1272,7 +1272,6 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 				'openByDefault' => true
 		);
 		//Other editions if applicable (only if we aren't the only record!)
-		/** @noinspection DuplicatedCode */
 		$groupedWorkDriver = $this->getGroupedWorkDriver();
 		if ($groupedWorkDriver != null){
 			$relatedRecords = $groupedWorkDriver->getRelatedRecords();

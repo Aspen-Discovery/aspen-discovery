@@ -2158,7 +2158,6 @@ class SirsiDynixROA extends HorizonAPI
 						$historyEntry['checkin'] = strtotime($circEntry->fields->checkInDate);
 						if (!empty($historyEntry['recordId'])) {
 							if ($systemVariables->storeRecordDetailsInDatabase){
-								/** @noinspection SqlResolve */
 								$getRecordDetailsQuery = 'SELECT permanent_id, indexed_format.format FROM grouped_work_records 
 								  LEFT JOIN grouped_work ON groupedWorkId = grouped_work.id
 								  LEFT JOIN indexed_record_source ON sourceId = indexed_record_source.id
