@@ -221,7 +221,7 @@ class HooplaRecordDriver extends GroupedWorkSubDriver {
 				$searchLibrary = Library::getSearchLibrary();
 				if ($searchLibrary->hooplaLibraryID > 0) { // Library is enabled for Hoopla patron action integration
 					$id = $this->id;
-					$title = 'Check Out Hoopla';
+					$title = translate(['text'=>'Check Out Hoopla','isPublicFacing'=>true]);
 					$this->_actions[] = array(
 						'onclick' => "return AspenDiscovery.Hoopla.getCheckOutPrompts('$id')",
 						'title' => $title,
@@ -433,7 +433,7 @@ class HooplaRecordDriver extends GroupedWorkSubDriver {
 		/** @var Library $searchLibrary */
 		$searchLibrary = Library::getSearchLibrary();
 		if ($searchLibrary->hooplaLibraryID > 0) { // Library is enabled for Hoopla patron action integration
-			$title = 'Check Out Hoopla';
+			$title = translate(['text'=>'Check Out Hoopla','isPublicFacing'=>true]);
 			$actions[] = array(
 				'onclick' => "return AspenDiscovery.Hoopla.getCheckOutPrompts('{$this->id}')",
 				'title'   => $title

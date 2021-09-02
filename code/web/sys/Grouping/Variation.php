@@ -181,14 +181,14 @@ class Grouping_Variation
 							$driver = RecordDriverFactory::initRecordDriverById($bestRecord->id);
 						}
 						$this->_actions[] = array(
-							'title' => 'View PDF',
+							'title' => translate(['text'=>'View PDF','isPublicFacing'=>true]),
 							'url' => '',
 							'onclick' => "return AspenDiscovery.GroupedWork.selectFileToView('{$driver->getPermanentId()}', 'RecordPDF');",
 							'requireLogin' => false,
 							'type' => 'view_pdfs'
 						);
 						$this->_actions[] = array(
-							'title' => 'Download PDF',
+							'title' => translate(['text'=>'Download PDF','isPublicFacing'=>true]),
 							'url' => '',
 							'onclick' => "return AspenDiscovery.GroupedWork.selectFileDownload('{$driver->getPermanentId()}', 'RecordPDF');",
 							'requireLogin' => false,
@@ -205,7 +205,7 @@ class Grouping_Variation
 							$driver = RecordDriverFactory::initRecordDriverById($bestRecord->id);
 						}
 						$this->_actions[] = array(
-							'title' => 'Download Supplemental File',
+							'title' => translate(['text'=>'Download Supplemental File','isPublicFacing'=>true]),
 							'url' => '',
 							'onclick' => "return AspenDiscovery.GroupedWork.selectFileDownload('{$driver->getPermanentId()}', 'RecordSupplementalFile');",
 							'requireLogin' => false,
