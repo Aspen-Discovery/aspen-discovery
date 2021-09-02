@@ -170,7 +170,7 @@ class Translator
 						$translation = new Translation();
 						$translation->termId = $translationTerm->id;
 						$translation->languageId = $activeLanguage->id;
-						if (!$translation->find(true)) {
+						if (!$translation->find(true) || empty($translation->translation)) {
 							if (!empty($defaultText)) {
 								$defaultTranslation = $defaultText;
 								$translation->translated = ($activeLanguage->id == 1) ? 1 : 0;
