@@ -834,9 +834,14 @@ class SearchAPI extends Action
 								$temp->id = $subCategory->subCategoryId;
 								if ($temp->find(true)) {
 									if ($temp->isValidForDisplay()) {
+										$parent = new BrowseCategory();
+										$parent->id = $subCategory->browseCategoryId;
+										if ($parent->find(true)){
+											$parentLabel = $parent->label;
+										}
 										$categoryResponse['subCategories'][] = [
 											'text_id' => $temp->textId,
-											'display_label' => $temp->label,
+											'display_label' => $parentLabel.': '.$temp->label,
 											'link' => $configArray['Site']['url'] . '?browseCategory=' . $temp->textId . '&subCategory=' . $temp->textId,
 											'source' => $temp->source,
 										];
