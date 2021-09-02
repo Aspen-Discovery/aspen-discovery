@@ -1695,7 +1695,7 @@ class Koha extends AbstractIlsDriver
 				$result['message'] = $response;
 				$result['success'] = true;
 			} else {
-				$result['message'] = translate(['text'=>'Your hold was thawed successfully.', 'isPublicFacing'=>true]]);
+				$result['message'] = translate(['text'=>'Your hold was thawed successfully.', 'isPublicFacing'=>true]);
 				$result['success'] = true;
 				$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
 				$patron->forceReloadOfHolds();
@@ -2395,6 +2395,7 @@ class Koha extends AbstractIlsDriver
 			}
 		}
 
+		/** @noinspection SqlResolve */
 		$patronReasonSQL = "SELECT * FROM authorised_values where category = 'OPAC_SUG' order by lib_opac";
 		$patronReasonRS = mysqli_query($this->dbConnection, $patronReasonSQL);
 		$patronReasons = [];
