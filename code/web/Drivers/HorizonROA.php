@@ -886,10 +886,9 @@ abstract class HorizonROA extends AbstractIlsDriver
 //		$describe  = $this->getWebServiceResponse($webServiceURL . "/v1/circulation/holdRecord/unsuspendHold/describe", null, $sessionToken);
 		$updateHoldResponse = $this->getWebServiceResponse($webServiceURL . "/v1/circulation/holdRecord/suspendHold", $params, $sessionToken, 'POST');
 		if (!empty($updateHoldResponse->holdRecord)) {
-			$frozen = translate('frozen');
 			return array(
 				'success' => true,
-				'message' => "The hold has been $frozen."
+				'message' => translate(['text' => "The hold has been frozen.", 'isPublicFacing'=>true])
 			);
 		} else {
 			$messages = array();
@@ -898,13 +897,12 @@ abstract class HorizonROA extends AbstractIlsDriver
 					$messages[] = $message->message;
 				}
 			}
-			$freeze = translate('freeze');
 			global $logger;
 			$errorMessage = 'Horizon ROA Freeze Hold Error: '. ($messages ? implode('; ', $messages) : '');
 			$logger->log($errorMessage, Logger::LOG_ERROR);
 			return array(
 				'success' => false,
-				'message' => "Failed to $freeze hold : ". implode('; ', $messages)
+				'message' => translate(['text' => "Failed to freeze hold", 'isPublicFacing'=>true]) . ' - '. implode('; ', $messages)
 			);
 		}
 	}
@@ -930,10 +928,9 @@ abstract class HorizonROA extends AbstractIlsDriver
 		$describe  = $this->getWebServiceResponse($webServiceURL . "/circulation/holdRecord/changePickupLibrary/describe", null, $sessionToken);
 		$updateHoldResponse = $this->getWebServiceResponse($webServiceURL . "/v1/circulation/holdRecord/unsuspendHold", $params, $sessionToken, 'POST');
 		if (!empty($updateHoldResponse->holdRecord)) {
-			$thawed = translate('thawed');
 			return array(
 				'success' => true,
-				'message' => "The hold has been $thawed."
+				'message' => translate(['text' => "The hold has been thawed.", 'isPublicFacing'=>true])
 			);
 		} else {
 			$messages = array();
@@ -942,13 +939,12 @@ abstract class HorizonROA extends AbstractIlsDriver
 					$messages[] = $message->message;
 				}
 			}
-			$thaw = translate('thaw');
 			global $logger;
 			$errorMessage = 'Horizon ROA Thaw Hold Error: '. ($messages ? implode('; ', $messages) : '');
 			$logger->log($errorMessage, Logger::LOG_ERROR);
 			return array(
 				'success' => false,
-				'message' => "Failed to $thaw hold : ". implode('; ', $messages)
+				'message' => translate(['text' => "Failed to thaw hold ", 'isPublicFacing'=>true]) . ' - '. implode('; ', $messages)
 			);
 		}
 	}

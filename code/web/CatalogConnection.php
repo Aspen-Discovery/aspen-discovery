@@ -97,7 +97,6 @@ class CatalogConnection
 	public function patronLogin($username, $password, $parentAccount = null, $validatedViaSSO = false)
 	{
 		global $offlineMode;
-		global $usageByIPAddress;
 
 		$barcodesToTest = array();
 		$barcodesToTest[$username] = $username;
@@ -427,7 +426,7 @@ class CatalogConnection
 				}
 			}
 			$result['success'] = true;
-			$result['message'] = translate(['text' => 'Deleted %1% entries from Reading History.', 1 => $numDeleted]);
+			$result['message'] = translate(['text' => 'Deleted %1% entries from Reading History.', 1 => $numDeleted, 'isPublicFacing'=>true]);
 		} elseif ($action == 'deleteAll') {
 			//Remove all titles from database (do not remove from ILS)
 			$readingHistoryDB = new ReadingHistoryEntry();
@@ -438,7 +437,7 @@ class CatalogConnection
 				$readingHistoryDB->update();
 			}
 			$result['success'] = true;
-			$result['message'] = translate('Deleted all entries from Reading History.');
+			$result['message'] = translate(['text' => 'Deleted all entries from Reading History.', 'isPublicFacing'=>true]);
 		} elseif ($action == 'optOut') {
 			//Delete the reading history (permanently this time since we are opting out)
 			$readingHistoryDB = new ReadingHistoryEntry();
@@ -453,14 +452,14 @@ class CatalogConnection
 			//$patron->initialReadingHistoryLoaded = false;
 			$patron->update();
 			$result['success'] = true;
-			$result['message'] = translate('You have been opted out of tracking Reading History');
+			$result['message'] = translate(['text' => 'You have been opted out of tracking Reading History', 'isPublicFacing'=>true]);
 		} elseif ($action == 'optIn') {
 			//Opt in within Aspen since the ILS does not seem to implement this functionality
 			$patron->trackReadingHistory = true;
 			$patron->update();
 
 			$result['success'] = true;
-			$result['message'] = translate('You have been opted out in to tracking Reading History');
+			$result['message'] = translate(['text' => 'You have been opted out in to tracking Reading History', 'isPublicFacing'=>true]);
 		}
 		if ($this->driver->performsReadingHistoryUpdatesOfILS()) {
 			$this->driver->doReadingHistoryAction($patron, $action, $selectedTitles);
@@ -492,7 +491,7 @@ class CatalogConnection
 		}
 
 		$result['success'] = true;
-		$result['message'] = translate(['text' => 'Deleted %1% entries from Reading History.', 1 => $numDeleted]);
+		$result['message'] = translate(['text' => 'Deleted %1% entries from Reading History.', 1 => $numDeleted, 'isPublicFacing'=>true]);
 
 		return $result;
 	}
@@ -589,6 +588,11 @@ class CatalogConnection
 		return $this->driver->updatePatronInfo($user, $canUpdateContactInfo);
 	}
 
+	/**
+	 * @param User $user
+	 * @param string $homeLibraryCode
+	 * @return array
+	 */
 	function updateHomeLibrary($user, $homeLibraryCode)
 	{
 		$result = $this->driver->updateHomeLibrary($user, $homeLibraryCode);

@@ -177,10 +177,10 @@ class AJAX_JSON extends Action {
 				if (!$user || ($user instanceof AspenError)){
 
 					// Expired Card Notice
-					if ($user && $user->getMessage() == 'expired_library_card') {
+					if ($user && $user->getMessage() == 'Your library card has expired. Please contact your local library to have your library card renewed.') {
 						return array(
 							'success' => false,
-							'message' => translate('expired_library_card')
+							'message' => translate(['text' => 'Your library card has expired. Please contact your local library to have your library card renewed.', 'isPublicFacing'=>true])
 						);
 					}
 

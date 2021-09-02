@@ -740,7 +740,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 					global $interface;
 					if (count($whileYouWaitTitles) > 0) {
 						$interface->assign('whileYouWaitTitles', $whileYouWaitTitles);
-						$holdResult['message'] .= '<h3>' . translate('While You Wait') . '</h3>';
+						$holdResult['message'] .= '<h3>' . translate(['text' => 'While You Wait', 'isPublicFacing'=>true]) . '</h3>';
 						$holdResult['message'] .= $interface->fetch('GroupedWork/whileYouWait.tpl');
 						$holdResult['hasWhileYouWait'] = true;
 					}
@@ -750,7 +750,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 			$user->clearCache();
 			$user->clearCachedAccountSummaryForSource('overdrive');
 		}else{
-			$holdResult['message'] = translate('Sorry, but we could not place a hold for you on this title.');
+			$holdResult['message'] = translate(['text' => 'Sorry, but we could not place a hold for you on this title.', 'isPublicFacing'=>true]);
 			if (isset($response->message)) $holdResult['message'] .= "  {$response->message}";
 			$this->incrementStat('numFailedHolds');
 		}
@@ -789,7 +789,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 			$holdResult['message'] = translate(['text'=>'overdrive_freeze_hold_success', 'defaultText' => 'Your hold was frozen successfully.']);
 			$patron->forceReloadOfHolds();
 		}else{
-			$holdResult['message'] = translate('Sorry, but we could not freeze the hold on this title.');
+			$holdResult['message'] = translate(['text' => 'Sorry, but we could not freeze the hold on this title.', 'isPublicFacing'=>true]);
 			if (isset($response->message)) $holdResult['message'] .= "  {$response->message}";
 			$this->incrementStat('numApiErrors');
 		}
@@ -813,7 +813,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 			$this->incrementStat('numHoldsThawed');
 			$patron->forceReloadOfHolds();
 		}else{
-			$holdResult['message'] = translate('Sorry, but we could not thaw the hold on this title.');
+			$holdResult['message'] = translate(['text' => 'Sorry, but we could not thaw the hold on this title.', 'isPublicFacing'=>true]);
 			if (isset($response->message)) $holdResult['message'] .= "  {$response->message}";
 			$this->incrementStat('numApiErrors');
 		}
@@ -836,12 +836,12 @@ class OverDriveDriver extends AbstractEContentDriver{
 		$cancelHoldResult['message'] = '';
 		if ($response === true){
 			$cancelHoldResult['success'] = true;
-			$cancelHoldResult['message'] = translate('Your hold was cancelled successfully.');
+			$cancelHoldResult['message'] = translate(['text' => 'Your hold was cancelled successfully.', 'isPublicFacing'=>true]);
 			$this->incrementStat('numHoldsCancelled');
 			$patron->clearCachedAccountSummaryForSource('overdrive');
 			$patron->forceReloadOfHolds();
 		}else{
-			$cancelHoldResult['message'] = translate('There was an error cancelling your hold.');
+			$cancelHoldResult['message'] = translate(['text' => 'There was an error cancelling your hold.', 'isPublicFacing'=>true]);
 		    if (isset($response->message)) $cancelHoldResult['message'] .= "  {$response->message}";
 			$this->incrementStat('numApiErrors');
 		}
@@ -871,7 +871,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 		//print_r($response);
 		if (isset($response->expires)) {
 			$result['success'] = true;
-			$result['message'] = translate(['text'=>'overdrive_checkout_success', 'defaultText'=>'Your title was checked out successfully. You may now download the title from your Account.']);
+			$result['message'] = translate(['text'=>'Your title was checked out successfully. You may now download the title from your Account.', 'isPublicFacing'=>true]);
 			$this->trackUserUsageOfOverDrive($patron);
 			$this->trackRecordCheckout($overDriveId);
 			$this->incrementStat('numCheckouts');
@@ -881,21 +881,21 @@ class OverDriveDriver extends AbstractEContentDriver{
 			$patron->forceReloadOfCheckouts();
 		}else{
 			$this->incrementStat('numFailedCheckouts');
-			$result['message'] = translate('Sorry, we could not checkout this title to you.');
+			$result['message'] = translate(['text' => 'Sorry, we could not checkout this title to you.', 'isPublicFacing'=>true]);
 			if (isset($response->errorCode) && $response->errorCode == 'PatronHasExceededCheckoutLimit'){
-				$result['message'] .= "\r\n\r\n" . translate(['text'=>'overdrive_exceeded_checkouts', 'defaultText'=>'You have reached the maximum number of OverDrive titles you can checkout one time.']);
+				$result['message'] .= "\r\n\r\n" . translate(['text'=>'You have reached the maximum number of OverDrive titles you can checkout one time.', 'isPublicFacing'=>true]);
 			}else{
 				if (isset($response->message)) $result['message'] .= "  {$response->message}";
 			}
 
 			if ($response == false || (isset($response->errorCode) && ($response->errorCode == 'NoCopiesAvailable' || $response->errorCode == 'PatronHasExceededCheckoutLimit'))) {
 				$result['noCopies'] = true;
-				$result['message'] .= "\r\n\r\n" . translate('Would you like to place a hold instead?');
+				$result['message'] .= "\r\n\r\n" . translate(['text' => 'Would you like to place a hold instead?', 'isPublicFacing'=>true]);
 			}else if ($response->errorCode == 'TitleAlreadyCheckedOut') {
-				$result['message'] = translate(['text' => 'overdrive_already_checked_out', 'defaultText' => "This title is already checked out to you, you can read it by visiting <a href='/MyAccount/CheckedOut'>Your Account</a>."]);
+				$result['message'] = translate(['text' => "This title is already checked out to you.", 'isPublicFacing'=>true]) . " <a href='/MyAccount/CheckedOut' class='btn btn-info'>" . translate(['text' => "View In Account", 'isPublicFacing'=>true]) . "</a>";
 			}else{
 				//Give more information about why it might gave failed, ie expired card or too much fines
-				$result['message'] .= ' ' . translate(['text' => 'overdrive_checkout_failed', 'defaultText' => 'Sorry, we could not checkout this title to you.  Please verify that your card has not expired and that you do not have excessive fines.']);
+				$result['message'] .= ' ' . translate(['text' => 'Sorry, we could not checkout this title to you.  Please verify that your card has not expired and that you do not have excessive fines.', 'isPublicFacing'=>true]);
 			}
 
 		}
@@ -918,13 +918,13 @@ class OverDriveDriver extends AbstractEContentDriver{
 		$cancelHoldResult['message'] = '';
 		if ($response === true){
 			$cancelHoldResult['success'] = true;
-			$cancelHoldResult['message'] = translate('Your item was returned successfully.');
+			$cancelHoldResult['message'] = translate(['text' => 'Your item was returned successfully.', 'isPublicFacing'=>true]);
 			$this->incrementStat('numEarlyReturns');
 
 			$patron->clearCachedAccountSummaryForSource('overdrive');
 			$patron->forceReloadOfCheckouts();
 		}else{
-			$cancelHoldResult['message'] =translate( 'There was an error returning this item.');
+			$cancelHoldResult['message'] =translate( ['text' => 'There was an error returning this item.', 'isPublicFacing'=>true]);
 			if (isset($response->message)) $cancelHoldResult['message'] .= "  {$response->message}";
 			$this->incrementStat('numApiErrors');
 		}
@@ -948,12 +948,12 @@ class OverDriveDriver extends AbstractEContentDriver{
 
 		if (isset($response->linkTemplates->downloadLink)){
 			$result['success'] = true;
-			$result['message'] = translate('This format was locked in');
+			$result['message'] = translate(['text' => 'This format was locked in', 'isPublicFacing'=>true]);
 			$downloadLink = $this->getDownloadLink($overDriveId, $formatId, $patron);
 			$result = $downloadLink;
 			$patron->forceReloadOfCheckouts();
 		}else{
-			$result['message'] = translate('Sorry, but we could not select a format for you.');
+			$result['message'] = translate(['text' => 'Sorry, but we could not select a format for you.', 'isPublicFacing'=>true]);
 			if (isset($response->message)) $result['message'] .= "  {$response->message}";
 			$this->incrementStat('numApiErrors');
 		}
@@ -1008,11 +1008,11 @@ class OverDriveDriver extends AbstractEContentDriver{
 
 		if (isset($response->links->contentlink)){
 			$result['success'] = true;
-			$result['message'] = translate('Created Download Link');
+			$result['message'] = translate(['text' => 'Created Download Link', 'isPublicFacing'=>true]);
 			$result['downloadUrl'] = $response->links->contentlink->href;
 			$this->incrementStat('numDownloads');
 		}else{
-			$result['message'] = translate('Sorry, but we could not get a download link for you.');
+			$result['message'] = translate(['text' => 'Sorry, but we could not get a download link for you.', 'isPublicFacing'=>true]);
 			if (isset($response->message)) $result['message'] .= "  {$response->message}";
 			$this->incrementStat('numApiErrors');
 		}
@@ -1073,7 +1073,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 
 			$patron->forceReloadOfCheckouts();
 		}else{
-			$holdResult['message'] = translate('Sorry, but we could not renew this title for you.');
+			$holdResult['message'] = translate(['text' => 'Sorry, but we could not renew this title for you.', 'isPublicFacing'=>true]);
 			if (isset($response->message)) $holdResult['message'] .= "  {$response->message}";
 			$this->incrementStat('numApiErrors');
 		}

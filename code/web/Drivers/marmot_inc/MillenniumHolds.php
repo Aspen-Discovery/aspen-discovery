@@ -236,7 +236,7 @@ class MillenniumHolds{
 							$title = (array_key_exists($tmpBib, $titles) && $titles[$tmpBib] != '') ? $titles[$tmpBib] : 'an item';
 
 							if (!empty($hold->_freezeError)) {
-								$failure_messages[$tmpXnumInfo] = "The hold for $title could not be ". translate('frozen') .'.  Please try again later or see your librarian.';
+								$failure_messages[$tmpXnumInfo] = translate(['text' => "The hold for %1% could not be frozen.  Please try again later or see your librarian.", 1=>$title, 'isPublicFacing'=>true]);
 								// use original id as index so that javascript functions can pick out failed cancels
 							}
 
@@ -279,17 +279,29 @@ class MillenniumHolds{
 		} elseif ($type == 'update') {
 			// Thaw Hold
 			if ($freezeValue == 'off') {
+				if ($isPlural){
+					$message = 'Your holds were thawed successfully.';
+				}else{
+					$message = 'Your holds was thawed successfully.';
+				}
 				return array(
 					'title' => $titles,
 					'success' => true,
-					'message' => 'Your hold'.($isPlural ? 's were' : ' was' ).' '. translate('thawed') .' successfully.');
+					'message' => translate(['text' => $message, 'isPublicFacing'=>true])
+				);
 			} elseif ($freezeValue == 'on') {
 				//TODO check for error messages
 				if ($success) { // All were successful
+					if ($isPlural){
+						$message = 'Your holds were frozen successfully.';
+					}else{
+						$message = 'Your holds was frozen successfully.';
+					}
 					return array(
 						'title' => $titles,
 						'success' => true,
-						'message' => 'Your hold' . ($isPlural ? 's were' : ' was') . ' '. translate('frozen') .' successfully.');
+						'message' => translate(['text' => $message, 'isPublicFacing'=>true])
+					);
 				} else { // at least one failure
 					return array(
 						'title' => $titles,
@@ -300,17 +312,29 @@ class MillenniumHolds{
 			} elseif ($freezeValue == '') {
 				// Change Pick-up Location
 				//TODO check for error messages
+				if ($isPlural){
+					$message = 'Your holds were updated successfully.';
+				}else{
+					$message = 'Your holds was updated successfully.';
+				}
 				return array(
 					'title' => $titles,
 					'success' => true,
-					'message' => 'Your hold'.($isPlural ? 's were' : ' was' ).' updated successfully.');
+					'message' => translate(['text' => $message, 'isPublicFacing'=>true])
+				);
 			}
 
 		}else{
+			if ($isPlural){
+				$message = 'Your holds were updated successfully.';
+			}else{
+				$message = 'Your holds was updated successfully.';
+			}
 			return array(
 				'title' => $titles,
 				'success' => true,
-				'message' => 'Your hold'.($isPlural ? 's were' : ' was' ).' updated successfully.');
+				'message' => translate(['text' => $message, 'isPublicFacing'=>true])
+			);
 		}
 		return null;
 	}

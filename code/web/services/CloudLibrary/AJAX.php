@@ -31,10 +31,10 @@ class CloudLibrary_AJAX extends JSON_Action
 			if ($patron) {
 				return $this->processHoldOrCheckout($id, $patron);
 			} else {
-				return array('result' => false, 'title' => translate("Error Checking Out Title"), 'message' => translate(['text' => 'Sorry, it looks like you don\'t have permissions to checkout titles for that user.', 'isPublicFacing'=>true]));
+				return array('result' => false, 'title' => translate(['text' => "Error Checking Out Title", 'isPublicFacing'=>true]), 'message' => translate(['text' => 'Sorry, it looks like you don\'t have permissions to checkout titles for that user.', 'isPublicFacing'=>true]));
 			}
 		} else {
-			return array('result' => false, 'title' => translate("Error Checking Out Title"), 'message' => translate(['text' => 'You must be logged in to checkout an item.', 'isPublicFacing'=>true]));
+			return array('result' => false, 'title' => translate(['text' => "Error Checking Out Title", 'isPublicFacing'=>true]), 'message' => translate(['text' => 'You must be logged in to checkout an item.', 'isPublicFacing'=>true]));
 		}
 	}
 
@@ -89,7 +89,7 @@ class CloudLibrary_AJAX extends JSON_Action
 		if (empty($user)){
 			$loggedOutMessage = translate(['text' => "Your login has timed out. Please login again.", 'isPublicFacing'=>true]);
 			return array(
-					'promptTitle' => translate('Invalid Account'),
+					'promptTitle' => translate(['text' => 'Invalid Account', 'isPublicFacing'=>true]),
 					'prompts' => '<p class="alert alert-danger">' . $loggedOutMessage . '</p>',
 					'buttons' => '',
 					'promptNeeded' => true

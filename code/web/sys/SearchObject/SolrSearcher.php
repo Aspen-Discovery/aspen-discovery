@@ -728,7 +728,7 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
 
 		if (count($this->filterList) > 0) {
 			// TODO : better display of filters
-			$interface->assign('lookfor', $lookfor . " (" . translate('with filters') . ")");
+			$interface->assign('lookfor', $lookfor . " (" . translate(['text' => 'with filters', 'isPublicFacing'=>true]) . ")");
 		} else {
 			$interface->assign('lookfor', $lookfor);
 		}

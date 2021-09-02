@@ -730,7 +730,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 
 		if (!$this->getMarcRecord()) {
 			$descriptionArray = array();
-			$description = translate("Description Not Provided");
+			$description = translate(['text' => "Description Not Provided", 'isPublicFacing'=>true]);
 			$descriptionArray['description'] = $description;
 			return $descriptionArray;
 		}
@@ -798,7 +798,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 				if ($marcDescription != null) {
 					$descriptionArray['description'] = $marcDescription;
 				} else {
-					$description = translate("Description Not Provided");
+					$description = translate(['text' => "Description Not Provided", 'isPublicFacing'=>true]);
 					$descriptionArray['description'] = $description;
 				}
 			}

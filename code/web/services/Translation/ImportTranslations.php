@@ -104,7 +104,7 @@ class Translation_ImportTranslations extends Admin_Admin
 						die();
 					}
 				} else {
-					$interface->assign('error', translate('Please select a file to import'));
+					$interface->assign('error', translate(['text' => 'Please select a file to import', 'isAdminFacing'=>true]));
 				}
 			}
 

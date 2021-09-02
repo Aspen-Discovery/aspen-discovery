@@ -20,7 +20,7 @@ class LibraryCloudLibraryScope extends DataObject
 		$cloudLibraryScope->orderBy('name');
 		$cloudLibraryScopes = [];
 		$cloudLibraryScope->find();
-		$cloudLibraryScopes[-1] = translate('Select a value');
+		$cloudLibraryScopes[-1] = translate(['text' => 'Select a value', 'isPublicFacing'=>true]);
 		while ($cloudLibraryScope->fetch()) {
 			$cloudLibraryScopes[$cloudLibraryScope->id] = (string)$cloudLibraryScope;
 		}

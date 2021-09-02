@@ -68,8 +68,8 @@ class Record_AJAX extends Action
 			if (!$this->setupHoldForm($recordSource, $rememberHoldPickupLocation, $marcRecord, $locations)){
 				return array(
 					'holdFormBypassed' => false,
-					'title' => translate('Unable to place hold'),
-					'message' => '<p>' . translate('This account is not associated with a library, please contact your library.') . '</p>',
+					'title' => translate(['text' => 'Unable to place hold', 'isPublicFacing'=>true]),
+					'message' => '<p>' . translate(['text' => 'This account is not associated with a library, please contact your library.', 'isPublicFacing'=>true]) . '</p>',
 					'success' => false
 				);
 			}
@@ -153,10 +153,10 @@ class Record_AJAX extends Action
 				}
 				if ($results['success']){
 					if (empty($results['needsItemLevelHold'])){
-						$results['title'] = translate('Hold Placed Successfully');
+						$results['title'] = translate(['text' => 'Hold Placed Successfully', 'isPublicFacing'=>true]);
 					}
 				}else{
-					$results['title'] = translate('Hold Failed');
+					$results['title'] = translate(['text' => 'Hold Failed', 'isPublicFacing'=>true]);
 				}
 				$results['holdFormBypassed'] = true;
 
@@ -218,7 +218,7 @@ class Record_AJAX extends Action
 					'success' => true
 				);
 				if ($holdType != 'none') {
-					$results['modalButtons'] = "<button type='submit' name='submit' id='requestTitleButton' class='btn btn-primary' onclick='return AspenDiscovery.Record.submitHoldForm();'><i class='fas fa-spinner fa-spin hidden' role='status' aria-hidden='true'></i>&nbsp;" . translate("Submit Hold Request") . "</button>";
+					$results['modalButtons'] = "<button type='submit' name='submit' id='requestTitleButton' class='btn btn-primary' onclick='return AspenDiscovery.Record.submitHoldForm();'><i class='fas fa-spinner fa-spin hidden' role='status' aria-hidden='true'></i>&nbsp;" . translate(['text' => "Submit Hold Request", 'isPublicFacing'=>true]) . "</button>";
 				}
 			}
 		} else {
@@ -253,14 +253,14 @@ class Record_AJAX extends Action
 			$relatedManifestations = $relatedManifestations[$format[0]];
 			$interface->assign('relatedManifestation', $relatedManifestations);
 			$results = array(
-				'title' => translate('Place Hold on Alternate Edition?'),
+				'title' => translate(['text' => 'Place Hold on Alternate Edition?', 'isPublicFacing'=>true]),
 				'modalBody' => $interface->fetch('Record/hold-select-edition-popup.tpl'),
 				'modalButtons' => '<a href="#" class="btn btn-primary" onclick="return AspenDiscovery.Record.showPlaceHold(\'Record\', \'' . $recordSource . '\', \'' . $id . '\');">No, place a hold on this edition</a>'
 			);
 		} else {
 			$results = array(
-				'title' => translate('Please login'),
-				'modalBody' => translate("You must be logged in.  Please close this dialog and login before placing your hold."),
+				'title' => translate(['text' => 'Please login', 'isPublicFacing'=>true]),
+				'modalBody' => translate(['text' => "You must be logged in.  Please close this dialog and login before placing your hold.", 'isPublicFacing'=>true]),
 				'modalButtons' => ''
 			);
 		}
@@ -322,7 +322,7 @@ class Record_AJAX extends Action
 			$results = array(
 				'title' => 'Select a volume to place a hold on',
 				'modalBody' => $interface->fetch('Record/hold-select-volume-popup.tpl'),
-				'modalButtons' => '<a href="#" class="btn btn-primary" onclick="return AspenDiscovery.Record.placeVolumeHold(\'Record\', \'' . $recordSource . '\', \'' . $id . '\');">' . translate('Place Hold') . '</a>'
+				'modalButtons' => '<a href="#" class="btn btn-primary" onclick="return AspenDiscovery.Record.placeVolumeHold(\'Record\', \'' . $recordSource . '\', \'' . $id . '\');">' . translate(['text' => 'Place Hold', 'isPublicFacing'=>true]) . '</a>'
 			);
 		} else {
 			$results = array(
@@ -491,7 +491,7 @@ class Record_AJAX extends Action
 							'confirmationNeeded' => $confirmationNeeded,
 						);
 						if ($confirmationNeeded){
-							$results['modalButtons'] = '<a href="#" class="btn btn-primary" onclick="return AspenDiscovery.Record.confirmHold(\'Record\', \'' . $shortId . '\', ' . $return['confirmationId'] . ')">' . translate('Yes, Place Hold') . '</a>';
+							$results['modalButtons'] = '<a href="#" class="btn btn-primary" onclick="return AspenDiscovery.Record.confirmHold(\'Record\', \'' . $shortId . '\', ' . $return['confirmationId'] . ')">' . translate(['text' => 'Yes, Place Hold', 'isPublicFacing'=>true]) . '</a>';
 						}
 						if (isset($_REQUEST['autologout']) && $return['success']) {
 							$masqueradeMode = UserAccount::isUserMasquerading();
@@ -578,7 +578,7 @@ class Record_AJAX extends Action
 				'confirmationNeeded' => $confirmationNeeded,
 			);
 			if ($confirmationNeeded){
-				$results['modalButtons'] = '<a href="#" class="btn btn-primary" onclick="return AspenDiscovery.Record.confirmHold(\'Record\', \'' . $shortId . '\', ' . $return['confirmationId'] . ')">' . translate('Yes, Place Hold') . '</a>';
+				$results['modalButtons'] = '<a href="#" class="btn btn-primary" onclick="return AspenDiscovery.Record.confirmHold(\'Record\', \'' . $shortId . '\', ' . $return['confirmationId'] . ')">' . translate(['text' => 'Yes, Place Hold', 'isPublicFacing'=>true]) . '</a>';
 			}
 		} else {
 			$results = array(
@@ -605,9 +605,9 @@ class Record_AJAX extends Action
 		$interface->assign('max_file_size', SystemUtils::file_upload_max_size() / (1024 * 1024));
 
 		return [
-			'title' => translate('Upload a PDF'),
+			'title' => translate(['text' => 'Upload a PDF', 'isPublicFacing'=>true]),
 			'modalBody' => $interface->fetch("Record/upload-pdf-form.tpl"),
-			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#uploadPDFForm\").submit()'>" . translate("Upload PDF") . "</button>"
+			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#uploadPDFForm\").submit()'>" . translate(['text' => "Upload PDF", 'isPublicFacing'=>true]) . "</button>"
 		];
 	}
 
@@ -626,9 +626,9 @@ class Record_AJAX extends Action
 		$interface->assign('max_file_size', SystemUtils::file_upload_max_size() / (1024 * 1024));
 
 		return [
-			'title' => translate('Upload a Supplemental File'),
+			'title' => translate(['text' => 'Upload a Supplemental File', 'isPublicFacing'=>true]),
 			'modalBody' => $interface->fetch("Record/upload-supplemental-file-form.tpl"),
-			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#uploadSupplementalFileForm\").submit()'>" . translate("Upload File") . "</button>"
+			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#uploadSupplementalFileForm\").submit()'>" . translate(['text' => "Upload File", 'isPublicFacing'=>true]) . "</button>"
 		];
 	}
 
@@ -877,9 +877,9 @@ class Record_AJAX extends Action
 		$interface->assign('validFiles', $validFiles);
 
 		if ($fileType == 'RecordPDF'){
-			$buttonTitle = translate('Download PDF');
+			$buttonTitle = translate(['text' => 'Download PDF', 'isPublicFacing'=>true]);
 		}else{
-			$buttonTitle = translate('Download Supplemental File');
+			$buttonTitle = translate(['text' => 'Download Supplemental File', 'isPublicFacing'=>true]);
 		}
 		return [
 			'title' => 'Select File to download',
@@ -919,9 +919,9 @@ class Record_AJAX extends Action
 		asort($validFiles);
 		$interface->assign('validFiles', $validFiles);
 
-		$buttonTitle = translate('View PDF');
+		$buttonTitle = translate(['text' => 'View PDF', 'isPublicFacing'=>true]);
 		return [
-			'title' => 'Select PDF to View',
+			'title' => translate(['text' => 'Select PDF to View', 'isPublicFacing'=>true]),
 			'modalBody' => $interface->fetch("Record/select-view-file-form.tpl"),
 			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#viewFile\").submit()'>$buttonTitle</button>"
 		];
@@ -1112,7 +1112,7 @@ class Record_AJAX extends Action
 			'needsItemLevelHold' => true,
 			'message' => $interface->fetch('Record/item-hold-popup.tpl'),
 			'title' => $return['title'] ?? '',
-			'modalButtons' => "<button type='submit' name='submit' id='requestTitleButton' class='btn btn-primary' onclick='return AspenDiscovery.Record.submitHoldForm();'>" . translate("Submit Hold Request") . "</button>"
+			'modalButtons' => "<button type='submit' name='submit' id='requestTitleButton' class='btn btn-primary' onclick='return AspenDiscovery.Record.submitHoldForm();'>" . translate(['text' => "Submit Hold Request", 'isPublicFacing'=>true]) . "</button>"
 		);
 	}
 }

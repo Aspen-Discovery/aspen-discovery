@@ -618,17 +618,16 @@ abstract class HorizonAPI extends Horizon{
 						}
 					}
 
-					$frozen = translate('frozen');
 					if ($allLocationChangesSucceed){
 						return array(
 							'title' => $titles,
 							'success' => true,
-							'message' => "Your hold(s) were $frozen successfully.");
+							'message' => translate(['text' => "Your hold(s) were frozen successfully.", 'isPublicFacing'=>true]));
 					}else{
 						return array(
 							'title' => $titles,
 							'success' => false,
-							'message' => "Some holds could not be $frozen.  Please try again later or see your librarian.");
+							'message' => translate(['text' => "Some holds could not be frozen.  Please try again later or see your librarian.", 'isPublicFacing'=>true]));
 					}
 				}else{
 					//Reactivate the hold
@@ -647,17 +646,16 @@ abstract class HorizonAPI extends Horizon{
 						}
 					}
 
-					$thawed = translate('thawed');
 					if ($allUnsuspendsSucceed){
 						return array(
 							'title' => $titles,
 							'success' => true,
-							'message' => "Your hold(s) were $thawed successfully.");
+							'message' => translate(['text' => "Your hold(s) were thawed successfully.", 'isPublicFacing'=>true]));
 					}else{
 						return array(
 							'title' => $titles,
 							'success' => false,
-							'message' => "Some holds could not be $thawed.  Please try again later or see your librarian.");
+							'message' => translate(['text' => "Some holds could not be thawed.  Please try again later or see your librarian.", 'isPublicFacing'=>true]));
 					}
 				}
 			}

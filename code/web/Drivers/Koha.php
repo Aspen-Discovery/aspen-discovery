@@ -1617,7 +1617,7 @@ class Koha extends AbstractIlsDriver
 	{
 		$result = [
 			'success' => false,
-			'message' => translate('Unable to freeze your hold.')
+			'message' => translate(['text' => 'Unable to freeze your hold.', 'isPublicFacing'=>true])
 		];
 
 		$oauthToken = $this->getOAuthToken();
@@ -1672,7 +1672,7 @@ class Koha extends AbstractIlsDriver
 	{
 		$result = [
 			'success' => false,
-			'message' => translate('Unable to thaw your hold.')
+			'message' => translate(['text' => 'Unable to thaw your hold.', 'isPublicFacing'=>true])
 		];
 
 		$oauthToken = $this->getOAuthToken();
@@ -1695,7 +1695,7 @@ class Koha extends AbstractIlsDriver
 				$result['message'] = $response;
 				$result['success'] = true;
 			} else {
-				$result['message'] = translate(['text'=>'ils_thaw_hold_success', 'defaultText' => 'Your hold was thawed successfully.']);
+				$result['message'] = translate(['text'=>'Your hold was thawed successfully.', 'isPublicFacing'=>true]]);
 				$result['success'] = true;
 				$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
 				$patron->forceReloadOfHolds();
@@ -1845,7 +1845,7 @@ class Koha extends AbstractIlsDriver
 	{
 		$result = array(
 			'success' => false,
-			'error' => translate("Unknown error sending password reset.")
+			'error' => translate(['text' => "Unknown error sending password reset.", 'isPublicFacing'=>true])
 		);
 
 		$catalogUrl = $this->accountProfile->vendorOpacUrl;
@@ -1866,9 +1866,9 @@ class Koha extends AbstractIlsDriver
 		$messageInformation = [];
 		if ($postResults == 'Internal Server Error') {
 			if (isset($_REQUEST['resendEmail'])) {
-				$result['error'] = translate('There was an error in backend system while resending the password reset email, please contact the library.');
+				$result['error'] = translate(['text' => 'There was an error in backend system while resending the password reset email, please contact the library.', 'isPublicFacing'=>true]);
 			}else{
-				$result['error'] = translate('There was an error in backend system while sending the password reset email, please contact the library.');
+				$result['error'] = translate(['text' => 'There was an error in backend system while sending the password reset email, please contact the library.', 'isPublicFacing'=>true]);
 			}
 		}else if (preg_match('%<div class="alert alert-warning">(.*?)</div>%s', $postResults, $messageInformation)) {
 			$error = $messageInformation[1];
@@ -2021,7 +2021,7 @@ class Koha extends AbstractIlsDriver
 		]);
 		if (!empty($library->validSelfRegistrationZipCodes)){
 			$fields['mainAddressSection']['properties']['borrower_zipcode']['validationPattern'] = $library->validSelfRegistrationZipCodes;
-			$fields['mainAddressSection']['properties']['borrower_zipcode']['validationMessage'] = translate('Please enter a valid zip code');
+			$fields['mainAddressSection']['properties']['borrower_zipcode']['validationMessage'] = translate(['text' => 'Please enter a valid zip code', 'isPublicFacing'=>true]);
 		}
 		//Contact information
 		$fields['contactInformationSection'] = array('property' => 'contactInformationSection', 'type' => 'section', 'label' => 'Contact Information', 'hideInLists' => true, 'expandByDefault' => true, 'properties' => [

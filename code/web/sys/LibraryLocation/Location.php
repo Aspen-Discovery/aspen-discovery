@@ -1177,9 +1177,9 @@ class Location extends DataObject
 				$formattedMessage .= ', ';
 			}
 			if (($i == (sizeof($hours) - 1)) && count($hours) > 1) {
-				$formattedMessage .= translate(' and ');
+				$formattedMessage .= translate(['text' => ' and ', 'isPublicFacing'=>true]);
 			}
-			$formattedMessage .= translate(['text' => '%1% to %2%', 1 => $hours[$i]['openFormatted'], 2 => $hours[$i]['closeFormatted']]);
+			$formattedMessage .= translate(['text' => '%1% to %2%', 1 => $hours[$i]['openFormatted'], 2 => $hours[$i]['closeFormatted'], 'isPublicFacing'=>true]);
 		}
 		return $formattedMessage;
 	}

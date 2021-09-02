@@ -8,6 +8,7 @@ class Search_Home extends Action {
 	{
 		global $interface;
 		global $library;
+		/** @var Location $locationSingleton*/
 		global $locationSingleton;
 		global $timer;
 

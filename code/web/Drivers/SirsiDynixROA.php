@@ -1204,7 +1204,6 @@ class SirsiDynixROA extends HorizonAPI
 					$messages[] = $message->message;
 				}
 			}
-			$freeze = translate('freeze');
 
 			global $logger;
 			$errorMessage = 'Sirsi ROA Freeze Hold Error: '. ($messages ? implode('; ', $messages) : '');
@@ -1212,7 +1211,7 @@ class SirsiDynixROA extends HorizonAPI
 
 			return array(
 				'success' => false,
-				'message' => "Failed to $freeze hold : ". implode('; ', $messages)
+				'message' => translate(['text' => "Failed to freeze hold", 'isPublicFacing'=>true]) . ' - ' . implode('; ', $messages)
 			);
 		}
 	}
@@ -1255,10 +1254,9 @@ class SirsiDynixROA extends HorizonAPI
 			$errorMessage = 'Sirsi ROA Thaw Hold Error: '. ($messages ? implode('; ', $messages) : '');
 			$logger->log($errorMessage, Logger::LOG_ERROR);
 
-			$thaw = translate('thaw');
 			return array(
 				'success' => false,
-				'message' => "Failed to $thaw hold : ". implode('; ', $messages)
+				'message' => translate(['text' => "Failed to thaw hold", 'isPublicFacing'=>true]) . ' - '. implode('; ', $messages)
 			);
 		}
 	}

@@ -482,7 +482,7 @@ class UserAccount
 				global $library;
 				if ($library->preventExpiredCardLogin && $tempUser->_expired) {
 					// Create error
-					$cardExpired = new AspenError('expired_library_card');
+					$cardExpired = new AspenError('Your library card has expired. Please contact your local library to have your library card renewed.');
 					$usageByIPAddress->numFailedLoginAttempts++;
 					return $cardExpired;
 				}
