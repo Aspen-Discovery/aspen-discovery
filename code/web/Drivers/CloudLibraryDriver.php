@@ -288,7 +288,7 @@ class CloudLibraryDriver extends AbstractEContentDriver
 		}else if ($responseCode == '404'){
 			$result['message'] = translate(['text' => "Item was not found.", 'isPublicFacing'=>true]);
 		}else if ($responseCode == '404'){
-			$result['message'] = translate(['text'=>'Could not place hold.  Already on hold or the item can be checked out', 'isPublicFacing'=>true]]);
+			$result['message'] = translate(['text'=>'Could not place hold.  Already on hold or the item can be checked out', 'isPublicFacing'=>true]);
 		}
 		return $result;
 	}

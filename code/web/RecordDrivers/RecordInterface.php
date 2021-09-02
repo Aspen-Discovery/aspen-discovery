@@ -137,7 +137,7 @@ abstract class RecordInterface
 		$moreDetailsOptions = array();
 		$moreDetailsOptions['description'] = array(
 			'label' => 'Description',
-			'body' => '<div id="descriptionPlaceholder">'. translate('Loading Description...') . '</div>',
+			'body' => '<div id="descriptionPlaceholder">'. translate(['text' => 'Loading Description...', 'isPublicFacing'=>true]) . '</div>',
 			'hideByDefault' => false,
 			'openByDefault' => true
 		);

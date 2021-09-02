@@ -29,7 +29,7 @@ class MaterialsRequest_Submit extends Action
 		if (!UserAccount::isLoggedIn()){
 			$user = UserAccount::login();
 			if ($user == null){
-				$interface->assign('error', 'Sorry, we could not log you in.  Please enter a valid barcode and pin number submit a '. translate('materials request') .'.');
+				$interface->assign('error', translate(['text' => 'Sorry, we could not log you in.  Please enter a valid barcode and pin number submit a materials request.', 'isPublicFacing'=>true]));
 				$processForm = false;
 			}
 		}
@@ -38,10 +38,10 @@ class MaterialsRequest_Submit extends Action
 			$enableMaterialsRequest = true;
 			if (!$enableMaterialsRequest){
 				$interface->assign('success', false);
-				$interface->assign('error', 'Sorry, only residents may submit '. translate('materials request') .'s at this time.');
+				$interface->assign('error', translate(['text' => 'Sorry, only residents may submit materials requests at this time.', 'isPublicFacing'=>true]));
 			}else if ($_REQUEST['format'] == 'article' && $_REQUEST['acceptCopyright'] != 1){
 				$interface->assign('success', false);
-				$interface->assign('error', 'Sorry, you must accept the copyright agreement before submitting a '. translate('materials request') .'.');
+				$interface->assign('error', translate(['text' => 'Sorry, you must accept the copyright agreement before submitting a materials request.', 'isPublicFacing'=>true]));
 			}else{
 				//Check to see how many active materials request results the user has already.
 				$materialsRequest = new MaterialsRequest();
@@ -58,8 +58,7 @@ class MaterialsRequest_Submit extends Action
 
 				if ($materialsRequest->getNumResults() >= $maxActiveRequests){
 					$interface->assign('success', false);
-					$materialsRequestString = translate('materials_request_short');
-					$interface->assign('error', "You've already reached your maximum limit of $maxActiveRequests '. translate('materials request') .'s open at one time. Once we've processed your existing {$materialsRequestString}s, you'll be able to submit again. To check the status of your current {$materialsRequestString}s, visit your <a href='{$accountPageLink}'>account</a>.");
+					$interface->assign('error', translate(['text' => "You've already reached your maximum limit of %1% materials requests open at one time. Once we've processed your existing materials requests, you'll be able to submit again.", 1=>$maxActiveRequests, 'isPublicFacing'=>true]) ."<a href='{$accountPageLink}' class='btn btn-info'>" . translate(['text' => 'View Materials Requests', 'isPublicFacing'=>true]) . "</a>.");
 				}else{
 					//Check the total number of requests created this year
 					$materialsRequest = new MaterialsRequest();
@@ -73,8 +72,7 @@ class MaterialsRequest_Submit extends Action
 					$interface->assign('requestsThisYear', $requestsThisYear);
 					if ($requestsThisYear >= $maxRequestsPerYear){
 						$interface->assign('success', false);
-						$materialsRequestString = translate('materials_request_short');
-						$interface->assign('error', "You've already reached your maximum limit of $maxRequestsPerYear '. translate('materials request') .'s per year. To check the status of your current {$materialsRequestString}s, visit your <a href='{$accountPageLink}'>account page</a>.");
+						$interface->assign('error', translate(['text' => "You've already reached your maximum limit of %1% materials requests per year.", 1=>$maxRequestsPerYear, 'isPublicFacing'=>true]) . "<a href='{$accountPageLink}' class='btn btn-info'>" . translate(['text' => 'View Materials Requests', 'isPublicFacing'=>true]) . "</a>.");
 					}else{
 						//Materials request can be submitted.
 						$materialsRequest = new MaterialsRequest();
@@ -138,7 +136,7 @@ class MaterialsRequest_Submit extends Action
 							$defaultStatus->libraryId = $homeLibrary->libraryId;
 							if (!$defaultStatus->find(true)) {
 								$interface->assign('success', false);
-								$interface->assign('error', translate('There was an error submitting your materials request, could not determine the default status.'));
+								$interface->assign('error', translate(['text' => 'There was an error submitting your materials request, could not determine the default status.', 'isPublicFacing'=>true]));
 							} else {
 								$materialsRequest->status      = $defaultStatus->id;
 								$materialsRequest->dateCreated = time();
@@ -154,7 +152,7 @@ class MaterialsRequest_Submit extends Action
 									$materialsRequest->sendStatusChangeEmail();
 								} else {
 									$interface->assign('success', false);
-									$interface->assign('error', translate('There was an error submitting your materials request.'));
+									$interface->assign('error', translate(['text' => 'There was an error submitting your materials request.', 'isPublicFacing'=>true]));
 								}
 							}
 						}

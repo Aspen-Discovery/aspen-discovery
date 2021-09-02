@@ -62,7 +62,7 @@ class MaterialsRequest_AJAX extends Action{
 		global $interface;
 
 		if (!isset($_REQUEST['id'])){
-			$interface->assign('error', 'Please provide an id of the '. translate('materials request') .' to view.');
+			$interface->assign('error', translate(['text' => 'Please provide an id of the materials request to view.', 'isPublicFacing'=>true]));
 		}else {
 			$id = $_REQUEST['id'];
 			if (ctype_digit($id)) {
@@ -202,28 +202,28 @@ class MaterialsRequest_AJAX extends Action{
 									$interface->assign('barCodeColumn', $barCodeColumn);
 
 								} else {
-									$interface->assign('error', 'Sorry, you don\'t have permission to update this '. translate('materials request') .'.');
+									$interface->assign('error', translate(['text' => 'Sorry, you don\'t have permission to update this materials request.', 'isPublicFacing'=>true]));
 								}
 							} else {
-								$interface->assign('error', 'Sorry, we couldn\'t find the user that made this '. translate('materials request') .'.');
+								$interface->assign('error', translate(['text' => 'Sorry, we couldn\'t find the user that made this materials request.', 'isPublicFacing'=>true]));
 							}
 						} else {
-							$interface->assign('error', 'Sorry, we couldn\'t find a '. translate('materials request') .' for that id.');
+							$interface->assign('error', translate(['text' => 'Sorry, we couldn\'t find a materials request for that id.', 'isPublicFacing'=>true]));
 						}
 					} else {
-						$interface->assign('error', 'We could not determine your home library.');
+						$interface->assign('error', translate(['text' => 'We could not determine your home library.', 'isPublicFacing'=>true]));
 					}
 				} else {
-					$interface->assign('error', 'Please log in to view & edit the '. translate('materials request') .'.');
+					$interface->assign('error', translate(['text' => 'Please log in to view & edit the materials request.', 'isPublicFacing'=>true]));
 				}
 			} else {
-				$interface->assign('error', 'Sorry, invalid id for a '. translate('materials request') .'.');
+				$interface->assign('error', translate(['text' => 'Sorry, invalid id for a materials request.', 'isPublicFacing'=>true]));
 			}
 		}
 		return array(
 			'title' => 'Update Materials Request',
 			'modalBody' => $interface->fetch('MaterialsRequest/ajax-update-request.tpl'),
-			'modalButtons' => $interface->get_template_vars('error') == null ?  "<button class='btn btn-primary' onclick='$(\"#materialsRequestUpdateForm\").submit();'>" . translate("Update Request") . "</button>" : ''
+			'modalButtons' => $interface->get_template_vars('error') == null ?  "<button class='btn btn-primary' onclick='$(\"#materialsRequestUpdateForm\").submit();'>" . translate(['text' => "Update Request", 'isPublicFacing'=>true]) . "</button>" : ''
 		);
 	}
 
@@ -232,9 +232,9 @@ class MaterialsRequest_AJAX extends Action{
 		global $interface;
 		$user = UserAccount::getLoggedInUser();
 		if (!isset($_REQUEST['id'])) {
-			$interface->assign('error', 'Please provide an id of the '. translate('materials request') .' to view.');
+			$interface->assign('error', translate(['text' => 'Please provide an id of the materials request to view.', 'isPublicFacing'=>true]));
 		}elseif (empty($user)) {
-			$interface->assign('error', 'Please log in to view details.');
+			$interface->assign('error', translate(['text' => 'Please log in to view details.', 'isPublicFacing'=>true]));
 		}else {
 			$id = $_REQUEST['id'];
 			if (!empty($id) && ctype_digit($id)) {
@@ -309,17 +309,17 @@ class MaterialsRequest_AJAX extends Action{
 							$interface->assign('showUserInformation', false);
 						}
 					} else {
-						$interface->assign('error', 'Sorry, we couldn\'t find a '. translate('materials request') .' for that id.');
+						$interface->assign('error', translate(['text' => 'Sorry, we couldn\'t find a materials request for that id.', 'isPublicFacing'=>true]));
 					}
 				} else {
-					$interface->assign('error', 'Could not determine your home library.');
+					$interface->assign('error', translate(['text' => 'Could not determine your home library.', 'isPublicFacing'=>true]));
 				}
 			} else {
-				$interface->assign('error', 'Invalid Request ID.');
+				$interface->assign('error', translate(['text' => 'Invalid Request ID.', 'isPublicFacing'=>true]));
 			}
 		}
 		return array(
-				'title'        => translate('Materials Request Details'),
+				'title'        => translate(['text' => 'Materials Request Details', 'isPublicFacing'=>true]),
 				'modalBody'    => $interface->fetch('MaterialsRequest/ajax-request-details.tpl'),
 				'modalButtons' => '' //TODO idea: add Update Request button (for staff only?)
 		);

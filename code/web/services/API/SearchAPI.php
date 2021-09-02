@@ -1060,7 +1060,7 @@ class SearchAPI extends Action
 			];
 			return;
 		}else{
-			$response['label'] = translate('Recommended for you');
+			$response['label'] = translate(['text' => 'Recommended for you', 'isPublicFacing'=>true]);
 			$response['searchUrl'] = '/MyAccount/SuggestedTitles';
 
 			require_once ROOT_DIR . '/sys/Suggestions.php';

@@ -61,7 +61,7 @@ class GroupedWork_AJAX extends JSON_Action
 		if ($recordDriver->isValid()){
 			$description = $recordDriver->getDescription();
 			if (strlen($description) == 0){
-				$description = translate('Description not provided');
+				$description = translate(['text' => 'Description not provided', 'isPublicFacing'=>true]);
 			}
 			$description = strip_tags($description, '<a><b><p><i><em><strong><ul><li><ol>');
 			$result['success'] = true;
@@ -685,7 +685,7 @@ class GroupedWork_AJAX extends JSON_Action
 			}
 		}
 
-		$subject = translate("Library Catalog Record") . ": " . $recordDriver->getTitle();
+		$subject = translate(['text' => "Library Catalog Record", 'isPublicFacing'=>true, 'inAttribute'=>true]) . ": " . $recordDriver->getTitle();
 		$interface->assign('from', $from);
 		$interface->assign('emailDetails', $recordDriver->getEmail());
 		$interface->assign('recordID', $recordDriver->getUniqueID());

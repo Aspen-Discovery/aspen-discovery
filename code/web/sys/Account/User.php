@@ -2611,7 +2611,7 @@ class User extends DataObject
 
 	public function getFormattedHoldInfoLastLoaded(){
 		if ($this->holdInfoLastLoaded == 0){
-			return translate("Loading...");
+			return translate(['text' => "Loading...", 'isPublicFacing'=>true]);
 		}else{
 			return strftime("%I:%M %p", $this->holdInfoLastLoaded);
 		}
@@ -2619,7 +2619,7 @@ class User extends DataObject
 
 	public function getFormattedCheckoutInfoLastLoaded(){
 		if ($this->checkoutInfoLastLoaded == 0){
-			return translate("Loading...");
+			return translate(['text' => "Loading...", 'isPublicFacing'=>true]);
 		}else{
 			return strftime("%I:%M %p", $this->checkoutInfoLastLoaded);
 		}

@@ -531,7 +531,7 @@ class WebBuilder_AJAX extends JSON_Action
 						$result['message'] = 'Display form';
 						$result['title'] = 'Edit Cell';
 						$result['modalBody'] = $interface->fetch('DataObjectUtil/objectEditForm.tpl');
-						$result['modalButtons'] = "<button class='tool btn btn-primary' onclick='AspenDiscovery.WebBuilder.editCell()'>" . translate('Update Cell') . "</button>";
+						$result['modalButtons'] = "<button class='tool btn btn-primary' onclick='AspenDiscovery.WebBuilder.editCell()'>" . translate(['text' => 'Update Cell', 'isAdminFacing'=>true]) . "</button>";
 					}else{
 						$result['message'] = 'Unable to find that cell';
 					}

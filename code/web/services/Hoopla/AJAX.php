@@ -93,7 +93,7 @@ class Hoopla_AJAX extends Action
 					}
 				} else {
 					// No Hoopla Account Found, give the user an error message
-					$invalidAccountMessage = translate('hoopla_invalid_account_or_library');
+					$invalidAccountMessage = translate(['text' => 'The barcode or library for this account is not valid for Hoopla.', 'isPublicFacing'=>true]);
 					global $logger;
 					$logger->log('No valid Hoopla account was found to check out a Hoopla title.', Logger::LOG_ERROR);
 					return

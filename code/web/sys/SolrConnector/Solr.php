@@ -1192,7 +1192,11 @@ abstract class Solr
 			$validFilters = array();
 			foreach ($filter as $id => $filterTerm) {
 				list($fieldName, $term) = explode(":", $filterTerm, 2);
-				$fieldName = preg_replace('/{!tag=\d+}/', '', $fieldName);
+				$tagging = '';
+				if (preg_match("/({!tag=\d+})(.*)/", $fieldName, $matches)){
+					$tagging = $matches[1];
+					$fieldName = $matches[2];
+				}
 				if (!in_array($fieldName, $validFields)) {
 					//Special handling for availability_by_format
 					if (preg_match("/availability_by_format_([^_]+)_[\\w_]+$/", $fieldName)) {
@@ -1207,7 +1211,7 @@ abstract class Solr
 						foreach ($dynamicFields as $dynamicField) {
 							if (preg_match("/^{$dynamicField}[^_]+$/", $fieldName)) {
 								//This is a dynamic field with the wrong scope
-								$validFilters[$id] = $dynamicField . $solrScope . ":" . $term;
+								$validFilters[$id] = $tagging . $dynamicField . $solrScope . ":" . $term;
 								break;
 							}
 						}

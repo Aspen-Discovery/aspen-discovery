@@ -26,6 +26,7 @@ class IIIRecordProcessor extends IlsRecordProcessor{
 			logger.error("Unable to load marc path from indexing profile");
 		}
 		validCheckedOutStatusCodes.add("-");
+		loadOrderInformationFromExport();
 	}
 
 	protected String getDisplayGroupedStatus(ItemInfo itemInfo, String identifier) {

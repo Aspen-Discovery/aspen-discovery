@@ -448,7 +448,7 @@ class HooplaRecordDriver extends GroupedWorkSubDriver {
 
 	public function getAccessLink()
 	{
-		$title      = translate('hoopla_url_action');
+		$title = translate(['text' => 'hoopla_url_action', 'isPublicFacing'=>true]);
 		$accessLink = array(
 			'url' => $this->hooplaRawMetadata->url,
 			'title' => $title,

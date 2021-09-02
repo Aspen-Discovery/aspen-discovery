@@ -688,19 +688,19 @@ class GroupedWorkDriver extends IndexRecordDriver
 				$summLanguage = $relatedRecord->language;
 			} else {
 				if ($summPublisher != $relatedRecord->publisher) {
-					$summPublisher = $alwaysShowMainDetails ? translate('Varies, see individual formats and editions') : null;
+					$summPublisher = $alwaysShowMainDetails ? translate(['text' => 'Varies, see individual formats and editions', 'isPublicFacing'=>true]) : null;
 				}
 				if ($summPubDate != $relatedRecord->publicationDate) {
-					$summPubDate = $alwaysShowMainDetails ? translate('Varies, see individual formats and editions') : null;
+					$summPubDate = $alwaysShowMainDetails ? translate(['text' => 'Varies, see individual formats and editions', 'isPublicFacing'=>true]) : null;
 				}
 				if ($summPhysicalDesc != $relatedRecord->physical) {
-					$summPhysicalDesc = $alwaysShowMainDetails ? translate('Varies, see individual formats and editions') : null;
+					$summPhysicalDesc = $alwaysShowMainDetails ? translate(['text' => 'Varies, see individual formats and editions', 'isPublicFacing'=>true]) : null;
 				}
 				if ($summEdition != $relatedRecord->edition) {
-					$summEdition = $alwaysShowMainDetails ? translate('Varies, see individual formats and editions') : null;
+					$summEdition = $alwaysShowMainDetails ? translate(['text' => 'Varies, see individual formats and editions', 'isPublicFacing'=>true]) : null;
 				}
 				if ($summLanguage != $relatedRecord->language) {
-					$summLanguage = $alwaysShowMainDetails ? translate('Varies, see individual formats and editions') : null;
+					$summLanguage = $alwaysShowMainDetails ? translate(['text' => 'Varies, see individual formats and editions', 'isPublicFacing'=>true]) : null;
 				}
 			}
 			$isFirst = false;
@@ -764,7 +764,7 @@ class GroupedWorkDriver extends IndexRecordDriver
 			$description = $this->getDescriptionFast();
 		}
 		if ($description == null || strlen($description) == 0) {
-			$description = translate('Description Not Provided');
+			$description = translate(['text' => 'Description Not Provided', 'isPublicFacing'=>true]);
 		}
 		return $description;
 	}
@@ -1598,19 +1598,19 @@ class GroupedWorkDriver extends IndexRecordDriver
 				$summLanguage = $relatedRecord->language;
 			} else {
 				if ($summPublisher != $relatedRecord->publisher) {
-					$summPublisher = $alwaysShowMainDetails ? translate('Varies, see individual formats and editions') : null;
+					$summPublisher = $alwaysShowMainDetails ? translate(['text' => 'Varies, see individual formats and editions', 'isPublicFacing'=>true]) : null;
 				}
 				if ($summPubDate != $relatedRecord->publicationDate) {
-					$summPubDate = $alwaysShowMainDetails ? translate('Varies, see individual formats and editions') : null;
+					$summPubDate = $alwaysShowMainDetails ? translate(['text' => 'Varies, see individual formats and editions', 'isPublicFacing'=>true]) : null;
 				}
 				if ($summPhysicalDesc != $relatedRecord->physical) {
-					$summPhysicalDesc = $alwaysShowMainDetails ? translate('Varies, see individual formats and editions') : null;
+					$summPhysicalDesc = $alwaysShowMainDetails ? translate(['text' => 'Varies, see individual formats and editions', 'isPublicFacing'=>true]) : null;
 				}
 				if ($summEdition != $relatedRecord->edition) {
-					$summEdition = $alwaysShowMainDetails ? translate('Varies, see individual formats and editions') : null;
+					$summEdition = $alwaysShowMainDetails ? translate(['text' => 'Varies, see individual formats and editions', 'isPublicFacing'=>true]) : null;
 				}
 				if ($summLanguage != $relatedRecord->language) {
-					$summLanguage = $alwaysShowMainDetails ? translate('Varies, see individual formats and editions') : null;
+					$summLanguage = $alwaysShowMainDetails ? translate(['text' => 'Varies, see individual formats and editions', 'isPublicFacing'=>true]) : null;
 				}
 			}
 			$isFirst = false;
