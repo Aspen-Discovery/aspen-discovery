@@ -275,7 +275,7 @@ abstract class SearchObject_BaseSearcher
 				return $facetConfig;
 			}
 		} else {
-			return ucwords(str_replace("_", " ", translate($shortField)));
+			return ucwords(str_replace("_", " ", translate(['text'=>$shortField,'isPublicFacing'=>true])));
 		}
 	}
 
@@ -324,7 +324,7 @@ abstract class SearchObject_BaseSearcher
 					$anyLocationLabel = $this->getFacetSetting("Availability", "anyLocationLabel");
 					$display = $anyLocationLabel == '' ? "Any Marmot Location" : $anyLocationLabel;
 				} else {
-					$display = $translate ? translate($value) : $value;
+					$display = $translate ? translate(['text'=>$value,'isPublicFacing'=>true]) : $value;
 				}
 
 				$list[$facetLabel][] = array(
@@ -2162,9 +2162,9 @@ abstract class SearchObject_BaseSearcher
 	protected function getHumanReadableFieldName($field)
 	{
 		if (isset($this->searchIndexes[$field])) {
-			return translate($this->searchIndexes[$field]);
+			return translate(['text'=>$this->searchIndexes[$field],'isPublicFacing'=>true]);
 		} else if (isset($this->advancedTypes[$field])) {
-			return translate($this->advancedTypes[$field]);
+			return translate(['text'=>$this->advancedTypes[$field],'isPublicFacing'=>true]);
 		} else {
 			return $field;
 		}

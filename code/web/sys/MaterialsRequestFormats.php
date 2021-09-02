@@ -169,7 +169,7 @@ class MaterialsRequestFormats extends DataObject
 			/** @var MaterialsRequestFormats $format */
 			foreach ($defaultFormats as $format) {
 				// Gather default Author Labels and default special Fields
-				$formatAuthorLabels[$format->format] = translate($format->authorLabel);
+				$formatAuthorLabels[$format->format] = translate(['text'=>$format->authorLabel,'isPublicFacing'=>true]);
 				if (!empty($format->specialFields)) {
 					$specialFieldFormats[$format->format] = $format->specialFields;
 				}
@@ -178,7 +178,7 @@ class MaterialsRequestFormats extends DataObject
 		} else {
 			$formats->find();
 			while ($formats->fetch()) {
-				$formatAuthorLabels[$formats->format] = translate($formats->authorLabel);
+				$formatAuthorLabels[$formats->format] = translate(['text'=>$formats->authorLabel,'isPublicFacing'=>true]);
 			}
 
 			// Get Formats that use Special Fields

@@ -1359,7 +1359,6 @@ abstract class HorizonROA extends AbstractIlsDriver
 	public function getSelfRegistrationFields()
 	{
 		// SelfRegistrationEnabled?
-		/** @noinspection PhpUnusedLocalVariableInspection */
 		$patronRegDescribeResponse = $this->getWebServiceResponse($this->webServiceURL . '/user/patron/register/describe');
 
 		if(!$patronRegDescribeResponse) {

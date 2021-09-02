@@ -194,7 +194,7 @@ class Translator
 											$jsonResponse = json_decode($response);
 											if ($jsonResponse->success) {
 												$translation->translated = 1;
-												$defaultTranslation = $jsonResponse->result->translation;
+												$defaultTranslation = $jsonResponse->translation;
 												$translatedInGreenhouse = true;
 											}
 										}

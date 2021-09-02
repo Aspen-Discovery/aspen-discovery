@@ -307,9 +307,9 @@ class MyAccount_RegisterRosenLevelUP extends MyAccount
 		} elseif ($queryResponse->status == '200') { // i.e., username found
 			$queryResponse->error = $role . ' Username already exists.';
 			if ($role == 'STUDENT') {
-				$queryResponse->message = translate(['text' => 'rosen_student_username_found', 'defaultText' => "%1% %2% has already been registered with Rosen LevelUP. Please <a href=\"https://levelupreader.com/app/#/login\">log in to Rosen LevelUP</a> or register with a different Username for this %1%", 1 => translate($role), 2 => $username]);
+				$queryResponse->message = translate(['text' => 'rosen_student_username_found', 'defaultText' => "%1% %2% has already been registered with Rosen LevelUP. Please <a href=\"https://levelupreader.com/app/#/login\">log in to Rosen LevelUP</a> or register with a different Username for this %1%", 1 => translate(['text'=>$role,'isPublicFacing'=>true, 'inAttribute'=>true]), 2 => $username]);
 			} elseif ($role == 'PARENT') {
-				$queryResponse->message = translate(['text' => 'rosen_parent_username_found', 'defaultText' => "%1% %2% has already been registered with Rosen LevelUP with a different email address. Please <a href=\"https://levelupreader.com/app/#/login\">log in to Rosen LevelUP</a> or register with a different Username or a different email for this %1%", 1 => translate($role), 2 => $username]);
+				$queryResponse->message = translate(['text' => 'rosen_parent_username_found', 'defaultText' => "%1% %2% has already been registered with Rosen LevelUP with a different email address. Please <a href=\"https://levelupreader.com/app/#/login\">log in to Rosen LevelUP</a> or register with a different Username or a different email for this %1%", 1 => translate(['text'=>$role,'isPublicFacing'=>true, 'inAttribute'=>true]), 2 => $username]);
 			}
 		} else {
 			// TO DO: figure out what the other cases are and implement them

@@ -474,7 +474,6 @@ class Axis360Driver extends AbstractEContentDriver
 	{
 		require_once ROOT_DIR . '/sys/Axis360/UserAxis360Usage.php';
 		$userUsage = new UserAxis360Usage();
-		/** @noinspection DuplicatedCode */
 		$userUsage->userId = $user->id;
 		$userUsage->year = date('Y');
 		$userUsage->month = date('n');

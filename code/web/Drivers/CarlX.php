@@ -1651,7 +1651,7 @@ class CarlX extends AbstractIlsDriver{
 				'title'   => $title,
 				'bib'     => $recordId,
 				'success' => $success,
-				'message' => translate($message)
+				'message' => translate(['text'=>$message,'isPublicFacing'=>true])
 		);
 	}
 

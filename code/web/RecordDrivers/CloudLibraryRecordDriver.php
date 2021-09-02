@@ -130,7 +130,6 @@ class CloudLibraryRecordDriver extends MarcRecordDriver {
 		$interface->assign('availability', $availability);
 
 		//Other editions if applicable (only if we aren't the only record!)
-		/** @noinspection DuplicatedCode */
 		$groupedWorkDriver = $this->getGroupedWorkDriver();
 		if ($groupedWorkDriver != null){
 			$relatedRecords = $groupedWorkDriver->getRelatedRecords();
@@ -189,14 +188,14 @@ class CloudLibraryRecordDriver extends MarcRecordDriver {
 			if ($loadDefaultActions) {
 				if ($isAvailable) {
 					$this->_actions[] = array(
-						'title' => 'Check Out Cloud Library',
+						'title' => translate(['text'=>'Check Out Cloud Library','isPublicFacing'=>true]),
 						'onclick' => "return AspenDiscovery.CloudLibrary.checkOutTitle('{$this->id}');",
 						'requireLogin' => false,
 						'type' => 'cloud_library_checkout'
 					);
 				} else {
 					$this->_actions[] = array(
-						'title' => 'Place Hold Cloud Library',
+						'title' => translate(['text'=>'Place Hold Cloud Library','isPublicFacing'=>true]),
 						'onclick' => "return AspenDiscovery.CloudLibrary.placeHold('{$this->id}');",
 						'requireLogin' => false,
 						'type' => 'cloud_library_hold'

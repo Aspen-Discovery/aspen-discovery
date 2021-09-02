@@ -558,9 +558,9 @@ class LibrarySolution extends AbstractIlsDriver {
 			foreach ($placeHoldResponse->placeHoldInfos as $holdResponse){
 				if ($holdResponse->success){
 					$result['success'] = true;
-					$result['message'] = translate(['text'=>"ils_hold_success", 'defaultText'=>"Your hold was placed successfully."]);
+					$result['message'] = translate(['text'=>"Your hold was placed successfully.",'isPublicFacing'=>true]);
 				}else{
-					$result['message'] = 'Sorry, your hold could not be placed.  ' . htmlentities(translate($holdResponse->message));
+					$result['message'] = 'Sorry, your hold could not be placed.  ' . htmlentities(translate(['text'=>$holdResponse->message,'isPublicFacing'=>true]));
 				}
 			}
 		}else{

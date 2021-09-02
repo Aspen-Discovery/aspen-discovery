@@ -924,7 +924,7 @@ class SearchAPI extends Action
 				$response['subCategoryTextId'] = $subCategoryTextId;
 
 				// Set the main category label before we fetch the sub-categories main results
-				$response['label']  = translate($mainCategory->label);
+				$response['label']  = translate(['text'=>$mainCategory->label,'isPublicFacing'=>true]);
 
 				$subCategory = $this->getBrowseCategory($subCategoryTextId);
 				if ($subCategory != null){
