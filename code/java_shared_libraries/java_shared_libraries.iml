@@ -23,6 +23,7 @@
       <sourceFolder url="file://$MODULE_DIR$/src/org/marc4j/marc" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/org/marc4j/samples" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/org/marc4j/util" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$" isTestSource="false" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
