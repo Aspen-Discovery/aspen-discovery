@@ -1,122 +1,144 @@
-import React, { Component } from 'react';
-import { Alert, Image, KeyboardAvoidingView, Text, TextInput, TouchableOpacity, View, ScrollView } from 'react-native';
+import React, { Component, useState, useEffect } from 'react';
+import { ActivityIndicator, Button, FlatList, Alert, Image, KeyboardAvoidingView, Text, TextInput, TouchableOpacity, View, ScrollView } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import ModalSelector from 'react-native-modal-selector-searchable';
 import Stylesheet from './Stylesheet';
+import * as Location from 'expo-location';
 
 export default class Login extends Component {
   // set default values for the login information in the constructor
   constructor(props) {
     super(props);
-    this.state = { username: '', password: '' }
+    this.state = {
+    username: '',
+    password: '',
+    isLoading: true,
+    }
   }
 
   // handles the mount information, setting session variables, etc
   componentDidMount = async() =>{
     // store the values into the state
     this.setState({
-      url: await AsyncStorage.getItem('url'),
-      username: await AsyncStorage.getItem('username')
+    url: await AsyncStorage.getItem('url'),
+    username: await AsyncStorage.getItem('username'),
+    isLoading: false
     });
+
+    var latitude =  await AsyncStorage.getItem('latitude')
+    var longitude =  await AsyncStorage.getItem('longitude')
+
+    var greenhouseUrl = 'https://aspen-test.bywatersolutions.com/API/GreenhouseAPI?method=getLibraries&latitude=' + latitude + '&longitude=' + longitude
+    console.log(greenhouseUrl)
+
+   // fetch greenhouse data
+   fetch(greenhouseUrl, {
+   header: {
+       'Accept': 'application/json',
+       'Content-Type':'application/json'
+   },
+   timeout: 5000})
+   .then(res => res.json())
+   .then((res) => {
+       this.setState({
+           allLibraries: res.libraries
+       });
+     },(err) => {
+     console.warn('Its borked! Aspen was unable to connect to the Greenhouse. Attempted connecting to <' + greenhouseUrl +'>');
+     console.warn('Error: ',err)
+   })
+   .done((res) => {
+       this.setState({
+           isLoading: false
+       });
+     })
+
   }
 
   // clear the value of the box when clicked
   clearText = async() =>{
-    this.setState({ username: '', password: '', pickUpLabel: '' });
+    this.setState({ username: '', password: '', libraryName: '' });
+  }
+
+  clearAsyncStorage = async() => {
+      AsyncStorage.clear();
   }
 
   // shows the options for locations
   showLocationPulldown = () => {
- 
-    const data = [
-        //{ key: 0, section: true, label: 'Select your Library' },
-        { key: 'https://aspen-test.bywatersolutions.com|test', label: 'ByWater Test' },
-        { key: 'https://discover.ajaxlibrary.ca|ajax', label: 'AJAX Public Library, Ontario' },
-        { key: 'https://discovery.arcadialibrary.org|arcadia', label: 'Arcadia Public Library, California' },
-        { key: 'https://libcat.arlingtonva.us|arlingtonva', label: 'Arlington Public Library, Virginia' },
-        { key: 'https://discovery.benbrooklibrary.org|benbrook', label: 'Benbrook Public Library, Texas'},
-        { key: 'https://pathfinder.catalog.ckls.org|ckls', label: 'Central Kansas Library System, Kansas'},
-        { key: 'https://catalog.aspencat.info|clic', label: 'Colorado Library Consortium, Colorado'},
-        { key: 'https://ccfls.org|crawfordcounty', label: 'Crawford County Federated Library System, Pennsylvania'},
-        { key: 'https://catalog.dubcolib.org|dubuque', label: 'Dubuque County Library District, Iowa'},
-        { key: 'https://catalog.duchesnecountylibrary.org|duchesne', label: 'Duchesne County Library, Utah' },
-        { key: 'https://catalog.flagstaffpubliclibrary.org|flagstaff', label: 'Flagstaff City-Coconino County Public Library, Arizona'},
-        { key: 'https://catalog.jcls.org|jacksoncounty', label: 'Jackson County, Oregon' },
-        { key: 'https://catalog.library.nashville.org|nashville', label: 'Nashville Public Library, Tennessee' },
-        { key: 'https://catalog.pueblolibrary.org|pueblo', label: 'Pueblo City County Library, Colorado'},
-        { key: 'https://discovery.roundrocktexas.gov|roundrock', label: 'Round Rock Public Library, Texas'},
-        { key: 'https://discover.salinapubliclibrary.org|salinaks', label: 'Salina Public Library, Kansas' },
-        { key: 'https://catalog.santafelibrary.org|santafe', label: 'Santa Fe Public Library, New Mexico'},
-        { key: 'https://catalogbeta.swanlibraries.net|swan', label: 'SWAN Library Services, Illinois'},
-        { key: 'https://catalog.uintahlibrary.org|uintah', label: 'Uintah County Library, Utah' },
-        { key: 'https://vokal-aspen.bywatersolutions.com|vokal', label: 'Vermont Organization of Koha Automated Libraries, Vermont'},
-        { key: 'https://catalog.wasatchlibrary.org|wasatch', label: 'Wasatch County Library, Utah' },
-        { key: 'https://catalog.washoecountylibrary.us|washoe', label: 'Washoe County Library System, Nevada'},
-    ];
-
     return (
       <View>
         <ModalSelector
-          data = {data}
-          initValue = "Select your Library"
+          data = {this.state.allLibraries}
+          keyExtractor= {item => item.baseUrl.concat("|" , item.solrScope, "|", item.libraryId)}
+          labelExtractor= {item => item.name}
+          initValue = "Select your Library ▼"
           supportedOrientations = {['portrait', 'landscape']}
           animationType = 'fade'
           accessible = {true}
           cancelText = "Cancel"
           scrollViewAccessibilityLabel = {'Scrollable options'}
-          cancelButtonAccessibilityLabel = {'Cancel Button'}
-          onChange = {(option) => { this.setState({pickUpLabel: option.label, pickUpLocation:option.key})}}>
+          cancelButtonAccessibilityLabel = {'Cancel'}
+          onChange={option => { this.setState({ libraryName: option.name, libraryUrl:option.baseUrl.concat("|" , option.solrScope, "|", option.libraryId) }) }}>
           <TextInput
             style={ Stylesheet.modalSelector }
             editable = {false}
             placeholder = "Select Your Library ▼"
             placeholderTextColor = "#000"
-            value = {this.state.pickUpLabel} />
+            value = {this.state.libraryName} />
         </ModalSelector>
       </View>
     );
   }
 
   render () {
+
+   if (this.state.isLoading) {
+        return (
+          <View style={ Stylesheet.activityIndicator }>
+            <ActivityIndicator size='large' color='#272362' />
+          </View>
+        );
+      }
+
     return (
       <KeyboardAvoidingView behavior='padding' style={ Stylesheet.outerContainer }>
-
         <View style={Stylesheet.welcomeContainer}>
           <Image style={ Stylesheet.libraryLogo } source={ require('../assets/aspenLogo.png') } />
         </View>
+
         { this.showLocationPulldown() }
-        <TextInput style={ Stylesheet.input } 
+        <TextInput style={ Stylesheet.input }
           id = 'barcode'
-          placeholder = 'Library Barcode' 
+          placeholder = 'Library Barcode'
           placeholderTextColor = "#F0F0F0"
-          autoCapitalize = 'none' 
-          onChangeText = { (username) => this.setState({ username }) } 
+          autoCapitalize = 'none'
+          onChangeText = { (username) => this.setState({ username }) }
           onSubmitEditing = { () => this.passwordInput.focus() }
           returnKeyType = 'next'
-          value = { this.state.username } 
+          //value = { this.state.username }
         />
-        <TextInput style={ Stylesheet.input } 
-          placeholder = 'Password' 
+        <TextInput style={ Stylesheet.input }
+          placeholder = 'Password/PIN'
           placeholderTextColor = "#F0F0F0"
-          secureTextEntry 
-          onChangeText = { (password) => this.setState({ password }) } 
+          secureTextEntry
+          onChangeText = { (password) => this.setState({ password }) }
           onSubmitEditing = { this._login }
           ref = { (input) => this.passwordInput = input }
-          value = { this.state.password } 
+          //value = { this.state.password }
         />
-        
+
         <View style={ Stylesheet.btnContainer }>
           <TouchableOpacity style={ Stylesheet.btnFormat } onPress={ this._login }>
             <Text style={ Stylesheet.btnText }>Login</Text>
           </TouchableOpacity>
         </View>
-        <View style={ Stylesheet.btnContainer }>
-          <TouchableOpacity style={ Stylesheet.btnFormatSmall } onPress={ this.clearText }>
-            <Text style={ Stylesheet.btnTextGray }>Reset</Text>
-          </TouchableOpacity>
+        <View>
         </View>
       </KeyboardAvoidingView>
     );
+
+
   }
 
   // create a function that saves your data asyncronously
@@ -147,11 +169,11 @@ export default class Login extends Component {
     // save the login credentials to the storage
     const { username, password } = this.state;
 
-    var locationInfo = this.state.pickUpLocation.split('|');
+    var locationInfo = this.state.libraryUrl.split('|');
+    console.log(locationInfo);
 
     const random = new Date().getTime(); // included to ensure that we're pulling the most recent information
-    const url = locationInfo[0] + '/app/aspenLogin.php?library=' + locationInfo[1] + '&barcode=' + this.state.username + '&pin=' + this.state.password + '&rand=' + random;
-
+    const url = locationInfo[0] + '/app/aspenLogin.php?id='+ locationInfo[2] + '&library=' + locationInfo[1] + '&barcode=' + this.state.username + '&pin=' + this.state.password + '&rand=' + random;
     fetch(url)
     .then(res => res.json())
     .then(res => {
@@ -159,7 +181,7 @@ export default class Login extends Component {
  
       // verify if the login credentials match the system
       if (data.ValidLogin === 'Yes') {
-        this._storeData(data, username, password, locationInfo[0], locationInfo[1]);
+        this._storeData(data, username, password, locationInfo[0], locationInfo[1], locationInfo[2]);
 
       } else {
         // no good login - fail
@@ -167,7 +189,16 @@ export default class Login extends Component {
       }
     })
     .catch(error => {
-      console.log("get data error from:" + url + " error:" + error);
+      console.log("get data error from: " + url + " error:" + error);
     });
   };
+
+  async _cacheResourcesAsync() {
+      const images = [require('../assets/aspenLogo.png')];
+
+      const cacheImages = images.map(image => {
+        return Asset.fromModule(image).downloadAsync();
+      });
+      return Promise.all(cacheImages);
+    }
 }

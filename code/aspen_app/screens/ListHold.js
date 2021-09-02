@@ -92,7 +92,7 @@ export default class ListHold extends Component {
     );
   };
 
-  getHeader = () => {
+/*  getHeader = () => {
     return (
       <View>
         <View style={ Stylesheet.accountInformation }>
@@ -100,7 +100,7 @@ export default class ListHold extends Component {
         </View>
       </View>
     );
-  }
+  }*/
   
   render() {
     if (this.state.isLoading) {
@@ -117,7 +117,7 @@ export default class ListHold extends Component {
           data={ this.state.data } 
           ListEmptyComponent = { this._listEmptyComponent() }
           renderItem={( {item} ) => this.renderNativeItem(item) }  
-          ListHeaderComponent={ this.getHeader() }
+          //ListHeaderComponent={ this.getHeader() }
         />
       </View>
     );
