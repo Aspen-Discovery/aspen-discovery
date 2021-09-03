@@ -42,7 +42,6 @@
         <SOURCES />
       </library>
     </orderEntry>
-    <orderEntry type="library" name="java_shared_libraries" level="project" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
 </module>

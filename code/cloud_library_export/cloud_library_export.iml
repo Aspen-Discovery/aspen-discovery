@@ -27,18 +27,7 @@
         <SOURCES />
       </library>
     </orderEntry>
-    <orderEntry type="module-library">
-      <library>
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/../reindexer/reindexer.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES>
-          <root url="jar://$MODULE_DIR$/../reindexer/reindexer.jar!/src" />
-          <root url="file://$MODULE_DIR$/../reindexer/src" />
-        </SOURCES>
-      </library>
-    </orderEntry>
+    <orderEntry type="module" module-name="reindexer" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
 </module>

@@ -1685,45 +1685,49 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 						}
 						if (!empty($indexingProfile->noteSubfield)){
 							//Get the item for the
-							$itemField = $itemsFromMarc[$copyInfo['itemId']];
-							$copyInfo['note'] = '';
-							if (!empty($itemField)) {
-								$noteSubfield = $itemField->getSubfield($indexingProfile->noteSubfield);
-								if ($noteSubfield != null && !empty($noteSubfield->getData())) {
-									//Check to see if this needs to be translated
-									$note = $noteSubfield->getData();
-									if ($noteTranslationMap != null){
+							if (array_key_exists($copyInfo['itemId'], $itemsFromMarc)) {
+								$itemField = $itemsFromMarc[$copyInfo['itemId']];
+								$copyInfo['note'] = '';
+								if (!empty($itemField)) {
+									$noteSubfield = $itemField->getSubfield($indexingProfile->noteSubfield);
+									if ($noteSubfield != null && !empty($noteSubfield->getData())) {
+										//Check to see if this needs to be translated
+										$note = $noteSubfield->getData();
+										if ($noteTranslationMap != null) {
 
-										foreach ($noteTranslationMap->getTranslationMapValues() as $translationMapValue){
-											if ($noteTranslationMap->usesRegularExpressions){
-												if (preg_match('~' . $translationMapValue->value . '~', $note)) {
-													$note = $translationMapValue->translation;
-													break;
-												}
-											}else {
-												if ($translationMapValue->value == $note) {
-													$note = $translationMapValue->translation;
-													break;
+											foreach ($noteTranslationMap->getTranslationMapValues() as $translationMapValue) {
+												if ($noteTranslationMap->usesRegularExpressions) {
+													if (preg_match('~' . $translationMapValue->value . '~', $note)) {
+														$note = $translationMapValue->translation;
+														break;
+													}
+												} else {
+													if ($translationMapValue->value == $note) {
+														$note = $translationMapValue->translation;
+														break;
+													}
 												}
 											}
 										}
+										$copyInfo['note'] = $note;
 									}
-									$copyInfo['note'] = $note;
 								}
 							}
 						}
 						if (!empty($indexingProfile->dueDate)){
 							//Get the item for the
-							$itemField = $itemsFromMarc[$copyInfo['itemId']];
-							$copyInfo['dueDate'] = '';
-							if (!empty($itemField)) {
-								$dueDateSubfield = $itemField->getSubfield($indexingProfile->dueDate);
-								if ($dueDateSubfield != null && !empty($dueDateSubfield->getData())) {
-									$dueDateTime = DateTime::createFromFormat($dueDateFormatPHP, $dueDateSubfield->getData());
-									if ($dueDateTime != false){
-										$copyInfo['dueDate'] = $dueDateTime->getTimestamp();
-									}else{
-										$copyInfo['dueDate'] = strtotime($dueDateSubfield->getData());
+							if (array_key_exists($copyInfo['itemId'], $itemsFromMarc)) {
+								$itemField = $itemsFromMarc[$copyInfo['itemId']];
+								$copyInfo['dueDate'] = '';
+								if (!empty($itemField)) {
+									$dueDateSubfield = $itemField->getSubfield($indexingProfile->dueDate);
+									if ($dueDateSubfield != null && !empty($dueDateSubfield->getData())) {
+										$dueDateTime = DateTime::createFromFormat($dueDateFormatPHP, $dueDateSubfield->getData());
+										if ($dueDateTime != false) {
+											$copyInfo['dueDate'] = $dueDateTime->getTimestamp();
+										} else {
+											$copyInfo['dueDate'] = strtotime($dueDateSubfield->getData());
+										}
 									}
 								}
 							}
