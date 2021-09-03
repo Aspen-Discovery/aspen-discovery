@@ -1296,7 +1296,14 @@ class Millennium extends AbstractIlsDriver
 		$finesVal = floatval(preg_replace('/[^\\d.]/', '', $patronDump['MONEY_OWED']));
 
 		$summary->numCheckedOut = $patronDump['CUR_CHKOUT'];
-		$summary->numOverdue = 0;
+		$checkouts = $patron->getCheckouts(false);
+		$numOverdue = 0;
+		foreach ($checkouts as $checkout){
+			if ($checkout->isOverdue()){
+				$numOverdue++;
+			}
+		}
+		$summary->numOverdue = $numOverdue;
 		$summary->numAvailableHolds = $numHoldsAvailable;
 		$summary->numUnavailableHolds = $numHoldsRequested;
 		$summary->totalFines = $finesVal;
