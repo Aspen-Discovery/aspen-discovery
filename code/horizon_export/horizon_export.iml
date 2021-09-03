@@ -6,7 +6,6 @@
       <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
     </content>
     <orderEntry type="inheritedJdk" />
-    <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module-library">
       <library>
         <CLASSES>
@@ -53,5 +52,6 @@
       </library>
     </orderEntry>
     <orderEntry type="module" module-name="java_shared_libraries" />
+    <orderEntry type="sourceFolder" forTests="false" />
   </component>
 </module>

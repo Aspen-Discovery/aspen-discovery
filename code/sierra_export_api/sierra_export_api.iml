@@ -6,7 +6,6 @@
       <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
     </content>
     <orderEntry type="inheritedJdk" />
-    <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="opencsv-4.5" level="project" />
     <orderEntry type="library" name="log4j-api-2.11.2" level="project" />
     <orderEntry type="library" name="ini4j-0.5.5-SNAPSHOT" level="project" />
@@ -34,5 +33,6 @@
         </SOURCES>
       </library>
     </orderEntry>
+    <orderEntry type="sourceFolder" forTests="false" />
   </component>
 </module>

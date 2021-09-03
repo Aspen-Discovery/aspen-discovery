@@ -26,7 +26,6 @@
       <sourceFolder url="file://$MODULE_DIR$" isTestSource="false" />
     </content>
     <orderEntry type="inheritedJdk" />
-    <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="log4j-api-2.11.2" level="project" />
     <orderEntry type="library" name="ini4j-0.5.5-SNAPSHOT" level="project" />
     <orderEntry type="library" name="log4j-core-2.11.2" level="project" />
@@ -44,5 +43,6 @@
       </library>
     </orderEntry>
     <orderEntry type="library" name="java_shared_libraries" level="project" />
+    <orderEntry type="sourceFolder" forTests="false" />
   </component>
 </module>
