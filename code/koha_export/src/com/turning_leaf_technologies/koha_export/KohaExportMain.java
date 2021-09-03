@@ -283,7 +283,7 @@ public class KohaExportMain {
 			PreparedStatement getKohaCoversStmt;
 			PreparedStatement getKohaCoverStmt;
 			float kohaVersion = getKohaVersion(kohaConn);
-			if (kohaVersion >= 21.05) {
+			if (kohaVersion >= 20.11) {
 				getKohaCoversStmt = kohaConn.prepareStatement("SELECT timestamp, imagenumber, biblionumber from cover_images", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 				getKohaCoverStmt = kohaConn.prepareStatement("SELECT imagefile, mimetype from cover_images  where imagenumber = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			}else{
