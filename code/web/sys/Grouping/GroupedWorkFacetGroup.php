@@ -13,7 +13,6 @@ class GroupedWorkFacetGroup extends DataObject
 		$facetSettingStructure = GroupedWorkFacet::getObjectStructure();
 		unset($facetSettingStructure['weight']);
 		unset($facetSettingStructure['facetGroupId']);
-		unset($facetSettingStructure['numEntriesToShowByDefault']);
 		unset($facetSettingStructure['showAsDropDown']);
 
 		$structure = [

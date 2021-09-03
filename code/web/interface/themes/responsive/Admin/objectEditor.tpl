@@ -21,7 +21,7 @@
 			{if !empty($id)}
 				<a class="btn btn-default" href='/{$module}/{$toolName}?id={$id}&amp;objectAction=history'>{translate text="History" isAdminFacing=true}</a>
 			{/if}
-			{if $id > 0 && $canDelete}<a class="btn btn-danger" href='/{$module}/{$toolName}?id={$id}&amp;objectAction=delete' onclick='return confirm("{translate text='Are you sure you want to delete this %1%?' 1=$objectType isAdminFacing=true}")'>{translate text="Delete" isAdminFacing=true}</a>{/if}
+			{if $id > 0 && $canDelete}<a class="btn btn-danger" href='/{$module}/{$toolName}?id={$id}&amp;objectAction=delete' onclick='return confirm("{translate text='Are you sure you want to delete this %1%?' 1=$objectType inAttribute=true isAdminFacing=true}")'>{translate text="Delete" isAdminFacing=true}</a>{/if}
 		</p>
 		<div class="btn-group">
 			{foreach from=$additionalObjectActions item=action}
