@@ -1104,6 +1104,8 @@ abstract class MarcRecordProcessor {
 			leaderBit = leader.charAt(6);
 			if (Character.toUpperCase(leaderBit) == 'J') {
 				printFormats.add("MusicRecording");
+			}else if (Character.toUpperCase(leaderBit) == 'D') {
+				printFormats.add("LargePrint");
 			}
 		}
 		//Check for braille
