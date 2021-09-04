@@ -28,6 +28,7 @@
   - [Catalog / Grouped Works](/Admin/HelpManual?page=Catalog-Grouped-Works)
     - [Cataloging](/Admin/HelpManual?page=Cataloging)
       - [Bib Level Format](/Admin/HelpManual?page=Bib-Level-Format)
+      - [Defining Covers in MARC](/Admin/HelpManual?page=Defining-Covers-MARC)
     - [Grouped Works](/Admin/HelpManual?page=Grouped-Works)
     - [Grouped Work Display Settings](/Admin/HelpManual?page=Grouped-Work-Display-Settings)
     - [Grouped Work Facets](/Admin/HelpManual?page=Grouped-Work-Facets)

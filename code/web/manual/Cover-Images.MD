@@ -14,6 +14,7 @@
       - Click on OMDB Settings
       - Click on Syndetics Settings
  - Manually uploading cover images 
+ - [Defining Covers in MARC](/Admin/HelpManual?page=Defining-Covers-MARC)
 
 [![Covers](/manual/images/Covers.jpg)](https://youtu.be/oS8Qrasrhuw)
 

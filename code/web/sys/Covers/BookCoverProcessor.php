@@ -527,7 +527,7 @@ class BookCoverProcessor{
 			/** @var File_MARC_Data_Field $marcField */
 			foreach ($marcFields as $marcField){
 				//Check to see if this is a cover to use for VuFind
-				if ($marcField->getSubfield('2') && strcasecmp(trim($marcField->getSubfield('2')->getData()), 'Vufind_Image') == 0){
+				if ($marcField->getSubfield('2') && (strcasecmp(trim($marcField->getSubfield('2')->getData()), 'Vufind_Image') == 0 || strcasecmp(trim($marcField->getSubfield('2')->getData()), 'Aspen') == 0)){
 					if ($marcField->getSubfield('3') && (strcasecmp(trim($marcField->getSubfield('3')->getData()), 'Cover Image') == 0 || strcasecmp(trim($marcField->getSubfield('3')->getData()), 'CoverImage') == 0)){
 						//Can use either subfield f or subfield u
 						if ($marcField->getSubfield('f')){
