@@ -1745,13 +1745,13 @@ class Koha extends AbstractIlsDriver
 
 				$postParams['pickup_library_id'] = $newPickupLocation;
 				$postParams['priority'] = $currentHold->priority;
-				$postParams = json_encode($postParams);
 				if ($this->getKohaVersion() >= 21.05){
 					$method = 'PATCH';
 				}else{
 					$method = 'PUT';
 					$postParams['branchcode'] = $newPickupLocation;
 				}
+				$postParams = json_encode($postParams);
 				$response = $this->apiCurlWrapper->curlSendPage($apiUrl, $method, $postParams);
 				if (!$response) {
 					return $result;

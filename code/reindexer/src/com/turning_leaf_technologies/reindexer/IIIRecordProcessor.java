@@ -177,7 +177,7 @@ class IIIRecordProcessor extends IlsRecordProcessor{
 			return;
 		}
 		itemInfo.setLocationCode(location);
-		itemInfo.setItemIdentifier(orderNumber);
+		itemInfo.setItemIdentifier(orderNumber + "-" + location);
 		itemInfo.setNumCopies(orderItem.getNumCopies());
 		itemInfo.setIsEContent(false);
 		itemInfo.setIsOrderItem();

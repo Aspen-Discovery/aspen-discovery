@@ -5,16 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="9a7bc6aa-b294-4e08-985c-3b6e4b5b29e4" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/../axis_360_export/axis_360_export.iml" beforeDir="false" afterPath="$PROJECT_DIR$/../axis_360_export/axis_360_export.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../axis_360_export/axis_360_export.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../axis_360_export/axis_360_export.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../carlx_export/carlx_export.iml" beforeDir="false" afterPath="$PROJECT_DIR$/../carlx_export/carlx_export.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../carlx_export/carlx_export.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../carlx_export/carlx_export.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../cloud_library_export/cloud_library_export.iml" beforeDir="false" afterPath="$PROJECT_DIR$/../cloud_library_export/cloud_library_export.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../cloud_library_export/cloud_library_export.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../cloud_library_export/cloud_library_export.jar" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../koha_export/src/com/turning_leaf_technologies/koha_export/KohaExportMain.java" beforeDir="false" afterPath="$PROJECT_DIR$/../koha_export/src/com/turning_leaf_technologies/koha_export/KohaExportMain.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../web/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../web/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web_indexer/web_indexer.iml" beforeDir="false" afterPath="$PROJECT_DIR$/../web_indexer/web_indexer.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web_indexer/web_indexer.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../web_indexer/web_indexer.jar" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -63,7 +56,7 @@
     <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1557953281623" />
     <property name="extract.method.default.visibility" value="private" />
     <property name="last_directory_selection" value="$PROJECT_DIR$/../java_shared_libraries/src/com/turning_leaf_technologies" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/../reindexer/reindexer.jar" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../reindexer/src" />
     <property name="project.structure.last.edited" value="Modules" />
     <property name="project.structure.proportion" value="0.15" />
     <property name="project.structure.side.proportion" value="0.2" />
@@ -222,7 +215,7 @@
     <configuration name="Reindexer Full" type="Application" factoryName="Application">
       <option name="MAIN_CLASS_NAME" value="com.turning_leaf_technologies.reindexer.GroupedReindexMain" />
       <module name="reindexer" />
-      <option name="PROGRAM_PARAMETERS" value="basinlibraries.localhost nightly" />
+      <option name="PROGRAM_PARAMETERS" value="penticton.localhost full" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/../reindexer" />
       <method v="2">
         <option name="Make" enabled="true" />
@@ -240,7 +233,6 @@
     <configuration name="Side Load Processing" type="Application" factoryName="Application">
       <option name="MAIN_CLASS_NAME" value="com.turning_leaf_technologies.sideloading.SideLoadingMain" />
       <module name="sideload_processing" />
-      <option name="PROGRAM_PARAMETERS" value="swan.localhost" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/../sideload_processing" />
       <method v="2">
         <option name="Make" enabled="true" />
@@ -362,11 +354,6 @@
           <option name="timeStamp" value="68" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/grouping/MarcRecordGrouper.java</url>
-          <line>200</line>
-          <option name="timeStamp" value="69" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../polaris_export/src/com/turning_leaf_technologies/polaris/PolarisExportMain.java</url>
           <line>663</line>
           <option name="timeStamp" value="83" />
@@ -375,11 +362,6 @@
           <url>file://$PROJECT_DIR$/../polaris_export/src/com/turning_leaf_technologies/polaris/PolarisExportMain.java</url>
           <line>643</line>
           <option name="timeStamp" value="84" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/GroupedWorkIndexer.java</url>
-          <line>1637</line>
-          <option name="timeStamp" value="111" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <condition expression="recordId == 24078850" language="JAVA" />
@@ -396,11 +378,6 @@
           <url>file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/OverDriveProcessor.java</url>
           <line>274</line>
           <option name="timeStamp" value="138" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/GroupedWorkSolr.java</url>
-          <line>207</line>
-          <option name="timeStamp" value="139" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/GroupedReindexMain.java</url>

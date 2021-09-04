@@ -6,7 +6,6 @@
       <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
     </content>
     <orderEntry type="inheritedJdk" />
-    <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="java_shared_libraries" />
     <orderEntry type="module-library">
       <library>
@@ -20,16 +19,7 @@
         <jarDirectory url="file://$MODULE_DIR$/../java_shared_libraries" recursive="false" />
       </library>
     </orderEntry>
-    <orderEntry type="module-library">
-      <library>
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/../reindexer/reindexer.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES>
-          <root url="jar://$MODULE_DIR$/../reindexer/reindexer.jar!/src" />
-        </SOURCES>
-      </library>
-    </orderEntry>
+    <orderEntry type="module" module-name="reindexer" />
+    <orderEntry type="sourceFolder" forTests="false" />
   </component>
 </module>

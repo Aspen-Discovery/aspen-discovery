@@ -1111,6 +1111,8 @@ abstract class MarcRecordProcessor {
 			if (fixedField.getData().length() > 23){
 				if (fixedField.getData().charAt(23) == 'f'){
 					printFormats.add("Braille");
+				}else if (fixedField.getData().charAt(23) == 'd') {
+					printFormats.add("LargePrint");
 				}
 			}
 		}
