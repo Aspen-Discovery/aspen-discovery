@@ -6,6 +6,11 @@ class Translation_ImportTranslations extends Admin_Admin
 {
 	function launch(){
 		global $interface;
+
+		//Figure out the maximum upload size
+		require_once ROOT_DIR . '/sys/Utils/SystemUtils.php';
+		$interface->assign('max_file_size', SystemUtils::file_upload_max_size() / (1024 * 1024));
+
 		if (isset($_REQUEST['submit'])){
 			//Make sure we don't time out while loading translations
 			set_time_limit(-1);

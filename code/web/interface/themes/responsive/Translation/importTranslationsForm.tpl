@@ -29,13 +29,29 @@
 		{/foreach}
 
 		<div class="form-group">
-			<label for="importFile" class="control-label">{translate text="Select a file to import" isAdminFacing=true}</label>
-			<input type="file" name="importFile" id="importFile">
+			<div class="input-group">
+				<label class="input-group-btn">
+					<span class="btn btn-primary">
+						{translate text="Select a file to import" isAdminFacing=true}&hellip; <input type="file" style="display: none;" name="importFile" id="importFile">
+					</span>
+				</label>
+				<input type="text" class="form-control" id="importFile-label" readonly>
+			</div>
+			<small id="importFileHelp" class="form-text text-muted">{translate text="CSV Files can be uploaded, must be %1%MB or less." 1=$max_file_size isAdminFacing=true}</small>
 		</div>
 
 		<div class="form-group">
 			<button type="submit" name="submit" class="btn btn-primary">{translate text="Import" isAdminFacing=true}</button>
 		</div>
 	</form>
+	<script type="application/javascript">
+		{literal}
+		$(document).on('change', ':file', function() {
+			var input = $(this);
+			var label = input.val().replace(/\\/g, '/').replace(/.*\//, '');
+			$("#importFile-label").val(label);
+		});
+		{/literal}
+	</script>
 </div>
 {/strip}
