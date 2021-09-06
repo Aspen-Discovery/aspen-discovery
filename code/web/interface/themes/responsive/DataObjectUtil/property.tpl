@@ -198,10 +198,28 @@
 		{elseif $property.type == 'uploaded_font'}
 			<div class="row">
 				<div class="col-sm-7">
-					<input type="file" name='{$propName}' id='{$propName}' size="80">
-					{if $propValue}
-						{translate text="Existing font" isAdminFacing=true} {$propValue} <input type='checkbox' name='remove{$propName}' id='remove{$propName}'> <label for="remove{$propName}">{translate text="Remove"  isAdminFacing=true}</label>
+					<div class="input-group">
+						<label class="input-group-btn">
+							<span class="btn btn-primary">
+								{translate text="Select a font" isAdminFacing=true}&hellip; <input type="file" style="display: none;" name="{$propName}" id="{$propName}">
+							</span>
+						</label>
+						<input type="text" class="form-control" id="importFile-label-{$propName}" readonly value="{$propValue}">
+					</div>
+					{if !empty($propValue)}
+						<div class="input-group">
+							<input type='checkbox' name='remove{$propName}' id='remove{$propName}'> <label for="remove{$propName}">{translate text="Remove"  isAdminFacing=true}</label>
+						</div>
 					{/if}
+					<script type="application/javascript">
+						{literal}
+						$(document).on('change', '#{/literal}{$propName}{literal}:file', function() {
+							var input = $(this);
+							var label = input.val().replace(/\\/g, '/').replace(/.*\//, '');
+							$("#importFile-label-{/literal}{$propName}{literal}").val(label);
+						});
+						{/literal}
+					</script>
 				</div>
 				<div class="col-sm-5">
 					<div id="{$propName}-sample-text" style="font-family: {$propValue},arial; font-size: {if $property.previewFontSize}{$property.previewFontSize}{else}12px{/if}">
@@ -243,30 +261,44 @@
 			{include file="DataObjectUtil/multiSelect.tpl"}
 
 		{elseif $property.type == 'image' || $property.type == 'file'}
-			{if $propValue}
-				{if $property.type == 'image'}
-					{if $property.thumbWidth}
-						<img src='/files/thumbnail/{$propValue}' style="display: block" alt="Selected Image for {$property.label}">
-						{$propValue} &nbsp;
-					{else}
-
-						{if $property.displayUrl}
-							<img src='{$property.displayUrl}{$object->id}' style="display: block" alt="Selected Image for {$property.label}">
-						{else}
-							<img src='/files/original/{$propValue}' style="display: block" alt="Selected Image for {$property.label}">
-						{/if}
-						{$propValue} &nbsp;
-					{/if}
-					<input type='checkbox' name='remove{$propName}' id='remove{$propName}'> <label for="remove{$propName}">{translate text="Remove image" isAdminFacing=true}</label>
-					<br>
+			{if !empty($propValue) && $property.type == 'image'}
+				{if $property.thumbWidth}
+					<img src='/files/thumbnail/{$propValue}' style="display: block" alt="Selected Image for {$property.label}">
 				{else}
-					{translate text="Existing file %1%" 1=$propValue isAdminFacing=true}
-					<input type='hidden' name='{$propName}_existing' id='{$propName}_existing' value='{$propValue|escape}'>
-
+					{if $property.displayUrl}
+						<img src='{$property.displayUrl}{$object->id}' style="display: block" alt="Selected Image for {$property.label}">
+					{else}
+						<img src='/files/original/{$propValue}' style="display: block" alt="Selected Image for {$property.label}">
+					{/if}
 				{/if}
 			{/if}
-			{* Display a table of the association with the ability to add and edit new values *}
-			<input type="file" name='{$propName}' id='{$propName}' size="80" {if $property.required && $objectAction != 'edit'}required="required"{/if}>
+			<div class="input-group">
+				<label class="input-group-btn">
+					<span class="btn btn-primary">
+						{if $property.type == 'image'}
+							{translate text="Select an image" isAdminFacing=true}&hellip; <input type="file" style="display: none;" name="{$propName}" id="{$propName}" {if $property.required && $objectAction != 'edit'}required="required"{/if}>
+						{else}
+							{translate text="Select a file" isAdminFacing=true}&hellip; <input type="file" style="display: none;" name="{$propName}" id="{$propName}" {if $property.required && $objectAction != 'edit'}required="required"{/if}>
+						{/if}
+					</span>
+				</label>
+				<input type="text" class="form-control" id="importFile-label-{$propName}" readonly value="{$propValue}">
+				<input type='hidden' name='{$propName}_existing' id='{$propName}_existing' value='{$propValue|escape}'>
+			</div>
+			{if !empty($propValue)}
+				<div class="input-group">
+					<input type='checkbox' name='remove{$propName}' id='remove{$propName}'> <label for="remove{$propName}">{translate text="Remove"  isAdminFacing=true}</label>
+				</div>
+			{/if}
+			<script type="application/javascript">
+				{literal}
+				$(document).on('change', '#{/literal}{$propName}{literal}:file', function() {
+					var input = $(this);
+					var label = input.val().replace(/\\/g, '/').replace(/.*\//, '');
+					$("#importFile-label-{/literal}{$propName}{literal}").val(label);
+				});
+				{/literal}
+			</script>
 		{elseif $property.type == 'checkbox'}
 			<div class="checkbox">
 				<label for='{$propName}'{if $property.description} title="{$property.description}"{/if}>
