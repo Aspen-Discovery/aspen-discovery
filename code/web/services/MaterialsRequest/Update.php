@@ -74,6 +74,7 @@ class MaterialsRequest_Update extends Action {
 				$materialsRequest->holdPickupLocation  = empty($_REQUEST['holdPickupLocation']) ? '' : $_REQUEST['holdPickupLocation'];
 				$materialsRequest->bookmobileStop      = empty($_REQUEST['bookmobileStop']) ? '' : $_REQUEST['bookmobileStop'];
 				$materialsRequest->illItem             = empty($_REQUEST['illItem']) ? 0 : $_REQUEST['illItem'];
+				$materialsRequest->emailSent           = empty($_REQUEST['emailSent']) ? 0 : $_REQUEST['emailSent'];
 				$statusChanged = false;
 				if (!empty($_REQUEST['status'])){
 					if ($materialsRequest->status != $_REQUEST['status']){

@@ -49,6 +49,11 @@ class MaterialsRequest extends DataObject
 	public $numRequests;
 	public $description;
 
+	public function getNumericColumnNames(): array
+	{
+		return ['emailSent', 'holdsCreated'];
+	}
+
 	static function getFormats(){
 		require_once ROOT_DIR . '/sys/MaterialsRequestFormats.php';
 		$customFormats = new MaterialsRequestFormats();
