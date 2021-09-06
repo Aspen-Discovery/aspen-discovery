@@ -49,7 +49,7 @@ class LibraryLink extends DataObject{
 			'url' => ['property'=>'url', 'type'=>'text', 'label'=>'URL', 'description'=>'The url to link to', 'size'=>'80', 'maxLength'=>255],
 			'htmlContents' => ['property'=>'htmlContents', 'type'=>'html', 'label'=>'HTML Contents', 'description'=>'Optional full HTML contents to show rather than showing a basic link within the sidebar.',],
 			'showInTopMenu' => ['property'=>'showInTopMenu', 'type'=>'checkbox', 'label'=>'Show In Top Menu (large screens only)', 'description'=>'Show the link in the top menu for large screens', 'default'=>0],
-			'alwaysShowIconInTopMenu' => ['property'=>'alwaysShowIconInTopMenu', 'type'=>'checkbox', 'label'=>'Always Show Icon In Top Menu', 'description'=>'Always show the icon in the top menu at all screen sizes', 'default'=>0],
+			'alwaysShowIconInTopMenu' => ['property'=>'alwaysShowIconInTopMenu', 'type'=>'checkbox', 'label'=>'Show Icon In Top Menu (all screen sizes)', 'description'=>'Always show the icon in the top menu at all screen sizes', 'default'=>0],
 			'showExpanded' => ['property'=>'showExpanded', 'type'=>'checkbox', 'label'=>'Show Expanded', 'description'=>'Expand the category by default',],
 			'openInNewTab' => ['property' => 'openInNewTab', 'type'=>'checkbox', 'label'=>'Open In New Tab', 'description'=>'Determine whether or not the link should be opened in a new tab', 'default'=>1],
 			'published' => ['property' => 'published', 'type' => 'checkbox','label'=>'Published', 'description'=>'The content is published and should be shown to all users','default'=>1],

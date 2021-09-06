@@ -11,7 +11,7 @@
 		</a>
 		{foreach from=$libraryLinks key=categoryName item=menuCategory}
 			{assign var=topCategory value=$menuCategory|@reset}
-			{if $topCategory->showInTopMenu || $topCategory->alwaysShowIconInTopMenu}
+			{if $topCategory->showInTopMenu || ($topCategory->alwaysShowIconInTopMenu && !empty($topCategory->iconName))}
 				{if count($menuCategory) > 1}
 					<div class="dropdown menuToggleButton {$topCategory->getEscapedCategory()}Menu" style="display:inline-block;">
 						<a id="{$topCategory->getEscapedCategory()}-menu-trigger" tabindex="0" class="dropdown-toggle menu-icon menu-bar-option {if !$topCategory->alwaysShowIconInTopMenu}visible-inline-block-lg{/if}" aria-label="{translate text=$categoryName inAttribute=true isPublicFacing=true}"  aria-haspopup="true" aria-expanded="false" role="link">
