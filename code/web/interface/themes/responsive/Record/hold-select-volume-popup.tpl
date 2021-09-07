@@ -13,7 +13,7 @@
 				<div class="holdsSummary">
 					<input type="hidden" name="holdCount" id="holdCount" value="1">
 					<div class="alert alert-warning" id="overHoldCountWarning" {if !$showOverHoldLimit}style="display:none"{/if}>
-						{translate text=Warning: You have reached the maximum of <span class=\"maxHolds\">%1%</span> holds for your account.  You must cancel a hold before you can place a hold on this title." 1=$maxHolds isPublicFacing=true}
+						{translate text="Warning: You have reached the maximum of <span class=\"maxHolds\">%1%</span> holds for your account.  You must cancel a hold before you can place a hold on this title." 1=$maxHolds isPublicFacing=true}
 					</div>
 					<div id="holdError" class="pageWarning" style="display: none"></div>
 				</div>
