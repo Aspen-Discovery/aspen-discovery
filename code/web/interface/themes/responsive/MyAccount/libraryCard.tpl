@@ -26,7 +26,7 @@
 				<div>{$profile->displayName}</div>
 			{/if}
 			{if $showCardExpirationDate && !empty($expirationDate)}
-				{translate text="Expires %1%" 1=$expirationDate|date_format:"%D" isPublicFacing=true}
+				{translate text="Expires %1%" 1=$expirationDate|date_format:"%b %d, %Y" isPublicFacing=true}
 			{/if}
 		</div>
 	</div>

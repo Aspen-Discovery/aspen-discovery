@@ -1,7 +1,7 @@
 <h1>{translate text="No Results Found" isPublicFacing=true}</h1>
 <p class="alert alert-info">
 	{if (empty($lookfor))}
-		{translate text="Your search - <b>&lt;empty&gt;</b> - did not match any resources." isPublicFacing=true}
+		{translate text="Your search did not match any resources." isPublicFacing=true}
 	{else}
 		{translate text="Your search - <b>%1%</b> - did not match any resources." 1=$lookfor|escape:html isPublicFacing=true}
 	{/if}

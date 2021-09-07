@@ -3,8 +3,8 @@
 	<table class="table table-striped table-condensed itemSummaryTable">
 		<thead>
 		<tr>
-			<th>{translate text="Avail. Copies" isPublicFacing=true}</th>
-			<th>{translate text="quick_copy_location" defaultText="Location" isPublicFacing=true}</th>
+			<th>{translate text="Available Copies" isPublicFacing=true}</th>
+			<th>{translate text="Location" isPublicFacing=true}</th>
 			<th>{translate text="Call #" isPublicFacing=true}</th>
 		</tr>
 		</thead>

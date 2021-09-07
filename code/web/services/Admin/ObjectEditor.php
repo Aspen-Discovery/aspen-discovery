@@ -227,11 +227,21 @@ abstract class ObjectEditor extends Admin_Admin
 		if (isset($_REQUEST['id'])){
 			$id = $_REQUEST['id'];
 			$existingObject = $this->getExistingObjectById($id);
-			$interface->assign('id', $id);
-			if (method_exists($existingObject, 'label')){
-				$interface->assign('objectName', $existingObject->label());
+			if ($existingObject != null){
+				if ($existingObject->canActiveUserEdit()) {
+					$interface->assign('id', $id);
+					if (method_exists($existingObject, 'label')) {
+						$interface->assign('objectName', $existingObject->label());
+					}
+					$this->activeObject = $existingObject;
+				}else{
+					$interface->setTemplate('../Admin/noPermission.tpl');
+					return;
+				}
+			}else{
+				$interface->setTemplate('../Admin/invalidObject.tpl');
+				return;
 			}
-			$this->activeObject = $existingObject;
 		}else{
 			$existingObject = null;
 		}
@@ -356,6 +366,10 @@ abstract class ObjectEditor extends Admin_Admin
 
 	public function canCopy() {
 		return $this->canAddNew();
+	}
+
+	public function canEdit(DataObject $object){
+		return true;
 	}
 
 	public function canCompare() {
@@ -616,7 +630,6 @@ abstract class ObjectEditor extends Admin_Admin
 	}
 
 	function applyFilters(DataObject $object){
-		/** @noinspection PhpPossiblePolymorphicInvocationInspection */
 		$appliedFilters = $this->getAppliedFilters($object::getObjectStructure());
 		foreach ($appliedFilters as $fieldName => $filter){
 			if ($filter['filterType'] == 'matches'){

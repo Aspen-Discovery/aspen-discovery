@@ -269,4 +269,12 @@ class BrowseCategory extends BaseBrowsable
 		}
 		return true;
 	}
+
+	public function canActiveUserEdit(){
+		if ($this->sharing == 'everyone'){
+			return UserAccount::userHasPermission('Administer All Browse Categories');
+		}
+		//Don't need to limit for the library since the user will need Administer Library Browse Categories to even view them.
+		return true;
+	}
 }

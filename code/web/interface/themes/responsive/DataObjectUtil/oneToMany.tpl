@@ -65,17 +65,19 @@
 						{/if}
 					{/foreach}
 					<td>
-						{if $property.editLink neq ''}
-							<a href='{$property.editLink}?objectAction=edit&widgetListId={$subObject->id}&widgetId={$widgetid}' class="btn btn-sm btn-default" title="edit">
-								{translate text="Edit" isAdminFacing=true}
-							</a>
-						{elseif $property.canEdit}
-							{if method_exists($subObject, 'getEditLink')}
-								<a href='{$subObject->getEditLink()}' title='Edit' class="btn btn-sm btn-default">
+						{if $subObject->canActiveUserEdit()}
+							{if $property.editLink neq ''}
+								<a href='{$property.editLink}?objectAction=edit&widgetListId={$subObject->id}&widgetId={$widgetid}' class="btn btn-sm btn-default" title="edit">
 									{translate text="Edit" isAdminFacing=true}
 								</a>
-							{else}
-								{translate text="Please add a getEditLink method to this object" isAdminFacing=true}
+							{elseif $property.canEdit}
+								{if method_exists($subObject, 'getEditLink')}
+									<a href='{$subObject->getEditLink()}' title='Edit' class="btn btn-sm btn-default">
+										{translate text="Edit" isAdminFacing=true}
+									</a>
+								{else}
+									{translate text="Please add a getEditLink method to this object" isAdminFacing=true}
+								{/if}
 							{/if}
 						{/if}
 						{* link to delete*}
