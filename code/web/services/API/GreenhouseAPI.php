@@ -83,7 +83,7 @@ class GreenhouseAPI extends Action
 								$distance = $distance * 1.609344;
 							}
 							$distance = round($distance, 2);
-							if ($distance <= 60) {
+							if (($distance <= 60) || ($sites->name == 'Test (ByWater)')) {
 								$return['libraries'][] = [
 									'name' => $findLibrary->locationName,
 									'librarySystem' => $sites->name,
@@ -120,42 +120,51 @@ class GreenhouseAPI extends Action
 				$library = new Library();
 				$library->libraryId = $libraryId;
 				if ($library->find(true)) {
-					$baseUrl = $library->baseUrl;
-					if (empty($baseUrl)){
-						$baseUrl = $configArray['Site']['url'];
-					}
+						$baseUrl = $library->baseUrl;
 
-					$solrScope = false;
+						if (empty($baseUrl)){
+							$baseUrl = $configArray['Site']['url'];
+						}
 
-					$searchLibrary = $library;
-					if ($searchLibrary) {
-						$solrScope = $searchLibrary->subdomain;
-					}
+						$solrScope = false;
 
-					//TODO: We will eventually want to be able to search individual library branches in the app.
-					// i.e. for schools
-					//$searchLocation = $location;
-					/*if ($searchLocation && $searchLibrary->getNumSearchLocationsForLibrary() > 1) {
-						if ($searchLibrary && strtolower($searchLocation->code) == $solrScope) {
-							$solrScope .= 'loc';
+						$searchLibrary = $library;
+						if ($searchLibrary) {
+							$solrScope = $searchLibrary->subdomain;
+						}
+
+						if (!empty($location->latitude) || !empty($location->longitude)) {
+							$latitude = $location->latitude;
+							$longitude = $location->longitude;
 						} else {
-							$solrScope = strtolower($searchLocation->code);
+							$latitude = 0;
+							$longitude = 0;
 						}
-						if (!empty($searchLocation->subLocation)) {
-							$solrScope = strtolower($searchLocation->subLocation);
-						}
-					}*/
 
-					$return['library'][] = [
-						'latitude' => $location->latitude,
-						'longitude' => $location->longitude,
-						'unit' => $location->unit,
-						'locationName' => $location->displayName,
-						'locationId' => $location->locationId,
-						'libraryId' => $libraryId,
-						'solrScope' => $solrScope,
-						'baseUrl' => $baseUrl,
-					];
+						//TODO: We will eventually want to be able to search individual library branches in the app.
+						// i.e. for schools
+						//$searchLocation = $location;
+						/*if ($searchLocation && $searchLibrary->getNumSearchLocationsForLibrary() > 1) {
+							if ($searchLibrary && strtolower($searchLocation->code) == $solrScope) {
+								$solrScope .= 'loc';
+							} else {
+								$solrScope = strtolower($searchLocation->code);
+							}
+							if (!empty($searchLocation->subLocation)) {
+								$solrScope = strtolower($searchLocation->subLocation);
+							}
+						}*/
+
+						$return['library'][] = [
+							'latitude' => $latitude,
+							'longitude' => $longitude,
+							'unit' => $location->unit,
+							'locationName' => $location->displayName,
+							'locationId' => $location->locationId,
+							'libraryId' => $libraryId,
+							'solrScope' => $solrScope,
+							'baseUrl' => $baseUrl,
+						];
 				}
 			}
 		}
