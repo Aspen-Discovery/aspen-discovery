@@ -8180,6 +8180,202 @@ a.placard-link {
   border: none;
   min-height: 50vh;
 }
+#explore-more-header {
+  padding: 10px 25px 5px 0;
+  margin-top: 5px;
+  text-align: right;
+  color: #FFF;
+  background-color: #0092ca;
+  font-variant: small-caps;
+  font-weight: bold;
+  font-size: 16px;
+}
+#explore-more-body .sectionHeader {
+  text-transform: uppercase;
+  font-weight: bold;
+  color: #000075;
+  border-bottom: 2px solid #00a4e3;
+  margin-top: 15px;
+}
+#explore-more-body .section {
+  padding-right: 5px;
+  margin-bottom: 20px;
+}
+#explore-more-body .subsectionTitle {
+  color: #000075;
+}
+#explore-more-body .jcarousel-wrapper {
+  margin-left: -10px;
+  margin-top: 5px;
+}
+#explore-more-body .jcarousel {
+  left: 30px;
+  width: calc(100% - 60px);
+}
+#explore-more-body .thumbnail {
+  height: 175px;
+  background-color: transparent;
+}
+#explore-more-body .relatedTitlesContainer {
+  height: 175px;
+}
+.exploreMoreBar {
+  border: solid 1px #00a4e3;
+  margin: 10px 5px 15px;
+  background: rgba(0, 164, 227, 0.05);
+}
+.exploreMoreBar .exploreMoreBarLabel {
+  color: #FFF;
+  font-weight: bold;
+  text-transform: uppercase;
+  white-space: nowrap;
+  font-size: 18px;
+  padding: 4px;
+}
+@media (max-width: 479px) {
+  .exploreMoreBar .exploreMoreBarLabel {
+    white-space: normal;
+  }
+}
+.exploreMoreBar .label-left {
+  float: left;
+  width: 40px;
+  min-height: 167px;
+  color: #FFF;
+}
+.exploreMoreBar .label-left,
+.exploreMoreBar .label-left img {
+  background-color: #00a4e3;
+}
+.exploreMoreBar .label-left .exploreMoreBarLabel {
+  position: absolute;
+  transform: rotate(-90deg) translateX(-100%);
+  transform-origin: 0 0;
+  padding-right: 10px;
+  padding-left: 5px;
+  line-height: 40px;
+}
+.exploreMoreBar .label-left + .exploreMoreContainer {
+  padding-left: 40px;
+  margin: 16px auto;
+}
+.exploreMoreBar .label-top {
+  color: #FFF;
+  width: 100%;
+}
+.exploreMoreBar .label-top,
+.exploreMoreBar .label-top img {
+  background-color: #00a4e3;
+  display: inline-block;
+}
+.exploreMoreBar .label-top .exploreMoreBarLabel {
+  padding-left: 10px;
+  display: inline-block;
+}
+.exploreMoreBar .jcarousel-wrapper {
+  margin: 5px auto;
+}
+.exploreMoreBar .jcarousel-wrapper .jcarousel li {
+  display: block !important;
+}
+.exploreMoreBar .jcarousel-wrapper .jcarousel .explore-more-option {
+  padding-left: 10px;
+  padding-right: 10px;
+  height: 100%;
+  border: 0px !important;
+}
+.exploreMoreBar .jcarousel-wrapper .jcarousel .explore-more-option .thumbnail {
+  border: 0 solid white;
+  position: relative;
+  display: block;
+  background-color: transparent !important;
+}
+.exploreMoreBar .jcarousel-wrapper .jcarousel .explore-more-option .thumbnail a img {
+  height: 125px;
+}
+.exploreMoreBar .jcarousel-wrapper .jcarousel .explore-more-option .thumbnail .explore-more-image {
+  width: 100%;
+  position: absolute;
+  top: 62px;
+  transform: translate(-50%, -50%);
+  left: 50%;
+}
+.exploreMoreBar .jcarousel-wrapper .jcarousel .explore-more-option figcaption {
+  margin-top: 4px;
+  margin-bottom: 4px;
+  font-weight: 100;
+  overflow-x: hidden;
+  position: absolute;
+  top: 130px;
+  width: 100%;
+  text-align: center;
+}
+#explore-more-body .jcarousel .thumbnail,
+.exploreMoreBar .jcarousel .thumbnail {
+  margin-bottom: 0;
+  height: 175px;
+  border: 0 solid white;
+}
+#explore-more-body .jcarousel-control-prev,
+.exploreMoreBar .jcarousel-control-prev,
+#explore-more-body .jcarousel-control-next,
+.exploreMoreBar .jcarousel-control-next {
+  height: 100%;
+  background-color: transparent;
+  color: #00a4e3;
+  z-index: 2;
+  box-shadow: white 0px 0px 0px 0px;
+}
+#explore-more-body .jcarousel-control-prev:focus,
+.exploreMoreBar .jcarousel-control-prev:focus,
+#explore-more-body .jcarousel-control-next:focus,
+.exploreMoreBar .jcarousel-control-next:focus {
+  outline: none;
+}
+#explore-more-body .jcarousel-control-prev .glyphicon,
+.exploreMoreBar .jcarousel-control-prev .glyphicon,
+#explore-more-body .jcarousel-control-next .glyphicon,
+.exploreMoreBar .jcarousel-control-next .glyphicon {
+  top: 39px;
+}
+#explore-more-body .jcarousel-control-prev,
+.exploreMoreBar .jcarousel-control-prev {
+  left: 2px;
+}
+#explore-more-body .jcarousel-control-next,
+.exploreMoreBar .jcarousel-control-next {
+  right: 2px;
+}
+#explore-more-body .panel-body,
+.exploreMoreBar .panel-body {
+  background-color: transparent;
+}
+#pdfContainer {
+  border: 1px solid lightgrey;
+  margin: 10px;
+}
+#pdfContainer #pdfContainerBody {
+  position: relative;
+  width: 100%;
+}
+#pdfContainer #pdfContainerBody #pdfComponentBox {
+  padding: 10px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+}
+#pdfContainer #pdfContainerBody #pdfComponentBox #view-pdf {
+  width: 100%;
+  height: 100%;
+}
+#pdfContainer #pdfContainerBody:before {
+  content: "";
+  display: block;
+  padding-top: 129.5%;
+  /* ratio of 11:8.5*/
+}
 #home-page-search {
   background-color: #00a4e3;
   padding: 20px 0 10px;
