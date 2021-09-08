@@ -23,7 +23,7 @@ $libraryId = $_GET['id'];
 # ****************************************************************************************************************************
 # * assemble the login API URL
 # ****************************************************************************************************************************
-$libraryInfo = $urlPath . '/API/SystemAPI?method=getLocationInfo&id=' . $libraryId;
+$libraryInfo = $urlPath . '/API/SystemAPI?method=getLocationInfo&id=' . $libraryId . '&library=' . $shortname;
 
 # ****************************************************************************************************************************
 # * grab the library info
