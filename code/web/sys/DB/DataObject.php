@@ -893,4 +893,8 @@ abstract class DataObject
 		}
 		return $return;
 	}
+
+	public function canActiveUserEdit(){
+		return true;
+	}
 }

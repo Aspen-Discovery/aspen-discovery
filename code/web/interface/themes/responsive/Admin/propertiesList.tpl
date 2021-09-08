@@ -63,7 +63,7 @@
 		</div>
 	{/if}
 
-	<div class='adminTableRegion'>
+	<div class='adminTableRegion fixed-height-table'>
 		<table class="adminTable table table-striped table-condensed smallText table-sticky" id="adminTable" aria-label="List of Objects">
 			<thead>
 				<tr>
@@ -81,6 +81,7 @@
 			<tbody>
 				{if isset($dataList) && is_array($dataList)}
 					{foreach from=$dataList item=dataItem key=id}
+						{assign var=canEdit value=$dataItem->canActiveUserEdit()}
 					<tr class='{cycle values="odd,even"} {$dataItem->class}'>
 						{if $canCompare || $canBatchUpdate}
 							<td><input type="checkbox" class="selectedObject" name="selectedObject[{$id}]" aria-label="Select Item {$id}"> </td>
@@ -93,9 +94,13 @@
 								<td aria-label="{$dataItem} {$propName}{if empty($propValue)} - empty{/if}">
 								{if $property.type == 'label'}
 									{if $dataItem->class != 'objectDeleted'}
-										{if $propName == $dataItem->getPrimaryKey()}<a href='/{$module}/{$toolName}?objectAction=edit&amp;id={$id}'>{/if}
-										{$propValue}
-										{if $propName == $dataItem->getPrimaryKey()}</a>{/if}
+										{if $dataItem->canActiveUserEdit()}
+											{if $propName == $dataItem->getPrimaryKey()}<a class="btn btn-default btn-sm" href='/{$module}/{$toolName}?objectAction=edit&amp;id={$id}'>{/if}
+											{$propValue}
+											{if $propName == $dataItem->getPrimaryKey()}</a>{/if}
+										{else}
+											{$propValue}
+										{/if}
 									{/if}
 								{elseif $property.type == 'regularExpression'}
 									{$propValue|escape}
@@ -147,7 +152,7 @@
 								{elseif $property.type == 'image'}
 									<img src="{$property.displayUrl}{$dataItem->id}" class="img-responsive" alt="{$propName}">
 								{else}
-									Unknown type to display {$property.type}
+									{translate text="Unknown type to display %1%" 1=$property.type isAdminFacing=true}
 								{/if}
 								</td>
 							{/if}
@@ -155,8 +160,10 @@
 						{if $dataItem->class != 'objectDeleted'}
 							<td>
 								<div class="btn-group-vertical">
-								<a href='/{$module}/{$toolName}?objectAction=edit&amp;id={$id}' class="btn btn-default btn-sm" aria-label="Edit Item {$id}">{translate text="Edit" isAdminFacing=true}</a>
-								<a href='/{$module}/{$toolName}?objectAction=history&amp;id={$id}' class="btn btn-default btn-sm" aria-label="History for Item {$id}">{translate text="History" isAdminFacing=true}</a>
+								{if $dataItem->canActiveUserEdit()}
+									<a href='/{$module}/{$toolName}?objectAction=edit&amp;id={$id}' class="btn btn-default btn-sm" aria-label="Edit Item {$id}">{translate text="Edit" isAdminFacing=true}</a>
+									<a href='/{$module}/{$toolName}?objectAction=history&amp;id={$id}' class="btn btn-default btn-sm" aria-label="History for Item {$id}">{translate text="History" isAdminFacing=true}</a>
+								{/if}
 								{if $additionalActions}
 									{foreach from=$additionalActions item=action}
 										<a href='{$action.path}&amp;id={$id}' class="btn btn-default btn-sm" aria-label="{$action.name} for Item {$id}">{translate text=$action.name isAdminFacing=true}</a>

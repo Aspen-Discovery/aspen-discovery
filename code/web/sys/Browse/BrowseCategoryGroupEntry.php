@@ -50,4 +50,24 @@ class BrowseCategoryGroupEntry extends DataObject
 	function getEditLink(){
 		return '/Admin/BrowseCategories?objectAction=edit&id=' . $this->browseCategoryId;
 	}
+
+	private $_browseCategory = null;
+	function getBrowseCategory() : ?BrowseCategory {
+		if ($this->_browseCategory == null){
+			$this->_browseCategory = new BrowseCategory();
+			$this->_browseCategory->id = $this->browseCategoryId;
+			if (!$this->_browseCategory->find(true)){
+				$this->_browseCategory= false;
+			}
+		}
+		return $this->_browseCategory;
+	}
+
+	public function canActiveUserEdit(){
+		if ($this->getBrowseCategory()->sharing == 'everyone'){
+			return UserAccount::userHasPermission('Administer All Browse Categories');
+		}
+		//Don't need to limit for the library since the user will need Administer Library Browse Categories to even view them.
+		return true;
+	}
 }
