@@ -197,7 +197,7 @@ public class SymphonyExportMain {
 		if (volumeExportFile.exists()){
 			long lastVolumeTimeStamp = indexingProfile.getLastVolumeExportTimestamp();
 			long fileTimeStamp = volumeExportFile.lastModified();
-			if (fileTimeStamp / 1000 > lastVolumeTimeStamp){
+			if ((fileTimeStamp / 1000) > lastVolumeTimeStamp){
 				logEntry.addNote("Checking to see if the volume file is still changing");
 				logEntry.saveResults();
 				boolean fileChanging = true;
@@ -250,7 +250,9 @@ public class SymphonyExportMain {
 							volumeInfoFields = repairedVolumeInfo;
 						}
 						if (volumeInfoFields.length == 7) {
-							String bibNumber = profileToLoad + ":" + volumeInfoFields[0].trim();
+							//It is more reliable to get the volume from the short bib number rather than the first field
+							//String bibNumber = profileToLoad + ":" + volumeInfoFields[0].trim();
+							String bibNumber = profileToLoad + ":a" + volumeInfoFields[5].trim();
 							if (!bibNumber.equals(curIlsId)){
 								if (curIlsId != null) {
 									//Save the current volume information
