@@ -4,6 +4,7 @@ import com.turning_leaf_technologies.indexing.IlsExtractLogEntry;
 import com.turning_leaf_technologies.indexing.IndexingProfile;
 import com.turning_leaf_technologies.indexing.RecordIdentifier;
 import com.turning_leaf_technologies.logging.BaseLogEntry;
+import com.turning_leaf_technologies.marc.MarcUtil;
 import com.turning_leaf_technologies.reindexer.GroupedWorkIndexer;
 import org.apache.logging.log4j.Logger;
 import org.marc4j.marc.*;
@@ -14,6 +15,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 /**
@@ -98,7 +100,7 @@ public class MarcRecordGrouper extends BaseMarcRecordGrouper {
 	}
 
 	public String processMarcRecord(Record marcRecord, boolean primaryDataChanged, String originalGroupedWorkId) {
-		RecordIdentifier primaryIdentifier = getPrimaryIdentifierFromMarcRecord(marcRecord, profile.getName(), profile.isDoAutomaticEcontentSuppression());
+		RecordIdentifier primaryIdentifier = getPrimaryIdentifierFromMarcRecord(marcRecord, profile);
 
 		if (primaryIdentifier != null){
 			//Get data for the grouped record
@@ -123,10 +125,10 @@ public class MarcRecordGrouper extends BaseMarcRecordGrouper {
 		return groupingFormat;
 	}
 
-	public RecordIdentifier getPrimaryIdentifierFromMarcRecord(Record marcRecord, String recordType, boolean doAutomaticEcontentSuppression){
-		RecordIdentifier identifier = super.getPrimaryIdentifierFromMarcRecord(marcRecord, recordType);
+	public RecordIdentifier getPrimaryIdentifierFromMarcRecord(Record marcRecord, IndexingProfile indexingProfile){
+		RecordIdentifier identifier = super.getPrimaryIdentifierFromMarcRecord(marcRecord, indexingProfile);
 
-		if (doAutomaticEcontentSuppression) {
+		if (indexingProfile.isDoAutomaticEcontentSuppression()) {
 			//Check to see if the record is an overdrive record
 			if (useEContentSubfield) {
 				boolean allItemsSuppressed = true;
@@ -170,6 +172,17 @@ public class MarcRecordGrouper extends BaseMarcRecordGrouper {
 								identifier.setSuppressed();
 							}
 						}
+					}
+				}
+			}
+		}
+
+		if (identifier != null) {
+			if (indexingProfile.getSuppressRecordsWithUrlsMatching() != null) {
+				Set<String> linkFields = MarcUtil.getFieldList(marcRecord, "856u");
+				for (String linkData : linkFields) {
+					if (indexingProfile.getSuppressRecordsWithUrlsMatching().matcher(linkData).matches()) {
+						identifier.setSuppressed();
 					}
 				}
 			}

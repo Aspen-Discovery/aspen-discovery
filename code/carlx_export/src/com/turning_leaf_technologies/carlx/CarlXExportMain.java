@@ -337,7 +337,7 @@ public class CarlXExportMain {
 				while (catalogReader.hasNext()) {
 					numRecordsRead++;
 					Record curBib = catalogReader.next();
-					RecordIdentifier recordIdentifier = recordGroupingProcessor.getPrimaryIdentifierFromMarcRecord(curBib, indexingProfile.getName(), indexingProfile.isDoAutomaticEcontentSuppression());
+					RecordIdentifier recordIdentifier = recordGroupingProcessor.getPrimaryIdentifierFromMarcRecord(curBib, indexingProfile);
 					if (recordIdentifier != null) {
 						String recordNumber = recordIdentifier.getIdentifier();
 						lastRecordProcessed = recordNumber;
@@ -371,7 +371,7 @@ public class CarlXExportMain {
 					logEntry.incProducts();
 					try{
 						Record curBib = catalogReader.next();
-						RecordIdentifier recordIdentifier = recordGroupingProcessor.getPrimaryIdentifierFromMarcRecord(curBib, indexingProfile.getName(), indexingProfile.isDoAutomaticEcontentSuppression());
+						RecordIdentifier recordIdentifier = recordGroupingProcessor.getPrimaryIdentifierFromMarcRecord(curBib, indexingProfile);
 						boolean deleteRecord = false;
 						if (recordIdentifier == null) {
 							//logger.debug("Record with control number " + curBib.getControlNumber() + " was suppressed or is eContent");

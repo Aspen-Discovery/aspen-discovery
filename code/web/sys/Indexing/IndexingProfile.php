@@ -80,6 +80,7 @@ class IndexingProfile extends DataObject
 	public /** @noinspection PhpUnused */ $orderCopies;
 	public /** @noinspection PhpUnused */ $orderCode3;
 	public /** @noinspection PhpUnused */ $doAutomaticEcontentSuppression;
+	public /** @noinspection PhpUnused */ $suppressRecordsWithUrlsMatching;
 	public /** @noinspection PhpUnused */ $determineAudienceBy;
 	public /** @noinspection PhpUnused */ $audienceSubfield;
 	public /** @noinspection PhpUnused */ $treatUnknownAudienceAs;
@@ -117,7 +118,7 @@ class IndexingProfile extends DataObject
 			'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id within the database'),
 			'name' => array('property' => 'name', 'type' => 'text', 'label' => 'Name', 'maxLength' => 50, 'description' => 'A name for this indexing profile', 'required' => true),
 			'marcPath' => array('property' => 'marcPath', 'type' => 'text', 'label' => 'MARC Path', 'maxLength' => 100, 'description' => 'The path on the server where MARC records can be found', 'required' => true, 'forcesReindex' => true),
-			'filenamesToInclude' => array('property' => 'filenamesToInclude', 'type' => 'text', 'label' => 'Filenames to Include', 'maxLength' => 250, 'description' => 'A regular expression to determine which files should be grouped and indexed', 'required' => true, 'default' => '.*\.ma?rc', 'forcesReindex' => true),
+			'filenamesToInclude' => array('property' => 'filenamesToInclude', 'type' => 'regularExpression', 'label' => 'Filenames to Include', 'maxLength' => 250, 'description' => 'A regular expression to determine which files should be grouped and indexed', 'required' => true, 'default' => '.*\.ma?rc', 'forcesReindex' => true),
 			'marcEncoding' => array('property' => 'marcEncoding', 'type' => 'enum', 'label' => 'MARC Encoding', 'values' => array('MARC8' => 'MARC8', 'UTF8' => 'UTF8', 'UNIMARC' => 'UNIMARC', 'ISO8859_1' => 'ISO8859_1', 'BESTGUESS' => 'BESTGUESS'), 'default' => 'MARC8', 'forcesReindex' => true),
 			'individualMarcPath' => array('property' => 'individualMarcPath', 'type' => 'text', 'label' => 'Individual MARC Path', 'maxLength' => 100, 'description' => 'The path on the server where individual MARC records can be found', 'required' => true, 'forcesReindex' => true),
 			'numCharsToCreateFolderFrom' => array('property' => 'numCharsToCreateFolderFrom', 'type' => 'integer', 'label' => 'Number of characters to create folder from', 'maxLength' => 50, 'description' => 'The number of characters to use when building a sub folder for individual marc records', 'required' => false, 'default' => '4', 'forcesReindex' => true),
@@ -136,6 +137,8 @@ class IndexingProfile extends DataObject
 
 			'treatUnknownLanguageAs' => ['property' => 'treatUnknownLanguageAs', 'type'=>'text', 'label' => 'Treat Unknown Language As', 'maxLength' => 50, 'description' => 'Records with an Unknown Language will use this language instead.  Leave blank for Unknown', 'default' => 'English', 'forcesReindex' => true],
 			'treatUndeterminedLanguageAs' => ['property' => 'treatUndeterminedLanguageAs', 'type'=>'text', 'label' => 'Treat Undetermined Language As', 'maxLength' => 50, 'description' => 'Records with an Undetermined Language will use this language instead.  Leave blank for Unknown', 'default' => 'English', 'forcesReindex' => true],
+
+			'suppressRecordsWithUrlsMatching' => array('property' => 'suppressRecordsWithUrlsMatching', 'type'=>'regularExpression', 'label'=>'Suppress Records With Urls Matching', 'description'=> 'Any records with an 856u matching the pattern will be suppressed', 'defaultValue'=>'overdrive\.com|contentreserve\.com|hoopla|yourcloudlibrary|axis360\.baker-taylor\.com', 'hideInLists'=>true, 'forcesReindex'=> true),
 
 			'determineAudienceBy' => ['property' => 'determineAudienceBy', 'type' => 'enum', 'values' => ['0' => 'By Bib Record Data', '1' => 'Item Collection using audience map', '2' => 'Item Shelf Location using audience map', '3' => 'Specified Item subfield using audience map'], 'label' => 'Determine Audience By', 'description' => 'How to determine the audience for each record', 'default' => '0', 'onchange'=>'return AspenDiscovery.Admin.updateIndexingProfileFields();'],
 			'audienceSubfield' => ['property' => 'audienceSubfield', 'type' => 'text', 'label' => 'Audience Subfield', 'maxLength' => 1, 'description' => 'Subfield to use when determining the audience', 'default' => ''],

@@ -42,7 +42,7 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 
 	public abstract String processMarcRecord(Record marcRecord, boolean primaryDataChanged, String originalGroupedWorkId);
 
-	public RecordIdentifier getPrimaryIdentifierFromMarcRecord(Record marcRecord, String recordType) {
+	public RecordIdentifier getPrimaryIdentifierFromMarcRecord(Record marcRecord, BaseIndexingSettings indexingProfile) {
 		RecordIdentifier identifier = null;
 		VariableField recordNumberField = marcRecord.getVariableField(recordNumberTag);
 		//Make sure we only get one ils identifier
@@ -56,14 +56,14 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 						if (recordNumber.indexOf(' ') > 0){
 							recordNumber = recordNumber.substring(0, recordNumber.indexOf(' '));
 						}
-						identifier = new RecordIdentifier(recordType, recordNumber);
+						identifier = new RecordIdentifier(indexingProfile.getName(), recordNumber);
 					}
 				}
 			} else {
 				//It's a control field
 				ControlField curRecordNumberField = (ControlField) recordNumberField;
 				String recordNumber = curRecordNumberField.getData().trim();
-				identifier = new RecordIdentifier(recordType, recordNumber);
+				identifier = new RecordIdentifier(indexingProfile.getName(), recordNumber);
 			}
 		}
 

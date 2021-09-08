@@ -508,7 +508,7 @@ public class SymphonyExportMain {
 				while (catalogReader.hasNext()) {
 					numRecordsRead++;
 					Record curBib = catalogReader.next();
-					RecordIdentifier recordIdentifier = recordGroupingProcessor.getPrimaryIdentifierFromMarcRecord(curBib, indexingProfile.getName(), indexingProfile.isDoAutomaticEcontentSuppression());
+					RecordIdentifier recordIdentifier = recordGroupingProcessor.getPrimaryIdentifierFromMarcRecord(curBib, indexingProfile);
 					if (recordIdentifier != null) {
 						String recordNumber = recordIdentifier.getIdentifier();
 						lastRecordProcessed = recordNumber;
@@ -560,13 +560,13 @@ public class SymphonyExportMain {
 						Record curBib = catalogReader.next();
 						numRecordsRead++;
 						if (hasFullExportFile && curBibFile.equals(fullExportFile) && (numRecordsRead < indexingProfile.getLastChangeProcessed())) {
-							RecordIdentifier recordIdentifier = recordGroupingProcessor.getPrimaryIdentifierFromMarcRecord(curBib, indexingProfile.getName(), indexingProfile.isDoAutomaticEcontentSuppression());
+							RecordIdentifier recordIdentifier = recordGroupingProcessor.getPrimaryIdentifierFromMarcRecord(curBib, indexingProfile);
 							if (recordIdentifier != null) {
 								recordGroupingProcessor.removeExistingRecord(recordIdentifier.getIdentifier());
 							}
 							logEntry.incSkipped();
 						}else {
-							RecordIdentifier recordIdentifier = recordGroupingProcessor.getPrimaryIdentifierFromMarcRecord(curBib, indexingProfile.getName(), indexingProfile.isDoAutomaticEcontentSuppression());
+							RecordIdentifier recordIdentifier = recordGroupingProcessor.getPrimaryIdentifierFromMarcRecord(curBib, indexingProfile);
 							boolean deleteRecord = false;
 							if (recordIdentifier == null) {
 								//logger.debug("Record with control number " + curBib.getControlNumber() + " was suppressed or is eContent");

@@ -953,7 +953,7 @@ public class SierraExportAPIMain {
 				//Get Items for the bib record
 				getItemsForBib(sierraInstanceInformation, id, marcRecord);
 				logger.debug("Processed items for Bib");
-				RecordIdentifier identifier = getRecordGroupingProcessor().getPrimaryIdentifierFromMarcRecord(marcRecord, indexingProfile.getName(), indexingProfile.isDoAutomaticEcontentSuppression());
+				RecordIdentifier identifier = getRecordGroupingProcessor().getPrimaryIdentifierFromMarcRecord(marcRecord, indexingProfile);
 				GroupedWorkIndexer.MarcStatus marcStatus = getGroupedWorkIndexer().saveMarcRecordToDatabase(indexingProfile, identifier.getIdentifier(), marcRecord);
 
 				//Setup the grouped work for the record.  This will take care of either adding it to the proper grouped work
@@ -1146,7 +1146,7 @@ public class SierraExportAPIMain {
 					while (marcReader.hasNext()) {
 						try {
 							Record marcRecord = marcReader.next();
-							RecordIdentifier identifier = getRecordGroupingProcessor().getPrimaryIdentifierFromMarcRecord(marcRecord, indexingProfile.getName(), indexingProfile.isDoAutomaticEcontentSuppression());
+							RecordIdentifier identifier = getRecordGroupingProcessor().getPrimaryIdentifierFromMarcRecord(marcRecord, indexingProfile);
 							logEntry.setCurrentId(identifier.getIdentifier());
 							GroupedWorkIndexer.MarcStatus status = getGroupedWorkIndexer().saveMarcRecordToDatabase(indexingProfile, identifier.getIdentifier(), marcRecord);
 

@@ -343,7 +343,7 @@ public class SideLoadingMain {
 			while (marcReader.hasNext()) {
 				try {
 					Record marcRecord = marcReader.next();
-					RecordIdentifier recordIdentifier = recordGrouper.getPrimaryIdentifierFromMarcRecord(marcRecord, settings.getName());
+					RecordIdentifier recordIdentifier = recordGrouper.getPrimaryIdentifierFromMarcRecord(marcRecord, settings);
 					if (recordIdentifier != null) {
 						existingRecords.remove(recordIdentifier.getIdentifier());
 						logEntry.incNumProducts(1);

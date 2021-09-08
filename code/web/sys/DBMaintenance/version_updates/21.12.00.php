@@ -31,5 +31,12 @@ function getUpdates21_12_00() : array
 				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES ('Local Enrichment', 'Edit Library Placards', '', 55, 'Allows the user to edit, but not create placards for their library.')",
 			]
 		], //edit_placard_permissions
+		'suppressRecordsWithUrlsMatching' => [
+			'title' => 'Add suppressRecordsWithUrlsMatching to Indexing Profiles',
+			'description' => 'Add suppressRecordsWithUrlsMatching to give control over eContent to be suppressed from the ILS',
+			'sql' => [
+				"ALTER TABLE indexing_profiles ADD COLUMN suppressRecordsWithUrlsMatching VARCHAR(512) DEFAULT 'overdrive\.com|contentreserve\.com|hoopla|yourcloudlibrary|axis360\.baker-taylor\.com'"
+			]
+		], //suppressRecordsWithUrlsMatching
 	];
 }

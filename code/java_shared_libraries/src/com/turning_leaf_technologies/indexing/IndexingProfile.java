@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
+import java.util.regex.Pattern;
 
 import com.turning_leaf_technologies.logging.BaseLogEntry;
 import org.apache.logging.log4j.Logger;
@@ -50,6 +51,7 @@ public class IndexingProfile extends BaseIndexingSettings {
 	private char noteSubfield;
 	private long lastUpdateOfAuthorities;
 	private long lastChangeProcessed;
+	private Pattern suppressRecordsWithUrlsMatching;
 
 	public IndexingProfile(ResultSet indexingProfileRS)  throws SQLException {
 		this.setId(indexingProfileRS.getLong("id"));
@@ -91,6 +93,7 @@ public class IndexingProfile extends BaseIndexingSettings {
 		this.setCheckRecordForLargePrint(indexingProfileRS.getBoolean("checkRecordForLargePrint"));
 
 		this.setDoAutomaticEcontentSuppression(indexingProfileRS.getBoolean("doAutomaticEcontentSuppression"));
+		this.setSuppressRecordsWithUrlsMatching(indexingProfileRS.getString("suppressRecordsWithUrlsMatching"));
 		this.setEContentDescriptor(getCharFromRecordSet(indexingProfileRS, "eContentDescriptor"));
 
 		this.setLastYearCheckoutsSubfield(getCharFromRecordSet(indexingProfileRS, "lastYearCheckouts"));
@@ -554,5 +557,17 @@ public class IndexingProfile extends BaseIndexingSettings {
 		}catch (Exception e){
 			logEntry.incErrors("Could not set last record processed", e);
 		}
+	}
+
+	public void setSuppressRecordsWithUrlsMatching(String suppressRecordsWithUrlsMatching) {
+		if (suppressRecordsWithUrlsMatching.length() == 0){
+			this.suppressRecordsWithUrlsMatching = null;
+		}else {
+			this.suppressRecordsWithUrlsMatching = Pattern.compile(suppressRecordsWithUrlsMatching, Pattern.CASE_INSENSITIVE);
+		}
+	}
+
+	public Pattern getSuppressRecordsWithUrlsMatching() {
+		return suppressRecordsWithUrlsMatching;
 	}
 }
