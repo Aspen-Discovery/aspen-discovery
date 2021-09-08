@@ -1,5 +1,6 @@
 <?php
 require_once ROOT_DIR . '/Action.php';
+require_once ROOT_DIR . '/sys/Greenhouse/AspenSiteCache.php';
 require_once ROOT_DIR . '/sys/Greenhouse/AspenSite.php';
 
 class GreenhouseAPI extends Action
@@ -45,63 +46,123 @@ class GreenhouseAPI extends Action
 		} else {
 			$userLongitude = 0;
 		}
+
+		// get release channel
+		// production, staging (beta), development (local)
+		if (isset($_GET['release_channel'])) {
+			$releaseChannel = $_GET['release_channel'];
+		}
+
+		$AspenSiteCache = new AspenSiteCache();
+		$numRows = $AspenSiteCache->count();
+
 		$sites = new AspenSite();
 		$sites->find();
 		while($sites->fetch()) {
-			if(($sites->appAccess == 1) || ($sites->appAccess == 3)) {
-				$fetchLibraryUrl = $sites->baseUrl.'API/GreenhouseAPI?method=getLibrary';
-				if($data = file_get_contents($fetchLibraryUrl)) {
-					$searchData = json_decode($data);
-					foreach ($searchData->library as $findLibrary) {
-
-						$libraryLatitude = $findLibrary->latitude;
-						$libraryLongitude = $findLibrary->longitude;
-						$libraryUnit = $findLibrary->unit;
-						$baseUrl = $findLibrary->baseUrl;
-
-						if($baseUrl == NULL) {
-							$baseUrl = $sites->baseUrl;
-						}
-
-						if ($userLatitude == 0 && $userLongitude == 0) {
-							$return['libraries'][] = [
-								'name' => $findLibrary->locationName,
-								'librarySystem' => $sites->name,
-								'libraryId' => $findLibrary->libraryId,
-								'baseUrl' => $baseUrl,
-								'accessLevel' => $sites->appAccess,
-								'solrScope' => $findLibrary->solrScope,
-							];
-						} else {
-							$theta = ($userLongitude - $libraryLongitude);
-							$distance = sin(deg2rad($userLatitude)) * sin(deg2rad($libraryLatitude)) + cos(deg2rad($userLatitude)) * cos(deg2rad($libraryLatitude)) * cos(deg2rad($theta));
-
-							$distance = acos($distance);
-							$distance = rad2deg($distance);
-							$distance = $distance * 60 * 1.1515;
-							if ($libraryUnit == "Km") {
-								$distance = $distance * 1.609344;
-							}
-							$distance = round($distance, 2);
-							if (($distance <= 60) || ($sites->name == 'Test (ByWater)')) {
+			if($numRows > 1){
+				if (($sites->appAccess == 1) || ($sites->appAccess == 3)) {
+					$cachedLibrary = new AspenSiteCache();
+					$cachedLibrary->find();
+					while ($cachedLibrary->fetch()) {
+						if ((time() - $cachedLibrary->lastUpdated) < (24.5 * 60 * 60)) {
+							if ($userLatitude == 0 && $userLongitude == 0) {
 								$return['libraries'][] = [
-									'name' => $findLibrary->locationName,
+									'name' => $cachedLibrary->name,
 									'librarySystem' => $sites->name,
-									'libraryId' => $findLibrary->libraryId,
-									'locationId' => $findLibrary->locationId,
-									'baseUrl' => $baseUrl,
+									'libraryId' => $cachedLibrary->libraryId,
+									'baseUrl' => $cachedLibrary->baseUrl,
 									'accessLevel' => $sites->appAccess,
-									'distance' => $distance,
-									'solrScope' => $findLibrary->solrScope,
+									'solrScope' => $cachedLibrary->solrScope,
 								];
+							} else {
+								$distance = $this->findDistance($userLongitude, $userLatitude, $cachedLibrary->longitude, $cachedLibrary->latitude, $cachedLibrary->unit);
+
+								// remove ByWater Test from Production when sending release channel data
+								if (($distance <= 60) || ($sites->name == 'Test (ByWater)')) {
+									$return['libraries'][] = [
+										'name' => $cachedLibrary->name,
+										'librarySystem' => $sites->name,
+										'libraryId' => $cachedLibrary->libraryId,
+										'locationId' => $cachedLibrary->locationId,
+										'baseUrl' => $cachedLibrary->baseUrl,
+										'accessLevel' => $sites->appAccess,
+										'distance' => $distance,
+										'solrScope' => $cachedLibrary->solrScope,
+									];
+								}
+							}
+						} else {
+							// if older than 24 hours, fetch new data
+							$fetchLibraryUrl = $sites->baseUrl . 'API/GreenhouseAPI?method=getLibrary';
+							if ($data = file_get_contents($fetchLibraryUrl)) {
+								$searchData = json_decode($data);
+								foreach ($searchData->library as $findLibrary) {
+									if($findLibrary->locationId === $cachedLibrary->locationId) {
+										$cachedLibrary->name = $findLibrary->locationName;
+										$cachedLibrary->solrScope = $findLibrary->solrScope;
+										$cachedLibrary->latitude = $findLibrary->latitude;
+										$cachedLibrary->longitude = $findLibrary->longitude;
+										$cachedLibrary->unit = $findLibrary->unit;
+										if($findLibrary->baseUrl == NULL) {
+											$cachedLibrary->baseUrl = $sites->baseUrl;
+										} else {
+											$cachedLibrary->baseUrl = $findLibrary->baseUrl;
+										}
+										$cachedLibrary->lastUpdated = time();
+										$cachedLibrary->update();
+									}
+								}
+								header("Refresh:0");
 							}
 						}
+					}
+				}
+			} else {
+				// populate initial cache
+				if (($sites->appAccess == 1) || ($sites->appAccess == 3)){
+					$fetchLibraryUrl = $sites->baseUrl . 'API/GreenhouseAPI?method=getLibrary';
+					if ($data = file_get_contents($fetchLibraryUrl)) {
+						$searchData = json_decode($data);
+						foreach ($searchData->library as $findLibrary) {
+							$newCachedLibrary = new AspenSiteCache();
+							$newCachedLibrary->name = $findLibrary->locationName;
+							$newCachedLibrary->locationId = $findLibrary->locationId;
+							$newCachedLibrary->libraryId = $findLibrary->libraryId;
+							$newCachedLibrary->solrScope = $findLibrary->solrScope;
+							$newCachedLibrary->latitude = $findLibrary->latitude;
+							$newCachedLibrary->longitude = $findLibrary->longitude;
+							$newCachedLibrary->unit = $findLibrary->unit;
+							if($findLibrary->baseUrl == NULL) {
+								$newCachedLibrary->baseUrl = $sites->baseUrl;
+							} else {
+								$newCachedLibrary->baseUrl = $findLibrary->baseUrl;
+							}
+							$newCachedLibrary->lastUpdated = time();
+							$newCachedLibrary->insert();
+						}
+						header("Refresh:0");
 					}
 				}
 			}
 		}
 
 		return $return;
+	}
+
+	/** @noinspection PhpUnused */
+	public function findDistance($userLongitude, $userLatitude, $libraryLongitude, $libraryLatitude, $unit) {
+		$theta = ($userLongitude - $libraryLongitude);
+		$distance = sin(deg2rad($userLatitude)) * sin(deg2rad($libraryLatitude)) + cos(deg2rad($userLatitude)) * cos(deg2rad($libraryLatitude)) * cos(deg2rad($theta));
+
+		$distance = acos($distance);
+		$distance = rad2deg($distance);
+		$distance = $distance * 60 * 1.1515;
+		if ($unit == "Km") {
+			$distance = $distance * 1.609344;
+		}
+		$distance = round($distance, 2);
+
+		return $distance;
 	}
 
 	/** @noinspection PhpUnused */
