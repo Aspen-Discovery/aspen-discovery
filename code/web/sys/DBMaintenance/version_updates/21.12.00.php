@@ -24,5 +24,12 @@ function getUpdates21_12_00() : array
 				'INSERT INTO placard_language (languageId, placardId) SELECT languages.id, placards.id from languages, placards;'
 			]
 		], //placard_languages
+		'edit_placard_permissions' => [
+			'title' => 'Edit Library Placard Permissions',
+			'description' => 'Add Library Placard Permissions',
+			'sql' => [
+				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES ('Local Enrichment', 'Edit Library Placards', '', 55, 'Allows the user to edit, but not create placards for their library.')",
+			]
+		], //edit_placard_permissions
 	];
 }

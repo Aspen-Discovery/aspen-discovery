@@ -4,7 +4,7 @@
 			{$message->getFormattedMessage()}
 		</div>
 		{if $message->dismissable && $loggedIn}
-			<button type="button" class="close" data-dismiss="alert" aria-label="{translate text="Close" isPublicFacing=true}" onclick="AspenDiscovery.Account.dismissSystemMessage({$message->id})"><i class="fas fa-times"></i></button>
+			<button type="button" class="close" data-dismiss="alert" aria-label="{translate text="Close" isPublicFacing=true inAttribute=true}" onclick="AspenDiscovery.Account.dismissSystemMessage({$message->id})"><i class="fas fa-times"></i></button>
 		{/if}
 	</div>
 {/foreach}

@@ -84,6 +84,11 @@ class Admin_Placards extends ObjectEditor
 
 	function canView() : bool
 	{
+		return UserAccount::userHasPermission(['Administer All Placards','Administer Library Placards', 'Edit Library Placards']);
+	}
+
+	function canAddNew()
+	{
 		return UserAccount::userHasPermission(['Administer All Placards','Administer Library Placards']);
 	}
 }

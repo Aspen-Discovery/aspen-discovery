@@ -13,7 +13,7 @@
 					<option value="{$roleId}" {if $roleId == $selectedRole->roleId}selected{/if}>{$role->name}</option>
 				{/foreach}
 			</select>
-			<a class="btn btn-danger btn-sm" onclick="if (confirm('{translate text="Are you sure you want to delete this role" inAttribute=true isAdminFacing=true}')){ldelim}return AspenDiscovery.Admin.deleteRole({$selectedRole->roleId}){rdelim}else{ldelim}return false{rdelim}">{translate text="Delete"}</a>
+			<a class="btn btn-danger btn-sm" onclick="if (confirm('{translate text="Are you sure you want to delete this role" inAttribute=true isAdminFacing=true}')){ldelim}return AspenDiscovery.Admin.deleteRole({$selectedRole->roleId}){rdelim}else{ldelim}return false{rdelim}">{translate text="Delete" isAdminFacing=true}</a>
 			<a class="btn btn-default btn-sm" onclick="return AspenDiscovery.Admin.showCreateRoleForm()">{translate text="Create New Role" isAdminFacing=true}</a>
 		</div>
 	</form>
