@@ -3,13 +3,13 @@
 function getUpdates21_12_00() : array
 {
 	return [
-		'name' => [
+		/*'name' => [
 			'title' => '',
 			'description' => '',
 			'sql' => [
 				''
 			]
-		], //sample
+		], //sample*/
 		'placard_languages' => [
 			'title' => 'Placard Languages',
 			'description' => 'Allow Placards to be limited by language',
