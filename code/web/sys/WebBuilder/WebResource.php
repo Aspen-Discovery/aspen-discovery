@@ -165,6 +165,10 @@ class WebResource extends DataObject
 			while($audienceLink->fetch()){
 				$this->_audiences[$audienceLink->audienceId] = $audienceLink->getAudience();
 			}
+			$sorter = function(WebBuilderAudience $a, WebBuilderAudience $b) {
+				return strcasecmp($a->name, $b->name);
+			};
+			uasort($this->_audiences, $sorter);
 		}
 		return $this->_audiences;
 	}
@@ -184,6 +188,10 @@ class WebResource extends DataObject
 					$this->_categories[$categoryLink->categoryId] = $category;
 				}
 			}
+			$sorter = function(WebBuilderCategory $a, WebBuilderCategory $b) {
+				return strcasecmp($a->name, $b->name);
+			};
+			uasort($this->_categories, $sorter);
 		}
 		return $this->_categories;
 	}
