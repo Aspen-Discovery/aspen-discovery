@@ -123,7 +123,7 @@ class GreenhouseAPI extends Action
 				// populate initial cache
 				if (($sites->appAccess == 1) || ($sites->appAccess == 3)){
 					$fetchLibraryUrl = $sites->baseUrl . 'API/GreenhouseAPI?method=getLibrary';
-					if ($data = @file_get_contents($fetchLibraryUrl)) {
+					if ($data = file_get_contents($fetchLibraryUrl)) {
 						$searchData = json_decode($data);
 						foreach ($searchData->library as $findLibrary) {
 							$newCachedLibrary = new AspenSiteCache();
