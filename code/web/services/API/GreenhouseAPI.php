@@ -143,7 +143,7 @@ class GreenhouseAPI extends Action
 							$newCachedLibrary->lastUpdated = time();
 							$newCachedLibrary->insert();
 						}
-						header("Refresh:0");
+						//header("Refresh:0");
 					}
 				}
 			}
