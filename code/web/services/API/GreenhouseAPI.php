@@ -100,6 +100,7 @@ class GreenhouseAPI extends Action
 								$searchData = json_decode($data);
 								foreach ($searchData->library as $findLibrary) {
 									if($findLibrary->locationId === $cachedLibrary->locationId) {
+										$cachedLibrary->siteId = $sites->id;
 										$cachedLibrary->name = $findLibrary->locationName;
 										$cachedLibrary->solrScope = $findLibrary->solrScope;
 										$cachedLibrary->latitude = $findLibrary->latitude;
