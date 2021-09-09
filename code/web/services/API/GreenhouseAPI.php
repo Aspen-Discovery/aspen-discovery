@@ -114,7 +114,7 @@ class GreenhouseAPI extends Action
 										$cachedLibrary->update();
 									}
 								}
-								header("Refresh:0");
+								//header("Refresh:0");
 							}
 						}
 					}
