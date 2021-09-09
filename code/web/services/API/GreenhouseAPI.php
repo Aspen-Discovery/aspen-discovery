@@ -53,15 +53,17 @@ class GreenhouseAPI extends Action
 			$releaseChannel = $_GET['release_channel'];
 		}
 
-		$AspenSiteCache = new AspenSiteCache();
-		$numRows = $AspenSiteCache->count();
-
 		$sites = new AspenSite();
 		$sites->find();
 		while($sites->fetch()) {
+			$existingCachedValues = new AspenSiteCache();
+			$existingCachedValues->siteId = $sites->id;
+			$numRows = $existingCachedValues->count();
+
 			if($numRows > 1){
 				if (($sites->appAccess == 1) || ($sites->appAccess == 3)) {
 					$cachedLibrary = new AspenSiteCache();
+					$cachedLibrary->siteId = $sites->id;
 					$cachedLibrary->find();
 					while ($cachedLibrary->fetch()) {
 						if ((time() - $cachedLibrary->lastUpdated) < (24.5 * 60 * 60)) {
@@ -121,10 +123,11 @@ class GreenhouseAPI extends Action
 				// populate initial cache
 				if (($sites->appAccess == 1) || ($sites->appAccess == 3)){
 					$fetchLibraryUrl = $sites->baseUrl . 'API/GreenhouseAPI?method=getLibrary';
-					if ($data = file_get_contents($fetchLibraryUrl)) {
+					if ($data = @file_get_contents($fetchLibraryUrl)) {
 						$searchData = json_decode($data);
 						foreach ($searchData->library as $findLibrary) {
 							$newCachedLibrary = new AspenSiteCache();
+							$newCachedLibrary->siteId = $sites->id;
 							$newCachedLibrary->name = $findLibrary->locationName;
 							$newCachedLibrary->locationId = $findLibrary->locationId;
 							$newCachedLibrary->libraryId = $findLibrary->libraryId;

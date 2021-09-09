@@ -56,5 +56,13 @@ function getUpdates21_12_00() : array
 				) ENGINE INNODB'
 			]
 		], //cacheGreenhouseData
+		'addSiteIdToCachedGreenhouseData' => [
+			'title' => 'Add SiteId To Cached Greenhouse Data',
+			'description' => 'Add tracking of cached data by site to avoid duplication',
+			'sql' => [
+				'ALTER TABLE greenhouse_cache ADD COLUMN siteId INT(11)',
+				'TRUNCATE TABLE greenhouse_cache'
+			]
+		]
 	];
 }
