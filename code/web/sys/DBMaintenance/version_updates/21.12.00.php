@@ -63,6 +63,13 @@ function getUpdates21_12_00() : array
 				'ALTER TABLE greenhouse_cache ADD COLUMN siteId INT(11)',
 				'TRUNCATE TABLE greenhouse_cache'
 			]
-		]
+		], //addSiteIdToCachedGreenhouseData
+		'increaseGreenhouseDataNameLength' => [
+			'title' => 'Add SiteId To Cached Greenhouse Data',
+			'description' => 'Add tracking of cached data by site to avoid duplication',
+			'sql' => [
+				'ALTER TABLE greenhouse_cache CHANGE COLUMN name name VARCHAR(100)',
+			]
+		], //increaseGreenhouseDataNameLength
 	];
 }
