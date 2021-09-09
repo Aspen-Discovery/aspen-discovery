@@ -65,8 +65,8 @@ function getUpdates21_12_00() : array
 			]
 		], //addSiteIdToCachedGreenhouseData
 		'increaseGreenhouseDataNameLength' => [
-			'title' => 'Add SiteId To Cached Greenhouse Data',
-			'description' => 'Add tracking of cached data by site to avoid duplication',
+			'title' => 'Increase name in Cached Greenhouse Data',
+			'description' => 'Increase the length of the name for cached Greenhouse data',
 			'sql' => [
 				'ALTER TABLE greenhouse_cache CHANGE COLUMN name name VARCHAR(100)',
 			]
