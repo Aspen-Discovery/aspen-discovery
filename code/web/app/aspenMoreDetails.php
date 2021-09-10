@@ -16,9 +16,10 @@ require_once '../bootstrap_aspen.php';
 # ****************************************************************************************************************************
 # * grab the passed location parameter, then find the path
 # ****************************************************************************************************************************
-$urlPath = 'https://'.$_SERVER['SERVER_NAME'];
+$urlPath = 'http://'.$_SERVER['SERVER_NAME'].':8888';
 $shortname = $_GET['library'];
 $libraryId = $_GET['id'];
+$version = $_GET['version'];
 
 # ****************************************************************************************************************************
 # * assemble the login API URL
@@ -65,7 +66,7 @@ if (! empty ($jsonData['result']['location']['hoursMessage'])) {
 //$pageLink[] = array('key' => 0, 'title' => "Program Calendar", 'subtitle' => "Programs, Events and Services.", 'path' => "WhatsOn");
 $pageLink[] = array('key' => 1, 'title' => "Contact Us", 'subtitle' => "We're just a click away.", 'path' => "ContactUs");
 //$pageLink[] = array('key' => 2, 'title' => "News", 'subtitle' => "Stay up to date on important Library News.", 'path' => "News");
-$pageLink[] = array('key' => 3, 'title' => "About", 'subtitle' => "Version 1.5.0", 'path' => "null");
+$pageLink[] = array('key' => 3, 'title' => "About", 'subtitle' => $version, 'path' => "null");
 
 # *********************************************************************************************************************************************
 # * WHATS ON
