@@ -94,7 +94,8 @@ class Mailer {
 	{
 		require_once ROOT_DIR . '/sys/Email/AmazonSesMessage.php';
 		$message = new AmazonSesMessage();
-		$message->setTo($to);
+		$toAddresses = explode(';', $to);
+		$message->addTo($toAddresses);
 		if (!empty($replyTo)){
 			$message->addReplyTo($replyTo);
 		}
