@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Aspen Discovery Mobile App",
+    "name": "Aspen Discovery Mobile",
     "slug": "aspen-discovery-mobile",
     "owner": "bywater-solutions",
     "privacy": "public",
@@ -9,7 +9,19 @@
       "android",
       "web"
     ],
-    "version": "21.01.00",
+    "hooks": {
+      "postPublish": [
+        {
+          "file": "sentry-expo/upload-sourcemaps",
+          "config": {
+            "organization": "bywater-solutions",
+            "project": "aspen-discovery",
+            "authToken": "b23cf7d018564c4d9a0a795633d254f5d2d0df1d160c40a6838ab8fa2818f775"
+          }
+        }
+      ]
+    },
+    "version": "21.12.02",
     "orientation": "portrait",
     "icon": "./assets/aspenNoTransparency.png",
     "splash": {
@@ -24,14 +36,14 @@
       "**/*"
     ],
     "ios": {
-      "buildNumber": "3",
+      "buildNumber": "7",
       "bundleIdentifier": "org.aspendiscovery.mobile",
       "supportsTablet": true,
       "icon": "./assets/aspenLogo.png"
     },
     "android": {
       "package": "org.aspendiscovery.mobile",
-      "versionCode": 3,
+      "versionCode": 7,
       "permissions": [
         "ACCESS_COARSE_LOCATION",
         "ACCESS_FINE_LOCATION",
@@ -45,6 +57,10 @@
     },
     "web": {
       "favicon": "./assets/aspenLogo.png"
-    }
+    },
+    "description": "",
+    "plugins": [
+      "sentry-expo"
+    ]
   }
 }

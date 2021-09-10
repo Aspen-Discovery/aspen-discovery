@@ -63,12 +63,14 @@ export default StyleSheet.create({
     //width: '80%',
   },
   btnFormatSmall: {
-    backgroundColor: '#2f373a',
+    borderColor: '#2f373a',
+    borderWidth: 1,
     borderRadius: 4,
     margin: 5,
     opacity: 0.75,
     overflow: 'hidden', //needed for border radius to work on IOS
     padding: 5,
+    marginTop: 25
     //width: '80%',
   },
   btnText: {
@@ -77,6 +79,12 @@ export default StyleSheet.create({
     fontWeight: 'bold',
     textAlign: 'center',
   },
+btnTextSmall: {
+  color: '#2f373a',
+  fontSize: 12,
+  fontWeight: 'bold',
+  textAlign: 'center',
+},
 btnTextGray: {
   color: '#fff',
   fontSize: 16,
@@ -210,7 +218,7 @@ btnTextGray: {
   },
   inputAndroid: {
     borderColor: 'purple',
-    borderRadius: 8,
+    borderRadius: 4,
     borderWidth: 0.5,
     color: 'black',
     fontSize: 16,
@@ -238,7 +246,8 @@ btnTextGray: {
     borderRadius: 4,
     fontWeight: 'bold',
     margin: 5,
-     textAlign: 'center'
+     textAlign: 'center',
+     width: 200
   },
   newsImage: {
     aspectRatio: 0.75,
@@ -302,7 +311,7 @@ btnTextGray: {
   },
   searchInput: {
     backgroundColor: '#2f373a',
-    borderRadius: 20,
+    borderRadius: 4,
     color: '#fff',
     marginBottom: 10,
     marginTop: 10,
@@ -326,8 +335,8 @@ btnTextGray: {
     backgroundColor: '#1e90ff',
   },
   summaryDescription: {
-    marginLeft: 30,
-    marginRight: 30
+    marginLeft: 10,
+    marginRight: 10
   },
   title: {
     fontSize: 16,
