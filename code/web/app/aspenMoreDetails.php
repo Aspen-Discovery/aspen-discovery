@@ -16,7 +16,7 @@ require_once '../bootstrap_aspen.php';
 # ****************************************************************************************************************************
 # * grab the passed location parameter, then find the path
 # ****************************************************************************************************************************
-$urlPath = 'http://'.$_SERVER['SERVER_NAME'].':8888';
+$urlPath = 'https://'.$_SERVER['SERVER_NAME'];
 $shortname = $_GET['library'];
 $libraryId = $_GET['id'];
 $version = $_GET['version'];
