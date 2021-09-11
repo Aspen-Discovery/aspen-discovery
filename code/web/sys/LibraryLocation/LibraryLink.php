@@ -173,11 +173,19 @@ class LibraryLink extends DataObject{
 	public function getLanguages(){
 		if (!isset($this->_languages) && $this->id) {
 			$this->_languages = [];
-			$language = new LibraryLinkLanguage();
-			$language->libraryLinkId = $this->id;
-			$language->find();
-			while ($language->fetch()) {
-				$this->_languages[$language->languageId] = $language->languageId;
+			try {
+				$language = new LibraryLinkLanguage();
+				$language->libraryLinkId = $this->id;
+				$language->find();
+				while ($language->fetch()) {
+					$this->_languages[$language->languageId] = $language->languageId;
+				}
+			}catch (Exception $e){
+				//This happens when the table is not setup yet
+				$languageList = Language::getLanguageList();
+				foreach ($languageList as $languageId => $displayName) {
+					$this->_languages[$languageId] = $languageId;
+				}
 			}
 		}
 		return $this->_languages;

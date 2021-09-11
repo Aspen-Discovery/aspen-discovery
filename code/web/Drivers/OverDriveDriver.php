@@ -723,7 +723,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 			$this->incrementStat('numHoldsPlaced');
 
 			$holdResult['success'] = true;
-			$holdResult['message'] = "<p class='alert alert-success'>" . translate(['text'=>'overdrive_hold_success', 'defaultText' => 'Your hold was placed successfully.  You are number %1% on the wait list.', 1=>$response->holdListPosition]) . "</p>";
+			$holdResult['message'] = "<p class='alert alert-success'>" . translate(['text'=> 'Your hold was placed successfully.  You are number %1% on the wait list.', 1=>$response->holdListPosition, 'isPublicFacing'=>true]) . "</p>";
 			$holdResult['hasWhileYouWait'] = false;
 
 			//Get the grouped work for the record

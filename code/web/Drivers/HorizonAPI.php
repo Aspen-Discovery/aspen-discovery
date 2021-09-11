@@ -438,10 +438,10 @@ abstract class HorizonAPI extends Horizon{
 				$hold_result = array();
 				if ($createHoldResponse == true){
 					$hold_result['success'] = true;
-					$hold_result['message'] = translate(['text'=>"ils_hold_success", 'defaultText'=>"Your hold was placed successfully."]);
+					$hold_result['message'] = translate(['text'=>"Your hold was placed successfully.", 'isPublicFacing'=>true]);
 				}else{
 					$hold_result['success'] = false;
-					$hold_result['message'] = translate(['text'=>"ils_hold_failed", 'defaultText'=>"Your hold could not be placed."]);
+					$hold_result['message'] = translate(['text'=>"Your hold could not be placed.", 'isPublicFacing'=>true]);
 					if (isset($createHoldResponse->message)){
 						$hold_result['message'] .= (string)$createHoldResponse->message;
 					}else if (isset($createHoldResponse->string)){
