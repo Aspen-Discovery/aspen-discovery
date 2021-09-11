@@ -35,6 +35,85 @@ getGitBranch();
 //Set a counter for CSS and JavaScript so we can have browsers clear their cache automatically
 $interface->assign('cssJsCacheCounter', 13);
 
+// Setup Translator
+global $language;
+global $serverName;
+//Get the active language
+$userLanguage = UserAccount::getUserInterfaceLanguage();
+if ($userLanguage == ''){
+	$language = strip_tags((isset($_SESSION['language'])) ? $_SESSION['language'] : 'en');
+}else{
+	$language = $userLanguage;
+}
+if (isset($_REQUEST['myLang'])) {
+	$newLanguage = strip_tags($_REQUEST['myLang']);
+	if (($userLanguage != '') && ($newLanguage != UserAccount::getUserInterfaceLanguage())){
+		$userObject = UserAccount::getActiveUserObj();
+		$userObject->interfaceLanguage = $newLanguage;
+		$userObject->update();
+	}
+	if ($language != $newLanguage){
+		$language = $newLanguage;
+		$_SESSION['language'] = $language;
+		//Clear the preference cookie
+		if (isset($_COOKIE['searchPreferenceLanguage'])){
+			//Clear the cookie when we change languages
+			setcookie('searchPreferenceLanguage', $_COOKIE['searchPreferenceLanguage'], time() - 1000, '/');
+			unset($_COOKIE['searchPreferenceLanguage']);
+		}
+	}
+}
+if (!UserAccount::isLoggedIn() && isset($_COOKIE['searchPreferenceLanguage'])) {
+	$showLanguagePreferencesBar = true;
+	$interface->assign('searchPreferenceLanguage', $_COOKIE['searchPreferenceLanguage']);
+}elseif (UserAccount::isLoggedIn()){
+	$showLanguagePreferencesBar = $language != 'en' && UserAccount::getActiveUserObj()->searchPreferenceLanguage == -1;
+	$interface->assign('searchPreferenceLanguage', UserAccount::getActiveUserObj()->searchPreferenceLanguage);
+}else{
+	$showLanguagePreferencesBar = $language != 'en';
+	$interface->assign('searchPreferenceLanguage', -1);
+}
+
+$interface->assign('showLanguagePreferencesBar', $showLanguagePreferencesBar);
+
+// Make sure language code is valid, reset to default if bad:
+$validLanguages = [];
+try{
+	require_once ROOT_DIR . '/sys/Translation/Language.php';
+	$validLanguage = new Language();
+	$validLanguage->orderBy("weight");
+	$validLanguage->find();
+	$userIsTranslator = UserAccount::userHasPermission('Translate Aspen');
+	while ($validLanguage->fetch()){
+		if (!$validLanguage->displayToTranslatorsOnly || $userIsTranslator){
+			$validLanguages[$validLanguage->code] = clone $validLanguage;
+		}
+	}
+}catch(Exception $e){
+	$defaultLanguage = new Language();
+	$defaultLanguage->code = 'en';
+	$defaultLanguage->displayName = 'English';
+	$defaultLanguage->displayNameEnglish = 'English';
+	$defaultLanguage->facetValue = 'English';
+	$validLanguages['en'] = $defaultLanguage;
+	$language = 'en';
+}
+
+if (!array_key_exists($language, $validLanguages)) {
+	$language = 'en';
+}
+global $activeLanguage;
+global $translator;
+$activeLanguage = $validLanguages[$language];
+$interface->assign('validLanguages', $validLanguages);
+if ($translator == null){
+	$translator = new Translator('lang', $language);
+}
+$timer->logTime('Translator setup');
+$interface->assign('translationModeActive', $translator->translationModeActive());
+
+$interface->setLanguage($activeLanguage);
+
 $interface->loadDisplayOptions();
 $timer->logTime('Loaded display options within interface');
 
@@ -127,85 +206,6 @@ if ($mode['online'] === false) {
 	exit();
 }
 $timer->logTime('Checked availability mode');
-
-// Setup Translator
-global $language;
-global $serverName;
-//Get the active language
-$userLanguage = UserAccount::getUserInterfaceLanguage();
-if ($userLanguage == ''){
-	$language = strip_tags((isset($_SESSION['language'])) ? $_SESSION['language'] : 'en');
-}else{
-	$language = $userLanguage;
-}
-if (isset($_REQUEST['myLang'])) {
-	$newLanguage = strip_tags($_REQUEST['myLang']);
-	if (($userLanguage != '') && ($newLanguage != UserAccount::getUserInterfaceLanguage())){
-		$userObject = UserAccount::getActiveUserObj();
-		$userObject->interfaceLanguage = $newLanguage;
-		$userObject->update();
-	}
-	if ($language != $newLanguage){
-		$language = $newLanguage;
-		$_SESSION['language'] = $language;
-		//Clear the preference cookie
-		if (isset($_COOKIE['searchPreferenceLanguage'])){
-			//Clear the cookie when we change languages
-			setcookie('searchPreferenceLanguage', $_COOKIE['searchPreferenceLanguage'], time() - 1000, '/');
-			unset($_COOKIE['searchPreferenceLanguage']);
-		}
-	}
-}
-if (!UserAccount::isLoggedIn() && isset($_COOKIE['searchPreferenceLanguage'])) {
-	$showLanguagePreferencesBar = true;
-	$interface->assign('searchPreferenceLanguage', $_COOKIE['searchPreferenceLanguage']);
-}elseif (UserAccount::isLoggedIn()){
-	$showLanguagePreferencesBar = $language != 'en' && UserAccount::getActiveUserObj()->searchPreferenceLanguage == -1;
-	$interface->assign('searchPreferenceLanguage', UserAccount::getActiveUserObj()->searchPreferenceLanguage);
-}else{
-	$showLanguagePreferencesBar = $language != 'en';
-	$interface->assign('searchPreferenceLanguage', -1);
-}
-
-$interface->assign('showLanguagePreferencesBar', $showLanguagePreferencesBar);
-
-// Make sure language code is valid, reset to default if bad:
-$validLanguages = [];
-try{
-	require_once ROOT_DIR . '/sys/Translation/Language.php';
-	$validLanguage = new Language();
-	$validLanguage->orderBy("weight");
-	$validLanguage->find();
-	$userIsTranslator = UserAccount::userHasPermission('Translate Aspen');
-	while ($validLanguage->fetch()){
-		if (!$validLanguage->displayToTranslatorsOnly || $userIsTranslator){
-			$validLanguages[$validLanguage->code] = clone $validLanguage;
-		}
-	}
-}catch(Exception $e){
-	$defaultLanguage = new Language();
-	$defaultLanguage->code = 'en';
-	$defaultLanguage->displayName = 'English';
-	$defaultLanguage->displayNameEnglish = 'English';
-	$defaultLanguage->facetValue = 'English';
-	$validLanguages['en'] = $defaultLanguage;
-	$language = 'en';
-}
-
-if (!array_key_exists($language, $validLanguages)) {
-	$language = 'en';
-}
-global $activeLanguage;
-global $translator;
-$activeLanguage = $validLanguages[$language];
-$interface->assign('validLanguages', $validLanguages);
-if ($translator == null){
-	$translator = new Translator('lang', $language);
-}
-$timer->logTime('Translator setup');
-$interface->assign('translationModeActive', $translator->translationModeActive());
-
-$interface->setLanguage($activeLanguage);
 
 //Check to see if we should show the submit ticket option
 $interface->assign('showSubmitTicket', false);

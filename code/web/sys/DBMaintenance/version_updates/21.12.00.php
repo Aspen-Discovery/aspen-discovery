@@ -24,6 +24,20 @@ function getUpdates21_12_00() : array
 				'INSERT INTO placard_language (languageId, placardId) SELECT languages.id, placards.id from languages, placards;'
 			]
 		], //placard_languages
+		'library_menu_link_languages' => [
+			'title' => 'Menu Link Languages',
+			'description' => 'Allow Menu LInks to be limited by language',
+			'continueOnError' => true,
+			'sql' => [
+				'CREATE TABLE library_link_language (
+							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+							libraryLinkId INT,
+							languageId INT,
+							UNIQUE INDEX libraryLinkLanguage(libraryLinkId, languageId)
+						) ENGINE = INNODB;',
+				'INSERT INTO library_link_language (languageId, libraryLinkId) SELECT languages.id, library_links.id from languages, library_links;'
+			]
+		], //placard_languages
 		'edit_placard_permissions' => [
 			'title' => 'Edit Library Placard Permissions',
 			'description' => 'Add Library Placard Permissions',
