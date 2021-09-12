@@ -68,6 +68,11 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	private char audienceSubfield;
 	private String treatUnknownAudienceAs;
 
+	private int determineLiteraryFormBy;
+	private char literaryFormSubfield;
+	private boolean hideUnknownLiteraryForm;
+	private boolean hideNotCodedLiteraryForm;
+
 	//Fields for loading order information
 	private String orderTag;
 	private char orderLocationSubfield;
@@ -215,6 +220,11 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			determineAudienceBy = indexingProfileRS.getInt("determineAudienceBy");
 			audienceSubfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "audienceSubfield");
 			treatUnknownAudienceAs = indexingProfileRS.getString("treatUnknownAudienceAs");
+
+			determineLiteraryFormBy = indexingProfileRS.getInt("determineLiteraryFormBy");
+			literaryFormSubfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "literaryFormSubfield");
+			hideUnknownLiteraryForm = indexingProfileRS.getBoolean("hideUnknownLiteraryForm");
+			hideNotCodedLiteraryForm = indexingProfileRS.getBoolean("hideNotCodedLiteraryForm");
 
 			loadHoldsStmt = dbConn.prepareStatement("SELECT ilsId, numHolds from ils_hold_summary where ilsId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 
@@ -1577,7 +1587,25 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			groupedWork.addTargetAudiences(translatedAudiences);
 			groupedWork.addTargetAudiencesFull(translatedAudiences);
 		}
+	}
 
-
+	protected void loadLiteraryForms(GroupedWorkSolr groupedWork, Record record, ArrayList<ItemInfo> printItems, String identifier) {
+		if (determineLiteraryFormBy == 0){
+			super.loadLiteraryForms(groupedWork, record, printItems, identifier);
+		}else{
+			//Load based on a subfield of the items
+			for (ItemInfo printItem : printItems) {
+				Subfield subfield = printItem.getMarcField().getSubfield(literaryFormSubfield);
+				if (subfield != null){
+					if (subfield.getData() != null){
+						String translatedValue = translateValue("literary_form", subfield.getData(), identifier);
+						if (translatedValue != null) {
+							groupedWork.addLiteraryForm(translatedValue);
+							groupedWork.addLiteraryFormFull(translatedValue);
+						}
+					}
+				}
+			}
+		}
 	}
 }

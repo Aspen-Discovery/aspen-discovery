@@ -85,5 +85,15 @@ function getUpdates21_12_00() : array
 				'ALTER TABLE greenhouse_cache CHANGE COLUMN name name VARCHAR(100)',
 			]
 		], //increaseGreenhouseDataNameLength
+		'literaryFormIndexingUpdates' => [
+			'title' => 'Literary Form Indexing Updates',
+			'description' => 'Add additional fields to indexing profiles to determine how literary forms are indexed',
+			'sql' => [
+				'ALTER TABLE indexing_profiles ADD COLUMN determineLiteraryFormBy TINYINT DEFAULT 0',
+				"ALTER TABLE indexing_profiles ADD COLUMN literaryFormSubfield CHAR(1) DEFAULT ''",
+				'ALTER TABLE indexing_profiles ADD COLUMN hideUnknownLiteraryForm TINYINT DEFAULT 0',
+				'ALTER TABLE indexing_profiles ADD COLUMN hideNotCodedLiteraryForm TINYINT DEFAULT 0',
+			]
+		], //literaryFormIndexingUpdates
 	];
 }
