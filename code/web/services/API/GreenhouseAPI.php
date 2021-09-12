@@ -294,6 +294,7 @@ class GreenhouseAPI extends Action
 		return $result;
 	}
 
+	/** @noinspection PhpUnused */
 	public function getDefaultTranslation() {
 		$result = [
 			'success' => false
@@ -326,6 +327,7 @@ class GreenhouseAPI extends Action
 		return $result;
 	}
 
+	/** @noinspection PhpUnused */
 	public function setTranslation() {
 		$result = [
 			'success' => false
