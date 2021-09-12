@@ -474,7 +474,7 @@ class IndexingProfile extends DataObject
 				}
 			}
 			//Clear array so it is reloaded the next time
-			unset($this->translationMaps);
+			unset($this->_translationMaps);
 		}
 	}
 

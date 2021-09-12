@@ -282,10 +282,12 @@ public class GroupedWorkSolr implements Cloneable {
 		doc.addField("era", eras);
 		checkDefaultValue(literaryFormFull, "Not Coded");
 		checkDefaultValue(literaryFormFull, "Other");
+		checkDefaultValue(literaryFormFull, "Unknown");
 		checkInconsistentLiteraryFormsFull();
 		doc.addField("literary_form_full", literaryFormFull.keySet());
 		checkDefaultValue(literaryForm, "Not Coded");
 		checkDefaultValue(literaryForm, "Other");
+		checkDefaultValue(literaryForm, "Unknown");
 		checkInconsistentLiteraryForms();
 		doc.addField("literary_form", literaryForm.keySet());
 		checkDefaultValue(targetAudienceFull, "Unknown");
@@ -1549,6 +1551,16 @@ public class GroupedWorkSolr implements Cloneable {
 	}
 
 	private void addLiteraryForm(String literaryForm, int count) {
+		if (literaryForm.equals("Not Coded")){
+			if (this.groupedWorkIndexer.isHideNotCodedLiteraryForm()){
+				return;
+			}
+		}
+		if (literaryForm.equals("Unknown")){
+			if (this.groupedWorkIndexer.isHideUnknownLiteraryForm()){
+				return;
+			}
+		}
 		literaryForm = literaryForm.trim();
 		if (this.literaryForm.containsKey(literaryForm)) {
 			Integer numMatches = this.literaryForm.get(literaryForm);
@@ -1559,6 +1571,16 @@ public class GroupedWorkSolr implements Cloneable {
 	}
 
 	void addLiteraryForm(String literaryForm) {
+		if (literaryForm.equals("Not Coded")){
+			if (this.groupedWorkIndexer.isHideNotCodedLiteraryForm()){
+				return;
+			}
+		}
+		if (literaryForm.equals("Unknown")){
+			if (this.groupedWorkIndexer.isHideUnknownLiteraryForm()){
+				return;
+			}
+		}
 		addLiteraryForm(literaryForm, 1);
 	}
 
@@ -1576,6 +1598,16 @@ public class GroupedWorkSolr implements Cloneable {
 
 	private void addLiteraryFormFull(String literaryForm, int count) {
 		literaryForm = literaryForm.trim();
+		if (literaryForm.equals("Not Coded")){
+			if (this.groupedWorkIndexer.isHideNotCodedLiteraryForm()){
+				return;
+			}
+		}
+		if (literaryForm.equals("Unknown")){
+			if (this.groupedWorkIndexer.isHideUnknownLiteraryForm()){
+				return;
+			}
+		}
 		if (this.literaryFormFull.containsKey(literaryForm)) {
 			Integer numMatches = this.literaryFormFull.get(literaryForm);
 			this.literaryFormFull.put(literaryForm, numMatches + count);
@@ -1585,6 +1617,16 @@ public class GroupedWorkSolr implements Cloneable {
 	}
 
 	void addLiteraryFormFull(String literaryForm) {
+		if (literaryForm.equals("Not Coded")){
+			if (this.groupedWorkIndexer.isHideNotCodedLiteraryForm()){
+				return;
+			}
+		}
+		if (literaryForm.equals("Unknown")){
+			if (this.groupedWorkIndexer.isHideUnknownLiteraryForm()){
+				return;
+			}
+		}
 		this.addLiteraryFormFull(literaryForm, 1);
 	}
 

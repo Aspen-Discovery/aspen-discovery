@@ -1608,4 +1608,12 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			}
 		}
 	}
+
+	public boolean isHideUnknownLiteraryForm() {
+		return hideUnknownLiteraryForm;
+	}
+
+	public boolean isHideNotCodedLiteraryForm() {
+		return hideNotCodedLiteraryForm;
+	}
 }
