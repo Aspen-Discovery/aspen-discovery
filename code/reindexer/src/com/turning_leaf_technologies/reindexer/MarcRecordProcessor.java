@@ -1355,7 +1355,7 @@ abstract class MarcRecordProcessor {
 			}else if (titleMedium.contains("ebook")){
 				printFormats.add("eBook");
 			}else if (titleMedium.contains("eaudio")){
-				printFormats.add("eAudio");
+				printFormats.add("eAudiobook");
 			}else if (titleMedium.contains("emusic")){
 				printFormats.add("eMusic");
 			}else if (titleMedium.contains("evideo")){
