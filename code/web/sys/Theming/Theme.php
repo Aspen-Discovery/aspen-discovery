@@ -1120,16 +1120,7 @@ class Theme extends DataObject
 	public function __get($name)
 	{
 		if ($name == "libraries") {
-			if (!isset($this->_libraries) && $this->id){
-				$this->_libraries = [];
-				$obj = new Library();
-				$obj->theme = $this->id;
-				$obj->find();
-				while($obj->fetch()){
-					$this->_libraries[$obj->libraryId] = $obj->libraryId;
-				}
-			}
-			return $this->_libraries;
+			return $this->getLibraries();
 		} elseif ($name == "locations") {
 			if (!isset($this->_locations) && $this->id){
 				$this->_locations = [];
@@ -1223,6 +1214,15 @@ class Theme extends DataObject
 	 */
 	public function getLibraries()
 	{
+		if (!isset($this->_libraries) && $this->id){
+			$this->_libraries = [];
+			$obj = new Library();
+			$obj->theme = $this->id;
+			$obj->find();
+			while($obj->fetch()){
+				$this->_libraries[$obj->libraryId] = $obj->libraryId;
+			}
+		}
 		return $this->_libraries;
 	}
 
@@ -1256,6 +1256,22 @@ class Theme extends DataObject
 	public function clearLocations(){
 		$this->clearOneToManyOptions('Location', 'theme');
 		unset($this->_locations);
+	}
+
+	public function canActiveUserEdit(){
+		if ( UserAccount::userHasPermission('Administer All Themes')){
+			return true;
+		}else if (UserAccount::userHasPermission('Administer Library Themes')){
+			$libraries = $this->getLibraries();
+			$homeLibrary = UserAccount::getActiveUserObj()->getHomeLibrary();
+			if (array_key_exists($homeLibrary->libraryId, $libraries)){
+				return true;
+			}else{
+				return false;
+			}
+		}else{
+			return false;
+		}
 	}
 
 }
