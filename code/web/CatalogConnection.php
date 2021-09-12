@@ -1106,6 +1106,8 @@ class CatalogConnection
 	public function logout(User $user)
 	{
 		$this->driver->logout($user);
+		$user->lastLoginValidation = 0;
+		$user->update();
 	}
 
 	public function getHoldsReportData($location) {

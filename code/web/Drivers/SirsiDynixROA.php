@@ -138,14 +138,19 @@ class SirsiDynixROA extends HorizonAPI
 								break;
 							case 'CITY/STATE' :
 								$cityState = $fields->data;
-								if (substr_count($cityState, ' ') > 1) {
-									//Splitting multiple word cities
-									$last_space = strrpos($cityState, ' ');
-									$City = substr($cityState, 0, $last_space);
-									$State = substr($cityState, $last_space + 1);
+								if (!empty($cityState)) {
+									if (substr_count($cityState, ' ') > 1) {
+										//Splitting multiple word cities
+										$last_space = strrpos($cityState, ' ');
+										$City = substr($cityState, 0, $last_space);
+										$State = substr($cityState, $last_space + 1);
 
-								} else {
-									list($City, $State) = explode(' ', $cityState);
+									} else {
+										list($City, $State) = explode(' ', $cityState);
+									}
+								}else{
+									$City = '';
+									$State = '';
 								}
 								break;
 							case 'ZIP' :

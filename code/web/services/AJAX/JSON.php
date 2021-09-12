@@ -347,10 +347,10 @@ class AJAX_JSON extends Action {
 			'modalBody'    => $interface->fetch('AJAX/autoLogoutPrompt.tpl'),
 			'modalButtons' => "<div id='continueSession' class='btn btn-primary' onclick='continueSession();'>" . translate(['text'=>'Continue','isPublicFacing'=>true]) . "</div>" .
 				( $masqueradeMode ?
-						"<div id='endSession' class='btn btn-primary' onclick='AspenDiscovery.Account.endMasquerade()'>End Masquerade</div>" .
-						"<div id='endSession' class='btn btn-warning' onclick='endSession()'>Logout</div>"
+						"<div id='endSession' class='btn btn-primary' onclick='AspenDiscovery.Account.endMasquerade()'>" . translate(['text' => 'End Masquerade', 'isAdminFacing'=>true]) . "</div>" .
+						"<div id='endSession' class='btn btn-warning' onclick='endSession()'>" . translate(['text'=>'Logout', 'isAdminFacing'=>true]) . "</div>"
 					:
-						"<div id='endSession' class='btn btn-warning' onclick='endSession()'>Logout</div>"
+						"<div id='endSession' class='btn btn-warning' onclick='endSession()'>" . translate(['text'=>'Logout', 'isAdminFacing'=>true]) . "</div>"
 				)
 		);
 	}

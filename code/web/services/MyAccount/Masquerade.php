@@ -153,6 +153,10 @@ class MyAccount_Masquerade extends MyAccount
 							$guidingUser = $user;
 							$user = $masqueradedUser;
 							if (!empty($user) && !($user instanceof AspenError)){
+								if ($user->lastLoginValidation < (time() - 15 * 60)) {
+									$user->updatePatronInfo(true);
+								}
+
 								@session_start(); // (suppress notice if the session is already started)
 								$_SESSION['guidingUserId'] = $guidingUser->id;
 								$_SESSION['activeUserId'] = $user->id;
