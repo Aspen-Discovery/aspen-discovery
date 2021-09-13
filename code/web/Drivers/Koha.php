@@ -2680,7 +2680,7 @@ class Koha extends AbstractIlsDriver
 		} else {
 			if (strpos($date, '-') !== false){
 				list($month, $day, $year) = explode('-', $date);
-				return "$month/$day/$year";
+				return "$year-$month-$day";
 			}else{
 				return $date;
 			}
