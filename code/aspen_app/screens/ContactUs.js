@@ -21,9 +21,10 @@ export default class News extends Component {
     this.state = {
       pathLibrary: await AsyncStorage.getItem('library'),
       pathUrl: await AsyncStorage.getItem('url'),
+      locationId: await AsyncStorage.getItem('locationId'),
     };
     
-    const url = this.state.pathUrl + '/app/aspenMoreDetails.php?library=' + this.state.pathLibrary;
+    const url = this.state.pathUrl + '/app/aspenMoreDetails.php?id='+ this.state.locationId + '&library=' + this.state.pathLibrary;
 
     fetch(url)
       .then(res => res.json())

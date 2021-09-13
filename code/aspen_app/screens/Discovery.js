@@ -4,6 +4,7 @@ import RNPickerSelect from 'react-native-picker-select';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Chevron } from 'react-native-shapes';
 import Stylesheet from './Stylesheet';
+import Constants from "expo-constants";
 
 export default class Discovery extends Component {
   constructor() {
@@ -21,8 +22,13 @@ export default class Discovery extends Component {
   componentDidMount = async() =>{
     this.setState({
       pathLibrary: await AsyncStorage.getItem('library'),
-      pathUrl: await AsyncStorage.getItem('url')
+      pathUrl: await AsyncStorage.getItem('url'),
+      libraryName: await AsyncStorage.getItem('libraryName'),
     });
+
+    // store version
+    const version = Constants.manifest.version;
+    await AsyncStorage.setItem('version', version);
 
     this.grabBrowseCategory();
     this.grabListData(this.state.limiter);
@@ -32,6 +38,7 @@ export default class Discovery extends Component {
   // Grab the browse categories
   grabBrowseCategory = () => {
     const url = this.state.pathUrl + '/app/aspenBrowseCategory.php?library=' + this.state.pathLibrary;
+    console.log(url);
 
     fetch(url)
       .then(res => res.json())
@@ -59,8 +66,8 @@ export default class Discovery extends Component {
       limiter: restriction
     });
     
-    //const url = 'https://ajaxlibrary.ca/app/aspenDiscover.php?library=test&limiter=' + restriction;
     const url = this.state.pathUrl + '/app/aspenDiscover.php?library=' + this.state.pathLibrary + '&limiter=' + restriction;
+    console.log(url);
 
     fetch(url)
       .then(res => res.json())
@@ -103,7 +110,6 @@ export default class Discovery extends Component {
       <View style={ Stylesheet.discoveryPickerView }>
         <RNPickerSelect
           onValueChange = { (itemValue) =>  this.grabListData(itemValue) }
-
           items = { this.state.browseCat.map(obj => (
             {
                label: obj.title,
@@ -122,17 +128,27 @@ export default class Discovery extends Component {
   }
 
   render() {
-    if (this.state.isLoading) {
+    if ((this.state.isLoading) && (this.state.limiter == '')) {
       return (
 
         <View style={ Stylesheet.activityIndicator }>
           <>
-            <Text>Loading titles for {this.state.limiter} category from {this.state.pathLibrary}.</Text>
+            <Text>Loading titles from {this.state.libraryName}...</Text>
             <ActivityIndicator size='large' color='#272362' />
           </>
         </View>
       );
-    }else if (this.state.hasError) {
+    } else if (this.state.isLoading) {
+          return (
+
+            <View style={ Stylesheet.activityIndicator }>
+              <>
+                <Text>Loading titles for { this.state.limiter } category from {this.state.libraryName}...</Text>
+                <ActivityIndicator size='large' color='#272362' />
+              </>
+            </View>
+          );
+    } else if (this.state.hasError) {
       return (
         <View style={ Stylesheet.activityIndicator }>
           <Text>{this.state.error}.</Text>

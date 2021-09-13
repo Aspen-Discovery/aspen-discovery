@@ -36,6 +36,25 @@ export default class PlaceHold extends Component {
       showFailure: false,
       username: await AsyncStorage.getItem('username')
     });
+
+     const pickuplocation = this.state.pathUrl + '/app/aspenPickUpLocations.php?library=' + this.state.pathLibrary + '&barcode=' + this.state.username + '&pin=' + this.state.password
+
+    // fetch valid pickup locations
+       fetch(pickuplocation, {
+       header: {
+           'Accept': 'application/json',
+           'Content-Type':'application/json'
+       },
+       timeout: 5000})
+       .then(res => res.json())
+       .then((res) => {
+           this.setState({
+               locations: res.pickup
+           });
+         },(err) => {
+         console.warn('Its borked! Unable to connect to the library. Attempted connecting to <' + pickuplocation +'>');
+         console.warn('Error: ',err)
+       })
   }
 
   // handles the scrollability of the screen
@@ -91,27 +110,20 @@ export default class PlaceHold extends Component {
 
   // shows the options for locations
   showLocationPulldown = () => {
-
-    // I don't like this, but until we get the code working, I'm going to have to fake this out
-    switch(this.state.pathLibrary) {
-      case "test":
-        var data =  [{ key: 0, section: true, label: 'Select your pick up location'}, { key: "N", label: 'North Branch' }, { key: "E", label: 'East Branch' }, { key: "M", label: 'Main Library' }, { key: "W", label: 'West Library' }, { key: "BOOKM", label: 'Bookmobile' }, { key: "LPL", label: 'Luis Pickle Memorial' }];
-        break;
-      default:
-        var data =  [];
-    } 
     
     return (
       <View>
         <ModalSelector
-          data = { data }
-          initValue = "Select your pick up location"
+          data = { this.state.locations }
+          keyExtractor= {item => item.code}
+          labelExtractor= {item => item.displayName}
+          initValue = "Select your pick up location ▼"
           supportedOrientations = {['landscape', 'portrait']}
           animationType = 'fade'
           accessible = {true}
           scrollViewAccessibilityLabel = {'Scrollable options'}
           cancelButtonAccessibilityLabel = {'Cancel Button'}
-          onChange = {(option) => { this.setState({pickUpLabel: option.label, pickUpLocation:option.key})}}>
+          onChange = {(option) => { this.setState({pickUpLabel: option.displayName, pickUpLocation:option.code})}}>
           <Text>{'\n'}Preferred Pick Up Location:</Text>
           <TextInput
             style={ Stylesheet.modalSelector }
