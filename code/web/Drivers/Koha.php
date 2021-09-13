@@ -2315,7 +2315,7 @@ class Koha extends AbstractIlsDriver
 					} else {
 						$result['messages'][] = "Error {$this->apiCurlWrapper->getResponseCode()} updating your account.";
 					}
-					$result['message'] = "Could not create you account. " . implode($result['messages']);
+					$result['message'] = "Could not create your account. " . implode($result['messages']);
 
 				} else {
 					$jsonResponse = json_decode($response);
