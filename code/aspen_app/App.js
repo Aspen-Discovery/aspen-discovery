@@ -1,5 +1,5 @@
 import React, {Component, setState, useState, useEffect} from 'react';
-import { ActivityIndicator, Text, View, Platform, Alert } from 'react-native';
+import { ActivityIndicator, Text, View, Platform, Alert, TouchableOpacity } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createAppContainer, createSwitchNavigator } from 'react-navigation';
 import { createStackNavigator } from 'react-navigation-stack';
@@ -7,6 +7,10 @@ import { createBottomTabNavigator } from 'react-navigation-tabs';
 import Icon from 'react-native-vector-icons/Entypo';
 import Stylesheet from './screens/Stylesheet';
 import * as Location from 'expo-location';
+import AppLoading from 'expo-app-loading';
+import * as SplashScreen from 'expo-splash-screen';
+import Constants from "expo-constants";
+import * as Sentry from 'sentry-expo';
 
 // import helper files
 import AccountDetails from './screens/AccountDetails';
@@ -24,6 +28,12 @@ import Search from './screens/Search';
 import WhatsOn from './screens/WhatsOn';
 import ContactUs from './screens/ContactUs';
 import News from './screens/News';
+
+Sentry.init({
+  dsn: 'https://7fe05c932e2b4fd7b93fa3a0acae0649@o994439.ingest.sentry.io/5952947',
+  enableInExpoDevelopment: true,
+  debug: true, // Sentry will try to print out useful debugging information if something goes wrong with sending an event. Set this to `false` in production.
+});
 
 // defines the Card tab and how it is handled
 const CardTab = createStackNavigator(
@@ -174,10 +184,103 @@ const LoginNavigator = createStackNavigator({
    }
    });
 
+class PermissionsScreen extends Component {
+    state = { appIsReady: false, };
+
+    async componentDidMount() {
+        // fetch version to compare
+        await AsyncStorage.getItem('version');
+
+        // Prevent native splash screen from autohiding
+        try {
+          await SplashScreen.preventAutoHideAsync();
+        } catch (e) {
+          console.warn(e);
+        }
+        this.prepareResources();
+    }
+
+  /**
+   * Method that serves to load resources and make API calls
+   */
+   prepareResources = async () => {
+       await getPermissions();
+
+       this.setState({ appIsReady: true }, async () => {
+          await SplashScreen.hideAsync();
+       });
+   };
+
+   render() {
+       if (!this.state.appIsReady) {
+         return null;
+       }
+
+       return ( this.props.navigation.navigate('Auth') );
+
+   }
+}
+
+class ResetLocation extends Component {
+    state = { appIsReady: false, };
+
+    async componentDidMount() {
+        this.prepareResources();
+    }
+
+   prepareResources = async () => {
+       await getPermissions();
+       this.setState({ appIsReady: true });
+   };
+
+   render() {
+       if (!this.state.appIsReady) {
+         <View style={ Stylesheet.activityIndicator }>
+             <ActivityIndicator size='large' color='#272362' />
+         </View>
+       }
+
+       return ( this.props.navigation.navigate('Auth') );
+   }
+}
+
+async function getPermissions()  {
+
+  let { status } = await Location.requestForegroundPermissionsAsync();
+  console.log(status);
+
+  if (status !== 'granted') {
+      await AsyncStorage.setItem('latitude', '0');
+      await AsyncStorage.setItem('longitude', '0');
+      return;
+  }
+
+  let location = await Location.getLastKnownPositionAsync({});
+
+    if(location != null) {
+    await AsyncStorage.setItem('latitude', JSON.stringify(location.coords.latitude));
+    await AsyncStorage.setItem('longitude', JSON.stringify(location.coords.longitude));
+    } else {
+    await AsyncStorage.setItem('latitude', '0');
+    await AsyncStorage.setItem('longitude', '0');
+    }
+
+
+  let text = 'Shuffling the elves around..';
+  if (location) {
+    text = JSON.stringify(location);
+  }
+
+  return(location)
+
+}
+
+
 class AuthLoadingScreen extends Component {
   constructor (props) {
    super(props);
    this._loadData();
+
   }
 
   render() {
@@ -200,77 +303,15 @@ class AuthLoadingScreen extends Component {
 
 export default createAppContainer(createSwitchNavigator(
   {
+    Permissions: PermissionsScreen,
     AuthLoading: AuthLoadingScreen,
     App: MainNavigator,
     Auth: LoginNavigator,
+    ResetLocation: ResetLocation,
   },
   {
-    initialRouteName: 'AuthLoading',
+    initialRouteName: 'Permissions',
   }
 ));
 
-export function GetGeolocation()  {
-const [location, setLocation] = useState(null);
-const [latitude, setLatitude] = useState(null);
-const [longitude, setLongitude]= useState(null);
-const [errorMsg, setErrorMsg] = useState(null);
 
-useEffect(() => {
-    (async () => {
-    try {
-      let { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
-        setErrorMsg('Permission to access location was denied');
-        Alert.alert(
-            "User location not detected",
-            "You haven't granted permission to detect your location.",
-            [{ text: 'OK', onPress: () => console.log('OK Pressed') }])
-      }
-    try {
-        let isLocationServicesEnabled = await Location.hasServicesEnabledAsync();
-        let location = await Location.getCurrentPositionAsync({
-            maximumAge: 60000, // only for Android
-            accuracy: Location.Accuracy.Low});
-
-        await AsyncStorage.setItem('latitude', JSON.stringify(location.coords.latitude));
-        await AsyncStorage.setItem('longitude', JSON.stringify(location.coords.longitude));
-        let fetchedData = '1';
-        await AsyncStorage.setItem('isFetchingData', fetchedData);
-      } catch (error) {
-        console.log('getCurrentPositionAsync error',error);
-        let location = await Location.getLastKnownPositionAsync();
-            if (location == null) {
-              Alert.alert(
-                "Geolocation failed",
-                "Your position could not be detected",
-                [{ text: "OK", onPress: () => console.log("OK Pressed") }]
-              );
-            } else {
-              await AsyncStorage.setItem('latitude', JSON.stringify(location.coords.latitude));
-              await AsyncStorage.setItem('longitude', JSON.stringify(location.coords.longitude));
-              let fetchedData = '1';
-              await AsyncStorage.setItem('isFetchingData', fetchedData);
-            }
-        }
-      } catch (error) {
-       console.log('askAsync error',error);
-      }
-  }, []);
-});
-
-  let text = 'Making fresh cookies...';
-  var userLatitude =  latitude
-  var userLongitude =  longitude
-  let greenhouseUrl = 'https://aspen-test.bywatersolutions.com/API/GreenhouseAPI?method=getLibraries&latitude=' + userLatitude + '&longitude=' + userLongitude
-
-  if (errorMsg) {
-    text = errorMsg;
-  } else if (location) {
-    text = greenhouseUrl
-    global.greenhouseUrl = greenhouseUrl
-
-  }
-
-  return (<View><Text>{text}</Text></View>);
-
-}

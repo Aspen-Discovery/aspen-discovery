@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
 import { ActivityIndicator, FlatList, TouchableOpacity, Text, View } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { ListItem } from "react-native-elements"
+import { ListItem } from "react-native-elements";
+import Constants from "expo-constants";
 import Stylesheet from './Stylesheet';
 
 export default class More extends Component {
@@ -15,11 +16,15 @@ export default class More extends Component {
 
   // handles the mount information, setting session variables, etc
   componentDidMount = async() =>{
+  const version = Constants.manifest.version;
     this.setState({
       pathUrl: await AsyncStorage.getItem('url'),
+      library: await AsyncStorage.getItem('library'),
+      locationId: await AsyncStorage.getItem('locationId'),
     });
 
-    const url = this.state.pathUrl + '/app/aspenMoreDetails.php';
+    const url = this.state.pathUrl + '/app/aspenMoreDetails.php?id='+ this.state.locationId + '&library=' + this.state.library + '&version=' + version;
+    console.log(url)
 
     fetch(url)
       .then(res => res.json())

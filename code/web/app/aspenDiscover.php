@@ -29,7 +29,19 @@ $searchLimit = 100;
 # ****************************************************************************************************************************
 $browseCat = $_GET['limiter'];
 if (empty($browseCat)) {
-	$browseCat = 'all_everyone';
+	$firstBrowseCategory = null;
+	$browseCategories = $urlPath . '/API/SearchAPI?method=getActiveBrowseCategories&includeSubCategories=false';
+	$results    = json_decode(file_get_contents($browseCategories), true);
+	foreach($results['result'] as $result) {
+		if($result['source'] != 'List') {
+			if (empty($firstBrowseCategory)){
+				$firstBrowseCategory = $result['text_id'];
+				break;
+			}
+		}
+	}
+
+	$browseCat = $firstBrowseCategory;
 }
 
 # ****************************************************************************************************************************
