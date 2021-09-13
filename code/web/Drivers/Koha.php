@@ -2081,7 +2081,7 @@ class Koha extends AbstractIlsDriver
 				$allFieldsHidden = true;
 				foreach ($section['properties'] as $fieldKey => &$field) {
 					$fieldName = str_replace('borrower_', '', $fieldKey);
-					if (array_key_exists($fieldName, $unwantedFields)) {
+					if (array_key_exists($fieldName, $unwantedFields) && !array_key_exists($fieldName, $requiredFields)) {
 						//There is a case here where a field is marked as both unwanted and required.  If that is the case, do not unset it, just change the type to hidden.
 						if (array_key_exists($fieldName, $requiredFields)) {
 							$section['properties'][$fieldKey]['type'] = 'hidden';
