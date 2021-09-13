@@ -12,8 +12,9 @@ class OverDriveDriver extends AbstractEContentDriver{
 	/** @var string */
 	protected $ILSName;
 
-	/** @var OverDriveSetting */
+	/** @var OverDriveScope */
 	private $scope = null;
+	/** @var OverDriveSetting */
 	protected $settings = null;
 	private $clientKey = null;
 	private $clientSecret = null;
@@ -40,6 +41,20 @@ class OverDriveDriver extends AbstractEContentDriver{
 		'magazine-overdrive' => 'OverDrive Magazine'
 	);
 	private $lastHttpCode;
+
+	/** @var OverDriveDriver  */
+	private static $singletonDriver = null;
+
+	/**
+	 * @return OverDriveDriver
+	 */
+	public static function getOverDriveDriver(){
+		if (OverDriveDriver::$singletonDriver == null){
+			OverDriveDriver::$singletonDriver = new OverDriveDriver();
+		}
+		return OverDriveDriver::$singletonDriver;
+	}
+
 
 	private function getSettings()
 	{
@@ -80,6 +95,25 @@ class OverDriveDriver extends AbstractEContentDriver{
 
 		}
 		return $this->settings;
+	}
+
+	public function getProductUrl($crossRefId){
+		$settings = $this->getSettings();
+		$baseUrl = $settings->url;
+		if (substr($baseUrl, -1) != '/'){
+			$baseUrl .= '/';
+		}
+		$baseUrl .= 'media/' . $crossRefId;
+		return $baseUrl;
+	}
+
+	public function isCirculationEnabled() {
+		$this->getSettings();
+		if ($this->scope == null){
+			return false;
+		}else{
+			return $this->scope->circulationEnabled;
+		}
 	}
 
 	public function getTokenData() {
@@ -723,7 +757,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 			$this->incrementStat('numHoldsPlaced');
 
 			$holdResult['success'] = true;
-			$holdResult['message'] = "<p class='alert alert-success'>" . translate(['text'=>'overdrive_hold_success', 'defaultText' => 'Your hold was placed successfully.  You are number %1% on the wait list.', 1=>$response->holdListPosition]) . "</p>";
+			$holdResult['message'] = "<p class='alert alert-success'>" . translate(['text'=> 'Your hold was placed successfully.  You are number %1% on the wait list.', 1=>$response->holdListPosition, 'isPublicFacing'=>true]) . "</p>";
 			$holdResult['hasWhileYouWait'] = false;
 
 			//Get the grouped work for the record

@@ -313,7 +313,8 @@ class Grouping_StatusInformation
 			'text' => $numberOfCopiesMessage,
 			1 => $this->getCopies(),
 			2 => $this->getNumHolds(),
-			3 => $this->getOnOrderCopies()
+			3 => $this->getOnOrderCopies(),
+			'isPublicFacing' => true,
 		]);
 	}
 

@@ -138,14 +138,19 @@ class SirsiDynixROA extends HorizonAPI
 								break;
 							case 'CITY/STATE' :
 								$cityState = $fields->data;
-								if (substr_count($cityState, ' ') > 1) {
-									//Splitting multiple word cities
-									$last_space = strrpos($cityState, ' ');
-									$City = substr($cityState, 0, $last_space);
-									$State = substr($cityState, $last_space + 1);
+								if (!empty($cityState)) {
+									if (substr_count($cityState, ' ') > 1) {
+										//Splitting multiple word cities
+										$last_space = strrpos($cityState, ' ');
+										$City = substr($cityState, 0, $last_space);
+										$State = substr($cityState, $last_space + 1);
 
-								} else {
-									list($City, $State) = explode(' ', $cityState);
+									} else {
+										list($City, $State) = explode(' ', $cityState);
+									}
+								}else{
+									$City = '';
+									$State = '';
 								}
 								break;
 							case 'ZIP' :
@@ -430,12 +435,9 @@ class SirsiDynixROA extends HorizonAPI
 
 	private function getStaffSessionToken()
 	{
-		global $configArray;
 		$staffSessionToken = false;
-		if (!empty($configArray['Catalog']['selfRegStaffUser']) && !empty($configArray['Catalog']['selfRegStaffPassword'])) {
-			$selfRegStaffUser = $configArray['Catalog']['selfRegStaffUser'];
-			$selfRegStaffPassword = $configArray['Catalog']['selfRegStaffPassword'];
-			list(, $staffSessionToken) = $this->staffLoginViaWebService($selfRegStaffUser, $selfRegStaffPassword);
+		if (!empty($this->accountProfile->staffUsername) && !empty($this->accountProfile->staffPassword)) {
+			list(, $staffSessionToken) = $this->staffLoginViaWebService($this->accountProfile->staffUsername, $this->accountProfile->staffPassword);
 		}
 		return $staffSessionToken;
 	}
@@ -1028,7 +1030,7 @@ class SirsiDynixROA extends HorizonAPI
 					}
 				} else {
 					$hold_result['success'] = true;
-					$hold_result['message'] = translate(['text'=>"ils_hold_success", 'defaultText'=>"Your hold was placed successfully."]);
+					$hold_result['message'] = translate(['text'=>"Your hold was placed successfully.", 'isPublicFacing'=>true]);
 					$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
 					$patron->forceReloadOfHolds();
 				}
@@ -1806,14 +1808,18 @@ class SirsiDynixROA extends HorizonAPI
 						break;
 					case 'CITY/STATE' :
 						$cityState = $fields->data;
-						if (substr_count($cityState, ' ') > 1) {
-							//Splitting multiple word cities
-							$last_space = strrpos($cityState, ' ');
-							$City = substr($cityState, 0, $last_space);
-							$State = substr($cityState, $last_space + 1);
-
-						} else {
-							list($City, $State) = explode(' ', $cityState);
+						if (!empty($cityState)) {
+							if (substr_count($cityState, ' ') > 1) {
+								//Splitting multiple word cities
+								$last_space = strrpos($cityState, ' ');
+								$City = substr($cityState, 0, $last_space);
+								$State = substr($cityState, $last_space + 1);
+							} else {
+								list($City, $State) = explode(' ', $cityState);
+							}
+						}else{
+							$City = '';
+							$State = '';
 						}
 						break;
 					case 'ZIP' :

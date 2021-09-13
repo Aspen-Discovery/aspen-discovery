@@ -631,34 +631,10 @@ class UInterface extends Smarty
 		$expandedLinkCategories = [];
 		/** @var LibraryLink $libraryLink */
 		foreach ($links as $libraryLink){
-			if ($libraryLink->showToLoggedInUsersOnly && !UserAccount::isLoggedIn()){
+			if (!$libraryLink->isValidForDisplay()){
 				continue;
 			}
-			if (!$libraryLink->published && !UserAccount::userHasPermission('View Unpublished Content')){
-				continue;
-			}
-			if($libraryLink->showToLoggedInUsersOnly && UserAccount::isLoggedIn()) {
-				$user = UserAccount::getLoggedInUser();
-				$userPatronType = $user->patronType;
-				$userId = $user->id;
-				require_once ROOT_DIR . '/sys/Account/PType.php';
-				$patronType = new pType();
-				$patronType->pType = $userPatronType;
-				if ($patronType->find(true)){
-					$patronTypeId = $patronType->id;
-					try{
-						require_once ROOT_DIR . '/sys/LibraryLocation/LibraryLinkAccess.php';
-						$patronTypeLink = new LibraryLinkAccess();
-						$patronTypeLink->libraryLinkId = $libraryLink->id;
-						$patronTypeLink->patronTypeId = $patronTypeId;
-						if((!$patronTypeLink->find(true)) && $userId != 1){
-							continue;
-						}
-					}catch (Exception $e){
-						//This happens before the table has been defined, ignore it
-					}
-				}
-			}
+
 			if (empty($libraryLink->category)){
 				$libraryLink->category = 'none-' . $libraryLink->id;
 			}

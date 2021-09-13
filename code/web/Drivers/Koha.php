@@ -1090,7 +1090,7 @@ class Koha extends AbstractIlsDriver
 			$response = $this->apiCurlWrapper->curlPostBodyData($apiUrl, $postParams, false);
 			$responseCode = $this->apiCurlWrapper->getResponseCode();
 			if ($responseCode == 201){
-				$result['message'] = translate(['text'=>"ils_hold_success", 'defaultText'=>"Your hold was placed successfully."]);
+				$result['message'] = translate(['text'=>"Your hold was placed successfully.", 'isPublicFacing'=>true]);
 				$result['success'] = true;
 				$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
 				$patron->forceReloadOfHolds();

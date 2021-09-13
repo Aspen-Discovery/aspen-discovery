@@ -1,5 +1,6 @@
 <?php
 require_once ROOT_DIR . '/sys/LibraryLocation/LibraryLinkAccess.php';
+require_once ROOT_DIR . '/sys/LibraryLocation/LibraryLinkLanguage.php';
 
 class LibraryLink extends DataObject{
 	public $__table = 'library_links';
@@ -19,6 +20,7 @@ class LibraryLink extends DataObject{
 	public /** @noinspection PhpUnused */ $openInNewTab;
 
 	private $_allowAccess;
+	private $_languages;
 
 	public function getNumericColumnNames() : array
 	{
@@ -38,6 +40,7 @@ class LibraryLink extends DataObject{
 		while ($library->fetch()){
 			$libraryList[$library->libraryId] = $library->displayName;
 		}
+		$languageList = Language::getLanguageList();
 
 		$patronTypeList = PType::getPatronTypeList();
 		return [
@@ -63,6 +66,15 @@ class LibraryLink extends DataObject{
 				'description' => 'Define what patron types should see the menu link',
 				'values' => $patronTypeList,
 			),
+			'languages' => array(
+				'property' => 'languages',
+				'type' => 'multiSelect',
+				'listStyle' => 'checkboxSimple',
+				'label' => 'Languages',
+				'description' => 'Define languages that use this placard',
+				'values' => $languageList,
+				'hideInLists' => true,
+			),
 		];
 	}
 
@@ -70,6 +82,14 @@ class LibraryLink extends DataObject{
 		$ret = parent::insert();
 		if ($ret !== FALSE ){
 			$this->saveAccess();
+			//When inserting a library link, if nothing exists, apply to all languages
+			if (empty($this->_languages)){
+				$languageList = Language::getLanguageList();
+				foreach ($languageList as $languageId => $displayName) {
+					$this->_languages[$languageId] = $languageId;
+				}
+			}
+			$this->saveLanguages();
 		}
 	}
 
@@ -77,12 +97,16 @@ class LibraryLink extends DataObject{
 		$ret = parent::update();
 		if ($ret !== FALSE ){
 			$this->saveAccess();
+			$this->saveLanguages();
 		}
 	}
 
 	public function __get($name){
 		if ($name == "allowAccess") {
 			return $this->getAccess();
+		} elseif ($name == 'languages') {
+			$this->getLanguages();
+			return $this->_languages;
 		}else{
 			return $this->_data[$name];
 		}
@@ -91,6 +115,8 @@ class LibraryLink extends DataObject{
 	public function __set($name, $value){
 		if ($name == "allowAccess") {
 			$this->_allowAccess = $value;
+		}elseif ($name == 'languages') {
+			$this->_languages = $value;
 		}else{
 			$this->_data[$name] = $value;
 		}
@@ -101,6 +127,10 @@ class LibraryLink extends DataObject{
 		$ret = parent::delete();
 		if ($ret !== FALSE ){
 			$this->clearAccess();
+
+			$libraryLinkLocation = new LibraryLinkLanguage();
+			$libraryLinkLocation->libraryLinkId = $this->id;
+			$libraryLinkLocation->delete(true);
 		}
 	}
 
@@ -138,6 +168,95 @@ class LibraryLink extends DataObject{
 		$link = new LibraryLinkAccess();
 		$link->libraryLinkId = $this->id;
 		return $link->delete(true);
+	}
+
+	public function getLanguages(){
+		if (!isset($this->_languages) && $this->id) {
+			$this->_languages = [];
+			try {
+				$language = new LibraryLinkLanguage();
+				$language->libraryLinkId = $this->id;
+				$language->find();
+				while ($language->fetch()) {
+					$this->_languages[$language->languageId] = $language->languageId;
+				}
+			}catch (Exception $e){
+				//This happens when the table is not setup yet
+				$languageList = Language::getLanguageList();
+				foreach ($languageList as $languageId => $displayName) {
+					$this->_languages[$languageId] = $languageId;
+				}
+			}
+		}
+		return $this->_languages;
+	}
+
+	public function saveLanguages(){
+		if (isset ($this->_languages) && is_array($this->_languages)){
+			$languageList = Language::getLanguageList();
+			foreach ($languageList as $languageId => $displayName) {
+				$obj = new LibraryLinkLanguage();
+				$obj->libraryLinkId = $this->id;
+				$obj->languageId = $languageId;
+				if (in_array($languageId, $this->_languages)) {
+					if (!$obj->find(true)) {
+						$obj->insert();
+					}
+				} else {
+					if ($obj->find(true)) {
+						$obj->delete();
+					}
+				}
+			}
+		}
+	}
+
+	public function isValidForDisplay(){
+		if ($this->showToLoggedInUsersOnly && !UserAccount::isLoggedIn()){
+			return false;
+		}
+		if (!$this->published && !UserAccount::userHasPermission('View Unpublished Content')){
+			return false;
+		}
+		//Check to see if the library link is valid based on the language
+		global $activeLanguage;
+		$validLanguages = $this->getLanguages();
+		if (!in_array($activeLanguage->id, $validLanguages)){
+			return false;
+		}
+		if ($this->showToLoggedInUsersOnly) {
+			if (UserAccount::isLoggedIn()) {
+				$user = UserAccount::getLoggedInUser();
+				$userPatronType = $user->patronType;
+				$userId = $user->id;
+				require_once ROOT_DIR . '/sys/Account/PType.php';
+				$patronType = new pType();
+				$patronType->pType = $userPatronType;
+				if ($patronType->find(true)) {
+					$patronTypeId = $patronType->id;
+					try {
+						require_once ROOT_DIR . '/sys/LibraryLocation/LibraryLinkAccess.php';
+						$patronTypeLink = new LibraryLinkAccess();
+						$patronTypeLink->libraryLinkId = $this->id;
+						$patronTypeLink->patronTypeId = $patronTypeId;
+						if ((!$patronTypeLink->find(true)) && $userId != 1) {
+							return false;
+						} else {
+							return true;
+						}
+					} catch (Exception $e) {
+						//This happens before the table has been defined, ignore it
+						return true;
+					}
+				} else {
+					return false;
+				}
+			}else{
+				return false;
+			}
+		}else{
+			return true;
+		}
 	}
 
 	function getEditLink(){

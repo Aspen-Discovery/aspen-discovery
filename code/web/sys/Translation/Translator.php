@@ -192,7 +192,7 @@ class Translator
 										$response = $this->greenhouseCurlWrapper->curlPostPage($systemVariables->greenhouseUrl . '/API/GreenhouseAPI?method=getDefaultTranslation', $body);
 										if ($response !== false) {
 											$jsonResponse = json_decode($response);
-											if ($jsonResponse->success) {
+											if (!empty($jsonResponse) && $jsonResponse->success) {
 												$translation->translated = 1;
 												$defaultTranslation = $jsonResponse->translation;
 												$translatedInGreenhouse = true;

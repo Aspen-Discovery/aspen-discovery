@@ -251,7 +251,7 @@ class CloudLibraryDriver extends AbstractEContentDriver
 			$this->trackRecordHold($recordId);
 
 			$result['success'] = true;
-			$result['message'] = "<p class='alert alert-success'>" . translate(['text'=>"cloud_library_hold_success", 'defaultText'=>"Your hold was placed successfully."]) . "</p>";
+			$result['message'] = "<p class='alert alert-success'>" . translate(['text'=>"Your hold was placed successfully.", 'isPublicFacing'=>true]) . "</p>";
 			$result['hasWhileYouWait'] = false;
 
 			//Get the grouped work for the record

@@ -159,7 +159,10 @@ class Placard extends DataObject
 			$this->saveTriggers();
 			//When inserting a placard, if nothing exists, apply to all languages
 			if (empty($this->_languages)){
-				$this->_languages = Language::getLanguageList();
+				$languageList = Language::getLanguageList();
+				foreach ($languageList as $languageId => $displayName) {
+					$this->_languages[$languageId] = $languageId;
+				}
 			}
 			$this->saveLanguages();
 		}

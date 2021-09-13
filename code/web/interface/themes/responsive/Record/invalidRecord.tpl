@@ -1,4 +1,4 @@
-<h1>{translate text='Invalid Record'}</h1>
+<h1>{translate text='Invalid Record' isPublicFacing=true}</h1>
 <p class="alert alert-warning">
 	{if empty($invalidWork)}
 		{translate text='Sorry, we could not find a record with an id of <b>%1%</b> in our catalog.	Please try your search again.' 1=$id isPublicFacing=true}

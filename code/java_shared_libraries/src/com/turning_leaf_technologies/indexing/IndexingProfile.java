@@ -48,6 +48,10 @@ public class IndexingProfile extends BaseIndexingSettings {
 	private char subLocationSubfield;
 	private int determineAudienceBy;
 	private char audienceSubfield;
+	private int determineLiteraryFormBy;
+	private char literaryFormSubfield;
+	private boolean hideUnknownLiteraryForm;
+	private boolean hideNotCodedLiteraryForm;
 	private char noteSubfield;
 	private long lastUpdateOfAuthorities;
 	private long lastChangeProcessed;
@@ -111,6 +115,11 @@ public class IndexingProfile extends BaseIndexingSettings {
 
 		this.setDetermineAudienceBy(indexingProfileRS.getInt("determineAudienceBy"));
 		this.setAudienceSubfield(getCharFromRecordSet(indexingProfileRS, "audienceSubfield"));
+
+		this.determineLiteraryFormBy = indexingProfileRS.getInt("determineLiteraryFormBy");
+		this.literaryFormSubfield = getCharFromRecordSet(indexingProfileRS, "literaryFormSubfield");
+		this.hideUnknownLiteraryForm = indexingProfileRS.getBoolean("hideUnknownLiteraryForm");
+		this.hideNotCodedLiteraryForm = indexingProfileRS.getBoolean("hideNotCodedLiteraryForm");
 
 		this.setNoteSubfield(getCharFromRecordSet(indexingProfileRS, "noteSubfield"));
 

@@ -861,29 +861,44 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver
 	{
 		if ($this->_actions === null) {
 			$this->_actions = array();
-			//Check to see if the title is on hold or checked out to the patron.
-			$loadDefaultActions = true;
-			if (UserAccount::isLoggedIn()) {
-				$user = UserAccount::getActiveUserObj();
-				$this->_actions = array_merge($this->_actions, $user->getCirculatedRecordActions('overdrive', $this->id));
-				$loadDefaultActions = count($this->_actions) == 0;
-			}
+			//Check to see if OverDrive circulation is enabled
+			require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
+			$overDriveDriver = OverDriveDriver::getOverDriveDriver();
+			if (!$overDriveDriver->isCirculationEnabled()){
+				$overDriveMetadata = $this->getOverDriveMetaData();
+				$crossRefId = $overDriveMetadata->getDecodedRawData()->crossRefId;
+				$this->_actions[] = array(
+					'title' => translate(['text'=>'Access Online','isPublicFacing'=>true]),
+					'url' => $overDriveDriver->getProductUrl($crossRefId),
+					'target' => 'blank',
+					'requireLogin' => false,
+					'type' => 'overdrive_access_online'
+				);
+			}else{
+				//Check to see if the title is on hold or checked out to the patron.
+				$loadDefaultActions = true;
+				if (UserAccount::isLoggedIn()) {
+					$user = UserAccount::getActiveUserObj();
+					$this->_actions = array_merge($this->_actions, $user->getCirculatedRecordActions('overdrive', $this->id));
+					$loadDefaultActions = count($this->_actions) == 0;
+				}
 
-			if ($loadDefaultActions) {
-				if ($isAvailable) {
-					$this->_actions[] = array(
-						'title' => translate(['text'=>'Check Out OverDrive','isPublicFacing'=>true]),
-						'onclick' => "return AspenDiscovery.OverDrive.checkOutTitle('{$this->id}');",
-						'requireLogin' => false,
-						'type' => 'overdrive_checkout'
-					);
-				} else {
-					$this->_actions[] = array(
-						'title' => translate(['text'=>'Place Hold OverDrive','isPublicFacing'=>true]),
-						'onclick' => "return AspenDiscovery.OverDrive.placeHold('{$this->id}');",
-						'requireLogin' => false,
-						'type' => 'overdrive_hold'
-					);
+				if ($loadDefaultActions) {
+					if ($isAvailable) {
+						$this->_actions[] = array(
+							'title' => translate(['text' => 'Check Out OverDrive', 'isPublicFacing' => true]),
+							'onclick' => "return AspenDiscovery.OverDrive.checkOutTitle('{$this->id}');",
+							'requireLogin' => false,
+							'type' => 'overdrive_checkout'
+						);
+					} else {
+						$this->_actions[] = array(
+							'title' => translate(['text' => 'Place Hold OverDrive', 'isPublicFacing' => true]),
+							'onclick' => "return AspenDiscovery.OverDrive.placeHold('{$this->id}');",
+							'requireLogin' => false,
+							'type' => 'overdrive_hold'
+						);
+					}
 				}
 			}
 

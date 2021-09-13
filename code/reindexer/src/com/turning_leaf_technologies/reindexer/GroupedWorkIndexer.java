@@ -134,6 +134,9 @@ public class GroupedWorkIndexer {
 	private boolean storeRecordDetailsInSolr = false;
 	private boolean storeRecordDetailsInDatabase = true;
 
+	private boolean hideUnknownLiteraryForm;
+	private boolean hideNotCodedLiteraryForm;
+
 	public GroupedWorkIndexer(String serverName, Connection dbConn, Ini configIni, boolean fullReindex, boolean clearIndex, BaseLogEntry logEntry, Logger logger) {
 		indexStartTime = new Date().getTime() / 1000;
 		this.serverName = serverName;
@@ -375,6 +378,19 @@ public class GroupedWorkIndexer {
 		hooplaProcessor = new HooplaProcessor(this, dbConn, logger);
 
 		axis360Processor = new Axis360Processor(this, dbConn, logger);
+
+		//Check to see if we want to display Unknown and Not Coded Literary Forms.  This is done by looking
+		//at the indexing profiles since that is the least confusing place to put the settings.
+		for (MarcRecordProcessor recordProcessor : ilsRecordProcessors.values()){
+			if (recordProcessor instanceof IlsRecordProcessor){
+				if (((IlsRecordProcessor) recordProcessor).isHideNotCodedLiteraryForm()){
+					this.hideNotCodedLiteraryForm = true;
+				}
+				if (((IlsRecordProcessor) recordProcessor).isHideUnknownLiteraryForm()){
+					this.hideUnknownLiteraryForm = true;
+				}
+			}
+		}
 
 		//Load translation maps
 		loadSystemTranslationMaps();
@@ -1938,6 +1954,14 @@ public class GroupedWorkIndexer {
 
 	public BaseLogEntry getLogEntry() {
 		return logEntry;
+	}
+
+	public boolean isHideUnknownLiteraryForm() {
+		return hideUnknownLiteraryForm;
+	}
+
+	public boolean isHideNotCodedLiteraryForm() {
+		return hideNotCodedLiteraryForm;
 	}
 
 	public enum MarcStatus {

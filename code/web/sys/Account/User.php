@@ -498,7 +498,12 @@ class User extends DataObject
 			$userHomeLibrary = Library::getPatronHomeLibrary($this);
 			if ($userHomeLibrary) {
 				if ($source == 'overdrive') {
-					return array_key_exists('OverDrive', $enabledModules) && $userHomeLibrary->overDriveScopeId > 0;
+					if (array_key_exists('OverDrive', $enabledModules) && $userHomeLibrary->overDriveScopeId > 0){
+						$driver = OverDriveDriver::getOverDriveDriver();
+						return $driver->isCirculationEnabled();
+					}else {
+						return false;
+					}
 				} elseif ($source == 'hoopla') {
 					return array_key_exists('Hoopla', $enabledModules) && $userHomeLibrary->hooplaLibraryID > 0;
 				} elseif ($source == 'cloud_library') {

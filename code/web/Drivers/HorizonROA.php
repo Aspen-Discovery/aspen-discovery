@@ -822,7 +822,7 @@ abstract class HorizonROA extends AbstractIlsDriver
 			$logger->log('Horizon ROA Place Hold Error: ' . $errorMessage, Logger::LOG_ERROR);
 		} elseif (!empty($createHoldResponse->holdRecord)) {
 			$hold_result['success'] = true;
-			$hold_result['message'] = translate(['text'=>"ils_hold_success", 'defaultText'=>"Your hold was placed successfully."]);
+			$hold_result['message'] = translate(['text'=>"Your hold was placed successfully.", 'isPublicFacing'=>true]);
 		}
 		// Retrieve Full Marc Record
 		require_once ROOT_DIR . '/RecordDrivers/RecordDriverFactory.php';

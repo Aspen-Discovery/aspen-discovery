@@ -680,12 +680,25 @@ abstract class MarcRecordProcessor {
 						literaryForms.add(Character.toString(literaryFormChar));
 					}
 				}
+				addToMapWithCount(literaryFormsWithCount, indexer.translateSystemCollection("literary_form", literaryForms, identifier), 2);
+				addToMapWithCount(literaryFormsFull, indexer.translateSystemCollection("literary_form_full", literaryForms, identifier), 2);
+			}else if (recordType == 'C' || recordType == 'D' || recordType == 'I' || recordType == 'J'){
+				//Music / Audio
+				if (ohOhEightField != null && ohOhEightField.getData().length() > 31){
+					char position30 = Character.toUpperCase(ohOhEightField.getData().charAt(30));
+					char position31 = Character.toUpperCase(ohOhEightField.getData().charAt(31));
+					if (position30 == 'F' || position31 == 'F'){
+						addToMapWithCount(literaryFormsWithCount, "Fiction", 2);
+						addToMapWithCount(literaryFormsFull, "Fiction", 2);
+					}else{
+						addToMapWithCount(literaryFormsWithCount, "Non Fiction", 2);
+						addToMapWithCount(literaryFormsFull, "Non Fiction", 2);
+					}
+				}
 			}
 		} catch (Exception e) {
 			indexer.getLogEntry().incErrors("Unexpected error loading literary forms", e);
 		}
-		addToMapWithCount(literaryFormsWithCount, indexer.translateSystemCollection("literary_form", literaryForms, identifier), 2);
-		addToMapWithCount(literaryFormsFull, indexer.translateSystemCollection("literary_form_full", literaryForms, identifier), 2);
 
 		//Check the subjects
 		Set<String> subjectFormData = MarcUtil.getFieldList(record, "650v:651v");
@@ -1355,7 +1368,7 @@ abstract class MarcRecordProcessor {
 			}else if (titleMedium.contains("ebook")){
 				printFormats.add("eBook");
 			}else if (titleMedium.contains("eaudio")){
-				printFormats.add("eAudio");
+				printFormats.add("eAudiobook");
 			}else if (titleMedium.contains("emusic")){
 				printFormats.add("eMusic");
 			}else if (titleMedium.contains("evideo")){
