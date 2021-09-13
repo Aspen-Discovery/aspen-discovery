@@ -2679,8 +2679,13 @@ class Koha extends AbstractIlsDriver
 			return $date;
 		} else {
 			if (strpos($date, '-') !== false){
-				list($month, $day, $year) = explode('-', $date);
-				return "$year-$month-$day";
+				list($year, $month, $day) = explode('-', $date);
+				if ($this->getKohaVersion() > 20.11){
+					return "$year-$month-$day";
+				}else{
+					return "$month/$day/$year";
+				}
+
 			}else{
 				return $date;
 			}
