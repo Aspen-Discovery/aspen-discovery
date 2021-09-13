@@ -9,6 +9,18 @@
       "android",
       "web"
     ],
+    "hooks": {
+      "postPublish": [
+        {
+          "file": "sentry-expo/upload-sourcemaps",
+          "config": {
+            "organization": "bywater-solutions",
+            "project": "aspen-discovery",
+            "authToken": "b23cf7d018564c4d9a0a795633d254f5d2d0df1d160c40a6838ab8fa2818f775"
+          }
+        }
+      ]
+    },
     "version": "21.12.02",
     "orientation": "portrait",
     "icon": "./assets/aspenNoTransparency.png",
@@ -46,6 +58,9 @@
     "web": {
       "favicon": "./assets/aspenLogo.png"
     },
-    "description": ""
+    "description": "",
+    "plugins": [
+      "sentry-expo"
+    ]
   }
 }
