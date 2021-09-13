@@ -95,5 +95,12 @@ function getUpdates21_12_00() : array
 				'ALTER TABLE indexing_profiles ADD COLUMN hideNotCodedLiteraryForm TINYINT DEFAULT 0',
 			]
 		], //literaryFormIndexingUpdates
+		'overdrive_circulationEnabled' => [
+			'title' => 'OverDrive Scope Circulation Enabled Switch',
+			'description' => 'Add the ability to disable the circulation of OverDrive materials within Aspen',
+			'sql' => [
+				'ALTER TABLE overdrive_scopes ADD COLUMN circulationEnabled TINYINT DEFAULT 1'
+			]
+		], //overdrive_circulationEnabled
 	];
 }
