@@ -67,6 +67,45 @@ class ListAPI extends Action
 		global $aspen_db;
 		$list = new UserList();
 		$list->public = 1;
+		$list->deleted = 0;
+		$list->find();
+		$results = array();
+		if ($list->getNumResults() > 0) {
+			while ($list->fetch()) {
+				$query = "SELECT count(id) as numTitles FROM user_list_entry where listId = " . $list->id;
+				$stmt = $aspen_db->prepare($query);
+				$stmt->setFetchMode(PDO::FETCH_ASSOC);
+				$success = $stmt->execute();
+				if ($success) {
+					$row = $stmt->fetch();
+					$numTitles = $row['numTitles'];
+				} else {
+					$numTitles = -1;
+				}
+
+				$results[] = array(
+					'id' => $list->id,
+					'title' => $list->title,
+					'description' => $list->description,
+					'numTitles' => $numTitles,
+					'dateUpdated' => $list->dateUpdated,
+				);
+			}
+		}
+		return array('success' => true, 'lists' => $results);
+	}
+
+	/**
+	 * Get all public lists
+	 * includes id, title, description, and number of titles
+	 */
+	function getSearchableLists()
+	{
+		global $aspen_db;
+		$list = new UserList();
+		$list->public = 1;
+		$list->searchable = 1;
+		$list->deleted = 0;
 		$list->find();
 		$results = array();
 		if ($list->getNumResults() > 0) {
