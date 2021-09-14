@@ -201,12 +201,16 @@ public class GroupedReindexMain {
 						}
 					}
 					getRunNightlyIndexStmt.close();
-
-					//Mark that nightly index does not need to run since we are currently running it.
-					dbConn.prepareStatement("UPDATE system_variables set runNightlyFullIndex = 0").executeUpdate();
 				}catch (SQLException e) {
 					logger.error("Unable to determine if the nightly index should run, running it", e);
 				}
+			}
+
+			try {
+				//Mark that nightly index does not need to run since we are currently running it.
+				dbConn.prepareStatement("UPDATE system_variables set runNightlyFullIndex = 0").executeUpdate();
+			}catch (SQLException e) {
+				logger.error("Unable to determine if the nightly index should run, running it", e);
 			}
 		}
 	}
