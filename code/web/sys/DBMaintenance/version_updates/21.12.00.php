@@ -102,5 +102,12 @@ function getUpdates21_12_00() : array
 				'ALTER TABLE overdrive_scopes ADD COLUMN circulationEnabled TINYINT DEFAULT 1'
 			]
 		], //overdrive_circulationEnabled
+		'addDefaultCatPassword' => [
+			'title' => 'Add Default cat_password',
+			'description' => 'Add default cat_password for cases when we are masquerading',
+			'sql' => [
+				"ALTER TABLE user CHANGE COLUMN cat_password cat_password VARCHAR(256) DEFAULT ''"
+			]
+		], //addDefaultCatPassword
 	];
 }
