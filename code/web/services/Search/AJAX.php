@@ -465,7 +465,7 @@ class AJAX extends Action {
 		if ($searchSource == 'combined'){
 			$response = [
 				'success' => true,
-				'searchIndexes' => ['Keyword' => 'Keyword'],
+				'searchIndexes' => ['Keyword' => translate(['text'=>'Keyword', 'isPublicFacing'=>true, 'inAttribute'=>true])],
 				'selectedIndex' => 'Keyword',
 				'defaultSearchIndex' => 'Keyword',
 			];
@@ -474,7 +474,7 @@ class AJAX extends Action {
 			if (!is_object($searchObject)){
 				$response = [
 					'success' => false,
-					'message' => 'Unknown search source ' . $searchSource
+					'message' => translate(['text'=>'Keyword', 'Unknown search source %1%', 1=> $searchSource, 'isPublicFacing'=>true, 'inAttribute'=>true])
 				];
 			}else{
 				$searchIndexes = SearchSources::getSearchIndexesForSource($searchObject, $searchSource);

@@ -1421,7 +1421,14 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 
 	public function getSearchIndexes()
 	{
-		return $this->searchIndexes;
+		return [
+			'Keyword' => translate(['text'=>'Keyword', 'isPublicFacing'=>true, 'inAttribute'=>true]),
+			'Title' => translate(['text'=>'Title', 'isPublicFacing'=>true, 'inAttribute'=>true]),
+			'StartOfTitle' => translate(['text'=>'Start of Title', 'isPublicFacing'=>true, 'inAttribute'=>true]),
+			'Series' => translate(['text'=>'Series', 'isPublicFacing'=>true, 'inAttribute'=>true]),
+			'Author' => translate(['text'=>'Author', 'isPublicFacing'=>true, 'inAttribute'=>true]),
+			'Subject' => translate(['text'=>'Subject', 'isPublicFacing'=>true, 'inAttribute'=>true]),
+		];
 	}
 
 	public function getRecordDriverForResult($record)

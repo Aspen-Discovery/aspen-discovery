@@ -406,7 +406,7 @@ BODY;
 				$searchIndexes = array();
 				if ($searchOptions != null) {
 					foreach ($searchOptions->AvailableSearchCriteria->AvailableSearchFields as $searchField) {
-						$searchIndexes[$searchField->FieldCode] = $searchField->Label;
+						$searchIndexes[$searchField->FieldCode] = translate(['text'=>$searchField->Label, 'isPublicFacing'=>true, 'inAttribute'=>true]);
 					}
 				}
 				global $configArray;

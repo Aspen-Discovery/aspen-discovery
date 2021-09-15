@@ -128,9 +128,9 @@ class SearchObject_ListsSearcher extends SearchObject_SolrSearcher
 	public function getSearchIndexes()
 	{
 		return [
-			'ListsKeyword' => 'Keyword',
-			'ListsTitle' => 'Title',
-			'ListsAuthor' => 'Author',
+			'ListsKeyword' => translate(['text'=>'Keyword', 'isPublicFacing'=>true, 'inAttribute'=>true]),
+			'ListsTitle' => translate(['text'=>'Title', 'isPublicFacing'=>true, 'inAttribute'=>true]),
+			'ListsAuthor' => translate(['text'=>'Author', 'isPublicFacing'=>true, 'inAttribute'=>true]),
 		];
 	}
 

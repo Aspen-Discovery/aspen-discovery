@@ -131,8 +131,8 @@ class SearchObject_EventsSearcher extends SearchObject_SolrSearcher
 	public function getSearchIndexes()
 	{
 		return [
-			'EventsKeyword' => 'Keyword',
-			'EventsTitle' => 'Title',
+			'EventsKeyword' => translate(['text'=>'Keyword', 'isPublicFacing'=>true, 'inAttribute'=>true]),
+			'EventsTitle' => translate(['text'=>'Title', 'isPublicFacing'=>true, 'inAttribute'=>true]),
 		];
 	}
 

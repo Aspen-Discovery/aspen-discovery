@@ -104,8 +104,8 @@ class SearchObject_WebsitesSearcher extends SearchObject_SolrSearcher
 	public function getSearchIndexes()
 	{
 		return [
-			'WebsiteKeyword' => 'Keyword',
-			'WebsiteTitle' => 'Title',
+			'WebsiteKeyword' => translate(['text'=>'Keyword', 'isPublicFacing'=>true, 'inAttribute'=>true]),
+			'WebsiteTitle' => translate(['text'=>'Title', 'isPublicFacing'=>true, 'inAttribute'=>true]),
 		];
 	}
 

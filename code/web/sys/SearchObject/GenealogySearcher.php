@@ -524,8 +524,8 @@ class SearchObject_GenealogySearcher extends SearchObject_SolrSearcher
 	public function getSearchIndexes()
 	{
 		return [
-			"GenealogyKeyword" => "Keyword",
-			"GenealogyName" => "Name"
+			"GenealogyKeyword" => translate(['text'=>"Keyword", 'isPublicFacing'=>true, 'inAttribute'=>true]),
+			"GenealogyName" => translate(['text'=>"Name", 'isPublicFacing'=>true, 'inAttribute'=>true])
 		];
 	}
 
