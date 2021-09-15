@@ -603,6 +603,14 @@ AspenDiscovery.Admin = (function(){
 				$("#propertyRowhomeLinkText").show();
 			}
 		},
+		updateBrowseCategoryFields: function () {
+			var sharingType = $('#sharingSelect').val();
+			if (sharingType === 'library') {
+				$("#propertyRowlibraryId").show();
+			}else{
+				$("#propertyRowlibraryId").hide();
+			}
+		},
 		showCreateRoleForm: function(){
 			AspenDiscovery.Account.ajaxLightbox(Globals.path + '/Admin/AJAX?method=getCreateRoleForm', true);
 			return false;
