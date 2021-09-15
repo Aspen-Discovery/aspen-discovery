@@ -10,7 +10,6 @@ import * as Location from 'expo-location';
 import AppLoading from 'expo-app-loading';
 import * as SplashScreen from 'expo-splash-screen';
 import Constants from "expo-constants";
-import * as Sentry from 'sentry-expo';
 
 // import helper files
 import AccountDetails from './screens/AccountDetails';
@@ -28,12 +27,6 @@ import Search from './screens/Search';
 import WhatsOn from './screens/WhatsOn';
 import ContactUs from './screens/ContactUs';
 import News from './screens/News';
-
-Sentry.init({
-  dsn: 'https://7fe05c932e2b4fd7b93fa3a0acae0649@o994439.ingest.sentry.io/5952947',
-  enableInExpoDevelopment: true,
-  debug: true, // Sentry will try to print out useful debugging information if something goes wrong with sending an event. Set this to `false` in production.
-});
 
 // defines the Card tab and how it is handled
 const CardTab = createStackNavigator(

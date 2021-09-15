@@ -23,13 +23,25 @@ class WebBuilder_ViewThumbnail extends Action{
 
 		global $serverName;
 		$dataPath = '/data/aspen-discovery/' . $serverName . '/uploads/web_builder_image/';
+		$extension = pathinfo($this->uploadedImage->fullSizePath, PATHINFO_EXTENSION);
 		$fullPath = $uploadedFile->thumbFullPath;
-		if (file_exists($fullPath)){
+
+		if ($extension != 'svg'){
+			$fullPath = $uploadedFile->thumbFullPath;
+		}else{
+			$fullPath = $uploadedFile->fullSizePath;
+		}
+
+		if ($file = @fopen($fullPath, 'r')){
 			set_time_limit(300);
 			$chunkSize = 2 * (1024 * 1024);
 			$size = intval(sprintf("%u", filesize($fullPath)));
 
-			header('Content-Type: image/jpg');
+			if($extension == 'svg'){
+				header('Content-Type: image/svg+xml');
+			} else {
+				header('Content-Type: image/jpg');
+			}
 			header('Content-Transfer-Encoding: binary');
 			header('Content-Length: ' . $size);
 

@@ -1,22 +1,16 @@
 <textarea name='{$propName}' id='{$propName}' {if !empty($property.rows)}rows='{$property.rows}'{/if} {if !empty($property.cols)}cols='{$property.cols}'{/if} title='{$property.description}' class='form-control {if !empty($property.required && $objectAction != 'edit')}required{/if}' {if !empty($property.readOnly)}readonly{/if}>{$propValue|escape}</textarea>
 {if $property.type == 'html' || ($property.type == 'markdown' && $useHtmlEditorRatherThanMarkdown)}
-	<script type="text/javascript">
+	<script>
 	{literal}
-	$(document).ready(function(){
-		CKEDITOR.replace( '{/literal}{$propName}{literal}',
-		{
-		toolbar : [
-			['Source','-','Save'],
-			['Cut','Copy','Paste','PasteText','PasteFromWord','-','SpellChecker','Scayt'],
-			['Undo','Redo','-','Find','Replace','-','SelectAll','RemoveFormat'],
-			'/',
-			['Bold','Italic','Underline','Strike','-','Subscript','Superscript'],
-			['Styles','Font','FontSize'],
-			['TextColor','BGColor'],
-			['Link','Unlink','Anchor'],
-			['Maximize', 'ShowBlocks','-','About']
-		]
-		});
+	tinymce.init({
+		selector: '#{/literal}{$propName}{literal}',
+		plugins: 'anchor autolink autoresize autosave code codesample colorpicker contextmenu directionality fullscreen help hr image imagetools insertdatetime link lists media paste preview print save searchreplace spellchecker table textcolor textpattern toc visualblocks visualchars wordcount',
+		toolbar1: 'code | cut copy paste pastetext spellchecker | undo redo searchreplace | image table hr codesample insertdatetime | link anchor ',
+		toolbar2: 'bold italic underline strikethrough | formatselect fontselect fontsizeselect forecolor backcolor',
+		toolbar3: 'numlist bullist | alignleft aligncenter alignright | visualblocks fullscreen help',
+		menubar: '',
+		images_upload_url: '/WebBuilder/AJAX?method=uploadImageTinyMCE',
+		theme: 'modern'
 	});
 	{/literal}
 	</script>
