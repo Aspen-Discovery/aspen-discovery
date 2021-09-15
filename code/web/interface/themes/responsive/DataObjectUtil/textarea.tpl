@@ -7,9 +7,10 @@
 		plugins: 'anchor autolink autoresize autosave code codesample colorpicker contextmenu directionality fullscreen help hr image imagetools insertdatetime link lists media paste preview print save searchreplace spellchecker table textcolor textpattern toc visualblocks visualchars wordcount',
 		toolbar1: 'code | cut copy paste pastetext spellchecker | undo redo searchreplace | image table hr codesample insertdatetime | link anchor ',
 		toolbar2: 'bold italic underline strikethrough | formatselect fontselect fontsizeselect forecolor backcolor',
-		toolbar3: 'numlist bullist | alignleft aligncenter alignright | visualblocks fullscreen help',
+		toolbar3: 'numlist bullist toc | alignleft aligncenter alignright | preview visualblocks fullscreen help',
 		menubar: '',
 		images_upload_url: '/WebBuilder/AJAX?method=uploadImageTinyMCE',
+		convert_urls: false,
 		theme: 'modern'
 	});
 	{/literal}
