@@ -52,7 +52,7 @@ class MyAccount_Masquerade extends MyAccount
 								if ($masqueradedUser->id == $user->id) {
 									return array(
 										'success' => false,
-										'error' => 'No need to masquerade as yourself.'
+										'error' => translate(['text'=>'No need to masquerade as yourself.', 'isAdminFacing'=>true])
 									);
 								}
 								$foundExistingUser = true;
@@ -68,7 +68,7 @@ class MyAccount_Masquerade extends MyAccount
 							if (!$masqueradedUser) {
 								return array(
 									'success' => false,
-									'error' => 'Invalid User'
+									'error' => translate(['text'=>'Invalid User', 'isAdminFacing'=>true])
 								);
 							}
 						}
@@ -91,7 +91,7 @@ class MyAccount_Masquerade extends MyAccount
 								if ($isRestrictedUser) {
 									return array(
 										'success' => false,
-										'error' => 'Cannot masquerade as patrons of this type.'
+										'error' => translate(['text'=>'Cannot masquerade as patrons of this type.', 'isAdminFacing'=>true])
 									);
 								}
 							}elseif (UserAccount::userHasPermission('Masquerade as patrons with same home library') || UserAccount::userHasPermission('Masquerade as unrestricted patrons with same home library')) {
@@ -99,51 +99,51 @@ class MyAccount_Masquerade extends MyAccount
 								if (!$guidingUserLibrary) {
 									return array(
 										'success' => false,
-										'error' => 'Could not determine your home library.'
+										'error' => translate(['text'=>'Could not determine your home library.', 'isAdminFacing'=>true])
 									);
 								}
 								$masqueradedUserLibrary = $masqueradedUser->getHomeLibrary();
 								if (!$masqueradedUserLibrary) {
 									return array(
 										'success' => false,
-										'error' => 'Could not determine the patron\'s home library.'
+										'error' => translate(['text'=>'Could not determine the patron\'s home library.', 'isAdminFacing'=>true])
 									);
 								}
 								if ($guidingUserLibrary->libraryId != $masqueradedUserLibrary->libraryId) {
 									return array(
 										'success' => false,
-										'error' => 'You do not have the same home library as the patron.'
+										'error' => translate(['text'=>'You do not have the same home library as the patron.', 'isAdminFacing'=>true])
 									);
 								}
 								if ($isRestrictedUser && !UserAccount::userHasPermission('Masquerade as patrons with same home library')) {
 									return array(
 										'success' => false,
-										'error' => 'Cannot masquerade as patrons of this type.'
+										'error' => translate(['text'=>'Cannot masquerade as patrons of this type.', 'isAdminFacing'=>true])
 									);
 								}
 							}elseif (UserAccount::userHasPermission('Masquerade as patrons with same home location') || UserAccount::userHasPermission('Masquerade as unrestricted patrons with same home location')) {
 								if (empty($user->homeLocationId)) {
 									return array(
 										'success' => false,
-										'error'   => 'Could not determine your home library branch.'
+										'error'   => translate(['text'=>'Could not determine your home library branch.', 'isAdminFacing'=>true])
 									);
 								}
 								if (empty($masqueradedUser->homeLocationId)) {
 									return array(
 										'success' => false,
-										'error'   => 'Could not determine the patron\'s home library branch.'
+										'error'   => translate(['text'=>'Could not determine the patron\'s home library branch.', 'isAdminFacing'=>true])
 									);
 								}
 								if ($user->homeLocationId != $masqueradedUser->homeLocationId) {
 									return array(
 										'success' => false,
-										'error'   => 'You do not have the same home library branch as the patron.'
+										'error'   => translate(['text'=>'You do not have the same home library branch as the patron.', 'isAdminFacing'=>true])
 									);
 								}
 								if ($isRestrictedUser && !UserAccount::userHasPermission('Masquerade as patrons with same home location')) {
 									return array(
 										'success' => false,
-										'error' => 'Cannot masquerade as patrons of this type.'
+										'error' => translate(['text'=>'Cannot masquerade as patrons of this type.', 'isAdminFacing'=>true])
 									);
 								}
 							}
@@ -166,43 +166,44 @@ class MyAccount_Masquerade extends MyAccount
 								unset($_SESSION['guidingUserId']);
 								return array(
 									'success' => false,
-									'error'   => 'Failed to initiate masquerade as specified user.'
+									'error'   => translate(['text'=>'Failed to initiate masquerade as specified user.', 'isAdminFacing'=>true])
 								);
 							}
 						} else {
 							return array(
 								'success' => false,
-								'error'   => 'Could not load user to masquerade as.'
+								'error'   => translate(['text'=>'Could not load user to masquerade as.', 'isAdminFacing'=>true])
 							);
 						}
 					} else {
 						return array(
 							'success' => false,
-							'error'   => $user ? 'You are not allowed to Masquerade.' : 'Not logged in. Please Log in.'
+							'error'   => $user ? translate(['text'=>'You are not allowed to Masquerade.', 'isAdminFacing'=>true]) : translate(['text'=>'Your session has expired, please sign in again.', 'isAdminFacing'=>true])
 						);
 					}
 				} else {
 					return array(
 						'success' => false,
-						'error'   => 'Already Masquerading.'
+						'error'   => translate(['text'=>'Already Masquerading.', 'isAdminFacing'=>true])
 					);
 				}
 			} else {
 				return array(
 					'success' => false,
-					'error'   => 'Please enter a valid Library Card Number.'
+					'error'   => translate(['text'=>'Please enter a valid Library Card Number.', 'isAdminFacing'=>true])
 				);
 			}
 		} else {
 			return array(
 				'success' => false,
-				'error'   => 'Masquerade Mode is not allowed.'
+				'error'   => translate(['text'=>'Masquerade Mode is not allowed.', 'isAdminFacing'=>true])
 			);
 		}
 	}
 
 	static function endMasquerade() {
 		if (UserAccount::isLoggedIn()) {
+			/** @var User $guidingUser */
 			global $guidingUser;
 			global $masqueradeMode;
 			@session_start();  // (suppress notice if the session is already started)

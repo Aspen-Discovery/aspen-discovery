@@ -16,7 +16,7 @@
 				<div class="col-xs-12">
 					{if !$noRememberThis}
 						<div class="selectLibraryOption">
-							<label for="rememberThis"><input type="checkbox" name="rememberThis" checked="checked" id="rememberThis"> <b>{translate text="Remember This" isPublicFacing=true}</b></label>
+							<label for="rememberThis"><input type="checkbox" name="rememberThis" id="rememberThis"> <b>{translate text="Remember This" isPublicFacing=true}</b></label>
 						</div>
 					{/if}
 					<input type="submit" name="submit" value="{translate text="Select Library Catalog" isPublicFacing=true inAttribute=true}" id="submitButton" class="btn btn-primary"/>
