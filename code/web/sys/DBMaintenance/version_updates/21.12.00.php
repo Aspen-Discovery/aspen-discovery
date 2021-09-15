@@ -109,5 +109,19 @@ function getUpdates21_12_00() : array
 				"ALTER TABLE user CHANGE COLUMN cat_password cat_password VARCHAR(256) DEFAULT ''"
 			]
 		], //addDefaultCatPassword
+		'appReleaseChannel' => [
+			'title' => 'Add release channel option',
+			'description' => 'Set app release channel preference by location',
+			'sql' => [
+				'ALTER TABLE location ADD COLUMN appReleaseChannel TINYINT(1) DEFAULT 0'
+			]
+		], //appReleaseChannel
+		'addReleaseChannelToCachedGreenhouseData' => [
+			'title' => 'Add release channel to cached Greenhouse data',
+			'description' => 'Stores library location release channel preference to cached Greenhouse data',
+			'sql' => [
+				'ALTER TABLE greenhouse_cache ADD COLUMN releaseChannel TINYINT(1) DEFAULT 0'
+			]
+		], //addReleaseChannelToCachedGreenhouseData
 	];
 }

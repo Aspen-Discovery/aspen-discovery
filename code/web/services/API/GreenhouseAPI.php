@@ -48,6 +48,7 @@ class GreenhouseAPI extends Action
 		}
 
 		// get release channel
+		$releaseChannel = "any";
 		// production, staging (beta), development (local)
 		if (isset($_GET['release_channel'])) {
 			$releaseChannel = $_GET['release_channel'];
@@ -68,34 +69,83 @@ class GreenhouseAPI extends Action
 					while ($cachedLibrary->fetch()) {
 						if ((time() - $cachedLibrary->lastUpdated) < (24.5 * 60 * 60)) {
 							if ($userLatitude == 0 && $userLongitude == 0) {
-								$return['libraries'][] = [
-									'name' => $cachedLibrary->name,
-									'librarySystem' => $sites->name,
-									'libraryId' => $cachedLibrary->libraryId,
-									'baseUrl' => $cachedLibrary->baseUrl,
-									'accessLevel' => $sites->appAccess,
-									'solrScope' => $cachedLibrary->solrScope,
-								];
-							} else {
-								$distance = $this->findDistance($userLongitude, $userLatitude, $cachedLibrary->longitude, $cachedLibrary->latitude, $cachedLibrary->unit);
-
-								// remove ByWater Test from Production when sending release channel data
-								if (($distance <= 60) || ($sites->name == 'Test (ByWater)')) {
+								if($releaseChannel == "production" && $cachedLibrary->releaseChannel == '1') {
 									$return['libraries'][] = [
 										'name' => $cachedLibrary->name,
 										'librarySystem' => $sites->name,
 										'libraryId' => $cachedLibrary->libraryId,
-										'locationId' => $cachedLibrary->locationId,
 										'baseUrl' => $cachedLibrary->baseUrl,
 										'accessLevel' => $sites->appAccess,
-										'distance' => $distance,
 										'solrScope' => $cachedLibrary->solrScope,
+										'releaseChannel' => $cachedLibrary->releaseChannel,
 									];
+								} elseif($releaseChannel == "beta" && ($cachedLibrary->releaseChannel == '0' || $cachedLibrary->releaseChannel == '1')) {
+									$return['libraries'][] = [
+										'name' => $cachedLibrary->name,
+										'librarySystem' => $sites->name,
+										'libraryId' => $cachedLibrary->libraryId,
+										'baseUrl' => $cachedLibrary->baseUrl,
+										'accessLevel' => $sites->appAccess,
+										'solrScope' => $cachedLibrary->solrScope,
+										'releaseChannel' => $cachedLibrary->releaseChannel,
+									];
+								} else {
+									$return['libraries'][] = [
+										'name' => $cachedLibrary->name,
+										'librarySystem' => $sites->name,
+										'libraryId' => $cachedLibrary->libraryId,
+										'baseUrl' => $cachedLibrary->baseUrl,
+										'accessLevel' => $sites->appAccess,
+										'solrScope' => $cachedLibrary->solrScope,
+										'releaseChannel' => $cachedLibrary->releaseChannel,
+									];
+								}
+							} else {
+								$distance = $this->findDistance($userLongitude, $userLatitude, $cachedLibrary->longitude, $cachedLibrary->latitude, $cachedLibrary->unit);
+
+								if ($distance <= 60) {
+									if($releaseChannel == "production" && $cachedLibrary->releaseChannel == '1') {
+										$return['libraries'][] = [
+											'name' => $cachedLibrary->name,
+											'librarySystem' => $sites->name,
+											'libraryId' => $cachedLibrary->libraryId,
+											'locationId' => $cachedLibrary->locationId,
+											'baseUrl' => $cachedLibrary->baseUrl,
+											'accessLevel' => $sites->appAccess,
+											'distance' => $distance,
+											'solrScope' => $cachedLibrary->solrScope,
+											'releaseChannel' => $cachedLibrary->releaseChannel,
+										];
+									} elseif($releaseChannel == "beta" && ($cachedLibrary->releaseChannel == '0' || $cachedLibrary->releaseChannel == '1')) {
+										$return['libraries'][] = [
+											'name' => $cachedLibrary->name,
+											'librarySystem' => $sites->name,
+											'libraryId' => $cachedLibrary->libraryId,
+											'locationId' => $cachedLibrary->locationId,
+											'baseUrl' => $cachedLibrary->baseUrl,
+											'accessLevel' => $sites->appAccess,
+											'distance' => $distance,
+											'solrScope' => $cachedLibrary->solrScope,
+											'releaseChannel' => $cachedLibrary->releaseChannel,
+										];
+									} else {
+										$return['libraries'][] = [
+											'name' => $cachedLibrary->name,
+											'librarySystem' => $sites->name,
+											'libraryId' => $cachedLibrary->libraryId,
+											'locationId' => $cachedLibrary->locationId,
+											'baseUrl' => $cachedLibrary->baseUrl,
+											'accessLevel' => $sites->appAccess,
+											'distance' => $distance,
+											'solrScope' => $cachedLibrary->solrScope,
+											'releaseChannel' => $cachedLibrary->releaseChannel,
+										];
+									}
 								}
 							}
 						} else {
 							// if older than 24 hours, fetch new data
-							$fetchLibraryUrl = $sites->baseUrl . 'API/GreenhouseAPI?method=getLibrary';
+							$fetchLibraryUrl = $sites->baseUrl . '/API/GreenhouseAPI?method=getLibrary';
 							if ($data = file_get_contents($fetchLibraryUrl)) {
 								$searchData = json_decode($data);
 								foreach ($searchData->library as $findLibrary) {
@@ -106,6 +156,7 @@ class GreenhouseAPI extends Action
 										$cachedLibrary->latitude = $findLibrary->latitude;
 										$cachedLibrary->longitude = $findLibrary->longitude;
 										$cachedLibrary->unit = $findLibrary->unit;
+										$cachedLibrary->releaseChannel = $findLibrary->releaseChannel;
 										if($findLibrary->baseUrl == NULL) {
 											$cachedLibrary->baseUrl = $sites->baseUrl;
 										} else {
@@ -136,6 +187,7 @@ class GreenhouseAPI extends Action
 							$newCachedLibrary->latitude = $findLibrary->latitude;
 							$newCachedLibrary->longitude = $findLibrary->longitude;
 							$newCachedLibrary->unit = $findLibrary->unit;
+							$newCachedLibrary->releaseChannel = $findLibrary->releaseChannel;
 							if($findLibrary->baseUrl == NULL) {
 								$newCachedLibrary->baseUrl = $sites->baseUrl;
 							} else {
@@ -229,6 +281,7 @@ class GreenhouseAPI extends Action
 							'libraryId' => $libraryId,
 							'solrScope' => $solrScope,
 							'baseUrl' => $baseUrl,
+							'releaseChannel' => $location->appReleaseChannel,
 						];
 				}
 			}
