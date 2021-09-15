@@ -42,9 +42,10 @@ abstract class MarcRecordProcessor {
 	PreparedStatement marcRecordAsSuppressedNoMarcStmt;
 	PreparedStatement getRecordSuppressionInformationStmt;
 
-	MarcRecordProcessor(GroupedWorkIndexer indexer, Connection dbConn, Logger logger) {
+	MarcRecordProcessor(GroupedWorkIndexer indexer, String profileType, Connection dbConn, Logger logger) {
 		this.indexer = indexer;
 		this.logger = logger;
+		this.profileType = profileType;
 		try {
 			addRecordToDBStmt = dbConn.prepareStatement("INSERT INTO ils_records set ilsId = ?, source = ?, checksum = ?, dateFirstDetected = ?, deleted = 0, suppressed = 0, sourceData = COMPRESS(?), lastModified = ? ON DUPLICATE KEY UPDATE sourceData = VALUES(sourceData), lastModified = VALUES(lastModified)");
 			marcRecordAsSuppressedNoMarcStmt = dbConn.prepareStatement("UPDATE ils_records set suppressedNoMarcAvailable = 1 where source = ? and ilsId = ?");

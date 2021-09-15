@@ -18,8 +18,8 @@ class IIIRecordProcessor extends IlsRecordProcessor{
 	// A list of status codes that are eligible to show items as checked out.
 	HashSet<String> validCheckedOutStatusCodes = new HashSet<>();
 
-	IIIRecordProcessor(GroupedWorkIndexer indexer, Connection dbConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
-		super(indexer, dbConn, indexingProfileRS, logger, fullReindex);
+	IIIRecordProcessor(GroupedWorkIndexer indexer, String profileType, Connection dbConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
+		super(indexer, profileType, dbConn, indexingProfileRS, logger, fullReindex);
 		try {
 			exportPath = indexingProfileRS.getString("marcPath");
 		}catch (Exception e){

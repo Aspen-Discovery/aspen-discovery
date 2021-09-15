@@ -11,8 +11,8 @@ import java.util.Locale;
 
 class SymphonyRecordProcessor extends IlsRecordProcessor {
 	private HashSet<String> bibsWithOrders = new HashSet<>();
-	SymphonyRecordProcessor(GroupedWorkIndexer indexer, Connection dbConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
-		super(indexer, dbConn, indexingProfileRS, logger, fullReindex);
+	SymphonyRecordProcessor(GroupedWorkIndexer indexer, String profileType, Connection dbConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
+		super(indexer, profileType, dbConn, indexingProfileRS, logger, fullReindex);
 	}
 
 	protected boolean isItemSuppressed(DataField curItem) {

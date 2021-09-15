@@ -12,8 +12,8 @@ import java.sql.ResultSet;
 import java.util.*;
 
 class CarlXRecordProcessor extends IlsRecordProcessor {
-	CarlXRecordProcessor(GroupedWorkIndexer indexer, Connection dbConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
-		super(indexer, dbConn, indexingProfileRS, logger, fullReindex);
+	CarlXRecordProcessor(GroupedWorkIndexer indexer, String curType, Connection dbConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
+		super(indexer, curType, dbConn, indexingProfileRS, logger, fullReindex);
 	}
 
 	@Override

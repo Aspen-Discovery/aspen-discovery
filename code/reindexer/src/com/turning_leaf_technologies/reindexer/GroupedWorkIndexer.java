@@ -16,6 +16,7 @@ import org.apache.solr.common.SolrInputDocument;
 import org.ini4j.Ini;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.sql.*;
 import java.util.*;
 import java.util.Date;
@@ -318,25 +319,25 @@ public class GroupedWorkIndexer {
 					String ilsIndexingClassString = indexingProfileRS.getString("indexingClass");
 					switch (ilsIndexingClassString) {
 						case "ArlingtonKoha":
-							ilsRecordProcessors.put(curType, new ArlingtonKohaRecordProcessor(this, dbConn, indexingProfileRS, logger, fullReindex));
+							ilsRecordProcessors.put(curType, new ArlingtonKohaRecordProcessor(this, curType, dbConn, indexingProfileRS, logger, fullReindex));
 							break;
 						case "CarlX":
-							ilsRecordProcessors.put(curType, new CarlXRecordProcessor(this, dbConn, indexingProfileRS, logger, fullReindex));
+							ilsRecordProcessors.put(curType, new CarlXRecordProcessor(this, curType, dbConn, indexingProfileRS, logger, fullReindex));
 							break;
 						case "III":
-							ilsRecordProcessors.put(curType, new IIIRecordProcessor(this, dbConn, indexingProfileRS, logger, fullReindex));
+							ilsRecordProcessors.put(curType, new IIIRecordProcessor(this, curType, dbConn, indexingProfileRS, logger, fullReindex));
 							break;
 						case "SideLoadedEContent":
-							ilsRecordProcessors.put(curType, new SideLoadedEContentProcessor(this, dbConn, indexingProfileRS, logger, fullReindex));
+							ilsRecordProcessors.put(curType, new SideLoadedEContentProcessor(this, curType, dbConn, indexingProfileRS, logger, fullReindex));
 							break;
 						case "Koha":
-							ilsRecordProcessors.put(curType, new KohaRecordProcessor(this, dbConn, indexingProfileRS, logger, fullReindex));
+							ilsRecordProcessors.put(curType, new KohaRecordProcessor(this, curType, dbConn, indexingProfileRS, logger, fullReindex));
 							break;
 						case "Symphony":
-							ilsRecordProcessors.put(curType, new SymphonyRecordProcessor(this, dbConn, indexingProfileRS, logger, fullReindex));
+							ilsRecordProcessors.put(curType, new SymphonyRecordProcessor(this, curType, dbConn, indexingProfileRS, logger, fullReindex));
 							break;
 						case "Polaris":
-							ilsRecordProcessors.put(curType, new PolarisRecordProcessor(this, dbConn, indexingProfileRS, logger, fullReindex));
+							ilsRecordProcessors.put(curType, new PolarisRecordProcessor(this, curType, dbConn, indexingProfileRS, logger, fullReindex));
 							break;
 						default:
 							logEntry.incErrors("Unknown indexing class " + ilsIndexingClassString);
@@ -348,7 +349,7 @@ public class GroupedWorkIndexer {
 					if (getSideLoadSettingsRS.next()){
 						String sideLoadIndexingClassString = getSideLoadSettingsRS.getString("indexingClass");
 						if ("SideLoadedEContent".equals(sideLoadIndexingClassString) || "SideLoadedEContentProcessor".equals(sideLoadIndexingClassString)) {
-							sideLoadProcessors.put(curType, new SideLoadedEContentProcessor(this, dbConn, getSideLoadSettingsRS, logger, fullReindex));
+							sideLoadProcessors.put(curType, new SideLoadedEContentProcessor(this, curType, dbConn, getSideLoadSettingsRS, logger, fullReindex));
 						} else {
 							logEntry.incErrors("Unknown side load processing class " + sideLoadIndexingClassString);
 							getSideLoadSettings.close();
@@ -373,7 +374,7 @@ public class GroupedWorkIndexer {
 		}
 		overDriveProcessor = new OverDriveProcessor(this, dbConn, logger);
 
-		cloudLibraryProcessor = new CloudLibraryProcessor(this, dbConn, logger);
+		cloudLibraryProcessor = new CloudLibraryProcessor(this, "cloud_library", dbConn, logger);
 
 		hooplaProcessor = new HooplaProcessor(this, dbConn, logger);
 
@@ -2065,7 +2066,7 @@ public class GroupedWorkIndexer {
 				getRecordForIdentifierStmt.setString(2, source);
 				ResultSet getRecordForIdentifierRS = getRecordForIdentifierStmt.executeQuery();
 				if (getRecordForIdentifierRS.next()) {
-					String marcRecordRaw = getRecordForIdentifierRS.getString("sourceData");
+					String marcRecordRaw = new String(getRecordForIdentifierRS.getBytes("sourceData"), StandardCharsets.UTF_8);
 					if (marcRecordRaw != null && marcRecordRaw.length() > 0) {
 						marcRecord = MarcUtil.readJsonFormattedRecord(identifier, marcRecordRaw, logEntry);
 						marcRecordCache.put(key, marcRecord);

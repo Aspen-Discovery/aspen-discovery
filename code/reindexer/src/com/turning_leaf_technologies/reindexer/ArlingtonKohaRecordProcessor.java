@@ -13,8 +13,8 @@ import java.util.HashSet;
 import java.util.List;
 
 class ArlingtonKohaRecordProcessor extends KohaRecordProcessor {
-	ArlingtonKohaRecordProcessor(GroupedWorkIndexer indexer, Connection dbConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
-		super(indexer, dbConn, indexingProfileRS, logger, fullReindex);
+	ArlingtonKohaRecordProcessor(GroupedWorkIndexer indexer, String profileType, Connection dbConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
+		super(indexer, profileType, dbConn, indexingProfileRS, logger, fullReindex);
 	}
 
 	@Override

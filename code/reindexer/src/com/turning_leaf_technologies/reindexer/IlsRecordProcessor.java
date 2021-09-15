@@ -92,8 +92,8 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 
 	private PreparedStatement loadHoldsStmt;
 
-	IlsRecordProcessor(GroupedWorkIndexer indexer, Connection dbConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
-		super(indexer, dbConn, logger);
+	IlsRecordProcessor(GroupedWorkIndexer indexer, String curType, Connection dbConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
+		super(indexer, curType, dbConn, logger);
 		this.fullReindex = fullReindex;
 		try {
 			settings = new IndexingProfile(indexingProfileRS);

@@ -17,8 +17,8 @@ class SideLoadedEContentProcessor extends MarcRecordProcessor{
 	protected boolean fullReindex;
 	private PreparedStatement getDateAddedStmt;
 
-	SideLoadedEContentProcessor(GroupedWorkIndexer indexer, Connection dbConn, ResultSet sideLoadSettingsRS, Logger logger, boolean fullReindex) {
-		super(indexer, dbConn, logger);
+	SideLoadedEContentProcessor(GroupedWorkIndexer indexer, String profileType, Connection dbConn, ResultSet sideLoadSettingsRS, Logger logger, boolean fullReindex) {
+		super(indexer, profileType, dbConn, logger);
 		this.fullReindex = fullReindex;
 
 		try{

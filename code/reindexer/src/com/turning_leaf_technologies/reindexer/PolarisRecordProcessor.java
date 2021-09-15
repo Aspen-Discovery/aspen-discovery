@@ -14,8 +14,8 @@ import java.util.TreeMap;
 
 public class PolarisRecordProcessor extends IlsRecordProcessor{
 
-	PolarisRecordProcessor(GroupedWorkIndexer indexer, Connection dbConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
-		super(indexer, dbConn, indexingProfileRS, logger, fullReindex);
+	PolarisRecordProcessor(GroupedWorkIndexer indexer, String profileType, Connection dbConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
+		super(indexer, profileType, dbConn, indexingProfileRS, logger, fullReindex);
 	}
 
 	@Override

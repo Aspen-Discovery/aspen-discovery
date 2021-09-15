@@ -21,8 +21,8 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 	private final HashMap<String, String> damagedStatuses = new HashMap<>();
 	private final HashMap<String, String> notForLoanStatuses = new HashMap<>();
 
-	KohaRecordProcessor(GroupedWorkIndexer indexer, Connection dbConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
-		this (indexer, dbConn, indexingProfileRS, logger, fullReindex, null);
+	KohaRecordProcessor(GroupedWorkIndexer indexer, String profileType, Connection dbConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
+		this (indexer, profileType, dbConn, indexingProfileRS, logger, fullReindex, null);
 		suppressRecordsWithNoCollection = false;
 	}
 
@@ -71,8 +71,8 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 		return kohaConnection;
 	}
 
-	private KohaRecordProcessor(GroupedWorkIndexer indexer, Connection dbConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex, Connection kohaConnection) {
-		super(indexer, dbConn, indexingProfileRS, logger, fullReindex);
+	private KohaRecordProcessor(GroupedWorkIndexer indexer, String profileType, Connection dbConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex, Connection kohaConnection) {
+		super(indexer, profileType, dbConn, indexingProfileRS, logger, fullReindex);
 		boolean valid = false;
 		int tries = 0;
 		while (tries < 3 && !valid) {
