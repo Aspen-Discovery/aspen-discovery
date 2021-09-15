@@ -63,7 +63,6 @@ export default class Login extends Component {
        },(err) => {
        console.warn('Its borked! Aspen was unable to connect to the Greenhouse. Attempted connecting to <' + greenhouseUrl +'>');
        console.warn('Error: ',err)
-       Sentry.captureMessage('Error trying to fetch from Greenhouse: ',err);
       })
 
     return (
