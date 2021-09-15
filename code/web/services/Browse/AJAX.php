@@ -561,7 +561,7 @@ class Browse_AJAX extends Action {
 		$this->getBrowseCategory();
 		if ($this->browseCategory) {
 			$result['textId'] = $this->browseCategory->textId;
-			$result['label']  = $this->browseCategory->label;
+			$result['label']  = translate(['text'=>$this->browseCategory->label,'isPublicFacing'=>true, 'isAdminEnteredData'=>true]);
 			$result['subcategories'] = $this->getSubCategories();
 		}
 
@@ -571,7 +571,7 @@ class Browse_AJAX extends Action {
 		$subCategoryResult = $this->getBrowseCategoryResults(); // Get the Browse Results for the Selected Sub Category
 
 		if (isset($subCategoryResult['label'])) {
-			$subCategoryResult['subCategoryLabel'] = $subCategoryResult['label'];
+			$subCategoryResult['subCategoryLabel'] = translate(['text'=>$subCategoryResult['label'],'isPublicFacing'=>true, 'isAdminEnteredData'=>true]);
 //			unset($subCategoryResult['label']);
 		}
 		if (isset($subCategoryResult['textId'])) {

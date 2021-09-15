@@ -1061,18 +1061,30 @@ class SirsiDynixROA extends HorizonAPI
 	}
 
 
-	 private function getSessionToken($patron)
-	 {
-		 $sirsiRoaUserId = $patron->username;
+	private function getSessionToken($patron)
+	{
+		if (UserAccount::isUserMasquerading()){
+			//If the user is masquerading, we will use the staff login since we might not have the patron PIN
+			$sirsiRoaUserId = UserAccount::getGuidingUserObject()->username;
+		}else{
+			$sirsiRoaUserId = $patron->username;
+		}
 
-		 //Get the session token for the user
-		 if (isset(SirsiDynixROA::$sessionIdsForUsers[$sirsiRoaUserId])) {
-			 return SirsiDynixROA::$sessionIdsForUsers[$sirsiRoaUserId];
-		 } else {
-			 list(, $sessionToken) = $this->loginViaWebService($patron->cat_username, $patron->cat_password);
-			 return $sessionToken;
-		 }
-	 }
+
+		//Get the session token for the user
+		if (isset(SirsiDynixROA::$sessionIdsForUsers[$sirsiRoaUserId])) {
+			return SirsiDynixROA::$sessionIdsForUsers[$sirsiRoaUserId];
+		} else {
+			if (UserAccount::isUserMasquerading()){
+				//If the user is masquerading, we will use the staff login since we might not have the patron PIN
+				//list($userValid, $sessionToken) = $this->loginViaWebService(UserAccount::getGuidingUserObject()->cat_username, UserAccount::getGuidingUserObject()->cat_password);
+				$sessionToken = $this->getStaffSessionToken();
+				return $sessionToken;
+			}
+			list(, $sessionToken) = $this->loginViaWebService($patron->cat_username, $patron->cat_password);
+			return $sessionToken;
+		}
+	}
 
 	function cancelHold($patron, $recordId, $cancelId = null)
 	{
