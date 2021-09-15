@@ -36,6 +36,7 @@ class Location extends DataObject
 	public $createSearchInterface;
 	public $showInSelectInterface;
 	public $enableAppAccess;
+	public $appReleaseChannel;
 	public $theme;
 	public $showDisplayNameInHeader;
 	public $headerText;
@@ -222,6 +223,8 @@ class Location extends DataObject
 			$overDriveScopes[$overDriveScope->id] = $overDriveScope->name;
 		}
 
+		$releaseChannels = [0 => 'Beta (Testing)', 1 => 'Production (Public)'];
+
 		$structure = array(
 			'locationId' => array('property' => 'locationId', 'type' => 'label', 'label' => 'Location Id', 'description' => 'The unique id of the location within the database'),
 			'subdomain' => array('property' => 'subdomain', 'type' => 'text', 'label' => 'Subdomain', 'description' => 'The subdomain to use while identifying this branch.  Can be left if it matches the code.', 'required' => false, 'forcesReindex' => true, 'canBatchUpdate'=>false, 'permissions' => ['Location Domain Settings']),
@@ -231,7 +234,10 @@ class Location extends DataObject
 			'displayName' => array('property' => 'displayName', 'type' => 'text', 'label' => 'Display Name', 'description' => 'The full name of the location for display to the user', 'size' => '40', 'forcesReindex' => true, 'canBatchUpdate'=>false, 'editPermissions' => ['Location Domain Settings']),
 			'createSearchInterface' => array('property' => 'createSearchInterface', 'type' => 'checkbox', 'label' => 'Create Search Interface', 'description' => 'Whether or not a search interface is created.  Things like lockers and drive through windows dow not need search interfaces.', 'forcesReindex' => true, 'editPermissions' => ['Location Domain Settings'], 'default' => true),
 			'showInSelectInterface' => array('property' => 'showInSelectInterface', 'type' => 'checkbox', 'label' => 'Show In Select Interface (requires Create Search Interface)', 'description' => 'Whether or not this Location will show in the Select Interface Page.', 'forcesReindex' => false, 'editPermissions' => ['Location Domain Settings'], 'default' => true),
-			'enableAppAccess' => array('property' => 'enableAppAccess', 'type' => 'checkbox', 'label' => 'Enable app access', 'description' => 'Whether or not the location is available in the app.', 'editPermissions' => ['Location Domain Settings'], 'default' => false),
+			'appSection' => array('property' => 'appSection', 'type' => 'section', 'label' => 'Mobile App Settings', 'hideInLists' => true, 'properties' => array(
+				'enableAppAccess' => array('property' => 'enableAppAccess', 'type' => 'checkbox', 'label' => 'Display Location in Mobile App', 'description' => 'Whether or not the location is available in the app.', 'editPermissions' => ['Location Domain Settings'], 'default' => false),
+				'appReleaseChannel' => array('property' => 'appReleaseChannel', 'type' => 'enum', 'values' => $releaseChannels, 'label' => 'Release Channel', 'description' => 'Is the location available in the main public app or private beta', 'editPermissions' => ['Location Domain Settings']),
+			)),
 			'theme' => array('property' => 'theme', 'type' => 'enum', 'label' => 'Theme', 'values' => $availableThemes, 'description' => 'The theme which should be used for the library', 'hideInLists' => true, 'default' => 'default', 'editPermissions' => ['Location Theme Configuration']),
 			'showDisplayNameInHeader' => array('property' => 'showDisplayNameInHeader', 'type' => 'checkbox', 'label' => 'Show Display Name in Header', 'description' => 'Whether or not the display name should be shown in the header next to the logo', 'hideInLists' => true, 'default' => false, 'permissions' => ['Location Theme Configuration']),
 			'libraryId' => array('property' => 'libraryId', 'type' => 'enum', 'values' => $libraryList, 'label' => 'Library', 'description' => 'A link to the library which the location belongs to', 'editPermissions' => ['Location Domain Settings']),

@@ -15,4 +15,5 @@ class AspenSiteCache extends DataObject
 	public $unit;
 	public $baseUrl;
 	public $lastUpdated;
+	public $releaseChannel;
 }
