@@ -426,15 +426,16 @@ class Koha extends AbstractIlsDriver
 
 			//Get the number of holds on current checkout, if any
 			/** @noinspection SqlResolve */
-			$holdsSql = "SELECT *  FROM biblio b  LEFT JOIN reserves h ON (b.biblionumber=h.biblionumber) WHERE b.biblionumber = {$curRow['biblionumber']} GROUP BY b.biblionumber HAVING count(h.reservedate) >= 1";
-			$holdsResults = mysqli_query($this->dbConnection, $holdsSql);
-			$holdsCount = $holdsResults->num_rows;
-			if ($holdsCount >= 1 && $curCheckout->autoRenew == 1) {
-				$curCheckout->autoRenewError = translate(['text' => 'Cannot auto renew, on hold for another user','isPublicFacing'=>true]);
-			} else if ($holdsCount >= 1 && $curCheckout->canRenew == 1 && $curCheckout->autoRenew == 0) {
-				$curCheckout->canRenew = "0";
-				$curCheckout->renewError = translate(['text' => 'On hold for another user','isPublicFacing'=>true]);
-			}
+			//Removing since this does not account for cases where there are available copies
+//			$holdsSql = "SELECT *  FROM biblio b  LEFT JOIN reserves h ON (b.biblionumber=h.biblionumber) WHERE b.biblionumber = {$curRow['biblionumber']} GROUP BY b.biblionumber HAVING count(h.reservedate) >= 1";
+//			$holdsResults = mysqli_query($this->dbConnection, $holdsSql);
+//			$holdsCount = $holdsResults->num_rows;
+//			if ($holdsCount >= 1 && $curCheckout->autoRenew == 1) {
+//				$curCheckout->autoRenewError = translate(['text' => 'Cannot auto renew, on hold for another user','isPublicFacing'=>true]);
+//			} else if ($holdsCount >= 1 && $curCheckout->canRenew == 1 && $curCheckout->autoRenew == 0) {
+//				$curCheckout->canRenew = "0";
+//				$curCheckout->renewError = translate(['text' => 'On hold for another user','isPublicFacing'=>true]);
+//			}
 
 			//Get the max renewals by figuring out what rule the checkout was issued under
 			$patronType = $patron->patronType;
