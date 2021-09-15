@@ -168,6 +168,8 @@ class WebBuilder_AJAX extends JSON_Action
 						$image = new ImageUpload();
 						$image->type = 'web_builder_image';
 						$image->fullSizePath = $file['name'];
+						$image->generateXLargeSize = true;
+						$image->generateLargeSize = true;
 						$image->generateMediumSize = true;
 						$image->generateSmallSize = true;
 						$destFileName = $file['name'];
@@ -193,6 +195,60 @@ class WebBuilder_AJAX extends JSON_Action
 								'success' => true,
 								'title' => $image->title,
 								'imageUrl' => $image->getDisplayUrl('full')
+							];
+							break;
+						}else{
+							$result['message'] = 'Could not save the image to disk';
+						}
+					}
+				}else{
+					$result['message'] = 'No file was selected';
+				}
+			}else{
+				$result['message'] = 'You don\'t have the correct permissions to upload an image';
+			}
+		}else{
+			$result['message'] = 'You must be logged in to upload an image';
+		}
+		return $result;
+	}
+
+	/** @noinspection PhpUnused */
+	function uploadImageTinyMCE(){
+		if (UserAccount::isLoggedIn()){
+			if (UserAccount::userHasPermission('Administer All Web Content')){
+				if (! empty($_FILES)) {
+					require_once ROOT_DIR . '/sys/File/ImageUpload.php';
+					$structure = ImageUpload::getObjectStructure();
+					foreach ($_FILES as $file) {
+						$image = new ImageUpload();
+						$image->type = 'web_builder_image';
+						$image->fullSizePath = $file['name'];
+						$image->generateXLargeSize = true;
+						$image->generateLargeSize = true;
+						$image->generateMediumSize = true;
+						$image->generateSmallSize = true;
+						$destFileName = $file['name'];
+						$destFolder = $structure['fullSizePath']['path'];
+						if (!is_dir($destFolder)){
+							if (!mkdir($destFolder, 0755, true)){
+								$result['message'] = 'Could not create directory to upload files';
+								if (IPAddress::showDebuggingInformation()){
+									$result['message'] .= " " . $destFolder;
+								}
+							}
+						}
+						$destFullPath = $destFolder . '/' . $destFileName;
+						if (file_exists($destFullPath)){
+							$image->find(true);
+						}
+
+						$image->title = $file['name'];
+						$copyResult = copy($file["tmp_name"], $destFullPath);
+						if ($copyResult) {
+							$image->update();
+							$result = [
+								'location' => $image->getDisplayUrl('full')
 							];
 							break;
 						}else{

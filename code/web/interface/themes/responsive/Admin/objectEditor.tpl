@@ -1,4 +1,4 @@
-<script src="/ckeditor/ckeditor.js"></script>
+<script src="/tinymce/tinymce.min.js"></script>
 {if $lastError}
 	<div class="alert alert-danger">
 		{$lastError}
