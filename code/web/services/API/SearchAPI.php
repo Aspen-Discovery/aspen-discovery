@@ -824,7 +824,6 @@ class SearchAPI extends Action
 						'link' => $configArray['Site']['url'] . '?browseCategory=' . $categoryInformation->textId,
 						'source' => $categoryInformation->source,
 					);
-
 					if ($includeSubCategories) {
 						$subCategories = $categoryInformation->getSubCategories();
 						$categoryResponse['subCategories'] = [];
@@ -839,9 +838,14 @@ class SearchAPI extends Action
 										if ($parent->find(true)){
 											$parentLabel = $parent->label;
 										}
+										if ($parentLabel == $temp->label) {
+											$displayLabel = $temp->label;
+										} else {
+											$displayLabel = $parentLabel.': '.$temp->label;
+										}
 										$categoryResponse['subCategories'][] = [
 											'text_id' => $temp->textId,
-											'display_label' => $parentLabel.': '.$temp->label,
+											'display_label' => $displayLabel,
 											'link' => $configArray['Site']['url'] . '?browseCategory=' . $temp->textId . '&subCategory=' . $temp->textId,
 											'source' => $temp->source,
 										];
