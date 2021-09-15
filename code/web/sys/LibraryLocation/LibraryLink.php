@@ -50,7 +50,7 @@ class LibraryLink extends DataObject{
 			'iconName' => ['property'=>'iconName', 'type' => 'text', 'label' => 'FontAwesome Icon Name (https://fontawesome.com/cheatsheet/free/solid)', 'description'=>'Show a font awesome icon next to the menu name'],
 			'linkText' => ['property'=>'linkText', 'type'=>'text', 'label'=>'Link Text', 'description'=>'The text to display for the link ', 'size'=>'80', 'maxLength'=>100],
 			'url' => ['property'=>'url', 'type'=>'text', 'label'=>'URL', 'description'=>'The url to link to', 'size'=>'80', 'maxLength'=>255],
-			'htmlContents' => ['property'=>'htmlContents', 'type'=>'html', 'label'=>'HTML Contents', 'description'=>'Optional full HTML contents to show rather than showing a basic link within the sidebar.',],
+			//'htmlContents' => ['property'=>'htmlContents', 'type'=>'html', 'label'=>'HTML Contents', 'description'=>'Optional full HTML contents to show rather than showing a basic link within the sidebar.',],
 			'showInTopMenu' => ['property'=>'showInTopMenu', 'type'=>'checkbox', 'label'=>'Show In Top Menu (large screens only)', 'description'=>'Show the link in the top menu for large screens', 'default'=>0],
 			'alwaysShowIconInTopMenu' => ['property'=>'alwaysShowIconInTopMenu', 'type'=>'checkbox', 'label'=>'Show Icon In Top Menu (all screen sizes)', 'description'=>'Always show the icon in the top menu at all screen sizes', 'default'=>0],
 			'showExpanded' => ['property'=>'showExpanded', 'type'=>'checkbox', 'label'=>'Show Expanded', 'description'=>'Expand the category by default',],
@@ -81,6 +81,12 @@ class LibraryLink extends DataObject{
 	public function insert(){
 		$ret = parent::insert();
 		if ($ret !== FALSE ){
+			if (empty($this->_allowAccess)){
+				$patronTypeList = PType::getPatronTypeList();
+				foreach ($patronTypeList as $pTypeId => $pType) {
+					$this->_allowAccess[$pTypeId] = $pTypeId;
+				}
+			}
 			$this->saveAccess();
 			//When inserting a library link, if nothing exists, apply to all languages
 			if (empty($this->_languages)){
