@@ -172,7 +172,7 @@ class HooplaProcessor {
 								}
 							}
 							if (!foundAudience) {
-								if (kind.equals("MOVIE") && !kind.equals("TELEVISION")) {
+								if (kind.equals("MOVIE") || kind.equals("TELEVISION")) {
 									switch (rating) {
 										case "R":
 											groupedWork.addTargetAudience("Adult");
