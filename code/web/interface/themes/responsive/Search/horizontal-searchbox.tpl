@@ -16,7 +16,7 @@
 			<input type="hidden" name="searchSource" value="{$searchSource}">
 		{/if}
 
-		<div class="col-xs-12 col-sm-10 col-md-11">
+		<div class="col-xs-12 col-sm-10 col-md-10 col-lg-10">
 			<div class="row">
 				<div class="{if $hiddenSearchSource}col-lg-10 col-md-10{else}col-lg-7 col-md-7{/if} col-sm-12 col-xs-12">
 					{* <div class="input-group"> *}
@@ -39,7 +39,7 @@
 				</div>
 
 				{* Search Type *}
-				<div class="col-lg-2 col-lg-offset-0 col-md-2 col-md-offset-0 {if $hiddenSearchSource} col-sm-12 col-sm-offset-0 col-xs-12 col-xs-offset-0 {else} col-sm-6 col-sm-offset-0 col-xs-5 col-xs-offset-0{/if}">
+				<div class="col-lg-2 col-lg-offset-0 col-md-2 col-md-offset-0 {if $hiddenSearchSource} col-sm-12 col-sm-offset-0 col-xs-12 col-xs-offset-0 {else} col-sm-6 col-sm-offset-0 col-xs-6 col-xs-offset-0{/if}">
 					<select name="searchIndex" class="searchTypeHorizontal form-control catalogType" id="searchIndex" title="The method of searching." aria-label="Search Index">
 						{foreach from=$searchIndexes item=searchDesc key=searchVal}
 							<option value="{$searchVal}"{if !empty($searchIndex) && $searchIndex == $searchVal} selected="selected"{/if}>{translate text="by %1%" 1=$searchDesc inAttribute=true isPublicFacing=true translateParameters=true}</option>
@@ -59,7 +59,7 @@
 				</div>
 
 				{if !$hiddenSearchSource}
-					<div class="col-lg-3 col-md-3 col-sm-6 col-xs-7">
+					<div class="col-lg-3 col-md-3 col-sm-6 col-xs-6">
 						<select name="searchSource" id="searchSource" title="{translate text="Select what to search. Items marked with a * will redirect you to one of our partner sites." isPublicFacing=true inAttribute=true}" onchange="AspenDiscovery.Searches.loadSearchTypes();" class="searchSourceHorizontal form-control" aria-label="{translate text="Collection to Search" isPublicFacing=true inAttribute=true}">
 							{foreach from=$searchSources item=searchOption key=searchKey}
 								<option data-catalog_type="{$searchOption.catalogType}" value="{$searchKey}" title="{$searchOption.description}" data-advanced_search="{$searchOption.hasAdvancedSearch}" data-advanced_search_label="{translate text="Advanced Search" inAttribute=true isPublicFacing=true}"
@@ -76,19 +76,19 @@
 		</div>
 
 		{* GO Button & Search Links*}
-		<div id="horizontal-search-button-container" class="col-xs-12 col-sm-2 col-md-1">
+		<div id="horizontal-search-button-container" class="col-xs-12 col-sm-2 col-md-2">
 			<div class="row">
-				<div class="col-tn-6 col-xs-6 col-sm-12 col-md-12">
-					<button class="btn btn-default" type="submit">
+				<div class="col-tn-6 col-xs-6 col-sm-12 col-md-12 text-center">
+					<button class="btn btn-default" type="submit" style="width: 95%">
 						<i class="fas fa-search fas-lg"></i>
-						<span id="horizontal-search-box-submit-text">&nbsp;{translate text='GO' isPublicFacing=true}</span>
+						<span id="horizontal-search-box-submit-text">&nbsp;{translate text='Search' isPublicFacing=true}</span>
 					</button>
 				</div>
 
 				{* Show/Hide Search Facets & Sort Options *}
 				{if !empty($recordCount) || !empty($sideRecommendations)}
-					<div class="col-tn-6 col-xs-6 visible-xs text-right">
-						<a class="btn btn-default" id="refineSearchButton" role="button" onclick="$('#side-bar').slideToggle('slow');return false;"><i class="fas fa-filter"></i> {translate text='Filters' isPublicFacing=true}</a>
+					<div class="col-tn-6 col-xs-6 visible-xs text-center">
+						<a class="btn btn-default" id="refineSearchButton" style="width: 95%" role="button" onclick="$('#side-bar').slideToggle('slow');return false;"><i class="fas fa-filter"></i> {translate text='Filters' isPublicFacing=true}</a>
 					</div>
 				{/if}
 			</div>
