@@ -72,7 +72,7 @@ class CloudLibrary_AJAX extends JSON_Action
 				);
 		} else {
 			// No Cloud Library Account Found
-			$invalidAccountMessage = translate(['text' => "The barcode or library for this account is not valid for Cloud Library.", 'isPublicFacing'=>true]);
+			$invalidAccountMessage = translate(['text' => "The barcode or library for this account is not valid for Cloud Library. Please contact your local library for more information.", 'isPublicFacing'=>true]);
 			return array(
 					'promptTitle' => translate(['text' => 'Invalid Account', 'isPublicFacing'=>true]),
 					'prompts' => '<p class="alert alert-danger">' . $invalidAccountMessage . '</p>',
@@ -117,7 +117,7 @@ class CloudLibrary_AJAX extends JSON_Action
 				);
 		} else {
 			// No Cloud Library Account Found
-			$invalidAccountMessage = translate(['text' => "The barcode or library for this account is not valid for Cloud Library.", 'isPublicFacing'=>true]);
+			$invalidAccountMessage = translate(['text' => "The barcode or library for this account is not valid for Cloud Library. Please contact your local library for more information.", 'isPublicFacing'=>true]);
 			return array(
 					'promptTitle' => translate(['text' => 'Invalid Account', 'isPublicFacing'=>true]),
 					'prompts' => '<p class="alert alert-danger">' . $invalidAccountMessage . '</p>',
