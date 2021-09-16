@@ -648,17 +648,22 @@ public class HooplaExportMain {
 	private static void regroupAllRecords(Connection dbConn, long settingsId, GroupedWorkIndexer indexer, HooplaExtractLogEntry logEntry)  throws SQLException {
 		logEntry.addNote("Starting to regroup all records");
 		PreparedStatement getAllRecordsToRegroupStmt = dbConn.prepareStatement("SELECT hooplaId, UNCOMPRESS(rawResponse) as rawResponse from hoopla_export where active = 1", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-		PreparedStatement getOriginalPermanentIdForRecordStmt = dbConn.prepareStatement("SELECT permanent_id from grouped_work_primary_identifiers join grouped_work on grouped_work_id = grouped_work.id WHERE type = 'hoopla' and identifier = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+		//It turns out to be quite slow to look this up repeatedly, just grab the existing values for all and store in memory
+		PreparedStatement getOriginalPermanentIdForRecordStmt = dbConn.prepareStatement("SELECT identifier, permanent_id from grouped_work_primary_identifiers join grouped_work on grouped_work_id = grouped_work.id WHERE type = 'hoopla'", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+		HashMap<Long, String> allPermanentIdsForHoopla = new HashMap<>();
+		ResultSet getOriginalPermanentIdForRecordRS = getOriginalPermanentIdForRecordStmt.executeQuery();
+		while (getOriginalPermanentIdForRecordRS.next()){
+			allPermanentIdsForHoopla.put(getOriginalPermanentIdForRecordRS.getLong("identifier"), getOriginalPermanentIdForRecordRS.getString("permanent_id"));
+		}
+		getOriginalPermanentIdForRecordRS.close();
+		getOriginalPermanentIdForRecordStmt.close();
 		ResultSet allRecordsToRegroupRS = getAllRecordsToRegroupStmt.executeQuery();
 		while (allRecordsToRegroupRS.next()) {
 			logEntry.incRecordsRegrouped();
 			long recordIdentifier = allRecordsToRegroupRS.getLong("hooplaId");
 			String originalGroupedWorkId;
-			getOriginalPermanentIdForRecordStmt.setLong(1, recordIdentifier);
-			ResultSet getOriginalPermanentIdForRecordRS = getOriginalPermanentIdForRecordStmt.executeQuery();
-			if (getOriginalPermanentIdForRecordRS.next()){
-				originalGroupedWorkId = getOriginalPermanentIdForRecordRS.getString("permanent_id");
-			}else{
+			originalGroupedWorkId = allPermanentIdsForHoopla.get(recordIdentifier);
+			if (originalGroupedWorkId == null){
 				originalGroupedWorkId = "false";
 			}
 			String rawResponseString = new String(allRecordsToRegroupRS.getBytes("rawResponse"), StandardCharsets.UTF_8);
