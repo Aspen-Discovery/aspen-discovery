@@ -10,6 +10,7 @@ class CloudLibraryDriver extends AbstractEContentDriver
 	{
 		$this->curlWrapper = new CurlWrapper();
 		$this->curlWrapper->timeout = 20;
+		$this->curlWrapper->connectTimeout = 4;
 	}
 
 	public function hasNativeReadingHistory()
@@ -336,7 +337,7 @@ class CloudLibraryDriver extends AbstractEContentDriver
 	{
 		list($existingId, $summary) = $user->getCachedAccountSummary('cloud_library');
 
-		if ($summary === null) {
+		if ($summary === null || isset($_REQUEST['reload'])) {
 			require_once ROOT_DIR . '/sys/User/AccountSummary.php';
 			$summary = new AccountSummary();
 			$summary->userId = $user->id;
