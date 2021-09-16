@@ -133,5 +133,12 @@ function getUpdates21_12_00() : array
 				'ALTER TABLE greenhouse_cache ADD COLUMN releaseChannel TINYINT(1) DEFAULT 0'
 			]
 		], //addReleaseChannelToCachedGreenhouseData
+		'removeGroupedWorkSecondDateUpdatedIndex' => [
+			'title' => 'Remove GroupedWork Second DateUpdated Index',
+			'description' => 'Remove redundant index',
+			'sql' => [
+				'ALTER TABLE grouped_work DROP INDEX date_updated_2'
+			]
+		], //removeGroupedWorkSecondDateUpdatedIndex
 	];
 }
