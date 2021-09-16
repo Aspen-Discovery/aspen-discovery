@@ -10,6 +10,7 @@ class HooplaSetting extends DataObject
 	public $apiUsername;
 	public $apiPassword;
 	public /** @noinspection PhpUnused */ $apiToken;
+	public $regroupAllRecords;
 	public $runFullUpdate;
 	public $lastUpdateOfChangedRecords;
 	public $lastUpdateOfAllRecords;
@@ -29,6 +30,7 @@ class HooplaSetting extends DataObject
 			'excludeTitlesWithCopiesFromOtherVendors' => array('property' => 'excludeTitlesWithCopiesFromOtherVendors', 'type' => 'checkbox', 'label' => 'Exclude Records With Copies from other eContent Vendors (OverDrive, Cloud Library, Axis 360, etc.)', 'description' => 'Whether or not records in other collections should be included', 'default' => 0, 'forcesReindex' => true),
 			'apiUsername' => array('property' => 'apiUsername', 'type' => 'text', 'label' => 'API Username', 'description' => 'The API Username provided by Hoopla when registering'),
 			'apiPassword' => array('property' => 'apiPassword', 'type' => 'storedPassword', 'label' => 'API Password', 'description' => 'The API Password provided by Hoopla when registering', 'hideInLists' => true),
+			'regroupAllRecords' => array('property' => 'regroupAllRecords', 'type' => 'checkbox', 'label' => 'Regroup all Records', 'description' => 'Whether or not all existing records should be regrouped', 'default' => 0),
 			'runFullUpdate' => array('property' => 'runFullUpdate', 'type' => 'checkbox', 'label' => 'Run Full Update', 'description' => 'Whether or not a full update of all records should be done on the next pass of indexing', 'default' => 0),
 			'lastUpdateOfChangedRecords' => array('property' => 'lastUpdateOfChangedRecords', 'type' => 'timestamp', 'label' => 'Last Update of Changed Records', 'description' => 'The timestamp when just changes were loaded', 'default' => 0),
 			'lastUpdateOfAllRecords' => array('property' => 'lastUpdateOfAllRecords', 'type' => 'timestamp', 'label' => 'Last Update of All Records', 'description' => 'The timestamp when just changes were loaded', 'default' => 0),

@@ -36,7 +36,22 @@
 		<div id="exportLogContainer">
 			<table class="logEntryDetails table table-condensed table-hover">
 				<thead>
-					<tr><th>{translate text="Id" isAdminFacing=true}</th><th>{translate text="Started" isAdminFacing=true}</th><th>{translate text="Last Update" isAdminFacing=true}</th><th>{translate text="Finished" isAdminFacing=true}</th><th>{translate text="Elapsed" isAdminFacing=true}</th><th>{translate text="Total Products" isAdminFacing=true}</th><th>{translate text="Num Errors" isAdminFacing=true}</th><th>{translate text="Products Added" isAdminFacing=true}</th><th>{translate text="Products Deleted" isAdminFacing=true}</th><th>{translate text="Products Updated" isAdminFacing=true}</th><th>{translate text="Products Skipped" isAdminFacing=true}</th><th>{translate text="Notes" isAdminFacing=true}</th></tr>
+					<tr>
+						<th>{translate text="Id" isAdminFacing=true}</th>
+						<th>{translate text="Started" isAdminFacing=true}</th>
+						<th>{translate text="Last Update" isAdminFacing=true}</th>
+						<th>{translate text="Finished" isAdminFacing=true}</th>
+						<th>{translate text="Elapsed" isAdminFacing=true}</th>
+						<th>{translate text="Products Regrouped" isAdminFacing=true}</th>
+						<th>{translate text="Products Changed After Grouping" isAdminFacing=true}</th>
+						<th>{translate text="Total Products" isAdminFacing=true}</th>
+						<th>{translate text="Num Errors" isAdminFacing=true}</th>
+						<th>{translate text="Products Added" isAdminFacing=true}</th>
+						<th>{translate text="Products Deleted" isAdminFacing=true}</th>
+						<th>{translate text="Products Updated" isAdminFacing=true}</th>
+						<th>{translate text="Products Skipped" isAdminFacing=true}</th>
+						<th>{translate text="Notes" isAdminFacing=true}</th>
+					</tr>
 				</thead>
 				<tbody>
 					{foreach from=$logEntries item=logEntry}
@@ -46,6 +61,8 @@
 							<td>{$logEntry->lastUpdate|date_format:"%D %T"}</td>
 							<td>{$logEntry->endTime|date_format:"%D %T"}</td>
 							<td>{$logEntry->getElapsedTime()}</td>
+							<td>{$logEntry->numRegrouped}</td>
+							<td>{$logEntry->numChangedAfterGrouping}</td>
 							<td>{$logEntry->numProducts}</td>
 							<td>{$logEntry->numErrors}</td>
 							<td>{$logEntry->numAdded}</td>

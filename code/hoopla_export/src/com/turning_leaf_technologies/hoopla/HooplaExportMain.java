@@ -2,10 +2,14 @@ package com.turning_leaf_technologies.hoopla;
 
 import com.turning_leaf_technologies.config.ConfigUtil;
 import com.turning_leaf_technologies.file.JarUtil;
+import com.turning_leaf_technologies.grouping.MarcRecordGrouper;
 import com.turning_leaf_technologies.grouping.RecordGroupingProcessor;
 import com.turning_leaf_technologies.grouping.RemoveRecordFromWorkResult;
+import com.turning_leaf_technologies.indexing.IlsExtractLogEntry;
+import com.turning_leaf_technologies.indexing.IndexingProfile;
 import com.turning_leaf_technologies.indexing.IndexingUtils;
 import com.turning_leaf_technologies.indexing.RecordIdentifier;
+import com.turning_leaf_technologies.logging.BaseLogEntry;
 import com.turning_leaf_technologies.logging.LoggingUtil;
 import com.turning_leaf_technologies.net.NetworkUtils;
 import com.turning_leaf_technologies.net.WebServiceResponse;
@@ -16,7 +20,9 @@ import org.ini4j.Ini;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.marc4j.marc.Record;
 
+import java.nio.charset.StandardCharsets;
 import java.sql.*;
 import java.util.Date;
 import java.util.HashMap;
@@ -279,13 +285,18 @@ public class HooplaExportMain {
 				long lastUpdateOfChangedRecords = getSettingsRS.getLong("lastUpdateOfChangedRecords");
 				long lastUpdateOfAllRecords = getSettingsRS.getLong("lastUpdateOfAllRecords");
 				long lastUpdate = Math.max(lastUpdateOfChangedRecords, lastUpdateOfAllRecords);
+				boolean isRegroupAllRecords = getSettingsRS.getBoolean("regroupAllRecords");
 				boolean doFullReload = getSettingsRS.getBoolean("runFullUpdate");
 				long settingsId = getSettingsRS.getLong("id");
 				if (doFullReload){
-					//Un mark that a full update needs to be done
+					//Unset that a full update needs to be done
 					PreparedStatement updateSettingsStmt = aspenConn.prepareStatement("UPDATE hoopla_settings set runFullUpdate = 0 where id = ?");
 					updateSettingsStmt.setLong(1, settingsId);
 					updateSettingsStmt.executeUpdate();
+				}
+
+				if (isRegroupAllRecords) {
+					regroupAllRecords(aspenConn, settingsId, getGroupedWorkIndexer(), logEntry);
 				}
 
 				String accessToken = getAccessToken(apiUsername, apiPassword);
@@ -515,7 +526,11 @@ public class HooplaExportMain {
 			subTitle = itemDetails.getString("title");
 		}else {
 			title = itemDetails.getString("title");
-			subTitle = "";
+			if (itemDetails.has("subtitle")){
+				subTitle = itemDetails.getString("subtitle");
+			}else{
+				subTitle = "";
+			}
 		}
 		String mediaType = itemDetails.getString("kind");
 		String primaryFormat;
@@ -628,5 +643,46 @@ public class HooplaExportMain {
 			recordGroupingProcessorSingleton = new RecordGroupingProcessor(aspenConn, serverName, logEntry, logger);
 		}
 		return recordGroupingProcessorSingleton;
+	}
+
+	private static void regroupAllRecords(Connection dbConn, long settingsId, GroupedWorkIndexer indexer, HooplaExtractLogEntry logEntry)  throws SQLException {
+		logEntry.addNote("Starting to regroup all records");
+		PreparedStatement getAllRecordsToRegroupStmt = dbConn.prepareStatement("SELECT hooplaId, UNCOMPRESS(rawResponse) as rawResponse from hoopla_export where active = 1", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+		PreparedStatement getOriginalPermanentIdForRecordStmt = dbConn.prepareStatement("SELECT permanent_id from grouped_work_primary_identifiers join grouped_work on grouped_work_id = grouped_work.id WHERE type = 'hoopla' and identifier = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+		ResultSet allRecordsToRegroupRS = getAllRecordsToRegroupStmt.executeQuery();
+		while (allRecordsToRegroupRS.next()) {
+			logEntry.incRecordsRegrouped();
+			long recordIdentifier = allRecordsToRegroupRS.getLong("hooplaId");
+			String originalGroupedWorkId;
+			getOriginalPermanentIdForRecordStmt.setLong(1, recordIdentifier);
+			ResultSet getOriginalPermanentIdForRecordRS = getOriginalPermanentIdForRecordStmt.executeQuery();
+			if (getOriginalPermanentIdForRecordRS.next()){
+				originalGroupedWorkId = getOriginalPermanentIdForRecordRS.getString("permanent_id");
+			}else{
+				originalGroupedWorkId = "false";
+			}
+			String rawResponseString = new String(allRecordsToRegroupRS.getBytes("rawResponse"), StandardCharsets.UTF_8);
+			JSONObject rawResponse = new JSONObject(rawResponseString);
+			//Pass null to processMarcRecord.  It will do the lookup to see if there is an existing id there.
+			String groupedWorkId = groupRecord(rawResponse, recordIdentifier);
+			if (originalGroupedWorkId == null || !originalGroupedWorkId.equals(groupedWorkId)) {
+				logEntry.incChangedAfterGrouping();
+			}
+		}
+
+		//Process all the records to reload which will handle reindexing anything that just changed
+		if (logEntry.getNumChangedAfterGrouping() > 0){
+			indexer.processScheduledWorks(logEntry);
+		}
+
+		try {
+			PreparedStatement clearRegroupAllRecordsStmt = dbConn.prepareStatement("UPDATE hoopla_settings set regroupAllRecords = 0 where id =?");
+			clearRegroupAllRecordsStmt.setLong(1, settingsId);
+			clearRegroupAllRecordsStmt.executeUpdate();
+		}catch (Exception e){
+			logEntry.incErrors("Could not clear regroup all records", e);
+		}
+		logEntry.addNote("Finished regrouping all records");
+		logEntry.saveResults();
 	}
 }

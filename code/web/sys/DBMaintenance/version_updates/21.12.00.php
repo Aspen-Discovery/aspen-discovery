@@ -109,5 +109,15 @@ function getUpdates21_12_00() : array
 				"ALTER TABLE user CHANGE COLUMN cat_password cat_password VARCHAR(256) DEFAULT ''"
 			]
 		], //addDefaultCatPassword
+		'hoopla_regroup_all_records' => [
+			'title' => 'Hoopla Add Regroup All Records',
+			'description' => 'Add the ability to regroup all records at the beginning of indexing for hoopla',
+			'sql' => [
+				'ALTER TABLE hoopla_settings ADD COLUMN regroupAllRecords TINYINT(1) DEFAULT 0',
+				"ALTER TABLE hoopla_export_log ADD COLUMN numChangedAfterGrouping INT(11) DEFAULT 0",
+				"ALTER TABLE hoopla_export_log ADD COLUMN numRegrouped INT(11) DEFAULT 0",
+				'UPDATE hoopla_settings set regroupAllRecords = 1'
+			]
+		],
 	];
 }

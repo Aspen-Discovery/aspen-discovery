@@ -8,6 +8,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -707,7 +708,7 @@ class OverDriveProcessor {
 			String fullDescription = metadataRS.getString("fullDescription");
 			groupedWork.addDescription(fullDescription, format);
 
-			returnMetadata.put("rawMetadata", metadataRS.getString("rawData"));
+			returnMetadata.put("rawMetadata", new String(metadataRS.getBytes("rawData"), StandardCharsets.UTF_8));
 		}
 		metadataRS.close();
 		return returnMetadata;
