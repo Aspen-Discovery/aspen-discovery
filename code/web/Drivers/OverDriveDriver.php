@@ -1215,7 +1215,11 @@ class OverDriveDriver extends AbstractEContentDriver{
 						}
 					}
 					if ($formatClassField != null && $lendingPeriodField != null){
-						$options['lendingPeriods'][$formatClassField->value]['options'] = $lendingPeriodField->options;
+						$formatClass = $formatClassField->value;
+						if ($formatClass == 'Periodicals') {
+							$formatClass = 'Magazines';
+						}
+						$options['lendingPeriods'][$formatClass]['options'] = $lendingPeriodField->options;
 					}
 				}
 			}
@@ -1233,11 +1237,15 @@ class OverDriveDriver extends AbstractEContentDriver{
 			if ($_REQUEST[$lendingPeriod['formatType']] != $lendingPeriod['lendingPeriod']){
 				$url = $this->getSettings()->patronApiUrl . '/v1/patrons/me';
 
+				$formatClass = $lendingPeriod['formatType'];
+				if ($formatClass == 'Magazines') {
+					$formatClass = 'magazine-overdrive';
+				}
 				$params = array(
-					'formatClass' => strtolower($lendingPeriod['formatType']) ,
+					'formatClass' => strtolower($formatClass) ,
 					'lendingPeriodDays' => $_REQUEST[$lendingPeriod['formatType']],
 				);
-				$this->_callPatronUrl($patron, $url, $params, 'PUT');
+				$response = $this->_callPatronUrl($patron, $url, $params, 'PUT');
 
 				if ($this->lastHttpCode != 204){
 					return false;
