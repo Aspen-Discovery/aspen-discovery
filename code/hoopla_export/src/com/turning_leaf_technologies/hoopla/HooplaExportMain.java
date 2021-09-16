@@ -670,7 +670,7 @@ public class HooplaExportMain {
 			JSONObject rawResponse = new JSONObject(rawResponseString);
 			//Pass null to processMarcRecord.  It will do the lookup to see if there is an existing id there.
 			String groupedWorkId = groupRecord(rawResponse, recordIdentifier);
-			if (originalGroupedWorkId == null || !originalGroupedWorkId.equals(groupedWorkId)) {
+			if (!originalGroupedWorkId.equals(groupedWorkId)) {
 				logEntry.incChangedAfterGrouping();
 			}
 		}

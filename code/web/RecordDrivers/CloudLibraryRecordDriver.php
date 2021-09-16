@@ -187,9 +187,13 @@ class CloudLibraryRecordDriver extends MarcRecordDriver {
 
 			if ($loadDefaultActions) {
 				if ($isAvailable) {
+					$userId = UserAccount::getActiveUserId();
+					if ($userId == false){
+						$userId = 'null';
+					}
 					$this->_actions[] = array(
 						'title' => translate(['text'=>'Check Out Cloud Library','isPublicFacing'=>true]),
-						'onclick' => "return AspenDiscovery.CloudLibrary.checkOutTitle('{$this->id}');",
+						'onclick' => "return AspenDiscovery.CloudLibrary.checkOutTitle({$userId}, '{$this->id}');",
 						'requireLogin' => false,
 						'type' => 'cloud_library_checkout'
 					);
