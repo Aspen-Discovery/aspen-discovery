@@ -2066,8 +2066,9 @@ public class GroupedWorkIndexer {
 				getRecordForIdentifierStmt.setString(2, source);
 				ResultSet getRecordForIdentifierRS = getRecordForIdentifierStmt.executeQuery();
 				if (getRecordForIdentifierRS.next()) {
-					String marcRecordRaw = new String(getRecordForIdentifierRS.getBytes("sourceData"), StandardCharsets.UTF_8);
-					if (marcRecordRaw != null && marcRecordRaw.length() > 0) {
+					byte[] marcData = getRecordForIdentifierRS.getBytes("sourceData");
+					if (marcData != null && marcData.length > 0) {
+						String marcRecordRaw = new String(marcData, StandardCharsets.UTF_8);
 						marcRecord = MarcUtil.readJsonFormattedRecord(identifier, marcRecordRaw, logEntry);
 						marcRecordCache.put(key, marcRecord);
 					}
