@@ -1209,7 +1209,7 @@ abstract class Solr
 						//Field doesn't exist, check to see if it is a dynamic field
 						//Where we can replace the scope with the current scope
 						foreach ($dynamicFields as $dynamicField) {
-							if (preg_match("/^{$dynamicField}[^_]+$/", $fieldName)) {
+							if (strlen($fieldName) > strlen($dynamicField) && strpos($fieldName, $dynamicField) === 0) {
 								//This is a dynamic field with the wrong scope
 								$validFilters[$id] = $tagging . $dynamicField . $solrScope . ":" . $term;
 								break;
@@ -1307,7 +1307,7 @@ abstract class Solr
 			}
 
 			foreach ($facet as $param => $value) {
-				if ($param != 'additionalOptions') {
+				if ($param != 'additionalOptions' && $param != 'field') {
 					$options[$param] = $value;
 				}
 			}
@@ -1327,12 +1327,21 @@ abstract class Solr
 				} else {
 					$facetName = $key;
 				}
+				$fullFacetName = $facetName;
 				$facetName = str_replace("_$solrScope", "", $facetName);
 
 				if (strpos($value, 'availability_toggle') === 0 || strpos($value, 'availability_by_format') === 0) {
 					$filters[$key] = '{!tag=avail}' . $value;
 				}elseif (isset($facet['field'][$facetName])) {
 					$facetSetting = $facet['field'][$facetName];
+					if ($facetSetting instanceof FacetSetting) {
+						if ($facetSetting->multiSelect) {
+							$facetKey = empty($facetSetting->id) ? $facetSetting->facetName : $facetSetting->id;
+							$filters[$key] = "{!tag={$facetKey}}" . $value;
+						}
+					}
+				}elseif (isset($facet['field'][$fullFacetName])) {
+					$facetSetting = $facet['field'][$fullFacetName];
 					if ($facetSetting instanceof FacetSetting) {
 						if ($facetSetting->multiSelect) {
 							$facetKey = empty($facetSetting->id) ? $facetSetting->facetName : $facetSetting->id;

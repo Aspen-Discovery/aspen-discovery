@@ -632,9 +632,20 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 		$filterQuery = $this->hiddenFilters;
 		//Remove any empty filters if we get them
 		//(typically happens when a subdomain has a function disabled that is enabled in the main scope)
+		//Also fix dynamic field names
+		$dynamicFields = $this->loadDynamicFields();
 		foreach ($this->filterList as $field => $filter) {
 			if ($field === '') {
 				unset($this->filterList[$field]);
+			}
+			//Correct any dynamic fields
+			foreach ($dynamicFields as $dynamicField) {
+				if (strlen($field) > strlen($dynamicField) && strpos($field, $dynamicField) === 0) {
+					//This is a dynamic field with the wrong scope
+					$this->filterList[$dynamicField . $solrScope] = $filter;
+					unset($this->filterList[$field]);
+					break;
+				}
 			}
 		}
 
