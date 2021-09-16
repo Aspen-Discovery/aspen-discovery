@@ -16,7 +16,7 @@ class Axis360_AJAX extends JSON_Action
 				$driver = new Axis360Driver();
 				return $driver->placeHold($patron, $id);
 			} else {
-				return array('result' => false, 'message' => translate(['text' => 'no_permissions_for_hold', 'defaultText' => 'Sorry, it looks like you don\'t have permissions to place holds for that user.']));
+				return array('result' => false, 'message' => translate(['text' => 'Sorry, it looks like you don\'t have permissions to place holds for that user.', 'isPublicFacing'=> true]));
 			}
 		} else {
 			return array('result' => false, 'message' => 'You must be logged in to place a hold.');

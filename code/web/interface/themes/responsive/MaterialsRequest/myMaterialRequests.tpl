@@ -16,7 +16,7 @@
 		<div class="alert alert-danger">{$error}</div>
 	{else}
 		<div id="materialsRequestSummary" class="alert alert-info">
-			{translate text="material_request_usage" defaultText="You have used <strong>%1%</strong> of your %2% yearly material requests.  We also limit patrons to %3% active material requests at a time.  You currently have <strong>%4%</strong> active material requests." 1=$requestsThisYear 2=$maxRequestsPerYear 3=$maxActiveRequests 4=$openRequests isPublicFacing=true}
+			{translate text="You have used <strong>%1%</strong> of your %2% yearly material requests.  We also limit patrons to %3% active material requests at a time.  You currently have <strong>%4%</strong> active material requests." 1=$requestsThisYear 2=$maxRequestsPerYear 3=$maxActiveRequests 4=$openRequests isPublicFacing=true}
 		</div>
 		<div id="materialsRequestFilters">
 			<legend>{translate text="Filters" isPublicFacing=true}</legend>

@@ -612,16 +612,16 @@ class CarlX extends AbstractIlsDriver{
 		if($result) {
 			$success = stripos($result->ResponseStatuses->ResponseStatus->ShortMessage, 'Success') !== false;
 			if (!$success) {
-				return ['success' => false, 'message' => translate(['text' => 'update_pin_failed', 'defaultText' => 'Failed to update your PIN.'])];
+				return ['success' => false, 'message' => translate(['text' => 'Failed to update your PIN.', 'isPublicFacing'=> true])];
 			} else {
 				$patron->cat_password = $newPin;
 				$patron->update();
-				return ['success' => true, 'message' => translate(['text'=> 'update_pin_success', 'defaultText' => 'Your PIN was updated successfully.'])];
+				return ['success' => true, 'message' => translate(['text'=> 'Your PIN was updated successfully.', 'isPublicFacing'=> true])];
 			}
 		} else {
 			global $logger;
 			$logger->log('CarlX ILS gave no response when attempting to update Patron PIN.', Logger::LOG_ERROR);
-			return ['success' => false, 'message' => translate(['text' => 'update_pin_failed', 'defaultText' => 'Failed to update your PIN.'])];
+			return ['success' => false, 'message' => translate(['text' => 'Failed to update your PIN.', 'isPublicFacing'=> true])];
 		}
 	}
 
@@ -1033,7 +1033,7 @@ class CarlX extends AbstractIlsDriver{
 					// FOLLOWING SUCCESSFUL SELF REGISTRATION, EMAIL PATRON THE LIBRARY CARD NUMBER
 					try {
 						$body = $firstName . " " . $lastName . "\n\n";
-						$body .= translate(['text' => 'selfreg_email_1', 'defaultText' =>'Thank you for registering for a Digital Access Card at the Nashville Public Library. Your library card number is:']);
+						$body .= translate(['text' => 'Thank you for registering for a Digital Access Card at the Nashville Public Library. Your library card number is:', 'isPublicFacing'=> true, 'isAdminEnteredData'=>true]);
 						$body .= "\n\n" . $tempPatronID . "\n\n";
 						$body_template = $interface->fetch($this->getSelfRegTemplate('success'));
 						$body .= $body_template;

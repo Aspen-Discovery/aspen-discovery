@@ -52,17 +52,17 @@ class MyAccount_Fines extends MyAccount
 						if ($payment->find(true)) {
 							if ($payment->completed == 1) {
 								$finePaymentResult->success = true;
-								$finePaymentResult->message = translate(['text' => 'patron_payment_success', 'defaultText' => 'Your payment was processed successfully, thank you.']);
+								$finePaymentResult->message = translate(['text' => 'Your payment was processed successfully, thank you.', 'isPublicFacing'=> true]);
 							} elseif ($payment->completed == 9) {
 								$finePaymentResult->success = false;
-								$finePaymentResult->message = translate(['text' => 'patron_payment_fail_1', 'defaultText' => 'Your payment was processed, but failed to update the Library system. Library staff have been alerted to this problem.']);
+								$finePaymentResult->message = translate(['text' => 'Your payment was processed, but failed to update the Library system. Library staff have been alerted to this problem.', 'isPublicFacing'=> true]);
 							} else { // i.e., $payment->completed == 0
 								$finePaymentResult->success = false;
-								$finePaymentResult->message = translate(['text' => 'patron_payment_fail_2', 'defaultText' => 'Your payment has not completed processing.']);
+								$finePaymentResult->message = translate(['text' => 'Your payment has not completed processing.', 'isPublicFacing'=> true]);
 							}
 						} else {
 							$finePaymentResult->success = false;
-							$finePaymentResult->message = translate(['text' => 'patron_payment_fail_3', 'defaultText' => 'Your payment was processed, but did not match library records. Please contact the library with your receipt.']);
+							$finePaymentResult->message = translate(['text' => 'Your payment was processed, but did not match library records. Please contact the library with your receipt.', 'isPublicFacing'=> true]);
 						}
 						$interface->assign('finePaymentResult', $finePaymentResult);
 					}

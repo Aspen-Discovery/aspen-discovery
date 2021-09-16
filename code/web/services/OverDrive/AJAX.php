@@ -60,7 +60,7 @@ class OverDrive_AJAX extends JSON_Action
 				return $driver->placeHold($patron, $overDriveId);
 			} else {
 				$logger->log("Logged in user {$user->id} not valid for patron {$patronId}", Logger::LOG_DEBUG);
-				return array('result' => false, 'message' => translate(['text' => 'no_permissions_for_hold', 'defaultText' => 'Sorry, it looks like you don\'t have permissions to place holds for that user.']));
+				return array('result' => false, 'message' => translate(['text' => 'Sorry, it looks like you don\'t have permissions to place holds for that user.', 'isPublicFacing'=> true]));
 			}
 		} else {
 			$logger->log("User is not logged in", Logger::LOG_DEBUG);

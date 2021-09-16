@@ -61,7 +61,7 @@
 				</div>
 			</div>
 		{foreachelse}
-			<div class="alert alert-success">{translate text="all_translations_done" defaultText="Congratulations, you have successfully translated everything!" isAdminFacing=true}</div>
+			<div class="alert alert-success">{translate text="Congratulations, you have successfully translated everything!" isAdminFacing=true}</div>
 		{/foreach}
 		<div class="form-group">
 			<button type="submit" name="submit" class="btn btn-primary">{translate text="Save Translations" isAdminFacing=true}</button>

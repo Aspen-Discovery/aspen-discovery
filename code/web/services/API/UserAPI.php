@@ -1008,7 +1008,7 @@ class UserAPI extends Action
 					}
 					$locationValid = $patron->validatePickupBranch($pickupBranch);
 					if (!$locationValid) {
-						return array('success' => false, 'message' => translate(['text' => 'pickup_location_unavailable', 'defaultText' => 'This location is no longer available, please select a different pickup location']));
+						return array('success' => false, 'message' => translate(['text' => 'This location is no longer available, please select a different pickup location', 'isPublicFacing'=> true]));
 					}
 				} else {
 					$pickupBranch = $patron->_homeLocationCode;
@@ -1047,7 +1047,7 @@ class UserAPI extends Action
 					$pickupBranch = trim($_REQUEST['pickupBranch']);
 					$locationValid = $patron->validatePickupBranch($pickupBranch);
 					if (!$locationValid){
-						return array('success' => false, 'message' => translate(['text' => 'pickup_location_unavailable', 'defaultText'=>'This location is no longer available, please select a different pickup location']));
+						return array('success' => false, 'message' => translate(['text' => 'This location is no longer available, please select a different pickup location', 'isPublicFacing'=> true]));
 					}
 				} else {
 					$pickupBranch = $patron->_homeLocationCode;
@@ -1083,7 +1083,7 @@ class UserAPI extends Action
 		if ($patron && !($patron instanceof AspenError)) {
 			$locationValid = $patron->validatePickupBranch($newLocation);
 			if (!$locationValid){
-				return array('success' => false, 'message' => translate(['text' => 'pickup_location_unavailable', 'defaultText'=>'This location is no longer available, please select a different pickup location']));
+				return array('success' => false, 'message' => translate(['text' => 'This location is no longer available, please select a different pickup location', 'isPublicFacing'=> true]));
 			}
 			$holdMessage = $patron->changeHoldPickUpLocation($holdId, $newLocation);
 			return array('success' => $holdMessage['success'], 'holdMessage' => $holdMessage['message']);

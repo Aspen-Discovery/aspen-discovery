@@ -90,7 +90,7 @@ class Koha extends AbstractIlsDriver
 				}
 			} else {
 				$result['success'] = true;
-                $result['messages'][] = translate(['text' => 'Your pickup location was updated successfully.', 'defaultText' => 'Your pickup location was updated successfully.']);
+                $result['messages'][] = translate(['text' => 'Your pickup location was updated successfully.', 'isPublicFacing'=> true]);
 			}
 		}
 
@@ -379,7 +379,7 @@ class Koha extends AbstractIlsDriver
 				if ($claimsReturnedResult = $claimsReturnedResults->fetch_assoc()) {
 					try {
 						$claimsReturnedDate = new DateTime($claimsReturnedResult['created_on']);
-						$curCheckout->returnClaim = translate(['text'=>'return_claim_message','defaultText'=> 'Title marked as returned on %1%, but the library is still processing', 1=>date_format($claimsReturnedDate, 'M j, Y')]);
+						$curCheckout->returnClaim = translate(['text'=>'Title marked as returned on %1%, but the library is still processing', 1=>date_format($claimsReturnedDate, 'M j, Y'), 'isPublicFacing'=> true]);
 					} catch (Exception $e) {
 						global $logger;
 						$logger->log("Error parsing claims returned info " . $claimsReturnedResult['created_on'] . " $e", Logger::LOG_ERROR);
@@ -1646,7 +1646,7 @@ class Koha extends AbstractIlsDriver
 			$response = $this->apiCurlWrapper->curlPostBodyData($apiUrl, $postParams, false);
 			if (!$response) {
 				if ($this->apiCurlWrapper->getResponseCode() != 204) {
-					$result['message'] = translate(['text'=>'ils_freeze_hold_success', 'defaultText' => 'Your hold was frozen successfully.']);
+					$result['message'] = translate(['text'=>'Your hold was frozen successfully.', 'isPublicFacing'=> true]);
 					$result['success'] = true;
 					$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
 					$patron->forceReloadOfHolds();
@@ -1658,7 +1658,7 @@ class Koha extends AbstractIlsDriver
 					$result['message'] = $hold_response->error;
 					$result['success'] = true;
 				} else {
-					$result['message'] = translate(['text'=>'ils_freeze_hold_success', 'defaultText' => 'Your hold was frozen successfully.']);
+					$result['message'] = translate(['text'=>'Your hold was frozen successfully.', 'isPublicFacing'=> true]);
 					$result['success'] = true;
 					$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
 					$patron->forceReloadOfHolds();
@@ -3340,7 +3340,7 @@ class Koha extends AbstractIlsDriver
 			if ($totalFines > (float)$maxOutstanding){
 				$result['isEligible'] = false;
 				$result['fineLimitReached'] = true;
-				$result['message'] = translate(['text' => 'outstanding_fine_limit', 'defaultText' => 'Sorry, your account has too many outstanding fines to place holds.']);
+				$result['message'] = translate(['text' => 'Sorry, your account has too many outstanding fines to place holds.', 'isPublicFacing'=> true]);
 			}
 		}
 
@@ -3354,7 +3354,7 @@ class Koha extends AbstractIlsDriver
 			if (strlen($result['message']) > 0){
 				$result['message'] .= '<br/>';
 			}
-			$result['message'] .= translate(['text' => 'outstanding_holds_limit', 'defaultText' => 'Sorry, you have reached the maximum number of holds for your account.']);
+			$result['message'] .= translate(['text' => 'Sorry, you have reached the maximum number of holds for your account.', 'isPublicFacing'=> true]);
 		}
 
 		//Check if the patron is expired
@@ -3386,7 +3386,7 @@ class Koha extends AbstractIlsDriver
 			if ($blockExpiredPatronOpacActions == 1){
 				$result['isEligible'] = false;
 				$result['expiredPatronWhoCannotPlaceHolds'] = true;
-				$result['message'] = translate(['text' => 'expired_patron_cannot_place_holds', 'defaultText' => 'Sorry, your account has expired. Please renew your account to place holds.']);
+				$result['message'] = translate(['text' => 'Sorry, your account has expired. Please renew your account to place holds.', 'isPublicFacing'=> true]);
 			}
 		}
 
@@ -3521,7 +3521,7 @@ class Koha extends AbstractIlsDriver
 				}
 			}
 			if (!$uniqueKeyValid){
-				$error = translate(['text' => 'invalid_pass_reset_uuid', 'defaultText' => ' The link you clicked is either invalid, or expired.<br/>Be sure you used the link from the email, or contact library staff for assistance.<br/>Please contact the library if you need further assistance.']);
+				$error = translate(['text' => 'The link you clicked is either invalid, or expired.<br/>Be sure you used the link from the email, or contact library staff for assistance.<br/>Please contact the library if you need further assistance.', 'isPublicFacing'=> true]);
 			}
 
 			$interface->assign('error', $error);
@@ -3559,7 +3559,7 @@ class Koha extends AbstractIlsDriver
 				}
 			}
 			if (!$uniqueKeyValid){
-				$error = translate(['text' => 'invalid_pass_reset_uuid', 'defaultText' => ' The link you clicked is either invalid, or expired.<br/>Be sure you used the link from the email, or contact library staff for assistance.<br/>Please contact the library if you need further assistance.']);
+				$error = translate(['text' => 'The link you clicked is either invalid, or expired.<br/>Be sure you used the link from the email, or contact library staff for assistance.<br/>Please contact the library if you need further assistance.', 'isPublicFacing'=> true]);
 			}else{
 				$oauthToken = $this->getOAuthToken();
 				if ($oauthToken == false) {

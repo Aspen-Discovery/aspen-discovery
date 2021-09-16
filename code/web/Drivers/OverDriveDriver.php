@@ -820,7 +820,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 		if (isset($response->holdListPosition) && isset($response->holdSuspension)){
 			$this->incrementStat('numHoldsFrozen');
 			$holdResult['success'] = true;
-			$holdResult['message'] = translate(['text'=>'overdrive_freeze_hold_success', 'defaultText' => 'Your hold was frozen successfully.']);
+			$holdResult['message'] = translate(['text'=>'Your hold was frozen successfully.', 'isPublicFacing'=> true]);
 			$patron->forceReloadOfHolds();
 		}else{
 			$holdResult['message'] = translate(['text' => 'Sorry, but we could not freeze the hold on this title.', 'isPublicFacing'=>true]);
@@ -843,7 +843,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 
 		if ($response == true){
 			$holdResult['success'] = true;
-			$holdResult['message'] = translate(['text'=>'overdrive_thaw_hold_success', 'defaultText' => 'Your hold was thawed successfully.']);
+			$holdResult['message'] = translate(['text'=>'Your hold was thawed successfully.', 'isPublicFacing'=> true]);
 			$this->incrementStat('numHoldsThawed');
 			$patron->forceReloadOfHolds();
 		}else{
@@ -1102,7 +1102,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 			$this->trackRecordHold($recordId);
 
 			$holdResult['success'] = true;
-			$holdResult['message'] = "<p class='alert alert-success'>" . translate(['text'=>'overdrive_renew_success', 'defaultText' => 'Your title has been requested again, you are number %1% on the list.', 1=>$response->holdListPosition]) . "</p>";
+			$holdResult['message'] = "<p class='alert alert-success'>" . translate(['text'=>'Your title has been requested again, you are number %1% on the list.', 1=>$response->holdListPosition, 'isPublicFacing'=> true]) . "</p>";
 			$this->incrementStat('numRenewals');
 
 			$patron->forceReloadOfCheckouts();

@@ -62,7 +62,7 @@
 										<div class="col-sm-9">
 											<input type='checkbox' name='searchable' id='searchable' data-on-text="Yes" data-off-text="No" {if $userList->searchable == 1}checked{/if}/>
 											<div class="form-text text-muted">
-												<small>{translate text="searchable_list_description" defaultText="If enabled, this list can be found by searching user lists. It must have at least 3 titles to be shown." isPublicFacing=true}</small>
+												<small>{translate text="If enabled, this list can be found by searching user lists. It must have at least 3 titles to be shown." isPublicFacing=true}</small>
 											</div>
 										</div>
 									</div>

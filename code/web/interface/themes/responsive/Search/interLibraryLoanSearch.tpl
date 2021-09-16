@@ -1,5 +1,5 @@
 {strip}
-	<h2>{translate text='in_ill_name' defaultText='In %1%' 1=$interLibraryLoanName}</h2>
+	<h2>{translate text='In %1%' 1=$interLibraryLoanName isPublicFacing=true}</h2>
 	<p id='illSearchResultsNote'>
 		{if $consortiumName}
 			{assign var='illLibrary' value=$consortiumName}

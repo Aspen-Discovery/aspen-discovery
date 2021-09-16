@@ -1135,9 +1135,9 @@ class Location extends DataObject
 					} else {
 						$openMessage = Location::getOpenHoursMessage($nextDayHours);
 						if (isset($closureReason)) {
-							$libraryHoursMessage = translate(['text' => 'closed_reopen_reason', 'defaultText' => "%1% is closed today for %2%. It will reopen on %3% from %4%", 1 => $location->displayName, 2 => $closureReason, 3 => $nextDayOfWeek, 4 => $openMessage]);
+							$libraryHoursMessage = translate(['text' => "%1% is closed today for %2%. It will reopen on %3% from %4%", 1 => $location->displayName, 2 => $closureReason, 3 => $nextDayOfWeek, 4 => $openMessage, 'isPublicFacing'=> true]);
 						} else {
-							$libraryHoursMessage = translate(['text' => 'closed_reopen_no_reason', 'defaultText' => "%1% is closed today. It will reopen on %2% from %3%", 1 => $location->displayName, 2 => $nextDayOfWeek, 3 => $openMessage]);
+							$libraryHoursMessage = translate(['text' => "%1% is closed today. It will reopen on %2% from %3%", 1 => $location->displayName, 2 => $nextDayOfWeek, 3 => $openMessage, 'isPublicFacing'=> true]);
 						}
 					}
 				} else {
@@ -1154,13 +1154,13 @@ class Location extends DataObject
 						$tomorrowsLibraryHours = Location::getLibraryHours($locationId, time() + (24 * 60 * 60));
 						if (isset($tomorrowsLibraryHours['closed']) && ($tomorrowsLibraryHours['closed'] == true || $tomorrowsLibraryHours['closed'] == 1)) {
 							if (isset($tomorrowsLibraryHours['closureReason'])) {
-								$libraryHoursMessage = translate(['text' => 'closed_tomorrow_reason', 'defaultText' => "%1% will be closed tomorrow for %2%", 1 => $location->displayName, 2 => $tomorrowsLibraryHours['closureReason']]);
+								$libraryHoursMessage = translate(['text' => "%1% will be closed tomorrow for %2%", 1 => $location->displayName, 2 => $tomorrowsLibraryHours['closureReason'], 'isPublicFacing'=> true]);
 							} else {
-								$libraryHoursMessage = translate(['text' => "%1% will be closed tomorrow", 1 => $location->displayName]);
+								$libraryHoursMessage = translate(['text' => "%1% will be closed tomorrow", 1 => $location->displayName, 'isPublicFacing'=> true]);
 							}
 
 						} else {
-							$libraryHoursMessage = translate(['text' => 'open_tomorrow', 'defaultText' => "%1% will be open tomorrow from %2%", 1 => $location->displayName, 2 => Location::getOpenHoursMessage($tomorrowsLibraryHours)]);
+							$libraryHoursMessage = translate(['text' => "%1% will be open tomorrow from %2%", 1 => $location->displayName, 2 => Location::getOpenHoursMessage($tomorrowsLibraryHours), 'isPublicFacing'=> true]);
 						}
 					} else {
 						$libraryHoursMessage = translate(['text' => "%1% is open today from %2%", 1 => $location->displayName, 2 => Location::getOpenHoursMessage($todaysLibraryHours)]);

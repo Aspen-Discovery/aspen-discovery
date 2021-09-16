@@ -2057,7 +2057,7 @@ class MyAccount_AJAX extends JSON_Action
 			);
 			$user = UserAccount::getActiveUserObj();
 			if (UserAccount::isLoggedIn() == false || empty($user)){
-				$result['message'] = translate(['text' => 'login_expired', 'defaultText' => "Your login has timed out. Please login again."]);
+				$result['message'] = translate(['text' => "Your login has timed out. Please login again.", 'isPublicFacing'=> true]);
 			}else{
 				if (count($user->getLinkedUsers()) > 0) {
 					$sortOptions['libraryAccount'] = 'Library Account';
@@ -2126,7 +2126,7 @@ class MyAccount_AJAX extends JSON_Action
 
 			$user = UserAccount::getActiveUserObj();
 			if (UserAccount::isLoggedIn() == false || empty($user)){
-				$result['message'] = translate(['text' => 'login_expired', 'defaultText' => "Your login has timed out. Please login again."]);
+				$result['message'] = translate(['text' => "Your login has timed out. Please login again.", 'isPublicFacing'=> true]);
 			}else {
 				$allowFreezeHolds = $user->getHomeLibrary()->allowFreezeHolds;
 				if($allowFreezeHolds) {
@@ -2602,19 +2602,19 @@ class MyAccount_AJAX extends JSON_Action
 		$transactionDate = time();
 		$user = UserAccount::getLoggedInUser();
 		if ($user == null) {
-			return ['success' => false, 'message' => translate(['text' => 'payment_not_signed_in', 'defaultText' => 'You must be signed in to pay fines, please sign in.'])];
+			return ['success' => false, 'message' => translate(['text' => 'You must be signed in to pay fines, please sign in.', 'isPublicFacing'=> true])];
 		} else {
 			$patronId = $_REQUEST['patronId'];
 
 			$patron = $user->getUserReferredTo($patronId);
 
 			if ($patron == false) {
-				return ['success' => false, 'message' => translate(['text' => 'payment_patron_not_found', 'defaultText' => 'Could not find the patron referred to, please try again.'])];
+				return ['success' => false, 'message' => translate(['text' => 'Could not find the patron referred to, please try again.', 'isPublicFacing'=> true])];
 			}
 			$userLibrary = $patron->getHomeLibrary();
 
 			if (empty($_REQUEST['selectedFine']) && $userLibrary->finesToPay != 0) {
-				return ['success' => false, 'message' => translate(['text' => 'payment_none_selected', 'defaultText' => 'Select at least one fine to pay.'])];
+				return ['success' => false, 'message' => translate(['text' => 'Select at least one fine to pay.', 'isPublicFacing'=> true])];
 			}
 			if (isset($_REQUEST['selectedFine'])) {
 				$selectedFines = $_REQUEST['selectedFine'];
@@ -2663,7 +2663,7 @@ class MyAccount_AJAX extends JSON_Action
 						$fineAmount = $_REQUEST['amountToPay'][$fineId];
 						$maxFineAmount = $useOutstanding ? $fine['amountOutstandingVal'] : $fine['amountVal'];
 						if (!is_numeric($fineAmount) || $fineAmount <= 0 || $fineAmount > $maxFineAmount) {
-							return ['success' => false, 'message' => translate(['text' => 'payment_invalid_amount', 'defaultText' => 'Invalid amount entered for fine. Please enter an amount over 0 and less than the total amount owed.'])];
+							return ['success' => false, 'message' => translate(['text' => 'Invalid amount entered for fine. Please enter an amount over 0 and less than the total amount owed.', 'isPublicFacing'=> true])];
 						}
 						$finesPaid .= '|' . $fineAmount;
 						if ($fineAmount != $maxFineAmount) {
@@ -2740,14 +2740,14 @@ class MyAccount_AJAX extends JSON_Action
 						$nextPaymentStatus = $paymentOrder[$nextPaymentType];
 						//We have a problem if a lower priority fine is partially or fully paid and the higher priority is not fully paid
 						if ($lastPaymentStatus != -1 && $lastPaymentStatus != 2 && $nextPaymentStatus >= 1) {
-							return ['success' => false, 'message' => translate(['text' => 'bad_payment_order', 'defaultText' => 'You must pay all fines of type <strong>%1%</strong> before paying other types.', 1 => $lastPaymentType])];
+							return ['success' => false, 'message' => translate(['text' => 'You must pay all fines of type <strong>%1%</strong> before paying other types.', 1 => $lastPaymentType, 'isPublicFacing'=> true])];
 						}
 					}
 				}
 			}
 
 			if ($totalFines < $userLibrary->minimumFineAmount) {
-				return ['success' => false, 'message' => translate(['text' => 'You must select at least %1% in fines to pay.', 1 => sprintf('$%01.2f', $userLibrary->minimumFineAmount)])];
+				return ['success' => false, 'message' => translate(['text' => 'You must select at least %1% in fines to pay.', 1 => sprintf('$%01.2f', $userLibrary->minimumFineAmount), 'isPublicFacing'=> true])];
 			}
 
 			$purchaseUnits['amount'] = [
@@ -2762,7 +2762,7 @@ class MyAccount_AJAX extends JSON_Action
 			];
 
 			if ($totalFines < $userLibrary->minimumFineAmount) {
-				return ['success' => false, 'message' => translate(['text' => 'You must select at least %1% in fines to pay.', 1 => sprintf('$%01.2f', $userLibrary->minimumFineAmount)])];
+				return ['success' => false, 'message' => translate(['text' => 'You must select at least %1% in fines to pay.', 1 => sprintf('$%01.2f', $userLibrary->minimumFineAmount), 'isPublicFacing'=> true])];
 			}
 
 			require_once ROOT_DIR . '/sys/Account/UserPayment.php';

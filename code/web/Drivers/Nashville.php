@@ -129,10 +129,10 @@ class Nashville extends CarlX {
 				}
 				return ['success' => $success, 'message' => $message];
 			} else {
-				return ['success' => false, 'message' => ['text' => 'sip_unknown_fail', 'defaultText' => 'Unknown problem with circulation server, please try again later.']];
+				return ['success' => false, 'message' => ['text' => 'Unknown problem with circulation server, please try again later.', 'isPublicFacing'=> true]];
 			}
 		} else {
-			return ['success' => false, 'message' => ['text' => 'sip_connect_fail', 'defaultText' => 'Could not connect to circulation server, please try again later.']];
+			return ['success' => false, 'message' => ['text' => 'Could not connect to circulation server, please try again later.', 'isPublicFacing'=> true]];
 		}
 	}
 
