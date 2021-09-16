@@ -118,6 +118,20 @@ function getUpdates21_12_00() : array
 				"ALTER TABLE hoopla_export_log ADD COLUMN numRegrouped INT(11) DEFAULT 0",
 				'UPDATE hoopla_settings set regroupAllRecords = 1'
 			]
-		],
+		], //hoopla_regroup_all_records
+		'appReleaseChannel' => [
+			'title' => 'Add release channel option',
+			'description' => 'Set app release channel preference by location',
+			'sql' => [
+				'ALTER TABLE location ADD COLUMN appReleaseChannel TINYINT(1) DEFAULT 0'
+			]
+		], //appReleaseChannel
+		'addReleaseChannelToCachedGreenhouseData' => [
+			'title' => 'Add release channel to cached Greenhouse data',
+			'description' => 'Stores library location release channel preference to cached Greenhouse data',
+			'sql' => [
+				'ALTER TABLE greenhouse_cache ADD COLUMN releaseChannel TINYINT(1) DEFAULT 0'
+			]
+		], //addReleaseChannelToCachedGreenhouseData
 	];
 }

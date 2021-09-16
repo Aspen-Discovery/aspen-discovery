@@ -919,7 +919,7 @@ class Theme extends DataObject
 		$interface->assign('bodyTextColor', $this->bodyTextColor);
 		$interface->assign('linkColor', $this->linkColor);
 		$interface->assign('linkHoverColor', $this->linkHoverColor);
-		$tableStripeBackgroundColor = ColorUtils::lightenColor($this->bodyBackgroundColor, 1.02);
+		$tableStripeBackgroundColor = ColorUtils::lightenColor($this->bodyBackgroundColor, 0.50);
 		if (ColorUtils::calculateColorContrast($tableStripeBackgroundColor, $this->bodyTextColor) < 4.5 ||
 			ColorUtils::calculateColorContrast($tableStripeBackgroundColor, $this->linkColor) < 4.5 ||
 			ColorUtils::calculateColorContrast($tableStripeBackgroundColor, $this->linkHoverColor) < 4.5){
