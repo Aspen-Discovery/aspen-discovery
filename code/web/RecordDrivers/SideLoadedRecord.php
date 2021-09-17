@@ -35,20 +35,23 @@ class SideLoadedRecord extends BaseEContentDriver {
 
 		//Get Related Records to make sure we initialize items
 		$recordInfo = $this->getGroupedWorkDriver()->getRelatedRecord($this->getIdWithSource());
+		if ($recordInfo != null) {
+			//Get copies for the record
+			$this->assignCopiesInformation();
 
-		//Get copies for the record
-		$this->assignCopiesInformation();
-
-		$interface->assign('items', $recordInfo->getItemSummary());
+			$interface->assign('items', $recordInfo->getItemSummary());
+		}
 
 		//Load more details options
 		$moreDetailsOptions = $this->getBaseMoreDetailsOptions($isbn);
 
-		$moreDetailsOptions['copies'] = array(
+		if ($recordInfo != null) {
+			$moreDetailsOptions['copies'] = array(
 				'label' => 'Copies',
 				'body' => $interface->fetch('ExternalEContent/view-items.tpl'),
 				'openByDefault' => true
-		);
+			);
+		}
 
 		$moreDetailsOptions['moreDetails'] = array(
 				'label' => 'More Details',
