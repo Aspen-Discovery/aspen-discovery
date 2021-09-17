@@ -43,7 +43,7 @@ class CloudLibrary_AccessOnline extends Action
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'My Account');
-		$breadcrumbs[] = new Breadcrumb($this->recordDriver->getRecordUrl(), $this->recordDriver->getTitle());
+		$breadcrumbs[] = new Breadcrumb($this->recordDriver->getRecordUrl(), $this->recordDriver->getTitle(), false);
 		$breadcrumbs[] = new Breadcrumb('', 'Access Online');
 		return $breadcrumbs;
 	}
