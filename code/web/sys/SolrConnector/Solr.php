@@ -1209,7 +1209,7 @@ abstract class Solr
 						//Field doesn't exist, check to see if it is a dynamic field
 						//Where we can replace the scope with the current scope
 						foreach ($dynamicFields as $dynamicField) {
-							if (strlen($fieldName) > strlen($dynamicField) && strpos($fieldName, $dynamicField) === 0) {
+							if (preg_match("/^{$dynamicField}[^_]+$/", $fieldName)) {
 								//This is a dynamic field with the wrong scope
 								$validFilters[$id] = $tagging . $dynamicField . $solrScope . ":" . $term;
 								break;
@@ -1334,14 +1334,6 @@ abstract class Solr
 					$filters[$key] = '{!tag=avail}' . $value;
 				}elseif (isset($facet['field'][$facetName])) {
 					$facetSetting = $facet['field'][$facetName];
-					if ($facetSetting instanceof FacetSetting) {
-						if ($facetSetting->multiSelect) {
-							$facetKey = empty($facetSetting->id) ? $facetSetting->facetName : $facetSetting->id;
-							$filters[$key] = "{!tag={$facetKey}}" . $value;
-						}
-					}
-				}elseif (isset($facet['field'][$fullFacetName])) {
-					$facetSetting = $facet['field'][$fullFacetName];
 					if ($facetSetting instanceof FacetSetting) {
 						if ($facetSetting->multiSelect) {
 							$facetKey = empty($facetSetting->id) ? $facetSetting->facetName : $facetSetting->id;

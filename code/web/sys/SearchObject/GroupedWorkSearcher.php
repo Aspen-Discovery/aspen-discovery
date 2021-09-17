@@ -638,13 +638,22 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 			if ($field === '') {
 				unset($this->filterList[$field]);
 			}
-			//Correct any dynamic fields
-			foreach ($dynamicFields as $dynamicField) {
-				if (strlen($field) > strlen($dynamicField) && strpos($field, $dynamicField) === 0) {
-					//This is a dynamic field with the wrong scope
-					$this->filterList[$dynamicField . $solrScope] = $filter;
-					unset($this->filterList[$field]);
-					break;
+			if (strpos($field, '_') !== false) {
+				$lastUnderscore = strrpos($field, '_');
+				$shortFieldName = substr($field, 0, $lastUnderscore + 1);
+				$oldScope = substr($field, $lastUnderscore + 1);
+				if ($oldScope != $solrScope) {
+					//Correct any dynamic fields
+					foreach ($dynamicFields as $dynamicField) {
+						if ($shortFieldName == $dynamicField) {
+							//This is a dynamic field with the wrong scope
+							if ($field != ($dynamicField . $solrScope)) {
+								unset($this->filterList[$field]);
+								$this->filterList[$dynamicField . $solrScope] = $filter;
+							}
+							break;
+						}
+					}
 				}
 			}
 		}
