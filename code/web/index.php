@@ -799,11 +799,7 @@ function getGitBranch(){
 			if (!empty($stringFromFile)) {
 				$stringFromFile = $stringFromFile[0]; //get the string from the array
 				if (preg_match('/(.*?)\s+branch\s+\'(.*?)\'.*/', $stringFromFile, $matches)) {
-					if (IPAddress::showDebuggingInformation()) {
-						$branchName = $matches[2] . ' (' . $matches[1] . ')'; //get the branch name
-					} else {
-						$branchName = $matches[2]; //get the branch name
-					}
+					$branchName = $matches[2] . ' (' . $matches[1] . ')'; //get the branch name
 					$branchNameWithCommit = $matches[2] . ' (' . substr($matches[1], 0,7) . ')'; //get the branch name
 				}
 			}
