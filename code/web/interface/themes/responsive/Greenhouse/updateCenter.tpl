@@ -29,7 +29,7 @@
 							{translate text=$site->getImplementationStatusName() isAdminFacing=true}
 						</td>
 						<td>
-							<input type="text" class="form-control" value="cd /usr/local/aspen-discovery/install; sudo ./upgrade.sh {$site->internalServerName} 21.11.00" onfocus="this.select()"/>
+							<input type="text" class="form-control" value="cd /usr/local/aspen-discovery/install; sudo ./upgrade.sh {$site->internalServerName} {$gitBranch}" onfocus="this.select()"/>
 						</td>
 						<td>
 							<a href="{$site->baseUrl}/Admin/DBMaintenance" target="_blank">{translate text="Update" isAdminFacing=true}</a>
