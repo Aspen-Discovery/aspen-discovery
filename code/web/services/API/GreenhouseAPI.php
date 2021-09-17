@@ -63,7 +63,6 @@ class GreenhouseAPI extends Action
 
 			if($numRows > 1){
 				if (($sites->appAccess == 1) || ($sites->appAccess == 3)) {
-					$nearbyLibraries = 0;
 					$cachedLibrary = new AspenSiteCache();
 					$cachedLibrary->siteId = $sites->id;
 					$cachedLibrary->find();
@@ -105,7 +104,6 @@ class GreenhouseAPI extends Action
 								$distance = $this->findDistance($userLongitude, $userLatitude, $cachedLibrary->longitude, $cachedLibrary->latitude, $cachedLibrary->unit);
 
 								if ($distance <= 60) {
-									$nearbyLibraries++;
 									if($releaseChannel == "production" && $cachedLibrary->releaseChannel == '1') {
 										$return['libraries'][] = [
 											'name' => $cachedLibrary->name,
@@ -172,47 +170,6 @@ class GreenhouseAPI extends Action
 							}
 						}
 					}
-
-					if($nearbyLibraries == 0) {
-						if ($userLatitude != 0 && $userLongitude != 0) {
-							$cachedLibrary = new AspenSiteCache();
-							$cachedLibrary->siteId = $sites->id;
-							$cachedLibrary->find();
-							while ($cachedLibrary->fetch()) {
-								if ($releaseChannel == "production" && $cachedLibrary->releaseChannel == '1') {
-									$return['libraries'][] = [
-										'name' => $cachedLibrary->name,
-										'librarySystem' => $sites->name,
-										'libraryId' => $cachedLibrary->libraryId,
-										'baseUrl' => $cachedLibrary->baseUrl,
-										'accessLevel' => $sites->appAccess,
-										'solrScope' => $cachedLibrary->solrScope,
-										'releaseChannel' => $cachedLibrary->releaseChannel,
-									];
-								} elseif ($releaseChannel == "beta" && ($cachedLibrary->releaseChannel == '0' || $cachedLibrary->releaseChannel == '1')) {
-									$return['libraries'][] = [
-										'name' => $cachedLibrary->name,
-										'librarySystem' => $sites->name,
-										'libraryId' => $cachedLibrary->libraryId,
-										'baseUrl' => $cachedLibrary->baseUrl,
-										'accessLevel' => $sites->appAccess,
-										'solrScope' => $cachedLibrary->solrScope,
-										'releaseChannel' => $cachedLibrary->releaseChannel,
-									];
-								} elseif ($releaseChannel == "any") {
-									$return['libraries'][] = [
-										'name' => $cachedLibrary->name,
-										'librarySystem' => $sites->name,
-										'libraryId' => $cachedLibrary->libraryId,
-										'baseUrl' => $cachedLibrary->baseUrl,
-										'accessLevel' => $sites->appAccess,
-										'solrScope' => $cachedLibrary->solrScope,
-										'releaseChannel' => $cachedLibrary->releaseChannel,
-									];
-								}
-							}
-						}
-					}
 				}
 			} else {
 				// populate initial cache
@@ -240,6 +197,71 @@ class GreenhouseAPI extends Action
 							$newCachedLibrary->insert();
 						}
 						//header("Refresh:0");
+					}
+				}
+			}
+		}
+		if(!empty($return->libraries)) {
+			return $return;
+		} else {
+			return $this->getAllLibraries();
+		}
+	}
+
+	public function getAllLibraries() : array {
+
+		// get release channel
+		$releaseChannel = "any";
+		// production, staging (beta), development (local)
+		if (isset($_GET['release_channel'])) {
+			$releaseChannel = $_GET['release_channel'];
+		}
+
+		$sites = new AspenSite();
+		$sites->find();
+		while($sites->fetch()) {
+			$existingCachedValues = new AspenSiteCache();
+			$existingCachedValues->siteId = $sites->id;
+			$numRows = $existingCachedValues->count();
+
+			if($numRows > 1){
+				if (($sites->appAccess == 1) || ($sites->appAccess == 3)) {
+					$nearbyLibraries = 0;
+					$cachedLibrary = new AspenSiteCache();
+					$cachedLibrary->siteId = $sites->id;
+					$cachedLibrary->find();
+					while ($cachedLibrary->fetch()) {
+						if($releaseChannel == "production" && $cachedLibrary->releaseChannel == '1') {
+							$return['libraries'][] = [
+								'name' => $cachedLibrary->name,
+								'librarySystem' => $sites->name,
+								'libraryId' => $cachedLibrary->libraryId,
+								'baseUrl' => $cachedLibrary->baseUrl,
+								'accessLevel' => $sites->appAccess,
+								'solrScope' => $cachedLibrary->solrScope,
+								'releaseChannel' => $cachedLibrary->releaseChannel,
+							];
+						} elseif($releaseChannel == "beta" && ($cachedLibrary->releaseChannel == '0' || $cachedLibrary->releaseChannel == '1')) {
+							$return['libraries'][] = [
+								'name' => $cachedLibrary->name,
+								'librarySystem' => $sites->name,
+								'libraryId' => $cachedLibrary->libraryId,
+								'baseUrl' => $cachedLibrary->baseUrl,
+								'accessLevel' => $sites->appAccess,
+								'solrScope' => $cachedLibrary->solrScope,
+								'releaseChannel' => $cachedLibrary->releaseChannel,
+							];
+						} elseif($releaseChannel == "any") {
+							$return['libraries'][] = [
+								'name' => $cachedLibrary->name,
+								'librarySystem' => $sites->name,
+								'libraryId' => $cachedLibrary->libraryId,
+								'baseUrl' => $cachedLibrary->baseUrl,
+								'accessLevel' => $sites->appAccess,
+								'solrScope' => $cachedLibrary->solrScope,
+								'releaseChannel' => $cachedLibrary->releaseChannel,
+							];
+						}
 					}
 				}
 			}
