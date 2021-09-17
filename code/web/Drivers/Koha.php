@@ -484,6 +484,10 @@ class Koha extends AbstractIlsDriver
 
 	public function getXMLWebServiceResponse($url)
 	{
+		global $logger;
+		if (IPAddress::showDebuggingInformation()){
+			$logger->log("Koha API Call to: " . $url, Logger::LOG_ERROR);
+		}
 		$xml = $this->curlWrapper->curlGetPage($url);
 		if ($xml !== false && $xml !== 'false') {
 			if (strpos($xml, '<') !== false) {
@@ -493,7 +497,6 @@ class Koha extends AbstractIlsDriver
 				$parsedXml = simplexml_load_string($xml);
 				if ($parsedXml === false) {
 					//Failed to load xml
-					global $logger;
 					$logger->log("Error parsing xml", Logger::LOG_ERROR);
 					$logger->log($xml, Logger::LOG_DEBUG);
 					foreach (libxml_get_errors() as $error) {
@@ -501,9 +504,15 @@ class Koha extends AbstractIlsDriver
 					}
 					return false;
 				} else {
+					if (IPAddress::showDebuggingInformation()){
+						$logger->log("Koha API response: " . $xml, Logger::LOG_ERROR);
+					}
 					return $parsedXml;
 				}
 			} else {
+				if (IPAddress::showDebuggingInformation()){
+					$logger->log("Koha API response: " . $xml, Logger::LOG_ERROR);
+				}
 				return $xml;
 			}
 		} else {
@@ -1032,7 +1041,7 @@ class Koha extends AbstractIlsDriver
 		//If the hold is successful we go back to the account page and can see
 
 		$hold_result['id'] = $recordId;
-		if ($placeHoldResponse != false && $placeHoldResponse->title) {
+		if ($placeHoldResponse != false && isset($placeHoldResponse->title)) {
 			//everything seems to be good
 			$hold_result = $this->getHoldMessageForSuccessfulHold($patron, $recordDriver->getId(), $hold_result);
 			$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
