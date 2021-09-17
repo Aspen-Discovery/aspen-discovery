@@ -74,6 +74,7 @@ class GreenhouseAPI extends Action
 										'name' => $cachedLibrary->name,
 										'librarySystem' => $sites->name,
 										'libraryId' => $cachedLibrary->libraryId,
+										'locationId' => $cachedLibrary->locationId,
 										'baseUrl' => $cachedLibrary->baseUrl,
 										'accessLevel' => $sites->appAccess,
 										'solrScope' => $cachedLibrary->solrScope,
@@ -84,6 +85,7 @@ class GreenhouseAPI extends Action
 										'name' => $cachedLibrary->name,
 										'librarySystem' => $sites->name,
 										'libraryId' => $cachedLibrary->libraryId,
+										'locationId' => $cachedLibrary->locationId,
 										'baseUrl' => $cachedLibrary->baseUrl,
 										'accessLevel' => $sites->appAccess,
 										'solrScope' => $cachedLibrary->solrScope,
@@ -94,6 +96,7 @@ class GreenhouseAPI extends Action
 										'name' => $cachedLibrary->name,
 										'librarySystem' => $sites->name,
 										'libraryId' => $cachedLibrary->libraryId,
+										'locationId' => $cachedLibrary->locationId,
 										'baseUrl' => $cachedLibrary->baseUrl,
 										'accessLevel' => $sites->appAccess,
 										'solrScope' => $cachedLibrary->solrScope,
@@ -201,9 +204,9 @@ class GreenhouseAPI extends Action
 				}
 			}
 		}
-		if(!empty($return->libraries)) {
+		if(!empty($return['libraries'])) {
 			return $return;
-		} else {
+		} else if(empty($return['libraries'])) {
 			return $this->getAllLibraries();
 		}
 	}
@@ -226,7 +229,6 @@ class GreenhouseAPI extends Action
 
 			if($numRows > 1){
 				if (($sites->appAccess == 1) || ($sites->appAccess == 3)) {
-					$nearbyLibraries = 0;
 					$cachedLibrary = new AspenSiteCache();
 					$cachedLibrary->siteId = $sites->id;
 					$cachedLibrary->find();
@@ -236,6 +238,7 @@ class GreenhouseAPI extends Action
 								'name' => $cachedLibrary->name,
 								'librarySystem' => $sites->name,
 								'libraryId' => $cachedLibrary->libraryId,
+								'locationId' => $cachedLibrary->locationId,
 								'baseUrl' => $cachedLibrary->baseUrl,
 								'accessLevel' => $sites->appAccess,
 								'solrScope' => $cachedLibrary->solrScope,
@@ -246,6 +249,7 @@ class GreenhouseAPI extends Action
 								'name' => $cachedLibrary->name,
 								'librarySystem' => $sites->name,
 								'libraryId' => $cachedLibrary->libraryId,
+								'locationId' => $cachedLibrary->locationId,
 								'baseUrl' => $cachedLibrary->baseUrl,
 								'accessLevel' => $sites->appAccess,
 								'solrScope' => $cachedLibrary->solrScope,
@@ -256,6 +260,7 @@ class GreenhouseAPI extends Action
 								'name' => $cachedLibrary->name,
 								'librarySystem' => $sites->name,
 								'libraryId' => $cachedLibrary->libraryId,
+								'locationId' => $cachedLibrary->locationId,
 								'baseUrl' => $cachedLibrary->baseUrl,
 								'accessLevel' => $sites->appAccess,
 								'solrScope' => $cachedLibrary->solrScope,
