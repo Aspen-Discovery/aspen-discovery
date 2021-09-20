@@ -2098,6 +2098,11 @@ class Koha extends AbstractIlsDriver
 						} else {
 							unset($section['properties'][$fieldKey]);
 						}
+					} elseif ($type == 'patronUpdate') {
+						if((array_key_exists($fieldName, $unwantedFields) && array_key_exists($fieldName, $requiredFields))) {
+							$section['properties'][$fieldKey]['type'] = 'hidden';
+							$section['properties'][$fieldKey]['required'] = false;
+						}
 					} else {
 						$field['required'] = array_key_exists($fieldName, $requiredFields);
 					}
