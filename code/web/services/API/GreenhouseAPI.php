@@ -157,7 +157,7 @@ class GreenhouseAPI extends Action
 											'solrScope' => $cachedLibrary->solrScope,
 											'releaseChannel' => $cachedLibrary->releaseChannel,
 										];
-									} elseif($releaseChannel == "any") {
+									} elseif($releaseChannel == "any"  || $sites->name == "Test (ByWater)") {
 										$return['libraries'][] = [
 											'name' => $cachedLibrary->name,
 											'librarySystem' => $sites->name,
@@ -170,6 +170,18 @@ class GreenhouseAPI extends Action
 											'releaseChannel' => $cachedLibrary->releaseChannel,
 										];
 									}
+								} elseif($sites->name == "Test (ByWater)") {
+									$return['libraries'][] = [
+										'name' => $cachedLibrary->name,
+										'librarySystem' => $sites->name,
+										'libraryId' => $cachedLibrary->libraryId,
+										'locationId' => $cachedLibrary->locationId,
+										'baseUrl' => $cachedLibrary->baseUrl,
+										'accessLevel' => $sites->appAccess,
+										'distance' => $distance,
+										'solrScope' => $cachedLibrary->solrScope,
+										'releaseChannel' => $cachedLibrary->releaseChannel,
+									];
 								}
 							}
 						} else {
