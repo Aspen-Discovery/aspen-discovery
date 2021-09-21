@@ -454,6 +454,8 @@ abstract class GroupedWorkSubDriver extends RecordInterface
 			foreach ($relatedRecords as $relatedRecord) {
 				if ($relatedRecord->id == $this->getIdWithSource()) {
 					return $relatedRecord->getActions();
+				}else if (strtolower($relatedRecord->id) == $this->getIdWithSource()) {
+					return $relatedRecord->getActions();
 				}
 			}
 		}
