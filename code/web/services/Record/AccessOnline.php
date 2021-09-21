@@ -25,28 +25,31 @@ class Record_AccessOnline extends Action
 		if ($this->recordDriver->isValid()) {
 
 			$relatedRecord = $this->recordDriver->getRelatedRecord();
-			$recordActions = $relatedRecord->getActions();
+			if ($relatedRecord != null) {
+				$recordActions = $relatedRecord->getActions();
 
-			$actionIndex = $_REQUEST['index'];
-			$selectedAction = $recordActions[$actionIndex];
-			$redirectUrl = $selectedAction['redirectUrl'];
+				$actionIndex = $_REQUEST['index'];
+				$selectedAction = $recordActions[$actionIndex];
+				$redirectUrl = $selectedAction['redirectUrl'];
 
-			//Track Usage
-			global $sideLoadSettings;
-			$sideLoadId = -1;
-			foreach ($sideLoadSettings as $sideLoad) {
-				if ($sideLoad->name == $this->recordDriver->getRecordType()) {
-					$sideLoadId = $sideLoad->id;
+				//Track Usage
+				global $sideLoadSettings;
+				$sideLoadId = -1;
+				foreach ($sideLoadSettings as $sideLoad) {
+					if ($sideLoad->name == $this->recordDriver->getRecordType()) {
+						$sideLoadId = $sideLoad->id;
+					}
 				}
+
+				$this->trackRecordUsage($sideLoadId, $this->recordDriver->getId());
+				$this->trackUserUsageOfSideLoad($sideLoadId);
+				header('Location: ' . $redirectUrl);
+			}else{
+				$this->display('invalidRecord.tpl', 'Invalid Record', '');
 			}
-
-			$this->trackRecordUsage($sideLoadId, $this->recordDriver->getId());
-			$this->trackUserUsageOfSideLoad($sideLoadId);
 		}else{
-			$redirectUrl = $this->recordDriver->getLinkUrl(true);
+			$this->display('invalidRecord.tpl', 'Invalid Record', '');
 		}
-
-		header('Location: ' . $redirectUrl);
 		die();
 	}
 
