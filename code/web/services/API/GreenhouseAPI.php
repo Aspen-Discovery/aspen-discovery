@@ -67,7 +67,33 @@ class GreenhouseAPI extends Action
 					$cachedLibrary->siteId = $sites->id;
 					$cachedLibrary->find();
 					while ($cachedLibrary->fetch()) {
-						if ((time() - $cachedLibrary->lastUpdated) < (24.5 * 60 * 60)) {
+						if(isset($_REQUEST['reload'])) {
+							// if reload is set, force new data fetch
+							$fetchLibraryUrl = $sites->baseUrl . '/API/GreenhouseAPI?method=getLibrary';
+							if ($data = file_get_contents($fetchLibraryUrl)) {
+								$searchData = json_decode($data);
+								foreach ($searchData->library as $findLibrary) {
+									if($findLibrary->locationId === $cachedLibrary->locationId) {
+										$cachedLibrary->siteId = $sites->id;
+										$cachedLibrary->name = $findLibrary->locationName;
+										$cachedLibrary->solrScope = $findLibrary->solrScope;
+										$cachedLibrary->latitude = $findLibrary->latitude;
+										$cachedLibrary->longitude = $findLibrary->longitude;
+										$cachedLibrary->unit = $findLibrary->unit;
+										$cachedLibrary->releaseChannel = $findLibrary->releaseChannel;
+										if($findLibrary->baseUrl == NULL) {
+											$cachedLibrary->baseUrl = $sites->baseUrl;
+										} else {
+											$cachedLibrary->baseUrl = $findLibrary->baseUrl;
+										}
+										$cachedLibrary->lastUpdated = time();
+										$cachedLibrary->update();
+									}
+								}
+								//header("Refresh:0");
+							}
+						}
+						elseif ((time() - $cachedLibrary->lastUpdated) < (24.5 * 60 * 60)) {
 							if ($userLatitude == 0 && $userLongitude == 0) {
 								if($releaseChannel == "production" && $cachedLibrary->releaseChannel == '1') {
 									$return['libraries'][] = [
