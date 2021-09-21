@@ -19,7 +19,7 @@ class SideLoadedRecord extends BaseEContentDriver {
 
 		/** @var IndexingProfile[] $indexingProfiles */
 		global $sideLoadSettings;
-		$indexingProfile = $sideLoadSettings[$this->profileType];
+		$indexingProfile = $sideLoadSettings[strtolower($this->profileType)];
 
 		return "/{$indexingProfile->recordUrlComponent}/$recordId";
 	}

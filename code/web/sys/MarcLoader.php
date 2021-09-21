@@ -56,7 +56,7 @@ class MarcLoader{
 			if (array_key_exists($recordType, $indexingProfiles)) {
 				$indexingProfile = $indexingProfiles[$recordType];
 			} elseif (array_key_exists($recordType, $sideLoadSettings)) {
-				$indexingProfile = $sideLoadSettings[$recordType];
+				$indexingProfile = $sideLoadSettings[strtolower($recordType)];
 			} else {
 				//Try to infer the indexing profile from the module
 				global $activeRecordProfile;
@@ -136,8 +136,8 @@ class MarcLoader{
 		}
 		if (array_key_exists($recordType, $indexingProfiles)) {
 			$indexingProfile = $indexingProfiles[$recordType];
-		}elseif (array_key_exists($recordType, $sideLoadSettings)){
-			$indexingProfile = $sideLoadSettings[$recordType];
+		}elseif (array_key_exists(strtolower($recordType), $sideLoadSettings)){
+			$indexingProfile = $sideLoadSettings[strtolower($recordType)];
 		}else{
 			$indexingProfile = $indexingProfiles['ils'];
 		}
@@ -206,8 +206,8 @@ class MarcLoader{
 		}else {
 			if (array_key_exists($recordType, $indexingProfiles)) {
 				$indexingProfile = $indexingProfiles[$recordType];
-			} elseif (array_key_exists($recordType, $sideLoadSettings)) {
-				$indexingProfile = $sideLoadSettings[$recordType];
+			} elseif (array_key_exists(strtolower($recordType), $sideLoadSettings)) {
+				$indexingProfile = $sideLoadSettings[strtolower($recordType)];
 			} else {
 				$indexingProfile = $indexingProfiles['ils'];
 			}
