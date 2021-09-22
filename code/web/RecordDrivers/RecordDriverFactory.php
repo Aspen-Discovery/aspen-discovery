@@ -108,8 +108,8 @@ class RecordDriverFactory {
 				$driverPath = ROOT_DIR . "/RecordDrivers/{$driverName}.php";
 				require_once $driverPath;
 				$recordDriver = new $driverName($id, $groupedWork);
-			}else if (array_key_exists($recordType, $sideLoadSettings)){
-				$indexingProfile = $sideLoadSettings[$recordType];
+			}else if (array_key_exists(strtolower($recordType), $sideLoadSettings)){
+				$indexingProfile = $sideLoadSettings[strtolower($recordType)];
 				$driverName = $indexingProfile->recordDriver;
 				$driverPath = ROOT_DIR . "/RecordDrivers/{$driverName}.php";
 				require_once $driverPath;

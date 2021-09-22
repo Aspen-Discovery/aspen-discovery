@@ -57,8 +57,8 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 			global $sideLoadSettings;
 			if (array_key_exists($this->profileType, $indexingProfiles)) {
 				$this->indexingProfile = $indexingProfiles[$this->profileType];
-			}else if (array_key_exists($this->profileType, $sideLoadSettings)) {
-				$this->indexingProfile = $sideLoadSettings[$this->profileType];
+			}else if (array_key_exists(strtolower($this->profileType), $sideLoadSettings)) {
+				$this->indexingProfile = $sideLoadSettings[strtolower($this->profileType)];
 			} else {
 				//Try to infer the indexing profile from the module
 				global $activeRecordProfile;

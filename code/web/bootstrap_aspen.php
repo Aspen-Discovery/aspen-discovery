@@ -143,7 +143,7 @@ function loadSearchInformation(){
 		$sideLoadSetting->orderBy('name');
 		$sideLoadSetting->find();
 		while ($sideLoadSetting->fetch()) {
-			$sideLoadSettings[$sideLoadSetting->name] = clone($sideLoadSetting);
+			$sideLoadSettings[strtolower($sideLoadSetting->name)] = clone($sideLoadSetting);
 		}
 	}catch (PDOException $e){
 		//Ignore, the tables have not been created yet.
