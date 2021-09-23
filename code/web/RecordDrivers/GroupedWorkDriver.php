@@ -1480,6 +1480,8 @@ class GroupedWorkDriver extends IndexRecordDriver
 		$this->loadRelatedRecords();
 		if (isset($this->relatedRecords[$recordIdentifier])) {
 			return $this->relatedRecords[$recordIdentifier];
+		} elseif (isset($this->relatedRecords[strtolower($recordIdentifier)])) {
+			return $this->relatedRecords[strtolower($recordIdentifier)];
 		} else {
 			return null;
 		}
