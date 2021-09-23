@@ -2716,7 +2716,12 @@ class Koha extends AbstractIlsDriver
 				list($month, $day, $year) = explode('/', $date);
 				$formattedDate = "$year-$month-$day";
 				return $formattedDate;
-			}else{
+			} else if (strpos($date, '-') !== false) {
+				list($month, $day, $year) = explode('-', $date);
+				$formattedDate = "$year-$month-$day";
+				return $formattedDate;
+			}
+			else{
 				return $date;
 			}
 		}
