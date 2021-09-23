@@ -1,0 +1,21 @@
+<?php
+/** @noinspection PhpUnused */
+function getUpdates21_13_00() : array
+{
+	return [
+		/*'name' => [
+			'title' => '',
+			'description' => '',
+			'sql' => [
+				''
+			]
+		], //sample*/
+		'open_archives_image_regex' => [
+			'title' => 'Open Archives Image Regular Expression',
+			'description' => 'Add a regular expression to get thumbnails for Open Archives',
+			'sql' => [
+				"ALTER TABLE open_archives_collection ADD COLUMN imageRegex VARCHAR(100) DEFAULT ''"
+			]
+		], //open_archives_image_regex
+	];
+}
