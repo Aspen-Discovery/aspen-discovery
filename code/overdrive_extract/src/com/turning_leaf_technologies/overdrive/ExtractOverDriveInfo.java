@@ -208,7 +208,13 @@ class ExtractOverDriveInfo {
 					logEntry.saveResults();
 
 					//Update, regroup, and reindex records
-					ThreadPoolExecutor es = (ThreadPoolExecutor)Executors.newFixedThreadPool(10);
+					int numExtractionThreads = settings.getNumExtractionThreads();
+					if (numExtractionThreads > 10) {
+						numExtractionThreads = 10;
+					}else if (numExtractionThreads < 1){
+						numExtractionThreads = 1;
+					}
+					ThreadPoolExecutor es = (ThreadPoolExecutor)Executors.newFixedThreadPool(numExtractionThreads);
 					for (OverDriveRecordInfo curRecord : allProductsInOverDrive.values()) {
 						es.execute(() -> {
 							numProcessed[0]++;
