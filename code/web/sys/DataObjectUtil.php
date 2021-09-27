@@ -175,8 +175,8 @@ class DataObjectUtil
 				$object->setProperty($propertyName, strip_tags($object->$propertyName), $property);
 			}elseif ($property['type'] != 'javascript'){
 				$systemVariables = SystemVariables::getSystemVariables();
-				if ($systemVariables != false){
-					if (!empty($systemVariables->allowHtmlInMarkdownFields)){
+				if ($systemVariables->allowHtmlInMarkdownFields != false){
+					if (!empty($systemVariables->allowableHtmlTags)){
 						$allowableTags = '<' . implode('><', explode('|', $systemVariables->allowableHtmlTags)). '>';
 					}else{
 						$allowableTags = null;
