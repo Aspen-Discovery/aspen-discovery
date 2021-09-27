@@ -44,9 +44,14 @@ if (! empty($jsonData['result']['holds']['available'])) {
 # * clean up the title and convert the due date from a timestamp
 # ****************************************************************************************************************************
     if(substr($item['title'], -1) == '/') { $item['title'] = substr($item['title'], 0, -1); }
-    $pickUpDetails = 'Ready for pickup at ' . $item['currentPickupName'] . ' until ' . date('Y-m-d', $item['expire']);
+    if($item['pickupLocationName'] && $item['expire']) {
+	    $pickUpDetails = $item['pickupLocationName'] . ',' . date('Y-m-d', $item['expire']);
 
-    $holdInfo['Items'][] = array('key' => ucwords($item['title']), 'holdSource' => $item['holdSource'], 'position' => $pickUpDetails, 'thumbnail' => $item['coverUrl'], 'author' => $item['author']); 
+    } else {
+	    $pickUpDetails = date('Y-m-d', $item['expire']);
+    }
+
+    $holdInfo['Items'][] = array('key' => ucwords($item['title']), 'holdSource' => $item['holdSource'], 'position' => $pickUpDetails, 'thumbnail' => $item['coverUrl'], 'author' => $item['author']);
   }
 }
 
