@@ -2069,6 +2069,44 @@ class Koha extends AbstractIlsDriver
 			'borrower_altcontactcountry' => array('property' => 'borrower_altcontactcountry', 'type' => 'text', 'label' => 'Country', 'accessibleLabel' => 'Alternate Contact Country', 'description' => 'Country', 'maxLength' => 32, 'required' => false),
 			'borrower_altcontactphone' => array('property' => 'borrower_altcontactphone', 'type' => 'text', 'label' => 'Phone' . $phoneFormat, 'accessibleLabel' => 'Alternate Contact Phone', 'description' => 'Phone', 'maxLength' => 128, 'required' => false),
 		]);
+
+		// Patron extended attributes
+		if($this->getKohaVersion() > 21.05) {
+			/** @noinspection SqlResolve */
+			$borrowerAttributeTypesSQL = "SELECT * FROM borrower_attribute_types where opac_display = '1' AND opac_editable = '1' order by code";
+			$borrowerAttributeTypesRS = mysqli_query($this->dbConnection, $borrowerAttributeTypesSQL);
+			$borrowerAttributeTypes = [];
+			while ($curRow = $borrowerAttributeTypesRS->fetch_assoc()) {
+				$borrowerAttributeTypes[$curRow['code']]['code'] = $curRow['code'];
+				$borrowerAttributeTypes[$curRow['code']]['desc'] = $curRow['description'];
+				$borrowerAttributeTypes[$curRow['code']]['req'] = $curRow['mandatory'];
+				$authorizedValueCategorySQL = "SELECT * FROM authorised_values where category = '{$curRow['authorised_value_category']}'";
+				$authorizedValueCategoryRS = mysqli_query($this->dbConnection, $authorizedValueCategorySQL);
+				$authorizedValueCategories = [];
+				while ($curRow2 = $authorizedValueCategoryRS->fetch_assoc()) {
+					$authorizedValueCategories[$curRow2['authorised_value']] = $curRow2['lib_opac'];
+				}
+				$borrowerAttributeTypes[$curRow['code']]['authorized_values'] = $authorizedValueCategories;
+			}
+
+			if (!empty($borrowerAttributeTypes)) {
+				$borrowerAttributes = [];
+				foreach ($borrowerAttributeTypes as $borrowerAttributeType) {
+					foreach ($borrowerAttributeType['authorized_values'] as $key => $value) {
+						$authorizedValues[$key] = $value;
+					}
+					$isRequired = $borrowerAttributeType['req'];
+					$borrowerAttributes[$borrowerAttributeType['code']]['property'] = "borrower_attribute_".$borrowerAttributeType['code'];
+					$borrowerAttributes[$borrowerAttributeType['code']]['type'] = "enum";
+					$borrowerAttributes[$borrowerAttributeType['code']]['values'] = $authorizedValues;
+					$borrowerAttributes[$borrowerAttributeType['code']]['label'] = $borrowerAttributeType['desc'];
+					$borrowerAttributes[$borrowerAttributeType['code']]['required'] = $isRequired;
+				}
+
+				$fields['additionalInfoSection'] = array('property' => 'additionalInfoSection', 'type' => 'section', 'label' => 'Additional Information', 'hideInLists' => true, 'expandByDefault' => true, 'properties' => $borrowerAttributes);
+			}
+		}
+
 		if ($type == 'selfReg') {
 			$passwordLabel = $library->loginFormPasswordLabel;
 			$passwordNotes = $library->selfRegistrationPasswordNotes;
@@ -2185,6 +2223,7 @@ class Koha extends AbstractIlsDriver
 			$postFields = $this->setPostField($postFields, 'borrower_altcontactphone', $library->useAllCapsWhenSubmittingSelfRegistration, $library->requireNumericPhoneNumbersWhenUpdatingProfile);
 			$postFields = $this->setPostField($postFields, 'borrower_password');
 			$postFields = $this->setPostField($postFields, 'borrower_password2');
+
 			$postFields['captcha'] = $captcha;
 			$postFields['captcha_digest'] = $captchaDigest;
 			$postFields['action'] = 'create';
