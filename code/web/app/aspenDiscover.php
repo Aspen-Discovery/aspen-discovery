@@ -63,56 +63,76 @@ $searchResults = [
 	'Items' => []
 ];
 
-if (isset($jsonData['result']['records'])) {
-	foreach ($jsonData['result']['records'] as $item) {
-		$groupedWork = new GroupedWorkDriver($item);
-		$author = $item['author_display'];
-
-		# ****************************************************************************************************************************
-		# * collection code may be empty - need to dummy it out just in case
-		# ****************************************************************************************************************************
-		$ccode = '';
-		if (isset($item['collection_' . $shortname][0])) {
-			$ccode = $item['collection_' . $shortname][0];
-		}
-
-		$format = $item['format_' . $shortname][0];
-		$iconName = $urlPath . "/bookcover.php?id=" . $item['id'] . "&size=medium&type=grouped_work";
-		$id = $item['id'];
-
-		# ****************************************************************************************************************************
-		# * clean up the summary to remove some of the &# codes
-		# ****************************************************************************************************************************
-		$summary = utf8_encode(trim(strip_tags($item['display_description'])));
-		$summary = str_replace('&#8211;', ' - ', $summary);
-		$summary = str_replace('&#8212;', ' - ', $summary);
-		$summary = str_replace('&#160;', ' ', $summary);
-
-		$title = ucwords($item['title_display']);
-		unset($itemList);
-
-		# ****************************************************************************************************************************
-		# * need to parse over the bib records
-		# ****************************************************************************************************************************
-		$relatedRecords = $groupedWork->getRelatedRecords();
-		foreach ($relatedRecords as $relatedRecord) {
-			if (strpos($relatedRecord->id, 'ils:') > -1 || strpos($relatedRecord->id, 'overdrive:') > -1) {
-
-				//if (! is_array($itemList)) {
-				if (!isset($itemList)) {
-					$itemList[] = array('type' => $relatedRecord->id, 'name' => $relatedRecord->format);
-				} elseif (!in_array($relatedRecord->format, array_column($itemList, 'name'))) {
-					$itemList[] = array('type' => $relatedRecord->id, 'name' => $relatedRecord->format);
+if (isset($jsonData['result'])) {
+	foreach ($jsonData['result'] as $item) {
+		foreach($item['records'] as $record) {
+			///
+			if ($groupedWork = new GroupedWorkDriver($record)) {
+				if (isset($record['author_display'][0])) {
+					$author = $record['author_display'];
 				}
-			}
-		}
 
-		# ****************************************************************************************************************************
-		# * Build out results array ... ensure we have at least one item available
-		# ****************************************************************************************************************************
-		if (!empty($itemList)) {
-			if (count($itemList) > 0) {
-				$searchResults['Items'][] = array('title' => trim($title), 'author' => $author, 'image' => $iconName, 'format' => $format . ' - ' . $ccode, 'itemList' => $itemList, 'key' => $id, 'summary' => $summary);
+				# ****************************************************************************************************************************
+				# * collection code may be empty - need to dummy it out just in case
+				# ****************************************************************************************************************************
+				$ccode = '';
+				if (isset($record['collection_' . $shortname][0])) {
+					$ccode = $record['collection_' . $shortname][0];
+				}
+
+				if (isset($record['format_' . $shortname][0])){
+					$format = $record['format_' . $shortname][0];
+				}
+
+				if (isset($record['id'])) {
+					$iconName = $urlPath . "/bookcover.php?id=" . $record['id'] . "&size=large&type=grouped_work";
+					$id = $record['id'];
+				}
+
+
+				# ****************************************************************************************************************************
+				# * clean up the summary to remove some of the &# codes
+				# ****************************************************************************************************************************
+				if (isset($record['display_description'])) {
+					$summary = utf8_encode(trim(strip_tags($record['display_description'])));
+					$summary = str_replace('&#8211;', ' - ', $summary);
+					$summary = str_replace('&#8212;', ' - ', $summary);
+					$summary = str_replace('&#160;', ' ', $summary);
+				}
+
+				if (isset($record['title_display'])) {
+					$title = ucwords($record['title_display']);
+				}
+				unset($itemList);
+
+				# ****************************************************************************************************************************
+				# * need to parse over the bib records
+				# ****************************************************************************************************************************
+
+				if ($relatedRecords = $groupedWork->getRelatedRecords()){
+					foreach ($relatedRecords as $relatedRecord) {
+						if (strpos($relatedRecord->id, 'ils:') > -1 || strpos($relatedRecord->id, 'overdrive:') > -1) {
+
+							//if (! is_array($itemList)) {
+							if (!isset($itemList)) {
+								$itemList[] = array('type' => $relatedRecord->id, 'name' => $relatedRecord->format);
+							} elseif (!in_array($relatedRecord->format, array_column($itemList, 'name'))) {
+								$itemList[] = array('type' => $relatedRecord->id, 'name' => $relatedRecord->format);
+							}
+						} elseif(is_null($relatedRecord->id)) {
+							$searchResults['Notices'][] = "Related records error";
+						}
+					}
+				}
+
+				# ****************************************************************************************************************************
+				# * Build out results array ... ensure we have at least one item available
+				# ****************************************************************************************************************************
+				if (!empty($itemList)) {
+					if (count($itemList) > 0) {
+						$searchResults['Items'][] = array('title' => trim($title), 'author' => $author, 'image' => $iconName, 'format' => $format . ' - ' . $ccode, 'itemList' => $itemList, 'key' => $id, 'summary' => $summary);
+					}
+				}
 			}
 		}
 	}
