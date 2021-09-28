@@ -46,7 +46,14 @@ if (! empty($jsonData['result']['checkedOutItems'])) {
     if(substr($item['title'], -1) == '/') { $item['title'] = substr($item['title'], 0, -1); }
     $dueDate = date('Y-m-d', $item['dueDate']);
 
-    $patronInfo['Items'][] = array('barcode' => $item['itemId'], 'key' => ucwords($item['title']), 'dateDue' => $dueDate, 'thumbnail' => $item['coverUrl'], 'author' => $item['author']); 
+    // make sure an id always populates
+    if(!$item['fullId']) {
+    	$barcode = $item['id'];
+    } else {
+    	$barocde = $item['fullId'];
+    }
+
+    $patronInfo['Items'][] = array('barcode' => $barcode, 'key' => ucwords($item['title']), 'dateDue' => $dueDate, 'thumbnail' => $item['coverUrl'], 'author' => $item['author']);
   }
 }
 

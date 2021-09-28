@@ -175,24 +175,26 @@ class DataObjectUtil
 				$object->setProperty($propertyName, strip_tags($object->$propertyName), $property);
 			}elseif ($property['type'] != 'javascript'){
 				$systemVariables = SystemVariables::getSystemVariables();
-				if ($systemVariables != false){
-					if (!empty($systemVariables->allowHtmlInMarkdownFields)){
-						$allowableTags = '<' . implode('><', explode('|', $systemVariables->allowableHtmlTags)). '>';
-					}else{
-						$allowableTags = null;
+				if ($systemVariables != false) {
+					if ($systemVariables->allowHtmlInMarkdownFields != false || $systemVariables->useHtmlEditorRatherThanMarkdown != false) {
+						if (!empty($systemVariables->allowableHtmlTags)) {
+							$allowableTags = '<' . implode('><', explode('|', $systemVariables->allowableHtmlTags)) . '>';
+						} else {
+							$allowableTags = null;
+						}
+					} else {
+						if (!empty($property['allowableTags'])) {
+							$allowableTags = $property['allowableTags'];
+						} else {
+							$allowableTags = '';
+						}
 					}
-				}else{
-					if (!empty($property['allowableTags'])){
-						$allowableTags = $property['allowableTags'];
-					}else{
-						$allowableTags = '<p><a><b><em><ul><ol><em><li><strong><i><br>';
-					}
-				}
 
-				if (!empty($allowableTags)) {
-					$object->setProperty($propertyName, strip_tags($object->$propertyName, $allowableTags), $property);
-				}else{
-					$object->setProperty($propertyName, $object->$propertyName, $property);
+					if (!empty($allowableTags)) {
+						$object->setProperty($propertyName, strip_tags($object->$propertyName, $allowableTags), $property);
+					} else {
+						$object->setProperty($propertyName, $object->$propertyName, $property);
+					}
 				}
 			}
 		}else if ($property['type'] == 'timestamp'){
