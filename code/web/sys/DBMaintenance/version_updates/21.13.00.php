@@ -17,5 +17,12 @@ function getUpdates21_13_00() : array
 				"ALTER TABLE open_archives_collection ADD COLUMN imageRegex VARCHAR(100) DEFAULT ''"
 			]
 		], //open_archives_image_regex
+		'polaris_item_identifiers' => [
+			'title' => 'Store item identifiers for Polaris',
+			'description' => 'Store item identifiers for Polaris',
+			'sql' => [
+				"UPDATE indexing_profiles set itemRecordNumber = '9' WHERE indexingClass = 'Polaris'"
+			]
+		], //polaris_item_identifiers
 	];
 }
