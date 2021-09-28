@@ -48,12 +48,12 @@ if (! empty($jsonData['result']['checkedOutItems'])) {
 
     // make sure an id always populates
     if(!$item['fullId']) {
-    	$barcode = $item['id'];
+    	$itemId = $item['id'];
     } else {
-    	$barocde = $item['fullId'];
+	    $itemId = $item['fullId'];
     }
 
-    $patronInfo['Items'][] = array('barcode' => $barcode, 'key' => ucwords($item['title']), 'dateDue' => $dueDate, 'thumbnail' => $item['coverUrl'], 'author' => $item['author']);
+    $patronInfo['Items'][] = array('barcode' => $itemId, 'key' => ucwords($item['title']), 'dateDue' => $dueDate, 'thumbnail' => $item['coverUrl'], 'author' => $item['author']);
   }
 }
 

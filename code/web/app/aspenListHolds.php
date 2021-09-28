@@ -51,7 +51,14 @@ if (! empty($jsonData['result']['holds']['available'])) {
 	    $pickUpDetails = date('Y-m-d', $item['expire']);
     }
 
-    $holdInfo['Items'][] = array('key' => ucwords($item['title']), 'holdSource' => $item['holdSource'], 'position' => $pickUpDetails, 'thumbnail' => $item['coverUrl'], 'author' => $item['author']);
+	// make sure an id always populates
+	if(!$item['fullId']) {
+	  $id = $item['id'];
+	} else {
+	  $id = $item['fullId'];
+	}
+
+    $holdInfo['Items'][] = array('key' => ucwords($item['title']), 'holdSource' => $item['holdSource'], 'position' => $pickUpDetails, 'thumbnail' => $item['coverUrl'], 'author' => $item['author'], 'id' => $id);
   }
 }
 
@@ -65,8 +72,15 @@ if (! empty($jsonData['result']['holds']['unavailable'])) {
 # * clean up the title and convert the due date from a timestamp
 # ****************************************************************************************************************************
     if(substr($item['title'], -1) == '/') { $item['title'] = substr($item['title'], 0, -1); }
+
+	// make sure an id always populates
+	if(!$item['fullId']) {
+	  $id = $item['id'];
+	} else {
+	  $id = $item['fullId'];
+	}
   
-    $holdInfo['Items'][] = array('key' => ucwords($item['title']), 'holdSource' => $item['holdSource'], 'position' => $item['position'], 'thumbnail' => $item['coverUrl'], 'author' => $item['author']); 
+    $holdInfo['Items'][] = array('key' => ucwords($item['title']), 'holdSource' => $item['holdSource'], 'position' => $item['position'], 'thumbnail' => $item['coverUrl'], 'author' => $item['author'], 'id' => $id);
   }
 }
 

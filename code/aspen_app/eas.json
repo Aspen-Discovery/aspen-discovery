@@ -1,9 +1,41 @@
 {
-  "build": {
-    "release": {},
-    "development": {
-      "developmentClient": true,
-      "distribution": "internal"
-    }
-  }
+	"build": {
+		"release": {
+			"releaseChannel": "production"
+		},
+		"beta": {
+			"releaseChannel": "beta"
+		},
+		"development": {
+			"releaseChannel": "dev",
+			"developmentClient": true,
+			"distribution": "internal"
+		}
+	},
+	"submit": {
+		"production": {
+			"android": {
+				"serviceAccountKeyPath": "",
+				"track": "production"
+			},
+			"ios": {
+				"appleId": "kirstien@bywatersolutions.com",
+				"ascAppId": "1581124727",
+				"appleTeamId": "46LCYCHVHM",
+				"companyName": "ByWater Solutions, LLC"
+			}
+		},
+		"beta": {
+			"android": {
+				"serviceAccountKeyPath": "x",
+				"track": "internal"
+			},
+			"ios": {
+				"appleId": "kirstien@bywatersolutions.com",
+				"ascAppId": "1581124727",
+				"appleTeamId": "46LCYCHVHM",
+				"companyName": "ByWater Solutions, LLC"
+			}
+		}
+	}
 }
