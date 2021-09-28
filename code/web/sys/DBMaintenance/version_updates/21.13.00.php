@@ -24,5 +24,12 @@ function getUpdates21_13_00() : array
 				"UPDATE indexing_profiles set itemRecordNumber = '9' WHERE indexingClass = 'Polaris'"
 			]
 		], //polaris_item_identifiers
+		'polaris_full_update_21_13' => [
+			'title' => 'Run a full update for polaris',
+			'description' => 'Run a full update for polaris',
+			'sql' => [
+				"UPDATE indexing_profiles set runFullUpdate = 1 WHERE indexingClass = 'Polaris'"
+			]
+		], //polaris_full_update_21_13
 	];
 }
