@@ -186,15 +186,19 @@ class DataObjectUtil
 						if (!empty($property['allowableTags'])) {
 							$allowableTags = $property['allowableTags'];
 						} else {
-							$allowableTags = '';
+							$allowableTags = '<p><a><b><em><ul><ol><em><li><strong><i><br>';
 						}
 					}
 
-					if (!empty($allowableTags)) {
-						$object->setProperty($propertyName, strip_tags($object->$propertyName, $allowableTags), $property);
-					} else {
-						$object->setProperty($propertyName, $object->$propertyName, $property);
-					}
+				} else {
+					// set defaults if system variables do not exist
+					$allowableTags = '<p><a><b><em><ul><ol><em><li><strong><i><br>';
+				}
+
+				if (!empty($allowableTags)) {
+					$object->setProperty($propertyName, strip_tags($object->$propertyName, $allowableTags), $property);
+				} else {
+					$object->setProperty($propertyName, $object->$propertyName, $property);
 				}
 			}
 		}else if ($property['type'] == 'timestamp'){
