@@ -48,9 +48,9 @@ if (! empty($jsonData['result']['checkedOutItems'])) {
 
     // make sure an id always populates
     if(!$item['fullId']) {
-    	$itemId = $item['fullId'];
+    	$itemId = $item['id'];
     } else {
-	    $itemId = $item['id'];
+	    $itemId = $item['fullId'];
     }
 
     $patronInfo['Items'][] = array('barcode' => $itemId, 'key' => ucwords($item['title']), 'dateDue' => $dueDate, 'thumbnail' => $item['coverUrl'], 'author' => $item['author']);

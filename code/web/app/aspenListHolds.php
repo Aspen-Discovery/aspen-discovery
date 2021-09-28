@@ -75,9 +75,9 @@ if (! empty($jsonData['result']['holds']['unavailable'])) {
 
 	// make sure an id always populates
 	if(!$item['fullId']) {
-	  $id = $item['fullId'];
-	} else {
 	  $id = $item['id'];
+	} else {
+	  $id = $item['fullId'];
 	}
   
     $holdInfo['Items'][] = array('key' => ucwords($item['title']), 'holdSource' => $item['holdSource'], 'position' => $item['position'], 'thumbnail' => $item['coverUrl'], 'author' => $item['author'], 'id' => $id);
