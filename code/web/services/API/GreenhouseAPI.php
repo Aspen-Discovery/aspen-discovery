@@ -105,6 +105,7 @@ class GreenhouseAPI extends Action
 										'accessLevel' => $sites->appAccess,
 										'solrScope' => $cachedLibrary->solrScope,
 										'releaseChannel' => $cachedLibrary->releaseChannel,
+										'siteId' => $sites->id,
 									];
 								} elseif($releaseChannel == "beta" && ($cachedLibrary->releaseChannel == '0' || $cachedLibrary->releaseChannel == '1')) {
 									$return['libraries'][] = [
@@ -116,8 +117,9 @@ class GreenhouseAPI extends Action
 										'accessLevel' => $sites->appAccess,
 										'solrScope' => $cachedLibrary->solrScope,
 										'releaseChannel' => $cachedLibrary->releaseChannel,
+										'siteId' => $sites->id,
 									];
-								} elseif($releaseChannel == "any") {
+								} elseif($releaseChannel == "any" || $releaseChannel == "default") {
 									$return['libraries'][] = [
 										'name' => $cachedLibrary->name,
 										'librarySystem' => $sites->name,
@@ -127,6 +129,7 @@ class GreenhouseAPI extends Action
 										'accessLevel' => $sites->appAccess,
 										'solrScope' => $cachedLibrary->solrScope,
 										'releaseChannel' => $cachedLibrary->releaseChannel,
+										'siteId' => $sites->id,
 									];
 								}
 							} else {
@@ -144,6 +147,7 @@ class GreenhouseAPI extends Action
 											'distance' => $distance,
 											'solrScope' => $cachedLibrary->solrScope,
 											'releaseChannel' => $cachedLibrary->releaseChannel,
+											'siteId' => $sites->id,
 										];
 									} elseif($releaseChannel == "beta" && ($cachedLibrary->releaseChannel == '0' || $cachedLibrary->releaseChannel == '1')) {
 										$return['libraries'][] = [
@@ -156,8 +160,9 @@ class GreenhouseAPI extends Action
 											'distance' => $distance,
 											'solrScope' => $cachedLibrary->solrScope,
 											'releaseChannel' => $cachedLibrary->releaseChannel,
+											'siteId' => $sites->id,
 										];
-									} elseif($releaseChannel == "any"  || $sites->name == "Test (ByWater)") {
+									} elseif($releaseChannel == "any" || $releaseChannel == "default" || $sites->name == "Test (ByWater)") {
 										$return['libraries'][] = [
 											'name' => $cachedLibrary->name,
 											'librarySystem' => $sites->name,
@@ -168,6 +173,7 @@ class GreenhouseAPI extends Action
 											'distance' => $distance,
 											'solrScope' => $cachedLibrary->solrScope,
 											'releaseChannel' => $cachedLibrary->releaseChannel,
+											'siteId' => $sites->id,
 										];
 									}
 								} elseif($sites->name == "Test (ByWater)") {
@@ -181,6 +187,7 @@ class GreenhouseAPI extends Action
 										'distance' => $distance,
 										'solrScope' => $cachedLibrary->solrScope,
 										'releaseChannel' => $cachedLibrary->releaseChannel,
+										'siteId' => $sites->id,
 									];
 								}
 							}
