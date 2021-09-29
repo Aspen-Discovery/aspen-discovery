@@ -33,6 +33,10 @@ $shortname = $_GET['library'];
 # ****************************************************************************************************************************
 $searchLimit = 100;
 
+if($_GET['page']) {
+	$page = $_GET['page'];
+} else { $page = 1; }
+
 # ****************************************************************************************************************************
 # * grab the parameters needed and clean it up
 # ****************************************************************************************************************************
@@ -42,7 +46,7 @@ $searchTerm = str_replace(' ', '+', $searchTerm);
 # ****************************************************************************************************************************
 # * search link to the catalogue
 # ****************************************************************************************************************************
-$reportURL = $urlPath . '/API/SearchAPI?method=search&lookfor=' . $searchTerm . '&pageSize=' . $searchLimit;
+$reportURL = $urlPath . '/API/SearchAPI?method=search&lookfor=' . $searchTerm . '&pageSize=' . $searchLimit . '&page=' . $page;
 
 # ****************************************************************************************************************************
 # * run the report and grab the JSON
@@ -73,6 +77,12 @@ if (!empty($jsonData['result']['recordSet'])) {
 		}
 		$iconName = $urlPath . "/bookcover.php?id=" . $item['id'] . "&size=medium&type=grouped_work";
 		$id = $item['id'];
+
+		if($ccode != '') {
+			$format = $format . ' - ' . $ccode;
+		} else {
+			$format = $format;
+		}
 
 # ****************************************************************************************************************************
 # * clean up the summary to remove some of the &# codes
@@ -108,7 +118,7 @@ if (!empty($jsonData['result']['recordSet'])) {
 # * Build out results array ... ensure we have at least one item available
 # ****************************************************************************************************************************
 		if (!empty($itemList)) {
-			$searchResults['Items'][] = array('title' => trim($title), 'author' => $author, 'image' => $iconName, 'format' => $format . ' - ' . $ccode, 'itemList' => $itemList, 'key' => $id, 'summary' => $summary);
+			$searchResults['Items'][] = array('title' => trim($title), 'author' => $author, 'image' => $iconName, 'format' => $format, 'itemList' => $itemList, 'key' => $id, 'summary' => $summary);
 		}
 	}
 }

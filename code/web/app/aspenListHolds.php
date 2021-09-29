@@ -22,8 +22,8 @@ $shortname = $_GET['library'];
 # ****************************************************************************************************************************
 # * Prep the patron information for checking - dummy out something just in case
 # ****************************************************************************************************************************
-$barcode = "thisisadummybarcodeincaseitisleftblank";
-$pin     = 1234567890;
+$barcode = '';
+$pin     = '';
 
 if (! empty($_GET['barcode'])) { $barcode = $_GET['barcode']; }
 if (! empty($_GET['pin'])) { $pin = $_GET['pin']; }  
@@ -51,14 +51,23 @@ if (! empty($jsonData['result']['holds']['available'])) {
 	    $pickUpDetails = date('Y-m-d', $item['expire']);
     }
 
+	$type = '';
+	if($item['source']) {
+	  $type = $item['source'].':';
+	}
 	// make sure an id always populates
-	if(!$item['fullId']) {
-	  $id = $item['id'];
+	if(!$item['id']) {
+	  $id = $type . $item['recordId'];
 	} else {
-	  $id = $item['fullId'];
+	  $id = $type . $item['id'];
 	}
 
-    $holdInfo['Items'][] = array('key' => ucwords($item['title']), 'holdSource' => $item['holdSource'], 'position' => $pickUpDetails, 'thumbnail' => $item['coverUrl'], 'author' => $item['author'], 'id' => $id);
+	$format = '';
+	if($item['format'][0]) {
+	  $format = $item['format'][0];
+	}
+
+    $holdInfo['Items'][] = array('key' => ucwords($item['title']), 'holdSource' => $item['holdSource'], 'position' => $pickUpDetails, 'thumbnail' => $item['coverUrl'], 'author' => $item['author'], 'id' => $id, 'format' => $format);
   }
 }
 
@@ -73,14 +82,23 @@ if (! empty($jsonData['result']['holds']['unavailable'])) {
 # ****************************************************************************************************************************
     if(substr($item['title'], -1) == '/') { $item['title'] = substr($item['title'], 0, -1); }
 
-	// make sure an id always populates
-	if(!$item['fullId']) {
-	  $id = $item['id'];
-	} else {
-	  $id = $item['fullId'];
-	}
+	  $type = '';
+	  if($item['type']) {
+		  $type = $item['type'].':';
+	  }
+	  // make sure an id always populates
+	  if(!$item['id']) {
+		  $id = $type . $item['recordId'];
+	  } else {
+		  $id = $type . $item['id'];
+	  }
+
+	  $format = '';
+	  if($item['format'][0]) {
+		  $format = $item['format'][0];
+	  }
   
-    $holdInfo['Items'][] = array('key' => ucwords($item['title']), 'holdSource' => $item['holdSource'], 'position' => $item['position'], 'thumbnail' => $item['coverUrl'], 'author' => $item['author'], 'id' => $id);
+    $holdInfo['Items'][] = array('key' => ucwords($item['title']), 'holdSource' => $item['holdSource'], 'position' => $item['position'], 'thumbnail' => $item['coverUrl'], 'author' => $item['author'], 'id' => $id, 'format' => $format);
   }
 }
 
