@@ -268,9 +268,11 @@ public class KohaExportMain {
 				ResultSet kohaVersionRS = getKohaVersionStmt.executeQuery();
 				while (kohaVersionRS.next()){
 					kohaVersion = kohaVersionRS.getFloat("value");
+					logEntry.addNote("Koha version is " + kohaVersion);
+					break;
 				}
 			} catch (SQLException e) {
-				logEntry.incErrors("Error exporting book covers", e);
+				logEntry.incErrors("Error loading koha version", e);
 			}
 		}
 		return kohaVersion;
