@@ -105,7 +105,7 @@ class OverDriveProcessor {
 								break;
 						}
 
-						HashMap<String, String> metadata = loadOverDriveMetadata(groupedWork, productId, primaryFormat);
+						HashMap<String, String> metadata = loadOverDriveMetadata(groupedWork, productId, primaryFormat, logEntry);
 
 						if (!metadata.containsKey("rawMetadata") || (metadata.get("rawMetadata") == null)){
 							//We didn't get metadata for the title.  This shouldn't happen in normal cases, but if it does,
@@ -127,7 +127,6 @@ class OverDriveProcessor {
 							rawMetadataDecoded = new JSONObject(rawMetadataString);
 						} catch (JSONException e) {
 							logEntry.incErrors("Error loading raw data for OverDrive MetaData", e);
-							rawMetadataDecoded = null;
 						}
 
 						boolean isOnOrder = false;
@@ -169,7 +168,7 @@ class OverDriveProcessor {
 													String day = publishDateMatcher.group(2).trim();
 													String year = publishDateMatcher.group(3);
 													GregorianCalendar publishCal = new GregorianCalendar();
-													int monthInt = 1;
+													int monthInt;
 													switch (month) {
 														case "jan":
 															monthInt = Calendar.JANUARY;
@@ -207,6 +206,9 @@ class OverDriveProcessor {
 														case "dec":
 															monthInt = Calendar.DECEMBER;
 															break;
+														default:
+															monthInt = Calendar.JANUARY;
+															break;
 													}
 													publishCal.set(Integer.parseInt(year), monthInt, (Integer.parseInt(day)));
 													publishDate = publishCal.getTime();
@@ -219,7 +221,7 @@ class OverDriveProcessor {
 														String month = publishDateFullMonthMatcher.group(1).toLowerCase();
 														String year = publishDateFullMonthMatcher.group(2);
 														GregorianCalendar publishCal = new GregorianCalendar();
-														int monthInt = 1;
+														int monthInt;
 														switch (month) {
 															case "january":
 																monthInt = Calendar.JANUARY;
@@ -256,6 +258,9 @@ class OverDriveProcessor {
 																break;
 															case "december":
 																monthInt = Calendar.DECEMBER;
+																break;
+															default:
+																monthInt = Calendar.JANUARY;
 																break;
 														}
 														publishCal.set(Integer.parseInt(year), monthInt, 1);
@@ -430,6 +435,7 @@ class OverDriveProcessor {
 									if (scope.isIncludeOverDriveCollection() && (scope.getOverDriveScope().getSettingId() == settingId)) {
 										//Check based on the audience as well
 										boolean okToInclude = false;
+										//noinspection RedundantIfStatement
 										if (isAdult && scope.getOverDriveScope().isIncludeAdult()) {
 											okToInclude = true;
 										}
@@ -453,6 +459,7 @@ class OverDriveProcessor {
 									}
 									if (curScope.isIncludeOverDriveCollection() && curScope.getLibraryId().equals(libraryId)) {
 										boolean okToInclude = false;
+										//noinspection RedundantIfStatement
 										if (isAdult && curScope.getOverDriveScope().isIncludeAdult()) {
 											okToInclude = true;
 										}
@@ -687,7 +694,7 @@ class OverDriveProcessor {
 		return formats;
 	}
 
-	private HashMap<String, String> loadOverDriveMetadata(GroupedWorkSolr groupedWork, long productId, String format) throws SQLException {
+	private HashMap<String, String> loadOverDriveMetadata(GroupedWorkSolr groupedWork, long productId, String format, BaseLogEntry logEntry) throws SQLException {
 		HashMap<String, String> returnMetadata = new HashMap<>();
 		//Load metadata
 		getProductMetadataStmt.setLong(1, productId);
@@ -708,7 +715,14 @@ class OverDriveProcessor {
 			String fullDescription = metadataRS.getString("fullDescription");
 			groupedWork.addDescription(fullDescription, format);
 
-			returnMetadata.put("rawMetadata", new String(metadataRS.getBytes("rawData"), StandardCharsets.UTF_8));
+			try {
+				byte[] rawDataBytes = metadataRS.getBytes("rawData");
+				if (!metadataRS.wasNull()) {
+					returnMetadata.put("rawMetadata", new String(rawDataBytes, StandardCharsets.UTF_8));
+				}
+			}catch (Exception e) {
+				logEntry.incErrors("Error loading metadata for record " + productId, e);
+			}
 		}
 		metadataRS.close();
 		return returnMetadata;
