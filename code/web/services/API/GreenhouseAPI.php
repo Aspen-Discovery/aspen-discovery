@@ -105,7 +105,7 @@ class GreenhouseAPI extends Action
 										'accessLevel' => $sites->appAccess,
 										'solrScope' => $cachedLibrary->solrScope,
 										'releaseChannel' => $cachedLibrary->releaseChannel,
-										'siteId' => $sites->id,
+										'siteId' => $cachedLibrary->id,
 									];
 								} elseif($releaseChannel == "beta" && ($cachedLibrary->releaseChannel == '0' || $cachedLibrary->releaseChannel == '1')) {
 									$return['libraries'][] = [
@@ -117,7 +117,7 @@ class GreenhouseAPI extends Action
 										'accessLevel' => $sites->appAccess,
 										'solrScope' => $cachedLibrary->solrScope,
 										'releaseChannel' => $cachedLibrary->releaseChannel,
-										'siteId' => $sites->id,
+										'siteId' => $cachedLibrary->id,
 									];
 								} else {
 									$return['libraries'][] = [
@@ -129,7 +129,7 @@ class GreenhouseAPI extends Action
 										'accessLevel' => $sites->appAccess,
 										'solrScope' => $cachedLibrary->solrScope,
 										'releaseChannel' => $cachedLibrary->releaseChannel,
-										'siteId' => $sites->id,
+										'siteId' => $cachedLibrary->id,
 									];
 								}
 							} else {
@@ -147,7 +147,7 @@ class GreenhouseAPI extends Action
 											'distance' => $distance,
 											'solrScope' => $cachedLibrary->solrScope,
 											'releaseChannel' => $cachedLibrary->releaseChannel,
-											'siteId' => $sites->id,
+											'siteId' => $cachedLibrary->id,
 										];
 									} elseif($releaseChannel == "beta" && ($cachedLibrary->releaseChannel == '0' || $cachedLibrary->releaseChannel == '1')) {
 										$return['libraries'][] = [
@@ -160,7 +160,7 @@ class GreenhouseAPI extends Action
 											'distance' => $distance,
 											'solrScope' => $cachedLibrary->solrScope,
 											'releaseChannel' => $cachedLibrary->releaseChannel,
-											'siteId' => $sites->id,
+											'siteId' => $cachedLibrary->id,
 										];
 									} else {
 										$return['libraries'][] = [
@@ -173,7 +173,7 @@ class GreenhouseAPI extends Action
 											'distance' => $distance,
 											'solrScope' => $cachedLibrary->solrScope,
 											'releaseChannel' => $cachedLibrary->releaseChannel,
-											'siteId' => $sites->id,
+											'siteId' => $cachedLibrary->id,
 										];
 									}
 								} elseif($sites->name == "Test (ByWater)") {
@@ -187,7 +187,7 @@ class GreenhouseAPI extends Action
 										'distance' => $distance,
 										'solrScope' => $cachedLibrary->solrScope,
 										'releaseChannel' => $cachedLibrary->releaseChannel,
-										'siteId' => $sites->id,
+										'siteId' => $cachedLibrary->id,
 									];
 								}
 							}
@@ -293,6 +293,7 @@ class GreenhouseAPI extends Action
 								'accessLevel' => $sites->appAccess,
 								'solrScope' => $cachedLibrary->solrScope,
 								'releaseChannel' => $cachedLibrary->releaseChannel,
+								'siteId' => $cachedLibrary->id,
 							];
 						} elseif($releaseChannel == "beta" && ($cachedLibrary->releaseChannel == '0' || $cachedLibrary->releaseChannel == '1')) {
 							$return['libraries'][] = [
@@ -304,6 +305,7 @@ class GreenhouseAPI extends Action
 								'accessLevel' => $sites->appAccess,
 								'solrScope' => $cachedLibrary->solrScope,
 								'releaseChannel' => $cachedLibrary->releaseChannel,
+								'siteId' => $cachedLibrary->id,
 							];
 						} else {
 							$return['libraries'][] = [
@@ -315,6 +317,7 @@ class GreenhouseAPI extends Action
 								'accessLevel' => $sites->appAccess,
 								'solrScope' => $cachedLibrary->solrScope,
 								'releaseChannel' => $cachedLibrary->releaseChannel,
+								'siteId' => $cachedLibrary->id,
 							];
 						}
 					}
