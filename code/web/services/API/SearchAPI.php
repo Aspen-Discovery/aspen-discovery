@@ -456,6 +456,10 @@ class SearchAPI extends Action
 		$searchObject = SearchObjectFactory::initSearchObject();
 		$searchObject->init();
 
+		if (isset($_REQUEST['pageSize']) && is_numeric($_REQUEST['pageSize'])){
+			$searchObject->setLimit($_REQUEST['pageSize']);
+		}
+
 		// Set Interface Variables
 		//   Those we can construct BEFORE the search is executed
 		$interface->assign('sortList', $searchObject->getSortList());
