@@ -215,6 +215,7 @@ class HooplaProcessor {
 								}else if (kind.equals("COMIC")){
 									switch (rating) {
 										case "T":
+										case "PA":
 											groupedWork.addTargetAudience("Adult");
 											groupedWork.addTargetAudienceFull("Adult");
 											break;
