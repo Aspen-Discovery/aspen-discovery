@@ -135,7 +135,7 @@ class DataObjectUtil
 		}
 	}
 
-	static function processProperty($object, $property){
+	static function processProperty(DataObject $object, $property){
 		global $logger;
 		$propertyName = $property['property'];
 		if ($property['type'] == 'section'){
@@ -326,7 +326,7 @@ class DataObjectUtil
 								if (isset($property['maxHeight'])) {
 									$height = $property['maxHeight'];
 								}
-								resizeImage($destFullPath, "{$destFolder}/{$destFileName}", $property['mediumWidth'], $property['mediumWidth']);
+								resizeImage($destFullPath, "{$destFolder}/{$destFileName}", $width, $height);
 							}
 						}
 					}
@@ -448,6 +448,7 @@ class DataObjectUtil
 				foreach ($idsToSave as $key => $id){
 					//Create the subObject
 					if ($id < 0 || $id == ""){
+						/** @var DataObject $subObject */
 						$subObject = new $subObjectType();
 						$id = $key;
 					} else {
@@ -499,35 +500,4 @@ class DataObjectUtil
 			$object->$propertyName = $values;
 		}
 	}
-
-	static function getObjectListFilters($objectStructure){
-
-	}
-
-	static function getObjectList($objectStructure, $objectsToShow){
-
-	}
-
-	static function getObjectExportFile($objectStructure, $objectsToExport, $exportFilename){
-
-	}
-	static function compareObjects($objectStructure, $object1, $object2){
-
-	}
-	static function importObjectsFromFile($objectStructure, $objectType, $importFilename){
-
-	}
-
-	static function getFileUploadMessage($errorNo, $fieldname){
-		$errorMessages = array(
-		0=>"There is no error, the file for $fieldname uploaded with success",
-		1=>"The uploaded file for $fieldname exceeds the maximum file size for the server",
-		2=>"The uploaded file for $fieldname exceeds the maximum file size for this field",
-		3=>"The uploaded file for $fieldname was only partially uploaded",
-		4=>"No file was uploaded for $fieldname",
-		6=>"Missing a temporary folder for $fieldname"
-		);
-		return $errorMessages[$errorNo];
-	}
-
 }
