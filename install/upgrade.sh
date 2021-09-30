@@ -13,6 +13,9 @@ fi
 
 service crond stop
 
+sudo yum -y update
+sudo apachectl graceful
+
 cd /usr/local/aspen-discovery
 git pull origin $2
 
