@@ -24,7 +24,7 @@ $version = $_GET['version'];
 # ****************************************************************************************************************************
 # * assemble the login API URL
 # ****************************************************************************************************************************
-$libraryInfo = $urlPath . '/API/SystemAPI?method=getLocationInfo&id=' . $libraryId . '&library=' . $shortname;
+$libraryInfo = $urlPath . '/API/SystemAPI?method=getLocationInfo&id=' . $libraryId . '&library=' . $shortname . '&version=' . $version;
 
 # ****************************************************************************************************************************
 # * grab the library info
