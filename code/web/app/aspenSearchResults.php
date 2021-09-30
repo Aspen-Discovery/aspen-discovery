@@ -79,7 +79,6 @@ if (!empty($jsonData['result']['recordSet'])) {
 		}
 		$iconName = $urlPath . "/bookcover.php?id=" . $item['id'] . "&size=medium&type=grouped_work";
 		$id = $item['id'];
-
 		if($ccode != '') {
 			$format = $format . ' - ' . $ccode;
 		} else {
