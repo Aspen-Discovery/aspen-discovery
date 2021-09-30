@@ -17,7 +17,6 @@ require_once '../bootstrap_aspen.php';
 # * grab the passed location parameter, then find the path
 # ****************************************************************************************************************************
 $urlPath = 'https://'.$_SERVER['SERVER_NAME'];
-$urlPath = 'https://aspen-test.bywatersolutions.com';
 
 $shortname = $_GET['library'];
 
