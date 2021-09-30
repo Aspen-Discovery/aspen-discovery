@@ -17,7 +17,6 @@ require_once '../bootstrap_aspen.php';
 # * grab the passed location parameter, then find the path
 # ****************************************************************************************************************************
 $urlPath = 'https://'.$_SERVER['SERVER_NAME'];
-
 $shortname = $_GET['library'];
 
 # ****************************************************************************************************************************
@@ -89,7 +88,7 @@ if (isset($jsonData['result']['records'])) {
 
 				$id = '';
 				if (isset($record['id'])) {
-					$iconName = $urlPath . "/bookcover.php?id=" . $record['id'] . "&size=medium&type=grouped_work";
+					$iconName = $urlPath . "/bookcover.php?id=" . $record['id'] . "&size=large&type=grouped_work";
 					$id = $record['id'];
 				}
 
