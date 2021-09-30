@@ -177,8 +177,8 @@ public class GroupedReindexMain {
 		}
 		try {
 			dbConn = DriverManager.getConnection(databaseConnectionInfo);
-			dbConn.prepareCall("SET collation_connection = utf8_general_ci").execute();
-			dbConn.prepareCall("SET NAMES utf8").execute();
+			dbConn.prepareCall("SET collation_connection = utf8mb4_general_ci").execute();
+			dbConn.prepareCall("SET NAMES utf8mb4").execute();
 		} catch (SQLException e) {
 			logger.error("Could not connect to aspen database", e);
 			System.exit(1);
