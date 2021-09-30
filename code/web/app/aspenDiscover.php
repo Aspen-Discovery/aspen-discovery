@@ -17,6 +17,8 @@ require_once '../bootstrap_aspen.php';
 # * grab the passed location parameter, then find the path
 # ****************************************************************************************************************************
 $urlPath = 'https://'.$_SERVER['SERVER_NAME'];
+$urlPath = 'https://aspen-test.bywatersolutions.com';
+
 $shortname = $_GET['library'];
 
 # ****************************************************************************************************************************
@@ -63,11 +65,12 @@ $searchResults = [
 	'Items' => []
 ];
 
-if (isset($jsonData['result'])) {
-	foreach ($jsonData['result'] as $item) {
-		foreach($item['records'] as $record) {
+if (isset($jsonData['result']['records'])) {
+	foreach ($jsonData['result']['records'] as $record) {
 			///
 			if ($groupedWork = new GroupedWorkDriver($record)) {
+
+				$author = '';
 				if (isset($record['author_display'][0])) {
 					$author = $record['author_display'];
 				}
@@ -80,12 +83,14 @@ if (isset($jsonData['result'])) {
 					$ccode = $record['collection_' . $shortname][0];
 				}
 
+				$format = '';
 				if (isset($record['format_' . $shortname][0])){
 					$format = $record['format_' . $shortname][0];
 				}
 
+				$id = '';
 				if (isset($record['id'])) {
-					$iconName = $urlPath . "/bookcover.php?id=" . $record['id'] . "&size=large&type=grouped_work";
+					$iconName = $urlPath . "/bookcover.php?id=" . $record['id'] . "&size=medium&type=grouped_work";
 					$id = $record['id'];
 				}
 
@@ -93,6 +98,7 @@ if (isset($jsonData['result'])) {
 				# ****************************************************************************************************************************
 				# * clean up the summary to remove some of the &# codes
 				# ****************************************************************************************************************************
+				$summary = '';
 				if (isset($record['display_description'])) {
 					$summary = utf8_encode(trim(strip_tags($record['display_description'])));
 					$summary = str_replace('&#8211;', ' - ', $summary);
@@ -100,6 +106,7 @@ if (isset($jsonData['result'])) {
 					$summary = str_replace('&#160;', ' ', $summary);
 				}
 
+				$title = '';
 				if (isset($record['title_display'])) {
 					$title = ucwords($record['title_display']);
 				}
@@ -109,18 +116,34 @@ if (isset($jsonData['result'])) {
 				# * need to parse over the bib records
 				# ****************************************************************************************************************************
 
-				if ($relatedRecords = $groupedWork->getRelatedRecords()){
-					foreach ($relatedRecords as $relatedRecord) {
-						if (strpos($relatedRecord->id, 'ils:') > -1 || strpos($relatedRecord->id, 'overdrive:') > -1) {
+				if(isset($_GET['lida'])) {
+					$lida = $_GET['lida'];
+				} else {
+					$lida = false;
+				}
 
-							//if (! is_array($itemList)) {
-							if (!isset($itemList)) {
-								$itemList[] = array('type' => $relatedRecord->id, 'name' => $relatedRecord->format);
-							} elseif (!in_array($relatedRecord->format, array_column($itemList, 'name'))) {
-								$itemList[] = array('type' => $relatedRecord->id, 'name' => $relatedRecord->format);
+				if ($relatedRecords = $groupedWork->getRelatedRecords()){
+					if ($lida == false) {
+						foreach ($relatedRecords as $relatedRecord) {
+							if (strpos($relatedRecord->id, 'ils:') > -1 || strpos($relatedRecord->id, 'overdrive:') > -1) {
+
+								//if (! is_array($itemList)) {
+								if (!isset($itemList)) {
+									$itemList[] = array('type' => $relatedRecord->id, 'name' => $relatedRecord->format);
+								} elseif (!in_array($relatedRecord->format, array_column($itemList, 'name'))) {
+									$itemList[] = array('type' => $relatedRecord->id, 'name' => $relatedRecord->format);
+								}
+							} elseif (is_null($relatedRecord->id)) {
+								$searchResults['Notices'][] = "Related records error";
 							}
-						} elseif(is_null($relatedRecord->id)) {
-							$searchResults['Notices'][] = "Related records error";
+						}
+					} else {
+						foreach ($relatedRecords as $relatedRecord) {
+							if (!isset($itemList)) {
+								$itemList[] = array('type' => $relatedRecord->id, 'name' => $relatedRecord->format, 'source' => $relatedRecord->source);
+							} elseif (!in_array($relatedRecord->format, array_column($itemList, 'name'))) {
+								$itemList[] = array('type' => $relatedRecord->id, 'name' => $relatedRecord->format, 'source' => $relatedRecord->source);
+							}
 						}
 					}
 				}
@@ -133,7 +156,6 @@ if (isset($jsonData['result'])) {
 						$searchResults['Items'][] = array('title' => trim($title), 'author' => $author, 'image' => $iconName, 'format' => $format . ' - ' . $ccode, 'itemList' => $itemList, 'key' => $id, 'summary' => $summary);
 					}
 				}
-			}
 		}
 	}
 }
