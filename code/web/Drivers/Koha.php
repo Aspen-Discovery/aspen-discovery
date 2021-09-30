@@ -116,11 +116,12 @@ class Koha extends AbstractIlsDriver
 				//This method does not use the review queue
 				//Load required fields from Koha here to make sure we don't wipe them out
 				/** @noinspection SqlResolve */
-				$sql = "SELECT address, city FROM borrowers where borrowernumber = {$patron->username}";
+				$this->initDatabaseConnection();
+				$sql = "SELECT address, city FROM borrowers where borrowernumber = '{$patron->username}'";
 				$results = mysqli_query($this->dbConnection, $sql);
 				$address = '';
 				$city = '';
-				if ($results !== false) {
+				if ($results !== false && $results != null) {
 					while ($curRow = $results->fetch_assoc()) {
 						$address = $curRow['address'];
 						$city = $curRow['city'];
@@ -131,7 +132,7 @@ class Koha extends AbstractIlsDriver
 					'surname' => $patron->lastname,
 					'address' => $address,
 					'city' => $city,
-					'library_id' => Location::getUserHomeLocation()->code,
+					'library_id' => $patron->getHomeLocationCode(),
 					'category_id' => $patron->patronType
 				];
 
@@ -188,6 +189,7 @@ class Koha extends AbstractIlsDriver
 				if ($oauthToken == false) {
 					$result['messages'][] = translate(['text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.', 'isPublicFacing'=>true]);
 				} else {
+
 					$apiUrl = $this->getWebServiceURL() . "/api/v1/patrons/{$patron->username}";
 					$postParams = json_encode($postVariables);
 
@@ -199,7 +201,6 @@ class Koha extends AbstractIlsDriver
 						'Content-Type: application/json;charset=UTF-8',
 						'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
 					], true);
-					$this->apiCurlWrapper->setupDebugging();
 					$response = $this->apiCurlWrapper->curlSendPage($apiUrl, 'PUT', $postParams);
 					if ($this->apiCurlWrapper->getResponseCode() != 200) {
 						if (strlen($response) > 0) {
