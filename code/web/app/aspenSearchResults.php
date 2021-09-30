@@ -104,14 +104,31 @@ if (!empty($jsonData['result']['recordSet'])) {
 # * need to parse over the bib records
 # ****************************************************************************************************************************
 		$relatedRecords = $groupedWork->getRelatedRecords();
-		foreach ($relatedRecords as $relatedRecord) {
-			if (strpos($relatedRecord->id, 'ils:') > -1 || strpos($relatedRecord->id, 'overdrive:') > -1) {
 
-				//if (! is_array($itemList)) {
+		if(isset($_GET['lida'])) {
+			$lida = $_GET['lida'];
+		} else {
+			$lida = false;
+		}
+
+		if($lida == false) {
+			foreach ($relatedRecords as $relatedRecord) {
+				if (strpos($relatedRecord->id, 'ils:') > -1 || strpos($relatedRecord->id, 'overdrive:') > -1) {
+
+					//if (! is_array($itemList)) {
+					if (!isset($itemList)) {
+						$itemList[] = array('type' => $relatedRecord->id, 'name' => $relatedRecord->format);
+					} elseif (!in_array($relatedRecord->format, array_column($itemList, 'name'))) {
+						$itemList[] = array('type' => $relatedRecord->id, 'name' => $relatedRecord->format);
+					}
+				}
+			}
+		} else {
+			foreach ($relatedRecords as $relatedRecord) {
 				if (!isset($itemList)) {
-					$itemList[] = array('type' => $relatedRecord->id, 'name' => $relatedRecord->format);
+					$itemList[] = array('type' => $relatedRecord->id, 'name' => $relatedRecord->format, 'source' => $relatedRecord->source);
 				} elseif (!in_array($relatedRecord->format, array_column($itemList, 'name'))) {
-					$itemList[] = array('type' => $relatedRecord->id, 'name' => $relatedRecord->format);
+					$itemList[] = array('type' => $relatedRecord->id, 'name' => $relatedRecord->format, 'source' => $relatedRecord->source);
 				}
 			}
 		}
