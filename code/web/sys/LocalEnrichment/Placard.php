@@ -12,7 +12,7 @@ class Placard extends DataObject
 	public $title;
 	public $body;
 	public $image;
-	public $altText;
+	public /** @noinspection PhpUnused */ $altText;
 	public $link;
 	public $css;
 	public /** @noinspection PhpUnused */ $dismissable;
