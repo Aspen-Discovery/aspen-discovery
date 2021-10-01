@@ -86,6 +86,10 @@ if (isset($jsonData['result']['records'])) {
 				$format = $record['format_' . $shortname][0];
 			}
 
+			if($ccode != '') {
+				$format = $format . ' - ' . $ccode;
+			}
+
 			$id = '';
 			if (isset($record['id'])) {
 				$iconName = $urlPath . "/bookcover.php?id=" . $record['id'] . "&size=large&type=grouped_work";
@@ -151,7 +155,7 @@ if (isset($jsonData['result']['records'])) {
 			# ****************************************************************************************************************************
 			if (!empty($itemList)) {
 				if (count($itemList) > 0) {
-					$searchResults['Items'][] = array('title' => trim($title), 'author' => $author, 'image' => $iconName, 'format' => $format . ' - ' . $ccode, 'itemList' => $itemList, 'key' => $id, 'summary' => $summary);
+					$searchResults['Items'][] = array('title' => trim($title), 'author' => $author, 'image' => $iconName, 'format' => $format, 'itemList' => $itemList, 'key' => $id, 'summary' => $summary);
 				}
 			}
 
