@@ -12,6 +12,7 @@ class Placard extends DataObject
 	public $title;
 	public $body;
 	public $image;
+	public $altText;
 	public $link;
 	public $css;
 	public /** @noinspection PhpUnused */ $dismissable;
@@ -39,6 +40,7 @@ class Placard extends DataObject
 			'body' => array('property'=>'body', 'type'=>'html', 'label'=>'Body', 'description'=>'The body of the placard', 'allowableTags' => '<a><b><em><div><script><span><p><strong><sub><sup>', 'hideInLists' => true),
 			'css' => array('property'=>'css', 'type'=>'textarea', 'label'=>'CSS', 'description'=>'Additional styling to apply to the placard', 'hideInLists' => true),
 			'image' => array('property' => 'image', 'type' => 'image', 'label' => 'Image (800px x 150px max)', 'description' => 'The logo for use in the header', 'required' => false, 'maxWidth' => 800, 'maxHeight' => 150, 'hideInLists' => true),
+			'altText' => array('property'=>'altText', 'type'=>'text', 'label'=>'Alt Text', 'description'=>'Alt Text for the image', 'maxLength'=>500, 'hideInLists' => true),
 			'link' => array('property' => 'link', 'type' => 'url', 'label' => 'Link', 'description' => 'An optional link when clicking on the placard (or link in the placard)', 'hideInLists' => true),
 			'triggers' => array(
 				'property'=>'triggers',
