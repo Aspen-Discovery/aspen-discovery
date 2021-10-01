@@ -77,6 +77,7 @@ function updateAllTablesToUtf8mb4(&$update)
 	$allTables = $result->fetchAll();
 	foreach ($allTables as $tableInfo){
 		$tableName = reset($tableInfo);
+		$fullSQL = "";
 		try {
 			//Get a list of the collations for all tables to see if we need to preserve binary collations
 			$modifyClause = '';
@@ -106,9 +107,9 @@ function updateAllTablesToUtf8mb4(&$update)
 				if (!isset($update['status'])) {
 					$update['status'] = '';
 				}
-				$update['status'] .= '<br/><strong>' . $tableName . '</strong> failed to update to utf8mb4 <br/> - ' .$e->getMessage() . '<br/>';
+				$update['status'] .= '<br/><strong>' . $tableName . "</strong> failed to update to utf8mb4 <br/> -  $fullSQL <br/> - " .$e->getMessage() . '<br/>';
 			} else {
-				$update['status'] = '<br/><strong>' . $tableName . '</strong> failed to update to utf8mb4 <br/> - '. $e->getMessage() . '<br/>';
+				$update['status'] = '<br/><strong>' . $tableName . "</strong> failed to update to utf8mb4 <br/> - $fullSQL <br/> - ". $e->getMessage() . '<br/>';
 				$updateOk = false;
 			}
 		}
