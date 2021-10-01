@@ -232,7 +232,8 @@ public class GroupedReindexMain {
 
 				//Fetch the file if we have never updated or if we last updated more than a week ago
 				boolean updateDB = false;
-				if (existingFileLastModified < (new java.util.Date().getTime() - (7 * 23 * 60 * 60))){
+				//Use 23 hours rather than 24 hours to avoid the day accelerated reader loads doesn't drift.
+				if (existingFileLastModified < (new java.util.Date().getTime() - (7 * 23 * 60 * 60 * 1000))){
 					updateDB = true;
 					logEntry.addNote("Fetching new Accelerated Reader Data");
 					logEntry.saveResults();
