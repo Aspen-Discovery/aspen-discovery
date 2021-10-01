@@ -17,7 +17,6 @@ require_once '../bootstrap_aspen.php';
 # * grab the passed location parameter, then find the path
 # ****************************************************************************************************************************
 $urlPath = 'https://'.$_SERVER['SERVER_NAME'];
-
 $shortname = $_GET['library'];
 
 # ****************************************************************************************************************************
@@ -180,60 +179,6 @@ if (isset($jsonData['result']['records'])) {
 				if (isset($record['id'])) {
 					$iconName = $urlPath . "/bookcover.php?id=" . $record['id'] . "&size=medium&type=grouped_work";
 					$id = $record['id'];
-				}
-
-
-				# ****************************************************************************************************************************
-				# * clean up the summary to remove some of the &# codes
-				# ****************************************************************************************************************************
-				$summary = '';
-				if (isset($record['display_description'])) {
-					$summary = utf8_encode(trim(strip_tags($record['display_description'])));
-					$summary = str_replace('&#8211;', ' - ', $summary);
-					$summary = str_replace('&#8212;', ' - ', $summary);
-					$summary = str_replace('&#160;', ' ', $summary);
-				}
-
-				$title = '';
-				if (isset($record['title_display'])) {
-					$title = ucwords($record['title_display']);
-				}
-				unset($itemList);
-
-				# ****************************************************************************************************************************
-				# * need to parse over the bib records
-				# ****************************************************************************************************************************
-
-				if (isset($_GET['lida'])) {
-					$lida = $_GET['lida'];
-				} else {
-					$lida = false;
-				}
-
-				if ($relatedRecords = $groupedWork->getRelatedRecords()) {
-					if ($lida == false) {
-						foreach ($relatedRecords as $relatedRecord) {
-							if (strpos($relatedRecord->id, 'ils:') > -1 || strpos($relatedRecord->id, 'overdrive:') > -1) {
-
-								//if (! is_array($itemList)) {
-								if (!isset($itemList)) {
-									$itemList[] = array('type' => $relatedRecord->id, 'name' => $relatedRecord->format);
-								} elseif (!in_array($relatedRecord->format, array_column($itemList, 'name'))) {
-									$itemList[] = array('type' => $relatedRecord->id, 'name' => $relatedRecord->format);
-								}
-							} elseif (is_null($relatedRecord->id)) {
-								$searchResults['Notices'][] = "Related records error";
-							}
-						}
-					} else {
-						foreach ($relatedRecords as $relatedRecord) {
-							if (!isset($itemList)) {
-								$itemList[] = array('type' => $relatedRecord->id, 'name' => $relatedRecord->format, 'source' => $relatedRecord->source);
-							} elseif (!in_array($relatedRecord->format, array_column($itemList, 'name'))) {
-								$itemList[] = array('type' => $relatedRecord->id, 'name' => $relatedRecord->format, 'source' => $relatedRecord->source);
-							}
-						}
-					}
 				}
 
 				# ****************************************************************************************************************************
