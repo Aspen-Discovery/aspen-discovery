@@ -44,15 +44,15 @@ function getUpdates21_13_00() : array
 				"ALTER TABLE indexed_edition DROP INDEX edition",
 				"ALTER TABLE indexed_edition DROP INDEX edition_2",
 				"ALTER TABLE indexed_edition MODIFY COLUMN edition VARCHAR(1000) collate utf8mb4_bin",
-				"ALTER TABLE indexed_physicaldescription DROP INDEX physicalDescription",
-				"ALTER TABLE indexed_physicaldescription DROP INDEX physicalDescription_2",
-				"ALTER TABLE indexed_physicaldescription MODIFY COLUMN physicalDescription VARCHAR(1000) collate utf8mb4_bin",
+				"ALTER TABLE indexed_physicalDescription DROP INDEX physicalDescription",
+				"ALTER TABLE indexed_physicalDescription DROP INDEX physicalDescription_2",
+				"ALTER TABLE indexed_physicalDescription MODIFY COLUMN physicalDescription VARCHAR(1000) collate utf8mb4_bin",
 				"ALTER TABLE session MODIFY COLUMN created DATETIME DEFAULT CURRENT_TIMESTAMP",
 				"ALTER TABLE translation_terms DROP INDEX term",
 				"ALTER TABLE translation_terms MODIFY COLUMN term VARCHAR(1000) collate utf8mb4_bin",
 				"updateAllTablesToUtf8mb4",
 				"ALTER TABLE indexed_edition ADD INDEX edition(edition(500))",
-				"ALTER TABLE indexed_physicaldescription ADD INDEX physicalDescription (physicalDescription(500))",
+				"ALTER TABLE indexed_physicalDescription ADD INDEX physicalDescription (physicalDescription(500))",
 				"ALTER TABLE translation_terms ADD INDEX term (term(500))",
 			]
 		],
@@ -77,6 +77,7 @@ function updateAllTablesToUtf8mb4(&$update)
 	$allTables = $result->fetchAll();
 	foreach ($allTables as $tableInfo){
 		$tableName = reset($tableInfo);
+		$fullSQL = "";
 		try {
 			//Get a list of the collations for all tables to see if we need to preserve binary collations
 			$modifyClause = '';
@@ -91,7 +92,11 @@ function updateAllTablesToUtf8mb4(&$update)
 						$modifyClause .= " NOT NULL";
 					}
 					if ($columnInfo['COLUMN_DEFAULT'] != null){
-						$modifyClause .= " DEFAULT '{$columnInfo['COLUMN_DEFAULT']}'" ;
+						if ($columnInfo['COLUMN_DEFAULT'] == '"NULL"' || $columnInfo['COLUMN_DEFAULT'] == "'NULL'" || $columnInfo['COLUMN_DEFAULT'] == 'NULL') {
+							$modifyClause .= " DEFAULT NULL";
+						}else{
+							$modifyClause .= " DEFAULT '{$columnInfo['COLUMN_DEFAULT']}'";
+						}
 					}
 				}
 			}
@@ -106,9 +111,9 @@ function updateAllTablesToUtf8mb4(&$update)
 				if (!isset($update['status'])) {
 					$update['status'] = '';
 				}
-				$update['status'] .= '<br/><strong>' . $tableName . '</strong> failed to update to utf8mb4 <br/> - ' .$e->getMessage() . '<br/>';
+				$update['status'] .= '<br/><strong>' . $tableName . "</strong> failed to update to utf8mb4 <br/> -  $fullSQL <br/> - " .$e->getMessage() . '<br/>';
 			} else {
-				$update['status'] = '<br/><strong>' . $tableName . '</strong> failed to update to utf8mb4 <br/> - '. $e->getMessage() . '<br/>';
+				$update['status'] = '<br/><strong>' . $tableName . "</strong> failed to update to utf8mb4 <br/> - $fullSQL <br/> - ". $e->getMessage() . '<br/>';
 				$updateOk = false;
 			}
 		}
