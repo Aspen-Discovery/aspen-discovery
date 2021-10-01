@@ -33,6 +33,7 @@
     - [Grouped Work Display Settings](/Admin/HelpManual?page=Grouped-Work-Display-Settings)
     - [Grouped Work Facets](/Admin/HelpManual?page=Grouped-Work-Facets)
       - [Manually grouping records](/Admin/HelpManual?page=Manually-grouping-records)
+    - [Author Authorities](/Admin/HelpManual?page=author-authorities)
   - [Local Catalog Enrichment](/Admin/HelpManual?page=Local-Catalog-Enrichment)
     - [Browse Category Groups](/Admin/HelpManual?page=Browse-Category-Groups)
     - [Browse Categories](/Admin/HelpManual?page=Browse-Categories)
