@@ -11,7 +11,9 @@
 		menubar: '',
 		images_upload_url: '/WebBuilder/AJAX?method=uploadImageTinyMCE',
 		convert_urls: false,
-		theme: 'modern'
+		theme: 'modern',
+		valid_elements : '*[*]',
+		extended_valid_elements : '*[*]',
 	});
 	{/literal}
 	</script>
