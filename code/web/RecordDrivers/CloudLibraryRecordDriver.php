@@ -192,14 +192,14 @@ class CloudLibraryRecordDriver extends MarcRecordDriver {
 						$userId = 'null';
 					}
 					$this->_actions[] = array(
-						'title' => translate(['text'=>'Check Out Cloud Library','isPublicFacing'=>true]),
+						'title' => translate(['text'=>'Check Out cloudLibrary','isPublicFacing'=>true]),
 						'onclick' => "return AspenDiscovery.CloudLibrary.checkOutTitle({$userId}, '{$this->id}');",
 						'requireLogin' => false,
 						'type' => 'cloud_library_checkout'
 					);
 				} else {
 					$this->_actions[] = array(
-						'title' => translate(['text'=>'Place Hold Cloud Library','isPublicFacing'=>true]),
+						'title' => translate(['text'=>'Place Hold cloudLibrary','isPublicFacing'=>true]),
 						'onclick' => "return AspenDiscovery.CloudLibrary.placeHold('{$this->id}');",
 						'requireLogin' => false,
 						'type' => 'cloud_library_hold'
@@ -310,7 +310,7 @@ class CloudLibraryRecordDriver extends MarcRecordDriver {
 		$relatedRecord = $this->getRelatedRecord();
 		$statusSummary = array();
 		if ($relatedRecord != null && $relatedRecord->getAvailableCopies() > 0){
-			$statusSummary['status'] = "Available from Cloud Library";
+			$statusSummary['status'] = "Available from cloudLibrary";
 			$statusSummary['available'] = true;
 			$statusSummary['class'] = 'available';
 			$statusSummary['showPlaceHold'] = false;

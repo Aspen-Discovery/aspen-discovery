@@ -764,7 +764,7 @@ class Library extends DataObject
 			'axis360Section' => array('property'=>'axis360Section', 'type' => 'section', 'label' =>'Axis 360', 'hideInLists' => true, 'renderAsHeading' => true, 'permissions' => ['Library Records included in Catalog'], 'properties' => array(
 				'axis360ScopeId'        => array('property'=>'axis360ScopeId', 'type'=>'enum','values'=>$axis360Scopes, 'label'=>'Axis 360 Scope', 'description'=>'The Axis 360 scope to use', 'hideInLists' => true, 'default'=>-1, 'forcesReindex' => true),
 			)),
-			'cloudLibrarySection' => array('property'=>'cloudLibrarySection', 'type' => 'section', 'label' =>'Cloud Library', 'hideInLists' => true, 'renderAsHeading' => true, 'permissions' => ['Library Records included in Catalog'], 'properties' => array(
+			'cloudLibrarySection' => array('property'=>'cloudLibrarySection', 'type' => 'section', 'label' =>'cloudLibrary', 'hideInLists' => true, 'renderAsHeading' => true, 'permissions' => ['Library Records included in Catalog'], 'properties' => array(
 				'cloudLibraryScopes' => [
 					'property' => 'cloudLibraryScopes',
 					'type' => 'oneToMany',
@@ -772,7 +772,7 @@ class Library extends DataObject
 					'keyOther' => 'libraryId',
 					'subObjectType' => 'LibraryCloudLibraryScope',
 					'structure' => $cloudLibraryScopeStructure,
-					'label' => 'Cloud Library Scopes',
+					'label' => 'cloudLibrary Scopes',
 					'description' => 'The scopes that apply to this library',
 					'sortable' => false,
 					'storeDb' => true,

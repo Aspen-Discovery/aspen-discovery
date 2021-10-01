@@ -1,6 +1,6 @@
 {strip}
 	<div id="main-content" class="col-md-12">
-		<h1>{translate text="Cloud Library Export Log" isAdminFacing=true}</h1>
+		<h1>{translate text="cloudLibrary Export Log" isAdminFacing=true}</h1>
 
 		{include file='Admin/exportLogFilters.tpl'}
 		<div id="exportLogContainer">

@@ -458,7 +458,7 @@ class MyAccount_AJAX extends JSON_Action
 								$driver = new OverDriveDriver();
 								$tmpResult = $driver->freezeHold($user, $recordId, null);
 								if($tmpResult['success']){$success++;}else{$failed++;}
-							//Cloud Library holds can't be frozen
+							//cloudLibrary holds can't be frozen
 //							} else if ($holdType == 'cloud_library') {
 //								require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
 //								$driver = new CloudLibraryDriver();
@@ -1355,7 +1355,7 @@ class MyAccount_AJAX extends JSON_Action
 						$cloudLibrarySummary->numAvailableHolds += $linkedUserSummary->numAvailableHolds;
 					}
 				}
-				$timer->logTime("Loaded Cloud Library Summary for User and linked users");
+				$timer->logTime("Loaded cloudLibrary Summary for User and linked users");
 				$result = [
 					'success' => true,
 					'summary' => $cloudLibrarySummary->toArray()

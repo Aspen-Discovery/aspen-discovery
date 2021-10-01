@@ -107,7 +107,7 @@ public class CloudLibraryExportMain {
 					try {
 						numChanges[0] += exporter.extractRecords();
 					}catch (Exception e){
-						logger.error("Error setting up cloud library exporter", e);
+						logger.error("Error setting up cloudLibrary exporter", e);
 					}
 				});
 			}
