@@ -92,7 +92,11 @@ function updateAllTablesToUtf8mb4(&$update)
 						$modifyClause .= " NOT NULL";
 					}
 					if ($columnInfo['COLUMN_DEFAULT'] != null){
-						$modifyClause .= " DEFAULT '{$columnInfo['COLUMN_DEFAULT']}'" ;
+						if ($columnInfo['COLUMN_DEFAULT'] == '"NULL"') {
+							$modifyClause .= " DEFAULT NULL";
+						}else{
+							$modifyClause .= " DEFAULT '{$columnInfo['COLUMN_DEFAULT']}'";
+						}
 					}
 				}
 			}
