@@ -1075,7 +1075,7 @@ class User extends DataObject
 				}
 			}
 
-			//Get holds from Cloud Library
+			//Get holds from cloudLibrary
 			if ($this->isValidForEContentSource('cloud_library')) {
 				require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
 				$driver = new CloudLibraryDriver();
@@ -2364,16 +2364,16 @@ class User extends DataObject
 		}
 
 		if (array_key_exists('Cloud Library', $enabledModules)) {
-			$sections['cloud_library'] = new AdminSection('Cloud Library');
-			$cloudLibrarySettingsAction = new AdminAction('Settings', 'Define connection information between Cloud Library and Aspen Discovery.', '/CloudLibrary/Settings');
+			$sections['cloud_library'] = new AdminSection('cloudLibrary');
+			$cloudLibrarySettingsAction = new AdminAction('Settings', 'Define connection information between cloudLibrary and Aspen Discovery.', '/CloudLibrary/Settings');
 			$cloudLibraryScopesAction = new AdminAction('Scopes', 'Define which records are loaded for each library and location.', '/CloudLibrary/Scopes');
 			if ($sections['cloud_library']->addAction($cloudLibrarySettingsAction, 'Administer Cloud Library')) {
 				$cloudLibrarySettingsAction->addSubAction($cloudLibraryScopesAction, 'Administer Cloud Library');
 			} else {
 				$sections['cloud_library']->addAction($cloudLibraryScopesAction, 'Administer Cloud Library');
 			}
-			$sections['cloud_library']->addAction(new AdminAction('Indexing Log', 'View the indexing log for Cloud Library.', '/CloudLibrary/IndexingLog'), ['View System Reports', 'View Indexing Logs']);
-			$sections['cloud_library']->addAction(new AdminAction('Dashboard', 'View the usage dashboard for Cloud Library integration.', '/CloudLibrary/Dashboard'), ['View Dashboards', 'View System Reports']);
+			$sections['cloud_library']->addAction(new AdminAction('Indexing Log', 'View the indexing log for cloudLibrary.', '/CloudLibrary/IndexingLog'), ['View System Reports', 'View Indexing Logs']);
+			$sections['cloud_library']->addAction(new AdminAction('Dashboard', 'View the usage dashboard for cloudLibrary integration.', '/CloudLibrary/Dashboard'), ['View Dashboards', 'View System Reports']);
 		}
 
 		if (array_key_exists('EBSCO EDS', $enabledModules)) {

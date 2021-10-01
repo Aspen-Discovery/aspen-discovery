@@ -58,7 +58,7 @@ class CloudLibrary_AJAX extends JSON_Action
 		$usersWithCloudLibraryAccess = $this->getCloudLibraryUsers($user);
 
 		if (count($usersWithCloudLibraryAccess) > 1) {
-			$promptTitle = 'Cloud Library Hold Options';
+			$promptTitle = 'cloudLibrary Hold Options';
 			return array(
 					'promptNeeded' => true,
 					'promptTitle' => $promptTitle,
@@ -71,8 +71,8 @@ class CloudLibrary_AJAX extends JSON_Action
 					'promptNeeded' => false,
 				);
 		} else {
-			// No Cloud Library Account Found
-			$invalidAccountMessage = translate(['text' => "The barcode or library for this account is not valid for Cloud Library. Please contact your local library for more information.", 'isPublicFacing'=>true]);
+			// No cloudLibrary Account Found
+			$invalidAccountMessage = translate(['text' => "The barcode or library for this account is not valid for cloudLibrary. Please contact your local library for more information.", 'isPublicFacing'=>true]);
 			return array(
 					'promptTitle' => translate(['text' => 'Invalid Account', 'isPublicFacing'=>true]),
 					'prompts' => '<p class="alert alert-danger">' . $invalidAccountMessage . '</p>',
@@ -103,7 +103,7 @@ class CloudLibrary_AJAX extends JSON_Action
 		$usersWithCloudLibraryAccess = $this->getCloudLibraryUsers($user);
 
 		if (count($usersWithCloudLibraryAccess) > 1) {
-			$promptTitle = 'Cloud Library Checkout Options';
+			$promptTitle = 'cloudLibrary Checkout Options';
 			return array(
 					'promptNeeded' => true,
 					'promptTitle' => $promptTitle,
@@ -116,8 +116,8 @@ class CloudLibrary_AJAX extends JSON_Action
 					'promptNeeded' => false,
 				);
 		} else {
-			// No Cloud Library Account Found
-			$invalidAccountMessage = translate(['text' => "The barcode or library for this account is not valid for Cloud Library. Please contact your local library for more information.", 'isPublicFacing'=>true]);
+			// No cloudLibrary Account Found
+			$invalidAccountMessage = translate(['text' => "The barcode or library for this account is not valid for cloudLibrary. Please contact your local library for more information.", 'isPublicFacing'=>true]);
 			return array(
 					'promptTitle' => translate(['text' => 'Invalid Account', 'isPublicFacing'=>true]),
 					'prompts' => '<p class="alert alert-danger">' . $invalidAccountMessage . '</p>',
@@ -212,7 +212,7 @@ class CloudLibrary_AJAX extends JSON_Action
 		require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
 		$driver = new CloudLibraryDriver();
 
-		//Before we place the hold, check the status since Cloud Library doesn't always update properly
+		//Before we place the hold, check the status since cloudLibrary doesn't always update properly
 		$itemStatus = $driver->getItemStatus($id, $patron);
 		if ($itemStatus == 'CAN_LOAN' || $itemStatus == 'RESERVATION') {
 			$result = $driver->checkoutTitle($patron, $id);
@@ -244,12 +244,12 @@ class CloudLibrary_AJAX extends JSON_Action
 		} elseif ($itemStatus == 'Authentication failed') {
 			$result = [
 				'result' => true,
-				'message' => translate(['text' => 'We were unable to authenticate your account in Cloud Library. If this problem persists, please contact the library.', 'isPublicFacing'=>true])
+				'message' => translate(['text' => 'We were unable to authenticate your account in cloudLibrary. If this problem persists, please contact the library.', 'isPublicFacing'=>true])
 			];
 		} else {
 			$result = [
 				'result' => true,
-				'message' => translate(['text' => "Cloud Library returned an invalid item status (%1%).", 1=>$itemStatus, 'isPublicFacing'=>true ])
+				'message' => translate(['text' => "cloudLibrary returned an invalid item status (%1%).", 1=>$itemStatus, 'isPublicFacing'=>true ])
 			];
 		}
 		return $result;

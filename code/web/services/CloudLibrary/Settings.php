@@ -23,7 +23,7 @@ class CloudLibrary_Settings extends ObjectEditor
 
 	function getPageTitle() : string
 	{
-		return 'Cloud Library Settings';
+		return 'cloudLibrary Settings';
 	}
 
 	function getAllObjects($page, $recordsPerPage) : array
@@ -72,7 +72,7 @@ class CloudLibrary_Settings extends ObjectEditor
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
-		$breadcrumbs[] = new Breadcrumb('/Admin/Home#cloud_library', 'Cloud Library');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#cloud_library', 'cloudLibrary');
 		$breadcrumbs[] = new Breadcrumb('/CloudLibrary/Settings', 'Settings');
 		return $breadcrumbs;
 	}
@@ -84,6 +84,6 @@ class CloudLibrary_Settings extends ObjectEditor
 
 	function canView() : bool
 	{
-		return UserAccount::userHasPermission('Administer Cloud Library');
+		return UserAccount::userHasPermission('Administer cloudLibrary');
 	}
 }

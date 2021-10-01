@@ -65,7 +65,7 @@ Find out more about hold rules in Aspen Discovery here: [https://bywatersolution
 
 **Q:** *What E-content vendors can Aspen connect to?*
 
-**A:** Aspen discovery can connect via API to Overdrive, Hoopla, Cloud Library, Axis 360, EBSCO EDS, and any vendor that supplies MARC records via side loading.
+**A:** Aspen discovery can connect via API to Overdrive, Hoopla, cloudLibrary, Axis 360, EBSCO EDS, and any vendor that supplies MARC records via side loading.
 
 Find more about Axis 360 integration here: [https://bywatersolutions.com/education/axis-360-integration-with-aspen-discovery-webinar](https://bywatersolutions.com/education/axis-360-integration-with-aspen-discovery-webinar)
 

@@ -56,6 +56,13 @@ function getUpdates21_13_00() : array
 				"ALTER TABLE translation_terms ADD INDEX term (term(500))",
 			]
 		],
+		'placard_alt_text' => [
+			'title' => 'Add alt text for Placard Images',
+			'description' => 'Add alt text for Placard Images',
+			'sql' => [
+				'ALTER TABLE placards ADD COLUMN altText VARCHAR(500)'
+			]
+		], //placard_alt_text
 	];
 }
 

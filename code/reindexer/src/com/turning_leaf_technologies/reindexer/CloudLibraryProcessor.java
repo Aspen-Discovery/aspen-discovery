@@ -31,7 +31,7 @@ class CloudLibraryProcessor extends MarcRecordProcessor {
 			getProductInfoStmt = dbConn.prepareStatement("SELECT * from cloud_library_title where cloudLibraryId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			getAvailabilityStmt = dbConn.prepareStatement("SELECT * from cloud_library_availability where cloudLibraryId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 		} catch (SQLException e) {
-			logger.error("Error setting up Cloud Library processor", e);
+			logger.error("Error setting up cloudLibrary processor", e);
 		}
 	}
 
@@ -42,7 +42,7 @@ class CloudLibraryProcessor extends MarcRecordProcessor {
 			if (productRS.next()) {
 				//Make sure the record isn't deleted
 				if (productRS.getBoolean("deleted")) {
-					logger.debug("Cloud Library product " + identifier + " was deleted, skipping");
+					logger.debug("cloudLibrary product " + identifier + " was deleted, skipping");
 					return;
 				}
 
@@ -88,9 +88,9 @@ class CloudLibraryProcessor extends MarcRecordProcessor {
 					loadLanguageDetails(groupedWork, marcRecord, allRelatedRecords, identifier);
 					loadPublicationDetails(groupedWork, marcRecord, allRelatedRecords);
 
-					//TODO: Cloud Library does not code target audience.  Load from subjects
+					//TODO: cloudLibrary does not code target audience.  Load from subjects
 				} else {
-					logEntry.incErrors("Error getting MARC record for Cloud Library record from database");
+					logEntry.incErrors("Error getting MARC record for cloudLibrary record from database");
 				}
 
 				//Update to create one item per settings so we can have uniform availability at the item level
@@ -107,12 +107,12 @@ class CloudLibraryProcessor extends MarcRecordProcessor {
 					itemInfo.setItemIdentifier(identifier + ":" + settingId); //Make sure we have an item identifier
 					itemInfo.setFormat(primaryFormat);
 					itemInfo.setFormatCategory(formatCategory);
-					itemInfo.seteContentSource("Cloud Library");
+					itemInfo.seteContentSource("cloudLibrary");
 					itemInfo.setIsEContent(true);
-					itemInfo.setShelfLocation("Online Cloud Library Collection");
-					itemInfo.setDetailedLocation("Online Cloud Library Collection");
-					itemInfo.setCallNumber("Online Cloud Library");
-					itemInfo.setSortableCallNumber("Online Cloud Library");
+					itemInfo.setShelfLocation("Online cloudLibrary Collection");
+					itemInfo.setDetailedLocation("Online cloudLibrary Collection");
+					itemInfo.setCallNumber("Online cloudLibrary");
+					itemInfo.setSortableCallNumber("Online cloudLibrary");
 					itemInfo.setHoldable(true);
 					itemInfo.setInLibraryUseOnly(false);
 
@@ -162,9 +162,9 @@ class CloudLibraryProcessor extends MarcRecordProcessor {
 			}
 			productRS.close();
 		} catch (NullPointerException e) {
-			logEntry.incErrors("Null pointer exception processing Cloud Library record ", e);
+			logEntry.incErrors("Null pointer exception processing cloudLibrary record ", e);
 		} catch (SQLException e) {
-			logEntry.incErrors("Error loading information from Database for Cloud Library title", e);
+			logEntry.incErrors("Error loading information from Database for cloudLibrary title", e);
 		}
 	}
 

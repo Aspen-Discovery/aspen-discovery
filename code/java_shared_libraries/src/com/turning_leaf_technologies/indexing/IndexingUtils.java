@@ -161,7 +161,7 @@ public class IndexingUtils {
 			}
 
 		} catch (SQLException e) {
-			logger.error("Error loading Cloud Library scopes", e);
+			logger.error("Error loading cloudLibrary scopes", e);
 		}
 		return cloudLibraryScopes;
 	}
