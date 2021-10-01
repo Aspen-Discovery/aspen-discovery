@@ -155,41 +155,6 @@ if (isset($jsonData['result']['records'])) {
 				}
 			}
 
-			if ($groupedWork = new GroupedWorkDriver($record)) {
-
-				$author = '';
-				if (isset($record['author_display'][0])) {
-					$author = $record['author_display'];
-				}
-
-				# ****************************************************************************************************************************
-				# * collection code may be empty - need to dummy it out just in case
-				# ****************************************************************************************************************************
-				$ccode = '';
-				if (isset($record['collection_' . $shortname][0])) {
-					$ccode = $record['collection_' . $shortname][0];
-				}
-
-				$format = '';
-				if (isset($record['format_' . $shortname][0])) {
-					$format = $record['format_' . $shortname][0];
-				}
-
-				$id = '';
-				if (isset($record['id'])) {
-					$iconName = $urlPath . "/bookcover.php?id=" . $record['id'] . "&size=medium&type=grouped_work";
-					$id = $record['id'];
-				}
-
-				# ****************************************************************************************************************************
-				# * Build out results array ... ensure we have at least one item available
-				# ****************************************************************************************************************************
-				if (!empty($itemList)) {
-					if (count($itemList) > 0) {
-						$searchResults['Items'][] = array('title' => trim($title), 'author' => $author, 'image' => $iconName, 'format' => $format . ' - ' . $ccode, 'itemList' => $itemList, 'key' => $id, 'summary' => $summary);
-					}
-				}
-			}
 		}
 	}
 }
