@@ -1306,7 +1306,7 @@ class User extends DataObject
 	}
 
 	public function getNameAndLibraryLabel(){
-		return $this->displayName . ' - ' . $this->getHomeLibrarySystemName();
+		return $this->getDisplayName() . ' - ' . $this->getHomeLibrarySystemName();
 	}
 
 	public function getValidHomeLibraryBranches($recordSource){
