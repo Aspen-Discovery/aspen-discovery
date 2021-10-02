@@ -63,6 +63,13 @@ function getUpdates21_13_00() : array
 				'ALTER TABLE placards ADD COLUMN altText VARCHAR(500)'
 			]
 		], //placard_alt_text
+		'increase_nonHoldableITypes' => [
+			'title' => 'Increase nonHoldableITypes length',
+			'description' => 'Increase the length of the nonHoldableITypes field',
+			'sql' => [
+				'ALTER TABLE indexing_profiles CHANGE COLUMN nonHoldableITypes nonHoldableITypes varchar(600) DEFAULT NULL'
+			]
+		], //increase_nonHoldableITypes
 	];
 }
 
