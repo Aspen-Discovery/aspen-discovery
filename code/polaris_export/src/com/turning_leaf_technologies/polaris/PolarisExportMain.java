@@ -824,9 +824,33 @@ public class PolarisExportMain {
 		indexingProfile.setLastChangeProcessed(0);
 		indexingProfile.updateLastChangeProcessed(dbConn, logEntry);
 
-		//If we are doing a continuous index, get a list of any items that have been updated or changed
+		//If we are doing a continuous index, get a list of any items that have been updated or changed or bib ids that have been replaced
 		if (!indexingProfile.isRunFullUpdate() && lastExtractTime != 0){
 			HashSet<String> bibsToUpdate = new HashSet<>();
+
+			//Get a list of any bibs that have been replaced.
+			DateTimeFormatter dateReplacedFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd", Locale.ENGLISH).withZone(ZoneId.systemDefault());
+			String formattedLastItemExtractDate = URLEncoder.encode(dateReplacedFormatter.format(Instant.ofEpochSecond(lastExtractTime)), "UTF-8");
+			String getBibReplacedUrl = "/PAPIService/REST/protected/v1/1033/100/1/" + accessToken + "/synch/bibs/replacementids?startdate=" + formattedLastItemExtractDate;
+			WebServiceResponse bibsReplaced = callPolarisAPI(getBibReplacedUrl, null, "GET", "application/json", accessSecret);
+			if (bibsReplaced.isSuccess()){
+				try {
+					JSONObject response = bibsReplaced.getJSONResponse();
+					JSONArray allBibs = response.getJSONArray("BibReplacementIDRows");
+					logEntry.addNote("There were " + allBibs.length() + "bibs where the id has been replaced");
+					for (int i = 0; i < allBibs.length(); i++) {
+						JSONObject curBibReplacement = allBibs.getJSONObject(i);
+						String originalId = Long.toString(curBibReplacement.getLong("OriginalBibRecordID"));
+						String newId = Long.toString(curBibReplacement.getLong("NewBibliographicRecordID"));
+						bibsToUpdate.add(originalId);
+						bibsToUpdate.add(newId);
+					}
+					logEntry.saveResults();
+				} catch (Exception e) {
+					logEntry.incErrors("Unable to parse document for replaced bubs response", e);
+				}
+			}
+
 			DateTimeFormatter itemDateFormatter = DateTimeFormatter.ofPattern("MM/dd/yyyy HH:mm:ss", Locale.ENGLISH).withZone(ZoneId.systemDefault());
 			String formattedLastItemExtractTime = URLEncoder.encode(itemDateFormatter.format(Instant.ofEpochSecond(lastExtractTime)), "UTF-8");
 			logEntry.addNote("Getting a list of all items that have been updated");
