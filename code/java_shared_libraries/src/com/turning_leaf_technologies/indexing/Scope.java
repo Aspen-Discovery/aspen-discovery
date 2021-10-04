@@ -74,7 +74,7 @@ public class Scope implements Comparable<Scope>{
 	 * @param subLocationCode   The sub location code to check.  Set to blank if no sub location code
 	 * @return                  Whether or not the item is included within the scope
 	 */
-	public InclusionResult isItemPartOfScope(@NotNull String recordType, @NotNull String locationCode, @NotNull String subLocationCode, String iType, TreeSet<String> audiences, String format, boolean isHoldable, boolean isOnOrder, boolean isEContent, Record marcRecord, String econtentUrl){
+	public InclusionResult isItemPartOfScope(@NotNull String recordType, @NotNull String locationCode, @NotNull String subLocationCode, String iType, TreeSet<String> audiences, String audiencesAsString, String format, boolean isHoldable, boolean isOnOrder, boolean isEContent, Record marcRecord, String econtentUrl){
 		String fullKey = recordType + locationCode + subLocationCode;
 		for(OwnershipRule curRule: ownershipRules){
 			if (curRule.isItemOwned(fullKey, recordType, locationCode, subLocationCode)){
@@ -83,7 +83,7 @@ public class Scope implements Comparable<Scope>{
 		}
 
 		for(InclusionRule curRule: inclusionRules){
-			if (curRule.isItemIncluded(recordType, locationCode, subLocationCode, iType, audiences, format, isHoldable, isOnOrder, isEContent, marcRecord)){
+			if (curRule.isItemIncluded(recordType, locationCode, subLocationCode, iType, audiences, audiencesAsString, format, isHoldable, isOnOrder, isEContent, marcRecord)){
 				if (econtentUrl != null) {
 					econtentUrl = curRule.getLocalUrl(econtentUrl);
 				}

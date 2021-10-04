@@ -768,7 +768,7 @@ public class GroupedWorkIndexer {
 			//Write the record to Solr.
 			try {
 				if (this.isStoreRecordDetailsInDatabase()) {
-					groupedWork.saveRecordsToDatabase(id, logEntry);
+					groupedWork.saveRecordsToDatabase(id);
 				}
 				SolrInputDocument inputDocument = groupedWork.getSolrDocument(logEntry);
 				UpdateResponse response = updateServer.add(inputDocument);
