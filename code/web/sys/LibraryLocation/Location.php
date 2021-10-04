@@ -1436,13 +1436,23 @@ class Location extends DataObject
 			'isMainBranch' => (bool)$this->isMainBranch,
 			'displayName' => $this->displayName,
 			'address' => $this->address,
+			'latitude' => $this->latitude,
+			'longitude' => $this->longitude,
 			'phone' => $this->phone,
 			'tty' => $this->tty,
 			'description' => $this->description,
-			'homeLink' => empty($this->homeLink) ? ($parentLibrary == null ? '' : $parentLibrary->homeLink) : $this->homeLink,
 			'hoursMessage' => Location::getLibraryHoursMessage($this->locationId),
 			'hours' => []
 		];
+		if((empty($this->homeLink) || $this->homeLink == "default")) {
+			if($parentLibrary == null) {
+				$apiInfo['homeLink'] = '';
+			} else {
+				$apiInfo['homeLink'] = $parentLibrary->homeLink;
+			}
+		} else {
+			$apiInfo['homeLink'] = $this->homeLink;
+		}
 		$hours = $this->getHours();
 		foreach ($hours as $hour){
 			$apiInfo['hours'][] = [
