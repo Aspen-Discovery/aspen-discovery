@@ -842,7 +842,14 @@ public class PolarisExportMain {
 						JSONObject curBibReplacement = allBibs.getJSONObject(i);
 						String originalId = Long.toString(curBibReplacement.getLong("OriginalBibRecordID"));
 						String newId = Long.toString(curBibReplacement.getLong("NewBibliographicRecordID"));
-						bibsToUpdate.add(originalId);
+						RemoveRecordFromWorkResult result = getRecordGroupingProcessor().removeRecordFromGroupedWork(indexingProfile.getName(), originalId);
+						if (result.reindexWork){
+							getGroupedWorkIndexer().processGroupedWork(result.permanentId);
+						}else if (result.deleteWork){
+							//Delete the work from solr and the database
+							getGroupedWorkIndexer().deleteRecord(result.permanentId);
+						}
+						logEntry.incDeleted();
 						bibsToUpdate.add(newId);
 					}
 					logEntry.saveResults();
