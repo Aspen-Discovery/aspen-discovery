@@ -49,6 +49,12 @@ class HooplaProcessor {
 					logger.debug("Hoopla product " + identifier + " is inactive, skipping");
 					return;
 				}
+				byte[] rawResponseBytes = productRS.getBytes("rawResponse");
+				if (rawResponseBytes == null){
+					logEntry.incErrors("rawResponse for Hoopla title " + identifier + " was null skipping");
+					return;
+				}
+
 				String kind = productRS.getString("kind");
 				float price = productRS.getFloat("price");
 
@@ -93,7 +99,7 @@ class HooplaProcessor {
 				hooplaRecord.addFormat(primaryFormat);
 				hooplaRecord.addFormatCategory(formatCategory);
 
-				String rawResponseString = new String(productRS.getBytes("rawResponse"), StandardCharsets.UTF_8);
+				String rawResponseString = new String(rawResponseBytes, StandardCharsets.UTF_8);
 				if (rawResponseString.charAt(0) != '{' || rawResponseString.charAt(rawResponseString.length() -1) != '}'){
 					//If the first char is not { check to see if it has been double encoded
 					rawResponseString = fixHooplaData(productRS.getLong("id"));
