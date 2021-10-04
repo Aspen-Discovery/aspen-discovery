@@ -135,12 +135,10 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver
 		$availability = $this->getAvailability();
 		$addCheckoutLink = false;
 		$addPlaceHoldLink = false;
-		foreach ($availability as $availableFrom) {
-			if ($availableFrom->copiesAvailable > 0) {
-				$addCheckoutLink = true;
-			} else {
-				$addPlaceHoldLink = true;
-			}
+		if ($availability->copiesAvailable > 0) {
+			$addCheckoutLink = true;
+		} else {
+			$addPlaceHoldLink = true;
 		}
 		foreach ($items as $key => $item) {
 			$item->links = array();
@@ -166,30 +164,10 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver
 		return $items;
 	}
 
-	/**
-	 * @return array
-	 */
-	public function getScopedAvailability()
-	{
-		$availability = array();
-		$availability['mine'] = $this->getAvailability();
-		$availability['other'] = array();
-		$scopingId = $this->getLibraryScopingId();
-		if ($scopingId != -1) {
-			foreach ($availability['mine'] as $key => $availabilityItem) {
-				if ($availabilityItem->libraryId != -1 && $availabilityItem->libraryId != $scopingId) {
-					$availability['other'][$key] = $availability['mine'][$key];
-					unset($availability['mine'][$key]);
-				}
-			}
-		}
-		return $availability;
-	}
-
 	public function getStatusSummary()
 	{
 		$holdings = $this->getHoldings();
-		$scopedAvailability = $this->getScopedAvailability();
+		$availability = $this->getAvailability();
 
 		$holdPosition = 0;
 
@@ -200,14 +178,10 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver
 		$onHold = 0;
 		$wishListSize = 0;
 		$numHolds = 0;
-		if (count($scopedAvailability['mine']) > 0) {
-			foreach ($scopedAvailability['mine'] as $curAvailability) {
-				$availableCopies += $curAvailability->copiesAvailable;
-				$totalCopies += $curAvailability->copiesOwned;
-				if ($curAvailability->numberOfHolds > $numHolds) {
-					$numHolds = $curAvailability->numberOfHolds;
-				}
-			}
+		if ($availability != null) {
+			$availableCopies += $availability->copiesAvailable;
+			$totalCopies += $availability->copiesOwned;
+			$numHolds = $availability->numberOfHolds;
 		}
 
 		//Load status summary
@@ -241,8 +215,8 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver
 
 		//Determine which buttons to show
 		$statusSummary['holdQueueLength'] = $numHolds;
-		$statusSummary['showPlaceHold'] = $availableCopies == 0 && count($scopedAvailability['mine']) > 0;
-		$statusSummary['showCheckout'] = $availableCopies > 0 && count($scopedAvailability['mine']) > 0;
+		$statusSummary['showPlaceHold'] = $availableCopies == 0;
+		$statusSummary['showCheckout'] = $availableCopies > 0;
 		$statusSummary['showAddToWishlist'] = false;
 		$statusSummary['showAccessOnline'] = false;
 
@@ -345,7 +319,7 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver
 	private $availability = null;
 
 	/**
-	 * @return OverDriveAPIProductAvailability[]
+	 * @return OverDriveAPIProductAvailability
 	 */
 	function getAvailability()
 	{
@@ -357,36 +331,13 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver
 			$availability->productId = $this->overDriveProduct->id;
 			$availability->settingId = $library->getOverdriveScope()->settingId;
 			//Only include shared collection if include digital collection is on
-			$searchLibrary = Library::getSearchLibrary();
-			$searchLocation = Location::getSearchLocation();
-			$includeSharedTitles = true;
-			if ($searchLocation != null) {
-				$includeSharedTitles = $searchLocation->overDriveScopeId != 0;
-			} elseif ($searchLibrary != null) {
-				$includeSharedTitles = $searchLibrary->overDriveScopeId != 0;
-			}
 			$libraryScopingId = $this->getLibraryScopingId();
-			if ($includeSharedTitles) {
-				//$availability->whereAdd('libraryId = -1 OR libraryId = ' . $libraryScopingId);
-			} else {
-				if ($libraryScopingId == -1) {
-					return $this->availability;
-				} else {
-					$availability->whereAdd('libraryId = ' . $libraryScopingId);
-				}
-			}
-			$availability->find();
-			$copiesInLibraryCollection = 0;
-			while ($availability->fetch()) {
-				$this->availability[$availability->libraryId] = clone $availability;
-				if ($availability->libraryId != -1) {
-					if ($availability->shared) {
-						$copiesInLibraryCollection += $availability->copiesOwned;
-					}
-				}
-			}
-			if ($copiesInLibraryCollection > 0) {
-				$this->availability[-1]->copiesOwned -= $copiesInLibraryCollection;
+			//OverDrive availability now returns correct counts for the library including shared items for each library.
+			// Just get the correct availability for with either the library (if available) or the shared collection
+			$availability->whereAdd("libraryId = $libraryScopingId OR libraryId = -1");
+			$availability->orderBy("libraryId DESC");
+			if ($availability->find(true)){
+				$this->availability  = clone $availability;
 			}
 		}
 		return $this->availability;
@@ -697,16 +648,9 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver
 
 		/** @var OverDriveAPIProductFormats[] $holdings */
 		$holdings = $this->getHoldings();
-		$scopedAvailability = $this->getScopedAvailability();
-		$interface->assign('availability', $scopedAvailability['mine']);
-		$interface->assign('availabilityOther', $scopedAvailability['other']);
-		$numberOfHolds = 0;
-		foreach ($scopedAvailability['mine'] as $availability) {
-			if ($availability->numberOfHolds > 0) {
-				$numberOfHolds = $availability->numberOfHolds;
-				break;
-			}
-		}
+		$availability = $this->getAvailability();
+		$interface->assign('availability', $availability);
+		$numberOfHolds = $availability->numberOfHolds;
 		$interface->assign('numberOfHolds', $numberOfHolds);
 		$showAvailability = true;
 		$showAvailabilityOther = true;
@@ -939,15 +883,7 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver
 
 	function getNumHolds()
 	{
-		$totalHolds = 0;
-		/** @var OverDriveAPIProductAvailability $availabilityInfo */
-		foreach ($this->getAvailability() as $availabilityInfo) {
-			//Holds is set once for everyone so don't add them up.
-			if ($availabilityInfo->numberOfHolds > $totalHolds) {
-				$totalHolds = $availabilityInfo->numberOfHolds;
-			}
-		}
-		return $totalHolds;
+		return $this->getAvailability()->numberOfHolds;
 	}
 
 	public function getSemanticData()

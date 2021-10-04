@@ -1390,7 +1390,7 @@ class ExtractOverDriveInfo {
 								numCopiesAvailable += accountData.getInt("copiesAvailable");
 							}else{
 								if (accountData.has("shared")){
-									if (accountData.getBoolean("shared")){
+									if (accountData.getBoolean("shared") && accountData.getInt("copiesOwned") > 0){
 										numSharedCopies += accountData.getInt("copiesOwned");
 										numSharedCopiesAvailable += accountData.getInt("copiesAvailable");
 									}
@@ -1412,8 +1412,8 @@ class ExtractOverDriveInfo {
 								totalCopiesOwned = numConsortiumCopies;
 								totalAvailableCopies = numConsortiumCopiesAvailable;
 							}else{
-								totalCopiesOwned = numCopiesOwned - numConsortiumCopies + numSharedCopies;
-								totalAvailableCopies = numCopiesAvailable - numConsortiumCopiesAvailable + numSharedCopiesAvailable;
+								totalCopiesOwned = numCopiesOwned + numConsortiumCopies + numSharedCopies;
+								totalAvailableCopies = numCopiesAvailable + numConsortiumCopiesAvailable + numSharedCopiesAvailable;
 							}
 
 							OverDriveAvailabilityInfo existingAvailability = existingAvailabilities.get(collectionInfo.getAspenLibraryId());

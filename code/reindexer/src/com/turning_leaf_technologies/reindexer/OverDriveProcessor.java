@@ -42,7 +42,7 @@ class OverDriveProcessor {
 			getProductInfoStmt = dbConn.prepareStatement("SELECT * from overdrive_api_products where overdriveId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			getNumCopiesStmt = dbConn.prepareStatement("SELECT sum(copiesOwned) as totalOwned FROM overdrive_api_product_availability WHERE productId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			getProductMetadataStmt = dbConn.prepareStatement("SELECT id, productId, checksum, sortTitle, publisher, publishDate, isPublicDomain, isPublicPerformanceAllowed, shortDescription, fullDescription, starRating, popularity, UNCOMPRESS(rawData) as rawData, thumbnail, cover, isOwnedByCollections from overdrive_api_product_metadata where productId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-			getProductAvailabilityStmt = dbConn.prepareStatement("SELECT * from overdrive_api_product_availability where productId = ? and shared = 0", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			getProductAvailabilityStmt = dbConn.prepareStatement("SELECT * from overdrive_api_product_availability where productId = ? AND settingId = ? AND (libraryId = ? OR libraryId = -1) order by libraryId DESC", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			getProductFormatsStmt = dbConn.prepareStatement("SELECT * from overdrive_api_product_formats where productId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			doubleDecodeRawMetadataStmt = dbConn.prepareStatement("SELECT UNCOMPRESS(UNCOMPRESS(rawData)) as rawData from overdrive_api_product_metadata where id = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			updateRawMetadataStmt = dbConn.prepareStatement("UPDATE overdrive_api_product_metadata SET rawData = COMPRESS(?) where id = ?");
@@ -65,6 +65,7 @@ class OverDriveProcessor {
 					indexer.overDriveRecordsSkipped.add(identifier);
 
 				} else {
+					//Check to see if at least one Aspen library owns a copy
 					getNumCopiesStmt.setLong(1, productId);
 					ResultSet numCopiesRS = getNumCopiesStmt.executeQuery();
 					numCopiesRS.next();
@@ -366,125 +367,104 @@ class OverDriveProcessor {
 						overDriveRecord.setPublicationDate(metadata.get("publicationDate"));
 						overDriveRecord.setPhysicalDescription("");
 
-						//Load availability & determine which scopes are valid for the record
-						//This does not include any shared records since those are included in the main collection
-						getProductAvailabilityStmt.setLong(1, productId);
-						ResultSet availabilityRS = getProductAvailabilityStmt.executeQuery();
-
+						//Loop through all of our scopes and figure out if that scope has records.
 						int totalCopiesOwned = 0;
 						int numHolds = 0;
-						while (availabilityRS.next()) {
-							numHolds = availabilityRS.getInt("numberOfHolds");
-							//Just create one item for each with a list of sub formats.
-							ItemInfo itemInfo = new ItemInfo();
-							itemInfo.seteContentSource("OverDrive");
-							itemInfo.setIsEContent(true);
-							itemInfo.setShelfLocation("Online OverDrive Collection");
-							itemInfo.setDetailedLocation("Online OverDrive Collection");
-							itemInfo.setCallNumber("Online OverDrive");
-							itemInfo.setSortableCallNumber("Online OverDrive");
-							if (isOnOrder) {
-								itemInfo.setIsOrderItem();
-								itemInfo.setDateAdded(publishDate);
-							} else {
-								itemInfo.setDateAdded(dateAdded);
-							}
+						for (Scope scope : indexer.getScopes()) {
+							if (scope.isIncludeOverDriveCollection()) {
+								//Get availability for this scope
+								getProductAvailabilityStmt.setLong(1, productId);
+								getProductAvailabilityStmt.setLong(2, scope.getOverDriveScope().getSettingId());
+								getProductAvailabilityStmt.setLong(3, scope.getLibraryId());
 
-							long libraryId = availabilityRS.getLong("libraryId");
-							long settingId = availabilityRS.getLong("settingId");
-							boolean available = availabilityRS.getBoolean("available");
+								ResultSet availabilityRS = getProductAvailabilityStmt.executeQuery();
+								//Load availability & determine which scopes are valid for the record
+								//This does not include any shared records since those are included in the main collection
 
-							itemInfo.setFormat(primaryFormat);
-							itemInfo.setSubFormats(detailedFormats);
-							itemInfo.setFormatCategory(formatCategory);
+								if (availabilityRS.next()) {
+									numHolds = Math.max(availabilityRS.getInt("numberOfHolds"), numHolds);
+									//Just create one item for each with a list of sub formats.
+									ItemInfo itemInfo = new ItemInfo();
+									itemInfo.seteContentSource("OverDrive");
+									itemInfo.setIsEContent(true);
+									itemInfo.setShelfLocation("OverDrive");
+									itemInfo.setDetailedLocation("OverDrive");
+									itemInfo.setCallNumber("OverDrive");
+									itemInfo.setSortableCallNumber("OverDrive");
+									if (isOnOrder) {
+										itemInfo.setIsOrderItem();
+										itemInfo.setDateAdded(publishDate);
+									} else {
+										itemInfo.setDateAdded(dateAdded);
+									}
 
-							//Need to set an identifier based on the scope so we can filter later.
-							itemInfo.setItemIdentifier(identifier + ":" + libraryId + ":" + primaryFormat + ":" + availabilityRS.getLong("id"));
+									long libraryId = availabilityRS.getLong("libraryId");
+									long settingId = availabilityRS.getLong("settingId");
+									boolean available = availabilityRS.getBoolean("available");
 
-							//TODO: Check to see if this is a pre-release title.  If not, suppress if the record has 0 copies owned
-							int copiesOwned = availabilityRS.getInt("copiesOwned");
-							itemInfo.setNumCopies(copiesOwned);
-							//Add copies since non-shared records are distinct from shared collection
-							totalCopiesOwned += copiesOwned;
+									itemInfo.setFormat(primaryFormat);
+									itemInfo.setSubFormats(detailedFormats);
+									itemInfo.setFormatCategory(formatCategory);
 
-							if (copiesOwned == 0 && libraryId != -1){
-								//Don't add advantage info if the library does not own additional copies (or have additional copies shared with it)
-								continue;
-							}
-							itemInfo.setAvailable(available);
-							itemInfo.setHoldable(true);
+									//Need to set an identifier based on the scope so we can filter later.
+									itemInfo.setItemIdentifier(identifier + ":" + libraryId + ":" + primaryFormat + ":" + availabilityRS.getLong("id"));
 
-							if (isOnOrder) {
-								itemInfo.setDetailedStatus("On Order");
-								itemInfo.setGroupedStatus("On Order");
-							} else if (available) {
-								itemInfo.setDetailedStatus("Available Online");
-								itemInfo.setGroupedStatus("Available Online");
-							} else {
-								itemInfo.setDetailedStatus("Checked Out");
-								itemInfo.setGroupedStatus("Checked Out");
-							}
+									//TODO: Check to see if this is a pre-release title.  If not, suppress if the record has 0 copies owned
+									int copiesOwned = availabilityRS.getInt("copiesOwned");
+									itemInfo.setNumCopies(copiesOwned);
 
-							overDriveRecord.addItem(itemInfo);
+									//Add copies since non-shared records are distinct from shared collection
+									totalCopiesOwned = Math.max(totalCopiesOwned, copiesOwned);
 
-							boolean isAdult = targetAudience.equals("Adult");
-							boolean isTeen = targetAudience.equals("Young Adult");
-							boolean isKids = targetAudience.equals("Juvenile");
-							if (libraryId == -1) {
-								for (Scope scope : indexer.getScopes()) {
-									if (scope.isIncludeOverDriveCollection() && (scope.getOverDriveScope().getSettingId() == settingId)) {
-										//Check based on the audience as well
-										boolean okToInclude = false;
-										//noinspection RedundantIfStatement
-										if (isAdult && scope.getOverDriveScope().isIncludeAdult()) {
-											okToInclude = true;
+									if (copiesOwned == 0 && libraryId != -1) {
+										//Don't add advantage info if the library does not own additional copies (or have additional copies shared with it)
+										continue;
+									}
+									itemInfo.setAvailable(available);
+									itemInfo.setHoldable(true);
+
+									if (isOnOrder) {
+										itemInfo.setDetailedStatus("On Order");
+										itemInfo.setGroupedStatus("On Order");
+									} else if (available) {
+										itemInfo.setDetailedStatus("Available Online");
+										itemInfo.setGroupedStatus("Available Online");
+									} else {
+										itemInfo.setDetailedStatus("Checked Out");
+										itemInfo.setGroupedStatus("Checked Out");
+									}
+
+									overDriveRecord.addItem(itemInfo);
+
+									boolean isAdult = targetAudience.equals("Adult");
+									boolean isTeen = targetAudience.equals("Young Adult");
+									boolean isKids = targetAudience.equals("Juvenile");
+									//Check based on the audience as well
+									boolean okToInclude = false;
+									//noinspection RedundantIfStatement
+									if (isAdult && scope.getOverDriveScope().isIncludeAdult()) {
+										okToInclude = true;
+									}
+									if (isTeen && scope.getOverDriveScope().isIncludeTeen()) {
+										okToInclude = true;
+									}
+									if (isKids && scope.getOverDriveScope().isIncludeKids()) {
+										okToInclude = true;
+									}
+									if (okToInclude) {
+										ScopingInfo scopingInfo = itemInfo.addScope(scope);
+										if (scope.isLocationScope()) {
+											scopingInfo.setLocallyOwned(true);
+											scopingInfo.setLibraryOwned(true);
 										}
-										if (isTeen && scope.getOverDriveScope().isIncludeTeen()) {
-											okToInclude = true;
+										if (scope.isLibraryScope()) {
+											scopingInfo.setLibraryOwned(true);
 										}
-										if (isKids && scope.getOverDriveScope().isIncludeKids()) {
-											okToInclude = true;
-										}
-										if (okToInclude) {
-											ScopingInfo scopingInfo = itemInfo.addScope(scope);
-											groupedWork.addScopingInfo(scope.getScopeName(), scopingInfo);
-										}
+										groupedWork.addScopingInfo(scope.getScopeName(), scopingInfo);
 									}
 								}
-							} else {
-								for (Scope curScope : indexer.getScopes()) {
-									if (curScope.isLibraryScope() && curScope.getLibraryId().equals(libraryId)) {
-										itemInfo.setShelfLocation("Online OverDrive Collection");
-										itemInfo.setDetailedLocation(curScope.getFacetLabel() + " - OverDrive Advantage");
-									}
-									if (curScope.isIncludeOverDriveCollection() && curScope.getLibraryId().equals(libraryId)) {
-										boolean okToInclude = false;
-										//noinspection RedundantIfStatement
-										if (isAdult && curScope.getOverDriveScope().isIncludeAdult()) {
-											okToInclude = true;
-										}
-										if (isTeen && curScope.getOverDriveScope().isIncludeTeen()) {
-											okToInclude = true;
-										}
-										if (isKids && curScope.getOverDriveScope().isIncludeKids()) {
-											okToInclude = true;
-										}
-										if (okToInclude) {
-											ScopingInfo scopingInfo = itemInfo.addScope(curScope);
-											groupedWork.addScopingInfo(curScope.getScopeName(), scopingInfo);
-											if (curScope.isLocationScope()) {
-												scopingInfo.setLocallyOwned(true);
-												scopingInfo.setLibraryOwned(true);
-											}
-											if (curScope.isLibraryScope()) {
-												scopingInfo.setLibraryOwned(true);
-											}
-										}
-									}
-								}
-
-							}//End processing availability
-						}
+							} // Scope has OverDrive content
+						} // End looping through scopes
 						groupedWork.addHoldings(totalCopiesOwned);
 						groupedWork.addHolds(numHolds);
 
