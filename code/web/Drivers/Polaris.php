@@ -74,11 +74,32 @@ class Polaris extends AbstractIlsDriver
 				if (!empty($block->BlockDescription)) {
 					$messages[] = [
 						'message' => $block->BlockDescription,
-						'messageStyle' => 'fanger'
+						'messageStyle' => 'danger'
 					];
 				}
 			}
 			if (!$circulateBlocksResponse->CanPatronCirculate && empty($messages)){
+				$messages[] = [
+					'message' => "Your account has been frozen.  Please contact the library for more information.",
+					'messageStyle' => 'danger',
+				];
+			}
+		}
+
+		$staffUserInfo = $this->getStaffUserInfo();
+		$polarisRenewBlocksUrl = "/PAPIService/REST/protected/v1/1033/100/1/{$staffUserInfo['accessToken']}/circulation/patron/{$user->username}/renewblocks";
+		$renewBlocksResponse = $this->getWebServiceResponse($polarisRenewBlocksUrl, 'GET', $staffUserInfo['accessSecret'], false, UserAccount::isUserMasquerading());
+		if ($renewBlocksResponse && $this->lastResponseCode == 200) {
+			$renewBlocksResponse = json_decode($renewBlocksResponse);
+			foreach ($renewBlocksResponse->Blocks as $block){
+				if (!empty($block->BlockDescription)) {
+					$messages[] = [
+						'message' => $block->BlockDescription,
+						'messageStyle' => 'danger'
+					];
+				}
+			}
+			if (!$renewBlocksResponse->CanPatronRenew && empty($messages)){
 				$messages[] = [
 					'message' => "Your account has been frozen.  Please contact the library for more information.",
 					'messageStyle' => 'danger',
