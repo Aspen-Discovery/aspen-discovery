@@ -176,8 +176,10 @@ abstract class ObjectEditor extends Admin_Admin
 			$propertyName = $property['property'];
 			if (isset($_REQUEST[$propertyName])){
 				$object->$propertyName = $_REQUEST[$propertyName];
-			}elseif (!empty($property['default'])){
+			}elseif (isset($property['default'])){
 				$object->$propertyName = $property['default'];
+			}elseif ($property['type'] == 'section'){
+				$this->setDefaultValues($object, $property['properties']);
 			}
 		}
 	}
