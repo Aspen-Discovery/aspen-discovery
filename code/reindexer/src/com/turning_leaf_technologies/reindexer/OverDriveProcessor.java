@@ -127,7 +127,7 @@ class OverDriveProcessor {
 						try {
 							rawMetadataDecoded = new JSONObject(rawMetadataString);
 						} catch (JSONException e) {
-							logEntry.incErrors("Error loading raw data for OverDrive MetaData", e);
+							logEntry.incErrors("Error loading raw data for OverDrive MetaData for record " + identifier, e);
 						}
 
 						boolean isOnOrder = false;

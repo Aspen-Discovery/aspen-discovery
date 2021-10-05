@@ -17,11 +17,7 @@
 						<div class="col-xs-7">
 							<span class="notranslate">{if !$item.isEContent}<strong>{$item.shelfLocation}</strong>{/if}
 								{if $item.availableCopies < 999}
-									{if $item.availableCopies == 1}
-										<br/>{translate text="%1% copy available" 1=$item.availableCopies isPublicFacing=true}
-									{else}
-										<br/>{translate text="%1% copies available" 1=$item.availableCopies isPublicFacing=true}
-									{/if}
+									&nbsp; {translate text="%1% available" 1=$item.availableCopies isPublicFacing=true}
 								{/if}
 							</span>
 						</div>

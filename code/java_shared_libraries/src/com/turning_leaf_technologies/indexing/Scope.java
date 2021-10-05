@@ -24,6 +24,7 @@ public class Scope implements Comparable<Scope>{
 	private boolean isLocationScope;
 	private Scope libraryScope;
 
+	//Called restrictOwningBranchesAndSystems in PHP admin interface
 	private boolean restrictOwningLibraryAndLocationFacets;
 	//Ownership rules indicate direct ownership of a record
 	private final HashSet<OwnershipRule> ownershipRules = new HashSet<>();
