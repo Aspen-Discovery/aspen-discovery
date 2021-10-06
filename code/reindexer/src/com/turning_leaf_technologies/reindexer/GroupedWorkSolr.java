@@ -517,6 +517,7 @@ public class GroupedWorkSolr implements Cloneable {
 
 
 			ArrayList<ScopingInfo> itemsWithScopingInfoForActiveScope = relatedScopes.get(scopeName);
+			boolean globalToggleAdded = false;
 			for (ScopingInfo scopingInfo : itemsWithScopingInfoForActiveScope) {
 				Scope curScope = scopingInfo.getScope();
 				if (groupedWorkIndexer.isStoreRecordDetailsInSolr()) {
@@ -584,7 +585,10 @@ public class GroupedWorkSolr implements Cloneable {
 					}
 				}
 
-				addAvailabilityToggle("global", availabilityToggleForScope, availabilityToggleByFormatForScope, formatsForItem);
+				if (!globalToggleAdded) {
+					addAvailabilityToggle("global", availabilityToggleForScope, availabilityToggleByFormatForScope, formatsForItem);
+					globalToggleAdded = true;
+				}
 				if (curItem.isEContent()){
 					addAvailabilityToggle("local", availabilityToggleForScope, availabilityToggleByFormatForScope, formatsForItem);
 					owningLibrariesForScope.add(curItem.getTrimmedEContentSource());
