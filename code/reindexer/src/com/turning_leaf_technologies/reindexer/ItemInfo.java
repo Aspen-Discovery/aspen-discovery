@@ -9,6 +9,7 @@ import org.marc4j.marc.Subfield;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 
 public class ItemInfo{
 	private String itemIdentifier;
@@ -479,6 +480,8 @@ public class ItemInfo{
 	private StringBuffer locationOwnedScopes = null;
 	private StringBuffer libraryOwnedScopes = null;
 	private StringBuffer recordsIncludedScopes = null;
+	private HashSet<String> locationOwnedNames = null;
+	private HashSet<String> libraryOwnedNames = null;
 	public String getLocationOwnedScopes() {
 		if (this.locationOwnedScopes == null){
 			this.createScopingStrings();
@@ -499,16 +502,33 @@ public class ItemInfo{
 		}
 		return recordsIncludedScopes.toString();
 	}
+	public HashSet<String> getLocationOwnedNames() {
+		if (this.locationOwnedNames == null){
+			this.createScopingStrings();
+		}
+		return locationOwnedNames;
+	}
+
+	public HashSet<String> getLibraryOwnedNames() {
+		if (this.libraryOwnedNames == null){
+			this.createScopingStrings();
+		}
+		return libraryOwnedNames;
+	}
 
 	private void createScopingStrings() {
 		locationOwnedScopes = new StringBuffer("~");
 		libraryOwnedScopes = new StringBuffer("~");
 		recordsIncludedScopes = new StringBuffer("~");
+		locationOwnedNames = new HashSet<>();
+		libraryOwnedNames = new HashSet<>();
 		for (ScopingInfo scope : scopingInfo.values()){
 			if (scope.isLocallyOwned()){
 				locationOwnedScopes.append(scope.getScope().getId()).append("~");
+				locationOwnedNames.add(scope.getScope().getFacetLabel());
 			}else if (scope.isLibraryOwned()){
 				libraryOwnedScopes.append(scope.getScope().getId()).append("~");
+				libraryOwnedNames.add(scope.getScope().getFacetLabel());
 			}else {
 				recordsIncludedScopes.append(scope.getScope().getId()).append("~");
 			}

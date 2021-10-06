@@ -70,6 +70,15 @@ function getUpdates21_13_00() : array
 				'ALTER TABLE indexing_profiles CHANGE COLUMN nonHoldableITypes nonHoldableITypes varchar(600) DEFAULT NULL'
 			]
 		], //increase_nonHoldableITypes
+		'increaseSymphonyPaymentTypeAndPolicyLengths' => [
+			'title' => 'Increase Symphony Payment Type And Policy Lengths',
+			'description' => 'Increase Symphony Payment Type And Policy Lengths',
+			'sql' => [
+				'ALTER TABLE library CHANGE COLUMN symphonyPaymentType symphonyPaymentType VARCHAR(10)',
+				'ALTER TABLE library CHANGE COLUMN symphonyPaymentPolicy symphonyPaymentPolicy VARCHAR(10)',
+			]
+		], //increaseSymphonyPaymentTypeAndPolicyLengths
+
 	];
 }
 

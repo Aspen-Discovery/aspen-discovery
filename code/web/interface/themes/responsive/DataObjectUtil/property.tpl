@@ -5,7 +5,7 @@
 		{assign var=propValue value=$object->$propName}
 		{assign var=objectId value=$object->getPrimaryKeyValue()}
 	{else}
-		{if !empty($property.default)}
+		{if isset($property.default)}
 			{assign var=propValue value=$property.default}
 		{else}
 			{assign var=propValue value=""}

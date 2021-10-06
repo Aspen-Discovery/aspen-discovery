@@ -22,7 +22,7 @@
 				<dt><a name="Phrase Searches"></a>Phrase Searches ("")</dt>
 				<dd>
 					<p>To perform a phrase search wrap the entire search phrase in quotes.</p>
-					<p>By putting double quotes around a set of words, you are telling vufind to consider the exact words in that exact order without any change.</p>
+					<p>By putting double quotes around a set of words, you are telling the system to consider the exact words in that exact order without any change.</p>
 				</dd>
 				<dt><a name="Wildcard Searches"></a>Wildcard Searches</dt>
 				<dd>

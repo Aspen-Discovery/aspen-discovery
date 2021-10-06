@@ -495,6 +495,7 @@ public class GroupedWorkSolr implements Cloneable {
 
 		doc.setField("scope_has_related_records", relatedScopes.keySet());
 		for (String scopeName : relatedScopes.keySet()){
+			HashSet<String> scopingDetailsForScope = new HashSet<>();
 			HashSet<String> formatsForScope = new HashSet<>();
 			HashSet<String> formatCategoriesForScope = new HashSet<>();
 			HashSet<String> collectionsForScope = new HashSet<>();
@@ -503,28 +504,61 @@ public class GroupedWorkSolr implements Cloneable {
 			HashSet<String> iTypesForScope = new HashSet<>();
 			HashSet<String> eContentSourcesForScope = new HashSet<>();
 			HashSet<String> localCallNumbersForScope = new HashSet<>();
+			HashSet<String> owningLibrariesForScope = new HashSet<>();
+			HashSet<String> owningLocationsForScope = new HashSet<>();
+			HashSet<String> availabilityToggleForScope = new HashSet<>();
+			HashMap<String, HashSet<String>> availabilityToggleByFormatForScope = new HashMap<>();
+			HashSet<String> availableAtForScope = new HashSet<>();
+			HashMap<String, HashSet<String>> availableAtByFormatForScope = new HashMap<>();
+
 			String sortableCallNumberForScope = null;
 			Long daysSinceAddedForScope = null;
 			long libBoost = 1;
 
 
-			HashMap<String, HashSet<String>> multiValuedScopedFields = new HashMap<>();
 			ArrayList<ScopingInfo> itemsWithScopingInfoForActiveScope = relatedScopes.get(scopeName);
+			boolean globalToggleAdded = false;
 			for (ScopingInfo scopingInfo : itemsWithScopingInfoForActiveScope) {
+				Scope curScope = scopingInfo.getScope();
 				if (groupedWorkIndexer.isStoreRecordDetailsInSolr()) {
-					setScopedField(multiValuedScopedFields, "scoping_details_" + scopeName, scopingInfo.getScopingDetails());
+					scopingDetailsForScope.add(scopingInfo.getScopingDetails());
 				}
 
+				HashSet<String> formatsForItem = new HashSet<>();
 				ItemInfo curItem = scopingInfo.getItem();
 				if (curItem.getFormat() != null) {
 					formatsForScope.add(curItem.getFormat());
+					formatsForItem.add(curItem.getFormat());
+					if (!availabilityToggleByFormatForScope.containsKey(curItem.getFormat())){
+						availabilityToggleByFormatForScope.put(curItem.getFormat(), new HashSet<>());
+						availableAtByFormatForScope.put(curItem.getFormat(), new HashSet<>());
+					}
 				} else {
-					formatsForScope.addAll(curItem.getRecordInfo().getFormats());
+					formatsForItem.addAll(curItem.getRecordInfo().getFormats());
+					for (String format : curItem.getRecordInfo().getFormats()){
+						formatsForScope.add(format);
+						if (!availabilityToggleByFormatForScope.containsKey(format)){
+							availabilityToggleByFormatForScope.put(format, new HashSet<>());
+							availableAtByFormatForScope.put(format, new HashSet<>());
+						}
+					}
 				}
 				if (curItem.getFormatCategory() != null) {
 					formatCategoriesForScope.add(curItem.getFormatCategory());
+					formatsForItem.add(curItem.getFormatCategory());
+					if (!availabilityToggleByFormatForScope.containsKey(curItem.getFormatCategory())){
+						availabilityToggleByFormatForScope.put(curItem.getFormatCategory(), new HashSet<>());
+						availableAtByFormatForScope.put(curItem.getFormatCategory(), new HashSet<>());
+					}
 				} else {
 					formatCategoriesForScope.addAll(curItem.getRecordInfo().getFormatCategories());
+					formatsForItem.addAll(curItem.getRecordInfo().getFormatCategories());
+					for (String format : curItem.getRecordInfo().getFormatCategories()){
+						if (!availabilityToggleByFormatForScope.containsKey(format)){
+							availabilityToggleByFormatForScope.put(format, new HashSet<>());
+							availableAtByFormatForScope.put(format, new HashSet<>());
+						}
+					}
 				}
 
 				Long daysSinceAdded;
@@ -551,8 +585,70 @@ public class GroupedWorkSolr implements Cloneable {
 					}
 				}
 
-				//Setup ownership & availability toggle values
-				setupAvailabilityToggleAndOwnershipForItemWithinScope(curItem.getRecordInfo(), curItem, scopeName, scopingInfo, multiValuedScopedFields);
+				if (!globalToggleAdded) {
+					addAvailabilityToggle("global", availabilityToggleForScope, availabilityToggleByFormatForScope, formatsForItem);
+					globalToggleAdded = true;
+				}
+				if (curItem.isEContent()){
+					addAvailabilityToggle("local", availabilityToggleForScope, availabilityToggleByFormatForScope, formatsForItem);
+					owningLibrariesForScope.add(curItem.getTrimmedEContentSource());
+					if (curItem.isAvailable()){
+						if (curScope.getGroupedWorkDisplaySettings().isIncludeOnlineMaterialsInAvailableToggle()) {
+							addAvailabilityToggle("available", availabilityToggleForScope, availabilityToggleByFormatForScope, formatsForItem);
+						}
+						addAvailabilityToggle("available_online", availabilityToggleForScope, availabilityToggleByFormatForScope, formatsForItem);
+						addAvailableAt(curItem.getTrimmedEContentSource(), availableAtForScope, availableAtByFormatForScope, formatsForItem);
+					}
+				}else{ //physical materials
+					if (scopingInfo.isLocallyOwned()) {
+						addAvailabilityToggle("local", availabilityToggleForScope, availabilityToggleByFormatForScope, formatsForItem);
+						if (curItem.isAvailable()){
+							addAvailabilityToggle("available", availabilityToggleForScope, availabilityToggleByFormatForScope, formatsForItem);
+							addAvailableAt(curScope.getFacetLabel(), availableAtForScope, availableAtByFormatForScope, formatsForItem);
+						}
+						//For physical materials, only locally owned means it is a location/branch scope and that branch owns it
+						owningLocationsForScope.add(curScope.getFacetLabel());
+						//This can be a library scope if it is both a library and location scope
+						owningLibrariesForScope.add(curScope.isLibraryScope() ? curScope.getFacetLabel() : curScope.getLibraryScope().getFacetLabel());
+
+						if (curScope.isIncludeAllLibraryBranchesInFacets()){
+							//Include other branches of this library that own the title within the owning locations
+							//isIncludeAllLibraryBranchesInFacets is only a setting at the location level
+							owningLocationsForScope.addAll(curItem.getLocationOwnedNames());
+						}
+					}
+					if (scopingInfo.isLibraryOwned()){
+						addAvailabilityToggle("local", availabilityToggleForScope, availabilityToggleByFormatForScope, formatsForItem);
+						if (curItem.isAvailable()){
+							addAvailabilityToggle("available", availabilityToggleForScope, availabilityToggleByFormatForScope, formatsForItem);
+							for (Scope locationScope : curScope.getLocationScopes()) {
+								addAvailableAt(locationScope.getFacetLabel(), availableAtForScope, availableAtByFormatForScope, formatsForItem);
+							}
+						}
+						owningLibrariesForScope.add(curScope.getFacetLabel());
+						//For owning locations, add all locations within the library that own it
+						owningLocationsForScope.addAll(curItem.getLocationOwnedNames());
+					}
+					//If it is not library or location owned, we might still add to the availability toggles
+					if (!scopingInfo.isLocallyOwned() && !scopingInfo.isLibraryOwned() &&
+							!curScope.getGroupedWorkDisplaySettings().isBaseAvailabilityToggleOnLocalHoldingsOnly()){
+						addAvailabilityToggle("local", availabilityToggleForScope, availabilityToggleByFormatForScope, formatsForItem);
+						if (curItem.isAvailable()){
+							addAvailabilityToggle("available", availabilityToggleForScope, availabilityToggleByFormatForScope, formatsForItem);
+							for (String owningName : curItem.getLocationOwnedNames()) {
+								addAvailableAt(owningName, availableAtForScope, availableAtByFormatForScope, formatsForItem);
+							}
+						}
+					}
+					if (curItem.isAvailable() && curScope.getAdditionalLocationsToShowAvailabilityForPattern() != null && curItem.getLocationCode() != null){
+						//We might include the item in the owning and availability facets if it matched the available locations
+						if (curScope.getAdditionalLocationsToShowAvailabilityForPattern().matcher(curItem.getLocationCode()).matches()){
+							for (String owningName : curItem.getLocationOwnedNames()) {
+								addAvailableAt(owningName, availableAtForScope, availableAtByFormatForScope, formatsForItem);
+							}
+						}
+					}
+				}
 
 				if (scopingInfo.isLocallyOwned() || scopingInfo.isLibraryOwned() || scopingInfo.getScope().getGroupedWorkDisplaySettings().isIncludeAllRecordsInShelvingFacets()) {
 					collectionsForScope.add(curItem.getCollection());
@@ -603,6 +699,7 @@ public class GroupedWorkSolr implements Cloneable {
 				formatCategoriesForScope.add("Books");
 				formatCategoriesForScope.add("Audio Books");
 			}
+			doc.addField("scoping_details_".concat(scopeName), scopingDetailsForScope);
 			doc.addField("format_".concat(scopeName), formatsForScope);
 			doc.addField("format_category_".concat(scopeName), formatCategoriesForScope);
 			doc.addField("collection_".concat(scopeName), collectionsForScope);
@@ -617,8 +714,15 @@ public class GroupedWorkSolr implements Cloneable {
 			doc.addField("callnumber_sort_".concat(scopeName), sortableCallNumberForScope);
 			doc.addField("econtent_source_".concat(scopeName), eContentSourcesForScope);
 
-			for (String fieldName : multiValuedScopedFields.keySet()){
-				doc.addField(fieldName, multiValuedScopedFields.get(fieldName));
+			doc.addField("owning_library_".concat(scopeName), owningLibrariesForScope);
+			doc.addField("owning_location_".concat(scopeName), owningLocationsForScope);
+			doc.addField("availability_toggle_".concat(scopeName), availabilityToggleForScope);
+			for (String format : availabilityToggleByFormatForScope.keySet()){
+				doc.addField("availability_toggle_".concat(scopeName).concat("_").concat(format), availabilityToggleByFormatForScope.get(format));
+			}
+			doc.addField("available_at_".concat(scopeName), availableAtForScope);
+			for (String format : availableAtByFormatForScope.keySet()){
+				doc.addField("available_at_".concat(scopeName).concat("_").concat(format), availableAtByFormatForScope.get(format));
 			}
 
 			SolrInputField field = doc.getField("local_days_since_added_".concat(scopeName));
@@ -631,126 +735,17 @@ public class GroupedWorkSolr implements Cloneable {
 		logger.info("Work " + id + " processed " + relatedScopes.size() + " scopes");
 	}
 
-	private void setScopedField(HashMap<String, HashSet<String>> scopedFields, String fieldName, String newValues) {
-		HashSet<String> fieldValues = scopedFields.computeIfAbsent(fieldName, k -> new HashSet<>());
-		fieldValues.add(newValues);
-	}
-	private void setScopedField(HashMap<String, HashSet<String>> scopedFields, String fieldName, HashSet<String> newValues) {
-		HashSet<String> fieldValues = scopedFields.computeIfAbsent(fieldName, k -> new HashSet<>());
-		fieldValues.addAll(newValues);
-	}
-
-	private void setupAvailabilityToggleAndOwnershipForItemWithinScope(RecordInfo curRecord, ItemInfo curItem, String curScopeName, ScopingInfo itemScopingInformation, HashMap<String, HashSet<String>> multiValuedScopedFields) {
-		boolean addLocationOwnership = false;
-		boolean addLibraryOwnership = false;
-		HashSet<String> availabilityToggleValues = new HashSet<>();
-		Scope curScopeDetails = itemScopingInformation.getScope();
-		availabilityToggleValues.add("global");
-
-		if (curItem.isEContent()){
-			//If the item is eContent, we will count it as part of the collection since it will be available.
-			availabilityToggleValues.add("local");
-			if (curItem.isAvailable()){
-				if (curScopeDetails.getGroupedWorkDisplaySettings().isIncludeOnlineMaterialsInAvailableToggle()) {
-					availabilityToggleValues.add("available");
-				}
-				availabilityToggleValues.add("available_online");
-			}
-			addLibraryOwnership = true;
-			if (itemScopingInformation.isLocallyOwned()) {
-				addLocationOwnership = true;
-			}
-		}else{
-			//Physical materials
-			if (itemScopingInformation.isLocallyOwned() && curScopeDetails.isLocationScope()) {
-				addLocationOwnership = true;
-				addLibraryOwnership = true;
-				availabilityToggleValues.add("local");
-				if (curItem.isAvailable()){
-					availabilityToggleValues.add("available");
-				}
-			}
-			if (itemScopingInformation.isLibraryOwned()) {
-				if (curScopeDetails.isLocationScope()) {
-					if (!curScopeDetails.getGroupedWorkDisplaySettings().isBaseAvailabilityToggleOnLocalHoldingsOnly()) {
-						addLibraryOwnership = true;
-						availabilityToggleValues.add("local");
-						if (curItem.isAvailable()) {
-							availabilityToggleValues.add("available");
-						}
-					}
-				} else {
-					addLibraryOwnership = true;
-					availabilityToggleValues.add("local");
-					if (itemScopingInformation.isLibraryOwned() && curItem.isAvailable()) {
-						availabilityToggleValues.add("available");
-					}
-				}
-			}
-		}
-
-		//Apply ownership and availability toggles
-		if (addLocationOwnership) {
-
-			//We do different ownership display depending on if this is eContent or not
-			String owningLocationValue = curScopeDetails.getFacetLabel();
-			if (curItem.isEContent()) {
-				owningLocationValue = curItem.getShelfLocation();
-			}
-
-			//Save values for this scope
-			setScopedField(multiValuedScopedFields, "owning_location_".concat(curScopeName), owningLocationValue);
-
-			if (curItem.isAvailable()) {
-				addAvailableAtValues(curRecord, curScopeName, owningLocationValue, multiValuedScopedFields);
-			}
-		}
-		if (addLibraryOwnership) {
-			//We do different ownership display depending on if this is eContent or not
-			String owningLibraryValue;
-			if (curItem.isEContent()) {
-				owningLibraryValue = curItem.getShelfLocation();
-			}else{
-				if (itemScopingInformation.getScope().isLibraryScope()) {
-					owningLibraryValue = curScopeDetails.getFacetLabel();
-				} else {
-					owningLibraryValue = curScopeDetails.getLibraryScope().getFacetLabel();
-				}
-			}
-			setScopedField(multiValuedScopedFields, "owning_library_".concat(curScopeName), owningLibraryValue);
-		}
-		//Make sure we always add availability toggles to this scope even if they are blank
-		addAvailabilityToggleValues(curRecord, curScopeName, availabilityToggleValues, multiValuedScopedFields);
-	}
-
-	private void addAvailableAtValues(RecordInfo curRecord, String curScopeName, String owningLocationValue, HashMap<String, HashSet<String>> multiValuedScopedFields) {
-		setScopedField(multiValuedScopedFields, "available_at_" + curScopeName, owningLocationValue);
-		String availableAtFormatScope = "available_at_by_format_".concat(curScopeName).concat("_");
-		for (String format : curRecord.getAllSolrFieldEscapedFormats()) {
-			setScopedField(multiValuedScopedFields, availableAtFormatScope.concat(format), owningLocationValue);
-		}
-		for (String formatCategory : curRecord.getAllSolrFieldEscapedFormatCategories()) {
-			setScopedField(multiValuedScopedFields, availableAtFormatScope.concat(formatCategory), owningLocationValue);
+	private void addAvailabilityToggle(String value, HashSet<String> availabilityToggleForScope, HashMap<String, HashSet<String>> availabilityToggleByFormatForScope,  HashSet<String> formatsForItem){
+		availabilityToggleForScope.add(value);
+		for (String format : formatsForItem){
+			availabilityToggleByFormatForScope.get(format).add(value);
 		}
 	}
 
-	private void addAvailabilityToggleValues(RecordInfo curRecord, String curScopeName, HashSet<String> availabilityToggleValues, HashMap<String, HashSet<String>> multiValuedScopedFields) {
-		setScopedField(multiValuedScopedFields, "availability_toggle_".concat(curScopeName), availabilityToggleValues);
-		HashSet<String> allFormats = curRecord.getAllSolrFieldEscapedFormats();
-		String availabilityByFormatScope = "availability_by_format_".concat(curScopeName).concat("_");
-		for (String format : allFormats) {
-			setScopedField(multiValuedScopedFields,  availabilityByFormatScope.concat(format), availabilityToggleValues);
-		}
-		HashSet<String> allFormatCategories = curRecord.getAllSolrFieldEscapedFormatCategories();
-		if (allFormats.contains("eaudiobook")) {
-			allFormatCategories.add("ebook");
-		}
-		if (allFormats.contains("vox_books")) {
-			allFormatCategories.add("books");
-			allFormatCategories.add("audio_books");
-		}
-		for (String formatCategory : allFormatCategories) {
-			setScopedField(multiValuedScopedFields, availabilityByFormatScope.concat(formatCategory), availabilityToggleValues);
+	private void addAvailableAt(String location, HashSet<String> availableAtForScope, HashMap<String, HashSet<String>> availableAtByFormatForScope,  HashSet<String> formatsForItem){
+		availableAtForScope.add(location);
+		for (String format : formatsForItem){
+			availableAtByFormatForScope.get(format).add(location);
 		}
 	}
 
@@ -993,11 +988,6 @@ public class GroupedWorkSolr implements Cloneable {
 			if (tmpTitle.length() > 0) {
 				subTitle = tmpTitle;
 			}
-			//Remove common formats
-//			tmpTitle = commonSubtitlePattern.matcher(subTitle).replaceAll("").trim();
-//			if (tmpTitle.length() > 0) {
-//				subTitle = tmpTitle;
-//			}
 			this.subTitle = subTitle;
 			keywords.add(subTitle);
 		}

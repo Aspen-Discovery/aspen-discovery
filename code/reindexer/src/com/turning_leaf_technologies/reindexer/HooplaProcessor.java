@@ -181,6 +181,8 @@ class HooplaProcessor {
 								if (kind.equals("MOVIE") || kind.equals("TELEVISION")) {
 									switch (rating) {
 										case "R":
+										case "NRA":
+										case "NRM":
 											groupedWork.addTargetAudience("Adult");
 											groupedWork.addTargetAudienceFull("Adult");
 											break;
@@ -197,21 +199,13 @@ class HooplaProcessor {
 										case "TVY7":
 										case "TVG":
 										case "G":
+										case "NRC":
 											groupedWork.addTargetAudience("Juvenile");
 											groupedWork.addTargetAudienceFull("Juvenile");
 											break;
 										case "NRT":
 											groupedWork.addTargetAudience("Young Adult");
 											groupedWork.addTargetAudienceFull("Adolescent (14-17)");
-											break;
-										case "NRC":
-											groupedWork.addTargetAudience("Juvenile");
-											groupedWork.addTargetAudienceFull("Juvenile");
-											break;
-										case "NRA":
-										case "NRM":
-											groupedWork.addTargetAudience("Adult");
-											groupedWork.addTargetAudienceFull("Adult");
 											break;
 										default:
 											//todo, do we want to add additional ratings here?
@@ -220,10 +214,18 @@ class HooplaProcessor {
 									}
 								}else if (kind.equals("COMIC")){
 									switch (rating) {
-										case "T":
+										case "E":
+											groupedWork.addTargetAudience("Juvenile");
+											groupedWork.addTargetAudienceFull("Juvenile");
+											break;
 										case "PA":
+										case "EX":
 											groupedWork.addTargetAudience("Adult");
 											groupedWork.addTargetAudienceFull("Adult");
+											break;
+										case "T":
+											groupedWork.addTargetAudience("Young Adult");
+											groupedWork.addTargetAudienceFull("Adolescent (14-17)");
 											break;
 										default:
 											groupedWork.addTargetAudience("Young Adult");
