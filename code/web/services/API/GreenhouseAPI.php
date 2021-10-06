@@ -347,10 +347,15 @@ class GreenhouseAPI extends Action
 	public function getLibrary() : array {
 		$return = [
 			'success' => true,
+			'theme' => [],
 			'library' => [],
 		];
 		global $configArray;
+		global $librarySingleton;
+
 		require_once ROOT_DIR . '/sys/LibraryLocation/Location.php';
+		require_once ROOT_DIR . '/sys/Theming/Theme.php';
+
 		$location = new Location();
 		$location->find();
 		while($location->fetch()) {
@@ -407,6 +412,25 @@ class GreenhouseAPI extends Action
 						];
 				}
 			}
+		}
+
+		$activeTheme = new Theme();
+		$activeTheme->id = $librarySingleton->theme;
+		if ($activeTheme->find(true)){
+			$activeTheme->applyDefaults();
+			if ($activeTheme->logoName) {
+				$return['theme']['logo'] = $configArray['Site']['url'] . '/files/original/' . $activeTheme->logoName;
+			}
+			if($activeTheme->favicon) {
+				$return['theme']['favicon'] = $configArray['Site']['url'] . '/files/original/' . $activeTheme->favicon;
+			}
+			$return['theme']['primaryBackgroundColor'] = $activeTheme->primaryBackgroundColor;
+			$return['theme']['primaryForegroundColor'] = $activeTheme->primaryForegroundColor;
+			$return['theme']['secondaryBackgroundColor'] = $activeTheme->secondaryBackgroundColor;
+			$return['theme']['secondaryForegroundColor'] = $activeTheme->secondaryForegroundColor;
+			$return['theme']['tertiaryBackgroundColor'] = $activeTheme->tertiaryBackgroundColor;
+			$return['theme']['tertiaryForegroundColor'] = $activeTheme->tertiaryForegroundColor;
+
 		}
 
 		return $return;
