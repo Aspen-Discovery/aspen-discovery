@@ -13,7 +13,6 @@ class Record_AccessOnline extends Action
 
 		if (strpos($id, ':')){
 			list($source, $id) = explode(":", $id);
-			$source = strtolower($source);
 			$this->id = $id;
 			$interface->assign('id', $this->id);
 		}else{
