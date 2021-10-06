@@ -42,7 +42,7 @@ class OverDriveProcessor {
 			getProductInfoStmt = dbConn.prepareStatement("SELECT * from overdrive_api_products where overdriveId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			getNumCopiesStmt = dbConn.prepareStatement("SELECT sum(copiesOwned) as totalOwned FROM overdrive_api_product_availability WHERE productId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			getProductMetadataStmt = dbConn.prepareStatement("SELECT id, productId, checksum, sortTitle, publisher, publishDate, isPublicDomain, isPublicPerformanceAllowed, shortDescription, fullDescription, starRating, popularity, UNCOMPRESS(rawData) as rawData, thumbnail, cover, isOwnedByCollections from overdrive_api_product_metadata where productId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-			getProductAvailabilityStmt = dbConn.prepareStatement("SELECT * from overdrive_api_product_availability where productId = ? AND settingId = ? AND (libraryId = ? OR libraryId = -1) order by libraryId DESC", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			getProductAvailabilityStmt = dbConn.prepareStatement("SELECT * from overdrive_api_product_availability where productId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			getProductFormatsStmt = dbConn.prepareStatement("SELECT * from overdrive_api_product_formats where productId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			doubleDecodeRawMetadataStmt = dbConn.prepareStatement("SELECT UNCOMPRESS(UNCOMPRESS(rawData)) as rawData from overdrive_api_product_metadata where id = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			updateRawMetadataStmt = dbConn.prepareStatement("UPDATE overdrive_api_product_metadata SET rawData = COMPRESS(?) where id = ?");
@@ -392,25 +392,36 @@ class OverDriveProcessor {
 						//Need to set an identifier based on the scope so we can filter later.
 						itemInfo.setItemIdentifier(identifier + ":" + primaryFormat);
 
+						//Get Availability for the product
+						getProductAvailabilityStmt.setLong(1, productId);
+						ResultSet availabilityRS = getProductAvailabilityStmt.executeQuery();
+						HashMap<String, OverDriveAvailabilityInfo> availabilityInfo = new HashMap<>();
+						while (availabilityRS.next()) {
+							availabilityInfo.put(
+									availabilityRS.getString("settingId") + ":" + availabilityRS.getString("libraryId"),
+									new OverDriveAvailabilityInfo(availabilityRS.getInt("numberOfHolds"), availabilityRS.getLong("libraryId"), availabilityRS.getBoolean("available"), availabilityRS.getInt("copiesOwned"))
+							);
+						}
+						availabilityRS.close();
+
 						for (Scope scope : indexer.getScopes()) {
 							if (scope.isIncludeOverDriveCollection()) {
-								//Get availability for this scope
-								getProductAvailabilityStmt.setLong(1, productId);
-								getProductAvailabilityStmt.setLong(2, scope.getOverDriveScope().getSettingId());
-								getProductAvailabilityStmt.setLong(3, scope.getLibraryId());
 
-								ResultSet availabilityRS = getProductAvailabilityStmt.executeQuery();
 								//Load availability & determine which scopes are valid for the record
 								//This does not include any shared records since those are included in the main collection
+								OverDriveAvailabilityInfo availability = availabilityInfo.get(scope.getOverDriveScope().getSettingId() + ":" + scope.getLibraryId());
+								if (availability == null){
+									availability = availabilityInfo.get(scope.getOverDriveScope().getSettingId() + ":-1");
+								}
 
-								if (availabilityRS.next()) {
-									numHolds = Math.max(availabilityRS.getInt("numberOfHolds"), numHolds);
+								if (availability != null) {
+									numHolds = Math.max(availability.numberOfHolds, numHolds);
 
-									long libraryId = availabilityRS.getLong("libraryId");
-									boolean available = availabilityRS.getBoolean("available");
+									long libraryId = availability.libraryId;
+									boolean available = availability.available;
 
 									//TODO: Check to see if this is a pre-release title.  If not, suppress if the record has 0 copies owned
-									int copiesOwned = availabilityRS.getInt("copiesOwned");
+									int copiesOwned = availability.copiedOwned;
 									itemInfo.setNumCopies(copiesOwned);
 
 									//Add copies since non-shared records are distinct from shared collection
