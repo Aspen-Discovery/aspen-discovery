@@ -370,6 +370,28 @@ class OverDriveProcessor {
 						//Loop through all of our scopes and figure out if that scope has records.
 						int totalCopiesOwned = 0;
 						int numHolds = 0;
+						//Just create one item for each with a list of sub formats.
+						ItemInfo itemInfo = new ItemInfo();
+						itemInfo.seteContentSource("OverDrive");
+						itemInfo.setIsEContent(true);
+						itemInfo.setShelfLocation("OverDrive");
+						itemInfo.setDetailedLocation("OverDrive");
+						itemInfo.setCallNumber("OverDrive");
+						itemInfo.setSortableCallNumber("OverDrive");
+						if (isOnOrder) {
+							itemInfo.setIsOrderItem();
+							itemInfo.setDateAdded(publishDate);
+						} else {
+							itemInfo.setDateAdded(dateAdded);
+						}
+
+						itemInfo.setFormat(primaryFormat);
+						itemInfo.setSubFormats(detailedFormats);
+						itemInfo.setFormatCategory(formatCategory);
+
+						//Need to set an identifier based on the scope so we can filter later.
+						itemInfo.setItemIdentifier(identifier + ":" + primaryFormat);
+
 						for (Scope scope : indexer.getScopes()) {
 							if (scope.isIncludeOverDriveCollection()) {
 								//Get availability for this scope
@@ -383,31 +405,9 @@ class OverDriveProcessor {
 
 								if (availabilityRS.next()) {
 									numHolds = Math.max(availabilityRS.getInt("numberOfHolds"), numHolds);
-									//Just create one item for each with a list of sub formats.
-									ItemInfo itemInfo = new ItemInfo();
-									itemInfo.seteContentSource("OverDrive");
-									itemInfo.setIsEContent(true);
-									itemInfo.setShelfLocation("OverDrive");
-									itemInfo.setDetailedLocation("OverDrive");
-									itemInfo.setCallNumber("OverDrive");
-									itemInfo.setSortableCallNumber("OverDrive");
-									if (isOnOrder) {
-										itemInfo.setIsOrderItem();
-										itemInfo.setDateAdded(publishDate);
-									} else {
-										itemInfo.setDateAdded(dateAdded);
-									}
 
 									long libraryId = availabilityRS.getLong("libraryId");
-									long settingId = availabilityRS.getLong("settingId");
 									boolean available = availabilityRS.getBoolean("available");
-
-									itemInfo.setFormat(primaryFormat);
-									itemInfo.setSubFormats(detailedFormats);
-									itemInfo.setFormatCategory(formatCategory);
-
-									//Need to set an identifier based on the scope so we can filter later.
-									itemInfo.setItemIdentifier(identifier + ":" + libraryId + ":" + primaryFormat + ":" + availabilityRS.getLong("id"));
 
 									//TODO: Check to see if this is a pre-release title.  If not, suppress if the record has 0 copies owned
 									int copiesOwned = availabilityRS.getInt("copiesOwned");
@@ -433,8 +433,6 @@ class OverDriveProcessor {
 										itemInfo.setDetailedStatus("Checked Out");
 										itemInfo.setGroupedStatus("Checked Out");
 									}
-
-									overDriveRecord.addItem(itemInfo);
 
 									boolean isAdult = targetAudience.equals("Adult");
 									boolean isTeen = targetAudience.equals("Young Adult");
@@ -465,15 +463,18 @@ class OverDriveProcessor {
 								}
 							} // Scope has OverDrive content
 						} // End looping through scopes
+						overDriveRecord.addItem(itemInfo);
+
 						groupedWork.addHoldings(totalCopiesOwned);
 						groupedWork.addHolds(numHolds);
 
 						if (hasKindle){
 							RecordInfo kindleRecord = groupedWork.addRelatedRecord("overdrive", "kindle", identifier);
 							kindleRecord.copyFrom(overDriveRecord);
-							for (ItemInfo itemInfo: kindleRecord.getRelatedItems()){
-								itemInfo.setFormat("Kindle");
-								itemInfo.setSubFormats("");
+							for (ItemInfo tmpItemInfo: kindleRecord.getRelatedItems()){
+								tmpItemInfo.setItemIdentifier(tmpItemInfo.getItemIdentifier() + ":kindle");
+								tmpItemInfo.setFormat("Kindle");
+								tmpItemInfo.setSubFormats("");
 							}
 						}
 					}
