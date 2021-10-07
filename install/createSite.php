@@ -288,11 +288,7 @@ if (!$siteOnWindows){
 	exec('chown -R solr:solr ' . $dataDir . '/solr7');
 }
 
-if ($siteOnWindows){
-	//Start solr
-	chdir($siteDir);
-	execInBackground( "{$sitename}.bat");
-}else{
+if (!$siteOnWindows){
 	//Start solr
 	exec('chmod +x ' . $siteDir . "/{$sitename}.sh");
 	execInBackground($siteDir . "/{$sitename}.sh");
@@ -316,6 +312,7 @@ if ($siteOnWindows) {
 	echo($step++ . ") Add Include \"$siteDir/httpd-{$sitename}.conf\" to the httpd.conf file\r\n");
 	echo($step++ . ") Add {$variables['servername']} to the hosts file\r\n");
 	echo($step++ . ") Restart apache\r\n");
+	echo($step++ . ") Start Solr\r\n");
 }
 echo($step++ . ") Login to the server as aspen_admin and run database updates\r\n");
 echo($step++ . ") Setup library(ies) within the admin interface\r\n");
