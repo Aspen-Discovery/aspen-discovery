@@ -40,6 +40,14 @@ if (! empty ($jsonData['result']['location']['homeLink'])) {
 }
 
 # ****************************************************************************************************************************
+# * grab the library display name
+# ****************************************************************************************************************************
+$displayName = '';
+if (! empty ($jsonData['result']['location']['displayName'])) {
+	$displayName = $jsonData['result']['location']['displayName'];
+}
+
+# ****************************************************************************************************************************
 # * grab the website catalogue URL - we should already know this
 # ****************************************************************************************************************************
 $catalogue = $urlPath;
@@ -58,6 +66,24 @@ if (! empty ($jsonData['result']['location']['phone'])) {
 $todayHours = '';
 if (! empty ($jsonData['result']['location']['hoursMessage'])) {
   $todayHours = $jsonData['result']['location']['hoursMessage'];
+}
+
+# ****************************************************************************************************************************
+# * grab the library coordinates
+# ****************************************************************************************************************************
+$latitude = '';
+$longitude = '';
+if (! empty ($jsonData['result']['location']['latitude'])) {
+	$latitude = $jsonData['result']['location']['latitude'];
+	$longitude = $jsonData['result']['location']['longitude'];
+}
+
+# ****************************************************************************************************************************
+# * grab the library address
+# ****************************************************************************************************************************
+$address = '';
+if (! empty ($jsonData['result']['location']['address'])) {
+	$address = $jsonData['result']['location']['address'];
 }
 
 # *********************************************************************************************************************************************
@@ -79,7 +105,7 @@ $whatsOnLink  = 'http://www.bywatersolutions.com';
 # * CONTACT US
 # *********************************************************************************************************************************************
 $contactUsBlurb    = "It's easy to get help and information on any of our services.";
-$contactUsMailLink = "mailto:aspensupport@bywatersolutions.com";
+$contactUsMailLink = "";
 
 # *********************************************************************************************************************************************
 # * NEWS - unique key is needed to prevent warning in iOS
@@ -92,7 +118,7 @@ $news[] = array('key' => 3, 'date' => 'Nov. 11, 2020', 'newsItem' => "News Item 
 # ****************************************************************************************************************************
 # * assemble the data above into an array for json-ing
 # ****************************************************************************************************************************
-$more['universal'] = array('todayHours' => $todayHours, 'phone' => $phone, 'website' => $website, 'catalogue' => $catalogue); 
+$more['universal'] = array('displayName' => $displayName, 'todayHours' => $todayHours, 'phone' => $phone, 'address' => $address, 'latitude' => $latitude, 'longitude' => $longitude, 'website' => $website, 'catalogue' => $catalogue);
 $more['options']   = $pageLink;
 //$more['whatsOn']   = array('button' => $whatsOnButton, 'blurb' => $whatsOnBlurb, 'link' => $whatsOnLink);
 $more['contactUs'] = array('blurb' => $contactUsBlurb, 'email' => $contactUsMailLink);
