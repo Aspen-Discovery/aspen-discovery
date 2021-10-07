@@ -196,9 +196,8 @@ class HooplaProcessor {
 											groupedWork.addTargetAudience("Adult");
 											groupedWork.addTargetAudienceFull("Adult");
 											break;
+										case "TVY":
 										case "TVY7":
-										case "TVG":
-										case "G":
 										case "NRC":
 											groupedWork.addTargetAudience("Juvenile");
 											groupedWork.addTargetAudienceFull("Juvenile");
@@ -206,6 +205,11 @@ class HooplaProcessor {
 										case "NRT":
 											groupedWork.addTargetAudience("Young Adult");
 											groupedWork.addTargetAudienceFull("Adolescent (14-17)");
+											break;
+										case "TVG":
+										case "G":
+											groupedWork.addTargetAudience("General");
+											groupedWork.addTargetAudienceFull("General");
 											break;
 										default:
 											//todo, do we want to add additional ratings here?
