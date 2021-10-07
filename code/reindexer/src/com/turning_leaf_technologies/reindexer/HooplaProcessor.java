@@ -227,6 +227,7 @@ class HooplaProcessor {
 											groupedWork.addTargetAudience("Young Adult");
 											groupedWork.addTargetAudienceFull("Adolescent (14-17)");
 											break;
+										case "T+":
 										default:
 											groupedWork.addTargetAudience("Young Adult");
 											groupedWork.addTargetAudienceFull("Adolescent (14-17)");
