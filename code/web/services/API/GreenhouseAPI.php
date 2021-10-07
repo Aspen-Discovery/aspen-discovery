@@ -47,25 +47,50 @@ class GreenhouseAPI extends Action
 		$aspenSite = new AspenSite();
 		$aspenSite->find();
 		while($aspenSite->fetch()) {
-			$existingCachedValues = new AspenSiteCache();
-			$existingCachedValues->siteId = $aspenSite->id;
-			$numRows = $existingCachedValues->count();
+			if (($aspenSite->appAccess == 1) || ($aspenSite->appAccess == 3)) {
+				$existingCachedValues = new AspenSiteCache();
+				$existingCachedValues->siteId = $aspenSite->id;
+				$numRows = $existingCachedValues->count();
 
-			if($numRows > 1){
-				if (($aspenSite->appAccess == 1) || ($aspenSite->appAccess == 3)) {
+				if($numRows > 1){
+					$reloadCache = false;
+					// check for forced reload of cache
+					if (isset($_REQUEST['reload']) && $reload) {
+						$reloadCache = true;
+					}else{
+						//Check to see if we have anything cached
+						$libraryLocation = new AspenSiteCache();
+						$libraryLocation->siteId = $aspenSite->id;
+						if ($libraryLocation->find(true)){
+							if ((time() - $libraryLocation->lastUpdated) > (24.5 * 60 * 60)) {
+								$reloadCache = true;
+							}
+						}else{
+							//Nothing cached, reload
+							$reloadCache = true;
+						}
+					}
+
+					if ($reloadCache){
+						$this->setLibraryCache($aspenSite);
+					}
+
 					$libraryLocation = new AspenSiteCache();
 					$libraryLocation->siteId = $aspenSite->id;
 					$libraryLocation->find();
 					while ($libraryLocation->fetch()) {
 						$distance = $this->findDistance($userLongitude, $userLatitude, $libraryLocation->longitude, $libraryLocation->latitude, $libraryLocation->unit);
 
-						// check for forced reload of cache
-						if (isset($_REQUEST['reload']) && $reload) {
-							$this->setLibraryCache($aspenSite);
-						}
-
-						if ((time() - $libraryLocation->lastUpdated) < (24.5 * 60 * 60)) {
-							if (($userLatitude == 0 && $userLongitude == 0) || $returnAll == true) {
+						if (($userLatitude == 0 && $userLongitude == 0) || $returnAll == true) {
+							if ($releaseChannel == "production" && $libraryLocation->releaseChannel == '1') {
+								$return['libraries'][] = $this->setLibrary($aspenSite, $libraryLocation, $distance);
+							} elseif ($releaseChannel == "beta" && ($libraryLocation->releaseChannel == '0' || $libraryLocation->releaseChannel == '1')) {
+								$return['libraries'][] = $this->setLibrary($aspenSite, $libraryLocation, $distance);
+							} else {
+								$return['libraries'][] = $this->setLibrary($aspenSite, $libraryLocation, $distance);
+							}
+						} else {
+							if ($distance <= 60) {
 								if ($releaseChannel == "production" && $libraryLocation->releaseChannel == '1') {
 									$return['libraries'][] = $this->setLibrary($aspenSite, $libraryLocation, $distance);
 								} elseif ($releaseChannel == "beta" && ($libraryLocation->releaseChannel == '0' || $libraryLocation->releaseChannel == '1')) {
@@ -73,29 +98,13 @@ class GreenhouseAPI extends Action
 								} else {
 									$return['libraries'][] = $this->setLibrary($aspenSite, $libraryLocation, $distance);
 								}
-							} else {
-								if ($distance <= 60) {
-									if ($releaseChannel == "production" && $libraryLocation->releaseChannel == '1') {
-										$return['libraries'][] = $this->setLibrary($aspenSite, $libraryLocation, $distance);
-									} elseif ($releaseChannel == "beta" && ($libraryLocation->releaseChannel == '0' || $libraryLocation->releaseChannel == '1')) {
-										$return['libraries'][] = $this->setLibrary($aspenSite, $libraryLocation, $distance);
-									} else {
-										$return['libraries'][] = $this->setLibrary($aspenSite, $libraryLocation, $distance);
-									}
-								} elseif($aspenSite->name == "Test (ByWater)") {
-									$return['libraries'][] = $this->setLibrary($aspenSite, $libraryLocation, $distance);
-								}
+							} elseif($aspenSite->name == "Test (ByWater)") {
+								$return['libraries'][] = $this->setLibrary($aspenSite, $libraryLocation, $distance);
 							}
-						} else {
-							// if older than 24 hours fetch new data
-							$this->setLibraryCache($aspenSite);
 						}
 					}
-				}
-			} else {
-				// populate initial cache
-				if (($aspenSite->appAccess == 1) || ($aspenSite->appAccess == 3)){
-					$this->setLibraryCache($aspenSite);
+				} else {
+					$this->setLibraryCache($aspenSite, null);
 				}
 			}
 		}
@@ -253,55 +262,28 @@ class GreenhouseAPI extends Action
 			$searchData = json_decode($data);
 			$libraryLocation = new AspenSiteCache();
 			$libraryLocation->siteId = $aspenSite->id;
-			if ($libraryLocation->find(true)) {
-				foreach ($searchData->library as $findLibrary) {
-					if ($findLibrary->locationId === $libraryLocation->locationId) {
-						$libraryLocation->siteId = $aspenSite->id;
-						$libraryLocation->name = $findLibrary->locationName;
-						$libraryLocation->solrScope = $findLibrary->solrScope;
-						$libraryLocation->latitude = $findLibrary->latitude;
-						$libraryLocation->longitude = $findLibrary->longitude;
-						$libraryLocation->unit = $findLibrary->unit;
-						$libraryLocation->releaseChannel = $findLibrary->releaseChannel;
+			$libraryLocation->delete();
 
-						if ($findLibrary->baseUrl == NULL) {
-							$libraryLocation->baseUrl = $aspenSite->baseUrl;
-						} else {
-							$libraryLocation->baseUrl = $findLibrary->baseUrl;
-						}
+			foreach ($searchData->library as $findLibrary) {
+				$libraryLocation = new AspenSiteCache();
 
-						$libraryLocation->logo = $searchData->theme->logo;
-						$libraryLocation->favicon = $searchData->theme->favicon;
-						$libraryLocation->primaryBackgroundColor = $searchData->theme->primaryBackgroundColor;
-						$libraryLocation->primaryForegroundColor = $searchData->theme->primaryForegroundColor;
-						$libraryLocation->secondaryBackgroundColor = $searchData->theme->secondaryBackgroundColor;
-						$libraryLocation->secondaryForegroundColor = $searchData->theme->secondaryForegroundColor;
-						$libraryLocation->tertiaryBackgroundColor = $searchData->theme->tertiaryBackgroundColor;
-						$libraryLocation->tertiaryForegroundColor = $searchData->theme->tertiaryForegroundColor;
+				$libraryLocation->siteId = $aspenSite->id;
+				$libraryLocation->libraryId = $findLibrary->libraryId;
+				$libraryLocation->locationId = $findLibrary->locationId;
+				$libraryLocation->name = $findLibrary->locationName;
+				$libraryLocation->solrScope = $findLibrary->solrScope;
+				$libraryLocation->latitude = $findLibrary->latitude;
+				$libraryLocation->longitude = $findLibrary->longitude;
+				$libraryLocation->unit = $findLibrary->unit;
+				$libraryLocation->releaseChannel = $findLibrary->releaseChannel;
 
-						$libraryLocation->lastUpdated = time();
-						$libraryLocation->update();
-					}
+				if ($findLibrary->baseUrl == NULL) {
+					$libraryLocation->baseUrl = $aspenSite->baseUrl;
+				} else {
+					$libraryLocation->baseUrl = $findLibrary->baseUrl;
 				}
-			} else {
-				foreach ($searchData->library as $findLibrary) {
-					$libraryLocation = new AspenSiteCache();
-					$libraryLocation->siteId = $aspenSite->id;
-					$libraryLocation->libraryId = $findLibrary->libraryId;
-					$libraryLocation->locationId = $findLibrary->locationId;
-					$libraryLocation->name = $findLibrary->locationName;
-					$libraryLocation->solrScope = $findLibrary->solrScope;
-					$libraryLocation->latitude = $findLibrary->latitude;
-					$libraryLocation->longitude = $findLibrary->longitude;
-					$libraryLocation->unit = $findLibrary->unit;
-					$libraryLocation->releaseChannel = $findLibrary->releaseChannel;
 
-					if ($findLibrary->baseUrl == NULL) {
-						$libraryLocation->baseUrl = $aspenSite->baseUrl;
-					} else {
-						$libraryLocation->baseUrl = $findLibrary->baseUrl;
-					}
-
+				if (isset($searchData->theme)) {
 					$libraryLocation->logo = $searchData->theme->logo;
 					$libraryLocation->favicon = $searchData->theme->favicon;
 					$libraryLocation->primaryBackgroundColor = $searchData->theme->primaryBackgroundColor;
@@ -310,14 +292,12 @@ class GreenhouseAPI extends Action
 					$libraryLocation->secondaryForegroundColor = $searchData->theme->secondaryForegroundColor;
 					$libraryLocation->tertiaryBackgroundColor = $searchData->theme->tertiaryBackgroundColor;
 					$libraryLocation->tertiaryForegroundColor = $searchData->theme->tertiaryForegroundColor;
-
-					$libraryLocation->lastUpdated = time();
-					$libraryLocation->update();
 				}
+
+				$libraryLocation->lastUpdated = time();
+				$libraryLocation->insert();
 			}
 		}
-
-		return $libraryLocation;
 	}
 
 	/** @noinspection PhpUnused */
