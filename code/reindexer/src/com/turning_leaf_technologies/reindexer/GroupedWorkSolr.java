@@ -534,7 +534,6 @@ public class GroupedWorkSolr implements Cloneable {
 
 
 			ArrayList<ScopingInfo> itemsWithScopingInfoForActiveScope = relatedScopes.get(scopeName);
-			boolean globalToggleAdded = false;
 			for (ScopingInfo scopingInfo : itemsWithScopingInfoForActiveScope) {
 				Scope curScope = scopingInfo.getScope();
 				if (groupedWorkIndexer.isStoreRecordDetailsInSolr()) {
@@ -602,10 +601,7 @@ public class GroupedWorkSolr implements Cloneable {
 					}
 				}
 
-				if (!globalToggleAdded) {
-					addAvailabilityToggle("global", availabilityToggleForScope, availabilityToggleByFormatForScope, formatsForItem);
-					globalToggleAdded = true;
-				}
+				addAvailabilityToggle("global", availabilityToggleForScope, availabilityToggleByFormatForScope, formatsForItem);
 				if (curItem.isEContent()){
 					addAvailabilityToggle("local", availabilityToggleForScope, availabilityToggleByFormatForScope, formatsForItem);
 					owningLibrariesForScope.add(curItem.getTrimmedEContentSource());
@@ -735,11 +731,15 @@ public class GroupedWorkSolr implements Cloneable {
 			doc.addField("owning_location_".concat(scopeName), owningLocationsForScope);
 			doc.addField("availability_toggle_".concat(scopeName), availabilityToggleForScope);
 			for (String format : availabilityToggleByFormatForScope.keySet()){
-				doc.addField("availability_toggle_".concat(scopeName).concat("_").concat(format), availabilityToggleByFormatForScope.get(format));
+				if (availabilityToggleByFormatForScope.get(format).size() != 0) {
+					doc.addField("availability_by_format_".concat(scopeName).concat("_").concat(StringUtils.toLowerCaseNoSpecialChars(format)), availabilityToggleByFormatForScope.get(format));
+				}
 			}
 			doc.addField("available_at_".concat(scopeName), availableAtForScope);
 			for (String format : availableAtByFormatForScope.keySet()){
-				doc.addField("available_at_".concat(scopeName).concat("_").concat(format), availableAtByFormatForScope.get(format));
+				if (availableAtByFormatForScope.get(format).size() != 0) {
+					doc.addField("available_at_".concat(scopeName).concat("_").concat(StringUtils.toLowerCaseNoSpecialChars(format)), availableAtByFormatForScope.get(format));
+				}
 			}
 
 			SolrInputField field = doc.getField("local_days_since_added_".concat(scopeName));
