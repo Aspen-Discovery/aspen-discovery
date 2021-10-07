@@ -86,6 +86,16 @@ class GreenhouseAPI extends Action
 										} else {
 											$cachedLibrary->baseUrl = $findLibrary->baseUrl;
 										}
+
+										$cachedLibrary->logo = $searchData->theme->logo;
+										$cachedLibrary->favicon = $searchData->theme->favicon;
+										$cachedLibrary->primaryBackgroundColor = $searchData->theme->primaryBackgroundColor;
+										$cachedLibrary->primaryForegroundColor = $searchData->theme->primaryForegroundColor;
+										$cachedLibrary->secondaryBackgroundColor = $searchData->theme->secondaryBackgroundColor;
+										$cachedLibrary->secondaryForegroundColor = $searchData->theme->secondaryForegroundColor;
+										$cachedLibrary->tertiaryBackgroundColor = $searchData->theme->tertiaryBackgroundColor;
+										$cachedLibrary->tertiaryForegroundColor = $searchData->theme->tertiaryForegroundColor;
+
 										$cachedLibrary->lastUpdated = time();
 										$cachedLibrary->update();
 									}
@@ -106,6 +116,14 @@ class GreenhouseAPI extends Action
 										'solrScope' => $cachedLibrary->solrScope,
 										'releaseChannel' => $cachedLibrary->releaseChannel,
 										'siteId' => $cachedLibrary->id,
+										'logo' => $cachedLibrary->logo,
+										'favicon' => $cachedLibrary->favicon,
+										'primaryBackgroundColor' => $cachedLibrary->primaryBackgroundColor,
+										'primaryForegroundColor' => $cachedLibrary->primaryForegroundColor,
+										'secondaryBackgroundColor' => $cachedLibrary->secondaryBackgroundColor,
+										'secondaryForegroundColor' => $cachedLibrary->secondaryForegroundColor,
+										'tertiaryBackgroundColor' => $cachedLibrary->tertiaryBackgroundColor,
+										'tertiaryForegroundColor' => $cachedLibrary->tertiaryForegroundColor,
 									];
 								} elseif($releaseChannel == "beta" && ($cachedLibrary->releaseChannel == '0' || $cachedLibrary->releaseChannel == '1')) {
 									$return['libraries'][] = [
@@ -118,6 +136,14 @@ class GreenhouseAPI extends Action
 										'solrScope' => $cachedLibrary->solrScope,
 										'releaseChannel' => $cachedLibrary->releaseChannel,
 										'siteId' => $cachedLibrary->id,
+										'logo' => $cachedLibrary->logo,
+										'favicon' => $cachedLibrary->favicon,
+										'primaryBackgroundColor' => $cachedLibrary->primaryBackgroundColor,
+										'primaryForegroundColor' => $cachedLibrary->primaryForegroundColor,
+										'secondaryBackgroundColor' => $cachedLibrary->secondaryBackgroundColor,
+										'secondaryForegroundColor' => $cachedLibrary->secondaryForegroundColor,
+										'tertiaryBackgroundColor' => $cachedLibrary->tertiaryBackgroundColor,
+										'tertiaryForegroundColor' => $cachedLibrary->tertiaryForegroundColor,
 									];
 								} else {
 									$return['libraries'][] = [
@@ -130,6 +156,14 @@ class GreenhouseAPI extends Action
 										'solrScope' => $cachedLibrary->solrScope,
 										'releaseChannel' => $cachedLibrary->releaseChannel,
 										'siteId' => $cachedLibrary->id,
+										'logo' => $cachedLibrary->logo,
+										'favicon' => $cachedLibrary->favicon,
+										'primaryBackgroundColor' => $cachedLibrary->primaryBackgroundColor,
+										'primaryForegroundColor' => $cachedLibrary->primaryForegroundColor,
+										'secondaryBackgroundColor' => $cachedLibrary->secondaryBackgroundColor,
+										'secondaryForegroundColor' => $cachedLibrary->secondaryForegroundColor,
+										'tertiaryBackgroundColor' => $cachedLibrary->tertiaryBackgroundColor,
+										'tertiaryForegroundColor' => $cachedLibrary->tertiaryForegroundColor,
 									];
 								}
 							} else {
@@ -148,6 +182,14 @@ class GreenhouseAPI extends Action
 											'solrScope' => $cachedLibrary->solrScope,
 											'releaseChannel' => $cachedLibrary->releaseChannel,
 											'siteId' => $cachedLibrary->id,
+											'logo' => $cachedLibrary->logo,
+											'favicon' => $cachedLibrary->favicon,
+											'primaryBackgroundColor' => $cachedLibrary->primaryBackgroundColor,
+											'primaryForegroundColor' => $cachedLibrary->primaryForegroundColor,
+											'secondaryBackgroundColor' => $cachedLibrary->secondaryBackgroundColor,
+											'secondaryForegroundColor' => $cachedLibrary->secondaryForegroundColor,
+											'tertiaryBackgroundColor' => $cachedLibrary->tertiaryBackgroundColor,
+											'tertiaryForegroundColor' => $cachedLibrary->tertiaryForegroundColor,
 										];
 									} elseif($releaseChannel == "beta" && ($cachedLibrary->releaseChannel == '0' || $cachedLibrary->releaseChannel == '1')) {
 										$return['libraries'][] = [
@@ -161,6 +203,14 @@ class GreenhouseAPI extends Action
 											'solrScope' => $cachedLibrary->solrScope,
 											'releaseChannel' => $cachedLibrary->releaseChannel,
 											'siteId' => $cachedLibrary->id,
+											'logo' => $cachedLibrary->logo,
+											'favicon' => $cachedLibrary->favicon,
+											'primaryBackgroundColor' => $cachedLibrary->primaryBackgroundColor,
+											'primaryForegroundColor' => $cachedLibrary->primaryForegroundColor,
+											'secondaryBackgroundColor' => $cachedLibrary->secondaryBackgroundColor,
+											'secondaryForegroundColor' => $cachedLibrary->secondaryForegroundColor,
+											'tertiaryBackgroundColor' => $cachedLibrary->tertiaryBackgroundColor,
+											'tertiaryForegroundColor' => $cachedLibrary->tertiaryForegroundColor,
 										];
 									} else {
 										$return['libraries'][] = [
@@ -174,6 +224,14 @@ class GreenhouseAPI extends Action
 											'solrScope' => $cachedLibrary->solrScope,
 											'releaseChannel' => $cachedLibrary->releaseChannel,
 											'siteId' => $cachedLibrary->id,
+											'logo' => $cachedLibrary->logo,
+											'favicon' => $cachedLibrary->favicon,
+											'primaryBackgroundColor' => $cachedLibrary->primaryBackgroundColor,
+											'primaryForegroundColor' => $cachedLibrary->primaryForegroundColor,
+											'secondaryBackgroundColor' => $cachedLibrary->secondaryBackgroundColor,
+											'secondaryForegroundColor' => $cachedLibrary->secondaryForegroundColor,
+											'tertiaryBackgroundColor' => $cachedLibrary->tertiaryBackgroundColor,
+											'tertiaryForegroundColor' => $cachedLibrary->tertiaryForegroundColor,
 										];
 									}
 								} elseif($sites->name == "Test (ByWater)") {
@@ -188,12 +246,20 @@ class GreenhouseAPI extends Action
 										'solrScope' => $cachedLibrary->solrScope,
 										'releaseChannel' => $cachedLibrary->releaseChannel,
 										'siteId' => $cachedLibrary->id,
+										'logo' => $cachedLibrary->logo,
+										'favicon' => $cachedLibrary->favicon,
+										'primaryBackgroundColor' => $cachedLibrary->primaryBackgroundColor,
+										'primaryForegroundColor' => $cachedLibrary->primaryForegroundColor,
+										'secondaryBackgroundColor' => $cachedLibrary->secondaryBackgroundColor,
+										'secondaryForegroundColor' => $cachedLibrary->secondaryForegroundColor,
+										'tertiaryBackgroundColor' => $cachedLibrary->tertiaryBackgroundColor,
+										'tertiaryForegroundColor' => $cachedLibrary->tertiaryForegroundColor,
 									];
 								}
 							}
 						} else {
 							// if older than 24 hours, fetch new data
-							$fetchLibraryUrl = $sites->baseUrl . '/API/GreenhouseAPI?method=getLibrary';
+							$fetchLibraryUrl = 'http://demo.localhost:8888/API/GreenhouseAPI?method=getLibrary';
 							if ($data = file_get_contents($fetchLibraryUrl)) {
 								$searchData = json_decode($data);
 								foreach ($searchData->library as $findLibrary) {
@@ -210,6 +276,18 @@ class GreenhouseAPI extends Action
 										} else {
 											$cachedLibrary->baseUrl = $findLibrary->baseUrl;
 										}
+
+										foreach ($searchData->theme as $themeData) {
+											$cachedLibrary->logo = $themeData->logo;
+											$cachedLibrary->favicon = $themeData->favicon;
+											$cachedLibrary->primaryBackgroundColor = $themeData->primaryBackgroundColor;
+											$cachedLibrary->primaryForegroundColor = $themeData->primaryForegroundColor;
+											$cachedLibrary->secondaryBackgroundColor = $themeData->secondaryBackgroundColor;
+											$cachedLibrary->secondaryForegroundColor = $themeData->secondaryForegroundColor;
+											$cachedLibrary->tertiaryBackgroundColor = $themeData->tertiaryBackgroundColor;
+											$cachedLibrary->tertiaryForegroundColor = $themeData->tertiaryForegroundColor;
+										}
+
 										$cachedLibrary->lastUpdated = time();
 										$cachedLibrary->update();
 									}
@@ -241,6 +319,16 @@ class GreenhouseAPI extends Action
 							} else {
 								$newCachedLibrary->baseUrl = $findLibrary->baseUrl;
 							}
+
+							$newCachedLibrary->logo = $searchData->theme->logo;
+							$newCachedLibrary->favicon = $searchData->theme->favicon;
+							$newCachedLibrary->primaryBackgroundColor = $searchData->theme->primaryBackgroundColor;
+							$newCachedLibrary->primaryForegroundColor = $searchData->theme->primaryForegroundColor;
+							$newCachedLibrary->secondaryBackgroundColor = $searchData->theme->secondaryBackgroundColor;
+							$newCachedLibrary->secondaryForegroundColor = $searchData->theme->secondaryForegroundColor;
+							$newCachedLibrary->tertiaryBackgroundColor = $searchData->theme->tertiaryBackgroundColor;
+							$newCachedLibrary->tertiaryForegroundColor = $searchData->theme->tertiaryForegroundColor;
+
 							$newCachedLibrary->lastUpdated = time();
 							$newCachedLibrary->insert();
 						}
@@ -294,6 +382,14 @@ class GreenhouseAPI extends Action
 								'solrScope' => $cachedLibrary->solrScope,
 								'releaseChannel' => $cachedLibrary->releaseChannel,
 								'siteId' => $cachedLibrary->id,
+								'logo' => $cachedLibrary->logo,
+								'favicon' => $cachedLibrary->favicon,
+								'primaryBackgroundColor' => $cachedLibrary->primaryBackgroundColor,
+								'primaryForegroundColor' => $cachedLibrary->primaryForegroundColor,
+								'secondaryBackgroundColor' => $cachedLibrary->secondaryBackgroundColor,
+								'secondaryForegroundColor' => $cachedLibrary->secondaryForegroundColor,
+								'tertiaryBackgroundColor' => $cachedLibrary->tertiaryBackgroundColor,
+								'tertiaryForegroundColor' => $cachedLibrary->tertiaryForegroundColor,
 							];
 						} elseif($releaseChannel == "beta" && ($cachedLibrary->releaseChannel == '0' || $cachedLibrary->releaseChannel == '1')) {
 							$return['libraries'][] = [
@@ -306,6 +402,14 @@ class GreenhouseAPI extends Action
 								'solrScope' => $cachedLibrary->solrScope,
 								'releaseChannel' => $cachedLibrary->releaseChannel,
 								'siteId' => $cachedLibrary->id,
+								'logo' => $cachedLibrary->logo,
+								'favicon' => $cachedLibrary->favicon,
+								'primaryBackgroundColor' => $cachedLibrary->primaryBackgroundColor,
+								'primaryForegroundColor' => $cachedLibrary->primaryForegroundColor,
+								'secondaryBackgroundColor' => $cachedLibrary->secondaryBackgroundColor,
+								'secondaryForegroundColor' => $cachedLibrary->secondaryForegroundColor,
+								'tertiaryBackgroundColor' => $cachedLibrary->tertiaryBackgroundColor,
+								'tertiaryForegroundColor' => $cachedLibrary->tertiaryForegroundColor,
 							];
 						} else {
 							$return['libraries'][] = [
@@ -318,6 +422,14 @@ class GreenhouseAPI extends Action
 								'solrScope' => $cachedLibrary->solrScope,
 								'releaseChannel' => $cachedLibrary->releaseChannel,
 								'siteId' => $cachedLibrary->id,
+								'logo' => $cachedLibrary->logo,
+								'favicon' => $cachedLibrary->favicon,
+								'primaryBackgroundColor' => $cachedLibrary->primaryBackgroundColor,
+								'primaryForegroundColor' => $cachedLibrary->primaryForegroundColor,
+								'secondaryBackgroundColor' => $cachedLibrary->secondaryBackgroundColor,
+								'secondaryForegroundColor' => $cachedLibrary->secondaryForegroundColor,
+								'tertiaryBackgroundColor' => $cachedLibrary->tertiaryBackgroundColor,
+								'tertiaryForegroundColor' => $cachedLibrary->tertiaryForegroundColor,
 							];
 						}
 					}

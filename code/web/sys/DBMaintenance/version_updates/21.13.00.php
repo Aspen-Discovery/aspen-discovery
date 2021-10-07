@@ -78,7 +78,20 @@ function getUpdates21_13_00() : array
 				'ALTER TABLE library CHANGE COLUMN symphonyPaymentPolicy symphonyPaymentPolicy VARCHAR(10)',
 			]
 		], //increaseSymphonyPaymentTypeAndPolicyLengths
-
+		'addThemeToCachedGreenhouseData' => [
+			'title' => 'Add Theme Data To Cached Greenhouse Data',
+			'description' => 'Add library theme data to cache',
+			'sql' => [
+				'ALTER TABLE greenhouse_cache ADD COLUMN logo VARCHAR(255)',
+				'ALTER TABLE greenhouse_cache ADD COLUMN favicon VARCHAR(255)',
+				'ALTER TABLE greenhouse_cache ADD COLUMN primaryBackgroundColor VARCHAR(25)',
+				'ALTER TABLE greenhouse_cache ADD COLUMN primaryForegroundColor VARCHAR(25)',
+				'ALTER TABLE greenhouse_cache ADD COLUMN secondaryBackgroundColor VARCHAR(25)',
+				'ALTER TABLE greenhouse_cache ADD COLUMN secondaryForegroundColor VARCHAR(25)',
+				'ALTER TABLE greenhouse_cache ADD COLUMN tertiaryBackgroundColor VARCHAR(25)',
+				'ALTER TABLE greenhouse_cache ADD COLUMN tertiaryForegroundColor VARCHAR(25)',
+			]
+		], //addThemeToCachedGreenhouseData
 	];
 }
 
