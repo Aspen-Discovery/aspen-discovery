@@ -29,414 +29,85 @@ class GreenhouseAPI extends Action
 		echo $output;
 	}
 
-	public function getLibraries() : array
+	public function getLibraries($returnAll = false, $reload = true) : array
 	{
 		$return = [
 			'success' => true,
 			'libraries' => [],
 		];
+
 		// prep user location
-		if (isset($_GET['latitude'])) {
-			$userLatitude = $_GET['latitude'];
-		} else {
-			$userLatitude = 0;
-		}
-		if (isset($_GET['longitude'])) {
-			$userLongitude = $_GET['longitude'];
-		} else {
-			$userLongitude = 0;
-		}
+		if (isset($_GET['latitude'])) { $userLatitude = $_GET['latitude']; } else { $userLatitude = 0; }
+		if (isset($_GET['longitude'])) { $userLongitude = $_GET['longitude']; } else { $userLongitude = 0; }
 
 		// get release channel
 		$releaseChannel = "any";
-		// production, staging (beta), development (local)
-		if (isset($_GET['release_channel'])) {
-			$releaseChannel = $_GET['release_channel'];
-		}
+		if (isset($_GET['release_channel'])) { $releaseChannel = $_GET['release_channel']; }
 
-		$sites = new AspenSite();
-		$sites->find();
-		while($sites->fetch()) {
+		$aspenSite = new AspenSite();
+		$aspenSite->find();
+		while($aspenSite->fetch()) {
 			$existingCachedValues = new AspenSiteCache();
-			$existingCachedValues->siteId = $sites->id;
+			$existingCachedValues->siteId = $aspenSite->id;
 			$numRows = $existingCachedValues->count();
 
 			if($numRows > 1){
-				if (($sites->appAccess == 1) || ($sites->appAccess == 3)) {
-					$cachedLibrary = new AspenSiteCache();
-					$cachedLibrary->siteId = $sites->id;
-					$cachedLibrary->find();
-					while ($cachedLibrary->fetch()) {
-						if(isset($_REQUEST['reload'])) {
-							// if reload is set, force new data fetch
-							$fetchLibraryUrl = $sites->baseUrl . '/API/GreenhouseAPI?method=getLibrary';
-							if ($data = file_get_contents($fetchLibraryUrl)) {
-								$searchData = json_decode($data);
-								foreach ($searchData->library as $findLibrary) {
-									if($findLibrary->locationId === $cachedLibrary->locationId) {
-										$cachedLibrary->siteId = $sites->id;
-										$cachedLibrary->name = $findLibrary->locationName;
-										$cachedLibrary->solrScope = $findLibrary->solrScope;
-										$cachedLibrary->latitude = $findLibrary->latitude;
-										$cachedLibrary->longitude = $findLibrary->longitude;
-										$cachedLibrary->unit = $findLibrary->unit;
-										$cachedLibrary->releaseChannel = $findLibrary->releaseChannel;
-										if($findLibrary->baseUrl == NULL) {
-											$cachedLibrary->baseUrl = $sites->baseUrl;
-										} else {
-											$cachedLibrary->baseUrl = $findLibrary->baseUrl;
-										}
+				if (($aspenSite->appAccess == 1) || ($aspenSite->appAccess == 3)) {
+					$libraryLocation = new AspenSiteCache();
+					$libraryLocation->siteId = $aspenSite->id;
+					$libraryLocation->find();
+					while ($libraryLocation->fetch()) {
+						$distance = $this->findDistance($userLongitude, $userLatitude, $libraryLocation->longitude, $libraryLocation->latitude, $libraryLocation->unit);
 
-										$cachedLibrary->logo = $searchData->theme->logo;
-										$cachedLibrary->favicon = $searchData->theme->favicon;
-										$cachedLibrary->primaryBackgroundColor = $searchData->theme->primaryBackgroundColor;
-										$cachedLibrary->primaryForegroundColor = $searchData->theme->primaryForegroundColor;
-										$cachedLibrary->secondaryBackgroundColor = $searchData->theme->secondaryBackgroundColor;
-										$cachedLibrary->secondaryForegroundColor = $searchData->theme->secondaryForegroundColor;
-										$cachedLibrary->tertiaryBackgroundColor = $searchData->theme->tertiaryBackgroundColor;
-										$cachedLibrary->tertiaryForegroundColor = $searchData->theme->tertiaryForegroundColor;
-
-										$cachedLibrary->lastUpdated = time();
-										$cachedLibrary->update();
-									}
-								}
-								//header("Refresh:0");
-							}
+						// check for forced reload of cache
+						if (isset($_REQUEST['reload']) && $reload) {
+							$this->setLibraryCache($aspenSite);
 						}
-						elseif ((time() - $cachedLibrary->lastUpdated) < (24.5 * 60 * 60)) {
-							if ($userLatitude == 0 && $userLongitude == 0) {
-								if($releaseChannel == "production" && $cachedLibrary->releaseChannel == '1') {
-									$return['libraries'][] = [
-										'name' => $cachedLibrary->name,
-										'librarySystem' => $sites->name,
-										'libraryId' => $cachedLibrary->libraryId,
-										'locationId' => $cachedLibrary->locationId,
-										'baseUrl' => $cachedLibrary->baseUrl,
-										'accessLevel' => $sites->appAccess,
-										'solrScope' => $cachedLibrary->solrScope,
-										'releaseChannel' => $cachedLibrary->releaseChannel,
-										'siteId' => $cachedLibrary->id,
-										'logo' => $cachedLibrary->logo,
-										'favicon' => $cachedLibrary->favicon,
-										'primaryBackgroundColor' => $cachedLibrary->primaryBackgroundColor,
-										'primaryForegroundColor' => $cachedLibrary->primaryForegroundColor,
-										'secondaryBackgroundColor' => $cachedLibrary->secondaryBackgroundColor,
-										'secondaryForegroundColor' => $cachedLibrary->secondaryForegroundColor,
-										'tertiaryBackgroundColor' => $cachedLibrary->tertiaryBackgroundColor,
-										'tertiaryForegroundColor' => $cachedLibrary->tertiaryForegroundColor,
-									];
-								} elseif($releaseChannel == "beta" && ($cachedLibrary->releaseChannel == '0' || $cachedLibrary->releaseChannel == '1')) {
-									$return['libraries'][] = [
-										'name' => $cachedLibrary->name,
-										'librarySystem' => $sites->name,
-										'libraryId' => $cachedLibrary->libraryId,
-										'locationId' => $cachedLibrary->locationId,
-										'baseUrl' => $cachedLibrary->baseUrl,
-										'accessLevel' => $sites->appAccess,
-										'solrScope' => $cachedLibrary->solrScope,
-										'releaseChannel' => $cachedLibrary->releaseChannel,
-										'siteId' => $cachedLibrary->id,
-										'logo' => $cachedLibrary->logo,
-										'favicon' => $cachedLibrary->favicon,
-										'primaryBackgroundColor' => $cachedLibrary->primaryBackgroundColor,
-										'primaryForegroundColor' => $cachedLibrary->primaryForegroundColor,
-										'secondaryBackgroundColor' => $cachedLibrary->secondaryBackgroundColor,
-										'secondaryForegroundColor' => $cachedLibrary->secondaryForegroundColor,
-										'tertiaryBackgroundColor' => $cachedLibrary->tertiaryBackgroundColor,
-										'tertiaryForegroundColor' => $cachedLibrary->tertiaryForegroundColor,
-									];
+
+						if ((time() - $libraryLocation->lastUpdated) < (24.5 * 60 * 60)) {
+							if (($userLatitude == 0 && $userLongitude == 0) || $returnAll == true) {
+								if ($releaseChannel == "production" && $libraryLocation->releaseChannel == '1') {
+									$return['libraries'][] = $this->setLibrary($aspenSite, $libraryLocation, $distance);
+								} elseif ($releaseChannel == "beta" && ($libraryLocation->releaseChannel == '0' || $libraryLocation->releaseChannel == '1')) {
+									$return['libraries'][] = $this->setLibrary($aspenSite, $libraryLocation, $distance);
 								} else {
-									$return['libraries'][] = [
-										'name' => $cachedLibrary->name,
-										'librarySystem' => $sites->name,
-										'libraryId' => $cachedLibrary->libraryId,
-										'locationId' => $cachedLibrary->locationId,
-										'baseUrl' => $cachedLibrary->baseUrl,
-										'accessLevel' => $sites->appAccess,
-										'solrScope' => $cachedLibrary->solrScope,
-										'releaseChannel' => $cachedLibrary->releaseChannel,
-										'siteId' => $cachedLibrary->id,
-										'logo' => $cachedLibrary->logo,
-										'favicon' => $cachedLibrary->favicon,
-										'primaryBackgroundColor' => $cachedLibrary->primaryBackgroundColor,
-										'primaryForegroundColor' => $cachedLibrary->primaryForegroundColor,
-										'secondaryBackgroundColor' => $cachedLibrary->secondaryBackgroundColor,
-										'secondaryForegroundColor' => $cachedLibrary->secondaryForegroundColor,
-										'tertiaryBackgroundColor' => $cachedLibrary->tertiaryBackgroundColor,
-										'tertiaryForegroundColor' => $cachedLibrary->tertiaryForegroundColor,
-									];
+									$return['libraries'][] = $this->setLibrary($aspenSite, $libraryLocation, $distance);
 								}
 							} else {
-								$distance = $this->findDistance($userLongitude, $userLatitude, $cachedLibrary->longitude, $cachedLibrary->latitude, $cachedLibrary->unit);
-
 								if ($distance <= 60) {
-									if($releaseChannel == "production" && $cachedLibrary->releaseChannel == '1') {
-										$return['libraries'][] = [
-											'name' => $cachedLibrary->name,
-											'librarySystem' => $sites->name,
-											'libraryId' => $cachedLibrary->libraryId,
-											'locationId' => $cachedLibrary->locationId,
-											'baseUrl' => $cachedLibrary->baseUrl,
-											'accessLevel' => $sites->appAccess,
-											'distance' => $distance,
-											'solrScope' => $cachedLibrary->solrScope,
-											'releaseChannel' => $cachedLibrary->releaseChannel,
-											'siteId' => $cachedLibrary->id,
-											'logo' => $cachedLibrary->logo,
-											'favicon' => $cachedLibrary->favicon,
-											'primaryBackgroundColor' => $cachedLibrary->primaryBackgroundColor,
-											'primaryForegroundColor' => $cachedLibrary->primaryForegroundColor,
-											'secondaryBackgroundColor' => $cachedLibrary->secondaryBackgroundColor,
-											'secondaryForegroundColor' => $cachedLibrary->secondaryForegroundColor,
-											'tertiaryBackgroundColor' => $cachedLibrary->tertiaryBackgroundColor,
-											'tertiaryForegroundColor' => $cachedLibrary->tertiaryForegroundColor,
-										];
-									} elseif($releaseChannel == "beta" && ($cachedLibrary->releaseChannel == '0' || $cachedLibrary->releaseChannel == '1')) {
-										$return['libraries'][] = [
-											'name' => $cachedLibrary->name,
-											'librarySystem' => $sites->name,
-											'libraryId' => $cachedLibrary->libraryId,
-											'locationId' => $cachedLibrary->locationId,
-											'baseUrl' => $cachedLibrary->baseUrl,
-											'accessLevel' => $sites->appAccess,
-											'distance' => $distance,
-											'solrScope' => $cachedLibrary->solrScope,
-											'releaseChannel' => $cachedLibrary->releaseChannel,
-											'siteId' => $cachedLibrary->id,
-											'logo' => $cachedLibrary->logo,
-											'favicon' => $cachedLibrary->favicon,
-											'primaryBackgroundColor' => $cachedLibrary->primaryBackgroundColor,
-											'primaryForegroundColor' => $cachedLibrary->primaryForegroundColor,
-											'secondaryBackgroundColor' => $cachedLibrary->secondaryBackgroundColor,
-											'secondaryForegroundColor' => $cachedLibrary->secondaryForegroundColor,
-											'tertiaryBackgroundColor' => $cachedLibrary->tertiaryBackgroundColor,
-											'tertiaryForegroundColor' => $cachedLibrary->tertiaryForegroundColor,
-										];
+									if ($releaseChannel == "production" && $libraryLocation->releaseChannel == '1') {
+										$return['libraries'][] = $this->setLibrary($aspenSite, $libraryLocation, $distance);
+									} elseif ($releaseChannel == "beta" && ($libraryLocation->releaseChannel == '0' || $libraryLocation->releaseChannel == '1')) {
+										$return['libraries'][] = $this->setLibrary($aspenSite, $libraryLocation, $distance);
 									} else {
-										$return['libraries'][] = [
-											'name' => $cachedLibrary->name,
-											'librarySystem' => $sites->name,
-											'libraryId' => $cachedLibrary->libraryId,
-											'locationId' => $cachedLibrary->locationId,
-											'baseUrl' => $cachedLibrary->baseUrl,
-											'accessLevel' => $sites->appAccess,
-											'distance' => $distance,
-											'solrScope' => $cachedLibrary->solrScope,
-											'releaseChannel' => $cachedLibrary->releaseChannel,
-											'siteId' => $cachedLibrary->id,
-											'logo' => $cachedLibrary->logo,
-											'favicon' => $cachedLibrary->favicon,
-											'primaryBackgroundColor' => $cachedLibrary->primaryBackgroundColor,
-											'primaryForegroundColor' => $cachedLibrary->primaryForegroundColor,
-											'secondaryBackgroundColor' => $cachedLibrary->secondaryBackgroundColor,
-											'secondaryForegroundColor' => $cachedLibrary->secondaryForegroundColor,
-											'tertiaryBackgroundColor' => $cachedLibrary->tertiaryBackgroundColor,
-											'tertiaryForegroundColor' => $cachedLibrary->tertiaryForegroundColor,
-										];
+										$return['libraries'][] = $this->setLibrary($aspenSite, $libraryLocation, $distance);
 									}
-								} elseif($sites->name == "Test (ByWater)") {
-									$return['libraries'][] = [
-										'name' => $cachedLibrary->name,
-										'librarySystem' => $sites->name,
-										'libraryId' => $cachedLibrary->libraryId,
-										'locationId' => $cachedLibrary->locationId,
-										'baseUrl' => $cachedLibrary->baseUrl,
-										'accessLevel' => $sites->appAccess,
-										'distance' => $distance,
-										'solrScope' => $cachedLibrary->solrScope,
-										'releaseChannel' => $cachedLibrary->releaseChannel,
-										'siteId' => $cachedLibrary->id,
-										'logo' => $cachedLibrary->logo,
-										'favicon' => $cachedLibrary->favicon,
-										'primaryBackgroundColor' => $cachedLibrary->primaryBackgroundColor,
-										'primaryForegroundColor' => $cachedLibrary->primaryForegroundColor,
-										'secondaryBackgroundColor' => $cachedLibrary->secondaryBackgroundColor,
-										'secondaryForegroundColor' => $cachedLibrary->secondaryForegroundColor,
-										'tertiaryBackgroundColor' => $cachedLibrary->tertiaryBackgroundColor,
-										'tertiaryForegroundColor' => $cachedLibrary->tertiaryForegroundColor,
-									];
+								} elseif($aspenSite->name == "Test (ByWater)") {
+									$return['libraries'][] = $this->setLibrary($aspenSite, $libraryLocation, $distance);
 								}
 							}
 						} else {
-							// if older than 24 hours, fetch new data
-							$fetchLibraryUrl = 'http://demo.localhost:8888/API/GreenhouseAPI?method=getLibrary';
-							if ($data = file_get_contents($fetchLibraryUrl)) {
-								$searchData = json_decode($data);
-								foreach ($searchData->library as $findLibrary) {
-									if($findLibrary->locationId === $cachedLibrary->locationId) {
-										$cachedLibrary->siteId = $sites->id;
-										$cachedLibrary->name = $findLibrary->locationName;
-										$cachedLibrary->solrScope = $findLibrary->solrScope;
-										$cachedLibrary->latitude = $findLibrary->latitude;
-										$cachedLibrary->longitude = $findLibrary->longitude;
-										$cachedLibrary->unit = $findLibrary->unit;
-										$cachedLibrary->releaseChannel = $findLibrary->releaseChannel;
-										if($findLibrary->baseUrl == NULL) {
-											$cachedLibrary->baseUrl = $sites->baseUrl;
-										} else {
-											$cachedLibrary->baseUrl = $findLibrary->baseUrl;
-										}
-
-										foreach ($searchData->theme as $themeData) {
-											$cachedLibrary->logo = $themeData->logo;
-											$cachedLibrary->favicon = $themeData->favicon;
-											$cachedLibrary->primaryBackgroundColor = $themeData->primaryBackgroundColor;
-											$cachedLibrary->primaryForegroundColor = $themeData->primaryForegroundColor;
-											$cachedLibrary->secondaryBackgroundColor = $themeData->secondaryBackgroundColor;
-											$cachedLibrary->secondaryForegroundColor = $themeData->secondaryForegroundColor;
-											$cachedLibrary->tertiaryBackgroundColor = $themeData->tertiaryBackgroundColor;
-											$cachedLibrary->tertiaryForegroundColor = $themeData->tertiaryForegroundColor;
-										}
-
-										$cachedLibrary->lastUpdated = time();
-										$cachedLibrary->update();
-									}
-								}
-								//header("Refresh:0");
-							}
+							// if older than 24 hours fetch new data
+							$this->setLibraryCache($aspenSite);
 						}
 					}
 				}
 			} else {
 				// populate initial cache
-				if (($sites->appAccess == 1) || ($sites->appAccess == 3)){
-					$fetchLibraryUrl = $sites->baseUrl . 'API/GreenhouseAPI?method=getLibrary';
-					if ($data = file_get_contents($fetchLibraryUrl)) {
-						$searchData = json_decode($data);
-						foreach ($searchData->library as $findLibrary) {
-							$newCachedLibrary = new AspenSiteCache();
-							$newCachedLibrary->siteId = $sites->id;
-							$newCachedLibrary->name = $findLibrary->locationName;
-							$newCachedLibrary->locationId = $findLibrary->locationId;
-							$newCachedLibrary->libraryId = $findLibrary->libraryId;
-							$newCachedLibrary->solrScope = $findLibrary->solrScope;
-							$newCachedLibrary->latitude = $findLibrary->latitude;
-							$newCachedLibrary->longitude = $findLibrary->longitude;
-							$newCachedLibrary->unit = $findLibrary->unit;
-							$newCachedLibrary->releaseChannel = $findLibrary->releaseChannel;
-							if($findLibrary->baseUrl == NULL) {
-								$newCachedLibrary->baseUrl = $sites->baseUrl;
-							} else {
-								$newCachedLibrary->baseUrl = $findLibrary->baseUrl;
-							}
-
-							$newCachedLibrary->logo = $searchData->theme->logo;
-							$newCachedLibrary->favicon = $searchData->theme->favicon;
-							$newCachedLibrary->primaryBackgroundColor = $searchData->theme->primaryBackgroundColor;
-							$newCachedLibrary->primaryForegroundColor = $searchData->theme->primaryForegroundColor;
-							$newCachedLibrary->secondaryBackgroundColor = $searchData->theme->secondaryBackgroundColor;
-							$newCachedLibrary->secondaryForegroundColor = $searchData->theme->secondaryForegroundColor;
-							$newCachedLibrary->tertiaryBackgroundColor = $searchData->theme->tertiaryBackgroundColor;
-							$newCachedLibrary->tertiaryForegroundColor = $searchData->theme->tertiaryForegroundColor;
-
-							$newCachedLibrary->lastUpdated = time();
-							$newCachedLibrary->insert();
-						}
-						//header("Refresh:0");
-					}
+				if (($aspenSite->appAccess == 1) || ($aspenSite->appAccess == 3)){
+					$this->setLibraryCache($aspenSite);
 				}
 			}
 		}
 		if(!empty($return['libraries'])) {
 			return $return;
 		} else if(empty($return['libraries'])) {
-			return $this->getAllLibraries();
+			return $this->getLibraries(true, false);
+		} else {
+			$return['success'] = false;
+			$return['message'] = 'Error fetching libraries';
+			return $return;
 		}
-	}
-
-	public function getAllLibraries() : array {
-
-		$return = [
-			'success' => true,
-			'libraries' => [],
-		];
-
-		// get release channel
-		$releaseChannel = "any";
-		// production, staging (beta), development (local)
-		if (isset($_GET['release_channel'])) {
-			$releaseChannel = $_GET['release_channel'];
-		}
-
-		$sites = new AspenSite();
-		$sites->find();
-		while($sites->fetch()) {
-			$existingCachedValues = new AspenSiteCache();
-			$existingCachedValues->siteId = $sites->id;
-			$numRows = $existingCachedValues->count();
-
-			if($numRows > 1){
-				if (($sites->appAccess == 1) || ($sites->appAccess == 3)) {
-					$cachedLibrary = new AspenSiteCache();
-					$cachedLibrary->siteId = $sites->id;
-					$cachedLibrary->find();
-					while ($cachedLibrary->fetch()) {
-						if($releaseChannel == "production" && $cachedLibrary->releaseChannel == '1') {
-							$return['libraries'][] = [
-								'name' => $cachedLibrary->name,
-								'librarySystem' => $sites->name,
-								'libraryId' => $cachedLibrary->libraryId,
-								'locationId' => $cachedLibrary->locationId,
-								'baseUrl' => $cachedLibrary->baseUrl,
-								'accessLevel' => $sites->appAccess,
-								'solrScope' => $cachedLibrary->solrScope,
-								'releaseChannel' => $cachedLibrary->releaseChannel,
-								'siteId' => $cachedLibrary->id,
-								'logo' => $cachedLibrary->logo,
-								'favicon' => $cachedLibrary->favicon,
-								'primaryBackgroundColor' => $cachedLibrary->primaryBackgroundColor,
-								'primaryForegroundColor' => $cachedLibrary->primaryForegroundColor,
-								'secondaryBackgroundColor' => $cachedLibrary->secondaryBackgroundColor,
-								'secondaryForegroundColor' => $cachedLibrary->secondaryForegroundColor,
-								'tertiaryBackgroundColor' => $cachedLibrary->tertiaryBackgroundColor,
-								'tertiaryForegroundColor' => $cachedLibrary->tertiaryForegroundColor,
-							];
-						} elseif($releaseChannel == "beta" && ($cachedLibrary->releaseChannel == '0' || $cachedLibrary->releaseChannel == '1')) {
-							$return['libraries'][] = [
-								'name' => $cachedLibrary->name,
-								'librarySystem' => $sites->name,
-								'libraryId' => $cachedLibrary->libraryId,
-								'locationId' => $cachedLibrary->locationId,
-								'baseUrl' => $cachedLibrary->baseUrl,
-								'accessLevel' => $sites->appAccess,
-								'solrScope' => $cachedLibrary->solrScope,
-								'releaseChannel' => $cachedLibrary->releaseChannel,
-								'siteId' => $cachedLibrary->id,
-								'logo' => $cachedLibrary->logo,
-								'favicon' => $cachedLibrary->favicon,
-								'primaryBackgroundColor' => $cachedLibrary->primaryBackgroundColor,
-								'primaryForegroundColor' => $cachedLibrary->primaryForegroundColor,
-								'secondaryBackgroundColor' => $cachedLibrary->secondaryBackgroundColor,
-								'secondaryForegroundColor' => $cachedLibrary->secondaryForegroundColor,
-								'tertiaryBackgroundColor' => $cachedLibrary->tertiaryBackgroundColor,
-								'tertiaryForegroundColor' => $cachedLibrary->tertiaryForegroundColor,
-							];
-						} else {
-							$return['libraries'][] = [
-								'name' => $cachedLibrary->name,
-								'librarySystem' => $sites->name,
-								'libraryId' => $cachedLibrary->libraryId,
-								'locationId' => $cachedLibrary->locationId,
-								'baseUrl' => $cachedLibrary->baseUrl,
-								'accessLevel' => $sites->appAccess,
-								'solrScope' => $cachedLibrary->solrScope,
-								'releaseChannel' => $cachedLibrary->releaseChannel,
-								'siteId' => $cachedLibrary->id,
-								'logo' => $cachedLibrary->logo,
-								'favicon' => $cachedLibrary->favicon,
-								'primaryBackgroundColor' => $cachedLibrary->primaryBackgroundColor,
-								'primaryForegroundColor' => $cachedLibrary->primaryForegroundColor,
-								'secondaryBackgroundColor' => $cachedLibrary->secondaryBackgroundColor,
-								'secondaryForegroundColor' => $cachedLibrary->secondaryForegroundColor,
-								'tertiaryBackgroundColor' => $cachedLibrary->tertiaryBackgroundColor,
-								'tertiaryForegroundColor' => $cachedLibrary->tertiaryForegroundColor,
-							];
-						}
-					}
-				}
-			}
-		}
-		return $return;
 	}
 
 	/** @noinspection PhpUnused */
@@ -546,6 +217,107 @@ class GreenhouseAPI extends Action
 		}
 
 		return $return;
+	}
+
+
+	public function setLibrary($aspenSite, $libraryLocation, $distance) {
+
+		$thisLibrary = [
+			'name' => $libraryLocation->name,
+			'librarySystem' => $aspenSite->name,
+			'libraryId' => $libraryLocation->libraryId,
+			'locationId' => $libraryLocation->locationId,
+			'baseUrl' => $libraryLocation->baseUrl,
+			'accessLevel' => $aspenSite->appAccess,
+			'distance' => $distance,
+			'solrScope' => $libraryLocation->solrScope,
+			'releaseChannel' => $libraryLocation->releaseChannel,
+			'siteId' => $libraryLocation->id,
+			'logo' => $libraryLocation->logo,
+			'favicon' => $libraryLocation->favicon,
+			'primaryBackgroundColor' => $libraryLocation->primaryBackgroundColor,
+			'primaryForegroundColor' => $libraryLocation->primaryForegroundColor,
+			'secondaryBackgroundColor' => $libraryLocation->secondaryBackgroundColor,
+			'secondaryForegroundColor' => $libraryLocation->secondaryForegroundColor,
+			'tertiaryBackgroundColor' => $libraryLocation->tertiaryBackgroundColor,
+			'tertiaryForegroundColor' => $libraryLocation->tertiaryForegroundColor,
+		];
+
+		return $thisLibrary;
+	}
+
+	public function setLibraryCache($aspenSite)
+	{
+		$fetchLibraryUrl = $aspenSite->baseUrl . '/API/GreenhouseAPI?method=getLibrary';
+		if ($data = file_get_contents($fetchLibraryUrl)) {
+			$searchData = json_decode($data);
+			$libraryLocation = new AspenSiteCache();
+			$libraryLocation->siteId = $aspenSite->id;
+			if ($libraryLocation->find(true)) {
+				foreach ($searchData->library as $findLibrary) {
+					if ($findLibrary->locationId === $libraryLocation->locationId) {
+						$libraryLocation->siteId = $aspenSite->id;
+						$libraryLocation->name = $findLibrary->locationName;
+						$libraryLocation->solrScope = $findLibrary->solrScope;
+						$libraryLocation->latitude = $findLibrary->latitude;
+						$libraryLocation->longitude = $findLibrary->longitude;
+						$libraryLocation->unit = $findLibrary->unit;
+						$libraryLocation->releaseChannel = $findLibrary->releaseChannel;
+
+						if ($findLibrary->baseUrl == NULL) {
+							$libraryLocation->baseUrl = $aspenSite->baseUrl;
+						} else {
+							$libraryLocation->baseUrl = $findLibrary->baseUrl;
+						}
+
+						$libraryLocation->logo = $searchData->theme->logo;
+						$libraryLocation->favicon = $searchData->theme->favicon;
+						$libraryLocation->primaryBackgroundColor = $searchData->theme->primaryBackgroundColor;
+						$libraryLocation->primaryForegroundColor = $searchData->theme->primaryForegroundColor;
+						$libraryLocation->secondaryBackgroundColor = $searchData->theme->secondaryBackgroundColor;
+						$libraryLocation->secondaryForegroundColor = $searchData->theme->secondaryForegroundColor;
+						$libraryLocation->tertiaryBackgroundColor = $searchData->theme->tertiaryBackgroundColor;
+						$libraryLocation->tertiaryForegroundColor = $searchData->theme->tertiaryForegroundColor;
+
+						$libraryLocation->lastUpdated = time();
+						$libraryLocation->update();
+					}
+				}
+			} else {
+				foreach ($searchData->library as $findLibrary) {
+					$libraryLocation = new AspenSiteCache();
+					$libraryLocation->siteId = $aspenSite->id;
+					$libraryLocation->libraryId = $findLibrary->libraryId;
+					$libraryLocation->locationId = $findLibrary->locationId;
+					$libraryLocation->name = $findLibrary->locationName;
+					$libraryLocation->solrScope = $findLibrary->solrScope;
+					$libraryLocation->latitude = $findLibrary->latitude;
+					$libraryLocation->longitude = $findLibrary->longitude;
+					$libraryLocation->unit = $findLibrary->unit;
+					$libraryLocation->releaseChannel = $findLibrary->releaseChannel;
+
+					if ($findLibrary->baseUrl == NULL) {
+						$libraryLocation->baseUrl = $aspenSite->baseUrl;
+					} else {
+						$libraryLocation->baseUrl = $findLibrary->baseUrl;
+					}
+
+					$libraryLocation->logo = $searchData->theme->logo;
+					$libraryLocation->favicon = $searchData->theme->favicon;
+					$libraryLocation->primaryBackgroundColor = $searchData->theme->primaryBackgroundColor;
+					$libraryLocation->primaryForegroundColor = $searchData->theme->primaryForegroundColor;
+					$libraryLocation->secondaryBackgroundColor = $searchData->theme->secondaryBackgroundColor;
+					$libraryLocation->secondaryForegroundColor = $searchData->theme->secondaryForegroundColor;
+					$libraryLocation->tertiaryBackgroundColor = $searchData->theme->tertiaryBackgroundColor;
+					$libraryLocation->tertiaryForegroundColor = $searchData->theme->tertiaryForegroundColor;
+
+					$libraryLocation->lastUpdated = time();
+					$libraryLocation->update();
+				}
+			}
+		}
+
+		return $libraryLocation;
 	}
 
 	/** @noinspection PhpUnused */
