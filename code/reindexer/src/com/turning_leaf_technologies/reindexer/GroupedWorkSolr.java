@@ -250,8 +250,11 @@ public class GroupedWorkSolr implements Cloneable {
 
 		//language related fields
 		//Check to see if we have Unknown plus a valid value
-		if (languages.size() > 1) {
+		if (languages.size() > 1 || groupedWorkIndexer.getTreatUnknownLanguageAs().length() != 0) {
 			languages.remove("Unknown");
+		}
+		if (languages.size() == 0){
+			languages.add(groupedWorkIndexer.getTreatUnknownLanguageAs());
 		}
 		doc.addField("language", languages);
 		doc.addField("translation", translations);
@@ -290,12 +293,26 @@ public class GroupedWorkSolr implements Cloneable {
 		checkDefaultValue(literaryForm, "Unknown");
 		checkInconsistentLiteraryForms();
 		doc.addField("literary_form", literaryForm.keySet());
-		checkDefaultValue(targetAudienceFull, "Unknown");
-		checkDefaultValue(targetAudienceFull, "Other");
-		checkDefaultValue(targetAudienceFull, "No Attempt To Code");
+		if (targetAudienceFull.size() > 1 || !groupedWorkIndexer.isTreatUnknownAudienceAsUnknown()) {
+			targetAudienceFull.remove("Unknown");
+		}
+		if (targetAudienceFull.size() > 1) {
+			targetAudienceFull.remove("No Attempt To Code");
+			targetAudienceFull.remove("Other");
+		}
+		if (targetAudienceFull.size() == 0){
+			targetAudienceFull.add(groupedWorkIndexer.getTreatUnknownAudienceAs());
+		}
 		doc.addField("target_audience_full", targetAudienceFull);
-		checkDefaultValue(targetAudience, "Unknown");
-		checkDefaultValue(targetAudience, "Other");
+		if (targetAudience.size() > 1 || !groupedWorkIndexer.isTreatUnknownAudienceAsUnknown()) {
+			targetAudience.remove("Unknown");
+		}
+		if (targetAudience.size() > 1) {
+			targetAudience.remove("Other");
+		}
+		if (targetAudience.size() == 0){
+			targetAudience.add(groupedWorkIndexer.getTreatUnknownAudienceAs());
+		}
 		doc.addField("target_audience", targetAudience);
 		doc.addField("system_list", systemLists);
 		//Date added to catalog
