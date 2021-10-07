@@ -138,6 +138,12 @@ public class GroupedWorkIndexer {
 	private boolean hideUnknownLiteraryForm;
 	private boolean hideNotCodedLiteraryForm;
 
+	private String treatUnknownAudienceAs = "Unknown";
+	private boolean treatUnknownAudienceAsUnknown = false;
+	private boolean treatUnknownAudienceAsGeneral = false;
+	private boolean treatUnknownAudienceAsAdult = false;
+	private String treatUnknownLanguageAs = "English";
+
 	public GroupedWorkIndexer(String serverName, Connection dbConn, Ini configIni, boolean fullReindex, boolean clearIndex, BaseLogEntry logEntry, Logger logger) {
 		indexStartTime = new Date().getTime() / 1000;
 		this.serverName = serverName;
@@ -342,6 +348,17 @@ public class GroupedWorkIndexer {
 						default:
 							logEntry.incErrors("Unknown indexing class " + ilsIndexingClassString);
 							break;
+					}
+					if (ilsRecordProcessors.containsKey(curType)){
+						this.treatUnknownAudienceAs = indexingProfileRS.getString("treatUnknownAudienceAs");
+						if (this.treatUnknownAudienceAs.equals("Unknown")){
+							treatUnknownAudienceAsUnknown = true;
+						}else if (this.treatUnknownAudienceAs.equals("Adult")){
+							treatUnknownAudienceAsAdult = true;
+						}else if (this.treatUnknownAudienceAs.equals("General")){
+							treatUnknownAudienceAsGeneral = true;
+						}
+						this.treatUnknownLanguageAs = indexingProfileRS.getString("treatUnknownLanguageAs");
 					}
 				}else if (!curType.equals("cloud_library")  && !curType.equals("hoopla") && !curType.equals("overdrive") && !curType.equals("axis360")) {
 					getSideLoadSettings.setString(1, curType);
@@ -1968,6 +1985,26 @@ public class GroupedWorkIndexer {
 
 	public boolean isHideNotCodedLiteraryForm() {
 		return hideNotCodedLiteraryForm;
+	}
+
+	public String getTreatUnknownAudienceAs() {
+		return treatUnknownAudienceAs;
+	}
+
+	public String getTreatUnknownLanguageAs() {
+		return treatUnknownLanguageAs;
+	}
+
+	public boolean isTreatUnknownAudienceAsUnknown() {
+		return treatUnknownAudienceAsUnknown;
+	}
+
+	public boolean isTreatUnknownAudienceAsGeneral() {
+		return treatUnknownAudienceAsGeneral;
+	}
+
+	public boolean isTreatUnknownAudienceAsAdult() {
+		return treatUnknownAudienceAsAdult;
 	}
 
 	public enum MarcStatus {

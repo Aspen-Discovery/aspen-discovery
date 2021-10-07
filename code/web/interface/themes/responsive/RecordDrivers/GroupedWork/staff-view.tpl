@@ -124,6 +124,18 @@
 </table>
 
 {if isset($variationData)}
+	<h4>{translate text="Record Details from Database" isAdminFacing="true"}</h4>
+	<table class="table-striped table table-condensed notranslate">
+		<tr>
+			<th>{translate text="Grouped Work Internal ID" isAdminFacing=true}</th>
+			<td>{$groupedWorkInternalId}</td>
+		</tr>
+		<tr>
+			<th>{translate text="Active Scope ID" isAdminFacing=true}</th>
+			<td>{$activeScopeId}</td>
+		</tr>
+	</table>
+
 	<h4>{translate text="Variation Details from Database" isAdminFacing="true"}</h4>
 	<table class="table-striped table table-condensed notranslate" style="display:block; overflow: auto;">
 		<thead>
@@ -150,18 +162,6 @@
 {/if}
 
 {if isset($recordData)}
-	<h4>{translate text="Record Details from Database" isAdminFacing="true"}</h4>
-	<table class="table-striped table table-condensed notranslate">
-		<tr>
-			<th>{translate text="Grouped Work Internal ID" isAdminFacing=true}</th>
-			<td>{$groupedWorkInternalId}</td>
-		</tr>
-		<tr>
-			<th>{translate text="Active Scope ID" isAdminFacing=true}</th>
-			<td>{$activeScopeId}</td>
-		</tr>
-	</table>
-
 	<table class="table-striped table table-condensed notranslate" style="display:block; overflow: auto;">
 		<thead>
 		<tr>
