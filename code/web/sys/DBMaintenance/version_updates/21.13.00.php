@@ -94,11 +94,19 @@ function getUpdates21_13_00() : array
 		], //addThemeToCachedGreenhouseData
 		'sideload_access_button_label' => [
 			'title' => 'SideLoad Access Button Label',
-			'description' => 'Add a Label to ',
+			'description' => 'Add a Label to SideloadS to allow the Access Online button to be renamed',
 			'sql' => [
 				"ALTER TABLE sideloads ADD COLUMN accessButtonLabel VARCHAR(50) DEFAULT 'Access Online'",
 			]
 		], //increaseSymphonyPaymentTypeAndPolicyLengths
+		'library_consortial_interface' => [
+			'title' => 'Add consortial interface to library settings',
+			'description' => 'Add a setting to specifically ',
+			'sql' => [
+				"ALTER TABLE library ADD COLUMN isConsortialCatalog TINYINT(1) default 0",
+				"UPDATE library set isConsortialCatalog = NOT restrictOwningBranchesAndSystems"
+			]
+		], //isConsortialCatalog
 	];
 }
 

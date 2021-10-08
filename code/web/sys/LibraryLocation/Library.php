@@ -40,6 +40,7 @@ class Library extends DataObject
 	public $libraryId; 				//int(11)
 	public $subdomain; 				//varchar(15)
 	public $baseUrl;
+	public $isConsortialCatalog;
 
 	//Display information specific to the library
 	public $displayName; 			//varchar(50)
@@ -461,6 +462,7 @@ class Library extends DataObject
 			'baseUrl' => array('property'=>'baseUrl', 'type'=>'text', 'label'=>'Base URL (include http:// or https:// as appropriate)', 'description'=>'The Base URL for the library instance including the protocol (http or https).', 'permissions' => ['Library Domain Settings']),
 			'displayName' => array('property'=>'displayName', 'type'=>'text', 'label'=>'Display Name', 'description'=>'A name to identify the library within the system', 'size'=>'40', 'uniqueProperty' => true, 'forcesReindex' => true, 'required' => true, 'editPermissions' => ['Library Domain Settings']),
 			'showDisplayNameInHeader' => array('property'=>'showDisplayNameInHeader', 'type'=>'checkbox', 'label'=>'Show Display Name in Header', 'description'=>'Whether or not the display name should be shown in the header next to the logo', 'hideInLists' => true, 'default'=>false, 'permissions' => ['Library Theme Configuration']),
+			'isConsortialCatalog' => array('property' => 'isConsortialCatalog', 'type'=>'checkbox', 'label' => 'Consortial Interface?', 'description' => 'If this library is a consortial view', 'hideInLists' => true, 'permissions' => ['Library Domain Settings']),
 			'createSearchInterface' => array('property' => 'createSearchInterface', 'type' => 'checkbox', 'label' => 'Create Search Interface', 'description' => 'Whether or not a search interface is created.  Things like lockers and drive through windows dow not need search interfaces.', 'forcesReindex' => true, 'editPermissions' => ['Library Domain Settings'], 'default' => true),
 			'showInSelectInterface' => array('property' => 'showInSelectInterface', 'type' => 'checkbox', 'label' => 'Show In Select Interface (requires Create Search Interface)', 'description' => 'Whether or not this Library will show in the Select Interface Page.', 'forcesReindex' => false, 'editPermissions' => ['Library Domain Settings'], 'default' => true),
 			'systemMessage' => array('property'=>'systemMessage', 'type'=>'html', 'label'=>'System Message', 'description'=>'A message to be displayed at the top of the screen', 'size'=>'80', 'maxLength' =>'512', 'allowableTags' => "<a><b><em><div><span><p><strong><sub><sup><script>", 'hideInLists' => true, 'permissions' => ['Library Theme Configuration']),
