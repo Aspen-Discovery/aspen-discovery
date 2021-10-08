@@ -156,52 +156,63 @@ class GreenhouseAPI extends Action
 				$library = new Library();
 				$library->libraryId = $libraryId;
 				if ($library->find(true)) {
-						$baseUrl = $library->baseUrl;
+					$baseUrl = $library->baseUrl;
 
-						if (empty($baseUrl)){
-							$baseUrl = $configArray['Site']['url'];
-						}
+					if (empty($baseUrl)){
+						$baseUrl = $configArray['Site']['url'];
+					}
 
-						$solrScope = false;
+					$solrScope = false;
 
-						$searchLibrary = $library;
-						if ($searchLibrary) {
-							$solrScope = $searchLibrary->subdomain;
-						}
+					$searchLibrary = $library;
+					if ($searchLibrary) {
+						$solrScope = $searchLibrary->subdomain;
+					}
 
-						if (!empty($location->latitude) || !empty($location->longitude)) {
-							$latitude = $location->latitude;
-							$longitude = $location->longitude;
+					if (!empty($location->latitude) || !empty($location->longitude)) {
+						$latitude = $location->latitude;
+						$longitude = $location->longitude;
+					} else {
+						$latitude = 0;
+						$longitude = 0;
+					}
+
+					//TODO: We will eventually want to be able to search individual library branches in the app.
+					// i.e. for schools
+					//$searchLocation = $location;
+					/*if ($searchLocation && $searchLibrary->getNumSearchLocationsForLibrary() > 1) {
+						if ($searchLibrary && strtolower($searchLocation->code) == $solrScope) {
+							$solrScope .= 'loc';
 						} else {
-							$latitude = 0;
-							$longitude = 0;
+							$solrScope = strtolower($searchLocation->code);
 						}
+						if (!empty($searchLocation->subLocation)) {
+							$solrScope = strtolower($searchLocation->subLocation);
+						}
+					}*/
 
-						//TODO: We will eventually want to be able to search individual library branches in the app.
-						// i.e. for schools
-						//$searchLocation = $location;
-						/*if ($searchLocation && $searchLibrary->getNumSearchLocationsForLibrary() > 1) {
-							if ($searchLibrary && strtolower($searchLocation->code) == $solrScope) {
-								$solrScope .= 'loc';
-							} else {
-								$solrScope = strtolower($searchLocation->code);
-							}
-							if (!empty($searchLocation->subLocation)) {
-								$solrScope = strtolower($searchLocation->subLocation);
-							}
-						}*/
+					//get the theme for the location
+					$theme = new Theme();
+					if (isset($location) && $location->theme != -1){
+						$theme->id = $location->theme;
+					}else {
+						$theme->id = $library->theme;
+					}
+					if ($theme->find(true)) {
+						$theme->applyDefaults();
+					}
 
-						$return['library'][] = [
-							'latitude' => $latitude,
-							'longitude' => $longitude,
-							'unit' => $location->unit,
-							'locationName' => $location->displayName,
-							'locationId' => $location->locationId,
-							'libraryId' => $libraryId,
-							'solrScope' => $solrScope,
-							'baseUrl' => $baseUrl,
-							'releaseChannel' => $location->appReleaseChannel,
-						];
+					$return['library'][] = [
+						'latitude' => $latitude,
+						'longitude' => $longitude,
+						'unit' => $location->unit,
+						'locationName' => $location->displayName,
+						'locationId' => $location->locationId,
+						'libraryId' => $libraryId,
+						'solrScope' => $solrScope,
+						'baseUrl' => $baseUrl,
+						'releaseChannel' => $location->appReleaseChannel,
+					];
 				}
 			}
 		}
