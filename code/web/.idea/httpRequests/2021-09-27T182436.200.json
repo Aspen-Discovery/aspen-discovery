@@ -1,0 +1,60 @@
+{
+  "success": true,
+  "libraries": [
+    {
+      "name": "East Branch",
+      "librarySystem": "Test (ByWater)",
+      "libraryId": "5",
+      "locationId": "2",
+      "baseUrl": "https:\/\/aspen-test.bywatersolutions.com",
+      "accessLevel": "1",
+      "distance": 1138.98,
+      "solrScope": "m",
+      "releaseChannel": "1"
+    },
+    {
+      "name": "Main Library",
+      "librarySystem": "Test (ByWater)",
+      "libraryId": "5",
+      "locationId": "3",
+      "baseUrl": "https:\/\/aspen-test.bywatersolutions.com",
+      "accessLevel": "1",
+      "distance": 0.43,
+      "solrScope": "m",
+      "releaseChannel": "0"
+    },
+    {
+      "name": "West Branch",
+      "librarySystem": "Test (ByWater)",
+      "libraryId": "5",
+      "locationId": "5",
+      "baseUrl": "https:\/\/aspen-test.bywatersolutions.com",
+      "accessLevel": "1",
+      "distance": 6626.89,
+      "solrScope": "m",
+      "releaseChannel": "0"
+    },
+    {
+      "name": "Bookmobile",
+      "librarySystem": "Test (ByWater)",
+      "libraryId": "8",
+      "locationId": "6",
+      "baseUrl": "https:\/\/aspen-test.bywatersolutions.com",
+      "accessLevel": "1",
+      "distance": 6626.89,
+      "solrScope": "bookm",
+      "releaseChannel": "0"
+    },
+    {
+      "name": "Luis Pickle Memorial Library",
+      "librarySystem": "Test (ByWater)",
+      "libraryId": "9",
+      "locationId": "7",
+      "baseUrl": "https:\/\/aspen-test.bywatersolutions.com",
+      "accessLevel": "1",
+      "distance": 6626.89,
+      "solrScope": "lpl",
+      "releaseChannel": "0"
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+GET https://aspen-test.bywatersolutions.com/API/GreenhouseAPI?method=getLibraries&latitude=38.8407&longitude=-97.6053&release_channel=any;
+
+<> 2021-10-01T144656.200.json
+
+###
+
+GET https://aspen-test.bywatersolutions.com/API/GreenhouseAPI?method=getLibraries&latitude=38.8407&longitude=-97.6053&release_channel=any;
+
+<> 2021-09-27T182602.200.json
+
+###
+
+GET https://aspen-test.bywatersolutions.com/API/GreenhouseAPI?method=getLibraries&latitude=38.8407&longitude=-97.6053&release_channel=any;
+
+<> 2021-09-27T182436.200.json
+
+###
+
