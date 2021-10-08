@@ -17,7 +17,7 @@ class SideLoadedRecord extends BaseEContentDriver {
 	function getRecordUrl(){
 		$recordId = $this->getUniqueID();
 
-		/** @var IndexingProfile[] $indexingProfiles */
+		/** @var SideLoad[] $sideLoadSettings */
 		global $sideLoadSettings;
 		$indexingProfile = $sideLoadSettings[strtolower($this->profileType)];
 
@@ -115,5 +115,33 @@ class SideLoadedRecord extends BaseEContentDriver {
 	{
 		// TODO: Implement getEContentFormat() method.
 		return '';
+	}
+
+	function createActionsFromUrls($relatedUrls){
+		/** @var SideLoad[] $sideLoadSettings */
+		global $sideLoadSettings;
+		$sideLoad = $sideLoadSettings[strtolower($this->profileType)];
+
+		global $configArray;
+		$actions = array();
+		$i = 0;
+		foreach ($relatedUrls as $urlInfo){
+			//Revert to access online per Karen at CCU.  If people want to switch it back, we can add a per library switch
+			$title = translate(['text'=>$sideLoad->accessButtonLabel,'isPublicFacing'=>true, 'isAdminEnteredData'=>true]);
+			$action = $configArray['Site']['url'] . '/' . $this->getModule() . '/' . $this->id . "/AccessOnline?index=$i";
+			$fileOrUrl = isset($urlInfo['url']) ? $urlInfo['url'] : $urlInfo['file'];
+			if (strlen($fileOrUrl) > 0){
+				$actions[] = array(
+					'url' => $action,
+					'redirectUrl' => $fileOrUrl,
+					'title' => $title,
+					'requireLogin' => false,
+					'target' => '_blank',
+				);
+				$i++;
+			}
+		}
+
+		return $actions;
 	}
 }

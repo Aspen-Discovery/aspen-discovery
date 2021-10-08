@@ -92,6 +92,13 @@ function getUpdates21_13_00() : array
 				'ALTER TABLE greenhouse_cache ADD COLUMN tertiaryForegroundColor VARCHAR(25)',
 			]
 		], //addThemeToCachedGreenhouseData
+		'sideload_access_button_label' => [
+			'title' => 'SideLoad Access Button Label',
+			'description' => 'Add a Label to ',
+			'sql' => [
+				"ALTER TABLE sideloads ADD COLUMN accessButtonLabel VARCHAR(50) DEFAULT 'Access Online'",
+			]
+		], //increaseSymphonyPaymentTypeAndPolicyLengths
 	];
 }
 
