@@ -24,7 +24,7 @@ class LMLibraryCalendarSetting extends DataObject
 		return array(
 			'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id'),
 			'name' => array('property' => 'name', 'type' => 'text', 'label' => 'Name', 'description' => 'A name for the settings'),
-			'baseUrl' => array('property' => 'baseUrl', 'type' => 'url', 'label' => 'url', 'description' => 'The URL for the site'),
+			'baseUrl' => array('property' => 'baseUrl', 'type' => 'url', 'label' => 'Base URL (i.e. https://yoursite.librarycalendar.com)', 'description' => 'The URL for the site'),
 			'clientId' => array('property' => 'clientId', 'type' => 'text', 'label' => 'Client ID', 'description' => 'Client ID for retrieving the staff feed', 'maxLength' => 36),
 			'clientSecret' => array('property' => 'clientSecret', 'type' => 'storedPassword', 'label' => 'Client Secret', 'description' => 'Client Secret for retrieving the staff feed', 'maxLength' => 36, 'hideInLists' => true),
 			'username' => array('property' => 'username', 'type' => 'text', 'label' => 'Library Calendar Admin Username', 'description' => 'Username for retrieving the staff feed', 'default'=>'lc_feeds_staffadmin', 'maxLength' => 36),
@@ -102,7 +102,7 @@ class LMLibraryCalendarSetting extends DataObject
 			$library->settingId = $this->id;
 			$library->find();
 			while($library->fetch()){
-				$this->_libraries[] = $library->libraryId;
+				$this->_libraries[$library->libraryId] = $library->libraryId;
 			}
 		}
 		return $this->_libraries;
