@@ -262,7 +262,7 @@ class GreenhouseAPI extends Action
 			$searchData = json_decode($data);
 			$libraryLocation = new AspenSiteCache();
 			$libraryLocation->siteId = $aspenSite->id;
-			$libraryLocation->delete();
+			$libraryLocation->delete(true);
 
 			foreach ($searchData->library as $findLibrary) {
 				$libraryLocation = new AspenSiteCache();
