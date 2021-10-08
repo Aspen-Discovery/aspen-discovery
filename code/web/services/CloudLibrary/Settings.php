@@ -84,6 +84,6 @@ class CloudLibrary_Settings extends ObjectEditor
 
 	function canView() : bool
 	{
-		return UserAccount::userHasPermission('Administer cloudLibrary');
+		return UserAccount::userHasPermission('Administer Cloud Library');
 	}
 }
