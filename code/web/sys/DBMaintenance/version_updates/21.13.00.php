@@ -106,7 +106,14 @@ function getUpdates21_13_00() : array
 				"ALTER TABLE library ADD COLUMN isConsortialCatalog TINYINT(1) default 0",
 				"UPDATE library set isConsortialCatalog = NOT restrictOwningBranchesAndSystems"
 			]
-		], //isConsortialCatalog
+		], //library_consortial_interface
+		'library_show_messaging_settings' => [
+			'title' => 'Library Show Messaging Settings',
+			'description' => 'Allow the display of messaging settings to be disabled',
+			'sql' => [
+				"ALTER TABLE library ADD COLUMN showMessagingSettings TINYINT(1) default 1",
+			]
+		], //library_show_messaging_settings
 	];
 }
 
