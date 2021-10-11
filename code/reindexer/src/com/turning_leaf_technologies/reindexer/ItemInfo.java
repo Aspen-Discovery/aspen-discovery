@@ -2,14 +2,13 @@ package com.turning_leaf_technologies.reindexer;
 
 import com.turning_leaf_technologies.indexing.Scope;
 import com.turning_leaf_technologies.logging.BaseLogEntry;
+import com.turning_leaf_technologies.marc.MarcUtil;
 import com.turning_leaf_technologies.strings.StringUtils;
 import org.marc4j.marc.DataField;
 import org.marc4j.marc.Subfield;
 
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.*;
 
 public class ItemInfo{
 	private String itemIdentifier;
@@ -386,6 +385,17 @@ public class ItemInfo{
 		}else{
 			return subfield.getData();
 		}
+	}
+
+	public List<String> getSubfields(char subFieldSpec) {
+		List<Subfield> subfields = this.marcField.getSubfields(subFieldSpec);
+		List<String> subfieldData = new ArrayList<>();
+		for (Subfield subfield : subfields){
+			if (subfield.getData() != null){
+				subfieldData.add(subfield.getData());
+			}
+		}
+		return subfieldData;
 	}
 
 	void setGroupedStatus(String groupedStatus) {

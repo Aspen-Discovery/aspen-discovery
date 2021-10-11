@@ -564,7 +564,9 @@ public class GroupedWorkIndexer {
 
 	public void processScheduledWorks(BaseLogEntry logEntry, boolean doLogging) {
 		//Check to see what records still need to be indexed based on a timed index
-		logEntry.addNote("Checking for additional works that need to be indexed");
+		if (doLogging) {
+			logEntry.addNote("Checking for additional works that need to be indexed");
+		}
 
 		try {
 			int numWorksProcessed = 0;
