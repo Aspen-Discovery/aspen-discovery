@@ -103,6 +103,11 @@ class Grouping_Record
 				}
 			}
 		}
+		if ($recordDriver != null && $recordDriver instanceof SideLoadedRecord){
+			$this->_statusInformation->setIsShowStatus($recordDriver->isShowStatus());
+		}else{
+			$this->_statusInformation->setIsShowStatus(true);
+		}
 	}
 
 	function addItem(Grouping_Item $item)

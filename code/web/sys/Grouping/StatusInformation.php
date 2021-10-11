@@ -18,6 +18,7 @@ class Grouping_StatusInformation
 	private $_localCopies = 0;
 	private $_localAvailableCopies = 0;
 	private $_isEcontent = false;
+	private $_isShowStatus = false;
 
 	/**
 	 * @return bool
@@ -68,6 +69,9 @@ class Grouping_StatusInformation
 			$this->_localCopies += $statusInformation->getLocalCopies();
 			$this->_localAvailableCopies += $statusInformation->getLocalAvailableCopies();
 			$this->_hasLocalItem = true;
+		}
+		if ($statusInformation->isShowStatus()){
+			$this->_isShowStatus = true;
 		}
 	}
 
@@ -334,5 +338,21 @@ class Grouping_StatusInformation
 
 	public function isEContent(){
 		return $this->_isEcontent;
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function isShowStatus(): bool
+	{
+		return $this->_isShowStatus;
+	}
+
+	/**
+	 * @param bool $isShowStatus
+	 */
+	public function setIsShowStatus(bool $isShowStatus): void
+	{
+		$this->_isShowStatus = $isShowStatus;
 	}
 }
