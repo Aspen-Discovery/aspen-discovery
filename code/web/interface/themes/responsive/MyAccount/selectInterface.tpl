@@ -8,7 +8,7 @@
 				<input type="hidden" name="gotoAction" value="{$gotoAction}"/>
 				{foreach from=$libraries key=libraryKey item=libraryInfo}
 					<div class="selectLibraryOption col-xs-12 col-sm-6 col-md-4">
-						<label for="library{$libraryInfo.id}"><input type="radio" id="library{$libraryKey}" name="library" value="{$libraryKey}"/> {$libraryInfo.displayName}</label>
+						<label for="library{$libraryKey}"><input type="radio" id="library{$libraryKey}" name="library" value="{$libraryKey}"/> {$libraryInfo.displayName}</label>
 					</div>
 				{/foreach}
 				<div class="clearfix"></div>
