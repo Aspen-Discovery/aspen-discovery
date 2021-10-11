@@ -543,7 +543,7 @@ public class GroupedWorkIndexer {
 
 	public void finishIndexingFromExtract(BaseLogEntry logEntry){
 		try {
-			processScheduledWorks(logEntry);
+			processScheduledWorks(logEntry, true);
 
 			updateServer.commit(false, false, true);
 			logEntry.addNote("Shutting down the update server");
@@ -562,7 +562,7 @@ public class GroupedWorkIndexer {
 		}
 	}
 
-	public void processScheduledWorks(BaseLogEntry logEntry) {
+	public void processScheduledWorks(BaseLogEntry logEntry, boolean doLogging) {
 		//Check to see what records still need to be indexed based on a timed index
 		logEntry.addNote("Checking for additional works that need to be indexed");
 
@@ -583,7 +583,10 @@ public class GroupedWorkIndexer {
 			}
 			scheduledWorksRS.close();
 			if (numWorksProcessed > 0){
-				logEntry.addNote("Processed " + numWorksProcessed + " works that were scheduled for indexing");
+				if (doLogging) {
+					logEntry.addNote("Processed " + numWorksProcessed + " works that were scheduled for indexing");
+				}
+				updateServer.commit(false, false, true);
 			}
 		}catch (Exception e){
 			logEntry.addNote("Error updating scheduled works " + e);
