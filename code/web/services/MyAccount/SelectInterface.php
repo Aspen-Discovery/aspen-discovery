@@ -38,8 +38,9 @@ class MyAccount_SelectInterface extends Action{
 		usort($libraries, $sortLibraries);
 		$interface->assign('libraries', $libraries);
 
-		global $locationSingleton;
-		$physicalLocation = $locationSingleton->getActiveLocation();
+		/** @var Location $locationSingleton*/
+		//global $locationSingleton;
+		//$physicalLocation = $locationSingleton->getIPLocation();
 
 		if (isset($_REQUEST['gotoModule'])){
 			$gotoModule = $_REQUEST['gotoModule'];
@@ -55,8 +56,8 @@ class MyAccount_SelectInterface extends Action{
 			$user = UserAccount::getLoggedInUser();
 			if (isset($_REQUEST['library'])){
 				$redirectLibrary = $_REQUEST['library'];
-			}elseif (!is_null($physicalLocation)){
-				$redirectLibrary = $physicalLocation->libraryId;
+			//}elseif (!is_null($physicalLocation)){
+			//	$redirectLibrary = $physicalLocation->libraryId;
 			}elseif ($user && isset($user->preferredLibraryInterface) && is_numeric($user->preferredLibraryInterface)){
 				$redirectLibrary = $user->preferredLibraryInterface;
 			}elseif (isset($_COOKIE['PreferredLibrarySystem'])){
