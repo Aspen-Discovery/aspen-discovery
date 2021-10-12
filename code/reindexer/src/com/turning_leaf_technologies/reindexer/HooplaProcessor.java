@@ -183,6 +183,9 @@ class HooplaProcessor {
 										case "R":
 										case "NRA":
 										case "NRM":
+										case "NRC":
+										case "NRT":
+										case "NC-17":
 											groupedWork.addTargetAudience("Adult");
 											groupedWork.addTargetAudienceFull("Adult");
 											break;
@@ -198,13 +201,8 @@ class HooplaProcessor {
 											break;
 										case "TVY":
 										case "TVY7":
-										case "NRC":
 											groupedWork.addTargetAudience("Juvenile");
 											groupedWork.addTargetAudienceFull("Juvenile");
-											break;
-										case "NRT":
-											groupedWork.addTargetAudience("Young Adult");
-											groupedWork.addTargetAudienceFull("Adolescent (14-17)");
 											break;
 										case "TVG":
 										case "G":

@@ -525,12 +525,21 @@ class Polaris extends AbstractIlsDriver
 			$body->PatronID = (int)$patron->username;
 			$body->BibID = (int)$shortId;
 			if (!empty($itemId)) {
-				$body->ItemBarcode = $itemId;
-
 				//Check to see if we also have a volume
 				$relatedRecord = $record->getRelatedRecord();
 				foreach ($relatedRecord->getItems() as $item){
 					if ($item->itemId == $itemId){
+						//We have the item id, but we need the item barcode for placing holds.  We will need
+						$marcRecord = $record->getMarcRecord();
+						/** @var File_MARC_Data_Field[] $marcItems */
+						$marcItems = $marcRecord->getFields($this->getIndexingProfile()->itemTag);
+						foreach ($marcItems as $marcItem) {
+							$itemSubField = $marcItem->getSubfield($this->getIndexingProfile()->itemRecordNumber);
+							if ($itemSubField->getData() == $itemId){
+								$body->ItemBarcode = $marcItem->getSubfield($this->getIndexingProfile()->barcode)->getData();
+								break;
+							}
+						}
 						if (!empty($item->volume)) {
 							$body->VolumeNumber = $item->volume;
 						}

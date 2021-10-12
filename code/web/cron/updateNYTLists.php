@@ -15,6 +15,8 @@ $nytUpdateLog = new NYTUpdateLogEntry();
 $nytUpdateLog->startTime = time();
 $nytUpdateLog->insert();
 
+set_time_limit(0);
+
 global $configArray;
 $nytSettings = new NewYorkTimesSetting();
 if (!$nytSettings->find(true)) {
@@ -23,14 +25,43 @@ if (!$nytSettings->find(true)) {
 	//Pass the log entry to the API so we can update it there
 	$nyt_api = new NYTApi($nytSettings->booksApiKey);
 
-	//Get the raw response from the API with a list of all the names
-	$availableListsRaw = $nyt_api->get_list('names');
-	//Convert into an object that can be processed
-	$availableLists = json_decode($availableListsRaw);
+	$retry = true;
+	$numTries = 0;
+	$availableLists = null;
+	while ($retry == true) {
+		$retry = false;
+		$numTries++;
+		//Get the raw response from the API with a list of all the names
+		$availableListsRaw = $nyt_api->get_list('names');
+		//Convert into an object that can be processed
+		$availableLists = json_decode($availableListsRaw);
+		if (empty($availableLists->status) || $availableLists->status != "OK") {
+			if (!empty($availableLists->fault)) {
+				if (strpos($availableLists->fault->faultstring, 'quota violation')) {
+					$retry = ($numTries <= 3);
+					if ($retry){
+						sleep(rand(60, 300));
+					}else{
+						if ($nytUpdateLog != null) {
+							$nytUpdateLog->addError("Did not get a good response from the API. {$availableLists->fault->faultstring}");
+						}
+					}
+				} else {
+					if ($nytUpdateLog != null) {
+						$nytUpdateLog->addError("Did not get a good response from the API. {$availableLists->fault->faultstring}");
+					}
+				}
+			} else {
+				if ($nytUpdateLog != null) {
+					$nytUpdateLog->addError("Did not get a good response from the API");
+				}
+			}
+		}
+	}
 
 	$listAPI = new ListAPI();
 
-	if (isset($availableLists->results)) {
+	if ($availableLists != null && isset($availableLists->results)) {
 		$allListsNames = [];
 		foreach ($availableLists->results as $listInfo) {
 			$allListsNames[] = $listInfo->list_name_encoded;
