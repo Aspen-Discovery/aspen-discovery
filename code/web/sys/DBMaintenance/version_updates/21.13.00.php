@@ -98,7 +98,14 @@ function getUpdates21_13_00() : array
 			'sql' => [
 				"ALTER TABLE sideloads ADD COLUMN accessButtonLabel VARCHAR(50) DEFAULT 'Access Online'",
 			]
-		], //increaseSymphonyPaymentTypeAndPolicyLengths
+		], //sideload_access_button_label
+		'sideload_show_status' => [
+			'title' => 'SideLoad Show Status',
+			'description' => 'Allow status to be removed for SideLoad records',
+			'sql' => [
+				"ALTER TABLE sideloads ADD COLUMN showStatus TINYINT(1) DEFAULT 1",
+			]
+		], //sideload_show_status
 		'library_consortial_interface' => [
 			'title' => 'Add consortial interface to library settings',
 			'description' => 'Add a setting to specifically ',
@@ -106,7 +113,14 @@ function getUpdates21_13_00() : array
 				"ALTER TABLE library ADD COLUMN isConsortialCatalog TINYINT(1) default 0",
 				"UPDATE library set isConsortialCatalog = NOT restrictOwningBranchesAndSystems"
 			]
-		], //isConsortialCatalog
+		], //library_consortial_interface
+		'library_show_messaging_settings' => [
+			'title' => 'Library Show Messaging Settings',
+			'description' => 'Allow the display of messaging settings to be disabled',
+			'sql' => [
+				"ALTER TABLE library ADD COLUMN showMessagingSettings TINYINT(1) default 1",
+			]
+		], //library_show_messaging_settings
 	];
 }
 

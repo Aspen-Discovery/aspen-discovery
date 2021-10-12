@@ -1,9 +1,11 @@
 {if $statusInformation->isEContent()}
-	{* eContent, easy to handle *}
-	{if $statusInformation->isAvailableOnline()}
-		<div class="related-manifestation-shelf-status label label-success label-wrap">{translate text='Available Online' isPublicFacing=true}</div>
-	{else}
-		<div class="related-manifestation-shelf-status label label-danger label-wrap">{translate text='Checked Out' isPublicFacing=true}</div>
+	{if $statusInformation->isShowStatus()}
+		{* eContent, easy to handle *}
+		{if $statusInformation->isAvailableOnline()}
+			<div class="related-manifestation-shelf-status label label-success label-wrap">{translate text='Available Online' isPublicFacing=true}</div>
+		{else}
+			<div class="related-manifestation-shelf-status label label-danger label-wrap">{translate text='Checked Out' isPublicFacing=true}</div>
+		{/if}
 	{/if}
 {else}
 	{* Physical materials, these get trickier *}

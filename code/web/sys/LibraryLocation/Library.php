@@ -71,6 +71,7 @@ class Library extends DataObject
 	public $allowProfileUpdates;   //tinyint(4)
 	public $allowHomeLibraryUpdates;
 	public $allowUsernameUpdates;
+	public $showMessagingSettings;
 	public $allowFreezeHolds;   //tinyint(4)
 	public $maxDaysToFreeze;
 	public $showHoldButton;
@@ -500,6 +501,7 @@ class Library extends DataObject
 				'expirationNearMessage' => array('property'=>'expirationNearMessage', 'type'=>'text', 'label'=>'Expiration Near Message (use the token %date% to insert the expiration date)', 'description'=>'A message to show in the menu when the user account will expire soon', 'hideInLists' => true, 'default' => '', 'permissions' => ['Library ILS Options']),
 				'expiredMessage' => array('property'=>'expiredMessage', 'type'=>'text', 'label'=>'Expired Message (use the token %date% to insert the expiration date)', 'description'=>'A message to show in the menu when the user account has expired', 'hideInLists' => true, 'default' => '', 'permissions' => ['Library ILS Options']),
 				'showWhileYouWait' => array('property'=>'showWhileYouWait', 'type'=>'checkbox', 'label'=>'Show While You Wait', 'description'=>'Whether or not the user should be shown suggestions of other titles they might like.', 'hideInLists' => true, 'default' => 1, 'permissions' => ['Library ILS Options']),
+				'showMessagingSettings' => array('property'=>'showMessagingSettings', 'type'=>'checkbox', 'label'=>'Show Messaging Settings (Koha, Symphony)', 'description'=>'Whether or not the user should be able to view their messaging settings.', 'hideInLists' => true, 'default' => 1, 'permissions' => ['Library ILS Options']),
 				'allowLinkedAccounts' => array('property'=>'allowLinkedAccounts', 'type'=>'checkbox', 'label'=>'Allow Linked Accounts', 'description' => 'Whether or not users can link multiple library cards under a single Aspen Discovery account.', 'hideInLists' => true, 'default' => 1, 'permissions' => ['Library ILS Options']),
 				'showLibraryHoursNoticeOnAccountPages' => array('property'=>'showLibraryHoursNoticeOnAccountPages', 'type'=>'checkbox', 'label'=>'Show Library Hours Notice on Account Pages', 'description'=>'Whether or not the Library Hours notice should be shown at the top of My Account\'s Checked Out, and Holds pages.', 'hideInLists' => true, 'default'=>true, 'permissions' => ['Library ILS Options']),
 				'enableCourseReserves' => array('property'=>'enableCourseReserves', 'type'=>'checkbox', 'label'=>'Enable Repeat Search in Course Reserves', 'description'=>'Whether or not patrons can repeat searches within course reserves.', 'hideInLists' => true, 'permissions' => ['Library ILS Connection']),

@@ -750,3 +750,23 @@ a.placard-link{
     padding-top: 129.5%; /* ratio of 11:8.5*/
   }
 }
+#selectLibraryOptions{
+  -webkit-column-gap:   35px;
+  -moz-column-gap:      35px;
+  column-gap:           35px;
+  @media(min-width: 0){
+    -webkit-column-count: 1;
+    -moz-column-count:    1;
+    column-count:         1;
+  }
+  @media(min-width: @screen-sm-min){
+    -webkit-column-count: 2;
+    -moz-column-count:    2;
+    column-count:         2;
+  }
+  @media(min-width: @screen-md-min){
+    -webkit-column-count: 3;
+    -moz-column-count:    3;
+    column-count:         3;
+  }
+}
