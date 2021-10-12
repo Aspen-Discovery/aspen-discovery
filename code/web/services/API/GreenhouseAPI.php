@@ -139,11 +139,9 @@ class GreenhouseAPI extends Action
 	public function getLibrary() : array {
 		$return = [
 			'success' => true,
-			'theme' => [],
 			'library' => [],
 		];
 		global $configArray;
-		global $librarySingleton;
 
 		require_once ROOT_DIR . '/sys/LibraryLocation/Location.php';
 		require_once ROOT_DIR . '/sys/Theming/Theme.php';
@@ -192,6 +190,7 @@ class GreenhouseAPI extends Action
 					}*/
 
 					//get the theme for the location
+					$themeArray = [];
 					$theme = new Theme();
 					if (isset($location) && $location->theme != -1){
 						$theme->id = $location->theme;
@@ -200,6 +199,16 @@ class GreenhouseAPI extends Action
 					}
 					if ($theme->find(true)) {
 						$theme->applyDefaults();
+
+						$themeArray['themeId'] = $theme->id;
+						$themeArray['logo'] = $configArray['Site']['url'] . '/files/original/' . $theme->logoName;
+						$themeArray['favicon'] = $configArray['Site']['url'] . '/files/original/' . $theme->favicon;
+						$themeArray['primaryBackgroundColor'] = $theme->primaryBackgroundColor;
+						$themeArray['primaryForegroundColor'] = $theme->primaryForegroundColor;
+						$themeArray['secondaryBackgroundColor'] = $theme->secondaryBackgroundColor;
+						$themeArray['secondaryForegroundColor'] = $theme->secondaryForegroundColor;
+						$themeArray['tertiaryBackgroundColor'] = $theme->tertiaryBackgroundColor;
+						$themeArray['tertiaryForegroundColor'] = $theme->tertiaryForegroundColor;
 					}
 
 					$return['library'][] = [
@@ -212,28 +221,10 @@ class GreenhouseAPI extends Action
 						'solrScope' => $solrScope,
 						'baseUrl' => $baseUrl,
 						'releaseChannel' => $location->appReleaseChannel,
+						'theme' => $themeArray,
 					];
 				}
 			}
-		}
-
-		$activeTheme = new Theme();
-		$activeTheme->id = $librarySingleton->theme;
-		if ($activeTheme->find(true)){
-			$activeTheme->applyDefaults();
-			if ($activeTheme->logoName) {
-				$return['theme']['logo'] = $configArray['Site']['url'] . '/files/original/' . $activeTheme->logoName;
-			}
-			if($activeTheme->favicon) {
-				$return['theme']['favicon'] = $configArray['Site']['url'] . '/files/original/' . $activeTheme->favicon;
-			}
-			$return['theme']['primaryBackgroundColor'] = $activeTheme->primaryBackgroundColor;
-			$return['theme']['primaryForegroundColor'] = $activeTheme->primaryForegroundColor;
-			$return['theme']['secondaryBackgroundColor'] = $activeTheme->secondaryBackgroundColor;
-			$return['theme']['secondaryForegroundColor'] = $activeTheme->secondaryForegroundColor;
-			$return['theme']['tertiaryBackgroundColor'] = $activeTheme->tertiaryBackgroundColor;
-			$return['theme']['tertiaryForegroundColor'] = $activeTheme->tertiaryForegroundColor;
-
 		}
 
 		return $return;

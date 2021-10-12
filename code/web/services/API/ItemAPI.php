@@ -576,14 +576,13 @@ class ItemAPI extends Action {
 		$itemData['ratingData'] = $this->recordDriver->getRatingData();
 		$timer->logTime('Got 5 star data');
 
-		$itemList[] = '';
 		$relatedRecords = $this->recordDriver->getRelatedRecords();
 		foreach($relatedRecords as $relatedRecord) {
 			$status='';
 			$recordId = $relatedRecord->id;
 			if (!isset($itemList)) {
 				if($relatedRecord->source == 'ils') {
-					$status = $this->getItemAppAvailability($recordId);
+					$status = $this->getAppItemAvailability($recordId);
 				} elseif ($relatedRecord->source == 'hoopla') {
 					if (strpos($recordId, ':') !== false) {
 						list(,$recordId) = explode(':', $recordId, 2);
@@ -603,7 +602,7 @@ class ItemAPI extends Action {
 
 			} elseif (!in_array($relatedRecord->format, array_column($itemList, 'name'))) {
 				if($relatedRecord->source == 'ils') {
-					$status = $this->getItemAppAvailability($recordId);
+					$status = $this->getAppItemAvailability($recordId);
 				} elseif ($relatedRecord->source == 'hoopla') {
 					if (strpos($recordId, ':') !== false) {
 						list(,$recordId) = explode(':', $recordId, 2);
