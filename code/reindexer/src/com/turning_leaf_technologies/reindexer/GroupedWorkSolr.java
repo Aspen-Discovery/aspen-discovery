@@ -634,8 +634,8 @@ public class GroupedWorkSolr implements Cloneable {
 						addAvailabilityToggle("local", availabilityToggleForScope, availabilityToggleByFormatForScope, formatsForItem);
 						if (curItem.isAvailable()){
 							addAvailabilityToggle("available", availabilityToggleForScope, availabilityToggleByFormatForScope, formatsForItem);
-							for (Scope locationScope : curScope.getLocationScopes()) {
-								addAvailableAt(locationScope.getFacetLabel(), availableAtForScope, availableAtByFormatForScope, formatsForItem);
+							for (String owningName : curItem.getLocationOwnedNames()) {
+								addAvailableAt(owningName, availableAtForScope, availableAtByFormatForScope, formatsForItem);
 							}
 						}
 						owningLibrariesForScope.add(curScope.getFacetLabel());

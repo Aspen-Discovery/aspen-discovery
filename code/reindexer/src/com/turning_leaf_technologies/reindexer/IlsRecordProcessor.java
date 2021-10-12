@@ -1568,9 +1568,12 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			}else if (determineAudienceBy == 3){
 				//Load based on a specified subfield
 				for (ItemInfo printItem : printItems){
-					String audienceCode = printItem.getSubfield(audienceSubfield);
-					if (audienceCode != null) {
-						targetAudiences.add(audienceCode.toLowerCase());
+					List<String> audienceCodes = printItem.getSubfields(audienceSubfield);
+					for (String audienceCode : audienceCodes) {
+						String audienceCodeLower = audienceCode.toLowerCase();
+						if (hasTranslation("audience", audienceCodeLower)) {
+							targetAudiences.add(audienceCodeLower);
+						}
 					}
 				}
 			}

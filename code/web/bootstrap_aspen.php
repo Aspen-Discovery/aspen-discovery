@@ -85,7 +85,7 @@ function loadSearchInformation(){
 	if ($searchLibrary){
 		$solrScope = $searchLibrary->subdomain;
 		$scopeType = 'Library';
-		if (!$searchLibrary->restrictOwningBranchesAndSystems){
+		if ($searchLibrary->isConsortialCatalog){
 			$isGlobalScope = true;
 		}
 	}

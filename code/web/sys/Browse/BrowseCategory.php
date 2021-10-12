@@ -261,7 +261,7 @@ class BrowseCategory extends BaseBrowsable
 		if ($this->textId == 'system_recommended_for_you'){
 			if (UserAccount::isLoggedIn()) {
 				$user = UserAccount::getActiveUserObj();
-				if (!$user->hasRatings()) {
+				if ($user->hasRatings()) {
 					return true;
 				}
 			}

@@ -283,6 +283,32 @@ class SearchAPI extends Action
 			}
 		}
 
+		//Check NYT Log to see if it has errors
+		require_once ROOT_DIR . '/sys/Enrichment/NewYorkTimesSetting.php';
+		$nytSetting = new NewYorkTimesSetting();
+		if ($nytSetting->find(true)){
+			require_once ROOT_DIR . '/sys/UserLists/NYTUpdateLogEntry.php';
+			$nytLog = new NYTUpdateLogEntry();
+			$nytLog->orderBy("id DESC");
+			$nytLog->limit(0, 3);
+			$nytLog->find();
+			if ($nytLog->getNumResults() == 0){
+				$this->addCheck($checks, 'NYT Lists', self::STATUS_WARN, "New York Times Lists have not been loaded");
+			}else{
+				$numErrors = 0;
+				while ($nytLog->fetch()){
+					if ($nytLog->numErrors > 0){
+						$numErrors++;
+					}
+				}
+				if ($numErrors > 0){
+					$this->addCheck($checks, 'NYT Lists', self::STATUS_WARN, "The last {$numErrors} for New York Times Lists had errors");
+				}else{
+					$this->addCheck($checks, 'NYT Lists');
+				}
+			}
+		}
+
 		//Check cron to be sure it doesn't have errors either
 		require_once ROOT_DIR . '/sys/CronLogEntry.php';
 		$cronLogEntry = new CronLogEntry();

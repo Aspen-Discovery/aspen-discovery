@@ -103,6 +103,11 @@ class Grouping_Record
 				}
 			}
 		}
+		if ($recordDriver != null && $recordDriver instanceof SideLoadedRecord){
+			$this->_statusInformation->setIsShowStatus($recordDriver->isShowStatus());
+		}else{
+			$this->_statusInformation->setIsShowStatus(true);
+		}
 	}
 
 	function addItem(Grouping_Item $item)
@@ -566,15 +571,11 @@ class Grouping_Record
 	 */
 	function getHoldRatio(): int
 	{
-		return $this->_holdRatio;
-	}
-
-	/**
-	 * @param int $holdRatio
-	 */
-	function setHoldRatio(int $holdRatio): void
-	{
-		$this->_holdRatio = $holdRatio;
+		if ($this->getCopies() > 0) {
+			return $this->_statusInformation->getNumHolds() / $this->getCopies();
+		}else{
+			return 0;
+		}
 	}
 
 	/**

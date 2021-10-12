@@ -61,7 +61,9 @@
 											<a href="{$siteStatus.baseUrl}/Admin/ReindexLog" target="_blank">{translate text=$check.status isAdminFacing=true}</a>
 										{elseif $checkType == 'side_loads'}
 											<a href="{$siteStatus.baseUrl}/SideLoads/IndexingLog" target="_blank">{translate text=$check.status isAdminFacing=true}</a>
-										{else}
+                                        {elseif $checkType == 'nyt_lists'}
+											<a href="{$siteStatus.baseUrl}/UserLists/NYTUpdatesLog" target="_blank">{translate text=$check.status isAdminFacing=true}</a>
+                                        {else}
 											{translate text=$check.status isAdminFacing=true}
 										{/if}
 									{else}

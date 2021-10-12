@@ -627,8 +627,10 @@ public class RecordGroupingProcessor {
 	static {
 		categoryMap.put("other", "book");
 		categoryMap.put("book", "book");
+		categoryMap.put("books", "book");
 		categoryMap.put("ebook", "book");
 		categoryMap.put("audio", "book");
+		categoryMap.put("audio books", "book");
 		categoryMap.put("music", "music");
 		categoryMap.put("movie", "movie");
 		categoryMap.put("movies", "movie");

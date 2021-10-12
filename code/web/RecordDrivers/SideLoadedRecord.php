@@ -144,4 +144,11 @@ class SideLoadedRecord extends BaseEContentDriver {
 
 		return $actions;
 	}
+
+	public function isShowStatus(){
+		/** @var SideLoad[] $sideLoadSettings */
+		global $sideLoadSettings;
+		$indexingProfile = $sideLoadSettings[strtolower($this->profileType)];
+		return $indexingProfile->showStatus;
+	}
 }

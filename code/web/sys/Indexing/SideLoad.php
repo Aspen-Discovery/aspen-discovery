@@ -12,6 +12,7 @@ class SideLoad extends DataObject
 	public $id;
 	public $name;
 	public $accessButtonLabel;
+	public $showStatus;
 	public $marcPath;
 	public /** @noinspection PhpUnused */ $filenamesToInclude;
 
@@ -73,6 +74,7 @@ class SideLoad extends DataObject
 			'id' => ['property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id within the database'],
 			'name' => ['property' => 'name', 'type' => 'text', 'label' => 'Name', 'maxLength' => 50, 'description' => 'A name for this side load', 'required' => true],
 			'accessButtonLabel' => ['property' => 'accessButtonLabel', 'type' => 'text', 'label' => 'Access Button Label', 'maxLength' => 50, 'description' => 'A label for the button to use when accessing the record', 'required' => true, 'default'=>'Access Online'],
+			'showStatus' => ['property' => 'showStatus', 'type' => 'checkbox', 'label' => 'Show Status', 'description' => 'Whether or not status should be shown for the record', 'default'=>1],
 			'recordUrlComponent' => ['property' => 'recordUrlComponent', 'type' => 'text', 'label' => 'Record URL Component', 'maxLength' => 50, 'description' => 'The Module to use within the URL', 'required' => true, 'default' => '{Change based on name}'],
 
 			'deletedRecordsIds' => ['property' => 'deletedRecordsIds', 'type' => 'textarea', 'label' => 'Deleted Records', 'description' => 'A list of records to that have been deleted, can be separated by commas or line breaks', 'forcesReindex' => true],
