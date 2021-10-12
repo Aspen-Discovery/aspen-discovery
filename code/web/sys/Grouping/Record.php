@@ -571,15 +571,11 @@ class Grouping_Record
 	 */
 	function getHoldRatio(): int
 	{
-		return $this->_holdRatio;
-	}
-
-	/**
-	 * @param int $holdRatio
-	 */
-	function setHoldRatio(int $holdRatio): void
-	{
-		$this->_holdRatio = $holdRatio;
+		if ($this->getCopies() > 0) {
+			return $this->_statusInformation->getNumHolds() / $this->getCopies();
+		}else{
+			return 0;
+		}
 	}
 
 	/**
