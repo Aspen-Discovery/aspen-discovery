@@ -1130,7 +1130,6 @@ class SearchAPI extends Action
 		//Figure out which library or location we are looking at
 		global $library;
 		global $locationSingleton;
-		global $configArray;
 
 		$includeSubCategories = false;
 		if (isset($_REQUEST['includeSubCategories'])){
@@ -1262,7 +1261,8 @@ class SearchAPI extends Action
 					// Shutdown the search object
 					$searchObject->close();
 				}
-				$response = $records;
+				$response['key'] = $browseCategory->textId;
+				$response['records'] = $records;
 			}
 		} else {
 			$response = [
