@@ -88,9 +88,15 @@ class Grouping_Record
 		$this->_statusInformation->setNumHolds($recordDriver != null ? $recordDriver->getNumHolds() : 0);
 		if ($recordDriver != null && $recordDriver instanceof OverDriveRecordDriver){
 			$availability = $recordDriver->getAvailability();
-			$this->_statusInformation->addCopies($availability->copiesOwned);
-			$this->_statusInformation->addAvailableCopies($availability->copiesAvailable);
-			$this->_statusInformation->setAvailableOnline($availability->copiesAvailable > 0);
+			if ($availability != null) {
+				$this->_statusInformation->addCopies($availability->copiesOwned);
+				$this->_statusInformation->addAvailableCopies($availability->copiesAvailable);
+				$this->_statusInformation->setAvailableOnline($availability->copiesAvailable > 0);
+			}else{
+				$this->_statusInformation->addCopies(0);
+				$this->_statusInformation->addAvailableCopies(0);
+				$this->_statusInformation->setAvailableOnline(false);
+			}
 			$this->_isOverDrive = true;
 		}
 		$this->_volumeHolds = $recordDriver != null ? $recordDriver->getVolumeHolds($volumeData) : null;

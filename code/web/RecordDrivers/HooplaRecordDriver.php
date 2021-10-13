@@ -306,7 +306,7 @@ class HooplaRecordDriver extends GroupedWorkSubDriver {
 		return ucfirst(strtolower($this->hooplaRawMetadata->language));
 	}
 
-	public function getNumHolds(){
+	public function getNumHolds() : int{
 		return 0;
 	}
 

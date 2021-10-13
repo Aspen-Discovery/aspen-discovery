@@ -232,7 +232,7 @@ class CloudLibraryRecordDriver extends MarcRecordDriver {
 		}
 	}
 
-	public function getNumHolds(){
+	public function getNumHolds() : int{
 		//TODO:  Check to see if we can determine number of holds on a title
 		return 0;
 	}

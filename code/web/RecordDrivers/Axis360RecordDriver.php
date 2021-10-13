@@ -306,7 +306,7 @@ class Axis360RecordDriver extends GroupedWorkSubDriver
 		return 'English';
 	}
 
-	public function getNumHolds()
+	public function getNumHolds() : int
 	{
 		//TODO:  Check to see if we can determine number of holds on a title
 		return 0;

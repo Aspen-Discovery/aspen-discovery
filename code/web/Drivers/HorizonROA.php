@@ -385,7 +385,7 @@ abstract class HorizonROA extends AbstractIlsDriver
 	 * @param  string|int $bibId
 	 * @return bool|int
 	 */
-	public function getNumHolds($bibId) {
+	public function getNumHolds($bibId) : int {
 		//This uses the standard / REST method to retrieve this information from the ILS.
 		// It isn't an ROA call.
 		global $offlineMode;
