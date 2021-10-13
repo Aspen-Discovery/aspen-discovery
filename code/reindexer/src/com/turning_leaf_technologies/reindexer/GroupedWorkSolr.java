@@ -738,7 +738,7 @@ public class GroupedWorkSolr implements Cloneable {
 			doc.addField("available_at_".concat(scopeName), availableAtForScope);
 			for (String format : availableAtByFormatForScope.keySet()){
 				if (availableAtByFormatForScope.get(format).size() != 0) {
-					doc.addField("available_at_".concat(scopeName).concat("_").concat(StringUtils.toLowerCaseNoSpecialChars(format)), availableAtByFormatForScope.get(format));
+					doc.addField("available_at_by_format_".concat(scopeName).concat("_").concat(StringUtils.toLowerCaseNoSpecialChars(format)), availableAtByFormatForScope.get(format));
 				}
 			}
 
