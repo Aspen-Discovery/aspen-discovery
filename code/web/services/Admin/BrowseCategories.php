@@ -7,50 +7,57 @@ require_once ROOT_DIR . '/sys/Browse/BrowseCategory.php';
 class Admin_BrowseCategories extends ObjectEditor
 {
 
-	function getObjectType(){
+	function getObjectType() : string{
 		return 'BrowseCategory';
 	}
-	function getToolName(){
+	function getToolName() : string{
 		return 'BrowseCategories';
 	}
-	function getPageTitle(){
+	function getPageTitle() : string{
 		return 'Browse Categories';
 	}
-	function getAllObjects(){
-		$browseCategory = new BrowseCategory();
-		$browseCategory->orderBy('label');
+	function getAllObjects($page, $recordsPerPage) : array{
+		$object = new BrowseCategory();
+		$object->orderBy($this->getSort());
+		$this->applyFilters($object);
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		if (!UserAccount::userHasPermission('Administer All Browse Categories')){
 			$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
 			$libraryId = $library == null ? -1 : $library->libraryId;
-			$browseCategory->whereAdd("sharing = 'everyone'");
-			$browseCategory->whereAdd("sharing = 'library' AND libraryId = " . $libraryId, 'OR');
+			$object->whereAdd("sharing = 'everyone'");
+			$object->whereAdd("sharing = 'library' AND libraryId = " . $libraryId, 'OR');
 		}
-		$browseCategory->find();
+		$object->find();
 		$list = array();
-		while ($browseCategory->fetch()){
-			$list[$browseCategory->id] = clone $browseCategory;
+		while ($object->fetch()){
+			$list[$object->id] = clone $object;
 		}
 		return $list;
 	}
-	function getObjectStructure(){
+	function getDefaultSort() : string
+	{
+		return 'label asc';
+	}
+
+	function getObjectStructure() : array{
 		return BrowseCategory::getObjectStructure();
 	}
-	function getPrimaryKeyColumn(){
+	function getPrimaryKeyColumn() : string{
 		return 'id';
 	}
-	function getIdKeyColumn(){
+	function getIdKeyColumn() : string{
 		return 'id';
 	}
 
-	function getInstructions(){
+	function getInstructions() : string{
 		return '';
 	}
 
-	function getInitializationJs(){
-		return 'return AspenDiscovery.Admin.updateBrowseSearchForSource();';
+	function getInitializationJs() : string {
+		return 'AspenDiscovery.Admin.updateBrowseSearchForSource();return AspenDiscovery.Admin.updateBrowseCategoryFields();';
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
@@ -59,13 +66,47 @@ class Admin_BrowseCategories extends ObjectEditor
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return 'local_enrichment';
 	}
 
-	function canView()
+	function canView() : bool
 	{
 		return UserAccount::userHasPermission(['Administer All Browse Categories','Administer Library Browse Categories']);
 	}
+
+	protected function getDefaultRecordsPerPage()
+	{
+		return 100;
+	}
+
+	protected function showQuickFilterOnPropertiesList(){
+		return true;
+	}
+
+	function getNumObjects(): int
+	{
+		if ($this->_numObjects == null){
+			if (!UserAccount::userHasPermission('Administer All Browse Categories')) {
+				/** @var DataObject $object */
+				$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
+				$libraryId = $library == null ? -1 : $library->libraryId;
+				$objectType = $this->getObjectType();
+				$object = new $objectType();
+				$object->whereAdd("sharing = 'everyone'");
+				$object->whereAdd("sharing = 'library' AND libraryId = " . $libraryId, 'OR');
+				$this->applyFilters($object);
+				$this->_numObjects = $object->count();
+			} else if (UserAccount::userHasPermission('Administer All Browse Categories')) {
+				/** @var DataObject $object */
+				$objectType = $this->getObjectType();
+				$object = new $objectType();
+				$this->applyFilters($object);
+				$this->_numObjects = $object->count();
+			}
+		}
+		return $this->_numObjects;
+	}
+
 }

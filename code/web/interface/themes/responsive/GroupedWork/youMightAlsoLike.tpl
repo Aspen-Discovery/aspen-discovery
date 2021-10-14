@@ -1,6 +1,6 @@
 {strip}
 {if $numTitles == 0}
-	<div class="alert alert-info">Sorry, we could not find any additional titles.</div>
+	<div class="alert alert-info">{translate text="Sorry, we could not find any additional titles." isPublicFacing=true}</div>
 {else}
 	<div class="row">
 		{foreach from=$youMightAlsoLikeTitles item=title}
@@ -14,7 +14,7 @@
 				</div>
 				<div class="row">
 					<div class="col-tn-12" style="padding-top: 5px">
-					<a href="{$title->getLinkUrl()}" class="btn btn-primary btn-sm">{translate text="More Info"}</a>
+					<a href="{$title->getLinkUrl()}" class="btn btn-primary btn-sm">{translate text="More Info" isPublicFacing=true}</a>
 					</div>
 				</div>
 			</div>

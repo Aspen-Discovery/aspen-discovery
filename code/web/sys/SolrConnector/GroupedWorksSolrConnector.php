@@ -153,8 +153,13 @@ class GroupedWorksSolrConnector extends Solr
 			if (isset($originalResult['language']) && count($originalResult['language']) == 1) {
 				$options['fq'][] = 'language:"' . $originalResult['language'][0] . '"';
 			}
-			if (isset($originalResult['series'])) {
-				$options['fq'][] = '!series:"' . $originalResult['series'][0] . '"';
+			//Don't include results from the same series unless the library does not have NoveList
+			require_once ROOT_DIR . '/sys/Enrichment/NovelistSetting.php';;
+			$novelistSettings = new NovelistSetting();
+			if ($novelistSettings->count() > 0) {
+				if (isset($originalResult['series'])) {
+					$options['fq'][] = '!series:"' . $originalResult['series'][0] . '"';
+				}
 			}
 			//Don't want to get other editions of the same work (that's a different query)
 		}
@@ -206,13 +211,14 @@ class GroupedWorksSolrConnector extends Solr
 	 *
 	 * @access    public
 	 *
-	 * @param array[] $ids
+	 * @param string[] $ids
 	 * @param string $fieldsToReturn
 	 * @param int $page
 	 * @param int $limit
+	 * @param string[] $notInterestedIds - An array of ids the patron is not interested in.  Can just load the last hour or so since they are also indexed.
 	 * @return    array                            An array of query results
 	 */
-	function getMoreLikeThese($ids, $fieldsToReturn, $page = 1, $limit = 25)
+	function getMoreLikeThese($ids, $fieldsToReturn, $page = 1, $limit = 25, $notInterestedIds = [])
 	{
 		// Query String Parameters
 		$idString = '';
@@ -235,10 +241,10 @@ class GroupedWorksSolrConnector extends Solr
 			$options['fq'][] = '-user_not_interested_link:' . UserAccount::getActiveUserId();
 			$options['fq'][] = '-user_reading_history_link:' . UserAccount::getActiveUserId();
 		}
-//		if (count($notInterestedIds) > 0) {
-//			$notInterestedString = implode(' OR ', $notInterestedIds);
-//			$options['fq'][] = "-id:($notInterestedString)";
-//		}
+		if (count($notInterestedIds) > 0) {
+			$notInterestedString = implode(' OR ', $notInterestedIds);
+			$options['fq'][] = "-id:($notInterestedString)";
+		}
 		$options['fq'][] = "-id:($idString)";
 		foreach ($scopingFilters as $filter) {
 			$options['fq'][] = $filter;

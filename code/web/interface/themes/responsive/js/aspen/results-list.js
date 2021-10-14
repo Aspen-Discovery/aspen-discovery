@@ -31,16 +31,18 @@ AspenDiscovery.ResultsList = (function(){
 				existingQuery = existingQuery.split('&');
 				for(var i = 0; i < existingQuery.length; i++){
 					var queryTerm = existingQuery[i].split('=');
-					if (queryTerm[0] === 'filter[]'){
+					if (queryTerm[0] === 'filter[]') {
 						//Check to see if we should include or not
-						if (!queryTerm[1].startsWith(fieldName)){
+						if (!queryTerm[1].startsWith(fieldName)) {
 							if (!firstTerm) {
 								newUrl += "&";
-							}else{
+							} else {
 								firstTerm = false;
 							}
 							newUrl += existingQuery[i];
 						}
+					}else if(queryTerm[0] === 'page') {
+						//Reset the page to the first page by omitting this term
 					}else{
 						if (!firstTerm){
 							newUrl += "&";

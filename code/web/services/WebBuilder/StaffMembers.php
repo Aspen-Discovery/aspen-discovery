@@ -4,63 +4,75 @@ require_once ROOT_DIR . '/sys/WebBuilder/StaffMember.php';
 
 class WebBuilder_StaffMembers extends ObjectEditor
 {
-	function getObjectType()
+	function getObjectType() : string
 	{
 		return 'StaffMember';
 	}
 
-	function getToolName()
+	function getToolName() : string
 	{
 		return 'StaffMembers';
 	}
 
-	function getModule()
+	function getModule() : string
 	{
 		return 'WebBuilder';
 	}
 
-	function getPageTitle()
+	function getPageTitle() : string
 	{
 		return 'Staff Members';
 	}
 
-	function getAllObjects()
+	function getAllObjects($page, $recordsPerPage) : array
 	{
 		$object = new StaffMember();
-		$object->find();
+		$object->orderBy($this->getSort());
+		$this->applyFilters($object);
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
+		if (!UserAccount::userHasPermission('Administer All Staff Members')){
+			$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
+			$object->libraryId = $library->libraryId;
+		}
 		$objectList = array();
+		$object->find();
 		while ($object->fetch()) {
 			$objectList[$object->id] = clone $object;
 		}
 		return $objectList;
 	}
 
-	function getObjectStructure()
+	function getDefaultSort() : string
+	{
+		return 'name asc';
+	}
+
+	function getObjectStructure() : array
 	{
 		return StaffMember::getObjectStructure();
 	}
 
-	function getPrimaryKeyColumn()
+	function getPrimaryKeyColumn() : string
 	{
 		return 'id';
 	}
 
-	function getIdKeyColumn()
+	function getIdKeyColumn() : string
 	{
 		return 'id';
 	}
 
-	function getAdditionalObjectActions($existingObject)
+	function getAdditionalObjectActions($existingObject) : array
 	{
 		return [];
 	}
 
-	function getInstructions()
+	function getInstructions() : string
 	{
 		return '';
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
@@ -69,12 +81,12 @@ class WebBuilder_StaffMembers extends ObjectEditor
 		return $breadcrumbs;
 	}
 
-	function canView()
+	function canView() : bool
 	{
 		return UserAccount::userHasPermission(['Administer All Staff Members', 'Administer Library Staff Members']);
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return 'web_builder';
 	}

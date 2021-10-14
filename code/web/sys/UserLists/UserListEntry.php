@@ -10,6 +10,8 @@ class UserListEntry extends DataObject{
 	public $notes;                           // blob(65535)  blob
 	public $dateAdded;                       // timestamp(19)  not_null unsigned zerofill binary timestamp
 	public $weight;                          //Where to position the entry in the overall list
+	public $importedFrom;
+	public $title;
 
 	/**
 	 * @param bool $updateBrowseCategories
@@ -18,9 +20,6 @@ class UserListEntry extends DataObject{
 	function insert($updateBrowseCategories = true)
 	{
 		$result = parent::insert();
-		if ($result && $updateBrowseCategories) {
-			$this->flushUserListBrowseCategory();
-		}
 		global $memCache;
 		$memCache->delete('user_list_data_' . UserAccount::getActiveUserId());
 		return $result;
@@ -33,9 +32,6 @@ class UserListEntry extends DataObject{
 	function update($updateBrowseCategories = true)
 	{
 		$result = parent::update();
-		if ($result && $updateBrowseCategories) {
-			$this->flushUserListBrowseCategory();
-		}
 		global $memCache;
 		$memCache->delete('user_list_data_' . UserAccount::getActiveUserId());
 		return $result;
@@ -49,26 +45,9 @@ class UserListEntry extends DataObject{
 	function delete($useWhere = false, $updateBrowseCategories = true)
 	{
 		$result = parent::delete($useWhere);
-		if ($result && $updateBrowseCategories) {
-			$this->flushUserListBrowseCategory();
-		}
 		global $memCache;
 		$memCache->delete('user_list_data_' . UserAccount::getActiveUserId());
 		return $result;
-	}
-
-	private function flushUserListBrowseCategory(){
-		// Check if the list is a part of a browse category and clear the cache.
-		require_once ROOT_DIR . '/sys/Browse/BrowseCategory.php';
-		$userListBrowseCategory = new BrowseCategory();
-		$userListBrowseCategory->sourceListId = $this->listId;
-		if ($userListBrowseCategory->find()) {
-			while ($userListBrowseCategory->fetch()) {
-				$userListBrowseCategory->deleteCachedBrowseCategoryResults();
-			}
-		}
-		$userListBrowseCategory->__destruct();
-		$userListBrowseCategory = null;
 	}
 
 	public function getRecordDriver()
@@ -87,7 +66,11 @@ class UserListEntry extends DataObject{
 		}elseif ($this->source == 'Lists'){
 			require_once ROOT_DIR . '/RecordDrivers/ListsRecordDriver.php';
 			$recordDriver = new ListsRecordDriver($this->sourceId);
-			return $recordDriver;
+			if ($recordDriver->isValid()){
+				return $recordDriver;
+			}else{
+				return $null;
+			}
 		}elseif ($this->source == 'Genealogy'){
 			require_once ROOT_DIR . '/RecordDrivers/PersonRecord.php';
 			$recordDriver = new PersonRecord($this->sourceId);
@@ -99,5 +82,19 @@ class UserListEntry extends DataObject{
 		}else{
 			return null;
 		}
+	}
+
+	public function getUserListEntries() {
+		if (!isset($this->_entries) && $this->id){
+			$this->_entries = [];
+			$obj = new UserListEntry();
+			$obj->listId = $this->listId;
+			$obj->orderBy('weight ASC');
+			$obj->find();
+			while($obj->fetch()){
+				$this->_entries[$obj->listId] = clone $obj;
+			}
+		}
+		return $this->_entries;
 	}
 }

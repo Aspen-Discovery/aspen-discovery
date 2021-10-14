@@ -87,7 +87,7 @@ public class GroupedReindexMain {
 		if (fullReindex){
 			logEntry.addNote("Performing full reindex");
 		}
-		
+
 		//Process grouped works
 		try {
 			GroupedWorkIndexer groupedWorkIndexer = new GroupedWorkIndexer(serverName, dbConn, configIni, fullReindex, clearIndex, logEntry, logger);
@@ -177,6 +177,8 @@ public class GroupedReindexMain {
 		}
 		try {
 			dbConn = DriverManager.getConnection(databaseConnectionInfo);
+			dbConn.prepareCall("SET collation_connection = utf8mb4_general_ci").execute();
+			dbConn.prepareCall("SET NAMES utf8mb4").execute();
 		} catch (SQLException e) {
 			logger.error("Could not connect to aspen database", e);
 			System.exit(1);
@@ -201,12 +203,16 @@ public class GroupedReindexMain {
 						}
 					}
 					getRunNightlyIndexStmt.close();
-
-					//Mark that nightly index does not need to run since we are currently running it.
-					dbConn.prepareStatement("UPDATE system_variables set runNightlyFullIndex = 0").executeUpdate();
 				}catch (SQLException e) {
 					logger.error("Unable to determine if the nightly index should run, running it", e);
 				}
+			}
+
+			try {
+				//Mark that nightly index does not need to run since we are currently running it.
+				dbConn.prepareStatement("UPDATE system_variables set runNightlyFullIndex = 0").executeUpdate();
+			}catch (SQLException e) {
+				logger.error("Unable to determine if the nightly index should run, running it", e);
 			}
 		}
 	}
@@ -218,25 +224,26 @@ public class GroupedReindexMain {
 			ResultSet arSettingsRS = arSettingsStmt.executeQuery();
 			if (arSettingsRS.next()){
 				long lastFetched = arSettingsRS.getLong("lastFetched");
-				//Update if we have never updated or if we last updated more than a week ago
-				//If we are updating, update the settings table right away so multiple processors don't update at the same time
-				if (lastFetched < ((new java.util.Date().getTime() / 1000) - (7 * 24 * 60 * 60))){
-					logEntry.addNote("Updating Accelerated Reader Data");
+
+				String arExportPath = arSettingsRS.getString("arExportPath");
+				File localFile = new File(arExportPath + "/RLI-ARDATA-XML.ZIP");
+
+				long existingFileLastModified = localFile.lastModified();
+
+				//Fetch the file if we have never updated or if we last updated more than a week ago
+				boolean updateDB = false;
+				//Use 23 hours rather than 24 hours to avoid the day accelerated reader loads doesn't drift.
+				if (existingFileLastModified < (new java.util.Date().getTime() - (7 * 23 * 60 * 60 * 1000))){
+					updateDB = true;
+					logEntry.addNote("Fetching new Accelerated Reader Data");
 					logEntry.saveResults();
-
-					PreparedStatement updateSettingsStmt = dbConn.prepareStatement("UPDATE accelerated_reading_settings SET lastFetched = ?");
-					updateSettingsStmt.setLong(1, (new Date().getTime() / 1000));
-
-					updateSettingsStmt.executeUpdate();
 
 					//Fetch the latest file from the SFTP server
 					String ftpServer = arSettingsRS.getString("ftpServer");
 					String ftpUser = arSettingsRS.getString("ftpUser");
 					String ftpPassword = arSettingsRS.getString("ftpPassword");
-					String arExportPath = arSettingsRS.getString("arExportPath");
 
 					String remoteFile = "/RLI-ARDATA-XML.ZIP";
-					File localFile = new File(arExportPath + "/RLI-ARDATA-XML.ZIP");
 
 					JSch jsch = new JSch();
 					Session session;
@@ -255,29 +262,45 @@ public class GroupedReindexMain {
 
 						logEntry.addNote("Retrieved new file from FTP server");
 						logEntry.saveResults();
+
+						if (localFile.exists()) {
+							UnzipUtility.unzip(localFile.getPath(), arExportPath);
+						}
 					} catch (JSchException e) {
 						logEntry.incErrors("JSch Error retrieving accelerated reader file from server", e);
 					} catch (SftpException e) {
 						logEntry.incErrors("Sftp Error retrieving accelerated reader file from server", e);
 					}
-
-					if (localFile.exists()){
-						UnzipUtility.unzip(localFile.getPath(), arExportPath);
-
-						//Update the database
-						//Load the ar_titles xml file
-						File arTitles = new File(arExportPath + "/ar_titles.xml");
-						loadAcceleratedReaderTitlesXMLFile(arTitles);
-
-						//Load the ar_titles_isbn xml file
-						File arTitlesIsbn = new File(arExportPath + "/ar_titles_isbn.xml");
-						loadAcceleratedReaderTitlesIsbnXMLFile(arTitlesIsbn);
-
-						logEntry.addNote("Done updating Accelerated Reader Data");
-						logEntry.saveResults();
-						infoReloaded = true;
+				}else{
+					//We didn't have to fetch the file, but we will still update the database if the file is newer
+					//than when we last fetched
+					if ((existingFileLastModified / 1000) > lastFetched) {
+						updateDB = true;
 					}
 				}
+
+				if (localFile.exists() && updateDB) {
+					PreparedStatement updateSettingsStmt = dbConn.prepareStatement("UPDATE accelerated_reading_settings SET lastFetched = ?");
+					updateSettingsStmt.setLong(1, (new Date().getTime() / 1000));
+					updateSettingsStmt.executeUpdate();
+
+					logEntry.addNote("Updating Accelerated Reader Data");
+					logEntry.saveResults();
+
+					//Update the database
+					//Load the ar_titles xml file
+					File arTitles = new File(arExportPath + "/ar_titles.xml");
+					loadAcceleratedReaderTitlesXMLFile(arTitles);
+
+					//Load the ar_titles_isbn xml file
+					File arTitlesIsbn = new File(arExportPath + "/ar_titles_isbn.xml");
+					loadAcceleratedReaderTitlesIsbnXMLFile(arTitlesIsbn);
+
+					logEntry.addNote("Done updating Accelerated Reader Data");
+					logEntry.saveResults();
+					infoReloaded = true;
+				}
+
 			}
 		}catch (Exception e){
 			logEntry.incErrors("Error loading accelerated reader data", e);

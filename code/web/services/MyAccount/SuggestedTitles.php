@@ -35,7 +35,7 @@ class SuggestedTitles extends MyAccount
 		$this->display('suggestedTitles.tpl', 'Recommended for You');
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'My Account');

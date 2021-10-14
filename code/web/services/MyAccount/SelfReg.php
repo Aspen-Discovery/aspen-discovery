@@ -65,7 +65,7 @@ class SelfReg extends Action {
 		}
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('', 'Register for a Library Card');

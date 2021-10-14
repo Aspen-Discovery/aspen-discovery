@@ -3,43 +3,49 @@
 require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 
-class LibraryFacetSettings extends ObjectEditor
+class Admin_LibraryFacetSettings extends ObjectEditor
 {
 
-	function getObjectType(){
+	function getObjectType() : string{
 		return 'LibraryFacetSetting';
 	}
-	function getToolName(){
+	function getToolName() : string{
 		return 'LibraryFacetSettings';
 	}
-	function getPageTitle(){
+	function getPageTitle() : string{
 		return 'Library Facets';
 	}
-	function getAllObjects(){
+	function getAllObjects($page, $recordsPerPage) : array{
 		$facetsList = array();
-		$library = new LibraryFacetSetting();
+		$object = new LibraryFacetSetting();
 		if (isset($_REQUEST['libraryId'])){
 			$libraryId = $_REQUEST['libraryId'];
-			$library->libraryId = $libraryId;
+			$object->libraryId = $libraryId;
 		}
-		$library->orderBy('weight');
-		$library->find();
-		while ($library->fetch()){
-			$facetsList[$library->id] = clone $library;
+		$object->orderBy($this->getSort());
+		$this->applyFilters($object);
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
+		$object->find();
+		while ($object->fetch()){
+			$facetsList[$object->id] = clone $object;
 		}
 
 		return $facetsList;
 	}
-	function getObjectStructure(){
+	function getDefaultSort() : string
+	{
+		return 'name asc';
+	}
+	function getObjectStructure() : array {
 		return LibraryFacetSetting::getObjectStructure();
 	}
-	function getPrimaryKeyColumn(){
+	function getPrimaryKeyColumn() : string{
 		return 'id';
 	}
-	function getIdKeyColumn(){
+	function getIdKeyColumn() : string{
 		return 'id';
 	}
-	function getAdditionalObjectActions($existingObject){
+	function getAdditionalObjectActions($existingObject) : array{
 		$objectActions = array();
 		if (isset($existingObject) && $existingObject != null){
 			$objectActions[] = array(
@@ -50,7 +56,7 @@ class LibraryFacetSettings extends ObjectEditor
 		return $objectActions;
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
@@ -62,12 +68,12 @@ class LibraryFacetSettings extends ObjectEditor
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return 'primary_configuration';
 	}
 
-	function canView()
+	function canView() : bool
 	{
 		return UserAccount::userHasPermission(['Administer All Libraries', 'Administer Home Library']);
 	}

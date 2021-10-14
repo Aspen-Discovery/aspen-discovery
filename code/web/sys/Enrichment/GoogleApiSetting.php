@@ -13,7 +13,7 @@ class GoogleApiSetting extends DataObject
 	public $googleBooksKey;
 	public $googleMapsKey;
 
-	public static function getObjectStructure()
+	public static function getObjectStructure() : array
 	{
 		return array(
 			'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id'),
@@ -23,7 +23,7 @@ class GoogleApiSetting extends DataObject
 			'googleAnalyticsLinkedProperties' => array('property' => 'googleAnalyticsLinkedProperties', 'type' => 'textarea', 'label' => 'Google Analytics Linked Properties (one per line)', 'description' => 'The Google analytics properties to link to'),
 			'googleAnalyticsDomainName' => array('property' => 'googleAnalyticsDomainName', 'type' => 'text', 'label' => 'Google Analytics Domain Name', 'description' => 'The Google analytics domain name to use'),
 			'googleBooksKey' => array('property' => 'googleBooksKey', 'type' => 'text', 'label' => 'Google Books Key', 'description' => 'The Google books API key to use'),
-			'googleMapsKey' => array('property' => 'googleMapsKey', 'type' => 'text', 'label' => 'Google Maps Key', 'description' => 'The Google maps API key to use'),
+			'googleMapsKey' => array('property' => 'googleMapsKey', 'type' => 'storedPassword', 'label' => 'Google Maps Key', 'description' => 'The Google maps API key to use'),
 		);
 	}
 }

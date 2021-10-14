@@ -10,14 +10,9 @@ class Timer{
 	public function __construct($startTime = null){
 		global $configArray;
 		if ($configArray){
-			if (isset($configArray['System']['timings'])) {
-				$this->timingsEnabled = $configArray['System']['timings'];
-			}
 			if (isset($configArray['System']['minTimeToLog'])){
 				$this->minTimeToLog = $configArray['System']['minTimeToLog'];
 			}
-		}else{
-			$this->timingsEnabled = true;
 		}
 
 		if (!$startTime) $startTime = microtime(true);
@@ -66,7 +61,7 @@ class Timer{
 			}
 			$timingInfo .= implode("\r\n", $this->timingMessages);
 			$timingInfo .= "\r\nTotal Elapsed time was: $totalElapsedTime seconds.\r\n";
-			$logger->log($timingInfo, Logger::LOG_NOTICE);
+			$logger->log($timingInfo, Logger::LOG_ALERT);
 		}
 	}
 

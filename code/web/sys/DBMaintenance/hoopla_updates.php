@@ -187,5 +187,52 @@ function getHooplaUpdates()
 				"UPDATE modules set logClassPath='/sys/Hoopla/HooplaExportLogEntry.php', logClassName='HooplaExportLogEntry' WHERE name='Hoopla'",
 			]
 		],
+
+		'hoopla_add_settings_2' => [
+			'title' => 'Add Settings to Hoopla module',
+			'description' => 'Add Settings to Hoopla module',
+			'sql' => [
+				"UPDATE modules set settingsClassPath = '/sys/Hoopla/HooplaSetting.php', settingsClassName = 'HooplaSetting' WHERE name = 'Hoopla'"
+			]
+		],
+
+		'hoopla_add_setting_to_scope' => [
+			'title' => 'Add settingId to Hoopla scope',
+			'description' => 'Allow multiple settings to be defined for Hoopla within a consortium',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE hoopla_scopes ADD column settingId INT(11)',
+				'updateHooplaScopes'
+			]
+		],
+
+		'hoopla_usage_add_instance' => [
+			'title' => 'Hoopla Usage - Instance Information',
+			'description' => 'Add Instance Information to Hoopla Usage stats',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE hoopla_record_usage ADD COLUMN instance VARCHAR(100)',
+				'ALTER TABLE hoopla_record_usage DROP INDEX hooplaId',
+				'ALTER TABLE hoopla_record_usage ADD UNIQUE INDEX (instance, hooplaId, year, month)',
+				'ALTER TABLE user_hoopla_usage ADD COLUMN instance VARCHAR(100)',
+				'ALTER TABLE user_hoopla_usage DROP INDEX userId',
+				'ALTER TABLE user_hoopla_usage ADD UNIQUE INDEX (instance, userId, year, month)',
+			]
+		],
 	);
+}
+
+/** @noinspection PhpUnused */
+function updateHooplaScopes(){
+	require_once ROOT_DIR . '/sys/Hoopla/HooplaSetting.php';
+	require_once ROOT_DIR . '/sys/Hoopla/HooplaScope.php';
+	$hooplaSettings = new HooplaSetting();
+	if ($hooplaSettings->find(true)){
+		$hooplaScopes = new HooplaScope();
+		$hooplaScopes->find();
+		while ($hooplaScopes->fetch()){
+			$hooplaScopes->settingId = $hooplaSettings->id;
+			$hooplaScopes->update();
+		}
+	}
 }

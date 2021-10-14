@@ -64,7 +64,7 @@ class CitationBuilder
 		$apa = array(
             'title' => $this->getAPATitle(),
             'authors' => $this->getAPAAuthors(),
-            'publisher' => $this->getPublisher(),
+            'publisher' => $this->getAPAPublisher(),
             'year' => $this->getYear(),
             'edition' => $this->getEdition()
 		);
@@ -88,10 +88,9 @@ class CitationBuilder
 		$mla = array(
             'title' => $this->getMLATitle(),
             'authors' => $this->getMLAAuthors(),
-            'publisher' => $this->getPublisher(),
+            'publisher' => $this->getMLAPublisher(),
             'year' => $this->getYear(),
-            'edition' => $this->getEdition(),
-            'format' => $this->getMLAFormat()
+            'edition' => $this->getEdition()
 		);
 		$interface->assign('mlaDetails', $mla);
 		return 'Citation/mla.tpl';
@@ -167,8 +166,7 @@ class CitationBuilder
             'title' => $this->getMLATitle(),
             'authors' => $this->getChicagoAuthors(),
             'publisher' => $this->getPublisher(),
-            'year' => $this->getYear(),
-            'edition' => $this->getEdition()
+            'year' => $this->getYear()
 		);
 		$interface->assign('citeDetails', $citeDetails);
 		return 'Citation/chicago-humanities.tpl';
@@ -191,8 +189,7 @@ class CitationBuilder
             'title' => $this->getMLATitle(),
             'authors' => $this->getChicagoAuthors(),
             'publisher' => $this->getPublisher(),
-            'year' => $this->getYear(),
-            'edition' => $this->getEdition()
+            'year' => $this->getYear()
 		);
 		$interface->assign('citeDetails', $citeDetails);
 		return 'Citation/chicago-authdate.tpl';
@@ -377,9 +374,9 @@ class CitationBuilder
 		}
 
 		// Add period to titles not ending in punctuation
-		if (!((substr($title, -1) == '?') || (substr($title, -1) == '!'))) {
+		/*if (!((substr($title, -1) == '?') || (substr($title, -1) == '!'))) {
 			$title .= '.';
-		}
+		}*/
 
 		return $title;
 	}
@@ -566,6 +563,24 @@ class CitationBuilder
 			return false;
 		}
 		return $this->stripPunctuation(implode(': ', $parts));
+	}
+
+	private function getAPAPublisher()
+	{
+		if (isset($this->details['pubName']) && !empty($this->details['pubName'])) {
+			return $this->details['pubName'];
+		}
+
+		return false;
+	}
+
+	private function getMLAPublisher()
+	{
+		if (isset($this->details['pubName']) && !empty($this->details['pubName'])) {
+			return $this->details['pubName'];
+		}
+
+		return false;
 	}
 
 	/**

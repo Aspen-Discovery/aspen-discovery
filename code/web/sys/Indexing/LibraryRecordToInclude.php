@@ -5,7 +5,7 @@ class LibraryRecordToInclude extends RecordToInclude{
 	public $__table = 'library_records_to_include';    // table name
 	public $libraryId;
 
-	static function getObjectStructure(){
+	static function getObjectStructure() : array {
 		$library = new Library();
 		$library->orderBy('displayName');
 		if (!UserAccount::userHasPermission('Administer All Libraries')){

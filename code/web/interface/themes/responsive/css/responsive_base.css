@@ -288,7 +288,7 @@ img {
   vertical-align: middle;
 }
 .img-responsive {
-  display: block;
+  display: inline-block;
   max-width: 100%;
   height: auto;
 }
@@ -10338,7 +10338,6 @@ a.browse-thumbnail-sorted.active {
   padding: 2px 5px;
   border-radius: 3px;
   border: 1px solid #ababab;
-  float: left;
   font-size: 12px;
 }
 .graph-bar {

@@ -9,10 +9,11 @@ import java.util.TreeSet;
 import java.util.regex.Pattern;
 
 public class Scope implements Comparable<Scope>{
+	private long id;
+
 	private String scopeName;
 	private String facetLabel;
 
-	private final HashSet<Long> relatedNumericPTypes = new HashSet<>();
 	private Long libraryId;
 
 	//Determine if this is a library scope or location scope and store related information
@@ -23,6 +24,7 @@ public class Scope implements Comparable<Scope>{
 	private boolean isLocationScope;
 	private Scope libraryScope;
 
+	//Called restrictOwningBranchesAndSystems in PHP admin interface
 	private boolean restrictOwningLibraryAndLocationFacets;
 	//Ownership rules indicate direct ownership of a record
 	private final HashSet<OwnershipRule> ownershipRules = new HashSet<>();
@@ -38,11 +40,18 @@ public class Scope implements Comparable<Scope>{
 	private GroupedWorkDisplaySettings groupedWorkDisplaySettings;
 	private OverDriveScope overDriveScope;
 	private HooplaScope hooplaScope;
-	private RbdigitalScope rbdigitalScope;
-	private CloudLibraryScope cloudLibraryScope;
+	private final HashMap<Long, CloudLibraryScope> cloudLibraryScopes = new HashMap<>();
 	private Axis360Scope axis360Scope;
 
 	private final HashMap<Long, SideLoadScope> sideLoadScopes = new HashMap<>();
+
+	public long getId() {
+		return id;
+	}
+
+	public void setId(long id) {
+		this.id = id;
+	}
 
 	public String getScopeName() {
 		return scopeName;
@@ -53,27 +62,12 @@ public class Scope implements Comparable<Scope>{
 		this.scopeName = this.scopeName.replaceAll("[^a-zA-Z0-9_]", "");
 	}
 
-	void setRelatedPTypes(String[] relatedPTypes) {
-		for (String relatedPType : relatedPTypes) {
-			relatedPType = relatedPType.trim();
-			if (relatedPType.length() > 0) {
-				try{
-					Long numericPType = Long.parseLong(relatedPType);
-					relatedNumericPTypes.add(numericPType);
-				} catch (Exception e){
-					//No need to do anything here.
-				}
-
-			}
-		}
-	}
-
 	void setFacetLabel(String facetLabel) {
 		this.facetLabel = facetLabel.trim();
 	}
 
 	/**
-	 * Determine if the item is part of the current scope based on location code and pType
+	 * Determine if the item is part of the current scope based on location code and other information
 	 *
 	 *
 	 * @param recordType        The type of record being checked based on profile
@@ -81,43 +75,41 @@ public class Scope implements Comparable<Scope>{
 	 * @param subLocationCode   The sub location code to check.  Set to blank if no sub location code
 	 * @return                  Whether or not the item is included within the scope
 	 */
-	public InclusionResult isItemPartOfScope(@NotNull String recordType, @NotNull String locationCode, @NotNull String subLocationCode, String iType, TreeSet<String> audiences, String format, boolean isHoldable, boolean isOnOrder, boolean isEContent, Record marcRecord, String econtentUrl){
-//		if (locationCode == null){
-//			//No location code, skip this item
-//			return new InclusionResult(false, econtentUrl);
-//		}
-
+	public InclusionResult isItemPartOfScope(@NotNull String recordType, @NotNull String locationCode, @NotNull String subLocationCode, String iType, TreeSet<String> audiences, String audiencesAsString, String format, boolean isHoldable, boolean isOnOrder, boolean isEContent, Record marcRecord, String econtentUrl){
+		String fullKey = recordType + locationCode + subLocationCode;
 		for(OwnershipRule curRule: ownershipRules){
-			if (curRule.isItemOwned(recordType, locationCode, subLocationCode)){
-				return new InclusionResult(true, econtentUrl);
+			if (curRule.isItemOwned(fullKey, recordType, locationCode, subLocationCode)){
+				return new InclusionResult(true, true, econtentUrl);
 			}
 		}
 
 		for(InclusionRule curRule: inclusionRules){
-			if (curRule.isItemIncluded(recordType, locationCode, subLocationCode, iType, audiences, format, isHoldable, isOnOrder, isEContent, marcRecord)){
+			if (curRule.isItemIncluded(recordType, locationCode, subLocationCode, iType, audiences, audiencesAsString, format, isHoldable, isOnOrder, isEContent, marcRecord)){
 				if (econtentUrl != null) {
 					econtentUrl = curRule.getLocalUrl(econtentUrl);
 				}
-				return new InclusionResult(true, econtentUrl);
+				return new InclusionResult(true, false, econtentUrl);
 			}
 		}
 
 		//If we got this far, it isn't included
-		return new InclusionResult(false, econtentUrl);
+		return new InclusionResult(false, false, econtentUrl);
 	}
 
 	/**
-	 * Determine if the item is part of the current scope based on location code and pType
+	 * Determine if the item is part of the current scope based on location code and other information
 	 *
 	 *
+	 *
+	 * @param fullKey
 	 * @param recordType        The type of record being checked based on profile
 	 * @param locationCode      The location code for the item.  Set to blank if location codes
 	 * @param subLocationCode   The sub location code to check.  Set to blank if no sub location code
 	 * @return                  Whether or not the item is included within the scope
 	 */
-	public boolean isItemOwnedByScope(@NotNull String recordType, @NotNull String locationCode, @NotNull String subLocationCode){
+	public boolean isItemOwnedByScope(String fullKey, @NotNull String recordType, @NotNull String locationCode, @NotNull String subLocationCode){
 		for(OwnershipRule curRule: ownershipRules){
-			if (curRule.isItemOwned(recordType, locationCode, subLocationCode)){
+			if (curRule.isItemOwned(fullKey, recordType, locationCode, subLocationCode)){
 				return true;
 			}
 		}
@@ -171,10 +163,6 @@ public class Scope implements Comparable<Scope>{
 
 	void addInclusionRule(InclusionRule inclusionRule) {
 		inclusionRules.add(inclusionRule);
-	}
-
-	public HashSet<Long> getRelatedNumericPTypes() {
-		return relatedNumericPTypes;
 	}
 
 	void addLocationScope(Scope locationScope) {
@@ -241,14 +229,6 @@ public class Scope implements Comparable<Scope>{
 		return additionalLocationsToShowAvailabilityForPattern;
 	}
 
-	private Boolean isUnscoped = null;
-	public boolean isUnscoped() {
-		if (isUnscoped == null){
-			isUnscoped = relatedNumericPTypes.contains(-1L);
-		}
-		return isUnscoped;
-	}
-
 	public OverDriveScope getOverDriveScope() {
 		return overDriveScope;
 	}
@@ -264,20 +244,12 @@ public class Scope implements Comparable<Scope>{
 		this.hooplaScope = hooplaScope;
 	}
 
-    void setRbdigitalScope(RbdigitalScope rbdigitalScope) {
-        this.rbdigitalScope = rbdigitalScope;
-    }
-
-    public RbdigitalScope getRbdigitalScope() {
-        return rbdigitalScope;
-    }
-
-	void setCloudLibraryScope(CloudLibraryScope cloudLibraryScope) {
-		this.cloudLibraryScope = cloudLibraryScope;
+	void addCloudLibraryScope(CloudLibraryScope cloudLibraryScope) {
+		this.cloudLibraryScopes.put(cloudLibraryScope.getSettingId(), cloudLibraryScope);
 	}
 
-	public CloudLibraryScope getCloudLibraryScope() {
-		return cloudLibraryScope;
+	public CloudLibraryScope getCloudLibraryScope(long settingId) {
+		return cloudLibraryScopes.get(settingId);
 	}
 
 	void addSideLoadScope(SideLoadScope scope){
@@ -307,10 +279,12 @@ public class Scope implements Comparable<Scope>{
 	public static class InclusionResult{
 		public boolean isIncluded;
 		public String localUrl;
+		public boolean isOwned;
 
-		InclusionResult(boolean isIncluded, String localUrl) {
+		InclusionResult(boolean isIncluded, boolean isOwned, String localUrl) {
 			this.isIncluded = isIncluded;
 			this.localUrl = localUrl;
+			this.isOwned = isOwned;
 		}
 	}
 }

@@ -9,10 +9,11 @@ yum -y install httpd
 yum -y install http://rpms.remirepo.net/enterprise/remi-release-7.rpm
 yum -y install yum-utils
 yum-config-manager --enable remi-php73
-yum -y install php php-mcrypt php-gd php-curl php-mysql php-zip php-fileinfo
+yum -y install php php-mcrypt php-gd php-curl php-mysql php-zip php-fileinfo php-soap
 yum -y install php-xml
 yum -y install bind-utils
 yum -y install php-intl
+yum -y install php-mbstring
 service httpd start
 chkconfig httpd on
 # New PHP ini file
@@ -57,5 +58,8 @@ mysql_secure_installation
 echo "Enter the timezone of the server"
 read timezone
 timedatectl set-timezone $timezone
+
+cd /usr/local/aspen-discovery/install
+bash ./setup_aspen_user.sh
 
 

@@ -11,7 +11,7 @@ class Axis360Scope extends DataObject
 	private $_libraries;
 	private $_locations;
 
-	public static function getObjectStructure()
+	public static function getObjectStructure() : array
 	{
 		$axis360Settings = [];
 		$axis360Setting = new Axis360Setting();
@@ -20,8 +20,8 @@ class Axis360Scope extends DataObject
 			$axis360Settings[$axis360Setting->id] = (string)$axis360Setting;
 		}
 
-		$libraryList = Library::getLibraryList();
-		$locationList = Location::getLocationList();
+		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Libraries'));
+		$locationList = Location::getLocationList(!UserAccount::userHasPermission('Administer All Libraries') || UserAccount::userHasPermission('Administer Home Library Locations'));
 
 		return [
 			'id' => ['property'=>'id', 'type'=>'label', 'label'=>'Id', 'description'=>'The unique id'],
@@ -116,7 +116,7 @@ class Axis360Scope extends DataObject
 
 	public function saveLibraries(){
 		if (isset ($this->_libraries) && is_array($this->_libraries)){
-			$libraryList = Library::getLibraryList();
+			$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Libraries'));
 			foreach ($libraryList as $libraryId => $displayName){
 				$library = new Library();
 				$library->libraryId = $libraryId;
@@ -141,7 +141,7 @@ class Axis360Scope extends DataObject
 
 	public function saveLocations(){
 		if (isset ($this->_locations) && is_array($this->_locations)){
-			$locationList = Location::getLocationList();
+			$locationList = Location::getLocationList(!UserAccount::userHasPermission('Administer All Libraries') || UserAccount::userHasPermission('Administer Home Library Locations'));
 			/**
 			 * @var int $locationId
 			 * @var Location $location

@@ -7,7 +7,7 @@
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!40101 SET NAMES utf8 */;
+/*!40101 SET NAMES utf8mb4 */;
 /*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
 /*!40103 SET TIME_ZONE='+00:00' */;
 /*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
@@ -21,7 +21,7 @@
 
 DROP TABLE IF EXISTS `accelerated_reading_isbn`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `accelerated_reading_isbn` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `arBookId` int(11) NOT NULL,
@@ -29,7 +29,7 @@ CREATE TABLE `accelerated_reading_isbn` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `isbn` (`isbn`),
   KEY `arBookId` (`arBookId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -45,7 +45,7 @@ CREATE TABLE `accelerated_reading_isbn` (
 
 DROP TABLE IF EXISTS `accelerated_reading_settings`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `accelerated_reading_settings` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `indexSeries` tinyint(1) DEFAULT '1',
@@ -56,7 +56,7 @@ CREATE TABLE `accelerated_reading_settings` (
   `ftpPassword` varchar(255) NOT NULL,
   `lastFetched` int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -72,14 +72,14 @@ CREATE TABLE `accelerated_reading_settings` (
 
 DROP TABLE IF EXISTS `accelerated_reading_subject`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `accelerated_reading_subject` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `topic` varchar(255) NOT NULL,
   `subTopic` varchar(255) NOT NULL,
   PRIMARY KEY (`id`),
   KEY `topic` (`topic`,`subTopic`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -95,14 +95,14 @@ CREATE TABLE `accelerated_reading_subject` (
 
 DROP TABLE IF EXISTS `accelerated_reading_subject_to_title`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `accelerated_reading_subject_to_title` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `arBookId` int(11) NOT NULL,
   `arSubjectId` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `arBookId` (`arBookId`,`arSubjectId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -118,7 +118,7 @@ CREATE TABLE `accelerated_reading_subject_to_title` (
 
 DROP TABLE IF EXISTS `accelerated_reading_titles`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `accelerated_reading_titles` (
   `arBookId` int(11) NOT NULL,
   `language` varchar(2) NOT NULL,
@@ -129,7 +129,7 @@ CREATE TABLE `accelerated_reading_titles` (
   `isFiction` tinyint(1) DEFAULT NULL,
   `interestLevel` varchar(5) DEFAULT NULL,
   PRIMARY KEY (`arBookId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -145,7 +145,7 @@ CREATE TABLE `accelerated_reading_titles` (
 
 DROP TABLE IF EXISTS `account_profiles`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `account_profiles` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(50) NOT NULL DEFAULT 'ils',
@@ -170,7 +170,7 @@ CREATE TABLE `account_profiles` (
   `oAuthClientSecret` varchar(36) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -187,12 +187,12 @@ INSERT INTO `account_profiles` VALUES (1,'admin','Library','name_barcode','db','
 
 DROP TABLE IF EXISTS `archive_private_collections`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `archive_private_collections` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `privateCollections` mediumtext,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -208,7 +208,7 @@ CREATE TABLE `archive_private_collections` (
 
 DROP TABLE IF EXISTS `archive_requests`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `archive_requests` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(100) NOT NULL,
@@ -228,7 +228,7 @@ CREATE TABLE `archive_requests` (
   PRIMARY KEY (`id`),
   KEY `pid` (`pid`),
   KEY `name` (`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -244,13 +244,13 @@ CREATE TABLE `archive_requests` (
 
 DROP TABLE IF EXISTS `archive_subjects`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `archive_subjects` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `subjectsToIgnore` mediumtext,
   `subjectsToRestrict` mediumtext,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -266,7 +266,7 @@ CREATE TABLE `archive_subjects` (
 
 DROP TABLE IF EXISTS `aspen_usage`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `aspen_usage` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `year` int(4) NOT NULL,
@@ -287,7 +287,7 @@ CREATE TABLE `aspen_usage` (
   `websiteSearches` int(11) DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `year` (`year`,`month`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -304,7 +304,7 @@ INSERT INTO `aspen_usage` VALUES (1,2019,11,3,0,3,1,3,6,5,0,0,0,0,0,0,0);
 
 DROP TABLE IF EXISTS `author_authorities`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `author_authorities` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `originalName` varchar(255) NOT NULL,
@@ -312,7 +312,7 @@ CREATE TABLE `author_authorities` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `originalName` (`originalName`),
   KEY `authoritativeName` (`authoritativeName`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -328,7 +328,7 @@ CREATE TABLE `author_authorities` (
 
 DROP TABLE IF EXISTS `author_enrichment`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `author_enrichment` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `authorName` varchar(255) NOT NULL,
@@ -336,7 +336,7 @@ CREATE TABLE `author_enrichment` (
   `wikipediaUrl` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `authorName` (`authorName`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -352,13 +352,13 @@ CREATE TABLE `author_enrichment` (
 
 DROP TABLE IF EXISTS `bad_words`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `bad_words` (
   `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'A unique Id for bad_word',
   `word` varchar(50) NOT NULL COMMENT 'The bad word that will be replaced',
   `replacement` varchar(50) NOT NULL COMMENT 'A replacement value for the word.',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=451 DEFAULT CHARSET=utf8 COMMENT='Stores information about bad_words that should be removed fr';
+) ENGINE=InnoDB AUTO_INCREMENT=451 DEFAULT CHARSET=utf8mb4 COMMENT='Stores information about bad_words that should be removed fr';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -374,7 +374,7 @@ CREATE TABLE `bad_words` (
 
 DROP TABLE IF EXISTS `bookcover_info`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `bookcover_info` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `recordType` varchar(20) DEFAULT NULL,
@@ -392,7 +392,7 @@ CREATE TABLE `bookcover_info` (
   UNIQUE KEY `record_info` (`recordType`,`recordId`),
   KEY `lastUsed` (`lastUsed`),
   KEY `imageSource` (`imageSource`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -408,7 +408,7 @@ CREATE TABLE `bookcover_info` (
 
 DROP TABLE IF EXISTS `browse_category`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `browse_category` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `textId` varchar(60) NOT NULL DEFAULT '-1',
@@ -424,7 +424,7 @@ CREATE TABLE `browse_category` (
   `sourceListId` mediumint(9) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `textId` (`textId`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -441,7 +441,7 @@ INSERT INTO `browse_category` VALUES (4,'main_new_fiction',1,'everyone','New Fic
 
 DROP TABLE IF EXISTS `browse_category_library`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `browse_category_library` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `libraryId` int(11) NOT NULL,
@@ -449,7 +449,7 @@ CREATE TABLE `browse_category_library` (
   `weight` int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `libraryId` (`libraryId`,`browseCategoryTextId`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -466,7 +466,7 @@ INSERT INTO `browse_category_library` VALUES (3,2,'main_new_fiction',0),(5,2,'ma
 
 DROP TABLE IF EXISTS `browse_category_location`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `browse_category_location` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `locationId` int(11) NOT NULL,
@@ -474,7 +474,7 @@ CREATE TABLE `browse_category_location` (
   `weight` int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `locationId` (`locationId`,`browseCategoryTextId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -490,7 +490,7 @@ CREATE TABLE `browse_category_location` (
 
 DROP TABLE IF EXISTS `browse_category_subcategories`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `browse_category_subcategories` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `browseCategoryId` int(11) NOT NULL,
@@ -498,7 +498,7 @@ CREATE TABLE `browse_category_subcategories` (
   `weight` smallint(2) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `subCategoryId` (`subCategoryId`,`browseCategoryId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -514,13 +514,13 @@ CREATE TABLE `browse_category_subcategories` (
 
 DROP TABLE IF EXISTS `cached_values`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `cached_values` (
   `cacheKey` varchar(200) NOT NULL,
   `value` varchar(16384) DEFAULT NULL,
   `expirationTime` int(11) DEFAULT NULL,
   UNIQUE KEY `cacheKey` (`cacheKey`)
-) ENGINE=MEMORY DEFAULT CHARSET=utf8;
+) ENGINE=MEMORY DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -529,7 +529,7 @@ CREATE TABLE `cached_values` (
 
 DROP TABLE IF EXISTS `claim_authorship_requests`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `claim_authorship_requests` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(100) NOT NULL,
@@ -541,7 +541,7 @@ CREATE TABLE `claim_authorship_requests` (
   PRIMARY KEY (`id`),
   KEY `pid` (`pid`),
   KEY `name` (`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -557,7 +557,7 @@ CREATE TABLE `claim_authorship_requests` (
 
 DROP TABLE IF EXISTS `cloud_library_availability`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `cloud_library_availability` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `cloudLibraryId` varchar(25) NOT NULL,
@@ -572,7 +572,7 @@ CREATE TABLE `cloud_library_availability` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `cloudLibraryId` (`cloudLibraryId`),
   KEY `lastChange` (`lastChange`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -588,7 +588,7 @@ CREATE TABLE `cloud_library_availability` (
 
 DROP TABLE IF EXISTS `cloud_library_export_log`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `cloud_library_export_log` (
   `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'The id of log',
   `startTime` int(11) NOT NULL COMMENT 'The timestamp when the run started',
@@ -603,7 +603,7 @@ CREATE TABLE `cloud_library_export_log` (
   `numAvailabilityChanges` int(11) DEFAULT '0',
   `numMetadataChanges` int(11) DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -619,7 +619,7 @@ CREATE TABLE `cloud_library_export_log` (
 
 DROP TABLE IF EXISTS `cloud_library_record_usage`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `cloud_library_record_usage` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `cloudLibraryId` int(11) DEFAULT NULL,
@@ -630,7 +630,7 @@ CREATE TABLE `cloud_library_record_usage` (
   PRIMARY KEY (`id`),
   KEY `cloudLibraryId` (`cloudLibraryId`,`year`,`month`),
   KEY `year` (`year`,`month`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -646,7 +646,7 @@ CREATE TABLE `cloud_library_record_usage` (
 
 DROP TABLE IF EXISTS `cloud_library_scopes`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `cloud_library_scopes` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(50) NOT NULL,
@@ -654,7 +654,7 @@ CREATE TABLE `cloud_library_scopes` (
   `includeEAudiobook` tinyint(4) DEFAULT '1',
   `restrictToChildrensMaterial` tinyint(4) DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -670,7 +670,7 @@ CREATE TABLE `cloud_library_scopes` (
 
 DROP TABLE IF EXISTS `cloud_library_settings`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `cloud_library_settings` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `apiUrl` varchar(255) DEFAULT NULL,
@@ -682,7 +682,7 @@ CREATE TABLE `cloud_library_settings` (
   `lastUpdateOfChangedRecords` int(11) DEFAULT '0',
   `lastUpdateOfAllRecords` int(11) DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -698,7 +698,7 @@ CREATE TABLE `cloud_library_settings` (
 
 DROP TABLE IF EXISTS `cloud_library_title`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `cloud_library_title` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `cloudLibraryId` varchar(25) NOT NULL,
@@ -714,7 +714,7 @@ CREATE TABLE `cloud_library_title` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `cloudLibraryId` (`cloudLibraryId`),
   KEY `lastChange` (`lastChange`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -730,7 +730,7 @@ CREATE TABLE `cloud_library_title` (
 
 DROP TABLE IF EXISTS `cron_log`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `cron_log` (
   `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'The id of the cron log',
   `startTime` int(11) NOT NULL COMMENT 'The timestamp when the cron run started',
@@ -738,7 +738,7 @@ CREATE TABLE `cron_log` (
   `lastUpdate` int(11) DEFAULT NULL COMMENT 'The timestamp when the cron run last updated (to check for stuck processes)',
   `notes` text COMMENT 'Additional information about the cron run',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -754,7 +754,7 @@ CREATE TABLE `cron_log` (
 
 DROP TABLE IF EXISTS `cron_process_log`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `cron_process_log` (
   `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'The id of cron process',
   `cronId` int(11) NOT NULL COMMENT 'The id of the cron run this process ran during',
@@ -768,7 +768,7 @@ CREATE TABLE `cron_process_log` (
   PRIMARY KEY (`id`),
   KEY `cronId` (`cronId`),
   KEY `processName` (`processName`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -784,12 +784,12 @@ CREATE TABLE `cron_process_log` (
 
 DROP TABLE IF EXISTS `db_update`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `db_update` (
   `update_key` varchar(100) NOT NULL,
   `date_run` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`update_key`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -806,7 +806,7 @@ INSERT INTO `db_update` VALUES ('accelerated_reader','2019-11-19 13:31:53'),('ac
 
 DROP TABLE IF EXISTS `errors`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `errors` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `module` varchar(50) NOT NULL,
@@ -817,7 +817,7 @@ CREATE TABLE `errors` (
   `timestamp` int(11) DEFAULT NULL,
   `userAgent` text,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -834,7 +834,7 @@ INSERT INTO `errors` VALUES (1,'MyAccount','AJAX','/MyAccount/AJAX?method=getMen
 
 DROP TABLE IF EXISTS `format_map_values`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `format_map_values` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `indexingProfileId` int(11) NOT NULL,
@@ -846,7 +846,7 @@ CREATE TABLE `format_map_values` (
   `holdType` enum('bib','item','either','none') DEFAULT 'bib',
   PRIMARY KEY (`id`),
   UNIQUE KEY `indexingProfileId` (`indexingProfileId`,`value`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -862,7 +862,7 @@ CREATE TABLE `format_map_values` (
 
 DROP TABLE IF EXISTS `grouped_work`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `grouped_work` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `permanent_id` char(36) NOT NULL,
@@ -874,7 +874,7 @@ CREATE TABLE `grouped_work` (
   UNIQUE KEY `permanent_id` (`permanent_id`),
   KEY `date_updated` (`date_updated`),
   KEY `date_updated_2` (`date_updated`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -890,7 +890,7 @@ CREATE TABLE `grouped_work` (
 
 DROP TABLE IF EXISTS `grouped_work_primary_identifiers`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `grouped_work_primary_identifiers` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `grouped_work_id` bigint(20) NOT NULL,
@@ -899,7 +899,7 @@ CREATE TABLE `grouped_work_primary_identifiers` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `type` (`type`,`identifier`),
   KEY `grouped_record_id` (`grouped_work_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -915,7 +915,7 @@ CREATE TABLE `grouped_work_primary_identifiers` (
 
 DROP TABLE IF EXISTS `holiday`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `holiday` (
   `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'The id of holiday',
   `libraryId` int(11) NOT NULL COMMENT 'The library system id',
@@ -925,7 +925,7 @@ CREATE TABLE `holiday` (
   UNIQUE KEY `LibraryDate` (`date`,`libraryId`),
   KEY `Library` (`libraryId`),
   KEY `Date` (`date`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -941,7 +941,7 @@ CREATE TABLE `holiday` (
 
 DROP TABLE IF EXISTS `hoopla_export`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `hoopla_export` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `hooplaId` int(11) NOT NULL,
@@ -960,7 +960,7 @@ CREATE TABLE `hoopla_export` (
   `dateFirstDetected` bigint(20) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `hooplaId` (`hooplaId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -976,7 +976,7 @@ CREATE TABLE `hoopla_export` (
 
 DROP TABLE IF EXISTS `hoopla_export_log`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `hoopla_export_log` (
   `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'The id of log',
   `startTime` int(11) NOT NULL COMMENT 'The timestamp when the run started',
@@ -990,7 +990,7 @@ CREATE TABLE `hoopla_export_log` (
   `numUpdated` int(11) DEFAULT '0',
   `numSkipped` int(11) DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1006,7 +1006,7 @@ CREATE TABLE `hoopla_export_log` (
 
 DROP TABLE IF EXISTS `hoopla_record_usage`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `hoopla_record_usage` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `hooplaId` int(11) DEFAULT NULL,
@@ -1016,7 +1016,7 @@ CREATE TABLE `hoopla_record_usage` (
   PRIMARY KEY (`id`),
   KEY `hooplaId` (`hooplaId`,`year`,`month`),
   KEY `year` (`year`,`month`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1032,7 +1032,7 @@ CREATE TABLE `hoopla_record_usage` (
 
 DROP TABLE IF EXISTS `hoopla_scopes`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `hoopla_scopes` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(50) NOT NULL,
@@ -1054,7 +1054,7 @@ CREATE TABLE `hoopla_scopes` (
   `excludeParentalAdvisory` tinyint(4) DEFAULT '0',
   `excludeProfanity` tinyint(4) DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1070,7 +1070,7 @@ CREATE TABLE `hoopla_scopes` (
 
 DROP TABLE IF EXISTS `hoopla_settings`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `hoopla_settings` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `apiUrl` varchar(255) DEFAULT NULL,
@@ -1082,7 +1082,7 @@ CREATE TABLE `hoopla_settings` (
   `lastUpdateOfAllRecords` int(11) DEFAULT '0',
   `excludeTitlesWithCopiesFromOtherVendors` tinyint(4) DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1098,7 +1098,7 @@ CREATE TABLE `hoopla_settings` (
 
 DROP TABLE IF EXISTS `ils_extract_log`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `ils_extract_log` (
   `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'The id of log',
   `indexingProfile` varchar(50) NOT NULL,
@@ -1113,7 +1113,7 @@ CREATE TABLE `ils_extract_log` (
   `notes` text COMMENT 'Additional information about the run',
   `numSkipped` int(11) DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1129,14 +1129,14 @@ CREATE TABLE `ils_extract_log` (
 
 DROP TABLE IF EXISTS `ils_hold_summary`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `ils_hold_summary` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `ilsId` varchar(20) NOT NULL,
   `numHolds` int(11) DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `ilsId` (`ilsId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1152,7 +1152,7 @@ CREATE TABLE `ils_hold_summary` (
 
 DROP TABLE IF EXISTS `ils_marc_checksums`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `ils_marc_checksums` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `ilsId` varchar(50) NOT NULL,
@@ -1162,7 +1162,7 @@ CREATE TABLE `ils_marc_checksums` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `ilsId` (`ilsId`),
   UNIQUE KEY `source` (`source`,`ilsId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1178,7 +1178,7 @@ CREATE TABLE `ils_marc_checksums` (
 
 DROP TABLE IF EXISTS `ils_record_usage`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `ils_record_usage` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `indexingProfileId` int(11) NOT NULL,
@@ -1189,7 +1189,7 @@ CREATE TABLE `ils_record_usage` (
   PRIMARY KEY (`id`),
   KEY `recordId` (`recordId`,`year`,`month`),
   KEY `year` (`year`,`month`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1205,7 +1205,7 @@ CREATE TABLE `ils_record_usage` (
 
 DROP TABLE IF EXISTS `ils_volume_info`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `ils_volume_info` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `recordId` varchar(50) NOT NULL COMMENT 'Full Record ID including the source',
@@ -1215,7 +1215,7 @@ CREATE TABLE `ils_volume_info` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `volumeId` (`volumeId`),
   KEY `recordId` (`recordId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1231,7 +1231,7 @@ CREATE TABLE `ils_volume_info` (
 
 DROP TABLE IF EXISTS `indexing_profiles`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `indexing_profiles` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(50) NOT NULL,
@@ -1310,7 +1310,7 @@ CREATE TABLE `indexing_profiles` (
   `lastUpdateFromMarcExport` int(11) DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1326,7 +1326,7 @@ CREATE TABLE `indexing_profiles` (
 
 DROP TABLE IF EXISTS `ip_lookup`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `ip_lookup` (
   `id` int(25) NOT NULL AUTO_INCREMENT,
   `locationid` int(5) NOT NULL,
@@ -1340,7 +1340,7 @@ CREATE TABLE `ip_lookup` (
   KEY `endIpVal` (`endIpVal`),
   KEY `startIpVal_2` (`startIpVal`),
   KEY `endIpVal_2` (`endIpVal`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1356,7 +1356,7 @@ CREATE TABLE `ip_lookup` (
 
 DROP TABLE IF EXISTS `islandora_object_cache`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `islandora_object_cache` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `pid` varchar(100) NOT NULL,
@@ -1373,7 +1373,7 @@ CREATE TABLE `islandora_object_cache` (
   `originalCoverUrl` varchar(255) DEFAULT '',
   PRIMARY KEY (`id`),
   UNIQUE KEY `pid` (`pid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1389,7 +1389,7 @@ CREATE TABLE `islandora_object_cache` (
 
 DROP TABLE IF EXISTS `islandora_samepika_cache`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `islandora_samepika_cache` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `groupedWorkId` char(36) NOT NULL,
@@ -1397,7 +1397,7 @@ CREATE TABLE `islandora_samepika_cache` (
   `archiveLink` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `groupedWorkId` (`groupedWorkId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1413,7 +1413,7 @@ CREATE TABLE `islandora_samepika_cache` (
 
 DROP TABLE IF EXISTS `languages`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `languages` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `weight` int(11) NOT NULL DEFAULT '0',
@@ -1424,7 +1424,7 @@ CREATE TABLE `languages` (
   `displayToTranslatorsOnly` tinyint(1) DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `code` (`code`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1441,7 +1441,7 @@ INSERT INTO `languages` VALUES (1,0,'en','English','English','English',0);
 
 DROP TABLE IF EXISTS `library`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `library` (
   `libraryId` int(11) NOT NULL AUTO_INCREMENT COMMENT 'A unique id to identify the library within the system',
   `subdomain` varchar(25) NOT NULL COMMENT 'The subdomain which can be used to access settings for the library',
@@ -1656,9 +1656,10 @@ CREATE TABLE `library` (
   `payPalSandboxMode` tinyint(1) DEFAULT '1',
   `payPalClientId` varchar(80) DEFAULT NULL,
   `payPalClientSecret` varchar(80) DEFAULT NULL,
+
   PRIMARY KEY (`libraryId`),
   UNIQUE KEY `subdomain` (`subdomain`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1675,7 +1676,7 @@ INSERT INTO `library` VALUES (2,'main','Main Library','responsive',1,0,1,1,0,0,0
 
 DROP TABLE IF EXISTS `library_archive_explore_more_bar`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `library_archive_explore_more_bar` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `libraryId` int(11) NOT NULL,
@@ -1685,7 +1686,7 @@ CREATE TABLE `library_archive_explore_more_bar` (
   `weight` int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `LibraryIdIndex` (`libraryId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1701,7 +1702,7 @@ CREATE TABLE `library_archive_explore_more_bar` (
 
 DROP TABLE IF EXISTS `library_archive_more_details`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `library_archive_more_details` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `libraryId` int(11) NOT NULL DEFAULT '-1',
@@ -1710,7 +1711,7 @@ CREATE TABLE `library_archive_more_details` (
   `collapseByDefault` tinyint(1) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `libraryId` (`libraryId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1726,7 +1727,7 @@ CREATE TABLE `library_archive_more_details` (
 
 DROP TABLE IF EXISTS `library_archive_search_facet_setting`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `library_archive_search_facet_setting` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `libraryId` int(11) NOT NULL,
@@ -1747,7 +1748,7 @@ CREATE TABLE `library_archive_search_facet_setting` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `libraryFacet` (`libraryId`,`facetName`),
   KEY `libraryId` (`libraryId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1763,7 +1764,7 @@ CREATE TABLE `library_archive_search_facet_setting` (
 
 DROP TABLE IF EXISTS `library_combined_results_section`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `library_combined_results_section` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `libraryId` int(11) NOT NULL,
@@ -1773,7 +1774,7 @@ CREATE TABLE `library_combined_results_section` (
   `weight` int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `LibraryIdIndex` (`libraryId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1789,7 +1790,7 @@ CREATE TABLE `library_combined_results_section` (
 
 DROP TABLE IF EXISTS `library_facet_setting`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `library_facet_setting` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `libraryId` int(11) NOT NULL,
@@ -1811,7 +1812,7 @@ CREATE TABLE `library_facet_setting` (
   UNIQUE KEY `libraryFacet` (`libraryId`,`facetName`),
   KEY `libraryId` (`libraryId`),
   KEY `libraryId_2` (`libraryId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='A widget that can be displayed within websites';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='A widget that can be displayed within websites';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1827,7 +1828,7 @@ CREATE TABLE `library_facet_setting` (
 
 DROP TABLE IF EXISTS `library_links`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `library_links` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `libraryId` int(11) NOT NULL,
@@ -1857,7 +1858,7 @@ CREATE TABLE `library_links` (
 
 DROP TABLE IF EXISTS `library_more_details`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `library_more_details` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `libraryId` int(11) NOT NULL DEFAULT '-1',
@@ -1866,7 +1867,7 @@ CREATE TABLE `library_more_details` (
   `collapseByDefault` tinyint(1) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `libraryId` (`libraryId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1882,7 +1883,7 @@ CREATE TABLE `library_more_details` (
 
 DROP TABLE IF EXISTS `library_records_owned`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `library_records_owned` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `libraryId` int(11) NOT NULL,
@@ -1892,7 +1893,7 @@ CREATE TABLE `library_records_owned` (
   PRIMARY KEY (`id`),
   KEY `libraryId` (`libraryId`),
   KEY `indexingProfileId` (`indexingProfileId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1908,7 +1909,7 @@ CREATE TABLE `library_records_owned` (
 
 DROP TABLE IF EXISTS `library_records_to_include`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `library_records_to_include` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `libraryId` int(11) NOT NULL,
@@ -1930,7 +1931,7 @@ CREATE TABLE `library_records_to_include` (
   PRIMARY KEY (`id`),
   KEY `libraryId` (`libraryId`,`indexingProfileId`),
   KEY `indexingProfileId` (`indexingProfileId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1946,7 +1947,7 @@ CREATE TABLE `library_records_to_include` (
 
 DROP TABLE IF EXISTS `library_search_source`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `library_search_source` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `libraryId` int(11) NOT NULL DEFAULT '-1',
@@ -1958,7 +1959,7 @@ CREATE TABLE `library_search_source` (
   `catalogScoping` enum('unscoped','library','location') DEFAULT 'unscoped',
   PRIMARY KEY (`id`),
   KEY `libraryId` (`libraryId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1974,14 +1975,14 @@ CREATE TABLE `library_search_source` (
 
 DROP TABLE IF EXISTS `library_sideload_scopes`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `library_sideload_scopes` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `libraryId` int(11) NOT NULL,
   `sideLoadScopeId` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `libraryId` (`libraryId`,`sideLoadScopeId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1997,7 +1998,7 @@ CREATE TABLE `library_sideload_scopes` (
 
 DROP TABLE IF EXISTS `library_top_links`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `library_top_links` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `libraryId` int(11) NOT NULL,
@@ -2006,7 +2007,7 @@ CREATE TABLE `library_top_links` (
   `weight` int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `libraryId` (`libraryId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2022,7 +2023,7 @@ CREATE TABLE `library_top_links` (
 
 DROP TABLE IF EXISTS `list_widget_lists`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `list_widget_lists` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `listWidgetId` int(11) NOT NULL,
@@ -2033,7 +2034,7 @@ CREATE TABLE `list_widget_lists` (
   `fullListLink` varchar(500) DEFAULT '',
   PRIMARY KEY (`id`),
   KEY `ListWidgetId` (`listWidgetId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='The lists that should appear within the widget';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='The lists that should appear within the widget';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2049,7 +2050,7 @@ CREATE TABLE `list_widget_lists` (
 
 DROP TABLE IF EXISTS `list_widgets`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `list_widgets` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(50) NOT NULL,
@@ -2071,7 +2072,7 @@ CREATE TABLE `list_widgets` (
   `showListWidgetTitle` tinyint(4) NOT NULL DEFAULT '1',
   `numTitlesToShow` int(11) NOT NULL DEFAULT '25',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='A widget that can be displayed within Aspen Discovery or within other sites';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='A widget that can be displayed within Aspen Discovery or within other sites';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2087,7 +2088,7 @@ CREATE TABLE `list_widgets` (
 
 DROP TABLE IF EXISTS `loan_rule_determiners`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `loan_rule_determiners` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `rowNumber` int(11) NOT NULL COMMENT 'The row of the determiner.  Rules are processed in reverse order',
@@ -2100,7 +2101,7 @@ CREATE TABLE `loan_rule_determiners` (
   PRIMARY KEY (`id`),
   KEY `rowNumber` (`rowNumber`),
   KEY `active` (`active`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2116,7 +2117,7 @@ CREATE TABLE `loan_rule_determiners` (
 
 DROP TABLE IF EXISTS `loan_rules`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `loan_rules` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `loanRuleId` int(11) NOT NULL COMMENT 'The location id',
@@ -2130,7 +2131,7 @@ CREATE TABLE `loan_rules` (
   PRIMARY KEY (`id`),
   KEY `loanRuleId` (`loanRuleId`),
   KEY `holdable` (`holdable`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2146,7 +2147,7 @@ CREATE TABLE `loan_rules` (
 
 DROP TABLE IF EXISTS `location`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `location` (
   `locationId` int(11) NOT NULL AUTO_INCREMENT COMMENT 'A unique Id for the branch or location within vuFind',
   `code` varchar(75) DEFAULT NULL,
@@ -2223,7 +2224,7 @@ CREATE TABLE `location` (
   UNIQUE KEY `code` (`code`,`subLocation`),
   KEY `ValidHoldPickupBranch` (`validHoldPickupBranch`),
   KEY `libraryId` (`libraryId`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8 COMMENT='Stores information about the various locations that are part';
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COMMENT='Stores information about the various locations that are part';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2240,7 +2241,7 @@ INSERT INTO `location` VALUES (1,'main','Main Library',2,1,-1,-1,'',0,0,'default
 
 DROP TABLE IF EXISTS `location_combined_results_section`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `location_combined_results_section` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `locationId` int(11) NOT NULL,
@@ -2250,7 +2251,7 @@ CREATE TABLE `location_combined_results_section` (
   `weight` int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `LocationIdIndex` (`locationId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2266,7 +2267,7 @@ CREATE TABLE `location_combined_results_section` (
 
 DROP TABLE IF EXISTS `location_facet_setting`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `location_facet_setting` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `locationId` int(11) NOT NULL,
@@ -2287,7 +2288,7 @@ CREATE TABLE `location_facet_setting` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `locationFacet` (`locationId`,`facetName`),
   KEY `locationId` (`locationId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='A widget that can be displayed within websites';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='A widget that can be displayed within websites';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2303,7 +2304,7 @@ CREATE TABLE `location_facet_setting` (
 
 DROP TABLE IF EXISTS `location_hours`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `location_hours` (
   `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'The id of hours entry',
   `locationId` int(11) NOT NULL COMMENT 'The location id',
@@ -2313,7 +2314,7 @@ CREATE TABLE `location_hours` (
   `close` varchar(10) NOT NULL COMMENT 'Close hour (24hr format) HH:MM',
   PRIMARY KEY (`id`),
   KEY `location` (`locationId`,`day`,`open`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2329,7 +2330,7 @@ CREATE TABLE `location_hours` (
 
 DROP TABLE IF EXISTS `location_more_details`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `location_more_details` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `locationId` int(11) NOT NULL DEFAULT '-1',
@@ -2338,7 +2339,7 @@ CREATE TABLE `location_more_details` (
   `collapseByDefault` tinyint(1) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `locationId` (`locationId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2354,7 +2355,7 @@ CREATE TABLE `location_more_details` (
 
 DROP TABLE IF EXISTS `location_records_owned`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `location_records_owned` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `locationId` int(11) NOT NULL,
@@ -2364,7 +2365,7 @@ CREATE TABLE `location_records_owned` (
   PRIMARY KEY (`id`),
   KEY `locationId` (`locationId`),
   KEY `indexingProfileId` (`indexingProfileId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2380,7 +2381,7 @@ CREATE TABLE `location_records_owned` (
 
 DROP TABLE IF EXISTS `location_records_to_include`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `location_records_to_include` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `locationId` int(11) NOT NULL,
@@ -2402,7 +2403,7 @@ CREATE TABLE `location_records_to_include` (
   PRIMARY KEY (`id`),
   KEY `locationId` (`locationId`,`indexingProfileId`),
   KEY `indexingProfileId` (`indexingProfileId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2418,7 +2419,7 @@ CREATE TABLE `location_records_to_include` (
 
 DROP TABLE IF EXISTS `location_search_source`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `location_search_source` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `locationId` int(11) NOT NULL DEFAULT '-1',
@@ -2430,7 +2431,7 @@ CREATE TABLE `location_search_source` (
   `catalogScoping` enum('unscoped','library','location') DEFAULT 'unscoped',
   PRIMARY KEY (`id`),
   KEY `locationId` (`locationId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2446,14 +2447,14 @@ CREATE TABLE `location_search_source` (
 
 DROP TABLE IF EXISTS `location_sideload_scopes`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `location_sideload_scopes` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `locationId` int(11) NOT NULL,
   `sideLoadScopeId` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `locationId` (`locationId`,`sideLoadScopeId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2469,7 +2470,7 @@ CREATE TABLE `location_sideload_scopes` (
 
 DROP TABLE IF EXISTS `marriage`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `marriage` (
   `marriageId` int(11) NOT NULL AUTO_INCREMENT,
   `personId` int(11) NOT NULL COMMENT 'A link to one person in the marriage',
@@ -2478,7 +2479,7 @@ CREATE TABLE `marriage` (
   `marriageDate` date DEFAULT NULL COMMENT 'The date of the marriage if known.',
   `comments` mediumtext,
   PRIMARY KEY (`marriageId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Information about a marriage between two people';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='Information about a marriage between two people';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2494,7 +2495,7 @@ CREATE TABLE `marriage` (
 
 DROP TABLE IF EXISTS `materials_request`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `materials_request` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `libraryId` int(10) unsigned DEFAULT NULL,
@@ -2552,7 +2553,7 @@ CREATE TABLE `materials_request` (
   KEY `format_2` (`format`),
   KEY `subFormat_2` (`subFormat`),
   KEY `status_3` (`status`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2568,7 +2569,7 @@ CREATE TABLE `materials_request` (
 
 DROP TABLE IF EXISTS `materials_request_fields_to_display`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `materials_request_fields_to_display` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `libraryId` int(11) NOT NULL,
@@ -2578,7 +2579,7 @@ CREATE TABLE `materials_request_fields_to_display` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `columnNameToDisplay` (`columnNameToDisplay`,`libraryId`),
   KEY `libraryId` (`libraryId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2594,7 +2595,7 @@ CREATE TABLE `materials_request_fields_to_display` (
 
 DROP TABLE IF EXISTS `materials_request_form_fields`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `materials_request_form_fields` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `libraryId` int(10) unsigned NOT NULL,
@@ -2605,7 +2606,7 @@ CREATE TABLE `materials_request_form_fields` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`),
   KEY `libraryId` (`libraryId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2621,7 +2622,7 @@ CREATE TABLE `materials_request_form_fields` (
 
 DROP TABLE IF EXISTS `materials_request_formats`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `materials_request_formats` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `libraryId` int(10) unsigned NOT NULL,
@@ -2632,7 +2633,7 @@ CREATE TABLE `materials_request_formats` (
   `specialFields` set('Abridged/Unabridged','Article Field','Eaudio format','Ebook format','Season') DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `libraryId` (`libraryId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2648,7 +2649,7 @@ CREATE TABLE `materials_request_formats` (
 
 DROP TABLE IF EXISTS `materials_request_status`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `materials_request_status` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `description` varchar(80) DEFAULT NULL,
@@ -2669,7 +2670,7 @@ CREATE TABLE `materials_request_status` (
   KEY `isDefault_3` (`isDefault`),
   KEY `isOpen_3` (`isOpen`),
   KEY `isPatronCancel_3` (`isPatronCancel`)
-) ENGINE=InnoDB AUTO_INCREMENT=41 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=41 DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2677,7 +2678,7 @@ CREATE TABLE `materials_request_status` (
 --
 
 /*!40000 ALTER TABLE `materials_request_status` DISABLE KEYS */;
-INSERT INTO `materials_request_status` VALUES (1,'Request Pending',1,0,'',1,0,-1),(2,'Already owned/On order',0,1,'This e-mail is to let you know the status of your recent request for an item that you did not find in our catalog. The Library already owns this item or it is already on order. Please access our catalog to place this item on hold.  Please check our online catalog periodically to put a hold for this item.',0,0,-1),(3,'Item purchased',0,1,'This e-mail is to let you know the status of your recent request for an item that you did not find in our catalog. Outcome: The library is purchasing the item you requested. Please check our online catalog periodically to put yourself on hold for this item. We anticipate that this item will be available soon for you to place a hold.',0,0,-1),(4,'Referred to Collection Development - Adult',0,0,'',1,0,-1),(5,'Referred to Collection Development - J/YA',0,0,'',1,0,-1),(6,'Referred to Collection Development - AV',0,0,'',1,0,-1),(7,'ILL Under Review',0,0,'',1,0,-1),(8,'Request Referred to ILL',0,1,'This e-mail is to let you know the status of your recent request for an item that you did not find in our catalog. The library\'s Interlibrary loan department is reviewing your request. We will attempt to borrow this item from another system. This process generally takes about 2 - 6 weeks.',1,0,-1),(9,'Request Filled by ILL',0,1,'This e-mail is to let you know the status of your recent request for an item that you did not find in our catalog. Our Interlibrary Loan Department is set to borrow this item from another library.',0,0,-1),(10,'Ineligible ILL',0,1,'This e-mail is to let you know the status of your recent request for an item that you did not find in our catalog. Your library account is not eligible for interlibrary loan at this time.',0,0,-1),(11,'Not enough info - please contact Collection Development to clarify',0,1,'This e-mail is to let you know the status of your recent request for an item that you did not find in our catalog. We need more specific information in order to locate the exact item you need. Please re-submit your request with more details.',1,0,-1),(12,'Unable to acquire the item - out of print',0,1,'This e-mail is to let you know the status of your recent request for an item that you did not find in our catalog. We regret that we are unable to acquire the item you requested. This item is out of print.',0,0,-1),(13,'Unable to acquire the item - not available in the US',0,1,'This e-mail is to let you know the status of your recent request for an item that you did not find in our catalog. We regret that we are unable to acquire the item you requested. This item is not available in the US.',0,0,-1),(14,'Unable to acquire the item - not available from vendor',0,1,'This e-mail is to let you know the status of your recent request for an item that you did not find in our catalog. We regret that we are unable to acquire the item you requested. This item is not available from a preferred vendor.',0,0,-1),(15,'Unable to acquire the item - not published',0,1,'This e-mail is to let you know the status of your recent request for an item that you did not find in our catalog. The item you requested has not yet been published. Please check our catalog when the publication date draws near.',0,0,-1),(16,'Unable to acquire the item - price',0,1,'This e-mail is to let you know the status of your recent request for an item that you did not find in our catalog. We regret that we are unable to acquire the item you requested. This item does not fit our collection guidelines.',0,0,-1),(17,'Unable to acquire the item - publication date',0,1,'This e-mail is to let you know the status of your recent request for an item that you did not find in our catalog. We regret that we are unable to acquire the item you requested. This item does not fit our collection guidelines.',0,0,-1),(18,'Unavailable',0,1,'This e-mail is to let you know the status of your recent request for an item that you did not find in our catalog. The item you requested cannot be purchased at this time from any of our regular suppliers and is not available from any of our lending libraries.',0,0,-1),(19,'Cancelled by Patron',0,0,'',0,1,-1),(20,'Cancelled - Duplicate Request',0,0,'',0,0,-1),(21,'Request Pending',1,0,'',1,NULL,-1),(22,'Already owned/On order',0,1,'This e-mail is to let you know the status of your recent request for an item that you did not find in our catalog. The Library already owns this item or it is already on order. Please access our catalog to place this item on hold.	Please check our online catalog periodically to put a hold for this item.',0,NULL,-1),(23,'Item purchased',0,1,'This e-mail is to let you know the status of your recent request for an item that you did not find in our catalog. Outcome: The library is purchasing the item you requested. Please check our online catalog periodically to put yourself on hold for this item. We anticipate that this item will be available soon for you to place a hold.',0,NULL,-1),(24,'Referred to Collection Development - Adult',0,0,'',1,NULL,-1),(25,'Referred to Collection Development - J/YA',0,0,'',1,NULL,-1),(26,'Referred to Collection Development - AV',0,0,'',1,NULL,-1),(27,'ILL Under Review',0,0,'',1,NULL,-1),(28,'Request Referred to ILL',0,1,'This e-mail is to let you know the status of your recent request for an item that you did not find in our catalog. The library\'s Interlibrary loan department is reviewing your request. We will attempt to borrow this item from another system. This process generally takes about 2 - 6 weeks.',1,NULL,-1),(29,'Request Filled by ILL',0,1,'This e-mail is to let you know the status of your recent request for an item that you did not find in our catalog. Our Interlibrary Loan Department is set to borrow this item from another library.',0,NULL,-1),(30,'Ineligible ILL',0,1,'This e-mail is to let you know the status of your recent request for an item that you did not find in our catalog. Your library account is not eligible for interlibrary loan at this time.',0,NULL,-1),(31,'Not enough info - please contact Collection Development to clarify',0,1,'This e-mail is to let you know the status of your recent request for an item that you did not find in our catalog. We need more specific information in order to locate the exact item you need. Please re-submit your request with more details.',1,NULL,-1),(32,'Unable to acquire the item - out of print',0,1,'This e-mail is to let you know the status of your recent request for an item that you did not find in our catalog. We regret that we are unable to acquire the item you requested. This item is out of print.',0,NULL,-1),(33,'Unable to acquire the item - not available in the US',0,1,'This e-mail is to let you know the status of your recent request for an item that you did not find in our catalog. We regret that we are unable to acquire the item you requested. This item is not available in the US.',0,NULL,-1),(34,'Unable to acquire the item - not available from vendor',0,1,'This e-mail is to let you know the status of your recent request for an item that you did not find in our catalog. We regret that we are unable to acquire the item you requested. This item is not available from a preferred vendor.',0,NULL,-1),(35,'Unable to acquire the item - not published',0,1,'This e-mail is to let you know the status of your recent request for an item that you did not find in our catalog. The item you requested has not yet been published. Please check our catalog when the publication date draws near.',0,NULL,-1),(36,'Unable to acquire the item - price',0,1,'This e-mail is to let you know the status of your recent request for an item that you did not find in our catalog. We regret that we are unable to acquire the item you requested. This item does not fit our collection guidelines.',0,NULL,-1),(37,'Unable to acquire the item - publication date',0,1,'This e-mail is to let you know the status of your recent request for an item that you did not find in our catalog. We regret that we are unable to acquire the item you requested. This item does not fit our collection guidelines.',0,NULL,-1),(38,'Unavailable',0,1,'This e-mail is to let you know the status of your recent request for an item that you did not find in our catalog. The item you requested cannot be purchased at this time from any of our regular suppliers and is not available from any of our lending libraries.',0,NULL,-1),(39,'Cancelled by Patron',0,0,'',0,1,-1),(40,'Cancelled - Duplicate Request',0,0,'',0,NULL,-1);
+INSERT INTO `materials_request_status` VALUES (1,'Request Pending',1,0,'',1,0,-1),(2,'Already owned/On order',0,1,'This e-mail is to let you know the status of your recent request for an item that you did not find in our catalog. The Library already owns this item or it is already on order. Please access our catalog to place this item on hold.  Please check our online catalog periodically to put a hold for this item.',0,0,-1),(3,'Item purchased',0,1,'This e-mail is to let you know the status of your recent request for an item that you did not find in our catalog. Outcome: The library is purchasing the item you requested. Please check our online catalog periodically to put yourself on hold for this item. We anticipate that this item will be available soon for you to place a hold.',0,0,-1),(4,'Referred to Collection Development - Adult',0,0,'',1,0,-1),(5,'Referred to Collection Development - J/YA',0,0,'',1,0,-1),(6,'Referred to Collection Development - AV',0,0,'',1,0,-1),(7,'ILL Under Review',0,0,'',1,0,-1),(8,'Request Referred to ILL',0,1,'This e-mail is to let you know the status of your recent request for an item that you did not find in our catalog. The library\'s Interlibrary loan department is reviewing your request. We will attempt to borrow this item from another system. This process generally takes about 2 - 6 weeks.',1,0,-1),(9,'Request Filled by ILL',0,1,'This e-mail is to let you know the status of your recent request for an item that you did not find in our catalog. Our Interlibrary Loan Department is set to borrow this item from another library.',0,0,-1),(10,'Ineligible ILL',0,1,'This e-mail is to let you know the status of your recent request for an item that you did not find in our catalog. Your library account is not eligible for interlibrary loan at this time.',0,0,-1),(11,'Not enough info - please contact Collection Development to clarify',0,1,'This e-mail is to let you know the status of your recent request for an item that you did not find in our catalog. We need more specific information in order to locate the exact item you need. Please re-submit your request with more details.',1,0,-1),(12,'Unable to acquire the item - out of print',0,1,'This e-mail is to let you know the status of your recent request for an item that you did not find in our catalog. We regret that we are unable to acquire the item you requested. This item is out of print.',0,0,-1),(13,'Unable to acquire the item - not available in the US',0,1,'This e-mail is to let you know the status of your recent request for an item that you did not find in our catalog. We regret that we are unable to acquire the item you requested. This item is not available in the US.',0,0,-1),(14,'Unable to acquire the item - not available from vendor',0,1,'This e-mail is to let you know the status of your recent request for an item that you did not find in our catalog. We regret that we are unable to acquire the item you requested. This item is not available from a preferred vendor.',0,0,-1),(15,'Unable to acquire the item - not published',0,1,'This e-mail is to let you know the status of your recent request for an item that you did not find in our catalog. The item you requested has not yet been published. Please check our catalog when the publication date draws near.',0,0,-1),(16,'Unable to acquire the item - price',0,1,'This e-mail is to let you know the status of your recent request for an item that you did not find in our catalog. We regret that we are unable to acquire the item you requested. This item does not fit our collection guidelines.',0,0,-1),(17,'Unable to acquire the item - publication date',0,1,'This e-mail is to let you know the status of your recent request for an item that you did not find in our catalog. We regret that we are unable to acquire the item you requested. This item does not fit our collection guidelines.',0,0,-1),(18,'Unavailable',0,1,'This e-mail is to let you know the status of your recent request for an item that you did not find in our catalog. The item you requested cannot be purchased at this time from any of our regular suppliers and is not available from any of our lending libraries.',0,0,-1),(19,'Cancelled by Patron',0,0,'',0,1,-1),(20,'Cancelled - Duplicate Request',0,0,'',0,0,-1);
 /*!40000 ALTER TABLE `materials_request_status` ENABLE KEYS */;
 
 --
@@ -2686,7 +2687,7 @@ INSERT INTO `materials_request_status` VALUES (1,'Request Pending',1,0,'',1,0,-1
 
 DROP TABLE IF EXISTS `merged_grouped_works`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `merged_grouped_works` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `sourceGroupedWorkId` char(36) NOT NULL,
@@ -2694,7 +2695,7 @@ CREATE TABLE `merged_grouped_works` (
   `notes` varchar(250) NOT NULL DEFAULT '',
   PRIMARY KEY (`id`),
   UNIQUE KEY `sourceGroupedWorkId` (`sourceGroupedWorkId`,`destinationGroupedWorkId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2710,7 +2711,7 @@ CREATE TABLE `merged_grouped_works` (
 
 DROP TABLE IF EXISTS `millennium_cache`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `millennium_cache` (
   `recordId` varchar(20) NOT NULL COMMENT 'The recordId being checked',
   `scope` int(16) NOT NULL COMMENT 'The scope that was loaded',
@@ -2718,7 +2719,7 @@ CREATE TABLE `millennium_cache` (
   `framesetInfo` longtext NOT NULL COMMENT 'Raw HTML returned from Millennium on the frameset page',
   `cacheDate` int(16) NOT NULL COMMENT 'When the entry was recorded in the cache',
   PRIMARY KEY (`recordId`,`scope`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Caches information from Millennium so we do not have to cont';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='Caches information from Millennium so we do not have to cont';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2734,7 +2735,7 @@ CREATE TABLE `millennium_cache` (
 
 DROP TABLE IF EXISTS `modules`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `modules` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(50) NOT NULL,
@@ -2744,7 +2745,7 @@ CREATE TABLE `modules` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`),
   KEY `enabled` (`enabled`)
-) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2761,14 +2762,14 @@ INSERT INTO `modules` VALUES (1,'Koha',0,'grouped_works','koha_export'),(2,'CARL
 
 DROP TABLE IF EXISTS `non_holdable_locations`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `non_holdable_locations` (
   `locationId` int(11) NOT NULL AUTO_INCREMENT COMMENT 'A unique id for the non holdable location',
   `millenniumCode` varchar(5) NOT NULL COMMENT 'The internal 5 letter code within Millennium',
   `holdingDisplay` varchar(30) NOT NULL COMMENT 'The text displayed in the holdings list within Millennium',
   `availableAtCircDesk` tinyint(4) NOT NULL COMMENT 'The item is available if the patron visits the circulation desk.',
   PRIMARY KEY (`locationId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2784,7 +2785,7 @@ CREATE TABLE `non_holdable_locations` (
 
 DROP TABLE IF EXISTS `nongrouped_records`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `nongrouped_records` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `source` varchar(50) NOT NULL,
@@ -2792,7 +2793,7 @@ CREATE TABLE `nongrouped_records` (
   `notes` varchar(255) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `source` (`source`,`recordId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2808,7 +2809,7 @@ CREATE TABLE `nongrouped_records` (
 
 DROP TABLE IF EXISTS `novelist_data`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `novelist_data` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `groupedRecordPermanentId` varchar(36) DEFAULT NULL,
@@ -2824,7 +2825,7 @@ CREATE TABLE `novelist_data` (
   KEY `groupedRecordPermanentId` (`groupedRecordPermanentId`),
   KEY `primaryISBN` (`primaryISBN`),
   KEY `series` (`seriesTitle`,`volume`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2840,7 +2841,7 @@ CREATE TABLE `novelist_data` (
 
 DROP TABLE IF EXISTS `obituary`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `obituary` (
   `obituaryId` int(11) NOT NULL AUTO_INCREMENT,
   `personId` int(11) NOT NULL COMMENT 'The person this obituary is for',
@@ -2850,7 +2851,7 @@ CREATE TABLE `obituary` (
   `contents` mediumtext,
   `picture` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`obituaryId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Information about an obituary for a person';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='Information about an obituary for a person';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2866,7 +2867,7 @@ CREATE TABLE `obituary` (
 
 DROP TABLE IF EXISTS `offline_circulation`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `offline_circulation` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `timeEntered` int(11) NOT NULL,
@@ -2890,7 +2891,7 @@ CREATE TABLE `offline_circulation` (
   KEY `initials` (`initials`),
   KEY `type` (`type`),
   KEY `status` (`status`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2906,7 +2907,7 @@ CREATE TABLE `offline_circulation` (
 
 DROP TABLE IF EXISTS `offline_hold`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `offline_hold` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `timeEntered` int(11) NOT NULL,
@@ -2925,7 +2926,7 @@ CREATE TABLE `offline_hold` (
   KEY `patronId` (`patronId`),
   KEY `bibId` (`bibId`),
   KEY `status` (`status`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2941,7 +2942,7 @@ CREATE TABLE `offline_hold` (
 
 DROP TABLE IF EXISTS `open_archives_collection`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `open_archives_collection` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(100) NOT NULL,
@@ -2953,7 +2954,7 @@ CREATE TABLE `open_archives_collection` (
   `subjects` mediumtext,
   `loadOneMonthAtATime` tinyint(1) DEFAULT '1',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2969,7 +2970,7 @@ CREATE TABLE `open_archives_collection` (
 
 DROP TABLE IF EXISTS `open_archives_export_log`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `open_archives_export_log` (
   `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'The id of log',
   `startTime` int(11) NOT NULL COMMENT 'The timestamp when the run started',
@@ -2984,7 +2985,7 @@ CREATE TABLE `open_archives_export_log` (
   `numUpdated` int(11) DEFAULT '0',
   `numSkipped` int(11) DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -3000,14 +3001,14 @@ CREATE TABLE `open_archives_export_log` (
 
 DROP TABLE IF EXISTS `open_archives_record`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `open_archives_record` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `sourceCollection` int(11) NOT NULL,
   `permanentUrl` varchar(512) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `sourceCollection` (`sourceCollection`,`permanentUrl`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -3023,7 +3024,7 @@ CREATE TABLE `open_archives_record` (
 
 DROP TABLE IF EXISTS `open_archives_record_usage`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `open_archives_record_usage` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `openArchivesRecordId` int(11) DEFAULT NULL,
@@ -3033,7 +3034,7 @@ CREATE TABLE `open_archives_record_usage` (
   `month` int(2) NOT NULL DEFAULT '4',
   PRIMARY KEY (`id`),
   KEY `openArchivesRecordId` (`openArchivesRecordId`,`year`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -3049,7 +3050,7 @@ CREATE TABLE `open_archives_record_usage` (
 
 DROP TABLE IF EXISTS `overdrive_account_cache`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `overdrive_account_cache` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `userId` int(11) DEFAULT NULL,
@@ -3060,7 +3061,7 @@ CREATE TABLE `overdrive_account_cache` (
   `wishlistPage` longtext,
   `wishlistPageLastLoaded` int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='A cache to store information about a user''s account within OverDrive.';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='A cache to store information about a user''s account within OverDrive.';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -3076,7 +3077,7 @@ CREATE TABLE `overdrive_account_cache` (
 
 DROP TABLE IF EXISTS `overdrive_api_product_availability`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `overdrive_api_product_availability` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `productId` int(11) DEFAULT NULL,
@@ -3091,7 +3092,7 @@ CREATE TABLE `overdrive_api_product_availability` (
   UNIQUE KEY `productId_2` (`productId`,`libraryId`),
   KEY `productId` (`productId`),
   KEY `libraryId` (`libraryId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -3107,7 +3108,7 @@ CREATE TABLE `overdrive_api_product_availability` (
 
 DROP TABLE IF EXISTS `overdrive_api_product_formats`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `overdrive_api_product_formats` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `productId` int(11) DEFAULT NULL,
@@ -3125,7 +3126,7 @@ CREATE TABLE `overdrive_api_product_formats` (
   UNIQUE KEY `productId_2` (`productId`,`textId`),
   KEY `productId` (`productId`),
   KEY `numericId` (`numericId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -3141,7 +3142,7 @@ CREATE TABLE `overdrive_api_product_formats` (
 
 DROP TABLE IF EXISTS `overdrive_api_product_identifiers`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `overdrive_api_product_identifiers` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `productId` int(11) DEFAULT NULL,
@@ -3150,7 +3151,7 @@ CREATE TABLE `overdrive_api_product_identifiers` (
   PRIMARY KEY (`id`),
   KEY `productId` (`productId`),
   KEY `type` (`type`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -3166,7 +3167,7 @@ CREATE TABLE `overdrive_api_product_identifiers` (
 
 DROP TABLE IF EXISTS `overdrive_api_product_metadata`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `overdrive_api_product_metadata` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `productId` int(11) DEFAULT NULL,
@@ -3186,7 +3187,7 @@ CREATE TABLE `overdrive_api_product_metadata` (
   `isOwnedByCollections` tinyint(1) DEFAULT '1',
   PRIMARY KEY (`id`),
   UNIQUE KEY `productId` (`productId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -3202,7 +3203,7 @@ CREATE TABLE `overdrive_api_product_metadata` (
 
 DROP TABLE IF EXISTS `overdrive_api_products`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `overdrive_api_products` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `overdriveId` varchar(36) NOT NULL,
@@ -3228,7 +3229,7 @@ CREATE TABLE `overdrive_api_products` (
   KEY `lastMetadataCheck` (`lastMetadataCheck`),
   KEY `lastAvailabilityCheck` (`lastAvailabilityCheck`),
   KEY `deleted` (`deleted`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -3244,7 +3245,7 @@ CREATE TABLE `overdrive_api_products` (
 
 DROP TABLE IF EXISTS `overdrive_extract_log`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `overdrive_extract_log` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `startTime` int(11) DEFAULT NULL,
@@ -3260,7 +3261,7 @@ CREATE TABLE `overdrive_extract_log` (
   `numMetadataChanges` int(11) DEFAULT '0',
   `notes` text,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -3276,7 +3277,7 @@ CREATE TABLE `overdrive_extract_log` (
 
 DROP TABLE IF EXISTS `overdrive_record_usage`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `overdrive_record_usage` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `overdriveId` varchar(36) DEFAULT NULL,
@@ -3287,7 +3288,7 @@ CREATE TABLE `overdrive_record_usage` (
   PRIMARY KEY (`id`),
   KEY `overdriveId` (`overdriveId`,`year`,`month`),
   KEY `year` (`year`,`month`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -3303,7 +3304,7 @@ CREATE TABLE `overdrive_record_usage` (
 
 DROP TABLE IF EXISTS `overdrive_settings`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `overdrive_settings` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `url` varchar(255) DEFAULT NULL,
@@ -3317,7 +3318,7 @@ CREATE TABLE `overdrive_settings` (
   `lastUpdateOfChangedRecords` int(11) DEFAULT '0',
   `lastUpdateOfAllRecords` int(11) DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -3333,7 +3334,7 @@ CREATE TABLE `overdrive_settings` (
 
 DROP TABLE IF EXISTS `person`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `person` (
   `personId` int(11) NOT NULL AUTO_INCREMENT,
   `firstName` varchar(100) DEFAULT NULL,
@@ -3371,7 +3372,7 @@ CREATE TABLE `person` (
   `privateComments` text,
   `importedFrom` varchar(50) DEFAULT NULL,
   PRIMARY KEY (`personId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Stores information about a particular person for use in genealogy';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='Stores information about a particular person for use in genealogy';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -3387,7 +3388,7 @@ CREATE TABLE `person` (
 
 DROP TABLE IF EXISTS `ptype`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `ptype` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `pType` varchar(20) NOT NULL,
@@ -3395,7 +3396,7 @@ CREATE TABLE `ptype` (
   `masquerade` varchar(45) NOT NULL DEFAULT 'none',
   PRIMARY KEY (`id`),
   UNIQUE KEY `pType` (`pType`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -3411,14 +3412,14 @@ CREATE TABLE `ptype` (
 
 DROP TABLE IF EXISTS `ptype_restricted_locations`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `ptype_restricted_locations` (
   `locationId` int(11) NOT NULL AUTO_INCREMENT COMMENT 'A unique id for the non holdable location',
   `millenniumCode` varchar(5) NOT NULL COMMENT 'The internal 5 letter code within Millennium',
   `holdingDisplay` varchar(30) NOT NULL COMMENT 'The text displayed in the holdings list within Millennium can use regular expression syntax to match multiple locations',
   `allowablePtypes` varchar(50) NOT NULL COMMENT 'A list of PTypes that are allowed to place holds on items with this location separated with pipes (|).',
   PRIMARY KEY (`locationId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -3434,7 +3435,7 @@ CREATE TABLE `ptype_restricted_locations` (
 
 DROP TABLE IF EXISTS `rbdigital_availability`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `rbdigital_availability` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `rbdigitalId` varchar(25) NOT NULL,
@@ -3447,7 +3448,7 @@ CREATE TABLE `rbdigital_availability` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `rbdigitalId` (`rbdigitalId`),
   KEY `lastChange` (`lastChange`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -3463,7 +3464,7 @@ CREATE TABLE `rbdigital_availability` (
 
 DROP TABLE IF EXISTS `rbdigital_export_log`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `rbdigital_export_log` (
   `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'The id of log',
   `startTime` int(11) NOT NULL COMMENT 'The timestamp when the run started',
@@ -3478,7 +3479,7 @@ CREATE TABLE `rbdigital_export_log` (
   `numAvailabilityChanges` int(11) DEFAULT '0',
   `numMetadataChanges` int(11) DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -3494,7 +3495,7 @@ CREATE TABLE `rbdigital_export_log` (
 
 DROP TABLE IF EXISTS `rbdigital_magazine`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `rbdigital_magazine` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `magazineId` varchar(25) NOT NULL,
@@ -3511,7 +3512,7 @@ CREATE TABLE `rbdigital_magazine` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `magazineId` (`magazineId`,`issueId`),
   KEY `lastChange` (`lastChange`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -3527,7 +3528,7 @@ CREATE TABLE `rbdigital_magazine` (
 
 DROP TABLE IF EXISTS `rbdigital_magazine_usage`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `rbdigital_magazine_usage` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `magazineId` int(11) DEFAULT NULL,
@@ -3537,7 +3538,7 @@ CREATE TABLE `rbdigital_magazine_usage` (
   PRIMARY KEY (`id`),
   KEY `magazineId` (`magazineId`,`year`,`month`),
   KEY `year` (`year`,`month`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -3553,7 +3554,7 @@ CREATE TABLE `rbdigital_magazine_usage` (
 
 DROP TABLE IF EXISTS `rbdigital_record_usage`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `rbdigital_record_usage` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `rbdigitalId` int(11) DEFAULT NULL,
@@ -3564,7 +3565,7 @@ CREATE TABLE `rbdigital_record_usage` (
   PRIMARY KEY (`id`),
   KEY `rbdigitalId` (`rbdigitalId`,`year`,`month`),
   KEY `year` (`year`,`month`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -3580,7 +3581,7 @@ CREATE TABLE `rbdigital_record_usage` (
 
 DROP TABLE IF EXISTS `rbdigital_scopes`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `rbdigital_scopes` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(50) NOT NULL,
@@ -3589,7 +3590,7 @@ CREATE TABLE `rbdigital_scopes` (
   `includeEMagazines` tinyint(4) DEFAULT '1',
   `restrictToChildrensMaterial` tinyint(4) DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -3605,7 +3606,7 @@ CREATE TABLE `rbdigital_scopes` (
 
 DROP TABLE IF EXISTS `rbdigital_settings`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `rbdigital_settings` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `apiUrl` varchar(255) DEFAULT NULL,
@@ -3616,7 +3617,7 @@ CREATE TABLE `rbdigital_settings` (
   `lastUpdateOfChangedRecords` int(11) DEFAULT '0',
   `lastUpdateOfAllRecords` int(11) DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -3632,7 +3633,7 @@ CREATE TABLE `rbdigital_settings` (
 
 DROP TABLE IF EXISTS `rbdigital_title`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `rbdigital_title` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `rbdigitalId` varchar(25) NOT NULL,
@@ -3650,7 +3651,7 @@ CREATE TABLE `rbdigital_title` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `rbdigitalId` (`rbdigitalId`),
   KEY `lastChange` (`lastChange`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -3666,7 +3667,7 @@ CREATE TABLE `rbdigital_title` (
 
 DROP TABLE IF EXISTS `record_grouping_log`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `record_grouping_log` (
   `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'The id of log',
   `startTime` int(11) NOT NULL COMMENT 'The timestamp when the run started',
@@ -3674,7 +3675,7 @@ CREATE TABLE `record_grouping_log` (
   `lastUpdate` int(11) DEFAULT NULL COMMENT 'The timestamp when the run last updated (to check for stuck processes)',
   `notes` text COMMENT 'Additional information about the run includes stats per source',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -3690,7 +3691,7 @@ CREATE TABLE `record_grouping_log` (
 
 DROP TABLE IF EXISTS `redwood_user_contribution`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `redwood_user_contribution` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `userId` int(11) NOT NULL,
@@ -3709,7 +3710,7 @@ CREATE TABLE `redwood_user_contribution` (
   `dateContributed` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `userId` (`userId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -3725,7 +3726,7 @@ CREATE TABLE `redwood_user_contribution` (
 
 DROP TABLE IF EXISTS `reindex_log`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `reindex_log` (
   `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'The id of reindex log',
   `startTime` int(11) NOT NULL COMMENT 'The timestamp when the reindex started',
@@ -3735,7 +3736,7 @@ CREATE TABLE `reindex_log` (
   `numWorksProcessed` int(11) NOT NULL DEFAULT '0',
   `numListsProcessed` int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -3751,13 +3752,13 @@ CREATE TABLE `reindex_log` (
 
 DROP TABLE IF EXISTS `roles`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `roles` (
   `roleId` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(50) NOT NULL COMMENT 'The internal name of the role',
   `description` varchar(100) NOT NULL COMMENT 'A description of what the role allows',
   PRIMARY KEY (`roleId`)
-) ENGINE=InnoDB AUTO_INCREMENT=32 DEFAULT CHARSET=utf8 COMMENT='A role identifying what the user can do.';
+) ENGINE=InnoDB AUTO_INCREMENT=32 DEFAULT CHARSET=utf8mb4 COMMENT='A role identifying what the user can do.';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -3774,7 +3775,7 @@ INSERT INTO `roles` VALUES (1,'userAdmin','Allows administration of users.'),(2,
 
 DROP TABLE IF EXISTS `search`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `search` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `user_id` int(11) NOT NULL DEFAULT '0',
@@ -3790,7 +3791,7 @@ CREATE TABLE `search` (
   KEY `user_id` (`user_id`),
   KEY `folder_id` (`folder_id`),
   KEY `session_id` (`session_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -3806,7 +3807,7 @@ CREATE TABLE `search` (
 
 DROP TABLE IF EXISTS `search_stats_new`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `search_stats_new` (
   `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'The unique id of the search statistic',
   `phrase` varchar(500) NOT NULL COMMENT 'The phrase being searched for',
@@ -3816,7 +3817,7 @@ CREATE TABLE `search_stats_new` (
   KEY `numSearches` (`numSearches`),
   KEY `lastSearch` (`lastSearch`),
   FULLTEXT KEY `phrase_text` (`phrase`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Statistical information about searches for use in reporting ';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='Statistical information about searches for use in reporting ';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -3832,14 +3833,14 @@ CREATE TABLE `search_stats_new` (
 
 DROP TABLE IF EXISTS `sendgrid_settings`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `sendgrid_settings` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `fromAddress` varchar(255) DEFAULT NULL,
   `replyToAddress` varchar(255) DEFAULT NULL,
   `apiKey` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -3855,7 +3856,7 @@ CREATE TABLE `sendgrid_settings` (
 
 DROP TABLE IF EXISTS `session`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `session` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `session_id` varchar(128) DEFAULT NULL,
@@ -3866,7 +3867,7 @@ CREATE TABLE `session` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `session_id` (`session_id`),
   KEY `last_used` (`last_used`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -3883,7 +3884,7 @@ INSERT INTO `session` VALUES (3,'6r6u8fsbnb9j2feqovmgkrj52i','activeUserId|s:1:\
 
 DROP TABLE IF EXISTS `sideload_log`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `sideload_log` (
   `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'The id of log',
   `startTime` int(11) NOT NULL COMMENT 'The timestamp when the run started',
@@ -3899,7 +3900,7 @@ CREATE TABLE `sideload_log` (
   `numUpdated` int(11) DEFAULT '0',
   `numSkipped` int(11) DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -3915,7 +3916,7 @@ CREATE TABLE `sideload_log` (
 
 DROP TABLE IF EXISTS `sideload_record_usage`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `sideload_record_usage` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `sideloadId` int(11) NOT NULL,
@@ -3926,7 +3927,7 @@ CREATE TABLE `sideload_record_usage` (
   PRIMARY KEY (`id`),
   KEY `sideloadId` (`sideloadId`,`year`,`month`),
   KEY `year` (`year`,`month`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -3942,14 +3943,14 @@ CREATE TABLE `sideload_record_usage` (
 
 DROP TABLE IF EXISTS `sideload_scopes`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `sideload_scopes` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(50) NOT NULL,
   `sideLoadId` int(11) NOT NULL,
   `restrictToChildrensMaterial` tinyint(4) DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -3965,7 +3966,7 @@ CREATE TABLE `sideload_scopes` (
 
 DROP TABLE IF EXISTS `sideloads`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `sideloads` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(50) NOT NULL,
@@ -3998,7 +3999,7 @@ CREATE TABLE `sideloads` (
   `lastUpdateOfAllRecords` int(11) DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -4014,7 +4015,7 @@ CREATE TABLE `sideloads` (
 
 DROP TABLE IF EXISTS `sierra_api_export_log`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `sierra_api_export_log` (
   `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'The id of log',
   `startTime` int(11) NOT NULL COMMENT 'The timestamp when the run started',
@@ -4026,7 +4027,7 @@ CREATE TABLE `sierra_api_export_log` (
   `numErrors` int(11) DEFAULT NULL,
   `numRemainingRecords` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -4042,7 +4043,7 @@ CREATE TABLE `sierra_api_export_log` (
 
 DROP TABLE IF EXISTS `sierra_export_field_mapping`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `sierra_export_field_mapping` (
   `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'The id of field mapping',
   `indexingProfileId` int(11) NOT NULL COMMENT 'The indexing profile this field mapping is associated with',
@@ -4057,7 +4058,7 @@ CREATE TABLE `sierra_export_field_mapping` (
   `urlExportFieldTag` char(1) DEFAULT NULL,
   `eContentExportFieldTag` char(1) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -4073,7 +4074,7 @@ CREATE TABLE `sierra_export_field_mapping` (
 
 DROP TABLE IF EXISTS `slow_ajax_request`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `slow_ajax_request` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `year` int(4) NOT NULL,
@@ -4088,7 +4089,7 @@ CREATE TABLE `slow_ajax_request` (
   `timesVerySlow` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `year` (`year`,`month`,`module`,`action`,`method`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -4105,7 +4106,7 @@ INSERT INTO `slow_ajax_request` VALUES (1,2019,11,'MyAccount','AJAX','getMenuDat
 
 DROP TABLE IF EXISTS `slow_page`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `slow_page` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `year` int(4) NOT NULL,
@@ -4119,7 +4120,7 @@ CREATE TABLE `slow_page` (
   `timesVerySlow` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `year` (`year`,`month`,`module`,`action`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -4136,7 +4137,7 @@ INSERT INTO `slow_page` VALUES (1,2019,11,'Admin','DBMaintenance',0,1,NULL,NULL,
 
 DROP TABLE IF EXISTS `status_map_values`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `status_map_values` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `indexingProfileId` int(11) NOT NULL,
@@ -4146,7 +4147,7 @@ CREATE TABLE `status_map_values` (
   `suppress` tinyint(1) DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `indexingProfileId` (`indexingProfileId`,`value`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -4162,7 +4163,7 @@ CREATE TABLE `status_map_values` (
 
 DROP TABLE IF EXISTS `syndetics_data`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `syndetics_data` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `groupedRecordPermanentId` varchar(36) DEFAULT NULL,
@@ -4176,7 +4177,7 @@ CREATE TABLE `syndetics_data` (
   `lastExcerptUpdate` int(11) DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `groupedRecordPermanentId` (`groupedRecordPermanentId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -4192,7 +4193,7 @@ CREATE TABLE `syndetics_data` (
 
 DROP TABLE IF EXISTS `themes`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `themes` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `themeName` varchar(100) NOT NULL,
@@ -4236,7 +4237,7 @@ CREATE TABLE `themes` (
   `bodyFontDefault` tinyint(1) DEFAULT '1',
   PRIMARY KEY (`id`),
   KEY `themeName` (`themeName`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -4253,7 +4254,7 @@ INSERT INTO `themes` VALUES (1,'default','','logoNameTL_Logo_final.png','#f1f1f1
 
 DROP TABLE IF EXISTS `time_to_reshelve`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `time_to_reshelve` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `indexingProfileId` int(11) NOT NULL,
@@ -4264,7 +4265,7 @@ CREATE TABLE `time_to_reshelve` (
   `weight` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   KEY `indexingProfileId` (`indexingProfileId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -4280,7 +4281,7 @@ CREATE TABLE `time_to_reshelve` (
 
 DROP TABLE IF EXISTS `title_authorities`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `title_authorities` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `originalName` varchar(255) NOT NULL,
@@ -4288,7 +4289,7 @@ CREATE TABLE `title_authorities` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `originalName` (`originalName`),
   KEY `authoritativeName` (`authoritativeName`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -4304,7 +4305,7 @@ CREATE TABLE `title_authorities` (
 
 DROP TABLE IF EXISTS `translation_map_values`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `translation_map_values` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `translationMapId` int(11) NOT NULL,
@@ -4312,7 +4313,7 @@ CREATE TABLE `translation_map_values` (
   `translation` varchar(255) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `translationMapId` (`translationMapId`,`value`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -4328,7 +4329,7 @@ CREATE TABLE `translation_map_values` (
 
 DROP TABLE IF EXISTS `translation_maps`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `translation_maps` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `indexingProfileId` int(11) NOT NULL,
@@ -4336,7 +4337,7 @@ CREATE TABLE `translation_maps` (
   `usesRegularExpressions` tinyint(1) DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `profileName` (`indexingProfileId`,`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -4352,7 +4353,7 @@ CREATE TABLE `translation_maps` (
 
 DROP TABLE IF EXISTS `translation_terms`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `translation_terms` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `term` varchar(50) NOT NULL,
@@ -4361,7 +4362,7 @@ CREATE TABLE `translation_terms` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `term` (`term`),
   KEY `url` (`samplePageUrl`)
-) ENGINE=InnoDB AUTO_INCREMENT=94 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=94 DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -4378,7 +4379,7 @@ INSERT INTO `translation_terms` VALUES (1,'Database Maintenance',NULL,'/Admin/DB
 
 DROP TABLE IF EXISTS `translations`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `translations` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `termId` int(11) NOT NULL,
@@ -4388,7 +4389,7 @@ CREATE TABLE `translations` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `term_language` (`termId`,`languageId`),
   KEY `translation_status` (`languageId`,`translated`)
-) ENGINE=InnoDB AUTO_INCREMENT=101 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=101 DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -4405,7 +4406,7 @@ INSERT INTO `translations` VALUES (1,83,1,'An Error has occurred',1),(2,2,1,'My 
 
 DROP TABLE IF EXISTS `usage_tracking`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `usage_tracking` (
   `usageId` int(11) NOT NULL AUTO_INCREMENT,
   `ipId` int(11) NOT NULL,
@@ -4433,7 +4434,7 @@ CREATE TABLE `usage_tracking` (
 
 DROP TABLE IF EXISTS `user`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `user` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `username` varchar(30) NOT NULL DEFAULT '',
@@ -4474,7 +4475,7 @@ CREATE TABLE `user` (
   `hooplaCheckOutConfirmation` tinyint(1) unsigned NOT NULL DEFAULT '1',
   PRIMARY KEY (`id`),
   UNIQUE KEY `username` (`source`,`username`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -4491,7 +4492,7 @@ INSERT INTO `user` VALUES (0,'nyt_user','nyt_password','New York Times','The New
 
 DROP TABLE IF EXISTS `user_cloud_library_usage`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `user_cloud_library_usage` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `userId` int(11) NOT NULL,
@@ -4501,7 +4502,7 @@ CREATE TABLE `user_cloud_library_usage` (
   PRIMARY KEY (`id`),
   KEY `userId` (`userId`,`year`,`month`),
   KEY `year` (`year`,`month`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -4517,7 +4518,7 @@ CREATE TABLE `user_cloud_library_usage` (
 
 DROP TABLE IF EXISTS `user_hoopla_usage`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `user_hoopla_usage` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `userId` int(11) NOT NULL,
@@ -4527,7 +4528,7 @@ CREATE TABLE `user_hoopla_usage` (
   PRIMARY KEY (`id`),
   KEY `userId` (`userId`,`year`,`month`),
   KEY `year` (`year`,`month`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -4543,7 +4544,7 @@ CREATE TABLE `user_hoopla_usage` (
 
 DROP TABLE IF EXISTS `user_ils_usage`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `user_ils_usage` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `userId` int(11) NOT NULL,
@@ -4554,7 +4555,7 @@ CREATE TABLE `user_ils_usage` (
   PRIMARY KEY (`id`),
   KEY `userId` (`userId`,`indexingProfileId`,`year`,`month`),
   KEY `year` (`year`,`month`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -4570,7 +4571,7 @@ CREATE TABLE `user_ils_usage` (
 
 DROP TABLE IF EXISTS `user_link`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `user_link` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `primaryAccountId` int(11) NOT NULL,
@@ -4578,7 +4579,7 @@ CREATE TABLE `user_link` (
   `linkingDisabled` tinyint(1) DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `user_link` (`primaryAccountId`,`linkedAccountId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -4594,14 +4595,14 @@ CREATE TABLE `user_link` (
 
 DROP TABLE IF EXISTS `user_link_blocks`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `user_link_blocks` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `primaryAccountId` int(10) unsigned NOT NULL,
   `blockedLinkAccountId` int(10) unsigned DEFAULT NULL COMMENT 'A specific account primaryAccountId will not be linked to.',
   `blockLinking` tinyint(3) unsigned DEFAULT NULL COMMENT 'Indicates primaryAccountId will not be linked to any other accounts.',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -4617,7 +4618,7 @@ CREATE TABLE `user_link_blocks` (
 
 DROP TABLE IF EXISTS `user_list`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `user_list` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `user_id` int(11) NOT NULL,
@@ -4630,7 +4631,7 @@ CREATE TABLE `user_list` (
   `defaultSort` varchar(20) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `user_id` (`user_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -4646,7 +4647,7 @@ CREATE TABLE `user_list` (
 
 DROP TABLE IF EXISTS `user_list_entry`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `user_list_entry` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `groupedWorkPermanentId` varchar(36) DEFAULT NULL,
@@ -4657,7 +4658,7 @@ CREATE TABLE `user_list_entry` (
   PRIMARY KEY (`id`),
   KEY `groupedWorkPermanentId` (`groupedWorkPermanentId`),
   KEY `listId` (`listId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -4673,7 +4674,7 @@ CREATE TABLE `user_list_entry` (
 
 DROP TABLE IF EXISTS `user_messages`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `user_messages` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `userId` int(11) DEFAULT NULL,
@@ -4687,7 +4688,7 @@ CREATE TABLE `user_messages` (
   `action2Title` varchar(50) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `userId` (`userId`,`isDismissed`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -4703,7 +4704,7 @@ CREATE TABLE `user_messages` (
 
 DROP TABLE IF EXISTS `user_not_interested`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `user_not_interested` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `userId` int(11) NOT NULL,
@@ -4711,7 +4712,7 @@ CREATE TABLE `user_not_interested` (
   `groupedRecordPermanentId` varchar(36) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `userId` (`userId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -4727,7 +4728,7 @@ CREATE TABLE `user_not_interested` (
 
 DROP TABLE IF EXISTS `user_open_archives_usage`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `user_open_archives_usage` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `userId` int(11) NOT NULL,
@@ -4737,7 +4738,7 @@ CREATE TABLE `user_open_archives_usage` (
   `month` int(2) NOT NULL DEFAULT '4',
   PRIMARY KEY (`id`),
   KEY `openArchivesCollectionId` (`openArchivesCollectionId`,`year`,`userId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -4753,7 +4754,7 @@ CREATE TABLE `user_open_archives_usage` (
 
 DROP TABLE IF EXISTS `user_overdrive_usage`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `user_overdrive_usage` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `userId` int(11) NOT NULL,
@@ -4763,7 +4764,7 @@ CREATE TABLE `user_overdrive_usage` (
   PRIMARY KEY (`id`),
   KEY `userId` (`userId`,`year`,`month`),
   KEY `year` (`year`,`month`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -4779,7 +4780,7 @@ CREATE TABLE `user_overdrive_usage` (
 
 DROP TABLE IF EXISTS `user_payments`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `user_payments` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `userId` int(11) DEFAULT NULL,
@@ -4791,7 +4792,7 @@ CREATE TABLE `user_payments` (
   PRIMARY KEY (`id`),
   KEY `userId` (`userId`,`paymentType`,`completed`),
   KEY `paymentType` (`paymentType`,`orderId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -4807,7 +4808,7 @@ CREATE TABLE `user_payments` (
 
 DROP TABLE IF EXISTS `user_rbdigital_usage`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `user_rbdigital_usage` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `userId` int(11) NOT NULL,
@@ -4817,7 +4818,7 @@ CREATE TABLE `user_rbdigital_usage` (
   PRIMARY KEY (`id`),
   KEY `userId` (`userId`,`year`,`month`),
   KEY `year` (`year`,`month`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -4833,7 +4834,7 @@ CREATE TABLE `user_rbdigital_usage` (
 
 DROP TABLE IF EXISTS `user_reading_history_work`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `user_reading_history_work` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `userId` int(11) NOT NULL COMMENT 'The id of the user who checked out the item',
@@ -4852,7 +4853,7 @@ CREATE TABLE `user_reading_history_work` (
   KEY `userId_3` (`userId`,`title`),
   KEY `userId_4` (`userId`,`author`),
   KEY `sourceId` (`sourceId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='The reading history for patrons';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='The reading history for patrons';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -4868,12 +4869,12 @@ CREATE TABLE `user_reading_history_work` (
 
 DROP TABLE IF EXISTS `user_roles`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `user_roles` (
   `userId` int(11) NOT NULL,
   `roleId` int(11) NOT NULL,
   PRIMARY KEY (`userId`,`roleId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Links users with roles so users can perform administration f';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='Links users with roles so users can perform administration f';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -4890,7 +4891,7 @@ INSERT INTO `user_roles` VALUES (1,1),(1,2);
 
 DROP TABLE IF EXISTS `user_sideload_usage`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `user_sideload_usage` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `userId` int(11) NOT NULL,
@@ -4901,7 +4902,7 @@ CREATE TABLE `user_sideload_usage` (
   PRIMARY KEY (`id`),
   KEY `userId` (`userId`,`sideloadId`,`year`,`month`),
   KEY `year` (`year`,`month`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -4917,7 +4918,7 @@ CREATE TABLE `user_sideload_usage` (
 
 DROP TABLE IF EXISTS `user_staff_settings`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `user_staff_settings` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `userId` int(10) unsigned NOT NULL,
@@ -4926,7 +4927,7 @@ CREATE TABLE `user_staff_settings` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `userId_UNIQUE` (`userId`),
   KEY `userId` (`userId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -4942,7 +4943,7 @@ CREATE TABLE `user_staff_settings` (
 
 DROP TABLE IF EXISTS `user_website_usage`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `user_website_usage` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `userId` int(11) NOT NULL,
@@ -4952,7 +4953,7 @@ CREATE TABLE `user_website_usage` (
   `usageCount` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `websiteId` (`websiteId`,`year`,`month`,`userId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -4968,7 +4969,7 @@ CREATE TABLE `user_website_usage` (
 
 DROP TABLE IF EXISTS `user_work_review`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `user_work_review` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `groupedRecordPermanentId` varchar(36) DEFAULT NULL,
@@ -4979,7 +4980,7 @@ CREATE TABLE `user_work_review` (
   PRIMARY KEY (`id`),
   KEY `groupedRecordPermanentId` (`groupedRecordPermanentId`),
   KEY `userId` (`userId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -4995,7 +4996,7 @@ CREATE TABLE `user_work_review` (
 
 DROP TABLE IF EXISTS `variables`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `variables` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(128) NOT NULL,
@@ -5004,7 +5005,7 @@ CREATE TABLE `variables` (
   UNIQUE KEY `name_2` (`name`),
   UNIQUE KEY `name_3` (`name`),
   KEY `name` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=142 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=142 DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -5021,7 +5022,7 @@ INSERT INTO `variables` VALUES (2,'validateChecksumsFromDisk','false'),(3,'offli
 
 DROP TABLE IF EXISTS `website_index_log`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `website_index_log` (
   `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'The id of log',
   `websiteName` varchar(255) NOT NULL,
@@ -5036,7 +5037,7 @@ CREATE TABLE `website_index_log` (
   `numErrors` int(11) DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `websiteName` (`websiteName`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -5052,7 +5053,7 @@ CREATE TABLE `website_index_log` (
 
 DROP TABLE IF EXISTS `website_indexing_settings`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `website_indexing_settings` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(75) NOT NULL,
@@ -5063,7 +5064,7 @@ CREATE TABLE `website_indexing_settings` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`),
   KEY `lastIndexed` (`lastIndexed`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -5079,7 +5080,7 @@ CREATE TABLE `website_indexing_settings` (
 
 DROP TABLE IF EXISTS `website_page_usage`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `website_page_usage` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `webPageId` int(11) DEFAULT NULL,
@@ -5089,7 +5090,7 @@ CREATE TABLE `website_page_usage` (
   `timesUsed` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   KEY `webPageId` (`webPageId`,`year`,`month`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -5105,7 +5106,7 @@ CREATE TABLE `website_page_usage` (
 
 DROP TABLE IF EXISTS `website_pages`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `website_pages` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `websiteId` int(11) NOT NULL,
@@ -5116,7 +5117,7 @@ CREATE TABLE `website_pages` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `url` (`url`),
   KEY `websiteId` (`websiteId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --

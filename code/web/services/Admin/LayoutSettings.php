@@ -7,21 +7,23 @@ require_once ROOT_DIR . '/sys/Theming/LayoutSetting.php';
 class Admin_LayoutSettings extends ObjectEditor
 {
 
-	function getObjectType(){
+	function getObjectType() : string{
 		return 'LayoutSetting';
 	}
-	function getToolName(){
+	function getToolName() : string{
 		return 'LayoutSettings';
 	}
-	function getPageTitle(){
+	function getPageTitle() : string{
 		return 'Layout Settings';
 	}
 	function canDelete(){
 		return UserAccount::userHasPermission('Administer All Layout Settings');
 	}
-	function getAllObjects(){
+	function getAllObjects($page, $recordsPerPage) : array{
 		$object = new LayoutSetting();
-		$object->orderBy('name');
+		$object->orderBy($this->getSort());
+		$this->applyFilters($object);
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		if (!UserAccount::userHasPermission('Administer All Layout Settings')){
 			$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
 			$object->id = $library->layoutSettingId;
@@ -33,17 +35,26 @@ class Admin_LayoutSettings extends ObjectEditor
 		}
 		return $list;
 	}
-	function getObjectStructure(){
+	function getDefaultSort() : string
+	{
+		return 'name asc';
+	}
+	function getObjectStructure() : array{
 		return LayoutSetting::getObjectStructure();
 	}
-	function getPrimaryKeyColumn(){
+	function getPrimaryKeyColumn() : string{
 		return 'id';
 	}
-	function getIdKeyColumn(){
+	function getIdKeyColumn() : string{
 		return 'id';
 	}
 
-	function getBreadcrumbs()
+	function getInitializationJs() : string
+	{
+		return 'return AspenDiscovery.Admin.updateLayoutSettingsFields();';
+	}
+
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
@@ -52,12 +63,12 @@ class Admin_LayoutSettings extends ObjectEditor
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return 'theme_and_layout';
 	}
 
-	function canView()
+	function canView() : bool
 	{
 		return UserAccount::userHasPermission(['Administer All Layout Settings','Administer Library Layout Settings']);
 	}

@@ -6,16 +6,8 @@
       <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
     </content>
     <orderEntry type="inheritedJdk" />
+    <orderEntry type="module" module-name="java_shared_libraries" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="module-library">
-      <library>
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/../java_shared_libraries/log4j-api-2.11.2.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
     <orderEntry type="module-library">
       <library>
         <CLASSES>
@@ -37,7 +29,7 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/../java_shared_libraries/commons-lang3-3.8.1.jar!/" />
+          <root url="jar://$MODULE_DIR$/../java_shared_libraries/log4j-api-2.11.2.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
@@ -88,8 +80,6 @@
         <SOURCES />
       </library>
     </orderEntry>
-    <orderEntry type="module" module-name="java_shared_libraries" />
-    <orderEntry type="module" module-name="marc4j" />
     <orderEntry type="module-library">
       <library>
         <CLASSES>
@@ -220,6 +210,15 @@
       <library>
         <CLASSES>
           <root url="jar://$MODULE_DIR$/../java_shared_libraries/jsch-0.1.55.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/../java_shared_libraries/commons-lang3-3.8.1.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />

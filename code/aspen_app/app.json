@@ -1,0 +1,41 @@
+{
+	"expo": {
+		"name": "Aspen Discovery Mobile",
+		"slug": "aspen-discovery-mobile",
+		"owner": "bywater-solutions",
+		"privacy": "public",
+		"platforms": ["ios", "android", "web"],
+		"version": "21.12.03",
+		"orientation": "portrait",
+		"icon": "./assets/aspenNoTransparency.png",
+		"splash": {
+			"image": "./assets/aspenLogo.png",
+			"resizeMode": "contain",
+			"backgroundColor": "#2f373a"
+		},
+		"updates": {
+			"fallbackToCacheTimeout": 0
+		},
+		"assetBundlePatterns": ["**/*"],
+		"ios": {
+			"buildNumber": "8",
+			"bundleIdentifier": "org.aspendiscovery.mobile",
+			"supportsTablet": true,
+			"icon": "./assets/aspenLogo.png"
+		},
+		"android": {
+			"package": "org.aspendiscovery.mobile",
+			"versionCode": 8,
+			"permissions": ["ACCESS_COARSE_LOCATION", "ACCESS_FINE_LOCATION", "FOREGROUND_SERVICE"],
+			"adaptiveIcon": {
+				"foregroundImage": "./assets/aspenLogo.png",
+				"backgroundColor": "#FFFFFF"
+			},
+			"icon": "./assets/aspenLogo.png"
+		},
+		"web": {
+			"favicon": "./assets/aspenLogo.png"
+		},
+		"description": ""
+	}
+}

@@ -23,7 +23,7 @@ class Suggest extends Action {
 		echo json_encode($results);
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		return [];
 	}

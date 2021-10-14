@@ -72,7 +72,7 @@ class LibraryCalendarIndexer {
 			getLibraryScopesStmt.setLong(1, settingsId);
 			ResultSet getLibraryScopesRS = getLibraryScopesStmt.executeQuery();
 			while (getLibraryScopesRS.next()){
-				librariesToShowFor.add(getLibraryScopesRS.getString("subdomain"));
+				librariesToShowFor.add(getLibraryScopesRS.getString("subdomain").toLowerCase());
 			}
 
 		} catch (Exception e) {
@@ -140,6 +140,11 @@ class LibraryCalendarIndexer {
 					if (doFullReload || !eventExists || eventChanged){
 						//Add the event to solr
 						try {
+							if (curEvent.has("public")){
+								if (!curEvent.getBoolean("public")){
+									continue;
+								}
+							}
 							SolrInputDocument solrDocument = new SolrInputDocument();
 							solrDocument.addField("id", "lc_" + settingsId + "_" + eventId);
 							solrDocument.addField("identifier", eventId);

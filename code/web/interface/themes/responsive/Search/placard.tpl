@@ -7,7 +7,7 @@
 			<div class="col-xs-12">
 
 				{if !empty($placard->image)}
-					<img src="/files/original/{$placard->image}" class="placard-image" alt="{$placard->title}">
+					<img src="/files/original/{$placard->image}" class="placard-image" alt="{if (empty($placard->altText))}{translate text=$placard->title inAttribute=true isPublicFacing=true isAdminEnteredData=true}{else}{translate text=$placard->altText inAttribute=true isPublicFacing=true isAdminEnteredData=true}{/if}">
 				{/if}
 				{if !empty($placard->body)}
 					<span class="placard-body">
@@ -26,7 +26,7 @@
 		<div class="row">
 			<div class="col-xs-12 text-right">
 				{if !empty($placard->dismissable) && $loggedIn}
-					<div class="btn btn-sm btn-warning placard-dismiss" onclick="return AspenDiscovery.Account.dismissPlacard('{$activeUserId}', '{$placard->id}')">{translate text="Don't show this again"}</div>
+					<div class="btn btn-sm btn-warning placard-dismiss" onclick="return AspenDiscovery.Account.dismissPlacard('{$activeUserId}', '{$placard->id}')">{translate text="Don't show this again" isPublicFacing=true}</div>
 				{/if}
 			</div>
 		</div>

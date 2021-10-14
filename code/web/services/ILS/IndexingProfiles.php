@@ -36,32 +36,34 @@ class ILS_IndexingProfiles extends ObjectEditor
 		}
 	}
 
-	function getObjectType()
+	function getObjectType() : string
 	{
 		return 'IndexingProfile';
 	}
 
-	function getModule()
+	function getModule() : string
 	{
 		return "ILS";
 	}
 
-	function getToolName()
+	function getToolName() : string
 	{
 		return 'IndexingProfiles';
 	}
 
-	function getPageTitle()
+	function getPageTitle() : string
 	{
 		return 'ILS Indexing Information';
 	}
 
-	function getAllObjects()
+	function getAllObjects($page, $recordsPerPage) : array
 	{
 		$list = array();
 
 		$object = new IndexingProfile();
-		$object->orderBy('name');
+		$object->orderBy($this->getSort());
+		$this->applyFilters($object);
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		while ($object->fetch()) {
 			$list[$object->id] = clone $object;
@@ -69,18 +71,22 @@ class ILS_IndexingProfiles extends ObjectEditor
 
 		return $list;
 	}
+	function getDefaultSort() : string
+	{
+		return 'name asc';
+	}
 
-	function getObjectStructure()
+	function getObjectStructure() : array
 	{
 		return IndexingProfile::getObjectStructure();
 	}
 
-	function getPrimaryKeyColumn()
+	function getPrimaryKeyColumn() : string
 	{
 		return 'id';
 	}
 
-	function getIdKeyColumn()
+	function getIdKeyColumn() : string
 	{
 		return 'id';
 	}
@@ -95,12 +101,12 @@ class ILS_IndexingProfiles extends ObjectEditor
 		return true;
 	}
 
-	function getInstructions()
+	function getInstructions() : string
 	{
 		return '';
 	}
 
-	function getAdditionalObjectActions($existingObject)
+	function getAdditionalObjectActions($existingObject) : array
 	{
 		$actions = array();
 		if ($existingObject && $existingObject->id != '') {
@@ -113,12 +119,12 @@ class ILS_IndexingProfiles extends ObjectEditor
 		return $actions;
 	}
 
-	function getInitializationJs()
+	function getInitializationJs() : string
 	{
 		return 'return AspenDiscovery.Admin.updateIndexingProfileFields();';
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
@@ -127,12 +133,12 @@ class ILS_IndexingProfiles extends ObjectEditor
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return 'ils_integration';
 	}
 
-	function canView()
+	function canView() : bool
 	{
 		return UserAccount::userHasPermission('Administer Indexing Profiles');
 	}

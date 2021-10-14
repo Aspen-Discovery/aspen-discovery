@@ -13,4 +13,6 @@ class UsageByIPAddress extends DataObject
 	public $numBlockedRequests;
 	public $numBlockedApiRequests;
 	public $lastRequest;
+	public $numLoginAttempts;
+	public $numFailedLoginAttempts;
 }

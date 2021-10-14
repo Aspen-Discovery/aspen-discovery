@@ -8,7 +8,6 @@ class ListIndexingLogEntry extends BaseLogEntry
 	public $lastUpdate;
 	public $notes;
 	public $numLists;
-	public $numErrors;
 	public $numAdded;
 	public $numDeleted;
 	public $numUpdated;

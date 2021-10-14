@@ -71,6 +71,7 @@ class OpenArchivesRecordDriver extends IndexRecordDriver
 		require_once ROOT_DIR . '/sys/OpenArchives/OpenArchivesRecordUsage.php';
 		$openArchivesUsage = new OpenArchivesRecordUsage();
 		$openArchivesUsage->openArchivesRecordId = $this->getUniqueID();
+		$openArchivesUsage->instance = $_SERVER['SERVER_NAME'];
 		$openArchivesUsage->year = date('Y');
 		$openArchivesUsage->month = date('n');
 		if ($openArchivesUsage->find(true)) {
@@ -107,7 +108,7 @@ class OpenArchivesRecordDriver extends IndexRecordDriver
 		return $bookCoverUrl;
 	}
 
-	public function getModule()
+	public function getModule() : string
 	{
 		return 'OpenArchives';
 	}

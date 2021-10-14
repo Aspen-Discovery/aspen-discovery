@@ -9,11 +9,10 @@ class GroupedWorkFacetGroup extends DataObject
 
 	public $_facets;
 
-	static function getObjectStructure(){
+	static function getObjectStructure() : array{
 		$facetSettingStructure = GroupedWorkFacet::getObjectStructure();
 		unset($facetSettingStructure['weight']);
 		unset($facetSettingStructure['facetGroupId']);
-		unset($facetSettingStructure['numEntriesToShowByDefault']);
 		unset($facetSettingStructure['showAsDropDown']);
 
 		$structure = [
@@ -24,7 +23,6 @@ class GroupedWorkFacetGroup extends DataObject
 				'type' => 'oneToMany',
 				'label' => 'Facets',
 				'description' => 'A list of facets to display in search results',
-				'helpLink' => '',
 				'keyThis' => 'libraryId',
 				'keyOther' => 'libraryId',
 				'subObjectType' => 'GroupedWorkFacet',

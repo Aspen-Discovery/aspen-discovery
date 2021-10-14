@@ -7,6 +7,28 @@ class MyAccount_MyList extends MyAccount {
 		$this->requireLogin = false;
 		parent::__construct();
 	}
+
+	/** @noinspection PhpUnused */
+	function reloadCover(){
+		$listId = $_REQUEST['id'];
+		$listEntry = new UserListEntry();
+		$listEntry->listId = $listId;
+
+		require_once ROOT_DIR . '/sys/Covers/BookCoverInfo.php';
+		$bookCoverInfo = new BookCoverInfo();
+		$bookCoverInfo->recordType = 'list';
+		$bookCoverInfo->recordId = $listEntry->listId;
+		if ($bookCoverInfo->find(true)){
+			$bookCoverInfo->imageSource = '';
+			$bookCoverInfo->thumbnailLoaded = 0;
+			$bookCoverInfo->mediumLoaded = 0;
+			$bookCoverInfo->largeLoaded = 0;
+			$bookCoverInfo->update();
+		}
+
+		return array('success' => true, 'message' => 'Covers have been reloaded.  You may need to refresh the page to clear your local cache.');
+	}
+
 	function launch() {
 		global $interface;
 
@@ -65,6 +87,7 @@ class MyAccount_MyList extends MyAccount {
 					}else {
 						$list->searchable = isset($_REQUEST['searchable']) && ($_REQUEST['searchable'] == 'true' || $_REQUEST['searchable'] == 'on');
 					}
+					$this->reloadCover();
 					$list->update();
 				}elseif ($actionToPerform == 'deleteList'){
 					$list->delete();
@@ -73,25 +96,13 @@ class MyAccount_MyList extends MyAccount {
 					die();
 				}elseif ($actionToPerform == 'bulkAddTitles'){
 					$notes = $this->bulkAddTitles($list);
+					$this->reloadCover();
 					$_SESSION['listNotes'] = $notes;
 				}
-			}elseif (isset($_REQUEST['myListActionItem']) && strlen($_REQUEST['myListActionItem']) > 0){
-				$actionToPerform = $_REQUEST['myListActionItem'];
-
-				if ($actionToPerform == 'deleteMarked'){
-					//get a list of all titles that were selected
-					$itemsToRemove = $_REQUEST['selected'];
-					foreach ($itemsToRemove as $id => $selected){
-						//add back the leading . to get the full bib record
-						$list->removeListEntry($id);
-					}
-				}elseif ($actionToPerform == 'deleteAll'){
-					$list->removeAllListEntries();
-				}
-				$list->update();
-			}elseif (isset($_REQUEST['delete'])) {
+			} elseif (isset($_REQUEST['delete'])) {
 				$recordToDelete = $_REQUEST['delete'];
 				$list->removeListEntry($recordToDelete);
+				$this->reloadCover();
 				$list->update();
 			}
 
@@ -103,6 +114,14 @@ class MyAccount_MyList extends MyAccount {
 		// Send list to template so title/description can be displayed:
 		$interface->assign('userList', $list);
 		$interface->assign('listSelected', $list->id);
+
+		// Retrieve and format dates to send to template
+		$dateCreated = $list->created;
+		$dateUpdated = $list->dateUpdated;
+		$dateCreated = date("F j, Y, g:i a", $dateCreated);
+		$dateUpdated = date("F j, Y, g:i a", $dateUpdated);
+		$interface->assign('dateCreated', $dateCreated);
+		$interface->assign('dateUpdated', $dateUpdated);
 
 		// Create a handler for displaying favorites and use it to assign
 		// appropriate template variables:
@@ -129,7 +148,7 @@ class MyAccount_MyList extends MyAccount {
 		}else{
 			$sidebar = '';
 		}
-		$this->display('../MyAccount/list.tpl', isset($list->title) ? $list->title : translate('My List'), $sidebar, false);
+		$this->display('../MyAccount/list.tpl', isset($list->title) ? $list->title : translate(['text' => 'My List', 'isPublicFacing'=>true]), $sidebar, false);
 	}
 
 	/**
@@ -227,7 +246,8 @@ class MyAccount_MyList extends MyAccount {
 
 	}
 
-	function bulkAddTitles($list){
+	function bulkAddTitles(UserList $list){
+		$totalRecords = $list->numValidListItems();
 		$numAdded = 0;
 		$notes = array();
 		$titlesToAdd = $_REQUEST['titlesToAdd'];
@@ -252,6 +272,15 @@ class MyAccount_MyList extends MyAccount {
 					$userListEntry->listId = $list->id;
 					$userListEntry->source = 'GroupedWork';
 					$userListEntry->sourceId = $id;
+					$userListEntry->weight = $totalRecords++;
+
+					require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
+					$groupedWork = new GroupedWork();
+					$groupedWork->permanent_id = $userListEntry->sourceId;
+					if ($groupedWork->find(true)) {
+						$userListEntry->title = substr($groupedWork->full_title, 0, 50);
+					}
+					
 					$existingEntry = false;
 					if ($userListEntry->find(true)) {
 						$existingEntry = true;
@@ -281,7 +310,7 @@ class MyAccount_MyList extends MyAccount {
 		return $notes;
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'My Account');

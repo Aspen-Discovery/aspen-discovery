@@ -37,8 +37,9 @@ class Axis360ExtractLogEntry implements BaseLogEntry {
 		saveResults();
 	}
 
-	private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-	public void addNote(String note) {
+	private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	//Synchronized to prevent concurrent modification of the notes ArrayList
+	public synchronized void addNote(String note) {
 		Date date = new Date();
 		this.notes.add(dateFormat.format(date) + " - " + note);
 		saveResults();
@@ -64,8 +65,8 @@ class Axis360ExtractLogEntry implements BaseLogEntry {
 		return returnText;
 	}
 
-	private static PreparedStatement insertLogEntry;
-	private static PreparedStatement updateLogEntry;
+	private PreparedStatement insertLogEntry;
+	private PreparedStatement updateLogEntry;
 	public boolean saveResults() {
 		try {
 			if (logEntryId == null){
@@ -109,12 +110,12 @@ class Axis360ExtractLogEntry implements BaseLogEntry {
 	}
 	public void incErrors(String note){
 		numErrors++;
-		this.addNote(note);
+		this.addNote("ERROR: " + note);
 		this.saveResults();
 		logger.error(note);
 	}
 	public void incErrors(String note, Exception e){
-		this.addNote(note + " " + e.toString());
+		this.addNote("ERROR: " + note + " " + e.toString());
 		numErrors++;
 		this.saveResults();
 		logger.error(note, e);

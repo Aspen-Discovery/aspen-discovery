@@ -5,20 +5,22 @@ require_once ROOT_DIR . '/services/Admin/Admin.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 require_once ROOT_DIR . '/sys/Module.php';
 class Admin_Modules extends ObjectEditor {
-	function getObjectType(){
+	function getObjectType() : string{
 		return 'Module';
 	}
-	function getToolName(){
+	function getToolName() : string{
 		return 'Modules';
 	}
-	function getPageTitle(){
+	function getPageTitle() : string{
 		return 'Aspen Discovery Modules';
 	}
-	function getAllObjects(){
+	function getAllObjects($page, $recordsPerPage) : array{
 		$list = array();
 
 		$object = new Module();
-		$object->orderBy('name asc');
+		$object->orderBy($this->getSort());
+		$this->applyFilters($object);
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		while ($object->fetch()){
 			$list[$object->id] = clone $object;
@@ -26,16 +28,20 @@ class Admin_Modules extends ObjectEditor {
 
 		return $list;
 	}
-	function getObjectStructure(){
+	function getDefaultSort() : string
+	{
+		return 'name asc';
+	}
+	function getObjectStructure() : array {
 		return Module::getObjectStructure();
 	}
-	function getPrimaryKeyColumn(){
+	function getPrimaryKeyColumn() : string{
 		return 'id';
 	}
-	function getIdKeyColumn(){
+	function getIdKeyColumn() : string{
 		return 'id';
 	}
-	function canView(){
+	function canView() : bool{
 		return UserAccount::userHasPermission('Administer Modules');
 	}
 	function canAddNew(){
@@ -49,7 +55,7 @@ class Admin_Modules extends ObjectEditor {
 		return false;
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
@@ -58,7 +64,7 @@ class Admin_Modules extends ObjectEditor {
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return 'system_admin';
 	}

@@ -3,53 +3,60 @@
 require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 
-class Locations extends ObjectEditor
+class Admin_Locations extends ObjectEditor
 {
 
-	function getObjectType(){
+	function getObjectType() : string{
 		return 'Location';
 	}
-	function getToolName(){
+	function getToolName() : string{
 		return 'Locations';
 	}
-	function getPageTitle(){
+	function getPageTitle() : string{
 		return 'Locations (Branches)';
 	}
-	function getAllObjects(){
+	function getAllObjects($page, $recordsPerPage) : array{
 		//Look lookup information for display in the user interface
 		$user = UserAccount::getLoggedInUser();
 
-		$location = new Location();
-		$location->orderBy('displayName');
+		$object = new Location();
+		$object->orderBy($this->getSort());
 		if (!UserAccount::userHasPermission('Administer All Locations')){
 			if (!UserAccount::userHasPermission('Administer Home Library Locations')){
+				$object->locationId = $user->homeLocationId;
+			}else{
 				//Scope to just locations for the user based on home library
 				$patronLibrary = Library::getLibraryForLocation($user->homeLocationId);
-				$location->libraryId = $patronLibrary->libraryId;
-			}else{
-				$location->locationId = $user->homeLocationId;
+				$object->libraryId = $patronLibrary->libraryId;
 			}
 		}
-		$location->find();
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
+		$this->applyFilters($object);
+		$object->find();
 		$locationList = array();
-		while ($location->fetch()){
-			$locationList[$location->locationId] = clone $location;
+		while ($object->fetch()){
+			$locationList[$object->locationId] = clone $object;
 		}
 		return $locationList;
 	}
 
-	function getObjectStructure(){
+	function getDefaultSort() : string
+	{
+		return 'displayName asc';
+	}
+
+	function getObjectStructure() : array {
 		return Location::getObjectStructure();
 	}
 
-	function getPrimaryKeyColumn(){
+	function getPrimaryKeyColumn() : string{
 		return 'code';
 	}
 
-	function getIdKeyColumn(){
+	function getIdKeyColumn() : string{
 		return 'locationId';
 	}
-	function getAdditionalObjectActions($existingObject){
+	function getAdditionalObjectActions($existingObject) : array{
 		$objectActions = array();
 		if ($existingObject != null && $existingObject instanceof Location){
 			$objectActions[] = array(
@@ -62,11 +69,11 @@ class Locations extends ObjectEditor
 		return $objectActions;
 	}
 
-	function getInstructions(){
+	function getInstructions() : string{
 		return '/Admin/HelpManual?page=Library-Systems-Locations';
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
@@ -78,13 +85,22 @@ class Locations extends ObjectEditor
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return 'primary_configuration';
 	}
 
-	function canView()
+	function canView() : bool
 	{
 		return UserAccount::userHasPermission(['Administer All Locations', 'Administer Home Library Locations', 'Administer Home Location']);
+	}
+
+	protected function getDefaultRecordsPerPage()
+	{
+		return 250;
+	}
+
+	protected function showQuickFilterOnPropertiesList(){
+		return true;
 	}
 }

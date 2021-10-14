@@ -305,6 +305,14 @@ function getWebBuilderUpdates(){
 			]
 		],
 
+		'web_builder_resource_open_in_new_tab' => [
+			'title' => 'Web Builder add openInNewTab to Resources',
+			'description' => 'Add open in new window flag to web resources',
+			'sql' => [
+				'ALTER TABLE web_builder_resource ADD COLUMN openInNewTab TINYINT(1) DEFAULT 0'
+			]
+		],
+
 		'web_builder_custom_forms' => [
 			'title' => 'Web Builder Custom Forms',
 			'description' => 'Add the ability for a library to define custom forms',
@@ -435,7 +443,30 @@ function getWebBuilderUpdates(){
 				'ALTER TABLE web_builder_portal_page DROP COLUMN showSidebar',
 				'ALTER TABLE web_builder_basic_page DROP COLUMN showSidebar',
 			]
-		]
+		],
 
+		'web_builder_add_frameHeight'=>[
+			'title' => 'Web Builder add frame height for iframe cell type',
+			'description' => 'Add frameHeight for iframes from Web Builder Pages',
+			'sql' => [
+				'ALTER TABLE web_builder_portal_cell ADD COLUMN frameHeight INT DEFAULT 0',
+			]
+		],
+
+		'web_builder_add_cell_makeCellAccordion'=>[
+			'title' => 'Web Builder add makeCellAccordion for cell layout options',
+			'description' => 'Add makeCellAccordion for layout settings in a cell for Web Builder Pages',
+			'sql' => [
+				'ALTER TABLE web_builder_portal_cell ADD COLUMN makeCellAccordion TINYINT NOT NULL DEFAULT 0',
+			]
+		],
+
+		'web_builder_add_cell_imageURL'=>[
+			'title' => 'Add Image URL to Web Builder custom page options',
+			'description' => 'Add Image URL field to add links to image Web Builder cell types',
+			'sql' => [
+				'ALTER TABLE web_builder_portal_cell ADD COLUMN imageURL VARCHAR(255)',
+			]
+		]
 	];
 }

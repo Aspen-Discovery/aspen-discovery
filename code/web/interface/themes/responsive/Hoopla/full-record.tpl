@@ -10,7 +10,7 @@
 			{$recordDriver->getTitle()|escape}
 			{if $recordDriver->getSubtitle()}: {$recordDriver->getSubtitle()|escape}{/if}
 			{if $recordDriver->getFormats()}
-				<br/><small>({implode subject=$recordDriver->getFormats() glue=", "})</small>
+				<br/><small>({implode subject=$recordDriver->getFormats() glue=", " translate=true isPublicFacing=true})</small>
 			{/if}
 		</h1>
 
@@ -18,7 +18,7 @@
 			<div class="col-xs-4 col-sm-5 col-md-4 col-lg-3 text-center">
 				{if $disableCoverArt != 1}
 					<div id="recordCover" class="text-center row">
-						<img alt="{translate text='Book Cover' inAttribute=true}" class="img-thumbnail" src="{$recordDriver->getBookcoverUrl('medium')}">
+						<a href="#" onclick="return AspenDiscovery.Hoopla.getLargeCover('{$recordDriver->getUniqueID()}')"><img alt="{translate text='Book Cover' isPublicFacing=true inAttribute=true}" class="img-thumbnail" src="{$recordDriver->getBookcoverUrl('medium')}"></a>
 					</div>
 				{/if}
 				{if $showRatings}
@@ -45,9 +45,12 @@
 					<div id="recordTools" class="col-xs-12 col-sm-6 col-md-3">
 						<div class="btn-toolbar">
 							<div class="btn-group btn-group-vertical btn-block">
-								{* Options for the user to view online or download *}
-								{foreach from=$summaryActions item=link}
-									<a href="{if $link.url}{$link.url}{else}#{/if}" {if $link.onclick && strlen($link.onclick) > 0}onclick="{$link.onclick}"{/if} class="btn btn-sm btn-action"{if $link.url} target="_blank"{/if}>{$link.title}</a>&nbsp;
+								{foreach from=$actions item=curAction}
+									{if $curAction.url && strlen($curAction.url) > 0}
+										<a href="{$curAction.url}" class="btn btn-sm {if empty($curAction.btnType)}btn-action{else}{$curAction.btnType}{/if} btn-wrap" onclick="{if $curAction.requireLogin}return AspenDiscovery.Account.followLinkIfLoggedIn(this, '{$curAction.url}');{/if}" {if $curAction.alt}title="{translate text=$curAction.alt inAttribute=true isPublicFacing=true}"{/if}>{translate text=$curAction.title isPublicFacing=true}</a>
+									{else}
+										<a href="#" class="btn btn-sm {if empty($curAction.btnType)}btn-action{else}{$curAction.btnType}{/if} btn-wrap" onclick="{$curAction.onclick}" {if $curAction.alt}title="{translate text=$curAction.alt inAttribute=true}"{/if}>{translate text=$curAction.title isPublicFacing=true}</a>
+									{/if}
 								{/foreach}
 							</div>
 						</div>

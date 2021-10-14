@@ -9,7 +9,7 @@ class Error_Handle404 extends Action {
 		$this->display('404.tpl', 'Page Not Found');
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		return [];
 	}

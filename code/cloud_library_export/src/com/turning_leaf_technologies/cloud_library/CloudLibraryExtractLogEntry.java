@@ -10,6 +10,7 @@ import java.util.Date;
 
 class CloudLibraryExtractLogEntry implements BaseLogEntry {
 	private Long logEntryId = null;
+	private final long settingId;
 	private final Date startTime;
 	private Date endTime;
 	private final ArrayList<String> notes = new ArrayList<>();
@@ -22,11 +23,12 @@ class CloudLibraryExtractLogEntry implements BaseLogEntry {
 	private int numMetadataChanges = 0;
 	private final Logger logger;
 
-	CloudLibraryExtractLogEntry(Connection dbConn, Logger logger) {
+	CloudLibraryExtractLogEntry(Connection dbConn, long settingsId, Logger logger) {
 		this.logger = logger;
 		this.startTime = new Date();
+		this.settingId = settingsId;
 		try {
-			insertLogEntry = dbConn.prepareStatement("INSERT into cloud_library_export_log (startTime) VALUES (?)", PreparedStatement.RETURN_GENERATED_KEYS);
+			insertLogEntry = dbConn.prepareStatement("INSERT into cloud_library_export_log (settingId, startTime) VALUES (?, ?)", PreparedStatement.RETURN_GENERATED_KEYS);
 			updateLogEntry = dbConn.prepareStatement("UPDATE cloud_library_export_log SET lastUpdate = ?, endTime = ?, notes = ?, numProducts = ?, numErrors = ?, numAdded = ?, numUpdated = ?, numDeleted = ?, numAvailabilityChanges = ?, numMetadataChanges = ? WHERE id = ?", PreparedStatement.RETURN_GENERATED_KEYS);
 		} catch (SQLException e) {
 			logger.error("Error creating prepared statements to update log", e);
@@ -34,9 +36,9 @@ class CloudLibraryExtractLogEntry implements BaseLogEntry {
 		saveResults();
 	}
 
-	private static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-
-	public void addNote(String note) {
+	private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	//Synchronized to prevent concurrent modification of the notes ArrayList
+	public synchronized void addNote(String note) {
 		Date date = new Date();
 		this.notes.add(dateFormat.format(date) + " - " + note);
 		saveResults();
@@ -62,13 +64,14 @@ class CloudLibraryExtractLogEntry implements BaseLogEntry {
 		return returnText;
 	}
 
-	private static PreparedStatement insertLogEntry;
-	private static PreparedStatement updateLogEntry;
+	private PreparedStatement insertLogEntry;
+	private PreparedStatement updateLogEntry;
 
 	public boolean saveResults() {
 		try {
 			if (logEntryId == null) {
-				insertLogEntry.setLong(1, startTime.getTime() / 1000);
+				insertLogEntry.setLong(1, settingId);
+				insertLogEntry.setLong(2, startTime.getTime() / 1000);
 				insertLogEntry.executeUpdate();
 				ResultSet generatedKeys = insertLogEntry.getGeneratedKeys();
 				if (generatedKeys.next()) {
@@ -102,19 +105,19 @@ class CloudLibraryExtractLogEntry implements BaseLogEntry {
 
 	public void setFinished() {
 		this.endTime = new Date();
-		this.addNote("Finished Cloud Library extraction");
+		this.addNote("Finished cloudLibrary extraction");
 		this.saveResults();
 	}
 
 	public void incErrors(String note) {
-		this.addNote(note);
+		this.addNote("ERROR: " + note);
 		numErrors++;
 		this.saveResults();
 		logger.error(note);
 	}
 
 	public void incErrors(String note, Exception e){
-		this.addNote(note + " " + e.toString());
+		this.addNote("ERROR: " + note + " " + e.toString());
 		numErrors++;
 		this.saveResults();
 		logger.error(note, e);

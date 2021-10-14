@@ -10,14 +10,43 @@ AspenDiscovery.WebBuilder = (function () {
 				$('#propertyRowmarkdown').show();
 				$('#propertyRowsourceInfo').hide();
 				$("#propertyRowsourceId").hide();
+				$('#propertyRowframeHeight').hide();
+				$('#propertyRowimageURL').hide();
+				$('#propertyRowpdfView').hide();
 			}else if (sourceType === 'youtube_video' || sourceType === 'vimeo_video') {
 				$('#propertyRowmarkdown').hide();
 				$('#propertyRowsourceInfo').show();
 				$("#propertyRowsourceId").hide();
-			}else{
+				$('#propertyRowframeHeight').hide();
+				$('#propertyRowimageURL').hide();
+				$('#propertyRowpdfView').hide();
+			}else if (sourceType === 'iframe') {
+				$('#propertyRowmarkdown').hide();
+				$('#propertyRowsourceInfo').show();
+				$("#propertyRowsourceId").hide();
+				$('#propertyRowframeHeight').show();
+				$('#propertyRowimageURL').hide();
+				$('#propertyRowpdfView').hide();
+			}else if (sourceType === 'hours_locations') {
+				$('#propertyRowmarkdown').hide();
+				$('#propertyRowsourceInfo').hide();
+				$("#propertyRowsourceId").hide();
+				$('#propertyRowframeHeight').hide();
+				$('#propertyRowimageURL').hide();
+				$('#propertyRowpdfView').hide();
+			}else {
 				$('#propertyRowmarkdown').hide();
 				$('#propertyRowsourceInfo').hide();
 				$("#propertyRowsourceId").show();
+				$('#propertyRowframeHeight').hide();
+				$('#propertyRowimageURL').hide();
+				$('#propertyRowpdfView').hide();
+				if (sourceType === 'image') {
+					$('#propertyRowimageURL').show();
+				} else if (sourceType === 'pdf') {
+					$('#propertyRowpdfView').show();
+				}
+
 				var url = Globals.path + '/WebBuilder/AJAX?method=getPortalCellValuesForSource&portalCellId=' + portalCellId + '&sourceType=' + sourceType;
 				$.getJSON(url, function(data){
 					if (data.success === true){
@@ -233,6 +262,23 @@ AspenDiscovery.WebBuilder = (function () {
 				modalDialog.modal('show');
 				return false;
 			}
-		}
+		},
+
+		updateWebBuilderFields: function () {
+			var requireLogin = $('#requireLogin');
+			if(requireLogin.is(":checked")) {
+				$("#propertyRowallowAccess").show();
+			} else {
+				$("#propertyRowallowAccess").hide();
+			}
+
+			$(requireLogin).click(function() {
+				if(requireLogin.is(":checked")){
+					$("#propertyRowallowAccess").show();
+				}else{
+					$("#propertyRowallowAccess").hide();
+				}
+			});
+		},
 	};
 }(AspenDiscovery.WebBuilder || {}));

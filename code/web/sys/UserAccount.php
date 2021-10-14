@@ -124,34 +124,15 @@ class UserAccount
 			if (UserAccount::isLoggedIn()) {
 				UserAccount::$userPermissions = array();
 
-				$roles = UserAccount::getActiveRoles();
 				$loadDefaultPermissions = false;
 				try{
-					$permissionIds = [];
-					require_once ROOT_DIR . '/sys/Administration/Permission.php';
-					require_once ROOT_DIR . '/sys/Administration/RolePermissions.php';
-					foreach ($roles as $roleId => $roleName){
-						$rolePermissions = new RolePermissions();
-						$rolePermissions->roleId = $roleId;
-						$rolePermissions->find();
-						while ($rolePermissions->fetch()){
-							$permissionIds[$rolePermissions->permissionId] = $rolePermissions->permissionId;
-						}
-					}
-					foreach ($permissionIds as $permissionId){
-						$permission = new Permission();
-						$permission->id = $permissionId;
-						if ($permission->find(true)){
-							if (!in_array($permission->name, UserAccount::$userPermissions)){
-								UserAccount::$userPermissions[] = $permission->name;
-							}
-						}
-					}
+					UserAccount::$userPermissions = UserAccount::getActiveUserObj()->getPermissions();
 				}catch (Exception $e){
 					$loadDefaultPermissions = true;
 				}
-				if ($loadDefaultPermissions || count(UserAccount::$userPermissions) == 0){
+				if ($loadDefaultPermissions){
 					//Permission system has not been setup, load default permissions
+					$roles = UserAccount::getActiveRoles();
 					foreach ($roles as $roleId => $roleName){
 						$role = new Role();
 						$role->roleId = $roleId;
@@ -203,12 +184,7 @@ class UserAccount
 	{
 		UserAccount::loadUserObjectFromDatabase();
 		if (UserAccount::$primaryUserObjectFromDB != false) {
-			if (strlen(UserAccount::$primaryUserObjectFromDB->displayName)) {
-				return UserAccount::$primaryUserObjectFromDB->displayName;
-			} else {
-				return UserAccount::$primaryUserObjectFromDB->firstname . ' ' . UserAccount::$primaryUserObjectFromDB->lastname;
-			}
-
+			return UserAccount::$primaryUserObjectFromDB->getDisplayName();
 		}
 		return '';
 	}
@@ -324,7 +300,6 @@ class UserAccount
 		$userData = false;
 		if (isset($_SESSION['activeUserId'])) {
 			$activeUserId = $_SESSION['activeUserId'];
-			/** @var Memcache $memCache */
 			global $memCache;
 			global $serverName;
 
@@ -444,8 +419,6 @@ class UserAccount
 			$showCovers = ($_REQUEST['showCovers'] == 'on' || $_REQUEST['showCovers'] == 'true');
 			$_SESSION['showCovers'] = $showCovers;
 		}
-
-		session_write_close();
 	}
 
 	/**
@@ -458,6 +431,8 @@ class UserAccount
 	public static function login()
 	{
 		global $logger;
+		global $usageByIPAddress;
+		$usageByIPAddress->numLoginAttempts++;
 
 		$validUsers = array();
 
@@ -471,6 +446,7 @@ class UserAccount
 			if ($casUsername == false || $casUsername instanceof AspenError) {
 				//The user could not be authenticated in CAS
 				$logger->log("The user could not be logged in", Logger::LOG_NOTICE);
+				$usageByIPAddress->numFailedLoginAttempts++;
 				return new AspenError('Could not authenticate in sign on service');
 			} else {
 				$logger->log("User logged in OK CAS Username $casUsername", Logger::LOG_NOTICE);
@@ -506,7 +482,8 @@ class UserAccount
 				global $library;
 				if ($library->preventExpiredCardLogin && $tempUser->_expired) {
 					// Create error
-					$cardExpired = new AspenError('expired_library_card');
+					$cardExpired = new AspenError('Your library card has expired. Please contact your local library to have your library card renewed.');
+					$usageByIPAddress->numFailedLoginAttempts++;
 					return $cardExpired;
 				}
 
@@ -542,6 +519,7 @@ class UserAccount
 			}
 			return $primaryUser;
 		} else {
+			$usageByIPAddress->numFailedLoginAttempts++;
 			return $lastError;
 		}
 	}
@@ -697,6 +675,10 @@ class UserAccount
 
 			global $interface;
 			$interface->assign('loggedIn', false);
+
+			global $logger;
+			$logger->log('Finished updating session as part of softLogout, will write on shutdown', Logger::LOG_DEBUG);
+			$logger->log(print_r($_SESSION, true), Logger::LOG_DEBUG);
 		}
 	}
 
@@ -745,25 +727,11 @@ class UserAccount
 	{
 		require_once ROOT_DIR . '/CatalogFactory.php';
 		$driversToTest = self::getAccountProfiles();
-		foreach ($driversToTest as $driverName => $driverData) {
+		foreach ($driversToTest as $driverData) {
 			$catalogConnectionInstance = CatalogFactory::getCatalogConnectionInstance($driverData['driver'], $driverData['accountProfile']);
 			if ($catalogConnectionInstance != null && !is_null($catalogConnectionInstance->driver) && method_exists($catalogConnectionInstance->driver, 'findNewUser')) {
 				$tmpUser = $catalogConnectionInstance->driver->findNewUser($patronBarcode);
 				if (!empty($tmpUser) && !($tmpUser instanceof AspenError)) {
-					if ($tmpUser->displayName == '') {
-						if ($tmpUser->firstname == '') {
-							$tmpUser->displayName = $tmpUser->lastname;
-						} else {
-							$homeLibrary = $tmpUser->getHomeLibrary();
-							if ($homeLibrary == null || ($homeLibrary->__get('patronNameDisplayStyle') == 'firstinitial_lastname')) {
-								// #PK-979 Make display name configurable firstname, last initial, vs first initial last name
-								$tmpUser->displayName = substr($tmpUser->firstname, 0, 1) . '. ' . $tmpUser->lastname;
-							} elseif ($homeLibrary->__get('patronNameDisplayStyle') == 'lastinitial_firstname') {
-								$tmpUser->displayName = $tmpUser->firstname . ' ' . substr($tmpUser->lastname, 0, 1) . '.';
-							}
-						}
-						$tmpUser->update();
-					}
 					return $tmpUser;
 				}
 			}

@@ -174,7 +174,7 @@ class Events_Results extends ResultsAction
 		$this->display($searchObject->getResultTotal() ? 'list.tpl' : 'list-none.tpl', 'Library Event Search Results', $sidebar);
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		return parent::getResultsBreadcrumbs('Events Search');
 	}

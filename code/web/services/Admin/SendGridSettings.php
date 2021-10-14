@@ -6,29 +6,31 @@ require_once ROOT_DIR . '/sys/Email/SendGridSetting.php';
 
 class Admin_SendGridSettings extends ObjectEditor
 {
-	function getObjectType()
+	function getObjectType() : string
 	{
 		return 'SendGridSetting';
 	}
 
-	function getToolName()
+	function getToolName() : string
 	{
 		return 'SendGridSettings';
 	}
 
-	function getModule()
+	function getModule() : string
 	{
 		return 'Admin';
 	}
 
-	function getPageTitle()
+	function getPageTitle() : string
 	{
 		return 'SendGrid Settings';
 	}
 
-	function getAllObjects()
+	function getAllObjects($page, $recordsPerPage) : array
 	{
 		$object = new SendGridSetting();
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
+		$this->applyFilters($object);
 		$object->find();
 		$objectList = array();
 		while ($object->fetch()) {
@@ -36,33 +38,42 @@ class Admin_SendGridSettings extends ObjectEditor
 		}
 		return $objectList;
 	}
+	function getDefaultSort() : string
+	{
+		return 'id asc';
+	}
 
-	function getObjectStructure()
+	function canSort() : bool
+	{
+		return false;
+	}
+
+	function getObjectStructure() : array
 	{
 		return SendGridSetting::getObjectStructure();
 	}
 
-	function getPrimaryKeyColumn()
+	function getPrimaryKeyColumn() : string
 	{
 		return 'id';
 	}
 
-	function getIdKeyColumn()
+	function getIdKeyColumn() : string
 	{
 		return 'id';
 	}
 
-	function getAdditionalObjectActions($existingObject)
+	function getAdditionalObjectActions($existingObject) : array
 	{
 		return [];
 	}
 
-	function getInstructions()
+	function getInstructions() : string
 	{
 		return '';
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
@@ -71,12 +82,12 @@ class Admin_SendGridSettings extends ObjectEditor
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return 'system_admin';
 	}
 
-	function canView()
+	function canView() : bool
 	{
 		return UserAccount::userHasPermission('Administer SendGrid');
 	}

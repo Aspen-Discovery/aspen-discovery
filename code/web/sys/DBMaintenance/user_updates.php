@@ -279,6 +279,22 @@ function getUserUpdates()
 			]
 		],
 
+		'user_payments_carlx' => [
+			'title' => 'User payments CarlX',
+			'description' => 'Add columns to user_payments to support CarlX credit card processing',
+			'sql' => [
+				'ALTER TABLE user_payments ADD COLUMN transactionDate INT(11)',
+			]
+		],
+
+		'user_payments_finesPaid' => [
+			'title' => 'User payments finesPaid embiggening',
+			'description' => 'Increase finesPaid column space to 8K',
+			'sql' => [
+				"ALTER TABLE user_payments CHANGE finesPaid finesPaid VARCHAR(8192) NOT NULL DEFAULT ''",
+			]
+		],
+
 		'user_display_name_length' => array(
 			'title' => 'User display name length',
 			'description' => 'Increase displayName field in the User table',
@@ -313,6 +329,15 @@ function getUserUpdates()
 			]
 		],
 
+		'user_list_import_information' => [
+			'title' => 'User List Import Information',
+			'description' => 'Add information about where list information was imported from',
+			'sql' => [
+				'ALTER TABLE user_list ADD COLUMN importedFrom VARCHAR(20)',
+				'ALTER TABLE user_list_entry ADD COLUMN importedFrom VARCHAR(20)',
+			]
+		],
+
 		'user_last_list_used' => [
 			'title' => 'User Last Used List',
 			'description' => 'Store the last list the user edited',
@@ -334,8 +359,8 @@ function getUserUpdates()
 			'description' => 'Add the ability to define a secondary library card for a user',
 			'sql' => [
 				"ALTER TABLE user ADD COLUMN alternateLibraryCard VARCHAR(50) DEFAULT ''",
-				"ALTER TABLE user ADD COLUMN alternateLibraryCardPassword VARCHAR(60) DEFAULT ''",
-				"ALTER TABLE user CHANGE COLUMN cat_password cat_password VARCHAR(60) DEFAULT ''",
+				"ALTER TABLE user ADD COLUMN alternateLibraryCardPassword VARCHAR(256) DEFAULT ''",
+				"ALTER TABLE user CHANGE COLUMN cat_password cat_password VARCHAR(256) DEFAULT ''",
 			]
 		],
 
@@ -440,12 +465,6 @@ function getUserUpdates()
 					,('Third Party Enrichment', 'Administer Third Party Enrichment API Keys', '', 0, 'Allows the user to define connection to external enrichment systems like Content Cafe, Syndetics, Google, Novelist etc.')
 					,('Third Party Enrichment', 'Administer Wikipedia Integration', '', 10, 'Allows the user to control how authors are matched to Wikipedia entries.')
 					,('Third Party Enrichment', 'View New York Times Lists', '', 20, 'Allows the user to view and update lists loaded from the New York Times.')
-					,('Islandora Archives', 'Administer Islandora Archive', 'Islandora', 0, 'Allows the user to administer integration with an Islandora archive.')
-					,('Islandora Archives', 'View Archive Authorship Claims', 'Islandora', 10, 'Allows the user to view authorship claims for Islandora archive materials.')
-					,('Islandora Archives', 'View Library Archive Authorship Claims', 'Islandora', 12, 'Allows the user to view authorship claims for Islandora archive materials.')
-					,('Islandora Archives', 'View Archive Material Requests', 'Islandora', 20, 'Allows the user to view material requests for Islandora archive materials.')
-					,('Islandora Archives', 'View Library Archive Material Requests', 'Islandora', 22, 'Allows the user to view material requests for Islandora archive materials.')
-					,('Islandora Archives', 'View Islandora Archive Usage', 'Islandora', 30, 'Allows the view a report of objects in the repository by library.')
 					,('Open Archives', 'Administer Open Archives', 'Open Archives', 0, 'Allows the user to administer integration with Open Archives repositories for all libraries.')
 					,('Events', 'Administer Library Calendar Settings', 'Events', 10, 'Allows the user to administer integration with Library Calendar for all libraries.')
 					,('Website Indexing', 'Administer Website Indexing Settings', 'Web Indexer', 0, 'Allows the user to administer the indexing of websites for all libraries.')
@@ -527,6 +546,14 @@ function getUserUpdates()
 			'description' => 'Add the ability to treat specific patron types as staff',
 			'sql' => [
 				'ALTER TABLE ptype add column isStaff TINYINT(1) DEFAULT 0',
+			]
+		],
+
+		'ptype_descriptions' => [
+			'title' => 'PType descriptions',
+			'description' => 'Add the ability to define descriptions for patron types',
+			'sql' => [
+				"ALTER TABLE ptype ADD COLUMN description VARCHAR(100) DEFAULT ''"
 			]
 		],
 
@@ -627,6 +654,296 @@ function getUserUpdates()
 				'fixNytUserPermissions'
 			],
 		],
+
+		'cleanup_invalid_reading_history_entries' => [
+			'title' => 'Cleanup Invalid Reading History Entries',
+			'description' => 'Remove old reading history entries that will display as Title Not Available',
+			'sql' => [
+				'DELETE FROM user_reading_history_work where (groupedWorkPermanentId is null or groupedWorkPermanentId = \'\') and (title is null or title = \'\') and (author is null OR author = \'\')'
+			]
+		],
+
+		'store_pickup_location' => [
+			'title' => 'Store the selected pickup location',
+			'description' => 'Store the selected pickup location with the user for cases when the library does not allow home location to be changed',
+			'sql' => [
+				'ALTER TABLE user ADD COLUMN pickupLocationId INT(11) DEFAULT 0',
+				'UPDATE user SET rememberHoldPickupLocation = 0',
+				'UPDATE user SET pickupLocationId = homeLocationId'
+			]
+		],
+
+		'user_add_last_reading_history_update_time' => [
+			'title' => 'Store when the reading history was last updated',
+			'description' =>  'Store when the reading history was last updated to optimize loading reading history',
+			'sql' => [
+				'ALTER TABLE user ADD COLUMN lastReadingHistoryUpdate INT(11) DEFAULT 0'
+			]
+		],
+
+		'user_remove_college_major' => [
+			'title' => 'Remove College and Major',
+			'description' => 'Remove unused college and major fields from user table',
+			'sql' => [
+				'ALTER TABLE user DROP COLUMN college',
+				'ALTER TABLE user DROP COLUMN major',
+			]
+		],
+		'encrypt_user_table' => [
+			'title' => 'Encrypt User Table (Slow)',
+			'description' => 'Encrypt data within the user table, this can take a long time for instances with a lot of users.',
+			'sql' => [
+				//First increase field lengths
+				'ALTER TABLE user CHANGE COLUMN password password VARCHAR(256)',
+				"ALTER TABLE user CHANGE COLUMN firstname firstname VARCHAR(256) NOT NULL DEFAULT ''",
+				"ALTER TABLE user CHANGE COLUMN lastname lastname VARCHAR(256) NOT NULL DEFAULT ''",
+				"ALTER TABLE user CHANGE COLUMN email email VARCHAR(256) NOT NULL DEFAULT ''",
+				'ALTER TABLE user CHANGE COLUMN cat_username cat_username VARCHAR(256)',
+				"ALTER TABLE user CHANGE COLUMN cat_password cat_password VARCHAR(256) DEFAULT ''",
+				"ALTER TABLE user CHANGE COLUMN displayName displayName VARCHAR(256) NOT NULL DEFAULT ''",
+				"ALTER TABLE user CHANGE COLUMN phone phone VARCHAR(256) NOT NULL DEFAULT ''",
+				"ALTER TABLE user CHANGE COLUMN overdriveEmail overdriveEmail VARCHAR(256) NOT NULL DEFAULT ''",
+				'ALTER TABLE user CHANGE COLUMN rbdigitalPassword rbdigitalPassword VARCHAR(256)',
+				"ALTER TABLE user CHANGE COLUMN alternateLibraryCardPassword alternateLibraryCardPassword VARCHAR(256) NOT NULL DEFAULT ''",
+				//Now do the actual encryption
+				'encryptUserFields'
+			]
+		],
+
+		'user_cache_holds' => [
+			'title' => 'User account cache holds',
+			'description' => 'Cache holds for a user to improve performance',
+			'sql' => [
+				'ALTER TABLE user ADD COLUMN holdInfoLastLoaded INT(11) DEFAULT 0',
+				"CREATE TABLE user_hold (
+					id INT(11) AUTO_INCREMENT PRIMARY KEY,
+					type VARCHAR(20) NOT NULL,
+					source VARCHAR(50) NOT NULL,
+					userId INT(11) NOT NULL,
+					sourceId VARCHAR(50) NOT NULL,
+					recordId VARCHAR(50) NOT NULL,
+					shortId VARCHAR(50),
+					itemId VARCHAR(50),
+					title VARCHAR(500),
+					title2 VARCHAR(500),
+					author VARCHAR(500),
+					volume VARCHAR(50),
+					callNumber VARCHAR(50),
+					available TINYINT(1),
+					cancelable TINYINT(1),
+					cancelId VARCHAR(50),
+					locationUpdateable TINYINT(1),
+					pickupLocationId VARCHAR(50),
+					pickupLocationName VARCHAR(100),
+					status VARCHAR(50),
+					position INT(11),
+					holdQueueLength INT(11),
+					createDate INT(11),
+					availableDate INT(11),
+					expirationDate INT(11),
+					automaticCancellationDate INT(11),
+					frozen TINYINT(1),
+					canFreeze TINYINT(1),
+					reactivateDate INT(11)
+				)  ENGINE=InnoDB  DEFAULT CHARSET=utf8"
+			]
+		],
+
+		'user_cache_checkouts' => [
+			'title' => 'User account cache checkouts',
+			'description' => 'Cache checkouts for a user to improve performance',
+			'sql' => [
+				'ALTER TABLE user ADD COLUMN checkoutInfoLastLoaded INT(11) DEFAULT 0',
+				"CREATE TABLE user_checkout (
+					id INT(11) AUTO_INCREMENT PRIMARY KEY,
+					type VARCHAR(20) NOT NULL,
+					source VARCHAR(50) NOT NULL,
+					userId INT(11) NOT NULL,
+					sourceId VARCHAR(50) NOT NULL,
+					recordId VARCHAR(50) NOT NULL,
+					shortId VARCHAR(50),
+					itemId VARCHAR(50),
+					itemIndex VARCHAR(50),
+					renewalId VARCHAR(50),
+					barcode VARCHAR(50),
+					title VARCHAR(500),
+					title2 VARCHAR(500),
+					author VARCHAR(500),
+					callNumber VARCHAR(50),
+					volume VARCHAR(50),
+					checkoutDate INT(11),
+					dueDate INT(11),
+					renewCount INT(11),
+					canRenew TINYINT(1),
+					autoRenew TINYINT(1),
+					autoRenewError VARCHAR(500),
+					maxRenewals INT(11),
+					fine FLOAT,
+					returnClaim VARCHAR(500),
+					holdQueueLength INT(11)
+				)  ENGINE=InnoDB  DEFAULT CHARSET=utf8"
+			]
+		],
+
+		'user_checkout_cache_additional_fields' =>[
+			'title' => 'User Checkout Cache Add Additional Fields',
+			'description' => 'Add additional fields to for eContent',
+			'sql' => [
+				'ALTER TABLE user_checkout ADD column allowDownload TINYINT(1)',
+				'ALTER TABLE user_checkout ADD column overdriveRead TINYINT(1)',
+				'ALTER TABLE user_checkout ADD column overdriveReadUrl VARCHAR(255)',
+				'ALTER TABLE user_checkout ADD column overdriveListen TINYINT(1)',
+				'ALTER TABLE user_checkout ADD column overdriveListenUrl VARCHAR(255)',
+				'ALTER TABLE user_checkout ADD column overdriveVideo TINYINT(1)',
+				'ALTER TABLE user_checkout ADD column overdriveVideoUrl VARCHAR(255)',
+				'ALTER TABLE user_checkout ADD column formatSelected TINYINT(1)',
+				'ALTER TABLE user_checkout ADD column selectedFormatName VARCHAR(50)',
+				'ALTER TABLE user_checkout ADD column selectedFormatValue VARCHAR(25)',
+				'ALTER TABLE user_checkout ADD column canReturnEarly TINYINT(1)',
+				'ALTER TABLE user_checkout ADD column supplementalMaterials TEXT',
+				'ALTER TABLE user_checkout ADD column formats TEXT',
+				'ALTER TABLE user_checkout ADD column downloadUrl VARCHAR(255)',
+				'ALTER TABLE user_checkout ADD column accessOnlineUrl VARCHAR(255)',
+				'ALTER TABLE user_checkout ADD column transactionId VARCHAR(40)',
+				'ALTER TABLE user_checkout ADD column coverUrl VARCHAR(255)',
+				'ALTER TABLE user_checkout ADD column format VARCHAR(50)',
+			]
+		],
+
+		'user_checkout_cache_renewal_information' =>[
+			'title' => 'User Checkout Cache renewal date',
+			'description' => 'Add renewal date to checkout cache',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE user_checkout ADD COLUMN renewalDate INT(11)',
+				'ALTER TABLE user_checkout ADD COLUMN renewIndicator VARCHAR(20)',
+			],
+		],
+
+		'user_circulation_cache_grouped_work' => [
+			'title' => 'Circulation caching grouped work',
+			'description' => 'Add groupedWorkId to circulation caching information',
+			'sql' => [
+				'ALTER TABLE user_checkout ADD COLUMN groupedWorkId CHAR(36)',
+				'ALTER TABLE user_hold ADD COLUMN groupedWorkId CHAR(36)',
+			]
+		],
+
+		'user_circulation_cache_overdrive_magazines' => [
+			'title' => 'Circulation caching overdrive magazines',
+			'description' => 'Add overdrive magazine to checkout caching information',
+			'sql' => [
+				'ALTER TABLE user_checkout ADD COLUMN overdriveMagazine TINYINT(1)',
+			]
+		],
+
+		'user_circulation_cache_overdrive_supplemental_materials' => [
+			'title' => 'Circulation caching supplemental materials',
+			'description' => 'Add overdrive supplemental materials to checkout caching information',
+			'sql' => [
+				'ALTER TABLE user_checkout ADD COLUMN isSupplemental TINYINT(1) DEFAULT 0',
+			]
+		],
+
+		'user_account_summary_cache' => [
+			'title' => 'User Account Summary caching',
+			'description' => 'Store Account Summary for users',
+			'sql' => [
+				"CREATE TABLE user_account_summary (
+					id INT(11) AUTO_INCREMENT PRIMARY KEY,
+					source VARCHAR(50) NOT NULL,
+					userId INT(11) NOT NULL,
+					numCheckedOut INT(11) DEFAULT 0,
+					numOverdue INT(11) DEFAULT 0,
+					numAvailableHolds INT(11) DEFAULT 0,
+					numUnavailableHolds INT(11) DEFAULT 0,
+					totalFines FLOAT DEFAULT 0,
+					expirationDate INT(11) DEFAULT 0,
+					numBookings INT(11) DEFAULT 0,
+					lastLoaded INT(11)
+				)  ENGINE=InnoDB  DEFAULT CHARSET=utf8",
+				'ALTER TABLE user_account_summary ADD UNIQUE (source, userId)'
+			]
+		],
+
+		'user_account_summary_remaining_checkouts' => [
+			'title' => 'User Account Summary - remaining checkouts',
+			'description' => 'Add remaining checkouts to account summary for Hoopla',
+			'sql' => [
+				'ALTER TABLE user_account_summary ADD COLUMN numCheckoutsRemaining INT(11) DEFAULT 0'
+			]
+		],
+
+		'user_circulation_cache_indexes' => [
+			'title' => 'Circulation Caching indexes',
+			'description' => 'Add indexes to circulation caching tables',
+			'sql' => [
+				'ALTER TABLE user_checkout ADD INDEX (userId, source, recordId)',
+				'ALTER TABLE user_hold ADD INDEX (userId, source, recordId)',
+				'ALTER TABLE user_checkout ADD INDEX (userId, groupedWorkId)',
+				'ALTER TABLE user_hold ADD INDEX (userId, groupedWorkId)'
+			]
+		],
+
+		'user_hold_format' => [
+			'title' => 'Add format to cached information for user holds',
+			'description' => 'Add format to cached information for user holds',
+			'sql' => [
+				'ALTER TABLE user_hold ADD COLUMN format VARCHAR(50)'
+			]
+		],
+
+		'user_username_increase_length' => [
+			'title' => 'Increase length of username field to accommodate FOLIO',
+			'description' => 'Increase length of username field to accommodate FOLIO',
+			'sql' => [
+				'ALTER TABLE user CHANGE COLUMN username username VARCHAR(36) NOT NULL'
+			]
+		],
+
+		'user_circulation_cache_cover_link' => [
+			'title' => 'Circulation Caching add links',
+			'description' => 'Add caching of cover url and link url to improve performance',
+			'sql' => [
+				'ALTER TABLE user_hold ADD column coverUrl VARCHAR(255)',
+				'ALTER TABLE user_hold ADD column linkUrl VARCHAR(255)',
+				'ALTER TABLE user_checkout ADD column linkUrl VARCHAR(255)',
+			]
+		],
+
+		'user_account_summary_expiration_date_extension' => [
+			'title' => 'Account Summary enlarge expiration dates',
+			'description' => 'Update Account Summary to allow expiration dates that are far in the future',
+			'sql' => [
+				'ALTER TABLE user_account_summary CHANGE COLUMN expirationDate expirationDate BIGINT DEFAULT 0',
+			]
+		],
+
+		'user_account_cache_volume_length' => [
+			'title' => 'Increase length of volume in holds and checkouts',
+			'description' => 'Increase length of volume in holds and checkouts',
+			'sql' => [
+				'ALTER TABLE user_checkout CHANGE COLUMN volume volume VARCHAR(255)',
+				'ALTER TABLE user_hold CHANGE COLUMN volume volume VARCHAR(255)'
+			]
+		],
+
+		'user_reading_history_dates_in_past' => [
+			'title' => 'Expand Reading History Check In Date',
+			'description' => 'Update Reading History to allow check in dates prior to 1970',
+			'sql' => [
+				'ALTER table user_reading_history_work change column checkInDate checkInDate BIGINT NULL;'
+			]
+		],
+
+		'user_circulation_cache_callnumber_length' => [
+			'title' => 'Expand call number length in circulation caches',
+			'description' => 'Update circulation caches to increase length of call number fields',
+			'sql' => [
+				'ALTER TABLE user_checkout change column callNumber callNumber VARCHAR(100)',
+				'ALTER TABLE user_hold change column callNumber callNumber VARCHAR(100)',
+			]
+		]
 	);
 }
 
@@ -712,5 +1029,23 @@ function fixNytUserPermissions()
 			$nytLists->searchable = 1;
 			$nytLists->update();
 		}
+	}
+}
+
+/** @noinspection PhpUnused */
+function encryptUserFields(){
+	set_time_limit(0);
+	$user = new User();
+	$numUsers = $user->count();
+	$numBatches = (int)ceil($numUsers / 1000);
+	for ($i = 0; $i < $numBatches; $i++){
+		$user = new User();
+		$user->limit($i * 1000, 1000);
+		$user->find();
+		while ($user->fetch()){
+			//Just need to re-save to make the encryption work
+			$user->update();
+		}
+		$user->__destruct();
 	}
 }

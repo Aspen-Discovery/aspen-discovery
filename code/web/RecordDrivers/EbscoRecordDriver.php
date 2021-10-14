@@ -98,7 +98,7 @@ class EbscoRecordDriver extends RecordInterface
 		return $this->recordData->PLink;
 	}
 
-	public function getModule()
+	public function getModule() : string
 	{
 		return 'EBSCO';
 	}
@@ -139,6 +139,7 @@ class EbscoRecordDriver extends RecordInterface
 
 		require_once ROOT_DIR . '/sys/Ebsco/EbscoEdsRecordUsage.php';
 		$recordUsage = new EbscoEdsRecordUsage();
+		$recordUsage->instance = $_SERVER['SERVER_NAME'];
 		$recordUsage->ebscoId = $this->getUniqueID();
 		$recordUsage->year = date('Y');
 		$recordUsage->month = date('n');
@@ -381,6 +382,11 @@ class EbscoRecordDriver extends RecordInterface
 		return $this->recordData->Header->DbLabel;
 	}
 
+	public function getPrimaryAuthor()
+	{
+		return $this->getAuthor();
+	}
+
 	public function getAuthor()
 	{
 		if (!empty($this->recordData->Items)) {
@@ -395,14 +401,7 @@ class EbscoRecordDriver extends RecordInterface
 
 	public function getExploreMoreInfo()
 	{
-		global $configArray;
-		$exploreMoreOptions = array();
-		if ($configArray['Catalog']['showExploreMoreForFullRecords']) {
-			require_once ROOT_DIR . '/sys/ExploreMore.php';
-			$exploreMore = new ExploreMore();
-			$exploreMore->loadExploreMoreSidebar('ebsco_eds', $this);
-		}
-		return $exploreMoreOptions;
+		return [];
 	}
 
 	public function getAllSubjectHeadings()

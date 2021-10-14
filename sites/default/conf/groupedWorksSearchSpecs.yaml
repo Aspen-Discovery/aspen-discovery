@@ -134,6 +134,10 @@ AuthorProper:
       - [onephrase, 350]
     - auth_author2:
       - [onephrase, 100]
+    - author2:
+      - [ onephrase, 100 ]
+    - author_additional:
+      - [onephrase, 50]
 
 ISN:
   QueryFields:
@@ -152,26 +156,21 @@ Subject:
     - subject:
       - [onephrase, 300]
       - [and, 100]
-      - [or, ~]
     - topic:
       - [onephrase, 300]
       - [and, 100]
-      - [or, ~]
     - topic_proper:
       - [onephrase, 300]
       - [and, 100]
-      - [or, ~]
     - geographic:
       - [onephrase, 300]
       - [and, 100]
-      - [or, ~]
     - genre:
       - [onephrase, 300]
       - [and, 100]
-      - [or, ~]
     - era:
+      - [onephrase, 300]
       - [and, 100]
-      - [or, ~]
 
 SubjectProper:
   QueryFields:
@@ -258,8 +257,12 @@ SeriesProper:
     - series_proper:
       - [localized_callnumber, 2400]
       - [onephrase, 500]
+    - series2:
+      - [onephrase, 750]
+      - [exact, 250]
     - series:
-      - [exact, 1000]
+      - [onephrase, 1000]
+      - [exact, 400]
 
 # This is proving slow based of the number of things we are searching.
 # Try reorganizing to match things better and ensure that we don't look at similar fields multiple times.
@@ -340,12 +343,21 @@ Keyword:
 # Check everything else
     - table_of_contents:
       - [and, 50]
+    - subject:
+      - [onephrase, 300]
+      - [and, 50]
     - topic:
       - [onephrase, 125]
+      - [and, 25]
     - geographic:
       - [onephrase, 75]
+      - [and, 10]
     - genre:
       - [onephrase, 75]
+      - [and, 10]
+    - era:
+      - [onephrase, 75]
+      - [and, 10]
     - keywords:
       - [and, 10]
     - description:

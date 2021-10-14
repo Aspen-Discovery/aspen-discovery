@@ -6,10 +6,12 @@ class StaffDirectory extends Action
 	function launch()
 	{
 		global $interface;
+		global $library;
 
 		require_once ROOT_DIR . '/sys/WebBuilder/StaffMember.php';
 		$staffMember = new StaffMember();
 		$staffMember->orderBy('name');
+		$staffMember->libraryId = $library->libraryId;
 		$staffMember->find();
 		$staffMembers = [];
 		$hasPhotos = false;
@@ -26,7 +28,7 @@ class StaffDirectory extends Action
 		$this->display('staffDirectory.tpl', 'Staff Directory', '');
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/', 'Home');

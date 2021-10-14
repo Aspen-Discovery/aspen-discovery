@@ -151,21 +151,6 @@ class CatalogConnection
 		}
 
 		if ($user && !($user instanceof AspenError)) {
-			if ($user->displayName == '') {
-				if ($user->firstname == '') {
-					$user->displayName = $user->lastname;
-				} else {
-					// #PK-979 Make display name configurable firstname, last initial, vs first initial last name
-					$homeLibrary = $user->getHomeLibrary();
-					if ($homeLibrary == null || ($homeLibrary->__get('patronNameDisplayStyle') == 'firstinitial_lastname')) {
-						// #PK-979 Make display name configurable firstname, last initial, vs first initial last name
-						$user->displayName = substr($user->firstname, 0, 1) . '. ' . $user->lastname;
-					} elseif ($homeLibrary->__get('patronNameDisplayStyle') == 'lastinitial_firstname') {
-						$user->displayName = $user->firstname . ' ' . substr($user->lastname, 0, 1) . '.';
-					}
-				}
-				$user->update();
-			}
 			if ($parentAccount) $user->setParentUser($parentAccount); // only set when the parent account is passed.
 
 			//Record stats to show the user logged in
@@ -249,31 +234,13 @@ class CatalogConnection
 	 * by a specific patron.
 	 *
 	 * @param User $user The user to load transactions for
-	 * @return mixed            Array of the patron's transactions on success,
+	 * @return Checkout[]            Array of the patron's transactions on success,
 	 * AspenError otherwise.
 	 * @access public
 	 */
 	public function getCheckouts(User $user)
 	{
-		$transactions = $this->driver->getCheckouts($user);
-		foreach ($transactions as $key => $curTitle) {
-			$curTitle['user'] = $user->getNameAndLibraryLabel();
-			$curTitle['userId'] = $user->id;
-			$curTitle['fullId'] = $this->accountProfile->recordSource . ':' . $curTitle['id'];
-
-			if ($curTitle['dueDate']) {
-				// use the same time of day to calculate days until due, in order to avoid errors wiht rounding
-				$dueDate = strtotime('midnight', $curTitle['dueDate']);
-				$today = strtotime('midnight');
-				$daysUntilDue = ceil(($dueDate - $today) / (24 * 60 * 60));
-				$overdue = $daysUntilDue < 0;
-				$curTitle['overdue'] = $overdue;
-				$curTitle['daysUntilDue'] = $daysUntilDue;
-			}
-			//Determine if the record
-			$transactions[$key] = $curTitle;
-		}
-		return $transactions;
+		return $this->driver->getCheckouts($user);
 	}
 
 	/**
@@ -290,7 +257,13 @@ class CatalogConnection
 	 */
 	public function getFines($patron, $includeMessages = false)
 	{
-		return $this->driver->getFines($patron, $includeMessages);
+		$fines = $this->driver->getFines($patron, $includeMessages);
+		foreach ($fines as &$fine){
+			if (!array_key_exists('canPayFine', $fine)){
+				$fine['canPayFine'] = true;
+			}
+		}
+		return $fines;
 	}
 
 	/**
@@ -425,7 +398,7 @@ class CatalogConnection
 	{
 		$result = [
 			'success' => false,
-			'message' => translate('Unknown error')
+			'message' => translate(['text'=>'Unknown Error', 'isPublicFacing'=>true])
 		];
 		if ($action == 'deleteMarked') {
 			//Remove titles from database (do not remove from ILS)
@@ -453,7 +426,7 @@ class CatalogConnection
 				}
 			}
 			$result['success'] = true;
-			$result['message'] = translate(['text' => 'Deleted %1% entries from Reading History.', 1 => $numDeleted]);
+			$result['message'] = translate(['text' => 'Deleted %1% entries from Reading History.', 1 => $numDeleted, 'isPublicFacing'=>true]);
 		} elseif ($action == 'deleteAll') {
 			//Remove all titles from database (do not remove from ILS)
 			$readingHistoryDB = new ReadingHistoryEntry();
@@ -464,7 +437,7 @@ class CatalogConnection
 				$readingHistoryDB->update();
 			}
 			$result['success'] = true;
-			$result['message'] = translate('Deleted all entries from Reading History.');
+			$result['message'] = translate(['text' => 'Deleted all entries from Reading History.', 'isPublicFacing'=>true]);
 		} elseif ($action == 'optOut') {
 			//Delete the reading history (permanently this time since we are opting out)
 			$readingHistoryDB = new ReadingHistoryEntry();
@@ -473,21 +446,53 @@ class CatalogConnection
 
 			//Opt out within Aspen since the ILS does not seem to implement this functionality
 			$patron->trackReadingHistory = false;
-			$patron->initialReadingHistoryLoaded = false;
+
+			//Do not unmark that the initial reading history was loaded to avoid reloading if the ILS does track it.
+			//TODO: Remove everything from the ILS when available.
+			//$patron->initialReadingHistoryLoaded = false;
 			$patron->update();
 			$result['success'] = true;
-			$result['message'] = translate('You have been opted out of tracking Reading History');
+			$result['message'] = translate(['text' => 'You have been opted out of tracking Reading History', 'isPublicFacing'=>true]);
 		} elseif ($action == 'optIn') {
 			//Opt in within Aspen since the ILS does not seem to implement this functionality
 			$patron->trackReadingHistory = true;
 			$patron->update();
 
 			$result['success'] = true;
-			$result['message'] = translate('You have been opted out in to tracking Reading History');
+			$result['message'] = translate(['text' => 'You have been opted out in to tracking Reading History', 'isPublicFacing'=>true]);
 		}
 		if ($this->driver->performsReadingHistoryUpdatesOfILS()) {
 			$this->driver->doReadingHistoryAction($patron, $action, $selectedTitles);
 		}
+		return $result;
+	}
+
+	/**
+	 * @param User $patron
+	 * @param string $title
+	 * @param string $author
+	 *
+	 * @return array
+	 */
+	function deleteReadingHistoryEntryByTitleAuthor($patron, $title, $author){
+		$numDeleted = 0;
+
+		$readingHistoryDB = new ReadingHistoryEntry();
+		$readingHistoryDB->userId = $patron->id;
+		$readingHistoryDB->title = $title;
+		$readingHistoryDB->author = $author;
+		$readingHistoryDB->find();
+		if ($readingHistoryDB->getNumResults() > 0) {
+			while ($readingHistoryDB->fetch()) {
+				$readingHistoryDB->deleted = 1;
+				$readingHistoryDB->update();
+				$numDeleted++;
+			}
+		}
+
+		$result['success'] = true;
+		$result['message'] = translate(['text' => 'Deleted %1% entries from Reading History.', 1 => $numDeleted, 'isPublicFacing'=>true]);
+
 		return $result;
 	}
 
@@ -504,24 +509,7 @@ class CatalogConnection
 	 */
 	public function getHolds($user)
 	{
-		$holds = $this->driver->getHolds($user);
-		foreach ($holds as $section => $holdsForSection) {
-			foreach ($holdsForSection as $key => $curTitle) {
-				$curTitle['user'] = $user->getNameAndLibraryLabel();
-				$curTitle['userId'] = $user->id;
-				$curTitle['allowFreezeHolds'] = $user->getHomeLibrary()->allowFreezeHolds;
-				if (!isset($curTitle['sortTitle'])) {
-					$curTitle['sortTitle'] = $curTitle['title'];
-				}
-				if (isset($curTitle['canFreeze'])) {
-					//This is used in the Arlington App
-					$curTitle['freezeable'] = $curTitle['canFreeze'];
-				}
-				$holds[$section][$key] = $curTitle;
-			}
-		}
-
-		return $holds;
+		return $this->driver->getHolds($user);
 	}
 
 	/**
@@ -600,6 +588,11 @@ class CatalogConnection
 		return $this->driver->updatePatronInfo($user, $canUpdateContactInfo);
 	}
 
+	/**
+	 * @param User $user
+	 * @param string $homeLibraryCode
+	 * @return array
+	 */
 	function updateHomeLibrary($user, $homeLibraryCode)
 	{
 		$result = $this->driver->updateHomeLibrary($user, $homeLibraryCode);
@@ -614,36 +607,6 @@ class CatalogConnection
 			}
 		}
 		return $result;
-	}
-
-	function bookMaterial($patron, $recordId, $startDate, $startTime = null, $endDate = null, $endTime = null)
-	{
-		return $this->driver->bookMaterial($patron, $recordId, $startDate, $startTime, $endDate, $endTime);
-	}
-
-	function cancelBookedMaterial($patron, $cancelIds)
-	{
-		return $this->driver->cancelBookedMaterial($patron, $cancelIds);
-	}
-
-	function cancelAllBookedMaterial($patron)
-	{
-		return $this->driver->cancelAllBookedMaterial($patron);
-	}
-
-	/**
-	 * @param User $patron
-	 *
-	 * @return array
-	 */
-	function getMyBookings($patron)
-	{
-		$bookings = $this->driver->getMyBookings($patron);
-		foreach ($bookings as &$booking) {
-			$booking['user'] = $patron->getNameAndLibraryLabel();
-			$booking['userId'] = $patron->id;
-		}
-		return $bookings;
 	}
 
 	function selfRegister()
@@ -712,18 +675,19 @@ class CatalogConnection
 		$historyEntry['timesUsed'] = $readingHistoryDB->timesUsed;
 		/** @noinspection PhpUndefinedFieldInspection */
 		$historyEntry['checkedOut'] = $readingHistoryDB->checkedOut == null ? false : true;
+		$historyEntry['permanentId'] = $readingHistoryDB->groupedWorkPermanentId;
 		if (!$forExport) {
 			require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 			$recordDriver = new GroupedWorkDriver($readingHistoryDB->groupedWorkPermanentId);
 
 			if ($recordDriver->isValid()) {
 				$historyEntry['recordDriver'] = $recordDriver;
-				$historyEntry['permanentId'] = $readingHistoryDB->groupedWorkPermanentId;
 				$historyEntry['ratingData'] = $recordDriver->getRatingData();
 				$historyEntry['linkUrl'] = $recordDriver->getLinkUrl();
 				$historyEntry['coverUrl'] = $recordDriver->getBookcoverUrl('small');
+				$historyEntry['existsInCatalog'] = true;
 			} else {
-				$historyEntry['permanentId'] = '';
+				$historyEntry['existsInCatalog'] = false;
 				$historyEntry['ratingData'] = '';
 				$historyEntry['linkUrl'] = '';
 				$historyEntry['coverUrl'] = '';
@@ -738,6 +702,13 @@ class CatalogConnection
 	 */
 	public function updateReadingHistoryBasedOnCurrentCheckouts($patron)
 	{
+		//Check to see if we need to update the reading history.  Only update every 5 minutes in normal situations.
+		$curTime = time();
+		if (($curTime - $patron->lastReadingHistoryUpdate) < 60 * 5 && !isset($_REQUEST['reload'])){
+			return;
+		}
+
+		require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
 		require_once ROOT_DIR . '/sys/ReadingHistoryEntry.php';
 		//Note, include deleted titles here so they are not added multiple times.
 		$readingHistoryDB = new ReadingHistoryEntry();
@@ -750,43 +721,32 @@ class CatalogConnection
 			$historyEntry = [];
 			$historyEntry['source'] = $readingHistoryDB->source;
 			$historyEntry['id'] = $readingHistoryDB->sourceId;
-			$key = $historyEntry['source'] . ':' . $historyEntry['id'];
+			$key = strtolower($historyEntry['source'] . ':' . $historyEntry['id']);
 			$activeHistoryTitles[$key] = $historyEntry;
 		}
 
 		//Update reading history based on current checkouts.  That way it never looks out of date
 		$checkouts = $patron->getCheckouts(false, 'all');
 		foreach ($checkouts as $checkout) {
-			$source = $checkout['checkoutSource'];
-			if ($source == 'OverDrive') {
-				$sourceId = $checkout['overDriveId'];
-			} elseif ($source == 'Hoopla') {
-				$sourceId = $checkout['hooplaId'];
-			} elseif ($source == 'ILS') {
-				$sourceId = $checkout['recordId'];
-			} elseif ($source == 'eContent') {
-				$source = $checkout['recordType'];
-				$sourceId = $checkout['id'];
-			} else {
-				$sourceId = $checkout['recordId'];
-			}
-			$key = $source . ':' . $sourceId;
+			$source = $checkout->source;
+			$sourceId = $checkout->sourceId;
+			$key = strtolower($source . ':' . $sourceId);
 			if (array_key_exists($key, $activeHistoryTitles)) {
 				unset($activeHistoryTitles[$key]);
 			} else {
 				$historyEntryDB = new ReadingHistoryEntry();
 				$historyEntryDB->userId = $patron->id;
-				if (isset($checkout['groupedWorkId'])) {
-					$historyEntryDB->groupedWorkPermanentId = $checkout['groupedWorkId'] == null ? '' : $checkout['groupedWorkId'];
+				if (!empty($checkout->groupedWorkId)) {
+					$historyEntryDB->groupedWorkPermanentId = $checkout->groupedWorkId;
 				} else {
 					$historyEntryDB->groupedWorkPermanentId = "";
 				}
 
 				$historyEntryDB->source = $source;
 				$historyEntryDB->sourceId = $sourceId;
-				$historyEntryDB->title = substr($checkout['title'], 0, 150);
-				$historyEntryDB->author = isset($checkout['author']) ? substr($checkout['author'], 0, 75) : "";
-				$historyEntryDB->format = substr($checkout['format'], 0, 50);
+				$historyEntryDB->title = StringUtils::trimStringToLengthAtWordBoundary($checkout->title, 150, true);
+				$historyEntryDB->author = isset($checkout->author) ? StringUtils::trimStringToLengthAtWordBoundary($checkout->author, 75, true) : "";
+				$historyEntryDB->format = substr($checkout->format, 0, 50);
 				$historyEntryDB->checkOutDate = time();
 				if (!$historyEntryDB->insert()) {
 					global $logger;
@@ -812,6 +772,10 @@ class CatalogConnection
 				}
 			}
 		}
+
+		//Set the last update time
+		$patron->lastReadingHistoryUpdate = $curTime;
+		$patron->update();
 	}
 
 	function cancelHold($patron, $recordId, $cancelId = null)
@@ -829,16 +793,9 @@ class CatalogConnection
 		return $this->driver->thawHold($patron, $recordId, $itemToThawId);
 	}
 
-	function changeHoldPickupLocation($patron, $recordId, $itemToUpdateId, $newPickupLocation)
+	function changeHoldPickupLocation(User $patron, $recordId, $itemToUpdateId, $newPickupLocation)
 	{
 		return $this->driver->changeHoldPickupLocation($patron, $recordId, $itemToUpdateId, $newPickupLocation);
-	}
-
-	public function getBookingCalendar($recordId)
-	{
-		// Graceful degradation -- return null if method not supported by driver.
-		return method_exists($this->driver, 'getBookingCalendar') ?
-			$this->driver->getBookingCalendar($recordId) : null;
 	}
 
 	public function renewCheckout($patron, $recordId, $itemId = null, $itemIndex = null)
@@ -846,7 +803,7 @@ class CatalogConnection
 		return $this->driver->renewCheckout($patron, $recordId, $itemId, $itemIndex);
 	}
 
-	public function renewAll($patron)
+	public function renewAll(User $patron)
 	{
 		if ($this->driver->hasFastRenewAll()) {
 			return $this->driver->renewAll($patron);
@@ -863,11 +820,14 @@ class CatalogConnection
 			$numRenewals = 0;
 			$failure_messages = array();
 			foreach ($currentTransactions as $transaction) {
-				$curResult = $this->renewCheckout($patron, $transaction['recordId'], $transaction['renewIndicator'], null);
+				$curResult = $this->renewCheckout($patron, $transaction->recordId, $transaction->renewIndicator, null);
 				if ($curResult['success']) {
 					$numRenewals++;
 				} else {
-					$failure_messages[] = $curResult['message'];
+					if ($curResult['message'] == 'The item could not be renewed'){
+						require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
+						$failure_messages[] = StringUtils::removeTrailingPunctuation($transaction->title) . ' could not be renewed';
+					}
 				}
 			}
 			$renewResult['Renewed'] += $numRenewals;
@@ -882,7 +842,7 @@ class CatalogConnection
 		}
 	}
 
-	public function placeVolumeHold($patron, $recordId, $volumeId, $pickupBranch)
+	public function placeVolumeHold(User $patron, $recordId, $volumeId, $pickupBranch)
 	{
 		return $this->driver->placeVolumeHold($patron, $recordId, $volumeId, $pickupBranch);
 	}
@@ -998,12 +958,23 @@ class CatalogConnection
 		return $this->driver->getPatronUpdateForm($user);
 	}
 
-	public function getAccountSummary($user)
+	public function getAccountSummary(User $user)
 	{
-		return $this->driver->getAccountSummary($user);
+		list($existingId, $summary) = $user->getCachedAccountSummary('ils');
+
+		if ($summary === null || isset($_REQUEST['reload'])) {
+			$summary = $this->driver->getAccountSummary($user);
+			$summary->lastLoaded = time();
+			$summary->id = $existingId;
+			$summary->update();
+		}
+		return $summary;
 	}
 
-	public function showMessagingSettings()
+	/**
+	 * @return bool
+	 */
+	public function showMessagingSettings() : bool
 	{
 		if ($this->driver == null) {
 			return false;
@@ -1011,19 +982,25 @@ class CatalogConnection
 		return $this->driver->showMessagingSettings();
 	}
 
-	public function getMessagingSettingsTemplate(User $user)
+	/**
+	 * @param User $user
+	 * @return string
+	 */
+	public function getMessagingSettingsTemplate(User $user) : ?string
 	{
 		return $this->driver->getMessagingSettingsTemplate($user);
 	}
 
-	public function processMessagingSettingsForm(User $user)
+	public function processMessagingSettingsForm(User $user) : array
 	{
 		return $this->driver->processMessagingSettingsForm($user);
 	}
 
 	public function completeFinePayment(User $patron, UserPayment $payment)
 	{
-		return $this->driver->completeFinePayment($patron, $payment);
+		$result = $this->driver->completeFinePayment($patron, $payment);
+		$patron->clearCachedAccountSummaryForSource($this->driver->getIndexingProfile()->name);
+		return $result;
 	}
 
 	public function patronEligibleForHolds(User $patron)
@@ -1129,6 +1106,8 @@ class CatalogConnection
 	public function logout(User $user)
 	{
 		$this->driver->logout($user);
+		$user->lastLoginValidation = 0;
+		$user->update();
 	}
 
 	public function getHoldsReportData($location) {
@@ -1143,10 +1122,23 @@ class CatalogConnection
 	 * Loads any contact information that is not stored by Aspen Discovery from the ILS. Updates the user object.
 	 *
 	 * @param User $user
-	 * @return mixed
 	 */
 	public function loadContactInformation(User $user)
 	{
-		return $this->driver->loadContactInformation($user);
+		$this->driver->loadContactInformation($user);
+	}
+
+	public function getILSMessages(User $user)
+	{
+		return $this->driver->getILSMessages($user);
+	}
+
+	public function confirmHold(User $user, $recordId, $confirmationId)
+	{
+		return $this->driver->confirmHold($user, $recordId, $confirmationId);
+	}
+
+	public function treatVolumeHoldsAsItemHolds() {
+		return $this->driver->treatVolumeHoldsAsItemHolds();
 	}
 }

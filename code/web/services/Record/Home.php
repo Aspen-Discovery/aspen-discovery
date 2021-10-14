@@ -47,6 +47,8 @@ class Record_Home extends GroupedWorkSubRecordHomeAction{
 			$appearsOnLists = UserList::getUserListsForRecord('GroupedWork', $this->recordDriver->getPermanentId());
 			$interface->assign('appearsOnLists', $appearsOnLists);
 
+			$groupedWork->loadReadingHistoryIndicator();
+
 			//Load information for display in the template rather than processing specific fields in the template
 			$marcField = $marcRecord->getField('245');
 			$recordTitle = $this->getSubfieldData($marcField, 'a');
@@ -191,15 +193,6 @@ class Record_Home extends GroupedWorkSubRecordHomeAction{
 			$interface->assign('shortId', $this->id);
 		}
 
-		// Define Default Tab
-		$tab = (isset($_GET['action'])) ? $_GET['action'] : 'Description';
-		$interface->assign('tab', $tab);
-
-		if (isset($_REQUEST['detail'])){
-			$detail = strip_tags($_REQUEST['detail']);
-			$interface->assign('defaultDetailsTab', $detail);
-		}
-
 		// Retrieve User Search History
 		$this->lastSearch = isset($_SESSION['lastSearchURL']) ? $_SESSION['lastSearchURL'] : false;
 		$interface->assign('lastSearch', $this->lastSearch);
@@ -250,11 +243,6 @@ class Record_Home extends GroupedWorkSubRecordHomeAction{
 		$interface->assign('semanticData', json_encode($this->recordDriver->getSemanticData()));
 
 		// Display Page
-		global $configArray;
-		if ($configArray['Catalog']['showExploreMoreForFullRecords']) {
-			$interface->assign('showExploreMore', true);
-		}
-
 		$this->display('full-record.tpl', $this->recordDriver->getTitle(), '', false);
 
 	}

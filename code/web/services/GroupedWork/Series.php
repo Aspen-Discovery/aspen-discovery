@@ -86,7 +86,7 @@ class GroupedWork_Series extends Action
 		$this->display('view-series.tpl', $this->seriesTitle,'', false);
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('', $this->seriesTitle, false);

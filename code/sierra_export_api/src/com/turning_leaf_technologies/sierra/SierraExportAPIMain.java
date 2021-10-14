@@ -17,6 +17,7 @@ import com.turning_leaf_technologies.indexing.IlsExtractLogEntry;
 import com.turning_leaf_technologies.indexing.IndexingProfile;
 import com.turning_leaf_technologies.indexing.IndexingUtils;
 import com.turning_leaf_technologies.indexing.RecordIdentifier;
+import com.turning_leaf_technologies.marc.MarcUtil;
 import com.turning_leaf_technologies.reindexer.GroupedWorkIndexer;
 import com.turning_leaf_technologies.config.ConfigUtil;
 import com.turning_leaf_technologies.grouping.MarcRecordGrouper;
@@ -86,7 +87,10 @@ public class SierraExportAPIMain {
 		}
 
 		if (extractSingleRecord){
-			String recordToExtract = StringUtils.getInputFromCommandLine("Enter the id of the record to extract, do not include the .b or the check digit for Sierra/Millennium systems");
+			String recordToExtract = StringUtils.getInputFromCommandLine("Enter the id of the record to extract, can optionally include the .b or the check digit for Sierra/Millennium systems");
+			if (recordToExtract.substring(0, 2).equals(".b")){
+				recordToExtract = recordToExtract.substring(2, recordToExtract.length() -1);
+			}
 			allBibsToUpdate.add(recordToExtract);
 		}
 
@@ -97,7 +101,6 @@ public class SierraExportAPIMain {
 		//Get the checksum of the JAR when it was started so we can stop if it has changed.
 		long myChecksumAtStart = JarUtil.getChecksumForJar(logger, processName, "./" + processName + ".jar");
 		long reindexerChecksumAtStart = JarUtil.getChecksumForJar(logger, "reindexer", "../reindexer/reindexer.jar");
-		long recordGroupingChecksumAtStart = JarUtil.getChecksumForJar(logger, "record_grouping", "../record_grouping/record_grouping.jar");
 
 		while (true) {
 			Date startTime = new Date();
@@ -134,6 +137,7 @@ public class SierraExportAPIMain {
 				Connection sierraConn = null;
 				SierraInstanceInformation sierraInstanceInformation = initializeSierraConnection(dbConn);
 				indexingProfile = IndexingProfile.loadIndexingProfile(dbConn, sierraInstanceInformation.indexingProfileName, logger);
+				logEntry.setIsFullUpdate(indexingProfile.isRunFullUpdate());
 
 				if (sierraInstanceInformation.sierraConnection == null) {
 					logEntry.incErrors("Could not connect to the Sierra database");
@@ -178,8 +182,19 @@ public class SierraExportAPIMain {
 				}
 				apiBaseUrl = sierraInstanceInformation.apiBaseUrl + "/iii/sierra-api/v" + apiVersion;
 
-				//Process MARC record changes
+
 				if (!extractSingleRecord) {
+					//Check to see if we should regroup all existing records
+					try {
+						if (indexingProfile.isRegroupAllRecords()) {
+							MarcRecordGrouper recordGrouper = getRecordGroupingProcessor();
+							recordGrouper.regroupAllRecords(dbConn, indexingProfile, getGroupedWorkIndexer(), logEntry);
+						}
+					}catch (Exception e){
+						logEntry.incErrors("Error regrouping all records", e);
+					}
+
+					//Load MARC record changes
 					getBibsAndItemUpdatesFromSierra(sierraInstanceInformation, dbConn, sierraConn);
 				}
 
@@ -256,11 +271,6 @@ public class SierraExportAPIMain {
 				disconnectDatabase();
 				break;
 			}
-			if (recordGroupingChecksumAtStart != JarUtil.getChecksumForJar(logger, "record_grouping", "../record_grouping/record_grouping.jar")){
-				IndexingUtils.markNightlyIndexNeeded(dbConn, logger);
-				disconnectDatabase();
-				break;
-			}
 
 			//Check to see if nightly indexing is running and if so, wait until it is done.
 			if (IndexingUtils.isNightlyIndexRunning(configIni, serverName, logger)) {
@@ -301,21 +311,12 @@ public class SierraExportAPIMain {
 			while (getRecordsToReloadRS.next()) {
 				long recordToReloadId = getRecordsToReloadRS.getLong("id");
 				String recordIdentifier = getRecordsToReloadRS.getString("identifier");
-				File marcFile = indexingProfile.getFileForIlsRecord(recordIdentifier);
-				if (!marcFile.exists()) {
-					logEntry.incErrors("Could not find marc for record to reload " + recordIdentifier);
-				} else {
-					FileInputStream marcFileStream = new FileInputStream(marcFile);
-					MarcPermissiveStreamReader streamReader = new MarcPermissiveStreamReader(marcFileStream, true, true);
-					if (streamReader.hasNext()) {
-						Record marcRecord = streamReader.next();
-						//Regroup the record
-						String groupedWorkId = groupSierraRecord(marcRecord);
-						//Reindex the record
-						getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
-					} else {
-						logEntry.incErrors("Could not read file " + marcFile);
-					}
+				Record marcRecord = getGroupedWorkIndexer().loadMarcRecordFromDatabase(indexingProfile.getName(), recordIdentifier, logEntry);
+				if (marcRecord != null){
+					//Regroup the record
+					String groupedWorkId = groupSierraRecord(marcRecord);
+					//Reindex the record
+					getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
 				}
 
 				markRecordToReloadAsProcessedStmt.setLong(1, recordToReloadId);
@@ -615,11 +616,11 @@ public class SierraExportAPIMain {
 				getGroupedWorkIndexer().processGroupedWork(result.permanentId);
 			} else if (result.deleteWork) {
 				//Delete the work from solr and the database
-				getGroupedWorkIndexer().deleteRecord(result.permanentId, result.groupedWorkId);
+				getGroupedWorkIndexer().deleteRecord(result.permanentId);
 			}
 			logEntry.incDeleted();
 		} catch (Exception e) {
-			logger.error("Error processing deleted bibs", e);
+			logger.error("Error removing record from grouped work", e);
 		}
 	}
 
@@ -952,17 +953,8 @@ public class SierraExportAPIMain {
 				//Get Items for the bib record
 				getItemsForBib(sierraInstanceInformation, id, marcRecord);
 				logger.debug("Processed items for Bib");
-				RecordIdentifier identifier = getRecordGroupingProcessor().getPrimaryIdentifierFromMarcRecord(marcRecord, indexingProfile.getName(), indexingProfile.isDoAutomaticEcontentSuppression());
-				File marcFile = indexingProfile.getFileForIlsRecord(identifier.getIdentifier());
-				if (!marcFile.getParentFile().exists()) {
-					if (!marcFile.getParentFile().mkdirs()) {
-						logEntry.incErrors("Could not create directories for " + marcFile.getAbsolutePath());
-					}
-				}
-				MarcWriter marcWriter = new MarcStreamWriter(new FileOutputStream(marcFile, false), "UTF-8", true);
-				marcWriter.write(marcRecord);
-				marcWriter.close();
-				logger.debug("Wrote marc record for " + identifier.getIdentifier());
+				RecordIdentifier identifier = getRecordGroupingProcessor().getPrimaryIdentifierFromMarcRecord(marcRecord, indexingProfile);
+				GroupedWorkIndexer.MarcStatus marcStatus = getGroupedWorkIndexer().saveMarcRecordToDatabase(indexingProfile, identifier.getIdentifier(), marcRecord);
 
 				//Setup the grouped work for the record.  This will take care of either adding it to the proper grouped work
 				//or creating a new grouped work
@@ -1070,6 +1062,10 @@ public class SierraExportAPIMain {
 						if (fixedFields.has("60") && indexingProfile.getICode2Subfield() != ' '){
 							itemField.addSubfield(marcFactory.newSubfield(indexingProfile.getICode2Subfield(), fixedFields.getJSONObject("60").getString("value")));
 						}
+						//opac note
+						if (fixedFields.has("108") && indexingProfile.getNoteSubfield() != ' '){
+							itemField.addSubfield(marcFactory.newSubfield(indexingProfile.getNoteSubfield(), fixedFields.getJSONObject("108").getString("value")));
+						}
 
 						//Process variable fields
 						for (int j = 0; j < varFields.length(); j++){
@@ -1146,21 +1142,13 @@ public class SierraExportAPIMain {
 				if (marcData != null) {
 					logger.debug("Got marc record file");
 					//REad the MARC records from the Sierra API, should be UTF8, but not 100% sure
-					MarcReader marcReader = new MarcPermissiveStreamReader(new ByteArrayInputStream(marcData.getBytes(StandardCharsets.UTF_8)), true, true, "BESTGUESS");
+					MarcReader marcReader = new MarcPermissiveStreamReader(new ByteArrayInputStream(marcData.getBytes(StandardCharsets.UTF_8)), true, true, "UTF8");
 					while (marcReader.hasNext()) {
 						try {
 							Record marcRecord = marcReader.next();
-							RecordIdentifier identifier = getRecordGroupingProcessor().getPrimaryIdentifierFromMarcRecord(marcRecord, indexingProfile.getName(), indexingProfile.isDoAutomaticEcontentSuppression());
-							File marcFile = indexingProfile.getFileForIlsRecord(identifier.getIdentifier());
-							if (!marcFile.getParentFile().exists()) {
-								if (!marcFile.getParentFile().mkdirs()) {
-									logger.error("Could not create directories for " + marcFile.getAbsolutePath());
-								}
-							}
-							MarcWriter marcWriter = new MarcStreamWriter(new FileOutputStream(marcFile, false), "UTF-8", true);
-							marcWriter.write(marcRecord);
-							marcWriter.close();
-							logger.debug("Wrote marc record for " + identifier.getIdentifier());
+							RecordIdentifier identifier = getRecordGroupingProcessor().getPrimaryIdentifierFromMarcRecord(marcRecord, indexingProfile);
+							logEntry.setCurrentId(identifier.getIdentifier());
+							GroupedWorkIndexer.MarcStatus status = getGroupedWorkIndexer().saveMarcRecordToDatabase(indexingProfile, identifier.getIdentifier(), marcRecord);
 
 							//Setup the grouped work for the record.  This will take care of either adding it to the proper grouped work
 							//or creating a new grouped work
@@ -1176,6 +1164,8 @@ public class SierraExportAPIMain {
 							logger.debug("Processed " + identifier.getIdentifier());
 						} catch (MarcException mre) {
 							logger.info("Error loading marc record from file, will load manually");
+						} catch (Exception e) {
+							logEntry.incErrors("Error reading marc record from file", e);
 						}
 					}
 					for (String id : idArray){
@@ -1305,7 +1295,8 @@ public class SierraExportAPIMain {
 	private static boolean connectToSierraAPI(SierraInstanceInformation sierraInstanceInformation, String baseUrl){
 		//Check to see if we already have a valid token
 		if (sierraAPIToken != null){
-			if (sierraAPIExpiration - new Date().getTime() > 0){
+			//Give this a buffer of 60 seconds to be sure the next call completes in time
+			if (sierraAPIExpiration - new Date().getTime() > 60000){
 				//logger.debug("token is still valid");
 				return true;
 			}else{
@@ -1355,7 +1346,7 @@ public class SierraExportAPIMain {
 					sierraAPIExpiration = new Date().getTime() + (parser.getLong("expires_in") * 1000) - 10000;
 					//logger.debug("Sierra token is " + sierraAPIToken);
 				}catch (JSONException jse){
-					logger.error("Error parsing response to json " + response.toString(), jse);
+					logger.error("Error parsing response to json " + response, jse);
 					return false;
 				}
 
@@ -1764,7 +1755,7 @@ public class SierraExportAPIMain {
 	}
 
 	private static String groupSierraRecord(Record marcRecord) {
-		return getRecordGroupingProcessor().processMarcRecord(marcRecord, true);
+		return getRecordGroupingProcessor().processMarcRecord(marcRecord, true, null);
 	}
 
 	private static MarcRecordGrouper getRecordGroupingProcessor() {

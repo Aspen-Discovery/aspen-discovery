@@ -7,8 +7,7 @@ class EBSCO_Results extends ResultsAction {
 		global $aspenUsage;
 
 		if (!isset($_REQUEST['lookfor']) || empty($_REQUEST['lookfor'])){
-			$this->display('noSearchTerm.tpl', 'Please enter a search term');
-			return;
+			$_REQUEST['lookfor'] = '*';
 		}
 
 		$aspenUsage->ebscoEdsSearches++;
@@ -120,7 +119,7 @@ class EBSCO_Results extends ResultsAction {
 		$this->display($summary['resultTotal'] > 0 ? 'list.tpl' : 'list-none.tpl', $pageTitle, $sidebar, false);
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		return parent::getResultsBreadcrumbs('Articles & Databases');
 	}

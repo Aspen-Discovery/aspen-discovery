@@ -406,7 +406,7 @@ BODY;
 				$searchIndexes = array();
 				if ($searchOptions != null) {
 					foreach ($searchOptions->AvailableSearchCriteria->AvailableSearchFields as $searchField) {
-						$searchIndexes[$searchField->FieldCode] = $searchField->Label;
+						$searchIndexes[$searchField->FieldCode] = translate(['text'=>$searchField->Label, 'isPublicFacing'=>true, 'inAttribute'=>true]);
 					}
 				}
 				global $configArray;
@@ -533,7 +533,11 @@ BODY;
 				return null;
 			}else{
 				$recordData = json_decode($recordInfoStr);
-				return $recordData->Record;
+				if (isset($recordData->Record)) {
+					return $recordData->Record;
+				}else{
+					return null;
+				}
 			}
 		}
 	}

@@ -51,6 +51,11 @@ public class SideLoadFile implements Comparable<SideLoadFile>{
 			this.needsReindex = true;
 			this.lastChanged = marcFile.lastModified() / 1000;
 		}
+		if (this.deletedTime != 0){
+			this.deletedTime = 0;
+			this.needsReindex = true;
+			this.lastChanged = marcFile.lastModified() / 1000;
+		}
 
 	}
 

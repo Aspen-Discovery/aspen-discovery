@@ -4,7 +4,7 @@ class LocationRecordOwned extends RecordOwned{
 	public $__table = 'location_records_owned';    // table name
 	public $locationId;
 
-	static function getObjectStructure(){
+	static function getObjectStructure() : array {
 		$location = new Location();
 		$location->orderBy('displayName');
 		if (!UserAccount::userHasPermission('Administer All Locations')){

@@ -20,7 +20,13 @@
 									AspenDiscovery.Account.completePayPalOrder(details.id, '{$userId}');
 								{rdelim}
 							);
-						{rdelim}
+						{rdelim},
+						onError: function(error) {ldelim}
+							AspenDiscovery.Account.handlePayPalError(error);
+						{rdelim},
+						onCancel: function(data) {ldelim}
+							AspenDiscovery.Account.cancelPayPalError();
+						{rdelim},
 					{rdelim}).render('#paypal-button-container{$userId}');
 				{rdelim});
 			</script>

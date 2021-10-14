@@ -4,31 +4,33 @@ require_once ROOT_DIR . '/sys/File/FileUpload.php';
 
 class WebBuilder_PDFs extends ObjectEditor
 {
-	function getObjectType()
+	function getObjectType() : string
 	{
 		return 'FileUpload';
 	}
 
-	function getToolName()
+	function getToolName() : string
 	{
 		return 'PDFs';
 	}
 
-	function getModule()
+	function getModule() : string
 	{
 		return 'WebBuilder';
 	}
 
-	function getPageTitle()
+	function getPageTitle() : string
 	{
 		return 'Uploaded PDFs';
 	}
 
-	function getAllObjects()
+	function getAllObjects($page, $recordsPerPage) : array
 	{
 		$object = new FileUpload();
 		$object->type = 'web_builder_pdf';
-		$object->orderBy('title');
+		$object->orderBy($this->getSort());
+		$this->applyFilters($object);
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		$objectList = array();
 		while ($object->fetch()) {
@@ -37,12 +39,17 @@ class WebBuilder_PDFs extends ObjectEditor
 		return $objectList;
 	}
 
+	function getDefaultSort() : string
+	{
+		return 'title asc';
+	}
+
 	function updateFromUI($object, $structure){
 		$object->type = 'web_builder_pdf';
 		return parent::updateFromUI($object, $structure);
 	}
 
-	function getObjectStructure()
+	function getObjectStructure() : array
 	{
 		$objectStructure = FileUpload::getObjectStructure();
 		unset($objectStructure['type']);
@@ -55,12 +62,12 @@ class WebBuilder_PDFs extends ObjectEditor
 		return $objectStructure;
 	}
 
-	function getPrimaryKeyColumn()
+	function getPrimaryKeyColumn() : string
 	{
 		return 'id';
 	}
 
-	function getIdKeyColumn()
+	function getIdKeyColumn() : string
 	{
 		return 'id';
 	}
@@ -69,7 +76,7 @@ class WebBuilder_PDFs extends ObjectEditor
 	 * @param FileUpload $existingObject
 	 * @return array
 	 */
-	function getAdditionalObjectActions($existingObject)
+	function getAdditionalObjectActions($existingObject) : array
 	{
 		$objectActions = [];
 		if (!empty($existingObject) && !empty($existingObject->id)){
@@ -81,16 +88,20 @@ class WebBuilder_PDFs extends ObjectEditor
 				'text' => 'Download PDF',
 				'url' => '/WebBuilder/DownloadPDF?id=' . $existingObject->id,
 			];
+			$objectActions[] = [
+				'text' => 'View Thumbnail',
+				'url' => '/WebBuilder/ViewThumbnail?id=' . $existingObject->id,
+			];
 		}
 		return $objectActions;
 	}
 
-	function getInstructions()
+	function getInstructions() : string
 	{
 		return '';
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
@@ -99,12 +110,12 @@ class WebBuilder_PDFs extends ObjectEditor
 		return $breadcrumbs;
 	}
 
-	function canView()
+	function canView() : bool
 	{
 		return UserAccount::userHasPermission(['Administer All Web Content']);
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return 'web_builder';
 	}

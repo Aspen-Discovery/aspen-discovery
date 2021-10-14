@@ -1,6 +1,6 @@
 {if $limitList}
 	<div id="searchLimitContainer">
-		<div id="remove-search-label" class="sidebar-label">{translate text='Limit Your Results'}</div>
+		<div id="remove-search-label" class="sidebar-label">{translate text='Limit Your Results' isPublicFacing=true}</div>
 		{foreach from=$limitList item=limit}
 			<div class="facetValue">
 				<label for="limit_{$limit.value|escapeCSS}">

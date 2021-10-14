@@ -53,7 +53,7 @@ class MyAccount_ResetPinPage extends MyAccount
 		$this->display('resetPinPage.tpl', 'Reset PIN/Password');
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'My Account');

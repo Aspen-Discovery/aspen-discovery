@@ -17,24 +17,34 @@ abstract class ObjectEditor extends Admin_Admin
 			$user->update();
 		}
 
+		$structure = $this->getObjectStructure();
+		$structure = $this->applyPermissionsToObjectStructure($structure);
 		$interface->assign('canAddNew', $this->canAddNew());
 		$interface->assign('canCopy', $this->canCopy());
 		$interface->assign('canCompare', $this->canCompare());
 		$interface->assign('canDelete', $this->canDelete());
+		$interface->assign('canSort', $this->canSort());
+		$interface->assign('canFilter', $this->canFilter($structure));
+		$interface->assign('canBatchUpdate', $this->canBatchEdit());
 		$interface->assign('showReturnToList', $this->showReturnToList());
 
 		$interface->assign('objectType', $this->getObjectType());
 		$interface->assign('toolName', $this->getToolName());
 		$interface->assign('initializationJs', $this->getInitializationJs());
+		$interface->assign('initializationAdditionalJs', $this->getInitializationAdditionalJs());
 
 		//Define the structure of the object.
-		$structure = $this->getObjectStructure();
 		$interface->assign('structure', $structure);
 		$objectAction = isset($_REQUEST['objectAction']) ? $_REQUEST['objectAction'] : null;
 		$customListActions = $this->customListActions();
 		$interface->assign('customListActions', $customListActions);
 		if (is_null($objectAction) || $objectAction == 'list'){
 			$interface->assign('instructions', $this->getListInstructions());
+			$interface->assign('sortableFields', $this->getSortableFields($structure));
+			$interface->assign('sort', $this->getSort());
+			$filterFields = $this->getFilterFields($structure);
+			$interface->assign('filterFields', $filterFields);
+			$interface->assign('appliedFilters', $this->getAppliedFilters($filterFields));
 			$this->viewExistingObjects();
 		}elseif (($objectAction == 'save' || $objectAction == 'delete')) {
 			$this->editObject($objectAction, $structure);
@@ -56,34 +66,54 @@ abstract class ObjectEditor extends Admin_Admin
 	/**
 	 * The class name of the object which is being edited
 	 */
-	abstract function getObjectType();
+	abstract function getObjectType() : string;
 	/**
 	 * The page name of the tool (typically the plural of the object)
 	 */
-	abstract function getToolName();
+	abstract function getToolName() : string;
 	/**
 	 * The title of the page to be displayed
 	 */
-	abstract function getPageTitle();
+	abstract function getPageTitle() : string;
+
 	/**
 	 * Load all objects into an array keyed by the primary key
+	 * @param int $page - The current page to display
+	 * @param int $recordsPerPage - Number of records to show per page
+	 * @return DataObject[]
 	 */
-	abstract function getAllObjects();
+	abstract function getAllObjects($page, $recordsPerPage) : array;
+
+	protected $_numObjects = null;
+	/**
+	 * Get a count of the number of objects so we can paginate as needed
+	 */
+	function getNumObjects() : int{
+		if ($this->_numObjects == null) {
+			/** @var DataObject $object */
+			$objectType = $this->getObjectType();
+			$object = new $objectType();
+			$this->applyFilters($object);
+			$this->_numObjects = $object->count();
+		}
+		return $this->_numObjects;
+	}
 	/**
 	 * Define the properties which are editable for the object
 	 * as well as how they should be treated while editing, and a description for the property
 	 */
-	abstract function getObjectStructure();
+	abstract function getObjectStructure() : array;
 	/**
 	 * The name of the column which defines this as unique
 	 */
-	abstract function getPrimaryKeyColumn();
+	abstract function getPrimaryKeyColumn() : string;
 	/**
 	 * The id of the column which serves to join other columns
 	 */
-	abstract function getIdKeyColumn();
+	abstract function getIdKeyColumn() : string;
 
-	function getExistingObjectById($id){
+	function getExistingObjectById($id) : ?DataObject
+	{
 		$objectType = $this->getObjectType();
 		$idColumn = $this->getIdKeyColumn();
 		/** @var DataObject $curLibrary */
@@ -102,7 +132,8 @@ abstract class ObjectEditor extends Admin_Admin
 	 * @param $structure
 	 * @return DataObject|false
 	 */
-	function insertObject($structure){
+	function insertObject($structure)
+	{
 		$objectType = $this->getObjectType();
 		/** @var DataObject $newObject */
 		$newObject = new $objectType;
@@ -115,7 +146,7 @@ abstract class ObjectEditor extends Admin_Admin
 				if ($newObject->getLastError()) {
 					$errorDescription = $newObject->getLastError();
 				} else {
-					$errorDescription = 'Unknown error';
+					$errorDescription = translate(['text'=>'Unknown Error', 'isPublicFacing'=>true]);
 				}
 				$logger->log('Could not insert new object ' . $ret . ' ' . $errorDescription, Logger::LOG_DEBUG);
 				$user = UserAccount::getActiveUserObj();
@@ -145,8 +176,10 @@ abstract class ObjectEditor extends Admin_Admin
 			$propertyName = $property['property'];
 			if (isset($_REQUEST[$propertyName])){
 				$object->$propertyName = $_REQUEST[$propertyName];
-			}elseif (!empty($property['default'])){
+			}elseif (isset($property['default'])){
 				$object->$propertyName = $property['default'];
+			}elseif ($property['type'] == 'section'){
+				$this->setDefaultValues($object, $property['properties']);
 			}
 		}
 	}
@@ -157,12 +190,32 @@ abstract class ObjectEditor extends Admin_Admin
 	}
 	function viewExistingObjects(){
 		global $interface;
+		$numObjects = $this->getNumObjects();
+		$page = isset($_REQUEST['page']) ? $_REQUEST['page'] : 1;
+		if (!is_numeric($page)){
+			$page = 1;
+		}
+		$recordsPerPage = isset($_REQUEST['pageSize']) ? $_REQUEST['pageSize'] : $this->getDefaultRecordsPerPage();
 		//Basic List
-		$allObjects = $this->getAllObjects();
+		$allObjects = $this->getAllObjects($page, $recordsPerPage);
+
+		if ($this->supportsPagination()) {
+			$options = [
+				'totalItems' => $numObjects,
+				'fileName' => "/{$this->getModule()}/{$this->getToolName()}?page=%d",
+				'perPage' => $recordsPerPage,
+				'canChangeRecordsPerPage' => true,
+				'canJumpToPage' => true
+			];
+			$pager = new Pager($options);
+			$interface->assign('pageLinks', $pager->getLinks());
+		}
+
 		$interface->assign('dataList', $allObjects);
 		if (count($allObjects) < 2){
 			$interface->assign('canCompare', false);
 		}
+		$interface->assign('showQuickFilterOnPropertiesList', $this->showQuickFilterOnPropertiesList());
 		$interface->setTemplate('../Admin/propertiesList.tpl');
 	}
 	function viewIndividualObject($structure){
@@ -176,11 +229,21 @@ abstract class ObjectEditor extends Admin_Admin
 		if (isset($_REQUEST['id'])){
 			$id = $_REQUEST['id'];
 			$existingObject = $this->getExistingObjectById($id);
-			$interface->assign('id', $id);
-			if (method_exists($existingObject, 'label')){
-				$interface->assign('objectName', $existingObject->label());
+			if ($existingObject != null){
+				if ($existingObject->canActiveUserEdit()) {
+					$interface->assign('id', $id);
+					if (method_exists($existingObject, 'label')) {
+						$interface->assign('objectName', $existingObject->label());
+					}
+					$this->activeObject = $existingObject;
+				}else{
+					$interface->setTemplate('../Admin/noPermission.tpl');
+					return;
+				}
+			}else{
+				$interface->setTemplate('../Admin/invalidObject.tpl');
+				return;
 			}
-			$this->activeObject = $existingObject;
 		}else{
 			$existingObject = null;
 		}
@@ -230,7 +293,7 @@ abstract class ObjectEditor extends Admin_Admin
 							if ($curObject->_lastError) {
 								$errorDescription = $curObject->_lastError->getUserInfo();
 							} else {
-								$errorDescription = 'Unknown error';
+								$errorDescription = translate(['text'=>'Unknown Error', 'isPublicFacing'=>true]);
 							}
 							$user->updateMessage = "An error occurred updating {$this->getObjectType()} with id of $id <br/>{$errorDescription}";
 							$user->updateMessageIsError = true;
@@ -295,7 +358,7 @@ abstract class ObjectEditor extends Admin_Admin
 		return true;
 	}
 
-	function getModule(){
+	function getModule() : string{
 		return 'Admin';
 	}
 
@@ -307,12 +370,34 @@ abstract class ObjectEditor extends Admin_Admin
 		return $this->canAddNew();
 	}
 
+	public function canEdit(DataObject $object){
+		return true;
+	}
+
 	public function canCompare() {
 		return true;
 	}
 
 	public function canDelete(){
 		return true;
+	}
+
+	public function canBatchEdit() {
+		return $this->getNumObjects() > 1;
+	}
+
+	public function canSort() : bool {
+		return $this->getNumObjects() > 3;
+	}
+
+	function getSort(){
+		return isset($_REQUEST['sort'])? $_REQUEST['sort'] : $this->getDefaultSort();
+	}
+
+	abstract function getDefaultSort() : string;
+
+	public function canFilter($objectStructure){
+		return ($this->getNumObjects() > 3) || (count($this->getAppliedFilters($objectStructure)) > 0);
 	}
 
 	public function customListActions(){
@@ -323,17 +408,20 @@ abstract class ObjectEditor extends Admin_Admin
 	 * @param DataObject $existingObject
 	 * @return array
 	 */
-	function getAdditionalObjectActions(/** @noinspection PhpUnusedParameterInspection */ $existingObject){
+	function getAdditionalObjectActions($existingObject){
 		return array();
 	}
 
-	function getInstructions(){
+	function getInstructions() : string{
 		return '';
 	}
 	function getListInstructions(){
 		return $this->getInstructions();
 	}
-	function getInitializationJs(){
+	function getInitializationJs() : string {
+		return '';
+	}
+	function getInitializationAdditionalJs(){
 		return '';
 	}
 
@@ -360,6 +448,7 @@ abstract class ObjectEditor extends Admin_Admin
 				$interface->assign('error', 'Could not load object from the database');
 			}else{
 				$properties = [];
+				$structure = $this->applyPermissionsToObjectStructure($structure);
 				$properties = $this->compareObjectProperties($structure, $object1, $object2, $properties, '');
 				$interface->assign('properties', $properties);
 			}
@@ -421,9 +510,17 @@ abstract class ObjectEditor extends Admin_Admin
 	function getPropertyValue($property, $propertyValue, $propertyType)
 	{
 		if ($propertyType == 'oneToMany' || $propertyType == 'multiSelect') {
-			return implode('<br/>', $propertyValue);
+			if ($propertyValue == null){
+				return 'null';
+			}else {
+				return implode('<br/>', $propertyValue);
+			}
 		}elseif ($propertyType == 'enum') {
-			return $property['values'][$propertyValue];
+			if (isset($property['values'][$propertyValue])){
+				return $property['values'][$propertyValue];
+			}else{
+				return translate(['text'=>'Undefined value %1%',1=>$propertyValue,'isAdminFacing'=>true]);
+			}
 		} else {
 			return is_array($propertyValue) ? implode(', ', $propertyValue) : (is_object($propertyValue) ? (string)$propertyValue : $propertyValue);
 		}
@@ -447,9 +544,9 @@ abstract class ObjectEditor extends Admin_Admin
 			$historyEntry->objectType = get_class($curObject);
 			$historyEntry->objectId = $curObject->$primaryField;
 			if ($displayNameColumn != null){
-				$title = 'History for ' . $curObject->$displayNameColumn;
+				$title = translate(["text"=>'History for %1%', 1=>$curObject->$displayNameColumn, "isAdminFacing"=>true]);
 			}else{
-				$title = 'History for ' . $historyEntry->objectType . ' - ' . $historyEntry->objectId;
+				$title = translate(["text"=>'History for %1%', 1=>$historyEntry->objectType . ' - ' . $historyEntry->objectId, "isAdminFacing"=>true]);
 			}
 			$interface->assign('title', $title);
 			$historyEntry->orderBy('changeDate desc');
@@ -463,7 +560,174 @@ abstract class ObjectEditor extends Admin_Admin
 		}
 	}
 
-	public function hasHistory(){
+	public function getBatchUpdateFields($structure){
+		$batchFormatFields = [];
+		$structure = $this->applyPermissionsToObjectStructure($structure);
+		foreach ($structure as $field){
+			$this->addFieldToBatchUpdateFieldsArray($batchFormatFields, $field);
+		}
+		ksort($batchFormatFields);
+		return $batchFormatFields;
+	}
+
+	public function getSortableFields($structure){
+		$sortFields = [];
+		$structure = $this->applyPermissionsToObjectStructure($structure);
+		foreach ($structure as $fieldName => $field){
+			$this->addFieldToSortableFieldsArray($sortFields, $field);
+		}
+		ksort($sortFields);
+		return $sortFields;
+	}
+
+	private function addFieldToSortableFieldsArray(&$sortableFields, $field){
+		if ($field['type'] == 'section'){
+			foreach ($field['properties'] as $subFieldName => $subField){
+				$this->addFieldToSortableFieldsArray($batchFormatFields, $subField);
+			}
+		} else {
+			$canSort = !isset($field['canSort']) || ($field['canSort'] == true);
+			if ($canSort && in_array($field['type'], ['checkbox', 'label', 'date', 'timestamp', 'enum', 'currency', 'text', 'integer', 'email', 'url'])) {
+				$sortableFields[$field['label']] = $field;
+			}
+		}
+	}
+
+	public function getFilterFields($structure){
+		$sortFields = [];
+		$structure = $this->applyPermissionsToObjectStructure($structure);
+		foreach ($structure as $fieldName => $field){
+			$this->addFieldToFilterFieldsArray($sortFields, $field);
+		}
+		ksort($sortFields);
+		return $sortFields;
+	}
+
+	private function addFieldToFilterFieldsArray(&$filterFields, $field){
+		if ($field['type'] == 'section'){
+			foreach ($field['properties'] as $subFieldName => $subField){
+				$this->addFieldToFilterFieldsArray($filterFields, $subField);
+			}
+		} else {
+			$canSort = !isset($field['canSort']) || ($field['canSort'] == true);
+			if ($canSort && in_array($field['type'], ['checkbox', 'label', 'date', 'timestamp', 'enum', 'currency', 'text', 'integer', 'email', 'url'])) {
+				$filterFields[$field['property']] = $field;
+			}
+		}
+	}
+
+	public function getAppliedFilters($filterFields){
+		$appliedFilters = [];
+		if (isset($_REQUEST['filterType'])){
+			foreach ($_REQUEST['filterType'] as $fieldName => $value){
+				$appliedFilters[$fieldName] = [
+					'fieldName' => $fieldName,
+					'filterType' => $value,
+					'filterValue' => isset($_REQUEST['filterValue'][$fieldName]) ? $_REQUEST['filterValue'][$fieldName] : '',
+					'field' => $filterFields[$fieldName]
+				];
+			}
+		}
+		return $appliedFilters;
+	}
+
+	function applyFilters(DataObject $object){
+		$appliedFilters = $this->getAppliedFilters($object::getObjectStructure());
+		foreach ($appliedFilters as $fieldName => $filter){
+			if ($filter['filterType'] == 'matches'){
+				$object->$fieldName = $filter['filterValue'];
+			}elseif ($filter['filterType'] == 'contains'){
+				$object->whereAdd($fieldName . ' like ' . $object->escape('%' . $filter['filterValue'] . '%'));
+			}elseif ($filter['filterType'] == 'startsWith'){
+				$object->whereAdd($fieldName . ' like ' . $object->escape($filter['filterValue'] . '%'));
+			}elseif ($filter['filterType'] == 'beforeTime'){
+				$fieldValue = strtotime($filter['filterValue']);
+				if ($fieldValue !== false) {
+					$object->whereAdd($fieldName . ' < ' . $fieldValue);
+				}
+			}elseif ($filter['filterType'] == 'afterTime'){
+				$fieldValue = strtotime($filter['filterValue']);
+				if ($fieldValue !== false) {
+					$object->whereAdd($fieldName . ' > ' . $fieldValue);
+				}
+			}
+		}
+	}
+
+	private function addFieldToBatchUpdateFieldsArray(&$batchFormatFields, $field){
+		if ($field['type'] == 'section'){
+			foreach ($field['properties'] as $subFieldName => $subField){
+				$this->addFieldToBatchUpdateFieldsArray($batchFormatFields, $subField);
+			}
+		} else {
+			$canBatchUpdate = !isset($field['canBatchUpdate']) || ($field['canBatchUpdate'] == true);
+			if ($canBatchUpdate && in_array($field['type'], ['checkbox', 'enum', 'currency', 'text', 'integer', 'email', 'url'])) {
+				$batchFormatFields[$field['label']] = $field;
+			}
+		}
+	}
+
+	protected function getDefaultRecordsPerPage()
+	{
+		return 25;
+	}
+
+	protected function showQuickFilterOnPropertiesList(){
+		return false;
+	}
+
+	protected function supportsPagination(){
 		return true;
+	}
+
+	protected function limitToObjectsForLibrary(&$object, $linkObjectType, $linkProperty){
+		$userHasExistingObjects = true;
+		$linkObject = new $linkObjectType();
+		$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
+		if ($library != null){
+			$linkObject->libraryId = $library->libraryId;
+			$objectsForLibrary = [];
+			$linkObject->find();
+			while ($linkObject->fetch()){
+				$objectsForLibrary[] = $linkObject->$linkProperty;
+			}
+			if (count($objectsForLibrary) > 0) {
+				$object->whereAddIn('id', $objectsForLibrary, false);
+			}else{
+				$userHasExistingObjects = false;
+			}
+		}
+		return $userHasExistingObjects;
+	}
+
+	private function applyPermissionsToObjectStructure(array $structure)
+	{
+		foreach ($structure as $key => &$property){
+			if ($property['type'] == 'section'){
+				$property['properties'] = $this->applyPermissionsToObjectStructure($property['properties']);
+				if (array_key_exists('permissions', $property)) {
+					if (!UserAccount::userHasPermission($property['permissions'])){
+						unset($structure[$key]);
+					}
+				}
+				if (count($property['properties']) == 0){
+					unset($structure[$key]);
+				}
+			}else{
+				if (array_key_exists('permissions', $property)){
+					//Verify the correct permission exists for the user
+					if (!UserAccount::userHasPermission($property['permissions'])){
+						unset($structure[$key]);
+					}
+				}
+				if (array_key_exists('editPermissions', $property)){
+					//Verify the correct permission exists for the user
+					if (!UserAccount::userHasPermission($property['editPermissions'])){
+						$property['type'] = 'label';
+					}
+				}
+			}
+		}
+		return $structure;
 	}
 }

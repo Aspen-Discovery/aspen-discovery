@@ -126,7 +126,7 @@ class SierraExportFieldMapping {
 			getSierraFieldMappingsStmt.close();
 
 		} catch (Exception e) {
-			logger.error("Error reading index profile for CarlX", e);
+			logger.error("Error reading sierra field mappings", e);
 		}
 		return sierraFieldMapping;
 	}

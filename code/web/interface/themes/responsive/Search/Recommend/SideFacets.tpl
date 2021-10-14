@@ -1,13 +1,14 @@
 {strip}
 {if $filterList || $sideFacetSet}
 	<div id="searchFilterContainer">
+		<h2 aria-label="Filter Results" class="hiddenTitle">{translate text="Filter Results" isPublicFacing=true}</h2>
 		{* Filters that have been applied *}
 		{if $filterList}
-			<div id="remove-search-label" class="sidebar-label">{translate text='Applied Filters'}</div>
+			<div id="remove-search-label" class="sidebar-label">{translate text='Applied Filters' isPublicFacing=true}</div>
 			<div class="applied-filters">
 			{foreach from=$filterList item=filters key=field }
 				{foreach from=$filters item=filter}
-					<div class="facetValue">{translate text=$field}: {$filter.display} <a href="{$filter.removalUrl|escape}"><img src="/images/silk/delete.png" alt="Delete"/></a></div>
+					<div class="facetValue">{translate text=$field isPublicFacing=true}: {$filter.display} <a href="{$filter.removalUrl|escape}" aria-label="{translate text="Remove Filter" inAttribute=true isPublicFacing=true}"><i class="fas fa-minus-circle fa-lg text-danger" style="display:inline; vertical-align: middle"></i></a></div>
 				{/foreach}
 			{/foreach}
 			</div>
@@ -15,18 +16,18 @@
 
 		{* Available filters *}
 		{if $sideFacetSet}
-			<div id="narrow-search-label" class="sidebar-label">{translate text='Narrow Search'}</div>
+			<div id="narrow-search-label" class="sidebar-label">{translate text='Narrow Search' isPublicFacing=true}</div>
 			<div id="facet-accordion" class="accordion">
 				{foreach from=$sideFacetSet item=cluster key=title name=facetSet}
 					{if count($cluster.list) > 0}
 						<div class="facetList">
-							<div class="facetTitle panel-title {if $cluster.collapseByDefault && !$cluster.hasApplied}collapsed{else}expanded{/if}" onclick="$(this).toggleClass('expanded');$(this).toggleClass('collapsed');$('#facetDetails_{$title}').toggle()">
-								{translate text=$cluster.label}
+							<div class="facetTitle panel-title {if $cluster.collapseByDefault && !$cluster.hasApplied}collapsed{else}expanded{/if}" onclick="$(this).toggleClass('expanded');$(this).toggleClass('collapsed');$('#facetDetails_{$title}').toggle()" onkeypress="$(this).toggleClass('expanded');$(this).toggleClass('collapsed');$('#facetDetails_{$title}').toggle()" tabindex="0" role="group">
+								{translate text=$cluster.label isPublicFacing=true}
 
 								{if $cluster.canLock}
-									<span class="facetLock pull-right" id="facetLock_{$title}" {if !$cluster.hasApplied}style="display: none"{/if} title="Locking a facet will retain the selected filters in new searches until they are cleared">
-										<a id="facetLock_lockIcon_{$title}" {if $cluster.locked}style="display: none"{/if} onclick="return AspenDiscovery.Searches.lockFacet('{$title}');"><img src="/images/silk/lock_open.png" alt="Lock {$cluster.label}"></a>
-										<a id="facetLock_unlockIcon_{$title}" {if !$cluster.locked}style="display: none"{/if} onclick="return AspenDiscovery.Searches.unlockFacet('{$title}');"><img src="/images/silk/lock.png" alt="Lock {$cluster.label}"></a>
+									<span class="facetLock pull-right" id="facetLock_{$title}" {if !$cluster.hasApplied}style="display: none"{/if} title="{translate text="Locking a facet will retain the selected filters in new searches until they are cleared" inAttribute=true isPublicFacing=true}">
+										<a id="facetLock_lockIcon_{$title}" {if $cluster.locked}style="display: none"{/if} onclick="return AspenDiscovery.Searches.lockFacet('{$title}');"><i class="fas fa-lock-open fa-lg fa-fw" style="vertical-align: middle"></i></a>
+										<a id="facetLock_unlockIcon_{$title}" {if !$cluster.locked}style="display: none"{/if} onclick="return AspenDiscovery.Searches.unlockFacet('{$title}');"><i class="fas fa-lock fa-lg fa-fw" style="vertical-align: middle"></i></a>
 									</span>
 								{/if}
 

@@ -22,26 +22,34 @@ class Record_AccessOnline extends Action
 		//Check to see if the record exists within the resources table
 		$this->recordDriver = RecordDriverFactory::initRecordDriverById($source . ':' . $this->id);
 
-		$relatedRecord = $this->recordDriver->getRelatedRecord();
-		$recordActions = $relatedRecord->getActions();
+		if ($this->recordDriver->isValid()) {
 
-		$actionIndex = $_REQUEST['index'];
-		$selectedAction = $recordActions[$actionIndex];
-		$redirectUrl = $selectedAction['redirectUrl'];
+			$relatedRecord = $this->recordDriver->getRelatedRecord();
+			if ($relatedRecord != null) {
+				$recordActions = $relatedRecord->getActions();
 
-		//Track Usage
-		global $sideLoadSettings;
-		$sideLoadId = -1;
-		foreach ($sideLoadSettings as $sideLoad){
-			if ($sideLoad->name == $this->recordDriver->getRecordType()){
-				$sideLoadId = $sideLoad->id;
+				$actionIndex = $_REQUEST['index'];
+				$selectedAction = $recordActions[$actionIndex];
+				$redirectUrl = $selectedAction['redirectUrl'];
+
+				//Track Usage
+				global $sideLoadSettings;
+				$sideLoadId = -1;
+				foreach ($sideLoadSettings as $sideLoad) {
+					if ($sideLoad->name == $this->recordDriver->getRecordType()) {
+						$sideLoadId = $sideLoad->id;
+					}
+				}
+
+				$this->trackRecordUsage($sideLoadId, $this->recordDriver->getId());
+				$this->trackUserUsageOfSideLoad($sideLoadId);
+				header('Location: ' . $redirectUrl);
+			}else{
+				$this->display('invalidRecord.tpl', 'Invalid Record', '');
 			}
+		}else{
+			$this->display('invalidRecord.tpl', 'Invalid Record', '');
 		}
-
-		$this->trackRecordUsage($sideLoadId, $this->recordDriver->getId());
-		$this->trackUserUsageOfSideLoad($sideLoadId);
-
-		header('Location: ' . $redirectUrl);
 		die();
 	}
 
@@ -49,6 +57,7 @@ class Record_AccessOnline extends Action
 	{
 		require_once ROOT_DIR . '/sys/Indexing/SideLoadedRecordUsage.php';
 		$recordUsage = new SideLoadedRecordUsage();
+		$recordUsage->instance = $_SERVER['SERVER_NAME'];
 		$recordUsage->sideloadId = $sideLoadId;
 		$recordUsage->recordId = $recordId;
 		$recordUsage->year = date('Y');
@@ -66,6 +75,7 @@ class Record_AccessOnline extends Action
 	{
 		require_once ROOT_DIR . '/sys/Indexing/UserSideLoadUsage.php';
 		$userUsage = new UserSideLoadUsage();
+		$userUsage->instance = $_SERVER['SERVER_NAME'];
 		if (UserAccount::getActiveUserId() == false){
 			//User is not logged in
 			$userUsage->userId = -1;
@@ -85,7 +95,7 @@ class Record_AccessOnline extends Action
 		}
 	}
 
-	public function getBreadcrumbs()
+	public function getBreadcrumbs() : array
 	{
 		return [];
 	}

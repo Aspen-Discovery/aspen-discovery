@@ -105,7 +105,7 @@ class Record_DownloadPDF extends Action
 		}
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		if (!empty($this->recordDriver)) {

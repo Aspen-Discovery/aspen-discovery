@@ -56,7 +56,7 @@ class Files_Contents extends Action
 		$actionClass->launch();
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		return [];
 	}

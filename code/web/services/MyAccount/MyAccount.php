@@ -50,6 +50,9 @@ abstract class MyAccount extends Action
 
 			global $interface;
 			$interface->assign('accountMessages', $accountMessages);
+
+			$ilsMessages = UserAccount::getActiveUserObj()->getILSMessages();
+			$interface->assign('ilsMessages', $ilsMessages);
 		}
 		// Hide Covers when the user has set that setting on an Account Page
 		$this->setShowCovers();

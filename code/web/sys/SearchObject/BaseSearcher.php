@@ -275,7 +275,7 @@ abstract class SearchObject_BaseSearcher
 				return $facetConfig;
 			}
 		} else {
-			return ucwords(str_replace("_", " ", translate($shortField)));
+			return ucwords(str_replace("_", " ", translate(['text'=>$shortField,'isPublicFacing'=>true])));
 		}
 	}
 
@@ -324,7 +324,7 @@ abstract class SearchObject_BaseSearcher
 					$anyLocationLabel = $this->getFacetSetting("Availability", "anyLocationLabel");
 					$display = $anyLocationLabel == '' ? "Any Marmot Location" : $anyLocationLabel;
 				} else {
-					$display = $translate ? translate($value) : $value;
+					$display = $translate ? translate(['text'=>$value,'isPublicFacing'=>true]) : $value;
 				}
 
 				$list[$facetLabel][] = array(
@@ -2162,9 +2162,9 @@ abstract class SearchObject_BaseSearcher
 	protected function getHumanReadableFieldName($field)
 	{
 		if (isset($this->searchIndexes[$field])) {
-			return translate($this->searchIndexes[$field]);
+			return translate(['text'=>$this->searchIndexes[$field],'isPublicFacing'=>true]);
 		} else if (isset($this->advancedTypes[$field])) {
-			return translate($this->advancedTypes[$field]);
+			return translate(['text'=>$this->advancedTypes[$field],'isPublicFacing'=>true]);
 		} else {
 			return $field;
 		}
@@ -2319,7 +2319,11 @@ abstract class SearchObject_BaseSearcher
 							//Convert back to 1 based index
 							if (isset($previousRecord)) {
 								$interface->assign('previousIndex', $currentResultIndex - 1 + 1);
-								$interface->assign('previousTitle', $previousRecord['title_display']);
+								if (isset($previousRecord['title_display'])) {
+									$interface->assign('previousTitle', $previousRecord['title_display']);
+								}else{
+									$interface->assign('previousTitle', 'Unknown Title');
+								}
 								if ($previousRecord['recordtype'] == 'grouped_work') {
 									require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 									$groupedWork = New GroupedWorkDriver($previousRecord);
@@ -2357,7 +2361,11 @@ abstract class SearchObject_BaseSearcher
 							//Convert back to 1 based index
 							$interface->assign('nextIndex', $currentResultIndex + 1 + 1);
 							if (isset($nextRecord)) {
-								$interface->assign('nextTitle', $nextRecord['title_display']);
+								if (isset($nextRecord['title_display'])) {
+									$interface->assign('nextTitle', $nextRecord['title_display']);
+								}else{
+									$interface->assign('nextTitle', 'Unknown Title');
+								}
 								if ($nextRecord['recordtype'] == 'grouped_work') {
 									require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 									$groupedWork = New GroupedWorkDriver($nextRecord);

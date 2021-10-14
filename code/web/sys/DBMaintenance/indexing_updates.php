@@ -268,6 +268,15 @@ function getIndexingUpdates()
 			)
 		),
 
+		'indexing_profile__remove_groupUnchangedFiles' => array(
+			'title' => 'Indexing Profiles - Remove Group Unchanged Files',
+			'description' => 'Remove Group Unchanged Files since it is not used.',
+			'continueOnError' => true,
+			'sql' => array(
+				"ALTER TABLE indexing_profiles DROP COLUMN groupUnchangedFiles",
+			)
+		),
+
 		'indexing_profile_marc_record_subfield' => array(
 			'title' => 'Indexing Profiles - Marc Record Subfield',
 			'description' => 'Define the subfield for the marc record',
@@ -308,6 +317,23 @@ function getIndexingUpdates()
 			'sql' => [
 				'ALTER TABLE ils_volume_info ADD COLUMN displayOrder SMALLINT default 0'
 			],
+		],
+
+		'volume_increase_display_order' => [
+			'title' => 'Volume info - increase display order length',
+			'description' => 'Make the field longer to store big things (and negative numbers)',
+			'sql' => [
+				'ALTER TABLE ils_volume_info CHANGE COLUMN displayOrder displayOrder INT(11) default 0'
+			]
+		],
+
+		'volume_increase_field_lengths' => [
+			'title' => 'Volume info - increase length of volume and related items fields',
+			'description' => 'Make the field longer to store big things (and negative numbers)',
+			'sql' => [
+				'ALTER TABLE ils_volume_info CHANGE COLUMN relatedItems relatedItems TEXT',
+				'ALTER TABLE ils_volume_info CHANGE COLUMN displayLabel displayLabel VARCHAR(512) NOT NULL'
+			]
 		],
 
 		'last_check_in_status_adjustments' => array(
@@ -390,6 +416,15 @@ function getIndexingUpdates()
 			)
 		),
 
+		'ils_exportLog_num_regroups' => array(
+			'title' => 'ILS export log add regroups',
+			'description' => 'Add tracking of number of records regrouped to export log',
+			'sql' => array(
+				"ALTER TABLE ils_extract_log ADD COLUMN numChangedAfterGrouping INT(11) DEFAULT 0",
+				"ALTER TABLE ils_extract_log ADD COLUMN numRegrouped INT(11) DEFAULT 0",
+			)
+		),
+
 		'track_ils_user_usage' => array(
 			'title' => 'ILS Usage by user',
 			'description' => 'Add a table to track how often a particular user uses the ils and side loads.',
@@ -461,6 +496,20 @@ function getIndexingUpdates()
 			]
 		],
 
+		'ils_usage_add_instance' => [
+			'title' => 'ILS Usage - Instance Information',
+			'description' => 'Add Instance Information to ILS Usage stats',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE ils_record_usage ADD COLUMN instance VARCHAR(100)',
+				'ALTER TABLE ils_record_usage DROP INDEX recordId',
+				'ALTER TABLE ils_record_usage ADD UNIQUE INDEX (instance, indexingProfileId, recordId, year, month)',
+				'ALTER TABLE user_ils_usage ADD COLUMN instance VARCHAR(100)',
+				'ALTER TABLE user_ils_usage DROP INDEX userId',
+				'ALTER TABLE user_ils_usage ADD UNIQUE INDEX (instance, userId, indexingProfileId, year, month)',
+			]
+		],
+
 		'indexing_profile_add_continuous_update_fields' => [
 			'title' => 'Indexing Profile Add Continuous Update Fields',
 			'description' => 'Add fields to track when last updates were done and to trigger full updates',
@@ -476,6 +525,30 @@ function getIndexingUpdates()
 			'description' => 'Add fields to track when last updates were done and to trigger full updates',
 			'sql' => [
 				'ALTER TABLE indexing_profiles ADD COLUMN lastUpdateFromMarcExport INT(11) DEFAULT 0',
+			]
+		],
+
+		'indexing_profile_last_volume_export_timestamp' => [
+			'title' => 'Indexing Profile Add Last Volume Export time',
+			'description' => 'Add fields to track when the last volume export file was saved',
+			'sql' => [
+				'ALTER TABLE indexing_profiles ADD COLUMN lastVolumeExportTimestamp INT(11) DEFAULT 0',
+			]
+		],
+
+		'indexing_profile_regroup_all_records' => [
+			'title' => 'Indexing Profile Add Regroup All Records',
+			'description' => 'Add the ability to regroup all records at the beginning of indexing',
+			'sql' => [
+				'ALTER TABLE indexing_profiles ADD COLUMN regroupAllRecords TINYINT(1) DEFAULT 0',
+			]
+		],
+
+		'regroup_21_03' => [
+			'title' => 'Regroup all records for 21.03',
+			'description' => 'Regroup all records for 21.03',
+			'sql' => [
+				'UPDATE indexing_profiles set regroupAllRecords = 1'
 			]
 		],
 
@@ -606,6 +679,14 @@ function getIndexingUpdates()
 			],
 		],
 
+		'format_mustPickupAtHoldingBranch' => [
+			'title' => 'Format table - mustPickupAtHoldingBranch',
+			'description' => 'Allow holds to be forced to be picked up at the holding branch by format',
+			'sql' => [
+				'ALTER TABLE format_map_values ADD COLUMN mustPickupAtHoldingBranch TINYINT(1) DEFAULT 0'
+			]
+		],
+
 		'sideloads' => [
 			'title' => 'Sideload setup',
 			'description' => 'Setup sideloads table to store information about how to index eContent from MARC record uploads',
@@ -690,6 +771,20 @@ function getIndexingUpdates()
 			),
 		),
 
+		'sideload_usage_add_instance' => [
+			'title' => 'Side Load Usage - Instance Information',
+			'description' => 'Add Instance Information to Side Load Usage stats',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE sideload_record_usage ADD COLUMN instance VARCHAR(100)',
+				'ALTER TABLE sideload_record_usage DROP INDEX sideloadId',
+				'ALTER TABLE sideload_record_usage ADD UNIQUE INDEX (instance, sideloadId, recordId, year, month)',
+				'ALTER TABLE user_sideload_usage ADD COLUMN instance VARCHAR(100)',
+				'ALTER TABLE user_sideload_usage DROP INDEX userId',
+				'ALTER TABLE user_sideload_usage ADD UNIQUE INDEX (instance, userId, sideLoadId, year, month)',
+			]
+		],
+
 		'sideload_log' => array(
 			'title' => 'Side Load log',
 			'description' => 'Create log for Side Load Processing.',
@@ -735,6 +830,15 @@ function getIndexingUpdates()
 				"ALTER TABLE sideload_scopes ADD COLUMN includeExcludeMatches TINYINT default 1",
 				"ALTER TABLE sideload_scopes ADD COLUMN urlToMatch VARCHAR(100)",
 				"ALTER TABLE sideload_scopes ADD COLUMN urlReplacement VARCHAR(100)"
+			]
+		],
+
+		'sideload_scope_url_match_and_rewrite_embiggening' => [
+			'title' => 'Increases the number of characters allowed in Side Load Scopes URL Match and Replacement fields',
+			'description' => 'Update scopes to allow limitation by MARC tag and perform URL rewriting',
+			'sql' => [
+				"ALTER TABLE sideload_scopes CHANGE COLUMN urlToMatch urlToMatch VARCHAR(255)",
+				"ALTER TABLE sideload_scopes CHANGE COLUMN urlReplacement urlReplacement VARCHAR(255)"
 			]
 		],
 
@@ -855,6 +959,14 @@ function getIndexingUpdates()
 			]
 		],
 
+		'indexing_module_add_settings2' => [
+			'title' => 'Add Settings to Indexing module',
+			'description' => 'Add Settings to Indexing module',
+			'sql' => [
+				"UPDATE modules set settingsClassPath = '/sys/Indexing/IndexingProfile.php', settingsClassName = 'IndexingProfile' WHERE name in ('Koha', 'CARL.X', 'Sierra', 'Horizon', 'Symphony')"
+			]
+		],
+
 		'indexing_profile_determineAudienceBy' => [
 			'title' => 'Indexing Profile - determineAudienceBy',
 			'description' => 'Add the ability to control how audience is determined to Indexing Profiles',
@@ -892,7 +1004,52 @@ function getIndexingUpdates()
 			'sql' => [
 				"ALTER TABLE indexing_profiles ADD COLUMN includeLocationNameInDetailedLocation TINYINT(1) DEFAULT 1"
 			]
-		]
+		],
+
+		'indexing_lastUpdateOfAuthorities' => [
+			'title' => 'Indexing add lastUpdateOfAuthorities',
+			'description' => 'Add lastUpdateOfAuthorities to Indexing Profiles to optimize loading authorities from the ILS',
+			'sql' => [
+				'ALTER TABLE indexing_profiles ADD COLUMN lastUpdateOfAuthorities INT(11) DEFAULT 0'
+			]
+		],
+
+		'indexing_simplify_format_boosting' => [
+			'title' => 'Indexing Simplify Format Boosting',
+			'description' => 'Simply Format Boosting using a dropdown rather than raw numbers',
+			'sql' => [
+				'UPDATE format_map_values SET formatBoost = 3 WHERE formatBoost > 1 and formatBoost <=4',
+				'UPDATE format_map_values SET formatBoost = 6 WHERE formatBoost > 4 and formatBoost <=7',
+				'UPDATE format_map_values SET formatBoost = 6 WHERE formatBoost > 7 and formatBoost <=8',
+				'UPDATE format_map_values SET formatBoost = 9 WHERE formatBoost > 8 and formatBoost <=10',
+				'UPDATE format_map_values SET formatBoost = 12 WHERE formatBoost > 10'
+			]
+		],
+
+		'create_polaris_module' => [
+			'title' => 'Create Polaris Module',
+			'description' => 'Create module for integration with Polaris',
+			'sql' => [
+				"INSERT INTO modules (name, indexName, backgroundProcess, logClassPath, logClassName, settingsClassPath, settingsClassName) VALUES ('Polaris', 'grouped_works', 'polaris_export', '/sys/ILS/IlsExtractLogEntry.php', 'IlsExtractLogEntry', '/sys/Indexing/IndexingProfile.php', 'IndexingProfile')"
+			]
+		],
+
+		'indexing_profile__full_export_record_threshold' => [
+			'title' => 'Indexing Profile - Full Export Record Threshold',
+			'description' => 'Add a threshold for to ensure that the maximum id within a full export is equal or greater than the threshold before processing',
+			'sql' => [
+				'ALTER TABLE indexing_profiles ADD COLUMN fullMarcExportRecordIdThreshold INT DEFAULT 0'
+			]
+		],
+
+		'indexing_profile_lastChangeProcessed' => [
+			'title' => 'Indexing Profile - Last Change processed',
+			'description' => 'Add tracking for the last record id processed so we can resume extracts that have errors',
+			'sql' => [
+				"ALTER TABLE indexing_profiles ADD COLUMN lastChangeProcessed INT DEFAULT 0"
+			]
+		],
+
 	);
 }
 

@@ -62,6 +62,7 @@ class IndexingProfile extends DataObject
 	public /** @noinspection PhpUnused */ $totalRenewals;
 	public $iType;
 	public /** @noinspection PhpUnused */ $nonHoldableITypes;
+	public $noteSubfield;
 	public $dueDate;
 	public $dueDateFormat;
 	public $dateCreated;
@@ -79,13 +80,23 @@ class IndexingProfile extends DataObject
 	public /** @noinspection PhpUnused */ $orderCopies;
 	public /** @noinspection PhpUnused */ $orderCode3;
 	public /** @noinspection PhpUnused */ $doAutomaticEcontentSuppression;
-	public /** @noinspection PhpUnused */ $groupUnchangedFiles;
+	public /** @noinspection PhpUnused */ $suppressRecordsWithUrlsMatching;
 	public /** @noinspection PhpUnused */ $determineAudienceBy;
 	public /** @noinspection PhpUnused */ $audienceSubfield;
+	public /** @noinspection PhpUnused */ $treatUnknownAudienceAs;
+	public /** @noinspection PhpUnused */ $determineLiteraryFormBy;
+	public /** @noinspection PhpUnused */ $literaryFormSubfield;
+	public /** @noinspection PhpUnused */ $hideUnknownLiteraryForm;
+	public /** @noinspection PhpUnused */ $hideNotCodedLiteraryForm;
+	public /** @noinspection PhpUnused */ $regroupAllRecords;
 	public $runFullUpdate;
 	public $lastUpdateOfChangedRecords;
 	public $lastUpdateOfAllRecords;
+	public /** @noinspection PhpUnused */ $lastChangeProcessed;
+	public /** @noinspection PhpUnused */ $fullMarcExportRecordIdThreshold;
 	public /** @noinspection PhpUnused */ $lastUpdateFromMarcExport;
+	public /** @noinspection PhpUnused */$lastVolumeExportTimestamp;
+	public /** @noinspection PhpUnused */$lastUpdateOfAuthorities;
 	
 	private $_translationMaps;
 	private $_timeToReshelve;
@@ -93,7 +104,7 @@ class IndexingProfile extends DataObject
 	private $_statusMap;
 	private $_formatMap;
 
-	static function getObjectStructure()
+	static function getObjectStructure() : array
 	{
 		$translationMapStructure = TranslationMap::getObjectStructure();
 		unset($translationMapStructure['indexingProfileId']);
@@ -111,8 +122,7 @@ class IndexingProfile extends DataObject
 			'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id within the database'),
 			'name' => array('property' => 'name', 'type' => 'text', 'label' => 'Name', 'maxLength' => 50, 'description' => 'A name for this indexing profile', 'required' => true),
 			'marcPath' => array('property' => 'marcPath', 'type' => 'text', 'label' => 'MARC Path', 'maxLength' => 100, 'description' => 'The path on the server where MARC records can be found', 'required' => true, 'forcesReindex' => true),
-			'filenamesToInclude' => array('property' => 'filenamesToInclude', 'type' => 'text', 'label' => 'Filenames to Include', 'maxLength' => 250, 'description' => 'A regular expression to determine which files should be grouped and indexed', 'required' => true, 'default' => '.*\.ma?rc', 'forcesReindex' => true),
-			'groupUnchangedFiles' => array('property' => 'groupUnchangedFiles', 'type' => 'checkbox', 'label' => 'Group unchanged files', 'description' => 'Whether or not files that have not changed since the last time grouping has run will be processed.', 'forcesReindex' => true),
+			'filenamesToInclude' => array('property' => 'filenamesToInclude', 'type' => 'regularExpression', 'label' => 'Filenames to Include', 'maxLength' => 250, 'description' => 'A regular expression to determine which files should be grouped and indexed', 'required' => true, 'default' => '.*\.ma?rc', 'forcesReindex' => true),
 			'marcEncoding' => array('property' => 'marcEncoding', 'type' => 'enum', 'label' => 'MARC Encoding', 'values' => array('MARC8' => 'MARC8', 'UTF8' => 'UTF8', 'UNIMARC' => 'UNIMARC', 'ISO8859_1' => 'ISO8859_1', 'BESTGUESS' => 'BESTGUESS'), 'default' => 'MARC8', 'forcesReindex' => true),
 			'individualMarcPath' => array('property' => 'individualMarcPath', 'type' => 'text', 'label' => 'Individual MARC Path', 'maxLength' => 100, 'description' => 'The path on the server where individual MARC records can be found', 'required' => true, 'forcesReindex' => true),
 			'numCharsToCreateFolderFrom' => array('property' => 'numCharsToCreateFolderFrom', 'type' => 'integer', 'label' => 'Number of characters to create folder from', 'maxLength' => 50, 'description' => 'The number of characters to use when building a sub folder for individual marc records', 'required' => false, 'default' => '4', 'forcesReindex' => true),
@@ -132,8 +142,16 @@ class IndexingProfile extends DataObject
 			'treatUnknownLanguageAs' => ['property' => 'treatUnknownLanguageAs', 'type'=>'text', 'label' => 'Treat Unknown Language As', 'maxLength' => 50, 'description' => 'Records with an Unknown Language will use this language instead.  Leave blank for Unknown', 'default' => 'English', 'forcesReindex' => true],
 			'treatUndeterminedLanguageAs' => ['property' => 'treatUndeterminedLanguageAs', 'type'=>'text', 'label' => 'Treat Undetermined Language As', 'maxLength' => 50, 'description' => 'Records with an Undetermined Language will use this language instead.  Leave blank for Unknown', 'default' => 'English', 'forcesReindex' => true],
 
+			'suppressRecordsWithUrlsMatching' => array('property' => 'suppressRecordsWithUrlsMatching', 'type'=>'regularExpression', 'label'=>'Suppress Records With Urls Matching', 'description'=> 'Any records with an 856u matching the pattern will be suppressed', 'defaultValue'=>'overdrive\.com|contentreserve\.com|hoopla|yourcloudlibrary|axis360\.baker-taylor\.com', 'hideInLists'=>true, 'forcesReindex'=> true),
+
 			'determineAudienceBy' => ['property' => 'determineAudienceBy', 'type' => 'enum', 'values' => ['0' => 'By Bib Record Data', '1' => 'Item Collection using audience map', '2' => 'Item Shelf Location using audience map', '3' => 'Specified Item subfield using audience map'], 'label' => 'Determine Audience By', 'description' => 'How to determine the audience for each record', 'default' => '0', 'onchange'=>'return AspenDiscovery.Admin.updateIndexingProfileFields();'],
 			'audienceSubfield' => ['property' => 'audienceSubfield', 'type' => 'text', 'label' => 'Audience Subfield', 'maxLength' => 1, 'description' => 'Subfield to use when determining the audience', 'default' => ''],
+			'treatUnknownAudienceAs' => ['property' => 'treatUnknownAudienceAs', 'type'=>'enum', 'label' => 'Treat Unknown Audience As', 'values' => ['General' => 'General', 'Adult' => 'Adult', 'Unknown' => 'Unknown'], 'description' => 'Records with an Unknown Audience will use this audience instead.', 'default' => 'Unknown', 'forcesReindex' => true],
+
+			'determineLiteraryFormBy' => ['property' => 'determineLiteraryFormBy', 'type' => 'enum', 'values' => ['0' => 'By Bib Record Data', '1' => 'Item Subfield with literary_form map'], 'label' => 'Determine Literary Form By', 'description' => 'How to determine the literary for each record', 'default' => '0', 'onchange'=>'return AspenDiscovery.Admin.updateIndexingProfileFields();', 'forcesReindex' => true],
+			'literaryFormSubfield' => ['property' => 'literaryFormSubfield', 'type' => 'text', 'label' => 'Literary Form Subfield', 'maxLength' => 1, 'description' => 'Subfield to use when determining the literary form', 'default' => '', 'forcesReindex' => true],
+			'hideUnknownLiteraryForm' => array('property' => 'hideUnknownLiteraryForm', 'type' => 'checkbox', 'label' => 'Hide Unknown Literary Forms', 'description' => 'Whether or not Literary Form Facets of Unknown are shown', 'forcesReindex' => true),
+			'hideNotCodedLiteraryForm' => array('property' => 'hideNotCodedLiteraryForm', 'type' => 'checkbox', 'label' => 'Hide Not Coded Literary Forms', 'description' => 'Whether or not Literary Form Facets of Not Coded are shown', 'forcesReindex' => true),
 
 			'itemSection' => ['property' => 'itemSection', 'type' => 'section', 'label' => 'Item Information', 'hideInLists' => true, 'properties' => [
 				'suppressItemlessBibs' => array('property' => 'suppressItemlessBibs', 'type' => 'checkbox', 'label' => 'Suppress Itemless Bibs', 'description' => 'Whether or not Itemless Bibs can be suppressed', 'forcesReindex' => true),
@@ -163,7 +181,7 @@ class IndexingProfile extends DataObject
 				'yearToDateCheckouts' => array('property' => 'yearToDateCheckouts', 'type' => 'text', 'label' => 'Year To Date', 'maxLength' => 1, 'description' => 'Subfield for checkouts so far this year', 'forcesReindex' => true),
 				'totalRenewals' => array('property' => 'totalRenewals', 'type' => 'text', 'label' => 'Total Renewals', 'maxLength' => 1, 'description' => 'Subfield for number of times this record has been renewed', 'forcesReindex' => true),
 				'iType' => array('property' => 'iType', 'type' => 'text', 'label' => 'iType', 'maxLength' => 1, 'description' => 'Subfield for iType', 'forcesReindex' => true),
-				'nonHoldableITypes' => array('property' => 'nonHoldableITypes', 'type' => 'text', 'label' => 'Non Holdable ITypes', 'maxLength' => 255, 'description' => 'A regular expression for any ITypes that should not allow holds', 'forcesReindex' => true),
+				'nonHoldableITypes' => array('property' => 'nonHoldableITypes', 'type' => 'text', 'label' => 'Non Holdable ITypes', 'maxLength' => 600, 'description' => 'A regular expression for any ITypes that should not allow holds', 'forcesReindex' => true),
 				'dueDate' => array('property' => 'dueDate', 'type' => 'text', 'label' => 'Due Date', 'maxLength' => 1, 'description' => 'Subfield for when the item is due', 'forcesReindex' => true),
 				'dueDateFormat' => array('property' => 'dueDateFormat', 'type' => 'text', 'label' => 'Due Date Format', 'maxLength' => 20, 'description' => 'Subfield for when the item is due', 'forcesReindex' => true),
 				'dateCreated' => array('property' => 'dateCreated', 'type' => 'text', 'label' => 'Date Created', 'maxLength' => 1, 'description' => 'The format of the due date.  I.e. yyMMdd see SimpleDateFormat for Java', 'forcesReindex' => true),
@@ -175,13 +193,14 @@ class IndexingProfile extends DataObject
 				'format' => array('property' => 'format', 'type' => 'text', 'label' => 'Format', 'maxLength' => 1, 'description' => 'The subfield to use when determining format based on item information', 'forcesReindex' => true),
 				'eContentDescriptor' => array('property' => 'eContentDescriptor', 'type' => 'text', 'label' => 'eContent Descriptor', 'maxLength' => 1, 'description' => 'Subfield to indicate that the item should be processed as eContent and how to process it', 'forcesReindex' => true),
 				'doAutomaticEcontentSuppression' => array('property' => 'doAutomaticEcontentSuppression', 'type' => 'checkbox', 'label' => 'Do Automatic eContent Suppression', 'description' => 'Whether or not eContent suppression for overdrive and hoopla records is done automatically', 'default' => false, 'forcesReindex' => true),
+				'noteSubfield' => array('property' => 'noteSubfield', 'type' => 'text', 'label' => 'Note', 'maxLength' => 1, 'description' => 'The subfield to use when loading notes for an item', 'forcesReindex' => true),
 			]],
 
 			'formatSection' => ['property' => 'formatMappingSection', 'type' => 'section', 'label' => 'Format Information', 'hideInLists' => true, 'properties' => [
-				'formatSource' => array('property' => 'formatSource', 'type' => 'enum', 'label' => 'Load Format from', 'values' => array('bib' => 'Bib Record', 'item' => 'Item Record', 'specified' => 'Specified Value'), 'default' => 'bib', 'forcesReindex' => true),
+				'formatSource' => array('property' => 'formatSource', 'type' => 'enum', 'label' => 'Load Format from', 'values' => array('bib' => 'Bib Record', 'item' => 'Item Record', 'specified' => 'Specified Value'), 'default' => 'bib', 'forcesReindex' => true, 'onchange'=>'return AspenDiscovery.Admin.updateIndexingProfileFields();'),
 				'specifiedFormat' => array('property' => 'specifiedFormat', 'type' => 'text', 'label' => 'Specified Format', 'maxLength' => 50, 'description' => 'The format to set when using a defined format', 'required' => false, 'default' => '', 'forcesReindex' => true),
 				'specifiedFormatCategory' => array('property' => 'specifiedFormatCategory', 'type' => 'enum', 'values' => array('', 'Books' => 'Books', 'eBook' => 'eBook', 'Audio Books' => 'Audio Books', 'Movies' => 'Movies', 'Music' => 'Music', 'Other' => 'Other'), 'label' => 'Specified Format Category', 'maxLength' => 50, 'description' => 'The format category to set when using a defined format', 'required' => false, 'default' => '', 'forcesReindex' => true),
-				'specifiedFormatBoost' => array('property' => 'specifiedFormatBoost', 'type' => 'integer', 'label' => 'Specified Format Boost', 'maxLength' => 50, 'description' => 'The format boost to set when using a defined format', 'required' => false, 'default' => '8', 'forcesReindex' => true),
+				'specifiedFormatBoost' => array('property' => 'specifiedFormatBoost', 'type' => 'enum', 'values'=>[1=>'None', '3'=>'Low',6=>'Medium', 9=>'High', '12'=>'Very High'], 'label' => 'Specified Format Boost', 'description' => 'The format boost to set when using a defined format', 'default' => '8', 'required' => false, 'forcesReindex' => true),
 				'checkRecordForLargePrint' => array('property' => 'checkRecordForLargePrint', 'type' => 'checkbox', 'label' => 'Check Record for Large Print', 'default' => false, 'description' => 'Check metadata within the record to see if a book is large print', 'forcesReindex' => true),
 				'formatMap' => array(
 					'property' => 'formatMap',
@@ -227,10 +246,15 @@ class IndexingProfile extends DataObject
 				'orderCode3' => array('property' => 'orderCode3', 'type' => 'text', 'label' => 'Order Code3', 'maxLength' => 1, 'description' => 'Code 3 for the order record', 'forcesReindex' => true),
 			]],
 
+			'regroupAllRecords' => array('property' => 'regroupAllRecords', 'type' => 'checkbox', 'label' => 'Regroup all Records', 'description' => 'Whether or not all existing records should be regrouped', 'default' => 0),
 			'runFullUpdate' => array('property' => 'runFullUpdate', 'type' => 'checkbox', 'label' => 'Run Full Update', 'description' => 'Whether or not a full update of all records should be done on the next pass of indexing', 'default' => 0),
 			'lastUpdateOfChangedRecords' => array('property' => 'lastUpdateOfChangedRecords', 'type' => 'timestamp', 'label' => 'Last Update of Changed Records', 'description' => 'The timestamp when just changes were loaded', 'default' => 0),
 			'lastUpdateOfAllRecords' => array('property' => 'lastUpdateOfAllRecords', 'type' => 'timestamp', 'label' => 'Last Update of All Records', 'description' => 'The timestamp when all records were loaded from the API', 'default' => 0),
+			'lastChangeProcessed' => array('property' => 'lastChangeProcessed', 'type' => 'integer', 'label' => 'Last Change Processed', 'description' => 'The index of the last change that was processed. Can be used for resuming API extracts if errors are generated.  (Koha only)', 'default' => 0),
+			'fullMarcExportRecordIdThreshold' => array('property' => 'fullMarcExportRecordIdThreshold', 'type' => 'integer', 'label' => 'Full MARC Export Record Id Threshold', 'description' => 'When indexing a full MARC export, verify that the maximum MARC record id in the export is at least this value', 'default' => 0),
 			'lastUpdateFromMarcExport' => array('property' => 'lastUpdateFromMarcExport', 'type' => 'timestamp', 'label' => 'Last Update from MARC Export', 'description' => 'The timestamp when all records were loaded from a MARC export', 'default' => 0),
+			'lastVolumeExportTimestamp' => array('property' => 'lastVolumeExportTimestamp', 'type' => 'timestamp', 'label' => 'Last Volume Export Timestamp (Symphony Only)', 'description' => 'The timestamp of the last volume export file used', 'default' => 0),
+			'lastUpdateOfAuthorities' => array('property' => 'lastUpdateOfAuthorities', 'type' => 'timestamp', 'label' => 'Last Authority Export Timestamp (Koha Only)', 'description' => 'The timestamp when authorities were last loaded', 'default' => 0),
 
 			'translationMaps' => array(
 				'property' => 'translationMaps',
@@ -288,6 +312,8 @@ class IndexingProfile extends DataObject
 		}
 		if ($ils == 'Koha') {
 			unset($structure['timeToReshelve']);
+		}else{
+			unset($structure['lastUpdateOfAuthorities']);
 		}
 		return $structure;
 	}
@@ -345,6 +371,7 @@ class IndexingProfile extends DataObject
 				if ($this->id) { // When this is a new Indexing Profile, there are no maps yet.
 					$statusMap = new StatusMapValue();
 					$statusMap->indexingProfileId = $this->id;
+					$statusMap->orderBy('value');
 					$statusMap->find();
 					while ($statusMap->fetch()) {
 						$this->_statusMap[$statusMap->id] = clone($statusMap);
@@ -435,7 +462,7 @@ class IndexingProfile extends DataObject
 		if (isset ($this->_translationMaps)) {
 			/** @var TranslationMap $translationMap */
 			foreach ($this->_translationMaps as $translationMap) {
-				if (isset($translationMap->deleteOnSave) && $translationMap->deleteOnSave == true) {
+				if ($translationMap->_deleteOnSave == true) {
 					$translationMap->delete();
 				} else {
 					if (isset($translationMap->id) && is_numeric($translationMap->id)) {
@@ -447,7 +474,7 @@ class IndexingProfile extends DataObject
 				}
 			}
 			//Clear array so it is reloaded the next time
-			unset($this->translationMaps);
+			unset($this->_translationMaps);
 		}
 	}
 
@@ -456,7 +483,7 @@ class IndexingProfile extends DataObject
 		if (isset ($this->_timeToReshelve)) {
 			/** @var TimeToReshelve $timeToReshelve */
 			foreach ($this->_timeToReshelve as $timeToReshelve) {
-				if (isset($timeToReshelve->deleteOnSave) && $timeToReshelve->deleteOnSave == true) {
+				if ($timeToReshelve->_deleteOnSave == true) {
 					$timeToReshelve->delete();
 				} else {
 					if (isset($timeToReshelve->id) && is_numeric($timeToReshelve->id)) {
@@ -477,7 +504,7 @@ class IndexingProfile extends DataObject
 		if (isset ($this->_sierraFieldMappings)) {
 			/** @var SierraExportFieldMapping $sierraFieldMapping */
 			foreach ($this->_sierraFieldMappings as $sierraFieldMapping) {
-				if (isset($sierraFieldMapping->deleteOnSave) && $sierraFieldMapping->deleteOnSave == true) {
+				if ($sierraFieldMapping->_deleteOnSave == true) {
 					$sierraFieldMapping->delete();
 				} else {
 					if (isset($sierraFieldMapping->id) && is_numeric($sierraFieldMapping->id)) {
@@ -498,7 +525,7 @@ class IndexingProfile extends DataObject
 		if (isset ($this->_statusMap)) {
 			/** @var StatusMapValue $statusMapValue */
 			foreach ($this->_statusMap as $statusMapValue) {
-				if (isset($statusMapValue->deleteOnSave) && $statusMapValue->deleteOnSave == true) {
+				if ($statusMapValue->_deleteOnSave == true) {
 					$statusMapValue->delete();
 				} else {
 					if (isset($statusMapValue->id) && is_numeric($statusMapValue->id)) {
@@ -519,7 +546,7 @@ class IndexingProfile extends DataObject
 		if (isset ($this->_formatMap)) {
 			/** @var FormatMapValue $formatMapValue */
 			foreach ($this->_formatMap as $formatMapValue) {
-				if (isset($formatMapValue->deleteOnSave) && $formatMapValue->deleteOnSave == true) {
+				if ($formatMapValue->_deleteOnSave == true) {
 					$formatMapValue->delete();
 				} else {
 					if (isset($formatMapValue->id) && is_numeric($formatMapValue->id)) {

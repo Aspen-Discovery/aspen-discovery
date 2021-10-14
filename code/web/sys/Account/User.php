@@ -25,6 +25,7 @@ class User extends DataObject
 	public $myLocation2Id;					 // int(11)
 	public $trackReadingHistory; 			 // tinyint
 	public $initialReadingHistoryLoaded;
+	public $lastReadingHistoryUpdate;
 	public $bypassAutoLogout;        //tinyint
 	public $disableRecommendations;     //tinyint
 	public $disableCoverArt;     //tinyint
@@ -33,14 +34,13 @@ class User extends DataObject
 	public $hooplaCheckOutConfirmation;
 	public $preferredLibraryInterface;
 	public $noPromptForUserReviews; //tinyint(1)
-    public $rbdigitalId;
-	public $rbdigitalUsername;
-	public $rbdigitalPassword;
-	public $rbdigitalLastAccountCheck;
-	public $lockedFacets;
+    public $lockedFacets;
 	public $alternateLibraryCard;
 	public $alternateLibraryCardPassword;
 	public $hideResearchStarters;
+
+	public $holdInfoLastLoaded;
+	public $checkoutInfoLastLoaded;
 
 	/** @var Role[] */
 	private $_roles;
@@ -51,6 +51,7 @@ class User extends DataObject
 	public $searchPreferenceLanguage;
 
 	public $rememberHoldPickupLocation;
+	public $pickupLocationId;
 
 	public $lastListUsed;
 
@@ -58,6 +59,8 @@ class User extends DataObject
 
 	public $updateMessage;
 	public $updateMessageIsError;
+
+	public $proPayPayerAccountId;
 
 	/** @var User $parentUser */
 	private $parentUser;
@@ -92,11 +95,7 @@ class User extends DataObject
 	private $_numCheckedOutOverDrive = 0;
 	private $_numHoldsOverDrive = 0;
 	private $_numHoldsAvailableOverDrive = 0;
-	private $_numCheckedOutRBdigital = 0;
-    private $_numHoldsRBdigital = 0;
-    private $_numHoldsAvailableRBdigital = 0;
 	private $_numCheckedOutHoopla = 0;
-	public $_numBookings;
 	public $_notices;
 	public $_noticePreferenceLabel;
 	private $_numMaterialsRequests = 0;
@@ -108,9 +107,13 @@ class User extends DataObject
 	public $_comingDueNotice;
 	public $_phoneType;
 
-	function getNumericColumnNames()
+	function getNumericColumnNames() : array
 	{
 		return ['trackReadingHistory', 'hooplaCheckOutConfirmation', 'initialReadingHistoryLoaded', 'updateMessageIsError'];
+	}
+
+	function getEncryptedFieldNames() : array {
+		return ['password', 'firstname', 'lastname', 'email', 'displayName', 'phone', 'overdriveEmail', 'alternateLibraryCardPassword', $this->getPasswordOrPinField()];
 	}
 
 	function getLists() {
@@ -130,7 +133,7 @@ class User extends DataObject
 		return $lists;
 	}
 
-	private $catalogDriver = null;
+	protected $_catalogDriver = null;
 
 	/**
 	 * Get a connection to the catalog for the user
@@ -139,17 +142,17 @@ class User extends DataObject
 	 */
 	function getCatalogDriver()
 	{
-		if ($this->catalogDriver == null) {
+		if ($this->_catalogDriver == null) {
 			//Based off the source of the user, get the AccountProfile
 			$accountProfile = $this->getAccountProfile();
 			if ($accountProfile) {
 				$catalogDriver = trim($accountProfile->driver);
 				if (!empty($catalogDriver)) {
-					$this->catalogDriver = CatalogFactory::getCatalogConnectionInstance($catalogDriver, $accountProfile);
+					$this->_catalogDriver = CatalogFactory::getCatalogConnectionInstance($catalogDriver, $accountProfile);
 				}
 			}
 		}
-		return $this->catalogDriver;
+		return $this->_catalogDriver;
 	}
 
 	function hasIlsConnection()
@@ -166,7 +169,7 @@ class User extends DataObject
 	}
 
 	/** @var AccountProfile */
-	private $_accountProfile;
+	protected $_accountProfile;
 
 	/**
 	 * @return AccountProfile
@@ -220,7 +223,7 @@ class User extends DataObject
 		$this->saveRoles();
 	}
 
-	function getRoles($isGuidingUser = false){
+	function getRoles(){
 		if (is_null($this->_roles)){
 			$this->_roles = array();
 			//Load roles for the user from the user
@@ -255,7 +258,7 @@ class User extends DataObject
 				}
 			}
 
-			//Setup masquerading as different users
+			//Setup a test role if provided
 			$testRole = '';
 			if (isset($_REQUEST['test_role'])){
 				$testRole = $_REQUEST['test_role'];
@@ -283,15 +286,6 @@ class User extends DataObject
 			}
 		}
 
-		$masqueradeMode = UserAccount::isUserMasquerading();
-		if ($masqueradeMode && !$isGuidingUser) {
-			if (is_null($this->_masqueradingRoles)) {
-				$guidingUser = UserAccount::getGuidingUserObject();
-				$guidingUserRoles = $guidingUser->getRoles(true);
-				$this->_masqueradingRoles = array_intersect($this->_roles, $guidingUserRoles);
-			}
-			return $this->_masqueradingRoles;
-		}
 		return $this->_roles;
 	}
 
@@ -308,19 +302,39 @@ class User extends DataObject
 
 	function getBarcode()
 	{
-		if ($this->getAccountProfile()->loginConfiguration == 'barcode_pin') {
+		if ($this->getAccountProfile() == null){
 			return trim($this->cat_username);
-		} else {
-			return trim($this->cat_password);
+		}else {
+			if ($this->getAccountProfile()->loginConfiguration == 'barcode_pin') {
+				return trim($this->cat_username);
+			} else {
+				return trim($this->cat_password);
+			}
 		}
 	}
 
 	function getPasswordOrPin()
 	{
-		if ($this->getAccountProfile()->loginConfiguration == 'barcode_pin') {
+		if ($this->getAccountProfile() == null) {
 			return trim($this->cat_password);
-		} else {
-			return trim($this->cat_username);
+		}else{
+			if ($this->getAccountProfile()->loginConfiguration == 'barcode_pin') {
+				return trim($this->cat_password);
+			} else {
+				return trim($this->cat_username);
+			}
+		}
+	}
+
+	function getPasswordOrPinField(){
+		if ($this->getAccountProfile() == null) {
+			return 'cat_password';
+		}else{
+			if ($this->getAccountProfile()->loginConfiguration == 'barcode_pin') {
+				return 'cat_password';
+			} else {
+				return 'cat_username';
+			}
 		}
 	}
 
@@ -484,58 +498,18 @@ class User extends DataObject
 			$userHomeLibrary = Library::getPatronHomeLibrary($this);
 			if ($userHomeLibrary) {
 				if ($source == 'overdrive') {
-					require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
-					$overDriveDriver = new OverDriveDriver();
-					return array_key_exists('OverDrive', $enabledModules) && $overDriveDriver->isUserValidForOverDrive($this);
+					if (array_key_exists('OverDrive', $enabledModules) && $userHomeLibrary->overDriveScopeId > 0){
+						$driver = OverDriveDriver::getOverDriveDriver();
+						return $driver->isCirculationEnabled();
+					}else {
+						return false;
+					}
 				} elseif ($source == 'hoopla') {
 					return array_key_exists('Hoopla', $enabledModules) && $userHomeLibrary->hooplaLibraryID > 0;
-				} elseif ($source == 'rbdigital') {
-					if (array_key_exists('RBdigital', $enabledModules)){
-						if ($userHomeLibrary->rbdigitalScopeId > 0){
-							return true;
-						}
-					}
-					return false;
 				} elseif ($source == 'cloud_library') {
-					if (array_key_exists('Cloud Library', $enabledModules)){
-						require_once ROOT_DIR . '/sys/CloudLibrary/CloudLibrarySetting.php';
-						try {
-							$cloudLibrarySettings = new CloudLibrarySetting();
-							$cloudLibrarySettings->find();
-							return $cloudLibrarySettings->getNumResults() > 0;
-						} catch (Exception $e) {
-							return false;
-						}
-					}
-					return false;
+					return array_key_exists('Cloud Library', $enabledModules) && (count($userHomeLibrary->cloudLibraryScopes) > 0);
 				} elseif ($source == 'axis360') {
-					if (array_key_exists('Axis 360', $enabledModules)){
-						require_once ROOT_DIR . '/sys/Axis360/Axis360Setting.php';
-						try {
-							$axis360Settings = new Axis360Setting();
-							$axis360Settings->find();
-							return $axis360Settings->getNumResults() > 0;
-						} catch (Exception $e) {
-							return false;
-						}
-					}
-					return false;
-				}
-			}
-		}
-		return false;
-	}
-
-	public function showRBdigitalHolds(){
-		global $enabledModules;
-		if ($this->parentUser == null || ($this->getBarcode() != $this->parentUser->getBarcode())) {
-			$userHomeLibrary = Library::getPatronHomeLibrary($this);
-			if ($userHomeLibrary->rbdigitalScopeId > 0){
-				require_once ROOT_DIR . '/sys/RBdigital/RBdigitalScope.php';
-				$scope = new RBdigitalScope();
-				$scope->id = $userHomeLibrary->rbdigitalScopeId;
-				if ($scope->find(true)){
-					return $scope->includeEAudiobook || $scope->includeEBooks;
+					return array_key_exists('Axis 360', $enabledModules) && ($userHomeLibrary->axis360ScopeId > 0);
 				}
 			}
 		}
@@ -651,6 +625,7 @@ class User extends DataObject
 			global $logger;
 			$logger->log('No Home Location ID was set for newly created user.', Logger::LOG_WARNING);
 		}
+		$this->pickupLocationId = $this->homeLocationId;
 		if (!isset($this->myLocation1Id)) $this->myLocation1Id = 0;
 		if (!isset($this->myLocation2Id)) $this->myLocation2Id = 0;
 		if (!isset($this->bypassAutoLogout)) $this->bypassAutoLogout = 0;
@@ -669,7 +644,7 @@ class User extends DataObject
 		return in_array($roleName, $myRoles);
 	}
 
-    static function getObjectStructure(){
+    static function getObjectStructure() : array {
 		//Lookup available roles in the system
 		require_once ROOT_DIR . '/sys/Administration/Role.php';
 		$roleList = Role::getLookup();
@@ -752,18 +727,6 @@ class User extends DataObject
 		$this->update();
 	}
 
-	public function updateRbdigitalOptions()
-	{
-		if (isset($_REQUEST['rbdigitalUsername'])){
-			$this->rbdigitalUsername = strip_tags($_REQUEST['rbdigitalUsername']);
-		}
-		if (isset($_REQUEST['rbdigitalPassword'])){
-			$this->rbdigitalPassword = strip_tags($_REQUEST['rbdigitalPassword']);
-		}
-		$this->update();
-		return true;
-	}
-
 	function updateStaffSettings(){
 		if (isset($_REQUEST['bypassAutoLogout']) && ($_REQUEST['bypassAutoLogout'] == 'yes' || $_REQUEST['bypassAutoLogout'] == 'on')){
 			$this->bypassAutoLogout = 1;
@@ -781,6 +744,9 @@ class User extends DataObject
 
 	function updateUserPreferences(){
 		// Validate that the input data is correct
+		if (isset($_POST['pickupLocation']) && !is_array($_POST['pickupLocation']) && preg_match('/^\d{1,3}$/', $_POST['pickupLocation']) == 0){
+			return ['success' => false, 'message' => 'The preferred pickup location had an incorrect format.'];
+		}
 		if (isset($_POST['myLocation1']) && !is_array($_POST['myLocation1']) && preg_match('/^\d{1,3}$/', $_POST['myLocation1']) == 0){
 			return ['success' => false, 'message' => 'The 1st location had an incorrect format.'];
 		}
@@ -796,6 +762,19 @@ class User extends DataObject
 		}
 
 		//Make sure the selected location codes are in the database.
+		if (isset($_POST['pickupLocation'])){
+			if ($_POST['pickupLocation'] == 0){
+				$this->pickupLocationId = $_POST['pickupLocation'];
+			}else{
+				$location = new Location();
+				$location->get('locationId', $_POST['pickupLocation'] );
+				if ($location->getNumResults() != 1) {
+					return ['success' => false, 'message' => 'The pickup location could not be found in the database.'];
+				} else {
+					$this->pickupLocationId = $_POST['pickupLocation'];
+				}
+			}
+		}
 		if (isset($_POST['myLocation1'])){
 			if ($_POST['myLocation1'] == 0){
 				$this->myLocation1Id = $_POST['myLocation1'];
@@ -888,36 +867,10 @@ class User extends DataObject
 		return $this->getHomeLibrary()->displayName;
 	}
 
-	public function getNumCheckedOutTotal($includeLinkedUsers = true) {
-		$this->updateRuntimeInformation();
-		$myCheckouts = $this->_numCheckedOutIls + $this->_numCheckedOutOverDrive + $this->_numCheckedOutHoopla + $this->_numCheckedOutRBdigital;
-		if ($includeLinkedUsers) {
-			if ($this->getLinkedUsers() != null) {
-				foreach ($this->getLinkedUsers() as $user) {
-					$myCheckouts += $user->getNumCheckedOutTotal(false);
-				}
-			}
-		}
-		return $myCheckouts;
-	}
-
-	public function getNumHoldsTotal($includeLinkedUsers = true) {
-		$this->updateRuntimeInformation();
-		$myHolds = $this->_numHoldsIls + $this->_numHoldsOverDrive + $this->_numHoldsRBdigital;
-		if ($includeLinkedUsers) {
-			if ($this->getLinkedUsers() != null) {
-				foreach ($this->linkedUsers as $user) {
-					$myHolds += $user->getNumHoldsTotal(false);
-				}
-			}
-		}
-		return $myHolds;
-	}
-
 	/** @noinspection PhpUnused */
 	public function getNumHoldsAvailableTotal($includeLinkedUsers = true){
 		$this->updateRuntimeInformation();
-		$myHolds = $this->_numHoldsAvailableIls + $this->_numHoldsAvailableOverDrive + $this->_numHoldsAvailableRBdigital;
+		$myHolds = $this->_numHoldsAvailableIls + $this->_numHoldsAvailableOverDrive;
 		if ($includeLinkedUsers){
 			if ($this->getLinkedUsers() != null) {
 				foreach ($this->linkedUsers as $user) {
@@ -927,19 +880,6 @@ class User extends DataObject
 		}
 
 		return $myHolds;
-	}
-
-	public function getNumBookingsTotal($includeLinkedUsers = true){
-		$myBookings = $this->_numBookings;
-		if ($includeLinkedUsers){
-			if ($this->getLinkedUsers() != null) {
-				foreach ($this->linkedUsers as $user) {
-					$myBookings += $user->getNumBookingsTotal(false);
-				}
-			}
-		}
-
-		return $myBookings;
 	}
 
 	private $totalFinesForLinkedUsers = -1;
@@ -971,24 +911,31 @@ class User extends DataObject
 	 *
 	 * @param bool $includeLinkedUsers
 	 * @param string $source
-	 * @return array
+	 * @return Checkout[]
 	 */
 	public function getCheckouts($includeLinkedUsers = true, $source = 'all'){
-		global $timer;
-		//Get checked out titles from the ILS
-		if ($source == 'all' || $source == 'ils'){
-			if ($this->hasIlsConnection()){
+		require_once ROOT_DIR . '/sys/User/Checkout.php';
+		//Check to see if we should return cached information, we will reload it if we last fetched it more than
+		//15 minutes ago or if the refresh option is selected
+		$reloadCheckoutInformation = false;
+		if (($this->checkoutInfoLastLoaded < (time() - 15 * 60)) || isset($_REQUEST['refreshCheckouts'])){
+			$reloadCheckoutInformation = true;
+		}
+
+		$checkoutsToReturn = [];
+		if ($reloadCheckoutInformation) {
+			global $timer;
+			$allCheckedOut = [];
+			//Get checked out titles from the ILS
+			if ($this->hasIlsConnection()) {
 				$ilsCheckouts = $this->getCatalogDriver()->getCheckouts($this);
 				$allCheckedOut = $ilsCheckouts;
 				$timer->logTime("Loaded transactions from catalog. {$this->id}");
-			}else{
-				$allCheckedOut = [];
+				if ($source == 'all' || $source == 'ils') {
+					$checkoutsToReturn = array_merge($checkoutsToReturn, $ilsCheckouts);
+				}
 			}
-		}else{
-			$allCheckedOut = [];
-		}
 
-		if ($source == 'all' || $source == 'overdrive') {
 			//Get checked out titles from OverDrive
 			//Do not load OverDrive titles if the parent barcode (if any) is the same as the current barcode
 			if ($this->isValidForEContentSource('overdrive')) {
@@ -997,10 +944,11 @@ class User extends DataObject
 				$overDriveCheckedOutItems = $driver->getCheckouts($this, false);
 				$allCheckedOut = array_merge($allCheckedOut, $overDriveCheckedOutItems);
 				$timer->logTime("Loaded transactions from overdrive. {$this->id}");
+				if ($source == 'all' || $source == 'overdrive') {
+					$checkoutsToReturn = array_merge($checkoutsToReturn, $overDriveCheckedOutItems);
+				}
 			}
-		}
 
-		if ($source == 'all' || $source == 'hoopla') {
 			//Get checked out titles from Hoopla
 			//Do not load Hoopla titles if the parent barcode (if any) is the same as the current barcode
 			if ($this->isValidForEContentSource('hoopla')) {
@@ -1009,36 +957,54 @@ class User extends DataObject
 				$hooplaCheckedOutItems = $hooplaDriver->getCheckouts($this);
 				$allCheckedOut = array_merge($allCheckedOut, $hooplaCheckedOutItems);
 				$timer->logTime("Loaded transactions from hoopla. {$this->id}");
+				if ($source == 'all' || $source == 'hoopla') {
+					$checkoutsToReturn = array_merge($checkoutsToReturn, $hooplaCheckedOutItems);
+				}
 			}
-		}
 
-		if ($source == 'all' || $source == 'rbdigital') {
-			if ($this->isValidForEContentSource('rbdigital')) {
-				require_once ROOT_DIR . '/Drivers/RBdigitalDriver.php';
-				$rbdigitalDriver = new RBdigitalDriver();
-				$rbdigitalCheckedOutItems = $rbdigitalDriver->getCheckouts($this);
-				$allCheckedOut = array_merge($allCheckedOut, $rbdigitalCheckedOutItems);
-				$timer->logTime("Loaded transactions from rbdigital. {$this->id}");
-			}
-		}
-
-		if ($source == 'all' || $source == 'cloud_library') {
 			if ($this->isValidForEContentSource('cloud_library')) {
 				require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
 				$cloudLibraryDriver = new CloudLibraryDriver();
 				$cloudLibraryCheckedOutItems = $cloudLibraryDriver->getCheckouts($this);
 				$allCheckedOut = array_merge($allCheckedOut, $cloudLibraryCheckedOutItems);
 				$timer->logTime("Loaded transactions from cloud_library. {$this->id}");
+				if ($source == 'all' || $source == 'cloud_library') {
+					$checkoutsToReturn = array_merge($checkoutsToReturn, $cloudLibraryCheckedOutItems);
+				}
 			}
-		}
 
-		if ($source == 'all' || $source == 'axis360') {
 			if ($this->isValidForEContentSource('axis360')) {
 				require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
 				$axis360Driver = new Axis360Driver();
 				$axis360CheckedOutItems = $axis360Driver->getCheckouts($this);
 				$allCheckedOut = array_merge($allCheckedOut, $axis360CheckedOutItems);
 				$timer->logTime("Loaded transactions from axis 360. {$this->id}");
+				if ($source == 'all' || $source == 'axis360') {
+					$checkoutsToReturn = array_merge($checkoutsToReturn, $axis360CheckedOutItems);
+				}
+			}
+
+			//Delete all existing checkouts
+			$checkout = new Checkout();
+			$checkout->userId = $this->id;
+			$checkout->delete(true);
+
+			foreach ($allCheckedOut as $checkout){
+				$checkout->insert();
+			}
+
+			$this->checkoutInfoLastLoaded = time();
+			$this->update();
+		}else{
+			//fetch cached checkouts
+			$checkout = new Checkout();
+			$checkout->userId = $this->id;
+			if ($source != 'all'){
+				$checkout->type = $source;
+			}
+			$checkout->find();
+			while ($checkout->fetch()){
+				$checkoutsToReturn[] = clone $checkout;
 			}
 		}
 
@@ -1046,85 +1012,158 @@ class User extends DataObject
 			if ($this->getLinkedUsers() != null) {
 				/** @var User $user */
 				foreach ($this->getLinkedUsers() as $linkedUser) {
-					$allCheckedOut = array_merge($allCheckedOut, $linkedUser->getCheckouts(false, $source));
+					$checkoutsToReturn = array_merge($checkoutsToReturn, $linkedUser->getCheckouts(false, $source));
 				}
 			}
 		}
-		return $allCheckedOut;
+		return $checkoutsToReturn;
+	}
+
+	public function isRecordCheckedOut($source, $recordId){
+		require_once ROOT_DIR . "/sys/User/Checkout.php";
+		$checkout = new Checkout();
+		$checkout->userId = $this->id;
+		$checkout->source = $source;
+		$checkout->recordId = $recordId;
+		if ($checkout->find(true)){
+			return true;
+		}else{
+			return false;
+		}
 	}
 
 	public function getHolds($includeLinkedUsers = true, $unavailableSort = 'sortTitle', $availableSort = 'expire', $source = 'all')
 	{
-		if ($source == 'all' || $source == 'ils') {
+		require_once ROOT_DIR . '/sys/User/Hold.php';
+		//Check to see if we should return cached information, we will reload it if we last fetched it more than
+		//15 minutes ago or if the refresh option is selected
+		$reloadHoldInformation = false;
+		if (($this->holdInfoLastLoaded < time() - 15 * 60) || isset($_REQUEST['refreshHolds'])){
+			$reloadHoldInformation = true;
+		}
+
+		$holdsToReturn = array(
+			'available' => [],
+			'unavailable' => []
+		);;
+		if ($reloadHoldInformation) {
+			//When we reload holds, we will fetch from all sources so they can be cached.
+
+			$allHolds = array(
+				'available' => [],
+				'unavailable' => []
+			);;
 			if ($this->hasIlsConnection()) {
 				$ilsHolds = $this->getCatalogDriver()->getHolds($this);
 				if ($ilsHolds instanceof AspenError) {
 					$ilsHolds = array();
 				}
 				$allHolds = $ilsHolds;
-			} else {
-				$allHolds = [];
+				if ($source == 'all' || $source == 'ils') {
+					$holdsToReturn = $ilsHolds;
+				}
 			}
-		} else {
-			$allHolds = [];
-		}
 
-		if ($source == 'all' || $source == 'overdrive') {
 			//Get holds from OverDrive
 			if ($this->isValidForEContentSource('overdrive')) {
 				require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
 				$driver = new OverDriveDriver();
 				$overDriveHolds = $driver->getHolds($this);
 				$allHolds = array_merge_recursive($allHolds, $overDriveHolds);
+				if ($source == 'all' || $source == 'overdrive') {
+					$holdsToReturn = array_merge_recursive($holdsToReturn, $overDriveHolds);
+				}
 			}
-		}
 
-		if ($source == 'all' || $source == 'rbdigital') {
-			//Get holds from RBdigital
-			if ($this->isValidForEContentSource('rbdigital') && $this->showRBdigitalHolds()) {
-				require_once ROOT_DIR . '/Drivers/RBdigitalDriver.php';
-				$driver = new RBdigitalDriver();
-				$rbdigitalHolds = $driver->getHolds($this);
-				$allHolds = array_merge_recursive($allHolds, $rbdigitalHolds);
-			}
-		}
-
-		if ($source == 'all' || $source == 'cloud_library') {
-			//Get holds from Cloud Library
+			//Get holds from cloudLibrary
 			if ($this->isValidForEContentSource('cloud_library')) {
 				require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
 				$driver = new CloudLibraryDriver();
 				$cloudLibraryHolds = $driver->getHolds($this);
 				$allHolds = array_merge_recursive($allHolds, $cloudLibraryHolds);
+				if ($source == 'all' || $source == 'cloud_library') {
+					$holdsToReturn = array_merge_recursive($holdsToReturn, $cloudLibraryHolds);
+				}
 			}
-		}
 
-		if ($source == 'all' || $source == 'axis360') {
 			//Get holds from Axis 360
 			if ($this->isValidForEContentSource('axis360')) {
 				require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
 				$driver = new Axis360Driver();
 				$axis360Holds = $driver->getHolds($this);
 				$allHolds = array_merge_recursive($allHolds, $axis360Holds);
+				if ($source == 'all' || $source == 'axis360') {
+					$holdsToReturn = array_merge_recursive($holdsToReturn, $axis360Holds);
+				}
+			}
+
+			//Delete all existing holds
+			$hold = new Hold();
+			$hold->userId = $this->id;
+			$hold->delete(true);
+
+			foreach ($allHolds['available'] as $holdToSave){
+				$holdToSave->insert();
+			}
+			foreach ($allHolds['unavailable'] as $holdToSave){
+				$holdToSave->insert();
+			}
+			$this->holdInfoLastLoaded = time();
+			$this->update();
+		}else{
+			//fetch cached holds
+			$hold = new Hold();
+			$hold->userId = $this->id;
+			if ($source != 'all'){
+				$hold->type = $source;
+			}
+			$hold->find();
+			while ($hold->fetch()){
+				$key = $hold->source;
+				if (!empty($hold->cancelId)){
+					$key .= $hold->cancelId;
+				}else{
+					$key .= $hold->sourceId;
+				}
+				$key .= $hold->userId;
+				if ($hold->available){
+					$holdsToReturn['available'][$key] = clone $hold;
+				}else{
+					$holdsToReturn['unavailable'][$key] = clone $hold;
+				}
 			}
 		}
 
 		if ($includeLinkedUsers) {
 			if ($this->getLinkedUsers() != null) {
 				foreach ($this->getLinkedUsers() as $user) {
-					$allHolds = array_merge_recursive($allHolds, $user->getHolds(false, $unavailableSort, $availableSort, $source));
+					$holdsToReturn = array_merge_recursive($holdsToReturn, $user->getHolds(false, $unavailableSort, $availableSort, $source));
 				}
 			}
 		}
 
 		$indexToSortBy = 'sortTitle';
 		$holdSort = function ($a, $b) use (&$indexToSortBy) {
-			$a = isset($a[$indexToSortBy]) ? $a[$indexToSortBy] : null;
-			$b = isset($b[$indexToSortBy]) ? $b[$indexToSortBy] : null;
+			$titleA = $a->getSortTitle();
+			$titleB = $b->getSortTitle();
+			if ($indexToSortBy == 'sortTitle'){
+				$a = $titleA;
+				$b = $titleB;
+			}elseif ($indexToSortBy == 'user'){
+				$a = $a->getUserName();
+				$b = $b->getUserName();
+			}else {
+				$a = isset($a->$indexToSortBy) ? $a->$indexToSortBy : null;
+				$b = isset($b->$indexToSortBy) ? $b->$indexToSortBy : null;
+			}
 
 			// Put empty values (except for specified values of zero) at the bottom of the sort
 			if (modifiedEmpty($a) && modifiedEmpty($b)) {
-				return 0;
+				if ($indexToSortBy != 'sortTitle'){
+					return strnatcasecmp($titleA, $titleB);
+				}else{
+					return 0;
+				}
 			} elseif (!modifiedEmpty($a) && modifiedEmpty($b)) {
 				return -1;
 			} elseif (modifiedEmpty($a) && !modifiedEmpty($b)) {
@@ -1140,11 +1179,15 @@ class User extends DataObject
 				}
 			}
 
-			return strnatcasecmp($a, $b);
-			// This will sort numerically correctly as well
+			$ret = strnatcasecmp($a, $b);
+			if ($ret == 0 && $indexToSortBy != 'sortTitle'){
+				return strnatcasecmp($titleA, $titleB);
+			}else{
+				return $ret;
+			}
 		};
 
-		if (!empty($allHolds['available'])) {
+		if (!empty($holdsToReturn['available'])) {
 			switch ($availableSort) {
 				case 'author' :
 				case 'format' :
@@ -1157,16 +1200,18 @@ class User extends DataObject
 				case 'libraryAccount' :
 					$indexToSortBy = 'user';
 					break;
+				case 'location' :
+					$indexToSortBy = 'pickupLocationName';
+					break;
 				case 'expire' :
 				default :
-					$indexToSortBy = 'expire';
+					$indexToSortBy = 'expirationDate';
 			}
-			uasort($allHolds['available'], $holdSort);
+			uasort($holdsToReturn['available'], $holdSort);
 		}
-		if (!empty($allHolds['unavailable'])) {
+		if (!empty($holdsToReturn['unavailable'])) {
 			switch ($unavailableSort) {
 				case 'author' :
-				case 'location' :
 				case 'position' :
 				case 'status' :
 				case 'format' :
@@ -1179,30 +1224,64 @@ class User extends DataObject
 				case 'libraryAccount' :
 					$indexToSortBy = 'user';
 					break;
+				case 'location' :
+					$indexToSortBy = 'pickupLocationName';
+					break;
 				case 'title' :
 				default :
 					$indexToSortBy = 'sortTitle';
 			}
-			uasort($allHolds['unavailable'], $holdSort);
+			uasort($holdsToReturn['unavailable'], $holdSort);
 		}
 
-		return $allHolds;
+		return $holdsToReturn;
 	}
 
-	public function getMyBookings($includeLinkedUsers = true){
-		$ilsBookings = $this->getCatalogDriver()->getMyBookings($this);
-		if ($ilsBookings instanceof AspenError) {
-			$ilsBookings = array();
+	public function isRecordOnHold($source, $recordId){
+		require_once ROOT_DIR . "/sys/User/Hold.php";
+		$hold = new Hold();
+		$hold->userId = $this->id;
+		$hold->source = $source;
+		$hold->recordId = $recordId;
+		if ($hold->find(true)){
+			return true;
+		}else{
+			return false;
 		}
+	}
 
-		if ($includeLinkedUsers) {
-			if ($this->getLinkedUsers() != null) {
-				foreach ($this->getLinkedUsers() as $user) {
-					$ilsBookings = array_merge_recursive($ilsBookings, $user->getMyBookings(false));
-				}
+	public function getCirculatedRecordActions($source, $recordId, $loadingLinkedUser = false)
+	{
+		$actions = [];
+		$showUserName = $loadingLinkedUser;
+//		if (!$loadingLinkedUser){
+//			$linkedUsers = $this->getLinkedUsers();
+//			if (count($linkedUsers) > 0){
+//				$showUserName = true;
+//			}
+//		}
+		if ($this->isRecordCheckedOut($source, $recordId)) {
+			$actions[] = array(
+				'title' => translate(['text' => 'Checked Out to %1%', 1 => $showUserName ? $this->displayName : 'You']),
+				'url' => "/MyAccount/CheckedOut",
+				'requireLogin' => false,
+				'btnType' => 'btn-info'
+			);
+		} elseif ($source != 'hoopla' && $this->isRecordOnHold($source, $recordId)) {
+			$actions[] = array(
+				'title' => translate(['text' => 'On Hold for %1%', 1 => $showUserName ? $this->displayName : 'You']),
+				'url' => "/MyAccount/Holds",
+				'requireLogin' => false,
+				'btnType' => 'btn-info'
+			);
+		}
+		if (!$loadingLinkedUser) {
+			$linkedUsers = $this->getLinkedUsers();
+			foreach ($linkedUsers as $linkedUser) {
+				$actions = array_merge($actions, $linkedUser->getCirculatedRecordActions($source, $recordId, true));
 			}
 		}
-		return $ilsBookings;
+		return $actions;
 	}
 
 	private $ilsFinesForUser;
@@ -1227,7 +1306,25 @@ class User extends DataObject
 	}
 
 	public function getNameAndLibraryLabel(){
-		return $this->displayName . ' - ' . $this->getHomeLibrarySystemName();
+		return $this->getDisplayName() . ' - ' . $this->getHomeLibrarySystemName();
+	}
+
+	public function getValidHomeLibraryBranches($recordSource){
+		$pickupLocations = $this->getValidPickupBranches($recordSource);
+		$hasHomeLibrary = false;
+		foreach ($pickupLocations as $key => $pickupLocation){
+			if (is_object($pickupLocation)){
+				if ($pickupLocation->locationId == $this->homeLocationId) {
+					$hasHomeLibrary = true;
+				}
+			}else{
+				unset($pickupLocations[$key]);
+			}
+		}
+		if (!$hasHomeLibrary){
+			$pickupLocations = array_merge([$this->getHomeLocation()], $pickupLocations);
+		}
+		return $pickupLocations;
 	}
 
 	/**
@@ -1243,38 +1340,51 @@ class User extends DataObject
 		// using $user to be consistent with other code use of getPickupBranches()
 		$userLocation = new Location();
 		if ($recordSource == $this->getAccountProfile()->recordSource){
-			$locations = $userLocation->getPickupBranches($this, $this->homeLocationId);
+			$locations = $userLocation->getPickupBranches($this);
 		}else{
 			$locations = array();
 		}
 		$linkedUsers = $this->getLinkedUsers();
-		foreach ($linkedUsers as $linkedUser){
-			if ($recordSource == $linkedUser->source){
-				$linkedUserLocation = new Location();
-				$linkedUserPickupLocations = $linkedUserLocation->getPickupBranches($linkedUser, null, true);
-				foreach ($linkedUserPickupLocations as $sortingKey => $pickupLocation) {
-					foreach ($locations as $mainSortingKey => $mainPickupLocation) {
-						// Check For Duplicated Pickup Locations
-						if ($mainPickupLocation->libraryId == $pickupLocation->libraryId && $mainPickupLocation->locationId == $pickupLocation->locationId) {
-							// Merge Linked Users that all have this pick-up location
-							$pickupUsers = array_unique(array_merge($mainPickupLocation->pickupUsers, $pickupLocation->pickupUsers));
-							$mainPickupLocation->pickupUsers = $pickupUsers;
-							$pickupLocation->pickupUsers = $pickupUsers;
-
-							// keep location with better sort key, remove the other
-							if ($mainSortingKey == $sortingKey || $mainSortingKey[0] < $sortingKey[0] ) {
-								unset ($linkedUserPickupLocations[$sortingKey]);
-							} elseif ($mainSortingKey[0] == $sortingKey[0]) {
-								if (strcasecmp($mainSortingKey, $sortingKey) > 0) unset ($locations[$mainSortingKey]);
-								else unset ($linkedUserPickupLocations[$sortingKey]);
-							} else {
-								unset ($locations[$mainSortingKey]);
+		if (count($linkedUsers) > 0){
+			$accountProfileForSource = new AccountProfile();
+			$accountProfileForSource->recordSource = $recordSource;
+			$accountProfileSource = '';
+			if ($accountProfileForSource->find(true)){
+				$accountProfileSource = $accountProfileForSource->name;
+			}
+			foreach ($linkedUsers as $linkedUser){
+				if ($accountProfileSource == $linkedUser->source){
+					$linkedUserLocation = new Location();
+					$linkedUserPickupLocations = $linkedUserLocation->getPickupBranches($linkedUser, true);
+					foreach ($linkedUserPickupLocations as $sortingKey => $pickupLocation) {
+						if (!is_object($pickupLocation)){
+							continue;
+						}
+						foreach ($locations as $mainSortingKey => $mainPickupLocation) {
+							if (!is_object($mainPickupLocation)){
+								continue;
 							}
+							// Check For Duplicated Pickup Locations
+							if ($mainPickupLocation->libraryId == $pickupLocation->libraryId && $mainPickupLocation->locationId == $pickupLocation->locationId) {
+								// Merge Linked Users that all have this pick-up location
+								$pickupUsers = array_unique(array_merge($mainPickupLocation->pickupUsers, $pickupLocation->pickupUsers));
+								$mainPickupLocation->pickupUsers = $pickupUsers;
+								$pickupLocation->pickupUsers = $pickupUsers;
 
+								// keep location with better sort key, remove the other
+								if ($mainSortingKey == $sortingKey || $mainSortingKey[0] < $sortingKey[0] ) {
+									unset ($linkedUserPickupLocations[$sortingKey]);
+								} elseif ($mainSortingKey[0] == $sortingKey[0]) {
+									if (strcasecmp($mainSortingKey, $sortingKey) > 0) unset ($locations[$mainSortingKey]);
+									else unset ($linkedUserPickupLocations[$sortingKey]);
+								} else {
+									unset ($locations[$mainSortingKey]);
+								}
+							}
 						}
 					}
+					$locations = array_merge($locations, $linkedUserPickupLocations);
 				}
-				$locations = array_merge($locations, $linkedUserPickupLocations);
 			}
 		}
 		ksort($locations);
@@ -1312,8 +1422,8 @@ class User extends DataObject
 		return $result;
 	}
 
-	function bookMaterial($recordId, $startDate, $startTime, $endDate, $endTime){
-		$result = $this->getCatalogDriver()->bookMaterial($this, $recordId, $startDate, $startTime, $endDate, $endTime);
+	function confirmHold($recordId, $confirmationId) {
+		$result = $this->getCatalogDriver()->confirmHold($this, $recordId, $confirmationId);
 		if ($result['success']){
 			$this->clearCache();
 		}
@@ -1341,35 +1451,6 @@ class User extends DataObject
 				$logger->log("Could not find location for $pickupBranch", Logger::LOG_ERROR);
 			}
 		}
-	}
-
-	function cancelBookedMaterial($cancelId){
-		$result = $this->getCatalogDriver()->cancelBookedMaterial($this, $cancelId);
-		$this->clearCache();
-		return $result;
-	}
-
-	function cancelAllBookedMaterial($includeLinkedUsers = true){
-		$result = $this->getCatalogDriver()->cancelAllBookedMaterial($this);
-		$this->clearCache();
-
-		if ($includeLinkedUsers) {
-			if ($this->getLinkedUsers() != null) {
-				foreach ($this->getLinkedUsers() as $user) {
-
-					$additionalResults = $user->cancelAllBookedMaterial(false);
-					if (!$additionalResults['success']) { // if we received failures
-						if ($result['success']) {
-							$result = $additionalResults; // first set of failures, overwrite currently successful results
-						} else { // if there were already failures, add the extra failure messages
-							$result['message'] = array_merge($result['message'], $additionalResults['message']);
-						}
-					}
-				}
-			}
-		}
-
-		return $result;
 	}
 
 	/**
@@ -1445,6 +1526,153 @@ class User extends DataObject
 		return $result;
 	}
 
+	function freezeAllHolds() {
+		$user = UserAccount::getLoggedInUser();
+		$tmpResult = array( // set default response
+			'success' => false,
+			'message' => 'Error modifying hold.'
+		);
+
+		$allHolds = $user->getHolds(true, 'sortTitle', 'expire', 'all');
+		$allUnavailableHolds = $allHolds['unavailable'];
+		$success = 0;
+		$failed = 0;
+		$total = count($allHolds['unavailable']);
+
+		if ($total >= 1) {
+			foreach ($allUnavailableHolds as $hold) {
+				$frozen = $hold->frozen;
+				$canFreeze = $hold->canFreeze;
+				$recordId = $hold->sourceId;
+				$holdId = $hold->cancelId;
+				$holdType = $hold->source;
+
+				if ($frozen == 0 && $canFreeze == 1) {
+					if ($holdType == 'ils') {
+						$tmpResult = $user->freezeHold($recordId, $holdId, false);
+						if ($tmpResult['success']) {
+							$success++;
+						}
+					} else if ($holdType == 'axis360') {
+						require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
+						$driver = new Axis360Driver();
+						$tmpResult = $driver->freezeHold($user, $recordId);
+						if ($tmpResult['success']) {
+							$success++;
+						}
+					} else if ($holdType == 'overdrive') {
+						require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
+						$driver = new OverDriveDriver();
+						$tmpResult = $driver->freezeHold($user, $recordId);
+						if ($tmpResult['success']) {
+							$success++;
+						}
+					} else if ($holdType == 'cloud_library') {
+						require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
+						$driver = new CloudLibraryDriver();
+						$tmpResult = $driver->freezeHold($user, $recordId);
+						if ($tmpResult['success']) {
+							$success++;
+						}
+					} else {
+						$failed++;
+						$tmpResult['message'] = '<div class="alert alert-warning">Hold not available</div>';
+					}
+
+				} else if ($canFreeze == 0) {
+					$failed++;
+				} else {
+					$tmpResult['message'] = '<div class="alert alert-warning">All holds already frozen</div>';
+				}
+			}
+		} else {
+			$tmpResult['message'] = 'No holds available to freeze.';
+		}
+
+		if ($success >= 1) {
+			$message = '<div class="alert alert-success">' . $success . ' of ' . $total . ' holds were frozen.</div>';
+
+			if ($failed >= 1) {
+				$message .= '<div class="alert alert-warning">' . $failed . ' holds failed to freeze.</div>';
+			}
+
+			$tmpResult['message'] = $message;
+		} else {
+			$tmpResult['message'] = '<div class="alert alert-warning">All holds already frozen</div>';
+		}
+
+		return $tmpResult;
+	}
+	function thawAllHolds(){
+		$user = UserAccount::getLoggedInUser();
+		$tmpResult = array( // set default response
+			'success' => false,
+			'message' => 'Error modifying hold.'
+		);
+
+		$allHolds = $user->getHolds(true, 'sortTitle', 'expire', 'all');
+		$allUnavailableHolds = $allHolds['unavailable'];
+		$success = 0;
+		$failed = 0;
+		$total = count($allHolds['unavailable']);
+
+		if ($total >= 1) {
+			foreach ($allUnavailableHolds as $hold) {
+				$frozen = $hold->frozen;
+				$canFreeze = $hold->canFreeze;
+				$recordId = $hold->sourceId;
+				$holdId = $hold->cancelId;
+				$holdType = $hold->source;
+
+				if ($frozen == 1 && $canFreeze == 1) {
+					if ($holdType == 'ils') {
+						$tmpResult = $user->thawHold($recordId, $holdId);
+						if($tmpResult['success']){$success++;}
+					} else if ($holdType == 'axis360') {
+						require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
+						$driver = new Axis360Driver();
+						$tmpResult = $driver->thawHold($user, $recordId);
+						if($tmpResult['success']){$success++;}
+					} else if ($holdType == 'overdrive') {
+						require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
+						$driver = new OverDriveDriver();
+						$tmpResult = $driver->thawHold($user, $recordId);
+						if($tmpResult['success']){$success++;}
+					} else if ($holdType == 'cloud_library') {
+						require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
+						$driver = new CloudLibraryDriver();
+						$tmpResult = $driver->thawHold($user, $recordId);
+						if($tmpResult['success']){$success++;}
+					} else {
+						$failed++;
+						$tmpResult['message'] = '<div class="alert alert-warning">Hold not available</div>';
+					}
+
+				} else if ($canFreeze == 0) {
+					$failed++;
+				} else if ($frozen == 1) {
+					$failed++;
+				}
+
+				if ($success >= 1 ){
+					$message = '<div class="alert alert-success">' . $success . ' of ' . $total . ' holds were thawed.</div>';
+
+					if ($failed >= 1) {
+						$message .= '<div class="alert alert-warning">' . $failed . ' holds failed to thaw.</div>';
+					}
+
+					$tmpResult['message'] = $message;
+				} else {
+					$tmpResult['message'] = '<div class="alert alert-warning">All holds already thawed</div>';
+				}
+			}
+		} else {
+			$tmpResult['message'] = 'No holds available to thaw.';
+		}
+
+		return $tmpResult;
+	}
+
 	function thawHold($recordId, $holdId){
 		$result = $this->getCatalogDriver()->thawHold($this, $recordId, $holdId);
 		$this->clearCache();
@@ -1507,14 +1735,22 @@ class User extends DataObject
 		return $renewAllResults;
 	}
 
-	public function getReadingHistory($page, $recordsPerPage, $selectedSortOption, $filter, $forExport) {
-		return $this->getCatalogDriver()->getReadingHistory($this, $page, $recordsPerPage, $selectedSortOption, $filter, $forExport);
+	public function getReadingHistory($page = 1, $recordsPerPage = 20, $sortOption = "checkedOut", $filter = "", $forExport = false) {
+		return $this->getCatalogDriver()->getReadingHistory($this, $page, $recordsPerPage, $sortOption, $filter, $forExport);
 	}
 
 	public function doReadingHistoryAction($readingHistoryAction, $selectedTitles){
 		$results = $this->getCatalogDriver()->doReadingHistoryAction($this, $readingHistoryAction, $selectedTitles);
 		$this->clearCache();
 		return $results;
+	}
+
+	public function deleteReadingHistoryEntryByTitleAuthor($title, $author) {
+		return $this->getCatalogDriver()->deleteReadingHistoryEntryByTitleAuthor($this, $title, $author);
+	}
+
+	public function updateReadingHistoryBasedOnCurrentCheckouts() {
+		$this->getCatalogDriver()->updateReadingHistoryBasedOnCurrentCheckouts($this);
 	}
 
 	/**
@@ -1673,10 +1909,13 @@ class User extends DataObject
 
 	/** @noinspection PhpUnused */
 	function showMessagingSettings(){
-		if ($this->hasIlsConnection()){
-			return $this->getCatalogDriver()->showMessagingSettings();
-		}else{
-			return false;
+		global $library;
+		if ($library->showMessagingSettings) {
+			if ($this->hasIlsConnection()) {
+				return $this->getCatalogDriver()->showMessagingSettings();
+			} else {
+				return false;
+			}
 		}
 	}
 
@@ -1691,6 +1930,14 @@ class User extends DataObject
 			$messages[] = clone $userMessage;
 		}
 		return $messages;
+	}
+
+	function getILSMessages(){
+		if ($this->hasIlsConnection()){
+			return $this->getCatalogDriver()->getILSMessages($this);
+		}else{
+			return false;
+		}
 	}
 
 	function disableLinkingDueToPasswordChange()
@@ -1779,12 +2026,15 @@ class User extends DataObject
 		return $this->getCatalogDriver()->updateAutoRenewal($this, $allowAutoRenewal);
 	}
 
-	public function getNotInterestedTitles(){
+	public function getNotInterestedTitles($sinceTime = 0){
 		global $timer;
 		$notInterestedTitles = [];
 		require_once ROOT_DIR . '/sys/LocalEnrichment/NotInterested.php';
 		$notInterested = new NotInterested();
 		$notInterested->userId = $this->id;
+		if ($sinceTime > 0){
+			$notInterested->whereAdd("dateMarked >= $sinceTime" );
+		}
 		$notInterested->find();
 		while ($notInterested->fetch()){
 			$notInterestedTitles[$notInterested->groupedRecordPermanentId] = $notInterested->groupedRecordPermanentId;
@@ -1822,15 +2072,7 @@ class User extends DataObject
 
 	/** @noinspection PhpUnused */
 	function getHomeLocationName(){
-		if (empty($this->_homeLocation)) {
-			$location = new Location();
-			$location->locationId = $this->homeLocationId;
-			if ($location->find(true)){
-				$this->_homeLocation = $location->displayName;
-			}
-			$location->__destruct();
-		}
-		return $this->_homeLocation;
+		return $this->getHomeLocation()->displayName;
 	}
 
 	function getHomeLocation(){
@@ -1850,6 +2092,25 @@ class User extends DataObject
 
 	function getHomeLocationCode(){
 		return $this->getHomeLocation()->code;
+	}
+
+	function getPickupLocationCode(){
+		//Always check if a preferred pickup location has been selected.  If not, use the home location
+		if ($this->pickupLocationId > 0 && $this->pickupLocationId != $this->homeLocationId) {
+			$pickupBranch = $this->pickupLocationId;
+			$locationLookup = new Location();
+			$locationLookup->locationId = $pickupBranch;
+			//Make sure that the hold location is a valid pickup location just in case it's been hidden since
+			if ($locationLookup->find(true) && $locationLookup->validHoldPickupBranch != 2) {
+				$pickupBranch = $locationLookup->code;
+			} else {
+				$pickupBranch = $this->getHomeLocation()->code;
+			}
+		} else {
+			$pickupBranch = $this->getHomeLocation()->code;
+		}
+
+		return $pickupBranch;
 	}
 
 	/**
@@ -1934,6 +2195,15 @@ class User extends DataObject
 		if ($this->hasIlsConnection()) {
 			$this->getCatalogDriver()->logout($this);
 		}
+		$this->lastLoginValidation = 0;
+		$this->update();
+	}
+
+	public function treatVolumeHoldsAsItemHolds() {
+		if ($this->hasIlsConnection()) {
+			return $this->getCatalogDriver()->treatVolumeHoldsAsItemHolds();
+		}
+		return false;
 	}
 
 	public function getAdminActions(){
@@ -1951,13 +2221,15 @@ class User extends DataObject
 		$sections['system_admin']->addAction(new AdminAction('Administration Users', 'Define who should have administration privileges.', '/Admin/Administrators'), 'Administer Users');
 		$sections['system_admin']->addAction(new AdminAction('Permissions', 'Define who what each role in the system can do.', '/Admin/Permissions'), 'Administer Permissions');
 		$sections['system_admin']->addAction(new AdminAction('DB Maintenance', 'Update the database when new versions of Aspen Discovery are released.', '/Admin/DBMaintenance'), 'Run Database Maintenance');
+		$sections['system_admin']->addAction(new AdminAction('Amazon SES Settings', 'Settings to allow Aspen Discovery to send emails via Amazon SES.', '/Admin/AmazonSesSettings'), 'Administer Amazon SES');
 		$sections['system_admin']->addAction(new AdminAction('Send Grid Settings', 'Settings to allow Aspen Discovery to send emails via SendGrid.', '/Admin/SendGridSettings'), 'Administer SendGrid');
 		$sections['system_admin']->addAction(new AdminAction('Variables', 'Variables set by the Aspen Discovery itself as part of background processes.', '/Admin/Variables'), 'Administer System Variables');
 		$sections['system_admin']->addAction(new AdminAction('System Variables', 'Settings for Aspen Discovery that apply to all libraries on this installation.', '/Admin/SystemVariables'), 'Administer System Variables');
 
 		$sections['system_reports'] = new AdminSection('System Reports');
 		$sections['system_reports']->addAction(new AdminAction('Site Status', 'View Status of Aspen Discovery.', '/Admin/SiteStatus'), 'View System Reports');
-		$sections['system_reports']->addAction(new AdminAction('Usage Dashboard', 'Usage Report for Aspen Discovery.', '/Admin/UsageDashboard'), 'View System Reports');
+		$sections['system_reports']->addAction(new AdminAction('Usage Dashboard', 'Usage Report for Aspen Discovery.', '/Admin/UsageDashboard'), ['View Dashboards', 'View System Reports']);
+		$sections['system_reports']->addAction(new AdminAction('API Usage Dashboard', 'API Usage Report for Aspen Discovery.', '/Admin/APIUsageDashboard'), ['View Dashboards', 'View System Reports']);
 		$sections['system_reports']->addAction(new AdminAction('Usage By IP Address', 'Reports which IP addresses have used Aspen Discovery.', '/Admin/UsageByIP'), 'View System Reports');
 		$sections['system_reports']->addAction(new AdminAction('Nightly Index Log', 'Nightly indexing log for Aspen Discovery.  The nightly index updates all records if needed.', '/Admin/ReindexLog'), ['View System Reports', 'View Indexing Logs']);
 		$sections['system_reports']->addAction(new AdminAction('Cron Log', 'View Cron Log. The cron process handles periodic cleanup tasks and updates reading history for users.', '/Admin/CronLog'), 'View System Reports');
@@ -2021,7 +2293,8 @@ class User extends DataObject
 		$groupedWorkAction = new AdminAction('Grouped Work Display', 'Define information about what is displayed for Grouped Works in search results and full record displays.', '/Admin/GroupedWorkDisplay');
 		$groupedWorkAction->addSubAction(new AdminAction('Grouped Work Facets', 'Define information about what facets are displayed for grouped works in search results and Advanced Search.', '/Admin/GroupedWorkFacets'), ['Administer All Grouped Work Facets', 'Administer Library Grouped Work Facets']);
 		$sections['cataloging']->addAction($groupedWorkAction, ['Administer All Grouped Work Display Settings', 'Administer Library Grouped Work Display Settings']);
-		$sections['cataloging']->addAction(new AdminAction('Title / Author Authorities', 'View a list of all title author/authorities that have been added to Aspen to merge works.', '/Admin/AlternateTitles'), 'Manually Group and Ungroup Works');
+		$sections['cataloging']->addAction(new AdminAction('Manual Grouping Authorities', 'View a list of all title author/authorities that have been added to Aspen to merge works.', '/Admin/AlternateTitles'), 'Manually Group and Ungroup Works');
+		$sections['cataloging']->addAction(new AdminAction('Author Authorities', 'Create and edit authorities for authors.', '/Admin/AuthorAuthorities'), 'Manually Group and Ungroup Works');
 		$sections['cataloging']->addAction(new AdminAction('Records To Not Group', 'Lists records that should not be grouped.', '/Admin/NonGroupedRecords'), 'Manually Group and Ungroup Works');
 		//$sections['cataloging']->addAction(new AdminAction('Print Barcodes', 'Lists records that should not be grouped.', '/Admin/PrintBarcodes'), 'Print Barcodes');
 
@@ -2031,7 +2304,7 @@ class User extends DataObject
 		$sections['local_enrichment']->addAction($browseCategoryGroupsAction, ['Administer All Browse Categories', 'Administer Library Browse Categories']);
 		$sections['local_enrichment']->addAction(new AdminAction('Collection Spotlights', 'Define basic information about how pages are displayed in Aspen Discovery.', '/Admin/CollectionSpotlights'), ['Administer All Collection Spotlights', 'Administer Library Collection Spotlights']);
 		$sections['local_enrichment']->addAction(new AdminAction('JavaScript Snippets', 'JavaScript Snippets to be added to the site when pages are rendered.', '/Admin/JavaScriptSnippets'), ['Administer All JavaScript Snippets', 'Administer Library JavaScript Snippets']);
-		$sections['local_enrichment']->addAction(new AdminAction('Placards', 'Placards allow you to promote services that do not have MARC records or APIs for inclusion in the catalog.', '/Admin/Placards'), ['Administer All Placards', 'Administer Library Placards']);
+		$sections['local_enrichment']->addAction(new AdminAction('Placards', 'Placards allow you to promote services that do not have MARC records or APIs for inclusion in the catalog.', '/Admin/Placards'), ['Administer All Placards', 'Administer Library Placards', 'Edit Library Placards']);
 		$sections['local_enrichment']->addAction(new AdminAction('System Messages', 'System Messages allow you to display messages to your patrons in specific locations.', '/Admin/SystemMessages'), ['Administer All System Messages', 'Administer Library System Messages']);
 
 		$sections['third_party_enrichment'] = new AdminSection('Third Party Enrichment');
@@ -2049,10 +2322,18 @@ class User extends DataObject
 		}
 		$sections['third_party_enrichment']->addAction(new AdminAction('Novelist Settings', 'Define settings for integrating Novelist within Aspen Discovery.', '/Enrichment/NovelistSettings'), 'Administer Third Party Enrichment API Keys');
 		$sections['third_party_enrichment']->addAction(new AdminAction('OMDB Settings', 'Define settings for integrating OMDB within Aspen Discovery.', '/Enrichment/OMDBSettings'), 'Administer Third Party Enrichment API Keys');
+		$sections['third_party_enrichment']->addAction(new AdminAction('Quipu eCARD Settings', 'Define settings for integrating Quipu eCARD within Aspen Discovery.', '/Enrichment/QuipuECardSettings'), 'Administer Third Party Enrichment API Keys');
 		$sections['third_party_enrichment']->addAction(new AdminAction('reCAPTCHA Settings', 'Define settings for using reCAPTCHA within Aspen Discovery.', '/Enrichment/RecaptchaSettings'), 'Administer Third Party Enrichment API Keys');
 		$sections['third_party_enrichment']->addAction(new AdminAction('Rosen LevelUP Settings', 'Define settings for allowing students and parents to register for Rosen LevelUP.', '/Rosen/RosenLevelUPSettings'), 'Administer Third Party Enrichment API Keys');
 		$sections['third_party_enrichment']->addAction(new AdminAction('Syndetics Settings', 'Define settings for Syndetics integration.', '/Enrichment/SyndeticsSettings'), 'Administer Third Party Enrichment API Keys');
 		$sections['third_party_enrichment']->addAction(new AdminAction('Wikipedia Integration', 'Modify which Wikipedia content is displayed for authors.', '/Admin/AuthorEnrichment'), 'Administer Wikipedia Integration');
+
+		$sections['ecommerce'] = new AdminSection('eCommerce');
+		$sections['ecommerce']->addAction(new AdminAction('eCommerce Report', 'View all payments initialted and completed within the sytem', '/Admin/eCommerceReport'), 'View eCommerce Reports');
+		$sections['ecommerce']->addAction(new AdminAction('Comprise Settings', 'Define Settings for Comprise SMARTPAY.', '/Admin/CompriseSettings'), 'Administer Comprise');
+		$sections['ecommerce']->addAction(new AdminAction('FIS WorldPay Settings', 'Define Settings for FIS WorldPay.', '/Admin/WorldPaySettings'), 'Administer WorldPay');
+		$sections['ecommerce']->addAction(new AdminAction('PayPal Settings', 'Define Settings for PayPal.', '/Admin/PayPalSettings'), 'Administer PayPal');
+		$sections['ecommerce']->addAction(new AdminAction('ProPay Settings', 'Define Settings for ProPay.', '/Admin/ProPaySettings'), 'Administer ProPay');
 
 		$sections['ils_integration'] = new AdminSection('ILS Integration');
 		$indexingProfileAction = new AdminAction('Indexing Profiles', 'Define how records from the ILS are loaded into Aspen Discovery.', '/ILS/IndexingProfiles');
@@ -2062,12 +2343,7 @@ class User extends DataObject
 		}else{
 			$sections['ils_integration']->addAction($translationMapsAction, 'Administer Translation Maps');
 		}
-		if ($configArray['Catalog']['ils'] == 'Millennium' || $configArray['Catalog']['ils'] == 'Sierra'){
-			$sections['ils_integration']->addAction(new AdminAction('Loan Rules', 'View and load loan rules used by the ILS to determine if an patron is eligible to use materials.', '/ILS/LoanRules'), 'Administer Loan Rules');
-			$sections['ils_integration']->addAction(new AdminAction('Loan Rule Determiners', 'View and load loan rule determiners used by the ILS to determine if an patron is eligible to use materials.', '/ILS/LoanRuleDeterminers'), 'Administer Loan Rules');
-		}
 		$sections['ils_integration']->addAction(new AdminAction('Indexing Log', 'View the indexing log for ILS records.', '/ILS/IndexingLog'), 'View Indexing Logs');
-		$sections['ils_integration']->addAction(new AdminAction('Offline Holds Report', 'View a report of holds that were submitted while the ILS was offline.', '/Circa/OfflineHoldsReport'), 'View Offline Holds Report');
 		$sections['ils_integration']->addAction(new AdminAction('Dashboard', 'View the usage dashboard for ILS integration.', '/ILS/Dashboard'), ['View Dashboards', 'View System Reports']);
 
 		$sections['circulation_reports'] = new AdminSection('Circulation Reports');
@@ -2089,16 +2365,16 @@ class User extends DataObject
 		}
 
 		if (array_key_exists('Cloud Library', $enabledModules)) {
-			$sections['cloud_library'] = new AdminSection('Cloud Library');
-			$cloudLibrarySettingsAction = new AdminAction('Settings', 'Define connection information between Cloud Library and Aspen Discovery.', '/CloudLibrary/Settings');
+			$sections['cloud_library'] = new AdminSection('cloudLibrary');
+			$cloudLibrarySettingsAction = new AdminAction('Settings', 'Define connection information between cloudLibrary and Aspen Discovery.', '/CloudLibrary/Settings');
 			$cloudLibraryScopesAction = new AdminAction('Scopes', 'Define which records are loaded for each library and location.', '/CloudLibrary/Scopes');
 			if ($sections['cloud_library']->addAction($cloudLibrarySettingsAction, 'Administer Cloud Library')) {
 				$cloudLibrarySettingsAction->addSubAction($cloudLibraryScopesAction, 'Administer Cloud Library');
 			} else {
 				$sections['cloud_library']->addAction($cloudLibraryScopesAction, 'Administer Cloud Library');
 			}
-			$sections['cloud_library']->addAction(new AdminAction('Indexing Log', 'View the indexing log for Cloud Library.', '/CloudLibrary/IndexingLog'), ['View System Reports', 'View Indexing Logs']);
-			$sections['cloud_library']->addAction(new AdminAction('Dashboard', 'View the usage dashboard for Cloud Library integration.', '/CloudLibrary/Dashboard'), ['View Dashboards', 'View System Reports']);
+			$sections['cloud_library']->addAction(new AdminAction('Indexing Log', 'View the indexing log for cloudLibrary.', '/CloudLibrary/IndexingLog'), ['View System Reports', 'View Indexing Logs']);
+			$sections['cloud_library']->addAction(new AdminAction('Dashboard', 'View the usage dashboard for cloudLibrary integration.', '/CloudLibrary/Dashboard'), ['View Dashboards', 'View System Reports']);
 		}
 
 		if (array_key_exists('EBSCO EDS', $enabledModules)) {
@@ -2132,18 +2408,11 @@ class User extends DataObject
 			$sections['overdrive']->addAction(new AdminAction('Indexing Log', 'View the indexing log for OverDrive.', '/OverDrive/IndexingLog'), ['View System Reports', 'View Indexing Logs']);
 			$sections['overdrive']->addAction(new AdminAction('Dashboard', 'View the usage dashboard for OverDrive integration.', '/OverDrive/Dashboard'), ['View Dashboards', 'View System Reports']);
 			$sections['overdrive']->addAction(new AdminAction('API Information', 'View API information for OverDrive integration to test connections.', '/OverDrive/APIData'), 'View OverDrive Test Interface');
+			$sections['overdrive']->addAction(new AdminAction('Aspen Information', 'View information stored within Aspen about an OverDrive product.', '/OverDrive/AspenData'), 'View OverDrive Test Interface');
 		}
 
 		if (array_key_exists('RBdigital', $enabledModules)) {
 			$sections['rbdigital'] = new AdminSection('RBdigital');
-			$rbdigitalSettingsAction = new AdminAction('Settings', 'Define connection information between RBdigital and Aspen Discovery.', '/RBdigital/Settings');
-			$rbdigitalScopesAction = new AdminAction('Scopes', 'Define which records are loaded for each library and location.', '/RBdigital/Scopes');
-			if ($sections['rbdigital']->addAction($rbdigitalSettingsAction, 'Administer RBdigital')) {
-				$rbdigitalSettingsAction->addSubAction($rbdigitalScopesAction, 'Administer RBdigital');
-			} else {
-				$sections['rbdigital']->addAction($rbdigitalScopesAction, 'Administer RBdigital');
-			}
-			$sections['rbdigital']->addAction(new AdminAction('Indexing Log', 'View the indexing log for RBdigital.', '/RBdigital/IndexingLog'), ['View System Reports', 'View Indexing Logs']);
 			$sections['rbdigital']->addAction(new AdminAction('Dashboard', 'View the usage dashboard for RBdigital integration.', '/RBdigital/Dashboard'), ['View Dashboards', 'View System Reports']);
 		}
 
@@ -2158,16 +2427,6 @@ class User extends DataObject
 			}
 			$sections['side_loads']->addAction(new AdminAction('Indexing Log', 'View the indexing log for Side Loads.', '/SideLoads/IndexingLog'), ['View System Reports', 'View Indexing Logs']);
 			$sections['side_loads']->addAction(new AdminAction('Dashboard', 'View the usage dashboard for Side Loads integration.', '/SideLoads/Dashboard'), ['View Dashboards', 'View System Reports']);
-		}
-
-		if ($configArray['Islandora']['enabled'] && array_key_exists('Islandora Archives', $enabledModules)){
-			$sections['islandora_archive'] = new AdminSection('Islandora Archives');
-			$sections['islandora_archive']->addAction(new AdminAction('Authorship Claims', 'View submissions from users that they are the author of materials within the archive.', '/Admin/AuthorshipClaims'), 'View Archive Authorship Claims');
-			$sections['islandora_archive']->addAction(new AdminAction('Clear Cache', 'Clear Archive information that has been cached within Aspen Discovery.', '/Admin/ClearArchiveCache'), 'Administer Islandora Archive');
-			$sections['islandora_archive']->addAction(new AdminAction('Material Requests', 'View requests for copies of materials from the archive.', '/Admin/ArchiveRequests'), 'View Archive Material Requests');
-			$sections['islandora_archive']->addAction(new AdminAction('Subject Control', 'Determine how subjects are handled when loading explore more information from the archive.', '/Admin/ArchiveSubjects'), 'Administer Islandora Archive');
-			$sections['islandora_archive']->addAction(new AdminAction('Private Collections', 'Setup collections within the archive that should not be private.', '/Admin/ArchivePrivateCollections'), 'Administer Islandora Archive');
-			$sections['islandora_archive']->addAction(new AdminAction('Usage Statistics', 'View statistics for number of records and drive space used by each library contributing content to the archive.', '/Admin/ArchiveUsage'), 'View Islandora Archive Usage');
 		}
 
 		if (array_key_exists('Open Archives', $enabledModules)){
@@ -2194,6 +2453,7 @@ class User extends DataObject
 			$sections['user_lists'] = new AdminSection('User Lists');
 			$sections['user_lists']->addAction(new AdminAction('Settings', 'Define settings for indexing user lists within Aspen Discovery.', '/UserLists/Settings'), 'Administer List Indexing Settings');
 			$sections['user_lists']->addAction(new AdminAction('Indexing Log', 'View the indexing log for User Lists.', '/UserLists/IndexingLog'), ['View System Reports', 'View Indexing Logs']);
+			$sections['user_lists']->addAction(new AdminAction('NYT Update Log', 'View the updates log for New York Times Lists.', '/UserLists/NYTUpdatesLog'), ['View System Reports', 'View Indexing Logs']);
 			//$sections['user_lists']->addAction(new AdminAction('Dashboard', 'View the usage dashboard for indexed User Lists.', '/UserLists/Dashboard'), ['View Dashboards', 'View System Reports']);
 		}
 
@@ -2217,15 +2477,56 @@ class User extends DataObject
 		return $sections;
 	}
 
-	public function getPermissions(){
+	public function getPermissions($isGuidingUser = false){
 		if ($this->_permissions == null){
 			$this->_permissions = [];
 			$roles = $this->getRoles();
 			foreach ($roles as $role){
 				$this->_permissions = array_merge($this->_permissions, $role->getPermissions());
 			}
+
+			if (!$isGuidingUser) {
+				$masqueradeMode = UserAccount::isUserMasquerading();
+				if ($masqueradeMode && !$isGuidingUser) {
+					$guidingUser = UserAccount::getGuidingUserObject();
+					$guidingUserPermissions = $guidingUser->getPermissions(true);
+					$this->_permissions = $this->filterPermissionsForMasquerade($this->_permissions, $guidingUserPermissions);
+				}
+			}
 		}
 		return $this->_permissions;
+	}
+
+	/**
+	 * Filter permissions to make sure that we don't gain escalated permissions by masquerading.
+	 * But, we also don't want to have permissions the user doesn't while masquerading.
+	 *
+	 * @param string[] $userPermissions
+	 * @param string[] $guidingUserPermissions
+	 * @return array
+	 */
+	public function filterPermissionsForMasquerade($userPermissions, $guidingUserPermissions){
+		$validPermissions = [];
+		foreach ($userPermissions as $permissionName){
+			if (in_array($permissionName, $guidingUserPermissions)){
+				$validPermissions[] = $permissionName;
+			}else{
+				//Check to see if the guiding user has a permission that is more inclusive than the user we are masquerading as
+				if (strpos($permissionName, 'Administer Library') === 0){
+					$tmpPermissionName = str_replace('Administer Library', 'Administer All', $permissionName);
+					if (in_array($tmpPermissionName, $guidingUserPermissions)){
+						$validPermissions[] = $permissionName;
+					}
+				}elseif ($permissionName == 'Administer Home Location' && (in_array('Administer Home Library Locations', $guidingUserPermissions) ||in_array('Administer All Locations', $guidingUserPermissions) )){
+					$validPermissions[] = $permissionName;
+				}elseif ($permissionName == 'Administer Home Library Locations' && (in_array('Administer All Locations', $guidingUserPermissions) )){
+					$validPermissions[] = $permissionName;
+				}elseif ($permissionName == 'Administer Home Library' && (in_array('Administer All Libraries', $guidingUserPermissions) )){
+					$validPermissions[] = $permissionName;
+				}
+			}
+		}
+		return $validPermissions;
 	}
 
 	/**
@@ -2246,6 +2547,106 @@ class User extends DataObject
 			}
 		}
 		return false;
+	}
+
+	public function getAccountSummary()
+	{
+		if ($this->hasIlsConnection()){
+			return $this->getCatalogDriver()->getAccountSummary($this);
+		}else {
+			return [];
+		}
+	}
+
+	public function getCachedAccountSummary(string $source)
+	{
+		//Check to see if we have cached summary information
+		require_once ROOT_DIR . '/sys/User/AccountSummary.php';
+		$summary = new AccountSummary();
+		$summary->userId = $this->id;
+		$summary->source = $source;
+		$existingId = null;
+		if ($summary->find(true)){
+			$existingId = $summary->id;
+			if (($summary->lastLoaded < (time() - 15 * 60)) || isset($_REQUEST['refreshCheckouts']) || isset($_REQUEST['refreshHolds']) || isset($_REQUEST['refreshSummary'])){
+				$summary = null;
+			}
+		}else{
+			$summary->insert();
+			$existingId = $summary->id;
+			$summary = null;
+		}
+		return [$existingId, $summary];
+	}
+
+	public function clearCachedAccountSummaryForSource(string $source){
+		require_once ROOT_DIR . '/sys/User/AccountSummary.php';
+		$summary = new AccountSummary();
+		$summary->userId = $this->id;
+		$summary->source = $source;
+		$summary->delete(true);
+	}
+
+	public function forceReloadOfCheckouts(){
+		require_once ROOT_DIR . '/sys/User/Checkout.php';
+		$checkout = new Checkout();
+		$checkout->userId = $this->id;
+		$checkout->delete(true);
+
+		$this->checkoutInfoLastLoaded = 0;
+		$this->update();
+	}
+
+	public function forceReloadOfHolds(){
+		require_once ROOT_DIR . '/sys/User/Hold.php';
+		$hold = new Hold();
+		$hold->userId = $this->id;
+		$hold->delete(true);
+
+		$this->holdInfoLastLoaded = 0;
+		$this->update();
+	}
+
+	protected function clearRuntimeDataVariables(){
+		if ($this->_accountProfile != null){
+			$this->_accountProfile->__destruct();
+			$this->_accountProfile = null;
+		}
+		parent::clearRuntimeDataVariables();
+	}
+
+	public function getFormattedHoldInfoLastLoaded(){
+		if ($this->holdInfoLastLoaded == 0){
+			return translate(['text' => "Loading...", 'isPublicFacing'=>true]);
+		}else{
+			return strftime("%I:%M %p", $this->holdInfoLastLoaded);
+		}
+	}
+
+	public function getFormattedCheckoutInfoLastLoaded(){
+		if ($this->checkoutInfoLastLoaded == 0){
+			return translate(['text' => "Loading...", 'isPublicFacing'=>true]);
+		}else{
+			return strftime("%I:%M %p", $this->checkoutInfoLastLoaded);
+		}
+	}
+
+	public function getDisplayName(){
+		if (empty($this->displayName)) {
+			if ($this->firstname == '') {
+				$this->displayName = $this->lastname;
+			} else {
+				// #PK-979 Make display name configurable firstname, last initial, vs first initial last name
+				$homeLibrary = $this->getHomeLibrary();
+				if ($homeLibrary == null || ($homeLibrary->patronNameDisplayStyle == 'firstinitial_lastname')) {
+					$this->displayName = substr($this->firstname, 0, 1) . '. ' . $this->lastname;
+				} else {
+					$this->displayName = $this->firstname . ' ' . substr($this->lastname, 0, 1) . '.';
+				}
+			}
+			$this->update();
+		}
+		return $this->displayName;
 	}
 }
 

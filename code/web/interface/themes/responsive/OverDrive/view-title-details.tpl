@@ -2,9 +2,40 @@
 	{* Display more information about the title*}
 	{if $recordDriver->getAuthor()}
 		<div class="row">
-			<div class="result-label col-tn-3">{translate text="Author"} </div>
+			<div class="result-label col-tn-3">{translate text="Author" isPublicFacing=true} </div>
 			<div class="col-tn-9 result-value">
 				<a href='/Author/Home?author="{$recordDriver->getAuthor()|escape:"url"}"'>{$recordDriver->getAuthor()|highlight}</a>
+			</div>
+		</div>
+	{/if}
+
+	{if $recordDriver->getDetailedContributors()}
+		<div class="row">
+			<div class="result-label col-tn-3">{translate text='Contributors' isPublicFacing=true}</div>
+			<div class="col-tn-9 result-value">
+				{foreach from=$recordDriver->getDetailedContributors() item=contributor name=loop}
+					{if $smarty.foreach.loop.index == 5}
+						<div id="showAdditionalContributorsLink">
+							<a onclick="AspenDiscovery.Record.moreContributors(); return false;" href="#">{translate text='more' isPublicFacing=true} ...</a>
+						</div>
+						{*create hidden div*}
+						<div id="additionalContributors" style="display:none">
+					{/if}
+					<a href='/Author/Home?author="{$contributor.name|trim|escape:"url"}"'>{$contributor.name|escape}</a>
+					{if !empty($contributor.roles)}
+						&nbsp;{implode subject=$contributor.roles glue=", " translate=true isPublicFacing=true}
+					{/if}
+					{if $contributor.title}
+						&nbsp;<a href="/Search/Results?lookfor={$contributor.title}&amp;searchIndex=Title">{$contributor.title}</a>
+					{/if}
+				<br/>
+				{/foreach}
+				{if $smarty.foreach.loop.index >= 5}
+					<div>
+						<a href="#" onclick="AspenDiscovery.Record.lessContributors(); return false;">{translate text='less' isPublicFacing=true} ...</a>
+					</div>
+					</div>{* closes hidden div *}
+				{/if}
 			</div>
 		</div>
 	{/if}
@@ -15,7 +46,7 @@
 
 	{if $showPublicationDetails && $recordDriver->getPublicationDetails()}
 		<div class="row">
-			<div class="result-label col-tn-3">{translate text='Published'}</div>
+			<div class="result-label col-tn-3">{translate text='Published' isPublicFacing=true}</div>
 			<div class="col-tn-9 result-value">
 				{implode subject=$recordDriver->getPublicationDetails() glue=", "}
 			</div>
@@ -24,7 +55,7 @@
 
 	{if $showFormats}
 		<div class="row">
-			<div class="result-label col-tn-3">{translate text='Format'}</div>
+			<div class="result-label col-tn-3">{translate text='Format' isPublicFacing=true}</div>
 			<div class="col-tn-9 result-value">
 				{implode subject=$recordDriver->getFormats() glue=", "}
 			</div>
@@ -33,7 +64,7 @@
 
 	{if $showEditions && $recordDriver->getEditions()}
 		<div class="row">
-			<div class="result-label col-tn-3">{translate text='Edition'}</div>
+			<div class="result-label col-tn-3">{translate text='Edition' isPublicFacing=true}</div>
 			<div class="col-tn-9 result-value">
 				{implode subject=$recordDriver->getEditions() glue=", "}
 			</div>
@@ -43,7 +74,7 @@
 
 	{if $showISBNs && count($recordDriver->getISBNs()) > 0}
 		<div class="row">
-			<div class="result-label col-tn-3">{translate text='ISBN'}</div>
+			<div class="result-label col-tn-3">{translate text='ISBN' isPublicFacing=true}</div>
 			<div class="col-tn-9 result-value">
 				{implode subject=$recordDriver->getISBNs() glue=", "}
 			</div>
@@ -52,7 +83,7 @@
 
 	{if !empty($showArInfo) && $recordDriver->getAcceleratedReaderDisplayString()}
 		<div class="row">
-			<div class="result-label col-tn-3">{translate text='Accelerated Reader'} </div>
+			<div class="result-label col-tn-3">{translate text='Accelerated Reader' isPublicFacing=true} </div>
 			<div class="result-value col-tn-9">
 				{$recordDriver->getAcceleratedReaderDisplayString()}
 			</div>
@@ -61,7 +92,7 @@
 
 	{if !empty($showLexileInfo) && $recordDriver->getLexileDisplayString()}
 		<div class="row">
-			<div class="result-label col-tn-3">{translate text='Lexile measure'} </div>
+			<div class="result-label col-tn-3">{translate text='Lexile measure' isPublicFacing=true} </div>
 			<div class="result-value col-tn-9">
 				{$recordDriver->getLexileDisplayString()}
 			</div>
@@ -70,7 +101,7 @@
 
 	{if !empty($showFountasPinnell) && $recordDriver->getFountasPinnellLevel()}
 		<div class="row">
-			<div class="result-label col-tn-3">{translate text='Fountas &amp; Pinnell'}</div>
+			<div class="result-label col-tn-3">{translate text='Fountas & Pinnell' isPublicFacing=true}</div>
 			<div class="col-tn-9 result-value">
 				{$recordDriver->getFountasPinnellLevel()|escape}
 			</div>
@@ -79,9 +110,11 @@
 
 	{include file="GroupedWork/relatedLists.tpl"}
 
+	{include file="GroupedWork/readingHistoryIndicator.tpl"}
+
 	<div class="row">
-		<div class="result-label col-tn-3">{translate text='Status'}</div>
-		<div class="col-tn-9 result-value result-value-bold statusValue {$holdingsSummary.class}" id="statusValue">{$holdingsSummary.status|translate}</div>
+		<div class="result-label col-tn-3">{translate text='Status' isPublicFacing=true}</div>
+		<div class="col-tn-9 result-value result-value-bold statusValue {$holdingsSummary.class}" id="statusValue">{translate text=$holdingsSummary.status isPublicFacing=true}</div>
 	</div>
 
 {/strip}

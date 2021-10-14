@@ -1,3 +1,3 @@
-<h1>Unknown Help Topic</h1>
+<h1>{translate text="Unknown Help Topic" isPublicFacing=true}</h1>
 
-<p>Sorry, we don't have any information on that topic.</p>
+<p>{translate text="Sorry, we don't have any information on that topic." isPublicFacing=true}</p>

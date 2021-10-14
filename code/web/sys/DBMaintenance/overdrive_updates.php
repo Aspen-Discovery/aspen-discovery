@@ -319,6 +319,14 @@ function getOverDriveUpdates()
 			]
 		],
 
+		'overdrive_module_add_settings' => [
+			'title' => 'Add Settings to OverDrive module',
+			'description' => 'Add Settings to OverDrive module',
+			'sql' => [
+				"UPDATE modules set settingsClassPath = '/sys/OverDrive/OverDriveSetting.php', settingsClassName = 'OverDriveSetting' WHERE name = 'OverDrive'"
+			]
+		],
+
 		'overdrive_part_count' => [
 			'title' => 'OverDrive part count',
 			'description' => 'Increase the size of the partCount field',
@@ -326,6 +334,105 @@ function getOverDriveUpdates()
 				'ALTER TABLE overdrive_api_product_formats CHANGE partCount partCount SMALLINT',
 			]
 		],
+
+		'overdrive_add_setting_to_scope' => [
+			'title' => 'Add settingId to OverDrive scope',
+			'description' => 'Allow multiple settings to be defined for OverDrive within a consortium',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE overdrive_scopes ADD column settingId INT(11)',
+				'updateOverDriveScopes'
+			]
+		],
+
+		'overdrive_add_setting_to_log' => [
+			'title' => 'Add settingID to OverDrive log entry',
+			'description' => 'Define which settings are being logged',
+			'sql' => [
+				'ALTER table overdrive_extract_log ADD column settingId INT(11)',
+				'updateOverDriveLogEntries'
+			]
+		],
+
+		'overdrive_add_setting_to_product_availability' => [
+			'title' => 'Add settingID to OverDrive availability',
+			'description' => 'Define which settings the availability belongs to',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER table overdrive_api_product_availability ADD column settingId INT(11)',
+				'updateOverDriveAvailabilities'
+			]
+		],
+
+		'overdrive_availability_update_indexes' => [
+			'title' => 'Update OverDrive Availability Indexes',
+			'description' => 'Fix indexes for overdrive availability to include settings',
+			'sql' => [
+				'ALTER TABLE overdrive_api_product_availability drop index productId',
+				'ALTER TABLE overdrive_api_product_availability drop index productId_2',
+				'ALTER TABLE overdrive_api_product_availability ADD UNIQUE (productId, settingId, libraryId)'
+			]
+		],
+
+		'overdrive_usage_add_instance' => [
+			'title' => 'OverDrive Usage - Instance Information',
+			'description' => 'Add Instance Information to OverDrive Usage stats',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE overdrive_record_usage ADD COLUMN instance VARCHAR(100)',
+				'ALTER TABLE overdrive_record_usage DROP INDEX overdriveId',
+				'ALTER TABLE overdrive_record_usage ADD UNIQUE INDEX (instance, overdriveId, year, month)',
+				'ALTER TABLE user_overdrive_usage ADD COLUMN instance VARCHAR(100)',
+				'ALTER TABLE user_overdrive_usage DROP INDEX userId',
+				'ALTER TABLE user_overdrive_usage ADD UNIQUE INDEX (instance, userId, year, month)',
+			]
+		],
+
+		'overdrive_client_credentials' => [
+			'title' => 'OverDrive Scope Client Credentials',
+			'description' => 'Add client credential informtion to OverDrive Scopes',
+			'sql' => [
+				'ALTER TABLE overdrive_scopes ADD COLUMN clientSecret VARCHAR(50)',
+				'ALTER TABLE overdrive_scopes ADD COLUMN clientKey VARCHAR(50)',
+			]
+		],
+
+		'overdrive_allow_large_deletes' => [
+			'title' => 'OverDrive - Allow Large Deletes',
+			'description' => 'Allow the OverDrive process to delete more than 500 records or 5% of the collection',
+			'sql' => [
+				'ALTER TABLE overdrive_settings ADD COLUMN allowLargeDeletes TINYINT(1) DEFAULT 0'
+			]
+		],
+
+		'track_overdrive_stats' => array(
+			'title' => 'OverDrive Stats',
+			'description' => 'Add a table to track how OverDrive is used.',
+			'continueOnError' => true,
+			'sql' => array(
+				"CREATE TABLE overdrive_stats (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					instance VARCHAR(100),
+					year INT(4) NOT NULL,
+					month INT(2) NOT NULL,
+					numCheckouts INT(11) NOT NULL DEFAULT 0,
+					numFailedCheckouts INT(11) NOT NULL DEFAULT 0,
+					numRenewals INT(11) NOT NULL DEFAULT 0,
+					numEarlyReturns INT(11) NOT NULL DEFAULT 0,
+					numHoldsPlaced INT(11) NOT NULL DEFAULT 0,
+					numFailedHolds INT(11) NOT NULL DEFAULT 0,
+					numHoldsCancelled INT(11) NOT NULL DEFAULT 0,
+					numHoldsFrozen INT(11) NOT NULL DEFAULT 0,
+					numHoldsThawed INT(11) NOT NULL DEFAULT 0,
+					numDownloads INT(11) NOT NULL DEFAULT 0,
+					numPreviews INT(11) NOT NULL DEFAULT 0, 
+					numOptionsUpdates INT(11) NOT NULL DEFAULT 0, 
+					numApiErrors INT(11) NOT NULL DEFAULT 0,
+					numConnectionFailures INT(11) NOT NULL DEFAULT 0
+				) ENGINE = InnoDB",
+				"ALTER TABLE overdrive_stats ADD INDEX (instance, year, month)",
+			),
+		),
 	);
 }
 
@@ -421,4 +528,44 @@ function getOverDriveScopeSettings($uniqueRow): OverDriveScope
 	$overdriveScope->overdriveAdvantageName = $uniqueRow['overdriveAdvantageName'];
 	$overdriveScope->overdriveAdvantageProductsKey = $uniqueRow['overdriveAdvantageProductsKey'];
 	return $overdriveScope;
+}
+
+/** @noinspection PhpUnused */
+function updateOverDriveScopes(){
+	require_once ROOT_DIR . '/sys/OverDrive/OverDriveSetting.php';
+	require_once ROOT_DIR . '/sys/OverDrive/OverDriveScope.php';
+	$overdriveSettings = new OverDriveSetting();
+	if ($overdriveSettings->find(true)){
+		$overdriveScopes = new OverDriveScope();
+		$overdriveScopes->find();
+		while ($overdriveScopes->fetch()){
+			$overdriveScopes->settingId = $overdriveSettings->id;
+			$overdriveScopes->update();
+		}
+	}
+}
+
+
+
+
+/** @noinspection PhpUnused */
+function updateOverDriveLogEntries(){
+	global $aspen_db;
+	require_once ROOT_DIR . '/sys/OverDrive/OverDriveSetting.php';
+	require_once ROOT_DIR . '/sys/OverDrive/OverDriveExtractLogEntry.php';
+	$overdriveSettings = new OverDriveSetting();
+	if ($overdriveSettings->find(true)){
+		$aspen_db->query("update overdrive_extract_log set settingId = {$overdriveSettings->id}");
+	}
+}
+
+/** @noinspection PhpUnused */
+function updateOverDriveAvailabilities(){
+	global $aspen_db;
+	require_once ROOT_DIR . '/sys/OverDrive/OverDriveSetting.php';
+	require_once ROOT_DIR . '/sys/OverDrive/OverDriveAPIProductAvailability.php';
+	$overdriveSettings = new OverDriveSetting();
+	if ($overdriveSettings->find(true)){
+		$aspen_db->query("update overdrive_api_product_availability set settingId = {$overdriveSettings->id}");
+	}
 }

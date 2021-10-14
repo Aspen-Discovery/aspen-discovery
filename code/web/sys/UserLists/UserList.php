@@ -15,11 +15,14 @@ class UserList extends DataObject
 	public $deleted;
 	public $dateUpdated;
 	public $defaultSort;
+	public $importedFrom;
+	public $nytListModified;
 
 	public static function getSourceListsForBrowsingAndCarousels()
 	{
 		$userLists = new UserList();
 		$userLists->public = 1;
+		$userLists->deleted = 0;
 		$userLists->orderBy('title asc');
 		$userLists->find();
 		$sourceLists = array();
@@ -33,7 +36,7 @@ class UserList extends DataObject
 		return $sourceLists;
 	}
 
-	public function getNumericColumnNames()
+	public function getNumericColumnNames() : array
 	{
 		return ['user_id', 'public', 'deleted', 'searchable'];
 	}
@@ -48,7 +51,7 @@ class UserList extends DataObject
 	);
 
 
-    static function getObjectStructure(){
+    static function getObjectStructure() : array {
 		return array(
 			'id' => array(
 				'property'=>'id',
@@ -109,7 +112,6 @@ class UserList extends DataObject
 		$this->dateUpdated = time();
 		$result = parent::update();
 		if ($result) {
-			$this->flushUserListBrowseCategory();
 			global $memCache;
 			$memCache->delete('user_list_data_' . UserAccount::getActiveUserId());
 		}
@@ -117,6 +119,7 @@ class UserList extends DataObject
 		return $result;
 	}
 	function delete($useWhere = false){
+		//TODO: Delete all list entries for the list?
 		$this->deleted = 1;
 		$this->dateUpdated = time();
 		$ret = parent::update();
@@ -136,12 +139,17 @@ class UserList extends DataObject
 	 * @return array      of list entries
 	 */
 	function getListEntries($sort = null){
+		global $interface;
 		require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
 		$listEntry = new UserListEntry();
 		$listEntry->listId = $this->id;
 
+		$entryPosition = 0;
+		$zeroCount = 0;
+		$nullCount = 0;
+
 		//Sort the list appropriately
-		if (!empty($sort) && $sort != 'title') $listEntry->orderBy(UserList::getSortOptions()[$sort]);
+		if (!empty($sort)) $listEntry->orderBy(UserList::getSortOptions()[$sort]);
 
 		// These conditions retrieve list items with a valid groupedWorkId or archive ID.
 		// (This prevents list strangeness when our searches don't find the ID in the search indexes)
@@ -150,6 +158,7 @@ class UserList extends DataObject
 		$idsBySource = [];
 		$listEntry->find();
 		while ($listEntry->fetch()){
+			$entryPosition++;
 			if (!array_key_exists($listEntry->source, $idsBySource)){
 				$idsBySource[$listEntry->source] = [];
 			}
@@ -157,34 +166,33 @@ class UserList extends DataObject
 			$tmpListEntry = [
 				'source' => $listEntry->source,
 				'sourceId' => $listEntry->sourceId,
+				'title' => $listEntry->title,
 				'notes' => $listEntry->notes,
-				'listEntryId' => $listEntry->id
+				'listEntryId' => $listEntry->id,
+				'listEntry' => $this->cleanListEntry(clone($listEntry)),
+				'weight' => $listEntry->weight,
 			];
-			if ($sort == 'title') {
-				if ($listEntry->getRecordDriver() != null){
-					$tmpListEntry['title'] = strtolower($listEntry->getRecordDriver()->getSortableTitle());
-				}else{
-					if ($tmpListEntry['source'] == 'GroupedWork'){
-						require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
-						$groupedWork = new GroupedWork();
-						$groupedWork->permanent_id = $tmpListEntry['sourceId'];
-						if ($groupedWork->find(true)){
-							$tmpListEntry['title'] = $groupedWork->full_title;
-						}else{
-							$tmpListEntry['title'] = 'Unknown title';
-						}
-					}else {
-						$tmpListEntry['title'] = 'Unknown title';
-					}
-				}
+
+			if($listEntry->weight === '0'){
+				$zeroCount++;
 			}
+
+			if (empty($listEntry->weight)){
+				$nullCount++;
+			}
+
+			if(($zeroCount >= 1) || ($nullCount >= 1)) {
+				$listEntry->weight = $entryPosition;
+				$listEntry->update();
+			}
+
 			$listEntries[] = $tmpListEntry;
 		}
 		$listEntry->__destruct();
 		$listEntry = null;
 
-		if ($sort == 'title') {
-			usort($listEntries, 'compareListEntryTitles');
+		if(($interface != null) && (($entryPosition != '') || ($entryPosition != null))){
+			$interface->assign('listEntryCount', $entryPosition);
 		}
 
 		return [
@@ -194,30 +202,23 @@ class UserList extends DataObject
 	}
 
 	/**
+	 * @param string $sortName How records should be sorted, if no sort is provided, will use the default for the list
 	 * @return UserListEntry[]|null
 	 */
-	function getListTitles()
+	function getListTitles($sortName = null)
 	{
 		if (isset($this->listTitles[$this->id])){
 			return $this->listTitles[$this->id];
 		}
-		$listTitles = array();
-
-		require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
-		$listEntry = new UserListEntry();
-		$listEntry->listId = $this->id;
-		$listEntry->find();
-
-		while ($listEntry->fetch()){
-			$cleanedEntry = $this->cleanListEntry(clone($listEntry));
-			if ($cleanedEntry != false){
-				$listTitles[] = $cleanedEntry;
-			}
+		if ($sortName == null){
+			$sortName = $this->defaultSort;
 		}
-		$listEntry->__destruct();
-		$listEntry = null;
+		$listEntries = $this->getListEntries($sortName);
+		$this->listTitles[$this->id] = [];
+		foreach ($listEntries['listEntries'] as $listEntry){
+			$this->listTitles[$this->id][] = $listEntry['listEntry'];
+		}
 
-		$this->listTitles[$this->id] = $listTitles;
 		return $this->listTitles[$this->id];
 	}
 
@@ -277,6 +278,29 @@ class UserList extends DataObject
 			require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
 			$listEntry = new UserListEntry();
 			$listEntry->id = $listEntryToRemove;
+
+			// update weights
+			if($listEntry->find(true)){
+				$userLists = new UserListEntry();
+				$userLists->listId = $listEntry->listId;
+				$userLists->find();
+				$entries = [];
+				while ($userLists->fetch()){
+					$entries[] = clone $userLists;
+				}
+
+				$entryIndex = $listEntry->weight;
+				foreach ($entries as $entry){
+					$weight = $entry->weight;
+					if($weight > $entryIndex) {
+						$weight--;
+						$entry->weight = $weight;
+						$entry->update();
+					}
+				}
+
+			}
+
 			$listEntry->delete(true);
 		}
 
@@ -498,7 +522,7 @@ class UserList extends DataObject
 	 */
 	public function getBrowseRecords($start, $numItems) {
 		//Get all entries for the list
-		$listEntryInfo = $this->getListEntries();
+		$listEntryInfo = $this->getListEntries($this->defaultSort);
 
 		//Trim to the number of records we want to return
 		$filteredListEntries = array_slice($listEntryInfo['listEntries'], $start, $numItems);
@@ -520,6 +544,50 @@ class UserList extends DataObject
 			}else{
 				$records = $searchObject->getRecords($sourceIds);
 				$browseRecords = array_merge($browseRecords, $this->getBrowseRecordHTML($records, $listEntryInfo['listEntries'], $start));
+			}
+		}
+
+		//Properly sort items
+		ksort($browseRecords);
+
+		return $browseRecords;
+	}
+
+	/**
+	 * @param int $start     position of first list item to fetch
+	 * @param int $numItems  Number of items to fetch for this result
+	 * @return array     Array of HTML to display to the user
+	 */
+	public function getBrowseRecordsRaw($start, $numItems) {
+		//Get all entries for the list
+		$listEntryInfo = $this->getListEntries();
+
+		//Trim to the number of records we want to return
+		$filteredListEntries = array_slice($listEntryInfo['listEntries'], $start, $numItems);
+
+		$filteredIdsBySource = [];
+		foreach ($filteredListEntries as $listItemEntry) {
+			if (!array_key_exists($listItemEntry['source'], $filteredIdsBySource)){
+				$filteredIdsBySource[$listItemEntry['source']] = [];
+			}
+			$filteredIdsBySource[$listItemEntry['source']][] = $listItemEntry['sourceId'];
+		}
+
+		//Load catalog items
+		$browseRecords = [];
+		foreach ($filteredIdsBySource as $sourceType => $sourceIds){
+			$searchObject = SearchObjectFactory::initSearchObject($sourceType);
+			if ($searchObject === false){
+				AspenError::raiseError("Unknown List Entry Source $sourceType");
+			}else{
+				$records = $searchObject->getRecords($sourceIds);
+				foreach ($records as $key => $record){
+					if ($record instanceof ListsRecordDriver){
+						$browseRecords[$key] = $record->getFields();
+					}else{
+						$browseRecords[$key] = $record;
+					}
+				}
 			}
 		}
 
@@ -604,19 +672,6 @@ class UserList extends DataObject
 
 		return $results;
 	}
-	private function flushUserListBrowseCategory(){
-		// Check if the list is a part of a browse category and clear the cache.
-		require_once ROOT_DIR . '/sys/Browse/BrowseCategory.php';
-		$userListBrowseCategory = new BrowseCategory();
-		$userListBrowseCategory->sourceListId = $this->id;
-		if ($userListBrowseCategory->find()) {
-			while ($userListBrowseCategory->fetch()) {
-				$userListBrowseCategory->deleteCachedBrowseCategoryResults();
-			}
-		}
-		$userListBrowseCategory->__destruct();
-		$userListBrowseCategory = null;
-	}
 
 	public static function getUserListsForSaveForm($source, $sourceId){
 		global $interface;
@@ -699,8 +754,4 @@ class UserList extends DataObject
 		ksort($userLists);
 		return $userLists;
 	}
-}
-
-function compareListEntryTitles($listEntry1, $listEntry2){
-	return strcasecmp($listEntry1['title'], $listEntry2['title']);
 }

@@ -13,11 +13,9 @@
       <module fileurl="file://$PROJECT_DIR$/../../install/install.iml" filepath="$PROJECT_DIR$/../../install/install.iml" />
       <module fileurl="file://$PROJECT_DIR$/../java_shared_libraries/java_shared_libraries.iml" filepath="$PROJECT_DIR$/../java_shared_libraries/java_shared_libraries.iml" />
       <module fileurl="file://$PROJECT_DIR$/../koha_export/koha_export.iml" filepath="$PROJECT_DIR$/../koha_export/koha_export.iml" />
-      <module fileurl="file://$PROJECT_DIR$/../marc4j/marc4j.iml" filepath="$PROJECT_DIR$/../marc4j/marc4j.iml" />
       <module fileurl="file://$PROJECT_DIR$/../oai_indexer/oai_indexer.iml" filepath="$PROJECT_DIR$/../oai_indexer/oai_indexer.iml" />
       <module fileurl="file://$PROJECT_DIR$/../overdrive_extract/overdrive_extract.iml" filepath="$PROJECT_DIR$/../overdrive_extract/overdrive_extract.iml" />
-      <module fileurl="file://$PROJECT_DIR$/../rbdigital_export/rbdigital_export.iml" filepath="$PROJECT_DIR$/../rbdigital_export/rbdigital_export.iml" />
-      <module fileurl="file://$PROJECT_DIR$/../record_grouping/record_grouping.iml" filepath="$PROJECT_DIR$/../record_grouping/record_grouping.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../polaris_export/polaris_export.iml" filepath="$PROJECT_DIR$/../polaris_export/polaris_export.iml" />
       <module fileurl="file://$PROJECT_DIR$/../reindexer/reindexer.iml" filepath="$PROJECT_DIR$/../reindexer/reindexer.iml" />
       <module fileurl="file://$PROJECT_DIR$/../sideload_processing/sideload_processing.iml" filepath="$PROJECT_DIR$/../sideload_processing/sideload_processing.iml" />
       <module fileurl="file://$PROJECT_DIR$/../sierra_export_api/sierra_export_api.iml" filepath="$PROJECT_DIR$/../sierra_export_api/sierra_export_api.iml" />

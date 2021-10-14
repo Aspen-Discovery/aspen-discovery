@@ -26,4 +26,9 @@ class OverDriveAPIProductMetaData extends DataObject {
 		}
 		return $this->decodedRawData;
 	}
+
+	public function getCompressedColumnNames(): array
+	{
+		return ['rawData'];
+	}
 }

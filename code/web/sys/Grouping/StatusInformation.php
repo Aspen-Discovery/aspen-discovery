@@ -18,6 +18,7 @@ class Grouping_StatusInformation
 	private $_localCopies = 0;
 	private $_localAvailableCopies = 0;
 	private $_isEcontent = false;
+	private $_isShowStatus = false;
 
 	/**
 	 * @return bool
@@ -60,31 +61,7 @@ class Grouping_StatusInformation
 		}
 		$this->_onOrderCopies += $statusInformation->getOnOrderCopies();
 
-		$statusRankings = array(
-			'currently unavailable' => 1,
-			'on order' => 2,
-			'coming soon' => 3,
-			'in processing' => 3.5,
-			'checked out' => 4,
-			'library use only' => 5,
-			'available online' => 6,
-			'in transit' => 6.5,
-			'on shelf' => 7
-		);
-		if ($statusInformation->getGroupedStatus() != '') {
-			$groupedStatus = $this->_groupedStatus;
-
-			//Check to see if we have a better status here
-			if (array_key_exists(strtolower($statusInformation->getGroupedStatus()), $statusRankings)) {
-				if ($groupedStatus == '') {
-					$groupedStatus = $statusInformation->getGroupedStatus();
-					//Check to see if we are getting a better status
-				} elseif ($statusRankings[strtolower($statusInformation->getGroupedStatus())] > $statusRankings[strtolower($groupedStatus)]) {
-					$groupedStatus = $statusInformation->getGroupedStatus();
-				}
-				$this->_groupedStatus = $groupedStatus;
-			}
-		}
+		$this->_groupedStatus = GroupedWorkDriver::keepBestGroupedStatus($this->_groupedStatus, $statusInformation->getGroupedStatus());
 
 		$this->_copies += $statusInformation->getCopies();
 		$this->_availableCopies += $statusInformation->getAvailableCopies();
@@ -92,6 +69,9 @@ class Grouping_StatusInformation
 			$this->_localCopies += $statusInformation->getLocalCopies();
 			$this->_localAvailableCopies += $statusInformation->getLocalAvailableCopies();
 			$this->_hasLocalItem = true;
+		}
+		if ($statusInformation->isShowStatus()){
+			$this->_isShowStatus = true;
 		}
 	}
 
@@ -162,7 +142,7 @@ class Grouping_StatusInformation
 	/**
 	 * @return int
 	 */
-	public function getNumHolds()
+	public function getNumHolds() : int
 	{
 		return $this->_numHolds;
 	}
@@ -296,26 +276,37 @@ class Grouping_StatusInformation
 		//If we don't have holds or on order copies, we don't need to show anything.
 		if ($this->getNumHolds() == 0 && $this->getOnOrderCopies() == 0){
 			$numberOfCopiesMessage = '';
-		}else{
-			if ($this->getCopies() == 1){
-				$numberOfCopiesMessage .= '1 copy';
-			}elseif ($this->getCopies() > 1){
-				$numberOfCopiesMessage .= '%1% copies';
-			}
-			if ($this->getNumHolds() > 0){
-				if (!empty($numberOfCopiesMessage)){
-					$numberOfCopiesMessage .= ', ';
+		}else {
+			if ($this->getAvailableCopies() > 9999){
+				$numberOfCopiesMessage .= 'Always Available';
+			}else {
+				if ($this->getNumHolds() == 0) {
+					if ($this->getAvailableCopies() == 1) {
+						$numberOfCopiesMessage .= '1 copy available';
+					} elseif ($this->getAvailableCopies() > 1) {
+						$numberOfCopiesMessage .= '%1% copies available';
+					}
 				}
-				if ($this->getNumHolds() == 1){
-					$numberOfCopiesMessage .= '1 person is on the wait list';
-				}else{
-					$numberOfCopiesMessage .= '%2% people are on the wait list';
+				if ($this->getNumHolds() > 0) {
+					if ($this->getCopies() == 1) {
+						$numberOfCopiesMessage .= '1 copy';
+					} elseif ($this->getCopies() > 1) {
+						$numberOfCopiesMessage .= '%1% copies';
+					}
+					if (!empty($numberOfCopiesMessage)) {
+						$numberOfCopiesMessage .= ', ';
+					}
+					if ($this->getNumHolds() == 1) {
+						$numberOfCopiesMessage .= '1 person is on the wait list';
+					} else {
+						$numberOfCopiesMessage .= '%2% people are on the wait list';
+					}
 				}
 			}
 			if (!empty($numberOfCopiesMessage)){
 				$numberOfCopiesMessage .= '. ';
 			}
-			if ($this->getOnOrderCopies() > 0){
+			if ($this->getOnOrderCopies() > 0 && $this->getCopies() < 10000){
 				if ($library->showOnOrderCounts){
 					if ($this->getOnOrderCopies() == 1){
 						$numberOfCopiesMessage .= '1 copy on order.';
@@ -335,7 +326,8 @@ class Grouping_StatusInformation
 			'text' => $numberOfCopiesMessage,
 			1 => $this->getCopies(),
 			2 => $this->getNumHolds(),
-			3 => $this->getOnOrderCopies()
+			3 => $this->getOnOrderCopies(),
+			'isPublicFacing' => true,
 		]);
 	}
 
@@ -348,4 +340,19 @@ class Grouping_StatusInformation
 		return $this->_isEcontent;
 	}
 
+	/**
+	 * @return bool
+	 */
+	public function isShowStatus(): bool
+	{
+		return $this->_isShowStatus;
+	}
+
+	/**
+	 * @param bool $isShowStatus
+	 */
+	public function setIsShowStatus(bool $isShowStatus): void
+	{
+		$this->_isShowStatus = $isShowStatus;
+	}
 }

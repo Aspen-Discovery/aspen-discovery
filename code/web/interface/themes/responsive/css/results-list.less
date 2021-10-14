@@ -42,7 +42,9 @@
   vertical-align: top;
 }
 .facetValue {
-  padding: 0 0 0 30px;
+  padding-left: 1.2em;
+  text-indent: -1.2em;
+  margin-left:30px;
   color: #888888;
   font-size: small;
   font-weight: bold;
@@ -108,11 +110,12 @@
     display: none;
   }
 }
-
-#results-sort{
-  width: 80%;
-  margin: 5px 10%;
+.applied-filters{
+  .facetValue{
+    padding-left: 0;
+  }
 }
+
 .result-head{
   font-size: smaller;
   color: #3174AF;
@@ -156,11 +159,21 @@
 .related-manifestations{
   margin-top: 3px;
 }
+.related-manifestation.grouped {
+  padding-top: 10px;
+  padding-bottom: 10px;
+  border: 1px solid #c3c3c3;
+  border-radius: 8px;
+  margin-top: 1em;
 
-.related-manifestation{
-  padding-top: 4px;
-  padding-bottom: 4px;
-  border-bottom: 1px dotted #d3d3d3;
+  .col-sm-12 .row.displayed {
+    padding-bottom: 1em;
+    margin-bottom: 1em !important;
+  }
+  .col-sm-12 .row.displayed.striped-odd {
+    background: #f8f8ff;
+    padding-top: 1em;
+  }
 }
 .related-manifestations-header{
   border-bottom: 1px solid #d3d3d3;
@@ -168,6 +181,10 @@
 // Make Choose a Format Label Larger
 .related-manifestations-label {
   font-size:10pt;
+}
+.related-manifestations a.showHidden {
+  display: block;
+  padding-top:1em;
 }
 .manifestation-actions .btn-default{
   background-color: #088ec6;
@@ -177,13 +194,14 @@
   margin-bottom: 5px;
 }
 .manifestation-format{
-  font-size:13px;
+  font-size:14px;
   font-weight: bold;
+  padding-bottom: .5em;
   .btn{
     width: 100%;
   }
   .btn-variation{
-    width: 90%;
+    width: 100%;
   }
 }
 .related-manifestation-shelf-status{
@@ -191,8 +209,8 @@
   font-weight: bold;
   display: inline-block;
   margin-bottom: 3px;
+  white-space: normal;
 }
-
 .related_record_status{
   font-size: 13px;
   font-weight: bold;
@@ -220,8 +238,6 @@
   -webkit-column-gap:   35px;
   -moz-column-gap:      35px;
   column-gap:           35px;
-  padding-left: 20px;
-  text-indent: -15px;
   @media(min-width: 0){
     -webkit-column-count: 1;
     -moz-column-count:    1;
@@ -237,9 +253,13 @@
     -moz-column-count:    2;
     column-count:         2;
   }
-  .checkboxFacet{
-    text-indent: -17px;
-    padding-left: 30px;
+  .checkboxFacet label{
+    padding-left: 1.2em;
+    text-indent: -1.2em;
+  }
+  .standardFacet{
+    padding-left: 2.5em;
+    text-indent: -1em;
   }
 }
 .highlight{
@@ -336,7 +356,6 @@
   padding: 2px 5px;
   border-radius: 3px;
   border: 1px solid #ababab;
-  float: left;
   font-size: 12px;
 }
 

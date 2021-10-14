@@ -26,20 +26,20 @@ class AJAX extends Action {
 	{
 		global $interface;
 
-		$subject = translate('Library Catalog Search Result');
+		$subject = translate(['text' => 'Library Catalog Search Result', 'isPublicFacing'=>true]);
 		$url = $_REQUEST['sourceUrl'];
 		$to = $_REQUEST['to'];
-		$from = $_REQUEST['from'];
+		$from = isset($_REQUEST['from']) ? $_REQUEST['from'] : '';
 		$message = $_REQUEST['message'];
-		$interface->assign('from', $from);
 		if (strpos($message, 'http') === false && strpos($message, 'mailto') === false && $message == strip_tags($message)){
 			$interface->assign('message', $message);
 			$interface->assign('msgUrl', $url);
+			$interface->assign('from', $from);
 			$body = $interface->fetch('Emails/share-link.tpl');
 
 			require_once ROOT_DIR . '/sys/Email/Mailer.php';
 			$mail = new Mailer();
-			$emailResult = $mail->send($to, $subject, $body, $from);
+			$emailResult = $mail->send($to, $subject, $body);
 
 			if ($emailResult === true){
 				$result = array(
@@ -73,6 +73,7 @@ class AJAX extends Action {
 		require_once ROOT_DIR . '/sys/SearchSuggestions.php';
 		global $timer;
 		global $configArray;
+		/** @var Memcache $memCache */
 		global $memCache;
 		$searchTerm = isset($_REQUEST['searchTerm']) ? $_REQUEST['searchTerm'] : $_REQUEST['q'];
 		$searchIndex = isset($_REQUEST['searchIndex']) ? $_REQUEST['searchIndex'] : '';
@@ -129,7 +130,7 @@ class AJAX extends Action {
 		$prospectorLink = $prospector->getSearchLink($searchObject->getSearchTerms());
 		$interface->assign('prospectorLink', $prospectorLink);
 		$timer->logTime('load Prospector titles');
-		echo $interface->fetch('Search/ajax-prospector.tpl');
+		echo $interface->fetch('Search/ajax-innreach.tpl');
 	}
 
 	/**
@@ -226,7 +227,7 @@ class AJAX extends Action {
 			$interface->assign('showViewMoreLink', $collectionSpotlight->showViewMoreLink);
 			if ($collectionSpotlightList->sourceListId != null && $collectionSpotlightList->sourceListId > 0){
 				require_once ROOT_DIR . '/sys/UserLists/UserList.php';
-				$sourceList     = new UserList();
+				$sourceList = new UserList();
 				$sourceList->id = $collectionSpotlightList->sourceListId;
 				if ($sourceList->find(true)) {
 					$result['listTitle'] = $sourceList->title;
@@ -260,9 +261,9 @@ class AJAX extends Action {
 	function getEmailForm(){
 		global $interface;
 		return array(
-			'title' => 'Email Search',
+			'title' => translate(['text' => 'Email Search', 'isPublicFacing' => true]),
 			'modalBody' => $interface->fetch('Search/email.tpl'),
-			'modalButtons' => "<span class='tool btn btn-primary' onclick='$(\"#emailSearchForm\").submit();'>Send Email</span>"
+			'modalButtons' => "<span class='tool btn btn-primary' onclick='$(\"#emailSearchForm\").submit();'>". translate(['text' => "Send Email", 'isPublicFacing' => true]) . "</span>"
 		);
 	}
 
@@ -320,10 +321,13 @@ class AJAX extends Action {
 		$displayTemplate = 'Search/covers-list.tpl'; // structure for bookcover tiles
 
 		// Rating Settings
-		global $library, $location;
+		global $library;
+		/** @var Location $locationSingleton */
+		global $locationSingleton;
+		$activeLocation = $locationSingleton->getActiveLocation();
 		$browseCategoryRatingsMode = null;
-		if ($location) {
-			$browseCategoryRatingsMode = $location->getBrowseCategoryGroup()->browseCategoryRatingsMode;
+		if ($activeLocation != null) {
+			$browseCategoryRatingsMode = $activeLocation->getBrowseCategoryGroup()->browseCategoryRatingsMode;
 		}else{
 			$browseCategoryRatingsMode = $library->getBrowseCategoryGroup()->browseCategoryRatingsMode;
 		}
@@ -376,7 +380,7 @@ class AJAX extends Action {
 	function lockFacet(){
 		$response = [
 			'success' => false,
-			'message' => 'Unknown error'
+			'message' => translate(['text'=>'Unknown Error', 'isPublicFacing'=>true])
 		];
 		$facetToLock = $_REQUEST['facet'];
 
@@ -423,7 +427,7 @@ class AJAX extends Action {
 	function unlockFacet(){
 		$response = [
 			'success' => false,
-			'message' => 'Unknown error'
+			'message' => translate(['text'=>'Unknown Error', 'isPublicFacing'=>true])
 		];
 
 		//Get the filters from the active search
@@ -461,7 +465,7 @@ class AJAX extends Action {
 		if ($searchSource == 'combined'){
 			$response = [
 				'success' => true,
-				'searchIndexes' => ['Keyword' => 'Keyword'],
+				'searchIndexes' => ['Keyword' => translate(['text'=>'Keyword', 'isPublicFacing'=>true, 'inAttribute'=>true])],
 				'selectedIndex' => 'Keyword',
 				'defaultSearchIndex' => 'Keyword',
 			];
@@ -470,7 +474,7 @@ class AJAX extends Action {
 			if (!is_object($searchObject)){
 				$response = [
 					'success' => false,
-					'message' => 'Unknown search source ' . $searchSource
+					'message' => translate(['text'=>'Keyword', 'Unknown search source %1%', 1=> $searchSource, 'isPublicFacing'=>true, 'inAttribute'=>true])
 				];
 			}else{
 				$searchIndexes = SearchSources::getSearchIndexesForSource($searchObject, $searchSource);
@@ -486,7 +490,7 @@ class AJAX extends Action {
 		return $response;
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		return [];
 	}

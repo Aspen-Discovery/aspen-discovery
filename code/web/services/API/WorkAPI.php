@@ -11,6 +11,8 @@ class WorkAPI extends Action{
 
 		if (method_exists($this, $method)) {
 			$output = json_encode(array('result'=>$this->$method()));
+			require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
+			APIUsage::incrementStat('WorkAPI', $method);
 		} else {
 			$output = json_encode(array('error'=>"invalid_method '$method'"));
 		}
@@ -19,6 +21,7 @@ class WorkAPI extends Action{
 	}
 
 	function getRatingData($permanentId = null){
+		global $timer;
 		if (is_null($permanentId) && isset($_REQUEST['id'])){
 			$permanentId = $_REQUEST['id'];
 		}
@@ -81,6 +84,7 @@ class WorkAPI extends Action{
 			$ratingData['barWidth2Star'] = 0;
 			$ratingData['barWidth1Star'] = 0;
 		}
+		$timer->logTime("Loaded rating information for $permanentId");
 		return $ratingData;
 	}
 
@@ -109,7 +113,7 @@ class WorkAPI extends Action{
 		}
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		return [];
 	}

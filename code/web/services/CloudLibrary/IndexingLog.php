@@ -17,7 +17,7 @@ class CloudLibrary_IndexingLog extends Admin_IndexingLog
 
 	public function getTitle(): string
 	{
-		return 'Cloud Library Export Log';
+		return 'cloudLibrary Export Log';
 	}
 
 	function getModule() : string{
@@ -30,16 +30,16 @@ class CloudLibrary_IndexingLog extends Admin_IndexingLog
 		}
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
-		$breadcrumbs[] = new Breadcrumb('/Admin/Home#cloud_library', 'Cloud Library');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#cloud_library', 'cloudLibrary');
 		$breadcrumbs[] = new Breadcrumb('', 'Indexing Log');
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return 'cloud_library';
 	}

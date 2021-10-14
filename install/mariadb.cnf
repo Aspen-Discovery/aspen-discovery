@@ -1,0 +1,43 @@
+#
+# This group is read both both by the client and the server
+# use it for options that affect everything
+#
+[client-server]
+
+#
+# include all files from the config directory
+#
+!includedir /etc/mysql/mariadb.conf.d/
+
+[mysqld]
+#Make sure that we use utf-8 always
+init_connect = 'SET collation_connection = utf8mb4_general_ci'
+init_connect = 'SET NAMES utf8mb4'
+character-set-server = utf8mb4
+collation-server = utf8mb4_general_ci
+
+# other variables here
+innodb_buffer_pool_instances = 3
+innodb_buffer_pool_size = 3584M # (adjust value here, 50%-70% of total RAM)
+innodb_log_file_size = 448M
+innodb_flush_log_at_trx_commit = 1 # may change to 2 or 0
+innodb_flush_method = O_DIRECT
+skip-name-resolve = 1
+query_cache_size = 0
+query_cache_type = 0
+query_cache_limit = 3M
+key_buffer_size = 5M
+join_buffer_size = 1M
+table_open_cache = 300
+performance_schema = ON
+slow_query_log=1
+long_query_time=1
+max_connections = 128
+tmp_table_size=256M
+max_heap_table_size=256M
+
+[mysqldump]
+host = localhost
+port = 3306
+user = {aspenDBUser}
+password = {aspenDBPwd}

@@ -6,20 +6,24 @@ require_once ROOT_DIR . '/sys/WebsiteIndexing/WebsiteIndexSetting.php';
 
 class Websites_Settings extends ObjectEditor
 {
-	function getObjectType(){
+	function getObjectType() : string{
 		return 'WebsiteIndexSetting';
 	}
-	function getToolName(){
+	function getToolName() : string{
 		return 'Settings';
 	}
-	function getModule(){
+	function getModule() : string{
 		return 'Websites';
 	}
-	function getPageTitle(){
+	function getPageTitle() : string{
 		return 'Website Indexing Settings';
 	}
-	function getAllObjects(){
+	function getAllObjects($page, $recordsPerPage) : array{
 		$object = new WebsiteIndexSetting();
+		$object->deleted = 0;
+		$this->applyFilters($object);
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
+		$object->orderBy($this->getSort());
 		$object->find();
 		$objectList = array();
 		while ($object->fetch()){
@@ -27,23 +31,27 @@ class Websites_Settings extends ObjectEditor
 		}
 		return $objectList;
 	}
-	function getObjectStructure(){
+	function getDefaultSort() : string
+	{
+		return 'id asc';
+	}
+	function getObjectStructure() : array {
 		return WebsiteIndexSetting::getObjectStructure();
 	}
-	function getPrimaryKeyColumn(){
+	function getPrimaryKeyColumn() : string{
 		return 'id';
 	}
-	function getIdKeyColumn(){
+	function getIdKeyColumn() : string{
 		return 'id';
 	}
-	function getAdditionalObjectActions($existingObject){
+	function getAdditionalObjectActions($existingObject) : array{
 		return [];
 	}
 
-	function getInstructions(){
+	function getInstructions() : string{
 		return '';
 	}
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
@@ -52,12 +60,12 @@ class Websites_Settings extends ObjectEditor
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return 'web_indexer';
 	}
 
-	function canView()
+	function canView() : bool
 	{
 		return UserAccount::userHasPermission('Administer Website Indexing Settings');
 	}

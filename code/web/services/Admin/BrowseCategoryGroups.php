@@ -7,47 +7,57 @@ require_once ROOT_DIR . '/sys/Browse/BrowseCategory.php';
 class Admin_BrowseCategoryGroups extends ObjectEditor
 {
 
-	function getObjectType(){
+	function getObjectType() : string{
 		return 'BrowseCategoryGroup';
 	}
-	function getToolName(){
+	function getToolName() : string{
 		return 'BrowseCategoryGroups';
 	}
-	function getPageTitle(){
+	function getPageTitle() : string{
 		return 'Browse Category Groups';
 	}
 	function canDelete(){
 		return UserAccount::userHasPermission('Administer All Browse Categories');
 	}
-	function getAllObjects(){
-		$browseCategory = new BrowseCategoryGroup();
-		$browseCategory->orderBy('name');
+	function canAddNew(){
+		return UserAccount::userHasPermission('Administer All Browse Categories');
+	}
+	function getAllObjects($page, $recordsPerPage) : array{
+		$object = new BrowseCategoryGroup();
+		$object->orderBy($this->getSort());
+		$this->applyFilters($object);
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		if (!UserAccount::userHasPermission('Administer All Browse Categories')){
 			$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
-			$browseCategory->id = $library->browseCategoryGroupId;
+			$object->id = $library->browseCategoryGroupId;
 		}
-		$browseCategory->find();
+		$object->find();
 		$list = array();
-		while ($browseCategory->fetch()){
-			$list[$browseCategory->id] = clone $browseCategory;
+		while ($object->fetch()){
+			$list[$object->id] = clone $object;
 		}
 		return $list;
 	}
-	function getObjectStructure(){
+	function getDefaultSort() : string
+	{
+		return 'name asc';
+	}
+
+	function getObjectStructure() : array{
 		return BrowseCategoryGroup::getObjectStructure();
 	}
-	function getPrimaryKeyColumn(){
+	function getPrimaryKeyColumn() : string{
 		return 'id';
 	}
-	function getIdKeyColumn(){
+	function getIdKeyColumn() : string{
 		return 'id';
 	}
 
-	function getInstructions(){
+	function getInstructions() : string{
 		return '';
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
@@ -56,13 +66,46 @@ class Admin_BrowseCategoryGroups extends ObjectEditor
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return 'local_enrichment';
 	}
 
-	function canView()
+	function canView() : bool
 	{
 		return UserAccount::userHasPermission(['Administer All Browse Categories', 'Administer Library Browse Categories']);
+	}
+
+	protected function getDefaultRecordsPerPage()
+	{
+		return 100;
+	}
+
+	protected function showQuickFilterOnPropertiesList(){
+		return true;
+	}
+
+	function getNumObjects(): int
+	{
+		if ($this->_numObjects == null){
+			if (!UserAccount::userHasPermission('Administer All Browse Categories')) {
+				/** @var DataObject $object */
+				$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
+				$libraryId = $library == null ? -1 : $library->libraryId;
+				$objectType = $this->getObjectType();
+				$object = new $objectType();
+				$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
+				$object->id = $library->browseCategoryGroupId;
+				$this->applyFilters($object);
+				$this->_numObjects = $object->count();
+			} else if (UserAccount::userHasPermission('Administer All Browse Categories')) {
+				/** @var DataObject $object */
+				$objectType = $this->getObjectType();
+				$object = new $objectType();
+				$this->applyFilters($object);
+				$this->_numObjects = $object->count();
+			}
+		}
+		return $this->_numObjects;
 	}
 }

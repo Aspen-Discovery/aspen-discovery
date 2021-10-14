@@ -102,7 +102,7 @@ class GroupedWork_DownloadPDF
 		}
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		if (!empty($this->recordDriver)) {

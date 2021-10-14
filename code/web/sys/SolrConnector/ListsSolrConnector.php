@@ -29,7 +29,7 @@ class ListsSolrConnector extends Solr
 	 * @param Location $searchLocation
 	 * @return array
 	 */
-	public function getScopingFilters(/** @noinspection PhpUnusedParameterInspection */ $searchLibrary, $searchLocation)
+	public function getScopingFilters($searchLibrary, $searchLocation)
 	{
 		global $solrScope;
 		$filter = [];

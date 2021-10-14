@@ -7,10 +7,12 @@ import com.turning_leaf_technologies.strings.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.solr.client.solrj.impl.BinaryRequestWriter;
 import org.apache.solr.client.solrj.impl.ConcurrentUpdateSolrClient;
+import org.apache.solr.client.solrj.response.UpdateResponse;
 import org.ini4j.Ini;
 
 import java.sql.*;
 import java.util.Date;
+import java.util.HashSet;
 
 public class WebsiteIndexerMain {
 	private static Logger logger;
@@ -47,10 +49,13 @@ public class WebsiteIndexerMain {
 				String solrPort = configIni.get("Reindex", "solrPort");
 				ConcurrentUpdateSolrClient solrUpdateServer = setupSolrClient(solrPort);
 
-				PreparedStatement getSitesToIndexStmt = aspenConn.prepareStatement("SELECT * from website_indexing_settings");
+				PreparedStatement getSitesToIndexStmt = aspenConn.prepareStatement("SELECT * from website_indexing_settings where deleted = 0");
+				PreparedStatement getLibrariesForSettingsStmt = aspenConn.prepareStatement("SELECT library.subdomain From library_website_indexing inner join library on library.libraryId = library_website_indexing.libraryId where settingId = ?");
+				PreparedStatement getLocationsForSettingsStmt = aspenConn.prepareStatement("SELECT code, subLocation from location_website_indexing inner join location on location.locationId = location_website_indexing.locationId where settingId = ?");
+				PreparedStatement updateLastIndexedStmt = aspenConn.prepareStatement("UPDATE website_indexing_settings set lastIndexed = ? WHERE id = ?");
 				ResultSet sitesToIndexRS = getSitesToIndexStmt.executeQuery();
 				while (sitesToIndexRS.next()) {
-					Long websiteId = sitesToIndexRS.getLong("id");
+					long websiteId = sitesToIndexRS.getLong("id");
 					String websiteName = sitesToIndexRS.getString("name");
 					String siteUrl = sitesToIndexRS.getString("siteUrl");
 					String pageTitleExpression = sitesToIndexRS.getString("pageTitleExpression");
@@ -59,6 +64,7 @@ public class WebsiteIndexerMain {
 					String fetchFrequency = sitesToIndexRS.getString("indexFrequency");
 					String pathsToExclude = sitesToIndexRS.getString("pathsToExclude");
 					long lastFetched = sitesToIndexRS.getLong("lastIndexed");
+					long maxPagesToIndex = sitesToIndexRS.getLong("maxPagesToIndex");
 					boolean fullReload = false;
 					boolean needsIndexing = false;
 					long currentTime = new Date().getTime() / 1000;
@@ -68,7 +74,9 @@ public class WebsiteIndexerMain {
 					} else {
 						//'daily', 'weekly', 'monthly', 'yearly', 'once'
 						switch (fetchFrequency) {
-							case "hourly": //Legacy, no longer in the interface
+							case "hourly":
+								needsIndexing = lastFetched < (currentTime - 60 * 60);
+								break;
 							case "daily":
 								needsIndexing = lastFetched < (currentTime - 24 * 60 * 60);
 								break;
@@ -84,15 +92,91 @@ public class WebsiteIndexerMain {
 						}
 					}
 					if (needsIndexing) {
+						HashSet<String> scopesToInclude = new HashSet<>();
+
+						//Get a list of libraries and locations that the setting applies to
+						getLibrariesForSettingsStmt.setLong(1, websiteId);
+						ResultSet librariesForSettingsRS = getLibrariesForSettingsStmt.executeQuery();
+						while (librariesForSettingsRS.next()){
+							String subdomain = librariesForSettingsRS.getString("subdomain");
+							subdomain = subdomain.replaceAll("[^a-zA-Z0-9_]", "");
+							scopesToInclude.add(subdomain.toLowerCase());
+						}
+
+						getLocationsForSettingsStmt.setLong(1, websiteId);
+						ResultSet locationsForSettingsRS = getLocationsForSettingsStmt.executeQuery();
+						while (locationsForSettingsRS.next()){
+							String subLocation = locationsForSettingsRS.getString("subLocation");
+							String scopeName;
+							if (!locationsForSettingsRS.wasNull() && subLocation.length() > 0){
+								scopeName = subLocation.replaceAll("[^a-zA-Z0-9_]", "").toLowerCase();
+							}else {
+								String code = locationsForSettingsRS.getString("code");
+								scopeName = code.replaceAll("[^a-zA-Z0-9_]", "").toLowerCase();
+							}
+							if (scopesToInclude.contains(scopeName)){
+								scopeName += "loc";
+							}
+							scopesToInclude.add(scopeName);
+						}
+
 						WebsiteIndexLogEntry logEntry = createDbLogEntry(websiteName, startTime, aspenConn);
-						WebsiteIndexer indexer = new WebsiteIndexer(websiteId, websiteName, searchCategory, siteUrl, pageTitleExpression, descriptionExpression, pathsToExclude, fullReload, logEntry, aspenConn, solrUpdateServer);
+						WebsiteIndexer indexer = new WebsiteIndexer(websiteId, websiteName, searchCategory, siteUrl, pageTitleExpression, descriptionExpression, pathsToExclude, maxPagesToIndex, scopesToInclude, fullReload, logEntry, aspenConn, solrUpdateServer);
 						indexer.spiderWebsite();
 
-						//TODO: Update the lastIndex time
+						updateLastIndexedStmt.setLong(1, currentTime);
+						updateLastIndexedStmt.setLong(2, websiteId);
+						updateLastIndexedStmt.executeUpdate();
 
 						logEntry.setFinished();
 					}
 				}
+
+				//Check for settings that have been deleted
+				PreparedStatement deletedSitesStmt = aspenConn.prepareStatement("SELECT * from website_indexing_settings where deleted = 1");
+				ResultSet deletedSitesRS = deletedSitesStmt.executeQuery();
+				while (deletedSitesRS.next()) {
+					WebsiteIndexLogEntry logEntry = null;
+					long websiteId = deletedSitesRS.getLong("id");
+					//Get a list of any pages that exist for the site.
+					String websiteName = deletedSitesRS.getString("name");
+					try {
+						PreparedStatement websitePagesStmt = aspenConn.prepareStatement("SELECT * from website_pages WHERE websiteId = ? and deleted = 0");
+						PreparedStatement deletePageStmt = aspenConn.prepareStatement("UPDATE website_pages SET deleted = 1 where id = ?");
+						websitePagesStmt.setLong(1, websiteId);
+						ResultSet websitePagesRS = websitePagesStmt.executeQuery();
+						while (websitePagesRS.next()) {
+							if (logEntry == null){
+								logEntry = createDbLogEntry(websiteName, startTime, aspenConn);
+							}
+							try {
+								WebPage page = new WebPage(websitePagesRS);
+								//noinspection unused
+								UpdateResponse deleteResponse = solrUpdateServer.deleteByQuery("id:" + page.getId() + " AND website_name:\"" + websiteName + "\"");
+								deletePageStmt.setLong(1, page.getId());
+								deletePageStmt.executeUpdate();
+								logEntry.incDeleted();
+							}catch (Exception e){
+								logEntry.incErrors("Error deleting page for website " + websiteName, e );
+							}
+						}
+						if (logEntry != null) {
+							try {
+								solrUpdateServer.commit(true, true, false);
+							}catch (Exception e){
+								logEntry.incErrors("Error updating solr after deleting pages for " + websiteName, e );
+							}
+							logEntry.setFinished();
+						}
+					} catch (SQLException e) {
+						if (logEntry == null){
+							logEntry = createDbLogEntry(websiteName, startTime, aspenConn);
+						}
+						logEntry.incErrors("Error loading pages to delete for website " + websiteName, e);
+						logEntry.setFinished();
+					}
+				}
+				deletedSitesRS.close();
 
 				//Index all content entered within Aspen (pages, resources, etc)
 				PreparedStatement getBasicPagesStmt = aspenConn.prepareStatement("SELECT count(*) as numBasicPages from web_builder_basic_page");
@@ -116,6 +200,7 @@ public class WebsiteIndexerMain {
 					WebsiteIndexLogEntry logEntry = createDbLogEntry("Web Builder Content", startTime, aspenConn);
 					WebBuilderIndexer indexer = new WebBuilderIndexer(fullReload, logEntry, aspenConn, solrUpdateServer);
 					indexer.indexContent();
+					logEntry.setFinished();
 				}
 
 			} catch (SQLException e) {

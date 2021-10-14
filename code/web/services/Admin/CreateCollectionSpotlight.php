@@ -8,6 +8,12 @@ require_once ROOT_DIR . '/sys/DataObjectUtil.php';
 
 class Admin_CreateCollectionSpotlight extends Action
 {
+	/** @noinspection PhpUnused */
+	function getInitializationJs() : string
+	{
+		return 'return AspenDiscovery.CollectionSpotlights.updateSpotlightFields();';
+	}
+	
 	function launch()
 	{
 		$user = UserAccount::getLoggedInUser();
@@ -17,6 +23,10 @@ class Admin_CreateCollectionSpotlight extends Action
 		if (!empty($user) && !empty($source) && !empty($sourceId)) { // make sure we received this input & the user is logged in
 			$existingSpotlightId = isset($_REQUEST['collectionSpotlightId']) ? $_REQUEST['collectionSpotlightId'] : -1;
 			$spotlightName = isset($_REQUEST['spotlightName']) ? $_REQUEST['spotlightName'] : '';
+			$replaceExisting = isset($_REQUEST['replaceExisting']) ? $_REQUEST['replaceExisting'] : '';
+			$replaceIds = isset($_REQUEST['collectionSpotlightListId']) ? $_REQUEST['collectionSpotlightListId'] : '';
+			$replaceListIds = explode(".", $replaceIds);
+			$replaceListId = $replaceListIds[0];
 
 			if ($existingSpotlightId == -1) {
 				$collectionSpotlight = new CollectionSpotlight();
@@ -47,29 +57,57 @@ class Admin_CreateCollectionSpotlight extends Action
 				$collectionSpotlight->find(true);
 			}
 
-			//Add the list to the spotlight
-			$spotlightList = new CollectionSpotlightList();
-			$spotlightList->collectionSpotlightId = $collectionSpotlight->id;
-			$spotlightList->displayFor = 'all';
-			if ($source == 'search') {
-				$spotlightList->sourceListId = -1;
-				/** @var SearchObject_GroupedWorkSearcher $searchObj */
-				$searchObj = SearchObjectFactory::initSearchObject();
-				$searchObj->init();
-				$searchObj = $searchObj->restoreSavedSearch($sourceId, false, true);
-				if (!$spotlightList->updateFromSearch($searchObj)) {
-					return array(
-						'success' => false,
-						'message' => "Sorry, this search is too complex to create a spotlight from."
-					);
+			if(!isset($_REQUEST['replaceExisting'])) {
+				//Add the list to the spotlight
+				$spotlightList = new CollectionSpotlightList();
+				$spotlightList->collectionSpotlightId = $collectionSpotlight->id;
+				$spotlightList->displayFor = 'all';
+				if ($source == 'search') {
+					$spotlightList->sourceListId = -1;
+					/** @var SearchObject_GroupedWorkSearcher $searchObj */
+					$searchObj = SearchObjectFactory::initSearchObject();
+					$searchObj->init();
+					$searchObj = $searchObj->restoreSavedSearch($sourceId, false, true);
+					if (!$spotlightList->updateFromSearch($searchObj)) {
+						return array(
+							'success' => false,
+							'message' => "Sorry, this search is too complex to create a spotlight from."
+						);
+					}
+				} elseif ($source == 'list') {
+					$spotlightList->sourceListId = $sourceId;
+					$spotlightList->source = 'List';
 				}
-			} elseif ($source == 'list') {
-				$spotlightList->sourceListId = $sourceId;
-			}
 
-			$spotlightList->name = $spotlightName;
-			$spotlightList->weight = 0;
-			$spotlightList->insert();
+				$spotlightList->name = $spotlightName;
+				$spotlightList->weight = 0;
+				$spotlightList->insert();
+			} else {
+				//Find the existing lists
+				//Delete the existing lists
+				//Add the list to the spotlight
+				$spotlightList = new CollectionSpotlightList();
+				$spotlightList->id = $replaceListId;
+				$spotlightList->find();
+				if ($source == 'search') {
+					$spotlightList->sourceListId = -1;
+					/** @var SearchObject_GroupedWorkSearcher $searchObj */
+					$searchObj = SearchObjectFactory::initSearchObject();
+					$searchObj->init();
+					$searchObj = $searchObj->restoreSavedSearch($sourceId, false, true);
+					if (!$spotlightList->updateFromSearch($searchObj)) {
+						return array(
+							'success' => false,
+							'message' => "Sorry, this search is too complex to create a spotlight from."
+						);
+					}
+				} elseif ($source == 'list') {
+					$spotlightList->sourceListId = $sourceId;
+					$spotlightList->source = 'List';
+				}
+				$spotlightList->name = $spotlightName;
+				$spotlightList->update();
+			}
 
 			//Redirect to the collection spotlight
 			header("Location: /Admin/CollectionSpotlights?objectAction=view&id={$collectionSpotlight->id}");
@@ -82,7 +120,7 @@ class Admin_CreateCollectionSpotlight extends Action
 		}
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');

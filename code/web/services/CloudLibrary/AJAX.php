@@ -14,10 +14,10 @@ class CloudLibrary_AJAX extends JSON_Action
 			if ($patron) {
 				return $this->processHoldOrCheckout($id, $patron);
 			} else {
-				return array('result' => false, 'message' => translate(['text' => 'no_permissions_for_hold', 'defaultText' => 'Sorry, it looks like you don\'t have permissions to place holds for that user.']));
+				return array('result' => false, 'message' => translate(['text' => 'Sorry, it looks like you don\'t have permissions to place holds for that user.', 'isPublicFacing'=>true]));
 			}
 		} else {
-			return array('result' => false, 'message' => 'You must be logged in to place a hold.');
+			return array('result' => false, 'message' => translate(['text' => 'You must be logged in to place a hold.', 'isPublicFacing'=>true]));
 		}
 	}
 
@@ -31,10 +31,10 @@ class CloudLibrary_AJAX extends JSON_Action
 			if ($patron) {
 				return $this->processHoldOrCheckout($id, $patron);
 			} else {
-				return array('result' => false, 'title' => translate("Error Checking Out Title"), 'message' => translate(['text' => 'no_permission_to_checkout', 'defaultText' => 'Sorry, it looks like you don\'t have permissions to checkout titles for that user.']));
+				return array('result' => false, 'title' => translate(['text' => "Error Checking Out Title", 'isPublicFacing'=>true]), 'message' => translate(['text' => 'Sorry, it looks like you don\'t have permissions to checkout titles for that user.', 'isPublicFacing'=>true]));
 			}
 		} else {
-			return array('result' => false, 'title' => translate("Error Checking Out Title"), 'message' => translate('You must be logged in to checkout an item.'));
+			return array('result' => false, 'title' => translate(['text' => "Error Checking Out Title", 'isPublicFacing'=>true]), 'message' => translate(['text' => 'You must be logged in to checkout an item.', 'isPublicFacing'=>true]));
 		}
 	}
 
@@ -43,9 +43,9 @@ class CloudLibrary_AJAX extends JSON_Action
 	{
 		$user = UserAccount::getLoggedInUser();
 		if (empty($user)){
-			$loggedOutMessage = translate(['text' => 'login_expired', 'defaultText' => "Your login has timed out. Please login again."]);
+			$loggedOutMessage = translate(['text' => "Your login has timed out. Please login again.", 'isPublicFacing'=>true]);
 			return array(
-					'promptTitle' => translate('Invalid Account'),
+					'promptTitle' => translate(['text' => 'Invalid Account', 'isPublicFacing'=>true]),
 					'prompts' => '<p class="alert alert-danger">' . $loggedOutMessage . '</p>',
 					'buttons' => '',
 					'promptNeeded' => true
@@ -58,12 +58,12 @@ class CloudLibrary_AJAX extends JSON_Action
 		$usersWithCloudLibraryAccess = $this->getCloudLibraryUsers($user);
 
 		if (count($usersWithCloudLibraryAccess) > 1) {
-			$promptTitle = 'Cloud Library Hold Options';
+			$promptTitle = 'cloudLibrary Hold Options';
 			return array(
 					'promptNeeded' => true,
 					'promptTitle' => $promptTitle,
 					'prompts' => $interface->fetch('CloudLibrary/ajax-hold-prompt.tpl'),
-					'buttons' => '<input class="btn btn-primary" type="submit" name="submit" value="Place Hold" onclick="return AspenDiscovery.CloudLibrary.processHoldPrompts();">'
+					'buttons' => '<input class="btn btn-primary" type="submit" name="submit" value="' . translate(['text' => 'Place Hold', 'isPublicFacing'=>true, 'inAttribute'=>true]) . '" onclick="return AspenDiscovery.CloudLibrary.processHoldPrompts();">'
 				);
 		} elseif (count($usersWithCloudLibraryAccess) == 1) {
 			return array(
@@ -71,10 +71,10 @@ class CloudLibrary_AJAX extends JSON_Action
 					'promptNeeded' => false,
 				);
 		} else {
-			// No Cloud Library Account Found
-			$invalidAccountMessage = translate(['text' => 'cloud_library_invalid_account_or_library', 'defaultText' => "The barcode or library for this account is not valid for Cloud Library."]);
+			// No cloudLibrary Account Found
+			$invalidAccountMessage = translate(['text' => "The barcode or library for this account is not valid for cloudLibrary. Please contact your local library for more information.", 'isPublicFacing'=>true]);
 			return array(
-					'promptTitle' => translate('Invalid Account'),
+					'promptTitle' => translate(['text' => 'Invalid Account', 'isPublicFacing'=>true]),
 					'prompts' => '<p class="alert alert-danger">' . $invalidAccountMessage . '</p>',
 					'buttons' => '',
 					'promptNeeded' => true
@@ -87,9 +87,9 @@ class CloudLibrary_AJAX extends JSON_Action
 	{
 		$user = UserAccount::getLoggedInUser();
 		if (empty($user)){
-			$loggedOutMessage = translate(['text' => 'login_expired', 'defaultText' => "Your login has timed out. Please login again."]);
+			$loggedOutMessage = translate(['text' => "Your login has timed out. Please login again.", 'isPublicFacing'=>true]);
 			return array(
-					'promptTitle' => translate('Invalid Account'),
+					'promptTitle' => translate(['text' => 'Invalid Account', 'isPublicFacing'=>true]),
 					'prompts' => '<p class="alert alert-danger">' . $loggedOutMessage . '</p>',
 					'buttons' => '',
 					'promptNeeded' => true
@@ -103,12 +103,12 @@ class CloudLibrary_AJAX extends JSON_Action
 		$usersWithCloudLibraryAccess = $this->getCloudLibraryUsers($user);
 
 		if (count($usersWithCloudLibraryAccess) > 1) {
-			$promptTitle = 'Cloud Library Checkout Options';
+			$promptTitle = 'cloudLibrary Checkout Options';
 			return array(
 					'promptNeeded' => true,
 					'promptTitle' => $promptTitle,
 					'prompts' => $interface->fetch('CloudLibrary/ajax-checkout-prompt.tpl'),
-					'buttons' => '<input class="btn btn-primary" type="submit" name="submit" value="Checkout Title" onclick="return AspenDiscovery.CloudLibrary.processCheckoutPrompts();">'
+					'buttons' => '<input class="btn btn-primary" type="submit" name="submit" value="' . translate(['text' => 'Checkout Title', 'isPublicFacing'=>true, 'inAttribute'=>true]) . '" onclick="return AspenDiscovery.CloudLibrary.processCheckoutPrompts();">'
 				);
 		} elseif (count($usersWithCloudLibraryAccess) == 1) {
 			return array(
@@ -116,10 +116,10 @@ class CloudLibrary_AJAX extends JSON_Action
 					'promptNeeded' => false,
 				);
 		} else {
-			// No Cloud Library Account Found
-			$invalidAccountMessage = translate(['text' => 'cloud_library_invalid_account_or_library', 'defaultText' => "The barcode or library for this account is not valid for Cloud Library."]);
+			// No cloudLibrary Account Found
+			$invalidAccountMessage = translate(['text' => "The barcode or library for this account is not valid for cloudLibrary. Please contact your local library for more information.", 'isPublicFacing'=>true]);
 			return array(
-					'promptTitle' => 'Invalid Account',
+					'promptTitle' => translate(['text' => 'Invalid Account', 'isPublicFacing'=>true]),
 					'prompts' => '<p class="alert alert-danger">' . $invalidAccountMessage . '</p>',
 					'buttons' => '',
 					'promptNeeded' => true,
@@ -139,10 +139,10 @@ class CloudLibrary_AJAX extends JSON_Action
 				$driver = new CloudLibraryDriver();
 				return $driver->cancelHold($patron, $id);
 			} else {
-				return array('result' => false, 'message' => 'Sorry, it looks like you don\'t have permissions to cancel holds for that user.');
+				return array('result' => false, 'message' => translate(['text' => 'Sorry, it looks like you don\'t have permissions to cancel holds for that user.', 'isPublicFacing'=>true]));
 			}
 		} else {
-			return array('result' => false, 'message' => 'You must be logged in to cancel holds.');
+			return array('result' => false, 'message' => translate(['text' => 'You must be logged in to cancel holds.', 'isPublicFacing'=>true]));
 		}
 	}
 
@@ -158,10 +158,10 @@ class CloudLibrary_AJAX extends JSON_Action
 				$driver = new CloudLibraryDriver();
 				return $driver->renewCheckout($patron, $id);
 			} else {
-				return array('result' => false, 'message' => 'Sorry, it looks like you don\'t have permissions to modify checkouts for that user.');
+				return array('result' => false, 'message' => translate(['text' => 'Sorry, it looks like you don\'t have permissions to modify checkouts for that user.', 'isPublicFacing'=>true]));
 			}
 		} else {
-			return array('result' => false, 'message' => 'You must be logged in to renew titles.');
+			return array('result' => false, 'message' => translate(['text' => 'You must be logged in to renew titles.', 'isPublicFacing'=>true]));
 		}
 	}
 
@@ -178,10 +178,10 @@ class CloudLibrary_AJAX extends JSON_Action
 				$driver = new CloudLibraryDriver();
 				return $driver->returnCheckout($patron, $id);
 			} else {
-				return array('result' => false, 'message' => 'Sorry, it looks like you don\'t have permissions to modify checkouts for that user.');
+				return array('result' => false, 'message' => translate(['text' => 'Sorry, it looks like you don\'t have permissions to modify checkouts for that user.', 'isPublicFacing'=>true]));
 			}
 		} else {
-			return array('result' => false, 'message' => 'You must be logged in to return titles.');
+			return array('result' => false, 'message' => translate(['text' => 'You must be logged in to return titles.', 'isPublicFacing'=>true]));
 		}
 	}
 
@@ -212,39 +212,44 @@ class CloudLibrary_AJAX extends JSON_Action
 		require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
 		$driver = new CloudLibraryDriver();
 
-		//Before we place the hold, check the status since Cloud Library doesn't always update properly
+		//Before we place the hold, check the status since cloudLibrary doesn't always update properly
 		$itemStatus = $driver->getItemStatus($id, $patron);
-		if ($itemStatus == 'CAN_LOAN') {
+		if ($itemStatus == 'CAN_LOAN' || $itemStatus == 'RESERVATION') {
 			$result = $driver->checkoutTitle($patron, $id);
 			//$logger->log("Checkout result = $result", Logger::LOG_NOTICE);
 			if ($result['success']) {
 				/** @noinspection HtmlUnknownTarget */
-				$result['title'] = translate("Title Checked Out Successfully");
-				$result['buttons'] = '<a class="btn btn-primary" href="/MyAccount/CheckedOut" role="button">' . translate('View My Check Outs') . '</a>';
+				$result['title'] = translate(['text' => "Title Checked Out Successfully", 'isPublicFacing'=>true]);
+				$result['buttons'] = '<a class="btn btn-primary" href="/MyAccount/CheckedOut" role="button">' . translate(['text'=>'View My Check Outs', 'isPublicFacing'=>true]) . '</a>';
 			} else {
-				$result['title'] = translate("Error Checking Out Title");
+				$result['title'] = translate(['text' => "Error Checking Out Title", 'isPublicFacing'=>true]);
 			}
 		} elseif ($itemStatus == 'CAN_HOLD') {
 			$result = $driver->placeHold($patron, $id);
 		} elseif ($itemStatus == 'HOLD' || $itemStatus == 'ON_HOLD') {
 			$result = [
 				'result' => true,
-				'message' => translate(['text' => 'already_on_hold', 'defaultText' => 'This title is already on hold for you.'])
+				'message' => translate(['text' => 'This title is already on hold for you.', 'isPublicFacing'=>true])
 			];
 		} elseif ($itemStatus == 'LOAN') {
 			$result = [
 				'result' => true,
-				'message' => translate(['text' => 'already_checked_out', 'defaultText' => 'This title is already checked out to you.'])
+				'message' => translate(['text' => 'This title is already checked out to you.', 'isPublicFacing'=>true])
 			];
 		} elseif ($itemStatus == 'CAN_WISH') {
 			$result = [
 				'result' => true,
-				'message' => translate(['text' => 'cloud_library_not_available', 'defaultText' => 'Sorry, this title is no longer available.'])
+				'message' => translate(['text' => 'Sorry, this title is no longer available.', 'isPublicFacing'=>true])
+			];
+		} elseif ($itemStatus == 'Authentication failed') {
+			$result = [
+				'result' => true,
+				'message' => translate(['text' => 'We were unable to authenticate your account in cloudLibrary. If this problem persists, please contact the library.', 'isPublicFacing'=>true])
 			];
 		} else {
 			$result = [
 				'result' => true,
-				'message' => translate(['text' => 'invalid_status_cloud_library', 'defaultText' => 'Cloud Library returned an invalid item status.'])
+				'message' => translate(['text' => "cloudLibrary returned an invalid item status (%1%).", 1=>$itemStatus, 'isPublicFacing'=>true ])
 			];
 		}
 		return $result;
@@ -253,7 +258,7 @@ class CloudLibrary_AJAX extends JSON_Action
 	function getStaffView(){
 		$result = [
 			'success' => false,
-			'message' => 'Unknown error loading staff view'
+			'message' => translate(['text' => 'Unknown error loading staff view', 'isPublicFacing'=>true])
 		];
 		$id = $_REQUEST['id'];
 		require_once ROOT_DIR . '/RecordDrivers/CloudLibraryRecordDriver.php';
@@ -266,8 +271,22 @@ class CloudLibrary_AJAX extends JSON_Action
 				'staffView' => $interface->fetch($recordDriver->getStaffView())
 			];
 		}else{
-			$result['message'] = 'Could not find that record';
+			$result['message'] = translate(['text' => 'Could not find that record', 'isPublicFacing'=>true]);
 		}
 		return $result;
+	}
+
+	/** @noinspection PhpUnused */
+	function getLargeCover(){
+		global $interface;
+
+		$id = $_REQUEST['id'];
+		$interface->assign('id', $id);
+
+		return array(
+			'title' => translate(['text'=>'Cover Image', 'isPublicFacing'=>true]),
+			'modalBody' => $interface->fetch("CloudLibrary/largeCover.tpl"),
+			'modalButtons' => ""
+		);
 	}
 }

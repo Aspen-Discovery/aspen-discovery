@@ -123,11 +123,6 @@ class UInterface extends Smarty
 		global $enabledModules;
 		$this->assign('enabledModules', $enabledModules);
 
-		if (isset($configArray['Islandora']['repositoryUrl'])) {
-			$this->assign('repositoryUrl', $configArray['Islandora']['repositoryUrl']);
-			$this->assign('encodedRepositoryUrl', str_replace('/', '\/', $configArray['Islandora']['repositoryUrl']));
-		}
-
 		$this->assign('fullPath', str_replace('&', '&amp;', $_SERVER['REQUEST_URI']));
 		$this->assign('requestHasParams', strpos($_SERVER['REQUEST_URI'], '?') > 0);
 		if (isset($configArray['Site']['email'])) {
@@ -238,7 +233,7 @@ class UInterface extends Smarty
 					$finePaymentType = 0;
 				}
 				$this->assign('eCommerceLink', $eCommerceLink);
-			}elseif ($finePaymentType == 2){
+			}elseif ($finePaymentType >= 2){
 				$this->assign('eCommerceLink', '/MyAccount/Fines');
 			}
 			$this->assign('finePaymentType', $finePaymentType);
@@ -270,12 +265,12 @@ class UInterface extends Smarty
 		return $this->getVariable('pageTemplate');
 	}
 
-	function setPageTitle($title, $translateTitle = true)
+	function setPageTitle($title, $translateTitle = true, $isPublicFacing = false, $isAdminFacing = false)
 	{
 		//Marmot override, add the name of the site to the title unless we are using the mobile interface.
 		if ($translateTitle){
-			$translatedTitle = translate($title);
-			$translatedTitleAttribute = translate(['text'=>$title, 'inAttribute'=>true]);
+			$translatedTitle = translate(['text'=>$title, 'inAttribute'=>false, 'isPublicFacing' => $isPublicFacing, 'isAdminFacing' => $isAdminFacing]);
+			$translatedTitleAttribute = translate(['text'=>$title, 'inAttribute'=>true, 'isPublicFacing' => $isPublicFacing, 'isAdminFacing' => $isAdminFacing]);
 		}else{
 			$translatedTitle = $title;
 			$translatedTitleAttribute = $title;
@@ -335,11 +330,22 @@ class UInterface extends Smarty
 
 		try {
 			$theme = new Theme();
-			$theme->id = $library->theme;
+			//Check to see if we are at a location and if we are if there is a theme applied to it
+			$location = $locationSingleton->getActiveLocation();
+			if (isset($location) && $location->theme != -1){
+				$theme->id = $location->theme;
+			}else {
+				$theme->id = $library->theme;
+			}
 			if ($theme->find(true)) {
 				$allAppliedThemes = $theme->getAllAppliedThemes();
 				$primaryTheme = $theme;
 				$this->appliedTheme = $primaryTheme;
+			}
+
+			//Get extended theme info
+			if($theme->extendsTheme){
+				$this->assign('extendedTheme', $theme->extendsTheme);
 			}
 
 			//Get Logo
@@ -381,6 +387,11 @@ class UInterface extends Smarty
 				$this->assign('footerLogoLink', $footerLogoLink);
 			}
 
+			$footerLogoAlt = $theme->footerLogoAlt;
+			if ($footerLogoAlt) {
+				$this->assign('footerLogoAlt', $footerLogoAlt);
+			}
+
 			//Get favicon
 			$favicon = null;
 			foreach ($allAppliedThemes as $theme) {
@@ -397,6 +408,14 @@ class UInterface extends Smarty
 				$themeCss = $primaryTheme->generatedCss;
 				$this->assign('themeCss', $themeCss);
 				$this->assign('primaryThemeObject', $primaryTheme);
+				$this->assign('bodyBackgroundColor', $primaryTheme->bodyBackgroundColor);
+				$this->assign('bodyTextColor', $primaryTheme->bodyTextColor);
+				$this->assign('primaryBackgroundColor', $primaryTheme->primaryBackgroundColor);
+				$this->assign('primaryForegroundColor', $primaryTheme->primaryForegroundColor);
+				$this->assign('secondaryBackgroundColor', $primaryTheme->secondaryBackgroundColor);
+				$this->assign('secondaryForegroundColor', $primaryTheme->secondaryForegroundColor);
+				$this->assign('tertiaryBackgroundColor', $primaryTheme->tertiaryBackgroundColor);
+				$this->assign('tertiaryForegroundColor', $primaryTheme->tertiaryForegroundColor);
 			}
 		}catch (PDOException $e){
 			global $logger;
@@ -407,7 +426,11 @@ class UInterface extends Smarty
 		$location = $locationSingleton->getActiveLocation();
 		$this->assign('logoLink', '');
 		$this->assign('logoAlt', 'Return to Catalog Home');
-		if ($library->getLayoutSettings()->useHomeLinkForLogo){
+		$useHomeLink = $library->getLayoutSettings()->useHomeLink;
+		if ($useHomeLink == '2' || $useHomeLink == '3'){
+			if ((isset($location) && $location->homeLink == 'default')){
+				$this->assign('logoLink', '/');
+			}
 			if (isset($location) && strlen($location->homeLink) > 0 && $location->homeLink != 'default'){
 				$this->assign('logoAlt', 'Library Home Page');
 				$this->assign('logoLink', $location->homeLink);
@@ -421,6 +444,8 @@ class UInterface extends Smarty
 			$this->assign('homeLink', $location->homeLink);
 		}elseif (strlen($library->homeLink) > 0 && $library->homeLink != 'default'){
 			$this->assign('homeLink', $library->homeLink);
+		}elseif ($library->homeLink == 'default') {
+			$this->assign('homeLink', '/');
 		}
 
 		//Load JavaScript Snippets
@@ -472,6 +497,7 @@ class UInterface extends Smarty
 		$this->assign('instagramLink', $library->instagramLink);
 		$this->assign('pinterestLink', $library->pinterestLink);
 		$this->assign('goodreadsLink', $library->goodreadsLink);
+		$this->assign('tiktokLink', $library->tiktokLink);
 		$this->assign('generalContactLink', $library->generalContactLink);
 		$this->assign('showLoginButton', $library->showLoginButton);
 		$this->assign('showAdvancedSearchbox', $library->showAdvancedSearchbox);
@@ -487,14 +513,20 @@ class UInterface extends Smarty
 		$this->assign('showWhileYouWait', $library->showWhileYouWait);
 
 		$this->assign('showItsHere', $library->showItsHere);
-		$this->assign('enableMaterialsBooking', $library->enableMaterialsBooking);
+
+		$this->assign('displayItemBarcode', $library->displayItemBarcode);
+
+		$this->assign('allowMaxDaysToFreeze', $library->maxDaysToFreeze);
+		if($library->maxDaysToFreeze > -1) {
+			$this->assign('maxDaysToFreeze', strtotime('+'.$library->maxDaysToFreeze.' days'));
+		}
+
 		$this->assign('showHoldButtonForUnavailableOnly', $library->showHoldButtonForUnavailableOnly);
 		$this->assign('showHoldCancelDate', $library->showHoldCancelDate);
 		$this->assign('allowMasqueradeMode', $library->allowMasqueradeMode);
 		$this->assign('allowReadingHistoryDisplayInMasqueradeMode', $library->allowReadingHistoryDisplayInMasqueradeMode);
 		$this->assign('interLibraryLoanName', $library->interLibraryLoanName);
 		$this->assign('interLibraryLoanUrl', $library->interLibraryLoanUrl);
-		$this->assign('sidebarMenuButtonText', $library->getLayoutSettings()->sidebarMenuButtonText);
 		$this->assign('showGroupedHoldCopiesCount', $library->showGroupedHoldCopiesCount);
 		$this->assign('showOnOrderCounts', $library->showOnOrderCounts);
 
@@ -599,12 +631,10 @@ class UInterface extends Smarty
 		$expandedLinkCategories = [];
 		/** @var LibraryLink $libraryLink */
 		foreach ($links as $libraryLink){
-			if ($libraryLink->showToLoggedInUsersOnly && !UserAccount::isLoggedIn()){
+			if (!$libraryLink->isValidForDisplay()){
 				continue;
 			}
-			if (!$libraryLink->published && !UserAccount::userHasPermission('View Unpublished Content')){
-				continue;
-			}
+
 			if (empty($libraryLink->category)){
 				$libraryLink->category = 'none-' . $libraryLink->id;
 			}
@@ -618,6 +648,18 @@ class UInterface extends Smarty
 		}
 		$this->assign('libraryLinks', $libraryLinks);
 		$this->assign('expandedLinkCategories', $expandedLinkCategories);
+
+		try {
+			require_once ROOT_DIR . '/sys/SystemVariables.php';
+			$systemVariables = SystemVariables::getSystemVariables();
+			if ($systemVariables != false) {
+				$this->assign('useHtmlEditorRatherThanMarkdown', $systemVariables->useHtmlEditorRatherThanMarkdown);
+			} else {
+				$this->assign('useHtmlEditorRatherThanMarkdown', 0);
+			}
+		}catch (Exception $e){
+			//This happens prior to the table being created
+		}
 	}
 
 	/**
@@ -688,13 +730,18 @@ function translate($params) {
 	if (is_array($params)) {
 		$defaultText = isset($params['defaultText']) ? $params['defaultText'] : null;
 		$inAttribute = isset($params['inAttribute']) ? $params['inAttribute'] : false;
+		$isPublicFacing = isset($params['isPublicFacing']) ? $params['isPublicFacing'] : false;
+		$isAdminFacing = isset($params['isAdminFacing']) ? $params['isAdminFacing'] : false;
+		$isMetadata = isset($params['isMetadata']) ? $params['isMetadata'] : false;
+		$isAdminEnteredData = isset($params['isAdminEnteredData']) ? $params['isAdminEnteredData'] : false;
+		$translateParameters = isset($params['translateParameters']) ? $params['translateParameters'] : false;
 		$replacementValues = [];
 		foreach ($params as $index => $param){
 			if (is_numeric($index)){
 				$replacementValues[$index] = $param;
 			}
 		}
-		return $translator->translate($params['text'], $defaultText, $replacementValues, $inAttribute);
+		return $translator->translate($params['text'], $defaultText, $replacementValues, $inAttribute, $isPublicFacing, $isAdminFacing, $isMetadata, $isAdminEnteredData, $translateParameters);
 	} else {
 		return $translator->translate($params, null, [], false);
 	}

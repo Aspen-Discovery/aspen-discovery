@@ -88,7 +88,7 @@ class MyRatings extends MyAccount{
 		$this->display('myRatings.tpl', 'My Ratings', 'Search/home-sidebar.tpl');
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'My Account');

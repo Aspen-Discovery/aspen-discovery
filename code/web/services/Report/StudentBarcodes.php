@@ -86,7 +86,7 @@ class Report_StudentBarcodes extends Admin_Admin {
 		$user = UserAccount::getLoggedInUser();
 		$location = new Location();
 		$location->orderBy('code');
-		if (UserAccount::userHasPermission('View Location Student Reports')){
+		if (!UserAccount::userHasPermission('View All Student Reports')){
 			//Scope to just locations for the user based on home branch
 			$location->locationId = $user->homeLocationId;
 		}
@@ -98,7 +98,7 @@ class Report_StudentBarcodes extends Admin_Admin {
 		return $locationList;
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
@@ -107,12 +107,12 @@ class Report_StudentBarcodes extends Admin_Admin {
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return 'circulation_reports';
 	}
 
-	function canView()
+	function canView() : bool
 	{
 		return UserAccount::userHasPermission(['View All Student Reports', 'View Location Student Reports']);
 	}

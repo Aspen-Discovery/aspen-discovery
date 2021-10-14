@@ -6,29 +6,32 @@ require_once ROOT_DIR . '/sys/OverDrive/OverDriveSetting.php';
 
 class OverDrive_Settings extends ObjectEditor
 {
-	function getObjectType()
+	function getObjectType() : string
 	{
 		return 'OverDriveSetting';
 	}
 
-	function getToolName()
+	function getToolName() : string
 	{
 		return 'Settings';
 	}
 
-	function getModule()
+	function getModule() : string
 	{
 		return 'OverDrive';
 	}
 
-	function getPageTitle()
+	function getPageTitle() : string
 	{
 		return 'OverDrive Settings';
 	}
 
-	function getAllObjects()
+	function getAllObjects($page, $recordsPerPage) : array
 	{
 		$object = new OverDriveSetting();
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
+		$object->orderBy($this->getSort());
+		$this->applyFilters($object);
 		$object->find();
 		$objectList = array();
 		while ($object->fetch()) {
@@ -37,32 +40,37 @@ class OverDrive_Settings extends ObjectEditor
 		return $objectList;
 	}
 
-	function getObjectStructure()
+	function getDefaultSort() : string
+	{
+		return 'id asc';
+	}
+
+	function getObjectStructure() : array
 	{
 		return OverDriveSetting::getObjectStructure();
 	}
 
-	function getPrimaryKeyColumn()
+	function getPrimaryKeyColumn() : string
 	{
 		return 'id';
 	}
 
-	function getIdKeyColumn()
+	function getIdKeyColumn() : string
 	{
 		return 'id';
 	}
 
-	function getAdditionalObjectActions($existingObject)
+	function getAdditionalObjectActions($existingObject) : array
 	{
 		return [];
 	}
 
-	function getInstructions()
+	function getInstructions() : string
 	{
 		return '';
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
@@ -71,12 +79,12 @@ class OverDrive_Settings extends ObjectEditor
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return 'overdrive';
 	}
 
-	function canView()
+	function canView() : bool
 	{
 		return UserAccount::userHasPermission('Administer OverDrive');
 	}

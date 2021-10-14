@@ -1,15 +1,28 @@
 {strip}
 	<div id="main-content" class="col-md-12">
-		<h1>Website Indexing Log</h1>
+		<h1>{translate text="Website Indexing Log" isAdminFacing=true}</h1>
 		<hr>
 
-		<h4>Filter by</h4>
+		<h4>{translate text="Filter by" isAdminFacing=true}</h4>
 
         {include file='Admin/exportLogFilters.tpl'}
 		<div id="websiteExportLogContainer">
 			<table class="logEntryDetails table table-condensed table-hover">
 				<thead>
-					<tr><th>Id</th><th>Name</th><th>Started</th><th>Last Update</th><th>Finished</th><th>Elapsed</th><th>Total Pages</th><th>Num Errors</th><th>Pages Added</th><th>Pages Deleted</th><th>Pages Updated</th><th>Notes</th></tr>
+					<tr>
+						<th>{translate text="Id" isAdminFacing=true}</th>
+						<th>{translate text="Name" isAdminFacing=true}</th>
+						<th>{translate text="Started" isAdminFacing=true}</th>
+						<th>{translate text="Last Update" isAdminFacing=true}</th>
+						<th>{translate text="Finished" isAdminFacing=true}</th>
+						<th>{translate text="Elapsed" isAdminFacing=true}</th>
+						<th>{translate text="Total Pages" isAdminFacing=true}</th>
+						<th>{translate text="Num Errors" isAdminFacing=true}</th>
+						<th>{translate text="Pages Added" isAdminFacing=true}</th>
+						<th>{translate text="Pages Deleted" isAdminFacing=true}</th>
+						<th>{translate text="Pages Updated" isAdminFacing=true}</th>
+						<th>{translate text="Notes" isAdminFacing=true}</th>
+					</tr>
 				</thead>
 				<tbody>
 					{foreach from=$logEntries item=logEntry}
@@ -25,7 +38,7 @@
 							<td>{$logEntry->numAdded}</td>
 							<td>{$logEntry->numDeleted}</td>
 							<td>{$logEntry->numUpdated}</td>
-							<td><a href="#" onclick="return AspenDiscovery.Admin.showExtractNotes('{$logEntry->id}', 'website');">Show Notes</a></td>
+							<td><a href="#" onclick="return AspenDiscovery.Admin.showExtractNotes('{$logEntry->id}', 'website');">{translate text="Show Notes" isAdminFacing=true}</a></td>
 						</tr>
 					{/foreach}
 				</tbody>

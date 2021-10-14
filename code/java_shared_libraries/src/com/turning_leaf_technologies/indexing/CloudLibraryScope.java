@@ -2,6 +2,7 @@ package com.turning_leaf_technologies.indexing;
 
 public class CloudLibraryScope {
 	private long id;
+	private long settingId;
 	private String name;
 	private boolean includeEBooks;
 	private boolean includeEAudiobook;
@@ -45,6 +46,14 @@ public class CloudLibraryScope {
 
 	void setRestrictToChildrensMaterial(boolean restrictToChildrensMaterial) {
 		this.restrictToChildrensMaterial = restrictToChildrensMaterial;
+	}
+
+	public long getSettingId() {
+		return settingId;
+	}
+
+	public void setSettingId(long settingId) {
+		this.settingId = settingId;
 	}
 
 }

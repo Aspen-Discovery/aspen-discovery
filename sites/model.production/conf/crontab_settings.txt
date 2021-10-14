@@ -30,16 +30,16 @@
 # Indexing Tasks #
 #############
 @reboot       solr    php /usr/local/aspen-discovery/code/web/cron/checkSolr.php model.production
-5 2 * * *     root    php /usr/local/aspen-discovery/code/web/cron/updateSuggesters.php model.production
-7 3 * * *     root    php /usr/local/aspen-discovery/code/web/cron/createSitemaps.php model.production
+5 2 * * *     solr    php /usr/local/aspen-discovery/code/web/cron/updateSuggesters.php model.production
+7 3 * * *     aspen    php /usr/local/aspen-discovery/code/web/cron/createSitemaps.php model.production
 */2 * * * *   solr    php /usr/local/aspen-discovery/code/web/cron/checkSolr.php model.production
-*/5 * * * *   root    php /usr/local/aspen-discovery/code/web/cron/checkBackgroundProcesses.php model.production
+*/5 * * * *   aspen    php /usr/local/aspen-discovery/code/web/cron/checkBackgroundProcesses.php model.production
 
 ########################################################
 # Regular extracts that don't need to run continuously #
 ########################################################
-0 2 * * *   root    cd /usr/local/aspen-discovery/code/oai_indexer; java -jar oai_indexer.jar model.production
-0 2 * * *   root    cd /usr/local/aspen-discovery/code/reindexer; java -jar reindexer.jar model.production nightly
+0 2 * * *   aspen    cd /usr/local/aspen-discovery/code/oai_indexer; java -jar oai_indexer.jar model.production
+0 2 * * *   aspen    cd /usr/local/aspen-discovery/code/reindexer; java -jar reindexer.jar model.production nightly
 
 ######################
 # MySQL Nightly Dump #
@@ -50,7 +50,7 @@
 #############################################
 # New York Times Best seller Lists Updating #
 #############################################
-15 7 * * 0-1  root    php /usr/local/aspen-discovery/code/web/cron/updateNYTLists.php model.production
+15 7 * * 0-1  aspen    php /usr/local/aspen-discovery/code/web/cron/updateNYTLists.php model.production
 # update on Sundays and Mondays at 7:15
 
 ###########################
@@ -61,6 +61,6 @@
 26 0 * * *    root    cd /tmp; rm -rf CURLCOOKIE*
 
 # CRON for Aspen (book cover cache cleanup etc.)
-00 22 * * *   root    cd /usr/local/aspen-discovery/code/cron; java -jar cron.jar model.production
+00 22 * * *   aspen    cd /usr/local/aspen-discovery/code/cron; java -jar cron.jar model.production
 
 00 01 * * *   root    certbot renew

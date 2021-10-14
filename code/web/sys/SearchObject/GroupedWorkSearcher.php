@@ -7,7 +7,7 @@ require_once ROOT_DIR . '/RecordDrivers/RecordDriverFactory.php';
 class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 {
 	// Field List
-	public static $fields_to_return = 'auth_author2,author2-role,id,mpaaRating,title_display,title_full,title_short,subtitle_display,author,author_display,isbn,upc,issn,series,series_with_volume,recordtype,display_description,literary_form,literary_form_full,num_titles,record_details,item_details,publisherStr,publishDate,publishDateSort,subject_facet,topic_facet,primary_isbn,primary_upc,accelerated_reader_point_value,accelerated_reader_reading_level,accelerated_reader_interest_level,lexile_code,lexile_score,display_description,fountas_pinnell,last_indexed';
+	public static $fields_to_return = 'auth_author2,author2-role,id,mpaaRating,title_display,title_full,title_short,subtitle_display,author,author_display,isbn,upc,issn,series,series_with_volume,recordtype,display_description,literary_form,literary_form_full,num_titles,record_details,item_details,publisherStr,publishDate,publishDateSort,subject_facet,topic_facet,primary_isbn,primary_upc,accelerated_reader_point_value,accelerated_reader_reading_level,accelerated_reader_interest_level,lexile_code,lexile_score,display_description,fountas_pinnell,last_indexed,lc_subject,bisac_subject';
 
 	// Optional, used on author screen for example
 	private $searchSubType = '';
@@ -60,17 +60,18 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 		}
 
 		// Load sort preferences (or defaults if none in .ini file):
-		if (isset($searchSettings['Sorting'])) {
-			$this->sortOptions = $searchSettings['Sorting'];
-		} else {
-			$this->sortOptions = array(
-				'relevance' => 'sort_relevance',
-				'popularity' => 'sort_popularity',
-				'year' => 'sort_year', 'year asc' => 'sort_year asc',
-				'callnumber' => 'sort_callnumber', 'author' => 'sort_author',
-				'title' => 'sort_title'
-			);
-		}
+		$this->sortOptions = array(
+			'relevance' => 'Best Match',
+			'year desc,title asc' => "Publication Year Desc",
+			'year asc,title asc' => "Publication Year Asc",
+			'author asc,title asc' => "Author",
+			'title' => 'Title',
+			'days_since_added asc' => "Date Purchased Desc",
+			'callnumber_sort' => 'sort_callnumber',
+			'popularity desc' => 'sort_popularity',
+			'rating desc' => 'sort_rating',
+			'total_holds desc' => "Number of Holds"
+		);
 
 		$this->indexEngine->debug = $this->debug;
 		$this->indexEngine->debugSolrQuery = $this->debugSolrQuery;
@@ -377,7 +378,6 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 				$allWorkIds[] = $this->indexResult['response']['docs'][$x]['id'];
 			}
 			require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
-			GroupedWorkDriver::loadArchiveLinksForWorks($allWorkIds);
 			$timer->logTime('Loaded archive links');
 			for ($x = 0; $x < count($this->indexResult['response']['docs']); $x++) {
 				$memoryWatcher->logMemory("Started loading record information for index $x");
@@ -632,9 +632,29 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 		$filterQuery = $this->hiddenFilters;
 		//Remove any empty filters if we get them
 		//(typically happens when a subdomain has a function disabled that is enabled in the main scope)
+		//Also fix dynamic field names
+		$dynamicFields = $this->loadDynamicFields();
 		foreach ($this->filterList as $field => $filter) {
 			if ($field === '') {
 				unset($this->filterList[$field]);
+			}
+			if (strpos($field, '_') !== false) {
+				$lastUnderscore = strrpos($field, '_');
+				$shortFieldName = substr($field, 0, $lastUnderscore + 1);
+				$oldScope = substr($field, $lastUnderscore + 1);
+				if ($oldScope != $solrScope) {
+					//Correct any dynamic fields
+					foreach ($dynamicFields as $dynamicField) {
+						if ($shortFieldName == $dynamicField) {
+							//This is a dynamic field with the wrong scope
+							if ($field != ($dynamicField . $solrScope)) {
+								unset($this->filterList[$field]);
+								$this->filterList[$dynamicField . $solrScope] = $filter;
+							}
+							break;
+						}
+					}
+				}
 			}
 		}
 
@@ -643,6 +663,7 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 		$formatValues = [];
 		$formatCategoryValues = [];
 		$facetConfig = $this->getFacetConfig();
+		$formatsAreMultiSelect = false;
 		foreach ($this->filterList as $field => $filter) {
 			$fieldPrefix = "";
 			$multiSelect = false;
@@ -669,6 +690,7 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 					$formatCategoryValues[] = $value;
 				} elseif (strpos($field, 'format') === 0) {
 					$formatValues[] = $value;
+					$formatsAreMultiSelect = $multiSelect;
 				}
 				// Special case -- allow trailing wildcards:
 				$okToAdd = false;
@@ -736,10 +758,20 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 		if ($availabilityToggleValue != null && (!empty($formatCategoryValues) || !empty($formatValues))) {
 			global $solrScope;
 			//Make sure to process the more specific format first
-			foreach ($formatValues as $formatValue) {
-				$availabilityByFormatFieldName = 'availability_by_format_' . $solrScope . '_' . strtolower(preg_replace('/\W/', '_', $formatValue));
-				$filterQuery[] = $availabilityByFormatFieldName . ':"' . $availabilityToggleValue . '"';
-				$availabilityByFormatFieldNames[] = $availabilityByFormatFieldName;
+			if ($formatsAreMultiSelect) {
+				$formatFilters = [];
+				foreach ($formatValues as $formatValue) {
+					$availabilityByFormatFieldName = 'availability_by_format_' . $solrScope . '_' . strtolower(preg_replace('/\W/', '_', $formatValue));
+					$formatFilters[] = $availabilityByFormatFieldName . ':"' . $availabilityToggleValue . '"';
+					$availabilityByFormatFieldNames[] = $availabilityByFormatFieldName;
+				}
+				$filterQuery[] = '(' . implode(' OR ', $formatFilters) . ')';
+			}else{
+				foreach ($formatValues as $formatValue) {
+					$availabilityByFormatFieldName = 'availability_by_format_' . $solrScope . '_' . strtolower(preg_replace('/\W/', '_', $formatValue));
+					$filterQuery[] = $availabilityByFormatFieldName . ':"' . $availabilityToggleValue . '"';
+					$availabilityByFormatFieldNames[] = $availabilityByFormatFieldName;
+				}
 			}
 			foreach ($formatCategoryValues as $formatCategoryValue) {
 				$availabilityByFormatFieldName = 'availability_by_format_' . $solrScope . '_' . strtolower(preg_replace('/\W/', '_', $formatCategoryValue));
@@ -1024,7 +1056,7 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 				// Initialize the array of data about the current facet:
 				$currentSettings = array();
 				$currentSettings['value'] = $facet[0];
-				$currentSettings['display'] = $translate ? translate($facet[0]) : $facet[0];
+				$currentSettings['display'] = $translate ? translate(['text'=>$facet[0],'isPublicFacing'=>true]) : $facet[0];
 				$currentSettings['count'] = $facet[1];
 				$currentSettings['isApplied'] = false;
 				$currentSettings['url'] = $this->renderLinkWithFilter($field, $facet[0]);
@@ -1042,6 +1074,10 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 				//Setup the key to allow sorting alphabetically if needed.
 				$valueKey = $facet[0];
 				$okToAdd = true;
+				//Don't include empty settings since they don't work properly with Solr
+				if (strlen(trim($facet[0])) == 0){
+					$okToAdd = false;
+				}
 				if ($doInstitutionProcessing) {
 					if ($facet[0] == $currentLibrary->facetLabel) {
 						$valueKey = '1' . $valueKey;
@@ -1191,7 +1227,7 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 		$lookfor = $this->displayQuery();
 		if (count($this->filterList) > 0) {
 			// TODO : better display of filters
-			$interface->assign('lookfor', $lookfor . " (" . translate('with filters') . ")");
+			$interface->assign('lookfor', $lookfor . " (" . translate(['text' => 'with filters', 'isPublicFacing'=>true]) . ")");
 		} else {
 			$interface->assign('lookfor', $lookfor);
 		}
@@ -1355,6 +1391,7 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 				$fieldsToReturn .= ',format_' . $solrScope;
 				$fieldsToReturn .= ',format_category_' . $solrScope;
 				$fieldsToReturn .= ',collection_' . $solrScope;
+				$fieldsToReturn .= ',local_days_since_added_' . $solrScope;
 				$fieldsToReturn .= ',local_time_since_added_' . $solrScope;
 				$fieldsToReturn .= ',local_callnumber_' . $solrScope;
 				$fieldsToReturn .= ',detailed_location_' . $solrScope;
@@ -1404,7 +1441,14 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 
 	public function getSearchIndexes()
 	{
-		return $this->searchIndexes;
+		return [
+			'Keyword' => translate(['text'=>'Keyword', 'isPublicFacing'=>true, 'inAttribute'=>true]),
+			'Title' => translate(['text'=>'Title', 'isPublicFacing'=>true, 'inAttribute'=>true]),
+			'StartOfTitle' => translate(['text'=>'Start of Title', 'isPublicFacing'=>true, 'inAttribute'=>true]),
+			'Series' => translate(['text'=>'Series', 'isPublicFacing'=>true, 'inAttribute'=>true]),
+			'Author' => translate(['text'=>'Author', 'isPublicFacing'=>true, 'inAttribute'=>true]),
+			'Subject' => translate(['text'=>'Subject', 'isPublicFacing'=>true, 'inAttribute'=>true]),
+		];
 	}
 
 	public function getRecordDriverForResult($record)
@@ -1429,11 +1473,12 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 	 * @param array[] $ids
 	 * @param int $page
 	 * @param int $limit
+	 * @param string[] $notInterestedTitles
 	 * @return    array                            An array of query results
 	 */
-	function getMoreLikeThese($ids, $page = 1, $limit = 25)
+	function getMoreLikeThese($ids, $page = 1, $limit = 25, $notInterestedTitles = [])
 	{
-		return $this->indexEngine->getMoreLikeThese($ids, $this->getFieldsToReturn(), $page, $limit);
+		return $this->indexEngine->getMoreLikeThese($ids, $this->getFieldsToReturn(), $page, $limit, $notInterestedTitles);
 	}
 
 	/**
@@ -1451,12 +1496,12 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 			} else {
 				$facets = $searchLibrary->getGroupedWorkDisplaySettings()->getFacets();
 			}
-			global $solrScope;
 			foreach ($facets as &$facet) {
 				//Adjust facet name for local scoping
 				$facet->facetName = $this->getScopedFieldName($facet->facetName);
 
-				if ($this->isAdvanced()) {
+				global $action;
+				if ($action == 'Advanced') {
 					if ($facet->showInAdvancedSearch == 1) {
 						$facetConfig[$facet->facetName] = $facet;
 					}

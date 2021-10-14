@@ -175,11 +175,11 @@ class Person_Home extends Action
 		$titleField = $this->recordDriver->getName(); //$this->record['firstName'] . ' ' . $this->record['lastName'];
 
 		// Display Page
-		$this->display('full-record.tpl', $titleField);
+		$this->display('full-record.tpl', $titleField, '');
 	}
 
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		if (!empty($this->lastSearch)){

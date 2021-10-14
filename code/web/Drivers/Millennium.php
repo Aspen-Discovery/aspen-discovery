@@ -1,61 +1,19 @@
 <?php
-require_once ROOT_DIR . '/Drivers/marmot_inc/LoanRule.php';
-require_once ROOT_DIR . '/Drivers/marmot_inc/LoanRuleDeterminer.php';
 require_once ROOT_DIR . '/sys/CurlWrapper.php';
 require_once ROOT_DIR . '/Drivers/AbstractIlsDriver.php';
 
 class Millennium extends AbstractIlsDriver
 {
-	var $statusTranslations = null;
-	var $holdableStatiRegex = null;
-	var $availableStatiRegex = null;
 	/** @var  Solr */
 	public $db;
-
-	/** @var LoanRule[] $loanRules  */
-	var $loanRules = null;
-	/** @var LoanRuleDeterminer[] $loanRuleDeterminers */
-	var $loanRuleDeterminers = null;
 
 	/** @var CurlWrapper */
 	var $curlWrapper;
 
 	public function __construct($accountProfile)
-    {
-        parent::__construct($accountProfile);
-        $this->curlWrapper = new CurlWrapper();
-    }
-
-    protected function loadLoanRules(){
-		if (is_null($this->loanRules)){
-			/** @var Memcache $memCache */
-			global $memCache;
-//			global $configArray;
-			global $instanceName;
-//			$this->loanRules = $memCache->get($instanceName . '_loan_rules');
-			if (!$this->loanRules || isset($_REQUEST['reload'])){
-				$this->loanRules = array();
-				$loanRule = new LoanRule();
-				$loanRule->find();
-				while ($loanRule->fetch()){
-					$this->loanRules[$loanRule->loanRuleId] = clone($loanRule);
-				}
-			}
-//			$memCache->set($instanceName . '_loan_rules', $this->loanRules, $configArray['Caching']['loan_rules']);
-
-			$this->loanRuleDeterminers = $memCache->get($instanceName . '_loan_rule_determiners');
-			if (!$this->loanRuleDeterminers || isset($_REQUEST['reload'])){
-				$this->loanRuleDeterminers = array();
-				$loanRuleDeterminer = new LoanRuleDeterminer();
-				$loanRuleDeterminer->active = 1;
-				$loanRuleDeterminer->orderBy('rowNumber DESC');
-				$loanRuleDeterminer->find();
-				while ($loanRuleDeterminer->fetch()){
-					$this->loanRuleDeterminers[$loanRuleDeterminer->rowNumber] = clone($loanRuleDeterminer);
-				}
-			}
-//			$memCache->set($instanceName . '_loan_rule_determiners', $this->loanRuleDeterminers, $configArray['Caching']['loan_rules']);
-		}
+	{
+		parent::__construct($accountProfile);
+		$this->curlWrapper = new CurlWrapper();
 	}
 
 	public function getMillenniumScope(){
@@ -135,11 +93,6 @@ class Millennium extends AbstractIlsDriver
 
 	}
 
-	static $libraryLocationInformationLoaded = false;
-	static $libraryLocations = null;
-	static $libraryLocationLabels = null;
-	static $homeLocationCode = null;
-	static $homeLocationLabel = null;
 	static $scopingLocationCode = null;
 
 	/**
@@ -223,7 +176,6 @@ class Millennium extends AbstractIlsDriver
 	public function _getPatronDump(&$barcode, $forceReload = false)
 	{
 		global $configArray;
-		/** @var Memcache $memCache */
 		global $memCache;
 		global $library;
 		global $timer;
@@ -263,10 +215,9 @@ class Millennium extends AbstractIlsDriver
 
 				if (is_null($patronDump)){
 					return $patronDump;
-				}else if ((isset($patronDump['ERRNUM']) || count($patronDump) == 0) && $i != count($barcodesToTest) - 1){
+				}/** @noinspection PhpStatementHasEmptyBodyInspection */ elseif ((isset($patronDump['ERRNUM']) || count($patronDump) == 0) && $i != count($barcodesToTest) - 1){
 					//check the next barcode
 				}else{
-
 					$timer->logTime('Finished loading patron dump from ILS.');
 					$memCache->set("patron_dump_$barcode", $patronDump, $configArray['Caching']['patron_dump']);
 					//Need to wait a little bit since getting the patron api locks the record in the DB
@@ -322,7 +273,7 @@ class Millennium extends AbstractIlsDriver
 		return $patronDump;
 	}
 
-	public function _curl_login($patron) {
+	public function _curl_login(User $patron) {
 		global $logger;
 		$loginResult = false;
 
@@ -370,15 +321,15 @@ class Millennium extends AbstractIlsDriver
 	 * This is responsible for retrieving all transactions (i.e. checked out items)
 	 * by a specific patron.
 	 *
-	 * @param User $user The user to load transactions for
-	 * @return mixed        Array of the patron's transactions on success,
+	 * @param User $patron The user to load transactions for
+	 * @return Checkout[]        Array of the patron's transactions on success,
 	 * AspenError otherwise.
 	 * @access public
 	 */
-	public function getCheckouts( $user) {
+	public function getCheckouts($patron) {
 		require_once ROOT_DIR . '/Drivers/marmot_inc/MillenniumCheckouts.php';
 		$millenniumCheckouts = new MillenniumCheckouts($this);
-		return $millenniumCheckouts->getCheckouts($user);
+		return $millenniumCheckouts->getCheckouts($patron, $this->getIndexingProfile());
 	}
 
 	/**
@@ -410,9 +361,9 @@ class Millennium extends AbstractIlsDriver
 		return $millenniumReadingHistory->getReadingHistory($patron, $page, $recordsPerPage, $sortOption);
 	}
 
-    public function performsReadingHistoryUpdatesOfILS(){
-        return true;
-    }
+	public function performsReadingHistoryUpdatesOfILS(){
+		return true;
+	}
 	/**
 	 * Do an update or edit of reading history information.  Current actions are:
 	 * deleteMarked
@@ -430,9 +381,6 @@ class Millennium extends AbstractIlsDriver
 		$millenniumReadingHistory->doReadingHistoryAction($patron, $action, $selectedTitles);
 	}
 
-
-
-
 	/**
 	 * Get Patron Holds
 	 *
@@ -446,7 +394,7 @@ class Millennium extends AbstractIlsDriver
 	public function getHolds($patron){
 		require_once ROOT_DIR . '/Drivers/marmot_inc/MillenniumHolds.php';
 		$millenniumHolds = new MillenniumHolds($this);
-		return $millenniumHolds->getHolds($patron);
+		return $millenniumHolds->getHolds($patron, $this->getIndexingProfile());
 	}
 
 	/**
@@ -500,7 +448,7 @@ class Millennium extends AbstractIlsDriver
 	 *                                  If an error occurs, return a AspenError
 	 * @access  public
 	 */
-	function placeVolumeHold($patron, $recordId, $volumeId, $pickupBranch) {
+	function placeVolumeHold(User $patron, $recordId, $volumeId, $pickupBranch) {
 		require_once ROOT_DIR . '/Drivers/marmot_inc/MillenniumHolds.php';
 		$millenniumHolds = new MillenniumHolds($this);
 		return $millenniumHolds->placeVolumeHold($patron, $recordId, $volumeId, $pickupBranch);
@@ -509,19 +457,19 @@ class Millennium extends AbstractIlsDriver
 	public function updateHold($patron, $requestId, $type){
 		require_once ROOT_DIR . '/Drivers/marmot_inc/MillenniumHolds.php';
 		$millenniumHolds = new MillenniumHolds($this);
-		return $millenniumHolds->updateHold($patron, $requestId, $type);
+		return $millenniumHolds->updateHold($patron, $requestId, $type, $this->getIndexingProfile());
 	}
 
 	public function updateHoldDetailed($patron, $type, $xNum, $cancelId, $locationId, $freezeValue='off'){
 		require_once ROOT_DIR . '/Drivers/marmot_inc/MillenniumHolds.php';
 		$millenniumHolds = new MillenniumHolds($this);
-		return $millenniumHolds->updateHoldDetailed($patron, $type, $xNum, $cancelId, $locationId, $freezeValue);
+		return $millenniumHolds->updateHoldDetailed($patron, $type, $xNum, $cancelId, $this->getIndexingProfile(), $locationId, $freezeValue);
 	}
 
 	public function cancelHold($patron, $recordId, $cancelId = null){
 		require_once ROOT_DIR . '/Drivers/marmot_inc/MillenniumHolds.php';
 		$millenniumHolds = new MillenniumHolds($this);
-		return $millenniumHolds->updateHoldDetailed($patron, 'cancel', null, $cancelId, '', '');
+		return $millenniumHolds->updateHoldDetailed($patron, 'cancel', null, $cancelId, $this->getIndexingProfile(), '', '');
 	}
 
 	function allowFreezingPendingHolds(){
@@ -531,26 +479,26 @@ class Millennium extends AbstractIlsDriver
 	function freezeHold($patron, $recordId, $itemToFreezeId, $dateToReactivate){
 		require_once ROOT_DIR . '/Drivers/marmot_inc/MillenniumHolds.php';
 		$millenniumHolds = new MillenniumHolds($this);
-		return $millenniumHolds->updateHoldDetailed($patron, 'update', null, $itemToFreezeId, '', 'on');
+		return $millenniumHolds->updateHoldDetailed($patron, 'update', null, $itemToFreezeId, $this->getIndexingProfile(), '', 'on');
 	}
 
 	function thawHold($patron, $recordId, $itemToThawId){
 		require_once ROOT_DIR . '/Drivers/marmot_inc/MillenniumHolds.php';
 		$millenniumHolds = new MillenniumHolds($this);
-		return $millenniumHolds->updateHoldDetailed($patron, 'update', null, $itemToThawId, '', 'off');
+		return $millenniumHolds->updateHoldDetailed($patron, 'update', null, $itemToThawId, $this->getIndexingProfile(), '', 'off');
 	}
 
-	function changeHoldPickupLocation($patron, $recordId, $itemToUpdateId, $newPickupLocation){
+	function changeHoldPickupLocation(User $patron, $recordId, $itemToUpdateId, $newPickupLocation){
 		require_once ROOT_DIR . '/Drivers/marmot_inc/MillenniumHolds.php';
 		$millenniumHolds = new MillenniumHolds($this);
-		return $millenniumHolds->updateHoldDetailed($patron, 'update', null, $itemToUpdateId, $newPickupLocation, null); // freeze value of null gets us to change  pickup location
+		return $millenniumHolds->updateHoldDetailed($patron, 'update', null, $itemToUpdateId, $this->getIndexingProfile(), $newPickupLocation, null); // freeze value of null gets us to change  pickup location
 	}
 
 	public function hasFastRenewAll(){
 		return true;
 	}
 
-	public function renewAll($patron){
+	public function renewAll(User $patron){
 		require_once ROOT_DIR . '/Drivers/marmot_inc/MillenniumCheckouts.php';
 		$millenniumCheckouts = new MillenniumCheckouts($this);
 		return $millenniumCheckouts->renewAll($patron);
@@ -574,45 +522,12 @@ class Millennium extends AbstractIlsDriver
 		return $result;
 	}
 
-	public function bookMaterial($patron, $recordId, $startDate, $startTime = null, $endDate = null, $endTime = null) {
-		require_once ROOT_DIR . '/Drivers/marmot_inc/MillenniumBooking.php';
-		$millenniumBooking = new MillenniumBooking($this);
-		return $millenniumBooking->bookMaterial($patron, $recordId, $startDate, $startTime, $endDate, $endTime);
-	}
-
 	/**
-	 * @param User $user  User to cancel for
-	 * @param $cancelIds  array uses a specific id for canceling a booking, rather than a record Id.
-	 * @return array data for client-side AJAX responses
-	 */
-	public function cancelBookedMaterial($user, $cancelIds) {
-		require_once ROOT_DIR . '/Drivers/marmot_inc/MillenniumBooking.php';
-		$millenniumBooking = new MillenniumBooking($this);
-		return $millenniumBooking->cancelBookedMaterial($user, $cancelIds);
-	}
-
-	/**
-	 * @param  User $patron
-	 * @return array      data for client-side AJAX responses
-	 */
-	public function cancelAllBookedMaterial($patron) {
-		require_once ROOT_DIR . '/Drivers/marmot_inc/MillenniumBooking.php';
-		$millenniumBooking = new MillenniumBooking($this);
-		return $millenniumBooking->cancelAllBookedMaterial($patron);
-	}
-
-	public function getBookingCalendar($recordId) {
-		require_once ROOT_DIR . '/Drivers/marmot_inc/MillenniumBooking.php';
-		$millenniumBooking = new MillenniumBooking($this);
-		return $millenniumBooking->getBookingCalendar($recordId);
-	}
-
-	/**
-	 * @param User $user                     The User Object to make updates to
+	 * @param User $patron                     The User Object to make updates to
 	 * @param boolean $canUpdateContactInfo  Permission check that updating is allowed
 	 * @return array                         Array of error messages for errors that occurred
 	 */
-	public function updatePatronInfo($user, $canUpdateContactInfo){
+	public function updatePatronInfo($patron, $canUpdateContactInfo){
 		$result = [
 			'success' => false,
 			'messages' => []
@@ -620,7 +535,7 @@ class Millennium extends AbstractIlsDriver
 
 		if ($canUpdateContactInfo){
 			//Setup the call to Millennium
-			$barcode = $this->_getBarcode($user);
+			$barcode = $this->_getBarcode($patron);
 			$patronDump = $this->_getPatronDump($barcode);
 
 			//Update profile information
@@ -697,7 +612,7 @@ class Millennium extends AbstractIlsDriver
 			}
 
 			//Login to the patron's account
-			$this->_curl_login($user);
+			$this->_curl_login($patron);
 
 			//Issue a post request to update the patron information
 			$scope = $this->getMillenniumScope();
@@ -706,9 +621,9 @@ class Millennium extends AbstractIlsDriver
 
 			// Update Patron Information on success
 			if (isset($sresult) && strpos($sresult, 'Patron information updated') !== false){
-				$user->phone = $_REQUEST['phone'];
-				$user->email = $_REQUEST['email'];
-				$user->update();
+				$patron->phone = $_REQUEST['phone'];
+				$patron->email = $_REQUEST['email'];
+				$patron->update();
 				global $memCache;
 				$memCache->delete("patron_dump_$barcode"); // because the update will affect the patron dump information also clear that cache as well
 				$result['success'] = true;
@@ -727,48 +642,6 @@ class Millennium extends AbstractIlsDriver
 			$result['messages'][] = 'You can not update your information.';
 		}
 		return $result;
-	}
-
-	/** @var  int[] */
-	var $pTypes;
-	/**
-	 * returns the patron type identifier if a patron is logged in or if the patron
-	 * is not logged in, it will return the default PType for the library domain.
-	 * If a domain is not in use it will return -1.
-	 *
-	 * @return int[]
-	 */
-	public function getPTypes(){
-		if ($this->pTypes == null){
-			$this->pTypes = array();
-			/** @var $user User */
-			$user = UserAccount::getLoggedInUser();
-			global $locationSingleton;
-			$searchLocation = $locationSingleton->getSearchLocation();
-			$searchLibrary = Library::getSearchLibrary();
-			if (isset($user) && $user != false){
-				if (is_numeric($user->patronType)){
-					$this->pTypes[] = $user->patronType;
-				}else{
-					$this->pTypes[] = -1;
-				}
-				//Add PTypes for any linked accounts
-				foreach ($user->getLinkedUsers() as $tmpUser){
-					if (is_numeric($tmpUser->patronType)){
-						$this->pTypes[] = $tmpUser->patronType;
-					}else{
-						$this->pTypes[] = -1;
-					}
-				}
-			}else if (isset($searchLocation) && $searchLocation->defaultPType >= 0){
-				$this->pTypes[] = $searchLocation->defaultPType;
-			}else if (isset($searchLibrary) && $searchLibrary->defaultPType >= 0){
-				$this->pTypes[] = $searchLibrary->defaultPType;
-			}else{
-				$this->pTypes[] = -1;
-			}
-		}
-		return $this->pTypes;
 	}
 
 	/**
@@ -859,215 +732,6 @@ class Millennium extends AbstractIlsDriver
 		}else{
 			return null;
 		}
-	}
-
-	/**
-	 * @param File_MARC_Record $marcRecord
-	 * @return bool
-	 */
-	function isRecordHoldable($marcRecord){
-		$pTypes = $this->getPTypes();
-
-		$indexingProfile = $this->getIndexingProfile();
-        $marcItemField = $indexingProfile->itemTag;
-        $iTypeSubfield = $indexingProfile->iType;
-        $locationSubfield = $indexingProfile->location;
-
-		/** @var File_MARC_Data_Field[] $items */
-		$items = $marcRecord->getFields($marcItemField);
-		$holdable = false;
-		$itemNumber = 0;
-		foreach ($items as $item){
-			$itemNumber++;
-			$subfield_j = $item->getSubfield($iTypeSubfield);
-			if (is_object($subfield_j) && !$subfield_j->isEmpty()){
-				$iType = $subfield_j->getData();
-			}else{
-				$iType = '0';
-			}
-			$subfield_d = $item->getSubfield($locationSubfield);
-			if (is_object($subfield_d) && !$subfield_d->isEmpty()){
-				$locationCode = $subfield_d->getData();
-			}else{
-				$locationCode = '?????';
-			}
-			//$logger->log("$itemNumber) iType = $iType, locationCode = $locationCode", Logger::LOG_DEBUG);
-
-			//Check the determiner table to see if this matches
-			$holdable = $this->isItemHoldableToPatron($locationCode, $iType, $pTypes);
-
-			if ($holdable){
-				break;
-			}
-		}
-		return $holdable;
-	}
-
-	function isItemHoldableToPatron($locationCode, $iType, $pTypes){
-		/** @var Memcache $memCache*/
-		global $memCache;
-		global $configArray;
-		global $timer;
-		global $serverName;
-		$pTypeString = implode(',', $pTypes);
-		$memcacheKey = "loan_rule_result_{$serverName}_{$locationCode}_{$iType}_{$pTypeString}";
-		$cachedValue = $memCache->get($memcacheKey);
-		if ($cachedValue !== false && !isset($_REQUEST['reload'])){
-			return $cachedValue == 'true';
-		}else{
-			$timer->logTime("Start checking if item is holdable $locationCode, $iType, $pTypeString");
-			$this->loadLoanRules();
-			if (count($this->loanRuleDeterminers) == 0){
-				//If we don't have any loan rules determiners, assume that the item is holdable.
-				return true;
-			}
-			$holdable = false;
-			//global $logger;
-			//$logger->log("Checking loan rules for $locationCode, $iType, $pType", Logger::LOG_DEBUG);
-			foreach ($this->loanRuleDeterminers as $loanRuleDeterminer){
-				//$logger->log("Determiner {$loanRuleDeterminer->rowNumber}", Logger::LOG_DEBUG);
-				//Check the location to be sure the determiner applies to this item
-				if ($loanRuleDeterminer->matchesLocation($locationCode) ){
-					//$logger->log("{$loanRuleDeterminer->rowNumber}) Location correct $locationCode, {$loanRuleDeterminer->location} ({$loanRuleDeterminer->trimmedLocation()})", Logger::LOG_DEBUG);
-					//Check that the iType is correct
-					if ($loanRuleDeterminer->itemType == '999' || in_array($iType, $loanRuleDeterminer->iTypeArray())){
-						//$logger->log("{$loanRuleDeterminer->rowNumber}) iType correct $iType, {$loanRuleDeterminer->itemType}", Logger::LOG_DEBUG);
-						foreach ($pTypes as $pType){
-							if ($pType == -1 || $loanRuleDeterminer->patronType == '999' || in_array($pType, $loanRuleDeterminer->pTypeArray())){
-								//$logger->log("{$loanRuleDeterminer->rowNumber}) pType correct $pType, {$loanRuleDeterminer->patronType}", Logger::LOG_DEBUG);
-								$loanRule = $this->loanRules[$loanRuleDeterminer->loanRuleId];
-								//$logger->log("Determiner {$loanRuleDeterminer->rowNumber} indicates Loan Rule {$loanRule->loanRuleId} applies, holdable {$loanRule->holdable}", Logger::LOG_DEBUG);
-								$holdable = ($loanRule->holdable == 1);
-								if ($holdable || $pType != -1){
-									break;
-								}
-							//}else{
-								//$logger->log("PType incorrect", Logger::LOG_DEBUG);
-							}
-						}
-
-					//}else{
-						//$logger->log("IType incorrect", Logger::LOG_DEBUG);
-					}
-				//}else{
-					//$logger->log("Location incorrect {$loanRuleDeterminer->location} != {$locationCode}", Logger::LOG_DEBUG);
-				}
-				if ($holdable) break;
-			}
-			$memCache->set($memcacheKey, ($holdable ? 'true' : 'false') , $configArray['Caching']['loan_rule_result']);
-			$timer->logTime("Finished checking if item is holdable $locationCode, $iType, $pTypeString");
-		}
-
-		return $holdable;
-	}
-
-	/**
-	 * @param File_MARC_Record $marcRecord
-	 * @return bool
-	 */
-	function isRecordBookable($marcRecord){
-		//TODO: finish this, template from Holds
-		$pTypes = $this->getPTypes();
-
-        $indexingProfile = $this->getIndexingProfile();
-        $marcItemField = $indexingProfile->itemTag;
-        $iTypeSubfield = $indexingProfile->iType;
-        $locationSubfield = $indexingProfile->location;
-
-		/** @var File_MARC_Data_Field[] $items */
-		$items = $marcRecord->getFields($marcItemField);
-		$bookable = false;
-		$itemNumber = 0;
-		foreach ($items as $item){
-			$itemNumber++;
-			$subfield_j = $item->getSubfield($iTypeSubfield);
-			if (is_object($subfield_j) && !$subfield_j->isEmpty()){
-				$iType = $subfield_j->getData();
-			}else{
-				$iType = '0';
-			}
-			$subfield_d = $item->getSubfield($locationSubfield);
-			if (is_object($subfield_d) && !$subfield_d->isEmpty()){
-				$locationCode = $subfield_d->getData();
-			}else{
-				$locationCode = '?????';
-			}
-			//$logger->log("$itemNumber) iType = $iType, locationCode = $locationCode", Logger::LOG_DEBUG);
-
-			//Check the determiner table to see if this matches
-			$bookable = $this->isItemBookableToPatron($locationCode, $iType, $pTypes);
-
-			if ($bookable){
-				break;
-			}
-		}
-		return $bookable;
-	}
-
-	public function isItemBookableToPatron($locationCode, $iType, $pTypes){
-		/** @var Memcache $memCache*/
-		global $memCache;
-		global $configArray;
-		global $timer;
-		$pTypeString = implode(',', $pTypes);
-		$memcacheKey = "loan_rule_material_booking_result_{$locationCode}_{$iType}_{$pTypeString}";
-		$cachedValue = $memCache->get($memcacheKey);
-		$pType = '';
-		if ($cachedValue !== false && !isset($_REQUEST['reload'])){
-			return $cachedValue == 'true';
-		}else {
-			$timer->logTime("Start checking if item is bookable $locationCode, $iType, $pTypeString");
-			$this->loadLoanRules();
-			if (count($this->loanRuleDeterminers) == 0){
-				//If we don't have any loan rules determiners, assume that the item isn't bookable.
-				return false;
-			}
-			$bookable = false;
-			//global $logger;
-			//$logger->log("Checking loan rules for $locationCode, $iType, $pType", Logger::LOG_DEBUG);
-			foreach ($this->loanRuleDeterminers as $loanRuleDeterminer){
-				//$logger->log("Determiner {$loanRuleDeterminer->rowNumber}", Logger::LOG_DEBUG);
-				//Check the location to be sure the determiner applies to this item
-				if ($loanRuleDeterminer->matchesLocation($locationCode) ){
-					//$logger->log("{$loanRuleDeterminer->rowNumber}) Location correct $locationCode, {$loanRuleDeterminer->location} ({$loanRuleDeterminer->trimmedLocation()})", Logger::LOG_DEBUG);
-					//Check that the iType is correct
-					if ($loanRuleDeterminer->itemType == '999' || in_array($iType, $loanRuleDeterminer->iTypeArray())){
-						//$logger->log("{$loanRuleDeterminer->rowNumber}) iType correct $iType, {$loanRuleDeterminer->itemType}", Logger::LOG_DEBUG);
-						foreach ($pTypes as $pType){
-							if ($pType == -1 || $loanRuleDeterminer->patronType == '999' || in_array($pType, $loanRuleDeterminer->pTypeArray())){
-								//$logger->log("{$loanRuleDeterminer->rowNumber}) pType correct $pType, {$loanRuleDeterminer->patronType}", Logger::LOG_DEBUG);
-								$loanRule = $this->loanRules[$loanRuleDeterminer->loanRuleId];
-								//$logger->log("Determiner {$loanRuleDeterminer->rowNumber} indicates Loan Rule {$loanRule->loanRuleId} applies, bookable {$loanRule->bookable}", Logger::LOG_DEBUG);
-								$bookable = ($loanRule->bookable == 1);
-								if ($bookable || $pType != -1){
-									break;
-								}
-							}
-//						else{
-//							//$logger->log("PType incorrect", Logger::LOG_DEBUG);
-//						}
-						}
-					}
-//					else{
-//						//$logger->log("IType incorrect", Logger::LOG_DEBUG);
-//					}
-				}
-//				else{
-//					//$logger->log("Location incorrect {$loanRuleDeterminer->location} != {$locationCode}", Logger::LOG_DEBUG);
-//				}
-			}
-			$memCache->set($memcacheKey, ($bookable ? 'true' : 'false') , $configArray['Caching']['loan_rule_result']); // TODO: set a different config option for booking results?
-			$timer->logTime("Finished checking if item is bookable $locationCode, $iType, $pType");
-		}
-
-		return $bookable;
-
-	}
-
-	public function getMyBookings($patron){
-		require_once ROOT_DIR . '/Drivers/marmot_inc/MillenniumBooking.php';
-		$millenniumBookings = new MillenniumBooking($this);
-		return $millenniumBookings->getMyBookings($patron);
 	}
 
 	function getCheckInGrid($id, $checkInGridId){
@@ -1270,10 +934,15 @@ class Millennium extends AbstractIlsDriver
 
 	}
 
-	public function _getLoginFormValues($patron){
+	public function _getLoginFormValues(User $patron){
 		$loginData = array();
-		$loginData['name'] = $patron->cat_username;
-		$loginData['code'] = $patron->cat_password;
+		if ($this->accountProfile->loginConfiguration == 'barcode_pin'){
+			$loginData['code'] = $patron->cat_username;
+			$loginData['pin'] = $patron->cat_password;
+		}else {
+			$loginData['name'] = $patron->cat_username;
+			$loginData['code'] = $patron->cat_password;
+		}
 
 		return $loginData;
 	}
@@ -1355,6 +1024,7 @@ class Millennium extends AbstractIlsDriver
 					if (preg_match_all('/<td.*?>(.*?)<\/td>/si', $rowContents, $colDetails, PREG_SET_ORDER) > 0){
 						$curFine['reason'] = trim(strip_tags($colDetails[1][1]));
 						$curFine['amount'] = trim($colDetails[2][1]);
+						$curFine['amountVal'] = (float)(str_replace('$', '', $curFine['amount']));
 					}
 				}else if ($rowType == 'patFuncFinesDetailDate'){
 					if (preg_match_all('/<td.*?>(.*?)<\/td>/si', $rowContents, $colDetails, PREG_SET_ORDER) > 0){
@@ -1522,7 +1192,7 @@ class Millennium extends AbstractIlsDriver
 
 	/**
 	 * Calculates a check digit for a III identifier
-	 * @param basedId String the base id without checksum
+	 * @param String basedId String the base id without checksum
 	 * @return String the check digit
 	 */
 	function getCheckDigit($baseId){
@@ -1594,30 +1264,21 @@ class Millennium extends AbstractIlsDriver
 		return $userValid;
 	}
 
-	public function showLinksForRecordsWithItems() {
-		return false;
-	}
-
-	public function getAccountSummary(User $user)
+	public function getAccountSummary(User $patron) : AccountSummary
 	{
-		$barcode = $user->getBarcode();
+		require_once ROOT_DIR . '/sys/User/AccountSummary.php';
+		$summary = new AccountSummary();
+		$summary->userId = $patron->id;
+		$summary->source = 'ils';
+		$summary->resetCounters();
+
+		$barcode = $patron->getBarcode();
 		$patronDump = $this->_getPatronDump($barcode);
-		$expired = 0;
-		$expireClose = 0;
-		$expires = '';
+		$expirationTime = 0;
 		//See if expiration date is close
 		if (trim($patronDump['EXP_DATE']) != '-  -'){
-			$expires = $patronDump['EXP_DATE'];
 			list ($monthExp, $dayExp, $yearExp) = explode("-",$patronDump['EXP_DATE']);
-			$timeExpire = strtotime($monthExp . "/" . $dayExp . "/" . $yearExp);
-			$timeNow = time();
-			$timeToExpire = $timeExpire - $timeNow;
-			if ($timeToExpire <= 30 * 24 * 60 * 60){
-				if ($timeToExpire <= 0){
-					$expired = 1;
-				}
-				$expireClose = 1;
-			}
+			$expirationTime = strtotime($monthExp . "/" . $dayExp . "/" . $yearExp);
 		}
 		$numHoldsAvailable = 0;
 		$numHoldsRequested = 0;
@@ -1633,16 +1294,22 @@ class Millennium extends AbstractIlsDriver
 			}
 		}
 		$finesVal = floatval(preg_replace('/[^\\d.]/', '', $patronDump['MONEY_OWED']));
-		return [
-			'numCheckedOut' => $patronDump['CUR_CHKOUT'],
-			'numOverdue' => 0,
-			'numAvailableHolds' => $numHoldsAvailable,
-			'numUnavailableHolds' => $numHoldsRequested,
-			'totalFines' => $finesVal,
-			'expires' => $expires,
-			'expired' => $expired,
-			'expireClose' => $expireClose,
-		];
+
+		$summary->numCheckedOut = $patronDump['CUR_CHKOUT'];
+		$checkouts = $patron->getCheckouts(false);
+		$numOverdue = 0;
+		foreach ($checkouts as $checkout){
+			if ($checkout->isOverdue()){
+				$numOverdue++;
+			}
+		}
+		$summary->numOverdue = $numOverdue;
+		$summary->numAvailableHolds = $numHoldsAvailable;
+		$summary->numUnavailableHolds = $numHoldsRequested;
+		$summary->totalFines = $finesVal;
+		$summary->expirationDate = $expirationTime;
+
+		return $summary;
 	}
 
 	public function findNewUser($patronBarcode){
@@ -1742,7 +1409,9 @@ class Millennium extends AbstractIlsDriver
 		$user->email = isset($patronDump['EMAIL_ADDR']) ? $patronDump['EMAIL_ADDR'] : '';
 		$user->patronType = $patronDump['P_TYPE'];
 
-		if (isset($patronDump['MESSAGE'])) {
+		// MDN: Ticket https://ticket.bywatersolutions.com/Ticket/Display.html?id=76676
+		// in Sierra, there is not a
+		/*if (isset($patronDump['MESSAGE'])) {
 			$user->_web_note = $patronDump['MESSAGE'];
 		}
 		if (isset($patronDump['WEB_NOTE'])){
@@ -1750,7 +1419,7 @@ class Millennium extends AbstractIlsDriver
 				$user->_web_note .= '<br/>';
 			}
 			$user->_web_note = $patronDump['WEB_NOTE'];
-		}
+		}*/
 
 		//Setup home location
 		$location = null;
@@ -1889,7 +1558,6 @@ class Millennium extends AbstractIlsDriver
 		$user->_numHoldsIls = isset($patronDump) ? (isset($patronDump['HOLD']) ? count($patronDump['HOLD']) : 0) : '?';
 		$user->_numHoldsAvailableIls = $numHoldsAvailable;
 		$user->_numHoldsRequestedIls = $numHoldsRequested;
-		$user->_numBookings = isset($patronDump) ? (isset($patronDump['BOOKING']) ? count($patronDump['BOOKING']) : 0) : '?';
 
 		$noticeLabels = array(
 			//'-' => 'Mail',  // officially None in Sierra, as in No Preference Selected.

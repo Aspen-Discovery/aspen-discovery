@@ -16,6 +16,16 @@ AspenDiscovery.Browse = (function(){
 			return false;
 		},
 
+		getUpdateBrowseCategoryForm: function(searchId){
+			AspenDiscovery.Account.ajaxLightbox(Globals.path + '/Browse/AJAX?method=getUpdateBrowseCategoryForm&searchId=' + searchId, true);
+			return false;
+		},
+
+		getNewBrowseCategoryForm: function(searchId){
+			AspenDiscovery.Account.ajaxLightbox(Globals.path + '/Browse/AJAX?method=getNewBrowseCategoryForm&searchId=' + searchId, true);
+			return false;
+		},
+
 		initializeBrowseCategory: function(){
 			if (!$('#home-page-browse-results .grid').length){
 				return;
@@ -45,18 +55,45 @@ AspenDiscovery.Browse = (function(){
 					$("#browse-category-carousel").jcarousel('scroll', $(this));
 				});
 
-				// Incorporate swiping gestures into the browse category selector. pascal 11-26-2014
-				var scrollFactor = 15; // swipe size per item to scroll.
-				browseCategoryCarousel.touchwipe({
-					wipeLeft: function (dx) {
-						var scrollInterval = Math.round(dx / scrollFactor); // vary scroll interval based on wipe length
-						$("#browse-category-carousel").jcarousel('scroll', '+=' + scrollInterval);
-					},
-					wipeRight: function (dx) {
-						var scrollInterval = Math.round(dx / scrollFactor); // vary scroll interval based on wipe length
-						$("#browse-category-carousel").jcarousel('scroll', '-=' + scrollInterval);
-					}
-				});
+				// attach jcarouselswipe to add nice swipe functionality
+				(function($) {
+					$(function() {
+						$('.jcarousel')
+							.jcarousel()
+							.jcarouselSwipe();
+
+						$('.jcarousel-control-prev')
+							.on('jcarouselcontrol:active', function() {
+								$(this).removeClass('inactive');
+							})
+							.on('jcarouselcontrol:inactive', function() {
+								$(this).addClass('inactive');
+							})
+							.jcarouselControl({
+								target: '-=1'
+							});
+
+						$('.jcarousel-control-next')
+							.on('jcarouselcontrol:active', function() {
+								$(this).removeClass('inactive');
+							})
+							.on('jcarouselcontrol:inactive', function() {
+								$(this).addClass('inactive');
+							})
+							.jcarouselControl({
+								target: '+=1'
+							});
+
+						$('.jcarousel-pagination')
+							.on('jcarouselpagination:active', 'a', function() {
+								$(this).addClass('active');
+							})
+							.on('jcarouselpagination:inactive', 'a', function() {
+								$(this).removeClass('active');
+							})
+							.jcarouselPagination();
+					});
+				})(jQuery);
 
 				// implements functions for libraries not using the carousel functionality
 			} else {
@@ -312,6 +349,30 @@ AspenDiscovery.Browse = (function(){
 			}).done(function(){
 				AspenDiscovery.Browse.changingDisplay = false;
 			});
+			return false;
+		},
+
+		updateBrowseCategory: function(){
+			var url = Globals.path + "/Browse/AJAX";
+			var	params = {
+				method:'updateBrowseCategory'
+				,categoryName:$('#updateBrowseCategorySelect').val()
+			};
+			var searchId = $("#searchId");
+			if (searchId){
+				params['searchId'] = searchId.val()
+			}
+			var listId = $("#listId");
+			if (listId){
+				params['listId'] = listId.val()
+			}
+			$.getJSON(url, params, function (data) {
+				if (data.success === false) {
+					AspenDiscovery.showMessage("Unable to update category", data.message);
+				} else {
+					AspenDiscovery.showMessage("Successfully updated", "This search was updated to the homepage successfully.", true);
+				}
+			}).fail(AspenDiscovery.ajaxFail);
 			return false;
 		},
 

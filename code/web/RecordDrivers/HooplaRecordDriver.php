@@ -56,7 +56,7 @@ class HooplaRecordDriver extends GroupedWorkSubDriver {
 		}
 	}
 
-	public function getModule()
+	public function getModule() : string
 	{
 		return 'Hoopla';
 	}
@@ -204,22 +204,34 @@ class HooplaRecordDriver extends GroupedWorkSubDriver {
 		return array();
 	}
 
-	function getRecordActions($relatedRecord, $recordAvailable, $recordHoldable, $recordBookable, $volumeData = null){
-		$actions = array();
+	protected $_actions = null;
+	function getRecordActions($relatedRecord, $recordAvailable, $recordHoldable, $volumeData = null){
+		if ($this->_actions === null) {
+			$this->_actions = array();
+			//Check to see if the title is on hold or checked out to the patron.
+			$loadDefaultActions = true;
+			if (UserAccount::isLoggedIn()) {
+				$user = UserAccount::getActiveUserObj();
+				$this->_actions = array_merge($this->_actions, $user->getCirculatedRecordActions('hoopla', $this->id));
+				$loadDefaultActions = count($this->_actions) == 0;
+			}
 
-		/** @var Library $searchLibrary */
-		$searchLibrary = Library::getSearchLibrary();
-		if ($searchLibrary->hooplaLibraryID > 0) { // Library is enabled for Hoopla patron action integration
-			$id = $this->id;
-			$title = 'Check Out Hoopla';
-			$actions[] = array(
-				'onclick' => "return AspenDiscovery.Hoopla.getCheckOutPrompts('$id')",
-				'title'   => $title,
-				'type' => 'hoopla_checkout'
-			);
+			if ($loadDefaultActions) {
+				/** @var Library $searchLibrary */
+				$searchLibrary = Library::getSearchLibrary();
+				if ($searchLibrary->hooplaLibraryID > 0) { // Library is enabled for Hoopla patron action integration
+					$id = $this->id;
+					$title = translate(['text'=>'Check Out Hoopla','isPublicFacing'=>true]);
+					$this->_actions[] = array(
+						'onclick' => "return AspenDiscovery.Hoopla.getCheckOutPrompts('$id')",
+						'title' => $title,
+						'type' => 'hoopla_checkout'
+					);
+				}
+			}
 		}
 
-		return $actions;
+		return $this->_actions;
 	}
 
 	/**
@@ -294,7 +306,7 @@ class HooplaRecordDriver extends GroupedWorkSubDriver {
 		return ucfirst(strtolower($this->hooplaRawMetadata->language));
 	}
 
-	public function getNumHolds(){
+	public function getNumHolds() : int{
 		return 0;
 	}
 
@@ -313,6 +325,10 @@ class HooplaRecordDriver extends GroupedWorkSubDriver {
 	 */
 	function getPrimaryAuthor()
 	{
+		return $this->getAuthor();
+	}
+
+	public function getAuthor(){
 		if (!empty($this->hooplaRawMetadata->artist)){
 			return $this->hooplaRawMetadata->artist;
 		}else{
@@ -366,6 +382,7 @@ class HooplaRecordDriver extends GroupedWorkSubDriver {
 
 			global $interface;
 			$interface->assign('og_title', $this->getTitle());
+			$interface->assign('og_description', $this->getDescription());
 			$interface->assign('og_type', $this->getGroupedWorkDriver()->getOGType());
 			$interface->assign('og_image', $this->getBookcoverUrl('medium', true));
 			$interface->assign('og_url', $this->getAbsoluteUrl());
@@ -416,7 +433,7 @@ class HooplaRecordDriver extends GroupedWorkSubDriver {
 		/** @var Library $searchLibrary */
 		$searchLibrary = Library::getSearchLibrary();
 		if ($searchLibrary->hooplaLibraryID > 0) { // Library is enabled for Hoopla patron action integration
-			$title = 'Check Out Hoopla';
+			$title = translate(['text'=>'Check Out Hoopla','isPublicFacing'=>true]);
 			$actions[] = array(
 				'onclick' => "return AspenDiscovery.Hoopla.getCheckOutPrompts('{$this->id}')",
 				'title'   => $title
@@ -431,7 +448,7 @@ class HooplaRecordDriver extends GroupedWorkSubDriver {
 
 	public function getAccessLink()
 	{
-		$title      = translate('hoopla_url_action');
+		$title = translate(['text' => 'hoopla_url_action', 'isPublicFacing'=>true]);
 		$accessLink = array(
 			'url' => $this->hooplaRawMetadata->url,
 			'title' => $title,
@@ -457,5 +474,25 @@ class HooplaRecordDriver extends GroupedWorkSubDriver {
 
 	function getHooplaCoverUrl(){
 		return $this->hooplaRawMetadata->coverImageUrl;
+	}
+
+	function getStatusSummary()
+	{
+		$relatedRecord = $this->getRelatedRecord();
+		$statusSummary = array();
+		if ($relatedRecord == null){
+			$statusSummary['status'] = "Unavailable";
+			$statusSummary['available'] = false;
+			$statusSummary['class'] = 'unavailable';
+			$statusSummary['showPlaceHold'] = false;
+			$statusSummary['showCheckout'] = false;
+		}else{
+			$statusSummary['status'] = "Available from Hoopla";
+			$statusSummary['available'] = true;
+			$statusSummary['class'] = 'available';
+			$statusSummary['showPlaceHold'] = false;
+			$statusSummary['showCheckout'] = true;
+		}
+		return $statusSummary;
 	}
 }

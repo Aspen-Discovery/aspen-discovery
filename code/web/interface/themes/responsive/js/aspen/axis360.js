@@ -8,7 +8,7 @@ AspenDiscovery.Axis360 = (function () {
 				success: function (data) {
 					if (data.success) {
 						AspenDiscovery.showMessage("Hold Cancelled", data.message, true);
-						$("#axis360Hold_" + id).hide();
+						$(".axis360Hold_" + id + "_" + patronId).hide();
 						AspenDiscovery.Account.loadMenuData();
 					} else {
 						AspenDiscovery.showMessage("Error Cancelling Hold", data.message, true);
@@ -208,7 +208,7 @@ AspenDiscovery.Axis360 = (function () {
 				success: function (data) {
 					if (data.success) {
 						AspenDiscovery.showMessage("Title Returned", data.message, true);
-						$("#axis360Checkout_" + recordId).hide();
+						$(".axis360Checkout_" + recordId + "_" + patronId).hide();
 						AspenDiscovery.Account.loadMenuData();
 					} else {
 						AspenDiscovery.showMessage("Error Returning Title", data.message, true);
@@ -267,6 +267,15 @@ AspenDiscovery.Axis360 = (function () {
 					AspenDiscovery.showMessage("Error", data.message);
 				}
 			}).error(AspenDiscovery.ajaxFail);
-		}
+		},
+
+		getLargeCover: function (id){
+			var url = Globals.path + '/Axis360/' + id + '/AJAX?method=getLargeCover';
+			$.getJSON(url, function (data){
+					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+				}
+			);
+			return false;
+		},
 	}
 }(AspenDiscovery.Axis360 || {}));

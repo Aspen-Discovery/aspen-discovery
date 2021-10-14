@@ -41,9 +41,10 @@ public class CronLogEntry implements BaseLogEntry {
 		return logEntryId;
 	}
 
-	private static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 	@Override
-	public void addNote(String note) {
+	//Synchronized to prevent concurrent modification of the notes ArrayList
+	public synchronized void addNote(String note) {
 		Date date = new Date();
 		this.notes.add(dateFormat.format(date) + " - " + note);
 	}
@@ -61,8 +62,8 @@ public class CronLogEntry implements BaseLogEntry {
 			notesText.append("<li>").append(cleanedNote).append("</li>");
 		}
 		notesText.append("</ol>");
-		if (notesText.length() > 64000){
-			notesText.substring(0, 64000);
+		if (notesText.length() > 25000){
+			notesText.substring(0, 25000);
 		}
 		return notesText.toString();
 	}
@@ -105,12 +106,12 @@ public class CronLogEntry implements BaseLogEntry {
 	}
 	public void incErrors(String note){
 		numErrors++;
-		this.addNote(note);
+		this.addNote("ERROR: " + note);
 		this.saveResults();
 		logger.error(note);
 	}
 	public void incErrors(String note, Exception e){
-		this.addNote(note + " " + e.toString());
+		this.addNote("ERROR: " + note + " " + e.toString());
 		numErrors++;
 		this.saveResults();
 		logger.error(note, e);

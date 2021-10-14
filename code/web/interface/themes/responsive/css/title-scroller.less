@@ -34,7 +34,7 @@
 .leftScrollerButton,.rightScrollerButton{
   display: inline-block;
   height: 135px;
-  line-height: 135px;
+  line-height: 115px;
   vertical-align: middle;
   width: 25px;
   float: left;
@@ -104,16 +104,42 @@
   text-align: center;
 }
 .scrollerTitleCover{
+  width: auto;
+  height: auto;
   max-width: 125px;
   max-height: 125px;
   padding: 3px;
+  margin: auto;
+}
+
+.horizontalCarouselSpotlightWrapper {
+  .scrollerTitleCover {
+    position: absolute;
+    width: 125px;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+  }
+}
+
+.moreLikeThisWrapper,.seriesWrapper {
+  li.carouselTitleWrapper {
+    width: 140px !important;
+  }
+  .scrollerTitleCover {
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+  }
 }
 
 .collectionSpotlightSelector{
   width: 100%;
   text-align: right;
 }
-.horizontalCarouselSpotlightWrapper{
+.horizontalCarouselSpotlightWrapper,.moreLikeThisWrapper,.seriesWrapper{
   .jcarousel-control-prev, .jcarousel-control-next {
     display: flex;
     align-items: center;
@@ -145,8 +171,13 @@
 .carouselScrollerTitle{
   display: inline-block;
   text-align: center;
+  width: 100%;
+  a{
+    display: block;
+  }
   .carouselScrollerTitleImage{
-    display: inline-block;
+    position: relative;
+    height: 200px;
   }
 }
 // Horizontal Scrollers
@@ -275,7 +306,7 @@
     height: 230px;
   }
   .leftScrollerButton, .rightScrollerButton{
-    margin-top: 85px;
+    line-height: 200px;
   }
   .scrollerButtonUp, .scrollerButtonDown{
     width: 223px;

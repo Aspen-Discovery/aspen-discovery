@@ -5,6 +5,10 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
+/**
+ * Parses a date and returns information about it.
+ * This is NOT currently Thread Safe
+ */
 class DateInfo {
 	private String originalDate;
 	private Calendar parsedDate = null;

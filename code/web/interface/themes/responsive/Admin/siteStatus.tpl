@@ -1,48 +1,48 @@
 {strip}
 <div id="main-content" class="col-tn-12 col-xs-12">
-	<h1>Aspen Discovery Status</h1>
-	<h2>Server Self Check</h2>
+	<h1>{translate text="Aspen Discovery Status" isAdminFacing=true}</h1>
+	<h2>{translate text="Server Self Check" isAdminFacing=true}</h2>
 	<div class="alert {if $aspenStatus.aspen_health_status == 'critical'}alert-danger{elseif $aspenStatus.aspen_health_status == 'warning'}alert-warning{else}alert-success{/if}">
-		{$aspenStatus.aspen_health_status|capitalize}
+		{translate text=$aspenStatus.aspen_health_status|capitalize isAdminFacing=true}
 	</div>
 	<table class="table table-bordered" aria-label="Self Checks">
 		<thead>
-			<th>Check Name</th>
-			<th>Status</th>
+			<th>{translate text="Check Name" isAdminFacing=true}</th>
+			<th>{translate text="Status" isAdminFacing=true}</th>
 		</thead>
 		{foreach from=$aspenStatus.checks item=check}
 			<tr>
-				<td>{$check.name}</td>
-				<td class="{if $check.status == 'critical'}danger{elseif $check.status == 'warning'}warning{else}success{/if}">{$check.status}</td>
+				<td>{translate text=$check.name isAdminFacing=true}</td>
+				<td class="{if $check.status == 'critical'}danger{elseif $check.status == 'warning'}warning{else}success{/if}">{translate text=$check.status isAdminFacing=true}</td>
 			</tr>
 		{/foreach}
 	</table>
 
-	<h2>Solr Cores</h2>
+	<h2>{translate text="Solr Cores" isAdminFacing=true}</h2>
 
 	{foreach from=$data item=searchIndex}
 		<h3>{$searchIndex.name}</h3>
-		<table class="table table-bordered" aria-label="Status of {$searchIndex.name} Solr index">
+		<table class="table table-bordered" aria-label="{translate text="Status of %1% Solr index" 1=$searchIndex.name isAdminFacing=true inAttribute=true}">
 			<tr>
-				<th>Record Count: </th>
+				<th>{translate text="Record Count" isAdminFacing=true}</th>
 				<td>{$searchIndex.index.numDocs}</td>
 			</tr>
 			<tr>
-				<th>Start Time: </th>
+				<th>{translate text="Start Time" isAdminFacing=true}</th>
 				<td>{$searchIndex.startTime|date_format:"%b %d, %Y %l:%M:%S%p"}</td>
 			</tr>
 			<tr>
-				<th>Last Modified: </th>
+				<th>{translate text="Last Modified" isAdminFacing=true}</th>
 				<td>{$searchIndex.index.lastModified|date_format:"%b %d, %Y %l:%M:%S%p"}</td>
 			</tr>
 			<tr>
-				<th>Uptime: </th>
+				<th>{translate text="Uptime" isAdminFacing=true}</th>
 				<td>{$searchIndexuptime|printms}</td>
 			</tr>
 			<tr>
-				<th>Full Status: </th>
-				<td><a onclick="$('#searcherStatus').show();">Show full status</a>
-					<div id="searcherStatus" style="display:none"><pre>{$searchIndex|print_r}</pre></div>
+				<th>{translate text="Full Status" isAdminFacing=true}</th>
+				<td><a onclick="$('#searcherStatus_{$searchIndex.name|escape:css}').show();">{translate text="Show full status" isAdminFacing=true}</a>
+					<div id="searcherStatus_{$searchIndex.name|escape:css}" style="display:none"><pre>{$searchIndex|print_r}</pre></div>
 				</td>
 			</tr>
 		</table>

@@ -135,7 +135,7 @@ class DataObjectUtil
 		}
 	}
 
-	static function processProperty($object, $property){
+	static function processProperty(DataObject $object, $property){
 		global $logger;
 		$propertyName = $property['property'];
 		if ($property['type'] == 'section'){
@@ -154,7 +154,11 @@ class DataObjectUtil
 				if ($object instanceof UnsavedDataObject && $property['type'] == 'enum'){
 					$object->setProperty($propertyName, $property['values'][$_REQUEST[$propertyName]], $property);
 				}else{
-					$object->setProperty($propertyName, strip_tags(trim($_REQUEST[$propertyName])), $property);
+					$newValue = strip_tags(trim($_REQUEST[$propertyName]));
+					if ($newValue != null) {
+						$newValue = preg_replace('/\x{2029}/usm', '', $newValue);
+					}
+					$object->setProperty($propertyName, $newValue, $property);
 				}
 			} else {
 				$object->setProperty($propertyName, "", $property);
@@ -170,8 +174,32 @@ class DataObjectUtil
 			if ($property['type'] == 'textarea' || $property['type'] == 'crSeparated'){
 				$object->setProperty($propertyName, strip_tags($object->$propertyName), $property);
 			}elseif ($property['type'] != 'javascript'){
-				$allowableTags = isset($property['allowableTags']) ? $property['allowableTags'] : '<p><a><b><em><ul><ol><em><li><strong><i><br>';
-				$object->setProperty($propertyName, strip_tags($object->$propertyName, $allowableTags), $property);
+				$systemVariables = SystemVariables::getSystemVariables();
+				if ($systemVariables != false) {
+					if ($systemVariables->allowHtmlInMarkdownFields != false || $systemVariables->useHtmlEditorRatherThanMarkdown != false) {
+						if (!empty($systemVariables->allowableHtmlTags)) {
+							$allowableTags = '<' . implode('><', explode('|', $systemVariables->allowableHtmlTags)) . '>';
+						} else {
+							$allowableTags = null;
+						}
+					} else {
+						if (!empty($property['allowableTags'])) {
+							$allowableTags = $property['allowableTags'];
+						} else {
+							$allowableTags = '<p><a><b><em><ul><ol><em><li><strong><i><br>';
+						}
+					}
+
+				} else {
+					// set defaults if system variables do not exist
+					$allowableTags = '<p><a><b><em><ul><ol><em><li><strong><i><br>';
+				}
+
+				if (!empty($allowableTags)) {
+					$object->setProperty($propertyName, strip_tags($object->$propertyName, $allowableTags), $property);
+				} else {
+					$object->setProperty($propertyName, $object->$propertyName, $property);
+				}
 			}
 		}else if ($property['type'] == 'timestamp'){
 			if (empty($_REQUEST[$propertyName])){
@@ -212,8 +240,9 @@ class DataObjectUtil
 
 		}else if ($property['type'] == 'checkbox'){
 			$object->setProperty($propertyName,isset($_REQUEST[$propertyName]) && $_REQUEST[$propertyName] == 'on' ? 1 : 0, $property);
-
-		}else if ($property['type'] == 'multiSelect'){
+		} else if ($property['type'] == 'webBuilderColor') {
+			$object->setProperty($propertyName,$_REQUEST[$propertyName], $property);
+		} else if ($property['type'] == 'multiSelect'){
 			if (isset($_REQUEST[$propertyName]) && is_array($_REQUEST[$propertyName])){
 				$object->setProperty($propertyName, $_REQUEST[$propertyName], $property);
 			}else{
@@ -249,7 +278,7 @@ class DataObjectUtil
 				}else if (isset($_FILES[$propertyName]["error"]) && $_FILES[$propertyName]["error"] > 0){
 					//return an error to the browser
 					$logger->log("Error in file upload for $propertyName", Logger::LOG_ERROR);
-				}else if (in_array($_FILES[$propertyName]["type"], array('image/gif', 'image/jpeg', 'image/png'))){
+				}else if (in_array($_FILES[$propertyName]["type"], array('image/gif', 'image/jpeg', 'image/png', 'image/svg+xml'))){
 					$logger->log("Processing uploaded file for $propertyName", Logger::LOG_DEBUG);
 					//Copy the full image to the files directory
 					//Filename is the name of the object + the original filename
@@ -281,85 +310,23 @@ class DataObjectUtil
 						$copyResult = copy($_FILES[$propertyName]["tmp_name"], $destFullPath);
 
 						if ($copyResult){
-							$img = imagecreatefromstring(file_get_contents($destFullPath));
-							$width = imagesx( $img );
-							$height = imagesy( $img );
+							require_once ROOT_DIR . '/sys/Covers/CoverImageUtils.php';
 
 							if (isset($property['thumbWidth'])) {
-								//Create a thumbnail if needed
-								$thumbWidth = $property['thumbWidth'];
-								if ($width > $thumbWidth) {
-									$new_width = $thumbWidth;
-									$new_height = floor($height * ($thumbWidth / $width));
-
-									// create a new temporary image
-									$tmp_img = imagecreatetruecolor($new_width, $new_height);
-									imagealphablending($tmp_img, false);
-									imagesavealpha($tmp_img, true);
-									$transparent = imagecolorallocatealpha($tmp_img, 255, 255, 255, 127);
-									imagefilledrectangle($tmp_img, 0, 0, $width, $height, $transparent);
-
-									// copy and resize old image into new image
-									imagecopyresized($tmp_img, $img, 0, 0, 0, 0, $new_width, $new_height, $width, $height);
-
-									// save thumbnail into a file
-									imagepng($tmp_img, "{$pathToThumbs}/{$destFileName}");
-								} else {
-									copy($destFullPath, "{$pathToThumbs}/{$destFileName}");
-								}
-
+								resizeImage($destFullPath, "{$pathToThumbs}/{$destFileName}", $property['thumbWidth'], $property['thumbWidth']);
 							}
 							if (isset($property['mediumWidth'])) {
 								//Create a thumbnail if needed
-								$thumbWidth = $property['mediumWidth'];
-								if ($width > $thumbWidth) {
-									$new_width = $thumbWidth;
-									$new_height = floor($height * ($thumbWidth / $width));
-
-									// create a new temporary image
-									$tmp_img = imagecreatetruecolor($new_width, $new_height);
-									imagealphablending($tmp_img, false);
-									imagesavealpha($tmp_img, true);
-									$transparent = imagecolorallocatealpha($tmp_img, 255, 255, 255, 127);
-									imagefilledrectangle($tmp_img, 0, 0, $width, $height, $transparent);
-
-									// copy and resize old image into new image
-									imagecopyresized($tmp_img, $img, 0, 0, 0, 0, $new_width, $new_height, $width, $height);
-
-									// save thumbnail into a file
-									imagepng($tmp_img, "{$pathToMedium}/{$destFileName}");
-								} else {
-									copy($destFullPath, "{$pathToMedium}/{$destFileName}");
-								}
+								resizeImage($destFullPath, "{$pathToMedium}/{$destFileName}", $property['mediumWidth'], $property['mediumWidth']);
 							}
 							if (isset($property['maxWidth'])) {
 								//Create a thumbnail if needed
-								$thumbWidth = $property['maxWidth'];
-								if ($width > $thumbWidth) {
-									$new_width = $thumbWidth;
-									$new_height = floor($height * ($thumbWidth / $width));
-
-									if (isset($property['maxHeight'])) {
-										$thumbHeight = $property['maxHeight'];
-										if ($new_height > $thumbHeight) {
-											$new_height = $thumbHeight;
-											$new_width = floor($new_width * ($thumbHeight / $height));
-										}
-									}
-
-									// create a new temporary image
-									$tmp_img = imagecreatetruecolor($new_width, $new_height);
-									imagealphablending($tmp_img, false);
-									imagesavealpha($tmp_img, true);
-									$transparent = imagecolorallocatealpha($tmp_img, 255, 255, 255, 127);
-									imagefilledrectangle($tmp_img, 0, 0, $width, $height, $transparent);
-
-									// copy and resize old image into new image
-									imagecopyresized($tmp_img, $img, 0, 0, 0, 0, $new_width, $new_height, $width, $height);
-
-									// save thumbnail into a file
-									imagepng($tmp_img, "{$destFolder}/{$destFileName}");
+								$width = $property['maxWidth'];
+								$height = $property['maxWidth'];
+								if (isset($property['maxHeight'])) {
+									$height = $property['maxHeight'];
 								}
+								resizeImage($destFullPath, "{$destFolder}/{$destFileName}", $width, $height);
 							}
 						}
 					}
@@ -451,11 +418,19 @@ class DataObjectUtil
 			}
 		}else if ($property['type'] == 'password'){
 			if (strlen($_REQUEST[$propertyName]) > 0 && ($_REQUEST[$propertyName] == $_REQUEST[$propertyName . 'Repeat'])){
-				$object->setProperty($propertyName, md5($_REQUEST[$propertyName]), $property);
+				$newValue = strip_tags(trim($_REQUEST[$propertyName]));
+				if ($newValue != null) {
+					$newValue = preg_replace('/\x{2029}/usm', '', $newValue);
+				}
+				$object->setProperty($propertyName, md5($newValue), $property);
 			}
 		}else if ($property['type'] == 'storedPassword'){
 			if (strlen($_REQUEST[$propertyName]) > 0 && ($_REQUEST[$propertyName] == $_REQUEST[$propertyName . 'Repeat'])){
-				$object->setProperty($propertyName, $_REQUEST[$propertyName], $property);
+				$newValue = strip_tags(trim($_REQUEST[$propertyName]));
+				if ($newValue != null) {
+					$newValue = preg_replace('/\x{2029}/usm', '', $newValue);
+				}
+				$object->setProperty($propertyName, $newValue, $property);
 			}
 		}else if ($property['type'] == 'oneToMany'){
 			//Check for deleted associations
@@ -473,6 +448,7 @@ class DataObjectUtil
 				foreach ($idsToSave as $key => $id){
 					//Create the subObject
 					if ($id < 0 || $id == ""){
+						/** @var DataObject $subObject */
 						$subObject = new $subObjectType();
 						$id = $key;
 					} else {
@@ -488,13 +464,13 @@ class DataObjectUtil
 
 					$deleted = isset($deletions[$id]) ? $deletions[$id] : false;
 					if ($deleted == 'true'){
-						$subObject->deleteOnSave = true;
+						$subObject->_deleteOnSave = true;
 					}else{
 						//Update properties of each associated object
 						foreach ($subStructure as $subProperty){
 							$requestKey = $propertyName . '_' . $subProperty['property'];
 							$subPropertyName = $subProperty['property'];
-							if (in_array($subProperty['type'], array('text', 'enum', 'integer', 'numeric', 'textarea', 'html', 'markdown','javascript', 'multiSelect') )){
+							if (in_array($subProperty['type'], array('text', 'enum', 'integer', 'numeric', 'textarea', 'html', 'markdown','javascript', 'multiSelect', 'regularExpression') )){
 								$subObject->setProperty($subPropertyName, $_REQUEST[$requestKey][$id], $subProperty);
 							}elseif (in_array($subProperty['type'], array('checkbox') )){
 								$subObject->setProperty($subPropertyName, isset($_REQUEST[$requestKey][$id]) ? 1 : 0, $subProperty);
@@ -524,35 +500,4 @@ class DataObjectUtil
 			$object->$propertyName = $values;
 		}
 	}
-
-	static function getObjectListFilters($objectStructure){
-
-	}
-
-	static function getObjectList($objectStructure, $objectsToShow){
-
-	}
-
-	static function getObjectExportFile($objectStructure, $objectsToExport, $exportFilename){
-
-	}
-	static function compareObjects($objectStructure, $object1, $object2){
-
-	}
-	static function importObjectsFromFile($objectStructure, $objectType, $importFilename){
-
-	}
-
-	static function getFileUploadMessage($errorNo, $fieldname){
-		$errorMessages = array(
-		0=>"There is no error, the file for $fieldname uploaded with success",
-		1=>"The uploaded file for $fieldname exceeds the maximum file size for the server",
-		2=>"The uploaded file for $fieldname exceeds the maximum file size for this field",
-		3=>"The uploaded file for $fieldname was only partially uploaded",
-		4=>"No file was uploaded for $fieldname",
-		6=>"Missing a temporary folder for $fieldname"
-		);
-		return $errorMessages[$errorNo];
-	}
-
 }

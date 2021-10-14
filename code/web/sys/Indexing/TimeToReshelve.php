@@ -11,7 +11,7 @@ class TimeToReshelve  extends DataObject{
 	public $status;
 	public /** @noinspection PhpUnused */ $groupedStatus;
 
-    static function getObjectStructure(){
+    static function getObjectStructure() : array{
 		$indexingProfiles = array();
 		require_once ROOT_DIR . '/sys/Indexing/IndexingProfile.php';
 		$indexingProfile = new IndexingProfile();

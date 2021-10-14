@@ -2,6 +2,9 @@
 {$list->title}
 {$list->description}
 ------------------------------------------------------------
+{if !empty($from)}
+{translate text="This email was sent from"}: {$from}
+{/if}
 {if !empty($message)}
 {translate text="Message From Sender"}:
 {$message}

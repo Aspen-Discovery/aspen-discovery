@@ -25,17 +25,18 @@ class Admin_CronLog extends Admin_Admin
 		}
 		$interface->assign('logEntries', $logEntries);
 
-		$options = array('totalItems' => $total,
-		                 'fileName'   => '/Admin/CronLog?page=%d',
-		                 'perPage'    => 30,
-		);
+		$options = [
+			'totalItems' => $total,
+			'fileName'   => '/Admin/CronLog?page=%d',
+			'perPage'    => 30,
+		];
 		$pager = new Pager($options);
 		$interface->assign('pageLinks', $pager->getLinks());
 
 		$this->display('cronLog.tpl', 'Cron Log');
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
@@ -44,12 +45,12 @@ class Admin_CronLog extends Admin_Admin
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return 'system_reports';
 	}
 
-	function canView()
+	function canView() : bool
 	{
 		return UserAccount::userHasPermission('View System Reports');
 	}

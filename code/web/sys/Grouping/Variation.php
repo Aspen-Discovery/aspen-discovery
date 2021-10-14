@@ -5,31 +5,49 @@ require_once ROOT_DIR . '/sys/Grouping/StatusInformation.php';
 class Grouping_Variation
 {
 	public $id;
+	public $databaseId;
 	public $label;
 	public $language;
 	public $isEcontent = false;
 	public $econtentSource = '';
 
 	/** @var Grouping_Record[] */
-	private $_records;
+	private $_records = [];
 
 	/** @var Grouping_StatusInformation */
 	private $_statusInformation;
 
 	private $_hideByDefault = false;
+	/**
+	 * @var Grouping_Manifestation
+	 */
+	public $manifestation;
 
-	public function __construct(Grouping_Record $record)
+	/**
+	 * Grouping_Variation constructor.
+	 * @param Grouping_Record|array $record
+	 */
+	public function __construct($record)
 	{
-		$this->isEcontent = $record->isEContent();
-		$this->econtentSource = $record->getEContentSource();
-		$this->language = $record->language;
+		if (is_array($record)){
+			$this->isEcontent = $record['eContentSource'] != null;
+			$this->econtentSource = $record['eContentSource'];
+			$this->language = $record['language'] ==  null ? 'Unknown' : $record['language'];
+			$this->databaseId = $record['id'];
+		}else {
+			$this->isEcontent = $record->isEContent();
+			$this->econtentSource = $record->getEContentSource();
+			$this->language = $record->language;
+		}
 		$this->label = $this->econtentSource;
 		if ($this->language != 'English' || !$this->isEcontent) {
-			$this->label = trim($this->econtentSource . ' ' . translate($this->language));
+			$this->label = trim(translate(['text'=>$this->econtentSource,'isPublicFacing'=>true]) . ' ' . translate(['text'=>$this->language,'isPublicFacing'=>true]));
 		}
 		$this->id = trim($this->econtentSource . ' ' . $this->language);
 		$this->_statusInformation = new Grouping_StatusInformation();
-		$this->addRecord($record);
+		if (!is_array($record)){
+			$this->addRecord($record);
+		}
 	}
 
 	/**
@@ -70,6 +88,10 @@ class Grouping_Variation
 		return $this->_records;
 	}
 
+	public function setSortedRelatedRecords($relatedRecords){
+		$this->_records = $relatedRecords;
+	}
+
 	/**
 	 * @return Grouping_StatusInformation
 	 */
@@ -85,8 +107,11 @@ class Grouping_Variation
 	 */
 	public function getActions(): array
 	{
+		global $timer;
 		if ($this->_actions == null) {
-			if ($this->getNumRelatedRecords() == 1) {
+			if ($this->getNumRelatedRecords() == 0) {
+				$this->_actions = [];
+			} else if ($this->getNumRelatedRecords() == 1) {
 				$firstRecord = $this->getFirstRecord();
 				$this->_actions = $firstRecord->getActions();
 			} else {
@@ -106,39 +131,40 @@ class Grouping_Variation
 					if ($promptForAlternateEdition) {
 						$alteredActions = array();
 						foreach ($bestRecord->getActions() as $action) {
-							$action['onclick'] = str_replace('Record.showPlaceHold', 'Record.showPlaceHoldEditions', $action['onclick']);
+							$action['onclick'] = str_replace('Record.showPlaceHold(', 'Record.showPlaceHoldEditions(', $action['onclick']);
 							$alteredActions[] = $action;
 						}
 						$this->_actions = $alteredActions;
 					} else {
 						$this->_actions = $bestRecord->getActions();
 					}
+					$timer->logTime("Done checking for whether or not we should be prompting for an alternate edition");
 				} else {
 					$this->_actions = $bestRecord->getActions();
 				}
 
-				if ($this->getNumRelatedRecords() > 1){
-					//Check to see if there are any downloadable files for the related records and if so make sure we have an action to download them.
-					$numDownloadablePDFs = 0;
-					$downloadPdfAction = '';
-					$numDownloadableSupplementalFiles = 0;
-					$downloadSupplementalFileAction = '';
-					foreach ($this->_records as $relatedRecord) {
-						$actions = $relatedRecord->getActions();
-						foreach ($actions as $action) {
-							if ($action['type'] == 'download_pdf'){
-								$numDownloadablePDFs += 1;
-								if ($numDownloadablePDFs == 1) {
-									$downloadPdfAction = $action;
-								}
-							}elseif ($action['type'] == 'download_supplemental_file'){
-								$numDownloadableSupplementalFiles += 1;
-								if ($numDownloadableSupplementalFiles == 1) {
-									$downloadSupplementalFileAction = $action;
-								}
+				//Check to see if there are any downloadable files for the related records and if so make sure we have an action to download them.
+				$numDownloadablePDFs = 0;
+				$downloadPdfAction = '';
+				$numDownloadableSupplementalFiles = 0;
+				$downloadSupplementalFileAction = '';
+				foreach ($this->_records as $relatedRecord) {
+					$actions = $relatedRecord->getActions();
+					foreach ($actions as $action) {
+						if ($action['type'] == 'download_pdf'){
+							$numDownloadablePDFs += 1;
+							if ($numDownloadablePDFs == 1) {
+								$downloadPdfAction = $action;
+							}
+						}elseif ($action['type'] == 'download_supplemental_file'){
+							$numDownloadableSupplementalFiles += 1;
+							if ($numDownloadableSupplementalFiles == 1) {
+								$downloadSupplementalFileAction = $action;
 							}
 						}
 					}
+				}
+				if (($downloadPdfAction > 0) || ($numDownloadableSupplementalFiles > 0)){
 					//Remove the action for downloading pdf & supplemental files if they exist
 					foreach ($this->_actions as $key => $action) {
 						if ($action['type'] == 'download_pdf' || $action['type'] == 'view_pdf' || $action['type'] == 'download_supplemental_file'){
@@ -155,14 +181,14 @@ class Grouping_Variation
 							$driver = RecordDriverFactory::initRecordDriverById($bestRecord->id);
 						}
 						$this->_actions[] = array(
-							'title' => 'View PDF',
+							'title' => translate(['text'=>'View PDF','isPublicFacing'=>true]),
 							'url' => '',
 							'onclick' => "return AspenDiscovery.GroupedWork.selectFileToView('{$driver->getPermanentId()}', 'RecordPDF');",
 							'requireLogin' => false,
 							'type' => 'view_pdfs'
 						);
 						$this->_actions[] = array(
-							'title' => 'Download PDF',
+							'title' => translate(['text'=>'Download PDF','isPublicFacing'=>true]),
 							'url' => '',
 							'onclick' => "return AspenDiscovery.GroupedWork.selectFileDownload('{$driver->getPermanentId()}', 'RecordPDF');",
 							'requireLogin' => false,
@@ -179,7 +205,7 @@ class Grouping_Variation
 							$driver = RecordDriverFactory::initRecordDriverById($bestRecord->id);
 						}
 						$this->_actions[] = array(
-							'title' => 'Download Supplemental File',
+							'title' => translate(['text'=>'Download Supplemental File','isPublicFacing'=>true]),
 							'url' => '',
 							'onclick' => "return AspenDiscovery.GroupedWork.selectFileDownload('{$driver->getPermanentId()}', 'RecordSupplementalFile');",
 							'requireLogin' => false,
@@ -188,6 +214,8 @@ class Grouping_Variation
 					}
 				}
 			}
+			global $timer;
+			$timer->logTime("Loaded actions for variation");
 		}
 		return $this->_actions;
 
@@ -211,7 +239,7 @@ class Grouping_Variation
 		return reset($this->_records);
 	}
 
-	private $_itemSummary = null;
+	protected $_itemSummary = null;
 
 	/**
 	 * @return array
@@ -225,11 +253,25 @@ class Grouping_Variation
 			foreach ($this->_records as $record) {
 				$itemSummary = mergeItemSummary($itemSummary, $record->getItemSummary());
 			}
-			ksort($itemSummary);
 			$this->_itemSummary = $itemSummary;
 			$timer->logTime("Got item summary for variation");
 		}
+		ksort($itemSummary);
 		return $this->_itemSummary;
+	}
+
+	protected $_itemsDisplayedByDefault = null;
+	function getItemsDisplayedByDefault(){
+		if ($this->_itemsDisplayedByDefault == null){
+			require_once ROOT_DIR . '/sys/Utils/GroupingUtils.php';
+			$itemsDisplayedByDefault = [];
+			foreach ($this->_records as $record) {
+				$itemsDisplayedByDefault = mergeItemSummary($itemsDisplayedByDefault, $record->getItemsDisplayedByDefault());
+			}
+			ksort($itemsDisplayedByDefault);
+			$this->_itemsDisplayedByDefault = $itemsDisplayedByDefault;
+		}
+		return $this->_itemsDisplayedByDefault;
 	}
 
 	public function getCopies()

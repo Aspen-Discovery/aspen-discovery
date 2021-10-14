@@ -33,6 +33,8 @@ class AnodeAPI extends Action
 		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
 		if (method_exists($this, $method)) {
 			$output = json_encode(array('result' => $this->$method()), JSON_PRETTY_PRINT);
+			require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
+			APIUsage::incrementStat('AnodeAPI', $method);
 		} else {
 			$output = json_encode(array('error' => 'invalid_method'));
 		}
@@ -231,7 +233,7 @@ class AnodeAPI extends Action
 		return $result;
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		return [];
 	}

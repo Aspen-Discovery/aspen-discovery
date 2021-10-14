@@ -1,12 +1,14 @@
-# Specific locations within Pika to exclude from git   #
-# Files are excluded either because                    #
-#  - they contain sensitive data (i.e. passwords)      #
-#  - they can change at runtime                        #
-########################################################
+# Specific locations within Aspen Discovery to exclude from git   #
+# Files are excluded either because                               #
+#  - they contain sensitive data (i.e. passwords)                 #
+#  - they can change at runtime                                   #
+#  - they can be easily downloaded or are machine specfic         #
+###################################################################
 tmp
 sites/*/backup
 sites/*/conf/log4j.*.properties
-!sites/defult/conf/log4j.properties
+sites/*/conf/passkey
+!sites/default/conf/log4j.properties
 !sites/default/backup
 sites/default/solr5/docs/*
 sites/default/solr5/example/*
@@ -16,6 +18,9 @@ sites/default/solr5/tmp/*
 sites/default/solr5/server/logs/*
 sites/default/solr5/server/tmp/*
 sites/default/solr5/server/solr/configsets/*
+code/aspen_app/.expo/**
+code/aspen_app/.expo-shared/**
+code/aspen_app/node_modules/**
 code/web/interface/cache/*
 code/web/interface/compile/*
 code/web/phpinfo.php
@@ -161,11 +166,21 @@ main.tmpcss
 
 code/web/fonts/HalisR-Regular.otf
 code/web/fonts/HalisR-S-Regular.otf
-.idea/aspen-discovery.iml
-.idea/misc.xml
-.idea/modules.xml
-.idea/vcs.xml
-.idea/workspace.xml
-.idea/codeStyles/codeStyleConfig.xml
-.idea/deployment.xml
 code/web/migrations/importResults.txt
+.idea/aspen-discovery.iml
+.idea/*.xml
+.idea/dataSources/**
+sites/demo.localhost/conf/config.cron.ini
+sites/demo.localhost/conf/config.ini
+sites/demo.localhost/conf/crontab_settings.txt
+sites/demo.localhost/demo.localhost.sh
+sites/demo.localhost/httpd-demo.localhost.conf
+code/web/.idea/watcherTasks.xml
+code/web/.idea/workspace.xml
+code/web/.idea/workspace.xml
+code/web/.idea/watcherTasks.xml
+code/web/fonts/IndieFlower-Regular.ttf
+code/web/fonts/KleeOne-SemiBold.ttf
+code/aspen_app/package-lock.json
+data_dir_setup/update_solr_files.sh
+code/web/.idea/workspace.xml

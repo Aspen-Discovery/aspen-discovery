@@ -47,13 +47,11 @@ class WebsitePageRecordDriver extends IndexRecordDriver
 			$interface->assign('description', '');
 		}
 		$interface->assign('source', isset($this->fields['source']) ? $this->fields['source'] : '');
-		// Obtain and assign snippet (highlighting) information:
-		$snippets = $this->getHighlightedSnippets();
-		$interface->assign('summSnippets', $snippets);
 
 		require_once ROOT_DIR . '/sys/WebsiteIndexing/WebPageUsage.php';
 		$webPageUsage = new WebPageUsage();
-		$webPageUsage->webPageId = $this->getUniqueID();
+		$webPageUsage->instance = $_SERVER['SERVER_NAME'];
+		$webPageUsage->webPageId = str_replace('WebPage:', '', $this->getUniqueID());
 		$webPageUsage->year = date('Y');
 		$webPageUsage->month = date('n');
 		if ($webPageUsage->find(true)) {
@@ -90,7 +88,7 @@ class WebsitePageRecordDriver extends IndexRecordDriver
 		return $bookCoverUrl;
 	}
 
-	public function getModule()
+	public function getModule() : string
 	{
 		return 'WebPage';
 	}
@@ -103,7 +101,7 @@ class WebsitePageRecordDriver extends IndexRecordDriver
 	public function getDescription()
 	{
 		if (isset($this->fields['description'])) {
-			return $this->fields['description'];
+			return strip_tags($this->fields['description']);
 		}else{
 			return '';
 		}

@@ -21,14 +21,14 @@ class ImageUpload extends DataObject
 	static $largeSize = 600;
 	static $mediumSize = 400;
 	static $smallSize = 200;
-	static function getObjectStructure()
+	static function getObjectStructure() : array
 	{
 		global $serverName;
 		return [
 			'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id within the database'),
 			'title' => array('property' => 'title', 'type' => 'text', 'label' => 'Title', 'description' => 'The title of the image', 'size' => '40', 'maxLength'=>255),
 			'type' => array('property' => 'type', 'type' => 'text', 'label' => 'Type', 'description' => 'The type of image being uploaded', 'maxLength' => 50),
-			'fullSizePath' => array('property'=>'fullSizePath', 'type'=>'image', 'label'=>'Full Size Image', 'description'=>'The full size image (max width 1068px)', 'maxWidth' => 1068, 'maxHeight' => 1068, 'path' => '/data/aspen-discovery/' . $serverName . '/uploads/web_builder_image/full', 'displayUrl' => '/WebBuilder/ViewImage?size=full&id=', 'hideInLists' => true),
+			'fullSizePath' => array('property'=>'fullSizePath', 'type'=>'image', 'label'=>'Full Size Image', 'description'=>'The full size image (max width 1068px)', 'maxWidth' => 1068, 'maxHeight' => 1068, 'path' => '/data/aspen-discovery/' . $serverName . '/uploads/web_builder_image/full', 'displayUrl' => '/WebBuilder/ViewImage?size=full&id=', 'hideInLists' => true, 'required' => true),
 			'generateXLargeSize' => array('property' => 'generateXLargeSize', 'type' => 'checkbox', 'label' => 'Generate x-large size image', 'default' => 1, 'hideInLists' => true),
 			'xLargeSizePath' => array('property'=>'xLargeSizePath', 'type'=>'image', 'label'=>'X-Large Size Image', 'description'=>'The x-large size image (max width 1100 px)', 'maxWidth' => ImageUpload::$xLargeSize, 'maxHeight' => ImageUpload::$xLargeSize, 'path' => '/data/aspen-discovery/' . $serverName . '/uploads/web_builder_image/x-large', 'displayUrl' => '/WebBuilder/ViewImage?size=x-large&id=', 'hideInLists' => true),
 			'generateLargeSize' => array('property' => 'generateLargeSize', 'type' => 'checkbox', 'label' => 'Generate large size image', 'default' => 1, 'hideInLists' => true),

@@ -8,6 +8,7 @@ class Translation_Translations extends Admin_Admin
 	function launch()
 	{
 		global $interface;
+		/** @var Translator $translator */
 		global $translator;
 		global $activeLanguage;
 		$translationModeActive = $translator->translationModeActive();
@@ -67,6 +68,7 @@ class Translation_Translations extends Admin_Admin
 		$interface->assign('recordsPerPage', $pageSize);
 		$interface->assign('page', $page);
 		$translation->limit(($page - 1) * $pageSize, $pageSize);
+		$translation->selectAdd('term.*');
 
 		$allTerms = [];
 		$translation->find();
@@ -174,7 +176,7 @@ class Translation_Translations extends Admin_Admin
 		exit();
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
@@ -184,12 +186,12 @@ class Translation_Translations extends Admin_Admin
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return 'translations';
 	}
 
-	function canView()
+	function canView() : bool
 	{
 		return UserAccount::userHasPermission('Translate Aspen');
 	}

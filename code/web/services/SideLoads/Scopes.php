@@ -25,21 +25,23 @@ class SideLoads_Scopes extends ObjectEditor
 		parent::launch();
 	}
 
-	function getObjectType(){
+	function getObjectType() : string{
 		return 'SideLoadScope';
 	}
-	function getToolName(){
+	function getToolName() : string{
 		return 'Scopes';
 	}
-	function getModule(){
+	function getModule() : string{
 		return 'SideLoads';
 	}
-	function getPageTitle(){
+	function getPageTitle() : string{
 		return 'Side Loaded eContent Scopes';
 	}
-	function getAllObjects(){
+	function getAllObjects($page, $recordsPerPage) : array{
 		$object = new SideLoadScope();
-		$object->orderBy('name');
+		$object->orderBy($this->getSort());
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
+		$this->applyFilters($object);
 		$object->find();
 		$objectList = array();
 		while ($object->fetch()){
@@ -47,20 +49,24 @@ class SideLoads_Scopes extends ObjectEditor
 		}
 		return $objectList;
 	}
-	function getObjectStructure(){
+	function getDefaultSort() : string
+	{
+		return 'name asc';
+	}
+	function getObjectStructure() : array {
 		return SideLoadScope::getObjectStructure();
 	}
-	function getPrimaryKeyColumn(){
+	function getPrimaryKeyColumn() : string{
 		return 'id';
 	}
-	function getIdKeyColumn(){
+	function getIdKeyColumn() : string{
 		return 'id';
 	}
-	function getAdditionalObjectActions($existingObject){
+	function getAdditionalObjectActions($existingObject) : array{
 		return [];
 	}
 
-	function getInstructions(){
+	function getInstructions() : string{
 		return '';
 	}
 
@@ -146,7 +152,7 @@ class SideLoads_Scopes extends ObjectEditor
 		header("Location: /SideLoads/Scopes?objectAction=edit&id=" . $scopeId);
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
@@ -158,12 +164,12 @@ class SideLoads_Scopes extends ObjectEditor
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return 'side_loads';
 	}
 
-	function canView()
+	function canView() : bool
 	{
 		return UserAccount::userHasPermission('Administer Side Loads');
 	}

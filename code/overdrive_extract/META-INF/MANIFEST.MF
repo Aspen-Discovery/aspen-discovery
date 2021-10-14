@@ -6,8 +6,7 @@ Class-Path: ../java_shared_libraries/commons-beanutils-1.9.3.jar ../ja
  libraries/ini4j-0.5.5-SNAPSHOT.jar ../java_shared_libraries/log4j-api
  -2.11.2.jar ../java_shared_libraries/log4j-core-2.11.2.jar ../java_sh
  ared_libraries/mysql-connector-java-8.0.15.jar ../java_shared_librari
- es/opencsv-4.5.jar ../record_grouping/record_grouping.jar ../reindexe
- r/reindexer.jar
+ es/opencsv-4.5.jar ../reindexer/reindexer.jar
 Main-Class: com.turning_leaf_technologies.overdrive.ExtractOverDriveIn
  foMain
 

@@ -217,7 +217,7 @@ class Lists_Results extends ResultsAction
 		}
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		return parent::getResultsBreadcrumbs('User Lists Search');
 	}

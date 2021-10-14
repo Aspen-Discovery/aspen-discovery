@@ -5,20 +5,22 @@ require_once ROOT_DIR . '/services/Admin/Admin.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 require_once ROOT_DIR . '/sys/Account/AccountProfile.php';
 class Admin_AccountProfiles extends ObjectEditor {
-	function getObjectType(){
+	function getObjectType() : string{
 		return 'AccountProfile';
 	}
-	function getToolName(){
+	function getToolName() : string{
 		return 'AccountProfiles';
 	}
-	function getPageTitle(){
+	function getPageTitle() : string{
 		return 'Account Profiles';
 	}
-	function getAllObjects(){
+	function getAllObjects($page, $recordsPerPage) : array{
 		$list = array();
 
 		$object = new AccountProfile();
-		$object->orderBy('weight, name');
+		$object->orderBy($this->getSort() . ', name');
+		$this->applyFilters($object);
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		while ($object->fetch()){
 			$list[$object->id] = clone $object;
@@ -26,17 +28,22 @@ class Admin_AccountProfiles extends ObjectEditor {
 
 		return $list;
 	}
-	function getObjectStructure(){
+	function getDefaultSort() : string
+	{
+		return 'weight asc';
+	}
+
+	function getObjectStructure() : array{
 		return AccountProfile::getObjectStructure();
 	}
-	function getPrimaryKeyColumn(){
+	function getPrimaryKeyColumn() : string{
 		return 'id';
 	}
-	function getIdKeyColumn(){
+	function getIdKeyColumn() : string{
 		return 'id';
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
@@ -45,12 +52,12 @@ class Admin_AccountProfiles extends ObjectEditor {
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return 'primary_configuration';
 	}
 
-	function canView()
+	function canView() : bool
 	{
 		return UserAccount::userHasPermission('Administer Account Profiles');
 	}

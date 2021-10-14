@@ -207,10 +207,15 @@ class Author_Home extends ResultsAction
 		// Set Interface Variables
 		//   Those we can construct BEFORE the search is executed
 		$interface->assign('sortList',   $searchObject->getSortList());
-		$interface->assign('limitList', $searchObject->getLimitList());
 		$interface->assign('viewList',  $searchObject->getViewList());
 		$interface->assign('rssLink',    $searchObject->getRSSUrl());
-		$interface->assign('filterList', $searchObject->getFilterList());
+
+		// Set Show in Search Results Main Details Section options for template
+		// (needs to be set before moreDetailsOptions)
+		global $library;
+		foreach ($library->getGroupedWorkDisplaySettings()->showInSearchResultsMainDetails as $detailOption) {
+			$interface->assign($detailOption, true);
+		}
 
 		$this->setShowCovers();
 
@@ -283,7 +288,7 @@ class Author_Home extends ResultsAction
 		}
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		global $interface;
 		return parent::getResultsBreadcrumbs($interface->getVariable('authorName'));

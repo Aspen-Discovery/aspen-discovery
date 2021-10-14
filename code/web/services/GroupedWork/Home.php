@@ -54,6 +54,8 @@ class GroupedWork_Home extends Action{
 		$appearsOnLists = UserList::getUserListsForRecord('GroupedWork', $this->recordDriver->getPermanentId());
 		$interface->assign('appearsOnLists', $appearsOnLists);
 
+		$this->recordDriver->loadReadingHistoryIndicator();
+
 		$interface->assign('moreDetailsOptions', $this->recordDriver->getMoreDetailsOptions());
 		$timer->logTime('Got more details options');
 
@@ -70,7 +72,7 @@ class GroupedWork_Home extends Action{
 		$this->display('full-record.tpl', $this->recordDriver->getTitle(),'', false);
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		if (!empty($this->lastSearch)){

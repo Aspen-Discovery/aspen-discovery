@@ -7,7 +7,7 @@ class CoceServerSetting extends DataObject
 	public $id;
 	public $coceServerUrl;
 
-	public static function getObjectStructure()
+	public static function getObjectStructure() : array
 	{
 		return array(
 			'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id'),

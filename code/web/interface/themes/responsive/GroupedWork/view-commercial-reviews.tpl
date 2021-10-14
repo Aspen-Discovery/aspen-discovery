@@ -3,7 +3,7 @@
 {foreach from=$reviews item=providerList key=provider}
 	{if $provider == 'goodReads'}
 		<div class="goodReads">
-			<img src="/images/goodreads_logo.png" alt="Reviews from GoodReads" />
+			<img src="/images/goodreads_logo.png" alt="{translate text="Reviews from GoodReads" isPublicFacing=true inAttribute=true}" />
 			<iframe src="{$providerList.sampleReviewsUrl}" width="100%" height="2020px" class="goodReadsIFrame" style="border-width: 0px;"></iframe>
 		</div>
 	{else}
@@ -28,7 +28,7 @@
 				<div class='reviewCopyright'>{$review.Copyright}</div>
 
 				{if $provider == "syndetics"}
-					<div class='reviewProvider'>{translate text="Powered by Syndetics"}</div>
+					<div class='reviewProvider'>{translate text="Powered by Syndetics" isPublicFacing=true}</div>
 				{/if}
 			</div>
 			{/if}

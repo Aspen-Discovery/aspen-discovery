@@ -363,7 +363,7 @@ abstract class HorizonAPI extends Horizon{
 	 *                              If an error occurs, return a AspenError
 	 * @access  public
 	 */
-	function placeItemHold($patron, $recordId, $itemId, $comment = '', $type = 'request') {
+	function placeItemHold(User $patron, $recordId, $itemId, $comment = '', $type = 'request') {
 		global $configArray;
 
 		$userId = $patron->id;
@@ -438,10 +438,10 @@ abstract class HorizonAPI extends Horizon{
 				$hold_result = array();
 				if ($createHoldResponse == true){
 					$hold_result['success'] = true;
-					$hold_result['message'] = translate(['text'=>"ils_hold_success", 'defaultText'=>"Your hold was placed successfully."]);
+					$hold_result['message'] = translate(['text'=>"Your hold was placed successfully.", 'isPublicFacing'=>true]);
 				}else{
 					$hold_result['success'] = false;
-					$hold_result['message'] = translate(['text'=>"ils_hold_failed", 'defaultText'=>"Your hold could not be placed."]);
+					$hold_result['message'] = translate(['text'=>"Your hold could not be placed.", 'isPublicFacing'=>true]);
 					if (isset($createHoldResponse->message)){
 						$hold_result['message'] .= (string)$createHoldResponse->message;
 					}else if (isset($createHoldResponse->string)){
@@ -459,19 +459,19 @@ abstract class HorizonAPI extends Horizon{
 		}
 	}
 
-	function cancelHold($patron, $recordId, $cancelId = null) {
+	function cancelHold(User $patron, $recordId, $cancelId = null) {
 		return $this->updateHoldDetailed($patron, 'cancel', null, $cancelId, '', '');
 	}
 
-	function freezeHold($patron, $recordId, $itemToFreezeId, $dateToReactivate) {
+	function freezeHold(User $patron, $recordId, $itemToFreezeId, $dateToReactivate) {
 		return $this->updateHoldDetailed($patron, 'update', null, $itemToFreezeId, '', 'on');
 	}
 
-	function thawHold($patron, $recordId, $itemToThawId) {
+	function thawHold(User $patron, $recordId, $itemToThawId) {
 		return $this->updateHoldDetailed($patron, 'update', null, $itemToThawId, '', 'off');
 	}
 
-	function changeHoldPickupLocation($patron, $recordId, $itemToUpdateId, $newPickupLocation) {
+	function changeHoldPickupLocation(User $patron, $recordId, $itemToUpdateId, $newPickupLocation) {
 		return $this->updateHoldDetailed($patron, 'update', null, $itemToUpdateId, $newPickupLocation, 'off');
 	}
 
@@ -618,17 +618,16 @@ abstract class HorizonAPI extends Horizon{
 						}
 					}
 
-					$frozen = translate('frozen');
 					if ($allLocationChangesSucceed){
 						return array(
 							'title' => $titles,
 							'success' => true,
-							'message' => "Your hold(s) were $frozen successfully.");
+							'message' => translate(['text' => "Your hold(s) were frozen successfully.", 'isPublicFacing'=>true]));
 					}else{
 						return array(
 							'title' => $titles,
 							'success' => false,
-							'message' => "Some holds could not be $frozen.  Please try again later or see your librarian.");
+							'message' => translate(['text' => "Some holds could not be frozen.  Please try again later or see your librarian.", 'isPublicFacing'=>true]));
 					}
 				}else{
 					//Reactivate the hold
@@ -647,17 +646,16 @@ abstract class HorizonAPI extends Horizon{
 						}
 					}
 
-					$thawed = translate('thawed');
 					if ($allUnsuspendsSucceed){
 						return array(
 							'title' => $titles,
 							'success' => true,
-							'message' => "Your hold(s) were $thawed successfully.");
+							'message' => translate(['text' => "Your hold(s) were thawed successfully.", 'isPublicFacing'=>true]));
 					}else{
 						return array(
 							'title' => $titles,
 							'success' => false,
-							'message' => "Some holds could not be $thawed.  Please try again later or see your librarian.");
+							'message' => translate(['text' => "Some holds could not be thawed.  Please try again later or see your librarian.", 'isPublicFacing'=>true]));
 					}
 				}
 			}
@@ -756,7 +754,7 @@ abstract class HorizonAPI extends Horizon{
 		return false;
 	}
 
-	public function renewAll($patron){
+	public function renewAll(User $patron){
 		return array(
 			'success' => false,
 			'message' => 'Renew All not supported directly, call through Catalog Connection',
@@ -801,7 +799,7 @@ abstract class HorizonAPI extends Horizon{
 			'message' => $message);
 	}
 
-	public function getNumHolds($id) {
+	public function getNumHolds($id) : int {
 		global $offlineMode;
 		if (!$offlineMode){
 			global $configArray;

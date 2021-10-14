@@ -64,12 +64,12 @@
 
 		<div class="dropdown pull-right">
 			<button class="btn btn-info dropdown-toggle" type="button" id="SearchTips" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-				{translate text="Search Tips"}
+				{translate text="Search Tips" isPublicFacing=true}
 				&nbsp;<span class="caret"></span>
 			</button>
 			<ul class="dropdown-menu" aria-labelledby="SearchTips">
-				<li><a href="/Help/Home?topic=advsearch" class="modalDialogTrigger" {*data-target="#modalDialog"*} data-title="{translate text="Help with Advanced Search" inAttribute=true}">{translate text="Help with Advanced Search"}</a></li>
-				<li><a href="/Help/Home?topic=search" class="modalDialogTrigger" {*data-target="#modalDialog"*} data-title="{translate text="Help with Search Operators" inAttribute=true}">{translate text="Help with Search Operators"}</a></li>
+				<li><a href="/Help/Home?topic=advsearch" class="modalDialogTrigger" {*data-target="#modalDialog"*} data-title="{translate text="Help with Advanced Search" inAttribute=true isPublicFacing=true}">{translate text="Help with Advanced Search" isPublicFacing=true}</a></li>
+				<li><a href="/Help/Home?topic=search" class="modalDialogTrigger" {*data-target="#modalDialog"*} data-title="{translate text="Help with Search Operators" inAttribute=true isPublicFacing=true}">{translate text="Help with Search Operators" isPublicFacing=true}</a></li>
 			</ul>
 		</div>
 
@@ -77,31 +77,31 @@
 			<div>
 				<div class="advSearchContent">
 
-					<h1>{translate text='Advanced Search'}</h1>
+					<h1>{translate text='Advanced Search' isPublicFacing=true}</h1>
 
 					{if $editErr}
 						{assign var=error value="advSearchError_$editErr"}
-						<div class="alert alert-warning">{translate text=$error}</div>
+						<div class="alert alert-warning">{translate text=$error isPublicFacing=true}</div>
 					{/if}
 
 					<div id="groupJoin" class="searchGroups">
 						<div class="searchGroupDetails">
-							<label for="join">{translate text="search_match"}</label>
+							<label for="join">{translate text="Match" isPublicFacing=true}</label>
 							<select id="join" name="join"{* class="form-control"*}>
-								<option value="AND">{translate text="group_AND"}</option>
-								<option value="OR"{if $searchDetails && $searchDetails.0.join == 'OR'} selected="selected"{/if}>{translate text="group_OR"}</option>
+								<option value="AND">{translate text="ALL Groups" isPublicFacing=true}</option>
+								<option value="OR"{if $searchDetails && $searchDetails.0.join == 'OR'} selected="selected"{/if}>{translate text="ANY Groups" isPublicFacing=true}</option>
 							</select>
 						</div>
-						<strong>{translate text="search_groups"}</strong>
+						<strong>{translate text="Search Groups" isPublicFacing=true}</strong>
 					</div>
 
 					{* An empty div; This is the target for the javascript that builds this screen *}
 					<div id="searchHolder"></div>
 
-					<button class="btn btn-default" onclick="addGroup();return false;"><span class="glyphicon glyphicon-plus"></span>&nbsp;{translate text="add_search_group"}</button>
-					<button class="btn btn-default" onclick="resetSearch();return false;"><span class="glyphicon glyphicon-remove-sign"></span>&nbsp;{translate text="Clear Search"}</button>
+					<button class="btn btn-default" onclick="addGroup();return false;"><span class="glyphicon glyphicon-plus"></span>&nbsp;{translate text="Add Search Group" isPublicFacing=true}</button>
+					<button class="btn btn-default" onclick="resetSearch();return false;"><span class="glyphicon glyphicon-remove-sign"></span>&nbsp;{translate text="Clear Search" isPublicFacing=true}</button>
 					{* addGroup() returns the variable nextGroupNumber so the return false is necessary *}
-					<input type="submit" name="submit" value="{translate text="Find" inAttribute=true}" class="btn btn-primary pull-right">
+					<input type="submit" name="submit" value="{translate text="Find" inAttribute=true isPublicFacing=true inAttribute=true}" class="btn btn-primary pull-right">
 					<br><br>
 					{if $facetList || $showPublicationDate}
 						<div class="accordion">
@@ -109,7 +109,7 @@
 								<div class="panel-heading">
 									<div class="panel-title {if !$hasSelectedFacet}collapsed{else}expanded{/if}">
 										<a href="#facetPanel" data-toggle="collapse" role="button">
-										{translate text='Optional Filters'}
+										{translate text='Optional Filters' isPublicFacing=true}
 										</a>
 									</div>
 								</div>
@@ -117,13 +117,13 @@
 									<div class="panel-body">
 
 										<div class="alert alert-info">
-											The filters below are optional. Only set the filters needed to narrow your search.
+											{translate text="The filters below are optional. Only set the filters needed to narrow your search." isPublicFacing=true}
 										</div>
 
 										{*//TODO Is this in use?? *}
 										{if $formatCategoryLimit}
 											<div class="advancedSearchFacetDetails">
-												<div class="advancedSearchFacetHeader">{translate text=$formatCategoryLimit.label}</div>
+												<div class="advancedSearchFacetHeader">{translate text=$formatCategoryLimit.label isPublicFacing=true}</div>
 												<div class="advancedSearchFacetList">
 													{foreach from=$formatCategoryLimit item="value" key="display"}
 														{if $value.filter != ""}
@@ -132,7 +132,7 @@
 																            name="filter[]"
 																            value="{$value.filter|escape}"{if $value.selected} checked="checked"{/if}>
 																	<label for="categoryValue_{$display|lower|replace:' ':''}">
-																		<span class="categoryValue categoryValue_{$display|lower|replace:' ':''}">{translate text=$display}</span>
+																		<span class="categoryValue categoryValue_{$display|lower|replace:' ':''}">{translate text=$display isPublicFacing=true}</span>
 																	</label>
 																</div>
 															</div>
@@ -146,64 +146,64 @@
 											{foreach from=$facetList item="facetInfo" key="label"}
 												<div class="row form-group">
 													<div class="col-sm-3">
-														<strong>{translate text=$label}</strong>
+														<strong>{translate text=$label isPublicFacing=true}</strong>
 													</div>
 													<div class="col-sm-9">
 														{if $facetInfo.facetName == "publishDate" || $facetInfo.facetName == "publishDateSort"}
 															<div class="row">
 																<div class="col-xs-6 col-md-4 col-lg-3">
-																	<label for="{$facetInfo.facetName}yearfrom" class="yearboxlabel">{translate text="From"} </label>
+																	<label for="{$facetInfo.facetName}yearfrom" class="yearboxlabel">{translate text="From" isPublicFacing=true} </label>
 																	<input type="text" size="4" maxlength="4" class="yearbox form-control" name="{$facetInfo.facetName}yearfrom" id="{$facetInfo.facetName}yearfrom" value="" aria-label="Publication Date From">
 																</div>
 																<div class="col-xs-6 col-md-4 col-lg-3">
-																	<label for="{$facetInfo.facetName}yearto" class="yearboxlabel">{translate text="To"} </label>
+																	<label for="{$facetInfo.facetName}yearto" class="yearboxlabel">{translate text="To" isPublicFacing=true} </label>
 																	<input type="text" size="4" maxlength="4" class="yearbox form-control" name="{$facetInfo.facetName}yearto" id="{$facetInfo.facetName}yearto" value="" aria-label="Publication Date To">
 																</div>
 															</div>
 															<div id="yearDefaultLinks row">
 																<div class="col-xs-12">
 																	{assign var=thisyear value=$smarty.now|date_format:"%Y"}
-																	{translate text="Published in the last"}<br/>
-																	<a onclick="$('#{$facetInfo.facetName}yearfrom').val('{$thisyear-1}');$('#{$facetInfo.facetName}yearto').val('');" href='javascript:void(0);'>year</a>
-																	&bullet; <a onclick="$('#{$facetInfo.facetName}yearfrom').val('{$thisyear-5}');$('#{$facetInfo.facetName}yearto').val('');" href='javascript:void(0);'>5&nbsp;years</a>
-																	&bullet; <a onclick="$('#{$facetInfo.facetName}yearfrom').val('{$thisyear-10}');$('#{$facetInfo.facetName}yearto').val('');" href='javascript:void(0);'>10&nbsp;years</a>
+																	{translate text="Published in the last" isPublicFacing=true}<br/>
+																	<a onclick="$('#{$facetInfo.facetName}yearfrom').val('{$thisyear-1}');$('#{$facetInfo.facetName}yearto').val('');" href='javascript:void(0);'>{translate text="year" isPublicFacing=true}</a>
+																	&bullet; <a onclick="$('#{$facetInfo.facetName}yearfrom').val('{$thisyear-5}');$('#{$facetInfo.facetName}yearto').val('');" href='javascript:void(0);'>{translate text="5 years" isPublicFacing=true}</a>
+																	&bullet; <a onclick="$('#{$facetInfo.facetName}yearfrom').val('{$thisyear-10}');$('#{$facetInfo.facetName}yearto').val('');" href='javascript:void(0);'>{translate text="10 years" isPublicFacing=true}</a>
 																</div>`
 															</div>
 														{elseif $facetInfo.facetName == "lexile_score"}
 															<div class="row">
 																<div class="col-xs-6 col-md-4 col-lg-3">
-																	<label for="lexile_scorefrom" class="yearboxlabel">From </label>
+																	<label for="lexile_scorefrom" class="yearboxlabel">{translate text="From" isPublicFacing=true} </label>
 																	<input type="text" size="4" maxlength="4" class="yearbox form-control" name="lexile_scorefrom" id="lexile_scorefrom" value="" aria-label="Lexile Score From">
 																</div>
 																<div class="col-xs-6 col-md-4 col-lg-3">
-																	<label for="lexile_scoreto" class="yearboxlabel">To </label>
+																	<label for="lexile_scoreto" class="yearboxlabel">{translate text="To" isPublicFacing=true} </label>
 																	<input type="text" size="4" maxlength="4" class="yearbox form-control" name="lexile_scoreto" id="lexile_scoreto" value="" aria-label="Lexile Score To">
 																</div>
 															</div>
 														{elseif $facetInfo.facetName == "accelerated_reader_point_value"}
 															<div class="row">
 																<div class="col-xs-6 col-md-4 col-lg-3">
-																	<label for="accelerated_reader_point_valuefrom" class="yearboxlabel">From </label>
+																	<label for="accelerated_reader_point_valuefrom" class="yearboxlabel">{translate text="From" isPublicFacing=true} </label>
 																	<input type="text" size="4" maxlength="4" class="yearbox form-control" name="accelerated_reader_point_valuefrom" id="accelerated_reader_point_valuefrom" value="" aria-label="Accelerated Reader Points From">
 																</div>
 																<div class="col-xs-6 col-md-4 col-lg-3">
-																	<label for="accelerated_reader_point_valueto" class="yearboxlabel">To </label>
+																	<label for="accelerated_reader_point_valueto" class="yearboxlabel">{translate text="To" isPublicFacing=true} </label>
 																	<input type="text" size="4" maxlength="4" class="yearbox form-control" name="accelerated_reader_point_valueto" id="accelerated_reader_point_valueto" value="" aria-label="Accelerated Reader Points To">
 																</div>
 															</div>
                                                         {elseif $facetInfo.facetName == "accelerated_reader_reading_level"}
 															<div class="row">
 																<div class="col-xs-6 col-md-4 col-lg-3">
-																	<label for="accelerated_reader_reading_levelfrom" class="yearboxlabel">From </label>
+																	<label for="accelerated_reader_reading_levelfrom" class="yearboxlabel">{translate text="From" isPublicFacing=true} </label>
 																	<input type="text" size="4" maxlength="4" class="yearbox form-control" name="accelerated_reader_reading_levelfrom" id="accelerated_reader_reading_levelfrom" value="" aria-label="Accelerated Reader Level From">
 																</div>
 																<div class="col-xs-6 col-md-4 col-lg-3">
-																	<label for="accelerated_reader_reading_levelto" class="yearboxlabel">To </label>
+																	<label for="accelerated_reader_reading_levelto" class="yearboxlabel">{translate text="To" isPublicFacing=true} </label>
 																	<input type="text" size="4" maxlength="4" class="yearbox form-control" name="accelerated_reader_reading_levelto" id="accelerated_reader_reading_levelto" value="" aria-label="Accelerated Reader Level To">
 																</div>
 															</div>
                                                         {else}
-															<select name="filter[]" class="form-control" aria-label="{translate text=$label inAttribute=true}">
+															<select name="filter[]" class="form-control" aria-label="{translate text=$label inAttribute=true isPublicFacing=true}">
 																{foreach from=$facetInfo.values item="value" key="display"}
 																	{if strlen($display) > 0}
 																		<option value="{$value.filter|escape}"{if $value.selected} selected="selected"{/if}>{$value.display|escape|truncate:80}</option>
@@ -215,7 +215,7 @@
 												</div>
 											{/foreach}
 										{/if}
-										<input type="submit" name="submit" value="{translate text="Find" inAttribute=true}" class="btn btn-primary pull-right">
+										<input type="submit" name="submit" value="{translate text="Find" inAttribute=true isPublicFacing=true}" class="btn btn-primary pull-right">
 									</div>
 								</div>
 							</div>
@@ -237,19 +237,19 @@
 	{* Define our search arrays so they are usuable in the javascript *}
 	var searchFields = {ldelim}
 	{foreach from=$advSearchTypes item=searchDesc key=searchVal}
-	"{$searchVal}" : "{translate text=$searchDesc inAttribute=true}",
+	"{$searchVal}" : "{translate text=$searchDesc inAttribute=true isPublicFacing=true}",
 	{/foreach}
 	{rdelim};
 	var searchJoins = {ldelim}
-		AND: '{translate text="search_AND" inAttribute=true}'
-		,OR: '{translate text="search_OR" inAttribute=true}'
-		,NOT:'{translate text="search_NOT" inAttribute=true}'
+		AND: '{translate text="All Terms (AND)" inAttribute=true isPublicFacing=true}'
+		,OR: '{translate text="Any Terms (OR)" inAttribute=true isPublicFacing=true}'
+		,NOT:'{translate text="No Terms (NOT)" inAttribute=true isPublicFacing=true}'
 		{rdelim};
-	var addSearchString = "{translate text="add_search" inAttribute=true}";
-	var searchLabel     = "{translate text="adv_search_label" inAttribute=true}";
-	var searchFieldLabel = "{translate text="in" inAttribute=true}";
-	var deleteSearchGroupString = "{translate text="del_search" inAttribute=true}";
-	var searchMatch     = "{translate text="search_match" inAttribute=true}";
+	var addSearchString = "{translate text="Add Search Field" inAttribute=true isPublicFacing=true}";
+	var searchLabel     = "{translate text="Search for" inAttribute=true isPublicFacing=true}";
+	var searchFieldLabel = "{translate text="in" inAttribute=true isPublicFacing=true}";
+	var deleteSearchGroupString = "{translate text="Remove Search Group" inAttribute=true isPublicFacing=true}";
+	var searchMatch     = "{translate text="Match" inAttribute=true isPublicFacing=true}";
 	var searchFormId    = 'advSearchForm';
 	{*  Build the form *}
 	$(function(){ldelim}

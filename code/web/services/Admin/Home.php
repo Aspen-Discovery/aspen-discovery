@@ -20,19 +20,19 @@ class Admin_Home extends Admin_Admin
 	}
 
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('', 'Administration Home');
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return 'home';
 	}
 
-	function canView()
+	function canView() : bool
 	{
 		return !empty(UserAccount::getActiveRoles());
 	}

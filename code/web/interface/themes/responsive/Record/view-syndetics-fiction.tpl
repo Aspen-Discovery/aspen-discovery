@@ -1,5 +1,5 @@
 <div class='fictionProfile'>
-<div class='fictionProfileTitle'>Characters</div>
+<div class='fictionProfileTitle'>{translate text="Characters" isPublicFacing=true}</div>
 {foreach from=$fictionData.characters item=character}
 <div class='fictionCharacter'>
 <span class='fictionCharacterName'>{$character.name}</span>
@@ -11,7 +11,7 @@
 {/foreach}
 
 {if isset($fictionData.topics)}
-<div class='fictionProfileTitle'>Topics</div>
+<div class='fictionProfileTitle'>{translate text="Topics" isPublicFacing=true}</div>
 <div class='fictionTopics'>
 {foreach from=$fictionData.topics item=topic}
 <span class='fictionTopic'>{$topic}, </span>
@@ -20,7 +20,7 @@
 {/if}
 
 {if isset($fictionData.settings)}
-<div class='fictionProfileTitle'>Settings</div>
+<div class='fictionProfileTitle'>{translate text="Settings" isPublicFacing=true}</div>
 <div class='fictionSettings'>
 {foreach from=$fictionData.settings item=setting}
 <span class='fictionSetting'>{$setting}, </span>
@@ -29,7 +29,7 @@
 {/if}
 
 {if isset($fictionData.settings)}
-<div class='fictionProfileTitle'>Genres</div>
+<div class='fictionProfileTitle'>{translate text="Genres" isPublicFacing=true}</div>
 <div class='fictionGenres'>
 {foreach from=$fictionData.genres item=genre}
 <div class='fictionGenre'>{$genre.name}
@@ -41,7 +41,7 @@
 </div>
 {/if}
 
-<div class='fictionProfileTitle'>Awards</div>
+<div class='fictionProfileTitle'>{translate text="Awards" isPublicFacing=true}</div>
 {foreach from=$fictionData.awards item=award}
 <div class='fictionAward'>
 <span class='fictionAwardYear'>{$award.year}</span>

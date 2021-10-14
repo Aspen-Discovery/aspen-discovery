@@ -22,6 +22,7 @@ public class BaseIndexingSettings {
 	long lastUpdateOfChangedRecords;
 	long lastUpdateOfAllRecords;
 	boolean runFullUpdate;
+	boolean regroupAllRecords;
 
 	static char getCharFromRecordSet(ResultSet indexingProfilesRS, String fieldName) throws SQLException {
 		char result = ' ';
@@ -105,6 +106,8 @@ public class BaseIndexingSettings {
 	public boolean isRunFullUpdate() {
 		return runFullUpdate;
 	}
+
+	public boolean isRegroupAllRecords() { return regroupAllRecords; }
 
 	public String getFormatSource() {
 		return formatSource;

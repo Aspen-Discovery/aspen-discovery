@@ -11,7 +11,7 @@ class GroupedWorkAlternateTitle extends DataObject
 	public $addedBy;
 	public $dateAdded;
 
-	static function getObjectStructure() {
+	static function getObjectStructure() : array {
 		return [
 			'id' => ['property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id'],
 			'permanent_id' => ['property' => 'permanent_id', 'type' => 'text', 'label' => 'Grouped Work ID', 'description' => 'The grouped work id with the alternate title', 'readOnly' => true],

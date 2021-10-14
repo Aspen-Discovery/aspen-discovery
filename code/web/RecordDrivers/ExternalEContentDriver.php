@@ -125,7 +125,7 @@ class ExternalEContentDriver extends BaseEContentDriver{
 		return $this->filterAndSortMoreDetailsOptions($moreDetailsOptions);
 	}
 
-	function getModule(){
+	function getModule() : string{
 		return 'ExternalEContent';
 	}
 

@@ -1,6 +1,6 @@
 <table class="table-striped table table-condensed notranslate">
   <tr>
-    <th>Last File Modification Time</th>
+    <th>{translate text="Last File Modification Time" isPublicFacing=true}</th>
     <td>{$lastMarcModificationTime|date_format:"%b %d, %Y %r"}</td>
   </tr>
 </table>

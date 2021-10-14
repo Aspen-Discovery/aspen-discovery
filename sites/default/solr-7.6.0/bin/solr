@@ -2018,7 +2018,8 @@ function start_solr() {
         '-XX:CMSMaxAbortablePrecleanTime=6000' \
         '-XX:+CMSParallelRemarkEnabled' \
         '-XX:+ParallelRefProcEnabled' \
-        '-XX:-OmitStackTraceInFastThrow')
+        '-XX:-OmitStackTraceInFastThrow' \
+        '-XX:+IgnoreUnrecognizedVMOptions')
   else
     GC_TUNE=($GC_TUNE)
   fi

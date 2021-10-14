@@ -69,7 +69,7 @@ class Report_HoldsReport extends Admin_Admin {
 		return $locationList;
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
@@ -78,12 +78,12 @@ class Report_HoldsReport extends Admin_Admin {
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return 'circulation_reports';
 	}
 
-	function canView()
+	function canView() : bool
 	{
 		return UserAccount::userHasPermission(['View All Holds Reports', 'View Location Holds Reports']);
 	}

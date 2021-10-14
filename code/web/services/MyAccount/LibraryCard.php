@@ -17,6 +17,8 @@ class LibraryCard extends MyAccount
 		$interface->assign('alternateLibraryCardLabel', $library->alternateLibraryCardLabel);
 		$interface->assign('alternateLibraryCardPasswordLabel', $library->alternateLibraryCardPasswordLabel);
 		$interface->assign('alternateLibraryCardStyle', $library->alternateLibraryCardStyle);
+		$interface->assign('showCardExpirationDate', $library->showCardExpirationDate);
+		$interface->assign('expirationDate', $user->getAccountSummary()->expirationDate);
 
 		$linkedUsers = $user->getLinkedUsers();
 		$linkedCards = [];
@@ -25,7 +27,8 @@ class LibraryCard extends MyAccount
 			$linkedCards[] = [
 				'id' => $tmpUser->id,
 				'fullName' => $tmpUser->displayName,
-				'barcode' => $tmpUser->getBarcode()
+				'barcode' => $tmpUser->getBarcode(),
+				'expirationDate' => $tmpUser->getAccountSummary()->expirationDate,
 			];
 		}
 		$interface->assign('linkedCards', $linkedCards);
@@ -45,7 +48,7 @@ class LibraryCard extends MyAccount
 		$this->display('libraryCard.tpl','Library Card');
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'My Account');

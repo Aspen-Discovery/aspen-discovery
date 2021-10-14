@@ -32,7 +32,6 @@ class MyAccount_ContactInformation extends MyAccount
 				$canUpdatePhoneNumber = false;
 				$showWorkPhoneInProfile = false;
 				$showNoticeTypeInProfile = false;
-				$showPickupLocationInProfile = false;
 				$treatPrintNoticesAsPhoneNotices = false;
 				$allowPinReset = false;
 				$showAlternateLibraryOptionsInProfile = false;
@@ -45,7 +44,6 @@ class MyAccount_ContactInformation extends MyAccount
 				$showWorkPhoneInProfile = ($patronHomeLibrary->showWorkPhoneInProfile == 1);
 				$showNoticeTypeInProfile = ($patronHomeLibrary->showNoticeTypeInProfile == 1);
 				$treatPrintNoticesAsPhoneNotices = ($patronHomeLibrary->treatPrintNoticesAsPhoneNotices == 1);
-				$showPickupLocationInProfile = ($patronHomeLibrary->showPickupLocationInProfile == 1);
 				$allowPinReset = ($patronHomeLibrary->allowPinReset == 1);
 				$showAlternateLibraryOptionsInProfile = ($patronHomeLibrary->showAlternateLibraryOptionsInProfile == 1);
 				$allowAccountLinking = ($patronHomeLibrary->allowLinkedAccounts == 1);
@@ -60,7 +58,6 @@ class MyAccount_ContactInformation extends MyAccount
 			$interface->assign('canUpdateAddress', $canUpdateAddress);
 			$interface->assign('canUpdatePhoneNumber', $canUpdatePhoneNumber);
 			$interface->assign('showWorkPhoneInProfile', $showWorkPhoneInProfile);
-			$interface->assign('showPickupLocationInProfile', $showPickupLocationInProfile);
 			$interface->assign('showNoticeTypeInProfile', $showNoticeTypeInProfile);
 			$interface->assign('treatPrintNoticesAsPhoneNotices', $treatPrintNoticesAsPhoneNotices);
 			$interface->assign('allowPinReset', $allowPinReset);
@@ -131,7 +128,7 @@ class MyAccount_ContactInformation extends MyAccount
 		$this->display('contactInformation.tpl', 'Contact Information');
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'My Account');

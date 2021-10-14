@@ -31,21 +31,21 @@
 # On Reboot #
 #############
 @reboot       solr    php /usr/local/aspen-discovery/code/web/cron/checkSolr.php nashville.production
-5 2 * * *     root    php /usr/local/aspen-discovery/code/web/cron/updateSuggesters.php nashville.production
-7 3 * * *     root    php /usr/local/aspen-discovery/code/web/cron/createSitemaps.php nashville.production
+5 2 * * *     solr    php /usr/local/aspen-discovery/code/web/cron/updateSuggesters.php nashville.production
+7 3 * * *     aspen    php /usr/local/aspen-discovery/code/web/cron/createSitemaps.php nashville.production
 */2 * * * *   solr    php /usr/local/aspen-discovery/code/web/cron/checkSolr.php nashville.production
-*/5 * * * *   root    php /usr/local/aspen-discovery/code/web/cron/checkBackgroundProcesses.php nashville.production
+*/5 * * * *   aspen    php /usr/local/aspen-discovery/code/web/cron/checkBackgroundProcesses.php nashville.production
 
 #############################
 # ILS CarlX nightly extract #
 #############################
-0 23 * * *    root    expect /usr/local/aspen-discovery/sites/nashville.production/copyCarlXExport.exp nashville.production
+20 22 * * *    aspen    expect /usr/local/aspen-discovery/sites/nashville.production/copyCarlXExport.exp nashville.production
 
 ########################################################
 # Regular extracts that don't need to run continuously #
 ########################################################
-0 2 * * *      root    cd /usr/local/aspen-discovery/code/oai_indexer; java -jar oai_indexer.jar nashville.production
-0 22 * * *      root    cd /usr/local/aspen-discovery/code/reindexer; java -jar reindexer.jar nashville.production nightly
+0 2 * * *      aspen    cd /usr/local/aspen-discovery/code/oai_indexer; java -jar oai_indexer.jar nashville.production
+40 22 * * *    aspen    cd /usr/local/aspen-discovery/code/reindexer; java -jar reindexer.jar nashville.production nightly
 
 ######################
 # MySQL Nightly Dump #
@@ -56,8 +56,8 @@
 #############################################
 # New York Times Best seller Lists Updating #
 #############################################
-20 7 * * 0-1  root    php /usr/local/aspen-discovery/code/web/cron/updateNYTLists.php nashville.production
-# update on Sundays and Mondays at 7:20
+45 11 * * 0-1  aspen    php /usr/local/aspen-discovery/code/web/cron/updateNYTLists.php nashville.production
+# update on Sundays and Mondays at 11:45
 
 ###########################
 # Aspen Discovery Cleanup #
@@ -67,12 +67,12 @@
 26 0 * * *    root    cd /tmp; rm -rf CURLCOOKIE*
 
 # CRON for Aspen (book cover cache cleanup etc.)
-00 20 * * *   root    cd /usr/local/aspen-discovery/code/cron; java -jar cron.jar nashville.production
+00 20 * * *   aspen    cd /usr/local/aspen-discovery/code/cron; java -jar cron.jar nashville.production
 
 ###################################
 # Data Extract from other systems #
 ###################################
 
 # SIDELOADED ECONTENT MARC triggered HERE (and commented out in full_update.sh)
-0 22 * * *    root    cd /usr/local/aspen-discovery/code/cron; ./sideload.sh nashville.production
+0 22 * * *    aspen    cd /usr/local/aspen-discovery/code/cron; ./sideload.sh nashville.production
 

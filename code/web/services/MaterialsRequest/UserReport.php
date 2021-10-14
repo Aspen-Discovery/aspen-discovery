@@ -4,9 +4,6 @@ require_once ROOT_DIR . '/Action.php';
 require_once(ROOT_DIR . '/services/Admin/Admin.php');
 require_once(ROOT_DIR . '/sys/MaterialsRequest.php');
 require_once(ROOT_DIR . '/sys/MaterialsRequestStatus.php');
-require_once(ROOT_DIR . "/sys/pChart/class/pData.class.php");
-require_once(ROOT_DIR . "/sys/pChart/class/pDraw.class.php");
-require_once(ROOT_DIR . "/sys/pChart/class/pImage.class.php");
 require_once(ROOT_DIR . "/PHPExcel.php");
 
 class MaterialsRequest_UserReport extends Admin_Admin {
@@ -45,7 +42,7 @@ class MaterialsRequest_UserReport extends Admin_Admin {
 		$materialsRequest->joinAdd(new MaterialsRequestStatus(), 'INNER', 'status', 'status', 'id');
 		$materialsRequest->selectAdd();
 		$materialsRequest->selectAdd('COUNT(materials_request.id) as numRequests');
-		$materialsRequest->selectAdd('user.id as userId, status, description, user.firstName, user.lastName, user.cat_username, user.cat_password');
+		$materialsRequest->selectAdd('user.id as userId, createdBy, status, description');
 		if (UserAccount::userHasPermission('View Materials Requests Reports')){
 			//Need to limit to only requests submitted for the user's home location
 			$userHomeLibrary = Library::getPatronHomeLibrary();
@@ -65,22 +62,21 @@ class MaterialsRequest_UserReport extends Admin_Admin {
 			$statusSql .= $materialsRequest->escape($status);
 		}
 		$materialsRequest->whereAdd("status in ($statusSql)");
-		$materialsRequest->groupBy('userId, status');
+		$materialsRequest->groupBy('createdBy, status');
 		$materialsRequest->find();
 
 		$userData = array();
-		$barcodeProperty = $configArray['Catalog']['barcodeProperty'];
 		while ($materialsRequest->fetch()){
-			if (!array_key_exists($materialsRequest->userId, $userData)){
-				$userData[$materialsRequest->userId] = array();
-				$userData[$materialsRequest->userId]['firstName'] = $materialsRequest->firstName;
-				$userData[$materialsRequest->userId]['lastName'] = $materialsRequest->lastName;
-				$userData[$materialsRequest->userId]['barcode'] = $materialsRequest->$barcodeProperty;
-				$userData[$materialsRequest->userId]['totalRequests'] = 0;
-				$userData[$materialsRequest->userId]['requestsByStatus'] = array();
+			if (!array_key_exists($materialsRequest->createdBy, $userData)){
+				$userData[$materialsRequest->createdBy] = array();
+				$userData[$materialsRequest->createdBy]['firstName'] = $materialsRequest->getCreatedByFirstName();
+				$userData[$materialsRequest->createdBy]['lastName'] = $materialsRequest->getCreatedByLastName();
+				$userData[$materialsRequest->createdBy]['barcode'] = $materialsRequest->getCreatedByUserBarcode();
+				$userData[$materialsRequest->createdBy]['totalRequests'] = 0;
+				$userData[$materialsRequest->createdBy]['requestsByStatus'] = array();
 			}
-			$userData[$materialsRequest->userId]['requestsByStatus'][$materialsRequest->description] = $materialsRequest->numRequests;
-			$userData[$materialsRequest->userId]['totalRequests'] += $materialsRequest->numRequests;
+			$userData[$materialsRequest->createdBy]['requestsByStatus'][$materialsRequest->description] = $materialsRequest->numRequests;
+			$userData[$materialsRequest->createdBy]['totalRequests'] += $materialsRequest->numRequests;
 		}
 		$interface->assign('userData', $userData);
 
@@ -88,7 +84,7 @@ class MaterialsRequest_UserReport extends Admin_Admin {
 		$statuses = array();
 		foreach ($userData as $userInfo){
 			foreach ($userInfo['requestsByStatus'] as $status => $numRequests){
-				$statuses[$status] = translate($status);
+				$statuses[$status] = translate(['text'=>$status, 'isAdminFacing'=>true]);
 			}
 		}
 		$interface->assign('statuses', $statuses);
@@ -161,7 +157,7 @@ class MaterialsRequest_UserReport extends Admin_Admin {
 
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/MaterialsRequest/ManageRequests', 'Manage Materials Requests');
@@ -169,12 +165,12 @@ class MaterialsRequest_UserReport extends Admin_Admin {
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return 'materials_request';
 	}
 
-	function canView()
+	function canView() : bool
 	{
 		return UserAccount::userHasPermission('View Materials Requests Reports');
 	}

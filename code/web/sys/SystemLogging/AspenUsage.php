@@ -5,19 +5,18 @@ class AspenUsage extends DataObject
 {
 	public $__table = 'aspen_usage';
 	public $id;
+	public $instance;
 	public $year;
 	public $month;
 	public $pageViews;
 	public $pageViewsByBots;
 	public $pageViewsByAuthenticatedUsers;
 	public $pagesWithErrors;
-	public $slowPages;
+	public $sessionsStarted;
 	public $ajaxRequests;
-	public $slowAjaxRequests;
 	public $coverViews;
 	public $genealogySearches;
 	public $groupedWorkSearches;
-	public $islandoraSearches;
 	public $openArchivesSearches;
 	public $userListSearches;
 	public $websiteSearches;
@@ -26,7 +25,7 @@ class AspenUsage extends DataObject
 	public $blockedRequests;
 	public $blockedApiRequests;
 
-	public function getNumericColumnNames()
+	public function getNumericColumnNames() : array
 	{
 		return [
 			'pageViews',
@@ -39,7 +38,6 @@ class AspenUsage extends DataObject
 			'coverViews',
 			'genealogySearches',
 			'groupedWorkSearches',
-			'islandoraSearches',
 			'openArchivesSearches',
 			'userListSearches',
 			'websiteSearches',

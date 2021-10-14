@@ -1,18 +1,11 @@
 ##################
 ## Crontab setting from a 'configuration' file
 ##
-## to save current crontab to file: crontab -l > crontab_settings.txt
-##
-## to set the current crontab from a file : crontab < crontab_settings.txt
+## crontab for the site should be linked to from /etc/cron.d
+## when updated, cron simply needs to be restarted.  I.e.
+## sudo service crond restart
 ##
 ##################
-
-# !! Please make all changes to the crontab within the git repository system and apply through the above method.
-#
-# ie :
-# git pull origin {current branch}
-# sudo /usr/local/aspen-discovery/code/cron/check_crontab.sh {sitename}
-# sudo crontab < /usr/local/aspen-discovery/sites/{sitename}/conf/crontab_settings.txt
 
 ###################
 # * * * * *  command to execute
@@ -30,16 +23,16 @@
 # Indexing Tasks #
 #############
 @reboot       solr    php /usr/local/aspen-discovery/code/web/cron/checkSolr.php {sitename}
-5 2 * * *     root    php /usr/local/aspen-discovery/code/web/cron/updateSuggesters.php {sitename}
-7 3 * * *     root    php /usr/local/aspen-discovery/code/web/cron/createSitemaps.php {sitename}
+5 2 * * *     solr   php /usr/local/aspen-discovery/code/web/cron/updateSuggesters.php {sitename}
+7 3 * * *     aspen   php /usr/local/aspen-discovery/code/web/cron/createSitemaps.php {sitename}
 */2 * * * *   solr    php /usr/local/aspen-discovery/code/web/cron/checkSolr.php {sitename}
-*/5 * * * *   root    php /usr/local/aspen-discovery/code/web/cron/checkBackgroundProcesses.php {sitename}
+*/5 * * * *   aspen   php /usr/local/aspen-discovery/code/web/cron/checkBackgroundProcesses.php {sitename}
 
 ########################################################
 # Regular extracts that don't need to run continuously #
 ########################################################
-0 2 * * *     root    cd /usr/local/aspen-discovery/code/oai_indexer; java -jar oai_indexer.jar {sitename}
-0 2 * * *     root    cd /usr/local/aspen-discovery/code/reindexer; java -jar reindexer.jar {sitename} nightly
+0 2 * * *     aspen   cd /usr/local/aspen-discovery/code/oai_indexer; java -jar oai_indexer.jar {sitename}
+0 2 * * *     aspen   cd /usr/local/aspen-discovery/code/reindexer; java -jar reindexer.jar {sitename} nightly
 
 ######################
 # MySQL Nightly Dump #
@@ -50,7 +43,7 @@
 #############################################
 # New York Times Best seller Lists Updating #
 #############################################
-15 7 * * 0-1  root    php /usr/local/aspen-discovery/code/web/cron/updateNYTLists.php {sitename}
+15 7 * * 0-1  aspen   php /usr/local/aspen-discovery/code/web/cron/updateNYTLists.php {sitename}
 # update on Sundays and Mondays at 7:15
 
 ###########################
@@ -61,6 +54,6 @@
 26 0 * * *    root    cd /tmp; rm -rf CURLCOOKIE*
 
 # CRON for Aspen (book cover cache cleanup etc.)
-00 22 * * *    root    cd /usr/local/aspen-discovery/code/cron; java -jar cron.jar {sitename}
+00 22 * * *   aspen   cd /usr/local/aspen-discovery/code/cron; java -jar cron.jar {sitename}
 
-00 01 * * *    root    certbot renew
+00 01 * * *   root    certbot renew

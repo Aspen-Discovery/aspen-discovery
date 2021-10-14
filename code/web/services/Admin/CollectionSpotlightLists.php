@@ -7,18 +7,20 @@ require_once ROOT_DIR . '/sys/LocalEnrichment/CollectionSpotlightList.php';
 class Admin_CollectionSpotlightLists extends ObjectEditor
 {
 
-	function getObjectType(){
+	function getObjectType() : string{
 		return 'CollectionSpotlightList';
 	}
-	function getToolName(){
+	function getToolName() : string{
 		return 'CollectionSpotlightLists';
 	}
-	function getPageTitle(){
+	function getPageTitle() : string{
 		return 'Collection Spotlight Lists';
 	}
-	function getAllObjects(){
+	function getAllObjects($page, $recordsPerPage) : array{
 		$object = new CollectionSpotlightList();
-		$object->orderBy('weight');
+		$object->orderBy($this->getSort());
+		$this->applyFilters($object);
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		$list = array();
 		while ($object->fetch()){
@@ -26,21 +28,26 @@ class Admin_CollectionSpotlightLists extends ObjectEditor
 		}
 		return $list;
 	}
-	function getObjectStructure(){
+	function getDefaultSort() : string
+	{
+		return 'weight asc';
+	}
+
+	function getObjectStructure() : array{
 		return CollectionSpotlightList::getObjectStructure();
 	}
-	function getPrimaryKeyColumn(){
+	function getPrimaryKeyColumn() : string{
 		return 'id';
 	}
-	function getIdKeyColumn(){
+	function getIdKeyColumn() : string{
 		return 'id';
 	}
 
-	function getInstructions(){
+	function getInstructions() : string{
 		return '';
 	}
 
-	function getInitializationJs(){
+	function getInitializationJs() : string {
 		return 'return AspenDiscovery.Admin.updateBrowseSearchForSource();';
 	}
 
@@ -48,7 +55,7 @@ class Admin_CollectionSpotlightLists extends ObjectEditor
 		return false;
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
@@ -57,12 +64,12 @@ class Admin_CollectionSpotlightLists extends ObjectEditor
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return 'local_enrichment';
 	}
 
-	function canView()
+	function canView() : bool
 	{
 		return UserAccount::userHasPermission(['Administer All Collection Spotlights','Administer Library Collection Spotlights']);
 	}

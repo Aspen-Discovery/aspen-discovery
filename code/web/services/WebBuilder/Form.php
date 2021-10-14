@@ -1,5 +1,5 @@
 <?php
-
+require_once ROOT_DIR . '/recaptcha/recaptchalib.php';
 
 class WebBuilder_Form extends Action{
 	private $form;
@@ -14,8 +14,30 @@ class WebBuilder_Form extends Action{
 		$this->form = new CustomForm();
 		$this->form->id = $id;
 		if (!$this->form->find(true)){
-			$this->display('../Record/invalidPage.tpl', 'Invalid Page');
+			global $interface;
+			$interface->assign('module','Error');
+			$interface->assign('action','Handle404');
+			require_once ROOT_DIR . "/services/Error/Handle404.php";
+			$actionClass = new Error_Handle404();
+			$actionClass->launch();
 			die();
+		}
+
+		if (!UserAccount::isLoggedIn()) {
+			if (!$this->form->requireLogin) {
+				require_once ROOT_DIR . '/sys/Enrichment/RecaptchaSetting.php';
+				$recaptcha = new RecaptchaSetting();
+				if ($recaptcha->find(true) && !empty($recaptcha->publicKey)) {
+					$captchaCode = recaptcha_get_html($recaptcha->publicKey);
+					$interface->assign('captcha', $captchaCode);
+				}
+			}else{
+				//Display a message that the user must be logged in
+				require_once ROOT_DIR . '/services/MyAccount/Login.php';
+				$myAccountAction = new MyAccount_Login();
+				$myAccountAction->launch();
+				exit();
+			}
 		}
 
 		require_once ROOT_DIR . '/sys/Parsedown/AspenParsedown.php';
@@ -30,7 +52,7 @@ class WebBuilder_Form extends Action{
 		$this->display('customForm.tpl', $this->form->title, '', false);
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/', 'Home');

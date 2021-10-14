@@ -6,8 +6,7 @@ Class-Path: ../java_shared_libraries/commons-beanutils-1.9.3.jar ../ja
  libraries/ini4j-0.5.5-SNAPSHOT.jar ../java_shared_libraries/log4j-api
  -2.11.2.jar ../java_shared_libraries/log4j-core-2.11.2.jar ../java_sh
  ared_libraries/mysql-connector-java-8.0.15.jar ../java_shared_librari
- es/opencsv-4.5.jar ../marc4j/marc4j-turningleaftech.jar ../record_gro
- uping/record_grouping.jar ../reindexer/reindexer.jar ./lib/postgresql
- -9.2-1003.jdbc4.jar
+ es/opencsv-4.5.jar ../marc4j/marc4j-turningleaftech.jar ../reindexer/
+ reindexer.jar ./lib/postgresql-9.2-1003.jdbc4.jar
 Main-Class: com.turning_leaf_technologies.sierra.SierraExportAPIMain
 

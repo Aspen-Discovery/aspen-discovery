@@ -25,7 +25,7 @@ class ImportListsFromClassic extends MyAccount{
 		$this->display('listImportResults.tpl', 'Import Results');
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'My Account');

@@ -12,7 +12,7 @@ class ContentCafeSetting extends DataObject
 	public $hasExcerpt;
 	public $hasAuthorNotes;
 
-	public static function getObjectStructure()
+	public static function getObjectStructure() : array
 	{
 		return array(
 			'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id'),

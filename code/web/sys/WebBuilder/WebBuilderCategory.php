@@ -8,7 +8,7 @@ class WebBuilderCategory extends DataObject
 	public $id;
 	public $name;
 
-	public static function getObjectStructure(){
+	public static function getObjectStructure() : array {
 		return array(
 			'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id'),
 			'name' => array('property' => 'name', 'type' => 'text', 'label' => 'Name', 'description' => 'A name for the settings', 'required' => true, 'maxLength' => 100),

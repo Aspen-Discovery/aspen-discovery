@@ -64,7 +64,7 @@ class SubmitTicket extends Admin_Admin
 		$this->display('submitTicket.tpl', 'Submit Ticket');
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
@@ -73,12 +73,12 @@ class SubmitTicket extends Admin_Admin
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return 'aspen_help';
 	}
 
-	function canView()
+	function canView() : bool
 	{
 		return UserAccount::userHasPermission('Submit Ticket');
 	}

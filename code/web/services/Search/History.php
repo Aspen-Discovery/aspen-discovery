@@ -6,7 +6,6 @@ class History extends Action {
 	var $catalog;
 	private  static $searchSourceLabels = array(
 		'local' => 'Catalog',
-		'islandora' => 'Archive',
 		'genealogy' => 'Genealogy'
 	);
 
@@ -102,7 +101,7 @@ class History extends Action {
 		}
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		if (UserAccount::isLoggedIn()){

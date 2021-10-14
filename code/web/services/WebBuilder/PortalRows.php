@@ -4,29 +4,37 @@ require_once ROOT_DIR . '/sys/WebBuilder/PortalRow.php';
 
 class WebBuilder_PortalRows extends ObjectEditor
 {
-	function getObjectType()
+	function getInitializationJs() : string
+	{
+		return 'return AspenDiscovery.Admin.updateMakeRowAccordion();';
+	}
+
+	function getObjectType() : string
 	{
 		return 'PortalRow';
 	}
 
-	function getToolName()
+	function getToolName() : string
 	{
 		return 'PortalRows';
 	}
 
-	function getModule()
+	function getModule() : string
 	{
 		return 'WebBuilder';
 	}
 
-	function getPageTitle()
+	function getPageTitle() : string
 	{
 		return 'WebBuilder Portal Rows';
 	}
 
-	function getAllObjects()
+	function getAllObjects($page, $recordsPerPage) : array
 	{
 		$object = new PortalRow();
+		$object->orderBy($this->getSort());
+		$this->applyFilters($object);
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		$objectList = array();
 		while ($object->fetch()) {
@@ -35,32 +43,37 @@ class WebBuilder_PortalRows extends ObjectEditor
 		return $objectList;
 	}
 
-	function getObjectStructure()
+	function getDefaultSort() : string
+	{
+		return 'weight asc';
+	}
+
+	function getObjectStructure() : array
 	{
 		return PortalRow::getObjectStructure();
 	}
 
-	function getPrimaryKeyColumn()
+	function getPrimaryKeyColumn() : string
 	{
 		return 'id';
 	}
 
-	function getIdKeyColumn()
+	function getIdKeyColumn() : string
 	{
 		return 'id';
 	}
 
-	function getAdditionalObjectActions($existingObject)
+	function getAdditionalObjectActions($existingObject) : array
 	{
 		return [];
 	}
 
-	function getInstructions()
+	function getInstructions() : string
 	{
 		return '';
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
@@ -72,12 +85,12 @@ class WebBuilder_PortalRows extends ObjectEditor
 		return $breadcrumbs;
 	}
 
-	function canView()
+	function canView() : bool
 	{
 		return UserAccount::userHasPermission(['Administer All Custom Pages', 'Administer Library Custom Pages']);
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return 'web_builder';
 	}

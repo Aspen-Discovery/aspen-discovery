@@ -4,54 +4,66 @@ require_once ROOT_DIR . '/sys/WebBuilder/CustomForm.php';
 
 class WebBuilder_CustomForms extends ObjectEditor
 {
-	function getObjectType()
+	function getObjectType() : string
 	{
 		return 'CustomForm';
 	}
 
-	function getToolName()
+	function getToolName() : string
 	{
 		return 'CustomForms';
 	}
 
-	function getModule()
+	function getModule() : string
 	{
 		return 'WebBuilder';
 	}
 
-	function getPageTitle()
+	function getPageTitle() : string
 	{
 		return 'Custom WebBuilder Forms';
 	}
 
-	function getAllObjects()
+	function getAllObjects($page, $recordsPerPage) : array
 	{
 		$object = new CustomForm();
-		$object->orderBy('title');
-		$object->find();
+		$object->orderBy($this->getSort());
+		$this->applyFilters($object);
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
+		$userHasExistingObjects = true;
+		if (!UserAccount::userHasPermission('Administer All Custom Forms')) {
+			$userHasExistingObjects = $this->limitToObjectsForLibrary($object, 'LibraryCustomForm', 'formId');
+		}
 		$objectList = array();
-		while ($object->fetch()) {
-			$objectList[$object->id] = clone $object;
+		if ($userHasExistingObjects) {
+			$object->find();
+			while ($object->fetch()) {
+				$objectList[$object->id] = clone $object;
+			}
 		}
 		return $objectList;
 	}
+	function getDefaultSort() : string
+	{
+		return 'title asc';
+	}
 
-	function getObjectStructure()
+	function getObjectStructure() : array
 	{
 		return CustomForm::getObjectStructure();
 	}
 
-	function getPrimaryKeyColumn()
+	function getPrimaryKeyColumn() : string
 	{
 		return 'id';
 	}
 
-	function getIdKeyColumn()
+	function getIdKeyColumn() : string
 	{
 		return 'id';
 	}
 
-	function getAdditionalObjectActions($existingObject)
+	function getAdditionalObjectActions($existingObject) : array
 	{
 		$objectActions = [];
 		if (!empty($existingObject) && $existingObject instanceof CustomForm && !empty($existingObject->id)){
@@ -67,12 +79,12 @@ class WebBuilder_CustomForms extends ObjectEditor
 		return $objectActions;
 	}
 
-	function getInstructions()
+	function getInstructions() : string
 	{
 		return '';
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
@@ -81,12 +93,12 @@ class WebBuilder_CustomForms extends ObjectEditor
 		return $breadcrumbs;
 	}
 
-	function canView()
+	function canView() : bool
 	{
 		return UserAccount::userHasPermission(['Administer All Custom Forms', 'Administer Library Custom Forms']);
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return 'web_builder';
 	}

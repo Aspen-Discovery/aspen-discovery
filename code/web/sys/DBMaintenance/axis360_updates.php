@@ -10,6 +10,14 @@ function getAxis360Updates(){
 			]
 		],
 
+		'axis360AddSettings' => [
+			'title' => 'Add Settings to Axis360 module',
+			'description' => 'Add Settings to Axis360 module',
+			'sql' => [
+				"UPDATE modules set settingsClassPath = '/sys/Axis360/Axis360Setting.php', settingsClassName='Axis360Setting' WHERE name = 'Axis 360'"
+			]
+		],
+
 		'createAxis360SettingsAndScopes' => [
 			'title' => 'Create settings and scopes for Axis360',
 			'description' => 'Create settings and scopes for Axis360',
@@ -105,6 +113,16 @@ function getAxis360Updates(){
 				'ALTER table axis360_title_availability ADD column settingId INT(11)',
 				'ALTER table axis360_title_availability DROP INDEX titleId',
 				'ALTER table axis360_title_availability ADD UNIQUE titleId(titleId, settingId)',
+			]
+		],
+
+		'axis360_availability_indexes' => [
+			'title' => 'Update Axis 360 Availability Indexes',
+			'description' => 'Update indexes for axis 360 availability',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER table axis360_title_availability DROP INDEX titleId_2',
+				'ALTER table axis360_title_availability ADD INDEX titleId2(titleId)',
 			]
 		],
 
@@ -210,8 +228,16 @@ function getAxis360Updates(){
 					numApiErrors INT(11) NOT NULL DEFAULT 0,
 					numConnectionFailures INT(11) NOT NULL DEFAULT 0
 				) ENGINE = InnoDB",
-				"ALTER TABLE axis360_record_usage ADD INDEX (instance, year, month)",
 			),
 		),
+
+		'axis360_stats_index' =>[
+			'title' => 'Axis 360 Stats Index',
+			'description' => 'Add an index to the table for tracking how Axis 360 is used.',
+			'continueOnError' => true,
+			'sql' => array(
+				"ALTER TABLE axis360_stats ADD INDEX (instance, year, month)",
+			),
+		]
 	];
 }

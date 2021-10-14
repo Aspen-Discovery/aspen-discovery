@@ -1,6 +1,6 @@
 {if $similarAuthors}
   <div class="authorbox">
-	  <h5>{translate text='Authors matching'}: {$lookfor|escape}</h5>
+	  <h5>{translate text='Authors matching' isPublicFacing=true}: {$lookfor|escape}</h5>
 	  <div class="row">
 	  	{foreach from=$similarAuthors.list item=author name=authorLoop}
 				{if $smarty.foreach.authorLoop.iteration % 4 == 1}
@@ -16,7 +16,7 @@
 	  </div>
 		{if count($similarAuthors.list) == 10}
 			<div>
-			  <a href="{$similarAuthors.lookfor|escape}"><strong>{translate text='see all'}{if $similarAuthors.count} {$similarAuthors.count}{/if} &raquo;</strong></a>
+			  <a href="{$similarAuthors.lookfor|escape}"><strong>{translate text='see all' isPublicFacing=true}{if $similarAuthors.count} {$similarAuthors.count}{/if} &raquo;</strong></a>
 			</div>
 		{/if}
   </div>

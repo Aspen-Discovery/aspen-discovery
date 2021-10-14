@@ -37,14 +37,14 @@ class MyAccount_RegisterRosenLevelUP extends MyAccount
 		$this->rosenLevelUPSetting = new RosenLevelUPSetting();
 		if (!$this->rosenLevelUPSetting->find(true)){
 			global $logger;
-			$this->levelUPResult->interfaceArray['message'] = translate(['text' => 'rosen_error_setup', 'defaultText' => 'Error: Rosen LevelUP is not set up for this Library System']);
+			$this->levelUPResult->interfaceArray['message'] = translate(['text' => 'Error: Rosen LevelUP is not set up for this Library System', 'isPublicFacing'=> true]);
 			$logger->log('Error: Rosen LevelUP is not set up for this Library System', Logger::LOG_NOTICE);
 			$interface->assign('registerRosenLevelUPResult', $this->levelUPResult->interfaceArray);
 			$this->display('registerRosenLevelUP.tpl', 'Register for Rosen LevelUP');
 			return;
 		}
 
-		$this->rosen_help = translate(['text' => 'rosen_help', 'defaultText' => 'For further assistance, use the Help menu.']);
+		$this->rosen_help = translate(['text' => 'For further assistance, use the Help menu.', 'isPublicFacing'=> true]);
 
 		if ($user) {
 			// Disable form for ineligible patron types
@@ -56,7 +56,7 @@ class MyAccount_RegisterRosenLevelUP extends MyAccount
 			}
 			if ($this->student_is_eligible == false) {
 				global $logger;
-				$this->levelUPResult->interfaceArray['message'] = translate(['text' => 'rosen_error_ineligible', 'defaultText' => 'Error: patron is not eligible to register for Rosen LevelUP. <a href=\"/MyAccount/RegisterRosenLevelUP\">Log in with a different Library account</a>.']);
+				$this->levelUPResult->interfaceArray['message'] = translate(['text' => 'Error: patron is not eligible to register for Rosen LevelUP.', 'isPublicFacing'=> true]) .' <a href=\"/MyAccount/RegisterRosenLevelUP\">' . translate(['text' => 'Log in with a different Library account', 'isPublicFacing'=> true]) . '</a>';
 				$logger->log('Error from LevelUP. User ID : ' . $user->id . 'Ineligible user', Logger::LOG_NOTICE);
 				$interface->assign('registerRosenLevelUPResult', $this->levelUPResult->interfaceArray);
 				$this->display('registerRosenLevelUP.tpl', 'Register for Rosen LevelUP');
@@ -67,10 +67,11 @@ class MyAccount_RegisterRosenLevelUP extends MyAccount
 				$this->student_username = $user->cat_username;
 				if (!empty($user->getHomeLocation()->subdomain)) {
 					$this->student_school_code = $user->getHomeLocation()->subdomain;
+					$this->student_school_name = $user->getHomeLocation()->displayName;
 				} else {
-					$this->student_school_code = $user->getHomeLocation()->code;
+					$this->student_school_code = 0;
+					$this->student_school_name = "Library User";
 				}
-				$this->student_school_name = $user->getHomeLocation()->displayName;
 
 				if (!empty($this->rosenLevelUPSetting->lu_ptypes_k) && preg_match($this->rosenLevelUPSetting->lu_ptypes_k, $user->patronType) == 1) {
 					$this->student_grade_level = 'K';
@@ -148,13 +149,13 @@ class MyAccount_RegisterRosenLevelUP extends MyAccount
 							if ($this->levelUPResult->UploadResponse->status == '200') {
 								global $logger;
 								$this->levelUPResult->interfaceArray['success'] = 'success';
-								$this->levelUPResult->interfaceArray['message'] = translate(['text' => 'rosen_success', 'defaultText' => "<p>Congratulations!!! You have successfully registered </p><p>STUDENT Username %1% with </p><p>PARENT Username %2%. </p><p>You will receive an email shortly with these details. </p><p>Please <a href=\"https://levelupreader.com/app/#/login\">log in to Rosen LevelUP</a> or <a href=\"/MyAccount/RegisterRosenLevelUP\">register another student</a>.</p>", 1 => $this->student_username, 2 => $this->parent_username]);
+								$this->levelUPResult->interfaceArray['message'] = translate(['text' => "<p>Congratulations!!! You have successfully registered </p><p>STUDENT Username %1% with </p><p>PARENT Username %2%. </p><p>You will receive an email shortly with these details. </p><p>Please <a href=\"https://levelupreader.com/app/#/login\">log in to Rosen LevelUP</a> or <a href=\"/MyAccount/RegisterRosenLevelUP\">register another student</a>.</p>", 1 => $this->student_username, 2 => $this->parent_username, 'isPublicFacing'=> true]);
 								$logger->log('LevelUP. User ID : ' . $user->id . ' successfully registered STUDENT ' . $this->student_username . ' with PARENT ' . $this->parent_username, Logger::LOG_NOTICE);
 
 								// following successful registration, email the parent with registration information
 								try {
-									$body = $firstName . " " . $lastName . "\n\n";
-									$body .= translate(['text' => 'rosen_email_1', 'defaultText' =>'Welcome to LevelUP! Your PARENT username: %2%. Your STUDENT\'S username: %1%.', 1 => $this->student_username, 2 => $this->parent_username]);
+									$body = $this->parent_first_name . " " . $this->parent_last_name . "\n\n";
+									$body .= translate(['text' => 'Welcome to LevelUP! Your PARENT username: %2%. Your STUDENT\'S username: %1%.', 1 => $this->student_username, 2 => $this->parent_username, 'isPublicFacing'=> true]);
 									$body_template = $interface->fetch('Emails/rosen-levelup.tpl');
 									$body .= $body_template;
 									require_once ROOT_DIR . '/sys/Email/Mailer.php';
@@ -222,7 +223,11 @@ class MyAccount_RegisterRosenLevelUP extends MyAccount
 		$locationList[0] = "school not listed";
 		$locationList[$this->rosenLevelUPSetting->lu_location_code_prefix . $this->student_school_code] = $this->student_school_name;
 		$fields[] = array('property' => 'student_school', 'default' => $this->rosenLevelUPSetting->lu_location_code_prefix . $this->student_school_code, 'type' => 'enum', 'label' => 'Student School', 'values' => $locationList, 'required' => true);
-		$fields[] = array('property' => 'student_grade_level', 'default' => $this->student_grade_level, 'type' => 'enum', 'label' => 'Student Grade Level, K-2', 'values' => array('K', '1', '2'), 'required' => true);
+		$studentGradeLevelsList = array();
+		$studentGradeLevelsList['K'] = 'Pre-K and K';
+		$studentGradeLevelsList['1'] = '1';
+		$studentGradeLevelsList['2'] = '2+';
+		$fields[] = array('property' => 'student_grade_level', 'default' => $this->student_grade_level, 'type' => 'enum', 'label' => 'Student Grade Level, K-2', 'values' => $studentGradeLevelsList, 'required' => true);
 		$fields[] = array('property' => 'parent_username', 'default' => $this->parent_username, 'type' => 'text', 'label' => 'Parent Rosen LevelUP Username', 'maxLength' => 40, 'required' => true);
 		$fields[] = array('property' => 'parent_pw', 'type' => 'storedPassword', 'label' => 'Parent Rosen LevelUP Password', 'maxLength' => 40, 'required' => true, 'repeat' => true);
 		$fields[] = array('property' => 'parent_first_name', 'default' => $this->parent_first_name, 'type' => 'text', 'label' => 'Parent First Name', 'maxLength' => 40, 'required' => true);
@@ -266,19 +271,19 @@ class MyAccount_RegisterRosenLevelUP extends MyAccount
 			$parseResponse->content = json_decode($responseBody, true);
 			$parseResponse->error = '';
 			$parseResponse->status = $responseCode;
-			$parseResponse->message = translate(['text' => 'rosen_info_http_response', 'defaultText' => "Rosen LevelUP User Account API yielded HTTP response code"]) . $parseResponse->status;
+			$parseResponse->message = translate(['text' => "Rosen LevelUP User Account API yielded HTTP response code", 'isPublicFacing'=> true]) . $parseResponse->status;
 		} elseif ($responseCode == '404') {
 			$parseResponse->content = json_decode($responseBody, true);
 			$parseResponse->error = 'Not found';
 			$parseResponse->status = '404';
-			$parseResponse->message = translate(['text' => 'rosen_info_http_response', 'defaultText' => "Rosen LevelUP User Account API yielded HTTP response code"]) . $parseResponse->status;
+			$parseResponse->message = translate(['text' => "Rosen LevelUP User Account API yielded HTTP response code", 'isPublicFacing'=> true]) . $parseResponse->status;
 		} elseif ($responseCode) {
 			$parseResponse->status = $responseCode;
-			$parseResponse->message = translate(['text' => 'rosen_info_http_response', 'defaultText' => "Rosen LevelUP User Account API yielded HTTP response code"]) . $parseResponse->status;
+			$parseResponse->message = translate(['text' => "Rosen LevelUP User Account API yielded HTTP response code", 'isPublicFacing'=> true]) . $parseResponse->status;
 		} else {
 			$parseResponse = new stdClass();
 			$parseResponse->error = 'Unavailable';
-			$parseResponse->message = translate(['text' => 'rosen_error_unavailable', 'defaultText' => 'Rosen LevelUP User Account API is not currently available']);
+			$parseResponse->message = translate(['text' => 'Rosen LevelUP User Account API is not currently available', 'isPublicFacing'=> true]);
 		}
 		return $parseResponse;
 	}
@@ -302,9 +307,9 @@ class MyAccount_RegisterRosenLevelUP extends MyAccount
 		} elseif ($queryResponse->status == '200') { // i.e., username found
 			$queryResponse->error = $role . ' Username already exists.';
 			if ($role == 'STUDENT') {
-				$queryResponse->message = translate(['text' => 'rosen_student_username_found', 'defaultText' => "%1% %2% has already been registered with Rosen LevelUP. Please <a href=\"https://levelupreader.com/app/#/login\">log in to Rosen LevelUP</a> or register with a different Username for this %1%", 1 => translate($role), 2 => $username]);
+				$queryResponse->message = translate(['text' => "%1% %2% has already been registered with Rosen LevelUP. Please <a href=\"https://levelupreader.com/app/#/login\">log in to Rosen LevelUP</a> or register with a different Username for this %1%", 1 => translate(['text'=>$role,'isPublicFacing'=>true, 'inAttribute'=>true]), 2 => $username, 'isPublicFacing'=> true]);
 			} elseif ($role == 'PARENT') {
-				$queryResponse->message = translate(['text' => 'rosen_parent_username_found', 'defaultText' => "%1% %2% has already been registered with Rosen LevelUP with a different email address. Please <a href=\"https://levelupreader.com/app/#/login\">log in to Rosen LevelUP</a> or register with a different Username or a different email for this %1%", 1 => translate($role), 2 => $username]);
+				$queryResponse->message = translate(['text' => "%1% %2% has already been registered with Rosen LevelUP with a different email address. Please <a href=\"https://levelupreader.com/app/#/login\">log in to Rosen LevelUP</a> or register with a different Username or a different email for this %1%", 1 => translate(['text'=>$role,'isPublicFacing'=>true, 'inAttribute'=>true]), 2 => $username, 'isPublicFacing'=> true]);
 			}
 		} else {
 			// TO DO: figure out what the other cases are and implement them
@@ -323,7 +328,7 @@ class MyAccount_RegisterRosenLevelUP extends MyAccount
 		$json_string .= '"location": "default",';
 		$json_string .= '"districtManagers": [],';
 		$json_string .= '"schools": [{';
-		$json_string .= '"name": "' . $this->rosenLevelUPSetting->lu_school_name . '",';
+		$json_string .= '"name": "' . $_REQUEST['student_school'] . '",';
 		$json_string .= '"classRooms": [{';
 		$json_string .= '"name": "' . $this->parent_username . '",';
 		$json_string .= '"gradeLevel": "' . $this->student_grade_level . '",';
@@ -384,7 +389,7 @@ class MyAccount_RegisterRosenLevelUP extends MyAccount
 		return $uploadResponse;
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		return [];
 	}

@@ -2,7 +2,7 @@
 	<div class="row">
 		<div class="col-sm-5 col-md-4">
 			<div class="form-group">
-				<label for="pageSize">{translate text='Entries Per Page'}</label>
+				<label for="pageSize">{translate text='Entries Per Page' isAdminFacing=true}</label>
 				<select id="pageSize" name="pageSize" class="pageSize form-control input-sm">
 					<option value="30"{if $recordsPerPage == 30} selected="selected"{/if}>30</option>
 					<option value="50"{if $recordsPerPage == 50} selected="selected"{/if}>50</option>
@@ -13,7 +13,7 @@
 		</div>
 		<div class="col-sm-3 col-md-3 col-lg-2">
 			<div class="form-group">
-				<label for="processedLimit">{translate text='Min Processed'}</label>
+				<label for="processedLimit">{translate text='Min Processed' isAdminFacing=true}</label>
 				<div class="input-group-sm input-group">
 					<input id="processedLimit" name="processedLimit" type="number" min="0" class="form-control input-sm" {if !empty($processedLimit)} value="{$processedLimit}"{/if}>
 				</div>
@@ -21,9 +21,9 @@
 		</div>
 		<div class="col-sm-4 col-md-4 col-lg-3">
 			<div class="form-group">
-				<label for="showErrorsOnly">{translate text='Show Errors Only'}</label>
+				<label for="showErrorsOnly">{translate text='Show Errors Only' isAdminFacing=true}</label>
 				<div class="input-group-sm input-group">
-					<input type='checkbox' name='showErrorsOnly' id='showErrorsOnly' data-on-text="&nbsp;Errors Only&nbsp;" data-off-text="&nbsp;All Records&nbsp;" data-switch="" {if $showErrorsOnly}checked{/if}/>
+					<input type='checkbox' name='showErrorsOnly' id='showErrorsOnly' data-on-text="{translate text='Errors Only' inAttribute=true isAdminFacing=true}" data-off-text="{translate text='All Records' inAttribute=true isAdminFacing=true}" data-switch="" {if $showErrorsOnly}checked{/if}/>
 				</div>
 			</div>
 		</div>
@@ -32,7 +32,7 @@
 	<div class="row">
 		<div class="col-sm-2 col-md-4">
 			<div class="form-group">
-				<button class="btn btn-primary btn-sm" type="submit">Apply</button>
+				<button class="btn btn-primary btn-sm" type="submit">{translate text="Apply" isAdminFacing=true}</button>
 			</div>
 		</div>
 	</div>

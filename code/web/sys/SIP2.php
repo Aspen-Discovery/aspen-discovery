@@ -270,7 +270,7 @@ class sip2
 	}
 
 	/* Fee paid function should go here */
-	function msgFeePaid ($feeType, $pmtType, $pmtAmount, $curType = 'USD', $feeId = '', $transId = '')
+	function msgFeePaid ($feeType = '01', $pmtType = '02', $pmtAmount, $curType = 'USD', $feeId = '', $transId = '', $patronId = '')
 	{
 		/* Fee payment function (37) - untested */
 		/* Fee Types: */
@@ -306,11 +306,15 @@ class sip2
 		$this->_addFixedOption(sprintf('%02d', $feeType), 2);
 		$this->_addFixedOption(sprintf('%02d', $pmtType), 2);
 		$this->_addFixedOption($curType, 3);
-		$this->_addVarOption('BV',$pmtAmount); /* due to currancy format localization, it is up to the programmer to properly format their payment amount */
+		$this->_addVarOption('BV',$pmtAmount); /* due to currency format localization, it is up to the programmer to properly format their payment amount */
 		$this->_addVarOption('AO',$this->AO);
-		$this->_addVarOption('AA',$this->patron);
+		if (!empty($patronId)) {
+			$this->_addVarOption('AA',$patronId);
+		} else {
+			$this->_addVarOption('AA',$this->patron);
+		}
 		$this->_addVarOption('AC',$this->AC, true);
-		$this->_addVarOption('AD',$this->patronpwd, true);
+//		$this->_addVarOption('AD',$this->patronpwd, true); // Patron password ignored in CarlX 9.6. Leave commented out until an Aspen ILS requires it.
 		$this->_addVarOption('CG',$feeId, true);
 		$this->_addVarOption('BK',$transId, true);
 
@@ -450,10 +454,13 @@ class sip2
 		}
 		$this->_addVarOption('BY',$holdtype, true);
 		$this->_addVarOption('XG','', true); // CarlX custom field Issue Identifier // TO DO: Evaluate code changes for Issue level holds
-		if ($freeze == 'freeze' && !empty($freezeReactivationDate)) {
-			if (substr($freezeReactivationDate,-1) != 'B') {
-				$freezeReactivationDate .= 'B';
+		if ($freeze == 'freeze' && !empty($freezeReactivateDate)) {
+			if (substr($freezeReactivateDate,-1) != 'B') {
+				$freezeReactivateDate .= 'B';
 			}
+		}
+		if ($freeze == 'thaw') {
+			$freezeReactivateDate = date('m/d/Y', $expDate); // CarlX 9.6.4.3 2020 12 31 will set hold cancel date equal to the previous Freeze Not Needed Before date unless a new value is supplied for Not Needed After in the thaw XI field, despite the fact that the same information is provided in BW
 		}
 		$this->_addVarOption('XI',$freezeReactivateDate, true); // CarlX custom field NNA or NNB Date used with suffix 'B' to indicate Freeze Reactivate Date
 
@@ -746,7 +753,7 @@ class sip2
 			//Whoops, we got an error
 			global $logger;
 			$lastError = socket_last_error($this->socket);
-			$logger->log("Error reading data from socket ($lastError)" . socket_strerror($lastError), Logger::LOG_ERROR);
+			$logger->log("Error reading data from socket ($lastError) " . socket_strerror($lastError), Logger::LOG_ERROR);
 		}
 
 		$this->_debugmsg("SIP2: {$result}");

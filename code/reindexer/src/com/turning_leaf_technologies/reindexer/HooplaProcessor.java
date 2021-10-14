@@ -8,27 +8,32 @@ import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.json.JSONString;
 
+import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 
 class HooplaProcessor {
-	private GroupedWorkIndexer indexer;
-	private Logger logger;
+	private final GroupedWorkIndexer indexer;
+	private final Logger logger;
 
 	private PreparedStatement getProductInfoStmt;
+	private PreparedStatement doubleDecodeRawResponseStmt;
+	private PreparedStatement updateRawResponseStmt;
 
 	HooplaProcessor(GroupedWorkIndexer indexer, Connection dbConn, Logger logger) {
 		this.indexer = indexer;
 		this.logger = logger;
 
 		try {
-			getProductInfoStmt = dbConn.prepareStatement("SELECT * from hoopla_export where hooplaId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+			getProductInfoStmt = dbConn.prepareStatement("SELECT id, hooplaId, active, title, kind, pa, demo, profanity, rating, abridged, children, price, rawChecksum, UNCOMPRESS(rawResponse) as rawResponse, dateFirstDetected from hoopla_export where hooplaId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+			doubleDecodeRawResponseStmt = dbConn.prepareStatement("SELECT UNCOMPRESS(UNCOMPRESS(rawResponse)) as rawResponse from hoopla_export where id = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+			updateRawResponseStmt = dbConn.prepareStatement("UPDATE hoopla_export SET rawResponse = COMPRESS(?) where id = ?");
 		} catch (SQLException e) {
 			logger.error("Error setting up hoopla processor", e);
 		}
@@ -44,6 +49,12 @@ class HooplaProcessor {
 					logger.debug("Hoopla product " + identifier + " is inactive, skipping");
 					return;
 				}
+				byte[] rawResponseBytes = productRS.getBytes("rawResponse");
+				if (rawResponseBytes == null){
+					logEntry.incErrors("rawResponse for Hoopla title " + identifier + " was null skipping");
+					return;
+				}
+
 				String kind = productRS.getString("kind");
 				float price = productRS.getFloat("price");
 
@@ -51,6 +62,8 @@ class HooplaProcessor {
 				hooplaRecord.setRecordIdentifier("hoopla", identifier);
 
 				String title = productRS.getString("title");
+				String subTitle = "";
+
 				String formatCategory;
 				String primaryFormat;
 				switch (kind) {
@@ -86,14 +99,36 @@ class HooplaProcessor {
 				hooplaRecord.addFormat(primaryFormat);
 				hooplaRecord.addFormatCategory(formatCategory);
 
-				JSONObject rawResponse = new JSONObject(productRS.getString("rawResponse"));
+				String rawResponseString = new String(rawResponseBytes, StandardCharsets.UTF_8);
+				if (rawResponseString.charAt(0) != '{' || rawResponseString.charAt(rawResponseString.length() -1) != '}'){
+					//If the first char is not { check to see if it has been double encoded
+					rawResponseString = fixHooplaData(productRS.getLong("id"));
+					if (rawResponseString == null){
+						logEntry.incErrors("Could not read or correct Hoopla raw response for " + identifier);
+					}
+				}
+				JSONObject rawResponse = new JSONObject(rawResponseString);
 
-				groupedWork.setTitle(title, title, title, primaryFormat);
+				if (rawResponse.has("titleTitle")){
+					title = rawResponse.getString("titleTitle");
+					subTitle = rawResponse.getString("title");
+				}else if (rawResponse.has("subtitle")){
+					subTitle = rawResponse.getString("subtitle");
+				}
+
+				String fullTitle = title + " " + subTitle;
+				fullTitle = fullTitle.trim();
+				groupedWork.setTitle(title, subTitle, title, title, primaryFormat);
+				groupedWork.addFullTitle(fullTitle);
+
 
 				String primaryAuthor = "";
 				if (rawResponse.has("artist")){
 					primaryAuthor = rawResponse.getString("artist");
-					primaryAuthor = StringUtils.swapFirstLastNames(primaryAuthor);
+					//Don't swap artist names for music since these are typically group names.
+					if (!kind.equals("MUSIC")) {
+						primaryAuthor = StringUtils.swapFirstLastNames(primaryAuthor);
+					}
 				}else if (rawResponse.has("publisher")){
 					primaryAuthor = rawResponse.getString("publisher");
 				}
@@ -122,10 +157,93 @@ class HooplaProcessor {
 							groupedWork.addTargetAudience("Adult");
 							groupedWork.addTargetAudienceFull("Adult");
 						}else {
-							groupedWork.addTargetAudience("Young Adult");
-							groupedWork.addTargetAudienceFull("Adolescent (14-17)");
-							groupedWork.addTargetAudience("Adult");
-							groupedWork.addTargetAudienceFull("Adult");
+							//Todo: Also check the genres (Children's, Teen
+							boolean foundAudience = false;
+							if (rawResponse.has("genres")){
+								JSONArray genres = rawResponse.getJSONArray("genres");
+								for (int i = 0; i < genres.length(); i++) {
+									if (genres.getString(i).equals("Teen")){
+										groupedWork.addTargetAudience("Young Adult");
+										groupedWork.addTargetAudienceFull("Adolescent (14-17)");
+										foundAudience = true;
+									}else if (genres.getString(i).equals("Children's")){
+										groupedWork.addTargetAudience("Juvenile");
+										groupedWork.addTargetAudienceFull("Juvenile");
+										foundAudience = true;
+									}else if (genres.getString(i).equals("Adult")){
+										groupedWork.addTargetAudience("Adult");
+										groupedWork.addTargetAudienceFull("Adult");
+										foundAudience = true;
+									}
+								}
+							}
+							if (!foundAudience) {
+								if (kind.equals("MOVIE") || kind.equals("TELEVISION")) {
+									switch (rating) {
+										case "R":
+										case "NRA":
+										case "NRM":
+										case "NRC":
+										case "NRT":
+										case "NC-17":
+											groupedWork.addTargetAudience("Adult");
+											groupedWork.addTargetAudienceFull("Adult");
+											break;
+										case "PG-13":
+										case "PG13":
+										case "PG":
+										case "TVPG":
+										case "TV14":
+											groupedWork.addTargetAudience("Young Adult");
+											groupedWork.addTargetAudienceFull("Adolescent (14-17)");
+											groupedWork.addTargetAudience("Adult");
+											groupedWork.addTargetAudienceFull("Adult");
+											break;
+										case "TVY":
+										case "TVY7":
+											groupedWork.addTargetAudience("Juvenile");
+											groupedWork.addTargetAudienceFull("Juvenile");
+											break;
+										case "TVG":
+										case "G":
+											groupedWork.addTargetAudience("General");
+											groupedWork.addTargetAudienceFull("General");
+											break;
+										default:
+											//todo, do we want to add additional ratings here?
+											logger.debug("rating " + rating);
+											break;
+									}
+								}else if (kind.equals("COMIC")){
+									switch (rating) {
+										case "E":
+											groupedWork.addTargetAudience("Juvenile");
+											groupedWork.addTargetAudienceFull("Juvenile");
+											break;
+										case "PA":
+										case "EX":
+											groupedWork.addTargetAudience("Adult");
+											groupedWork.addTargetAudienceFull("Adult");
+											break;
+										case "T":
+											groupedWork.addTargetAudience("Young Adult");
+											groupedWork.addTargetAudienceFull("Adolescent (14-17)");
+											break;
+										case "T+":
+										default:
+											groupedWork.addTargetAudience("Young Adult");
+											groupedWork.addTargetAudienceFull("Adolescent (14-17)");
+											groupedWork.addTargetAudience("Adult");
+											groupedWork.addTargetAudienceFull("Adult");
+									}
+
+								}else{
+									groupedWork.addTargetAudience("Young Adult");
+									groupedWork.addTargetAudienceFull("Adolescent (14-17)");
+									groupedWork.addTargetAudience("Adult");
+									groupedWork.addTargetAudienceFull("Adult");
+								}
+							}
 						}
 					}else{
 						groupedWork.addTargetAudience("Adult");
@@ -159,8 +277,6 @@ class HooplaProcessor {
 
 				JSONArray genres = rawResponse.getJSONArray("genres");
 				HashSet<String> genresToAdd = new HashSet<>();
-//				HashMap<String, Integer> literaryForm = new HashMap<>();
-//				HashMap<String, Integer> literaryFormFull = new HashMap<>();
 				HashSet<String> topicsToAdd = new HashSet<>();
 				for (int i = 0; i < genres.length(); i++) {
 					String genre = genres.getString(i);
@@ -173,20 +289,24 @@ class HooplaProcessor {
 				groupedWork.addTopicFacet(topicsToAdd);
 				groupedWork.addTopic(topicsToAdd);
 
-//				boolean isFiction = productRS.getBoolean("isFiction");
-//				if (!isFiction){
-//					Util.addToMapWithCount(literaryForm, "Non Fiction");
-//					Util.addToMapWithCount(literaryFormFull, "Non Fiction");
-//				}else{
-//					Util.addToMapWithCount(literaryForm, "Fiction");
-//					Util.addToMapWithCount(literaryFormFull, "Fiction");
-//				}
-//				if (literaryForm.size() > 0){
-//					groupedWork.addLiteraryForms(literaryForm);
-//				}
-//				if (literaryFormFull.size() > 0){
-//					groupedWork.addLiteraryFormsFull(literaryFormFull);
-//				}
+				HashMap<String, Integer> literaryForm = new HashMap<>();
+				HashMap<String, Integer> literaryFormFull = new HashMap<>();
+				if (rawResponse.has("fiction")){
+					if (rawResponse.getBoolean("fiction")){
+						Util.addToMapWithCount(literaryForm, "Fiction");
+						Util.addToMapWithCount(literaryFormFull, "Fiction");
+					}else{
+						Util.addToMapWithCount(literaryForm, "Non Fiction");
+						Util.addToMapWithCount(literaryFormFull, "Non Fiction");
+					}
+				}
+				if (literaryForm.size() > 0){
+					groupedWork.addLiteraryForms(literaryForm);
+				}
+				if (literaryFormFull.size() > 0){
+					groupedWork.addLiteraryFormsFull(literaryFormFull);
+				}
+
 				String publisher = rawResponse.getString("publisher");
 				groupedWork.addPublisher(publisher);
 				//publication date
@@ -212,6 +332,7 @@ class HooplaProcessor {
 				groupedWork.addUpc(upc);
 
 				ItemInfo itemInfo = new ItemInfo();
+				itemInfo.setItemIdentifier(identifier);
 				itemInfo.seteContentSource("Hoopla");
 				itemInfo.setIsEContent(true);
 				itemInfo.seteContentUrl(rawResponse.getString("url"));
@@ -223,11 +344,15 @@ class HooplaProcessor {
 				itemInfo.setFormatCategory(formatCategory);
 				//Hoopla is always 1 copy unlimited use
 				itemInfo.setNumCopies(1);
+				itemInfo.setAvailable(true);
+				itemInfo.setDetailedStatus("Available Online");
+				itemInfo.setGroupedStatus("Available Online");
+				itemInfo.setHoldable(false);
+				itemInfo.setInLibraryUseOnly(false);
 
 				Date dateAdded = new Date(productRS.getLong("dateFirstDetected") * 1000);
 				itemInfo.setDateAdded(dateAdded);
 
-				itemInfo.setDetailedStatus("Available Online");
 				boolean abridged = productRS.getBoolean("abridged");
 				boolean pa = productRS.getBoolean("pa");
 				boolean profanity = productRS.getBoolean("profanity");
@@ -280,13 +405,9 @@ class HooplaProcessor {
 					}
 					if (okToAdd) {
 						ScopingInfo scopingInfo = itemInfo.addScope(scope);
-						scopingInfo.setAvailable(true);
-						scopingInfo.setStatus("Available Online");
-						scopingInfo.setGroupedStatus("Available Online");
-						scopingInfo.setHoldable(false);
+						groupedWork.addScopingInfo(scope.getScopeName(), scopingInfo);
 						scopingInfo.setLibraryOwned(true);
 						scopingInfo.setLocallyOwned(true);
-						scopingInfo.setInLibraryUseOnly(false);
 					}
 				}
 
@@ -295,12 +416,29 @@ class HooplaProcessor {
 			}
 			productRS.close();
 		}catch (NullPointerException e) {
-			logEntry.incErrors("Null pointer exception processing Hoopla record ", e);
+			logEntry.incErrors("Null pointer exception processing Hoopla record " + identifier + " grouped work " + groupedWork.getId(), e);
 		} catch (JSONException e) {
-			logEntry.incErrors("Error parsing raw data for Hoopla", e);
+			logEntry.incErrors("Error parsing raw data for Hoopla record " + identifier, e);
 		} catch (SQLException e) {
-			logEntry.incErrors("Error loading information from Database for Hoopla title", e);
+			logEntry.incErrors("Error loading information from Database for Hoopla title " + identifier, e);
 		}
+	}
+
+	private String fixHooplaData(long id) throws SQLException{
+		doubleDecodeRawResponseStmt.setLong(1, id);
+		ResultSet doubleDecodeRawResponseRS = doubleDecodeRawResponseStmt.executeQuery();
+		if (doubleDecodeRawResponseRS.next()){
+			String rawResponseString = doubleDecodeRawResponseRS.getString("rawResponse");
+			if (rawResponseString.charAt(0) == '{' && rawResponseString.charAt(rawResponseString.length() -1) == '}'){
+				updateRawResponseStmt.setString(1, rawResponseString);
+				updateRawResponseStmt.setLong(2, id);
+				updateRawResponseStmt.executeUpdate();
+				return rawResponseString;
+			}
+		}
+		doubleDecodeRawResponseRS.close();
+
+		return null;
 	}
 
 }

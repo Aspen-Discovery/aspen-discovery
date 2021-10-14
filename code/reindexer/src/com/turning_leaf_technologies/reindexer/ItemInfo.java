@@ -1,19 +1,22 @@
 package com.turning_leaf_technologies.reindexer;
 
 import com.turning_leaf_technologies.indexing.Scope;
+import com.turning_leaf_technologies.logging.BaseLogEntry;
+import com.turning_leaf_technologies.marc.MarcUtil;
+import com.turning_leaf_technologies.strings.StringUtils;
 import org.marc4j.marc.DataField;
 import org.marc4j.marc.Subfield;
 
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
+import java.util.*;
 
-public class ItemInfo {
+public class ItemInfo{
 	private String itemIdentifier;
 	private String locationCode;
 	private String subLocation;
 	private String subLocationCode;
 	private String format;
+	private String trimmedFormat;
 	private String subFormat;
 	private String formatCategory;
 	private int numCopies = 1;
@@ -25,8 +28,10 @@ public class ItemInfo {
 	private String sortableCallNumber;
 	private Date dateAdded;
 	private String IType;
+	private String trimmedIType;
 	private String ITypeCode;
 	private String eContentSource;
+	private String trimmedEContentSource;
 	private String eContentFilename;
 	private String eContentUrl;
 	private String statusCode;
@@ -34,6 +39,14 @@ public class ItemInfo {
 	private String dueDate;
 	private String collection;
 	private Date lastCheckinDate;
+	private String volumeField;
+	private String status;
+	private String groupedStatus;
+	private boolean available;
+	private boolean holdable;
+	private boolean bookable = false;
+	private boolean inLibraryUseOnly;
+
 	private RecordInfo recordInfo;
 
 	private final HashMap<String, ScopingInfo> scopingInfo = new HashMap<>();
@@ -69,10 +82,6 @@ public class ItemInfo {
 		this.detailedStatus = detailedStatus;
 	}
 
-	public String getDetailedStatus(){
-		return this.detailedStatus;
-	}
-
 	public String getLocationCode() {
 		return locationCode;
 	}
@@ -97,7 +106,11 @@ public class ItemInfo {
 	}
 
 	String getItemIdentifier() {
-		return itemIdentifier;
+		if (itemIdentifier == null || itemIdentifier.length() == 0) {
+			return recordInfo.getRecordIdentifier() + "-" + recordInfo.getRelatedItems().indexOf(this);
+		}else {
+			return itemIdentifier;
+		}
 	}
 
 	void setItemIdentifier(String itemIdentifier) {
@@ -137,6 +150,7 @@ public class ItemInfo {
 
 	public void setFormat(String format) {
 		this.format = format;
+		this.trimmedFormat = StringUtils.trimTrailingPunctuation(format);
 	}
 
 	void setSubFormats(String subFormats){
@@ -172,17 +186,16 @@ public class ItemInfo {
 		this.isEContent = isEContent;
 	}
 
-	private static final SimpleDateFormat lastCheckinDateFormatter = new SimpleDateFormat("MMM dd, yyyy");
 	private String baseDetails = null;
-	String getDetails(){
+	String getDetails(BaseLogEntry logEntry){
 		if (baseDetails == null){
 			String formattedLastCheckinDate = "";
 			if (lastCheckinDate != null){
-				formattedLastCheckinDate = lastCheckinDateFormatter.format(lastCheckinDate);
+				formattedLastCheckinDate = formatLastCheckInDate(lastCheckinDate, logEntry);
 			}
 			//Cache the part that doesn't change depending on the scope
 			baseDetails = recordInfo.getFullIdentifier() + "|" +
-					Util.getCleanDetailValue(itemIdentifier) + "|" +
+					Util.getCleanDetailValue(getItemIdentifier()) + "|" +
 					Util.getCleanDetailValue(detailedLocation) + "|" +
 					Util.getCleanDetailValue(callNumber) + "|" +
 					Util.getCleanDetailValue(format) + "|" +
@@ -202,6 +215,20 @@ public class ItemInfo {
 		return baseDetails;
 	}
 
+	private String formatLastCheckInDate(Date lastCheckinDate, BaseLogEntry logEntry){
+		String formattedLastCheckinDate;
+		try {
+			//We need to create this each time because the DateTimeFomatter is not ThreadSafe and just synchronizing
+			// this method is not working. Eventually, we can convert everything that uses Date to Java 8's new Date classes
+			SimpleDateFormat lastCheckinDateFormatter = new SimpleDateFormat("MMM dd, yyyy");
+			formattedLastCheckinDate = lastCheckinDateFormatter.format(lastCheckinDate);
+		}catch (Exception e){
+			logEntry.incErrors("Error formatting check in date for " + lastCheckinDate, e);
+			formattedLastCheckinDate = "";
+		}
+		return formattedLastCheckinDate;
+	}
+
 	Date getDateAdded() {
 		return dateAdded;
 	}
@@ -218,8 +245,17 @@ public class ItemInfo {
 		}
 	}
 
+	String getTrimmedIType(){
+		if (this.trimmedIType != null){
+			return trimmedIType;
+		}else {
+			return trimmedFormat;
+		}
+	}
+
 	void setIType(String IType) {
 		this.IType = IType;
+		this.trimmedIType = StringUtils.trimTrailingPunctuation(IType);
 	}
 
 	@SuppressWarnings("SpellCheckingInspection")
@@ -227,9 +263,14 @@ public class ItemInfo {
 		return eContentSource;
 	}
 
+	String getTrimmedEContentSource(){
+		return trimmedEContentSource;
+	}
+
 	@SuppressWarnings("SpellCheckingInspection")
 	void seteContentSource(String eContentSource) {
 		this.eContentSource = eContentSource;
+		this.trimmedEContentSource = StringUtils.trimTrailingPunctuation(eContentSource);
 	}
 
 	String getCallNumber() {
@@ -280,44 +321,8 @@ public class ItemInfo {
 		return scopingInfo;
 	}
 
-	boolean isValidForScope(Scope scope){
-		return scopingInfo.containsKey(scope.getScopeName());
-	}
-
 	boolean isValidForScope(String scopeName){
 		return scopingInfo.containsKey(scopeName);
-	}
-
-	boolean isLocallyOwned(Scope scope) {
-		ScopingInfo scopeData = scopingInfo.get(scope.getScopeName());
-		if (scopeData != null){
-			return scopeData.isLocallyOwned();
-		}
-		return false;
-	}
-
-	boolean isLibraryOwned(Scope scope) {
-		ScopingInfo scopeData = scopingInfo.get(scope.getScopeName());
-		if (scopeData != null){
-			return scopeData.isLibraryOwned();
-		}
-		return false;
-	}
-
-	boolean isLocallyOwned(String scopeName) {
-		ScopingInfo scopeData = scopingInfo.get(scopeName);
-		if (scopeData != null){
-			return scopeData.isLocallyOwned();
-		}
-		return false;
-	}
-
-	boolean isLibraryOwned(String scopeName) {
-		ScopingInfo scopeData = scopingInfo.get(scopeName);
-		if (scopeData != null){
-			return scopeData.isLibraryOwned();
-		}
-		return false;
 	}
 
 	String getShelfLocationCode() {
@@ -381,4 +386,165 @@ public class ItemInfo {
 			return subfield.getData();
 		}
 	}
+
+	public List<String> getSubfields(char subFieldSpec) {
+		List<Subfield> subfields = this.marcField.getSubfields(subFieldSpec);
+		List<String> subfieldData = new ArrayList<>();
+		for (Subfield subfield : subfields){
+			if (subfield.getData() != null){
+				subfieldData.add(subfield.getData());
+			}
+		}
+		return subfieldData;
+	}
+
+	void setGroupedStatus(String groupedStatus) {
+		this.groupedStatus = groupedStatus;
+	}
+
+	public String getGroupedStatus() {
+		return this.groupedStatus;
+	}
+
+	public boolean isAvailable() {
+		return available;
+	}
+
+	public void setAvailable(boolean available) {
+		this.available = available;
+	}
+
+	void setHoldable(boolean holdable) {
+		this.holdable = holdable;
+	}
+
+	public boolean isHoldable() {
+		return holdable;
+	}
+
+	public boolean isBookable() {
+		return false;
+	}
+
+	void setInLibraryUseOnly(boolean inLibraryUseOnly) {
+		this.inLibraryUseOnly = inLibraryUseOnly;
+	}
+
+	public boolean isInLibraryUseOnly() {
+		return inLibraryUseOnly;
+	}
+
+	public void copyFrom(ItemInfo itemInfo) {
+		this.itemIdentifier = itemInfo.itemIdentifier;
+		this.locationCode = itemInfo.locationCode;
+		this.subLocation = itemInfo.subLocation;
+		this.subLocationCode = itemInfo.subLocationCode;
+		this.format = itemInfo.format;
+		this.formatCategory = itemInfo.formatCategory;
+		this.numCopies = itemInfo.numCopies;
+		this.isOrderItem = itemInfo.isOrderItem;
+		this.isEContent = itemInfo.isEContent;
+		this.shelfLocation = itemInfo.shelfLocation;
+		this.detailedLocation = itemInfo.detailedLocation;
+		this.callNumber = itemInfo.callNumber;
+		this.sortableCallNumber = itemInfo.sortableCallNumber;
+		this.dateAdded = itemInfo.dateAdded;
+		this.IType = itemInfo.IType;
+		this.ITypeCode = itemInfo.ITypeCode;
+		this.eContentSource = itemInfo.eContentSource;
+		this.eContentFilename = itemInfo.eContentFilename;
+		this.eContentUrl = itemInfo.eContentUrl;
+		this.statusCode = itemInfo.statusCode;
+		this.detailedStatus = itemInfo.detailedStatus;
+		this.dueDate = itemInfo.dueDate;
+		this.collection = itemInfo.collection;
+		this.lastCheckinDate = itemInfo.lastCheckinDate;
+		this.shelfLocationCode = itemInfo.shelfLocationCode;
+		this.autoReindexTime = itemInfo.autoReindexTime;
+		this.marcField = itemInfo.marcField;
+		this.status = itemInfo.status;
+		this.groupedStatus = itemInfo.groupedStatus;
+		this.available = itemInfo.available;
+		this.holdable = itemInfo.holdable;
+		this.bookable = itemInfo.bookable;
+		this.inLibraryUseOnly = itemInfo.inLibraryUseOnly;
+		for (String scope : itemInfo.scopingInfo.keySet()){
+			ScopingInfo curScopingInfo = itemInfo.scopingInfo.get(scope);
+			ScopingInfo clonedScope = addScope(curScopingInfo.getScope());
+			clonedScope.copyFrom(curScopingInfo);
+		}
+	}
+
+	public String getDetailedStatus() {
+		return detailedStatus;
+	}
+
+	public void setVolumeField(String volumeField) {
+		this.volumeField = volumeField;
+	}
+
+	public String getVolumeField() {
+		return this.volumeField;
+	}
+
+	private StringBuffer locationOwnedScopes = null;
+	private StringBuffer libraryOwnedScopes = null;
+	private StringBuffer recordsIncludedScopes = null;
+	private HashSet<String> locationOwnedNames = null;
+	private HashSet<String> libraryOwnedNames = null;
+	public String getLocationOwnedScopes() {
+		if (this.locationOwnedScopes == null){
+			this.createScopingStrings();
+		}
+		return locationOwnedScopes.toString();
+	}
+
+	public String getLibraryOwnedScopes() {
+		if (this.libraryOwnedScopes == null){
+			this.createScopingStrings();
+		}
+		return libraryOwnedScopes.toString();
+	}
+
+	public String getRecordsIncludedScopes() {
+		if (this.recordsIncludedScopes == null){
+			this.createScopingStrings();
+		}
+		return recordsIncludedScopes.toString();
+	}
+	public HashSet<String> getLocationOwnedNames() {
+		if (this.locationOwnedNames == null){
+			this.createScopingStrings();
+		}
+		return locationOwnedNames;
+	}
+
+	public HashSet<String> getLibraryOwnedNames() {
+		if (this.libraryOwnedNames == null){
+			this.createScopingStrings();
+		}
+		return libraryOwnedNames;
+	}
+
+	private void createScopingStrings() {
+		locationOwnedScopes = new StringBuffer("~");
+		libraryOwnedScopes = new StringBuffer("~");
+		recordsIncludedScopes = new StringBuffer("~");
+		locationOwnedNames = new HashSet<>();
+		libraryOwnedNames = new HashSet<>();
+		for (ScopingInfo scope : scopingInfo.values()){
+			if (scope.isLocallyOwned()){
+				locationOwnedScopes.append(scope.getScope().getId()).append("~");
+				locationOwnedNames.add(scope.getScope().getFacetLabel());
+			}else if (scope.isLibraryOwned()){
+				libraryOwnedScopes.append(scope.getScope().getId()).append("~");
+				libraryOwnedNames.add(scope.getScope().getFacetLabel());
+			}else {
+				recordsIncludedScopes.append(scope.getScope().getId()).append("~");
+			}
+		}
+	}
+
+
+
 }

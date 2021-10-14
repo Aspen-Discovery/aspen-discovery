@@ -10,12 +10,12 @@ class GroupedWorkMoreDetails extends DataObject
 	public $collapseByDefault;
 	public $weight;
 
-	function getNumericColumnNames()
+	function getNumericColumnNames() : array
 	{
 		return ['collapseByDefault', 'weight'];
 	}
 
-	static function getObjectStructure()
+	static function getObjectStructure() : array
 	{
 		require_once ROOT_DIR . '/RecordDrivers/RecordInterface.php';
 		$validSources = RecordInterface::getValidMoreDetailsSources();

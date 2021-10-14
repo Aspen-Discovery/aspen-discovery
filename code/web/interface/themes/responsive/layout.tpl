@@ -17,8 +17,20 @@
 		{if !empty($og_title)}
 			<meta property="og:title" content="{$og_title|removeTrailingPunctuation|escape:html}"/>
 		{/if}
+		{if !empty($og_description)}
+			<meta property="og:description" content="{$og_description|escape:html}"/>
+		{/if}
 		{if !empty($og_type)}
 			<meta property="og:type" content="{$og_type|escape:html}"/>
+		{/if}
+		{if !empty($dc_creator)}
+			<meta property="DC.Creator" content="{$dc_creator|escape:html}">
+		{/if}
+		{if !empty($dc_pubName)}
+		<meta property="DC.publisher" content="{$dc_pubName}">
+		{/if}
+		{if !empty($dc_pubDate)}
+		<meta property="DC.date.issued" content="{$dc_pubDate}">
 		{/if}
 		{if !empty($og_image)}
 			<meta property="og:image" content="{$og_image|escape:html}"/>
@@ -44,33 +56,27 @@
 		{foreach from=$messages item="message"}
 			<div class="alert alert-{$message->messageLevel} row alert-dismissable">
 				<button type="button" class="close" data-dismiss="alert" aria-label="Close" onclick="AspenDiscovery.Account.dismissMessage({$message->id})"><span aria-hidden="true">&times;</span></button>
-				{$message->message|translate}
+				{translate text=$message->message isPublicFacing=true}
 				{if !empty($message->action1Title) && !empty($message->action1)}
-					&nbsp;<a data-dismiss="alert" class="btn btn-default" onclick="{$message->action1}">{$message->action1Title}</a>
+					&nbsp;<a data-dismiss="alert" class="btn btn-default" onclick="{$message->action1}">{translate text=$message->action1Title isPublicFacing=true}</a>
 				{/if}
 				{if !empty($message->action2Title) && !empty($message->action2)}
-					<a data-dismiss="alert" class="btn btn-default" onclick="{$message->action2}">{$message->action2Title}</a>
+					<a data-dismiss="alert" class="btn btn-default" onclick="{$message->action2}">{translate text=$message->action2Title isPublicFacing=true}</a>
 				{/if}
 			</div>
 		{/foreach}
 
-		<div id="header-wrapper" class="row">
-			<div id="header-container" role="banner">
-				{include file='header_responsive.tpl'}
-			</div>
+		<div id="header-wrapper" class="row" role="banner">
+			{include file='header_responsive.tpl'}
 		</div>
 
 		<div id="horizontal-menu-bar-wrapper" class="row">
-			<div id="horizontal-menu-bar-container" class="col-tn-12 col-xs-12 menu-bar" role="navigation" aria-label="Top Navigation">
+			<div id="horizontal-menu-bar-container" class="col-tn-12 col-xs-12 menu-bar" role="navigation" aria-label="{translate text="Top Navigation" isPublicFacing=true inAttribute=true}">
 				{include file='horizontal-menu-bar.tpl'}
 			</div>
 			<div id="horizontal-search-container" class="col-tn-12" role="search">
 				{include file="Search/horizontal-searchbox.tpl"}
 			</div>
-
-{*			{if !empty($webMenu)}*}
-{*				{include file="webmenu.tpl"}*}
-{*			{/if}*}
 		</div>
 
 		<div id="content-container">
@@ -82,7 +88,7 @@
 					</div>
 					<div class="col-tn-12 col-xs-12 col-sm-8 col-md-9 col-lg-9" id="main-content-with-sidebar">
 						{if $showBreadcrumbs}
-							<div role="navigation" aria-label="Breadcrumbs">
+							<div role="navigation" aria-label="{translate text="Breadcrumbs" isPublicFacing=true inAttribute=true}">
 							{include file="breadcrumbs.tpl"}
 							</div>
 						{/if}
@@ -97,7 +103,7 @@
 				{else} {* Main Content Only, no sidebar *}
 					<div class="col-xs-12" id="main-content">
 						{if $showBreadcrumbs}
-							<div role="navigation" aria-label="Breadcrumbs">
+							<div role="navigation" aria-label="{translate text="Breadcrumbs" isPublicFacing=true inAttribute=true}">
 							{include file="breadcrumbs.tpl"}
 							</div>
 						{/if}

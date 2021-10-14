@@ -10,7 +10,7 @@ class MaterialsRequestFieldsToDisplay extends DataObject
 	public $labelForColumnToDisplay;
 	public $weight;
 
-	static function getObjectStructure(){
+	static function getObjectStructure() : array {
 		$materialsRequest = new MaterialsRequest();
 		$columnNames        = array_keys($materialsRequest->table());
 		$columnToChooseFrom = array_combine($columnNames, $columnNames);

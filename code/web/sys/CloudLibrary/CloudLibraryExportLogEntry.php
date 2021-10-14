@@ -5,6 +5,7 @@ class CloudLibraryExportLogEntry extends BaseLogEntry
 {
 	public $__table = 'cloud_library_export_log';   // table name
 	public $id;
+	public $settingId;
 	public $lastUpdate;
 	public $notes;
 	public $numProducts;

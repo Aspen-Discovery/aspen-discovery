@@ -4,29 +4,31 @@ require_once ROOT_DIR . '/services/Admin/Admin.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 require_once ROOT_DIR . '/sys/Redwood/UserContribution.php';
 
-class RedwoodUserContributions extends ObjectEditor
+class Admin_RedwoodUserContributions extends ObjectEditor
 {
-	function getObjectType()
+	function getObjectType() : string
 	{
 		return 'UserContribution';
 	}
 
-	function getToolName()
+	function getToolName() : string
 	{
 		return 'RedwoodUserContributions';
 	}
 
-	function getPageTitle()
+	function getPageTitle() : string
 	{
 		return 'Submit Material to the Archive';
 	}
 
-	function getAllObjects()
+	function getAllObjects($page, $recordsPerPage) : array
 	{
 		$list = array();
 
 		$object = new UserContribution();
-		$object->orderBy('dateContributed desc');
+		$object->orderBy($this->getSort());
+		$this->applyFilters($object);
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		while ($object->fetch()) {
 			$list[$object->id] = clone $object;
@@ -35,17 +37,22 @@ class RedwoodUserContributions extends ObjectEditor
 		return $list;
 	}
 
-	function getObjectStructure()
+	function getDefaultSort() : string
+	{
+		return 'dateContributed desc';
+	}
+
+	function getObjectStructure() : array
 	{
 		return UserContribution::getObjectStructure();
 	}
 
-	function getPrimaryKeyColumn()
+	function getPrimaryKeyColumn() : string
 	{
 		return 'id';
 	}
 
-	function getIdKeyColumn()
+	function getIdKeyColumn() : string
 	{
 		return 'id';
 	}
@@ -55,7 +62,7 @@ class RedwoodUserContributions extends ObjectEditor
 		return false;
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		return [];
 	}
@@ -65,12 +72,12 @@ class RedwoodUserContributions extends ObjectEditor
 		parent::display($mainContentTemplate, $pageTitle, '', false);
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return '';
 	}
 
-	function canView()
+	function canView() : bool
 	{
 		return true;
 	}

@@ -32,7 +32,7 @@ class OverDrive_IndexingLog extends Admin_IndexingLog
 		}
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
@@ -41,7 +41,7 @@ class OverDrive_IndexingLog extends Admin_IndexingLog
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return 'overdrive';
 	}

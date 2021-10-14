@@ -2,12 +2,12 @@
 <div id="record{$summId|escape}" class="resultsList">
 	<div class="row">
 		{if $showCovers}
-			<div class="coversColumn col-xs-3 col-sm-3{if !empty($viewingCombinedResults)} col-md-3 col-lg-2{/if} text-center">
-				<a href="/Person/{$summId}">
+			<div class="coversColumn col-xs-3 col-sm-3{if !empty($viewingCombinedResults)} col-md-3 col-lg-2{/if} text-center" aria-hidden="true" role="presentation">
+				<a href="/Person/{$summId}" tabindex="-1">
 					{if $summPicture}
-					<img src="/files/thumbnail/{$summPicture}" class="alignleft listResultImage" alt="{translate text='Picture' inAttribute=true}"/><br />
+					<img src="/files/thumbnail/{$summPicture}" class="alignleft listResultImage" alt="{$summTitle|removeTrailingPunctuation|truncate:180:"..."|highlight}"/><br />
 					{else}
-					<img src="/interface/themes/responsive/images/person.png" class="alignleft listResultImage" alt="{translate text='No Cover Image' inAttribute=true}"/><br />
+					<img src="/interface/themes/responsive/images/person.png" class="alignleft listResultImage" alt="{translate text='No Cover Image' inAttribute=true isPublicFacing=true}"/><br />
 					{/if}
 				</a>
 			</div>
@@ -19,7 +19,7 @@
 					<span class="result-index">{$resultIndex})</span>&nbsp;
 
 					<a href="/Person/{$summId}" class="result-title notranslate">
-						{if !$summTitle}{translate text='Title not available'}{else}{$summTitle|removeTrailingPunctuation|truncate:180:"..."|highlight}{/if}
+						{if !$summTitle} {translate text='Title not available' isPublicFacing=true}{else}{$summTitle|removeTrailingPunctuation|truncate:180:"..."|highlight}{/if}
 					</a>
 					{if isset($summScore)}
 						&nbsp;(<a href="#" onclick="return AspenDiscovery.showElementInPopup('Score Explanation', '#scoreExplanationValue{$summId|escape}');">{$summScore}</a>)
@@ -31,31 +31,31 @@
 				<div class="resultDetails col-md-9">
 					{if $birthDate}
 						<div class="row">
-							<div class='result-label col-md-3'>{translate text="Born"} </div>
+							<div class='result-label col-md-3'>{translate text="Born" isPublicFacing=true} </div>
 							<div class="col-md-9 result-value">{$birthDate}</div>
 						</div>
 					{/if}
 					{if $deathDate}
 						<div class="row">
-							<div class='result-label col-md-3'>{translate text="Died"} </div>
+							<div class='result-label col-md-3'>{translate text="Died" isPublicFacing=true} </div>
 							<div class="col-md-9 result-value">{$deathDate}</div>
 						</div>
 					{/if}
 					{if $numObits}
 						<div class="row">
-							<div class='result-label col-md-3'>{translate text="Num. Obits"} </div>
+							<div class='result-label col-md-3'>{translate text="Num. Obits" isPublicFacing=true} </div>
 							<div class="col-md-9 result-value">{$numObits}</div>
 						</div>
 					{/if}
 					{if $dateAdded}
 						<div class="row">
-							<div class='result-label col-md-3'>{translate text="Added"} </div>
+							<div class='result-label col-md-3'>{translate text="Added" isPublicFacing=true} </div>
 							<div class="col-md-9 result-value">{$dateAdded|date_format}</div>
 						</div>
 					{/if}
 					{if $lastUpdate}
 						<div class="row">
-							<div class='result-label col-md-3'>{translate text="Last Updated"} </div>
+							<div class='result-label col-md-3'>{translate text="Last Updated" isPublicFacing=true} </div>
 							<div class="col-md-9 result-value">{$lastUpdate|date_format}</div>
 						</div>
 					{/if}

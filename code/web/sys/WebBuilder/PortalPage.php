@@ -5,6 +5,7 @@ require_once ROOT_DIR . '/sys/WebBuilder/WebBuilderAudience.php';
 require_once ROOT_DIR . '/sys/WebBuilder/WebBuilderCategory.php';
 require_once ROOT_DIR . '/sys/WebBuilder/PortalPageAudience.php';
 require_once ROOT_DIR . '/sys/WebBuilder/PortalPageCategory.php';
+require_once ROOT_DIR . '/sys/WebBuilder/PortalPageAccess.php';
 
 class PortalPage extends DataObject
 {
@@ -12,6 +13,7 @@ class PortalPage extends DataObject
 	public $id;
 	public $title;
 	public $urlAlias;
+	public $requireLogin;
 	public $lastUpdate;
 
 	private $_rows;
@@ -19,17 +21,19 @@ class PortalPage extends DataObject
 	private $_libraries;
 	private $_audiences;
 	private $_categories;
+	private $_allowAccess;
 
-	static function getObjectStructure() {
-		$libraryList = Library::getLibraryList();
+	static function getObjectStructure() : array {
+		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Custom Pages'));
 		$audiencesList = WebBuilderAudience::getAudiences();
 		$categoriesList = WebBuilderCategory::getCategories();
+		$patronTypeList = PType::getPatronTypeList();
 
 		$portalRowStructure = PortalRow::getObjectStructure();
 		return [
 			'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id within the database'),
 			'title' => array('property' => 'title', 'type' => 'text', 'label' => 'Title', 'description' => 'The title of the page', 'size' => '40', 'maxLength'=>100),
-			'urlAlias' => array('property' => 'urlAlias', 'type' => 'text', 'label' => 'URL Alias (no domain)', 'description' => 'The url of the page (no domain name)', 'size' => '40', 'maxLength'=>100),
+			'urlAlias' => array('property' => 'urlAlias', 'type' => 'text', 'label' => 'URL Alias (no domain, should start with /)', 'description' => 'The url of the page (no domain name)', 'size' => '40', 'maxLength'=>100),
 
 			'rows' => [
 				'property'=>'rows',
@@ -47,6 +51,16 @@ class PortalPage extends DataObject
 				'hideInLists' => true
 			],
 
+			'requireLogin' => ['property' => 'requireLogin', 'type' => 'checkbox', 'label' => 'Require login to access', 'description' => 'Require login to access page', 'onchange' => 'return AspenDiscovery.WebBuilder.updateWebBuilderFields();', 'default' => 0],
+			'allowAccess' => array(
+				'property' => 'allowAccess',
+				'type' => 'multiSelect',
+				'listStyle' => 'checkboxSimple',
+				'label' => 'Allow Access',
+				'description' => 'Define what patron types should have access to the page',
+				'values' => $patronTypeList,
+				'hideInLists' => false,
+			),
 			'audiences' => array(
 				'property' => 'audiences',
 				'type' => 'multiSelect',
@@ -88,6 +102,8 @@ class PortalPage extends DataObject
 			return $this->getCategories();
 		}elseif ($name == 'rows') {
 			return $this->getRows();
+		} elseif ($name == 'allowAccess') {
+			return $this->getAccess();
 		} else {
 			return $this->_data[$name];
 		}
@@ -103,6 +119,8 @@ class PortalPage extends DataObject
 			$this->_categories = $value;
 		}elseif ($name == 'rows') {
 			$this->_rows = $value;
+		}elseif ($name == 'allowAccess') {
+			$this->_allowAccess = $value;
 		}else{
 			$this->_data[$name] = $value;
 		}
@@ -122,6 +140,7 @@ class PortalPage extends DataObject
 			$this->saveLibraries();
 			$this->saveAudiences();
 			$this->saveCategories();
+			$this->saveAccess();
 		}
 
 		return $ret;
@@ -140,6 +159,7 @@ class PortalPage extends DataObject
 			$this->saveLibraries();
 			$this->saveAudiences();
 			$this->saveCategories();
+			$this->saveAccess();
 		}
 		return $ret;
 	}
@@ -174,6 +194,7 @@ class PortalPage extends DataObject
 			$this->clearLibraries();
 			$this->clearAudiences();
 			$this->clearCategories();
+			$this->clearAccess();
 		}
 		return $ret;
 	}
@@ -215,6 +236,19 @@ class PortalPage extends DataObject
 			}
 		}
 		return $this->_categories;
+	}
+
+	public function getAccess() {
+		if (!isset($this->_allowAccess) && $this->id){
+			$this->_allowAccess = array();
+			$patronTypeLink = new PortalPageAccess();
+			$patronTypeLink->portalPageId = $this->id;
+			$patronTypeLink->find();
+			while($patronTypeLink->fetch()){
+				$this->_allowAccess[$patronTypeLink->patronTypeId] = $patronTypeLink->patronTypeId;
+			}
+		}
+		return $this->_allowAccess;
 	}
 
 	public function saveLibraries(){
@@ -262,6 +296,21 @@ class PortalPage extends DataObject
 		}
 	}
 
+	public function saveAccess(){
+		if (isset($this->_allowAccess) && is_array($this->_allowAccess)){
+			$this->clearAccess();
+
+			foreach ($this->_allowAccess as $patronTypeId) {
+				$link = new PortalPageAccess();
+
+				$link->portalPageId = $this->id;
+				$link->patronTypeId = $patronTypeId;
+				$link->insert();
+			}
+			unset($this->_allowAccess);
+		}
+	}
+
 	private function clearLibraries()
 	{
 		//Delete links to the libraries
@@ -282,6 +331,14 @@ class PortalPage extends DataObject
 	{
 		//Delete links to the libraries
 		$link = new PortalPageCategory();
+		$link->portalPageId = $this->id;
+		return $link->delete(true);
+	}
+
+	private function clearAccess()
+	{
+		//Delete links to the patron types
+		$link = new PortalPageAccess();
 		$link->portalPageId = $this->id;
 		return $link->delete(true);
 	}

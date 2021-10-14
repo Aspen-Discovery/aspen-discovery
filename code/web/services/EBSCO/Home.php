@@ -20,15 +20,10 @@ class EBSCO_Home extends Action{
 		$interface->assign('appearsOnLists', $appearsOnLists);
 
 		// Display Page
-		global $configArray;
-		if ($configArray['Catalog']['showExploreMoreForFullRecords']) {
-			$interface->assign('showExploreMore', true);
-		}
-
 		$this->display('full-record.tpl', $this->recordDriver->getTitle(), 'Search/home-sidebar.tpl', false);
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		if (!empty($this->lastSearch)){

@@ -2,6 +2,7 @@ package com.turning_leaf_technologies.indexing;
 
 public class OverDriveScope {
 	private long id;
+	private long settingId;
 	private String name;
 	private boolean includeAdult;
 	private boolean includeTeen;
@@ -45,5 +46,13 @@ public class OverDriveScope {
 
 	void setIncludeKids(boolean includeKids) {
 		this.includeKids = includeKids;
+	}
+
+	public long getSettingId() {
+		return settingId;
+	}
+
+	void setSettingId(long settingId) {
+		this.settingId = settingId;
 	}
 }

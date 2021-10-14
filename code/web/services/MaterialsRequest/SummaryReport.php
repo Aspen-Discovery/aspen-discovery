@@ -4,9 +4,6 @@ require_once ROOT_DIR . '/Action.php';
 require_once(ROOT_DIR . '/services/Admin/Admin.php');
 require_once(ROOT_DIR . '/sys/MaterialsRequest.php');
 require_once(ROOT_DIR . '/sys/MaterialsRequestStatus.php');
-require_once(ROOT_DIR . "/sys/pChart/class/pData.class.php");
-require_once(ROOT_DIR . "/sys/pChart/class/pDraw.class.php");
-require_once(ROOT_DIR . "/sys/pChart/class/pImage.class.php");
 require_once(ROOT_DIR . "/PHPExcel.php");
 
 class MaterialsRequest_SummaryReport extends Admin_Admin {
@@ -27,35 +24,35 @@ class MaterialsRequest_SummaryReport extends Admin_Admin {
 		}
 		$interface->assign('period', $period);
 
-		$endDate = (isset($_REQUEST['endDate']) && strlen($_REQUEST['endDate']) > 0) ? DateTime::createFromFormat('m/d/Y', $_REQUEST['endDate']) : new DateTime();
-		$interface->assign('endDate', $endDate->format('m/d/Y'));
+		$endDate = (isset($_REQUEST['endDate']) && strlen($_REQUEST['endDate']) > 0) ? DateTime::createFromFormat('Y-m-d', $_REQUEST['endDate']) : new DateTime();
+		$interface->assign('endDate', $endDate->format('Y-m-d'));
 
 		if (isset($_REQUEST['startDate']) && strlen($_REQUEST['startDate']) > 0){
-			$startDate = DateTime::createFromFormat('m/d/Y', $_REQUEST['startDate']);
+			$startDate = DateTime::createFromFormat('Y-m-d', $_REQUEST['startDate']);
 		} else{
 			if ($period == 'day'){
-				$startDate = new DateTime($endDate->format('m/d/Y') . " - 7 days");
+				$startDate = new DateTime($endDate->format('Y-m-d') . " - 7 days");
 			}elseif ($period == 'week'){
 				//Get the sunday after this
 				$endDate->setISODate($endDate->format('Y'), $endDate->format("W"), 0);
 				$endDate->modify("+7 days");
-				$startDate = new DateTime($endDate->format('m/d/Y') . " - 28 days");
+				$startDate = new DateTime($endDate->format('Y-m-d') . " - 28 days");
 			}elseif ($period == 'month'){
 				$endDate->modify("+1 month");
 				$numDays = $endDate->format("d");
 				$endDate->modify(" -$numDays days");
-				$startDate = new DateTime($endDate->format('m/d/Y') . " - 6 months");
+				$startDate = new DateTime($endDate->format('Y-m-d') . " - 6 months");
 			}else{ //year
 				$endDate->modify("+1 year");
 				$numDays = $endDate->format("m");
 				$endDate->modify(" -$numDays months");
 				$numDays = $endDate->format("d");
 				$endDate->modify(" -$numDays days");
-				$startDate = new DateTime($endDate->format('m/d/Y') . " - 2 years");
+				$startDate = new DateTime($endDate->format('Y-m-d') . " - 2 years");
 			}
 		}
 
-		$interface->assign('startDate', $startDate->format('m/d/Y'));
+		$interface->assign('startDate', $startDate->format('Y-m-d'));
 
 		//Set the end date to the end of the day
 		$endDate->setTime(24, 0, 0);
@@ -149,7 +146,7 @@ class MaterialsRequest_SummaryReport extends Admin_Admin {
 		$statuses = array();
 		foreach ($periodData as $periodInfo){
 			foreach ($periodInfo as $status => $numRequests){
-				$statuses[$status] = translate($status);
+				$statuses[$status] = translate(['text'=>$status, 'isAdminFacing'=>true]);
 			}
 		}
 		$interface->assign('statuses', $statuses);
@@ -213,58 +210,50 @@ class MaterialsRequest_SummaryReport extends Admin_Admin {
 		$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
 		$objWriter->save('php://output');
 		exit;
-
 	}
 
 	function generateGraph($periodData, $statuses){
-		global $configArray;
 		global $interface;
-		$reportData = new pData();
+
+		$graphColors = [
+			0 => [255, 99, 132],
+			1 => [54, 162, 235],
+			2 => [255, 159, 64],
+			3 => [0, 255, 55, 1],
+			4 => [154, 75, 244],
+			5 => [255, 206, 86],
+			6 => [75, 192, 192],
+			7 => [153, 102, 255],
+			8 => [165, 42, 42],
+			9 => [50, 205, 50],
+			10 => [220, 60, 20],
+		];
+		$dataSeries = [];
+		$columnLabels = [];
 
 		//Add points for each status
-		$periodsFormatted = array();
+		$statusNumber = 0;
+		foreach ($periodData as $date => $periodInfo){
+			$columnLabels[] = date('M-d-Y', $date);;
+		}
 		foreach ($statuses as $status => $statusLabel){
-			$statusData = array();
+			$curColor = $statusNumber % 10;
+			$dataSeries[$statusLabel] = [
+				'borderColor' => "rgba({$graphColors[$curColor][0]}, {$graphColors[$curColor][1]}, {$graphColors[$curColor][2]}, 1)",
+				'backgroundColor' => "rgba({$graphColors[$curColor][0]}, {$graphColors[$curColor][1]}, {$graphColors[$curColor][2]}, 0.2)",
+				'data' => []
+			];
 			foreach ($periodData as $date => $periodInfo){
-				$periodsFormatted[$date] = date('M-d-Y', $date);
-				$statusData[$date] = isset($periodInfo[$status]) ? $periodInfo[$status] : 0;
+				$dataSeries[$statusLabel]['data'][$date] = isset($periodInfo[$status]) ? $periodInfo[$status] : 0;
 			}
-			$reportData->addPoints($statusData, $status);
+			$statusNumber++;
 		}
 
-		$reportData->setAxisName(0,"Requests");
-
-		$reportData->addPoints($periodsFormatted, "Dates");
-		$reportData->setAbscissa("Dates");
-
-		/* Create the pChart object */
-		$myPicture = new pImage(700,290,$reportData);
-
-		/* Draw the background */
-		$Settings = array("R"=>225, "G"=>225, "B"=>225);
-		$myPicture->drawFilledRectangle(0,0,700,290,$Settings);
-
-		/* Add a border to the picture */
-		$myPicture->drawRectangle(0,0,699,289,array("R"=>0,"G"=>0,"B"=>0));
-
-		$myPicture->setFontProperties(array("FontName"=> ROOT_DIR . "/sys/pChart/fonts/verdana.ttf","FontSize"=>9));
-		$myPicture->setGraphArea(50,30,670,190);
-		//$myPicture->drawFilledRectangle(30,30,670,150,array("R"=>255,"G"=>255,"B"=>255,"Surrounding"=>-200,"Alpha"=>10));
-		$myPicture->drawScale(array("DrawSubTicks"=>TRUE, "LabelRotation"=>90));
-		$myPicture->setFontProperties(array("FontName"=> ROOT_DIR . "/sys/pChart/fonts/verdana.ttf","FontSize"=>9));
-		$myPicture->drawLineChart(array("DisplayValues"=>TRUE,"DisplayColor"=>DISPLAY_AUTO));
-
-		/* Write the chart legend */
-		$myPicture->drawLegend(80,20,array("Style"=>LEGEND_NOBORDER,"Mode"=>LEGEND_HORIZONTAL));
-
-		/* Render the picture (choose the best way) */
-		$chartHref = "/images/charts/materialsRequestSummary". time() . ".png";
-		$chartPath = $configArray['Site']['local'] . $chartHref;
-		$myPicture->render($chartPath);
-		$interface->assign('chartPath', $chartHref);
+		$interface->assign('columnLabels', $columnLabels);
+		$interface->assign('dataSeries', $dataSeries);
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/MaterialsRequest/ManageRequests', 'Manage Materials Requests');
@@ -272,12 +261,12 @@ class MaterialsRequest_SummaryReport extends Admin_Admin {
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return 'materials_request';
 	}
 
-	function canView()
+	function canView() : bool
 	{
 		return UserAccount::userHasPermission('View Materials Requests Reports');
 	}

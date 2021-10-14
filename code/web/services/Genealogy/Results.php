@@ -253,7 +253,7 @@ class Genealogy_Results extends ResultsAction {
 		$this->display($searchObject->getResultTotal() ? 'list.tpl' : 'list-none.tpl', $displayQuery, $sidebar, false);
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		return parent::getResultsBreadcrumbs('Genealogy Search');
 	}

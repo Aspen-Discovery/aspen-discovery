@@ -4,6 +4,7 @@
     <content url="file://$MODULE_DIR$">
       <excludeFolder url="file://$MODULE_DIR$/interface/cache" />
       <excludeFolder url="file://$MODULE_DIR$/interface/compile" />
+      <excludeFolder url="file://$MODULE_DIR$/PHPExcel/Shared/PDF" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

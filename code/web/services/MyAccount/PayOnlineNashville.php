@@ -327,7 +327,7 @@ echo "\r\n\r\nResponse Headers\r\n";
 		if(!empty($patron)) return $patron;
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'My Account');

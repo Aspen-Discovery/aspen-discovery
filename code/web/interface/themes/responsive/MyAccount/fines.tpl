@@ -7,17 +7,22 @@
 	{if !empty($accountMessages)}
 		{include file='systemMessages.tpl' messages=$accountMessages}
 	{/if}
+	{if !empty($ilsMessages)}
+		{include file='ilsMessages.tpl' messages=$ilsMessages}
+	{/if}
 
-	<span class='availableHoldsNoticePlaceHolder'></span>
-	<h1>{translate text='Fines'}</h1>
+	<h1>{translate text='Fines' isPublicFacing=true}</h1>
 	{if $offline}
-		<div class="alert alert-warning">{translate text=offline_notice defaultText="<strong>The library system is currently offline.</strong> We are unable to retrieve information about your account at this time."}</div>
+		<div class="alert alert-warning"><strong>{translate text="The library system is currently offline." isPublicFacing=true}</strong> {translate text="We are unable to retrieve information about your account at this time." isPublicFacing=true}</div>
 	{else}
+		{if $finePaymentResult}
+			<div class="alert alert-{if $finePaymentResult->success === true}success{else}danger{/if}" id="finePaymentResult">{$finePaymentResult->message}</div>
+		{/if}
 		{if count($userFines) > 0}
 			{* Show Fine Alert when the user has no linked accounts *}
-			{if  count($userFines) == 1 && $profile->_fines}
+			{if count($userFines) == 1 && $profile->_fines}
 				<div class="alert alert-info">
-					{translate text="fines_summary" defaultText="Your account has <strong>%1%</strong> in fines." 1=$profile->_fines}
+					{translate text="Your account has <strong>%1%</strong> in fines." 1=$profile->_fines isPublicFacing=true}
 				</div>
 			{/if}
 
@@ -28,35 +33,37 @@
 						<table id="finesTable{$smarty.foreach.fineTable.index}" class="fines-table table table-striped">
 							<thead>
 							<tr>
-								{if $finePaymentType == 2 && $finesToPay >= 1 && $fineTotalsVal.$userId > $minimumFineAmount}
+								{if ($finePaymentType >= 2) && $finesToPay >= 1 && $fineTotalsVal.$userId > $minimumFineAmount}
 									<th><input type="checkbox" checked name="selectAllFines{$userId}" id="selectAllFines{$userId}" aria-label="Select all fines" onclick="$('#fines{$userId} .selectedFine').prop('checked', $('#selectAllFines{$userId}').prop('checked'));AspenDiscovery.Account.updateFineTotal('#fines{$userId}', '{$userId}', '{$finesToPay}');"></th>
 								{/if}
 								{if $showDate}
-									<th>{translate text="Date"}</th>
+									<th>{translate text="Date" isPublicFacing=true}</th>
 								{/if}
 								{if $showReason}
-									<th>{translate text="Reason"}</th>
+									<th>{translate text="Reason" isPublicFacing=true}</th>
 								{/if}
-								<th>{translate text="Title"}</th>
+								<th>{translate text="Title" isPublicFacing=true}</th>
 								{if $showSystem}
-									<th>{translate text="fine_system" defaultText="System"}</th>
+									<th>{translate text="System" isPublicFacing=true}</th>
 								{/if}
-								<th>{translate text="Fine/Fee Amount"}</th>
+								<th>{translate text="Fine/Fee Amount" isPublicFacing=true}</th>
 								{if $showOutstanding}
-									<th>{translate text="Amount Outstanding"}</th>
+									<th>{translate text="Amount Outstanding" isPublicFacing=true}</th>
 								{/if}
 								{if $finesToPay == 2 && $fineTotalsVal.$userId > $minimumFineAmount}
-									<th>{translate text="Amount To Pay"}</th>
+									<th>{translate text="Amount To Pay" isPublicFacing=true}</th>
 								{/if}
 							</tr>
 							</thead>
 							<tbody>
 								{foreach from=$fines item=fine}
 									<tr>
-										{if $finePaymentType == 2 && $finesToPay >= 1 && $fineTotalsVal.$userId > $minimumFineAmount}
+										{if ($finePaymentType >= 2) && $finesToPay >= 1 && $fineTotalsVal.$userId > $minimumFineAmount && $fine.canPayFine !== false}
 											<td>
 												<input type="checkbox" checked class="selectedFine" name="selectedFine[{$fine.fineId}]" aria-label="Pay Fine {$fine.reason|escapeCSS}" onchange="AspenDiscovery.Account.updateFineTotal('#fines{$userId}', '{$userId}', '{$finesToPay}')" data-fine_id="{$fine.fineId}" data-fine_amt="{$fine.amountVal}" data-outstanding_amt="{if $showOutstanding}{$fine.amountOutstandingVal}{else}0{/if}">
 											</td>
+										{elseif ($finePaymentType >= 2) && $finesToPay >= 1 && $fineTotalsVal.$userId > $minimumFineAmount}
+											<td></td>
 									    {/if}
 										{if $showDate}
 											<td>{$fine.date}</td>
@@ -84,31 +91,36 @@
 										{/if}
 										<td>{$fine.amountVal|formatCurrency}</td>
 										{if $showOutstanding}
-											<td>{$fine.amountOutstanding}</td>
+											<td>{$fine.amountOutstandingVal|formatCurrency}</td>
 										{/if}
-										{if $finesToPay == 2 && $fineTotalsVal.$userId > $minimumFineAmount}
+										{if $finesToPay == 2 && $fineTotalsVal.$userId > $minimumFineAmount && $fine.canPayFine !== false}
 											{if $showOutstanding}
-												<td><input aria-label="Amount to Pay for fine {$detail.label}" type="text" max="{$fine.amountOutstandingVal}" name="amountToPay[{$fine.fineId}]" id="amountToPay{$fine.fineId}" value="{$fine.amountOutstandingVal|string_format:'%.2f'}" onchange="AspenDiscovery.Account.updateFineTotal('#fines{$userId}', '{$userId}', '{$finesToPay}');"> </td>
+												<td><input aria-label="Amount to Pay for fine {$detail.label}" type="text" min="0" max="{$fine.amountOutstandingVal}" name="amountToPay[{$fine.fineId}]" id="amountToPay{$fine.fineId}" value="{$fine.amountOutstandingVal|string_format:'%.2f'}" onchange="AspenDiscovery.Account.updateFineTotal('#fines{$userId}', '{$userId}', '{$finesToPay}');"> </td>
 											{else}
-												<td><input aria-label="Amount to Pay for fine {$detail.label}" type="text" max="{$fine.amountVal}" name="amountToPay[{$fine.fineId}]" id="amountToPay{$fine.fineId}" value="{$fine.amountVal|string_format:'%.2f'}" onchange="AspenDiscovery.Account.updateFineTotal('#fines{$userId}', '{$userId}', '{$finesToPay}');"> </td>
+												<td><input aria-label="Amount to Pay for fine {$detail.label}" type="text" min="0" max="{$fine.amountVal}" name="amountToPay[{$fine.fineId}]" id="amountToPay{$fine.fineId}" value="{$fine.amountVal|string_format:'%.2f'}" onchange="AspenDiscovery.Account.updateFineTotal('#fines{$userId}', '{$userId}', '{$finesToPay}');"> </td>
 											{/if}
+										{elseif $finesToPay == 2 && $fineTotalsVal.$userId > $minimumFineAmount}
+											<td></td>
 										{/if}
 									</tr>
 								{/foreach}
 							</tbody>
 							<tfoot>
 								<tr class="info">
-									{if $finePaymentType == 2 && $finesToPay >= 1 && $fineTotalsVal.$userId > $minimumFineAmount}
+									{if ($finePaymentType >= 2) && $finesToPay >= 1 && $fineTotalsVal.$userId > $minimumFineAmount}
 										<td></td>
 									{/if}
-									<th>{translate text="Total"}</th>
+									<th>{translate text="Total" isPublicFacing=true}</th>
 									{if $showDate}
 										<td></td>
 									{/if}
 									{if $showReason}
 										<td></td>
 									{/if}
-									<th id="formattedTotal{$userId}">{$fineTotalsVal.$userId|formatCurrency}</th>
+									{if $showSystem}
+										<td></td>
+									{/if}
+										<th id="formattedTotal{$userId}">{$fineTotalsVal.$userId|formatCurrency}</th>
 									{if $showOutstanding}
 										<th id="formattedOutstandingTotal{$userId}">{$outstandingTotalVal.$userId|formatCurrency}</th>
 									{/if}
@@ -118,27 +130,35 @@
 						{if $finePaymentType == 1}
 							{* Pay Fines Button *}
 							{if $finePaymentType && $fineTotalsVal.$userId > $minimumFineAmount}
-								<a href="{$eCommerceLink}" {if $finePaymentType == 1}target="_blank"{/if}{if $showRefreshAccountButton} onclick="AspenDiscovery.Account.ajaxLightbox('/AJAX/JSON?method=getPayFinesAfterAction')"{/if}>
-									<div class="btn btn-sm btn-primary">{if $payFinesLinkText}{$payFinesLinkText}{else}{translate text="Click to Pay Fines Online"}{/if}</div>
+								<a class="btn btn-sm btn-primary" href="{$eCommerceLink}" {if $finePaymentType == 1}target="_blank"{/if}{if $showRefreshAccountButton} onclick="AspenDiscovery.Account.ajaxLightbox('/AJAX/JSON?method=getPayFinesAfterAction')"{/if}>
+									{if $payFinesLinkText}{$payFinesLinkText}{else}{translate text="Click to Pay Fines Online" isPublicFacing=true}{/if}
 								</a>
 							{/if}
-						{elseif $finePaymentType == 2}
+						{elseif $finePaymentType >= 2}
 							{if $fineTotalsVal.$userId > $minimumFineAmount}
 								{* We are doing an actual payment of fines online *}
-								{include file="MyAccount/paypalPayments.tpl"}
+								{if $finePaymentType == 2}
+									{include file="MyAccount/paypalPayments.tpl"}
+								{elseif $finePaymentType == 3}
+									{include file="MyAccount/msbPayments.tpl"}
+								{elseif $finePaymentType == 4}
+									{include file="MyAccount/comprisePayments.tpl"}
+								{elseif $finePaymentType == 5}
+									{include file="MyAccount/proPayPayments.tpl"}
+								{/if}
 							{else}
-								<p>{translate text="Fines and fees can be paid online when you owe more than %1%." 1=$minimumFineAmount|formatCurrency}</p>
+								<p>{translate text="Fines and fees can be paid online when you owe more than %1%." 1=$minimumFineAmount|formatCurrency isPublicFacing=true}</p>
 							{/if}
 						{/if}
 					{else}
-						<p class="alert alert-success">{translate text="no_fines_for_account_message" defaultText="This account does not have any fines within the system."}</p>
+						<p class="alert alert-success">{translate text="This account does not have any fines within the system." isPublicFacing=true}</p>
 					{/if}
 				</form>
 			{/foreach}
 		{else}
-			<p class="alert alert-success">{translate text="no_fines_message" defaultText="You do not have any fines within the system."}</p>
+			<p class="alert alert-success">{translate text="You do not have any fines within the system." isPublicFacing=true}</p>
 		{/if}
 	{/if}
 {else}
-	You must sign in to view this information. Click <a href="/MyAccount/Login">here</a> to sign in.
+	{translate text="You must sign in to view this information." isPublicFacing=true}<a href='/MyAccount/Login' class="btn btn-primary">{translate text="Sign In" isPublicFacing=true}</a>
 {/if}

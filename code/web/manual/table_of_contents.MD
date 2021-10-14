@@ -1,49 +1,53 @@
-##Table of Contents
-- Administration
+## Table of Contents
+### Community
+  - [Aspen Gathering](/Admin/HelpManual?page=Aspen-Gathering)
+  - [Aspen Weekly](/Admin/HelpManual?page=Aspen-Weekly)
+  - [Contributing to the Help Manual](/Admin/HelpManual?page=Manual-Contribution)
+
+### Administration
   - [System Administration](/Admin/HelpManual?page=System-Administration)
     - [Permissions](/Admin/HelpManual?page=Permissions)
   - [System Reports](/Admin/HelpManual?page=System-Reports)
-    - Cron Log
-    - Dashboards
-    - Indexing Logs
-    - Performance Report
-  - Configuration Templates
+  - Theme & Layout
     - [Themes](/Admin/HelpManual?page=Themes)
     - [Layout Settings](/Admin/HelpManual?page=Layout-Settings)
-    - [Menu Links](/Admin/HelpManual?page=Menu-Links)
-    - [Grouped Work Display Settings](/Admin/HelpManual?page=Grouped-Work-Display-Settings)
-      - [Grouped Work Facets](/Admin/HelpManual?page=Grouped-Work-Facets)
-      - Creating Grouped Works
-      - Grouped Work Pages
-      - [Manually grouping records](/Admin/HelpManual?page=Manually-grouping-records)
-      - Ungrouping records
-    - [Browse Category Groups](/Admin/HelpManual?page=Browse-Category-Groups)
-      - [Browse Categories](/Admin/HelpManual?page=Browse-Categories)
-  - Primary Configuration
-    - Languages
-      - [Translations](/Admin/HelpManual?page=Translations)
+  - [Primary Configuration](/Admin/HelpManual?page=Primary-Configuration)
     - [Library Systems](/Admin/HelpManual?page=Library-Systems)
-      - [Locations](/Admin/HelpManual?page=Library-Systems-Locations)
-      - [IP Addresses](/Admin/HelpManual?page=Location-IP-Addresses)
-    - Block Patron Account Linking
-    - Patron Types
-    - Account Profiles
-  - Enrichment
+      - [Menu Links](/Admin/HelpManual?page=Menu-Links)
+    - [Locations](/Admin/HelpManual?page=Library-Systems-Locations)
+    - [IP Addresses](/Admin/HelpManual?page=Location-IP-Addresses)
+  - [Web Builder](/Admin/HelpManual?page=Web-Builder)
+    - [Basic Pages](/Admin/HelpManual?page=Web-Builder_Basic-Pages)
+    - [Custom Pages](/Admin/HelpManual?page=Web-Builder_Custom-Pages)
+    - [Custom Forms](/Admin/HelpManual?page=Web-Builder_Custom-Forms)
+    - [Web Resources](/Admin/HelpManual?page=Web-Builder_Web-Resources)
+    - [Staff Members](/Admin/HelpManual?page=Web-Builder_Staff-Members)
+  - Languages and Translations
+    - [Languages](/Admin/HelpManual?page=Languages)
+    - [Translations](/Admin/HelpManual?page=Translations)
+  - [Catalog / Grouped Works](/Admin/HelpManual?page=Catalog-Grouped-Works)
+    - [Cataloging](/Admin/HelpManual?page=Cataloging)
+      - [Bib Level Format](/Admin/HelpManual?page=Bib-Level-Format)
+      - [Defining Covers in MARC](/Admin/HelpManual?page=Defining-Covers-MARC)
+    - [Grouped Works](/Admin/HelpManual?page=Grouped-Works)
+    - [Grouped Work Display Settings](/Admin/HelpManual?page=Grouped-Work-Display-Settings)
+    - [Grouped Work Facets](/Admin/HelpManual?page=Grouped-Work-Facets)
+      - [Manually grouping records](/Admin/HelpManual?page=Manually-grouping-records)
+    - [Author Authorities](/Admin/HelpManual?page=author-authorities)
+  - [Local Catalog Enrichment](/Admin/HelpManual?page=Local-Catalog-Enrichment)
+    - [Browse Category Groups](/Admin/HelpManual?page=Browse-Category-Groups)
+    - [Browse Categories](/Admin/HelpManual?page=Browse-Categories)
+    - [Collection Spotlights](/Admin/HelpManual?page=Collection-Spotlights)
+    - [Placards](/Admin/HelpManual?page=Placards)
+  - Third Party Enrichment
     - [Accelerated Reader](/Admin/HelpManual?page=Accelerated-Reader)
     - [Content Cafe](/Admin/HelpManual?page=Content-Cafe)
     - [DP.LA](/Admin/HelpManual?page=DPLA)
-    - Facebook
-    - GoodReads
-    - Google
     - [OMDB](/Admin/HelpManual?page=OMDB)
     - [New York Times](/Admin/HelpManual?page=New-York-Times)
-      - NY Times Lists
     - [Novelist](/Admin/HelpManual?page=Novelist)
-    - Pinterest
-    - reCAPTCHA
     - [Syndetics](/Admin/HelpManual?page=Syndetics)
     - [Wikipedia](/Admin/HelpManual?page=Wikipedia)
-  - [Cataloging](/Admin/HelpManual?page=Cataloging)
   - [ILS Integration](/Admin/HelpManual?page=ILS-Integration)
     - Indexing Profiles
       - Format Information
@@ -55,44 +59,28 @@
     - Polaris
     - Sierra
     - Symphony
-  - [OverDrive](/Admin/HelpManual?page=Overdrive)
-    - Settings
-    - Scopes
-    - Indexing Log
-    - Dashboard
-    - API Information
-  - RB Digital
-    - Settings 
-    - Scopes 
-    - Indexing Log 
-    - Dashboard
-  - [Cloud Library](/Admin/HelpManual?page=Cloud-Library)
-    - Settings 
-    - Scopes 
-    - Indexing Log 
-    - Dashboard
-  - [Side Loaded eContent](/Admin/HelpManual?page=Side-Loaded-eContent)
-    - Side Loaded Configurations
-    - Scopes
-    - Indexing Log
-    - Dashboard
-  - Indexing Information
-    - Group Work Index Log
+  - [eContent Integrations](/Admin/HelpManual?page=eContent-Integrations)
+    - [CloudLibrary](/Admin/HelpManual?page=Cloud-Library)
+    - [Hoopla](/Admin/HelpManual?page=Hoopla)
+    - [OverDrive](/Admin/HelpManual?page=Overdrive)
+    - [EBSCO EDS](/Admin/HelpManual?page=EBSCO-EDS)
+    - [Axis 360](/Admin/HelpManual?page=Axis-360)
+    - [Side Loaded eContent](/Admin/HelpManual?page=Side-Loaded-eContent)
   - [Open Archives](/Admin/HelpManual?page=Open-Archives)
-    - Collections
-    - Indexing Log
-    - Dashboard
   - [Website Indexing](/Admin/HelpManual?page=Website-Indexing)
-    - Settings
-    - Indexing Log
-    - Dashboard
+  - [User Lists](/Admin/HelpManual?page=User-Lists)
+  - Events
   - Circulation
     - Offline Holds Report
+  - Javascript Snippets
   - Server Setup
     - Installation
     - Background tasks
-  - Uploaded PDFS
-- Website Builder
+  - System Messages
+  - Uploaded PDFs
+  - [Aspen Discovery Help](/Admin/HelpManual?page=Aspen-Discovery-Help)
+  
+### User Experience
 - [Advanced Search](/Admin/HelpManual?page=Advanced%20Search)
 - Aspen API
 - [Author pages](/Admin/HelpManual?page=Author-Pages)
@@ -101,34 +89,59 @@
 - [Collection Spotlights](/Admin/HelpManual?page=Collection-Spotlights)
 - [Covers](/Admin/HelpManual?page=Cover-Images)
 - [eCommerce](/Admin/HelpManual?page=eCommerce)
-- [eContent Integrations](/Admin/HelpManual?page=eContent-Integrations)
-  - [CloudLibrary](/Admin/HelpManual?page=Cloud-Library)
-  - [Hoopla](/Admin/HelpManual?page=Hoopla)
-  - [OverDrive](/Admin/HelpManual?page=Overdrive)
-  - RBdigital
-  - [EBSCO EDS](/Admin/HelpManual?page=EBSCO-EDS)
-  - [Axis 360](/Admin/HelpManual?page=Axis-360)
 - Email
 - Events
   - Library Calendar
-- Explore More
+- [Explore More](/Admin/HelpManual?page=Explore-More)
 - Full Record Pages
-- [Genealogy](/Admin/HelpManual?page=Genealogy) & Obituaries
+- [Genealogy](/Admin/HelpManual?page=Genealogy)
 - Interlibrary Loans
+- [Masquerade](/Admin/HelpManual?page=Masquerade)
 - [Materials Requests & Purchase Suggestions](/Admin/HelpManual?page=Materials-Requests-Purchase-Suggestions)
 - [Open Archives](/Admin/HelpManual?page=Open-Archives)
 - [Placards](/Admin/HelpManual?page=Placards)
-- [Reading History](/Admin/HelpManual?page=Reading-History)
-- [Ratings and Reviews](/Admin/HelpManual?page=Ratings-And-Reviews)
-- [Recommendations](/Admin/HelpManual?page=Recommendations)
+- [Rosen LevelUP](/Admin/HelpManual?page=Rosen-LevelUP)
 - Searching
   - Search Types
   - [Facets](/Admin/HelpManual?page=Facets)
-    - [Nonfiction/Fiction Facets](/Admin/HelpManual?page=Literary-Forms)
-    - [Subject Facets](/Admin/HelpManual?page=Subject-Facets)
-  - [Relevancy](/Admin/HelpManual?page=Search-Relevancy)
+    - [Literary Form (Nonfiction/Fiction) Facet](/Admin/HelpManual?page=Literary-Forms)
+    - [Subjects (Full Subject) Facet](/Admin/HelpManual?page=FullSubject-Facet)
+    - [Bisac Subject Facet](/Admin/HelpManual?page=BISACSubject-Facet)
+    - [LC Subject Facet](/Admin/HelpManual?page=LCSubject-Facet)
+    - [Audience Facet](/Admin/HelpManual?page=Audience-Facets)
+    - [Reading Level Facet](/Admin/HelpManual?page=ReadingLevel-Facets)
+    - [Era Facet](/Admin/HelpManual?page=Era-Facets)
+    - [Topics Facet](/Admin/HelpManual?page=Topic-Facets)
+    - [Genre Facet](/Admin/HelpManual?page=Genre-Facets)
+    - [Region Facet](/Admin/HelpManual?page=GeographicRegion-Facets)
+    - [Language Facet](/Admin/HelpManual?page=Language-Facet)
+    - [Awards Facet](/Admin/HelpManual?page=Awards-Facet)
+    - [Item Type Facet](/Admin/HelpManual?page=itemtype-facet)
+    - [Collection Facet](/Admin/HelpManual?page=Collection-Facet)
+    - [Shelf Location Facet](/Admin/HelpManual?page=ShelfLocation-Facet)
+- [Relevancy](/Admin/HelpManual?page=Search-Relevancy)
 - System Messages
-- [User Lists](/Admin/HelpManual?page=User-Lists)
-- Patron Account
-  - [Rosen LevelUP](/Admin/HelpManual?page=Rosen-LevelUP)
-  - [While You Wait](/Admin/HelpManual?page=While-You-Wait)
+- [While You Wait](/Admin/HelpManual?page=While-You-Wait)
+
+#### Patron Account
+  - [Checked Out Titles](/Admin/HelpManual?page=Check-Out-Titles)
+  - [Titles On Hold](/Admin/HelpManual?page=Titles-On-Hold)
+  - [Reading History](/Admin/HelpManual?page=Reading-History)
+  - [Paying Fines/Fees](/Admin/HelpManual?page=Fines-and-Fees)
+  - [Materials Requests & Purchase Suggestions](/Admin/HelpManual?page=Materials-Requests-Purchase-Suggestions)
+  - [Ratings and Reviews](/Admin/HelpManual?page=Ratings-And-Reviews)
+  - [Recommendations](/Admin/HelpManual?page=Recommendations)
+  - [Account Settings](/Admin/HelpManual?page=Account-Settings)
+    - Preferences and Language Settings
+    - Linked Accounts
+  - [Search History](/Admin/HelpManual?page=Search-History)
+  - [User Lists](/Admin/HelpManual?page=User-Lists)
+
+### Development
+-  [Setting Up Your Development Environment](/Admin/HelpManual?page=Development-Environment)
+-  [Installing on Linux or Mac OS X](/Admin/HelpManual?page=Installing-Aspen-Linux)
+-  [Installing on Windows](/Admin/HelpManual?page=Installing-Aspen-Windows)
+
+### Troubleshooting
+  - [Administration Issues](/Admin/HelpManual?page=Troubleshooting-Administration)
+  - [End User Issues](/Admin/HelpManual?page=Troubleshooting-End-User)

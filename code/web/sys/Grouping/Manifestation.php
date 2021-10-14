@@ -12,8 +12,6 @@ class Grouping_Manifestation
 	private $_statusInformation = null;
 
 	//Information calculated at runtime
-	private $_shelfLocation = [];
-	private $_callNumber = [];
 	private $_isEContent = false;
 
 	private $_hideByDefault = false;
@@ -26,16 +24,29 @@ class Grouping_Manifestation
 
 	/**
 	 * Grouping_Manifestation constructor.
-	 * @param Grouping_Record $record
+	 * @param Grouping_Record|array $record
 	 */
 	function __construct($record)
 	{
-		$this->format = $record->format;
-		$this->formatCategory = $record->formatCategory;
 		$this->_statusInformation = new Grouping_StatusInformation();
-		$this->addRecord($record);
+		if (is_array($record)) {
+			$this->format = $record['format'];
+			$this->formatCategory = $record['formatCategory'];
+		}else{
+			$this->format = $record->format;
+			$this->formatCategory = $record->formatCategory;
+			$this->addRecord($record);
+		}
 	}
 
+	function addVariation(Grouping_Variation $variation){
+		$variation->manifestation = $this;
+		$this->_variations[] = $variation;
+	}
+
+	function removeVariation($variationKey){
+		unset($this->_variations[$variationKey]);
+	}
 	function addRecord(Grouping_Record $record)
 	{
 		//Check our variations to see if we need to create a new one
@@ -58,13 +69,11 @@ class Grouping_Manifestation
 			$this->_isEContent = true;
 		}
 
-		if ($record->getShelfLocation()) {
-			$this->_shelfLocation[$record->getShelfLocation()] = $record->getShelfLocation();
-		}
-		if ($record->getCallNumber()) {
-			$this->_callNumber[$record->getCallNumber()] = $record->getCallNumber();
-		}
 		$this->_relatedRecords[] = $record;
+	}
+
+	function setSortedRelatedRecords($relatedRecords){
+		$this->_relatedRecords = $relatedRecords;
 	}
 
 	/**
@@ -80,38 +89,41 @@ class Grouping_Manifestation
 		return count($this->_variations);
 	}
 
+	protected $_isHideByDefault = null;
+	protected $_hasHiddenFormats = null;
 	/**
 	 * @return bool
 	 */
 	function isHideByDefault(): bool
 	{
-		if (!$this->_hideByDefault) {
-			$hideAllVariations = true;
-			foreach ($this->_variations as $variation) {
-				if (!$variation->isHideByDefault()) {
-					$hideAllVariations = false;
-					break;
-				}
-			}
-			return $hideAllVariations;
-		} else {
-			return true;
-		}
+		$this->loadHiddenInformation();
+		return $this->_isHideByDefault;
+	}
 
+	function loadHiddenInformation(){
+		if ($this->_isHideByDefault == null){
+			$this->_hasHiddenFormats = false;
+			if (!$this->_hideByDefault) {
+				$hideAllVariations = true;
+				foreach ($this->_variations as $variation) {
+					if (!$variation->isHideByDefault()) {
+						$hideAllVariations = false;
+					}else{
+						$this->_hasHiddenFormats = true;
+					}
+				}
+				$this->_isHideByDefault = $hideAllVariations;
+			} else {
+				$this->_isHideByDefault = true;
+				$this->_hasHiddenFormats = true;
+			}
+		}
 	}
 
 	function hasHiddenFormats(): bool
 	{
-		if (!$this->_hideByDefault) {
-			foreach ($this->_variations as $variation) {
-				if ($variation->isHideByDefault()) {
-					return true;
-				}
-			}
-			return false;
-		} else {
-			return true;
-		}
+		$this->loadHiddenInformation();
+		return $this->_hasHiddenFormats;
 	}
 
 	/**
@@ -307,7 +319,7 @@ class Grouping_Manifestation
 		return $firstVariation->getActions();
 	}
 
-	private $_itemSummary = null;
+	protected $_itemSummary = null;
 
 	/**
 	 * @return array
@@ -326,6 +338,22 @@ class Grouping_Manifestation
 			$timer->logTime("Got item summary for manifestation");
 		}
 		return $this->_itemSummary;
+	}
+
+	protected $_itemsDisplayedByDefault = null;
+
+	/** @noinspection PhpUnused */
+	function getItemsDisplayedByDefault(){
+		if ($this->_itemsDisplayedByDefault == null){
+			require_once ROOT_DIR . '/sys/Utils/GroupingUtils.php';
+			$itemsDisplayedByDefault = [];
+			foreach ($this->_variations as $variation) {
+				$itemsDisplayedByDefault = mergeItemSummary($itemsDisplayedByDefault, $variation->getItemsDisplayedByDefault());
+			}
+			ksort($itemsDisplayedByDefault);
+			$this->_itemsDisplayedByDefault = $itemsDisplayedByDefault;
+		}
+		return $this->_itemsDisplayedByDefault;
 	}
 
 	/**

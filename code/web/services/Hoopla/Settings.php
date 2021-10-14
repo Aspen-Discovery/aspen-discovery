@@ -6,29 +6,32 @@ require_once ROOT_DIR . '/sys/Hoopla/HooplaSetting.php';
 
 class Hoopla_Settings extends ObjectEditor
 {
-	function getObjectType()
+	function getObjectType() : string
 	{
 		return 'HooplaSetting';
 	}
 
-	function getToolName()
+	function getToolName() : string
 	{
 		return 'Settings';
 	}
 
-	function getModule()
+	function getModule() : string
 	{
 		return 'Hoopla';
 	}
 
-	function getPageTitle()
+	function getPageTitle() : string
 	{
 		return 'Hoopla Settings';
 	}
 
-	function getAllObjects()
+	function getAllObjects($page, $recordsPerPage) : array
 	{
 		$object = new HooplaSetting();
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
+		$this->applyFilters($object);
+		$object->orderBy($this->getSort());
 		$object->find();
 		$objectList = array();
 		while ($object->fetch()) {
@@ -37,17 +40,22 @@ class Hoopla_Settings extends ObjectEditor
 		return $objectList;
 	}
 
-	function getObjectStructure()
+	function getDefaultSort() : string
+	{
+		return 'apiUrl asc';
+	}
+
+	function getObjectStructure() : array
 	{
 		return HooplaSetting::getObjectStructure();
 	}
 
-	function getPrimaryKeyColumn()
+	function getPrimaryKeyColumn() : string
 	{
 		return 'id';
 	}
 
-	function getIdKeyColumn()
+	function getIdKeyColumn() : string
 	{
 		return 'id';
 	}
@@ -62,17 +70,17 @@ class Hoopla_Settings extends ObjectEditor
 		return true;
 	}
 
-	function getAdditionalObjectActions($existingObject)
+	function getAdditionalObjectActions($existingObject) : array
 	{
 		return [];
 	}
 
-	function getInstructions()
+	function getInstructions() : string
 	{
 		return '';
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
@@ -81,12 +89,12 @@ class Hoopla_Settings extends ObjectEditor
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return 'hoopla';
 	}
 
-	function canView()
+	function canView() : bool
 	{
 		return UserAccount::userHasPermission('Administer Hoopla');
 	}

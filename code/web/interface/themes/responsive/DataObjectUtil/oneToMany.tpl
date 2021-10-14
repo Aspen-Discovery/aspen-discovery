@@ -5,14 +5,14 @@
 			<thead>
 			<tr>
 				{if $property.sortable}
-					<th>Sort</th>
+					<th>{translate text="Sort" isAdminFacing=true}</th>
 				{/if}
 				{foreach from=$property.structure item=subProperty}
-					{if in_array($subProperty.type, array('text', 'enum', 'date', 'checkbox', 'integer', 'textarea', 'html')) || ($subProperty.type == 'multiSelect' && $subProperty.listStyle == 'checkboxList') }
-						<th{if in_array($subProperty.type, array('text', 'enum', 'html', 'multiSelect'))} style="min-width:150px"{/if}>{$subProperty.label}</th>
+					{if in_array($subProperty.type, array('text', 'regularExpression', 'enum', 'date', 'checkbox', 'integer', 'textarea', 'html')) || ($subProperty.type == 'multiSelect' && $subProperty.listStyle == 'checkboxList') }
+						<th{if in_array($subProperty.type, array('text', 'regularExpression', 'enum', 'html', 'multiSelect'))} style="min-width:150px"{/if}>{translate text=$subProperty.label isAdminFacing=true}</th>
 					{/if}
 				{/foreach}
-				<th>Actions</th>
+				<th>{translate text="Actions" isAdminFacing=true}</th>
 			</tr>
 			</thead>
 			<tbody>
@@ -27,12 +27,14 @@
 						</td>
 					{/if}
 					{foreach from=$property.structure item=subProperty}
-						{if in_array($subProperty.type, array('text', 'enum', 'date', 'checkbox', 'integer', 'textarea', 'html')) }
+						{if in_array($subProperty.type, array('text', 'regularExpression', 'enum', 'date', 'checkbox', 'integer', 'textarea', 'html')) }
 							<td>
 								{assign var=subPropName value=$subProperty.property}
 								{assign var=subPropValue value=$subObject->$subPropName}
-								{if $subProperty.type=='text' || $subProperty.type=='date' || $subProperty.type=='integer' || $subProperty.type=='html'}
-									<input type="text" name="{$propName}_{$subPropName}[{$subObject->id}]" value="{$subPropValue|escape}" class="form-control{if $subProperty.type=='date'} datepicker{elseif $subProperty.type=="integer"} integer{/if}{if $subProperty.required == true} required{/if}">
+								{if $subProperty.type=='text' || $subProperty.type=='regularExpression' || $subProperty.type=='integer' || $subProperty.type=='html'}
+									<input type="text" name="{$propName}_{$subPropName}[{$subObject->id}]" value="{$subPropValue|escape}" class="form-control{if $subProperty.type=="integer"} integer{/if}{if $subProperty.required == true} required{/if}">
+								{elseif $subProperty.type=='date'}
+									<input type="date" name="{$propName}_{$subPropName}[{$subObject->id}]" value="{$subPropValue|escape}" class="form-control{if $subProperty.required == true} required{/if}">
 								{elseif $subProperty.type=='textarea'}
 									<textarea name="{$propName}_{$subPropName}[{$subObject->id}]" class="form-control">{$subPropValue|escape}</textarea>
 								{elseif $subProperty.type=='checkbox'}
@@ -40,7 +42,7 @@
 								{else}
 									<select name='{$propName}_{$subPropName}[{$subObject->id}]' id='{$propName}{$subPropName}_{$subObject->id}' class='form-control {if $subProperty.required == true} required{/if}' {if !empty($subProperty.onchange)}onchange="{$subProperty.onchange}"{/if}>
 										{foreach from=$subProperty.values item=propertyName key=propertyValue}
-											<option value='{$propertyValue}' {if $subPropValue == $propertyValue}selected='selected'{/if}>{$propertyName}</option>
+											<option value='{$propertyValue}' {if $subPropValue == $propertyValue}selected='selected'{/if}>{if !empty($subProperty.translateValues)}{translate text=$propertyName inAttribute=true isPublicFacing=$subProperty.isPublicFacing isAdminFacing=$subProperty.isAdminFacing }{else}{$propertyName}{/if}</option>
 										{/foreach}
 									</select>
 								{/if}
@@ -63,25 +65,27 @@
 						{/if}
 					{/foreach}
 					<td>
-						{if $property.editLink neq ''}
-							<a href='{$property.editLink}?objectAction=edit&widgetListId={$subObject->id}&widgetId={$widgetid}' class="btn btn-sm btn-default" title="edit">
-								{translate text="Edit"}
-							</a>
-						{elseif $property.canEdit}
-							{if method_exists($subObject, 'getEditLink')}
-								<a href='{$subObject->getEditLink()}' title='Edit' class="btn btn-sm btn-default">
-									{translate text="Edit"}
+						{if $subObject->canActiveUserEdit()}
+							{if $property.editLink neq ''}
+								<a href='{$property.editLink}?objectAction=edit&widgetListId={$subObject->id}&widgetId={$widgetid}' class="btn btn-sm btn-default" title="edit">
+									{translate text="Edit" isAdminFacing=true}
 								</a>
-							{else}
-								Please add a getEditLink method to this object
+							{elseif $property.canEdit}
+								{if method_exists($subObject, 'getEditLink')}
+									<a href='{$subObject->getEditLink()}' title='Edit' class="btn btn-sm btn-default">
+										{translate text="Edit" isAdminFacing=true}
+									</a>
+								{else}
+									{translate text="Please add a getEditLink method to this object" isAdminFacing=true}
+								{/if}
 							{/if}
 						{/if}
 						{* link to delete*}
 						<input type="hidden" id="{$propName}Deleted_{$subObject->id}" name="{$propName}Deleted[{$subObject->id}]" value="false">
 						{* link to delete *}
-						<a href="#" class="btn btn-sm btn-warning" onclick="if (confirm('Are you sure you want to delete this?')){literal}{{/literal}$('#{$propName}Deleted_{$subObject->id}').val('true');$('#{$propName}{$subObject->id}').hide().find('.required').removeClass('required'){literal}}{/literal};return false;">
+						<a href="#" class="btn btn-sm btn-warning" onclick="if (confirm('{translate text='Are you sure you want to delete this?' inAttribute=true isAdminFacing=true}')){literal}{{/literal}$('#{$propName}Deleted_{$subObject->id}').val('true');$('#{$propName}{$subObject->id}').hide().find('.required').removeClass('required'){literal}}{/literal};return false;">
 							{* On delete action, also remove class 'required' to turn off form validation of the deleted input; so that the form can be submitted by the user  *}
-							{translate text="Delete"}
+							{translate text="Delete" isAdminFacing=true}
 						</a>
 					</td>
 				</tr>
@@ -94,11 +98,11 @@
 		</table>
 	</div>
 	<div class="{$propName}Actions">
-		<a href="#" onclick="addNew{$propName}();return false;" class="btn btn-primary btn-sm">Add New</a>
+		<a href="#" onclick="addNew{$propName}();return false;" class="btn btn-primary btn-sm">{translate text="Add New" isAdminFacing=true}</a>
 		{if $property.additionalOneToManyActions && $id}{* Only display these actions for an existing object *}
 			<div class="btn-group pull-right">
 				{foreach from=$property.additionalOneToManyActions item=action}
-					<a class="btn {if $action.class}{$action.class}{else}btn-default{/if} btn-sm" href="{$action.url|replace:'$id':$id}">{$action.text}</a>
+					<a class="btn {if $action.class}{$action.class}{else}btn-default{/if} btn-sm" href="{$action.url|replace:'$id':$id}">{translate text=$action.text isPublicFacing=true}</a>
 				{/foreach}
 			</div>
 		{/if}
@@ -117,7 +121,6 @@
 			});
 			{/literal}
 			{/if}
-			{literal}$('.datepicker').datepicker({format: "yyyy-mm-dd"});{/literal}
 		{literal}});{/literal}
 		var numAdditional{$propName} = 0;
 
@@ -132,12 +135,14 @@
 			newRow += "</td>";
 			{/if}
 			{foreach from=$property.structure item=subProperty}
-			{if in_array($subProperty.type, array('text', 'enum', 'date', 'checkbox', 'integer', 'textarea', 'html')) }
+			{if in_array($subProperty.type, array('text', 'regularExpression', 'enum', 'date', 'checkbox', 'integer', 'textarea', 'html')) }
 			newRow += "<td>";
 			{assign var=subPropName value=$subProperty.property}
 			{assign var=subPropValue value=$subObject->$subPropName}
-			{if $subProperty.type=='text' || $subProperty.type=='date' || $subProperty.type=='integer' || $subProperty.type=='textarea' || $subProperty.type=='html'}
-			newRow += "<input type='text' name='{$propName}_{$subPropName}[" + numAdditional{$propName} + "]' value='{if $subProperty.default}{$subProperty.default}{/if}' class='form-control{if $subProperty.type=="date"} datepicker{elseif $subProperty.type=="integer"} integer{/if}{if $subProperty.required == true} required{/if}'>";
+			{if $subProperty.type=='text' || $subProperty.type=='regularExpression' || $subProperty.type=='integer' || $subProperty.type=='textarea' || $subProperty.type=='html'}
+			newRow += "<input type='text' name='{$propName}_{$subPropName}[" + numAdditional{$propName} + "]' value='{if $subProperty.default}{$subProperty.default}{/if}' class='form-control{if $subProperty.type=="integer"} integer{/if}{if $subProperty.required == true} required{/if}'>";
+			{elseif $subProperty.type=='date'}
+			newRow += "<input type='date' name='{$propName}_{$subPropName}[" + numAdditional{$propName} + "]' value='{if $subProperty.default}{$subProperty.default}{/if}' class='form-control{if $subProperty.required == true} required{/if}'>";
 			{elseif $subProperty.type=='checkbox'}
 			newRow += "<input type='checkbox' name='{$propName}_{$subPropName}[" + numAdditional{$propName} + "]' {if $subProperty.default == 1}checked='checked'{/if}>";
 			{else}
@@ -166,7 +171,6 @@
 			newRow += "</tr>";
 			{literal}
 			$('#{/literal}{$propName}{literal} tr:last').after(newRow);
-			$('.datepicker').datepicker({format: "yyyy-mm-dd"});
 			return false;
 		}
 		{/literal}

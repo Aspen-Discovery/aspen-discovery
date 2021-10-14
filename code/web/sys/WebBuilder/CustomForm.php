@@ -17,15 +17,20 @@ class CustomForm extends DataObject
 	/** @var CustomFormField[] */
 	private $_formFields;
 
-	static function getObjectStructure()
+	public function getNumericColumnNames() : array
+	{
+		return ['requireLogin'];
+	}
+
+	static function getObjectStructure() : array
 	{
 		$formFieldStructure = CustomFormField::getObjectStructure();
 		unset ($formFieldStructure['weight']);
-		$libraryList = Library::getLibraryList();
+		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Custom Forms'));
 		return [
 			'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id within the database'),
 			'title' => array('property' => 'title', 'type' => 'text', 'label' => 'Title', 'description' => 'The title of the page', 'size' => '40', 'maxLength' => 100, 'required' => true),
-			'urlAlias' => array('property' => 'urlAlias', 'type' => 'text', 'label' => 'URL Alias (no domain)', 'description' => 'The url of the page (no domain name)', 'size' => '40', 'maxLength' => 100),
+			'urlAlias' => array('property' => 'urlAlias', 'type' => 'text', 'label' => 'URL Alias (no domain, should start with /)', 'description' => 'The url of the page (no domain name)', 'size' => '40', 'maxLength' => 100),
 			'requireLogin' => array('property' => 'requireLogin', 'type' => 'checkbox', 'label' => 'Require Login', 'description' => 'Whether or not the user must be logged in to view the form', 'default' => 0),
 			'introText' => array('property' => 'introText', 'type' => 'markdown', 'label' => 'Introductory Text', 'description' => 'Introductory Text displayed above the fields', 'hideInLists' => true),
 			'formFields' => array(
@@ -42,7 +47,7 @@ class CustomForm extends DataObject
 				'allowEdit' => false,
 				'canEdit' => false,
 			),
-			'emailResultsTo' => array('property' => 'emailResultsTo', 'type' => 'text', 'label' => 'Email Results To', 'description' => 'An email address to send submission results to', 'size' => '40', 'maxLength' => 100),
+			'emailResultsTo' => array('property' => 'emailResultsTo', 'type' => 'text', 'label' => 'Email Results To (separate multiple addresses with semi-colons)', 'description' => 'An email address to send submission results to', 'size' => '40', 'maxLength' => 100),
 			'submissionResultText' => array('property' => 'submissionResultText', 'type' => 'markdown', 'label' => 'Submission Result Text', 'description' => 'Text to be displayed to the user when submission is complete', 'hideInLists' => true),
 			'libraries' => array(
 				'property' => 'libraries',
@@ -111,7 +116,7 @@ class CustomForm extends DataObject
 			$libraryLink->formId = $this->id;
 			$libraryLink->find();
 			while($libraryLink->fetch()){
-				$this->_libraries[] = $libraryLink->libraryId;
+				$this->_libraries[$libraryLink->libraryId] = $libraryLink->libraryId;
 			}
 		}
 		return $this->_libraries;
@@ -197,6 +202,11 @@ class CustomForm extends DataObject
 		$interface->assign('submitUrl', '/WebBuilder/SubmitForm?id=' . $this->id);
 		$interface->assign('structure', $structure);
 		$interface->assign('saveButtonText', 'Submit');
+		if (isset($_GET['objectAction'])){
+			$interface->assign('objectAction', $_GET['objectAction']);
+		} else {
+			$interface->assign('objectAction', '');
+		}
 		return $interface->fetch('DataObjectUtil/objectEditForm.tpl');
 	}
 }

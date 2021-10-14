@@ -1,10 +1,10 @@
 #A list of files to merge, can comment out lines with a #
-C:\web\aspen-discovery\code\web\js\jquery-1.11.0.min.js
+../../../../js/jquery-1.11.0.min.js
 lib/jquery-ui-1.10.4.custom.min.js
 lib/bootstrap.min.js
-lib/bootstrap-datepicker.min.js
 lib/bootstrap-switch.min.js
 lib/jcarousel.min.js
+lib/jcarousel-swipe.js
 lib/colcade.js
 lib/jquery.tablesorter.js
 lib/jquery.tablesorter.pager.min.js
@@ -17,12 +17,14 @@ lib/rater.min.js
 lib/recaptcha_ajax.min.js
 lib/simplemde.min.js
 lib/moment.min.js
+#rome.standalone.min.js must come after moment
 lib/rome.standalone.min.js
+#Chart.js must come after moment
+lib/Chart.min.js
 aspen/globals.js
 aspen/base.js
 aspen/account.js
 aspen/admin.js
-aspen/archive.js
 aspen/authors.js
 aspen/axis360.js
 aspen/browse.js
@@ -39,7 +41,6 @@ aspen/open-archives.js
 aspen/hoopla.js
 aspen/prospector.js
 aspen/ratings.js
-aspen/rbdigital.js
 aspen/reading-history.js
 aspen/record.js
 aspen/responsive.js

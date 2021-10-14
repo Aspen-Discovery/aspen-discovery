@@ -77,7 +77,7 @@
 		<!-- Type i.e. library_calendar -->
 		<field name="type" type="unchanged_string" indexed="true" stored="true" multiValued="false" required="true"/>
 		<!-- Source the id of the settings entry -->
-		<field name="source" type="unchanged_string" indexed="false" stored="true" multiValued="false" required="true"/>
+		<field name="source" type="unchanged_string" indexed="true" stored="true" multiValued="false" required="true"/>
 		<!-- The identifier of the setting in the events system -->
 		<field name="identifier" type="unchanged_string" indexed="true" stored="true" multiValued="false" required="true"/>
 		<field name="_version_" type="long" indexed="true" stored="true"/>

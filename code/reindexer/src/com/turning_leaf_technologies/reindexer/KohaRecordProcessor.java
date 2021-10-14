@@ -21,8 +21,8 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 	private final HashMap<String, String> damagedStatuses = new HashMap<>();
 	private final HashMap<String, String> notForLoanStatuses = new HashMap<>();
 
-	KohaRecordProcessor(GroupedWorkIndexer indexer, Connection dbConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
-		this (indexer, dbConn, indexingProfileRS, logger, fullReindex, null);
+	KohaRecordProcessor(GroupedWorkIndexer indexer, String profileType, Connection dbConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
+		this (indexer, profileType, dbConn, indexingProfileRS, logger, fullReindex, null);
 		suppressRecordsWithNoCollection = false;
 	}
 
@@ -71,8 +71,8 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 		return kohaConnection;
 	}
 
-	private KohaRecordProcessor(GroupedWorkIndexer indexer, Connection dbConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex, Connection kohaConnection) {
-		super(indexer, dbConn, indexingProfileRS, logger, fullReindex);
+	private KohaRecordProcessor(GroupedWorkIndexer indexer, String profileType, Connection dbConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex, Connection kohaConnection) {
+		super(indexer, profileType, dbConn, indexingProfileRS, logger, fullReindex);
 		boolean valid = false;
 		int tries = 0;
 		while (tries < 3 && !valid) {
@@ -147,7 +147,7 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 
 	@Override
 	protected boolean isItemAvailable(ItemInfo itemInfo) {
-		return !inTransitItems.contains(itemInfo.getItemIdentifier()) && (itemInfo.getStatusCode().equals("On Shelf") || itemInfo.getStatusCode().equals("Library Use Only"));
+		return !inTransitItems.contains(itemInfo.getItemIdentifier()) && (itemInfo.getDetailedStatus().equals("On Shelf") || itemInfo.getDetailedStatus().equals("Library Use Only"));
 	}
 
 	@Override
@@ -164,16 +164,18 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 				String shelfLocation = shelfLocationCode.toLowerCase().trim();
 				if (hasTranslation("format", shelfLocation)){
 					String translatedLocation = translateValue("format", shelfLocation, recordInfo.getRecordIdentifier());
-					if (itemCountsByItype.containsKey(shelfLocation)) {
-						itemCountsByItype.put(shelfLocation, itemCountsByItype.get(shelfLocation) + 1);
-					} else {
-						itemCountsByItype.put(shelfLocation, 1);
-					}
-					foundFormatFromShelfLocation = true;
-					itemTypeToFormat.put(shelfLocation, translatedLocation);
-					if (itemCountsByItype.get(shelfLocation) > mostUsedCount){
-						mostPopularIType = shelfLocation;
-						mostUsedCount = itemCountsByItype.get(shelfLocation);
+					if (translatedLocation != null && translatedLocation.length() > 0) {
+						if (itemCountsByItype.containsKey(shelfLocation)) {
+							itemCountsByItype.put(shelfLocation, itemCountsByItype.get(shelfLocation) + 1);
+						} else {
+							itemCountsByItype.put(shelfLocation, 1);
+						}
+						foundFormatFromShelfLocation = true;
+						itemTypeToFormat.put(shelfLocation, translatedLocation);
+						if (itemCountsByItype.get(shelfLocation) > mostUsedCount) {
+							mostPopularIType = shelfLocation;
+							mostUsedCount = itemCountsByItype.get(shelfLocation);
+						}
 					}
 				}
 			}
@@ -184,16 +186,18 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 				String subLocation = subLocationCode.toLowerCase().trim();
 				if (hasTranslation("format", subLocation)){
 					String translatedLocation = translateValue("format", subLocation, recordInfo.getRecordIdentifier());
-					if (itemCountsByItype.containsKey(subLocation)) {
-						itemCountsByItype.put(subLocation, itemCountsByItype.get(subLocation) + 1);
-					} else {
-						itemCountsByItype.put(subLocation, 1);
-					}
-					foundFormatFromSublocation = true;
-					itemTypeToFormat.put(subLocation, translatedLocation);
-					if (itemCountsByItype.get(subLocation) > mostUsedCount){
-						mostPopularIType = subLocation;
-						mostUsedCount = itemCountsByItype.get(subLocation);
+					if (translatedLocation != null && translatedLocation.length() > 0) {
+						if (itemCountsByItype.containsKey(subLocation)) {
+							itemCountsByItype.put(subLocation, itemCountsByItype.get(subLocation) + 1);
+						} else {
+							itemCountsByItype.put(subLocation, 1);
+						}
+						foundFormatFromSublocation = true;
+						itemTypeToFormat.put(subLocation, translatedLocation);
+						if (itemCountsByItype.get(subLocation) > mostUsedCount) {
+							mostPopularIType = subLocation;
+							mostUsedCount = itemCountsByItype.get(subLocation);
+						}
 					}
 				}
 			}
@@ -204,16 +208,18 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 				collectionCode = collectionCode.toLowerCase().trim();
 				if (hasTranslation("format", collectionCode)){
 					String translatedLocation = translateValue("format", collectionCode, recordInfo.getRecordIdentifier());
-					if (itemCountsByItype.containsKey(collectionCode)) {
-						itemCountsByItype.put(collectionCode, itemCountsByItype.get(collectionCode) + 1);
-					} else {
-						itemCountsByItype.put(collectionCode, 1);
-					}
-					foundFormatFromCollection = true;
-					itemTypeToFormat.put(collectionCode, translatedLocation);
-					if (itemCountsByItype.get(collectionCode) > mostUsedCount){
-						mostPopularIType = collectionCode;
-						mostUsedCount = itemCountsByItype.get(collectionCode);
+					if (translatedLocation != null && translatedLocation.length() > 0) {
+						if (itemCountsByItype.containsKey(collectionCode)) {
+							itemCountsByItype.put(collectionCode, itemCountsByItype.get(collectionCode) + 1);
+						} else {
+							itemCountsByItype.put(collectionCode, 1);
+						}
+						foundFormatFromCollection = true;
+						itemTypeToFormat.put(collectionCode, translatedLocation);
+						if (itemCountsByItype.get(collectionCode) > mostUsedCount) {
+							mostPopularIType = collectionCode;
+							mostUsedCount = itemCountsByItype.get(collectionCode);
+						}
 					}
 				}
 			}
@@ -327,6 +333,9 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 			String fieldData = itemField.getSubfield(subfield).getData();
 			if (!fieldData.equals("0")) {
 				if (fieldData.equals("1")) {
+					if (subfield == '7' && notForLoanStatuses.containsKey(fieldData)){
+						return notForLoanStatuses.get(fieldData);
+					}
 					return defaultStatus;
 				}else{
 					if (subfield == 'q'){
@@ -382,6 +391,9 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 								//There are several reserve statuses that we don't care about, just ignore silently.
 								return null;
 						}
+					}else if (subfield == '0'){
+						//Everything should be treated as withdrawn if this field is set
+						return "Withdrawn";
 					}
 					String status = "|" + subfield + "-" + fieldData;
 					if (!additionalStatuses.contains(status)){
@@ -402,7 +414,7 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 				boolean isEContent = false;
 				if (itemField.getSubfield(iTypeSubfield) != null){
 					String iType = itemField.getSubfield(iTypeSubfield).getData().toLowerCase().trim();
-					if (iType.equals("ebook") || iType.equals("eaudio") || iType.equals("online") || iType.equals("oneclick") || iType.equals("eaudiobook") || iType.equals("download")){
+					if (iType.equals("ebook") || iType.equals("eaudio") || iType.equals("evideo") || iType.equals("online") || iType.equals("oneclick") || iType.equals("eaudiobook") || iType.equals("download")){
 						isEContent = true;
 					}
 				}
@@ -427,7 +439,7 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 				boolean isOneClickDigital = false;
 				if (itemField.getSubfield(iTypeSubfield) != null){
 					String iType = itemField.getSubfield(iTypeSubfield).getData().toLowerCase().trim();
-					if (iType.equals("ebook") || iType.equals("eaudio") || iType.equals("online") || iType.equals("oneclick") || iType.equals("eaudiobook") || iType.equals("download")){
+					if (iType.equals("ebook") || iType.equals("eaudio") || iType.equals("evideo") || iType.equals("online") || iType.equals("oneclick") || iType.equals("eaudiobook") || iType.equals("download")){
 						isEContent = true;
 						String sourceType = getSourceType(record, itemField);
 						if (sourceType != null){
@@ -479,6 +491,9 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 		String sourceType = null;
 		if (itemField.getSubfield('e') != null){
 			sourceType = itemField.getSubfield('e').getData();
+			if (sourceType.equalsIgnoreCase("marcexpress")){
+				sourceType = "OverDrive";
+			}
 		}else{
 			List<DataField> urlFields = record.getDataFields("856");
 			for (DataField urlDataField : urlFields) {
@@ -562,6 +577,20 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 				suppressed = true;
 			}
 		}
+		//Suppression based on format
+		String shelfLocationCode = getSubfieldData(curItem, shelvingLocationSubfield);
+		String subLocation = getSubfieldData(curItem, subLocationSubfield);
+		String collectionCode = getSubfieldData(curItem, collectionSubfield);
+		String itemType = getSubfieldData(curItem, iTypeSubfield);
+		if (shelfLocationCode != null && formatsToSuppress.contains(shelfLocationCode.toUpperCase())){
+			suppressed = true;
+		}else if (subLocation != null && formatsToSuppress.contains(subLocation.toUpperCase())){
+			suppressed = true;
+		}else if (collectionCode != null && formatsToSuppress.contains(collectionCode.toUpperCase())){
+			suppressed = true;
+		}else if (itemType != null && formatsToSuppress.contains(itemType.toUpperCase())){
+			suppressed = true;
+		}
 		if (suppressed){
 			return true;
 		}else{
@@ -598,25 +627,24 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 	}
 
 	protected boolean isBibSuppressed(Record record) {
-		boolean isSuppressed = false;
 		DataField field942 = record.getDataField("942");
 		if (field942 != null){
 			Subfield subfieldN = field942.getSubfield('n');
 			if (subfieldN != null && subfieldN.getData().equals("1")){
-				isSuppressed = true;
+				return true;
 			}
 		}
 
-		return isSuppressed;
+		return super.isBibSuppressed(record);
 	}
 
-	protected HoldabilityInformation isItemHoldableUnscoped(ItemInfo itemInfo){
+	protected boolean isItemHoldableUnscoped(ItemInfo itemInfo){
 		//Koha uses subfield 7 to determine if a record is holdable or not.
 		Subfield subfield7 = itemInfo.getMarcField().getSubfield('7');
 		if (subfield7 != null) {
 			int notForLoan = Integer.parseInt(subfield7.getData());
 			if (notForLoan >= 1) {
-				return new HoldabilityInformation(false, new HashSet<>());
+				return false;
 			}
 		}
 		return super.isItemHoldableUnscoped(itemInfo);

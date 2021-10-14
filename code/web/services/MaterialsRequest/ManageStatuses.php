@@ -7,44 +7,55 @@ require_once ROOT_DIR . '/sys/MaterialsRequestStatus.php';
 class MaterialsRequest_ManageStatuses extends ObjectEditor
 {
 
-	function getObjectType(){
+	function getObjectType() : string{
 		return 'MaterialsRequestStatus';
 	}
-	function getModule()
+	function getModule() : string
 	{
 		return 'MaterialsRequest';
 	}
 
-	function getToolName(){
+	function getToolName() : string{
 		return 'ManageStatuses';
 	}
-	function getPageTitle(){
+	function getPageTitle() : string{
 		return 'Materials Request Statuses';
 	}
-	function getAllObjects(){
-		$status = new MaterialsRequestStatus();
+	function getAllObjects($page, $recordsPerPage) : array{
+		$object = new MaterialsRequestStatus();
 
 		$homeLibrary = Library::getPatronHomeLibrary();
-		$status->libraryId = $homeLibrary->libraryId;
+		$object->libraryId = $homeLibrary->libraryId;
+		$this->applyFilters($object);
 
-		$status->orderBy('isDefault DESC');
-		$status->orderBy('isPatronCancel DESC');
-		$status->orderBy('isOpen DESC');
-		$status->orderBy('description ASC');
-		$status->find();
+		$object->orderBy('isDefault DESC');
+		$object->orderBy('isPatronCancel DESC');
+		$object->orderBy('isOpen DESC');
+		$object->orderBy('description ASC');
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
+		$object->find();
 		$objectList = array();
-		while ($status->fetch()){
-			$objectList[$status->id] = clone $status;
+		while ($object->fetch()){
+			$objectList[$object->id] = clone $object;
 		}
 		return $objectList;
 	}
-	function getObjectStructure(){
+	function getDefaultSort() : string
+	{
+		return 'isDefault desc';
+	}
+	function canSort() : bool
+	{
+		return false;
+	}
+
+	function getObjectStructure() : array{
 		return MaterialsRequestStatus::getObjectStructure();
 	}
-	function getPrimaryKeyColumn(){
+	function getPrimaryKeyColumn() : string{
 		return 'description';
 	}
-	function getIdKeyColumn(){
+	function getIdKeyColumn() : string{
 		return 'id';
 	}
 	function customListActions(){
@@ -76,7 +87,7 @@ class MaterialsRequest_ManageStatuses extends ObjectEditor
 		header("Location: /MaterialsRequest/ManageStatuses");
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/MaterialsRequest/ManageRequests', 'Manage Materials Requests');
@@ -84,12 +95,12 @@ class MaterialsRequest_ManageStatuses extends ObjectEditor
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return 'materials_request';
 	}
 
-	function canView()
+	function canView() : bool
 	{
 		return UserAccount::userHasPermission('Administer Materials Requests');
 	}

@@ -19,7 +19,7 @@ class Marriage extends DataObject
 		return $this->marriageId;
 	}
 
-	function getNumericColumnNames()
+	function getNumericColumnNames() : array
 	{
 		return [
 			'marriageDateDay',
@@ -32,7 +32,7 @@ class Marriage extends DataObject
 		return $this->spouseName . (isset($this->marriageDate) ? (' - ' . $this->marriageDate) : '');
 	}
 
-    static function getObjectStructure(){
+    static function getObjectStructure() : array{
 		$structure = array(
 			array('property'=>'marriageId', 'type'=>'label', 'label'=>'Id', 'description'=>'The unique id of the marriage in the database', 'storeDb' => true),
 			array('property'=>'personId', 'type'=>'hidden', 'label'=>'Person Id', 'description'=>'The id of the person this marriage is for', 'storeDb' => true),

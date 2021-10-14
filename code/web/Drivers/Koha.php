@@ -56,7 +56,7 @@ class Koha extends AbstractIlsDriver
 		];
 		$oauthToken = $this->getOAuthToken();
 		if ($oauthToken == false) {
-			$result['messages'][] = translate(['text' => 'unable_to_authenticate', 'defaultText' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.']);
+			$result['messages'][] = translate(['text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.', 'isPublicFacing'=>true]);
 		} else {
 			$apiUrl = $this->getWebServiceURL() . "/api/v1/patrons/{$patron->username}";
 			$postParams = json_encode($postVariables);
@@ -90,7 +90,7 @@ class Koha extends AbstractIlsDriver
 				}
 			} else {
 				$result['success'] = true;
-				$result['messages'][] = 'Your pickup location was updated successfully.';
+                $result['messages'][] = translate(['text' => 'Your pickup location was updated successfully.', 'isPublicFacing'=> true]);
 			}
 		}
 
@@ -116,11 +116,12 @@ class Koha extends AbstractIlsDriver
 				//This method does not use the review queue
 				//Load required fields from Koha here to make sure we don't wipe them out
 				/** @noinspection SqlResolve */
-				$sql = "SELECT address, city FROM borrowers where borrowernumber = {$patron->username}";
+				$this->initDatabaseConnection();
+				$sql = "SELECT address, city FROM borrowers where borrowernumber = '{$patron->username}'";
 				$results = mysqli_query($this->dbConnection, $sql);
 				$address = '';
 				$city = '';
-				if ($results !== false) {
+				if ($results !== false && $results != null) {
 					while ($curRow = $results->fetch_assoc()) {
 						$address = $curRow['address'];
 						$city = $curRow['city'];
@@ -131,7 +132,7 @@ class Koha extends AbstractIlsDriver
 					'surname' => $patron->lastname,
 					'address' => $address,
 					'city' => $city,
-					'library_id' => Location::getUserHomeLocation()->code,
+					'library_id' => $patron->getHomeLocationCode(),
 					'category_id' => $patron->patronType
 				];
 
@@ -186,8 +187,9 @@ class Koha extends AbstractIlsDriver
 
 				$oauthToken = $this->getOAuthToken();
 				if ($oauthToken == false) {
-					$result['messages'][] = translate(['text' => 'unable_to_authenticate', 'defaultText' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.']);
+					$result['messages'][] = translate(['text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.', 'isPublicFacing'=>true]);
 				} else {
+
 					$apiUrl = $this->getWebServiceURL() . "/api/v1/patrons/{$patron->username}";
 					$postParams = json_encode($postVariables);
 
@@ -199,7 +201,6 @@ class Koha extends AbstractIlsDriver
 						'Content-Type: application/json;charset=UTF-8',
 						'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
 					], true);
-					$this->apiCurlWrapper->setupDebugging();
 					$response = $this->apiCurlWrapper->curlSendPage($apiUrl, 'PUT', $postParams);
 					if ($this->apiCurlWrapper->getResponseCode() != 200) {
 						if (strlen($response) > 0) {
@@ -246,7 +247,9 @@ class Koha extends AbstractIlsDriver
 				$postVariables = $this->setPostField($postVariables, 'borrower_title', $library->useAllCapsWhenUpdatingProfile);
 				$postVariables = $this->setPostField($postVariables, 'borrower_surname', $library->useAllCapsWhenUpdatingProfile);
 				$postVariables = $this->setPostField($postVariables, 'borrower_firstname', $library->useAllCapsWhenUpdatingProfile);
-				$postVariables = $this->setPostField($postVariables, 'borrower_dateofbirth', $library->useAllCapsWhenUpdatingProfile);
+				if (!empty($_REQUEST['borrower_dateofbirth'])){
+					$postVariables['borrower_dateofbirth'] = $this->aspenDateToKohaDate($_REQUEST['borrower_dateofbirth']);
+				}
 				$postVariables = $this->setPostField($postVariables, 'borrower_initials', $library->useAllCapsWhenUpdatingProfile);
 				$postVariables = $this->setPostField($postVariables, 'borrower_othernames', $library->useAllCapsWhenUpdatingProfile);
 				$postVariables = $this->setPostField($postVariables, 'borrower_sex', $library->useAllCapsWhenUpdatingProfile);
@@ -315,13 +318,9 @@ class Koha extends AbstractIlsDriver
 		return $result;
 	}
 
-	private $checkouts = array();
-
 	public function getCheckouts($patron)
 	{
-		if (isset($this->checkouts[$patron->id])) {
-			return $this->checkouts[$patron->id];
-		}
+		require_once ROOT_DIR . '/sys/User/Checkout.php';
 
 		//Get checkouts by screen scraping
 		$checkouts = array();
@@ -331,21 +330,32 @@ class Koha extends AbstractIlsDriver
 		$opacRenewalAllowed = $this->getKohaSystemPreference('OpacRenewalAllowed');
 
 		/** @noinspection SqlResolve */
-		$sql = "SELECT issues.*, items.biblionumber, items.itype, items.itemcallnumber, items.enumchron, title, author, auto_renew, auto_renew_error from issues left join items on items.itemnumber = issues.itemnumber left join biblio ON items.biblionumber = biblio.biblionumber where borrowernumber = {$patron->username}";
+		$sql = "SELECT issues.*, items.biblionumber, items.itype, items.itemcallnumber, items.enumchron, title, author, auto_renew, auto_renew_error, items.barcode from issues left join items on items.itemnumber = issues.itemnumber left join biblio ON items.biblionumber = biblio.biblionumber where borrowernumber = {$patron->username}";
 		$results = mysqli_query($this->dbConnection, $sql);
 		while ($curRow = $results->fetch_assoc()) {
-			$checkout = array();
-			$checkout['checkoutSource'] = 'ILS';
+			$curCheckout = new Checkout();
+			$curCheckout->type = 'ils';
+			$curCheckout->source = $this->getIndexingProfile()->name;
+			$curCheckout->sourceId = $curRow['issue_id'];
+			$curCheckout->userId = $patron->id;
 
-			$checkout['id'] = $curRow['issue_id'];
-			$checkout['recordId'] = $curRow['biblionumber'];
-			$checkout['shortId'] = $curRow['biblionumber'];
-			$checkout['title'] = $curRow['title'];
+			$curCheckout->recordId = $curRow['biblionumber'];
+			$curCheckout->shortId = $curRow['biblionumber'];
+			$curCheckout->barcode = $curRow['barcode'];
+
+			$recordDriver = RecordDriverFactory::initRecordDriverById($this->getIndexingProfile()->name . ':' . $curCheckout->recordId);
+			if ($recordDriver->isValid()){
+				$curCheckout->updateFromRecordDriver($recordDriver);
+			}else{
+				$curCheckout->title = $curRow['title'];
+				$curCheckout->author = $curRow['author'];
+			}
+
 			if (isset($curRow['itemcallnumber'])) {
-				$checkout['callNumber'] = $curRow['itemcallnumber'];
+				$curCheckout->callNumber = $curRow['itemcallnumber'];
 			}
 			if (isset($curRow['enumchron'])) {
-				$checkout['volume'] = $curRow['enumchron'];
+				$curCheckout->volume = $curRow['enumchron'];
 			}
 
 			$itemNumber = $curRow['itemnumber'];
@@ -356,7 +366,7 @@ class Koha extends AbstractIlsDriver
 			$volumeResults = mysqli_query($this->dbConnection, $volumeSql);
 			if ($volumeResults !== false) { //This is false if Koha does not support volumes
 				if ($volumeRow = $volumeResults->fetch_assoc()) {
-					$checkout['volume'] = $volumeRow['description'];
+					$curCheckout->volume = $volumeRow['description'];
 				}
 				$volumeResults->close();
 			}
@@ -365,12 +375,12 @@ class Koha extends AbstractIlsDriver
 			/** @noinspection SqlResolve */
 			$claimsReturnedSql = "SELECT created_on from return_claims where issue_id = {$curRow['issue_id']}";
 			$claimsReturnedResults = mysqli_query($this->dbConnection, $claimsReturnedSql);
-			$checkout['return_claim'] = '';
+			$curCheckout->returnClaim = '';
 			if ($claimsReturnedResults !== false) { //This is false if Koha does not support volumes
 				if ($claimsReturnedResult = $claimsReturnedResults->fetch_assoc()) {
 					try {
 						$claimsReturnedDate = new DateTime($claimsReturnedResult['created_on']);
-						$checkout['return_claim'] = translate(['text'=>'return_claim_message','defaultText'=> 'Title marked as returned on %1%, but the library is still processing', 1=>date_format($claimsReturnedDate, 'M j, Y')]);
+						$curCheckout->returnClaim = translate(['text'=>'Title marked as returned on %1%, but the library is still processing', 1=>date_format($claimsReturnedDate, 'M j, Y'), 'isPublicFacing'=> true]);
 					} catch (Exception $e) {
 						global $logger;
 						$logger->log("Error parsing claims returned info " . $claimsReturnedResult['created_on'] . " $e", Logger::LOG_ERROR);
@@ -379,87 +389,106 @@ class Koha extends AbstractIlsDriver
 				$claimsReturnedResults->close();
 			}
 
-			$checkout['author'] = $curRow['author'];
-
 			$dateDue = DateTime::createFromFormat('Y-m-d H:i:s', $curRow['date_due']);
 			if ($dateDue) {
-				$renewalDate = $dateDue->format('D M jS');
-				$checkout['renewalDate'] = $renewalDate;
+				$curCheckout->renewalDate = $dateDue->getTimestamp();
 				$dueTime = $dateDue->getTimestamp();
+				$renewalDate = date('M j, y', $curCheckout->renewalDate);
 			} else {
 				$renewalDate = 'Unknown';
 				$dueTime = null;
 			}
-			$checkout['dueDate'] = $dueTime;
-			$checkout['itemId'] = $itemNumber;
-			$checkout['renewIndicator'] = $curRow['itemnumber'];
-			$checkout['renewCount'] = $curRow['renewals'];
+			$curCheckout->dueDate = $dueTime;
+			$curCheckout->itemId = $itemNumber;
+			$curCheckout->renewIndicator = $curRow['itemnumber'];
+			$curCheckout->renewCount = $curRow['renewals'];
 
-			$checkout['canRenew'] = !$curRow['auto_renew'] && $opacRenewalAllowed;
-			$checkout['autoRenew'] = $curRow['auto_renew'];
-			$autoRenewError = $curRow['auto_renew_error'];
+			/** @noinspection SqlResolve */
+			$renewPrefSql = "SELECT autorenew_checkouts FROM borrowers WHERE borrowernumber = {$patron->username}";
+			$renewPrefResults = mysqli_query($this->dbConnection, $renewPrefSql);
+			if ($renewPrefRow = $renewPrefResults->fetch_assoc()) {
+				$renewPref = $renewPrefRow['autorenew_checkouts'];
 
-			if ($autoRenewError) {
-				if ($autoRenewError == 'on_reserve') {
-					$autoRenewError = translate(['text' => 'koha_auto_renew_on_reserve', 'defaultText' => 'Cannot auto renew, on hold for another user']);
-				} elseif ($autoRenewError == 'too_many') {
-					$autoRenewError = translate(['text' => 'koha_auto_renew_too_many', 'defaultText' => 'Cannot auto renew, too many renewals']);
-				} elseif ($autoRenewError == 'auto_account_expired') {
-					$autoRenewError = translate(['text' => 'koha_auto_renew_auto_account_expired', 'defaultText' => 'Cannot auto renew, your account has expired']);
-				} elseif ($autoRenewError == 'auto_too_soon') {
-					$autoRenewError = translate(['text' => 'koha_auto_renew_auto', 'defaultText' => 'If eligible, this item wil renew on<br/>%1%', '1' => $renewalDate]);
+				if ($renewPref == 0) {
+					$curCheckout->autoRenew = "0";
+				} else {
+					$curCheckout->autoRenew = $curRow['auto_renew'];
 				}
 			}
-			$checkout['autoRenewError'] = $autoRenewError;
+
+			$curCheckout->canRenew = !$curCheckout->autoRenew && $opacRenewalAllowed;
+
+			if ($curCheckout->autoRenew == 1){
+				$autoRenewError = $curRow['auto_renew_error'];
+				if ($autoRenewError == 'null') {
+					$curCheckout->autoRenewError = translate(['text' => 'If eligible, this item will renew on<br/>%1%', '1' => $renewalDate,'isPublicFacing'=>true]);
+				}
+			}
+
+			//Get the number of holds on current checkout, if any
+			/** @noinspection SqlResolve */
+			//Removing since this does not account for cases where there are available copies
+//			$holdsSql = "SELECT *  FROM biblio b  LEFT JOIN reserves h ON (b.biblionumber=h.biblionumber) WHERE b.biblionumber = {$curRow['biblionumber']} GROUP BY b.biblionumber HAVING count(h.reservedate) >= 1";
+//			$holdsResults = mysqli_query($this->dbConnection, $holdsSql);
+//			$holdsCount = $holdsResults->num_rows;
+//			if ($holdsCount >= 1 && $curCheckout->autoRenew == 1) {
+//				$curCheckout->autoRenewError = translate(['text' => 'Cannot auto renew, on hold for another user','isPublicFacing'=>true]);
+//			} else if ($holdsCount >= 1 && $curCheckout->canRenew == 1 && $curCheckout->autoRenew == 0) {
+//				$curCheckout->canRenew = "0";
+//				$curCheckout->renewError = translate(['text' => 'On hold for another user','isPublicFacing'=>true]);
+//			}
 
 			//Get the max renewals by figuring out what rule the checkout was issued under
 			$patronType = $patron->patronType;
 			$itemType = $curRow['itype'];
 			$checkoutBranch = $curRow['branchcode'];
 			/** @noinspection SqlResolve */
-			$issuingRulesSql = "SELECT renewalsallowed FROM issuingrules where categorycode IN ('{$patronType}', '*') and itemtype IN('{$itemType}', '*') and branchcode IN ('{$checkoutBranch}', '*') order by branchcode desc, categorycode desc, itemtype desc limit 1";
+			$issuingRulesSql = "SELECT *  FROM circulation_rules where rule_name =  'renewalsallowed' AND (categorycode IN ('{$patronType}', '*') OR categorycode IS NULL) and (itemtype IN('{$itemType}', '*') OR itemtype is null) and (branchcode IN ('{$checkoutBranch}', '*') OR branchcode IS NULL) order by branchcode desc, categorycode desc, itemtype desc limit 1";
 			$issuingRulesRS = mysqli_query($this->dbConnection, $issuingRulesSql);
 			if ($issuingRulesRS !== false) {
 				if ($issuingRulesRow = $issuingRulesRS->fetch_assoc()) {
-					$checkout['maxRenewals'] = $issuingRulesRow['renewalsallowed'];
+					$curCheckout->maxRenewals = $issuingRulesRow['rule_value'];
+
+					if ($curCheckout->autoRenew == 1) {
+						if ($curCheckout->maxRenewals == $curCheckout->renewCount) {
+								$curCheckout->autoRenewError = translate(['text' => 'Cannot auto renew, too many renewals','isPublicFacing'=>true]);
+						}
+					} else if ($curCheckout->maxRenewals == $curCheckout->renewCount) {
+						$curCheckout->canRenew = "0";
+						$curCheckout->renewError = translate(['text' => 'Renewed too many times','isPublicFacing'=>true]);
+					}
 				}
 				$issuingRulesRS->close();
 			}
 
-			if ($checkout['id'] && strlen($checkout['id']) > 0) {
-				require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
-				$recordDriver = new MarcRecordDriver($checkout['recordId']);
-				if ($recordDriver->isValid()) {
-					$checkout['groupedWorkId'] = $recordDriver->getPermanentId();
-					$checkout['coverUrl'] = $recordDriver->getBookcoverUrl('medium', true);
-					$checkout['ratingData'] = $recordDriver->getRatingData();
-					$checkout['groupedWorkId'] = $recordDriver->getGroupedWorkId();
-					$checkout['format'] = $recordDriver->getPrimaryFormat();
-					$checkout['author'] = $recordDriver->getPrimaryAuthor();
-					$checkout['title'] = $recordDriver->getTitle();
-					$curTitle['title_sort'] = $recordDriver->getSortableTitle();
-					$checkout['link'] = $recordDriver->getLinkUrl();
-				} else {
-					$checkout['coverUrl'] = "";
-					$checkout['groupedWorkId'] = "";
-					$checkout['format'] = "Unknown";
+			//Get the patron expiration date to check for active card
+			if ($curCheckout->autoRenew == 1){
+				/** @noinspection SqlResolve */
+				$patronExpirationSql = "SELECT dateexpiry FROM borrowers WHERE borrowernumber = {$patron->username}";
+				$patronExpirationResults = mysqli_query($this->dbConnection, $patronExpirationSql);
+
+				if ($patronExpirationRow = $patronExpirationResults->fetch_assoc()) {
+					$expirationDate = strtotime($patronExpirationRow['dateexpiry']);
+					$today = date("Y-m-d");
+
+					if ($expirationDate < $today) {
+						$curCheckout->autoRenewError = translate(['text' => 'Cannot auto renew, your account has expired','isPublicFacing'=>true]);
+					}
 				}
-				$recordDriver->__destruct();
-				$recordDriver = null;
 			}
 
-			$checkout['user'] = $patron->getNameAndLibraryLabel();
-
-			$checkouts[] = $checkout;
+			$checkouts[$curCheckout->source . $curCheckout->sourceId . $curCheckout->userId] = $curCheckout;
 		}
-
-		$this->checkouts[$patron->id] = $checkouts;
 
 		return $checkouts;
 	}
 
 	public function getXMLWebServiceResponse($url)
 	{
+		global $logger;
+		if (IPAddress::showDebuggingInformation()){
+			$logger->log("Koha API Call to: " . $url, Logger::LOG_ERROR);
+		}
 		$xml = $this->curlWrapper->curlGetPage($url);
 		if ($xml !== false && $xml !== 'false') {
 			if (strpos($xml, '<') !== false) {
@@ -469,7 +498,6 @@ class Koha extends AbstractIlsDriver
 				$parsedXml = simplexml_load_string($xml);
 				if ($parsedXml === false) {
 					//Failed to load xml
-					global $logger;
 					$logger->log("Error parsing xml", Logger::LOG_ERROR);
 					$logger->log($xml, Logger::LOG_DEBUG);
 					foreach (libxml_get_errors() as $error) {
@@ -477,9 +505,15 @@ class Koha extends AbstractIlsDriver
 					}
 					return false;
 				} else {
+					if (IPAddress::showDebuggingInformation()){
+						$logger->log("Koha API response: " . $xml, Logger::LOG_ERROR);
+					}
 					return $parsedXml;
 				}
 			} else {
+				if (IPAddress::showDebuggingInformation()){
+					$logger->log("Koha API response: " . $xml, Logger::LOG_ERROR);
+				}
 				return $xml;
 			}
 		} else {
@@ -530,7 +564,7 @@ class Koha extends AbstractIlsDriver
 					global $logger;
 					$logger->log("MySQL did not return a result for getUserInfoStmt", Logger::LOG_ERROR);
 					if ($i == count($barcodesToTest) - 1) {
-						return new AspenError('authentication_error_technical');
+						return new AspenError('We cannot log you in at this time.  Please try again later.');
 					}
 				} else {
 					return $result;
@@ -565,7 +599,7 @@ class Koha extends AbstractIlsDriver
 			}
 		}
 		if ($userExistsInDB) {
-			return new AspenError('authentication_error_denied');
+			return new AspenError('Sorry that login information was not correct, please try again.');
 		} else {
 			return null;
 		}
@@ -636,7 +670,7 @@ class Koha extends AbstractIlsDriver
 						$patronCategorySql = "select default_privacy from categories where categorycode = '$pType'";
 						$patronCategoryResult = mysqli_query($this->dbConnection, $patronCategorySql, MYSQLI_USE_RESULT);
 						if ($patronCategoryResult) {
-							$privacyInfo = mysqli_fetch_assoc($patronCategoryResult);
+							$privacyInfo = $patronCategoryResult->fetch_assoc();
 							if ($privacyInfo) {
 								switch ($privacyInfo['default_privacy']) {
 									case 'forever':
@@ -778,14 +812,6 @@ class Koha extends AbstractIlsDriver
 		}
 	}
 
-	function closeDatabaseConnection()
-	{
-		if ($this->dbConnection != null){
-			mysqli_close($this->dbConnection);
-			$this->dbConnection = null;
-		}
-	}
-
 	/**
 	 * @param AccountProfile $accountProfile
 	 */
@@ -801,13 +827,16 @@ class Koha extends AbstractIlsDriver
 	function __destruct()
 	{
 		$this->curlWrapper = null;
+		$this->apiCurlWrapper = null;
 
 		//Cleanup any connections we have to other systems
+		$this->closeDatabaseConnection();
+	}
+
+	function closeDatabaseConnection() {
 		if ($this->dbConnection != null) {
-			if ($this->getNumHoldsStmt != null) {
-				$this->getNumHoldsStmt->close();
-			}
 			mysqli_close($this->dbConnection);
+			$this->dbConnection = null;
 		}
 	}
 
@@ -974,113 +1003,62 @@ class Koha extends AbstractIlsDriver
 			$hold_result['message'] = 'Unable to find a valid record for this title.  Please try your search again.';
 			return $hold_result;
 		}
-		$marcRecord = $recordDriver->getMarcRecord();
 
 		//Check to see if the patron already has that record checked out
 		$allowHoldsOnCheckedOutTitles = $this->getKohaSystemPreference('AllowHoldsOnPatronsPossessions');
 		if ($allowHoldsOnCheckedOutTitles == 0) {
 			$existingCheckouts = $this->getCheckouts($patron);
 			foreach ($existingCheckouts as $checkout) {
-				if ($checkout['recordId'] == $recordId) {
+				if ($checkout->recordId == $recordId) {
 					$hold_result['message'] = 'You already have that title checked out, you cannot place a hold on it until you check it in.';
 					return $hold_result;
 				}
 			}
 		}
 
-		//Check to see if the title requires item level holds
-		/** @var File_MARC_Data_Field[] $holdTypeFields */
-		$itemLevelHoldAllowed = false;
-		$itemLevelHoldOnly = false;
-		$indexingProfile = $this->getIndexingProfile();
-		$holdTypeFields = $marcRecord->getFields($indexingProfile->itemTag);
-		foreach ($holdTypeFields as $holdTypeField) {
-			if ($holdTypeField->getSubfield('r') != null) {
-				if ($holdTypeField->getSubfield('r')->getData() == 'itemtitle') {
-					$itemLevelHoldAllowed = true;
-				} else if ($holdTypeField->getSubfield('r')->getData() == 'item') {
-					$itemLevelHoldAllowed = true;
-					$itemLevelHoldOnly = true;
-				}
-			}
-		}
+		//Just a regular bib level hold
+		$hold_result['title'] = $recordDriver->getTitle();
 
-		//Get the items the user can place a hold on
-		if ($itemLevelHoldAllowed) {
-			//Need to prompt for an item level hold
-			$items = array();
-			if (!$itemLevelHoldOnly) {
-				//Add a first title returned
-				$items[-1] = array(
-					'itemNumber' => -1,
-					'location' => 'Next available copy',
-					'callNumber' => '',
-					'status' => '',
-				);
-			}
+		global $active_ip;
+		$holdParams = [
+			'service' => 'HoldTitle',
+			'patron_id' => $patron->username,
+			'bib_id' => $recordDriver->getId(),
+			'request_location' => $active_ip,
+			'pickup_location' => $pickupBranch
+		];
 
-			$hold_result['title'] = $recordDriver->getTitle();
-			$hold_result['items'] = $items;
-			if (count($items) > 0) {
-				$message = 'This title allows item level holds, please select an item to place a hold on.';
-			} else {
-				if (!isset($message)) {
-					$message = 'There are no holdable items for this title.';
-				}
-			}
-			$hold_result['success'] = false;
-			$hold_result['message'] = $message;
-			return $hold_result;
-		} else {
-			//Just a regular bib level hold
-			$hold_result['title'] = $recordDriver->getTitle();
-
-			global $active_ip;
-			$holdParams = [
-				'service' => 'HoldTitle',
-				'patron_id' => $patron->username,
-				'bib_id' => $recordDriver->getId(),
-				'request_location' => $active_ip,
-				'pickup_location' => $pickupBranch
-			];
-
-			if ($cancelDate != null) {
+		if ($cancelDate != null) {
+			if ($this->getKohaVersion() >= 20.05) {
+				$holdParams['expiry_date'] = str_replace('/', '-', $this->aspenDateToKohaDate($cancelDate));
+			}else{
 				$holdParams['needed_before_date'] = $this->aspenDateToKohaDate($cancelDate);
 			}
-
-			$placeHoldURL = $this->getWebServiceUrl() . '/cgi-bin/koha/ilsdi.pl?' . http_build_query($holdParams);
-			$placeHoldResponse = $this->getXMLWebServiceResponse($placeHoldURL);
-
-			//If the hold is successful we go back to the account page and can see
-
-			$hold_result['id'] = $recordId;
-			if ($placeHoldResponse->title) {
-				//everything seems to be good
-				$hold_result = $this->getHoldMessageForSuccessfulHold($patron, $recordDriver->getId(), $hold_result);
-			} else {
-				$hold_result['success'] = false;
-				//See if we can get more info on why this failed.
-				$holds = $this->getHolds($patron);
-				$alreadyOnHold = false;
-				foreach($holds['available'] as $hold) {
-					if ($hold['recordId'] == $recordDriver->getId()){
-						$alreadyOnHold = true;
-					}
-				}
-				foreach($holds['unavailable'] as $hold) {
-					if ($hold['recordId'] == $recordDriver->getId()){
-						$alreadyOnHold = true;
-					}
-				}
-				//Look for an alert message
-				if ($alreadyOnHold){
-					$hold_result['message'] = translate(['text'=>'ils_title_already_on_hold', 'defaultText'=>'Your hold could not be placed, you already have this title on hold.']);
-				}else {
-					$hold_result['message'] = translate(['text'=>'koha_hold_failed', 'defaultText'=>'Your hold could not be placed. %1%', '1'=> $placeHoldResponse->code]);
-				}
-			}
-			return $hold_result;
 		}
+
+		$placeHoldURL = $this->getWebServiceUrl() . '/cgi-bin/koha/ilsdi.pl?' . http_build_query($holdParams);
+		$placeHoldResponse = $this->getXMLWebServiceResponse($placeHoldURL);
+
+		//If the hold is successful we go back to the account page and can see
+
+		$hold_result['id'] = $recordId;
+		if ($placeHoldResponse != false && isset($placeHoldResponse->title)) {
+			//everything seems to be good
+			$hold_result = $this->getHoldMessageForSuccessfulHold($patron, $recordDriver->getId(), $hold_result);
+			$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
+			$patron->forceReloadOfHolds();
+		} else {
+			if ($placeHoldResponse == false) {
+				$error = 'Unknown error placing hold';
+			}else{
+				$error = $placeHoldResponse->code;
+			}
+			$hold_result['success'] = false;
+			$message = 'The item could not be placed on hold: ';
+			$message = $this->getHoldErrorMessage($error, $message);
+			$hold_result['message'] = translate(['text'=>$message,'isPublicFacing'=>true]);
+		}
+		return $hold_result;
 	}
 
 
@@ -1091,7 +1069,7 @@ class Koha extends AbstractIlsDriver
 	 * @param string $pickupBranch
 	 * @return array
 	 */
-	public function placeVolumeHold($patron, $recordId, $volumeId, $pickupBranch)
+	public function placeVolumeHold(User $patron, $recordId, $volumeId, $pickupBranch)
 	{
 		$result = [
 			'success' => false,
@@ -1100,13 +1078,13 @@ class Koha extends AbstractIlsDriver
 
 		$oauthToken = $this->getOAuthToken();
 		if ($oauthToken == false) {
-			$result['message'] = translate(['text' => 'unable_to_authenticate', 'defaultText' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.']);
+			$result['message'] = translate(['text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.', 'isPublicFacing'=>true]);
 		} else {
 			$apiUrl = $this->getWebServiceUrl() . "/api/v1/holds";
 			$postParams = [
 				'patron_id' => $patron->username,
 				'pickup_library_id' => $pickupBranch,
-				'volume_id' => $volumeId,
+				'volume_id' => (int)$volumeId,
 				'biblio_id' => $recordId,
 			];
 			$postParams = json_encode($postParams);
@@ -1123,8 +1101,10 @@ class Koha extends AbstractIlsDriver
 			$response = $this->apiCurlWrapper->curlPostBodyData($apiUrl, $postParams, false);
 			$responseCode = $this->apiCurlWrapper->getResponseCode();
 			if ($responseCode == 201){
-				$result['message'] = translate(['text'=>"ils_hold_success", 'defaultText'=>"Your hold was placed successfully."]);
+				$result['message'] = translate(['text'=>"Your hold was placed successfully.", 'isPublicFacing'=>true]);
 				$result['success'] = true;
+				$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
+				$patron->forceReloadOfHolds();
 			}else{
 				$result = [
 					'success' => false,
@@ -1192,7 +1172,11 @@ class Koha extends AbstractIlsDriver
 			'pickup_location' => $pickupBranch
 		];
 		if ($cancelDate != null) {
-			$holdParams['needed_before_date'] = $this->aspenDateToKohaDate($cancelDate);
+			if ($this->getKohaVersion() >= 20.05) {
+				$holdParams['expiry_date'] = str_replace('/', '-', $this->aspenDateToKohaDate($cancelDate));
+			}else{
+				$holdParams['needed_before_date'] = $this->aspenDateToKohaDate($cancelDate);
+			}
 		}
 
 		$placeHoldURL = $this->getWebServiceUrl() . '/cgi-bin/koha/ilsdi.pl?' . http_build_query($holdParams);
@@ -1201,10 +1185,15 @@ class Koha extends AbstractIlsDriver
 		if ($placeHoldResponse->pickup_location) {
 			//We redirected to the holds page, everything seems to be good
 			$hold_result = $this->getHoldMessageForSuccessfulHold($patron, $recordId, $hold_result);
+			$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
+			$patron->forceReloadOfHolds();
 		} else {
 			$hold_result['success'] = false;
 			//Look for an alert message
-			$hold_result['message'] = 'Your hold could not be placed. ' . $placeHoldResponse->code;
+			$error = $placeHoldResponse->code;
+			$message = 'The item could not be placed on hold: ';
+			$message = $this->getHoldErrorMessage($error, $message);
+			$hold_result['message'] = translate(['text'=>$message,'isPublicFacing'=>true]);
 		}
 		return $hold_result;
 	}
@@ -1225,6 +1214,7 @@ class Koha extends AbstractIlsDriver
 	 */
 	public function getHolds($patron, $page = 1, $recordsPerPage = -1, $sortOption = 'title')
 	{
+		require_once ROOT_DIR . '/sys/User/Hold.php';
 		$availableHolds = array();
 		$unavailableHolds = array();
 		$holds = array(
@@ -1234,23 +1224,26 @@ class Koha extends AbstractIlsDriver
 
 		$this->initDatabaseConnection();
 
+		$showHoldPosition = $this->getKohaSystemPreference('OPACShowHoldQueueDetails', 'holds');
+
 		/** @noinspection SqlResolve */
 		$sql = "SELECT reserves.*, biblio.title, biblio.author, items.itemcallnumber, items.enumchron FROM reserves inner join biblio on biblio.biblionumber = reserves.biblionumber left join items on items.itemnumber = reserves.itemnumber where borrowernumber = {$patron->username}";
 		$results = mysqli_query($this->dbConnection, $sql);
 		while ($curRow = $results->fetch_assoc()) {
 			//Each row in the table represents a hold
-			$curHold = array();
-			$curHold['holdSource'] = 'ILS';
-			$bibId = $curRow['biblionumber'];
-			$curHold['id'] = $curRow['biblionumber'];
-			$curHold['shortId'] = $curRow['biblionumber'];
-			$curHold['recordId'] = $curRow['biblionumber'];
-			$curHold['title'] = $curRow['title'];
+			$curHold = new Hold();
+			$curHold->userId = $patron->id;
+			$curHold->type = 'ils';
+			$curHold->source = $this->getIndexingProfile()->name;
+			$curHold->sourceId = $curRow['biblionumber'];
+			$curHold->recordId = $curRow['biblionumber'];
+			$curHold->shortId = $curRow['biblionumber'];
+			$curHold->title = $curRow['title'];
 			if (isset($curRow['itemcallnumber'])) {
-				$curHold['callNumber'] = $curRow['itemcallnumber'];
+				$curHold->callNumber = $curRow['itemcallnumber'];
 			}
 			if (isset($curRow['enumchron'])) {
-				$curHold['volume'] = $curRow['enumchron'];
+				$curHold->volume = $curRow['enumchron'];
 			}
 			if (isset($curRow['volume_id'])){
 				//Get the volume info
@@ -1258,86 +1251,77 @@ class Koha extends AbstractIlsDriver
 				$volumeInfo = new IlsVolumeInfo();
 				$volumeInfo->volumeId = $curRow['volume_id'];
 				if ($volumeInfo->find(true)){
-					$curHold['volume'] = $volumeInfo->displayLabel;
+					$curHold->volume = $volumeInfo->displayLabel;
 				}
 			}
-			if (strpos($curRow['reservedate'], ':') > 0){
-				$curHold['create'] = date_parse_from_format('Y-m-d H:i:s', $curRow['reservedate']);
-			}else{
-				$curHold['create'] = date_parse_from_format('Y-m-d', $curRow['reservedate']);
-			}
+			$curHold->createDate = strtotime($curRow['reservedate']);
 
 			if (!empty($curRow['expirationdate'])) {
 				$dateTime = date_create_from_format('Y-m-d', $curRow['expirationdate']);
-				$curHold['expire'] = $dateTime->getTimestamp();
+				$curHold->expirationDate = $dateTime->getTimestamp();
 			}
 
 			if (!empty($curRow['cancellationdate'])) {
-				$curHold['automaticCancellation'] = date_parse_from_format('Y-m-d H:i:s', $curRow['cancellationdate']);
+				$curHold->automaticCancellationDate = date_parse_from_format('Y-m-d H:i:s', $curRow['cancellationdate']);
 			}else{
-				$curHold['automaticCancellation'] = '';
+				$curHold->automaticCancellationDate = '';
 			}
 
-			$curHold['currentPickupId'] = $curRow['branchcode'];
-			$curHold['location'] = $curRow['branchcode'];
-			$curHold['locationUpdateable'] = false;
-			$curHold['currentPickupName'] = $curHold['location'];
-			$curHold['position'] = $curRow['priority'];
-			$curHold['frozen'] = false;
-			$curHold['canFreeze'] = false;
-			$curHold['cancelable'] = true;
+			$curPickupBranch = new Location();
+			$curPickupBranch->code = $curRow['branchcode'];
+			if ($curPickupBranch->find(true)) {
+				$curPickupBranch->fetch();
+				$curHold->pickupLocationId = $curPickupBranch->locationId;
+				$curHold->pickupLocationName = $curPickupBranch->displayName;
+			}else{
+				$curHold->pickupLocationName = $curPickupBranch->code;
+			}
+			$curHold->locationUpdateable = false;
+			if ($showHoldPosition != 'none') {
+				$curHold->position = $curRow['priority'];
+			}
+			$curHold->frozen = false;
+			$curHold->canFreeze = false;
+			$curHold->cancelable = true;
 			if ($curRow['suspend'] == '1') {
-				$curHold['frozen'] = true;
-				$curHold['status'] = "Frozen";
+				$curHold->frozen = true;
+				$curHold->status = "Frozen";
+				$curHold->canFreeze = true;
 				if ($curRow['suspend_until'] != null) {
-					$curHold['status'] .= ' until ' . date("m/d/Y", strtotime($curRow['suspend_until']));
+					$curHold->status .= ' until ' . date("m/d/Y", strtotime($curRow['suspend_until']));
 				}
-				$curHold['locationUpdateable'] = true;
+				$curHold->locationUpdateable = true;
 			} elseif ($curRow['found'] == 'W') {
-				$curHold['cancelable'] = false;
-				$curHold['status'] = "Ready to Pickup";
+				$curHold->cancelable = false;
+				$curHold->status = "Ready to Pickup";
 			} elseif ($curRow['found'] == 'T') {
-				$curHold['status'] = "In Transit";
+				$curHold->status = "In Transit";
 			} else {
-				$curHold['status'] = "Pending";
-				$curHold['canFreeze'] = true;
-				$curHold['locationUpdateable'] = true;
+				$curHold->status = "Pending";
+				$curHold->canFreeze = $patron->getHomeLibrary()->allowFreezeHolds;
+				$curHold->locationUpdateable = true;
 			}
-			$curHold['cancelId'] = $curRow['reserve_id'];
+			$curHold->cancelId = $curRow['reserve_id'];
 
-			if ($bibId) {
-				require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
-				$recordDriver = new MarcRecordDriver($bibId);
-				if ($recordDriver->isValid()) {
-					$curHold['groupedWorkId'] = $recordDriver->getPermanentId();
-					$curHold['sortTitle'] = $recordDriver->getSortableTitle();
-					$curHold['format'] = $recordDriver->getFormat();
-					$curHold['author'] = $recordDriver->getPrimaryAuthor();
-					$curHold['isbn'] = $recordDriver->getCleanISBN();
-					$curHold['upc'] = $recordDriver->getCleanUPC();
-					$curHold['format_category'] = $recordDriver->getFormatCategory();
-					$curHold['coverUrl'] = $recordDriver->getBookcoverUrl('medium', true);
-					$curHold['link'] = $recordDriver->getLinkUrl();
-
-					//Load rating information
-					$curHold['ratingData'] = $recordDriver->getRatingData();
-				}
+			$recordDriver = RecordDriverFactory::initRecordDriverById($this->getIndexingProfile()->name . ':' . $curHold->recordId);
+			if ($recordDriver->isValid()){
+				$curHold->updateFromRecordDriver($recordDriver);
 			}
-			$curHold['user'] = $patron->getNameAndLibraryLabel();
 
-			$isAvailable = isset($curHold['status']) && preg_match('/^Ready to Pickup.*/i', $curHold['status']);
+			$isAvailable = isset($curHold->status) && preg_match('/^Ready to Pickup.*/i', $curHold->status);
 			global $library;
 			if ($isAvailable && $library->availableHoldDelay > 0){
 				$holdAvailableOn = strtotime($curRow['waitingdate']);
 				if ((time() - $holdAvailableOn) < 60 * 60 * 24 * $library->availableHoldDelay){
 					$isAvailable = false;
-					$curHold['status'] = 'In transit';
+					$curHold->status = 'In transit';
 				}
 			}
+			$curHold->available = $isAvailable;
 			if (!$isAvailable) {
-				$holds['unavailable'][$curHold['holdSource'] . $curHold['cancelId']. $curHold['user']] = $curHold;
+				$holds['unavailable'][$curHold->source . $curHold->cancelId. $curHold->userId] = $curHold;
 			} else {
-				$holds['available'][$curHold['holdSource'] . $curHold['cancelId']. $curHold['user']] = $curHold;
+				$holds['available'][$curHold->source . $curHold->cancelId. $curHold->userId] = $curHold;
 			}
 		}
 
@@ -1391,9 +1375,9 @@ class Koha extends AbstractIlsDriver
 					$allCancelsSucceed = false;
 				}
 			}
+			$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
+			$patron->forceReloadOfHolds();
 			if ($allCancelsSucceed) {
-				global $memCache;
-				$memCache->delete('koha_summary_' . $patron->id);
 				return array(
 					'title' => $titles,
 					'success' => true,
@@ -1424,7 +1408,7 @@ class Koha extends AbstractIlsDriver
 		return false;
 	}
 
-	public function renewAll($patron)
+	public function renewAll(User $patron)
 	{
 		return array(
 			'success' => false,
@@ -1434,25 +1418,84 @@ class Koha extends AbstractIlsDriver
 
 	public function renewCheckout($patron, $recordId, $itemId = null, $itemIndex = null)
 	{
+		$this->initDatabaseConnection();
+		/** @noinspection SqlResolve */
+		$renewSql = "SELECT issues.*, items.biblionumber, items.itype, items.itemcallnumber, items.enumchron, title, author, issues.renewals from issues left join items on items.itemnumber = issues.itemnumber left join biblio ON items.biblionumber = biblio.biblionumber where borrowernumber = {$patron->username} AND issues.itemnumber = {$itemId} limit 1";
+		$renewResults = mysqli_query($this->dbConnection, $renewSql);
+		$maxRenewals = 0;
+
 		$params = [
 			'service' => 'RenewLoan',
 			'patron_id' => $patron->username,
 			'item_id' => $itemId,
 		];
 
+		require_once ROOT_DIR . '/sys/User/Checkout.php';;
 		$renewURL = $this->getWebServiceUrl() . '/cgi-bin/koha/ilsdi.pl?' . http_build_query($params);
 		$renewResponse = $this->getXMLWebServiceResponse($renewURL);
 
 		//Parse the result
 		if (isset($renewResponse->success) && ($renewResponse->success == 1)) {
+
+			while ($curRow = mysqli_fetch_assoc($renewResults)) {
+				$patronType = $patron->patronType;
+				$itemType = $curRow['itype'];
+				$checkoutBranch = $curRow['branchcode'];
+				$renewCount = $curRow['renewals'] + 1;
+				/** @noinspection SqlResolve */
+				$issuingRulesSql = "SELECT *  FROM circulation_rules where rule_name =  'renewalsallowed' AND (categorycode IN ('{$patronType}', '*') OR categorycode IS NULL) and (itemtype IN('{$itemType}', '*') OR itemtype is null) and (branchcode IN ('{$checkoutBranch}', '*') OR branchcode IS NULL) order by branchcode desc, categorycode desc, itemtype desc limit 1";
+				$issuingRulesRS = mysqli_query($this->dbConnection, $issuingRulesSql);
+				if ($issuingRulesRS !== false) {
+					if ($issuingRulesRow = $issuingRulesRS->fetch_assoc()) {
+						$maxRenewals = $issuingRulesRow['rule_value'];
+					}
+					$issuingRulesRS->close();
+				}
+			}
+			$renewResults->close();
+
+			$renewsRemaining = ($maxRenewals - $renewCount);
 			//We renewed the hold
 			$success = true;
-			$message = 'Your item was successfully renewed';
-			global $memCache;
-			$memCache->delete('koha_summary_' . $patron->id);
+			$message = 'Your item was successfully renewed.';
+			$message .= ' ' . $renewsRemaining . ' of ' . $maxRenewals . ' renewals remaining.';
+			$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
+			$patron->forceReloadOfCheckouts();
 		} else {
+			$error = $renewResponse->error;
 			$success = false;
-			$message = 'The item could not be renewed';
+			$message = 'The item could not be renewed: ';
+			if($error == "too_many") {
+				$message .= 'Renewed the maximum number of times';
+			} elseif ($error == "no_item") {
+				$message .= 'No matching item could be found';
+			} elseif ($error == "too_soon") {
+				$message .= 'Cannot be renewed yet';
+			} elseif ($error == "no_checkout") {
+				$message .= 'Item is not checked out';
+			} elseif ($error == "auto_too_soon") {
+				$message .= 'Scheduled for automatic renewal and cannot be renewed yet';
+			} elseif ($error == "auto_too_late") {
+				$message .= 'Scheduled for automatic renewal and cannot be renewed any more';
+			} elseif ($error == "auto_account_expired") {
+				$message .= 'Scheduled for automatic renewal and cannot be renewed because the patron\'s account has expired';
+			} elseif ($error == "auto_renew") {
+				$message .= 'Scheduled for automatic renewal';
+			}  elseif ($error == "auto_too_much_oweing") {
+				$message .= 'Scheduled for automatic renewal and cannot be renewed because the patron has too many outstanding charges';
+			}  elseif ($error == "on_reserve") {
+				$message .= 'On hold for another patron';
+			}  elseif ($error == "patron_restricted") {
+				$message .= 'Patron is currently restricted';
+			}  elseif ($error == "item_denied_renewal") {
+				$message .= 'Item is not allowed renewal';
+			}  elseif ($error == "onsite_checkout") {
+				$message .= 'Item is an onsite checkout';
+			}  elseif ($error == "has_fine") {
+				$message .= 'Item has an outstanding fine';
+			}  else {
+				$message = 'The item could not be renewed';
+			}
 		}
 
 		return array(
@@ -1524,9 +1567,6 @@ class Koha extends AbstractIlsDriver
 		return $fines;
 	}
 
-	/** @var mysqli_stmt */
-	private $getNumHoldsStmt = null;
-
 	/**
 	 * Get Total Outstanding fines for a user.  Lifted from Koha:
 	 * C4::Accounts.pm gettotalowed method
@@ -1588,18 +1628,18 @@ class Koha extends AbstractIlsDriver
 	{
 		$result = [
 			'success' => false,
-			'message' => translate('Unable to freeze your hold.')
+			'message' => translate(['text' => 'Unable to freeze your hold.', 'isPublicFacing'=>true])
 		];
 
 		$oauthToken = $this->getOAuthToken();
 		if ($oauthToken == false) {
-			$result['message'] = translate(['text' => 'unable_to_authenticate', 'defaultText' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.']);
+			$result['message'] = translate(['text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.', 'isPublicFacing'=>true]);
 		} else {
 			$apiUrl = $this->getWebServiceUrl() . "/api/v1/holds/$itemToFreezeId/suspension";
 			$postParams = "";
 			if (strlen($dateToReactivate) > 0) {
 				$postParams = [];
-				list($month, $day, $year) = explode('/', $dateToReactivate);
+				list($year,$month,$day) = explode('-', $dateToReactivate);
 				$postParams['end_date'] = "$year-$month-$day";
 				$postParams = json_encode($postParams);
 			}
@@ -1615,6 +1655,12 @@ class Koha extends AbstractIlsDriver
 			], true);
 			$response = $this->apiCurlWrapper->curlPostBodyData($apiUrl, $postParams, false);
 			if (!$response) {
+				if ($this->apiCurlWrapper->getResponseCode() != 204) {
+					$result['message'] = translate(['text'=>'Your hold was frozen successfully.', 'isPublicFacing'=> true]);
+					$result['success'] = true;
+					$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
+					$patron->forceReloadOfHolds();
+				}
 				return $result;
 			} else {
 				$hold_response = json_decode($response, false);
@@ -1622,8 +1668,10 @@ class Koha extends AbstractIlsDriver
 					$result['message'] = $hold_response->error;
 					$result['success'] = true;
 				} else {
-					$result['message'] = translate(['text'=>'ils_freeze_hold_success', 'defaultText' => 'Your hold was frozen successfully.']);
+					$result['message'] = translate(['text'=>'Your hold was frozen successfully.', 'isPublicFacing'=> true]);
 					$result['success'] = true;
+					$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
+					$patron->forceReloadOfHolds();
 				}
 			}
 		}
@@ -1635,12 +1683,12 @@ class Koha extends AbstractIlsDriver
 	{
 		$result = [
 			'success' => false,
-			'message' => translate('Unable to thaw your hold.')
+			'message' => translate(['text' => 'Unable to thaw your hold.', 'isPublicFacing'=>true])
 		];
 
 		$oauthToken = $this->getOAuthToken();
 		if ($oauthToken == false) {
-			$result['message'] = translate(['text' => 'unable_to_authenticate', 'defaultText' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.']);
+			$result['message'] = translate(['text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.', 'isPublicFacing'=>true]);
 		} else {
 			$apiUrl = $this->getWebServiceUrl() . "/api/v1/holds/$itemToThawId/suspension";
 
@@ -1658,15 +1706,17 @@ class Koha extends AbstractIlsDriver
 				$result['message'] = $response;
 				$result['success'] = true;
 			} else {
-				$result['message'] = translate(['text'=>'ils_thaw_hold_success', 'defaultText' => 'Your hold was thawed successfully.']);
+				$result['message'] = translate(['text'=>'Your hold was thawed successfully.', 'isPublicFacing'=>true]);
 				$result['success'] = true;
+				$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
+				$patron->forceReloadOfHolds();
 			}
 		}
 
 		return $result;
 	}
 
-	function changeHoldPickupLocation($patron, $recordId, $itemToUpdateId, $newPickupLocation)
+	function changeHoldPickupLocation(User $patron, $recordId, $itemToUpdateId, $newPickupLocation)
 	{
 		$result = [
 			'success' => false,
@@ -1675,7 +1725,7 @@ class Koha extends AbstractIlsDriver
 
 		$oauthToken = $this->getOAuthToken();
 		if ($oauthToken == false) {
-			$result['message'] = translate(['text' => 'unable_to_authenticate', 'defaultText' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.']);
+			$result['message'] = translate(['text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.', 'isPublicFacing'=>true]);
 		} else {
 			$this->apiCurlWrapper->addCustomHeaders([
 				'Authorization: Bearer ' . $oauthToken,
@@ -1703,11 +1753,17 @@ class Koha extends AbstractIlsDriver
 
 				$apiUrl = $this->getWebServiceUrl() . "/api/v1/holds/$itemToUpdateId";
 				$postParams = [];
-				$postParams['branchcode'] = $newPickupLocation;
+
 				$postParams['pickup_library_id'] = $newPickupLocation;
 				$postParams['priority'] = $currentHold->priority;
+				if ($this->getKohaVersion() >= 21.05){
+					$method = 'PATCH';
+				}else{
+					$method = 'PUT';
+					$postParams['branchcode'] = $newPickupLocation;
+				}
 				$postParams = json_encode($postParams);
-				$response = $this->apiCurlWrapper->curlSendPage($apiUrl, 'PUT', $postParams);
+				$response = $this->apiCurlWrapper->curlSendPage($apiUrl, $method, $postParams);
 				if (!$response) {
 					return $result;
 				} else {
@@ -1716,11 +1772,13 @@ class Koha extends AbstractIlsDriver
 						$result['message'] = $hold_response->error;
 						$result['success'] = true;
 					} elseif ($hold_response->pickup_library_id != $newPickupLocation) {
-						$result['message'] = translate(['text'=>'ils_change_pickup_location_failed', 'Sorry, the pickup location of your hold could not be changed.']);
+						$result['message'] = translate(['text'=>'Sorry, the pickup location of your hold could not be changed.', 'isPublicFacing'=>true]);
 						$result['success'] = true;
 					} else {
-						$result['message'] = translate(['text'=>'ils_change_pickup_location_success', 'The pickup location of your hold was changed successfully.']);
+						$result['message'] = translate(['text'=>'The pickup location of your hold was changed successfully.', 'isPublicFacing'=>true]);
 						$result['success'] = true;
+						$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
+						$patron->forceReloadOfHolds();
 					}
 				}
 			}
@@ -1774,7 +1832,7 @@ class Koha extends AbstractIlsDriver
 		if ($this->opacCurlWrapper == null) {
 			$this->opacCurlWrapper = new CurlWrapper();
 			//Extend timeout when talking to Koha via HTTP
-			$this->opacCurlWrapper->timeout = 20;
+			$this->opacCurlWrapper->timeout = 60;
 		}
 		return $this->opacCurlWrapper->curlPostPage($kohaUrl, $postParams);
 	}
@@ -1798,7 +1856,7 @@ class Koha extends AbstractIlsDriver
 	{
 		$result = array(
 			'success' => false,
-			'error' => translate("Unknown error sending password reset.")
+			'error' => translate(['text' => "Unknown error sending password reset.", 'isPublicFacing'=>true])
 		);
 
 		$catalogUrl = $this->accountProfile->vendorOpacUrl;
@@ -1819,9 +1877,9 @@ class Koha extends AbstractIlsDriver
 		$messageInformation = [];
 		if ($postResults == 'Internal Server Error') {
 			if (isset($_REQUEST['resendEmail'])) {
-				$result['error'] = translate('There was an error in backend system while resending the password reset email, please contact the library.');
+				$result['error'] = translate(['text' => 'There was an error in backend system while resending the password reset email, please contact the library.', 'isPublicFacing'=>true]);
 			}else{
-				$result['error'] = translate('There was an error in backend system while sending the password reset email, please contact the library.');
+				$result['error'] = translate(['text' => 'There was an error in backend system while sending the password reset email, please contact the library.', 'isPublicFacing'=>true]);
 			}
 		}else if (preg_match('%<div class="alert alert-warning">(.*?)</div>%s', $postResults, $messageInformation)) {
 			$error = $messageInformation[1];
@@ -1948,7 +2006,7 @@ class Koha extends AbstractIlsDriver
 			'borrower_title' => array('property' => 'borrower_title', 'type' => 'enum', 'label' => 'Salutation', 'values' => ['' => '', 'Mr' => 'Mr', 'Mrs' => 'Mrs', 'Ms' => 'Ms', 'Miss' => 'Miss', 'Dr.' => 'Dr.'], 'description' => 'Your first name', 'required' => false),
 			'borrower_surname' => array('property' => 'borrower_surname', 'type' => 'text', 'label' => 'Surname', 'description' => 'Your last name', 'maxLength' => 60, 'required' => true),
 			'borrower_firstname' => array('property' => 'borrower_firstname', 'type' => 'text', 'label' => 'First Name', 'description' => 'Your first name', 'maxLength' => 25, 'required' => true),
-			'borrower_dateofbirth' => array('property' => 'borrower_dateofbirth', 'type' => 'date', 'label' => 'Date of Birth (MM-DD-YYYY)', 'description' => 'Date of birth', 'maxLength' => 10, 'required' => true),
+			'borrower_dateofbirth' => array('property' => 'borrower_dateofbirth', 'type' => 'date', 'label' => 'Date of Birth (MM/DD/YYYY)', 'description' => 'Date of birth', 'maxLength' => 10, 'required' => true),
 			'borrower_initials' => array('property' => 'borrower_initials', 'type' => 'text', 'label' => 'Initials', 'description' => 'Initials', 'maxLength' => 25, 'required' => false),
 			'borrower_othernames' => array('property' => 'borrower_othernames', 'type' => 'text', 'label' => 'Other names', 'description' => 'Other names you go by', 'maxLength' => 128, 'required' => false),
 			'borrower_sex' => array('property' => 'borrower_sex', 'type' => 'enum', 'label' => 'Gender', 'values' => ['' => 'None Specified', 'F' => 'Female', 'M' => 'Male'], 'description' => 'Gender', 'required' => false),
@@ -1974,7 +2032,7 @@ class Koha extends AbstractIlsDriver
 		]);
 		if (!empty($library->validSelfRegistrationZipCodes)){
 			$fields['mainAddressSection']['properties']['borrower_zipcode']['validationPattern'] = $library->validSelfRegistrationZipCodes;
-			$fields['mainAddressSection']['properties']['borrower_zipcode']['validationMessage'] = translate('Please enter a valid zip code');
+			$fields['mainAddressSection']['properties']['borrower_zipcode']['validationMessage'] = translate(['text' => 'Please enter a valid zip code', 'isPublicFacing'=>true]);
 		}
 		//Contact information
 		$fields['contactInformationSection'] = array('property' => 'contactInformationSection', 'type' => 'section', 'label' => 'Contact Information', 'hideInLists' => true, 'expandByDefault' => true, 'properties' => [
@@ -2012,6 +2070,44 @@ class Koha extends AbstractIlsDriver
 			'borrower_altcontactcountry' => array('property' => 'borrower_altcontactcountry', 'type' => 'text', 'label' => 'Country', 'accessibleLabel' => 'Alternate Contact Country', 'description' => 'Country', 'maxLength' => 32, 'required' => false),
 			'borrower_altcontactphone' => array('property' => 'borrower_altcontactphone', 'type' => 'text', 'label' => 'Phone' . $phoneFormat, 'accessibleLabel' => 'Alternate Contact Phone', 'description' => 'Phone', 'maxLength' => 128, 'required' => false),
 		]);
+
+		// Patron extended attributes
+		if($this->getKohaVersion() > 21.05) {
+			/** @noinspection SqlResolve */
+			$borrowerAttributeTypesSQL = "SELECT * FROM borrower_attribute_types where opac_display = '1' AND opac_editable = '1' order by code";
+			$borrowerAttributeTypesRS = mysqli_query($this->dbConnection, $borrowerAttributeTypesSQL);
+			$borrowerAttributeTypes = [];
+			while ($curRow = $borrowerAttributeTypesRS->fetch_assoc()) {
+				$borrowerAttributeTypes[$curRow['code']]['code'] = $curRow['code'];
+				$borrowerAttributeTypes[$curRow['code']]['desc'] = $curRow['description'];
+				$borrowerAttributeTypes[$curRow['code']]['req'] = $curRow['mandatory'];
+				$authorizedValueCategorySQL = "SELECT * FROM authorised_values where category = '{$curRow['authorised_value_category']}'";
+				$authorizedValueCategoryRS = mysqli_query($this->dbConnection, $authorizedValueCategorySQL);
+				$authorizedValueCategories = [];
+				while ($curRow2 = $authorizedValueCategoryRS->fetch_assoc()) {
+					$authorizedValueCategories[$curRow2['authorised_value']] = $curRow2['lib_opac'];
+				}
+				$borrowerAttributeTypes[$curRow['code']]['authorized_values'] = $authorizedValueCategories;
+			}
+
+			if (!empty($borrowerAttributeTypes)) {
+				$borrowerAttributes = [];
+				foreach ($borrowerAttributeTypes as $borrowerAttributeType) {
+					foreach ($borrowerAttributeType['authorized_values'] as $key => $value) {
+						$authorizedValues[$key] = $value;
+					}
+					$isRequired = $borrowerAttributeType['req'];
+					$borrowerAttributes[$borrowerAttributeType['code']]['property'] = "borrower_attribute_".$borrowerAttributeType['code'];
+					$borrowerAttributes[$borrowerAttributeType['code']]['type'] = "enum";
+					$borrowerAttributes[$borrowerAttributeType['code']]['values'] = $authorizedValues;
+					$borrowerAttributes[$borrowerAttributeType['code']]['label'] = $borrowerAttributeType['desc'];
+					$borrowerAttributes[$borrowerAttributeType['code']]['required'] = $isRequired;
+				}
+
+				$fields['additionalInfoSection'] = array('property' => 'additionalInfoSection', 'type' => 'section', 'label' => 'Additional Information', 'hideInLists' => true, 'expandByDefault' => true, 'properties' => $borrowerAttributes);
+			}
+		}
+
 		if ($type == 'selfReg') {
 			$passwordLabel = $library->loginFormPasswordLabel;
 			$passwordNotes = $library->selfRegistrationPasswordNotes;
@@ -2034,12 +2130,17 @@ class Koha extends AbstractIlsDriver
 				$allFieldsHidden = true;
 				foreach ($section['properties'] as $fieldKey => &$field) {
 					$fieldName = str_replace('borrower_', '', $fieldKey);
-					if (array_key_exists($fieldName, $unwantedFields)) {
+					if (array_key_exists($fieldName, $unwantedFields) && !array_key_exists($fieldName, $requiredFields)) {
 						//There is a case here where a field is marked as both unwanted and required.  If that is the case, do not unset it, just change the type to hidden.
 						if (array_key_exists($fieldName, $requiredFields)) {
 							$section['properties'][$fieldKey]['type'] = 'hidden';
 						} else {
 							unset($section['properties'][$fieldKey]);
+						}
+					} elseif ($type == 'patronUpdate') {
+						if((array_key_exists($fieldName, $unwantedFields) && array_key_exists($fieldName, $requiredFields))) {
+							$section['properties'][$fieldKey]['type'] = 'hidden';
+							$section['properties'][$fieldKey]['required'] = false;
 						}
 					} else {
 						$field['required'] = array_key_exists($fieldName, $requiredFields);
@@ -2066,110 +2167,248 @@ class Koha extends AbstractIlsDriver
 			'success' => false,
 		];
 
-		$catalogUrl = $this->accountProfile->vendorOpacUrl;
-		$selfRegPage = $this->getKohaPage($catalogUrl . '/cgi-bin/koha/opac-memberentry.pl');
-		$captcha = '';
-		$captchaDigest = '';
-		$captchaInfo = [];
-		if (preg_match('%<span class="hint">(?:.*)<strong>(.*?)</strong></span>%s', $selfRegPage, $captchaInfo)) {
-			$captcha = $captchaInfo[1];
-		}
-		$captchaInfo = [];
-		if (preg_match('%<input type="hidden" name="captcha_digest" value="(.*?)" />%s', $selfRegPage, $captchaInfo)) {
-			$captchaDigest = $captchaInfo[1];
-		}
+		if ($this->getKohaVersion() < 20.05) {
+			$catalogUrl = $this->accountProfile->vendorOpacUrl;
+			$selfRegPage = $this->getKohaPage($catalogUrl . '/cgi-bin/koha/opac-memberentry.pl');
+			$captcha = '';
+			$captchaDigest = '';
+			$captchaInfo = [];
+			if (preg_match('%<span class="hint">(?:.*)<strong>(.*?)</strong></span>%s', $selfRegPage, $captchaInfo)) {
+				$captcha = $captchaInfo[1];
+			}
+			$captchaInfo = [];
+			if (preg_match('%<input type="hidden" name="captcha_digest" value="(.*?)" />%s', $selfRegPage, $captchaInfo)) {
+				$captchaDigest = $captchaInfo[1];
+			}
 
-		$postFields = [];
-		$postFields = $this->setPostField($postFields, 'borrower_branchcode', $library->useAllCapsWhenSubmittingSelfRegistration);
-		$postFields = $this->setPostField($postFields, 'borrower_title', $library->useAllCapsWhenSubmittingSelfRegistration);
-		$postFields = $this->setPostField($postFields, 'borrower_surname', $library->useAllCapsWhenSubmittingSelfRegistration);
-		$postFields = $this->setPostField($postFields, 'borrower_firstname', $library->useAllCapsWhenSubmittingSelfRegistration);
-		if (isset($_REQUEST['borrower_dateofbirth'])) {
-			$postFields['borrower_dateofbirth'] = str_replace('-', '/', $_REQUEST['borrower_dateofbirth']);
-		}
-		$postFields = $this->setPostField($postFields, 'borrower_initials', $library->useAllCapsWhenSubmittingSelfRegistration);
-		$postFields = $this->setPostField($postFields, 'borrower_othernames', $library->useAllCapsWhenSubmittingSelfRegistration);
-		$postFields = $this->setPostField($postFields, 'borrower_sex', $library->useAllCapsWhenSubmittingSelfRegistration);
-		$postFields = $this->setPostField($postFields, 'borrower_address', $library->useAllCapsWhenSubmittingSelfRegistration);
-		$postFields = $this->setPostField($postFields, 'borrower_address2', $library->useAllCapsWhenSubmittingSelfRegistration);
-		$postFields = $this->setPostField($postFields, 'borrower_city', $library->useAllCapsWhenSubmittingSelfRegistration);
-		$postFields = $this->setPostField($postFields, 'borrower_state', $library->useAllCapsWhenSubmittingSelfRegistration);
-		$postFields = $this->setPostField($postFields, 'borrower_zipcode', $library->useAllCapsWhenSubmittingSelfRegistration);
-		$postFields = $this->setPostField($postFields, 'borrower_country', $library->useAllCapsWhenSubmittingSelfRegistration);
-		$postFields = $this->setPostField($postFields, 'borrower_phone', $library->useAllCapsWhenSubmittingSelfRegistration, $library->requireNumericPhoneNumbersWhenUpdatingProfile);
-		$postFields = $this->setPostField($postFields, 'borrower_email', $library->useAllCapsWhenSubmittingSelfRegistration);
-		$postFields = $this->setPostField($postFields, 'borrower_phonepro', $library->useAllCapsWhenSubmittingSelfRegistration, $library->requireNumericPhoneNumbersWhenUpdatingProfile);
-		$postFields = $this->setPostField($postFields, 'borrower_mobile', $library->useAllCapsWhenSubmittingSelfRegistration, $library->requireNumericPhoneNumbersWhenUpdatingProfile);
-		$postFields = $this->setPostField($postFields, 'borrower_emailpro', $library->useAllCapsWhenSubmittingSelfRegistration);
-		$postFields = $this->setPostField($postFields, 'borrower_fax', $library->useAllCapsWhenSubmittingSelfRegistration, $library->requireNumericPhoneNumbersWhenUpdatingProfile);
-		$postFields = $this->setPostField($postFields, 'borrower_B_address', $library->useAllCapsWhenSubmittingSelfRegistration);
-		$postFields = $this->setPostField($postFields, 'borrower_B_address2', $library->useAllCapsWhenSubmittingSelfRegistration);
-		$postFields = $this->setPostField($postFields, 'borrower_B_city', $library->useAllCapsWhenSubmittingSelfRegistration);
-		$postFields = $this->setPostField($postFields, 'borrower_B_state', $library->useAllCapsWhenSubmittingSelfRegistration);
-		$postFields = $this->setPostField($postFields, 'borrower_B_zipcode', $library->useAllCapsWhenSubmittingSelfRegistration);
-		$postFields = $this->setPostField($postFields, 'borrower_B_country', $library->useAllCapsWhenSubmittingSelfRegistration);
-		$postFields = $this->setPostField($postFields, 'borrower_B_phone', $library->useAllCapsWhenSubmittingSelfRegistration, $library->requireNumericPhoneNumbersWhenUpdatingProfile);
-		$postFields = $this->setPostField($postFields, 'borrower_B_email', $library->useAllCapsWhenSubmittingSelfRegistration);
-		$postFields = $this->setPostField($postFields, 'borrower_contactnote', $library->useAllCapsWhenSubmittingSelfRegistration);
-		$postFields = $this->setPostField($postFields, 'borrower_altcontactsurname', $library->useAllCapsWhenSubmittingSelfRegistration);
-		$postFields = $this->setPostField($postFields, 'borrower_altcontactfirstname', $library->useAllCapsWhenSubmittingSelfRegistration);
-		$postFields = $this->setPostField($postFields, 'borrower_altcontactaddress1', $library->useAllCapsWhenSubmittingSelfRegistration);
-		$postFields = $this->setPostField($postFields, 'borrower_altcontactaddress2', $library->useAllCapsWhenSubmittingSelfRegistration);
-		$postFields = $this->setPostField($postFields, 'borrower_altcontactaddress3', $library->useAllCapsWhenSubmittingSelfRegistration);
-		$postFields = $this->setPostField($postFields, 'borrower_altcontactstate', $library->useAllCapsWhenSubmittingSelfRegistration);
-		$postFields = $this->setPostField($postFields, 'borrower_altcontactzipcode', $library->useAllCapsWhenSubmittingSelfRegistration);
-		$postFields = $this->setPostField($postFields, 'borrower_altcontactcountry', $library->useAllCapsWhenSubmittingSelfRegistration);
-		$postFields = $this->setPostField($postFields, 'borrower_altcontactphone', $library->useAllCapsWhenSubmittingSelfRegistration, $library->requireNumericPhoneNumbersWhenUpdatingProfile);
-		$postFields = $this->setPostField($postFields, 'borrower_password');
-		$postFields = $this->setPostField($postFields, 'borrower_password2');
-		$postFields['captcha'] = $captcha;
-		$postFields['captcha_digest'] = $captchaDigest;
-		$postFields['action'] = 'create';
-		$headers = [
-			'Content-Type: application/x-www-form-urlencoded'
-		];
-		$this->opacCurlWrapper->addCustomHeaders($headers, false);
-		$selfRegPageResponse = $this->postToKohaPage($catalogUrl . '/cgi-bin/koha/opac-memberentry.pl', $postFields);
+			$postFields = [];
+			$postFields = $this->setPostField($postFields, 'borrower_branchcode', $library->useAllCapsWhenSubmittingSelfRegistration);
+			$postFields = $this->setPostField($postFields, 'borrower_title', $library->useAllCapsWhenSubmittingSelfRegistration);
+			$postFields = $this->setPostField($postFields, 'borrower_surname', $library->useAllCapsWhenSubmittingSelfRegistration);
+			$postFields = $this->setPostField($postFields, 'borrower_firstname', $library->useAllCapsWhenSubmittingSelfRegistration);
+			if (isset($_REQUEST['borrower_dateofbirth'])) {
+				$postFields['borrower_dateofbirth'] = str_replace('-', '/', $_REQUEST['borrower_dateofbirth']);
+			}
+			$postFields = $this->setPostField($postFields, 'borrower_initials', $library->useAllCapsWhenSubmittingSelfRegistration);
+			$postFields = $this->setPostField($postFields, 'borrower_othernames', $library->useAllCapsWhenSubmittingSelfRegistration);
+			$postFields = $this->setPostField($postFields, 'borrower_sex', $library->useAllCapsWhenSubmittingSelfRegistration);
+			$postFields = $this->setPostField($postFields, 'borrower_address', $library->useAllCapsWhenSubmittingSelfRegistration);
+			$postFields = $this->setPostField($postFields, 'borrower_address2', $library->useAllCapsWhenSubmittingSelfRegistration);
+			$postFields = $this->setPostField($postFields, 'borrower_city', $library->useAllCapsWhenSubmittingSelfRegistration);
+			$postFields = $this->setPostField($postFields, 'borrower_state', $library->useAllCapsWhenSubmittingSelfRegistration);
+			$postFields = $this->setPostField($postFields, 'borrower_zipcode', $library->useAllCapsWhenSubmittingSelfRegistration);
+			$postFields = $this->setPostField($postFields, 'borrower_country', $library->useAllCapsWhenSubmittingSelfRegistration);
+			$postFields = $this->setPostField($postFields, 'borrower_phone', $library->useAllCapsWhenSubmittingSelfRegistration, $library->requireNumericPhoneNumbersWhenUpdatingProfile);
+			$postFields = $this->setPostField($postFields, 'borrower_email', $library->useAllCapsWhenSubmittingSelfRegistration);
+			$postFields = $this->setPostField($postFields, 'borrower_phonepro', $library->useAllCapsWhenSubmittingSelfRegistration, $library->requireNumericPhoneNumbersWhenUpdatingProfile);
+			$postFields = $this->setPostField($postFields, 'borrower_mobile', $library->useAllCapsWhenSubmittingSelfRegistration, $library->requireNumericPhoneNumbersWhenUpdatingProfile);
+			$postFields = $this->setPostField($postFields, 'borrower_emailpro', $library->useAllCapsWhenSubmittingSelfRegistration);
+			$postFields = $this->setPostField($postFields, 'borrower_fax', $library->useAllCapsWhenSubmittingSelfRegistration, $library->requireNumericPhoneNumbersWhenUpdatingProfile);
+			$postFields = $this->setPostField($postFields, 'borrower_B_address', $library->useAllCapsWhenSubmittingSelfRegistration);
+			$postFields = $this->setPostField($postFields, 'borrower_B_address2', $library->useAllCapsWhenSubmittingSelfRegistration);
+			$postFields = $this->setPostField($postFields, 'borrower_B_city', $library->useAllCapsWhenSubmittingSelfRegistration);
+			$postFields = $this->setPostField($postFields, 'borrower_B_state', $library->useAllCapsWhenSubmittingSelfRegistration);
+			$postFields = $this->setPostField($postFields, 'borrower_B_zipcode', $library->useAllCapsWhenSubmittingSelfRegistration);
+			$postFields = $this->setPostField($postFields, 'borrower_B_country', $library->useAllCapsWhenSubmittingSelfRegistration);
+			$postFields = $this->setPostField($postFields, 'borrower_B_phone', $library->useAllCapsWhenSubmittingSelfRegistration, $library->requireNumericPhoneNumbersWhenUpdatingProfile);
+			$postFields = $this->setPostField($postFields, 'borrower_B_email', $library->useAllCapsWhenSubmittingSelfRegistration);
+			$postFields = $this->setPostField($postFields, 'borrower_contactnote', $library->useAllCapsWhenSubmittingSelfRegistration);
+			$postFields = $this->setPostField($postFields, 'borrower_altcontactsurname', $library->useAllCapsWhenSubmittingSelfRegistration);
+			$postFields = $this->setPostField($postFields, 'borrower_altcontactfirstname', $library->useAllCapsWhenSubmittingSelfRegistration);
+			$postFields = $this->setPostField($postFields, 'borrower_altcontactaddress1', $library->useAllCapsWhenSubmittingSelfRegistration);
+			$postFields = $this->setPostField($postFields, 'borrower_altcontactaddress2', $library->useAllCapsWhenSubmittingSelfRegistration);
+			$postFields = $this->setPostField($postFields, 'borrower_altcontactaddress3', $library->useAllCapsWhenSubmittingSelfRegistration);
+			$postFields = $this->setPostField($postFields, 'borrower_altcontactstate', $library->useAllCapsWhenSubmittingSelfRegistration);
+			$postFields = $this->setPostField($postFields, 'borrower_altcontactzipcode', $library->useAllCapsWhenSubmittingSelfRegistration);
+			$postFields = $this->setPostField($postFields, 'borrower_altcontactcountry', $library->useAllCapsWhenSubmittingSelfRegistration);
+			$postFields = $this->setPostField($postFields, 'borrower_altcontactphone', $library->useAllCapsWhenSubmittingSelfRegistration, $library->requireNumericPhoneNumbersWhenUpdatingProfile);
+			$postFields = $this->setPostField($postFields, 'borrower_password');
+			$postFields = $this->setPostField($postFields, 'borrower_password2');
 
-		$matches = [];
-		if (preg_match('%<h1>Registration Complete!</h1>.*?<span id="patron-userid">(.*?)</span>.*?<span id="patron-password">(.*?)</span>.*?<span id="patron-cardnumber">(.*?)</span>%s', $selfRegPageResponse, $matches)) {
-			$username = $matches[1];
-			$password = $matches[2];
-			$barcode = $matches[3];
-			$result['success'] = true;
-			$result['username'] = $username;
-			$result['password'] = $password;
-			$result['barcode'] = $barcode;
-		}elseif (preg_match('%<h1>Registration Complete!</h1>.*?<span id="patron-userid">(.*?)</span>.*?<span id="patron-password">(.*?)</span>%s', $selfRegPageResponse, $matches)) {
-			$username = $matches[1];
-			$password = $matches[2];
-			$result['success'] = true;
-			$result['username'] = $username;
-			$result['password'] = $password;
-		}elseif (preg_match('%<h1>Registration Complete!</h1>%s', $selfRegPageResponse, $matches)) {
-			$result['success'] = true;
-			$result['message'] = "Your account was registered, but a barcode was not provided, please contact your library for barcode and password to use when logging in.";
-		}elseif (preg_match('%<h1>Please confirm your registration</h1>%s', $selfRegPageResponse, $matches)) {
-			//Load the patron's username and barcode
-			$result['success'] = true;
-			$result['message'] = "Your account was registered, and a confirmation email will be sent to the email you provided. Your account will not be activated until you follow the link provided in the confirmation email.";
-		}elseif (preg_match('%This email address already exists in our database.%', $selfRegPageResponse)){
-			$result['message'] = 'This email address already exists in our database. Please contact your library for account information or use a different email.';
+			$postFields['captcha'] = $captcha;
+			$postFields['captcha_digest'] = $captchaDigest;
+			$postFields['action'] = 'create';
+			$headers = [
+				'Content-Type: application/x-www-form-urlencoded'
+			];
+			$this->opacCurlWrapper->addCustomHeaders($headers, false);
+			$selfRegPageResponse = $this->postToKohaPage($catalogUrl . '/cgi-bin/koha/opac-memberentry.pl', $postFields);
+
+			$matches = [];
+			if (preg_match('%<h1>Registration Complete!</h1>.*?<span id="patron-userid">(.*?)</span>.*?<span id="patron-password">(.*?)</span>.*?<span id="patron-cardnumber">(.*?)</span>%s', $selfRegPageResponse, $matches)) {
+				$username = $matches[1];
+				$password = $matches[2];
+				$barcode = $matches[3];
+				$result['success'] = true;
+				$result['username'] = $username;
+				$result['password'] = $password;
+				$result['barcode'] = $barcode;
+			} elseif (preg_match('%<h1>Registration Complete!</h1>.*?<span id="patron-userid">(.*?)</span>.*?<span id="patron-password">(.*?)</span>%s', $selfRegPageResponse, $matches)) {
+				$username = $matches[1];
+				$password = $matches[2];
+				$result['success'] = true;
+				$result['username'] = $username;
+				$result['password'] = $password;
+			} elseif (preg_match('%<h1>Registration Complete!</h1>%s', $selfRegPageResponse, $matches)) {
+				$result['success'] = true;
+				$result['message'] = "Your account was registered, but a barcode was not provided, please contact your library for barcode and password to use when logging in.";
+			} elseif (preg_match('%<h1>Please confirm your registration</h1>%s', $selfRegPageResponse, $matches)) {
+				//Load the patron's username and barcode
+				$result['success'] = true;
+				$result['message'] = "Your account was registered, and a confirmation email will be sent to the email you provided. Your account will not be activated until you follow the link provided in the confirmation email.";
+			} elseif (preg_match('%This email address already exists in our database.%', $selfRegPageResponse)) {
+				$result['message'] = 'This email address already exists in our database. Please contact your library for account information or use a different email.';
+			}
+		}else{
+			//Check to see if the email is duplicate
+			$autobarcode = $this->getKohaSystemPreference('autoMemberNum');
+			$verificationRequired = $this->getKohaSystemPreference('PatronSelfRegistrationVerifyByEmail');
+			$selfRegistrationEmailMustBeUnique = $this->getKohaSystemPreference('PatronSelfRegistrationEmailMustBeUnique');
+			if (!empty($_REQUEST['borrower_email']) && $selfRegistrationEmailMustBeUnique == '1'){
+				$this->initDatabaseConnection();
+				/** @noinspection SqlResolve */
+				$sql = "SELECT * FROM borrowers where email = '{$_REQUEST['borrower_email']}';";
+				$results = mysqli_query($this->dbConnection, $sql);
+				if ($results) {
+					$hasDuplicateEmail = false;
+					if ($results->fetch_assoc()) {
+						$hasDuplicateEmail = true;
+					}
+					$results->close();
+				}
+
+				if ($hasDuplicateEmail){
+					$result['success'] = false;
+					$result['message'] = 'This email address already exists in our database. Please contact your library for account information or use a different email.';
+					return $result;
+				}
+			}
+
+			//Use self registration API
+			$postVariables = [];
+			$postVariables = $this->setPostFieldWithDifferentName($postVariables,'address', 'borrower_address', $library->useAllCapsWhenUpdatingProfile);
+			$postVariables = $this->setPostFieldWithDifferentName($postVariables,'address', 'borrower_address', $library->useAllCapsWhenUpdatingProfile);
+			$postVariables = $this->setPostFieldWithDifferentName($postVariables,'address2', 'borrower_address2', $library->useAllCapsWhenUpdatingProfile);
+			$postVariables = $this->setPostFieldWithDifferentName($postVariables,'altaddress_address', 'borrower_B_address', $library->useAllCapsWhenUpdatingProfile);
+			$postVariables = $this->setPostFieldWithDifferentName($postVariables,'altaddress_address2', 'borrower_B_address2', $library->useAllCapsWhenUpdatingProfile);
+			$postVariables = $this->setPostFieldWithDifferentName($postVariables,'altaddress_city', 'borrower_B_city', $library->useAllCapsWhenUpdatingProfile);
+			$postVariables = $this->setPostFieldWithDifferentName($postVariables,'altaddress_country', 'borrower_B_country', $library->useAllCapsWhenUpdatingProfile);
+			$postVariables = $this->setPostFieldWithDifferentName($postVariables,'altaddress_email', 'borrower_B_email', $library->useAllCapsWhenUpdatingProfile);
+			//altaddress_notes
+			$postVariables = $this->setPostFieldWithDifferentName($postVariables,'altaddress_phone', 'borrower_B_phone', $library->useAllCapsWhenUpdatingProfile, $library->requireNumericPhoneNumbersWhenUpdatingProfile);
+			$postVariables = $this->setPostFieldWithDifferentName($postVariables,'altaddress_postal_code', 'borrower_B_zipcode', $library->useAllCapsWhenUpdatingProfile);
+			$postVariables = $this->setPostFieldWithDifferentName($postVariables,'altaddress_state', 'borrower_B_state', $library->useAllCapsWhenUpdatingProfile);
+			//altaddress_street_number
+			//altaddress_street_type
+			$postVariables = $this->setPostFieldWithDifferentName($postVariables,'altcontact_address', 'borrower_altcontactaddress1', $library->useAllCapsWhenUpdatingProfile);
+			$postVariables = $this->setPostFieldWithDifferentName($postVariables,'altcontact_address2', 'borrower_altcontactaddress2', $library->useAllCapsWhenUpdatingProfile);
+			$postVariables = $this->setPostFieldWithDifferentName($postVariables,'altcontact_city', 'borrower_altcontactaddress3', $library->useAllCapsWhenUpdatingProfile);
+			$postVariables = $this->setPostFieldWithDifferentName($postVariables,'altcontact_country', 'borrower_altcontactcountry', $library->useAllCapsWhenUpdatingProfile);
+			$postVariables = $this->setPostFieldWithDifferentName($postVariables,'altcontact_firstname', 'borrower_altcontactfirstname', $library->useAllCapsWhenUpdatingProfile);
+			$postVariables = $this->setPostFieldWithDifferentName($postVariables,'altcontact_phone', 'borrower_altcontactphone', $library->useAllCapsWhenUpdatingProfile, $library->requireNumericPhoneNumbersWhenUpdatingProfile);
+			$postVariables = $this->setPostFieldWithDifferentName($postVariables,'altcontact_postal_code', 'borrower_altcontactzipcode', $library->useAllCapsWhenUpdatingProfile);
+			$postVariables = $this->setPostFieldWithDifferentName($postVariables,'altcontact_state', 'borrower_altcontactstate', $library->useAllCapsWhenUpdatingProfile);
+			$postVariables = $this->setPostFieldWithDifferentName($postVariables,'altcontact_surname', 'borrower_altcontactsurname', $library->useAllCapsWhenUpdatingProfile);
+			$postVariables = $this->setPostFieldWithDifferentName($postVariables,'city', 'borrower_city', $library->useAllCapsWhenUpdatingProfile);
+			$postVariables = $this->setPostFieldWithDifferentName($postVariables,'country', 'borrower_country', $library->useAllCapsWhenUpdatingProfile);
+			if (!empty($_REQUEST['borrower_dateofbirth'])) {
+				$postVariables['date_of_birth'] = $_REQUEST['borrower_dateofbirth'];
+			}
+			$postVariables = $this->setPostFieldWithDifferentName($postVariables,'email', 'borrower_email', $library->useAllCapsWhenUpdatingProfile);
+			$postVariables = $this->setPostFieldWithDifferentName($postVariables,'fax', 'borrower_fax', $library->useAllCapsWhenUpdatingProfile, $library->requireNumericPhoneNumbersWhenUpdatingProfile);
+			$postVariables = $this->setPostFieldWithDifferentName($postVariables,'firstname', 'borrower_firstname', $library->useAllCapsWhenUpdatingProfile);
+			$postVariables = $this->setPostFieldWithDifferentName($postVariables,'gender', 'borrower_sex', $library->useAllCapsWhenUpdatingProfile);
+			$postVariables = $this->setPostFieldWithDifferentName($postVariables,'initials', 'borrower_initials', $library->useAllCapsWhenUpdatingProfile);
+			if (!isset($_REQUEST['borrower_branchcode']) || $_REQUEST['borrower_branchcode'] == -1){
+				$postVariables['library_id'] = $library->code;
+			}else {
+				$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'library_id', 'borrower_branchcode', $library->useAllCapsWhenUpdatingProfile);
+			}
+			$postVariables = $this->setPostFieldWithDifferentName($postVariables,'mobile', 'borrower_mobile', $library->useAllCapsWhenUpdatingProfile);
+			$postVariables = $this->setPostFieldWithDifferentName($postVariables,'opac_notes', 'borrower_contactnote', $library->useAllCapsWhenUpdatingProfile);
+			$postVariables = $this->setPostFieldWithDifferentName($postVariables,'other_name', 'borrower_othernames', $library->useAllCapsWhenUpdatingProfile);
+			$postVariables = $this->setPostFieldWithDifferentName($postVariables,'phone', 'borrower_phone', $library->useAllCapsWhenUpdatingProfile, $library->requireNumericPhoneNumbersWhenUpdatingProfile);
+			$postVariables = $this->setPostFieldWithDifferentName($postVariables,'postal_code', 'borrower_zipcode', $library->useAllCapsWhenUpdatingProfile);
+			$postVariables = $this->setPostFieldWithDifferentName($postVariables,'secondary_email', 'borrower_emailpro', $library->useAllCapsWhenUpdatingProfile);
+			$postVariables = $this->setPostFieldWithDifferentName($postVariables,'secondary_phone', 'borrower_phonepro', $library->useAllCapsWhenUpdatingProfile, $library->requireNumericPhoneNumbersWhenUpdatingProfile);
+			$postVariables = $this->setPostFieldWithDifferentName($postVariables,'state', 'borrower_state', $library->useAllCapsWhenUpdatingProfile);
+			$postVariables = $this->setPostFieldWithDifferentName($postVariables,'surname', 'borrower_surname', $library->useAllCapsWhenUpdatingProfile);
+			$postVariables = $this->setPostFieldWithDifferentName($postVariables,'title', 'borrower_title', $library->useAllCapsWhenUpdatingProfile);
+			$postVariables['category_id'] = $this->getKohaSystemPreference('PatronSelfRegistrationDefaultCategory');
+
+			$oauthToken = $this->getOAuthToken();
+			if ($oauthToken == false) {
+				$result['messages'][] = translate(['text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.', 'isPublicFacing'=>true]);
+			} else {
+				$apiUrl = $this->getWebServiceURL() . "/api/v1/patrons";
+				$postParams = json_encode($postVariables);
+
+				$this->apiCurlWrapper->addCustomHeaders([
+					'Authorization: Bearer ' . $oauthToken,
+					'User-Agent: Aspen Discovery',
+					'Accept: */*',
+					'Cache-Control: no-cache',
+					'Content-Type: application/json;charset=UTF-8',
+					'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
+				], true);
+				//$this->apiCurlWrapper->setupDebugging();
+				$response = $this->apiCurlWrapper->curlSendPage($apiUrl, 'POST', $postParams);
+				if ($this->apiCurlWrapper->getResponseCode() != 201) {
+					if (strlen($response) > 0) {
+						$jsonResponse = json_decode($response);
+						if ($jsonResponse) {
+							if (!empty($jsonResponse->error)) {
+								$result['messages'][] = $jsonResponse->error;
+							}else{
+								foreach ($jsonResponse->errors as $error) {
+									$result['messages'][] = $error->message;
+								}
+							}
+						} else {
+							$result['messages'][] = $response;
+						}
+					} else {
+						$result['messages'][] = "Error {$this->apiCurlWrapper->getResponseCode()} updating your account.";
+					}
+					$result['message'] = "Could not create your account. " . implode($result['messages']);
+
+				} else {
+					$jsonResponse = json_decode($response);
+					$result['username'] = $jsonResponse->userid;
+					$result['success'] = true;
+					if ($verificationRequired != "0") {
+						$result['message'] = "Your account was registered, and a confirmation email will be sent to the email you provided. Your account will not be activated until you follow the link provided in the confirmation email.";
+					}else{
+						if ($autobarcode == "1"){
+							$result['barcode'] = $jsonResponse->cardnumber;
+							$patronId = $jsonResponse->patron_id;
+							if (isset($_REQUEST['borrower_password'])) {
+								$tmpResult = $this->resetPinInKoha($patronId, $_REQUEST['borrower_password'], $oauthToken);
+								if ($tmpResult['success']){
+									$result['password'] = $_REQUEST['borrower_password'];
+								}
+							}
+						}else{
+							$result['message'] = "Your account was registered, but a barcode was not provided, please contact your library for barcode and password to use when logging in.";
+						}
+					}
+				}
+			}
 		}
 		return $result;
 	}
 
-	function updatePin(User $user, string $oldPin, string $newPin)
+	function updatePin(User $patron, string $oldPin, string $newPin)
 	{
-		if ($user->cat_password != $oldPin) {
+		if ($patron->cat_password != $oldPin) {
 			return ['success' => false, 'message' => "The old PIN provided is incorrect."];
 		}
 		$result = ['success' => false, 'message' => "Unknown error updating password."];
 		$oauthToken = $this->getOAuthToken();
 		if ($oauthToken == false) {
-			$result['message'] = translate(['text' => 'unable_to_authenticate', 'defaultText' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.']);
+			$result['message'] = translate(['text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.', 'isPublicFacing'=>true]);
 		} else {
-			$borrowerNumber = $user->username;
+			$borrowerNumber = $patron->username;
 			$result = $this->resetPinInKoha($borrowerNumber, $newPin, $oauthToken);
 		}
 		return $result;
@@ -2211,6 +2450,14 @@ class Koha extends AbstractIlsDriver
 			}
 		}
 
+		/** @noinspection SqlResolve */
+		$patronReasonSQL = "SELECT * FROM authorised_values where category = 'OPAC_SUG' order by lib_opac";
+		$patronReasonRS = mysqli_query($this->dbConnection, $patronReasonSQL);
+		$patronReasons = [];
+		while ($curRow = $patronReasonRS->fetch_assoc()) {
+			$patronReasons[$curRow['authorised_value']] = $curRow['lib_opac'];
+		}
+
 		global $interface;
 		$allowPurchaseSuggestionBranchChoice = $this->getKohaSystemPreference('AllowPurchaseSuggestionBranchChoice');
 		$pickupLocations = [];
@@ -2243,6 +2490,10 @@ class Koha extends AbstractIlsDriver
 			array('property' => 'branchcode', 'type' => 'enum', 'values' => $pickupLocations, 'label' => 'Library', 'description' => '', 'required' => false, 'default' => $user->getHomeLocation()->code),
 			array('property' => 'note', 'type' => 'textarea', 'label' => 'Note', 'description' => '', 'required' => false),
 		];
+
+		if (!empty($patronReasons)) {
+			array_push($fields,['property' => 'patronreason', 'type' => 'enum', 'values' => $patronReasons, 'label' => 'Reason for Purchase']);
+		}
 
 		foreach ($fields as &$field) {
 			if (array_key_exists($field['property'], $mandatoryFields)) {
@@ -2288,6 +2539,7 @@ class Koha extends AbstractIlsDriver
 				'itemtype' => $_REQUEST['itemtype'],
 				'branchcode' => $_REQUEST['branchcode'],
 				'note' => $_REQUEST['note'],
+				'patronreason' => $_REQUEST['patronreason'],
 				'negcap' => '',
 				'suggested_by_anyone' => 0,
 				'op' => 'add_confirm'
@@ -2350,7 +2602,7 @@ class Koha extends AbstractIlsDriver
 			$request['suggestedOn'] = $curRow['suggesteddate'];
 			$request['note'] = $curRow['note'];
 			$request['managedBy'] = $managedByStr;
-			$request['status'] = ucwords(strtolower($curRow['STATUS']));
+			$request['status'] = translate(['text'=>ucwords(strtolower($curRow['STATUS'])), 'isPublicFacing'=>true]);
 			if (!empty($curRow['reason'])) {
 				$request['status'] .= ' (' . $curRow['reason'] . ')';
 			}
@@ -2367,12 +2619,15 @@ class Koha extends AbstractIlsDriver
 		global $interface;
 		$interface->assign('allRequests', $allRequests);
 
+		global $library;
+		$interface->assign('allowDeletingILSRequests', $library->allowDeletingILSRequests);
+
 		return 'koha-requests.tpl';
 	}
 
-	function deleteMaterialsRequests(User $user)
+	function deleteMaterialsRequests(User $patron)
 	{
-		$this->loginToKohaOpac($user);
+		$this->loginToKohaOpac($patron);
 
 		$catalogUrl = $this->accountProfile->vendorOpacUrl;
 		$this->getKohaPage($catalogUrl . '/cgi-bin/koha/opac-suggestions.pl');
@@ -2383,8 +2638,7 @@ class Koha extends AbstractIlsDriver
 		];
 		$this->postToKohaPage($catalogUrl . '/cgi-bin/koha/opac-suggestions.pl', $postFields);
 
-		global $memCache;
-		$memCache->delete('koha_summary_' . $user->id);
+		$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
 
 		return [
 			'success' => true,
@@ -2464,7 +2718,7 @@ class Koha extends AbstractIlsDriver
 			return $date;
 		} else {
 			list($year, $month, $day) = explode('-', $date);
-			return "$month-$day-$year";
+			return "$month/$day/$year";
 		}
 	}
 
@@ -2480,8 +2734,13 @@ class Koha extends AbstractIlsDriver
 			return $date;
 		} else {
 			if (strpos($date, '-') !== false){
-				list($month, $day, $year) = explode('-', $date);
-				return "$month/$day/$year";
+				list($year, $month, $day) = explode('-', $date);
+				if ($this->getKohaVersion() > 20.11){
+					return "$year-$month-$day";
+				}else{
+					return "$month/$day/$year";
+				}
+
 			}else{
 				return $date;
 			}
@@ -2493,13 +2752,20 @@ class Koha extends AbstractIlsDriver
 		if (strlen($date) == 0) {
 			return $date;
 		} else {
-			if (strpos($date, '-') !== false){
+			if (strpos($date, '/') !== false){
+				list($month, $day, $year) = explode('/', $date);
+				$formattedDate = "$year-$month-$day";
+				return $formattedDate;
+			} else if (strpos($date, '-') !== false) {
 				list($month, $day, $year) = explode('-', $date);
-				return "$year-$month-$day";
-			}else{
+				$formattedDate = "$year-$month-$day";
+				return $formattedDate;
+			}
+			else{
 				return $date;
 			}
 		}
+
 	}
 
 	/**
@@ -2595,126 +2861,103 @@ class Koha extends AbstractIlsDriver
 		return $results;
 	}
 
-	public function getAccountSummary($user, $forceRefresh = false)
+	public function getAccountSummary(User $patron) : AccountSummary
 	{
-		global $memCache;
 		global $timer;
-		global $configArray;
 		global $library;
 
-		$accountSummary = $memCache->get('koha_summary_' . $user->id);
-		if ($accountSummary == false || isset($_REQUEST['reload']) || $forceRefresh) {
-			$accountSummary = [
-				'numCheckedOut' => 0,
-				'numOverdue' => 0,
-				'numAvailableHolds' => 0,
-				'numUnavailableHolds' => 0,
-				'totalFines' => 0
-			];
-			$this->initDatabaseConnection();
+		require_once ROOT_DIR . '/sys/User/AccountSummary.php';
+		$summary = new AccountSummary();
+		$summary->userId = $patron->id;
+		$summary->source = 'ils';
+		$summary->resetCounters();
 
-			//Get number of items checked out
-			/** @noinspection SqlResolve */
-			$checkedOutItemsRS = mysqli_query($this->dbConnection, 'SELECT count(*) as numCheckouts FROM issues WHERE borrowernumber = ' . $user->username, MYSQLI_USE_RESULT);
-			$numCheckouts = 0;
-			if ($checkedOutItemsRS) {
-				$checkedOutItems = $checkedOutItemsRS->fetch_assoc();
-				$numCheckouts = $checkedOutItems['numCheckouts'];
-				$checkedOutItemsRS->close();
-			}
-			$accountSummary['numCheckedOut'] = $numCheckouts;
+		$this->initDatabaseConnection();
 
-			$now = date('Y-m-d H:i:s');
-			/** @noinspection SqlResolve */
-			$overdueItemsRS = mysqli_query($this->dbConnection, 'SELECT count(*) as numOverdue FROM issues WHERE date_due < \'' . $now . '\' AND borrowernumber = ' . $user->username, MYSQLI_USE_RESULT);
-			$numOverdue = 0;
-			if ($overdueItemsRS) {
-				$overdueItems = $overdueItemsRS->fetch_assoc();
-				$numOverdue = $overdueItems['numOverdue'];
-				$overdueItemsRS->close();
-			}
-			$accountSummary['numOverdue'] = $numOverdue;
-			$timer->logTime("Loaded checkouts for Koha");
-
-			//Get number of available holds
-			if ($library->availableHoldDelay > 0){
-				/** @noinspection SqlResolve */
-				$holdsRS = mysqli_query($this->dbConnection, 'SELECT waitingdate, found FROM reserves WHERE borrowernumber = ' . $user->username, MYSQLI_USE_RESULT);
-				if ($holdsRS) {
-					while ($curRow = $holdsRS->fetch_assoc()) {
-						if ($curRow['found'] !== 'W'){
-							$accountSummary['numUnavailableHolds']++;
-						}else{
-							$holdAvailableOn = strtotime($curRow['waitingdate']);
-							if ((time() - $holdAvailableOn) < 60 * 60 * 24 * $library->availableHoldDelay){
-								$accountSummary['numUnavailableHolds']++;
-							}else{
-								$accountSummary['numAvailableHolds']++;
-							}
-						}
-					}
-					$holdsRS->close();
-				}
-			}else{
-				/** @noinspection SqlResolve */
-				$availableHoldsRS = mysqli_query($this->dbConnection, 'SELECT count(*) as numHolds FROM reserves WHERE found = "W" and borrowernumber = ' . $user->username, MYSQLI_USE_RESULT);
-				$numAvailableHolds = 0;
-				if ($availableHoldsRS) {
-					$availableHolds = $availableHoldsRS->fetch_assoc();
-					$numAvailableHolds = $availableHolds['numHolds'];
-					$availableHoldsRS->close();
-				}
-				$accountSummary['numAvailableHolds'] = $numAvailableHolds;
-				$timer->logTime("Loaded available holds for Koha");
-
-				//Get number of unavailable
-				/** @noinspection SqlResolve */
-				$waitingHoldsRS = mysqli_query($this->dbConnection, 'SELECT count(*) as numHolds FROM reserves WHERE (found <> "W" or found is null) and borrowernumber = ' . $user->username, MYSQLI_USE_RESULT);
-				$numWaitingHolds = 0;
-				if ($waitingHoldsRS) {
-					$waitingHolds = $waitingHoldsRS->fetch_assoc();
-					$numWaitingHolds = $waitingHolds['numHolds'];
-					$waitingHoldsRS->close();
-				}
-				$accountSummary['numUnavailableHolds'] = $numWaitingHolds;
-			}
-			$timer->logTime("Loaded total holds for Koha");
-
-			//Get fines
-			//Load fines from database
-			$outstandingFines = $this->getOutstandingFineTotal($user);
-			$accountSummary['totalFines'] = floatval($outstandingFines);
-
-			//Get expiration information
-			/** @noinspection SqlResolve */
-			$sql = "SELECT dateexpiry from borrowers where borrowernumber = {$user->username}";
-
-			$lookupUserResult = mysqli_query($this->dbConnection, $sql, MYSQLI_USE_RESULT);
-			if ($lookupUserResult) {
-				$userFromDb = $lookupUserResult->fetch_assoc();
-				$accountSummary['expires'] = $userFromDb['dateexpiry']; //TODO: format is year-month-day; millennium is month-day-year; needs converting??
-
-				$accountSummary['expired'] = 0; // default setting
-				$accountSummary['expireClose'] = 0;
-
-				if (!empty($userFromDb['dateexpiry'])) { // TODO: probably need a better check of this field
-					list ($yearExp, $monthExp, $dayExp) = explode('-', $userFromDb['dateexpiry']);
-					$timeExpire = strtotime($monthExp . "/" . $dayExp . "/" . $yearExp);
-					$timeNow = time();
-					$timeToExpire = $timeExpire - $timeNow;
-					if ($timeToExpire <= 30 * 24 * 60 * 60) {
-						if ($timeToExpire <= 0) {
-							$accountSummary['expired'] = 1;
-						}
-						$accountSummary['expireClose'] = 1;
-					}
-				}
-				$lookupUserResult->close();
-			}
-
-			$memCache->set('koha_summary_' . $user->id, $accountSummary, $configArray['Caching']['account_summary']);
+		//Get number of items checked out
+		/** @noinspection SqlResolve */
+		$checkedOutItemsRS = mysqli_query($this->dbConnection, 'SELECT count(*) as numCheckouts FROM issues WHERE borrowernumber = ' . $patron->username, MYSQLI_USE_RESULT);
+		if ($checkedOutItemsRS) {
+			$checkedOutItems = $checkedOutItemsRS->fetch_assoc();
+			$summary->numCheckedOut = (int)$checkedOutItems['numCheckouts'];
+			$checkedOutItemsRS->close();
 		}
-		return $accountSummary;
+
+		$now = date('Y-m-d H:i:s');
+		/** @noinspection SqlResolve */
+		$overdueItemsRS = mysqli_query($this->dbConnection, 'SELECT count(*) as numOverdue FROM issues WHERE date_due < \'' . $now . '\' AND borrowernumber = ' . $patron->username, MYSQLI_USE_RESULT);
+		if ($overdueItemsRS) {
+			$overdueItems = $overdueItemsRS->fetch_assoc();
+			$summary->numOverdue = (int)$overdueItems['numOverdue'];
+			$overdueItemsRS->close();
+		}
+		$timer->logTime("Loaded checkouts for Koha");
+
+		//Get number of available holds
+		if ($library->availableHoldDelay > 0){
+			/** @noinspection SqlResolve */
+			$holdsRS = mysqli_query($this->dbConnection, 'SELECT waitingdate, found FROM reserves WHERE borrowernumber = ' . $patron->username, MYSQLI_USE_RESULT);
+			if ($holdsRS) {
+				while ($curRow = $holdsRS->fetch_assoc()) {
+					if ($curRow['found'] !== 'W'){
+						$summary->numUnavailableHolds++;
+					}else{
+						$holdAvailableOn = strtotime($curRow['waitingdate']);
+						if ((time() - $holdAvailableOn) < 60 * 60 * 24 * $library->availableHoldDelay){
+							$summary->numUnavailableHolds++;
+						}else{
+							$summary->numAvailableHolds++;
+						}
+					}
+				}
+				$holdsRS->close();
+			}
+		}else{
+			/** @noinspection SqlResolve */
+			$availableHoldsRS = mysqli_query($this->dbConnection, 'SELECT count(*) as numHolds FROM reserves WHERE found = "W" and borrowernumber = ' . $patron->username, MYSQLI_USE_RESULT);
+			if ($availableHoldsRS) {
+				$availableHolds = $availableHoldsRS->fetch_assoc();
+				$summary->numAvailableHolds = (int)$availableHolds['numHolds'];
+				$availableHoldsRS->close();
+			}
+			$timer->logTime("Loaded available holds for Koha");
+
+			//Get number of unavailable
+			/** @noinspection SqlResolve */
+			$waitingHoldsRS = mysqli_query($this->dbConnection, 'SELECT count(*) as numHolds FROM reserves WHERE (found <> "W" or found is null) and borrowernumber = ' . $patron->username, MYSQLI_USE_RESULT);
+			if ($waitingHoldsRS) {
+				$waitingHolds = $waitingHoldsRS->fetch_assoc();
+				$summary->numUnavailableHolds = (int)$waitingHolds['numHolds'];
+				$waitingHoldsRS->close();
+			}
+		}
+		$timer->logTime("Loaded total holds for Koha");
+
+		//Get fines
+		//Load fines from database
+		$outstandingFines = $this->getOutstandingFineTotal($patron);
+		$summary->totalFines = floatval($outstandingFines);
+
+		//Get expiration information
+		/** @noinspection SqlResolve */
+		$lookupUserQuery = "SELECT dateexpiry from borrowers where borrowernumber = {$patron->username}";
+		$lookupUserResult = mysqli_query($this->dbConnection, $lookupUserQuery, MYSQLI_USE_RESULT);
+		if ($lookupUserResult) {
+			$userFromDb = $lookupUserResult->fetch_assoc();
+			$dateExpiry = $userFromDb['dateexpiry'];
+			if (!empty($dateExpiry)) {
+				$timeExpire = strtotime($dateExpiry);
+				if ($timeExpire !== false) {
+					$summary->expirationDate = $timeExpire;
+				}else{
+					global $logger;
+					$logger->log("Error parsing expiration date for patron $dateExpiry", Logger::LOG_ERROR);
+				}
+			}
+			$lookupUserResult->close();
+		}
+
+		return $summary;
 	}
 
 	/**
@@ -2781,15 +3024,16 @@ class Koha extends AbstractIlsDriver
 			$patronId = $lookupUserRow['borrowernumber'];
 			$newUser = $this->loadPatronInfoFromDB($patronId, null);
 			if (!empty($newUser) && !($newUser instanceof AspenError)) {
-				$this->closeDatabaseConnection();
 				return $newUser;
 			}
 		}
-		$this->closeDatabaseConnection();
 		return false;
 	}
 
-	public function showMessagingSettings()
+	/**
+	 * @return bool
+	 */
+	public function showMessagingSettings() : bool
 	{
 		$this->initDatabaseConnection();
 		/** @noinspection SqlResolve */
@@ -2804,7 +3048,11 @@ class Koha extends AbstractIlsDriver
 		return $allowed;
 	}
 
-	public function getMessagingSettingsTemplate(User $user)
+	/**
+	 * @param User $patron
+	 * @return string
+	 */
+	public function getMessagingSettingsTemplate(User $patron) : ?string
 	{
 		global $interface;
 		$this->initDatabaseConnection();
@@ -2832,9 +3080,9 @@ class Koha extends AbstractIlsDriver
 		}
 
 		/** @noinspection SqlResolve */
-		$borrowerSql = "SELECT smsalertnumber, sms_provider_id FROM borrowers where borrowernumber = {$user->username}";
+		$borrowerSql = "SELECT smsalertnumber, sms_provider_id FROM borrowers where borrowernumber = {$patron->username}";
 		$borrowerRS = mysqli_query($this->dbConnection, $borrowerSql);
-		if ($borrowerRow = mysqli_fetch_assoc($borrowerRS)) {
+		if ($borrowerRow = $borrowerRS->fetch_assoc()) {
 			$interface->assign('smsAlertNumber', $borrowerRow['smsalertnumber']);
 			$interface->assign('smsProviderId', $borrowerRow['sms_provider_id']);
 		}
@@ -2879,6 +3127,17 @@ class Koha extends AbstractIlsDriver
 				case "Item_Checkout":
 					$messageType['label'] = 'Item checkout';
 					break;
+				case "Ill_ready":
+					$messageType['label'] = 'ILL ready';
+					break;
+				case "Ill_unavailable":
+					$messageType['label'] = 'ILL unavailable';
+					break;
+				case "Auto_Renewals":
+					$messageType['label'] = 'Auto Renewals';
+					break;
+				default:
+					$messageType['label'] = $messageType['message_name'];
 			}
 			$messageAttributes[] = $messageType;
 		}
@@ -2893,9 +3152,9 @@ class Koha extends AbstractIlsDriver
 			FROM   borrower_message_preferences
 			LEFT JOIN borrower_message_transport_preferences
 			ON     borrower_message_transport_preferences.borrower_message_preference_id = borrower_message_preferences.borrower_message_preference_id
-			WHERE  borrower_message_preferences.borrowernumber = {$user->username}";
+			WHERE  borrower_message_preferences.borrowernumber = {$patron->username}";
 		$userMessagingSettingsRS = mysqli_query($this->dbConnection, $userMessagingSettingsSql);
-		while ($userMessagingSetting = mysqli_fetch_assoc($userMessagingSettingsRS)) {
+		while ($userMessagingSetting = $userMessagingSettingsRS->fetch_assoc()) {
 			$messageType = $userMessagingSetting['message_attribute_id'];
 			if ($userMessagingSetting['wants_digest']) {
 				$messagingSettings[$messageType]['wantsDigest'] = $userMessagingSetting['wants_digest'];
@@ -2915,7 +3174,7 @@ class Koha extends AbstractIlsDriver
 		}
 		$interface->assign('validNoticeDays', $validNoticeDays);
 
-		$library = $user->getHomeLibrary();
+		$library = $patron->getHomeLibrary();
 		if ($library->allowProfileUpdates){
 			$interface->assign('canSave', true);
 		}else{
@@ -2925,9 +3184,9 @@ class Koha extends AbstractIlsDriver
 		return 'kohaMessagingSettings.tpl';
 	}
 
-	public function processMessagingSettingsForm(User $user)
+	public function processMessagingSettingsForm(User $patron) : array
 	{
-		$result = $this->loginToKohaOpac($user);
+		$result = $this->loginToKohaOpac($patron);
 		if (!$result['success']) {
 			return $result;
 		} else {
@@ -2987,29 +3246,29 @@ class Koha extends AbstractIlsDriver
 	{
 		$holds = $this->getHolds($patron, 1, -1, 'title');
 		$hold_result['success'] = true;
-		$hold_result['message'] = translate(['text'=>"ils_hold_success", 'defaultText'=>"Your hold was placed successfully."]);
+		$hold_result['message'] = translate(['text'=>"Your hold was placed successfully.", 'isPublicFacing'=>true]);
 		//Find the correct hold (will be unavailable)
+		/** @var Hold $holdInfo */
 		foreach ($holds['unavailable'] as $holdInfo) {
-			if ($holdInfo['id'] == $recordId) {
-				if (isset($holdInfo['position'])) {
-					$hold_result['message'] .= translate(['text'=>"ils_hold_success_position", 'defaultText'=>"&nbsp;You are number <b>%1%</b> in the queue.", '1' => $holdInfo['position']]);
+			if ($holdInfo->sourceId == $recordId) {
+				if (isset($holdInfo->position)) {
+					$hold_result['message'] .= '&nbsp;' . translate(['text'=>"You are number <b>%1%</b> in the queue.", '1' => $holdInfo->position, 'isPublicFacing'=>true]);
 				}
 				//Show the number of holds the patron has used.
-				$accountSummary = $this->getAccountSummary($patron, true);
-				$maxReserves = $this->getKohaSystemPreference('maxreserves');
-				$totalHolds = $accountSummary['numAvailableHolds'] + $accountSummary['numUnavailableHolds'];
+				$accountSummary = $this->getAccountSummary($patron);
+				$maxReserves = $this->getKohaSystemPreference('maxreserves', 50);
+				$totalHolds = $accountSummary->getNumHolds();
 				$remainingHolds = $maxReserves - $totalHolds;
 				if ($remainingHolds <= 3){
-					$hold_result['message'] .= translate(['text'=>"ils_hold_success_total_remaining_holds", 'defaultText'=>"<br/>You have %1% holds currently and can place %2% additional holds.", 1=>$totalHolds, 2=>$remainingHolds]);
+					$hold_result['message'] .= '<br/>' . translate(['text'=>"You have %1% holds currently and can place %2% additional holds.", 1=>$totalHolds, 2=>$remainingHolds, 'isPublicFacing'=>true]);
 				}else{
-					$hold_result['message'] .= translate(['text'=>"ils_hold_success_total_holds", 'defaultText'=>"<br/>You have %1% holds currently.", 1 => $totalHolds]);
+					$hold_result['message'] .= '<br/>' . translate(['text'=>"<br/>You have %1% holds currently.", 1 => $totalHolds, 'isPublicFacing'=>true]);
 				}
 
 				break;
 			}
 		}
-		global $memCache;
-		$memCache->delete('koha_summary_' . $patron->id);
+		$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
 		return $hold_result;
 	}
 
@@ -3029,7 +3288,7 @@ class Koha extends AbstractIlsDriver
 
 		$oauthToken = $this->getOAuthToken();
 		if ($oauthToken == false) {
-			$result['message'] = translate(['text' => 'unable_to_authenticate', 'defaultText' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.']);
+			$result['message'] = translate(['text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.', 'isPublicFacing'=>true]);
 			$logger->log('Unable to authenticate with Koha while completing fine payment', Logger::LOG_ERROR);
 		} else {
 			$accountLinesPaid = explode(',', $payment->finesPaid);
@@ -3096,7 +3355,7 @@ class Koha extends AbstractIlsDriver
 					];
 
 					$response = $this->apiCurlWrapper->curlPostBodyData($apiUrl, $postVariables);
-					if ($this->apiCurlWrapper->getResponseCode() != 200) {
+					if ($this->apiCurlWrapper->getResponseCode() != 200 && $this->apiCurlWrapper->getResponseCode() != 201) {
 						if (!isset($result['message'])) {$result['message'] = '';}
 						if (strlen($response) > 0) {
 							$jsonResponse = json_decode($response);
@@ -3120,8 +3379,7 @@ class Koha extends AbstractIlsDriver
 				];
 			}
 		}
-		global $memCache;
-		$memCache->delete('koha_summary_' . $patron->id);
+		$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
 		return $result;
 	}
 
@@ -3137,36 +3395,59 @@ class Koha extends AbstractIlsDriver
 
 		$maxOutstanding = $this->getKohaSystemPreference('MaxOutstanding');
 
-		$accountSummary = $this->getAccountSummary($patron, true);
+		$accountSummary = $this->getAccountSummary($patron);
 		if ($maxOutstanding > 0){
-			$totalFines = $accountSummary['totalFines'];
-			if ($totalFines > $maxOutstanding){
+			$totalFines = $accountSummary->totalFines;
+			if ($totalFines > (float)$maxOutstanding){
 				$result['isEligible'] = false;
 				$result['fineLimitReached'] = true;
-				$result['message'] = translate(['text' => 'outstanding_fine_limit', 'defaultText' => 'Sorry, your account has too many outstanding fines to place holds.']);
+				$result['message'] = translate(['text' => 'Sorry, your account has too many outstanding fines to place holds.', 'isPublicFacing'=> true]);
 			}
 		}
 
 		//Check maximum holds
-		$maxHolds = $this->getKohaSystemPreference('maxreserves');
+		$maxHolds = $this->getKohaSystemPreference('maxreserves', 50);
 		//Get total holds
-		$currentHoldsForUser = $accountSummary['numAvailableHolds'] + $accountSummary['numUnavailableHolds'];
+		$currentHoldsForUser = $accountSummary->getNumHolds();
 		if ($currentHoldsForUser >= $maxHolds) {
 			$result['isEligible'] = false;
 			$result['maxPhysicalCheckoutsReached'] = true;
 			if (strlen($result['message']) > 0){
 				$result['message'] .= '<br/>';
 			}
-			$result['message'] .= translate(['text' => 'outstanding_holds_limit', 'defaultText' => 'Sorry, you have reached the maximum number of holds for your account.']);
+			$result['message'] .= translate(['text' => 'Sorry, you have reached the maximum number of holds for your account.', 'isPublicFacing'=> true]);
 		}
 
 		//Check if the patron is expired
-		if ($accountSummary['expired'] == 1) {
-			$blockExpiredPatronOpacActions = $this->getKohaSystemPreference('BlockExpiredPatronOpacActions');
+		if ($accountSummary->isExpired()) {
+			//Check the patron category as well
+			/** @noinspection SqlResolve */
+			$patronCategorySql = "select BlockExpiredPatronOpacActions from categories where categorycode = '{$patron->patronType}'";
+			$patronCategoryResult = mysqli_query($this->dbConnection, $patronCategorySql, MYSQLI_USE_RESULT);
+			$useSystemPreference = true;
+			$blockExpiredPatronOpacActions = true;
+			if ($patronCategoryResult !== false) {
+				$patronCategoryInfo = $patronCategoryResult->fetch_assoc();
+				if ($patronCategoryInfo['BlockExpiredPatronOpacActions'] == 0){
+					$blockExpiredPatronOpacActions = false;
+					$useSystemPreference = false;
+				}elseif ($patronCategoryInfo['BlockExpiredPatronOpacActions'] == 1){
+					$blockExpiredPatronOpacActions = true;
+					$useSystemPreference = false;
+				}elseif ($patronCategoryInfo['BlockExpiredPatronOpacActions'] == -1){
+					$blockExpiredPatronOpacActions = true;
+					$useSystemPreference = true;
+				}
+				$patronCategoryResult->close();
+			}
+
+			if ($useSystemPreference) {
+				$blockExpiredPatronOpacActions = $this->getKohaSystemPreference('BlockExpiredPatronOpacActions');
+			}
 			if ($blockExpiredPatronOpacActions == 1){
 				$result['isEligible'] = false;
 				$result['expiredPatronWhoCannotPlaceHolds'] = true;
-				$result['message'] = translate(['text' => 'expired_patron_cannot_place_holds', 'defaultText' => 'Sorry, your account has expired. Please renew your account to place holds.']);
+				$result['message'] = translate(['text' => 'Sorry, your account has expired. Please renew your account to place holds.', 'isPublicFacing'=> true]);
 			}
 		}
 
@@ -3236,7 +3517,7 @@ class Koha extends AbstractIlsDriver
 
 		$oauthToken = $this->getOAuthToken();
 		if ($oauthToken == false) {
-			$result['message'] = translate(['text' => 'unable_to_authenticate', 'defaultText' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.']);
+			$result['message'] = translate(['text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.', 'isPublicFacing'=>true]);
 		} else {
 			$apiUrl = $this->getWebServiceURL() . "/api/v1/patrons/{$patron->username}";
 			$postParams = json_encode($postVariables);
@@ -3301,7 +3582,7 @@ class Koha extends AbstractIlsDriver
 				}
 			}
 			if (!$uniqueKeyValid){
-				$error = translate(['text' => 'invalid_pass_reset_uuid', 'defaultText' => ' The link you clicked is either invalid, or expired.<br/>Be sure you used the link from the email, or contact library staff for assistance.<br/>Please contact the library if you need further assistance.']);
+				$error = translate(['text' => 'The link you clicked is either invalid, or expired.<br/>Be sure you used the link from the email, or contact library staff for assistance.<br/>Please contact the library if you need further assistance.', 'isPublicFacing'=> true]);
 			}
 
 			$interface->assign('error', $error);
@@ -3339,11 +3620,11 @@ class Koha extends AbstractIlsDriver
 				}
 			}
 			if (!$uniqueKeyValid){
-				$error = translate(['text' => 'invalid_pass_reset_uuid', 'defaultText' => ' The link you clicked is either invalid, or expired.<br/>Be sure you used the link from the email, or contact library staff for assistance.<br/>Please contact the library if you need further assistance.']);
+				$error = translate(['text' => 'The link you clicked is either invalid, or expired.<br/>Be sure you used the link from the email, or contact library staff for assistance.<br/>Please contact the library if you need further assistance.', 'isPublicFacing'=> true]);
 			}else{
 				$oauthToken = $this->getOAuthToken();
 				if ($oauthToken == false) {
-					$result['message'] = translate(['text' => 'unable_to_authenticate', 'defaultText' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.']);
+					$result['message'] = translate(['text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.', 'isPublicFacing'=>true]);
 				} else {
 					$result = $this->resetPinInKoha($borrowerNumber, $_REQUEST['pin1'], $oauthToken);
 					if ($result['success'] == false){
@@ -3409,17 +3690,24 @@ class Koha extends AbstractIlsDriver
 		return $this->getKohaSystemPreference('Version');
 	}
 
-	private function getKohaSystemPreference(string $preferenceName)
+	private function getKohaSystemPreference(string $preferenceName, $default = '')
 	{
 		$this->initDatabaseConnection();
 		/** @noinspection SqlResolve */
 		$sql = "SELECT value FROM systempreferences WHERE variable='$preferenceName';";
 		$results = mysqli_query($this->dbConnection, $sql);
-		$preference = '';
-		while ($curRow = $results->fetch_assoc()) {
-			$preference = $curRow['value'];
+		$preference = $default;
+		if ($results !== false) {
+			while ($curRow = $results->fetch_assoc()) {
+				if ($curRow['value'] != '') {
+					$preference = $curRow['value'];
+				}
+			}
+			$results->close();
+		}else{
+			global $logger;
+			$logger->log("Error loading system preference " . mysqli_error($this->dbConnection), Logger::LOG_ERROR);
 		}
-		$results->close();
 		return $preference;
 	}
 
@@ -3493,7 +3781,7 @@ class Koha extends AbstractIlsDriver
 
 		$oauthToken = $this->getOAuthToken();
 		if ($oauthToken == false) {
-			$result['message'] = translate(['text' => 'unable_to_authenticate', 'defaultText' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.']);
+			$result['message'] = translate(['text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.', 'isPublicFacing'=>true]);
 		} else {
 			$apiUrl = $this->getWebServiceURL() . "/api/v1/patrons/{$patron->username}";
 			$postParams = json_encode($postVariables);
@@ -3535,5 +3823,104 @@ class Koha extends AbstractIlsDriver
 			}
 		}
 		return $result;
+	}
+
+	public function getILSMessages(User $user)
+	{
+		$messages = [];
+		$library = $user->getHomeLibrary();
+		if ($library == null){
+			return $messages;
+		}
+
+		$this->initDatabaseConnection();
+		if ($library->showBorrowerMessages) {
+			//Check to see if the username is already in use
+			/** @noinspection SqlResolve */
+			$sql = "SELECT message FROM messages where borrowernumber = {$user->username} and message_type='B'";
+			$results = mysqli_query($this->dbConnection, $sql);
+			if ($results !== false) {
+				while ($curRow = $results->fetch_assoc()) {
+					$messages[] = [
+						'message' => $curRow['message'],
+						'messageStyle' => 'info',
+					];
+				}
+			}
+		}
+
+		/** @noinspection SqlResolve */
+		$sql = "SELECT debarred, debarredcomment, opacnote FROM borrowers where borrowernumber = {$user->username}";
+		$results = mysqli_query($this->dbConnection, $sql);
+		if ($results !== false) {
+			if ($curRow = $results->fetch_assoc()) {
+				if ($library->showOpacNotes) {
+					if (!empty($curRow['opacnote'])) {
+						$messages[] = [
+							'message' => $curRow['opacnote'],
+							'messageStyle' => 'info',
+						];
+					}
+				}
+
+				if ($curRow['debarred'] != null) {
+					$message = '<strong>Please note:</strong> Your account has been frozen. ';
+					if ($library->showDebarmentNotes) {
+						if (!empty($curRow['debarredcomment'])) {
+							$debarredComment = str_replace('OVERDUES_PROCESS', 'Restriction added by overdues process', $curRow['debarredcomment']);
+							$message .= "Comment: " . $debarredComment . '<br/>';
+						}
+					}
+					$message .= "  <em>Usually the reason for freezing an account is overdues or damage fees. If your account shows to be clear, please contact the library.</em>";
+					$messages[] = [
+						'message' => $message,
+						'messageStyle' => 'danger',
+					];
+				}
+			}
+		}
+
+		return $messages;
+	}
+
+	/**
+	 * @param SimpleXMLElement $error
+	 * @param string $message
+	 * @return string
+	 */
+	protected function getHoldErrorMessage(?SimpleXMLElement $error, string $message): string
+	{
+		if ($error == null) {
+			$message .= 'Unknown Error';
+		}elseif ($error == "damaged") {
+			$message .= 'Item damaged';
+		} elseif ($error == "ageRestricted") {
+			$message .= 'Age restricted';
+		} elseif ($error == "tooManyHoldsForThisRecord") {
+			$message .= 'Exceeded max holds per record';
+		} elseif ($error == "tooManyReservesToday") {
+			$message .= 'Exceeded hold limit for patron';
+		} elseif ($error == "tooManyReserves") {
+			$message .= 'Too many holds';
+		} elseif ($error == "notReservable") {
+			$message .= 'Not holdable';
+		} elseif ($error == "cannotReserveFromOtherBranches") {
+			$message .= 'Patron is from different library';
+		} elseif ($error == "branchNotInHoldGroup") {
+			$message .= 'Cannot place hold from patron\'s library';
+		} elseif ($error == "itemAlreadyOnHold") {
+			$message .= 'Patron already has hold for this item';
+		} elseif ($error == "cannotBeTransferred") {
+			$message .= 'Cannot be transferred to pickup library';
+		} elseif ($error == "pickupNotInHoldGroup") {
+			$message .= 'Only pickup locations within the same hold group are allowed';
+		} elseif ($error == "noReservesAllowed") {
+			$message .= 'No reserves are allowed on this item';
+		} elseif ($error == "libraryNotPickupLocation") {
+			$message .= 'Library is not a pickup location';
+		} else {
+			$message = "The item could not be placed on hold ($error)";
+		}
+		return $message;
 	}
 }

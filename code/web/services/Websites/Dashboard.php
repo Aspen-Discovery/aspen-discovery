@@ -1,26 +1,19 @@
 <?php
 require_once ROOT_DIR . '/Action.php';
-require_once ROOT_DIR . '/services/Admin/Admin.php';
+require_once ROOT_DIR . '/services/Admin/Dashboard.php';
 require_once ROOT_DIR . '/sys/WebsiteIndexing/WebsiteIndexSetting.php';
 require_once ROOT_DIR . '/sys/WebsiteIndexing/WebsitePage.php';
 require_once ROOT_DIR . '/sys/WebsiteIndexing/WebPageUsage.php';
 require_once ROOT_DIR . '/sys/WebsiteIndexing/UserWebsiteUsage.php';
 
-class Websites_Dashboard extends Admin_Admin
+class Websites_Dashboard extends Admin_Dashboard
 {
 	function launch()
 	{
 		global $interface;
 
-		$thisMonth = date('n');
-		$thisYear = date('Y');
-		$lastMonth = $thisMonth - 1;
-		$lastMonthYear = $thisYear;
-		if ($lastMonth == 0) {
-			$lastMonth = 12;
-			$lastMonthYear--;
-		}
-		$lastYear = $thisYear - 1;
+		$instanceName = $this->loadInstanceInformation('WebPageUsage');
+		$this->loadDates();
 
 		//Generate stats
 		$website = new WebsiteIndexSetting();
@@ -33,40 +26,44 @@ class Websites_Dashboard extends Admin_Admin
 
 		$interface->assign('websites', $websitesToGetStatsFor);
 
-		$activeUsersThisMonth = $this->getUserStats($thisMonth, $thisYear, $websitesToGetStatsFor);
+		$activeUsersThisMonth = $this->getUserStats($instanceName, $this->thisMonth, $this->thisYear, $websitesToGetStatsFor);
 		$interface->assign('activeUsersThisMonth', $activeUsersThisMonth);
-		$activeUsersLastMonth = $this->getUserStats($lastMonth, $lastMonthYear, $websitesToGetStatsFor);
+		$activeUsersLastMonth = $this->getUserStats($instanceName, $this->lastMonth, $this->lastMonthYear, $websitesToGetStatsFor);
 		$interface->assign('activeUsersLastMonth', $activeUsersLastMonth);
-		$activeUsersThisYear = $this->getUserStats(null, $thisYear, $websitesToGetStatsFor);
+		$activeUsersThisYear = $this->getUserStats($instanceName, null, $this->thisYear, $websitesToGetStatsFor);
 		$interface->assign('activeUsersThisYear', $activeUsersThisYear);
-		$activeUsersLastYear = $this->getUserStats(null, $lastYear, $websitesToGetStatsFor);
+		$activeUsersLastYear = $this->getUserStats($instanceName, null, $this->lastYear, $websitesToGetStatsFor);
 		$interface->assign('activeUsersLastYear', $activeUsersLastYear);
-		$activeUsersAllTime = $this->getUserStats(null, null, $websitesToGetStatsFor);
+		$activeUsersAllTime = $this->getUserStats($instanceName, null, null, $websitesToGetStatsFor);
 		$interface->assign('activeUsersAllTime', $activeUsersAllTime);
 
-		$activeRecordsThisMonth = $this->getSiteStats($thisMonth, $thisYear, $websitesToGetStatsFor);
+		$activeRecordsThisMonth = $this->getSiteStats($instanceName, $this->thisMonth, $this->thisYear, $websitesToGetStatsFor);
 		$interface->assign('activeRecordsThisMonth', $activeRecordsThisMonth);
-		$activeRecordsLastMonth = $this->getSiteStats($lastMonth, $lastMonthYear, $websitesToGetStatsFor);
+		$activeRecordsLastMonth = $this->getSiteStats($instanceName, $this->lastMonth, $this->lastMonthYear, $websitesToGetStatsFor);
 		$interface->assign('activeRecordsLastMonth', $activeRecordsLastMonth);
-		$activeRecordsThisYear = $this->getSiteStats(null, $thisYear, $websitesToGetStatsFor);
+		$activeRecordsThisYear = $this->getSiteStats($instanceName, null, $this->thisYear, $websitesToGetStatsFor);
 		$interface->assign('activeRecordsThisYear', $activeRecordsThisYear);
-		$activeRecordsLastYear = $this->getSiteStats(null, $lastYear, $websitesToGetStatsFor);
+		$activeRecordsLastYear = $this->getSiteStats($instanceName, null, $this->lastYear, $websitesToGetStatsFor);
 		$interface->assign('activeRecordsLastYear', $activeRecordsLastYear);
-		$activeRecordsAllTime = $this->getSiteStats(null, null, $websitesToGetStatsFor);
+		$activeRecordsAllTime = $this->getSiteStats($instanceName, null, null, $websitesToGetStatsFor);
 		$interface->assign('activeRecordsAllTime', $activeRecordsAllTime);
 
 		$this->display('dashboard.tpl', 'Website Search Dashboard');
 	}
 
 	/**
+	 * @param string|null $instanceName
 	 * @param string|null $month
 	 * @param string|null $year
 	 * @param int[] $websitesToGetStatsFor
 	 * @return int[]
 	 */
-	public function getUserStats($month, $year, $websitesToGetStatsFor): array
+	public function getUserStats($instanceName, $month, $year, $websitesToGetStatsFor): array
 	{
 		$userUsage = new UserWebsiteUsage();
+		if (!empty($instanceName)){
+			$userUsage->instance = $instanceName;
+		}
 		if ($month != null) {
 			$userUsage->month = $month;
 		}
@@ -90,16 +87,20 @@ class Websites_Dashboard extends Admin_Admin
 	}
 
 	/**
+	 * @param string|null $instanceName
 	 * @param string|null $month
 	 * @param string|null $year
 	 * @param int[] $websitesToGetStatsFor
 	 * @return int[]
 	 */
-	public function getSiteStats($month, $year, $websitesToGetStatsFor): array
+	public function getSiteStats($instanceName, $month, $year, $websitesToGetStatsFor): array
 	{
 		$usage = new WebPageUsage();
 		$recordInfo = new WebsitePage();
 		$usage->joinAdd($recordInfo, 'INNER', 'record', 'webPageId', 'id');
+		if (!empty($instanceName)){
+			$usage->instance = $instanceName;
+		}
 		if ($month != null) {
 			$usage->month = $month;
 		}
@@ -131,7 +132,7 @@ class Websites_Dashboard extends Admin_Admin
 		return $usageStats;
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
@@ -140,12 +141,12 @@ class Websites_Dashboard extends Admin_Admin
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return 'web_indexer';
 	}
 
-	function canView()
+	function canView() : bool
 	{
 		return UserAccount::userHasPermission(['View System Reports', 'View Dashboards']);
 	}

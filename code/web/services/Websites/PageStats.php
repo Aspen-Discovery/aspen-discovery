@@ -98,7 +98,7 @@ class Websites_PageStats extends Admin_Admin
 		return $usageStats;
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
@@ -108,8 +108,13 @@ class Websites_PageStats extends Admin_Admin
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return 'web_indexer';
+	}
+
+	function canView() : bool
+	{
+		return UserAccount::userHasPermission(['View System Reports', 'View Dashboards']);
 	}
 }

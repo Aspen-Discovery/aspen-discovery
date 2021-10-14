@@ -24,7 +24,7 @@ class RecordToInclude extends DataObject{
 
 	public $weight;
 
-	static function getObjectStructure(){
+	static function getObjectStructure() : array {
 		$indexingProfiles = array();
 		require_once ROOT_DIR . '/sys/Indexing/IndexingProfile.php';
 		$indexingProfile = new IndexingProfile();
@@ -37,13 +37,13 @@ class RecordToInclude extends DataObject{
 			'id' => ['property'=>'id', 'type'=>'label', 'label'=>'Id', 'description'=>'The unique id'],
 			'weight' => ['property'=>'weight', 'type'=>'integer', 'label'=>'Weight', 'description'=>'The sort order', 'default' => 0],
 			'indexingProfileId' => ['property' => 'indexingProfileId', 'type' => 'enum', 'values' => $indexingProfiles, 'label' => 'Indexing Profile Id', 'description' => 'The Indexing Profile this map is associated with'],
-			'location' => ['property'=>'location', 'type'=>'text', 'label'=>'Location', 'description'=>'A regular expression for location codes to include', 'maxLength' => '100', 'required' => false,'forcesReindex' => true],
-			'locationsToExclude' => ['property'=>'locationsToExclude', 'type'=>'text', 'label'=>'Locations to Exclude', 'description'=>'A regular expression for location codes to exclude', 'maxLength' => '100', 'required' => false,'forcesReindex' => true],
-			'subLocation' => ['property'=>'subLocation', 'type'=>'text', 'label'=>'Sub Location', 'description'=>'A regular expression for sublocation codes to include', 'maxLength' => '100', 'required' => false,'forcesReindex' => true],
-			'subLocationsToExclude' => ['property'=>'subLocationsToExclude', 'type'=>'text', 'label'=>'Sub Locations to Exclude', 'description'=>'A regular expression for sublocation codes to exclude', 'maxLength' => '100', 'required' => false,'forcesReindex' => true],
-			'iType' => ['property'=>'iType', 'type'=>'text', 'label'=>'iType', 'description'=>'A regular expression for item types to include', 'maxLength' => '100', 'required' => false,'forcesReindex' => true],
-			'audience' => ['property'=>'audience', 'type'=>'text', 'label'=>'Audience', 'description'=>'A regular expression for audiences to include', 'maxLength' => '100', 'required' => false,'forcesReindex' => true],
-			'format' => ['property'=>'format', 'type'=>'text', 'label'=>'Format', 'description'=>'A regular expression for formats to include', 'maxLength' => '100', 'required' => false,'forcesReindex' => true],
+			'location' => ['property'=>'location', 'type'=>'regularExpression', 'label'=>'Location (Regex)', 'description'=>'A regular expression for location codes to include', 'maxLength' => '100', 'required' => false,'forcesReindex' => true],
+			'locationsToExclude' => ['property'=>'locationsToExclude', 'type'=>'regularExpression', 'label'=>'Locations to Exclude (Regex)', 'description'=>'A regular expression for location codes to exclude', 'maxLength' => '100', 'required' => false,'forcesReindex' => true],
+			'subLocation' => ['property'=>'subLocation', 'type'=>'regularExpression', 'label'=>'Sub Location (Regex)', 'description'=>'A regular expression for sublocation codes to include', 'maxLength' => '100', 'required' => false,'forcesReindex' => true],
+			'subLocationsToExclude' => ['property'=>'subLocationsToExclude', 'type'=>'regularExpression', 'label'=>'Sub Locations to Exclude (Regex)', 'description'=>'A regular expression for sublocation codes to exclude', 'maxLength' => '100', 'required' => false,'forcesReindex' => true],
+			'iType' => ['property'=>'iType', 'type'=>'regularExpression', 'label'=>'iType (Regex)', 'description'=>'A regular expression for item types to include', 'maxLength' => '100', 'required' => false,'forcesReindex' => true],
+			'audience' => ['property'=>'audience', 'type'=>'regularExpression', 'label'=>'Audience (Regex)', 'description'=>'A regular expression for audiences to include', 'maxLength' => '100', 'required' => false,'forcesReindex' => true],
+			'format' => ['property'=>'format', 'type'=>'regularExpression', 'label'=>'Format (Regex)', 'description'=>'A regular expression for formats to include', 'maxLength' => '100', 'required' => false,'forcesReindex' => true],
 			'includeHoldableOnly' => ['property'=>'includeHoldableOnly', 'type'=>'checkbox', 'label'=>'Include Holdable Only', 'description'=>'Whether or not non-holdable records are included','forcesReindex' => true],
 			'includeItemsOnOrder' => ['property'=>'includeItemsOnOrder', 'type'=>'checkbox', 'label'=>'Include Items On Order', 'description'=>'Whether or not order records are included', 'default' => 1,'forcesReindex' => true],
 			'includeEContent' => ['property'=>'includeEContent', 'type'=>'checkbox', 'label'=>'Include e-content Items', 'description'=>'Whether or not e-Content should be included', 'default' => 1,'forcesReindex' => true],

@@ -11,6 +11,7 @@ class OwnershipRule {
 	private final boolean matchAllLocations;
 	private final Pattern locationCodePattern;
 	private Pattern locationsToExcludePattern = null;
+	private final boolean matchAllSubLocations;
 	private final Pattern subLocationCodePattern;
 	private Pattern subLocationsToExcludePattern = null;
 
@@ -25,6 +26,7 @@ class OwnershipRule {
 		if (subLocationCode.length() == 0){
 			subLocationCode = ".*";
 		}
+		this.matchAllSubLocations = subLocationCode.equals(".*");
 		this.subLocationCodePattern = Pattern.compile(subLocationCode, Pattern.CASE_INSENSITIVE);
 
 		if (locationsToExclude.length() > 0){
@@ -36,32 +38,37 @@ class OwnershipRule {
 	}
 
 	private final HashMap<String, Boolean> ownershipResults = new HashMap<>();
-	boolean isItemOwned(@NotNull String recordType, @NotNull String locationCode, @NotNull String subLocationCode){
-		boolean isOwned = false;
-		if (this.recordType.equals(recordType)){
-			String key = locationCode + "-" + subLocationCode;
-			if (ownershipResults.containsKey(key)){
-				return ownershipResults.get(key);
-			}
+	boolean isItemOwned(String fullKey, @NotNull String recordType, @NotNull String locationCode, @NotNull String subLocationCode){
+		Boolean isOwned = ownershipResults.get(fullKey);
+		if (isOwned == null) {
+			return this.calcOwnership(fullKey, recordType, locationCode, subLocationCode);
+		}
+		return  isOwned;
+	}
 
+	private boolean calcOwnership(String fullKey, String recordType, String locationCode, String subLocationCode) {
+		boolean isOwned;
+		if (this.recordType.equals(recordType)){
 			if (locationCode == null ){
 				if (matchAllLocations) {
-					isOwned = (subLocationCode == null || subLocationCodePattern.matcher(subLocationCode).lookingAt());
+					isOwned =  (matchAllSubLocations || subLocationCode == null || subLocationCodePattern.matcher(subLocationCode).matches());
 				}else{
 					isOwned = false;
 				}
 			}else{
-				isOwned = locationCodePattern.matcher(locationCode).lookingAt() && (subLocationCode == null || subLocationCodePattern.matcher(subLocationCode).lookingAt());
+				isOwned = locationCodePattern.matcher(locationCode).matches() && (matchAllSubLocations || subLocationCode == null || subLocationCodePattern.matcher(subLocationCode).matches());
 			}
 			//Make sure that we are not excluding the result
 			if (isOwned && locationCode != null && locationsToExcludePattern != null) {
-				isOwned = !locationsToExcludePattern.matcher(locationCode).lookingAt();
+				isOwned = !locationsToExcludePattern.matcher(locationCode).matches();
 			}
 			if (isOwned && subLocationCode != null && subLocationsToExcludePattern != null) {
-				isOwned = !subLocationsToExcludePattern.matcher(subLocationCode).lookingAt();
+				isOwned = !subLocationsToExcludePattern.matcher(subLocationCode).matches();
 			}
-			ownershipResults.put(key, isOwned);
+		}else{
+			isOwned = false;
 		}
-		return  isOwned;
+		ownershipResults.put(fullKey, isOwned);
+		return isOwned;
 	}
 }

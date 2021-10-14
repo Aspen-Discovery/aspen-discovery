@@ -1,12 +1,12 @@
 {strip}
 	<div id="main-content" class="col-md-12">
-		<h1>{translate text="Hoopla Export Log"}</h1>
+		<h1>{translate text="Hoopla Export Log" isAdminFacing=true}</h1>
 
 		<form>
 			<div class="row">
 				<div class="col-sm-5 col-md-4">
 					<div class="form-group">
-						<label for="pageSize">{translate text='Entries Per Page'}</label>
+						<label for="pageSize">{translate text='Entries Per Page' isAdminFacing=true}</label>
 						<select id="pageSize" name="pageSize" class="pageSize form-control input-sm">
 							<option value="30"{if $recordsPerPage == 30} selected="selected"{/if}>30</option>
 							<option value="50"{if $recordsPerPage == 50} selected="selected"{/if}>50</option>
@@ -17,7 +17,7 @@
 				</div>
 				<div class="col-sm-5 col-md-4">
 					<div class="form-group">
-						<label for="processedLimit">{translate text='Min Processed'}</label>
+						<label for="processedLimit">{translate text='Min Processed' isAdminFacing=true}</label>
 						<div class="input-group-sm input-group">
 							<input id="processedLimit" name="processedLimit" type="number" min="0" class="form-control input-sm" {if !empty($processedLimit)} value="{$processedLimit}"{/if}>
 						</div>
@@ -28,7 +28,7 @@
 			<div class="row">
 				<div class="col-sm-2 col-md-4">
 					<div class="form-group">
-						<button class="btn btn-primary btn-sm" type="submit">Apply</button>
+						<button class="btn btn-primary btn-sm" type="submit">{translate text="Apply" isAdminFacing=true}</button>
 					</div>
 				</div>
 			</div>
@@ -36,7 +36,22 @@
 		<div id="exportLogContainer">
 			<table class="logEntryDetails table table-condensed table-hover">
 				<thead>
-					<tr><th>{translate text="Id"}</th><th>{translate text="Started"}</th><th>{translate text="Last Update"}</th><th>{translate text="Finished"}</th><th>{translate text="Elapsed"}</th><th>{translate text="Total Products"}</th><th>{translate text="Num Errors"}</th><th>{translate text="Products Added"}</th><th>{translate text="Products Deleted"}</th><th>{translate text="Products Updated"}</th><th>{translate text="Products Skipped"}</th><th>{translate text="Notes"}</th></tr>
+					<tr>
+						<th>{translate text="Id" isAdminFacing=true}</th>
+						<th>{translate text="Started" isAdminFacing=true}</th>
+						<th>{translate text="Last Update" isAdminFacing=true}</th>
+						<th>{translate text="Finished" isAdminFacing=true}</th>
+						<th>{translate text="Elapsed" isAdminFacing=true}</th>
+						<th>{translate text="Products Regrouped" isAdminFacing=true}</th>
+						<th>{translate text="Products Changed After Grouping" isAdminFacing=true}</th>
+						<th>{translate text="Total Products" isAdminFacing=true}</th>
+						<th>{translate text="Num Errors" isAdminFacing=true}</th>
+						<th>{translate text="Products Added" isAdminFacing=true}</th>
+						<th>{translate text="Products Deleted" isAdminFacing=true}</th>
+						<th>{translate text="Products Updated" isAdminFacing=true}</th>
+						<th>{translate text="Products Skipped" isAdminFacing=true}</th>
+						<th>{translate text="Notes" isAdminFacing=true}</th>
+					</tr>
 				</thead>
 				<tbody>
 					{foreach from=$logEntries item=logEntry}
@@ -46,13 +61,15 @@
 							<td>{$logEntry->lastUpdate|date_format:"%D %T"}</td>
 							<td>{$logEntry->endTime|date_format:"%D %T"}</td>
 							<td>{$logEntry->getElapsedTime()}</td>
+							<td>{$logEntry->numRegrouped}</td>
+							<td>{$logEntry->numChangedAfterGrouping}</td>
 							<td>{$logEntry->numProducts}</td>
 							<td>{$logEntry->numErrors}</td>
 							<td>{$logEntry->numAdded}</td>
 							<td>{$logEntry->numDeleted}</td>
 							<td>{$logEntry->numUpdated}</td>
 							<td>{$logEntry->numSkipped}</td>
-							<td><a href="#" onclick="return AspenDiscovery.Admin.showExtractNotes('{$logEntry->id}', 'hoopla');">{translate text="Show Notes"}</a></td>
+							<td><a href="#" onclick="return AspenDiscovery.Admin.showExtractNotes('{$logEntry->id}', 'hoopla');">{translate text="Show Notes" isAdminFacing=true}</a></td>
 						</tr>
 					{/foreach}
 				</tbody>

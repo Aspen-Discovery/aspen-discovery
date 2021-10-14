@@ -167,7 +167,6 @@ function readConfig()
 		$fullServerName = $_SERVER['aspen_server'];
 		//echo("Server name is set as server var $fullServerName\r\n");
 	} else {
-
 		if (isset($_SERVER['SERVER_NAME'])) {
 			//Run from browser
 			$fullServerName = $_SERVER['SERVER_NAME'];
@@ -226,6 +225,9 @@ function readConfig()
 			$mainArray['Site']['url'] = "https://" . $_SERVER['SERVER_NAME'];
 		} else {
 			$mainArray['Site']['url'] = "http://" . $_SERVER['SERVER_NAME'];
+		}
+		if (isset($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] != 80 && $_SERVER['SERVER_PORT'] != 443){
+			$mainArray['Site']['url'] .= ":" . $_SERVER['SERVER_PORT'];
 		}
 	}
 
@@ -376,7 +378,7 @@ function updateConfigForScoping($configArray)
 		die();
 	} else {
 		//Update the title
-		$configArray['Site']['theme'] = $library->themeName . ',responsive';
+		$configArray['Site']['theme'] = 'responsive';
 		$configArray['Site']['title'] = $library->displayName;
 
 		$locationSingleton->getActiveLocation();

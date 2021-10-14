@@ -44,11 +44,6 @@
   background-color: #00a4e3;
   padding: 15px 0;
 }
-@media (max-width: 991px) {
-  #horizontal-search-box {
-    display: none;
-  }
-}
 #horizontal-search-box #searchForm .row {
   margin-left: 0;
   margin-right: 0;

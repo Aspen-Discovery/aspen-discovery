@@ -1870,6 +1870,15 @@ function getLibraryLocationUpdates(){
 			],
 		],
 
+		'library_fine_updates_msb' => [
+			'title' => 'Library Fine Updates MSB',
+			'description' => 'Updates to library settings for MSB payment integration.',
+			'continueOnError' => false,
+			'sql' => [
+				"ALTER TABLE library ADD COLUMN msbUrl VARCHAR(80)"
+			],
+		],
+
 		'library_fine_payment_order' => [
 			'title' => 'Library Fine Payment Order',
 			'description' => 'Updates to library settings to allow libraries to identify the order fines should be paid in.',
@@ -1956,6 +1965,14 @@ function getLibraryLocationUpdates(){
 			'description' => 'Remove Show Sidebar menu since it is no longer used',
 			'sql' => [
 				'ALTER TABLE layout_settings DROP COLUMN showSidebarMenu'
+			]
+		],
+
+		'layout_settings_remove_sidebarMenuButtonText' => [
+			'title' => 'Layout Settings - Sidebar Menu Button Text',
+			'description' => 'Remove Sidebar Menu Button Text since it is no longer used',
+			'sql' => [
+				'ALTER TABLE layout_settings DROP COLUMN sidebarMenuButtonText'
 			]
 		],
 
@@ -2144,6 +2161,14 @@ function getLibraryLocationUpdates(){
 			]
 		],
 
+		'increaseLengthOfShowInMainDetails' => [
+			'title' => 'Increase Length of Show In Main Details',
+			'description' => 'Increase Length of Show In Main Details for display settings',
+			'sql' => [
+				'ALTER TABLE grouped_work_display_settings change showInMainDetails showInMainDetails VARCHAR(500)'
+			]
+		],
+
 		'selfRegistrationLocationRestrictions' => [
 			'title' => 'Self Registration Location Restrictions',
 			'description' => 'Setup restrictions for valid locations for self registration',
@@ -2296,6 +2321,68 @@ function getLibraryLocationUpdates(){
 			'description' => 'Add Notes to show on library login forms',
 			'sql' => [
 				'ALTER TABLE library ADD COLUMN loginNotes MEDIUMTEXT'
+			]
+		],
+
+		'library_allow_remember_pickup_location' => [
+			'title' => 'Library Allow Remember Pickup Location',
+			'description' => 'Add an option for whether or not users can remember their preferred pickup location',
+			'sql' => [
+				'ALTER TABLE library ADD COLUMN allowRememberPickupLocation TINYINT(1) DEFAULT 1'
+			]
+		],
+
+		'library_allow_home_library_updates' => [
+			'title' => 'Library - Allow Home Library Updates',
+			'description' => 'Add an option to determine whether or not the patron can update their home library',
+			'sql' => [
+				'ALTER TABLE library ADD COLUMN allowHomeLibraryUpdates TINYINT(1) DEFAULT 1',
+				'UPDATE library set allowHomeLibraryUpdates = allowProfileUpdates'
+			]
+		],
+
+		'library_rename_showPickupLocationInProfile' => [
+			'title' => 'Library rename showPickupLocationInProfile',
+			'description' => 'Rename showPickupLocationInProfile to allowPickupLocationUpdates TINYINT(1) DEFAULT 1',
+			'sql' => [
+				"ALTER TABLE library CHANGE COLUMN showPickupLocationInProfile allowPickupLocationUpdates TINYINT(1) DEFAULT 0"
+			]
+		],
+
+		'library_patron_messages' => [
+			'title' => 'Library - configure patron messages',
+			'description' => 'Add the ability to configure which patron messages are shown within the account profile',
+			'sql' => [
+				'ALTER TABLE library ADD COLUMN showOpacNotes TINYINT(1) DEFAULT 0',
+				'ALTER TABLE library ADD COLUMN showBorrowerMessages TINYINT(1) DEFAULT 0',
+				'ALTER TABLE library ADD COLUMN showDebarmentNotes TINYINT(1) DEFAULT 0',
+			]
+		],
+
+		'library_propay_settings' => [
+			'title' => 'Library - add settings for ProPay integration',
+			'description' => 'Add settings to enable ProPay payments and update Symphony',
+			'sql' => [
+				'ALTER TABLE library ADD COLUMN proPayAccountNumber VARCHAR(10)',
+				'ALTER TABLE library ADD COLUMN proPayAgencyCode VARCHAR(4)',
+				'ALTER TABLE library ADD COLUMN symphonyPaymentType VARCHAR(8)',
+				'ALTER TABLE library ADD COLUMN symphonyPaymentPolicy VARCHAR(8)',
+			]
+		],
+
+		'library_allowDeletingILSRequests' => [
+			'title' => 'Library - Allow deleting ILS Requests',
+			'description' => 'Add a toggle to determine if the user should be able to delete requests from the ILS',
+			'sql' => [
+				'ALTER TABLE library ADD column allowDeletingILSRequests TINYINT(1) DEFAULT 1'
+			]
+		],
+
+		'library_tiktok_link' => [
+			'title' => 'Add TikTok to library contact links',
+			'description' => 'Add TikTok to library contact links',
+			'sql' => [
+				"ALTER TABLE library ADD tiktokLink VARCHAR(255) DEFAULT ''",
 			]
 		]
 	);
@@ -2654,7 +2741,7 @@ function moveGroupedWorkSettingsToTable(/** @noinspection PhpUnusedParameterInsp
 function moveLayoutSettingsToTable(/** @noinspection PhpUnusedParameterInspection */ &$update){
 	global $aspen_db;
 
-	$uniqueLayoutSettingsSQL = "SELECT libraryId as id, displayName, showSidebarMenu, sidebarMenuButtonText, useHomeLinkInBreadcrumbs, useHomeLinkForLogo, homeLinkText, showLibraryHoursAndLocationsLink From library";
+	$uniqueLayoutSettingsSQL = "SELECT libraryId as id, displayName, showSidebarMenu, useHomeLinkInBreadcrumbs, useHomeLinkForLogo, homeLinkText, showLibraryHoursAndLocationsLink From library";
 
 	$uniqueLayoutSettingsRS = $aspen_db->query($uniqueLayoutSettingsSQL, PDO::FETCH_ASSOC);
 	$uniqueLayoutSettingsRow = $uniqueLayoutSettingsRS->fetch();
@@ -2663,7 +2750,6 @@ function moveLayoutSettingsToTable(/** @noinspection PhpUnusedParameterInspectio
 		//Check to see if we already have a settings group with this information
 		$layoutSetting = new LayoutSetting();
 		$layoutSetting->showSidebarMenu = $uniqueLayoutSettingsRow['showSidebarMenu'];
-		$layoutSetting->sidebarMenuButtonText = $uniqueLayoutSettingsRow['sidebarMenuButtonText'];
 		$layoutSetting->useHomeLinkInBreadcrumbs = $uniqueLayoutSettingsRow['useHomeLinkInBreadcrumbs'];
 		$layoutSetting->useHomeLinkForLogo = $uniqueLayoutSettingsRow['useHomeLinkForLogo'];
 		$layoutSetting->homeLinkText = $uniqueLayoutSettingsRow['homeLinkText'];

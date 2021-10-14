@@ -12,6 +12,7 @@ class Enrichment_NYTLists extends Admin_Admin
 
 		require_once ROOT_DIR . '/sys/Enrichment/NewYorkTimesSetting.php';
 		$nytSettings = new NewYorkTimesSetting();
+
 		if (!$nytSettings->find(true)) {
 			$interface->assign('error', 'The New York Times API is not configured properly, create settings at <a href="/Admin/NewYorkTimesSettings"></a>');
 		} else {
@@ -23,8 +24,14 @@ class Enrichment_NYTLists extends Admin_Admin
 
 			//Get the raw response from the API with a list of all the names
 			$availableListsRaw = $nyt_api->get_list('names');
+
 			//Convert into an object that can be processed
 			$availableLists = json_decode($availableListsRaw);
+			$availableListsCompareFunction = function ($subjectArray0, $subjectArray1) {
+				return strcasecmp($subjectArray0->display_name, $subjectArray1->display_name);
+			};
+			$availableLists = $availableLists->results;
+			usort($availableLists, $availableListsCompareFunction);
 
 			$interface->assign('availableLists', $availableLists);
 
@@ -39,7 +46,7 @@ class Enrichment_NYTLists extends Admin_Admin
 					require_once ROOT_DIR . '/services/API/ListAPI.php';
 					$listApi = new ListAPI();
 					try{
-						$results = $listApi->createUserListFromNYT($selectedList);
+						$results = $listApi->createUserListFromNYT($selectedList, null);
 						if ($results['success'] == false) {
 							$interface->assign('error', $results['message']);
 						} else {
@@ -61,6 +68,7 @@ class Enrichment_NYTLists extends Admin_Admin
 				$nyTimesUserLists = new UserList();
 				$nyTimesUserLists->user_id = $nyTimesUser->id;
 				$nyTimesUserLists->whereAdd('title like "NYT - %"');
+				$nyTimesUserLists->deleted = 0;
 				$nyTimesUserLists->orderBy('title');
 				$existingLists = $nyTimesUserLists->fetchAll();
 
@@ -71,7 +79,7 @@ class Enrichment_NYTLists extends Admin_Admin
 		$this->display('nytLists.tpl', 'Lists from New York Times');
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
@@ -80,12 +88,12 @@ class Enrichment_NYTLists extends Admin_Admin
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return 'third_party_enrichment';
 	}
 
-	function canView()
+	function canView() : bool
 	{
 		return UserAccount::userHasPermission('View New York Times Lists');
 	}

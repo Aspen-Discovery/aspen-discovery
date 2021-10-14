@@ -3,7 +3,7 @@
 	<div>
 		<div class="form-group">
 			<div class="col-tn-3">
-				<label for="title">{translate text="Title"}</label>
+				<label for="title">{translate text="Title" isAdminFacing=true}</label>
 			</div>
 			<div class="col-tn-9">
 				<input type="text" name="title" id="title" class="form-control" value="{$title}" maxlength="276"/>
@@ -11,7 +11,7 @@
 		</div>
 		<div class="form-group">
 			<div class="col-tn-3">
-				<label for="author">{translate text="Author"} </label>
+				<label for="author">{translate text="Author" isAdminFacing=true} </label>
 			</div>
 			<div class="col-tn-9">
 				<input type="text" name="author" id="author" class="form-control" value="{$author}" maxlength="50"/>
@@ -19,7 +19,7 @@
 		</div>
 		<div class="form-group">
 			<div class="col-tn-3">
-				<label for="seriesName">{translate text="Series Name"}</label>
+				<label for="seriesName">{translate text="Series Name" isAdminFacing=true}</label>
 			</div>
 			<div class="col-tn-9">
 				<input type="text" name="seriesName" id="seriesName" class="form-control" value="{$seriesName}" maxlength="255"/>
@@ -27,7 +27,7 @@
 		</div>
 		<div class="form-group">
 			<div class="col-tn-3">
-				<label for="seriesDisplayOrder">{translate text="Series Display Order"}</label>
+				<label for="seriesDisplayOrder">{translate text="Series Display Order" isAdminFacing=true}</label>
 			</div>
 			<div class="col-tn-9">
 				<input type="number" name="seriesDisplayOrder" id="seriesDisplayOrder" class="form-control" value="{$seriesDisplayOrder}" maxlength="255"/>

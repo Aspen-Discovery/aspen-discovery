@@ -257,7 +257,9 @@ class MillenniumReadingHistory {
 				}
 
 				if (stripos($sKeys[$i],"Checked Out") > -1) {
-					$historyEntry['checkout'] = strip_tags($sCols[$i]);
+					$checkoutTime = DateTime::createFromFormat('m-d-Y', strip_tags($sCols[$i]))->getTimestamp();
+					$historyEntry['checkout'] = $checkoutTime;
+					$historyEntry['checkin'] = $checkoutTime;
 				}
 				if (stripos($sKeys[$i],"Details") > -1) {
 					$historyEntry['details'] = strip_tags($sCols[$i]);
@@ -278,9 +280,8 @@ class MillenniumReadingHistory {
 			}elseif ($sortOption == "author"){
 				$titleKey = $historyEntry['author'] . "_" . $historyEntry['title_sort'];
 			}elseif ($sortOption == "checkedOut" || $sortOption == "returned"){
-				$checkoutTime = DateTime::createFromFormat('m-d-Y', $historyEntry['checkout']) ;
-				if ($checkoutTime){
-					$titleKey = $checkoutTime->getTimestamp() . "_" . $historyEntry['title_sort'];
+				if ($historyEntry['checkout']){
+					$titleKey = $historyEntry['checkout'] . "_" . $historyEntry['title_sort'];
 				}else{
 					//print_r($historyEntry);
 					$titleKey = $historyEntry['title_sort'];

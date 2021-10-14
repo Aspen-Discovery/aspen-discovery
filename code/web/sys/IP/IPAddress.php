@@ -12,15 +12,17 @@ class IPAddress extends DataObject
 	public $blockAccess;
 	public $allowAPIAccess;
 	public $showDebuggingInformation;
+	public $logTimingInformation;
+	public $logAllQueries;
 	public $startIpVal;
 	public $endIpVal;
 
-	function getNumericColumnNames()
+	function getNumericColumnNames() : array
 	{
 		return ['isOpac', 'blockAccess', 'allowAPIAccess', 'startIpVal', 'endIpVal'];
 	}
 
-	static function getObjectStructure(){
+	static function getObjectStructure() : array{
 		//Look lookup information for display in the user interface
 		$location = new Location();
 		$location->orderBy('displayName');
@@ -40,6 +42,8 @@ class IPAddress extends DataObject
 			'blockAccess' => array('property' => 'blockAccess', 'type' => 'checkbox', 'label' => 'Block Access from this IP', 'description' => 'Traffic from this IP will not be allowed to use Aspen.', 'default' => false),
 			'allowAPIAccess' => array('property' => 'allowAPIAccess', 'type' => 'checkbox', 'label' => 'Allow API Access', 'description' => 'Traffic from this IP will be allowed to use Aspen APIs.', 'default' => false),
 			'showDebuggingInformation' => array('property' => 'showDebuggingInformation', 'type' => 'checkbox', 'label' => 'Show Debugging Information', 'description' => 'Traffic from this IP will have debugging information emitted for it.', 'default' => false),
+			'logTimingInformation' => array('property' => 'logTimingInformation', 'type' => 'checkbox', 'label' => 'Log Timing Information', 'description' => 'Traffic from this IP will have timing information logged for it.', 'default' => false),
+			'logAllQueries' => array('property' => 'logAllQueries', 'type' => 'checkbox', 'label' => 'Log Database Queries', 'description' => 'Traffic from this IP will have database query information logged for it.', 'default' => false),
 		);
 	}
 
@@ -212,6 +216,9 @@ class IPAddress extends DataObject
 		} else {
 			$ip = '';
 		}
+		if ($ip == '::1'){
+			$ip = '127.0.0.1';
+		}
 		return $ip;
 	}
 
@@ -236,13 +243,58 @@ class IPAddress extends DataObject
 		}
 	}
 
+	static $_showDebuggingInformation = null;
 	public static function showDebuggingInformation(){
-		$clientIP = IPAddress::getClientIP();
-		$ipInfo = IPAddress::getIPAddressForIP($clientIP);
-		if (!empty($ipInfo)) {
-			return $ipInfo->showDebuggingInformation;
-		}else{
-			return false;
+		if (IPAddress::$_showDebuggingInformation === null) {
+			$clientIP = IPAddress::getClientIP();
+			$ipInfo = IPAddress::getIPAddressForIP($clientIP);
+			if (!empty($ipInfo)) {
+				IPAddress::$_showDebuggingInformation = $ipInfo->showDebuggingInformation;
+			} else {
+				IPAddress::$_showDebuggingInformation = false;
+			}
 		}
+		return IPAddress::$_showDebuggingInformation;
+	}
+
+	static $_logTimingInformation = null;
+	public static function logTimingInformation(){
+		if (IPAddress::$_logTimingInformation === null) {
+			$clientIP = IPAddress::getClientIP();
+			$ipInfo = IPAddress::getIPAddressForIP($clientIP);
+			if (!empty($ipInfo)) {
+				IPAddress::$_logTimingInformation = $ipInfo->logTimingInformation;
+			} else {
+				IPAddress::$_logTimingInformation = false;
+			}
+		}
+		return IPAddress::$_logTimingInformation;
+	}
+
+	static $_logAllQueries = null;
+	static $_loadingLogQueryInfo = false;
+	public static function logAllQueries(){
+		if (IPAddress::$_logAllQueries === null) {
+			if (!isset($_REQUEST['logQueries'])){
+				IPAddress::$_loadingLogQueryInfo = false;
+			}else {
+				//There is a potential recursion here that we need to avoid
+				if (IPAddress::$_loadingLogQueryInfo) {
+					return false;
+				} else {
+					IPAddress::$_loadingLogQueryInfo = true;
+					IPAddress::$_logAllQueries = false;
+					$clientIP = IPAddress::getClientIP();
+					$ipInfo = IPAddress::getIPAddressForIP($clientIP);
+					if (!empty($ipInfo)) {
+						IPAddress::$_logAllQueries = $ipInfo->logAllQueries;
+					} else {
+						IPAddress::$_logAllQueries = false;
+					}
+					IPAddress::$_loadingLogQueryInfo = false;
+				}
+			}
+		}
+		return IPAddress::$_logAllQueries;
 	}
 }

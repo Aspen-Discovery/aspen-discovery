@@ -113,6 +113,83 @@ AspenDiscovery.Lists = (function(){
 				window.location = Globals.path + "/MyAccount/ImportListsFromClassic";
 			}
 			return false;
-		}
+		},
+		getUploadListCoverForm: function (id){
+			var url = Globals.path + '/MyAccount/AJAX?id=' + id + '&method=getUploadListCoverForm';
+			$.getJSON(url, function (data){
+					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+				}
+			);
+			return false;
+		},
+
+		uploadListCover: function (id){
+			var url = Globals.path + '/MyAccount/AJAX?id=' + id + '&method=uploadListCover';
+			var uploadCoverData = new FormData($("#uploadListCoverForm")[0]);
+			$.ajax({
+				url: url,
+				type: 'POST',
+				data: uploadCoverData,
+				dataType: 'json',
+				success: function(data) {
+					AspenDiscovery.showMessage(data.title, data.message, true, data.success);
+				},
+				async: false,
+				contentType: false,
+				processData: false
+			});
+			return false;
+		},
+
+		getUploadListCoverFormByURL: function (id){
+			var url = Globals.path + '/MyAccount/AJAX?id=' + id + '&method=getUploadListCoverFormByURL';
+			$.getJSON(url, function (data){
+					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+				}
+			);
+			return false;
+		},
+
+		uploadListCoverByURL: function (id){
+			var url = Globals.path + '/MyAccount/AJAX?id=' + id + '&method=uploadListCoverByURL';
+			var uploadCoverData = new FormData($("#uploadListCoverFormByURL")[0]);
+			$.ajax({
+				url: url,
+				type: 'POST',
+				data: uploadCoverData,
+				dataType: 'json',
+				success: function(data) {
+					AspenDiscovery.showMessage(data.title, data.message, true, data.success);
+				},
+				async: false,
+				contentType: false,
+				processData: false
+			});
+			return false;
+		},
+
+		changeWeight: function(listEntryId, direction) {
+			var url = Globals.path + '/MyAccount/AJAX';
+			var params = {
+				method: 'updateWeight',
+				listEntryId: listEntryId,
+				direction: direction
+			};
+			$.getJSON(url, params, function (data) {
+				if (data.success){
+					var entry1 = $(listEntryId);
+					var entry2 = $(data.swappedWithId);
+					if (direction === 'up'){
+						entry2.before(entry1);
+					}else{
+						entry1.before(entry2);
+					}
+					location.reload();
+				} else {
+					AspenDiscovery.showMessage('An error occurred', data.message);
+				}
+			});
+			return false;
+		},
 	};
 }(AspenDiscovery.Lists || {}));

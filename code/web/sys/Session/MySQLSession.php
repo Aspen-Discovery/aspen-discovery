@@ -7,7 +7,7 @@ class MySQLSession extends SessionInterface
 {
 	public function open($sess_path, $sess_name) {
 		global $logger;
-		$logger->log("Opening session ", Logger::LOG_DEBUG);
+		$logger->log("Opening session ({$_SERVER['REQUEST_URI']})", Logger::LOG_DEBUG);
 		//Delete any sessions where remember me was false
 		$s = new Session();
 		$earliestValidSession = time() - self::$lifetime;
@@ -60,7 +60,8 @@ class MySQLSession extends SessionInterface
 					&& !isset($_REQUEST['showCovers'])
 					&& !isset($_REQUEST['sort'])
 					&& !isset($_REQUEST['availableHoldSort'])
-					&& !isset($_REQUEST['unavailableHoldSort'])) {
+					&& !isset($_REQUEST['unavailableHoldSort'])
+					&& !isset($_REQUEST['autologout'])) {
 					$logger->log("Not updating session $sess_id $module $action $method", Logger::LOG_DEBUG);
 					return true;
 				}
@@ -73,7 +74,7 @@ class MySQLSession extends SessionInterface
 		$s = new Session();
 		$s->session_id = $sess_id;
 		if ($s->find(true)){
-			$logger->log("Updating session $sess_id", Logger::LOG_DEBUG);
+			$logger->log("Updating session $sess_id {$_SERVER['REQUEST_URI']}", Logger::LOG_DEBUG);
 			$s->data = $data;
 			$s->last_used = time();
 			if (isset($_REQUEST['rememberMe']) && ($_REQUEST['rememberMe'] == true || $_REQUEST['rememberMe'] === "true")) {
@@ -87,6 +88,15 @@ class MySQLSession extends SessionInterface
 			$s->last_used = time();
 			$s->remember_me = 0;
 			$result = $s->insert();
+			//Don't bother to count sessions that are from bots.
+			global $isAJAX;
+			if (!BotChecker::isRequestFromBot() && !$isAJAX) {
+				global $aspenUsage;
+				$aspenUsage->sessionsStarted++;
+				if (!empty($aspenUsage->id)) {
+					$aspenUsage->update();
+				}
+			}
 		}
 		$logger->log(" Result = $result", Logger::LOG_DEBUG);
 		return true;
@@ -99,7 +109,7 @@ class MySQLSession extends SessionInterface
 		$s->session_id = $sess_id;
 		if ($s->find(true)){
 			global $logger;
-			$logger->log("Destroying session $sess_id", Logger::LOG_DEBUG);
+			$logger->log("Destroying session $sess_id {$_SERVER['REQUEST_URI']}", Logger::LOG_DEBUG);
 			// Perform standard actions required by all session methods:
 			parent::destroy($sess_id);
 
@@ -107,7 +117,7 @@ class MySQLSession extends SessionInterface
 			return $numDeleted == 1;
 		}else{
 			global $logger;
-			$logger->log("Session $sess_id has already been destroyed", Logger::LOG_DEBUG);
+			$logger->log("Session $sess_id has already been destroyed {$_SERVER['REQUEST_URI']}", Logger::LOG_DEBUG);
 			//Already deleted
 			return false;
 		}

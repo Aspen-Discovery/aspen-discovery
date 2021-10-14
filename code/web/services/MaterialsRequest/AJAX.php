@@ -60,16 +60,9 @@ class MaterialsRequest_AJAX extends Action{
 	/** @noinspection PhpUnused */
 	function updateMaterialsRequest(){
 		global $interface;
-		global $configArray;
-
-		$useWorldCat = false;
-		if (isset($configArray['WorldCat']) && isset($configArray['WorldCat']['apiKey'])){
-			$useWorldCat = strlen($configArray['WorldCat']['apiKey']) > 0;
-		}
-		$interface->assign('useWorldCat', $useWorldCat);
 
 		if (!isset($_REQUEST['id'])){
-			$interface->assign('error', 'Please provide an id of the '. translate('materials request') .' to view.');
+			$interface->assign('error', translate(['text' => 'Please provide an id of the materials request to view.', 'isPublicFacing'=>true]));
 		}else {
 			$id = $_REQUEST['id'];
 			if (ctype_digit($id)) {
@@ -78,7 +71,6 @@ class MaterialsRequest_AJAX extends Action{
 					$staffLibrary = $user->getHomeLibrary(); // staff member's home library
 
 					if (!empty($staffLibrary)) {
-
 						// Material Request
 						$materialsRequest = new MaterialsRequest();
 						$materialsRequest->id = $id;
@@ -157,23 +149,21 @@ class MaterialsRequest_AJAX extends Action{
 									$interface->assign('formatAuthorLabelsJSON', json_encode($formatAuthorLabels));
 									$interface->assign('specialFieldFormatsJSON', json_encode($specialFieldFormats));
 
-									$interface->assign('showEbookFormatField', $configArray['MaterialsRequest']['showEbookFormatField']);
-//									$interface->assign('showEaudioFormatField', $configArray['MaterialsRequest']['showEaudioFormatField']);
-									$interface->assign('requireAboutField', $configArray['MaterialsRequest']['requireAboutField']);
-
 									$interface->assign('materialsRequest', $materialsRequest);
 									$interface->assign('showUserInformation', true);
 
 									// Hold Pick-up Locations
 									$location = new Location();
-									$locationList = $location->getPickupBranches($requestUser, $materialsRequest->holdPickupLocation);
+									$locationList = $location->getPickupBranches($requestUser);
 									$pickupLocations = array();
 									foreach ($locationList as $curLocation) {
-										$pickupLocations[] = array(
-											'id' => $curLocation->locationId,
-											'displayName' => $curLocation->displayName,
-											'selected' => is_object($curLocation) ? $curLocation->getSelected() : '',
-										);
+										if (is_object($curLocation)) {
+											$pickupLocations[] = array(
+												'id' => $curLocation->locationId,
+												'displayName' => $curLocation->displayName,
+												'selected' => is_object($curLocation) ? ($curLocation->locationId == $materialsRequest->holdPickupLocation ? 'selected' : '') : '',
+											);
+										}
 									}
 
 									// Add bookmobile Stop to the pickup locations if that form field is being used.
@@ -212,28 +202,28 @@ class MaterialsRequest_AJAX extends Action{
 									$interface->assign('barCodeColumn', $barCodeColumn);
 
 								} else {
-									$interface->assign('error', 'Sorry, you don\'t have permission to update this '. translate('materials request') .'.');
+									$interface->assign('error', translate(['text' => 'Sorry, you don\'t have permission to update this materials request.', 'isPublicFacing'=>true]));
 								}
 							} else {
-								$interface->assign('error', 'Sorry, we couldn\'t find the user that made this '. translate('materials request') .'.');
+								$interface->assign('error', translate(['text' => 'Sorry, we couldn\'t find the user that made this materials request.', 'isPublicFacing'=>true]));
 							}
 						} else {
-							$interface->assign('error', 'Sorry, we couldn\'t find a '. translate('materials request') .' for that id.');
+							$interface->assign('error', translate(['text' => 'Sorry, we couldn\'t find a materials request for that id.', 'isPublicFacing'=>true]));
 						}
 					} else {
-						$interface->assign('error', 'We could not determine your home library.');
+						$interface->assign('error', translate(['text' => 'We could not determine your home library.', 'isPublicFacing'=>true]));
 					}
 				} else {
-					$interface->assign('error', 'Please log in to view & edit the '. translate('materials request') .'.');
+					$interface->assign('error', translate(['text' => 'Please log in to view & edit the materials request.', 'isPublicFacing'=>true]));
 				}
 			} else {
-				$interface->assign('error', 'Sorry, invalid id for a '. translate('materials request') .'.');
+				$interface->assign('error', translate(['text' => 'Sorry, invalid id for a materials request.', 'isPublicFacing'=>true]));
 			}
 		}
 		return array(
 			'title' => 'Update Materials Request',
 			'modalBody' => $interface->fetch('MaterialsRequest/ajax-update-request.tpl'),
-			'modalButtons' => $interface->get_template_vars('error') == null ?  "<button class='btn btn-primary' onclick='$(\"#materialsRequestUpdateForm\").submit();'>Update Request</button>" : ''
+			'modalButtons' => $interface->get_template_vars('error') == null ?  "<button class='btn btn-primary' onclick='$(\"#materialsRequestUpdateForm\").submit();'>" . translate(['text' => "Update Request", 'isPublicFacing'=>true]) . "</button>" : ''
 		);
 	}
 
@@ -242,9 +232,9 @@ class MaterialsRequest_AJAX extends Action{
 		global $interface;
 		$user = UserAccount::getLoggedInUser();
 		if (!isset($_REQUEST['id'])) {
-			$interface->assign('error', 'Please provide an id of the '. translate('materials request') .' to view.');
+			$interface->assign('error', translate(['text' => 'Please provide an id of the materials request to view.', 'isPublicFacing'=>true]));
 		}elseif (empty($user)) {
-			$interface->assign('error', 'Please log in to view details.');
+			$interface->assign('error', translate(['text' => 'Please log in to view details.', 'isPublicFacing'=>true]));
 		}else {
 			$id = $_REQUEST['id'];
 			if (!empty($id) && ctype_digit($id)) {
@@ -319,54 +309,19 @@ class MaterialsRequest_AJAX extends Action{
 							$interface->assign('showUserInformation', false);
 						}
 					} else {
-						$interface->assign('error', 'Sorry, we couldn\'t find a '. translate('materials request') .' for that id.');
+						$interface->assign('error', translate(['text' => 'Sorry, we couldn\'t find a materials request for that id.', 'isPublicFacing'=>true]));
 					}
 				} else {
-					$interface->assign('error', 'Could not determine your home library.');
+					$interface->assign('error', translate(['text' => 'Could not determine your home library.', 'isPublicFacing'=>true]));
 				}
 			} else {
-				$interface->assign('error', 'Invalid Request ID.');
+				$interface->assign('error', translate(['text' => 'Invalid Request ID.', 'isPublicFacing'=>true]));
 			}
 		}
 		return array(
-				'title'        => translate('Materials Request Details'),
+				'title'        => translate(['text' => 'Materials Request Details', 'isPublicFacing'=>true]),
 				'modalBody'    => $interface->fetch('MaterialsRequest/ajax-request-details.tpl'),
 				'modalButtons' => '' //TODO idea: add Update Request button (for staff only?)
-		);
-	}
-
-	/** @noinspection PhpUnused */
-	function GetWorldCatIdentifiers(){
-		$worldCatTitles = $this->GetWorldCatTitles();
-		if ($worldCatTitles['success'] == false){
-			return $worldCatTitles;
-		}else{
-			$suggestedIdentifiers = array();
-			foreach ($worldCatTitles['titles'] as $title){
-				$identifier = null;
-				if (isset($title['ISBN'])){
-					//Get the first 13 digit ISBN if available
-					foreach ($title['ISBN'] as $isbn){
-						$identifier = $isbn;
-						if (strlen($isbn) == 13){
-							break;
-						}
-					}
-					$title['isbn'] = $identifier;
-				}elseif (isset($title['oclcNumber'])){
-					$identifier = $title['oclcNumber'];
-				}
-				if (!is_null($identifier) && !array_key_exists($identifier, $suggestedIdentifiers)){
-					$suggestedIdentifiers[$identifier] = $title;
-				}
-			}
-		}
-		global $interface;
-		$interface->assign('suggestedIdentifiers', $suggestedIdentifiers);
-		return array(
-			'success' => true,
-			'identifiers' => $suggestedIdentifiers,
-			'formattedSuggestions' => $interface->fetch('MaterialsRequest/ajax-suggested-identifiers.tpl')
 		);
 	}
 
@@ -512,6 +467,10 @@ class MaterialsRequest_AJAX extends Action{
 							$showAgeField = in_array('Age Level', $headers);
 							$showPlaceHoldField = in_array('Hold', $headers);
 							$showIllField = in_array('ILL', $headers);
+							$numImported = 0;
+							$numSkippedCouldNotFindUser = 0;
+							$numSkippedCouldNotFindStatus = 0;
+							$numSkippedFailedInsert = 0;
 							for ($rowNum = 4; $rowNum <= $highestRow; $rowNum++){
 								$materialRequest = new MaterialsRequest();
 								$curCol = 1;
@@ -542,9 +501,9 @@ class MaterialsRequest_AJAX extends Action{
 								$materialRequest->abridged = ($sheet->getCellByColumnAndRow($curCol++, $rowNum)->getValue() == 'Unabridged' ? 0 : ($sheet->getCellByColumnAndRow($curCol++, $rowNum)->getValue() == 'Abridged' ? 1 : 2));
 								$materialRequest->about = $sheet->getCellByColumnAndRow($curCol++, $rowNum)->getValue();
 								$materialRequest->comments = $sheet->getCellByColumnAndRow($curCol++, $rowNum)->getValue();
-								/** @noinspection PhpUnusedLocalVariableInspection */
 								$username = $sheet->getCellByColumnAndRow($curCol++, $rowNum)->getValue();
 								$barcode = $sheet->getCellByColumnAndRow($curCol++, $rowNum)->getFormattedValue();
+								$email = $sheet->getCellByColumnAndRow($curCol++, $rowNum)->getFormattedValue();
 								if (is_numeric($barcode)){
 									$barcode = (int)$barcode;
 								}
@@ -554,17 +513,33 @@ class MaterialsRequest_AJAX extends Action{
 								$requestUser->$barcodeProperty = $barcode;
 								$requestUser->find();
 								if ($requestUser->getNumResults() == 0){
-									//See if we can fetch the user from the ils
-									$requestUser = UserAccount::findNewUser($barcode);
-									if ($requestUser == false){
-										//We didn't get a user, skip this one.
-										continue;
+									//Try looking by last name, first
+									$requestUser = new User();
+									$requestUser->cat_username = $username;
+									$requestUser->find();
+									if ($requestUser->getNumResults() == 0) {
+										$requestUser = new User();
+										$requestUser->email = $email;
+										$requestUser->find();
+										if (empty($email) || $requestUser->getNumResults() == 0) {
+											//See if we can fetch the user from the ils
+											$requestUser = UserAccount::findNewUser($barcode);
+											if ($requestUser == false) {
+												//We didn't get a user, skip this one.
+												$numSkippedCouldNotFindUser++;
+												continue;
+											}
+										}else{
+											$requestUser->fetch();                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   
+										}
+									}else{
+										$requestUser->fetch();
 									}
 								}else{
 									$requestUser->fetch();
 								}
 								$materialRequest->createdBy = $requestUser->id;
-								$materialRequest->email = $sheet->getCellByColumnAndRow($curCol++, $rowNum)->getValue();
+								$materialRequest->email = $email;
 								if ($showPlaceHoldField){
 									$placeHold = $sheet->getCellByColumnAndRow($curCol++, $rowNum)->getValue();
 									if ($placeHold == 'No'){
@@ -581,6 +556,7 @@ class MaterialsRequest_AJAX extends Action{
 									$materialRequest->status = (int)$materialRequest->status;
 								}
 								if (!array_key_exists($materialRequest->status, $allStatuses)){
+									$numSkippedCouldNotFindStatus++;
 									continue;
 								}
 								$dateCreated = $sheet->getCellByColumnAndRow($curCol++, $rowNum)->getValue();
@@ -590,7 +566,25 @@ class MaterialsRequest_AJAX extends Action{
 								/** @noinspection PhpUnusedLocalVariableInspection */
 								$assignedTo = $sheet->getCellByColumnAndRow($curCol++, $rowNum)->getValue();
 
-								$materialRequest->insert();
+								if ($materialRequest->insert() == 1){
+									$numImported++;
+								}else{
+									$numSkippedFailedInsert++;
+								}
+							}
+							$result['success'] = true;
+							$result['message'] = "Imported file, $numImported entries were imported successfully.";
+							if ($numSkippedFailedInsert > 0) {
+								$result['message'] .= "<br/>$numSkippedFailedInsert could not be inserted in the database.";
+								$result['success'] = false;
+							}
+							if ($numSkippedCouldNotFindStatus > 0) {
+								$result['message'] .= "<br/>$numSkippedCouldNotFindStatus did not have a proper status.";
+								$result['success'] = false;
+							}
+							if ($numSkippedCouldNotFindUser > 0) {
+								$result['message'] .= "<br/>$numSkippedCouldNotFindUser could not find a user.";
+								$result['success'] = false;
 							}
 						}else{
 							$result['message'] =  "This does not look like a valid export of Material Request data";
@@ -604,10 +598,10 @@ class MaterialsRequest_AJAX extends Action{
 				$result['message'] = 'No file was selected, please try again.';
 			}
 		}
-		return json_encode($result);
+		return $result;
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		return [];
 	}

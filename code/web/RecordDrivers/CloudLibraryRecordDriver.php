@@ -80,7 +80,7 @@ class CloudLibraryRecordDriver extends MarcRecordDriver {
 		return $url;
 	}
 
-	public function getModule()
+	public function getModule() : string
 	{
 		return 'CloudLibrary';
 	}
@@ -130,7 +130,6 @@ class CloudLibraryRecordDriver extends MarcRecordDriver {
 		$interface->assign('availability', $availability);
 
 		//Other editions if applicable (only if we aren't the only record!)
-		/** @noinspection DuplicatedCode */
 		$groupedWorkDriver = $this->getGroupedWorkDriver();
 		if ($groupedWorkDriver != null){
 			$relatedRecords = $groupedWorkDriver->getRelatedRecords();
@@ -173,25 +172,42 @@ class CloudLibraryRecordDriver extends MarcRecordDriver {
 		return $this->filterAndSortMoreDetailsOptions($moreDetailsOptions);
 	}
 
-	public function getRecordActions($relatedRecord, $isAvailable, $isHoldable, $isBookable, $volumeData = null)
+	protected $_actions = null;
+	public function getRecordActions($relatedRecord, $isAvailable, $isHoldable, $volumeData = null)
 	{
-		$actions = array();
-		if ($isAvailable){
-			$actions[] = array(
-				'title' => 'Check Out Cloud Library',
-				'onclick' => "return AspenDiscovery.CloudLibrary.checkOutTitle('{$this->id}');",
-				'requireLogin' => false,
-				'type' => 'cloud_library_checkout'
-			);
-		}else{
-			$actions[] = array(
-				'title' => 'Place Hold Cloud Library',
-				'onclick' => "return AspenDiscovery.CloudLibrary.placeHold('{$this->id}');",
-				'requireLogin' => false,
-				'type' => 'cloud_library_hold'
-			);
+		if ($this->_actions === null) {
+			$this->_actions = array();
+			//Check to see if the title is on hold or checked out to the patron.
+			$loadDefaultActions = true;
+			if (UserAccount::isLoggedIn()) {
+				$user = UserAccount::getActiveUserObj();
+				$this->_actions = array_merge($this->_actions, $user->getCirculatedRecordActions('cloud_library', $this->id));
+				$loadDefaultActions = count($this->_actions) == 0;
+			}
+
+			if ($loadDefaultActions) {
+				if ($isAvailable) {
+					$userId = UserAccount::getActiveUserId();
+					if ($userId == false){
+						$userId = 'null';
+					}
+					$this->_actions[] = array(
+						'title' => translate(['text'=>'Check Out cloudLibrary','isPublicFacing'=>true]),
+						'onclick' => "return AspenDiscovery.CloudLibrary.checkOutTitle({$userId}, '{$this->id}');",
+						'requireLogin' => false,
+						'type' => 'cloud_library_checkout'
+					);
+				} else {
+					$this->_actions[] = array(
+						'title' => translate(['text'=>'Place Hold cloudLibrary','isPublicFacing'=>true]),
+						'onclick' => "return AspenDiscovery.CloudLibrary.placeHold('{$this->id}');",
+						'requireLogin' => false,
+						'type' => 'cloud_library_hold'
+					);
+				}
+			}
 		}
-		return $actions;
+		return $this->_actions;
 	}
 
 	/**
@@ -216,7 +232,7 @@ class CloudLibraryRecordDriver extends MarcRecordDriver {
 		}
 	}
 
-	public function getNumHolds(){
+	public function getNumHolds() : int{
 		//TODO:  Check to see if we can determine number of holds on a title
 		return 0;
 	}
@@ -258,6 +274,7 @@ class CloudLibraryRecordDriver extends MarcRecordDriver {
 
 		global $interface;
 		$interface->assign('og_title', $this->getTitle());
+		$interface->assign('og_description', $this->getDescriptionFast());
 		$interface->assign('og_type', $this->getGroupedWorkDriver()->getOGType());
 		$interface->assign('og_image', $this->getBookcoverUrl('medium'));
 		$interface->assign('og_url', $this->getAbsoluteUrl());
@@ -292,8 +309,8 @@ class CloudLibraryRecordDriver extends MarcRecordDriver {
 	{
 		$relatedRecord = $this->getRelatedRecord();
 		$statusSummary = array();
-		if ($relatedRecord->getAvailableCopies() > 0){
-			$statusSummary['status'] = "Available from Cloud Library";
+		if ($relatedRecord != null && $relatedRecord->getAvailableCopies() > 0){
+			$statusSummary['status'] = "Available from cloudLibrary";
 			$statusSummary['available'] = true;
 			$statusSummary['class'] = 'available';
 			$statusSummary['showPlaceHold'] = false;
@@ -339,9 +356,9 @@ class CloudLibraryRecordDriver extends MarcRecordDriver {
 		return $availability;
 	}
 
-	function getAccessOnlineLink($patron)
+	function getAccessOnlineLinkUrl($patronId)
 	{
 		global $configArray;
-		return $configArray['Site']['url'] . '/CloudLibrary/' . $this->id . '/AccessOnline?patronId=' . $patron->id;
+		return $configArray['Site']['url'] . '/CloudLibrary/' . $this->id . '/AccessOnline?patronId=' . $patronId;
 	}
 }

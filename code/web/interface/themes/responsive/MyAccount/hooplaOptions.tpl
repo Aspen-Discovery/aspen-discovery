@@ -10,28 +10,27 @@
 				{include file='systemMessages.tpl' messages=$accountMessages}
 			{/if}
 
-			<span class='availableHoldsNoticePlaceHolder'></span>
-			<h1>{translate text="Hoopla Options"}</h1>
+			<h1>{translate text="Hoopla Options" isPublicFacing=true}</h1>
 			{if $offline}
-				<div class="alert alert-warning">{translate text=offline_notice defaultText="<strong>The library system is currently offline.</strong> We are unable to retrieve information about your account at this time."}</div>
+				<div class="alert alert-warning"><strong>{translate text="The library system is currently offline." isPublicFacing=true}</strong> {translate text="We are unable to retrieve information about your account at this time." isPublicFacing=true}</div>
 			{else}
 				{* Empty action attribute uses the page loaded. this keeps the selected user patronId in the parameters passed back to server *}
 				<form action="" method="post" class="form-horizontal">
 					<input type="hidden" name="updateScope" value="hoopla">
 					<div class="form-group">
-						<div class="col-xs-6"><label for="hooplaCheckOutConfirmation" class="control-label">{translate text='Ask for confirmation before checking out from Hoopla'}</label></div>
+						<div class="col-xs-6"><label for="hooplaCheckOutConfirmation" class="control-label">{translate text='Ask for confirmation before checking out from Hoopla' isPublicFacing=true}</label></div>
 						<div class="col-xs-6">
 							{if $edit == true}
 								<input type="checkbox" name="hooplaCheckOutConfirmation" id="hooplaCheckOutConfirmation" {if $profile->hooplaCheckOutConfirmation==1}checked='checked'{/if} data-switch="">
 							{else}
-								{if $profile->hooplaCheckOutConfirmation==0}No{else}Yes{/if}
+								{if $profile->hooplaCheckOutConfirmation==0}{translate text="No" isPublicFacing=true}{else}{translate text="Yes" isPublicFacing=true}{/if}
 							{/if}
 						</div>
 					</div>
 					{if !$offline && $edit == true}
 						<div class="form-group">
 							<div class="col-xs-6 col-xs-offset-6">
-								<button type="submit" name="updateHoopla" class="btn btn-sm btn-primary">{translate text="Update Hoopla Options"}</button>
+								<button type="submit" name="updateHoopla" class="btn btn-sm btn-primary">{translate text="Update Hoopla Options" isPublicFacing=true}</button>
 							</div>
 						</div>
 					{/if}
@@ -46,7 +45,7 @@
 			{/if}
 		{else}
 			<div class="page">
-				You must sign in to view this information. Click <a href="/MyAccount/Login">here</a> to sign in.
+				{translate text="You must sign in to view this information." isPublicFacing=true}<a href='/MyAccount/Login' class="btn btn-primary">{translate text="Sign In" isPublicFacing=true}</a>
 			</div>
 		{/if}
 	</div>

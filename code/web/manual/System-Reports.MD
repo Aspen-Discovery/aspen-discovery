@@ -2,29 +2,24 @@
 
 The System Reports section of Aspen Discovery includes Site Status, Usage Dashboard, Usage by IP Address, Nightly Index Log, Cron Log, Performance Report, Error Log, and PHP Information.
 
-- Site Status
-  - Shows the status of each aspect of Aspen.
+### System Reports Available
 
-- Usage Dashboard
-  - General Aspen Discovery usage counts for your system.
-
-- Usage by IP Address
-  - Shows usage by IP addresses to help dertermine if there is any usage that is slowing your site.
-
-- Nightly Index Log
-  - Shows nightly index information.
-
-- Cron Log
-  - Shows nightly cron reports.
-
- -Performance Report
-  - Shows details of how each page in Aspen is performing.
-
-- Error Log
-  - Shows any error that may have recently occurred.
-
-- PHP Information
-  - Information on Aspen Discovery code.
+#### Site Status
+The Site Status will give a detailed view of each aspect of Aspen and the level at which it is performing. This are also shows Solr reports.
+#### Usage Dashboard
+The Usage Dashboard shows general usage of Aspen, including page views and exceptions. You are able to toggle the view of these reports to show the information in a graph format as well.
+#### Usage by IP Address
+Shows usage by IP addresses to help determine if there is any usage that is slowing your site. All IP addresses that have accessed the site will show here along with the total requests and the latest request date.
+#### Nightly Index Log
+The nightly index updates all records in Aspen so as to show the most updated information. This will show you the nightly index log information.
+#### Cron Log
+The Cron Log will show a report of when crons have started, how long they lasted, and any associated notes. Crons will update user reading history and process periodic cleanup tasks.
+#### Performance Report
+The Performance Report will show how each of the pages of Aspen are loading and at what speed.
+#### Error Log
+Shows any error that may have recently occurred and at what date and time they occured.
+#### PHP Information
+Information on Aspen Discovery code.
 
 
 ### Video Tutorial

@@ -1,4 +1,4 @@
-<h1 class="hiddenTitle">{translate text='Events Search Results'}</h1>
+<h1 class="hiddenTitle">{translate text='Events Search Results' isPublicFacing=true}</h1>
 <div id="searchInfo">
 	{* Recommendations *}
 	{if $topRecommendations}
@@ -12,27 +12,27 @@
 
 		{if !empty($replacementTerm)}
 			<div id="replacement-search-info-block">
-				<div id="replacement-search-info"><span class="replacement-search-info-text">Showing Results for</span> {$replacementTerm}</div>
-				<div id="original-search-info"><span class="replacement-search-info-text">Search instead for </span><a href="{$oldSearchUrl}">{$oldTerm}</a></div>
+				<div id="replacement-search-info"><span class="replacement-search-info-text">{translate text="Showing Results for" isPublicFacing=true}</span> {$replacementTerm}</div>
+				<div id="original-search-info"><span class="replacement-search-info-text">{translate text="Search instead for" isPublicFacing=true} </span><a href="{$oldSearchUrl}">{$oldTerm}</a></div>
 			</div>
 		{/if}
 
 		{if !empty($solrSearchDebug)}
-			<div id="solrSearchOptionsToggle" onclick="$('#solrSearchOptions').toggle()">Show Search Options</div>
+			<div id="solrSearchOptionsToggle" onclick="$('#solrSearchOptions').toggle()">{translate text="Show Search Options" isAdminFacing=true}</div>
 			<div id="solrSearchOptions" style="display:none">
-				<pre>Search options: {$solrSearchDebug}</pre>
+				<pre>{translate text="Search options" isPublicFacing=true} {$solrSearchDebug}</pre>
 			</div>
 		{/if}
 
 		{if !empty($solrLinkDebug)}
-			<div id='solrLinkToggle' onclick='$("#solrLink").toggle()'>Show Solr Link</div>
+			<div id='solrLinkToggle' onclick='$("#solrLink").toggle()'>{translate text="Show Solr Link" isAdminFacing=true}</div>
 			<div id='solrLink' style='display:none'>
 				<pre>{$solrLinkDebug}</pre>
 			</div>
 		{/if}
 
 		{if !empty($debugTiming)}
-			<div id='solrTimingToggle' onclick='$("#solrTiming").toggle()'>Show Solr Timing</div>
+			<div id='solrTimingToggle' onclick='$("#solrTiming").toggle()'>{translate text="Show Solr Timing" isAdminFacing=true}</div>
 			<div id='solrTiming' style='display:none'>
 				<pre>{$debugTiming}</pre>
 			</div>
@@ -53,9 +53,9 @@
 
 	{if $displayMode == 'covers'}
 		{if $recordEnd < $recordCount}
-			<a onclick="return AspenDiscovery.Searches.getMoreResults()" role="button" title="{translate text='Get More Results'}">
+			<a onclick="return AspenDiscovery.Searches.getMoreResults()" role="button" title="{translate text='Get More Results' inAttribute=true isPublicFacing=true}">
 				<div class="row" id="more-browse-results">
-					<span class="glyphicon glyphicon-chevron-down" aria-label="{translate text='Get More Results'}"></span>
+					<span class="glyphicon glyphicon-chevron-down" aria-label="{translate text='Get More Results' inAttribute=true isPublicFacing=true}"></span>
 				</div>
 			</a>
 		{/if}
@@ -65,22 +65,22 @@
 
 	{if $showSearchTools || ($loggedIn && count($userPermissions) > 0)}
 	<div class="search_tools well small">
-		<strong>{translate text='Search Tools'}:</strong>
+		<strong>{translate text='Search Tools' isPublicFacing=true} </strong>
 		{if $showSearchTools}
-			<a href="{$rssLink|escape}">{translate text='Get RSS Feed'}</a>
-			<a href="#" onclick="return AspenDiscovery.Account.ajaxLightbox('/Search/AJAX?method=getEmailForm', true);">{translate text='Email this Search'}</a>
+			<a href="{$rssLink|escape}">{translate text='Get RSS Feed' isPublicFacing=true}</a>
+			<a href="#" onclick="return AspenDiscovery.Account.ajaxLightbox('/Search/AJAX?method=getEmailForm', true);">{translate text='Email this Search' isPublicFacing=true}</a>
 			{if $savedSearch}
-				<a href="#" onclick="return AspenDiscovery.Account.saveSearch('{$searchId}')">{translate text='save_search_remove'}</a>
+				<a href="#" onclick="return AspenDiscovery.Account.saveSearch('{$searchId}')">{translate text="Remove Saved Search" isPublicFacing=true}</a>
 			{else}
-				<a href="#" onclick="return AspenDiscovery.Account.saveSearch('{$searchId}')">{translate text='save_search'}</a>
+				<a href="#" onclick="return AspenDiscovery.Account.saveSearch('{$searchId}')">{translate text='Save Search' isPublicFacing=true}</a>
 			{/if}
-			<a href="{$excelLink|escape}">{translate text='Export To Excel'}</a>
+			<a href="{$excelLink|escape}">{translate text='Export To Excel' isPublicFacing=true}</a>
 		{/if}
 		{if $loggedIn && (in_array('Administer All Collection Spotlights', $userPermissions) || in_array('Administer Library Collection Spotlights', $userPermissions))}
-			<a href="#" onclick="return AspenDiscovery.CollectionSpotlights.createSpotlightFromSearch('{$searchId}')">{translate text='Create Spotlight'}</a>
+			<a href="#" onclick="return AspenDiscovery.CollectionSpotlights.createSpotlightFromSearch('{$searchId}')">{translate text='Create Spotlight' isAdminFacing=true}</a>
 		{/if}
 		{if $loggedIn && (in_array('Administer All Browse Categories', $userPermissions) || in_array('Administer Library Browse Categories', $userPermissions))}
-			<a href="#" onclick="return AspenDiscovery.Browse.addToHomePage('{$searchId}')">{translate text='Add To Browse'}</a>
+			<a href="#" onclick="return AspenDiscovery.Browse.addToHomePage('{$searchId}')">{translate text='Add To Browse' isPublicFacing=true}</a>
 		{/if}
 	</div>
 	{/if}

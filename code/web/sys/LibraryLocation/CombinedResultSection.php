@@ -8,14 +8,11 @@ abstract class CombinedResultSection extends DataObject{
 	public $source;
 	public $numberOfResultsToShow;
 
-	static function getObjectStructure(){
+	static function getObjectStructure() : array {
 		global $configArray;
 		global $enabledModules;
 		$validResultSources = array();
 		$validResultSources['catalog'] = 'Catalog Results';
-		if (!empty($configArray['Islandora']['repositoryUrl'])){
-			$validResultSources['archive'] = 'Digital Archive';
-		}
 		require_once ROOT_DIR . '/sys/Enrichment/DPLASetting.php';
 		$dplaSetting = new DPLASetting();
 		if ($dplaSetting->find(true)){
@@ -73,7 +70,7 @@ abstract class CombinedResultSection extends DataObject{
 			$search = array(array('lookfor' => $searchTerm, 'index' => $searchType));
 			return $prospector->getSearchLink($search);
 		}elseif ($this->source == 'websites'){
-			return "/Websites/Results?lookfor=$searchTerm&searchSource=open_archives";
+			return "/Websites/Results?lookfor=$searchTerm&searchSource=websites";
 		}else{
 			return '';
 		}

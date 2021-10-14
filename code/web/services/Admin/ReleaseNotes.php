@@ -38,7 +38,7 @@ class Admin_ReleaseNotes extends Action
 		$this->display('releaseNotes.tpl', 'Release Notes', $sidebar);
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		if (UserAccount::isLoggedIn() && count(UserAccount::getActivePermissions()) > 0) {
@@ -49,12 +49,12 @@ class Admin_ReleaseNotes extends Action
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return 'aspen_help';
 	}
 
-	function canView()
+	function canView() : bool
 	{
 		return true;
 	}

@@ -35,10 +35,14 @@ abstract class BaseEContentDriver  extends MarcRecordDriver {
 	}
 
 	public function getItemActions($itemInfo){
-		return $this->createActionsFromUrls($itemInfo['relatedUrls']);
+		if ($itemInfo instanceof Grouping_Item){
+			return $this->createActionsFromUrls($itemInfo->getRelatedUrls());
+		}else{
+			return $this->createActionsFromUrls($itemInfo['relatedUrls']);
+		}
 	}
 
-	public function getRecordActions($relatedRecord, $isAvailable, $isHoldable, $isBookable, $volumeData = null){
+	public function getRecordActions($relatedRecord, $isAvailable, $isHoldable, $volumeData = null){
 		return [];
 	}
 
@@ -48,7 +52,7 @@ abstract class BaseEContentDriver  extends MarcRecordDriver {
 		$i = 0;
 		foreach ($relatedUrls as $urlInfo){
 			//Revert to access online per Karen at CCU.  If people want to switch it back, we can add a per library switch
-			$title = 'Access Online';
+			$title = translate(['text'=>'Access Online','isPublicFacing'=>true]);
 			$alt = 'Available online from ' . $urlInfo['source'];
 			$action = $configArray['Site']['url'] . '/' . $this->getModule() . '/' . $this->id . "/AccessOnline?index=$i";
 			$fileOrUrl = isset($urlInfo['url']) ? $urlInfo['url'] : $urlInfo['file'];
@@ -56,7 +60,7 @@ abstract class BaseEContentDriver  extends MarcRecordDriver {
 				if (strlen($fileOrUrl) >= 3){
 					$extension =strtolower(substr($fileOrUrl, strlen($fileOrUrl), 3));
 					if ($extension == 'pdf'){
-						$title = 'Access PDF';
+						$title = translate(['text'=>'Access PDF','isPublicFacing'=>true]);
 					}
 				}
 				$actions[] = array(
@@ -65,6 +69,7 @@ abstract class BaseEContentDriver  extends MarcRecordDriver {
 					'title' => $title,
 					'requireLogin' => false,
 					'alt' => $alt,
+					'target' => '_blank',
 				);
 				$i++;
 			}

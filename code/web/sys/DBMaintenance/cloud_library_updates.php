@@ -149,6 +149,14 @@ function getCloudLibraryUpdates() {
 			]
 		],
 
+		'cloud_library_add_settings' => [
+			'title' => 'Add Settings to Cloud Library module',
+			'description' => 'Add Settings to Cloud Library module',
+			'sql' => [
+				"UPDATE modules set settingsClassPath = '/sys/CloudLibrary/CloudLibrarySetting.php', settingsClassName = 'CloudLibrarySetting' WHERE name = 'Cloud Library'"
+			]
+		],
+
 		'cloud_library_increase_allowable_copies' => [
 			'title' => 'Cloud Library increase field size for copies fields',
 			'description' => 'Cloud Library increase field size for copies fields',
@@ -158,6 +166,59 @@ function getCloudLibraryUpdates() {
 				'ALTER TABLE cloud_library_availability CHANGE COLUMN totalLoanCopies totalLoanCopies SMALLINT NOT NULL DEFAULT 0',
 				'ALTER TABLE cloud_library_availability CHANGE COLUMN totalHoldCopies totalHoldCopies SMALLINT NOT NULL DEFAULT 0',
 				'ALTER TABLE cloud_library_availability CHANGE COLUMN sharedLoanCopies sharedLoanCopies SMALLINT NOT NULL DEFAULT 0'
+			]
+		],
+
+		'cloud_library_usage_add_instance' => [
+			'title' => 'Cloud Library Usage - Instance Information',
+			'description' => 'Add Instance Information to Cloud Library Usage stats',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE cloud_library_record_usage ADD COLUMN instance VARCHAR(100)',
+				'ALTER TABLE cloud_library_record_usage DROP INDEX cloudLibraryId',
+				'ALTER TABLE cloud_library_record_usage ADD UNIQUE INDEX (instance, cloudLibraryId, year, month)',
+				'ALTER TABLE user_cloud_library_usage ADD COLUMN instance VARCHAR(100)',
+				'ALTER TABLE user_cloud_library_usage DROP INDEX userId',
+				'ALTER TABLE user_cloud_library_usage ADD UNIQUE INDEX (instance, userId, year, month)',
+			]
+		],
+
+		'cloud_library_add_scope_setting_id' => [
+			'title' => 'Add Setting Id to Cloud Library Scopes',
+			'description' => 'Add Setting Id to Cloud Library Scopes',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE cloud_library_scopes ADD COLUMN settingId INT(11)',
+				'UPDATE cloud_library_scopes set settingId = (SELECT MIN(id) from cloud_library_settings)'
+			]
+		],
+
+		'cloud_library_add_setting_to_availability' => [
+			'title' => 'Add settingID to Cloud Library availability',
+			'description' => 'Define availability based on settings',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER table cloud_library_availability ADD column settingId INT(11)',
+				'UPDATE cloud_library_availability set settingId = (SELECT MIN(id) from cloud_library_settings)',
+				'ALTER table cloud_library_availability DROP INDEX cloudLibraryId',
+				'ALTER table cloud_library_availability ADD UNIQUE cloudLibraryId(cloudLibraryId, settingId)',
+			]
+		],
+
+		'add_settings_cloud_library_exportLog' => array(
+			'title' => 'Add Settings to Cloud Library export log',
+			'description' => 'Add settings to Cloud Library export log.',
+			'sql' => array(
+				'ALTER table cloud_library_export_log ADD column settingId INT(11)'
+			)
+		),
+
+		'cloud_library_cleanup_availability_with_settings' => [
+			'title' => 'Cloud Library - Cleanup Availablity Tables',
+			'description' => 'Cleanup null settings in cloud library availability table and reindex',
+			'sql' => [
+				'DELETE FROM cloud_library_availability where settingId IS NULL',
+				'UPDATE cloud_library_settings set runFullUpdate = 1'
 			]
 		]
 	);

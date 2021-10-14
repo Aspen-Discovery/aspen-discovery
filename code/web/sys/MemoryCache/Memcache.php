@@ -26,26 +26,30 @@ class Memcache
 
 	public function get($name)
 	{
-		if (array_key_exists($name, $this->vars)) {
-			return $this->vars[$name];
-		} elseif ($this->enableDbCache) {
-			try {
-				$cachedValue = new CachedValue();
-				$cachedValue->cacheKey = $name;
-				if ($cachedValue->find(true)) {
-					if ($cachedValue->expirationTime != 0 && $cachedValue->expirationTime < time()) {
-						return false;
-					} else {
-						/** @noinspection PhpUnnecessaryLocalVariableInspection */
-						$unSerializedValue = unserialize($cachedValue->value);
-						return $unSerializedValue;
+		if (!array_key_exists($name, $this->vars)) {
+			if ($this->enableDbCache) {
+				try {
+					$cachedValue = new CachedValue();
+					$cachedValue->cacheKey = $name;
+					if ($cachedValue->find(true)) {
+						if ($cachedValue->expirationTime != 0 && $cachedValue->expirationTime < time()) {
+							$this->vars[$name] = false;
+						} else {
+							$unSerializedValue = unserialize($cachedValue->value);
+							$this->vars[$name] = $unSerializedValue;
+						}
+					}else{
+						$this->vars[$name] = false;
 					}
+				} catch (Exception $e) {
+					//Table has not been created ignore
+					$this->vars[$name] = false;
 				}
-			} catch (Exception $e) {
-				//Table has not been created ignore
+			}else{
+				$this->vars[$name] = false;
 			}
 		}
-		return false;
+		return $this->vars[$name];
 	}
 
 	public function set($name, $value, $timeout)
@@ -106,28 +110,6 @@ class Memcache
 				Memcache::$cachedValueCleaner->delete(true);
 			} catch (Exception $e) {
 				//Table has not been created ignore
-			}
-		}
-	}
-
-	/** @noinspection PhpUnused */
-	public function deleteKeysStartingWith($name){
-		if ($this->enableDbCache){
-			try {
-				if (Memcache::$cachedValueCleaner == null) {
-					Memcache::$cachedValueCleaner = new CachedValue();
-				}
-
-				Memcache::$cachedValueCleaner->whereAdd();
-				Memcache::$cachedValueCleaner->whereAdd("cacheKey LIKE '$name%'");
-				Memcache::$cachedValueCleaner->delete(true);
-			} catch (Exception $e) {
-				//Table has not been created ignore
-			}
-		}
-		foreach ($this->vars as $varName => $value){
-			if (strpos($varName, $name) === 0){
-				unset($this->vars[$varName]);
 			}
 		}
 	}

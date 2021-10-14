@@ -1,4 +1,5 @@
 <?php
+require_once ROOT_DIR . '/sys/BaseLogEntry.php';
 
 /***************************************
  * Simple class to retrieve feed of NYT best sellers
@@ -15,8 +16,12 @@ class NYTApi {
 
 	static $allListsInfo = null;
 
+	/**
+	 * NYTApi constructor.
+	 * @param string $key
+	 */
 	public function __construct($key) {
-		$this->api_key = $key;
+	    $this->api_key = $key;
 	}
 
 	protected function build_url($list_name) {
@@ -58,6 +63,8 @@ class NYTApi {
 		if ($list_name == 'names' && !isset(NYTApi::$allListsInfo)) {
 			NYTApi::$allListsInfo = $response;
 		}
+
+		//KK Todo: Check the response to see if it failed and if so update the log entry with the error
 
 		// return response
 		return $response;

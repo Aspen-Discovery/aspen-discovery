@@ -62,25 +62,37 @@ body {
   font-size: 14px;
 }
 .fieldset-collapsible-label:before{
-  content: "▼ ";
+  font-family: "Font Awesome 5 Free";
+  content: '\f078';
+  font-weight: bold;
+  padding-right: .25em;
 }
 .fieldset-collapsed .fieldset-collapsible-label {
   background-position: 4px 4px;
 }
 .fieldset-collapsed .fieldset-collapsible-label:before{
-  content: "► ";
+  font-family: "Font Awesome 5 Free";
+  content: '\f105';
+  font-weight: bold;
+  padding-right: .25em;
 }
 
 
 .accordion {
   .panel-title.collapsed:before {
-    content: "► ";
+    font-family: "Font Awesome 5 Free";
+    content: '\f105';
+    font-weight: bold;
+    padding-right: .25em;
     @media print {
       content: "";
     }
   }
   .panel-title.expanded:before {
-    content: "▼ ";
+    font-family: "Font Awesome 5 Free";
+    content: '\f078';
+    font-weight: bold;
+    padding-right: .25em;
     @media print{
       content: "";
     }
@@ -88,13 +100,19 @@ body {
 }
 
 .panel .panel-title:before {
-  content: "► ";
+  font-family: "Font Awesome 5 Free";
+  content: '\f105';
+  font-weight: bold;
+  padding-right: .25em;
   @media print{
     content: "";
   }
 }
 .panel.active .panel-title:before {
-  content: "▼ ";
+  font-family: "Font Awesome 5 Free";
+  content: '\f078';
+  font-weight: bold;
+  padding-right: .25em;
   @media print{
     content: "";
   }
@@ -159,11 +177,32 @@ body {
   }
 }
 
+#UserList .selectTitle,
+#UserList .text-right,
+#UserList span.btn-editions{
+  @media print{
+    display: none;
+  }
+}
+
+#UserList .result .row .col-xs-6.col-sm-6.col-md-6.col-lg-7{
+  @media print{
+    width: 75%
+  }
+}
+
+.module_MyAccount.action_MyList .alert{
+  @media print{
+    display: none;
+  }
+}
+
 .btn-editions{
-  display:inline;
+  display:inline-block;
   color: #212529;
   background-color: #f8f9fa;
   border-color: #999999;
+  margin-top: 3px;
   &:hover, &:focus, &:active{
     color: #212529;
     background-color: #e2e6ea;
@@ -279,13 +318,13 @@ div.striped {
 
 // Third party imports
 @import "ratings.less";
-@import "datepicker.less";
 @import "jcarousel.responsive.less";
 @import "lib/fontawesome-all.min.css";
 @import "lib/bootstrap-switch.less";
 @import "lib/tablesorter/tablesorter.less";
 @import "lib/rome.min.css";
 @import "simplemde.min.css";
+@import "lib/Chart.min.css";
 
 // Imports of functionality related to Aspen
 @import "layout.less";
@@ -301,7 +340,6 @@ div.striped {
 @import "prospector.less";
 @import "calendar.less";
 @import "genealogy.less";
-@import "repository.less";
 @import "admin.less";
 @import "web-builder.less";
 @import "ebsco.less";

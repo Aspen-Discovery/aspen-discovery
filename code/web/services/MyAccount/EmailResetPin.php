@@ -23,7 +23,7 @@ class MyAccount_EmailResetPin extends Action{
 		}
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		return [];
 	}

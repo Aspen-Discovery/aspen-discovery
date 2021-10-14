@@ -97,7 +97,7 @@ class Author_AJAX {
 		return  json_encode($returnVal);
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		return [];
 	}

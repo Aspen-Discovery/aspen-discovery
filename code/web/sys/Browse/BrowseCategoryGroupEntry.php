@@ -10,7 +10,7 @@ class BrowseCategoryGroupEntry extends DataObject
 	public $browseCategoryGroupId;
 	public $browseCategoryId;
 
-	static function getObjectStructure(){
+	static function getObjectStructure() : array{
 		//Load Groups for lookup values
 		$groups = new BrowseCategoryGroup();
 		$groups->orderBy('name');
@@ -22,10 +22,22 @@ class BrowseCategoryGroupEntry extends DataObject
 		require_once ROOT_DIR . '/sys/Browse/BrowseCategory.php';
 		$browseCategories = new BrowseCategory();
 		$browseCategories->orderBy('label');
-		$browseCategories->find();
-		$browseCategoryList = [];
-		while($browseCategories->fetch()){
-			$browseCategoryList[$browseCategories->id] = $browseCategories->label . " ({$browseCategories->textId})";
+		if (!UserAccount::userHasPermission('Administer All Browse Categories')) {
+			$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
+			$libraryId = $library == null ? -1 : $library->libraryId;
+			$browseCategories->whereAdd("sharing = 'everyone'");
+			$browseCategories->whereAdd("sharing = 'library' AND libraryId = " . $libraryId, 'OR');
+			$browseCategories->find();
+			$browseCategoryList = [];
+			while ($browseCategories->fetch()) {
+				$browseCategoryList[$browseCategories->id] = $browseCategories->label . " ({$browseCategories->textId})";
+			}
+		} else if(UserAccount::userHasPermission('Administer All Browse Categories')) {
+			$browseCategories->find();
+			$browseCategoryList = [];
+			while ($browseCategories->fetch()) {
+				$browseCategoryList[$browseCategories->id] = $browseCategories->label . " ({$browseCategories->textId})";
+			}
 		}
 		return [
 			'id' => array('property'=>'id', 'type'=>'label', 'label'=>'Id', 'description'=>'The unique id of the hours within the database'),
@@ -37,5 +49,25 @@ class BrowseCategoryGroupEntry extends DataObject
 
 	function getEditLink(){
 		return '/Admin/BrowseCategories?objectAction=edit&id=' . $this->browseCategoryId;
+	}
+
+	private $_browseCategory = null;
+	function getBrowseCategory() : ?BrowseCategory {
+		if ($this->_browseCategory == null){
+			$this->_browseCategory = new BrowseCategory();
+			$this->_browseCategory->id = $this->browseCategoryId;
+			if (!$this->_browseCategory->find(true)){
+				$this->_browseCategory= false;
+			}
+		}
+		return $this->_browseCategory;
+	}
+
+	public function canActiveUserEdit(){
+		if ($this->getBrowseCategory()->sharing == 'everyone'){
+			return UserAccount::userHasPermission('Administer All Browse Categories');
+		}
+		//Don't need to limit for the library since the user will need Administer Library Browse Categories to even view them.
+		return true;
 	}
 }

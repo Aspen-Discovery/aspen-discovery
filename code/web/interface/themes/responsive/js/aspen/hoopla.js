@@ -18,7 +18,7 @@ AspenDiscovery.Hoopla = (function(){
 						AspenDiscovery.showMessageWithButtons(data.title, data.message, data.buttons);
 						AspenDiscovery.Account.loadMenuData();
 					} else {
-						AspenDiscovery.showMessage("Checking Out Title", data.message);
+						AspenDiscovery.showMessage(data.title, data.message);
 					}
 				}).fail(AspenDiscovery.ajaxFail)
 			}else{
@@ -63,7 +63,16 @@ AspenDiscovery.Hoopla = (function(){
 				}, false);
 			}
 			return false;
-		}
+		},
+
+		getLargeCover: function (id){
+			var url = Globals.path + '/Hoopla/' + id + '/AJAX?method=getLargeCover';
+			$.getJSON(url, function (data){
+					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+				}
+			);
+			return false;
+		},
 
 	}
 }(AspenDiscovery.Hoopla || {}));

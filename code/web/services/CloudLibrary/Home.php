@@ -26,6 +26,9 @@ class CloudLibrary_Home extends GroupedWorkSubRecordHomeAction{
             $holdingsSummary = $this->recordDriver->getStatusSummary();
 			$interface->assign('holdingsSummary', $holdingsSummary);
 
+			//Get actions
+			$interface->assign('actions', $this->recordDriver->getRecordActions(null, $holdingsSummary['available'], true, null));
+
 			//Load the citations
 			$this->loadCitations();
 
@@ -43,6 +46,8 @@ class CloudLibrary_Home extends GroupedWorkSubRecordHomeAction{
 			require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 			$appearsOnLists = UserList::getUserListsForRecord('GroupedWork', $this->recordDriver->getPermanentId());
 			$interface->assign('appearsOnLists', $appearsOnLists);
+
+			$groupedWork->loadReadingHistoryIndicator();
 
 			// Set Show in Main Details Section options for templates
 			// (needs to be set before moreDetailsOptions)

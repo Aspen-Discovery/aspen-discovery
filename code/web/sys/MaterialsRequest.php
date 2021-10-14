@@ -43,13 +43,16 @@ class MaterialsRequest extends DataObject
 	public $holdPickupLocation;
 	public $bookmobileStop;
 	public $assignedTo;
+	public $staffComments;
 
 	//Dynamic properties setup by joins
 	public $numRequests;
 	public $description;
-	public $userId;
-	public $firstName;
-	public $lastName;
+
+	public function getNumericColumnNames(): array
+	{
+		return ['emailSent', 'holdsCreated'];
+	}
 
 	static function getFormats(){
 		require_once ROOT_DIR . '/sys/MaterialsRequestFormats.php';
@@ -128,15 +131,6 @@ class MaterialsRequest extends DataObject
 				$enableAspenMaterialsRequest = false;
 			}else if ($homeLibrary->libraryId != $library->libraryId){
 				$enableAspenMaterialsRequest = false;
-			}else if (isset($configArray['MaterialsRequest']['allowablePatronTypes'])){
-				//Check to see if we need to do additional restrictions by patron type
-				$allowablePatronTypes = $configArray['MaterialsRequest']['allowablePatronTypes'];
-				if (strlen($allowablePatronTypes) > 0){
-					$user = UserAccount::getLoggedInUser();
-					if (!preg_match("/^$allowablePatronTypes$/i", $user->patronType)){
-						$enableAspenMaterialsRequest = false;
-					}
-				}
 			}
 		}
 
@@ -168,7 +162,8 @@ class MaterialsRequest extends DataObject
 
 		if (!$isStaffRequest){
 			foreach ($fieldsToSortByCategory as $fieldKey => $fieldDetails){
-				if (in_array($fieldDetails->fieldType, array('assignedTo','createdBy','libraryCardNumber','id','status'))){
+				//Remove any fields that are available to staff only
+				if (in_array($fieldDetails->fieldType, array('assignedTo','createdBy','libraryCardNumber','id','status','staffComments'))){
 					unset($fieldsToSortByCategory[$fieldKey]);
 				}
 			}
@@ -234,12 +229,78 @@ class MaterialsRequest extends DataObject
 						$body = str_replace('{' . $fieldName . '}', $fieldValue, $body);
 					}
 				}
-				$error = $mail->send($this->email, "Your Materials Request Update", $body, $replyToAddress);
+				$error = $mail->send($this->email, translate(['text'=>"Your Materials Request Update",'isPublicFacing'=>true]), $body, $replyToAddress);
 				if (($error instanceof AspenError)) {
 					global $interface;
 					$interface->assign('error', $error->getMessage());
 				}
 			}
+		}
+	}
+
+	/** @noinspection PhpUnused */
+	function getCreatedByFirstName(){
+		if ($this->getCreatedByUser() != false) {
+			return $this->_createdByUser->firstname;
+		}else{
+			return '';
+		}
+	}
+
+	/** @noinspection PhpUnused */
+	function getCreatedByLastName(){
+		if ($this->getCreatedByUser() != false) {
+			return $this->_createdByUser->lastname;
+		}else{
+			return '';
+		}
+	}
+
+	/** @noinspection PhpUnused */
+	function getCreatedByUserBarcode(){
+		if ($this->getCreatedByUser() != false) {
+			return $this->_createdByUser->getBarcode();
+		}else{
+			return '';
+		}
+	}
+
+	/** @var User */
+	protected $_createdByUser = null;
+	function getCreatedByUser(){
+		if ($this->_createdByUser == null){
+			$this->_createdByUser = new User();
+			$this->_createdByUser->id = $this->createdBy;
+			if (!$this->_createdByUser->find(true)){
+				$this->_createdByUser = false;
+			}
+		}
+		return $this->_createdByUser;
+	}
+
+	/** @var User */
+	protected $_assigneeUser = null;
+	function getAssigneeUser(){
+		if ($this->_assigneeUser == null){
+			if (empty($this->assignedTo)){
+				$this->_assigneeUser = false;
+			}else {
+				$this->_assigneeUser = new User();
+				$this->_assigneeUser->id = $this->assignedTo;
+				if (!$this->_assigneeUser->find(true)) {
+					$this->_assigneeUser = false;
+				}
+			}
+		}
+		return $this->_assigneeUser;
+	}
+
+	/** @noinspection PhpUnused */
+	function getAssigneeName(){
+		if ($this->getAssigneeUser() != false) {
+			return $this->_assigneeUser->displayName;
+		}else{
+			return '';
 		}
 	}
 }

@@ -158,7 +158,7 @@ class Events_Calendar extends Action
 		$this->display('calendar.tpl', 'Events Calendar ' . $formattedMonthYear, '');
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');

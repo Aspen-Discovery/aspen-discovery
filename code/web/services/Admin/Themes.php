@@ -6,21 +6,23 @@ require_once ROOT_DIR . '/sys/Theming/Theme.php';
 
 class Admin_Themes extends ObjectEditor
 {
-	function getObjectType(){
+	function getObjectType() : string{
 		return 'Theme';
 	}
-	function getToolName(){
+	function getToolName() : string{
 		return 'Themes';
 	}
-	function getPageTitle(){
+	function getPageTitle() : string{
 		return 'Themes';
 	}
 	function canDelete(){
 		return UserAccount::userHasPermission('Administer All Themes');
 	}
-	function getAllObjects(){
+	function getAllObjects($page, $recordsPerPage) : array{
 		$object = new Theme();
-		$object->orderBy('themeName');
+		$object->orderBy($this->getSort());
+		$this->applyFilters($object);
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		if (!UserAccount::userHasPermission('Administer All Themes')){
 			$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
 			$object->id = $library->theme;
@@ -32,22 +34,26 @@ class Admin_Themes extends ObjectEditor
 		}
 		return $list;
 	}
-	function getObjectStructure(){
+	function getDefaultSort() : string
+	{
+		return 'themeName asc';
+	}
+	function getObjectStructure() : array {
 		return Theme::getObjectStructure();
 	}
-	function getPrimaryKeyColumn(){
+	function getPrimaryKeyColumn() : string{
 		return 'id';
 	}
-	function getIdKeyColumn(){
+	function getIdKeyColumn() : string{
 		return 'id';
 	}
 
-	function getInstructions(){
+	function getInstructions() : string{
 		//return 'For more information on themes see TBD';
 		return '';
 	}
 
-	function getExistingObjectById($id){
+	function getExistingObjectById($id) : ?DataObject {
 		$existingObject = parent::getExistingObjectById($id);
 		if ($existingObject != null && $existingObject instanceof Theme){
 			$existingObject->applyDefaults();
@@ -55,7 +61,7 @@ class Admin_Themes extends ObjectEditor
 		return $existingObject;
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
@@ -76,13 +82,22 @@ class Admin_Themes extends ObjectEditor
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return 'theme_and_layout';
 	}
 
-	function canView()
+	function canView() : bool
 	{
 		return UserAccount::userHasPermission(['Administer All Themes','Administer Library Themes']);
+	}
+
+	protected function getDefaultRecordsPerPage()
+	{
+		return 100;
+	}
+
+	protected function showQuickFilterOnPropertiesList(){
+		return true;
 	}
 }

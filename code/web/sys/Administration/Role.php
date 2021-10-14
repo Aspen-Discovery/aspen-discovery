@@ -11,7 +11,7 @@ class Role extends DataObject
 	public $description;
 	private $_permissions;
 
-	static function getObjectStructure()
+	static function getObjectStructure() : array
 	{
 		$permissionsList = [];
 		return [
@@ -38,7 +38,7 @@ class Role extends DataObject
 		$role->find();
 		$roleList = [];
 		while ($role->fetch()) {
-			$roleList[$role->roleId] = $role->name . ' - ' . $role->description;
+			$roleList[$role->roleId] = translate(['text'=>$role->name, 'inAttribute'=>true,'isAdminFacing'=>true,'isAdminEnteredData'=>true]) . ' - ' . translate(['text'=>$role->description, 'inAttribute'=>true,'isAdminFacing'=>true,'isAdminEnteredData'=>true]);
 		}
 		return $roleList;
 	}
@@ -108,7 +108,6 @@ class Role extends DataObject
 				'Administer Hoopla',
 				'Administer IP Addresses',
 				'Administer Indexing Profiles',
-				'Administer Islandora Archive',
 				'Administer Languages',
 				'Administer Library Calendar Settings',
 				'Administer List Indexing Settings',
@@ -118,6 +117,7 @@ class Role extends DataObject
 				'Administer OverDrive',
 				'Administer Patron Types',
 				'Administer RBdigital',
+				'Administer Amazon SES',
 				'Administer SendGrid',
 				'Administer Side Loads',
 				'Administer System Variables',
@@ -138,6 +138,7 @@ class Role extends DataObject
 				'Submit Ticket',
 				'Translate Aspen',
 				'Upload Covers',
+				'Upload List Covers',
 				'Upload PDFs',
 				'Upload Supplemental Files',
 				'View Archive Authorship Claims',
@@ -146,7 +147,6 @@ class Role extends DataObject
 				'View Indexing Logs',
 				'View ILS records in native OPAC',
 				'View ILS records in native Staff Client',
-				'View Islandora Archive Usage',
 				'View New York Times Lists',
 				'View Offline Holds Report',
 				'View OverDrive Test Interface',
@@ -212,6 +212,7 @@ class Role extends DataObject
 				'Manually Group and Ungroup Works',
 				'Set Grouped Work Display Information',
 				'Upload Covers',
+				'Upload List Covers',
 				'Upload PDFs',
 				'Upload Supplemental Files',
 				'View Dashboards',
@@ -226,17 +227,12 @@ class Role extends DataObject
 				'Force Reindexing of Records',
 				'Manually Group and Ungroup Works',
 				'Upload Covers',
+				'Upload List Covers',
 				'Upload PDFs',
 				'Upload Supplemental Files',
 				'View ILS records in native OPAC',
 				'View ILS records in native Staff Client',
 				'View Indexing Logs',
-			];
-		case 'archives':
-			return [
-				'Administer Islandora Archive',
-				'View Archive Authorship Claims',
-				'View Archive Material Requests',
 			];
 		case 'circulationReports':
 			return [

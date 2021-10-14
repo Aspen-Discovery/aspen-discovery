@@ -11,6 +11,15 @@ var Globals = (function () {
 		repositoryUrl: '',
 		encodedRepositoryUrl: '',
 		activeAction: '',
-		activeModule: ''
+		activeModule: '',
+		hasILSConnection: false,
+		hasAxis360Connection: false,
+		hasCloudLibraryConnection: false,
+		hasHooplaConnection: false,
+		hasOverDriveConnection: false,
+		loadingTitle: 'Loading',
+		loadingBody: 'Loading, please wait',
+		requestFailedTitle: 'Request Failed',
+		requestFailedBody: 'There was an error with this AJAX Request.'
 	}
 })(Globals || {});

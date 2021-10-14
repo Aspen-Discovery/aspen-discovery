@@ -132,7 +132,7 @@ class PersonRecord extends IndexRecordDriver
 		return 'RecordDrivers/Person/listEntry.tpl';
 	}
 
-	public function getModule()
+	public function getModule() : string
 	{
 		return 'Person';
 	}

@@ -6,18 +6,20 @@ require_once ROOT_DIR . '/sys/IP/IPAddress.php';
 
 class Admin_IPAddresses extends ObjectEditor
 {
-	function getObjectType(){
+	function getObjectType() : string{
 		return 'IPAddress';
 	}
-	function getToolName(){
+	function getToolName() : string{
 		return 'IPAddresses';
 	}
-	function getPageTitle(){
+	function getPageTitle() : string{
 		return 'Location IP Addresses';
 	}
-	function getAllObjects(){
+	function getAllObjects($page, $recordsPerPage) : array{
 		$object = new IPAddress();
-		$object->orderBy('ip');
+		$object->orderBy($this->getSort());
+		$this->applyFilters($object);
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		$objectList = array();
 		while ($object->fetch()){
@@ -25,20 +27,24 @@ class Admin_IPAddresses extends ObjectEditor
 		}
 		return $objectList;
 	}
-	function getObjectStructure(){
+	function getDefaultSort() : string
+	{
+		return 'ip asc';
+	}
+	function getObjectStructure() : array {
 		return IPAddress::getObjectStructure();
 	}
-	function getPrimaryKeyColumn(){
+	function getPrimaryKeyColumn() : string{
 		return 'ip';
 	}
-	function getIdKeyColumn(){
+	function getIdKeyColumn() : string{
 		return 'id';
 	}
-	function getInstructions()
+	function getInstructions() : string
 	{
 		return '/Admin/HelpManual?page=Location-IP-Addresses';
 	}
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
@@ -47,12 +53,12 @@ class Admin_IPAddresses extends ObjectEditor
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return 'primary_configuration';
 	}
 
-	function canView()
+	function canView() : bool
 	{
 		return UserAccount::userHasPermission('Administer IP Addresses');
 	}

@@ -22,15 +22,14 @@ public class IndexingUtils {
 		try {
 			HashMap<Long, OverDriveScope> overDriveScopes = loadOverDriveScopes(dbConn, logger);
 			HashMap<Long, HooplaScope> hooplaScopes = loadHooplaScopes(dbConn, logger);
-			HashMap<Long, RbdigitalScope> rbdigitalScopes = loadRbdigitalScopes(dbConn, logger);
 			HashMap<Long, Axis360Scope> axis360Scopes = loadAxis360Scopes(dbConn, logger);
 			HashMap<Long, CloudLibraryScope> cloudLibraryScopes = loadCloudLibraryScopes(dbConn, logger);
 			HashMap<Long, SideLoadScope> sideLoadScopes = loadSideLoadScopes(dbConn, logger);
 			HashMap<Long, GroupedWorkDisplaySettings> groupedWorkDisplaySettings = loadGroupedWorkDisplaySettings(dbConn, logger);
 
-			loadLibraryScopes(scopes, groupedWorkDisplaySettings, overDriveScopes, hooplaScopes, rbdigitalScopes, cloudLibraryScopes, axis360Scopes, sideLoadScopes, dbConn, logger);
+			loadLibraryScopes(scopes, groupedWorkDisplaySettings, overDriveScopes, hooplaScopes, cloudLibraryScopes, axis360Scopes, sideLoadScopes, dbConn, logger);
 
-			loadLocationScopes(scopes, groupedWorkDisplaySettings, overDriveScopes, hooplaScopes, rbdigitalScopes, cloudLibraryScopes, axis360Scopes, sideLoadScopes, dbConn, logger);
+			loadLocationScopes(scopes, groupedWorkDisplaySettings, overDriveScopes, hooplaScopes, cloudLibraryScopes, axis360Scopes, sideLoadScopes, dbConn, logger);
 		} catch (SQLException e) {
 			logger.error("Error setting up scopes", e);
 			return null;
@@ -98,31 +97,6 @@ public class IndexingUtils {
 		return hooplaScopes;
 	}
 
-	private static HashMap<Long, RbdigitalScope> loadRbdigitalScopes(Connection dbConn, Logger logger) {
-		HashMap<Long, RbdigitalScope> rbdigitalScopes = new HashMap<>();
-		try {
-			PreparedStatement rbdigitalScopeStmt = dbConn.prepareStatement("SELECT * from rbdigital_scopes", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-			ResultSet rbdigitalScopesRS = rbdigitalScopeStmt.executeQuery();
-
-			while (rbdigitalScopesRS.next()) {
-				RbdigitalScope rbdigitalScope = new RbdigitalScope();
-				rbdigitalScope.setId(rbdigitalScopesRS.getLong("id"));
-				rbdigitalScope.setName(rbdigitalScopesRS.getString("name"));
-				rbdigitalScope.setSettingId(rbdigitalScopesRS.getLong("settingId"));
-				rbdigitalScope.setIncludeEBooks(rbdigitalScopesRS.getBoolean("includeEBooks"));
-				rbdigitalScope.setIncludeEMagazines(rbdigitalScopesRS.getBoolean("includeEMagazines"));
-				rbdigitalScope.setIncludeEAudiobook(rbdigitalScopesRS.getBoolean("includeEAudiobook"));
-				rbdigitalScope.setRestrictToChildrensMaterial(rbdigitalScopesRS.getBoolean("restrictToChildrensMaterial"));
-
-				rbdigitalScopes.put(rbdigitalScope.getId(), rbdigitalScope);
-			}
-
-		} catch (SQLException e) {
-			logger.error("Error loading RBdigital scopes", e);
-		}
-		return rbdigitalScopes;
-	}
-
 	private static HashMap<Long, Axis360Scope> loadAxis360Scopes(Connection dbConn, Logger logger) {
 		HashMap<Long, Axis360Scope> axis360Scopes = new HashMap<>();
 		try {
@@ -153,6 +127,7 @@ public class IndexingUtils {
 			while (overDriveScopesRS.next()) {
 				OverDriveScope overDriveScope = new OverDriveScope();
 				overDriveScope.setId(overDriveScopesRS.getLong("id"));
+				overDriveScope.setSettingId(overDriveScopesRS.getLong("settingId"));
 				overDriveScope.setName(overDriveScopesRS.getString("name"));
 				overDriveScope.setIncludeAdult(overDriveScopesRS.getBoolean("includeAdult"));
 				overDriveScope.setIncludeTeen(overDriveScopesRS.getBoolean("includeTeen"));
@@ -176,6 +151,7 @@ public class IndexingUtils {
 			while (cloudLibraryScopesRS.next()) {
 				CloudLibraryScope cloudLibraryScope = new CloudLibraryScope();
 				cloudLibraryScope.setId(cloudLibraryScopesRS.getLong("id"));
+				cloudLibraryScope.setSettingId(cloudLibraryScopesRS.getLong("settingId"));
 				cloudLibraryScope.setName(cloudLibraryScopesRS.getString("name"));
 				cloudLibraryScope.setIncludeEBooks(cloudLibraryScopesRS.getBoolean("includeEBooks"));
 				cloudLibraryScope.setIncludeEAudiobook(cloudLibraryScopesRS.getBoolean("includeEAudiobook"));
@@ -185,7 +161,7 @@ public class IndexingUtils {
 			}
 
 		} catch (SQLException e) {
-			logger.error("Error loading Cloud Library scopes", e);
+			logger.error("Error loading cloudLibrary scopes", e);
 		}
 		return cloudLibraryScopes;
 	}
@@ -216,25 +192,42 @@ public class IndexingUtils {
 		return sideLoadScopes;
 	}
 
-	private static void loadLocationScopes(TreeSet<Scope> scopes, HashMap<Long, GroupedWorkDisplaySettings> groupedWorkDisplaySettings, HashMap<Long, OverDriveScope> overDriveScopes, HashMap<Long, HooplaScope> hooplaScopes, HashMap<Long, RbdigitalScope> rbdigitalScopes, HashMap<Long, CloudLibraryScope> cloudLibraryScopes, HashMap<Long, Axis360Scope> axis360Scopes, HashMap<Long, SideLoadScope> sideLoadScopes, Connection dbConn, Logger logger) throws SQLException {
+	private static void loadLocationScopes(TreeSet<Scope> scopes, HashMap<Long, GroupedWorkDisplaySettings> groupedWorkDisplaySettings, HashMap<Long, OverDriveScope> overDriveScopes, HashMap<Long, HooplaScope> hooplaScopes, HashMap<Long, CloudLibraryScope> cloudLibraryScopes, HashMap<Long, Axis360Scope> axis360Scopes, HashMap<Long, SideLoadScope> sideLoadScopes, Connection dbConn, Logger logger) throws SQLException {
+		//To minimize the amount of data in the index, only load locations that have more than one location within the library.
+		PreparedStatement librariesWithMoreThanOneLocationStmt = dbConn.prepareStatement("select libraryId, count(*) as numLocations from location WHERE createSearchInterface = 1 group by libraryId having numLocations > 1", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+		ResultSet librariesWithMoreThanOneLocation = librariesWithMoreThanOneLocationStmt.executeQuery();
+		String librariesToFetch = new String();
+		while (librariesWithMoreThanOneLocation.next()){
+			if (librariesToFetch.length() > 0){
+				librariesToFetch += ",";
+			}
+			librariesToFetch += librariesWithMoreThanOneLocation.getString("libraryId");
+		}
+		librariesWithMoreThanOneLocation.close();
+		librariesWithMoreThanOneLocationStmt.close();
+		if (librariesToFetch.length() == 0){
+			return;
+		}
+
 		PreparedStatement locationInformationStmt = dbConn.prepareStatement("SELECT library.libraryId, locationId, code, subLocation, ilsCode, " +
-						"library.subdomain, location.facetLabel, location.displayName, library.pTypes, library.restrictOwningBranchesAndSystems, location.publicListsToInclude, " +
+						"library.subdomain, location.facetLabel, location.displayName, library.restrictOwningBranchesAndSystems, location.publicListsToInclude, " +
 						"location.additionalLocationsToShowAvailabilityFor, includeAllLibraryBranchesInFacets, " +
 						"location.groupedWorkDisplaySettingId as groupedWorkDisplaySettingIdLocation, library.groupedWorkDisplaySettingId as groupedWorkDisplaySettingIdLibrary, " +
 						"location.includeLibraryRecordsToInclude, " +
 						"library.overDriveScopeId as overDriveScopeIdLibrary, location.overDriveScopeId as overDriveScopeIdLocation, " +
 						"library.hooplaScopeId as hooplaScopeLibrary, location.hooplaScopeId as hooplaScopeLocation, " +
-						"library.rbdigitalScopeId as rbdigitalScopeLibrary, location.rbdigitalScopeId as rbdigitalScopeLocation, " +
-						"library.cloudLibraryScopeId as cloudLibraryScopeLibrary, location.cloudLibraryScopeId as cloudLibraryScopeLocation, " +
 						"library.axis360ScopeId as axis360ScopeLibrary, location.axis360ScopeId as axis360ScopeLocation " +
-						"FROM location INNER JOIN library on library.libraryId = location.libraryId ORDER BY code ASC",
+						"FROM location INNER JOIN library on library.libraryId = location.libraryId WHERE location.libraryId IN (" + librariesToFetch + ") ORDER BY code ASC",
 				ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 		PreparedStatement locationOwnedRecordRulesStmt = dbConn.prepareStatement("SELECT location_records_owned.*, indexing_profiles.name FROM location_records_owned INNER JOIN indexing_profiles ON indexingProfileId = indexing_profiles.id WHERE locationId = ?",
 				ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 		PreparedStatement locationRecordInclusionRulesStmt = dbConn.prepareStatement("SELECT location_records_to_include.*, indexing_profiles.name FROM location_records_to_include INNER JOIN indexing_profiles ON indexingProfileId = indexing_profiles.id WHERE locationId = ?",
 				ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+		PreparedStatement libraryCloudLibraryScopesStmt = dbConn.prepareStatement("SELECT * from library_cloud_library_scope WHERE libraryId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+		PreparedStatement locationCloudLibraryScopesStmt = dbConn.prepareStatement("SELECT * from location_cloud_library_scope WHERE locationId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 		PreparedStatement librarySideLoadScopesStmt = dbConn.prepareStatement("SELECT * from library_sideload_scopes WHERE libraryId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 		PreparedStatement locationSideLoadScopesStmt = dbConn.prepareStatement("SELECT * from location_sideload_scopes WHERE locationId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+		PreparedStatement libraryRecordInclusionRulesStmt = dbConn.prepareStatement("SELECT library_records_to_include.*, indexing_profiles.name from library_records_to_include INNER JOIN indexing_profiles ON indexingProfileId = indexing_profiles.id WHERE libraryId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 
 		ResultSet locationInformationRS = locationInformationStmt.executeQuery();
 		while (locationInformationRS.next()) {
@@ -249,8 +242,6 @@ public class IndexingUtils {
 			//Determine if we need to build a scope for this location
 			long libraryId = locationInformationRS.getLong("libraryId");
 			long locationId = locationInformationRS.getLong("locationId");
-			String pTypes = locationInformationRS.getString("pTypes");
-			if (pTypes == null) pTypes = "";
 
 			Scope locationScopeInfo = new Scope();
 			locationScopeInfo.setIsLibraryScope(false);
@@ -261,7 +252,6 @@ public class IndexingUtils {
 			}
 			locationScopeInfo.setScopeName(scopeName);
 			locationScopeInfo.setLibraryId(libraryId);
-			locationScopeInfo.setRelatedPTypes(pTypes.split(","));
 			locationScopeInfo.setFacetLabel(facetLabel);
 			locationScopeInfo.setRestrictOwningLibraryAndLocationFacets(locationInformationRS.getBoolean("restrictOwningBranchesAndSystems"));
 			locationScopeInfo.setIlsCode(code);
@@ -305,24 +295,34 @@ public class IndexingUtils {
 				locationScopeInfo.setHooplaScope(hooplaScopes.get(hooplaScopeLocation));
 			}
 
-			long rbdigitalScopeLocation = locationInformationRS.getLong("rbdigitalScopeLocation");
-			long rbdigitalScopeLibrary = locationInformationRS.getLong("rbdigitalScopeLibrary");
-			if (rbdigitalScopeLocation == -1) {
-				if (rbdigitalScopeLibrary != -1) {
-					locationScopeInfo.setRbdigitalScope(rbdigitalScopes.get(rbdigitalScopeLibrary));
+			locationCloudLibraryScopesStmt.setLong(1, locationId);
+			ResultSet locationCloudLibraryScopesRS = locationCloudLibraryScopesStmt.executeQuery();
+			while (locationCloudLibraryScopesRS.next()) {
+				long scopeId = locationCloudLibraryScopesRS.getLong("scopeId");
+				if (scopeId == -1) {
+					libraryCloudLibraryScopesStmt.setLong(1, libraryId);
+					ResultSet libraryCloudLibraryScopesRS = libraryCloudLibraryScopesStmt.executeQuery();
+					while (libraryCloudLibraryScopesRS.next()) {
+						long cloudLibraryScopeId = libraryCloudLibraryScopesRS.getLong("scopeId");
+						if (cloudLibraryScopes.containsKey(cloudLibraryScopeId)) {
+							locationScopeInfo.addCloudLibraryScope(cloudLibraryScopes.get(cloudLibraryScopeId));
+						}
+					}
+				} else {
+					if (cloudLibraryScopes.containsKey(scopeId)) {
+						locationScopeInfo.addCloudLibraryScope(cloudLibraryScopes.get(scopeId));
+					}
 				}
-			} else if (rbdigitalScopeLocation == -2) {
-				locationScopeInfo.setRbdigitalScope(rbdigitalScopes.get(rbdigitalScopeLocation));
 			}
-
-			long cloudLibraryScopeLocation = locationInformationRS.getLong("cloudLibraryScopeLocation");
-			long cloudLibraryScopeLibrary = locationInformationRS.getLong("cloudLibraryScopeLibrary");
-			if (cloudLibraryScopeLocation == -1) {
-				if (cloudLibraryScopeLibrary != -1) {
-					locationScopeInfo.setCloudLibraryScope(cloudLibraryScopes.get(cloudLibraryScopeLibrary));
+			if (includeLibraryRecordsToInclude){
+				libraryCloudLibraryScopesStmt.setLong(1, libraryId);
+				ResultSet libraryCloudLibraryScopesRS = libraryCloudLibraryScopesStmt.executeQuery();
+				while (libraryCloudLibraryScopesRS.next()) {
+					long cloudLibraryScopeId = libraryCloudLibraryScopesRS.getLong("scopeId");
+					if (cloudLibraryScopes.containsKey(cloudLibraryScopeId)) {
+						locationScopeInfo.addCloudLibraryScope(cloudLibraryScopes.get(cloudLibraryScopeId));
+					}
 				}
-			} else if (rbdigitalScopeLocation == -2) {
-				locationScopeInfo.setCloudLibraryScope(cloudLibraryScopes.get(cloudLibraryScopeLocation));
 			}
 
 			long axis360ScopeLocation = locationInformationRS.getLong("axis360ScopeLocation");
@@ -331,7 +331,7 @@ public class IndexingUtils {
 				if (axis360ScopeLibrary != -1) {
 					locationScopeInfo.setAxis360Scope(axis360Scopes.get(axis360ScopeLibrary));
 				}
-			} else if (rbdigitalScopeLocation == -2) {
+			} else if (axis360ScopeLocation != -2) {
 				locationScopeInfo.setAxis360Scope(axis360Scopes.get(axis360ScopeLocation));
 			}
 
@@ -395,6 +395,7 @@ public class IndexingUtils {
 			}
 
 			if (includeLibraryRecordsToInclude) {
+
 				libraryRecordInclusionRulesStmt.setLong(1, libraryId);
 				ResultSet libraryRecordInclusionRulesRS = libraryRecordInclusionRulesStmt.executeQuery();
 				while (libraryRecordInclusionRulesRS.next()) {
@@ -434,19 +435,19 @@ public class IndexingUtils {
 		}
 	}
 
-	private static PreparedStatement libraryRecordInclusionRulesStmt;
-
-	private static void loadLibraryScopes(TreeSet<Scope> scopes, HashMap<Long, GroupedWorkDisplaySettings> groupedWorkDisplaySettings, HashMap<Long, OverDriveScope> overDriveScopes, HashMap<Long, HooplaScope> hooplaScopes, HashMap<Long, RbdigitalScope> rbdigitalScopes, HashMap<Long, CloudLibraryScope> cloudLibraryScopes, HashMap<Long, Axis360Scope> axis360Scopes, HashMap<Long, SideLoadScope> sideLoadScopes, Connection dbConn, Logger logger) throws SQLException {
+	private static void loadLibraryScopes(TreeSet<Scope> scopes, HashMap<Long, GroupedWorkDisplaySettings> groupedWorkDisplaySettings, HashMap<Long, OverDriveScope> overDriveScopes, HashMap<Long, HooplaScope> hooplaScopes, HashMap<Long, CloudLibraryScope> cloudLibraryScopes, HashMap<Long, Axis360Scope> axis360Scopes, HashMap<Long, SideLoadScope> sideLoadScopes, Connection dbConn, Logger logger) throws SQLException {
 		PreparedStatement libraryInformationStmt = dbConn.prepareStatement("SELECT libraryId, ilsCode, subdomain, " +
-						"displayName, facetLabel, pTypes, restrictOwningBranchesAndSystems, publicListsToInclude, " +
+						"displayName, facetLabel, restrictOwningBranchesAndSystems, publicListsToInclude, " +
 						"additionalLocationsToShowAvailabilityFor, overDriveScopeId, " +
-						"groupedWorkDisplaySettingId, hooplaScopeId, rbdigitalScopeId, cloudLibraryScopeId, axis360ScopeId " +
-						"FROM library ORDER BY ilsCode ASC",
+						"groupedWorkDisplaySettingId, hooplaScopeId, axis360ScopeId " +
+						"FROM library WHERE createSearchInterface = 1 ORDER BY ilsCode ASC",
 				ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-		PreparedStatement libraryOwnedRecordRulesStmt = dbConn.prepareStatement("SELECT library_records_owned.*, indexing_profiles.name from library_records_owned INNER JOIN indexing_profiles ON indexingProfileId = indexing_profiles.id WHERE libraryId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-		libraryRecordInclusionRulesStmt = dbConn.prepareStatement("SELECT library_records_to_include.*, indexing_profiles.name from library_records_to_include INNER JOIN indexing_profiles ON indexingProfileId = indexing_profiles.id WHERE libraryId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+		PreparedStatement numLocationsForLibraryStmt = dbConn.prepareStatement("SELECT count(locationId) as numLocations from location where libraryId = ? and createSearchInterface = 1")
+;		PreparedStatement libraryOwnedRecordRulesStmt = dbConn.prepareStatement("SELECT library_records_owned.*, indexing_profiles.name from library_records_owned INNER JOIN indexing_profiles ON indexingProfileId = indexing_profiles.id WHERE libraryId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+		PreparedStatement libraryRecordInclusionRulesStmt = dbConn.prepareStatement("SELECT library_records_to_include.*, indexing_profiles.name from library_records_to_include INNER JOIN indexing_profiles ON indexingProfileId = indexing_profiles.id WHERE libraryId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 		ResultSet libraryInformationRS = libraryInformationStmt.executeQuery();
 		PreparedStatement librarySideLoadScopesStmt = dbConn.prepareStatement("SELECT * from library_sideload_scopes WHERE libraryId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+		PreparedStatement libraryCloudLibraryScopesStmt = dbConn.prepareStatement("SELECT * from library_cloud_library_scope WHERE libraryId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 
 		while (libraryInformationRS.next()) {
 			String facetLabel = libraryInformationRS.getString("facetLabel");
@@ -457,21 +458,30 @@ public class IndexingUtils {
 			}
 			//These options determine how scoping is done
 			long libraryId = libraryInformationRS.getLong("libraryId");
-			String pTypes = libraryInformationRS.getString("pTypes");
-			if (pTypes == null) {
-				pTypes = "";
+
+			//Get number of locations for the library
+			int numLocations = 0;
+			numLocationsForLibraryStmt.setLong(1, libraryId);
+			ResultSet numLocationsForLibraryRS = numLocationsForLibraryStmt.executeQuery();
+			if (numLocationsForLibraryRS.next()){
+				numLocations = numLocationsForLibraryRS.getInt("numLocations");
 			}
+			numLocationsForLibraryRS.close();
 
 			//Determine if we need to build a scope for this library
 			//MDN 10/1/2014 always build scopes because it makes coding more consistent elsewhere.
 			//We need to build a scope
 			Scope newScope = new Scope();
 			newScope.setIsLibraryScope(true);
-			newScope.setIsLocationScope(false);
+			if (numLocations == 1) {
+				//Scopes with only 1 location for the library will be boht library and location
+				newScope.setIsLocationScope(true);
+			}else{
+				newScope.setIsLocationScope(false);
+			}
 			newScope.setScopeName(subdomain);
 			newScope.setLibraryId(libraryId);
 			newScope.setFacetLabel(facetLabel);
-			newScope.setRelatedPTypes(pTypes.split(","));
 			newScope.setPublicListsToInclude(libraryInformationRS.getInt("publicListsToInclude"));
 			newScope.setAdditionalLocationsToShowAvailabilityFor(libraryInformationRS.getString("additionalLocationsToShowAvailabilityFor"));
 			long groupedWorkDisplaySettingId = libraryInformationRS.getLong("groupedWorkDisplaySettingId");
@@ -492,14 +502,13 @@ public class IndexingUtils {
 				newScope.setHooplaScope(hooplaScopes.get(hooplaScopeLibrary));
 			}
 
-			long rbdigitalScopeLibrary = libraryInformationRS.getLong("rbdigitalScopeId");
-			if (rbdigitalScopeLibrary != -1) {
-				newScope.setRbdigitalScope(rbdigitalScopes.get(rbdigitalScopeLibrary));
-			}
-
-			long cloudLibraryScopeLibrary = libraryInformationRS.getLong("cloudLibraryScopeId");
-			if (cloudLibraryScopeLibrary != -1) {
-				newScope.setCloudLibraryScope(cloudLibraryScopes.get(cloudLibraryScopeLibrary));
+			libraryCloudLibraryScopesStmt.setLong(1, libraryId);
+			ResultSet libraryCloudLibraryScopesRS = libraryCloudLibraryScopesStmt.executeQuery();
+			while (libraryCloudLibraryScopesRS.next()) {
+				long cloudLibraryScopeId = libraryCloudLibraryScopesRS.getLong("scopeId");
+				if (cloudLibraryScopes.containsKey(cloudLibraryScopeId)) {
+					newScope.addCloudLibraryScope(cloudLibraryScopes.get(cloudLibraryScopeId));
+				}
 			}
 
 			long axis360ScopeLibrary = libraryInformationRS.getLong("axis360ScopeId");

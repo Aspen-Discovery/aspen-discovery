@@ -8,6 +8,7 @@ require_once ROOT_DIR . '/sys/Module.php';
 require_once ROOT_DIR . '/sys/SystemLogging/AspenUsage.php';
 require_once ROOT_DIR . '/sys/SystemLogging/UsageByIPAddress.php';
 require_once ROOT_DIR . '/sys/IP/IPAddress.php';
+require_once ROOT_DIR . '/sys/Utils/EncryptionUtils.php';
 global $aspenUsage;
 $aspenUsage = new AspenUsage();
 $aspenUsage->year = date('Y');
@@ -23,14 +24,24 @@ require_once ROOT_DIR . '/sys/ConfigArray.php';
 global $configArray;
 $configArray = readConfig();
 
+if (isset($_SERVER['SERVER_NAME'])) {
+	$aspenUsage->instance = $_SERVER['SERVER_NAME'];
+}else{
+	$aspenUsage->instance = 'aspen_internal';
+}
+
 //This has to be done after reading configuration so we can get the servername
 global $usageByIPAddress;
-global $instanceName;
+global $fullServerName;
 $usageByIPAddress = new UsageByIPAddress();
 $usageByIPAddress->year = date('Y');
 $usageByIPAddress->month = date('n');
 $usageByIPAddress->ipAddress = IPAddress::getClientIP();
-$usageByIPAddress->instance = $instanceName;
+if (isset($_SERVER['SERVER_NAME'])) {
+	$usageByIPAddress->instance = $_SERVER['SERVER_NAME'];
+}else{
+	$usageByIPAddress->instance = 'aspen_internal';
+}
 
 require_once ROOT_DIR . '/sys/Timer.php';
 global $timer;
@@ -41,7 +52,6 @@ $memoryWatcher = new MemoryWatcher();
 
 global $logger;
 $logger = new Logger();
-$timer->logTime("Read Config");
 
 //Use output buffering to allow session cookies to have different values
 // this can't be determined before session_start is called
@@ -49,6 +59,12 @@ ob_start();
 
 initMemcache();
 initDatabase();
+
+//Check to see if timings should be enabled
+if (IPAddress::logTimingInformation()) {
+	$timer->enableTimings(true);
+}
+$timer->logTime("Initial configuration");
 
 try{
 	$aspenUsage->find(true);

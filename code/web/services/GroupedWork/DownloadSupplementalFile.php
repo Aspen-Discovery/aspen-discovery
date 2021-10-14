@@ -103,7 +103,7 @@ class GroupedWork_DownloadSupplementalFile
 
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		if (!empty($this->recordDriver)) {

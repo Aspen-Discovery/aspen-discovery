@@ -13,6 +13,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Set;
+import java.util.regex.Pattern;
 import java.util.zip.CRC32;
 
 import com.turning_leaf_technologies.strings.StringUtils;
@@ -27,9 +28,10 @@ import org.xml.sax.Attributes;
 import org.xml.sax.helpers.DefaultHandler;
 
 class CloudLibraryMarcHandler extends DefaultHandler {
-	private static PreparedStatement updateCloudLibraryItemStmt;
-	private static PreparedStatement updateCloudLibraryAvailabilityStmt;
-	private static PreparedStatement getExistingCloudLibraryAvailabilityStmt;
+	private CloudLibraryExporter exporter;
+	private PreparedStatement updateCloudLibraryItemStmt;
+	private PreparedStatement updateCloudLibraryAvailabilityStmt;
+	private PreparedStatement getExistingCloudLibraryAvailabilityStmt;
 
 	private final MarcFactory marcFactory;
 	private final boolean doFullReload;
@@ -39,6 +41,7 @@ class CloudLibraryMarcHandler extends DefaultHandler {
 	private final CloudLibraryExtractLogEntry logEntry;
 	private final HashMap<String, CloudLibraryTitle> existingRecords;
 	private final long startTimeForLogging;
+	private final long settingId;
 
 	private int numDocuments = 0;
 	private Record marcRecord;
@@ -49,7 +52,9 @@ class CloudLibraryMarcHandler extends DefaultHandler {
 
 	private static final CRC32 checksumCalculator = new CRC32();
 
-	CloudLibraryMarcHandler(HashMap<String, CloudLibraryTitle> existingRecords, boolean doFullReload, long startTimeForLogging, Connection dbConn, RecordGroupingProcessor recordGroupingProcessor, GroupedWorkIndexer indexer, CloudLibraryExtractLogEntry logEntry, Logger logger) {
+	CloudLibraryMarcHandler(CloudLibraryExporter exporter, long settingId, HashMap<String, CloudLibraryTitle> existingRecords, boolean doFullReload, long startTimeForLogging, Connection dbConn, RecordGroupingProcessor recordGroupingProcessor, GroupedWorkIndexer indexer, CloudLibraryExtractLogEntry logEntry, Logger logger) {
+		this.exporter = exporter;
+		this.settingId = settingId;
 		this.recordGroupingProcessor = recordGroupingProcessor;
 		this.indexer = indexer;
 		this.logEntry = logEntry;
@@ -69,8 +74,8 @@ class CloudLibraryMarcHandler extends DefaultHandler {
 			getExistingCloudLibraryAvailabilityStmt = dbConn.prepareStatement("SELECT id, rawChecksum from cloud_library_availability WHERE cloudLibraryId = ?");
 			updateCloudLibraryAvailabilityStmt = dbConn.prepareStatement(
 					"INSERT INTO cloud_library_availability " +
-							"(cloudLibraryId, totalCopies, sharedCopies, totalLoanCopies, totalHoldCopies, sharedLoanCopies, rawChecksum, rawResponse, lastChange) " +
-							"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) " +
+							"(cloudLibraryId, settingId, totalCopies, sharedCopies, totalLoanCopies, totalHoldCopies, sharedLoanCopies, rawChecksum, rawResponse, lastChange) " +
+							"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) " +
 							"ON DUPLICATE KEY UPDATE totalCopies = VALUES(totalCopies), sharedCopies = VALUES(sharedCopies), " +
 							"totalLoanCopies = VALUES(totalLoanCopies), totalHoldCopies = VALUES(totalHoldCopies), sharedLoanCopies = VALUES(sharedLoanCopies), " +
 							"rawChecksum = VALUES(rawChecksum), rawResponse = VALUES(rawResponse), lastChange = VALUES(lastChange)");
@@ -177,7 +182,7 @@ class CloudLibraryMarcHandler extends DefaultHandler {
 		String author = MarcUtil.getFirstFieldVal(marcRecord, "100a");
 
 		//Get availability for the title
-		CloudLibraryAvailability availability = CloudLibraryExportMain.loadAvailabilityForRecord(cloudLibraryId);
+		CloudLibraryAvailability availability = exporter.loadAvailabilityForRecord(cloudLibraryId);
 		if (availability == null) {
 			logEntry.addNote("Did not load availability for " + title + " by " + author + " id " + cloudLibraryId);
 			return;
@@ -257,14 +262,15 @@ class CloudLibraryMarcHandler extends DefaultHandler {
 			try {
 				logEntry.incAvailabilityChanges();
 				updateCloudLibraryAvailabilityStmt.setString(1, cloudLibraryId);
-				updateCloudLibraryAvailabilityStmt.setLong(2, availability.getTotalCopies());
-				updateCloudLibraryAvailabilityStmt.setLong(3, availability.getSharedCopies());
-				updateCloudLibraryAvailabilityStmt.setLong(4, availability.getTotalLoanCopies());
-				updateCloudLibraryAvailabilityStmt.setLong(5, availability.getTotalHoldCopies());
-				updateCloudLibraryAvailabilityStmt.setLong(6, availability.getSharedLoanCopies());
-				updateCloudLibraryAvailabilityStmt.setLong(7, availabilityChecksum);
-				updateCloudLibraryAvailabilityStmt.setString(8, rawAvailabilityResponse);
-				updateCloudLibraryAvailabilityStmt.setLong(9, startTimeForLogging);
+				updateCloudLibraryAvailabilityStmt.setLong(2, settingId);
+				updateCloudLibraryAvailabilityStmt.setLong(3, availability.getTotalCopies());
+				updateCloudLibraryAvailabilityStmt.setLong(4, availability.getSharedCopies());
+				updateCloudLibraryAvailabilityStmt.setLong(5, availability.getTotalLoanCopies());
+				updateCloudLibraryAvailabilityStmt.setLong(6, availability.getTotalHoldCopies());
+				updateCloudLibraryAvailabilityStmt.setLong(7, availability.getSharedLoanCopies());
+				updateCloudLibraryAvailabilityStmt.setLong(8, availabilityChecksum);
+				updateCloudLibraryAvailabilityStmt.setString(9, rawAvailabilityResponse);
+				updateCloudLibraryAvailabilityStmt.setLong(10, startTimeForLogging);
 				updateCloudLibraryAvailabilityStmt.executeUpdate();
 			} catch (SQLException e) {
 				logEntry.incErrors("Error saving availability", e);
@@ -284,9 +290,11 @@ class CloudLibraryMarcHandler extends DefaultHandler {
 		}
 	}
 
+	Pattern wordsInParensPattern = Pattern.compile("\\(.*?\\)", Pattern.CASE_INSENSITIVE);
 	private String groupCloudLibraryRecord(String title, String subtitle, String author, String format, String cloudLibraryId) {
 		RecordIdentifier primaryIdentifier = new RecordIdentifier("cloud_library", cloudLibraryId);
-
+		//cloudLibrary puts awards within parentheses, we need to remove all of those.
+		title = wordsInParensPattern.matcher(title).replaceAll("");
 		return recordGroupingProcessor.processRecord(primaryIdentifier, title, subtitle, author, format, true);
 	}
 

@@ -26,7 +26,7 @@ abstract class Action
 		if (!empty($sidebarTemplate)) $interface->assign('sidebar', $sidebarTemplate);
 		$interface->assign('breadcrumbs', $this->getBreadcrumbs());
 		$interface->setTemplate($mainContentTemplate);
-		$interface->setPageTitle($pageTitle, $translateTitle);
+		$interface->setPageTitle($pageTitle, $translateTitle, false, true);
 		$interface->assign('moreDetailsTemplate', 'GroupedWork/moredetails-accordion.tpl');
 		global $isAJAX;
 		if (!$isAJAX && UserAccount::isLoggedIn()){
@@ -77,5 +77,5 @@ abstract class Action
 		die();
 	}
 
-	abstract function getBreadcrumbs();
+	abstract function getBreadcrumbs() : array;
 }

@@ -116,7 +116,7 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 			$materialsRequests->joinAdd(new User(), 'INNER', 'user', 'createdBy', 'id');
 			$materialsRequests->joinAdd(new User(), 'LEFT', 'assignee', 'assignedTo', 'id');
 			$materialsRequests->selectAdd();
-			$materialsRequests->selectAdd('materials_request.*, status.description as statusLabel, location.displayName as location, user.firstname, user.lastname, user.' . $configArray['Catalog']['barcodeProperty'] . ' as barcode, assignee.displayName as assignedTo');
+			$materialsRequests->selectAdd('materials_request.*, status.description as statusLabel, location.displayName as location');
 
 			//Need to limit to only requests submitted for the user's home location
 			$userHomeLibrary = Library::getPatronHomeLibrary();
@@ -144,7 +144,7 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 				$formatSql = "";
 				foreach ($formatsToShow as $format){
 					if (strlen($formatSql) > 0) $formatSql .= ",";
-					$formatSql .= "'" . $materialsRequests->escape($format) . "'";
+					$formatSql .= $materialsRequests->escape($format);
 				}
 				$materialsRequests->whereAdd("format in ($formatSql)");
 			}
@@ -153,8 +153,11 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 				$condition = $assigneesSql = '';
 				if (!empty($assigneesToShow)) {
 					foreach ($assigneesToShow as $assignee) {
-						if (strlen($assigneesSql) > 0) $assigneesSql .= ',';
-						$assigneesSql .= "'{$materialsRequests->escape($assignee)}'";
+						$assignee = trim($assignee);
+						if (is_numeric($assignee)) {
+							if (strlen($assigneesSql) > 0) $assigneesSql .= ',';
+							$assigneesSql .= $assignee;
+						}
 					}
 					$assigneesSql = "assignedTo IN ($assigneesSql)";
 				}
@@ -185,8 +188,11 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 				$ids = explode(',', $idsToShow);
 				$formattedIds = '';
 				foreach ($ids as $id){
-					if (strlen($formattedIds) > 0) $formattedIds .= ',';
-					$formattedIds .= "'" . trim($id) . "'";
+					$id = trim($id);
+					if (is_numeric($id)) {
+						if (strlen($formattedIds) > 0) $formattedIds .= ',';
+						$formattedIds .= $id;
+					}
 				}
 				$materialsRequests->whereAdd("materials_request.id IN ($formattedIds)");
 				$interface->assign('idsToShow', $idsToShow);
@@ -302,15 +308,10 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 		$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Magazine');
 		$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Author');
 		$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Format');
-		if ($configArray['MaterialsRequest']['showEbookFormatField']/* || $configArray['MaterialsRequest']['showEaudioFormatField']*/){
-			$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Sub Format');
-		}
-		if ($configArray['MaterialsRequest']['showBookTypeField']){
-			$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Type');
-		}
-		if ($configArray['MaterialsRequest']['showAgeField']){
-			$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Age Level');
-		}
+		$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Sub Format');
+
+		$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Type');
+		$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Age Level');
 		$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'ISBN');
 		$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'UPC');
 		$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'ISSN');
@@ -324,12 +325,9 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 		$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Barcode');
 		$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Email');
 
-		if ($configArray['MaterialsRequest']['showPlaceHoldField']){
-			$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Hold');
-		}
-		if ($configArray['MaterialsRequest']['showIllField']){
-			$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'ILL');
-		}
+		$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Hold');
+		$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'ILL');
+
 		$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Status');
 		$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Date Created');
 		$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Assigned To');
@@ -364,15 +362,9 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 				$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, trim($magazineInfo));
 				$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $request->author);
 				$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $request->format);
-				if ($configArray['MaterialsRequest']['showEbookFormatField']/* || $configArray['MaterialsRequest']['showEaudioFormatField']*/){
-					$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $request->subFormat);
-				}
-				if ($configArray['MaterialsRequest']['showBookTypeField']){
-					$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $request->bookType);
-				}
-				if ($configArray['MaterialsRequest']['showAgeField']){
-					$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $request->ageLevel);
-				}
+				$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $request->subFormat);
+				$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $request->bookType);
+				$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $request->ageLevel);
 				$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $request->isbn);
 				$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $request->upc);
 				$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $request->issn);
@@ -382,31 +374,26 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 				$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $request->abridged == 0 ? 'Unabridged' : ($request->abridged == 1 ? 'Abridged' : 'Not Applicable'));
 				$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $request->about);
 				$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $request->comments);
-				$requestUser = new User();
-				$requestUser->get($request->createdBy);
-				$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $requestUser->lastname . ', ' . $requestUser->firstname);
-				$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $requestUser->$configArray['Catalog']['barcodeProperty']);
-				$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $requestUser->email);
-				if ($configArray['MaterialsRequest']['showPlaceHoldField']){
-					if ($request->placeHoldWhenAvailable == 1){
-						$value = 'Yes ' . $request->holdPickupLocation;
-						if ($request->bookmobileStop){
-							$value .= ' ' . $request->bookmobileStop;
-						}
-					}else{
-						$value = 'No';
+				$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $request->getCreatedByLastName() . ', ' . $request->getCreatedByFirstName());
+				$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $request->getCreatedByUser()->getBarcode());
+				$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $request->getCreatedByUser()->email);
+				if ($request->placeHoldWhenAvailable == 1){
+					$value = 'Yes ' . $request->holdPickupLocation;
+					if ($request->bookmobileStop){
+						$value .= ' ' . $request->bookmobileStop;
 					}
-					$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $value);
+				}else{
+					$value = 'No';
 				}
-				if ($configArray['MaterialsRequest']['showIllField']){
-					if ($request->illItem == 1){
-						$value = 'Yes';
-					}else{
-						$value = 'No';
-					}
-					$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $value);
+				$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $value);
+				if ($request->illItem == 1){
+					$value = 'Yes';
+				}else{
+					$value = 'No';
 				}
-				$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, translate($request->status));
+				$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $value);
+
+				$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, translate(['text'=>$request->status,'isPublicFacing'=>true,'isMetadata'=>true]));
 				$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, date('m/d/Y', $request->dateCreated));
 				$activeSheet->setCellValueByColumnAndRow($curCol, $curRow, $request->assignedTo);
 			}
@@ -429,19 +416,19 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 		exit;
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/MaterialsRequest/ManageRequests', 'Manage Materials Requests');
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return 'materials_request';
 	}
 
-	function canView()
+	function canView() : bool
 	{
 		return UserAccount::userHasPermission('Manage Library Materials Requests');
 	}

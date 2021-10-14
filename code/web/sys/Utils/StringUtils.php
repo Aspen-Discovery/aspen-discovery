@@ -7,6 +7,9 @@ class StringUtils
 		if (strlen($string) < $maxLength) {
 			return $string;
 		} else {
+			if ($addEllipsis){
+				$maxLength -= 3;
+			}
 			$lastDelimiter = strrpos(substr($string, 0, $maxLength), ' ');
 			$string = substr($string, 0, $lastDelimiter);
 			if ($addEllipsis) {
@@ -148,5 +151,18 @@ class StringUtils
 		// $bytes /= (1 << (10 * $pow));
 
 		return round($bytes, $precision) . ' ' . $units[$pow];
+	}
+
+	static function startsWith( $haystack, $needle ) {
+		$length = strlen( $needle );
+		return substr( $haystack, 0, $length ) === $needle;
+	}
+
+	static function endsWith( $haystack, $needle ) {
+		$length = strlen( $needle );
+		if( !$length ) {
+			return true;
+		}
+		return substr( $haystack, -$length ) === $needle;
 	}
 }

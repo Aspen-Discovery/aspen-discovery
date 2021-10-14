@@ -6,21 +6,23 @@ require_once ROOT_DIR . '/sys/Hoopla/HooplaScope.php';
 
 class Hoopla_Scopes extends ObjectEditor
 {
-	function getObjectType(){
+	function getObjectType() : string{
 		return 'HooplaScope';
 	}
-	function getToolName(){
+	function getToolName() : string{
 		return 'Scopes';
 	}
-	function getModule(){
+	function getModule() : string{
 		return 'Hoopla';
 	}
-	function getPageTitle(){
+	function getPageTitle() : string{
 		return 'Hoopla Scopes';
 	}
-	function getAllObjects(){
+	function getAllObjects($page, $recordsPerPage) : array{
 		$object = new HooplaScope();
-		$object->orderBy('name');
+		$object->orderBy($this->getSort());
+		$this->applyFilters($object);
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		$objectList = array();
 		while ($object->fetch()){
@@ -28,24 +30,28 @@ class Hoopla_Scopes extends ObjectEditor
 		}
 		return $objectList;
 	}
-	function getObjectStructure(){
+	function getDefaultSort() : string
+	{
+		return 'name asc';
+	}
+	function getObjectStructure() : array{
 		return HooplaScope::getObjectStructure();
 	}
-	function getPrimaryKeyColumn(){
+	function getPrimaryKeyColumn() : string{
 		return 'id';
 	}
-	function getIdKeyColumn(){
+	function getIdKeyColumn() : string{
 		return 'id';
 	}
-	function getAdditionalObjectActions($existingObject){
+	function getAdditionalObjectActions($existingObject) : array{
 		return [];
 	}
 
-	function getInstructions(){
+	function getInstructions() : string{
 		return '';
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
@@ -54,12 +60,12 @@ class Hoopla_Scopes extends ObjectEditor
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return 'hoopla';
 	}
 
-	function canView()
+	function canView() : bool
 	{
 		return UserAccount::userHasPermission('Administer Hoopla');
 	}

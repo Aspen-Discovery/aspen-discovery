@@ -279,14 +279,14 @@ class LibrarySolution extends AbstractIlsDriver {
 	 * This is responsible for retrieving all transactions (i.e. checked out items)
 	 * by a specific patron.
 	 *
-	 * @param User $user The user to load transactions for
-	 * @return mixed        Array of the patron's transactions on success,
+	 * @param User $patron The user to load transactions for
+	 * @return Checkout[]        Array of the patron's transactions on success,
 	 * AspenError otherwise.
 	 * @access public
 	 */
-	public function getCheckouts($user){
+	public function getCheckouts($patron){
 		$transactions = array();
-		if ($this->loginPatronToLSS($user->cat_username, $user->cat_password)){
+		if ($this->loginPatronToLSS($patron->cat_username, $patron->cat_password)){
 			//Load transactions from LSS
 			//TODO: Verify that this will load more than 20 loans
 			$url = $this->getVendorOpacUrl() . '/loans/0/20/Status?_=' . time() * 1000;
@@ -349,7 +349,7 @@ class LibrarySolution extends AbstractIlsDriver {
 		return false;
 	}
 
-	public function renewAll($patron){
+	public function renewAll(User $patron){
 		return array(
 			'success' => false,
 			'message' => 'Renew All not supported directly, call through Catalog Connection',
@@ -432,18 +432,18 @@ class LibrarySolution extends AbstractIlsDriver {
 	 *
 	 * This is responsible for retrieving all holds for a specific patron.
 	 *
-	 * @param User $user      The user to load transactions for
+	 * @param User $patron      The user to load transactions for
 	 *
 	 * @return array          Array of the patron's holds
 	 * @access public
 	 */
-	public function getHolds($user){
+	public function getHolds($patron){
 		$holds = array(
 			'available' => array(),
 			'unavailable' => array()
 		);
 
-		if ($this->loginPatronToLSS($user->cat_username, $user->cat_password)) {
+		if ($this->loginPatronToLSS($patron->cat_username, $patron->cat_password)) {
 			//Load transactions from LSS
 			//TODO: Verify that this will load more than 20 loans
 			$url = $this->getVendorOpacUrl() . '/requests/0/20/Status?_=' . time() * 1000;
@@ -511,7 +511,7 @@ class LibrarySolution extends AbstractIlsDriver {
 					$curHold['ratingData'] = $recordDriver->getRatingData();
 				}
 				$curHold['link'] = $recordDriver->getLinkUrl();
-				$curHold['user'] = $user->getNameAndLibraryLabel();
+				$curHold['user'] = $patron->getNameAndLibraryLabel();
 
 				//TODO: Determine the status of available holds
 				if (!isset($hold->status) || $hold->status == 'PE' || $hold->status == 'T'){
@@ -558,9 +558,9 @@ class LibrarySolution extends AbstractIlsDriver {
 			foreach ($placeHoldResponse->placeHoldInfos as $holdResponse){
 				if ($holdResponse->success){
 					$result['success'] = true;
-					$result['message'] = translate(['text'=>"ils_hold_success", 'defaultText'=>"Your hold was placed successfully."]);
+					$result['message'] = translate(['text'=>"Your hold was placed successfully.",'isPublicFacing'=>true]);
 				}else{
-					$result['message'] = 'Sorry, your hold could not be placed.  ' . htmlentities(translate($holdResponse->message));
+					$result['message'] = 'Sorry, your hold could not be placed.  ' . htmlentities(translate(['text'=>$holdResponse->message,'isPublicFacing'=>true]));
 				}
 			}
 		}else{
@@ -650,9 +650,9 @@ class LibrarySolution extends AbstractIlsDriver {
 			foreach ($response->suspendHoldInfos as $itemResponse){
 				if ($itemResponse->success){
 					$result['success'] = true;
-					$result['message'] = translate(['text'=>'ils_freeze_hold_success', 'defaultText' => 'Your hold was frozen successfully.']);
+					$result['message'] = translate(['text'=>'Your hold was frozen successfully.', 'isPublicFacing'=> true]);
 				}else{
-					$result['message'] = translate(['text'=>'ils_freeze_hold_failure', 'defaultText' => 'Sorry, your hold could not be frozen.']);
+					$result['message'] = translate(['text'=>'Sorry, your hold could not be frozen.', 'isPublicFacing'=> true]);
 				}
 			}
 		}else{
@@ -675,7 +675,7 @@ class LibrarySolution extends AbstractIlsDriver {
 		return $result;
 	}
 
-	function changeHoldPickupLocation($patron, $recordId, $itemToUpdateId, $newPickupLocation){
+	function changeHoldPickupLocation(User $patron, $recordId, $itemToUpdateId, $newPickupLocation){
 		$recordDriver = RecordDriverFactory::initRecordDriverById($this->accountProfile->recordSource . ':' . $recordId);
 		$result = array(
 			'success' => false,

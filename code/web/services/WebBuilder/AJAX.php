@@ -7,7 +7,7 @@ class WebBuilder_AJAX extends JSON_Action
 	function getPortalCellValuesForSource() {
 		$result = [
 			'success' => false,
-			'message' => 'Unknown error'
+			'message' => translate(['text'=>'Unknown Error', 'isPublicFacing'=>true])
 		];
 
 		$sourceType = $_REQUEST['sourceType'];
@@ -86,6 +86,22 @@ class WebBuilder_AJAX extends JSON_Action
 				'values' => $list
 			];
 			break;
+		case 'pdf':
+			require_once ROOT_DIR . '/sys/File/FileUpload.php';
+			$list = [];
+			$list['-1'] = 'Select a PDF';
+			$object = new FileUpload();
+			$object->type = 'web_builder_pdf';
+			$object->orderBy('title');
+			$object->find();
+			while ($object->fetch()) {
+				$list[$object->id] =$object->title;
+			}
+			$result = [
+				'success' => true,
+				'values' => $list
+			];
+			break;
 		case 'video':
 			require_once ROOT_DIR . '/sys/File/FileUpload.php';
 			$list = [];
@@ -102,14 +118,29 @@ class WebBuilder_AJAX extends JSON_Action
 				'values' => $list
 			];
 			break;
+		case 'web_resource':
+			require_once ROOT_DIR . '/sys/WebBuilder/WebResource.php';
+			$list = [];
+			$list['-1'] = 'Select a web resource';
+			$object = new WebResource();
+			$object->orderBy('name');
+			$object->find();
+			while ($object->fetch()) {
+				$list[$object->id] = $object->name;
+			}
+			$result = [
+				'success' => true,
+				'values' => $list
+			];
+			break;
 		default:
 			$result['message'] = 'Unhandled Source Type ' . $sourceType;
 		}
 
 		$portalCellId = $_REQUEST['portalCellId'];
-		$portalCell = null;
 		$result['selected'] = '-1';
 		if (!empty($portalCellId)){
+			require_once ROOT_DIR . '/sys/WebBuilder/PortalCell.php';
 			$portalCell = new PortalCell();
 			$portalCell->id = $portalCellId;
 			if ($portalCell->find(true)){
@@ -129,7 +160,7 @@ class WebBuilder_AJAX extends JSON_Action
 			'message' => 'Unknown error uploading image'
 		];
 		if (UserAccount::isLoggedIn()){
-			if (UserAccount::userHasPermission('Administer All Web Resources')){
+			if (UserAccount::userHasPermission('Administer All Web Content')){
 				if (! empty($_FILES)) {
 					require_once ROOT_DIR . '/sys/File/ImageUpload.php';
 					$structure = ImageUpload::getObjectStructure();
@@ -137,6 +168,8 @@ class WebBuilder_AJAX extends JSON_Action
 						$image = new ImageUpload();
 						$image->type = 'web_builder_image';
 						$image->fullSizePath = $file['name'];
+						$image->generateXLargeSize = true;
+						$image->generateLargeSize = true;
 						$image->generateMediumSize = true;
 						$image->generateSmallSize = true;
 						$destFileName = $file['name'];
@@ -181,17 +214,71 @@ class WebBuilder_AJAX extends JSON_Action
 	}
 
 	/** @noinspection PhpUnused */
+	function uploadImageTinyMCE(){
+		if (UserAccount::isLoggedIn()){
+			if (UserAccount::userHasPermission('Administer All Web Content')){
+				if (! empty($_FILES)) {
+					require_once ROOT_DIR . '/sys/File/ImageUpload.php';
+					$structure = ImageUpload::getObjectStructure();
+					foreach ($_FILES as $file) {
+						$image = new ImageUpload();
+						$image->type = 'web_builder_image';
+						$image->fullSizePath = $file['name'];
+						$image->generateXLargeSize = true;
+						$image->generateLargeSize = true;
+						$image->generateMediumSize = true;
+						$image->generateSmallSize = true;
+						$destFileName = $file['name'];
+						$destFolder = $structure['fullSizePath']['path'];
+						if (!is_dir($destFolder)){
+							if (!mkdir($destFolder, 0755, true)){
+								$result['message'] = 'Could not create directory to upload files';
+								if (IPAddress::showDebuggingInformation()){
+									$result['message'] .= " " . $destFolder;
+								}
+							}
+						}
+						$destFullPath = $destFolder . '/' . $destFileName;
+						if (file_exists($destFullPath)){
+							$image->find(true);
+						}
+
+						$image->title = $file['name'];
+						$copyResult = copy($file["tmp_name"], $destFullPath);
+						if ($copyResult) {
+							$image->update();
+							$result = [
+								'location' => $image->getDisplayUrl('full')
+							];
+							break;
+						}else{
+							$result['message'] = 'Could not save the image to disk';
+						}
+					}
+				}else{
+					$result['message'] = 'No file was selected';
+				}
+			}else{
+				$result['message'] = 'You don\'t have the correct permissions to upload an image';
+			}
+		}else{
+			$result['message'] = 'You must be logged in to upload an image';
+		}
+		return $result;
+	}
+
+	/** @noinspection PhpUnused */
 	function getUploadImageForm(){
 		global $interface;
-		$results = [
+		$result = [
 			'success' => false,
 			'message' => 'Unknown error getting upload form'
 		];
 		if (UserAccount::isLoggedIn()) {
-			if (UserAccount::userHasPermission('Administer All Web Resources')) {
+			if (UserAccount::userHasPermission('Administer All Web Content')) {
 				$editorName = strip_tags($_REQUEST['editorName']);
 				$interface->assign('editorName', $editorName);
-				$results = array(
+				$result = array(
 					'success' => true,
 					'title' => 'Upload an Image',
 					'modalBody' => $interface->fetch('WebBuilder/uploadImage.tpl'),
@@ -204,7 +291,7 @@ class WebBuilder_AJAX extends JSON_Action
 			$result['message'] = 'You must be logged in to upload an image';
 		}
 
-		return $results;
+		return $result;
 	}
 
 	/** @noinspection PhpUnused */
@@ -217,6 +304,7 @@ class WebBuilder_AJAX extends JSON_Action
 			if (UserAccount::userHasPermission(['Administer All Custom Pages', 'Administer Library Custom Pages'])) {
 				if (isset($_REQUEST['id'])) {
 					require_once ROOT_DIR . '/sys/WebBuilder/PortalCell.php';
+					require_once ROOT_DIR . '/sys/WebBuilder/PortalRow.php';
 					$portalCell = new PortalCell();
 					$portalCell->id = $_REQUEST['id'];
 					if ($portalCell->find(true)){
@@ -499,7 +587,7 @@ class WebBuilder_AJAX extends JSON_Action
 						$result['message'] = 'Display form';
 						$result['title'] = 'Edit Cell';
 						$result['modalBody'] = $interface->fetch('DataObjectUtil/objectEditForm.tpl');
-						$result['modalButtons'] = "<button class='tool btn btn-primary' onclick='AspenDiscovery.WebBuilder.editCell()'>" . translate('Update Cell') . "</button>";
+						$result['modalButtons'] = "<button class='tool btn btn-primary' onclick='AspenDiscovery.WebBuilder.editCell()'>" . translate(['text' => 'Update Cell', 'isAdminFacing'=>true]) . "</button>";
 					}else{
 						$result['message'] = 'Unable to find that cell';
 					}
@@ -514,5 +602,103 @@ class WebBuilder_AJAX extends JSON_Action
 		}
 		return $result;
 
+	}
+
+	/** @noinspection PhpUnused */
+	function getHoursAndLocations(){
+		//Get a list of locations for the current library
+		global $library;
+		$tmpLocation = new Location();
+		$tmpLocation->libraryId = $library->libraryId;
+		$tmpLocation->showInLocationsAndHoursList = 1;
+		$tmpLocation->orderBy('isMainBranch DESC, displayName'); // List Main Branches first, then sort by name
+		$libraryLocations = array();
+		$tmpLocation->find();
+		if ($tmpLocation->getNumResults() == 0){
+			//Get all locations
+			$tmpLocation = new Location();
+			$tmpLocation->showInLocationsAndHoursList = 1;
+			$tmpLocation->orderBy('displayName');
+			$tmpLocation->find();
+		}
+
+		$locationsToProcess = [];
+		while ($tmpLocation->fetch()){
+			$locationsToProcess[] = clone $tmpLocation;
+		}
+
+		require_once ROOT_DIR . '/sys/Enrichment/GoogleApiSetting.php';
+		$googleSettings = new GoogleApiSetting();
+		if ($googleSettings->find(true)){
+			$mapsKey = $googleSettings->googleMapsKey;
+		}else{
+			$mapsKey = null;
+		}
+		require_once ROOT_DIR . '/sys/Parsedown/AspenParsedown.php';
+		$parsedown = AspenParsedown::instance();
+		$parsedown->setBreaksEnabled(true);
+		foreach ($locationsToProcess as $locationToProcess){
+			$mapAddress = urlencode(preg_replace('/\r\n|\r|\n/', '+', $locationToProcess->address));
+			$hours = $locationToProcess->getHours();
+			foreach ($hours as $key => $hourObj){
+				if (!$hourObj->closed){
+					$hourString = $hourObj->open;
+					list($hour, $minutes) = explode(':', $hourString);
+					if ($hour < 12){
+						if ($hour == 0) {
+							$hour += 12;
+						}
+						$hourObj->open = +$hour.":$minutes AM"; // remove leading zeros in the hour
+					}elseif ($hour == 12 && $minutes == '00'){
+						$hourObj->open = 'Noon';
+					}elseif ($hour == 24 && $minutes == '00'){
+						$hourObj->open = 'Midnight';
+					}else{
+						if ($hour != 12) {
+							$hour -= 12;
+						}
+						$hourObj->open = "$hour:$minutes PM";
+					}
+					$hourString = $hourObj->close;
+					list($hour, $minutes) = explode(':', $hourString);
+					if ($hour < 12){
+						if ($hour == 0) {
+							$hour += 12;
+						}
+						$hourObj->close = "$hour:$minutes AM";
+					}elseif ($hour == 12 && $minutes == '00'){
+						$hourObj->close = 'Noon';
+					}elseif ($hour == 24 && $minutes == '00'){
+						$hourObj->close = 'Midnight';
+					}else{
+						if ($hour != 12) {
+							$hour -= 12;
+						}
+						$hourObj->close = "$hour:$minutes PM";
+					}
+				}
+				$hours[$key] = $hourObj;
+			}
+			$libraryLocation = [
+				'id' => $locationToProcess->locationId,
+				'name' => $locationToProcess->displayName,
+				'address' => preg_replace('/\r\n|\r|\n/', '<br>', $locationToProcess->address),
+				'phone' => $locationToProcess->phone,
+				'tty' => $locationToProcess->tty,
+				//'map_image' => "http://maps.googleapis.com/maps/api/staticmap?center=$mapAddress&zoom=15&size=200x200&sensor=false&markers=color:red%7C$mapAddress",
+				'hours' => $hours,
+				'hasValidHours' => $locationToProcess->hasValidHours(),
+				'description' => $parsedown->parse($locationToProcess->description)
+			];
+
+			if (!empty($mapsKey)){
+				$libraryLocation['map_link'] = "http://maps.google.com/maps?f=q&hl=en&geocode=&q=$mapAddress&ie=UTF8&z=15&iwloc=addr&om=1&t=m&key=$mapsKey";
+			}
+			$libraryLocations[$locationToProcess->locationId] = $libraryLocation;
+		}
+
+		global $interface;
+		$interface->assign('libraryLocations', $libraryLocations);
+		return $interface->fetch('WebBuilder/libraryHoursAndLocations.tpl');
 	}
 }

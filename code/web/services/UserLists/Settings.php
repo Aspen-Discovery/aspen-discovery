@@ -6,29 +6,32 @@ require_once ROOT_DIR . '/sys/UserLists/ListIndexingSettings.php';
 
 class UserLists_Settings extends ObjectEditor
 {
-	function getObjectType()
+	function getObjectType() : string
 	{
 		return 'ListIndexingSettings';
 	}
 
-	function getToolName()
+	function getToolName() : string
 	{
 		return 'Settings';
 	}
 
-	function getModule()
+	function getModule() : string
 	{
 		return 'UserLists';
 	}
 
-	function getPageTitle()
+	function getPageTitle() : string
 	{
 		return 'List Indexing Settings';
 	}
 
-	function getAllObjects()
+	function getAllObjects($page, $recordsPerPage) : array
 	{
 		$object = new ListIndexingSettings();
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
+		$this->applyFilters($object);
+		$object->orderBy($this->getSort());
 		$object->find();
 		$objectList = array();
 		while ($object->fetch()) {
@@ -36,33 +39,37 @@ class UserLists_Settings extends ObjectEditor
 		}
 		return $objectList;
 	}
+	function getDefaultSort() : string
+	{
+		return 'id asc';
+	}
 
-	function getObjectStructure()
+	function getObjectStructure() : array
 	{
 		return ListIndexingSettings::getObjectStructure();
 	}
 
-	function getPrimaryKeyColumn()
+	function getPrimaryKeyColumn() : string
 	{
 		return 'id';
 	}
 
-	function getIdKeyColumn()
+	function getIdKeyColumn() : string
 	{
 		return 'id';
 	}
 
-	function getAdditionalObjectActions($existingObject)
+	function getAdditionalObjectActions($existingObject) : array
 	{
 		return [];
 	}
 
-	function getInstructions()
+	function getInstructions() : string
 	{
 		return '';
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
@@ -71,12 +78,12 @@ class UserLists_Settings extends ObjectEditor
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return 'user_lists';
 	}
 
-	function canView()
+	function canView() : bool
 	{
 		return UserAccount::userHasPermission('Administer List Indexing Settings');
 	}

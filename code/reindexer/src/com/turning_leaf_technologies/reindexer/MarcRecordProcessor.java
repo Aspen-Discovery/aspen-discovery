@@ -1,14 +1,17 @@
 package com.turning_leaf_technologies.reindexer;
 
+import com.turning_leaf_technologies.indexing.BaseIndexingSettings;
+import com.turning_leaf_technologies.logging.BaseLogEntry;
 import com.turning_leaf_technologies.marc.MarcUtil;
 import com.turning_leaf_technologies.strings.StringUtils;
 import org.apache.logging.log4j.Logger;
-import org.marc4j.MarcPermissiveStreamReader;
-import org.marc4j.MarcReader;
 import org.marc4j.marc.*;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
+import java.io.File;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -17,10 +20,13 @@ import java.util.regex.PatternSyntaxException;
 abstract class MarcRecordProcessor {
 	protected Logger logger;
 	protected GroupedWorkIndexer indexer;
+	protected BaseIndexingSettings settings;
+	protected String profileType;
 	private static final Pattern mpaaRatingRegex1 = Pattern.compile("(?:.*?)Rated\\s(G|PG-13|PG|R|NC-17|NR|X)(?:.*)", Pattern.CANON_EQ);
 	private static final Pattern mpaaRatingRegex2 = Pattern.compile("(?:.*?)(G|PG-13|PG|R|NC-17|NR|X)\\sRated(?:.*)", Pattern.CANON_EQ);
 	private static final Pattern mpaaRatingRegex3 = Pattern.compile("(?:.*?)MPAA rating:\\s(G|PG-13|PG|R|NC-17|NR|X)(?:.*)", Pattern.CANON_EQ);
 	private static final Pattern mpaaNotRatedRegex = Pattern.compile("Rated\\sNR\\.?|Not Rated\\.?|NR");
+	private static final Pattern dvdBlurayComboRegex = Pattern.compile("(.*blu-ray\\s?\\+\\s?dvd.*)|(.*blu-ray\\s?\\+blu-ray 3d\\s?\\+\\s?dvd.*)|(.*dvd\\s?\\+\\s?blu-ray.*)", Pattern.CASE_INSENSITIVE);
 	private final HashSet<String> unknownSubjectForms = new HashSet<>();
 	int numCharsToCreateFolderFrom;
 	boolean createFolderFromLeadingCharacters;
@@ -32,9 +38,21 @@ abstract class MarcRecordProcessor {
 	String treatUnknownLanguageAs = null;
 	String treatUndeterminedLanguageAs = null;
 
-	MarcRecordProcessor(GroupedWorkIndexer indexer, Logger logger) {
+	PreparedStatement addRecordToDBStmt;
+	PreparedStatement marcRecordAsSuppressedNoMarcStmt;
+	PreparedStatement getRecordSuppressionInformationStmt;
+
+	MarcRecordProcessor(GroupedWorkIndexer indexer, String profileType, Connection dbConn, Logger logger) {
 		this.indexer = indexer;
 		this.logger = logger;
+		this.profileType = profileType;
+		try {
+			addRecordToDBStmt = dbConn.prepareStatement("INSERT INTO ils_records set ilsId = ?, source = ?, checksum = ?, dateFirstDetected = ?, deleted = 0, suppressed = 0, sourceData = COMPRESS(?), lastModified = ? ON DUPLICATE KEY UPDATE sourceData = VALUES(sourceData), lastModified = VALUES(lastModified)");
+			marcRecordAsSuppressedNoMarcStmt = dbConn.prepareStatement("UPDATE ils_records set suppressedNoMarcAvailable = 1 where source = ? and ilsId = ?");
+			getRecordSuppressionInformationStmt = dbConn.prepareStatement("SELECT suppressedNoMarcAvailable from ils_records where source = ? and ilsId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+		}catch (Exception e){
+			indexer.getLogEntry().incErrors("Error setting up prepared statements for loading MARC from the DB", e);
+		}
 	}
 
 	/**
@@ -43,40 +61,55 @@ abstract class MarcRecordProcessor {
 	 *
 	 * @param groupedWork the work to be updated
 	 * @param identifier the identifier to load information for
+	 * @param logEntry the log entry to store any errors
 	 */
-	public void processRecord(GroupedWorkSolr groupedWork, String identifier){
-		Record record = loadMarcRecordFromDisk(identifier);
+	public synchronized void processRecord(GroupedWorkSolr groupedWork, String identifier, BaseLogEntry logEntry){
+		//Check to be sure the record is not suppressed
+		boolean isSuppressed = false;
+		try {
+			getRecordSuppressionInformationStmt.setString(1, this.profileType);
+			getRecordSuppressionInformationStmt.setString(2, identifier);
+			ResultSet getRecordSuppressionInformationRS = getRecordSuppressionInformationStmt.executeQuery();
+			if (getRecordSuppressionInformationRS.next()){
+				if (getRecordSuppressionInformationRS.getBoolean("suppressedNoMarcAvailable")){
+					isSuppressed = true;
+				}
+			}
+			getRecordSuppressionInformationRS.close();
+		}catch (Exception e){
+			logEntry.incErrors("Error loading suppression information for record", e);
+		}
+		if (!isSuppressed) {
+			Record record = indexer.loadMarcRecordFromDatabase(this.profileType, identifier, logEntry);
+			if (record == null) {
+				record = loadMarcRecordFromDisk(identifier, logEntry);
+				if (record != null) {
+					indexer.saveMarcRecordToDatabase(settings, identifier, record);
+				} else {
+					try {
+						//We don't have data for this MARC record, mark it as suppressed for not having MARC data
+						marcRecordAsSuppressedNoMarcStmt.setString(1, this.profileType);
+						marcRecordAsSuppressedNoMarcStmt.setString(2, identifier);
+						marcRecordAsSuppressedNoMarcStmt.executeUpdate();
+					} catch (SQLException e) {
+						logEntry.incErrors("Error marking record as suppressed for not having MARC", e);
+					}
+				}
+			}
 
-		if (record != null){
-			try{
-				updateGroupedWorkSolrDataBasedOnMarc(groupedWork, record, identifier);
-			}catch (Exception e) {
-				logger.error("Error updating solr based on marc record", e);
+			if (record != null) {
+				try {
+					updateGroupedWorkSolrDataBasedOnMarc(groupedWork, record, identifier);
+				} catch (Exception e) {
+					logEntry.incErrors("Error updating solr based on marc record", e);
+				}
 			}
 		}
 	}
 
-	private Record loadMarcRecordFromDisk(String identifier) {
-		Record record = null;
+	private Record loadMarcRecordFromDisk(String identifier, BaseLogEntry logEntry) {
 		String individualFilename = getFileForIlsRecord(identifier);
-		try {
-			//Don't need to use a permissive reader here since we've written good individual MARCs as part of record grouping
-			//Actually we do need to since we can still get MARC records over the max length.
-			FileInputStream inputStream = new FileInputStream(individualFilename);
-			MarcReader marcReader = new MarcPermissiveStreamReader(inputStream, true, true, "UTF8");
-			if (marcReader.hasNext()) {
-				record = marcReader.next();
-			}
-			if (record != null && record.hasErrors()){
-				logger.info("Errors loading MARC\r\n" + record.getErrors().toString());
-			}
-			inputStream.close();
-		}catch (FileNotFoundException fe){
-			logger.warn("Could not find MARC record at " + individualFilename + " for " + identifier);
-		} catch (Exception e) {
-			logger.error("Error reading data from ils file " + individualFilename, e);
-		}
-		return record;
+		return MarcUtil.readMarcRecordFromFile(new File(individualFilename), logEntry);
 	}
 
 	private String getFileForIlsRecord(String recordNumber) {
@@ -348,14 +381,14 @@ abstract class MarcRecordProcessor {
 
 	}
 
-	void updateGroupedWorkSolrDataBasedOnStandardMarcData(GroupedWorkSolr groupedWork, Record record, HashSet<ItemInfo> printItems, String identifier, String format) {
+	void updateGroupedWorkSolrDataBasedOnStandardMarcData(GroupedWorkSolr groupedWork, Record record, ArrayList<ItemInfo> printItems, String identifier, String format) {
 		loadTitles(groupedWork, record, format);
 		loadAuthors(groupedWork, record, identifier);
 		loadSubjects(groupedWork, record);
 
 		List<DataField> seriesFields = MarcUtil.getDataFields(record, "830");
 		for (DataField seriesField : seriesFields){
-			String series = StringUtils.trimTrailingPunctuation(MarcUtil.getSpecifiedSubfieldsAsString(seriesField, "ap","")).toString();
+			String series = StringUtils.trimTrailingPunctuation(MarcUtil.getSpecifiedSubfieldsAsString(seriesField, "anp"," ")).toString();
 			//Remove anything in parenthesis since it's normally just the format
 			series = series.replaceAll("\\s+\\(.*?\\)", "");
 			//Remove the word series at the end since this gets cataloged inconsistently
@@ -403,8 +436,37 @@ abstract class MarcRecordProcessor {
 		loadLiteraryForms(groupedWork, record, printItems, identifier);
 		loadTargetAudiences(groupedWork, record, printItems, identifier);
 		loadFountasPinnell(groupedWork, record);
+		loadLexileScore(groupedWork, record);
 		groupedWork.addMpaaRating(getMpaaRating(record));
 		groupedWork.addKeywords(MarcUtil.getAllSearchableFields(record, 100, 900));
+	}
+
+	private static final Pattern lexileMatchingPattern = Pattern.compile("(AD|NC|HL|IG|GN|BR|NP)(\\d+)");
+	private void loadLexileScore(GroupedWorkSolr groupedWork, Record record) {
+		List<DataField> targetAudiences = MarcUtil.getDataFields(record, "521");
+		for (DataField targetAudience : targetAudiences){
+			Subfield subfieldA = targetAudience.getSubfield('a');
+			Subfield subfieldB = targetAudience.getSubfield('b');
+			if (subfieldA != null && subfieldB != null){
+				if (subfieldB.getData().equalsIgnoreCase("lexile")){
+					String lexileValue = subfieldA.getData();
+					if (lexileValue.endsWith("L")){
+						lexileValue = lexileValue.substring(0, lexileValue.length() - 1);
+					}
+					if (StringUtils.isNumeric(lexileValue)) {
+						groupedWork.setLexileScore(lexileValue);
+					}else{
+						Matcher lexileMatcher = lexileMatchingPattern.matcher(lexileValue);
+						if (lexileMatcher.find()){
+							String lexileCode = lexileMatcher.group(1);
+							String lexileScore = lexileMatcher.group(2);
+							groupedWork.setLexileScore(lexileScore);
+							groupedWork.setLexileCode(lexileCode);
+						}
+					}
+				}
+			}
+		}
 	}
 
 	private void loadFountasPinnell(GroupedWorkSolr groupedWork, Record record) {
@@ -521,7 +583,11 @@ abstract class MarcRecordProcessor {
 		}
 	}
 
-	protected void loadTargetAudiences(GroupedWorkSolr groupedWork, Record record, HashSet<ItemInfo> printItems, String identifier) {
+	protected void loadTargetAudiences(GroupedWorkSolr groupedWork, Record record, ArrayList<ItemInfo> printItems, String identifier) {
+		loadTargetAudiences(groupedWork, record, printItems, identifier, "Unknown");
+	}
+
+	protected void loadTargetAudiences(GroupedWorkSolr groupedWork, Record record, ArrayList<ItemInfo> printItems, String identifier, String unknownAudienceLabel) {
 		Set<String> targetAudiences = new LinkedHashSet<>();
 		try {
 			String leader = record.getLeader().toString();
@@ -555,28 +621,41 @@ abstract class MarcRecordProcessor {
 						targetAudiences.add(Character.toString(targetAudienceChar));
 					}
 				} else if (targetAudiences.size() == 0) {
-					targetAudiences.add("Unknown");
+					targetAudiences.add(unknownAudienceLabel);
 				}
 			} else {
-				targetAudiences.add("Unknown");
+				targetAudiences.add(unknownAudienceLabel);
 			}
 		} catch (Exception e) {
 			// leader not long enough to get target audience
 			logger.debug("ERROR in getTargetAudience ", e);
-			targetAudiences.add("Unknown");
+			targetAudiences.add(unknownAudienceLabel);
 		}
 
 		if (targetAudiences.size() == 0) {
-			targetAudiences.add("Unknown");
+			targetAudiences.add(unknownAudienceLabel);
 		}
 
-		groupedWork.addTargetAudiences(indexer.translateSystemCollection("target_audience", targetAudiences, identifier));
-		groupedWork.addTargetAudiencesFull(indexer.translateSystemCollection("target_audience_full", targetAudiences, identifier));
+		LinkedHashSet<String> translatedAudiences = indexer.translateSystemCollection("target_audience", targetAudiences, identifier);
+		if (!unknownAudienceLabel.equals("Unknown") && translatedAudiences.contains("Unknown")){
+			translatedAudiences.remove("Unknown");
+			translatedAudiences.add(unknownAudienceLabel);
+		}
+		groupedWork.addTargetAudiences(translatedAudiences);
+		LinkedHashSet<String> translatedAudiencesFull = indexer.translateSystemCollection("target_audience_full", targetAudiences, identifier);
+		if (!unknownAudienceLabel.equals("Unknown") && translatedAudiencesFull.contains("Unknown")){
+			translatedAudiencesFull.remove("Unknown");
+			translatedAudiencesFull.add(unknownAudienceLabel);
+		}
+		groupedWork.addTargetAudiencesFull(translatedAudiencesFull);
 	}
 
-	protected void loadLiteraryForms(GroupedWorkSolr groupedWork, Record record, HashSet<ItemInfo> printItems, String identifier) {
+	protected void loadLiteraryForms(GroupedWorkSolr groupedWork, Record record, ArrayList<ItemInfo> printItems, String identifier) {
 		//First get the literary Forms from the 008.  These need translation
+		//Now get literary forms from the subjects, these don't need translation
 		LinkedHashSet<String> literaryForms = new LinkedHashSet<>();
+		HashMap<String, Integer> literaryFormsWithCount = new HashMap<>();
+		HashMap<String, Integer> literaryFormsFull = new HashMap<>();
 		try {
 			String leader = record.getLeader().toString();
 
@@ -602,25 +681,26 @@ abstract class MarcRecordProcessor {
 						literaryForms.add(Character.toString(literaryFormChar));
 					}
 				}
-				if (literaryForms.size() == 0) {
-					literaryForms.add(" ");
+				addToMapWithCount(literaryFormsWithCount, indexer.translateSystemCollection("literary_form", literaryForms, identifier), 2);
+				addToMapWithCount(literaryFormsFull, indexer.translateSystemCollection("literary_form_full", literaryForms, identifier), 2);
+			}else if (recordType == 'C' || recordType == 'D' || recordType == 'I' || recordType == 'J'){
+				//Music / Audio
+				if (ohOhEightField != null && ohOhEightField.getData().length() > 31){
+					char position30 = Character.toUpperCase(ohOhEightField.getData().charAt(30));
+					char position31 = Character.toUpperCase(ohOhEightField.getData().charAt(31));
+					if (position30 == 'F' || position31 == 'F'){
+						addToMapWithCount(literaryFormsWithCount, "Fiction", 2);
+						addToMapWithCount(literaryFormsFull, "Fiction", 2);
+					}else{
+						addToMapWithCount(literaryFormsWithCount, "Non Fiction", 2);
+						addToMapWithCount(literaryFormsFull, "Non Fiction", 2);
+					}
 				}
-			} else {
-				literaryForms.add("Unknown");
 			}
 		} catch (Exception e) {
-			logger.error("Unexpected error", e);
+			indexer.getLogEntry().incErrors("Unexpected error loading literary forms", e);
 		}
-		if (literaryForms.size() > 1){
-			//Uh oh, we have a problem
-			logger.warn("Received multiple literary forms for a single marc record");
-		}
-		groupedWork.addLiteraryForms(indexer.translateSystemCollection("literary_form", literaryForms, identifier));
-		groupedWork.addLiteraryFormsFull(indexer.translateSystemCollection("literary_form_full", literaryForms, identifier));
 
-		//Now get literary forms from the subjects, these don't need translation
-		HashMap<String, Integer> literaryFormsWithCount = new HashMap<>();
-		HashMap<String, Integer> literaryFormsFull = new HashMap<>();
 		//Check the subjects
 		Set<String> subjectFormData = MarcUtil.getFieldList(record, "650v:651v");
 		for(String subjectForm : subjectFormData){
@@ -749,11 +829,21 @@ abstract class MarcRecordProcessor {
 		groupedWork.addLiteraryFormsFull(literaryFormsFull);
 	}
 
+	private void addToMapWithCount(HashMap<String, Integer> map, HashSet<String> elementsToAdd, int numberToAdd){
+		for (String elementToAdd : elementsToAdd) {
+			addToMapWithCount(map, elementToAdd, numberToAdd);
+		}
+	}
+
 	private void addToMapWithCount(HashMap<String, Integer> map, String elementToAdd){
+		addToMapWithCount(map, elementToAdd, 1);
+	}
+
+	private void addToMapWithCount(HashMap<String, Integer> map, String elementToAdd, int numberToAdd){
 		if (map.containsKey(elementToAdd)){
-			map.put(elementToAdd, map.get(elementToAdd) + 1);
+			map.put(elementToAdd, map.get(elementToAdd) + numberToAdd);
 		}else{
-			map.put(elementToAdd, 1);
+			map.put(elementToAdd, numberToAdd);
 		}
 	}
 
@@ -857,6 +947,22 @@ abstract class MarcRecordProcessor {
 				groupedWork.setLanguageBoostSpanish(languageBoostVal);
 			}
 		}
+		if (translatedLanguages.size() == 0){
+			translatedLanguages.add(treatUnknownLanguageAs);
+			for (RecordInfo ilsRecord : ilsRecords){
+				ilsRecord.setPrimaryLanguage(treatUnknownLanguageAs);
+			}
+			String languageBoost = indexer.translateSystemValue("language_boost", treatUnknownLanguageAs, identifier);
+			if (languageBoost != null){
+				Long languageBoostVal = Long.parseLong(languageBoost);
+				groupedWork.setLanguageBoost(languageBoostVal);
+			}
+			String languageBoostEs = indexer.translateSystemValue("language_boost_es", treatUnknownLanguageAs, identifier);
+			if (languageBoostEs != null){
+				Long languageBoostVal = Long.parseLong(languageBoostEs);
+				groupedWork.setLanguageBoostSpanish(languageBoostVal);
+			}
+		}
 		groupedWork.setLanguages(translatedLanguages);
 
 		String translationFields = "041b:041d:041h:041j";
@@ -917,10 +1023,8 @@ abstract class MarcRecordProcessor {
 		//title (full title done by index process by concatenating short and subtitle
 
 		//title short
-		groupedWork.setTitle(MarcUtil.getFirstFieldVal(record, "245a"), MarcUtil.getFirstFieldVal(record, "245abnp"), this.getSortableTitle(record), format);
-		//title sub
-		//MDN 2/6/2016 add np to subtitle #ARL-163
-		groupedWork.setSubTitle(MarcUtil.getFirstFieldVal(record, "245bnp"));
+		String subTitle = MarcUtil.getFirstFieldVal(record, "245bnp");
+		groupedWork.setTitle(MarcUtil.getFirstFieldVal(record, "245a"), subTitle, MarcUtil.getFirstFieldVal(record, "245abnp"), this.getSortableTitle(record), format);
 		//title full
 		String authorInTitleField = MarcUtil.getFirstFieldVal(record, "245c");
 		String standardAuthorData = MarcUtil.getFirstFieldVal(record, "100abcdq:110ab");
@@ -988,7 +1092,7 @@ abstract class MarcRecordProcessor {
 
 		String title = MarcUtil.getFirstFieldVal(record, "245abnp");
 		if (title == null){
-			return null;
+			return "";
 		}
 		title = title.toLowerCase();
 
@@ -998,7 +1102,7 @@ abstract class MarcRecordProcessor {
 		}
 
 		if (title.length() == 0) {
-			return null;
+			return "";
 		}
 
 		return title;
@@ -1020,7 +1124,7 @@ abstract class MarcRecordProcessor {
 	LinkedHashSet<String> getFormatsFromBib(Record record, RecordInfo recordInfo){
 		LinkedHashSet<String> printFormats = new LinkedHashSet<>();
 		String leader = record.getLeader().toString();
-		char leaderBit;
+		char leaderBit = ' ';
 		ControlField fixedField = (ControlField) record.getVariableField("008");
 
 		// check for music recordings quickly so we can figure out if it is music
@@ -1032,6 +1136,17 @@ abstract class MarcRecordProcessor {
 				printFormats.add("MusicRecording");
 			}
 		}
+		//Check for braille
+		if (fixedField != null && (leaderBit == 'a' || leaderBit == 't' || leaderBit == 'A' || leaderBit == 'T')){
+			if (fixedField.getData().length() > 23){
+				if (fixedField.getData().charAt(23) == 'f'){
+					printFormats.add("Braille");
+				}else if (fixedField.getData().charAt(23) == 'd') {
+					printFormats.add("LargePrint");
+				}
+			}
+		}
+
 		getFormatFromPublicationInfo(record, printFormats);
 		getFormatFromNotes(record, printFormats);
 		getFormatFromEdition(record, printFormats);
@@ -1039,14 +1154,14 @@ abstract class MarcRecordProcessor {
 		getFormatFromSubjects(record, printFormats);
 		getFormatFromTitle(record, printFormats);
 		getFormatFromDigitalFileCharacteristics(record, printFormats);
-		if (printFormats.size() == 0) {
+		if (printFormats.size() == 0 || printFormats.contains("MusicRecording") || (printFormats.size() == 1 && printFormats.contains("Book"))) {
 			//Only get from fixed field information if we don't have anything yet since the cataloging of
 			//fixed fields is not kept up to date reliably.  #D-87
 			getFormatFrom007(record, printFormats);
 			if (printFormats.size() > 1){
 				logger.info("Found more than 1 format for " + recordInfo.getFullIdentifier() + " looking at just 007");
 			}
-			if (printFormats.size() == 0) {
+			if (printFormats.size() == 0 || (printFormats.size() == 1 && printFormats.contains("Book"))) {
 				getFormatFromLeader(printFormats, leader, fixedField);
 				if (printFormats.size() > 1){
 					logger.info("Found more than 1 format for " + recordInfo.getFullIdentifier() + " looking at just the leader");
@@ -1054,16 +1169,18 @@ abstract class MarcRecordProcessor {
 			}
 		}
 
-		if (printFormats.size() == 0){
+		if (printFormats.size() == 0) {
 			logger.debug("Did not get any formats for print record " + recordInfo.getFullIdentifier() + ", assuming it is a book ");
 			printFormats.add("Book");
-		}else{
-			for(String format: printFormats){
-				logger.debug("    found format " + format);
-			}
+//		}else if (printFormats.size() > 1){
+//			for(String format: printFormats){
+//				logger.debug("    found format " + format);
+//			}
 		}
 
-		filterPrintFormats(printFormats);
+		if (printFormats.size() > 1) {
+			filterPrintFormats(printFormats);
+		}
 
 		if (printFormats.size() > 1){
 			String formatsString = Util.getCsvSeparatedString(printFormats);
@@ -1093,6 +1210,11 @@ abstract class MarcRecordProcessor {
 			printFormats.add("Archival Materials");
 			return;
 		}
+		if (printFormats.contains("LibraryOfThings")){
+			printFormats.clear();
+			printFormats.add("LibraryOfThings");
+			return;
+		}
 		if (printFormats.contains("SoundCassette") && printFormats.contains("MusicRecording")){
 			printFormats.clear();
 			printFormats.add("MusicCassette");
@@ -1104,6 +1226,11 @@ abstract class MarcRecordProcessor {
 		if (printFormats.contains("Phonograph")){
 			printFormats.clear();
 			printFormats.add("Phonograph");
+			return;
+		}
+		if (printFormats.contains("CD+DVD")){
+			printFormats.clear();
+			printFormats.add("CD+DVD");
 			return;
 		}
 		if (printFormats.contains("MusicRecording") && (printFormats.contains("CD") || printFormats.contains("CompactDisc") || printFormats.contains("SoundDisc"))){
@@ -1126,6 +1253,16 @@ abstract class MarcRecordProcessor {
 			printFormats.add("GoReader");
 			return;
 		}
+		if (printFormats.contains("VoxBooks")){
+			printFormats.clear();
+			printFormats.add("VoxBooks");
+			return;
+		}
+		if (printFormats.contains("Kit")){
+			printFormats.clear();
+			printFormats.add("Kit");
+			return;
+		}
 		if (printFormats.contains("Video") && printFormats.contains("DVD")){
 			printFormats.remove("Video");
 		}
@@ -1143,17 +1280,21 @@ abstract class MarcRecordProcessor {
 		}
 		if (printFormats.contains("Blu-ray")){
 			printFormats.remove("VideoDisc");
+			printFormats.remove("DVD");
+		}
+		if (printFormats.contains("Blu-ray/DVD")){
+			printFormats.remove("Blu-ray");
+			printFormats.remove("DVD");
 		}
 		if (printFormats.contains("SoundDisc")){
 			printFormats.remove("SoundRecording");
-		}
-		if (printFormats.contains("SoundDisc")){
 			printFormats.remove("CDROM");
 		}
-		if (printFormats.contains("SoundCassette")){
-			printFormats.remove("SoundRecording");
+		if (printFormats.contains("MP3Disc")){
+			printFormats.remove("SoundDisc");
 		}
 		if (printFormats.contains("SoundCassette")){
+			printFormats.remove("SoundRecording");
 			printFormats.remove("CompactDisc");
 		}
 		if (printFormats.contains("SoundRecording") && printFormats.contains("CDROM")){
@@ -1161,7 +1302,17 @@ abstract class MarcRecordProcessor {
 			printFormats.add("SoundDisc");
 		}
 
+		if (printFormats.contains("Book") && printFormats.contains("Serial")){
+			printFormats.remove("Book");
+		}
+		if (printFormats.contains("BookClubKit") && printFormats.contains("LargePrint")){
+			printFormats.clear();
+			printFormats.add("BookClubKitLarge");
+		}
 		if (printFormats.contains("Book") && printFormats.contains("LargePrint")){
+			printFormats.remove("Book");
+		}
+		if (printFormats.contains("Book") && printFormats.contains("Atlas")){
 			printFormats.remove("Book");
 		}
 		if (printFormats.contains("Book") && printFormats.contains("Manuscript")){
@@ -1202,14 +1353,22 @@ abstract class MarcRecordProcessor {
 			printFormats.remove("Manuscript");
 		}
 		if (printFormats.contains("Kinect") || printFormats.contains("XBox360")  || printFormats.contains("Xbox360")
-				|| printFormats.contains("XBoxOne") || printFormats.contains("PlayStation")
-				|| printFormats.contains("PlayStation3") || printFormats.contains("PlayStation4")
+				|| printFormats.contains("XboxOne") || printFormats.contains("XboxSeriesX") || printFormats.contains("PlayStation")
+				|| printFormats.contains("PlayStation2") || printFormats.contains("PlayStation3")
+				|| printFormats.contains("PlayStation4") || printFormats.contains("PlayStation5") || printFormats.contains("PlayStationVita")
 				|| printFormats.contains("Wii") || printFormats.contains("WiiU")
-				|| printFormats.contains("3DS") || printFormats.contains("WindowsGame")){
+				|| printFormats.contains("3DS") || printFormats.contains("WindowsGame")
+				|| printFormats.contains("NintendoSwitch") || printFormats.contains("NintendoDS")){
 			printFormats.remove("Software");
 			printFormats.remove("Electronic");
 			printFormats.remove("CDROM");
 			printFormats.remove("Blu-ray");
+			printFormats.remove("Blu-ray/DVD");
+			printFormats.remove("DVD");
+			printFormats.remove("CD+Book");
+			printFormats.remove("Book+CD");
+			printFormats.remove("Book+DVD");
+			printFormats.remove("SoundDisc");
 		}
 	}
 
@@ -1226,7 +1385,7 @@ abstract class MarcRecordProcessor {
 			}else if (titleMedium.contains("ebook")){
 				printFormats.add("eBook");
 			}else if (titleMedium.contains("eaudio")){
-				printFormats.add("eAudio");
+				printFormats.add("eAudiobook");
 			}else if (titleMedium.contains("emusic")){
 				printFormats.add("eMusic");
 			}else if (titleMedium.contains("evideo")){
@@ -1277,14 +1436,13 @@ abstract class MarcRecordProcessor {
 
 	private void getFormatFromPublicationInfo(Record record, Set<String> result) {
 		// check for playaway in 260|b
-		DataField sysDetailsNote = record.getDataField("260");
-		if (sysDetailsNote != null) {
-			if (sysDetailsNote.getSubfield('b') != null) {
-				String sysDetailsValue = sysDetailsNote.getSubfield('b').getData()
-						.toLowerCase();
+		List<DataField> publicationFields = record.getDataFields(new String[]{"260", "264"});
+		for (DataField publicationInfo : publicationFields) {
+			for (Subfield publisherSubField : publicationInfo.getSubfields('b')){
+				String sysDetailsValue = publisherSubField.getData().toLowerCase();
 				if (sysDetailsValue.contains("playaway")) {
 					result.add("Playaway");
-				}else if (sysDetailsValue.contains("go reader")) {
+				} else if (sysDetailsValue.contains("go reader")) {
 					result.add("GoReader");
 				}
 			}
@@ -1292,14 +1450,14 @@ abstract class MarcRecordProcessor {
 	}
 
 	private void getFormatFromEdition(Record record, Set<String> result) {
-		// Check for large print book (large format in 650, 300, or 250 fields)
-		// Check for blu-ray in 300 fields
 		DataField edition = record.getDataField("250");
 		if (edition != null) {
 			if (edition.getSubfield('a') != null) {
 				String editionData = edition.getSubfield('a').getData().toLowerCase();
 				if (editionData.contains("large type") || editionData.contains("large print")) {
 					result.add("LargePrint");
+				}else if (dvdBlurayComboRegex.matcher(editionData).matches()) {
+					result.add("Blu-ray/DVD");
 				}else if (editionData.contains("go reader")) {
 					result.add("GoReader");
 				}else {
@@ -1312,55 +1470,81 @@ abstract class MarcRecordProcessor {
 		}
 	}
 
+	Pattern audioDiscPattern = Pattern.compile(".*\\b(cd|cds|(sound|audio|compact) discs?)\\b.*");
 	private void getFormatFromPhysicalDescription(Record record, Set<String> result) {
-		List<DataField> physicalDescription = MarcUtil.getDataFields(record, "300");
-		if (physicalDescription != null) {
-			Iterator<DataField> fieldIterator = physicalDescription.iterator();
-			DataField field;
-			while (fieldIterator.hasNext()) {
-				field = fieldIterator.next();
-				List<Subfield> subFields = field.getSubfields();
-				for (Subfield subfield : subFields) {
-					if (subfield.getCode() != 'e') {
-						String physicalDescriptionData = subfield.getData().toLowerCase();
-						if (physicalDescriptionData.contains("large type") || physicalDescriptionData.contains("large print")) {
-							result.add("LargePrint");
-						} else if (physicalDescriptionData.contains("bluray") || physicalDescriptionData.contains("blu-ray")) {
+		List<DataField> physicalDescriptions = MarcUtil.getDataFields(record, "300");
+		for (DataField field : physicalDescriptions) {
+			List<Subfield> subFields = field.getSubfields();
+			for (Subfield subfield : subFields) {
+				if (subfield.getCode() != 'e') {
+					String physicalDescriptionData = subfield.getData().toLowerCase();
+					if (physicalDescriptionData.contains("atlas")) {
+						result.add("Atlas");
+					} else if (physicalDescriptionData.contains("large type") || physicalDescriptionData.contains("large print")) {
+						result.add("LargePrint");
+					} else if (physicalDescriptionData.contains("bluray") || physicalDescriptionData.contains("blu-ray")) {
+						//Check to see if this is a combo pack.
+						Subfield subfieldE = field.getSubfield('e');
+						if (subfieldE != null && subfieldE.getData().toLowerCase().contains("dvd")){
+							result.add("Blu-ray/DVD");
+						}else {
 							result.add("Blu-ray");
-						} else if (physicalDescriptionData.contains("computer optical disc")) {
-							if (!physicalDescriptionData.matches("^.*?\\d+\\s+(p\\.|pages).*$")){
-								result.add("Software");
-							}
-						} else if (physicalDescriptionData.contains("sound cassettes")) {
-							result.add("SoundCassette");
-						} else if (physicalDescriptionData.contains("sound discs") || physicalDescriptionData.contains("audio discs") || physicalDescriptionData.contains("compact disc")) {
+						}
+					} else if (physicalDescriptionData.contains("computer optical disc")) {
+						if (!physicalDescriptionData.matches("^.*?\\d+\\s+(p\\.|pages).*$")){
+							result.add("Software");
+						}
+					} else if (physicalDescriptionData.contains("sound cassettes")) {
+						result.add("SoundCassette");
+					} else if (physicalDescriptionData.contains("mp3")) {
+						result.add("MP3Disc");
+					} else if (physicalDescriptionData.matches(".*\\bkit\\b.*")) {
+						result.add("Kit");
+					} else if (audioDiscPattern.matcher(physicalDescriptionData).matches()) {
+						//Check to see if there is a subfield e.  If so, this could be a combined format
+						Subfield subfieldE = field.getSubfield('e');
+						if (subfieldE != null && subfieldE.getData().toLowerCase().contains("book")){
+							result.add("CD+Book");
+						}else{
 							result.add("SoundDisc");
 						}
-						//Since this is fairly generic, only use it if we have no other formats yet
-						if (result.size() == 0 && subfield.getCode() == 'f' && physicalDescriptionData.matches("^.*?\\d+\\s+(p\\.|pages).*$")) {
+					} else if (subfield.getCode() == 'a' && physicalDescriptionData.matches("^.*?\\b\\d+\\s+(p\\.|pages)[\\s\\W]*$")){
+						Subfield subfieldE = field.getSubfield('e');
+						if (subfieldE != null && subfieldE.getData().toLowerCase().contains("dvd")){
+							result.add("Book+DVD");
+						}else if (subfieldE != null && subfieldE.getData().toLowerCase().contains("cd")){
+							result.add("Book+CD");
+						}else{
 							result.add("Book");
 						}
+					}
+					//Since this is fairly generic, only use it if we have no other formats yet
+					if (result.size() == 0 && subfield.getCode() == 'f' && physicalDescriptionData.matches("^.*?\\d+\\s+(p\\.|pages).*$")) {
+						result.add("Book");
 					}
 				}
 			}
 		}
 	}
 
+	private final Pattern voxPattern = Pattern.compile(".*(vox books|vox reader|vox audio).*");
 	private void getFormatFromNotes(Record record, Set<String> result) {
 		// Check for formats in the 538 field
-		DataField sysDetailsNote2 = record.getDataField("538");
-		if (sysDetailsNote2 != null) {
+		List<DataField> sysDetailsNotes2 = record.getDataFields("538");
+		for (DataField sysDetailsNote2 : sysDetailsNotes2) {
 			if (sysDetailsNote2.getSubfield('a') != null) {
 				String sysDetailsValue = sysDetailsNote2.getSubfield('a').getData().toLowerCase();
 				String gameFormat = getGameFormatFromValue(sysDetailsValue);
-				if (gameFormat != null){
+				if (gameFormat != null) {
 					result.add(gameFormat);
-				}else{
+				} else {
 					if (sysDetailsValue.contains("playaway")) {
 						result.add("Playaway");
+					} else if (dvdBlurayComboRegex.matcher(sysDetailsValue).matches()) {
+						result.add("Blu-ray/DVD");
 					} else if (sysDetailsValue.contains("bluray") || sysDetailsValue.contains("blu-ray")) {
 						result.add("Blu-ray");
-					} else if (sysDetailsValue.contains("dvd")) {
+					} else if (sysDetailsValue.contains("dvd") && !sysDetailsValue.contains("dvd-rom")) {
 						result.add("DVD");
 					} else if (sysDetailsValue.contains("vertical file")) {
 						result.add("VerticalFile");
@@ -1370,14 +1554,21 @@ abstract class MarcRecordProcessor {
 		}
 
 		// Check for formats in the 500 tag
-		DataField noteField = record.getDataField("500");
-		if (noteField != null) {
-			if (noteField.getSubfield('a') != null) {
-				String noteValue = noteField.getSubfield('a').getData().toLowerCase();
-				if (noteValue.contains("vertical file")) {
-					result.add("VerticalFile");
-				}else if (noteValue.contains("vox books")) {
-					result.add("VoxBooks");
+		List<DataField> noteFields = record.getDataFields("500");
+		for (DataField noteField : noteFields) {
+			if (noteField != null) {
+				if (noteField.getSubfield('a') != null) {
+					String noteValue = noteField.getSubfield('a').getData().toLowerCase();
+					if (noteValue.contains("vertical file")) {
+						result.add("VerticalFile");
+						break;
+					} else if (voxPattern.matcher(noteValue).matches()) {
+						result.add("VoxBooks");
+						break;
+					} else if (dvdBlurayComboRegex.matcher(noteValue).matches()) {
+						result.add("Blu-ray/DVD");
+						break;
+					}
 				}
 			}
 		}
@@ -1405,27 +1596,48 @@ abstract class MarcRecordProcessor {
 		}
 	}
 
+	Pattern playStation5Pattern = Pattern.compile(".*(playstation\\s?5|ps\\s?5).*");
+	Pattern playStation4Pattern = Pattern.compile(".*(playstation\\s?4|ps\\s?4).*");
+	Pattern playStation3Pattern = Pattern.compile(".*(playstation\\s?3|ps\\s?3).*");
+	Pattern playStation2Pattern = Pattern.compile(".*(playstation\\s?2|ps\\s?2).*");
+	Pattern playStationVitaPattern = Pattern.compile(".*(playstation\\s?vita|ps\\s?vita).*");
 	private String getGameFormatFromValue(String value) {
 		if (value.contains("kinect sensor")) {
 			return "Kinect";
-		} else if (value.contains("xbox one") && !value.contains("compatible")) {
-			return "XboxOne";
-		} else if (value.contains("xbox") && !value.contains("compatible")) {
-			return "Xbox360";
-		} else if (value.contains("playstation 4") && !value.contains("compatible")) {
-			return "PlayStation4";
-		} else if (value.contains("playstation 3") && !value.contains("compatible")) {
-			return "PlayStation3";
-		} else if (value.contains("playstation") && !value.contains("compatible")) {
-			return "PlayStation";
 		} else if (value.contains("wii u")) {
 			return "WiiU";
-		} else if (value.contains("nintendo wii")) {
+		} else if (value.contains("nintendo wii") || value.contains("wii")) {
 			return "Wii";
 		} else if (value.contains("nintendo 3ds")) {
 			return "3DS";
+		} else if (value.contains("nintendo switch")) {
+			return "NintendoSwitch";
+		} else if (value.contains("nintendo ds")) {
+			return "NintendoDS";
 		} else if (value.contains("directx")) {
 			return "WindowsGame";
+		} else if (!value.contains("compatible")) {
+			if (value.contains("xbox one")) {
+				return "XboxOne";
+			} else if (value.contains("xbox")) {
+				return "Xbox360";
+			} else if ((value.contains("xbox series x") || value.contains("xbox x"))) {
+				return "XBox Series X";
+			} else if (playStation5Pattern.matcher(value).matches()) {
+				return "PlayStation5";
+			} else if (playStationVitaPattern.matcher(value).matches()) {
+				return "PlayStationVita";
+			} else if (playStation4Pattern.matcher(value).matches()) {
+				return "PlayStation4";
+			} else if (playStation3Pattern.matcher(value).matches()) {
+				return "PlayStation3";
+			} else if (playStation2Pattern.matcher(value).matches()) {
+				return "PlayStation2";
+			} else if (value.contains("playstation")) {
+				return "PlayStation";
+			}else{
+				return null;
+			}
 		}else{
 			return null;
 		}
@@ -1479,6 +1691,8 @@ abstract class MarcRecordProcessor {
 						String subfieldData = subfield.getData().toLowerCase();
 						if (subfieldData.contains("large type")) {
 							result.add("LargePrint");
+						}else if (subfieldData.contains("library of things")){
+							result.add("LibraryOfThings");
 						}else if (subfieldData.contains("playaway")) {
 							result.add("Playaway");
 						}else if (subfieldData.contains("graphic novel")) {
@@ -1537,193 +1751,203 @@ abstract class MarcRecordProcessor {
 	}
 
 	private void getFormatFrom007(Record record, Set<String> result) {
+		Set<String> resultsFrom007 = new HashSet<>();
 		char formatCode;// check the 007 - this is a repeating field
-		ControlField formatField = MarcUtil.getControlField(record, "007");
-		if (formatField != null){
-			if (formatField.getData() == null || formatField.getData().length() < 2) {
-				return;
-			}
-			// Check for blu-ray (s in position 4)
-			// This logic does not appear correct.
-			/*
-			 * if (formatField.getData() != null && formatField.getData().length()
-			 * >= 4){ if (formatField.getData().toUpperCase().charAt(4) == 'S'){
-			 * result.add("Blu-ray"); break; } }
-			 */
-			formatCode = formatField.getData().toUpperCase().charAt(0);
-			switch (formatCode) {
-				case 'A':
-					if (formatField.getData().toUpperCase().charAt(1) == 'D') {
-						result.add("Atlas");
-					} else {
-						result.add("Map");
-					}
-					break;
-				case 'C':
-					switch (formatField.getData().toUpperCase().charAt(1)) {
-						case 'A':
-							result.add("TapeCartridge");
-							break;
-						case 'B':
-							result.add("ChipCartridge");
-							break;
-						case 'C':
-							result.add("DiscCartridge");
-							break;
-						case 'F':
-							result.add("TapeCassette");
-							break;
-						case 'H':
-							result.add("TapeReel");
-							break;
-						case 'J':
-							result.add("FloppyDisk");
-							break;
-						case 'M':
-						case 'O':
-							result.add("CDROM");
-							break;
-						case 'R':
-							// Do not return - this will cause anything with an
-							// 856 field to be labeled as "Electronic"
-							break;
-						default:
-							result.add("Software");
-							break;
-					}
-					break;
-				case 'D':
-					result.add("Globe");
-					break;
-				case 'F':
-					result.add("Braille");
-					break;
-				case 'G':
-					switch (formatField.getData().toUpperCase().charAt(1)) {
-						case 'C':
-						case 'D':
-							result.add("Filmstrip");
-							break;
-						case 'T':
-							result.add("Transparency");
-							break;
-						default:
-							result.add("Slide");
-							break;
-					}
-					break;
-				case 'H':
-					result.add("Microfilm");
-					break;
-				case 'K':
-					switch (formatField.getData().toUpperCase().charAt(1)) {
-						case 'C':
-							result.add("Collage");
-							break;
-						case 'D':
-						case 'L':
-							result.add("Drawing");
-							break;
-						case 'E':
-							result.add("Painting");
-							break;
-						case 'F':
-						case 'J':
-							result.add("Print");
-							break;
-						case 'G':
-							result.add("Photonegative");
-							break;
-						case 'O':
-							result.add("FlashCard");
-							break;
-						case 'N':
-							result.add("Chart");
-							break;
-						default:
-							result.add("Photo");
-							break;
-					}
-					break;
-				case 'M':
-					switch (formatField.getData().toUpperCase().charAt(1)) {
-						case 'F':
-							result.add("VideoCassette");
-							break;
-						case 'R':
-							result.add("Filmstrip");
-							break;
-						default:
-							result.add("MotionPicture");
-							break;
-					}
-					break;
-				case 'O':
-					result.add("Kit");
-					break;
-				case 'Q':
-					result.add("MusicalScore");
-					break;
-				case 'R':
-					result.add("SensorImage");
-					break;
-				case 'S':
-					switch (formatField.getData().toUpperCase().charAt(1)) {
-						case 'D':
-							if (formatField.getData().length() >= 4) {
-								char speed = formatField.getData().toUpperCase().charAt(3);
-								if (speed >= 'A' && speed <= 'E') {
-									result.add("Phonograph");
-								} else if (speed == 'F') {
-									result.add("CompactDisc");
-								} else if (speed >= 'K' && speed <= 'R') {
-									result.add("TapeRecording");
+		List<ControlField> formatFields = record.getControlFields("007");
+		for (ControlField formatField : formatFields) {
+			if (formatField != null) {
+				if (formatField.getData() == null || formatField.getData().length() < 2) {
+					return;
+				}
+				formatCode = formatField.getData().toUpperCase().charAt(0);
+				switch (formatCode) {
+					case 'A':
+						if (formatField.getData().toUpperCase().charAt(1) == 'D') {
+							resultsFrom007.add("Atlas");
+						} else {
+							resultsFrom007.add("Map");
+						}
+						break;
+					case 'C':
+						switch (formatField.getData().toUpperCase().charAt(1)) {
+							case 'A':
+								resultsFrom007.add("TapeCartridge");
+								break;
+							case 'B':
+								resultsFrom007.add("ChipCartridge");
+								break;
+							case 'C':
+								resultsFrom007.add("DiscCartridge");
+								break;
+							case 'F':
+								resultsFrom007.add("TapeCassette");
+								break;
+							case 'H':
+								resultsFrom007.add("TapeReel");
+								break;
+							case 'J':
+								resultsFrom007.add("FloppyDisk");
+								break;
+							case 'M':
+							case 'O':
+								resultsFrom007.add("CDROM");
+								break;
+							case 'R':
+								// Do not return - this will cause anything with an
+								// 856 field to be labeled as "Electronic"
+								break;
+							default:
+								resultsFrom007.add("Software");
+								break;
+						}
+						break;
+					case 'D':
+						resultsFrom007.add("Globe");
+						break;
+					case 'F':
+						resultsFrom007.add("Braille");
+						break;
+					case 'G':
+						switch (formatField.getData().toUpperCase().charAt(1)) {
+							case 'C':
+							case 'D':
+								resultsFrom007.add("Filmstrip");
+								break;
+							case 'T':
+								resultsFrom007.add("Transparency");
+								break;
+							default:
+								resultsFrom007.add("Slide");
+								break;
+						}
+						break;
+					case 'H':
+						resultsFrom007.add("Microfilm");
+						break;
+					case 'K':
+						switch (formatField.getData().toUpperCase().charAt(1)) {
+							case 'C':
+								resultsFrom007.add("Collage");
+								break;
+							case 'D':
+							case 'L':
+								resultsFrom007.add("Drawing");
+								break;
+							case 'E':
+								resultsFrom007.add("Painting");
+								break;
+							case 'F':
+							case 'J':
+								resultsFrom007.add("Print");
+								break;
+							case 'G':
+								resultsFrom007.add("Photonegative");
+								break;
+							case 'O':
+								resultsFrom007.add("FlashCard");
+								break;
+							case 'N':
+								resultsFrom007.add("Chart");
+								break;
+							default:
+								resultsFrom007.add("Photo");
+								break;
+						}
+						break;
+					case 'M':
+						switch (formatField.getData().toUpperCase().charAt(1)) {
+							case 'F':
+								resultsFrom007.add("VideoCassette");
+								break;
+							case 'R':
+								resultsFrom007.add("Filmstrip");
+								break;
+							default:
+								resultsFrom007.add("MotionPicture");
+								break;
+						}
+						break;
+					case 'O':
+						resultsFrom007.add("Kit");
+						break;
+					case 'Q':
+						resultsFrom007.add("MusicalScore");
+						break;
+					case 'R':
+						resultsFrom007.add("SensorImage");
+						break;
+					case 'S':
+						switch (formatField.getData().toUpperCase().charAt(1)) {
+							case 'D':
+								if (formatField.getData().length() >= 4) {
+									char speed = formatField.getData().toUpperCase().charAt(3);
+									if (speed >= 'A' && speed <= 'E') {
+										resultsFrom007.add("Phonograph");
+									} else if (speed == 'F') {
+										resultsFrom007.add("CompactDisc");
+									} else if (speed >= 'K' && speed <= 'R') {
+										resultsFrom007.add("TapeRecording");
+									} else {
+										resultsFrom007.add("SoundDisc");
+									}
 								} else {
-									result.add("SoundDisc");
+									resultsFrom007.add("SoundDisc");
 								}
-							} else {
-								result.add("SoundDisc");
-							}
-							break;
-						case 'S':
-							result.add("SoundCassette");
-							break;
-						default:
-							result.add("SoundRecording");
-							break;
-					}
-					break;
-				case 'T':
-					switch (formatField.getData().toUpperCase().charAt(1)) {
-						case 'A':
-							result.add("Book");
-							break;
-						case 'B':
-							result.add("LargePrint");
-							break;
-					}
-					break;
-				case 'V':
-					switch (formatField.getData().toUpperCase().charAt(1)) {
-						case 'C':
-							result.add("VideoCartridge");
-							break;
-						case 'D':
-							result.add("VideoDisc");
-							break;
-						case 'F':
-							result.add("VideoCassette");
-							break;
-						case 'R':
-							result.add("VideoReel");
-							break;
-						default:
-							result.add("Video");
-							break;
-					}
-					break;
+								break;
+							case 'S':
+								resultsFrom007.add("SoundCassette");
+								break;
+							default:
+								resultsFrom007.add("SoundRecording");
+								break;
+						}
+						break;
+					case 'T':
+						switch (formatField.getData().toUpperCase().charAt(1)) {
+							case 'A':
+								resultsFrom007.add("Book");
+								break;
+							case 'B':
+								resultsFrom007.add("LargePrint");
+								break;
+						}
+						break;
+					case 'V':
+						switch (formatField.getData().toUpperCase().charAt(1)) {
+							case 'C':
+								resultsFrom007.add("VideoCartridge");
+								break;
+							case 'D':
+								resultsFrom007.add("VideoDisc");
+								break;
+							case 'F':
+								resultsFrom007.add("VideoCassette");
+								break;
+							case 'R':
+								resultsFrom007.add("VideoReel");
+								break;
+							default:
+								resultsFrom007.add("Video");
+								break;
+						}
+						break;
+				}
 			}
 		}
+		if (resultsFrom007.size() > 1){
+			//We received more than one 007 field.  We potentially need to combine these.
+			if (resultsFrom007.contains("CompactDisc")){
+				resultsFrom007.remove("CDROM");
+			}
+			if (resultsFrom007.contains("CompactDisc") && resultsFrom007.contains("VideoDisc")){
+				resultsFrom007.clear();
+				resultsFrom007.add("CD+DVD");
+			}
+			if (resultsFrom007.size() > 1){
+				logger.info("record had more than one format identified by 007");
+			}
+		}
+		result.addAll(resultsFrom007);
 	}
 
 

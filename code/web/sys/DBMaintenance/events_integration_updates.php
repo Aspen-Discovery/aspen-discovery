@@ -17,6 +17,14 @@ function getEventsIntegrationUpdates(){
 			]
 		],
 
+		'events_add_settings' => [
+			'title' => 'Add Settings to Events module',
+			'description' => 'Add Settings to Events module',
+			'sql' => [
+				"UPDATE modules set settingsClassPath = '/sys/Events/LMLibraryCalendarSetting.php', settingsClassName = 'LMLibraryCalendarSetting' WHERE name = 'Events'"
+			]
+		],
+
 		'lm_library_calendar_settings' => [
 			'title' => 'Define events settings for Library Market - Library Calendar integration',
 			'description' => 'Initial setup of the library market integration',

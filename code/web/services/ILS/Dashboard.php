@@ -1,25 +1,19 @@
 <?php
 
 require_once ROOT_DIR . '/Action.php';
-require_once ROOT_DIR . '/services/Admin/Admin.php';
+require_once ROOT_DIR . '/services/Admin/Dashboard.php';
 require_once ROOT_DIR . '/sys/ILS/UserILSUsage.php';
 require_once ROOT_DIR . '/sys/ILS/ILSRecordUsage.php';
 
-class ILS_Dashboard extends Admin_Admin
+class ILS_Dashboard extends Admin_Dashboard
 {
 	function launch()
 	{
 		global $interface;
 
-		$thisMonth = date('n');
-		$thisYear = date('Y');
-		$lastMonth = $thisMonth - 1;
-		$lastMonthYear = $thisYear;
-		if ($lastMonth == 0) {
-			$lastMonth = 12;
-			$lastMonthYear--;
-		}
-		$lastYear = $thisYear - 1;
+		$instanceName = $this->loadInstanceInformation('UserILSUsage');
+		$this->loadDates();
+
 		//Generate stats
 
 		global $indexingProfiles;
@@ -29,40 +23,44 @@ class ILS_Dashboard extends Admin_Admin
 		}
 		$interface->assign('profiles', $profilesToGetStatsFor);
 
-		$activeUsersThisMonth = $this->getUserStats($thisMonth, $thisYear, $profilesToGetStatsFor);
+		$activeUsersThisMonth = $this->getUserStats($instanceName, $this->thisMonth, $this->thisYear, $profilesToGetStatsFor);
 		$interface->assign('activeUsersThisMonth', $activeUsersThisMonth);
-		$activeUsersLastMonth = $this->getUserStats($lastMonth, $lastMonthYear, $profilesToGetStatsFor);
+		$activeUsersLastMonth = $this->getUserStats($instanceName, $this->lastMonth, $this->lastMonthYear, $profilesToGetStatsFor);
 		$interface->assign('activeUsersLastMonth', $activeUsersLastMonth);
-		$activeUsersThisYear = $this->getUserStats(null, $thisYear, $profilesToGetStatsFor);
+		$activeUsersThisYear = $this->getUserStats($instanceName, null, $this->thisYear, $profilesToGetStatsFor);
 		$interface->assign('activeUsersThisYear', $activeUsersThisYear);
-		$activeUsersLastYear = $this->getUserStats(null, $lastYear, $profilesToGetStatsFor);
+		$activeUsersLastYear = $this->getUserStats($instanceName, null, $this->lastYear, $profilesToGetStatsFor);
 		$interface->assign('activeUsersLastYear', $activeUsersLastYear);
-		$activeUsersAllTime = $this->getUserStats(null, null, $profilesToGetStatsFor);
+		$activeUsersAllTime = $this->getUserStats($instanceName, null, null, $profilesToGetStatsFor);
 		$interface->assign('activeUsersAllTime', $activeUsersAllTime);
 
-		$activeRecordsThisMonth = $this->getRecordStats($thisMonth, $thisYear, $profilesToGetStatsFor);
+		$activeRecordsThisMonth = $this->getRecordStats($instanceName, $this->thisMonth, $this->thisYear, $profilesToGetStatsFor);
 		$interface->assign('activeRecordsThisMonth', $activeRecordsThisMonth);
-		$activeRecordsLastMonth = $this->getRecordStats($lastMonth, $lastMonthYear, $profilesToGetStatsFor);
+		$activeRecordsLastMonth = $this->getRecordStats($instanceName, $this->lastMonth, $this->lastMonthYear, $profilesToGetStatsFor);
 		$interface->assign('activeRecordsLastMonth', $activeRecordsLastMonth);
-		$activeRecordsThisYear = $this->getRecordStats(null, $thisYear, $profilesToGetStatsFor);
+		$activeRecordsThisYear = $this->getRecordStats($instanceName, null, $this->thisYear, $profilesToGetStatsFor);
 		$interface->assign('activeRecordsThisYear', $activeRecordsThisYear);
-		$activeRecordsLastYear = $this->getRecordStats(null, $lastYear, $profilesToGetStatsFor);
+		$activeRecordsLastYear = $this->getRecordStats($instanceName, null, $this->lastYear, $profilesToGetStatsFor);
 		$interface->assign('activeRecordsLastYear', $activeRecordsLastYear);
-		$activeRecordsAllTime = $this->getRecordStats(null, null, $profilesToGetStatsFor);
+		$activeRecordsAllTime = $this->getRecordStats($instanceName, null, null, $profilesToGetStatsFor);
 		$interface->assign('activeRecordsAllTime', $activeRecordsAllTime);
 
 		$this->display('dashboard.tpl', 'ILS Usage Dashboard');
 	}
 
 	/**
+	 * @param string|null $instanceName
 	 * @param string|null $month
 	 * @param string|null $year
 	 * @param int[] $profilesToGetStatsFor
 	 * @return int[]
 	 */
-	public function getUserStats($month, $year, $profilesToGetStatsFor): array
+	public function getUserStats($instanceName, $month, $year, $profilesToGetStatsFor): array
 	{
 		$userUsage = new UserILSUsage();
+		if (!empty($instanceName)){
+			$userUsage->instance = $instanceName;
+		}
 		if ($month != null) {
 			$userUsage->month = $month;
 		}
@@ -109,14 +107,18 @@ class ILS_Dashboard extends Admin_Admin
 	}
 
 	/**
+	 * @param string|null $instanceName
 	 * @param string|null $month
 	 * @param string|null $year
 	 * @param int[] $profilesToGetStatsFor
 	 * @return int[]
 	 */
-	public function getRecordStats($month, $year, $profilesToGetStatsFor): array
+	public function getRecordStats($instanceName, $month, $year, $profilesToGetStatsFor): array
 	{
 		$usage = new ILSRecordUsage();
+		if (!empty($instanceName)){
+			$usage->instance = $instanceName;
+		}
 		if ($month != null) {
 			$usage->month = $month;
 		}
@@ -158,7 +160,7 @@ class ILS_Dashboard extends Admin_Admin
 		return $usageStats;
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
@@ -167,12 +169,12 @@ class ILS_Dashboard extends Admin_Admin
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return 'ils_integration';
 	}
 
-	function canView()
+	function canView() : bool
 	{
 		return UserAccount::userHasPermission(['View System Reports', 'View Dashboards']);
 	}

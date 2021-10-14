@@ -12,12 +12,12 @@ class WebBuilderMenu extends DataObject
 	public $libraryId;
 	public $lastUpdate;
 
-	public function getNumericColumnNames()
+	public function getNumericColumnNames() : array
 	{
 		return ['parentMenuId'];
 	}
 
-	public static function getObjectStructure(){
+	public static function getObjectStructure() : array{
 		$parentMenuItems = [];
 		$parentMenuItems[-1] = 'None';
 

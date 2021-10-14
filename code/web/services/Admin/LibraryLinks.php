@@ -7,29 +7,31 @@ require_once ROOT_DIR . '/sys/LibraryLocation/LibraryLink.php';
 class Admin_LibraryLinks extends ObjectEditor
 {
 
-	function getObjectType(){
+	function getObjectType() : string{
 		return 'LibraryLink';
 	}
-	function getToolName(){
+	function getToolName() : string{
 		return 'LibraryLinks';
 	}
-	function getPageTitle(){
+	function getPageTitle() : string{
 		return 'Library Links';
 	}
-	function getAllObjects(){
+	function getAllObjects($page, $recordsPerPage) : array{
 		//Look lookup information for display in the user interface
 		$user = UserAccount::getLoggedInUser();
 
 		$object = new LibraryLink();
 		$location = new Location();
-		$location->orderBy('displayName');
+		$location->orderBy('displayName asc');
 		if (!UserAccount::userHasPermission('Administer All Libraries')){
 			//Scope to just locations for the user based on home library
 			$patronLibrary = Library::getLibraryForLocation($user->homeLocationId);
 			$object->libraryId = $patronLibrary->libraryId;
 		}
 
-		$object->orderBy('weight');
+		$object->orderBy($this->getSort());
+		$this->applyFilters($object);
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		$list = array();
 		while ($object->fetch()){
@@ -37,19 +39,23 @@ class Admin_LibraryLinks extends ObjectEditor
 		}
 		return $list;
 	}
-	function getObjectStructure(){
+	function getDefaultSort() : string
+	{
+		return 'weight asc';
+	}
+	function getObjectStructure() : array {
 		$structure = LibraryLink::getObjectStructure();
 		unset ($structure['weight']);
 		return $structure;
 	}
-	function getPrimaryKeyColumn(){
+	function getPrimaryKeyColumn() : string{
 		return 'id';
 	}
-	function getIdKeyColumn(){
+	function getIdKeyColumn() : string{
 		return 'id';
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
@@ -57,16 +63,21 @@ class Admin_LibraryLinks extends ObjectEditor
 		if (!empty($this->activeObject) && $this->activeObject instanceof LibraryLink){
 			$breadcrumbs[] = new Breadcrumb('/Admin/Libraries?objectAction=edit&id=' . $this->activeObject->libraryId, 'Library');
 		}
-		$breadcrumbs[] = new Breadcrumb('', 'Sidebar Link');
+		$breadcrumbs[] = new Breadcrumb('', 'Library Link');
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return 'primary_configuration';
 	}
 
-	function canView()
+	function getInitializationJs() : string
+	{
+		return 'AspenDiscovery.Admin.updateLibraryLinksFields()';
+	}
+
+	function canView() : bool
 	{
 		return UserAccount::userHasPermission(['Administer All Libraries', 'Administer Home Library']);
 	}

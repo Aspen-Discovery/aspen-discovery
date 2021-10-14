@@ -12,10 +12,10 @@ class JavaScriptSnippet extends DataObject
 	private $_libraries;
 	private $_locations;
 
-	public static function getObjectStructure()
+	public static function getObjectStructure() : array
 	{
-		$libraryList = Library::getLibraryList();
-		$locationList = Location::getLocationList();
+		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All JavaScript Snippets'));
+		$locationList = Location::getLocationList(!UserAccount::userHasPermission('Administer All JavaScript Snippets'));
 
 		return [
 			'id' => ['property'=>'id', 'type'=>'label', 'label'=>'Id', 'description'=>'The unique id'],
@@ -81,6 +81,7 @@ class JavaScriptSnippet extends DataObject
 			$javascriptSnippetLocation->javascriptSnippetId = $this->id;
 			$javascriptSnippetLocation->delete(true);
 		}
+		return $ret;
 	}
 
 	public function __get($name){
@@ -123,7 +124,7 @@ class JavaScriptSnippet extends DataObject
 
 	public function saveLibraries(){
 		if (isset ($this->_libraries) && is_array($this->_libraries)){
-			$libraryList = Library::getLibraryList();
+			$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All JavaScript Snippets'));
 			foreach ($libraryList as $libraryId => $displayName){
 				$obj = new JavaScriptSnippetLibrary();
 				$obj->javascriptSnippetId = $this->id;
@@ -143,7 +144,7 @@ class JavaScriptSnippet extends DataObject
 
 	public function saveLocations(){
 		if (isset ($this->_locations) && is_array($this->_locations)){
-			$locationList = Location::getLocationList();
+			$locationList = Location::getLocationList(!UserAccount::userHasPermission('Administer All JavaScript Snippets'));
 			foreach ($locationList as $locationId => $displayName) {
 				$obj = new JavaScriptSnippetLocation();
 				$obj->javascriptSnippetId = $this->id;

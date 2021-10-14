@@ -30,103 +30,10 @@ if (isset($_REQUEST['test_role'])){
 $interface = new UInterface();
 $timer->logTime('Create interface');
 
-//Set footer information
 global $locationSingleton;
 getGitBranch();
-
-$interface->loadDisplayOptions();
-$timer->logTime('Loaded display options within interface');
-
-global $active_ip;
-
-try {
-	require_once ROOT_DIR . '/sys/Enrichment/GoogleApiSetting.php';
-	$googleSettings = new GoogleApiSetting();
-	if ($googleSettings->find(true)) {
-		$googleAnalyticsId = $googleSettings->googleAnalyticsTrackingId;
-		$googleAnalyticsLinkingId = $googleSettings->googleAnalyticsTrackingId;
-		$interface->assign('googleAnalyticsId', $googleSettings->googleAnalyticsTrackingId);
-		$interface->assign('googleAnalyticsLinkingId', $googleSettings->googleAnalyticsLinkingId);
-		$interface->assign('googleAnalyticsVersion', empty($googleSettings->googleAnalyticsVersion) ? 'v3' : $googleSettings->googleAnalyticsVersion);
-		$linkedProperties = '';
-		if (!empty($googleSettings->googleAnalyticsLinkedProperties)) {
-			$linkedPropertyArray = preg_split('~\\r\\n|\\r|\\n~', $googleSettings->googleAnalyticsLinkedProperties);
-			foreach ($linkedPropertyArray as $linkedProperty) {
-				if (strlen($linkedProperties) > 0) {
-					$linkedProperties .= ', ';
-				}
-				$linkedProperties .= "'{$linkedProperty}'";
-			}
-		}
-		$interface->assign('googleAnalyticsLinkedProperties', $linkedProperties);
-		if ($googleAnalyticsId) {
-			$googleAnalyticsDomainName = !empty($googleSettings->googleAnalyticsDomainName) ? $googleSettings->googleAnalyticsDomainName : strstr($_SERVER['SERVER_NAME'], '.');
-			// check for a config setting, use that if found, otherwise grab domain name  but remove the first subdomain
-			$interface->assign('googleAnalyticsDomainName', $googleAnalyticsDomainName);
-		}
-	}
-}catch (Exception $e){
-	//This happens when Google analytics settings aren't setup yet
-}
-
-global $library;
-global $offlineMode;
-
-$interface->assign('islandoraEnabled', $configArray['Islandora']['enabled']);
-
-//Get the name of the active instance
-//$inLibrary, is used to pre-select auto-logout on place hold forms;
-// to hide the remember me option on login pages;
-// and to show the Location in the page footer
-if ($locationSingleton->getIPLocation() != null){
-	$interface->assign('inLibrary', true);
-	$physicalLocation = $locationSingleton->getIPLocation()->displayName;
-}else{
-	$interface->assign('inLibrary', false);
-	$physicalLocation = 'Home';
-}
-$interface->assign('physicalLocation', $physicalLocation);
-
-$productionServer = $configArray['Site']['isProduction'];
-$interface->assign('productionServer', $productionServer);
-
-$location = $locationSingleton->getActiveLocation();
-
-// Determine Module and Action
-$module = (isset($_GET['module'])) ? $_GET['module'] : null;
-$module = preg_replace('/[^\w]/', '', $module);
-$action = (isset($_GET['action'])) ? $_GET['action'] : null;
-$action = preg_replace('/[^\w]/', '', $action);
-
-//Redirect some common spam components so they go to a valid place, and redirect old actions to new
-if ($action == 'trackback'){
-	$action = null;
-}
-if ($action == 'SimilarTitles'){
-	$action = 'Home';
-}
-//Set these initially in case user login fails, we will need the module to be set.
-$interface->assign('module', $module);
-$interface->assign('action', $action);
-
-global $solrScope;
-global $scopeType;
-global $isGlobalScope;
-$interface->assign('scopeType', $scopeType);
-$interface->assign('solrScope', "$solrScope - $scopeType");
-$interface->assign('isGlobalScope', $isGlobalScope);
-
-$interface->assign('showFines', $configArray['Catalog']['showFines']);
-
-$interface->assign('activeIp', IPAddress::getActiveIp());
-
-// Check system availability
-$mode = checkAvailabilityMode();
-if ($mode['online'] === false) {
-	$interface->display($mode['template']);
-	exit();
-}
-$timer->logTime('Checked availability mode');
+//Set a counter for CSS and JavaScript so we can have browsers clear their cache automatically
+$interface->assign('cssJsCacheCounter', 14);
 
 // Setup Translator
 global $language;
@@ -207,6 +114,99 @@ $interface->assign('translationModeActive', $translator->translationModeActive()
 
 $interface->setLanguage($activeLanguage);
 
+$interface->loadDisplayOptions();
+$timer->logTime('Loaded display options within interface');
+
+global $active_ip;
+
+try {
+	require_once ROOT_DIR . '/sys/Enrichment/GoogleApiSetting.php';
+	$googleSettings = new GoogleApiSetting();
+	if ($googleSettings->find(true)) {
+		$googleAnalyticsId = $googleSettings->googleAnalyticsTrackingId;
+		$googleAnalyticsLinkingId = $googleSettings->googleAnalyticsTrackingId;
+		$interface->assign('googleAnalyticsId', $googleSettings->googleAnalyticsTrackingId);
+		$interface->assign('googleAnalyticsLinkingId', $googleSettings->googleAnalyticsLinkingId);
+		$interface->assign('googleAnalyticsVersion', empty($googleSettings->googleAnalyticsVersion) ? 'v3' : $googleSettings->googleAnalyticsVersion);
+		$linkedProperties = '';
+		if (!empty($googleSettings->googleAnalyticsLinkedProperties)) {
+			$linkedPropertyArray = preg_split('~\\r\\n|\\r|\\n~', $googleSettings->googleAnalyticsLinkedProperties);
+			foreach ($linkedPropertyArray as $linkedProperty) {
+				if (strlen($linkedProperties) > 0) {
+					$linkedProperties .= ', ';
+				}
+				$linkedProperties .= "'{$linkedProperty}'";
+			}
+		}
+		$interface->assign('googleAnalyticsLinkedProperties', $linkedProperties);
+		if ($googleAnalyticsId) {
+			$googleAnalyticsDomainName = !empty($googleSettings->googleAnalyticsDomainName) ? $googleSettings->googleAnalyticsDomainName : strstr($_SERVER['SERVER_NAME'], '.');
+			// check for a config setting, use that if found, otherwise grab domain name  but remove the first subdomain
+			$interface->assign('googleAnalyticsDomainName', $googleAnalyticsDomainName);
+		}
+	}
+}catch (Exception $e){
+	//This happens when Google analytics settings aren't setup yet
+}
+
+global $library;
+global $offlineMode;
+global $configArray;
+
+//Get the name of the active instance
+//$inLibrary, is used to pre-select auto-logout on place hold forms;
+// to hide the remember me option on login pages;
+// and to show the Location in the page footer
+if ($locationSingleton->getIPLocation() != null){
+	$interface->assign('inLibrary', true);
+	$physicalLocation = $locationSingleton->getIPLocation()->displayName;
+}else{
+	$interface->assign('inLibrary', false);
+	$physicalLocation = 'Home';
+}
+$interface->assign('physicalLocation', $physicalLocation);
+
+$productionServer = $configArray['Site']['isProduction'];
+$interface->assign('productionServer', $productionServer);
+
+$location = $locationSingleton->getActiveLocation();
+
+// Determine Module and Action
+$module = (isset($_GET['module'])) ? $_GET['module'] : null;
+$module = preg_replace('/[^\w]/', '', $module);
+$action = (isset($_GET['action'])) ? $_GET['action'] : null;
+$action = preg_replace('/[^\w]/', '', $action);
+
+//Redirect some common spam components so they go to a valid place, and redirect old actions to new
+if ($action == 'trackback'){
+	$action = null;
+}
+if ($action == 'SimilarTitles'){
+	$action = 'Home';
+}
+//Set these initially in case user login fails, we will need the module to be set.
+$interface->assign('module', $module);
+$interface->assign('action', $action);
+
+global $solrScope;
+global $scopeType;
+global $isGlobalScope;
+$interface->assign('scopeType', $scopeType);
+$interface->assign('solrScope', "$solrScope - $scopeType");
+$interface->assign('isGlobalScope', $isGlobalScope);
+
+$interface->assign('showFines', $configArray['Catalog']['showFines']);
+
+$interface->assign('activeIp', IPAddress::getActiveIp());
+
+// Check system availability
+$mode = checkAvailabilityMode();
+if ($mode['online'] === false) {
+	$interface->display($mode['template']);
+	exit();
+}
+$timer->logTime('Checked availability mode');
+
 //Check to see if we should show the submit ticket option
 $interface->assign('showSubmitTicket', false);
 if (UserAccount::isLoggedIn() && UserAccount::userHasPermission('Submit Ticket')) {
@@ -285,7 +285,7 @@ if ($isLoggedIn) {
 	if ($user instanceof AspenError) {
 		require_once ROOT_DIR . '/services/MyAccount/Login.php';
 		$launchAction = new MyAccount_Login();
-		$error_msg    = translate($user->getMessage());
+		$error_msg    = translate(['text'=>$user->getMessage(),'isPublicFacing'=>true]);
 		$launchAction->launch($error_msg);
 		exit();
 	}elseif(!$user){
@@ -462,11 +462,7 @@ if ($action == "AJAX" || $action == "JSON" || $module == 'API'){
 	if ($activeSearchObject->getView()) $interface->assign('displayMode', $activeSearchObject->getView());
 
 	if ($library->enableGenealogy){
-        $interface->assign('enableOpenGenealogy', true);
-	}
-
-	if ($library->enableArchive){
-		$interface->assign('enableArchive', true);
+		$interface->assign('enableGenealogy', true);
 	}
 
 	if ($library->enableOpenArchives) {
@@ -493,18 +489,20 @@ if ($action == "AJAX" || $action == "JSON" || $module == 'API'){
 	}
 
 	if (($action =="Home" && $module=="Search") || $action == "AJAX" || $action == "JSON"){
-		$interface->assign('showTopSearchBox', 0);
 		$interface->assign('showBreadcrumbs', 0);
 	}else{
-		$interface->assign('showTopSearchBox', 1);
 		$interface->assign('showBreadcrumbs', 1);
 		if ($library->getLayoutSettings()->useHomeLinkInBreadcrumbs && !empty($library->homeLink)){
 			$interface->assign('homeBreadcrumbLink', $library->homeLink);
 		}else{
 			$interface->assign('homeBreadcrumbLink', '/');
 		}
-		$interface->assign('homeLinkText', $library->getLayoutSettings()->homeLinkText);
 	}
+
+	$interface->assign('homeLinkText', $library->getLayoutSettings()->homeLinkText);
+	$interface->assign('browseLinkText', $library->getLayoutSettings()->browseLinkText);
+	$interface->assign('useHomeLink', $library->getLayoutSettings()->useHomeLink);
+	$interface->assign('showBookIcon', $library->getLayoutSettings()->showBookIcon);
 }
 
 //Load page level system messages
@@ -649,7 +647,12 @@ if ($isInvalidUrl || !is_dir(ROOT_DIR . "/services/$module")){
 		try {
 			$service->launch();
 		}catch (Error $e){
-			AspenError::raiseError(new AspenError($e->getMessage(), $e->getTrace()));
+			$backtrace[] = [
+				'file' => $e->getFile(),
+				'line' => $e->getLine(),
+			];
+			$backtrace = array_merge($backtrace, $e->getTrace());
+			AspenError::raiseError(new AspenError($e->getMessage(), $backtrace));
 		}catch (Exception $e){
 			AspenError::raiseError(new AspenError($e->getMessage(), $e->getTrace()));
 		}
@@ -688,7 +691,6 @@ try{
 
 	if (!BotChecker::isRequestFromBot()) {
 		if ($isAJAX) {
-			$aspenUsage->slowAjaxRequests++;
 			require_once ROOT_DIR . '/sys/SystemLogging/SlowAjaxRequest.php';
 			$slowRequest = new SlowAjaxRequest();
 			$slowRequest->year = date('Y');
@@ -704,7 +706,6 @@ try{
 				$slowRequest->insert();
 			}
 		} else {
-			$aspenUsage->slowPages++;
 			require_once ROOT_DIR . '/sys/SystemLogging/SlowPage.php';
 			$slowPage = new SlowPage();
 			$slowPage->year = date('Y');
@@ -785,29 +786,30 @@ function getGitBranch(){
 
 	$gitName = $configArray['System']['gitVersionFile'];
 	$branchName = 'Unknown';
+	$branchNameWithCommit = 'Unknown';
 	if ($gitName == 'HEAD'){
 		$stringFromFile = file('../../.git/HEAD', FILE_USE_INCLUDE_PATH);
 		$stringFromFile = $stringFromFile[0]; //get the string from the array
 		$explodedString = explode("/", $stringFromFile); //separate out by the "/" in the string
-		$branchName = $explodedString[2]; //get the one that is always the branch name
+		$branchName = trim($explodedString[2]); //get the one that is always the branch name
+		$branchNameWithCommit = $branchName;
 	}else{
 		if (file_exists('../../.git/FETCH_HEAD')) {
 			$stringFromFile = file('../../.git/FETCH_HEAD', FILE_USE_INCLUDE_PATH);
 			if (!empty($stringFromFile)) {
 				$stringFromFile = $stringFromFile[0]; //get the string from the array
 				if (preg_match('/(.*?)\s+branch\s+\'(.*?)\'.*/', $stringFromFile, $matches)) {
-					if (IPAddress::showDebuggingInformation()) {
-						$branchName = $matches[2] . ' (' . $matches[1] . ')'; //get the branch name
-					} else {
-						$branchName = $matches[2]; //get the branch name
-					}
+					$branchName = $matches[2]; //get the branch name
+					$branchNameWithCommit = $matches[2] . ' (' . substr($matches[1], 0,7) . ')'; //get the branch name
 				}
 			}
 		}else{
 			$branchName = 'Unknown';
+			$branchNameWithCommit = 'Unknown';
 		}
 	}
 	$interface->assign('gitBranch', $branchName);
+	$interface->assign('gitBranchWithCommit', $branchNameWithCommit);
 }
 // Set up autoloader (needed for YAML)
 function aspen_autoloader($class) {
@@ -865,7 +867,7 @@ function loadModuleActionId(){
 	global $indexingProfiles;
 	/** SideLoad[] $sideLoadSettings */
 	global $sideLoadSettings;
-	$allRecordModules = "OverDrive|GroupedWork|Record|ExternalEContent|Person|Library|RBdigital|Hoopla|RBdigitalMagazine|CloudLibrary|Files|Axis360";
+	$allRecordModules = "OverDrive|GroupedWork|Record|ExternalEContent|Person|Library|RBdigital|Hoopla|RBdigitalMagazine|CloudLibrary|Files|Axis360|WebBuilder|ProPay";
 	foreach ($indexingProfiles as $profile){
 		$allRecordModules .= '|' . $profile->recordUrlComponent;
 	}
@@ -942,11 +944,20 @@ function loadModuleActionId(){
 	}
 
 	global $enabledModules;
+	global $library;
 	try {
 		if ($checkWebBuilderAliases && array_key_exists('Web Builder', $enabledModules)) {
 			require_once ROOT_DIR . '/sys/WebBuilder/BasicPage.php';
+			//Request path will go up to any query parameters (first ?)
+			$requestPath = $requestURI;
+			if (strpos($requestPath, '?') > 0){
+				$requestPath = substr($requestPath, 0, strpos($requestPath, '?'));
+			}
 			$basicPage = new BasicPage();
-			$basicPage->urlAlias = $requestURI;
+			$basicPage->urlAlias = $requestPath;
+			$basicPageLibrary = new LibraryBasicPage();
+			$basicPageLibrary->libraryId = $library->libraryId;
+			$basicPage->joinAdd($basicPageLibrary, 'INNER', 'libraryFilter', 'id', 'basicPageId');
 			if ($basicPage->find(true)) {
 				$_GET['module'] = 'WebBuilder';
 				$_GET['action'] = 'BasicPage';
@@ -957,7 +968,10 @@ function loadModuleActionId(){
 			} else {
 				require_once ROOT_DIR . '/sys/WebBuilder/PortalPage.php';
 				$portalPage = new PortalPage();
-				$portalPage->urlAlias = $requestURI;
+				$portalPage->urlAlias = $requestPath;
+				$portalPageLibrary = new LibraryPortalPage();
+				$portalPageLibrary->libraryId = $library->libraryId;
+				$portalPage->joinAdd($portalPageLibrary, 'INNER', 'libraryFilter', 'id', 'portalPageId');
 				if ($portalPage->find(true)) {
 					$_GET['module'] = 'WebBuilder';
 					$_GET['action'] = 'PortalPage';
@@ -968,7 +982,10 @@ function loadModuleActionId(){
 				} else {
 					require_once ROOT_DIR . '/sys/WebBuilder/CustomForm.php';
 					$form = new CustomForm();
-					$form->urlAlias = $requestURI;
+					$form->urlAlias = $requestPath;
+					$customFormLibrary = new LibraryCustomForm();
+					$customFormLibrary->libraryId = $library->libraryId;
+					$form->joinAdd($customFormLibrary, 'INNER', 'libraryFilter', 'id', 'formId');
 					if ($form->find(true)) {
 						$_GET['module'] = 'WebBuilder';
 						$_GET['action'] = 'Form';

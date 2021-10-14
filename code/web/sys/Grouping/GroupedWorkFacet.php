@@ -4,7 +4,7 @@ class GroupedWorkFacet extends FacetSetting {
 	public $__table = 'grouped_work_facet';
 	public $facetGroupId;
 
-	public function getNumericColumnNames()
+	public function getNumericColumnNames() : array
 	{
 		$numericColumns = parent::getNumericColumnNames();
 		$numericColumns[] = 'facetGroupId';
@@ -68,6 +68,7 @@ class GroupedWorkFacet extends FacetSetting {
 			'weight' => array('property'=>'weight', 'type'=>'integer', 'label'=>'Weight', 'description'=>'The sort order', 'default' => 0),
 			'facetName' => array('property'=>'facetName', 'type'=>'enum', 'label'=>'Facet', 'values' => empty($availableFacets) ? self::getAvailableFacets() : $availableFacets, 'description'=>'The facet to include'),
 			'displayName' => array('property'=>'displayName', 'type'=>'text', 'label'=>'Display Name', 'description'=>'The full name of the facet for display to the user'),
+			'displayNamePlural' => array('property'=>'displayNamePlural', 'type'=>'text', 'label'=>'Plural Display Name', 'description'=>'The full name pluralized of the facet for display to the user'),
 			'showAboveResults' => array('property' => 'showAboveResults', 'type' => 'checkbox', 'label' => 'Show Above Results', 'description'=>'Whether or not the facets should be shown above the results', 'default'=>0),
 			'showInResults' => array('property' => 'showInResults', 'type' => 'checkbox', 'label' => 'Show on Results Page', 'description'=>'Whether or not the facets should be shown in regular search results', 'default'=>1),
 			'showInAdvancedSearch' => array('property' => 'showInAdvancedSearch', 'type' => 'checkbox', 'label' => 'Show on Advanced Search', 'description'=>'Whether or not the facet should be an option on the Advanced Search Page', 'default'=>1),

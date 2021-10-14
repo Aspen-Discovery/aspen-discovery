@@ -30,39 +30,11 @@ class SideFacets implements RecommendationInterface
 		$params = explode(':', $params);
 		$mainSection = empty($params[0]) ? 'Results' : $params[0];
 
-		if ($searchObject->getSearchType() == 'islandora'){
-			$searchLibrary = Library::getActiveLibrary();
-			$hasArchiveSearchLibraryFacets = ($searchLibrary != null && (count($searchLibrary->archiveSearchFacets) > 0));
-			if ($hasArchiveSearchLibraryFacets){
-				$facets = $searchLibrary->archiveSearchFacets;
-			}else{
-				$facets = Library::getDefaultArchiveSearchFacets();
-			}
-
-			$this->facetSettings = array();
-			$this->mainFacets = array();
-
-			/** @var FacetSetting $facet */
-			foreach ($facets as $facet){
-				$facetName = $facet->facetName;
-
-				//Figure out if the facet should be included
-				if ($mainSection == 'Results'){
-					if ($facet->showInResults == 1 && $facet->showAboveResults == 0){
-						$this->facetSettings[$facetName] = $facet;
-						$this->mainFacets[$facetName] = $facet->displayName;
-					}elseif ($facet->showInAdvancedSearch == 1 && $facet->showAboveResults == 0){
-						$this->facetSettings[$facetName] = $facet->displayName;
-					}
-				}
-			}
-		}else{
-			$this->facetSettings = $searchObject->getFacetConfig();
-			$this->mainFacets = array();
-			foreach ($this->facetSettings as $facetName => $facet){
-				if (!$facet->showAboveResults) {
-					$this->mainFacets[$facetName] = $facet->displayName;
-				}
+		$this->facetSettings = $searchObject->getFacetConfig();
+		$this->mainFacets = array();
+		foreach ($this->facetSettings as $facetName => $facet){
+			if (!$facet->showAboveResults) {
+				$this->mainFacets[$facetName] = $facet->displayName;
 			}
 		}
 	}
@@ -292,7 +264,7 @@ class SideFacets implements RecommendationInterface
 
 			$sortedList = array();
 			foreach ($facetsList as $key => $value) {
-				$sortedList[strtolower($key)] = $value;
+				$sortedList[strtolower($key).$key] = $value;
 			}
 			ksort($sortedList);
 			$sideFacets[$facetKey]['sortedList'] = $sortedList;
@@ -303,6 +275,7 @@ class SideFacets implements RecommendationInterface
 
 		$sideFacets[$facetKey]['locked'] = array_key_exists($facetKey, $lockedFacets);
 		$sideFacets[$facetKey]['canLock'] = $facetSetting->canLock;
+		$sideFacets[$facetKey]['displayNamePlural'] = empty($facetSetting->displayNamePlural) ? $facetSetting->displayName : $facetSetting->displayNamePlural;
 		return $sideFacets;
 	}
 }

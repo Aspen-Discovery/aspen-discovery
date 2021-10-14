@@ -40,9 +40,15 @@ if (!file_exists($exportPath)){
 	$movedGroupedWorks = [];
 
 	$startTime = time();
-	importUsers($startTime, $exportPath, $existingUsers, $missingUsers, $serverName, $flipIds);
-	importSavedSearches($startTime, $exportPath, $existingUsers, $missingUsers, $serverName);
-	importMergedWorks($startTime, $exportPath, $existingUsers, $missingUsers, $serverName, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks);
+	if (file_exists($exportPath . "users.csv")) {
+		importUsers($startTime, $exportPath, $existingUsers, $missingUsers, $serverName, $flipIds);
+	}
+	if (file_exists($exportPath . "saved_searches.csv")) {
+		importSavedSearches($startTime, $exportPath, $existingUsers, $missingUsers, $serverName);
+	}
+	if (file_exists($exportPath . 'mergedGroupedWorks.csv')) {
+		importMergedWorks($startTime, $exportPath, $existingUsers, $missingUsers, $serverName, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks);
+	}
 	importLists($startTime, $exportPath, $existingUsers, $missingUsers, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks);
 	importListWidgets($startTime, $exportPath, $existingUsers, $missingUsers, $serverName);
 	importNotInterested($startTime, $exportPath, $existingUsers, $missingUsers, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks);
@@ -468,8 +474,8 @@ function importRatingsAndReviews($startTime, $exportPath, &$existingUsers, &$mis
 		$dateRated = $patronsRatingsAndReviewsRow[3];
 		$title = cleancsv($patronsRatingsAndReviewsRow[4]);
 		$author = cleancsv($patronsRatingsAndReviewsRow[5]);
-		$groupedWorkId = $patronsRatingsAndReviewsRow[6];
-		$groupedWorkResources = $patronsRatingsAndReviewsRow[7];
+		$groupedWorkId = cleancsv($patronsRatingsAndReviewsRow[6]);
+		$groupedWorkResources = cleancsv($patronsRatingsAndReviewsRow[7]);
 
 		if (!validateGroupedWork($groupedWorkId, $title, $author, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks, $groupedWorkResources)){
 			$numSkipped++;
@@ -603,8 +609,8 @@ function importLists($startTime, $exportPath, &$existingUsers, &$missingUsers, &
 		$dateAdded = $patronListEntryRow[3];
 		$title = cleancsv($patronListEntryRow[4]);
 		$author = cleancsv($patronListEntryRow[5]);
-		$groupedWorkId = $patronListEntryRow[6];
-		$groupedWorkResources = $patronListEntryRow[7];
+		$groupedWorkId = cleancsv($patronListEntryRow[6]);
+		$groupedWorkResources = cleancsv($patronListEntryRow[7]);
 
 		if (array_key_exists($listId, $removedLists)){
 			//Skip this list entry since the list wasn't imported (because the user no longer exists)
@@ -743,8 +749,8 @@ function importMergedWorks($startTime, $exportPath, &$existingUsers, &$missingUs
 
 			$destinationTitle = cleancsv($mergedWorksRow[0]);
 			$destinationAuthor = cleancsv($mergedWorksRow[1]);
-			$destinationGroupedWorkID = $mergedWorksRow[2];
-			$destinationRecords = $mergedWorksRow[3];
+			$destinationGroupedWorkID = cleancsv($mergedWorksRow[2]);
+			$destinationRecords = cleancsv($mergedWorksRow[3]);
 
 			//Find the work for the given title & author
 			if (!validateGroupedWork($destinationGroupedWorkID, $destinationTitle, $destinationAuthor, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks, $destinationRecords)){
@@ -753,7 +759,7 @@ function importMergedWorks($startTime, $exportPath, &$existingUsers, &$missingUs
 			}
 
 			$aspenGroupedWorkId = getGroupedWorkId($destinationGroupedWorkID, $validGroupedWorks, $movedGroupedWorks);
-			$resourcesList = explode(",", $destinationRecords);
+			$resourcesList = preg_split('/[,;]/', $destinationRecords);
 			$allResourcesAttachedToSameRecord = true;
 			$alternateTitleAuthors = [];
 			foreach ($resourcesList as $resourceId){
@@ -990,9 +996,13 @@ function validateGroupedWork($groupedWorkId, $title, $author, &$validGroupedWork
 		//We can use two approaches, look at the resources tied to it or look at it by permanent id and title/author
 		//First try looking by resource.  Do this first because the grouping has been tweaked and because this better
 		//Handles works that have merged or unmerged
-		$groupedWorkResourceArray = explode(",", $groupedWorkResources);
+		$groupedWorkResourceArray = preg_split('/[,;]/', $groupedWorkResources);
 		$groupedWorkValid = false;
 		foreach ($groupedWorkResourceArray as $identifier){
+			if (strpos($identifier, ':') === false){
+				echo("Identifier $identifier did not have a source list of resources = $groupedWorkResources");
+				continue;
+			}
 			list($source, $id) = explode(':', $identifier);
 			$groupedWorkPrimaryIdentifier = new GroupedWorkPrimaryIdentifier();
 			$groupedWorkPrimaryIdentifier->type = $source;

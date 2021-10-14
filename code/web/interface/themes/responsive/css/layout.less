@@ -59,16 +59,14 @@ hr.menu{
 .dismissable-system-message-text{
   width: calc(100% - 30px);
 }
-//Define the header elements
-#header-container{
-  padding-top: 0;
-  height: @header-height;
-  background-color: @header-top-color;
-  //background: linear-gradient(to bottom, @header-top-color, @header-middle-color 85%, @header-bottom-color);
 
+#header-wrapper{
+  padding-top: 0;
+  background-color: @header-top-color;
   margin-bottom: 0;
-  min-height: 110px;
+  padding-bottom: 1em;
 }
+
 #header-logo-container{
   @media(max-width: @screen-tn-max) {
     text-align: center;
@@ -90,10 +88,15 @@ hr.menu{
   display: inline-block;
   padding-right: 10px;
 }
-#menuToggleButton{
+#menuToggleButton, .menuToggleButton a.menu-bar {
   width: 36px;
   display: inline-block;
   text-align: center;
+}
+
+#select-language.dropdown-menu {
+  left: unset;
+  right: 0;
 }
 
 #menuToggleButton.selected{
@@ -111,32 +114,40 @@ hr.menu{
 }
 
 #header-menu {
-  display: none;
-  position: absolute;
+  left: unset;
+  right: 0;
   background-color: #ededed;
-  min-width: 220px;
+  min-width: 250px;
   box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
   padding: 12px 16px;
   z-index: 3;
+  top: 35px;
+  margin: 0;
+
+  #logoutLink {
+    margin-top: 1em;
+  }
 }
 
 .header-menu-option{
   margin-bottom: 3px;
   cursor: pointer;
 
-  i {
-    float:right;
+  i + span {
+    margin-left: .5em;
   }
 }
 
 #account-menu {
-  display: none;
-  position: absolute;
+  left: unset;
+  right: 0;
   background-color: #ededed;
   min-width: 220px;
-  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
   padding: 12px 16px;
   z-index: 3;
+  top: 35px;
+  margin: 0;
 }
 
 #accountMenuToggleButton.selected{
@@ -150,11 +161,21 @@ hr.menu{
 .header-menu-section{
   margin-bottom: 3px;
   cursor: pointer;
-
-  i {
-    float:right;
-  }
 }
+
+#aspenLanguagesMenuSection {
+  font-weight: bold;
+  margin-top: 1em;
+}
+
+.header-menu-option.languageSelect {
+  margin-left: 2em;
+}
+
+.header-menu-option.languageSelected {
+  margin-left: .5em;
+}
+
 #library-name-header{
   font-size: @library-display-name-font-size;
   color: @library-display-name-color;
@@ -180,6 +201,7 @@ hr.menu{
 #footer-container{
   border-top: 8px solid @footer-top-border-color;
   padding-top: 3px;
+  margin-top: 1em;
 
   // zero out negative margins on xs screens
   @media screen and (max-width: @screen-xs-max) {
@@ -201,6 +223,7 @@ hr.menu{
 }
 .connect-icon{
   padding: 0 3px 0 3px;
+  color: inherit !important;
 }
 
 // Fixed navigation in footer
@@ -383,6 +406,10 @@ ul.account-submenu{
   white-space: normal !important;
 }
 
+.label-wrap{
+  white-space: normal !important;
+}
+
 .placard{
   border: 1px solid #bbb;
   background-color:  #f0f5f5;
@@ -463,6 +490,15 @@ a.placard-link{
   background-color: #666666;
 }
 
+.search_tools.well.small {
+  a,strong {
+    padding-right: .5em;
+  }
+    :last-child {
+      padding-right: 0;
+    }
+}
+
 /* with flexbox */
 .grid {
   display: -webkit-box;
@@ -479,4 +515,258 @@ a.placard-link{
   flex-shrink: 1;
   flex-basis: 0;
   padding: 5px;
+}
+
+.previewFrame{
+  width: 100%;
+  height: 100%;
+  border: none;
+  min-height: 50vh;
+}
+
+#explore-more-header{
+  padding: 10px 25px 5px 0;
+  margin-top: 5px; // to match other menus
+  //margin-bottom:5px;
+  text-align: right;
+  color: @explore-more-sidebar-color;
+  background-color: @explore-more-sidebar-bg-color;
+  font-variant: small-caps;
+  font-weight: bold;
+  font-size: 16px;
+}
+
+#explore-more-body{
+
+  // No longer needed now that an accordion is in place
+  //margin-left: floor(-@grid-gutter-width / 2); // undo padding of parent #sidebar-content with negative margin
+  //padding-left: @padding-small-horizontal; // add smaller padding
+
+  .sectionHeader {
+    text-transform: uppercase;
+    font-weight: bold;
+    color: @title-color;
+    border-bottom: 2px solid @explore-more-bar-label-bg-color;
+    margin-top: 15px;
+  }
+  .section {
+    padding-right: @padding-xs-horizontal;
+    margin-bottom: 20px;
+  }
+  .subsectionTitle {
+    color: @subsection-title-color;
+  }
+  .subsection {
+
+  }
+  .jcarousel-wrapper {
+    margin-left: -@padding-small-horizontal; // remove padding from #explore-more-body, so that full space is available to the carousel
+    margin-top: 5px;
+  }
+  .jcarousel {
+    left: 30px;  // position carousel first item
+    width: calc(100% ~"-" 60px); // Escaping so that LESS doesn't compile the calc rule;
+  }
+
+  .thumbnail{
+    height: 175px;
+    background-color: transparent;
+  }
+
+  .relatedTitlesContainer {
+    //white-space: nowrap;
+    height: 175px; // doesn't seem have an effect
+
+  }
+}
+
+// Styling for Explore More Bar in Search Results
+.exploreMoreBar {
+  border: solid @explore-more-bar-border-width @explore-more-bar-label-bg-color;
+  margin: 10px 5px 15px; // matches padding of a .result div
+  background: fade(@explore-more-bar-label-bg-color, 5%);
+
+  .exploreMoreBarLabel {
+    color: @menu-bar-color;
+    font-weight: bold;
+    text-transform: uppercase;
+    white-space: nowrap; // multiple word labels need to stay on the same line
+    @media (max-width: @screen-tn-max) {
+      white-space: normal;
+    }
+    font-size: 18px;
+    padding: 4px;
+  }
+
+  // Explore More Bar Label on the Left Hand Side
+  .label-left {
+    float: left;
+    // Mimic Sidebar Behaviour
+    width: @explore-more-bar-label-width;
+    min-height: 167px; // makes explore more bar contain the left label
+    color: @menu-bar-color;
+    &, & img {
+      background-color: @explore-more-bar-label-bg-color;
+    }
+    .exploreMoreBarLabel {
+      // Make Font Vertical
+      position: absolute;
+      transform: rotate(-90deg) translateX(-100%);
+      transform-origin: 0 0;
+      padding-right: 10px; // padding between icon and text (after transform)
+      padding-left: 5px; // padding at bottom of text, after transform //TODO this may not be needed in the end
+      line-height: @explore-more-bar-label-width; // matches width, after transform
+    }
+    &+.exploreMoreContainer{
+      padding-left: @explore-more-bar-label-width; // move carousel container to left of the label
+      margin: 16px auto; // center the carousel.
+    }
+  }
+
+  // Explore More Bar Label on the Top
+  .label-top {
+    color: @menu-bar-color;
+    width: 100%;
+    &, & img {
+      background-color: @explore-more-bar-label-bg-color;
+      display: inline-block;
+    }
+    .exploreMoreBarLabel {
+      padding-left: 10px;
+      display: inline-block;
+    }
+  }
+
+  .jcarousel-wrapper {
+    margin: 5px auto;
+
+    .jcarousel {
+      li{
+        display: block !important;
+      }
+      .explore-more-option{
+        padding-left: 10px;
+        padding-right: 10px;
+        height: 100%;
+        border: 0px !important;
+
+        .thumbnail {
+          a {
+            img {
+              height: 125px;
+            }
+          }
+          border: 0 solid white;
+          position: relative;
+          display: block;
+          background-color: transparent !important;
+
+          .explore-more-image {
+            width: 100%;
+            position: absolute;
+            top: 62px;
+            transform: translate(-50%, -50%);
+            left: 50%;
+          }
+        }
+        figcaption {
+          margin-top: 4px;
+          margin-bottom: 4px;
+          font-weight: 100;
+          overflow-x: hidden;
+          position: absolute;
+          top: 130px;
+          width: 100%;
+          text-align: center;
+
+        }
+      }
+    }
+  }
+}
+
+// Common Rules between Explore More Bar & Explore More Sidebar
+#explore-more-body, .exploreMoreBar {
+  .jcarousel {
+    .thumbnail {
+      margin-bottom: 0;
+      height:175px;
+      border: 0 solid white;
+    }
+  }
+
+  .jcarousel-control-prev, .jcarousel-control-next {
+    height: 100%;
+    background-color: transparent;
+    color: @explore-more-bar-label-bg-color;
+    z-index: 2; // keep above carousel content
+    box-shadow: white 0px 0px 0px 0px;
+    &:focus {
+      outline: none;
+    }
+    .glyphicon {
+      top: 39px; // center the button a bit better. I haven't find a good way to make it center with out a specific value yet
+    }
+  }
+  // Horizontal Placement of Previous Next Buttons
+  .jcarousel-control-prev {
+    left: 2px;
+  }
+  .jcarousel-control-next {
+    right: 2px;
+  }
+
+  // Accordion Styling
+  .panel-body {
+    background-color: transparent;
+  }
+}
+
+#pdfContainer{
+  border: 1px solid lightgrey;
+  margin: 10px;
+
+  #pdfContainerBody{
+    position: relative;
+    width:    100%;
+
+    #pdfComponentBox{
+      padding: 10px;
+      position: absolute;
+      top:      0;
+      left:     0;
+      bottom:   0;
+      right:    0;
+
+      #view-pdf{
+        width: 100%;
+        height: 100%;
+      }
+    }
+  }
+  #pdfContainerBody:before{
+    content:     "";
+    display:     block;
+    padding-top: 129.5%; /* ratio of 11:8.5*/
+  }
+}
+#selectLibraryOptions{
+  -webkit-column-gap:   35px;
+  -moz-column-gap:      35px;
+  column-gap:           35px;
+  @media(min-width: 0){
+    -webkit-column-count: 1;
+    -moz-column-count:    1;
+    column-count:         1;
+  }
+  @media(min-width: @screen-sm-min){
+    -webkit-column-count: 2;
+    -moz-column-count:    2;
+    column-count:         2;
+  }
+  @media(min-width: @screen-md-min){
+    -webkit-column-count: 3;
+    -moz-column-count:    3;
+    column-count:         3;
+  }
 }

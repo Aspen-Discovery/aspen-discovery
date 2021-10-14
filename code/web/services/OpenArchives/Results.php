@@ -177,7 +177,7 @@ class OpenArchives_Results extends ResultsAction
 		$this->display($searchObject->getResultTotal() ? 'list.tpl' : 'list-none.tpl', 'Archive Search Results', $sidebar);
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		return parent::getResultsBreadcrumbs('History & Archives Search');
 	}

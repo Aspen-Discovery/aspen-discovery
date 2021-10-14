@@ -9,7 +9,7 @@ class SubBrowseCategories extends DataObject {
 	public $browseCategoryId; // ID of the Main or Parent browse category
 	public $subCategoryId;    // ID of the browse Category which is the Sub-Category or Child browse category
 
-	static function getObjectStructure(){
+	static function getObjectStructure() : array{
 		$browseCategoryList = self::listBrowseCategories();
 		return array(
 			'id' => array('property'=>'id', 'type'=>'label', 'label'=>'Id', 'description'=>'The unique id of the sub-category row within the database'),
@@ -25,11 +25,24 @@ class SubBrowseCategories extends DataObject {
 
 		$browseCategories = new BrowseCategory();
 		$browseCategories->orderBy('label');
-		$browseCategories->find();
-		while ($browseCategories->fetch()){
-			$browseCategoryList[$browseCategories->id] = $browseCategories->label . ' (' . $browseCategories->textId . ')';
-		}
+		if (!UserAccount::userHasPermission('Administer All Browse Categories')){
+			$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
+			$libraryId = $library == null ? -1 : $library->libraryId;
+			$browseCategories->whereAdd("sharing = 'everyone'");
+			$browseCategories->whereAdd("sharing = 'library' AND libraryId = " . $libraryId, 'OR');
+			$browseCategories->find();
 
+			while ($browseCategories->fetch()){
+				$browseCategoryList[$browseCategories->id] = $browseCategories->label . ' (' . $browseCategories->textId . ')';
+			}
+
+		} else if(UserAccount::userHasPermission('Administer All Browse Categories')) {
+			$browseCategories->find();
+
+			while ($browseCategories->fetch()){
+				$browseCategoryList[$browseCategories->id] = $browseCategories->label . ' (' . $browseCategories->textId . ')';
+			}
+		}
 		return $browseCategoryList;
 	}
 

@@ -1174,7 +1174,8 @@ IF "%GC_TUNE%"=="" (
    -XX:CMSMaxAbortablePrecleanTime=6000 ^
    -XX:+CMSParallelRemarkEnabled ^
    -XX:+ParallelRefProcEnabled ^
-   -XX:-OmitStackTraceInFastThrow
+   -XX:-OmitStackTraceInFastThrow ^
+   -XX:+IgnoreUnrecognizedVMOptions
 )
 
 if !JAVA_MAJOR_VERSION! GEQ 9  (

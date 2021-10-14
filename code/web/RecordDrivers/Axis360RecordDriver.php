@@ -54,7 +54,7 @@ class Axis360RecordDriver extends GroupedWorkSubDriver
 		}
 	}
 
-	public function getModule()
+	public function getModule() : string
 	{
 		return 'Axis360';
 	}
@@ -91,6 +91,14 @@ class Axis360RecordDriver extends GroupedWorkSubDriver
 			$title .= ': ' . $subtitle;
 		}
 		return $title;
+	}
+
+	/**
+	 * @return  string
+	 */
+	public function getAuthor()
+	{
+		return $this->axis360Title->primaryAuthor;
 	}
 
 	/**
@@ -186,25 +194,38 @@ class Axis360RecordDriver extends GroupedWorkSubDriver
 		return array();
 	}
 
-	public function getRecordActions($relatedRecord, $isAvailable, $isHoldable, $isBookable, $volumeData = null)
+	protected $_actions = null;
+	public function getRecordActions($relatedRecord, $isAvailable, $isHoldable, $volumeData = null)
 	{
-		$actions = array();
-		if ($isAvailable) {
-			$actions[] = array(
-				'title' => 'Check Out Axis 360',
-				'onclick' => "return AspenDiscovery.Axis360.checkOutTitle('{$this->id}');",
-				'requireLogin' => false,
-				'type' => 'axis360_checkout'
-			);
-		} else {
-			$actions[] = array(
-				'title' => 'Place Hold Axis 360',
-				'onclick' => "return AspenDiscovery.Axis360.placeHold('{$this->id}');",
-				'requireLogin' => false,
-				'type' => 'axis360_hold'
-			);
+		if ($this->_actions === null) {
+			$this->_actions = array();
+			//Check to see if the title is on hold or checked out to the patron.
+			$loadDefaultActions = true;
+			if (UserAccount::isLoggedIn()) {
+				$user = UserAccount::getActiveUserObj();
+				$this->_actions = array_merge($this->_actions, $user->getCirculatedRecordActions('axis360', $this->id));
+				$loadDefaultActions = count($this->_actions) == 0;
+			}
+
+			if ($loadDefaultActions) {
+				if ($isAvailable) {
+					$this->_actions[] = array(
+						'title' => translate(['text'=>'Check Out Axis 360','isPublicFacing'=>true]),
+						'onclick' => "return AspenDiscovery.Axis360.checkOutTitle('{$this->id}');",
+						'requireLogin' => false,
+						'type' => 'axis360_checkout'
+					);
+				} else {
+					$this->_actions[] = array(
+						'title' => translate(['text'=>'Place Hold Axis 360','isPublicFacing'=>true]),
+						'onclick' => "return AspenDiscovery.Axis360.placeHold('{$this->id}');",
+						'requireLogin' => false,
+						'type' => 'axis360_hold'
+					);
+				}
+			}
 		}
-		return $actions;
+		return $this->_actions;
 	}
 
 	/**
@@ -255,7 +276,13 @@ class Axis360RecordDriver extends GroupedWorkSubDriver
 	 */
 	function getFormats()
 	{
-		return ['eBook'];
+		if ($this->axis360RawMetadata->formatType == 'eBook') {
+			return ['eBook'];
+		}else if ($this->axis360RawMetadata->formatType == 'eAudiobook') {
+			return ['eAudiobook'];
+		}else {
+			return ['Unknown'];
+		}
 	}
 
 	/**
@@ -265,7 +292,13 @@ class Axis360RecordDriver extends GroupedWorkSubDriver
 	 */
 	function getFormatCategory()
 	{
-		return ['eBook'];
+		if ($this->axis360RawMetadata->formatType == 'eBook') {
+			return ['eBook'];
+		}else if ($this->axis360RawMetadata->formatType == 'eAudiobook') {
+			return ['Audio Books'];
+		}else {
+			return ['Unknown'];
+		}
 	}
 
 	public function getLanguage()
@@ -273,7 +306,7 @@ class Axis360RecordDriver extends GroupedWorkSubDriver
 		return 'English';
 	}
 
-	public function getNumHolds()
+	public function getNumHolds() : int
 	{
 		//TODO:  Check to see if we can determine number of holds on a title
 		return 0;
@@ -345,6 +378,7 @@ class Axis360RecordDriver extends GroupedWorkSubDriver
 
 			global $interface;
 			$interface->assign('og_title', $this->getTitle());
+			$interface->assign('og_description', $this->getDescription());
 			$interface->assign('og_type', $this->getGroupedWorkDriver()->getOGType());
 			$interface->assign('og_image', $this->getBookcoverUrl('medium'));
 			$interface->assign('og_url', $this->getAbsoluteUrl());
@@ -386,14 +420,21 @@ class Axis360RecordDriver extends GroupedWorkSubDriver
 	function loadSubjects()
 	{
 		$subjects = [];
-		if (!empty($this->axis360RawMetadata->subjects)) {
-			$subjects = explode('# ', $this->axis360RawMetadata->subjects);
-			foreach ($subjects as $key => $subject){
-				$subjects[$key] = str_replace('/', ' -- ', $subject);
-			}
+		$rawSubjects = $this->getMetadataFieldArray('subject');
+		foreach ($rawSubjects as $key => $subject){
+			$subjects[$key] = str_replace('/', ' -- ', $subject);
 		}
 		global $interface;
 		$interface->assign('subjects', $subjects);
+	}
+
+	function getMetadataFieldArray($fieldName){
+		foreach ($this->axis360RawMetadata->fields as $fieldInfo){
+			if ($fieldInfo->name == $fieldName){
+				return $fieldInfo->values;
+			}
+		}
+		return [];
 	}
 
 	/**

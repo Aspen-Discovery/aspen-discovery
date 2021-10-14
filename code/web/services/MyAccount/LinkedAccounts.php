@@ -19,7 +19,7 @@ class LinkedAccounts extends MyAccount
 			$linkedUsers = $user->getLinkedUsers();
 			$patronId    = isset($_REQUEST['patronId']) ? $_REQUEST['patronId'] : $user->id;
 			/** @var User $patron */
-			$patron      = $user->getUserReferredTo($patronId);
+			$patron = $user->getUserReferredTo($patronId);
 
 			// Linked Accounts Selection Form set-up
 			if (count($linkedUsers) > 0) {
@@ -37,7 +37,7 @@ class LinkedAccounts extends MyAccount
 		$this->display('linkedAccounts.tpl', 'Linked Accounts');
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'My Account');

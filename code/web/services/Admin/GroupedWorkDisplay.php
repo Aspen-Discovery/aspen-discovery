@@ -5,21 +5,28 @@ require_once ROOT_DIR . '/sys/Grouping/GroupedWorkDisplaySetting.php';
 
 class Admin_GroupedWorkDisplay extends ObjectEditor
 {
-	function getObjectType(){
+	function getObjectType() : string
+	{
 		return 'GroupedWorkDisplaySetting';
 	}
-	function getToolName(){
+	function getToolName() : string
+	{
 		return 'GroupedWorkDisplay';
 	}
-	function getPageTitle(){
+	function getPageTitle() : string
+	{
 		return 'Grouped Work Display Settings';
 	}
-	function canDelete(){
+	function canDelete() : bool
+	{
 		return UserAccount::userHasPermission('Administer All Grouped Work Display Settings');
 	}
-	function getAllObjects(){
+	function getAllObjects($page, $recordsPerPage): array
+	{
 		$object = new GroupedWorkDisplaySetting();
-		$object->orderBy('name');
+		$object->orderBy($this->getSort());
+		$this->applyFilters($object);
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		if (!UserAccount::userHasPermission('Administer All Grouped Work Display Settings')){
 			$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
 			$object->id = $library->groupedWorkDisplaySettingId;
@@ -31,17 +38,26 @@ class Admin_GroupedWorkDisplay extends ObjectEditor
 		}
 		return $list;
 	}
-	function getObjectStructure(){
+	function getDefaultSort() : string
+	{
+		return 'name asc';
+	}
+
+	function getObjectStructure() : array
+	{
 		return GroupedWorkDisplaySetting::getObjectStructure();
 	}
-	function getPrimaryKeyColumn(){
+	function getPrimaryKeyColumn() : string
+	{
 		return 'id';
 	}
-	function getIdKeyColumn(){
+	function getIdKeyColumn() : string
+	{
 		return 'id';
 	}
 
-	function getInstructions(){
+	function getInstructions() : string
+	{
 		return '/Admin/HelpManual?page=Grouped-Work-Display-Settings';
 	}
 
@@ -74,7 +90,7 @@ class Admin_GroupedWorkDisplay extends ObjectEditor
 		header("Location: /Admin/GroupedWorkDisplay?objectAction=edit&id=" . $groupedWorkSettingId);
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
@@ -83,12 +99,12 @@ class Admin_GroupedWorkDisplay extends ObjectEditor
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return 'cataloging';
 	}
 
-	function canView()
+	function canView() : bool
 	{
 		return UserAccount::userHasPermission(['Administer All Grouped Work Display Settings','Administer Library Grouped Work Display Settings']);
 	}

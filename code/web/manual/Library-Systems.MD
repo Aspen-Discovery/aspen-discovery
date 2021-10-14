@@ -1,8 +1,10 @@
-##Library Systems
+## Library Systems
 
 - Library Systems is a part of inital setup for Aspen. This lives under Account -> Primary Configuration
 
-![Library Systems](/manual/images/Library-Systems.png)
+![Library Systems](/manual/images/Library-Systems-Update.png)
+
+### Creating a New Library System
 
 - To create a library system, click the 'Add New' box.
 - If you have more than one system, you can click the small checkbox next to two and click 'Compare' at the bottom of the list to see the similarities and differences in configuration for the two.
@@ -20,7 +22,7 @@
     - The checkbox 'Show Expiration Warnings' will warn patrons when their accounts are set to expire soon.
     - The checkbox 'Show While You Wait' allows Aspen to give patrons recommendations on items when placing holds. Reference the section of the manual on 'While You Wait' for more information.
     - The checkbox 'Allow Linked Accounts' tells Aspen that relationships between patron accounts in your ILS are present and can be allowed in Aspen, as well. For example, if your ILS has guarantor and guarantee relationships.
-    - The checkbox 'Show Library Hours Notice on Account Pages' determines whether or not the library hours should show My Account's Checked Out, Holds, and Bookings page.
+    - The checkbox 'Show Library Hours Notice on Account Pages' determines whether or not the library hours should show My Account's Checked Out, and Holds page.
   - Barcode
     - You can let Aspen know what your minimum and maximum length on patron barcodes.
     - If you define a Barcode Prefix, patrons can login with their cardnumber without the prefix. This is useful when patrons are more familiar with their unique id instead of the entire cardnumber.
@@ -49,7 +51,8 @@
 - Records owned allows you to tell Aspen what items are owned by your system. If you are a one branch system, you can input .* as your location, which tells Aspen all of the locations are your items. If you are a multi-branch system then you will need to define your distinct locations in the locations section under Library Systems. You can find more information on that on the location page of the manual. 
 - Records to Include tells Aspen what records should be included in your searches.
 
+## Video Tutorial 
 
-[![Library System and Locations](/manual/images/Library-System-and-Locations.jpg)](https://youtu.be/H51Q4jdd9MM)
+[![Library System and Locations](/manual/images/library-systems-and-locations.jpg)](https://youtu.be/d720bfDRSUI)
 
-[Watch on Youtube](https://youtu.be/H51Q4jdd9MM)
+[Watch on Youtube](https://youtu.be/d720bfDRSUI)

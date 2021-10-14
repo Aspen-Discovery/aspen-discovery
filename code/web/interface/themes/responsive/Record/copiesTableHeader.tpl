@@ -5,25 +5,37 @@
  xs-3 : 25%       (1/4)
  xs-2 : 16.6667% (1/6)
  *}
-	<div class="row">
+<thead>
+	<tr>
 		{if $showVolume}
-			<div class="col-tn-2">
-				<strong><u>{translate text="Volume"}</u></strong>
-			</div>
+			<th>
+				<strong><u>{translate text="Volume" isPublicFacing=true}</u></strong>
+			</th>
 		{/if}
-		<div class="col-tn-{if $showLastCheckIn && $showVolume}3{elseif $showLastCheckIn || $showVolume}4{else}5{/if} ">
-			<strong><u>{translate text="Location"}</u></strong>
-		</div>
-		<div class="holdingsCallNumber col-tn-{if $showLastCheckIn || $showVolume}3{else}4{/if}">
-			<strong><u>{translate text="Call Number"}</u></strong>
-		</div>
-		<div class="col-tn-{if $showLastCheckIn && $showVolume}2{elseif $showLastCheckIn || $showVolume}3{else}3{/if}">
-			<strong><u>{translate text="Status"}</u></strong>
-		</div>
+		<th>
+			<strong><u>{translate text="Location" isPublicFacing=true}</u></strong>
+		</th>
+		<th>
+			<strong><u>{translate text="Call Number" isPublicFacing=true}</u></strong>
+		</th>
+		{if $hasNote}
+			<th>
+				<strong><u>{translate text="Note" isPublicFacing=true}</u></strong>
+			</th>
+		{/if}
+		<th>
+			<strong><u>{translate text="Status" isPublicFacing=true}</u></strong>
+		</th>
+		{if $hasDueDate && $showItemDueDates}
+			<th>
+				<strong><u>{translate text="Due Date" isPublicFacing=true}</u></strong>
+			</th>
+		{/if}
 		{if $showLastCheckIn}
-			<div class="col-tn-2">
-				<strong><u>{translate text="Last Check-In"}</u></strong>
-			</div>
+			<th>
+				<strong><u>{translate text="Last Check-In" isPublicFacing=true}</u></strong>
+			</th>
 		{/if}
-	</div>
+	</tr>
+</thead>
 {/strip}

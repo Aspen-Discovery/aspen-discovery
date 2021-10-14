@@ -1,5 +1,6 @@
 package com.turning_leaf_technologies.reindexer;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.TreeMap;
@@ -12,8 +13,8 @@ public class RecordInfo {
 
 	//Formats exist at both the item and record level because
 	//Various systems define them in both ways.
-	private final HashSet<String> formats = new HashSet<>();
-	private final HashSet<String> formatCategories = new HashSet<>();
+	private HashSet<String> formats = new HashSet<>();
+	private HashSet<String> formatCategories = new HashSet<>();
 	private long formatBoost = 1;
 
 	private String edition;
@@ -22,7 +23,8 @@ public class RecordInfo {
 	private String publicationDate;
 	private String physicalDescription;
 
-	private final HashSet<ItemInfo> relatedItems = new HashSet<>();
+	private final ArrayList<ItemInfo> relatedItems = new ArrayList<>();
+
 	public RecordInfo(String source, String recordIdentifier){
 		this.source = source;
 		this.recordIdentifier = recordIdentifier;
@@ -34,6 +36,10 @@ public class RecordInfo {
 
 	void setSubSource(String subSource) {
 		this.subSource = subSource;
+	}
+
+	public String getSubSource(){
+		return this.subSource;
 	}
 
 	public long getFormatBoost() {
@@ -50,6 +56,10 @@ public class RecordInfo {
 		this.edition = edition;
 	}
 
+	public String getEdition(){
+		return edition;
+	}
+
 	void setPrimaryLanguage(String primaryLanguage) {
 		this.primaryLanguage = primaryLanguage;
 	}
@@ -62,15 +72,23 @@ public class RecordInfo {
 		this.publisher = publisher;
 	}
 
+	public String getPublisher() {
+		return this.publisher;
+	}
+
 	void setPublicationDate(String publicationDate) {
 		this.publicationDate = publicationDate;
+	}
+
+	public String getPublicationDate() {
+		return this.publicationDate;
 	}
 
 	void setPhysicalDescription(String physicalDescription) {
 		this.physicalDescription = physicalDescription;
 	}
 
-	HashSet<ItemInfo> getRelatedItems() {
+	ArrayList<ItemInfo> getRelatedItems() {
 		return relatedItems;
 	}
 
@@ -130,7 +148,7 @@ public class RecordInfo {
 		return primaryFormat;
 	}
 
-	private String getPrimaryFormatCategory() {
+	public String getPrimaryFormatCategory() {
 		HashMap<String, Integer> relatedFormats = new HashMap<>();
 		for (String format : formatCategories){
 			relatedFormats.put(format, 1);
@@ -266,6 +284,10 @@ public class RecordInfo {
 		return values;
 	}
 
+	void clearFormats(){
+		this.formats.clear();;
+	}
+
 	void addFormats(HashSet<String> translatedFormats) {
 		this.formats.addAll(translatedFormats);
 	}
@@ -280,48 +302,6 @@ public class RecordInfo {
 
 	void addFormatCategory(String translatedFormatCategory){
 		this.formatCategories.add(translatedFormatCategory);
-	}
-
-	void updateIndexingStats(TreeMap<String, ScopedIndexingStats> indexingStats) {
-		for (ScopedIndexingStats scopedStats : indexingStats.values()){
-			String recordProcessor = this.subSource == null ? this.source : this.subSource;
-			RecordProcessorIndexingStats stats = scopedStats.recordProcessorIndexingStats.get(recordProcessor.toLowerCase());
-			if (stats == null) {
-				continue;
-			}
-			HashSet<ItemInfo> itemsForScope = getRelatedItemsForScope(scopedStats.getScopeName());
-			if (itemsForScope.size() > 0) {
-				stats.numRecordsTotal++;
-				boolean recordLocallyOwned = false;
-				for (ItemInfo curItem : itemsForScope){
-					//Check the type (physical, eContent, on order)
-					boolean locallyOwned = curItem.isLocallyOwned(scopedStats.getScopeName())
-							|| curItem.isLibraryOwned(scopedStats.getScopeName());
-					if (locallyOwned){
-						recordLocallyOwned = true;
-					}
-					if (curItem.isEContent()){
-						stats.numEContentTotal += curItem.getNumCopies();
-						if (locallyOwned){
-							stats.numEContentOwned += curItem.getNumCopies();
-						}
-					}else if (curItem.isOrderItem()){
-						stats.numOrderItemsTotal += curItem.getNumCopies();
-						if (locallyOwned){
-							stats.numOrderItemsOwned += curItem.getNumCopies();
-						}
-					}else{
-						stats.numPhysicalItemsTotal += curItem.getNumCopies();
-						if (locallyOwned){
-							stats.numPhysicalItemsOwned += curItem.getNumCopies();
-						}
-					}
-				}
-				if (recordLocallyOwned){
-					stats.numRecordsOwned++;
-				}
-			}
-		}
 	}
 
 	boolean hasItemFormats() {
@@ -339,5 +319,28 @@ public class RecordInfo {
 				autoReindexTimes.add(curItem.getAutoReindexTime());
 			}
 		}
+	}
+
+	void copyFrom(RecordInfo recordInfo){
+		//noinspection unchecked
+		this.formats = (HashSet<String>) recordInfo.formats.clone();
+		//noinspection unchecked
+		this.formatCategories = (HashSet<String>)recordInfo.formatCategories.clone();
+		this.formatBoost = recordInfo.formatBoost;
+		this.edition = recordInfo.edition;
+		this.primaryLanguage = recordInfo.primaryLanguage;
+		this.publisher = recordInfo.publisher;
+		this.publicationDate = recordInfo.publicationDate;
+		this.physicalDescription = recordInfo.physicalDescription;
+		//noinspection unchecked
+		for (ItemInfo itemInfo : recordInfo.relatedItems) {
+			ItemInfo clonedItem = new ItemInfo();
+			addItem(clonedItem);
+			clonedItem.copyFrom(itemInfo);
+		}
+	}
+
+	public String getPhysicalDescription() {
+		return physicalDescription;
 	}
 }

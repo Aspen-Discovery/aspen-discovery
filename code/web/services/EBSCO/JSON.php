@@ -9,7 +9,7 @@ class EBSCO_JSON extends JSON_Action
 		if (!isset($_REQUEST['id'])) {
 			return ['success' => false, 'message' => 'ID was not provided'];
 		}
-		$result = ['success' => false, 'message' => 'Unknown error'];
+		$result = ['success' => false, 'message' => translate(['text'=>'Unknown Error', 'isPublicFacing'=>true])];
 		$id = $_REQUEST['id'];
 
 		require_once ROOT_DIR . '/sys/Ebsco/ResearchStarter.php';
@@ -44,6 +44,7 @@ class EBSCO_JSON extends JSON_Action
 		//Track usage of the record
 		require_once ROOT_DIR . '/sys/Ebsco/EbscoEdsRecordUsage.php';
 		$ebscoEdsRecordUsage = new EbscoEdsRecordUsage();
+		$ebscoEdsRecordUsage->instance = $_SERVER['SERVER_NAME'];
 		$ebscoEdsRecordUsage->ebscoId = $id;
 		$ebscoEdsRecordUsage->year = date('Y');
 		$ebscoEdsRecordUsage->month = date('n');
@@ -64,6 +65,7 @@ class EBSCO_JSON extends JSON_Action
 			//Track usage for the user
 			require_once ROOT_DIR . '/sys/Ebsco/UserEbscoEdsUsage.php';
 			$userEbscoEdsUsage = new UserEbscoEdsUsage();
+			$userEbscoEdsUsage->instance = $_SERVER['SERVER_NAME'];
 			$userEbscoEdsUsage->userId = $userId;
 			$userEbscoEdsUsage->year = date('Y');
 			$userEbscoEdsUsage->month = date('n');

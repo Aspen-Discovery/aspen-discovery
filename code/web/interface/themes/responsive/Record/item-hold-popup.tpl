@@ -12,11 +12,11 @@
 		{if count($items) == 0}
 			<div class="alert alert-danger">{$message}</div>
 		{else}
-			<div class="alert alert-warning">Please select the item you would like to place a hold on.</div>
+			<div class="alert alert-warning">{translate text="Please select the item you would like to place a hold on." isPublicFacing=true}</div>
 			<ol class='hold_result_details'>
 				<select id="selectedItem" name="selectedItem" class="form-control">
 					{if array_key_exists('-1', $items) == false}
-						<option class="hold_item" value="-1">Select an item</option>
+						<option class="hold_item" value="-1">{translate text="Select an item" isPublicFacing=true}</option>
 					{/if}
 					{foreach from=$items item=item_data}
 						<option class="hold_item" value="{$item_data.itemNumber}">

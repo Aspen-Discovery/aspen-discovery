@@ -1,6 +1,6 @@
 {strip}
 <div id="main-content" class="col-md-12">
-	<h1>Manage Materials Requests</h1>
+	<h1>{translate text="Manage Materials Requests" isAdminFacing=true}</h1>
 	{if !empty($error)}
 		<div class="alert alert-danger">{$error}</div>
 	{/if}
@@ -10,7 +10,7 @@
 			<div class="panel-heading">
 				<div class="panel-title collapsed">
 					<a href="#filterPanel" data-toggle="collapse" role="button">
-						Filters
+						{translate text="Filters" isAdminFacing=true}
 					</a>
 				</div>
 			</div>
@@ -19,64 +19,64 @@
 
 					<form action="/MaterialsRequest/ManageRequests" method="get">
 						<fieldset class="fieldset-collapsible">
-							<legend>Statuses to Show:</legend>
+							<legend>{translate text="Statuses to Show" isAdminFacing=true}</legend>
 							<div class="form-group checkbox">
 								<label for="selectAllStatusFilter">
 									<input type="checkbox" name="selectAllStatusFilter" id="selectAllStatusFilter" onchange="AspenDiscovery.toggleCheckboxes('.statusFilter', '#selectAllStatusFilter');">
-									<strong>Select All</strong>
+									<strong>{translate text="Select All" isAdminFacing=true}</strong>
 								</label>
 							</div>
 							<div class="form-group">
 								{foreach from=$availableStatuses item=statusLabel key=status}
 									<div class="checkbox">
 										<label>
-											<input type="checkbox" name="statusFilter[]" value="{$status}" {if in_array($status, $statusFilter)}checked="checked"{/if} class="statusFilter">{$statusLabel}
+											<input type="checkbox" name="statusFilter[]" value="{$status}" {if in_array($status, $statusFilter)}checked="checked"{/if} class="statusFilter">{translate text=$statusLabel isAdminFacing=true isAdminEnteredData=true}
 										</label>
 									</div>
 								{/foreach}
 							</div>
 						</fieldset>
 						<fieldset class="form-group fieldset-collapsible">
-							<legend>Date:</legend>
+							<legend>{translate text="Date" isPublicFacing=true isAdminFacing=true}</legend>
 							<div class="form-group">
-								<label for="startDate">From</label> <input type="text" id="startDate" name="startDate" value="{$startDate}" size="8">
-								<label for="endDate">To</label> <input type="text" id="endDate" name="endDate" value="{$endDate}" size="8">
+								<label for="startDate">{translate text="From" isAdminFacing=true}</label> <input type="date" id="startDate" name="startDate" value="{$startDate}" size="8" max="{$smarty.now|date_format:"%Y-%m-%d"}">
+								<label for="endDate">{translate text="To" isAdminFacing=true}</label> <input type="date" id="endDate" name="endDate" value="{$endDate}" size="8" max="{$smarty.now|date_format:"%Y-%m-%d"}">
 							</div>
 						</fieldset>
 						<fieldset class="form-group fieldset-collapsible">
-							<legend>Request IDs to Show (separated by commas):</legend>
+							<legend>{translate text="Request IDs to Show (separated by commas)" isAdminFacing=true}</legend>
 							<div class="form-group">
-								<label for="idsToShow">Request IDs</label> <input type="text" id="idsToShow" name="idsToShow" value="{$idsToShow}" size="60" class="form-control">
+								<label for="idsToShow">{translate text="Request IDs" isAdminFacing=true}</label> <input type="text" id="idsToShow" name="idsToShow" value="{$idsToShow}" size="60" class="form-control">
 							</div>
 						</fieldset>
 						<fieldset class="form-group fieldset-collapsible">
-							<legend>Format:</legend>
+							<legend>{translate text="Format" isAdminFacing=true}</legend>
 							<div class="form-group checkbox">
 								<label for="selectAllFormatFilter">
 									<input type="checkbox" name="selectAllFormatFilter" id="selectAllFormatFilter" onchange="AspenDiscovery.toggleCheckboxes('.formatFilter', '#selectAllFormatFilter');">
-									<strong>Select All</strong>
+									<strong>{translate text="Select All" isAdminFacing=true}</strong>
 								</label>
 							</div>
 							<div class="form-group">
 								{foreach from=$availableFormats item=formatLabel key=format}
 									<div class="checkbox">
-										<label><input type="checkbox" name="formatFilter[]" value="{$format}" {if in_array($format, $formatFilter)}checked="checked"{/if} class="formatFilter">{$formatLabel}</label>
+										<label><input type="checkbox" name="formatFilter[]" value="{$format}" {if in_array($format, $formatFilter)}checked="checked"{/if} class="formatFilter">{translate text=$formatLabel isAdminFacing=true}</label>
 									</div>
 								{/foreach}
 							</div>
 						</fieldset>
 						<fieldset class="fieldset-collapsible">
-							<legend>Assigned To:</legend>
+							<legend>{translate text="Assigned To" isAdminFacing=true}</legend>
 							<div class="form-group checkbox">
 								<label for="showUnassigned">
 									<input type="checkbox" name="showUnassigned" id="showUnassigned"{if $showUnassigned} checked{/if}>
-									<strong>Unassigned</strong>
+									<strong>{translate text="Unassigned" isAdminFacing=true}</strong>
 								</label>
 							</div>
 								<div class="form-group checkbox">
 								<label for="selectAllAssigneesFilter">
 									<input type="checkbox" name="selectAllAssigneesFilter" id="selectAllAssigneesFilter" onchange="AspenDiscovery.toggleCheckboxes('.assigneesFilter', '#selectAllAssigneesFilter');">
-									<strong>Select All</strong>
+									<strong>{translate text="Select All" isAdminFacing=true}</strong>
 								</label>
 							</div>
 							<div class="form-group">
@@ -91,7 +91,7 @@
 							</div>
 						</fieldset>
 
-						<input type="submit" name="submit" value="Update Filters" class="btn btn-default">
+						<input type="submit" name="submit" value="{translate text="Update Filters" inAttribute=true isAdminFacing=true}" class="btn btn-default">
 					</form>
 
 				</div>
@@ -104,7 +104,7 @@
 						<tr>
 							<th><input type="checkbox" name="selectAll" id="selectAll" onchange="AspenDiscovery.toggleCheckboxes('.select', '#selectAll');"></th>
 							{foreach from=$columnsToDisplay item=label}
-								<th>{$label}</th>
+								<th>{translate text=$label isAdminFacing=true}</th>
 							{/foreach}
 							<th>&nbsp;</th> {* Action Buttons Column *}
 						</tr>
@@ -118,14 +118,14 @@
 										<td>
 											{if in_array($request->format, array_keys($availableFormats))}
 												{assign var="key" value=$request->format}
-												{$availableFormats.$key}
+												{translate text=$availableFormats.$key isAdminFacing=true}
 											{else}
-												{$request->format}
+												{translate text=$request->format isAdminFacing=true}
 											{/if}
 										</td>
 									{elseif $column == 'abridged'}
-										<td>{if $request->$column == 1}Yes{elseif $request->$column == 2}N/A{else}No{/if}</td>
-									{elseif $column == 'about' || $column == 'comments'}
+										<td>{if $request->$column == 1}{translate text="Yes" isAdminFacing=true}{elseif $request->$column == 2}{translate text="N/A" isAdminFacing=true}{else}{translate text="No" isAdminFacing=true}{/if}</td>
+									{elseif $column == 'about' || $column == 'comments' || $column == 'staffCommments'}
 										<td>
 											{if !empty($request->$column)}
 												<textarea cols="30" rows="4" readonly disabled>
@@ -135,21 +135,21 @@
 											{/if}
 										</td>
 									{elseif $column == 'status'}
-										<td>{$request->statusLabel|translate}</td>
+										<td>{translate text=$request->statusLabel isAdminFacing=true}</td>
 									{elseif $column == 'dateCreated' || $column == 'dateUpdated'}
 										{* Date Columns*}
 										<td>{$request->$column|date_format}</td>
 									{elseif $column == 'createdBy'}
-										<td>{$request->lastname}, {$request->firstname}<br>{$request->barcode}</td>
+										<td>{$request->getCreatedByLastName()}, {$request->getCreatedByFirstName()}<br>{$request->getCreatedByUserBarcode()}</td>
 
 									{elseif $column == 'emailSent' || $column == 'holdsCreated' || $column == 'illItem'}
 										{* Simple Boolean Columns *}
-										<td>{if $request->$column}Yes{else}No{/if}</td>
+										<td>{if $request->$column}{translate text="Yes" isAdminFacing=true}{else}{translate text="No" isAdminFacing=true}{/if}</td>
 
 									{elseif $column == 'email'}
 										<td>{$request->email}</td>
 									{elseif $column == 'placeHoldWhenAvailable'}
-										<td>{if $request->$column}Yes{if $request->location} - {$request->location}{/if}{else}No{/if}</td>
+										<td>{if $request->$column}{translate text="Yes" isAdminFacing=true}{if $request->location} - {$request->location}{/if}{else}{translate text="No" isAdminFacing=true}{/if}</td>
 									{elseif $column == 'holdPickupLocation'}
 										<td>
 											{$request->getHoldLocationName($request->holdPickupLocation)}
@@ -157,49 +157,7 @@
 									{elseif $column == 'bookmobileStop'}
 										<td>{$request->bookmobileStop}</td>
 									{elseif $column == 'assignedTo'}
-										<td>{$request->assignedTo}</td>
-{*
-									{elseif $column == 'id'}
-										<td>{$request->id}</td>
-									{elseif $column == 'title'}
-										<td>{$request->title}</td>
-									{elseif $column == 'author'}
-										<td>{$request->author}</td>
-									{elseif $column == 'ageLevel'}
-										<td>{$request->ageLevel}</td>
-									{elseif $column == 'isbn'}
-										<td>{$request->isbn}</td>
-									{elseif $column == 'oclcNumber'}
-										<td>{$request->oclcNumber}</td>
-									{elseif $column == 'publisher'}
-										<td>{$request->publisher}</td>
-									{elseif $column == 'publicationYear'}
-										<td>{$request->publicationYear}</td>
-									{elseif $column == 'articleInfo'}
-										<td>{$request->articleInfo}</td>
-									{elseif $column == 'phone'}
-										<td>{$request->phone}</td>
-									{elseif $column == 'season'}
-										<td>{$request->season}</td>
-									{elseif $column == 'magazineTitle'}
-										<td>{$request->magazineTitle}</td>
-									{elseif $column == 'upc'}
-										<td>{$request->upc}</td>
-									{elseif $column == 'issn'}
-										<td>{$request->issn}</td>
-									{elseif $column == 'bookType'}
-										<td>{$request->bookType}</td>
-									{elseif $column == 'subFormat'}
-										<td>{$request->subFormat}</td>
-									{elseif $column == 'magazineDate'}
-										<td>{$request->magazineDate}</td>
-									{elseif $column == 'magazineVolume'}
-										<td>{$request->magazineVolume}</td>
-									{elseif $column == 'magazinePageNumbers'}
-										<td>{$request->magazinePageNumbers}</td>
-									{elseif $column == 'magazineNumber'}
-										<td>{$request->magazineNumber}</td>
-*}
+										<td>{$request->getAssigneeName()}</td>
 									{else}
 										{* All columns that can be displayed with out special handling *}
 										<td>{$request->$column}</td>
@@ -207,8 +165,8 @@
 								{/foreach}
 								<td>
 									<div class="btn-group btn-group-vertical btn-group-sm">
-										<button type="button" onclick="AspenDiscovery.MaterialsRequest.showMaterialsRequestDetails('{$request->id}', true)" class="btn btn-sm btn-info">Details</button>
-										<button type="button" onclick="AspenDiscovery.MaterialsRequest.updateMaterialsRequest('{$request->id}')" class="btn btn-sm btn-primary">Update&nbsp;Request</button>
+										<button type="button" onclick="AspenDiscovery.MaterialsRequest.showMaterialsRequestDetails('{$request->id}', true)" class="btn btn-sm btn-info btn-wrap">{translate text="Details" isAdminFacing=true}</button>
+										<button type="button" onclick="AspenDiscovery.MaterialsRequest.updateMaterialsRequest('{$request->id}')" class="btn btn-sm btn-primary btn-wrap">{translate text="Update Request" isAdminFacing=true}</button>
 									</div>
 								</td>
 							</tr>
@@ -219,49 +177,49 @@
 					<div id="materialsRequestActions">
 						<div class="row form-group">
 							<div class="col-sm-4">
-								<label for="newAssignee" class="control-label">Assign selected to:</label>
+								<label for="newAssignee" class="control-label">{translate text="Assign selected to"}</label>
 							</div>
 							<div class="col-sm-8">
 								<div class="input-group">
 									{if $assignees}
 										<select name="newAssignee" id="newAssignee" class="form-control">
-											<option value="unselected">Select One</option>
-											<option value="unassign">Un-assign (remove assignee)</option>
+											<option value="unselected">{translate text="Select One" inAttribute=true isAdminFacing=true}</option>
+											<option value="unassign">{translate text="Un-assign (remove assignee)" inAttribute=true isAdminFacing=true}</option>
 
 											{foreach from=$assignees item=displayName key=assigneeId}
 												<option value="{$assigneeId}">{$displayName}</option>
 											{/foreach}
 
 										</select>
-										<span class="btn btn-sm btn-primary input-group-addon" onclick="return AspenDiscovery.MaterialsRequest.assignSelectedRequests();">Assign Selected Requests</span>
+										<span class="btn btn-sm btn-primary input-group-addon" onclick="return AspenDiscovery.MaterialsRequest.assignSelectedRequests();">{translate text="Assign Selected Requests" isAdminFacing=true}</span>
 									{else}
-										<span class="text-warning">No Valid Assignees Found</span>
+										<span class="text-warning">{translate text="No Valid Assignees Found" isAdminFacing=true}</span>
 									{/if}
 								</div>
 							</div>
 						</div>
 						<div class="row form-group">
 							<div class="col-sm-4">
-								<label for="newStatus" class="control-label">Change status of selected to:</label>
+								<label for="newStatus" class="control-label">{translate text="Change status of selected to" isAdminFacing=true}</label>
 							</div>
 							<div class="col-sm-8">
 								<div class="input-group">
 									<select name="newStatus" id="newStatus" class="form-control">
-										<option value="unselected">Select One</option>
+										<option value="unselected">{translate text="Select One" isAdminFacing=true}</option>
 										{foreach from=$availableStatuses item=statusLabel key=status}
-											<option value="{$status}">{$statusLabel}</option>
+											<option value="{$status}">{translate text="$statusLabel" inAttribute=true}</option>
 										{/foreach}
 									</select>
-									<span class="btn btn-sm btn-primary input-group-addon" onclick="return AspenDiscovery.MaterialsRequest.updateSelectedRequests();">Update Selected Requests</span>
+									<span class="btn btn-sm btn-primary input-group-addon" onclick="return AspenDiscovery.MaterialsRequest.updateSelectedRequests();">{translate text="Update Selected Requests" isAdminFacing=true}</span>
 								</div>
 							</div>
 						</div>
 						<div class="row">
 							<div class="col-xs-12">
-								<input class="btn btn-sm btn-default" type="submit" name="exportSelected" value="Export Selected To Excel" onclick="return AspenDiscovery.MaterialsRequest.exportSelectedRequests();">
+								<input class="btn btn-sm btn-default" type="submit" name="exportSelected" value="{translate text="Export Selected To Excel" inAttribute=true isAdminFacing=true}" onclick="return AspenDiscovery.MaterialsRequest.exportSelectedRequests();">
 								{if in_array('Import Materials Requests', $userPermissions)}
 									{* We don't really want to do this much / ever so it gets a special permission *}
-									<input class="btn btn-sm btn-default" type="submit" name="importRequests" value="Import Requests" onclick="return AspenDiscovery.MaterialsRequest.showImportRequestForm();">
+									<input class="btn btn-sm btn-default" type="submit" name="importRequests" value="{translate text="Import Requests" inAttribute=true isAdminFacing=true} onclick="return AspenDiscovery.MaterialsRequest.showImportRequestForm();">
 								{/if}
 							</div>
 						</div>
@@ -269,12 +227,12 @@
 				{/if}
 			</form>
 		{else}
-			<div class="alert alert-info">There are no materials requests that meet your criteria.</div>
+			<div class="alert alert-info">{translate text="There are no materials requests that meet your criteria." isAdminFacing=true}</div>
 			{if in_array('Import Materials Requests', $userPermissions)}
 				{* We don't really want to do this much / ever so it gets a special permission *}
 				<div class="row">
 					<div class="col-xs-12">
-						<input class="btn btn-sm btn-default" type="submit" name="importRequests" value="Import Requests" onclick="return AspenDiscovery.MaterialsRequest.showImportRequestForm();">
+						<input class="btn btn-sm btn-default" type="submit" name="importRequests" value="{translate text="Import Requests" inAttribute=true isAdminFacing=true}" onclick="return AspenDiscovery.MaterialsRequest.showImportRequestForm();">
 					</div>
 				</div>
 			{/if}
@@ -285,8 +243,6 @@
 
 <script type="text/javascript">
 $(function () {ldelim}
-	$("#startDate").datepicker();
-	$("#endDate").datepicker();
 	$("#requestedMaterials").tablesorter({ldelim}
 		cssAsc: 'sortAscHeader',
 		cssDesc: 'sortDescHeader',

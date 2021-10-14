@@ -7,8 +7,9 @@
 	{if !empty($accountMessages)}
 		{include file='systemMessages.tpl' messages=$accountMessages}
 	{/if}
-
-	<span class='availableHoldsNoticePlaceHolder'></span>
+	{if !empty($ilsMessages)}
+		{include file='ilsMessages.tpl' messages=$ilsMessages}
+	{/if}
 
 	<h1>{translate text='Messaging Settings'}</h1>
 
@@ -29,17 +30,17 @@
 			<thead>
 			<tr>
 				<th>&nbsp;</th>
-				<th>Days in advance</th>
+				<th>{translate text="Days in advance" isPublicFacing=true}</th>
 				{if $enableSmsMessaging}
-				<th>SMS</th>
+				<th>{translate text="SMS" isPublicFacing=true}</th>
 				{/if}
 				{if $enablePhoneMessaging}
-				<th>Phone</th>
+				<th>{translate text="Phone" isPublicFacing=true}</th>
 				{/if}
-				<th>Email</th>
-				<th>Digests only <i id="info_digests" data-toggle="tooltip" title="" data-placement="right" class="fa fa-info-circle" data-original-title="You can ask for a digest to reduce the number of messages. Messages will be saved and sent as a single message."></i></th>
+				<th>{translate text="Email" isPublicFacing=true}</th>
+				<th>{translate text="Digests only" isPublicFacing=true} <i id="info_digests" data-toggle="tooltip" title="" data-placement="right" class="fa fa-info-circle" data-original-title="{translate text="You can ask for a digest to reduce the number of messages. Messages will be saved and sent as a single message." inAttribute="true" isPublicFacing=true}"></i></th>
 				{if $canSave}
-				<!-- <th>RSS</th> --><th>Do not notify</th>
+				<!-- <th>RSS</th> --><th>{translate text="Do not notify" isPublicFacing=true}</th>
 				{/if}
 			</tr>
 			</thead>
@@ -49,7 +50,7 @@
 				{assign var=messageTypeId value=$messageType.message_attribute_id}
 				<tr id="messageType{$messageTypeId}Row">
 					<td>
-						{$messageType.label}
+						{translate text=$messageType.label isPublicFacing=true}
 					</td>
 					<td>
 						{if ($messageType.takes_days)}
@@ -72,7 +73,7 @@
 							{if $canSave}
 								<input type="checkbox" id="sms{$messageTypeId}" name="{$messageTypeId}[]" value="sms" aria-label="Send SMS Message for {$messageType.label}" onclick="$('#none{$messageTypeId}').attr('checked', false)" {if $messagingSettings.$messageTypeId.selectedTransports.sms}checked="checked"{/if}>
 							{else}
-								{if $messagingSettings.$messageTypeId.selectedTransports.sms}{translate text="Yes"}{else}{translate text="No"}{/if}
+								{if $messagingSettings.$messageTypeId.selectedTransports.sms} {translate text='Yes' isPublicFacing=true}{else} {translate text='No' isPublicFacing=true}{/if}
 							{/if}
 						{else}
 							-
@@ -85,7 +86,7 @@
 							{if $canSave}
 								<input type="checkbox" id="phone{$messageTypeId}" name="{$messageTypeId}[]" value="phone" aria-label="Receive Phone Call for {$messageType.label}" onclick="$('#none{$messageTypeId}').attr('checked', false)" {if $messagingSettings.$messageTypeId.selectedTransports.phone}checked="checked"{/if}>
 							{else}
-								{if $messagingSettings.$messageTypeId.selectedTransports.phone}{translate text="Yes"}{else}{translate text="No"}{/if}
+								{if $messagingSettings.$messageTypeId.selectedTransports.phone} {translate text='Yes' isPublicFacing=true}{else} {translate text='No' isPublicFacing=true}{/if}
 							{/if}
 						{else}
 							-
@@ -97,7 +98,7 @@
 						{if $canSave}
 							<input type="checkbox" id="email{$messageTypeId}" name="{$messageTypeId}[]" value="email" aria-label="Send Email for {$messageType.label}" onclick="$('#none{$messageTypeId}').attr('checked', false)" {if $messagingSettings.$messageTypeId.selectedTransports.email}checked="checked"{/if}>
 						{else}
-							{if $messagingSettings.$messageTypeId.selectedTransports.email}{translate text="Yes"}{else}{translate text="No"}{/if}
+							{if $messagingSettings.$messageTypeId.selectedTransports.email} {translate text='Yes' isPublicFacing=true}{else} {translate text='No' isPublicFacing=true}{/if}
 						{/if}
 					{else}
 						-
@@ -108,7 +109,7 @@
 							{if $canSave}
 								<input type="checkbox" id="digest{$messageTypeId}" value="{$messageTypeId}" name="digest" aria-label="Send Message for {$messageType.label} as digest" {if $messagingSettings.$messageTypeId.wantsDigest}checked="checked"{/if}>
 							{else}
-								{if  $messagingSettings.$messageTypeId.allowDigests}{translate text="Yes"}{else}{translate text="No"}{/if}
+								{if  $messagingSettings.$messageTypeId.allowDigests} {translate text='Yes' isPublicFacing=true}{else} {translate text='No' isPublicFacing=true}{/if}
 							{/if}
 						{else}
 							-
@@ -128,38 +129,38 @@
 		{if $enableSmsMessaging}
 			<div class="row form-group" id="smsNoticeRow">
 				<div class="col-md-3">
-				<label class="control-label">Notice</label>
+				<label class="control-label">{translate text="Notice" isPublicFacing=true}</label>
 				</div>
 				<div class="col-md-9">
-					Some charges for text messages may be incurred when using this service. Please check with your mobile service provider if you have questions.
+					{translate text="Some charges for text messages may be incurred when using this service. Please check with your mobile service provider if you have questions." isPublicFacing=true}
 				</div>
 			</div>
 			<div class="row form-group" id="smsNumberRow">
 				<div class="col-md-3">
-					<label for="SMSnumber" class="control-label">SMS number</label>
+					<label for="SMSnumber" class="control-label">{translate text="SMS number" isPublicFacing=true}</label>
 				</div>
 				<div class="col-md-9">
 					<input type="text" id="SMSnumber" name="SMSnumber" value="{$smsAlertNumber}" class="form-control" {if !$canSave}readonly{/if}>
-					<i>Please enter numbers only. <b>(123) 456-7890</b> would be entered as <b>1234567890</b>.</i>
+					<i>{translate text="Please enter numbers only. <b>(123) 456-7890</b> would be entered as <b>1234567890</b>." isPublicFacing=true}</i>
 				</div>
 			</div>
 			<div class="row form-group" id="smsProviderRow">
 				<div class="col-md-3">
-					<label for="sms_provider_id" class="control-label">SMS provider</label>
+					<label for="sms_provider_id" class="control-label">{translate text="SMS provider" isPublicFacing=true}</label>
 				</div>
 				<div class="col-md-9">
 					<select id="sms_provider_id" name="sms_provider_id" class="form-control" {if !$canSave}readonly{/if}>
-						<option value="">Unknown</option>
+						<option value="">{translate text="Unknown" isPublicFacing=true}</option>
 						{foreach from=$smsProviders item=provider key=id}
 						<option value="{$id}" {if $smsProviderId==$id}selected="selected"{/if}>{$provider}</option>
 						{/foreach}
 					</select>
-					<i>Please contact a library staff member if you are unsure of your mobile service provider, or you do not see your provider in this list.</i>
+					<i>{translate text="Please contact a library staff member if you are unsure of your mobile service provider, or you do not see your provider in this list." isPublicFacing=true}</i>
 				</div>
 			</div>
 		{/if}
 		{if $canSave}
-			<button type="submit" class="btn btn-sm btn-primary" name="submit">{translate text="Update Settings"}</button>
+			<button type="submit" class="btn btn-sm btn-primary" name="submit">{translate text="Update Settings" isPublicFacing=true}</button>
 		{/if}
 	</form>
 </div>

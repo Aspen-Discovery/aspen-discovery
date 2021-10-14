@@ -31,7 +31,7 @@ public class NetworkUtils {
 			URL urlToCall = new URL(url);
 			HttpURLConnection conn = (HttpURLConnection) urlToCall.openConnection();
 			conn.setConnectTimeout(10000);
-			conn.setReadTimeout(300000);
+			conn.setReadTimeout(readTimeout);
 			if (headers != null) {
 				for (String header : headers.keySet()) {
 					conn.setRequestProperty(header, headers.get(header));
@@ -53,7 +53,7 @@ public class NetworkUtils {
 				BufferedReader rd = new BufferedReader(new InputStreamReader(conn.getInputStream()));
 				String line;
 				while ((line = rd.readLine()) != null) {
-					response.append(line + "\r\n");
+					response.append(line).append("\r\n");
 				}
 
 				rd.close();
@@ -90,18 +90,21 @@ public class NetworkUtils {
 	}
 
 	public static WebServiceResponse postToURL(String url, String postData, String contentType, String referer, Logger logger) {
-		return NetworkUtils.postToURL(url, postData, contentType, referer, logger, null,  10000, 300000, StandardCharsets.UTF_8);
+		return NetworkUtils.postToURL(url, postData, contentType, referer, logger, null,  10000, 300000, StandardCharsets.UTF_8, null);
 	}
 
 	public static WebServiceResponse postToURL(String url, String postData, String contentType, String referer, Logger logger, String authentication) {
-		return NetworkUtils.postToURL(url, postData, contentType, referer, logger, authentication, 10000, 300000, StandardCharsets.UTF_8);
+		return NetworkUtils.postToURL(url, postData, contentType, referer, logger, authentication, 10000, 300000, StandardCharsets.UTF_8, null);
 	}
 
 	public static WebServiceResponse postToURL(String url, String postData, String contentType, String referer, Logger logger, String authentication, int connectTimeout, int readTimeout) {
-		return NetworkUtils.postToURL(url, postData, contentType, referer, logger, authentication, connectTimeout, readTimeout, StandardCharsets.UTF_8);
+		return NetworkUtils.postToURL(url, postData, contentType, referer, logger, authentication, connectTimeout, readTimeout, StandardCharsets.UTF_8, null);
 	}
 
 	public static WebServiceResponse postToURL(String url, String postData, String contentType, String referer, Logger logger, String authentication, int connectTimeout, int readTimeout, Charset authenticationCharSet) {
+		return NetworkUtils.postToURL(url, postData, contentType, referer, logger, authentication, connectTimeout, readTimeout, authenticationCharSet, null);
+	}
+	public static WebServiceResponse postToURL(String url, String postData, String contentType, String referer, Logger logger, String authentication, int connectTimeout, int readTimeout, Charset authenticationCharSet, HashMap<String, String> headers) {
 		WebServiceResponse retVal;
 		HttpURLConnection conn = null;
 		try {
@@ -124,6 +127,11 @@ public class NetworkUtils {
 			conn.setDoInput(true);
 			if (referer != null) {
 				conn.setRequestProperty("Referer", referer);
+			}
+			if (headers != null){
+				for (String header : headers.keySet()){
+					conn.setRequestProperty(header, headers.get(header));
+				}
 			}
 			conn.setRequestMethod("POST");
 			if (postData != null && postData.length() > 0) {

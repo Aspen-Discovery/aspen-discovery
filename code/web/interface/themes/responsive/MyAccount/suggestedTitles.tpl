@@ -9,13 +9,11 @@
 			{include file='systemMessages.tpl' messages=$accountMessages}
 		{/if}
 
-		<span class='availableHoldsNoticePlaceHolder'></span>
-
-		<h1 class="myAccountTitle">{translate text='Recommended for you'}</h1>
+		<h1 class="myAccountTitle">{translate text='Recommended for you' isPublicFacing=true}</h1>
 
 		{if count($resourceList) > 0}
 			<div id="pager" class="navbar form-inline">
-				<label for="hideCovers" class="control-label checkbox pull-right"> {translate text='Hide Covers'} <input id="hideCovers" type="checkbox" onclick="AspenDiscovery.Account.toggleShowCovers(!$(this).is(':checked'))" {if $showCovers == false}checked="checked"{/if}></label>
+				<label for="hideCovers" class="control-label checkbox pull-right"> {translate text='Hide Covers' isPublicFacing=true} <input id="hideCovers" type="checkbox" onclick="AspenDiscovery.Account.toggleShowCovers(!$(this).is(':checked'))" {if $showCovers == false}checked="checked"{/if}></label>
 			</div>
 		{/if}
 
@@ -26,7 +24,7 @@
 					{$suggestion}
 				</div>
 				{foreachelse}
-				<div class="alert alert-info">You have not rated any titles.  Please rate some titles so we can display suggestions for you. </div>
+				<div class="alert alert-info">{translate text='You have not rated any titles.  Please rate some titles so we can display suggestions for you.' isPublicFacing=true} </div>
 			{/foreach}
 		</div>
 	</div>

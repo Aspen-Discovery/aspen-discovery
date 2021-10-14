@@ -41,25 +41,13 @@ class MyAccount_OverDriveOptions extends MyAccount
 				$interface->assign('edit', false);
 			}
 
-			/** @var Translator $translator */
-			global $translator;
-			$notice         = $translator->translate('overdrive_account_preferences_notice');
-            require_once ROOT_DIR . '/sys/OverDrive/OverDriveSetting.php';
-            $overDriveSettings = new OverDriveSetting();
-            $overDriveSettings->find((true));
-            $overDriveUrl = $overDriveSettings->url;
-			$replacementUrl = empty($overDriveUrl) ? '#' : $overDriveUrl;
-			$notice         = str_replace('{OVERDRIVEURL}', $replacementUrl, $notice); // Insert the Overdrive URL into the notice
-			$interface->assign('overdrivePreferencesNotice', $notice);
-
-
 			$interface->assign('profile', $patron);
 		}
 
 		$this->display('overDriveOptions.tpl', 'Account Settings');
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'My Account');

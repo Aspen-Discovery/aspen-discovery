@@ -14,22 +14,25 @@ class MaterialsRequest_NewRequest extends Action
 		global $configArray;
 		global $interface;
 		global $library;
-		global $locationSingleton;
 
 		if (!UserAccount::isLoggedIn()) {
 			header('Location: /MyAccount/Home?followupModule=MaterialsRequest&followupAction=NewRequest');
 			exit;
 		} else {
 			// Hold Pick-up Locations
-			$locations = $locationSingleton->getPickupBranches(UserAccount::getActiveUserObj(), UserAccount::getUserHomeLocationId());
+			$user = UserAccount::getActiveUserObj();
+			$location = new Location();
+			$locations = $location->getPickupBranches($user);
 
 			$pickupLocations = array();
 			foreach ($locations as $curLocation) {
-				$pickupLocations[] = array(
-					'id' => $curLocation->locationId,
-					'displayName' => $curLocation->displayName,
-					'selected' => is_object($curLocation) ? $curLocation->getSelected() : '',
-				);
+				if (is_object($curLocation)) {
+					$pickupLocations[] = array(
+						'id' => $curLocation->locationId,
+						'displayName' => $curLocation->displayName,
+						'selected' => is_object($curLocation) ? ($curLocation->locationId == $user->pickupLocationId ? 'selected' : '') : '',
+					);
+				}
 			}
 			$interface->assign('pickupLocations', $pickupLocations);
 
@@ -60,16 +63,6 @@ class MaterialsRequest_NewRequest extends Action
 			}
 
 			$interface->assign('materialsRequest', $request);
-
-			$interface->assign('showEbookFormatField', $configArray['MaterialsRequest']['showEbookFormatField']);
-//			$interface->assign('showEaudioFormatField', $configArray['MaterialsRequest']['showEaudioFormatField']);
-			$interface->assign('requireAboutField', $configArray['MaterialsRequest']['requireAboutField']);
-
-			$useWorldCat = false;
-			if (isset($configArray['WorldCat']) && isset($configArray['WorldCat']['apiKey'])) {
-				$useWorldCat = strlen($configArray['WorldCat']['apiKey']) > 0;
-			}
-			$interface->assign('useWorldCat', $useWorldCat);
 
 			// Get the Fields to Display for the form
 			$requestFormFields = $request->getRequestFormFields($library->libraryId);
@@ -109,7 +102,7 @@ class MaterialsRequest_NewRequest extends Action
 		}
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'My Account');

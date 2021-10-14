@@ -13,12 +13,12 @@ import java.util.HashSet;
 import java.util.List;
 
 class ArlingtonKohaRecordProcessor extends KohaRecordProcessor {
-	ArlingtonKohaRecordProcessor(GroupedWorkIndexer indexer, Connection dbConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
-		super(indexer, dbConn, indexingProfileRS, logger, fullReindex);
+	ArlingtonKohaRecordProcessor(GroupedWorkIndexer indexer, String profileType, Connection dbConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
+		super(indexer, profileType, dbConn, indexingProfileRS, logger, fullReindex);
 	}
 
 	@Override
-	protected void loadLiteraryForms(GroupedWorkSolr groupedWork, Record record, HashSet<ItemInfo> printItems, String identifier) {
+	protected void loadLiteraryForms(GroupedWorkSolr groupedWork, Record record, ArrayList<ItemInfo> printItems, String identifier) {
 		//For Arlington we can load the literary forms based off of the location code:
 		// ??f?? = Fiction
 		// ??n?? = Non-Fiction

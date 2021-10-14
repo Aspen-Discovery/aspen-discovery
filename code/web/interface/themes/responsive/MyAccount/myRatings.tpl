@@ -13,21 +13,22 @@
 	{if !empty($accountMessages)}
 		{include file='systemMessages.tpl' messages=$accountMessages}
 	{/if}
-
-	<span class='availableHoldsNoticePlaceHolder'></span>
+	{if !empty($ilsMessages)}
+		{include file='ilsMessages.tpl' messages=$ilsMessages}
+	{/if}
 
 	<div class="resultHead">
-		<h1>{translate text='Titles You Rated'}</h1>
+		<h1>{translate text='Titles You Rated' isPublicFacing=true}</h1>
 
 		<div class="page">
 			{if $ratings}
 				<table class="table table-striped" id="myRatingsTable">
 					<thead>
 						<tr>
-							<th>{translate text='Date'}</th>
-							<th>{translate text='Title'}</th>
-							<th>{translate text='Author'}</th>
-							<th>{translate text='Rating'}</th>
+							<th>{translate text='Date' isPublicFacing=true}</th>
+							<th>{translate text='Title' isPublicFacing=true}</th>
+							<th>{translate text='Author' isPublicFacing=true}</th>
+							<th>{translate text='Rating' isPublicFacing=true}</th>
 							<th>&nbsp;</th>
 						</tr>
 					</thead>
@@ -51,14 +52,14 @@
 								<p>{$rating.review}</p>
 							</td>
 							<td class="myAccountCell">
-								<span class="btn btn-xs btn-warning" onclick="return AspenDiscovery.GroupedWork.clearUserRating('{$rating.groupedWorkId}');">{translate text="Clear"}</span>
+								<span class="btn btn-xs btn-warning" onclick="return AspenDiscovery.GroupedWork.clearUserRating('{$rating.groupedWorkId}');">{translate text="Clear" isPublicFacing=true}</span>
 							</td>
 						</tr>
 					{/foreach}
 					</tbody>
 				</table>
 			{else}
-				You have not rated any titles yet.
+			{translate text="You have not rated any titles yet." isPublicFacing=true}
 			{/if}
 
 			{if $notInterested}
@@ -66,9 +67,9 @@
 				<table class="myAccountTable table table-striped" id="notInterestedTable">
 					<thead>
 						<tr>
-							<th>{translate text="Date"}</th>
-							<th>{translate text="Title"}</th>
-							<th>{translate text="Author"}</th>
+							<th>{translate text="Date" isPublicFacing=true}</th>
+							<th>{translate text="Title" isPublicFacing=true}</th>
+							<th>{translate text="Author" isPublicFacing=true}</th>
 							<th>&nbsp;</th>
 						</tr>
 					</thead>
@@ -101,6 +102,6 @@
 	</div>
 {else}
 	<div class="page">
-		You must sign in to view this information. Click <a href="/MyAccount/Login">here</a> to sign in.
+		{translate text="You must sign in to view this information." isPublicFacing=true}<a href='/MyAccount/Login' class="btn btn-primary">{translate text="Sign In" isPublicFacing=true}</a>
 	</div>
 {/if}

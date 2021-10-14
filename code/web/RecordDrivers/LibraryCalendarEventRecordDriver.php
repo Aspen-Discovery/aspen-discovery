@@ -88,7 +88,7 @@ class LibraryCalendarEventRecordDriver extends IndexRecordDriver
 		return $bookCoverUrl;
 	}
 
-	public function getModule()
+	public function getModule() : string
 	{
 		return 'LMLCEvents';
 	}
@@ -163,7 +163,10 @@ class LibraryCalendarEventRecordDriver extends IndexRecordDriver
 	public function getStartDate()
 	{
 		try {
-			return new DateTime($this->fields['start_date']);
+			//Need to specify timezone since we start as a timstamp
+			$startDate = new DateTime($this->fields['start_date']);
+			$startDate->setTimezone(new DateTimeZone(date_default_timezone_get()));
+			return $startDate;
 		} catch (Exception $e) {
 			return null;
 		}

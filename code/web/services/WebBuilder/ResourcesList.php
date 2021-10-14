@@ -6,19 +6,25 @@ class WebBuilder_ResourcesList extends Action
 
 	function launch()
 	{
+		global $library;
 		//Get all the resources.
 		$resourcesByCategory = [];
 		$featuredResources = [];
+
 		$resource = new WebResource();
 		$resource->orderBy('name');
+		//Limit based on the library
+		$libraryWebResource = new LibraryWebResource();
+		$libraryWebResource->libraryId = $library->libraryId;
+		$resource->joinAdd($libraryWebResource, 'INNER', 'libraryWebResource', 'id', 'webResourceId');
 		$resource->find();
 		while ($resource->fetch()){
 			$clonedResource = clone $resource;
-			if ($resource->featured){
+			if ($resource->featured) {
 				$featuredResources[] = $clonedResource;
 			}
-			foreach ($clonedResource->getCategories() as $category){
-				if (!array_key_exists($category->name, $resourcesByCategory)){
+			foreach ($resource->getCategories() as $category) {
+				if (!array_key_exists($category->name, $resourcesByCategory)) {
 					$resourcesByCategory[$category->name] = [];
 				}
 				$resourcesByCategory[$category->name][] = $clonedResource;
@@ -32,7 +38,7 @@ class WebBuilder_ResourcesList extends Action
 		$this->display('resourcesList.tpl', 'Research & Learn', '');
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/', 'Home');

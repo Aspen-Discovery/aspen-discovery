@@ -11,7 +11,7 @@ class EDSSettings extends DataObject
 	public $edsApiPassword;
 	public $edsSearchProfile;
 
-	public static function getObjectStructure(){
+	public static function getObjectStructure() : array {
 		return [
 			'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id'),
 			'name' => array('property' => 'name', 'type' => 'text', 'label' => 'Name', 'maxLength' => 50, 'description' => 'A name for these settings', 'required' => true),

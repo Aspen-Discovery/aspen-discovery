@@ -8,10 +8,10 @@
 			{assign var="atLeastOneReview" value=true}
 		{/if}
 	{foreachelse}
-		<p>No borrower reviews currently exist.</p>
+		<p>{translate text="No borrower reviews currently exist." isPublicFacing=true}</p>
 	{/foreach}
 	{if !$atLeastOneReview}{* This is for the case when all the reviews were actually just ratings w/o a review included *}
-		<p>No borrower reviews currently exist.</p>
+		<p>{translate text="No borrower reviews currently exist." isPublicFacing=true}</p>
 	{/if}
 </div>
 {/strip}

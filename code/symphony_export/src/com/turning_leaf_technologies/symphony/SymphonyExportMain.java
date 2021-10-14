@@ -1,13 +1,12 @@
 package com.turning_leaf_technologies.symphony;
 
-import com.opencsv.CSVReader;
 import com.turning_leaf_technologies.config.ConfigUtil;
 import com.turning_leaf_technologies.file.JarUtil;
-import com.turning_leaf_technologies.grouping.BaseMarcRecordGrouper;
 import com.turning_leaf_technologies.grouping.MarcRecordGrouper;
 import com.turning_leaf_technologies.grouping.RemoveRecordFromWorkResult;
 import com.turning_leaf_technologies.indexing.*;
 import com.turning_leaf_technologies.logging.LoggingUtil;
+import com.turning_leaf_technologies.marc.MarcUtil;
 import com.turning_leaf_technologies.reindexer.GroupedWorkIndexer;
 import com.turning_leaf_technologies.strings.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -57,7 +56,6 @@ public class SymphonyExportMain {
 		//Get the checksum of the JAR when it was started so we can stop if it has changed.
 		long myChecksumAtStart = JarUtil.getChecksumForJar(logger, processName, "./" + processName + ".jar");
 		long reindexerChecksumAtStart = JarUtil.getChecksumForJar(logger, "reindexer", "../reindexer/reindexer.jar");
-		long recordGroupingChecksumAtStart = JarUtil.getChecksumForJar(logger, "record_grouping", "../record_grouping/record_grouping.jar");
 
 		while (true) {
 			reindexStartTime = new Date();
@@ -98,10 +96,12 @@ public class SymphonyExportMain {
 			//TODO: Load the account profile with additional information about Symphony connection if needed.
 
 			indexingProfile = IndexingProfile.loadIndexingProfile(dbConn, profileToLoad, logger);
+			logEntry.setIsFullUpdate(indexingProfile.isRunFullUpdate());
 
 			//Check for new marc out
 			exportVolumes(dbConn, indexingProfile, profileToLoad);
 			numChanges = updateRecords(dbConn);
+			processRecordsToReload(indexingProfile, logEntry);
 
 			if (recordGroupingProcessorSingleton != null) {
 				recordGroupingProcessorSingleton.close();
@@ -133,11 +133,6 @@ public class SymphonyExportMain {
 				disconnectDatabase();
 				break;
 			}
-			if (recordGroupingChecksumAtStart != JarUtil.getChecksumForJar(logger, "record_grouping", "../record_grouping/record_grouping.jar")){
-				IndexingUtils.markNightlyIndexNeeded(dbConn, logger);
-				disconnectDatabase();
-				break;
-			}
 
 			disconnectDatabase();
 
@@ -147,10 +142,11 @@ public class SymphonyExportMain {
 				System.exit(0);
 			}else {
 				//Pause before running the next export (longer if we didn't get any actual changes)
+				//But not too much longer since we get regular marc delta files that we want to catch as quickly as possible
 				try {
 					if (numChanges == 0 || logEntry.hasErrors()) {
 						//noinspection BusyWait
-						Thread.sleep(1000 * 60 * 5);
+						Thread.sleep(1000 * 60 * 2);
 					} else {
 						//noinspection BusyWait
 						Thread.sleep(1000 * 60);
@@ -162,101 +158,242 @@ public class SymphonyExportMain {
 		}
 	}
 
+	private static void processRecordsToReload(IndexingProfile indexingProfile, IlsExtractLogEntry logEntry) {
+		try {
+			MarcRecordGrouper recordGroupingProcessor = getRecordGroupingProcessor(dbConn);
+			GroupedWorkIndexer indexer = getGroupedWorkIndexer(dbConn);
+
+			PreparedStatement getRecordsToReloadStmt = dbConn.prepareStatement("SELECT * from record_identifiers_to_reload WHERE processed = 0 and type='" + indexingProfile.getName() + "'", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			PreparedStatement markRecordToReloadAsProcessedStmt = dbConn.prepareStatement("UPDATE record_identifiers_to_reload SET processed = 1 where id = ?");
+			ResultSet getRecordsToReloadRS = getRecordsToReloadStmt.executeQuery();
+			int numRecordsToReloadProcessed = 0;
+			while (getRecordsToReloadRS.next()) {
+				long recordToReloadId = getRecordsToReloadRS.getLong("id");
+				String recordIdentifier = getRecordsToReloadRS.getString("identifier");
+				Record marcRecord = indexer.loadMarcRecordFromDatabase(indexingProfile.getName(), recordIdentifier, logEntry);
+				if (marcRecord != null) {
+					logEntry.incRecordsRegrouped();
+					//Regroup the record
+					String permanentId = recordGroupingProcessor.processMarcRecord(marcRecord, true, null);
+					//Reindex the record
+					indexer.processGroupedWork(permanentId);
+				}
+
+				markRecordToReloadAsProcessedStmt.setLong(1, recordToReloadId);
+				markRecordToReloadAsProcessedStmt.executeUpdate();
+				numRecordsToReloadProcessed++;
+			}
+			if (numRecordsToReloadProcessed > 0) {
+				logEntry.addNote("Regrouped " + numRecordsToReloadProcessed + " records marked for reprocessing");
+			}
+			getRecordsToReloadRS.close();
+		}catch (Exception e){
+			logEntry.incErrors("Error processing records to reload ", e);
+		}
+	}
+
 	private static void exportVolumes(Connection dbConn, IndexingProfile indexingProfile, String profileToLoad) {
 		File volumeExportFile = new File(indexingProfile.getMarcPath() + "/volumes.txt");
 		if (volumeExportFile.exists()){
-			try {
-				//Get the existing volumes from the database
-				PreparedStatement getExistingVolumes = dbConn.prepareStatement("SELECT volumeId from ils_volume_info", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-				HashSet<String> existingVolumes = new HashSet<>();
-				ResultSet existingVolumesRS = getExistingVolumes.executeQuery();
-				while (existingVolumesRS.next()){
-					existingVolumes.add(existingVolumesRS.getString("volumeId"));
+			long lastVolumeTimeStamp = indexingProfile.getLastVolumeExportTimestamp();
+			long fileTimeStamp = volumeExportFile.lastModified();
+			if ((fileTimeStamp / 1000) > lastVolumeTimeStamp){
+				logEntry.addNote("Checking to see if the volume file is still changing");
+				logEntry.saveResults();
+				boolean fileChanging = true;
+				while (fileChanging){
+					fileChanging = false;
+					try {
+						Thread.sleep(1000);
+					} catch (InterruptedException e) {
+						logger.debug("Thread interrupted while checking if volume file is changing");
+					}
+					if (fileTimeStamp != volumeExportFile.lastModified()){
+						fileTimeStamp = volumeExportFile.lastModified();
+						fileChanging = true;
+					}
 				}
-				existingVolumesRS.close();
 
-				//Load all volumes in the export
-				CSVReader csvReader = new CSVReader(new FileReader(volumeExportFile),'|');;
-				String[] volumeInfoFields = csvReader.readNext();
-				HashMap<String, VolumeInfo> allVolumesInExport = new HashMap<>();
-				while (volumeInfoFields != null) {
-					if (volumeInfoFields.length == 6) {
-						String bibNumber = profileToLoad + ":" + volumeInfoFields[0].trim();
-						String fullCallNumber = volumeInfoFields[1].trim();
-						try {
-							int startOfVolumeInfo = Integer.parseInt(volumeInfoFields[2].trim());
-							//String dateUpdated = volumeInfoFields[3];
-							String relatedItemNumber = volumeInfoFields[4].trim();
+				//Now update the volumes
+				try {
+					VolumeUpdateInfo volumeUpdateInfo = new VolumeUpdateInfo();
+					logEntry.addNote("Updating Volumes, loading existing volumes from database");
+					PreparedStatement allRecordsWithVolumesStmt = dbConn.prepareStatement("SELECT DISTINCT(recordId) from ils_volume_info where recordId like '" + profileToLoad + ":%'", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+					PreparedStatement addVolumeStmt = dbConn.prepareStatement("INSERT INTO ils_volume_info (recordId, volumeId, displayLabel, relatedItems, displayOrder) VALUES (?,?,?,?, ?) ON DUPLICATE KEY update recordId = VALUES(recordId), displayLabel = VALUES(displayLabel), relatedItems = VALUES(relatedItems), displayOrder = VALUES(displayOrder)");
+					PreparedStatement deleteVolumeStmt = dbConn.prepareStatement("DELETE from ils_volume_info where recordId = ?");
 
-							//startOfVolumeInfo = 0 indicates this item is not part of a volume. Will need separate handling.
-							if (startOfVolumeInfo > 0 && startOfVolumeInfo < fullCallNumber.length()) {
-								String volume = fullCallNumber.substring(startOfVolumeInfo);
-								String key = bibNumber + ":" + volume;
-								VolumeInfo curVolume;
-								if (allVolumesInExport.containsKey(key)) {
-									curVolume = allVolumesInExport.get(key);
-								} else {
-									curVolume = new VolumeInfo();
-									curVolume.bibNumber = bibNumber;
-									curVolume.volume = volume;
-									allVolumesInExport.put(key, curVolume);
+					//Get the existing records with volumes from the database, we will use this to figure out which records no longer have volumes
+					HashSet<String> allRecordsWithVolumes = new HashSet<>();
+					ResultSet allRecordsWithVolumesRS = allRecordsWithVolumesStmt.executeQuery();
+					while (allRecordsWithVolumesRS.next()){
+						allRecordsWithVolumes.add(allRecordsWithVolumesRS.getString("recordId") );
+					}
+					allRecordsWithVolumesRS.close();
+					allRecordsWithVolumesStmt.close();
+
+					//Load all volumes in the export
+					logEntry.addNote("Updating Volumes, loading volumes from the export");
+					logEntry.saveResults();
+					BufferedReader csvReader = new BufferedReader(new FileReader(volumeExportFile));
+					String volumeInfoLine = csvReader.readLine();
+					HashMap<String, VolumeInfo> volumesForRecord = new HashMap<>();
+					String curIlsId = null;
+					int curRow = 0;
+					int numMalformattedRows = 0;
+					while (volumeInfoLine != null) {
+						String[] volumeInfoFields = volumeInfoLine.split("\\|");
+						if (volumeInfoFields.length > 7) {
+							String[] repairedVolumeInfo = new String[8];
+							repairedVolumeInfo[0] = volumeInfoFields[0];
+							repairedVolumeInfo[1] = volumeInfoFields[1] + "|" + volumeInfoFields[2];
+							System.arraycopy(volumeInfoFields, 3, repairedVolumeInfo, 2, 6);
+							volumeInfoFields = repairedVolumeInfo;
+						}
+						if (volumeInfoFields.length == 7) {
+							//It is more reliable to get the volume from the short bib number rather than the first field
+							//String bibNumber = profileToLoad + ":" + volumeInfoFields[0].trim();
+							String bibNumber = profileToLoad + ":a" + volumeInfoFields[5].trim();
+							if (!bibNumber.equals(curIlsId)){
+								if (curIlsId != null) {
+									//Save the current volume information
+									saveVolumes(volumesForRecord, addVolumeStmt, volumeUpdateInfo);
 								}
-								curVolume.relatedItems.add(relatedItemNumber);
+								volumesForRecord = new HashMap<>();
+								curIlsId = bibNumber;
+								allRecordsWithVolumes.remove(curIlsId);
 							}
-						} catch (NumberFormatException nfe) {
-							logEntry.addNote("Mal formatted volume information " + volumeInfoFields);
+							String fullCallNumber = volumeInfoFields[1].trim();
+							try {
+								int startOfVolumeInfo = Integer.parseInt(volumeInfoFields[2].trim());
+								//String dateUpdated = volumeInfoFields[3];
+								String relatedItemNumber = volumeInfoFields[4].trim();
+								String shortBibNumber = volumeInfoFields[5].trim();
+								String volumeNumber = volumeInfoFields[6].trim();
+								String volumeIdentifier = shortBibNumber + ":" + volumeNumber;
+								//startOfVolumeInfo = 0 indicates this item is not part of a volume. Will need separate handling.
+								if (startOfVolumeInfo > 0 && startOfVolumeInfo < fullCallNumber.length()) {
+									String volume = fullCallNumber.substring(startOfVolumeInfo);
+									VolumeInfo curVolume;
+
+									if (volumesForRecord.containsKey(volume)) {
+										curVolume = volumesForRecord.get(volume);
+									} else {
+										curVolume = new VolumeInfo();
+										curVolume.bibNumber = bibNumber;
+										curVolume.volume = volume;
+										//So technically there isn't a volume identifier, this is really the identifier
+										//of the first call number we find which works just fine when placing the hold
+										curVolume.volumeIdentifier = volumeIdentifier;
+										curVolume.displayOrder = curRow;
+										volumesForRecord.put(volume, curVolume);
+									}
+									curVolume.relatedItems.add(relatedItemNumber);
+								}
+							} catch (NumberFormatException nfe) {
+								logger.debug("Mal formatted volume information " + volumeInfoLine);
+								numMalformattedRows++;
+							}
+						}else{
+							logger.debug("Mal formatted volume information " + volumeInfoLine);
+							numMalformattedRows++;
 						}
-					}else{
-						logEntry.addNote("Mal formatted volume information " + volumeInfoFields);
+
+						//Read the next line
+						curRow++;
+						if (curRow % 50000 == 0){
+							logEntry.addNote("Read " + curRow + "rows in the volume table");
+							logEntry.saveResults();
+						}
+						volumeInfoLine = csvReader.readLine();
+					}
+					if (curIlsId != null) {
+						//Save the last volume information
+						saveVolumes(volumesForRecord, addVolumeStmt, volumeUpdateInfo);
 					}
 
-					//Read the next line
-					volumeInfoFields = csvReader.readNext();
-				}
+					logEntry.addNote(numMalformattedRows + " rows were mal formatted in the volume export");
+					logEntry.saveResults();
 
-				//Update the database
-				PreparedStatement addVolumeStmt = dbConn.prepareStatement("INSERT INTO ils_volume_info (recordId, volumeId, displayLabel, relatedItems) VALUES (?,?,?,?) ON DUPLICATE KEY update recordId = VALUES(recordId), displayLabel = VALUES(displayLabel), relatedItems = VALUES(relatedItems)");
-				PreparedStatement deleteVolumeStmt = dbConn.prepareStatement("DELETE from ils_volume_info where volumeId = ?");
-				int numVolumesUpdated = 0;
-				for (String curVolumeKey : allVolumesInExport.keySet()){
-					VolumeInfo curVolume = allVolumesInExport.get(curVolumeKey);
-					existingVolumes.remove(curVolumeKey);
-					try{
-						addVolumeStmt.setString(1, curVolume.bibNumber);
-						addVolumeStmt.setString(2, curVolume.volume);
-						addVolumeStmt.setString(3, curVolume.volume);
-						addVolumeStmt.setString(4, curVolume.getRelatedItemsAsString());
-						int numUpdates = addVolumeStmt.executeUpdate();
-						if (numUpdates > 0) {
-							numVolumesUpdated++;
-						}
-					}catch (SQLException sqlException){
-						logEntry.incErrors("Error adding volume - volume length = " + curVolume.volume.length() + " related Items length = " + curVolume.getRelatedItemsAsString().length(), sqlException);
+					if (volumeUpdateInfo.maxRelatedItemsLength > 0){
+						logEntry.incErrors("Related items were too long for the field, max length should be at least " + volumeUpdateInfo.maxRelatedItemsLength);
 					}
-				}
+					if (volumeUpdateInfo.maxDisplayLabelLength > 0){
+						logEntry.addNote("Volume Name was too long for the field, max length should be at least " + volumeUpdateInfo.maxDisplayLabelLength);
+					}
 
-				long numVolumesDeleted = 0;
-				for (String existingVolume : existingVolumes){
-					logEntry.addNote("Deleted volume " + existingVolume);
-					deleteVolumeStmt.setString(1, existingVolume);
-					deleteVolumeStmt.executeUpdate();
-					numVolumesDeleted++;
+					long numVolumesDeleted = 0;
+					for (String existingVolume : allRecordsWithVolumes){
+						logEntry.addNote("Deleted volume " + existingVolume);
+						deleteVolumeStmt.setString(1, existingVolume);
+						deleteVolumeStmt.executeUpdate();
+						numVolumesDeleted++;
+					}
+					logEntry.addNote("Updated " + volumeUpdateInfo.numVolumesUpdated + " volumes and deleted " + numVolumesDeleted + " volumes");
+					logEntry.saveResults();
+
+					//Update the indexing profile to store the last volume time change
+					PreparedStatement updateLastVolumeExportTimeStmt = dbConn.prepareStatement("UPDATE indexing_profiles set lastVolumeExportTimestamp = ? where id = ?");
+					updateLastVolumeExportTimeStmt.setLong(1, fileTimeStamp / 1000);
+					updateLastVolumeExportTimeStmt.setLong(2, indexingProfile.getId());
+					updateLastVolumeExportTimeStmt.executeUpdate();
+				} catch (FileNotFoundException e) {
+					logEntry.incErrors("Error loading volumes", e);
+				} catch (IOException e) {
+					logEntry.incErrors("Error reading volume information", e);
+				} catch (SQLException e) {
+					logEntry.incErrors("Error reading and writing from database while loading volumes", e);
 				}
-				logEntry.addNote("Updated " + numVolumesUpdated + " volumes and deleted " + numVolumesDeleted + " volumes");
-			} catch (FileNotFoundException e) {
-				logEntry.incErrors("Error loading volumes", e);
-			} catch (IOException e) {
-				logEntry.incErrors("Error reading volume information", e);
-			} catch (SQLException e) {
-				logEntry.incErrors("Error reading and writing from database while loading volumes", e);
+				logEntry.addNote("Finished export of volume information " + dateTimeFormatter.format(new Date()));
+			}else{
+				logEntry.addNote("Volumes File has not changed");
 			}
-			logEntry.addNote("Finished export of volume information " + dateTimeFormatter.format(new Date()));
 		}else{
 			logEntry.addNote("Volume export file (volumes.txt) did not exist in " + SymphonyExportMain.indexingProfile.getMarcPath());
 		}
 	}
 
+	private static void saveVolumes(HashMap<String, VolumeInfo> volumesForRecord, PreparedStatement addVolumeStmt, VolumeUpdateInfo volumeUpdateInfo) {
+		//Update the database
+		for (String curVolumeKey : volumesForRecord.keySet()){
+			VolumeInfo curVolume = volumesForRecord.get(curVolumeKey);
+			try{
+				addVolumeStmt.setString(1, curVolume.bibNumber);
+				addVolumeStmt.setString(2, curVolume.volumeIdentifier);
+				addVolumeStmt.setString(3, curVolume.volume);
+				addVolumeStmt.setString(4, curVolume.getRelatedItemsAsString());
+				addVolumeStmt.setLong(5, curVolume.displayOrder);
+				int numUpdates = addVolumeStmt.executeUpdate();
+				if (numUpdates > 0) {
+					volumeUpdateInfo.numVolumesUpdated++;
+				}
+			}catch (SQLException sqlException){
+				if (sqlException.toString().contains("Data too long for column 'relatedItems'")){
+					if (curVolume.getRelatedItemsAsString().length() > volumeUpdateInfo.maxRelatedItemsLength){
+						volumeUpdateInfo.maxRelatedItemsLength = curVolume.getRelatedItemsAsString().length();
+					}
+				}else if (sqlException.toString().contains("Data too long for column 'displayLabel'")){
+					if (curVolume.volume.length() > volumeUpdateInfo.maxDisplayLabelLength){
+						logger.debug("Long volume name (" + curVolume.volume.length() + ") " + curVolume.volume);
+						volumeUpdateInfo.maxDisplayLabelLength = curVolume.volume.length();
+					}
+				}else{
+					logEntry.incErrors("Error adding volume - volume length = " + curVolume.volume.length() + " related Items length = " + curVolume.getRelatedItemsAsString().length(), sqlException);
+				}
+			}
+		}
+	}
+
 	private static int updateRecords(Connection dbConn){
+		//Check to see if we should regroup all existing records
+		try {
+			if (indexingProfile.isRegroupAllRecords()) {
+				MarcRecordGrouper recordGrouper = getRecordGroupingProcessor(dbConn);
+				recordGrouper.regroupAllRecords(dbConn, indexingProfile, getGroupedWorkIndexer(dbConn), logEntry);
+			}
+		}catch (Exception e){
+			logEntry.incErrors("Error regrouping all records", e);
+		}
+
 		//Get the last export from MARC time
 		long lastUpdateFromMarc = indexingProfile.getLastUpdateFromMarcExport();
 
@@ -267,6 +404,7 @@ public class SymphonyExportMain {
 		File latestFile = null;
 		long latestMarcFile = 0;
 		boolean hasFullExportFile = false;
+		File fullExportFile = null;
 		if (exportedMarcFiles != null && exportedMarcFiles.length > 0){
 			for (File exportedMarcFile : exportedMarcFiles) {
 				//Remove any files that are older than the last time we processed files.
@@ -286,6 +424,7 @@ public class SymphonyExportMain {
 		if (latestFile != null) {
 			filesToProcess.add(latestFile);
 			hasFullExportFile = true;
+			fullExportFile = latestFile;
 		}
 
 		//Get a list of marc deltas since the last marc record
@@ -308,7 +447,7 @@ public class SymphonyExportMain {
 		if (filesToProcess.size() > 0){
 			//Update all records based on the MARC export
 			logEntry.addNote("Updating based on MARC extract");
-			return updateRecordsUsingMarcExtract(filesToProcess, hasFullExportFile, dbConn);
+			return updateRecordsUsingMarcExtract(filesToProcess, hasFullExportFile, fullExportFile, dbConn);
 		}else{
 			//TODO: See if we can get more runtime info from SirsiDynix APIs;
 			return 0;
@@ -322,10 +461,11 @@ public class SymphonyExportMain {
 	 *
 	 * @param exportedMarcFiles - An array of files to process
 	 * @param hasFullExportFile - Whether or not we are including a full export.  We will only delete records if we have a full export.
+	 * @param fullExportFile
 	 * @param dbConn            - Connection to the Aspen database
 	 * @return - total number of changes that were found
 	 */
-	private static int updateRecordsUsingMarcExtract(ArrayList<File> exportedMarcFiles, boolean hasFullExportFile, Connection dbConn) {
+	private static int updateRecordsUsingMarcExtract(ArrayList<File> exportedMarcFiles, boolean hasFullExportFile, File fullExportFile, Connection dbConn) {
 		int totalChanges = 0;
 		MarcRecordGrouper recordGroupingProcessor = getRecordGroupingProcessor(dbConn);
 		if (!recordGroupingProcessor.isValid()){
@@ -335,6 +475,7 @@ public class SymphonyExportMain {
 			return totalChanges;
 		}
 
+		//Make sure that none of the files are still changing
 		for (File curBibFile : exportedMarcFiles) {
 			//Make sure the file is not currently changing.
 			boolean isFileChanging = true;
@@ -345,82 +486,160 @@ public class SymphonyExportMain {
 				} catch (InterruptedException e) {
 					logEntry.incErrors("Error checking if a file is still changing", e);
 				}
-				if (lastSizeCheck == curBibFile.length()){
+				if (lastSizeCheck == curBibFile.length()) {
 					isFileChanging = false;
-				}else{
+				} else {
 					lastSizeCheck = curBibFile.length();
 				}
 			}
-			logEntry.addNote("Processing file " + curBibFile.getAbsolutePath());
+		}
+
+		//Validate that the FullMarcExportRecordIdThreshold has been met if we are running a full export.
+		long maxIdInExport = 0;
+		if (hasFullExportFile){
+			logEntry.addNote("Validating that full export is the correct size");
+			logEntry.saveResults();
 
 			int numRecordsRead = 0;
 			String lastRecordProcessed = "";
 			try {
+				FileInputStream marcFileStream = new FileInputStream(fullExportFile);
+				MarcReader catalogReader = new MarcPermissiveStreamReader(marcFileStream, true, true, indexingProfile.getMarcEncoding());
+				while (catalogReader.hasNext()) {
+					numRecordsRead++;
+					Record curBib = catalogReader.next();
+					RecordIdentifier recordIdentifier = recordGroupingProcessor.getPrimaryIdentifierFromMarcRecord(curBib, indexingProfile);
+					if (recordIdentifier != null) {
+						String recordNumber = recordIdentifier.getIdentifier();
+						lastRecordProcessed = recordNumber;
+						recordNumber = recordNumber.replaceAll("[^\\d]", "");
+						long recordNumberDigits = Long.parseLong(recordNumber);
+						if (recordNumberDigits > maxIdInExport) {
+							maxIdInExport = recordNumberDigits;
+						}
+					}
+				}
+			} catch (Exception e) {
+				logEntry.incErrors("Error loading Symphony bibs on record " + numRecordsRead + " in profile " + indexingProfile.getName() + " the last record processed was " + lastRecordProcessed + " file " + fullExportFile.getAbsolutePath(), e);
+				logEntry.addNote("Not processing MARC export due to error reading MARC files.");
+				return totalChanges;
+			}
+			logEntry.addNote("Full export " + fullExportFile + " contains " + numRecordsRead + " records.");
+			logEntry.saveResults();
+
+			if (maxIdInExport < indexingProfile.getFullMarcExportRecordIdThreshold()){
+				logEntry.incErrors("Full MARC export appears to be truncated, MAX Record ID in the export was " + maxIdInExport + " expected to be greater than or equal to " + indexingProfile.getFullMarcExportRecordIdThreshold());
+				logEntry.addNote("Not processing the full export");
+				exportedMarcFiles.remove(fullExportFile);
+				hasFullExportFile = false;
+			}else{
+				logEntry.addNote("The full export is the correct size.");
+				logEntry.saveResults();
+			}
+		}
+
+		GroupedWorkIndexer reindexer = getGroupedWorkIndexer(dbConn);
+		for (File curBibFile : exportedMarcFiles) {
+			logEntry.addNote("Processing file " + curBibFile.getAbsolutePath());
+
+			String lastRecordProcessed = "";
+			if (hasFullExportFile && curBibFile.equals(fullExportFile) && indexingProfile.getLastChangeProcessed() > 0){
+				logEntry.addNote("Skipping the first " + indexingProfile.getLastChangeProcessed() + " records because they were processed previously see (Last Record ID Processed for the Indexing Profile).");
+			}
+			int numRecordsRead = 0;
+			try {
 				FileInputStream marcFileStream = new FileInputStream(curBibFile);
 				MarcReader catalogReader = new MarcPermissiveStreamReader(marcFileStream, true, true, indexingProfile.getMarcEncoding());
+				//Symphony handles bib records with a large number of items by breaking the MARC export into multiple records. The records are always sequential.
+				//To solve this, we need to track which id we processed last and if the record has already been processed, we will need to append items from the new
+				//record to the old record and then reprocess it.
+				RecordIdentifier lastIdentifier = null;
 				while (catalogReader.hasNext()) {
 					logEntry.incProducts();
 					try{
 						Record curBib = catalogReader.next();
-						RecordIdentifier recordIdentifier = recordGroupingProcessor.getPrimaryIdentifierFromMarcRecord(curBib, indexingProfile.getName(), indexingProfile.isDoAutomaticEcontentSuppression());
-						boolean deleteRecord = false;
-						if (recordIdentifier == null) {
-							//logger.debug("Record with control number " + curBib.getControlNumber() + " was suppressed or is eContent");
-							String controlNumber = curBib.getControlNumber();
-							if (controlNumber == null) {
-								logger.warn("Bib did not have control number or identifier");
+						numRecordsRead++;
+						if (hasFullExportFile && curBibFile.equals(fullExportFile) && (numRecordsRead < indexingProfile.getLastChangeProcessed())) {
+							RecordIdentifier recordIdentifier = recordGroupingProcessor.getPrimaryIdentifierFromMarcRecord(curBib, indexingProfile);
+							if (recordIdentifier != null) {
+								recordGroupingProcessor.removeExistingRecord(recordIdentifier.getIdentifier());
 							}
-						}else if (!recordIdentifier.isSuppressed()) {
-							String recordNumber = recordIdentifier.getIdentifier();
-
-							BaseMarcRecordGrouper.MarcStatus marcStatus = recordGroupingProcessor.writeIndividualMarc(indexingProfile, curBib, recordNumber, logger);
-							if (marcStatus != BaseMarcRecordGrouper.MarcStatus.UNCHANGED || indexingProfile.isRunFullUpdate()) {
-								String permanentId = recordGroupingProcessor.processMarcRecord(curBib, marcStatus != BaseMarcRecordGrouper.MarcStatus.UNCHANGED);
-								if (permanentId == null){
-									//Delete the record since it is suppressed
-									deleteRecord = true;
-								}else {
-									if (marcStatus == BaseMarcRecordGrouper.MarcStatus.NEW){
-										logEntry.incAdded();
-									}else {
-										logEntry.incUpdated();
-									}
-									getGroupedWorkIndexer(dbConn).processGroupedWork(permanentId);
-									totalChanges++;
+							logEntry.incSkipped();
+						}else {
+							RecordIdentifier recordIdentifier = recordGroupingProcessor.getPrimaryIdentifierFromMarcRecord(curBib, indexingProfile);
+							boolean deleteRecord = false;
+							if (recordIdentifier == null) {
+								//logger.debug("Record with control number " + curBib.getControlNumber() + " was suppressed or is eContent");
+								String controlNumber = curBib.getControlNumber();
+								if (controlNumber == null) {
+									logger.warn("Bib did not have control number or identifier");
 								}
-							}else{
-								logEntry.incSkipped();
+							} else if (!recordIdentifier.isSuppressed()) {
+								String recordNumber = recordIdentifier.getIdentifier();
+								GroupedWorkIndexer.MarcStatus marcStatus;
+								if (lastIdentifier != null && lastIdentifier.equals(recordIdentifier)) {
+									marcStatus = reindexer.appendItemsToExistingRecord(indexingProfile, curBib, recordNumber);
+								} else {
+									marcStatus = reindexer.saveMarcRecordToDatabase(indexingProfile, recordNumber, curBib);
+								}
+
+								if (marcStatus != GroupedWorkIndexer.MarcStatus.UNCHANGED || indexingProfile.isRunFullUpdate()) {
+									String permanentId = recordGroupingProcessor.processMarcRecord(curBib, marcStatus != GroupedWorkIndexer.MarcStatus.UNCHANGED, null);
+									if (permanentId == null) {
+										//Delete the record since it is suppressed
+										deleteRecord = true;
+									} else {
+										if (marcStatus == GroupedWorkIndexer.MarcStatus.NEW) {
+											logEntry.incAdded();
+										} else {
+											logEntry.incUpdated();
+										}
+										getGroupedWorkIndexer(dbConn).processGroupedWork(permanentId);
+										totalChanges++;
+									}
+								} else {
+									logEntry.incSkipped();
+								}
+								if (totalChanges % 5000 == 0) {
+									getGroupedWorkIndexer(dbConn).commitChanges();
+								}
+								//Mark that the record was processed
+								recordGroupingProcessor.removeExistingRecord(recordIdentifier.getIdentifier());
+								lastRecordProcessed = recordNumber;
+							} else {
+								//Delete the record since it is suppressed
+								deleteRecord = true;
 							}
-							if (totalChanges % 5000 == 0) {
-								getGroupedWorkIndexer(dbConn).commitChanges();
+							lastIdentifier = recordIdentifier;
+							indexingProfile.setLastChangeProcessed(numRecordsRead);
+							if (deleteRecord) {
+								RemoveRecordFromWorkResult result = recordGroupingProcessor.removeRecordFromGroupedWork(indexingProfile.getName(), recordIdentifier.getIdentifier());
+								if (result.reindexWork) {
+									getGroupedWorkIndexer(dbConn).processGroupedWork(result.permanentId);
+								} else if (result.deleteWork) {
+									//Delete the work from solr and the database
+									getGroupedWorkIndexer(dbConn).deleteRecord(result.permanentId);
+								}
+								logEntry.incDeleted();
+								totalChanges++;
 							}
-							//Mark that the record was processed
-							recordGroupingProcessor.removeExistingRecord(recordIdentifier.getIdentifier());
-							lastRecordProcessed = recordNumber;
-						}else{
-							//Delete the record since it is suppressed
-							deleteRecord = true;
-						}
-						if (deleteRecord){
-							RemoveRecordFromWorkResult result = recordGroupingProcessor.removeRecordFromGroupedWork(indexingProfile.getName(), recordIdentifier.getIdentifier());
-							if (result.reindexWork){
-								getGroupedWorkIndexer(dbConn).processGroupedWork(result.permanentId);
-							}else if (result.deleteWork){
-								//Delete the work from solr and the database
-								getGroupedWorkIndexer(dbConn).deleteRecord(result.permanentId, result.groupedWorkId);
-							}
-							logEntry.incDeleted();
-							totalChanges++;
 						}
 					}catch (MarcException me){
 						logEntry.incErrors("Error processing individual record  on record " + numRecordsRead + " of " + curBibFile.getAbsolutePath() + " the last record processed was " + lastRecordProcessed + " trying to continue", me);
 					}
-					numRecordsRead++;
 					if (numRecordsRead % 250 == 0) {
 						logEntry.saveResults();
+						indexingProfile.updateLastChangeProcessed(dbConn, logEntry);
 					}
 				}
 				marcFileStream.close();
+
+				if (hasFullExportFile){
+					indexingProfile.setLastChangeProcessed(0);
+					indexingProfile.updateLastChangeProcessed(dbConn, logEntry);
+					logEntry.addNote("Updated " + numRecordsRead + " records");
+					logEntry.saveResults();
+				}
 			} catch (Exception e) {
 				logEntry.incErrors("Error loading Symphony bibs on record " + numRecordsRead + " in profile " + indexingProfile.getName() + " the last record processed was " + lastRecordProcessed + " file " + curBibFile.getAbsolutePath(), e);
 			}
@@ -428,19 +647,32 @@ public class SymphonyExportMain {
 
 		//Loop through remaining records and delete them
 		if (hasFullExportFile) {
+			logEntry.addNote("Deleting " + recordGroupingProcessor.getExistingRecords().size() + " records that were not contained in the export");
 			for (String identifier : recordGroupingProcessor.getExistingRecords().keySet()) {
 				RemoveRecordFromWorkResult result = recordGroupingProcessor.removeRecordFromGroupedWork(indexingProfile.getName(), identifier);
 				if (result.reindexWork){
 					getGroupedWorkIndexer(dbConn).processGroupedWork(result.permanentId);
 				}else if (result.deleteWork){
 					//Delete the work from solr and the database
-					getGroupedWorkIndexer(dbConn).deleteRecord(result.permanentId, result.groupedWorkId);
+					getGroupedWorkIndexer(dbConn).deleteRecord(result.permanentId);
 				}
 				logEntry.incDeleted();
 				totalChanges++;
+				if (logEntry.getNumDeleted() % 250 == 0){
+					logEntry.saveResults();
+				}
+			}
+			logEntry.saveResults();
+
+			try {
+				PreparedStatement updateMarcExportStmt = dbConn.prepareStatement("UPDATE indexing_profiles set fullMarcExportRecordIdThreshold = ? where id = ?");
+				updateMarcExportStmt.setLong(1, maxIdInExport);
+				updateMarcExportStmt.setLong(2, indexingProfile.getId());
+				updateMarcExportStmt.executeUpdate();
+			}catch (Exception e){
+				logEntry.incErrors("Error updating lastUpdateFromMarcExport", e);
 			}
 		}
-
 
 		try {
 			PreparedStatement updateMarcExportStmt = dbConn.prepareStatement("UPDATE indexing_profiles set lastUpdateFromMarcExport = ? where id = ?");
@@ -449,6 +681,17 @@ public class SymphonyExportMain {
 			updateMarcExportStmt.executeUpdate();
 		}catch (Exception e){
 			logEntry.incErrors("Error updating lastUpdateFromMarcExport", e);
+		}
+
+		if (hasFullExportFile && indexingProfile.isRunFullUpdate()){
+			//Disable runFullUpdate
+			try {
+				PreparedStatement updateIndexingProfileStmt = dbConn.prepareStatement("UPDATE indexing_profiles set runFullUpdate = 0 where id = ?");
+				updateIndexingProfileStmt.setLong(1, indexingProfile.getId());
+				updateIndexingProfileStmt.executeUpdate();
+			}catch (Exception e){
+				logEntry.incErrors("Error updating disabling runFullUpdate", e);
+			}
 		}
 
 		return totalChanges;
@@ -476,7 +719,7 @@ public class SymphonyExportMain {
 				dbConn = null;
 			}
 		} catch (Exception e) {
-			System.out.println("Error closing aspen connection: " + e.toString());
+			System.out.println("Error closing aspen connection: " + e);
 			e.printStackTrace();
 		}
 	}

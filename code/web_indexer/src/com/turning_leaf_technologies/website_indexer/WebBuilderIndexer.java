@@ -36,7 +36,7 @@ class WebBuilderIndexer {
 		loadLibrarySubdomains();
 
 		try {
-			solrUpdateServer.deleteByQuery("website_name:Local Content");
+			solrUpdateServer.deleteByQuery("website_name:\"Local Content\"");
 			//3-19-2019 Don't commit so the index does not get cleared during run (but will clear at the end).
 		} catch (HttpSolrClient.RemoteSolrException rse) {
 			logEntry.addNote("Solr is not running properly, try restarting " + rse.toString());
@@ -60,7 +60,9 @@ class WebBuilderIndexer {
 			PreparedStatement getLibrarySubdomainsStmt = aspenConn.prepareStatement("SELECT libraryId, subdomain from library");
 			ResultSet getLibrarySubdomainsRS = getLibrarySubdomainsStmt.executeQuery();
 			while (getLibrarySubdomainsRS.next()){
-				librarySubdomains.put(getLibrarySubdomainsRS.getLong("libraryId"), getLibrarySubdomainsRS.getString("subdomain"));
+				String scopeName = getLibrarySubdomainsRS.getString("subdomain");
+				scopeName = scopeName.replaceAll("[^a-zA-Z0-9_]", "").toLowerCase();
+				librarySubdomains.put(getLibrarySubdomainsRS.getLong("libraryId"), scopeName);
 			}
 			getLibrarySubdomainsRS.close();
 			getLibrarySubdomainsStmt.close();
@@ -108,7 +110,7 @@ class WebBuilderIndexer {
 				SolrInputDocument solrDocument = new SolrInputDocument();
 				//Load basic information
 				String id = getResourcesRS.getString("id");
-				solrDocument.addField("id", id);
+				solrDocument.addField("id", "WebResource:" + id);
 				solrDocument.addField("recordtype", "WebResource");
 				solrDocument.addField("website_name", "Library Website");
 				solrDocument.addField("search_category", "Website");
@@ -146,8 +148,10 @@ class WebBuilderIndexer {
 					solrDocument.addField("scope_has_related_records", librarySubdomains.get(getLibrariesForResourceRS.getLong("libraryId")));
 				}
 
+				logEntry.incNumPages();
 				try {
 					solrUpdateServer.add(solrDocument);
+					logEntry.incUpdated();
 				} catch (SolrServerException | IOException e) {
 					logEntry.incErrors("Error adding page to index", e);
 				}
@@ -170,7 +174,7 @@ class WebBuilderIndexer {
 				SolrInputDocument solrDocument = new SolrInputDocument();
 				//Load basic information
 				String id = getBasicPagesRS.getString("id");
-				solrDocument.addField("id", id);
+				solrDocument.addField("id", "BasicPage:" + id);
 				solrDocument.addField("recordtype", "BasicPage");
 				solrDocument.addField("website_name", "Library Website");
 				solrDocument.addField("search_category", "Website");
@@ -211,8 +215,10 @@ class WebBuilderIndexer {
 					solrDocument.addField("scope_has_related_records", librarySubdomains.get(getLibrariesForBasicPageRS.getLong("libraryId")));
 				}
 
+				logEntry.incNumPages();
 				try {
 					solrUpdateServer.add(solrDocument);
+					logEntry.incUpdated();
 				} catch (SolrServerException | IOException e) {
 					logEntry.incErrors("Error adding page to index", e);
 				}

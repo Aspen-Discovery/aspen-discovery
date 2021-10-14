@@ -31,25 +31,29 @@ class ExternalEContent_AccessOnline extends Action
 		require_once ROOT_DIR . '/RecordDrivers/ExternalEContentDriver.php';
 		$this->recordDriver = new ExternalEContentDriver($subType . ':'. $id);
 
-		$relatedRecord = $this->recordDriver->getRelatedRecord();
-		$recordActions = $relatedRecord->getActions();
+		if ($this->recordDriver->isValid()) {
+			$relatedRecord = $this->recordDriver->getRelatedRecord();
+			$recordActions = $relatedRecord->getActions();
 
-		$actionIndex = $_REQUEST['index'];
-		$selectedAction = $recordActions[$actionIndex];
-		$redirectUrl = $selectedAction['redirectUrl'];
+			$actionIndex = $_REQUEST['index'];
+			$selectedAction = $recordActions[$actionIndex];
+			$redirectUrl = $selectedAction['redirectUrl'];
 
-		//Track Usage
-		global $sideLoadSettings;
-		$sideLoadId = -1;
-		foreach ($sideLoadSettings as $sideLoad){
-			if ($sideLoad->name == $this->recordDriver->getRecordType()){
-				$sideLoadId = $sideLoad->id;
+			//Track Usage
+			global $sideLoadSettings;
+			$sideLoadId = -1;
+			foreach ($sideLoadSettings as $sideLoad) {
+				if ($sideLoad->name == $this->recordDriver->getRecordType()) {
+					$sideLoadId = $sideLoad->id;
+				}
 			}
-		}
 
-		if ($sideLoadId != -1) {
-			$this->trackRecordUsage($sideLoadId, $this->recordDriver->getId());
-			$this->trackUserUsageOfSideLoad($sideLoadId);
+			if ($sideLoadId != -1) {
+				$this->trackRecordUsage($sideLoadId, $this->recordDriver->getId());
+				$this->trackUserUsageOfSideLoad($sideLoadId);
+			}
+		}else{
+			$redirectUrl = $this->recordDriver->getLinkUrl(true);
 		}
 
 		header('Location: ' . $redirectUrl);
@@ -60,6 +64,7 @@ class ExternalEContent_AccessOnline extends Action
 	{
 		require_once ROOT_DIR . '/sys/Indexing/SideLoadedRecordUsage.php';
 		$recordUsage = new SideLoadedRecordUsage();
+		$recordUsage->instance = $_SERVER['SERVER_NAME'];
 		$recordUsage->sideloadId = $sideLoadId;
 		$recordUsage->recordId = $recordId;
 		$recordUsage->year = date('Y');
@@ -77,6 +82,7 @@ class ExternalEContent_AccessOnline extends Action
 	{
 		require_once ROOT_DIR . '/sys/Indexing/UserSideLoadUsage.php';
 		$userUsage = new UserSideLoadUsage();
+		$userUsage->instance = $_SERVER['SERVER_NAME'];
 		if (UserAccount::getActiveUserId() == false){
 			//User is not logged in
 			$userUsage->userId = -1;
@@ -96,11 +102,11 @@ class ExternalEContent_AccessOnline extends Action
 		}
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
-		$breadcrumbs[] = new Breadcrumb($this->recordDriver->getRecordUrl(), $this->recordDriver->getTitle());
+		$breadcrumbs[] = new Breadcrumb($this->recordDriver->getRecordUrl(), $this->recordDriver->getTitle(), false);
 		$breadcrumbs[] = new Breadcrumb('', 'Access Online');
 		return $breadcrumbs;
 	}

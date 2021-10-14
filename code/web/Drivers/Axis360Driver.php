@@ -19,8 +19,11 @@ class Axis360Driver extends AbstractEContentDriver
 		return false;
 	}
 
-	private function getAxis360AccessToken() {
-		$settings = $this->getSettings();
+	private function getAxis360AccessToken(User $user = null) {
+		$settings = $this->getSettings($user);
+		if ($settings == false){
+			return false;
+		}
 		$now = time();
 		if ($this->accessToken == null || $this->accessTokenExpiration <= $now){
 			$authentication = $settings->vendorUsername . ':' . $settings->vendorPassword . ':' . $settings->libraryPrefix;
@@ -55,22 +58,26 @@ class Axis360Driver extends AbstractEContentDriver
 	 * This is responsible for retrieving all checkouts (i.e. checked out items)
 	 * by a specific patron.
 	 *
-	 * @param User $user The user to load transactions for
-	 * @return array        Array of the patron's transactions on success
+	 * @param User $patron The user to load transactions for
+	 * @return Checkout[]        Array of the patron's transactions on success
 	 * @access public
 	 */
-	public function getCheckouts(User $user)
+	public function getCheckouts(User $patron)
 	{
-		if (isset($this->checkouts[$user->id])){
-			return $this->checkouts[$user->id];
+		require_once ROOT_DIR . '/sys/User/Checkout.php';
+		if (isset($this->checkouts[$patron->id])){
+			return $this->checkouts[$patron->id];
 		}
 		$checkouts = [];
-		if ($this->getAxis360AccessToken()){
-			$settings = $this->getSettings();
+		$settings = $this->getSettings($patron);
+		if ($settings == false){
+			return $checkouts;
+		}
+		if ($this->getAxis360AccessToken($patron)){
 			$checkoutsUrl = $settings->apiUrl . "/Services/VendorAPI/availability/v3_1";
 			$params = [
 				'statusFilter' => 'CHECKOUT',
-				'patronId' => $user->getBarcode()
+				'patronId' => $patron->getBarcode()
 			];
 			$headers = [
 				'Authorization: ' . $this->accessToken,
@@ -84,7 +91,7 @@ class Axis360Driver extends AbstractEContentDriver
 			$status = $xmlResults->status;
 			if ($status->code == '0000'){
 				foreach ($xmlResults->title as $title){
-					$this->loadCheckoutInfo($title, $checkouts, $user);
+					$this->loadCheckoutInfo($title, $checkouts, $patron);
 				}
 			}else{
 				global $logger;
@@ -112,7 +119,7 @@ class Axis360Driver extends AbstractEContentDriver
 	 * @param $patron  User
 	 * @return mixed
 	 */
-	public function renewAll($patron)
+	public function renewAll(User $patron)
 	{
 		return false;
 	}
@@ -132,12 +139,13 @@ class Axis360Driver extends AbstractEContentDriver
 	/**
 	 * Return a title currently checked out to the user
 	 *
+	 * @param $patron User
 	 * @param $transactionId   string
 	 * @return array
 	 */
-	public function returnCheckout($transactionId)
+	public function returnCheckout($patron, $transactionId)
 	{
-		$result = ['success' => false, 'message' => 'Unknown error'];
+		$result = ['success' => false, 'message' => translate(['text' => 'Unknown error', 'isPublicFacing' => true])];
 		if ($this->getAxis360AccessToken()){
 			$settings = $this->getSettings();
 			$returnCheckoutUrl = $settings->apiUrl . "/Services/VendorAPI/EarlyCheckin/v2?transactionID=$transactionId";
@@ -153,15 +161,17 @@ class Axis360Driver extends AbstractEContentDriver
 			$removeHoldResult = $xmlResults->EarlyCheckinRestResult;
 			$status = $removeHoldResult->status;
 			if ($status->code != '0000'){
-				$result['message'] = "Could not cancel return title, " . (string)$status->statusMessage;
+				$result['message'] = translate(['text'=>"Could not return Axis 360 title, %1%", 1=>(string)$status->statusMessage, 'isPublicFacing'=>true]);
 				$this->incrementStat('numApiErrors');
 			}else{
 				$result['success'] = true;
-				$result['message'] = 'Your title was returned successfully';
+				$result['message'] = translate(['text'=>'Your Axis 360 title was returned successfully', 'isPublicFacing'=>true]);
 				$this->incrementStat('numEarlyReturns');
+				$patron->clearCachedAccountSummaryForSource('axis360');
+				$patron->forceReloadOfCheckouts();
 			}
 		}else{
-			$result['message'] = 'Unable to connect to Axis 360';
+			$result['message'] = translate(['text'=>'Unable to connect to Axis 360', 'isPublicFacing'=>true]);
 		}
 		return $result;
 	}
@@ -172,24 +182,29 @@ class Axis360Driver extends AbstractEContentDriver
 	 *
 	 * This is responsible for retrieving all holds for a specific patron.
 	 *
-	 * @param User $user The user to load transactions for
+	 * @param User $patron The user to load transactions for
 	 * @param bool $forSummary
 	 *
 	 * @return array        Array of the patron's holds
 	 * @access public
 	 */
-	public function getHolds($user, $forSummary = false)
+	public function getHolds($patron, $forSummary = false)
 	{
-		if (isset($this->holds[$user->id])){
-			return $this->holds[$user->id];
+		require_once ROOT_DIR . '/sys/User/Hold.php';
+		if (isset($this->holds[$patron->id])){
+			return $this->holds[$patron->id];
 		}
 		$holds = array(
 			'available' => array(),
 			'unavailable' => array()
 		);
-		if ($this->getAxis360AccessToken()){
-			$settings = $this->getSettings();
-			$holdUrl = $settings->apiUrl . "/Services/VendorAPI/GetHolds/{$user->getBarcode()}";
+		$settings = $this->getSettings($patron);
+		if ($settings == false){
+			return $holds;
+		}
+
+		if ($this->getAxis360AccessToken($patron)){
+			$holdUrl = $settings->apiUrl . "/Services/VendorAPI/GetHolds/{$patron->getBarcode()}";
 			$headers = [
 				'Authorization: ' . $this->accessToken,
 				'Library: ' . $settings->libraryPrefix,
@@ -202,7 +217,7 @@ class Axis360Driver extends AbstractEContentDriver
 			$holdsResult = $xmlResults->getHoldsResult;
 			if (!empty($holdsResult->holds)){
 				foreach ($holdsResult->holds->hold as $hold){
-					$this->loadHoldInfo($hold, $holds, $user, $forSummary);
+					$this->loadHoldInfo($hold, $holds, $patron, $forSummary);
 				}
 			}
 
@@ -227,9 +242,9 @@ class Axis360Driver extends AbstractEContentDriver
 	 */
 	function placeHold($patron, $recordId, $pickupBranch = null, $cancelDate = null)
 	{
-		$result = ['success' => false, 'message' => 'Unknown error'];
-		if ($this->getAxis360AccessToken()) {
-			$settings = $this->getSettings();
+		$result = ['success' => false, 'message' => translate(['text' => 'Unknown error', 'isPublicFacing' => true])];
+		if ($this->getAxis360AccessToken($patron)) {
+			$settings = $this->getSettings($patron);
 			$holdUrl = $settings->apiUrl . "/Services/VendorAPI/addToHold/v2/$recordId/" . urlencode($patron->email) . "/{$patron->getBarcode()}";
 			$headers = [
 				'Authorization: ' . $this->accessToken,
@@ -246,18 +261,20 @@ class Axis360Driver extends AbstractEContentDriver
 				//The title is available, try to check it out.
 				return $this->checkOutTitle($patron, $recordId, false);
 			}else if ($status->code != '0000'){
-				$result['message'] = "Could not place hold, " . (string)$status->statusMessage;
+				$result['message'] = translate(['text' => "Could not place Axis 360 hold, %1%", 1=>(string)$status->statusMessage, 'isPublicFacing' => true]);
 				$this->incrementStat('numApiErrors');
 			}else{
 				$result['success'] = true;
-				$result['message'] = 'Your hold was placed successfully';
+				$result['message'] = translate(['text' => 'Your Axis 360 hold was placed successfully', 'isPublicFacing' => true]);
 				$this->incrementStat('numHoldsPlaced');
 				$this->trackUserUsageOfAxis360($patron);
 				$this->trackRecordHold($recordId);
+				$patron->clearCachedAccountSummaryForSource('axis360');
+				$patron->forceReloadOfHolds();
 			}
 
 		}else{
-			$result['message'] = 'Unable to connect to Axis 360';
+			$result['message'] = translate(['text' => 'Unable to connect to Axis 360','isPublicFacing' => true]);
 		}
 		return $result;
 	}
@@ -271,9 +288,9 @@ class Axis360Driver extends AbstractEContentDriver
 	 */
 	function cancelHold($patron, $recordId, $cancelId = null)
 	{
-		$result = ['success' => false, 'message' => 'Unknown error'];
-		if ($this->getAxis360AccessToken()){
-			$settings = $this->getSettings();
+		$result = ['success' => false, 'message' => translate(['text' => 'Unknown error', 'isPublicFacing' => true])];
+		if ($this->getAxis360AccessToken($patron)){
+			$settings = $this->getSettings($patron);
 			$cancelHoldUrl = $settings->apiUrl . "/Services/VendorAPI/removeHold/v2/$recordId/{$patron->getBarcode()}";
 			$headers = [
 				'Authorization: ' . $this->accessToken,
@@ -287,46 +304,39 @@ class Axis360Driver extends AbstractEContentDriver
 			$removeHoldResult = $xmlResults->removeholdResult;
 			$status = $removeHoldResult->status;
 			if ($status->code != '0000'){
-				$result['message'] = "Could not cancel hold, " . (string)$status->statusMessage;
+				$result['message'] = translate(['text' => "Could not cancel Axis 360 hold, " . (string)$status->statusMessage,'isPublicFacing' => true]);
 				$this->incrementStat('numApiErrors');
 			}else{
 				$result['success'] = true;
-				$result['message'] = 'Your hold was cancelled successfully';
+				$result['message'] = translate(['text' => 'Your Axis 360 hold was cancelled successfully','isPublicFacing' => true]);
 				$this->incrementStat('numHoldsCancelled');
+				$patron->clearCachedAccountSummaryForSource('axis360');
+				$patron->forceReloadOfHolds();
 			}
 		}else{
-			$result['message'] = 'Unable to connect to Axis 360';
+			$result['message'] = translate(['text' => 'Unable to connect to Axis 360','isPublicFacing' => true]);
 		}
 		return $result;
 	}
 
-	public function getAccountSummary($patron)
+	public function getAccountSummary(User $user) : AccountSummary
 	{
-		global $memCache;
-		global $configArray;
+		list($existingId, $summary) = $user->getCachedAccountSummary('axis360');
 
-		if ($patron == false){
-			return array(
-				'numCheckedOut' => 0,
-				'numAvailableHolds' => 0,
-				'numUnavailableHolds' => 0,
-			);
-		}
+		if ($summary === null) {
+			//Get account information from api
+			require_once ROOT_DIR . '/sys/User/AccountSummary.php';
+			$summary = new AccountSummary();
+			$summary->userId = $user->id;
+			$summary->source = 'axis360';
+			$summary->resetCounters();
 
-		$summary = $memCache->get('axis360_summary_' . $patron->id);
-		if (true || $summary == false || isset($_REQUEST['reload'])){
-			$summary = array(
-				'numCheckedOut' => 0,
-				'numAvailableHolds' => 0,
-				'numUnavailableHolds' => 0,
-				'numHolds' => 0,
-			);
-			if ($this->getAxis360AccessToken()) {
+			if ($this->getAxis360AccessToken($user)) {
 				require_once ROOT_DIR . '/RecordDrivers/Axis360RecordDriver.php';
-				$settings = $this->getSettings();
+				$settings = $this->getSettings($user);
 				$checkoutsUrl = $settings->apiUrl . "/Services/VendorAPI/availability/v3_1";
 				$params = [
-					'patronId' => $patron->getBarcode()
+					'patronId' => $user->getBarcode()
 				];
 				$headers = [
 					'Authorization: ' . $this->accessToken,
@@ -338,46 +348,52 @@ class Axis360Driver extends AbstractEContentDriver
 				/** @var stdClass $xmlResults */
 				$xmlResults = simplexml_load_string($response);
 				$status = $xmlResults->status;
-				if ($status->code == '0000'){
-					foreach ($xmlResults->title as $title){
+				if ($status->code == '0000') {
+					foreach ($xmlResults->title as $title) {
 						$availability = $title->availability;
-						if ((string)$availability->isCheckedout == 'true'){
-							$summary['numCheckedOut']++;
-						}elseif ((string)$availability->isInHoldQueue == 'true'){
+						if ((string)$availability->isCheckedout == 'true') {
+							$summary->numCheckedOut++;
+						} elseif ((string)$availability->isInHoldQueue == 'true') {
 							if ((string)$availability->isReserved == 'true') {
-								$summary['numAvailableHolds']++;
-							}else{
-								$summary['numUnavailableHolds']++;
+								$summary->numAvailableHolds++;
+							} else {
+								$summary->numUnavailableHolds++;
 							}
-							$summary['numHolds']++;
 						}
 					}
-				}else{
+				} else {
 					$this->incrementStat('numApiErrors');
 				}
 			}
-			$memCache->set('axis360_summary_' . $patron->id, $summary, $configArray['Caching']['account_summary']);
+
+			$summary->lastLoaded = time();
+			if ($existingId != null) {
+				$summary->id = $existingId;
+				$summary->update();
+			}else{
+				$summary->insert();
+			}
 		}
 
 		return $summary;
 	}
 
 	/**
-	 * @param User $user
+	 * @param User $patron
 	 * @param string $titleId
 	 *
 	 * @param bool $fromRenew
 	 * @return array
 	 */
-	public function checkOutTitle($user, $titleId, $fromRenew = false)
+	public function checkOutTitle($patron, $titleId, $fromRenew = false)
 	{
-		$result = ['success' => false, 'message' => 'Unknown error'];
+		$result = ['success' => false, 'message' => translate(['text' => 'Unknown error', 'isPublicFacing' => true])];
 
-		if ($this->getAxis360AccessToken()){
-			$settings = $this->getSettings();
+		if ($this->getAxis360AccessToken($patron)){
+			$settings = $this->getSettings($patron);
 			$params = [
 				'titleId' => $titleId,
-				'patronId' => $user->getBarcode()
+				'patronId' => $patron->getBarcode()
 			];
 			$checkoutUrl = $settings->apiUrl . "/Services/VendorAPI/checkout/v2";
 			$headers = [
@@ -392,36 +408,60 @@ class Axis360Driver extends AbstractEContentDriver
 			$checkoutResult = $xmlResults->checkoutResult;
 			$status = $checkoutResult->status;
 			if ($status->code != '0000') {
-				$result['message'] = translate('Sorry, we could not checkout this title to you.');
+				$result['message'] = translate(['text' => 'Sorry, we could not checkout this Axis 360 title to you.', 'isPublicFacing'=>true]);
 				if ($status->code == '3113'){
 					$result['noCopies'] = true;
-					$result['message'] .= "\r\n\r\n" . translate('Would you like to place a hold instead?');
+					$result['message'] .= "\r\n\r\n" . translate(['text' => 'Would you like to place a hold instead?', 'isPublicFacing'=>true]);
 				}else{
-					$result['message'] .= (string)$status->statusMessage;
+					$result['message'] .= '&nbsp;' . (string)$status->statusMessage;
 					$this->incrementStat('numApiErrors');
 				}
 			} else {
 				$result['success'] = true;
-				$result['message'] = translate(['text' => 'axis360_checkout_success', 'defaultText' => 'Your title was checked out successfully. You may now download the title from your Account.']);
+				$result['message'] = translate(['text' => 'Your Axis 360 title was checked out successfully. You may now download the title from your Account.', 'isPublicFacing'=>true]);
 				if ($fromRenew) {
 					$this->incrementStat('numRenewals');
 				}else{
 					$this->incrementStat('numCheckouts');
-					$this->trackUserUsageOfAxis360($user);
+					$this->trackUserUsageOfAxis360($patron);
 					$this->trackRecordCheckout($titleId);
+					$patron->lastReadingHistoryUpdate = 0;
+					$patron->update();
 				}
+				$patron->clearCachedAccountSummaryForSource('axis360');
+				$patron->forceReloadOfCheckouts();
 			}
 		}else{
-			$result['message'] = 'Unable to connect to Axis 360';
+			$result['message'] = translate(['text' => 'Unable to connect to Axis 360', 'isPublicFacing'=>true]);
 		}
 		return $result;
 	}
 
-	private function getSettings(){
+	private function getSettings(User $user = null){
+		require_once ROOT_DIR . '/sys/Axis360/Axis360Scope.php';
 		require_once ROOT_DIR . '/sys/Axis360/Axis360Setting.php';
-		$settings = new Axis360Setting();
-		if ($settings->find(true)) {
-			return $settings;
+		$activeLibrary = null;
+		if ($user != null){
+			$activeLibrary = $user->getHomeLibrary();
+		}
+		if ($activeLibrary == null){
+			global $library;
+			$activeLibrary = $library;
+		}
+		$scope = new Axis360Scope();
+		$scope->id = $activeLibrary->axis360ScopeId;
+		if ($activeLibrary->axis360ScopeId > 0) {
+			if ($scope->find(true)) {
+				$settings = new Axis360Setting();
+				$settings->id = $scope->settingId;
+				if ($settings->find(true)) {
+					return $settings;
+				} else {
+					return false;
+				}
+			} else {
+				return false;
+			}
 		}else{
 			return false;
 		}
@@ -434,10 +474,10 @@ class Axis360Driver extends AbstractEContentDriver
 	{
 		require_once ROOT_DIR . '/sys/Axis360/UserAxis360Usage.php';
 		$userUsage = new UserAxis360Usage();
-		/** @noinspection DuplicatedCode */
 		$userUsage->userId = $user->id;
 		$userUsage->year = date('Y');
 		$userUsage->month = date('n');
+		$userUsage->instance = $_SERVER['SERVER_NAME'];
 
 		if ($userUsage->find(true)) {
 			$userUsage->usageCount++;
@@ -460,6 +500,7 @@ class Axis360Driver extends AbstractEContentDriver
 		$product->axis360Id = $recordId;
 		if ($product->find(true)) {
 			$recordUsage->axis360Id = $product->axis360Id;
+			$recordUsage->instance = $_SERVER['SERVER_NAME'];
 			$recordUsage->year = date('Y');
 			$recordUsage->month = date('n');
 			if ($recordUsage->find(true)) {
@@ -484,6 +525,7 @@ class Axis360Driver extends AbstractEContentDriver
 		$product = new Axis360Title();
 		$product->axis360Id = $recordId;
 		if ($product->find(true)){
+			$recordUsage->instance = $_SERVER['SERVER_NAME'];
 			$recordUsage->axis360Id = $product->axis360Id;
 			$recordUsage->year = date('Y');
 			$recordUsage->month = date('n');
@@ -499,96 +541,81 @@ class Axis360Driver extends AbstractEContentDriver
 	}
 
 	/** @noinspection PhpUndefinedFieldInspection */
-	private function loadHoldInfo(SimpleXMLElement $rawHold, array &$holds, User $user, $forSummary)
+	private function loadHoldInfo(SimpleXMLElement $rawHold, array &$holds, User $user, $forSummary) : Hold
 	{
-		$hold = array();
+		$hold = new Hold();
+		$hold->type = 'axis360';
+		$hold->source = 'axis360';
+
 		$available = (string)$rawHold->isAvailable == 'Y';
 		$titleId = (string)$rawHold->titleID;
-		$hold['holdSource'] = 'Axis360';
-		$hold['axis360Id'] = $titleId;
-		$hold['holdQueueLength'] = (string)$rawHold->totalHoldSize;
-		$hold['holdQueuePosition'] = (string)$rawHold->holdPosition;
-		$hold['position'] = (string)$rawHold->holdPosition;
-		$hold['available'] = $available;
+		$hold->sourceId = $titleId;
+		$hold->recordId = $titleId;
+		$hold->title = (string)$rawHold->bookTitle;
+		$hold->holdQueueLength = (string)$rawHold->totalHoldSize;
+		$hold->position = (string)$rawHold->holdPosition;
+		$hold->available = $available;
 		if (!$available){
-			$hold['allowFreezeHolds'] = true;
-			$hold['canFreeze'] = true;
-			$hold['frozen'] = (string)$rawHold->isSuspendHold == 'R';
-			if ($hold['frozen']){
-				$hold['status'] = "Frozen";
+			$hold->canFreeze = true;
+			$hold->frozen = (string)$rawHold->isSuspendHold == 'R';
+			if ($hold->frozen){
+				$hold->status = "Frozen";
 			}
 		}else{
-			$hold['expire'] = strtotime($rawHold->reservedEndDate);
+			$hold->expirationDate = strtotime($rawHold->reservedEndDate);
 		}
 
 		require_once ROOT_DIR . '/RecordDrivers/Axis360RecordDriver.php';
-		if (!$forSummary){
-			$axis360Record = new Axis360RecordDriver($titleId);
-			$hold['groupedWorkId'] = $axis360Record->getPermanentId();
-			$hold['recordId'] = $axis360Record->getUniqueID();
-			$hold['coverUrl'] = $axis360Record->getBookcoverUrl('medium', true);
-			$hold['recordUrl'] = $axis360Record->getAbsoluteUrl();
-			$hold['title'] = $axis360Record->getTitle();
-			$hold['sortTitle'] = $axis360Record->getTitle();
-			$hold['author'] = $axis360Record->getPrimaryAuthor();
-			$hold['linkUrl'] = $axis360Record->getLinkUrl(true);
-			$hold['format'] = $axis360Record->getFormats();
-			$hold['ratingData'] = $axis360Record->getRatingData();
+		$axis360Record = new Axis360RecordDriver($titleId);
+		if ($axis360Record->isValid()) {
+			$hold->updateFromRecordDriver($axis360Record);
 		}
-		$hold['user'] = $user->getNameAndLibraryLabel();
-		$hold['userId'] = $user->id;
-		$key = $hold['holdSource'] . $hold['axis360Id'] . $hold['user'];
+
+		$hold->userId = $user->id;
+		$key = $hold->source . $hold->sourceId . $hold->userId;
 		if ($available){
 			$holds['available'][$key] = $hold;
 		}else{
 			$holds['unavailable'][$key] = $hold;
 		}
+		return $hold;
 	}
 
 	/** @noinspection PhpUndefinedFieldInspection */
 	private function loadCheckoutInfo(SimpleXMLElement $title, &$checkouts, User $user)
 	{
-		$checkout = [
-			'checkoutSource' => 'Axis360',
-			'axis360Id' => (string)$title->titleId,
-			'recordId' => (string)$title->titleId
-		];
+		$checkout = new Checkout();
+		$checkout->type = 'axis360';
+		$checkout->source = 'axis360';
+		$checkout->sourceId = (string)$title->titleId;
+		$checkout->recordId = (string)$title->titleId;
 
 		//After a title is returned, Axis 360 will still return it for a bit, but mark it as not checked out.
 		if ((string)$title->availability->isCheckedout == 'N'){
 			return;
 		}
-		$checkout['canRenew'] = (string)$title->availability->IsButtonRenew != 'N';
+		$checkout->canRenew = (string)$title->availability->IsButtonRenew != 'N';
 		$expirationDate = new DateTime($title->availability->checkoutEndDate);
-		$checkout['dueDate'] = $expirationDate->getTimestamp();
-		$checkout['accessOnlineUrl'] = (string)$title->titleUrl;
-		$checkout['transactionId'] = (string)$title->availability->transactionID;
+		$checkout->dueDate = $expirationDate->getTimestamp();
+		$checkout->accessOnlineUrl = (string)$title->titleUrl;
+		$checkout->transactionId = (string)$title->availability->transactionID;
 		require_once ROOT_DIR . '/RecordDrivers/Axis360RecordDriver.php';
 
 		$axis360Record = new Axis360RecordDriver((string)$title->titleId);
 		if ($axis360Record->isValid()) {
-			$formats = $axis360Record->getFormats();
-			$checkout['groupedWorkId'] = $axis360Record->getPermanentId();
-			$checkout['format'] = reset($formats);
-			$checkout['coverUrl'] = $axis360Record->getBookcoverUrl('medium', true);
-			$checkout['ratingData'] = $axis360Record->getRatingData();
-			$checkout['recordUrl'] = $axis360Record->getLinkUrl(true);
-			$checkout['title'] = $axis360Record->getTitle();
-			$checkout['author'] = $axis360Record->getPrimaryAuthor();
-			$checkout['linkUrl'] = $axis360Record->getLinkUrl(false);
+			$checkout->updateFromRecordDriver($axis360Record);
 		}
-		$checkout['user'] = $user->getNameAndLibraryLabel();
-		$checkout['userId'] = $user->id;
+		$checkout->userId = $user->id;
 
-		$key = $checkout['checkoutSource'] . $checkout['axis360Id'];
+		$key = $checkout->source . $checkout->sourceId . $checkout->userId;
 		$checkouts[$key] = $checkout;
 	}
 
 	function freezeHold(User $patron, $recordId)
 	{
-		$result = ['success' => false, 'message' => 'Unknown error'];
-		if ($this->getAxis360AccessToken()){
-			$settings = $this->getSettings();
+		$result = ['success' => false, 'message' => translate(['text' => 'Unknown error', 'isPublicFacing' => true])];
+		if ($this->getAxis360AccessToken($patron)){
+			$settings = $this->getSettings($patron);
 			$freezeHoldUrl = $settings->apiUrl . "/Services/VendorAPI/suspendHold/v2/$recordId/{$patron->getBarcode()}";
 			$headers = [
 				'Authorization: ' . $this->accessToken,
@@ -602,24 +629,25 @@ class Axis360Driver extends AbstractEContentDriver
 			$freezeHoldResult = $xmlResults->HoldResult;
 			$status = $freezeHoldResult->status;
 			if ($status->code != '0000'){
-				$result['message'] = "Could not freeze hold, " . (string)$status->statusMessage;
+				$result['message'] = translate(['text' => "Could not freeze Axis 360 hold, %1%", 1=>(string)$status->statusMessage,'isPublicFacing' => true]);
 				$this->incrementStat('numApiErrors');
 			}else{
 				$result['success'] = true;
-				$result['message'] = 'Your hold was frozen successfully';
+				$result['message'] = translate(['text' => 'Your hold was frozen successfully','isPublicFacing' => true]);
 				$this->incrementStat('numHoldsFrozen');
+				$patron->forceReloadOfHolds();
 			}
 		}else{
-			$result['message'] = 'Unable to connect to Axis 360';
+			$result['message'] = translate(['text' => 'Unable to connect to Axis 360','isPublicFacing' => true]);
 		}
 		return $result;
 	}
 
 	function thawHold(User $patron, $recordId)
 	{
-		$result = ['success' => false, 'message' => 'Unknown error'];
-		if ($this->getAxis360AccessToken()){
-			$settings = $this->getSettings();
+		$result = ['success' => false, 'message' => translate(['text' => 'Unknown error', 'isPublicFacing' => true])];
+		if ($this->getAxis360AccessToken($patron)){
+			$settings = $this->getSettings($patron);
 			$freezeHoldUrl = $settings->apiUrl . "/Services/VendorAPI/activateHold/v2/$recordId/{$patron->getBarcode()}";
 			$headers = [
 				'Authorization: ' . $this->accessToken,
@@ -633,25 +661,25 @@ class Axis360Driver extends AbstractEContentDriver
 			$thawHoldResult = $xmlResults->HoldResult;
 			$status = $thawHoldResult->status;
 			if ($status->code != '0000'){
-				$result['message'] = "Could not thaw hold, " . (string)$status->statusMessage;
+				$result['message'] = translate(['text' => "Could not thaw Axis 360 hold, %1%", 1=>(string)$status->statusMessage, 'isPublicFacing' => true]);
 				$this->incrementStat('numApiErrors');
 			}else{
 				$result['success'] = true;
-				$result['message'] = 'Your hold was thawed successfully';
+				$result['message'] = translate(['text' => 'Your Axis 360 hold was thawed successfully', 'isPublicFacing' => true]);
 				$this->incrementStat('numHoldsThawed');
+				$patron->forceReloadOfHolds();
 			}
 		}else{
-			$result['message'] = 'Unable to connect to Axis 360';
+			$result['message'] = translate(['text' => 'Unable to connect to Axis 360', 'isPublicFacing' => true]);
 		}
 		return $result;
 	}
 
 	private function incrementStat(string $fieldName)
 	{
-		global $instanceName;
 		require_once ROOT_DIR . '/sys/Axis360/Axis360Stats.php';
 		$axis360Stats = new Axis360Stats();
-		$axis360Stats->instance = $instanceName;
+		$axis360Stats->instance = $_SERVER['SERVER_NAME'];
 		$axis360Stats->year = date('Y');
 		$axis360Stats->month = date('n');
 		if ($axis360Stats->find(true)) {

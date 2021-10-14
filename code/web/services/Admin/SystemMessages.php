@@ -7,21 +7,24 @@ require_once ROOT_DIR . '/sys/LocalEnrichment/SystemMessage.php';
 class Admin_SystemMessages extends ObjectEditor
 {
 
-	function getObjectType(){
+	function getObjectType() : string{
 		return 'SystemMessage';
 	}
-	function getToolName(){
+	function getToolName() : string{
 		return 'SystemMessages';
 	}
-	function getPageTitle(){
+	function getPageTitle() : string{
 		return 'SystemMessages';
 	}
 	function canDelete(){
-		return UserAccount::userHasPermission('Administer All System Messages');
+		return UserAccount::userHasPermission(['Administer All System Messages','Administer Library System Messages']);
 	}
-	function getAllObjects(){
-		$systemMessage = new SystemMessage();
-		$systemMessage->orderBy('title');
+	function getAllObjects($page, $recordsPerPage) : array{
+		$object = new SystemMessage();
+		$object->orderBy($this->getSort());
+		$this->applyFilters($object);
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
+		$userHasExistingMessages = true;
 		if (!UserAccount::userHasPermission('Administer All System Messages')){
 			$librarySystemMessage = new SystemMessageLibrary();
 			$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
@@ -32,30 +35,40 @@ class Admin_SystemMessages extends ObjectEditor
 				while ($librarySystemMessage->fetch()){
 					$systemMessagesForLibrary[] = $librarySystemMessage->systemMessageId;
 				}
-				$systemMessage->whereAddIn('id', $systemMessagesForLibrary, false);
+				if (count($systemMessagesForLibrary) > 0) {
+					$object->whereAddIn('id', $systemMessagesForLibrary, false);
+				}else{
+					$userHasExistingMessages = false;
+				}
 			}
 		}
-		$systemMessage->find();
 		$list = array();
-		while ($systemMessage->fetch()){
-			$list[$systemMessage->id] = clone $systemMessage;
+		if ($userHasExistingMessages) {
+			$object->find();
+			while ($object->fetch()) {
+				$list[$object->id] = clone $object;
+			}
 		}
 		return $list;
 	}
-	function getObjectStructure(){
+	function getDefaultSort() : string
+	{
+		return 'title asc';
+	}
+	function getObjectStructure() : array{
 		return SystemMessage::getObjectStructure();
 	}
-	function getPrimaryKeyColumn(){
+	function getPrimaryKeyColumn() : string{
 		return 'id';
 	}
-	function getIdKeyColumn(){
+	function getIdKeyColumn() : string{
 		return 'id';
 	}
-	function getInstructions()
+	function getInstructions() : string
 	{
 		return '';
 	}
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
@@ -64,12 +77,12 @@ class Admin_SystemMessages extends ObjectEditor
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return 'local_enrichment';
 	}
 
-	function canView()
+	function canView() : bool
 	{
 		return UserAccount::userHasPermission(['Administer All System Messages','Administer Library System Messages']);
 	}

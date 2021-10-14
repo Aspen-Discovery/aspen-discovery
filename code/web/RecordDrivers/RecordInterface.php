@@ -52,30 +52,35 @@ abstract class RecordInterface
 		return $configArray['Site']['url'] . '/' . $this->getModule() . '/' . $recordId;
 	}
 
+	protected $_linkUrl = null;
 	public function getLinkUrl($absolutePath = false)
 	{
-		global $interface;
-		if ($absolutePath) {
-			$linkUrl = $this->getAbsoluteUrl();
-		} else {
-			$linkUrl = $this->getRecordUrl();
+		if ($this->_linkUrl == null){
+			global $interface;
+			$this->_linkUrl = $this->getRecordUrl();
+
+			$extraParams = array();
+			if ($interface != null && strlen($interface->get_template_vars('searchId')) > 0) {
+				$extraParams[] = 'searchId=' . $interface->get_template_vars('searchId');
+				$extraParams[] = 'recordIndex=' . $interface->get_template_vars('recordIndex');
+				$extraParams[] = 'page=' . $interface->get_template_vars('page');
+				$extraParams[] = 'searchSource=' . $interface->get_template_vars('searchSource');
+			}
+
+			if (count($extraParams) > 0) {
+				$this->_linkUrl .= '?' . implode('&', $extraParams);
+			}
 		}
 
-		$extraParams = array();
-		if ($interface != null && strlen($interface->get_template_vars('searchId')) > 0) {
-			$extraParams[] = 'searchId=' . $interface->get_template_vars('searchId');
-			$extraParams[] = 'recordIndex=' . $interface->get_template_vars('recordIndex');
-			$extraParams[] = 'page=' . $interface->get_template_vars('page');
-			$extraParams[] = 'searchSource=' . $interface->get_template_vars('searchSource');
+		if ($absolutePath){
+			global $configArray;
+			return $configArray['Site']['url'] . $this->_linkUrl;
+		}else{
+			return $this->_linkUrl;
 		}
-
-		if (count($extraParams) > 0) {
-			$linkUrl .= '?' . implode('&', $extraParams);
-		}
-		return $linkUrl;
 	}
 
-	public abstract function getModule();
+	public abstract function getModule() : string;
 
 
 	/**
@@ -95,6 +100,9 @@ abstract class RecordInterface
 	 */
 	public abstract function getTitle();
 
+	public function getSortableTitle(){
+		return $this->getTitle();
+	}
 
 	/**
 	 * Return the unique identifier of this record within the Solr index;
@@ -115,10 +123,21 @@ abstract class RecordInterface
 		global $interface;
 		global $configArray;
 		global $timer;
+		$hasSyndeticsUnbound = false;
+		require_once ROOT_DIR . '/sys/Enrichment/SyndeticsSetting.php';
+		$syndeticsSettings = new SyndeticsSetting();
+		if ($syndeticsSettings->find(true)) {
+			if ($syndeticsSettings->syndeticsUnbound) {
+				$interface->assign('unboundAccountNumber', $syndeticsSettings->unboundAccountNumber);
+				$hasSyndeticsUnbound = true;
+			}
+		}
+		$interface->assign('hasSyndeticsUnbound');
+
 		$moreDetailsOptions = array();
 		$moreDetailsOptions['description'] = array(
 			'label' => 'Description',
-			'body' => '<div id="descriptionPlaceholder">Loading Description...</div>',
+			'body' => '<div id="descriptionPlaceholder">'. translate(['text' => 'Loading Description...', 'isPublicFacing'=>true]) . '</div>',
 			'hideByDefault' => false,
 			'openByDefault' => true
 		);
@@ -130,14 +149,14 @@ abstract class RecordInterface
 			'openByDefault' => true
 		);
 		$timer->logTime('Loaded Series Data');
-		if (!$configArray['Catalog']['showExploreMoreForFullRecords']) {
-			$moreDetailsOptions['moreLikeThis'] = array(
-				'label' => 'More Like This',
-				'body' => $interface->fetch('GroupedWork/moreLikeThis.tpl'),
-				'hideByDefault' => false,
-				'openByDefault' => true
-			);
-		}
+
+		$moreDetailsOptions['moreLikeThis'] = array(
+			'label' => 'More Like This',
+			'body' => $interface->fetch('GroupedWork/moreLikeThis.tpl'),
+			'hideByDefault' => false,
+			'openByDefault' => true
+		);
+
 		$timer->logTime('Loaded More Like This');
 		if ($interface->getVariable('enableProspectorIntegration')) {
 			$moreDetailsOptions['prospector'] = array(
@@ -146,6 +165,14 @@ abstract class RecordInterface
 				'hideByDefault' => false
 			);
 		}
+		if ($hasSyndeticsUnbound) {
+			$moreDetailsOptions['syndeticsUnbound'] = array(
+				'label' => 'Syndetics Unbound',
+				'body' => $interface->fetch('GroupedWork/syndeticsUnbound.tpl'),
+				'hideByDefault' => false
+			);
+		}
+
 		$moreDetailsOptions['tableOfContents'] = array(
 			'label' => 'Table of Contents',
 			'body' => $interface->fetch('GroupedWork/tableOfContents.tpl'),
@@ -180,28 +207,27 @@ abstract class RecordInterface
 					'body' => '<div id="goodReadsPlaceHolder">Loading GoodReads Reviews.</div>'
 				);
 			}
-			if (!$configArray['Catalog']['showExploreMoreForFullRecords']) {
-				if ($interface->getVariable('showSimilarTitles')) {
-					$moreDetailsOptions['similarTitles'] = array(
-						'label' => 'Similar Titles From NoveList',
-						'body' => '<div id="novelistTitlesPlaceholder"></div>',
-						'hideByDefault' => true
-					);
-				}
-				if ($interface->getVariable('showSimilarAuthors')) {
-					$moreDetailsOptions['similarAuthors'] = array(
-						'label' => 'Similar Authors From NoveList',
-						'body' => '<div id="novelistAuthorsPlaceholder"></div>',
-						'hideByDefault' => true
-					);
-				}
-				if ($interface->getVariable('showSimilarTitles')) {
-					$moreDetailsOptions['similarSeries'] = array(
-						'label' => 'Similar Series From NoveList',
-						'body' => '<div id="novelistSeriesPlaceholder"></div>',
-						'hideByDefault' => true
-					);
-				}
+
+			if ($interface->getVariable('showSimilarTitles')) {
+				$moreDetailsOptions['similarTitles'] = array(
+					'label' => 'Similar Titles From NoveList',
+					'body' => '<div id="novelistTitlesPlaceholder"></div>',
+					'hideByDefault' => true
+				);
+			}
+			if ($interface->getVariable('showSimilarAuthors')) {
+				$moreDetailsOptions['similarAuthors'] = array(
+					'label' => 'Similar Authors From NoveList',
+					'body' => '<div id="novelistAuthorsPlaceholder"></div>',
+					'hideByDefault' => true
+				);
+			}
+			if ($interface->getVariable('showSimilarTitles')) {
+				$moreDetailsOptions['similarSeries'] = array(
+					'label' => 'Similar Series From NoveList',
+					'body' => '<div id="novelistSeriesPlaceholder"></div>',
+					'hideByDefault' => true
+				);
 			}
 		}
 		//Do the filtering and sorting here so subclasses can use this directly
@@ -223,10 +249,8 @@ abstract class RecordInterface
 				$moreDetailsFilters[$option->source] = $option->collapseByDefault ? 'closed' : 'open';
 			}
 		}
-		/** @noinspection PhpUndefinedFieldInspection */
 		if ($activeLocation && count($activeLocation->getGroupedWorkDisplaySettings()->getMoreDetailsOptions()) > 0) {
 			$useDefault = false;
-			/** @noinspection PhpUndefinedFieldInspection */
 			/** @var LocationMoreDetails $option */
 			foreach ($activeLocation->getGroupedWorkDisplaySettings()->getMoreDetailsOptions() as $option) {
 				$moreDetailsFilters[$option->source] = $option->collapseByDefault ? 'closed' : 'open';
@@ -264,6 +288,7 @@ abstract class RecordInterface
 			'authornotes' => 'Author Notes (Syndetics/ContentCafe)',
 			'subjects' => 'Subjects',
 			'moreDetails' => 'More Details',
+			'syndeticsUnbound' => 'Syndetics Unbound',
 			'similarSeries' => 'Similar Series From NoveList',
 			'similarTitles' => 'Similar Titles From NoveList',
 			'similarAuthors' => 'Similar Authors From NoveList',
@@ -284,6 +309,7 @@ abstract class RecordInterface
 			'formats' => 'open',
 			'copies' => 'open',
 			'moreLikeThis' => 'open',
+			'syndeticsUnbound' => 'open',
 			'otherEditions' => 'closed',
 			'prospector' => 'closed',
 			'links' => 'closed',

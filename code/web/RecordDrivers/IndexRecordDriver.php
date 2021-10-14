@@ -9,7 +9,6 @@ require_once ROOT_DIR . '/RecordDrivers/RecordInterface.php';
  *  - Grouped Works
  *  - People
  *  - Lists
- *  - Islandora Objects
  */
 abstract class IndexRecordDriver extends RecordInterface
 {
@@ -397,5 +396,9 @@ abstract class IndexRecordDriver extends RecordInterface
 		$interface->assign('recordDriver', $this);
 
 		return 'RecordDrivers/Index/combinedResult.tpl';
+	}
+
+	public function getFields(){
+		return $this->fields;
 	}
 }

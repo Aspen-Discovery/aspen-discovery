@@ -15,6 +15,8 @@ class HooplaExtractLogEntry implements BaseLogEntry {
 	private Long logEntryId = null;
 	private Date startTime;
 	private Date endTime;
+	private int numRegrouped = 0;
+	private int numChangedAfterGrouping = 0;
 	private ArrayList<String> notes = new ArrayList<>();
 	private int numProducts = 0;
 	private int numErrors = 0;
@@ -29,16 +31,17 @@ class HooplaExtractLogEntry implements BaseLogEntry {
 		this.startTime = new Date();
 		try {
 			insertLogEntry = dbConn.prepareStatement("INSERT into hoopla_export_log (startTime) VALUES (?)", PreparedStatement.RETURN_GENERATED_KEYS);
-			updateLogEntry = dbConn.prepareStatement("UPDATE hoopla_export_log SET lastUpdate = ?, endTime = ?, notes = ?, numProducts = ?, numErrors = ?, numAdded = ?, numUpdated = ?, numDeleted = ?, numSkipped = ? WHERE id = ?", PreparedStatement.RETURN_GENERATED_KEYS);
+			updateLogEntry = dbConn.prepareStatement("UPDATE hoopla_export_log SET lastUpdate = ?, endTime = ?, notes = ?, numProducts = ?, numErrors = ?, numAdded = ?, numUpdated = ?, numDeleted = ?, numSkipped = ?, numRegrouped =?, numChangedAfterGrouping = ? WHERE id = ?", PreparedStatement.RETURN_GENERATED_KEYS);
 		} catch (SQLException e) {
 			logger.error("Error creating prepared statements to update log", e);
 		}
 		saveResults();
 	}
 
-	private static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
-	public void addNote(String note) {
+	//Synchronized to prevent concurrent modification of the notes ArrayList
+	public synchronized void addNote(String note) {
 		Date date = new Date();
 		this.notes.add(dateFormat.format(date) + " - " + note);
 		saveResults();
@@ -91,6 +94,8 @@ class HooplaExtractLogEntry implements BaseLogEntry {
 				updateLogEntry.setInt(++curCol, numUpdated);
 				updateLogEntry.setInt(++curCol, numDeleted);
 				updateLogEntry.setInt(++curCol, numSkipped);
+				updateLogEntry.setInt(++curCol, numRegrouped);
+				updateLogEntry.setInt(++curCol, numChangedAfterGrouping);
 				updateLogEntry.setLong(++curCol, logEntryId);
 				updateLogEntry.executeUpdate();
 			}
@@ -108,14 +113,14 @@ class HooplaExtractLogEntry implements BaseLogEntry {
 	}
 
 	public void incErrors(String note) {
-		this.addNote(note);
+		this.addNote("ERROR: " + note);
 		numErrors++;
 		this.saveResults();
 		logger.error(note);
 	}
 
 	public void incErrors(String note, Exception e) {
-		this.addNote(note + " " + e.toString());
+		this.addNote("ERROR: " + note + " " + e.toString());
 		numErrors++;
 		this.saveResults();
 		logger.error(note, e);
@@ -147,5 +152,19 @@ class HooplaExtractLogEntry implements BaseLogEntry {
 
 	int getNumChanges() {
 		return numUpdated + numDeleted + numAdded;
+	}
+
+	public void incRecordsRegrouped() {
+		numRegrouped++;
+		if (numRegrouped % 1000 == 0){
+			this.saveResults();
+		}
+	}
+	public void incChangedAfterGrouping(){
+		numChangedAfterGrouping++;
+	}
+
+	public int getNumChangedAfterGrouping() {
+		return numChangedAfterGrouping;
 	}
 }

@@ -44,9 +44,6 @@ class SearchObjectFactory
 	{
 		// Figure out the engine type for the object we're about to construct:
 		switch ($searchSource) {
-			case 'islandora' :
-				$engine = 'Islandora';
-				break;
 			case 'open_archives' :
 				$engine = 'OpenArchives';
 				break;
@@ -103,9 +100,6 @@ class SearchObjectFactory
 
 		// Figure out the engine type for the object we're about to construct:
 		switch ($minSO->ss) {
-			case 'islandora' :
-				$source = 'Islandora';
-				break;
 			case 'open_archives' :
 				$source = 'OpenArchives';
 				break;

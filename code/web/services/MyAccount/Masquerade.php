@@ -30,54 +30,46 @@ class MyAccount_Masquerade extends MyAccount
 		if (!empty($library) && $library->allowMasqueradeMode) {
 			if (!empty($_REQUEST['cardNumber'])) {
 				//$logger->log("Masquerading as " . $_REQUEST['cardNumber'], Logger::LOG_ERROR);
-				$libraryCard = $_REQUEST['cardNumber'];
+				$libraryCard = trim($_REQUEST['cardNumber']);
 				global $guidingUser;
 				if (empty($guidingUser)) {
 					$user = UserAccount::getLoggedInUser();
 					if ($user && $user->canMasquerade()) {
-						$masqueradedUser = new User();
-						//TODO: below, when $masquerade User account is in another ILS and the other ILS has a different $authenticationMethod (ie barcode/pin)
-						if ($user->getAccountProfile()->loginConfiguration == 'barcode_pin') {
-							$masqueradedUser->cat_username = $libraryCard;
-						} else {
-							$masqueradedUser->cat_password = $libraryCard;
-						}
-						if ($masqueradedUser->find(true)) {
-							if ($masqueradedUser->id == $user->id) {
-								return array(
-									'success' => false,
-									'error' => 'No need to masquerade as yourself.'
-								);
+						//Check to see if the user already exists in the database
+						$foundExistingUser = false;
+						$accountProfile = new AccountProfile();
+						$accountProfile->find();
+						$masqueradedUser = null;
+						while ($accountProfile->fetch()){
+							$masqueradedUser = new User();
+							$masqueradedUser->source = $accountProfile->name;
+							if ($accountProfile->loginConfiguration == 'barcode_pin') {
+								$masqueradedUser->cat_username = $libraryCard;
+							} else {
+								$masqueradedUser->cat_password = $libraryCard;
 							}
-							//$logger->log("Found masqueraded user with card " . $libraryCard, Logger::LOG_ERROR);
-						} else {
-							//$logger->log("Testing a different login configuration", Logger::LOG_ERROR);
-							// Check for another ILS with a different login configuration
-							$accountProfile = new AccountProfile();
-							$accountProfile->selectAdd();
-							$accountProfile->selectAdd('loginConfiguration');
-							$accountProfile->groupBy('loginConfiguration');
-							$accountProfile->find();
-							if ($accountProfile->getNumResults() > 1) {
-								// Now that we know there is more than loginConfiguration type, check the opposite column
-								$masqueradedUser = new User();
-								if ($user->getAccountProfile()->loginConfiguration == 'barcode_pin') {
-									$masqueradedUser->cat_password = $libraryCard;
-								} else {
-									$masqueradedUser->cat_username = $libraryCard;
-								}
-								$masqueradedUser->find(true);
-							}
-
-							if ($masqueradedUser->getNumResults() == 0) {
-								// Test for a user that hasn't logged into Aspen Discovery before
-								$masqueradedUser = UserAccount::findNewUser($libraryCard);
-								if (!$masqueradedUser) {
+							if ($masqueradedUser->find(true)) {
+								if ($masqueradedUser->id == $user->id) {
 									return array(
 										'success' => false,
-										'error' => 'Invalid User'
+										'error' => translate(['text'=>'No need to masquerade as yourself.', 'isAdminFacing'=>true])
 									);
 								}
+								$foundExistingUser = true;
+								break;
+							}else{
+								$masqueradedUser = null;
+							}
+						}
+
+						if (!$foundExistingUser) {
+							// Test for a user that hasn't logged into Aspen Discovery before
+							$masqueradedUser = UserAccount::findNewUser($libraryCard);
+							if (!$masqueradedUser) {
+								return array(
+									'success' => false,
+									'error' => translate(['text'=>'Invalid User', 'isAdminFacing'=>true])
+								);
 							}
 						}
 
@@ -99,7 +91,7 @@ class MyAccount_Masquerade extends MyAccount
 								if ($isRestrictedUser) {
 									return array(
 										'success' => false,
-										'error' => 'Cannot masquerade as patrons of this type.'
+										'error' => translate(['text'=>'Cannot masquerade as patrons of this type.', 'isAdminFacing'=>true])
 									);
 								}
 							}elseif (UserAccount::userHasPermission('Masquerade as patrons with same home library') || UserAccount::userHasPermission('Masquerade as unrestricted patrons with same home library')) {
@@ -107,51 +99,51 @@ class MyAccount_Masquerade extends MyAccount
 								if (!$guidingUserLibrary) {
 									return array(
 										'success' => false,
-										'error' => 'Could not determine your home library.'
+										'error' => translate(['text'=>'Could not determine your home library.', 'isAdminFacing'=>true])
 									);
 								}
 								$masqueradedUserLibrary = $masqueradedUser->getHomeLibrary();
 								if (!$masqueradedUserLibrary) {
 									return array(
 										'success' => false,
-										'error' => 'Could not determine the patron\'s home library.'
+										'error' => translate(['text'=>'Could not determine the patron\'s home library.', 'isAdminFacing'=>true])
 									);
 								}
 								if ($guidingUserLibrary->libraryId != $masqueradedUserLibrary->libraryId) {
 									return array(
 										'success' => false,
-										'error' => 'You do not have the same home library as the patron.'
+										'error' => translate(['text'=>'You do not have the same home library as the patron.', 'isAdminFacing'=>true])
 									);
 								}
 								if ($isRestrictedUser && !UserAccount::userHasPermission('Masquerade as patrons with same home library')) {
 									return array(
 										'success' => false,
-										'error' => 'Cannot masquerade as patrons of this type.'
+										'error' => translate(['text'=>'Cannot masquerade as patrons of this type.', 'isAdminFacing'=>true])
 									);
 								}
 							}elseif (UserAccount::userHasPermission('Masquerade as patrons with same home location') || UserAccount::userHasPermission('Masquerade as unrestricted patrons with same home location')) {
 								if (empty($user->homeLocationId)) {
 									return array(
 										'success' => false,
-										'error'   => 'Could not determine your home library branch.'
+										'error'   => translate(['text'=>'Could not determine your home library branch.', 'isAdminFacing'=>true])
 									);
 								}
 								if (empty($masqueradedUser->homeLocationId)) {
 									return array(
 										'success' => false,
-										'error'   => 'Could not determine the patron\'s home library branch.'
+										'error'   => translate(['text'=>'Could not determine the patron\'s home library branch.', 'isAdminFacing'=>true])
 									);
 								}
 								if ($user->homeLocationId != $masqueradedUser->homeLocationId) {
 									return array(
 										'success' => false,
-										'error'   => 'You do not have the same home library branch as the patron.'
+										'error'   => translate(['text'=>'You do not have the same home library branch as the patron.', 'isAdminFacing'=>true])
 									);
 								}
 								if ($isRestrictedUser && !UserAccount::userHasPermission('Masquerade as patrons with same home location')) {
 									return array(
 										'success' => false,
-										'error' => 'Cannot masquerade as patrons of this type.'
+										'error' => translate(['text'=>'Cannot masquerade as patrons of this type.', 'isAdminFacing'=>true])
 									);
 								}
 							}
@@ -161,6 +153,10 @@ class MyAccount_Masquerade extends MyAccount
 							$guidingUser = $user;
 							$user = $masqueradedUser;
 							if (!empty($user) && !($user instanceof AspenError)){
+								if ($user->lastLoginValidation < (time() - 15 * 60)) {
+									$user->updatePatronInfo(true);
+								}
+
 								@session_start(); // (suppress notice if the session is already started)
 								$_SESSION['guidingUserId'] = $guidingUser->id;
 								$_SESSION['activeUserId'] = $user->id;
@@ -170,43 +166,44 @@ class MyAccount_Masquerade extends MyAccount
 								unset($_SESSION['guidingUserId']);
 								return array(
 									'success' => false,
-									'error'   => 'Failed to initiate masquerade as specified user.'
+									'error'   => translate(['text'=>'Failed to initiate masquerade as specified user.', 'isAdminFacing'=>true])
 								);
 							}
 						} else {
 							return array(
 								'success' => false,
-								'error'   => 'Could not load user to masquerade as.'
+								'error'   => translate(['text'=>'Could not load user to masquerade as.', 'isAdminFacing'=>true])
 							);
 						}
 					} else {
 						return array(
 							'success' => false,
-							'error'   => $user ? 'You are not allowed to Masquerade.' : 'Not logged in. Please Log in.'
+							'error'   => $user ? translate(['text'=>'You are not allowed to Masquerade.', 'isAdminFacing'=>true]) : translate(['text'=>'Your session has expired, please sign in again.', 'isAdminFacing'=>true])
 						);
 					}
 				} else {
 					return array(
 						'success' => false,
-						'error'   => 'Already Masquerading.'
+						'error'   => translate(['text'=>'Already Masquerading.', 'isAdminFacing'=>true])
 					);
 				}
 			} else {
 				return array(
 					'success' => false,
-					'error'   => 'Please enter a valid Library Card Number.'
+					'error'   => translate(['text'=>'Please enter a valid Library Card Number.', 'isAdminFacing'=>true])
 				);
 			}
 		} else {
 			return array(
 				'success' => false,
-				'error'   => 'Masquerade Mode is not allowed.'
+				'error'   => translate(['text'=>'Masquerade Mode is not allowed.', 'isAdminFacing'=>true])
 			);
 		}
 	}
 
 	static function endMasquerade() {
 		if (UserAccount::isLoggedIn()) {
+			/** @var User $guidingUser */
 			global $guidingUser;
 			global $masqueradeMode;
 			@session_start();  // (suppress notice if the session is already started)
@@ -226,7 +223,7 @@ class MyAccount_Masquerade extends MyAccount
 		return array('success' => false);
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'My Account');

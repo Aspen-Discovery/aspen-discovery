@@ -9,6 +9,7 @@ var AspenDiscovery = (function(){
 		AspenDiscovery.initializeModalDialogs();
 		AspenDiscovery.setupFieldSetToggles();
 		AspenDiscovery.initCarousels();
+		AspenDiscovery.toggleMenu();
 
 		$("#modalDialog").modal({show:false});
 		$('[data-toggle="tooltip"]').tooltip();
@@ -23,11 +24,7 @@ var AspenDiscovery = (function(){
 
 		$(window).on("popstate", function () {
 			// if the state is the page you expect, pull the name and load it.
-			if (history.state && history.state.page === "MapExhibit") {
-				AspenDiscovery.Archive.handleMapClick(history.state.marker, history.state.exhibitPid, history.state.placePid, history.state.label, false, history.state.showTimeline);
-			}else if (history.state && history.state.page === "Book") {
-				AspenDiscovery.Archive.handleBookClick(history.state.bookPid, history.state.pagePid, history.state.viewer);
-			}else if (history.state && history.state.page === "Checkouts") {
+			if (history.state && history.state.page === "Checkouts") {
 				var selector1 = '#checkoutsTab a[href="#' + history.state.source + '"]';
 				$(selecto1r).tab('show');
 			}else if (history.state && history.state.page === "Holds") {
@@ -53,6 +50,9 @@ var AspenDiscovery = (function(){
 
 		changePageSize: function(){
 			var url = window.location.href;
+			if (url.match(/[&?]page=\d+/)) {
+				url = url.replace(/page=\d+/, "page=1");
+			}
 			if (url.match(/[&?]pageSize=\d+/)) {
 				url = url.replace(/pageSize=\d+/, "pageSize=" + $("#pageSize").val());
 			} else {
@@ -63,6 +63,36 @@ var AspenDiscovery = (function(){
 				}
 			}
 			window.location.href = url;
+		},
+
+		changePage: function(){
+			var url = window.location.href;
+			if (url.match(/[&?]page=\d+/)) {
+				url = url.replace(/page=\d+/, "page=" + $("#page").val());
+			} else {
+				if (url.indexOf("?", 0) > 0){
+					url = url+ "&page=" + $("#page").val();
+				}else{
+					url = url+ "?page=" + $("#page").val();
+				}
+			}
+			window.location.href = url;
+			return false;
+		},
+
+		changeSort: function(){
+			var url = window.location.href;
+			if (url.match(/[&?]sort=([A-Za-z_]|%20)+/)) {
+				url = url.replace(/sort=([A-Za-z_]|%20)+/, "sort=" + $("#sort").val());
+			} else {
+				if (url.indexOf("?", 0) > 0){
+					url = url+ "&sort=" + $("#sort").val();
+				}else{
+					url = url+ "?sort=" + $("#sort").val();
+				}
+			}
+			window.location.href = url;
+			return false;
 		},
 
 		closeLightbox: function(callback){
@@ -240,6 +270,16 @@ var AspenDiscovery = (function(){
 			}
 			return selectedTitles;
 		},
+		getSelectedLists: function(){
+			var selectedLists = $("input.listSelect:checked ").map(function() {
+				return $(this).attr('name') + "=" + $(this).val();
+			}).get().join("&");
+			if (selectedLists.length === 0){
+				var ret = confirm('No lists selected');
+			}
+			return selectedLists;
+		},
+
 
 		pwdToText: function(fieldId){
 			var elem = document.getElementById(fieldId);
@@ -303,16 +343,19 @@ var AspenDiscovery = (function(){
 			$(".modal-body").html(body);
 			$('.modal-buttons').html('');
 			var modalDialog = $("#modalDialog");
-			modalDialog.removeClass('image-popup')
+			modalDialog.removeClass('image-popup');
 			modalDialog.modal('show');
 			if (autoClose) {
 				setTimeout(function(){
-					if (refreshAfterClose) location.reload(true);
-					else AspenDiscovery.closeLightbox();
+					if (refreshAfterClose) {
+						window.location = window.location;
+					} else {
+						AspenDiscovery.closeLightbox();
+					}
 				}, autoClose > 1 ? autoClose : 3000);
 			}else if (refreshAfterClose) {
 				modalDialog.on('hide.bs.modal', function(){
-					location.reload(true)
+					window.location = window.location;
 				})
 			}
 		},
@@ -326,12 +369,12 @@ var AspenDiscovery = (function(){
 
 		// common loading message for lightbox while waiting for AJAX processes to complete.
 		loadingMessage: function() {
-			AspenDiscovery.showMessage('Loading', 'Loading, please wait.')
+			AspenDiscovery.showMessage(Globals.loadingTitle, Globals.loadingBody)
 		},
 
 		// common message for when an AJAX call has failed.
 		ajaxFail: function() {
-			if (!Globals.LeavingPage) AspenDiscovery.showMessage('Request Failed', 'There was an error with this AJAX Request.');
+			if (!Globals.LeavingPage) AspenDiscovery.showMessage(Globals.requestFailedTitle, Globals.requestFailedBody);
 		},
 
 		showElementInPopup: function(title, elementId, buttonsElementId){
@@ -488,29 +531,54 @@ var AspenDiscovery = (function(){
 						$("#term_" + termId ).hide();
 						AspenDiscovery.closeLightbox();
 					} else {
-						AspenDiscovery.showMessage("Error", data.message);
+						AspenDiscovery.showMessage(data.title, data.message);
 					}
 				}
 			).fail(AspenDiscovery.ajaxFail);
 			return false;
 		},
 		toggleMenu: function() {
-			var headerMenu = $('#header-menu');
-			var menuButton = $('#menuToggleButton');
-			var menuButtonIcon = $('#menuToggleButton > i');
-			if (headerMenu.is(':visible')){
-				this.closeMenu();
-			}else{
-				this.closeAccountMenu();
-				$('.dropdownMenu').slideUp('slow');
-				var menuButtonPosition = menuButton.position();
-				headerMenu.css('left', menuButtonPosition.left + menuButton.outerWidth() - headerMenu.outerWidth() + 5);
-				headerMenu.css('top', menuButtonPosition.top + menuButton.outerHeight());
-				menuButton.addClass('selected');
-				headerMenu.slideDown('slow');
-				menuButtonIcon.removeClass('fa-bars');
-				menuButtonIcon.addClass('fa-times');
-			}
+			// fixed bootstrap account-menu toggle
+			$('div.dropdown.menuToggleButton.accountMenu a').on('click', function (event) {
+				$(this).parent().toggleClass('open');
+			});
+			$('div.dropdown.menuToggleButton.accountMenu').on('keyup', function (event) {
+				$(this).addClass('open');
+			});
+			$(document).on('click', function (e) {
+				var $trigger = $("div.dropdown.menuToggleButton.accountMenu");
+				if($trigger !== event.target && !$trigger.has(event.target).length){
+					$('div.dropdown.menuToggleButton.accountMenu').removeClass('open');
+				}
+			});
+			$(document).on('keyup', function (e) {
+				var $trigger = $("div.dropdown.menuToggleButton.accountMenu");
+				if($trigger !== event.target && !$trigger.has(event.target).length){
+					$('div.dropdown.menuToggleButton.accountMenu').removeClass('open');
+				}
+			});
+			// fixed bootstrap header-menu toggle
+			$('div.dropdown.menuToggleButton.headerMenu a').on('click', function (event) {
+				$(this).parent().toggleClass('open');
+			});
+
+			$('div.dropdown.menuToggleButton.headerMenu').on('keyup', function (event) {
+				$(this).addClass('open');
+			});
+
+			$(document).on('click', function (e) {
+				var $trigger = $("div.dropdown.menuToggleButton.headerMenu");
+				if($trigger !== event.target && !$trigger.has(event.target).length){
+					$('div.dropdown.menuToggleButton.headerMenu').removeClass('open');
+				}
+			});
+
+			$(document).on('keyup', function (e) {
+				var $trigger = $("div.dropdown.menuToggleButton.headerMenu");
+				if($trigger !== event.target && !$trigger.has(event.target).length){
+					$('div.dropdown.menuToggleButton.headerMenu').removeClass('open');
+				}
+			});
 			return false;
 		},
 		closeMenu: function(){
@@ -534,46 +602,20 @@ var AspenDiscovery = (function(){
 				menuSectionHeaderIcon.removeClass('fa-caret-right');
 				menuSectionHeaderIcon.addClass('fa-caret-down');
 			}
-			return false;
-		},
-		toggleAccountMenu: function() {
-			var accountMenu = $('#account-menu');
-			var accountMenuButton = $('#accountMenuToggleButton');
-			if (accountMenu.is(':visible')){
-				this.closeAccountMenu();
-			}else{
-				this.closeMenu();
-				$('.dropdownMenu').slideUp('slow');
-				var accountMenuButtonPosition = accountMenuButton.position();
-				accountMenu.css('left', accountMenuButtonPosition.left + accountMenuButton.outerWidth() - accountMenu.outerWidth() + 4);
-				accountMenu.css('top', accountMenuButtonPosition.top + accountMenuButton.outerHeight());
-				accountMenuButton.addClass('selected');
-				accountMenu.slideDown('slow');
-			}
-			return false;
-		},
-		closeAccountMenu: function(){
-			var accountMenu = $('#account-menu');
-			var accountMenuButton = $('#accountMenuToggleButton');
-			accountMenu.slideUp('slow');
-			accountMenuButton.removeClass('selected');
-		},
-		showCustomMenu: function (menuName) {
-			this.closeMenu();
-			this.closeAccountMenu();
-			var customMenu = $('#' + menuName + '-menu');
-			if (customMenu.is(':visible')){
-				customMenu.slideUp('slow');
-			}else{
-				$('.dropdownMenu').slideUp('slow');
-				var customMenuTrigger = $('#' + menuName + '-menu-trigger')
-				var customMenuTriggerPosition = customMenuTrigger.position();
-				customMenu.css('left', customMenuTriggerPosition.left);
-				customMenu.css('top', customMenuTriggerPosition.top + customMenuTrigger.outerHeight());
-				customMenu.slideDown('slow');
-			}
 
 			return false;
+		},
+		showCustomMenu: function (menuName) {
+			// fixed bootstrap custom menu toggles
+			$('div.dropdown.menuToggleButton.' + menuName + 'Menu a').on('click', function (event) {
+				$(this).parent().toggleClass('open');
+			});
+			$(document).on('click', function (e) {
+				var trigger = $('div.dropdown.menuToggleButton.' + menuName + 'Menu');
+				if(trigger !== event.target && !trigger.has(event.target).length){
+					$('div.dropdown.menuToggleButton.' + menuName + 'Menu').removeClass('open');
+				}
+			});
 		},
 		formatCurrency: function(currencyValue, elementToUpdate){
 			var url = Globals.path + "/AJAX/JSON";
@@ -591,6 +633,9 @@ var AspenDiscovery = (function(){
 				}
 			).fail(AspenDiscovery.ajaxFail);
 			return false;
+		},
+		resetSearchBox: function() {
+			document.getElementById("lookfor").value = "";
 		}
 	}
 
@@ -608,49 +653,6 @@ jQuery.validator.addMethod("multiemail", function (value, element) {
 	}
 	return valid;
 }, "Invalid email format: please use a comma to separate multiple email addresses.");
-
-/**
- *  Modified from above code, for Aspen Discovery self registration form.
- *
- * Return true, if the value is a valid date, also making this formal check mm-dd-yyyy.
- *
- * @example jQuery.validator.methods.date("01-01-1900")
- * @result true
- *
- * @example jQuery.validator.methods.date("01-13-1990")
- * @result false
- *
- * @example jQuery.validator.methods.date("01.01.1900")
- * @result false
- *
- * @example <input name="pippo" class="{dateAspen:true}" />
- * @desc Declares an optional input element whose value must be a valid date.
- *
- * @name jQuery.validator.methods.dateAspen
- * @type Boolean
- * @cat Plugins/Validate/Methods
- */
-jQuery.validator.addMethod(
-	"dateAspen",
-	function(value, element) {
-		var check = false;
-		var re = /^\d{1,2}(-)\d{1,2}(-)\d{4}$/;
-		if( re.test(value)){
-			var adata = value.split('-');
-			var mm = parseInt(adata[0],10);
-			var dd = parseInt(adata[1],10);
-			var aaaa = parseInt(adata[2],10);
-			var xdata = new Date(aaaa,mm-1,dd);
-			if ( ( xdata.getFullYear() == aaaa ) && ( xdata.getMonth () == mm - 1 ) && ( xdata.getDate() == dd ) )
-				check = true;
-			else
-				check = false;
-		} else
-			check = false;
-		return this.optional(element) || check;
-	},
-	"Please enter a correct date"
-);
 
 $.validator.addMethod('repeat', function(value, element){
 	if(element.id.lastIndexOf('Repeat') === element.id.length - 6) {

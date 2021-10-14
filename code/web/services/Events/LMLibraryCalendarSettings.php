@@ -10,7 +10,7 @@ class Events_LMLibraryCalendarSettings extends ObjectEditor
 	/**
 	 * The class name of the object which is being edited
 	 */
-	function getObjectType()
+	function getObjectType() : string
 	{
 		return 'LMLibraryCalendarSetting';
 	}
@@ -18,12 +18,12 @@ class Events_LMLibraryCalendarSettings extends ObjectEditor
 	/**
 	 * The page name of the tool (typically the plural of the object)
 	 */
-	function getToolName()
+	function getToolName() : string
 	{
 		return 'LMLibraryCalendarSettings';
 	}
 
-	function getModule()
+	function getModule() : string
 	{
 		return 'Events';
 	}
@@ -31,7 +31,7 @@ class Events_LMLibraryCalendarSettings extends ObjectEditor
 	/**
 	 * The title of the page to be displayed
 	 */
-	function getPageTitle()
+	function getPageTitle() : string
 	{
 		return 'Library Market - Library Calendar Settings';
 	}
@@ -39,9 +39,12 @@ class Events_LMLibraryCalendarSettings extends ObjectEditor
 	/**
 	 * Load all objects into an array keyed by the primary key
 	 */
-	function getAllObjects()
+	function getAllObjects($page, $recordsPerPage) : array
 	{
 		$object = new LMLibraryCalendarSetting();
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
+		$this->applyFilters($object);
+		$object->orderBy($this->getSort());
 		$object->find();
 		$objectList = array();
 		while ($object->fetch()) {
@@ -49,12 +52,16 @@ class Events_LMLibraryCalendarSettings extends ObjectEditor
 		}
 		return $objectList;
 	}
+	function getDefaultSort() : string
+	{
+		return 'id asc';
+	}
 
 	/**
 	 * Define the properties which are editable for the object
 	 * as well as how they should be treated while editing, and a description for the property
 	 */
-	function getObjectStructure()
+	function getObjectStructure() : array
 	{
 		return LMLibraryCalendarSetting::getObjectStructure();
 	}
@@ -62,7 +69,7 @@ class Events_LMLibraryCalendarSettings extends ObjectEditor
 	/**
 	 * The name of the column which defines this as unique
 	 */
-	function getPrimaryKeyColumn()
+	function getPrimaryKeyColumn() : string
 	{
 		return 'id';
 	}
@@ -70,12 +77,12 @@ class Events_LMLibraryCalendarSettings extends ObjectEditor
 	/**
 	 * The id of the column which serves to join other columns
 	 */
-	function getIdKeyColumn()
+	function getIdKeyColumn() : string
 	{
 		return 'id';
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
@@ -84,12 +91,12 @@ class Events_LMLibraryCalendarSettings extends ObjectEditor
 		return $breadcrumbs;
 	}
 
-	function canView()
+	function canView() : bool
 	{
 		return UserAccount::userHasPermission('Administer Library Calendar Settings');
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return 'events';
 	}

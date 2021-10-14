@@ -10,19 +10,12 @@ abstract class AbstractDriver
 		return false;
 	}
 
-	public function getReadingHistory(
-		/** @noinspection PhpUnusedParameterInspection */ $user,
-		/** @noinspection PhpUnusedParameterInspection */ $page = 1,
-		/** @noinspection PhpUnusedParameterInspection */ $recordsPerPage = -1,
-		/** @noinspection PhpUnusedParameterInspection */ $sortOption = "checkedOut")
+	public function getReadingHistory(User $patron, $page = 1, $recordsPerPage = -1, $sortOption = "checkedOut")
 	{
 		return array('historyActive' => false, 'titles' => array(), 'numTitles' => 0);
 	}
 
-	public function doReadingHistoryAction(
-		/** @noinspection PhpUnusedParameterInspection */ $user,
-		/** @noinspection PhpUnusedParameterInspection */ $action,
-		/** @noinspection PhpUnusedParameterInspection */ $selectedTitles)
+	public function doReadingHistoryAction(User $patron, $action, $selectedTitles)
 	{
 		return;
 	}
@@ -33,11 +26,11 @@ abstract class AbstractDriver
 	 * This is responsible for retrieving all checkouts (i.e. checked out items)
 	 * by a specific patron.
 	 *
-	 * @param User $user The user to load transactions for
-	 * @return array        Array of the patron's transactions on success
+	 * @param User $patron The user to load transactions for
+	 * @return Checkout[]        Array of the patron's transactions on success
 	 * @access public
 	 */
-	public abstract function getCheckouts(User $user);
+	public abstract function getCheckouts(User $patron);
 
 	/**
 	 * @return boolean true if the driver can renew all titles in a single pass
@@ -50,7 +43,7 @@ abstract class AbstractDriver
 	 * @param $patron  User
 	 * @return mixed
 	 */
-	public abstract function renewAll($patron);
+	public abstract function renewAll(User $patron);
 
 	/**
 	 * Renew a single title currently checked out to the user
@@ -61,7 +54,7 @@ abstract class AbstractDriver
 	 * @param $itemIndex  string
 	 * @return mixed
 	 */
-	abstract function renewCheckout($patron, $recordId, $itemId = null, $itemIndex = null);
+	abstract function renewCheckout(User $patron, $recordId, $itemId = null, $itemIndex = null);
 
 	public function hasHolds()
 	{
@@ -73,12 +66,12 @@ abstract class AbstractDriver
 	 *
 	 * This is responsible for retrieving all holds for a specific patron.
 	 *
-	 * @param User $user The user to load transactions for
+	 * @param User $patron The user to load transactions for
 	 *
 	 * @return array        Array of the patron's holds
 	 * @access public
 	 */
-	public abstract function getHolds($user);
+	public abstract function getHolds(User $patron);
 
 	/**
 	 * Place Hold
@@ -93,7 +86,7 @@ abstract class AbstractDriver
 	 *                                If an error occurs, return a AspenError
 	 * @access  public
 	 */
-	abstract function placeHold($patron, $recordId, $pickupBranch = null, $cancelDate = null);
+	abstract function placeHold(User $patron, $recordId, $pickupBranch = null, $cancelDate = null);
 
 	/**
 	 * Cancels a hold for a patron
@@ -103,5 +96,6 @@ abstract class AbstractDriver
 	 * @param string $cancelId Information about the hold to be cancelled
 	 * @return  array
 	 */
-	abstract function cancelHold($patron, $recordId, $cancelId = null);
+	abstract function cancelHold(User $patron, $recordId, $cancelId = null);
+
 }

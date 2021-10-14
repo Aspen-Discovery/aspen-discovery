@@ -62,14 +62,16 @@ class ViewPDF extends Action
 			$interface->assign('pdfPath', $configArray['Site']['url'] . '/Files/' . $fileId . '/Contents');
 			$this->display('pdfViewer.tpl', $this->title, '');
 		}else{
-			$this->display('invalidRecord.tpl', 'Invalid Record', '');
+			$this->display('invalidRecord.tpl', 'Invalid File', '');
 		}
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
-		$breadcrumbs[] = new Breadcrumb($this->recordDriver->getRecordUrl(), $this->recordDriver->getTitle(), false);
+		if ($this->recordDriver != null) {
+			$breadcrumbs[] = new Breadcrumb($this->recordDriver->getRecordUrl(), $this->recordDriver->getTitle(), false);
+		}
 		$breadcrumbs[] = new Breadcrumb('', $this->title, false);
 		return $breadcrumbs;
 	}

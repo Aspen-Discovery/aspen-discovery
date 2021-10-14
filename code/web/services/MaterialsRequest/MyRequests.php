@@ -88,11 +88,11 @@ class MaterialsRequest_MyRequests extends MyAccount
 		$this->display('myMaterialRequests.tpl', 'My Materials Requests');
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'My Account');
-		$breadcrumbs[] = new Breadcrumb('/MaterialsRequest/IlsRequests', 'My Materials Requests');
+		$breadcrumbs[] = new Breadcrumb('/MaterialsRequest/MyRequests', 'My Materials Requests');
 		return $breadcrumbs;
 	}
 }

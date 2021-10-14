@@ -20,14 +20,14 @@ abstract class HorizonAPI3_23 extends HorizonAPI
 	}
 
     /**
-     * @param User $user
+     * @param User $patron
      * @param string $oldPin
      * @param string $newPin
      * @return string[] a message to the user letting them know what happened
      */
-	function updatePin(User $user, string $oldPin, string $newPin){
+	function updatePin(User $patron, string $oldPin, string $newPin){
 		//Log the user in
-		list($userValid, $sessionToken) = $this->loginViaWebService($user->cat_username, $user->cat_password);
+		list($userValid, $sessionToken) = $this->loginViaWebService($patron->cat_username, $patron->cat_password);
 		if (!$userValid){
 			return ['success' => false, 'message' => 'Sorry, it does not look like you are logged in currently.  Please login and try again'];
 		}
@@ -48,8 +48,8 @@ abstract class HorizonAPI3_23 extends HorizonAPI
 			return ['success' => false, 'message' => 'Sorry, we encountered an error while attempting to update your pin. Please contact your local library.'];
 		} elseif (!empty($updatePinResponse['sessionToken'])){
 			// Success response isn't particularly clear, but returning the session Token seems to indicate the pin updated. plb 8-15-2016
-			$user->cat_password = $newPin;
-			$user->update();
+			$patron->cat_password = $newPin;
+			$patron->update();
 			return ['success' => true, 'message' => "Your pin number was updated successfully."];
 		}else{
 			return ['success' => false, 'message' => "Sorry, we could not update your pin number. Please try again later."];

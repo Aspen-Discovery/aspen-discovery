@@ -1,37 +1,37 @@
 {strip}
 <div id="main-content" class="col-md-12">
-	<h1>{translate text="Translations"}</h1>
+	<h1>{translate text="Translations" isAdminFacing=true}</h1>
 	<form class="form" id="translationSettings">
 		<div class="form-group">
 			{if $translationModeActive}
-				<button class="btn btn-primary" type="submit" name="stopTranslationMode">{translate text="Exit Translation Mode"}</button>
+				<button class="btn btn-primary" type="submit" name="stopTranslationMode">{translate text="Exit Translation Mode" isAdminFacing=true}</button>
 			{else}
-				<button class="btn btn-primary" type="submit" name="startTranslationMode">{translate text="Start Translation Mode"}</button>
+				<button class="btn btn-primary" type="submit" name="startTranslationMode">{translate text="Start Translation Mode" isAdminFacing=true}</button>
 			{/if}
 
-			<button class="btn btn-primary" type="submit" name="exportAllTranslations">{translate text="Export All Translations"}</button>
+			<button class="btn btn-primary" type="submit" name="exportAllTranslations">{translate text="Export All Translations" isAdminFacing=true}</button>
 			{if $activeLanguage->id != 1}
-				<button class="btn btn-primary" type="submit" name="exportForBulkTranslation">{translate text="Export For Bulk Translation"}</button>
+				<button class="btn btn-primary" type="submit" name="exportForBulkTranslation">{translate text="Export For Bulk Translation" isAdminFacing=true}</button>
 			{/if}
-			<a class="btn btn-primary" id="importTranslations" href="/Translation/ImportTranslations">{translate text="Import Translations"}</a>
+			<a class="btn btn-primary" id="importTranslations" href="/Translation/ImportTranslations">{translate text="Import Translations" isAdminFacing=true}</a>
 			{if $activeLanguage->id != 1}
-				<a class="btn btn-primary" id="importBulkTranslations" href="/Translation/ImportBulkTranslations">{translate text="Import Bulk Translations"}</a>
+				<a class="btn btn-primary" id="importBulkTranslations" href="/Translation/ImportBulkTranslations">{translate text="Import Bulk Translations" isAdminFacing=true}</a>
 			{/if}
 		</div>
 		<div class="form-group">
 			<input type="checkbox" name="showAllTranslations" id="showAllTranslations" {if $showAllTranslations}checked{/if}>
-			<label for="showAllTranslations">{translate text="Show All Translations"}</label>
+			<label for="showAllTranslations">{translate text="Show All Translations" isAdminFacing=true}</label>
 		</div>
 		<div class="form-group">
-			<label class="control-label" for="filterTerm">{translate text="Show Terms containing"}</label>
+			<label class="control-label" for="filterTerm">{translate text="Show Terms containing" isAdminFacing=true}</label>
 			<input class="form-control" type="text" name="filterTerm" id="filterTerm" value="{$filterTerm}">
 		</div>
 		<div class="form-group">
-			<label class="control-label" for="filterTranslation">{translate text="Show Translations containing"}</label>
+			<label class="control-label" for="filterTranslation">{translate text="Show Translations containing" isAdminFacing=true}</label>
 			<input class="form-control" type="text" name="filterTranslation" id="filterTranslation" value="{$filterTranslation}">
 		</div>
 		<div class="form-group">
-			<button class="btn btn-primary" type="submit">{translate text="Update Filters"}</button>
+			<button class="btn btn-primary" type="submit">{translate text="Update Filters" isAdminFacing=true}</button>
 		</div>
 	</form>
 
@@ -61,10 +61,10 @@
 				</div>
 			</div>
 		{foreachelse}
-			<div class="alert alert-success">{translate text="all_translations_done" defaultText="Congratulations, you have successfully translated everything!"}</div>
+			<div class="alert alert-success">{translate text="Congratulations, you have successfully translated everything!" isAdminFacing=true}</div>
 		{/foreach}
 		<div class="form-group">
-			<button type="submit" name="submit" class="btn btn-primary">{translate text="Save Translations"}</button>
+			<button type="submit" name="submit" class="btn btn-primary">{translate text="Save Translations" isAdminFacing=true}</button>
 		</div>
 	</form>
 

@@ -91,9 +91,9 @@ public class TranslationMap {
 
 	public void addValue(String value, String translation) {
 		if (usesRegularExpressions){
-			translationValuePatterns.put(Pattern.compile(value, Pattern.CASE_INSENSITIVE), translation);
+			translationValuePatterns.put(Pattern.compile(value.trim(), Pattern.CASE_INSENSITIVE), translation);
 		}else{
-			translationValues.put(value.toLowerCase(), translation);
+			translationValues.put(value.trim().toLowerCase(), translation);
 		}
 	}
 

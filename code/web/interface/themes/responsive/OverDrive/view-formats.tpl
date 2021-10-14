@@ -19,33 +19,16 @@
 			</div>
 		</div>
 
-		<div class="eContentHoldingNotes">
-				{if $overDriveFormat->size != 0 && strcasecmp($overDriveFormat->size, 'unknown') != 0}
-				Size: {$overDriveFormat->fileSize|file_size}<br/>
-				{/if}
-		</div>
-		<div class="eContentHoldingActions">
-			{if $overDriveFormat->sampleUrl_1}
-				<a href="{$overDriveFormat->sampleUrl_1}" class="btn btn-sm btn-default">{translate text="Sample"}{if $overDriveFormat->sampleName_1}: {$overDriveFormat->sampleName_1}{/if}</a>
-				&nbsp;
-			{/if}
-			{if $overDriveFormat->sampleUrl_2}
-				<a href="{$overDriveFormat->sampleUrl_2}" class="btn btn-sm btn-default">{translate text="Sample"}{if $overDriveFormat->sampleName_2}: {$overDriveFormat->sampleName_2}{/if}</a>
-				&nbsp;
-			{/if}
-			{* Options for the user to view online or download *}
-			{foreach from=$overDriveFormat->links item=link}
-				<a href="{if $link.url}{$link.url}{else}#{/if}" {if $link.onclick}onclick="{$link.onclick}"{/if} class="btn btn-sm btn-primary">{$link.text}</a>
-			{/foreach}
-		</div>
+		{if $overDriveFormat->size != 0 && strcasecmp($overDriveFormat->size, 'unknown') != 0}
+			<div class="eContentHoldingNotes">
+				{translate text="Size %1%" 1=$overDriveFormat->fileSize|file_size isPublicFacing=true}
+			</div>
+		{/if}
+
 	</div>
 	{/foreach}
-	<div id="formatHelp">
-		Need Help?<br />
-		{include file='OverDrive/overdrive-help.tpl'}
-	</div>
 {else}
-	No Copies Found
+	{translate text="No Copies Found" isPublicFacing=true}
 {/if}
 
 {/strip}

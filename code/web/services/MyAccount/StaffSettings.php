@@ -45,7 +45,7 @@ class MyAccount_StaffSettings extends MyAccount
 		$this->display('staffSettings.tpl', 'Staff Settings');
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'My Account');

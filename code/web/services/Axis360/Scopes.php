@@ -6,21 +6,23 @@ require_once ROOT_DIR . '/sys/Axis360/Axis360Scope.php';
 
 class Axis360_Scopes extends ObjectEditor
 {
-	function getObjectType(){
+	function getObjectType() : string{
 		return 'Axis360Scope';
 	}
-	function getToolName(){
+	function getToolName() : string{
 		return 'Scopes';
 	}
-	function getModule(){
+	function getModule() : string{
 		return 'Axis360';
 	}
-	function getPageTitle(){
+	function getPageTitle() : string{
 		return 'Axis 360 Scopes';
 	}
-	function getAllObjects(){
+	function getAllObjects($page, $recordsPerPage) : array{
 		$object = new Axis360Scope();
-		$object->orderBy('name');
+		$object->orderBy($this->getSort());
+		$this->applyFilters($object);
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		$objectList = array();
 		while ($object->fetch()){
@@ -28,24 +30,28 @@ class Axis360_Scopes extends ObjectEditor
 		}
 		return $objectList;
 	}
-	function getObjectStructure(){
+	function getDefaultSort() : string
+	{
+		return 'name asc';
+	}
+	function getObjectStructure() : array {
 		return Axis360Scope::getObjectStructure();
 	}
-	function getPrimaryKeyColumn(){
+	function getPrimaryKeyColumn() : string{
 		return 'id';
 	}
-	function getIdKeyColumn(){
+	function getIdKeyColumn() : string{
 		return 'id';
 	}
-	function getAdditionalObjectActions($existingObject){
+	function getAdditionalObjectActions($existingObject) : array{
 		return [];
 	}
 
-	function getInstructions(){
+	function getInstructions() : string{
 		return '';
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
@@ -57,12 +63,12 @@ class Axis360_Scopes extends ObjectEditor
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return 'axis360';
 	}
 
-	function canView()
+	function canView() : bool
 	{
 		return UserAccount::userHasPermission('Administer Axis 360');
 	}

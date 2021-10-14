@@ -343,6 +343,26 @@ AspenDiscovery.OverDrive = (function(){
 					$("#staffViewPlaceHolder").replaceWith(data.staffView);
 				}
 			});
-		}
+		},
+
+		showPreview: function (overdriveId, formatId, sampleNumber) {
+			var url = Globals.path + "/OverDrive/" + overdriveId + "/AJAX?method=getPreview&formatId=" + formatId + "&sampleNumber=" + sampleNumber;
+			$.getJSON(url, function (data){
+				if (data.success){
+					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+				}else{
+					AspenDiscovery.showMessage('Error', data.message);
+				}
+			});
+		},
+
+		getLargeCover: function (id){
+			var url = Globals.path + '/OverDrive/' + id + '/AJAX?method=getLargeCover';
+			$.getJSON(url, function (data){
+					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+				}
+			);
+			return false;
+		},
 	}
 }(AspenDiscovery.OverDrive || {}));

@@ -604,10 +604,14 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
 			$list[$field]['hasApplied'] = false;
 			// Loop through values:
 			foreach ($data as $facet) {
+				//Don't include empty settings since they don't work properly with Solr
+				if (strlen(trim($facet[0])) == 0){
+					continue;
+				}
 				// Initialize the array of data about the current facet:
 				$currentSettings = array();
 				$currentSettings['value'] = $facet[0];
-				$currentSettings['display'] = $translate ? translate($facet[0]) : $facet[0];
+				$currentSettings['display'] = $translate ? translate(['text'=>$facet[0],'isPublicFacing'=>true, 'isMetadata'=>true]) : $facet[0];
 				$currentSettings['count'] = $facet[1];
 				$currentSettings['isApplied'] = false;
 				$currentSettings['url'] = $this->renderLinkWithFilter($field, $facet[0]);
@@ -724,7 +728,7 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
 
 		if (count($this->filterList) > 0) {
 			// TODO : better display of filters
-			$interface->assign('lookfor', $lookfor . " (" . translate('with filters') . ")");
+			$interface->assign('lookfor', $lookfor . " (" . translate(['text' => 'with filters', 'isPublicFacing'=>true]) . ")");
 		} else {
 			$interface->assign('lookfor', $lookfor);
 		}

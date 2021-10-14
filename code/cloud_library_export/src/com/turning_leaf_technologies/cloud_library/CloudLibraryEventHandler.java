@@ -12,8 +12,9 @@ import java.sql.SQLException;
 import java.util.zip.CRC32;
 
 class CloudLibraryEventHandler extends DefaultHandler {
-	private static PreparedStatement updateCloudLibraryAvailabilityStmt;
-	private static PreparedStatement getExistingCloudLibraryAvailabilityStmt;
+	private CloudLibraryExporter exporter;
+	private PreparedStatement updateCloudLibraryAvailabilityStmt;
+	private PreparedStatement getExistingCloudLibraryAvailabilityStmt;
 
 	private final boolean doFullReload;
 	private final RecordGroupingProcessor recordGroupingProcessor;
@@ -27,7 +28,8 @@ class CloudLibraryEventHandler extends DefaultHandler {
 
 	private static CRC32 checksumCalculator = new CRC32();
 
-	CloudLibraryEventHandler(boolean doFullReload, Long startTimeForLogging, Connection aspenConn, RecordGroupingProcessor recordGroupingProcessor, GroupedWorkIndexer groupedWorkIndexer, CloudLibraryExtractLogEntry logEntry, Logger logger) {
+	CloudLibraryEventHandler(CloudLibraryExporter exporter, boolean doFullReload, Long startTimeForLogging, Connection aspenConn, RecordGroupingProcessor recordGroupingProcessor, GroupedWorkIndexer groupedWorkIndexer, CloudLibraryExtractLogEntry logEntry, Logger logger) {
+		this.exporter = exporter;
 		this.recordGroupingProcessor = recordGroupingProcessor;
 		this.indexer = groupedWorkIndexer;
 		this.logEntry = logEntry;
@@ -36,11 +38,11 @@ class CloudLibraryEventHandler extends DefaultHandler {
 		this.startTimeForLogging = startTimeForLogging;
 
 		try {
-			getExistingCloudLibraryAvailabilityStmt = aspenConn.prepareStatement("SELECT id, rawChecksum from cloud_library_availability WHERE cloudLibraryId = ?");
+			getExistingCloudLibraryAvailabilityStmt = aspenConn.prepareStatement("SELECT id, rawChecksum from cloud_library_availability WHERE cloudLibraryId = ? and settingId = " + exporter.getSettingsId());
 			updateCloudLibraryAvailabilityStmt = aspenConn.prepareStatement(
 					"INSERT INTO cloud_library_availability " +
-							"(cloudLibraryId, totalCopies, sharedCopies, totalLoanCopies, totalHoldCopies, sharedLoanCopies, rawChecksum, rawResponse, lastChange) " +
-							"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) " +
+							"(cloudLibraryId, settingId, totalCopies, sharedCopies, totalLoanCopies, totalHoldCopies, sharedLoanCopies, rawChecksum, rawResponse, lastChange) " +
+							"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) " +
 							"ON DUPLICATE KEY UPDATE totalCopies = VALUES(totalCopies), sharedCopies = VALUES(sharedCopies), " +
 							"totalLoanCopies = VALUES(totalLoanCopies), totalHoldCopies = VALUES(totalHoldCopies), sharedLoanCopies = VALUES(sharedLoanCopies), " +
 							"rawChecksum = VALUES(rawChecksum), rawResponse = VALUES(rawResponse), lastChange = VALUES(lastChange)");
@@ -64,7 +66,7 @@ class CloudLibraryEventHandler extends DefaultHandler {
 
 	private void updateAvailabilityForTitle(String cloudLibraryId) {
 		//Get availability for the title
-		CloudLibraryAvailability availability = CloudLibraryExportMain.loadAvailabilityForRecord(cloudLibraryId);
+		CloudLibraryAvailability availability = exporter.loadAvailabilityForRecord(cloudLibraryId);
 		if (availability == null) {
 			logEntry.addNote("Did not load availability for id " + cloudLibraryId);
 			return;
@@ -100,14 +102,15 @@ class CloudLibraryEventHandler extends DefaultHandler {
 			try {
 				logEntry.incAvailabilityChanges();
 				updateCloudLibraryAvailabilityStmt.setString(1, cloudLibraryId);
-				updateCloudLibraryAvailabilityStmt.setLong(2, availability.getTotalCopies());
-				updateCloudLibraryAvailabilityStmt.setLong(3, availability.getSharedCopies());
-				updateCloudLibraryAvailabilityStmt.setLong(4, availability.getTotalLoanCopies());
-				updateCloudLibraryAvailabilityStmt.setLong(5, availability.getTotalHoldCopies());
-				updateCloudLibraryAvailabilityStmt.setLong(6, availability.getSharedLoanCopies());
-				updateCloudLibraryAvailabilityStmt.setLong(7, availabilityChecksum);
-				updateCloudLibraryAvailabilityStmt.setString(8, rawAvailabilityResponse);
-				updateCloudLibraryAvailabilityStmt.setLong(9, startTimeForLogging);
+				updateCloudLibraryAvailabilityStmt.setLong(2, exporter.getSettingsId());
+				updateCloudLibraryAvailabilityStmt.setLong(3, availability.getTotalCopies());
+				updateCloudLibraryAvailabilityStmt.setLong(4, availability.getSharedCopies());
+				updateCloudLibraryAvailabilityStmt.setLong(5, availability.getTotalLoanCopies());
+				updateCloudLibraryAvailabilityStmt.setLong(6, availability.getTotalHoldCopies());
+				updateCloudLibraryAvailabilityStmt.setLong(7, availability.getSharedLoanCopies());
+				updateCloudLibraryAvailabilityStmt.setLong(8, availabilityChecksum);
+				updateCloudLibraryAvailabilityStmt.setString(9, rawAvailabilityResponse);
+				updateCloudLibraryAvailabilityStmt.setLong(10, startTimeForLogging);
 				updateCloudLibraryAvailabilityStmt.executeUpdate();
 			} catch (SQLException e) {
 				logEntry.incErrors("Error saving availability", e);

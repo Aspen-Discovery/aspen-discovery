@@ -10,15 +10,26 @@ AspenDiscovery.Record = (function(){
 				}
 				$.getJSON(url, function(data){
 					document.body.style.cursor = "default";
-					if (data.holdFormBypassed){
-						if (data.success){
-							AspenDiscovery.showMessage('Hold Placed Successfully', data.message, false, false);
-							AspenDiscovery.Account.loadMenuData();
-						}else{
-							AspenDiscovery.showMessage('Hold Failed', data.message, false, false);
+					if (data.holdFormBypassed) {
+						if (data.success) {
+							if (data.needsItemLevelHold){
+								AspenDiscovery.showMessageWithButtons(data.title, data.message, data.modalButtons);
+							}else {
+								AspenDiscovery.showMessage(data.title, data.message, false, false);
+								AspenDiscovery.Account.loadMenuData();
+							}
+						}else if (data.confirmationNeeded){
+							AspenDiscovery.showMessageWithButtons(data.title, data.message, data.modalButtons);
+						} else {
+							AspenDiscovery.showMessage(data.title, data.message, false, false);
+						}
+					}else {
+						if (data.success) {
+							AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+						} else {
+							AspenDiscovery.showMessage(data.title, data.message);
 						}
 					}
-					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
 				}).fail(AspenDiscovery.ajaxFail);
 			}else{
 				AspenDiscovery.Account.ajaxLogin(null, function(){
@@ -43,44 +54,26 @@ AspenDiscovery.Record = (function(){
 				}, false);
 			}
 			return false;
-
 		},
 
-		showBookMaterial: function(module, id){
+		showPlaceHoldVolumes: function (module, source, id) {
 			if (Globals.loggedIn){
-				AspenDiscovery.loadingMessage();
-				//var source; // source not used for booking at this time
-				if (id.indexOf(":") > 0){
-					var idParts = id.split(":", 2);
-					//source = idParts[0];
-					id = idParts[1];
-				//}else{
-				//	source = 'ils';
-				}
-				$.getJSON(Globals.path + "/" + module + "/" + id + "/AJAX?method=getBookMaterialForm", function(data){
+				var url = Globals.path + "/" + module + "/" + id + "/AJAX?method=getPlaceHoldVolumesForm&recordSource=" + source;
+				$.getJSON(url, function(data){
 					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
-				}).fail(AspenDiscovery.ajaxFail)
+				}).fail(AspenDiscovery.ajaxFail);
 			}else{
 				AspenDiscovery.Account.ajaxLogin(null, function(){
-					AspenDiscovery.Record.showBookMaterial(id);
-				}, false)
+					AspenDiscovery.Record.showPlaceHoldVolumes(module, source, id);
+				}, false);
 			}
 			return false;
 		},
 
-		submitBookMaterialForm: function(){
-			var params = $('#bookMaterialForm').serialize();
-			var module = $('#module').val();
-			AspenDiscovery.showMessage('Scheduling', 'Processing, please wait.');
-			$.getJSON(Globals.path + "/" + module +"/AJAX", params+'&method=bookMaterial', function(data){
-				if (data.modalBody) AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
-					// For errors that can be fixed by the user, the form will be re-displayed
-				if (data.success) AspenDiscovery.showMessage('Success', data.message/*, true*/);
-				else if (data.message) AspenDiscovery.showMessage('Error', data.message);
-			}).fail(AspenDiscovery.ajaxFail);
-		},
-
 		submitHoldForm: function(){
+			$('#requestTitleButton').prop('disabled', true);
+			$('#requestTitleButton').addClass('disabled');
+			document.querySelector('.fa-spinner').classList.remove('hidden');
 			var id = $('#id').val();
 			var autoLogOut = $('#autologout').prop('checked');
 			var selectedItem = $('#selectedItem');
@@ -123,13 +116,85 @@ AspenDiscovery.Record = (function(){
 					if (data.needsItemLevelHold){
 						$('.modal-body').html(data.message);
 					}else{
-						AspenDiscovery.showMessage('Hold Placed Successfully', data.message, false, autoLogOut);
+						AspenDiscovery.showMessage(data.title, data.message, false, data.autologout);
+						if (!data.autologout){
+							AspenDiscovery.Account.loadMenuData();
+						}
+					}
+				}else if (data.confirmationNeeded){
+					AspenDiscovery.showMessageWithButtons(data.title, data.message, data.modalButtons);
+				}else{
+					AspenDiscovery.showMessage(data.title, data.message, false, false);
+				}
+			}).fail(AspenDiscovery.ajaxFail);
+		},
+
+		placeVolumeHold: function(){
+			var id = $('#id').val();
+			var autoLogOut = $('#autologout').prop('checked');
+			var module = $('#module').val();
+			var volume = $('#selectedVolume');
+			var params = {
+				'method': 'placeHold',
+				pickupBranch: $('#pickupBranch').val(),
+				selectedUser: $('#user').val(),
+				cancelDate: $('#cancelDate').val(),
+				recordSource: $('#recordSource').val(),
+				account: $('#account').val(),
+				rememberHoldPickupLocation: $('#rememberHoldPickupLocation').prop('checked')
+			};
+			if (autoLogOut){
+				params['autologout'] = true;
+			}
+			if (volume.length > 0){
+				params['volume'] = volume.val();
+			}
+			if (params['pickupBranch'] === 'undefined'){
+				alert("Please select a location to pick up your hold when it is ready.");
+				return false;
+			}
+			var holdType = $('#holdType');
+			if (holdType.length > 0){
+				params['holdType'] = holdType.val();
+			}else{
+				if ($('#holdTypeBib').is(':checked')){
+					params['holdType'] = 'bib';
+				}else{
+					params['holdType'] = 'volume';
+				}
+			}
+			$.getJSON(Globals.path + "/" + module +  "/" + id + "/AJAX", params, function(data){
+				if (data.success){
+					if (data.needsItemLevelHold){
+						$('.modal-body').html(data.message);
+					}else{
+						AspenDiscovery.showMessage(data.title, data.message, false, autoLogOut);
 						AspenDiscovery.Account.loadMenuData();
 					}
 				}else{
-					AspenDiscovery.showMessage('Hold Failed', data.message, false, autoLogOut);
+					AspenDiscovery.showMessage(data.title, data.message, false, autoLogOut);
 				}
 			}).fail(AspenDiscovery.ajaxFail);
+		},
+
+		confirmHold: function (module, bibId, confirmationId) {
+			var params = {
+				'method': 'confirmHold',
+				confirmationId: confirmationId
+			};
+			$.getJSON(Globals.path + "/" + module +  "/" + bibId + "/AJAX", params, function(data){
+				if (data.success){
+					if (data.needsItemLevelHold){
+						$('.modal-body').html(data.message);
+					}else{
+						AspenDiscovery.showMessage(data.title, data.message, false);
+						AspenDiscovery.Account.loadMenuData();
+					}
+				}else{
+					AspenDiscovery.showMessage(data.title, data.message, false);
+				}
+			}).fail(AspenDiscovery.ajaxFail);
+			return false;
 		},
 
 		moreContributors: function(){

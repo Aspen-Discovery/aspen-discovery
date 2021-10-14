@@ -11,17 +11,48 @@ class Lists extends MyAccount
 		$userLists = new UserList();
 		$userLists->user_id = UserAccount::getActiveUserId();
 		$userLists->deleted = "0";
-		$userLists->orderBy('title');
+		if (isset($_REQUEST['sort'])) {
+			$sort = $_REQUEST['sort'];
+		} else {
+			$sort = 'title';
+		}
+		if (($sort == 'dateCreated') || ($sort == 'created') || ($sort == 'dateUpdated')) {
+			$order = ' DESC';
+		} else {
+			$order = ' ASC';
+		}
+
+		$page = isset($_REQUEST['page']) ? $_REQUEST['page'] : 1;
+		$interface->assign('page', $page);
+
+		$listsPerPage = 20;
+		$interface->assign('curPage', $page);
+		$userLists->orderBy($sort . $order);
+		$userLists->limit(($page - 1) * $listsPerPage, $listsPerPage);
+		$listCount = $userLists->count();
 		$userLists->find();
 		$lists = [];
 		while ($userLists->fetch()){
 			$lists[] = clone $userLists;
 		}
 		$interface->assign('lists', $lists);
-		$this->display('../MyAccount/lists.tpl', translate('My Lists'));
+		$interface->assign('sortedBy', $sort);
+
+		$options = array(
+			'totalItems' => $listCount,
+			'fileName' => '/MyAccount/MyLists?page=%d',
+			'perPage' => $listsPerPage,
+			'showCovers' => isset($_REQUEST['showCovers'])
+		);
+		$pager = new Pager($options);
+
+			$interface->assign('pageLinks', $pager->getLinks());
+
+		$this->display('../MyAccount/lists.tpl', 'My Lists');
+
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'My Account');

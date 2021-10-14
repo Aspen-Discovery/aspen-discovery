@@ -5,7 +5,7 @@
 		{assign var=propValue value=$object->$propName}
 		{assign var=objectId value=$object->getPrimaryKeyValue()}
 	{else}
-		{if !empty($property.default)}
+		{if isset($property.default)}
 			{assign var=propValue value=$property.default}
 		{else}
 			{assign var=propValue value=""}
@@ -16,21 +16,29 @@
 {/if}
 {strip}
 {if ((!isset($property.storeDb) || $property.storeDb == true) && !($property.type == 'oneToManyAssociation' || $property.type == 'hidden' || $property.type == 'method'))}
-	<div class="form-group" id="propertyRow{$propName}">
+	<div {if $addFormGroupToProperty !== false}class="form-group"{/if} id="propertyRow{$propName}">
 		{* Output the label *}
 		{if $property.type == 'enum'}
-			<label for='{$propName}Select'{if $property.description} title="{$property.description}"{/if}>{$property.label|translate} {if $property.required}({translate text="required"}){/if}</label>
+			<label for='{$propName}Select'{if $property.description} title="{translate text=$property.description isAdminFacing=true inAttribute=true}"{/if}>{translate text=$property.label isAdminFacing=true} {if $property.required && $objectAction != 'edit'}({translate text="required" isAdminFacing=true}){/if}</label>
 		{elseif $property.type == 'oneToMany' && !empty($property.helpLink)}
 			<div class="row">
 				<div class="col-xs-11">
-					<label for='{$propName}'{if $property.description} title="{$property.description}"{/if}>{$property.label|translate}</label>
+				{if $property.renderAsHeading == true}
+					<h2>{translate text=$property.label isAdminFacing=true}</h2>
+				{else}
+					<label for='{$propName}'{if $property.description} title="{translate text=$property.description isAdminFacing=true inAttribute=true}"{/if}>{translate text=$property.label isAdminFacing=true}</label>
+				{/if}
 				</div>
 				<div class="col-xs-1">
 					<a href="{$property.helpLink}" target="_blank"><img src="/interface/themes/responsive/images/help.png" alt="Help"></a>
 				</div>
 			</div>
 		{elseif $property.type != 'section' && $property.type != 'checkbox' && $property.type != 'hidden'}
-			<label for='{$propName}'{if $property.description} title="{$property.description}"{/if}>{$property.label|translate} {if $property.required}({translate text="required"}){/if}</label>
+			{if $property.renderAsHeading == true}
+				<h2>{translate text=$property.label isAdminFacing=true}</h2>
+			{else}
+				<label for='{$propName}'{if $property.description} title="{$property.description}"{/if}>{translate text=$property.label isAdminFacing=true} {if $property.required && $objectAction != 'edit'}({translate text="required" isAdminFacing=true}){/if}</label>
+			{/if}
 		{/if}
 		{if !empty($property.showDescription)}
 			<div class='propertyDescription'><em>{$property.description}</em></div>
@@ -41,7 +49,7 @@
 				<div class="row">
 					<div class="col-xs-12">
 						{if !empty($property.label)}
-							<h2>{$property.label|translate}</h2>
+							<h2>{translate text=$property.label isAdminFacing=true}</h2>
 						{/if}
 
 						{foreach from=$property.properties item=property}
@@ -55,7 +63,7 @@
 						<div class="panel-heading row">
 							<div class="panel-title col-xs-11">
 								<a data-toggle="collapse" data-parent="#accordion_{$property.label|escapeCSS}" href="#accordion_body_{$property.label|escapeCSS}">
-									{$property.label|translate}
+									{translate text=$property.label isAdminFacing=true}
 								</a>
 							</div>
 							{if $property.helpLink}
@@ -87,13 +95,13 @@
 				</div>
 			</div>
         {elseif $property.type == 'text' || $property.type == 'regularExpression' || $property.type == 'folder'}
-			<input type='text' name='{$propName}' id='{$propName}' value='{$propValue|escape}' {if !empty($property.accessibleLabel)}aria-label="{$property.accessibleLabel}"{/if} {if $property.maxLength}maxlength='{$property.maxLength}'{/if} {if !empty($property.size)}size='{$property.size}'{/if} class='form-control {if $property.required}required{/if}' {if !empty($property.readOnly)}readonly{/if}>
+			<input type='text' name='{$propName}' id='{$propName}' value='{$propValue|escape}' {if !empty($property.accessibleLabel)}aria-label="{$property.accessibleLabel}"{/if} {if $property.maxLength}maxlength='{$property.maxLength}'{/if} {if !empty($property.size)}size='{$property.size}'{/if} class='form-control {if $property.required && $objectAction != 'edit'}required{/if}' {if !empty($property.readOnly)}readonly{/if}>
 		{elseif $property.type == 'integer'}
-			<input type='number' name='{$propName}' id='{$propName}' value='{$propValue|escape}' {if !empty($property.accessibleLabel)}aria-label="{$property.accessibleLabel}"{/if} {if $property.max}max="{$property.max}"{/if} {if $property.min}min="{$property.min}"{/if} {if $property.maxLength}maxlength='{$property.maxLength}'{/if} {if !empty($property.size)}size='{$property.size}'{/if} class='form-control {if $property.required}required{/if}' {if !empty($property.readOnly)}readonly{/if}>
+			<input type='number' name='{$propName}' id='{$propName}' value='{$propValue|escape}' {if !empty($property.accessibleLabel)}aria-label="{$property.accessibleLabel}"{/if} {if $property.max}max="{$property.max}"{/if} {if $property.min}min="{$property.min}"{/if} {if $property.maxLength}maxlength='{$property.maxLength}'{/if} {if !empty($property.size)}size='{$property.size}'{/if} class='form-control {if $property.required && $objectAction != 'edit'}required{/if}' {if !empty($property.readOnly)}readonly{/if}>
 		{elseif $property.type == 'timestamp'}
 			<div class="row">
 				<div class="col-sm-4">
-					<input name='{$propName}' id='{$propName}' value='{if !empty($propValue)}{$propValue|date_format:"%Y-%m-%d %H:%M"}{/if}' {if !empty($property.accessibleLabel)}aria-label="{$property.accessibleLabel}"{/if} {if $property.max}max="{$property.max}"{/if} {if $property.min}min="{$property.min}"{/if} {if $property.maxLength}maxlength='{$property.maxLength}'{/if} {if !empty($property.size)}size='{$property.size}'{/if} class='form-control {if $property.required}required{/if}' {if !empty($property.readOnly)}readonly{/if}>
+					<input name='{$propName}' id='{$propName}' value='{if !empty($propValue)}{$propValue|date_format:"%Y-%m-%d %H:%M"}{/if}' {if !empty($property.accessibleLabel)}aria-label="{$property.accessibleLabel}"{/if} {if $property.max}max="{$property.max}"{/if} {if $property.min}min="{$property.min}"{/if} {if $property.maxLength}maxlength='{$property.maxLength}'{/if} {if !empty($property.size)}size='{$property.size}'{/if} class='form-control {if $property.required && $objectAction != 'edit'}required{/if}' {if !empty($property.readOnly)}readonly{/if}>
 				</div>
 				<script type="text/javascript">
 					$(document).ready(function(){ldelim}
@@ -102,13 +110,13 @@
 				</script>
 			</div>
 		{elseif $property.type == 'url'}
-			<input type='text' name='{$propName}' id='{$propName}' value='{$propValue|escape}' {if !empty($property.accessibleLabel)}aria-label="{$property.accessibleLabel}"{/if} {if $property.maxLength}maxlength='{$property.maxLength}'{/if} {if !empty($property.size)}size='{$property.size}'{/if} class='form-control url {if $property.required}required{/if}' {if !empty($property.readOnly)}readonly{/if}>
+			<input type='text' name='{$propName}' id='{$propName}' value='{$propValue|escape}' {if !empty($property.accessibleLabel)}aria-label="{$property.accessibleLabel}"{/if} {if $property.maxLength}maxlength='{$property.maxLength}'{/if} {if !empty($property.size)}size='{$property.size}'{/if} class='form-control url {if $property.required && $objectAction != 'edit'}required{/if}' {if !empty($property.readOnly)}readonly{/if}>
 		{elseif $property.type == 'email'}
-			<input type='text' name='{$propName}' id='{$propName}' value='{$propValue|escape}' {if !empty($property.accessibleLabel)}aria-label="{$property.accessibleLabel}"{/if} {if $property.maxLength}maxlength='{$property.maxLength}'{/if} {if !empty($property.size)}size='{$property.size}'{/if} class='form-control email {if $property.required}required{/if}' {if !empty($property.readOnly)}readonly{/if}>
+			<input type='text' name='{$propName}' id='{$propName}' value='{$propValue|escape}' {if !empty($property.accessibleLabel)}aria-label="{$property.accessibleLabel}"{/if} {if $property.maxLength}maxlength='{$property.maxLength}'{/if} {if !empty($property.size)}size='{$property.size}'{/if} class='form-control email {if $property.required && $objectAction != 'edit'}required{/if}' {if !empty($property.readOnly)}readonly{/if}>
 		{elseif $property.type == 'color'}
 			<div class="row">
 				<div class="col-tn-3">
-					<input type='color' name='{$propName}' id='{$propName}' value='{$propValue|escape}'  aria-label='{$property.label} color picker' class='form-control{if $property.required}required{/if}' size="7" maxlength="7" onchange="$('#{$propName}Hex').val(this.value);$('#{$propName}-default').prop('checked',false);{if !empty($property.checkContrastWith)}AspenDiscovery.Admin.checkContrast('{$propName}', '{$property.checkContrastWith}');{/if}" {if !empty($property.readOnly)}readonly{/if}>
+					<input type='color' name='{$propName}' id='{$propName}' value='{$propValue|escape}'  aria-label='{$property.label} color picker' class='form-control{if $property.required && $objectAction != 'edit'}required{/if}' size="7" maxlength="7" onchange="$('#{$propName}Hex').val(this.value);$('#{$propName}-default').prop('checked',false);{if !empty($property.checkContrastWith)}AspenDiscovery.Admin.checkContrast('{$propName}', '{$property.checkContrastWith}');{/if}" {if !empty($property.readOnly)}readonly{/if}>
 				</div>
 				<div class="col-tn-3">
 					<input type='text' id='{$propName}Hex' value='{$propValue|escape}' aria-label='{$property.label} hex code' class='form-control' size="7" maxlength="7" onchange="$('#{$propName}').val(this.value);$('#{$propName}-default').prop('checked',false);{if !empty($property.checkContrastWith)}AspenDiscovery.Admin.checkContrast('{$propName}', '{$property.checkContrastWith}');{/if}" pattern="^#([a-fA-F0-9]{ldelim}6{rdelim})$" {if !empty($property.readOnly)}readonly{/if}>
@@ -121,11 +129,11 @@
 						{assign var=useDefault value=$object->$defaultVariableName}
 					{/if}
 
-					<input type="checkbox" name='{$propName}-default' id='{$propName}-default' {if $useDefault == '1'}checked="checked"{/if} {if !empty($property.readOnly)}readonly{/if}/><label for='{$propName}-default'>Use Default</label>
+					<input type="checkbox" name='{$propName}-default' id='{$propName}-default' {if $useDefault == '1'}checked="checked"{/if} {if !empty($property.readOnly)}readonly{/if}/><label for='{$propName}-default'>{translate text="Use Default" isAdminFacing=true}</label>
 				</div>
 				<div class="col-tn-3">
 					{if !empty($property.checkContrastWith)}
-						&nbsp;{translate text='Contrast Ratio'}&nbsp;<span id="contrast_{$propName}" class="contrast_warning"></span>
+						&nbsp;{translate text='Contrast Ratio' isAdminFacing=true}&nbsp;<span id="contrast_{$propName}" class="contrast_warning"></span>
 						<script type="text/javascript">
 							$(document).ready(function(){ldelim}
 								AspenDiscovery.Admin.checkContrast('{$propName}', '{$property.checkContrastWith}'{if !empty($property.checkContrastOneWay) && $property.checkContrastOneWay==true},true{/if});
@@ -134,10 +142,33 @@
 					{/if}
 				</div>
 			</div>
+			{assign var=fetchDefaultColor value='default|cat:$propName'}
+		{literal}
+			<script type="text/javascript">
+				var setDefaultColor = $('#{/literal}{$propName}{literal}-default');
+				$('#{/literal}{$propName}{literal}-default').on("click", function() {
+
+					if($(this).is(":checked")) {
+						$(this).attr("checked", true);
+						AspenDiscovery.Admin.getDefaultColor('{/literal}{$propName}{literal}','{/literal}{$fetchDefaultColor}{literal}');
+						{/literal}
+						{if !empty($property.checkContrastWith)}AspenDiscovery.Admin.checkContrast('{$propName}', '{$property.checkContrastWith}');{/if}
+						{literal}
+					} else {
+						$(this).attr("checked", false);
+						document.getElementById('{/literal}{$propName}{literal}').value = '{/literal}{$propValue}{literal}';
+						document.getElementById('{/literal}{$propName}{literal}Hex').value = '{/literal}{$propValue}{literal}';
+						{/literal}
+						{if !empty($property.checkContrastWith)}AspenDiscovery.Admin.checkContrast('{$propName}', '{$property.checkContrastWith}');{/if}
+						{literal}
+					}
+				});
+			</script>
+		{/literal}
 		{elseif $property.type == 'font'}
 			<div class="row">
 				<div class="col-sm-4">
-					<select name='{$propName}' id='{$propName}' class='form-control font {if $property.required}required{/if}' {if !empty($property.readOnly)}readonly{/if} onchange="$('#{$propName}-default').prop('checked',false);AspenDiscovery.Admin.loadGoogleFontPreview('{$propName}')">
+					<select name='{$propName}' id='{$propName}' class='form-control font {if $property.required && $objectAction != 'edit'}required{/if}' {if !empty($property.readOnly)}readonly{/if} onchange="$('#{$propName}-default').prop('checked',false);AspenDiscovery.Admin.loadGoogleFontPreview('{$propName}')">
 						{foreach from=$property.validFonts item=fontName}
 							<option value="{$fontName}"{if $propValue == $fontName} selected='selected'{/if}>{$fontName}</option>
 						{/foreach}
@@ -151,7 +182,7 @@
 						{assign var=useDefault value=$object->$defaultVariableName}
 					{/if}
 
-					<input type="checkbox" name='{$propName}-default' id='{$propName}-default' {if $useDefault == '1'}checked="checked"{/if} {if !empty($property.readOnly)}readonly{/if}/><label for='{$propName}-default'>Use Default</label>
+					<input type="checkbox" name='{$propName}-default' id='{$propName}-default' {if $useDefault == '1'}checked="checked"{/if} {if !empty($property.readOnly)}readonly{/if}/><label for='{$propName}-default'>{translate text="Use Default" isAdminFacing=true}</label>
 				</div>
 				<div class="col-sm-5">
 					<div id="{$propName}-sample-text" style="font-family: {$propValue},arial; font-size: {if $property.previewFontSize}{$property.previewFontSize}{else}12px{/if}">
@@ -167,10 +198,28 @@
 		{elseif $property.type == 'uploaded_font'}
 			<div class="row">
 				<div class="col-sm-7">
-					<input type="file" name='{$propName}' id='{$propName}' size="80">
-					{if $propValue}
-						Existing font: {$propValue} <input type='checkbox' name='remove{$propName}' id='remove{$propName}'> <label for="remove{$propName}">Remove</label>
+					<div class="input-group">
+						<label class="input-group-btn">
+							<span class="btn btn-primary">
+								{translate text="Select a font" isAdminFacing=true}&hellip; <input type="file" style="display: none;" name="{$propName}" id="{$propName}">
+							</span>
+						</label>
+						<input type="text" class="form-control" id="importFile-label-{$propName}" readonly value="{$propValue}">
+					</div>
+					{if !empty($propValue)}
+						<div class="input-group">
+							<input type='checkbox' name='remove{$propName}' id='remove{$propName}'> <label for="remove{$propName}">{translate text="Remove"  isAdminFacing=true}</label>
+						</div>
 					{/if}
+					<script type="application/javascript">
+						{literal}
+						$(document).on('change', '#{/literal}{$propName}{literal}:file', function() {
+							var input = $(this);
+							var label = input.val().replace(/\\/g, '/').replace(/.*\//, '');
+							$("#importFile-label-{/literal}{$propName}{literal}").val(label);
+						});
+						{/literal}
+					</script>
 				</div>
 				<div class="col-sm-5">
 					<div id="{$propName}-sample-text" style="font-family: {$propValue},arial; font-size: {if $property.previewFontSize}{$property.previewFontSize}{else}12px{/if}">
@@ -179,13 +228,13 @@
 				</div>
 			</div>
 		{elseif $property.type == 'multiemail'}
-			<input type='text' name='{$propName}' id='{$propName}' value='{$propValue|escape}' {if !empty($property.accessibleLabel)}aria-label="{$property.accessibleLabel}"{/if} {if $property.maxLength}maxlength='{$property.maxLength}'{/if} {if !empty($property.size)}size='{$property.size}'{/if} class='form-control multiemail {if $property.required}required{/if}' {if !empty($property.readOnly)}readonly{/if}>
+			<input type='text' name='{$propName}' id='{$propName}' value='{$propValue|escape}' {if !empty($property.accessibleLabel)}aria-label="{$property.accessibleLabel}"{/if} {if $property.maxLength}maxlength='{$property.maxLength}'{/if} {if !empty($property.size)}size='{$property.size}'{/if} class='form-control multiemail {if $property.required && $objectAction != 'edit'}required{/if}' {if !empty($property.readOnly)}readonly{/if}>
 		{elseif $property.type == 'date'}
-			{*<input type='{$property.type}' name='{$propName}' id='{$propName}' value='{$propValue}' {if $property.maxLength}maxLength='10'{/if}	class='form-control {if $property.required}required{/if} date'>*}
-			{* disable html5 features until consistly implemented *}
-			{*<input type='text' name='{$propName}' id='{$propName}' value='{$propValue}' {if $property.maxLength}maxLength='10'{/if}	class='form-control {if $property.required}required{/if} date'>*}
-			<input type='text' name='{$propName}' id='{$propName}' value='{$propValue}' {if !empty($property.accessibleLabel)}aria-label="{$property.accessibleLabel}"{/if} {if $property.maxLength}maxLength='10'{/if}	class='form-control {if $property.required}required{/if} dateAspen' {if !empty($property.readOnly)}readonly{/if}>
-			{* dateAspen is for the form validator *}
+			{*<input type='{$property.type}' name='{$propName}' id='{$propName}' value='{$propValue}' {if $property.maxLength}maxLength='10'{/if}	class='form-control {if $property.required && $objectAction != 'edit'}required{/if} date'>*}
+			{* disable html5 features until consistly implemented *
+			{*<input type='text' name='{$propName}' id='{$propName}' value='{$propValue}' {if $property.maxLength}maxLength='10'{/if}	class='form-control {if $property.required && $objectAction != 'edit'}required{/if} date'>*}
+			{*<input type='text' name='{$propName}' id='{$propName}' value='{$propValue}' {if !empty($property.accessibleLabel)}aria-label="{$property.accessibleLabel}"{/if} {if $property.maxLength}maxLength='10'{/if}	class='form-control {if $property.required && $objectAction != 'edit'}required{/if} dateAspen' {if !empty($property.readOnly)}readonly{/if}>*}
+			<input type="date" name='{$propName}' id='{$propName}' value='{$propValue|date_format:"%Y-%m-%d"}'	class='form-control' {if $property.required && $objectAction != 'edit'}required{/if}>
 		{elseif $property.type == 'partialDate'}
 			{include file="DataObjectUtil/partialDate.tpl"}
 
@@ -196,7 +245,7 @@
 			{include file="DataObjectUtil/password.tpl"}
 
 		{elseif $property.type == 'pin'}
-			<input type='password' name='{$propName}' id='{$propName}' value='{$propValue|escape}' {if $property.maxLength}maxlength='{$property.maxLength}'{/if} {if !empty($property.size)}size='{$property.size}'{/if} class='form-control digits {if $property.required}required{/if}' {if !empty($property.readOnly)}readonly{/if}>
+			<input type='password' name='{$propName}' id='{$propName}' value='{$propValue|escape}' {if $property.maxLength}maxlength='{$property.maxLength}'{/if} {if !empty($property.size)}size='{$property.size}'{/if} class='form-control digits {if $property.required && $objectAction != 'edit'}required{/if}' {if !empty($property.readOnly)}readonly{/if}>
 
 
 		{elseif $property.type == 'currency'}
@@ -212,37 +261,61 @@
 			{include file="DataObjectUtil/multiSelect.tpl"}
 
 		{elseif $property.type == 'image' || $property.type == 'file'}
-			{if $propValue}
-				{if $property.type == 'image'}
-					{if $property.thumbWidth}
-						<img src='/files/thumbnail/{$propValue}' style="display: block" alt="Selected Image for {$property.label}">
-						{$propValue} &nbsp;
-					{else}
-
-						{if $property.displayUrl}
-							<img src='{$property.displayUrl}{$object->id}' style="display: block" alt="Selected Image for {$property.label}">
-						{else}
-							<img src='/files/original/{$propValue}' style="display: block" alt="Selected Image for {$property.label}">
-						{/if}
-						{$propValue} &nbsp;
-					{/if}
-					<input type='checkbox' name='remove{$propName}' id='remove{$propName}'> <label for="remove{$propName}">Remove image</label>
-					<br>
+			{if !empty($propValue) && $property.type == 'image'}
+				{if $property.thumbWidth}
+					<img src='/files/thumbnail/{$propValue}' style="display: block" alt="Selected Image for {$property.label}">
 				{else}
-					Existing file: {$propValue}
-					<input type='hidden' name='{$propName}_existing' id='{$propName}_existing' value='{$propValue|escape}'>
-
+					{if $property.displayUrl}
+						<img src='{$property.displayUrl}{$object->id}' style="display: block" alt="Selected Image for {$property.label}">
+					{else}
+						<img src='/files/original/{$propValue}' style="display: block" alt="Selected Image for {$property.label}">
+					{/if}
 				{/if}
 			{/if}
-			{* Display a table of the association with the ability to add and edit new values *}
-			<input type="file" name='{$propName}' id='{$propName}' size="80">
+			<div class="input-group">
+				<label class="input-group-btn">
+					<span class="btn btn-primary">
+						{if $property.type == 'image'}
+							{translate text="Select an image" isAdminFacing=true}&hellip; <input type="file" style="display: none;" name="{$propName}" id="{$propName}" {if $property.required && $objectAction != 'edit'}required="required"{/if}>
+						{else}
+							{translate text="Select a file" isAdminFacing=true}&hellip; <input type="file" style="display: none;" name="{$propName}" id="{$propName}" {if $property.required && $objectAction != 'edit'}required="required"{/if}>
+						{/if}
+					</span>
+				</label>
+				<input type="text" class="form-control" id="importFile-label-{$propName}" readonly value="{$propValue}">
+				<input type='hidden' name='{$propName}_existing' id='{$propName}_existing' value='{$propValue|escape}'>
+			</div>
+			{if !empty($propValue)}
+				<div class="input-group">
+					<input type='checkbox' name='remove{$propName}' id='remove{$propName}'> <label for="remove{$propName}">{translate text="Remove"  isAdminFacing=true}</label>
+				</div>
+			{/if}
+			<script type="application/javascript">
+				{literal}
+				$(document).on('change', '#{/literal}{$propName}{literal}:file', function() {
+					var input = $(this);
+					var label = input.val().replace(/\\/g, '/').replace(/.*\//, '');
+					$("#importFile-label-{/literal}{$propName}{literal}").val(label);
+				});
+				{/literal}
+			</script>
 		{elseif $property.type == 'checkbox'}
 			<div class="checkbox">
 				<label for='{$propName}'{if $property.description} title="{$property.description}"{/if}>
-					<input type='checkbox' name='{$propName}' id='{$propName}' {if ($propValue == 1)}checked='checked'{/if} {if !empty($property.readOnly)}readonly{/if}> {$property.label}
+					<input type='checkbox' name='{$propName}' id='{$propName}' {if ($propValue == 1)}checked='checked'{/if} {if $property.required && $objectAction != 'edit'}required{/if} {if !empty($property.readOnly)}readonly{/if}> {translate text=$property.label isAdminFacing=true}
 				</label>
 			</div>
-
+		{elseif $property.type == 'webBuilderColor'}
+			<section style="display: flex; flex-flow: row wrap; margin-top: 2rem;">
+				{foreach from=$property.colorOptions item=colorOption}
+				<div style="flex: 1; padding: 0.5rem; height: 100px">
+					<input type="radio" id="{$propName}_{$colorOption}" name="{$propName}" value="{$colorOption}" {if ($propValue == $colorOption)}checked{/if}>
+					<label for="{$propName}_{$colorOption}" style="background-color: {if $colorOption == 'primary'}{$primaryBackgroundColor}{elseif $colorOption == 'secondary'}{$secondaryBackgroundColor}{elseif $colorOption == 'tertiary'}{$tertiaryBackgroundColor}{else}inherit{/if}">
+						<span style="font-size: 18px; font-weight: bold; color: inherit; text-transform: capitalize">{$colorOption}</span>
+					</label>
+				</div>
+				{/foreach}
+			</section>
 		{elseif $property.type == 'oneToMany'}
 			{include file="DataObjectUtil/oneToMany.tpl"}
 		{elseif $property.type == 'portalRow'}

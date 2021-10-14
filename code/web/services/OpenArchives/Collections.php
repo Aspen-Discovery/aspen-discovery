@@ -5,23 +5,25 @@ require_once ROOT_DIR . '/services/Admin/Admin.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 require_once ROOT_DIR . '/sys/OpenArchives/OpenArchivesCollection.php';
 class OpenArchives_Collections extends ObjectEditor {
-	function getObjectType(){
+	function getObjectType() : string{
 		return 'OpenArchivesCollection';
 	}
-	function getToolName(){
+	function getToolName() : string{
 		return 'Collections';
 	}
-    function getModule(){
+    function getModule() : string{
         return 'OpenArchives';
     }
-	function getPageTitle(){
+	function getPageTitle() : string{
 		return 'Open Archives collections to include';
 	}
-	function getAllObjects(){
+	function getAllObjects($page, $recordsPerPage) : array{
 		$list = array();
 
 		$object = new OpenArchivesCollection();
-		$object->orderBy('name asc');
+		$object->orderBy($this->getSort());
+		$this->applyFilters($object);
+		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
 		while ($object->fetch()){
 			$list[$object->id] = clone $object;
@@ -29,17 +31,21 @@ class OpenArchives_Collections extends ObjectEditor {
 
 		return $list;
 	}
-	function getObjectStructure(){
+	function getDefaultSort() : string
+	{
+		return 'name asc';
+	}
+	function getObjectStructure() : array{
 		return OpenArchivesCollection::getObjectStructure();
 	}
-	function getPrimaryKeyColumn(){
+	function getPrimaryKeyColumn() : string{
 		return 'id';
 	}
-	function getIdKeyColumn(){
+	function getIdKeyColumn() : string{
 		return 'id';
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
@@ -48,12 +54,12 @@ class OpenArchives_Collections extends ObjectEditor {
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return 'open_archives';
 	}
 
-	function canView()
+	function canView() : bool
 	{
 		return UserAccount::userHasPermission('Administer Open Archives');
 	}

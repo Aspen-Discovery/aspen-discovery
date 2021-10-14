@@ -45,6 +45,7 @@ class Theme extends DataObject
 
 	public $footerLogo;
 	public $footerLogoLink;
+	public $footerLogoAlt;
 	public $footerBackgroundColor;
 	public /** @noinspection PhpUnused */ $footerBackgroundColorDefault;
 	public $footerForegroundColor;
@@ -304,10 +305,10 @@ class Theme extends DataObject
 	private $_libraries;
 	private $_locations;
 
-	static function getObjectStructure()
+	static function getObjectStructure() : array
 	{
-		$libraryList = Library::getLibraryList();
-		$locationList = Location::getLocationList();
+		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Themes'));
+		$locationList = Location::getLocationList(!UserAccount::userHasPermission('Administer All Themes'));
 
 		//Load Valid Fonts
 		$validHeadingFonts = [
@@ -326,6 +327,7 @@ class Theme extends DataObject
 			'PT Sans',
 			'Raleway',
 			'Roboto',
+			'Rubik',
 			'Source Sans Pro',
 			'Ubuntu',
 		];
@@ -348,6 +350,7 @@ class Theme extends DataObject
 			'Roboto',
 			'Roboto Condensed',
 			'Roboto Slab',
+			'Rubik',
 			'Source Sans Pro',
 			'Ubuntu',
 		];
@@ -364,7 +367,7 @@ class Theme extends DataObject
 			'id' => ['property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id', 'uniqueProperty' => true],
 			'themeName' => ['property' => 'themeName', 'type' => 'text', 'label' => 'Theme Name', 'description' => 'The Name of the Theme', 'maxLength' => 50, 'required' => true, 'uniqueProperty' => true],
 			'extendsTheme' => ['property' => 'extendsTheme', 'type' => 'enum', 'values' => $themesToExtend, 'label' => 'Extends Theme', 'description' => 'A theme that this overrides (leave blank if none is overridden)', 'maxLength' => 50, 'required' => false],
-			'logoName' => ['property' => 'logoName', 'type' => 'image', 'label' => 'Logo (500px x 100px max)', 'description' => 'The logo for use in the header', 'required' => false, 'maxWidth' => 500, 'maxHeight' => 100, 'hideInLists' => true],
+			'logoName' => ['property' => 'logoName', 'type' => 'image', 'label' => 'Logo (1170 x 250px max) - (250 x 100px max if showing library name in header)', 'description' => 'The logo for use in the header', 'required' => false, 'thumbWidth' => 750, 'maxWidth' => 1170, 'maxHeight' => 250, 'hideInLists' => true],
 			'favicon' => ['property' => 'favicon', 'type' => 'image', 'label' => 'favicon (32px x 32px max)', 'description' => 'The icon for use in the tab', 'required' => false, 'maxWidth' => 32, 'maxHeight' => 32, 'hideInLists' => true],
 			//Overall page colors
 			'pageBackgroundColor' => ['property' => 'pageBackgroundColor', 'type' => 'color', 'label' => 'Page Background Color', 'description' => 'Page Background Color behind all content', 'required' => false, 'hideInLists' => true, 'default' => '#ffffff', 'serverValidation' => 'validateColorContrast'],
@@ -394,6 +397,8 @@ class Theme extends DataObject
 			'footerForegroundColor' => ['property' => 'footerForegroundColor', 'type' => 'color', 'label' => 'Footer Text Color', 'description' => 'Footer Foreground Color', 'required' => false, 'hideInLists' => true, 'default' => '#303030', 'checkContrastWith'=>'footerBackgroundColor'],
 			'footerImage' => ['property' => 'footerLogo', 'type' => 'image', 'label' => 'Footer Image (250px x 150px max)', 'description' => 'An image to be displayed in the footer', 'required' => false, 'maxWidth' => 250, 'maxHeight' => 150, 'hideInLists' => true],
 			'footerImageLink' => ['property' => 'footerLogoLink', 'type' => 'url', 'label' => 'Footer Image Link', 'description' => 'A link to be added to the footer logo', 'required' => false, 'hideInLists' => true],
+			'footerImageAlt' => ['property' => 'footerLogoAlt', 'type' => 'text', 'label' => 'Footer Image Alternative Text', 'description' => 'The text to be used for screen readers', 'required' => false, 'hideInLists' => true],
+
 			//Primary Color
 			'primaryBackgroundColor' => ['property' => 'primaryBackgroundColor', 'type' => 'color', 'label' => 'Primary Background Color', 'description' => 'Primary Background Color', 'required' => false, 'hideInLists' => true, 'default' => '#0a7589', 'checkContrastWith'=>'primaryForegroundColor'],
 			'primaryForegroundColor' => ['property' => 'primaryForegroundColor', 'type' => 'color', 'label' => 'Primary Text Color', 'description' => 'Primary Foreground Color', 'required' => false, 'hideInLists' => true, 'default' => '#ffffff', 'checkContrastWith'=>'primaryBackgroundColor'],
@@ -460,7 +465,7 @@ class Theme extends DataObject
 				'openPanelBackgroundColor' => ['property' => 'openPanelBackgroundColor', 'type' => 'color', 'label' => 'Open Panel Background Color', 'description' => 'Panel Category Background Color while open', 'required' => false, 'hideInLists' => true, 'default' => '#4DACDE', 'checkContrastWith'=>'openPanelForegroundColor'],
 				'openPanelForegroundColor' => ['property' => 'openPanelForegroundColor', 'type' => 'color', 'label' => 'Open Panel Text Color', 'description' => 'Panel Category Foreground Color while open', 'required' => false, 'hideInLists' => true, 'default' => '#303030', 'checkContrastWith'=>'openPanelBackgroundColor'],
 				'panelBodyBackgroundColor' => ['property' => 'panelBodyBackgroundColor', 'type' => 'color', 'label' => 'Panel Body Background Color', 'description' => 'Panel Body Background Color', 'required' => false, 'hideInLists' => true, 'default' => '#f8f8f8', 'checkContrastWith'=>'panelBodyForegroundColor'],
-				'panelBodyForegroundColor' => ['property' => 'panelBodyForegroundColor', 'type' => 'color', 'label' => 'Open Panel Text Color', 'description' => 'Panel Body Foreground Color', 'required' => false, 'hideInLists' => true, 'default' => '#404040', 'checkContrastWith'=>'panelBodyBackgroundColor'],
+				'panelBodyForegroundColor' => ['property' => 'panelBodyForegroundColor', 'type' => 'color', 'label' => 'Panel Body Text Color', 'description' => 'Panel Body Foreground Color', 'required' => false, 'hideInLists' => true, 'default' => '#404040', 'checkContrastWith'=>'panelBodyBackgroundColor'],
 			]],
 
 			'buttonSection' =>['property'=>'buttonSection', 'type' => 'section', 'label' =>'Buttons', 'hideInLists' => true, 'properties' => [
@@ -545,7 +550,7 @@ class Theme extends DataObject
 					'type' => 'multiSelect',
 					'listStyle' => 'checkboxSimple',
 					'label' => 'Libraries',
-					'description' => 'Define libraries that use this browse category group',
+					'description' => 'Define libraries that use this theme',
 					'values' => $libraryList,
 				],
 
@@ -554,7 +559,7 @@ class Theme extends DataObject
 					'type' => 'multiSelect',
 					'listStyle' => 'checkboxSimple',
 					'label' => 'Locations',
-					'description' => 'Define locations that use this browse category group',
+					'description' => 'Define locations that use this theme',
 					'values' => $locationList,
 				],
 			]]
@@ -914,7 +919,7 @@ class Theme extends DataObject
 		$interface->assign('bodyTextColor', $this->bodyTextColor);
 		$interface->assign('linkColor', $this->linkColor);
 		$interface->assign('linkHoverColor', $this->linkHoverColor);
-		$tableStripeBackgroundColor = ColorUtils::lightenColor($this->bodyBackgroundColor, 1.02);
+		$tableStripeBackgroundColor = ColorUtils::lightenColor($this->bodyBackgroundColor, 0.50);
 		if (ColorUtils::calculateColorContrast($tableStripeBackgroundColor, $this->bodyTextColor) < 4.5 ||
 			ColorUtils::calculateColorContrast($tableStripeBackgroundColor, $this->linkColor) < 4.5 ||
 			ColorUtils::calculateColorContrast($tableStripeBackgroundColor, $this->linkHoverColor) < 4.5){
@@ -1115,16 +1120,7 @@ class Theme extends DataObject
 	public function __get($name)
 	{
 		if ($name == "libraries") {
-			if (!isset($this->_libraries) && $this->id){
-				$this->_libraries = [];
-				$obj = new Library();
-				$obj->theme = $this->id;
-				$obj->find();
-				while($obj->fetch()){
-					$this->_libraries[$obj->libraryId] = $obj->libraryId;
-				}
-			}
-			return $this->_libraries;
+			return $this->getLibraries();
 		} elseif ($name == "locations") {
 			if (!isset($this->_locations) && $this->id){
 				$this->_locations = [];
@@ -1154,7 +1150,7 @@ class Theme extends DataObject
 
 	public function saveLibraries(){
 		if (isset ($this->_libraries) && is_array($this->_libraries)){
-			$libraryList = Library::getLibraryList();
+			$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Themes'));
 			foreach ($libraryList as $libraryId => $displayName){
 				$library = new Library();
 				$library->libraryId = $libraryId;
@@ -1179,7 +1175,7 @@ class Theme extends DataObject
 
 	public function saveLocations(){
 		if (isset ($this->_locations) && is_array($this->_locations)){
-			$locationList = Location::getLocationList();
+			$locationList = Location::getLocationList(!UserAccount::userHasPermission('Administer All Themes'));
 			/**
 			 * @var int $locationId
 			 * @var Location $location
@@ -1218,6 +1214,15 @@ class Theme extends DataObject
 	 */
 	public function getLibraries()
 	{
+		if (!isset($this->_libraries) && $this->id){
+			$this->_libraries = [];
+			$obj = new Library();
+			$obj->theme = $this->id;
+			$obj->find();
+			while($obj->fetch()){
+				$this->_libraries[$obj->libraryId] = $obj->libraryId;
+			}
+		}
 		return $this->_libraries;
 	}
 
@@ -1251,6 +1256,22 @@ class Theme extends DataObject
 	public function clearLocations(){
 		$this->clearOneToManyOptions('Location', 'theme');
 		unset($this->_locations);
+	}
+
+	public function canActiveUserEdit(){
+		if ( UserAccount::userHasPermission('Administer All Themes')){
+			return true;
+		}else if (UserAccount::userHasPermission('Administer Library Themes')){
+			$libraries = $this->getLibraries();
+			$homeLibrary = UserAccount::getActiveUserObj()->getHomeLibrary();
+			if (array_key_exists($homeLibrary->libraryId, $libraries)){
+				return true;
+			}else{
+				return false;
+			}
+		}else{
+			return false;
+		}
 	}
 
 }

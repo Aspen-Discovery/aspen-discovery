@@ -13,9 +13,9 @@ class StaffMember extends DataObject
 	public $photo;
 	public $description;
 
-	static function getObjectStructure()
+	static function getObjectStructure() : array
 	{
-		$libraryList = Library::getLibraryList();
+		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Staff Members'));
 		return [
 			'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id within the database'),
 			'libraryId' => array('property'=>'libraryId',         'type'=>'enum', 'values'=>$libraryList, 'label'=>'Library', 'description'=>'A link to the library which the location belongs to'),

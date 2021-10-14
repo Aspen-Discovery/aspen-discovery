@@ -41,7 +41,7 @@ class MyAccount_HooplaOptions extends MyAccount
 		$this->display('hooplaOptions.tpl', 'Account Settings');
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'My Account');

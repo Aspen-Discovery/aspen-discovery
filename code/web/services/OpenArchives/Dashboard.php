@@ -1,27 +1,20 @@
 <?php
 
 require_once ROOT_DIR . '/Action.php';
-require_once ROOT_DIR . '/services/Admin/Admin.php';
+require_once ROOT_DIR . '/services/Admin/Dashboard.php';
 require_once ROOT_DIR . '/sys/OpenArchives/OpenArchivesCollection.php';
 require_once ROOT_DIR . '/sys/OpenArchives/OpenArchivesRecord.php';
 require_once ROOT_DIR . '/sys/OpenArchives/UserOpenArchivesUsage.php';
 require_once ROOT_DIR . '/sys/OpenArchives/OpenArchivesRecordUsage.php';
 
-class OpenArchives_Dashboard extends Admin_Admin
+class OpenArchives_Dashboard extends Admin_Dashboard
 {
 	function launch()
 	{
 		global $interface;
 
-		$thisMonth = date('n');
-		$thisYear = date('Y');
-		$lastMonth = $thisMonth - 1;
-		$lastMonthYear = $thisYear;
-		if ($lastMonth == 0) {
-			$lastMonth = 12;
-			$lastMonthYear--;
-		}
-		$lastYear = $thisYear - 1;
+		$instanceName = $this->loadInstanceInformation('OpenArchivesRecordUsage');
+		$this->loadDates();
 
 		//Generate stats
 		$collection = new OpenArchivesCollection();
@@ -32,26 +25,26 @@ class OpenArchives_Dashboard extends Admin_Admin
 			$collectionsToGetStatsFor[$collection->id] = $collection->name;
 		}
 
-		$activeUsersThisMonth = $this->getUserStats($thisMonth, $thisYear, $collectionsToGetStatsFor);
+		$activeUsersThisMonth = $this->getUserStats($instanceName, $this->thisMonth, $this->thisYear, $collectionsToGetStatsFor);
 		$interface->assign('activeUsersThisMonth', $activeUsersThisMonth);
-		$activeUsersLastMonth = $this->getUserStats($lastMonth, $lastMonthYear, $collectionsToGetStatsFor);
+		$activeUsersLastMonth = $this->getUserStats($instanceName, $this->lastMonth, $this->lastMonthYear, $collectionsToGetStatsFor);
 		$interface->assign('activeUsersLastMonth', $activeUsersLastMonth);
-		$activeUsersThisYear = $this->getUserStats(null, $thisYear, $collectionsToGetStatsFor);
+		$activeUsersThisYear = $this->getUserStats($instanceName, null, $this->thisYear, $collectionsToGetStatsFor);
 		$interface->assign('activeUsersThisYear', $activeUsersThisYear);
-		$activeUsersLastYear = $this->getUserStats(null, $lastYear, $collectionsToGetStatsFor);
+		$activeUsersLastYear = $this->getUserStats($instanceName, null, $this->lastYear, $collectionsToGetStatsFor);
 		$interface->assign('activeUsersLastYear', $activeUsersLastYear);
-		$activeUsersAllTime = $this->getUserStats(null, null, $collectionsToGetStatsFor);
+		$activeUsersAllTime = $this->getUserStats($instanceName, null, null, $collectionsToGetStatsFor);
 		$interface->assign('activeUsersAllTime', $activeUsersAllTime);
 
-		$activeRecordsThisMonth = $this->getRecordStats($thisMonth, $thisYear, $collectionsToGetStatsFor);
+		$activeRecordsThisMonth = $this->getRecordStats($instanceName, $this->thisMonth, $this->thisYear, $collectionsToGetStatsFor);
 		$interface->assign('activeRecordsThisMonth', $activeRecordsThisMonth);
-		$activeRecordsLastMonth = $this->getRecordStats($lastMonth, $lastMonthYear, $collectionsToGetStatsFor);
+		$activeRecordsLastMonth = $this->getRecordStats($instanceName, $this->lastMonth, $this->lastMonthYear, $collectionsToGetStatsFor);
 		$interface->assign('activeRecordsLastMonth', $activeRecordsLastMonth);
-		$activeRecordsThisYear = $this->getRecordStats(null, $thisYear, $collectionsToGetStatsFor);
+		$activeRecordsThisYear = $this->getRecordStats($instanceName, null, $this->thisYear, $collectionsToGetStatsFor);
 		$interface->assign('activeRecordsThisYear', $activeRecordsThisYear);
-		$activeRecordsLastYear = $this->getRecordStats(null, $lastYear, $collectionsToGetStatsFor);
+		$activeRecordsLastYear = $this->getRecordStats($instanceName, null, $this->lastYear, $collectionsToGetStatsFor);
 		$interface->assign('activeRecordsLastYear', $activeRecordsLastYear);
-		$activeRecordsAllTime = $this->getRecordStats(null, null, $collectionsToGetStatsFor);
+		$activeRecordsAllTime = $this->getRecordStats($instanceName, null, null, $collectionsToGetStatsFor);
 		$interface->assign('activeRecordsAllTime', $activeRecordsAllTime);
 
 		if (count($collectionsToGetStatsFor) > 1) {
@@ -63,14 +56,18 @@ class OpenArchives_Dashboard extends Admin_Admin
 	}
 
 	/**
+	 * @param string|null $instanceName
 	 * @param string|null $month
 	 * @param string|null $year
 	 * @param int[] $collectionsToGetStatsFor
 	 * @return int[]
 	 */
-	public function getUserStats($month, $year, $collectionsToGetStatsFor): array
+	public function getUserStats($instanceName, $month, $year, $collectionsToGetStatsFor): array
 	{
 		$userUsage = new UserOpenArchivesUsage();
+		if (!empty($instanceName)){
+			$userUsage->instance = $instanceName;
+		}
 		if ($month != null) {
 			$userUsage->month = $month;
 		}
@@ -97,16 +94,20 @@ class OpenArchives_Dashboard extends Admin_Admin
 	}
 
 	/**
+	 * @param string|null $instanceName
 	 * @param string|null $month
 	 * @param string|null $year
 	 * @param int[] $collectionsToGetStatsFor
 	 * @return int[]
 	 */
-	public function getRecordStats($month, $year, $collectionsToGetStatsFor): array
+	public function getRecordStats($instanceName, $month, $year, $collectionsToGetStatsFor): array
 	{
 		$usage = new OpenArchivesRecordUsage();
 		$recordInfo = new OpenArchivesRecord();
 		$usage->joinAdd($recordInfo, 'INNER', 'record', 'openArchivesRecordId', 'id');
+		if (!empty($instanceName)){
+			$usage->instance = $instanceName;
+		}
 		if ($month != null) {
 			$usage->month = $month;
 		}
@@ -158,7 +159,7 @@ class OpenArchives_Dashboard extends Admin_Admin
 		return $usageStats;
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
@@ -167,12 +168,12 @@ class OpenArchives_Dashboard extends Admin_Admin
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return 'open_archives';
 	}
 
-	function canView()
+	function canView() : bool
 	{
 		return UserAccount::userHasPermission(['View System Reports', 'View Dashboards']);
 	}

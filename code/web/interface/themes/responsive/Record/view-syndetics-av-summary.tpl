@@ -1,6 +1,6 @@
 <dl>
 	{if count($avSummaryData.trackListing) > 0}
-		<dt>Track Listing</dt>
+		<dt>{translate text="Track Listing" isPublicFacing=true}</dt>
 		<dd>
 			{foreach from=$avSummaryData.trackListing item=track}
 				<div class='track'>

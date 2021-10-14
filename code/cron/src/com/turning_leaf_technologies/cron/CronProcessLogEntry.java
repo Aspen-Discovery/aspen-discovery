@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -19,8 +20,9 @@ public class CronProcessLogEntry implements BaseLogEntry {
 	private Date endTime;
 	private int numErrors;
 	private int numSkipped;
-	private int numUpdates; 
-	private ArrayList<String> notes = new ArrayList<>();
+	private int numUpdates;
+	private StringBuilder notesText = new StringBuilder();
+	private boolean maxNoteTextLengthReached = false;
 
 	private static PreparedStatement insertLogEntry;
 	private static PreparedStatement updateLogEntry;
@@ -45,13 +47,13 @@ public class CronProcessLogEntry implements BaseLogEntry {
 
 	public synchronized void incErrors(String note){
 		this.numErrors++;
-		this.addNote(note);
+		this.addNote("ERROR: " + note);
 		cronLogEntry.incErrors();
 		this.saveResults();
 		logger.error(note);
 	}
 	public synchronized void incErrors(String note, Exception e){
-		this.addNote(note + " " + e.toString());
+		this.addNote("ERROR: " + note + " " + e.toString());
 		this.numErrors++;
 		cronLogEntry.incErrors();
 		this.saveResults();
@@ -67,29 +69,33 @@ public class CronProcessLogEntry implements BaseLogEntry {
 		numUpdates += updates;
 	}
 
+	private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	@Override
+	//Synchronized to prevent concurrent modification of the notes ArrayList
 	public synchronized void addNote(String note) {
-		if (this.notes.size() < 5000){
-			this.notes.add(note);
+		logger.info(note);
+		if (maxNoteTextLengthReached){
+			return;
+		}
+		Date date = new Date();
+		String cleanedNote = note;
+		cleanedNote = cleanedNote.replaceAll("<pre>", "<code>");
+		cleanedNote = cleanedNote.replaceAll("</pre>", "</code>");
+		//Replace multiple line breaks
+		cleanedNote = cleanedNote.replaceAll("(?:<br?>\\s*)+", "<br/>");
+		cleanedNote = cleanedNote.replaceAll("<meta.*?>", "");
+		cleanedNote = cleanedNote.replaceAll("<title>.*?</title>", "");
+		cleanedNote = "<li>" + dateFormat.format(date) + " - " + cleanedNote + "</li>";
+		if (notesText.length() + cleanedNote.length() < 25000){
+			notesText.append(cleanedNote);
+		}else{
+			cleanedNote = "<li>Additional Notes truncated</li>";
+			maxNoteTextLengthReached = true;
 		}
 	}
-	
+
 	private String getNotesHtml() {
-		StringBuilder notesText = new StringBuilder("<ol class='cronProcessNotes'>");
-		for (String curNote : notes){
-			String cleanedNote = curNote;
-			cleanedNote = cleanedNote.replaceAll("<pre>", "<code>");
-			cleanedNote = cleanedNote.replaceAll("</pre>", "</code>");
-			//Replace multiple line breaks
-			cleanedNote = cleanedNote.replaceAll("(?:<br?>\\s*)+", "<br/>");
-			cleanedNote = cleanedNote.replaceAll("<meta.*?>", "");
-			cleanedNote = cleanedNote.replaceAll("<title>.*?</title>", "");
-			notesText.append("<li>").append(cleanedNote).append("</li>");
-		}
-		notesText.append("</ol>");
-		if (notesText.length() > 64000){
-			notesText.substring(0, 64000);
-		}
-		return notesText.toString();
+		return notesText.toString() + "</ol>";
 	}
 	
 	public synchronized boolean saveResults() {

@@ -4,21 +4,32 @@ require_once ROOT_DIR . '/RecordDrivers/IndexRecordDriver.php';
 class ListsRecordDriver extends IndexRecordDriver
 {
 	private $listObject;
+	private $valid = true;
 	public function __construct($record)
 	{
 		// Call the parent's constructor...
 		if (is_string($record)) {
 			/** @var SearchObject_ListsSearcher $searchObject */
 			$searchObject = SearchObjectFactory::initSearchObject('Lists');
-			$fields = $searchObject->getRecord($record);
-			parent::__construct($fields);
+			disableErrorHandler();
+			try {
+				$fields = $searchObject->getRecord($record);
+				if ($fields == null) {
+					$this->valid = false;
+				}else {
+					parent::__construct($fields);
+				}
+			}catch (Exception $e){
+				$this->valid = false;
+			}
+			enableErrorHandler();
 		}else {
 			parent::__construct($record);
 		}
 	}
 
 	public function isValid(){
-		return true;
+		return $this->valid;
 	}
 
 	function getBookcoverUrl($size = 'small', $absolutePath = false)
@@ -75,10 +86,6 @@ class ListsRecordDriver extends IndexRecordDriver
 			$appearsOnLists = UserList::getUserListsForRecord('Lists', $this->getId());
 			$interface->assign('appearsOnLists', $appearsOnLists);
 		}
-
-		// Obtain and assign snippet (highlighting) information:
-		$snippets = $this->getHighlightedSnippets();
-		$interface->assign('summSnippets', $snippets);
 
 		return 'RecordDrivers/List/result.tpl';
 	}
@@ -150,7 +157,7 @@ class ListsRecordDriver extends IndexRecordDriver
 		return 'RecordDrivers/List/listEntry.tpl';
 	}
 
-	public function getModule()
+	public function getModule() : string
 	{
 		return 'MyAccount/MyList';
 	}

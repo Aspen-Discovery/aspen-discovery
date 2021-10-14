@@ -16,16 +16,22 @@ class BrowseCategory extends BaseBrowsable
 	public $label; //A label for the browse category to be shown in the browse category listing
 	public $description; //A description of the browse category
 
+	public $startDate;
+	public $endDate;
+
 	public $numTimesShown;
 	public $numTitlesClickedOn;
 
 	private $_subBrowseCategories;
 
-	function getNumericColumnNames()
+	function getNumericColumnNames() : array
 	{
 		return ['id', 'sourceListId', 'userId'];
 	}
 
+	/*
+	returns both valid and invalid categories
+	*/
 	public function getSubCategories()
 	{
 		if (!isset($this->_subBrowseCategories) && $this->id) {
@@ -70,10 +76,6 @@ class BrowseCategory extends BaseBrowsable
 		$ret = parent::update();
 		if ($ret !== FALSE) {
 			$this->saveSubBrowseCategories();
-
-			//delete any cached results for browse category
-			$this->deleteCachedBrowseCategoryResults();
-
 		}
 		return $ret;
 	}
@@ -128,12 +130,6 @@ class BrowseCategory extends BaseBrowsable
 		return $ret;
 	}
 
-	public function deleteCachedBrowseCategoryResults()
-	{
-		global $memCache;
-		$keyFormat = 'browse_category_' . $this->textId;
-		$memCache->deleteKeysStartingWith($keyFormat);
-	}
 
 	public function saveSubBrowseCategories()
 	{
@@ -141,7 +137,7 @@ class BrowseCategory extends BaseBrowsable
 			/** @var SubBrowseCategories[] $subBrowseCategories */
 			/** @var SubBrowseCategories $subCategory */
 			foreach ($this->_subBrowseCategories as $subCategory) {
-				if (isset($subCategory->deleteOnSave) && $subCategory->deleteOnSave == true) {
+				if ($subCategory->_deleteOnSave == true) {
 					$subCategory->delete();
 				} else {
 					if (isset($subCategory->id) && is_numeric($subCategory->id)) {
@@ -156,7 +152,7 @@ class BrowseCategory extends BaseBrowsable
 		}
 	}
 
-	static function getObjectStructure()
+	static function getObjectStructure() : array
 	{
 		// Get All User Lists
 		require_once ROOT_DIR . '/sys/UserLists/UserList.php';
@@ -168,7 +164,7 @@ class BrowseCategory extends BaseBrowsable
 		unset($browseSubCategoryStructure['browseCategoryId']);
 		$browseCategorySources = BaseBrowsable::getBrowseSources();
 
-		$libraryList = Library::getLibraryList();
+		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Browse Categories'));
 		$libraryList[-1] = 'No Library Selected';
 
 		return array(
@@ -176,9 +172,11 @@ class BrowseCategory extends BaseBrowsable
 			'label' => array('property' => 'label', 'type' => 'text', 'label' => 'Label', 'description' => 'The label to show to the user', 'maxLength' => 50, 'required' => true),
 			'textId' => array('property' => 'textId', 'type' => 'text', 'label' => 'textId', 'description' => 'A textual id to identify the category', 'serverValidation' => 'validateTextId', 'maxLength' => 50),
 			'userId' => array('property' => 'userId', 'type' => 'label', 'label' => 'userId', 'description' => 'The User Id who created this category', 'default' => UserAccount::getActiveUserId()),
-			'sharing' => array('property'=>'sharing', 'type'=>'enum', 'values' => array('library' => 'My Home Library', 'everyone' => 'Everyone'), 'label'=>'Share With', 'description'=>'Who the category should be shared with', 'default' =>'everyone'),
+			'sharing' => array('property'=>'sharing', 'type'=>'enum', 'values' => array('library' => 'Selected Library', 'everyone' => 'Everyone'), 'label'=>'Share With', 'description'=>'Who the category should be shared with', 'default' =>'library', 'onchange'=>'return AspenDiscovery.Admin.updateBrowseCategoryFields();'),
 			'libraryId' => array('property' => 'libraryId', 'type' => 'enum', 'values' => $libraryList, 'label' => 'Library', 'description' => 'A link to the library which the location belongs to'),
 			'description' => array('property' => 'description', 'type' => 'html', 'label' => 'Description', 'description' => 'A description of the category.', 'hideInLists' => true),
+			'startDate' => array('property'=>'startDate', 'type'=>'timestamp','label'=>'Start Date to Show', 'description'=> 'The first date the category should be shown, leave blank to always show', 'unsetLabel'=>'No start date'),
+			'endDate' => array('property'=>'endDate', 'type'=>'timestamp','label'=>'End Date to Show', 'description'=> 'The end date the category should be shown, leave blank to always show', 'unsetLabel'=>'No end date'),
 
 			// Define oneToMany interface for choosing and arranging sub-categories
 			'subBrowseCategories' => array(
@@ -207,7 +205,7 @@ class BrowseCategory extends BaseBrowsable
 			'searchTerm' => array('property' => 'searchTerm', 'type' => 'text', 'label' => 'Search Term', 'description' => 'A default search term to apply to the category', 'default' => '', 'hideInLists' => true, 'maxLength' => 500),
 			'defaultFilter' => array('property' => 'defaultFilter', 'type' => 'textarea', 'label' => 'Default Filter(s)', 'description' => 'Filters to apply to the search by default.', 'hideInLists' => true, 'rows' => 3, 'cols' => 80),
 			'sourceListId' => array('property' => 'sourceListId', 'type' => 'enum', 'values' => $sourceLists, 'label' => 'Source List', 'description' => 'A public list to display titles from'),
-			'defaultSort' => array('property' => 'defaultSort', 'type' => 'enum', 'label' => 'Default Sort', 'values' => array('relevance' => 'Best Match', 'popularity' => 'Popularity', 'newest_to_oldest' => 'Date Added', 'author' => 'Author', 'title' => 'Title', 'user_rating' => 'Rating'), 'description' => 'The default sort for the search if none is specified', 'default' => 'relevance', 'hideInLists' => true),
+			'defaultSort' => array('property' => 'defaultSort', 'type' => 'enum', 'label' => 'Default Sort', 'values' => array('relevance' => 'Best Match', 'popularity' => 'Popularity', 'newest_to_oldest' => 'Date Added', 'author' => 'Author', 'title' => 'Title', 'user_rating' => 'Rating', 'publication_year_desc' => 'Publication Year Desc', 'publication_year_asc' => 'Publication Year Asc', 'holds' => 'Number of Holds'), 'description' => 'The default sort for the search if none is specified', 'default' => 'relevance', 'hideInLists' => true),
 			'numTimesShown' => array('property' => 'numTimesShown', 'type' => 'label', 'label' => 'Times Shown', 'description' => 'The number of times this category has been shown to users'),
 			'numTitlesClickedOn' => array('property' => 'numTitlesClickedOn', 'type' => 'label', 'label' => 'Titles Clicked', 'description' => 'The number of times users have clicked on titles within this category'),
 		);
@@ -250,5 +248,33 @@ class BrowseCategory extends BaseBrowsable
 		}
 
 		return $validationResults;
+	}
+
+	public function isValidForDisplay(){
+		$curTime = time();
+		if ($this->startDate != 0 && $this->startDate > $curTime){
+			return false;
+		}
+		if ($this->endDate != 0 && $this->endDate < $curTime){
+			return false;
+		}
+		if ($this->textId == 'system_recommended_for_you'){
+			if (UserAccount::isLoggedIn()) {
+				$user = UserAccount::getActiveUserObj();
+				if ($user->hasRatings()) {
+					return true;
+				}
+			}
+			return false;
+		}
+		return true;
+	}
+
+	public function canActiveUserEdit(){
+		if ($this->sharing == 'everyone'){
+			return UserAccount::userHasPermission('Administer All Browse Categories') || ($this->userId == UserAccount::getActiveUserId());
+		}
+		//Don't need to limit for the library since the user will need Administer Library Browse Categories to even view them.
+		return true;
 	}
 }

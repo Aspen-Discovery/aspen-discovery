@@ -14,26 +14,37 @@ class WebBuilder_ViewImage extends Action{
 		$this->uploadedImage = new ImageUpload();
 		$this->uploadedImage->id = $id;
 		if (!$this->uploadedImage->find(true)){
-			$this->display('../Record/invalidPage.tpl', 'Invalid Image');
+			global $interface;
+			$interface->assign('module','Error');
+			$interface->assign('action','Handle404');
+			require_once ROOT_DIR . "/services/Error/Handle404.php";
+			$actionClass = new Error_Handle404();
+			$actionClass->launch();
 			die();
 		}
 
 		global $serverName;
 		$dataPath = '/data/aspen-discovery/' . $serverName . '/uploads/web_builder_image/';
-		if (isset($_REQUEST['size'])){
+		$extension = pathinfo($this->uploadedImage->fullSizePath, PATHINFO_EXTENSION);
+		if ((isset($_REQUEST['size'])) && $extension != 'svg'){
 			$size = $_REQUEST['size'];
 		}else{
 			$size = 'full';
 		}
 		$dataPath .= $size . '/';
 		$fullPath = $dataPath . $this->uploadedImage->fullSizePath;
-		if (file_exists($fullPath)) {
+
+		if ($file = @fopen($fullPath, 'r')) {
 			set_time_limit(300);
 			$chunkSize = 2 * (1024 * 1024);
 
 			$size = intval(sprintf("%u", filesize($fullPath)));
 
-			header('Content-Type: image/png');
+			if($extension == 'svg'){
+				header('Content-Type: image/svg+xml');
+			} else {
+				header('Content-Type: image/png');
+			}
 			header('Content-Transfer-Encoding: binary');
 			header('Content-Length: ' . $size);
 
@@ -60,7 +71,7 @@ class WebBuilder_ViewImage extends Action{
 
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/', 'Home');

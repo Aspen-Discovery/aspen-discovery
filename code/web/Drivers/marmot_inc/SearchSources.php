@@ -21,9 +21,6 @@ class SearchSources{
 			case 'genealogy':
 				$searchObject = SearchObjectFactory::initSearchObject('Genealogy');
 				break;
-			case 'islandora':
-				$searchObject = SearchObjectFactory::initSearchObject('Islandora');
-				break;
 			case 'lists':
 				$searchObject = SearchObjectFactory::initSearchObject('Lists');
 				break;
@@ -82,7 +79,6 @@ class SearchSources{
 
 		$searchGenealogy = array_key_exists('Genealogy', $enabledModules) && $library->enableGenealogy;
 		$repeatCourseReserves = $library->enableCourseReserves == 1;
-		$searchArchive = $library->enableArchive == 1;
 		$searchEbsco = array_key_exists('EBSCO EDS', $enabledModules) && $library->edsSettingsId != -1;
 		$searchOpenArchives = array_key_exists('Open Archives', $enabledModules) && $library->enableOpenArchives == 1;
 
@@ -212,18 +208,17 @@ class SearchSources{
 		if (array_key_exists('Web Indexer', $enabledModules)){
 			require_once ROOT_DIR . '/sys/WebsiteIndexing/WebsiteIndexSetting.php';
 			$websiteSetting = new WebsiteIndexSetting();
-			$websiteSetting->selectAdd(null);
-			$websiteSetting->selectAdd('searchCategory');
-			$websiteSetting->groupBy('searchCategory');
 			$websiteSetting->find();
 			//TODO: Need to deal with searching different collections
 			while ($websiteSetting->fetch()) {
-				$searchOptions['websites'] = array(
-					'name' => $websiteSetting->searchCategory,
-					'description' => $websiteSetting->searchCategory,
-					'catalogType' => 'websites',
-					'hasAdvancedSearch' => false
-				);
+				if ($websiteSetting->isValidForSearching()) {
+					$searchOptions['websites'] = array(
+						'name' => 'Library Website',
+						'description' => 'Library Website',
+						'catalogType' => 'websites',
+						'hasAdvancedSearch' => false
+					);
+				}
 			}
 			//Local search, activate if we have at least one page
 			if ($library->enableWebBuilder) {
@@ -233,15 +228,6 @@ class SearchSources{
 					'catalogType' => 'websites'
 				);
 			}
-		}
-
-		if ($searchArchive){
-			$searchOptions['islandora'] = array(
-				'name' => 'Local Digital Archive',
-				'description' => 'Local Digital Archive for the library',
-				'catalogType' => 'islandora',
-				'hasAdvancedSearch' => false
-			);
 		}
 
 		if ($searchOpenArchives){
@@ -379,11 +365,18 @@ class SearchSources{
 			}
 			return $worldCatLink;
 		}else if ($searchSource == 'overdrive'){
-			require_once ROOT_DIR . '/sys/OverDrive/OverDriveSetting.php';
-			$overDriveSettings = new OverDriveSetting();
-			$overDriveSettings->find((true));
-			$overDriveUrl = $overDriveSettings->url;
-			return "$overDriveUrl/search?query=" . urlencode($lookFor);
+			require_once ROOT_DIR . '/sys/OverDrive/OverDriveScope.php';
+			$overDriveScope = new OverDriveScope();
+			$overDriveScope->id = $library->overDriveScopeId;
+			if ($overDriveScope->find(true)){
+				require_once ROOT_DIR . '/sys/OverDrive/OverDriveSetting.php';
+				$overDriveSettings = new OverDriveSetting();
+				$overDriveSettings->id = $overDriveScope->settingId;
+				if ($overDriveSettings->find(true)) {
+					$overDriveUrl = $overDriveSettings->url;
+					return "$overDriveUrl/search?query=" . urlencode($lookFor);
+				}
+			}
 		}else if ($searchSource == 'prospector'){
 			$prospectorSearchType = $this->getProspectorSearchType($type);
 			$lookFor = str_replace('+', '%20', rawurlencode($lookFor));

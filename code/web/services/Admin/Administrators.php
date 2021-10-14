@@ -5,16 +5,18 @@ require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 
 class Admin_Administrators extends ObjectEditor
 {
-	function getObjectType(){
+	function getObjectType() : string{
 		return 'User';
 	}
-	function getToolName(){
+	function getToolName() : string{
 		return 'Administrators';
 	}
-	function getPageTitle(){
+	function getPageTitle() : string{
 		return 'Administrators';
 	}
-	function getAllObjects(){
+
+	//TODO: This currently does not respect loading by page or filtering
+	function getAllObjects($page, $recordsPerPage) : array{
 		require_once ROOT_DIR . '/sys/Administration/UserRoles.php';
 		$userRole = new UserRoles();
 		$userRole->find();
@@ -50,13 +52,22 @@ class Admin_Administrators extends ObjectEditor
 
 		return $adminList;
 	}
-	function getObjectStructure(){
+	function getDefaultSort() : string
+	{
+		return 'id';
+	}
+	function canSort() : bool
+	{
+		return false;
+	}
+
+	function getObjectStructure() : array {
 		return User::getObjectStructure();
 	}
-	function getPrimaryKeyColumn(){
+	function getPrimaryKeyColumn() : string{
 		return 'cat_password';
 	}
-	function getIdKeyColumn(){
+	function getIdKeyColumn() : string{
 		return 'id';
 	}
 	function canAddNew(){
@@ -99,13 +110,13 @@ class Admin_Administrators extends ObjectEditor
 			//See if we can fetch the user from the ils
 			$newAdmin = UserAccount::findNewUser($login);
 			if ($newAdmin == false){
-				$interface->assign('error', 'Could not find a user with that barcode.');
+				$interface->assign('error', translate(['text' => 'Could not find a user with that barcode.', 'isAdminFacing'=>true]));
 			}
 		}elseif ($numResults == 1){
 			$newAdmin->fetch();
 		}elseif ($numResults > 1){
 			$newAdmin = false;
-			$interface->assign('error', "Found multiple ({$numResults}) users with that barcode. (The database needs to be cleaned up.)");
+			$interface->assign('error', translate(['text' => "Found multiple (%1%) users with that barcode. (The database needs to be cleaned up.)", 'isAdminFacing'=>true]));
 		}
 
 		if ($newAdmin != false) {
@@ -123,11 +134,11 @@ class Admin_Administrators extends ObjectEditor
 		}
 	}
 
-	function getInstructions(){
+	function getInstructions() : string{
 		return '';
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
@@ -136,13 +147,31 @@ class Admin_Administrators extends ObjectEditor
 		return $breadcrumbs;
 	}
 
-	function getActiveAdminSection()
+	function getActiveAdminSection() : string
 	{
 		return 'system_admin';
 	}
 
-	function canView()
+	function canView() : bool
 	{
 		return UserAccount::userHasPermission('Administer Users');
+	}
+
+	function canBatchEdit()
+	{
+		return false;
+	}
+
+	function canFilter($objectStructure)
+	{
+		return false;
+	}
+
+	protected function showQuickFilterOnPropertiesList(){
+		return true;
+	}
+
+	protected function supportsPagination(){
+		return false;
 	}
 }

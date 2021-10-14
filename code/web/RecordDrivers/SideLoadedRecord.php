@@ -15,12 +15,11 @@ class SideLoadedRecord extends BaseEContentDriver {
 	}
 
 	function getRecordUrl(){
-		global $configArray;
 		$recordId = $this->getUniqueID();
 
-		/** @var IndexingProfile[] $indexingProfiles */
+		/** @var SideLoad[] $sideLoadSettings */
 		global $sideLoadSettings;
-		$indexingProfile = $sideLoadSettings[$this->profileType];
+		$indexingProfile = $sideLoadSettings[strtolower($this->profileType)];
 
 		return "/{$indexingProfile->recordUrlComponent}/$recordId";
 	}
@@ -36,20 +35,23 @@ class SideLoadedRecord extends BaseEContentDriver {
 
 		//Get Related Records to make sure we initialize items
 		$recordInfo = $this->getGroupedWorkDriver()->getRelatedRecord($this->getIdWithSource());
+		if ($recordInfo != null) {
+			//Get copies for the record
+			$this->assignCopiesInformation();
 
-		//Get copies for the record
-		$this->assignCopiesInformation();
-
-		$interface->assign('items', $recordInfo->getItemSummary());
+			$interface->assign('items', $recordInfo->getItemSummary());
+		}
 
 		//Load more details options
 		$moreDetailsOptions = $this->getBaseMoreDetailsOptions($isbn);
 
-		$moreDetailsOptions['copies'] = array(
+		if ($recordInfo != null) {
+			$moreDetailsOptions['copies'] = array(
 				'label' => 'Copies',
 				'body' => $interface->fetch('ExternalEContent/view-items.tpl'),
 				'openByDefault' => true
-		);
+			);
+		}
 
 		$moreDetailsOptions['moreDetails'] = array(
 				'label' => 'More Details',
@@ -113,5 +115,40 @@ class SideLoadedRecord extends BaseEContentDriver {
 	{
 		// TODO: Implement getEContentFormat() method.
 		return '';
+	}
+
+	function createActionsFromUrls($relatedUrls){
+		/** @var SideLoad[] $sideLoadSettings */
+		global $sideLoadSettings;
+		$sideLoad = $sideLoadSettings[strtolower($this->profileType)];
+
+		global $configArray;
+		$actions = array();
+		$i = 0;
+		foreach ($relatedUrls as $urlInfo){
+			//Revert to access online per Karen at CCU.  If people want to switch it back, we can add a per library switch
+			$title = translate(['text'=>$sideLoad->accessButtonLabel,'isPublicFacing'=>true, 'isAdminEnteredData'=>true]);
+			$action = $configArray['Site']['url'] . '/' . $this->getModule() . '/' . $this->id . "/AccessOnline?index=$i";
+			$fileOrUrl = isset($urlInfo['url']) ? $urlInfo['url'] : $urlInfo['file'];
+			if (strlen($fileOrUrl) > 0){
+				$actions[] = array(
+					'url' => $action,
+					'redirectUrl' => $fileOrUrl,
+					'title' => $title,
+					'requireLogin' => false,
+					'target' => '_blank',
+				);
+				$i++;
+			}
+		}
+
+		return $actions;
+	}
+
+	public function isShowStatus(){
+		/** @var SideLoad[] $sideLoadSettings */
+		global $sideLoadSettings;
+		$indexingProfile = $sideLoadSettings[strtolower($this->profileType)];
+		return $indexingProfile->showStatus;
 	}
 }

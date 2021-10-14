@@ -9,6 +9,7 @@ class MyAccount_Fines extends MyAccount
 		global $interface;
 		global $configArray;
 
+// TODO: get account profile -> ils instead of config.ini
 		$ils = $configArray['Catalog']['ils'];
 		$interface->assign('showDate', $ils == 'Koha' || $ils == 'Horizon' || $ils == 'CarlX' || $ils == 'Symphony');
 		$interface->assign('showReason', true);
@@ -21,9 +22,10 @@ class MyAccount_Fines extends MyAccount
 			global $offlineMode;
 			if (!$offlineMode) {
 				$currencyCode = 'USD';
-				$variables = new SystemVariables();
-				if ($variables->find(true)){
-					$currencyCode = $variables->currencyCode;
+				$systemVariables = SystemVariables::getSystemVariables();
+
+				if (!empty($systemVariables->currencyCode)) {
+					$currencyCode = $systemVariables->currencyCode;
 				}
 				$interface->assign('currencyCode', $currencyCode);
 
@@ -40,8 +42,32 @@ class MyAccount_Fines extends MyAccount
 					$interface->assign('payPalClientId', $clientId);
 				}
 
+				// MSB payment result message
+				if ($userLibrary->finePaymentType == 3) {
+					if (!empty($_REQUEST['id'])) {
+						require_once ROOT_DIR . '/sys/Account/UserPayment.php';
+						$payment = new UserPayment();
+						$payment->id = $_REQUEST['id'];
+						$finePaymentResult = new stdClass();
+						if ($payment->find(true)) {
+							if ($payment->completed == 1) {
+								$finePaymentResult->success = true;
+								$finePaymentResult->message = translate(['text' => 'Your payment was processed successfully, thank you.', 'isPublicFacing'=> true]);
+							} elseif ($payment->completed == 9) {
+								$finePaymentResult->success = false;
+								$finePaymentResult->message = translate(['text' => 'Your payment was processed, but failed to update the Library system. Library staff have been alerted to this problem.', 'isPublicFacing'=> true]);
+							} else { // i.e., $payment->completed == 0
+								$finePaymentResult->success = false;
+								$finePaymentResult->message = translate(['text' => 'Your payment has not completed processing.', 'isPublicFacing'=> true]);
+							}
+						} else {
+							$finePaymentResult->success = false;
+							$finePaymentResult->message = translate(['text' => 'Your payment was processed, but did not match library records. Please contact the library with your receipt.', 'isPublicFacing'=> true]);
+						}
+						$interface->assign('finePaymentResult', $finePaymentResult);
+					}
+				}
 				$interface->assign('finesToPay', $userLibrary->finesToPay);
-
 				$interface->assign('userFines', $fines);
 
 				$userAccountLabel = [];
@@ -81,7 +107,7 @@ class MyAccount_Fines extends MyAccount
 		$this->display('fines.tpl', 'My Fines');
 	}
 
-	function getBreadcrumbs()
+	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'My Account');
