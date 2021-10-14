@@ -142,7 +142,7 @@ class Grouping_StatusInformation
 	/**
 	 * @return int
 	 */
-	public function getNumHolds()
+	public function getNumHolds() : int
 	{
 		return $this->_numHolds;
 	}

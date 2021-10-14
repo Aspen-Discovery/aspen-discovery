@@ -368,7 +368,7 @@ abstract class GroupedWorkSubDriver extends RecordInterface
 
 	public abstract function getLanguage();
 
-	public abstract function getNumHolds();
+	public abstract function getNumHolds() : int;
 
 	public function getPermanentId()
 	{

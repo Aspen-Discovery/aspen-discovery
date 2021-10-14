@@ -6,6 +6,7 @@ class OMDBSetting extends DataObject
 	public $__table = 'omdb_settings';    // table name
 	public $id;
 	public $apiKey;
+	public $fetchCoversWithoutDates;
 
 	public static function getObjectStructure() : array
 	{

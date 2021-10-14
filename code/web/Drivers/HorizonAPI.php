@@ -799,7 +799,7 @@ abstract class HorizonAPI extends Horizon{
 			'message' => $message);
 	}
 
-	public function getNumHolds($id) {
+	public function getNumHolds($id) : int {
 		global $offlineMode;
 		if (!$offlineMode){
 			global $configArray;

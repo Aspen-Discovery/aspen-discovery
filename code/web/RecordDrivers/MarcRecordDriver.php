@@ -1500,7 +1500,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 
 	private $numHolds = -1;
 
-	function getNumHolds()
+	function getNumHolds() : int
 	{
 		if ($this->numHolds != -1) {
 			return $this->numHolds;

@@ -325,7 +325,6 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver
 	{
 		global $library;
 		if ($this->availability == null) {
-			$this->availability = array();
 			require_once ROOT_DIR . '/sys/OverDrive/OverDriveAPIProductAvailability.php';
 			$availability = new OverDriveAPIProductAvailability();
 			$availability->productId = $this->overDriveProduct->id;
@@ -881,9 +880,14 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver
 		return $actions;
 	}
 
-	function getNumHolds()
+	function getNumHolds() : int
 	{
-		return $this->getAvailability()->numberOfHolds;
+		$availability = $this->getAvailability();
+		if ($availability == null){
+			return 0;
+		}else{
+			return $availability->numberOfHolds;
+		}
 	}
 
 	public function getSemanticData()
