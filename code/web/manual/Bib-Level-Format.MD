@@ -4,6 +4,8 @@ Within Aspen you have the capability to assign format based on bibliographic rec
 
 
   * If the 008 is six characters or longer and the 6th character is a J, the format is 'MusicRecording'.
+  * If position 6 of the leader contains a,t,A or T and the 008 position 23 is 'f' then the format is "Braille"
+  * If position 6 of the leader contains a,t,A or T and the 008 position 23 is 'd' then the format is "LargePrint"
 
 The following rules reference the 347$b. 
 
@@ -50,6 +52,10 @@ The following rules reference the 347$b.
   * If the 347b contains "WiiU" then the format will be "WiiU"
   * If the 347b contains "3DS" then the format will be "3DS"
   * If the 347b contains "WindowsGame" then the format will be "WindowsGame"
+  * If the 347b contains "LibraryOfThings" then the format will be "LibraryOfThings"
+  * If the 347b contains "CD+DVD" then the format will be "CD+DVD"
+  * If the 347b contains "VoxBooks" then the format will be "VoxBooks"
+  * If the 347b contains "BookClubKit" & "LargePrint" then the format will be "BookClubKitLarge"
 
 
 The following rules reference the 245$h. 
@@ -107,6 +113,7 @@ The following rules reference the 250$a.
   * If the 250a contains "nintendo wii" then the format will be "Wii"
   * If the 250a contains "nintendo 3ds" then the format will be "3DS"
   * If the 250a contains "directx" then the format will be "WindowsGame"
+  * If the 250a contains any variation of "blu-ray" AND "dvd" then the format will be "Blu-ray/DVD"
 
 
 The following rules reference the 300 field and any subfield with the exception of subfield e. 
@@ -115,9 +122,15 @@ The following rules reference the 300 field and any subfield with the exception 
   * If the subfields in the 300, except for subfield 'e', contain "bluray" or "blu-ray" then the format will be "Blu-ray"
   * If the subfields in the 300, except for subfield 'e', contain "computer optical disc" and a note about the number of pages then the format will be "Software"
   * If the subfields in the 300, except for subfield 'e', contain "sound cassettes" or "SoundCassette" or "sound discs" or "audio discs" or "compact disc" then the format will be "SoundDisc"
+  * If the subfields in the 300, except for subfield 'e', contain "mp3" then the format will be "MP3Disc"
 
+The following rules reference the 300 field subfield e. 
 
-If this point no format has been assigned and the 300$f contain a note about the number of pages, then the format will be "Book"
+  * If the 300e contains "Kit" then the format will be "Kit"
+  * If the 300e contains "book" or "cd" then the format will be "CD+Book"
+  * If the 300e contains "dvd" then the format will be "Book+DVD"
+
+If this point no format has been assigned from the 300 and the 300$f or 300$a contain a note about the number of pages, then the format will be "Book"
 
 
 The following rules reference the 538$a.
@@ -126,12 +139,14 @@ The following rules reference the 538$a.
   * If the 538a contains "bluray" OR "blu-ray" then the format will be "Blu-ray"
   * If the 538a contains "dvd" then the format will be "DVD"
   * If the 538a contains "vertical file" then the format will be "VerticalFile"
+  * If the 538a contains any variation of "blu-ray" AND "dvd" then the format will be "Blu-ray/DVD"
 
 
 The following rules reference the 500$a.
 
   * If the 500a contains "vertical file" then the format will be "VerticalFile"
   * If the 500a contains "vox books" then the format will be "VoxBooks"
+  * If the 500a contains any variation of "blu-ray" AND "dvd" then the format will be "Blu-ray/DVD"
 
 
 The following rules reference the 502$a.
@@ -156,6 +171,10 @@ The following rules reference the 655$a.
   * If the 655a contains "large type" then the format will be "LargePrint"
   * If the 655a contains "playaway" then the format will be "Playaway"
   * If the 655a contains "graphic novel" and the 655v does not contain "television adaptation" then the format will be "GraphicNovel"
+
+
+
+  * If the 655 contains "library of things" then the format will be "LibraryOfThings"
 
 
 The following rules reference the 690$a.
@@ -215,6 +234,7 @@ The following rules reference the 007.
   * If position 0 = "V" and position 1 = "R" then the format will be "VideoReel"
   * If position 0 = "V" and position 1 does not equal "C", "D", "F" or "R" then the format will be "Video"
 
+If Aspen reads from the 007 that the format should be "CompactDisc" and "VideoDisc" then the format will be "CD+DVD"
 
 The following rules reference the leader.
 
@@ -234,5 +254,7 @@ The following rules reference the leader.
   * If position 7 = "S" and the 008 position 21 does not equal "N" or "P" then the format will be "Serial"
 
 If there are no formats found, Aspen defaults to the format 'Book'
+
+Aspen will weight the different formats coming from all of these places and the format with the highest occurence, will bt the format Aspen chooses for the record. 
 
 You can translate the formats and the way they are displayed to the patron in the ILS Integration Indexing Profile. 
