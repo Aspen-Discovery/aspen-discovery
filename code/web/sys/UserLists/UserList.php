@@ -17,6 +17,10 @@ class UserList extends DataObject
 	public $defaultSort;
 	public $importedFrom;
 	public $nytListModified;
+	public $isCourseReserve;
+	public $courseInstructor;
+	public $courseNumber;
+	public $courseTitle;
 
 	public static function getSourceListsForBrowsingAndCarousels()
 	{

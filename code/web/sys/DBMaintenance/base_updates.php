@@ -33,13 +33,6 @@ function getInitialUpdates()
 				'ALTER TABLE modules ADD COLUMN settingsClassName VARCHAR(35)',
 			]
 		],
-		'create_field_encryption_file' => [
-			'title' => 'Create field encryption file',
-			'description' => 'Setup field level encryption for specific fields (i.e. PINs, Passwords, API keys, etc)',
-			'sql' => [
-				'createKeyFile'
-			]
-		],
 	];
 }
 
@@ -2511,4 +2504,212 @@ function getFinalBaseUpdates()
 			]
 		]
 	);
+}
+
+/** @noinspection PhpUnused */
+function convertTablesToInnoDB(/** @noinspection PhpUnusedParameterInspection */ &$update)
+{
+	global $configArray;
+	$sql = "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = '{$configArray['Database']['database_aspen_dbname']}' AND ENGINE = 'MyISAM'";
+
+	global $aspen_db;
+	$results = $aspen_db->query($sql, PDO::FETCH_ASSOC);
+	$row = $results->fetchObject();
+	while ($row != null) {
+		/** @noinspection SqlResolve */
+		$sql = "ALTER TABLE `{$row->TABLE_NAME}` ENGINE=INNODB";
+		$aspen_db->query($sql);
+		$row = $results->fetchObject();
+	}
+}
+
+/** @noinspection PhpUnused */
+function createDefaultIpRanges()
+{
+	require_once ROOT_DIR . 'sys/IP/IPAddress.php';
+	$subnet = new IPAddress();
+	$subnet->find();
+	while ($subnet->fetch()) {
+		$subnet->update();
+	}
+}
+
+/** @noinspection PhpUnused */
+function updateDueDateFormat()
+{
+	global $configArray;
+	if (isset($configArray['Reindex']['dueDateFormat'])) {
+		$ilsIndexingProfile = new IndexingProfile();
+		$ilsIndexingProfile->name = 'ils';
+		if ($ilsIndexingProfile->find(true)) {
+			$ilsIndexingProfile->dueDateFormat = $configArray['Reindex']['dueDateFormat'];
+			$ilsIndexingProfile->update();
+		}
+
+		$ilsIndexingProfile = new IndexingProfile();
+		$ilsIndexingProfile->name = 'millennium';
+		if ($ilsIndexingProfile->find(true)) {
+			$ilsIndexingProfile->dueDateFormat = $configArray['Reindex']['dueDateFormat'];
+			$ilsIndexingProfile->update();
+		}
+	}
+}
+
+
+/** @noinspection PhpUnused */
+function updateShowSeriesInMainDetails()
+{
+	$groupedWorkDisplaySettings = new GroupedWorkDisplaySetting();
+	$groupedWorkDisplaySettings->find();
+	while ($groupedWorkDisplaySettings->fetch()) {
+		if (!count($groupedWorkDisplaySettings->showInMainDetails) == 0) {
+			$groupedWorkDisplaySettings->showInMainDetails[] = 'showSeries';
+			$groupedWorkDisplaySettings->update();
+		}
+	}
+}
+
+/** @noinspection PhpUnused */
+function populateNovelistSettings()
+{
+	global $configArray;
+	if (!empty($configArray['Novelist']['profile'])) {
+		require_once ROOT_DIR . '/sys/Enrichment/NovelistSetting.php';
+		$novelistSetting = new NovelistSetting();
+		$novelistSetting->profile = $configArray['Novelist']['profile'];
+		$novelistSetting->pwd = $configArray['Novelist']['pwd'];
+		$novelistSetting->insert();
+	}
+}
+
+/** @noinspection PhpUnused */
+function populateContentCafeSettings()
+{
+	global $configArray;
+	if (!empty($configArray['ContentCafe']['id'])) {
+		require_once ROOT_DIR . '/sys/Enrichment/ContentCafeSetting.php';
+		$setting = new ContentCafeSetting();
+		$setting->contentCafeId = $configArray['ContentCafe']['id'];
+		$setting->pwd = $configArray['ContentCafe']['pw'];
+		$setting->hasSummary = ($configArray['ContentCafe']['showSummary'] == true);
+		$setting->hasToc = ($configArray['ContentCafe']['showToc'] == true);
+		$setting->hasExcerpt = ($configArray['ContentCafe']['showExcerpt'] == true);
+		$setting->hasAuthorNotes = ($configArray['ContentCafe']['showAuthorNotes'] == true);
+		$setting->insert();
+	}
+}
+
+/** @noinspection PhpUnused */
+function populateSyndeticsSettings()
+{
+	global $configArray;
+	if (!empty($configArray['Syndetics']['key'])) {
+		require_once ROOT_DIR . '/sys/Enrichment/SyndeticsSetting.php';
+		$setting = new SyndeticsSetting();
+		$setting->syndeticsKey = $configArray['Syndetics']['key'];
+		$setting->hasSummary = ($configArray['Syndetics']['showSummary'] == true);
+		$setting->hasAvSummary = ($configArray['Syndetics']['showAvSummary'] == true);
+		$setting->hasAvProfile = ($configArray['Syndetics']['showAvProfile'] == true);
+		$setting->hasToc = ($configArray['Syndetics']['showToc'] == true);
+		$setting->hasExcerpt = ($configArray['Syndetics']['showExcerpt'] == true);
+		$setting->hasFictionProfile = ($configArray['Syndetics']['showFictionProfile'] == true);
+		$setting->hasAuthorNotes = ($configArray['Syndetics']['showAuthorNotes'] == true);
+		$setting->hasVideoClip = ($configArray['Syndetics']['showVideoClip'] == true);
+		$setting->insert();
+	}
+}
+
+/** @noinspection PhpUnused */
+function populateRecaptchaSettings()
+{
+	global $configArray;
+	if (!empty($configArray['ReCaptcha']['publicKey'])) {
+		require_once ROOT_DIR . '/sys/Enrichment/RecaptchaSetting.php';
+		$recaptchaSetting = new RecaptchaSetting();
+		$recaptchaSetting->publicKey = $configArray['ReCaptcha']['publicKey'];
+		$recaptchaSetting->privateKey = $configArray['ReCaptcha']['privateKey'];
+		$recaptchaSetting->insert();
+	}
+}
+
+/** @noinspection PhpUnused */
+function updateSearchableLists(){
+	//Get a list of users who have permission to create searchable lists
+	require_once ROOT_DIR . '/sys/Administration/Permission.php';
+	require_once ROOT_DIR . '/sys/Administration/RolePermissions.php';
+	require_once ROOT_DIR . '/sys/Administration/UserRoles.php';
+	require_once ROOT_DIR . '/sys/UserLists/UserList.php';
+	require_once ROOT_DIR . '/sys/Account/PType.php';
+	$permission = new Permission();
+	$permission->name = 'Include Lists In Search Results';
+	$permission->find(true);
+
+	$permissionRoles = new RolePermissions();
+	$permissionRoles->permissionId = $permission->id;
+	$permissionRoles->find();
+	while ($permissionRoles->fetch()){
+		$userRole = new UserRoles();
+		$userRole->roleId = $permissionRoles->roleId;
+		$userRole->find();
+		while($userRole->fetch()){
+			makeListsSearchableForUser($userRole->userId);
+		}
+	}
+
+	//Also update based on ptype
+	$pType = new PType();
+	$pType->whereAdd('assignedRoleId > -1');
+	$pType->find();
+	while ($pType->fetch()){
+		$user = new User();
+		$user->patronType = $pType;
+		$user->find();
+		while ($user->fetch()){
+			makeListsSearchableForUser($user->id);
+		}
+	}
+
+	//finally update nyt user
+	$user = new User();
+	$user->cat_username = 'nyt_user';
+	if ($user->find(true)){
+		makeListsSearchableForUser($user->id);
+	}
+}
+
+/**
+ * @param int $userId
+ */
+function makeListsSearchableForUser($userId)
+{
+	$userList = new UserList();
+	$userList->user_id = $userId;
+	$userList->find();
+	$allLists = [];
+	while ($userList->fetch()) {
+		$allLists[] = clone $userList;
+	}
+	foreach ($allLists as $list){
+		if ($list->searchable == 0) {
+			$list->searchable = 1;
+			$list->update();
+		}
+	}
+}
+
+/** @noinspection PhpUnused */
+function createDefaultListIndexingSettings(){
+	require_once ROOT_DIR . '/sys/UserLists/ListIndexingSettings.php';
+	$listIndexingSettings = new ListIndexingSettings();
+	$listIndexingSettings->find();
+	if (!$listIndexingSettings->fetch()){
+		$listIndexingSettings = new ListIndexingSettings();
+		$variable = new Variable();
+		$variable->name = 'last_user_list_index_time';
+		if ($variable->find(true)){
+			$listIndexingSettings->lastUpdateOfChangedLists = $variable->value;
+			$variable->delete();
+		}
+		$listIndexingSettings->insert();
+	}
 }

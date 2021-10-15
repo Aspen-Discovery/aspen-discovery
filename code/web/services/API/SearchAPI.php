@@ -48,9 +48,11 @@ class SearchAPI extends Action
 	function getIndexStatus()
 	{
 		require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
+		require_once ROOT_DIR . '/services/API/SystemAPI.php';
 		global $configArray;
 		$checks = [];
 		$serverStats = [];
+		$systemApi = new SystemAPI();
 
 		//Check if solr is running by pinging it
 		/** @var SearchObject_GroupedWorkSearcher $solrSearcher */
@@ -94,6 +96,21 @@ class SearchAPI extends Action
 					$this->addCheck($checks, 'Backup');
 				}
 			}
+		}
+
+		//Check for encryption key
+		$hasKeyFile = $systemApi->doesKeyFileExist();
+		if ($hasKeyFile){
+			$this->addCheck($checks, 'Encryption Key');
+		}else{
+			$this->addCheck($checks, 'Encryption Key', self::STATUS_CRITICAL, "The encryption key does not exist.");
+		}
+
+		$hasPendingUpdates = $systemApi->hasPendingDatabaseUpdates();
+		if ($hasPendingUpdates){
+			$this->addCheck($checks, 'Pending Database Updates', self::STATUS_CRITICAL, "There are pending database updates.");
+		}else{
+			$this->addCheck($checks, 'Pending Database Updates');
 		}
 
 		//Check free disk space
