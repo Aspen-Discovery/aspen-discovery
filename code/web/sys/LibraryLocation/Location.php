@@ -1441,10 +1441,11 @@ class Location extends DataObject
 			'phone' => $this->phone,
 			'tty' => $this->tty,
 			'description' => $this->description,
+			'showInLocationsAndHoursList' => $this->showInLocationsAndHoursList,
 			'hoursMessage' => Location::getLibraryHoursMessage($this->locationId),
 			'hours' => []
 		];
-		if((empty($this->homeLink) || $this->homeLink == "default")) {
+		if((empty($this->homeLink) || $this->homeLink == "default" || $this->homeLink == "/")) {
 			if($parentLibrary == null) {
 				$apiInfo['homeLink'] = '';
 			} else {
