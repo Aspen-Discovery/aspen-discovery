@@ -377,4 +377,15 @@ class Grouping_Manifestation
 		return $this->_statusInformation->getCopies();
 	}
 
+	function getNumberOfCopiesMessage()
+	{
+		return $this->_statusInformation->getNumberOfCopiesMessage();
+	}
+
+
+	function getVariationInformation()
+	{
+		return $this->_variations;
+	}
+
 }

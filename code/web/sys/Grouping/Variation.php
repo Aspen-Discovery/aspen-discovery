@@ -12,7 +12,7 @@ class Grouping_Variation
 	public $econtentSource = '';
 
 	/** @var Grouping_Record[] */
-	private $_records = [];
+	public $_records = [];
 
 	/** @var Grouping_StatusInformation */
 	private $_statusInformation;

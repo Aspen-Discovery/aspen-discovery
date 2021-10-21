@@ -613,6 +613,14 @@ class Grouping_Record
 		return $this->_statusInformation;
 	}
 
+	function isAvailable() {
+		return $this->_statusInformation->isAvailable();
+	}
+
+	function getGroupedStatus() {
+		return $this->_statusInformation->getGroupedStatus();
+	}
+
 	/**
 	 * @return int
 	 */
@@ -643,4 +651,6 @@ class Grouping_Record
 	{
 		return $this->_volumeData;
 	}
+
+
 }
