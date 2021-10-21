@@ -31,7 +31,7 @@ class ItemAPI extends Action {
 		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
 
 		//Make sure the user can access the API based on the IP address
-		if (!in_array($method, array('getAppBasicItemInfo', 'getAppItemAvailability')) && !IPAddress::allowAPIAccessForClientIP()){
+		if (!in_array($method, array('getAppBasicItemInfo', 'getAppItemAvailability', 'getAppGroupedWork')) && !IPAddress::allowAPIAccessForClientIP()){
 			$this->forbidAPIAccess();
 		}
 
@@ -44,7 +44,7 @@ class ItemAPI extends Action {
 				header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
 			}
 
-			if (in_array($method, array('getDescriptionByRecordId', 'getDescriptionByTitleAndAuthor'))){
+			if (in_array($method, array('getDescriptionByRecordId', 'getDescriptionByTitleAndAuthor', 'getAppGroupedWork'))){
 				$output = json_encode($this->$method());
 			}else{
 				$output = json_encode(array('result'=>$this->$method()));
@@ -522,147 +522,189 @@ class ItemAPI extends Action {
 # *
 # ****************************************************************************************************************************
 	/** @noinspection PhpUnused */
-	function getAppBasicItemInfo(){
-		global $timer;
+	function getAppGroupedWork() {
 		global $configArray;
-		global $solrScope;
-		$itemData = array();
 
 		//Load basic information
 		$this->id = $_GET['id'];
 		$itemData['id'] = $this->id;
 
-		// Setup Search Engine Connection
-		$url = $configArray['Index']['url'];
-		require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
-		$this->db = new GroupedWorksSolrConnector($url);
+		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+		$groupedWorkDriver = new GroupedWorkDriver($this->id);
 
-		// Retrieve Full Marc Record
-		if (!($record = $this->db->getRecord($this->id))) {
-			AspenError::raiseError(new AspenError('Record Does Not Exist'));
-		}
-		$this->record = $record;
-		/** @var GroupedWorkDriver recordDriver */
-		$this->recordDriver = RecordDriverFactory::initRecordDriver($record);
-		$timer->logTime('Initialized the Record Driver');
+		if ($groupedWorkDriver->isValid()) {
+			$itemData['title'] = $groupedWorkDriver->getShortTitle();
+			$itemData['author'] = $groupedWorkDriver->getPrimaryAuthor();
+			$itemData['description'] = $groupedWorkDriver->getDescriptionFast();
+			if($itemData['description'] == '') {
+				$itemData['description'] = "Description Not Provided";
+			}
+			$itemData['cover'] = $groupedWorkDriver->getBookcoverUrl('large', true);
 
-		$itemData['recordType'] = $record['recordtype'];
-		$itemData['groupingCategory'] = $record['grouping_category'];
+			$ratingData = $groupedWorkDriver->getRatingData();
+			$itemData['ratingData']['average'] = $ratingData['average'];
+			$itemData['ratingData']['count'] = $ratingData['count'];
 
-		// Get ISBN for cover and review use
-		$itemData['isbn'] = $this->recordDriver->getCleanISBN();
-		if (empty($itemData['isbn'])) unset($itemData['isbn']);
-		$itemData['upc'] = $this->recordDriver->getCleanUPC();
-		if (empty($itemData['upc'])) unset($itemData['upc']);
-		$itemData['issn'] = $this->recordDriver->getISSNs();
-		if (empty($itemData['issn'])) unset($itemData['issn']);
+			$relatedManifestations = $groupedWorkDriver->getRelatedManifestations();
+			foreach ($relatedManifestations as $relatedManifestation){
 
-		//Generate basic information from the marc file to make display easier.
-		$itemData['title'] = $record['title_display'];
-		$itemData['author'] = isset($record['author']) ? $record['author'] : (isset($record['author2']) ? $record['author2'][0] : '');
-		$itemData['publisher'] = $record['publisher'];
-		if(isset($itemData['isbn'])) { $itemData['allIsbn'] = $record['isbn']; }
-		if(isset($itemData['upc'])) { $itemData['allUpc'] = $record['upc']; }
-		if(isset($itemData['issn'])) { $itemData['allIssn'] = $record['issn']; }
-		$itemData['format_' . $solrScope] = isset($record['format_' . $solrScope]) ? $record['format_' . $solrScope] : '';
-		$itemData['formatCategory_' . $solrScope] = $record['format_category_' . $solrScope];
+				/** @var  $relatedVariations Grouping_Variation[] */
+				$relatedVariations = $relatedManifestation->getVariationInformation();
 
-		if(isset($record['language'])) {$itemData['language'] = $record['language'];};
-		$itemData['cover'] = $this->recordDriver->getBookcoverUrl('large', true);
+				foreach ($relatedVariations as $relatedVariation) {
+					$relatedRecords = $relatedVariation->getRecords();
 
-		$itemData['description'] = $this->recordDriver->getDescriptionFast();
+					$records = [];
+					foreach ($relatedRecords as $relatedRecord) {
+						$recordActions = $relatedRecord->getActions();
+						$actions = [];
+						foreach ($recordActions as $recordAction) {
+							$action = array(
+								'title' => $recordAction['title'],
+								'type' => $recordAction['type'],
+							);
+							$actions[] = $action;
+						}
 
-		//setup 5 star ratings
-		$itemData['ratingData'] = $this->recordDriver->getRatingData();
-		$timer->logTime('Got 5 star data');
+						$isAvailable = $relatedRecord->isAvailable();
+						$groupedStatus = $relatedRecord->getGroupedStatus();
 
-		$relatedRecords = $this->recordDriver->getRelatedRecords();
-		foreach($relatedRecords as $relatedRecord) {
-			$status='';
-			$recordId = $relatedRecord->id;
-			if (!isset($itemList)) {
-				if($relatedRecord->source == 'ils') {
-					$status = $this->getAppItemAvailability($recordId);
-				} elseif ($relatedRecord->source == 'hoopla') {
-					if (strpos($recordId, ':') !== false) {
-						list(,$recordId) = explode(':', $recordId, 2);
+						$items = $relatedRecord->getItems();
+						foreach ($items as $item) {
+							$shelfLocation = $item->shelfLocation;
+							$callNumber = $item->callNumber;
+						}
+
+
+						$holdable = $relatedRecord->isHoldable();
+
+						$record = array(
+							'id' => $relatedRecord->id,
+							'source' => $relatedRecord->source,
+							'format' => $relatedRecord->format,
+							'language' => $relatedRecord->language,
+							'available' => $isAvailable,
+							'status' => $groupedStatus,
+							'holdable' => $holdable,
+							'shelfLocation' => $shelfLocation,
+							'callNumber' => $callNumber,
+							'action' => $actions,
+						);
+						$records[] = $record;
 					}
-					$hooplaId = preg_replace('/^MWT/', '', $recordId);
-					$this->hooplaRecordDriver = new HooplaRecordDriver($hooplaId);
-					$status = $this->hooplaRecordDriver->getStatusSummary();
-				} elseif ($relatedRecord->source == 'overdrive') {
-					if (strpos($recordId, ':') !== false) {
-						list(,$recordId) = explode(':', $recordId, 2);
-					}
-					$overdriveId = preg_replace('/^MWT/', '', $recordId);
-					$this->overdriveRecordDriver = new OverdriveRecordDriver($overdriveId);
-					$status = $this->overdriveRecordDriver->getStatusSummary();
+					$variationCategoryInfo[$relatedManifestation->formatCategory] = [
+						'formatCategory' => $relatedManifestation->formatCategory,
+						'records' => $records,
+					];
+
+					$itemData['variation'] = $variationCategoryInfo;
 				}
-				$itemList[] = array('id' => $relatedRecord->id, 'name' => $relatedRecord->format, 'source' => $relatedRecord->source, 'status' => $status);
 
-			} elseif (!in_array($relatedRecord->format, array_column($itemList, 'name'))) {
-				if($relatedRecord->source == 'ils') {
-					$status = $this->getAppItemAvailability($recordId);
-				} elseif ($relatedRecord->source == 'hoopla') {
-					if (strpos($recordId, ':') !== false) {
-						list(,$recordId) = explode(':', $recordId, 2);
+				/** @var  $allVariationsFormat Grouping_Variation[] */
+				/** @var  $allVariationsLanguage Grouping_Variation[] */
+
+				foreach($relatedManifestation->getVariations() as $filter) {
+					if (!isset($filterOnFormat)) {
+						$filterOnFormat[] = array('format' => $filter->manifestation->format, 'formatCategory' => $filter->manifestation->formatCategory);
+					} elseif (!in_array( $filter->manifestation->format, array_column($filterOnFormat, 'format'))) {
+						$filterOnFormat[] = array('format' =>  $filter->manifestation->format, 'formatCategory' => $filter->manifestation->formatCategory);
 					}
-					$hooplaId = preg_replace('/^MWT/', '', $recordId);
-					$this->hooplaRecordDriver = new HooplaRecordDriver($hooplaId);
-					$status = $this->hooplaRecordDriver->getStatusSummary();
-				} elseif ($relatedRecord->source == 'overdrive') {
-					if (strpos($recordId, ':') !== false) {
-						list(,$recordId) = explode(':', $recordId, 2);
+					if (!isset($filterOnLanguage)) {
+						$filterOnLanguage[] = array('language' => $filter->language);
+					} elseif (!in_array( $filter->language, array_column($filterOnLanguage, 'language'))) {
+						$filterOnLanguage[] = array('language' =>  $filter->language);
 					}
-					$overdriveId = preg_replace('/^MWT/', '', $recordId);
-					$this->overdriveRecordDriver = new OverdriveRecordDriver($overdriveId);
-					$status = $this->overdriveRecordDriver->getStatusSummary();
 				}
-				$itemList[] = array('type' => $relatedRecord->id, 'name' => $relatedRecord->format, 'source' => $relatedRecord->source, 'status' => $status);
+
+				$itemData['filterOn']['format'] = $filterOnFormat;
+				$itemData['filterOn']['language'] = $filterOnLanguage;
 
 			}
+			return $itemData;
 		}
-
-		$itemData['items'] = $itemList;
-
-		return $itemData;
 	}
 
 	/** @noinspection PhpUnused */
-	function getAppItemAvailability($recordId){
+	function getAppBasicItemInfo(){
 		$itemData = array();
-		global $library;
+
+		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
+		require_once ROOT_DIR . '/sys/Grouping/Manifestation.php';
+		require_once ROOT_DIR . '/sys/Grouping/Variation.php';
+		require_once ROOT_DIR . '/sys/Grouping/Record.php';
+		require_once ROOT_DIR . '/sys/Grouping/Item.php';
 
 		//Load basic information
-		$this->id = $recordId;
+		$this->id = $_GET['id'];
+		$itemData['id'] = $this->id;
 
-		$fullId = $this->id;
+		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+		$groupedWorkDriver = new GroupedWorkDriver($this->id);
+		if ($groupedWorkDriver->isValid()) {
 
-		//Rather than calling the catalog, update to load information from the index
-		//Need to match historical data so we don't break EBSCO
-		$recordDriver = RecordDriverFactory::initRecordDriverById($fullId);
-		if ($recordDriver->isValid()){
-			$copies = $recordDriver->getCopies();
-			$holdings = array();
-			foreach ($copies as $copy) {
-				$key = $copy['shelfLocation'];
-				$key = preg_replace('~\W~', '_', $key);
-				$holdings[$key][] = array(
-					'location' => $copy['shelfLocation'],
-					'callnumber' => $copy['callNumber'],
-					'status' => $copy['status'],
-					'statusFull' => $copy['status'],
-					'availability' => $copy['available'],
-					'holdable' => ($copy['holdable'] && $library->showHoldButton) ? 1 : 0,
-					'libraryDisplayName' => $copy['shelfLocation'],
-					'section' => $copy['section'],
-					'sectionId' => $copy['sectionId'],
-					'lastCheckinDate' => $copy['lastCheckinDate'],
-				);
+
+			$itemData['title'] = $groupedWorkDriver->getShortTitle();
+			$itemData['author'] = $groupedWorkDriver->getPrimaryAuthor();
+			$itemData['formats'] = $groupedWorkDriver->getFormatsArray();
+			$itemData['description'] = $groupedWorkDriver->getDescriptionFast();
+			if($itemData['description'] == '') {
+				$itemData['description'] = "Description Not Provided";
 			}
-			$itemData['holdings'] = $holdings;
+			$itemData['cover'] = $groupedWorkDriver->getBookcoverUrl('large', true);
+
+			$ratingData = $groupedWorkDriver->getRatingData();
+			$itemData['ratingData']['average'] = $ratingData['average'];
+			$itemData['ratingData']['count'] = $ratingData['count'];
+
+			$relatedManifestations = $groupedWorkDriver->getRelatedManifestations();
+			$allVariations = [];
+
+			foreach($relatedManifestations as $manifestation) {
+
+				$statusMessage = $manifestation->getNumberOfCopiesMessage();
+				if($statusMessage == '') {
+					$statusMessage = $manifestation->getStatusInformation()->_groupedStatus;
+				}
+
+				$action = $manifestation->getActions();
+
+				$manifestationSummary = array(
+					'format' => $manifestation->format,
+					'records' => $manifestation->getItemSummary(),
+					'variation' => $manifestation->getVariations(),
+					'status' => $statusMessage,
+					'action' => $action,
+				);
+
+				$itemList[] = $manifestationSummary;
+
+				/** @var  $allVariationsFormat Grouping_Variation[] */
+				/** @var  $allVariationsLanguage Grouping_Variation[] */
+
+				foreach($manifestation->getVariations() as $variation) {
+					if (!isset($allVariationsFormat)) {
+						$allVariationsFormat[] = array('format' => $variation->manifestation->format, 'formatCategory' => $variation->manifestation->formatCategory);
+					} elseif (!in_array( $variation->manifestation->format, array_column($allVariationsFormat, 'format'))) {
+						$allVariationsFormat[] = array('format' =>  $variation->manifestation->format, 'formatCategory' => $variation->manifestation->formatCategory);
+					}
+					if (!isset($allVariationsLanguage)) {
+						$allVariationsLanguage[] = array('language' => $variation->language);
+					} elseif (!in_array( $variation->language, array_column($allVariationsLanguage, 'language'))) {
+						$allVariationsLanguage[] = array('language' =>  $variation->language);
+					}
+				}
+
+
+			}
+
+
+			$itemData['variations_format'] = $allVariationsFormat;
+			$itemData['variations_language'] = $allVariationsLanguage;
+			$itemData['manifestations'] = $itemList;
+
+			return $itemData;
 		}
 
-		return $itemData;
 	}
+
 }
