@@ -617,6 +617,10 @@ class Grouping_Record
 		return $this->_statusInformation->isAvailable();
 	}
 
+	function isAvailableOnline() {
+		return $this->_statusInformation->isAvailableOnline();
+	}
+
 	function getGroupedStatus() {
 		return $this->_statusInformation->getGroupedStatus();
 	}
