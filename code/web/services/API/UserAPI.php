@@ -513,9 +513,6 @@ class UserAPI extends Action
 		} else {
 			$user = $this->getUserForApiCall();
 			if ($user && !($user instanceof AspenError)) {
-
-				$loggedIn = $this->login();
-
 				$source = $_REQUEST['source'] ?? 'all';
 				$allHolds = $user->getHolds(false, 'sortTitle', 'expire', $source);
 				$holdsToReturn = [
