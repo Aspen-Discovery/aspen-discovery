@@ -42,6 +42,7 @@ class Location extends DataObject
 	public $headerText;
 	public $address;
 	public $phone;
+	public $contactEmail;
 	public $latitude;
 	public $longitude;
 	public $unit;
@@ -245,6 +246,7 @@ class Location extends DataObject
 			'showInLocationsAndHoursList' => array('property' => 'showInLocationsAndHoursList', 'type' => 'checkbox', 'label' => 'Show In Locations And Hours List', 'description' => 'Whether or not this location should be shown in the list of library hours and locations', 'hideInLists' => true, 'default' => true, 'editPermissions' => ['Location Address and Hours Settings']),
 			'address' => array('property' => 'address', 'type' => 'textarea', 'label' => 'Address', 'description' => 'The address of the branch.', 'hideInLists' => true, 'editPermissions' => ['Location Address and Hours Settings']),
 			'phone' => array('property' => 'phone', 'type' => 'text', 'label' => 'Phone Number', 'description' => 'The main phone number for the site .', 'maxLength' => '25', 'hideInLists' => true, 'editPermissions' => ['Location Address and Hours Settings']),
+			'contactEmail' => array('property' => 'contactEmail', 'type' => 'text', 'label' => 'Email Address', 'description' => 'The main public email address for the site .', 'hideInLists' => true, 'editPermissions' => ['Location Address and Hours Settings']),
 			'latitude' => array('property' => 'latitude', 'type' => 'text', 'label' => 'Address Latitude', 'description' => 'The latitude of the address provided.', 'maxLength' => '25', 'hideInLists' => true, 'editPermissions' => ['Location Address and Hours Settings']),
 			'longitude' => array('property' => 'longitude', 'type' => 'text', 'label' => 'Address Longitude', 'description' => 'The longitude of the address provided', 'maxLength' => '25', 'hideInLists' => true, 'editPermissions' => ['Location Address and Hours Settings']),
 			'unit' => array('property' => 'unit', 'type' => 'text', 'label' => 'Units for Distance (Mi/Km)', 'description' => 'The unit of measurement for distance', 'maxLength' => '2', 'hideInLists' => true, 'editPermissions' => ['Location Address and Hours Settings']),
@@ -1440,11 +1442,13 @@ class Location extends DataObject
 			'longitude' => $this->longitude,
 			'phone' => $this->phone,
 			'tty' => $this->tty,
+			'email' => $this->contactEmail,
 			'description' => $this->description,
+			'showInLocationsAndHoursList' => $this->showInLocationsAndHoursList,
 			'hoursMessage' => Location::getLibraryHoursMessage($this->locationId),
 			'hours' => []
 		];
-		if((empty($this->homeLink) || $this->homeLink == "default")) {
+		if((empty($this->homeLink) || $this->homeLink == "default" || $this->homeLink == "/")) {
 			if($parentLibrary == null) {
 				$apiInfo['homeLink'] = '';
 			} else {

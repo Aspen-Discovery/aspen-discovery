@@ -13,8 +13,14 @@ class UserAPI extends Action
 	 */
 	function launch()
 	{
+		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
+
 		//Make sure the user can access the API based on the IP address
 		if (!IPAddress::allowAPIAccessForClientIP()){
+			$this->forbidAPIAccess();
+		}
+
+		if (!in_array($method, array('login', 'isLoggedIn', 'logout', 'checkoutItem', 'placeHold', 'renewItem', 'viewOnlineItem', 'changeHoldPickUpLocation', 'getPatronProfile')) && !IPAddress::allowAPIAccessForClientIP()){
 			$this->forbidAPIAccess();
 		}
 
@@ -23,7 +29,6 @@ class UserAPI extends Action
 		header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
 		header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
 
-		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
 		if ($method != 'getUserForApiCall' && method_exists($this, $method)) {
 			$result = [
 				'result' => $this->$method()
@@ -346,6 +351,7 @@ class UserAPI extends Action
 			$userData->numHoldsIls =(int) $accountSummary->getNumHolds();
 			$userData->numHoldsAvailableIls = (int) ($accountSummary->numAvailableHolds == null ? 0 : $accountSummary->numAvailableHolds);
 			$userData->numHoldsRequestedIls = (int) ($accountSummary->numUnavailableHolds == null ? 0 :  $accountSummary->numUnavailableHolds);
+			$userData->numOverdue = (int)$accountSummary->numOverdue;
 			$userData->finesVal = (float)$accountSummary->totalFines;
 			global $activeLanguage;
 			$currencyCode = 'USD';
@@ -365,6 +371,36 @@ class UserAPI extends Action
 				$userData->numCheckedOutOverDrive = (int)$overDriveSummary->numCheckedOut;
 				$userData->numHoldsOverDrive = (int)$overDriveSummary->getNumHolds();
 				$userData->numHoldsAvailableOverDrive = (int)$overDriveSummary->numAvailableHolds;
+			}
+
+			//Add hoopla data
+			if ($user->isValidForEContentSource('hoopla')) {
+				require_once ROOT_DIR . '/Drivers/HooplaDriver.php';
+				$driver = new HooplaDriver();
+				$hooplaSummary = $driver->getAccountSummary($user);
+				$userData->numCheckedOut_Hoopla = (int)$hooplaSummary->numCheckedOut;
+				$userData->numHolds_Hoopla = (int)$hooplaSummary->getNumHolds();
+				$userData->numHoldsAvailable_Hoopla = (int)$hooplaSummary->numAvailableHolds;
+			}
+
+			//Add cloudLibrary data
+			if ($user->isValidForEContentSource('cloud_library')) {
+				require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
+				$driver = new CloudLibraryDriver();
+				$cloudLibrarySummary = $driver->getAccountSummary($user);
+				$userData->numCheckedOut_cloudLibrary = (int)$cloudLibrarySummary->numCheckedOut;
+				$userData->numHolds_cloudLibrary = (int)$cloudLibrarySummary->getNumHolds();
+				$userData->numHoldsAvailable_cloudLibrary = (int)$cloudLibrarySummary->numAvailableHolds;
+			}
+
+			//Add axis360 data
+			if ($user->isValidForEContentSource('axis360')) {
+				require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
+				$driver = new Axis360Driver();
+				$axis360Summary = $driver->getAccountSummary($user);
+				$userData->numCheckedOut_axis360 = (int)$axis360Summary->numCheckedOut;
+				$userData->numHolds_axis360 = (int)$axis360Summary->getNumHolds();
+				$userData->numHoldsAvailable_axis360 = (int)$axis360Summary->numAvailableHolds;
 			}
 
 			return array('success' => true, 'profile' => $userData);
@@ -831,6 +867,73 @@ class UserAPI extends Action
 		}
 	}
 
+	function checkoutItem() : array
+	{
+		list($username, $password) = $this->loadUsernameAndPassword();
+		$source = $_REQUEST['source'];
+		$patron = UserAccount::validateAccount($username, $password);
+
+		if ($patron && !($patron instanceof AspenError)) {
+			if ($source == 'overdrive') {
+				return $this->checkoutOverDriveItem();
+			} else if ($source == 'hoopla') {
+				return $this->checkoutHooplaItem();
+			} else if ($source == 'cloud_library') {
+				return $this->checkoutCloudLibraryItem();
+			} else if ($source == 'axis360') {
+				return $this->checkoutAxis360Item();
+			} else {
+				return array('success' => false, 'message' => 'This source does not permit checkouts.');
+			}
+		} else {
+			return array('success' => false, 'message' => 'Login unsuccessful');
+		}
+	}
+
+	function returnCheckout() : array
+	{
+		list($username, $password) = $this->loadUsernameAndPassword();
+		$source = $_REQUEST['itemSource'];
+		$patron = UserAccount::validateAccount($username, $password);
+
+		if ($patron && !($patron instanceof AspenError)) {
+			if ($source == 'overdrive') {
+				return $this->returnOverDriveCheckout();
+			} else if ($source == 'hoopla') {
+				return $this->returnHooplaItem();
+			} else if ($source == 'cloud_library') {
+				return $this->returnCloudLibraryItem();
+			} else if ($source == 'axis360') {
+				return $this->returnAxis360Item();
+			}
+		} else {
+			return array('success' => false, 'message' => 'Login unsuccessful');
+		}
+	}
+
+	function viewOnlineItem() : array
+	{
+		list($username, $password) = $this->loadUsernameAndPassword();
+		$source = $_REQUEST['itemSource'];
+		$patron = UserAccount::validateAccount($username, $password);
+
+		if ($patron && !($patron instanceof AspenError)) {
+
+			if ($source == 'overdrive') {
+				return $this->openOverDriveItem();
+			} else if ($source == 'hoopla') {
+				return $this->openHooplaItem();
+			} else if ($source == 'cloud_library') {
+				return $this->openCloudLibraryItem();
+			} else if ($source == 'axis360') {
+				return $this->openAxis360Item();
+			}
+		} else {
+			return array('success' => false, 'message' => 'Login unsuccessful when trying to view online checkout');
+		}
+	}
+
+
 	/**
 	 * Renews an item that has been checked out within the ILS.
 	 *
@@ -877,11 +980,12 @@ class UserAPI extends Action
 		$recordId = $_REQUEST['recordId'];
 		$itemBarcode = $_REQUEST['itemBarcode'];
 		$itemIndex = $_REQUEST['itemIndex'];
+
 		$user = UserAccount::validateAccount($username, $password);
 		if ($user && !($user instanceof AspenError)) {
 			require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
 			$renewalMessage = $user->renewCheckout($recordId, $itemBarcode, $itemIndex);
-			if ($renewalMessage['success']){
+			if ($renewalMessage['success']) {
 				require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
 				APIUsage::incrementStat('UserAPI', 'successfulRenewals');
 			}
@@ -895,15 +999,31 @@ class UserAPI extends Action
 	function renewItem() : array
 	{
 		list($username, $password) = $this->loadUsernameAndPassword();
+
+		if(isset($_REQUEST['itemSource'])) {
+			$source = $_REQUEST['itemSource'];
+		} else {
+			$source = null;
+		}
+
 		$itemBarcode = $_REQUEST['itemBarcode'];
 		$user = UserAccount::validateAccount($username, $password);
 		if ($user && !($user instanceof AspenError)) {
-			$renewalMessage = $user->renewCheckout($user, $itemBarcode);
-			if ($renewalMessage['success']){
-				require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
-				APIUsage::incrementStat('UserAPI', 'successfulRenewals');
+			if ($source == 'ils' || $source == null) {
+				$renewalMessage = $user->renewCheckout($user, $itemBarcode);
+				if ($renewalMessage['success']) {
+					require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
+					APIUsage::incrementStat('UserAPI', 'successfulRenewals');
+					return array('success' => true, 'renewalMessage' => $renewalMessage);
+				}
+			} else if ($source == 'overdrive') {
+				return $this->renewOverDriveItem();
+			} else if ($source == 'cloud_library') {
+				return $this->renewCloudLibraryItem();
+			} else if ($source == 'axis360') {
+				return $this->renewAxis360Item();
 			}
-			return array('success' => true, 'renewalMessage' => $renewalMessage);
+
 		} else {
 			return array('success' => false, 'message' => 'Login unsuccessful');
 		}
@@ -994,37 +1114,58 @@ class UserAPI extends Action
 	function placeHold() : array
 	{
 		list($username, $password) = $this->loadUsernameAndPassword();
-		$bibId = $_REQUEST['bibId'];
+
+		if(isset($_REQUEST['bidId'])){
+			$bibId = $_REQUEST['bidId'];
+		} else {
+			$bibId = $_REQUEST['itemId'];
+		}
+
+		if(isset($_REQUEST['itemSource'])) {
+			$source = $_REQUEST['itemSource'];
+		} else {
+			$source = null;
+		}
 
 		$patron = UserAccount::validateAccount($username, $password);
 		if ($patron && !($patron instanceof AspenError)) {
 			global $library;
 			if ($library->showHoldButton) {
-				if (isset($_REQUEST['pickupBranch']) || isset($_REQUEST['campus'])) {
-					if (isset($_REQUEST['pickupBranch'])) {
-						$pickupBranch = trim($_REQUEST['pickupBranch']);
+				if ($source == 'ils' || $source == null) {
+					if (isset($_REQUEST['pickupBranch']) || isset($_REQUEST['campus'])) {
+						if (isset($_REQUEST['pickupBranch'])) {
+							$pickupBranch = trim($_REQUEST['pickupBranch']);
+						} else {
+							$pickupBranch = trim($_REQUEST['campus']);
+						}
+						$locationValid = $patron->validatePickupBranch($pickupBranch);
+						if (!$locationValid) {
+							return array('success' => false, 'message' => translate(['text' => 'This location is no longer available, please select a different pickup location', 'isPublicFacing' => true]));
+						}
 					} else {
-						$pickupBranch = trim($_REQUEST['campus']);
+						$pickupBranch = $patron->_homeLocationCode;
 					}
-					$locationValid = $patron->validatePickupBranch($pickupBranch);
-					if (!$locationValid) {
-						return array('success' => false, 'message' => translate(['text' => 'This location is no longer available, please select a different pickup location', 'isPublicFacing'=> true]));
+					//Make sure that there are not volumes available
+					require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+					$recordDriver = new MarcRecordDriver($bibId);
+					if ($recordDriver->isValid()) {
+						require_once ROOT_DIR . '/sys/ILS/IlsVolumeInfo.php';
+						$volumeDataDB = new IlsVolumeInfo();
+						$volumeDataDB->recordId = $recordDriver->getIdWithSource();
+						if ($volumeDataDB->find(true)) {
+							return array('success' => false, 'message' => translate(['text' => 'You must place a volume hold on this title.']));
+						}
 					}
-				} else {
-					$pickupBranch = $patron->_homeLocationCode;
+					return $patron->placeHold($bibId, $pickupBranch);
+				} else if ($source == 'overdrive') {
+					return $this->placeOverDriveHold();
+				} else if ($source == 'hoopla') {
+					return $this->placeHooplaHold();
+				} else if ($source == 'cloud_library') {
+					return $this->placeCloudLibraryHold();
+				} else if ($source == 'axis360') {
+					return $this->placeAxis360Hold();
 				}
-				//Make sure that there are not volumes available
-				require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
-				$recordDriver = new MarcRecordDriver($bibId);
-				if ($recordDriver->isValid()) {
-					require_once ROOT_DIR . '/sys/ILS/IlsVolumeInfo.php';
-					$volumeDataDB = new IlsVolumeInfo();
-					$volumeDataDB->recordId = $recordDriver->getIdWithSource();
-					if ($volumeDataDB->find(true)){
-						return array('success' => false, 'message' => translate(['text' => 'You must place a volume hold on this title.']));
-					}
-				}
-				return $patron->placeHold($bibId, $pickupBranch);
 			}else{
 				return array('success' => false, 'message' => 'Sorry, holds are not currently allowed.');
 			}
@@ -1153,8 +1294,12 @@ class UserAPI extends Action
 	function placeOverDriveHold() : array
 	{
 		list($username, $password) = $this->loadUsernameAndPassword();
-		if (isset($_REQUEST['overDriveId'])) {
-			$overDriveId = $_REQUEST['overDriveId'];
+		if ((isset($_REQUEST['overDriveId'])) || (isset($_REQUEST['itemId']))) {
+			if(isset($_REQUEST['overDriveId'])){
+				$overDriveId = $_REQUEST['overDriveId'];
+			} else {
+				$overDriveId = $_REQUEST['itemId'];
+			}
 
 			$user = UserAccount::validateAccount($username, $password);
 			if ($user && !($user instanceof AspenError)) {
@@ -1169,6 +1314,52 @@ class UserAPI extends Action
 			return array('success' => false, 'message' => 'Please provide the overDriveId to be place the hold on');
 		}
 
+	}
+
+	function freezeOverDriveHold() : array
+	{
+		list($username, $password) = $this->loadUsernameAndPassword();
+		if ((isset($_REQUEST['overDriveId'])) || (isset($_REQUEST['itemId']))) {
+			if(isset($_REQUEST['overDriveId'])){
+				$overDriveId = $_REQUEST['overDriveId'];
+			} else {
+				$overDriveId = $_REQUEST['itemId'];
+			}
+
+			$reactivationDate = $_REQUEST['reactivationDate'] ?? null;
+
+			$user = UserAccount::validateAccount($username, $password);
+			if ($user && !($user instanceof AspenError)) {
+				require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
+				$driver = new OverDriveDriver();
+				$result = $driver->freezeHold($user, $overDriveId, $reactivationDate);
+				return array('success' => $result['success'], 'message' => $result['message']);
+			} else {
+				return array('success' => false, 'message' => 'Login unsuccessful');
+			}
+		} else {
+			return array('success' => false, 'message' => 'Please provide the overDriveId to be place the hold on');
+		}
+
+	}
+
+	function thawOverDriveHold() : array
+	{
+		list($username, $password) = $this->loadUsernameAndPassword();
+		$id = $_REQUEST['holdId'];
+		$patronId = $_REQUEST['patronId'];
+
+		$user = UserAccount::validateAccount($username, $password);
+
+		if ($user && !($user instanceof AspenError)) {
+			$patron = $user->getUserReferredTo($patronId);
+			require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
+			$driver = new OverDriveDriver();
+			$result = $driver->thawHold($patron, $id);
+			return array('success' => $result['success'], 'message' => $result['message']);
+		} else {
+			return array('success' => false, 'message' => 'Login unsuccessful');
+		}
 	}
 
 	/**
@@ -1218,6 +1409,44 @@ class UserAPI extends Action
 		}
 	}
 
+	function renewOverDriveItem() : array
+	{
+		list($username, $password) = $this->loadUsernameAndPassword();
+		$overDriveId = $_REQUEST['overDriveId'];
+
+		$user = UserAccount::validateAccount($username, $password);
+		if ($user && !($user instanceof AspenError)) {
+			require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
+			$driver = new OverDriveDriver();
+			$result = $driver->renewCheckout($user, $overDriveId);
+			return array('success' => $result['success'], 'message' => $result['message']);
+		} else {
+			return array('success' => false, 'message' => 'Login unsuccessful');
+		}
+	}
+
+	function returnOverDriveCheckout() : array
+	{
+		list($username, $password) = $this->loadUsernameAndPassword();
+
+		if(isset($_REQUEST['overDriveId'])) {
+			$overDriveId = $_REQUEST['overDriveId'];
+		} else {
+			$overDriveId = $_REQUEST['id'];
+		}
+
+		$user = UserAccount::validateAccount($username, $password);
+		if ($user && !($user instanceof AspenError)) {
+			require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
+			$driver = new OverDriveDriver();
+			$result = $driver->returnCheckout($user, $overDriveId);
+			return array('success' => $result['success'], 'message' => $result['message']);
+		} else {
+			return array('success' => false, 'message' => 'Login unsuccessful');
+		}
+
+	}
+
 	/**
 	 * Checkout an item in OverDrive by first adding to the cart and then processing the cart.
 	 *
@@ -1252,7 +1481,11 @@ class UserAPI extends Action
 	function checkoutOverDriveItem() : array
 	{
 		list($username, $password) = $this->loadUsernameAndPassword();
-		$overDriveId = $_REQUEST['overDriveId'];
+		if(isset($_REQUEST['overDriveId'])) {
+			$overDriveId = $_REQUEST['overDriveId'];
+		} else {
+			$overDriveId = $_REQUEST['itemId'];
+		}
 
 		$user = UserAccount::validateAccount($username, $password);
 		if ($user && !($user instanceof AspenError)) {
@@ -1260,6 +1493,460 @@ class UserAPI extends Action
 			$driver = new OverDriveDriver();
 			$holdMessage = $driver->checkOutTitle($user, $overDriveId);
 			return array('success' => $holdMessage['success'], 'message' => $holdMessage['message']);
+		} else {
+			return array('success' => false, 'message' => 'Login unsuccessful');
+		}
+	}
+
+	function openOverDriveItem() : array
+	{
+		list($username, $password) = $this->loadUsernameAndPassword();
+		$overDriveId = $_REQUEST['overDriveId'];
+		$formatId = $_REQUEST['formatId'];
+		$patronId = $_REQUEST['patronId'];
+
+		$user = UserAccount::validateAccount($username, $password);
+
+		if ($user && !($user instanceof AspenError)) {
+			$patron = $user->getUserReferredTo($patronId);
+			require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
+			$driver = new OverDriveDriver();
+			$accessLink = $driver->getDownloadLink($overDriveId, $formatId, $patron);
+			return array('success' => true, 'url' => $accessLink['downloadUrl']);
+
+		} else {
+			return array('success' => false, 'message' => 'Login unsuccessful');
+		}
+	}
+
+	function checkoutCloudLibraryItem() : array
+	{
+		list($username, $password) = $this->loadUsernameAndPassword();
+		$id = $_REQUEST['itemId'];
+		$patronId = $_REQUEST['patronId'];
+
+		$user = UserAccount::validateAccount($username, $password);
+
+		if ($user && !($user instanceof AspenError)) {
+			$patron = $user->getUserReferredTo($patronId);
+			require_once ROOT_DIR . '/RecordDrivers/CloudLibraryRecordDriver.php';
+			$this->recordDriver = new CloudLibraryRecordDriver($id);
+
+			require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
+			$driver = new CloudLibraryDriver();
+			$result = $driver->checkOutTitle($patron, $id);
+			return array('success' => $result['success'], 'message' => $result['message']);
+		} else {
+			return array('success' => false, 'message' => 'Login unsuccessful');
+		}
+	}
+
+	function renewCloudLibraryItem() : array
+	{
+		list($username, $password) = $this->loadUsernameAndPassword();
+		$id = $_REQUEST['id'];
+		$patronId = $_REQUEST['patronId'];
+
+		$user = UserAccount::validateAccount($username, $password);
+
+		if ($user && !($user instanceof AspenError)) {
+			$patron = $user->getUserReferredTo($patronId);
+			require_once ROOT_DIR . '/RecordDrivers/CloudLibraryRecordDriver.php';
+			$this->recordDriver = new CloudLibraryRecordDriver($id);
+
+			require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
+			$driver = new CloudLibraryDriver();
+			$result = $driver->renewCheckout($patron, $id);
+			return array('success' => $result['success'], 'message' => $result['message']);
+		} else {
+			return array('success' => false, 'message' => 'Login unsuccessful');
+		}
+	}
+
+	function placeCloudLibraryHold() : array
+	{
+		list($username, $password) = $this->loadUsernameAndPassword();
+		$id = $_REQUEST['id'];
+		$patronId = $_REQUEST['patronId'];
+
+		$user = UserAccount::validateAccount($username, $password);
+
+		if ($user && !($user instanceof AspenError)) {
+			$patron = $user->getUserReferredTo($patronId);
+			require_once ROOT_DIR . '/RecordDrivers/CloudLibraryRecordDriver.php';
+			$this->recordDriver = new CloudLibraryRecordDriver($id);
+
+			require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
+			$driver = new CloudLibraryDriver();
+			$result = $driver->placeHold($patron, $id);
+			return array('success' => $result['success'], 'message' => $result['message']);
+		} else {
+			return array('success' => false, 'message' => 'Login unsuccessful');
+		}
+	}
+
+	function freezeCloudLibraryHold() : array
+	{
+		list($username, $password) = $this->loadUsernameAndPassword();
+
+		$id = $_REQUEST['id'];
+		$reactivationDate = $_REQUEST['reactivationDate'] ?? null;
+
+		$user = UserAccount::validateAccount($username, $password);
+		if ($user && !($user instanceof AspenError)) {
+
+			require_once ROOT_DIR . '/RecordDrivers/CloudLibraryRecordDriver.php';
+			$this->recordDriver = new CloudLibraryRecordDriver($id);
+
+			require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
+			$driver = new CloudLibraryDriver();
+			$result = $driver->freezeHold($user, $id, $reactivationDate);
+			return array('success' => $result['success'], 'message' => $result['message']);
+		} else {
+			return array('success' => false, 'message' => 'Login unsuccessful');
+		}
+
+	}
+
+	function thawCloudLibraryHold() : array
+	{
+		list($username, $password) = $this->loadUsernameAndPassword();
+		$id = $_REQUEST['holdId'];
+		$patronId = $_REQUEST['patronId'];
+
+		$user = UserAccount::validateAccount($username, $password);
+
+		if ($user && !($user instanceof AspenError)) {
+			$patron = $user->getUserReferredTo($patronId);
+			require_once ROOT_DIR . '/RecordDrivers/CloudLibraryRecordDriver.php';
+			$this->recordDriver = new CloudLibraryRecordDriver($id);
+
+			require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
+			$driver = new CloudLibraryDriver();
+			$result = $driver->thawHold($patron, $id);
+			return array('success' => $result['success'], 'message' => $result['message']);
+		} else {
+			return array('success' => false, 'message' => 'Login unsuccessful');
+		}
+	}
+
+	function cancelCloudLibraryHold() : array
+	{
+		list($username, $password) = $this->loadUsernameAndPassword();
+		$id = $_REQUEST['id'];
+		$patronId = $_REQUEST['patronId'];
+
+		$user = UserAccount::validateAccount($username, $password);
+
+		if ($user && !($user instanceof AspenError)) {
+			$patron = $user->getUserReferredTo($patronId);
+			require_once ROOT_DIR . '/RecordDrivers/CloudLibraryRecordDriver.php';
+			$this->recordDriver = new CloudLibraryRecordDriver($id);
+
+			require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
+			$driver = new CloudLibraryDriver();
+			$result = $driver->cancelHold($patron, $id);
+			return array('success' => $result['success'], 'message' => $result['message']);
+		} else {
+			return array('success' => false, 'message' => 'Login unsuccessful');
+		}
+	}
+
+	function returnCloudLibraryItem() : array
+	{
+		list($username, $password) = $this->loadUsernameAndPassword();
+		$id = $_REQUEST['id'];
+		$patronId = $_REQUEST['patronId'];
+
+		$user = UserAccount::validateAccount($username, $password);
+
+		if ($user && !($user instanceof AspenError)) {
+			$patron = $user->getUserReferredTo($patronId);
+			require_once ROOT_DIR . '/RecordDrivers/CloudLibraryRecordDriver.php';
+			$this->recordDriver = new CloudLibraryRecordDriver($id);
+
+			require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
+			$driver = new CloudLibraryDriver();
+			$result = $driver->returnCheckout($patron, $id);
+			return array('success' => $result['success'], 'message' => $result['message']);
+		} else {
+			return array('success' => false, 'message' => 'Login unsuccessful');
+		}
+	}
+
+	function openCloudLibraryItem() : array
+	{
+		list($username, $password) = $this->loadUsernameAndPassword();
+		$id = $_REQUEST['itemId'];
+		$patronId = $_REQUEST['patronId'];
+
+		$user = UserAccount::validateAccount($username, $password);
+
+		if ($user && !($user instanceof AspenError)) {
+			$patron = $user->getUserReferredTo($patronId);
+
+			require_once ROOT_DIR . '/RecordDrivers/CloudLibraryRecordDriver.php';
+			$driver = new CloudLibraryRecordDriver($id);
+			$accessUrl = $driver->getAccessOnlineLinkUrl($patron);
+
+			return array('success' => true, 'url' => $accessUrl);
+
+		} else {
+			return array('success' => false, 'message' => 'Login unsuccessful');
+		}
+	}
+
+	/**
+	 * Checkout an item in Hoopla by first adding to the cart and then processing the cart.
+	 *
+	 * Parameters:
+	 * <ul>
+	 * <li>username - The barcode of the user.  Can be truncated to the last 7 or 9 digits.</li>
+	 * <li>password - The pin number for the user. </li>
+	 * <li>hooplaId - The id of the record in Hoopla.</li>
+	 * </ul>
+	 *
+	 * Returns JSON encoded data as follows:
+	 * <ul>
+	 * <li>success - true if the account is valid and the title could be checked out, false if the username or password were incorrect or the hold could not be checked out.</li>
+	 * <li>message - information about the process for display to the user.</li>
+	 * </ul>
+	 *
+	 * Sample Call:
+	 * <code>
+	 * https://aspenurl/API/UserAPI?method=checkoutHooplaItem&username=23025003575917&password=1234&id=13567811
+	 * </code>
+	 *
+	 * Sample Response:
+	 * <code>
+	 * {"result":{
+	 *   "success":true,
+	 *   "message":"Your titles were checked out successfully. You may now download the titles from your Account."
+	 * }}
+	 * </code>
+	 *
+	 * @noinspection PhpUnused
+	 */
+	function checkoutHooplaItem() : array
+	{
+		list($username, $password) = $this->loadUsernameAndPassword();
+		$titleId = $_REQUEST['itemId'];
+
+		$user = UserAccount::validateAccount($username, $password);
+		if ($user && !($user instanceof AspenError)) {
+			require_once ROOT_DIR . '/Drivers/HooplaDriver.php';
+			$driver = new HooplaDriver();
+			$result = $driver->checkOutTitle($user, $titleId);
+			return array('success' => $result['success'], 'message' => $result['message']);
+		} else {
+			return array('success' => false, 'message' => 'Login unsuccessful');
+		}
+	}
+
+	function returnHooplaItem() : array
+	{
+		list($username, $password) = $this->loadUsernameAndPassword();
+		$titleId = $_REQUEST['id'];
+
+		$user = UserAccount::validateAccount($username, $password);
+		if ($user && !($user instanceof AspenError)) {
+			require_once ROOT_DIR . '/Drivers/HooplaDriver.php';
+			$driver = new HooplaDriver();
+			$result = $driver->returnCheckout($user, $titleId);
+			return array('success' => $result['success'], 'message' => $result['message']);
+		} else {
+			return array('success' => false, 'message' => 'Login unsuccessful');
+		}
+	}
+
+	function openHooplaItem() : array
+	{
+		list($username, $password) = $this->loadUsernameAndPassword();
+		$id = $_REQUEST['itemId'];
+		$patronId = $_REQUEST['patronId'];
+
+		$user = UserAccount::validateAccount($username, $password);
+
+		if ($user && !($user instanceof AspenError)) {
+			$patron = $user->getUserReferredTo($patronId);
+
+			require_once ROOT_DIR . '/RecordDrivers/HooplaRecordDriver.php';
+			$hooplaRecord = new HooplaRecordDriver($id);
+			$accessLink = $hooplaRecord->getAccessLink();
+			return array('success' => true, 'url' => $accessLink['url']);
+		} else {
+			return array('success' => false, 'message' => 'Login unsuccessful');
+		}
+	}
+
+	function placeAxis360Hold() : array
+	{
+		list($username, $password) = $this->loadUsernameAndPassword();
+		$id = $_REQUEST['id'];
+		$patronId = $_REQUEST['patronId'];
+
+		$user = UserAccount::validateAccount($username, $password);
+
+		if ($user && !($user instanceof AspenError)) {
+			$patron = $user->getUserReferredTo($patronId);
+			require_once ROOT_DIR . '/RecordDrivers/Axis360RecordDriver.php';
+			$this->recordDriver = new Axis360RecordDriver($id);
+
+			require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
+			$driver = new Axis360Driver();
+			$result = $driver->placeHold($patron, $id);
+			return array('success' => $result['success'], 'message' => $result['message']);
+		} else {
+			return array('success' => false, 'message' => 'Login unsuccessful');
+		}
+	}
+
+	function freezeAxis360Hold() : array
+	{
+		list($username, $password) = $this->loadUsernameAndPassword();
+		$id = $_REQUEST['id'];
+		$patronId = $_REQUEST['patronId'];
+
+		$user = UserAccount::validateAccount($username, $password);
+
+		if ($user && !($user instanceof AspenError)) {
+			$patron = $user->getUserReferredTo($patronId);
+			require_once ROOT_DIR . '/RecordDrivers/Axis360RecordDriver.php';
+			$this->recordDriver = new Axis360RecordDriver($id);
+
+			require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
+			$driver = new Axis360Driver();
+			$result = $driver->freezeHold($patron, $id);
+			return array('success' => $result['success'], 'message' => $result['message']);
+		} else {
+			return array('success' => false, 'message' => 'Login unsuccessful');
+		}
+	}
+
+	function thawAxis360Hold() : array
+	{
+		list($username, $password) = $this->loadUsernameAndPassword();
+		$id = $_REQUEST['holdId'];
+		$patronId = $_REQUEST['patronId'];
+
+		$user = UserAccount::validateAccount($username, $password);
+
+		if ($user && !($user instanceof AspenError)) {
+			$patron = $user->getUserReferredTo($patronId);
+			require_once ROOT_DIR . '/RecordDrivers/Axis360RecordDriver.php';
+			$this->recordDriver = new Axis360RecordDriver($id);
+
+			require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
+			$driver = new Axis360Driver();
+			$result = $driver->thawHold($patron, $id);
+			return array('success' => $result['success'], 'message' => $result['message']);
+		} else {
+			return array('success' => false, 'message' => 'Login unsuccessful');
+		}
+	}
+
+	function cancelAxis360Hold() : array
+	{
+		list($username, $password) = $this->loadUsernameAndPassword();
+		$id = $_REQUEST['id'];
+		$patronId = $_REQUEST['patronId'];
+
+		$user = UserAccount::validateAccount($username, $password);
+
+		if ($user && !($user instanceof AspenError)) {
+			$patron = $user->getUserReferredTo($patronId);
+			require_once ROOT_DIR . '/RecordDrivers/Axis360RecordDriver.php';
+			$this->recordDriver = new Axis360RecordDriver($id);
+
+			require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
+			$driver = new Axis360Driver();
+			$result = $driver->cancelHold($patron, $id);
+			return array('success' => $result['success'], 'message' => $result['message']);
+		} else {
+			return array('success' => false, 'message' => 'Login unsuccessful');
+		}
+	}
+
+	function checkoutAxis360Item() : array
+	{
+		list($username, $password) = $this->loadUsernameAndPassword();
+		$id = $_REQUEST['itemId'];
+		$patronId = $_REQUEST['patronId'];
+
+		$user = UserAccount::validateAccount($username, $password);
+
+		if ($user && !($user instanceof AspenError)) {
+			$patron = $user->getUserReferredTo($patronId);
+			require_once ROOT_DIR . '/RecordDrivers/Axis360RecordDriver.php';
+			$this->recordDriver = new Axis360RecordDriver($id);
+
+			require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
+			$driver = new Axis360Driver();
+			$result = $driver->checkOutTitle($user, $id);
+			return array('success' => $result['success'], 'message' => $result['message']);
+		} else {
+			return array('success' => false, 'message' => 'Login unsuccessful');
+		}
+	}
+
+	function returnAxis360Item() : array
+	{
+		list($username, $password) = $this->loadUsernameAndPassword();
+		$id = $_REQUEST['id'];
+		$patronId = $_REQUEST['patronId'];
+
+		$user = UserAccount::validateAccount($username, $password);
+
+		if ($user && !($user instanceof AspenError)) {
+			$patron = $user->getUserReferredTo($patronId);
+			require_once ROOT_DIR . '/RecordDrivers/Axis360RecordDriver.php';
+			$this->recordDriver = new Axis360RecordDriver($id);
+
+			require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
+			$driver = new Axis360Driver();
+			$result = $driver->returnCheckout($patron, $id);
+			return array('success' => $result['success'], 'message' => $result['message']);
+		} else {
+			return array('success' => false, 'message' => 'Login unsuccessful');
+		}
+	}
+
+	function renewAxis360Item() : array
+	{
+		list($username, $password) = $this->loadUsernameAndPassword();
+		$id = $_REQUEST['id'];
+		$patronId = $_REQUEST['patronId'];
+
+		$user = UserAccount::validateAccount($username, $password);
+
+		if ($user && !($user instanceof AspenError)) {
+			$patron = $user->getUserReferredTo($patronId);
+			require_once ROOT_DIR . '/RecordDrivers/Axis360RecordDriver.php';
+			$this->recordDriver = new Axis360RecordDriver($id);
+
+			require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
+			$driver = new Axis360Driver();
+			$result = $driver->renewCheckout($patron, $id);
+			return array('success' => $result['success'], 'message' => $result['message']);
+		} else {
+			return array('success' => false, 'message' => 'Login unsuccessful');
+		}
+	}
+
+	function openAxis360Item() : array
+	{
+		list($username, $password) = $this->loadUsernameAndPassword();
+		$id = $_REQUEST['itemId'];
+		$patronId = $_REQUEST['patronId'];
+
+		$user = UserAccount::validateAccount($username, $password);
+
+		if ($user && !($user instanceof AspenError)) {
+			$patron = $user->getUserReferredTo($patronId);
+			require_once ROOT_DIR . '/RecordDrivers/Axis360RecordDriver.php';
+			$driver = new Axis360RecordDriver($id);
+			$accessUrl = $driver->getAccessOnlineLinkUrl($patron);
+			return array('success' => true, 'url' => $accessUrl);
 		} else {
 			return array('success' => false, 'message' => 'Login unsuccessful');
 		}
@@ -1321,10 +2008,24 @@ class UserAPI extends Action
 			$cancelId = $_REQUEST['cancelId'];
 		}
 
-		$user = UserAccount::validateAccount($username, $password);
-		if ($user && !($user instanceof AspenError)) {
-			$holdMessage = $user->cancelHold($recordId, $cancelId);
-			return array('success' => $holdMessage['success'], 'holdMessage' => $holdMessage['message']);
+		if(isset($_REQUEST['itemSource'])) {
+			$source = $_REQUEST['itemSource'];
+		} else {
+			$source = null;
+		}
+
+		$patron = UserAccount::validateAccount($username, $password);
+
+		if ($patron && !($patron instanceof AspenError)) {
+			if ($source == 'ils' || $source == null) {
+				return $patron->cancelHold($recordId, $cancelId);
+			} else if ($source == 'overdrive') {
+				return $this->cancelOverDriveHold();
+			} else if ($source == 'cloud_library') {
+				return $this->cancelCloudLibraryHold();
+			} else if ($source == 'axis360') {
+				return $this->cancelAxis360Hold();
+			}
 		} else {
 			return array('success' => false, 'message' => 'Login unsuccessful');
 		}
@@ -1368,6 +2069,13 @@ class UserAPI extends Action
 	function freezeHold() : array
 	{
 		list($username, $password) = $this->loadUsernameAndPassword();
+
+		if(isset($_REQUEST['itemSource'])) {
+			$source = $_REQUEST['itemSource'];
+		} else {
+			$source = null;
+		}
+
 		$user = UserAccount::validateAccount($username, $password);
 		if ($user && !($user instanceof AspenError)) {
 			if (empty($_REQUEST['recordId']) || empty($_REQUEST['holdId'])) {
@@ -1376,7 +2084,15 @@ class UserAPI extends Action
 				$recordId = $_REQUEST['recordId'];
 				$holdId = $_REQUEST['holdId'];
 				$reactivationDate = $_REQUEST['reactivationDate'] ?? null;
-				return $user->freezeHold($recordId, $holdId, $reactivationDate);
+				if ($source == 'ils' || $source == null) {
+					return $user->freezeHold($recordId, $holdId, $reactivationDate);
+				} else if ($source == 'overdrive') {
+					return $this->freezeOverDriveHold();
+				} else if ($source == 'cloud_library') {
+					return $this->freezeCloudLibraryHold();
+				} else if ($source == 'axis360') {
+					return $this->freezeAxis360Hold();
+				}
 			}
 		} else {
 			return array('success' => false, 'message' => 'Login unsuccessful');
@@ -1432,13 +2148,26 @@ class UserAPI extends Action
 	{
 		list($username, $password) = $this->loadUsernameAndPassword();
 		$user = UserAccount::validateAccount($username, $password);
+		if(isset($_REQUEST['itemSource'])) {
+			$source = $_REQUEST['itemSource'];
+		} else {
+			$source = null;
+		}
 		if ($user && !($user instanceof AspenError)) {
 			if (empty($_REQUEST['recordId']) || empty($_REQUEST['holdId'])) {
 				return array('success' => false, 'message' => 'recordId and holdId must be provided');
 			} else {
 				$recordId = $_REQUEST['recordId'];
 				$holdId = $_REQUEST['holdId'];
-				return $user->thawHold($recordId, $holdId);
+				if ($source == 'ils' || $source == null) {
+					return $user->thawHold($recordId, $holdId);
+				} else if ($source == 'overdrive') {
+					return $this->thawOverDriveHold();
+				} else if ($source == 'cloud_library') {
+					return $this->thawCloudLibraryHold();
+				} else if ($source == 'axis360') {
+					return $this->thawAxis360Hold();
+				}
 			}
 		} else {
 			return array('success' => false, 'message' => 'Login unsuccessful');
