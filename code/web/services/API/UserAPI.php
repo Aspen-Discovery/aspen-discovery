@@ -1484,7 +1484,11 @@ class UserAPI extends Action
 	function checkoutOverDriveItem() : array
 	{
 		list($username, $password) = $this->loadUsernameAndPassword();
-		$overDriveId = $_REQUEST['itemId'];
+		if(isset($_REQUEST['overDriveId'])) {
+			$overDriveId = $_REQUEST['overDriveId'];
+		} else {
+			$overDriveId = $_REQUEST['itemId'];
+		}
 
 		$user = UserAccount::validateAccount($username, $password);
 		if ($user && !($user instanceof AspenError)) {
@@ -1693,64 +1697,6 @@ class UserAPI extends Action
 		} else {
 			return array('success' => false, 'message' => 'Login unsuccessful');
 		}
-	}
-
-	/**
-	 * Place a hold within Hoopla.
-	 * You should specify either the recordId of the title within VuFind or the overdrive id.
-	 *
-	 * Parameters:
-	 * <ul>
-	 * <li>username - The barcode of the user.  Can be truncated to the last 7 or 9 digits.</li>
-	 * <li>password - The pin number for the user. </li>
-	 * <li>itemId - The id of the record within the eContent database.</li>
-	 * <li>or hooplaId - The id of the record in Hoopla.</li>
-	 * </ul>
-	 *
-	 * Returns JSON encoded data as follows:
-	 * <ul>
-	 * <li>success - true if the account is valid and the hold could be placed, false if the username or password were incorrect or the hold could not be placed.</li>
-	 * <li>message - information about the process for display to the user.</li>
-	 * </ul>
-	 *
-	 * Sample Call:
-	 * <code>
-	 * https://aspenurl/API/UserAPI?method=placeHooplaHold&username=23025003575917&password=1234&hooplaId=13567811
-	 * </code>
-	 *
-	 * Sample Response:
-	 * <code>
-	 * {"result":{
-	 *   "success":true,
-	 *   "message":"Your hold was placed successfully."
-	 * }}
-	 * </code>
-	 *
-	 * @noinspection PhpUnused
-	 */
-	function placeHooplaHold() : array
-	{
-		list($username, $password) = $this->loadUsernameAndPassword();
-		if ((isset($_REQUEST['hooplaId'])) || (isset($_REQUEST['itemId']))) {
-			if(isset($_REQUEST['hooplaId'])){
-				$hooplaId = $_REQUEST['hooplaId'];
-			} else {
-				$hooplaId = $_REQUEST['itemId'];
-			}
-
-			$user = UserAccount::validateAccount($username, $password);
-			if ($user && !($user instanceof AspenError)) {
-				require_once ROOT_DIR . '/Drivers/HooplaDriver.php';
-				$driver = new HooplaDriver();
-				$result = $driver->placeHold($user, $hooplaId);
-				return array('success' => $result['result'], 'message' => $result['message']);
-			} else {
-				return array('success' => false, 'message' => 'Login unsuccessful');
-			}
-		} else {
-			return array('success' => false, 'message' => 'Please provide the hooplaId to be place the hold on');
-		}
-
 	}
 
 	/**
