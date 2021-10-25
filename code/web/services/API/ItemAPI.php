@@ -554,7 +554,7 @@ class ItemAPI extends Action {
 				foreach ($relatedVariations as $relatedVariation) {
 					$relatedRecords = $relatedVariation->getRecords();
 
-					$records = [];
+
 					foreach ($relatedRecords as $relatedRecord) {
 						$recordActions = $relatedRecord->getActions();
 						$actions = [];
