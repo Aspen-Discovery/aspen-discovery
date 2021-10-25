@@ -523,7 +523,6 @@ class ItemAPI extends Action {
 # ****************************************************************************************************************************
 	/** @noinspection PhpUnused */
 	function getAppGroupedWork() {
-		global $configArray;
 
 		//Load basic information
 		$this->id = $_GET['id'];
@@ -534,6 +533,7 @@ class ItemAPI extends Action {
 
 		if ($groupedWorkDriver->isValid()) {
 			$itemData['title'] = $groupedWorkDriver->getShortTitle();
+			$itemData['subtitle'] = $groupedWorkDriver->getSubtitle();
 			$itemData['author'] = $groupedWorkDriver->getPrimaryAuthor();
 			$itemData['description'] = $groupedWorkDriver->getDescriptionFast();
 			if($itemData['description'] == '') {
@@ -568,6 +568,7 @@ class ItemAPI extends Action {
 
 						$isAvailable = $relatedRecord->isAvailable();
 						$groupedStatus = $relatedRecord->getGroupedStatus();
+						$isEContent = $relatedRecord->isEContent();
 
 						$items = $relatedRecord->getItems();
 						foreach ($items as $item) {
@@ -577,17 +578,18 @@ class ItemAPI extends Action {
 
 
 						$holdable = $relatedRecord->isHoldable();
-
 						$record = array(
 							'id' => $relatedRecord->id,
 							'source' => $relatedRecord->source,
 							'format' => $relatedRecord->format,
 							'language' => $relatedRecord->language,
 							'available' => $isAvailable,
+							'eContent' => $isEContent,
 							'status' => $groupedStatus,
 							'holdable' => $holdable,
 							'shelfLocation' => $shelfLocation,
 							'callNumber' => $callNumber,
+							'copiesMessage' => $relatedManifestation->getNumberOfCopiesMessage(),
 							'action' => $actions,
 						);
 						$records[] = $record;
