@@ -1262,14 +1262,14 @@ class User extends DataObject
 //		}
 		if ($this->isRecordCheckedOut($source, $recordId)) {
 			$actions[] = array(
-				'title' => translate(['text' => 'Checked Out to %1%', 1 => $showUserName ? $this->displayName : 'You']),
+				'title' => translate(['text' => 'Checked Out to %1%', 1 => $showUserName ? $this->displayName : 'You', 'isPublicFacing' => true]),
 				'url' => "/MyAccount/CheckedOut",
 				'requireLogin' => false,
 				'btnType' => 'btn-info'
 			);
 		} elseif ($source != 'hoopla' && $this->isRecordOnHold($source, $recordId)) {
 			$actions[] = array(
-				'title' => translate(['text' => 'On Hold for %1%', 1 => $showUserName ? $this->displayName : 'You']),
+				'title' => translate(['text' => 'On Hold for %1%', 1 => $showUserName ? $this->displayName : 'You', 'isPublicFacing' => true]),
 				'url' => "/MyAccount/Holds",
 				'requireLogin' => false,
 				'btnType' => 'btn-info'
