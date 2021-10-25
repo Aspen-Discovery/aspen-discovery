@@ -567,6 +567,7 @@ class ItemAPI extends Action {
 						}
 
 						$isAvailable = $relatedRecord->isAvailable();
+						$isAvailableOnline = $relatedRecord->isAvailableOnline();
 						$groupedStatus = $relatedRecord->getGroupedStatus();
 						$isEContent = $relatedRecord->isEContent();
 
@@ -584,6 +585,7 @@ class ItemAPI extends Action {
 							'format' => $relatedRecord->format,
 							'language' => $relatedRecord->language,
 							'available' => $isAvailable,
+							'availableOnline' => $isAvailableOnline,
 							'eContent' => $isEContent,
 							'status' => $groupedStatus,
 							'holdable' => $holdable,
