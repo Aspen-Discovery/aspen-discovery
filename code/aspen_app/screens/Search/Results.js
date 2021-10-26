@@ -124,9 +124,9 @@ export default class Results extends Component {
                     {item.author ? <Text fontSize={{ base: "xs", lg: "lg"}} color="coolGray.600">
                         By: {item.author}
                     </Text> : null }
-                    <Stack mt={1.5} direction="row" space={1}>
+                    <Stack mt={1.5} direction="row" flexWrap="wrap" space={1}>
                 {item.itemList.map((item, index) => {
-                        return <Badge colorScheme="tertiary" variant="outline" rounded="4px">{item.name}</Badge>;
+                        return <Badge colorScheme="tertiary" variant="outline" rounded="4px" mb={1}>{item.name}</Badge>;
                 })}
                 </Stack>
                 </ListItem.Content>
