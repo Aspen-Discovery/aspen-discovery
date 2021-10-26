@@ -863,7 +863,9 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver
 					'onclick' => "return AspenDiscovery.OverDrive.showPreview('{$this->id}', '{$item->id}', '1');",
 					'requireLogin' => false,
 					'type' => 'overdrive_sample',
-					'btnType' => 'btn-info'
+					'btnType' => 'btn-info',
+					'formatId' => $item->id,
+					'sampleNumber' => 1
 				);
 			}
 			if (!empty($item->sampleUrl_2) && !in_array($item->sampleUrl_2, $previewLinks) && !StringUtils::endsWith($item->sampleUrl_2, '.epub') && !StringUtils::endsWith($item->sampleUrl_2, '.wma')) {
@@ -873,7 +875,9 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver
 					'onclick' => "return AspenDiscovery.OverDrive.showPreview('{$this->id}', '{$item->id}', '2');",
 					'requireLogin' => false,
 					'type' => 'overdrive_sample',
-					'btnType' => 'btn-info'
+					'btnType' => 'btn-info',
+					'formatId' => $item->id,
+					'sampleNumber' => 2
 				);
 			}
 		}
