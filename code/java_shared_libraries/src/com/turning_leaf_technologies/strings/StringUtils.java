@@ -96,6 +96,7 @@ public class StringUtils {
 			} finally {
 				is.close();
 			}
+			buffer = null;
 			return writer.toString();
 		} else {
 			return "";

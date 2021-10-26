@@ -711,6 +711,7 @@ class OverDriveProcessor {
 				byte[] rawDataBytes = metadataRS.getBytes("rawData");
 				if (!metadataRS.wasNull()) {
 					returnMetadata.put("rawMetadata", new String(rawDataBytes, StandardCharsets.UTF_8));
+					rawDataBytes = null;
 				}
 			}catch (Exception e) {
 				logEntry.incErrors("Error loading metadata for record " + productId, e);
