@@ -1,9 +1,7 @@
 <?php
 /** @noinspection PhpUnused */
-function getUpdates21_13_02() : array
+function getUpdates21_13_03() : array
 {
-	global $configArray;
-
 	return [
 		/*'name' => [
 			'title' => '',
