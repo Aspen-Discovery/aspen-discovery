@@ -1595,6 +1595,11 @@ class Library extends DataObject
 		if (empty($this->baseUrl)){
 			$apiInfo['baseUrl'] = $configArray['Site']['url'];
 		}
+		if ($this->libraryCardBarcodeStyle != "none") {
+			$apiInfo['barcodeStyle'] = $this->libraryCardBarcodeStyle;
+		} else {
+			$apiInfo['barcodeStyle'] = null;
+		}
 		$activeTheme = new Theme();
 		$activeTheme->id = $this->theme;
 		if ($activeTheme->find(true)){
