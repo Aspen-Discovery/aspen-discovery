@@ -354,41 +354,72 @@ class HooplaDriver extends AbstractEContentDriver{
 						$this->trackRecordCheckout($titleId);
 						$patron->clearCachedAccountSummaryForSource('hoopla');
 						$patron->forceReloadOfCheckouts();
+
+						$apiResult = array();
+						$apiResult['title'] = translate(['text'=>'Title checked out successfully', 'isPublicFacing'=>true]);
+						$apiResult['message'] = strip_tags($checkoutResponse->message);
+
 						return array(
 							'success'   => true,
 							'message'   => $checkoutResponse->message,
 							'title'     => $checkoutResponse->title,
 							'HooplaURL' => $checkoutResponse->url,
-							'due'       => $checkoutResponse->due
+							'due'       => $checkoutResponse->due,
+							'api'       => $apiResult,
 						);
 					} else {
+						$apiResult = array();
+						$apiResult['title'] = translate(['text'=>'Error checking out', 'isPublicFacing'=>true]);
+						$apiResult['message'] = isset($checkoutResponse->message) ? strip_tags($checkoutResponse->message) : 'An error occurred checking out the Hoopla title.';
+
 						return array(
 							'success' => false,
-							'message' => isset($checkoutResponse->message) ? $checkoutResponse->message : 'An error occurred checking out the Hoopla title.'
+							'message' => isset($checkoutResponse->message) ? $checkoutResponse->message : 'An error occurred checking out the Hoopla title.',
+							'api' => $apiResult
 						);
 					}
 
 				} else {
+					$apiResult = array();
+					$apiResult['title'] = translate(['text'=>'Error checking title out', 'isPublicFacing'=>true]);
+					$apiResult['message'] = translate(['text'=>'An error occurred checking out the Hoopla title.', 'isPublicFacing'=>true]);;
+
 					return array(
 						'success' => false,
-						'message' => 'An error occurred checking out the Hoopla title.'
+						'message' => 'An error occurred checking out the Hoopla title.',
+						'api' => $apiResult
 					);
 				}
 			} elseif (!$this->getHooplaLibraryID($patron)) {
+				$apiResult = array();
+				$apiResult['title'] = translate(['text'=>'Error checking title out', 'isPublicFacing'=>true]);
+				$apiResult['message'] = translate(['text'=>'Your library does not have Hoopla integration enabled.', 'isPublicFacing'=>true]);
+
 				return array(
 					'success' => false,
-					'message' => 'Your library does not have Hoopla integration enabled.'
+					'message' => 'Your library does not have Hoopla integration enabled.',
+					'api' => $apiResult
 				);
 			} else {
+				$apiResult = array();
+				$apiResult['title'] = translate(['text'=>'Error checking title out', 'isPublicFacing'=>true]);
+				$apiResult['message'] = translate(['text'=>'There was an error retrieving your library card number.', 'isPublicFacing'=>true]);
+
 				return array(
 					'success' => false,
-					'message' => 'There was an error retrieving your library card number.'
+					'message' => 'There was an error retrieving your library card number.',
+					'api' => $apiResult
 				);
 			}
 		} else {
+			$apiResult = array();
+			$apiResult['title'] = translate(['text'=>'Error checking title out', 'isPublicFacing'=>true]);
+			$apiResult['message'] = translate(['text'=>'Hoopla integration is not enabled.', 'isPublicFacing'=>true]);
+
 			return array(
 				'success' => false,
-				'message' => 'Hoopla integration is not enabled.'
+				'message' => 'Hoopla integration is not enabled.',
+				'api' => $apiResult
 			);
 		}
 	}
@@ -400,6 +431,7 @@ class HooplaDriver extends AbstractEContentDriver{
      * @return array
      */
 	public function returnCheckout($patron, $hooplaId) {
+		$apiResult = array();
 		if ($this->hooplaEnabled) {
             $returnCheckoutURL = $this->getHooplaBasePatronURL($patron);
 			if (!empty($returnCheckoutURL)) {
@@ -409,32 +441,52 @@ class HooplaDriver extends AbstractEContentDriver{
 				if ($result) {
 					$patron->clearCachedAccountSummaryForSource('hoopla');
 					$patron->forceReloadOfCheckouts();
+					$apiResult['title'] = translate(['text'=>'Title returned', 'isPublicFacing'=>true]);
+					$apiResult['message'] = translate(['text'=>'The title was successfully returned.', 'isPublicFacing'=>true]);
+
 					return array(
 						'success' => true,
-						'message' => 'The title was successfully returned.'
+						'message' => 'The title was successfully returned.',
+						'api' => $apiResult
 					);
 				} else {
+					$apiResult['title'] = translate(['text'=>'Error returning title', 'isPublicFacing'=>true]);
+					$apiResult['message'] = translate(['text'=>' There was an error returning this title.', 'isPublicFacing'=>true]);
+
 					return array(
 						'success' => false,
-						'message' => 'There was an error returning this title.'
+						'message' => 'There was an error returning this title.',
+						'api' => $apiResult
 					);
 				}
 
 			} elseif (!$this->getHooplaLibraryID($patron)) {
+				$apiResult['title'] = translate(['text'=>'Error returning title', 'isPublicFacing'=>true]);
+				$apiResult['message'] = translate(['text'=>'Your library does not have Hoopla integration enabled.', 'isPublicFacing'=>true]);
+
 				return array(
 					'success' => false,
-					'message' => 'Your library does not have Hoopla integration enabled.'
+					'message' => 'Your library does not have Hoopla integration enabled.',
+					'api' => $apiResult,
 				);
 			} else {
+				$apiResult['title'] = translate(['text'=>'Error returning title', 'isPublicFacing'=>true]);
+				$apiResult['message'] = translate(['text'=>'There was an error retrieving your library card number.', 'isPublicFacing'=>true]);
+
 				return array(
 					'success' => false,
-					'message' => 'There was an error retrieving your library card number.'
+					'message' => 'There was an error retrieving your library card number.',
+					'api' => $apiResult
 				);
 			}
 		} else {
+			$apiResult['title'] = translate(['text'=>'Error returning title', 'isPublicFacing'=>true]);
+			$apiResult['message'] = translate(['text'=>'Hoopla integration is not enabled.', 'isPublicFacing'=>true]);
+
 			return array(
 				'success' => false,
-				'message' => 'Hoopla integration is not enabled.'
+				'message' => 'Hoopla integration is not enabled.',
+				'api' => $apiResult
 			);
 		}
 	}

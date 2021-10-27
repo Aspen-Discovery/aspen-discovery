@@ -1779,9 +1779,9 @@ class UserAPI extends Action
 			require_once ROOT_DIR . '/Drivers/HooplaDriver.php';
 			$driver = new HooplaDriver();
 			$result = $driver->checkOutTitle($user, $titleId);
-			return array('success' => $result['success'], 'message' => $result['message']);
+			return array('success' => $result['success'], 'title' => $result['api']['title'], 'message' => $result['api']['message']);
 		} else {
-			return array('success' => false, 'message' => 'Login unsuccessful');
+			return array('success' => false, 'title' => 'Error', 'message' => 'Unable to validate user');
 		}
 	}
 
@@ -1795,9 +1795,9 @@ class UserAPI extends Action
 			require_once ROOT_DIR . '/Drivers/HooplaDriver.php';
 			$driver = new HooplaDriver();
 			$result = $driver->returnCheckout($user, $titleId);
-			return array('success' => $result['success'], 'message' => $result['message']);
+			return array('success' => $result['success'], 'title' => $result['api']['title'], 'message' => $result['api']['message']);
 		} else {
-			return array('success' => false, 'message' => 'Login unsuccessful');
+			return array('success' => false, 'title' => 'Error', 'message' => 'Unable to validate user');
 		}
 	}
 
@@ -1815,9 +1815,9 @@ class UserAPI extends Action
 			require_once ROOT_DIR . '/RecordDrivers/HooplaRecordDriver.php';
 			$hooplaRecord = new HooplaRecordDriver($id);
 			$accessLink = $hooplaRecord->getAccessLink();
-			return array('success' => true, 'url' => $accessLink['url']);
+			return array('success' => true, 'title' => "Download Url", 'url' => $accessLink['url']);
 		} else {
-			return array('success' => false, 'message' => 'Login unsuccessful');
+			return array('success' => false, 'title' => 'Error', 'message' => 'Unable to validate user');
 		}
 	}
 
