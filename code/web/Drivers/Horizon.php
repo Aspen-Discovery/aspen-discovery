@@ -244,7 +244,7 @@ abstract class Horizon extends AbstractIlsDriver
 					return $result;
 				} else {
 					//Make sure that we are not using bad words
-					require_once ROOT_DIR . '/Drivers/marmot_inc/BadWord.php';
+					require_once ROOT_DIR . '/sys/LocalEnrichment/BadWord.php';
 					$badWords = new BadWord();
 					$okToAdd = $badWords->hasBadWords($_REQUEST['displayName']);
 					if (!$okToAdd) {

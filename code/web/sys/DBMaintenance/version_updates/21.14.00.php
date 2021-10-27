@@ -27,5 +27,27 @@ function getUpdates21_14_00() : array
 				'ALTER TABLE overdrive_api_products ADD COLUMN lastSeen INT(11) DEFAULT 0'
 			]
 		], //addLastSeenToOverDriveProducts
+		'loadBadWords' => [
+			'title' => 'Load Bad Words',
+			'description' => 'Load the Bad Words List',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE bad_words DROP COLUMN replacement',
+				'importBadWords',
+			]
+		], //loadBadWords
 	];
+}
+
+function importBadWords(){
+	$fhnd = fopen(ROOT_DIR . "/sys/DBMaintenance/badwords.txt", 'r');
+	while ($word = fgets($fhnd)) {
+		require_once ROOT_DIR . '/sys/LocalEnrichment/BadWord.php';
+		$badWord = new BadWord();
+		$badWord->word = trim($word);
+		if (strlen($badWord->word) > 0) {
+			$badWord->insert();
+		}
+	}
+	fclose($fhnd);
 }

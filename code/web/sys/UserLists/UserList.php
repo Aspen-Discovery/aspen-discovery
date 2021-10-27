@@ -237,7 +237,7 @@ class UserList extends DataObject
 		if (!UserAccount::isLoggedIn() || $this->user_id != UserAccount::getActiveUserId()){
 			//Load all bad words.
 			global $library;
-			require_once ROOT_DIR . '/Drivers/marmot_inc/BadWord.php';
+			require_once ROOT_DIR . '/sys/LocalEnrichment/BadWord.php';
 			$badWords = new BadWord();
 
 			//Determine if we should censor bad words or hide the comment completely.

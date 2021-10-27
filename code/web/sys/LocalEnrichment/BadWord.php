@@ -6,7 +6,6 @@ class BadWord extends DataObject
 	public $__table = 'bad_words';    // table name
 	public $id;                      //int(11)
 	public $word;                    //varchar(50)
-	public $replacement;             //varchar(50)
 
 	function getBadWordExpressions(){
 		/** @var $memCache Memcache */
