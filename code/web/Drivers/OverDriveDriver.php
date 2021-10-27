@@ -16,6 +16,8 @@ class OverDriveDriver extends AbstractEContentDriver{
 	private $scope = null;
 	/** @var OverDriveSetting */
 	protected $settings = null;
+	private $patronApiHost = null;
+	private $overdriveApiHost = null;
 	private $clientKey = null;
 	private $clientSecret = null;
 
@@ -329,6 +331,8 @@ class OverDriveDriver extends AbstractEContentDriver{
 			$tokenData = $this->_connectToPatronAPI($user, $userBarcode, null, false);
 		}
 		if ($tokenData){
+			$patronApiHost = $this->getPatronApiHost();
+
 			$ch = curl_init($url);
 			curl_setopt($ch, CURLOPT_USERAGENT,"Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)");
 			if (isset($tokenData->token_type) && isset($tokenData->access_token)){
@@ -336,8 +340,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 				$headers = array(
 					"Authorization: $authorizationData",
 					"User-Agent: Aspen Discovery",
-					"Host: patron.api.overdrive.com" // production
-					//"Host: integration-patron.api.overdrive.com" // testing
+					"Host: $patronApiHost"
 				);
 			}else{
 				//The user is not valid
@@ -417,14 +420,14 @@ class OverDriveDriver extends AbstractEContentDriver{
 			curl_setopt($ch, CURLOPT_USERAGENT,"Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)");
 			if ($tokenData){
 				$authorizationData = $tokenData->token_type . ' ' . $tokenData->access_token;
+				$patronApiHost = $this->getPatronApiHost();
 				$headers = array(
 					"Authorization: $authorizationData",
 					"User-Agent: Aspen Discovery",
-					"Host: patron.api.overdrive.com",
-					//"Host: integration-patron.api.overdrive.com"
+					"Host: $patronApiHost",
 				);
 			}else{
-				$headers = array("User-Agent: Aspen Discovery", "Host: api.overdrive.com");
+				$headers = array("User-Agent: Aspen Discovery", "Host: {$this->getOverDriveApiHost()}");
 			}
 
 			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -459,12 +462,12 @@ class OverDriveDriver extends AbstractEContentDriver{
 
 	public function getLibraryAccountInformation(){
 		$libraryId = $this->getSettings()->accountId;
-		return $this->_callUrl("https://api.overdrive.com/v1/libraries/$libraryId");
+		return $this->_callUrl("https://{$this->getOverDriveApiHost()}/v1/libraries/$libraryId");
 	}
 
 	public function getAdvantageAccountInformation(){
         $libraryId = $this->getSettings()->accountId;
-		return $this->_callUrl("https://api.overdrive.com/v1/libraries/$libraryId/advantageAccounts");
+		return $this->_callUrl("https://{$this->getOverDriveApiHost()}/v1/libraries/$libraryId/advantageAccounts");
 	}
 
 	public function getProductMetadata($overDriveId, $productsKey = null){
@@ -473,14 +476,14 @@ class OverDriveDriver extends AbstractEContentDriver{
 		}
 		if (is_numeric($overDriveId)){
 			//This is a crossRefId, we need to search for the product by crossRefId to get the actual id
-			$searchUrl = "https://api.overdrive.com/v1/collections/$productsKey/products?crossRefId=$overDriveId";
+			$searchUrl = "https://{$this->getOverDriveApiHost()}/v1/collections/$productsKey/products?crossRefId=$overDriveId";
 			$searchResults = $this->_callUrl($searchUrl);
 			if (!empty($searchResults->products) && count($searchResults->products) > 0){
 				$overDriveId = $searchResults->products[0]->id;
 			}
 		}
 		$overDriveId= strtoupper($overDriveId);
-		$metadataUrl = "https://api.overdrive.com/v1/collections/$productsKey/products/$overDriveId/metadata";
+		$metadataUrl = "https://{$this->getOverDriveApiHost()}/v1/collections/$productsKey/products/$overDriveId/metadata";
 		return $this->_callUrl($metadataUrl);
 	}
 
@@ -488,7 +491,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 		if ($productsKey == null){
 			$productsKey = $this->getSettings()->productsKey;
 		}
-		$availabilityUrl = "https://api.overdrive.com/v2/collections/$productsKey/products/$overDriveId/availability";
+		$availabilityUrl = "https://{$this->getOverDriveApiHost()}/v2/collections/$productsKey/products/$overDriveId/availability";
 		return $this->_callUrl($availabilityUrl);
 	}
 
@@ -1358,5 +1361,28 @@ class OverDriveDriver extends AbstractEContentDriver{
 			$axis360Stats->$fieldName = 1;
 			$axis360Stats->insert();
 		}
+	}
+
+	private function getPatronApiHost()
+	{
+		if ($this->patronApiHost == null) {
+			$patronApiUrl = $this->getSettings()->patronApiUrl;
+			$patronApiHost = str_replace('http://', '', $patronApiUrl);
+			$this->patronApiHost = str_replace('https://', '', $patronApiHost);
+		}
+		return $this->patronApiHost;
+	}
+
+	private function getOverDriveApiHost()
+	{
+		if ($this->overdriveApiHost == null) {
+			$patronApiHost = $this->getPatronApiHost();
+			if (strpos($patronApiHost, 'integration') >= 0){
+				$this->overdriveApiHost = 'integration.api.overdrive.com';
+			}else{
+				$this->overdriveApiHost = 'api.overdrive.com';
+			}
+		}
+		return $this->overdriveApiHost;
 	}
 }

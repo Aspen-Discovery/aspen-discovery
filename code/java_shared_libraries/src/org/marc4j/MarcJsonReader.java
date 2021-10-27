@@ -4,6 +4,7 @@ package org.marc4j;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.util.regex.Pattern;
 
 import org.marc4j.marc.ControlField;
 import org.marc4j.marc.DataField;
@@ -91,6 +92,8 @@ public class MarcJsonReader implements MarcReader {
         throw new MarcException("Malformed JSON input");
     }
 
+    static Pattern threeAlphaNumerics = Pattern.compile("[A-Z0-9][A-Z0-9][A-Z0-9]");
+    static Pattern singleAlphaNumeric = Pattern.compile("[A-Z0-9]");
     /**
      * Returns the next {@link Record}.
      */
@@ -110,8 +113,7 @@ public class MarcJsonReader implements MarcReader {
                 case JsonParser.EVT_OBJECT_BEGIN:
                     if (parserLevel == 0) {
                         record = factory.newRecord();
-                    } else if (inArray == FIELDS_ARRAY &&
-                            mname.matches("[A-Z0-9][A-Z0-9][A-Z0-9]")) {
+                    } else if (inArray == FIELDS_ARRAY && threeAlphaNumerics.matcher(mname).matches()) {
                         df = factory.newDataField();
                         df.setTag(mname);
                     }
@@ -122,12 +124,10 @@ public class MarcJsonReader implements MarcReader {
                     parserLevel--;
                     if (parserLevel == 0) {
                         return record;
-                    } else if (inArray == FIELDS_ARRAY &&
-                            mname.matches("[A-Z0-9][A-Z0-9][A-Z0-9]")) {
+                    } else if (inArray == FIELDS_ARRAY && threeAlphaNumerics.matcher(mname).matches()) {
                         record.addVariableField(df);
                         df = null;
-                    } else if (inArray == DATAFIELD_ARRAY &&
-                            mname.matches("datafield")) {
+                    } else if (inArray == DATAFIELD_ARRAY && mname.equals("datafield")) {
                         record.addVariableField(df);
                         df = null;
                     }
@@ -175,10 +175,10 @@ public class MarcJsonReader implements MarcReader {
                         df.setIndicator2(value.length() >= 1 ? value.charAt(0) : ' ');
                     } else if (mname.equals("leader")) {
                         record.setLeader(factory.newLeader(value));
-                    } else if (inArray == FIELDS_ARRAY && mname.matches("[A-Z0-9][A-Z0-9][A-Z0-9]")) {
+                    } else if (inArray == FIELDS_ARRAY && threeAlphaNumerics.matcher(mname).matches()) {
                         cf = factory.newControlField(mname, value);
                         record.addVariableField(cf);
-                    } else if (inArray == SUBFIELDS_ARRAY && mname.matches("[a-z0-9]")) {
+                    } else if (inArray == SUBFIELDS_ARRAY && singleAlphaNumeric.matcher(mname).matches()) {
                         sf = factory.newSubfield(mname.charAt(0), value);
                         df.addSubfield(sf);
                     } else if (inArray == CONTROLFIELD_ARRAY && mname.equals("tag")) {

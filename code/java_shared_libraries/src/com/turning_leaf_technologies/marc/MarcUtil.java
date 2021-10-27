@@ -584,11 +584,13 @@ public class MarcUtil {
 			try{
 				Record marcRecord = streamReader.next();
 				marcFileStream.close();
+				streamReader = null;
 				return marcRecord;
 			}catch (MarcException me){
 				//Could not read the marc record, there likely was not a record in the file, but ignore and use the permissive read.
 				logEntry.incErrors("Could not read MARC for " + identifier, me);
 			}
+			streamReader = null;
 			marcFileStream.close();
 		}catch (Exception e){
 			logEntry.incErrors("Could not parse marc in json format for " + identifier, e);
