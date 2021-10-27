@@ -31,7 +31,7 @@ class ItemAPI extends Action {
 		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
 
 		//Make sure the user can access the API based on the IP address
-		if (!in_array($method, array('getAppBasicItemInfo', 'getAppItemAvailability', 'getAppGroupedWork')) && !IPAddress::allowAPIAccessForClientIP()){
+		if (!in_array($method, array('getAppBasicItemInfo', 'getAppGroupedWork')) && !IPAddress::allowAPIAccessForClientIP()){
 			$this->forbidAPIAccess();
 		}
 
@@ -535,7 +535,7 @@ class ItemAPI extends Action {
 			$itemData['title'] = $groupedWorkDriver->getShortTitle();
 			$itemData['subtitle'] = $groupedWorkDriver->getSubtitle();
 			$itemData['author'] = $groupedWorkDriver->getPrimaryAuthor();
-			$itemData['description'] = $groupedWorkDriver->getDescriptionFast();
+			$itemData['description'] = strip_tags($groupedWorkDriver->getDescriptionFast());
 			if($itemData['description'] == '') {
 				$itemData['description'] = "Description Not Provided";
 			}
@@ -550,7 +550,7 @@ class ItemAPI extends Action {
 
 				/** @var  $relatedVariations Grouping_Variation[] */
 				$relatedVariations = $relatedManifestation->getVariationInformation();
-
+				$records = [];
 				foreach ($relatedVariations as $relatedVariation) {
 					$relatedRecords = $relatedVariation->getRecords();
 
@@ -563,6 +563,11 @@ class ItemAPI extends Action {
 								'title' => $recordAction['title'],
 								'type' => $recordAction['type'],
 							);
+
+							if($relatedRecord->source == "overdrive" && $recordAction['type'] == "overdrive_sample") {
+								$action['formatId'] = $recordAction['formatId'];
+								$action['sampleNumber'] = $recordAction['sampleNumber'];
+							}
 							$actions[] = $action;
 						}
 
@@ -575,6 +580,61 @@ class ItemAPI extends Action {
 						foreach ($items as $item) {
 							$shelfLocation = $item->shelfLocation;
 							$callNumber = $item->callNumber;
+
+							if($item->eContentSource == "Hoopla") {
+								require_once ROOT_DIR . '/RecordDrivers/HooplaRecordDriver.php';
+								$hooplaDriver = new HooplaRecordDriver($item->itemId);
+								$publicationDate = $hooplaDriver->getPublicationDates();
+								if(is_array($publicationDate) && $publicationDate != null) {
+									$publicationDate = $publicationDate[0];
+								} elseif (count($publicationDate) == 0) {
+									$publicationDate = $relatedRecord->publicationDate;
+								}
+								$publisher = $hooplaDriver->getPublishers();
+								if(is_array($publisher) && $publisher != null) {
+									$publisher = $publisher[0];
+								} elseif (count($publisher) == 0) {
+									$publisher = $relatedRecord->publisher;
+								}
+								$edition = $hooplaDriver->getEditions();
+								if(is_array($edition) && $edition != null) {
+									$edition = $edition[0];
+								} elseif (count($edition) == 0) {
+									$edition = $relatedRecord->edition;
+								}
+								$physical = $hooplaDriver->getPhysicalDescriptions();
+								if(is_array($physical) && $physical != null) {
+									$physical = $physical[0];
+								} elseif (count($physical) == 0) {
+									$physical = $relatedRecord->physical;
+								}
+							} elseif($item->eContentSource == "OverDrive") {
+								require_once ROOT_DIR . '/RecordDrivers/OverDriveRecordDriver.php';
+								$overdriveDriver = new OverDriveRecordDriver($item->itemId);
+								$publicationDate = $relatedRecord->publicationDate;
+								$publisher = $relatedRecord->publisher;
+								$edition = $relatedRecord->edition;
+								$physical = $relatedRecord->physical;
+							} elseif($item->eContentSource == "CloudLibrary") {
+								require_once ROOT_DIR . '/RecordDrivers/CloudLibraryRecordDriver.php';
+								$cloudLibraryDriver = new CloudLibraryRecordDriver($item->itemId);
+								$publicationDate = $cloudLibraryDriver->getPublicationDates();
+								$publisher = $cloudLibraryDriver->getPublishers();
+								$edition = $cloudLibraryDriver->getEditions();
+								$physical = $relatedRecord->physical;
+							} elseif($item->eContentSource == "Axis360") {
+								require_once ROOT_DIR . '/RecordDrivers/Axis360RecordDriver.php';
+								$axis360Driver = new Axis360RecordDriver($item->itemId);
+								$publicationDate = $axis360Driver->getPublicationDates();
+								$publisher = $axis360Driver->getPublishers();
+								$edition = $axis360Driver->getEditions();
+								$physical = $relatedRecord->physical;
+							} else {
+								$publicationDate = $relatedRecord->publicationDate;
+								$publisher = $relatedRecord->publisher;
+								$edition = $relatedRecord->edition;
+								$physical = $relatedRecord->physical;
+							}
 						}
 
 
@@ -592,14 +652,17 @@ class ItemAPI extends Action {
 							'shelfLocation' => $shelfLocation,
 							'callNumber' => $callNumber,
 							'copiesMessage' => $relatedManifestation->getNumberOfCopiesMessage(),
+							'edition' => $edition,
+							'publisher' => $publisher,
+							'publicationDate' => $publicationDate,
+							'physical' => $physical,
 							'action' => $actions,
 						);
 						$records[] = $record;
+
 					}
-					$variationCategoryInfo[$relatedManifestation->formatCategory] = [
-						'formatCategory' => $relatedManifestation->formatCategory,
-						'records' => $records,
-					];
+					$variationCategoryInfo[$relatedManifestation->format] = $records;
+
 
 					$itemData['variation'] = $variationCategoryInfo;
 				}
@@ -609,9 +672,9 @@ class ItemAPI extends Action {
 
 				foreach($relatedManifestation->getVariations() as $filter) {
 					if (!isset($filterOnFormat)) {
-						$filterOnFormat[] = array('format' => $filter->manifestation->format, 'formatCategory' => $filter->manifestation->formatCategory);
+						$filterOnFormat[] = array('format' => $filter->manifestation->format, 'format' => $filter->manifestation->format);
 					} elseif (!in_array( $filter->manifestation->format, array_column($filterOnFormat, 'format'))) {
-						$filterOnFormat[] = array('format' =>  $filter->manifestation->format, 'formatCategory' => $filter->manifestation->formatCategory);
+						$filterOnFormat[] = array('format' =>  $filter->manifestation->format, 'format' => $filter->manifestation->format);
 					}
 					if (!isset($filterOnLanguage)) {
 						$filterOnLanguage[] = array('language' => $filter->language);
@@ -620,8 +683,7 @@ class ItemAPI extends Action {
 					}
 				}
 
-				$itemData['filterOn']['format'] = $filterOnFormat;
-				$itemData['filterOn']['language'] = $filterOnLanguage;
+				$itemData['filterOn'] = array('format' => $filterOnFormat, 'language' => $filterOnLanguage);
 
 			}
 			return $itemData;
