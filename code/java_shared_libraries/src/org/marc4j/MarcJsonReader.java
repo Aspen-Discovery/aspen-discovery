@@ -41,7 +41,7 @@ public class MarcJsonReader implements MarcReader {
      * @param is - an InputStream to read
      */
     public MarcJsonReader(final InputStream is) {
-        parser = new JsonParser(JsonParser.OPT_INTERN_KEYWORDS |
+        parser = new JsonParser(/*JsonParser.OPT_INTERN_KEYWORDS |*/
                         JsonParser.OPT_UNQUOTED_KEYWORDS |
                         JsonParser.OPT_SINGLE_QUOTE_STRINGS);
         parser.setInput("MarcInput", new InputStreamReader(is), false);
@@ -94,6 +94,7 @@ public class MarcJsonReader implements MarcReader {
 
     static Pattern threeAlphaNumerics = Pattern.compile("[A-Z0-9][A-Z0-9][A-Z0-9]");
     static Pattern singleAlphaNumeric = Pattern.compile("[A-Z0-9]");
+    static Pattern forwardSlash = Pattern.compile("⁄");
     /**
      * Returns the next {@link Record}.
      */
@@ -167,7 +168,7 @@ public class MarcJsonReader implements MarcReader {
                         value = JsonParser.stripQuotes(value);
                     }
 
-                    value = value.replaceAll("⁄", "/");
+                    value = forwardSlash.matcher(value).replaceAll("/");
 
                     if (mname.equals("ind1")) {
                         df.setIndicator1(value.length() >= 1 ? value.charAt(0) : ' ');

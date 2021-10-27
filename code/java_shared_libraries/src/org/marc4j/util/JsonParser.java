@@ -1175,7 +1175,7 @@ public class JsonParser extends Object {
      */
     static public String stripQuotes(String val) {
         if (isQuoted(val)) {
-            val = val.substring(1, val.length() - 1);
+            val = new String(val.toCharArray(), 1, val.length() - 2);
         }
         return val;
     }
@@ -1206,7 +1206,7 @@ public class JsonParser extends Object {
     static private Reader preloadInput(final String inpnam, final Reader inprdr,
             final boolean inpcls, final int sizest) throws Escape {
         CharArrayWriter wtr;                                    // writer
-        final char[] buf = new char[10240];                    // read buffer
+        char[] buf = new char[10240];                    // read buffer
         int len;                                    // read length
 
         try {
@@ -1218,6 +1218,7 @@ public class JsonParser extends Object {
             if (inpcls) {
                 wtr.close();
             }
+            buf = null;
             return new CharArrayReader(wtr.toCharArray());
         } catch (final IOException thr) {
             throw new Escape(Escape.IOERROR,

@@ -943,7 +943,7 @@ class ExtractOverDriveInfo {
 				batchUrl += "offset=" + i + "&limit=" + batchSize;
 
 				for (int tries = 0; tries < 3; tries++){
-					WebServiceResponse productBatchInfoResponse = callOverDriveURL(batchUrl);
+					WebServiceResponse productBatchInfoResponse = callOverDriveURL(batchUrl, tries == 2);
 					if (productBatchInfoResponse.getResponseCode() == 200) {
 						JSONObject productBatchInfo = productBatchInfoResponse.getJSONResponse();
 						if (productBatchInfo != null && productBatchInfo.has("products")) {

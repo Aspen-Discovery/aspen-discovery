@@ -126,6 +126,8 @@ public class ExtractOverDriveInfoMain {
 						logger.info("Elapsed time " + String.format("%f2", ((float) elapsedTime / 60f)) + " minutes");
 
 						extractor.close();
+
+						localDBConnection.close();
 					} catch (SQLException e) {
 						logger.error("Could not connect to database", e);
 						System.exit(1);

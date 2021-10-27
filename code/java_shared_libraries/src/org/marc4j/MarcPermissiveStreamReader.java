@@ -1373,9 +1373,9 @@ public class MarcPermissiveStreamReader implements MarcReader {
     }
 
     private int parseRecordLength(final byte[] leaderData) throws IOException {
-        final InputStreamReader isr = new InputStreamReader(new ByteArrayInputStream(leaderData));
+        InputStreamReader isr = new InputStreamReader(new ByteArrayInputStream(leaderData));
         int length = -1;
-        final char[] tmp = new char[5];
+        char[] tmp = new char[5];
         isr.read(tmp);
 
         try {
@@ -1385,12 +1385,13 @@ public class MarcPermissiveStreamReader implements MarcReader {
             throw new MarcException("unable to parse record length", e);
         }
 
+        tmp = null;
+        isr.close();
         return length;
     }
 
     private void parseLeader(final Leader ldr, final byte[] leaderData) throws IOException {
-        final InputStreamReader isr = new InputStreamReader(new ByteArrayInputStream(leaderData),
-                "ISO-8859-1");
+        InputStreamReader isr = new InputStreamReader(new ByteArrayInputStream(leaderData), "ISO-8859-1");
 
         char[] tmp = new char[5];
         isr.read(tmp);
@@ -1447,6 +1448,8 @@ public class MarcPermissiveStreamReader implements MarcReader {
             throw new MarcException("unable to parse base address of data", e);
         }
 
+        tmp = null;
+        isr.close();
     }
 
     private static Pattern ltPattern = Pattern.compile("&lt;");

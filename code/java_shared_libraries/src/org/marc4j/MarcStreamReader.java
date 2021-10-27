@@ -347,20 +347,22 @@ public class MarcStreamReader implements MarcReader {
     }
 
     private int parseRecordLength(final byte[] leaderData) throws IOException {
-        final InputStreamReader isr = new InputStreamReader(new ByteArrayInputStream(leaderData), "ISO-8859-1");
+        InputStreamReader isr = new InputStreamReader(new ByteArrayInputStream(leaderData), "ISO-8859-1");
         int length = -1;
-        final char[] tmp = new char[5];
+        char[] tmp = new char[5];
         isr.read(tmp);
         try {
             length = Integer.parseInt(new String(tmp));
         } catch (final NumberFormatException e) {
             throw new MarcException("unable to parse record length", e);
         }
+        tmp = null;
+        isr.close();
         return length;
     }
 
     private void parseLeader(final Leader ldr, final byte[] leaderData) throws IOException {
-        final InputStreamReader isr = new InputStreamReader(new ByteArrayInputStream(leaderData), "ISO-8859-1");
+        InputStreamReader isr = new InputStreamReader(new ByteArrayInputStream(leaderData), "ISO-8859-1");
         char[] tmp = new char[5];
         isr.read(tmp);
         // Skip over bytes for record length, If we get here, its already been
@@ -373,7 +375,7 @@ public class MarcStreamReader implements MarcReader {
         ldr.setCharCodingScheme((char) isr.read());
         final char indicatorCount = (char) isr.read();
         final char subfieldCodeLength = (char) isr.read();
-        final char baseAddr[] = new char[5];
+        char baseAddr[] = new char[5];
         isr.read(baseAddr);
         tmp = new char[3];
         isr.read(tmp);
@@ -397,7 +399,9 @@ public class MarcStreamReader implements MarcReader {
         } catch (final NumberFormatException e) {
             throw new MarcException("unable to parse base address of data", e);
         }
-
+        tmp = null;
+        baseAddr = null;
+        isr.close();
     }
 
     private String getDataAsString(final byte[] bytes) {

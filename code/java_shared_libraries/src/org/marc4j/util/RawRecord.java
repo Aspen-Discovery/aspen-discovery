@@ -244,15 +244,17 @@ public class RawRecord {
     }
 
     private static int parseRecordLength(final byte[] leaderData) throws IOException {
-        final InputStreamReader isr = new InputStreamReader(new ByteArrayInputStream(leaderData));
+        InputStreamReader isr = new InputStreamReader(new ByteArrayInputStream(leaderData));
         int length = -1;
-        final char[] tmp = new char[5];
+        char[] tmp = new char[5];
         isr.read(tmp);
         try {
             length = Integer.parseInt(new String(tmp));
         } catch (final NumberFormatException e) {
             throw new IOException("unable to parse record length");
         }
+        tmp = null;
+        isr.close();
         return (length);
     }
 }
