@@ -50,4 +50,7 @@ function importBadWords(){
 		}
 	}
 	fclose($fhnd);
+	/** @var $memCache Memcache */
+	global $memCache;
+	$memCache->delete('bad_words_list');
 }

@@ -2077,7 +2077,7 @@ class GroupedWorkDriver extends IndexRecordDriver
 		// Determine if we should censor bad words or hide the comment completely.
 		global $library;
 		$censorWords = !$library->getGroupedWorkDisplaySettings()->hideCommentsWithBadWords; // censor if not hiding
-		require_once(ROOT_DIR . '/sys/LocalEnrichment/BadWord.php');
+		require_once ROOT_DIR . '/sys/LocalEnrichment/BadWord.php';
 		$badWords = new BadWord();
 
 		// Get the Reviews
