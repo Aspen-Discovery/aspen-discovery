@@ -1347,7 +1347,7 @@ class UserAPI extends Action
 
 	}
 
-	function thawOverDriveHold() : array
+	function activateOverDriveHold() : array
 	{
 		list($username, $password) = $this->loadUsernameAndPassword();
 		$id = $_REQUEST['holdId'];
@@ -1820,7 +1820,7 @@ class UserAPI extends Action
 		}
 	}
 
-	function thawAxis360Hold() : array
+	function activateAxis360Hold() : array
 	{
 		list($username, $password) = $this->loadUsernameAndPassword();
 		$id = $_REQUEST['holdId'];
@@ -1997,20 +1997,10 @@ class UserAPI extends Action
 		list($username, $password) = $this->loadUsernameAndPassword();
 
 		// Cancel Hold requires one of these, which one depends on the ILS
-		$recordId = $cancelId = null;
-		if (!empty($_REQUEST['recordId'])) {
-			$recordId = $_REQUEST['recordId'];
-		}
-		if (!empty($_REQUEST['cancelId'])) {
-			$cancelId = $_REQUEST['cancelId'];
-		}
+		$recordId = $_REQUEST['recordId'] ?? null;
+		$cancelId = $_REQUEST['cancelId'] ?? null;
 
-		if(isset($_REQUEST['itemSource'])) {
-			$source = $_REQUEST['itemSource'];
-		} else {
-			$source = null;
-		}
-
+		$source = $_REQUEST['itemSource'] ?? null;
 		$patron = UserAccount::validateAccount($username, $password);
 
 		if ($patron && !($patron instanceof AspenError)) {
@@ -2024,7 +2014,7 @@ class UserAPI extends Action
 				return $this->cancelAxis360Hold();
 			}
 		} else {
-			return array('success' => false, 'message' => 'Login unsuccessful');
+			return array('success' => false, 'title' => 'Error', 'message' => 'Unable to validate user');
 		}
 	}
 
@@ -2081,14 +2071,12 @@ class UserAPI extends Action
 				return $user->freezeHold($recordId, $holdId, $reactivationDate);
 			} else if ($source == 'overdrive') {
 				return $this->freezeOverDriveHold();
-			} else if ($source == 'cloud_library') {
-				return $this->freezeCloudLibraryHold();
 			} else if ($source == 'axis360') {
 				return $this->freezeAxis360Hold();
 			}
 
 		} else {
-			return array('success' => false, 'message' => 'Login unsuccessful');
+			return array('success' => false, 'title' => 'Error', 'message' => 'Unable to validate user');
 		}
 	}
 
@@ -2141,29 +2129,24 @@ class UserAPI extends Action
 	{
 		list($username, $password) = $this->loadUsernameAndPassword();
 		$user = UserAccount::validateAccount($username, $password);
-		if(isset($_REQUEST['itemSource'])) {
-			$source = $_REQUEST['itemSource'];
-		} else {
-			$source = null;
-		}
+		$source = $_REQUEST['itemSource'] ?? null;
+
 		if ($user && !($user instanceof AspenError)) {
-			if (empty($_REQUEST['recordId']) || empty($_REQUEST['holdId'])) {
-				return array('success' => false, 'message' => 'recordId and holdId must be provided');
-			} else {
-				$recordId = $_REQUEST['recordId'];
-				$holdId = $_REQUEST['holdId'];
-				if ($source == 'ils' || $source == null) {
+			if ($source == 'ils' || $source == null) {
+				if (empty($_REQUEST['recordId']) || empty($_REQUEST['holdId'])) {
+					return array('success' => false, 'title' => 'Error', 'message' => 'recordId and holdId must be provided');
+				} else {
+					$recordId = $_REQUEST['recordId'];
+					$holdId = $_REQUEST['holdId'];
 					return $user->thawHold($recordId, $holdId);
-				} else if ($source == 'overdrive') {
-					return $this->thawOverDriveHold();
-				} else if ($source == 'cloud_library') {
-					return $this->thawCloudLibraryHold();
-				} else if ($source == 'axis360') {
-					return $this->thawAxis360Hold();
 				}
+			} else if ($source == 'overdrive') {
+				return $this->activateOverDriveHold();
+			} else if ($source == 'axis360') {
+				return $this->activateAxis360Hold();
 			}
 		} else {
-			return array('success' => false, 'message' => 'Login unsuccessful');
+			return array('success' => false, 'title' => 'Error', 'message' => 'Unable to validate user');
 		}
 	}
 
