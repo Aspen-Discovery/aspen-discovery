@@ -86,7 +86,6 @@ class ExtractOverDriveInfo {
 	}
 
 	int extractOverDriveInfo(Ini configIni, String serverName, Connection dbConn, OverDriveExtractLogEntry logEntry) {
-		final int[] numChanges = {0};
 		final int[] numProcessed = {0};
 		this.configIni = configIni;
 		this.serverName = serverName;
@@ -95,20 +94,33 @@ class ExtractOverDriveInfo {
 
 		long extractStartTime = new Date().getTime();
 
+		boolean checkForDeletedRecords = false;
+		Calendar rightNow = Calendar.getInstance();
+		int hour = rightNow.get(Calendar.HOUR_OF_DAY);
+		if (hour == 8){
+			checkForDeletedRecords = true;
+		}
+
 		try {
 			initOverDriveExtract(dbConn, logEntry);
+
+			//Initialize these so we don't have to synchronize later
+			getGroupedWorkIndexer();
+			getRecordGroupingProcessor();
 
 			try {
 				if (settings.getClientSecret() == null || settings.getClientKey() == null || settings.getAccountId() == null || settings.getClientSecret().length() == 0 || settings.getClientKey().length() == 0 || settings.getAccountId().length() == 0) {
 					logEntry.addNote("Did not find correct configuration in settings, not loading overdrive titles");
 				} else {
-					//Load all products from API to figure out what is actually new, what is deleted, and what needs an update
-					//This just gets minimal data, we will load more complete information when we have truly determined
-					//What has changed
-					if (!loadProductsFromAPI(LOAD_ALL_PRODUCTS, extractStartTime)) {
-						return 0;
+					if (checkForDeletedRecords) {
+						//Load all products from API to figure out what is actually new, what is deleted, and what needs an update
+						//This just gets minimal data, we will load more complete information when we have truly determined
+						//What has changed
+						if (!loadProductsFromAPI(LOAD_ALL_PRODUCTS, extractStartTime)) {
+							return 0;
+						}
+						logger.info("There are a total of " + totalProductsInCollection + " products in the combined overdrive collections");
 					}
-					logger.info("There are a total of " + totalProductsInCollection + " products in the combined overdrive collections");
 
 					//We now have a list of all products in all collections, but we need to know what needs availability
 					//and metadata updated for it.  So we need to call again to figure out which records have
@@ -170,95 +182,113 @@ class ExtractOverDriveInfo {
 					}else if (numExtractionThreads < 1){
 						numExtractionThreads = 1;
 					}
-					ThreadPoolExecutor es = (ThreadPoolExecutor)Executors.newFixedThreadPool(numExtractionThreads);
+
+					//ThreadPoolExecutor es = (ThreadPoolExecutor)Executors.newFixedThreadPool(numExtractionThreads);
 					for (OverDriveRecordInfo curRecord : allProductsInOverDrive.values()) {
-						es.execute(() -> {
+						//es.execute(() -> {
 							numProcessed[0]++;
 							try {
 								//Extract data from overdrive and update the database
+								final boolean[] errorsEncountered = {false};
 								if (settings.isRunFullUpdate() || curRecord.isNew || curRecord.hasChanges) {
 									//Load Metadata for the record
-									updateOverDriveMetaData(curRecord);
+									Thread metadataThread = new Thread(() -> {
+										try {
+											updateOverDriveMetaData(curRecord);
+										} catch (SocketTimeoutException e) {
+											logEntry.incErrors("Error loading metadata for " + curRecord.getId(), e);
+											errorsEncountered[0] = true;
+										}
+									});
 									//Load availability for the record
-									updateOverDriveAvailability(curRecord, curRecord.getDatabaseId(), false);
-								}
+									Thread availabilityThread = new Thread(() -> {
+										try {
+											updateOverDriveAvailability(curRecord, curRecord.getDatabaseId(), false);
+										} catch (SocketTimeoutException e) {
+											logEntry.incErrors("Error loading availability for " + curRecord.getId(), e);
+											errorsEncountered[0] = true;
+										}
+									});
+									metadataThread.start();
+									availabilityThread.start();
+									metadataThread.join();
+									availabilityThread.join();
 
-								String groupedWorkId = null;
-								if (settings.isRunFullUpdate() || curRecord.isNew || curRecord.hasChanges) {
-									//Regroup the record
-									groupedWorkId = getRecordGroupingProcessor().processOverDriveRecord(curRecord.getId());
-								}
-								if (settings.isRunFullUpdate() || curRecord.isNew || curRecord.hasChanges) {
-									//Metadata didn't change so we need to load from the database
-									if (groupedWorkId == null) {
-										groupedWorkId = getRecordGroupingProcessor().getPermanentIdForRecord("overdrive", curRecord.getId());
+									if (!errorsEncountered[0]){
+										String groupedWorkId = null;
+										if (settings.isRunFullUpdate() || curRecord.isNew || curRecord.hasChanges) {
+											//Regroup the record
+											groupedWorkId = getRecordGroupingProcessor().processOverDriveRecord(curRecord.getId());
+										}
+										if (settings.isRunFullUpdate() || curRecord.isNew || curRecord.hasChanges) {
+											//Metadata didn't change so we need to load from the database
+											if (groupedWorkId == null) {
+												groupedWorkId = getRecordGroupingProcessor().getPermanentIdForRecord("overdrive", curRecord.getId());
+											}
+											//Reindex the record
+											getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
+											logEntry.incUpdated();
+										}else{
+											logEntry.incSkipped();
+										}
 									}
-									//Reindex the record
-									getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
-									logEntry.incUpdated();
-
-									numChanges[0]++;
-									if (numChanges[0] % 250 == 0) {
-										logger.info("Processed " + numChanges[0]);
-										logEntry.saveResults();
-									}
-								}else{
-									logEntry.incSkipped();
 								}
 							}catch (Exception e){
-								logEntry.incErrors("Error processing record", e);
+								logEntry.incErrors("Error processing record " + curRecord.getId(), e);
 							}
-							if (numProcessed[0] % 1000 == 0) {
+							if (numProcessed[0] % 100 == 0) {
 								logEntry.addNote("Processed " + numProcessed[0]);
 								logEntry.saveResults();
 							}
-						});
+						//});
 					}
-					es.shutdown();
-					while (true) {
-						try {
-							boolean terminated = es.awaitTermination(1, TimeUnit.MINUTES);
-							if (terminated){
-								break;
-							}
-						} catch (InterruptedException e) {
-							logger.error("Error waiting for all extracts to finish");
-						}
-					}
+//					es.shutdown();
+//					while (true) {
+//						try {
+//							boolean terminated = es.awaitTermination(1, TimeUnit.MINUTES);
+//							if (terminated){
+//								break;
+//							}
+//						} catch (InterruptedException e) {
+//							logger.error("Error waiting for all extracts to finish");
+//						}
+//					}
 
-					//Remove any records that no longer exist
-					//There is currently an issue with OverDrive Search APIs that cause all records to not be returned
-					//so we will avoid deleting records if we are deleting more than 500 records or 5% of the collection
-					int totalRecordsToDelete = 0;
-					getNumDeletedProductsStmt.setLong(1, settings.getId());
-					getNumDeletedProductsStmt.setLong(2, extractStartTime / 1000);
-					ResultSet getNumDeletedProductsRS = getNumDeletedProductsStmt.executeQuery();
-					if (getNumDeletedProductsRS.next()){
-						totalRecordsToDelete = getNumDeletedProductsRS.getInt(1);
-					}
-					if (!this.errorsWhileLoadingProducts && !this.hadTimeoutsFromOverDrive) {
-						if (totalRecordsToDelete > 0 && (settings.isAllowLargeDeletes() || (totalRecordsToDelete < 500 && allProductsInOverDrive.size() > 0 && (((float) totalRecordsToDelete / allProductsInOverDrive.size()) < .05)))) {
-							int numRecordsDeleted = 0;
-							getDeletedProductsStmt.setLong(1, settings.getId());
-							getDeletedProductsStmt.setLong(2, extractStartTime / 1000);
-							ResultSet getDeletedProductsRS = getDeletedProductsStmt.executeQuery();
-							while (getDeletedProductsRS.next()){
-								String overDriveId = getDeletedProductsRS.getString("overdriveId");
-								long aspenOverDriveId = getDeletedProductsRS.getLong("id");
-								deleteProduct(overDriveId, aspenOverDriveId);
-								numRecordsDeleted++;
-								if (numRecordsDeleted % 100 == 0) {
-									logEntry.saveResults();
-								}
-							}
-							logger.info("Deleted " + numRecordsDeleted + " records that no longer exist");
-						} else if (!settings.isAllowLargeDeletes() && totalRecordsToDelete >= 500) {
-							logEntry.incErrors("There were more than 500 records to delete, detected " + totalRecordsToDelete + ", not deleting records");
-						} else if (!settings.isAllowLargeDeletes() && (((float) totalRecordsToDelete / allProductsInOverDrive.size()) >= .05)) {
-							logEntry.incErrors("More than 5% of the collection was marked as being deleted. Detected " + totalRecordsToDelete + ", not deleting records");
+					if (checkForDeletedRecords) {
+						//Remove any records that no longer exist
+						//There is currently an issue with OverDrive Search APIs that cause all records to not be returned
+						//so we will avoid deleting records if we are deleting more than 500 records or 5% of the collection
+						int totalRecordsToDelete = 0;
+						getNumDeletedProductsStmt.setLong(1, settings.getId());
+						getNumDeletedProductsStmt.setLong(2, extractStartTime / 1000);
+						ResultSet getNumDeletedProductsRS = getNumDeletedProductsStmt.executeQuery();
+						if (getNumDeletedProductsRS.next()) {
+							totalRecordsToDelete = getNumDeletedProductsRS.getInt(1);
 						}
-					}else{
-						logger.info("Did not delete " + totalRecordsToDelete + " records that no longer exist because we received errors from OverDrive.");
+						if (!this.errorsWhileLoadingProducts && !this.hadTimeoutsFromOverDrive) {
+							if (totalRecordsToDelete > 0 && (settings.isAllowLargeDeletes() || (totalRecordsToDelete < 500 && allProductsInOverDrive.size() > 0 && (((float) totalRecordsToDelete / allProductsInOverDrive.size()) < .05)))) {
+								int numRecordsDeleted = 0;
+								getDeletedProductsStmt.setLong(1, settings.getId());
+								getDeletedProductsStmt.setLong(2, extractStartTime / 1000);
+								ResultSet getDeletedProductsRS = getDeletedProductsStmt.executeQuery();
+								while (getDeletedProductsRS.next()) {
+									String overDriveId = getDeletedProductsRS.getString("overdriveId");
+									long aspenOverDriveId = getDeletedProductsRS.getLong("id");
+									deleteProduct(overDriveId, aspenOverDriveId);
+									numRecordsDeleted++;
+									if (numRecordsDeleted % 100 == 0) {
+										logEntry.saveResults();
+									}
+								}
+								logger.info("Deleted " + numRecordsDeleted + " records that no longer exist");
+							} else if (!settings.isAllowLargeDeletes() && totalRecordsToDelete >= 500) {
+								logEntry.incErrors("There were more than 500 records to delete, detected " + totalRecordsToDelete + ", not deleting records");
+							} else if (!settings.isAllowLargeDeletes() && (((float) totalRecordsToDelete / allProductsInOverDrive.size()) >= .05)) {
+								logEntry.incErrors("More than 5% of the collection was marked as being deleted. Detected " + totalRecordsToDelete + ", not deleting records");
+							}
+						} else {
+							logger.info("Did not delete " + totalRecordsToDelete + " records that no longer exist because we received errors from OverDrive.");
+						}
 					}
 
 					//For any records that have been marked to reload, regroup and reindex the records
@@ -277,8 +307,6 @@ class ExtractOverDriveInfo {
 				logEntry.addNote("Error while loading information from OverDrive, aborting");
 				errorsWhileLoadingProducts = true;
 			}
-
-			logger.info("Processed " + numChanges[0]);
 
 			if (recordGroupingProcessorSingleton != null) {
 				recordGroupingProcessorSingleton.close();
@@ -309,7 +337,7 @@ class ExtractOverDriveInfo {
 			// handle any errors
 			this.logEntry.incErrors("Error initializing overdrive extraction ", e);
 		}
-		return numChanges[0];
+		return numProcessed[0];
 	}
 
 	private void processUnlinkedProducts() {
@@ -663,13 +691,15 @@ class ExtractOverDriveInfo {
 					mainProductUrl += "&lastUpdateTime=" + lastUpdateTimeParam;
 				}
 				AdvantageCollectionInfo mainCollectionInfo = null;
-				if (loadType == LOAD_ALL_PRODUCTS) {
+				boolean loadCollectionInfo = false;
+				if (loadType == LOAD_ALL_PRODUCTS || allAdvantageCollections.size() == 0) {
 					mainCollectionInfo = new AdvantageCollectionInfo();
 					mainCollectionInfo.setAdvantageId(-1);
 					mainCollectionInfo.setName("Shared OverDrive Collection");
 					mainCollectionInfo.setCollectionToken(libraryInfo.getString("collectionToken"));
 					mainCollectionInfo.setAspenLibraryId(-1);
 					allAdvantageCollections.add(mainCollectionInfo);
+					loadCollectionInfo = true;
 				}else{
 					for (AdvantageCollectionInfo curCollection : allAdvantageCollections){
 						if (curCollection.getAspenLibraryId() == -1){
@@ -690,11 +720,12 @@ class ExtractOverDriveInfo {
 							ExecutorService es = Executors.newCachedThreadPool();
 
 							JSONArray advantageAccounts = advantageInfo.getJSONArray("advantageAccounts");
+							boolean finalLoadCollectionInfo = loadCollectionInfo;
 							for (int i = 0; i < advantageAccounts.length(); i++) {
 								JSONObject curAdvantageAccount = advantageAccounts.getJSONObject(i);
 								es.execute(() -> {
 									try {
-										extractProductsForAdvantageAccount(loadType, curAdvantageAccount, startTime);
+										extractProductsForAdvantageAccount(loadType, curAdvantageAccount, startTime, finalLoadCollectionInfo);
 									} catch (SocketTimeoutException e) {
 										logEntry.incErrors("Socket timeout loading information from OverDrive API ", e);
 										hadTimeoutsFromOverDrive = true;
@@ -739,9 +770,9 @@ class ExtractOverDriveInfo {
 		}
 	}
 
-	private void extractProductsForAdvantageAccount(int loadType, JSONObject curAdvantageAccount, long startTime) throws SocketTimeoutException {
+	private void extractProductsForAdvantageAccount(int loadType, JSONObject curAdvantageAccount, long startTime, boolean loadCollectionInfo) throws SocketTimeoutException {
 		AdvantageCollectionInfo collectionInfo = null;
-		if (loadType == LOAD_ALL_PRODUCTS) {
+		if (loadType == LOAD_ALL_PRODUCTS || loadCollectionInfo) {
 			collectionInfo = new AdvantageCollectionInfo();
 			collectionInfo.setAdvantageId(curAdvantageAccount.getInt("id"));
 			collectionInfo.setName(curAdvantageAccount.getString("name"));
@@ -892,8 +923,8 @@ class ExtractOverDriveInfo {
 			logger.info(collectionInfo.getName() + " collection has " + numProducts + " products, the libraryId for the collection is " + collectionInfo.getAspenLibraryId());
 			if (loadType == LOAD_ALL_PRODUCTS) {
 				logEntry.addNote(collectionInfo.getName() + " collection has " + numProducts + " products, the libraryId for the collection is " + collectionInfo.getAspenLibraryId());
+				logEntry.saveResults();
 			}
-			logEntry.saveResults();
 			long batchSize = 300;
 			for (int i = 0; i < numProducts; i += batchSize) {
 				//Just search for the specific product
@@ -1029,7 +1060,7 @@ class ExtractOverDriveInfo {
 		}
 	}
 
-	private synchronized void saveMetadataToDatabase(OverDriveRecordInfo overDriveInfo, long curTime, WebServiceResponse metaDataResponse) {
+	private void saveMetadataToDatabase(OverDriveRecordInfo overDriveInfo, long curTime, WebServiceResponse metaDataResponse) {
 		JSONObject metaData = metaDataResponse.getJSONResponse();
 
 		checksumCalculator.reset();
@@ -1486,7 +1517,6 @@ class ExtractOverDriveInfo {
 				updateProductAvailabilityStmt.setLong(1, curTime);
 				updateProductAvailabilityStmt.setLong(2, curTime);
 				logEntry.incAvailabilityChanges();
-				logEntry.saveResults();
 				updateProductAvailabilityStmt.setLong(3, databaseId);
 				updateProductAvailabilityStmt.executeUpdate();
 			} catch (SQLException e) {
@@ -1609,14 +1639,14 @@ class ExtractOverDriveInfo {
 		return true;
 	}
 
-	private synchronized OverDriveRecordGrouper getRecordGroupingProcessor(){
+	private OverDriveRecordGrouper getRecordGroupingProcessor(){
 		if (recordGroupingProcessorSingleton == null) {
 			recordGroupingProcessorSingleton = new OverDriveRecordGrouper(dbConn, serverName, logEntry, logger);
 		}
 		return recordGroupingProcessorSingleton;
 	}
 
-	private synchronized GroupedWorkIndexer getGroupedWorkIndexer() {
+	private GroupedWorkIndexer getGroupedWorkIndexer() {
 		if (groupedWorkIndexer == null) {
 			groupedWorkIndexer = new GroupedWorkIndexer(serverName, dbConn, configIni, false, false, logEntry, logger);
 		}

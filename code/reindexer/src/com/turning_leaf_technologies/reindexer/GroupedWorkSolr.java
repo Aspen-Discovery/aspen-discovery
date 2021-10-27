@@ -1816,7 +1816,7 @@ public class GroupedWorkSolr implements Cloneable {
 		this.userNotInterestedLink.add(userId);
 	}
 
-	public synchronized void saveRecordsToDatabase(long groupedWorkId) {
+	public void saveRecordsToDatabase(long groupedWorkId) {
 		groupedWorkIndexer.disableAutoCommit();
 		//Get a list of all existing records for the grouped work
 		HashMap<String, SavedRecordInfo> existingRecords = groupedWorkIndexer.getExistingRecordsForGroupedWork(groupedWorkId);

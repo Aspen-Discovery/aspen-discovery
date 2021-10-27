@@ -71,7 +71,7 @@ class OverDriveExtractLogEntry implements BaseLogEntry {
 	
 	private PreparedStatement insertLogEntry;
 	private PreparedStatement updateLogEntry;
-	public synchronized boolean saveResults() {
+	public boolean saveResults() {
 		try {
 			if (logEntryId == null){
 				insertLogEntry.setLong(1, startTime.getTime() / 1000);

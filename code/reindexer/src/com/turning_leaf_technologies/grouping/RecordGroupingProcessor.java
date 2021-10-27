@@ -116,7 +116,7 @@ public class RecordGroupingProcessor {
 	 * @param source - The source of the record being removed
 	 * @param id     - The id of the record being removed
 	 */
-	public synchronized RemoveRecordFromWorkResult removeRecordFromGroupedWork(String source, String id) {
+	public RemoveRecordFromWorkResult removeRecordFromGroupedWork(String source, String id) {
 		RemoveRecordFromWorkResult result = new RemoveRecordFromWorkResult();
 		try {
 			//Check to see if the identifier is in the grouped work primary identifiers table
@@ -148,7 +148,7 @@ public class RecordGroupingProcessor {
 		return result;
 	}
 
-	public synchronized String getPermanentIdForRecord(String source, String id) {
+	public String getPermanentIdForRecord(String source, String id) {
 		String permanentId = null;
 		try {
 			getWorkForPrimaryIdentifierStmt.setString(1, source);
@@ -243,7 +243,7 @@ public class RecordGroupingProcessor {
 	 * @param primaryIdentifier The primary identifier we are updating the work for
 	 * @param groupedWork       Information about the work itself
 	 */
-	synchronized void addGroupedWorkToDatabase(RecordIdentifier primaryIdentifier, GroupedWork groupedWork, boolean primaryDataChanged, String originalGroupedWorkId) {
+	void addGroupedWorkToDatabase(RecordIdentifier primaryIdentifier, GroupedWork groupedWork, boolean primaryDataChanged, String originalGroupedWorkId) {
 		String groupedWorkPermanentId = groupedWork.getPermanentId();
 
 		//Check to see if we need to ungroup the record.

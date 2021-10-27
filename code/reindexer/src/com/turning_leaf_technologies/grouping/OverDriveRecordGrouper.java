@@ -24,7 +24,7 @@ public class OverDriveRecordGrouper extends RecordGroupingProcessor {
 	}
 
 	Pattern wordsInParensPattern = Pattern.compile("\\(.*?\\)", Pattern.CASE_INSENSITIVE);
-	public synchronized String processOverDriveRecord(String overdriveId) {
+	public String processOverDriveRecord(String overdriveId) {
 		try {
 			getOverDriveProductInfoStmt.setString(1, overdriveId);
 			ResultSet overDriveRecordRS = getOverDriveProductInfoStmt.executeQuery();

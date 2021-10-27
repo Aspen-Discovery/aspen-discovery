@@ -102,26 +102,34 @@ public class ExtractOverDriveInfoMain {
 				boolean finalExtractSingleWork = extractSingleWork;
 				String finalSingleWorkId = singleWorkId;
 				es.execute(() -> {
-					OverDriveExtractLogEntry logEntry = new OverDriveExtractLogEntry(dbConn, setting, logger);
-					if (!logEntry.saveResults()) {
-						logger.error("Could not save log entry to database, quitting");
-						return;
+					Connection localDBConnection;
+					try {
+						localDBConnection = DriverManager.getConnection(databaseConnectionInfo);
+
+						OverDriveExtractLogEntry logEntry = new OverDriveExtractLogEntry(localDBConnection, setting, logger);
+						if (!logEntry.saveResults()) {
+							logger.error("Could not save log entry to database, quitting");
+							return;
+						}
+
+						ExtractOverDriveInfo extractor = new ExtractOverDriveInfo(setting);
+						if (finalExtractSingleWork) {
+							numChanges[0] += extractor.processSingleWork(finalSingleWorkId, configIni, serverName, localDBConnection, logEntry);
+						} else {
+							numChanges[0] += extractor.extractOverDriveInfo(configIni, serverName, localDBConnection, logEntry);
+						}
+
+						logEntry.setFinished();
+						logger.info("Finished OverDrive extraction");
+						Date endTime = new Date();
+						long elapsedTime = (endTime.getTime() - startTime.getTime()) / 1000;
+						logger.info("Elapsed time " + String.format("%f2", ((float) elapsedTime / 60f)) + " minutes");
+
+						extractor.close();
+					} catch (SQLException e) {
+						logger.error("Could not connect to database", e);
+						System.exit(1);
 					}
-
-					ExtractOverDriveInfo extractor = new ExtractOverDriveInfo(setting);
-					if (finalExtractSingleWork) {
-						numChanges[0] += extractor.processSingleWork(finalSingleWorkId, configIni, serverName, dbConn, logEntry);
-					} else {
-						numChanges[0] += extractor.extractOverDriveInfo(configIni, serverName, dbConn, logEntry);
-					}
-
-					logEntry.setFinished();
-					logger.info("Finished OverDrive extraction");
-					Date endTime = new Date();
-					long elapsedTime = (endTime.getTime() - startTime.getTime()) / 1000;
-					logger.info("Elapsed time " + String.format("%f2", ((float) elapsedTime / 60f)) + " minutes");
-
-					extractor.close();
 				});
 			}
 			es.shutdown();

@@ -66,6 +66,7 @@ public class Scope implements Comparable<Scope>{
 		this.facetLabel = facetLabel.trim();
 	}
 
+	private final HashMap<String, Boolean> ownershipResults = new HashMap<>();
 	/**
 	 * Determine if the item is part of the current scope based on location code and other information
 	 *
@@ -77,10 +78,17 @@ public class Scope implements Comparable<Scope>{
 	 */
 	public InclusionResult isItemPartOfScope(@NotNull String recordType, @NotNull String locationCode, @NotNull String subLocationCode, String iType, TreeSet<String> audiences, String audiencesAsString, String format, boolean isHoldable, boolean isOnOrder, boolean isEContent, Record marcRecord, String econtentUrl){
 		String fullKey = recordType + locationCode + subLocationCode;
-		for(OwnershipRule curRule: ownershipRules){
-			if (curRule.isItemOwned(fullKey, recordType, locationCode, subLocationCode)){
-				return new InclusionResult(true, true, econtentUrl);
+		Boolean isOwned = ownershipResults.get(fullKey);
+		if (isOwned == null) {
+			for (OwnershipRule curRule : ownershipRules) {
+				if (curRule.isItemOwned(fullKey, recordType, locationCode, subLocationCode)) {
+					ownershipResults.put(fullKey, true);
+					return new InclusionResult(true, true, econtentUrl);
+				}
 			}
+			ownershipResults.put(fullKey, false);
+		}else if (isOwned){
+			return new InclusionResult(true, true, econtentUrl);
 		}
 
 		for(InclusionRule curRule: inclusionRules){
