@@ -29,6 +29,27 @@ class GreenhouseAPI extends Action
 		echo $output;
 	}
 
+	public function updateSiteStatus() {
+		$sites = new AspenSite();
+		$sites->whereAdd('implementationStatus != 4 AND implementationStatus != 0');
+		$sites->orderBy('siteType ASC, implementationStatus DESC, name ASC');
+		$sites->find();
+		$numSitesUpdated = 0;
+		while ($sites->fetch()){
+			$siteStatus = $sites->getStatus();
+			$siteStatuses[] = $siteStatus;
+			foreach ($siteStatus['checks'] as $key => $check){
+				$allChecks[$key] = $check['name'];
+			}
+			$numSitesUpdated++;
+		}
+		$return = [
+			'success' => true,
+			'numSitesUpdated' => $numSitesUpdated,
+		];
+		return $return;
+	}
+
 	public function getLibraries($returnAll = false, $reload = true) : array
 	{
 		$return = [
