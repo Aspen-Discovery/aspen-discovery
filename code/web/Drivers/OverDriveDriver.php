@@ -914,7 +914,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 			$cancelHoldResult['message'] = translate(['text' => 'Your hold was cancelled successfully.', 'isPublicFacing'=>true]);
 
 			// Result for API or app use
-			$cancelHoldResult['api']['title'] = "";
+			$cancelHoldResult['api']['title'] = translate(['text' => 'Hold cancelled', 'isPublicFacing'=> true]);
 			$cancelHoldResult['api']['message'] = translate(['text' => 'Your hold was cancelled successfully.', 'isPublicFacing'=>true]);
 
 			$this->incrementStat('numHoldsCancelled');
@@ -925,7 +925,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 		    if (isset($response->message)) $cancelHoldResult['message'] .= "  {$response->message}";
 
 			// Result for API or app use
-			$cancelHoldResult['api']['title'] = "";
+			$cancelHoldResult['api']['title'] = translate(['text' => 'Error cancelling hold', 'isPublicFacing'=> true]);
 			$cancelHoldResult['api']['message'] = translate(['text' => 'There was an error cancelling your hold.', 'isPublicFacing'=>true]);;
 			if (isset($response->message)) $cancelHoldResult['api']['message'] .= "  {$response->message}";
 
