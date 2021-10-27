@@ -1577,9 +1577,9 @@ class UserAPI extends Action
 			require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
 			$driver = new CloudLibraryDriver();
 			$result = $driver->checkOutTitle($patron, $id);
-			return array('success' => $result['success'], 'message' => $result['message']);
+			return array('success' => $result['success'], 'title' => $result['api']['title'], 'message' => $result['api']['message']);
 		} else {
-			return array('success' => false, 'message' => 'Login unsuccessful');
+			return array('success' => false, 'title' => 'Error', 'message' => 'Unable to validate user');
 		}
 	}
 
@@ -1599,9 +1599,9 @@ class UserAPI extends Action
 			require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
 			$driver = new CloudLibraryDriver();
 			$result = $driver->renewCheckout($patron, $id);
-			return array('success' => $result['success'], 'message' => $result['message']);
+			return array('success' => $result['success'], 'title' => $result['api']['title'], 'message' => $result['api']['message']);
 		} else {
-			return array('success' => false, 'message' => 'Login unsuccessful');
+			return array('success' => false, 'title' => 'Error', 'message' => 'Unable to validate user');
 		}
 	}
 
@@ -1621,54 +1621,9 @@ class UserAPI extends Action
 			require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
 			$driver = new CloudLibraryDriver();
 			$result = $driver->placeHold($patron, $id);
-			return array('success' => $result['success'], 'message' => $result['message']);
+			return array('success' => $result['success'], 'title' => $result['api']['title'], 'message' => $result['api']['message']);
 		} else {
-			return array('success' => false, 'message' => 'Login unsuccessful');
-		}
-	}
-
-	function freezeCloudLibraryHold() : array
-	{
-		list($username, $password) = $this->loadUsernameAndPassword();
-
-		$id = $_REQUEST['recordId'];
-		$reactivationDate = $_REQUEST['reactivationDate'] ?? null;
-
-		$user = UserAccount::validateAccount($username, $password);
-		if ($user && !($user instanceof AspenError)) {
-
-			require_once ROOT_DIR . '/RecordDrivers/CloudLibraryRecordDriver.php';
-			$this->recordDriver = new CloudLibraryRecordDriver($id);
-
-			require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
-			$driver = new CloudLibraryDriver();
-			$result = $driver->freezeHold($user, $id, $reactivationDate);
-			return array('success' => $result['success'], 'message' => $result['message']);
-		} else {
-			return array('success' => false, 'message' => 'Login unsuccessful');
-		}
-
-	}
-
-	function thawCloudLibraryHold() : array
-	{
-		list($username, $password) = $this->loadUsernameAndPassword();
-		$id = $_REQUEST['holdId'];
-		$patronId = $_REQUEST['patronId'];
-
-		$user = UserAccount::validateAccount($username, $password);
-
-		if ($user && !($user instanceof AspenError)) {
-			$patron = $user->getUserReferredTo($patronId);
-			require_once ROOT_DIR . '/RecordDrivers/CloudLibraryRecordDriver.php';
-			$this->recordDriver = new CloudLibraryRecordDriver($id);
-
-			require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
-			$driver = new CloudLibraryDriver();
-			$result = $driver->thawHold($patron, $id);
-			return array('success' => $result['success'], 'message' => $result['message']);
-		} else {
-			return array('success' => false, 'message' => 'Login unsuccessful');
+			return array('success' => false, 'title' => 'Error', 'message' => 'Unable to validate user');
 		}
 	}
 
@@ -1688,9 +1643,9 @@ class UserAPI extends Action
 			require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
 			$driver = new CloudLibraryDriver();
 			$result = $driver->cancelHold($patron, $id);
-			return array('success' => $result['success'], 'message' => $result['message']);
+			return array('success' => $result['success'], 'title' => $result['api']['title'], 'message' => $result['api']['message']);
 		} else {
-			return array('success' => false, 'message' => 'Login unsuccessful');
+			return array('success' => false, 'title' => 'Error', 'message' => 'Unable to validate user');
 		}
 	}
 
