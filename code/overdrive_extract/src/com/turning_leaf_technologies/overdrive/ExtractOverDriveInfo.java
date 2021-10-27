@@ -265,6 +265,7 @@ class ExtractOverDriveInfo {
 						if (getNumDeletedProductsRS.next()) {
 							totalRecordsToDelete = getNumDeletedProductsRS.getInt(1);
 						}
+						getNumDeletedProductsRS.close();
 						if (!this.errorsWhileLoadingProducts && !this.hadTimeoutsFromOverDrive) {
 							if (totalRecordsToDelete > 0 && (settings.isAllowLargeDeletes() || (totalRecordsToDelete < 500 && allProductsInOverDrive.size() > 0 && (((float) totalRecordsToDelete / allProductsInOverDrive.size()) < .05)))) {
 								int numRecordsDeleted = 0;
@@ -280,6 +281,7 @@ class ExtractOverDriveInfo {
 										logEntry.saveResults();
 									}
 								}
+								getDeletedProductsRS.close();
 								logger.info("Deleted " + numRecordsDeleted + " records that no longer exist");
 							} else if (!settings.isAllowLargeDeletes() && totalRecordsToDelete >= 500) {
 								logEntry.incErrors("There were more than 500 records to delete, detected " + totalRecordsToDelete + ", not deleting records");
@@ -373,6 +375,7 @@ class ExtractOverDriveInfo {
 					logEntry.incErrors("Error processing unlinked record " + overDriveId, e);
 				}
 			}
+			getUnlinkedProductsRS.close();
 			if (numUnlinkedProductsProcessed > 0) {
 				logEntry.addNote("Processed " + numUnlinkedProductsProcessed + " records that were not linked to a grouped work and that were not deleted");
 			}
@@ -546,6 +549,7 @@ class ExtractOverDriveInfo {
 		while (advantageCollectionMapRS.next()){
 			libToOverDriveAPIKeyMap.put(advantageCollectionMapRS.getLong(1), advantageCollectionMapRS.getString(3));
 		}
+		advantageCollectionMapRS.close();
 	}
 
 	private void deleteProduct(String overDriveId, long aspenOverDriveId) {
@@ -561,6 +565,7 @@ class ExtractOverDriveInfo {
 					isAvailableElsewhere = true;
 				}
 			}
+			isProductAvailableInOtherSettingsRS.close();
 
 			if (isAvailableElsewhere) {
 				//Remove availability within this collection and reindex
@@ -1031,6 +1036,7 @@ class ExtractOverDriveInfo {
 			}else{
 				curRecord.isNew = true;
 			}
+			getProductIdByOverDriveIdRS.close();
 		} catch (SQLException e) {
 			logEntry.incErrors("Error getting existing DB id for " + curRecord.getId());
 		}

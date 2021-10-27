@@ -35,9 +35,10 @@ public class OverDriveRecordGrouper extends RecordGroupingProcessor {
 				String subtitle = overDriveRecordRS.getString("subtitle");
 				String series = overDriveRecordRS.getString("series");
 				String author = overDriveRecordRS.getString("primaryCreatorName");
-
+				overDriveRecordRS.close();
 				return processOverDriveRecord(overdriveId, title, subtitle, series, author, mediaType);
 			}
+			overDriveRecordRS.close();
 		} catch (SQLException e) {
 			logEntry.incErrors("Error getting information about overdrive record for grouping", e);
 		}
