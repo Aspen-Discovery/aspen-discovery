@@ -1,35 +1,54 @@
 import React, { Component, useState, useReducer } from "react";
 import { Dimensions, Animated } from "react-native";
 import { Center, Stack, HStack, VStack, Spinner, Toast, Button, Divider, Flex, Box, Text, Icon, Image, IconButton, FlatList, Badge, Avatar, Actionsheet, useDisclose, Pressable } from "native-base";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as SecureStore from 'expo-secure-store';
+import { ListItem } from "react-native-elements";
+import NavigationService from '../../../components/NavigationService';
+import { MaterialIcons, Entypo, Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { create, CancelToken } from 'apisauce';
 
-export default async function placeHold(itemId, source, patronId) {
-    const api = create({ baseURL: global.libraryUrl + '/API', timeout: 10000 });
-    const response = await api.get('/UserAPI?method=placeHold', { username: global.userKey, password: global.secretKey, itemId: itemId, itemSource: source, patronId: patronId });
+const PlaceHold = (props) => {
+    return (
+        <Box>
+            <Text>Place hold screen</Text>
+        </Box>
+    )
+}
+
+async function placeHold(id, source, location) {
+    const api = create({ baseURL: 'https://aspen-test.bywatersolutions.com/API', timeout: 10000 });
+    const response = await api.get('/UserAPI?method=placeHold', { username: global.userKey, password: global.secretKey, sessionId: global.sessionId, itemSource: source, itemId: id, pickupBranch: location, patronId: patronId });
 
     if(response.ok) {
         const result = response.data;
-        const fetchedData = result.result;
-        console.log(fetchedData);
+        const fetchedData = result.hold;
 
-        if (fetchedData.success == true) {
-           console.log(fetchedData);
-
-        } else {
+        if(fetchedData.ok == true) {
             Toast.show({
-                title: "Unable to place hold",
+                title: "Success",
                 description: fetchedData.message,
-                status: "error",
                 isClosable: true,
                 duration: 8000,
+                status: "success",
                 accessibilityAnnouncement: fetchedData.message,
-                zIndex: 9999,
-                placement: "top"
+            });
+        } else {
+            Toast.show({
+                title: "Error",
+                description: fetchedData.message,
+                isClosable: true,
+                duration: 8000,
+                status: "warning",
+                accessibilityAnnouncement: fetchedData.message,
             });
         }
+
     } else {
-        console.log("Unable to connect.");
-        fetchedData = response.problem;
-        return fetchedData
+        const fetchedData = response.problem;
+        console.log(fetchedData);
+        return fetchedData;
     }
 }
+
+export default PlaceHold;
