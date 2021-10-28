@@ -920,39 +920,49 @@ public class SierraExportAPIMain {
 				marcRecord.addVariableField(marcFactory.newDataField(indexingProfile.getRecordNumberTag(), ' ', ' ',  "a", ".b" + id + getCheckDigit(id)));
 
 				//Load Fixed Fields
-				JSONObject fixedFieldResults = getMarcJSONFromSierraApiURL(sierraInstanceInformation, apiBaseUrl, apiBaseUrl + "/bibs/" + id + "?fields=fixedFields");
-				if (fixedFieldResults != null) {
-					if (sierraExportFieldMapping.getFixedFieldDestinationField().length() > 0) {
-						DataField fixedDataField = marcFactory.newDataField(sierraExportFieldMapping.getFixedFieldDestinationField(), ' ', ' ');
-						if (sierraExportFieldMapping.getBcode3DestinationSubfield() != ' ') {
-							String bCode3 = fixedFieldResults.getJSONObject("fixedFields").getJSONObject("31").getString("value");
-							fixedDataField.addSubfield(marcFactory.newSubfield(sierraExportFieldMapping.getBcode3DestinationSubfield(), bCode3));
-						}
-						if (sierraExportFieldMapping.getMaterialTypeSubfield() != ' ') {
-							String matType = fixedFieldResults.getJSONObject("fixedFields").getJSONObject("30").getString("value");
-							fixedDataField.addSubfield(marcFactory.newSubfield(sierraExportFieldMapping.getMaterialTypeSubfield(), matType));
-						}
-						if (sierraExportFieldMapping.getBibLevelLocationsSubfield() != ' ') {
-							if (fixedFieldResults.has("26")) {
-								String location = fixedFieldResults.getJSONObject("26").getString("value");
-								if (location.equalsIgnoreCase("multi")) {
-									JSONArray locationsJSON = fixedFieldResults.getJSONArray("locations");
-									for (int k = 0; k < locationsJSON.length(); k++) {
-										location = locationsJSON.getJSONObject(k).getString("code");
+				Thread fixedFieldThread = new Thread(() -> {
+					JSONObject fixedFieldResults = getMarcJSONFromSierraApiURL(sierraInstanceInformation, apiBaseUrl, apiBaseUrl + "/bibs/" + id + "?fields=fixedFields");
+					if (fixedFieldResults != null) {
+						if (sierraExportFieldMapping.getFixedFieldDestinationField().length() > 0) {
+							DataField fixedDataField = marcFactory.newDataField(sierraExportFieldMapping.getFixedFieldDestinationField(), ' ', ' ');
+							if (sierraExportFieldMapping.getBcode3DestinationSubfield() != ' ') {
+								String bCode3 = fixedFieldResults.getJSONObject("fixedFields").getJSONObject("31").getString("value");
+								fixedDataField.addSubfield(marcFactory.newSubfield(sierraExportFieldMapping.getBcode3DestinationSubfield(), bCode3));
+							}
+							if (sierraExportFieldMapping.getMaterialTypeSubfield() != ' ') {
+								String matType = fixedFieldResults.getJSONObject("fixedFields").getJSONObject("30").getString("value");
+								fixedDataField.addSubfield(marcFactory.newSubfield(sierraExportFieldMapping.getMaterialTypeSubfield(), matType));
+							}
+							if (sierraExportFieldMapping.getBibLevelLocationsSubfield() != ' ') {
+								if (fixedFieldResults.has("26")) {
+									String location = fixedFieldResults.getJSONObject("26").getString("value");
+									if (location.equalsIgnoreCase("multi")) {
+										JSONArray locationsJSON = fixedFieldResults.getJSONArray("locations");
+										for (int k = 0; k < locationsJSON.length(); k++) {
+											location = locationsJSON.getJSONObject(k).getString("code");
+											fixedDataField.addSubfield(marcFactory.newSubfield(sierraExportFieldMapping.getBibLevelLocationsSubfield(), location));
+										}
+									} else {
 										fixedDataField.addSubfield(marcFactory.newSubfield(sierraExportFieldMapping.getBibLevelLocationsSubfield(), location));
 									}
-								} else {
-									fixedDataField.addSubfield(marcFactory.newSubfield(sierraExportFieldMapping.getBibLevelLocationsSubfield(), location));
 								}
 							}
+							marcRecord.addVariableField(fixedDataField);
 						}
-						marcRecord.addVariableField(fixedDataField);
 					}
-				}
+				});
 
-				//Get Items for the bib record
-				getItemsForBib(sierraInstanceInformation, id, marcRecord);
-				logger.debug("Processed items for Bib");
+				Thread itemUpdateThread = new Thread(() -> {
+					//Get Items for the bib record
+					getItemsForBib(sierraInstanceInformation, id, marcRecord);
+					logger.debug("Processed items for Bib");
+				});
+
+				fixedFieldThread.start();
+				itemUpdateThread.start();
+				fixedFieldThread.join();
+				itemUpdateThread.join();
+
 				RecordIdentifier identifier = getRecordGroupingProcessor().getPrimaryIdentifierFromMarcRecord(marcRecord, indexingProfile);
 				GroupedWorkIndexer.MarcStatus marcStatus = getGroupedWorkIndexer().saveMarcRecordToDatabase(indexingProfile, identifier.getIdentifier(), marcRecord);
 

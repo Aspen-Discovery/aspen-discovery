@@ -122,6 +122,11 @@ class OverDriveProcessor {
 								logEntry.incErrors("Could not read or correct raw OverDrive Metadata for " + identifier);
 							}
 						}
+
+						if (rawMetadataString == null){
+							logEntry.incErrors("Could not load metadata for record " + identifier + " skipping");
+							return;
+						}
 						//Decode JSON data to get a little more information
 						JSONObject rawMetadataDecoded = null;
 						try {
