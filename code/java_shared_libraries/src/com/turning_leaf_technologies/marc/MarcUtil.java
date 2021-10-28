@@ -24,7 +24,8 @@ import java.util.zip.CRC32;
  * Class to handle loading data from MARC records
  */
 public class MarcUtil {
-	private static MaxSizeHashMap<String, Set<String>> marcRecordFieldListCache = new MaxSizeHashMap<>(100);
+	private static HashMap<String, Set<String>> marcRecordFieldListCache = new HashMap<>();
+	private static long lastRecordHashCode;
 	/**
 	 * Get Set of Strings as indicated by tagStr. For each field spec in the
 	 * tagStr that is NOT about bytes (i.e. not a 008[7-12] type fieldspec), the
@@ -47,7 +48,11 @@ public class MarcUtil {
 	 *         of Strings.
 	 */
 	public static Set<String> getFieldList(Record record, String tagStr) {
-		Set<String> result = marcRecordFieldListCache.get(record.toString() + tagStr);
+		if (lastRecordHashCode != record.hashCode()){
+			marcRecordFieldListCache.clear();
+			lastRecordHashCode = record.hashCode();
+		}
+		Set<String> result = marcRecordFieldListCache.get(tagStr);
 		if (result != null){
 			return result;
 		}
@@ -109,7 +114,7 @@ public class MarcUtil {
 					result.addAll(getSubfieldDataAsSet(record, tag, subfield, separator));
 			}
 		}
-		marcRecordFieldListCache.put(record.toString() + tagStr, result);
+		marcRecordFieldListCache.put(tagStr, result);
 		return result;
 	}
 
@@ -584,11 +589,13 @@ public class MarcUtil {
 			try{
 				Record marcRecord = streamReader.next();
 				marcFileStream.close();
+				streamReader = null;
 				return marcRecord;
 			}catch (MarcException me){
 				//Could not read the marc record, there likely was not a record in the file, but ignore and use the permissive read.
 				logEntry.incErrors("Could not read MARC for " + identifier, me);
 			}
+			streamReader = null;
 			marcFileStream.close();
 		}catch (Exception e){
 			logEntry.incErrors("Could not parse marc in json format for " + identifier, e);
