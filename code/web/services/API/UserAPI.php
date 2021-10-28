@@ -1563,6 +1563,41 @@ class UserAPI extends Action
 		return $result;
 	}
 
+	function updateOverDriveEmail() : array
+	{
+		list($username, $password) = $this->loadUsernameAndPassword();
+
+		$user = UserAccount::validateAccount($username, $password);
+
+		if ($user && !($user instanceof AspenError)) {
+			$patronId = $_REQUEST['patronId'];
+			$patron = $user->getUserReferredTo($patronId);
+			if ($patron) {
+				if (isset($_REQUEST['overdriveEmail'])) {
+					if ($_REQUEST['overdriveEmail'] != $patron->overdriveEmail) {
+						$patron->overdriveEmail = $_REQUEST['overdriveEmail'];
+						$patron->update();
+					}
+				}
+				if (isset($_REQUEST['promptForOverdriveEmail'])) {
+					if ($_REQUEST['promptForOverdriveEmail'] == 1 || $_REQUEST['promptForOverdriveEmail'] == 'yes' || $_REQUEST['promptForOverdriveEmail'] == 'on') {
+						$patron->promptForOverdriveEmail = 1;
+					} else {
+						$patron->promptForOverdriveEmail = 0;
+					}
+					$patron->update();
+				}
+
+				return $this->placeOverDriveHold();
+			} else {
+				return array('success' => false, 'title' => 'Error', 'message' => 'Unable to validate user');
+			}
+
+		} else {
+			return array('success' => false, 'title' => 'Error', 'message' => 'Unable to validate user');
+		}
+	}
+
 	function checkoutCloudLibraryItem() : array
 	{
 		list($username, $password) = $this->loadUsernameAndPassword();
