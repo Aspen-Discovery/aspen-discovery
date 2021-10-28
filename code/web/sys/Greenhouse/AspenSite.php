@@ -17,6 +17,9 @@ class AspenSite extends DataObject
 	public $operatingSystem;
 	public $ils;
 	public $notes;
+	public $version;
+	public $sendErrorNotificationsTo;
+	public $slackNotificationChannel;
 
 	public static $_implementationStatuses = [0 => 'Installing', 1 => 'Implementing', 2 => 'Soft Launch', 3 => 'Production', 4 => 'Retired'];
 	public static $_appAccess = [0 => 'None', 1 => 'LiDA Only', 2 => 'Whitelabel Only', 3 => 'LiDA + Whitelabel'];
@@ -74,6 +77,10 @@ class AspenSite extends DataObject
 					$versionJson = json_decode($versionRaw, true);
 					if ($versionJson && isset($versionJson['result'])) {
 						$version = $versionJson['result']['version'];
+						if ($version != $this->version){
+							$this->version = $version;
+							$this->update();
+						}
 					}
 				}
 			}catch (Exception $e){

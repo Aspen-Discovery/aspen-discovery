@@ -29,23 +29,62 @@ class GreenhouseAPI extends Action
 		echo $output;
 	}
 
-	public function updateSiteStatus() {
+	public function updateSiteStatuses() {
+		require_once ROOT_DIR . '/sys/Greenhouse/AspenSiteCheck.php';
 		$sites = new AspenSite();
 		$sites->whereAdd('implementationStatus != 4 AND implementationStatus != 0');
 		$sites->orderBy('siteType ASC, implementationStatus DESC, name ASC');
 		$sites->find();
 		$numSitesUpdated = 0;
+		$start = time();
 		while ($sites->fetch()){
+			$statusTime = time();
 			$siteStatus = $sites->getStatus();
-			$siteStatuses[] = $siteStatus;
-			foreach ($siteStatus['checks'] as $key => $check){
-				$allChecks[$key] = $check['name'];
+			if ($sites->version != $siteStatus['version']){
+				$sites->version = $siteStatus['version'];
+				$sites->update();
 			}
+			foreach ($siteStatus['checks'] as $key => $check){
+				$aspenSiteCheck = new AspenSiteCheck();
+				$aspenSiteCheck->siteId = $sites->id;
+				$aspenSiteCheck->checkName = $check['name'];
+				$checkExists = false;
+				if ($aspenSiteCheck->find(true)){
+					$checkExists = true;
+				}
+				$status = $check['status'];
+				if ($status == 'okay'){
+					if ($aspenSiteCheck->currentStatus !== 0) {
+						$aspenSiteCheck->currentStatus = 0;
+						$aspenSiteCheck->currentNote = '';
+						$aspenSiteCheck->lastOkTime = $statusTime;
+					}
+				}elseif ($status == 'warning'){
+					if ($aspenSiteCheck->currentStatus != 1) {
+						$aspenSiteCheck->currentStatus = 1;
+						$aspenSiteCheck->currentNote = $check['note'];
+						$aspenSiteCheck->lastWarningTime = $statusTime;
+					}
+				}else{
+					if ($aspenSiteCheck->currentStatus != 2) {
+						$aspenSiteCheck->currentStatus = 2;
+						$aspenSiteCheck->currentNote = $check['note'];
+						$aspenSiteCheck->lastErrorTime = $statusTime;
+					}
+				}
+				if ($checkExists){
+					$aspenSiteCheck->update();
+				}else{
+					$aspenSiteCheck->insert();
+				}
+			}
+			//store stats
 			$numSitesUpdated++;
 		}
 		$return = [
 			'success' => true,
 			'numSitesUpdated' => $numSitesUpdated,
+			'elapsedTime' => time() - $start,
 		];
 		return $return;
 	}

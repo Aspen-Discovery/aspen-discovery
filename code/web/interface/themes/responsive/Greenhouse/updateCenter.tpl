@@ -31,7 +31,7 @@
 							<a href="{$site->baseUrl}" target="_blank">{$site->name}</a>
 						</td>
 						<td>
-							{$site->getCurrentVersion()}
+							{$site->version}
 						</td>
 						<td>
 							{translate text=$site->getImplementationStatusName() isAdminFacing=true}
