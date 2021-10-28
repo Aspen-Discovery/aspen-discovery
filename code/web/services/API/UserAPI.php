@@ -1351,16 +1351,15 @@ class UserAPI extends Action
 	function activateOverDriveHold() : array
 	{
 		list($username, $password) = $this->loadUsernameAndPassword();
-		$id = $_REQUEST['holdId'];
+		$id = $_REQUEST['recordId'];
 		$patronId = $_REQUEST['patronId'];
 
 		$user = UserAccount::validateAccount($username, $password);
 
 		if ($user && !($user instanceof AspenError)) {
-			$patron = $user->getUserReferredTo($patronId);
 			require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
 			$driver = new OverDriveDriver();
-			$result = $driver->thawHold($patron, $id);
+			$result = $driver->thawHold($user, $id);
 			return array('success' => $result['success'], 'title' => $result['api']['title'], 'message' => $result['api']['message']);
 		} else {
 			return array('success' => false, 'title' => 'Error', 'message' => 'Unable to validate user');
@@ -1401,7 +1400,11 @@ class UserAPI extends Action
 	function cancelOverDriveHold() : array
 	{
 		list($username, $password) = $this->loadUsernameAndPassword();
-		$overDriveId = $_REQUEST['overDriveId'];
+		if(isset($_REQUEST['overDriveId'])){
+			$overDriveId = $_REQUEST['overDriveId'];
+		} else {
+			$overDriveId = $_REQUEST['recordId'];
+		}
 
 		$user = UserAccount::validateAccount($username, $password);
 		if ($user && !($user instanceof AspenError)) {
@@ -1669,19 +1672,18 @@ class UserAPI extends Action
 	function cancelCloudLibraryHold() : array
 	{
 		list($username, $password) = $this->loadUsernameAndPassword();
-		$id = $_REQUEST['id'];
+		$id = $_REQUEST['recordId'];
 		$patronId = $_REQUEST['patronId'];
 
 		$user = UserAccount::validateAccount($username, $password);
 
 		if ($user && !($user instanceof AspenError)) {
-			$patron = $user->getUserReferredTo($patronId);
 			require_once ROOT_DIR . '/RecordDrivers/CloudLibraryRecordDriver.php';
 			$this->recordDriver = new CloudLibraryRecordDriver($id);
 
 			require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
 			$driver = new CloudLibraryDriver();
-			$result = $driver->cancelHold($patron, $id);
+			$result = $driver->cancelHold($user, $id);
 			return array('success' => $result['success'], 'title' => $result['api']['title'], 'message' => $result['api']['message']);
 		} else {
 			return array('success' => false, 'title' => 'Error', 'message' => 'Unable to validate user');
@@ -1864,19 +1866,17 @@ class UserAPI extends Action
 	function activateAxis360Hold() : array
 	{
 		list($username, $password) = $this->loadUsernameAndPassword();
-		$id = $_REQUEST['holdId'];
-		$patronId = $_REQUEST['patronId'];
+		$id = $_REQUEST['recordId'];
 
 		$user = UserAccount::validateAccount($username, $password);
 
 		if ($user && !($user instanceof AspenError)) {
-			$patron = $user->getUserReferredTo($patronId);
 			require_once ROOT_DIR . '/RecordDrivers/Axis360RecordDriver.php';
 			$this->recordDriver = new Axis360RecordDriver($id);
 
 			require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
 			$driver = new Axis360Driver();
-			$result = $driver->thawHold($patron, $id);
+			$result = $driver->thawHold($user, $id);
 			return array('success' => $result['success'], 'title' => $result['api']['title'], 'message' => $result['api']['message']);
 		} else {
 			return array('success' => false, 'title' => 'Error', 'message' => 'Unable to validate user');
@@ -1886,19 +1886,17 @@ class UserAPI extends Action
 	function cancelAxis360Hold() : array
 	{
 		list($username, $password) = $this->loadUsernameAndPassword();
-		$id = $_REQUEST['id'];
-		$patronId = $_REQUEST['patronId'];
+		$id = $_REQUEST['recordId'];
 
 		$user = UserAccount::validateAccount($username, $password);
 
 		if ($user && !($user instanceof AspenError)) {
-			$patron = $user->getUserReferredTo($patronId);
 			require_once ROOT_DIR . '/RecordDrivers/Axis360RecordDriver.php';
 			$this->recordDriver = new Axis360RecordDriver($id);
 
 			require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
 			$driver = new Axis360Driver();
-			$result = $driver->cancelHold($patron, $id);
+			$result = $driver->cancelHold($user, $id);
 			return array('success' => $result['success'], 'title' => $result['api']['title'], 'message' => $result['api']['message']);
 		} else {
 			return array('success' => false, 'title' => 'Error', 'message' => 'Unable to validate user');
