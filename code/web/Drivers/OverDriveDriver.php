@@ -766,6 +766,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 			// Result for API or app use
 			$holdResult['api']['title'] = translate(['text'=>'Hold Placed Successfully', 'isPublicFacing'=>true]);
 			$holdResult['api']['message'] = translate(['text'=> 'Your hold was placed successfully.  You are number %1% on the wait list.', 1=>$response->holdListPosition, 'isPublicFacing'=>true]);
+			$holdResult['api']['action'] = translate(['text'=> 'Go to Holds', 'isPublicFacing'=>true]);
 
 			//Get the grouped work for the record
 			global $library;
@@ -844,7 +845,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 			if (isset($response->message)) $holdResult['message'] .= "  {$response->message}";
 
 			// Store result for API or app use
-			$holdResult['api']['title'] = translate(['text'=>'Failed to freeze hold', 'isPublicFacing'=> true]);
+			$holdResult['api']['title'] = translate(['text'=>'Unable to freeze hold', 'isPublicFacing'=> true]);
 			$holdResult['api']['message'] = translate(['text'=>'Sorry, but we could not freeze the hold on this title.', 'isPublicFacing'=> true]);
 			if (isset($response->message)) $holdResult['api']['message'] .= "  {$response->message}";
 
@@ -882,7 +883,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 			if (isset($response->message)) $holdResult['message'] .= "  {$response->message}";
 
 			// Result for API or app use
-			$holdResult['api']['title'] = translate(['text'=> 'Failed to thaw hold', 'isPublicFacing'=> true]);
+			$holdResult['api']['title'] = translate(['text'=> 'Unable to thaw hold', 'isPublicFacing'=> true]);
 			$holdResult['api']['message'] = translate(['text'=> 'Sorry, but we could not thaw the hold on this title.', 'isPublicFacing'=> true]);
 			if (isset($response->message)) $holdResult['api']['message'] .= "  {$response->message}";
 
@@ -914,7 +915,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 			$cancelHoldResult['message'] = translate(['text' => 'Your hold was cancelled successfully.', 'isPublicFacing'=>true]);
 
 			// Result for API or app use
-			$cancelHoldResult['api']['title'] = "";
+			$cancelHoldResult['api']['title'] = translate(['text' => 'Hold cancelled', 'isPublicFacing'=> true]);
 			$cancelHoldResult['api']['message'] = translate(['text' => 'Your hold was cancelled successfully.', 'isPublicFacing'=>true]);
 
 			$this->incrementStat('numHoldsCancelled');
@@ -925,7 +926,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 		    if (isset($response->message)) $cancelHoldResult['message'] .= "  {$response->message}";
 
 			// Result for API or app use
-			$cancelHoldResult['api']['title'] = "";
+			$cancelHoldResult['api']['title'] = translate(['text' => 'Unable to cancel hold', 'isPublicFacing'=> true]);
 			$cancelHoldResult['api']['message'] = translate(['text' => 'There was an error cancelling your hold.', 'isPublicFacing'=>true]);;
 			if (isset($response->message)) $cancelHoldResult['api']['message'] .= "  {$response->message}";
 
@@ -965,6 +966,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 			// Result for API or app use
 			$result['api']['title'] = translate(['text'=>'Checked out title', 'isPublicFacing'=>true]);
 			$result['api']['message'] = translate(['text'=>'Your title was checked out successfully. You may now download the title from your Account.', 'isPublicFacing'=>true]);
+			$result['api']['action'] = translate(['text' => 'Go to Checkouts', 'isPublicFacing'=>true]);
 
 			$this->trackUserUsageOfOverDrive($patron);
 			$this->trackRecordCheckout($overDriveId);
@@ -978,7 +980,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 			$result['message'] = translate(['text' => 'Sorry, we could not checkout this title to you.', 'isPublicFacing'=>true]);
 
 			// Result for API or app use
-			$result['api']['title'] = translate(['text'=>'Error checking out title', 'isPublicFacing'=>true]);
+			$result['api']['title'] = translate(['text'=>'Unable to checkout title', 'isPublicFacing'=>true]);
 			$result['api']['message'] = translate(['text' => 'Sorry, we could not checkout this title to you. ', 'isPublicFacing'=>true]);
 			if (isset($response->errorCode) && $response->errorCode == 'PatronHasExceededCheckoutLimit'){
 				$result['message'] .= "\r\n\r\n" . translate(['text'=>'You have reached the maximum number of OverDrive titles you can checkout one time.', 'isPublicFacing'=>true]);
@@ -1002,7 +1004,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 
 				// Result for API or app use
 				$result['api']['message'] = translate(['text' => "This title is already checked out to you.", 'isPublicFacing'=>true]);
-				$result['api']['action'] = translate(['text' => "View in Account", 'isPublicFacing'=>true]);
+				$result['api']['action'] = translate(['text' => "Go to Checkouts", 'isPublicFacing'=>true]);
 			}else{
 				//Give more information about why it might have failed, ie expired card or too many fines
 				$result['message'] .= ' ' . translate(['text' => 'Sorry, we could not checkout this title to you.  Please verify that your card has not expired and that you do not have excessive fines.', 'isPublicFacing'=>true]);
@@ -1038,7 +1040,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 			$cancelHoldResult['message'] = translate(['text' => 'Your item was returned successfully.', 'isPublicFacing'=>true]);
 
 			// Result for API or app use
-			$cancelHoldResult['api']['title'] = translate(['text' => 'Returning title', 'isPublicFacing'=>true]);
+			$cancelHoldResult['api']['title'] = translate(['text' => 'Title returned', 'isPublicFacing'=>true]);
 			$cancelHoldResult['api']['message'] = translate(['text' => 'Your item was returned successfully.', 'isPublicFacing'=>true]);
 
 			$this->incrementStat('numEarlyReturns');
@@ -1050,7 +1052,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 			if (isset($response->message)) $cancelHoldResult['message'] .= "  {$response->message}";
 
 			// Result for API or app use
-			$cancelHoldResult['api']['title'] = translate(['text' => 'Error returning title', 'isPublicFacing'=>true]);
+			$cancelHoldResult['api']['title'] = translate(['text' => 'Unable to return title', 'isPublicFacing'=>true]);
 			$cancelHoldResult['api']['message'] = translate( ['text' => 'There was an error returning this item.', 'isPublicFacing'=>true]);
 			if (isset($response->message)) $cancelHoldResult['api']['message'] .= "  {$response->message}";
 
@@ -1197,12 +1199,23 @@ class OverDriveDriver extends AbstractEContentDriver{
 
 			$holdResult['success'] = true;
 			$holdResult['message'] = "<p class='alert alert-success'>" . translate(['text'=>'Your title has been requested again, you are number %1% on the list.', 1=>$response->holdListPosition, 'isPublicFacing'=> true]) . "</p>";
+
+			// Result for API or app use
+			$holdResult['api']['title'] = translate(['text'=>'Renewed title', 'isPublicFacing'=>true]);
+			$holdResult['api']['message'] = translate(['text'=>'Your title has been requested again, you are number %1% on the list.', 1=>$response->holdListPosition, 'isPublicFacing'=> true]);
+
 			$this->incrementStat('numRenewals');
 
 			$patron->forceReloadOfCheckouts();
 		}else{
 			$holdResult['message'] = translate(['text' => 'Sorry, but we could not renew this title for you.', 'isPublicFacing'=>true]);
 			if (isset($response->message)) $holdResult['message'] .= "  {$response->message}";
+
+			// Result for API or app use
+			$holdResult['api']['title'] = translate(['text'=>'Unable to renew title', 'isPublicFacing'=>true]);
+			$holdResult['api']['message'] = translate(['text'=>"Sorry, but we could not renew this title for you.", 'isPublicFacing'=>true]);
+			if (isset($response->message)) $holdResult['api']['message'] .= "  {$response->message}";
+
 			$this->incrementStat('numApiErrors');
 		}
 		$patron->clearCache();
