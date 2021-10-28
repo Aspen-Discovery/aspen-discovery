@@ -5,8 +5,10 @@ class SystemAPI extends Action
 {
 	function launch()
 	{
+		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
+
 		//Make sure the user can access the API based on the IP address
-		if (!IPAddress::allowAPIAccessForClientIP()){
+		if (!in_array($method, array('getLibraryInfo', 'getLocationInfo')) && !IPAddress::allowAPIAccessForClientIP()){
 			$this->forbidAPIAccess();
 		}
 
@@ -18,7 +20,6 @@ class SystemAPI extends Action
 		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
 		if (!in_array($method, ['getCatalogConnection', 'getUserForApiCall', 'checkWhichUpdatesHaveRun', 'getPendingDatabaseUpdates', 'runSQLStatement', 'markUpdateAsRun'])
 				&& method_exists($this, $method)) {
-
 			$result = [
 				'result' => $this->$method()
 			];

@@ -908,6 +908,9 @@ class User extends DataObject
 	 * Will check:
 	 * 1) The current ILS for the user
 	 * 2) OverDrive
+	 * 3) Hoopla
+	 * 4) cloudLibrary
+	 * 5) Axis360
 	 *
 	 * @param bool $includeLinkedUsers
 	 * @param string $source

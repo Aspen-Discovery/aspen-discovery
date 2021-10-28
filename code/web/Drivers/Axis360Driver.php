@@ -162,16 +162,30 @@ class Axis360Driver extends AbstractEContentDriver
 			$status = $removeHoldResult->status;
 			if ($status->code != '0000'){
 				$result['message'] = translate(['text'=>"Could not return Axis 360 title, %1%", 1=>(string)$status->statusMessage, 'isPublicFacing'=>true]);
+
+				// Result for API or app use
+				$result['api']['title'] = translate(['text'=>'Unable to return title', 'isPublicFacing'=>true]);
+				$result['api']['message'] = translate(['text'=>"Could not return Axis 360 title, %1%", 1=>(string)$status->statusMessage, 'isPublicFacing'=>true]);
+
 				$this->incrementStat('numApiErrors');
 			}else{
 				$result['success'] = true;
 				$result['message'] = translate(['text'=>'Your Axis 360 title was returned successfully', 'isPublicFacing'=>true]);
+
+				// Result for API or app use
+				$result['api']['title'] = translate(['text'=>'Title returned', 'isPublicFacing'=>true]);
+				$result['api']['message'] = translate(['text'=>'Your Axis 360 title was returned successfully', 'isPublicFacing'=>true]);
+
 				$this->incrementStat('numEarlyReturns');
 				$patron->clearCachedAccountSummaryForSource('axis360');
 				$patron->forceReloadOfCheckouts();
 			}
 		}else{
 			$result['message'] = translate(['text'=>'Unable to connect to Axis 360', 'isPublicFacing'=>true]);
+
+			// Result for API or app use
+			$result['api']['title'] = translate(['text'=>'Error checking out title', 'isPublicFacing'=>true]);
+			$result['api']['message'] = translate(['text'=>'Unable to connect to Axis 360', 'isPublicFacing'=>true]);
 		}
 		return $result;
 	}
@@ -262,10 +276,21 @@ class Axis360Driver extends AbstractEContentDriver
 				return $this->checkOutTitle($patron, $recordId, false);
 			}else if ($status->code != '0000'){
 				$result['message'] = translate(['text' => "Could not place Axis 360 hold, %1%", 1=>(string)$status->statusMessage, 'isPublicFacing' => true]);
+
+				// Result for API or app use
+				$result['api']['title'] = translate(['text'=> 'Unable to place hold', 'isPublicFacing'=>true]);
+				$result['api']['message'] = translate(['text' => "Could not place Axis 360 hold, %1%", 1=>(string)$status->statusMessage, 'isPublicFacing' => true]);
+
 				$this->incrementStat('numApiErrors');
 			}else{
 				$result['success'] = true;
 				$result['message'] = translate(['text' => 'Your Axis 360 hold was placed successfully', 'isPublicFacing' => true]);
+
+				// Result for API or app use
+				$result['api']['title'] = translate(['text'=>'Hold Placed Successfully', 'isPublicFacing'=>true]);
+				$result['api']['message'] = translate(['text'=>'Your Axis 360 hold was placed successfully', 'isPublicFacing'=>true]);
+				$result['api']['action'] = translate(['text'=> 'Go to Holds', 'isPublicFacing'=>true]);
+
 				$this->incrementStat('numHoldsPlaced');
 				$this->trackUserUsageOfAxis360($patron);
 				$this->trackRecordHold($recordId);
@@ -275,6 +300,10 @@ class Axis360Driver extends AbstractEContentDriver
 
 		}else{
 			$result['message'] = translate(['text' => 'Unable to connect to Axis 360','isPublicFacing' => true]);
+
+			// Result for API or app use
+			$result['api']['title'] = translate(['text'=>'Unable to place hold', 'isPublicFacing'=>true]);
+			$result['api']['message'] = translate(['text'=>'Unable to connect to Axis 360', 'isPublicFacing'=>true]);
 		}
 		return $result;
 	}
@@ -305,16 +334,30 @@ class Axis360Driver extends AbstractEContentDriver
 			$status = $removeHoldResult->status;
 			if ($status->code != '0000'){
 				$result['message'] = translate(['text' => "Could not cancel Axis 360 hold, " . (string)$status->statusMessage,'isPublicFacing' => true]);
+
+				// Result for API or app use
+				$result['api']['title'] = translate(['text' => 'Unable to cancel hold', 'isPublicFacing'=> true]);
+				$result['api']['message'] = translate(['text' => 'Could not cancel Axis 360 hold, ' . (string)$status->statusMessage, 'isPublicFacing'=>true]);
+
 				$this->incrementStat('numApiErrors');
 			}else{
 				$result['success'] = true;
 				$result['message'] = translate(['text' => 'Your Axis 360 hold was cancelled successfully','isPublicFacing' => true]);
+
+				// Result for API or app use
+				$result['api']['title'] = translate(['text' => 'Hold cancelled', 'isPublicFacing'=> true]);
+				$result['api']['message'] = translate(['text' => 'Your Axis 360 hold was cancelled successfully', 'isPublicFacing'=>true]);
+
 				$this->incrementStat('numHoldsCancelled');
 				$patron->clearCachedAccountSummaryForSource('axis360');
 				$patron->forceReloadOfHolds();
 			}
 		}else{
 			$result['message'] = translate(['text' => 'Unable to connect to Axis 360','isPublicFacing' => true]);
+
+			// Result for API or app use
+			$result['api']['title'] = translate(['text' => 'Unable to cancel hold', 'isPublicFacing'=> true]);
+			$result['api']['message'] = translate(['text' => 'Unable to connect to Axis 360', 'isPublicFacing'=>true]);
 		}
 		return $result;
 	}
@@ -409,9 +452,17 @@ class Axis360Driver extends AbstractEContentDriver
 			$status = $checkoutResult->status;
 			if ($status->code != '0000') {
 				$result['message'] = translate(['text' => 'Sorry, we could not checkout this Axis 360 title to you.', 'isPublicFacing'=>true]);
+
+				// Result for API or app use
+				$result['api']['title'] = translate(['text'=>'Unable to checkout title', 'isPublicFacing'=>true]);
+				$result['api']['message'] = translate(['text'=>'Sorry, we could not checkout this Axis 360 title to you.', 'isPublicFacing'=>true]);
+
 				if ($status->code == '3113'){
 					$result['noCopies'] = true;
 					$result['message'] .= "\r\n\r\n" . translate(['text' => 'Would you like to place a hold instead?', 'isPublicFacing'=>true]);
+
+					// Result for API or app use
+					$result['api']['action'] = translate(['text' => 'Place a Hold', 'isPublicFacing'=>true]);
 				}else{
 					$result['message'] .= '&nbsp;' . (string)$status->statusMessage;
 					$this->incrementStat('numApiErrors');
@@ -419,9 +470,19 @@ class Axis360Driver extends AbstractEContentDriver
 			} else {
 				$result['success'] = true;
 				$result['message'] = translate(['text' => 'Your Axis 360 title was checked out successfully. You may now download the title from your Account.', 'isPublicFacing'=>true]);
+
 				if ($fromRenew) {
+					// Result for API or app use
+					$result['api']['title'] = translate(['text'=>'Renewed title', 'isPublicFacing'=>true]);
+					$result['api']['message'] = translate(['text'=>'Your Axis 360 title was renewed successfully.', 'isPublicFacing'=>true]);
+
 					$this->incrementStat('numRenewals');
 				}else{
+					// Result for API or app use
+					$result['api']['title'] = translate(['text'=>'Checked out title', 'isPublicFacing'=>true]);
+					$result['api']['message'] = translate(['text'=>'Your Axis 360 title was checked out successfully. You may now download the title from your Account.', 'isPublicFacing'=>true]);
+					$result['api']['action'] = translate(['text' => 'Go to Checkouts', 'isPublicFacing'=>true]);
+
 					$this->incrementStat('numCheckouts');
 					$this->trackUserUsageOfAxis360($patron);
 					$this->trackRecordCheckout($titleId);
@@ -433,6 +494,10 @@ class Axis360Driver extends AbstractEContentDriver
 			}
 		}else{
 			$result['message'] = translate(['text' => 'Unable to connect to Axis 360', 'isPublicFacing'=>true]);
+
+			// Result for API or app use
+			$result['api']['title'] = translate(['text'=>'Error checking out title', 'isPublicFacing'=>true]);
+			$result['api']['message'] = translate(['text'=>'Unable to connect to Axis 360', 'isPublicFacing'=>true]);
 		}
 		return $result;
 	}
@@ -630,15 +695,29 @@ class Axis360Driver extends AbstractEContentDriver
 			$status = $freezeHoldResult->status;
 			if ($status->code != '0000'){
 				$result['message'] = translate(['text' => "Could not freeze Axis 360 hold, %1%", 1=>(string)$status->statusMessage,'isPublicFacing' => true]);
+
+				// Result for API or app use
+				$result['api']['title'] = translate(['text'=>'Unable to freeze hold', 'isPublicFacing'=>true]);
+				$result['api']['message'] = translate(['text' => "Could not freeze Axis 360 hold, %1%", 1=>(string)$status->statusMessage,'isPublicFacing' => true]);
+
 				$this->incrementStat('numApiErrors');
 			}else{
 				$result['success'] = true;
 				$result['message'] = translate(['text' => 'Your hold was frozen successfully','isPublicFacing' => true]);
+
+				// Result for API or app use
+				$result['api']['title'] = translate(['text'=>'Hold frozen', 'isPublicFacing'=>true]);
+				$result['api']['message'] = translate(['text'=>'Your hold was frozen successfully', 'isPublicFacing'=>true]);
+
 				$this->incrementStat('numHoldsFrozen');
 				$patron->forceReloadOfHolds();
 			}
 		}else{
 			$result['message'] = translate(['text' => 'Unable to connect to Axis 360','isPublicFacing' => true]);
+
+			// Result for API or app use
+			$result['api']['title'] = translate(['text'=>'Unable to freeze hold', 'isPublicFacing'=>true]);
+			$result['api']['message'] = translate(['text'=>'Unable to connect to Axis 360', 'isPublicFacing'=>true]);
 		}
 		return $result;
 	}
@@ -662,15 +741,29 @@ class Axis360Driver extends AbstractEContentDriver
 			$status = $thawHoldResult->status;
 			if ($status->code != '0000'){
 				$result['message'] = translate(['text' => "Could not thaw Axis 360 hold, %1%", 1=>(string)$status->statusMessage, 'isPublicFacing' => true]);
+
+				// Result for API or app use
+				$result['api']['title'] = translate(['text'=>'Unable to thaw hold', 'isPublicFacing'=>true]);
+				$result['api']['message'] = translate(['text' => "Could not thaw Axis 360 hold, %1%", 1=>(string)$status->statusMessage, 'isPublicFacing' => true]);
+
 				$this->incrementStat('numApiErrors');
 			}else{
 				$result['success'] = true;
 				$result['message'] = translate(['text' => 'Your Axis 360 hold was thawed successfully', 'isPublicFacing' => true]);
+
+				// Result for API or app use
+				$result['api']['title'] = translate(['text'=>'Hold thawed', 'isPublicFacing'=>true]);
+				$result['api']['message'] = translate(['text'=>'Your Axis 360 hold was thawed successfully', 'isPublicFacing'=>true]);
+
 				$this->incrementStat('numHoldsThawed');
 				$patron->forceReloadOfHolds();
 			}
 		}else{
 			$result['message'] = translate(['text' => 'Unable to connect to Axis 360', 'isPublicFacing' => true]);
+
+			// Result for API or app use
+			$result['api']['title'] = translate(['text'=>'Unable to thaw hold', 'isPublicFacing'=>true]);
+			$result['api']['message'] = translate(['text'=>'Unable to connect to Axis 360', 'isPublicFacing'=>true]);
 		}
 		return $result;
 	}

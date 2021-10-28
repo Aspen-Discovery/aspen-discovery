@@ -870,7 +870,7 @@ class UserAPI extends Action
 	function checkoutItem() : array
 	{
 		list($username, $password) = $this->loadUsernameAndPassword();
-		$source = $_REQUEST['source'];
+		$source = $_REQUEST['itemSource'] ?? null;
 		$patron = UserAccount::validateAccount($username, $password);
 
 		if ($patron && !($patron instanceof AspenError)) {
@@ -1309,8 +1309,9 @@ class UserAPI extends Action
 			if ($user && !($user instanceof AspenError)) {
 				require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
 				$driver = new OverDriveDriver();
-				$holdMessage = $driver->placeHold($user, $overDriveId);
-				return array('success' => $holdMessage['success'], 'title' => $holdMessage['api']['title'], 'message' => $holdMessage['api']['message']);
+				$result = $driver->placeHold($user, $overDriveId);
+				$action = $result['api']['action'] ?? null;
+				return array('success' => $result['success'], 'title' => $result['api']['title'], 'message' => $result['api']['message'], 'action' => $action);
 			} else {
 				return array('success' => false, 'title' => 'Error', 'message' => 'Unable to validate user');
 			}
@@ -1347,19 +1348,18 @@ class UserAPI extends Action
 
 	}
 
-	function thawOverDriveHold() : array
+	function activateOverDriveHold() : array
 	{
 		list($username, $password) = $this->loadUsernameAndPassword();
-		$id = $_REQUEST['holdId'];
+		$id = $_REQUEST['recordId'];
 		$patronId = $_REQUEST['patronId'];
 
 		$user = UserAccount::validateAccount($username, $password);
 
 		if ($user && !($user instanceof AspenError)) {
-			$patron = $user->getUserReferredTo($patronId);
 			require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
 			$driver = new OverDriveDriver();
-			$result = $driver->thawHold($patron, $id);
+			$result = $driver->thawHold($user, $id);
 			return array('success' => $result['success'], 'title' => $result['api']['title'], 'message' => $result['api']['message']);
 		} else {
 			return array('success' => false, 'title' => 'Error', 'message' => 'Unable to validate user');
@@ -1400,7 +1400,11 @@ class UserAPI extends Action
 	function cancelOverDriveHold() : array
 	{
 		list($username, $password) = $this->loadUsernameAndPassword();
-		$overDriveId = $_REQUEST['overDriveId'];
+		if(isset($_REQUEST['overDriveId'])){
+			$overDriveId = $_REQUEST['overDriveId'];
+		} else {
+			$overDriveId = $_REQUEST['recordId'];
+		}
 
 		$user = UserAccount::validateAccount($username, $password);
 		if ($user && !($user instanceof AspenError)) {
@@ -1495,8 +1499,9 @@ class UserAPI extends Action
 		if ($user && !($user instanceof AspenError)) {
 			require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
 			$driver = new OverDriveDriver();
-			$holdMessage = $driver->checkOutTitle($user, $overDriveId);
-			return array('success' => $holdMessage['success'], 'title' => $holdMessage['api']['title'],'message' => $holdMessage['api']['message'], 'action' => $holdMessage['api']['action']);
+			$result = $driver->checkOutTitle($user, $overDriveId);
+			$action = $result['api']['action'] ?? null;
+			return array('success' => $result['success'], 'title' => $result['api']['title'],'message' => $result['api']['message'], 'action' => $action);
 		} else {
 			return array('success' => false, 'title' => 'Error', 'message' => 'Unable to validate user');
 		}
@@ -1561,6 +1566,41 @@ class UserAPI extends Action
 		return $result;
 	}
 
+	function updateOverDriveEmail() : array
+	{
+		list($username, $password) = $this->loadUsernameAndPassword();
+
+		$user = UserAccount::validateAccount($username, $password);
+
+		if ($user && !($user instanceof AspenError)) {
+			$patronId = $_REQUEST['patronId'];
+			$patron = $user->getUserReferredTo($patronId);
+			if ($patron) {
+				if (isset($_REQUEST['overdriveEmail'])) {
+					if ($_REQUEST['overdriveEmail'] != $patron->overdriveEmail) {
+						$patron->overdriveEmail = $_REQUEST['overdriveEmail'];
+						$patron->update();
+					}
+				}
+				if (isset($_REQUEST['promptForOverdriveEmail'])) {
+					if ($_REQUEST['promptForOverdriveEmail'] == 1 || $_REQUEST['promptForOverdriveEmail'] == 'yes' || $_REQUEST['promptForOverdriveEmail'] == 'on') {
+						$patron->promptForOverdriveEmail = 1;
+					} else {
+						$patron->promptForOverdriveEmail = 0;
+					}
+					$patron->update();
+				}
+
+				return $this->placeOverDriveHold();
+			} else {
+				return array('success' => false, 'title' => 'Error', 'message' => 'Unable to validate user');
+			}
+
+		} else {
+			return array('success' => false, 'title' => 'Error', 'message' => 'Unable to validate user');
+		}
+	}
+
 	function checkoutCloudLibraryItem() : array
 	{
 		list($username, $password) = $this->loadUsernameAndPassword();
@@ -1577,9 +1617,10 @@ class UserAPI extends Action
 			require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
 			$driver = new CloudLibraryDriver();
 			$result = $driver->checkOutTitle($patron, $id);
-			return array('success' => $result['success'], 'message' => $result['message']);
+			$action = $result['api']['action'] ?? null;
+			return array('success' => $result['success'], 'title' => $result['api']['title'], 'message' => $result['api']['message'], 'action' => $action);
 		} else {
-			return array('success' => false, 'message' => 'Login unsuccessful');
+			return array('success' => false, 'title' => 'Error', 'message' => 'Unable to validate user');
 		}
 	}
 
@@ -1599,9 +1640,9 @@ class UserAPI extends Action
 			require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
 			$driver = new CloudLibraryDriver();
 			$result = $driver->renewCheckout($patron, $id);
-			return array('success' => $result['success'], 'message' => $result['message']);
+			return array('success' => $result['success'], 'title' => $result['api']['title'], 'message' => $result['api']['message']);
 		} else {
-			return array('success' => false, 'message' => 'Login unsuccessful');
+			return array('success' => false, 'title' => 'Error', 'message' => 'Unable to validate user');
 		}
 	}
 
@@ -1621,76 +1662,31 @@ class UserAPI extends Action
 			require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
 			$driver = new CloudLibraryDriver();
 			$result = $driver->placeHold($patron, $id);
-			return array('success' => $result['success'], 'message' => $result['message']);
+			$action = $result['api']['action'] ?? null;
+			return array('success' => $result['success'], 'title' => $result['api']['title'], 'message' => $result['api']['message'], 'action' => $action);
 		} else {
-			return array('success' => false, 'message' => 'Login unsuccessful');
-		}
-	}
-
-	function freezeCloudLibraryHold() : array
-	{
-		list($username, $password) = $this->loadUsernameAndPassword();
-
-		$id = $_REQUEST['recordId'];
-		$reactivationDate = $_REQUEST['reactivationDate'] ?? null;
-
-		$user = UserAccount::validateAccount($username, $password);
-		if ($user && !($user instanceof AspenError)) {
-
-			require_once ROOT_DIR . '/RecordDrivers/CloudLibraryRecordDriver.php';
-			$this->recordDriver = new CloudLibraryRecordDriver($id);
-
-			require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
-			$driver = new CloudLibraryDriver();
-			$result = $driver->freezeHold($user, $id, $reactivationDate);
-			return array('success' => $result['success'], 'message' => $result['message']);
-		} else {
-			return array('success' => false, 'message' => 'Login unsuccessful');
-		}
-
-	}
-
-	function thawCloudLibraryHold() : array
-	{
-		list($username, $password) = $this->loadUsernameAndPassword();
-		$id = $_REQUEST['holdId'];
-		$patronId = $_REQUEST['patronId'];
-
-		$user = UserAccount::validateAccount($username, $password);
-
-		if ($user && !($user instanceof AspenError)) {
-			$patron = $user->getUserReferredTo($patronId);
-			require_once ROOT_DIR . '/RecordDrivers/CloudLibraryRecordDriver.php';
-			$this->recordDriver = new CloudLibraryRecordDriver($id);
-
-			require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
-			$driver = new CloudLibraryDriver();
-			$result = $driver->thawHold($patron, $id);
-			return array('success' => $result['success'], 'message' => $result['message']);
-		} else {
-			return array('success' => false, 'message' => 'Login unsuccessful');
+			return array('success' => false, 'title' => 'Error', 'message' => 'Unable to validate user');
 		}
 	}
 
 	function cancelCloudLibraryHold() : array
 	{
 		list($username, $password) = $this->loadUsernameAndPassword();
-		$id = $_REQUEST['id'];
+		$id = $_REQUEST['recordId'];
 		$patronId = $_REQUEST['patronId'];
 
 		$user = UserAccount::validateAccount($username, $password);
 
 		if ($user && !($user instanceof AspenError)) {
-			$patron = $user->getUserReferredTo($patronId);
 			require_once ROOT_DIR . '/RecordDrivers/CloudLibraryRecordDriver.php';
 			$this->recordDriver = new CloudLibraryRecordDriver($id);
 
 			require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
 			$driver = new CloudLibraryDriver();
-			$result = $driver->cancelHold($patron, $id);
-			return array('success' => $result['success'], 'message' => $result['message']);
+			$result = $driver->cancelHold($user, $id);
+			return array('success' => $result['success'], 'title' => $result['api']['title'], 'message' => $result['api']['message']);
 		} else {
-			return array('success' => false, 'message' => 'Login unsuccessful');
+			return array('success' => false, 'title' => 'Error', 'message' => 'Unable to validate user');
 		}
 	}
 
@@ -1710,9 +1706,9 @@ class UserAPI extends Action
 			require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
 			$driver = new CloudLibraryDriver();
 			$result = $driver->returnCheckout($patron, $id);
-			return array('success' => $result['success'], 'message' => $result['message']);
+			return array('success' => $result['success'], 'title' => $result['api']['title'], 'message' => $result['api']['message']);
 		} else {
-			return array('success' => false, 'message' => 'Login unsuccessful');
+			return array('success' => false, 'title' => 'Error', 'message' => 'Unable to validate user');
 		}
 	}
 
@@ -1731,10 +1727,10 @@ class UserAPI extends Action
 			$driver = new CloudLibraryRecordDriver($id);
 			$accessUrl = $driver->getAccessOnlineLinkUrl($patron);
 
-			return array('success' => true, 'url' => $accessUrl);
+			return array('success' => true, 'title' => 'Download Url', 'url' => $accessUrl);
 
 		} else {
-			return array('success' => false, 'message' => 'Login unsuccessful');
+			return array('success' => false, 'title' => 'Error', 'message' => 'Unable to validate user');
 		}
 	}
 
@@ -1779,9 +1775,10 @@ class UserAPI extends Action
 			require_once ROOT_DIR . '/Drivers/HooplaDriver.php';
 			$driver = new HooplaDriver();
 			$result = $driver->checkOutTitle($user, $titleId);
-			return array('success' => $result['success'], 'message' => $result['message']);
+			$action = $result['api']['action'] ?? null;
+			return array('success' => $result['success'], 'title' => $result['api']['title'], 'message' => $result['api']['message'], 'action' => $action);
 		} else {
-			return array('success' => false, 'message' => 'Login unsuccessful');
+			return array('success' => false, 'title' => 'Error', 'message' => 'Unable to validate user');
 		}
 	}
 
@@ -1795,9 +1792,9 @@ class UserAPI extends Action
 			require_once ROOT_DIR . '/Drivers/HooplaDriver.php';
 			$driver = new HooplaDriver();
 			$result = $driver->returnCheckout($user, $titleId);
-			return array('success' => $result['success'], 'message' => $result['message']);
+			return array('success' => $result['success'], 'title' => $result['api']['title'], 'message' => $result['api']['message']);
 		} else {
-			return array('success' => false, 'message' => 'Login unsuccessful');
+			return array('success' => false, 'title' => 'Error', 'message' => 'Unable to validate user');
 		}
 	}
 
@@ -1815,9 +1812,9 @@ class UserAPI extends Action
 			require_once ROOT_DIR . '/RecordDrivers/HooplaRecordDriver.php';
 			$hooplaRecord = new HooplaRecordDriver($id);
 			$accessLink = $hooplaRecord->getAccessLink();
-			return array('success' => true, 'url' => $accessLink['url']);
+			return array('success' => true, 'title' => "Download Url", 'url' => $accessLink['url']);
 		} else {
-			return array('success' => false, 'message' => 'Login unsuccessful');
+			return array('success' => false, 'title' => 'Error', 'message' => 'Unable to validate user');
 		}
 	}
 
@@ -1837,9 +1834,10 @@ class UserAPI extends Action
 			require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
 			$driver = new Axis360Driver();
 			$result = $driver->placeHold($patron, $id);
-			return array('success' => $result['success'], 'message' => $result['message']);
+			$action = $result['api']['action'] ?? null;
+			return array('success' => $result['success'], 'title' => $result['api']['title'], 'message' => $result['api']['message'], 'action' => $action);
 		} else {
-			return array('success' => false, 'message' => 'Login unsuccessful');
+			return array('success' => false, 'title' => 'Error', 'message' => 'Unable to validate user');
 		}
 	}
 
@@ -1859,53 +1857,49 @@ class UserAPI extends Action
 			require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
 			$driver = new Axis360Driver();
 			$result = $driver->freezeHold($patron, $id);
-			return array('success' => $result['success'], 'message' => $result['message']);
+			return array('success' => $result['success'], 'title' => $result['api']['title'], 'message' => $result['api']['message']);
 		} else {
-			return array('success' => false, 'message' => 'Login unsuccessful');
+			return array('success' => false, 'title' => 'Error', 'message' => 'Unable to validate user');
 		}
 	}
 
-	function thawAxis360Hold() : array
+	function activateAxis360Hold() : array
 	{
 		list($username, $password) = $this->loadUsernameAndPassword();
-		$id = $_REQUEST['holdId'];
-		$patronId = $_REQUEST['patronId'];
+		$id = $_REQUEST['recordId'];
 
 		$user = UserAccount::validateAccount($username, $password);
 
 		if ($user && !($user instanceof AspenError)) {
-			$patron = $user->getUserReferredTo($patronId);
 			require_once ROOT_DIR . '/RecordDrivers/Axis360RecordDriver.php';
 			$this->recordDriver = new Axis360RecordDriver($id);
 
 			require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
 			$driver = new Axis360Driver();
-			$result = $driver->thawHold($patron, $id);
-			return array('success' => $result['success'], 'message' => $result['message']);
+			$result = $driver->thawHold($user, $id);
+			return array('success' => $result['success'], 'title' => $result['api']['title'], 'message' => $result['api']['message']);
 		} else {
-			return array('success' => false, 'message' => 'Login unsuccessful');
+			return array('success' => false, 'title' => 'Error', 'message' => 'Unable to validate user');
 		}
 	}
 
 	function cancelAxis360Hold() : array
 	{
 		list($username, $password) = $this->loadUsernameAndPassword();
-		$id = $_REQUEST['id'];
-		$patronId = $_REQUEST['patronId'];
+		$id = $_REQUEST['recordId'];
 
 		$user = UserAccount::validateAccount($username, $password);
 
 		if ($user && !($user instanceof AspenError)) {
-			$patron = $user->getUserReferredTo($patronId);
 			require_once ROOT_DIR . '/RecordDrivers/Axis360RecordDriver.php';
 			$this->recordDriver = new Axis360RecordDriver($id);
 
 			require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
 			$driver = new Axis360Driver();
-			$result = $driver->cancelHold($patron, $id);
-			return array('success' => $result['success'], 'message' => $result['message']);
+			$result = $driver->cancelHold($user, $id);
+			return array('success' => $result['success'], 'title' => $result['api']['title'], 'message' => $result['api']['message']);
 		} else {
-			return array('success' => false, 'message' => 'Login unsuccessful');
+			return array('success' => false, 'title' => 'Error', 'message' => 'Unable to validate user');
 		}
 	}
 
@@ -1925,9 +1919,10 @@ class UserAPI extends Action
 			require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
 			$driver = new Axis360Driver();
 			$result = $driver->checkOutTitle($user, $id);
-			return array('success' => $result['success'], 'message' => $result['message']);
+			$action = $result['api']['action'] ?? null;
+			return array('success' => $result['success'], 'title' => $result['api']['title'], 'message' => $result['api']['message'], 'action' => $action);
 		} else {
-			return array('success' => false, 'message' => 'Login unsuccessful');
+			return array('success' => false, 'title' => 'Error', 'message' => 'Unable to validate user');
 		}
 	}
 
@@ -1947,9 +1942,9 @@ class UserAPI extends Action
 			require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
 			$driver = new Axis360Driver();
 			$result = $driver->returnCheckout($patron, $id);
-			return array('success' => $result['success'], 'message' => $result['message']);
+			return array('success' => $result['success'], 'title' => $result['api']['title'], 'message' => $result['api']['message']);
 		} else {
-			return array('success' => false, 'message' => 'Login unsuccessful');
+			return array('success' => false, 'title' => 'Error', 'message' => 'Unable to validate user');
 		}
 	}
 
@@ -1969,9 +1964,9 @@ class UserAPI extends Action
 			require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
 			$driver = new Axis360Driver();
 			$result = $driver->renewCheckout($patron, $id);
-			return array('success' => $result['success'], 'message' => $result['message']);
+			return array('success' => $result['success'], 'title' => $result['api']['title'], 'message' => $result['api']['message']);
 		} else {
-			return array('success' => false, 'message' => 'Login unsuccessful');
+			return array('success' => false, 'title' => 'Error', 'message' => 'Unable to validate user');
 		}
 	}
 
@@ -1988,9 +1983,9 @@ class UserAPI extends Action
 			require_once ROOT_DIR . '/RecordDrivers/Axis360RecordDriver.php';
 			$driver = new Axis360RecordDriver($id);
 			$accessUrl = $driver->getAccessOnlineLinkUrl($patron);
-			return array('success' => true, 'url' => $accessUrl);
+			return array('success' => true, 'title' => 'Download Url', 'url' => $accessUrl);
 		} else {
-			return array('success' => false, 'message' => 'Login unsuccessful');
+			return array('success' => false, 'title' => 'Error', 'message' => 'Unable to validate user');
 		}
 	}
 
@@ -2042,20 +2037,10 @@ class UserAPI extends Action
 		list($username, $password) = $this->loadUsernameAndPassword();
 
 		// Cancel Hold requires one of these, which one depends on the ILS
-		$recordId = $cancelId = null;
-		if (!empty($_REQUEST['recordId'])) {
-			$recordId = $_REQUEST['recordId'];
-		}
-		if (!empty($_REQUEST['cancelId'])) {
-			$cancelId = $_REQUEST['cancelId'];
-		}
+		$recordId = $_REQUEST['recordId'] ?? null;
+		$cancelId = $_REQUEST['cancelId'] ?? null;
 
-		if(isset($_REQUEST['itemSource'])) {
-			$source = $_REQUEST['itemSource'];
-		} else {
-			$source = null;
-		}
-
+		$source = $_REQUEST['itemSource'] ?? null;
 		$patron = UserAccount::validateAccount($username, $password);
 
 		if ($patron && !($patron instanceof AspenError)) {
@@ -2069,7 +2054,7 @@ class UserAPI extends Action
 				return $this->cancelAxis360Hold();
 			}
 		} else {
-			return array('success' => false, 'message' => 'Login unsuccessful');
+			return array('success' => false, 'title' => 'Error', 'message' => 'Unable to validate user');
 		}
 	}
 
@@ -2126,14 +2111,12 @@ class UserAPI extends Action
 				return $user->freezeHold($recordId, $holdId, $reactivationDate);
 			} else if ($source == 'overdrive') {
 				return $this->freezeOverDriveHold();
-			} else if ($source == 'cloud_library') {
-				return $this->freezeCloudLibraryHold();
 			} else if ($source == 'axis360') {
 				return $this->freezeAxis360Hold();
 			}
 
 		} else {
-			return array('success' => false, 'message' => 'Login unsuccessful');
+			return array('success' => false, 'title' => 'Error', 'message' => 'Unable to validate user');
 		}
 	}
 
@@ -2186,29 +2169,24 @@ class UserAPI extends Action
 	{
 		list($username, $password) = $this->loadUsernameAndPassword();
 		$user = UserAccount::validateAccount($username, $password);
-		if(isset($_REQUEST['itemSource'])) {
-			$source = $_REQUEST['itemSource'];
-		} else {
-			$source = null;
-		}
+		$source = $_REQUEST['itemSource'] ?? null;
+
 		if ($user && !($user instanceof AspenError)) {
-			if (empty($_REQUEST['recordId']) || empty($_REQUEST['holdId'])) {
-				return array('success' => false, 'message' => 'recordId and holdId must be provided');
-			} else {
-				$recordId = $_REQUEST['recordId'];
-				$holdId = $_REQUEST['holdId'];
-				if ($source == 'ils' || $source == null) {
+			if ($source == 'ils' || $source == null) {
+				if (empty($_REQUEST['recordId']) || empty($_REQUEST['holdId'])) {
+					return array('success' => false, 'title' => 'Error', 'message' => 'recordId and holdId must be provided');
+				} else {
+					$recordId = $_REQUEST['recordId'];
+					$holdId = $_REQUEST['holdId'];
 					return $user->thawHold($recordId, $holdId);
-				} else if ($source == 'overdrive') {
-					return $this->thawOverDriveHold();
-				} else if ($source == 'cloud_library') {
-					return $this->thawCloudLibraryHold();
-				} else if ($source == 'axis360') {
-					return $this->thawAxis360Hold();
 				}
+			} else if ($source == 'overdrive') {
+				return $this->activateOverDriveHold();
+			} else if ($source == 'axis360') {
+				return $this->activateAxis360Hold();
 			}
 		} else {
-			return array('success' => false, 'message' => 'Login unsuccessful');
+			return array('success' => false, 'title' => 'Error', 'message' => 'Unable to validate user');
 		}
 	}
 
