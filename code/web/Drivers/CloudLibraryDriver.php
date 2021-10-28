@@ -140,7 +140,8 @@ class CloudLibraryDriver extends AbstractEContentDriver
 			$result['success'] = true;
 			$result['message'] = translate(['text' => "Your title was returned successfully.", 'isPublicFacing'=>true]);
 
-			$result['api']['title'] = translate(['text' => 'Returning title', 'isPublicFacing'=>true]);
+			// Result for API or app use
+			$result['api']['title'] = translate(['text' => 'Title returned', 'isPublicFacing'=>true]);
 			$result['api']['message'] = translate(['text' => 'Your title was returned successfully.', 'isPublicFacing'=>true]);
 
 			$patron->clearCachedAccountSummaryForSource('cloud_library');
@@ -151,15 +152,21 @@ class CloudLibraryDriver extends AbstractEContentDriver
 			if (IPAddress::showDebuggingInformation()){
 				$result['message'] .= "\r\n" . $requestBody;
 			}
-			$result['api']['title'] = translate(['text' => 'Error returning title', 'isPublicFacing'=>true]);
+
+			// Result for API or app use
+			$result['api']['title'] = translate(['text' => 'Unable to return title', 'isPublicFacing'=>true]);
 			$result['api']['message'] = translate(['text' => 'Bad Request returning checkout.', 'isPublicFacing'=>true]);
 		}else if ($responseCode == '403'){
 			$result['message'] = translate(['text' => "Unable to authenticate.", 'isPublicFacing'=>true]);
-			$result['api']['title'] = translate(['text' => 'Error returning title', 'isPublicFacing'=>true]);
+
+			// Result for API or app use
+			$result['api']['title'] = translate(['text' => 'Unable to return title', 'isPublicFacing'=>true]);
 			$result['api']['message'] = translate(['text' => 'Unable to authenticate.', 'isPublicFacing'=>true]);
 		}else if ($responseCode == '404'){
 			$result['message'] = translate(['text' => "Checkout was not found.", 'isPublicFacing'=>true]);
-			$result['api']['title'] = translate(['text' => 'Error returning title', 'isPublicFacing'=>true]);
+
+			// Result for API or app use
+			$result['api']['title'] = translate(['text' => 'Unable to return title', 'isPublicFacing'=>true]);
 			$result['api']['message'] = translate(['text' => 'Checkout was not found.', 'isPublicFacing'=>true]);
 		}
 		return $result;
@@ -245,6 +252,8 @@ class CloudLibraryDriver extends AbstractEContentDriver
 		$patronEligibleForHolds = $patron->eligibleForHolds();
 		if ($patronEligibleForHolds['fineLimitReached']){
 			$result['message'] = translate(['text' => 'Sorry, your account has too many outstanding fines to use cloudLibrary.', 'isPublicFacing'=> true]);
+
+			// Result for API or app use
 			$result['api']['title'] = translate(['text' => 'Fine limit reached', 'isPublicFacing'=> true]);
 			$result['api']['message'] = translate(['text' => 'Sorry, your account has too many outstanding fines to use cloudLibrary.', 'isPublicFacing'=> true]);
 
@@ -267,6 +276,7 @@ class CloudLibraryDriver extends AbstractEContentDriver
 			$result['message'] = "<p class='alert alert-success'>" . translate(['text'=>"Your hold was placed successfully.", 'isPublicFacing'=>true]) . "</p>";
 			$result['hasWhileYouWait'] = false;
 
+			// Result for API or app use
 			$result['api']['title'] = translate(['text' => 'Hold Placed Successfully', 'isPublicFacing'=> true]);
 			$result['api']['message'] = translate(['text' => 'Your hold was placed successfully.', 'isPublicFacing'=> true]);
 
@@ -300,25 +310,29 @@ class CloudLibraryDriver extends AbstractEContentDriver
 				$result['message'] .= "\r\n" . $requestBody;
 			}
 
-			$result['api']['title'] = translate(['text' => 'Error placing hold', 'isPublicFacing'=> true]);
+			// Result for API or app use
+			$result['api']['title'] = translate(['text' => 'Unable to place hold', 'isPublicFacing'=> true]);
 			$result['api']['message'] = translate(['text' => 'Bad Request placing hold.', 'isPublicFacing'=> true]);
 
 		}else if ($responseCode == '403'){
 			$result['message'] = translate(['text' => "Unable to authenticate.", 'isPublicFacing'=>true]);
 
-			$result['api']['title'] = translate(['text' => 'Error placing hold', 'isPublicFacing'=> true]);
+			// Result for API or app use
+			$result['api']['title'] = translate(['text' => 'Unable to place hold', 'isPublicFacing'=> true]);
 			$result['api']['message'] = translate(['text' => 'Unable to authenticate.', 'isPublicFacing'=> true]);
 
 		}else if ($responseCode == '404'){
 			$result['message'] = translate(['text' => "Item was not found.", 'isPublicFacing'=>true]);
 
-			$result['api']['title'] = translate(['text' => 'Error placing hold', 'isPublicFacing'=> true]);
+			// Result for API or app use
+			$result['api']['title'] = translate(['text' => 'Unable to place hold', 'isPublicFacing'=> true]);
 			$result['api']['message'] = translate(['text' => 'Item was not found.', 'isPublicFacing'=> true]);
 
 		}else if ($responseCode == '404'){
 			$result['message'] = translate(['text'=>'Could not place hold.  Already on hold or the item can be checked out', 'isPublicFacing'=>true]);
 
-			$result['api']['title'] = translate(['text' => 'Error placing hold', 'isPublicFacing'=> true]);
+			// Result for API or app use
+			$result['api']['title'] = translate(['text' => 'Unable to place hold', 'isPublicFacing'=> true]);
 			$result['api']['message'] = translate(['text' => 'Could not place hold.  Already on hold or the item can be checked out', 'isPublicFacing'=> true]);
 		}
 		return $result;
@@ -348,6 +362,7 @@ class CloudLibraryDriver extends AbstractEContentDriver
 			$result['success'] = true;
 			$result['message'] = translate(['text' => "Your hold was cancelled successfully.", 'isPublicFacing'=>true]);
 
+			// Result for API or app use
 			$result['api']['title'] = translate(['text' => 'Hold cancelled', 'isPublicFacing'=> true]);
 			$result['api']['message'] = translate(['text' => 'Your hold was cancelled successfully.', 'isPublicFacing'=> true]);
 
@@ -359,19 +374,22 @@ class CloudLibraryDriver extends AbstractEContentDriver
 				$result['message'] .= "\r\n" . $requestBody;
 			}
 
-			$result['api']['title'] = translate(['text' => 'Error cancelling hold', 'isPublicFacing'=> true]);
+			// Result for API or app use
+			$result['api']['title'] = translate(['text' => 'Unable to cancel hold', 'isPublicFacing'=> true]);
 			$result['api']['message'] = translate(['text' => 'Bad Request cancelling hold.', 'isPublicFacing'=> true]);
 
 		}else if ($responseCode == '403'){
 			$result['message'] = translate(['text' => "Unable to authenticate.", 'isPublicFacing'=>true]);
 
-			$result['api']['title'] = translate(['text' => 'Error cancelling hold', 'isPublicFacing'=> true]);
+			// Result for API or app use
+			$result['api']['title'] = translate(['text' => 'Unable to cancel hold', 'isPublicFacing'=> true]);
 			$result['api']['message'] = translate(['text' => 'Unable to authenticate.', 'isPublicFacing'=> true]);
 
 		}else if ($responseCode == '404'){
 			$result['message'] = translate(['text' => "Item was not found.", 'isPublicFacing'=>true]);
 
-			$result['api']['title'] = translate(['text' => 'Error cancelling hold', 'isPublicFacing'=> true]);
+			// Result for API or app use
+			$result['api']['title'] = translate(['text' => 'Unable to cancel hold', 'isPublicFacing'=> true]);
 			$result['api']['message'] = translate(['text' => 'Item was not found.', 'isPublicFacing'=> true]);
 
 		}
@@ -425,6 +443,7 @@ class CloudLibraryDriver extends AbstractEContentDriver
 		if (!$patron->eligibleForHolds()){
 			$result['message'] = translate(['text' => 'Sorry, your account has too many outstanding fines to use cloudLibrary.', 'isPublicFacing'=>true]);
 
+			// Result for API or app use
 			$result['api']['title'] = translate(['text'=>'Fine limit reached', 'isPublicFacing'=>true]);
 			$result['api']['message'] = translate(['text'=>'Sorry, your account has too many outstanding fines to use cloudLibrary.', 'isPublicFacing'=>true]);
 			return $result;
@@ -450,10 +469,14 @@ class CloudLibraryDriver extends AbstractEContentDriver
 				$result['success'] = true;
 				if ($fromRenew){
 					$result['message'] = translate(['text' => 'Your title was renewed successfully.', 'isPublicFacing'=>true]);
+
+					// Result for API or app use
 					$result['api']['title'] = translate(['text'=>'Renewed title', 'isPublicFacing'=>true]);
 					$result['api']['message'] = translate(['text'=>'Your title was renewed successfully.', 'isPublicFacing'=>true]);
 				}else {
 					$result['message'] = translate(['text' => 'Your title was checked out successfully. You can read or listen to the title from your account.', 'isPublicFacing'=>true]);
+
+					// Result for API or app use
 					$result['api']['title'] = translate(['text'=>'Checked out title', 'isPublicFacing'=>true]);
 					$result['api']['message'] = translate(['text'=>'Your title was checked out successfully. You can read or listen to the title from your account.', 'isPublicFacing'=>true]);
 				}

@@ -355,8 +355,9 @@ class HooplaDriver extends AbstractEContentDriver{
 						$patron->clearCachedAccountSummaryForSource('hoopla');
 						$patron->forceReloadOfCheckouts();
 
+						// Result for API or app use
 						$apiResult = array();
-						$apiResult['title'] = translate(['text'=>'Title checked out successfully', 'isPublicFacing'=>true]);
+						$apiResult['title'] = translate(['text'=>'Checked out title', 'isPublicFacing'=>true]);
 						$apiResult['message'] = strip_tags($checkoutResponse->message);
 
 						return array(
@@ -368,8 +369,9 @@ class HooplaDriver extends AbstractEContentDriver{
 							'api'       => $apiResult,
 						);
 					} else {
+						// Result for API or app use
 						$apiResult = array();
-						$apiResult['title'] = translate(['text'=>'Error checking out', 'isPublicFacing'=>true]);
+						$apiResult['title'] = translate(['text'=>'Unable to checkout title', 'isPublicFacing'=>true]);
 						$apiResult['message'] = isset($checkoutResponse->message) ? strip_tags($checkoutResponse->message) : 'An error occurred checking out the Hoopla title.';
 
 						return array(
@@ -380,8 +382,9 @@ class HooplaDriver extends AbstractEContentDriver{
 					}
 
 				} else {
+					// Result for API or app use
 					$apiResult = array();
-					$apiResult['title'] = translate(['text'=>'Error checking title out', 'isPublicFacing'=>true]);
+					$apiResult['title'] = translate(['text'=>'Unable to checkout title', 'isPublicFacing'=>true]);
 					$apiResult['message'] = translate(['text'=>'An error occurred checking out the Hoopla title.', 'isPublicFacing'=>true]);;
 
 					return array(
@@ -391,8 +394,9 @@ class HooplaDriver extends AbstractEContentDriver{
 					);
 				}
 			} elseif (!$this->getHooplaLibraryID($patron)) {
+				// Result for API or app use
 				$apiResult = array();
-				$apiResult['title'] = translate(['text'=>'Error checking title out', 'isPublicFacing'=>true]);
+				$apiResult['title'] = translate(['text'=>'Unable to checkout title', 'isPublicFacing'=>true]);
 				$apiResult['message'] = translate(['text'=>'Your library does not have Hoopla integration enabled.', 'isPublicFacing'=>true]);
 
 				return array(
@@ -401,8 +405,9 @@ class HooplaDriver extends AbstractEContentDriver{
 					'api' => $apiResult
 				);
 			} else {
+				// Result for API or app use
 				$apiResult = array();
-				$apiResult['title'] = translate(['text'=>'Error checking title out', 'isPublicFacing'=>true]);
+				$apiResult['title'] = translate(['text'=>'Unable to checkout title', 'isPublicFacing'=>true]);
 				$apiResult['message'] = translate(['text'=>'There was an error retrieving your library card number.', 'isPublicFacing'=>true]);
 
 				return array(
@@ -412,8 +417,9 @@ class HooplaDriver extends AbstractEContentDriver{
 				);
 			}
 		} else {
+			// Result for API or app use
 			$apiResult = array();
-			$apiResult['title'] = translate(['text'=>'Error checking title out', 'isPublicFacing'=>true]);
+			$apiResult['title'] = translate(['text'=>'Unable to checkout title', 'isPublicFacing'=>true]);
 			$apiResult['message'] = translate(['text'=>'Hoopla integration is not enabled.', 'isPublicFacing'=>true]);
 
 			return array(
@@ -441,6 +447,8 @@ class HooplaDriver extends AbstractEContentDriver{
 				if ($result) {
 					$patron->clearCachedAccountSummaryForSource('hoopla');
 					$patron->forceReloadOfCheckouts();
+
+					// Result for API or app use
 					$apiResult['title'] = translate(['text'=>'Title returned', 'isPublicFacing'=>true]);
 					$apiResult['message'] = translate(['text'=>'The title was successfully returned.', 'isPublicFacing'=>true]);
 
@@ -450,7 +458,8 @@ class HooplaDriver extends AbstractEContentDriver{
 						'api' => $apiResult
 					);
 				} else {
-					$apiResult['title'] = translate(['text'=>'Error returning title', 'isPublicFacing'=>true]);
+					// Result for API or app use
+					$apiResult['title'] = translate(['text'=>'Unable to return title', 'isPublicFacing'=>true]);
 					$apiResult['message'] = translate(['text'=>' There was an error returning this title.', 'isPublicFacing'=>true]);
 
 					return array(
@@ -461,7 +470,8 @@ class HooplaDriver extends AbstractEContentDriver{
 				}
 
 			} elseif (!$this->getHooplaLibraryID($patron)) {
-				$apiResult['title'] = translate(['text'=>'Error returning title', 'isPublicFacing'=>true]);
+				// Result for API or app use
+				$apiResult['title'] = translate(['text'=>'Unable to return title', 'isPublicFacing'=>true]);
 				$apiResult['message'] = translate(['text'=>'Your library does not have Hoopla integration enabled.', 'isPublicFacing'=>true]);
 
 				return array(
@@ -470,7 +480,8 @@ class HooplaDriver extends AbstractEContentDriver{
 					'api' => $apiResult,
 				);
 			} else {
-				$apiResult['title'] = translate(['text'=>'Error returning title', 'isPublicFacing'=>true]);
+				// Result for API or app use
+				$apiResult['title'] = translate(['text'=>'Unable to return title', 'isPublicFacing'=>true]);
 				$apiResult['message'] = translate(['text'=>'There was an error retrieving your library card number.', 'isPublicFacing'=>true]);
 
 				return array(
@@ -480,7 +491,8 @@ class HooplaDriver extends AbstractEContentDriver{
 				);
 			}
 		} else {
-			$apiResult['title'] = translate(['text'=>'Error returning title', 'isPublicFacing'=>true]);
+			// Result for API or app use
+			$apiResult['title'] = translate(['text'=>'Unable to return title', 'isPublicFacing'=>true]);
 			$apiResult['message'] = translate(['text'=>'Hoopla integration is not enabled.', 'isPublicFacing'=>true]);
 
 			return array(
