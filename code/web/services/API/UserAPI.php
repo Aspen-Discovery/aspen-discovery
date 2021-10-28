@@ -870,7 +870,7 @@ class UserAPI extends Action
 	function checkoutItem() : array
 	{
 		list($username, $password) = $this->loadUsernameAndPassword();
-		$source = $_REQUEST['source'];
+		$source = $_REQUEST['itemSource'] ?? null;
 		$patron = UserAccount::validateAccount($username, $password);
 
 		if ($patron && !($patron instanceof AspenError)) {
@@ -1310,7 +1310,7 @@ class UserAPI extends Action
 				require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
 				$driver = new OverDriveDriver();
 				$holdMessage = $driver->placeHold($user, $overDriveId);
-				return array('success' => $holdMessage['success'], 'title' => $holdMessage['api']['title'], 'message' => $holdMessage['api']['message']);
+				return array('success' => $holdMessage['success'], 'title' => $holdMessage['api']['title'], 'message' => $holdMessage['api']['message'], 'action' => $holdMessage['api']['action']);
 			} else {
 				return array('success' => false, 'title' => 'Error', 'message' => 'Unable to validate user');
 			}
@@ -1577,7 +1577,7 @@ class UserAPI extends Action
 			require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
 			$driver = new CloudLibraryDriver();
 			$result = $driver->checkOutTitle($patron, $id);
-			return array('success' => $result['success'], 'title' => $result['api']['title'], 'message' => $result['api']['message']);
+			return array('success' => $result['success'], 'title' => $result['api']['title'], 'message' => $result['api']['message'], 'action' => $result['api']['action']);
 		} else {
 			return array('success' => false, 'title' => 'Error', 'message' => 'Unable to validate user');
 		}
@@ -1621,7 +1621,7 @@ class UserAPI extends Action
 			require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
 			$driver = new CloudLibraryDriver();
 			$result = $driver->placeHold($patron, $id);
-			return array('success' => $result['success'], 'title' => $result['api']['title'], 'message' => $result['api']['message']);
+			return array('success' => $result['success'], 'title' => $result['api']['title'], 'message' => $result['api']['message'], 'action' => $result['api']['action']);
 		} else {
 			return array('success' => false, 'title' => 'Error', 'message' => 'Unable to validate user');
 		}
@@ -1665,9 +1665,9 @@ class UserAPI extends Action
 			require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
 			$driver = new CloudLibraryDriver();
 			$result = $driver->returnCheckout($patron, $id);
-			return array('success' => $result['success'], 'message' => $result['message']);
+			return array('success' => $result['success'], 'title' => $result['api']['title'], 'message' => $result['api']['message']);
 		} else {
-			return array('success' => false, 'message' => 'Login unsuccessful');
+			return array('success' => false, 'title' => 'Error', 'message' => 'Unable to validate user');
 		}
 	}
 
@@ -1686,10 +1686,10 @@ class UserAPI extends Action
 			$driver = new CloudLibraryRecordDriver($id);
 			$accessUrl = $driver->getAccessOnlineLinkUrl($patron);
 
-			return array('success' => true, 'url' => $accessUrl);
+			return array('success' => true, 'title' => 'Download Url', 'url' => $accessUrl);
 
 		} else {
-			return array('success' => false, 'message' => 'Login unsuccessful');
+			return array('success' => false, 'title' => 'Error', 'message' => 'Unable to validate user');
 		}
 	}
 
@@ -1734,7 +1734,7 @@ class UserAPI extends Action
 			require_once ROOT_DIR . '/Drivers/HooplaDriver.php';
 			$driver = new HooplaDriver();
 			$result = $driver->checkOutTitle($user, $titleId);
-			return array('success' => $result['success'], 'title' => $result['api']['title'], 'message' => $result['api']['message']);
+			return array('success' => $result['success'], 'title' => $result['api']['title'], 'message' => $result['api']['message'], 'action' => $result['api']['action']);
 		} else {
 			return array('success' => false, 'title' => 'Error', 'message' => 'Unable to validate user');
 		}
@@ -1792,9 +1792,9 @@ class UserAPI extends Action
 			require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
 			$driver = new Axis360Driver();
 			$result = $driver->placeHold($patron, $id);
-			return array('success' => $result['success'], 'message' => $result['message']);
+			return array('success' => $result['success'], 'title' => $result['api']['title'], 'message' => $result['api']['message'], 'action' => $result['api']['action']);
 		} else {
-			return array('success' => false, 'message' => 'Login unsuccessful');
+			return array('success' => false, 'title' => 'Error', 'message' => 'Unable to validate user');
 		}
 	}
 
@@ -1814,9 +1814,9 @@ class UserAPI extends Action
 			require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
 			$driver = new Axis360Driver();
 			$result = $driver->freezeHold($patron, $id);
-			return array('success' => $result['success'], 'message' => $result['message']);
+			return array('success' => $result['success'], 'title' => $result['api']['title'], 'message' => $result['api']['message']);
 		} else {
-			return array('success' => false, 'message' => 'Login unsuccessful');
+			return array('success' => false, 'title' => 'Error', 'message' => 'Unable to validate user');
 		}
 	}
 
@@ -1836,9 +1836,9 @@ class UserAPI extends Action
 			require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
 			$driver = new Axis360Driver();
 			$result = $driver->thawHold($patron, $id);
-			return array('success' => $result['success'], 'message' => $result['message']);
+			return array('success' => $result['success'], 'title' => $result['api']['title'], 'message' => $result['api']['message']);
 		} else {
-			return array('success' => false, 'message' => 'Login unsuccessful');
+			return array('success' => false, 'title' => 'Error', 'message' => 'Unable to validate user');
 		}
 	}
 
@@ -1858,9 +1858,9 @@ class UserAPI extends Action
 			require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
 			$driver = new Axis360Driver();
 			$result = $driver->cancelHold($patron, $id);
-			return array('success' => $result['success'], 'message' => $result['message']);
+			return array('success' => $result['success'], 'title' => $result['api']['title'], 'message' => $result['api']['message']);
 		} else {
-			return array('success' => false, 'message' => 'Login unsuccessful');
+			return array('success' => false, 'title' => 'Error', 'message' => 'Unable to validate user');
 		}
 	}
 
@@ -1880,9 +1880,9 @@ class UserAPI extends Action
 			require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
 			$driver = new Axis360Driver();
 			$result = $driver->checkOutTitle($user, $id);
-			return array('success' => $result['success'], 'message' => $result['message']);
+			return array('success' => $result['success'], 'title' => $result['api']['title'], 'message' => $result['api']['message'], 'action' => $result['api']['action']);
 		} else {
-			return array('success' => false, 'message' => 'Login unsuccessful');
+			return array('success' => false, 'title' => 'Error', 'message' => 'Unable to validate user');
 		}
 	}
 
@@ -1902,9 +1902,9 @@ class UserAPI extends Action
 			require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
 			$driver = new Axis360Driver();
 			$result = $driver->returnCheckout($patron, $id);
-			return array('success' => $result['success'], 'message' => $result['message']);
+			return array('success' => $result['success'], 'title' => $result['api']['title'], 'message' => $result['api']['message']);
 		} else {
-			return array('success' => false, 'message' => 'Login unsuccessful');
+			return array('success' => false, 'title' => 'Error', 'message' => 'Unable to validate user');
 		}
 	}
 
@@ -1924,9 +1924,9 @@ class UserAPI extends Action
 			require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
 			$driver = new Axis360Driver();
 			$result = $driver->renewCheckout($patron, $id);
-			return array('success' => $result['success'], 'message' => $result['message']);
+			return array('success' => $result['success'], 'title' => $result['api']['title'], 'message' => $result['api']['message']);
 		} else {
-			return array('success' => false, 'message' => 'Login unsuccessful');
+			return array('success' => false, 'title' => 'Error', 'message' => 'Unable to validate user');
 		}
 	}
 
@@ -1943,9 +1943,9 @@ class UserAPI extends Action
 			require_once ROOT_DIR . '/RecordDrivers/Axis360RecordDriver.php';
 			$driver = new Axis360RecordDriver($id);
 			$accessUrl = $driver->getAccessOnlineLinkUrl($patron);
-			return array('success' => true, 'url' => $accessUrl);
+			return array('success' => true, 'title' => 'Download Url', 'url' => $accessUrl);
 		} else {
-			return array('success' => false, 'message' => 'Login unsuccessful');
+			return array('success' => false, 'title' => 'Error', 'message' => 'Unable to validate user');
 		}
 	}
 
