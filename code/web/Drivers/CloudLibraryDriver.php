@@ -279,6 +279,7 @@ class CloudLibraryDriver extends AbstractEContentDriver
 			// Result for API or app use
 			$result['api']['title'] = translate(['text' => 'Hold Placed Successfully', 'isPublicFacing'=> true]);
 			$result['api']['message'] = translate(['text' => 'Your hold was placed successfully.', 'isPublicFacing'=> true]);
+			$result['api']['action'] = translate(['text' => 'Go to Holds', 'isPublicFacing'=>true]);
 
 			//Get the grouped work for the record
 			global $library;
@@ -479,6 +480,7 @@ class CloudLibraryDriver extends AbstractEContentDriver
 					// Result for API or app use
 					$result['api']['title'] = translate(['text'=>'Checked out title', 'isPublicFacing'=>true]);
 					$result['api']['message'] = translate(['text'=>'Your title was checked out successfully. You can read or listen to the title from your account.', 'isPublicFacing'=>true]);
+					$result['api']['action'] = translate(['text' => 'Go to Checkouts', 'isPublicFacing'=>true]);
 				}
 
 				$patron->clearCachedAccountSummaryForSource('cloud_library');
