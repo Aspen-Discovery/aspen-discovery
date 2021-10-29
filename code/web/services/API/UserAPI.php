@@ -346,6 +346,9 @@ class UserAPI extends Action
 				}
 			}
 
+			$numCheckedOut = 0;
+			$numHolds = 0;
+			$numHoldsAvailable = 0;
 			$accountSummary = $user->getAccountSummary();
 			$userData->numCheckedOutIls = (int)$accountSummary->numCheckedOut;
 			$userData->numHoldsIls =(int) $accountSummary->getNumHolds();
@@ -353,6 +356,9 @@ class UserAPI extends Action
 			$userData->numHoldsRequestedIls = (int) ($accountSummary->numUnavailableHolds == null ? 0 :  $accountSummary->numUnavailableHolds);
 			$userData->numOverdue = (int)$accountSummary->numOverdue;
 			$userData->finesVal = (float)$accountSummary->totalFines;
+			$numCheckedOut += $userData->numCheckedOutIls;
+			$numHolds += $userData->numHoldsIls;
+			$numHoldsAvailable += $userData->numHoldsAvailableIls;
 			global $activeLanguage;
 			$currencyCode = 'USD';
 			$variables = new SystemVariables();
@@ -371,6 +377,9 @@ class UserAPI extends Action
 				$userData->numCheckedOutOverDrive = (int)$overDriveSummary->numCheckedOut;
 				$userData->numHoldsOverDrive = (int)$overDriveSummary->getNumHolds();
 				$userData->numHoldsAvailableOverDrive = (int)$overDriveSummary->numAvailableHolds;
+				$numCheckedOut += $userData->numCheckedOutOverDrive;
+				$numHolds += $userData->numHoldsOverDrive;
+				$numHoldsAvailable += $userData->numHoldsAvailableOverDrive;
 			}
 
 			//Add hoopla data
@@ -379,8 +388,7 @@ class UserAPI extends Action
 				$driver = new HooplaDriver();
 				$hooplaSummary = $driver->getAccountSummary($user);
 				$userData->numCheckedOut_Hoopla = (int)$hooplaSummary->numCheckedOut;
-				$userData->numHolds_Hoopla = (int)$hooplaSummary->getNumHolds();
-				$userData->numHoldsAvailable_Hoopla = (int)$hooplaSummary->numAvailableHolds;
+				$numCheckedOut += $userData->numCheckedOut_Hoopla;
 			}
 
 			//Add cloudLibrary data
@@ -391,6 +399,9 @@ class UserAPI extends Action
 				$userData->numCheckedOut_cloudLibrary = (int)$cloudLibrarySummary->numCheckedOut;
 				$userData->numHolds_cloudLibrary = (int)$cloudLibrarySummary->getNumHolds();
 				$userData->numHoldsAvailable_cloudLibrary = (int)$cloudLibrarySummary->numAvailableHolds;
+				$numCheckedOut += $userData->numCheckedOut_cloudLibrary;
+				$numHolds += $userData->numHolds_cloudLibrary;
+				$numHoldsAvailable += $userData->numHoldsAvailable_cloudLibrary;
 			}
 
 			//Add axis360 data
@@ -401,7 +412,14 @@ class UserAPI extends Action
 				$userData->numCheckedOut_axis360 = (int)$axis360Summary->numCheckedOut;
 				$userData->numHolds_axis360 = (int)$axis360Summary->getNumHolds();
 				$userData->numHoldsAvailable_axis360 = (int)$axis360Summary->numAvailableHolds;
+				$numCheckedOut += $userData->numCheckedOut_axis360;
+				$numHolds += $userData->numHolds_axis360;
+				$numHoldsAvailable += $userData->numHoldsAvailable_axis360;
 			}
+
+			$userData->numCheckedOut = $numCheckedOut;
+			$userData->numHolds = $numHolds;
+			$userData->numHoldsAvailable = $numHoldsAvailable;
 
 			return array('success' => true, 'profile' => $userData);
 		} else {
