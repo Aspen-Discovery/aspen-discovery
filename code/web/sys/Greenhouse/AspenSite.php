@@ -41,7 +41,7 @@ class AspenSite extends DataObject
 		];
 	}
 
-	public function getStatus() {
+	public function updateStatus() {
 		$status = $this->toArray();
 		if (!empty($this->baseUrl)){
 			$statusUrl = $this->baseUrl . '/API/SearchAPI?method=getIndexStatus';
@@ -51,11 +51,11 @@ class AspenSite extends DataObject
 					$statusJson = json_decode($statusRaw, true);
 					$status['alive'] = true;
 					$status = array_merge($status, $statusJson['result']);
-				}else{
+				}else {
 					$status['alive'] = false;
 					$status['checks'] = [];
 				}
-			}catch (Exception $e){
+			}catch (Exception $e) {
 				$status['alive'] = false;
 				$status['checks'] = [];
 			}
@@ -65,6 +65,64 @@ class AspenSite extends DataObject
 		}
 
 		return $status;
+	}
+
+	public function getCachedStatus() {
+		$status = $this->toArray();
+		if (!empty($this->baseUrl)){
+			$status['checks'] = [];
+			require_once ROOT_DIR . '/sys/Greenhouse/AspenSiteCheck.php';
+			$statusChecks = new AspenSiteCheck();
+			$statusChecks->siteId = $this->id;
+			$statusChecks->orderBy('checkName');
+			$statusChecks->find();
+			$hasCriticalErrors = false;
+			$hasWarnings = false;
+			while ($statusChecks->fetch()){
+				$note = $statusChecks->currentNote;
+
+				$statusValue = 'okay';
+				if ($statusChecks->currentStatus == 2){
+					$hasCriticalErrors = true;
+					$statusValue = 'critical';
+					$note .= ' for ' . $this->getElapsedTime($statusChecks->lastErrorTime);
+				}else if ($statusChecks->currentStatus == 1){
+					$hasWarnings = true;
+					$statusValue = 'warning';
+					$note .= ' for ' . $this->getElapsedTime($statusChecks->lastWarningTime);
+				}
+				$checkName = str_replace(' ', '_', strtolower($statusChecks->checkName));
+
+				$status['checks'][$checkName] = [
+					'name' => $statusChecks->checkName,
+					'status' => $statusValue,
+					'note' => $note
+				];
+			}
+			if ($hasCriticalErrors){
+				$status['aspen_health_status'] = 'critical';
+			}elseif ($hasWarnings){
+				$status['aspen_health_status'] = 'warning';
+			}else{
+				$status['aspen_health_status'] = 'okay';
+			}
+		}else{
+			$status['checks'] = [];
+		}
+
+		return $status;
+	}
+
+	function getElapsedTime($time)
+	{
+		$elapsedTimeMin = ceil((time() - $time) / 60);
+		if ($elapsedTimeMin < 60) {
+			return $elapsedTimeMin . " min";
+		} else {
+			$hours = floor($elapsedTimeMin / 60);
+			$minutes = $elapsedTimeMin - (60 * $hours);
+			return "$hours hours, $minutes min";
+		}
 	}
 
 	public function getCurrentVersion() {

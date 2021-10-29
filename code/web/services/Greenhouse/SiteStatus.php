@@ -14,7 +14,7 @@ class Greenhouse_SiteStatus extends Admin_Admin
 		$siteStatuses = [];
 		$allChecks = [];
 		while ($sites->fetch()){
-			$siteStatus = $sites->getStatus();
+			$siteStatus = $sites->getCachedStatus();
 			$siteStatuses[] = $siteStatus;
 			foreach ($siteStatus['checks'] as $key => $check){
 				$allChecks[$key] = $check['name'];

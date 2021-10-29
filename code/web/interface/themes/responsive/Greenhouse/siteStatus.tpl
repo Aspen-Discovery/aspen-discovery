@@ -13,7 +13,6 @@
 					<th>{translate text="DB Maintenance" isAdminFacing=true}</th>
 					<th>{translate text="Implementation Status" isAdminFacing=true}</th>
 					<th>{translate text="Version" isAdminFacing=true}</th>
-					<th>{translate text="Alive" isAdminFacing=true}</th>
 					{foreach from=$allChecks item=checkName key=checkType}
 						<th>{translate text=$checkName isAdminFacing=true}</th>
 					{/foreach}
@@ -33,9 +32,6 @@
 						</td>
 						<td>
 							{$siteStatus.version}
-						</td>
-						<td {if $siteStatus.alive}style="background-color: lightgreen"{else}style="background-color: #D50000;color:white;font-weight: bold"{/if}>
-							&nbsp;
 						</td>
 						{foreach from=$allChecks item=checkName key=checkType}
 							{if array_key_exists($checkType,$siteStatus.checks)}

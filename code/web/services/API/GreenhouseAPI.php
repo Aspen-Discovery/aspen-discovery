@@ -39,11 +39,13 @@ class GreenhouseAPI extends Action
 		$start = time();
 		while ($sites->fetch()){
 			$statusTime = time();
-			$siteStatus = $sites->getStatus();
+			$siteStatus = $sites->updateStatus();
 			if ($sites->version != $siteStatus['version']){
 				$sites->version = $siteStatus['version'];
 				$sites->update();
 			}
+
+			//Store checks
 			foreach ($siteStatus['checks'] as $key => $check){
 				$aspenSiteCheck = new AspenSiteCheck();
 				$aspenSiteCheck->siteId = $sites->id;
@@ -78,6 +80,12 @@ class GreenhouseAPI extends Action
 					$aspenSiteCheck->insert();
 				}
 			}
+
+			//Store stats
+
+
+			//Check to see if we need to send an alert
+
 			//store stats
 			$numSitesUpdated++;
 		}
