@@ -135,7 +135,7 @@ class DataObjectUtil
 		}
 	}
 
-	static function processProperty(DataObject $object, $property){
+	static function processProperty($object, $property){
 		global $logger;
 		$propertyName = $property['property'];
 		if ($property['type'] == 'section'){
@@ -175,29 +175,23 @@ class DataObjectUtil
 				$object->setProperty($propertyName, strip_tags($object->$propertyName), $property);
 			}elseif ($property['type'] != 'javascript'){
 				$systemVariables = SystemVariables::getSystemVariables();
-				if ($systemVariables != false) {
-					if ($systemVariables->allowHtmlInMarkdownFields != false || $systemVariables->useHtmlEditorRatherThanMarkdown != false) {
-						if (!empty($systemVariables->allowableHtmlTags)) {
-							$allowableTags = '<' . implode('><', explode('|', $systemVariables->allowableHtmlTags)) . '>';
-						} else {
-							$allowableTags = null;
-						}
-					} else {
-						if (!empty($property['allowableTags'])) {
-							$allowableTags = $property['allowableTags'];
-						} else {
-							$allowableTags = '<p><a><b><em><ul><ol><em><li><strong><i><br>';
-						}
+				if ($systemVariables != false){
+					if (!empty($systemVariables->allowHtmlInMarkdownFields)){
+						$allowableTags = '<' . implode('><', explode('|', $systemVariables->allowableHtmlTags)). '>';
+					}else{
+						$allowableTags = null;
 					}
-
-				} else {
-					// set defaults if system variables do not exist
-					$allowableTags = '<p><a><b><em><ul><ol><em><li><strong><i><br>';
+				}else{
+					if (!empty($property['allowableTags'])){
+						$allowableTags = $property['allowableTags'];
+					}else{
+						$allowableTags = '<p><a><b><em><ul><ol><em><li><strong><i><br>';
+					}
 				}
 
 				if (!empty($allowableTags)) {
 					$object->setProperty($propertyName, strip_tags($object->$propertyName, $allowableTags), $property);
-				} else {
+				}else{
 					$object->setProperty($propertyName, $object->$propertyName, $property);
 				}
 			}
@@ -326,7 +320,7 @@ class DataObjectUtil
 								if (isset($property['maxHeight'])) {
 									$height = $property['maxHeight'];
 								}
-								resizeImage($destFullPath, "{$destFolder}/{$destFileName}", $width, $height);
+								resizeImage($destFullPath, "{$destFolder}/{$destFileName}", $property['mediumWidth'], $property['mediumWidth']);
 							}
 						}
 					}
@@ -448,7 +442,6 @@ class DataObjectUtil
 				foreach ($idsToSave as $key => $id){
 					//Create the subObject
 					if ($id < 0 || $id == ""){
-						/** @var DataObject $subObject */
 						$subObject = new $subObjectType();
 						$id = $key;
 					} else {
@@ -500,4 +493,35 @@ class DataObjectUtil
 			$object->$propertyName = $values;
 		}
 	}
+
+	static function getObjectListFilters($objectStructure){
+
+	}
+
+	static function getObjectList($objectStructure, $objectsToShow){
+
+	}
+
+	static function getObjectExportFile($objectStructure, $objectsToExport, $exportFilename){
+
+	}
+	static function compareObjects($objectStructure, $object1, $object2){
+
+	}
+	static function importObjectsFromFile($objectStructure, $objectType, $importFilename){
+
+	}
+
+	static function getFileUploadMessage($errorNo, $fieldname){
+		$errorMessages = array(
+		0=>"There is no error, the file for $fieldname uploaded with success",
+		1=>"The uploaded file for $fieldname exceeds the maximum file size for the server",
+		2=>"The uploaded file for $fieldname exceeds the maximum file size for this field",
+		3=>"The uploaded file for $fieldname was only partially uploaded",
+		4=>"No file was uploaded for $fieldname",
+		6=>"Missing a temporary folder for $fieldname"
+		);
+		return $errorMessages[$errorNo];
+	}
+
 }

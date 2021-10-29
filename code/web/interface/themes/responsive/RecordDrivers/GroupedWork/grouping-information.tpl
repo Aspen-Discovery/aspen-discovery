@@ -1,5 +1,5 @@
 {strip}
-<h4>{translate text="Grouping Information" isPublicFacing=true}</h4>
+<h4>Grouping Information</h4>
 <table class="table-striped table table-condensed notranslate">
 	<tr>
 		<th>{translate text="Grouped Work ID" isPublicFacing=true}</th>

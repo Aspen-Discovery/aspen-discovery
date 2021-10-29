@@ -1,8 +1,6 @@
 package com.turning_leaf_technologies.marc;
 
-import com.mysql.cj.util.LRUCache;
 import com.turning_leaf_technologies.logging.BaseLogEntry;
-import com.turning_leaf_technologies.util.MaxSizeHashMap;
 import org.apache.logging.log4j.Logger;
 import com.turning_leaf_technologies.strings.StringUtils;
 import org.marc4j.*;
@@ -24,7 +22,6 @@ import java.util.zip.CRC32;
  * Class to handle loading data from MARC records
  */
 public class MarcUtil {
-	private static MaxSizeHashMap<String, Set<String>> marcRecordFieldListCache = new MaxSizeHashMap<>(100);
 	/**
 	 * Get Set of Strings as indicated by tagStr. For each field spec in the
 	 * tagStr that is NOT about bytes (i.e. not a 008[7-12] type fieldspec), the
@@ -47,13 +44,8 @@ public class MarcUtil {
 	 *         of Strings.
 	 */
 	public static Set<String> getFieldList(Record record, String tagStr) {
-		Set<String> result = marcRecordFieldListCache.get(record.toString() + tagStr);
-		if (result != null){
-			return result;
-		}
-
 		String[] tags = tagStr.split(":");
-		result = new LinkedHashSet<>();
+		Set<String> result = new LinkedHashSet<>();
 		for (String tag1 : tags) {
 			// Check to ensure tag length is at least 3 characters
 			if (tag1.length() < 3) {
@@ -109,7 +101,6 @@ public class MarcUtil {
 					result.addAll(getSubfieldDataAsSet(record, tag, subfield, separator));
 			}
 		}
-		marcRecordFieldListCache.put(record.toString() + tagStr, result);
 		return result;
 	}
 

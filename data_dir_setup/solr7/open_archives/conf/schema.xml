@@ -7,21 +7,33 @@
 		<fieldType name="float" class="FloatPointField"/>
 		<fieldType name="date" class="DateRangeField"/>
 		<fieldType name="random" class="RandomSortField"/>
-		<fieldType name="text_general" class="solr.TextField" positionIncrementGap="100">
+				<fieldType name="text_general" class="solr.TextField" positionIncrementGap="100">
 			<analyzer type="index">
 				<tokenizer class="solr.StandardTokenizerFactory"/>
 				<filter class="solr.ASCIIFoldingFilterFactory" preserveOriginal="false" />
 				<filter class="solr.StopFilterFactory" ignoreCase="true" words="stopwords.txt"  />
+				<filter class="solr.StopFilterFactory" ignoreCase="true" words="stopwords_ar.txt"  />
 				<filter class="solr.LowerCaseFilterFactory"/>
+				<filter class="solr.ArabicNormalizationFilterFactory"/>
+  				<filter class="solr.ArabicStemFilterFactory"/>
+				<charFilter class="solr.PatternReplaceCharFilterFactory"    pattern="(عبد)\s*(\W+)" replacement="$1$2" />     
+                <charFilter class="solr.PatternReplaceCharFilterFactory"    pattern="(ابو)\s*(\W+)" replacement="$1$2" />     
+                <charFilter class="solr.PatternReplaceCharFilterFactory"    pattern="(ابي)\s*(\W+)" replacement="$1$2" />     
+                <charFilter class="solr.PatternReplaceCharFilterFactory"    pattern="(ابا)\s*(\W+)" replacement="$1$2" />   
+
 			</analyzer>
 			<analyzer type="query">
 				<tokenizer class="solr.StandardTokenizerFactory"/>
 				<filter class="solr.ASCIIFoldingFilterFactory" preserveOriginal="false" />
+				<filter class="solr.StopFilterFactory" ignoreCase="true" words="stopwords_ar.txt"  />
 				<filter class="solr.StopFilterFactory" ignoreCase="true" words="stopwords.txt"  />
 				<filter class="solr.SynonymGraphFilterFactory" synonyms="synonyms.txt" ignoreCase="true" expand="true"/>
 				<filter class="solr.LowerCaseFilterFactory"/>
+				<filter class="solr.ArabicNormalizationFilterFactory"/>
+  				<filter class="solr.ArabicStemFilterFactory"/>
+
 			</analyzer>
-		</fieldType>
+		</fieldType>		
 		<fieldType name="searchable_text" class="solr.TextField" positionIncrementGap="100">
 			<analyzer>
 				<!-- Whitespace tokenizer is needed so the Word Delimiter filter factory works properly
@@ -33,8 +45,11 @@
 				<filter class="solr.WordDelimiterGraphFilterFactory" generateWordParts="1" generateNumberParts="1" catenateWords="1" catenateNumbers="1" catenateAll="0" splitOnCaseChange="1" preserveOriginal="1"/>
 				<filter class="solr.CommonGramsFilterFactory" words="stopwords.txt" ignoreCase="true"/>
 				<filter class="solr.KeywordMarkerFilterFactory" protected="protwords.txt"/>
+				<filter class="solr.StopFilterFactory" ignoreCase="true" words="stopwords_ar.txt"  />
 				<filter class="solr.SnowballPorterFilterFactory" language="English"/>
 				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
+				<filter class="solr.ArabicNormalizationFilterFactory"/>
+  				<filter class="solr.ArabicStemFilterFactory"/>
 			</analyzer>
 		</fieldType>
 		<!-- Text Field without Stemming, Synonyms, and stop Word removal -->

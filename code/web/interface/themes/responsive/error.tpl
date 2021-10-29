@@ -9,8 +9,8 @@
 </div>
 <div id ="debug">
 	{if $debug}
-		<h4>{translate text="Debug Information" isAdminFacing=true}</h4>
-		<p>{translate text="Backtrace" isAdminFacing=true}</p>
+		<h4>{translate text="Debug Information" isPublicFacing=true}</h4>
+		<p>{translate text="Backtrace" isPublicFacing=true}</p>
 		{$error->backtrace}
 	{/if}
 </div>

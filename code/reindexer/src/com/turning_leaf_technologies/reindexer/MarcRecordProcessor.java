@@ -947,22 +947,6 @@ abstract class MarcRecordProcessor {
 				groupedWork.setLanguageBoostSpanish(languageBoostVal);
 			}
 		}
-		if (translatedLanguages.size() == 0){
-			translatedLanguages.add(treatUnknownLanguageAs);
-			for (RecordInfo ilsRecord : ilsRecords){
-				ilsRecord.setPrimaryLanguage(treatUnknownLanguageAs);
-			}
-			String languageBoost = indexer.translateSystemValue("language_boost", treatUnknownLanguageAs, identifier);
-			if (languageBoost != null){
-				Long languageBoostVal = Long.parseLong(languageBoost);
-				groupedWork.setLanguageBoost(languageBoostVal);
-			}
-			String languageBoostEs = indexer.translateSystemValue("language_boost_es", treatUnknownLanguageAs, identifier);
-			if (languageBoostEs != null){
-				Long languageBoostVal = Long.parseLong(languageBoostEs);
-				groupedWork.setLanguageBoostSpanish(languageBoostVal);
-			}
-		}
 		groupedWork.setLanguages(translatedLanguages);
 
 		String translationFields = "041b:041d:041h:041j";

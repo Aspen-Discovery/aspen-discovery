@@ -11,16 +11,16 @@
 		</div>
 		<div id="selfRegAccountInfo" class="alert alert-info">
 			{if !empty($selfRegResult.barcode)}
-				<p id="selfRegBarcode">{translate text='Your library card number is <strong>%1%</strong>' 1=$selfRegResult.barcode isPublicFacing=true}</p>
+				<p>{translate text='Your library card number is <strong>%1%</strong>' 1=$selfRegResult.barcode isPublicFacing=true}</p>
 			{/if}
 			{if !empty($selfRegResult.username)}
-				<p id="selfRegUsername">{translate text='Your username is <strong>%1%</strong>' 1=$selfRegResult.username isPublicFacing=true}</p>
+				<p>{translate text='Your username is <strong>%1%</strong>' 1=$selfRegResult.username isPublicFacing=true}</p>
 			{/if}
 			{if !empty($selfRegResult.password)}
-				<p id="selfRegPassword">{translate text='Your initial password is <strong>%1%</strong>' 1=$selfRegResult.password isPublicFacing=true}</p>
+				<p>{translate text='Your initial password is <strong>%1%</strong>' 1=$selfRegResult.password isPublicFacing=true}</p>
 			{/if}
 			{if !empty($selfRegResult.message)}
-				<p id="selfRegMessage" class="alert alert-warning">{$selfRegResult.message}</p>
+				<p class="alert alert-warning">{$selfRegResult.message}</p>
 			{/if}
 		</div>
 	{elseif (isset($selfRegResult) && $selfRegResult.success === false)}

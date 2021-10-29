@@ -34,7 +34,7 @@
 
 {include file="RecordDrivers/GroupedWork/grouping-information.tpl"}
 
-<h4>{translate text="cloudLibrary Information" isPublicFacing=true}</h4>
+<h4>{translate text="Cloud Library Information" isPublicFacing=true}</h4>
 <table class="table-striped table table-condensed notranslate">
 	<tr>
 		<th>{translate text="First Detected" isPublicFacing=true}</th>

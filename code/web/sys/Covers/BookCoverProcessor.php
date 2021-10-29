@@ -1341,16 +1341,6 @@ class BookCoverProcessor{
 				}
 				$bookcoverUrl = str_replace('\/', '/', $bookcoverUrl);
 				return $this->processImageURL('open_archives', $bookcoverUrl, true);
-			}else{
-				require_once ROOT_DIR . '/sys/OpenArchives/OpenArchivesCollection.php';
-				$sourceCollection = new OpenArchivesCollection();
-				$sourceCollection->id = $openArchivesRecord->sourceCollection;
-				if ($sourceCollection->find(true)){
-					if (!empty($sourceCollection->imageRegex) && preg_match($sourceCollection->imageRegex, $pageContents, $matches)){
-						$bookcoverUrl = str_replace( '&amp;', '&', $matches[1]);
-						return $this->processImageURL('open_archives', $bookcoverUrl, true);
-					}
-				}
 			}
 		}
 		return false;

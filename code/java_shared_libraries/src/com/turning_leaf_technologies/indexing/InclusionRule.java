@@ -92,9 +92,8 @@ class InclusionRule {
 		this.urlReplacement = urlReplacement;
 	}
 
-	//private final HashMap<String, HashMap<String, HashMap<String, HashMap<String, HashMap<String, Boolean>>>>> locationCodeCache = new HashMap<>();
-	HashMap<String, Boolean> inclusionCache = new HashMap<>();
-	boolean isItemIncluded(String recordType, String locationCode, String subLocationCode, String iType, TreeSet<String> audiences, String audiencesAsString, String format, boolean isHoldable, boolean isOnOrder, boolean isEContent, Record marcRecord){
+	private final HashMap<String, HashMap<String, HashMap<String, HashMap<String, HashMap<String, Boolean>>>>> locationCodeCache = new HashMap<>();
+	boolean isItemIncluded(String recordType, String locationCode, String subLocationCode, String iType, TreeSet<String> audiences, String format, boolean isHoldable, boolean isOnOrder, boolean isEContent, Record marcRecord){
 		//Do the quick checks first
 		if (!isEContent && (includeHoldableOnly && !isHoldable)){
 			return false;
@@ -115,44 +114,45 @@ class InclusionRule {
 				return false;
 			}
 		}
-//		HashMap<String, HashMap<String, HashMap<String, HashMap<String, Boolean>>>> subLocationCodeIncludeCache = locationCodeCache.get(locationCode);
-//		if (subLocationCodeIncludeCache == null) {
-//			hasCachedValue = false;
-//			subLocationCodeIncludeCache = new HashMap<>();
-//			locationCodeCache.put(locationCode, subLocationCodeIncludeCache);
-//		}
+		HashMap<String, HashMap<String, HashMap<String, HashMap<String, Boolean>>>> subLocationCodeIncludeCache = locationCodeCache.get(locationCode);
+		if (subLocationCodeIncludeCache == null) {
+			hasCachedValue = false;
+			subLocationCodeIncludeCache = new HashMap<>();
+			locationCodeCache.put(locationCode, subLocationCodeIncludeCache);
+		}
 
-//		HashMap<String, HashMap<String, HashMap<String, Boolean>>> iTypeCache = subLocationCodeIncludeCache.get(subLocationCode);
-//		if (iTypeCache == null){
-//			hasCachedValue = false;
-//			iTypeCache = new HashMap<>();
-//			subLocationCodeIncludeCache.put(subLocationCode, iTypeCache);
-//		}
+		HashMap<String, HashMap<String, HashMap<String, Boolean>>> iTypeCache = subLocationCodeIncludeCache.get(subLocationCode);
+		if (iTypeCache == null){
+			hasCachedValue = false;
+			iTypeCache = new HashMap<>();
+			subLocationCodeIncludeCache.put(subLocationCode, iTypeCache);
+		}
 
 		if (matchAlliTypes){
 			iType = "any";
 		}
-//		HashMap<String, HashMap<String, Boolean>> audiencesCache = iTypeCache.get(iType);
-//		if (audiencesCache == null){
-//			hasCachedValue = false;
-//			audiencesCache = new HashMap<>();
-//			iTypeCache.put(iType, audiencesCache);
-//		}
-		String audienceKey = audiencesAsString;
-		if (matchAllAudiences){
-			audienceKey = "all";
+		HashMap<String, HashMap<String, Boolean>> audiencesCache = iTypeCache.get(iType);
+		if (audiencesCache == null){
+			hasCachedValue = false;
+			audiencesCache = new HashMap<>();
+			iTypeCache.put(iType, audiencesCache);
 		}
-//		HashMap<String, Boolean> formatCache = audiencesCache.get(audienceKey);
-//		if (formatCache == null){
-//			hasCachedValue = false;
-//			formatCache = new HashMap<>();
-//			audiencesCache.put(audienceKey, formatCache);
-//		}
+		String audiencesKey;
+		if (matchAllAudiences) {
+			audiencesKey = "any";
+		}else{
+			audiencesKey = audiences.toString();
+		}
+		HashMap<String, Boolean> formatCache = audiencesCache.get(audiencesKey);
+		if (formatCache == null){
+			hasCachedValue = false;
+			formatCache = new HashMap<>();
+			audiencesCache.put(audiencesKey, formatCache);
+		}
 		if (matchAllFormats){
 			format = "any";
 		}
-		String inclusionCacheKey = locationCode + subLocationCode + iType + audienceKey + format;
-		Boolean cachedInclusion = inclusionCache.get(inclusionCacheKey);
+		Boolean cachedInclusion = formatCache.get(format);
 		if (cachedInclusion == null){
 			hasCachedValue = false;
 		}
@@ -161,8 +161,8 @@ class InclusionRule {
 
 		if (!hasCachedValue){
 			if (locationCodePattern.matcher(locationCode).matches() &&
-					(subLocationCode == "" || matchAllSubLocations || subLocationCodePattern.matcher(subLocationCode).matches()) &&
-					(matchAllFormats || format == "" || formatPattern.matcher(format).matches())
+					(subLocationCode == null || matchAllSubLocations || subLocationCodePattern.matcher(subLocationCode).matches()) &&
+					(matchAllFormats || format == null || formatPattern.matcher(format).matches())
 					){
 
 				//We got a match based on location check formats iTypes etc
@@ -186,7 +186,7 @@ class InclusionRule {
 				isIncluded = false;
 			}
 			//Make sure not to cache marc tag determination
-			inclusionCache.put(inclusionCacheKey, isIncluded);
+			formatCache.put(format, isIncluded);
 		}else{
 			isIncluded = cachedInclusion;
 		}

@@ -28,13 +28,12 @@ class ItemAPI extends Action {
 
 	function launch()
 	{
-		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
-
 		//Make sure the user can access the API based on the IP address
-		if (!in_array($method, array('getAppBasicItemInfo', 'getAppItemAvailability')) && !IPAddress::allowAPIAccessForClientIP()){
+		if (!IPAddress::allowAPIAccessForClientIP()){
 			$this->forbidAPIAccess();
 		}
 
+		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
 		if ($method != 'loadSolrRecord' && method_exists($this, $method)) {
 			// Connect to Catalog
 			if ($method != 'getBookcoverById' && $method != 'getBookCover'){
@@ -515,154 +514,5 @@ class ItemAPI extends Action {
 	function getBreadcrumbs() : array
 	{
 		return [];
-	}
-
-# ****************************************************************************************************************************
-# * Functions for Aspen LiDA
-# *
-# ****************************************************************************************************************************
-	/** @noinspection PhpUnused */
-	function getAppBasicItemInfo(){
-		global $timer;
-		global $configArray;
-		global $solrScope;
-		$itemData = array();
-
-		//Load basic information
-		$this->id = $_GET['id'];
-		$itemData['id'] = $this->id;
-
-		// Setup Search Engine Connection
-		$url = $configArray['Index']['url'];
-		require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
-		$this->db = new GroupedWorksSolrConnector($url);
-
-		// Retrieve Full Marc Record
-		if (!($record = $this->db->getRecord($this->id))) {
-			AspenError::raiseError(new AspenError('Record Does Not Exist'));
-		}
-		$this->record = $record;
-		/** @var GroupedWorkDriver recordDriver */
-		$this->recordDriver = RecordDriverFactory::initRecordDriver($record);
-		$timer->logTime('Initialized the Record Driver');
-
-		$itemData['recordType'] = $record['recordtype'];
-		$itemData['groupingCategory'] = $record['grouping_category'];
-
-		// Get ISBN for cover and review use
-		$itemData['isbn'] = $this->recordDriver->getCleanISBN();
-		if (empty($itemData['isbn'])) unset($itemData['isbn']);
-		$itemData['upc'] = $this->recordDriver->getCleanUPC();
-		if (empty($itemData['upc'])) unset($itemData['upc']);
-		$itemData['issn'] = $this->recordDriver->getISSNs();
-		if (empty($itemData['issn'])) unset($itemData['issn']);
-
-		//Generate basic information from the marc file to make display easier.
-		$itemData['title'] = $record['title_display'];
-		$itemData['author'] = isset($record['author']) ? $record['author'] : (isset($record['author2']) ? $record['author2'][0] : '');
-		$itemData['publisher'] = $record['publisher'];
-		if(isset($itemData['isbn'])) { $itemData['allIsbn'] = $record['isbn']; }
-		if(isset($itemData['upc'])) { $itemData['allUpc'] = $record['upc']; }
-		if(isset($itemData['issn'])) { $itemData['allIssn'] = $record['issn']; }
-		$itemData['format_' . $solrScope] = isset($record['format_' . $solrScope]) ? $record['format_' . $solrScope] : '';
-		$itemData['formatCategory_' . $solrScope] = $record['format_category_' . $solrScope];
-
-		if(isset($record['language'])) {$itemData['language'] = $record['language'];};
-		$itemData['cover'] = $this->recordDriver->getBookcoverUrl('large', true);
-
-		$itemData['description'] = $this->recordDriver->getDescriptionFast();
-
-		//setup 5 star ratings
-		$itemData['ratingData'] = $this->recordDriver->getRatingData();
-		$timer->logTime('Got 5 star data');
-
-		$relatedRecords = $this->recordDriver->getRelatedRecords();
-		foreach($relatedRecords as $relatedRecord) {
-			$status='';
-			$recordId = $relatedRecord->id;
-			if (!isset($itemList)) {
-				if($relatedRecord->source == 'ils') {
-					$status = $this->getAppItemAvailability($recordId);
-				} elseif ($relatedRecord->source == 'hoopla') {
-					if (strpos($recordId, ':') !== false) {
-						list(,$recordId) = explode(':', $recordId, 2);
-					}
-					$hooplaId = preg_replace('/^MWT/', '', $recordId);
-					$this->hooplaRecordDriver = new HooplaRecordDriver($hooplaId);
-					$status = $this->hooplaRecordDriver->getStatusSummary();
-				} elseif ($relatedRecord->source == 'overdrive') {
-					if (strpos($recordId, ':') !== false) {
-						list(,$recordId) = explode(':', $recordId, 2);
-					}
-					$overdriveId = preg_replace('/^MWT/', '', $recordId);
-					$this->overdriveRecordDriver = new OverdriveRecordDriver($overdriveId);
-					$status = $this->overdriveRecordDriver->getStatusSummary();
-				}
-				$itemList[] = array('id' => $relatedRecord->id, 'name' => $relatedRecord->format, 'source' => $relatedRecord->source, 'status' => $status);
-
-			} elseif (!in_array($relatedRecord->format, array_column($itemList, 'name'))) {
-				if($relatedRecord->source == 'ils') {
-					$status = $this->getAppItemAvailability($recordId);
-				} elseif ($relatedRecord->source == 'hoopla') {
-					if (strpos($recordId, ':') !== false) {
-						list(,$recordId) = explode(':', $recordId, 2);
-					}
-					$hooplaId = preg_replace('/^MWT/', '', $recordId);
-					$this->hooplaRecordDriver = new HooplaRecordDriver($hooplaId);
-					$status = $this->hooplaRecordDriver->getStatusSummary();
-				} elseif ($relatedRecord->source == 'overdrive') {
-					if (strpos($recordId, ':') !== false) {
-						list(,$recordId) = explode(':', $recordId, 2);
-					}
-					$overdriveId = preg_replace('/^MWT/', '', $recordId);
-					$this->overdriveRecordDriver = new OverdriveRecordDriver($overdriveId);
-					$status = $this->overdriveRecordDriver->getStatusSummary();
-				}
-				$itemList[] = array('type' => $relatedRecord->id, 'name' => $relatedRecord->format, 'source' => $relatedRecord->source, 'status' => $status);
-
-			}
-		}
-
-		$itemData['items'] = $itemList;
-
-		return $itemData;
-	}
-
-	/** @noinspection PhpUnused */
-	function getAppItemAvailability($recordId){
-		$itemData = array();
-		global $library;
-
-		//Load basic information
-		$this->id = $recordId;
-
-		$fullId = $this->id;
-
-		//Rather than calling the catalog, update to load information from the index
-		//Need to match historical data so we don't break EBSCO
-		$recordDriver = RecordDriverFactory::initRecordDriverById($fullId);
-		if ($recordDriver->isValid()){
-			$copies = $recordDriver->getCopies();
-			$holdings = array();
-			foreach ($copies as $copy) {
-				$key = $copy['shelfLocation'];
-				$key = preg_replace('~\W~', '_', $key);
-				$holdings[$key][] = array(
-					'location' => $copy['shelfLocation'],
-					'callnumber' => $copy['callNumber'],
-					'status' => $copy['status'],
-					'statusFull' => $copy['status'],
-					'availability' => $copy['available'],
-					'holdable' => ($copy['holdable'] && $library->showHoldButton) ? 1 : 0,
-					'libraryDisplayName' => $copy['shelfLocation'],
-					'section' => $copy['section'],
-					'sectionId' => $copy['sectionId'],
-					'lastCheckinDate' => $copy['lastCheckinDate'],
-				);
-			}
-			$itemData['holdings'] = $holdings;
-		}
-
-		return $itemData;
 	}
 }

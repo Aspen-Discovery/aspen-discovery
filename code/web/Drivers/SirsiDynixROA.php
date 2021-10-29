@@ -1582,63 +1582,59 @@ class SirsiDynixROA extends HorizonAPI
 					if ($updatePatronInfoParametersClass) {
 						//Convert from stdClass to associative array
 						$updatePatronInfoParameters = json_decode(json_encode($updatePatronInfoParametersClass), true);
-						if ($result['success'] == true) {
-							$preferredAddress = $updatePatronInfoParameters['fields']['preferredAddress'];
+						$preferredAddress = $updatePatronInfoParameters['fields']['preferredAddress'];
 
-							// Update Address Field with new data supplied by the user
-							if (isset($_REQUEST['email'])) {
-								$this->setPatronUpdateFieldBySearch('EMAIL', $_REQUEST['email'], $updatePatronInfoParameters, $preferredAddress);
-								$patron->email = $_REQUEST['email'];
+						// Update Address Field with new data supplied by the user
+						if (isset($_REQUEST['email'])) {
+							$this->setPatronUpdateFieldBySearch('EMAIL', $_REQUEST['email'], $updatePatronInfoParameters, $preferredAddress);
+							$patron->email = $_REQUEST['email'];
+						}
+
+						if (isset($_REQUEST['phone'])) {
+							$this->setPatronUpdateFieldBySearch('PHONE', $_REQUEST['phone'], $updatePatronInfoParameters, $preferredAddress);
+							$patron->phone = $_REQUEST['phone'];
+						}
+
+						if (isset($_REQUEST['address1'])) {
+							$this->setPatronUpdateFieldBySearch('STREET', $_REQUEST['address1'], $updatePatronInfoParameters, $preferredAddress);
+							$patron->_address1 = $_REQUEST['address1'];
+						}
+
+						if (isset($_REQUEST['city']) && isset($_REQUEST['state'])) {
+							$this->setPatronUpdateFieldBySearch('CITY/STATE', $_REQUEST['city'] . ' ' . $_REQUEST['state'], $updatePatronInfoParameters, $preferredAddress);
+							$patron->_city = $_REQUEST['city'];
+							$patron->_state = $_REQUEST['state'];
+						}
+
+						if (isset($_REQUEST['zip'])) {
+							$this->setPatronUpdateFieldBySearch('ZIP', $_REQUEST['zip'], $updatePatronInfoParameters, $preferredAddress);
+							$patron->_zip = $_REQUEST['zip'];
+						}
+
+						// Update Home Location
+						if (!empty($_REQUEST['pickupLocation'])) {
+							$homeLibraryLocation = new Location();
+							if ($homeLibraryLocation->get('code', $_REQUEST['pickupLocation'])) {
+								$homeBranchCode = strtoupper($homeLibraryLocation->code);
+								$updatePatronInfoParameters['fields']['library'] = array(
+									'key' => $homeBranchCode,
+									'resource' => '/policy/library'
+								);
 							}
+						}
 
-							if (isset($_REQUEST['phone'])) {
-								$this->setPatronUpdateFieldBySearch('PHONE', $_REQUEST['phone'], $updatePatronInfoParameters, $preferredAddress);
-								$patron->phone = $_REQUEST['phone'];
+						$updateAccountInfoResponse = $this->getWebServiceResponse($webServiceURL . '/user/patron/key/' . $userID.'?includeFields=*,preferredAddress,address1,address2,address3', $updatePatronInfoParameters, $sessionToken, 'PUT');
+
+						if (isset($updateAccountInfoResponse->messageList)) {
+							foreach ($updateAccountInfoResponse->messageList as $message) {
+								$result['messages'][] = $message->message;
 							}
-
-							if (isset($_REQUEST['address1'])) {
-								$this->setPatronUpdateFieldBySearch('STREET', $_REQUEST['address1'], $updatePatronInfoParameters, $preferredAddress);
-								$patron->_address1 = $_REQUEST['address1'];
-							}
-
-							if (isset($_REQUEST['city']) && isset($_REQUEST['state'])) {
-								$this->setPatronUpdateFieldBySearch('CITY/STATE', $_REQUEST['city'] . ' ' . $_REQUEST['state'], $updatePatronInfoParameters, $preferredAddress);
-								$patron->_city = $_REQUEST['city'];
-								$patron->_state = $_REQUEST['state'];
-							}
-
-							if (isset($_REQUEST['zip'])) {
-								$this->setPatronUpdateFieldBySearch('ZIP', $_REQUEST['zip'], $updatePatronInfoParameters, $preferredAddress);
-								$patron->_zip = $_REQUEST['zip'];
-							}
-
-							// Update Home Location
-							if (!empty($_REQUEST['pickupLocation'])) {
-								$homeLibraryLocation = new Location();
-								if ($homeLibraryLocation->get('code', $_REQUEST['pickupLocation'])) {
-									$homeBranchCode = strtoupper($homeLibraryLocation->code);
-									$updatePatronInfoParameters['fields']['library'] = array(
-										'key' => $homeBranchCode,
-										'resource' => '/policy/library'
-									);
-								}
-							}
-
-							$updateAccountInfoResponse = $this->getWebServiceResponse($webServiceURL . '/user/patron/key/' . $userID . '?includeFields=*,preferredAddress,address1,address2,address3', $updatePatronInfoParameters, $sessionToken, 'PUT');
-
-							if (isset($updateAccountInfoResponse->messageList)) {
-								foreach ($updateAccountInfoResponse->messageList as $message) {
-									$result['messages'][] = $message->message;
-								}
-								global $logger;
-								$logger->log('Symphony Driver - Patron Info Update Error - Error from ILS : ' . implode(';', $result['messages']), Logger::LOG_ERROR);
-							} else {
-								$result['success'] = true;
-								$result['messages'][] = 'Your account was updated successfully.';
-								$patron->update();
-							}
-						}else{
-							$result['messages'][] = 'Could not load patron account information.';
+							global $logger;
+							$logger->log('Symphony Driver - Patron Info Update Error - Error from ILS : ' . implode(';', $result['messages']), Logger::LOG_ERROR);
+						} else {
+							$result['success'] = true;
+							$result['messages'][] = 'Your account was updated successfully.';
+							$patron->update();
 						}
 					}else{
 						$result['messages'][] = 'Could not find the account to update.';

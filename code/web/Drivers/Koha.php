@@ -116,12 +116,11 @@ class Koha extends AbstractIlsDriver
 				//This method does not use the review queue
 				//Load required fields from Koha here to make sure we don't wipe them out
 				/** @noinspection SqlResolve */
-				$this->initDatabaseConnection();
-				$sql = "SELECT address, city FROM borrowers where borrowernumber = '{$patron->username}'";
+				$sql = "SELECT address, city FROM borrowers where borrowernumber = {$patron->username}";
 				$results = mysqli_query($this->dbConnection, $sql);
 				$address = '';
 				$city = '';
-				if ($results !== false && $results != null) {
+				if ($results !== false) {
 					while ($curRow = $results->fetch_assoc()) {
 						$address = $curRow['address'];
 						$city = $curRow['city'];
@@ -132,7 +131,7 @@ class Koha extends AbstractIlsDriver
 					'surname' => $patron->lastname,
 					'address' => $address,
 					'city' => $city,
-					'library_id' => $patron->getHomeLocationCode(),
+					'library_id' => Location::getUserHomeLocation()->code,
 					'category_id' => $patron->patronType
 				];
 
@@ -189,7 +188,6 @@ class Koha extends AbstractIlsDriver
 				if ($oauthToken == false) {
 					$result['messages'][] = translate(['text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.', 'isPublicFacing'=>true]);
 				} else {
-
 					$apiUrl = $this->getWebServiceURL() . "/api/v1/patrons/{$patron->username}";
 					$postParams = json_encode($postVariables);
 
@@ -201,6 +199,7 @@ class Koha extends AbstractIlsDriver
 						'Content-Type: application/json;charset=UTF-8',
 						'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
 					], true);
+					$this->apiCurlWrapper->setupDebugging();
 					$response = $this->apiCurlWrapper->curlSendPage($apiUrl, 'PUT', $postParams);
 					if ($this->apiCurlWrapper->getResponseCode() != 200) {
 						if (strlen($response) > 0) {
@@ -2070,44 +2069,6 @@ class Koha extends AbstractIlsDriver
 			'borrower_altcontactcountry' => array('property' => 'borrower_altcontactcountry', 'type' => 'text', 'label' => 'Country', 'accessibleLabel' => 'Alternate Contact Country', 'description' => 'Country', 'maxLength' => 32, 'required' => false),
 			'borrower_altcontactphone' => array('property' => 'borrower_altcontactphone', 'type' => 'text', 'label' => 'Phone' . $phoneFormat, 'accessibleLabel' => 'Alternate Contact Phone', 'description' => 'Phone', 'maxLength' => 128, 'required' => false),
 		]);
-
-		// Patron extended attributes
-		if($this->getKohaVersion() > 21.05) {
-			/** @noinspection SqlResolve */
-			$borrowerAttributeTypesSQL = "SELECT * FROM borrower_attribute_types where opac_display = '1' AND opac_editable = '1' order by code";
-			$borrowerAttributeTypesRS = mysqli_query($this->dbConnection, $borrowerAttributeTypesSQL);
-			$borrowerAttributeTypes = [];
-			while ($curRow = $borrowerAttributeTypesRS->fetch_assoc()) {
-				$borrowerAttributeTypes[$curRow['code']]['code'] = $curRow['code'];
-				$borrowerAttributeTypes[$curRow['code']]['desc'] = $curRow['description'];
-				$borrowerAttributeTypes[$curRow['code']]['req'] = $curRow['mandatory'];
-				$authorizedValueCategorySQL = "SELECT * FROM authorised_values where category = '{$curRow['authorised_value_category']}'";
-				$authorizedValueCategoryRS = mysqli_query($this->dbConnection, $authorizedValueCategorySQL);
-				$authorizedValueCategories = [];
-				while ($curRow2 = $authorizedValueCategoryRS->fetch_assoc()) {
-					$authorizedValueCategories[$curRow2['authorised_value']] = $curRow2['lib_opac'];
-				}
-				$borrowerAttributeTypes[$curRow['code']]['authorized_values'] = $authorizedValueCategories;
-			}
-
-			if (!empty($borrowerAttributeTypes)) {
-				$borrowerAttributes = [];
-				foreach ($borrowerAttributeTypes as $borrowerAttributeType) {
-					foreach ($borrowerAttributeType['authorized_values'] as $key => $value) {
-						$authorizedValues[$key] = $value;
-					}
-					$isRequired = $borrowerAttributeType['req'];
-					$borrowerAttributes[$borrowerAttributeType['code']]['property'] = "borrower_attribute_".$borrowerAttributeType['code'];
-					$borrowerAttributes[$borrowerAttributeType['code']]['type'] = "enum";
-					$borrowerAttributes[$borrowerAttributeType['code']]['values'] = $authorizedValues;
-					$borrowerAttributes[$borrowerAttributeType['code']]['label'] = $borrowerAttributeType['desc'];
-					$borrowerAttributes[$borrowerAttributeType['code']]['required'] = $isRequired;
-				}
-
-				$fields['additionalInfoSection'] = array('property' => 'additionalInfoSection', 'type' => 'section', 'label' => 'Additional Information', 'hideInLists' => true, 'expandByDefault' => true, 'properties' => $borrowerAttributes);
-			}
-		}
-
 		if ($type == 'selfReg') {
 			$passwordLabel = $library->loginFormPasswordLabel;
 			$passwordNotes = $library->selfRegistrationPasswordNotes;
@@ -2136,11 +2097,6 @@ class Koha extends AbstractIlsDriver
 							$section['properties'][$fieldKey]['type'] = 'hidden';
 						} else {
 							unset($section['properties'][$fieldKey]);
-						}
-					} elseif ($type == 'patronUpdate') {
-						if((array_key_exists($fieldName, $unwantedFields) && array_key_exists($fieldName, $requiredFields))) {
-							$section['properties'][$fieldKey]['type'] = 'hidden';
-							$section['properties'][$fieldKey]['required'] = false;
 						}
 					} else {
 						$field['required'] = array_key_exists($fieldName, $requiredFields);
@@ -2224,7 +2180,6 @@ class Koha extends AbstractIlsDriver
 			$postFields = $this->setPostField($postFields, 'borrower_altcontactphone', $library->useAllCapsWhenSubmittingSelfRegistration, $library->requireNumericPhoneNumbersWhenUpdatingProfile);
 			$postFields = $this->setPostField($postFields, 'borrower_password');
 			$postFields = $this->setPostField($postFields, 'borrower_password2');
-
 			$postFields['captcha'] = $captcha;
 			$postFields['captcha_digest'] = $captchaDigest;
 			$postFields['action'] = 'create';
@@ -2752,20 +2707,13 @@ class Koha extends AbstractIlsDriver
 		if (strlen($date) == 0) {
 			return $date;
 		} else {
-			if (strpos($date, '/') !== false){
-				list($month, $day, $year) = explode('/', $date);
-				$formattedDate = "$year-$month-$day";
-				return $formattedDate;
-			} else if (strpos($date, '-') !== false) {
+			if (strpos($date, '-') !== false){
 				list($month, $day, $year) = explode('-', $date);
-				$formattedDate = "$year-$month-$day";
-				return $formattedDate;
-			}
-			else{
+				return "$year-$month-$day";
+			}else{
 				return $date;
 			}
 		}
-
 	}
 
 	/**
@@ -3355,7 +3303,7 @@ class Koha extends AbstractIlsDriver
 					];
 
 					$response = $this->apiCurlWrapper->curlPostBodyData($apiUrl, $postVariables);
-					if ($this->apiCurlWrapper->getResponseCode() != 200 && $this->apiCurlWrapper->getResponseCode() != 201) {
+					if ($this->apiCurlWrapper->getResponseCode() != 200) {
 						if (!isset($result['message'])) {$result['message'] = '';}
 						if (strlen($response) > 0) {
 							$jsonResponse = json_decode($response);

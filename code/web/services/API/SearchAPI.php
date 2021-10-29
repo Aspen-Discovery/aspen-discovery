@@ -10,7 +10,7 @@ class SearchAPI extends Action
 	{
 		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
 
-		if (!in_array($method, array('getListWidget', 'getCollectionSpotlight', 'getIndexStatus', 'getActiveBrowseCategories', 'getBrowseCategoryResultsForApp')) && !IPAddress::allowAPIAccessForClientIP()){
+		if (!in_array($method, array('getListWidget', 'getCollectionSpotlight', 'getIndexStatus')) && !IPAddress::allowAPIAccessForClientIP()){
 			$this->forbidAPIAccess();
 		}
 		$output = '';
@@ -283,32 +283,6 @@ class SearchAPI extends Action
 			}
 		}
 
-		//Check NYT Log to see if it has errors
-		require_once ROOT_DIR . '/sys/Enrichment/NewYorkTimesSetting.php';
-		$nytSetting = new NewYorkTimesSetting();
-		if ($nytSetting->find(true)){
-			require_once ROOT_DIR . '/sys/UserLists/NYTUpdateLogEntry.php';
-			$nytLog = new NYTUpdateLogEntry();
-			$nytLog->orderBy("id DESC");
-			$nytLog->limit(0, 3);
-			$nytLog->find();
-			if ($nytLog->getNumResults() == 0){
-				$this->addCheck($checks, 'NYT Lists', self::STATUS_WARN, "New York Times Lists have not been loaded");
-			}else{
-				$numErrors = 0;
-				while ($nytLog->fetch()){
-					if ($nytLog->numErrors > 0){
-						$numErrors++;
-					}
-				}
-				if ($numErrors > 0){
-					$this->addCheck($checks, 'NYT Lists', self::STATUS_WARN, "The last {$numErrors} for New York Times Lists had errors");
-				}else{
-					$this->addCheck($checks, 'NYT Lists');
-				}
-			}
-		}
-
 		//Check cron to be sure it doesn't have errors either
 		require_once ROOT_DIR . '/sys/CronLogEntry.php';
 		$cronLogEntry = new CronLogEntry();
@@ -481,10 +455,6 @@ class SearchAPI extends Action
 		// Initialise from the current search globals
 		$searchObject = SearchObjectFactory::initSearchObject();
 		$searchObject->init();
-
-		if (isset($_REQUEST['pageSize']) && is_numeric($_REQUEST['pageSize'])){
-			$searchObject->setLimit($_REQUEST['pageSize']);
-		}
 
 		// Set Interface Variables
 		//   Those we can construct BEFORE the search is executed
@@ -1119,158 +1089,5 @@ class SearchAPI extends Action
 			$response['numRecords'] = count($suggestions);
 		}
 
-	}
-
-# ****************************************************************************************************************************
-# * Functions for Aspen LiDA
-# *
-# ****************************************************************************************************************************
-	/** @noinspection PhpUnused */
-	function getAppActiveBrowseCategories(){
-		//Figure out which library or location we are looking at
-		global $library;
-		global $locationSingleton;
-
-		$includeSubCategories = false;
-		if (isset($_REQUEST['includeSubCategories'])){
-			$includeSubCategories = ($_REQUEST['includeSubCategories'] == 'true') || ($_REQUEST['includeSubCategories'] == 1);
-		}
-		//Check to see if we have an active location, will be null if we don't have a specific location
-		//based off of url, branch parameter, or IP address
-		$activeLocation = $locationSingleton->getActiveLocation();
-
-		//Get a list of browse categories for that library / location
-		/** @var BrowseCategoryGroupEntry[] $browseCategories */
-		if ($activeLocation == null){
-			//We don't have an active location, look at the library
-			$browseCategories = $library->getBrowseCategoryGroup()->getBrowseCategories();
-		}else{
-			//We have a location get data for that
-			$browseCategories = $activeLocation->getBrowseCategoryGroup()->getBrowseCategories();
-		}
-
-		require_once ROOT_DIR . '/sys/Browse/BrowseCategory.php';
-		//Format for return to the user, we want to return
-		// - the text id of the category
-		// - the display label
-		// - Clickable link to load the category
-		$formattedCategories = array();
-		foreach ($browseCategories as $curCategory){
-			$categoryInformation = new BrowseCategory();
-			$categoryInformation->id = $curCategory->browseCategoryId;
-
-			if ($categoryInformation->find(true)) {
-				if ($categoryInformation->isValidForDisplay()){
-					if ($categoryInformation->source != 'List'){
-						$categoryResponse = array(
-							'key' => $categoryInformation->textId,
-							'title' => $categoryInformation->label,
-						);
-						if ($includeSubCategories) {
-							$subCategories = $categoryInformation->getSubCategories();
-							$categoryResponse['subCategories'] = [];
-							if (count($subCategories) > 0) {
-								foreach ($subCategories as $subCategory) {
-									$temp = new BrowseCategory();
-									$temp->id = $subCategory->subCategoryId;
-									if ($temp->find(true)) {
-										if ($temp->isValidForDisplay()) {
-											if ($temp->source != 'List') {
-												$parent = new BrowseCategory();
-												$parent->id = $subCategory->browseCategoryId;
-												if ($parent->find(true)) {
-													$parentLabel = $parent->label;
-												}
-												if ($parentLabel == $temp->label) {
-													$displayLabel = $temp->label;
-												} else {
-													$displayLabel = $parentLabel . ': ' . $temp->label;
-												}
-												$categoryResponse['subCategories'][] = [
-													'key' => $temp->textId,
-													'title' => $displayLabel,
-												];
-											}
-										}
-									}
-								}
-							}
-						}
-						$formattedCategories[] = $categoryResponse;
-					}
-				}
-			}
-		}
-		return $formattedCategories;
-	}
-
-	/** @noinspection PhpUnused */
-	function getAppBrowseCategoryResults(){
-		if (isset($_REQUEST['page']) && is_numeric($_REQUEST['page'])) {
-			$pageToLoad = (int) $_REQUEST['page'];
-		}else{
-			$pageToLoad = 1;
-		}
-		$pageSize = isset($_REQUEST['limit']) ? $_REQUEST['limit'] : self::ITEMS_PER_PAGE;
-		$thisId = $_REQUEST['id'];
-
-		require_once ROOT_DIR . '/sys/Browse/BrowseCategory.php';
-		$browseCategory = new BrowseCategory();
-		$browseCategory->textId = $thisId;
-
-		if ($browseCategory->find(true)) {
-			if ($browseCategory->textId == 'system_recommended_for_you') {
-				$this->getSuggestionsBrowseCategoryResults($pageToLoad, $pageSize);
-			} else {
-				if ($browseCategory->source == 'List') {
-					require_once ROOT_DIR . '/sys/UserLists/UserList.php';
-					$sourceList     = new UserList();
-					$sourceList->id = $browseCategory->sourceListId;
-					if ($sourceList->find(true)) {
-						$records = $sourceList->getBrowseRecordsRaw(($pageToLoad - 1) * $pageSize, $pageSize);
-					} else {
-						$records = array();
-					}
-
-					// Search Browse Category //
-				} else {
-					$searchObject = SearchObjectFactory::initSearchObject($browseCategory->source);
-					$defaultFilterInfo  = $browseCategory->defaultFilter;
-					$defaultFilters     = preg_split('/[\r\n,;]+/', $defaultFilterInfo);
-					foreach ($defaultFilters as $filter) {
-						$searchObject->addFilter(trim($filter));
-					}
-					//Set Sorting, this is actually slightly mangled from the category to Solr
-					$searchObject->setSort($browseCategory->getSolrSort());
-					if ($browseCategory->searchTerm != '') {
-						$searchObject->setSearchTerm($browseCategory->searchTerm);
-					}
-
-					//Get titles for the list
-					$searchObject->setFieldsToReturn('id,title_display');
-					$searchObject->clearFacets();
-					$searchObject->disableSpelling();
-					$searchObject->disableLogging();
-					$searchObject->setLimit($pageSize);
-					$searchObject->setPage($pageToLoad);
-					$searchObject->processSearch();
-
-					// The results to send to LiDA
-					$records = $searchObject->getResultRecordSet();
-
-					// Shutdown the search object
-					$searchObject->close();
-				}
-				$response['key'] = $browseCategory->textId;
-				$response['records'] = $records;
-			}
-		} else {
-			$response = [
-				'success' => false,
-				'message' => 'Browse category not found'
-			];
-		}
-
-		return $response;
 	}
 }

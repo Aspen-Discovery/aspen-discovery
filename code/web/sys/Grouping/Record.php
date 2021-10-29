@@ -43,10 +43,6 @@ class Grouping_Record
 	/** @var  IlsVolumeInfo[] */
 	private $_volumeData;
 
-	//Is the record an OverDrive record?
-	//If so, the number of owned and available copies are already set.
-	private $_isOverDrive = false;
-
 	/**
 	 * Grouping_Record constructor.
 	 * @param string $recordId
@@ -86,13 +82,6 @@ class Grouping_Record
 		$this->source = $source;
 		$this->_statusInformation = new Grouping_StatusInformation();
 		$this->_statusInformation->setNumHolds($recordDriver != null ? $recordDriver->getNumHolds() : 0);
-		if ($recordDriver != null && $recordDriver instanceof OverDriveRecordDriver){
-			$availability = $recordDriver->getAvailability();
-			$this->_statusInformation->addCopies($availability->copiesOwned);
-			$this->_statusInformation->addAvailableCopies($availability->copiesAvailable);
-			$this->_statusInformation->setAvailableOnline($availability->copiesAvailable > 0);
-			$this->_isOverDrive = true;
-		}
 		$this->_volumeHolds = $recordDriver != null ? $recordDriver->getVolumeHolds($volumeData) : null;
 		$this->_volumeData = $volumeData;
 		if (!empty($volumeData)) {
@@ -102,11 +91,6 @@ class Grouping_Record
 					$this->_volumeData[] = $volumeInfo;
 				}
 			}
-		}
-		if ($recordDriver != null && $recordDriver instanceof SideLoadedRecord){
-			$this->_statusInformation->setIsShowStatus($recordDriver->isShowStatus());
-		}else{
-			$this->_statusInformation->setIsShowStatus(true);
 		}
 	}
 
@@ -120,15 +104,13 @@ class Grouping_Record
 			$this->setIsEContent(true);
 			$this->_statusInformation->setIsEContent(true);
 		}
-		if ($this->_isOverDrive == false) {
-			if ($item->available) {
-				if ($item->isEContent) {
-					$this->_statusInformation->setAvailableOnline(true);
-				} else {
-					$this->_statusInformation->setAvailable(true);
-				}
-				$this->_statusInformation->addAvailableCopies($item->numCopies);
+		if ($item->available) {
+			if ($item->isEContent) {
+				$this->_statusInformation->setAvailableOnline(true);
+			} else {
+				$this->_statusInformation->setAvailable(true);
 			}
+			$this->_statusInformation->addAvailableCopies($item->numCopies);
 		}
 
 		if (!$item->inLibraryUseOnly) {
@@ -138,30 +120,26 @@ class Grouping_Record
 		if ($item->holdable) {
 			$this->_holdable = true;
 		}
-
-		if ($this->_isOverDrive == false) {
-			if ($item->isOrderItem) {
-				$this->addOnOrderCopies($item->numCopies);
-			} else {
-				$this->addCopies($item->numCopies);
-			}
-
-			$searchLocation = Location::getSearchLocation();
-			if ($searchLocation != null) {
-				if ($item->locallyOwned) {
+		if ($item->isOrderItem) {
+			$this->addOnOrderCopies($item->numCopies);
+		} else {
+			$this->addCopies($item->numCopies);
+		}
+		$searchLocation = Location::getSearchLocation();
+		if ($searchLocation != null){
+			if ($item->locallyOwned) {
+				$this->_statusInformation->addLocalCopies($item->numCopies);
+				if ($item->available){
 					$this->_statusInformation->addLocalCopies($item->numCopies);
-					if ($item->available) {
-						$this->_statusInformation->addLocalCopies($item->numCopies);
-						$this->_statusInformation->setAvailableHere(true);
-					}
+					$this->_statusInformation->setAvailableHere(true);
 				}
-			} else {
-				if ($item->libraryOwned) {
-					$this->_statusInformation->addLocalCopies($item->numCopies);
-					if ($item->available) {
-						$this->_statusInformation->addAvailableCopies($item->numCopies);
-						$this->_statusInformation->setAvailableLocally(true);
-					}
+			}
+		}else{
+			if ($item->libraryOwned) {
+				$this->_statusInformation->addLocalCopies($item->numCopies);
+				if ($item->available){
+					$this->_statusInformation->addAvailableCopies($item->numCopies);
+					$this->_statusInformation->setAvailableLocally(true);
 				}
 			}
 		}
@@ -571,11 +549,15 @@ class Grouping_Record
 	 */
 	function getHoldRatio(): int
 	{
-		if ($this->getCopies() > 0) {
-			return $this->_statusInformation->getNumHolds() / $this->getCopies();
-		}else{
-			return 0;
-		}
+		return $this->_holdRatio;
+	}
+
+	/**
+	 * @param int $holdRatio
+	 */
+	function setHoldRatio(int $holdRatio): void
+	{
+		$this->_holdRatio = $holdRatio;
 	}
 
 	/**

@@ -336,7 +336,7 @@ class Location extends DataObject
 				'axis360ScopeId' => array('property' => 'axis360ScopeId', 'type' => 'enum', 'values' => $axis360Scopes, 'label' => 'Axis 360 Scope', 'description' => 'The Axis 360 scope to use', 'hideInLists' => true, 'default' => -1, 'forcesReindex' => true),
 			)),
 			
-			'cloudLibrarySection' => array('property' => 'cloudLibrarySection', 'type' => 'section', 'label' => 'cloudLibrary', 'hideInLists' => true, 'renderAsHeading' => true, 'permissions' => ['Location Records included in Catalog'], 'properties' => array(
+			'cloudLibrarySection' => array('property' => 'cloudLibrarySection', 'type' => 'section', 'label' => 'Cloud Library', 'hideInLists' => true, 'renderAsHeading' => true, 'permissions' => ['Location Records included in Catalog'], 'properties' => array(
 				'cloudLibraryScopes' => [
 					'property' => 'cloudLibraryScopes',
 					'type' => 'oneToMany',
@@ -344,7 +344,7 @@ class Location extends DataObject
 					'keyOther' => 'locationId',
 					'subObjectType' => 'LocationCloudLibraryScope',
 					'structure' => $cloudLibraryScopeStructure,
-					'label' => 'cloudLibrary Scopes',
+					'label' => 'Cloud Library Scopes',
 					'description' => 'The scopes that apply to this location',
 					'sortable' => false,
 					'storeDb' => true
@@ -1436,23 +1436,13 @@ class Location extends DataObject
 			'isMainBranch' => (bool)$this->isMainBranch,
 			'displayName' => $this->displayName,
 			'address' => $this->address,
-			'latitude' => $this->latitude,
-			'longitude' => $this->longitude,
 			'phone' => $this->phone,
 			'tty' => $this->tty,
 			'description' => $this->description,
+			'homeLink' => empty($this->homeLink) ? ($parentLibrary == null ? '' : $parentLibrary->homeLink) : $this->homeLink,
 			'hoursMessage' => Location::getLibraryHoursMessage($this->locationId),
 			'hours' => []
 		];
-		if((empty($this->homeLink) || $this->homeLink == "default")) {
-			if($parentLibrary == null) {
-				$apiInfo['homeLink'] = '';
-			} else {
-				$apiInfo['homeLink'] = $parentLibrary->homeLink;
-			}
-		} else {
-			$apiInfo['homeLink'] = $this->homeLink;
-		}
 		$hours = $this->getHours();
 		foreach ($hours as $hour){
 			$apiInfo['hours'][] = [

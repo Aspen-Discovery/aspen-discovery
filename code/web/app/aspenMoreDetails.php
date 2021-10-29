@@ -24,7 +24,7 @@ $version = $_GET['version'];
 # ****************************************************************************************************************************
 # * assemble the login API URL
 # ****************************************************************************************************************************
-$libraryInfo = $urlPath . '/API/SystemAPI?method=getLocationInfo&id=' . $libraryId . '&library=' . $shortname . '&version=' . $version;
+$libraryInfo = $urlPath . '/API/SystemAPI?method=getLocationInfo&id=' . $libraryId . '&library=' . $shortname;
 
 # ****************************************************************************************************************************
 # * grab the library info
@@ -37,14 +37,6 @@ $jsonData = json_decode(file_get_contents($libraryInfo), true);
 $website = '';
 if (! empty ($jsonData['result']['location']['homeLink'])) {
   $website = $jsonData['result']['location']['homeLink'];
-}
-
-# ****************************************************************************************************************************
-# * grab the library display name
-# ****************************************************************************************************************************
-$displayName = '';
-if (! empty ($jsonData['result']['location']['displayName'])) {
-	$displayName = $jsonData['result']['location']['displayName'];
 }
 
 # ****************************************************************************************************************************
@@ -68,24 +60,6 @@ if (! empty ($jsonData['result']['location']['hoursMessage'])) {
   $todayHours = $jsonData['result']['location']['hoursMessage'];
 }
 
-# ****************************************************************************************************************************
-# * grab the library coordinates
-# ****************************************************************************************************************************
-$latitude = '';
-$longitude = '';
-if (! empty ($jsonData['result']['location']['latitude'])) {
-	$latitude = $jsonData['result']['location']['latitude'];
-	$longitude = $jsonData['result']['location']['longitude'];
-}
-
-# ****************************************************************************************************************************
-# * grab the library address
-# ****************************************************************************************************************************
-$address = '';
-if (! empty ($jsonData['result']['location']['address'])) {
-	$address = $jsonData['result']['location']['address'];
-}
-
 # *********************************************************************************************************************************************
 # * Links for the More Page - unique key is needed to prevent a warning in iOS
 # *********************************************************************************************************************************************
@@ -105,7 +79,7 @@ $whatsOnLink  = 'http://www.bywatersolutions.com';
 # * CONTACT US
 # *********************************************************************************************************************************************
 $contactUsBlurb    = "It's easy to get help and information on any of our services.";
-$contactUsMailLink = "";
+$contactUsMailLink = "mailto:aspensupport@bywatersolutions.com";
 
 # *********************************************************************************************************************************************
 # * NEWS - unique key is needed to prevent warning in iOS
@@ -118,7 +92,7 @@ $news[] = array('key' => 3, 'date' => 'Nov. 11, 2020', 'newsItem' => "News Item 
 # ****************************************************************************************************************************
 # * assemble the data above into an array for json-ing
 # ****************************************************************************************************************************
-$more['universal'] = array('displayName' => $displayName, 'todayHours' => $todayHours, 'phone' => $phone, 'address' => $address, 'latitude' => $latitude, 'longitude' => $longitude, 'website' => $website, 'catalogue' => $catalogue);
+$more['universal'] = array('todayHours' => $todayHours, 'phone' => $phone, 'website' => $website, 'catalogue' => $catalogue); 
 $more['options']   = $pageLink;
 //$more['whatsOn']   = array('button' => $whatsOnButton, 'blurb' => $whatsOnBlurb, 'link' => $whatsOnLink);
 $more['contactUs'] = array('blurb' => $contactUsBlurb, 'email' => $contactUsMailLink);

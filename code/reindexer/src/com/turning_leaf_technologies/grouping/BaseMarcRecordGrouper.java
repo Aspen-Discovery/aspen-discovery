@@ -424,7 +424,6 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 		DataField field100 = marcRecord.getDataField("100");
 		DataField field110 = marcRecord.getDataField("110");
 		DataField field260 = marcRecord.getDataField("260");
-		DataField field264 = marcRecord.getDataField("264");
 		DataField field710 = marcRecord.getDataField("710");
 
 		//Depending on the format we will promote the use of the 245c
@@ -444,8 +443,6 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 			author = field710.getSubfield('a').getData();
 		} else if (field260 != null && field260.getSubfield('b') != null) {
 			author = field260.getSubfield('b').getData();
-		} else if (field264 != null && field264.getSubfield('b') != null) {
-			author = field264.getSubfield('b').getData();
 		} else if (!groupingFormat.equals("book") && field245 != null && field245.getSubfield('c') != null) {
 			author = field245.getSubfield('c').getData();
 			if (author.indexOf(';') > 0) {

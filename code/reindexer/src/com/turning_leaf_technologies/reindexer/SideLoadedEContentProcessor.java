@@ -121,11 +121,11 @@ class SideLoadedEContentProcessor extends MarcRecordProcessor{
 		itemInfo.setIsEContent(true);
 
 		loadDateAdded(identifier, itemInfo);
-		itemInfo.setLocationCode(settings.getName());
-		itemInfo.setCallNumber("Online " + settings.getName());
+		itemInfo.setLocationCode(profileType);
+		itemInfo.setCallNumber("Online " + profileType);
 		itemInfo.setItemIdentifier(identifier);
-		itemInfo.setShelfLocation(settings.getName());
-		itemInfo.setDetailedLocation(settings.getName());
+		itemInfo.setShelfLocation(profileType);
+		itemInfo.setDetailedLocation(profileType);
 
 		//No Collection for Side loaded eContent
 		//itemInfo.setCollection(translateValue("collection", getItemSubfieldData(collectionSubfield, itemField), identifier));
@@ -135,14 +135,15 @@ class SideLoadedEContentProcessor extends MarcRecordProcessor{
 		itemInfo.setHoldable(false);
 		itemInfo.setInLibraryUseOnly(false);
 
-		itemInfo.seteContentSource(settings.getName());
+		itemInfo.seteContentSource(profileType);
 
-		RecordInfo relatedRecord = groupedWork.addRelatedRecord(settings.getName(), identifier);
-		//RecordInfo relatedRecord = groupedWork.addRelatedRecord(profileType, identifier);
+		RecordInfo relatedRecord = groupedWork.addRelatedRecord(profileType, identifier);
 		relatedRecord.addItem(itemInfo);
 		loadEContentUrl(record, itemInfo);
 
 		loadEContentFormatInformation(record, relatedRecord, itemInfo);
+
+
 
 		return relatedRecord;
 	}

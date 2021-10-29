@@ -13,7 +13,6 @@ class OverDriveSetting extends DataObject
 	public $productsKey;
 	public $runFullUpdate;
 	public $allowLargeDeletes;
-	public $numExtractionThreads;
 	public $lastUpdateOfChangedRecords;
 	public $lastUpdateOfAllRecords;
 
@@ -35,7 +34,6 @@ class OverDriveSetting extends DataObject
 			'productsKey' => array('property' => 'productsKey', 'type' => 'text', 'label' => 'Products Key', 'description' => 'The products key provided by OverDrive used to load information about collections', 'canBatchUpdate'=>false),
 			'runFullUpdate' => array('property' => 'runFullUpdate', 'type' => 'checkbox', 'label' => 'Run Full Update', 'description' => 'Whether or not a full update of all records should be done on the next pass of indexing', 'default' => 0),
 			'allowLargeDeletes' => array('property' => 'allowLargeDeletes', 'type' => 'checkbox', 'label' => 'Allow Large Deletes', 'description' => 'Whether or not Aspen can delete more than 500 records or 5% of the collection', 'default' => 0),
-			'numExtractionThreads' => array('property' => 'numExtractionThreads', 'type' => 'integer', 'label' => 'Num Extraction Threads', 'description' => 'The number of threads to use when extracting from OverDrive', 'canBatchUpdate'=>false, 'default'=>10),
 			'lastUpdateOfChangedRecords' => array('property' => 'lastUpdateOfChangedRecords', 'type' => 'timestamp', 'label' => 'Last Update of Changed Records', 'description' => 'The timestamp when just changes were loaded', 'default' => 0),
 			'lastUpdateOfAllRecords' => array('property' => 'lastUpdateOfAllRecords', 'type' => 'timestamp', 'label' => 'Last Update of All Records', 'description' => 'The timestamp when just changes were loaded', 'default' => 0),
 			'scopes' => [

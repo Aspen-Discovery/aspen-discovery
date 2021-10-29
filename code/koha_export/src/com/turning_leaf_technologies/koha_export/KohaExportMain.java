@@ -268,11 +268,9 @@ public class KohaExportMain {
 				ResultSet kohaVersionRS = getKohaVersionStmt.executeQuery();
 				while (kohaVersionRS.next()){
 					kohaVersion = kohaVersionRS.getFloat("value");
-					logEntry.addNote("Koha version is " + kohaVersion);
-					break;
 				}
 			} catch (SQLException e) {
-				logEntry.incErrors("Error loading koha version", e);
+				logEntry.incErrors("Error exporting book covers", e);
 			}
 		}
 		return kohaVersion;
@@ -305,13 +303,8 @@ public class KohaExportMain {
 					//Check to see if we have an existing uploaded record
 					String groupedWorkId = getGroupedWorkForRecordRS.getString("permanent_id");
 					File coverFile = new File(coversPath + groupedWorkId + ".png");
-					Timestamp kohaCoverTimestamp = null;
-					try{
-						kohaCoverTimestamp = kohaCoversRS.getTimestamp("timestamp");
-					}catch (SQLException e){
-						logger.warn("Null timestamp found while exporting bookcovers, ignoring.");
-					}
-					if (!coverFile.exists() || coverFile.length() == 0 || kohaCoverTimestamp == null || (coverFile.lastModified() < kohaCoverTimestamp.getTime())) {
+					Timestamp kohaCoverTimestamp = kohaCoversRS.getTimestamp("timestamp");
+					if (!coverFile.exists() || coverFile.length() == 0 || (coverFile.lastModified() < kohaCoverTimestamp.getTime())) {
 						getKohaCoverStmt.setLong(1, kohaCoversRS.getLong("imagenumber"));
 						ResultSet kohaCoverRS = getKohaCoverStmt.executeQuery();
 						if (kohaCoverRS.next()){

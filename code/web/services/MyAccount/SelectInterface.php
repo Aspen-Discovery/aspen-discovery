@@ -38,9 +38,8 @@ class MyAccount_SelectInterface extends Action{
 		usort($libraries, $sortLibraries);
 		$interface->assign('libraries', $libraries);
 
-		/** @var Location $locationSingleton*/
-		//global $locationSingleton;
-		//$physicalLocation = $locationSingleton->getIPLocation();
+		global $locationSingleton;
+		$physicalLocation = $locationSingleton->getActiveLocation();
 
 		if (isset($_REQUEST['gotoModule'])){
 			$gotoModule = $_REQUEST['gotoModule'];
@@ -56,8 +55,8 @@ class MyAccount_SelectInterface extends Action{
 			$user = UserAccount::getLoggedInUser();
 			if (isset($_REQUEST['library'])){
 				$redirectLibrary = $_REQUEST['library'];
-			//}elseif (!is_null($physicalLocation)){
-			//	$redirectLibrary = $physicalLocation->libraryId;
+			}elseif (!is_null($physicalLocation)){
+				$redirectLibrary = $physicalLocation->libraryId;
 			}elseif ($user && isset($user->preferredLibraryInterface) && is_numeric($user->preferredLibraryInterface)){
 				$redirectLibrary = $user->preferredLibraryInterface;
 			}elseif (isset($_COOKIE['PreferredLibrarySystem'])){
@@ -89,40 +88,31 @@ class MyAccount_SelectInterface extends Action{
 					$urlPortions[1] = str_replace('opac.', '', $urlPortions[1]);
 					$baseUrl = $urlPortions[0] . '://' . $subdomain . '.' . $urlPortions[1];
 				}
-				$baseUrl .= '?branch=';
 			}else{
 				/** @var Location $selectedLocation */
 				$selectedLocation = $libraries[$redirectLibrary]['location'];
-				global $configArray;
-				$baseUrl = $configArray['Site']['url'];
-				$branch = '';
-				$urlPortions = explode('://', $baseUrl);
-				//Get rid of extra portions of the url
-				$subdomain = $selectedLocation->subdomain;
-				$buildUrl = true;
-				if (empty($subdomain)){
-					$library = $selectedLocation->getParentLibrary();
-					if (!empty($library->baseUrl)) {
-						$baseUrl = $library->baseUrl;
-						$branch = $selectedLocation->code;
-						$buildUrl = false;
-					}else {
+				if (!empty($selectedLocation->baseUrl)) {
+					$baseUrl = $selectedLocation->baseUrl;
+				} else {
+					global $configArray;
+					$baseUrl = $configArray['Site']['url'];
+					$branch = '';
+					$urlPortions = explode('://', $baseUrl);
+					//Get rid of extra portions of the url
+					$subdomain = $selectedLocation->subdomain;
+					if (empty($subdomain)){
 						$subdomain = $selectedLocation->getParentLibrary()->subdomain;
 						$branch = $selectedLocation->code;
 					}
-				}
-				if ($buildUrl){
 					if (strpos($urlPortions[1], 'opac2') !== false) {
 						$urlPortions[1] = str_replace('opac2.', '', $urlPortions[1]);
 						$subdomain .= '2';
 					}
 					$urlPortions[1] = str_replace('opac.', '', $urlPortions[1]);
 					$baseUrl = $urlPortions[0] . '://' . $subdomain . '.' . $urlPortions[1];
-				}
-				if (!empty($branch)){
-					$baseUrl .= '?branch=' . $branch;
-				}else{
-					$baseUrl .= '?branch=';
+					if (!empty($branch)){
+						$baseUrl .= '?branch=' . $branch;
+					}
 				}
 			}
 			if ($gotoModule) {

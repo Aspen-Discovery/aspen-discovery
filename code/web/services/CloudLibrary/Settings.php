@@ -23,7 +23,7 @@ class CloudLibrary_Settings extends ObjectEditor
 
 	function getPageTitle() : string
 	{
-		return 'cloudLibrary Settings';
+		return 'Cloud Library Settings';
 	}
 
 	function getAllObjects($page, $recordsPerPage) : array
@@ -72,7 +72,7 @@ class CloudLibrary_Settings extends ObjectEditor
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
-		$breadcrumbs[] = new Breadcrumb('/Admin/Home#cloud_library', 'cloudLibrary');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#cloud_library', 'Cloud Library');
 		$breadcrumbs[] = new Breadcrumb('/CloudLibrary/Settings', 'Settings');
 		return $breadcrumbs;
 	}

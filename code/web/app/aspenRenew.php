@@ -43,12 +43,12 @@ if (strcmp($itemId, 'all') == 0) {
 # ****************************************************************************************************************************
 $jsonData = json_decode(file_get_contents($renewal), true);
 
+$renewalInfo['renewed'] = $jsonData['result']['renewalMessage']['success'];
+$renewalInfo['message'] = $jsonData['result']['renewalMessage']['message'];
+
 if (strcmp($itemId, 'all') == 0) {
   $renewalInfo['renewed'] = $jsonData['result']['success'];
   $renewalInfo['message'] = $jsonData['result']['message'][0];
-} else {
-	$renewalInfo['renewed'] = $jsonData['result']['renewalMessage']['success'];
-	$renewalInfo['message'] = $jsonData['result']['renewalMessage']['message'];
 }
 
 # ****************************************************************************************************************************

@@ -5,13 +5,6 @@
 		</div>
 	</div>
 
-	<p class="alert alert-info">
-		{translate text="Quick Update to current version" isAdminFacing=true}
-		<pre>
-			cd /usr/local/aspen-discovery; sudo git pull origin {$gitBranch}
-		</pre>
-	</p>
-
 	<div class="siteStatusRegion">
 		<table class="table table-striped table-condensed smallText table-sticky" id="siteStatusTable" aria-label="{translate text="List of sites to upgrade" inAttribute=true isAdminFacing=true}">
 			<thead>
@@ -19,8 +12,7 @@
 					<th>{translate text="Name" isAdminFacing=true}</th>
 					<th>{translate text="Version" isAdminFacing=true}</th>
 					<th>{translate text="Implementation Status" isAdminFacing=true}</th>
-					<th>{translate text="Hosting" isAdminFacing=true}</th>
-					<th>{translate text="Full Update" isAdminFacing=true}</th>
+					<th>{translate text="Upgrade Command" isAdminFacing=true}</th>
 					<th>{translate text="DB Maintenance" isAdminFacing=true}</th>
 				</tr>
 			</thead>
@@ -35,9 +27,6 @@
 						</td>
 						<td>
 							{translate text=$site->getImplementationStatusName() isAdminFacing=true}
-						</td>
-						<td>
-                            {$site->hosting}
 						</td>
 						<td>
 							<input type="text" class="form-control" value="cd /usr/local/aspen-discovery/install; sudo ./upgrade.sh {$site->internalServerName} {$gitBranch}" onfocus="this.select()"/>

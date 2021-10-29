@@ -1,82 +1,119 @@
-import React, { Component, useState } from "react";
-import { Dimensions, Animated } from "react-native";
-import { Center, Stack, HStack, Spinner, Toast, Button, Divider, Flex, Box, Text, Icon, Avatar, Menu, Pressable, IconButton } from "native-base";
-import * as SecureStore from 'expo-secure-store';
-import { TabView, SceneMap, TabBar, NavigationState, SceneRendererProps } from "react-native-tab-view";
-import { MaterialIcons } from "@expo/vector-icons";
-import moment from "moment";
+import React, { Component } from 'react';
+import { ActivityIndicator, FlatList, Text, View, TouchableOpacity } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Avatar, ListItem } from "react-native-elements"
+import Stylesheet from './Stylesheet';
 
-import AccountSummary from "./AccountSummary";
-import AccountCheckouts from "./AccountCheckouts";
-import AccountHolds from "./AccountHolds";
+export default class AccountDetail extends Component {
 
-const FirstRoute = () => <AccountCheckouts />;
-const SecondRoute = () => <AccountHolds />;
-const initialLayout = { width: Dimensions.get("window").width };
-const renderScene = SceneMap({
-	first: FirstRoute,
-	second: SecondRoute,
-});
+  // establishes the title for the window
+  static navigationOptions = { title: 'Account' };
 
-const handleIndexChange = (index: number) => this.setState({ index });
+  constructor() {
+    super();
+    this.state = {
+      isLoading: true
+    };
+  }
 
-export default function MyItems() {
-	const [index, setIndex] = React.useState(0);
-	const [routes] = React.useState([
-		{ key: "first", title: "Checked Out" },
-		{ key: "second", title: "On Hold" },
-	]);
+  // handles the mount information, setting session variables, etc
+  componentDidMount = async() =>{
+    // store the values into the state
+    this.setState({
+      password: await AsyncStorage.getItem('password'),
+      pathLibrary: await AsyncStorage.getItem('library'),
+      pathUrl: await AsyncStorage.getItem('url'),
+      patronName: await AsyncStorage.getItem('patronName'),
+      username: await AsyncStorage.getItem('username')
+    });
 
-	const renderTabBar = (props) => {
-		const inputRange = props.navigationState.routes.map((x, i) => i);
-		return (
-			<Box flexDirection="row" backgroundColor="white">
-				{props.navigationState.routes.map((route, i) => {
-					const opacity = props.position.interpolate({
-						inputRange,
-						outputRange: inputRange.map((inputIndex) => (inputIndex === i ? 1 : 0.5)),
-					});
-					const color = index === i ? "#27272a" : "#d4d4d8";
-					const weight = index === i ? "bold" : "normal";
-					const borderColor = index === i ? "primary.900" : "coolGray.300";
-					const backgroundColor = index === i ? "#d4d4d4" : "#fafafa";
+    // grab the checkouts
+    this.getCheckOuts();
 
-					return (
-						<Box
-							backgroundColor={backgroundColor}
-							borderBottomWidth={3}
-							borderColor={borderColor}
-							flex={1}
-							alignItems="center"
-							p={3}
-							borderTopRightRadius={8}
-							borderTopLeftRadius={8}
-						>
-							<Pressable
-								onPress={() => {
-									setIndex(i);
-								}}
-							>
-								<Animated.Text style={{ color, fontWeight: weight }}>{route.title}</Animated.Text>
-							</Pressable>
-						</Box>
-					);
-				})}
-			</Box>
-		);
-	};
+    // forces a new connection to ensure that we're getting the newest stuff
+    this.willFocusSubscription = this.props.navigation.addListener('willFocus', () => { this.getCheckOuts(); } );
+  }
 
-	return (
-		<>
-			<AccountSummary />
-			<TabView
-				navigationState={{ index, routes }}
-				renderScene={renderScene}
-				renderTabBar={renderTabBar}
-				onIndexChange={setIndex}
-				initialLayout={initialLayout}
-				swipeEnabled={false}
-			/>
-		</>
-	);
+  // needed to ensure that the data refreshes
+  componentWillUnmount() {
+    this.willFocusSubscription.remove();
+  }
+
+  // grabs the items checked out to the account
+  getCheckOuts = () => {
+    const random = new Date().getTime();
+    const url = this.state.pathUrl + '/app/aspenAccountDetails.php?library=' + this.state.pathLibrary + '&barcode=' + this.state.username + '&pin=' + this.state.password + '&rand=' + random;
+    
+    fetch(url)
+      .then(res => res.json())
+      .then(res => {
+        this.setState({
+          checkOuts: res.numCheckedOut,
+          holdsILS: res.holdsILS,
+          holdsEProduct: res.holdsEProduct,
+          isLoading: false,
+        });
+      })
+      .catch(error => {
+        console.log("get data error from:" + url + " error:" + error);
+      });
+  };
+
+  // renders the items on the screen
+  renderNativeItem = (item) => {
+    const iconName = '../assets/aspenLogo.png';
+
+    return (
+      <ListItem bottomDivider onPress={ () => this.onPressItem(item.key) }>
+        <Avatar rounded source={ require(iconName) } />
+        <ListItem.Content>
+          <ListItem.Title>{ item.title }</ListItem.Title>
+          <ListItem.Subtitle>{ item.note }</ListItem.Subtitle>
+        </ListItem.Content>
+        <ListItem.Chevron />
+      </ListItem>
+    );
+  }
+
+  // handles the on press action 
+  onPressItem = (item) => {
+    this.props.navigation.navigate(item, { item },);
+  }
+
+  getHeader = () => {
+    return (
+      <View>
+        <View style={ Stylesheet.accountInformation }>
+        <Text style={ Stylesheet.accountTextHeader }>{ this.state.patronName }'s Account Summary:</Text>
+        <Text style={ Stylesheet.accountText }>Barcode: { this.state.username }</Text>
+        <Text style={ Stylesheet.accountText }>Items checked out: { this.state.checkOuts }</Text>
+        <Text style={ Stylesheet.accountText }>Items on hold: { this.state.holdsILS }</Text>
+        <Text style={ Stylesheet.accountText }>eItems on hold: { this.state.holdsEProduct }</Text>
+        </View>
+      </View>
+    );
+  }
+  
+  render() {
+    if (this.state.isLoading) {
+      return (
+        <View style={ Stylesheet.activityIndicator }>
+          <ActivityIndicator size='large' color='#272362' />
+        </View>
+      );
+    }
+
+    return (
+      <View style={ Stylesheet.searchResultsContainer }>
+        <FlatList
+          data={[  
+            { key: 'ListCKO', title: 'Items Checked out (' + this.state.checkOuts + ')', note: 'Click to check due dates and renewal options.', thumbnail: 'books.png' },
+            { key: 'ListHold', title: 'Items On Hold (' + this.state.holdsILS + ')', note: 'Click to see what you have on hold.', thumbnail: 'holds.png' },
+          ]}  
+          renderItem={( {item} ) => this.renderNativeItem(item) }  
+          ListHeaderComponent={ this.getHeader() }
+        />
+      </View>
+    );
+  }
 }

@@ -138,7 +138,6 @@ class RecordImpl implements Record {
         } else {
             dataFields.add((DataField) field);
         }
-        stringRepresentation = null;
     }
 
     @Override
@@ -149,7 +148,6 @@ class RecordImpl implements Record {
         } else {
             dataFields.remove(field);
         }
-        stringRepresentation = null;
     }
 
     /**
@@ -347,7 +345,6 @@ class RecordImpl implements Record {
         return result;
     }
 
-    String stringRepresentation = null;
     /**
      * Returns a string representation of this record.
      *
@@ -376,21 +373,18 @@ class RecordImpl implements Record {
      */
     @Override
     public String toString() {
-        if (stringRepresentation == null) {
-            final StringBuilder sb = new StringBuilder();
+        final StringBuilder sb = new StringBuilder();
 
-            sb.append("LEADER ");
-            sb.append(getLeader().toString());
+        sb.append("LEADER ");
+        sb.append(getLeader().toString());
+        sb.append('\n');
+
+        for (final VariableField field : getVariableFields()) {
+            sb.append(field.toString());
             sb.append('\n');
-
-            for (final VariableField field : getVariableFields()) {
-                sb.append(field.toString());
-                sb.append('\n');
-            }
-
-            stringRepresentation = sb.toString();
         }
-        return stringRepresentation;
+
+        return sb.toString();
     }
 
     /**

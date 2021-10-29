@@ -458,7 +458,7 @@ class MyAccount_AJAX extends JSON_Action
 								$driver = new OverDriveDriver();
 								$tmpResult = $driver->freezeHold($user, $recordId, null);
 								if($tmpResult['success']){$success++;}else{$failed++;}
-							//cloudLibrary holds can't be frozen
+							//Cloud Library holds can't be frozen
 //							} else if ($holdType == 'cloud_library') {
 //								require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
 //								$driver = new CloudLibraryDriver();
@@ -1355,7 +1355,7 @@ class MyAccount_AJAX extends JSON_Action
 						$cloudLibrarySummary->numAvailableHolds += $linkedUserSummary->numAvailableHolds;
 					}
 				}
-				$timer->logTime("Loaded cloudLibrary Summary for User and linked users");
+				$timer->logTime("Loaded Cloud Library Summary for User and linked users");
 				$result = [
 					'success' => true,
 					'summary' => $cloudLibrarySummary->toArray()
@@ -2782,84 +2782,76 @@ class MyAccount_AJAX extends JSON_Action
 
 	function createPayPalOrder(){
 		global $configArray;
-		$result = $this->createGenericOrder('paypal');
-		if (array_key_exists('success', $result) && $result['success'] === false) {
-			return $result;
+		list($userLibrary, $payment, $purchaseUnits) = $this->createGenericOrder('paypal');
+
+		require_once ROOT_DIR . '/sys/CurlWrapper.php';
+		$payPalAuthRequest = new CurlWrapper();
+		//Connect to PayPal
+		if ($userLibrary->payPalSandboxMode == 1) {
+			$baseUrl = 'https://api.sandbox.paypal.com';
 		} else {
-			/** @var Library $userLibrary */
-			/** @var UserPayment $payment */
-			/** @var User $patron */
-			/** @noinspection PhpUnusedLocalVariableInspection */
-			list($userLibrary, $payment, $purchaseUnits, $patron) = $result;
-			require_once ROOT_DIR . '/sys/CurlWrapper.php';
-			$payPalAuthRequest = new CurlWrapper();
-			//Connect to PayPal
-			if ($userLibrary->payPalSandboxMode == 1) {
-				$baseUrl = 'https://api.sandbox.paypal.com';
-			} else {
-				$baseUrl = 'https://api.paypal.com';
-			}
-
-			$clientId = $userLibrary->payPalClientId;
-			$clientSecret = $userLibrary->payPalClientSecret;
-
-			//Get the access token
-			$authInfo = base64_encode("$clientId:$clientSecret");
-			$payPalAuthRequest->addCustomHeaders([
-				"Accept: application/json",
-				"Accept-Language: en_US",
-				"Authorization: Basic $authInfo"
-			], true);
-			$postParams = [
-				'grant_type' => 'client_credentials',
-			];
-
-			$accessTokenUrl = $baseUrl . "/v1/oauth2/token";
-			$accessTokenResults = $payPalAuthRequest->curlPostPage($accessTokenUrl, $postParams);
-			$accessTokenResults = json_decode($accessTokenResults);
-			if (empty($accessTokenResults->access_token)) {
-				return ['success' => false, 'message' => 'Unable to authenticate with PayPal, please try again in a few minutes.'];
-			} else {
-				$accessToken = $accessTokenResults->access_token;
-			}
-
-			//Setup the payment request (https://developer.paypal.com/docs/checkout/reference/server-integration/set-up-transaction/)
-			$payPalPaymentRequest = new CurlWrapper();
-			$payPalPaymentRequest->addCustomHeaders([
-				"Accept: application/json",
-				"Content-Type: application/json",
-				"Accept-Language: en_US",
-				"Authorization: Bearer $accessToken"
-			], false);
-			$paymentRequestUrl = $baseUrl . '/v2/checkout/orders';
-			$paymentRequestBody = [
-				'intent' => 'CAPTURE',
-				'application_context' => [
-					'brand_name' => $userLibrary->displayName,
-					'locale' => 'en-US',
-					'shipping_preferences' => 'NO_SHIPPING',
-					'user_action' => 'PAY_NOW',
-					'return_url' => $configArray['Site']['url'] . '/MyAccount/PayPalReturn',
-					'cancel_url' => $configArray['Site']['url'] . '/MyAccount/Fines'
-				],
-				'purchase_units' => [
-					0 => $purchaseUnits,
-				]
-			];
-
-			$paymentResponse = $payPalPaymentRequest->curlPostBodyData($paymentRequestUrl, $paymentRequestBody);
-			$paymentResponse = json_decode($paymentResponse);
-
-			if ($paymentResponse->status != 'CREATED') {
-				return ['success' => false, 'message' => 'Unable to create your order in PayPal.'];
-			}
-
-			//Log the request in the database so we can validate it on return
-			$payment->orderId = $paymentResponse->id;
-			$payment->update();
-
-			return ['success' => true, 'orderInfo' => $paymentResponse, 'orderID' => $paymentResponse->id];
+			$baseUrl = 'https://api.paypal.com';
 		}
+
+		$clientId = $userLibrary->payPalClientId;
+		$clientSecret = $userLibrary->payPalClientSecret;
+
+		//Get the access token
+		$authInfo = base64_encode("$clientId:$clientSecret");
+		$payPalAuthRequest->addCustomHeaders([
+			"Accept: application/json",
+			"Accept-Language: en_US",
+			"Authorization: Basic $authInfo"
+		], true);
+		$postParams = [
+			'grant_type' => 'client_credentials',
+		];
+
+		$accessTokenUrl = $baseUrl . "/v1/oauth2/token";
+		$accessTokenResults = $payPalAuthRequest->curlPostPage($accessTokenUrl, $postParams);
+		$accessTokenResults = json_decode($accessTokenResults);
+		if (empty($accessTokenResults->access_token)) {
+			return ['success' => false, 'message' => 'Unable to authenticate with PayPal, please try again in a few minutes.'];
+		} else {
+			$accessToken = $accessTokenResults->access_token;
+		}
+
+		//Setup the payment request (https://developer.paypal.com/docs/checkout/reference/server-integration/set-up-transaction/)
+		$payPalPaymentRequest = new CurlWrapper();
+		$payPalPaymentRequest->addCustomHeaders([
+			"Accept: application/json",
+			"Content-Type: application/json",
+			"Accept-Language: en_US",
+			"Authorization: Bearer $accessToken"
+		], false);
+		$paymentRequestUrl = $baseUrl . '/v2/checkout/orders';
+		$paymentRequestBody = [
+			'intent' => 'CAPTURE',
+			'application_context' => [
+				'brand_name' => $userLibrary->displayName,
+				'locale' => 'en-US',
+				'shipping_preferences' => 'NO_SHIPPING',
+				'user_action' => 'PAY_NOW',
+				'return_url' => $configArray['Site']['url'] . '/MyAccount/PayPalReturn',
+				'cancel_url' => $configArray['Site']['url'] . '/MyAccount/Fines'
+			],
+			'purchase_units' => [
+				0 => $purchaseUnits,
+			]
+		];
+
+		$paymentResponse = $payPalPaymentRequest->curlPostBodyData($paymentRequestUrl, $paymentRequestBody);
+		$paymentResponse = json_decode($paymentResponse);
+
+		if ($paymentResponse->status != 'CREATED') {
+			return ['success' => false, 'message' => 'Unable to create your order in PayPal.'];
+		}
+
+		//Log the request in the database so we can validate it on return
+		$payment->orderId = $paymentResponse->id;
+		$payment->update();
+
+		return ['success' => true, 'orderInfo' => $paymentResponse, 'orderID' => $paymentResponse->id];
 	}
 
 	/** @noinspection PhpUnused */

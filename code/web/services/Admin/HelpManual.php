@@ -9,7 +9,14 @@ class Admin_HelpManual extends Action
 		global $interface;
 
 		//Get a list of all available release notes
-		$helpManualPath = ROOT_DIR . '/manual';
+		
+		/* Kware Fix */
+		$language = strip_tags((isset($_SESSION['language'])) ? $_SESSION['language'] : 'en');		
+		$langManualPath = ROOT_DIR . '/manual_'.$language;
+		$defaultManualPath = ROOT_DIR . '/manual';		
+		$helpManualPath = file_exists($langManualPath) ? $langManualPath : $defaultManualPath;
+		/* End of Kware Fix */
+		
 		if (isset($_REQUEST['page'])){
 			$page = $_REQUEST['page'];
 		}else{

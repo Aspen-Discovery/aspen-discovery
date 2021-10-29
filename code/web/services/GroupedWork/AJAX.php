@@ -1017,7 +1017,7 @@ class GroupedWork_AJAX extends JSON_Action
 		$interface->assign('recordDriver', $recordDriver);
 
 		$recordId = $_REQUEST['recordId'];
-		$selectedFormat = urldecode($_REQUEST['format']);
+		$selectedFormat = $_REQUEST['format'];
 
 		$relatedManifestation = null;
 		foreach ($recordDriver->getRelatedManifestations() as $relatedManifestation){

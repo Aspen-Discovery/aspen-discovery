@@ -1,0 +1,752 @@
+//@import (reference) "bootstrap/less/variables.less";
+@import (reference) "variables.less";
+
+//Functionality related to the overall layout
+//Headers, Footer, columns, etc.
+
+//Body
+body{
+  color: @body-text-color;
+}
+#content-container{
+  @media(max-width: @screen-sm-min){
+    width: auto;
+  }
+  @media(min-width: @screen-sm-min){
+    width: 100%;
+  }
+  padding: 0;
+}
+
+hr.menu{
+  margin-top: 3px;
+  margin-bottom: 3px;
+  height: 0;
+  border-top: 1px solid #d3d3d3;
+}
+
+//Breadcrumbs (within main content)
+.breadcrumbs{
+  background-color: @breadcrumb-bg;
+  padding: 3px;
+  margin-top: 4.6px;
+}
+.breadcrumb{
+  padding: 0;
+  margin-bottom: 0;
+  > li {
+    display: inline-block;
+    + li:before {
+      content: ""; // Override default separator since we add one in code
+      padding: 0 5px;
+      color: @breadcrumb-color;
+    }
+  }
+}
+//System message
+#system-message-header{
+  background-color: @header-top-color;
+  color: black;
+  text-align: center;
+  padding: 3px;
+}
+.system-message{
+  padding: 5px;
+}
+.system-message-text{
+  display: inline-block;
+}
+.dismissable-system-message-text{
+  width: calc(100% - 30px);
+}
+
+#header-wrapper{
+  padding-top: 0;
+  background-color: @header-top-color;
+  margin-bottom: 0;
+  padding-bottom: 1em;
+}
+
+#header-logo-container{
+  @media(max-width: @screen-tn-max) {
+    text-align: center;
+  }
+}
+#header-logo{
+  padding: 10px 10px 0 0;
+  @media(max-width: @screen-xs-max){
+    max-width: 100%;
+    height:auto;
+  }
+}
+#horizontal-menu-bar-container{
+  background-color: @header-top-color;
+  border-bottom: @header-bottom-border-width solid @header-bottom-border-color;
+}
+
+.availableLanguage{
+  display: inline-block;
+  padding-left: 10px;
+}
+#menuToggleButton, .menuToggleButton a.menu-bar {
+  width: 36px;
+  display: inline-block;
+  text-align: center;
+}
+
+#select-language.dropdown-menu {
+  right: unset;
+  left: 0;
+}
+
+#menuToggleButton.selected{
+  background-color: #ededed;
+}
+
+.dropdownMenu {
+  display: none;
+  position: absolute;
+  background-color: #ededed;
+  min-width: 220px;
+  box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
+  padding: 12px 16px;
+  z-index: 3;
+}
+
+#header-menu {
+  right: unset;
+  left: 0;
+  background-color: #ededed;
+  min-width: 250px;
+  box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
+  padding: 12px 16px;
+  z-index: 3;
+  top: 35px;
+  margin: 0;
+
+  #logoutLink {
+    margin-top: 1em;
+  }
+}
+
+.header-menu-option{
+  margin-bottom: 3px;
+  cursor: pointer;
+
+  i + span {
+    margin-right: .5em;
+  }
+}
+
+#account-menu {
+  right: unset;
+  left: 0;
+  background-color: #ededed;
+  min-width: 220px;
+  box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
+  padding: 12px 16px;
+  z-index: 3;
+  top: 35px;
+  margin: 0;
+}
+
+#accountMenuToggleButton.selected{
+  background-color: #ededed;
+}
+
+.childMenuItem{
+  margin-right: 15px;
+}
+
+.header-menu-section{
+  margin-bottom: 3px;
+  cursor: pointer;
+}
+
+#aspenLanguagesMenuSection {
+  font-weight: bold;
+  margin-top: 1em;
+}
+
+.header-menu-option.languageSelect {
+  margin-right: 2em;
+}
+
+.header-menu-option.languageSelected {
+  margin-right: .5em;
+}
+
+#library-name-header{
+  font-size: @library-display-name-font-size;
+  color: @library-display-name-color;
+  font-weight: bold;
+  white-space: normal;
+  padding-top: 5px;
+}
+#header-links{
+  text-align: center;
+  .header-link-wrapper:last-of-type{
+    border-left: 0 solid black;
+  }
+}
+.header-link-wrapper{
+  display: inline-block;
+  padding: 2px 15px;
+  border-left: 1px solid #0078ae;
+  a{
+    font-size: 16px;
+  }
+}
+// Footer
+#footer-container{
+  border-top: 8px solid @footer-top-border-color;
+  padding-top: 3px;
+  margin-top: 1em;
+
+  // zero out negative margins on xs screens
+  @media screen and (max-width: @screen-xs-max) {
+    margin-right: 0;
+    margin-left: 0;
+  }
+  @media (min-width: @screen-sm-max) {
+    padding-right: 40px;
+  }
+}
+#install-info{
+  padding-right: 20px;
+}
+#connect-with-us-info{
+  padding-left: 20px;
+}
+#connect-with-us-label{
+  margin-left: 15px;
+}
+.connect-icon{
+  padding: 0 3px 0 3px;
+  color: inherit !important;
+}
+
+// Fixed navigation in footer
+#navigation-controls{
+  border-top: 8px solid @footer-top-border-color;
+  background: #fff;
+  @media print {
+    display: none !important;
+  }
+}
+// Applies to both horizontal or side menu bar
+.menu-bar {
+  color: @menu-bar-color;
+  background-color: @menu-bar-background-color;
+}
+
+#horizontal-menu-bar-wrapper {
+  @media print {
+    display: none;
+  }
+}
+
+#horizontal-menu-bar-container{
+  display: flex;
+  flex-direction: row;
+  .menu-section{
+    display: block;
+  }
+
+  .menu-icon {
+    line-height: 16px;
+    display: inline-block;
+    padding: 12px 5px 7px 5px;
+    cursor: pointer;
+    margin-right: 5px;
+    margin-left: 5px;
+    font-size: 16px;
+    &:visited,&:hover,&:focus {
+      text-decoration: none;
+      outline: none;
+    }
+    .menu-bar-label {
+      font-weight: bold;
+      text-transform: uppercase;
+      font-size:16px;
+
+      margin-right: 5px;
+      text-align: right;
+      display: inline-block;
+    }
+  }
+}
+
+.menu-section-right{
+  flex-grow: 10;
+}
+.menu-section-left{
+  align-self: flex-end;
+}
+
+// Sidebar & Main content
+#side-bar{
+  // padding-right: 0;
+  @media print {
+    display: none;
+  }
+  @media (max-width: @screen-xs-max){
+    display: none;
+  }
+}
+#main-content-with-sidebar{
+  padding-bottom: 15px;
+  @media print{
+    width:100%;
+    display: block !important;
+  }
+}
+
+//JCarousel styling
+.jcarousel ul > li {
+  text-align: center;
+}
+
+.jcarousel .thumbnail img{
+  max-height: 125px !important;
+}
+
+#sectionLabel{
+  width: 100%;
+  background-color: lighten(#80D2F1, 20%);
+  color: #137DE2;
+  text-transform: capitalize;
+  font-weight: bold;
+  padding: 5px;
+  text-align: center;
+  font-size: 16px;
+}
+
+.nopadding {
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+.required-input{
+  color: #c62828;
+}
+
+.hiddenTitle{
+  font-size: 0;
+  width: 1px;
+  height: 1px;
+  display: inline-block;
+  overflow: hidden;
+  position: absolute!important;
+  border: 0!important;
+  padding: 0!important;
+  margin: 0!important;
+  clip: rect(1px,1px,1px,1px);
+}
+
+#language-selection-header{
+  margin-top: 5px;
+  margin-bottom: 5px;
+  text-align: left;
+}
+
+.translation_id{
+  border: 1px solid dimgrey;
+  margin-right: 2px;
+  padding: 1px;
+  font-size: 10px;
+  vertical-align: super !important;
+  background-color: white;
+  color: darkslategrey;
+}
+.translated{
+  background-color: lightgreen;
+}
+.not_translated{
+  background-color: lightpink;
+}
+
+.form-control-sm {
+  display: block;
+  width: 100%;
+  padding: 5px 10px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #555555;
+  vertical-align: middle;
+  background-color: #fff;
+  background-image: none;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+}
+.form-inline select.form-control-sm {
+  width: auto;
+}
+.form-inline .form-control-sm {
+  display: inline-block;
+}
+.navbar-skinny{
+  min-height: auto;
+  margin-bottom: 0;
+}
+
+.badge{
+  font-size: 10px;
+  text-indent: 0;
+}
+
+ul.account-submenu{
+  list-style: none;
+  margin-right: 0;
+  padding-right: 1em;
+  text-indent: -1em;
+}
+
+.btn-wrap{
+  white-space: normal !important;
+}
+
+.label-wrap{
+  white-space: normal !important;
+}
+
+.placard{
+  border: 1px solid #bbb;
+  background-color:  #f0f5f5;
+  padding: 10px;
+  margin: 5px;
+}
+
+a.placard-link{
+  text-decoration: none;
+}
+
+.placard-image{
+  float: right;
+  padding-left: 10px;
+  max-width: 100%; // Part 1: Set a maximum relative to the parent
+  height: auto; // Part 2: Scale the height according to the width, otherwise you get stretching
+}
+
+.placard-body{
+  font-weight: bold;
+}
+
+.table-sticky{
+  overflow-y: auto;
+  thead {
+    tr {
+      th {
+        position: sticky;
+        top: 0;
+        background-color: white;
+        z-index: 2;
+      }
+    }
+  }
+}
+
+.rd-container {
+  z-index: 5;
+}
+
+#webMenuNavBar {
+  background-color: @home-search-top-color;
+  color: @home-search-label-color;
+  border: 0;
+  border-top: solid @home-search-label-color 2px;
+  border-radius: 0;
+  min-height: auto;
+
+  .nav > li > a, .nav > li > a:visited {
+    color: @home-search-label-color;
+    padding: 7px 10px;
+  }
+
+  .navbar-nav > li.open > a, .navbar-nav > li.open > a:visited {
+    color: rgb(85, 85, 85);
+  }
+}
+
+.help-link{
+  margin-top: 20px;
+  line-height: 50px;
+  text-align: left;
+}
+
+.propertyDescription{
+  margin-bottom: 6px;
+}
+
+.image-popup .modal-dialog {
+	width: auto;
+
+	.img-responsive {
+		margin: auto;
+	}
+}
+
+.badge{
+  background-color: #666666;
+}
+
+.search_tools.well.small {
+  a,strong {
+    padding-left: .5em;
+  }
+    :last-child {
+      padding-left: 0;
+    }
+}
+
+/* with flexbox */
+.grid {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+}
+
+.grid-col {
+  -webkit-box-flex: 1;
+  -webkit-flex-grow: 1;
+  -ms-flex-positive: 1;
+  flex-grow: 1;
+  flex-shrink: 1;
+  flex-basis: 0;
+  padding: 5px;
+}
+
+.previewFrame{
+  width: 100%;
+  height: 100%;
+  border: none;
+  min-height: 50vh;
+}
+
+#explore-more-header{
+  padding: 10px 25px 5px 0;
+  margin-top: 5px; // to match other menus
+  //margin-bottom:5px;
+  text-align: left;
+  color: @explore-more-sidebar-color;
+  background-color: @explore-more-sidebar-bg-color;
+  font-variant: small-caps;
+  font-weight: bold;
+  font-size: 16px;
+}
+
+#explore-more-body{
+
+  // No longer needed now that an accordion is in place
+  //margin-right: floor(-@grid-gutter-width / 2); // undo padding of parent #sidebar-content with negative margin
+  //padding-right: @padding-small-horizontal; // add smaller padding
+
+  .sectionHeader {
+    text-transform: uppercase;
+    font-weight: bold;
+    color: @title-color;
+    border-bottom: 2px solid @explore-more-bar-label-bg-color;
+    margin-top: 15px;
+  }
+  .section {
+    padding-left: @padding-xs-horizontal;
+    margin-bottom: 20px;
+  }
+  .subsectionTitle {
+    color: @subsection-title-color;
+  }
+  .subsection {
+
+  }
+  .jcarousel-wrapper {
+    margin-right: -@padding-small-horizontal; // remove padding from #explore-more-body, so that full space is available to the carousel
+    margin-top: 5px;
+  }
+  .jcarousel {
+    right: 30px;  // position carousel first item
+    width: calc(100% ~"-" 60px); // Escaping so that LESS doesn't compile the calc rule;
+  }
+
+  .thumbnail{
+    height: 175px;
+    background-color: transparent;
+  }
+
+  .relatedTitlesContainer {
+    //white-space: nowrap;
+    height: 175px; // doesn't seem have an effect
+
+  }
+}
+
+// Styling for Explore More Bar in Search Results
+.exploreMoreBar {
+  border: solid @explore-more-bar-border-width @explore-more-bar-label-bg-color;
+  margin: 10px 5px 15px; // matches padding of a .result div
+  background: fade(@explore-more-bar-label-bg-color, 5%);
+
+  .exploreMoreBarLabel {
+    color: @menu-bar-color;
+    font-weight: bold;
+    text-transform: uppercase;
+    white-space: nowrap; // multiple word labels need to stay on the same line
+    @media (max-width: @screen-tn-max) {
+      white-space: normal;
+    }
+    font-size: 18px;
+    padding: 4px;
+  }
+
+  // Explore More Bar Label on the Left Hand Side
+  .label-right {
+    float: right;
+    // Mimic Sidebar Behaviour
+    width: @explore-more-bar-label-width;
+    min-height: 167px; // makes explore more bar contain the right label
+    color: @menu-bar-color;
+    &, & img {
+      background-color: @explore-more-bar-label-bg-color;
+    }
+    .exploreMoreBarLabel {
+      // Make Font Vertical
+      position: absolute;
+      transform: rotate(-90deg) translateX(-100%);
+      transform-origin: 0 0;
+      padding-left: 10px; // padding between icon and text (after transform)
+      padding-right: 5px; // padding at bottom of text, after transform //TODO this may not be needed in the end
+      line-height: @explore-more-bar-label-width; // matches width, after transform
+    }
+    &+.exploreMoreContainer{
+      padding-right: @explore-more-bar-label-width; // move carousel container to right of the label
+      margin: 16px auto; // center the carousel.
+    }
+  }
+
+  // Explore More Bar Label on the Top
+  .label-top {
+    color: @menu-bar-color;
+    width: 100%;
+    &, & img {
+      background-color: @explore-more-bar-label-bg-color;
+      display: inline-block;
+    }
+    .exploreMoreBarLabel {
+      padding-right: 10px;
+      display: inline-block;
+    }
+  }
+
+  .jcarousel-wrapper {
+    margin: 5px auto;
+
+    .jcarousel {
+      li{
+        display: block !important;
+      }
+      .explore-more-option{
+        padding-right: 10px;
+        padding-left: 10px;
+        height: 100%;
+        border: 0px !important;
+
+        .thumbnail {
+          a {
+            img {
+              height: 125px;
+            }
+          }
+          border: 0 solid white;
+          position: relative;
+          display: block;
+          background-color: transparent !important;
+
+          .explore-more-image {
+            width: 100%;
+            position: absolute;
+            top: 62px;
+            transform: translate(-50%, -50%);
+            right: 50%;
+          }
+        }
+        figcaption {
+          margin-top: 4px;
+          margin-bottom: 4px;
+          font-weight: 100;
+          overflow-x: hidden;
+          position: absolute;
+          top: 130px;
+          width: 100%;
+          text-align: center;
+
+        }
+      }
+    }
+  }
+}
+
+// Common Rules between Explore More Bar & Explore More Sidebar
+#explore-more-body, .exploreMoreBar {
+  .jcarousel {
+    .thumbnail {
+      margin-bottom: 0;
+      height:175px;
+      border: 0 solid white;
+    }
+  }
+
+  .jcarousel-control-prev, .jcarousel-control-next {
+    height: 100%;
+    background-color: transparent;
+    color: @explore-more-bar-label-bg-color;
+    z-index: 2; // keep above carousel content
+    box-shadow: white 0px 0px 0px 0px;
+    &:focus {
+      outline: none;
+    }
+    .glyphicon {
+      top: 39px; // center the button a bit better. I haven't find a good way to make it center with out a specific value yet
+    }
+  }
+  // Horizontal Placement of Previous Next Buttons
+  .jcarousel-control-prev {
+    right: 2px;
+  }
+  .jcarousel-control-next {
+    left: 2px;
+  }
+
+  // Accordion Styling
+  .panel-body {
+    background-color: transparent;
+  }
+}
+
+#pdfContainer{
+  border: 1px solid lightgrey;
+  margin: 10px;
+
+  #pdfContainerBody{
+    position: relative;
+    width:    100%;
+
+    #pdfComponentBox{
+      padding: 10px;
+      position: absolute;
+      top:      0;
+      right:     0;
+      bottom:   0;
+      left:    0;
+
+      #view-pdf{
+        width: 100%;
+        height: 100%;
+      }
+    }
+  }
+  #pdfContainerBody:before{
+    content:     "";
+    display:     block;
+    padding-top: 129.5%; /* ratio of 11:8.5*/
+  }
+}

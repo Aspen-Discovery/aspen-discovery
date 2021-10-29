@@ -8038,7 +8038,7 @@ AspenDiscovery.CloudLibrary = (function () {
 				dataType: 'json',
 				async: false,
 				error: function () {
-					AspenDiscovery.showMessage("Error Cancelling Hold", "An error occurred processing your request in cloudLibrary.  Please try again in a few minutes.", false);
+					AspenDiscovery.showMessage("Error Cancelling Hold", "An error occurred processing your request in Cloud Library.  Please try again in a few minutes.", false);
 				}
 			});
 		},
@@ -8085,7 +8085,7 @@ AspenDiscovery.CloudLibrary = (function () {
 					dataType: 'json',
 					async: false,
 					error: function () {
-						alert("An error occurred processing your request in cloudLibrary.  Please try again in a few minutes.");
+						alert("An error occurred processing your request in Cloud Library.  Please try again in a few minutes.");
 						//alert("ajaxUrl = " + ajaxUrl);
 						AspenDiscovery.closeLightbox();
 					}
@@ -8115,7 +8115,7 @@ AspenDiscovery.CloudLibrary = (function () {
 				dataType: 'json',
 				async: false,
 				error: function () {
-					AspenDiscovery.showMessage("Error Placing Hold", "An error occurred processing your request in cloudLibrary.  Please try again in a few minutes.", false);
+					AspenDiscovery.showMessage("Error Placing Hold", "An error occurred processing your request in Cloud Library.  Please try again in a few minutes.", false);
 				}
 			});
 		},
@@ -8161,7 +8161,7 @@ AspenDiscovery.CloudLibrary = (function () {
 				dataType: 'json',
 				async: false,
 				error: function () {
-					alert("An error occurred processing your request in cloudLibrary.  Please try again in a few minutes.");
+					alert("An error occurred processing your request in Cloud Library.  Please try again in a few minutes.");
 					AspenDiscovery.closeLightbox();
 				}
 			});
@@ -8214,7 +8214,7 @@ AspenDiscovery.CloudLibrary = (function () {
 				dataType: 'json',
 				async: false,
 				error: function () {
-					AspenDiscovery.showMessage("Error Renewing Checkout", "An error occurred processing your request in cloudLibrary.  Please try again in a few minutes.", false);
+					AspenDiscovery.showMessage("Error Renewing Checkout", "An error occurred processing your request in Cloud Library.  Please try again in a few minutes.", false);
 				}
 			});
 		},
@@ -8236,7 +8236,7 @@ AspenDiscovery.CloudLibrary = (function () {
 				dataType: 'json',
 				async: false,
 				error: function () {
-					AspenDiscovery.showMessage("Error Returning Checkout", "An error occurred processing your request in cloudLibrary.  Please try again in a few minutes.", false);
+					AspenDiscovery.showMessage("Error Returning Checkout", "An error occurred processing your request in Cloud Library.  Please try again in a few minutes.", false);
 				}
 			});
 		},

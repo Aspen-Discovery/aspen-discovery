@@ -205,7 +205,7 @@ class BrowseCategory extends BaseBrowsable
 			'searchTerm' => array('property' => 'searchTerm', 'type' => 'text', 'label' => 'Search Term', 'description' => 'A default search term to apply to the category', 'default' => '', 'hideInLists' => true, 'maxLength' => 500),
 			'defaultFilter' => array('property' => 'defaultFilter', 'type' => 'textarea', 'label' => 'Default Filter(s)', 'description' => 'Filters to apply to the search by default.', 'hideInLists' => true, 'rows' => 3, 'cols' => 80),
 			'sourceListId' => array('property' => 'sourceListId', 'type' => 'enum', 'values' => $sourceLists, 'label' => 'Source List', 'description' => 'A public list to display titles from'),
-			'defaultSort' => array('property' => 'defaultSort', 'type' => 'enum', 'label' => 'Default Sort', 'values' => array('relevance' => 'Best Match', 'popularity' => 'Popularity', 'newest_to_oldest' => 'Date Added', 'author' => 'Author', 'title' => 'Title', 'user_rating' => 'Rating', 'publication_year_desc' => 'Publication Year Desc', 'publication_year_asc' => 'Publication Year Asc', 'holds' => 'Number of Holds'), 'description' => 'The default sort for the search if none is specified', 'default' => 'relevance', 'hideInLists' => true),
+			'defaultSort' => array('property' => 'defaultSort', 'type' => 'enum', 'label' => 'Default Sort', 'values' => array('relevance' => 'Best Match', 'popularity' => 'Popularity', 'newest_to_oldest' => 'Date Added', 'author' => 'Author', 'title' => 'Title', 'user_rating' => 'Rating'), 'description' => 'The default sort for the search if none is specified', 'default' => 'relevance', 'hideInLists' => true),
 			'numTimesShown' => array('property' => 'numTimesShown', 'type' => 'label', 'label' => 'Times Shown', 'description' => 'The number of times this category has been shown to users'),
 			'numTitlesClickedOn' => array('property' => 'numTitlesClickedOn', 'type' => 'label', 'label' => 'Titles Clicked', 'description' => 'The number of times users have clicked on titles within this category'),
 		);
@@ -261,7 +261,7 @@ class BrowseCategory extends BaseBrowsable
 		if ($this->textId == 'system_recommended_for_you'){
 			if (UserAccount::isLoggedIn()) {
 				$user = UserAccount::getActiveUserObj();
-				if ($user->hasRatings()) {
+				if (!$user->hasRatings()) {
 					return true;
 				}
 			}

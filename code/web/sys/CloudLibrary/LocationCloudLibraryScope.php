@@ -39,7 +39,7 @@ class LocationCloudLibraryScope extends DataObject
 		return [
 			'id' => array('property'=>'id', 'type'=>'label', 'label'=>'Id', 'description'=>'The unique id'),
 			'locationId' => array('property'=>'locationId', 'type'=>'enum','values'=>$locationsList, 'label'=>'Location', 'description'=>'The Location to associate the scope to', 'required' => true),
-			'scopeId' =>array('property'=>'scopeId', 'type'=>'enum','values'=>$cloudLibraryScopes,  'label'=>'cloudLibrary Scope', 'description'=>'The cloudLibrary scope to use', 'hideInLists' => true, 'default'=>-1, 'forcesReindex' => true),
+			'scopeId' =>array('property'=>'scopeId', 'type'=>'enum','values'=>$cloudLibraryScopes,  'label'=>'Cloud Library Scope', 'description'=>'The Cloud Library scope to use', 'hideInLists' => true, 'default'=>-1, 'forcesReindex' => true),
 		];
 	}
 }

@@ -1075,7 +1075,7 @@ class User extends DataObject
 				}
 			}
 
-			//Get holds from cloudLibrary
+			//Get holds from Cloud Library
 			if ($this->isValidForEContentSource('cloud_library')) {
 				require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
 				$driver = new CloudLibraryDriver();
@@ -1306,7 +1306,7 @@ class User extends DataObject
 	}
 
 	public function getNameAndLibraryLabel(){
-		return $this->getDisplayName() . ' - ' . $this->getHomeLibrarySystemName();
+		return $this->displayName . ' - ' . $this->getHomeLibrarySystemName();
 	}
 
 	public function getValidHomeLibraryBranches($recordSource){
@@ -1909,13 +1909,10 @@ class User extends DataObject
 
 	/** @noinspection PhpUnused */
 	function showMessagingSettings(){
-		global $library;
-		if ($library->showMessagingSettings) {
-			if ($this->hasIlsConnection()) {
-				return $this->getCatalogDriver()->showMessagingSettings();
-			} else {
-				return false;
-			}
+		if ($this->hasIlsConnection()){
+			return $this->getCatalogDriver()->showMessagingSettings();
+		}else{
+			return false;
 		}
 	}
 
@@ -2367,16 +2364,16 @@ class User extends DataObject
 		}
 
 		if (array_key_exists('Cloud Library', $enabledModules)) {
-			$sections['cloud_library'] = new AdminSection('cloudLibrary');
-			$cloudLibrarySettingsAction = new AdminAction('Settings', 'Define connection information between cloudLibrary and Aspen Discovery.', '/CloudLibrary/Settings');
+			$sections['cloud_library'] = new AdminSection('Cloud Library');
+			$cloudLibrarySettingsAction = new AdminAction('Settings', 'Define connection information between Cloud Library and Aspen Discovery.', '/CloudLibrary/Settings');
 			$cloudLibraryScopesAction = new AdminAction('Scopes', 'Define which records are loaded for each library and location.', '/CloudLibrary/Scopes');
 			if ($sections['cloud_library']->addAction($cloudLibrarySettingsAction, 'Administer Cloud Library')) {
 				$cloudLibrarySettingsAction->addSubAction($cloudLibraryScopesAction, 'Administer Cloud Library');
 			} else {
 				$sections['cloud_library']->addAction($cloudLibraryScopesAction, 'Administer Cloud Library');
 			}
-			$sections['cloud_library']->addAction(new AdminAction('Indexing Log', 'View the indexing log for cloudLibrary.', '/CloudLibrary/IndexingLog'), ['View System Reports', 'View Indexing Logs']);
-			$sections['cloud_library']->addAction(new AdminAction('Dashboard', 'View the usage dashboard for cloudLibrary integration.', '/CloudLibrary/Dashboard'), ['View Dashboards', 'View System Reports']);
+			$sections['cloud_library']->addAction(new AdminAction('Indexing Log', 'View the indexing log for Cloud Library.', '/CloudLibrary/IndexingLog'), ['View System Reports', 'View Indexing Logs']);
+			$sections['cloud_library']->addAction(new AdminAction('Dashboard', 'View the usage dashboard for Cloud Library integration.', '/CloudLibrary/Dashboard'), ['View Dashboards', 'View System Reports']);
 		}
 
 		if (array_key_exists('EBSCO EDS', $enabledModules)) {
@@ -2638,12 +2635,18 @@ class User extends DataObject
 			if ($this->firstname == '') {
 				$this->displayName = $this->lastname;
 			} else {
-				// #PK-979 Make display name configurable firstname, last initial, vs first initial last name
+			// #PK-979 Make display name configurable firstname, last initial, vs first initial last name
 				$homeLibrary = $this->getHomeLibrary();
-				if ($homeLibrary == null || ($homeLibrary->patronNameDisplayStyle == 'firstinitial_lastname')) {
+				/*if ($homeLibrary == null || ($homeLibrary->patronNameDisplayStyle == 'firstinitial_lastname')) {
 					$this->displayName = substr($this->firstname, 0, 1) . '. ' . $this->lastname;
 				} else {
 					$this->displayName = $this->firstname . ' ' . substr($this->lastname, 0, 1) . '.';
+				}
+			}*/
+			if ($homeLibrary == null || ($homeLibrary->patronNameDisplayStyle == 'firstinitial_lastname')) {
+					$this->displayName = $this->firstname . '. ' . $this->lastname;
+				} else {
+					$this->displayName = $this->firstname . ' ' . $this->lastname . '';
 				}
 			}
 			$this->update();

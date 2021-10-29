@@ -138,12 +138,6 @@ public class GroupedWorkIndexer {
 	private boolean hideUnknownLiteraryForm;
 	private boolean hideNotCodedLiteraryForm;
 
-	private String treatUnknownAudienceAs = "Unknown";
-	private boolean treatUnknownAudienceAsUnknown = false;
-	private boolean treatUnknownAudienceAsGeneral = false;
-	private boolean treatUnknownAudienceAsAdult = false;
-	private String treatUnknownLanguageAs = "English";
-
 	public GroupedWorkIndexer(String serverName, Connection dbConn, Ini configIni, boolean fullReindex, boolean clearIndex, BaseLogEntry logEntry, Logger logger) {
 		indexStartTime = new Date().getTime() / 1000;
 		this.serverName = serverName;
@@ -349,17 +343,6 @@ public class GroupedWorkIndexer {
 							logEntry.incErrors("Unknown indexing class " + ilsIndexingClassString);
 							break;
 					}
-					if (ilsRecordProcessors.containsKey(curType)){
-						this.treatUnknownAudienceAs = indexingProfileRS.getString("treatUnknownAudienceAs");
-						if (this.treatUnknownAudienceAs.equals("Unknown")){
-							treatUnknownAudienceAsUnknown = true;
-						}else if (this.treatUnknownAudienceAs.equals("Adult")){
-							treatUnknownAudienceAsAdult = true;
-						}else if (this.treatUnknownAudienceAs.equals("General")){
-							treatUnknownAudienceAsGeneral = true;
-						}
-						this.treatUnknownLanguageAs = indexingProfileRS.getString("treatUnknownLanguageAs");
-					}
 				}else if (!curType.equals("cloud_library")  && !curType.equals("hoopla") && !curType.equals("overdrive") && !curType.equals("axis360")) {
 					getSideLoadSettings.setString(1, curType);
 					ResultSet getSideLoadSettingsRS = getSideLoadSettings.executeQuery();
@@ -543,7 +526,7 @@ public class GroupedWorkIndexer {
 
 	public void finishIndexingFromExtract(BaseLogEntry logEntry){
 		try {
-			processScheduledWorks(logEntry, true);
+			processScheduledWorks(logEntry);
 
 			updateServer.commit(false, false, true);
 			logEntry.addNote("Shutting down the update server");
@@ -562,11 +545,9 @@ public class GroupedWorkIndexer {
 		}
 	}
 
-	public void processScheduledWorks(BaseLogEntry logEntry, boolean doLogging) {
+	public void processScheduledWorks(BaseLogEntry logEntry) {
 		//Check to see what records still need to be indexed based on a timed index
-		if (doLogging) {
-			logEntry.addNote("Checking for additional works that need to be indexed");
-		}
+		logEntry.addNote("Checking for additional works that need to be indexed");
 
 		try {
 			int numWorksProcessed = 0;
@@ -585,10 +566,7 @@ public class GroupedWorkIndexer {
 			}
 			scheduledWorksRS.close();
 			if (numWorksProcessed > 0){
-				if (doLogging) {
-					logEntry.addNote("Processed " + numWorksProcessed + " works that were scheduled for indexing");
-				}
-				updateServer.commit(false, false, true);
+				logEntry.addNote("Processed " + numWorksProcessed + " works that were scheduled for indexing");
 			}
 		}catch (Exception e){
 			logEntry.addNote("Error updating scheduled works " + e);
@@ -790,7 +768,7 @@ public class GroupedWorkIndexer {
 			//Write the record to Solr.
 			try {
 				if (this.isStoreRecordDetailsInDatabase()) {
-					groupedWork.saveRecordsToDatabase(id);
+					groupedWork.saveRecordsToDatabase(id, logEntry);
 				}
 				SolrInputDocument inputDocument = groupedWork.getSolrDocument(logEntry);
 				UpdateResponse response = updateServer.add(inputDocument);
@@ -1817,11 +1795,6 @@ public class GroupedWorkIndexer {
 				if (addItemForWorkRS.next()) {
 					itemId = addItemForWorkRS.getLong(1);
 				}
-				SavedItemInfo savedItemInfo = new SavedItemInfo(itemId, recordId, variationId, itemInfo.getItemIdentifier(), shelfLocationId, callNumberId, sortableCallNumberId, itemInfo.getNumCopies(),
-						itemInfo.isOrderItem(), statusId, itemInfo.getDateAdded(), locationCodeId, subLocationId, itemInfo.getLastCheckinDate(), groupedStatusId, itemInfo.isAvailable(),
-						itemInfo.isHoldable(), itemInfo.isInLibraryUseOnly(), itemInfo.getLocationOwnedScopes(), itemInfo.getLibraryOwnedScopes(), itemInfo.getRecordsIncludedScopes());
-
-				existingItems.put(itemInfo.getItemIdentifier(), savedItemInfo);
 			}else if (savedItem.hasChanged(recordId, variationId, itemInfo.getItemIdentifier(), shelfLocationId, callNumberId, sortableCallNumberId, itemInfo.getNumCopies(),
 					itemInfo.isOrderItem(), statusId, itemInfo.getDateAdded(), locationCodeId, subLocationId, itemInfo.getLastCheckinDate(), groupedStatusId, itemInfo.isAvailable(),
 					itemInfo.isHoldable(), itemInfo.isInLibraryUseOnly(), itemInfo.getLocationOwnedScopes(), itemInfo.getLibraryOwnedScopes(), itemInfo.getRecordsIncludedScopes())){
@@ -1990,26 +1963,6 @@ public class GroupedWorkIndexer {
 
 	public boolean isHideNotCodedLiteraryForm() {
 		return hideNotCodedLiteraryForm;
-	}
-
-	public String getTreatUnknownAudienceAs() {
-		return treatUnknownAudienceAs;
-	}
-
-	public String getTreatUnknownLanguageAs() {
-		return treatUnknownLanguageAs;
-	}
-
-	public boolean isTreatUnknownAudienceAsUnknown() {
-		return treatUnknownAudienceAsUnknown;
-	}
-
-	public boolean isTreatUnknownAudienceAsGeneral() {
-		return treatUnknownAudienceAsGeneral;
-	}
-
-	public boolean isTreatUnknownAudienceAsAdult() {
-		return treatUnknownAudienceAsAdult;
 	}
 
 	public enum MarcStatus {

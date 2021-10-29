@@ -47,7 +47,7 @@ class CloudLibrary_Dashboard extends Admin_Dashboard
 		$interface->assign('loansAllTime', $loansAllTime);
 		$interface->assign('holdsAllTime', $holdsAllTime);
 
-		$this->display('dashboard.tpl', 'cloudLibrary Dashboard');
+		$this->display('dashboard.tpl', 'Cloud Library Dashboard');
 	}
 
 	/**
@@ -107,7 +107,7 @@ class CloudLibrary_Dashboard extends Admin_Dashboard
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
-		$breadcrumbs[] = new Breadcrumb('/Admin/Home#cloud_library', 'cloudLibrary');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#cloud_library', 'Cloud Library');
 		$breadcrumbs[] = new Breadcrumb('/CloudLibrary/Dashboard', 'Usage Dashboard');
 		return $breadcrumbs;
 	}

@@ -673,15 +673,11 @@ public class HooplaExportMain {
 			if (!originalGroupedWorkId.equals(groupedWorkId)) {
 				logEntry.incChangedAfterGrouping();
 			}
-			//process records to regroup after every 1000 changes so we keep up with the changes.
-			if (logEntry.getNumChangedAfterGrouping() % 1000 == 0){
-				indexer.processScheduledWorks(logEntry, false);
-			}
 		}
 
-		//Finish reindexing anything that just changed
+		//Process all the records to reload which will handle reindexing anything that just changed
 		if (logEntry.getNumChangedAfterGrouping() > 0){
-			indexer.processScheduledWorks(logEntry, false);
+			indexer.processScheduledWorks(logEntry);
 		}
 
 		try {

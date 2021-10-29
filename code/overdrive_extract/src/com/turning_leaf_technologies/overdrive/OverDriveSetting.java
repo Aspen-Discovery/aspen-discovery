@@ -14,7 +14,6 @@ public class OverDriveSetting {
 	private final long lastUpdateOfChangedRecords;
 	private final long lastUpdateOfAllRecords;
 	private final boolean allowLargeDeletes;
-	private final int numExtractionThreads;
 
 	OverDriveSetting(ResultSet settingRS) throws SQLException {
 		id = settingRS.getLong("id");
@@ -27,7 +26,6 @@ public class OverDriveSetting {
 		allowLargeDeletes = settingRS.getBoolean("allowLargeDeletes");
 		lastUpdateOfChangedRecords = settingRS.getLong("lastUpdateOfChangedRecords");
 		lastUpdateOfAllRecords = settingRS.getLong("lastUpdateOfAllRecords");
-		numExtractionThreads = settingRS.getInt("numExtractionThreads");
 	}
 
 	public long getId() {
@@ -68,9 +66,5 @@ public class OverDriveSetting {
 
 	public boolean isAllowLargeDeletes() {
 		return allowLargeDeletes;
-	}
-
-	public int getNumExtractionThreads() {
-		return numExtractionThreads;
 	}
 }

@@ -833,7 +833,7 @@ class ListAPI extends Action
 					if (strpos($listTitles->fault->faultstring, 'quota violation')) {
 						$retry = ($numTries <= 3);
 						if ($retry){
-							sleep(rand(60, 300));
+							sleep(60);
 						}else{
 							if ($nytUpdateLog != null) {
 								$nytUpdateLog->addError("Did not get a good response from the API. {$listTitles->fault->faultstring}");

@@ -15,6 +15,7 @@ class Greenhouse_UpdateCenter extends Admin_Admin
 		while ($sites->fetch()){
 			$allSites[] = clone $sites;
 		}
+		asort($allSites);
 		global $interface;
 		$interface->assign('allSites', $allSites);
 		$this->display('updateCenter.tpl', 'Aspen Upgrade Center',false);

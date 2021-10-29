@@ -8,7 +8,7 @@
 	{foreach from=$relatedManifestation->getVariations() item=variation}
 		<div class="row {if $variation->isHideByDefault()}hiddenManifestation_{$summId}{else} displayed striped-{cycle values="odd,even"}{/if}" {if $variation->isHideByDefault()}style="display: none"{/if}>
 			<div class="col-tn-4 col-xs-4{if empty($viewingCombinedResults) || !$viewingCombinedResults} col-md-3{/if} manifestation-format">
-				<a class="btn btn-xs btn-primary btn-variation btn-wrap" href="{$variation->getUrl()}" onclick="return AspenDiscovery.ResultsList.toggleRelatedManifestations('{$workId|escapeCSS}_{$relatedManifestation->format|escapeCSS}_{$variation->id|escapeCSS}');"aria-label="{translate text="View Manifestations for %1% %2 of %3" 1=$relatedManifestation->format 2=$variation->label 3=$summTitle inAttribute=true isPublicFacing=true}">
+				<a class="btn btn-xs btn-primary btn-variation btn-wrap" href="{$variation->getUrl()}" onclick="return AspenDiscovery.ResultsList.toggleRelatedManifestations('{$workId|escapeCSS}_{$relatedManifestation->format|escapeCSS}');"aria-label="{translate text="View Manifestations for %1% %2 of %3" 1=$relatedManifestation->format 2=$variation->label 3=$summTitle inAttribute=true isPublicFacing=true}">
 					{translate text=$variation->label isPublicFacing=true}
 				</a>
 				<br>

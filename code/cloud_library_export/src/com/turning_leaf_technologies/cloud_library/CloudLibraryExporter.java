@@ -114,7 +114,7 @@ public class CloudLibraryExporter {
 							try {
 								Thread.sleep(1000);
 							} catch (InterruptedException e) {
-								logger.error("Thread was interrupted while waiting to retry for cloudLibrary");
+								logger.error("Thread was interrupted while waiting to retry for cloud library");
 							}
 						}
 					}
@@ -162,7 +162,7 @@ public class CloudLibraryExporter {
 							try {
 								Thread.sleep(1000);
 							} catch (InterruptedException e) {
-								logger.error("Thread was interrupted while waiting to retry for cloudLibrary");
+								logger.error("Thread was interrupted while waiting to retry for cloud library");
 							}
 						}
 					}
@@ -192,14 +192,14 @@ public class CloudLibraryExporter {
 				updateSettingsStmt.setLong(1, settings.getSettingsId());
 				updateSettingsStmt.executeUpdate();
 			}catch (Exception e){
-				logEntry.incErrors("Could not update cloudLibrary settings to disable run full update", e);
+				logEntry.incErrors("Could not update cloud library settings to disable run full update", e);
 			}
 
 			//Mark any records that no longer exist in search results as deleted, but only if we are doing a full update
 			numChanges += deleteItems();
 		}
 
-		//Update the last time we ran the update in settings.  This is always done since cloudLibrary has some expected errors.
+		//Update the last time we ran the update in settings.  This is always done since Cloud Library has some expected errors.
 		PreparedStatement updateExtractTime;
 		String columnToUpdate = "lastUpdateOfChangedRecords";
 		if (settings.isDoFullReload()) {
@@ -211,7 +211,7 @@ public class CloudLibraryExporter {
 			updateExtractTime.setLong(2, settings.getSettingsId());
 			updateExtractTime.executeUpdate();
 		}catch (Exception e){
-			logEntry.incErrors("Could not update cloudLibrary settings to set last update time", e);
+			logEntry.incErrors("Could not update cloud library settings to set last update time", e);
 		}
 
 		logger.info("Updated or added " + numChanges + " records");

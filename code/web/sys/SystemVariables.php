@@ -47,7 +47,6 @@ class SystemVariables extends DataObject
 		}
 	}
 
-	/** @var null|SystemVariables */
 	protected static $_systemVariables = null;
 
 	/**

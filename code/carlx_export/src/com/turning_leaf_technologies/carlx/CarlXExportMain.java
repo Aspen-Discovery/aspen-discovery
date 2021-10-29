@@ -792,7 +792,7 @@ public class CarlXExportMain {
 									}
 
 									// Save Marc Record to File
-									getGroupedWorkIndexer(dbConn).saveMarcRecordToDatabase(indexingProfile, currentFullBibID, updatedMarcRecordFromAPICall);
+									saveMarc(updatedMarcRecordFromAPICall, currentFullBibID);
 
 									String permanentId = groupRecord(dbConn, updatedMarcRecordFromAPICall);
 									getGroupedWorkIndexer(dbConn).processGroupedWork(permanentId);
@@ -1408,6 +1408,26 @@ public class CarlXExportMain {
 			logger.error("Error updating marc record for bib " + curBibId, e);
 		}
 		return null;
+	}
+
+	private static void saveMarc(Record marcObject, String curBibId) {
+		//Write the new marc record
+		File marcFile = indexingProfile.getFileForIlsRecord(curBibId);
+
+		MarcWriter writer;
+		try {
+			if (!marcFile.getParentFile().exists()){
+				if (!marcFile.getParentFile().mkdir()){
+					logEntry.incErrors("Could not create marc directory " + marcFile.getParentFile().getAbsolutePath());
+				}
+			}
+			writer = new MarcStreamWriter(new FileOutputStream(marcFile, false), "UTF-8", true);
+			writer.write(marcObject);
+			writer.close();
+			logger.debug("  Created Saved updated MARC record to " + marcFile.getAbsolutePath());
+		} catch (FileNotFoundException e) {
+			logger.error("Error saving marc record for bib " + curBibId, e);
+		}
 	}
 
 	private static String getFileIdForRecordNumber(String recordNumber) {

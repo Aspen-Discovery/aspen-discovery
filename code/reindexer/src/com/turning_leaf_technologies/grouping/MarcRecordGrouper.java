@@ -3,7 +3,6 @@ package com.turning_leaf_technologies.grouping;
 import com.turning_leaf_technologies.indexing.IlsExtractLogEntry;
 import com.turning_leaf_technologies.indexing.IndexingProfile;
 import com.turning_leaf_technologies.indexing.RecordIdentifier;
-import com.turning_leaf_technologies.indexing.TranslationMap;
 import com.turning_leaf_technologies.logging.BaseLogEntry;
 import com.turning_leaf_technologies.marc.MarcUtil;
 import com.turning_leaf_technologies.reindexer.GroupedWorkIndexer;
@@ -16,7 +15,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -76,20 +74,6 @@ public class MarcRecordGrouper extends BaseMarcRecordGrouper {
 				translationMaps.put(mapName, translationMap);
 			}
 			translationMapsRS.close();
-
-			PreparedStatement getFormatMapStmt = dbConnection.prepareStatement("SELECT * from format_map_values WHERE indexingProfileId = ?");
-			getFormatMapStmt.setLong(1, profile.getId());
-			ResultSet formatMapRS = getFormatMapStmt.executeQuery();
-			HashMap <String, String> formatMap = new HashMap<>();
-			translationMaps.put("format", formatMap);
-			HashMap <String, String> formatCategoryMap = new HashMap<>();
-			translationMaps.put("formatCategory", formatCategoryMap);
-			while (formatMapRS.next()){
-				String format = formatMapRS.getString("value");
-				formatMap.put(format.toLowerCase(), formatMapRS.getString("format"));
-				formatCategoryMap.put(format.toLowerCase(), formatMapRS.getString("formatCategory"));
-			}
-			formatMapRS.close();
 		}catch (Exception e){
 			logEntry.incErrors("Error loading translation maps", e);
 		}
@@ -103,20 +87,16 @@ public class MarcRecordGrouper extends BaseMarcRecordGrouper {
 		for (DataField itemField : itemFields) {
 			if (itemField.getSubfield(formatSubfield) != null) {
 				String originalFormat = itemField.getSubfield(formatSubfield).getData().toLowerCase();
-				if (translationMaps.get("formatCategory").containsKey(originalFormat)){
-					String format = translateValue("formatCategory", originalFormat);
-					String formatCategory = categoryMap.get(format.toLowerCase());
-					if (formatCategory != null){
-						return formatCategory;
-					}else{
-						logger.warn("Did not find a grouping category for format " + format.toLowerCase());
-					}
-				}else{
-					logger.warn("Did not find a format category for format " + originalFormat);
+				String format = translateValue("item_format", originalFormat);
+				if (format != null && !format.equals(originalFormat)){
+					return format;
 				}
 			}
 		}
-		return null;
+		//We didn't get a format from the items, check the bib as backup
+		String format = getFormatFromBib(record);
+		format = categoryMap.get(formatsToFormatCategory.get(format.toLowerCase()));
+		return format;
 	}
 
 	public String processMarcRecord(Record marcRecord, boolean primaryDataChanged, String originalGroupedWorkId) {
@@ -139,14 +119,6 @@ public class MarcRecordGrouper extends BaseMarcRecordGrouper {
 		if (profile.getFormatSource().equals("item")){
 			//get format from item
 			groupingFormat = getFormatFromItems(marcRecord, profile.getFormat());
-			if (groupingFormat == null || groupingFormat.length() == 0){
-				//Do a bib level determination
-				String format = getFormatFromBib(marcRecord);
-				groupingFormat = categoryMap.get(formatsToFormatCategory.get(format.toLowerCase()));
-				workForTitle.setGroupingCategory(groupingFormat);
-			}else {
-				workForTitle.setGroupingCategory(groupingFormat);
-			}
 		}else{
 			groupingFormat = super.setGroupingCategoryForWork(marcRecord, workForTitle);
 		}
@@ -261,17 +233,13 @@ public class MarcRecordGrouper extends BaseMarcRecordGrouper {
 				String groupedWorkId = processMarcRecord(marcRecord, false, null);
 				if (originalGroupedWorkId == null || !originalGroupedWorkId.equals(groupedWorkId)) {
 					logEntry.incChangedAfterGrouping();
-					//process records to regroup after every 1000 changes so we keep up with the changes.
-					if (logEntry.getNumChangedAfterGrouping() % 1000 == 0){
-						indexer.processScheduledWorks(logEntry, false);
-					}
 				}
 			}
 		}
 
-		//Finish reindexing anything that just changed
+		//Process all of the records to reload which will handle reindexing anything that just changed
 		if (logEntry.getNumChangedAfterGrouping() > 0){
-			indexer.processScheduledWorks(logEntry, false);
+			indexer.processScheduledWorks(logEntry);
 		}
 
 		indexingProfile.clearRegroupAllRecords(dbConn, logEntry);

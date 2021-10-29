@@ -1,6 +1,6 @@
 {strip}
 	<div id="main-content" class="col-sm-12">
-		<h1>{translate text="cloudLibrary Dashboard" isAdminFacing=true}</h1>
+		<h1>{translate text="Cloud Library Dashboard" isAdminFacing=true}</h1>
 		{include file="Admin/selectInterfaceForm.tpl"}
 		<div class="row">
 			<div class="dashboardCategory col-sm-6">

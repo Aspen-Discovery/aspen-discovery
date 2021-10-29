@@ -40,7 +40,6 @@ class Library extends DataObject
 	public $libraryId; 				//int(11)
 	public $subdomain; 				//varchar(15)
 	public $baseUrl;
-	public $isConsortialCatalog;
 
 	//Display information specific to the library
 	public $displayName; 			//varchar(50)
@@ -71,7 +70,6 @@ class Library extends DataObject
 	public $allowProfileUpdates;   //tinyint(4)
 	public $allowHomeLibraryUpdates;
 	public $allowUsernameUpdates;
-	public $showMessagingSettings;
 	public $allowFreezeHolds;   //tinyint(4)
 	public $maxDaysToFreeze;
 	public $showHoldButton;
@@ -463,7 +461,6 @@ class Library extends DataObject
 			'baseUrl' => array('property'=>'baseUrl', 'type'=>'text', 'label'=>'Base URL (include http:// or https:// as appropriate)', 'description'=>'The Base URL for the library instance including the protocol (http or https).', 'permissions' => ['Library Domain Settings']),
 			'displayName' => array('property'=>'displayName', 'type'=>'text', 'label'=>'Display Name', 'description'=>'A name to identify the library within the system', 'size'=>'40', 'uniqueProperty' => true, 'forcesReindex' => true, 'required' => true, 'editPermissions' => ['Library Domain Settings']),
 			'showDisplayNameInHeader' => array('property'=>'showDisplayNameInHeader', 'type'=>'checkbox', 'label'=>'Show Display Name in Header', 'description'=>'Whether or not the display name should be shown in the header next to the logo', 'hideInLists' => true, 'default'=>false, 'permissions' => ['Library Theme Configuration']),
-			'isConsortialCatalog' => array('property' => 'isConsortialCatalog', 'type'=>'checkbox', 'label' => 'Consortial Interface?', 'description' => 'If this library is a consortial view', 'hideInLists' => true, 'permissions' => ['Library Domain Settings']),
 			'createSearchInterface' => array('property' => 'createSearchInterface', 'type' => 'checkbox', 'label' => 'Create Search Interface', 'description' => 'Whether or not a search interface is created.  Things like lockers and drive through windows dow not need search interfaces.', 'forcesReindex' => true, 'editPermissions' => ['Library Domain Settings'], 'default' => true),
 			'showInSelectInterface' => array('property' => 'showInSelectInterface', 'type' => 'checkbox', 'label' => 'Show In Select Interface (requires Create Search Interface)', 'description' => 'Whether or not this Library will show in the Select Interface Page.', 'forcesReindex' => false, 'editPermissions' => ['Library Domain Settings'], 'default' => true),
 			'systemMessage' => array('property'=>'systemMessage', 'type'=>'html', 'label'=>'System Message', 'description'=>'A message to be displayed at the top of the screen', 'size'=>'80', 'maxLength' =>'512', 'allowableTags' => "<a><b><em><div><span><p><strong><sub><sup><script>", 'hideInLists' => true, 'permissions' => ['Library Theme Configuration']),
@@ -501,7 +498,6 @@ class Library extends DataObject
 				'expirationNearMessage' => array('property'=>'expirationNearMessage', 'type'=>'text', 'label'=>'Expiration Near Message (use the token %date% to insert the expiration date)', 'description'=>'A message to show in the menu when the user account will expire soon', 'hideInLists' => true, 'default' => '', 'permissions' => ['Library ILS Options']),
 				'expiredMessage' => array('property'=>'expiredMessage', 'type'=>'text', 'label'=>'Expired Message (use the token %date% to insert the expiration date)', 'description'=>'A message to show in the menu when the user account has expired', 'hideInLists' => true, 'default' => '', 'permissions' => ['Library ILS Options']),
 				'showWhileYouWait' => array('property'=>'showWhileYouWait', 'type'=>'checkbox', 'label'=>'Show While You Wait', 'description'=>'Whether or not the user should be shown suggestions of other titles they might like.', 'hideInLists' => true, 'default' => 1, 'permissions' => ['Library ILS Options']),
-				'showMessagingSettings' => array('property'=>'showMessagingSettings', 'type'=>'checkbox', 'label'=>'Show Messaging Settings (Koha, Symphony)', 'description'=>'Whether or not the user should be able to view their messaging settings.', 'hideInLists' => true, 'default' => 1, 'permissions' => ['Library ILS Options']),
 				'allowLinkedAccounts' => array('property'=>'allowLinkedAccounts', 'type'=>'checkbox', 'label'=>'Allow Linked Accounts', 'description' => 'Whether or not users can link multiple library cards under a single Aspen Discovery account.', 'hideInLists' => true, 'default' => 1, 'permissions' => ['Library ILS Options']),
 				'showLibraryHoursNoticeOnAccountPages' => array('property'=>'showLibraryHoursNoticeOnAccountPages', 'type'=>'checkbox', 'label'=>'Show Library Hours Notice on Account Pages', 'description'=>'Whether or not the Library Hours notice should be shown at the top of My Account\'s Checked Out, and Holds pages.', 'hideInLists' => true, 'default'=>true, 'permissions' => ['Library ILS Options']),
 				'enableCourseReserves' => array('property'=>'enableCourseReserves', 'type'=>'checkbox', 'label'=>'Enable Repeat Search in Course Reserves', 'description'=>'Whether or not patrons can repeat searches within course reserves.', 'hideInLists' => true, 'permissions' => ['Library ILS Connection']),
@@ -768,7 +764,7 @@ class Library extends DataObject
 			'axis360Section' => array('property'=>'axis360Section', 'type' => 'section', 'label' =>'Axis 360', 'hideInLists' => true, 'renderAsHeading' => true, 'permissions' => ['Library Records included in Catalog'], 'properties' => array(
 				'axis360ScopeId'        => array('property'=>'axis360ScopeId', 'type'=>'enum','values'=>$axis360Scopes, 'label'=>'Axis 360 Scope', 'description'=>'The Axis 360 scope to use', 'hideInLists' => true, 'default'=>-1, 'forcesReindex' => true),
 			)),
-			'cloudLibrarySection' => array('property'=>'cloudLibrarySection', 'type' => 'section', 'label' =>'cloudLibrary', 'hideInLists' => true, 'renderAsHeading' => true, 'permissions' => ['Library Records included in Catalog'], 'properties' => array(
+			'cloudLibrarySection' => array('property'=>'cloudLibrarySection', 'type' => 'section', 'label' =>'Cloud Library', 'hideInLists' => true, 'renderAsHeading' => true, 'permissions' => ['Library Records included in Catalog'], 'properties' => array(
 				'cloudLibraryScopes' => [
 					'property' => 'cloudLibraryScopes',
 					'type' => 'oneToMany',
@@ -776,7 +772,7 @@ class Library extends DataObject
 					'keyOther' => 'libraryId',
 					'subObjectType' => 'LibraryCloudLibraryScope',
 					'structure' => $cloudLibraryScopeStructure,
-					'label' => 'cloudLibrary Scopes',
+					'label' => 'Cloud Library Scopes',
 					'description' => 'The scopes that apply to this library',
 					'sortable' => false,
 					'storeDb' => true,
@@ -1598,9 +1594,6 @@ class Library extends DataObject
 			$activeTheme->applyDefaults();
 			if ($activeTheme->logoName) {
 				$apiInfo['logo'] = $configArray['Site']['url'] . '/files/original/' . $activeTheme->logoName;
-			}
-			if($activeTheme->favicon) {
-				$apiInfo['favicon'] = $configArray['Site']['url'] . '/files/original/' . $activeTheme->favicon;
 			}
 			$apiInfo['primaryBackgroundColor'] = $activeTheme->primaryBackgroundColor;
 			$apiInfo['primaryForegroundColor'] = $activeTheme->primaryForegroundColor;

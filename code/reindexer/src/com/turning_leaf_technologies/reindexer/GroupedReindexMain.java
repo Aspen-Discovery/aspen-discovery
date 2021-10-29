@@ -177,8 +177,8 @@ public class GroupedReindexMain {
 		}
 		try {
 			dbConn = DriverManager.getConnection(databaseConnectionInfo);
-			dbConn.prepareCall("SET collation_connection = utf8mb4_general_ci").execute();
-			dbConn.prepareCall("SET NAMES utf8mb4").execute();
+			dbConn.prepareCall("SET collation_connection = utf8_general_ci").execute();
+			dbConn.prepareCall("SET NAMES utf8").execute();
 		} catch (SQLException e) {
 			logger.error("Could not connect to aspen database", e);
 			System.exit(1);
@@ -232,8 +232,7 @@ public class GroupedReindexMain {
 
 				//Fetch the file if we have never updated or if we last updated more than a week ago
 				boolean updateDB = false;
-				//Use 23 hours rather than 24 hours to avoid the day accelerated reader loads doesn't drift.
-				if (existingFileLastModified < (new java.util.Date().getTime() - (7 * 23 * 60 * 60 * 1000))){
+				if (existingFileLastModified < (new java.util.Date().getTime() - (7 * 23 * 60 * 60))){
 					updateDB = true;
 					logEntry.addNote("Fetching new Accelerated Reader Data");
 					logEntry.saveResults();

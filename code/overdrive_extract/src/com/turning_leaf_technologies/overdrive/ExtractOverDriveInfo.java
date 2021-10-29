@@ -208,13 +208,7 @@ class ExtractOverDriveInfo {
 					logEntry.saveResults();
 
 					//Update, regroup, and reindex records
-					int numExtractionThreads = settings.getNumExtractionThreads();
-					if (numExtractionThreads > 10) {
-						numExtractionThreads = 10;
-					}else if (numExtractionThreads < 1){
-						numExtractionThreads = 1;
-					}
-					ThreadPoolExecutor es = (ThreadPoolExecutor)Executors.newFixedThreadPool(numExtractionThreads);
+					ThreadPoolExecutor es = (ThreadPoolExecutor)Executors.newFixedThreadPool(10);
 					for (OverDriveRecordInfo curRecord : allProductsInOverDrive.values()) {
 						es.execute(() -> {
 							numProcessed[0]++;
@@ -1390,7 +1384,7 @@ class ExtractOverDriveInfo {
 								numCopiesAvailable += accountData.getInt("copiesAvailable");
 							}else{
 								if (accountData.has("shared")){
-									if (accountData.getBoolean("shared") && accountData.getInt("copiesOwned") > 0){
+									if (accountData.getBoolean("shared")){
 										numSharedCopies += accountData.getInt("copiesOwned");
 										numSharedCopiesAvailable += accountData.getInt("copiesAvailable");
 									}
@@ -1412,8 +1406,8 @@ class ExtractOverDriveInfo {
 								totalCopiesOwned = numConsortiumCopies;
 								totalAvailableCopies = numConsortiumCopiesAvailable;
 							}else{
-								totalCopiesOwned = numCopiesOwned + numConsortiumCopies + numSharedCopies;
-								totalAvailableCopies = numCopiesAvailable + numConsortiumCopiesAvailable + numSharedCopiesAvailable;
+								totalCopiesOwned = numCopiesOwned - numConsortiumCopies + numSharedCopies;
+								totalAvailableCopies = numCopiesAvailable - numConsortiumCopiesAvailable + numSharedCopiesAvailable;
 							}
 
 							OverDriveAvailabilityInfo existingAvailability = existingAvailabilities.get(collectionInfo.getAspenLibraryId());

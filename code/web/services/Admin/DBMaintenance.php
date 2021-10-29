@@ -107,6 +107,8 @@ class Admin_DBMaintenance extends Admin_Admin
 		$fileUploadUpdates = getFileUploadUpdates();
 		$finalBaseUpdates = getFinalBaseUpdates();
 
+		/** @noinspection SqlResolve */
+		/** @noinspection SqlWithoutWhere */
 		$baseUpdates = array_merge(
 			$initialUpdates,
 			$library_location_updates,
@@ -234,9 +236,9 @@ class Admin_DBMaintenance extends Admin_Admin
 				if (!isset($update['status'])) {
 					$update['status'] = '';
 				}
-				$update['status'] .= '<br/><strong>' . $sql . '</strong><br/>Warning: ' . $e;
+				$update['status'] .= 'Warning: ' . $e . '<br/>' . $sql;
 			} else {
-				$update['status'] = '<br/><strong>' . $sql . '</strong><br/>Update failed: ' . $e;
+				$update['status'] = 'Update failed: ' . $e . '<br/>' . $sql;
 				$updateOk = false;
 			}
 		}

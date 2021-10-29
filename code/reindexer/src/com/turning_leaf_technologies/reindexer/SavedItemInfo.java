@@ -54,41 +54,6 @@ public class SavedItemInfo {
 		this.recordIncludedScopes = getExistingItemsForRecordRS.getString("recordIncludedScopes");
 	}
 
-	public SavedItemInfo(long id, long recordId, long variationId, String itemId, long shelfLocationId, long callNumberId, long sortableCallNumberId,
-	                     int numCopies, boolean isOrderItem, long statusId, Date dateAdded, long locationId, long subLocationId, Date lastCheckInDate,
-	                     long groupedStatusId, boolean available, boolean holdable, boolean inLibraryUseOnly, String locationOwnedScopes,
-	                     String libraryOwnedScopes, String recordIncludedScopes){
-		this.id = id;
-		this.recordId = recordId;
-		this.variationId = variationId;
-		this.itemId = itemId;
-		this.shelfLocationId = shelfLocationId;
-		this.callNumberId = callNumberId;
-		this.sortableCallNumberId = sortableCallNumberId;
-		this.numCopies = numCopies;
-		this.isOrderItem = isOrderItem;
-		this.statusId = statusId;
-		if (dateAdded == null){
-			this.dateAdded = null;
-		}else {
-			this.dateAdded = dateAdded.getTime() / 1000;
-		}
-		this.locationCodeId = locationId;
-		this.subLocationCodeId = subLocationId;
-		if (lastCheckInDate == null){
-			this.lastCheckInDate = null;
-		}else {
-			this.lastCheckInDate = lastCheckInDate.getTime() / 1000;
-		}
-		this.groupedStatusId = groupedStatusId;
-		this.available = available;
-		this.holdable = holdable;
-		this.inLibraryUseOnly = inLibraryUseOnly;
-		this.locationOwnedScopes = locationOwnedScopes;
-		this.libraryOwnedScopes = libraryOwnedScopes;
-		this.recordIncludedScopes = recordIncludedScopes;
-	}
-
 	boolean hasChanged(long recordId, long variationId, String itemId, long shelfLocationId, long callNumberId, long sortableCallNumberId,
 	                   int numCopies, boolean isOrderItem, long statusId, Date dateAdded, long locationId, long subLocationId, Date lastCheckInDate,
 	                   long groupedStatusId, boolean available, boolean holdable, boolean inLibraryUseOnly, String locationOwnedScopes,
@@ -120,30 +85,26 @@ public class SavedItemInfo {
 		if (this.statusId != statusId){
 			return true;
 		}
-		if (dateAdded != null || this.dateAdded != null) {
-			if (dateAdded == null) {
-				return true;
-			} else if (this.dateAdded == null) {
-				return true;
-			} else if (dateAdded.getTime() / 1000 != this.dateAdded) {
-				return true;
-			}
-		}// else both are null
-		if (this.locationCodeId != locationId){
+		if (dateAdded == null && this.dateAdded != null){
+			return true;
+		}else if (dateAdded != null && this.dateAdded == null) {
+			return true;
+		}else if (dateAdded.getTime() / 1000 != this.dateAdded){
 			return true;
 		}
-		if (this.subLocationCodeId != subLocationId){
+		if (this.locationCodeId != locationCodeId){
 			return true;
 		}
-		if (lastCheckInDate != null || this.lastCheckInDate != null) {
-			if (lastCheckInDate == null) {
-				return true;
-			} else if (this.lastCheckInDate == null) {
-				return true;
-			} else if (lastCheckInDate.getTime() / 1000 != this.lastCheckInDate) {
-				return true;
-			}
-		}// else both are null
+		if (this.subLocationCodeId != subLocationCodeId){
+			return true;
+		}
+		if (lastCheckInDate == null && this.lastCheckInDate != null){
+			return true;
+		}else if (lastCheckInDate != null && this.lastCheckInDate == null) {
+			return true;
+		}else if (lastCheckInDate.getTime() / 1000 != this.lastCheckInDate){
+			return true;
+		}
 		if (this.groupedStatusId != groupedStatusId){
 			return true;
 		}

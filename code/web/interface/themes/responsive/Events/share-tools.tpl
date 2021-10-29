@@ -7,7 +7,7 @@
 				<i class="fab fa-facebook-square fa-2x fa-fw"></i>
 			</a>
 
-			<a href="http://www.pinterest.com/pin/create/button/?url={$eventUrl}&media={$recordDriver->getBookcoverUrl('large', true)}&description=Pin%20on%20Pinterest" target="_blank" title="{translate text="Pin on Pinterest" inAttribute=true isPublicFacing=true}">
+			<a href="http://www.pinterest.com/pin/create/button/?url={$eventUrl}&media={$recordDriver->getBookcoverUrl('medium', true)}&description=Pin%20on%20Pinterest" target="_blank" title="{translate text="Pin on Pinterest" inAttribute=true isPublicFacing=true}">
 				<i class="fab fa-pinterest-square fa-2x fa-fw"></i>
 			</a>
 		{/if}

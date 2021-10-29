@@ -1,90 +1,98 @@
-import React, { Component } from "react";
-import { Linking, Platform } from "react-native";
-import * as SecureStore from 'expo-secure-store';
-import { Center, HStack, Spinner, Box, Button, Text, Heading, Icon, Divider } from "native-base";
-import { Ionicons, MaterialIcons } from "@expo/vector-icons";
+import React, { Component } from 'react';
+import { ActivityIndicator, Linking, Platform, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import Stylesheet from './Stylesheet';
 
 export default class News extends Component {
-	static navigationOptions = { title: "Contact the Library" };
+  // establishes the title for the window
+  static navigationOptions = { title: "Contact Us" };
 
-	constructor() {
-		super();
+  constructor() {
+    super();
 
-		this.state = {
-			isLoading: true,
-		};
-	}
+    this.state = {
+      isLoading: true
+    };
+  }
 
-	componentDidMount = async () => {
+  // handles the mount information, setting session variables, etc
+  componentDidMount = async() =>{
+    //const url = 'https://www.ajaxlibrary.ca/app/aspenMoreDetails.php';
+    this.state = {
+      pathLibrary: await AsyncStorage.getItem('library'),
+      pathUrl: await AsyncStorage.getItem('url'),
+      locationId: await AsyncStorage.getItem('locationId'),
+    };
+    
+    const url = this.state.pathUrl + '/app/aspenMoreDetails.php?id='+ this.state.locationId + '&library=' + this.state.pathLibrary;
 
-		const url = global.libraryUrl + "/app/aspenMoreDetails.php?id=" + global.locationId + "&library=" + global.solrScope + "&index=" + "&version=" + global.version;
+    fetch(url)
+      .then(res => res.json())
+      .then(res => {
+        this.setState({
+          dataContactUs: res.contactUs,
+          dataUniversal: res.universal,
+          isLoading: false
+        });
+      })
+      .catch(error => {
+        console.log("get data error from:" + url + " error:" + error);
+      });
+  }
 
-		fetch(url)
-			.then((res) => res.json())
-			.then((res) => {
-				this.setState({
-					dataContactUs: res.contactUs,
-					dataUniversal: res.universal,
-					isLoading: false,
-				});
-			})
-			.catch((error) => {
-				console.log("get data error from:" + url + " error:" + error);
-			});
-	};
+  // handles the calling of the library when the button is clicked
+  dialCall = (number) => {
+    let phoneNumber = '';
+    if (Platform.OS === 'android') { phoneNumber = `tel:${number}`; }
+    else {phoneNumber = `telprompt:${number}`; }
+    Linking.openURL(phoneNumber);
+  };
 
-	dialCall = (number) => {
-		let phoneNumber = "";
-		if (Platform.OS === "android") {
-			phoneNumber = `tel:${number}`;
-		} else {
-			phoneNumber = `telprompt:${number}`;
-		}
-		Linking.openURL(phoneNumber);
-	};
+  // handles the click for visiting the website
+  handleClick = (linkToFollow) => {
+    Linking.canOpenURL( linkToFollow ).then(supported => {
+      if (supported) {
+        Linking.openURL( linkToFollow );
+      }
+    });
+  }
 
-	handleClick = (linkToFollow) => {
-		Linking.canOpenURL(linkToFollow).then((supported) => {
-			if (supported) {
-				Linking.openURL(linkToFollow);
-			}
-		});
-	};
+  render() {
+    if (this.state.isLoading) {
+      return (
+        <View style={ Stylesheet.activityIndicator }>
+          <ActivityIndicator size='large' color='#272362' />
+        </View>
+      );
+    }
 
-	render() {
-		if (this.state.isLoading) {
-			return (
-				<Center flex={1}>
-					<HStack>
-						<Spinner accessibilityLabel="Loading..." />
-					</HStack>
-				</Center>
-			);
-		}
+    return (
+      <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+        <View style={ Stylesheet.outerContainer }>
 
-		return (
-            <Box safeArea={5}>
-            <Center>
-                <Box mb={8}>
-                <Text fontSize="xl" bold>{this.state.dataContactUs.blurb}</Text>
-                </Box>
-                <Box mb={8}>
-                <HStack space={2}>
-                  <Icon as={MaterialIcons} name="schedule" size="sm" mt={0.3} mr={-1} />
-                  <Text fontSize="lg" bold>
-                    Today's Hours
-                  </Text>
-                </HStack>
-                <Text>{this.state.dataUniversal.todayHours}</Text>
-                </Box>
-                <Divider mb={10} />
-                <Box>
-                <Button mb={3} onPress={() => { this.dialCall(this.state.dataUniversal.phone); }} startIcon={<Icon as={MaterialIcons} name="call" size="sm" />} >Call the Library</Button>
-                <Button mb={3} onPress={() => { this.handleClick(this.state.dataContactUs.email); }} startIcon={<Icon as={MaterialIcons} name="email" size="sm" />} >Email a Librarian</Button>
-                <Button onPress={() => { this.handleClick(this.state.dataContactUs.website); }} startIcon={<Icon as={MaterialIcons} name="home" size="sm" />} >Visit Our Website</Button>
-                </Box>
-            </Center>
-            </Box>
-		);
-	}
+        <Text style={ Stylesheet.newsItem }>{ this.state.dataContactUs.blurb }</Text>
+
+        <Text style={ Stylesheet.newsItem }>Today's Branch Hours:{'\n'} { this.state.dataUniversal.todayHours }</Text>
+
+        <View style={ Stylesheet.btnContainer }>
+          <TouchableOpacity style={ Stylesheet.btnFormat } onPress={ ()=>{ this.dialCall(this.state.dataUniversal.phone) } }>
+            <Text style={ Stylesheet.btnText }>Call the Library</Text>
+          </TouchableOpacity>
+        </View>
+
+        <View style={ Stylesheet.btnContainer }>
+          <TouchableOpacity style={ Stylesheet.btnFormat } onPress={ ()=>{ this.handleClick(this.state.dataContactUs.email) } }>
+            <Text style={ Stylesheet.btnText }>Email a Librarian</Text>
+          </TouchableOpacity>
+        </View>        
+
+        <View style={ Stylesheet.btnContainer }>
+          <TouchableOpacity style={ Stylesheet.btnFormat } onPress={ ()=>{ this.handleClick(this.state.dataUniversal.website) } }>
+            <Text style={ Stylesheet.btnText }>Visit our Website</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+      </ScrollView>
+    );
+  }
 }

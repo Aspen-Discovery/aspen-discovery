@@ -127,7 +127,7 @@
 		<field name="days_since_added" type="integer" indexed="true" stored="true" multiValued="false"/>
 		<dynamicField name="local_time_since_added_*" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
 		<dynamicField name="local_days_since_added_*" type="integer" indexed="true" stored="true" multiValued="false"/>
-		<field name="scope_has_related_records" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
+		<field name="scope_has_related_records" type="unchanged_string" indexed="true" stored="false" multiValued="true"/>
 
 		<!-- IDs of records that make up the list -->
 		<field name="alternate_ids" type="unchanged_string" indexed="true" stored="false" multiValued="true"/>

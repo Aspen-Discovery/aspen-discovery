@@ -49,12 +49,6 @@ class HooplaProcessor {
 					logger.debug("Hoopla product " + identifier + " is inactive, skipping");
 					return;
 				}
-				byte[] rawResponseBytes = productRS.getBytes("rawResponse");
-				if (rawResponseBytes == null){
-					logEntry.incErrors("rawResponse for Hoopla title " + identifier + " was null skipping");
-					return;
-				}
-
 				String kind = productRS.getString("kind");
 				float price = productRS.getFloat("price");
 
@@ -99,7 +93,7 @@ class HooplaProcessor {
 				hooplaRecord.addFormat(primaryFormat);
 				hooplaRecord.addFormatCategory(formatCategory);
 
-				String rawResponseString = new String(rawResponseBytes, StandardCharsets.UTF_8);
+				String rawResponseString = new String(productRS.getBytes("rawResponse"), StandardCharsets.UTF_8);
 				if (rawResponseString.charAt(0) != '{' || rawResponseString.charAt(rawResponseString.length() -1) != '}'){
 					//If the first char is not { check to see if it has been double encoded
 					rawResponseString = fixHooplaData(productRS.getLong("id"));
@@ -181,11 +175,6 @@ class HooplaProcessor {
 								if (kind.equals("MOVIE") || kind.equals("TELEVISION")) {
 									switch (rating) {
 										case "R":
-										case "NRA":
-										case "NRM":
-										case "NRC":
-										case "NRT":
-										case "NC-17":
 											groupedWork.addTargetAudience("Adult");
 											groupedWork.addTargetAudienceFull("Adult");
 											break;
@@ -199,15 +188,24 @@ class HooplaProcessor {
 											groupedWork.addTargetAudience("Adult");
 											groupedWork.addTargetAudienceFull("Adult");
 											break;
-										case "TVY":
 										case "TVY7":
+										case "TVG":
+										case "G":
 											groupedWork.addTargetAudience("Juvenile");
 											groupedWork.addTargetAudienceFull("Juvenile");
 											break;
-										case "TVG":
-										case "G":
-											groupedWork.addTargetAudience("General");
-											groupedWork.addTargetAudienceFull("General");
+										case "NRT":
+											groupedWork.addTargetAudience("Young Adult");
+											groupedWork.addTargetAudienceFull("Adolescent (14-17)");
+											break;
+										case "NRC":
+											groupedWork.addTargetAudience("Juvenile");
+											groupedWork.addTargetAudienceFull("Juvenile");
+											break;
+										case "NRA":
+										case "NRM":
+											groupedWork.addTargetAudience("Adult");
+											groupedWork.addTargetAudienceFull("Adult");
 											break;
 										default:
 											//todo, do we want to add additional ratings here?
@@ -216,20 +214,10 @@ class HooplaProcessor {
 									}
 								}else if (kind.equals("COMIC")){
 									switch (rating) {
-										case "E":
-											groupedWork.addTargetAudience("Juvenile");
-											groupedWork.addTargetAudienceFull("Juvenile");
-											break;
-										case "PA":
-										case "EX":
+										case "T":
 											groupedWork.addTargetAudience("Adult");
 											groupedWork.addTargetAudienceFull("Adult");
 											break;
-										case "T":
-											groupedWork.addTargetAudience("Young Adult");
-											groupedWork.addTargetAudienceFull("Adolescent (14-17)");
-											break;
-										case "T+":
 										default:
 											groupedWork.addTargetAudience("Young Adult");
 											groupedWork.addTargetAudienceFull("Adolescent (14-17)");

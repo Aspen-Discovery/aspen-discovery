@@ -229,7 +229,7 @@ class MaterialsRequest extends DataObject
 						$body = str_replace('{' . $fieldName . '}', $fieldValue, $body);
 					}
 				}
-				$error = $mail->send($this->email, translate(['text'=>"Your Materials Request Update",'isPublicFacing'=>true]), $body, $replyToAddress);
+				$error = $mail->send($this->email, "Your Materials Request Update", $body, $replyToAddress);
 				if (($error instanceof AspenError)) {
 					global $interface;
 					$interface->assign('error', $error->getMessage());

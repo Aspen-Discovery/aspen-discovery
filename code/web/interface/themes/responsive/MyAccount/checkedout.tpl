@@ -30,7 +30,7 @@
 					<li role="presentation"{if $tab=='hoopla'} class="active"{/if}><a href="#hoopla" aria-controls="hoopla" role="tab" data-toggle="tab">{translate text="Hoopla" isPublicFacing=true} <span class="badge"><span class="hoopla-checkouts-placeholder">&nbsp;</span></span></a></li>
 				{/if}
 				{if $user->isValidForEContentSource('cloud_library')}
-					<li role="presentation"{if $tab=='cloud_library'} class="active"{/if}><a href="#cloud_library" aria-controls="cloud_library" role="tab" data-toggle="tab">{translate text="cloudLibrary" isPublicFacing=true} <span class="badge"><span class="cloud_library-checkouts-placeholder">&nbsp;</span></span></a></li>
+					<li role="presentation"{if $tab=='cloud_library'} class="active"{/if}><a href="#cloud_library" aria-controls="cloud_library" role="tab" data-toggle="tab">{translate text="Cloud Library" isPublicFacing=true} <span class="badge"><span class="cloud_library-checkouts-placeholder">&nbsp;</span></span></a></li>
 				{/if}
 				{if $user->isValidForEContentSource('axis360')}
 					<li role="presentation"{if $tab=='axis360'} class="active"{/if}><a href="#axis360" aria-controls="axis360" role="tab" data-toggle="tab">{translate text="Axis 360" isPublicFacing=true} <span class="badge"><span class="axis360-checkouts-placeholder">&nbsp;</span></span></a></li>
@@ -51,7 +51,7 @@
 					<div role="tabpanel" class="tab-pane{if $tab=='hoopla'} active{/if}" id="hoopla" aria-label="Hoopla Checkouts List"><div id="hooplaCheckoutsPlaceholder">{translate text="Loading checkouts from Hoopla" isPublicFacing=true}</div></div>
 				{/if}
 				{if $user->isValidForEContentSource('cloud_library')}
-					<div role="tabpanel" class="tab-pane{if $tab=='cloud_library'} active{/if}" id="cloud_library" aria-label="cloudLibrary Checkouts List"><div id="cloud_libraryCheckoutsPlaceholder">{translate text="Loading checkouts from cloudLibrary" isPublicFacing=true}</div></div>
+					<div role="tabpanel" class="tab-pane{if $tab=='cloud_library'} active{/if}" id="cloud_library" aria-label="Cloud Library Checkouts List"><div id="cloud_libraryCheckoutsPlaceholder">{translate text="Loading checkouts from Cloud Library" isPublicFacing=true}</div></div>
 				{/if}
                 {if $user->isValidForEContentSource('axis360')}
 					<div role="tabpanel" class="tab-pane{if $tab=='axis360'} active{/if}" id="axis360" aria-label="Axis 360 Checkouts List"><div id="axis360CheckoutsPlaceholder">{translate text="Loading checkouts from Axis 360" isPublicFacing=true}</div></div>

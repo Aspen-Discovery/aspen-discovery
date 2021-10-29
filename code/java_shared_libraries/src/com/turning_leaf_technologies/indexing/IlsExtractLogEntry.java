@@ -73,7 +73,7 @@ public class IlsExtractLogEntry implements BaseLogEntry {
 	private static PreparedStatement updateLogEntry;
 	@Override
 	@SuppressWarnings("UnusedReturnValue")
-	public synchronized boolean saveResults() {
+	public boolean saveResults() {
 		try {
 			if (logEntryId == null){
 				insertLogEntry.setLong(1, startTime.getTime() / 1000);

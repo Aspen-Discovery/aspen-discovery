@@ -22,8 +22,8 @@ $shortname = $_GET['library'];
 # ****************************************************************************************************************************
 # * Prep the patron information for checking - dummy out something just in case
 # ****************************************************************************************************************************
-$barcode = '';
-$pin     = '';
+$barcode = "thisisadummybarcodeincaseitisleftblank";
+$pin     = 1234567890;
 
 if (! empty($_GET['barcode'])) { $barcode = $_GET['barcode']; }
 if (! empty($_GET['pin'])) { $pin = $_GET['pin']; }  
@@ -44,30 +44,9 @@ if (! empty($jsonData['result']['holds']['available'])) {
 # * clean up the title and convert the due date from a timestamp
 # ****************************************************************************************************************************
     if(substr($item['title'], -1) == '/') { $item['title'] = substr($item['title'], 0, -1); }
-    if($item['pickupLocationName'] && $item['expire']) {
-	    $pickUpDetails = $item['pickupLocationName'] . ',' . date('Y-m-d', $item['expire']);
+    $pickUpDetails = 'Ready for pickup at ' . $item['currentPickupName'] . ' until ' . date('Y-m-d', $item['expire']);
 
-    } else {
-	    $pickUpDetails = date('Y-m-d', $item['expire']);
-    }
-
-	$type = '';
-	if($item['source']) {
-	  $type = $item['source'].':';
-	}
-	// make sure an id always populates
-	if(!$item['id']) {
-	  $id = $type . $item['recordId'];
-	} else {
-	  $id = $type . $item['id'];
-	}
-
-	$format = '';
-	if($item['format'][0]) {
-	  $format = $item['format'][0];
-	}
-
-    $holdInfo['Items'][] = array('key' => ucwords($item['title']), 'holdSource' => $item['holdSource'], 'position' => $pickUpDetails, 'thumbnail' => $item['coverUrl'], 'author' => $item['author'], 'id' => $id, 'format' => $format);
+    $holdInfo['Items'][] = array('key' => ucwords($item['title']), 'holdSource' => $item['holdSource'], 'position' => $pickUpDetails, 'thumbnail' => $item['coverUrl'], 'author' => $item['author']); 
   }
 }
 
@@ -81,24 +60,8 @@ if (! empty($jsonData['result']['holds']['unavailable'])) {
 # * clean up the title and convert the due date from a timestamp
 # ****************************************************************************************************************************
     if(substr($item['title'], -1) == '/') { $item['title'] = substr($item['title'], 0, -1); }
-
-	  $type = '';
-	  if($item['type']) {
-		  $type = $item['type'].':';
-	  }
-	  // make sure an id always populates
-	  if(!$item['id']) {
-		  $id = $type . $item['recordId'];
-	  } else {
-		  $id = $type . $item['id'];
-	  }
-
-	  $format = '';
-	  if($item['format'][0]) {
-		  $format = $item['format'][0];
-	  }
   
-    $holdInfo['Items'][] = array('key' => ucwords($item['title']), 'holdSource' => $item['holdSource'], 'position' => $item['position'], 'thumbnail' => $item['coverUrl'], 'author' => $item['author'], 'id' => $id, 'format' => $format);
+    $holdInfo['Items'][] = array('key' => ucwords($item['title']), 'holdSource' => $item['holdSource'], 'position' => $item['position'], 'thumbnail' => $item['coverUrl'], 'author' => $item['author']); 
   }
 }
 

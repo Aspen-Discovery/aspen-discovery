@@ -85,7 +85,7 @@ function loadSearchInformation(){
 	if ($searchLibrary){
 		$solrScope = $searchLibrary->subdomain;
 		$scopeType = 'Library';
-		if ($searchLibrary->isConsortialCatalog){
+		if (!$searchLibrary->restrictOwningBranchesAndSystems){
 			$isGlobalScope = true;
 		}
 	}
@@ -143,7 +143,7 @@ function loadSearchInformation(){
 		$sideLoadSetting->orderBy('name');
 		$sideLoadSetting->find();
 		while ($sideLoadSetting->fetch()) {
-			$sideLoadSettings[strtolower($sideLoadSetting->name)] = clone($sideLoadSetting);
+			$sideLoadSettings[$sideLoadSetting->name] = clone($sideLoadSetting);
 		}
 	}catch (PDOException $e){
 		//Ignore, the tables have not been created yet.

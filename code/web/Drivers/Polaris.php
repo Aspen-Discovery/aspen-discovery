@@ -74,7 +74,7 @@ class Polaris extends AbstractIlsDriver
 				if (!empty($block->BlockDescription)) {
 					$messages[] = [
 						'message' => $block->BlockDescription,
-						'messageStyle' => 'danger'
+						'messageStyle' => 'fanger'
 					];
 				}
 			}
@@ -83,29 +83,6 @@ class Polaris extends AbstractIlsDriver
 					'message' => "Your account has been frozen.  Please contact the library for more information.",
 					'messageStyle' => 'danger',
 				];
-			}
-		}
-
-		if (empty($messages)) {
-			$staffUserInfo = $this->getStaffUserInfo();
-			$polarisRenewBlocksUrl = "/PAPIService/REST/protected/v1/1033/100/1/{$staffUserInfo['accessToken']}/circulation/patron/{$user->username}/renewblocks";
-			$renewBlocksResponse = $this->getWebServiceResponse($polarisRenewBlocksUrl, 'GET', $staffUserInfo['accessSecret'], false, UserAccount::isUserMasquerading());
-			if ($renewBlocksResponse && $this->lastResponseCode == 200) {
-				$renewBlocksResponse = json_decode($renewBlocksResponse);
-				foreach ($renewBlocksResponse->Blocks as $block) {
-					if (!empty($block->BlockDescription)) {
-						$messages[] = [
-							'message' => $block->BlockDescription,
-							'messageStyle' => 'danger'
-						];
-					}
-				}
-				if (!$renewBlocksResponse->CanPatronRenew && empty($messages)) {
-					$messages[] = [
-						'message' => "Your account has been frozen.  Please contact the library for more information.",
-						'messageStyle' => 'danger',
-					];
-				}
 			}
 		}
 
@@ -525,21 +502,12 @@ class Polaris extends AbstractIlsDriver
 			$body->PatronID = (int)$patron->username;
 			$body->BibID = (int)$shortId;
 			if (!empty($itemId)) {
+				$body->ItemBarcode = $itemId;
+
 				//Check to see if we also have a volume
 				$relatedRecord = $record->getRelatedRecord();
 				foreach ($relatedRecord->getItems() as $item){
 					if ($item->itemId == $itemId){
-						//We have the item id, but we need the item barcode for placing holds.  We will need
-						$marcRecord = $record->getMarcRecord();
-						/** @var File_MARC_Data_Field[] $marcItems */
-						$marcItems = $marcRecord->getFields($this->getIndexingProfile()->itemTag);
-						foreach ($marcItems as $marcItem) {
-							$itemSubField = $marcItem->getSubfield($this->getIndexingProfile()->itemRecordNumber);
-							if ($itemSubField->getData() == $itemId){
-								$body->ItemBarcode = $marcItem->getSubfield($this->getIndexingProfile()->barcode)->getData();
-								break;
-							}
-						}
 						if (!empty($item->volume)) {
 							$body->VolumeNumber = $item->volume;
 						}

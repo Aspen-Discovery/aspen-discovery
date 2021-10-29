@@ -16,7 +16,7 @@ class CloudLibrary_Scopes extends ObjectEditor
 		return 'CloudLibrary';
 	}
 	function getPageTitle() : string{
-		return 'cloudLibrary Scopes';
+		return 'Cloud Library Scopes';
 	}
 	function getAllObjects($page, $recordsPerPage) : array{
 		$object = new CloudLibraryScope();
@@ -143,7 +143,7 @@ class CloudLibrary_Scopes extends ObjectEditor
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
-		$breadcrumbs[] = new Breadcrumb('/Admin/Home#cloud_library', 'cloudLibrary');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#cloud_library', 'Cloud Library');
 		$breadcrumbs[] = new Breadcrumb('/CloudLibrary/Scopes', 'Scopes');
 		return $breadcrumbs;
 	}

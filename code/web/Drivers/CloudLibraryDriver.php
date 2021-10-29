@@ -72,8 +72,8 @@ class CloudLibraryDriver extends AbstractEContentDriver
 					$checkout->updateFromRecordDriver($recordDriver);
 					$checkout->accessOnlineUrl = $recordDriver->getAccessOnlineLinkUrl($patron);
 				} else {
-					$checkout->title = 'Unknown cloudLibrary Title';
-					$checkout->format = 'Unknown - cloudLibrary';
+					$checkout->title = 'Unknown Cloud Library Title';
+					$checkout->format = 'Unknown - Cloud Library';
 				}
 
 				$checkout->userId = $patron->id;
@@ -235,7 +235,7 @@ class CloudLibraryDriver extends AbstractEContentDriver
 		$password = $patron->getPasswordOrPin();
 		$patronEligibleForHolds = $patron->eligibleForHolds();
 		if ($patronEligibleForHolds['fineLimitReached']){
-			$result['message'] = translate(['text' => 'Sorry, your account has too many outstanding fines to use cloudLibrary.', 'isPublicFacing'=> true]);
+			$result['message'] = translate(['text' => 'Sorry, your account has too many outstanding fines to use Cloud Library.', 'isPublicFacing'=> true]);
 			return $result;
 		}
 
@@ -378,7 +378,7 @@ class CloudLibraryDriver extends AbstractEContentDriver
 		$patronId = str_replace(' ', '', $patron->getBarcode());
 		$password = $patron->getPasswordOrPin();
 		if (!$patron->eligibleForHolds()){
-			$result['message'] = translate(['text' => 'Sorry, your account has too many outstanding fines to use cloudLibrary.', 'isPublicFacing'=>true]);
+			$result['message'] = translate(['text' => 'Sorry, your account has too many outstanding fines to use Cloud Library.', 'isPublicFacing'=>true]);
 			return $result;
 		}
 
@@ -594,8 +594,8 @@ class CloudLibraryDriver extends AbstractEContentDriver
 		if ($recordDriver->isValid()) {
 			$hold->updateFromRecordDriver($recordDriver);
 		} else {
-			$hold->title = 'Unknown cloudLibrary Title';
-			$hold->format = 'Unknown - cloudLibrary';
+			$hold->title = 'Unknown Cloud Library Title';
+			$hold->format = 'Unknown - Cloud Library';
 		}
 		return $hold;
 	}

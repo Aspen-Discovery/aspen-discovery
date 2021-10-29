@@ -3,6 +3,7 @@ package com.turning_leaf_technologies.reindexer;
 import com.turning_leaf_technologies.indexing.IndexingProfile;
 import com.turning_leaf_technologies.indexing.Scope;
 import com.turning_leaf_technologies.indexing.TranslationMap;
+import com.turning_leaf_technologies.logging.BaseLogEntry;
 import com.turning_leaf_technologies.marc.MarcUtil;
 import com.turning_leaf_technologies.strings.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -560,14 +561,14 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		return true;
 	}
 
-	private void loadScopeInfoForOrderItem(GroupedWorkSolr groupedWork, String location, String format, TreeSet<String> audiences, String audiencesAsString, ItemInfo itemInfo, Record record) {
+	private void loadScopeInfoForOrderItem(GroupedWorkSolr groupedWork, String location, String format, TreeSet<String> audiences, ItemInfo itemInfo, Record record) {
 		//Shelf Location also include the name of the ordering branch if possible
 		boolean hasLocationBasedShelfLocation = false;
 		boolean hasSystemBasedShelfLocation = false;
 		String originalUrl = itemInfo.geteContentUrl();
 		String fullKey = profileType + location;
 		for (Scope scope: indexer.getScopes()){
-			Scope.InclusionResult result = scope.isItemPartOfScope(profileType, location, "", null, audiences, audiencesAsString, format, true, true, false, record, originalUrl);
+			Scope.InclusionResult result = scope.isItemPartOfScope(profileType, location, "", null, audiences, format, true, true, false, record, originalUrl);
 			if (result.isIncluded){
 				ScopingInfo scopingInfo = itemInfo.addScope(scope);
 				if (scopingInfo == null){
@@ -898,7 +899,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 				itemInfo.setHoldable(true);
 				itemInfo.setDetailedStatus("On Order");
 				itemInfo.setGroupedStatus("On Order");
-				loadScopeInfoForOrderItem(groupedWork, itemInfo.getLocationCode(), recordInfo.getPrimaryFormat(), groupedWork.getTargetAudiences(), groupedWork.getTargetAudiencesAsString(), itemInfo, record);
+				loadScopeInfoForOrderItem(groupedWork, itemInfo.getLocationCode(), recordInfo.getPrimaryFormat(), groupedWork.getTargetAudiences(), itemInfo, record);
 			}else if (itemInfo.isEContent()){
 				itemInfo.setAvailable(true);
 				itemInfo.setDetailedStatus("Available Online");
@@ -906,7 +907,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 				itemInfo.setHoldable(false);
 				loadScopeInfoForEContentItem(groupedWork, itemInfo, record);
 			}else{
-				loadScopeInfoForPrintIlsItem(groupedWork, recordInfo, groupedWork.getTargetAudiences(), groupedWork.getTargetAudiencesAsString(), itemInfo, record);
+				loadScopeInfoForPrintIlsItem(groupedWork, recordInfo, groupedWork.getTargetAudiences(), itemInfo, record);
 			}
 		}
 	}
@@ -920,7 +921,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			if (format == null){
 				format = itemInfo.getRecordInfo().getPrimaryFormat();
 			}
-			Scope.InclusionResult result = curScope.isItemPartOfScope(profileType, itemLocation, "", null, groupedWork.getTargetAudiences(), groupedWork.getTargetAudiencesAsString(), format, false, false, true, record, originalUrl);
+			Scope.InclusionResult result = curScope.isItemPartOfScope(profileType, itemLocation, "", null, groupedWork.getTargetAudiences(), format, false, false, true, record, originalUrl);
 			if (result.isIncluded){
 				ScopingInfo scopingInfo = itemInfo.addScope(curScope);
 				groupedWork.addScopingInfo(curScope.getScopeName(), scopingInfo);
@@ -941,7 +942,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		}
 	}
 
-	private void loadScopeInfoForPrintIlsItem(GroupedWorkSolr groupedWork, RecordInfo recordInfo, TreeSet<String> audiences, String audiencesAsString, ItemInfo itemInfo, Record record) {
+	private void loadScopeInfoForPrintIlsItem(GroupedWorkSolr groupedWork, RecordInfo recordInfo, TreeSet<String> audiences, ItemInfo itemInfo, Record record) {
 		//Determine Availability
 		boolean available = isItemAvailable(itemInfo);
 
@@ -971,7 +972,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		String fullKey = profileType + itemLocation + itemSublocation;
 		for (Scope curScope : indexer.getScopes()) {
 
-			Scope.InclusionResult result = curScope.isItemPartOfScope(profileType, itemLocation, itemSublocation, itemInfo.getITypeCode(), audiences, audiencesAsString, primaryFormat, isHoldableUnscoped, false, false, record, originalUrl);
+			Scope.InclusionResult result = curScope.isItemPartOfScope(profileType, itemLocation, itemSublocation, itemInfo.getITypeCode(), audiences, primaryFormat, isHoldableUnscoped, false, false, record, originalUrl);
 			if (result.isIncluded){
 				ScopingInfo scopingInfo = itemInfo.addScope(curScope);
 				groupedWork.addScopingInfo(curScope.getScopeName(), scopingInfo);
@@ -1568,12 +1569,9 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			}else if (determineAudienceBy == 3){
 				//Load based on a specified subfield
 				for (ItemInfo printItem : printItems){
-					List<String> audienceCodes = printItem.getSubfields(audienceSubfield);
-					for (String audienceCode : audienceCodes) {
-						String audienceCodeLower = audienceCode.toLowerCase();
-						if (hasTranslation("audience", audienceCodeLower)) {
-							targetAudiences.add(audienceCodeLower);
-						}
+					String audienceCode = printItem.getSubfield(audienceSubfield);
+					if (audienceCode != null) {
+						targetAudiences.add(audienceCode.toLowerCase());
 					}
 				}
 			}

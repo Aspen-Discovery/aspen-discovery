@@ -1480,8 +1480,6 @@ class GroupedWorkDriver extends IndexRecordDriver
 		$this->loadRelatedRecords();
 		if (isset($this->relatedRecords[$recordIdentifier])) {
 			return $this->relatedRecords[$recordIdentifier];
-		} elseif (isset($this->relatedRecords[strtolower($recordIdentifier)])) {
-			return $this->relatedRecords[strtolower($recordIdentifier)];
 		} else {
 			return null;
 		}
@@ -1797,30 +1795,6 @@ class GroupedWorkDriver extends IndexRecordDriver
 		$fields = $this->fields;
 		ksort($fields);
 		$interface->assign('details', $fields);
-
-		if (IPAddress::showDebuggingInformation()) {
-			require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
-			$groupedWork = new GroupedWork();
-			$groupedWork->permanent_id = $this->getUniqueID();
-			if (!empty($groupedWork->permanent_id) && $groupedWork->find(true)) {
-				global $aspen_db;
-				//Get the scopeId for the active scope
-				global $solrScope;
-				$scopeIdQuery = "SELECT id from scope where name = '$solrScope'";
-				$scopeId = -1;
-				$results = $aspen_db->query($scopeIdQuery, PDO::FETCH_ASSOC);
-				if ($scopeResults = $results->fetch()) {
-					$scopeId = $scopeResults['id'];
-				}
-
-				$interface->assign('groupedWorkInternalId',  $groupedWork->id);
-				$interface->assign('activeScopeId',  $scopeId);
-				$databaseIds = $this->getVariationRecordAndItemIdsFromDB($scopeId, $groupedWork->id);
-				$interface->assign('variationData', $this->getRawVariationsDataFromDB($databaseIds['uniqueVariationIds']));
-				$interface->assign('recordData', $this->getRawRecordDataFromDB($databaseIds['uniqueRecordIds']));
-				$interface->assign('itemData', $this->getRawItemDataFromDB($databaseIds['uniqueItemIds']));
-			}
-		}
 
 		$this->assignGroupedWorkStaffView();
 
@@ -2301,9 +2275,39 @@ class GroupedWorkDriver extends IndexRecordDriver
 					}
 
 					//Get the ids of all the variations, records, and items attached to the work
-					$databaseIds = $this->getVariationRecordAndItemIdsFromDB($scopeId, $groupedWork->id);
+					$getIdsQuery = "select groupedWorkId, groupedWorkVariationId, groupedWorkRecordId, grouped_work_record_items.id as groupedRecordItemId FROM 
+										grouped_work_record_items inner join grouped_work_records on groupedWorkRecordId = grouped_work_records.id where 
+										(locationOwnedScopes like '%~$scopeId~%' OR libraryOwnedScopes like '%~$scopeId~%' OR recordIncludedScopes LIKE '%~$scopeId~%') and groupedWorkId = {$groupedWork->id}";
+					$results = $aspen_db->query($getIdsQuery, PDO::FETCH_ASSOC);
+					$allIds = $results->fetchAll();
+					$results->closeCursor();
 
-					$variations = $this->getRawVariationsDataFromDB($databaseIds['uniqueVariationIds']);
+					$uniqueVariationIds = [];
+					$uniqueRecordIds = [];
+					$uniqueItemIds = [];
+					foreach ($allIds as $id) {
+						$uniqueVariationIds[$id['groupedWorkVariationId']] = $id['groupedWorkVariationId'];
+						$uniqueRecordIds[$id['groupedWorkRecordId']] = $id['groupedWorkRecordId'];
+						$uniqueItemIds[$id['groupedRecordItemId']] = $id['groupedRecordItemId'];
+					}
+					$uniqueVariationsIdsString = implode(',', $uniqueVariationIds);
+					$uniqueRecordIdsString = implode(',', $uniqueRecordIds);
+					$uniqueItemIdsString = implode(',', $uniqueItemIds);
+
+					//Load manifestation and variation information
+					if (count($uniqueVariationIds) == 0) {
+						$variations = [];
+					}else{
+						$variationQuery = "SELECT grouped_work_variation.id, indexed_language.language, indexed_eContentSource.eContentSource, indexed_format.format, indexed_format_category.formatCategory FROM grouped_work_variation 
+									  LEFT JOIN indexed_language on primaryLanguageId = indexed_language.id
+									  LEFT JOIN indexed_eContentSource on eContentSourceId = indexed_eContentSource.id
+									  LEFT JOIN indexed_format on formatId = indexed_format.id
+									  LEFT JOIN indexed_format_category on formatCategoryId = indexed_format_category.id
+									  where grouped_work_variation.id IN ($uniqueVariationsIdsString)";
+						$results = $aspen_db->query($variationQuery, PDO::FETCH_ASSOC);
+						$variations = $results->fetchAll();
+						$results->closeCursor();
+					}
 					$this->_relatedManifestations = array();
 					/** @var  $allVariations Grouping_Variation[] */
 					$allVariations = [];
@@ -2316,8 +2320,24 @@ class GroupedWorkDriver extends IndexRecordDriver
 						$allVariations[$variationObj->databaseId] = $variationObj;
 					}
 
-					$records = $this->getRawRecordDataFromDB($databaseIds['uniqueRecordIds']);
-
+					//Load record information
+					if (count($uniqueRecordIds) == 0){
+						$records = [];
+					}else {
+						$recordQuery = "SELECT grouped_work_records.id, recordIdentifier, indexed_record_source.source, indexed_record_source.subSource, indexed_edition.edition, indexed_publisher.publisher, indexed_publicationDate.publicationDate, indexed_physicalDescription.physicalDescription, indexed_format.format, indexed_format_category.formatCategory, indexed_language.language FROM grouped_work_records 
+								  LEFT JOIN indexed_record_source ON sourceId = indexed_record_source.id
+								  LEFT JOIN indexed_edition ON editionId = indexed_edition.id
+								  LEFT JOIN indexed_publisher ON publisherId = indexed_publisher.id
+								  LEFT JOIN indexed_publicationDate ON publicationDateId = indexed_publicationDate.id
+								  LEFT JOIN indexed_physicalDescription ON physicalDescriptionId = indexed_physicalDescription.id
+								  LEFT JOIN indexed_format on formatId = indexed_format.id
+								  LEFT JOIN indexed_format_category on formatCategoryId = indexed_format_category.id
+								  LEFT JOIN indexed_language on languageId = indexed_language.id
+								  where grouped_work_records.id IN ($uniqueRecordIdsString)";
+						$results = $aspen_db->query($recordQuery, PDO::FETCH_ASSOC);
+						$records = $results->fetchAll();
+						$results->closeCursor();
+					}
 					/** @var Grouping_Record[] $allRecords */
 					$allRecords = [];
 					foreach ($records as $record){
@@ -2334,8 +2354,25 @@ class GroupedWorkDriver extends IndexRecordDriver
 						$allRecords[$relatedRecord->databaseId] = $relatedRecord;
 					}
 
-					$scopedItems = $this->getRawItemDataFromDB($databaseIds['uniqueItemIds']);
-
+					//Load item/scope information
+					if (count($uniqueItemIds) == 0){
+						$scopedItems = [];
+					}else {
+						$scopeQuery = "SELECT grouped_work_record_items.id as groupedWorkItemId, available, holdable, inLibraryUseOnly, locationOwnedScopes, libraryOwnedScopes, groupedStatusTbl.status as groupedStatus, statusTbl.status as status, 
+								  grouped_work_record_items.groupedWorkRecordId, grouped_work_record_items.groupedWorkVariationId, grouped_work_record_items.itemId, indexed_callNumber.callNumber, indexed_shelfLocation.shelfLocation, numCopies, isOrderItem, dateAdded, 
+       							  indexed_locationCode.locationCode, indexed_subLocationCode.subLocationCode, lastCheckInDate
+								  FROM grouped_work_record_items
+								  LEFT JOIN indexed_status as groupedStatusTbl on groupedStatusId = groupedStatusTbl.id 
+								  LEFT JOIN indexed_status as statusTbl on statusId = statusTbl.id 
+								  LEFT JOIN indexed_callNumber ON callNumberId = indexed_callNumber.id
+								  LEFT JOIN indexed_shelfLocation ON shelfLocationId = indexed_shelfLocation.id
+								  LEFT JOIN indexed_locationCode on locationCodeId = indexed_locationCode.id
+								  LEFT JOIN indexed_subLocationCode on subLocationCodeId = indexed_subLocationCode.id
+								  where grouped_work_record_items.id IN ($uniqueItemIdsString)";
+						$results = $aspen_db->query($scopeQuery, PDO::FETCH_ASSOC);
+						$scopedItems = $results->fetchAll();
+					}
+					$results->closeCursor();
 					foreach ($scopedItems as $scopedItem) {
 						$relatedRecord = $allRecords[$scopedItem['groupedWorkRecordId']];
 						$relatedVariation = $allVariations[$scopedItem['groupedWorkVariationId']];
@@ -2427,99 +2464,6 @@ class GroupedWorkDriver extends IndexRecordDriver
 			}
 		}
 		return array($scopingInfo, $validRecordIds, $validItemIds);
-	}
-
-	private function getVariationRecordAndItemIdsFromDB($scopeId, $groupedWorkId){
-		global $aspen_db;
-		$getIdsQuery = "select groupedWorkId, groupedWorkVariationId, groupedWorkRecordId, grouped_work_record_items.id as groupedRecordItemId FROM 
-										grouped_work_record_items inner join grouped_work_records on groupedWorkRecordId = grouped_work_records.id where 
-										(locationOwnedScopes like '%~$scopeId~%' OR libraryOwnedScopes like '%~$scopeId~%' OR recordIncludedScopes LIKE '%~$scopeId~%') and groupedWorkId = {$groupedWorkId}";
-		$results = $aspen_db->query($getIdsQuery, PDO::FETCH_ASSOC);
-		$allIds = $results->fetchAll();
-		$results->closeCursor();
-		$uniqueVariationIds = [];
-		$uniqueRecordIds = [];
-		$uniqueItemIds = [];
-		foreach ($allIds as $id) {
-			$uniqueVariationIds[$id['groupedWorkVariationId']] = $id['groupedWorkVariationId'];
-			$uniqueRecordIds[$id['groupedWorkRecordId']] = $id['groupedWorkRecordId'];
-			$uniqueItemIds[$id['groupedRecordItemId']] = $id['groupedRecordItemId'];
-		}
-		return [
-			'uniqueVariationIds' => $uniqueVariationIds,
-			'uniqueRecordIds' => $uniqueRecordIds,
-			'uniqueItemIds' => $uniqueItemIds
-		];
-	}
-	private function getRawVariationsDataFromDB($uniqueVariationIds){
-		global $aspen_db;
-
-		//Load manifestation and variation information
-		if (count($uniqueVariationIds) == 0) {
-			$variations = [];
-		}else{
-			$uniqueVariationsIdsString = implode(',', $uniqueVariationIds);
-			$variationQuery = "SELECT grouped_work_variation.id, indexed_language.language, indexed_eContentSource.eContentSource, indexed_format.format, indexed_format_category.formatCategory FROM grouped_work_variation 
-									  LEFT JOIN indexed_language on primaryLanguageId = indexed_language.id
-									  LEFT JOIN indexed_eContentSource on eContentSourceId = indexed_eContentSource.id
-									  LEFT JOIN indexed_format on formatId = indexed_format.id
-									  LEFT JOIN indexed_format_category on formatCategoryId = indexed_format_category.id
-									  where grouped_work_variation.id IN ($uniqueVariationsIdsString)";
-			$variationResults = $aspen_db->query($variationQuery, PDO::FETCH_ASSOC);
-			$variations = $variationResults->fetchAll();
-			$variationResults->closeCursor();
-		}
-		return $variations;
-	}
-
-	private function getRawRecordDataFromDB($uniqueRecordIds){
-		global $aspen_db;
-
-		//Load record information
-		if (count($uniqueRecordIds) == 0){
-			$records = [];
-		}else {
-			$uniqueRecordIdsString = implode(',', $uniqueRecordIds);
-			$recordQuery = "SELECT grouped_work_records.id, recordIdentifier, indexed_record_source.source, indexed_record_source.subSource, indexed_edition.edition, indexed_publisher.publisher, indexed_publicationDate.publicationDate, indexed_physicalDescription.physicalDescription, indexed_format.format, indexed_format_category.formatCategory, indexed_language.language FROM grouped_work_records 
-								  LEFT JOIN indexed_record_source ON sourceId = indexed_record_source.id
-								  LEFT JOIN indexed_edition ON editionId = indexed_edition.id
-								  LEFT JOIN indexed_publisher ON publisherId = indexed_publisher.id
-								  LEFT JOIN indexed_publicationDate ON publicationDateId = indexed_publicationDate.id
-								  LEFT JOIN indexed_physicalDescription ON physicalDescriptionId = indexed_physicalDescription.id
-								  LEFT JOIN indexed_format on formatId = indexed_format.id
-								  LEFT JOIN indexed_format_category on formatCategoryId = indexed_format_category.id
-								  LEFT JOIN indexed_language on languageId = indexed_language.id
-								  where grouped_work_records.id IN ($uniqueRecordIdsString)";
-			$results = $aspen_db->query($recordQuery, PDO::FETCH_ASSOC);
-			$records = $results->fetchAll();
-			$results->closeCursor();
-		}
-		return $records;
-	}
-
-	private function getRawItemDataFromDB($uniqueItemIds){
-		global $aspen_db;
-		//Load item/scope information
-		if (count($uniqueItemIds) == 0){
-			$scopedItems = [];
-		}else {
-			$uniqueItemIdsString = implode(',', $uniqueItemIds);
-			$scopeQuery = "SELECT grouped_work_record_items.id as groupedWorkItemId, available, holdable, inLibraryUseOnly, locationOwnedScopes, libraryOwnedScopes, groupedStatusTbl.status as groupedStatus, statusTbl.status as status, 
-								  grouped_work_record_items.groupedWorkRecordId, grouped_work_record_items.groupedWorkVariationId, grouped_work_record_items.itemId, indexed_callNumber.callNumber, indexed_shelfLocation.shelfLocation, numCopies, isOrderItem, dateAdded, 
-       							  indexed_locationCode.locationCode, indexed_subLocationCode.subLocationCode, lastCheckInDate
-								  FROM grouped_work_record_items
-								  LEFT JOIN indexed_status as groupedStatusTbl on groupedStatusId = groupedStatusTbl.id 
-								  LEFT JOIN indexed_status as statusTbl on statusId = statusTbl.id 
-								  LEFT JOIN indexed_callNumber ON callNumberId = indexed_callNumber.id
-								  LEFT JOIN indexed_shelfLocation ON shelfLocationId = indexed_shelfLocation.id
-								  LEFT JOIN indexed_locationCode on locationCodeId = indexed_locationCode.id
-								  LEFT JOIN indexed_subLocationCode on subLocationCodeId = indexed_subLocationCode.id
-								  where grouped_work_record_items.id IN ($uniqueItemIdsString)";
-			$results = $aspen_db->query($scopeQuery, PDO::FETCH_ASSOC);
-			$scopedItems = $results->fetchAll();
-			$results->closeCursor();
-		}
-		return $scopedItems;
 	}
 
 	private static function normalizeEdition($edition)
