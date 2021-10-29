@@ -100,4 +100,9 @@ class Greenhouse_Sites extends ObjectEditor
 		}
 		return false;
 	}
+
+	protected function getDefaultRecordsPerPage()
+	{
+		return 100;
+	}
 }
