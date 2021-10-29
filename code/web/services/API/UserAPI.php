@@ -16,11 +16,7 @@ class UserAPI extends Action
 		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
 
 		//Make sure the user can access the API based on the IP address
-		if (!IPAddress::allowAPIAccessForClientIP()){
-			$this->forbidAPIAccess();
-		}
-
-		if (!in_array($method, array('isLoggedIn', 'logout', 'checkoutItem', 'placeHold', 'renewItem', 'renewAll', 'viewOnlineItem', 'changeHoldPickUpLocation', 'getPatronProfile', 'validateAccount', 'getPatronHolds', 'getPatronCheckedOutItems', 'cancelHold', 'activateHold', 'freezeHold', 'returnCheckout', 'updateOverDriveEmail', 'getValidPickupLocations' )) && !IPAddress::allowAPIAccessForClientIP()){
+		if (!IPAddress::allowAPIAccessForClientIP() && !in_array($method, array('isLoggedIn', 'logout', 'checkoutItem', 'placeHold', 'renewItem', 'renewAll', 'viewOnlineItem', 'changeHoldPickUpLocation', 'getPatronProfile', 'validateAccount', 'getPatronHolds', 'getPatronCheckedOutItems', 'cancelHold', 'activateHold', 'freezeHold', 'returnCheckout', 'updateOverDriveEmail', 'getValidPickupLocations' )) && !IPAddress::allowAPIAccessForClientIP()){
 			$this->forbidAPIAccess();
 		}
 
