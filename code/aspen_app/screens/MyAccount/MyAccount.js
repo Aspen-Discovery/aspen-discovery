@@ -12,12 +12,12 @@ import CheckedOut from "./CheckedOut";
 import Holds from "./Holds";
 
 const initialLayout = { width: Dimensions.get("window").width };
-const renderScene = ({ route, navigation, jumpTo }) => {
+const renderScene = ({ route, navigation }) => {
       switch (route.key) {
-        case 'CheckedOut':
-           return <CheckedOut navigation={navigation} jumpTo={jumpTo}/>;
-        case 'Holds':
-          return <Holds navigation={navigation} jumpTo={jumpTo}/>;
+        case 'first':
+           return <CheckedOut navigation={navigation}/>;
+        case 'second':
+          return <Holds navigation={navigation}/>;
         default:
           return null;
       }
@@ -28,8 +28,8 @@ const handleIndexChange = (index: number) => this.setState({ index });
 export default function MyItems() {
 	const [index, setIndex] = React.useState(0);
 	const [routes] = React.useState([
-		{ key: "CheckedOut", title: "Checked Out" },
-		{ key: "Holds", title: "On Hold" },
+		{ key: "first", title: "Checked Out" },
+		{ key: "second", title: "On Hold" },
 	]);
 
 	const renderTabBar = (props) => {

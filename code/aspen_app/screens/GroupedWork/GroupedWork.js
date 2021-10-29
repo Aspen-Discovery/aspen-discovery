@@ -1,4 +1,4 @@
-import React, { Component, useState, setState } from "react";
+import React, { Component, useState, setState, useRef, TouchableOpacity, useEffect } from "react";
 import { FlatList, Dimensions, Animated, Linking, Platform, View } from "react-native";
 import {
 	Center,
@@ -23,7 +23,10 @@ import {
 	Icon,
 	Badge,
 	Stack,
-	Heading
+	Heading,
+	AlertDialog,
+	Input,
+	Checkbox,
 } from "native-base";
 import * as SecureStore from 'expo-secure-store';
 import { ListItem, Rating } from "react-native-elements";
@@ -34,10 +37,14 @@ import ExpoFastImage from 'expo-fast-image';
 import { create, CancelToken } from 'apisauce';
 import _ from "lodash";
 
-import Manifestation from "./Manifestation";
-import StatusIndicator from "./Item/StatusIndicator";
+import StatusIndicator from "./StatusIndicator";
 
-import Error from "../../components/Error.js";
+import { loadingSpinner } from "../../components/loadingSpinner";
+import { loadError, renderAlert, PopAlert, AlertDialogComponent } from "../../components/loadError";
+
+import { getGroupedWork } from "../../util/recordActions";
+import { getPickupLocations } from "../../util/loadLibrary";
+import { updateOverDriveEmail } from "../../util/accountActions";
 
 export default class GroupedWork extends Component {
 	static navigationOptions = { title: "Book Details" };
@@ -48,16 +55,19 @@ export default class GroupedWork extends Component {
 		    locations: [],
 		    hasError: false,
 		    error: null,
-		    isExpanded: false,
 		    items: [],
+		    data: [],
+		    ratingData: null,
+		    variations: null,
+		    formats: null,
+		    languages: null,
 		    format: null,
 		    language: null,
 		    status: null,
+		    alert: false,
 		};
 		this.locations = [];
 	}
-
-
 
 	authorSearch = (author) => {
 		this.props.navigation.push("SearchResults", { searchTerm: author });
@@ -65,20 +75,18 @@ export default class GroupedWork extends Component {
 
 	componentDidMount = async () => {
         await this._fetchItemData();
-        this._fetchLocations();
+        await this._fetchLocations();
+
+        this.setState({ patronId: global.patronId });
 	};
 
 	_fetchItemData = async () => {
 
-	    this.setState({
-	        isLoading: true,
-	    });
+	    this.setState({ isLoading: true });
 
-        const groupedWorkId = await this.props.navigation.state.params.item;
+        console.log("Searching for... " + this.props.navigation.state.params.item);
 
-        console.log("Searching for... " + groupedWorkId);
-
-        await getGroupedWork(groupedWorkId).then(response => {
+        await getGroupedWork(this.props.navigation.state.params.item).then(response => {
             if(response == "TIMEOUT_ERROR") {
                 this.setState({
                     hasError: true,
@@ -86,10 +94,11 @@ export default class GroupedWork extends Component {
                     isLoading: false,
                 });
             } else {
-                console.log(response);
                 try {
                     this.setState({
                         data: response,
+                        ratingData: response.ratingData,
+                        variations: response.variation,
                         formats: response.filterOn.format,
                         languages: response.filterOn.language,
                         format: response.filterOn.format[0].format,
@@ -109,38 +118,36 @@ export default class GroupedWork extends Component {
         })
 	}
 
-	_fetchLocations = () => {
-	const url = 'https://aspen-test.bywatersolutions.com/app/aspenPickUpLocations.php?library=m&barcode=' + global.userKey + '&pin=' + global.secretKey + '&sessionId=' + global.sessionId;
-        fetch(url, {
-            header: {
-                Accept: "application/json",
-                "Content-Type": "application/json",
-            },
-            timeout: 5000,
-        })
-            .then((res) => res.json())
-            .then(
-                (res) => {
+	_fetchLocations = async () => {
+        await getPickupLocations().then(response => {
+            if(response == "TIMEOUT_ERROR") {
+                this.setState({
+                    hasError: true,
+                    error: "Connection to the library timed out.",
+                    isLoading: false,
+                });
+            } else {
+                try {
                     this.setState({
-                        locations: res.pickup,
+                        locations: response,
+                        hasError: false,
+                        error: null,
                         isLoading: false,
                     });
-                    this.locations = res.pickup;
-                },
-                (err) => {
-                    console.log("Unable to fetch data from: <" + url + "> in ItemDetails");
+                } catch (error) {
                     this.setState({
-                        isLoading: false,
                         hasError: true,
-                        error: "There was a problem loading data from the library."
+                        error: "Unable to load filter options.",
+                        isLoading: false,
                     })
                 }
-            );
+            }
+        })
 	}
 
 	// shows the author information on the screen and allows the link to be clickable. hides it if there is no author.
-	showAuthor = (author) => {
-		if (author) {
+	showAuthor = () => {
+		if (this.state.data.author) {
 			return (
 				<Button
 					pt={2}
@@ -150,9 +157,9 @@ export default class GroupedWork extends Component {
 						color: "primary.500",
 						fontWeight: "600",
 					}}
-					onPress={() => this.authorSearch(author)}
+					onPress={() => this.authorSearch(this.state.data.author)}
 				>
-					{author}
+					{this.state.data.author}
 				</Button>
 			);
 		}
@@ -185,41 +192,79 @@ export default class GroupedWork extends Component {
         })
 	}
 
-	selectedItemStatus = (item) => {
-	    return (
-	        <StatusIndicator />
-	    )
-	}
+	showAlert = (response) => {
+	    console.log(response);
+        if(response.message) {
+            this.setState({
+                alert: true,
+                alertTitle: response.title,
+                alertMessage: response.message,
+                alertAction: response.action,
+                alertStatus: response.success,
+            })
+
+            if(response.action) {
+                if(response.action.includes("Checkouts")) {
+                    this.setState({
+                        alertNavigateTo: "Account",
+                    });
+                } else if(response.action.includes("Holds")) {
+                    this.setState({
+                        alertNavigateTo: "Account",
+                    });
+                }
+            }
+        } else if (response.getPrompt == true) {
+            this.setState({
+                prompt: true,
+                promptItemId: response.itemId,
+                promptSource: response.source,
+                promptPatronId: response.patronId,
+                promptTitle: "OverDrive Hold Options",
+            });
+        }
+    }
+
+    hideAlert = () => {
+        this.setState({ alert: false })
+    }
+
+    hidePrompt = () => {
+        this.setState({ prompt: false })
+    }
+
+    cancelRef = () => {
+        useEffect(() => {
+            React.useRef();
+        })
+    }
+
+    initialRef = () => {
+        useEffect(() => {
+            React.useRef();
+        })
+    }
+
+    setEmail = (email) => {
+        this.setState({ overdriveEmail: email });
+    }
+
+    setRememberPrompt = (remember) => {
+        this.setState({ promptForOverdriveEmail: remember });
+    }
 
 	render() {
 		if (this.state.isLoading) {
-			return (
-				<Center flex={1}>
-					<HStack>
-						<Spinner accessibilityLabel="Loading..." />
-					</HStack>
-				</Center>
-			);
-		} else if (this.state.hasError) {
-             return(
-                null
-             )
+			return ( loadingSpinner() );
+		}
+
+        if (this.state.hasError) {
+            return ( loadError(this.state.error, this._fetchResults) );
         }
 
-		const groupedWork = this.state.data;
-		const title = this.state.data.title;
-		const subtitle = this.state.data.subtitle;
-		const author = this.state.data.author;
-		const bookSummary = this.state.data.description;
-		const variations = this.state.data.variation;
-		const itemImage = this.state.data.cover;
-		const groupedWorkId = this.state.data.id;
-
-		const ratingAverage = this.state.data.ratingData.average;
-		const ratingCount = this.state.data.ratingData.count;
-
-		const language = this.state.language;
-
+        if (!this.state.isLoading && !this.state.data.title) {
+            return ( loadError("We're unable to load data for this title.") );
+        }
 
 		return (
 			<ScrollView>
@@ -227,193 +272,89 @@ export default class GroupedWork extends Component {
 				<Box flex={1} safeArea={5}>
 					<Center mt={5}>
 					    <Box w={{ base: 200, lg: 300}} h={{ base: 250, lg: 350}} shadow={3}>
-					    <ExpoFastImage cacheKey={groupedWorkId} uri={itemImage} alt={title} resizeMode="contain" style={{ width: '100%', height: '100%', borderRadius: 4 }} />
+					    <ExpoFastImage cacheKey={this.state.data.id} uri={this.state.data.cover} alt={this.state.data.title} resizeMode="contain" style={{ width: '100%', height: '100%', borderRadius: 4 }} />
 						</Box>
 						<Text fontSize={{ base: "lg", lg: "2xl" }} bold pt={5} alignText="center">
-							{title} {subtitle}
+							{this.state.data.title} {this.state.data.subtitle}
 						</Text>
-						{this.showAuthor(author)}
-						{ratingCount != 0 && <Rating imageSize={20} readonly count={ratingCount} startingValue={ratingAverage} type='custom' tintColor="#F2F2F2" ratingBackgroundColor="#E5E5E5" />}
+						{this.showAuthor()}
+						{this.state.ratingData.count > 0 ? <Rating imageSize={20} readonly count={this.state.ratingData.count} startingValue={this.state.ratingData.average} type='custom' tintColor="#F2F2F2" ratingBackgroundColor="#E5E5E5" style={{ paddingTop: 5}} /> : null }
                     </Center>
                     <Text fontSize={{ base: "xs", lg: "md" }} bold mt={3} mb={1}>Format:</Text>
-                    <Button.Group style={{flex: 1, flexWrap: 'wrap'}}>{this.formatOptions()}</Button.Group>
+                    {this.state.formats ? <Button.Group style={{flex: 1, flexWrap: 'wrap'}}>{this.formatOptions()}</Button.Group> : null }
                     <Text fontSize={{ base: "xs", lg: "md" }} bold mt={3} mb={1}>Language:</Text>
-                    <Button.Group colorScheme="tertiary">{this.languageOptions()}</Button.Group>
+                    {this.state.languages ? <Button.Group colorScheme="tertiary">{this.languageOptions()}</Button.Group> : null }
 
-                    <StatusIndicator data={variations} format={this.state.format} language={this.state.language} />
+                    {this.state.variations ? <StatusIndicator data={this.state.variations} format={this.state.format} language={this.state.language} patronId={this.state.patronId} locations={this.state.locations} showAlert={this.showAlert} /> : null}
 
 					<Text mt={5} mb={5} fontSize={{ base: "md", lg: "lg" }} lineHeight={{ base: "22px", lg: "26px" }}>
-						{bookSummary}
+						{this.state.data.description}
 					</Text>
 				</Box>
+				    <Center>
+                      <AlertDialog
+                        leastDestructiveRef={this.cancelRef}
+                        isOpen={this.state.alert}
+                      >
+                        <AlertDialog.Content>
+                          <AlertDialog.Header fontSize="lg" fontWeight="bold">
+                            {this.state.alertTitle}
+                          </AlertDialog.Header>
+                          <AlertDialog.Body>
+                            {this.state.alertMessage}
+                          </AlertDialog.Body>
+                          <AlertDialog.Footer>
+                          {this.state.alertAction ?
+                          <Button onPress={() => this.props.navigation.navigate(this.state.alertNavigateTo)}>
+                            {this.state.alertAction}
+                          </Button>
+                           : null}
+                            <Button onPress={this.hideAlert} ml={3} variant="outline" colorScheme="primary">
+                              OK
+                            </Button>
+                          </AlertDialog.Footer>
+                        </AlertDialog.Content>
+                      </AlertDialog>
+                    </Center>
+                    <Modal
+                      isOpen={this.state.prompt}
+                      onClose={this.hidePrompt}
+                      initialFocusRef={this.initialRef}
+                      avoidKeyboard
+                      closeOnOverlayClick={false}
+                    >
+                    <Modal.Content>
+                        <Modal.CloseButton />
+                        <Modal.Header>{this.state.promptTitle}</Modal.Header>
+                        <Modal.Body mt={4}>
+                            <FormControl>
+                                <Stack>
+                                    <FormControl.Label>Enter an email to be notified when the title is ready for you.</FormControl.Label>
+                                    <Input
+                                        autoCapitalize="none"
+                                        autoCorrect={false}
+                                        id="overdriveEmail"
+                                        onChangeText={text => this.setEmail(text)}
+                                    />
+                                    <Checkbox
+                                        value="yes"
+                                        my={2}
+                                        id="promptForOverdriveEmail"
+                                        onChange={isSelected => this.setRememberPrompt(isSelected)}
+                                    >Remember these settings</Checkbox>
+                                </Stack>
+                            </FormControl>
 
+                        </Modal.Body>
+                        <Modal.Footer>
+                        <Button.Group space={2} size="md">
+                            <Button colorScheme="primary" variant="ghost" onPress={this.hidePrompt}>Close</Button>
+                            <Button onPress={ async () => { await updateOverDriveEmail(this.state.promptItemId, this.state.promptSource, this.state.promptPatronId, this.state.overdriveEmail, this.state.promptForOverdriveEmail).then(response => { this.showAlert(response) }) }}>Place Hold</Button>
+                        </Button.Group>
+                        </Modal.Footer>
+                    </Modal.Content>
+                    </Modal>
 			</ScrollView>
 		);
 	}
-}
-
-export const PlaceHold = (props) => {
-
-    const locations = props.locations;
-
-	const [showModal, setShowModal] = useState(false);
-	let [item, setItem] = React.useState("");
-	let [location, setLocation] = React.useState("");
-
-	let formatCount = 0;
-	let onlineOnly = 0;
-	let actionAvailable = false;
-	props.formats.map((item, index) => {
-	    console.log(item.status);
-        formatCount++;
-        if(item.source != 'ils' && item.source != 'overdrive') {
-            onlineOnly++;
-        }
-	});
-
-	if(formatCount != onlineOnly) {
-	    actionAvailable = true
-	}
-
-	if(formatCount == 0) {
-	    actionAvailable = false
-	}
-
-    async function openAspen(recordUrl) {
-        WebBrowser.openBrowserAsync(recordUrl);
-    };
-
-    async function onPressItem(item, location, action) {
-        console.log(action);
-        const thisItem = item.split(':');
-        const itemSource = thisItem[0];
-        const itemId = thisItem[1];
-        if(action == 'hold') {
-            placeHold(itemSource, itemId, location);
-        } else if(action == 'checkout') {
-            tryCheckout(itemSource, itemId, location);
-        }
-    };
-
-    const recordUrl = global.libraryUrl + '/GroupedWork/' + props.groupedWorkId + '#main-content';
-
-	return (
-		<>
-			{actionAvailable ? <Button onPress={() => setShowModal(true)} colorScheme="secondary" size="md">
-				Place a Hold
-			</Button> : <Button colorScheme="secondary" size="md" onPress={() => { openAspen(recordUrl); }} startIcon={<Icon as={MaterialIcons} name="launch" size="sm" />}>Open in Catalog</Button>}
-			<Modal isOpen={showModal} onClose={() => setShowModal(false)} closeOnOverlayClick={false}>
-				<Modal.Content>
-					<Modal.CloseButton />
-					<Modal.Header>Place Hold on <Text noOfLines={2} maxW={250} bold fontSize="xl">{props.title}</Text></Modal.Header>
-					<Modal.Body>
-						<FormControl pb={3}>
-							<FormControl.Label>Select a format</FormControl.Label>
-							<Select
-								size="sm"
-								variant="filled"
-								selected={item}
-								accessibilityLabel="Select a format"
-								_selectedItem={{
-									bg: "tertiary.300",
-									endIcon: <CheckIcon size={5} />,
-								}}
-								mt="1"
-								onValueChange={(itemValue) => {
-									setItem(itemValue);
-								}}
-							>
-								{props.formats.map((item, index) => {
-                                    if(item.source == 'ils' || item.source == 'overdrive' ) {
-                                        return <Select.Item label={item.name} value={item.id} key={item.id} />;
-                                    } else {
-                                        const label = item.name + ' (Not yet available)';
-                                        return <Select.Item label={label} value={item.id} key={item.id} disabled/>;
-                                    }
-								})}
-							</Select>
-						</FormControl>
-                        {item.includes('ils') &&
-                        <FormControl>
-                            <FormControl.Label>I want to pick this up at</FormControl.Label>
-                            <Select
-                                size="sm"
-                                variant="filled"
-                                accessibilityLabel="Select a pickup location"
-                                selected={location}
-                                onValueChange={(itemValue) => {
-                                    setLocation(itemValue);
-                                }}
-                                _selectedItem={{
-                                    bg: "tertiary.300",
-                                    endIcon: <CheckIcon size={5} />,
-                                }}
-                                mt="1"
-                            >
-                                {props.locations.map((item, index) => {
-                                    return <Select.Item label={item.displayName} value={item.code} key={item.code} />;
-                                })}
-                            </Select>
-                        </FormControl>
-                        }
-					</Modal.Body>
-					<Modal.Footer>
-						<Button.Group>
-							<Button onPress={() => setShowModal(false)} variant="subtle">Cancel</Button>
-							<Button
-								onPress={() => {
-                                    if(item.includes('ils')){
-                                        if (item && location ) {
-                                            let action = "hold";
-                                            onPressItem(item, location, action);
-                                        } else {
-                                            Toast.show({
-                                                title: "Unable to place hold",
-                                                description: "A format and pickup location are required.",
-                                                isClosable: true,
-                                                duration: 8000,
-                                                status: "error",
-                                                accessibilityAnnouncement: "A format and pickup location are required.",
-                                            });
-                                        }
-                                    } else {
-                                        if (item) {
-                                            let action = "hold";
-                                            let location = null;
-                                            onPressItem(item, location, action);
-                                        } else {
-                                            Toast.show({
-                                                title: "Unable to place hold",
-                                                description: "A format is required.",
-                                                isClosable: true,
-                                                duration: 8000,
-                                                status: "error",
-                                                accessibilityAnnouncement: "A format is required.",
-                                            });
-                                        }
-                                    } setShowModal(false);
-								}}
-							>
-								Place Hold
-							</Button>
-						</Button.Group>
-					</Modal.Footer>
-				</Modal.Content>
-			</Modal>
-		</>
-	);
-};
-
-async function getGroupedWork(itemId) {
-
-    const api = create({ baseURL: 'http://demo.localhost:8888/API', timeout: 10000 });
-    const response = await api.get('/ItemAPI?method=getAppGroupedWork', { id: itemId });
-
-    if(response.ok) {
-        const fetchedData = response.data;
-        return fetchedData;
-    } else {
-        const fetchedData = response.problem;
-        return fetchedData;
-    }
 }

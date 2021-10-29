@@ -6,6 +6,11 @@ import { MaterialIcons, Entypo, Ionicons } from "@expo/vector-icons";
 import moment from "moment";
 import { create, CancelToken } from 'apisauce';
 
+import { loadingSpinner } from "../../components/loadingSpinner";
+import { loadError } from "../../components/loadError";
+
+import { getProfile } from '../../util/loadPatron';
+
 export default class Summary extends Component {
 	constructor() {
 		super();
@@ -20,7 +25,9 @@ export default class Summary extends Component {
         this.setState({
             barcode: global.barcode,
             numHoldsAvailableIls: global.numHoldsAvailableIls,
+            numOverdue: global.numOverdue,
             isLoading: false,
+            thisPatron: global.patron + "'s",
         });
 
         await this._fetchProfile();
@@ -28,12 +35,11 @@ export default class Summary extends Component {
 	};
 
     _fetchProfile = async () => {
-
         this.setState({
             isLoading: true,
         });
 
-        await getPatronProfile().then(response => {
+        await getProfile().then(response => {
             if(response == "TIMEOUT_ERROR") {
                 this.setState({
                     hasError: true,
@@ -41,6 +47,7 @@ export default class Summary extends Component {
                     isLoading: false,
                 });
             } else {
+
                 this.setState({
                     data: response,
                     hasError: false,
@@ -53,64 +60,40 @@ export default class Summary extends Component {
 
 	render() {
 
-        if (this.state.isLoading) {
-            return null
-        }
-
 		return (
 			<Box safeArea={5} style={{ backgroundColor: "white" }}>
 			<Center>
-					<Text fontSize="xl">{global.patron}'s Account Summary</Text>
-						{this.state.barcode &&
+					<Text fontSize="xl">{this.state.thisPatron} Account Summary</Text>
+						{this.state.barcode ?
 						<HStack space={1} alignItems="center"><Icon as={Ionicons} name="card" size="xs" />
 						<Text bold fontSize="sm" mr={0.5}>
 							{this.state.barcode}
 						</Text>
 						</HStack>
-						}
+						: null}
 						</Center>
 					<Divider mt={2} mb={2} />
 					<HStack space={1}>
 					<VStack width="50%">
 					<Center>
 						<Text fontSize="md" mb={1}>
-							<Text bold>Checked Out:</Text> {calcCheckouts(global.numCheckedOutIls, global.numCheckedOutOverDrive)}
+							<Text bold>Checked Out: </Text>{calcCheckouts(global.numCheckedOutIls, global.numCheckedOutOverDrive)}
 						</Text>
-						<Badge colorScheme="danger" rounded="4px">1 Overdue</Badge>
+						{this.state.numOverdue ? <Badge colorScheme="danger" rounded="4px"><Text fontSize="xs" bold>{this.state.numOverdue} Overdue</Text></Badge> : null}
 						</Center>
                     </VStack>
 					<VStack width="50%">
 					<Center>
 						<Text fontSize="md" mb={1}>
-							<Text bold>Holds:</Text> {calcHolds(global.numHoldsIls, global.numHoldsOverDrive)}
+							<Text bold>Holds: </Text>{calcHolds(global.numHoldsIls, global.numHoldsOverDrive)}
 						</Text>
-						<Badge colorScheme="success" rounded="4px"><Text fontSize="xs" bold>{this.state.numHoldsAvailableIls} Ready for Pickup</Text></Badge>
+						{this.state.numHoldsAvailableIls > 0 ? <Badge colorScheme="success" rounded="4px"><Text fontSize="xs" bold>{this.state.numHoldsAvailableIls} Ready for Pickup</Text></Badge> : null}
 						</Center>
                     </VStack>
                     </HStack>
 			</Box>
 		);
 	}
-}
-
-async function getPatronProfile() {
-
-    const api = create({ baseURL: 'http://demo.localhost:8888/API', timeout: 10000 });
-    const response = await api.get('/UserAPI?method=getPatronProfile', { username: global.userKey, password: global.secretKey });
-
-    if(response.ok) {
-        const result = response.data;
-        const patronProfile = result.result;
-        const fetchedData = patronProfile.profile;
-        console.log(result);
-        return fetchedData;
-    } else {
-        const fetchedData = response.problem;
-        console.log(fetchedData);
-        return fetchedData;
-    }
-
-    console.log(response)
 }
 
 function calcCheckouts(ilsCheckouts, overdriveCheckouts) {

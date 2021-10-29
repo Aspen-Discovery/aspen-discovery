@@ -1,6 +1,6 @@
 import React, { Component, useState, useReducer } from "react";
-import { Dimensions, Animated } from "react-native";
-import { Center, Stack, HStack, Spinner, Toast, Button, Divider, Flex, Box, Text, Icon, Image, IconButton, FlatList, Badge, Avatar, Actionsheet, useDisclose, Pressable } from "native-base";
+import { Dimensions, Animated, RefreshControl } from "react-native";
+import { Center, Stack, Modal, FormControl, Radio, HStack, Spinner, Toast, Button, Divider, Flex, Box, Text, Icon, Image, IconButton, FlatList, Badge, Avatar, Actionsheet, useDisclose, Pressable } from "native-base";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as SecureStore from 'expo-secure-store';
 import { ListItem } from "react-native-elements";
@@ -10,6 +10,13 @@ import { MaterialIcons, Entypo, Ionicons, MaterialCommunityIcons } from "@expo/v
 import moment from "moment";
 import { create, CancelToken } from 'apisauce';
 
+import { loadingSpinner } from "../../components/loadingSpinner";
+import { loadError } from "../../components/loadError";
+
+import { getHolds } from '../../util/loadPatron';
+import { freezeHold, thawHold, cancelHold, changeHoldPickUpLocation } from '../../util/accountActions';
+import { getPickupLocations } from '../../util/loadLibrary';
+
 export default class Holds extends Component {
 	constructor(props) {
 		super(props);
@@ -17,29 +24,24 @@ export default class Holds extends Component {
 			isLoading: true,
 			hasError: false,
 			error: null,
+			isRefreshing: false,
+			locations: null,
 		};
 	}
 
 	componentDidMount = async () => {
         this.setState({
-            holdInfoLastLoaded: JSON.parse(await SecureStore.getItemAsync("holdInfoLastLoaded")),
             data: global.allHolds,
             unavailableHolds: global.unavailableHolds,
             availableHolds: global.availableHolds,
+            allHolds: global.allUserHolds,
             isLoading: false,
         })
 
-        // check to see if the data is stale for an automatic refresh
-        let hours = moment().diff(moment(this.state.holdInfoLastLoaded), 'hours');
-        if(hours >= 1) {
-            console.log("Hold data older than 1 hour.")
-            try {
-                this._fetchHolds();
-            } catch (e) {
-                console.log("Unable to update.")
-            }
-        } else {
-            console.log("Hold data still fresh.")
+        await this._fetchLocations();
+
+        if(this.state.allHolds == null) {
+            await this._fetchHolds();
         }
 
 	};
@@ -51,7 +53,9 @@ export default class Holds extends Component {
             isLoading: true,
         });
 
-        await getPatronHolds().then(response => {
+        const forceReload = this.state.isRefreshing;
+
+        await getHolds(forceReload).then(response => {
             if(response == "TIMEOUT_ERROR") {
                 this.setState({
                     hasError: true,
@@ -59,15 +63,38 @@ export default class Holds extends Component {
                     isLoading: false,
                 });
             } else {
-                var thisMoment = moment().unix();
                 this.setState({
                     data: response,
                     unavailableHolds: Object.values(response.unavailable),
-                    availableHolds: Object.values(response.available),
+                    allHolds: Object.values(response.available),
+                    allHolds: [...this.state.availableHolds, ...this.state.unavailableHolds],
                     hasError: false,
                     error: null,
                     isLoading: false,
-                    holdInfoLastLoaded: thisMoment,
+                });
+            }
+        })
+    }
+
+    _fetchLocations = async () => {
+
+        this.setState({
+            isLoading: true,
+        });
+
+        await getPickupLocations().then(response => {
+            if(response == "TIMEOUT_ERROR") {
+                this.setState({
+                    hasError: true,
+                    error: "Connection to the library timed out.",
+                    isLoading: false,
+                });
+            } else {
+                this.setState({
+                    locations: response,
+                    hasError: false,
+                    error: null,
+                    isLoading: false,
                 });
             }
         })
@@ -79,11 +106,13 @@ export default class Holds extends Component {
     };
 
 	// renders the items on the screen
-	renderUnavailableItem = (item) => {
+	renderHoldItem = (item) => {
         return (
-            <UnavailableHoldItem
+            <HoldItem
               data={item}
               onPressItem={this.onPressItem}
+              navigation={this.props.navigation}
+              locations={this.state.locations}
             />
         );
 	}
@@ -96,17 +125,15 @@ export default class Holds extends Component {
         );
 	}
 
+	_onRefresh() {
+	    this.setState({ isRefreshing: true }, () => {
+            this._fetchHolds().then(() => {
+                this.setState({ isRefreshing: false });
+            });
+	    });
+	}
 
 	_listEmptyComponent = () => {
-        if(this.state.error) {
-            return (
-                <Center mt={5} mb={5}>
-                    <Text bold fontSize="lg">
-                        Error loading holds. Please try again later.
-                    </Text>
-                </Center>
-            )
-        }
 		return (
 			<Center mt={5} mb={5}>
 				<Text bold fontSize="lg">
@@ -117,293 +144,49 @@ export default class Holds extends Component {
 	};
 
 	render() {
-
-
 		if (this.state.isLoading) {
-			return (
-				<Center flex={1}>
-					<HStack>
-						<Spinner accessibilityLabel="Loading..." />
-					</HStack>
-				</Center>
-			);
+			return ( loadingSpinner() );
 		}
+
+        if (this.state.hasError) {
+            return ( loadError(this.state.error, this._fetchHolds) );
+        }
 
 		return (
 			<Box h="100%">
-            <Center bg="white" pt={3} pb={3}>
-                <Button
-                    size="sm"
-                    onPress={() => this._fetchHolds()}
-                    startIcon={<Icon as={MaterialIcons} name="refresh" size={5} />}
-                >
-                    Reload Holds
-                </Button>
-            </Center>
 				<FlatList
-					data={this.state.availableHolds}
-					renderItem={({ item }) => this.renderAvailableItem(item)}
-					keyExtractor={(item) => item.id}
-				/>
-				<FlatList
-					data={this.state.unavailableHolds}
+					data={this.state.allHolds}
 					ListEmptyComponent={this._listEmptyComponent()}
-					renderItem={({ item }) => this.renderUnavailableItem(item)}
+					renderItem={({ item }) => this.renderHoldItem(item)}
 					keyExtractor={(item) => item.id}
+                    refreshControl={
+                        <RefreshControl
+                            refreshing={this.state.isRefreshing}
+                            onRefresh={this._onRefresh.bind(this)}
+                        />
+                    }
 				/>
             </Box>
 		);
 	}
 }
 
-async function getPatronHolds() {
-
-    const api = create({ baseURL: 'https://aspen-test.bywatersolutions.com/API', timeout: 10000 });
-    const response = await api.get('/UserAPI?method=getPatronHolds', { source: 'all', username: global.userKey, password: global.secretKey });
-
-
-    if(response.ok) {
-        const result = response.data;
-        const fetchedData = result.result;
-        const allHolds = fetchedData.holds;
-
-        global.allHolds = allHolds;
-        global.unavailableHolds = Object.values(allHolds.unavailable);
-        global.availableHolds = Object.values(allHolds.available);
-
-        console.log("Patron holds updated.")
-        return allHolds;
-
-    } else {
-        const fetchedData = response.problem;
-        console.log(fetchedData);
-        return fetchedData;
-    }
-}
-
-async function freezeHold(cancelId, recordId, source) {
-    const today = moment();
-    const reactivationDate = "";
-    const api = create({ baseURL: 'https://aspen-test.bywatersolutions.com/API', timeout: 10000 });
-    const response = await api.get('/UserAPI?method=freezeHold', { username: global.userKey, password: global.secretKey, sessionId: global.sessionId, holdId: cancelId, recordId: recordId, itemSource: source });
-
-    if(response.ok) {
-        const result = response.data;
-        const fetchedData = result.result;
-
-        if(fetchedData.success == true) {
-            Toast.show({
-                title: "Hold frozen",
-                description: fetchedData.message,
-                status: "success",
-                isClosable: true,
-                duration: 8000,
-                accessibilityAnnouncement: fetchedData.message,
-                zIndex: 9999,
-                placement: "top"
-            });
-
-            // try to reload holds
-            await getPatronHolds();
-
-        } else {
-            Toast.show({
-                title: "Unable to freeze hold",
-                description: fetchedData.message,
-                status: "error",
-                isClosable: true,
-                duration: 8000,
-                accessibilityAnnouncement: fetchedData.message,
-                zIndex: 9999,
-                placement: "top"
-            });
-        }
-
-    } else {
-        const fetchedData = response.problem;
-        console.log(fetchedData);
-        return fetchedData;
-    }
-}
-
-async function thawHold(cancelId, recordId, source) {
-    const api = create({ baseURL: 'https://aspen-test.bywatersolutions.com/API', timeout: 10000 });
-    const response = await api.get('/UserAPI?method=activateHold', { username: global.userKey, password: global.secretKey, sessionId: global.sessionId, holdId: cancelId, recordId: recordId, itemSource: source });
-
-    if(response.ok) {
-        const result = response.data;
-        const fetchedData = result.result;
-
-        if(fetchedData.success == true) {
-            Toast.show({
-                title: "Hold thawed",
-                description: fetchedData.message,
-                status: "success",
-                isClosable: true,
-                duration: 8000,
-                accessibilityAnnouncement: fetchedData.message,
-                zIndex: 9999,
-                placement: "top",
-            });
-
-        } else {
-            Toast.show({
-                title: "Unable to thaw hold",
-                description: fetchedData.message,
-                status: "error",
-                isClosable: true,
-                duration: 8000,
-                accessibilityAnnouncement: fetchedData.message,
-                zIndex: 9999,
-                placement: "top"
-            });
-        }
-
-    } else {
-        const fetchedData = response.problem;
-        console.log(fetchedData);
-        return fetchedData;
-    }
-}
-
-async function cancelHold(cancelId, recordId, source) {
-    const api = create({ baseURL: 'https://aspen-test.bywatersolutions.com/API', timeout: 10000 });
-    const response = await api.get('/UserAPI?method=cancelHold', { username: global.userKey, password: global.secretKey, sessionId: global.sessionId, cancelId: cancelId, recordId: recordId, itemSource: source });
-
-    if(response.ok) {
-        const result = response.data;
-        const fetchedData = result.result;
-
-        if(fetchedData.success == true) {
-            Toast.show({
-                title: "Hold canceled",
-                description: fetchedData.message,
-                status: "success",
-                isClosable: true,
-                duration: 8000,
-                accessibilityAnnouncement: fetchedData.message,
-                zIndex: 9999,
-                placement: "top",
-            });
-
-        } else {
-            Toast.show({
-                title: "Unable to cancel hold",
-                description: fetchedData.message,
-                status: "error",
-                isClosable: true,
-                duration: 8000,
-                accessibilityAnnouncement: fetchedData.message,
-                zIndex: 9999,
-                placement: "top"
-            });
-        }
-
-    } else {
-        const fetchedData = response.problem;
-        console.log(fetchedData);
-        return fetchedData;
-    }
-}
-
-async function changeHoldPickUpLocation(holdId, newLocation) {
-    const api = create({ baseURL: 'https://aspen-test.bywatersolutions.com/API', timeout: 10000 });
-    const response = await api.get('/UserAPI?method=changeHoldPickUpLocation', { username: global.userKey, password: global.secretKey, sessionId: global.sessionId, holdId: cancelId, location: newLocation });
-
-    if(response.ok) {
-        const result = response.data;
-        const fetchedData = result.result;
-
-        if(fetchedData.success == true) {
-            Toast.show({
-                title: "Pickup location updated",
-                description: fetchedData.message,
-                status: "success",
-                isClosable: true,
-                duration: 8000,
-                accessibilityAnnouncement: fetchedData.message,
-                zIndex: 9999,
-                placement: "top",
-            });
-
-        } else {
-            Toast.show({
-                title: "Unable to update pickup location",
-                description: fetchedData.message,
-                status: "error",
-                isClosable: true,
-                duration: 8000,
-                accessibilityAnnouncement: fetchedData.message,
-                zIndex: 9999,
-                placement: "top"
-            });
-        }
-
-    } else {
-        const fetchedData = response.problem;
-        console.log(fetchedData);
-        return fetchedData;
-    }
-}
-
-function AvailableHoldItem(props) {
-    const { data } = props;
-
-    if(data.expirationDate) {
-        var expirationDate = moment(data.expirationDate).format("MMM D, YYYY");
-    } else {
-        var expirationDate = "";
-    }
-
-    var title = data.title;
-    var title = title.substring(0, title.lastIndexOf('/'));
-
-    var author = data.author;
-    var countComma = author.split(',').length-1;
-    if (countComma > 1) {
-        var author = author.substring(0, author.lastIndexOf(','));
-    }
-
-    return (
-        <>
-        <ListItem bottomDivider >
-            <Avatar source={{ uri: data.coverUrl }} size="56px" alt={data.title}/>
-            <ListItem.Content>
-                <Text fontSize="sm" bold mb={1}>
-                    {title}
-                </Text>
-                {data.status == "Ready to Pickup" && <Badge colorScheme="green" rounded="4px" mb={.5}>{data.status}</Badge>}
-                <Text bold fontSize="xs">
-                    Author: <Text fontSize="xs">{author}</Text>
-                </Text>
-                <Text bold fontSize="xs">
-                    Format: <Text fontSize="xs">{data.format}</Text>
-                </Text>
-                <Text bold fontSize="xs">
-                    Pickup Location: <Text fontSize="xs">{data.currentPickupName}</Text>
-                </Text>
-                <Text bold fontSize="xs">
-                    Pickup By: <Text fontSize="xs">{expirationDate}</Text>
-                </Text>
-            </ListItem.Content>
-
-        </ListItem>
-        </>
-        )
-}
-
-function UnavailableHoldItem(props) {
-    const { onPressItem, data } = props;
+function HoldItem(props) {
+    const { onPressItem, data, navigation, locations } = props;
     const { isOpen, onOpen, onClose } = useDisclose();
 
 
     // format some dates
     if(data.availableDate != null) {
-        const availableDate = moment(data.availableDate).format("MMM D, YYYY");
+        var availableDateUnix = moment.unix(data.availableDate);
+        var availableDate = moment(availableDateUnix).format("MMM D, YYYY");
     }
 
-    if(data.reactivationDate != null) {
-        const reactivationDate = moment(data.reactivationDate).format("MMM D, YYYY");
+    if(data.expirationDate) {
+        var expirationDateUnix = moment.unix(data.expirationDate);
+        var expirationDate = moment(expirationDateUnix).format("MMM D, YYYY");
+    } else {
+        var expirationDate = "";
     }
 
     // check freeze status to see which option to display
@@ -416,6 +199,11 @@ function UnavailableHoldItem(props) {
             var label = "Freeze Hold for 30 Days";
             var method = "freezeHold";
             var icon = "pause";
+            if(data.available) {
+                var label = "Delay Checkout for 30 Days";
+                var method = "freezeHold";
+                var icon = "pause";
+            }
         }
     }
 
@@ -425,11 +213,43 @@ function UnavailableHoldItem(props) {
 
     var title = data.title;
     var title = title.substring(0, title.lastIndexOf('/'));
+    if(title == '') {
+        var title = data.title;
+    }
 
-    var author = data.author;
-    var countComma = author.split(',').length-1;
-    if (countComma > 1) {
-        var author = author.substring(0, author.lastIndexOf(','));
+    if(data.author){
+        var author = data.author;
+        var countComma = author.split(',').length-1;
+        if (countComma > 1) {
+            var author = author.substring(0, author.lastIndexOf(','));
+        }
+    }
+
+    var source = data.source;
+    var holdSource = data.holdSource;
+    if(source == 'ils') {
+        var readyMessage = data.status;
+    } else {
+        var readyMessage = "Ready to Checkout";
+    }
+
+    var isAvailable = data.available;
+    var updateLocation = data.locationUpdateable;
+
+    if(data.available && data.locationUpdateable) {
+        var updateLocation = false;
+    }
+
+    var checkoutOnline = false;
+    if(data.available && source != 'ils') {
+        var checkoutOnline = true;
+    }
+
+    var cancelable = false;
+    if(!data.available && source != 'ils') {
+        var cancelable = true;
+    } else if (!data.available && source == 'ils') {
+        var cancelable = true;
     }
 
     return (
@@ -439,20 +259,26 @@ function UnavailableHoldItem(props) {
         <Avatar source={{ uri: data.coverUrl }} size="56px" alt={data.title}/>
         <ListItem.Content>
             <Text fontSize="sm" bold mb={1}>
-                {title} {data.status == "Frozen" && <Badge colorScheme="yellow" rounded="4px" mt={-.5}>{data.status}</Badge>}
+                {data.frozen ? <Badge colorScheme="yellow" rounded="4px" mt={-.5}>{data.status}</Badge> : null}
+                {data.available ?
+                    <Badge colorScheme="green" rounded="4px" mt={-.5}>{readyMessage}</Badge>
+                 : null} {title}
             </Text>
+
+            {author ?
             <Text bold fontSize="xs">
                 Author: <Text fontSize="xs">{author}</Text>
             </Text>
+             : null}
             <Text bold fontSize="xs">
                 Format: <Text fontSize="xs">{data.format}</Text>
             </Text>
-            <Text bold fontSize="xs">
+            {data.source == "ils" ? <Text bold fontSize="xs">
                 Pickup Location: <Text fontSize="xs">{data.currentPickupName}</Text>
             </Text>
-            <Text bold fontSize="xs">
-                Position: <Text fontSize="xs">{data.position}</Text>
-            </Text>
+            : null }
+                {data.status != "Ready to Pickup" ? <Text bold fontSize="xs">Position: <Text fontSize="xs">{data.position}</Text></Text> : null}
+                {data.status == "Ready to Pickup" ? <Text bold fontSize="xs">Pickup By: <Text fontSize="xs">{expirationDate}</Text></Text> : null}
         </ListItem.Content>
 
     </ListItem>
@@ -470,7 +296,7 @@ function UnavailableHoldItem(props) {
               {title}
             </Text>
           </Box>
-        {data.cancelable &&
+        {cancelable ?
         <Actionsheet.Item startIcon={ <Icon as={MaterialIcons} name="cancel"  color="trueGray.400" mr="1" size="6" /> }
             onPress={ () => {
                 cancelHold(data.cancelId, data.recordId, data.source);
@@ -478,8 +304,8 @@ function UnavailableHoldItem(props) {
             }} >
             Cancel Hold
         </Actionsheet.Item>
-        }
-        {data.allowFreezeHolds &&
+         : null}
+        {data.allowFreezeHolds ?
         <Actionsheet.Item startIcon={ <Icon as={MaterialCommunityIcons} name={icon}  color="trueGray.400" mr="1" size="6" /> }
             onPress={ () => {
                 if (data.frozen == true) {
@@ -492,29 +318,80 @@ function UnavailableHoldItem(props) {
             >
             {label}
         </Actionsheet.Item>
-        }
+         : null}
 
-        {data.locationUpdateable &&
+        {updateLocation ?
+        <SelectPickupLocation locations={locations} onClose={onClose} currentPickupId={data.pickupLocationId} holdId={data.cancelId} />
+         : null}
+
+        {checkoutOnline ?
         <Actionsheet.Item startIcon={ <Icon as={Ionicons} name="location"  color="trueGray.400" mr="1" size="6" /> }
             onPress={ () => {
-                console.log("Change pickup location");
+                console.log("Checkout on " + data.holdSource);
                 onClose(onClose);
             }} >
-            Change Pickup Location
+            Checkout on OverDrive
         </Actionsheet.Item>
-        }
-
-        {data.groupedWorkId != null &&
-        <Actionsheet.Item startIcon={ <Icon as={MaterialIcons} name="search"  color="trueGray.400" mr="1" size="6" /> }
-            onPress={ () => {
-                console.log("Open item");
-                onClose(onClose);
-            }} >
-        Item Details
-        </Actionsheet.Item>
-        }
+         : null}
         </Actionsheet.Content>
       </Actionsheet>
     </>
     )
+}
+
+const SelectPickupLocation = (props) => {
+
+    const { locations, label, onClose, currentPickupId, holdId } = props;
+
+	const [showModal, setShowModal] = useState(false);
+	let [value, setValue] = React.useState(currentPickupId);
+
+	return (
+	<>
+        <Actionsheet.Item startIcon={ <Icon as={Ionicons} name="location"  color="trueGray.400" mr="1" size="6" /> }
+            onPress={ () => {
+                setShowModal(true);
+            }} >
+            Change Pickup Location
+        </Actionsheet.Item>
+        <Modal isOpen={showModal} onClose={() => setShowModal(false)} closeOnOverlayClick={false}>
+            <Modal.Content>
+                <Modal.CloseButton />
+                <Modal.Header>Change Hold Location</Modal.Header>
+                <Modal.Body>
+                    <FormControl>
+                        <FormControl.Label>Select a new location to pickup your hold</FormControl.Label>
+                        <Radio.Group
+                            name="pickupLocations"
+                            value={value}
+                            accessibilityLabel="Select a pickup location"
+                            onChange={(nextValue) => {
+                                setValue(nextValue);
+                            }}
+                            mt="1"
+                        >
+                            {locations.map((item, index) => {
+                                return <Radio value={item.locationId} my={1}>{item.name}</Radio>;
+                            })}
+                        </Radio.Group>
+                    </FormControl>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button.Group space={2} size="md">
+                        <Button colorScheme="muted" variant="outline" onPress={() => setShowModal(false)}>Close</Button>
+                        <Button
+                            onPress={() => {
+                                changeHoldPickUpLocation(holdId, value);
+                                setShowModal(false);
+                                onClose(onClose);
+                            }}
+                        >
+                            Change Location
+                        </Button>
+                    </Button.Group>
+                </Modal.Footer>
+            </Modal.Content>
+        </Modal>
+    </>
+	)
 }

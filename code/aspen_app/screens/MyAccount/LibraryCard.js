@@ -3,7 +3,9 @@ import { View } from "react-native";
 import { Center, Spinner, HStack, Text, Image, Flex } from "native-base";
 import * as SecureStore from 'expo-secure-store';
 import Barcode from "react-native-barcode-expo";
-import base64 from 'react-native-base64';
+
+import { loadingSpinner } from "../../components/loadingSpinner";
+import { loadError } from "../../components/loadError";
 
 export default class LibraryCard extends Component {
 	// done to allow the page title to change down in the code
@@ -15,6 +17,9 @@ export default class LibraryCard extends Component {
 		super(props);
 		this.state = {
 			isLoading: true,
+			hasError: false,
+			error: null,
+			libraryCard: null,
 		};
 
 	}
@@ -23,7 +28,7 @@ export default class LibraryCard extends Component {
 	componentDidMount = async () => {
 		this.setState({
 			isLoading: false,
-			libraryCard: await SecureStore.getItemAsync("barcode"),
+			libraryCard: global.barcode,
 		});
 
 		// change the page name to personalize it
@@ -33,15 +38,8 @@ export default class LibraryCard extends Component {
 	};
 
 	render() {
-
 		if (this.state.isLoading) {
-			return (
-				<Center flex={1}>
-					<HStack>
-						<Spinner accessibilityLabel="Loading..." />
-					</HStack>
-				</Center>
-			);
+			return ( loadingSpinner() );
 		}
 
 		return (
@@ -50,7 +48,7 @@ export default class LibraryCard extends Component {
 					<Center>
 						<Flex direction="row">
 							<Image
-                            source={{ uri: global.logo }}
+                            source={{ uri: global.favicon }}
                             fallbackSource={require("../../themes/default/aspenLogo.png")}
 							w={38} h={38} alt="Digital Library Card" />
 							<Text bold pl={3} mt={2} fontSize="lg">
@@ -59,7 +57,7 @@ export default class LibraryCard extends Component {
 						</Flex>
 					</Center>
 					<Center pt={5}>
-						<Barcode value={this.state.libraryCard} format="CODE128" />
+						{this.state.libraryCard ? <Barcode value={this.state.libraryCard} format="CODE128" /> : <Text>No library barcode to load.</Text> }
 					</Center>
 				</Flex>
 			</Center>

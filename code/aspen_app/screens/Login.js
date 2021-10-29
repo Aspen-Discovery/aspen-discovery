@@ -1,5 +1,5 @@
-import React, { Component, useState, useEffect } from "react";
-import { View, ScrollView, RefreshControl } from "react-native";
+import React, { Component, useState, useEffect, useRef } from "react";
+import { View, ScrollView, Platform } from "react-native";
 import {
 	NativeBaseProvider,
 	Box,
@@ -33,11 +33,14 @@ import * as Updates from "expo-updates";
 import Constants from "expo-constants";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import filter from "lodash";
+import base64 from 'react-native-base64';
+import { create, CancelToken } from 'apisauce';
 
 export default class Login extends Component {
 	// set default values for the login information in the constructor
 	constructor(props) {
 		super(props);
+		this._bootstrapAsync();
 		this.state = {
 			isLoading: true,
 			libraryData: [],
@@ -50,14 +53,25 @@ export default class Login extends Component {
 			isBeta: false
 		};
 
+        // create arrays to store Greenhouse data from
 		this.arrayHolder = [];
 		this.filteredLibraries = [];
 
+        // check for beta release channel
         let result = SecureStore.getItemAsync("releaseChannel");
 		if(result == 'beta') {
             this.setState({ isBeta: true });
 		}
 	}
+
+    // Fetch the token from storage then navigate to our appropriate place
+    _bootstrapAsync = async () => {
+        const userToken = await SecureStore.getItemAsync("userToken");
+
+        // This will switch to the App screen or Auth screen and this loading
+        // screen will be unmounted and thrown away.
+        this.props.navigation.navigate(userToken ? 'Loading' : 'Auth');
+    };
 
 	// handles the mount information, setting session variables, etc
 	componentDidMount = async () => {
@@ -67,91 +81,33 @@ export default class Login extends Component {
 			isFetching: true,
 		});
 
+        // fetch global variables set in App.js
 		await setGlobalVariables();
 
+        // fetch Greenhouse data to populate libraries
 		await this.makeGreenhouseRequest();
 		await this.makeFullGreenhouseRequest();
 
 	};
 
-	onRefresh() {
-		this.setState({ isFetching: true }, function () {
-			this.makeGreenhouseRequest();
-		});
-	}
-
+    // handles the opening or closing of the showLibraries() modal
 	handleModal = () => {
 		this.setState({
 			modalOpened: !this.state.modalOpened,
 		});
 	};
 
-	searchFilterFunction = (text) => {
-		this.setState({ libraryData: [], isFetching: true });
-		const updatedData = this.arrayHolder.filter((item) => {
-			const itemData = `${item.name.toUpperCase()}, ${item.librarySystem.toUpperCase()}`;
-			const textData = text.toUpperCase();
-			return itemData.indexOf(textData) > -1;
-		});
-		this.setState({ libraryData: updatedData, query: text, isFetching: false });
-		console.log(this.state.libraryData);
-	};
-
-	renderListHeader = () => {
-		return (
-			<Box pb={5}>
-				<Input
-					variant="underlined"
-					autoCorrect={false}
-					onChangeText={(text) => this.searchFilterFunction(text)}
-					status="info"
-					placeholder="Search"
-					clearButtonMode="always"
-					value={this.state.query}
-				/>
-			</Box>
-		);
-	};
-
-	renderListSeparator = () => {
-		return (
-			<View
-				style={{
-					height: 1,
-					width: "86%",
-					backgroundColor: "#CED0CE",
-					marginLeft: "5%",
-				}}
-			/>
-		);
-	};
-
-	renderListEmpty = () => {
-        if(this.state.error) {
-            return (
-                <Center mt={5} mb={5}>
-                    <Text bold fontSize="lg">
-                        Error loading libraries. Please try again.
-                    </Text>
-                </Center>
-            )
-        }
-        return (
-            <Center>
-                <Heading>Unable to find nearby libraries</Heading>
-                <Text bold>Try searching instead</Text>
-            </Center>
-        );
-	};
-
+    // fetch the list of libraries based on distance and initial population of showLibraries modal
 	makeGreenhouseRequest = () => {
 
-		this.setState({ isFetching: true });
-
+        // build url to Greenhouse
 		const url =
 			"https://aspen-test.bywatersolutions.com/API/GreenhouseAPI?method=getLibraries&latitude=" + global.latitude + "&longitude=" + global.longitude + "&release_channel=" + global.releaseChannel;
 
-		// fetch greenhouse data
+        // set state to fetching to display spinner
+		this.setState({ isFetching: true });
+
+        // fetch greenhouse data
 		fetch(url, {
 			header: {
 				Accept: "application/json",
@@ -189,12 +145,15 @@ export default class Login extends Component {
 		console.log("Greenhouse request using geolocation made to " + url);
 	};
 
+    // fetch the entire list of available libraries to search from showLibraries modal search box
 	makeFullGreenhouseRequest = () => {
-		const { releaseChannel } = this.state;
+	    // build url to Greenhouse
 		const url = "https://aspen-test.bywatersolutions.com/API/GreenhouseAPI?method=getLibraries&release_channel=" + global.releaseChannel;
 
+        // set state to fetching to display spinner
 		this.setState({ isFetching: true });
-		// fetch greenhouse data
+
+        // fetch greenhouse data
 		fetch(url, {
 			header: {
 				Accept: "application/json",
@@ -226,12 +185,14 @@ export default class Login extends Component {
                     });
 				}
 			);
-
-		console.log("Greenhouse request made to " + url);
 	};
 
-	// shows the options for locations
-	showLocationPulldown = () => {
+	/**
+    // showLibraries() function
+    // Renders the list of libraries in a modal
+    // When a library is picked it stores information from the Greenhouse API response used to validate login
+    **/
+	showLibraries = () => {
 		return (
 			<>
 				<Modal isOpen={this.state.modalOpened} onClose={this.handleModal} size="lg">
@@ -244,7 +205,7 @@ export default class Login extends Component {
 									refreshing={this.state.isFetching}
 									renderItem={({ item }) => (
 										<ListItem bottomDivider onPress={() => this.onPressLibrary(item)}>
-											<Avatar />
+											<Avatar source={{ uri: item.favicon }} size="36px" />
 											<ListItem.Content>
 												<Box _text={{ fontWeight: 600 }}>{item.name}</Box>
 												<Box
@@ -259,7 +220,7 @@ export default class Login extends Component {
 											</ListItem.Content>
 										</ListItem>
 									)}
-									keyExtractor={(item) => item.baseUrl.concat("|", item.solrScope, "|", item.libraryId, "|", item.locationId, "|", global.sessionId)}
+									keyExtractor={(item) => item.siteId}
 									ItemSeparatorComponent={this.renderListSeparator}
 									ListHeaderComponent={this.renderListHeader}
 									extraData={this.state}
@@ -275,7 +236,69 @@ export default class Login extends Component {
 		);
 	};
 
-	// handles the on press action and
+	// FlatList: Renders the search box for filtering
+    renderListHeader = () => {
+        return (
+            <Box pb={5}>
+                <Input
+                    variant="underlined"
+                    autoCorrect={false}
+                    onChangeText={(text) => this.searchFilterFunction(text)}
+                    status="info"
+                    placeholder="Search"
+                    clearButtonMode="always"
+                    value={this.state.query}
+                />
+            </Box>
+        );
+    };
+
+	// FlatList: ListItems separator
+    renderListSeparator = () => {
+        return (
+            <View
+                style={{
+                    height: 1,
+                    width: "86%",
+                    backgroundColor: "#CED0CE",
+                    marginLeft: "5%",
+                }}
+            />
+        );
+    };
+
+    // FlatList: Make sure something loads if nothing from Greenhouse is available
+    renderListEmpty = () => {
+        if(this.state.error) {
+            return (
+                <Center mt={5} mb={5}>
+                    <Text bold fontSize="lg">
+                        Error loading libraries. Please try again.
+                    </Text>
+                </Center>
+            )
+        }
+        return (
+            <Center>
+                <Heading>Unable to find nearby libraries</Heading>
+                <Text bold>Try searching instead</Text>
+            </Center>
+        );
+    };
+
+    // showLibraries: handles searching the array returned from makeFullGreenhouseRequest
+	searchFilterFunction = (text) => {
+		this.setState({ libraryData: [], isFetching: true });
+		const updatedData = this.arrayHolder.filter((item) => {
+			const itemData = `${item.name.toUpperCase()}, ${item.librarySystem.toUpperCase()}`;
+			const textData = text.toUpperCase();
+			return itemData.indexOf(textData) > -1;
+		});
+		this.setState({ libraryData: updatedData, query: text, isFetching: false });
+		console.log(this.state.libraryData);
+	};
+
+	// showLibraries: handles storing the states based on selected library to use later on in validation
 	onPressLibrary = (item) => {
 		this.setState({
 			libraryName: item.name,
@@ -284,9 +307,15 @@ export default class Login extends Component {
 			libraryId: item.libraryId,
 			locationId: item.locationId,
 			modalOpened: false,
+			favicon: item.favicon,
+			logo: item.logo,
 		});
 	};
+    /**
+    // end of showLibraries() setup
+    **/
 
+    // render the Login screen
 	render() {
 		const isBeta = this.state.isBeta;
 
@@ -301,21 +330,25 @@ export default class Login extends Component {
 		};
 
         return (
-            <>
+
                 <Box flex={1} alignItems="center" justifyContent="center" safeArea={5}>
-                    <Image source={require("../assets/aspenLogo.png")} size="225px" borderRadius={25} alt="Aspen Discovery" />
+                    <Image source={require("../themes/default/aspenLogo.png")} size="180px" borderRadius={25} alt="Aspen Discovery" />
 
-                    {this.showLocationPulldown()}
+                    {this.showLibraries()}
 
-                    <GetLoginForm
-                        libraryName={this.state.libraryName}
-                        locationId={this.state.locationId}
-                        libraryId={this.state.libraryId}
-                        libraryUrl={this.state.libraryUrl}
-                        solrScope={this.state.solrScope}
-                        sessionId={this.state.sessionId}
-                        navigation={this.props.navigation}
-                    />
+                    {this.state.libraryName ?
+                         <GetLoginForm
+                            libraryName={this.state.libraryName}
+                            locationId={this.state.locationId}
+                            libraryId={this.state.libraryId}
+                            libraryUrl={this.state.libraryUrl}
+                            solrScope={this.state.solrScope}
+                            favicon={this.state.favicon}
+                            logo={this.state.logo}
+                            sessionId={this.state.sessionId}
+                            navigation={this.props.navigation}
+                        />
+                    : null}
 
                     <Button
                         onPress={this.makeGreenhouseRequest}
@@ -325,41 +358,42 @@ export default class Login extends Component {
                         color="#30373b"
                         startIcon={<Icon as={Ionicons} name="navigate-circle-outline" size={5} />}
                     >
-                        Find Nearby Libraries
+                        Reset Geolocation
                     </Button>
                     <Box>{isBeta ? <Badge>BETA</Badge> : null}</Box>
                 </Box>
-            </>
         );
 	}
 }
 
-
+/**
+// Create the form used for logging in
+// Validates the login attempt
+// If valid, saves variables as key/value pairs into the Secure Store
+**/
 const GetLoginForm = (props) => {
-  // securely set and store key:value pairs
-  const [keyUser, onChangeKeyUser] = React.useState('');
-  const [valueUser, onChangeValueUser] = React.useState('');
-  const [keySecret, onChangeKeySecret] = React.useState('');
-  const [valueSecret, onChangeValueSecret] = React.useState('');
+    // securely set and store key:value pairs
+    const [keyUser, onChangeKeyUser] = React.useState('');
+    const [valueUser, onChangeValueUser] = React.useState('');
+    const [keySecret, onChangeKeySecret] = React.useState('');
+    const [valueSecret, onChangeValueSecret] = React.useState('');
 
-  // show:hide data from password field
-  const [show, setShow] = React.useState(false)
-  const handleClick = () => setShow(!show)
+    // show:hide data from password field
+    const [show, setShow] = React.useState(false)
+    const handleClick = () => setShow(!show)
 
 
-  // store the token then navigate to the app's main screen
-  async function storeToken() {
+    async function storeToken() {
+        // store login data for safe keeping
+        SecureStore.setItemAsync("userKey", valueUser);
+        SecureStore.setItemAsync("secretKey", valueSecret);
+        SecureStore.deleteItemAsync("userToken");
 
-      // store login data for safe keeping
-      SecureStore.setItemAsync("userKey", valueUser);
-      SecureStore.setItemAsync("secretKey", valueSecret);
-      SecureStore.deleteItemAsync("userToken");
+        // call function to validate login
+        validateLogin();
+    };
 
-      // make sure that login information is valid
-      validateLogin();
-
-  };
-
+    // checks for valid tokens, can be used by passing the key used when saving token in Secure Store
     async function getTokenValue(key) {
         let result = await SecureStore.getItemAsync(key);
         if (result) {
@@ -369,21 +403,38 @@ const GetLoginForm = (props) => {
         }
     };
 
+    // tries to validate login
     async function validateLogin() {
-        // build URL to validate
-        const userKey = await SecureStore.getItemAsync("userKey");
-        const secretKey = await SecureStore.getItemAsync("secretKey");
-        const url = props.libraryUrl + "/app/aspenLogin.php?barcode=" + userKey + "&pin=" + secretKey + "&rand=" + props.sessionId;
+        try {
+            // fetch username and password from Secure Store to try and login
+            try {
+                var userKey = await SecureStore.getItemAsync("userKey");
+                var secretKey = await SecureStore.getItemAsync("secretKey");
+            } catch (error) {
+                console.log("Unable to fetch user token data.");
+                console.log(error);
+            }
 
-        fetch(url)
-            .then((res) => res.json())
-            .then((res) => {
-                // verify if the login credentials match the system
-                if (res.ValidLogin === 'Yes') {
-                    storeLoginToken(res.ValidLogin, res.Name);
+            var bodyFormData = null;
+            var bodyFormData = new FormData();
+            bodyFormData.append('username', userKey);
+            bodyFormData.append('password', secretKey);
+
+
+            // build URL to verify if the login credentials match the system
+            const api = create({ baseURL: props.libraryUrl + '/API', timeout: 3000 });
+            const response = await api.get('/UserAPI?method=validateAccount', { username: userKey, password: secretKey });
+
+            if(response.ok) {
+                const result = response.data.result.success;
+
+                if(result['id'] != null) {
+                    console.log("Valid user: " + result.firstname + " " + result.lastname);
+                    const key = "ValidLogin";
+                    const token = JSON.stringify(result.firstname + " " + result.lastname);
+                    storeLoginToken(key, token);
                 } else {
-                    console.log("Unable to store data");
-                    // login failed, remove bad data from storage
+                    console.log("Invalid user. Unable to store data.");
                     SecureStore.deleteItemAsync("userKey");
                     SecureStore.deleteItemAsync("secretKey");
                     Toast.show({
@@ -394,18 +445,27 @@ const GetLoginForm = (props) => {
                         isClosable: true,
                         accessibilityAnnouncement: "Unable to login. Barcode and/or PIN is incorrect."
                     });
-
                 }
-            })
-            .catch((error) => {
-                console.log("Unable to get data when trying: <" + url + ">");
-                console.log("Error: " + error);
-            });
+            } else {
+                const result = response.problem;
+                console.log(result);
+            }
+        } catch (error) {
+            console.log("Unable to connect due to lack of variables.")
+            console.log(error);
+        }
+
+
+
     };
 
+    // tries to store variables
     async function storeLoginToken(thisLogin, thisName) {
 
-        let patronName = thisName.substr(0, thisName.indexOf(" "));
+        // Parse to reverse stringify needed to store name from response
+        let name = JSON.parse(thisName);
+        // grab just the first name of the user's full name
+        let patronName = name.substr(0, name.indexOf(" "));
 
         // if patronName is in all uppercase, force it to sentence-case
         if (patronName == patronName.toUpperCase()) {
@@ -417,16 +477,22 @@ const GetLoginForm = (props) => {
             patronName = patronName.join(' ');
         }
 
+        // save variables in the Secure Store to access later on
         await SecureStore.setItemAsync("patronName", patronName);
         await SecureStore.setItemAsync("library", props.libraryId);
         await SecureStore.setItemAsync("libraryName", props.libraryName);
         await SecureStore.setItemAsync("locationId", props.locationId);
         await SecureStore.setItemAsync("solrScope", props.solrScope);
         await SecureStore.setItemAsync("pathUrl", props.libraryUrl);
+        await SecureStore.setItemAsync("logo", props.logo);
+        await SecureStore.setItemAsync("favicon", props.favicon);
+
         await SecureStore.setItemAsync("userToken", thisLogin);
 
+        // to confirm the save was completed, try to access login token from the Secure Store
         try {
             const token = getTokenValue("userToken");
+
         } catch (e) {
             Toast.show({
                 id: "loginError",
@@ -438,18 +504,24 @@ const GetLoginForm = (props) => {
                 accessibilityAnnouncement: "Something went wrong. Please try to login again."
             });
 
+            // if token was unable to be accessed delete the username and password just in case it was stored anyway
             SecureStore.deleteItemAsync("userKey");
             SecureStore.deleteItemAsync("secretKey");
         }
+
         props.navigation.navigate("App");
 
     }
 
-
+    // make ref to move the user to next input field
+    const passwordRef = useRef();
+    const loginRef = useRef();
 
     return(
-      <>
-        <FormControl m={1}>
+
+
+      <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ width: "100%" }}>
+        <FormControl>
             <FormControl.Label
                 _text={{
                     color: "muted.700",
@@ -465,12 +537,14 @@ const GetLoginForm = (props) => {
                 variant="filled"
                 id="barcode"
                 onChangeText={text => onChangeValueUser(text)}
-                onSubmitEditing={() => this.passwordInput.focus()}
                 returnKeyType="next"
+                textContentType="username"
                 required
+                onSubmitEditing={() => { passwordRef.current.focus(); }}
+                blurOnSubmit={false}
             />
         </FormControl>
-        <FormControl m={1}>
+        <FormControl mt={3}>
             <FormControl.Label
                 _text={{
                     color: "muted.700",
@@ -483,6 +557,9 @@ const GetLoginForm = (props) => {
             <Input
                 variant="filled"
                 type={show ? "text" : "password"}
+                returnKeyType="next"
+                textContentType="password"
+                ref={passwordRef}
                 InputRightElement={
                     <Icon
                         as={<Ionicons name={show ? "eye-outline" : "eye-off-outline"} />}
@@ -499,6 +576,7 @@ const GetLoginForm = (props) => {
             />
         </FormControl>
 
+        <Center>
         <Button
         mt={3}
         size="md"
@@ -520,11 +598,14 @@ const GetLoginForm = (props) => {
         >
         Login
         </Button>
-        </>
+        </Center>
+
+        </KeyboardAvoidingView>
       );
 
 }
 
+// fetch the user coordinates and release channel set in App.js when opening the app
 async function setGlobalVariables() {
     try {
     global.releaseChannel = await SecureStore.getItemAsync("releaseChannel");
@@ -534,5 +615,4 @@ async function setGlobalVariables() {
         console.log("Error setting global variables.");
     }
 };
-
 

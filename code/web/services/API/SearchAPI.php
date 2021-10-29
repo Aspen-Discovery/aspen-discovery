@@ -10,7 +10,7 @@ class SearchAPI extends Action
 	{
 		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
 
-		if (!in_array($method, array('getListWidget', 'getCollectionSpotlight', 'getIndexStatus', 'getActiveBrowseCategories', 'getBrowseCategoryResultsForApp')) && !IPAddress::allowAPIAccessForClientIP()){
+		if (!in_array($method, array('getListWidget', 'getCollectionSpotlight', 'getIndexStatus', 'getActiveBrowseCategories', 'getBrowseCategoryResultsForApp', 'getAppBrowseCategoryResults', 'getAppActiveBrowseCategories')) && !IPAddress::allowAPIAccessForClientIP()){
 			$this->forbidAPIAccess();
 		}
 		$output = '';

@@ -6,24 +6,38 @@ import * as SecureStore from 'expo-secure-store';
 import { createAppContainer, createSwitchNavigator } from "react-navigation";
 import { createStackNavigator } from "react-navigation-stack";
 import { createBottomTabNavigator } from "react-navigation-tabs";
+import NavigationService from './components/NavigationService';
+import { fadeOut } from 'react-navigation-transitions';
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import * as Location from "expo-location";
 import * as SplashScreen from "expo-splash-screen";
 import Constants from "expo-constants";
 import * as Updates from "expo-updates";
 import { SSRProvider } from "@react-aria/ssr";
+import base64 from 'react-native-base64';
 
 // import helper files
-import AccountDetails from "./screens/AccountDetails";
-import AccountCheckouts from "./screens/AccountCheckouts";
-import Discovery from "./screens/Discovery";
-import ItemDetails from "./screens/ItemDetails";
-import LibraryCard from "./screens/LibraryCard";
 import Login from "./screens/Login";
 import More from "./screens/More";
-import Search from "./screens/Search";
-import SearchResults from "./screens/SearchResults";
-import ContactUs from "./screens/ContactUs";
+
+// account screens
+import MyAccount from "./screens/MyAccount/MyAccount";
+import CheckedOut from "./screens/MyAccount/CheckedOut";
+import Holds from "./screens/MyAccount/Holds";
+import LibraryCard from "./screens/MyAccount/LibraryCard";
+
+// browse category screens
+import BrowseCategoryHome from "./screens/BrowseCategory/Home";
+
+// grouped work screens
+import GroupedWork from "./screens/GroupedWork/GroupedWork";
+
+// search screens
+import Search from "./screens/Search/Search";
+import Results from "./screens/Search/Results";
+
+// library screens
+import Contact from "./screens/Library/Contact";
 
 // defines the Card tab and how it is handled
 const CardTab = createStackNavigator(
@@ -45,8 +59,8 @@ const CardTab = createStackNavigator(
 const SearchTab = createStackNavigator(
 	{
 		Search: Search,
-		ItemDetails: ItemDetails,
-		SearchResults: SearchResults,
+		GroupedWork: GroupedWork,
+		SearchResults: Results,
 	},
 	{
 		defaultNavigationOptions: {
@@ -64,7 +78,7 @@ const SearchTab = createStackNavigator(
 const MoreTab = createStackNavigator(
 	{
 		More: More,
-		ContactUs: ContactUs,
+		Contact: Contact,
 	},
 	{
 		defaultNavigationOptions: {
@@ -80,7 +94,10 @@ const MoreTab = createStackNavigator(
 // defines the Account tab and how it is handled
 const AccountTab = createStackNavigator(
 	{
-		Account: AccountDetails,
+		Account: MyAccount,
+		CheckedOut: CheckedOut,
+		Holds: Holds,
+		GroupedWork: GroupedWork,
 	},
 	{
 		defaultNavigationOptions: {
@@ -96,8 +113,8 @@ const AccountTab = createStackNavigator(
 // defines the Account tab and how it is handled
 const DiscoveryTab = createStackNavigator(
 	{
-		Discover: Discovery,
-		ItemDetails: ItemDetails
+		BrowseCategoryHome: BrowseCategoryHome,
+		GroupedWork: GroupedWork
 	},
 	{
 		defaultNavigationOptions: {
@@ -154,7 +171,7 @@ const MainNavigator = createStackNavigator(
 	{
 		headerMode: "none",
 		navigationOptions: {
-			headerVisible: true,
+			headerVisible: false,
 		},
 	}
 );
@@ -173,12 +190,15 @@ const LoginNavigator = createStackNavigator(
 );
 
 class PermissionsScreen extends Component {
-	state = { appIsReady: false };
+	constructor(props) {
+		super(props);
+		this.state = {
+			appIsReady: false,
+			loginToken: false,
+		};
+	}
 
 	async componentDidMount() {
-		// fetch version to compare
-		await AsyncStorage.getItem("version");
-
         this.setState({
             loginToken: await SecureStore.getItemAsync("userToken"),
         })
@@ -194,16 +214,11 @@ class PermissionsScreen extends Component {
 
 	prepareResources = async () => {
 		await getPermissions();
+		await getAppDetails();
 
 		this.setState({ appIsReady: true }, async () => {
 			await SplashScreen.hideAsync();
 		});
-
-		if (Updates.releaseChannel == "production" || Updates.releaseChannel == "beta") {
-		    await SecureStore.setItemAsync("releaseChannel", Updates.releaseChannel);
-		} else {
-			await SecureStore.setItemAsync("releaseChannel", "any");
-		}
 
 	};
 
@@ -218,7 +233,7 @@ class PermissionsScreen extends Component {
 			return null;
 		}
 
-		return this.props.navigation.navigate(this.state.loginToken ? 'App' : 'Auth')
+		return this.props.navigation.navigate(this.state.loginToken ? 'Loading' : 'Auth')
 	}
 }
 
@@ -251,43 +266,139 @@ async function getPermissions() {
 	return location;
 }
 
-class AuthLoadingScreen extends Component {
-	constructor(props) {
-		super(props);
-		this._loadData();
+async function getAppDetails() {
+    try {
+        global.version = Constants.manifest.version;
+
+        if (global.version == "production" || global.version == "beta") {
+            await SecureStore.setItemAsync("releaseChannel", global.version);
+        } else {
+            await SecureStore.setItemAsync("releaseChannel", "any");
+        }
+
+        console.log("Release channel variable set.")
+    } catch (e) {
+        console.log("Error setting release channel variable.")
+    }
+}
+
+class LoadingScreen extends Component {
+
+	constructor() {
+		super();
+		this.state = {
+            sessionReady: true,
+		};
 	}
 
 	render() {
-		return (
-			<HStack>
-				<Spinner accessibilityLabel="Loading..." />
-			</HStack>
-		);
+		if (!this.state.sessionReady) {
+			return null;
+		}
+
+		return this.props.navigation.navigate(this.state.sessionReady ? 'App' : 'Loading')
 	}
-
-
-
-	_loadData = async () => {
-        let result = await SecureStore.getItemAsync("userToken");
-        if (result) {
-            console.log("Keys found");
-            this.props.navigation.navigate("App");
-        } else {
-            console.log("No keys found");
-            this.props.navigation.navigate("Auth");
-        }
-	};
 }
+
+
+async function setGlobalVariables() {
+    try {
+        // prepare app data
+        global.version = Constants.manifest.version;
+
+        // prepare user data
+        const userKey = await SecureStore.getItemAsync("userKey");
+        global.userKey = base64.encode(userKey);
+        const secretKey = await SecureStore.getItemAsync("secretKey");
+        global.secretKey = base64.encode(secretKey);
+        global.sessionId = await SecureStore.getItemAsync("sessionId");
+        global.pickUpLocation = await SecureStore.getItemAsync("pickUpLocation");
+        global.patron = await SecureStore.getItemAsync("patronName");
+
+        // prepare library data
+        global.libraryId = await SecureStore.getItemAsync("library");
+        global.libraryName = await SecureStore.getItemAsync("libraryName");
+        global.locationId = await SecureStore.getItemAsync("locationId");
+        global.solrScope = await SecureStore.getItemAsync("solrScope");
+        global.libraryUrl = await SecureStore.getItemAsync("pathUrl");
+        global.logo = await SecureStore.getItemAsync("logo");
+        global.favicon = await SecureStore.getItemAsync("favicon");
+
+        // prepare urls for API calls
+        global.aspenBrowseCategory = global.libraryUrl + "/app/aspenBrowseCategory.php?library=" + global.solrScope;
+        global.aspenDiscover = global.libraryUrl + "/app/aspenDiscover.php?library=" + global.solrScope + "&lida=true";
+        global.aspenAccountDetails = global.libraryUrl + "/app/aspenAccountDetails.php?library=" + global.solrScope + "&barcode=" + global.userKey + "&pin=" + global.secretKey + "&sessionId=" + global.sessionId;
+        global.aspenRenew = global.libraryUrl + '/app/aspenRenew.php?library=' + global.solrScope + '&barcode=' + global.userKey + '&pin=' + global.secretKey + '&sessionId=' + global.sessionId;
+        global.aspenListCKO = global.libraryUrl + '/app/aspenListCKO.php?library=' + global.solrScope + '&barcode=' + global.userKey + '&pin=' + global.secretKey + '&sessionId=' + global.sessionId;
+        global.aspenMoreDetails = global.libraryUrl + "/app/aspenMoreDetails.php?id=" + global.locationId + "&library=" + global.solrScope + "&version=" + global.version + "&index=";
+        global.aspenListHolds = global.libraryUrl + '/app/aspenListHolds.php?library=' + global.solrScope + '&barcode=' + global.userKey + '&pin=' + global.secretKey + '&sessionId=' + global.sessionId + '&action=ilsCKO';
+        global.aspenPickupLocations = global.libraryUrl + "/app/aspenPickUpLocations.php?library=" + global.solrScope + "&barcode=" + global.userKey + "&pin=" + global.secretKey + "&sessionId=" + global.sessionId;
+        global.aspenSearch = global.libraryUrl + "/app/aspenSearchLists.php?library=" + global.solrScope;
+        global.aspenSearchResults = global.libraryUrl + "/app/aspenSearchResults.php?library=" + global.solrScope + "&lida=true";
+        // we won't use this one by the time globals are set, but lets build it just in case we need to verify later on in the app
+        global.aspenLogin = global.libraryUrl + "/app/aspenLogin.php?barcode=" + global.userKey + "&pin=" + global.secretKey + "&sessionId=" + global.sessionId;
+
+        console.log("Global variables set.")
+
+    } catch(e) {
+        console.log("Error setting global variables.");
+        console.log(e);
+    }
+};
+
+async function setSession() {
+    var S4 = function () {
+        return (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1);
+    };
+
+    var guid = S4() + S4() + "-" + S4() + "-" + S4() + "-" + S4() + "-" + S4() + S4() + S4();
+
+    try {
+        await SecureStore.setItemAsync("sessionId", guid);
+    } catch {
+        const random = new Date().getTime()
+        await SecureStore.setItemAsync("sessionId", random);
+    }
+
+    console.log("Session created.")
+
+};
+
+const AuthStack = createStackNavigator(
+    {
+        Permissions: {
+            screen: PermissionsScreen
+        },
+        Auth: {
+            screen: LoginNavigator
+        },
+        Loading: {
+            screen: LoadingScreen
+        }
+    },
+    {
+        headerMode: "none",
+        transitionConfig: () => fadeOut(),
+        navigationOptions: {
+            headerVisible: false,
+        },
+    }
+);
 
 const AppNavigator = createSwitchNavigator(
 	{
-		Permissions: PermissionsScreen,
-		Auth: LoginNavigator,
+		Auth: AuthStack,
 		App: MainNavigator,
 	},
 	{
-		initialRouteName: "Permissions",
-	}
+		initialRouteName: "Auth",
+	},
+    {
+        headerMode: "none",
+        navigationOptions: {
+            headerVisible: false,
+        },
+    }
 );
 
 // Create the main app container and config
