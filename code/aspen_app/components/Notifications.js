@@ -43,9 +43,9 @@ export default function Messages() {
       }}>
       <Text>Your expo push token: {expoPushToken}</Text>
       <View style={{ alignItems: 'center', justifyContent: 'center' }}>
-        <Text>Title: {notification && notification.request.content.title} </Text>
-        <Text>Body: {notification && notification.request.content.body}</Text>
-        <Text>Data: {notification && JSON.stringify(notification.request.content.data)}</Text>
+        <Text>Title: {notification ? notification.request.content.title : null} </Text>
+        <Text>Body: {notification ? notification.request.content.body : null}</Text>
+        <Text>Data: {notification ? JSON.stringify(notification.request.content.data) : null}</Text>
       </View>
       <Button
         title="Press to schedule a notification"
