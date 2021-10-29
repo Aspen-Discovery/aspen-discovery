@@ -72,6 +72,25 @@ function getUpdates21_14_00() : array
 				) ENGINE INNODB'
 			]
 		], //greenhouseMonitoring
+		'greenhouseSlackIntegration' => [
+			'title' => 'Greenhouse Slack Integration',
+			'description' => 'Greenhouse Slack Integration',
+			'sql' => [
+				'CREATE TABLE greenhouse_settings (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					greenhouseAlertSlackHook VARCHAR(255)
+				) ENGINE INNODB',
+			]
+		], //greenhouseSlackIntegration
+		'greenhouseMonitoring2' => [
+			'title' => 'Greenhouse Monitoring 2',
+			'description' => 'Store Additional information within the Greenhouse for monitoring',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE aspen_sites DROP COLUMN slackNotificationChannel',
+				'ALTER TABLE aspen_sites ADD COLUMN lastNotificationTime INT(11)',
+			]
+		], //greenhouseMonitoring2
 	];
 }
 

@@ -33,9 +33,16 @@ class GreenhouseAPI extends Action
 		require_once ROOT_DIR . '/sys/Greenhouse/AspenSiteCheck.php';
 		$sites = new AspenSite();
 		$sites->whereAdd('implementationStatus != 4 AND implementationStatus != 0');
-		$sites->orderBy('siteType ASC, implementationStatus DESC, name ASC');
+		$sites->orderBy('name ASC');
 		$sites->find();
 		$numSitesUpdated = 0;
+
+		require_once ROOT_DIR . '/sys/Greenhouse/GreenhouseSettings.php';
+		$greenhouseSettings = new GreenhouseSettings();
+		$greenhouseAlertSlackHook = null;
+		if ($greenhouseSettings->find(true)){
+			$greenhouseAlertSlackHook = $greenhouseSettings->greenhouseAlertSlackHook;
+		}
 		$start = time();
 		while ($sites->fetch()){
 			$statusTime = time();
@@ -46,6 +53,9 @@ class GreenhouseAPI extends Action
 			}
 
 			//Store checks
+			$alertText = "";
+			$notification = "";
+			$sendAlert = false;
 			foreach ($siteStatus['checks'] as $key => $check){
 				$aspenSiteCheck = new AspenSiteCheck();
 				$aspenSiteCheck->siteId = $sites->id;
@@ -56,10 +66,29 @@ class GreenhouseAPI extends Action
 				}
 				$status = $check['status'];
 				if ($status == 'okay'){
-					if ($aspenSiteCheck->currentStatus !== 0) {
+					if ($aspenSiteCheck->currentStatus !== "0") {
+						$alertText .= '- ~' . $check['name'] . " recovered!~\n";
+						$wasCritical = false;
+						$wasWarning = false;
+						if ($aspenSiteCheck->currentStatus == 2){
+							$wasCritical = true;
+						}
+						if ($aspenSiteCheck->currentStatus == 1){
+							$wasWarning = true;
+						}
 						$aspenSiteCheck->currentStatus = 0;
 						$aspenSiteCheck->currentNote = '';
 						$aspenSiteCheck->lastOkTime = $statusTime;
+						//Only send an alert when the service recovers if we alerted since the time it failed last.
+						if ($wasWarning) {
+							if ((($start - $aspenSiteCheck->lastWarningTime) > 4 * 60 * 60) && ($aspenSiteCheck->lastWarningTime > $sites->lastNotificationTime)) {
+								$sendAlert = true;
+							}
+						}
+						if ($wasCritical){
+							$sendAlert = true;
+						}
+
 					}
 				}elseif ($status == 'warning'){
 					if ($aspenSiteCheck->currentStatus != 1) {
@@ -67,14 +96,28 @@ class GreenhouseAPI extends Action
 						$aspenSiteCheck->currentNote = $check['note'];
 						$aspenSiteCheck->lastWarningTime = $statusTime;
 					}
+					$alertText .= "- <{$aspenSiteCheck->getUrl($sites)}|" . $check['name'] . "> is warning : {$aspenSiteCheck->currentNote} \n";
+					//We will add this to the alert if we have been warning for more than 4 hours and the warning started after the last alert was sent.
+					if ((($start - $aspenSiteCheck->lastWarningTime) > 4 * 60 * 60) && ($aspenSiteCheck->lastWarningTime > $sites->lastNotificationTime)){
+						$sendAlert = true;
+					}
 				}else{
 					if ($aspenSiteCheck->currentStatus != 2) {
 						$aspenSiteCheck->currentStatus = 2;
 						$aspenSiteCheck->currentNote = $check['note'];
 						$aspenSiteCheck->lastErrorTime = $statusTime;
+						//Send an alert as soon as we see a critical alert the first time.
+						$sendAlert = true;
 					}
+					//Send an alert if we have never sent an alert
+					if ($sites->lastNotificationTime == 0){
+						$sendAlert = true;
+					}
+					$alertText .= "- :fire: <{$aspenSiteCheck->getUrl($sites)}|" . $check['name'] . "> is critical : {$aspenSiteCheck->currentNote}\n";
+					$notification = "<!here>";
 				}
 				if ($checkExists){
+
 					$aspenSiteCheck->update();
 				}else{
 					$aspenSiteCheck->insert();
@@ -85,6 +128,22 @@ class GreenhouseAPI extends Action
 
 
 			//Check to see if we need to send an alert
+			if (strlen($alertText) > 0 && $sendAlert){
+				$alertText = '*' . $sites->name . "* $notification\n" . $alertText;
+				if (!empty($greenhouseAlertSlackHook)) {
+					$curlWrapper = new CurlWrapper();
+					$headers = array(
+						'Accept: application/json',
+						'Content-Type: application/json',
+					);
+					$curlWrapper->addCustomHeaders($headers, false);
+					$body = new stdClass();
+					$body->text = $alertText;
+					$curlWrapper->curlPostPage($greenhouseAlertSlackHook, json_encode($body));
+				}
+				$sites->lastNotificationTime = $start;
+				$sites->update();
+			}
 
 			//store stats
 			$numSitesUpdated++;
@@ -172,7 +231,7 @@ class GreenhouseAPI extends Action
 						}
 					}
 				} else {
-					$this->setLibraryCache($aspenSite, null);
+					$this->setLibraryCache($aspenSite);
 				}
 			}
 		}

@@ -19,7 +19,7 @@ class AspenSite extends DataObject
 	public $notes;
 	public $version;
 	public $sendErrorNotificationsTo;
-	public $slackNotificationChannel;
+	public $lastNotificationTime;
 
 	public static $_implementationStatuses = [0 => 'Installing', 1 => 'Implementing', 2 => 'Soft Launch', 3 => 'Production', 4 => 'Retired'];
 	public static $_appAccess = [0 => 'None', 1 => 'LiDA Only', 2 => 'Whitelabel Only', 3 => 'LiDA + Whitelabel'];
