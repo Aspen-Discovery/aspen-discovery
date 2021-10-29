@@ -20,7 +20,7 @@ class UserAPI extends Action
 			$this->forbidAPIAccess();
 		}
 
-		if (!in_array($method, array('login', 'isLoggedIn', 'logout', 'checkoutItem', 'placeHold', 'renewItem', 'viewOnlineItem', 'changeHoldPickUpLocation', 'getPatronProfile')) && !IPAddress::allowAPIAccessForClientIP()){
+		if (!in_array($method, array('isLoggedIn', 'logout', 'checkoutItem', 'placeHold', 'renewItem', 'renewAll', 'viewOnlineItem', 'changeHoldPickUpLocation', 'getPatronProfile', 'validateAccount', 'getPatronHolds', 'getPatronCheckedOutItems', 'cancelHold', 'activateHold', 'freezeHold', 'returnCheckout', 'updateOverDriveEmail', 'getValidPickupLocations' )) && !IPAddress::allowAPIAccessForClientIP()){
 			$this->forbidAPIAccess();
 		}
 
