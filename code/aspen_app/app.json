@@ -1,40 +1,50 @@
 {
 	"expo": {
-		"name": "Aspen Discovery Mobile",
-		"slug": "aspen-discovery-mobile",
+		"name": "Aspen LiDA",
+		"slug": "aspen-lida",
 		"owner": "bywater-solutions",
 		"privacy": "public",
-		"platforms": ["ios", "android", "web"],
-		"version": "21.12.03",
+		"platforms": ["ios", "android"],
+		"version": "21.14.00",
 		"orientation": "portrait",
-		"icon": "./assets/aspenNoTransparency.png",
+		"icon": "./assets/LiDA_Icon1024.png",
 		"splash": {
-			"image": "./assets/aspenLogo.png",
+			"image": "./assets/android/PNG/xxxhdpi/LiDA_xxxhdpi_432px_Icon.png",
 			"resizeMode": "contain",
-			"backgroundColor": "#2f373a"
+			"backgroundColor": "#333D42"
 		},
 		"updates": {
 			"fallbackToCacheTimeout": 0
 		},
 		"assetBundlePatterns": ["**/*"],
 		"ios": {
-			"buildNumber": "8",
+			"buildNumber": "11",
 			"bundleIdentifier": "org.aspendiscovery.mobile",
 			"supportsTablet": true,
-			"icon": "./assets/aspenLogo.png"
+			"icon": "./assets/LiDA_Icon1024.png",
+			"infoPlist": {
+				"NSLocationWhenInUseUsageDescription": "This app uses your location to find nearby libraries to make logging in easier",
+				"LSApplicationQueriesSchemes": [
+					"comgooglemaps",
+					"citymapper",
+					"uber",
+					"lyft",
+					"waze"
+				]
+			}
 		},
 		"android": {
 			"package": "org.aspendiscovery.mobile",
-			"versionCode": 8,
+			"versionCode": 11,
 			"permissions": ["ACCESS_COARSE_LOCATION", "ACCESS_FINE_LOCATION", "FOREGROUND_SERVICE"],
 			"adaptiveIcon": {
-				"foregroundImage": "./assets/aspenLogo.png",
-				"backgroundColor": "#FFFFFF"
+				"foregroundImage": "./assets/android/png/xxxhdpi/LiDA_xxxhdpi_432px_Icon.png",
+				"backgroundImage": "./assets/android/png/xxxhdpi/LiDA_xxxhdpi_432px_Background.png"
 			},
-			"icon": "./assets/aspenLogo.png"
+			"icon": "./assets/LiDA_Icon512.png"
 		},
 		"web": {
-			"favicon": "./assets/aspenLogo.png"
+			"favicon": "./assets/LiDA_Icon512.png"
 		},
 		"description": ""
 	}

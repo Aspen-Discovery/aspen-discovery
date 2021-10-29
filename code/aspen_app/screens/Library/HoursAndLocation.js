@@ -1,5 +1,8 @@
 import React, { Component, useState, useCallback, useEffect, useRef } from 'react'
-import { Box, Text, FlatList, Spinner, ScrollView, View, TouchableWithoutFeedback } from 'native-base';
+import { Box, Text, FlatList, Spinner, ScrollView, View, TouchableWithoutFeedback, HStack, VStack, Icon, Divider, Center } from 'native-base';
+import { Ionicons, MaterialIcons } from "@expo/vector-icons";
+import { Platform } from "react-native";
+import moment from "moment";
 
 const HoursAndLocation = (props) => {
 
@@ -8,18 +11,14 @@ const HoursAndLocation = (props) => {
     return (
     <>
         <Box mb={4}>
-            <HStack space={3}>
+        <Center>
+            <HStack space={3} alignItems="center">
                 <Icon as={MaterialIcons} name="schedule" size="sm" mt={0.3} mr={-1} />
                 <Text fontSize="lg" bold>Today's Hours </Text>
             </HStack>
-            <Text>{hoursMessage}</Text>
+            <Text alignText="center" mt={2} italic>{hoursMessage}</Text>
+            </Center>
         </Box>
-            <FlatList
-                data={hours}
-                renderItem={({ item }) => renderHours(item)}
-                keyExtractor={(item) => item.day}
-                mb={3}
-            />
         <Divider mb={10} />
         </>
     )
@@ -38,13 +37,15 @@ function renderHours(item) {
 
     return (
         <Box>
-            <HStack space={3} alignItems="flex-start">
+        <Center>
+            <VStack space={1} alignItems="flex-start">
                 <Text bold fontSize="sm">{item.dayName}</Text>
                 <Text fontSize="sm">{hours}</Text>
-            </HStack>
-        {item.notes &&
+            </VStack>
+            </Center>
+        {item.notes ?
             <Text bold>Note: <Text>{item.notes}</Text></Text>
-        }
+        : null }
         </Box>
     );
 };

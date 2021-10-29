@@ -1,63 +1,81 @@
 import React, { Component } from "react";
 import { Center, HStack, Spinner, Button, Box, Text, FlatList } from "native-base";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as SecureStore from 'expo-secure-store';
 import { ListItem } from "react-native-elements";
 import Constants from "expo-constants";
+import Messages from "../components/Notifications";
+import * as WebBrowser from 'expo-web-browser';
+import { create, CancelToken } from 'apisauce';
+
+import { loadingSpinner } from "../components/loadingSpinner";
+import { loadError } from "../components/loadError";
+import { removeData, logoutUser } from "../util/logout";
 
 export default class More extends Component {
 	constructor() {
 		super();
-		this.state = { isLoading: true };
+		this.state = {
+            isLoading: true,
+            hasError: false,
+            error: null,
+            defaultMenuItems: [
+                {
+                    key: '0',
+                    title: 'Contact',
+                    path: 'Contact',
+                    external: false,
+                },
+                {
+                    key: '1',
+                    title: 'Privacy Policy',
+                    path: 'https://bywatersolutions.com/lida-app-privacy-policy',
+                    external: true,
+                }
+            ]
+		 };
 	}
 
-	// handles the mount information, setting session variables, etc
 	componentDidMount = async () => {
-		const url = global.libraryUrl + "/app/aspenMoreDetails.php?id=" + global.locationId + "&library=" + global.solrScope + "&version=" + global.version;
-
-		fetch(url)
-			.then((res) => res.json())
-			.then((res) => {
-				this.setState({
-					data: res.options,
-					isLoading: false,
-				});
-			})
-			.catch((error) => {
-				console.log("get data error from:" + url + " error:" + error);
-			});
+        this.setState({
+            isLoading: false,
+        });
 	};
 
 	renderNativeItem = (item) => {
-		return (
-			<ListItem bottomDivider onPress={() => this.onPressItem(item.path)}>
-				<ListItem.Content>
-					<Text bold>{item.title}</Text>
-					<Text fontSize="sm" color="coolGray.600">{item.subtitle}</Text>
-				</ListItem.Content>
-				<ListItem.Chevron />
-			</ListItem>
-		);
+        if(item.external) {
+            return (
+                <ListItem bottomDivider onPress={() => {this.openWebsite(item.path)} }>
+                    <ListItem.Content>
+                        <Text bold>{item.title}</Text>
+                    </ListItem.Content>
+                    <ListItem.Chevron />
+                </ListItem>
+            );
+        } else {
+            return (
+                <ListItem bottomDivider onPress={() => {this.onPressMenuItem(item.path)} }>
+                    <ListItem.Content>
+                        <Text bold>{item.title}</Text>
+                    </ListItem.Content>
+                    <ListItem.Chevron />
+                </ListItem>
+            );
+        }
 	};
 
-	_logout = async () => {
-        await SecureStore.deleteItemAsync("sessionId");
-        await SecureStore.deleteItemAsync("pickupLocation");
-        await SecureStore.deleteItemAsync("patronName");
-        await SecureStore.deleteItemAsync("library");
-        await SecureStore.deleteItemAsync("libraryName");
-        await SecureStore.deleteItemAsync("locationId");
-        await SecureStore.deleteItemAsync("solrScope");
-        await SecureStore.deleteItemAsync("pathUrl");
-        await SecureStore.deleteItemAsync("version");
-        await SecureStore.deleteItemAsync("userKey");
-        await SecureStore.deleteItemAsync("secretKey");
-        await SecureStore.deleteItemAsync("userToken");
-		this.props.navigation.navigate("Permissions");
-	};
-
-	onPressItem = (item) => {
+	onPressMenuItem = (item) => {
 		this.props.navigation.navigate(item, { item });
 	};
+
+	onPressLogout = async () => {
+	    await removeData();
+	    this.props.navigation.navigate("Permissions");
+	}
+
+	openWebsite = async (url) => {
+	    WebBrowser.openBrowserAsync(url);
+	}
 
 	_listEmptyComponent = () => {
 		return (
@@ -71,26 +89,25 @@ export default class More extends Component {
 
 	render() {
 		if (this.state.isLoading) {
-			return (
-				<Center flex={1}>
-					<HStack>
-						<Spinner accessibilityLabel="Loading..." />
-					</HStack>
-				</Center>
-			);
+			return ( loadingSpinner() );
+		}
+
+		if (this.state.hasError) {
+            return ( loadError(this.state.error) );
 		}
 
 		return (
 			<Box>
 				<FlatList
-					data={this.state.data}
+					data={this.state.defaultMenuItems}
 					ListEmptyComponent={this._listEmptyComponent()}
 					renderItem={({ item }) => this.renderNativeItem(item)}
 					keyExtractor={(item, index) => index.toString()}
 				/>
 
                 <Center mt={5}>
-                    <Button onPress={this._logout}>Logout</Button>
+                    <Button onPress={() => {this.onPressLogout()} }>Logout</Button>
+                    <Text mt={10} fontSize="xs" bold>App Version <Text fontSize="xs" color="coolGray.600">{global.version}</Text></Text>
                 </Center>
 			</Box>
 		);

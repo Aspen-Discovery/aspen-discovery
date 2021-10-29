@@ -125,9 +125,9 @@ if (!empty($jsonData['result']['recordSet'])) {
 		} else {
 			foreach ($relatedRecords as $relatedRecord) {
 				if (!isset($itemList)) {
-					$itemList[] = array('type' => $relatedRecord->id, 'name' => $relatedRecord->format, 'source' => $relatedRecord->source);
+					$itemList[] = array('id' => $relatedRecord->id, 'name' => $relatedRecord->format, 'source' => $relatedRecord->source);
 				} elseif (!in_array($relatedRecord->format, array_column($itemList, 'name'))) {
-					$itemList[] = array('type' => $relatedRecord->id, 'name' => $relatedRecord->format, 'source' => $relatedRecord->source);
+					$itemList[] = array('id' => $relatedRecord->id, 'name' => $relatedRecord->format, 'source' => $relatedRecord->source);
 				}
 			}
 		}

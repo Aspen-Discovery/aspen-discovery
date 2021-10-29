@@ -25,6 +25,9 @@ import {
 import * as SecureStore from 'expo-secure-store';
 import { MaterialCommunityIcons, Ionicons, MaterialIcons } from "@expo/vector-icons";
 
+import { loadingSpinner } from "../../components/loadingSpinner";
+import { loadError } from "../../components/loadError";
+
 export default class Results extends Component {
 	static navigationOptions = ({ navigation }) => ({
 		title: typeof navigation.state.params === "undefined"  || typeof navigation.state.params.title === "undefined" ? "Results" : navigation.state.params.title,
@@ -49,7 +52,7 @@ export default class Results extends Component {
 		//const format     = this.props.navigation.state.params.format;
 		//const searchType = this.props.navigation.state.params.searchType;
 
-		this._fetchResults();
+		await this._fetchResults();
         console.log("Search term: " + this.props.navigation.state.params.searchTerm);
 		if(this.props.navigation.state.params.searchTerm != "%20") {
 		    this.props.navigation.setParams({ title: "Results for " + this.props.navigation.state.params.searchTerm });
@@ -79,7 +82,7 @@ export default class Results extends Component {
             .catch((error) => {
 				console.log("Unable to fetch data from: <" + global.aspenSearchResults + "&searchTerm=" + searchTerm + "&page=" + page + "> in _fetchResults");
 				this.setState({
-					error: "Unable to fetch from _fetchResults()",
+					error: "Unable to load search results",
 					isLoading: false,
 					isLoadingMore: false,
 					hasError: true,
@@ -164,33 +167,12 @@ export default class Results extends Component {
 
 	render() {
 		if (this.state.isLoading) {
-			return (
-				<Center flex={1}>
-					<HStack>
-						<Spinner accessibilityLabel="Searching..." />
-					</HStack>
-				</Center>
-			);
-		} else if (this.state.hasError) {
-            return (
-                <Center flex={1}>
-                <HStack>
-                     <Icon as={MaterialIcons} name="error" size="md" mt={.5} mr={1} color="error.500" />
-                     <Heading color="error.500" mb={2}>Error</Heading>
-                </HStack>
-                <Text bold w="75%" textAlign="center">There was an error loading results from the library. Please try again.</Text>
-                 <Button
-                     mt={5}
-                     colorScheme="primary"
-                     onPress={() => this._fetchResults()}
-                     startIcon={<Icon as={MaterialIcons} name="refresh" size={5} />}
-                 >
-                     Reload
-                 </Button>
-                 <Text fontSize="xs" w="75%" mt={5} color="muted.500" textAlign="center">ERROR: {this.state.error}</Text>
-                </Center>
-            );
-        }
+			return ( loadingSpinner() );
+		}
+
+		if (this.state.hasError) {
+            return ( loadError(this.state.error, this._fetchResults) );
+		}
 
 		return (
 			<Box>

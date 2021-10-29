@@ -24,7 +24,7 @@ export default class Contact extends Component {
 
 	componentDidMount = async () => {
 		this.setState({
-		    libraryShowHours: await AsyncStorage.getItem('@libraryShowHours'),
+		    showLibraryHours: await AsyncStorage.getItem('@libraryShowHours'),
 		    hoursMessage: await AsyncStorage.getItem('@libraryHoursMessage'),
 		    homeLink: await AsyncStorage.getItem('@libraryHomeLink'),
 		    address: await AsyncStorage.getItem('@libraryAddress'),
@@ -94,7 +94,7 @@ export default class Contact extends Component {
 		return (
             <Box safeArea={5}>
             <Center>
-                {this.state.showLibraryHours == 1 && <HoursAndLocation hoursMessage={this.state.hoursMessage} hours={this.state.hours} /> }
+                {this.state.showLibraryHours == 1 ? <HoursAndLocation hoursMessage={this.state.hoursMessage} hours={this.state.hours} /> : null }
                 <Box>
                     <Button mb={3} onPress={() => { this.dialCall(this.state.phone); }} startIcon={<Icon as={MaterialIcons} name="call" size="sm" />} >Call the Library</Button>
                     <Button mb={3} onPress={() => { this.sendEmail(this.state.email); }} startIcon={<Icon as={MaterialIcons} name="email" size="sm" />} >Email a Librarian</Button>
