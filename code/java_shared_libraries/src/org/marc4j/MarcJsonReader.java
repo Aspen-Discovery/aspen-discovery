@@ -93,7 +93,7 @@ public class MarcJsonReader implements MarcReader {
     }
 
     static Pattern threeAlphaNumerics = Pattern.compile("[A-Z0-9][A-Z0-9][A-Z0-9]");
-    static Pattern singleAlphaNumeric = Pattern.compile("[A-Z0-9]");
+    static Pattern singleAlphaNumeric = Pattern.compile("[a-z0-9]");
     static Pattern forwardSlash = Pattern.compile("⁄");
     /**
      * Returns the next {@link Record}.
