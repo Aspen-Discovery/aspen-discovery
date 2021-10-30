@@ -564,6 +564,10 @@ class ItemAPI extends Action {
 								'type' => $recordAction['type'],
 							);
 
+							if(isset($recordAction['redirectUrl'])) {
+								$action['redirectUrl'] = $recordAction['redirectUrl'];
+							}
+
 							if($relatedRecord->source == "overdrive" && $recordAction['type'] == "overdrive_sample") {
 								$action['formatId'] = $recordAction['formatId'];
 								$action['sampleNumber'] = $recordAction['sampleNumber'];
