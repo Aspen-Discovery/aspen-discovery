@@ -3,13 +3,20 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as SecureStore from 'expo-secure-store';
 import Constants from "expo-constants";
 import * as Random from 'expo-random';
+import React from "react";
+import { Toast } from "native-base";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as SecureStore from 'expo-secure-store';
+import Constants from "expo-constants";
+import * as Random from 'expo-random';
 import moment from "moment";
 import { create, CancelToken } from 'apisauce';
 
-import { badServerConnectionToast } from "../components/loadError";
+// custom components and helper files
+import { translate } from "../util/translations";
+import { popToast, popAlert } from "../components/loadError";
 
 export async function searchResults(searchTerm, pageSize, page) {
-
    const thisSearchTerm = searchTerm.replace(" ", "+");
 
    const api = create({ baseURL: global.libraryUrl + '/API', timeout: 5000 });
@@ -18,23 +25,18 @@ export async function searchResults(searchTerm, pageSize, page) {
    if(response.ok) {
        const result = response.data;
        const fetchedData = result.result;
-
        if (fetchedData.success == true) {
-
-        var searchResults = fetchedData.recordSet.map(({ title_display, author_display, description, id }) => ({
-            key: id,
-            title: title_display,
-            author: author_display,
-            description: description,
-        }));
-
+            var searchResults = fetchedData.recordSet.map(({ title_display, author_display, description, id }) => ({
+                key: id,
+                title: title_display,
+                author: author_display,
+                description: description,
+            }));
        } else {
            console.log("Connection made, but library location not found.")
        }
-
        return searchResults;
-
    } else {
-       badServerConnectionToast();
+       popToast(translate('error.no_server_connection'), translate('error.no_library_connection'), "warning");
    }
 }

@@ -8,7 +8,9 @@ import moment from "moment";
 import { create, CancelToken } from 'apisauce';
 import * as WebBrowser from 'expo-web-browser';
 
-import { badServerConnectionToast, popToast } from "../components/loadError";
+// custom components and helper files
+import { translate } from "../util/translations";
+import { popToast, popAlert } from "../components/loadError";
 
 export async function isLoggedIn() {
     const api = create({ baseURL: global.libraryUrl + '/API', timeout: 5000 });
@@ -16,54 +18,41 @@ export async function isLoggedIn() {
 
     if(response.ok) {
         const result = response.data;
-        console.log(result);
         return result;
-
     } else {
-        badServerConnectionToast();
+        popToast(translate('error.no_server_connection'), translate('error.no_library_connection'), "warning");
+        const result = response.problem;
+        return result;
     }
 }
 
 /* ACTIONS ON CHECKOUTS */
-export async function renewCheckout(barcode) {
+export async function renewCheckout(barcode, recordId, source) {
 
     const api = create({ baseURL: global.libraryUrl + '/API', timeout: 5000 });
-    const response = await api.get('/UserAPI?method=renewItem', { username: global.userKey, password: global.secretKey, itemBarcode: barcode });
+    const response = await api.get('/UserAPI?method=renewItem', { username: global.userKey, password: global.secretKey, itemBarcode: barcode, recordId: recordId, itemSource: source });
 
+        console.log(response);
     if(response.ok) {
-        const result = response.data;
-        const fetchedData = result.result;
+        const fetchedData = response.data;
+        const result = fetchedData.result;
 
-        if (fetchedData.success == true) {
-            if (fetchedData.renewalMessage.success == true) {
-                Toast.show({
-                    title: "Title renewed",
-                    description: fetchedData.renewalMessage.message,
-                    status: "success",
-                    isClosable: true,
-                    duration: 8000,
-                    accessibilityAnnouncement: fetchedData.renewalMessage.message,
-                    zIndex: 9999,
-                    placement: "top"
-                });
+        if(source == "ils") {
+            if (result.renewalMessage.success == true) {
+                popAlert("Title renewed", result.renewalMessage.message, "success");
             } else {
-                Toast.show({
-                    title: "Unable to renew title",
-                    description: fetchedData.renewalMessage.message,
-                    status: "error",
-                    isClosable: true,
-                    duration: 8000,
-                    accessibilityAnnouncement: fetchedData.renewalMessage.message,
-                    zIndex: 9999,
-                    placement: "top"
-                });
+                popAlert("Unable to renew title", result.renewalMessage.message, "error");
             }
         } else {
-            console.log("Connection made, but title not renewed because: " + fetchedData.renewalMessage.message)
+            if (result.success == true) {
+                popAlert("Title renewed", result.message, "success");
+            } else {
+                popAlert("Unable to renew title", result.message, "error");
+            }
         }
 
     } else {
-        badServerConnectionToast();
+        popToast(translate('error.no_server_connection'), translate('error.no_library_connection'), "warning");
     }
 
 }
@@ -74,38 +63,18 @@ export async function renewAllCheckouts() {
     const response = await api.get('/UserAPI?method=renewAll', { username: global.userKey, password: global.secretKey });
 
     if(response.ok) {
-        const result = response.data;
-        console.log(result);
-        const fetchedData = result.result;
+        const fetchedData = response.data;
+        const result = fetchedData.result;
 
-        if (fetchedData.renewalMessage.success == true) {
-            Toast.show({
-                title: "Renew All",
-                description: fetchedData.renewalMessage[0],
-                status: "success",
-                isClosable: true,
-                duration: 8000,
-                accessibilityAnnouncement: fetchedData.renewalMessage[0],
-                zIndex: 9999,
-                placement: "top"
-            });
+        if (result.renewalMessage.success == true) {
+            popAlert("Renewed All Titles", result.renewalMessage[0], "success");
         } else {
-            Toast.show({
-                title: "Issue with Renew All",
-                description: fetchedData.renewalMessage[0],
-                status: "warning",
-                isClosable: true,
-                duration: 8000,
-                accessibilityAnnouncement: fetchedData.renewalMessage[0],
-                zIndex: 9999,
-                placement: "top"
-            });
+            popAlert("Unable to Renew All Titles", result.renewalMessage[0], "error");
         }
 
     } else {
-        badServerConnectionToast();
+        popToast(translate('error.no_server_connection'), translate('error.no_library_connection'), "warning");
     }
-
 }
 
 export async function returnCheckout(userId, id, source, overDriveId) {
@@ -119,34 +88,16 @@ export async function returnCheckout(userId, id, source, overDriveId) {
     const response = await api.get('/UserAPI?method=returnCheckout', { username: global.userKey, password: global.secretKey, id: itemId, patronId: userId, itemSource: source });
 
     if(response.ok) {
-        const results = response.data;
+        const fetchedData = response.data;
+        const result = fetchedData.result;
 
-        if (results.result.success == true) {
-            Toast.show({
-                title: "Title returned",
-                description: results.result.message,
-                status: "success",
-                isClosable: true,
-                duration: 8000,
-                accessibilityAnnouncement: results.result.message,
-                zIndex: 9999,
-                placement: "top"
-            });
+        if (result.success == true) {
+            popAlert(result.title, result.message, "success");
         } else {
-            Toast.show({
-                title: "Unable to return title",
-                description: results.result.message,
-                status: "error",
-                isClosable: true,
-                duration: 8000,
-                accessibilityAnnouncement: results.result.message,
-                zIndex: 9999,
-                placement: "top"
-            });
+            popAlert(result.title, result.message, "error");
         }
-
     } else {
-        badServerConnectionToast();
+        popToast(translate('error.no_server_connection'), translate('error.no_library_connection'), "warning");
     }
 
 }
@@ -175,21 +126,20 @@ export async function viewOnlineItem(userId, id, source, accessOnlineUrl) {
                           console.log(response);
                         })
                         .catch(async error => {
-                            popToast("Unable to open", "We are having problems opening this item, please try accessing using a browser", "info");
+                            popToast(translate('error.no_open_resource'), translate('error.device_block_browser'), "warning");
                         });
                     } catch(error) {
-                          popToast("Unable to open", "We are having problems opening this item, please try accessing using a browser", "info");
+                          console.log ("Really borked.");
                     }
 
                 } else {
-                    popToast("Unable to open", "We are having problems opening this item, please try accessing using a browser", "info");
+                    popToast(translate('error.no_open_resource'), translate('error.device_block_browser'), "warning");
                 }
               });
         } else {
-            badServerConnectionToast();
+            popToast(translate('error.no_server_connection'), translate('error.no_library_connection'), "warning");
         }
     } else {
-        console.log(accessOnlineUrl);
         await WebBrowser.openBrowserAsync(accessOnlineUrl)
           .then(res => {
             console.log(res);
@@ -204,14 +154,14 @@ export async function viewOnlineItem(userId, id, source, accessOnlineUrl) {
                       console.log(response);
                     })
                     .catch(async error => {
-                      popToast("Unable to open", "We are having problems opening this item, please try accessing using a browser", "info");
+                      popToast(translate('error.no_open_resource'), translate('error.device_block_browser'), "warning");
                     });
                 } catch(error) {
-                    popToast("Unable to open", "We are having problems opening this item, please try accessing using a browser", "info");
+                    console.log("Unable to open.")
                 }
 
             } else {
-              console.log("Unable to open browser window.");
+              popToast(translate('error.no_open_resource'), translate('error.device_block_browser'), "warning");
             }
           });
     }
@@ -247,13 +197,13 @@ export async function viewOverDriveItem(userId, formatId, overDriveId) {
                     console.log ("Really borked.");
                 }
             } else {
-              console.log("Unable to open browser window.");
+              popToast(translate('error.no_open_resource'), translate('error.device_block_browser'), "warning");
             }
           });
 
 
     } else {
-        badServerConnectionToast();
+        popToast(translate('error.no_server_connection'), translate('error.no_library_connection'), "warning");
     }
 }
 
@@ -266,36 +216,16 @@ export async function freezeHold(cancelId, recordId, source) {
     const response = await api.get('/UserAPI?method=freezeHold', { username: global.userKey, password: global.secretKey, sessionId: global.sessionId, holdId: cancelId, recordId: recordId, itemSource: source, reactivationDate: reactivationDate, patronId: global.patronId });
 
     if(response.ok) {
-        const result = response.data;
-        const fetchedData = result.result;
+        const fetchedData = response.data;
+        const result = fetchedData.result;
 
-        if(fetchedData.success == true) {
-            Toast.show({
-                title: "Hold frozen",
-                description: fetchedData.message,
-                status: "success",
-                isClosable: true,
-                duration: 8000,
-                accessibilityAnnouncement: fetchedData.message,
-                zIndex: 9999,
-                placement: "top"
-            });
-
+        if(result.success == true) {
+            popAlert("Hold frozen", result.message, "success");
         } else {
-            Toast.show({
-                title: "Unable to freeze hold",
-                description: fetchedData.message,
-                status: "error",
-                isClosable: true,
-                duration: 8000,
-                accessibilityAnnouncement: fetchedData.message,
-                zIndex: 9999,
-                placement: "top"
-            });
+            popAlert("Unable to freeze hold", result.message, "error");
         }
-
     } else {
-        badServerConnectionToast();
+        popToast(translate('error.no_server_connection'), translate('error.no_library_connection'), "warning");
     }
 }
 
@@ -304,36 +234,16 @@ export async function thawHold(cancelId, recordId, source) {
     const response = await api.get('/UserAPI?method=activateHold', { username: global.userKey, password: global.secretKey, sessionId: global.sessionId, holdId: cancelId, recordId: recordId, itemSource: source, patronId: global.patronId });
 
     if(response.ok) {
-        const result = response.data;
-        const fetchedData = result.result;
+        const fetchedData = response.data;
+        const result = fetchedData.result;
 
-        if(fetchedData.success == true) {
-            Toast.show({
-                title: "Hold thawed",
-                description: fetchedData.message,
-                status: "success",
-                isClosable: true,
-                duration: 8000,
-                accessibilityAnnouncement: fetchedData.message,
-                zIndex: 9999,
-                placement: "top",
-            });
-
+        if(result.success == true) {
+            popAlert("Hold thawed", result.message, "success");
         } else {
-            Toast.show({
-                title: "Unable to thaw hold",
-                description: fetchedData.message,
-                status: "error",
-                isClosable: true,
-                duration: 8000,
-                accessibilityAnnouncement: fetchedData.message,
-                zIndex: 9999,
-                placement: "top"
-            });
+            popAlert("Unable to thaw hold", result.message, "error");
         }
-
     } else {
-        badServerConnectionToast();
+        popToast(translate('error.no_server_connection'), translate('error.no_library_connection'), "warning");
     }
 }
 
@@ -342,37 +252,17 @@ export async function cancelHold(cancelId, recordId, source) {
     const response = await api.get('/UserAPI?method=cancelHold', { username: global.userKey, password: global.secretKey, sessionId: global.sessionId, cancelId: cancelId, recordId: recordId, itemSource: source, patronId: global.patronId });
 
     if(response.ok) {
-        const result = response.data;
-                console.log(result);
-        const fetchedData = result.result;
+        const fetchedData = response.data;
+        const result = fetchedData.result;
 
         if(fetchedData.success == true) {
-            Toast.show({
-                title: "Hold canceled",
-                description: fetchedData.message,
-                status: "success",
-                isClosable: true,
-                duration: 8000,
-                accessibilityAnnouncement: fetchedData.message,
-                zIndex: 9999,
-                placement: "top",
-            });
-
+            popAlert("Hold cancelled", result.message, "success");
         } else {
-            Toast.show({
-                title: "Unable to cancel hold",
-                description: fetchedData.message,
-                status: "error",
-                isClosable: true,
-                duration: 8000,
-                accessibilityAnnouncement: fetchedData.message,
-                zIndex: 9999,
-                placement: "top"
-            });
+            popAlert("Unable to cancel hold", result.message, "error");
         }
 
     } else {
-        badServerConnectionToast();
+        popToast(translate('error.no_server_connection'), translate('error.no_library_connection'), "warning");
     }
 }
 
@@ -381,37 +271,18 @@ export async function changeHoldPickUpLocation(holdId, newLocation) {
     const response = await api.get('/UserAPI?method=changeHoldPickUpLocation', { username: global.userKey, password: global.secretKey, sessionId: global.sessionId, holdId: holdId, location: newLocation });
 
     if(response.ok) {
-        const result = response.data;
+        const fetchedData = response.data;
         console.log(result);
-        const fetchedData = result.result;
+        const result = fetchedData.result;
 
         if(fetchedData.success == true) {
-            Toast.show({
-                title: "Pickup location updated",
-                description: fetchedData.message,
-                status: "success",
-                isClosable: true,
-                duration: 8000,
-                accessibilityAnnouncement: fetchedData.message,
-                zIndex: 9999,
-                placement: "top",
-            });
-
+            popAlert("Pickup location updated", result.message, "success");
         } else {
-            Toast.show({
-                title: "Unable to update pickup location",
-                description: fetchedData.message,
-                status: "error",
-                isClosable: true,
-                duration: 8000,
-                accessibilityAnnouncement: fetchedData.message,
-                zIndex: 9999,
-                placement: "top"
-            });
+            popAlert("Unable to update pickup location", result.message, "error");
         }
 
     } else {
-        badServerConnectionToast();
+        popToast(translate('error.no_server_connection'), translate('error.no_library_connection'), "warning");
     }
 }
 
@@ -421,9 +292,9 @@ export async function updateOverDriveEmail(itemId, source, patronId, overdriveEm
 
     if(response.ok) {
         const responseData = response.data;
-        const results = responseData.result;
-        return results;
+        const result = responseData.result;
+        return result;
     } else {
-        badServerConnectionToast();
+        popToast(translate('error.no_server_connection'), translate('error.no_library_connection'), "warning");
     }
 }

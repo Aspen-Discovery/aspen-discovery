@@ -18,7 +18,7 @@
 		},
 		"assetBundlePatterns": ["**/*"],
 		"ios": {
-			"buildNumber": "11",
+			"buildNumber": "14",
 			"bundleIdentifier": "org.aspendiscovery.mobile",
 			"supportsTablet": true,
 			"icon": "./assets/LiDA_Icon1024.png",
@@ -30,12 +30,13 @@
 					"uber",
 					"lyft",
 					"waze"
-				]
+				],
+				"CFBundleAllowMixedLocalizations": true
 			}
 		},
 		"android": {
 			"package": "org.aspendiscovery.mobile",
-			"versionCode": 11,
+			"versionCode": 14,
 			"permissions": ["ACCESS_COARSE_LOCATION", "ACCESS_FINE_LOCATION", "FOREGROUND_SERVICE"],
 			"adaptiveIcon": {
 				"foregroundImage": "./assets/android/png/xxxhdpi/LiDA_xxxhdpi_432px_Icon.png",
