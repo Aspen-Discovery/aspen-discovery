@@ -260,7 +260,7 @@ class Location extends DataObject
 			'displaySection' => array('property' => 'displaySection', 'type' => 'section', 'label' => 'Basic Display', 'hideInLists' => true, 'properties' => array(
 				array('property' => 'homeLink', 'type' => 'text', 'label' => 'Home Link', 'description' => 'The location to send the user when they click on the home button or logo.  Use default or blank to go back to the aspen home location.', 'hideInLists' => true, 'size' => '40', 'editPermissions' => ['Location Domain Settings']),
 				array('property' => 'additionalCss', 'type' => 'textarea', 'label' => 'Additional CSS', 'description' => 'Extra CSS to apply to the site.  Will apply to all pages.', 'hideInLists' => true, 'permissions' => ['Location Theme Configuration']),
-				array('property' => 'headerText', 'type' => 'html', 'label' => 'Header Text', 'description' => 'Optional Text to display in the header, between the logo and the log in/out buttons.  Will apply to all pages.', 'allowableTags' => '<a><b><em><div><span><p><strong><sub><sup><h1><h2><h3><h4><h5><h6><img>', 'hideInLists' => true, 'permissions' => ['Location Theme Configuration']),
+				array('property' => 'headerText', 'type' => 'html', 'label' => 'Header Text', 'description' => 'Optional Text to display in the header, between the logo and the log in/out buttons.  Will apply to all pages.', 'allowableTags' => '<p><em><i><strong><b><a><ul><ol><li><h1><h2><h3><h4><h5><h6><h7><pre><code><hr><table><tbody><tr><th><td><caption><img><br><div><span><sub><sup>', 'hideInLists' => true, 'permissions' => ['Location Theme Configuration']),
 			)),
 
 			'ilsSection' => array('property' => 'ilsSection', 'type' => 'section', 'label' => 'ILS/Account Integration', 'hideInLists' => true, 'properties' => array(
