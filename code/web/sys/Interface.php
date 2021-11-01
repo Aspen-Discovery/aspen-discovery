@@ -611,6 +611,9 @@ class UInterface extends Smarty
 			$this->assign('enableAspenMaterialsRequest', false);
 		}
 
+		//Determine whether or not to display materials request to patrons
+		$this->assign('displayMaterialsRequest', $library->displayMaterialsRequestToPublic);
+
 		//Determine whether or not Rosen LevelUP functionality should be enabled
 		try {
 			require_once ROOT_DIR . '/sys/Rosen/RosenLevelUPSetting.php';

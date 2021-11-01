@@ -135,6 +135,7 @@ class Library extends DataObject
 	public $holdDisclaimer;
 	public $availableHoldDelay;
 	public $enableMaterialsRequest;
+	public $displayMaterialsRequestToPublic;
 	public $allowDeletingILSRequests;
 	public $externalMaterialsRequestUrl;
 	public /** @noinspection PhpUnused */ $eContentLinkRules;
@@ -682,6 +683,7 @@ class Library extends DataObject
 
 			'materialsRequestSection'=> array('property'=>'materialsRequestSection', 'type' => 'section', 'label' =>'Materials Request', 'hideInLists' => true, 'permissions' => ['Library Materials Request Options'], 'properties' => array(
 				'enableMaterialsRequest' => array('property'=>'enableMaterialsRequest', 'type'=>'enum', 'values'=>$materialsRequestOptions, 'label'=>'Materials Request System', 'description'=>'Materials Request functionality so patrons can request items not in the catalog.', 'hideInLists' => true, 'onchange' => 'return AspenDiscovery.Admin.updateMaterialsRequestFields();', 'default'=>0),
+				'displayMaterialsRequestToPublic' => array('property'=>'displayMaterialsRequestToPublic', 'type'=>'checkbox', 'label'=>'Turn on Materials Request for Public', 'description'=>'Whether or not Materials Request should be shown.', 'hideInLists' => true, 'default' => 1),
 				'allowDeletingILSRequests' => array('property'=>'allowDeletingILSRequests', 'type'=>'checkbox', 'label'=>'Allow Deleting ILS Materials Requests', 'description'=>'Whether or not Materials Requests made in the ILS can be deleted.', 'hideInLists' => true, 'onchange' => 'return AspenDiscovery.Admin.updateMaterialsRequestFields();', 'default' => 1),
 				'externalMaterialsRequestUrl' => array('property'=>'externalMaterialsRequestUrl', 'type'=>'text', 'label'=>'External Materials Request URL', 'description'=>'A link to an external Materials Request System to be used instead of the built in Aspen Discovery system', 'hideInList' => true),
 				'maxRequestsPerYear' => array('property'=>'maxRequestsPerYear', 'type'=>'integer', 'label'=>'Max Requests Per Year', 'description'=>'The maximum number of requests that a user can make within a year', 'hideInLists' => true, 'default' => 60),

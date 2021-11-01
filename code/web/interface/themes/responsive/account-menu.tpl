@@ -27,11 +27,11 @@
 					</div>
 				{/if}
 			{/if}
-			{if $materialRequestType == 1 && $enableAspenMaterialsRequest}
-				<div class="header-menu-option" >
+			{if $materialRequestType == 1 && $enableAspenMaterialsRequest && $displayMaterialsRequest}
+				<div class="header-menu-option materialsRequestLink">
 					<a href="/MaterialsRequest/MyRequests">{translate text='Materials Requests' isPublicFacing=true}</a>
 				</div>
-			{elseif $materialRequestType == 2 && $userHasCatalogConnection}
+			{elseif $materialRequestType == 2 && $userHasCatalogConnection && $displayMaterialsRequest}
 				<div class="header-menu-option" >
 					<a href="/MaterialsRequest/IlsRequests">{translate text='Materials Requests' isPublicFacing=true}</a>
 				</div>
