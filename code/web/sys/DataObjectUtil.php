@@ -186,13 +186,13 @@ class DataObjectUtil
 						if (!empty($property['allowableTags'])) {
 							$allowableTags = $property['allowableTags'];
 						} else {
-							$allowableTags = '<p><a><b><em><ul><ol><em><li><strong><i><br>';
+							$allowableTags = '<p><em><i><strong><b><a><ul><ol><li><h1><h2><h3><h4><h5><h6><h7><pre><code><hr><table><tbody><tr><th><td><caption><img><br><div><span>';
 						}
 					}
 
 				} else {
 					// set defaults if system variables do not exist
-					$allowableTags = '<p><a><b><em><ul><ol><em><li><strong><i><br>';
+					$allowableTags = '<p><em><i><strong><b><a><ul><ol><li><h1><h2><h3><h4><h5><h6><h7><pre><code><hr><table><tbody><tr><th><td><caption><img><br><div><span>';
 				}
 
 				if (!empty($allowableTags)) {
