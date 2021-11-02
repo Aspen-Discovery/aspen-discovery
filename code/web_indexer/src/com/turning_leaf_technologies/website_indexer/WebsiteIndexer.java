@@ -295,7 +295,7 @@ class WebsiteIndexer {
 										page.getLinks().add(linkUrl);
 										allLinks.put(linkUrl, false);
 										//There are too many pages to process, quit
-										if (allLinks.size() > 2500){
+										if (allLinks.size() > maxPagesToIndex){
 											return;
 										}
 										logEntry.incNumPages();

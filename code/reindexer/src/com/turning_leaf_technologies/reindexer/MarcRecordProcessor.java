@@ -1471,6 +1471,9 @@ abstract class MarcRecordProcessor {
 	}
 
 	Pattern audioDiscPattern = Pattern.compile(".*\\b(cd|cds|(sound|audio|compact) discs?)\\b.*");
+	Pattern pagesPattern = Pattern.compile("^.*?\\d+\\s+(p\\.|pages).*$");
+	Pattern pagesPattern2 = Pattern.compile("^.*?\\b\\d+\\s+(p\\.|pages)[\\s\\W]*$");
+	Pattern kitPattern = Pattern.compile(".*\\bkit\\b.*");
 	private void getFormatFromPhysicalDescription(Record record, Set<String> result) {
 		List<DataField> physicalDescriptions = MarcUtil.getDataFields(record, "300");
 		for (DataField field : physicalDescriptions) {
@@ -1491,14 +1494,14 @@ abstract class MarcRecordProcessor {
 							result.add("Blu-ray");
 						}
 					} else if (physicalDescriptionData.contains("computer optical disc")) {
-						if (!physicalDescriptionData.matches("^.*?\\d+\\s+(p\\.|pages).*$")){
+						if (!pagesPattern.matcher(physicalDescriptionData).matches()){
 							result.add("Software");
 						}
 					} else if (physicalDescriptionData.contains("sound cassettes")) {
 						result.add("SoundCassette");
 					} else if (physicalDescriptionData.contains("mp3")) {
 						result.add("MP3Disc");
-					} else if (physicalDescriptionData.matches(".*\\bkit\\b.*")) {
+					} else if (kitPattern.matcher(physicalDescriptionData).matches()) {
 						result.add("Kit");
 					} else if (audioDiscPattern.matcher(physicalDescriptionData).matches()) {
 						//Check to see if there is a subfield e.  If so, this could be a combined format
@@ -1508,7 +1511,7 @@ abstract class MarcRecordProcessor {
 						}else{
 							result.add("SoundDisc");
 						}
-					} else if (subfield.getCode() == 'a' && physicalDescriptionData.matches("^.*?\\b\\d+\\s+(p\\.|pages)[\\s\\W]*$")){
+					} else if (subfield.getCode() == 'a' && pagesPattern2.matcher(physicalDescriptionData).matches()){
 						Subfield subfieldE = field.getSubfield('e');
 						if (subfieldE != null && subfieldE.getData().toLowerCase().contains("dvd")){
 							result.add("Book+DVD");
@@ -1519,7 +1522,7 @@ abstract class MarcRecordProcessor {
 						}
 					}
 					//Since this is fairly generic, only use it if we have no other formats yet
-					if (result.size() == 0 && subfield.getCode() == 'f' && physicalDescriptionData.matches("^.*?\\d+\\s+(p\\.|pages).*$")) {
+					if (result.size() == 0 && subfield.getCode() == 'f' && pagesPattern.matcher(physicalDescriptionData).matches()) {
 						result.add("Book");
 					}
 				}
