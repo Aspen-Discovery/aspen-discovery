@@ -1,5 +1,12 @@
 {strip}
 	<section class="placard" id="placard{$placard->id}">
+		<div class="row">
+			<div class="col-xs-12 text-right">
+				{if !empty($placard->dismissable) && $loggedIn}
+					<div class="btn btn-sm btn-warning placard-dismiss" onclick="return AspenDiscovery.Account.dismissPlacard('{$activeUserId}', '{$placard->id}')"><i class="fas fa-times"></i> {translate text="Don't show this again" isPublicFacing=true}</div>
+				{/if}
+			</div>
+		</div>
 		{if $placard->link}
 			<a href="{$placard->link}" target="_blank" class="placard-link">
 		{/if}
@@ -23,12 +30,5 @@
 		{if $placard->link}
 			</a>
 		{/if}
-		<div class="row">
-			<div class="col-xs-12 text-right">
-				{if !empty($placard->dismissable) && $loggedIn}
-					<div class="btn btn-sm btn-warning placard-dismiss" onclick="return AspenDiscovery.Account.dismissPlacard('{$activeUserId}', '{$placard->id}')">{translate text="Don't show this again" isPublicFacing=true}</div>
-				{/if}
-			</div>
-		</div>
 	</section>
 {/strip}
