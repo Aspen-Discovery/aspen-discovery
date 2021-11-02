@@ -9,9 +9,10 @@ import moment from "moment";
 import { create, CancelToken } from 'apisauce';
 import * as WebBrowser from 'expo-web-browser';
 
+// custom components and helper files
+import { translate } from '../../util/translations';
 import { loadingSpinner } from "../../components/loadingSpinner";
 import { loadError } from "../../components/loadError";
-
 import { getCheckedOutItems } from '../../util/loadPatron';
 import { isLoggedIn, renewCheckout, renewAllCheckouts, returnCheckout, viewOnlineItem, viewOverDriveItem } from '../../util/accountActions';
 
@@ -23,6 +24,7 @@ export default class CheckedOut extends Component {
 			hasError: false,
 			error: null,
 			isRefreshing: false,
+			numCheckedOut: global.numCheckedOut,
 		};
 	}
 
@@ -50,7 +52,7 @@ export default class CheckedOut extends Component {
             if(response == "TIMEOUT_ERROR") {
                 this.setState({
                     hasError: true,
-                    error: "Connection to the library timed out.",
+                    error: translate('error.timeout'),
                     isLoading: false,
                 });
             } else {
@@ -81,22 +83,18 @@ export default class CheckedOut extends Component {
             isLoading: true,
         });
 
-        console.log("Trying to access " + url);
-
-        console.log("Checking to see if user is logged in...");
 
         await isLoggedIn().then(response => {
             if(response == "TIMEOUT_ERROR") {
                 this.setState({
                     hasError: true,
-                    error: "Connection to the library timed out.",
+                    error: translate('error.timeout'),
                     isLoading: false,
                 });
             } else {
                 this.setState({
                     isLoading: false,
                 });
-                console.log("User is logged in.");
 
                 viewOverDriveItem(data.userId, formatId, data.overDriveId)
                     .then(res => {
@@ -131,7 +129,7 @@ export default class CheckedOut extends Component {
         return (
 			<Center mt={5} mb={5}>
 				<Text bold fontSize="lg">
-					You have no items checked out.
+					{translate('checkouts.no_checkouts')}
 				</Text>
 			</Center>
 		);
@@ -157,6 +155,7 @@ export default class CheckedOut extends Component {
 
 		return (
 		<Box h="100%">
+		{this.state.numCheckedOut > 0 ?
             <Center bg="white" pt={3} pb={3}>
                 <Button
                     size="sm"
@@ -164,9 +163,10 @@ export default class CheckedOut extends Component {
                     onPress={() => renewAllCheckouts()}
                     startIcon={<Icon as={MaterialIcons} name="autorenew" size={5} />}
                 >
-                    Renew All
+                    {translate('checkouts.renew_all')}
                 </Button>
             </Center>
+        : null }
 			<FlatList
 				data={global.checkedOutItems}
 				ListEmptyComponent={this._listEmptyComponent()}
@@ -193,29 +193,29 @@ function CheckedOutItem(props) {
     const dueDate = moment.unix(data.dueDate);
     var itemDueOn = moment(dueDate).format("MMM D, YYYY");
 
-    var label = "Access Online at " + data.checkoutSource;
+    var label = translate('checkouts.access_online', { source : data.checkoutSource });
 
      if(data.checkoutSource == "OverDrive") {
 
         if(data.overdriveRead == 1) {
             var formatId = "ebook-overdrive";
-            var label = "Read Online at " + data.checkoutSource;
+            var label = translate('checkouts.read_online', { source : data.checkoutSource });
 
         } else if (data.overdriveListen == 1) {
             var formatId = "audiobook-overdrive";
-            var label = "Listen Online at " + data.checkoutSource;
+            var label = translate('checkouts.listen_online', { source : data.checkoutSource });
 
         } else if (data.overdriveVideo == 1) {
             var formatId = "video-streaming";
-            var label = "Watch Online at " + data.checkoutSource;
+            var label = translate('checkouts.watch_online', { source : data.checkoutSource });
 
         } else if (data.overdriveMagazine == 1) {
             var formatId = "magazine-overdrive";
-            var label = "Read Online at " + data.checkoutSource;
+            var label = translate('checkouts.read_online', { source : data.checkoutSource });
 
         } else {
             var formatId = '';
-            var label = "Access Online at " + data.checkoutSource;
+            var label = translate('checkouts.access_online', { source : data.checkoutSource });
         }
 
     }
@@ -235,6 +235,8 @@ function CheckedOutItem(props) {
         var author = author.substring(0, author.lastIndexOf(','));
     }
 
+    console.log(data)
+
     return (
     <>
     <Pressable onPress={onOpen}>
@@ -242,32 +244,32 @@ function CheckedOutItem(props) {
         <Avatar source={{ uri: data.coverUrl }} size="56px" alt={data.title}/>
         <ListItem.Content>
             <Text fontSize="sm" bold mb={1}>
-                {data.overdue ? <Badge colorScheme="danger" rounded="4px" mt={-.5}>Overdue</Badge> : null} {title}
+                {data.overdue ? <Badge colorScheme="danger" rounded="4px" mt={-.5}>{translate('checkouts.overdue')}</Badge> : null} {title}
             </Text>
 
             {author != "" ?
             <Text fontSize="xs">
                 <Text bold fontSize="xs">
-                    Author:
+                    {translate('grouped_work.author')}
                     <Text fontSize="xs"> {author}</Text>
                 </Text>
             </Text>
             : null}
             <Text fontSize="xs">
                 <Text bold fontSize="xs">
-                    Format:
+                    {translate('grouped_work.format')}
                     <Text fontSize="xs"> {data.format}</Text>
                 </Text>
             </Text>
             <Text fontSize="xs">
                 <Text bold fontSize="xs">
-                    Due:
+                    {translate('checkouts.due')}
                     <Text fontSize="xs"> {itemDueOn}</Text>
                 </Text>
             </Text>
             {data.autoRenew == 1 ?
                 <Box mt={1} p={.5} bgColor="muted.100">
-                <Text fontSize="xs">If eligible, this item will renew on {data.renewalDate}</Text>
+                <Text fontSize="xs">{translate('checkouts.auto_renew')} {data.renewalDate}</Text>
                 </Box>
             : null}
         </ListItem.Content>
@@ -291,12 +293,13 @@ function CheckedOutItem(props) {
         {data.canRenew ?
         <Actionsheet.Item startIcon={ <Icon as={MaterialIcons} name="autorenew"  color="trueGray.400" mr="1" size="6" /> }
             onPress={ () => {
-            renewCheckout(data.barcode, false);
+            renewCheckout(data.barcode, data.recordId, data.source);
             onClose(onClose);
             }} >
-            Renew
+            {translate('checkouts.renew')}
         </Actionsheet.Item>
-        : null}
+        : null
+        }
 
         {data.source == "overdrive" ?
         <Actionsheet.Item startIcon={ <Icon as={MaterialIcons} name="book"  color="trueGray.400" mr="1" size="6" /> }
@@ -324,7 +327,7 @@ function CheckedOutItem(props) {
             returnCheckout(data.userId, data.recordId, data.source, data.overDriveId);
             onClose(onClose);
             }}>
-            Return Now
+            {translate('checkouts.return_now')}
         </Actionsheet.Item>
         : null }
 
@@ -334,7 +337,7 @@ function CheckedOutItem(props) {
             returnCheckout(data.userId, data.recordId, data.source, data.overDriveId);
             onClose(onClose);
             }}>
-            Return Now
+            {translate('checkouts.return_now')}
         </Actionsheet.Item>
         : null }
 

@@ -36,6 +36,11 @@ import filter from "lodash";
 import base64 from 'react-native-base64';
 import { create, CancelToken } from 'apisauce';
 
+// custom components and helper files
+import { translate } from "../util/translations";
+import { loadingSpinner } from "../components/loadingSpinner";
+import { popToast, popAlert } from "../components/loadError";
+
 export default class Login extends Component {
 	// set default values for the login information in the constructor
 	constructor(props) {
@@ -130,8 +135,6 @@ export default class Login extends Component {
 				},
 				(err) => {
 				    this.setState({ error: true });
-					console.warn("Its borked! Aspen was unable to connect to the Greenhouse. Attempted connecting to <" + url + ">");
-					console.warn("Error: ", err);
                     Toast.show({
                         title: "Unable to connect",
                         description: "There was an error fetching the libraries. Please try again.",
@@ -198,7 +201,7 @@ export default class Login extends Component {
 				<Modal isOpen={this.state.modalOpened} onClose={this.handleModal} size="lg">
 					<Modal.Content>
 						<Modal.CloseButton />
-						<Modal.Header>Find Your Library</Modal.Header>
+						<Modal.Header>{translate('login.find_your_library')}</Modal.Header>
 						<Modal.Body>
 								<FlatList
 									data={this.state.libraryData}
@@ -230,7 +233,7 @@ export default class Login extends Component {
 				</Modal>
 
 				<Button colorScheme="primary" m={5} onPress={this.handleModal} size="md" startIcon={<Icon as={MaterialIcons} name="place" size={5} />}>
-					{this.state.libraryName ? this.state.libraryName : "Select Your Library"}
+					{this.state.libraryName ? this.state.libraryName : translate('login.select_your_library')}
 				</Button>
 			</>
 		);
@@ -245,7 +248,7 @@ export default class Login extends Component {
                     autoCorrect={false}
                     onChangeText={(text) => this.searchFilterFunction(text)}
                     status="info"
-                    placeholder="Search"
+                    placeholder={translate('search.title')}
                     clearButtonMode="always"
                     value={this.state.query}
                 />
@@ -317,51 +320,46 @@ export default class Login extends Component {
 
     // render the Login screen
 	render() {
-		const isBeta = this.state.isBeta;
+		const isBeta = global.version;
 
 		if (this.state.isLoading) {
-			return (
-				<Center flex={1}>
-					<HStack>
-						<Spinner accessibilityLabel="Loading..." />
-					</HStack>
-				</Center>
-			);
+            return ( loadingSpinner() );
 		};
 
         return (
+            <Box flex={1} alignItems="center" justifyContent="center" safeArea={5}>
+                <Image source={require("../themes/default/lidaLogo.png")} rounded={25} size="216px" alt={translate('app.name')} />
 
-                <Box flex={1} alignItems="center" justifyContent="center" safeArea={5}>
-                    <Image source={require("../themes/default/aspenLogo.png")} size="180px" borderRadius={25} alt="Aspen Discovery" />
+                {this.showLibraries()}
 
-                    {this.showLibraries()}
+                <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "padding"} style={{ width: "100%" }}>
+                {this.state.libraryName ?
+                     <GetLoginForm
+                        libraryName={this.state.libraryName}
+                        locationId={this.state.locationId}
+                        libraryId={this.state.libraryId}
+                        libraryUrl={this.state.libraryUrl}
+                        solrScope={this.state.solrScope}
+                        favicon={this.state.favicon}
+                        logo={this.state.logo}
+                        sessionId={this.state.sessionId}
+                        navigation={this.props.navigation}
+                    />
+                : null}
 
-                    {this.state.libraryName ?
-                         <GetLoginForm
-                            libraryName={this.state.libraryName}
-                            locationId={this.state.locationId}
-                            libraryId={this.state.libraryId}
-                            libraryUrl={this.state.libraryUrl}
-                            solrScope={this.state.solrScope}
-                            favicon={this.state.favicon}
-                            logo={this.state.logo}
-                            sessionId={this.state.sessionId}
-                            navigation={this.props.navigation}
-                        />
-                    : null}
-
-                    <Button
-                        onPress={this.makeGreenhouseRequest}
-                        mt={8}
-                        size="xs"
-                        variant="subtle"
-                        color="#30373b"
-                        startIcon={<Icon as={Ionicons} name="navigate-circle-outline" size={5} />}
-                    >
-                        Reset Geolocation
-                    </Button>
-                    <Box>{isBeta ? <Badge>BETA</Badge> : null}</Box>
-                </Box>
+                <Button
+                    onPress={this.makeGreenhouseRequest}
+                    mt={8}
+                    size="xs"
+                    variant="subtle"
+                    colorScheme="light"
+                    startIcon={<Icon as={Ionicons} name="navigate-circle-outline" size={5} />}
+                >
+                    {translate('login.reset_geolocation')}
+                </Button>
+                    <Center>{isBeta ? <Badge colorScheme="secondary" rounded={5} mt={5}>{translate('app.beta')}</Badge> : null}</Center>
+                </KeyboardAvoidingView>
+            </Box>
         );
 	}
 }
@@ -398,8 +396,6 @@ const GetLoginForm = (props) => {
         let result = await SecureStore.getItemAsync(key);
         if (result) {
             return result
-        } else {
-            console.log("No keys found")
         }
     };
 
@@ -411,7 +407,6 @@ const GetLoginForm = (props) => {
                 var userKey = await SecureStore.getItemAsync("userKey");
                 var secretKey = await SecureStore.getItemAsync("secretKey");
             } catch (error) {
-                console.log("Unable to fetch user token data.");
                 console.log(error);
             }
 
@@ -428,35 +423,34 @@ const GetLoginForm = (props) => {
             if(response.ok) {
                 const result = response.data.result.success;
 
-                if(result['id'] != null) {
-                    console.log("Valid user: " + result.firstname + " " + result.lastname);
-                    const key = "ValidLogin";
-                    const token = JSON.stringify(result.firstname + " " + result.lastname);
-                    storeLoginToken(key, token);
+                if(result != false){
+                    if(result['id'] != null) {
+                        console.log("Valid user: " + result.firstname + " " + result.lastname);
+                        const key = "ValidLogin";
+                        const token = JSON.stringify(result.firstname + " " + result.lastname);
+                        storeLoginToken(key, token);
+                    } else {
+                        console.log("Invalid user. Unable to store data.");
+                        SecureStore.deleteItemAsync("userKey");
+                        SecureStore.deleteItemAsync("secretKey");
+                        popAlert(translate('login.unable_to_login'), translate('login.invalid_user'), "error");
+                    }
                 } else {
                     console.log("Invalid user. Unable to store data.");
                     SecureStore.deleteItemAsync("userKey");
                     SecureStore.deleteItemAsync("secretKey");
-                    Toast.show({
-                        title: "Unable to login",
-                        description: "Barcode and/or PIN is incorrect.",
-                        status: "error",
-                        duration: 8000,
-                        isClosable: true,
-                        accessibilityAnnouncement: "Unable to login. Barcode and/or PIN is incorrect."
-                    });
+                    popAlert(translate('login.unable_to_login'), translate('login.invalid_user'), "error");
                 }
+
             } else {
                 const result = response.problem;
+                popToast(translate('error.no_server_connection'), translate('error.no_library_connection'), "warning");
                 console.log(result);
             }
         } catch (error) {
-            console.log("Unable to connect due to lack of variables.")
+            popAlert(translate('login.unable_to_login'), translate('login.not_enough_data'), "error");
             console.log(error);
         }
-
-
-
     };
 
     // tries to store variables
@@ -494,19 +488,10 @@ const GetLoginForm = (props) => {
             const token = getTokenValue("userToken");
 
         } catch (e) {
-            Toast.show({
-                id: "loginError",
-                title: "Unable to start session",
-                description: "Something went wrong. Please try to login again.",
-                status: "error",
-                duration: 8000,
-                isClosable: true,
-                accessibilityAnnouncement: "Something went wrong. Please try to login again."
-            });
-
             // if token was unable to be accessed delete the username and password just in case it was stored anyway
             SecureStore.deleteItemAsync("userKey");
             SecureStore.deleteItemAsync("secretKey");
+            popToast(translate('error.unable_to_login'), translate('error.no_session_created'), "warning")
         }
 
         props.navigation.navigate("App");
@@ -519,8 +504,8 @@ const GetLoginForm = (props) => {
 
     return(
 
+<>
 
-      <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ width: "100%" }}>
         <FormControl>
             <FormControl.Label
                 _text={{
@@ -529,7 +514,7 @@ const GetLoginForm = (props) => {
                     fontWeight: 600,
                 }}
             >
-                Library Barcode
+                {translate('login.username')}
             </FormControl.Label>
             <Input
                 autoCapitalize="none"
@@ -552,7 +537,7 @@ const GetLoginForm = (props) => {
                     fontWeight: 600,
                 }}
             >
-                Password/PIN
+                {translate('login.password')}
             </FormControl.Label>
             <Input
                 variant="filled"
@@ -577,30 +562,17 @@ const GetLoginForm = (props) => {
         </FormControl>
 
         <Center>
-        <Button
-        mt={3}
-        size="md"
-        color="#30373b"
-        onPress={() => {
-            if (props.libraryName) {
-              storeToken();
-            } else {
-                Toast.show({
-                    title: "No library selected",
-                    description: "Please select a library",
-                    isClosable: true,
-                    duration: 8000,
-                    status: "error",
-                    accessibilityAnnouncement: "A library was not selected, please select one to login.",
-                });
-            }
-        }}
-        >
-        Login
-        </Button>
+            <Button
+                mt={3}
+                size="md"
+                color="#30373b"
+                onPress={() => { storeToken() }}
+                >
+                    {translate('general.login')}
+            </Button>
         </Center>
+</>
 
-        </KeyboardAvoidingView>
       );
 
 }

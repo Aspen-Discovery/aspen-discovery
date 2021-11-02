@@ -5,13 +5,17 @@ import Constants from "expo-constants";
 import * as Random from 'expo-random';
 import moment from "moment";
 
+// custom components and helper files
+import { translate } from "../util/translations";
+import { popToast, popAlert } from "../components/loadError";
+
 export async function setInitialVariables() {
     try {
         global.releaseChannel = await SecureStore.getItemAsync("releaseChannel");
         global.latitude = await SecureStore.getItemAsync("latitude");
         global.longitude = await SecureStore.getItemAsync("longitude");
     } catch {
-        console.log("Error setting global variables.");
+        console.log("Error setting initial global variables.");
     }
 };
 
@@ -34,6 +38,11 @@ export async function setGlobalVariables() {
         global.libraryUrl = await SecureStore.getItemAsync("pathUrl");
         global.logo = await SecureStore.getItemAsync("logo");
         global.favicon = await SecureStore.getItemAsync("favicon");
+
+
+        // set timeout options
+        global.timeoutFast = 3000;
+        global.timeoutAverage = 5000;
 
         console.log("Global variables set.")
 

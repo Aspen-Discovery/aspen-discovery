@@ -8,6 +8,8 @@ import Messages from "../components/Notifications";
 import * as WebBrowser from 'expo-web-browser';
 import { create, CancelToken } from 'apisauce';
 
+// custom components and helper files
+import { translate } from "../util/translations";
 import { loadingSpinner } from "../components/loadingSpinner";
 import { loadError } from "../components/loadError";
 import { removeData, logoutUser } from "../util/logout";
@@ -77,15 +79,6 @@ export default class More extends Component {
 	    WebBrowser.openBrowserAsync(url);
 	}
 
-	_listEmptyComponent = () => {
-		return (
-			<ListItem bottomDivider>
-				<ListItem.Content>
-					<Text bold>Something went wrong. Please try again later.</Text>
-				</ListItem.Content>
-			</ListItem>
-		);
-	};
 
 	render() {
 		if (this.state.isLoading) {
@@ -100,14 +93,13 @@ export default class More extends Component {
 			<Box>
 				<FlatList
 					data={this.state.defaultMenuItems}
-					ListEmptyComponent={this._listEmptyComponent()}
 					renderItem={({ item }) => this.renderNativeItem(item)}
 					keyExtractor={(item, index) => index.toString()}
 				/>
 
                 <Center mt={5}>
-                    <Button onPress={() => {this.onPressLogout()} }>Logout</Button>
-                    <Text mt={10} fontSize="xs" bold>App Version <Text fontSize="xs" color="coolGray.600">{global.version}</Text></Text>
+                    <Button onPress={() => {this.onPressLogout()} }>{translate('general.logout')}</Button>
+                    <Text mt={10} fontSize="xs" bold>{translate('app.version')} <Text fontSize="xs" color="coolGray.600">{global.version}</Text></Text>
                 </Center>
 			</Box>
 		);
