@@ -9,7 +9,7 @@ class Greenhouse_SiteStatus extends Admin_Admin
 	{
 		$sites = new AspenSite();
 		$sites->whereAdd('implementationStatus != 4 AND implementationStatus != 0');
-		$sites->orderBy('siteType ASC, implementationStatus DESC, name ASC');
+		$sites->orderBy('name ASC');
 		$sites->find();
 		$siteStatuses = [];
 		$allChecks = [];
