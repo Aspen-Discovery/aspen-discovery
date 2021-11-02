@@ -7,14 +7,12 @@ import { createAppContainer, createSwitchNavigator } from "react-navigation";
 import { createStackNavigator } from "react-navigation-stack";
 import { createBottomTabNavigator } from "react-navigation-tabs";
 import NavigationService from './components/NavigationService';
-import { fadeOut } from 'react-navigation-transitions';
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import * as Location from "expo-location";
 import * as SplashScreen from "expo-splash-screen";
 import Constants from "expo-constants";
 import * as Updates from "expo-updates";
 import { SSRProvider } from "@react-aria/ssr";
-import base64 from 'react-native-base64';
 
 // import helper files
 import Login from "./screens/Login";
@@ -51,6 +49,7 @@ const CardTab = createStackNavigator(
 			},
 			headerTintColor: "#30373b",
 			title: "Library Card",
+            cardStyle: { backgroundColor: "#ffffff" },
 		},
 	}
 );
@@ -186,6 +185,9 @@ const LoginNavigator = createStackNavigator(
 		navigationOptions: {
 			headerVisible: false,
 		},
+		defaultNavigationOptions: {
+		    cardStyle: { backgroundColor: "#ffffff" },
+		},
 	}
 );
 
@@ -268,10 +270,10 @@ async function getPermissions() {
 
 async function getAppDetails() {
     try {
-        global.version = Constants.manifest.version;
+        global.releaseChannel = Updates.releaseChannel;
 
-        if (global.version == "production" || global.version == "beta") {
-            await SecureStore.setItemAsync("releaseChannel", global.version);
+        if (global.releaseChannel == "production" || global.releaseChannel == "beta") {
+            await SecureStore.setItemAsync("releaseChannel", global.releaseChannel);
         } else {
             await SecureStore.setItemAsync("releaseChannel", "any");
         }
@@ -378,7 +380,6 @@ const AuthStack = createStackNavigator(
     },
     {
         headerMode: "none",
-        transitionConfig: () => fadeOut(),
         navigationOptions: {
             headerVisible: false,
         },

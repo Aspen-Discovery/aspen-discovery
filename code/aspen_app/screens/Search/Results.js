@@ -25,12 +25,14 @@ import {
 import * as SecureStore from 'expo-secure-store';
 import { MaterialCommunityIcons, Ionicons, MaterialIcons } from "@expo/vector-icons";
 
+// custom components and helper files
+import { translate } from '../../util/translations';
 import { loadingSpinner } from "../../components/loadingSpinner";
 import { loadError } from "../../components/loadError";
 
 export default class Results extends Component {
 	static navigationOptions = ({ navigation }) => ({
-		title: typeof navigation.state.params === "undefined"  || typeof navigation.state.params.title === "undefined" ? "Results" : navigation.state.params.title,
+		title: typeof navigation.state.params === "undefined"  || typeof navigation.state.params.title === "undefined" ? translate('search.search_results') : navigation.state.params.title,
 	});
 
 	constructor() {
@@ -53,11 +55,10 @@ export default class Results extends Component {
 		//const searchType = this.props.navigation.state.params.searchType;
 
 		await this._fetchResults();
-        console.log("Search term: " + this.props.navigation.state.params.searchTerm);
-		if(this.props.navigation.state.params.searchTerm != "%20") {
-		    this.props.navigation.setParams({ title: "Results for " + this.props.navigation.state.params.searchTerm });
+		if(this.props.navigation.state.params.searchTerm != null) {
+		    this.props.navigation.setParams({ title: translate('search.search_results_title') + " " + this.props.navigation.state.params.searchTerm });
 		} else {
-		    this.props.navigation.setParams({ title: "Search Results" });
+		    this.props.navigation.setParams({ title: translate('search.search_results') });
 		}
 
 	};
@@ -80,9 +81,8 @@ export default class Results extends Component {
                 }));
             })
             .catch((error) => {
-				console.log("Unable to fetch data from: <" + global.aspenSearchResults + "&searchTerm=" + searchTerm + "&page=" + page + "> in _fetchResults");
 				this.setState({
-					error: "Unable to load search results",
+					error: translate('error.no_page_load'),
 					isLoading: false,
 					isLoadingMore: false,
 					hasError: true,
@@ -125,13 +125,13 @@ export default class Results extends Component {
                         {item.title}
                     </Text>
                     {item.author ? <Text fontSize={{ base: "xs", lg: "lg"}} color="coolGray.600">
-                        By: {item.author}
+                        {translate('grouped_work.by')} {item.author}
                     </Text> : null }
-                    <Stack mt={1.5} direction="row" space={1}>
-                {item.itemList.map((item, index) => {
-                        return <Badge colorScheme="tertiary" variant="outline" rounded="4px">{item.name}</Badge>;
-                })}
-                </Stack>
+                    <Stack mt={1.5} direction="row" space={1} flexWrap="wrap">
+                        {item.itemList.map((item, index) => {
+                            return <Badge colorScheme="tertiary" mt={1} variant="outline" rounded="4px">{item.name}</Badge>;
+                        })}
+                    </Stack>
                 </ListItem.Content>
                 <ListItem.Chevron />
             </ListItem>
@@ -147,8 +147,8 @@ export default class Results extends Component {
 		return (
 			<Center flex={1} justifyContent="center" alignItems="center" pt="70%">
 				<VStack space={5}>
-					<Heading>No results found.</Heading>
-					<Button onPress={() => this.props.navigation.goBack()}>Try a new search</Button>
+					<Heading>{translate('search.no_results')}</Heading>
+					<Button onPress={() => this.props.navigation.goBack()}>{translate('search.new_search_button')}</Button>
 				</VStack>
 			</Center>
 		);
@@ -156,13 +156,7 @@ export default class Results extends Component {
 
 	_renderFooter = () => {
 	    if(!this.state.isLoadingMore) return null;
-
-	    return(
-	        <Center pt={5} pb={5}>
-	            <Spinner accessibilityLabel="Searching..." />
-	        </Center>
-	    )
-
+	    return ( loadingSpinner() );
 	}
 
 	render() {

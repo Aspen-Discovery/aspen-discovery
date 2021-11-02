@@ -9,27 +9,40 @@ import * as WebBrowser from 'expo-web-browser';
 import { showLocation } from 'react-native-map-link';
 import moment from "moment";
 
+// custom components and helper files
+import { translate } from '../../util/translations';
+import { loadingSpinner } from "../../components/loadingSpinner";
+import { getLocationInfo, getLibraryInfo } from '../../util/loadLibrary';
 import HoursAndLocation from "./HoursAndLocation";
 
 export default class Contact extends Component {
 	constructor() {
 		super();
-
 		this.state = {
 			isLoading: true,
 			hasError: false,
 			error: null,
+			showLibraryHours: 0,
+			website: null,
+			address: null,
+			phone: null,
+			email: null,
+			description: null,
 		};
 	}
 
 	componentDidMount = async () => {
+	    await getLocationInfo();
+	    await getLibraryInfo();
+
 		this.setState({
 		    showLibraryHours: await AsyncStorage.getItem('@libraryShowHours'),
 		    hoursMessage: await AsyncStorage.getItem('@libraryHoursMessage'),
-		    homeLink: await AsyncStorage.getItem('@libraryHomeLink'),
+		    website: await AsyncStorage.getItem('@libraryHomeLink'),
 		    address: await AsyncStorage.getItem('@libraryAddress'),
 		    phone: await AsyncStorage.getItem('@libraryPhone'),
 		    email: await AsyncStorage.getItem('@libraryEmail'),
+		    description: await AsyncStorage.getItem('@libraryDescription'),
             latitude: await AsyncStorage.getItem("@libraryLatitude"),
             longitude: await AsyncStorage.getItem("@libraryLongitude"),
             hours: JSON.parse(await AsyncStorage.getItem("@libraryHours")),
@@ -76,30 +89,25 @@ export default class Contact extends Component {
 	        sourceLatitude: this.state.userLatitude,
 	        sourceLongitude: this.state.userLongitude,
 	        title: global.libraryName,
+	        googleForceLatLon: true,
 	    })
 	};
 
 
 	render() {
 		if (this.state.isLoading) {
-			return (
-				<Center flex={1}>
-					<HStack>
-						<Spinner accessibilityLabel="Loading..." />
-					</HStack>
-				</Center>
-			);
+			return ( loadingSpinner() );
 		}
 
 		return (
             <Box safeArea={5}>
             <Center>
-                {this.state.showLibraryHours == 1 ? <HoursAndLocation hoursMessage={this.state.hoursMessage} hours={this.state.hours} /> : null }
+                {this.state.showLibraryHours == 1 ? <HoursAndLocation hoursMessage={this.state.hoursMessage} hours={this.state.hours} description={this.state.description} /> : null }
                 <Box>
-                    <Button mb={3} onPress={() => { this.dialCall(this.state.phone); }} startIcon={<Icon as={MaterialIcons} name="call" size="sm" />} >Call the Library</Button>
-                    <Button mb={3} onPress={() => { this.sendEmail(this.state.email); }} startIcon={<Icon as={MaterialIcons} name="email" size="sm" />} >Email a Librarian</Button>
-                    <Button mb={3} onPress={() => { this.getDirections(); }} startIcon={<Icon as={MaterialIcons} name="map" size="sm" />} >Get Directions</Button>
-                    <Button onPress={() => { this.openWebsite(this.state.homeLink); }} startIcon={<Icon as={MaterialIcons} name="home" size="sm" />} >Visit Our Website</Button>
+                    {this.state.phone ? <Button mb={3} onPress={() => { this.dialCall(this.state.phone); }} startIcon={<Icon as={MaterialIcons} name="call" size="sm" />} >{translate('library_contact.call_button')}</Button> : null }
+                    {this.state.email ? <Button mb={3} onPress={() => { this.sendEmail(this.state.email); }} startIcon={<Icon as={MaterialIcons} name="email" size="sm" />} >{translate('library_contact.email_button')}</Button> : null }
+                    <Button mb={3} onPress={() => { this.getDirections(); }} startIcon={<Icon as={MaterialIcons} name="map" size="sm" />} >{translate('library_contact.directions_button')}</Button>
+                    {this.state.website ? <Button onPress={() => { this.openWebsite(this.state.homeLink); }} startIcon={<Icon as={MaterialIcons} name="home" size="sm" />} >{translate('library_contact.website_button')}</Button> : null }
                 </Box>
             </Center>
             </Box>
