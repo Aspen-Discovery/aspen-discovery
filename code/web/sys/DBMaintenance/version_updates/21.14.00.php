@@ -91,6 +91,13 @@ function getUpdates21_14_00() : array
 				'ALTER TABLE aspen_sites ADD COLUMN lastNotificationTime INT(11)',
 			]
 		], //greenhouseMonitoring2
+		'displayMaterialsRequestToPublic' => [
+			'title' => 'Add displayMaterialsRequestToPublic',
+			'description' => 'Add option to have Materials Request enabled but hidden to patrons',
+			'sql' => [
+				'ALTER TABLE library ADD COLUMN displayMaterialsRequestToPublic TINYINT(1) DEFAULT 1',
+			]
+		], //displayMaterialsRequestToPublic
 	];
 }
 
