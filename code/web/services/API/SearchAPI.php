@@ -290,19 +290,17 @@ class SearchAPI extends Action
 			require_once ROOT_DIR . '/sys/UserLists/NYTUpdateLogEntry.php';
 			$nytLog = new NYTUpdateLogEntry();
 			$nytLog->orderBy("id DESC");
-			$nytLog->limit(0, 3);
-			$nytLog->find();
-			if ($nytLog->getNumResults() == 0){
+			$nytLog->limit(0, 1);
+
+			if (!$nytLog->find(true)){
 				$this->addCheck($checks, 'NYT Lists', self::STATUS_WARN, "New York Times Lists have not been loaded");
 			}else{
 				$numErrors = 0;
-				while ($nytLog->fetch()){
-					if ($nytLog->numErrors > 0){
-						$numErrors++;
-					}
+				if ($nytLog->numErrors > 0){
+					$numErrors++;
 				}
 				if ($numErrors > 0){
-					$this->addCheck($checks, 'NYT Lists', self::STATUS_WARN, "The last {$numErrors} for New York Times Lists had errors");
+					$this->addCheck($checks, 'NYT Lists', self::STATUS_WARN, "The last log for New York Times Lists had errors");
 				}else{
 					$this->addCheck($checks, 'NYT Lists');
 				}
