@@ -1,5 +1,5 @@
 {strip}
-	<div class="placard" id="placard{$placard->id}">
+	<section class="placard" id="placard{$placard->id}">
 		{if $placard->link}
 			<a href="{$placard->link}" target="_blank" class="placard-link">
 		{/if}
@@ -30,5 +30,5 @@
 				{/if}
 			</div>
 		</div>
-	</div>
+	</section>
 {/strip}
