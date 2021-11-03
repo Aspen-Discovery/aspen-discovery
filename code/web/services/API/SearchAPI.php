@@ -153,11 +153,17 @@ class SearchAPI extends Action
 			$this->addServerStat($serverStats, '5 minute Load Average', $load[1]);
 			$this->addServerStat($serverStats, '15 minute Load Average', $load[2]);
 			$this->addServerStat($serverStats, 'Load Per CPU', ($load[1] / $numCPUs));
-			if ($load[1] > $numCPUs * 1.5){
+			if ($load[1] > $numCPUs * 2.5){
 				if ($load[0] >= $load[1]){
 					$this->addCheck($checks, 'Load Average', self::STATUS_CRITICAL, "Load is very high {$load[1]} and is increasing");
 				}else{
 					$this->addCheck($checks, 'Load Average', self::STATUS_WARN, "Load is very high {$load[1]}, but it is decreasing");
+				}
+			}elseif ($load[1] > $numCPUs * 1.5){
+				if ($load[0] >= $load[1]){
+					$this->addCheck($checks, 'Load Average', self::STATUS_WARN, "Load is high {$load[1]} and is increasing");
+				}else{
+					$this->addCheck($checks, 'Load Average', self::STATUS_WARN, "Load is high {$load[1]}, but it is decreasing");
 				}
 			}else{
 				$this->addCheck($checks, 'Load Average');
@@ -219,7 +225,11 @@ class SearchAPI extends Action
 				/** @var BaseLogEntry $logEntry */
 				$logEntry = new $aspenModule->logClassName();
 				$logEntry->orderBy("id DESC");
-				$logEntry->limit(0, 3 * $numSettings);
+				$numEntriesToCheck = 3;
+				if ($aspenModule->name == 'Open Archives'){
+					$numEntriesToCheck = 1;
+				}
+				$logEntry->limit(0, $numEntriesToCheck * $numSettings);
 				$logErrors = 0;
 				$logEntry->find();
 				$numUnfinishedEntries = 0;
