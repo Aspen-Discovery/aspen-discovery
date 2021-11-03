@@ -200,6 +200,10 @@ class ExtractOverDriveInfo {
 											errorsEncountered[0] = true;
 										}
 									});
+									//Load availability for all collections since we will currently only have collections where the record changed.
+									for (AdvantageCollectionInfo collectionInfo: allAdvantageCollections) {
+										curRecord.addCollection(collectionInfo);
+									}
 									//Load availability for the record
 									Thread availabilityThread = new Thread(() -> {
 										try {
