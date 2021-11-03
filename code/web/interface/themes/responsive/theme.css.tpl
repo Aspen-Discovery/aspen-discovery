@@ -377,6 +377,24 @@ body .container, #home-page-browse-content{ldelim}
     color: {$searchToolsForegroundColor};
 {rdelim}
 
+.top-link{ldelim}
+    background-color: {$tertiaryBackgroundColor};
+    color: {$tertiaryForegroundColor};
+{rdelim}
+
+.top-link:hover{ldelim}
+    background-color: {$tertiaryBackgroundColor};
+    color: {$tertiaryForegroundColor};
+{rdelim}
+
+.top-link i{ldelim}
+    color: {$tertiaryForegroundColor};
+{rdelim}
+
+.top-link i:hover{ldelim}
+    color: {$tertiaryForegroundColor};
+{rdelim}
+
 {$additionalCSS}
 </style>
 {/strip}

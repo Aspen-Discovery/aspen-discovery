@@ -116,6 +116,28 @@ function getUpdates21_14_00() : array
 				) ENGINE INNODB'
 			]
 		], //externalRequestsLog
+		'showTopOfPageButton' => [
+			'title' => 'Add showTopOfPageButton',
+			'description' => 'Add option to have button that goes to top of page in Layout Settings',
+			'sql' => [
+				'ALTER TABLE layout_settings ADD COLUMN showTopOfPageButton TINYINT(1) DEFAULT 1',
+				'updateAllThemes',
+			]
+		], //showTopOfPageButton
+		'dismissPlacardButtonLocation' => [
+			'title' => 'Add dismissPlacardButtonLocation',
+			'description' => 'Add option to move button to dismiss placard in top right corner in Layout Settings',
+			'sql' => [
+				'ALTER TABLE layout_settings ADD COLUMN dismissPlacardButtonLocation TINYINT(1) DEFAULT 0',
+			]
+		], //dismissPlacardButtonLocation
+		'dismissPlacardButtonIcon' => [
+			'title' => 'Add dismissPlacardButtonIcon',
+			'description' => 'Add option to change dismiss placard button to X icon instead of text in Layout Settings',
+			'sql' => [
+				'ALTER TABLE layout_settings ADD COLUMN dismissPlacardButtonIcon TINYINT(1) DEFAULT 0',
+			]
+		], //dismissPlacardButtonIcon
 	];
 }
 
