@@ -448,6 +448,9 @@ class UInterface extends Smarty
 			$this->assign('homeLink', '/');
 		}
 
+		$showTopOfPageButton = $library->getLayoutSettings()->showTopOfPageButton;
+		$this->assign('showTopOfPageButton', $showTopOfPageButton);
+
 		//Load JavaScript Snippets
 		$customJavascript = '';
 		if (!isset($_REQUEST['noCustomJavaScript']) && !isset($_REQUEST['noCustomJavascript'])) {

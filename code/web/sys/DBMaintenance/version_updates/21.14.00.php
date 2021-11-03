@@ -98,6 +98,13 @@ function getUpdates21_14_00() : array
 				'ALTER TABLE library ADD COLUMN displayMaterialsRequestToPublic TINYINT(1) DEFAULT 1',
 			]
 		], //displayMaterialsRequestToPublic
+		'showTopOfPageButton' => [
+			'title' => 'Add showTopOfPageButton',
+			'description' => 'Add option to have button that goes to top of page in Layout Settings',
+			'sql' => [
+				'ALTER TABLE layout_settings ADD COLUMN showTopOfPageButton TINYINT(1) DEFAULT 1',
+			]
+		], //showTopOfPageButton
 	];
 }
 

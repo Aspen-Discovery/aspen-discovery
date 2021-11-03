@@ -14,6 +14,7 @@ class LayoutSetting extends DataObject
 	public $showLibraryHoursAndLocationsLink;
 	public $useHomeLink;
 	public $showBookIcon;
+	public $showTopOfPageButton;
 
 	static function getObjectStructure() : array {
 		return [
@@ -24,6 +25,7 @@ class LayoutSetting extends DataObject
 			'homeLinkText' => array('property'=>'homeLinkText', 'type'=>'text', 'label'=>'Home Breadcrumb Link Text', 'description'=>'The text to show for the Home breadcrumb link', 'size'=>'40', 'default' => 'Home'),
 			'browseLinkText' => array('property'=>'browseLinkText', 'type'=>'text', 'label'=>'Catalog Home Breadcrumb Link Text', 'description'=>'The text to show for the Catalog Home breadcrumb link', 'size'=>'40', 'default' => 'Browse'),
 			'showLibraryHoursAndLocationsLink' => array('property'=>'showLibraryHoursAndLocationsLink', 'type'=>'checkbox', 'label'=>'Show Library Hours and Locations Link', 'description'=>'Whether or not the library hours and locations link is shown on the home page.', 'default' => true),
+			'showTopOfPageButton' => array('property'=>'showTopOfPageButton', 'type'=>'checkbox', 'label'=>'Show Top of Page Button', 'description'=>'Whether or not to show button to go to top of page', 'default' => true),
 		];
 	}
 }
