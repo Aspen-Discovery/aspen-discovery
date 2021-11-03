@@ -529,19 +529,21 @@ class Polaris extends AbstractIlsDriver
 				$relatedRecord = $record->getRelatedRecord();
 				foreach ($relatedRecord->getItems() as $item){
 					if ($item->itemId == $itemId){
-						//We have the item id, but we need the item barcode for placing holds.  We will need
 						$marcRecord = $record->getMarcRecord();
-						/** @var File_MARC_Data_Field[] $marcItems */
-						$marcItems = $marcRecord->getFields($this->getIndexingProfile()->itemTag);
-						foreach ($marcItems as $marcItem) {
-							$itemSubField = $marcItem->getSubfield($this->getIndexingProfile()->itemRecordNumber);
-							if ($itemSubField->getData() == $itemId){
-								$body->ItemBarcode = $marcItem->getSubfield($this->getIndexingProfile()->barcode)->getData();
-								break;
-							}
-						}
 						if (!empty($item->volume)) {
+							//Volume holds just need the volume
 							$body->VolumeNumber = $item->volume;
+						}else{
+							//If we place a hold on just an item, we need a barcode for the item rather than the record number
+							/** @var File_MARC_Data_Field[] $marcItems */
+							$marcItems = $marcRecord->getFields($this->getIndexingProfile()->itemTag);
+							foreach ($marcItems as $marcItem) {
+								$itemSubField = $marcItem->getSubfield($this->getIndexingProfile()->itemRecordNumber);
+								if ($itemSubField->getData() == $itemId){
+									$body->ItemBarcode = $marcItem->getSubfield($this->getIndexingProfile()->barcode)->getData();
+									break;
+								}
+							}
 						}
 						break;
 					}
