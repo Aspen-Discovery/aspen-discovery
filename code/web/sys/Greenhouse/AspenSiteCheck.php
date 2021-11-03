@@ -51,6 +51,6 @@ class AspenSiteCheck extends DataObject
 		}elseif ($checkType == 'nyt_lists'){
 			return $site->baseUrl . "/UserLists/NYTUpdatesLog";
 		}
-		return "";
+		return $site->baseUrl . "/Admin/SiteStatus";
 	}
 }

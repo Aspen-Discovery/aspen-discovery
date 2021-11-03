@@ -66,7 +66,7 @@ class GreenhouseAPI extends Action
 				}
 				$status = $check['status'];
 				if ($status == 'okay'){
-					if ($aspenSiteCheck->currentStatus !== "0") {
+					if ($aspenSiteCheck->currentStatus !== "0" && $aspenSiteCheck->currentStatus !== 0) {
 						$alertText .= '- ~' . $check['name'] . " recovered!~\n";
 						$wasCritical = false;
 						$wasWarning = false;
@@ -117,7 +117,6 @@ class GreenhouseAPI extends Action
 					$notification = "<!here>";
 				}
 				if ($checkExists){
-
 					$aspenSiteCheck->update();
 				}else{
 					$aspenSiteCheck->insert();
