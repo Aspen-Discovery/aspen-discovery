@@ -287,7 +287,7 @@ class Grouping_StatusInformation
 						$numberOfCopiesMessage .= '%1% copies available';
 					}
 				}
-				if ($this->getNumHolds() > 0 && ($this->getAvailableCopies() > 0 || !$this->isAvailableOnline())) {
+				if ($this->getNumHolds() > 0 && ($this->getAvailableCopies() == 0 && !$this->isAvailableOnline())) {
 					if ($this->getCopies() == 1) {
 						$numberOfCopiesMessage .= '1 copy';
 					} elseif ($this->getCopies() > 1) {
