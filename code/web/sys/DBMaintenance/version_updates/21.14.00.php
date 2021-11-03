@@ -106,6 +106,20 @@ function getUpdates21_14_00() : array
 				'updateAllThemes',
 			]
 		], //showTopOfPageButton
+		'dismissPlacardButtonLocation' => [
+			'title' => 'Add dismissPlacardButtonLocation',
+			'description' => 'Add option to move button to dismiss placard in top right corner in Layout Settings',
+			'sql' => [
+				'ALTER TABLE layout_settings ADD COLUMN dismissPlacardButtonLocation TINYINT(1) DEFAULT 0',
+			]
+		], //dismissPlacardButtonLocation
+		'dismissPlacardButtonIcon' => [
+			'title' => 'Add dismissPlacardButtonIcon',
+			'description' => 'Add option to change dismiss placard button to X icon instead of text in Layout Settings',
+			'sql' => [
+				'ALTER TABLE layout_settings ADD COLUMN dismissPlacardButtonIcon TINYINT(1) DEFAULT 0',
+			]
+		], //dismissPlacardButtonIcon
 	];
 }
 
@@ -123,12 +137,4 @@ function importBadWords(){
 	/** @var $memCache Memcache */
 	global $memCache;
 	$memCache->delete('bad_words_list');
-}
-
-function updateAllThemes(){
-	$theme = new Theme();
-	$theme->find();
-	while ($theme->fetch()){
-		$theme->generateCss(true);
-	}
 }

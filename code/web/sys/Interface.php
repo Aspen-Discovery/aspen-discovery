@@ -451,6 +451,12 @@ class UInterface extends Smarty
 		$showTopOfPageButton = $library->getLayoutSettings()->showTopOfPageButton;
 		$this->assign('showTopOfPageButton', $showTopOfPageButton);
 
+		$dismissPlacardLocation = $library->getLayoutSettings()->dismissPlacardButtonLocation;
+		$this->assign('dismissPlacardLocation', $dismissPlacardLocation);
+
+		$dismissPlacardButtonAsIcon = $library->getLayoutSettings()->dismissPlacardButtonIcon;
+		$this->assign('dismissPlacardButtonAsIcon', $dismissPlacardButtonAsIcon);
+
 		//Load JavaScript Snippets
 		$customJavascript = '';
 		if (!isset($_REQUEST['noCustomJavaScript']) && !isset($_REQUEST['noCustomJavascript'])) {

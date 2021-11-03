@@ -15,6 +15,8 @@ class LayoutSetting extends DataObject
 	public $useHomeLink;
 	public $showBookIcon;
 	public $showTopOfPageButton;
+	public $dismissPlacardButtonLocation;
+	public $dismissPlacardButtonIcon;
 
 	static function getObjectStructure() : array {
 		return [
@@ -26,6 +28,8 @@ class LayoutSetting extends DataObject
 			'browseLinkText' => array('property'=>'browseLinkText', 'type'=>'text', 'label'=>'Catalog Home Breadcrumb Link Text', 'description'=>'The text to show for the Catalog Home breadcrumb link', 'size'=>'40', 'default' => 'Browse'),
 			'showLibraryHoursAndLocationsLink' => array('property'=>'showLibraryHoursAndLocationsLink', 'type'=>'checkbox', 'label'=>'Show Library Hours and Locations Link', 'description'=>'Whether or not the library hours and locations link is shown on the home page.', 'default' => true),
 			'showTopOfPageButton' => array('property'=>'showTopOfPageButton', 'type'=>'checkbox', 'label'=>'Show Top of Page Button', 'description'=>'Whether or not to show button to go to top of page', 'default' => true),
+			'dismissPlacardButtonLocation' => array('property'=>'dismissPlacardButtonLocation', 'type'=>'checkbox', 'label'=>'Show Dismiss Placard Button in Top Right Corner', 'description'=>'Whether or not to show dismiss button in the top right corner instead of the bottom right', 'default' => false),
+			'dismissPlacardButtonIcon' => array('property'=>'dismissPlacardButtonIcon', 'type'=>'checkbox', 'label'=>'Show Dismiss Placard Button as <i class="fas fa-times"></i> (Close) Icon', 'description'=>'Whether or not to show icon instead of default dismiss placard text', 'default' => false),
 		];
 	}
 }
