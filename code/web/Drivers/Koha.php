@@ -240,9 +240,7 @@ class Koha extends AbstractIlsDriver
 							$patronId = $jsonResponse->patron_id;
 
 							if (!empty($extendedAttributes)) {
-								foreach ($extendedAttributes as $attribute) {
-									$this->updateExtendedAttributesInKoha($patronId, $attribute['code'], $_REQUEST["borrower_attribute_".$attribute['code']], $oauthToken);
-								}
+								$this->updateExtendedAttributesInKoha($patronId, $extendedAttributes, $oauthToken);
 							}
 						}
 					}
@@ -2425,9 +2423,7 @@ class Koha extends AbstractIlsDriver
 						$extendedAttributes = $this->setExtendedAttributes();
 
 						if (!empty($extendedAttributes)) {
-							foreach ($extendedAttributes as $attribute) {
-								$this->updateExtendedAttributesInKoha($patronId, $attribute['code'], $_REQUEST["borrower_attribute_".$attribute['code']], $oauthToken);
-							}
+							$this->updateExtendedAttributesInKoha($patronId, $extendedAttributes, $oauthToken);
 						}
 					}
 
@@ -3770,15 +3766,19 @@ class Koha extends AbstractIlsDriver
 	 * @param string $oauthToken
 	 * @return array
 	 */
-	protected function updateExtendedAttributesInKoha($borrowerNumber, string $attributeType, string $attributeValue, string $oauthToken): array
+	protected function updateExtendedAttributesInKoha($borrowerNumber, array $extendedAttributes, string $oauthToken): array
 	{
 
 		$apiUrl = $this->getWebServiceURL() . "/api/v1/patrons/{$borrowerNumber}/extended_attributes";
 
-		$postVariables[] = array(
-			'type' => $attributeType,
-			'value' => $attributeValue,
-		);
+		$postVariables = [];
+		foreach($extendedAttributes as $extendedAttribute) {
+			$postVariable = array(
+				'type' => $extendedAttribute['code'],
+				'value' => $_REQUEST["borrower_attribute_".$extendedAttribute['code']],
+			);
+			$postVariables[] = $postVariable;
+		}
 
 		$postParams = json_encode($postVariables);
 
