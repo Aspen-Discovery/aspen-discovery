@@ -4519,6 +4519,8 @@ var AspenDiscovery = (function(){
 		AspenDiscovery.setupFieldSetToggles();
 		AspenDiscovery.initCarousels();
 		AspenDiscovery.toggleMenu();
+		AspenDiscovery.autoOpenPanel();
+		AspenDiscovery.scrollToTopPage();
 
 		$("#modalDialog").modal({show:false});
 		$('[data-toggle="tooltip"]').tooltip();
@@ -4549,6 +4551,8 @@ var AspenDiscovery = (function(){
 				}
 			}
 		});
+
+
 	});
 
 	return {
@@ -5145,6 +5149,58 @@ var AspenDiscovery = (function(){
 		},
 		resetSearchBox: function() {
 			document.getElementById("lookfor").value = "";
+		},
+		autoOpenPanel: function() {
+			var hash = window.location.hash.substr(1);
+			if (hash) {
+				var requestedPanel = hash;
+				var element = '#'.concat(requestedPanel);
+				$(element).addClass('active');
+				var element2 = '#'.concat(requestedPanel, "Body");
+				$(element2).removeClass('collapse');
+				$(element2).addClass('in');
+				$(element2).css("height","auto");
+			}
+		},
+		scrollToTopPage: function() {
+			// Set a variable for our button element.
+			var scrollToTopButton = document.getElementById('js-top');
+
+			// Let's set up a function that shows our scroll-to-top button if we scroll beyond the height of the initial window.
+			function scrollFunc() {
+				// Get the current scroll value
+				var y = window.scrollY;
+
+				// If the scroll value is greater than the window height, let's add a class to the scroll-to-top button to show it!
+				if (y > 0) {
+					scrollToTopButton.className = "top-link show";
+				} else {
+					scrollToTopButton.className = "top-link hide";
+				}
+			};
+
+			window.addEventListener("scroll", scrollFunc);
+
+			function scrollToTop() {
+				// Let's set a variable for the number of pixels we are from the top of the document.
+				var c = document.documentElement.scrollTop || document.body.scrollTop;
+
+				// If that number is greater than 0, we'll scroll back to 0, or the top of the document.
+				// We'll also animate that scroll with requestAnimationFrame:
+				// https://developer.mozilla.org/en-US/docs/Web/API/window/requestAnimationFrame
+				if (c > 0) {
+					window.requestAnimationFrame(scrollToTop);
+					// ScrollTo takes an x and a y coordinate.
+					// Increase the '10' value to get a smoother/slower scroll!
+					window.scrollTo(0, c - c / 10);
+				}
+			};
+
+			// When the button is clicked, run our ScrolltoTop function above!
+			scrollToTopButton.onclick = function(e) {
+				e.preventDefault();
+				scrollToTop();
+			}
 		}
 	}
 

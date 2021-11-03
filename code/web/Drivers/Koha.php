@@ -185,6 +185,16 @@ class Koha extends AbstractIlsDriver
 				$postVariables = $this->setPostFieldWithDifferentName($postVariables,'surname', 'borrower_surname', $library->useAllCapsWhenUpdatingProfile);
 				$postVariables = $this->setPostFieldWithDifferentName($postVariables,'title', 'borrower_title', $library->useAllCapsWhenUpdatingProfile);
 
+				// Patron extended attributes
+				if($this->getKohaVersion() > 21.05) {
+					$extendedAttributes = $this->setExtendedAttributes();
+					if (!empty($extendedAttributes)) {
+						foreach ($extendedAttributes as $attribute) {
+							$postVariables = $this->setPostFieldWithDifferentName($postVariables,"borrower_attribute_".$attribute['code'], $attribute['code'], $library->useAllCapsWhenUpdatingProfile);
+						}
+					}
+				}
+
 				$oauthToken = $this->getOAuthToken();
 				if ($oauthToken == false) {
 					$result['messages'][] = translate(['text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.', 'isPublicFacing'=>true]);
@@ -223,6 +233,16 @@ class Koha extends AbstractIlsDriver
 					} else {
 						$result['success'] = true;
 						$result['messages'][] = 'Your account was updated successfully.';
+
+						// check for patron attributes
+						if($this->getKohaVersion() > 21.05) {
+							$jsonResponse = json_decode($response);
+							$patronId = $jsonResponse->patron_id;
+
+							if (!empty($extendedAttributes)) {
+								$this->updateExtendedAttributesInKoha($patronId, $extendedAttributes, $oauthToken);
+							}
+						}
 					}
 				}
 			} else {
@@ -283,6 +303,16 @@ class Koha extends AbstractIlsDriver
 				$postVariables = $this->setPostField($postVariables, 'borrower_altcontactzipcode', $library->useAllCapsWhenUpdatingProfile);
 				$postVariables = $this->setPostField($postVariables, 'borrower_altcontactcountry', $library->useAllCapsWhenUpdatingProfile);
 				$postVariables = $this->setPostField($postVariables, 'borrower_altcontactphone', $library->useAllCapsWhenUpdatingProfile, $library->requireNumericPhoneNumbersWhenUpdatingProfile);
+
+				// Patron extended attributes
+				if($this->getKohaVersion() > 21.05) {
+					$extendedAttributes = $this->setExtendedAttributes();
+					if (!empty($extendedAttributes)) {
+						foreach ($extendedAttributes as $attribute) {
+							$postVariables = $this->setPostFieldWithDifferentName($postVariables,"borrower_attribute_".$attribute['code'], $attribute['code'], $library->useAllCapsWhenUpdatingProfile);
+						}
+					}
+				}
 
 				$postVariables['csrf_token'] = $csr_token;
 				$postVariables['action'] = 'update';
@@ -2073,37 +2103,20 @@ class Koha extends AbstractIlsDriver
 
 		// Patron extended attributes
 		if($this->getKohaVersion() > 21.05) {
-			/** @noinspection SqlResolve */
-			$borrowerAttributeTypesSQL = "SELECT * FROM borrower_attribute_types where opac_display = '1' AND opac_editable = '1' order by code";
-			$borrowerAttributeTypesRS = mysqli_query($this->dbConnection, $borrowerAttributeTypesSQL);
-			$borrowerAttributeTypes = [];
-			while ($curRow = $borrowerAttributeTypesRS->fetch_assoc()) {
-				$borrowerAttributeTypes[$curRow['code']]['code'] = $curRow['code'];
-				$borrowerAttributeTypes[$curRow['code']]['desc'] = $curRow['description'];
-				$borrowerAttributeTypes[$curRow['code']]['req'] = $curRow['mandatory'];
-				$authorizedValueCategorySQL = "SELECT * FROM authorised_values where category = '{$curRow['authorised_value_category']}'";
-				$authorizedValueCategoryRS = mysqli_query($this->dbConnection, $authorizedValueCategorySQL);
-				$authorizedValueCategories = [];
-				while ($curRow2 = $authorizedValueCategoryRS->fetch_assoc()) {
-					$authorizedValueCategories[$curRow2['authorised_value']] = $curRow2['lib_opac'];
-				}
-				$borrowerAttributeTypes[$curRow['code']]['authorized_values'] = $authorizedValueCategories;
-			}
-
-			if (!empty($borrowerAttributeTypes)) {
+			$extendedAttributes = $this->setExtendedAttributes();
+			if (!empty($extendedAttributes)) {
 				$borrowerAttributes = [];
-				foreach ($borrowerAttributeTypes as $borrowerAttributeType) {
-					foreach ($borrowerAttributeType['authorized_values'] as $key => $value) {
+				foreach ($extendedAttributes as $attribute) {
+					foreach ($attribute['authorized_values'] as $key => $value) {
 						$authorizedValues[$key] = $value;
 					}
-					$isRequired = $borrowerAttributeType['req'];
-					$borrowerAttributes[$borrowerAttributeType['code']]['property'] = "borrower_attribute_".$borrowerAttributeType['code'];
-					$borrowerAttributes[$borrowerAttributeType['code']]['type'] = "enum";
-					$borrowerAttributes[$borrowerAttributeType['code']]['values'] = $authorizedValues;
-					$borrowerAttributes[$borrowerAttributeType['code']]['label'] = $borrowerAttributeType['desc'];
-					$borrowerAttributes[$borrowerAttributeType['code']]['required'] = $isRequired;
+					$isRequired = $attribute['req'];
+					$borrowerAttributes[$attribute['code']]['property'] = "borrower_attribute_".$attribute['code'];
+					$borrowerAttributes[$attribute['code']]['type'] = "enum";
+					$borrowerAttributes[$attribute['code']]['values'] = $authorizedValues;
+					$borrowerAttributes[$attribute['code']]['label'] = $attribute['desc'];
+					$borrowerAttributes[$attribute['code']]['required'] = $isRequired;
 				}
-
 				$fields['additionalInfoSection'] = array('property' => 'additionalInfoSection', 'type' => 'section', 'label' => 'Additional Information', 'hideInLists' => true, 'expandByDefault' => true, 'properties' => $borrowerAttributes);
 			}
 		}
@@ -2336,6 +2349,16 @@ class Koha extends AbstractIlsDriver
 			$postVariables = $this->setPostFieldWithDifferentName($postVariables,'title', 'borrower_title', $library->useAllCapsWhenUpdatingProfile);
 			$postVariables['category_id'] = $this->getKohaSystemPreference('PatronSelfRegistrationDefaultCategory');
 
+			// Patron extended attributes
+			if($this->getKohaVersion() > 21.05) {
+				$extendedAttributes = $this->setExtendedAttributes();
+				if (!empty($extendedAttributes)) {
+					foreach ($extendedAttributes as $attribute) {
+						$postVariables = $this->setPostFieldWithDifferentName($postVariables,"borrower_attribute_".$attribute['code'], $attribute['code'], $library->useAllCapsWhenUpdatingProfile);
+					}
+				}
+			}
+
 			$oauthToken = $this->getOAuthToken();
 			if ($oauthToken == false) {
 				$result['messages'][] = translate(['text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.', 'isPublicFacing'=>true]);
@@ -2392,6 +2415,19 @@ class Koha extends AbstractIlsDriver
 							$result['message'] = "Your account was registered, but a barcode was not provided, please contact your library for barcode and password to use when logging in.";
 						}
 					}
+
+					// check for patron attributes
+					if($this->getKohaVersion() > 21.05) {
+						$jsonResponse = json_decode($response);
+						$patronId = $jsonResponse->patron_id;
+						$extendedAttributes = $this->setExtendedAttributes();
+
+						if (!empty($extendedAttributes)) {
+							$this->updateExtendedAttributesInKoha($patronId, $extendedAttributes, $oauthToken);
+						}
+					}
+
+
 				}
 			}
 		}
@@ -2677,6 +2713,15 @@ class Koha extends AbstractIlsDriver
 				} else {
 					$user->$objectProperty = $value;
 				}
+			}
+		}
+
+		//Set default values for extended patron attributes
+		if($this->getKohaVersion() > 21.05) {
+			$extendedAttributes = $this->getUsersExtendedAttributesFromKoha($user->borrower_borrowernumber);
+			foreach ($extendedAttributes as $attribute) {
+				$objectProperty = 'borrower_attribute_' . $attribute['type'];
+				$user->$objectProperty = $attribute['value'];
 			}
 		}
 
@@ -3682,6 +3727,135 @@ class Koha extends AbstractIlsDriver
 
 		} else {
 			return ['success' => true, 'message' => 'Your password was updated successfully.'];
+		}
+	}
+
+	function setExtendedAttributes()
+	{
+		$this->initDatabaseConnection();
+		/** @noinspection SqlResolve */
+		$borrowerAttributeTypesSQL = "SELECT * FROM borrower_attribute_types where opac_display = '1' AND opac_editable = '1' order by code";
+		$borrowerAttributeTypesRS = mysqli_query($this->dbConnection, $borrowerAttributeTypesSQL);
+
+		while ($curRow = $borrowerAttributeTypesRS->fetch_assoc()) {
+
+			$authorizedValueCategorySQL = "SELECT * FROM authorised_values where category = '{$curRow['authorised_value_category']}'";
+			$authorizedValueCategoryRS = mysqli_query($this->dbConnection, $authorizedValueCategorySQL);
+			$authorizedValueCategories = [];
+			while ($curRow2 = $authorizedValueCategoryRS->fetch_assoc()) {
+				$authorizedValueCategories[$curRow2['authorised_value']] = $curRow2['lib_opac'];
+			}
+
+			$attribute = [
+				'code' => $curRow['code'],
+				'desc' => $curRow['description'],
+				'req' => $curRow['mandatory'],
+				'authorized_values' => $authorizedValueCategories,
+			];
+
+			$extendedAttributes[] = $attribute;
+		}
+
+		return $extendedAttributes;
+	}
+
+	/**
+	 * @param $borrowerNumber
+	 * @param string $attributeType
+	 * @param string $attributeValue
+	 * @param string $oauthToken
+	 * @return array
+	 */
+	protected function updateExtendedAttributesInKoha($borrowerNumber, array $extendedAttributes, string $oauthToken): array
+	{
+
+		$apiUrl = $this->getWebServiceURL() . "/api/v1/patrons/{$borrowerNumber}/extended_attributes";
+
+		$postVariables = [];
+		foreach($extendedAttributes as $extendedAttribute) {
+			$postVariable = array(
+				'type' => $extendedAttribute['code'],
+				'value' => $_REQUEST["borrower_attribute_".$extendedAttribute['code']],
+			);
+			$postVariables[] = $postVariable;
+		}
+
+		$postParams = json_encode($postVariables);
+
+		$this->apiCurlWrapper->addCustomHeaders([
+			'Authorization: Bearer ' . $oauthToken,
+			'User-Agent: Aspen Discovery',
+			'Accept: */*',
+			'Cache-Control: no-cache',
+			'Content-Type: application/json;charset=UTF-8',
+			'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
+		], true);
+		$response = $this->apiCurlWrapper->curlSendPage($apiUrl, 'PUT', $postParams);
+		if ($this->apiCurlWrapper->getResponseCode() != 200) {
+			if (strlen($response) > 0) {
+				$jsonResponse = json_decode($response);
+				if ($jsonResponse) {
+					if (!empty($jsonResponse->error)) {
+						$result['messages'][] = $jsonResponse->error;
+					}else{
+						foreach ($jsonResponse->errors as $error) {
+							$result['messages'][] = $error->message;
+						}
+					}
+				} else {
+					$result['messages'][] = $response;
+				}
+			} else {
+				$result['messages'][] = "Error {$this->apiCurlWrapper->getResponseCode()} updating your account.";
+			}
+		} else {
+			$result['success'] = true;
+			$result['messages'][] = translate(['text' => 'Your account was updated successfully.', 'isPublicFacing'=> true]);
+		}
+
+		return $result;
+	}
+
+	/**
+	 * @param $borrowerNumber
+	 * @return array
+	 */
+	protected function getUsersExtendedAttributesFromKoha($borrowerNumber): array
+	{
+
+		$oauthToken = $this->getOAuthToken();
+		if ($oauthToken == false) {
+			return ['success' => false, 'message' => translate(['text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.', 'isPublicFacing'=>true])];
+		} else {
+			$apiUrl = $this->getWebServiceURL() . "/api/v1/patrons/{$borrowerNumber}/extended_attributes";
+
+			$this->apiCurlWrapper->addCustomHeaders([
+				'Authorization: Bearer ' . $oauthToken,
+				'User-Agent: Aspen Discovery',
+				'Accept: */*',
+				'Cache-Control: no-cache',
+				'Content-Type: application/json',
+				'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
+				'Accept-Encoding: gzip, deflate',
+			], true);
+
+			$response = $this->apiCurlWrapper->curlSendPage($apiUrl, 'GET', null);
+
+			if ($this->apiCurlWrapper->getResponseCode() != 200) {
+				$result['success'] = false;
+				$result['message'] = "Error getting extended patron attributes";
+			} else {
+				$jsonResponse = json_decode($response, true);
+				foreach($jsonResponse as $response) {
+					$attribute = [
+						'id' => $response['extended_attribute_id'],
+						'type' => $response['type'],
+						'value' => $response['value'],
+					];
+					$result[] = $attribute;
+				}
+			}
+			return $result;
 		}
 	}
 
