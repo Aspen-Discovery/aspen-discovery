@@ -98,6 +98,24 @@ function getUpdates21_14_00() : array
 				'ALTER TABLE library ADD COLUMN displayMaterialsRequestToPublic TINYINT(1) DEFAULT 1',
 			]
 		], //displayMaterialsRequestToPublic
+		'externalRequestsLog' => [
+			'title' => 'External Requests Log',
+			'description' => 'Add External Requests Log',
+			'sql' => [
+				'CREATE TABLE external_request_log (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					requestUrl VARCHAR(400),
+					requestHeaders TEXT,
+					requestBody TEXT,
+					response TEXT,
+					responseCode INT,
+					requestTime INT,
+					INDEX requestUrl(requestUrl),
+					INDEX requestTime(requestTime),
+					INDEX responseCode(responseCode)
+				) ENGINE INNODB'
+			]
+		], //externalRequestsLog
 	];
 }
 
