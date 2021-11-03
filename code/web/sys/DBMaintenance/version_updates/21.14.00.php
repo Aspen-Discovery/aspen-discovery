@@ -103,6 +103,7 @@ function getUpdates21_14_00() : array
 			'description' => 'Add option to have button that goes to top of page in Layout Settings',
 			'sql' => [
 				'ALTER TABLE layout_settings ADD COLUMN showTopOfPageButton TINYINT(1) DEFAULT 1',
+				'updateAllThemes',
 			]
 		], //showTopOfPageButton
 	];
@@ -122,4 +123,12 @@ function importBadWords(){
 	/** @var $memCache Memcache */
 	global $memCache;
 	$memCache->delete('bad_words_list');
+}
+
+function updateAllThemes(){
+	$theme = new Theme();
+	$theme->find();
+	while ($theme->fetch()){
+		$theme->generateCss(true);
+	}
 }
