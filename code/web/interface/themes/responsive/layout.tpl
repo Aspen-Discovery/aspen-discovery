@@ -47,7 +47,7 @@
 <body class="module_{$module} action_{$action}{if $masqueradeMode} masqueradeMode{/if}{if $loggedIn} loggedIn{else} loggedOut{/if}" id="{$module}-{$action}{if $module=="WebBuilder" && $action=="BasicPage" || $action=="PortalPage"}-{$id}{/if}">
 {strip}
 	{if $showTopOfPageButton}
-	<a class="top-link hide hidden-sm hidden-xs" href="" id="js-top">
+	<a class="top-link hide" href="" id="js-top">
 		<i class="fas fa-arrow-up fa-2x fa-fw"></i>
 		<span class="screen-reader-text">Back to top</span>
 	</a>
