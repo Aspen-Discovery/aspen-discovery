@@ -47,7 +47,7 @@
 		{if !empty($keywordResultsLink)}
 			<div class="correction">
 			<h3>{translate text="Try a Keyword Search?" isPublicFacing=true}</h3>
-                {translate text="Your search type is not set to Keyword.  There are <strong>%1%</strong> results when searching by keyword." 1= keywordResultsCount isPublicFacing=true}
+                {translate text="Your search type is not set to Keyword.  There are <strong>%1%</strong> results when searching by keyword." 1=$keywordResultsCount isPublicFacing=true}
 				<a class='btn btn-primary' href="{$keywordResultsLink}">{translate text="Search by Keyword" isPublicFacing=true}</a>.
 			</div>
 		{/if}
