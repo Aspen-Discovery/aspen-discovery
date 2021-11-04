@@ -37,13 +37,25 @@ class Polaris extends AbstractIlsDriver
 		$summary->source = 'ils';
 		$summary->resetCounters();
 
+		//Can't se the quick response since it includes eContent.
+		$checkouts = $this->getCheckouts($patron);
+		$summary->numCheckedOut = count($checkouts);
+		$numOverdue = 0;
+		foreach ($checkouts as $checkout){
+			if ($checkout->isOverdue()){
+				$numOverdue++;
+			}
+		}
+		$summary->numOverdue = $numOverdue;
+
+		$holds = $this->getHolds($patron);
+		$summary->numAvailableHolds = count($holds['available']);
+		$summary->numUnavailableHolds = count($holds['unavailable']);
+
+		//Get additional information
 		$basicDataResponse = $this->getBasicDataResponse($patron->getBarcode(), $patron->getPasswordOrPin(), UserAccount::isUserMasquerading());
 		if ($basicDataResponse != null){
 			//TODO: Account for electronic items
-			$summary->numCheckedOut = $basicDataResponse->ItemsOutCount;
-			$summary->numOverdue = $basicDataResponse->ItemsOverdueCount;
-			$summary->numAvailableHolds =  $basicDataResponse->HoldRequestsHeldCount;
-			$summary->numUnavailableHolds = $basicDataResponse->HoldRequestsCurrentCount + $basicDataResponse->HoldRequestsShippedCount;
 			$summary->totalFines = $basicDataResponse->ChargeBalance;
 
 			$polarisCirculateBlocksUrl = "/PAPIService/REST/public/v1/1033/100/1/patron/{$patron->getBarcode()}/circulationblocks";
