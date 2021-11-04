@@ -18,11 +18,12 @@
 			</div>
 			<div class="col-tn-5 col-xs-8{if empty($viewingCombinedResults) || !$viewingCombinedResults} col-md-5 col-lg-6{/if}">
 				{include file='GroupedWork/statusIndicator.tpl' statusInformation=$variation->getStatusInformation() viewingIndividualRecord=0}
-
-				{if $variation->getNumRelatedRecords() == 1}
-					{include file='GroupedWork/copySummary.tpl' summary=$variation->getItemsDisplayedByDefault() totalCopies=$variation->getCopies() itemSummaryId="`$workId`_`$variation->label`" recordViewUrl=$variation->getUrl() format=$relatedManifestation->format}
-				{else}
-					{include file='GroupedWork/copySummary.tpl' summary=$variation->getItemsDisplayedByDefault() totalCopies=$variation->getCopies() itemSummaryId="`$workId`_`$variation->label`" format=$relatedManifestation->format}
+				{if !$variation->isEContent()}
+					{if $variation->getNumRelatedRecords() == 1}
+						{include file='GroupedWork/copySummary.tpl' summary=$variation->getItemsDisplayedByDefault() totalCopies=$variation->getCopies() itemSummaryId="`$workId`_`$variation->label`" recordViewUrl=$variation->getUrl() format=$relatedManifestation->format}
+					{else}
+						{include file='GroupedWork/copySummary.tpl' summary=$variation->getItemsDisplayedByDefault() totalCopies=$variation->getCopies() itemSummaryId="`$workId`_`$variation->label`" format=$relatedManifestation->format}
+					{/if}
 				{/if}
 			</div>
 			<div class="col-tn-8 col-tn-offset-4 col-xs-8 col-xs-offset-4{if empty($viewingCombinedResults) || !$viewingCombinedResults} col-md-4 col-md-offset-0 col-lg-3{/if} manifestation-actions">
