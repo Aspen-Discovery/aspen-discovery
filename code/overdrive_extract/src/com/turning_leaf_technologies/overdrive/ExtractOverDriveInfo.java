@@ -297,7 +297,7 @@ class ExtractOverDriveInfo {
 							} else if (!settings.isAllowLargeDeletes() && totalRecordsToDelete >= 500) {
 								logEntry.incErrors("There were more than 500 records to delete, detected " + totalRecordsToDelete + ", not deleting records");
 							} else if (!settings.isAllowLargeDeletes() && (((float) totalRecordsToDelete / totalOverDriveRecords) >= .05)) {
-								logEntry.incErrors("More than 5% of the collection was marked as being deleted. Detected " + totalRecordsToDelete + ", not deleting records");
+								logEntry.incErrors("More than 5% of the collection was marked as being deleted. Detected " + totalRecordsToDelete + " of " + totalOverDriveRecords + " to delete, not deleting records");
 							}
 						} else {
 							logger.info("Did not delete " + totalRecordsToDelete + " records that no longer exist because we received errors from OverDrive.");
