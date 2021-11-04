@@ -243,7 +243,7 @@ class CurlWrapper
 
 	function logRequest($url, $response, $body){
 		try {
-			if (IPAddress::showDebuggingInformation()) {
+			if (false || IPAddress::showDebuggingInformation()) {
 				require_once ROOT_DIR . '/sys/SystemLogging/ExternalRequestLogEntry.php';
 				$externalRequest = new ExternalRequestLogEntry();
 				$externalRequest->requestUrl = $url;
