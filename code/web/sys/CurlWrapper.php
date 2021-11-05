@@ -134,7 +134,6 @@ class CurlWrapper
 			global $logger;
 			$logger->log("curl get error for $url: " . curl_error($this->curl_connection), Logger::LOG_ERROR);
 		}
-		$this->logRequest($url, $return, '');
 		return $return;
 	}
 
@@ -166,7 +165,6 @@ class CurlWrapper
 			global $logger;
 			$logger->log("curl post error for $url: " . curl_error($this->curl_connection), Logger::LOG_ERROR);
 		}
-		$this->logRequest($url, $return, $post_string);
 		return $return;
 	}
 
@@ -198,7 +196,6 @@ class CurlWrapper
 			global $logger;
 			$logger->log("curl post error for $url: " . curl_error($this->curl_connection), Logger::LOG_ERROR);
 		}
-		$this->logRequest($url, $return, $post_string);
 		return $return;
 	}
 
@@ -231,7 +228,6 @@ class CurlWrapper
 			global $logger;
 			$logger->log("curl send error for url $url : " . curl_error($this->curl_connection), Logger::LOG_ERROR);
 		}
-		$this->logRequest($url, $return, $body);
 		return $return;
 	}
 
@@ -239,24 +235,6 @@ class CurlWrapper
 	{
 		$curl_info = curl_getinfo($this->curl_connection);
 		return $curl_info['http_code'];
-	}
-
-	function logRequest($url, $response, $body){
-		try {
-			if (false || IPAddress::showDebuggingInformation()) {
-				require_once ROOT_DIR . '/sys/SystemLogging/ExternalRequestLogEntry.php';
-				$externalRequest = new ExternalRequestLogEntry();
-				$externalRequest->requestUrl = $url;
-				$externalRequest->requestHeaders = implode($this->headers, "\n");
-				$externalRequest->requestBody = $body;
-				$externalRequest->responseCode = $this->getResponseCode();
-				$externalRequest->response = $response;
-				$externalRequest->requestTime = time();
-				$externalRequest->insert();
-			}
-		}catch (Exception $e){
-			//This happens before the table is created, we can ignore it safely.
-		}
 	}
 
 	function getHeaders()
