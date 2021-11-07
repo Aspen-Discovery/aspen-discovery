@@ -52,7 +52,7 @@ abstract class AbstractIlsDriver extends AbstractDriver
 
 	abstract function changeHoldPickupLocation(User $patron, $recordId, $itemToUpdateId, $newPickupLocation);
 
-	abstract function updatePatronInfo(User $patron, $canUpdateContactInfo);
+	abstract function updatePatronInfo(User $patron, $canUpdateContactInfo, $fromMasquerade);
 
 	function updateHomeLibrary(User $patron, string $homeLibraryCode){
 		return [

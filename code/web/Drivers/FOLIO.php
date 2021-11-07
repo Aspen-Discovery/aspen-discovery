@@ -409,7 +409,7 @@ class FOLIO extends AbstractIlsDriver
 
 	}
 
-	function updatePatronInfo($patron, $canUpdateContactInfo)
+	function updatePatronInfo($patron, $canUpdateContactInfo, $fromMasquerade)
 	{
 
 	}

@@ -230,6 +230,7 @@ class Polaris extends AbstractIlsDriver
 
 					$curCheckout->renewCount = $itemOut->RenewalCount;
 					$curCheckout->canRenew = $itemOut->RenewalCount < $itemOut->RenewalLimit;
+					$curCheckout->maxRenewals = $itemOut->RenewalLimit;
 					$curCheckout->renewalId = $itemOut->ItemID;
 					$curCheckout->renewIndicator = $itemOut->ItemID;
 
@@ -1093,9 +1094,10 @@ class Polaris extends AbstractIlsDriver
 	/**
 	 * @param User $patron
 	 * @param bool $canUpdateContactInfo
+	 * @param boolean $fromMasquerade
 	 * @return array
 	 */
-	function updatePatronInfo($patron, $canUpdateContactInfo)
+	function updatePatronInfo($patron, $canUpdateContactInfo, $fromMasquerade)
 	{
 		$result = [
 			'success' => false,
@@ -1118,7 +1120,7 @@ class Polaris extends AbstractIlsDriver
 				$patron->phone = $_REQUEST['phone'];
 			}
 
-			$patronBasicData = $this->getBasicDataResponse($patron->getBarcode(), $patron->getPasswordOrPin());
+			$patronBasicData = $this->getBasicDataResponse($patron->getBarcode(), $patron->getPasswordOrPin(), $fromMasquerade);
 			//Get the ID of the address to update
 			$addresses = $patronBasicData->PatronAddresses;
 			if (count($addresses) > 0){
@@ -1166,7 +1168,7 @@ class Polaris extends AbstractIlsDriver
 				}
 			}
 			$encodedBody = json_encode($body);
-			$response = $this->getWebServiceResponse($polarisUrl, 'PUT', $this->getAccessToken($patron->getBarcode(), $patron->getPasswordOrPin()), $encodedBody, UserAccount::isUserMasquerading());
+			$response = $this->getWebServiceResponse($polarisUrl, 'PUT', $this->getAccessToken($patron->getBarcode(), $patron->getPasswordOrPin()), $encodedBody, $fromMasquerade || UserAccount::isUserMasquerading());
 			ExternalRequestLogEntry::logRequest('polaris.updatePatronInfo', 'PUT', $this->getWebServiceURL() . $polarisUrl, $this->apiCurlWrapper->getHeaders(), $encodedBody, $this->lastResponseCode, $response, []);
 			if ($response && $this->lastResponseCode == 200) {
 				$jsonResponse = json_decode($response);

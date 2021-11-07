@@ -226,9 +226,10 @@ abstract class Horizon extends AbstractIlsDriver
 	/**
 	 * @param User $patron The User Object to make updates to
 	 * @param boolean $canUpdateContactInfo Permission check that updating is allowed
+	 * @param boolean $fromMasquerade
 	 * @return array                         Array of error messages for errors that occurred
 	 */
-	function updatePatronInfo($patron, $canUpdateContactInfo)
+	function updatePatronInfo($patron, $canUpdateContactInfo, $fromMasquerade)
 	{
 		$result = [
 			'success' => false,

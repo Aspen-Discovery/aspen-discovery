@@ -1564,9 +1564,10 @@ class SirsiDynixROA extends HorizonAPI
 	/**
 	 * @param User $patron
 	 * @param bool $canUpdateContactInfo
+	 * @param bool $fromMasquerade
 	 * @return array
 	 */
-	function updatePatronInfo($patron, $canUpdateContactInfo)
+	function updatePatronInfo($patron, $canUpdateContactInfo, $fromMasquerade)
 	{
 		$result = [
 			'success' => false,

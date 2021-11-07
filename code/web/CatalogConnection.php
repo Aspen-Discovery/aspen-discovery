@@ -583,9 +583,9 @@ class CatalogConnection
 		return $this->driver->placeItemHold($patron, $recordId, $itemId, $pickupBranch, $cancelDate);
 	}
 
-	function updatePatronInfo($user, $canUpdateContactInfo)
+	function updatePatronInfo($user, $canUpdateContactInfo, $fromMasquerade = false)
 	{
-		return $this->driver->updatePatronInfo($user, $canUpdateContactInfo);
+		return $this->driver->updatePatronInfo($user, $canUpdateContactInfo, $fromMasquerade);
 	}
 
 	/**

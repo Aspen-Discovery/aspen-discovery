@@ -1774,8 +1774,8 @@ class User extends DataObject
 		return false;
 	}
 
-	public function updatePatronInfo($canUpdateContactInfo){
-		$result = $this->getCatalogDriver()->updatePatronInfo($this, $canUpdateContactInfo);
+	public function updatePatronInfo($canUpdateContactInfo, $fromMasquerade = false){
+		$result = $this->getCatalogDriver()->updatePatronInfo($this, $canUpdateContactInfo, $fromMasquerade);
 		$this->clearCache();
 		return $result;
 	}
