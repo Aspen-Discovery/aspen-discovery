@@ -801,7 +801,7 @@ CREATE TABLE `browse_category` (
 
 LOCK TABLES `browse_category` WRITE;
 /*!40000 ALTER TABLE `browse_category` DISABLE KEYS */;
-INSERT INTO `browse_category` VALUES (4,'main_new_fiction',1,'everyone','New Fiction','','literary_form:Fiction','newest_to_oldest','',2,0,-1,'GroupedWork',-1,0,0),(5,'main_new_non_fiction',1,'everyone','New Non Fiction','','literary_form:Non Fiction','newest_to_oldest','',0,0,-1,'GroupedWork',-1,0,0);
+INSERT INTO `browse_category` VALUES (1,'main_new_fiction',1,'everyone','New Fiction','','literary_form:Fiction','newest_to_oldest','',2,0,-1,'GroupedWork',-1,0,0),(2,'main_new_non_fiction',1,'everyone','New Non Fiction','','literary_form:Non Fiction','newest_to_oldest','',0,0,-1,'GroupedWork',-1,0,0);
 /*!40000 ALTER TABLE `browse_category` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -828,6 +828,7 @@ CREATE TABLE `browse_category_group` (
 
 LOCK TABLES `browse_category_group` WRITE;
 /*!40000 ALTER TABLE `browse_category_group` DISABLE KEYS */;
+INSERT INTO browse_category_group (id, name) VALUES (1, 'Main Library');
 /*!40000 ALTER TABLE `browse_category_group` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -854,6 +855,8 @@ CREATE TABLE `browse_category_group_entry` (
 
 LOCK TABLES `browse_category_group_entry` WRITE;
 /*!40000 ALTER TABLE `browse_category_group_entry` DISABLE KEYS */;
+INSERT INTO browse_category_group_entry (browseCategoryGroupId, browseCategoryId) VALUES (1, 1);
+INSERT INTO browse_category_group_entry (browseCategoryGroupId, browseCategoryId) VALUES (1, 2);
 /*!40000 ALTER TABLE `browse_category_group_entry` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -880,7 +883,7 @@ CREATE TABLE `browse_category_library` (
 
 LOCK TABLES `browse_category_library` WRITE;
 /*!40000 ALTER TABLE `browse_category_library` DISABLE KEYS */;
-INSERT INTO `browse_category_library` VALUES (3,2,'main_new_fiction',0),(5,2,'main_new_non_fiction',0);
+INSERT INTO `browse_category_library` VALUES (1,2,'main_new_fiction',0),(2,2,'main_new_non_fiction',0);
 /*!40000 ALTER TABLE `browse_category_library` ENABLE KEYS */;
 UNLOCK TABLES;
 
