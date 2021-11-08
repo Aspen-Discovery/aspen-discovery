@@ -211,7 +211,7 @@ public class IndexingUtils {
 
 		PreparedStatement locationInformationStmt = dbConn.prepareStatement("SELECT library.libraryId, locationId, code, subLocation, ilsCode, " +
 						"library.subdomain, location.facetLabel, location.displayName, library.restrictOwningBranchesAndSystems, location.publicListsToInclude, " +
-						"location.additionalLocationsToShowAvailabilityFor, includeAllLibraryBranchesInFacets, " +
+						"location.additionalLocationsToShowAvailabilityFor, includeAllLibraryBranchesInFacets, library.isConsortialCatalog, " +
 						"location.groupedWorkDisplaySettingId as groupedWorkDisplaySettingIdLocation, library.groupedWorkDisplaySettingId as groupedWorkDisplaySettingIdLibrary, " +
 						"location.includeLibraryRecordsToInclude, " +
 						"library.overDriveScopeId as overDriveScopeIdLibrary, location.overDriveScopeId as overDriveScopeIdLocation, " +
@@ -258,6 +258,7 @@ public class IndexingUtils {
 			locationScopeInfo.setPublicListsToInclude(locationInformationRS.getInt("publicListsToInclude"));
 			locationScopeInfo.setAdditionalLocationsToShowAvailabilityFor(locationInformationRS.getString("additionalLocationsToShowAvailabilityFor"));
 			locationScopeInfo.setIncludeAllLibraryBranchesInFacets(locationInformationRS.getBoolean("includeAllLibraryBranchesInFacets"));
+			locationScopeInfo.setConsortialCatalog(locationInformationRS.getBoolean("isConsortialCatalog"));
 			long groupedWorkDisplaySettingId = locationInformationRS.getLong("groupedWorkDisplaySettingIdLocation");
 			if (groupedWorkDisplaySettingId == -1){
 				groupedWorkDisplaySettingId = locationInformationRS.getLong("groupedWorkDisplaySettingIdLibrary");
@@ -437,7 +438,7 @@ public class IndexingUtils {
 
 	private static void loadLibraryScopes(TreeSet<Scope> scopes, HashMap<Long, GroupedWorkDisplaySettings> groupedWorkDisplaySettings, HashMap<Long, OverDriveScope> overDriveScopes, HashMap<Long, HooplaScope> hooplaScopes, HashMap<Long, CloudLibraryScope> cloudLibraryScopes, HashMap<Long, Axis360Scope> axis360Scopes, HashMap<Long, SideLoadScope> sideLoadScopes, Connection dbConn, Logger logger) throws SQLException {
 		PreparedStatement libraryInformationStmt = dbConn.prepareStatement("SELECT libraryId, ilsCode, subdomain, " +
-						"displayName, facetLabel, restrictOwningBranchesAndSystems, publicListsToInclude, " +
+						"displayName, facetLabel, restrictOwningBranchesAndSystems, publicListsToInclude, isConsortialCatalog, " +
 						"additionalLocationsToShowAvailabilityFor, overDriveScopeId, " +
 						"groupedWorkDisplaySettingId, hooplaScopeId, axis360ScopeId " +
 						"FROM library WHERE createSearchInterface = 1 ORDER BY ilsCode ASC",
@@ -484,6 +485,7 @@ public class IndexingUtils {
 			newScope.setFacetLabel(facetLabel);
 			newScope.setPublicListsToInclude(libraryInformationRS.getInt("publicListsToInclude"));
 			newScope.setAdditionalLocationsToShowAvailabilityFor(libraryInformationRS.getString("additionalLocationsToShowAvailabilityFor"));
+			newScope.setConsortialCatalog(libraryInformationRS.getBoolean("isConsortialCatalog"));
 			long groupedWorkDisplaySettingId = libraryInformationRS.getLong("groupedWorkDisplaySettingId");
 			if (groupedWorkDisplaySettings.containsKey(groupedWorkDisplaySettingId)) {
 				newScope.setGroupedWorkDisplaySettings(groupedWorkDisplaySettings.get(groupedWorkDisplaySettingId));
