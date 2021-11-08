@@ -186,13 +186,6 @@ function loadLibraryAndLocation(){
 
 	global $active_ip;
 	$active_ip = IPAddress::getActiveIp();
-	if (!isset($_COOKIE['test_ip']) || $active_ip != $_COOKIE['test_ip']){
-		if ($active_ip == ''){
-			setcookie('test_ip', $active_ip, time() - 1000, '/');
-		}else{
-			setcookie('test_ip', $active_ip, 0, '/');
-		}
-	}
 	$timer->logTime('Got active ip address');
 
 	$branch = $locationSingleton->getBranchLocationCode();

@@ -5,7 +5,7 @@
 		"owner": "bywater-solutions",
 		"privacy": "public",
 		"platforms": ["ios", "android"],
-		"version": "21.14.00",
+		"version": "21.14.01",
 		"orientation": "portrait",
 		"icon": "./assets/LiDA_Icon1024.png",
 		"splash": {
@@ -18,7 +18,7 @@
 		},
 		"assetBundlePatterns": ["**/*"],
 		"ios": {
-			"buildNumber": "14",
+			"buildNumber": "15",
 			"bundleIdentifier": "org.aspendiscovery.mobile",
 			"supportsTablet": true,
 			"icon": "./assets/LiDA_Icon1024.png",
@@ -36,7 +36,7 @@
 		},
 		"android": {
 			"package": "org.aspendiscovery.mobile",
-			"versionCode": 14,
+			"versionCode": 15,
 			"permissions": ["ACCESS_COARSE_LOCATION", "ACCESS_FINE_LOCATION", "FOREGROUND_SERVICE"],
 			"adaptiveIcon": {
 				"foregroundImage": "./assets/android/png/xxxhdpi/LiDA_xxxhdpi_432px_Icon.png",

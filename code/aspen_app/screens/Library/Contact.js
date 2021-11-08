@@ -35,21 +35,26 @@ export default class Contact extends Component {
 	    await getLocationInfo();
 	    await getLibraryInfo();
 
-		this.setState({
-		    showLibraryHours: await AsyncStorage.getItem('@libraryShowHours'),
-		    hoursMessage: await AsyncStorage.getItem('@libraryHoursMessage'),
-		    website: await AsyncStorage.getItem('@libraryHomeLink'),
-		    address: await AsyncStorage.getItem('@libraryAddress'),
-		    phone: await AsyncStorage.getItem('@libraryPhone'),
-		    email: await AsyncStorage.getItem('@libraryEmail'),
-		    description: await AsyncStorage.getItem('@libraryDescription'),
-            latitude: await AsyncStorage.getItem("@libraryLatitude"),
-            longitude: await AsyncStorage.getItem("@libraryLongitude"),
-            hours: JSON.parse(await AsyncStorage.getItem("@libraryHours")),
-            userLatitude: await SecureStore.getItemAsync("latitude"),
-            userLongitude: await SecureStore.getItemAsync("longitude"),
-		    isLoading: false,
-		})
+		try {
+            this.setState({
+                showLibraryHours: await AsyncStorage.getItem('@libraryShowHours'),
+                hoursMessage: await AsyncStorage.getItem('@libraryHoursMessage'),
+                website: await AsyncStorage.getItem('@libraryHomeLink'),
+                address: await AsyncStorage.getItem('@libraryAddress'),
+                phone: await AsyncStorage.getItem('@libraryPhone'),
+                email: await AsyncStorage.getItem('@libraryEmail'),
+                description: await AsyncStorage.getItem('@libraryDescription'),
+                latitude: await AsyncStorage.getItem("@libraryLatitude"),
+                longitude: await AsyncStorage.getItem("@libraryLongitude"),
+                hours: JSON.parse(await AsyncStorage.getItem("@libraryHours")),
+                userLatitude: await SecureStore.getItemAsync("latitude"),
+                userLongitude: await SecureStore.getItemAsync("longitude"),
+                isLoading: false,
+            })
+
+		} catch (error) {
+		    console.log("Unable to load state data.")
+		}
 
 
 	};
@@ -98,6 +103,11 @@ export default class Contact extends Component {
 		if (this.state.isLoading) {
 			return ( loadingSpinner() );
 		}
+
+		console.log("showLibraryHours: " + this.state.showLibraryHours);
+		console.log("website: " + this.state.website);
+		console.log("latitude: " + this.state.latitude);
+		console.log("longitude: " + this.state.longitude);
 
 		return (
             <Box safeArea={5}>

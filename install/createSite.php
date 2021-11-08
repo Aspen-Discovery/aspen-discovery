@@ -297,9 +297,7 @@ if (!$siteOnWindows){
 }
 
 //Update my.cnf for backups
-if ($siteOnWindows){
-	replaceVariables("/etc/my.cnf", $variables);
-} else {
+if (!$siteOnWindows){
 	replaceVariables($$linuxOS['mysqlConf'], $variables);
 }
 

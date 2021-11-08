@@ -33,7 +33,6 @@ import * as Updates from "expo-updates";
 import Constants from "expo-constants";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import filter from "lodash";
-import base64 from 'react-native-base64';
 import { create, CancelToken } from 'apisauce';
 
 // custom components and helper files
@@ -63,8 +62,7 @@ export default class Login extends Component {
 		this.filteredLibraries = [];
 
         // check for beta release channel
-        let result = SecureStore.getItemAsync("releaseChannel");
-		if(result == 'beta') {
+		if(global.releaseChannel == 'beta') {
             this.setState({ isBeta: true });
 		}
 	}
@@ -320,7 +318,7 @@ export default class Login extends Component {
 
     // render the Login screen
 	render() {
-		const isBeta = global.version;
+		const isBeta = this.state.isBeta;
 
 		if (this.state.isLoading) {
             return ( loadingSpinner() );

@@ -1442,7 +1442,6 @@ class Location extends DataObject
 			'longitude' => $this->longitude,
 			'phone' => $this->phone,
 			'tty' => $this->tty,
-			'email' => $this->contactEmail,
 			'description' => $this->description,
 			'showInLocationsAndHoursList' => $this->showInLocationsAndHoursList,
 			'hoursMessage' => Location::getLibraryHoursMessage($this->locationId),
@@ -1456,6 +1455,15 @@ class Location extends DataObject
 			}
 		} else {
 			$apiInfo['homeLink'] = $this->homeLink;
+		}
+		if((empty($this->contactEmail) || $this->contactEmail == null)) {
+			if($parentLibrary == null) {
+				$apiInfo['email'] = null;
+			} else {
+				$apiInfo['email'] = $parentLibrary->contactEmail;
+			}
+		} else {
+			$apiInfo['email'] = $this->contactEmail;
 		}
 		$hours = $this->getHours();
 		foreach ($hours as $hour){

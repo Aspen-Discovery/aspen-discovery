@@ -112,6 +112,6 @@
     "permission_error": "The library has incorrect permissions for connecting via LiDA",
     "no_open_resource": "Unable to open resource",
     "no_valid_url": "A valid access URL has not been provided for the record",
-    "device_block_browser": "App is not allowed to open a browser window at this time"
+    "device_block_browser": "There was a problem opening item. Try again"
   }
 }
