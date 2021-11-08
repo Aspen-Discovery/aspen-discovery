@@ -474,7 +474,7 @@ class OverDriveProcessor {
 										if (scope.isLibraryScope()) {
 											scopingInfo.setLibraryOwned(true);
 										}
-										groupedWork.addScopingInfo(scope.getScopeName(), scopingInfo);
+										groupedWork.addScopingInfo(scope.getScopeName(), scopingInfo, itemInfo);
 									}
 								}
 							} // Scope has OverDrive content

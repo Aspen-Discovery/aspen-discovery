@@ -54,8 +54,8 @@ public class GroupedWorkIndexer {
 
 	private final Connection dbConn;
 
-	static int availableAtBoostValue = 50;
-	static int ownedByBoostValue = 10;
+	static Long availableAtBoostValue = 50L;
+	static Long ownedByBoostValue = 10L;
 
 	private final boolean fullReindex;
 	private final boolean clearIndex;
@@ -730,7 +730,7 @@ public class GroupedWorkIndexer {
 
 	synchronized void processGroupedWork(Long id, String permanentId, String grouping_category) throws SQLException {
 		//Create a solr record for the grouped work
-		GroupedWorkSolr groupedWork = new GroupedWorkSolr(this, logger);
+		GroupedWorkSolr groupedWork = new GroupedWorkSolr(this, scopes, logger);
 		groupedWork.setId(permanentId);
 		groupedWork.setGroupingCategory(grouping_category);
 

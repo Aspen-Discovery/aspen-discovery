@@ -91,7 +91,6 @@ class SideLoadedEContentProcessor extends MarcRecordProcessor{
 				boolean itemPartOfScope = sideLoadScope.isItemPartOfScope(record);
 				if (itemPartOfScope) {
 					ScopingInfo scopingInfo = itemInfo.addScope(curScope);
-					groupedWork.addScopingInfo(curScope.getScopeName(), scopingInfo);
 
 					scopingInfo.setLibraryOwned(true);
 					scopingInfo.setLocallyOwned(true);
@@ -101,6 +100,7 @@ class SideLoadedEContentProcessor extends MarcRecordProcessor{
 						String newUrl = sideLoadScope.getLocalUrl(originalUrl);
 						scopingInfo.setLocalUrl(newUrl);
 					}
+					groupedWork.addScopingInfo(curScope.getScopeName(), scopingInfo, itemInfo);
 				}
 			}
 		}

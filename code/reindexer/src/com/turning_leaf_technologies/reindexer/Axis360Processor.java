@@ -170,10 +170,9 @@ class Axis360Processor {
 						}
 						if (okToAdd) {
 							ScopingInfo scopingInfo = itemInfo.addScope(scope);
-							groupedWork.addScopingInfo(scope.getScopeName(), scopingInfo);
-
 							scopingInfo.setLibraryOwned(true);
 							scopingInfo.setLocallyOwned(true);
+							groupedWork.addScopingInfo(scope.getScopeName(), scopingInfo, itemInfo);
 						}
 					}
 				}

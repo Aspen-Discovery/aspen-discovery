@@ -148,6 +148,19 @@ public class ItemInfo{
 		return format;
 	}
 
+	private HashSet<String> formats = null;
+	public HashSet<String> getFormats() {
+		if (formats == null) {
+			formats = new HashSet<>();
+			if (format != null) {
+				formats.add(format);
+			} else {
+				formats.addAll(recordInfo.getFormats());
+			}
+		}
+		return formats;
+	}
+
 	public void setFormat(String format) {
 		this.format = format;
 		this.trimmedFormat = StringUtils.trimTrailingPunctuation(format);
@@ -296,6 +309,28 @@ public class ItemInfo{
 
 	public void setFormatCategory(String formatCategory) {
 		this.formatCategory = formatCategory;
+	}
+
+	private HashSet<String> formatCategories;
+	public HashSet<String> getFormatCategories(){
+		if (formatCategories == null){
+			formatCategories = new HashSet<>();
+			if (formatCategory != null){
+				formatCategories.add(formatCategory);
+			}else{
+				formatCategories.addAll(recordInfo.getFormatCategories());
+			}
+			HashSet<String> formats = this.getFormats();
+			//eAudiobooks are considered both Audiobooks and eBooks by some people
+			if (formats.contains("eAudiobook")) {
+				formatCategories.add("eBook");
+			}else if (formats.contains("CD + Book") || formats.contains("VOX Books")) {
+				formatCategories.add("Books");
+				formatCategories.add("Audio Books");
+			}
+
+		}
+		return formatCategories;
 	}
 
 	void setShelfLocation(String shelfLocation) {
@@ -490,8 +525,8 @@ public class ItemInfo{
 	private StringBuffer locationOwnedScopes = null;
 	private StringBuffer libraryOwnedScopes = null;
 	private StringBuffer recordsIncludedScopes = null;
-	private HashSet<String> locationOwnedNames = null;
-	private HashSet<String> libraryOwnedNames = null;
+//	private HashSet<String> locationOwnedNames = null;
+//	private HashSet<String> libraryOwnedNames = null;
 	public String getLocationOwnedScopes() {
 		if (this.locationOwnedScopes == null){
 			this.createScopingStrings();
@@ -512,39 +547,36 @@ public class ItemInfo{
 		}
 		return recordsIncludedScopes.toString();
 	}
-	public HashSet<String> getLocationOwnedNames() {
-		if (this.locationOwnedNames == null){
-			this.createScopingStrings();
-		}
-		return locationOwnedNames;
-	}
-
-	public HashSet<String> getLibraryOwnedNames() {
-		if (this.libraryOwnedNames == null){
-			this.createScopingStrings();
-		}
-		return libraryOwnedNames;
-	}
-
+//	public HashSet<String> getLocationOwnedNames() {
+//		if (this.locationOwnedNames == null){
+//			this.createScopingStrings();
+//		}
+//		return locationOwnedNames;
+//	}
+//
+//	public HashSet<String> getLibraryOwnedNames() {
+//		if (this.libraryOwnedNames == null){
+//			this.createScopingStrings();
+//		}
+//		return libraryOwnedNames;
+//	}
+//
 	private void createScopingStrings() {
 		locationOwnedScopes = new StringBuffer("~");
 		libraryOwnedScopes = new StringBuffer("~");
 		recordsIncludedScopes = new StringBuffer("~");
-		locationOwnedNames = new HashSet<>();
-		libraryOwnedNames = new HashSet<>();
+//		locationOwnedNames = new HashSet<>();
+//		libraryOwnedNames = new HashSet<>();
 		for (ScopingInfo scope : scopingInfo.values()){
 			if (scope.isLocallyOwned()){
 				locationOwnedScopes.append(scope.getScope().getId()).append("~");
-				locationOwnedNames.add(scope.getScope().getFacetLabel());
+//				locationOwnedNames.add(scope.getScope().getFacetLabel());
 			}else if (scope.isLibraryOwned()){
 				libraryOwnedScopes.append(scope.getScope().getId()).append("~");
-				libraryOwnedNames.add(scope.getScope().getFacetLabel());
+//				libraryOwnedNames.add(scope.getScope().getFacetLabel());
 			}else {
 				recordsIncludedScopes.append(scope.getScope().getId()).append("~");
 			}
 		}
 	}
-
-
-
 }

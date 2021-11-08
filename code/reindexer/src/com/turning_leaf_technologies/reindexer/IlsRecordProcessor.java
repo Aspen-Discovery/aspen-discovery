@@ -574,7 +574,6 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 					indexer.getLogEntry().incErrors("Could not add scoping information for " + scope.getScopeName() + " for item " + itemInfo.getFullRecordIdentifier());
 					continue;
 				}
-				groupedWork.addScopingInfo(scope.getScopeName(), scopingInfo);
 				if (scope.isLocationScope()) { //Either a location scope or both library and location scope
 					boolean itemIsOwned = scope.isItemOwnedByScope(fullKey, profileType, location, "");
 					scopingInfo.setLocallyOwned(itemIsOwned);
@@ -610,6 +609,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 				if (originalUrl != null && !originalUrl.equals(result.localUrl)){
 					scopingInfo.setLocalUrl(result.localUrl);
 				}
+				groupedWork.addScopingInfo(scope.getScopeName(), scopingInfo, itemInfo);
 			}
 		}
 	}
@@ -923,7 +923,6 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			Scope.InclusionResult result = curScope.isItemPartOfScope(profileType, itemLocation, "", null, groupedWork.getTargetAudiences(), groupedWork.getTargetAudiencesAsString(), format, false, false, true, record, originalUrl);
 			if (result.isIncluded){
 				ScopingInfo scopingInfo = itemInfo.addScope(curScope);
-				groupedWork.addScopingInfo(curScope.getScopeName(), scopingInfo);
 				if (curScope.isLocationScope()) {  //Either a location scope or both library and location scope
 					boolean itemIsOwned = curScope.isItemOwnedByScope(fullKey, profileType, itemLocation, "");
 					scopingInfo.setLocallyOwned(itemIsOwned);
@@ -937,6 +936,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 				if (originalUrl != null && !originalUrl.equals(result.localUrl)){
 					scopingInfo.setLocalUrl(result.localUrl);
 				}
+				groupedWork.addScopingInfo(curScope.getScopeName(), scopingInfo, itemInfo);
 			}
 		}
 	}
@@ -974,7 +974,6 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			Scope.InclusionResult result = curScope.isItemPartOfScope(profileType, itemLocation, itemSublocation, itemInfo.getITypeCode(), audiences, audiencesAsString, primaryFormat, isHoldableUnscoped, false, false, record, originalUrl);
 			if (result.isIncluded){
 				ScopingInfo scopingInfo = itemInfo.addScope(curScope);
-				groupedWork.addScopingInfo(curScope.getScopeName(), scopingInfo);
 
 				if (originalUrl != null && !originalUrl.equals(result.localUrl)){
 					scopingInfo.setLocalUrl(result.localUrl);
@@ -988,6 +987,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 				if (curScope.isLibraryScope()) {
 					scopingInfo.setLibraryOwned(result.isOwned);
 				}
+				groupedWork.addScopingInfo(curScope.getScopeName(), scopingInfo, itemInfo);
 			}
 		}
 	}

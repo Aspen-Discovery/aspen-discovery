@@ -3,6 +3,7 @@ package com.turning_leaf_technologies.indexing;
 import com.sun.istack.internal.NotNull;
 import org.marc4j.marc.Record;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.TreeSet;
@@ -282,6 +283,19 @@ public class Scope implements Comparable<Scope>{
 
 	public void setAxis360Scope(Axis360Scope axis360Scope) {
 		this.axis360Scope = axis360Scope;
+	}
+
+	private HashSet<String> locationScopeNames;
+	public HashSet<String> getLocationScopeNames() {
+		if (locationScopeNames == null){
+			locationScopeNames = new HashSet<>();
+			if (isLibraryScope){
+				for (Scope locationScope : locationScopes){
+					locationScopeNames.add(locationScope.getFacetLabel());
+				}
+			}
+		}
+		return locationScopeNames;
 	}
 
 	public static class InclusionResult{
