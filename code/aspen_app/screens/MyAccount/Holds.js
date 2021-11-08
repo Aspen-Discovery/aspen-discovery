@@ -176,11 +176,12 @@ function HoldItem(props) {
     const { onPressItem, data, navigation, locations } = props;
     const { isOpen, onOpen, onClose } = useDisclose();
 
-
     // format some dates
     if(data.availableDate != null) {
         var availableDateUnix = moment.unix(data.availableDate);
         var availableDate = moment(availableDateUnix).format("MMM D, YYYY");
+    } else {
+        var availableDate = "";
     }
 
     if(data.expirationDate) {
@@ -212,10 +213,12 @@ function HoldItem(props) {
         var statusColor = "green";
     }
 
-    var title = data.title;
-    var title = title.substring(0, title.lastIndexOf('/'));
-    if(title == '') {
+    if(data.title){
         var title = data.title;
+        var title = title.substring(0, title.lastIndexOf('/'));
+        if(title == '') {
+            var title = data.title;
+        }
     }
 
     if(data.author){
@@ -236,7 +239,6 @@ function HoldItem(props) {
 
     var isAvailable = data.available;
     var updateLocation = data.locationUpdateable;
-
     if(data.available && data.locationUpdateable) {
         var updateLocation = false;
     }
@@ -278,8 +280,7 @@ function HoldItem(props) {
                 {translate('pickup_locations.pickup_location')}: <Text fontSize="xs">{data.currentPickupName}</Text>
             </Text>
             : null }
-                {data.status != "Ready to Pickup" ? <Text bold fontSize="xs">{translate('holds.position_queue')}: <Text fontSize="xs">{data.position}</Text></Text> : null}
-                {data.status == "Ready to Pickup" ? <Text bold fontSize="xs">{translate('holds.pickup_by')}: <Text fontSize="xs">{expirationDate}</Text></Text> : null}
+                {data.available ? <Text bold fontSize="xs">{translate('holds.pickup_by')}: <Text fontSize="xs">{expirationDate}</Text></Text> : <Text bold fontSize="xs">{translate('holds.position_queue')}: <Text fontSize="xs">{data.position}</Text></Text>}
         </ListItem.Content>
 
     </ListItem>
