@@ -26,6 +26,7 @@ public class Scope implements Comparable<Scope>{
 
 	//Called restrictOwningBranchesAndSystems in PHP admin interface
 	private boolean restrictOwningLibraryAndLocationFacets;
+	private boolean isConsortialCatalog;
 	//Ownership rules indicate direct ownership of a record
 	private final HashSet<OwnershipRule> ownershipRules = new HashSet<>();
 	//Inclusion rules indicate records owned by someone else that should be shown within the scope
@@ -282,6 +283,14 @@ public class Scope implements Comparable<Scope>{
 
 	public void setAxis360Scope(Axis360Scope axis360Scope) {
 		this.axis360Scope = axis360Scope;
+	}
+
+	public boolean isConsortialCatalog() {
+		return isConsortialCatalog;
+	}
+
+	public void setConsortialCatalog(boolean consortialCatalog) {
+		this.isConsortialCatalog = consortialCatalog;
 	}
 
 	public static class InclusionResult{

@@ -412,14 +412,14 @@ class GreenhouseAPI extends Action
 				}
 
 				if (isset($findLibrary->theme)) {
-					$libraryLocation->logo = $findLibrary->theme->logo;
-					$libraryLocation->favicon = $findLibrary->theme->favicon;
-					$libraryLocation->primaryBackgroundColor = $findLibrary->theme->primaryBackgroundColor;
-					$libraryLocation->primaryForegroundColor = $findLibrary->theme->primaryForegroundColor;
-					$libraryLocation->secondaryBackgroundColor = $findLibrary->theme->secondaryBackgroundColor;
-					$libraryLocation->secondaryForegroundColor = $findLibrary->theme->secondaryForegroundColor;
-					$libraryLocation->tertiaryBackgroundColor = $findLibrary->theme->tertiaryBackgroundColor;
-					$libraryLocation->tertiaryForegroundColor = $findLibrary->theme->tertiaryForegroundColor;
+					$libraryLocation->logo = empty($findLibrary->theme->logo) ? '' : $findLibrary->theme->logo;
+					$libraryLocation->favicon =empty($findLibrary->theme->favicon) ? '' : $findLibrary->theme->favicon;
+					$libraryLocation->primaryBackgroundColor = empty($findLibrary->theme->primaryBackgroundColor) ? '' : $findLibrary->theme->primaryBackgroundColor;
+					$libraryLocation->primaryForegroundColor = empty($findLibrary->theme->primaryForegroundColor) ? '' : $findLibrary->theme->primaryForegroundColor;
+					$libraryLocation->secondaryBackgroundColor = empty($findLibrary->theme->secondaryBackgroundColor) ? '' : $findLibrary->theme->secondaryBackgroundColor;
+					$libraryLocation->secondaryForegroundColor =empty($findLibrary->theme->secondaryForegroundColor) ? '' : $findLibrary->theme->secondaryForegroundColor;
+					$libraryLocation->tertiaryBackgroundColor = empty($findLibrary->theme->tertiaryBackgroundColor) ? '' : $findLibrary->theme->tertiaryBackgroundColor;
+					$libraryLocation->tertiaryForegroundColor = empty($findLibrary->theme->tertiaryForegroundColor) ? '' : $findLibrary->theme->tertiaryForegroundColor;
 				}
 
 				$libraryLocation->lastUpdated = time();
