@@ -63,7 +63,7 @@ export default class LibraryCard extends Component {
                     <Text bold mt={2} fontSize="lg">
                         {this.state.libraryName}
                     </Text>
-                    <Text bold pl={3} mt={2} fontSize="md">
+                    <Text mt={2} fontSize="md">
                         {this.state.libraryCard}
                     </Text>
                     </Center>

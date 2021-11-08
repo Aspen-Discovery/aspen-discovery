@@ -26,7 +26,7 @@ export async function getLocationInfo() {
            if(profile.email) {
                 await AsyncStorage.setItem('@libraryEmail', profile.email);
            } else {
-                await AsyncStorage.setItem('@libraryEmail', null);
+                await AsyncStorage.setItem('@libraryEmail', "null");
            }
 
            await AsyncStorage.setItem('@libraryShowHours', profile.showInLocationsAndHoursList);
@@ -38,8 +38,11 @@ export async function getLocationInfo() {
 
            await AsyncStorage.setItem('@libraryLatitude', profile.latitude);
            await AsyncStorage.setItem('@libraryLongitude', profile.longitude);
+
        } catch (error) {
          // unable to save data at this time
+         console.log("Unable to save data.")
+         console.log(error);
        }
 
        console.log("Location profile set")
@@ -63,6 +66,8 @@ export async function getLibraryInfo() {
            await AsyncStorage.setItem('@libraryBarcodeStyle', profile.barcodeStyle);
        } catch (error) {
          // unable to save data at this time
+          console.log("Unable to save data.")
+          console.log(error);
        }
 
        console.log("Library profile set")

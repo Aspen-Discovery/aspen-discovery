@@ -33,6 +33,8 @@ export async function getProfile() {
             global.numHoldsAvailable = profile.numHoldsAvailable;
         } catch (error) {
             // no data saved yet
+            console.log("Unable to save data.")
+            console.log(error);
         }
     } else {
         const fetchedData = response.problem;

@@ -214,7 +214,7 @@ function CheckedOutItem(props) {
             var label = translate('checkouts.read_online', { source : data.checkoutSource });
 
         } else {
-            var formatId = '';
+            var formatId = 'ebook-overdrive';
             var label = translate('checkouts.access_online', { source : data.checkoutSource });
         }
 
@@ -223,19 +223,21 @@ function CheckedOutItem(props) {
 
 
     // check that title ends in / first
-    var title = data.title;
-    var countSlash = title.split('/').length-1;
-    if (countSlash > 0) {
-        var title = title.substring(0, title.lastIndexOf('/'));
+    if(data.title) {
+        var title = data.title;
+        var countSlash = title.split('/').length-1;
+        if (countSlash > 0) {
+            var title = title.substring(0, title.lastIndexOf('/'));
+        }
     }
 
-    var author = data.author;
-    var countComma = author.split(',').length-1;
-    if (countComma > 1) {
-        var author = author.substring(0, author.lastIndexOf(','));
+    if(data.author) {
+        var author = data.author;
+        var countComma = author.split(',').length-1;
+        if (countComma > 1) {
+            var author = author.substring(0, author.lastIndexOf(','));
+        }
     }
-
-    console.log(data)
 
     return (
     <>
@@ -247,7 +249,7 @@ function CheckedOutItem(props) {
                 {data.overdue ? <Badge colorScheme="danger" rounded="4px" mt={-.5}>{translate('checkouts.overdue')}</Badge> : null} {title}
             </Text>
 
-            {author != "" ?
+            {data.author ?
             <Text fontSize="xs">
                 <Text bold fontSize="xs">
                     {translate('grouped_work.author')}
@@ -255,12 +257,14 @@ function CheckedOutItem(props) {
                 </Text>
             </Text>
             : null}
+            {data.format != "Unknown" ?
             <Text fontSize="xs">
                 <Text bold fontSize="xs">
                     {translate('grouped_work.format')}
                     <Text fontSize="xs"> {data.format}</Text>
                 </Text>
             </Text>
+            : null }
             <Text fontSize="xs">
                 <Text bold fontSize="xs">
                     {translate('checkouts.due')}
