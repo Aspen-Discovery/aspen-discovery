@@ -603,14 +603,14 @@ public class GroupedWorkSolr implements Cloneable {
 				}
 
 				if (curItem.isEContent()){
-					addAvailabilityToggle(curScope.getGroupedWorkDisplaySettings().isIncludeOnlineMaterialsInAvailableToggle() && curItem.isAvailable(), curItem.isAvailable(), availabilityToggleForScope, availabilityToggleByFormatForScope, formatsForItem);
+					addAvailabilityToggle(scopingInfo.isLocallyOwned() || scopingInfo.isLibraryOwned(),curScope.getGroupedWorkDisplaySettings().isIncludeOnlineMaterialsInAvailableToggle() && curItem.isAvailable(), curItem.isAvailable(), availabilityToggleForScope, availabilityToggleByFormatForScope, formatsForItem);
 					owningLibrariesForScope.add(curItem.getTrimmedEContentSource());
 					if (curItem.isAvailable()){
 						addAvailableAt(curItem.getTrimmedEContentSource(), availableAtForScope, availableAtByFormatForScope, formatsForItem);
 					}
 				}else{ //physical materials
 					if (scopingInfo.isLocallyOwned()) {
-						addAvailabilityToggle(curItem.isAvailable(), false, availabilityToggleForScope, availabilityToggleByFormatForScope, formatsForItem);
+						addAvailabilityToggle(scopingInfo.isLocallyOwned() || scopingInfo.isLibraryOwned(),curItem.isAvailable(), false, availabilityToggleForScope, availabilityToggleByFormatForScope, formatsForItem);
 						if (curItem.isAvailable()){
 							addAvailableAt(curScope.getFacetLabel(), availableAtForScope, availableAtByFormatForScope, formatsForItem);
 						}
@@ -626,7 +626,7 @@ public class GroupedWorkSolr implements Cloneable {
 						}
 					}
 					if (scopingInfo.isLibraryOwned()){
-						addAvailabilityToggle(curItem.isAvailable(), false, availabilityToggleForScope, availabilityToggleByFormatForScope, formatsForItem);
+						addAvailabilityToggle(scopingInfo.isLocallyOwned() || scopingInfo.isLibraryOwned(),curItem.isAvailable(), false, availabilityToggleForScope, availabilityToggleByFormatForScope, formatsForItem);
 						if (curItem.isAvailable()){
 							for (String owningName : curItem.getLocationOwnedNames()) {
 								addAvailableAt(owningName, availableAtForScope, availableAtByFormatForScope, formatsForItem);
@@ -638,7 +638,7 @@ public class GroupedWorkSolr implements Cloneable {
 					}
 					//If it is not library or location owned, we might still add to the availability toggles
 					if (!scopingInfo.isLocallyOwned() && !scopingInfo.isLibraryOwned() && !curScope.getGroupedWorkDisplaySettings().isBaseAvailabilityToggleOnLocalHoldingsOnly()){
-						addAvailabilityToggle(curItem.isAvailable(), false, availabilityToggleForScope, availabilityToggleByFormatForScope, formatsForItem);
+						addAvailabilityToggle(scopingInfo.isLocallyOwned() || scopingInfo.isLibraryOwned(), curItem.isAvailable(), false, availabilityToggleForScope, availabilityToggleByFormatForScope, formatsForItem);
 						if (curItem.isAvailable()){
 							for (String owningName : curItem.getLocationOwnedNames()) {
 								addAvailableAt(owningName, availableAtForScope, availableAtByFormatForScope, formatsForItem);
@@ -757,8 +757,8 @@ public class GroupedWorkSolr implements Cloneable {
 		return lowerCaseNoSpecialCharFormat;
 	}
 
-	private void addAvailabilityToggle(boolean available, boolean availableOnline, AvailabilityToggleInfo availabilityToggleForScope, HashMap<String, AvailabilityToggleInfo> availabilityToggleByFormatForScope,  HashSet<String> formatsForItem){
-		availabilityToggleForScope.local = true;
+	private void addAvailabilityToggle(boolean local, boolean available, boolean availableOnline, AvailabilityToggleInfo availabilityToggleForScope, HashMap<String, AvailabilityToggleInfo> availabilityToggleByFormatForScope,  HashSet<String> formatsForItem){
+		availabilityToggleForScope.local = availabilityToggleForScope.local || local;
 		availabilityToggleForScope.available = availabilityToggleForScope.available || available;
 		availabilityToggleForScope.availableOnline = availabilityToggleForScope.availableOnline || availableOnline;
 		for (String format : formatsForItem){
