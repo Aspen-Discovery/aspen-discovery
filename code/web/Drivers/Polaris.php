@@ -215,7 +215,7 @@ class Polaris extends AbstractIlsDriver
 			$jsonResponse = json_decode($response);
 			$itemsOutList = $jsonResponse->PatronItemsOutGetRows;
 			foreach ($itemsOutList as $index => $itemOut){
-				if ($itemOut->DisplayInPAC == 1 && !$itemOut->ElectronicItem) {
+				if (!$itemOut->ElectronicItem) {
 					$curCheckout = new Checkout();
 					$curCheckout->type = 'ils';
 					$curCheckout->source = $this->getIndexingProfile()->name;
