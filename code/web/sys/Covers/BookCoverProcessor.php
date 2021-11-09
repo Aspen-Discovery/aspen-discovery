@@ -1018,28 +1018,31 @@ class BookCoverProcessor{
 		}
 
 		//Try one last time without a year
-		$url = "http://www.omdbapi.com/?t=$encodedTitle&apikey={$omdbSettings->apiKey}";
-		$client = new CurlWrapper();
-		$result = $client->curlGetPage($url);
-		if ($result !== false) {
-			if ($json = json_decode($result, true)) {
-				if (array_key_exists('Poster', $json)){
-					if ($this->processImageURL($source, $json['Poster'], true)){
-						return true;
+		if ($omdbSettings->fetchCoversWithoutDates) {
+			$source = 'omdb_title';
+			$url = "http://www.omdbapi.com/?t=$encodedTitle&apikey={$omdbSettings->apiKey}";
+			$client = new CurlWrapper();
+			$result = $client->curlGetPage($url);
+			if ($result !== false) {
+				if ($json = json_decode($result, true)) {
+					if (array_key_exists('Poster', $json)) {
+						if ($this->processImageURL($source, $json['Poster'], true)) {
+							return true;
+						}
 					}
 				}
 			}
-		}
 
-		//Try short title one last time without a year
-		$url = "http://www.omdbapi.com/?t=$encodedShortTitle&apikey={$omdbSettings->apiKey}";
-		$client = new CurlWrapper();
-		$result = $client->curlGetPage($url);
-		if ($result !== false) {
-			if ($json = json_decode($result, true)) {
-				if (array_key_exists('Poster', $json)){
-					if ($this->processImageURL($source, $json['Poster'], true)){
-						return true;
+			//Try short title one last time without a year
+			$url = "http://www.omdbapi.com/?t=$encodedShortTitle&apikey={$omdbSettings->apiKey}";
+			$client = new CurlWrapper();
+			$result = $client->curlGetPage($url);
+			if ($result !== false) {
+				if ($json = json_decode($result, true)) {
+					if (array_key_exists('Poster', $json)) {
+						if ($this->processImageURL($source, $json['Poster'], true)) {
+							return true;
+						}
 					}
 				}
 			}
