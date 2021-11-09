@@ -1419,24 +1419,28 @@ class Koha extends AbstractIlsDriver
 				return array(
 					'title' => $titles,
 					'success' => true,
-					'message' => count($holdKeys) == 1 ? 'Cancelled 1 hold successfully.' : 'Cancelled ' . count($holdKeys) . ' hold(s) successfully.');
+					'message' => translate(['text'=>'Cancelled %1% hold(s) successfully.', 1=>count($holdKeys), 'isPublicFacing'=>true])
+				);
 			} else {
 				return array(
 					'title' => $titles,
 					'success' => false,
-					'message' => 'Some holds could not be cancelled.  Please try again later or see your librarian.');
+					'message' => translate(['text'=>'Some holds could not be cancelled.  Please try again later or see your librarian.', 'isPublicFacing'=>true])
+				);
 			}
 		} else {
 			if ($locationId) {
 				return array(
 					'title' => $titles,
 					'success' => false,
-					'message' => 'Changing location for a hold is not supported.');
+					'message' => translate(['text'=>'Changing location for a hold is not supported.', 'isPublicFacing'=>true])
+				);
 			} else {
 				return array(
 					'title' => $titles,
 					'success' => false,
-					'message' => 'Freezing and thawing holds is not supported.');
+					'message' => translate(['text'=>'Freezing and thawing holds is not supported.', 'isPublicFacing'=>true])
+				);
 			}
 		}
 	}
