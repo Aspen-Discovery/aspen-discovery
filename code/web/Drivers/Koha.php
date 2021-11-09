@@ -3822,11 +3822,9 @@ class Koha extends AbstractIlsDriver
 	 */
 	protected function getUsersExtendedAttributesFromKoha($borrowerNumber): array
 	{
-
+		$extendedAttributes = [];
 		$oauthToken = $this->getOAuthToken();
-		if ($oauthToken == false) {
-			return ['success' => false, 'message' => translate(['text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.', 'isPublicFacing'=>true])];
-		} else {
+		if ($oauthToken != false) {
 			$apiUrl = $this->getWebServiceURL() . "/api/v1/patrons/{$borrowerNumber}/extended_attributes";
 
 			$this->apiCurlWrapper->addCustomHeaders([
@@ -3841,10 +3839,7 @@ class Koha extends AbstractIlsDriver
 
 			$response = $this->apiCurlWrapper->curlSendPage($apiUrl, 'GET', null);
 
-			if ($this->apiCurlWrapper->getResponseCode() != 200) {
-				$result['success'] = false;
-				$result['message'] = "Error getting extended patron attributes";
-			} else {
+			if ($this->apiCurlWrapper->getResponseCode() == 200) {
 				$jsonResponse = json_decode($response, true);
 				foreach($jsonResponse as $response) {
 					$attribute = [
@@ -3852,11 +3847,11 @@ class Koha extends AbstractIlsDriver
 						'type' => $response['type'],
 						'value' => $response['value'],
 					];
-					$result[] = $attribute;
+					$extendedAttributes[] = $attribute;
 				}
 			}
-			return $result;
 		}
+		return $extendedAttributes;
 	}
 
 	private function getKohaVersion()
