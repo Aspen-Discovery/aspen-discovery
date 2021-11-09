@@ -254,6 +254,12 @@ class HooplaProcessor {
 				String language = rawResponse.getString("language");
 				language = org.apache.commons.lang3.StringUtils.capitalize(language.toLowerCase());
 				hooplaRecord.setPrimaryLanguage(language);
+				groupedWork.addLanguage(language);
+				if (language.equalsIgnoreCase("English")){
+					groupedWork.setLanguageBoost(10L);
+				}else if (language.equalsIgnoreCase("Spanish")){
+					groupedWork.setLanguageBoostSpanish(10L);
+				}
 				long formatBoost = 1;
 				try {
 					formatBoost = Long.parseLong(indexer.translateSystemValue("format_boost_hoopla", primaryFormat, identifier));
