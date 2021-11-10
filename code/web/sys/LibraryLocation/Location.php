@@ -861,7 +861,11 @@ class Location extends DataObject
 		$facets = array();
 		if ($location->getNumResults() > 0) {
 			while ($location->fetch()) {
-				$facets[] = $location->facetLabel;
+				if (empty($location->facetLabel)) {
+					$facets[] = $location->displayName;
+				}else{
+					$facets[] = $location->facetLabel;
+				}
 			}
 		}
 		return $facets;
