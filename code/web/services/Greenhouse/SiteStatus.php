@@ -44,7 +44,7 @@ class Greenhouse_SiteStatus extends Admin_Admin
 	function canView() : bool
 	{
 		if (UserAccount::isLoggedIn()){
-			if (UserAccount::getActiveUserObj()->source = 'admin' && UserAccount::getActiveUserObj()->cat_username == 'aspen_admin'){
+			if (UserAccount::getActiveUserObj()->source == 'admin' && UserAccount::getActiveUserObj()->cat_username == 'aspen_admin'){
 				return true;
 			}
 		}
