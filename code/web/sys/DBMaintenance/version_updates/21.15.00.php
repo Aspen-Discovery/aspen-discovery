@@ -17,6 +17,12 @@ function getUpdates21_15_00() : array
 				'ALTER TABLE omdb_settings ADD COLUMN fetchCoversWithoutDates TINYINT(1) DEFAULT 1',
 			]
 		], //omdb_disableCoversWithNoDates
-
+		'checkoutFormatLength' => [
+			'title' => 'Increase Format Length for Checkout',
+			'description' => 'Increase Format Length for Checkouts',
+			'sql' => [
+				'alter table user_checkout change column format format VARCHAR(75) DEFAULT NULL;'
+			]
+		], //checkoutFormatLength
 	];
 }
