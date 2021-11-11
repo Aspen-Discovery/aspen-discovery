@@ -273,7 +273,7 @@ class ExtractOverDriveInfo {
 						getNumDeletedProductsRS.close();
 						int totalOverDriveRecords = 0;
 						getTotalProductsStmt.setLong(1, settings.getId());
-						ResultSet getTotalProductsRS = getNumDeletedProductsStmt.executeQuery();
+						ResultSet getTotalProductsRS = getTotalProductsStmt.executeQuery();
 						if (getTotalProductsRS.next()) {
 							totalOverDriveRecords = getTotalProductsRS.getInt(1);
 						}
