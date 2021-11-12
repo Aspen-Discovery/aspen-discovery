@@ -360,7 +360,7 @@ class CloudLibraryDriver extends AbstractEContentDriver
 				<PatronId>{$patronId}</PatronId>
 			</CancelHoldRequest>";
 		$response = $this->callCloudLibraryUrl($settings, $apiPath, 'POST', $requestBody);
-        ExternalRequestLogEntry::logRequest('cloudLibrary.cancelHold', 'POST', $settings->apiUrl . $apiPath, $this->curlWrapper->getHeaders(), $requestBody, $this->curlWrapper->getResponseCode(), $response);
+        ExternalRequestLogEntry::logRequest('cloudLibrary.cancelHold', 'POST', $settings->apiUrl . $apiPath, $this->curlWrapper->getHeaders(), $requestBody, $this->curlWrapper->getResponseCode(), $response, []);
 		$responseCode = $this->curlWrapper->getResponseCode();
 		if ($responseCode == '200'){
 			$result['success'] = true;
