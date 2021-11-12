@@ -1153,6 +1153,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 				$result['message'] = translate(['text' => 'Select a format', 'isPublicFacing' => true]);
 				$result['fulfillment'] = "redirect";
 				$result['modalBody'] = "<iframe src='{$downloadRedirectUrl}' class='fulfillmentFrame'></iframe>";
+				$result['downloadUrl'] = $downloadRedirectUrl; // for API access
 				$this->incrementStat('numDownloads');
 			} else {
 				$result['message'] = translate(['text' => 'Unable to create download url', 'isPublicFacing' => true]);
