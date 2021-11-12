@@ -1128,8 +1128,8 @@ class UserAPI extends Action
 	{
 		list($username, $password) = $this->loadUsernameAndPassword();
 
-		if(isset($_REQUEST['bidId'])){
-			$bibId = $_REQUEST['bidId'];
+		if(isset($_REQUEST['bibId'])){
+			$bibId = $_REQUEST['bibId'];
 		} else {
 			$bibId = $_REQUEST['itemId'];
 		}
