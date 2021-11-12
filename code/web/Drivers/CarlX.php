@@ -52,7 +52,7 @@ class CarlX extends AbstractIlsDriver{
 		$request->SearchID   = $username;
 		$request->Modifiers  = '';
 
-		$result = $this->doSoapRequest('getPatronInformation', $request);
+		$result = $this->doSoapRequest('getPatronInformation', $request, '', [], ['password' => $password]);
 
 		if ($result){
 			if (isset($result->Patron)){
@@ -175,9 +175,9 @@ class CarlX extends AbstractIlsDriver{
 		global $logger;
 
 		//renew the item via SIP 2
-		$mysip = new sip2();
-		$mysip->hostname = $this->accountProfile->sipHost;
-		$mysip->port = $this->accountProfile->sipPort;
+		$mySip = new sip2();
+		$mySip->hostname = $this->accountProfile->sipHost;
+		$mySip->port = $this->accountProfile->sipPort;
 
 		$renew_result = array(
 			'success' => false,
@@ -186,37 +186,39 @@ class CarlX extends AbstractIlsDriver{
 			'NotRenewed' => $patron->_numCheckedOutIls,
 			'Total' => $patron->_numCheckedOutIls
 		);
-		if ($mysip->connect()) {
+		if ($mySip->connect()) {
 			//send selfcheck status message
-			$in = $mysip->msgSCStatus();
-			$msg_result = $mysip->get_message($in);
+			$in = $mySip->msgSCStatus();
+			$msg_result = $mySip->get_message($in);
+            ExternalRequestLogEntry::logRequest('carlx.selfCheckStatus', 'SIP2', $mySip->hostname  . ':' . $mySip->port, [], $in, 0, $msg_result, []);
 			// Make sure the response is 98 as expected
 			if (preg_match("/^98/", $msg_result)) {
-				$result = $mysip->parseACSStatusResponse($msg_result);
+				$result = $mySip->parseACSStatusResponse($msg_result);
 
 				//  Use result to populate SIP2 settings
 				// These settings don't seem to apply to the CarlX Sandbox. pascal 7-12-2016
 				if (isset($result['variable']['AO'][0])){
-					$mysip->AO = $result['variable']['AO'][0]; /* set AO to value returned */
+					$mySip->AO = $result['variable']['AO'][0]; /* set AO to value returned */
 				}else{
-					$mysip->AO = 'NASH'; /* set AO to value returned */
+					$mySip->AO = 'NASH'; /* set AO to value returned */
 				}
 				if (isset($result['variable']['AN'][0])) {
-					$mysip->AN = $result['variable']['AN'][0]; /* set AN to value returned */
+					$mySip->AN = $result['variable']['AN'][0]; /* set AN to value returned */
 				}else{
-					$mysip->AN = '';
+					$mySip->AN = '';
 				}
 
-				$mysip->patron    = $patron->cat_username;
-				$mysip->patronpwd = $patron->cat_password;
+				$mySip->patron    = $patron->cat_username;
+				$mySip->patronpwd = $patron->cat_password;
 
-				$in = $mysip->msgRenewAll();
+				$in = $mySip->msgRenewAll();
 				//print_r($in . '<br/>');
-				$msg_result = $mysip->get_message($in);
+				$msg_result = $mySip->get_message($in);
+                ExternalRequestLogEntry::logRequest('carlx.renewAll', 'SIP2', $mySip->hostname  . ':' . $mySip->port, [], $in, 0, $msg_result, ['patronPwd'=>$patron->cat_password]);
 				//print_r($msg_result);
 
 				if (preg_match("/^66/", $msg_result)) {
-					$result = $mysip->parseRenewAllResponse($msg_result);
+					$result = $mySip->parseRenewAllResponse($msg_result);
 					$logger->log("Renew all response\r\n" . print_r($msg_result, true), Logger::LOG_ERROR);
 
 					$renew_result['success'] = ($result['fixed']['Ok'] == 1);
@@ -268,7 +270,7 @@ class CarlX extends AbstractIlsDriver{
 	 * @param array $soapRequestOptions
 	 * @return false|stdClass
 	 */
-	protected function doSoapRequest($requestName, $request, $WSDL = '', $soapRequestOptions = array()) {
+	protected function doSoapRequest($requestName, $request, string $WSDL = '', array $soapRequestOptions = [], $dataToSanitize = []) {
 		if (empty($WSDL)) { // Let the patron WSDL be the assumed default WSDL when not specified.
 			if (!empty($this->patronWsdl)) {
 				$WSDL = $this->patronWsdl;
@@ -283,11 +285,15 @@ class CarlX extends AbstractIlsDriver{
 		$connectionPassed = false;
 		$numTries = 0;
 		$result = false;
+        if (IPAddress::showDebuggingInformation()) {
+            $soapRequestOptions['trace'] = true;
+        }
 		while (!$connectionPassed && $numTries < 2){
 			try {
 				$this->soapClient = new SoapClient($WSDL, $soapRequestOptions);
 				$result = $this->soapClient->$requestName($request);
 				$connectionPassed = true;
+                ExternalRequestLogEntry::logRequest('carlx.' . $requestName, 'GET', $WSDL, $this->soapClient->__getLastRequestHeaders(), $this->soapClient->__getLastRequest(), 0, $result, $dataToSanitize);
 				if (is_null($result)) {
 					$lastResponse = $this->soapClient->__getLastResponse();
 					$lastResponse = simplexml_load_string($lastResponse, NULL, NULL, 'http://schemas.xmlsoap.org/soap/envelope/');
@@ -608,7 +614,7 @@ class CarlX extends AbstractIlsDriver{
 		$request = $this->getSearchbyPatronIdRequest($patron);
 		$request->Patron = new stdClass();
 		$request->Patron->PatronPIN = $newPin;
-		$result = $this->doSoapRequest('updatePatron', $request, $this->patronWsdl, $this->genericResponseSOAPCallOptions);
+		$result = $this->doSoapRequest('updatePatron', $request, $this->patronWsdl, $this->genericResponseSOAPCallOptions, ['pin'=>$newPin]);
 		if($result) {
 			$success = stripos($result->ResponseStatuses->ResponseStatus->ShortMessage, 'Success') !== false;
 			if (!$success) {
@@ -667,7 +673,7 @@ class CarlX extends AbstractIlsDriver{
 	 * @param boolean $fromMasquerade
 	 * @return array
 	 */
-	public function updatePatronInfo(User $patron, $canUpdateContactInf, $fromMasqueradeo) {
+	public function updatePatronInfo(User $patron, $canUpdateContactInfo, $fromMasqueradeo) {
 		$result = [
 			'success' => false,
 			'messages' => []
@@ -1464,6 +1470,7 @@ class CarlX extends AbstractIlsDriver{
 			//send self check status message
 			$in = $mySip->msgSCStatus();
 			$msg_result = $mySip->get_message($in);
+            ExternalRequestLogEntry::logRequest('carlx.selfCheckStatus', 'SIP2', $mySip->hostname  . ':' . $mySip->port, [], $in, 0, $msg_result, []);
 			// Make sure the response is 98 as expected
 			if (preg_match("/^98/", $msg_result)) {
 				$result = $mySip->parseACSStatusResponse($msg_result);
@@ -1486,7 +1493,7 @@ class CarlX extends AbstractIlsDriver{
 
 				$in = $mySip->msgPatronInformation('unavail',1,110); // hardcoded Nashville - circulation policy allows 100 holds for many borrower types
 				$result = $mySip->parsePatronInfoResponse( $mySip->get_message($in) );
-
+                ExternalRequestLogEntry::logRequest('carlx.getUnavailableHolds', 'SIP2', $mySip->hostname  . ':' . $mySip->port, [], $in, 0, $result, ['patronPwd'=>$patron->cat_password]);
 				if ($result && !empty($result['variable']['CD'])) {
 					if (!is_array($result['variable']['CD'])) {
 						$result['variable']['CD'] = (array)$result['variable']['CD'];
@@ -1545,6 +1552,7 @@ class CarlX extends AbstractIlsDriver{
 			//send self check status message
 			$in = $mySip->msgSCStatus();
 			$msg_result = $mySip->get_message($in);
+            ExternalRequestLogEntry::logRequest('carlx.selfCheckStatus', 'SIP2', $mySip->hostname  . ':' . $mySip->port, [], $in, 0, $msg_result, []);
 			// Make sure the response is 98 as expected
 			if (preg_match("/^98/", $msg_result)) {
 				$result = $mySip->parseACSStatusResponse($msg_result);
@@ -1633,6 +1641,7 @@ class CarlX extends AbstractIlsDriver{
 
 				$in = $mySip->msgHoldCarlX($mode, $expirationTime, $holdType, $itemId, $recordId, '', $pickupBranchNumber, $queuePosition, $freeze, $freezeReactivationDate);
 				$msg_result = $mySip->get_message($in);
+                ExternalRequestLogEntry::logRequest('carlx.placeHold', 'SIP2', $mySip->hostname  . ':' . $mySip->port, [], $in, 0, $msg_result, ['patronPwd'=>$patron->cat_password]);
 
 				if (preg_match("/^16/", $msg_result)) {
 					$result = $mySip->parseHoldResponse($msg_result );
@@ -1659,43 +1668,45 @@ class CarlX extends AbstractIlsDriver{
 
 	public function renewCheckoutViaSIP(User $patron, $itemId, $useAlternateSIP = false){
 		//renew the item via SIP 2
-		$mysip = new sip2();
-		$mysip->hostname = $this->accountProfile->sipHost;
-		$mysip->port = $this->accountProfile->sipPort;
+		$mySip = new sip2();
+		$mySip->hostname = $this->accountProfile->sipHost;
+		$mySip->port = $this->accountProfile->sipPort;
 
 		$success = false;
 		$message = 'Failed to connect to complete requested action.';
-		if ($mysip->connect()) {
+		if ($mySip->connect()) {
 			//send selfcheck status message
-			$in = $mysip->msgSCStatus();
-			$msg_result = $mysip->get_message($in);
+			$in = $mySip->msgSCStatus();
+			$msg_result = $mySip->get_message($in);
+            ExternalRequestLogEntry::logRequest('carlx.selfCheckStatus', 'SIP2', $mySip->hostname  . ':' . $mySip->port, [], $in, 0, $msg_result, []);
 			// Make sure the response is 98 as expected
 			if (preg_match("/^98/", $msg_result)) {
-				$result = $mysip->parseACSStatusResponse($msg_result);
+				$result = $mySip->parseACSStatusResponse($msg_result);
 
 				//  Use result to populate SIP2 settings
 				// These settings don't seem to apply to the CarlX Sandbox. pascal 7-12-2016
 				if (isset($result['variable']['AO'][0])){
-					$mysip->AO = $result['variable']['AO'][0]; /* set AO to value returned */
+					$mySip->AO = $result['variable']['AO'][0]; /* set AO to value returned */
 				}else{
-					$mysip->AO = 'NASH'; /* set AO to value returned */
+					$mySip->AO = 'NASH'; /* set AO to value returned */
 				}
 				if (isset($result['variable']['AN'][0])) {
-					$mysip->AN = $result['variable']['AN'][0]; /* set AN to value returned */
+					$mySip->AN = $result['variable']['AN'][0]; /* set AN to value returned */
 				}else{
-					$mysip->AN = '';
+					$mySip->AN = '';
 				}
 
-				$mysip->patron    = $patron->cat_username;
-				$mysip->patronpwd = $patron->cat_password;
+				$mySip->patron    = $patron->cat_username;
+				$mySip->patronpwd = $patron->cat_password;
 
-				$in = $mysip->msgRenew($itemId, '', '', '', 'N', 'N', 'Y');
+				$in = $mySip->msgRenew($itemId, '', '', '', 'N', 'N', 'Y');
 				//print_r($in . '<br/>');
-				$msg_result = $mysip->get_message($in);
+				$msg_result = $mySip->get_message($in);
+                ExternalRequestLogEntry::logRequest('carlx.renewCheckout', 'SIP2', $mySip->hostname  . ':' . $mySip->port, [], $in, 0, $msg_result, ['patronPwd'=>$patron->cat_password]);
 				//print_r($msg_result);
 
 				if (preg_match("/^30/", $msg_result)) {
-					$result = $mysip->parseRenewResponse($msg_result);
+					$result = $mySip->parseRenewResponse($msg_result);
 
 //					$title = $result['variable']['AJ'][0];
 

@@ -119,6 +119,7 @@ class Nashville extends CarlX {
 		if (!is_null($mySip)) {
 			$in = $mySip->msgFeePaid($feeType, $pmtType, $pmtAmount, $curType, $feeId, $transId, $patronId);
 			$msg_result = $mySip->get_message($in);
+            ExternalRequestLogEntry::logRequest('carlx.feePaid', 'SIP2', $mySip->hostname  . ':' . $mySip->port, [], $in, 0, $msg_result, []);
 			if (preg_match("/^38/", $msg_result)) {
 				$result = $mySip->parseFeePaidResponse($msg_result);
 				$success = ($result['fixed']['PaymentAccepted'] == 'Y');
@@ -287,11 +288,13 @@ class Nashville extends CarlX {
 		if (!is_null($mySip)) {
 			$in = $mySip->msgPatronInformation('none');
 			$msg_result = $mySip->get_message($in);
+            ExternalRequestLogEntry::logRequest('carlx.getLost', 'SIP2', $mySip->hostname  . ':' . $mySip->port, [], $in, 0, $msg_result, []);
 			if (preg_match("/^64/", $msg_result)) {
 				$result = $mySip->parsePatronInfoResponse($msg_result);
 				$fineCount = $result['fixed']['FineCount'];
 				$in = $mySip->msgPatronInformation('fine', 1, $fineCount);
 				$msg_result = $mySip->get_message($in);
+                ExternalRequestLogEntry::logRequest('carlx.fine', 'SIP2', $mySip->hostname  . ':' . $mySip->port, [], $in, 0, $msg_result, []);
 				if (preg_match("/^64/", $msg_result)) {
 					$myLostFees = [];
 					$result = $mySip->parsePatronInfoResponse($msg_result);
@@ -361,6 +364,7 @@ class Nashville extends CarlX {
 			// Make sure the response is 98 as expected
 			if (preg_match("/^98/", $msg_result)) {
 				$result = $mySip->parseACSStatusResponse($msg_result);
+                ExternalRequestLogEntry::logRequest('carlx.selfCheckStatus', 'SIP2', $mySip->hostname  . ':' . $mySip->port, [], $in, 0, $msg_result, []);
 
 				//  Use result to populate SIP2 setings
 				// These settings don't seem to apply to the CarlX Sandbox. pascal 7-12-2016
