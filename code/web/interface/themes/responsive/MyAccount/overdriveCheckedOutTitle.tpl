@@ -91,7 +91,7 @@
 						<div class="result-value col-tn-8 col-lg-9">{$record->dueDate|date_format}</div>
 					</div>
 
-					{if $record->allowDownload}
+					{if $record->allowDownload && $fulfillmentMethod == "0"}
 						<div class="row econtent-download-row">
 							<div class="result-label col-md-4 col-lg-3">{translate text='Download' isPublicFacing=true}</div>
 							<div class="result-value col-md-8 col-lg-9">

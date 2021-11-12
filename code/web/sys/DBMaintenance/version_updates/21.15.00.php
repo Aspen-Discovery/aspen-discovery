@@ -24,5 +24,12 @@ function getUpdates21_15_00() : array
 				'alter table user_checkout change column format format VARCHAR(75) DEFAULT NULL;'
 			]
 		], //checkoutFormatLength
+		'overdrive_useFulfillmentInterface' => [
+			'title' => 'OverDrive - Enable updated checkout fulfillment interface',
+			'description' => 'Enable updated checkout fulfillment interface',
+			'sql' => [
+				'ALTER TABLE overdrive_settings ADD COLUMN useFulfillmentInterface TINYINT(1) DEFAULT 0',
+			]
+		], //overdrive_useFulfillmentInterface
 	];
 }

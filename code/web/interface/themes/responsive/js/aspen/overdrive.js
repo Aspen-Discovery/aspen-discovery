@@ -185,13 +185,21 @@ AspenDiscovery.OverDrive = (function(){
 				url: ajaxUrl,
 				cache: false,
 				success: function(data){
-					if (data.success){
+					if (data.success && data.fulfillment == "download"){
 						//Reload the page
 						var win = window.open(data.downloadUrl, '_blank');
 						win.focus();
 						//window.location.href = data.downloadUrl ;
 					}else{
 						AspenDiscovery.showMessage('An Error occurred', data.message);
+					}
+
+					if (data.success && data.fulfillment == "redirect") {
+						if (data.success){
+							AspenDiscovery.showMessageWithButtons(data.message, data.modalBody, data.modalButtons);
+						}else{
+							AspenDiscovery.showMessage('Error', data.message);
+						}
 					}
 				},
 				dataType: 'json',
