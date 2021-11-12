@@ -31,8 +31,19 @@ UNLOCK TABLES;
 
 LOCK TABLES `indexing_profiles` WRITE;
 /*!40000 ALTER TABLE `indexing_profiles` DISABLE KEYS */;
-INSERT INTO `indexing_profiles` (id, name, marcPath, marcEncoding, individualMarcPath, groupingClass, indexingClass, recordDriver, recordUrlComponent, formatSource, recordNumberTag, recordNumberPrefix,suppressItemlessBibs, itemTag, itemRecordNumber, useItemBasedCallNumbers, callNumberPrestamp, callNumber, callNumberCutter, callNumberPoststamp, location, locationsToSuppress, subLocation, shelvingLocation, volume, itemUrl, barcode, status, statusesToSuppress, totalCheckouts, lastYearCheckouts, yearToDateCheckouts, totalRenewals, iType, dueDate, dateCreated, dateCreatedFormat, iCode2, useICode2Suppression, format, eContentDescriptor, orderTag, orderStatus, orderLocation, orderCopies, orderCode3, collection, catalogDriver, nonHoldableITypes, nonHoldableStatuses, nonHoldableLocations, lastCheckinFormat, lastCheckinDate, orderLocationSingle, specifiedFormat, specifiedFormatCategory, specifiedFormatBoost, filenamesToInclude, collectionsToSuppress, numCharsToCreateFolderFrom, createFolderFromLeadingCharacters, dueDateFormat, doAutomaticEcontentSuppression, iTypesToSuppress, iCode2sToSuppress, bCode3sToSuppress, sierraRecordFixedFieldsTag, bCode3, recordNumberField, recordNumberSubfield, runFullUpdate, lastUpdateOfChangedRecords, lastUpdateOfAllRecords, lastUpdateFromMarcExport, lastVolumeExportTimestamp) VALUES (1,'ils','/data/aspen-discovery/{sitename}/ils/marc','UTF8','/data/aspen-discovery/{sitename}/ils/marc_recs','MarcRecordGrouper','Koha','MarcRecordDriver','Record','bib','999','',1,'952','9',1,'','o','','','b','','c','8','h','','p','','','l','','','m','y','','d','yyyy-MM-dd','',0,'y','','','','','','','','Koha','','','','','','','','0',8,'.*\\.ma?rc','',4,0,'',1,0,NULL,NULL,NULL,NULL,NULL,'a','c',1,0,0,0);
+INSERT INTO `indexing_profiles` (id, name, marcPath, marcEncoding, individualMarcPath, groupingClass, indexingClass, recordDriver, recordUrlComponent, formatSource, recordNumberTag, suppressItemlessBibs, itemTag, itemRecordNumber, useItemBasedCallNumbers, callNumber, location, shelvingLocation,collection, volume, barcode, totalCheckouts, totalRenewals, iType, dueDate, dateCreated, dateCreatedFormat, format, catalogDriver, filenamesToInclude, numCharsToCreateFolderFrom, createFolderFromLeadingCharacters, doAutomaticEcontentSuppression, recordNumberSubfield, recordNumberPrefix, noteSubfield, lastCheckinFormat) VALUES (1,'ils','/data/aspen-discovery/{sitename}/ils/marc','UTF8','/data/aspen-discovery/{sitename}/ils/marc_recs','MarcRecordGrouper','Koha','MarcRecordDriver','Record','bib','999',1,'952','9',1,'o','a','c','8','h','p','l','m','y','k','d','yyyy-MM-dd','y','Koha','.*\\.ma?rc',4,0,1,'c', '', 'z', '');
 /*!40000 ALTER TABLE `indexing_profiles` ENABLE KEYS */;
+UNLOCK TABLES;
+
+
+--
+-- Dumping data for table `library_records_to_include`
+--
+
+LOCK TABLES `library_records_to_include` WRITE;
+/*!40000 ALTER TABLE `library_records_to_include` DISABLE KEYS */;
+INSERT INTO `library_records_to_include` VALUES (1,1,1,'.*','.*',0,1,1,1,'','','','','',1,'','','','');
+/*!40000 ALTER TABLE `library_records_to_include` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
