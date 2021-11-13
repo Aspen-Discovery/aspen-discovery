@@ -42,7 +42,7 @@ class HooplaDriver extends AbstractEContentDriver{
 
 
 	// $customRequest is for curl, can be 'PUT', 'DELETE', 'POST'
-	private function getAPIResponse($url, $params = null, $customRequest = null, $additionalHeaders = null)
+	private function getAPIResponse($requestType, $url, $params = null, $customRequest = null, $additionalHeaders = null, $dataToSanitize = [])
 	{
 		global $logger;
 		$logger->log('Hoopla API URL :' .$url, Logger::LOG_NOTICE);
@@ -58,11 +58,11 @@ class HooplaDriver extends AbstractEContentDriver{
 			$headers = array_merge($headers, $additionalHeaders);
 		}
 		if (empty($customRequest)) {
+            $customRequest = 'GET';
 			curl_setopt($ch, CURLOPT_HTTPGET, true);
 		} elseif ($customRequest == 'POST') {
 			curl_setopt($ch, CURLOPT_POST, true);
-		}
-		else {
+		} else {
 			curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $customRequest);
 		}
 
@@ -82,7 +82,9 @@ class HooplaDriver extends AbstractEContentDriver{
 		}
 		$json = curl_exec($ch);
 
-		if (!$json && curl_getinfo($ch, CURLINFO_HTTP_CODE) == 401) {
+        ExternalRequestLogEntry::logRequest($requestType, $customRequest, $url, $headers, '', curl_getinfo($ch, CURLINFO_HTTP_CODE), $json,$dataToSanitize);
+
+        if (!$json && curl_getinfo($ch, CURLINFO_HTTP_CODE) == 401) {
 			$logger->log('401 Response in getAPIResponse. Attempting to renew access token', Logger::LOG_WARNING);
 			$this->renewAccessToken();
 			return false;
@@ -123,8 +125,10 @@ class HooplaDriver extends AbstractEContentDriver{
 			curl_setopt($ch, CURLINFO_HEADER_OUT, true);
 		}
 
-		curl_exec($ch);
+		$response = curl_exec($ch);
 		$http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
+        ExternalRequestLogEntry::logRequest('hoopla.returnCheckout', 'DELETE', $url, $headers, '', $http_code, $response,[]);
 
 		curl_close($ch);
 		return $http_code == 204;
@@ -187,7 +191,7 @@ class HooplaDriver extends AbstractEContentDriver{
 			$getPatronStatusURL = $this->getHooplaBasePatronURL($user);
 			if (!empty($getPatronStatusURL)) {
 				$getPatronStatusURL .= '/status';
-				$hooplaPatronStatusResponse = $this->getAPIResponse($getPatronStatusURL);
+				$hooplaPatronStatusResponse = $this->getAPIResponse('hoopla.getAccountSummary',$getPatronStatusURL);
 				if (!empty($hooplaPatronStatusResponse) && !isset($hooplaPatronStatusResponse->message)) {
 					$this->hooplaPatronStatuses[$user->id] = $hooplaPatronStatusResponse;
 
@@ -224,7 +228,7 @@ class HooplaDriver extends AbstractEContentDriver{
 			$hooplaCheckedOutTitlesURL = $this->getHooplaBasePatronURL($patron);
 			if (!empty($hooplaCheckedOutTitlesURL)) {
 				$hooplaCheckedOutTitlesURL  .= '/checkouts/current';
-				$checkOutsResponse = $this->getAPIResponse($hooplaCheckedOutTitlesURL);
+				$checkOutsResponse = $this->getAPIResponse('hoopla.getCheckouts', $hooplaCheckedOutTitlesURL);
 				if (is_array($checkOutsResponse)) {
                     $hooplaPatronStatus = null;
 					foreach ($checkOutsResponse as $checkOut) {
@@ -305,6 +309,7 @@ class HooplaDriver extends AbstractEContentDriver{
 				curl_setopt($curl, CURLINFO_HEADER_OUT, true);
 			}
 			$response = curl_exec($curl);
+            ExternalRequestLogEntry::logRequest('hoopla.renewAccessToken', 'POST', $url, [], '', curl_getinfo($ch, CURLINFO_HTTP_CODE), $response,[]);
 
 			curl_close($curl);
 
@@ -347,7 +352,7 @@ class HooplaDriver extends AbstractEContentDriver{
 
 				$titleId = self::recordIDtoHooplaID($titleId);
 				$checkoutURL      .= '/' . $titleId;
-				$checkoutResponse = $this->getAPIResponse($checkoutURL, array(), 'POST');
+				$checkoutResponse = $this->getAPIResponse('hoopla.checkoutTitle',$checkoutURL, array(), 'POST');
 				if ($checkoutResponse) {
 					if (!empty($checkoutResponse->contentId)) {
 						$this->trackUserUsageOfHoopla($patron);
@@ -443,7 +448,7 @@ class HooplaDriver extends AbstractEContentDriver{
 			if (!empty($returnCheckoutURL)) {
 				$itemId = self::recordIDtoHooplaID($hooplaId);
                 $returnCheckoutURL .= "/$itemId";
-				$result = $this->getAPIResponseReturnHooplaTitle($returnCheckoutURL);
+				$result = $this->getAPIResponseReturnHooplaTitle('hoopla.returnCheckout', $returnCheckoutURL);
 				if ($result) {
 					$patron->clearCachedAccountSummaryForSource('hoopla');
 					$patron->forceReloadOfCheckouts();
