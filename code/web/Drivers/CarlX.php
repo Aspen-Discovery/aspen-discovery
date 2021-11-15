@@ -506,6 +506,10 @@ class CarlX extends AbstractIlsDriver{
 	 */
 	function placeItemHold(User $patron, $recordId, $itemId, $pickupBranch, $cancelDate = null) {
 		// TODO: Implement placeItemHold() method. // CarlX [9.6.4.3] does not allow item level holds via SIP2
+		return [
+			'success' => false,
+			'message' => 'Unable to place item holds for CARL.X'
+		];
 	}
 
 	/**
