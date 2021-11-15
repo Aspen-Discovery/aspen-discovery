@@ -30,7 +30,7 @@ class OverDriveSetting extends DataObject
 			'url' => array('property' => 'url', 'type' => 'url', 'label' => 'url', 'description' => 'The publicly accessible URL', 'canBatchUpdate'=>false),
 			'patronApiUrl' => array('property' => 'patronApiUrl', 'type' => 'url', 'label' => 'Patron API URL', 'description' => 'The URL where the Patron API is located', 'canBatchUpdate'=>false),
 			'clientKey' => array('property' => 'clientKey', 'type' => 'text', 'label' => 'Client Key', 'description' => 'The client key provided by OverDrive when registering', 'canBatchUpdate'=>false),
-			'clientSecret' => array('property' => 'clientSecret', 'type' => 'text', 'label' => 'Client Secret', 'description' => 'The client secret provided by OverDrive when registering', 'canBatchUpdate'=>false),
+			'clientSecret' => array('property' => 'clientSecret', 'type' => 'storedPassword', 'label' => 'Client Secret', 'description' => 'The client secret provided by OverDrive when registering', 'canBatchUpdate'=>false, 'hideInLists'=>true),
 			'accountId' => array('property' => 'accountId', 'type' => 'integer', 'label' => 'Account Id', 'description' => 'The account id for the main collection provided by OverDrive and used to load information about collections', 'canBatchUpdate'=>false),
 			'websiteId' => array('property' => 'websiteId', 'type' => 'integer', 'label' => 'Website Id', 'description' => 'The website id provided by OverDrive and used to load circulation information', 'canBatchUpdate'=>false),
 			'productsKey' => array('property' => 'productsKey', 'type' => 'text', 'label' => 'Products Key', 'description' => 'The products key provided by OverDrive used to load information about collections', 'canBatchUpdate'=>false),
