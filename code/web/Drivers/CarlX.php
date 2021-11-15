@@ -293,7 +293,9 @@ class CarlX extends AbstractIlsDriver{
 				$this->soapClient = new SoapClient($WSDL, $soapRequestOptions);
 				$result = $this->soapClient->$requestName($request);
 				$connectionPassed = true;
-				ExternalRequestLogEntry::logRequest('carlx.' . $requestName, 'GET', $WSDL, $this->soapClient->__getLastRequestHeaders(), $this->soapClient->__getLastRequest(), 0, $this->soapClient->__getLastResponse(), $dataToSanitize);
+				if (IPAddress::showDebuggingInformation()) {
+					ExternalRequestLogEntry::logRequest('carlx.' . $requestName, 'GET', $WSDL, $this->soapClient->__getLastRequestHeaders(), $this->soapClient->__getLastRequest(), 0, $this->soapClient->__getLastResponse(), $dataToSanitize);
+				}
 				if (is_null($result)) {
 					$lastResponse = $this->soapClient->__getLastResponse();
 					$lastResponse = simplexml_load_string($lastResponse, NULL, NULL, 'http://schemas.xmlsoap.org/soap/envelope/');
