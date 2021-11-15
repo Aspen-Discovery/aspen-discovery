@@ -654,6 +654,7 @@ class BookCoverProcessor{
 			'header' => "User-Agent: {$this->configArray['Catalog']['catalogUserAgent']}\r\n"
 		)));
 
+		ExternalRequestLogEntry::logRequest("$source.getCover", 'GET', $url, [], '', 0, '', []);
 		if ($image = @file_get_contents($url, false, $context)) {
 			// Figure out file paths -- $tempFile will be used to store the downloaded
 			// image for analysis.  $finalFile will be used for long-term storage if
