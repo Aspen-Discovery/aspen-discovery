@@ -35,10 +35,10 @@ class ExternalRequestLogEntry extends DataObject
 	 * @param null|string|string[] $headers
 	 * @param string $body
 	 * @param string $responseCode
-	 * @param string $response
+	 * @param string|null $response
 	 * @param string[] $dataToSanitize
 	 */
-	static function logRequest(string $requestType, string $method, string $url, $headers, string $body, string $responseCode, string $response, array $dataToSanitize){
+	static function logRequest(string $requestType, string $method, string $url, $headers, string $body, string $responseCode, ?string $response, array $dataToSanitize){
 		try {
 			if (IPAddress::showDebuggingInformation()) {
 				require_once ROOT_DIR . '/sys/SystemLogging/ExternalRequestLogEntry.php';
@@ -55,6 +55,9 @@ class ExternalRequestLogEntry extends DataObject
 				$externalRequest->requestHeaders = ExternalRequestLogEntry::sanitize($headers, $dataToSanitize);
 				$externalRequest->requestBody = ExternalRequestLogEntry::sanitize($body, $dataToSanitize);
 				$externalRequest->responseCode = $responseCode;
+				if (is_null($response)){
+					$response = '';
+				}
 				$externalRequest->response = ExternalRequestLogEntry::sanitize($response, $dataToSanitize);;
 				$externalRequest->requestTime = time();
 				$externalRequest->insert();
