@@ -32,7 +32,7 @@ class ExternalRequestLogEntry extends DataObject
 	 * @param string $requestType
 	 * @param string $method
 	 * @param string $url
-	 * @param string|string[] $headers
+	 * @param null|string|string[] $headers
 	 * @param string $body
 	 * @param string $responseCode
 	 * @param string $response
@@ -47,7 +47,9 @@ class ExternalRequestLogEntry extends DataObject
 				$externalRequest->requestMethod = $method;
 
 				$externalRequest->requestUrl = ExternalRequestLogEntry::sanitize($url, $dataToSanitize);
-				if (is_array($headers)){
+				if (is_null($headers)){
+					$headers = '';
+				}elseif (is_array($headers)){
 					$headers = implode($headers, "\n");
 				}
 				$externalRequest->requestHeaders = ExternalRequestLogEntry::sanitize($headers, $dataToSanitize);
