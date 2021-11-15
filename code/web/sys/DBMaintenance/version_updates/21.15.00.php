@@ -31,5 +31,12 @@ function getUpdates21_15_00() : array
 				'ALTER TABLE overdrive_settings ADD COLUMN useFulfillmentInterface TINYINT(1) DEFAULT 0',
 			]
 		], //overdrive_useFulfillmentInterface
+		'account_profile_increaseDatabaseNameLength' => [
+			'title' => 'Account Profile - Increase Database Name Length',
+			'description' => 'Increase datbase name length for Account Profiles',
+			'sql' => [
+				"ALTER TABLE account_profiles CHANGE COLUMN databaseName databaseName VARCHAR(75)",
+			]
+		], //account_profile_increaseDatabaseNameLength
 	];
 }
