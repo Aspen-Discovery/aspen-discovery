@@ -45,7 +45,7 @@ class AccountProfile extends DataObject {
 			'databaseSection'=>array('property'=>'databaseSection', 'type' => 'section', 'label' =>'Database Information (optional)', 'hideInLists' => true, 'properties' => array(
 					'databaseHost' => array('property' => 'databaseHost', 'type' => 'text', 'label' => 'Database Host', 'maxLength' => 100, 'description' => 'Optional URL where the database is located', 'required' => false),
 					'databasePort' => array('property' => 'databasePort', 'type' => 'text', 'label' => 'Database Port', 'maxLength' => 5, 'description' => 'The port to use when connecting to the database', 'required' => false),
-					'databaseName' => array('property' => 'databaseName', 'type' => 'text', 'label' => 'Database Schema Name', 'maxLength' => 50, 'description' => 'Name of the schema to connect to within the database', 'required' => false),
+					'databaseName' => array('property' => 'databaseName', 'type' => 'text', 'label' => 'Database Schema Name', 'maxLength' => 75, 'description' => 'Name of the schema to connect to within the database', 'required' => false),
 					'databaseUser' => array('property' => 'databaseUser', 'type' => 'text', 'label' => 'Database User', 'maxLength' => 50, 'description' => 'Username to use when connecting', 'required' => false),
 					'databasePassword' => array('property' => 'databasePassword', 'type' => 'storedPassword', 'label' => 'Database Password', 'maxLength' => 50, 'description' => 'Password to use when connecting', 'required' => false),
 					'databaseTimezone' => array('property' => 'databaseTimezone', 'type' => 'text', 'label' => 'Database Timezone', 'maxLength' => 50, 'description' => 'Timezone to use when connecting', 'required' => false),
