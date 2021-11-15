@@ -28,7 +28,17 @@ class ExternalRequestLogEntry extends DataObject
 		];
 	}
 
-	static function logRequest($requestType, $method, $url, $headers, $body, $responseCode, $response, $dataToSanitize){
+	/**
+	 * @param string $requestType
+	 * @param string $method
+	 * @param string $url
+	 * @param string|string[] $headers
+	 * @param string $body
+	 * @param string $responseCode
+	 * @param string $response
+	 * @param string[] $dataToSanitize
+	 */
+	static function logRequest(string $requestType, string $method, string $url, $headers, string $body, string $responseCode, string $response, array $dataToSanitize){
 		try {
 			if (IPAddress::showDebuggingInformation()) {
 				require_once ROOT_DIR . '/sys/SystemLogging/ExternalRequestLogEntry.php';
@@ -37,7 +47,10 @@ class ExternalRequestLogEntry extends DataObject
 				$externalRequest->requestMethod = $method;
 
 				$externalRequest->requestUrl = ExternalRequestLogEntry::sanitize($url, $dataToSanitize);
-				$externalRequest->requestHeaders = ExternalRequestLogEntry::sanitize(implode($headers, "\n"), $dataToSanitize);
+				if (is_array($headers)){
+					$headers = implode($headers, "\n");
+				}
+				$externalRequest->requestHeaders = ExternalRequestLogEntry::sanitize($headers, $dataToSanitize);
 				$externalRequest->requestBody = ExternalRequestLogEntry::sanitize($body, $dataToSanitize);
 				$externalRequest->responseCode = $responseCode;
 				$externalRequest->response = ExternalRequestLogEntry::sanitize($response, $dataToSanitize);;
@@ -51,8 +64,8 @@ class ExternalRequestLogEntry extends DataObject
 
 	private static function sanitize($field, $dataToSanitize){
 		$sanitizedField = $field;
-		foreach ($dataToSanitize as $field => $value){
-			$sanitizedField = str_replace($value, "**$field**" , $sanitizedField);
+		foreach ($dataToSanitize as $dataFieldName => $value){
+			$sanitizedField = str_replace($value, "**$dataFieldName**" , $sanitizedField);
 		}
 		return $sanitizedField;
 	}
