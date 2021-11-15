@@ -9,6 +9,8 @@ class CurlWrapper
 	public $curl_connection; // need access in order to check for curl errors.
 	public $connectTimeout = 2;
 	public $timeout = 10;
+	public $responseHeaders = [];
+	public $cookies = [];
 
 	public function __construct()
 	{
@@ -85,6 +87,7 @@ class CurlWrapper
 			$this->setOption(CURLOPT_CONNECTTIMEOUT, $this->connectTimeout);
 			$this->setOption(CURLOPT_TIMEOUT, $this->timeout);
 			$this->setOption(CURLOPT_HTTPHEADER, $this->headers);
+			$this->setOption(CURLOPT_HEADERFUNCTION, [$this, 'curlResponseHeaderCallback']);
 
 			global $configArray;
 			if (IPAddress::showDebuggingInformation() && $configArray['System']['debugCurl']){
@@ -128,6 +131,7 @@ class CurlWrapper
 	{
 		$this->curl_connect($url);
 		curl_setopt($this->curl_connection, CURLOPT_HTTPGET, true);
+		$this->responseHeaders = [];
 		$return = curl_exec($this->curl_connection);
 		if (!$return) { // log curl error
 			global $logger;
@@ -161,6 +165,7 @@ class CurlWrapper
 				curl_setopt($this->curl_connection, $key, $value);
 			}
 		}
+		$this->responseHeaders = [];
 		$return = curl_exec($this->curl_connection);
 		if (!$return) { // log curl error
 			global $logger;
@@ -191,7 +196,7 @@ class CurlWrapper
 			CURLOPT_POST => true,
 			CURLOPT_POSTFIELDS => $post_string,
 		));
-
+		$this->responseHeaders = [];
 		$return = curl_exec($this->curl_connection);
 		if (!$return) { // log curl error
 			global $logger;
@@ -219,6 +224,7 @@ class CurlWrapper
 		if ($body != null) {
 			curl_setopt($this->curl_connection, CURLOPT_POSTFIELDS, $body);
 		}
+		$this->responseHeaders = [];
 		$return = curl_exec($this->curl_connection);
 		if (!$return) { // log curl error
 			global $configArray;
@@ -295,5 +301,13 @@ class CurlWrapper
 		if (!empty($this->curl_connection)){
 			curl_setopt($this->curl_connection, CURLOPT_CONNECTTIMEOUT, $this->connectTimeout);
 		}
+	}
+
+	function curlResponseHeaderCallback($ch, $headerLine) {
+		$this->responseHeaders[] = $headerLine;
+		if (preg_match('/^Set-Cookie:\s*([^;]*)/mi', $headerLine, $cookie) == 1) {
+			$this->cookies[] = $cookie[1];
+		}
+		return strlen($headerLine); // Needed by curl
 	}
 }
