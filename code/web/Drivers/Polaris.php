@@ -435,6 +435,7 @@ class Polaris extends AbstractIlsDriver
 						$isAvailable = true;
 						$curHold->locationUpdateable = false;
 						$curHold->cancelable = false;
+						$curHold->expirationDate = isset($holdInfo->PickupByDate) ? $this->extractDateFromPolarisDateField($holdInfo->PickupByDate) : null;
 						break;
 					case 7:
 						//Not Supplied
@@ -1597,5 +1598,10 @@ class Polaris extends AbstractIlsDriver
 			'maxLength' => 14,
 			'onlyDigitsAllowed' => false,
 		];
+	}
+
+	private function extractDateFromPolarisDateField($PickupByDate)
+	{
+		return strstr($PickupByDate, 'T', true);
 	}
 }
