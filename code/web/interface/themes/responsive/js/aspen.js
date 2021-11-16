@@ -7896,6 +7896,11 @@ AspenDiscovery.Browse = (function(){
 									.fadeIn()
 							}
 						}
+						if (data.lastPage){
+							$('#more-browse-results').hide(); // hide the load more results
+						} else {
+							$('#more-browse-results').show();
+						}
 					}
 				}
 			}).fail(function(){
@@ -8005,6 +8010,12 @@ AspenDiscovery.Browse = (function(){
 					AspenDiscovery.Browse.colcade.append($(data.records));
 
 					$('#selected-browse-search-link').attr('href', data.searchUrl); // update the search link
+
+					if (data.lastPage){
+						$('#more-browse-results').hide(); // hide the load more results
+					} else {
+						$('#more-browse-results').show();
+					}
 				}
 			}).fail(function(){
 				AspenDiscovery.ajaxFail();
