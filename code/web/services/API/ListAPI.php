@@ -3,6 +3,7 @@
 require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/sys/Pager.php';
 require_once ROOT_DIR . '/sys/UserLists/UserList.php';
+require_once ROOT_DIR . '/sys/SearchEntry.php';
 
 class ListAPI extends Action
 {
@@ -166,6 +167,8 @@ class ListAPI extends Action
 					'description' => $list->description,
 					'numTitles' => $list->numValidListItems(),
 					'public' => $list->public == 1,
+					'created' => $list->created,
+					'dateUpdated' => $list->dateUpdated,
 				);
 			}
 		}
@@ -496,6 +499,43 @@ class ListAPI extends Action
 				'fullListLink' => ''
 			);
 		}
+	}
+
+	function getSavedSearches() : array
+	{
+		$userId = null;
+		if (!UserAccount::isLoggedIn()){
+			if (!isset($_REQUEST['username']) || !isset($_REQUEST['password'])) {
+				return array('success' => false, 'message' => 'The username and password must be provided to load saved searches.');
+			}
+
+			$username = $_REQUEST['username'];
+			$password = $_REQUEST['password'];
+			$user = UserAccount::validateAccount($username, $password);
+
+			if ($user == false) {
+				return array('success' => false, 'message' => 'Sorry, we could not find a user with those credentials.');
+			}
+
+			$userId = $user->id;
+		}
+
+		$savedSearches = [];
+		$searchEntry = new SearchEntry();
+		$savedSearchLists = $searchEntry->getSearches(session_id(), $userId);
+
+		foreach($savedSearchLists as $savedSearchList) {
+			if($savedSearchList->title) {
+				$savedSearch = array(
+					'id' => $savedSearchList->id,
+					'title' => $savedSearchList->title,
+					'created' => $savedSearchList->created,
+					'searchUrl' => $savedSearchList->searchUrl,
+				);
+				$savedSearches[] = $savedSearch;
+			}
+		}
+		return $savedSearches;
 	}
 
 	function getSavedSearchTitles($searchId, $numTitlesToShow)

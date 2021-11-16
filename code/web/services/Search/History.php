@@ -128,6 +128,7 @@ class History extends Action {
 
 					$thisSearch = array(
 						'id'          => $search->id,
+						'title'       => $search->title,
 						'url'         => $searchObject->renderSearchUrl(),
 						'description' => $searchObject->displayQuery(),
 						'filters'     => $searchObject->getFilterList(),
@@ -147,6 +148,39 @@ class History extends Action {
 		}
 
 		$interface->assign('thisSearch', $thisSearch);
+		return $thisSearch;
+	}
+
+	public static function getSavedSearchObject($searchId) {
+		// Retrieve search history
+		$s = new SearchEntry();
+		$searchHistory = $s->getSearches(session_id(), UserAccount::isLoggedIn() ? UserAccount::getActiveUserId() : null);
+		$thisSearch = [];
+		if (count($searchHistory) > 0) {
+			// Loop through the history to find the one we want
+			foreach($searchHistory as $search) {
+				if($search->id == $searchId) {
+					$searchObject = SearchObjectFactory::initSearchObject();
+					$size = strlen($search->search_object);
+					$minSO = unserialize($search->search_object);
+					$searchObject = SearchObjectFactory::deminify($minSO);
+
+					$searchObject->activateAllFacets();
+
+					$searchSourceLabel = $searchObject->getSearchSource();
+					if (array_key_exists($searchSourceLabel, self::$searchSourceLabels)) {
+						$searchSourceLabel = self::$searchSourceLabels[$searchSourceLabel];
+					}
+
+					$thisSearch = array(
+						'id'            => $search->id,
+						'url'           => $search->searchUrl,
+						'search_object' => $search->search_object,
+						'source'        => $searchSourceLabel,
+					);
+				}
+			}
+		}
 		return $thisSearch;
 	}
 
