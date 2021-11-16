@@ -345,6 +345,108 @@ class Browse_AJAX extends Action {
 		return $result;
 	}
 
+	private function getSavedSearchBrowseCategoryResults($pageToLoad = 1){
+		if (!UserAccount::isLoggedIn()){
+			return [
+				'success' => false,
+				'message' => 'Your session has timed out, please login again to view suggestions'
+			];
+		}
+		//Do not cache browse category results in memory because they are generally too large and because they can be slow to delete
+		$browseMode = $this->setBrowseMode();
+
+		global $interface;
+		$interface->assign('browseCategoryId', $this->textId);
+		$result['success'] = true;
+		$result['textId'] = $this->textId;
+		$result['label'] = translate(['text' => 'Your saved searches', 'isPublicFacing'=>true]);
+		$result['searchUrl'] = '/MyAccount/SuggestedTitles';
+
+
+		$searchEntry = new SearchEntry();
+		$searches = [];
+		$savedSearches = $searchEntry->getSearches(session_id(), UserAccount::isLoggedIn() ? UserAccount::getActiveUserId() : null);
+		foreach($savedSearches as $savedSearch) {
+			if($savedSearch->searchTerms) {
+				$query = $savedSearch->searchTerms[0]['lookfor'];
+			} else {
+				$query = translate(['text' => 'Anything (Empty Search)', 'isPublicFacing'=>true]);
+			}
+
+			$search = array(
+				'textId' => $savedSearch->id,
+				'label' => $query,
+				'created' => $savedSearch->created,
+				'searchUrl' => $savedSearch->searchUrl,
+			);
+
+			if (empty($search['label'])){
+				$search['label'] = translate(['text' => 'Anything (Empty Search)', 'isPublicFacing'=>true]);
+			}
+
+			$searches[] = $search;
+		}
+
+		if (!empty($searches)) {
+			global $interface;
+			$interface->assign('subCategories', $searches);
+			return $interface->fetch('Search/browse-sub-category-menu.tpl');
+		}
+
+
+		$records[] = $interface->fetch('Browse/noResults.tpl');
+
+		$result['records']    = implode('',$records);
+		$result['numRecords'] = count($records);
+
+		return $result;
+	}
+
+	private function getUserListBrowseCategoryResults($pageToLoad = 1){
+		if (!UserAccount::isLoggedIn()){
+			return [
+				'success' => false,
+				'message' => 'Your session has timed out, please login again to view suggestions'
+			];
+		}
+		//Do not cache browse category results in memory because they are generally too large and because they can be slow to delete
+		$browseMode = $this->setBrowseMode();
+
+		global $interface;
+		$interface->assign('browseCategoryId', $this->textId);
+		$result['success'] = true;
+		$result['textId'] = $this->textId;
+		$result['label'] = translate(['text' => 'Recommended for you', 'isPublicFacing'=>true]);
+		$result['searchUrl'] = '/MyAccount/SuggestedTitles';
+
+		require_once ROOT_DIR . '/sys/Suggestions.php';
+		$suggestions = Suggestions::getSuggestions(-1, $pageToLoad,self::ITEMS_PER_PAGE);
+		$records = array();
+		foreach ($suggestions as $suggestedItemId => $suggestionData) {
+			require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+			if (array_key_exists('recordDriver', $suggestionData['titleInfo'])) {
+				$groupedWork = $suggestionData['titleInfo']['recordDriver'];
+			}else {
+				$groupedWork = new GroupedWorkDriver($suggestionData['titleInfo']);
+			}
+			if ($groupedWork->isValid) {
+				if (method_exists($groupedWork, 'getBrowseResult')) {
+					$records[] = $interface->fetch($groupedWork->getBrowseResult());
+				} else {
+					$records[] = 'Browse Result not available';
+				}
+			}
+		}
+		if (count($records) == 0){
+			$records[] = $interface->fetch('Browse/noResults.tpl');
+		}
+
+		$result['records']    = implode('',$records);
+		$result['numRecords'] = count($records);
+
+		return $result;
+	}
+
 	private function getBrowseCategoryResults($pageToLoad = 1){
 		if ($this->textId == 'system_recommended_for_you') {
 			return $this->getSuggestionsBrowseCategoryResults($pageToLoad);

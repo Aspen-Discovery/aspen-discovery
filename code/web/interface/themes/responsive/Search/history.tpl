@@ -13,6 +13,7 @@
 					<tr>
 						<th width="4%">{translate text="Id" isPublicFacing=true}</th>
 						<th width="18%">{translate text="Time" isPublicFacing=true}</th>
+						<th>{translate text="Name" isPublicFacing=true}</th>
 						<th width="30%">{translate text="Search" isPublicFacing=true}</th>
 						<th width="28%">{translate text="Limits" isPublicFacing=true}</th>
 						<th width="10%">{translate text="Search Source" isPublicFacing=true}</th>
@@ -23,6 +24,7 @@
 					<tr>
 						<td>{$info.id}</td>
 						<td>{$info.time}</td>
+						<td>{$info.title}</td>
 						<td><a href="{$info.url|escape}">{if empty($info.description)}{translate text="Anything (Empty Search)" isPublicFacing=true}{else}{$info.description|escape}{/if}</a></td>
 						<td>{foreach from=$info.filters item=filters key=field}{foreach from=$filters item=filter}
 							<b>{translate text=$field|escape isPublicFacing=true}</b>: {$filter.display|escape}<br/>

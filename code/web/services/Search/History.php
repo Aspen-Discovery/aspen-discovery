@@ -49,6 +49,7 @@ class History extends Action {
 				$newItem = array(
 					'id'          => $search->id,
 					'time'        => date("g:ia, jS M y", $searchObject->getStartTime()),
+					'title'       => $search->title,
 					'url'         => $searchObject->renderSearchUrl(),
 					'searchId'    => $searchObject->getSearchId(),
 					'description' => $searchObject->displayQuery(),
@@ -99,6 +100,54 @@ class History extends Action {
 		}else{
 			$this->display('history.tpl', 'Search History', '');
 		}
+	}
+
+	public static function getSearchForSaveForm($searchId) {
+		global $interface;
+
+		// Retrieve search history
+		$s = new SearchEntry();
+		$searchHistory = $s->getSearches(session_id(), UserAccount::isLoggedIn() ? UserAccount::getActiveUserId() : null);
+
+		$thisSearch = [];
+		if (count($searchHistory) > 0) {
+			// Loop through the history to find the one we want
+			foreach($searchHistory as $search) {
+				if($search->id == $searchId) {
+					$searchObject = SearchObjectFactory::initSearchObject();
+					$size = strlen($search->search_object);
+					$minSO = unserialize($search->search_object);
+					$searchObject = SearchObjectFactory::deminify($minSO);
+
+					$searchObject->activateAllFacets();
+
+					$searchSourceLabel = $searchObject->getSearchSource();
+					if (array_key_exists($searchSourceLabel, self::$searchSourceLabels)) {
+						$searchSourceLabel = self::$searchSourceLabels[$searchSourceLabel];
+					}
+
+					$thisSearch = array(
+						'id'          => $search->id,
+						'url'         => $searchObject->renderSearchUrl(),
+						'description' => $searchObject->displayQuery(),
+						'filters'     => $searchObject->getFilterList(),
+						'hits'        => number_format($searchObject->getResultTotal()),
+						'source'      => $searchSourceLabel,
+					);
+
+					if (empty($thisSearch['description'])){
+						$thisSearch['description'] = "Anything (Empty search)";
+					}
+
+					if (empty($thisSearch['filters'])){
+						$thisSearch['filters'] = "No filters set";
+					}
+				}
+			}
+		}
+
+		$interface->assign('thisSearch', $thisSearch);
+		return $thisSearch;
 	}
 
 	function getBreadcrumbs() : array
