@@ -59,7 +59,7 @@ class SirsiDynixROA extends HorizonAPI
 			$logger->log(print_r($json, true), Logger::LOG_ERROR);
 		}
 
-        ExternalRequestLogEntry::logRequest('symphony.' . $requestType, $customRequest, $url, $headers, json_encode($params), curl_getinfo($this->curl_connection)['http_code'], $json, $dataToSanitize);
+        ExternalRequestLogEntry::logRequest('symphony.' . $requestType, $customRequest, $url, $headers, json_encode($params), curl_getinfo($ch)['http_code'], $json, $dataToSanitize);
 		if ($json !== false && $json !== 'false') {
 			curl_close($ch);
 			return json_decode($json);
@@ -594,6 +594,7 @@ class SirsiDynixROA extends HorizonAPI
 
 	protected function loginViaWebService($username, $password)
 	{
+		/** @var Memcache $memCache */
 		global $memCache;
 		global $library;
 		$memCacheKey = "sirsiROA_session_token_info_{$library->libraryId}_$username";
@@ -635,6 +636,7 @@ class SirsiDynixROA extends HorizonAPI
 
 	protected function staffLoginViaWebService($username, $password)
 	{
+		/** @var Memcache $memCache */
 		global $memCache;
 		global $library;
 		$memCacheKey = "sirsiROA_session_token_info_{$library->libraryId}_$username";
@@ -1704,6 +1706,7 @@ class SirsiDynixROA extends HorizonAPI
 		return isset($statusMap[$statusCode]) ? $statusMap[$statusCode] : 'Unknown (' . $statusCode . ')';
 	}
 	public function logout(User $user){
+		/** @var Memcache $memCache */
 		global $memCache;
 		global $library;
 		$memCacheKey = "sirsiROA_session_token_info_{$library->libraryId}_{$user->getBarcode()}";
@@ -2326,4 +2329,73 @@ class SirsiDynixROA extends HorizonAPI
 
 		return $result;
 	}
+
+	/**
+	 * Import Lists from the ILS
+	 *
+	 * @param User $patron
+	 * @return array - an array of results including the names of the lists that were imported as well as number of titles.
+	 */
+//	function importListsFromIls($patron)
+//	{
+//		$results =[
+//			'success' => false,
+//			'errors' => []
+//		];
+//		require_once ROOT_DIR . '/sys/UserLists/UserList.php';
+//		require_once ROOT_DIR . '/sys/Grouping/GroupedWorkPrimaryIdentifier.php';
+//		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
+//
+//		$curlWrapper = new CurlWrapper();
+//		//Login to Enterprise
+//		$enterpriseUrl = $this->accountProfile->vendorOpacUrl;
+//		if (substr($enterpriseUrl, -1, 1) != '/'){
+//			$enterpriseUrl .= '/';
+//		}
+//
+//		//First navigate to the main page to get cookies and other info needed for login
+//		$result = $curlWrapper->curlGetPage($enterpriseUrl . 'search/mylists?ic=true');
+//
+//		//Extract the login form
+//		$formData = [];
+/*		if (preg_match('%<form class="loginPageForm".*?>(.*?)</form>%s', $result, $matches)){*/
+//			$formElement = $matches[1];
+//		}else{
+//			$results['errors'][] = "Could not connect to the old catalog to import lists";
+//			return $results;
+//		}
+//
+//		$matches = [];
+//		if (preg_match('%<input value="(.*?)" name="t:formdata" type="hidden"></input>%s', $formElement, $matches)){
+//			$formData['t:formdata'] = $matches[1];
+//		}else{
+//			$results['errors'][] = "Could not connect to the old catalog to import lists";
+//			return $results;
+//		}
+//
+//		$formData['t:submit'] = '["submit_0","submit_0"]';
+//		$formData['textfield'] = '';
+//		$formData['textfield_0'] = '';
+//		$formData['hidden'] = 'SYMWS';
+//		$formData['j_username'] = $patron->getBarcode();
+//		$formData['j_password'] = $patron->getPasswordOrPin();
+//		$formData['t:zoneid'] = 'loginFormZone';
+//
+//		$loginUrl = $enterpriseUrl . "index.template.patronloginform.loginpageform/false?ic=true";
+//
+//		$headers  = array(
+//			'Accept: text/javascript, text/html, application/xml, text/xml, */*',
+//			'Accept-Encoding: gzip, deflate, br',
+//			'Accept-Language: en-US,en;q=0.5',
+//			'Content-Type: application/x-www-form-urlencoded; charset=UTF-8',
+//			'User-Agent: Aspen Discovery'
+//		);
+//		$curlWrapper->addCustomHeaders($headers, true);
+//		$result = $curlWrapper->curlPostPage($loginUrl, $formData);
+//
+//		//Get the mylists page now that we are logged in
+//		$result = $curlWrapper->curlGetPage($enterpriseUrl . 'search/mylists?ic=true');
+//
+//		return $results;
+//	}
 }

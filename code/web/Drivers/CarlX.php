@@ -58,7 +58,7 @@ class CarlX extends AbstractIlsDriver{
 			if (isset($result->Patron)){
 				//Check to see if the pin matches
 				if ($result->Patron->PatronPIN == $password || $validatedViaSSO){
-					$fullName = $result->Patron->FullName;
+					//$fullName = $result->Patron->FullName;
 					$firstName = $result->Patron->FirstName;
 					$lastName = $result->Patron->LastName;
 
@@ -293,7 +293,9 @@ class CarlX extends AbstractIlsDriver{
 				$this->soapClient = new SoapClient($WSDL, $soapRequestOptions);
 				$result = $this->soapClient->$requestName($request);
 				$connectionPassed = true;
-                ExternalRequestLogEntry::logRequest('carlx.' . $requestName, 'GET', $WSDL, $this->soapClient->__getLastRequestHeaders(), $this->soapClient->__getLastRequest(), 0, $result, $dataToSanitize);
+				if (IPAddress::showDebuggingInformation()) {
+					ExternalRequestLogEntry::logRequest('carlx.' . $requestName, 'GET', $WSDL, $this->soapClient->__getLastRequestHeaders(), $this->soapClient->__getLastRequest(), 0, $this->soapClient->__getLastResponse(), $dataToSanitize);
+				}
 				if (is_null($result)) {
 					$lastResponse = $this->soapClient->__getLastResponse();
 					$lastResponse = simplexml_load_string($lastResponse, NULL, NULL, 'http://schemas.xmlsoap.org/soap/envelope/');
@@ -506,6 +508,10 @@ class CarlX extends AbstractIlsDriver{
 	 */
 	function placeItemHold(User $patron, $recordId, $itemId, $pickupBranch, $cancelDate = null) {
 		// TODO: Implement placeItemHold() method. // CarlX [9.6.4.3] does not allow item level holds via SIP2
+		return [
+			'success' => false,
+			'message' => 'Unable to place item holds for CARL.X'
+		];
 	}
 
 	/**
@@ -1013,6 +1019,7 @@ class CarlX extends AbstractIlsDriver{
 					$request->SearchID   	= $tempPatronID;
 					$request->Modifiers  	= '';
 
+					/** @noinspection PhpUnusedLocalVariableInspection */
 					$result = $this->doSoapRequest('getPatronInformation', $request);
 
 					// FOLLOWING SUCCESSFUL SELF REGISTRATION, INPUT PATRON IP ADDRESS INTO PATRON RECORD NOTE
@@ -1079,7 +1086,7 @@ class CarlX extends AbstractIlsDriver{
 		}elseif ($reason == 'success') {
 			return 'Emails/self-registration.tpl';
 		}else{
-			return;
+			return null;
 		}
 	}
 
@@ -1358,6 +1365,7 @@ class CarlX extends AbstractIlsDriver{
 	}
 
 	private function getBranchInformation($branchNumber = null, $branchCode = null) {
+		/** @var Memcache $memCache */
 		global $memCache;
 
 		if (!empty($branchNumber)) {
@@ -1456,9 +1464,10 @@ class CarlX extends AbstractIlsDriver{
 	private function getUnavailableHoldViaSIP(User $patron, $holdId) {
 		$request = $this->getSearchbyPatronIdRequest($patron);
 		$request->TransactionType = 'UnavailableHold';
+
+		/** @noinspection PhpUnusedLocalVariableInspection */
 		$result = $this->doSoapRequest('getPatronTransactions', $request);
 
-		global $configArray;
 		//Place the hold via SIP 2
 		$mySip = new sip2();
 		$mySip->hostname = $this->accountProfile->sipHost;
@@ -1539,7 +1548,6 @@ class CarlX extends AbstractIlsDriver{
 		if (strpos($holdId, $this->accountProfile->recordSource . ':') === 0) {
 			$holdId = str_replace($this->accountProfile->recordSource . ':', '', $holdId);
 		}
-		global $configArray;
 		//Place the hold via SIP 2
 		$mySip = new sip2();
 		$mySip->hostname = $this->accountProfile->sipHost;
@@ -1588,7 +1596,6 @@ class CarlX extends AbstractIlsDriver{
 				$pickupBranchNumber = $pickupBranchInfo->BranchNumber;
 
 				//place the hold
-				$holdType = '2'; // any copy of title
 				$itemId = '';
 				$recordId = '';
 				if (strpos($holdId, 'ITEM ID: ') === 0){
@@ -1666,7 +1673,7 @@ class CarlX extends AbstractIlsDriver{
 	}
 
 
-	public function renewCheckoutViaSIP(User $patron, $itemId, $useAlternateSIP = false){
+	public function renewCheckoutViaSIP(User $patron, $itemId){
 		//renew the item via SIP 2
 		$mySip = new sip2();
 		$mySip->hostname = $this->accountProfile->sipHost;
