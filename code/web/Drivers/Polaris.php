@@ -435,7 +435,7 @@ class Polaris extends AbstractIlsDriver
 						$isAvailable = true;
 						$curHold->locationUpdateable = false;
 						$curHold->cancelable = false;
-						$curHold->expirationDate = isset($holdInfo->PickupByDate) ? $this->extractDateFromPolarisDateField($holdInfo->PickupByDate) : null;
+						$curHold->expirationDate = $this->parsePolarisDate($holdInfo->PickupByDate);
 						break;
 					case 7:
 						//Not Supplied
@@ -475,7 +475,7 @@ class Polaris extends AbstractIlsDriver
 				}else{
 					$curHold->pickupLocationName = $holdInfo->PickupBranchName;
 				}
-				$curHold->expirationDate = $this->parsePolarisDate($holdInfo->PickupBranchName);
+				$curHold->expirationDate = $this->parsePolarisDate($holdInfo->PickupByDate);
 				$curHold->position = $holdInfo->QueuePosition;
 				$curHold->holdQueueLength = $holdInfo->QueueTotal;
 				$curHold->volume = $holdInfo->VolumeNumber;
@@ -1598,10 +1598,5 @@ class Polaris extends AbstractIlsDriver
 			'maxLength' => 14,
 			'onlyDigitsAllowed' => false,
 		];
-	}
-
-	private function extractDateFromPolarisDateField($PickupByDate)
-	{
-		return strstr($PickupByDate, 'T', true);
 	}
 }
