@@ -274,6 +274,7 @@ class HooplaDriver extends AbstractEContentDriver{
 	private function getAccessToken()
 	{
 		if (empty($this->accessToken)) {
+			/** @var Memcache $memCache */
 			global $memCache;
 			$accessToken = $memCache->get(self::memCacheKey);
 			if (empty($accessToken)) {
@@ -309,7 +310,7 @@ class HooplaDriver extends AbstractEContentDriver{
 				curl_setopt($curl, CURLINFO_HEADER_OUT, true);
 			}
 			$response = curl_exec($curl);
-            ExternalRequestLogEntry::logRequest('hoopla.renewAccessToken', 'POST', $url, [], '', curl_getinfo($ch, CURLINFO_HTTP_CODE), $response,[]);
+            ExternalRequestLogEntry::logRequest('hoopla.renewAccessToken', 'POST', $url, [], '', curl_getinfo($curl, CURLINFO_HTTP_CODE), $response,[]);
 
 			curl_close($curl);
 
@@ -318,6 +319,7 @@ class HooplaDriver extends AbstractEContentDriver{
 				if (!empty($json->access_token)) {
 					$this->accessToken = $json->access_token;
 
+					/** @var Memcache $memCache */
 					global $memCache;
 					global $configArray;
 					$memCache->set(self::memCacheKey, $this->accessToken, $configArray['Caching']['hoopla_api_access_token']);
@@ -390,7 +392,7 @@ class HooplaDriver extends AbstractEContentDriver{
 					// Result for API or app use
 					$apiResult = array();
 					$apiResult['title'] = translate(['text'=>'Unable to checkout title', 'isPublicFacing'=>true]);
-					$apiResult['message'] = translate(['text'=>'An error occurred checking out the Hoopla title.', 'isPublicFacing'=>true]);;
+					$apiResult['message'] = translate(['text'=>'An error occurred checking out the Hoopla title.', 'isPublicFacing'=>true]);
 
 					return array(
 						'success' => false,
@@ -448,7 +450,7 @@ class HooplaDriver extends AbstractEContentDriver{
 			if (!empty($returnCheckoutURL)) {
 				$itemId = self::recordIDtoHooplaID($hooplaId);
                 $returnCheckoutURL .= "/$itemId";
-				$result = $this->getAPIResponseReturnHooplaTitle('hoopla.returnCheckout', $returnCheckoutURL);
+				$result = $this->getAPIResponseReturnHooplaTitle($returnCheckoutURL);
 				if ($result) {
 					$patron->clearCachedAccountSummaryForSource('hoopla');
 					$patron->forceReloadOfCheckouts();
@@ -561,20 +563,22 @@ class HooplaDriver extends AbstractEContentDriver{
         return [];
     }
 
-    /**
-     * Place Hold
-     *
-     * This is responsible for both placing holds as well as placing recalls.
-     *
-     * @param User $patron The User to place a hold for
-     * @param string $recordId The id of the bib record
-     * @return  array                 An array with the following keys
-     *                                result - true/false
-     *                                message - the message to display (if item holds are required, this is a form to select the item).
-     *                                needsItemLevelHold - An indicator that item level holds are required
-     *                                title - the title of the record the user is placing a hold on
-     * @access  public
-     */
+	/**
+	 * Place Hold
+	 *
+	 * This is responsible for both placing holds as well as placing recalls.
+	 *
+	 * @param User $patron The User to place a hold for
+	 * @param string $recordId The id of the bib record
+	 * @param null $pickupBranch For compatibility
+	 * @param null $cancelDate For compatibility
+	 * @return  array                 An array with the following keys
+	 *                                result - true/false
+	 *                                message - the message to display (if item holds are required, this is a form to select the item).
+	 *                                needsItemLevelHold - An indicator that item level holds are required
+	 *                                title - the title of the record the user is placing a hold on
+	 * @access  public
+	 */
 	function placeHold($patron, $recordId, $pickupBranch = null, $cancelDate = null)
     {
         return [
@@ -583,13 +587,14 @@ class HooplaDriver extends AbstractEContentDriver{
         ];
     }
 
-    /**
-     * Cancels a hold for a patron
-     *
-     * @param User $patron The User to cancel the hold for
-     * @param string $recordId The id of the bib record
-     * @return false|array
-     */
+	/**
+	 * Cancels a hold for a patron
+	 *
+	 * @param User $patron The User to cancel the hold for
+	 * @param string $recordId The id of the bib record
+	 * @param null $cancelId ID to cancel for compatibility
+	 * @return false|array
+	 */
 	function cancelHold($patron, $recordId, $cancelId = null)
     {
         return false;
