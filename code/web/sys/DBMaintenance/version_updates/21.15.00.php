@@ -43,12 +43,5 @@ function getUpdates21_15_00() : array
 						) ENGINE = INNODB;',
 			]
 		], //browseCategoryDismissal
-		'overdrive_showLibbyPromo' => [
-			'title' => 'OverDrive - Enable show/hide Libby promo',
-			'description' => 'Enable show/hide option for Libby promo in OverDrive fulfillment interface',
-			'sql' => [
-				'ALTER TABLE overdrive_settings ADD COLUMN showLibbyPromo TINYINT(1) DEFAULT 1',
-			]
-		], //overdrive_showLibbyPromo
 	];
 }
