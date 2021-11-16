@@ -236,20 +236,6 @@ class AspenError extends DataObject
 		global $logger;
 		$logger->log($errorDetails, Logger::LOG_ERROR);
 
-		try{
-			require_once ROOT_DIR . '/sys/SystemVariables.php';
-			$systemVariables = new SystemVariables();
-			if ($systemVariables->find(true) && !empty($systemVariables->errorEmail)) {
-				global $serverName;
-
-				require_once ROOT_DIR . '/sys/Email/Mailer.php';
-				$mailer = new Mailer();
-				$emailErrorDetails = $this->url . "\n" . $errorDetails;
-				$mailer->send($systemVariables->errorEmail, "$serverName Error in User Interface", $emailErrorDetails);
-			}
-		}catch (Exception $e){
-			//This happens when the table has not been created
-		}
 		exit();
 	}
 }
