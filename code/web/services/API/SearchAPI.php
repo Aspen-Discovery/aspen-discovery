@@ -315,6 +315,18 @@ class SearchAPI extends Action
 			}
 		}
 
+		//Check for interface errors in the last hour
+		$aspenError = new AspenError();
+		$aspenError->whereAdd('timestamp > ' . (time() - 60 * 60));
+		$numErrors = $aspenError->count();
+		if ($numErrors > 10){
+			$this->addCheck($checks, 'Interface Errors', self::STATUS_CRITICAL, "$numErrors Interface Errors have occurred in the last hour");
+		}elseif ($numErrors > 1){
+			$this->addCheck($checks, 'Interface Errors', self::STATUS_WARN, "$numErrors Interface Errors have occurred in the last hour");
+		}else{
+			$this->addCheck($checks, 'Interface Errors');
+		}
+
 		//Check NYT Log to see if it has errors
 		require_once ROOT_DIR . '/sys/Enrichment/NewYorkTimesSetting.php';
 		$nytSetting = new NewYorkTimesSetting();
