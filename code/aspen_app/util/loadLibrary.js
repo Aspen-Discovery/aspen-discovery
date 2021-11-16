@@ -6,6 +6,8 @@ import * as Random from 'expo-random';
 import moment from "moment";
 import { create, CancelToken } from 'apisauce';
 
+// custom components and helper files
+import { translate } from "../util/translations";
 import { popToast, popAlert } from "../components/loadError";
 
 export async function getLocationInfo() {
