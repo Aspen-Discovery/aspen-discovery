@@ -31,17 +31,5 @@ function getUpdates21_15_00() : array
 				'ALTER TABLE overdrive_settings ADD COLUMN useFulfillmentInterface TINYINT(1) DEFAULT 0',
 			]
 		], //overdrive_useFulfillmentInterface
-		'browseCategoryDismissal' => [
-			'title' => 'Add browse_category_dismissal table',
-			'description' => 'Enables the ability to hide browse categories by the user',
-			'sql' => [
-				'CREATE TABLE browse_category_dismissal (
-							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-							browseCategoryId INT,
-							userId INT,
-							UNIQUE INDEX userBrowseCategory(userId, browseCategoryId)
-						) ENGINE = INNODB;',
-			]
-		], //browseCategoryDismissal
 	];
 }
