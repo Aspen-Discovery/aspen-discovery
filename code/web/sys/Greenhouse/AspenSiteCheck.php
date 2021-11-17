@@ -50,6 +50,8 @@ class AspenSiteCheck extends DataObject
 			return $site->baseUrl . "/OpenArchives/IndexingLog";
 		}elseif ($checkType == 'nyt_lists'){
 			return $site->baseUrl . "/UserLists/NYTUpdatesLog";
+		}elseif ($checkType == 'interface_errors'){
+			return $site->baseUrl . "/Admin/ErrorReport";
 		}
 		return $site->baseUrl . "/Admin/SiteStatus";
 	}

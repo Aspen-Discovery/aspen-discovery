@@ -1368,7 +1368,7 @@ class SirsiDynixROA extends HorizonAPI
 					}
 					$fines[] = array(
 						'fineId' => str_replace(':', '_', $block->key),
-						'reason' => $fine->block->key,
+						'reason' => translate(['text'=>$fine->block->key, 'isPublicFacing'=>true, 'isAdminEnteredData'=>true]),
 						'type' => $fine->block->key,
 						'amount' => $fine->amount->amount,
 						'amountVal' => $fine->amount->amount,
@@ -2325,7 +2325,7 @@ class SirsiDynixROA extends HorizonAPI
 		}
 
 		global $logger;
-		$logger->log("Marked fines as paid within Polaris for user {$patron->id}, {$result['message']}", Logger::LOG_ERROR);
+		$logger->log("Marked fines as paid within Symphony for user {$patron->id}, {$result['message']}", Logger::LOG_ERROR);
 
 		return $result;
 	}

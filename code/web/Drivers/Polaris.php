@@ -435,6 +435,7 @@ class Polaris extends AbstractIlsDriver
 						$isAvailable = true;
 						$curHold->locationUpdateable = false;
 						$curHold->cancelable = false;
+						$curHold->expirationDate = $this->parsePolarisDate($holdInfo->PickupByDate);
 						break;
 					case 7:
 						//Not Supplied
@@ -474,7 +475,7 @@ class Polaris extends AbstractIlsDriver
 				}else{
 					$curHold->pickupLocationName = $holdInfo->PickupBranchName;
 				}
-				$curHold->expirationDate = $this->parsePolarisDate($holdInfo->PickupBranchName);
+				$curHold->expirationDate = $this->parsePolarisDate($holdInfo->PickupByDate);
 				$curHold->position = $holdInfo->QueuePosition;
 				$curHold->holdQueueLength = $holdInfo->QueueTotal;
 				$curHold->volume = $holdInfo->VolumeNumber;
