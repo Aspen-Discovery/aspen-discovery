@@ -13,6 +13,7 @@ class OverDriveSetting extends DataObject
 	public $productsKey;
 	public $runFullUpdate;
 	public $useFulfillmentInterface;
+	public $showLibbyPromo;
 	public $allowLargeDeletes;
 	public $numExtractionThreads;
 	public $lastUpdateOfChangedRecords;
@@ -37,6 +38,7 @@ class OverDriveSetting extends DataObject
 			'runFullUpdate' => array('property' => 'runFullUpdate', 'type' => 'checkbox', 'label' => 'Run Full Update', 'description' => 'Whether or not a full update of all records should be done on the next pass of indexing', 'default' => 0),
 			'allowLargeDeletes' => array('property' => 'allowLargeDeletes', 'type' => 'checkbox', 'label' => 'Allow Large Deletes', 'description' => 'Whether or not Aspen can delete more than 500 records or 5% of the collection', 'default' => 0),
 			'useFulfillmentInterface' => array('property' => 'useFulfillmentInterface', 'type' => 'checkbox', 'label' => 'Enable updated checkout fulfillment interface', 'description' => 'Whether or not to use the updated fulfillment interface', 'default' => 0),
+			'showLibbyPromo' => array('property' => 'showLibbyPromo', 'type' => 'checkbox', 'label' => 'Show Libby promo in checkout fulfillment interface', 'description' => 'Whether or not to show the Libby promo ad in the fulfillment interface', 'default' => 1),
 			'numExtractionThreads' => array('property' => 'numExtractionThreads', 'type' => 'integer', 'label' => 'Num Extraction Threads', 'description' => 'The number of threads to use when extracting from OverDrive', 'canBatchUpdate'=>false, 'default'=>10),
 			'lastUpdateOfChangedRecords' => array('property' => 'lastUpdateOfChangedRecords', 'type' => 'timestamp', 'label' => 'Last Update of Changed Records', 'description' => 'The timestamp when just changes were loaded', 'default' => 0),
 			'lastUpdateOfAllRecords' => array('property' => 'lastUpdateOfAllRecords', 'type' => 'timestamp', 'label' => 'Last Update of All Records', 'description' => 'The timestamp when just changes were loaded', 'default' => 0),

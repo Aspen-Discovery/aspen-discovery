@@ -116,8 +116,8 @@ export default class Contact extends Component {
                 <Box>
                     {this.state.phone ? <Button mb={3} onPress={() => { this.dialCall(this.state.phone); }} startIcon={<Icon as={MaterialIcons} name="call" size="sm" />} >{translate('library_contact.call_button')}</Button> : null }
                     {this.state.email ? <Button mb={3} onPress={() => { this.sendEmail(this.state.email); }} startIcon={<Icon as={MaterialIcons} name="email" size="sm" />} >{translate('library_contact.email_button')}</Button> : null }
-                    <Button mb={3} onPress={() => { this.getDirections(); }} startIcon={<Icon as={MaterialIcons} name="map" size="sm" />} >{translate('library_contact.directions_button')}</Button>
-                    {this.state.website ? <Button onPress={() => { this.openWebsite(this.state.homeLink); }} startIcon={<Icon as={MaterialIcons} name="home" size="sm" />} >{translate('library_contact.website_button')}</Button> : null }
+                    {this.state.latitude != 0 ? <Button mb={3} onPress={() => { this.getDirections(); }} startIcon={<Icon as={MaterialIcons} name="map" size="sm" />} >{translate('library_contact.directions_button')}</Button> : null }
+                    {this.state.website ? <Button onPress={() => { this.openWebsite(this.state.website); }} startIcon={<Icon as={MaterialIcons} name="home" size="sm" />} >{translate('library_contact.website_button')}</Button> : null }
                 </Box>
             </Center>
             </Box>
