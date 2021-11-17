@@ -520,22 +520,22 @@ class ListAPI extends Action
 			$userId = $user->id;
 		}
 
-		$savedSearches = [];
+		$result = [];
 		$searchEntry = new SearchEntry();
 		$savedSearchLists = $searchEntry->getSearches(session_id(), $userId);
 
 		foreach($savedSearchLists as $savedSearchList) {
-			if($savedSearchList->title) {
+			if($savedSearchList->title && $savedSearchList->saved == 1) {
 				$savedSearch = array(
 					'id' => $savedSearchList->id,
 					'title' => $savedSearchList->title,
 					'created' => $savedSearchList->created,
 					'searchUrl' => $savedSearchList->searchUrl,
 				);
-				$savedSearches[] = $savedSearch;
+				$result[] = $savedSearch;
 			}
 		}
-		return $savedSearches;
+		return array('success' => true, 'searches' => $result);
 	}
 
 	function getSavedSearchTitles($searchId, $numTitlesToShow)

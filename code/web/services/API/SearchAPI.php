@@ -880,17 +880,17 @@ class SearchAPI extends Action
 
 			if ($categoryInformation->find(true)) {
 				if ($categoryInformation->isValidForDisplay()){
-					$categoryResponse = array(
-						'text_id' => $categoryInformation->textId,
-						'display_label' => $categoryInformation->label,
-						'link' => $configArray['Site']['url'] . '?browseCategory=' . $categoryInformation->textId,
-						'source' => $categoryInformation->source,
-					);
 					if($categoryInformation->textId == "system_user_lists") {
 						$userLists = $listApi->getUserLists();
 						$categoryResponse['subCategories'] = [];
 						$allUserLists = $userLists['lists'];
 						if(count($allUserLists) > 0) {
+							$categoryResponse = array(
+								'text_id' => $categoryInformation->textId,
+								'display_label' => $categoryInformation->label,
+								'link' => $configArray['Site']['url'] . '?browseCategory=' . $categoryInformation->textId,
+								'source' => $categoryInformation->source,
+							);
 							foreach ($allUserLists as $userList) {
 								if($userList['id'] != "recommendations") {
 									$categoryResponse['subCategories'][] = [
@@ -902,18 +902,33 @@ class SearchAPI extends Action
 							}
 							$formattedCategories[] = $categoryResponse;
 						}
-					}
-					if($categoryInformation->textId == "system_saved_searches") {
+					} elseif($categoryInformation->textId == "system_saved_searches") {
 						$savedSearches = $listApi->getSavedSearches();
 						$categoryResponse['subCategories'] = [];
-						foreach ($savedSearches as $savedSearch) {
-							$categoryResponse['subCategories'][] = [
-								'text_id' => $categoryInformation->textId . '_' . $savedSearch['id'],
-								'display_label' => $savedSearch['title'],
-								'source' => "SavedSearch",
-							];
+						$allSearches = $savedSearches['searches'];
+						if(count($allSearches) > 0){
+							$categoryResponse = array(
+								'text_id' => $categoryInformation->textId,
+								'display_label' => $categoryInformation->label,
+								'link' => $configArray['Site']['url'] . '?browseCategory=' . $categoryInformation->textId,
+								'source' => $categoryInformation->source,
+							);
+							foreach ($allSearches as $savedSearch) {
+								$categoryResponse['subCategories'][] = [
+									'text_id' => $categoryInformation->textId . '_' . $savedSearch['id'],
+									'display_label' => $savedSearch['title'],
+									'source' => "SavedSearch",
+								];
+							}
 						}
 						$formattedCategories[] = $categoryResponse;
+					} else {
+						$categoryResponse = array(
+							'text_id' => $categoryInformation->textId,
+							'display_label' => $categoryInformation->label,
+							'link' => $configArray['Site']['url'] . '?browseCategory=' . $categoryInformation->textId,
+							'source' => $categoryInformation->source,
+						);
 					}
 					if ($includeSubCategories) {
 						$subCategories = $categoryInformation->getSubCategories();
@@ -974,8 +989,11 @@ class SearchAPI extends Action
 						$id = $label[3];
 						$temp = new UserList();
 						$temp->id = $id;
+						$numListItems = $temp->numValidListItems();
 						if ($temp->find(true)) {
-							$subCategories[] = array('label' => $temp->title, 'textId' => $temp->id, 'source' => "userList");
+							if($numListItems > 0) {
+								$subCategories[] = array('label' => $temp->title, 'textId' => $temp->id, 'source' => "userList");
+							}
 						}
 					} else {
 						$temp = new BrowseCategory();
@@ -1310,8 +1328,9 @@ class SearchAPI extends Action
 						}
 						if($categoryInformation->textId == "system_saved_searches") {
 							$savedSearches = $listApi->getSavedSearches();
+							$allSearches = $savedSearches['searches'];
 							$categoryResponse['subCategories'] = [];
-								foreach ($savedSearches as $savedSearch) {
+								foreach ($allSearches as $savedSearch) {
 									$categoryResponse['subCategories'][] = [
 										'key' => $categoryInformation->textId . '_' . $savedSearch['id'],
 										'title' => $categoryInformation->label . ': ' . $savedSearch['title'],

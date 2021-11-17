@@ -361,99 +361,6 @@ class Browse_AJAX extends Action {
 		return $result;
 	}
 
-	private function getSavedSearchBrowseCategoryResults($pageToLoad = 1){
-		if (!UserAccount::isLoggedIn()){
-			return [
-				'success' => false,
-				'message' => 'Your session has timed out, please login again to view suggestions'
-			];
-		}
-		//Do not cache browse category results in memory because they are generally too large and because they can be slow to delete
-		$browseMode = $this->setBrowseMode();
-
-		global $interface;
-		$interface->assign('browseCategoryId', $this->textId);
-		$result['success'] = true;
-		$result['textId'] = $this->textId;
-
-		$label = explode('_', $this->textId);
-		$id = $label[3];
-		require_once ROOT_DIR . '/services/API/ListAPI.php';
-		require_once ROOT_DIR . '/services/Search/History.php';
-		$savedSearch = History::getSearchForSaveForm($id);
-		$result['label'] = $savedSearch['title'];
-		$result['searchUrl'] = $savedSearch['url'];
-
-		$listApi = new ListAPI();
-		$results = $listApi->getSavedSearchTitles($id, 30);
-		$records = array();
-		foreach ($results as $resultItemId => $searchResult) {
-			require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
-			$groupedWork = new GroupedWorkDriver($searchResult['id']);
-			if ($groupedWork->isValid) {
-				if (method_exists($groupedWork, 'getBrowseResult')) {
-					$records[] = $interface->fetch($groupedWork->getBrowseResult());
-				} else {
-					$records[] = 'Browse Result not available';
-				}
-			}
-		}
-
-		if (count($records) == 0){
-			$records[] = $interface->fetch('Browse/noResults.tpl');
-		}
-
-		$result['records']    = implode('',$records);
-		$result['numRecords'] = count($records);
-
-		return $result;
-	}
-
-	private function getUserListBrowseCategoryResults($pageToLoad = 1){
-		if (!UserAccount::isLoggedIn()){
-			return [
-				'success' => false,
-				'message' => 'Your session has timed out, please login again to view suggestions'
-			];
-		}
-		//Do not cache browse category results in memory because they are generally too large and because they can be slow to delete
-		$browseMode = $this->setBrowseMode();
-
-		global $interface;
-		$interface->assign('browseCategoryId', $this->textId);
-		$result['success'] = true;
-		$result['textId'] = $this->textId;
-		$result['label'] = translate(['text' => 'Recommended for you', 'isPublicFacing'=>true]);
-		$result['searchUrl'] = '/MyAccount/SuggestedTitles';
-
-		require_once ROOT_DIR . '/sys/Suggestions.php';
-		$suggestions = Suggestions::getSuggestions(-1, $pageToLoad,self::ITEMS_PER_PAGE);
-		$records = array();
-		foreach ($suggestions as $suggestedItemId => $suggestionData) {
-			require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
-			if (array_key_exists('recordDriver', $suggestionData['titleInfo'])) {
-				$groupedWork = $suggestionData['titleInfo']['recordDriver'];
-			}else {
-				$groupedWork = new GroupedWorkDriver($suggestionData['titleInfo']);
-			}
-			if ($groupedWork->isValid) {
-				if (method_exists($groupedWork, 'getBrowseResult')) {
-					$records[] = $interface->fetch($groupedWork->getBrowseResult());
-				} else {
-					$records[] = 'Browse Result not available';
-				}
-			}
-		}
-		if (count($records) == 0){
-			$records[] = $interface->fetch('Browse/noResults.tpl');
-		}
-
-		$result['records']    = implode('',$records);
-		$result['numRecords'] = count($records);
-
-		return $result;
-	}
-
 	private function getBrowseCategoryResults($pageToLoad = 1){
 		$lastPage = false;
 		if ($this->textId == 'system_recommended_for_you') {
@@ -480,18 +387,36 @@ class Browse_AJAX extends Action {
 				}
 
 				if(strpos($this->textId,"system_user_lists_") !== false){
-					$browseCategorySource = "List";
+					$browseCategory->source = "userList";
+					$browseCategory->sourceListId = $browseCategory->id;
+				}
+
+				if(strpos($this->textId,"system_saved_searches_") !== false){
+					$browseCategory->source = "SavedSearch";
+					$browseCategory->sourceListId = $browseCategory->id;
 				}
 
 				// User List Browse Category //
 				if ($browseCategory->source == 'List') {
 					require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 					$sourceList     = new UserList();
-					if(isset($browseCategory->source)) {
-						$sourceListId = $browseCategory->sourceListId;
+					$sourceList->id = $browseCategory->sourceListId;
+					if ($sourceList->find(true)) {
+						$records = $sourceList->getBrowseRecords(($pageToLoad - 1) * self::ITEMS_PER_PAGE, self::ITEMS_PER_PAGE);
+						$preloadedRecords = $sourceList->getBrowseRecords(($pageToLoad + 1) * self::ITEMS_PER_PAGE, self::ITEMS_PER_PAGE);
+						if($preloadedRecords == 0) {
+							$lastPage = true;
+						}
 					} else {
-						$sourceListId = $browseCategory->id;
+						$records = array();
 					}
+					$result['searchUrl'] = '/MyAccount/MyList/' . $browseCategory->sourceListId;
+
+					// Search Browse Category //
+				} elseif ($browseCategory->source == 'userList') {
+					require_once ROOT_DIR . '/sys/UserLists/UserList.php';
+					$sourceList     = new UserList();
+					$sourceListId = $browseCategory->sourceListId;
 					$sourceList->id = $sourceListId;
 					if ($sourceList->find(true)) {
 						$records = $sourceList->getBrowseRecords(($pageToLoad - 1) * self::ITEMS_PER_PAGE, self::ITEMS_PER_PAGE);
@@ -503,9 +428,7 @@ class Browse_AJAX extends Action {
 						$records = array();
 					}
 					$result['searchUrl'] = '/MyAccount/MyList/' . $sourceListId;
-
-					// Search Browse Category //
-				} else {
+				}  else {
 					if(strpos($this->textId,"system_saved_searches_") !== false) {
 						$label = explode('_', $this->textId);
 						$id = $label[3];
@@ -659,7 +582,17 @@ class Browse_AJAX extends Action {
 				$subCategoryTextId = $_REQUEST['subCategoryTextId'];
 			} else {
 				foreach ($subCategories as $subCategoryId) {
-					if($subCategoryId->source != "browseCategory") {
+					if($subCategoryId->source == "userList") {
+						require_once ROOT_DIR . '/sys/UserLists/UserList.php';
+						$label = explode('_', $subCategoryId->id);
+						$id = $label[3];
+						$userList = new UserList();
+						$userList->id = $id;
+						if($userList->numValidListItems() > 0) {
+							$subCategoryTextId = $subCategoryId->id;
+							break;
+						}
+					} elseif($subCategoryId->source == "savedSearch") {
 						$subCategoryTextId = $subCategoryId->id;
 						break;
 					} else {

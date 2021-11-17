@@ -40,17 +40,19 @@ class BrowseCategory extends BaseBrowsable
 			if ($module != "Admin") {
 				if ($this->textId == "system_saved_searches") {
 					// fetch users saved searches
-					$s = new SearchEntry();
-					$savedSearches = $s->getSearches(session_id(), UserAccount::isLoggedIn() ? UserAccount::getActiveUserId() : null);
-					if (count($savedSearches) > 0) {
-						foreach ($savedSearches as $savedSearch) {
-							if ($savedSearch->title) {
-								$searchId = $savedSearch->id;
-								$this->_subBrowseCategories[$searchId] = clone($savedSearch);
-								$this->_subBrowseCategories[$searchId]->id = $this->textId . '_' . $savedSearch->id;
-								$this->_subBrowseCategories[$searchId]->label = $savedSearch->title;
-								$this->_subBrowseCategories[$searchId]->source = "savedSearch";
-							}
+					$SearchEntry = new SearchEntry();
+					$SearchEntry->user_id = UserAccount::getActiveUserId();
+					$SearchEntry->saved = "1";
+					$SearchEntry->orderBy('created');
+					$SearchEntry->limit(0,5);
+					$SearchEntry->find();
+					while($SearchEntry->fetch()) {
+						if ($SearchEntry->title) {
+							$searchId = $SearchEntry->id;
+							$this->_subBrowseCategories[$searchId] = clone($SearchEntry);
+							$this->_subBrowseCategories[$searchId]->id = $this->textId . '_' . $SearchEntry->id;
+							$this->_subBrowseCategories[$searchId]->label = $SearchEntry->title;
+							$this->_subBrowseCategories[$searchId]->source = "savedSearch";
 						}
 					}
 				} elseif ($this->textId == "system_user_lists") {
@@ -59,6 +61,8 @@ class BrowseCategory extends BaseBrowsable
 					$lists = new UserList();
 					$lists->user_id = UserAccount::getActiveUserId();
 					$lists->deleted = "0";
+					$lists->orderBy('created');
+					$lists->limit(0,5);
 					$lists->find();
 					while ($lists->fetch()) {
 						$id = $lists->id;
@@ -313,7 +317,13 @@ class BrowseCategory extends BaseBrowsable
 		}
 		if ($this->textId == 'system_user_lists' || $this->textId == 'system_saved_searches') {
 			if (UserAccount::isLoggedIn()) {
-				return true;
+				$user = UserAccount::getActiveUserObj();
+				if($this->textId == 'system_saved_searches' && $user->hasSavedSearches()) {
+					return true;
+				}
+				if($this->textId == 'system_user_lists' && $user->hasLists()) {
+					return true;
+				}
 			}
 			return false;
 		}
