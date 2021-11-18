@@ -76,6 +76,32 @@ function getUpdates21_15_00() : array
 				"alter table system_variables ADD COLUMN libraryToUseForPayments TINYINT(1) DEFAULT 0"
 			]
 		], //systemVariables_libraryToUseForPayments
+		'browseCategoryDismissal' => [
+			'title' => 'Add browse_category_dismissal table',
+			'description' => 'Enables the ability to hide browse categories by the user',
+			'sql' => [
+				'CREATE TABLE browse_category_dismissal (
+							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+							browseCategoryId INT,
+							userId INT,
+							UNIQUE INDEX userBrowseCategory(userId, browseCategoryId)
+						) ENGINE = INNODB;',
+			]
+		], //browseCategoryDismissal
+		'overdrive_showLibbyPromo' => [
+			'title' => 'OverDrive - Enable show/hide Libby promo',
+			'description' => 'Enable show/hide option for Libby promo in OverDrive fulfillment interface',
+			'sql' => [
+				'ALTER TABLE overdrive_settings ADD COLUMN showLibbyPromo TINYINT(1) DEFAULT 1',
+			]
+		], //overdrive_showLibbyPromo
+		'search_increaseTitleLength' => [
+			'title' => 'Saved Search - Increase Title Length',
+			'description' => 'Increase title length for Saved Searches',
+			'sql' => [
+				"ALTER TABLE search CHANGE COLUMN title title VARCHAR(225)",
+			]
+		], //search_increaseTitleLength
 	];
 }
 

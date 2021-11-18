@@ -162,31 +162,56 @@ class MyAccount_AJAX extends JSON_Action
 	/** @noinspection PhpUnused */
 	function saveSearch()
 	{
+		$result = [
+			'success' => false,
+			'message' => 'Unknown error saving search'
+		];
 		$searchId = $_REQUEST['searchId'];
+		$title = $_REQUEST['title'];
 		$search = new SearchEntry();
 		$search->id = $searchId;
-		$saveOk = false;
 		if ($search->find(true)) {
 			// Found, make sure this is a search from this user
 			if ($search->session_id == session_id() || $search->user_id == UserAccount::getActiveUserId()) {
 				if ($search->saved != 1) {
 					$search->user_id = UserAccount::getActiveUserId();
 					$search->saved = 1;
-					$saveOk = ($search->update() !== FALSE);
-					$message = $saveOk ? 'Your search was saved successfully.  You can view the saved search by clicking on Search History within the Account Menu.' . '<a href="/Search/History?require_login">' . 'View Saved Searches' . '</a>' : "Sorry, we could not save that search for you.  It may have expired.";
+					$search->title = $title;
+					if($search->update() !== FALSE) {
+						$result['success'] = true;
+						$result['message'] = translate(['text' => "Your search was saved successfully.  You can view the saved search by clicking on Search History within the Account Menu.", 'isPublicFacing'=>true]);
+						$result['modalButtons'] = "<a class='tool btn btn-primary' id='viewSavedSearches' href='/Search/History?require_login'>" . translate(['text' => "View Saved Searches", 'isPublicFacing'=>true]). "</a>";
+					} else {
+						$result['message'] = translate(['text' => "Sorry, we could not save that search for you.  It may have expired.", 'isPublicFacing'=>true]);
+					}
 				} else {
-					$saveOk = true;
-					$message = "That search was already saved.";
+					$result['success'] = true;
+					$result['message'] = translate(['text' => "That search was already saved.", 'isPublicFacing'=>true]);
+					$result['modalButtons'] = "<a class='tool btn btn-primary' id='viewSavedSearches' href='/Search/History?require_login'>" . translate(['text' => "View Saved Searches", 'isPublicFacing'=>true]). "</a>";
 				}
 			} else {
-				$message = "Sorry, it looks like that search does not belong to you.";
+				$result['message'] = translate(['text' => "Sorry, it looks like that search does not belong to you.", 'isPublicFacing'=>true]);
 			}
 		} else {
-			$message = "Sorry, it looks like that search has expired.";
+			$result['message'] = translate(['text' => "Sorry, it looks like that search has expired.", 'isPublicFacing'=>true]);
 		}
+		return $result;
+	}
+
+	/** @noinspection PhpUnused */
+	function getSaveSearchForm() {
+		global $interface;
+
+		$searchId = $_REQUEST['searchId'];
+		$interface->assign('searchId', $searchId);
+
+		require_once ROOT_DIR . '/services/Search/History.php';
+		History::getSearchForSaveForm($searchId);
+
 		return array(
-			'result' => $saveOk,
-			'message' => $message,
+			'title' => translate(['text'=>'Save Search','isPublicFacing'=>true]),
+			'modalBody' => $interface->fetch('MyAccount/saveSearch.tpl'),
+			'modalButtons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.Account.saveSearch(); return false;'>" . translate(['text'=>'Save','isPublicFacing'=>true]) . "</button>",
 		);
 	}
 
@@ -3673,51 +3698,46 @@ class MyAccount_AJAX extends JSON_Action
 			$userListEntry->update();
 
 			if(($position != $userListEntry->weight) && ($position != '')) {
-				$newPosition = $_REQUEST['position'];
-				$currentPosition = $userListEntry->weight;
+				$moveToPosition = $_REQUEST['position'];
+				$moveFromPosition = $userListEntry->weight;
 
-				$desiredPosition = new UserListEntry();
-				$desiredPosition->listId = $_REQUEST['listId'];
-				$desiredPosition->weight = $newPosition;
-				if ($desiredPosition->find(true)){
-					$entriesToSwap = new UserListEntry();
-					$entriesToSwap->listId = $_REQUEST['listId'];
-					$maxPosition = $entriesToSwap->count();
-					$entriesToSwap->find();
-					while ($entriesToSwap->fetch()){
-						if($newPosition > $currentPosition){
-							// move up
-							if ($entriesToSwap->weight == 1) {
-								$entriesToSwap->weight = $entriesToSwap->weight + 1;
-								$entriesToSwap->update();
+				$moveTo = new UserListEntry();
+				$moveTo->listId = $_REQUEST['listId'];
+				$moveTo->weight = $moveToPosition;
+				if ($moveTo->find(true)){
+					$listEntry = new UserListEntry();
+					$listEntry->listId = $_REQUEST['listId'];
+					$maxPosition = $listEntry->count();
+					$listEntry->find();
+					while ($listEntry->fetch()){
+						if($listEntry->weight == 1){
+							// update position 1 only if replacing 1
+							if($moveToPosition == 1) {
+								$listEntry->weight = $listEntry->weight + 1;
+								$listEntry->update();
 							}
-							elseif ($entriesToSwap->weight == $maxPosition) {
-								$entriesToSwap->weight = $entriesToSwap->weight - 1;
-								$entriesToSwap->update();
+						} elseif($listEntry->weight == $maxPosition) {
+							// update last position only if replacing
+							if($moveToPosition == $maxPosition){
+								$listEntry->weight = $listEntry->weight - 1;
+								$listEntry->update();
 							}
-							elseif ($entriesToSwap->weight < $newPosition) {
-								$entriesToSwap->weight = $entriesToSwap->weight - 1;
-								$entriesToSwap->update();
+						} elseif($moveToPosition > $moveFromPosition){
+							// if item is increasing in weight, move items down by 1
+							if ($listEntry->weight >= $moveToPosition) {
+								$listEntry->weight = $listEntry->weight - 1;
+								$listEntry->update();
 							}
-						}
-						if($newPosition < $currentPosition){
-							// move down
-							if ($entriesToSwap->weight == 1) {
-								$entriesToSwap->weight = $entriesToSwap->weight + 1;
-								$entriesToSwap->update();
-							}
-							elseif ($entriesToSwap->weight == $maxPosition) {
-								$entriesToSwap->weight = $entriesToSwap->weight - 1;
-								$entriesToSwap->update();
-							}
-							elseif ($entriesToSwap->weight > $newPosition) {
-								$entriesToSwap->weight = $entriesToSwap->weight + 1;
-								$entriesToSwap->update();
+						} elseif($moveToPosition < $moveFromPosition){
+							// if item is decreasing in weight, move items up by 1
+							if ($listEntry->weight <= $moveToPosition) {
+								$listEntry->weight = $listEntry->weight + 1;
+								$listEntry->update();
 							}
 						}
 					}
 
-					$userListEntry->weight = $newPosition;
+					$userListEntry->weight = $moveToPosition;
 					$userListEntry->update();
 
 					$result['success'] = true;

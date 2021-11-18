@@ -589,7 +589,15 @@ class UserList extends DataObject
 					if ($record instanceof ListsRecordDriver){
 						$browseRecords[$key] = $record->getFields();
 					}else{
-						$browseRecords[$key] = $record;
+						require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+						$groupedWorkDriver = new GroupedWorkDriver($key);
+						if($groupedWorkDriver->isValid()){
+							$browseRecords[$key]['id'] = $groupedWorkDriver->getPermanentId();
+							$browseRecords[$key]['title_display'] = $groupedWorkDriver->getShortTitle();
+						} else {
+							$browseRecords[$key] = $record;
+						}
+
 					}
 				}
 			}

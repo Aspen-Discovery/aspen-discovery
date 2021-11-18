@@ -52,6 +52,9 @@
 		<span class="screen-reader-text">Back to top</span>
 	</a>
 	{/if}
+	{if $shouldShowAdminAlert}
+		{include file="adminMessages.tpl"}
+	{/if}
 	<div class="container">
 		{if !empty($systemMessages)}
 			<div id="system-message-header" class="row">

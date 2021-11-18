@@ -680,6 +680,30 @@ class User extends DataObject
 		}
 	}
 
+	function hasSavedSearches(){
+		$searchEntry = new SearchEntry();
+		$searchEntry->user_id = $this->id;
+		$searchEntry->saved = "1";
+		$searchEntry->find();
+		if ($searchEntry->getNumResults() > 0){
+			return true;
+		}else{
+			return false;
+		}
+	}
+
+	function hasLists(){
+		require_once ROOT_DIR . '/sys/UserLists/UserList.php';
+		$userList = new UserList();
+		$userList->user_id = $this->id;
+		$userList->find();
+		if ($userList->getNumResults() > 0){
+			return true;
+		}else{
+			return false;
+		}
+	}
+
 	private $_runtimeInfoUpdated = false;
 	function updateRuntimeInformation(){
 		if (!$this->_runtimeInfoUpdated) {

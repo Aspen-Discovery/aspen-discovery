@@ -1147,12 +1147,19 @@ class OverDriveDriver extends AbstractEContentDriver{
 		// check the value of useFulfillmentInterface
 		$fulfillmentMethod = $this->getSettings()->useFulfillmentInterface;
 		if($fulfillmentMethod == 1 ) {
-			$downloadRedirectUrl = $this->getDownloadRedirectUrl($user, $overDriveId);
+			$showLibbyPromoSetting = $this->getSettings()->showLibbyPromo;
+			if($showLibbyPromoSetting == 1) {
+				$showLibbyPromo = "";
+			} else {
+				$showLibbyPromo = "?appPromoOverride=none";
+			}
+			$downloadRedirectUrl = $this->getDownloadRedirectUrl($user, $overDriveId, $showLibbyPromo);
 			if($downloadRedirectUrl) {
 				$result['success'] = true;
 				$result['message'] = translate(['text' => 'Select a format', 'isPublicFacing' => true]);
 				$result['fulfillment'] = "redirect";
 				$result['modalBody'] = "<iframe src='{$downloadRedirectUrl}' class='fulfillmentFrame'></iframe>";
+				$result['downloadUrl'] = $downloadRedirectUrl; // for API access
 				$this->incrementStat('numDownloads');
 			} else {
 				$result['message'] = translate(['text' => 'Unable to create download url', 'isPublicFacing' => true]);
@@ -1192,9 +1199,9 @@ class OverDriveDriver extends AbstractEContentDriver{
 		return $result;
 	}
 
-	function getDownloadRedirectUrl($user, $overDriveId){
+	function getDownloadRedirectUrl($user, $overDriveId, $showLibbyPromo){
 
-		$url = $this->getSettings()->patronApiUrl . "/v1/patrons/me/checkouts/$overDriveId?appPromoOverride=none";
+		$url = $this->getSettings()->patronApiUrl . "/v1/patrons/me/checkouts/$overDriveId" . $showLibbyPromo;
 		$response = $this->_callPatronUrl($user, $url, "getDownloadRedirectUrl");
 		if ($response == false){
 			//The user is not authorized to use OverDrive

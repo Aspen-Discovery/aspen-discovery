@@ -328,6 +328,15 @@ class UInterface extends Smarty
 		$allAppliedThemes = [];
 		$primaryTheme = null;
 
+		require_once ROOT_DIR . '/services/API/SystemAPI.php';
+		$systemAPI = new SystemAPI();
+		$adminUser = $systemAPI->displayAdminAlert();
+		if($adminUser) {
+			$hasUpdates = $systemAPI->hasPendingDatabaseUpdates();
+			$this->assign('hasSqlUpdates', $hasUpdates);
+		}
+		$this->assign('shouldShowAdminAlert', $adminUser);
+
 		try {
 			$theme = new Theme();
 			//Check to see if we are at a location and if we are if there is a theme applied to it

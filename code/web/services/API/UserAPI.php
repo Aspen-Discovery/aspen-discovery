@@ -1128,8 +1128,8 @@ class UserAPI extends Action
 	{
 		list($username, $password) = $this->loadUsernameAndPassword();
 
-		if(isset($_REQUEST['bidId'])){
-			$bibId = $_REQUEST['bidId'];
+		if(isset($_REQUEST['bibId'])){
+			$bibId = $_REQUEST['bibId'];
 		} else {
 			$bibId = $_REQUEST['itemId'];
 		}
@@ -1172,8 +1172,6 @@ class UserAPI extends Action
 					return $patron->placeHold($bibId, $pickupBranch);
 				} else if ($source == 'overdrive') {
 					return $this->placeOverDriveHold();
-				} else if ($source == 'hoopla') {
-					return $this->placeHooplaHold();
 				} else if ($source == 'cloud_library') {
 					return $this->placeCloudLibraryHold();
 				} else if ($source == 'axis360') {

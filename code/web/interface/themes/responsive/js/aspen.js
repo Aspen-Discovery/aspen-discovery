@@ -6204,6 +6204,7 @@ AspenDiscovery.Account = (function(){
 
 			return queryString;
 		},
+
 		saveSearch: function(searchId){
 			if (!Globals.loggedIn){
 				AspenDiscovery.Account.ajaxLogin(null, function(){
@@ -6211,17 +6212,38 @@ AspenDiscovery.Account = (function(){
 				}, false);
 			}else{
 				var url = Globals.path + "/MyAccount/AJAX";
-				var params = {method :'saveSearch', searchId :searchId};
+				var params = {
+					'method': 'saveSearch',
+					'searchId': $('#searchId').val(),
+					'title': $('#searchName').val()
+				};
 				// noinspection JSUnresolvedFunction
 				$.getJSON(url, params,
 						function(data){
-							if (data.result) {
-								AspenDiscovery.showMessage("Success", data.message);
+							if (data.success) {
+								AspenDiscovery.showMessage("Saved Successfully", data.message, data.modalButtons);
 							} else {
 								AspenDiscovery.showMessage("Error", data.message);
 							}
 						}
 				).fail(AspenDiscovery.ajaxFail);
+			}
+			return false;
+		},
+
+		showSaveSearchForm: function(searchId) {
+			if (Globals.loggedIn){
+				AspenDiscovery.loadingMessage();
+				var url = Globals.path + "/MyAccount/AJAX";
+				var params = {
+					method: 'getSaveSearchForm',
+					searchId: searchId
+				};
+
+				// noinspection JSUnresolvedFunction
+				$.getJSON(url, params, function(data){
+					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+				}).fail(AspenDiscovery.ajaxFail);
 			}
 			return false;
 		},
@@ -6529,10 +6551,6 @@ AspenDiscovery.Account = (function(){
 				$.getJSON(url, params, function(data){
 					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
 				}).fail(AspenDiscovery.ajaxFail);
-			}else{
-				AspenDiscovery.Account.ajaxLogin($(trigger), function (){
-					AspenDiscovery.Account.showSaveToListForm(trigger, source, id);
-				});
 			}
 			return false;
 		},
@@ -7890,6 +7908,11 @@ AspenDiscovery.Browse = (function(){
 									.fadeIn()
 							}
 						}
+						if (data.lastPage){
+							$('#more-browse-results').hide(); // hide the load more results
+						} else {
+							$('#more-browse-results').show();
+						}
 					}
 				}
 			}).fail(function(){
@@ -7999,6 +8022,12 @@ AspenDiscovery.Browse = (function(){
 					AspenDiscovery.Browse.colcade.append($(data.records));
 
 					$('#selected-browse-search-link').attr('href', data.searchUrl); // update the search link
+
+					if (data.lastPage){
+						$('#more-browse-results').hide(); // hide the load more results
+					} else {
+						$('#more-browse-results').show();
+					}
 				}
 			}).fail(function(){
 				AspenDiscovery.ajaxFail();
