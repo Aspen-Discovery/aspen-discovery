@@ -1,0 +1,127 @@
+@import (reference) "bootstrap/less/variables.less";
+
+//
+//Variables for Aspen Discovery customization.  These can be overridden at the local theme level
+//
+@body-bg-resp: #fff;
+@content-bg: #fff;
+@body-text-color: #404040;
+@link-color-resp: #3174AF;
+@font-family-sans-serif-resp: "Helvetica Neue", Helvetica, Arial, sans-serif;
+@font-family-serif-resp: Georgia, "Times New Roman", Times, serif;
+@icon-font-path: "../../../../fonts/";
+@brand-primary: #3174AF;
+@brand-success: #2e7d32;
+@brand-danger: #c62828;
+
+//Header Variables
+@header-height: 120px;
+@header-top-color: #f2f2f2; //Top color for background gradient in header
+@header-middle-color: #dddddd; //middle color for background gradient in header @80% of header height from bottom
+@header-bottom-color: #e0e0e0; //Bottom color for background gradient in header
+@header-bottom-border-color: #b7b7b7;
+@header-bottom-border-width: 8px;
+
+//Header link/buttons
+@header-link-color: #8b8b8b;
+@header-link-color-hover: #088ec6;
+@header-button-border-vertical: #d9d8d8;
+
+@library-display-name-color: #8b8b8b;
+@library-display-name-font: "Palatino Linotype", "Book Antiqua", Palatino, serif;
+@library-display-name-font-size: 26px;
+
+//Footer Variables
+@footer-top-border-color: #088ec6;
+
+//Search Box color
+@home-search-top-color: #00a4e3; //Top color for background gradient in header
+@home-search-bottom-color: #147ce2; //Bottom color for background gradient in header
+@home-search-label-color: #ffffff;
+@horizontal-search-label-color: @home-search-label-color;
+
+//Menu Bar Variables
+@menu-bar-background-color: #00a4e3;
+@menu-bar-color: #FFF;
+@vertical-menu-bar-width: 40px;
+@menu-bar-selected-background-color: tint(@menu-bar-background-color, 50%);
+@menu-bar-selected-color: #FFF;
+@menu-bar-z-index: 101;
+
+//Sidebar font data
+@sidebar-font-size: 14px;
+@sidebar-link-color: @link-color-resp;
+@sidebar-label-background-color: #414141;
+@sidebar-label-color: #fff;
+
+//Home Page Browse Category labels
+@browse-header-background-color: #d7dce3;
+@home-page-browse-content-background-color: @content-bg;
+@browse-label-text-color: #3497d1;
+@browse-label-line-color: #bbd4e3;
+@selected-browse-label-search-color: #0072bc;
+
+//Home Page Browse categories
+@browse-category-font-size: 20px;
+@browse-category-text-color: #fff;
+@categoryLineShadow: #64b7d8;
+@categoryLineColor: #89cae5;
+@category1MainColor: #0d8ec7;
+@category2MainColor: lighten(@category1MainColor, 3%);
+@category3MainColor: lighten(@category1MainColor, 6%);
+@category4MainColor: lighten(@category1MainColor, 9%);
+@category5MainColor: lighten(@category1MainColor, 12%);
+@category6MainColor: lighten(@category1MainColor, 15%);
+@category7MainColor: lighten(@category1MainColor, 18%);
+@category8MainColor: lighten(@category1MainColor, 21%);
+@category9MainColor: lighten(@category1MainColor, 24%);
+@selectedCategoryBorderColor: #3497d1;
+
+//Home Page Browse Category Carousel Controls
+@browseCarouselControlBackgroundColor: #9e9fa3;
+@browseCarouselControlColor: #d4d4d4;
+
+// Home Page Browse Sub-Categories
+@selectedSubCategoryFontColor: #fff;
+@selectedSubCategoryBackgroundColor: @category1MainColor;
+
+// Home Page Browse Category More Results button
+@more-browse-results-backgroundcolor: #e6e6e6;
+@more-browse-results-color: #c7c9ca;
+
+//Accordions
+@accordion-active-header-backgroundcolor: #4dacde;
+@accordion-active-header-color: #fff;
+
+@accordion-header-bg-color:#e7e7e7;
+@accordion-header-top-gradient-color: @accordion-active-header-color;
+@accordion-header-bottom-gradient-color: #d7d7d7;
+
+// Explore More Bar
+@explore-more-bar-label-bg-color: @menu-bar-background-color;
+@explore-more-bar-label-color: @menu-bar-color;
+@explore-more-bar-label-width: @vertical-menu-bar-width;
+@explore-more-bar-border-width : 1px;
+@explore-more-bar-image-height: 150px;
+
+// Explore More Side Bar
+@explore-more-sidebar-bg-color: darken(@explore-more-bar-label-bg-color, 5%);
+@explore-more-sidebar-color: @explore-more-bar-label-color;
+@explore-more-sidebar-body-bg-color: #f8f8f8;
+
+//@explore-more-sidebar-related-titles-height: 200px; TODO: delete if not used
+
+@title-color: #000075;
+@subsection-title-color: @title-color;
+
+
+// Masquerade Variables
+@masquerade-background-color: #8a00e6;
+@masquerade-color: #FFF;
+@masquerade-bar-height: 50px;
+@masquerade-button-bg-color: #ebccff;
+@masquerade-button-color: #003366;
+
+// Digital Archive
+@archiveComponent-color: @menu-bar-color;
+@archiveComponentControl-background-color: @menu-bar-background-color;

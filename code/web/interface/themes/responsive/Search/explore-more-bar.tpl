@@ -2,10 +2,14 @@
 	{* TODO: Consider renaming classes to assume they are under the exploreMoreBar class *}
 <div class="exploreMoreBar row">
 	{*<div class="label-left">*}
-	<div class="label-top">
-		<div class="exploreMoreBarLabel"><i class="fas fa-share-square fa-x2"></i> {translate text='Explore More' isPublicFacing=true}</div>
+		<div class="label-top">
+		<div class="exploreMoreBarLabel">
+{if $userLang->code=="ar"} <!-- Fixed by Kware -->
+<i class="fas fa-share-square fa-flip-horizontal fa-x2"></i>
+{else}
+<i class="fas fa-share-square fa-x2"></i>
+{/if} {translate text='Explore More'}<!-- End of Fixed by Kware--> </div>
 	</div>
-
 	<div class="exploreMoreContainer">
 		<div class="jcarousel-wrapper">
 			{* Scrolling Buttons *}

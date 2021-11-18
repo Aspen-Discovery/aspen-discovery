@@ -17,7 +17,6 @@ class SystemVariables extends DataObject
 	public $storeRecordDetailsInSolr;
 	public $storeRecordDetailsInDatabase;
 	public $greenhouseUrl;
-	public $libraryToUseForPayments;
 
 	static function getObjectStructure() : array {
 		return [
@@ -31,10 +30,9 @@ class SystemVariables extends DataObject
 			'storeRecordDetailsInSolr' => array('property' => 'storeRecordDetailsInSolr', 'type' => 'checkbox', 'label' => 'Store Record Details In Solr', 'description' => 'Whether or not a record details should be stored in solr (for backwards compatibility with 21.07)', 'default' => false),
 			'storeRecordDetailsInDatabase' => array('property' => 'storeRecordDetailsInDatabase', 'type' => 'checkbox', 'label' => 'Store Record Details in Database', 'description' => 'Whether or not a record details should be stored in the database', 'default' => true),
 			'loadCoversFrom020z' => array('property' => 'loadCoversFrom020z', 'type' => 'checkbox', 'label' => 'Load covers from cancelled & invalid ISBNs (020$z)', 'description' => 'Whether or not covers can be loaded from the 020z', 'default' => false),
-			'allowableHtmlTags' => array('property' => 'allowableHtmlTags', 'type' => 'text', 'label' => 'Allowable HTML Tags (blank to allow all, separate tags with pipes)', 'description' => 'HTML Tags to allow in HTML and Markdown fields', 'maxLength' => 512, 'default'=>'p|em|i|strong|b|span|style|a|table|ul|ol|li|h1|h2|h3|h4|h5|h6|pre|code|hr|table|tbody|tr|th|td|caption|img|br|div|span', 'hideInLists'=>true),
+			'allowableHtmlTags' => array('property' => 'allowableHtmlTags', 'type' => 'text', 'label' => 'Allowable HTML Tags (blank to allow all, separate tags with pipes)', 'description' => 'HTML Tags to allow in HTML and Markdown fields', 'maxLength' => 512, 'default'=>'p|div|span|a|b|em|strong|i|ul|ol|li|br|h1|h2|h3|h4|h5|h6', 'hideInLists'=>true),
 			'allowHtmlInMarkdownFields' => array('property' => 'allowHtmlInMarkdownFields', 'type' => 'checkbox', 'label' => 'Allow HTML in Markdown fields', 'description' => 'Whether or administrators can add HTML to a Markdown field, if disabled, all tags will be stripped', 'default' => false),
 			'useHtmlEditorRatherThanMarkdown' => array('property' => 'useHtmlEditorRatherThanMarkdown', 'type' => 'checkbox', 'label' => 'Use HTML Editor rather than Markdown', 'description' => 'Changes all Markdown fields to HTML fields', 'default' => false),
-			'libraryToUseForPayments' => ['property'=>'libraryToUseForPayments','type'=>'enum','values'=>[0=>'Patron Home Library', 1=>'Active Catalog'], 'label'=>'Library to use for payments', 'description'=>'What library settings should be used when making payments', 'default'=>0],
 		];
 	}
 

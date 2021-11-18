@@ -35,7 +35,6 @@ class Axis360Driver extends AbstractEContentDriver
 			$authorizationCurlWrapper = new CurlWrapper();
 			$authorizationCurlWrapper->addCustomHeaders($headers, true);
 			$authorizationResponse = $authorizationCurlWrapper->curlPostPage($authorizationUrl, "");
-			ExternalRequestLogEntry::logRequest('axis360.getAccessToken', 'POST', $authorizationUrl, $authorizationCurlWrapper->getHeaders(), false, $authorizationCurlWrapper->getResponseCode(), $authorizationResponse, []);
 			$authorizationCurlWrapper->close_curl();
 			if ($authorizationResponse){
 				$jsonResponse = json_decode($authorizationResponse);
@@ -87,7 +86,6 @@ class Axis360Driver extends AbstractEContentDriver
 			$this->initCurlWrapper();
 			$this->curlWrapper->addCustomHeaders($headers, false);
 			$response = $this->curlWrapper->curlPostPage($checkoutsUrl, $params);
-			ExternalRequestLogEntry::logRequest('axis360.getCheckouts', 'POST', $checkoutsUrl, $this->curlWrapper->getHeaders(), false, $this->curlWrapper->getResponseCode(), $response, []);
 			/** @var stdClass $xmlResults */
 			$xmlResults = simplexml_load_string($response);
 			$status = $xmlResults->status;
@@ -158,7 +156,6 @@ class Axis360Driver extends AbstractEContentDriver
 			$this->initCurlWrapper();
 			$this->curlWrapper->addCustomHeaders($headers, false);
 			$response = $this->curlWrapper->curlGetPage($returnCheckoutUrl);
-			ExternalRequestLogEntry::logRequest('axis360.returnCheckout', 'GET', $returnCheckoutUrl, $this->curlWrapper->getHeaders(), false, $this->curlWrapper->getResponseCode(), $response, []);
 			/** @var stdClass $xmlResults */
 			$xmlResults = simplexml_load_string($response);
 			$removeHoldResult = $xmlResults->EarlyCheckinRestResult;
@@ -229,7 +226,6 @@ class Axis360Driver extends AbstractEContentDriver
 			$this->initCurlWrapper();
 			$this->curlWrapper->addCustomHeaders($headers, false);
 			$response = $this->curlWrapper->curlSendPage($holdUrl, 'GET');
-			ExternalRequestLogEntry::logRequest('axis360.getHolds', 'GET', $holdUrl, $this->curlWrapper->getHeaders(), false, $this->curlWrapper->getResponseCode(), $response, []);
 			/** @var stdClass $xmlResults */
 			$xmlResults = simplexml_load_string($response);
 			$holdsResult = $xmlResults->getHoldsResult;
@@ -271,7 +267,6 @@ class Axis360Driver extends AbstractEContentDriver
 			$this->initCurlWrapper();
 			$this->curlWrapper->addCustomHeaders($headers, false);
 			$response = $this->curlWrapper->curlSendPage($holdUrl, 'GET');
-			ExternalRequestLogEntry::logRequest('axis360.placeHold', 'GET', $holdUrl, $this->curlWrapper->getHeaders(), false, $this->curlWrapper->getResponseCode(), $response, []);
 			/** @var stdClass $xmlResults */
 			$xmlResults = simplexml_load_string($response);
 			$addToHoldResult = $xmlResults->addtoholdResult;
@@ -333,7 +328,6 @@ class Axis360Driver extends AbstractEContentDriver
 			$this->initCurlWrapper();
 			$this->curlWrapper->addCustomHeaders($headers, false);
 			$response = $this->curlWrapper->curlSendPage($cancelHoldUrl, 'GET');
-			ExternalRequestLogEntry::logRequest('axis360.cancelHold', 'GET', $cancelHoldUrl, $this->curlWrapper->getHeaders(), false, $this->curlWrapper->getResponseCode(), $response, []);
 			/** @var stdClass $xmlResults */
 			$xmlResults = simplexml_load_string($response);
 			$removeHoldResult = $xmlResults->removeholdResult;
@@ -394,7 +388,6 @@ class Axis360Driver extends AbstractEContentDriver
 				$this->initCurlWrapper();
 				$this->curlWrapper->addCustomHeaders($headers, false);
 				$response = $this->curlWrapper->curlPostPage($checkoutsUrl, $params);
-				ExternalRequestLogEntry::logRequest('axis360.getAccountSummary', 'POST', $checkoutsUrl, $this->curlWrapper->getHeaders(), false, $this->curlWrapper->getResponseCode(), $response, []);
 				/** @var stdClass $xmlResults */
 				$xmlResults = simplexml_load_string($response);
 				$status = $xmlResults->status;
@@ -453,7 +446,6 @@ class Axis360Driver extends AbstractEContentDriver
 			$this->initCurlWrapper();
 			$this->curlWrapper->addCustomHeaders($headers, false);
 			$response = $this->curlWrapper->curlPostPage($checkoutUrl, $params);
-			ExternalRequestLogEntry::logRequest('axis360.checkoutTitle', 'GET', $checkoutUrl, $this->curlWrapper->getHeaders(), false, $this->curlWrapper->getResponseCode(), $response, []);
 			/** @var stdClass $xmlResults */
 			$xmlResults = simplexml_load_string($response);
 			$checkoutResult = $xmlResults->checkoutResult;
@@ -697,7 +689,6 @@ class Axis360Driver extends AbstractEContentDriver
 			$this->initCurlWrapper();
 			$this->curlWrapper->addCustomHeaders($headers, false);
 			$response = $this->curlWrapper->curlSendPage($freezeHoldUrl, 'GET');
-			ExternalRequestLogEntry::logRequest('axis360.freezeHold', 'GET', $freezeHoldUrl, $this->curlWrapper->getHeaders(), false, $this->curlWrapper->getResponseCode(), $response, []);
 			/** @var stdClass $xmlResults */
 			$xmlResults = simplexml_load_string($response);
 			$freezeHoldResult = $xmlResults->HoldResult;
@@ -744,7 +735,6 @@ class Axis360Driver extends AbstractEContentDriver
 			$this->initCurlWrapper();
 			$this->curlWrapper->addCustomHeaders($headers, false);
 			$response = $this->curlWrapper->curlSendPage($freezeHoldUrl, 'GET');
-			ExternalRequestLogEntry::logRequest('axis360.thawHold', 'GET', $freezeHoldUrl, $this->curlWrapper->getHeaders(), false, $this->curlWrapper->getResponseCode(), $response, []);
 			/** @var stdClass $xmlResults */
 			$xmlResults = simplexml_load_string($response);
 			$thawHoldResult = $xmlResults->HoldResult;

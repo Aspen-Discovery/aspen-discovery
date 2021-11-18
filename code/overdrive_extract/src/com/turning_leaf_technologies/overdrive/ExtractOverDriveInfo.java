@@ -72,7 +72,6 @@ class ExtractOverDriveInfo {
 	private PreparedStatement updateLastSeenStmt;
 	private PreparedStatement getDeletedProductsStmt;
 	private PreparedStatement getNumDeletedProductsStmt;
-	private PreparedStatement getTotalProductsStmt;
 
 	private final CRC32 checksumCalculator = new CRC32();
 	private boolean errorsWhileLoadingProducts;
@@ -201,10 +200,6 @@ class ExtractOverDriveInfo {
 											errorsEncountered[0] = true;
 										}
 									});
-									//Load availability for all collections since we will currently only have collections where the record changed.
-									for (AdvantageCollectionInfo collectionInfo: allAdvantageCollections) {
-										curRecord.addCollection(collectionInfo);
-									}
 									//Load availability for the record
 									Thread availabilityThread = new Thread(() -> {
 										try {
@@ -271,14 +266,8 @@ class ExtractOverDriveInfo {
 							totalRecordsToDelete = getNumDeletedProductsRS.getInt(1);
 						}
 						getNumDeletedProductsRS.close();
-						int totalOverDriveRecords = 0;
-						getTotalProductsStmt.setLong(1, settings.getId());
-						ResultSet getTotalProductsRS = getTotalProductsStmt.executeQuery();
-						if (getTotalProductsRS.next()) {
-							totalOverDriveRecords = getTotalProductsRS.getInt(1);
-						}
 						if (!this.errorsWhileLoadingProducts && !this.hadTimeoutsFromOverDrive) {
-							if (totalRecordsToDelete > 0 && (settings.isAllowLargeDeletes() || (totalRecordsToDelete < 500 && totalOverDriveRecords > 0 && (((float) totalRecordsToDelete / totalOverDriveRecords) < .05)))) {
+							if (totalRecordsToDelete > 0 && (settings.isAllowLargeDeletes() || (totalRecordsToDelete < 500 && allProductsInOverDrive.size() > 0 && (((float) totalRecordsToDelete / allProductsInOverDrive.size()) < .05)))) {
 								int numRecordsDeleted = 0;
 								getDeletedProductsStmt.setLong(1, settings.getId());
 								getDeletedProductsStmt.setLong(2, extractStartTime / 1000);
@@ -296,8 +285,8 @@ class ExtractOverDriveInfo {
 								logger.info("Deleted " + numRecordsDeleted + " records that no longer exist");
 							} else if (!settings.isAllowLargeDeletes() && totalRecordsToDelete >= 500) {
 								logEntry.incErrors("There were more than 500 records to delete, detected " + totalRecordsToDelete + ", not deleting records");
-							} else if (!settings.isAllowLargeDeletes() && (((float) totalRecordsToDelete / totalOverDriveRecords) >= .05)) {
-								logEntry.incErrors("More than 5% of the collection was marked as being deleted. Detected " + totalRecordsToDelete + " of " + totalOverDriveRecords + " to delete, not deleting records");
+							} else if (!settings.isAllowLargeDeletes() && (((float) totalRecordsToDelete / allProductsInOverDrive.size()) >= .05)) {
+								logEntry.incErrors("More than 5% of the collection was marked as being deleted. Detected " + totalRecordsToDelete + ", not deleting records");
 							}
 						} else {
 							logger.info("Did not delete " + totalRecordsToDelete + " records that no longer exist because we received errors from OverDrive.");
@@ -511,7 +500,6 @@ class ExtractOverDriveInfo {
 		getProductIdByOverDriveIdStmt = dbConn.prepareStatement("SELECT id, deleted from overdrive_api_products where overdriveid = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 		updateLastSeenStmt = dbConn.prepareStatement("UPDATE overdrive_api_products set lastSeen = ? where overdriveid = ?");
 		getNumDeletedProductsStmt = dbConn.prepareStatement("SELECT count(*) from overdrive_api_products inner join overdrive_api_product_availability on productId = overdrive_api_products.id where deleted = 0 and settingId = ? and lastSeen < ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-		getTotalProductsStmt = dbConn.prepareStatement("SELECT count(*) from overdrive_api_products inner join overdrive_api_product_availability on productId = overdrive_api_products.id where deleted = 0 and settingId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 		getDeletedProductsStmt = dbConn.prepareStatement("SELECT overdrive_api_products.id, overdriveId from overdrive_api_products inner join overdrive_api_product_availability on productId = overdrive_api_products.id where deleted = 0 and settingId = ? and lastSeen < ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 		updateProductStmt = dbConn.prepareStatement("UPDATE overdrive_api_products SET crossRefId = ?, mediaType = ?, title = ?, subtitle = ?, series = ?, primaryCreatorRole = ?, primaryCreatorName = ?, cover = ?, deleted = 0 where id = ?");
 		updateProductChangeTimeStmt = dbConn.prepareStatement("UPDATE overdrive_api_products set dateUpdated = ? WHERE overdriveId = ?");

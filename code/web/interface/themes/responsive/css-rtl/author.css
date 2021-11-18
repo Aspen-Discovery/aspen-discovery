@@ -1,0 +1,15 @@
+.wikipedia_image {
+  margin: 0 10px 10px;
+}
+@media (min-width: 767px) {
+  .wikipedia_image {
+    float: right;
+  }
+}
+@media (max-width: 767px) {
+  .wikipedia_image {
+    display: block;
+    margin: 0 auto 10px;
+  }
+}
+/*# sourceMappingURL=author.css.map */

@@ -188,7 +188,6 @@ class IPAddress extends DataObject
 			$ip = $_COOKIE['test_ip'];
 		} else {
 			$ip = IPAddress::getClientIP();
-			setcookie('test_ip', $ip, time() - 1000, '/');
 		}
 		IPAddress::$activeIp = $ip;
 		$timer->logTime("getActiveIp");

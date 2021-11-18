@@ -30,7 +30,7 @@ abstract class HorizonAPI extends Horizon{
                 echo("Web service URL must be defined in the account profile to work with the Horizon API");
                 die();
 			}
-			$lookupMyAccountInfoResponse = $this->getWebServiceResponse('patronLogin', $webServiceURL . '/standard/lookupMyAccountInfo?clientID=' . $configArray['Catalog']['clientId'] . '&sessionToken=' . $sessionToken . '&includeAddressInfo=true&includeHoldInfo=true&includeBlockInfo=true&includeItemsOutInfo=true');
+			$lookupMyAccountInfoResponse = $this->getWebServiceResponse($webServiceURL . '/standard/lookupMyAccountInfo?clientID=' . $configArray['Catalog']['clientId'] . '&sessionToken=' . $sessionToken . '&includeAddressInfo=true&includeHoldInfo=true&includeBlockInfo=true&includeItemsOutInfo=true');
 			if ($lookupMyAccountInfoResponse){
 				$fullName = (string)$lookupMyAccountInfoResponse->name;
 				list($fullName, $lastName, $firstName) = $this->splitFullName($fullName);
@@ -217,7 +217,7 @@ abstract class HorizonAPI extends Horizon{
 	protected function loginViaWebService($username, $password) {
 		global $configArray;
 		$loginUserUrl = $configArray['Catalog']['webServiceUrl'] . '/standard/loginUser?clientID=' . $configArray['Catalog']['clientId'] . '&login=' . urlencode($username) . '&password=' . urlencode($password);
-		$loginUserResponse = $this->getWebServiceResponse('loginViaWebService', $loginUserUrl, null, null, null, null, ['password'=> $password]);
+		$loginUserResponse = $this->getWebServiceResponse($loginUserUrl);
 		if (!$loginUserResponse){
 			return array(false, false, false);
 		}else if (isset($loginUserResponse->Fault)){
@@ -267,7 +267,7 @@ abstract class HorizonAPI extends Horizon{
 		}
 
 		//Now that we have the session token, get holds information
-		$lookupMyAccountInfoResponse = $this->getWebServiceResponse('getHolds',$configArray['Catalog']['webServiceUrl'] . '/standard/lookupMyAccountInfo?clientID=' . $configArray['Catalog']['clientId'] . '&sessionToken=' . $sessionToken . '&includeHoldInfo=true');
+		$lookupMyAccountInfoResponse = $this->getWebServiceResponse($configArray['Catalog']['webServiceUrl'] . '/standard/lookupMyAccountInfo?clientID=' . $configArray['Catalog']['clientId'] . '&sessionToken=' . $sessionToken . '&includeHoldInfo=true');
 		if (isset($lookupMyAccountInfoResponse->HoldInfo)){
 			require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
 			foreach ($lookupMyAccountInfoResponse->HoldInfo as $hold){
@@ -433,7 +433,7 @@ abstract class HorizonAPI extends Horizon{
 					$createHoldUrl .= '&itemKey=' . $itemId;
 				}
 
-				$createHoldResponse = $this->getWebServiceResponse('placeHold',$createHoldUrl);
+				$createHoldResponse = $this->getWebServiceResponse($createHoldUrl);
 
 				$hold_result = array();
 				if ($createHoldResponse == true){
@@ -537,7 +537,7 @@ abstract class HorizonAPI extends Horizon{
 				//create the hold using the web service
 				$cancelHoldUrl = $configArray['Catalog']['webServiceUrl'] . '/standard/cancelMyHold?clientID=' . $configArray['Catalog']['clientId'] . '&sessionToken=' . $sessionToken . '&holdKey=' . $holdKey;
 
-				$cancelHoldResponse = $this->getWebServiceResponse('cancelHold', $cancelHoldUrl);
+				$cancelHoldResponse = $this->getWebServiceResponse($cancelHoldUrl);
 
 				if ($cancelHoldResponse){
 					//Clear the patron profile
@@ -578,7 +578,7 @@ abstract class HorizonAPI extends Horizon{
 					//create the hold using the web service
 					$changePickupLocationUrl = $configArray['Catalog']['webServiceUrl'] . '/standard/changePickupLocation?clientID=' . $configArray['Catalog']['clientId'] . '&sessionToken=' . $sessionToken . '&holdKey=' . $holdKey . '&newLocation=' . $locationId;
 
-					$changePickupLocationResponse = $this->getWebServiceResponse('changePickupLocation', $changePickupLocationUrl);
+					$changePickupLocationResponse = $this->getWebServiceResponse($changePickupLocationUrl);
 
 					if ($changePickupLocationResponse){
 						//Clear the patron profile
@@ -609,7 +609,7 @@ abstract class HorizonAPI extends Horizon{
 						//create the hold using the web service
 						$changePickupLocationUrl = $configArray['Catalog']['webServiceUrl'] . '/standard/suspendMyHold?clientID=' . $configArray['Catalog']['clientId'] . '&sessionToken=' . $sessionToken . '&holdKey=' . $holdKey . '&suspendEndDate=' . $reactivationDate;
 
-						$changePickupLocationResponse = $this->getWebServiceResponse('suspendHold', $changePickupLocationUrl);
+						$changePickupLocationResponse = $this->getWebServiceResponse($changePickupLocationUrl);
 
 						if ($changePickupLocationResponse){
 							//Clear the patron profile
@@ -637,7 +637,7 @@ abstract class HorizonAPI extends Horizon{
 						//create the hold using the web service
 						$changePickupLocationUrl = $configArray['Catalog']['webServiceUrl'] . '/standard/unsuspendMyHold?clientID=' . $configArray['Catalog']['clientId'] . '&sessionToken=' . $sessionToken . '&holdKey=' . $holdKey;
 
-						$changePickupLocationResponse = $this->getWebServiceResponse('unsuspendHold', $changePickupLocationUrl);
+						$changePickupLocationResponse = $this->getWebServiceResponse($changePickupLocationUrl);
 
 						if ($changePickupLocationResponse){
 							//Clear the patron profile
@@ -682,7 +682,7 @@ abstract class HorizonAPI extends Horizon{
 		}
 
 		//Now that we have the session token, get checkouts information
-		$lookupMyAccountInfoResponse = $this->getWebServiceResponse('lookupAccountInfo', $configArray['Catalog']['webServiceUrl'] . '/standard/lookupMyAccountInfo?clientID=' . $configArray['Catalog']['clientId'] . '&sessionToken=' . $sessionToken . '&includeItemsOutInfo=true');
+		$lookupMyAccountInfoResponse = $this->getWebServiceResponse($configArray['Catalog']['webServiceUrl'] . '/standard/lookupMyAccountInfo?clientID=' . $configArray['Catalog']['clientId'] . '&sessionToken=' . $sessionToken . '&includeItemsOutInfo=true');
 		if (isset($lookupMyAccountInfoResponse->ItemsOutInfo)){
 			$sCount = 0;
 			foreach ($lookupMyAccountInfoResponse->ItemsOutInfo as $itemOut){
@@ -783,7 +783,7 @@ abstract class HorizonAPI extends Horizon{
 		//create the hold using the web service
 		$renewCheckoutUrl = $configArray['Catalog']['webServiceUrl'] . '/standard/renewMyCheckout?clientID=' . $configArray['Catalog']['clientId'] . '&sessionToken=' . $sessionToken . '&itemID=' . $itemId;
 
-		$renewCheckoutResponse = $this->getWebServiceResponse('renewCheckout', $renewCheckoutUrl);
+		$renewCheckoutResponse = $this->getWebServiceResponse($renewCheckoutUrl);
 
 		if ($renewCheckoutResponse && !isset($renewCheckoutResponse->string)){
 			$success = true;
@@ -804,7 +804,7 @@ abstract class HorizonAPI extends Horizon{
 		if (!$offlineMode){
 			global $configArray;
 			$lookupTitleInfoUrl = $configArray['Catalog']['webServiceUrl'] . '/standard/lookupTitleInfo?clientID=' . $configArray['Catalog']['clientId'] . '&titleKey=' . $id . '&includeItemInfo=false&includeHoldCount=true' ;
-			$lookupTitleInfoResponse = $this->getWebServiceResponse('getNumHoldsOnTitle', $lookupTitleInfoUrl);
+			$lookupTitleInfoResponse = $this->getWebServiceResponse($lookupTitleInfoUrl);
 			if ($lookupTitleInfoResponse->titleInfo){
 				return (int)$lookupTitleInfoResponse->titleInfo->holdCount;
 			}
@@ -836,7 +836,7 @@ abstract class HorizonAPI extends Horizon{
 
 		//create the hold using the web service
 		$updatePinUrl = $configArray['Catalog']['webServiceUrl'] . '/standard/changeMyPin?clientID=' . $configArray['Catalog']['clientId'] . '&sessionToken=' . $sessionToken . '&currentPin=' . $oldPin . '&newPin=' . $newPin;
-		$updatePinResponse = $this->getWebServiceResponse('changePin', $updatePinUrl, null, null, null, null, ['oldPin'=>$oldPin, 'newPin'=>$newPin]);
+		$updatePinResponse = $this->getWebServiceResponse($updatePinUrl);
 
 		if ($updatePinResponse){
 			$user->cat_password = $newPin;
@@ -856,7 +856,7 @@ abstract class HorizonAPI extends Horizon{
 
 		//email the pin to the user
 		$updatePinUrl = $configArray['Catalog']['webServiceUrl'] . '/standard/emailMyPin?clientID=' . $configArray['Catalog']['clientId'] . '&secret=' . $configArray['Catalog']['clientSecret'] . '&login=' . $barcode . '&profile=' . $this->hipProfile;
-		$updatePinResponse = $this->getWebServiceResponse('emailPin', $updatePinUrl);
+		$updatePinResponse = $this->getWebServiceResponse($updatePinUrl);
 		//$updatePinResponse is an XML object, at least when there is an error with the API call
 		// otherwise, it is true for the pin sent, or false for pin not sent.
 
@@ -879,7 +879,7 @@ abstract class HorizonAPI extends Horizon{
 		global $configArray;
 		$lookupSelfRegistrationFieldsUrl = $configArray['Catalog']['webServiceUrl'] . '/standard/lookupSelfRegistrationFields?clientID=' . $configArray['Catalog']['clientId'];
 
-		$lookupSelfRegistrationFieldsResponse = $this->getWebServiceResponse('getSelfRegistrationFields', $lookupSelfRegistrationFieldsUrl);
+		$lookupSelfRegistrationFieldsResponse = $this->getWebServiceResponse($lookupSelfRegistrationFieldsUrl);
 		$fields = array();
 		if ($lookupSelfRegistrationFieldsResponse){
 			foreach($lookupSelfRegistrationFieldsResponse->registrationField as $registrationField){
@@ -926,15 +926,14 @@ abstract class HorizonAPI extends Horizon{
 		return array($fullName, $lastName, $firstName);
 	}
 
-	public function getWebServiceResponse($requestType, $url, $params = null, $sessionToken = null, $customRequest = null, $additionalHeaders = null, $dataToSanitize = []){
+	public function getWebServiceResponse($url){
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_URL, $url);
 		//curl_setopt($ch, CURLOPT_HTTPHEADER, array('Accept-Charset: utf-8'));
 		curl_setopt($ch, CURLOPT_HEADER, false);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 		$xml = curl_exec($ch);
-        ExternalRequestLogEntry::logRequest('horizonApi.' . $requestType, 'GET', $url, [], '', curl_getinfo($ch)['http_code'], $xml, $dataToSanitize);
-        curl_close($ch);
+		curl_close($ch);
 
 		if ($xml !== false && $xml !== 'false'){
 			if (strpos($xml, '<') !== FALSE){

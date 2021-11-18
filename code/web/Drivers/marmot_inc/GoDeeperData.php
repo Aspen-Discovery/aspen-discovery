@@ -5,7 +5,6 @@ require_once ROOT_DIR . '/sys/Syndetics/SyndeticsData.php';
 class GoDeeperData{
 	static function getGoDeeperOptions($isbn, $upc){
 		global $configArray;
-		/** @var Memcache $memCache */
 		global $memCache;
 		global $timer;
 		if (is_array($upc)){
@@ -37,8 +36,6 @@ class GoDeeperData{
 								)
 							));
 							$response = @file_get_contents($requestUrl, 0, $ctx);
-							ExternalRequestLogEntry::logRequest('syndetics.getIndex', 'GET', $requestUrl, [], '', 0, $response, []);
-
 							$timer->logTime("Got options from syndetics");
 							//echo($response);
 
@@ -149,9 +146,6 @@ class GoDeeperData{
 				'soap_version' => SOAP_1_2,
 //				'trace' => 1, // turns on debugging features
 		);
-		if (IPAddress::showDebuggingInformation()) {
-			$SOAP_options['trace'] = true;
-		}
 		try {
 			$soapClient = new SoapClient($url, $SOAP_options);
 
@@ -164,9 +158,6 @@ class GoDeeperData{
 
 			/** @noinspection PhpUndefinedMethodInspection */
 			$response = $soapClient->Single($params);
-			if (IPAddress::showDebuggingInformation()) {
-				ExternalRequestLogEntry::logRequest('contentcafe.getData', 'GET', $url, $soapClient->__getLastRequestHeaders(), $soapClient->__getLastRequest(), 0, $soapClient->__getLastResponse(), []);
-			}
 			if ($response) {
 				if (!isset($response->ContentCafe->Error)) {
 					return $response->ContentCafe->RequestItems->RequestItem;
@@ -207,7 +198,6 @@ class GoDeeperData{
 	 */
 	private static function getContentCafeSummary(ContentCafeSetting $settings, $isbn, $upc) {
 		global $configArray;
-		/** @var Memcache $memCache */
 		global $memCache;
 		$memCacheKey = "contentcafe_summary_{$isbn}_{$upc}";
 		$summaryData = $memCache->get($memCacheKey);
@@ -249,7 +239,6 @@ class GoDeeperData{
 		global $configArray;
 
 		if ($settings->hasSummary){
-			/** @var Memcache $memCache */
 			global $memCache;
 			$key = "syndetics_summary_{$isbn}_{$upc}";
 			$summaryData = $memCache->get($key);
@@ -285,10 +274,8 @@ class GoDeeperData{
 						));
 
 						$response = @file_get_contents($requestUrl, 0, $ctx);
-						ExternalRequestLogEntry::logRequest('syndetics.getSummary', 'GET', $requestUrl, [], '', 0, $response, []);
 						if (!preg_match('/Error in Query Selection|The page you are looking for could not be found/', $response)){
 							//Parse the XML
-							/** @var stdClass $data */
 							$data = new SimpleXMLElement($response);
 
 							$summaryData = array();
@@ -414,10 +401,9 @@ class GoDeeperData{
 				));
 				$response =file_get_contents($requestUrl, 0, $ctx);
 				$tocData = array();
-				ExternalRequestLogEntry::logRequest('syndetics.getTOC', 'GET', $requestUrl, [], '', 0, $response, []);
+
 				if (!preg_match('/Error in Query Selection|The page you are looking for could not be found/', $response)){
 					//Parse the XML
-					/** @var stdClass $data */
 					$data = new SimpleXMLElement($response);
 
 
@@ -475,10 +461,8 @@ class GoDeeperData{
 				)
 				));
 				$response =file_get_contents($requestUrl, 0, $ctx);
-				ExternalRequestLogEntry::logRequest('syndetics.getFiction', 'GET', $requestUrl, [], '', 0, $response, []);
 
 				//Parse the XML
-				/** @var stdClass $data */
 				$data = new SimpleXMLElement($response);
 
 				$fictionData = array();
@@ -611,10 +595,8 @@ class GoDeeperData{
 				)
 				));
 				$response =file_get_contents($requestUrl, 0, $ctx);
-				ExternalRequestLogEntry::logRequest('syndetics.getAuthorNotes', 'GET', $requestUrl, [], '', 0, $response, []);
 
 				//Parse the XML
-				/** @var stdClass $data */
 				$data = new SimpleXMLElement($response);
 
 				$summaryData = array();
@@ -661,10 +643,8 @@ class GoDeeperData{
 					)
 				));
 				$response =file_get_contents($requestUrl, 0, $ctx);
-				ExternalRequestLogEntry::logRequest('syndetics.getExcerpt', 'GET', $requestUrl, [], '', 0, $response, []);
 
 				//Parse the XML
-				/** @var stdClass $data */
 				$data = new SimpleXMLElement($response);
 
 				$excerptData = array();
@@ -736,10 +716,8 @@ class GoDeeperData{
 				)
 				));
 				$response =file_get_contents($requestUrl, 0, $ctx);
-				ExternalRequestLogEntry::logRequest('syndetics.getVideoClip', 'GET', $requestUrl, [], '', 0, $response, []);
 
 				//Parse the XML
-				/** @var stdClass $data */
 				$data = new SimpleXMLElement($response);
 
 				$summaryData = array();
@@ -792,11 +770,9 @@ class GoDeeperData{
 				)
 				));
 				$response = file_get_contents($requestUrl, 0, $ctx);
-				ExternalRequestLogEntry::logRequest('syndetics.getAVSummary', 'GET', $requestUrl, [], '', 0, $response, []);
 				$avSummaryData = array();
 				if (!preg_match('/Error in Query Selection|The page you are looking for could not be found/', $response)){
 					//Parse the XML
-					/** @var stdClass $data */
 					$data = new SimpleXMLElement($response);
 
 					if (isset($data)){

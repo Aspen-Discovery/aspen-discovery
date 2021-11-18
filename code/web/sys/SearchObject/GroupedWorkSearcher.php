@@ -972,7 +972,6 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 		// Loop through every field returned by the result set
 		$validFields = array_keys($filter);
 
-		/** @var Location $locationSingleton */
 		global $locationSingleton;
 		/** @var Library $currentLibrary */
 		$currentLibrary = Library::getActiveLibrary();
@@ -1123,6 +1122,9 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 							$numValidRelatedLocations++;
 						} else if ($field == 'available_at' && !is_null($additionalAvailableAtLocations) && in_array($facet[0], $additionalAvailableAtLocations)) {
 							$valueKey = '4' . $valueKey;
+							$numValidRelatedLocations++;
+						} elseif ($facet[0] == 'Digital Collection' || $facet[0] == 'OverDrive' || $facet[0] == 'Online') {
+							$valueKey = '5' . $valueKey;
 							$numValidRelatedLocations++;
 						}
 					}

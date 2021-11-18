@@ -654,7 +654,6 @@ class BookCoverProcessor{
 			'header' => "User-Agent: {$this->configArray['Catalog']['catalogUserAgent']}\r\n"
 		)));
 
-		ExternalRequestLogEntry::logRequest("$source.getCover", 'GET', $url, [], '', 0, '', []);
 		if ($image = @file_get_contents($url, false, $context)) {
 			// Figure out file paths -- $tempFile will be used to store the downloaded
 			// image for analysis.  $finalFile will be used for long-term storage if
@@ -1019,31 +1018,28 @@ class BookCoverProcessor{
 		}
 
 		//Try one last time without a year
-		if ($omdbSettings->fetchCoversWithoutDates) {
-			$source = 'omdb_title';
-			$url = "http://www.omdbapi.com/?t=$encodedTitle&apikey={$omdbSettings->apiKey}";
-			$client = new CurlWrapper();
-			$result = $client->curlGetPage($url);
-			if ($result !== false) {
-				if ($json = json_decode($result, true)) {
-					if (array_key_exists('Poster', $json)) {
-						if ($this->processImageURL($source, $json['Poster'], true)) {
-							return true;
-						}
+		$url = "http://www.omdbapi.com/?t=$encodedTitle&apikey={$omdbSettings->apiKey}";
+		$client = new CurlWrapper();
+		$result = $client->curlGetPage($url);
+		if ($result !== false) {
+			if ($json = json_decode($result, true)) {
+				if (array_key_exists('Poster', $json)){
+					if ($this->processImageURL($source, $json['Poster'], true)){
+						return true;
 					}
 				}
 			}
+		}
 
-			//Try short title one last time without a year
-			$url = "http://www.omdbapi.com/?t=$encodedShortTitle&apikey={$omdbSettings->apiKey}";
-			$client = new CurlWrapper();
-			$result = $client->curlGetPage($url);
-			if ($result !== false) {
-				if ($json = json_decode($result, true)) {
-					if (array_key_exists('Poster', $json)) {
-						if ($this->processImageURL($source, $json['Poster'], true)) {
-							return true;
-						}
+		//Try short title one last time without a year
+		$url = "http://www.omdbapi.com/?t=$encodedShortTitle&apikey={$omdbSettings->apiKey}";
+		$client = new CurlWrapper();
+		$result = $client->curlGetPage($url);
+		if ($result !== false) {
+			if ($json = json_decode($result, true)) {
+				if (array_key_exists('Poster', $json)){
+					if ($this->processImageURL($source, $json['Poster'], true)){
+						return true;
 					}
 				}
 			}

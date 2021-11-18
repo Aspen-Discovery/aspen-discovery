@@ -42,7 +42,7 @@ class HooplaDriver extends AbstractEContentDriver{
 
 
 	// $customRequest is for curl, can be 'PUT', 'DELETE', 'POST'
-	private function getAPIResponse($requestType, $url, $params = null, $customRequest = null, $additionalHeaders = null, $dataToSanitize = [])
+	private function getAPIResponse($url, $params = null, $customRequest = null, $additionalHeaders = null)
 	{
 		global $logger;
 		$logger->log('Hoopla API URL :' .$url, Logger::LOG_NOTICE);
@@ -58,11 +58,11 @@ class HooplaDriver extends AbstractEContentDriver{
 			$headers = array_merge($headers, $additionalHeaders);
 		}
 		if (empty($customRequest)) {
-            $customRequest = 'GET';
 			curl_setopt($ch, CURLOPT_HTTPGET, true);
 		} elseif ($customRequest == 'POST') {
 			curl_setopt($ch, CURLOPT_POST, true);
-		} else {
+		}
+		else {
 			curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $customRequest);
 		}
 
@@ -82,9 +82,7 @@ class HooplaDriver extends AbstractEContentDriver{
 		}
 		$json = curl_exec($ch);
 
-        ExternalRequestLogEntry::logRequest($requestType, $customRequest, $url, $headers, '', curl_getinfo($ch, CURLINFO_HTTP_CODE), $json,$dataToSanitize);
-
-        if (!$json && curl_getinfo($ch, CURLINFO_HTTP_CODE) == 401) {
+		if (!$json && curl_getinfo($ch, CURLINFO_HTTP_CODE) == 401) {
 			$logger->log('401 Response in getAPIResponse. Attempting to renew access token', Logger::LOG_WARNING);
 			$this->renewAccessToken();
 			return false;
@@ -125,10 +123,8 @@ class HooplaDriver extends AbstractEContentDriver{
 			curl_setopt($ch, CURLINFO_HEADER_OUT, true);
 		}
 
-		$response = curl_exec($ch);
+		curl_exec($ch);
 		$http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-
-        ExternalRequestLogEntry::logRequest('hoopla.returnCheckout', 'DELETE', $url, $headers, '', $http_code, $response,[]);
 
 		curl_close($ch);
 		return $http_code == 204;
@@ -191,7 +187,7 @@ class HooplaDriver extends AbstractEContentDriver{
 			$getPatronStatusURL = $this->getHooplaBasePatronURL($user);
 			if (!empty($getPatronStatusURL)) {
 				$getPatronStatusURL .= '/status';
-				$hooplaPatronStatusResponse = $this->getAPIResponse('hoopla.getAccountSummary',$getPatronStatusURL);
+				$hooplaPatronStatusResponse = $this->getAPIResponse($getPatronStatusURL);
 				if (!empty($hooplaPatronStatusResponse) && !isset($hooplaPatronStatusResponse->message)) {
 					$this->hooplaPatronStatuses[$user->id] = $hooplaPatronStatusResponse;
 
@@ -228,7 +224,7 @@ class HooplaDriver extends AbstractEContentDriver{
 			$hooplaCheckedOutTitlesURL = $this->getHooplaBasePatronURL($patron);
 			if (!empty($hooplaCheckedOutTitlesURL)) {
 				$hooplaCheckedOutTitlesURL  .= '/checkouts/current';
-				$checkOutsResponse = $this->getAPIResponse('hoopla.getCheckouts', $hooplaCheckedOutTitlesURL);
+				$checkOutsResponse = $this->getAPIResponse($hooplaCheckedOutTitlesURL);
 				if (is_array($checkOutsResponse)) {
                     $hooplaPatronStatus = null;
 					foreach ($checkOutsResponse as $checkOut) {
@@ -274,7 +270,6 @@ class HooplaDriver extends AbstractEContentDriver{
 	private function getAccessToken()
 	{
 		if (empty($this->accessToken)) {
-			/** @var Memcache $memCache */
 			global $memCache;
 			$accessToken = $memCache->get(self::memCacheKey);
 			if (empty($accessToken)) {
@@ -310,7 +305,6 @@ class HooplaDriver extends AbstractEContentDriver{
 				curl_setopt($curl, CURLINFO_HEADER_OUT, true);
 			}
 			$response = curl_exec($curl);
-            ExternalRequestLogEntry::logRequest('hoopla.renewAccessToken', 'POST', $url, [], '', curl_getinfo($curl, CURLINFO_HTTP_CODE), $response,[]);
 
 			curl_close($curl);
 
@@ -319,7 +313,6 @@ class HooplaDriver extends AbstractEContentDriver{
 				if (!empty($json->access_token)) {
 					$this->accessToken = $json->access_token;
 
-					/** @var Memcache $memCache */
 					global $memCache;
 					global $configArray;
 					$memCache->set(self::memCacheKey, $this->accessToken, $configArray['Caching']['hoopla_api_access_token']);
@@ -354,7 +347,7 @@ class HooplaDriver extends AbstractEContentDriver{
 
 				$titleId = self::recordIDtoHooplaID($titleId);
 				$checkoutURL      .= '/' . $titleId;
-				$checkoutResponse = $this->getAPIResponse('hoopla.checkoutTitle',$checkoutURL, array(), 'POST');
+				$checkoutResponse = $this->getAPIResponse($checkoutURL, array(), 'POST');
 				if ($checkoutResponse) {
 					if (!empty($checkoutResponse->contentId)) {
 						$this->trackUserUsageOfHoopla($patron);
@@ -392,7 +385,7 @@ class HooplaDriver extends AbstractEContentDriver{
 					// Result for API or app use
 					$apiResult = array();
 					$apiResult['title'] = translate(['text'=>'Unable to checkout title', 'isPublicFacing'=>true]);
-					$apiResult['message'] = translate(['text'=>'An error occurred checking out the Hoopla title.', 'isPublicFacing'=>true]);
+					$apiResult['message'] = translate(['text'=>'An error occurred checking out the Hoopla title.', 'isPublicFacing'=>true]);;
 
 					return array(
 						'success' => false,
@@ -563,22 +556,20 @@ class HooplaDriver extends AbstractEContentDriver{
         return [];
     }
 
-	/**
-	 * Place Hold
-	 *
-	 * This is responsible for both placing holds as well as placing recalls.
-	 *
-	 * @param User $patron The User to place a hold for
-	 * @param string $recordId The id of the bib record
-	 * @param null $pickupBranch For compatibility
-	 * @param null $cancelDate For compatibility
-	 * @return  array                 An array with the following keys
-	 *                                result - true/false
-	 *                                message - the message to display (if item holds are required, this is a form to select the item).
-	 *                                needsItemLevelHold - An indicator that item level holds are required
-	 *                                title - the title of the record the user is placing a hold on
-	 * @access  public
-	 */
+    /**
+     * Place Hold
+     *
+     * This is responsible for both placing holds as well as placing recalls.
+     *
+     * @param User $patron The User to place a hold for
+     * @param string $recordId The id of the bib record
+     * @return  array                 An array with the following keys
+     *                                result - true/false
+     *                                message - the message to display (if item holds are required, this is a form to select the item).
+     *                                needsItemLevelHold - An indicator that item level holds are required
+     *                                title - the title of the record the user is placing a hold on
+     * @access  public
+     */
 	function placeHold($patron, $recordId, $pickupBranch = null, $cancelDate = null)
     {
         return [
@@ -587,14 +578,13 @@ class HooplaDriver extends AbstractEContentDriver{
         ];
     }
 
-	/**
-	 * Cancels a hold for a patron
-	 *
-	 * @param User $patron The User to cancel the hold for
-	 * @param string $recordId The id of the bib record
-	 * @param null $cancelId ID to cancel for compatibility
-	 * @return false|array
-	 */
+    /**
+     * Cancels a hold for a patron
+     *
+     * @param User $patron The User to cancel the hold for
+     * @param string $recordId The id of the bib record
+     * @return false|array
+     */
 	function cancelHold($patron, $recordId, $cancelId = null)
     {
         return false;

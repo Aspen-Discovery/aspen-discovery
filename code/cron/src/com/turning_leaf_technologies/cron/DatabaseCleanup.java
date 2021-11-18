@@ -27,7 +27,6 @@ public class DatabaseCleanup implements IProcessHandler {
 		removeUserDataForDeletedUsers(dbConn, logger, processLog);
 		removeOldCachedObjects(dbConn, logger, processLog);
 		removeOldIndexingData(dbConn, logger, processLog);
-		removeOldExternalRequests(dbConn, logger, processLog);
 
 		cleanupReadingHistory(dbConn, logger, processLog);
 
@@ -72,26 +71,6 @@ public class DatabaseCleanup implements IProcessHandler {
 			processLog.saveResults();
 		} catch (SQLException e) {
 			processLog.incErrors("Unable to cleanup reading history. ", e);
-		}
-	}
-
-	private void removeOldExternalRequests(Connection dbConn, Logger logger, CronProcessLogEntry processLog) {
-		//Remove long searches
-		try {
-			long now = new Date().getTime() / 1000;
-			//Remove anything more than 24 hours old
-			long removalTime = now - 24 * 60 * 60;
-			PreparedStatement removeOldExternalRequestsStmt = dbConn.prepareStatement("DELETE from external_request_log where requestTime <= ?");
-			removeOldExternalRequestsStmt.setLong(1, removalTime);
-
-			int rowsRemoved = removeOldExternalRequestsStmt.executeUpdate();
-
-			processLog.addNote("Removed " + rowsRemoved + " external request log entries");
-			processLog.incUpdated();
-
-			processLog.saveResults();
-		} catch (SQLException e) {
-			processLog.incErrors("Unable to delete old cached objects. ", e);
 		}
 	}
 

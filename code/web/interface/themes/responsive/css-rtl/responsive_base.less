@@ -1,0 +1,345 @@
+//
+// Main responsive theme css
+//
+//Default values for variables
+@navbarCollapseWidth: 480px;
+@navbarCollapseDesktopWidth: 481px;
+@horizontalComponentOffsetNarrow: 80px;
+@icon-font-path: '/fonts/';
+
+@import "bootstrap/less/bootstrap.less";
+@import "bootstrap.inline-responsive.less";
+
+//
+//  Basic Style overrides
+//
+a, a:visited{
+  color: @link-color-resp;
+}
+a:hover{
+  color: darken(@link-color-resp, 10%);
+}
+a.btn-primary, a.btn-warning, a.btn-info{
+  color: #ffffff;
+}
+@media print {
+  a:link:after,
+  a:visited:after {
+    content: "" !important;
+  }
+}
+
+body {
+  font-family: @font-family-sans-serif-resp;
+  background-color: @body-bg-resp;
+  > .container{
+    background-color: @content-bg;
+  }
+}
+
+.noBreak{
+  white-space: nowrap;
+}
+
+.collapsed, .expanded{
+  cursor: pointer;
+}
+
+.fieldset-collapsed {
+  //height: 10px;
+  overflow: hidden;
+  border-right: 0;
+  border-left: 0;
+  border-bottom: 0;
+  div, fieldset {
+    display: none;
+  }
+}
+
+.fieldset-collapsible-label {
+  color: #256292;
+  cursor: pointer;
+  font-size: 14px;
+}
+.fieldset-collapsible-label:before{
+  font-family: "Font Awesome 5 Free";
+  content: '\f078';
+  font-weight: bold;
+  padding-left: .25em;
+}
+.fieldset-collapsed .fieldset-collapsible-label {
+  background-position: 4px 4px;
+}
+.fieldset-collapsed .fieldset-collapsible-label:before{
+  font-family: "Font Awesome 5 Free";
+  content: '\f105';
+  font-weight: bold;
+  padding-left: .25em;
+}
+
+
+.accordion {
+  .panel-title.collapsed:before {
+    font-family: "Font Awesome 5 Free";
+    content: '\f105';
+    font-weight: bold;
+    padding-left: .25em;
+    @media print {
+      content: "";
+    }
+  }
+  .panel-title.expanded:before {
+    font-family: "Font Awesome 5 Free";
+    content: '\f078';
+    font-weight: bold;
+    padding-left: .25em;
+    @media print{
+      content: "";
+    }
+  }
+}
+
+.panel .panel-title:before {
+  font-family: "Font Awesome 5 Free";
+  content: '\f105';
+  font-weight: bold;
+  padding-left: .25em;
+  @media print{
+    content: "";
+  }
+}
+.panel.active .panel-title:before {
+  font-family: "Font Awesome 5 Free";
+  content: '\f078';
+  font-weight: bold;
+  padding-left: .25em;
+  @media print{
+    content: "";
+  }
+}
+
+.panel-title{
+  font-size: 14px;
+  color: #333333;
+  > a {
+    color: #333333;
+  }
+}
+.active {
+  .panel-title {
+    color: #333333;
+
+    > a {
+      color: #333333;
+    }
+  }
+}
+// Modals
+.modal {
+  //position: fixed; // In modals.less
+  right: 50%;
+  width: 80%;
+  margin-right: -40%;
+  overflow-y: auto;
+
+  @media(max-width: @screen-xs-max) {
+    width: 98%;
+    margin-right: -50%;
+  }
+}
+
+.modal-dialog {
+  max-width: 100%; // constrain content to the modal box
+}
+.modal-buttons{
+  margin-right: 3px;
+  margin-left: 3px;
+}
+
+.modal-header{
+  font-weight: bold;
+  font-size: 18px;
+}
+ // top-left close button
+.modal-header .close {
+  opacity: .4;
+}
+
+.btn-toolbar{
+  @media print{
+    display: none;
+  }
+}
+
+.btn-group{
+  @media print{
+    display: none;
+  }
+}
+
+#UserList .selectTitle,
+#UserList .text-left,
+#UserList span.btn-editions{
+  @media print{
+    display: none;
+  }
+}
+
+#UserList .result .row .col-xs-6.col-sm-6.col-md-6.col-lg-7{
+  @media print{
+    width: 75%
+  }
+}
+
+.module_MyAccount.action_MyList .alert{
+  @media print{
+    display: none;
+  }
+}
+
+.btn-editions{
+  display:inline-block;
+  color: #212529;
+  background-color: #f8f9fa;
+  border-color: #999999;
+  margin-top: 3px;
+  &:hover, &:focus, &:active{
+    color: #212529;
+    background-color: #e2e6ea;
+    border-color: #dae0e5;
+  }
+}
+
+.btn-tools{
+  color: #ffffff;
+  background-color: #747474;
+  border-color: #636363;
+  &:hover, &:focus, &:active{
+    color: #ffffff;
+    background-color: #636363;
+    border-color: #636363;
+  }
+  &:visited{
+    color: #ffffff;
+  }
+}
+
+.tab-content {
+  border-right: 1px solid #ddd;
+  border-left: 1px solid #ddd;
+  padding: 10px;
+}
+
+.nav-tabs {
+  margin-bottom: 0;
+}
+
+#search_box_group{
+  // Append input to search box when larger than phone
+  @media (max-width: 480px) {
+    #search_button{
+      padding-top: 5px;
+      width: 100%;
+    }
+    padding-top: 5px;
+  }
+}
+
+@media print{
+  #header-wrapper{
+    display: none;
+  }
+  #side-bar{
+    display: none;
+  }
+}
+
+.footer-column{
+  @media (max-width: 767px) {
+    h4:before{
+      content: "▼ ";
+    }
+    h4.collapsed:before{
+      content: "► ";
+    }
+
+  }
+}
+.footerContents{
+  @media (min-width: 767px) {
+    .collapse.in;
+  }
+}
+
+.bold{
+  font-weight: bold;
+}
+
+ul.list-striped, ol.list-striped {
+  > li:nth-child(odd),
+  > li:nth-child(odd) {
+    background-color: @table-bg-accent;
+  }
+}
+
+div.striped {
+  > div:nth-child(odd),
+  > div:nth-child(odd) {
+    background-color: @table-bg-accent;
+  }
+}
+
+// Used on Checked Out Page
+.bg-overdue {
+  background-color: #fcf2f2 !important; // important is needed to override .striped on checked out page
+  a&:hover,
+  a&:focus {
+    background-color: darken(@state-danger-bg, 10%);
+  }
+}
+
+// Library Admin Page
+//#propertyRowfacets {
+//  overflow-x: scroll;
+//}
+
+.tablesorter-filter{
+  width: 98%;
+}
+
+// Google translate
+#google_translate_element{
+  font-size: smaller;
+  padding-right: 5px;
+}
+.goog-te-gadget {
+  display: inline-block;
+}
+
+// Third party imports
+@import "ratings.less";
+@import "jcarousel.responsive.less";
+@import "lib/fontawesome-all.min.css";
+@import "lib/bootstrap-switch.less";
+@import "lib/tablesorter/tablesorter.less";
+@import "lib/rome.min.css";
+@import "simplemde.min.css";
+@import "lib/Chart.min.css";
+
+// Imports of functionality related to Aspen
+@import "layout.less";
+@import "home.less";
+@import "browse-categories.less";
+@import "account.less";
+@import "help.less";
+@import "author.less";
+@import "title-scroller.less";
+@import "record.less";
+@import "results-list.less";
+@import "grouped_work.less";
+@import "prospector.less";
+@import "calendar.less";
+@import "genealogy.less";
+@import "admin.less";
+@import "web-builder.less";
+@import "ebsco.less";

@@ -61,11 +61,42 @@ function smarty_function_js($params, &$smarty){
 
 		// If the file exists on the local file system, set $js to the relative
 		// path needed to link to it from the web interface.
-		if (file_exists("{$local}/interface/themes/{$theme}/js/{$filename}")) {
-			$js = "/interface/themes/{$theme}/js/{$filename}";
+				$language = strip_tags((isset($_SESSION['language'])) ? $_SESSION['language'] : 'en');
+			$mynewLanguage = strip_tags($_REQUEST['myLang']);
+		//var_dump($language);
+		$userLanguage = UserAccount::getUserInterfaceLanguage();
+		//var_dump($userLanguage);
+		
+		$rtl_langs = array('ar','he');
+		
+				
+		 $smarty->assign("language", $language);
+		 $smarty->assign("mynewLanguage", $mynewLanguage);
+
+		 $smarty->assign("userLanguage", $userLanguage);
+
+		 $smarty->assign("rtl_langs", $rtl_langs);
+
+		if (in_array($userLanguage, $rtl_langs) || in_array($mynewLanguage, $rtl_langs) || in_array($language, $rtl_langs))
+		{
+		  if (file_exists("{$local}/interface/themes/{$theme}/js-rtl/{$filename}")) 
+			{
+			$js = "/interface/themes/{$theme}/js-rtl/{$filename}";
 			break;
+			}
+		}
+		else
+		{
+
+			if (file_exists("{$local}/interface/themes/{$theme}/js/{$filename}")) 
+			{
+			$js = "{$local}/interface/themes/{$theme}/js/{$filename}";
+			break;
+			}
+
 		}
 	}
+
 
 	// If we couldn't find the file, check the global Javascript area; if that
 	// still doesn't help, we shouldn't try to link to it:

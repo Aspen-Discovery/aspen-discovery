@@ -716,7 +716,7 @@ class LibrarySolution extends AbstractIlsDriver {
 		return $fines;
 	}
 
-	function updatePatronInfo($patron, $canUpdateContactInfo, $fromMasquerade)
+	function updatePatronInfo($patron, $canUpdateContactInfo)
 	{
 		return [
 			'success' => false,

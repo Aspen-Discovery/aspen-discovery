@@ -4,12 +4,9 @@ import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { Platform } from "react-native";
 import moment from "moment";
 
-// custom components and helper files
-import { translate } from '../../util/translations';
-
 const HoursAndLocation = (props) => {
 
-    const { hoursMessage, hours, description } = props
+    const { hoursMessage, hours } = props
 
     return (
     <>
@@ -17,8 +14,7 @@ const HoursAndLocation = (props) => {
         <Center>
             <HStack space={3} alignItems="center">
                 <Icon as={MaterialIcons} name="schedule" size="sm" mt={0.3} mr={-1} />
-                <Text fontSize="lg" bold>{translate('library_contact.today_hours')}</Text>
-                <Text>{description}</Text>
+                <Text fontSize="lg" bold>Today's Hours </Text>
             </HStack>
             <Text alignText="center" mt={2} italic>{hoursMessage}</Text>
             </Center>
@@ -34,7 +30,7 @@ function renderHours(item) {
     const closingTime = moment(item.close, "HH:mm").format("h:mm A");
 
     if(item.isClosed) {
-        var hours = translate('library_contact.closed');
+        var hours = "Closed";
     } else {
         var hours = openTime + " - " + closingTime;
     }
@@ -48,7 +44,7 @@ function renderHours(item) {
             </VStack>
             </Center>
         {item.notes ?
-            <Text bold>{translate('library_contact.note')}: <Text>{item.notes}</Text></Text>
+            <Text bold>Note: <Text>{item.notes}</Text></Text>
         : null }
         </Box>
     );

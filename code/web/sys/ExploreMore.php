@@ -515,6 +515,8 @@ class ExploreMore {
 									if (in_array($facetValueStr, array('Magazines', 'News', 'Academic Journals', 'Primary Source Documents'))) {
 										$numFacetMatches = (int)$facetValue->Count;
 										$iconName = 'ebsco_' . str_replace(' ', '_', strtolower($facetValueStr));
+										
+										$facetValueStr = translate($facetValueStr);
 										$exploreMoreOptions['searchLinks'][] = array(
 											'label' => "$facetValueStr ({$numFacetMatches})",
 											'description' => "{$facetValueStr} in EBSCO related to {$searchTerm}",

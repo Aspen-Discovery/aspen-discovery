@@ -9,7 +9,7 @@ class Greenhouse_SiteStatus extends Admin_Admin
 	{
 		$sites = new AspenSite();
 		$sites->whereAdd('implementationStatus != 4 AND implementationStatus != 0');
-		$sites->orderBy('name ASC');
+		$sites->orderBy('siteType ASC, implementationStatus DESC, name ASC');
 		$sites->find();
 		$siteStatuses = [];
 		$allChecks = [];
@@ -44,7 +44,7 @@ class Greenhouse_SiteStatus extends Admin_Admin
 	function canView() : bool
 	{
 		if (UserAccount::isLoggedIn()){
-			if (UserAccount::getActiveUserObj()->source == 'admin' && UserAccount::getActiveUserObj()->cat_username == 'aspen_admin'){
+			if (UserAccount::getActiveUserObj()->source = 'admin' && UserAccount::getActiveUserObj()->cat_username == 'aspen_admin'){
 				return true;
 			}
 		}

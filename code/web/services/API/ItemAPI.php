@@ -564,10 +564,6 @@ class ItemAPI extends Action {
 								'type' => $recordAction['type'],
 							);
 
-							if(isset($recordAction['url'])) {
-								$action['url'] = $recordAction['url'];
-							}
-
 							if(isset($recordAction['redirectUrl'])) {
 								$action['redirectUrl'] = $recordAction['redirectUrl'];
 							}

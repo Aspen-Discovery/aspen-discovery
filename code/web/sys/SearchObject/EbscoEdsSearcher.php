@@ -818,7 +818,7 @@ BODY;
 		$limitList = [];
 		foreach ($limitOptions as $limit => $limitOption){
 			if (array_key_exists($limit, $this->limiters)){
-				$limitIsApplied = ($this->limiters[$limit]) == 'y' ? 1 : 0;
+				$limitIsApplied = $limitOption == 'y';
 			}else{
 				$limitIsApplied = $limitOption['defaultOn'];
 			}

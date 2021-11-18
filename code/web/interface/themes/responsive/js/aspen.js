@@ -4519,8 +4519,6 @@ var AspenDiscovery = (function(){
 		AspenDiscovery.setupFieldSetToggles();
 		AspenDiscovery.initCarousels();
 		AspenDiscovery.toggleMenu();
-		AspenDiscovery.autoOpenPanel();
-		AspenDiscovery.scrollToTopPage();
 
 		$("#modalDialog").modal({show:false});
 		$('[data-toggle="tooltip"]').tooltip();
@@ -4551,8 +4549,6 @@ var AspenDiscovery = (function(){
 				}
 			}
 		});
-
-
 	});
 
 	return {
@@ -5149,60 +5145,6 @@ var AspenDiscovery = (function(){
 		},
 		resetSearchBox: function() {
 			document.getElementById("lookfor").value = "";
-		},
-		autoOpenPanel: function() {
-			var hash = window.location.hash.substr(1);
-			if (hash) {
-				var requestedPanel = hash;
-				var element = '#'.concat(requestedPanel);
-				$(element).addClass('active');
-				var element2 = '#'.concat(requestedPanel, "Body");
-				$(element2).removeClass('collapse');
-				$(element2).addClass('in');
-				$(element2).css("height","auto");
-			}
-		},
-		scrollToTopPage: function() {
-			// Set a variable for our button element.
-			var scrollToTopButton = document.getElementById('js-top');
-			if (scrollToTopButton) {
-				// Let's set up a function that shows our scroll-to-top button if we scroll beyond the height of the initial window.
-				function scrollFunc() {
-					// Get the current scroll value
-					var y = window.scrollY;
-
-					// If the scroll value is greater than the window height, let's add a class to the scroll-to-top button to show it!
-					if (y > 0) {
-						scrollToTopButton.className = "top-link show";
-					} else {
-						scrollToTopButton.className = "top-link hide";
-					}
-				};
-
-				window.addEventListener("scroll", scrollFunc);
-
-
-				function scrollToTop() {
-					// Let's set a variable for the number of pixels we are from the top of the document.
-					var c = document.documentElement.scrollTop || document.body.scrollTop;
-
-					// If that number is greater than 0, we'll scroll back to 0, or the top of the document.
-					// We'll also animate that scroll with requestAnimationFrame:
-					// https://developer.mozilla.org/en-US/docs/Web/API/window/requestAnimationFrame
-					if (c > 0) {
-						window.requestAnimationFrame(scrollToTop);
-						// ScrollTo takes an x and a y coordinate.
-						// Increase the '10' value to get a smoother/slower scroll!
-						window.scrollTo(0, c - c / 10);
-					}
-				};
-
-				// When the button is clicked, run our ScrolltoTop function above!
-				scrollToTopButton.onclick = function (e) {
-					e.preventDefault();
-					scrollToTop();
-				}
-			}
 		}
 	}
 
@@ -6204,7 +6146,6 @@ AspenDiscovery.Account = (function(){
 
 			return queryString;
 		},
-
 		saveSearch: function(searchId){
 			if (!Globals.loggedIn){
 				AspenDiscovery.Account.ajaxLogin(null, function(){
@@ -6212,38 +6153,17 @@ AspenDiscovery.Account = (function(){
 				}, false);
 			}else{
 				var url = Globals.path + "/MyAccount/AJAX";
-				var params = {
-					'method': 'saveSearch',
-					'searchId': $('#searchId').val(),
-					'title': $('#searchName').val()
-				};
+				var params = {method :'saveSearch', searchId :searchId};
 				// noinspection JSUnresolvedFunction
 				$.getJSON(url, params,
 						function(data){
-							if (data.success) {
-								AspenDiscovery.showMessage("Saved Successfully", data.message, data.modalButtons);
+							if (data.result) {
+								AspenDiscovery.showMessage("Success", data.message);
 							} else {
 								AspenDiscovery.showMessage("Error", data.message);
 							}
 						}
 				).fail(AspenDiscovery.ajaxFail);
-			}
-			return false;
-		},
-
-		showSaveSearchForm: function(searchId) {
-			if (Globals.loggedIn){
-				AspenDiscovery.loadingMessage();
-				var url = Globals.path + "/MyAccount/AJAX";
-				var params = {
-					method: 'getSaveSearchForm',
-					searchId: searchId
-				};
-
-				// noinspection JSUnresolvedFunction
-				$.getJSON(url, params, function(data){
-					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
-				}).fail(AspenDiscovery.ajaxFail);
 			}
 			return false;
 		},
@@ -6551,6 +6471,10 @@ AspenDiscovery.Account = (function(){
 				$.getJSON(url, params, function(data){
 					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
 				}).fail(AspenDiscovery.ajaxFail);
+			}else{
+				AspenDiscovery.Account.ajaxLogin($(trigger), function (){
+					AspenDiscovery.Account.showSaveToListForm(trigger, source, id);
+				});
 			}
 			return false;
 		},
@@ -7217,18 +7141,6 @@ AspenDiscovery.Admin = (function(){
 				function(data) {
 					if (data.success) {
 						$("#releaseNotes").html(data.releaseNotes);
-						if (data.actionItems === ''){
-							$("#actionItemsSection").hide();
-						}else{
-							$("#actionItemsSection").show();
-							$("#actionItems").html(data.actionItems);
-						}
-						if (data.testingSuggestions === ''){
-							$("#testingSection").hide();
-						}else{
-							$("#testingSection").show();
-							$("#testingSuggestions").html(data.testingSuggestions);
-						}
 					} else {
 						$("#releaseNotes").html("Error + " + data.message);
 					}
@@ -7908,11 +7820,6 @@ AspenDiscovery.Browse = (function(){
 									.fadeIn()
 							}
 						}
-						if (data.lastPage){
-							$('#more-browse-results').hide(); // hide the load more results
-						} else {
-							$('#more-browse-results').show();
-						}
 					}
 				}
 			}).fail(function(){
@@ -8022,12 +7929,6 @@ AspenDiscovery.Browse = (function(){
 					AspenDiscovery.Browse.colcade.append($(data.records));
 
 					$('#selected-browse-search-link').attr('href', data.searchUrl); // update the search link
-
-					if (data.lastPage){
-						$('#more-browse-results').hide(); // hide the load more results
-					} else {
-						$('#more-browse-results').show();
-					}
 				}
 			}).fail(function(){
 				AspenDiscovery.ajaxFail();
@@ -9795,21 +9696,13 @@ AspenDiscovery.OverDrive = (function(){
 				url: ajaxUrl,
 				cache: false,
 				success: function(data){
-					if (data.success && data.fulfillment == "download"){
+					if (data.success){
 						//Reload the page
 						var win = window.open(data.downloadUrl, '_blank');
 						win.focus();
 						//window.location.href = data.downloadUrl ;
 					}else{
 						AspenDiscovery.showMessage('An Error occurred', data.message);
-					}
-
-					if (data.success && data.fulfillment == "redirect") {
-						if (data.success){
-							AspenDiscovery.showMessageWithButtons(data.message, data.modalBody, data.modalButtons);
-						}else{
-							AspenDiscovery.showMessage('Error', data.message);
-						}
 					}
 				},
 				dataType: 'json',

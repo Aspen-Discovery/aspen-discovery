@@ -5784,34 +5784,6 @@ button.close {
   display: none !important;
   visibility: hidden !important;
 }
-.screen-reader-text {
-  position: absolute;
-  clip-path: inset(50%);
-  margin: -1px;
-  border: 0;
-  padding: 0;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  word-wrap: normal !important;
-  clip: rect(1px, 1px, 1px, 1px);
-}
-.screen-reader-text:focus {
-  display: block;
-  top: 5px;
-  left: 5px;
-  z-index: 100000;
-  clip-path: none;
-  background-color: #eee;
-  padding: 15px 23px 14px;
-  width: auto;
-  height: auto;
-  text-decoration: none;
-  line-height: normal;
-  color: #444;
-  font-size: 1em;
-  clip: auto !important;
-}
 .affix {
   position: fixed;
 }
@@ -7833,6 +7805,7 @@ hr.menu {
 #select-language.dropdown-menu {
   left: unset;
   right: 0;
+  overflow: hidden;
 }
 #menuToggleButton.selected {
   background-color: #ededed;
@@ -7856,6 +7829,7 @@ hr.menu {
   z-index: 3;
   top: 35px;
   margin: 0;
+  overflow: hidden;
 }
 #header-menu #logoutLink {
   margin-top: 1em;
@@ -7877,6 +7851,7 @@ hr.menu {
   z-index: 3;
   top: 35px;
   margin: 0;
+  overflow: hidden;
 }
 #accountMenuToggleButton.selected {
   background-color: #ededed;
@@ -8208,12 +8183,6 @@ a.placard-link {
   border: none;
   min-height: 50vh;
 }
-.fulfillmentFrame {
-  width: 100%;
-  height: 100%;
-  border: none;
-  min-height: 50vh;
-}
 #explore-more-header {
   padding: 10px 25px 5px 0;
   margin-top: 5px;
@@ -8435,46 +8404,6 @@ a.placard-link {
     -moz-column-count: 3;
     column-count: 3;
   }
-}
-.top-link {
-  transition: all 0.25s ease-in-out;
-  position: fixed;
-  bottom: 0;
-  right: 0;
-  display: inline-flex;
-  cursor: pointer;
-  align-items: center;
-  justify-content: center;
-  margin: 0 3em 3em 0;
-  border-radius: 50%;
-  width: 60px;
-  height: 60px;
-  color: #ffffff;
-  background-color: #747474;
-  z-index: 9999999;
-}
-.top-link.show {
-  visibility: visible;
-  opacity: 1;
-}
-.top-link.hide {
-  visibility: hidden;
-  opacity: 0;
-}
-.top-link i {
-  color: #ffffff;
-  width: 100%;
-  height: 100%;
-  text-align: center;
-  line-height: 60px;
-}
-.top-link:hover {
-  background-color: #636363;
-  border-color: #636363;
-  filter: brightness(0.95);
-}
-.top-link:hover i {
-  color: #ffffff;
 }
 #home-page-search {
   background-color: #00a4e3;

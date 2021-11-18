@@ -1,20 +1,16 @@
 import React from "react";
-import { ScrollView, Center, HStack, VStack, Icon, CloseIcon, Heading, Button, Text, Toast, Collapse, AlertDialog, Alert, Box, IconButton } from "native-base";
+import { Alert } from "react-native";
+import { Center, HStack, Icon, Heading, Button, Text, Toast, AlertDialog } from "native-base";
 import { MaterialIcons, Entypo, Ionicons } from "@expo/vector-icons";
-
-// custom components and helper files
-import { translate } from "../util/translations";
-
-/** status options: success, error, info, warning **/
 
 export function loadError(error, reloadAction) {
     return (
         <Center flex={1}>
             <HStack>
                 <Icon as={MaterialIcons} name="error" size="md" mt={.5} mr={1} color="error.500" />
-                <Heading color="error.500" mb={2}>{translate('error.title')}</Heading>
+                <Heading color="error.500" mb={2}>Error</Heading>
             </HStack>
-            <Text bold w="75%" textAlign="center">{translate('error.message')}</Text>
+            <Text bold w="75%" textAlign="center">There was an error loading results from the library.</Text>
             {reloadAction ?
                 <Button
                     mt={5}
@@ -22,7 +18,7 @@ export function loadError(error, reloadAction) {
                     onPress={reloadAction}
                     startIcon={<Icon as={MaterialIcons} name="refresh" size={5} />}
                 >
-                    {translate('error.reload_button')}
+                    Reload
                 </Button>
              : null}
             <Text fontSize="xs" w="75%" mt={5} color="muted.500" textAlign="center">ERROR: {error}</Text>
@@ -33,27 +29,17 @@ export function loadError(error, reloadAction) {
 export function badServerConnectionToast() {
     return (
         Toast.show({
-            title: translate('error.no_server_connection'),
-            description: translate('error.no_library_connection'),
+            title: "Server connection error",
+            description: "We're unable to connect to the library. Please try again later.",
             status: "error",
             isClosable: true,
             duration: 5000,
-            accessibilityAnnouncement: translate('error.no_library_connection'),
+            accessibilityAnnouncement: "We're unable to connect to the library. Please try again later.",
             zIndex: 9999,
             placement: "top"
         })
     );
 }
-
-/***
- *** TOASTS: low priority
- ***
- *** Use: A brief error or update regarding an app process
- *** Action: Optional and minimal
- *** Closes: Disappears automatically, should be brief
- *** Examples: Bad API fetches or server connection troubles/timeouts
- ***
-***/
 
 export function popToast(title, description, status) {
     return (
@@ -70,44 +56,93 @@ export function popToast(title, description, status) {
     );
 }
 
-/***
- *** ALERTS: prominent, medium priority
- ***
- *** Use: An error or notice occurs because of an action that a user has taken
- *** Action: Optional, buttons do not need to be displayed
- *** Closes: When dismissed or the state that caused the alert is resolved
- *** Examples: Checkout renewal, freeze or thaw hold, or hold cancelled
- ***
-***/
+export function popAlertNative(title, message, action = null) {
 
-export function popAlert(title, description, status) {
-  return (
-      Toast.show({
-        duration: 5000,
-        render: () => {
-          return (
-            <ScrollView px="30" my="15">
-                <Alert w="100%" colorScheme={status} status={status} variant="left-accent" >
-                    <VStack space={2} flexShrink={1} w="100%">
-                        <HStack flexShrink={1} space={2} alignItems="center" justifyContent="space-between" >
-                            <HStack space={2} flexShrink={1} alignItems="center">
-                                <Alert.Icon />
-                                <Alert.Title>
-                                    {title}
-                                </Alert.Title>
-                            </HStack>
-                        </HStack>
-                        <Alert.Description>
-                            {description}
-                        </Alert.Description>
-                    </VStack>
-                </Alert>
-            </ScrollView>
-          )
-        },
-      })
-  );
+    Alert.alert(
+      title,
+      message,
+      [
+        { text: "OK", onPress: () => console.log("OK Pressed") }
+      ]
+    );
+
 }
 
+export const PopAlert = (props) => {
+
+  const { data } = props;
+
+  console.log("popAlert:");
+  console.log(props.data);
+
+  const [isOpen, setIsOpen] = React.useState(false);
+  const onClose = () => setIsOpen(false);
+  const cancelRef = React.useRef();
+  return (
+    <Center>
+      <AlertDialog
+        leastDestructiveRef={cancelRef}
+        isOpen={isOpen}
+        onClose={onClose}
+        motionPreset={"fade"}
+      >
+        <AlertDialog.Content>
+          <AlertDialog.Header fontSize="lg" fontWeight="bold">
+            Delete Customer
+          </AlertDialog.Header>
+          <AlertDialog.Body>
+            Are you sure? You can't undo this action afterwards.
+          </AlertDialog.Body>
+          <AlertDialog.Footer>
+            <Button ref={cancelRef} onPress={onClose}>
+              Cancel
+            </Button>
+            <Button colorScheme="red" onPress={onClose} ml={3}>
+              Delete
+            </Button>
+          </AlertDialog.Footer>
+        </AlertDialog.Content>
+      </AlertDialog>
+    </Center>
+  );
 
 
+}
+
+export const AlertDialogComponent = (props) => {
+
+  console.log("AlertDialogComponent:");
+  console.log(props);
+
+  const inputRef = React.useRef();
+  const { status, message, title } = props;
+  const [isOpen, setIsOpen] = React.useState(false);
+  const onClose = () => setIsOpen(false);
+  const cancelRef = React.useRef();
+
+  return (
+    <Center>
+      <AlertDialog
+        leastDestructiveRef={cancelRef}
+        isOpen={isOpen}
+      >
+        <AlertDialog.Content>
+          <AlertDialog.Header fontSize="lg" fontWeight="bold">
+            {title}
+          </AlertDialog.Header>
+          <AlertDialog.Body>
+            {message}
+          </AlertDialog.Body>
+          <AlertDialog.Footer>
+            <Button ref={cancelRef} onPress={onClose}>
+              Cancel
+            </Button>
+            <Button colorScheme="red" onPress={onClose} ml={3}>
+              Delete
+            </Button>
+          </AlertDialog.Footer>
+        </AlertDialog.Content>
+      </AlertDialog>
+    </Center>
+  );
+}

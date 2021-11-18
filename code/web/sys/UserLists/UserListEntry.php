@@ -69,7 +69,7 @@ class UserListEntry extends DataObject{
 			if ($recordDriver->isValid()){
 				return $recordDriver;
 			}else{
-				return null;
+				return $null;
 			}
 		}elseif ($this->source == 'Genealogy'){
 			require_once ROOT_DIR . '/RecordDrivers/PersonRecord.php';

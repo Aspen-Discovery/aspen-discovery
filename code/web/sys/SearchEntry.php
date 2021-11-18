@@ -13,7 +13,6 @@ class SearchEntry extends DataObject
 	public $session_id;
 	public $searchSource;
 	public $searchUrl;
-	public $title;
 
     /**
      * Get an array of SearchEntry objects for the specified user.

@@ -1,0 +1,29 @@
+.staff-member {
+  padding: 5px 10px;
+  border: 1px solid #bbb;
+  margin: 10px 0;
+}
+.staff-name {
+  font-size: 20px;
+  font-weight: bold;
+}
+.portal-row-edit {
+  border-color: dimgrey;
+  border-style: dashed;
+  border-width: 1px;
+  min-height: 100px;
+  padding: 5px;
+}
+.portal-cell-edit {
+  border-color: dimgrey;
+  border-style: dotted;
+  border-width: 1px;
+  min-height: 90px;
+}
+.portal-cell-title-edit {
+  padding: 5px;
+  background-color: dimgrey;
+  color: white;
+  height: 50px;
+}
+/*# sourceMappingURL=web-builder.css.map */

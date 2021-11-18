@@ -34,62 +34,14 @@ class BrowseCategory extends BaseBrowsable
 	*/
 	public function getSubCategories()
 	{
-		global $module;
 		if (!isset($this->_subBrowseCategories) && $this->id) {
 			$this->_subBrowseCategories = array();
-			if ($module != "Admin") {
-				if ($this->textId == "system_saved_searches") {
-					// fetch users saved searches
-					$SearchEntry = new SearchEntry();
-					$SearchEntry->user_id = UserAccount::getActiveUserId();
-					$SearchEntry->saved = "1";
-					$SearchEntry->orderBy('created');
-					$SearchEntry->limit(0,5);
-					$SearchEntry->find();
-					while($SearchEntry->fetch()) {
-						if ($SearchEntry->title) {
-							$searchId = $SearchEntry->id;
-							$this->_subBrowseCategories[$searchId] = clone($SearchEntry);
-							$this->_subBrowseCategories[$searchId]->id = $this->textId . '_' . $SearchEntry->id;
-							$this->_subBrowseCategories[$searchId]->label = $SearchEntry->title;
-							$this->_subBrowseCategories[$searchId]->source = "savedSearch";
-						}
-					}
-				} elseif ($this->textId == "system_user_lists") {
-					// fetch users list
-					require_once ROOT_DIR . '/sys/UserLists/UserList.php';
-					$lists = new UserList();
-					$lists->user_id = UserAccount::getActiveUserId();
-					$lists->deleted = "0";
-					$lists->orderBy('created');
-					$lists->limit(0,5);
-					$lists->find();
-					while ($lists->fetch()) {
-						$id = $lists->id;
-						$this->_subBrowseCategories[$id] = clone($lists);
-						$this->_subBrowseCategories[$id]->id = $this->textId . '_' . $id;
-						$this->_subBrowseCategories[$id]->label = $lists->title;
-						$this->_subBrowseCategories[$id]->source = "userList";
-					}
-				} else {
-					$subCategory = new SubBrowseCategories();
-					$subCategory->browseCategoryId = $this->id;
-					$subCategory->orderBy('weight');
-					$subCategory->find();
-					while ($subCategory->fetch()) {
-						$this->_subBrowseCategories[$subCategory->id] = clone($subCategory);
-						$this->_subBrowseCategories[$subCategory->id]->source = "browseCategory";
-					}
-				}
-			} else {
-				$subCategory = new SubBrowseCategories();
-				$subCategory->browseCategoryId = $this->id;
-				$subCategory->orderBy('weight');
-				$subCategory->find();
-				while ($subCategory->fetch()) {
-					$this->_subBrowseCategories[$subCategory->id] = clone($subCategory);
-					$this->_subBrowseCategories[$subCategory->id]->source = "browseCategory";
-				}
+			$subCategory = new SubBrowseCategories();
+			$subCategory->browseCategoryId = $this->id;
+			$subCategory->orderBy('weight');
+			$subCategory->find();
+			while ($subCategory->fetch()) {
+				$this->_subBrowseCategories[$subCategory->id] = clone($subCategory);
 			}
 		}
 		return $this->_subBrowseCategories;
@@ -310,18 +262,6 @@ class BrowseCategory extends BaseBrowsable
 			if (UserAccount::isLoggedIn()) {
 				$user = UserAccount::getActiveUserObj();
 				if ($user->hasRatings()) {
-					return true;
-				}
-			}
-			return false;
-		}
-		if ($this->textId == 'system_user_lists' || $this->textId == 'system_saved_searches') {
-			if (UserAccount::isLoggedIn()) {
-				$user = UserAccount::getActiveUserObj();
-				if($this->textId == 'system_saved_searches' && $user->hasSavedSearches()) {
-					return true;
-				}
-				if($this->textId == 'system_user_lists' && $user->hasLists()) {
 					return true;
 				}
 			}

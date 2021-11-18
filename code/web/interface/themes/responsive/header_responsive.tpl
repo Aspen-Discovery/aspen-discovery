@@ -20,7 +20,7 @@
 
 			{if !empty($headerText)}
 				<div id="headerTextDiv">{*An id of headerText would clash with the input textarea on the Admin Page*}
-					{translate text=$headerText isPublicFacing=true isAdminEnteredData=true}
+					{$headerText}
 				</div>
 			{/if}
 		</div>

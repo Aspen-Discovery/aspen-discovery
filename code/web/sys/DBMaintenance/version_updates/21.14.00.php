@@ -91,53 +91,6 @@ function getUpdates21_14_00() : array
 				'ALTER TABLE aspen_sites ADD COLUMN lastNotificationTime INT(11)',
 			]
 		], //greenhouseMonitoring2
-		'displayMaterialsRequestToPublic' => [
-			'title' => 'Add displayMaterialsRequestToPublic',
-			'description' => 'Add option to have Materials Request enabled but hidden to patrons',
-			'sql' => [
-				'ALTER TABLE library ADD COLUMN displayMaterialsRequestToPublic TINYINT(1) DEFAULT 1',
-			]
-		], //displayMaterialsRequestToPublic
-		'externalRequestsLog' => [
-			'title' => 'External Requests Log',
-			'description' => 'Add External Requests Log',
-			'sql' => [
-				'CREATE TABLE external_request_log (
-					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-					requestUrl VARCHAR(400),
-					requestHeaders TEXT,
-					requestBody TEXT,
-					response TEXT,
-					responseCode INT,
-					requestTime INT,
-					INDEX requestUrl(requestUrl),
-					INDEX requestTime(requestTime),
-					INDEX responseCode(responseCode)
-				) ENGINE INNODB'
-			]
-		], //externalRequestsLog
-		'showTopOfPageButton' => [
-			'title' => 'Add showTopOfPageButton',
-			'description' => 'Add option to have button that goes to top of page in Layout Settings',
-			'sql' => [
-				'ALTER TABLE layout_settings ADD COLUMN showTopOfPageButton TINYINT(1) DEFAULT 1',
-				'updateAllThemes',
-			]
-		], //showTopOfPageButton
-		'dismissPlacardButtonLocation' => [
-			'title' => 'Add dismissPlacardButtonLocation',
-			'description' => 'Add option to move button to dismiss placard in top right corner in Layout Settings',
-			'sql' => [
-				'ALTER TABLE layout_settings ADD COLUMN dismissPlacardButtonLocation TINYINT(1) DEFAULT 0',
-			]
-		], //dismissPlacardButtonLocation
-		'dismissPlacardButtonIcon' => [
-			'title' => 'Add dismissPlacardButtonIcon',
-			'description' => 'Add option to change dismiss placard button to X icon instead of text in Layout Settings',
-			'sql' => [
-				'ALTER TABLE layout_settings ADD COLUMN dismissPlacardButtonIcon TINYINT(1) DEFAULT 0',
-			]
-		], //dismissPlacardButtonIcon
 	];
 }
 

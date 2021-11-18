@@ -1,6 +1,6 @@
 {strip}
 	<div id="main-content" class="col-md-12">
-		<h1>{translate text="Release Information" isAdminFacing=true}</h1>
+		<h1>{translate text="Release Notes" isAdminFacing=true}</h1>
 		<hr>
 
 		<form class="navbar form-inline row">
@@ -13,28 +13,8 @@
 				</select>
 			</div>
 		</form>
-		{if $actionItemsFormatted}
-			<div id="actionItemsSection">
-				<h2>Post Release To Do</h2>
-				<div id="actionItems" class="alert alert-info">
-					<div>After deployment, we suggest Aspen administrators check the following settings</div>
-					{$actionItemsFormatted}
-				</div>
-				<hr/>
-			</div>
-		{/if}
 		<div id="releaseNotes">
-			<h2>Changes This Release</h2>
 			{$releaseNotesFormatted}
 		</div>
-		{if $testingSuggestionsFormatted}
-			<div id="testingSection">
-				<hr/>
-				<h2>Testing Suggestions</h2>
-				<div id="testingSuggestions">
-					{$testingSuggestionsFormatted}
-				</div>
-			</div>
-		{/if}
 	</div>
 {/strip}

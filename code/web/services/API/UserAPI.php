@@ -1017,9 +1017,14 @@ class UserAPI extends Action
 	function renewItem() : array
 	{
 		list($username, $password) = $this->loadUsernameAndPassword();
-		$source = $_REQUEST['itemSource'] ?? null;
-		$itemBarcode = $_REQUEST['itemBarcode'] ?? null;
 
+		if(isset($_REQUEST['itemSource'])) {
+			$source = $_REQUEST['itemSource'];
+		} else {
+			$source = null;
+		}
+
+		$itemBarcode = $_REQUEST['itemBarcode'];
 		$user = UserAccount::validateAccount($username, $password);
 		if ($user && !($user instanceof AspenError)) {
 			if ($source == 'ils' || $source == null) {
@@ -1128,8 +1133,8 @@ class UserAPI extends Action
 	{
 		list($username, $password) = $this->loadUsernameAndPassword();
 
-		if(isset($_REQUEST['bibId'])){
-			$bibId = $_REQUEST['bibId'];
+		if(isset($_REQUEST['bidId'])){
+			$bibId = $_REQUEST['bidId'];
 		} else {
 			$bibId = $_REQUEST['itemId'];
 		}
@@ -1172,6 +1177,8 @@ class UserAPI extends Action
 					return $patron->placeHold($bibId, $pickupBranch);
 				} else if ($source == 'overdrive') {
 					return $this->placeOverDriveHold();
+				} else if ($source == 'hoopla') {
+					return $this->placeHooplaHold();
 				} else if ($source == 'cloud_library') {
 					return $this->placeCloudLibraryHold();
 				} else if ($source == 'axis360') {
@@ -1427,11 +1434,7 @@ class UserAPI extends Action
 	function renewOverDriveItem() : array
 	{
 		list($username, $password) = $this->loadUsernameAndPassword();
-		if(isset($_REQUEST['overDriveId'])) {
-			$overDriveId = $_REQUEST['overDriveId'];
-		} else {
-			$overDriveId = $_REQUEST['recordId'];
-		}
+		$overDriveId = $_REQUEST['overDriveId'];
 
 		$user = UserAccount::validateAccount($username, $password);
 		if ($user && !($user instanceof AspenError)) {
@@ -1627,7 +1630,7 @@ class UserAPI extends Action
 
 			require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
 			$driver = new CloudLibraryDriver();
-			$result = $driver->checkOutTitle($user, $id);
+			$result = $driver->checkOutTitle($patron, $id);
 			$action = $result['api']['action'] ?? null;
 			return array('success' => $result['success'], 'title' => $result['api']['title'], 'message' => $result['api']['message'], 'action' => $action);
 		} else {
@@ -1638,7 +1641,7 @@ class UserAPI extends Action
 	function renewCloudLibraryItem() : array
 	{
 		list($username, $password) = $this->loadUsernameAndPassword();
-		$id = $_REQUEST['recordId'];
+		$id = $_REQUEST['id'];
 		$patronId = $_REQUEST['patronId'];
 
 		$user = UserAccount::validateAccount($username, $password);
@@ -1650,7 +1653,7 @@ class UserAPI extends Action
 
 			require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
 			$driver = new CloudLibraryDriver();
-			$result = $driver->renewCheckout($user, $id);
+			$result = $driver->renewCheckout($patron, $id);
 			return array('success' => $result['success'], 'title' => $result['api']['title'], 'message' => $result['api']['message']);
 		} else {
 			return array('success' => false, 'title' => 'Error', 'message' => 'Unable to validate user');
@@ -1672,7 +1675,7 @@ class UserAPI extends Action
 
 			require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
 			$driver = new CloudLibraryDriver();
-			$result = $driver->placeHold($user, $id);
+			$result = $driver->placeHold($patron, $id);
 			$action = $result['api']['action'] ?? null;
 			return array('success' => $result['success'], 'title' => $result['api']['title'], 'message' => $result['api']['message'], 'action' => $action);
 		} else {
@@ -1716,7 +1719,7 @@ class UserAPI extends Action
 
 			require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
 			$driver = new CloudLibraryDriver();
-			$result = $driver->returnCheckout($user, $id);
+			$result = $driver->returnCheckout($patron, $id);
 			return array('success' => $result['success'], 'title' => $result['api']['title'], 'message' => $result['api']['message']);
 		} else {
 			return array('success' => false, 'title' => 'Error', 'message' => 'Unable to validate user');
@@ -1844,7 +1847,7 @@ class UserAPI extends Action
 
 			require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
 			$driver = new Axis360Driver();
-			$result = $driver->placeHold($user, $id);
+			$result = $driver->placeHold($patron, $id);
 			$action = $result['api']['action'] ?? null;
 			return array('success' => $result['success'], 'title' => $result['api']['title'], 'message' => $result['api']['message'], 'action' => $action);
 		} else {
@@ -1867,7 +1870,7 @@ class UserAPI extends Action
 
 			require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
 			$driver = new Axis360Driver();
-			$result = $driver->freezeHold($user, $id);
+			$result = $driver->freezeHold($patron, $id);
 			return array('success' => $result['success'], 'title' => $result['api']['title'], 'message' => $result['api']['message']);
 		} else {
 			return array('success' => false, 'title' => 'Error', 'message' => 'Unable to validate user');
@@ -1952,7 +1955,7 @@ class UserAPI extends Action
 
 			require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
 			$driver = new Axis360Driver();
-			$result = $driver->returnCheckout($user, $id);
+			$result = $driver->returnCheckout($patron, $id);
 			return array('success' => $result['success'], 'title' => $result['api']['title'], 'message' => $result['api']['message']);
 		} else {
 			return array('success' => false, 'title' => 'Error', 'message' => 'Unable to validate user');
@@ -1962,7 +1965,7 @@ class UserAPI extends Action
 	function renewAxis360Item() : array
 	{
 		list($username, $password) = $this->loadUsernameAndPassword();
-		$id = $_REQUEST['recordId'];
+		$id = $_REQUEST['id'];
 		$patronId = $_REQUEST['patronId'];
 
 		$user = UserAccount::validateAccount($username, $password);
@@ -1974,7 +1977,7 @@ class UserAPI extends Action
 
 			require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
 			$driver = new Axis360Driver();
-			$result = $driver->renewCheckout($user, $id);
+			$result = $driver->renewCheckout($patron, $id);
 			return array('success' => $result['success'], 'title' => $result['api']['title'], 'message' => $result['api']['message']);
 		} else {
 			return array('success' => false, 'title' => 'Error', 'message' => 'Unable to validate user');

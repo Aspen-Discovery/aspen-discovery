@@ -73,7 +73,7 @@ class MyAccount_ContactInformation extends MyAccount
 			if (isset($_POST['updateScope']) && !$offlineMode) {
 				$updateScope = $_REQUEST['updateScope'];
 				if ($updateScope == 'contact') {
-					$result = $user->updatePatronInfo($canUpdateContactInfo, false);
+					$result = $user->updatePatronInfo($canUpdateContactInfo);
 					$user->updateMessage = implode('<br/>', $result['messages']);
 					$user->updateMessageIsError = !$result['success'];
 					$user->update();

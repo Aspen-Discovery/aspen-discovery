@@ -351,7 +351,7 @@ class EbscoRecordDriver extends RecordInterface
 
 	public function getDescription()
 	{
-		if (!empty($this->recordData->Items)) {
+		if (count($this->recordData->Items)) {
 			/** @var stdClass $item */
 			foreach ($this->recordData->Items as $item) {
 				if ($item->Name == 'Abstract') {

@@ -53,7 +53,7 @@ class Union_AJAX extends JSON_Action {
 		}else{
 			$results = "<div>Showing $numberOfResults for $source.  Show covers? $showCovers</div>";
 		}
-		$results .= "<div><a href='" . $fullResultsLink . "' target='_blank'>Full Results from {$sectionObject->displayName}</a></div>";
+		$results .= "<div><a href='" . $fullResultsLink . "' target='_blank'>" . translate("Full Results from") . translate("{$sectionObject->displayName}") ."</a></div>";
 
 		return array(
 				'success' => true,
@@ -84,10 +84,10 @@ class Union_AJAX extends JSON_Action {
 		$summary = $searchObject->getResultSummary();
 		$records = $searchObject->getCombinedResultsHTML();
 		if ($summary['resultTotal'] == 0){
-			$results = '<div class="clearfix"></div><div>No results match your search.</div>';
+			$results = '<div class="clearfix"></div><div>' . translate("No results match your search.") . '</div>';
 		}else{
 			$formattedNumResults = number_format($summary['resultTotal']);
-			$results = "<a href='{$fullResultsLink}' class='btn btn-default combined-results-button'>See all {$formattedNumResults} results <i class='fas fa-chevron-right fa-lg'></i></a><div class='clearfix'></div>";
+			$results = "<a href='{$fullResultsLink}' class='btn btn-default combined-results-button'>" .translate("See all"). "{$formattedNumResults} ". translate("results"). "<i class='fas fa-chevron-right fa-lg'></i></a><div class='clearfix'></div>";
 
 			$interface->assign('recordSet', $records);
 			$interface->assign('showExploreMoreBar', false);
@@ -121,10 +121,10 @@ class Union_AJAX extends JSON_Action {
 			$summary = $edsSearcher->getResultSummary();
 			$records = $edsSearcher->getCombinedResultHTML();
 			if ($summary['resultTotal'] == 0) {
-				$results = '<div class="clearfix"></div><div>No results match your search.</div>';
+				$results = '<div class="clearfix"></div><div>' . translate("No results match your search.") . '</div>';
 			} else {
 				$formattedNumResults = number_format($summary['resultTotal']);
-				$results = "<a href='{$fullResultsLink}' class='btn btn-default combined-results-button'>See all {$formattedNumResults} results <i class='fas fa-chevron-right fa-lg'></i></a><div class='clearfix'></div>";
+				$results = "<a href='{$fullResultsLink}' class='btn btn-default combined-results-button'>" .translate("See all"). "{$formattedNumResults} ". translate("results"). " <i class='fas fa-chevron-right fa-lg'></i></a><div class='clearfix'></div>";
 
 				$records = array_slice($records, 0, $numberOfResults);
 				global $interface;
@@ -151,10 +151,10 @@ class Union_AJAX extends JSON_Action {
 		$dpla = new DPLA();
 		$dplaResults = $dpla->getDPLAResults($searchTerm, $numberOfResults);
 		if (!isset($dplaResults['resultTotal']) || ($dplaResults['resultTotal'] == 0)){
-			$results = '<div class="clearfix"></div><div>No results match your search.</div>';
+			$results = '<div class="clearfix"></div><div>' . translate("No results match your search.") . '</div>';
 		}else {
 			$formattedNumResults = number_format($dplaResults['resultTotal']);
-			$results = "<a href='{$fullResultsLink}' class='btn btn-default combined-results-button' target='_blank'>See all {$formattedNumResults} results <i class='fas fa-chevron-right fa-lg'></i></a><div class='clearfix'></div>";
+			$results = "<a href='{$fullResultsLink}' class='btn btn-default combined-results-button' target='_blank'>" .translate("See all"). "{$formattedNumResults} " . translate("results"). " <i class='fas fa-chevron-right fa-lg'></i></a><div class='clearfix'></div>";
 			$results .= $dpla->formatCombinedResults($dplaResults['records'], false);
 		}
 
@@ -184,10 +184,10 @@ class Union_AJAX extends JSON_Action {
 			$prospectorResults = $prospector->getTopSearchResults($searchTerms, $numberOfResults);
 			global $interface;
 			if ($prospectorResults['resultTotal'] == 0) {
-				$results = '<div class="clearfix"></div><div>No results match your search.</div>';
+				$results = '<div class="clearfix"></div><div>' . translate("No results match your search.") . '</div>';
 			} else {
 				$formattedNumResults = number_format($prospectorResults['resultTotal']);
-				$results = "<a href='{$fullResultsLink}' class='btn btn-default combined-results-button' target='_blank'>See all {$formattedNumResults} results <i class='fas fa-chevron-right fa-lg'></i></a><div class='clearfix'></div>";
+				$results = "<a href='{$fullResultsLink}' class='btn btn-default combined-results-button' target='_blank'>" . translate("See all"). "{$formattedNumResults}" .translate("results"). " <i class='fas fa-chevron-right fa-lg'></i></a><div class='clearfix'></div>";
 				$interface->assign('prospectorResults', $prospectorResults['records']);
 				$results .= $interface->fetch('Union/prospector.tpl');
 			}

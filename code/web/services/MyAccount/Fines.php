@@ -38,12 +38,8 @@ class MyAccount_Fines extends MyAccount
 				$interface->assign('showOutstanding', $useOutstanding);
 
 				if ($userLibrary->finePaymentType == 2) {
-					require_once ROOT_DIR . '/sys/ECommerce/PayPalSetting.php';
-					$settings = new PayPalSetting();
-					$settings->id = $userLibrary->payPalSettingId;
-					if ($settings->find(true)) {
-						$interface->assign('payPalClientId', $settings->clientId);
-					}
+					$clientId = $userLibrary->payPalClientId;
+					$interface->assign('payPalClientId', $clientId);
 				}
 
 				// MSB payment result message

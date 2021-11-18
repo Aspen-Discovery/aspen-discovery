@@ -1,0 +1,4 @@
+@CHARSET "ISO-8859-1";
+.sortableProperty { list-style-type: none; margin: 0; padding: 0; width: 85%; cursor: pointer;}
+.sortableProperty li { margin: 0 3px 3px 3px; padding: 0.4em; padding-right: 1.5em; font-size: 1.2em; height: 18px; border: 1px solid grey; background: white;}
+.sortableProperty li span { position: absolute; margin-right: -1.3em; }

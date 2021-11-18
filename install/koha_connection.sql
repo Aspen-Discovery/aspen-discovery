@@ -21,7 +21,7 @@
 
 LOCK TABLES `account_profiles` WRITE;
 /*!40000 ALTER TABLE `account_profiles` DISABLE KEYS */;
-INSERT INTO `account_profiles` (id, name, driver, loginConfiguration, authenticationMethod, vendorOpacUrl, patronApiUrl, recordSource, weight, databaseHost, databaseName, databaseUser, databasePassword, databasePort, databaseTimezone, oAuthClientId, oAuthClientSecret, ils) VALUES (2,'ils','Koha','barcode_pin','ils','{ilsUrl}','{ilsUrl}','ils',0,'{ilsDBHost}','{ilsDBName}','{ilsDBUser}','{ilsDBPwd}','{ilsDBPort}','{ilsDBTimezone}','{ilsClientId}','{ilsClientSecret}', 'koha');
+INSERT INTO `account_profiles` VALUES (2,'ils','Koha','barcode_pin','ils','{ilsUrl}','{ilsUrl}','ils',0,'{ilsDBHost}','{ilsDBName}','{ilsDBUser}','{ilsDBPwd}','','','','','{ilsDBPort}','{ilsDBTimezone}','{ilsClientId}','{ilsClientSecret}');
 /*!40000 ALTER TABLE `account_profiles` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -31,19 +31,8 @@ UNLOCK TABLES;
 
 LOCK TABLES `indexing_profiles` WRITE;
 /*!40000 ALTER TABLE `indexing_profiles` DISABLE KEYS */;
-INSERT INTO `indexing_profiles` (id, name, marcPath, marcEncoding, individualMarcPath, groupingClass, indexingClass, recordDriver, recordUrlComponent, formatSource, recordNumberTag, suppressItemlessBibs, itemTag, itemRecordNumber, useItemBasedCallNumbers, callNumber, location, shelvingLocation,collection, volume, barcode, totalCheckouts, totalRenewals, iType, dueDate, dateCreated, dateCreatedFormat, format, catalogDriver, filenamesToInclude, numCharsToCreateFolderFrom, createFolderFromLeadingCharacters, doAutomaticEcontentSuppression, recordNumberSubfield, recordNumberPrefix, noteSubfield, lastCheckinFormat) VALUES (1,'ils','/data/aspen-discovery/{sitename}/ils/marc','UTF8','/data/aspen-discovery/{sitename}/ils/marc_recs','MarcRecordGrouper','Koha','MarcRecordDriver','Record','bib','999',1,'952','9',1,'o','a','c','8','h','p','l','m','y','k','d','yyyy-MM-dd','y','Koha','.*\\.ma?rc',4,0,1,'c', '', 'z', '');
+INSERT INTO `indexing_profiles` VALUES (1,'ils','/data/aspen-discovery/{sitename}/ils/marc','UTF8','/data/aspen-discovery/{sitename}/ils/marc_recs','MarcRecordGrouper','Koha','MarcRecordDriver','Record','bib','999','',1,'952','9',1,'','o','','','b','','c','8','h','','p','','','l','','','m','y','','d','yyyy-MM-dd','',0,'y','','','','','','','','Koha','','','','','','','','0',8,'.*\\.ma?rc','',4,0,'',1,0,NULL,NULL,NULL,NULL,NULL,'a','c',1,0,0,0);
 /*!40000 ALTER TABLE `indexing_profiles` ENABLE KEYS */;
-UNLOCK TABLES;
-
-
---
--- Dumping data for table `library_records_to_include`
---
-
-LOCK TABLES `library_records_to_include` WRITE;
-/*!40000 ALTER TABLE `library_records_to_include` DISABLE KEYS */;
-INSERT INTO `library_records_to_include` VALUES (1,1,1,'.*','.*',0,1,1,1,'','','','','',1,'','','','');
-/*!40000 ALTER TABLE `library_records_to_include` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -52,7 +41,7 @@ UNLOCK TABLES;
 
 LOCK TABLES `status_map_values` WRITE;
 /*!40000 ALTER TABLE `status_map_values` DISABLE KEYS */;
-INSERT INTO `status_map_values` (id, indexingProfileId, value, status, groupedStatus, suppress) VALUES (1,1,'Checked Out','Checked Out','Checked Out',0),(2,1,'Claims Returned','Claims Returned','Currently Unavailable',1),(3,1,'On Shelf','On Shelf','On Shelf',0),(4,1,'Damaged','Damaged','Currently Unavailable',1),(5,1,'In Transit','In Transit','In Transit',0),(6,1,'Library Use Only','Library Use Only','Library Use Only',0),(7,1,'Long Overdue (Lost)','Long Overdue (Lost)','Currently Unavailable',1),(8,1,'Lost','Lost','Currently Unavailable',1),(9,1,'Lost and Paid For','Lost and Paid For','Currently Unavailable',1),(10,1,'Missing','Missing','Currently Unavailable',1),(11,1,'On Hold Shelf','On Hold Shelf','Checked Out',0),(12,1,'On Order','On Order','On Order',0),(13,1,'Discard','Discard','Currently Unavailable',1),(14,1,'Lost Claim','Lost Claim','Currently Unavailable',1);
+INSERT INTO `status_map_values` VALUES (1,1,'Checked Out','Checked Out','Checked Out',0),(2,1,'Claims Returned','Claims Returned','Currently Unavailable',1),(3,1,'On Shelf','On Shelf','On Shelf',0),(4,1,'Damaged','Damaged','Currently Unavailable',1),(5,1,'In Transit','In Transit','In Transit',0),(6,1,'Library Use Only','Library Use Only','Library Use Only',0),(7,1,'Long Overdue (Lost)','Long Overdue (Lost)','Currently Unavailable',1),(8,1,'Lost','Lost','Currently Unavailable',1),(9,1,'Lost and Paid For','Lost and Paid For','Currently Unavailable',1),(10,1,'Missing','Missing','Currently Unavailable',1),(11,1,'On Hold Shelf','On Hold Shelf','Checked Out',0),(12,1,'On Order','On Order','On Order',0),(13,1,'Discard','Discard','Currently Unavailable',1),(14,1,'Lost Claim','Lost Claim','Currently Unavailable',1);
 /*!40000 ALTER TABLE `status_map_values` ENABLE KEYS */;
 UNLOCK TABLES;
 

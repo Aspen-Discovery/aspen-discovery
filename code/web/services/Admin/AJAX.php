@@ -237,19 +237,8 @@ class Admin_AJAX extends JSON_Action
 			$releaseNotesFormatted = $parsedown->parse(file_get_contents($releaseNotesPath . '/'. $release . '.MD'));
 			$results = [
 				'success' => true,
-				'releaseNotes' => $releaseNotesFormatted,
-				'actionItems' => '',
-				'testingSuggestions' => ''
+				'releaseNotes' => $releaseNotesFormatted
 			];
-			if (file_exists($releaseNotesPath . '/'. $release . '_action_items.MD')){
-				$actionItemsFormatted = $parsedown->parse(file_get_contents($releaseNotesPath . '/'. $release . '_action_items.MD'));
-				$results['actionItems'] = $actionItemsFormatted;
-			}
-			if (file_exists($releaseNotesPath . '/'. $release . '_testing.MD')){
-				$testingSuggestionsFormatted = $parsedown->parse(file_get_contents($releaseNotesPath . '/'. $release . '_testing.MD'));
-				$results['testingSuggestions'] = $testingSuggestionsFormatted;
-			}
-
 		}
 		return $results;
 	}

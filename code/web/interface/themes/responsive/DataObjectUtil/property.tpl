@@ -19,14 +19,14 @@
 	<div {if $addFormGroupToProperty !== false}class="form-group"{/if} id="propertyRow{$propName}">
 		{* Output the label *}
 		{if $property.type == 'enum'}
-			<label for='{$propName}Select'{if $property.description} title="{translate text=$property.description isAdminFacing=true inAttribute=true}"{/if}>{translate text=$property.label isAdminFacing=true} {if $property.required && $objectAction != 'edit'}({translate text="required" isAdminFacing=true}){/if} {if $property.forcesReindex}<small><em>({translate text="Causes Nightly Reindex" isAdminFacing=true})</em></small>{/if}</label>
+			<label for='{$propName}Select'{if $property.description} title="{translate text=$property.description isAdminFacing=true inAttribute=true}"{/if}>{translate text=$property.label isAdminFacing=true} {if $property.required && $objectAction != 'edit'}({translate text="required" isAdminFacing=true}){/if}</label>
 		{elseif $property.type == 'oneToMany' && !empty($property.helpLink)}
 			<div class="row">
 				<div class="col-xs-11">
 				{if $property.renderAsHeading == true}
 					<h2>{translate text=$property.label isAdminFacing=true}</h2>
 				{else}
-					<label for='{$propName}'{if $property.description} title="{translate text=$property.description isAdminFacing=true inAttribute=true}"{/if}>{translate text=$property.label isAdminFacing=true} {if $property.forcesReindex}<small><em>({translate text="Causes Nightly Reindex" isAdminFacing=true})</em></small>{/if}</label>
+					<label for='{$propName}'{if $property.description} title="{translate text=$property.description isAdminFacing=true inAttribute=true}"{/if}>{translate text=$property.label isAdminFacing=true}</label>
 				{/if}
 				</div>
 				<div class="col-xs-1">
@@ -35,9 +35,9 @@
 			</div>
 		{elseif $property.type != 'section' && $property.type != 'checkbox' && $property.type != 'hidden'}
 			{if $property.renderAsHeading == true}
-				<h2>{translate text=$property.label isAdminFacing=true} {if $property.forcesReindex}({translate text="Causes Nightly Reindex" isAdminFacing=true}){/if}</h2>
+				<h2>{translate text=$property.label isAdminFacing=true}</h2>
 			{else}
-				<label for='{$propName}'{if $property.description} title="{$property.description}"{/if}>{translate text=$property.label isAdminFacing=true} {if $property.required && $objectAction != 'edit'}({translate text="required" isAdminFacing=true}){/if} {if $property.forcesReindex}<small><em>({translate text="Causes Nightly Reindex" isAdminFacing=true})</em></small>{/if}</label>
+				<label for='{$propName}'{if $property.description} title="{$property.description}"{/if}>{translate text=$property.label isAdminFacing=true} {if $property.required && $objectAction != 'edit'}({translate text="required" isAdminFacing=true}){/if}</label>
 			{/if}
 		{/if}
 		{if !empty($property.showDescription)}
@@ -302,7 +302,7 @@
 		{elseif $property.type == 'checkbox'}
 			<div class="checkbox">
 				<label for='{$propName}'{if $property.description} title="{$property.description}"{/if}>
-					<input type='checkbox' name='{$propName}' id='{$propName}' {if ($propValue == 1)}checked='checked'{/if} {if $property.required && $objectAction != 'edit'}required{/if} {if !empty($property.readOnly)}readonly{/if}> {translate text=$property.label isAdminFacing=true} {if $property.forcesReindex}<small><em>({translate text="Causes Nightly Reindex" isAdminFacing=true})</em></small>{/if}
+					<input type='checkbox' name='{$propName}' id='{$propName}' {if ($propValue == 1)}checked='checked'{/if} {if $property.required && $objectAction != 'edit'}required{/if} {if !empty($property.readOnly)}readonly{/if}> {translate text=$property.label isAdminFacing=true}
 				</label>
 			</div>
 		{elseif $property.type == 'webBuilderColor'}

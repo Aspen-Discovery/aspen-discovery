@@ -20,7 +20,15 @@
 
 	{* This is all merged using the merge_javascript.php file called automatically with a File Watcher*}
 	{* Code is minified using uglify.js *}
-	<script src="/interface/themes/responsive/js/aspen.js?v={$gitBranch|urlencode}.{$cssJsCacheCounter}"></script>
+
+{if in_array($userLanguage, $rtl_langs) || in_array($mynewLanguage, $rtl_langs) || in_array($language, $rtl_langs)}
+
+	<script src="/interface/themes/responsive/js-rtl/aspen.js?v={$gitBranch|urlencode}.{$cssJsCacheCounter}"></script>
+
+{else}
+<script src="/interface/themes/responsive/js/aspen.js?v={$gitBranch|urlencode}.{$cssJsCacheCounter}"></script>
+
+{/if}
 
 	{/strip}
 	<script type="text/javascript">

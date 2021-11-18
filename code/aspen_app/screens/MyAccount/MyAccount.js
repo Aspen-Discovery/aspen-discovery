@@ -7,8 +7,6 @@ import { MaterialIcons } from "@expo/vector-icons";
 import moment from "moment";
 import Constants from 'expo-constants';
 
-// custom components and helper files
-import { translate } from '../../util/translations';
 import Summary from "./Summary";
 import CheckedOut from "./CheckedOut";
 import Holds from "./Holds";
@@ -30,8 +28,8 @@ const handleIndexChange = (index: number) => this.setState({ index });
 export default function MyItems() {
 	const [index, setIndex] = React.useState(0);
 	const [routes] = React.useState([
-		{ key: "first", title: translate('checkouts.title') },
-		{ key: "second", title: translate('holds.title') },
+		{ key: "first", title: "Checked Out" },
+		{ key: "second", title: "On Hold" },
 	]);
 
 	const renderTabBar = (props) => {

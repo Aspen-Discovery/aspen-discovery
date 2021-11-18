@@ -6,10 +6,6 @@ import * as Random from 'expo-random';
 import moment from "moment";
 import { create, CancelToken } from 'apisauce';
 
-// custom components and helper files
-import { translate } from "../util/translations";
-import { popToast, popAlert } from "../components/loadError";
-
 export async function removeData() {
     const keys = ['@libraryHomeLink', '@libraryAddress', '@libraryPhone',
                   '@libraryEmail',  '@libraryShowHours',  '@libraryHoursMessage',
@@ -30,27 +26,37 @@ export async function removeData() {
             SecureStore.deleteItemAsync("logo");
             SecureStore.deleteItemAsync("favicon");
             AsyncStorage.multiRemove(keys);
+
             global.promptForOverdriveEmail = "";
             global.overdriveEmail = "";
+
             global.patronId = "";
             global.barcode = "";
             global.rememberHoldPickupLocation = "";
             global.pickupLocationId = "";
             global.homeLocationId = "";
             global.interfaceLanguage = "";
-            global.numCheckedOut = "";
+
+            global.holdInfoLastLoaded = "";
+            global.checkoutInfoLastLoaded = "";
+            global.numCheckedOutIls = "";
+            global.numCheckedOutOverDrive = "";
             global.numOverdue = "";
-            global.numHolds = "";
-            global.numHoldsAvailable = "";
+            global.numHoldsIls = "";
+            global.numHoldsOverDrive = "";
+            global.numHoldsAvailableIls = "";
+
             global.userKey = "";
             global.secretKey = "";
+
             global.allHolds = "";
             global.unavailableHolds = "";
             global.availableHolds = "";
             global.allUserHolds = "";
             global.checkedOutItems = "";
+
+            console.log("User data removed.");
         } catch(error) {
-            popAlert("Unable to logout", "Something went wrong when clearing user data. Try again.", "error");
             console.log("Unable to remove user data.");
             console.log(error);
         }

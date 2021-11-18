@@ -6,10 +6,9 @@ import { MaterialIcons, Entypo, Ionicons } from "@expo/vector-icons";
 import moment from "moment";
 import { create, CancelToken } from 'apisauce';
 
-// custom components and helper files
-import { translate } from "../../util/translations";
 import { loadingSpinner } from "../../components/loadingSpinner";
 import { loadError } from "../../components/loadError";
+
 import { getProfile } from '../../util/loadPatron';
 
 export default class Summary extends Component {
@@ -19,19 +18,13 @@ export default class Summary extends Component {
 			isLoading: true,
 			hasError: false,
 			error: null,
-			numCheckedOut: 0,
-			numHolds: 0,
-			numHoldsAvailable: 0,
-			numOverdue: 0,
 		};
 	}
 
 	componentDidMount = async () => {
         this.setState({
             barcode: global.barcode,
-            numCheckedOut: global.numCheckedOut,
-            numHolds: global.numHolds,
-            numHoldsAvailable: global.numHoldsAvailable,
+            numHoldsAvailableIls: global.numHoldsAvailableIls,
             numOverdue: global.numOverdue,
             isLoading: false,
             thisPatron: global.patron + "'s",
@@ -42,6 +35,9 @@ export default class Summary extends Component {
 	};
 
     _fetchProfile = async () => {
+        this.setState({
+            isLoading: true,
+        });
 
         await getProfile().then(response => {
             if(response == "TIMEOUT_ERROR") {
@@ -67,7 +63,7 @@ export default class Summary extends Component {
 		return (
 			<Box safeArea={5} style={{ backgroundColor: "white" }}>
 			<Center>
-					<Text fontSize="xl">{this.state.thisPatron} {translate('user_profile.title')}</Text>
+					<Text fontSize="xl">{this.state.thisPatron} Account Summary</Text>
 						{this.state.barcode ?
 						<HStack space={1} alignItems="center"><Icon as={Ionicons} name="card" size="xs" />
 						<Text bold fontSize="sm" mr={0.5}>
@@ -81,17 +77,17 @@ export default class Summary extends Component {
 					<VStack width="50%">
 					<Center>
 						<Text fontSize="md" mb={1}>
-							<Text bold>{translate('checkouts.title')}: </Text>{this.state.numCheckedOut}
+							<Text bold>Checked Out: </Text>{calcCheckouts(global.numCheckedOutIls, global.numCheckedOutOverDrive)}
 						</Text>
-						{this.state.numOverdue > 0 ? <Badge colorScheme="danger" rounded="4px"><Text fontSize="xs" bold>{translate('checkouts.overdue_summary', { count: this.state.numOverdue })}</Text></Badge> : null}
+						{this.state.numOverdue ? <Badge colorScheme="danger" rounded="4px"><Text fontSize="xs" bold>{this.state.numOverdue} Overdue</Text></Badge> : null}
 						</Center>
                     </VStack>
 					<VStack width="50%">
 					<Center>
 						<Text fontSize="md" mb={1}>
-							<Text bold>{translate('holds.holds')}: </Text>{this.state.numHolds}
+							<Text bold>Holds: </Text>{calcHolds(global.numHoldsIls, global.numHoldsOverDrive)}
 						</Text>
-						{this.state.numHoldsAvailable > 0 ? <Badge colorScheme="success" rounded="4px"><Text fontSize="xs" bold>{translate('holds.ready_for_pickup', { count: this.state.numHoldsAvailable})}</Text></Badge> : null}
+						{this.state.numHoldsAvailableIls > 0 ? <Badge colorScheme="success" rounded="4px"><Text fontSize="xs" bold>{this.state.numHoldsAvailableIls} Ready for Pickup</Text></Badge> : null}
 						</Center>
                     </VStack>
                     </HStack>

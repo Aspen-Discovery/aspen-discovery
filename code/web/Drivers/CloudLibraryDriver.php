@@ -134,9 +134,8 @@ class CloudLibraryDriver extends AbstractEContentDriver
 				<ItemId>{$recordId}</ItemId>
 				<PatronId>{$patronId}</PatronId>
 			</CheckinRequest>";
-		$response = $this->callCloudLibraryUrl($settings, $apiPath, 'POST', $requestBody);
+		$this->callCloudLibraryUrl($settings, $apiPath, 'POST', $requestBody);
 		$responseCode = $this->curlWrapper->getResponseCode();
-        ExternalRequestLogEntry::logRequest('cloudLibrary.returnCheckout', 'POST', $settings->apiUrl . $apiPath, $this->curlWrapper->getHeaders(), $requestBody, $this->curlWrapper->getResponseCode(), $response, []);
 		if ($responseCode == '200'){
 			$result['success'] = true;
 			$result['message'] = translate(['text' => "Your title was returned successfully.", 'isPublicFacing'=>true]);
@@ -267,9 +266,8 @@ class CloudLibraryDriver extends AbstractEContentDriver
 				<ItemId>{$recordId}</ItemId>
 				<PatronId>{$patronId}</PatronId>
 			</PlaceHoldRequest>";
-		$response = $this->callCloudLibraryUrl($settings, $apiPath, 'POST', $requestBody);
-        ExternalRequestLogEntry::logRequest('cloudLibrary.placeHold', 'POST', $settings->apiUrl . $apiPath, $this->curlWrapper->getHeaders(), $requestBody, $this->curlWrapper->getResponseCode(), $response, ['password' => $password]);
-        $responseCode = $this->curlWrapper->getResponseCode();
+		$this->callCloudLibraryUrl($settings, $apiPath, 'POST', $requestBody);
+		$responseCode = $this->curlWrapper->getResponseCode();
 		if ($responseCode == '201'){
 			$this->trackUserUsageOfCloudLibrary($patron);
 			$this->trackRecordHold($recordId);
@@ -359,8 +357,7 @@ class CloudLibraryDriver extends AbstractEContentDriver
 				<ItemId>{$recordId}</ItemId>
 				<PatronId>{$patronId}</PatronId>
 			</CancelHoldRequest>";
-		$response = $this->callCloudLibraryUrl($settings, $apiPath, 'POST', $requestBody);
-        ExternalRequestLogEntry::logRequest('cloudLibrary.cancelHold', 'POST', $settings->apiUrl . $apiPath, $this->curlWrapper->getHeaders(), $requestBody, $this->curlWrapper->getResponseCode(), $response, []);
+		$this->callCloudLibraryUrl($settings, $apiPath, 'POST', $requestBody);
 		$responseCode = $this->curlWrapper->getResponseCode();
 		if ($responseCode == '200'){
 			$result['success'] = true;
@@ -460,7 +457,6 @@ class CloudLibraryDriver extends AbstractEContentDriver
 			<PatronId>{$patronId}</PatronId>
 		</CheckoutRequest>";
 		$checkoutResponse = $this->callCloudLibraryUrl($settings, $apiPath, 'POST', $requestBody);
-        ExternalRequestLogEntry::logRequest('cloudLibrary.checkoutTitle', 'POST', $settings->apiUrl . $apiPath, $this->curlWrapper->getHeaders(), $requestBody, $this->curlWrapper->getResponseCode(), $checkoutResponse, ['password' => $password]);
 		if ($checkoutResponse != null){
 			$checkoutXml = simplexml_load_string($checkoutResponse);
 			if (isset($checkoutXml->Error)){
@@ -502,7 +498,6 @@ class CloudLibraryDriver extends AbstractEContentDriver
 			$password = $user->getPasswordOrPin();
 			$apiPath = "/cirrus/library/{$settings->libraryId}/circulation/patron/$patronId?password=$password";
 			$circulationInfo = $this->callCloudLibraryUrl($settings, $apiPath);
-            ExternalRequestLogEntry::logRequest('cloudLibrary.getPatronCirculation', 'GET', $settings->apiUrl . $apiPath, $this->curlWrapper->getHeaders(), '', $this->curlWrapper->getResponseCode(), $circulationInfo, ['password' => $password]);
 			return simplexml_load_string($circulationInfo);
 		}else{
 			return null;
@@ -554,7 +549,9 @@ class CloudLibraryDriver extends AbstractEContentDriver
 		//Can't reuse the curl wrapper so make sure it is initialized on each call
 		$this->initCurlWrapper();
 		$this->curlWrapper->addCustomHeaders($headers, true);
-        return $this->curlWrapper->curlSendPage($settings->apiUrl . $apiPath, $method, $requestBody);
+		$response = $this->curlWrapper->curlSendPage($settings->apiUrl . $apiPath, $method, $requestBody);
+
+		return $response;
 	}
 
 	/**
@@ -635,11 +632,15 @@ class CloudLibraryDriver extends AbstractEContentDriver
 			return false;
 		}
 		$patronId = str_replace(' ', '', $user->getBarcode());
+		$password = $user->getPasswordOrPin();
 		$apiPath = "/cirrus/library/{$settings->libraryId}/patron/$patronId";
+		if (false){
+			$apiPath .= "?password=$password";
+		}
 		$authenticationResponse = $this->callCloudLibraryUrl($settings, $apiPath);
-        ExternalRequestLogEntry::logRequest('cloudLibrary.checkAuthentication', 'GET', $settings->apiUrl . $apiPath, $this->curlWrapper->getHeaders(), '', $this->curlWrapper->getResponseCode(), $authenticationResponse, ['password' => $password]);
 		/** @var SimpleXMLElement $authentication */
 		$authentication = simplexml_load_string($authenticationResponse);
+		/** @noinspection PhpUndefinedFieldInspection */
 		if ($authentication->result == 'SUCCESS'){
 			return true;
 		}else{
@@ -687,7 +688,6 @@ class CloudLibraryDriver extends AbstractEContentDriver
 		$patronId = str_replace(' ', '', $patron->getBarcode());
 		$apiPath = "/cirrus/library/{$settings->libraryId}/item/status/$patronId/$itemId";
 		$itemStatusInfo = $this->callCloudLibraryUrl($settings, $apiPath);
-        ExternalRequestLogEntry::logRequest('cloudLibrary.getItemStatus', 'GET', $settings->apiUrl . $apiPath, $this->curlWrapper->getHeaders(), '', $this->curlWrapper->getResponseCode(), $itemStatusInfo, []);
 		if ($this->curlWrapper->getResponseCode() == 200){
 			$itemStatus = simplexml_load_string($itemStatusInfo);
 			$this->curlWrapper = new CurlWrapper();
@@ -727,8 +727,7 @@ class CloudLibraryDriver extends AbstractEContentDriver
 		);
 		$curlWrapper->addCustomHeaders($headers, false);
 		$response = $curlWrapper->curlPostPage($loginUrl, $postParams, [CURLOPT_HEADER => true]);
-        ExternalRequestLogEntry::logRequest('cloudLibrary.redirectToCloudLibrary', 'POST', $loginUrl, $curlWrapper->getHeaders(), '', $curlWrapper->getResponseCode(), $response, ['password' => $patron->getPasswordOrPin()]);
-        if ($response){
+		if ($response){
 			preg_match_all('/^Set-Cookie:\s*([^;]*)/mi', $response, $matches);
 			$cookies = array();
 			foreach($matches[1] as $item) {

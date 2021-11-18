@@ -177,7 +177,6 @@ class Novelist3{
 					$req->setTimeout(20);
 
 					$response = $req->curlGetPage($requestUrl);
-					ExternalRequestLogEntry::logRequest('novelist.contentByQuery', 'GET', $requestUrl, [], '', $req->getResponseCode(), $response, ['password'=>$novelistSettings->pwd]);
 					$timer->logTime("Made call to Novelist for enrichment information $isbnParam");
 
 

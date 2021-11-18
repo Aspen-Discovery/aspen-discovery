@@ -4,10 +4,6 @@ import * as SecureStore from 'expo-secure-store';
 import { MaterialIcons, Entypo } from "@expo/vector-icons";
 import { create, CancelToken } from 'apisauce';
 
-// custom components and helper files
-import { translate } from '../../util/translations';
-import { loadingSpinner } from "../../components/loadingSpinner";
-
 export default class Search extends Component {
 	constructor() {
 		super();
@@ -58,6 +54,7 @@ export default class Search extends Component {
 				onPress={() =>
 					navigate("SearchResults", {
 						searchTerm: item.term,
+
 					})
 				}
 			>
@@ -72,7 +69,13 @@ export default class Search extends Component {
 
 	render() {
 		if (this.state.isLoading) {
-			return ( loadingSpinner() );
+			return (
+				<Center flex={1}>
+					<HStack>
+						<Spinner accessibilityLabel="Loading..." />
+					</HStack>
+				</Center>
+			);
 		}
 
 		return (
@@ -83,7 +86,7 @@ export default class Search extends Component {
                             autoCapitalize="none"
                             onChangeText={(searchTerm) => this.setState({ searchTerm })}
                             status="info"
-                            placeholder={translate('search.title')}
+                            placeholder="Search"
                             clearButtonMode="always"
                             onSubmitEditing={this.initiateSearch}
                             value={this.state.searchTerm}
@@ -91,7 +94,7 @@ export default class Search extends Component {
                         />
                         <Center>
                             <Text mt={8} mb={2} fontSize="xl" bold>
-                                {translate('search.quick_search_title')}
+                                Quick Searches:
                             </Text>
                         </Center>
                     </FormControl>

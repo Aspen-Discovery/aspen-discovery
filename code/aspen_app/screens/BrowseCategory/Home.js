@@ -14,13 +14,11 @@ import { create, CancelToken } from 'apisauce';
 import moment from "moment";
 import base64 from 'react-native-base64';
 
-// custom components and helper files
-import { translate } from '../../util/translations';
 import { setGlobalVariables, setSession } from '../../util/setVariables';
 import { getProfile, getCheckedOutItems, getHolds } from '../../util/loadPatron';
-import { getLocationInfo, getLibraryInfo } from '../../util/loadLibrary';
+import { getLocationInfo } from '../../util/loadLibrary';
+
 import { loadingSpinner } from "../../components/loadingSpinner";
-import { loadError } from "../../components/loadError";
 
 export default class BrowseCategoryHome extends Component {
 	constructor() {
@@ -44,6 +42,9 @@ export default class BrowseCategoryHome extends Component {
 
         });
 
+       console.log("Ready to work.")
+       console.log("Preparing...")
+       console.log("Creating session...")
        await setSession();
        await setGlobalVariables();
        setTimeout(
@@ -52,11 +53,12 @@ export default class BrowseCategoryHome extends Component {
             getHolds();
             getProfile();
             getLocationInfo();
-            getLibraryInfo();
          }
          .bind(this),
          1000
        );
+
+       console.log("Jobs done.")
 
        await this.getActiveBrowseCategories();
 	}
@@ -87,10 +89,7 @@ export default class BrowseCategoryHome extends Component {
                             categories: categoriesArray[0],
                         })
                 } else {
-                    this.setState({
-                        hasError: true,
-                        error: "",
-                    })
+                    console.log(response);
                 }
             })
     }
@@ -106,9 +105,37 @@ export default class BrowseCategoryHome extends Component {
     _renderNativeItem = (data) => {
 	    const imageUrl = global.libraryUrl + "/bookcover.php?id=" + data.key + "&size=medium&type=grouped_work";
 		return (
-        <Pressable mr={1.5} onPress={() => this.onPressItem(data.key)} width={{ base: 100, lg: 200 }} height={{ base: 150, lg: 250 }}>
+        <Pressable mr={1.5} onPress={() => this.onPressItem(data.key)} width={{ base: 100, lg: 200 }} height={{ base: 125, lg: 275 }}>
             <ExpoFastImage cacheKey={data.key} uri={imageUrl} alt={data.title} resizeMode="cover" style={{ width: '100%', height: '100%', borderRadius:8 }} />
         </Pressable>
+		);
+	};
+
+    _listFooterComponent = () => {
+		return (
+        <Pressable onPress={() => this.onLoadMore(data.key)} width={{ base: 100, lg: 200 }} height={{ base: 125, lg: 275 }} bgColor="secondary.400" rounded={8}>
+            <Center flex={1}><Text fontSize={{ base: "lg", lg: "2xl" }} bold>Load More</Text></Center>
+        </Pressable>
+		);
+	};
+
+	_listEmptyComponent = () => {
+        if(this.state.hasError) {
+            return (
+                <Center mt={5} mb={5}>
+                    <Text bold fontSize="lg">
+                        Error loading items. Please try again later.
+                    </Text>
+                </Center>
+            )
+        }
+		return (
+			<Center mt={5} mb={5}>
+				<Text bold fontSize="lg">
+					No items to load
+				</Text>
+				<Text>Try a different category</Text>
+			</Center>
 		);
 	};
 
@@ -117,30 +144,27 @@ export default class BrowseCategoryHome extends Component {
 
         if(this.state.isLoading == true) {
            return ( loadingSpinner() );
+        } else {
+            return (
+            <ScrollView>
+                <Box safeArea={5}>
+                    {categories.map((category) => {
+                        return (
+                            <BrowseCategory
+                            isLoading={isLoading}
+                            categoryLabel={category.title}
+                            categoryKey={category.key}
+                            renderItem={this._renderNativeItem}
+                            emptyComponent={this._listEmptyComponent}
+                            footerComponent={this._listFooterComponent}
+                            loadMore={this.onLoadMore}
+                            />
+                        );
+                    })}
+                </Box>
+            </ScrollView>
+            );
         }
-
-        if (this.state.hasError) {
-            return ( loadError(this.state.error) );
-        }
-
-        return (
-        <ScrollView>
-            <Box safeArea={5}>
-                {categories.map((category) => {
-                    return (
-                        <BrowseCategory
-                        isLoading={isLoading}
-                        categoryLabel={category.title}
-                        categoryKey={category.key}
-                        renderItem={this._renderNativeItem}
-                        loadMore={this.onLoadMore}
-                        />
-                    );
-                })}
-            </Box>
-        </ScrollView>
-        );
-
     }
 
 }

@@ -328,15 +328,6 @@ class UInterface extends Smarty
 		$allAppliedThemes = [];
 		$primaryTheme = null;
 
-		require_once ROOT_DIR . '/services/API/SystemAPI.php';
-		$systemAPI = new SystemAPI();
-		$adminUser = $systemAPI->displayAdminAlert();
-		if($adminUser) {
-			$hasUpdates = $systemAPI->hasPendingDatabaseUpdates();
-			$this->assign('hasSqlUpdates', $hasUpdates);
-		}
-		$this->assign('shouldShowAdminAlert', $adminUser);
-
 		try {
 			$theme = new Theme();
 			//Check to see if we are at a location and if we are if there is a theme applied to it
@@ -456,15 +447,6 @@ class UInterface extends Smarty
 		}elseif ($library->homeLink == 'default') {
 			$this->assign('homeLink', '/');
 		}
-
-		$showTopOfPageButton = $library->getLayoutSettings()->showTopOfPageButton;
-		$this->assign('showTopOfPageButton', $showTopOfPageButton);
-
-		$dismissPlacardLocation = $library->getLayoutSettings()->dismissPlacardButtonLocation;
-		$this->assign('dismissPlacardLocation', $dismissPlacardLocation);
-
-		$dismissPlacardButtonAsIcon = $library->getLayoutSettings()->dismissPlacardButtonIcon;
-		$this->assign('dismissPlacardButtonAsIcon', $dismissPlacardButtonAsIcon);
 
 		//Load JavaScript Snippets
 		$customJavascript = '';
@@ -628,9 +610,6 @@ class UInterface extends Smarty
 		}else{
 			$this->assign('enableAspenMaterialsRequest', false);
 		}
-
-		//Determine whether or not to display materials request to patrons
-		$this->assign('displayMaterialsRequest', $library->displayMaterialsRequestToPublic);
 
 		//Determine whether or not Rosen LevelUP functionality should be enabled
 		try {

@@ -203,10 +203,9 @@ class WebsiteIndexer {
 					String mimeType = contentType.getMimeType();
 					if (!mimeType.equals("text/html")) {
 						//TODO: Index PDFs
-						//Don't log this for now since it just distracts from actual errors
-//						if (!mimeType.equals("application/pdf")) {
-//							logEntry.addNote("Non HTML page " + pageToProcess + " " + mimeType);
-//						}
+						if (!mimeType.equals("application/pdf")) {
+							logEntry.addNote("Non HTML page " + pageToProcess + " " + mimeType);
+						}
 					} else {
 						// do something useful with the response body
 						// and ensure it is fully consumed
@@ -296,7 +295,7 @@ class WebsiteIndexer {
 										page.getLinks().add(linkUrl);
 										allLinks.put(linkUrl, false);
 										//There are too many pages to process, quit
-										if (allLinks.size() > maxPagesToIndex){
+										if (allLinks.size() > 2500){
 											return;
 										}
 										logEntry.incNumPages();

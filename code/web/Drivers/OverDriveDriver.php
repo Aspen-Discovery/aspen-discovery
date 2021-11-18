@@ -44,16 +44,6 @@ class OverDriveDriver extends AbstractEContentDriver{
 	);
 	private $lastHttpCode;
 
-	/** @var CurlWrapper */
-	private $apiCurlWrapper;
-
-	public function initCurlWrapper()
-	{
-		$this->apiCurlWrapper = new CurlWrapper();
-		$this->apiCurlWrapper->timeout = 5;
-	}
-
-
 	/** @var OverDriveDriver  */
 	private static $singletonDriver = null;
 
@@ -129,22 +119,10 @@ class OverDriveDriver extends AbstractEContentDriver{
 	}
 
 	public function getTokenData() {
-		return $this->_connectToAPI(true, "getTokenData");
+		return $this->_connectToAPI(true);
 	}
 
-	public function getPatronTokenData($user, $forceNewConnection = false) {
-		$userBarcode = $user->getBarcode();
-		if ($this->getRequirePin($user)){
-			$userPin = $user->getPasswordOrPin();
-			$tokenData = $this->_connectToPatronAPI($user, $userBarcode, $userPin, "getPatronTokenData", $forceNewConnection);
-		}else{
-			$tokenData = $this->_connectToPatronAPI($user, $userBarcode, null, "getPatronTokenData", $forceNewConnection);
-		}
-
-		return $tokenData;
-	}
-
-	private function _connectToAPI($forceNewConnection = false, $methodName){
+	private function _connectToAPI($forceNewConnection = false){
 		global $memCache;
 		$settings = $this->getSettings();
 		if ($settings == false){
@@ -153,31 +131,21 @@ class OverDriveDriver extends AbstractEContentDriver{
 		$tokenData = $memCache->get('overdrive_token_' . $settings->id . '_' . $this->scope->id);
 		if ($forceNewConnection || $tokenData == false){
 			if (!empty($this->clientKey) && !empty($this->clientSecret)){
-
-				$url = "https://oauth.overdrive.com/token";
-
-				$this->initCurlWrapper();
-				$this->apiCurlWrapper->setConnectTimeout(1);
-				$this->apiCurlWrapper->addCustomHeaders([
-					"Content-Type: application/x-www-form-urlencoded;charset=UTF-8",
-				], true);
-
-				$params = [
-					'grant_type' => 'client_credentials'
-				];
-
-				$curlOptions = array(
-					CURLOPT_USERAGENT => 'Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)',
-					CURLOPT_RETURNTRANSFER => true,
-					CURLOPT_SSL_VERIFYPEER => false,
-					CURLOPT_FOLLOWLOCATION => 1,
-					CURLOPT_USERPWD => $this->clientKey . ':' . $this->clientSecret,
-				);
-
-				$response = $this->apiCurlWrapper->curlPostPage($url, $params, $curlOptions);
-				ExternalRequestLogEntry::logRequest('overdrive.connectToAPI_' . $methodName, 'POST', $url, $this->apiCurlWrapper->getHeaders(), false, $this->apiCurlWrapper->getResponseCode(), $response, []);
-
-				$tokenData = json_decode($response);
+				$ch = curl_init("https://oauth.overdrive.com/token");
+				curl_setopt($ch, CURLOPT_USERAGENT,"Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)");
+				curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+				curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+				curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+				curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/x-www-form-urlencoded;charset=UTF-8'));
+				curl_setopt($ch, CURLOPT_USERPWD, $this->clientKey . ":" . $this->clientSecret);
+				curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+				curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 1);
+				curl_setopt($ch, CURLOPT_POST, 1);
+				curl_setopt($ch, CURLOPT_POSTFIELDS, "grant_type=client_credentials");
+				curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+				$return = curl_exec($ch);
+				curl_close($ch);
+				$tokenData = json_decode($return);
 				if ($tokenData){
 					if (!isset($tokenData->error)){
 						$memCache->set('overdrive_token_' . $settings->id . '_' . $this->scope->id, $tokenData, $tokenData->expires_in - 10);
@@ -193,7 +161,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 		return $tokenData;
 	}
 
-	private function _connectToPatronAPI($user, $patronBarcode, $patronPin, $methodName, $forceNewConnection = false){
+	private function _connectToPatronAPI($user, $patronBarcode, $patronPin, $forceNewConnection = false){
 		global $memCache;
 		global $timer;
 		global $logger;
@@ -201,14 +169,11 @@ class OverDriveDriver extends AbstractEContentDriver{
 		if ($settings == false){
 			return false;
 		}
-
 		$patronTokenData = $memCache->get("overdrive_patron_token_{$settings->id}_{$this->scope->id}_$patronBarcode");
 		if ($forceNewConnection || $patronTokenData == false){
-			$tokenData = $this->_connectToAPI($forceNewConnection, "connectToPatronAPI");
+			$tokenData = $this->_connectToAPI($forceNewConnection);
 			$timer->logTime("Connected to OverDrive API");
 			if ($tokenData){
-				$this->initCurlWrapper();
-				$url = "https://oauth-patron.overdrive.com/patrontoken";
 				$ch = curl_init("https://oauth-patron.overdrive.com/patrontoken");
 				if (empty($settings->websiteId)){
 					if (IPAddress::showDebuggingInformation()) {
@@ -228,16 +193,19 @@ class OverDriveDriver extends AbstractEContentDriver{
 					$logger->log("Patron is not valid for OverDrive, ClientSecret is not set", Logger::LOG_ERROR);
 					return false;
 				}
-				$this->apiCurlWrapper->setOption(CURLOPT_USERAGENT,"Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)");
-				$this->apiCurlWrapper->setOption(CURLOPT_RETURNTRANSFER,true);
-				$this->apiCurlWrapper->setOption(CURLOPT_SSL_VERIFYPEER, false);
-				$this->apiCurlWrapper->setOption(CURLOPT_FOLLOWLOCATION,1);
+				curl_setopt($ch, CURLOPT_USERAGENT,"Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)");
+				curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+				curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+				curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
 				$encodedAuthValue = base64_encode($this->clientKey . ":" . $this->clientSecret);
-				$this->apiCurlWrapper->addCustomHeaders([
-					"Content-Type: application/x-www-form-urlencoded;charset=UTF-8",
+				curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+					'Content-Type: application/x-www-form-urlencoded;charset=UTF-8',
 					"Authorization: Basic " . $encodedAuthValue,
-					"User-Agent: Aspen Discovery",
-				], true);
+					"User-Agent: Aspen Discovery"
+				));
+				curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+				curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 1);
+				curl_setopt($ch, CURLOPT_POST, 1);
 
 				if ($patronPin == null){
 					$postFields = "grant_type=password&username={$patronBarcode}&password=ignore&password_required=false&scope=websiteId:{$websiteId}%20ilsname:{$ilsname}";
@@ -245,10 +213,14 @@ class OverDriveDriver extends AbstractEContentDriver{
 					$postFields = "grant_type=password&username={$patronBarcode}&password={$patronPin}&password_required=true&scope=websiteId:{$websiteId}%20ilsname:{$ilsname}";
 				}
 
-				$content = $this->apiCurlWrapper->curlPostPage($url, $postFields);
-				ExternalRequestLogEntry::logRequest('overdrive.connectToPatronAPI_' . $methodName, 'POST', $url, $this->apiCurlWrapper->getHeaders(), false, $this->apiCurlWrapper->getResponseCode(), $content, []);
+				curl_setopt($ch, CURLOPT_POSTFIELDS, $postFields);
+
+				curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+
+				$return = curl_exec($ch);
 				$timer->logTime("Logged $patronBarcode into OverDrive API");
-				$patronTokenData = json_decode($content);
+				curl_close($ch);
+				$patronTokenData = json_decode($return);
 				$timer->logTime("Decoded return for login of $patronBarcode into OverDrive API");
 				if ($patronTokenData){
 					if (isset($patronTokenData->error)){
@@ -278,25 +250,24 @@ class OverDriveDriver extends AbstractEContentDriver{
 		return $patronTokenData;
 	}
 
-	public function _callUrl($url, $methodName){
-		$tokenData = $this->_connectToAPI(false, "callUrl");
+	public function _callUrl($url){
+		$tokenData = $this->_connectToAPI();
 		if ($tokenData){
-			$this->initCurlWrapper();
-			$this->apiCurlWrapper->setOption(CURLOPT_USERAGENT,"Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)");
-			$this->apiCurlWrapper->setOption(CURLOPT_RETURNTRANSFER,true);
-			$this->apiCurlWrapper->setOption(CURLOPT_FOLLOWLOCATION,1);
-			$this->apiCurlWrapper->addCustomHeaders([
-				"Authorization: {$tokenData->token_type} {$tokenData->access_token}",
-				"User-Agent: Aspen Discovery",
-			], true);
-
-			$content = $this->apiCurlWrapper->curlGetPage($url);
-			ExternalRequestLogEntry::logRequest('overdrive.callUrl_' . $methodName, 'GET', $url, $this->apiCurlWrapper->getHeaders(), false, $this->apiCurlWrapper->getResponseCode(), $content, []);
-			$response = json_decode($content);
+			$ch = curl_init($url);
+			curl_setopt($ch, CURLOPT_USERAGENT,"Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)");
+			curl_setopt($ch, CURLOPT_HTTPHEADER, array("Authorization: {$tokenData->token_type} {$tokenData->access_token}", "User-Agent: Aspen Discovery"));
+			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+			curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+			curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+			curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 1);
+			curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+			$return = curl_exec($ch);
+			curl_close($ch);
+			$returnVal = json_decode($return);
 			//print_r($returnVal);
-			if ($response != null){
-				if (!isset($response->message) || $response->message != 'An unexpected error has occurred.'){
-					return $response;
+			if ($returnVal != null){
+				if (!isset($returnVal->message) || $returnVal->message != 'An unexpected error has occurred.'){
+					return $returnVal;
 				}
 			}
 		}
@@ -349,21 +320,28 @@ class OverDriveDriver extends AbstractEContentDriver{
 	 * @param string $method
 	 * @return bool|mixed
 	 */
-	public function _callPatronUrl($user, $url, $methodName, $postParams = null, $method = null){
+	public function _callPatronUrl($user, $url, $postParams = null, $method = null){
 		global $configArray;
 
-		$tokenData = $this->getPatronTokenData($user);
+		$userBarcode = $user->getBarcode();
+		if ($this->getRequirePin($user)){
+			$userPin = $user->getPasswordOrPin();
+			$tokenData = $this->_connectToPatronAPI($user, $userBarcode, $userPin, false);
+		}else{
+			$tokenData = $this->_connectToPatronAPI($user, $userBarcode, null, false);
+		}
 		if ($tokenData){
 			$patronApiHost = $this->getPatronApiHost();
 
-			$this->initCurlWrapper();
+			$ch = curl_init($url);
+			curl_setopt($ch, CURLOPT_USERAGENT,"Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)");
 			if (isset($tokenData->token_type) && isset($tokenData->access_token)){
 				$authorizationData = $tokenData->token_type . ' ' . $tokenData->access_token;
-				$this->apiCurlWrapper->addCustomHeaders([
+				$headers = array(
 					"Authorization: $authorizationData",
 					"User-Agent: Aspen Discovery",
 					"Host: $patronApiHost"
-				], true);
+				);
 			}else{
 				//The user is not valid
 				if (isset($configArray['Site']['debug']) && $configArray['Site']['debug'] == true){
@@ -372,13 +350,13 @@ class OverDriveDriver extends AbstractEContentDriver{
 				return false;
 			}
 
-			$curlOptions = array(
-				CURLOPT_USERAGENT => 'Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)',
-				CURLOPT_RETURNTRANSFER => true,
-				CURLOPT_FOLLOWLOCATION => 2,
-			);
-
+			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+			curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+			curl_setopt($ch, CURLOPT_TIMEOUT, 20);
+			curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 2);
+			curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
 			if ($postParams != null){
+				curl_setopt($ch, CURLOPT_POST, 1);
 				//Convert post fields to json
 				$jsonData = array('fields' => array());
 				foreach ($postParams as $key => $value){
@@ -389,36 +367,36 @@ class OverDriveDriver extends AbstractEContentDriver{
 				}
 				$postData = json_encode($jsonData);
 				//print_r($postData);
+				curl_setopt($ch, CURLOPT_POSTFIELDS, $postData);
 				$headers[] = 'Content-Type: application/vnd.overdrive.content.api+json';
-
-				$this->apiCurlWrapper->addCustomHeaders($headers, false);
-				$response = $this->apiCurlWrapper->curlPostPage($url, $postData, $curlOptions);
-				ExternalRequestLogEntry::logRequest('overdrive.callPatronUrl_' . $methodName, 'POST', $url, $this->apiCurlWrapper->getHeaders(), false, $this->apiCurlWrapper->getResponseCode(), $response, []);
 			}else{
-				$response = $this->apiCurlWrapper->curlGetPage($url);
-				ExternalRequestLogEntry::logRequest('overdrive.callPatronUrl_' . $methodName, 'GET', $url, $this->apiCurlWrapper->getHeaders(), false, $this->apiCurlWrapper->getResponseCode(), $response, []);
+				curl_setopt($ch, CURLOPT_HTTPGET, true);
 			}
+			curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 
 			if (!empty($method)){
-				$response = $this->apiCurlWrapper->curlSendPage($url, $method);
-				ExternalRequestLogEntry::logRequest('overdrive.callPatronUrl_' . $methodName, $method, $url, $this->apiCurlWrapper->getHeaders(), false, $this->apiCurlWrapper->getResponseCode(), $response, []);
+				curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
 			}
 
-			$returnVal = json_decode($response);
+			$return = curl_exec($ch);
+			$returnVal = json_decode($return);
 			if ($returnVal != null){
 				if (!isset($returnVal->message) || $returnVal->message != 'An unexpected error has occurred.'){
+					curl_close($ch);
 					return $returnVal;
 				}
 			}else{
-				$this->lastHttpCode = $this->apiCurlWrapper->getResponseCode();
+				$results = curl_getinfo($ch);
+				$this->lastHttpCode = $results['http_code'];
 				global $logger;
-				if ($response == false) {
+				if ($return == false) {
 					$logger->log("Failed to call overdrive url $url " . session_id() . " curl_exec returned false " . print_r($postParams, true), Logger::LOG_ERROR);
 				}else{
-					$logger->log("Failed to call overdrive url " . session_id() . print_r($response, true), Logger::LOG_ERROR);
+					$logger->log("Failed to call overdrive url " . session_id() . print_r($return, true), Logger::LOG_ERROR);
 				}
 
 			}
+			curl_close($ch);
 		}
 		return false;
 	}
@@ -428,46 +406,52 @@ class OverDriveDriver extends AbstractEContentDriver{
 	 * @param $url
 	 * @return bool|mixed
 	 */
-	private function _callPatronDeleteUrl($user, $url, $methodName){
-		$tokenData = $this->getPatronTokenData($user);
-
+	private function _callPatronDeleteUrl($user, $url){
+		$userBarcode = $user->getBarcode();
+		if ($this->getRequirePin($user)){
+			$userPin = $user->getPasswordOrPin();
+			$tokenData = $this->_connectToPatronAPI($user, $userBarcode, $userPin, false);
+		}else{
+			$tokenData = $this->_connectToPatronAPI($user, $userBarcode, null, false);
+		}
 		//TODO: Remove || true when oauth works
 		if ($tokenData || true){
-			$this->initCurlWrapper();
-			$this->apiCurlWrapper->setOption(CURLOPT_USERAGENT,"Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)");
-			$this->apiCurlWrapper->setOption(CURLOPT_RETURNTRANSFER,true);
-			$this->apiCurlWrapper->setOption(CURLOPT_FOLLOWLOCATION,1);
-
-			if($tokenData){
+			$ch = curl_init($url);
+			curl_setopt($ch, CURLOPT_USERAGENT,"Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)");
+			if ($tokenData){
 				$authorizationData = $tokenData->token_type . ' ' . $tokenData->access_token;
 				$patronApiHost = $this->getPatronApiHost();
-				$this->apiCurlWrapper->addCustomHeaders([
+				$headers = array(
 					"Authorization: $authorizationData",
 					"User-Agent: Aspen Discovery",
 					"Host: $patronApiHost",
-				], true);
+				);
 			}else{
-				$this->apiCurlWrapper->addCustomHeaders([
-					"User-Agent: Aspen Discovery",
-					"Host: {$this->getOverDriveApiHost()}",
-				], true);
+				$headers = array("User-Agent: Aspen Discovery", "Host: {$this->getOverDriveApiHost()}");
 			}
 
-			$content = $this->apiCurlWrapper->curlSendPage($url, "DELETE", false);
-			ExternalRequestLogEntry::logRequest('overdrive.callPatronDeleteUrl_' . $methodName, 'DEL', $url, $this->apiCurlWrapper->getHeaders(), false, $this->apiCurlWrapper->getResponseCode(), json_decode($content), []);
-			$responseCode = $this->apiCurlWrapper->getResponseCode();
+			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+			curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+			curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+			curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 1);
+			curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+			curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'DELETE');
+			curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 
-			if($responseCode == 204){
+			$return = curl_exec($ch);
+			$returnInfo = curl_getinfo($ch);
+			if ($returnInfo['http_code'] == 204){
 				$result = true;
 			}else{
-				//echo("Response code was " . $responseCode);
+				//echo("Response code was " . $returnInfo['http_code']);
 				$result = false;
 			}
-
-			$response = json_decode($content);
-			if($response != null){
-				if (!isset($response->message) || $response->message != 'An unexpected error has occurred.'){
-					return $response;
+			curl_close($ch);
+			$returnVal = json_decode($return);
+			//print_r($returnVal);
+			if ($returnVal != null){
+				if (!isset($returnVal->message) || $returnVal->message != 'An unexpected error has occurred.'){
+					return $returnVal;
 				}
 			}else{
 				return $result;
@@ -478,12 +462,12 @@ class OverDriveDriver extends AbstractEContentDriver{
 
 	public function getLibraryAccountInformation(){
 		$libraryId = $this->getSettings()->accountId;
-		return $this->_callUrl("https://{$this->getOverDriveApiHost()}/v1/libraries/$libraryId", "getLibraryAccountInformation");
+		return $this->_callUrl("https://{$this->getOverDriveApiHost()}/v1/libraries/$libraryId");
 	}
 
 	public function getAdvantageAccountInformation(){
         $libraryId = $this->getSettings()->accountId;
-		return $this->_callUrl("https://{$this->getOverDriveApiHost()}/v1/libraries/$libraryId/advantageAccounts", "getAdvantageAccountInformation");
+		return $this->_callUrl("https://{$this->getOverDriveApiHost()}/v1/libraries/$libraryId/advantageAccounts");
 	}
 
 	public function getProductMetadata($overDriveId, $productsKey = null){
@@ -493,14 +477,14 @@ class OverDriveDriver extends AbstractEContentDriver{
 		if (is_numeric($overDriveId)){
 			//This is a crossRefId, we need to search for the product by crossRefId to get the actual id
 			$searchUrl = "https://{$this->getOverDriveApiHost()}/v1/collections/$productsKey/products?crossRefId=$overDriveId";
-			$searchResults = $this->_callUrl($searchUrl, "getProductMetadata");
+			$searchResults = $this->_callUrl($searchUrl);
 			if (!empty($searchResults->products) && count($searchResults->products) > 0){
 				$overDriveId = $searchResults->products[0]->id;
 			}
 		}
 		$overDriveId= strtoupper($overDriveId);
 		$metadataUrl = "https://{$this->getOverDriveApiHost()}/v1/collections/$productsKey/products/$overDriveId/metadata";
-		return $this->_callUrl($metadataUrl, "getProductMetadata");
+		return $this->_callUrl($metadataUrl);
 	}
 
 	public function getProductAvailability($overDriveId, $productsKey = null){
@@ -508,7 +492,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 			$productsKey = $this->getSettings()->productsKey;
 		}
 		$availabilityUrl = "https://{$this->getOverDriveApiHost()}/v2/collections/$productsKey/products/$overDriveId/availability";
-		return $this->_callUrl($availabilityUrl, "getProductAvailability");
+		return $this->_callUrl($availabilityUrl);
 	}
 
 	/**
@@ -525,16 +509,12 @@ class OverDriveDriver extends AbstractEContentDriver{
 			return array();
 		}
 		$url = $this->getSettings()->patronApiUrl . '/v1/patrons/me/checkouts';
-		$response = $this->_callPatronUrl($patron, $url, "getCheckouts");
+		$response = $this->_callPatronUrl($patron, $url);
 		if ($response == false){
 			//The user is not authorized to use OverDrive
 			$this->incrementStat('numApiErrors');
 			return array();
 		}
-
-		global $interface;
-		$fulfillmentMethod = $this->getSettings()->useFulfillmentInterface;
-		$interface->assign('fulfillmentMethod', $fulfillmentMethod);
 
 		$checkedOutTitles = [];
 		$supplementalMaterialIds = [];
@@ -674,7 +654,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 			return $holds;
 		}
 		$url = $this->getSettings()->patronApiUrl . '/v1/patrons/me/holds';
-		$response = $this->_callPatronUrl($patron, $url, "getHolds");
+		$response = $this->_callPatronUrl($patron, $url);
 		if ($response == false){
 			$this->incrementStat('numApiErrors');
 			return $holds;
@@ -768,7 +748,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 			'reserveId' => $overDriveId,
 			'emailAddress' => trim((empty($user->overdriveEmail) ? $user->email : $user->overdriveEmail))
 		);
-		$response = $this->_callPatronUrl($user, $url, "placeHold", $params);
+		$response = $this->_callPatronUrl($user, $url, $params);
 
 		$holdResult = array();
 		$holdResult['success'] = false;
@@ -847,7 +827,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 			}
 
 		}
-		$response = $this->_callPatronUrl($patron, $url, "freezeHold", $params);
+		$response = $this->_callPatronUrl($patron, $url, $params);
 
 		$holdResult = array();
 		$holdResult['success'] = false;
@@ -882,7 +862,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 	function thawHold(User $patron, $overDriveId)
 	{
 		$url = $this->getSettings()->patronApiUrl . '/v1/patrons/me/holds/' . $overDriveId . '/suspension';
-		$response = $this->_callPatronDeleteUrl($patron, $url, "thawHold");
+		$response = $this->_callPatronDeleteUrl($patron, $url);
 
 		$holdResult = array();
 		$holdResult['success'] = false;
@@ -924,7 +904,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 	 */
 	function cancelHold($patron, $overDriveId, $cancelId = null){
 		$url = $this->getSettings()->patronApiUrl . '/v1/patrons/me/holds/' . $overDriveId;
-		$response = $this->_callPatronDeleteUrl($patron, $url, "cancelHold");
+		$response = $this->_callPatronDeleteUrl($patron, $url);
 
 		$cancelHoldResult = array();
 		$cancelHoldResult['success'] = false;
@@ -972,7 +952,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 		$params = array(
 			'reserveId' => $overDriveId,
 		);
-		$response = $this->_callPatronUrl($patron, $url, "checkOutTitle", $params);
+		$response = $this->_callPatronUrl($patron, $url, $params);
 
 		$result = array();
 		$result['success'] = false;
@@ -1049,7 +1029,7 @@ class OverDriveDriver extends AbstractEContentDriver{
      */
 	public function returnCheckout($patron, $overDriveId){
 		$url = $this->getSettings()->patronApiUrl . '/v1/patrons/me/checkouts/' . $overDriveId;
-		$response = $this->_callPatronDeleteUrl($patron, $url, "returnCheckout");
+		$response = $this->_callPatronDeleteUrl($patron, $url);
 
 		$cancelHoldResult = array();
 		$cancelHoldResult['success'] = false;
@@ -1092,7 +1072,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 			'reserveId' => $overDriveId,
 			'formatType' => $formatId
 		);
-		$response = $this->_callPatronUrl($patron, $url, "selectOverDriveDownloadFormat", $params);
+		$response = $this->_callPatronUrl($patron, $url, $params);
 		//print_r($response);
 
 		$result = array();
@@ -1127,9 +1107,9 @@ class OverDriveDriver extends AbstractEContentDriver{
 			if ($this->getRequirePin($user)){
 				$userPin = $user->getPasswordOrPin();
 				// determine which column is the pin by using the opposing field to the barcode. (between catalog password & username)
-				$tokenData = $this->_connectToPatronAPI($user, $userBarcode, $userPin, "isUserValidForOverDrive", false);
+				$tokenData = $this->_connectToPatronAPI($user, $userBarcode, $userPin, false);
 			}else{
-				$tokenData = $this->_connectToPatronAPI($user, $userBarcode, null, "isUserValidForOverDrive", false);
+				$tokenData = $this->_connectToPatronAPI($user, $userBarcode, null, false);
 			}
 			$timer->logTime("Checked to see if the user $userBarcode is valid for OverDrive");
 			$isValid = ($tokenData !== false) && ($tokenData !== null) && !array_key_exists('error', $tokenData);
@@ -1140,117 +1120,37 @@ class OverDriveDriver extends AbstractEContentDriver{
 
 	public function getDownloadLink($overDriveId, $format, $user){
 		global $configArray;
+
+		$url = $this->getSettings()->patronApiUrl . "/v1/patrons/me/checkouts/{$overDriveId}/formats/{$format}/downloadlink";
+		$url .= '?errorpageurl=' . urlencode($configArray['Site']['url'] . '/Help/OverDriveError');
+		if ($format == 'ebook-overdrive' || $format == 'ebook-mediado'){
+			$url .= '&odreadauthurl=' . urlencode($configArray['Site']['url'] . '/Help/OverDriveError');
+		}elseif ($format == 'audiobook-overdrive'){
+			$url .= '&odreadauthurl=' . urlencode($configArray['Site']['url'] . '/Help/OverDriveError');
+		}elseif ($format == 'video-streaming'){
+			$url .= '&errorurl=' . urlencode($configArray['Site']['url'] . '/Help/OverDriveError');
+			$url .= '&streamingauthurl=' . urlencode($configArray['Site']['url'] . '/Help/streamingvideoauth');
+		}
+
+		$response = $this->_callPatronUrl($user, $url);
+		//print_r($response);
+
 		$result = array();
 		$result['success'] = false;
 		$result['message'] = '';
 
-		// check the value of useFulfillmentInterface
-		$fulfillmentMethod = $this->getSettings()->useFulfillmentInterface;
-		if($fulfillmentMethod == 1 ) {
-			$showLibbyPromoSetting = $this->getSettings()->showLibbyPromo;
-			if($showLibbyPromoSetting == 1) {
-				$showLibbyPromo = "";
-			} else {
-				$showLibbyPromo = "?appPromoOverride=none";
-			}
-			$downloadRedirectUrl = $this->getDownloadRedirectUrl($user, $overDriveId, $showLibbyPromo);
-			if($downloadRedirectUrl) {
-				$result['success'] = true;
-				$result['message'] = translate(['text' => 'Select a format', 'isPublicFacing' => true]);
-				$result['fulfillment'] = "redirect";
-				$result['modalBody'] = "<iframe src='{$downloadRedirectUrl}' class='fulfillmentFrame'></iframe>";
-				$result['downloadUrl'] = $downloadRedirectUrl; // for API access
-				$this->incrementStat('numDownloads');
-			} else {
-				$result['message'] = translate(['text' => 'Unable to create download url', 'isPublicFacing' => true]);
-			}
-		} else {
-			$url = $this->getSettings()->patronApiUrl . "/v1/patrons/me/checkouts/{$overDriveId}/formats/{$format}/downloadlink";
-			$url .= '?errorpageurl=' . urlencode($configArray['Site']['url'] . '/Help/OverDriveError');
-			if ($format == 'ebook-overdrive' || $format == 'ebook-mediado'){
-				$url .= '&odreadauthurl=' . urlencode($configArray['Site']['url'] . '/Help/OverDriveError');
-			}elseif ($format == 'audiobook-overdrive'){
-				$url .= '&odreadauthurl=' . urlencode($configArray['Site']['url'] . '/Help/OverDriveError');
-			}elseif ($format == 'video-streaming'){
-				$url .= '&errorurl=' . urlencode($configArray['Site']['url'] . '/Help/OverDriveError');
-				$url .= '&streamingauthurl=' . urlencode($configArray['Site']['url'] . '/Help/streamingvideoauth');
-			}
-
-			$response = $this->_callPatronUrl($user, $url, "getDownloadLink");
-			//print_r($response);
-
-			$result = array();
-			$result['success'] = false;
-			$result['message'] = '';
-
-			if (isset($response->links->contentlink)){
-				$result['success'] = true;
-				$result['message'] = translate(['text' => 'Created Download Link', 'isPublicFacing'=>true]);
-				$result['downloadUrl'] = $response->links->contentlink->href;
-				$result['fulfillment'] = "download";
-				$this->incrementStat('numDownloads');
-			}else{
-				$result['message'] = translate(['text' => 'Sorry, but we could not get a download link for you.', 'isPublicFacing'=>true]);
-				if (isset($response->message)) $result['message'] .= "  {$response->message}";
-				$this->incrementStat('numApiErrors');
-			}
+		if (isset($response->links->contentlink)){
+			$result['success'] = true;
+			$result['message'] = translate(['text' => 'Created Download Link', 'isPublicFacing'=>true]);
+			$result['downloadUrl'] = $response->links->contentlink->href;
+			$this->incrementStat('numDownloads');
+		}else{
+			$result['message'] = translate(['text' => 'Sorry, but we could not get a download link for you.', 'isPublicFacing'=>true]);
+			if (isset($response->message)) $result['message'] .= "  {$response->message}";
+			$this->incrementStat('numApiErrors');
 		}
 
 		return $result;
-	}
-
-	function getDownloadRedirectUrl($user, $overDriveId, $showLibbyPromo){
-
-		$url = $this->getSettings()->patronApiUrl . "/v1/patrons/me/checkouts/$overDriveId" . $showLibbyPromo;
-		$response = $this->_callPatronUrl($user, $url, "getDownloadRedirectUrl");
-		if ($response == false){
-			//The user is not authorized to use OverDrive
-			$this->incrementStat('numApiErrors');
-			return array();
-		}
-
-		$apiUrl = $response->links->downloadRedirect->href;
-		$tokenData = $this->getPatronTokenData($user, true);
-		$authorizationData = $tokenData->token_type . ' ' . $tokenData->access_token;
-
-		$apiHost = $this->getPatronApiHost();
-
-		$ch = curl_init($apiUrl);
-		curl_setopt($ch, CURLOPT_ENCODING, "");
-		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, false);
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-		curl_setopt($ch, CURLOPT_AUTOREFERER, true);
-		curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
-		curl_setopt($ch, CURLOPT_TIMEOUT, 5);
-		curl_setopt($ch, CURLOPT_MAXREDIRS, 10);
-		curl_setopt($ch, CURLOPT_HEADER, true);
-		curl_setopt($ch, CURLINFO_HEADER_OUT, true);
-		curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-			"Authorization: " . $authorizationData,
-			"Host: $apiHost",
-			"Accept: application/json, text/xml, text/html"
-		));
-
-		$content = curl_exec($ch);
-		$response = curl_getinfo($ch);
-		$header = curl_getinfo($ch, CURLINFO_HEADER_OUT);
-		$headers = explode("\n", $header);
-		curl_close($ch);
-
-		if ($response['http_code'] == 301 || $response['http_code'] == 302) {
-			ini_set("user_agent", "Mozilla/5.0 (Windows; U; Windows NT 5.1; rv:1.7.3) Gecko/20041001 Firefox/0.10.1");
-			ExternalRequestLogEntry::logRequest('overdrive.getDownloadRedirectUrl', 'GET', $apiUrl, $headers, false, $response['http_code'], $content, []);
-			return $response['redirect_url'];
-		}
-
-		if (preg_match("/window\.location\.replace\('(.*)'\)/i", $content, $value) || preg_match("/window\.location\=\"(.*)\"/i", $content, $value)) {
-			ExternalRequestLogEntry::logRequest('overdrive.getDownloadRedirectUrl', 'GET', $apiUrl, $headers, false, $response['http_code'], $content, []);
-			return $response['redirect_url'];
-		} else {
-			ExternalRequestLogEntry::logRequest('overdrive.getDownloadRedirectUrl', 'GET', $apiUrl, $headers, false, $response['http_code'], $content, []);
-			return $response['url'];
-		}
-
 	}
 
 	public function hasNativeReadingHistory()
@@ -1290,7 +1190,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 			'reserveId' => $recordId,
 			'emailAddress' => trim((empty($patron->overdriveEmail) ? $patron->email : $patron->overdriveEmail))
 		);
-		$response = $this->_callPatronUrl($patron, $url, "renewCheckout", $params);
+		$response = $this->_callPatronUrl($patron, $url, $params);
 
 		$holdResult = array();
 		$holdResult['success'] = false;
@@ -1395,7 +1295,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 			return array();
 		}
 		$url = $this->getSettings()->patronApiUrl . '/v1/patrons/me';
-		$response = $this->_callPatronUrl($patron, $url, "getOptions");
+		$response = $this->_callPatronUrl($patron, $url);
 		if ($response == false){
 			//The user is not authorized to use OverDrive
 			return array();
@@ -1455,7 +1355,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 					'formatClass' => strtolower($formatClass) ,
 					'lendingPeriodDays' => $_REQUEST[$lendingPeriod['formatType']],
 				);
-				$response = $this->_callPatronUrl($patron, $url, "updateOptions", $params, 'PUT');
+				$response = $this->_callPatronUrl($patron, $url, $params, 'PUT');
 
 				if ($this->lastHttpCode != 204){
 					return false;

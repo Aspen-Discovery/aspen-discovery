@@ -124,11 +124,11 @@
 									</div>
 								{/if}
 							{/if}
-							{if $materialRequestType == 1 && $enableAspenMaterialsRequest && $displayMaterialsRequest}
-								<div class="myAccountLink materialsRequestLink" title="{translate text='Materials Requests' inAttribute=true isPublicFacing=true}">
+							{if $materialRequestType == 1 && $enableAspenMaterialsRequest}
+								<div class="myAccountLink" title="{translate text='Materials Requests' inAttribute=true isPublicFacing=true}">
 									<a href="/MaterialsRequest/MyRequests">{translate text='Materials Requests' isPublicFacing=true} <span class="badge"><span class="materialsRequests-placeholder">??</span></span></a>
 								</div>
-							{elseif $materialRequestType == 2 && $userHasCatalogConnection && $displayMaterialsRequest}
+							{elseif $materialRequestType == 2 && $userHasCatalogConnection}
 								<div class="myAccountLink" title="{translate text='Materials Requests' inAttribute=true isPublicFacing=true}">
 									<a href="/MaterialsRequest/IlsRequests">{translate text='Materials Requests' isPublicFacing=true} <span class="badge"><span class="materialsRequests-placeholder">??</span></span></a>
 								</div>

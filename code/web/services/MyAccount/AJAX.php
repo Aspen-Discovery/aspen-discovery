@@ -162,56 +162,31 @@ class MyAccount_AJAX extends JSON_Action
 	/** @noinspection PhpUnused */
 	function saveSearch()
 	{
-		$result = [
-			'success' => false,
-			'message' => 'Unknown error saving search'
-		];
 		$searchId = $_REQUEST['searchId'];
-		$title = $_REQUEST['title'];
 		$search = new SearchEntry();
 		$search->id = $searchId;
+		$saveOk = false;
 		if ($search->find(true)) {
 			// Found, make sure this is a search from this user
 			if ($search->session_id == session_id() || $search->user_id == UserAccount::getActiveUserId()) {
 				if ($search->saved != 1) {
 					$search->user_id = UserAccount::getActiveUserId();
 					$search->saved = 1;
-					$search->title = $title;
-					if($search->update() !== FALSE) {
-						$result['success'] = true;
-						$result['message'] = translate(['text' => "Your search was saved successfully.  You can view the saved search by clicking on Search History within the Account Menu.", 'isPublicFacing'=>true]);
-						$result['modalButtons'] = "<a class='tool btn btn-primary' id='viewSavedSearches' href='/Search/History?require_login'>" . translate(['text' => "View Saved Searches", 'isPublicFacing'=>true]). "</a>";
-					} else {
-						$result['message'] = translate(['text' => "Sorry, we could not save that search for you.  It may have expired.", 'isPublicFacing'=>true]);
-					}
+					$saveOk = ($search->update() !== FALSE);
+					$message = $saveOk ? 'Your search was saved successfully.  You can view the saved search by clicking on Search History within the Account Menu.' . '<a href="/Search/History?require_login">' . 'View Saved Searches' . '</a>' : "Sorry, we could not save that search for you.  It may have expired.";
 				} else {
-					$result['success'] = true;
-					$result['message'] = translate(['text' => "That search was already saved.", 'isPublicFacing'=>true]);
-					$result['modalButtons'] = "<a class='tool btn btn-primary' id='viewSavedSearches' href='/Search/History?require_login'>" . translate(['text' => "View Saved Searches", 'isPublicFacing'=>true]). "</a>";
+					$saveOk = true;
+					$message = "That search was already saved.";
 				}
 			} else {
-				$result['message'] = translate(['text' => "Sorry, it looks like that search does not belong to you.", 'isPublicFacing'=>true]);
+				$message = "Sorry, it looks like that search does not belong to you.";
 			}
 		} else {
-			$result['message'] = translate(['text' => "Sorry, it looks like that search has expired.", 'isPublicFacing'=>true]);
+			$message = "Sorry, it looks like that search has expired.";
 		}
-		return $result;
-	}
-
-	/** @noinspection PhpUnused */
-	function getSaveSearchForm() {
-		global $interface;
-
-		$searchId = $_REQUEST['searchId'];
-		$interface->assign('searchId', $searchId);
-
-		require_once ROOT_DIR . '/services/Search/History.php';
-		History::getSearchForSaveForm($searchId);
-
 		return array(
-			'title' => translate(['text'=>'Save Search','isPublicFacing'=>true]),
-			'modalBody' => $interface->fetch('MyAccount/saveSearch.tpl'),
-			'modalButtons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.Account.saveSearch(); return false;'>" . translate(['text'=>'Save','isPublicFacing'=>true]) . "</button>",
+			'result' => $saveOk,
+			'message' => $message,
 		);
 	}
 
@@ -1585,7 +1560,7 @@ class MyAccount_AJAX extends JSON_Action
 
 		$ils = $configArray['Catalog']['ils'];
 		$showOut = ($ils == 'Horizon');
-		$showRenewed = ($ils == 'Horizon' || $ils == 'Millennium' || $ils == 'Sierra' || $ils == 'Koha' || $ils == 'Symphony' || $ils == 'CarlX'|| $ils == 'Polaris');
+		$showRenewed = ($ils == 'Horizon' || $ils == 'Millennium' || $ils == 'Sierra' || $ils == 'Koha' || $ils == 'Symphony' || $ils == 'CarlX');
 		$showWaitList = $ils == 'Horizon';
 
 		// Create new PHPExcel object
@@ -2065,7 +2040,7 @@ class MyAccount_AJAX extends JSON_Action
 			//Determine which columns to show
 			$ils = $configArray['Catalog']['ils'];
 			$showOut = ($ils == 'Horizon');
-			$showRenewed = ($source == 'ils' || $source == 'all') && ($ils == 'Horizon' || $ils == 'Millennium' || $ils == 'Sierra' || $ils == 'Koha' || $ils == 'Symphony' || $ils == 'CarlX' || $ils == 'Polaris');
+			$showRenewed = ($source == 'ils' || $source == 'all') && ($ils == 'Horizon' || $ils == 'Millennium' || $ils == 'Sierra' || $ils == 'Koha' || $ils == 'Symphony' || $ils == 'CarlX');
 			$showWaitList = ($source == 'ils' || $source == 'all') && ($ils == 'Horizon');
 
 			$interface->assign('showOut', $showOut);
@@ -2638,14 +2613,7 @@ class MyAccount_AJAX extends JSON_Action
 			}
 			$userLibrary = $patron->getHomeLibrary();
 
-			global $library;
-			$paymentLibrary = $library;
-			$systemVariables = SystemVariables::getSystemVariables();
-			if ($systemVariables->libraryToUseForPayments == 0){
-				$paymentLibrary = $userLibrary;
-			}
-
-			if (empty($_REQUEST['selectedFine']) && $paymentLibrary->finesToPay != 0) {
+			if (empty($_REQUEST['selectedFine']) && $userLibrary->finesToPay != 0) {
 				return ['success' => false, 'message' => translate(['text' => 'Select at least one fine to pay.', 'isPublicFacing'=> true])];
 			}
 			if (isset($_REQUEST['selectedFine'])) {
@@ -2675,7 +2643,7 @@ class MyAccount_AJAX extends JSON_Action
 			foreach ($fines[$patronId] as $fine) {
 				$finePayment = 0;
 				$addToOrder = false;
-				if ($paymentLibrary->finesToPay == 0) {
+				if ($userLibrary->finesToPay == 0) {
 					$addToOrder = true;
 				} else {
 					foreach ($selectedFines as $fineId => $status) {
@@ -2739,8 +2707,8 @@ class MyAccount_AJAX extends JSON_Action
 			}
 
 			//Determine if fines have been paid in the proper order
-			if (!empty($paymentLibrary->finePaymentOrder)) {
-				$paymentOrder = explode('|', strtolower($paymentLibrary->finePaymentOrder));
+			if (!empty($userLibrary->finePaymentOrder)) {
+				$paymentOrder = explode('|', strtolower($userLibrary->finePaymentOrder));
 
 				//Add another category for everything else.
 				$paymentOrder[] = '!!other!!';
@@ -2778,8 +2746,8 @@ class MyAccount_AJAX extends JSON_Action
 				}
 			}
 
-			if ($totalFines < $paymentLibrary->minimumFineAmount) {
-				return ['success' => false, 'message' => translate(['text' => 'You must select at least %1% in fines to pay.', 1 => sprintf('$%01.2f', $paymentLibrary->minimumFineAmount), 'isPublicFacing'=> true])];
+			if ($totalFines < $userLibrary->minimumFineAmount) {
+				return ['success' => false, 'message' => translate(['text' => 'You must select at least %1% in fines to pay.', 1 => sprintf('$%01.2f', $userLibrary->minimumFineAmount), 'isPublicFacing'=> true])];
 			}
 
 			$purchaseUnits['amount'] = [
@@ -2793,8 +2761,8 @@ class MyAccount_AJAX extends JSON_Action
 				]
 			];
 
-			if ($totalFines < $paymentLibrary->minimumFineAmount) {
-				return ['success' => false, 'message' => translate(['text' => 'You must select at least %1% in fines to pay.', 1 => sprintf('$%01.2f', $paymentLibrary->minimumFineAmount), 'isPublicFacing'=> true])];
+			if ($totalFines < $userLibrary->minimumFineAmount) {
+				return ['success' => false, 'message' => translate(['text' => 'You must select at least %1% in fines to pay.', 1 => sprintf('$%01.2f', $userLibrary->minimumFineAmount), 'isPublicFacing'=> true])];
 			}
 
 			require_once ROOT_DIR . '/sys/Account/UserPayment.php';
@@ -2805,45 +2773,35 @@ class MyAccount_AJAX extends JSON_Action
 			$payment->totalPaid = $totalFines;
 			$payment->paymentType = $paymentType;
 			$payment->transactionDate = $transactionDate;
-			global $library;
-			$payment->paidFromInstance = $library->subdomain;
 			$paymentId = $payment->insert();
 			$purchaseUnits['custom_id'] = $paymentId;
 
-			return [$paymentLibrary, $userLibrary, $payment, $purchaseUnits, $patron];
+			return [$userLibrary, $payment, $purchaseUnits, $patron];
 		}
 	}
 
 	function createPayPalOrder(){
 		global $configArray;
-
 		$result = $this->createGenericOrder('paypal');
 		if (array_key_exists('success', $result) && $result['success'] === false) {
 			return $result;
 		} else {
-			/** @var Library $paymentLibrary */
 			/** @var Library $userLibrary */
 			/** @var UserPayment $payment */
 			/** @var User $patron */
 			/** @noinspection PhpUnusedLocalVariableInspection */
-			list($paymentLibrary, $userLibrary, $payment, $purchaseUnits, $patron) = $result;
-			require_once ROOT_DIR . '/sys/ECommerce/PayPalSetting.php';
-			$payPalSettings = new PayPalSetting();
-			$payPalSettings->id = $paymentLibrary->payPalSettingId;
-			if (!$payPalSettings->find(true)){
-				return ['success' => false, 'message' => "PayPal payments are not configured correctly for ."];
-			}
+			list($userLibrary, $payment, $purchaseUnits, $patron) = $result;
 			require_once ROOT_DIR . '/sys/CurlWrapper.php';
 			$payPalAuthRequest = new CurlWrapper();
 			//Connect to PayPal
-			if ($payPalSettings->sandboxMode == 1) {
+			if ($userLibrary->payPalSandboxMode == 1) {
 				$baseUrl = 'https://api.sandbox.paypal.com';
 			} else {
 				$baseUrl = 'https://api.paypal.com';
 			}
 
-			$clientId = $payPalSettings->clientId;
-			$clientSecret = $payPalSettings->clientSecret;
+			$clientId = $userLibrary->payPalClientId;
+			$clientSecret = $userLibrary->payPalClientSecret;
 
 			//Get the access token
 			$authInfo = base64_encode("$clientId:$clientSecret");
@@ -2865,11 +2823,6 @@ class MyAccount_AJAX extends JSON_Action
 				$accessToken = $accessTokenResults->access_token;
 			}
 
-			global $library;
-			foreach ($purchaseUnits['items'] as &$item){
-				$item['reference_id'] = $payment->id . "|" . $library->subdomain . "|" . $userLibrary->subdomain;
-			}
-
 			//Setup the payment request (https://developer.paypal.com/docs/checkout/reference/server-integration/set-up-transaction/)
 			$payPalPaymentRequest = new CurlWrapper();
 			$payPalPaymentRequest->addCustomHeaders([
@@ -2882,12 +2835,12 @@ class MyAccount_AJAX extends JSON_Action
 			$paymentRequestBody = [
 				'intent' => 'CAPTURE',
 				'application_context' => [
-					'brand_name' => $paymentLibrary->displayName,
+					'brand_name' => $userLibrary->displayName,
 					'locale' => 'en-US',
 					'shipping_preferences' => 'NO_SHIPPING',
 					'user_action' => 'PAY_NOW',
 					'return_url' => $configArray['Site']['url'] . '/MyAccount/PayPalReturn',
-					'cancel_url' => $configArray['Site']['url'] . '/MyAccount/Fines',
+					'cancel_url' => $configArray['Site']['url'] . '/MyAccount/Fines'
 				],
 				'purchase_units' => [
 					0 => $purchaseUnits,
@@ -2942,8 +2895,8 @@ class MyAccount_AJAX extends JSON_Action
 			return $result;
 		} else {
 			/** @noinspection PhpUnusedLocalVariableInspection */
-			list($paymentLibrary, $userLibrary, $payment, $purchaseUnits) = $result;
-			$paymentRequestUrl = $paymentLibrary->msbUrl;
+			list($userLibrary, $payment, $purchaseUnits) = $result;
+			$paymentRequestUrl = $userLibrary->msbUrl;
 			$paymentRequestUrl .= "?ReferenceID=" . $payment->id;
 			$paymentRequestUrl .= "&PaymentType=CC";
 			$paymentRequestUrl .= "&TotalAmount=" . $payment->totalPaid;
@@ -2973,10 +2926,10 @@ class MyAccount_AJAX extends JSON_Action
 			/** @var UserPayment $payment */
 			/** @var User $patron */
 			/** @noinspection PhpUnusedLocalVariableInspection */
-			list($paymentLibrary, $userLibrary, $payment, $purchaseUnits, $patron) = $result;
+			list($userLibrary, $payment, $purchaseUnits, $patron) = $result;
 			require_once ROOT_DIR . '/sys/ECommerce/CompriseSetting.php';
 			$compriseSettings = new CompriseSetting();
-			$compriseSettings->id = $paymentLibrary->compriseSettingId;
+			$compriseSettings->id = $userLibrary->compriseSettingId;
 			if ($compriseSettings->find(true)) {
 				$paymentRequestUrl = 'https://smartpayapi2.comprisesmartterminal.com/smartpayapi/websmartpay.dll?GetCreditForm';
 				$paymentRequestUrl .= "&LocationID=" . $compriseSettings->username;
@@ -3018,15 +2971,14 @@ class MyAccount_AJAX extends JSON_Action
 			$currencyFormatter = new NumberFormatter( $activeLanguage->locale . '@currency=' . $currencyCode, NumberFormatter::CURRENCY );
 			$currencyFormatter->setSymbol(NumberFormatter::CURRENCY_SYMBOL, '');
 
-			/** @var Library $paymentLibrary */
 			/** @var Library $userLibrary */
 			/** @var UserPayment $payment */
 			/** @var User $patron */
 			/** @noinspection PhpUnusedLocalVariableInspection */
-			list($paymentLibrary, $userLibrary, $payment, $purchaseUnits, $patron) = $result;
+			list($userLibrary, $payment, $purchaseUnits, $patron) = $result;
 			require_once ROOT_DIR . '/sys/ECommerce/ProPaySetting.php';
 			$proPaySetting = new ProPaySetting();
-			$proPaySetting->id = $paymentLibrary->proPaySettingId;
+			$proPaySetting->id = $userLibrary->proPaySettingId;
 			if ($proPaySetting->find(true)) {
 				$curlWrapper = new CurlWrapper();
 				$authorization = $proPaySetting->billerAccountId . ':' . $proPaySetting->authenticationToken;
@@ -3698,46 +3650,51 @@ class MyAccount_AJAX extends JSON_Action
 			$userListEntry->update();
 
 			if(($position != $userListEntry->weight) && ($position != '')) {
-				$moveToPosition = $_REQUEST['position'];
-				$moveFromPosition = $userListEntry->weight;
+				$newPosition = $_REQUEST['position'];
+				$currentPosition = $userListEntry->weight;
 
-				$moveTo = new UserListEntry();
-				$moveTo->listId = $_REQUEST['listId'];
-				$moveTo->weight = $moveToPosition;
-				if ($moveTo->find(true)){
-					$listEntry = new UserListEntry();
-					$listEntry->listId = $_REQUEST['listId'];
-					$maxPosition = $listEntry->count();
-					$listEntry->find();
-					while ($listEntry->fetch()){
-						if($listEntry->weight == 1){
-							// update position 1 only if replacing 1
-							if($moveToPosition == 1) {
-								$listEntry->weight = $listEntry->weight + 1;
-								$listEntry->update();
+				$desiredPosition = new UserListEntry();
+				$desiredPosition->listId = $_REQUEST['listId'];
+				$desiredPosition->weight = $newPosition;
+				if ($desiredPosition->find(true)){
+					$entriesToSwap = new UserListEntry();
+					$entriesToSwap->listId = $_REQUEST['listId'];
+					$maxPosition = $entriesToSwap->count();
+					$entriesToSwap->find();
+					while ($entriesToSwap->fetch()){
+						if($newPosition > $currentPosition){
+							// move up
+							if ($entriesToSwap->weight == 1) {
+								$entriesToSwap->weight = $entriesToSwap->weight + 1;
+								$entriesToSwap->update();
 							}
-						} elseif($listEntry->weight == $maxPosition) {
-							// update last position only if replacing
-							if($moveToPosition == $maxPosition){
-								$listEntry->weight = $listEntry->weight - 1;
-								$listEntry->update();
+							elseif ($entriesToSwap->weight == $maxPosition) {
+								$entriesToSwap->weight = $entriesToSwap->weight - 1;
+								$entriesToSwap->update();
 							}
-						} elseif($moveToPosition > $moveFromPosition){
-							// if item is increasing in weight, move items down by 1
-							if ($listEntry->weight >= $moveToPosition) {
-								$listEntry->weight = $listEntry->weight - 1;
-								$listEntry->update();
+							elseif ($entriesToSwap->weight < $newPosition) {
+								$entriesToSwap->weight = $entriesToSwap->weight - 1;
+								$entriesToSwap->update();
 							}
-						} elseif($moveToPosition < $moveFromPosition){
-							// if item is decreasing in weight, move items up by 1
-							if ($listEntry->weight <= $moveToPosition) {
-								$listEntry->weight = $listEntry->weight + 1;
-								$listEntry->update();
+						}
+						if($newPosition < $currentPosition){
+							// move down
+							if ($entriesToSwap->weight == 1) {
+								$entriesToSwap->weight = $entriesToSwap->weight + 1;
+								$entriesToSwap->update();
+							}
+							elseif ($entriesToSwap->weight == $maxPosition) {
+								$entriesToSwap->weight = $entriesToSwap->weight - 1;
+								$entriesToSwap->update();
+							}
+							elseif ($entriesToSwap->weight > $newPosition) {
+								$entriesToSwap->weight = $entriesToSwap->weight + 1;
+								$entriesToSwap->update();
 							}
 						}
 					}
 
-					$userListEntry->weight = $moveToPosition;
+					$userListEntry->weight = $newPosition;
 					$userListEntry->update();
 
 					$result['success'] = true;

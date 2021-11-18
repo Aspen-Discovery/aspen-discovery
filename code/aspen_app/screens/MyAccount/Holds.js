@@ -10,10 +10,9 @@ import { MaterialIcons, Entypo, Ionicons, MaterialCommunityIcons } from "@expo/v
 import moment from "moment";
 import { create, CancelToken } from 'apisauce';
 
-// custom components and helper files
-import { translate } from '../../util/translations';
 import { loadingSpinner } from "../../components/loadingSpinner";
 import { loadError } from "../../components/loadError";
+
 import { getHolds } from '../../util/loadPatron';
 import { freezeHold, thawHold, cancelHold, changeHoldPickUpLocation } from '../../util/accountActions';
 import { getPickupLocations } from '../../util/loadLibrary';
@@ -60,7 +59,7 @@ export default class Holds extends Component {
             if(response == "TIMEOUT_ERROR") {
                 this.setState({
                     hasError: true,
-                    error: translate('error.timeout'),
+                    error: "Connection to the library timed out.",
                     isLoading: false,
                 });
             } else {
@@ -87,7 +86,7 @@ export default class Holds extends Component {
             if(response == "TIMEOUT_ERROR") {
                 this.setState({
                     hasError: true,
-                    error: translate('error.timeout'),
+                    error: "Connection to the library timed out.",
                     isLoading: false,
                 });
             } else {
@@ -138,7 +137,7 @@ export default class Holds extends Component {
 		return (
 			<Center mt={5} mb={5}>
 				<Text bold fontSize="lg">
-					{translate('holds.no_holds')}
+					You have no items on hold.
 				</Text>
 			</Center>
 		);
@@ -176,12 +175,11 @@ function HoldItem(props) {
     const { onPressItem, data, navigation, locations } = props;
     const { isOpen, onOpen, onClose } = useDisclose();
 
+
     // format some dates
     if(data.availableDate != null) {
         var availableDateUnix = moment.unix(data.availableDate);
         var availableDate = moment(availableDateUnix).format("MMM D, YYYY");
-    } else {
-        var availableDate = "";
     }
 
     if(data.expirationDate) {
@@ -194,15 +192,15 @@ function HoldItem(props) {
     // check freeze status to see which option to display
     if(data.canFreeze == true) {
         if(data.frozen == true) {
-            var label = translate('holds.thaw_hold');
+            var label = "Thaw Hold";
             var method = "thawHold";
             var icon = "play";
         } else {
-            var label = translate('holds.freeze_hold_with_reactivation');
+            var label = "Freeze Hold for 30 Days";
             var method = "freezeHold";
             var icon = "pause";
             if(data.available) {
-                var label = translate('overdrive.delay_checkout');
+                var label = "Delay Checkout for 30 Days";
                 var method = "freezeHold";
                 var icon = "pause";
             }
@@ -213,12 +211,10 @@ function HoldItem(props) {
         var statusColor = "green";
     }
 
-    if(data.title){
+    var title = data.title;
+    var title = title.substring(0, title.lastIndexOf('/'));
+    if(title == '') {
         var title = data.title;
-        var title = title.substring(0, title.lastIndexOf('/'));
-        if(title == '') {
-            var title = data.title;
-        }
     }
 
     if(data.author){
@@ -234,11 +230,12 @@ function HoldItem(props) {
     if(source == 'ils') {
         var readyMessage = data.status;
     } else {
-        var readyMessage = translate('overdrive.hold_ready');
+        var readyMessage = "Ready to Checkout";
     }
 
     var isAvailable = data.available;
     var updateLocation = data.locationUpdateable;
+
     if(data.available && data.locationUpdateable) {
         var updateLocation = false;
     }
@@ -270,17 +267,18 @@ function HoldItem(props) {
 
             {author ?
             <Text bold fontSize="xs">
-                {translate('grouped_work.author')}: <Text fontSize="xs">{author}</Text>
+                Author: <Text fontSize="xs">{author}</Text>
             </Text>
              : null}
             <Text bold fontSize="xs">
-                {translate('grouped_work.format')}: <Text fontSize="xs">{data.format}</Text>
+                Format: <Text fontSize="xs">{data.format}</Text>
             </Text>
             {data.source == "ils" ? <Text bold fontSize="xs">
-                {translate('pickup_locations.pickup_location')}: <Text fontSize="xs">{data.currentPickupName}</Text>
+                Pickup Location: <Text fontSize="xs">{data.currentPickupName}</Text>
             </Text>
             : null }
-                {data.available ? <Text bold fontSize="xs">{translate('holds.pickup_by')}: <Text fontSize="xs">{expirationDate}</Text></Text> : <Text bold fontSize="xs">{translate('holds.position_queue')}: <Text fontSize="xs">{data.position}</Text></Text>}
+                {data.status != "Ready to Pickup" ? <Text bold fontSize="xs">Position: <Text fontSize="xs">{data.position}</Text></Text> : null}
+                {data.status == "Ready to Pickup" ? <Text bold fontSize="xs">Pickup By: <Text fontSize="xs">{expirationDate}</Text></Text> : null}
         </ListItem.Content>
 
     </ListItem>
@@ -304,7 +302,7 @@ function HoldItem(props) {
                 cancelHold(data.cancelId, data.recordId, data.source);
                 onClose(onClose);
             }} >
-            {translate('holds.cancel_hold')}
+            Cancel Hold
         </Actionsheet.Item>
          : null}
         {data.allowFreezeHolds ?
@@ -326,6 +324,15 @@ function HoldItem(props) {
         <SelectPickupLocation locations={locations} onClose={onClose} currentPickupId={data.pickupLocationId} holdId={data.cancelId} />
          : null}
 
+        {checkoutOnline ?
+        <Actionsheet.Item startIcon={ <Icon as={Ionicons} name="location"  color="trueGray.400" mr="1" size="6" /> }
+            onPress={ () => {
+                console.log("Checkout on " + data.holdSource);
+                onClose(onClose);
+            }} >
+            Checkout on OverDrive
+        </Actionsheet.Item>
+         : null}
         </Actionsheet.Content>
       </Actionsheet>
     </>
@@ -345,18 +352,19 @@ const SelectPickupLocation = (props) => {
             onPress={ () => {
                 setShowModal(true);
             }} >
-            {translate('pickup_locations.change_pickup_location')}
+            Change Pickup Location
         </Actionsheet.Item>
         <Modal isOpen={showModal} onClose={() => setShowModal(false)} closeOnOverlayClick={false}>
             <Modal.Content>
                 <Modal.CloseButton />
-                <Modal.Header>{translate('pickup_locations.change_hold_location')}</Modal.Header>
+                <Modal.Header>Change Hold Location</Modal.Header>
                 <Modal.Body>
                     <FormControl>
-                        <FormControl.Label>{translate('pickup_locations.select_new_pickup')}</FormControl.Label>
+                        <FormControl.Label>Select a new location to pickup your hold</FormControl.Label>
                         <Radio.Group
                             name="pickupLocations"
                             value={value}
+                            accessibilityLabel="Select a pickup location"
                             onChange={(nextValue) => {
                                 setValue(nextValue);
                             }}
@@ -370,7 +378,7 @@ const SelectPickupLocation = (props) => {
                 </Modal.Body>
                 <Modal.Footer>
                     <Button.Group space={2} size="md">
-                        <Button colorScheme="muted" variant="outline" onPress={() => setShowModal(false)}>{translate('general.close_window')}</Button>
+                        <Button colorScheme="muted" variant="outline" onPress={() => setShowModal(false)}>Close</Button>
                         <Button
                             onPress={() => {
                                 changeHoldPickUpLocation(holdId, value);
@@ -378,7 +386,7 @@ const SelectPickupLocation = (props) => {
                                 onClose(onClose);
                             }}
                         >
-                            {translate('pickup_locations.change_location')}
+                            Change Location
                         </Button>
                     </Button.Group>
                 </Modal.Footer>

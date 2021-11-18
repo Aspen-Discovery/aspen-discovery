@@ -37,17 +37,17 @@ import ExpoFastImage from 'expo-fast-image';
 import { create, CancelToken } from 'apisauce';
 import _ from "lodash";
 
-// custom components and helper files
-import { translate } from '../../util/translations';
 import StatusIndicator from "./StatusIndicator";
+
 import { loadingSpinner } from "../../components/loadingSpinner";
-import { loadError, popToast, popAlert } from "../../components/loadError";
+import { loadError, renderAlert, PopAlert, AlertDialogComponent } from "../../components/loadError";
+
 import { getGroupedWork } from "../../util/recordActions";
 import { getPickupLocations } from "../../util/loadLibrary";
 import { updateOverDriveEmail } from "../../util/accountActions";
 
 export default class GroupedWork extends Component {
-	static navigationOptions = { title: translate('grouped_work.title') };
+	static navigationOptions = { title: "Book Details" };
 	constructor() {
 		super();
 		this.state = {
@@ -84,11 +84,13 @@ export default class GroupedWork extends Component {
 
 	    this.setState({ isLoading: true });
 
+        console.log("Searching for... " + this.props.navigation.state.params.item);
+
         await getGroupedWork(this.props.navigation.state.params.item).then(response => {
             if(response == "TIMEOUT_ERROR") {
                 this.setState({
                     hasError: true,
-                    error: translate('error.timeout'),
+                    error: "Connection to the library timed out.",
                     isLoading: false,
                 });
             } else {
@@ -108,7 +110,7 @@ export default class GroupedWork extends Component {
                 } catch (error) {
                     this.setState({
                         hasError: true,
-                        error: translate('error.no_data'),
+                        error: "Unable to load filter options.",
                         isLoading: false,
                     })
                 }
@@ -121,11 +123,10 @@ export default class GroupedWork extends Component {
             if(response == "TIMEOUT_ERROR") {
                 this.setState({
                     hasError: true,
-                    error: translate('error.timeout'),
+                    error: "Connection to the library timed out.",
                     isLoading: false,
                 });
             } else {
-
                 try {
                     this.setState({
                         locations: response,
@@ -133,11 +134,10 @@ export default class GroupedWork extends Component {
                         error: null,
                         isLoading: false,
                     });
-
                 } catch (error) {
                     this.setState({
                         hasError: true,
-                        error: translate('error.no_data'),
+                        error: "Unable to load filter options.",
                         isLoading: false,
                     })
                 }
@@ -220,7 +220,7 @@ export default class GroupedWork extends Component {
                 promptItemId: response.itemId,
                 promptSource: response.source,
                 promptPatronId: response.patronId,
-                promptTitle: translate('holds.hold_options'),
+                promptTitle: "OverDrive Hold Options",
             });
         }
     }
@@ -262,6 +262,10 @@ export default class GroupedWork extends Component {
             return ( loadError(this.state.error, this._fetchResults) );
         }
 
+        if (!this.state.isLoading && !this.state.data.title) {
+            return ( loadError("We're unable to load data for this title.") );
+        }
+
 		return (
 			<ScrollView>
 				<Box h={{ base: 125, lg: 200}} w="100%" bgColor="muted.200" zIndex={-1} position="absolute" left={0} top={0}></Box>
@@ -276,9 +280,9 @@ export default class GroupedWork extends Component {
 						{this.showAuthor()}
 						{this.state.ratingData.count > 0 ? <Rating imageSize={20} readonly count={this.state.ratingData.count} startingValue={this.state.ratingData.average} type='custom' tintColor="#F2F2F2" ratingBackgroundColor="#E5E5E5" style={{ paddingTop: 5}} /> : null }
                     </Center>
-                    <Text fontSize={{ base: "xs", lg: "md" }} bold mt={3} mb={1}>{translate('grouped_work.format')}</Text>
+                    <Text fontSize={{ base: "xs", lg: "md" }} bold mt={3} mb={1}>Format:</Text>
                     {this.state.formats ? <Button.Group style={{flex: 1, flexWrap: 'wrap'}}>{this.formatOptions()}</Button.Group> : null }
-                    <Text fontSize={{ base: "xs", lg: "md" }} bold mt={3} mb={1}>{translate('grouped_work.language')}</Text>
+                    <Text fontSize={{ base: "xs", lg: "md" }} bold mt={3} mb={1}>Language:</Text>
                     {this.state.languages ? <Button.Group colorScheme="tertiary">{this.languageOptions()}</Button.Group> : null }
 
                     {this.state.variations ? <StatusIndicator data={this.state.variations} format={this.state.format} language={this.state.language} patronId={this.state.patronId} locations={this.state.locations} showAlert={this.showAlert} /> : null}
@@ -306,7 +310,7 @@ export default class GroupedWork extends Component {
                           </Button>
                            : null}
                             <Button onPress={this.hideAlert} ml={3} variant="outline" colorScheme="primary">
-                              {translate('general.button_ok')}
+                              OK
                             </Button>
                           </AlertDialog.Footer>
                         </AlertDialog.Content>
@@ -325,7 +329,7 @@ export default class GroupedWork extends Component {
                         <Modal.Body mt={4}>
                             <FormControl>
                                 <Stack>
-                                    <FormControl.Label>{translate('overdrive.email_field')}</FormControl.Label>
+                                    <FormControl.Label>Enter an email to be notified when the title is ready for you.</FormControl.Label>
                                     <Input
                                         autoCapitalize="none"
                                         autoCorrect={false}
@@ -337,15 +341,15 @@ export default class GroupedWork extends Component {
                                         my={2}
                                         id="promptForOverdriveEmail"
                                         onChange={isSelected => this.setRememberPrompt(isSelected)}
-                                    >{translate('user_profile.remember_settings')}</Checkbox>
+                                    >Remember these settings</Checkbox>
                                 </Stack>
                             </FormControl>
 
                         </Modal.Body>
                         <Modal.Footer>
                         <Button.Group space={2} size="md">
-                            <Button colorScheme="primary" variant="ghost" onPress={this.hidePrompt}>{translate('general.close_window')}</Button>
-                            <Button onPress={ async () => { await updateOverDriveEmail(this.state.promptItemId, this.state.promptSource, this.state.promptPatronId, this.state.overdriveEmail, this.state.promptForOverdriveEmail).then(response => { this.showAlert(response) }) }}>{translate('holds.place_hold')}</Button>
+                            <Button colorScheme="primary" variant="ghost" onPress={this.hidePrompt}>Close</Button>
+                            <Button onPress={ async () => { await updateOverDriveEmail(this.state.promptItemId, this.state.promptSource, this.state.promptPatronId, this.state.overdriveEmail, this.state.promptForOverdriveEmail).then(response => { this.showAlert(response) }) }}>Place Hold</Button>
                         </Button.Group>
                         </Modal.Footer>
                     </Modal.Content>

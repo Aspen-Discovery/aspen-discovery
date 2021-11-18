@@ -3,7 +3,7 @@ import { Box, Text, FlatList, Spinner, ScrollView, View, TouchableWithoutFeedbac
 import { create, CancelToken } from 'apisauce';
 
 const BrowseCategory = (props) => {
-    const { isLoading, categoryLabel, categoryKey, renderItem, loadMore } = props
+    const { isLoading, categoryLabel, categoryKey, renderItem, emptyComponent, footerComponent, loadMore } = props
     const [page, setPage] = React.useState(1);
     const [items, setItems] = React.useState([]);
     const [shouldFetch, setShouldFetch] = React.useState(true);
@@ -19,12 +19,7 @@ const BrowseCategory = (props) => {
                 setItems(newItems);
 
             };
-           setTimeout(
-             function() {
-                fetch();
-             }
-             .bind(this),
-             1000);
+            fetch();
             setInitialLoad(true);
         }, [fetchMore]);
 
