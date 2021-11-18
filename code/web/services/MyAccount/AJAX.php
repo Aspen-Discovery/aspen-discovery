@@ -2613,7 +2613,14 @@ class MyAccount_AJAX extends JSON_Action
 			}
 			$userLibrary = $patron->getHomeLibrary();
 
-			if (empty($_REQUEST['selectedFine']) && $userLibrary->finesToPay != 0) {
+			global $library;
+			$paymentLibrary = $library;
+			$systemVariables = SystemVariables::getSystemVariables();
+			if ($systemVariables->libraryToUseForPayments == 0){
+				$paymentLibrary = $userLibrary;
+			}
+
+			if (empty($_REQUEST['selectedFine']) && $paymentLibrary->finesToPay != 0) {
 				return ['success' => false, 'message' => translate(['text' => 'Select at least one fine to pay.', 'isPublicFacing'=> true])];
 			}
 			if (isset($_REQUEST['selectedFine'])) {
@@ -2643,7 +2650,7 @@ class MyAccount_AJAX extends JSON_Action
 			foreach ($fines[$patronId] as $fine) {
 				$finePayment = 0;
 				$addToOrder = false;
-				if ($userLibrary->finesToPay == 0) {
+				if ($paymentLibrary->finesToPay == 0) {
 					$addToOrder = true;
 				} else {
 					foreach ($selectedFines as $fineId => $status) {
@@ -2707,8 +2714,8 @@ class MyAccount_AJAX extends JSON_Action
 			}
 
 			//Determine if fines have been paid in the proper order
-			if (!empty($userLibrary->finePaymentOrder)) {
-				$paymentOrder = explode('|', strtolower($userLibrary->finePaymentOrder));
+			if (!empty($paymentLibrary->finePaymentOrder)) {
+				$paymentOrder = explode('|', strtolower($paymentLibrary->finePaymentOrder));
 
 				//Add another category for everything else.
 				$paymentOrder[] = '!!other!!';
@@ -2746,8 +2753,8 @@ class MyAccount_AJAX extends JSON_Action
 				}
 			}
 
-			if ($totalFines < $userLibrary->minimumFineAmount) {
-				return ['success' => false, 'message' => translate(['text' => 'You must select at least %1% in fines to pay.', 1 => sprintf('$%01.2f', $userLibrary->minimumFineAmount), 'isPublicFacing'=> true])];
+			if ($totalFines < $paymentLibrary->minimumFineAmount) {
+				return ['success' => false, 'message' => translate(['text' => 'You must select at least %1% in fines to pay.', 1 => sprintf('$%01.2f', $paymentLibrary->minimumFineAmount), 'isPublicFacing'=> true])];
 			}
 
 			$purchaseUnits['amount'] = [
@@ -2761,8 +2768,8 @@ class MyAccount_AJAX extends JSON_Action
 				]
 			];
 
-			if ($totalFines < $userLibrary->minimumFineAmount) {
-				return ['success' => false, 'message' => translate(['text' => 'You must select at least %1% in fines to pay.', 1 => sprintf('$%01.2f', $userLibrary->minimumFineAmount), 'isPublicFacing'=> true])];
+			if ($totalFines < $paymentLibrary->minimumFineAmount) {
+				return ['success' => false, 'message' => translate(['text' => 'You must select at least %1% in fines to pay.', 1 => sprintf('$%01.2f', $paymentLibrary->minimumFineAmount), 'isPublicFacing'=> true])];
 			}
 
 			require_once ROOT_DIR . '/sys/Account/UserPayment.php';
@@ -2773,35 +2780,45 @@ class MyAccount_AJAX extends JSON_Action
 			$payment->totalPaid = $totalFines;
 			$payment->paymentType = $paymentType;
 			$payment->transactionDate = $transactionDate;
+			global $library;
+			$payment->paidFromInstance = $library->subdomain;
 			$paymentId = $payment->insert();
 			$purchaseUnits['custom_id'] = $paymentId;
 
-			return [$userLibrary, $payment, $purchaseUnits, $patron];
+			return [$paymentLibrary, $userLibrary, $payment, $purchaseUnits, $patron];
 		}
 	}
 
 	function createPayPalOrder(){
 		global $configArray;
+
 		$result = $this->createGenericOrder('paypal');
 		if (array_key_exists('success', $result) && $result['success'] === false) {
 			return $result;
 		} else {
+			/** @var Library $paymentLibrary */
 			/** @var Library $userLibrary */
 			/** @var UserPayment $payment */
 			/** @var User $patron */
 			/** @noinspection PhpUnusedLocalVariableInspection */
-			list($userLibrary, $payment, $purchaseUnits, $patron) = $result;
+			list($paymentLibrary, $userLibrary, $payment, $purchaseUnits, $patron) = $result;
+			require_once ROOT_DIR . '/sys/ECommerce/PayPalSetting.php';
+			$payPalSettings = new PayPalSetting();
+			$payPalSettings->id = $paymentLibrary->payPalSettingId;
+			if (!$payPalSettings->find(true)){
+				return ['success' => false, 'message' => "PayPal payments are not configured correctly for ."];
+			}
 			require_once ROOT_DIR . '/sys/CurlWrapper.php';
 			$payPalAuthRequest = new CurlWrapper();
 			//Connect to PayPal
-			if ($userLibrary->payPalSandboxMode == 1) {
+			if ($payPalSettings->sandboxMode == 1) {
 				$baseUrl = 'https://api.sandbox.paypal.com';
 			} else {
 				$baseUrl = 'https://api.paypal.com';
 			}
 
-			$clientId = $userLibrary->payPalClientId;
-			$clientSecret = $userLibrary->payPalClientSecret;
+			$clientId = $payPalSettings->clientId;
+			$clientSecret = $payPalSettings->clientSecret;
 
 			//Get the access token
 			$authInfo = base64_encode("$clientId:$clientSecret");
@@ -2823,6 +2840,11 @@ class MyAccount_AJAX extends JSON_Action
 				$accessToken = $accessTokenResults->access_token;
 			}
 
+			global $library;
+			foreach ($purchaseUnits['items'] as &$item){
+				$item['reference_id'] = $payment->id . "|" . $library->subdomain . "|" . $userLibrary->subdomain;
+			}
+
 			//Setup the payment request (https://developer.paypal.com/docs/checkout/reference/server-integration/set-up-transaction/)
 			$payPalPaymentRequest = new CurlWrapper();
 			$payPalPaymentRequest->addCustomHeaders([
@@ -2835,12 +2857,12 @@ class MyAccount_AJAX extends JSON_Action
 			$paymentRequestBody = [
 				'intent' => 'CAPTURE',
 				'application_context' => [
-					'brand_name' => $userLibrary->displayName,
+					'brand_name' => $paymentLibrary->displayName,
 					'locale' => 'en-US',
 					'shipping_preferences' => 'NO_SHIPPING',
 					'user_action' => 'PAY_NOW',
 					'return_url' => $configArray['Site']['url'] . '/MyAccount/PayPalReturn',
-					'cancel_url' => $configArray['Site']['url'] . '/MyAccount/Fines'
+					'cancel_url' => $configArray['Site']['url'] . '/MyAccount/Fines',
 				],
 				'purchase_units' => [
 					0 => $purchaseUnits,
@@ -2895,8 +2917,8 @@ class MyAccount_AJAX extends JSON_Action
 			return $result;
 		} else {
 			/** @noinspection PhpUnusedLocalVariableInspection */
-			list($userLibrary, $payment, $purchaseUnits) = $result;
-			$paymentRequestUrl = $userLibrary->msbUrl;
+			list($paymentLibrary, $userLibrary, $payment, $purchaseUnits) = $result;
+			$paymentRequestUrl = $paymentLibrary->msbUrl;
 			$paymentRequestUrl .= "?ReferenceID=" . $payment->id;
 			$paymentRequestUrl .= "&PaymentType=CC";
 			$paymentRequestUrl .= "&TotalAmount=" . $payment->totalPaid;
@@ -2926,10 +2948,10 @@ class MyAccount_AJAX extends JSON_Action
 			/** @var UserPayment $payment */
 			/** @var User $patron */
 			/** @noinspection PhpUnusedLocalVariableInspection */
-			list($userLibrary, $payment, $purchaseUnits, $patron) = $result;
+			list($paymentLibrary, $userLibrary, $payment, $purchaseUnits, $patron) = $result;
 			require_once ROOT_DIR . '/sys/ECommerce/CompriseSetting.php';
 			$compriseSettings = new CompriseSetting();
-			$compriseSettings->id = $userLibrary->compriseSettingId;
+			$compriseSettings->id = $paymentLibrary->compriseSettingId;
 			if ($compriseSettings->find(true)) {
 				$paymentRequestUrl = 'https://smartpayapi2.comprisesmartterminal.com/smartpayapi/websmartpay.dll?GetCreditForm';
 				$paymentRequestUrl .= "&LocationID=" . $compriseSettings->username;
@@ -2971,14 +2993,15 @@ class MyAccount_AJAX extends JSON_Action
 			$currencyFormatter = new NumberFormatter( $activeLanguage->locale . '@currency=' . $currencyCode, NumberFormatter::CURRENCY );
 			$currencyFormatter->setSymbol(NumberFormatter::CURRENCY_SYMBOL, '');
 
+			/** @var Library $paymentLibrary */
 			/** @var Library $userLibrary */
 			/** @var UserPayment $payment */
 			/** @var User $patron */
 			/** @noinspection PhpUnusedLocalVariableInspection */
-			list($userLibrary, $payment, $purchaseUnits, $patron) = $result;
+			list($paymentLibrary, $userLibrary, $payment, $purchaseUnits, $patron) = $result;
 			require_once ROOT_DIR . '/sys/ECommerce/ProPaySetting.php';
 			$proPaySetting = new ProPaySetting();
-			$proPaySetting->id = $userLibrary->proPaySettingId;
+			$proPaySetting->id = $paymentLibrary->proPaySettingId;
 			if ($proPaySetting->find(true)) {
 				$curlWrapper = new CurlWrapper();
 				$authorization = $proPaySetting->billerAccountId . ':' . $proPaySetting->authenticationToken;

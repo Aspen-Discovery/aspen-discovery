@@ -7,6 +7,7 @@ class UserPayment extends DataObject
 
 	public $id;
 	public $userId;
+	public $paidFromInstance;
 	public $paymentType;
 	public $orderId;
 	public $completed;
@@ -23,6 +24,7 @@ class UserPayment extends DataObject
 			'paymentType' => ['property' => 'paymentType', 'type' => 'text', 'label' => 'Payment Type', 'description' => 'The system the payment was made with', 'readOnly' => true],
 			'transactionDate' => ['property' => 'transactionDate', 'type' => 'timestamp', 'label' => 'Transaction Date', 'description' => 'The date the payment was started', 'readOnly' => true],
 			'user' => ['property' => 'user', 'type' => 'text', 'label' => 'User', 'description' => 'The user who made the payment', 'readOnly' => true],
+			'paidFromInstance' => ['property' => 'paidFromInstance', 'type' => 'text', 'label' => 'Paid From', 'description' => 'The interface used when making the payment', 'readOnly' => true],
 			'library' => ['property' => 'library', 'type' => 'text', 'label' => 'Library', 'description' => 'The patron\'s home library', 'readOnly' => true],
 			'orderId' => ['property' => 'orderId', 'type' => 'text', 'label' => 'Order ID', 'description' => 'The ID of the order within the payment system', 'readOnly' => true],
 			'totalPaid' => ['property' => 'totalPaid', 'type' => 'currency', 'label' => 'Total Paid', 'description' => 'A list of fines paid as part of this transaction', 'displayFormat'=>'%0.2f', 'readOnly' => true],

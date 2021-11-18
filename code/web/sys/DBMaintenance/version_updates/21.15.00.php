@@ -38,5 +38,91 @@ function getUpdates21_15_00() : array
 				"ALTER TABLE account_profiles CHANGE COLUMN databaseName databaseName VARCHAR(75)",
 			]
 		], //account_profile_increaseDatabaseNameLength
+		'payment_paidFrom' => [
+			'title' => 'Add paidFromInstance to payments',
+			'description' => 'Add paidFromInstance to payments',
+			'sql' => [
+				'ALTER TABLE user_payments ADD COLUMN paidFromInstance VARCHAR(100)'
+			]
+		], //payment_paidFrom
+		'paypal_showPayLater' => [
+			'title' => 'PayPal - Show Pay Later',
+			'description' => 'Allow users to control if the Pay Later option is available',
+			'sql' => [
+				'ALTER TABLE paypal_settings ADD COLUMN showPayLater TINYINT(1) DEFAULT 0'
+			]
+		], //paypal_showPayLater
+		'paypal_moveSettingsFromLibrary' => [
+			'title' => 'PayPal - Move Settings From Library',
+			'description' => 'Move settings from library settings to PayPal Settings',
+			'sql' => [
+				'movePayPalSettings',
+				'ALTER TABLE library DROP COLUMN payPalClientId',
+				'ALTER TABLE library DROP COLUMN payPalClientSecret',
+				'ALTER TABLE library DROP COLUMN payPalSandboxMode',
+			]
+		], //paypal_moveSettingsFromLibrary
+		'library_validPickupSystemLength' => [
+			'title' => 'Library validPickupSystem Length',
+			'description' => 'Increase length of validPickupSystems for libraries',
+			'sql' => [
+				"alter table library CHANGE COLUMN validPickupSystems validPickupSystems VARCHAR(500) DEFAULT ''"
+			]
+		], //library_validPickupSystemLength
+		'systemVariables_libraryToUseForPayments' => [
+			'title' => 'System Variables - Library To Use For Payments',
+			'description' => 'Allow configuration of which library settings are used when making payments',
+			'sql' => [
+				"alter table system_variables ADD COLUMN libraryToUseForPayments TINYINT(1) DEFAULT 0"
+			]
+		], //systemVariables_libraryToUseForPayments
 	];
+}
+
+function movePayPalSettings(){
+	require_once ROOT_DIR . '/sys/ECommerce/PayPalSetting.php';
+	$payPalSetting = new PayPalSetting();
+	$payPalSettings = $payPalSetting->fetchAll();
+
+	//Get distinct PayPal information
+	global $aspen_db;
+	$payPalInfoStmt = "SELECT libraryId, displayName, payPalClientId, payPalClientSecret, payPalSandboxMode FROM library ORDER BY isDefault desc, displayName asc";
+
+	$payPalInfoRS = $aspen_db->query($payPalInfoStmt, PDO::FETCH_ASSOC);
+	$payPalInfoRow = $payPalInfoRS->fetch();
+	require_once ROOT_DIR . '/sys/Theming/LayoutSetting.php';
+	while ($payPalInfoRow != null){
+		if (!empty($payPalInfoRow['payPalClientId']) && !empty($payPalInfoRow['payPalClientSecret'])){
+			$library = new Library();
+			$library->libraryId = $payPalInfoRow['libraryId'];
+			if ($library->find(true)) {
+				if (count($payPalSettings) == 0) {
+					$createSetting = true;
+				} else {
+					$createSetting = true;
+					foreach ($payPalSetting as $payPalSettings) {
+						if ($payPalSetting->clientId == $library->payPalClientId && $payPalSetting->clientSecret == $library->payPalClientSecret) {
+							$createSetting = false;
+						}
+					}
+				}
+				if ($createSetting) {
+					$payPalSetting = new PayPalSetting();
+					if (count($payPalSettings) == 0) {
+						$payPalSetting->name = 'default';
+					} else {
+						$payPalSetting->name = $library->displayName;
+					}
+					$payPalSetting->clientId = $payPalInfoRow['payPalClientId'];
+					$payPalSetting->clientSecret = $payPalInfoRow['payPalClientSecret'];
+					$payPalSetting->sandboxMode = $payPalInfoRow['payPalSandboxMode'];
+					$payPalSetting->insert();
+					$payPalSettings[] = clone $payPalSetting;
+				}
+				$library->payPalSettingId = $payPalSetting->id;
+				$library->update();
+			}
+		}
+		$payPalInfoRow = $payPalInfoRS->fetch();
+	}
 }

@@ -7199,6 +7199,18 @@ AspenDiscovery.Admin = (function(){
 				function(data) {
 					if (data.success) {
 						$("#releaseNotes").html(data.releaseNotes);
+						if (data.actionItems === ''){
+							$("#actionItemsSection").hide();
+						}else{
+							$("#actionItemsSection").show();
+							$("#actionItems").html(data.actionItems);
+						}
+						if (data.testingSuggestions === ''){
+							$("#testingSection").hide();
+						}else{
+							$("#testingSection").show();
+							$("#testingSuggestions").html(data.testingSuggestions);
+						}
 					} else {
 						$("#releaseNotes").html("Error + " + data.message);
 					}
