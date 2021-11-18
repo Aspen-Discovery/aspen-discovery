@@ -7,23 +7,35 @@ class Greenhouse_SiteStatus extends Admin_Admin
 
 	function launch()
 	{
+		global $interface;
+		if (isset($_REQUEST['showErrorsOnly'])){
+			$interface->assign('showErrorsOnly', true);
+		}
 		$sites = new AspenSite();
 		$sites->whereAdd('implementationStatus != 4 AND implementationStatus != 0');
 		$sites->orderBy('name ASC');
 		$sites->find();
 		$siteStatuses = [];
 		$allChecks = [];
+		$checksWithErrors = [];
+		$sitesWithErrors = [];
 		while ($sites->fetch()){
 			$siteStatus = $sites->getCachedStatus();
 			$siteStatuses[] = $siteStatus;
 			foreach ($siteStatus['checks'] as $key => $check){
 				$allChecks[$key] = $check['name'];
+				if ($check['status'] != 'okay'){
+					$checksWithErrors[$key] = $key;
+					$sitesWithErrors[$sites->name] = $sites->name;
+				}
 			}
 		}
 		asort($allChecks);
-		global $interface;
+
 		$interface->assign('allChecks', $allChecks);
 		$interface->assign('siteStatuses', $siteStatuses);
+		$interface->assign('checksWithErrors', $checksWithErrors);
+		$interface->assign('sitesWithErrors', $sitesWithErrors);
 		$this->display('siteStatus.tpl', 'Aspen Site Status',false);
 	}
 
