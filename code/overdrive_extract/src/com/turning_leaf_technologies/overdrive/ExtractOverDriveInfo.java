@@ -73,6 +73,7 @@ class ExtractOverDriveInfo {
 	private PreparedStatement getDeletedProductsStmt;
 	private PreparedStatement getNumDeletedProductsStmt;
 	private PreparedStatement getTotalProductsStmt;
+	private PreparedStatement logExternalRequestStmt;
 
 	private final CRC32 checksumCalculator = new CRC32();
 	private boolean errorsWhileLoadingProducts;
@@ -532,6 +533,7 @@ class ExtractOverDriveInfo {
 		deleteAvailabilityForSettingStmt = dbConn.prepareStatement("DELETE FROM overdrive_api_product_availability WHERE productId = ? and settingId = ?");
 		deleteAllAvailabilityStmt = dbConn.prepareStatement("DELETE FROM overdrive_api_product_availability where productId = ? and libraryId = ? and settingId = ?");
 		updateProductAvailabilityStmt = dbConn.prepareStatement("UPDATE overdrive_api_products SET lastAvailabilityCheck = ?, lastAvailabilityChange = ? where id = ?");
+		logExternalRequestStmt = dbConn.prepareStatement("INSERT INTO external_request_log (requestType, requestMethod, requestUrl, requestHeaders, requestBody, responseCode, response, requestTime) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
 
 		if (settings.getProductsKey() == null){
 			logEntry.incErrors("No products key was provided for settings " + settings.getId());
@@ -694,7 +696,7 @@ class ExtractOverDriveInfo {
 	 * @throws SocketTimeoutException Error if we have a timeout getting data
 	 */
 	private boolean loadProductsFromAPI(int loadType, long startTime) throws SocketTimeoutException {
-		WebServiceResponse libraryInfoResponse = callOverDriveURL("https://api.overdrive.com/v1/libraries/" + settings.getAccountId());
+		WebServiceResponse libraryInfoResponse = callOverDriveURL("overDriveExtract.loadLibraries", "https://api.overdrive.com/v1/libraries/" + settings.getAccountId());
 		if (libraryInfoResponse.getResponseCode() == 200 && libraryInfoResponse.getMessage() != null){
 			JSONObject libraryInfo = libraryInfoResponse.getJSONResponse();
 			try {
@@ -729,7 +731,7 @@ class ExtractOverDriveInfo {
 				logEntry.setNumProducts(allProductsInOverDrive.size());
 				//Get a list of advantage collections
 				if (libraryInfo.getJSONObject("links").has("advantageAccounts")) {
-					WebServiceResponse webServiceResponse = callOverDriveURL(libraryInfo.getJSONObject("links").getJSONObject("advantageAccounts").getString("href"));
+					WebServiceResponse webServiceResponse = callOverDriveURL("overdriveExtract.loadAdvantageAccounts", libraryInfo.getJSONObject("links").getJSONObject("advantageAccounts").getString("href"));
 					if (webServiceResponse.getResponseCode() == 200) {
 						JSONObject advantageInfo = webServiceResponse.getJSONResponse();
 						if (advantageInfo.has("advantageAccounts")) {
@@ -829,7 +831,7 @@ class ExtractOverDriveInfo {
 		if (processCollection) {
 			//Need to load products for all advantage libraries since they can be shared with the entire consortium.
 			String advantageSelfUrl = curAdvantageAccount.getJSONObject("links").getJSONObject("self").getString("href");
-			WebServiceResponse advantageWebServiceResponse = callOverDriveURL(advantageSelfUrl);
+			WebServiceResponse advantageWebServiceResponse = callOverDriveURL("overdriveExtract.loadAdvantageProducts", advantageSelfUrl);
 			if (advantageWebServiceResponse.getResponseCode() == 200) {
 				JSONObject advantageSelfInfo = advantageWebServiceResponse.getJSONResponse();
 				if (advantageSelfInfo != null) {
@@ -863,7 +865,7 @@ class ExtractOverDriveInfo {
 	 * @throws SocketTimeoutException Error if we timeout getting data
 	 */
 	private boolean loadAccountInformationFromAPI() throws SocketTimeoutException {
-		WebServiceResponse libraryInfoResponse = callOverDriveURL("https://api.overdrive.com/v1/libraries/" + settings.getAccountId());
+		WebServiceResponse libraryInfoResponse = callOverDriveURL("overdriveExtract.loadLibraryAccount", "https://api.overdrive.com/v1/libraries/" + settings.getAccountId());
 		if (libraryInfoResponse.getResponseCode() == 200 && libraryInfoResponse.getMessage() != null){
 			JSONObject libraryInfo = libraryInfoResponse.getJSONResponse();
 			try {
@@ -876,7 +878,7 @@ class ExtractOverDriveInfo {
 
 				//Get a list of advantage collections
 				if (libraryInfo.getJSONObject("links").has("advantageAccounts")) {
-					WebServiceResponse webServiceResponse = callOverDriveURL(libraryInfo.getJSONObject("links").getJSONObject("advantageAccounts").getString("href"));
+					WebServiceResponse webServiceResponse = callOverDriveURL("overdriveExtract.loadAdvantageAccounts", libraryInfo.getJSONObject("links").getJSONObject("advantageAccounts").getString("href"));
 					if (webServiceResponse.getResponseCode() == 200) {
 						JSONObject advantageInfo = webServiceResponse.getJSONResponse();
 						if (advantageInfo.has("advantageAccounts")) {
@@ -929,7 +931,7 @@ class ExtractOverDriveInfo {
 		if  (loadType == LOAD_ALL_PRODUCTS && collectionInfo.getAspenLibraryId() == 0) {
 			logger.info("Not loading products for " + collectionInfo.getName() + " since it is not part of Aspen");
 		}
-		WebServiceResponse productsResponse = callOverDriveURL(mainProductUrl);
+		WebServiceResponse productsResponse = callOverDriveURL("overdriveExtract.loadProducts", mainProductUrl);
 		if (productsResponse.getResponseCode() == 200) {
 			JSONObject productInfo = productsResponse.getJSONResponse();
 			if (productInfo == null) {
@@ -955,7 +957,7 @@ class ExtractOverDriveInfo {
 				batchUrl += "offset=" + i + "&limit=" + batchSize;
 
 				for (int tries = 0; tries < 3; tries++){
-					WebServiceResponse productBatchInfoResponse = callOverDriveURL(batchUrl, tries == 2);
+					WebServiceResponse productBatchInfoResponse = callOverDriveURL("overdriveExtract.getProductsBatch", batchUrl, tries == 2);
 					if (productBatchInfoResponse.getResponseCode() == 200) {
 						JSONObject productBatchInfo = productBatchInfoResponse.getJSONResponse();
 						if (productBatchInfo != null && productBatchInfo.has("products")) {
@@ -1069,7 +1071,7 @@ class ExtractOverDriveInfo {
 		AdvantageCollectionInfo collectionInfo = overDriveInfo.getCollections().iterator().next();
 		String apiKey = collectionInfo.getCollectionToken();
 		String url = "https://api.overdrive.com/v1/collections/" + apiKey + "/products/" + overDriveInfo.getId() + "/metadata";
-		WebServiceResponse metaDataResponse = callOverDriveURL(url);
+		WebServiceResponse metaDataResponse = callOverDriveURL("overdriveExtract.getProductMetadata", url);
 		if (metaDataResponse.getResponseCode() != 200){
 			logEntry.incErrors("Could not load metadata (code " + metaDataResponse.getResponseCode() + ") from " + url );
 			logger.info(metaDataResponse.getResponseCode() + ":" + metaDataResponse.getMessage());
@@ -1355,7 +1357,7 @@ class ExtractOverDriveInfo {
 			String apiKey = collectionInfo.getCollectionToken();
 
 			String url = "https://api.overdrive.com/v2/collections/" + apiKey + "/products/" + overDriveInfo.getId() + "/availability";
-			WebServiceResponse availabilityResponse = callOverDriveURL(url, false);
+			WebServiceResponse availabilityResponse = callOverDriveURL("overdriveExtract.getProductAvailability", url, false);
 
 			//404 is a message that availability has been deleted.
 			if (availabilityResponse.getResponseCode() == 404) {
@@ -1543,7 +1545,7 @@ class ExtractOverDriveInfo {
 		}
 	}
 
-	private WebServiceResponse callOverDriveURL(String overdriveUrl, boolean logFailures) throws SocketTimeoutException {
+	private WebServiceResponse callOverDriveURL(String requestType, String overdriveUrl, boolean logFailures) throws SocketTimeoutException {
 		if (connectToOverDriveAPI()) {
 			HashMap<String, String> headers = new HashMap<>();
 			headers.put("Authorization", overDriveAPITokenType + " " + overDriveAPIToken);
@@ -1553,6 +1555,7 @@ class ExtractOverDriveInfo {
 				numTries++;
 				//logger.error(numTries + " - " + overdriveUrl);
 				response = NetworkUtils.getURL(overdriveUrl, logger, headers, 300000, logFailures);
+				logExternalRequest(requestType, overdriveUrl, headers, response.getResponseCode(), response.getMessage());
 				if (response.isCallTimedOut() && numTries == 3) {
 					this.hadTimeoutsFromOverDrive = true;
 					try {
@@ -1580,8 +1583,8 @@ class ExtractOverDriveInfo {
 		}
 	}
 
-	private WebServiceResponse callOverDriveURL(String overdriveUrl) throws SocketTimeoutException {
-		return callOverDriveURL(overdriveUrl, true);
+	private WebServiceResponse callOverDriveURL(String requestType, String overdriveUrl) throws SocketTimeoutException {
+		return callOverDriveURL(requestType, overdriveUrl, true);
 	}
 
 	private boolean connectToOverDriveAPI() throws SocketTimeoutException {
@@ -1707,6 +1710,27 @@ class ExtractOverDriveInfo {
 			updateProductAvailabilityStmt.close();
 		} catch (SQLException e) {
 			logger.error("Error closing overdrive extractor", e);
+		}
+	}
+
+	void logExternalRequest(String requestType, String requestUrl, HashMap<String, String> requestHeaders, int responseCode, String response){
+		StringBuilder headers = new StringBuilder();
+		for (String requestHeader : requestHeaders.keySet()){
+			headers.append(requestHeader).append(": ").append(requestHeaders.get(requestHeader)).append("\n");
+		}
+		try {
+			logExternalRequestStmt.setString(1, requestType);
+			logExternalRequestStmt.setString(2, "GET");
+			logExternalRequestStmt.setString(3, requestUrl);
+			logExternalRequestStmt.setString(4, headers.toString());
+			logExternalRequestStmt.setString(5,"");
+			logExternalRequestStmt.setInt(6, responseCode);
+			logExternalRequestStmt.setString(7, response);
+			logExternalRequestStmt.setLong(8, new Date().getTime() / 1000);
+
+			logExternalRequestStmt.executeUpdate();
+		}catch (Exception e){
+			logEntry.incErrors("Unable to log external request", e);
 		}
 	}
 }
