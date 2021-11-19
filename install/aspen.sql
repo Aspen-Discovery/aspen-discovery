@@ -1915,13 +1915,13 @@ CREATE TABLE `image_uploads` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `indexed_callnumber`
+-- Table structure for table `indexed_callNumber`
 --
 
-DROP TABLE IF EXISTS `indexed_callnumber`;
+DROP TABLE IF EXISTS `indexed_callNumber`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `indexed_callnumber` (
+CREATE TABLE `indexed_callNumber` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `callNumber` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL,
   PRIMARY KEY (`id`),
@@ -1933,10 +1933,10 @@ CREATE TABLE `indexed_callnumber` (
 -- Table structure for table `indexed_econtentsource`
 --
 
-DROP TABLE IF EXISTS `indexed_econtentsource`;
+DROP TABLE IF EXISTS `indexed_eContentSource`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `indexed_econtentsource` (
+CREATE TABLE `indexed_eContentSource` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `eContentSource` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL,
   PRIMARY KEY (`id`),
@@ -1990,13 +1990,13 @@ CREATE TABLE `indexed_format_category` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `indexed_groupedstatus`
+-- Table structure for table `indexed_groupedStatus`
 --
 
-DROP TABLE IF EXISTS `indexed_groupedstatus`;
+DROP TABLE IF EXISTS `indexed_groupedStatus`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `indexed_groupedstatus` (
+CREATE TABLE `indexed_groupedStatus` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `groupedStatus` varchar(75) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL,
   PRIMARY KEY (`id`),
@@ -2005,13 +2005,13 @@ CREATE TABLE `indexed_groupedstatus` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `indexed_itemtype`
+-- Table structure for table `indexed_itemType`
 --
 
-DROP TABLE IF EXISTS `indexed_itemtype`;
+DROP TABLE IF EXISTS `indexed_itemType`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `indexed_itemtype` (
+CREATE TABLE `indexed_itemType` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `itemType` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL,
   PRIMARY KEY (`id`),
@@ -2035,13 +2035,13 @@ CREATE TABLE `indexed_language` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `indexed_locationcode`
+-- Table structure for table `indexed_locationCode`
 --
 
-DROP TABLE IF EXISTS `indexed_locationcode`;
+DROP TABLE IF EXISTS `indexed_locationCode`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `indexed_locationcode` (
+CREATE TABLE `indexed_locationCode` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `locationCode` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL,
   PRIMARY KEY (`id`),
@@ -2050,13 +2050,13 @@ CREATE TABLE `indexed_locationcode` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `indexed_physicaldescription`
+-- Table structure for table `indexed_physicalDescription`
 --
 
-DROP TABLE IF EXISTS `indexed_physicaldescription`;
+DROP TABLE IF EXISTS `indexed_physicalDescription`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `indexed_physicaldescription` (
+CREATE TABLE `indexed_physicalDescription` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `physicalDescription` varchar(1000) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL,
   PRIMARY KEY (`id`),
@@ -2065,13 +2065,13 @@ CREATE TABLE `indexed_physicaldescription` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `indexed_publicationdate`
+-- Table structure for table `indexed_publicationDate`
 --
 
-DROP TABLE IF EXISTS `indexed_publicationdate`;
+DROP TABLE IF EXISTS `indexed_publicationDate`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `indexed_publicationdate` (
+CREATE TABLE `indexed_publicationDate` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `publicationDate` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL,
   PRIMARY KEY (`id`),
@@ -2112,13 +2112,13 @@ CREATE TABLE `indexed_record_source` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `indexed_shelflocation`
+-- Table structure for table `indexed_shelfLocation`
 --
 
-DROP TABLE IF EXISTS `indexed_shelflocation`;
+DROP TABLE IF EXISTS `indexed_shelfLocation`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `indexed_shelflocation` (
+CREATE TABLE `indexed_shelfLocation` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `shelfLocation` varchar(600) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL,
   PRIMARY KEY (`id`),
@@ -2142,13 +2142,13 @@ CREATE TABLE `indexed_status` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `indexed_sublocationcode`
+-- Table structure for table `indexed_subLocationCode`
 --
 
-DROP TABLE IF EXISTS `indexed_sublocationcode`;
+DROP TABLE IF EXISTS `indexed_subLocationCode`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `indexed_sublocationcode` (
+CREATE TABLE `indexed_subLocationCode` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `subLocationCode` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL,
   PRIMARY KEY (`id`),
