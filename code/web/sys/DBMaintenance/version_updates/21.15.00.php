@@ -248,8 +248,8 @@ function movePayPalSettings(){
 					$createSetting = true;
 				} else {
 					$createSetting = true;
-					foreach ($payPalSetting as $payPalSettings) {
-						if ($payPalSetting->clientId == $library->payPalClientId && $payPalSetting->clientSecret == $library->payPalClientSecret) {
+					foreach ($payPalSettings as $payPalSetting) {
+						if ($payPalSetting->clientId == $payPalInfoRow['payPalClientId'] && $payPalSetting->clientSecret == $payPalInfoRow['payPalClientSecret']) {
 							$createSetting = false;
 						}
 					}
