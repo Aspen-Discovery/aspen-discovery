@@ -977,6 +977,8 @@ class ExtractOverDriveInfo {
 									setLastSeenForProduct(startTime, curRecord);
 									totalProductsInCollection++;
 								} else {
+									//By definition the record has changes if we are loading just changes
+									curRecord.hasChanges = true;
 									if (previouslyLoadedProduct == null) {
 										allProductsInOverDrive.put(curRecord.getId(), curRecord);
 										getExistingRecordInformationForProduct(curRecord);
