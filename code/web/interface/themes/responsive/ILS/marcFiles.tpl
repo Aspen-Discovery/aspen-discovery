@@ -7,7 +7,7 @@
 					<a class="btn btn-default btn-sm" href='{$action.url}'>{translate text=$action.text isAdminFacing=true}</a>
 				{/if}
 			{/foreach}
-			<a class="btn btn-sm btn-default" href='/ILS/IndexingProfiles?objectAction=list'>{translate text="Return to List" isAdminFacing=true}</a>
+			<a class="btn btn-sm btn-default" href='/ILS/IndexingProfiles?objectAction=list'><i class="fas fa-arrow-alt-circle-left"></i> {translate text="Return to List" isAdminFacing=true}</a>
 		</div>
 		<h1>{$IndexProfileName}</h1>
 		<table class="table table-striped table-bordered">

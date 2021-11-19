@@ -38,7 +38,7 @@
 			</div>
 			<div class="form-group">
 				<div class="controls">
-					<input type="submit" name="submit" value="{translate text="Update User" inAttribute=true isAdminFacing=true}" class="btn btn-primary">  <a href='/Admin/{$toolName}?objectAction=list' class="btn btn-default">{translate text="Return to List" isAdminFacing=true}</a>
+					<input type="submit" name="submit" value="{translate text="Update User" inAttribute=true isAdminFacing=true}" class="btn btn-primary">  <a href='/Admin/{$toolName}?objectAction=list' class="btn btn-default"><i class="fas fa-arrow-alt-circle-left"></i> {translate text="Return to List" isAdminFacing=true}</a>
 				</div>
 			</div>
 		</fieldset>

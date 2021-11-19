@@ -19,14 +19,42 @@
 	<div {if $addFormGroupToProperty !== false}class="form-group"{/if} id="propertyRow{$propName}">
 		{* Output the label *}
 		{if $property.type == 'enum'}
-			<label for='{$propName}Select'{if $property.description} title="{translate text=$property.description isAdminFacing=true inAttribute=true}"{/if}>{translate text=$property.label isAdminFacing=true} {if $property.required && $objectAction != 'edit'}({translate text="required" isAdminFacing=true}){/if} {if $property.forcesReindex}<small><em>({translate text="Causes Nightly Reindex" isAdminFacing=true})</em></small>{/if}</label>
+			{if $property.renderAsHeading == true}
+				{if $property.required && $objectAction != 'edit'}
+					<div style="margin-bottom: .5em">
+						<h2 style="display: inline; vertical-align: top; margin-right: .25em">{translate text=$property.label isAdminFacing=true}</h2>
+						<span class="label label-danger" style="margin-right: .5em">{translate text="Required" isAdminFacing=true}</span>
+					</div>
+				{else}
+					<h2>{translate text=$property.label isAdminFacing=true}</h2>
+				{/if}
+			{else}
+				<label for='{$propName}Select'{if $property.description} title="{translate text=$property.description isAdminFacing=true inAttribute=true}"{/if} style="margin-right: .5em">
+					{translate text=$property.label isAdminFacing=true}
+				</label>
+				{if $property.required && $objectAction != 'edit'}
+					<span class="label label-danger" style="margin-right: .5em">{translate text="Required" isAdminFacing=true}</span>
+				{/if}
+			{/if}
 		{elseif $property.type == 'oneToMany' && !empty($property.helpLink)}
 			<div class="row">
 				<div class="col-xs-11">
 				{if $property.renderAsHeading == true}
-					<h2>{translate text=$property.label isAdminFacing=true}</h2>
+					{if $property.required && $objectAction != 'edit'}
+						<div style="margin-bottom: .5em">
+							<h2 style="display: inline; vertical-align: top; margin-right: .25em">{translate text=$property.label isAdminFacing=true}</h2>
+							<span class="label label-danger" style="margin-right: .5em">{translate text="Required" isAdminFacing=true}</span>
+						</div>
+					{else}
+						<h2>{translate text=$property.label isAdminFacing=true}</h2>
+					{/if}
 				{else}
-					<label for='{$propName}'{if $property.description} title="{translate text=$property.description isAdminFacing=true inAttribute=true}"{/if}>{translate text=$property.label isAdminFacing=true} {if $property.forcesReindex}<small><em>({translate text="Causes Nightly Reindex" isAdminFacing=true})</em></small>{/if}</label>
+					<label for='{$propName}'{if $property.description} title="{translate text=$property.description isAdminFacing=true inAttribute=true}"{/if} style="margin-right: .5em">
+						{translate text=$property.label isAdminFacing=true}
+					</label>
+					{if $property.required && $objectAction != 'edit'}
+						<span class="label label-danger" style="margin-right: .5em">{translate text="Required" isAdminFacing=true}</span>
+					{/if}
 				{/if}
 				</div>
 				<div class="col-xs-1">
@@ -35,9 +63,19 @@
 			</div>
 		{elseif $property.type != 'section' && $property.type != 'checkbox' && $property.type != 'hidden'}
 			{if $property.renderAsHeading == true}
-				<h2>{translate text=$property.label isAdminFacing=true} {if $property.forcesReindex}({translate text="Causes Nightly Reindex" isAdminFacing=true}){/if}</h2>
+				{if $property.required && $objectAction != 'edit'}
+					<div style="margin-bottom: .5em">
+						<h2 style="display: inline; vertical-align: top; margin-right: .25em">{translate text=$property.label isAdminFacing=true}</h2>
+						<span class="label label-danger" style="margin-right: .5em">{translate text="Required" isAdminFacing=true}</span>
+					</div>
+				{else}
+					<h2>{translate text=$property.label isAdminFacing=true}</h2>
+				{/if}
 			{else}
-				<label for='{$propName}'{if $property.description} title="{$property.description}"{/if}>{translate text=$property.label isAdminFacing=true} {if $property.required && $objectAction != 'edit'}({translate text="required" isAdminFacing=true}){/if} {if $property.forcesReindex}<small><em>({translate text="Causes Nightly Reindex" isAdminFacing=true})</em></small>{/if}</label>
+				<label for='{$propName}'{if $property.description} title="{$property.description}"{/if} style="margin-right: .5em">{translate text=$property.label isAdminFacing=true}</label>
+				{if $property.required && $objectAction != 'edit'}
+					<span class="label label-danger" style="margin-right: .5em">{translate text="Required" isAdminFacing=true}</span>
+				{/if}
 			{/if}
 		{/if}
 		{if !empty($property.showDescription)}
@@ -95,9 +133,15 @@
 				</div>
 			</div>
         {elseif $property.type == 'text' || $property.type == 'regularExpression' || $property.type == 'folder'}
-			<input type='text' name='{$propName}' id='{$propName}' value='{$propValue|escape}' {if !empty($property.accessibleLabel)}aria-label="{$property.accessibleLabel}"{/if} {if $property.maxLength}maxlength='{$property.maxLength}'{/if} {if !empty($property.size)}size='{$property.size}'{/if} class='form-control {if $property.required && $objectAction != 'edit'}required{/if}' {if !empty($property.readOnly)}readonly{/if}>
+			<input type='text' name='{$propName}' id='{$propName}' value='{$propValue|escape}' {if !empty($property.accessibleLabel)}aria-label="{$property.accessibleLabel}"{/if} {if $property.maxLength}maxlength='{$property.maxLength}'{/if} {if !empty($property.size)}size='{$property.size}'{/if} class='form-control {if $property.required && $objectAction != 'edit'}required{/if}' {if !empty($property.readOnly)}readonly{/if}  {if $property.forcesReindex}aria-describedby="{$propName}HelpBlock"{/if}>
+			{if $property.forcesReindex}<span id="{$propName}HelpBlock" class="help-block" style="margin-top:0"><small class="text-warning"><i class="fas fa-exclamation-circle"></i> {translate text="Updating this setting causes a nightly reindex" isAdminFacing=true}</small></span>{/if}
+			{if $property.affectsLiDA}<span id="{$propName}HelpBlock" class="help-block" style="margin-top:0"><small class="text-info"><i class="fas fa-info-circle"></i> {translate text="Aspen LiDA also uses this setting" isAdminFacing=true}</small></span>{/if}
+			{if $property.note}<span id="{$propName}HelpBlock" class="help-block" style="margin-top:0"><small><i class="fas fa-info-circle"></i> {$property.note}</small></span>{/if}
 		{elseif $property.type == 'integer'}
 			<input type='number' name='{$propName}' id='{$propName}' value='{$propValue|escape}' {if !empty($property.accessibleLabel)}aria-label="{$property.accessibleLabel}"{/if} {if $property.max}max="{$property.max}"{/if} {if $property.min}min="{$property.min}"{/if} {if $property.maxLength}maxlength='{$property.maxLength}'{/if} {if !empty($property.size)}size='{$property.size}'{/if} class='form-control {if $property.required && $objectAction != 'edit'}required{/if}' {if !empty($property.readOnly)}readonly{/if}>
+			{if $property.forcesReindex}<span id="{$propName}HelpBlock" class="help-block"><small class="text-warning"><i class="fas fa-exclamation-circle"></i> {translate text="Updating this setting causes a nightly reindex" isAdminFacing=true}</small></span>{/if}
+			{if $property.affectsLiDA}<span id="{$propName}HelpBlock" class="help-block"><small class="text-info"><i class="fas fa-info-circle"></i> {translate text="Aspen LiDA also uses this setting" isAdminFacing=true}</small></span>{/if}
+			{if $property.note}<span id="{$propName}HelpBlock" class="help-block"><small><i class="fas fa-info-circle"></i> {$property.note}</small></span>{/if}
 		{elseif $property.type == 'timestamp'}
 			<div class="row">
 				<div class="col-sm-4">
@@ -109,10 +153,19 @@
 					{rdelim});
 				</script>
 			</div>
+			{if $property.forcesReindex}<span id="{$propName}HelpBlock" class="help-block" style="margin-top:0"><small class="text-warning"><i class="fas fa-exclamation-circle"></i> {translate text="Updating this setting causes a nightly reindex" isAdminFacing=true}</small></span>{/if}
+			{if $property.affectsLiDA}<span id="{$propName}HelpBlock" class="help-block" style="margin-top:0"><small class="text-info"><i class="fas fa-info-circle"></i> {translate text="Aspen LiDA also uses this setting" isAdminFacing=true}</small></span>{/if}
+			{if $property.note}<span id="{$propName}HelpBlock" class="help-block" style="margin-top:0"><small><i class="fas fa-info-circle"></i> {$property.note}</small></span>{/if}
 		{elseif $property.type == 'url'}
 			<input type='text' name='{$propName}' id='{$propName}' value='{$propValue|escape}' {if !empty($property.accessibleLabel)}aria-label="{$property.accessibleLabel}"{/if} {if $property.maxLength}maxlength='{$property.maxLength}'{/if} {if !empty($property.size)}size='{$property.size}'{/if} class='form-control url {if $property.required && $objectAction != 'edit'}required{/if}' {if !empty($property.readOnly)}readonly{/if}>
+			{if $property.forcesReindex}<span id="{$propName}HelpBlock" class="help-block" style="margin-top:0"><small class="text-warning"><i class="fas fa-exclamation-circlee"></i> {translate text="Updating this setting causes a nightly reindex" isAdminFacing=true}</small></span>{/if}
+			{if $property.affectsLiDA}<span id="{$propName}HelpBlock" class="help-block" style="margin-top:0"><small class="text-info"><i class="fas fa-info-circle"></i> {translate text="Aspen LiDA also uses this setting" isAdminFacing=true}</small></span>{/if}
+			{if $property.note}<span id="{$propName}HelpBlock" class="help-block" style="margin-top:0"><small><i class="fas fa-info-circle"></i> {$property.note}</small></span>{/if}
 		{elseif $property.type == 'email'}
 			<input type='text' name='{$propName}' id='{$propName}' value='{$propValue|escape}' {if !empty($property.accessibleLabel)}aria-label="{$property.accessibleLabel}"{/if} {if $property.maxLength}maxlength='{$property.maxLength}'{/if} {if !empty($property.size)}size='{$property.size}'{/if} class='form-control email {if $property.required && $objectAction != 'edit'}required{/if}' {if !empty($property.readOnly)}readonly{/if}>
+			{if $property.forcesReindex}<span id="{$propName}HelpBlock" class="help-block" style="margin-top:0"><small class="text-warning"><i class="fas fa-exclamation-circle"></i> {translate text="Updating this setting causes a nightly reindex" isAdminFacing=true}</small></span>{/if}
+			{if $property.affectsLiDA}<span id="{$propName}HelpBlock" class="help-block" style="margin-top:0"><small class="text-info"><i class="fas fa-info-circle"></i> {$property.affectsLiDA}</small></span>{/if}
+			{if $property.note}<span id="{$propName}HelpBlock" class="help-block" style="margin-top:0"><small><i class="fas fa-info-circle"></i> {translate text="Aspen LiDA also uses this setting" isAdminFacing=true}</small></span>{/if}
 		{elseif $property.type == 'color'}
 			<div class="row">
 				<div class="col-tn-3">
@@ -128,8 +181,11 @@
 					{else}
 						{assign var=useDefault value=$object->$defaultVariableName}
 					{/if}
-
-					<input type="checkbox" name='{$propName}-default' id='{$propName}-default' {if $useDefault == '1'}checked="checked"{/if} {if !empty($property.readOnly)}readonly{/if}/><label for='{$propName}-default'>{translate text="Use Default" isAdminFacing=true}</label>
+					<div class="checkbox" style="margin: 0">
+						<label for='{$propName}-default'>{translate text="Use Default" isAdminFacing=true}
+							<input type="checkbox" name='{$propName}-default' id='{$propName}-default' {if $useDefault == '1'}checked="checked"{/if} {if !empty($property.readOnly)}readonly{/if}/>
+						</label>
+					</div>
 				</div>
 				<div class="col-tn-3">
 					{if !empty($property.checkContrastWith)}
@@ -181,8 +237,11 @@
 					{else}
 						{assign var=useDefault value=$object->$defaultVariableName}
 					{/if}
-
-					<input type="checkbox" name='{$propName}-default' id='{$propName}-default' {if $useDefault == '1'}checked="checked"{/if} {if !empty($property.readOnly)}readonly{/if}/><label for='{$propName}-default'>{translate text="Use Default" isAdminFacing=true}</label>
+					<div class="checkbox" style="margin: 0">
+						<label for='{$propName}-default'>{translate text="Use Default" isAdminFacing=true}
+							<input type="checkbox" name='{$propName}-default' id='{$propName}-default' {if $useDefault == '1'}checked="checked"{/if} {if !empty($property.readOnly)}readonly{/if}/>
+						</label>
+					</div>
 				</div>
 				<div class="col-sm-5">
 					<div id="{$propName}-sample-text" style="font-family: {$propValue},arial; font-size: {if $property.previewFontSize}{$property.previewFontSize}{else}12px{/if}">
@@ -207,8 +266,10 @@
 						<input type="text" class="form-control" id="importFile-label-{$propName}" readonly value="{$propValue}">
 					</div>
 					{if !empty($propValue)}
-						<div class="input-group">
-							<input type='checkbox' name='remove{$propName}' id='remove{$propName}'> <label for="remove{$propName}">{translate text="Remove"  isAdminFacing=true}</label>
+						<div class="checkbox" style="margin-top: 0;">
+							<label for="remove{$propName}"><small class="text-danger"><i class="fas fa-trash"></i> {translate text="Remove" isAdminFacing=true}</small>
+							<input type='checkbox' name='remove{$propName}' id='remove{$propName}'>
+							</label>
 						</div>
 					{/if}
 					<script type="application/javascript">
@@ -240,6 +301,9 @@
 
 		{elseif $property.type == 'textarea' || $property.type == 'html' || $property.type == 'markdown' || $property.type == 'javascript' || $property.type == 'crSeparated'}
 			{include file="DataObjectUtil/textarea.tpl"}
+			{if $property.forcesReindex}<span id="{$propName}HelpBlock" class="help-block" style="margin-top:0"><small class="text-warning"><i class="fas fa-exclamation-circle"></i> {translate text="Updating this setting causes a nightly reindex" isAdminFacing=true}</small></span>{/if}
+			{if $property.affectsLiDA}<span id="{$propName}HelpBlock" class="help-block" style="margin-top:0"><small class="text-info"><i class="fas fa-info-circle"></i> {translate text="Aspen LiDA also uses this setting" isAdminFacing=true}</small></span>{/if}
+			{if $property.note}<span id="{$propName}HelpBlock" class="help-block" style="margin-top:0"><small><i class="fas fa-info-circle"></i> {$property.note}</small></span>{/if}
 
 		{elseif $property.type == 'password' || $property.type == 'storedPassword'}
 			{include file="DataObjectUtil/password.tpl"}
@@ -253,12 +317,21 @@
 
 		{elseif $property.type == 'label'}
 			<div id='{$propName}'>{$propValue}</div>
+			{if $property.forcesReindex}<span id="{$propName}HelpBlock" class="help-block" style="margin-top:0"><small class="text-warning"><i class="fas fa-exclamation-circle"></i> {translate text="Updating this setting causes a nightly reindex" isAdminFacing=true}</small></span>{/if}
+			{if $property.affectsLiDA}<span id="{$propName}HelpBlock" class="help-block" style="margin-top:0"><small class="text-info"><i class="fas fa-info-circle"></i> {translate text="Aspen LiDA also uses this setting" isAdminFacing=true}</small></span>{/if}
+			{if $property.note}<span id="{$propName}HelpBlock" class="help-block" style="margin-top:0"><small><i class="fas fa-info-circle"></i> {$property.note}</small></span>{/if}
 
 		{elseif $property.type == 'enum'}
 			{include file="DataObjectUtil/enum.tpl"}
+			{if $property.forcesReindex}<span id="{$propName}HelpBlock" class="help-block" style="margin-top:0"><small class="text-warning"><i class="fas fa-exclamation-circle"></i> {translate text="Updating this setting causes a nightly reindex" isAdminFacing=true}</small></span>{/if}
+			{if $property.affectsLiDA}<span id="{$propName}HelpBlock" class="help-block" style="margin-top:0"><small class="text-info"><i class="fas fa-info-circle"></i> {translate text="Aspen LiDA also uses this setting" isAdminFacing=true}</small></span>{/if}
+			{if $property.note}<span id="{$propName}HelpBlock" class="help-block" style="margin-top:0"><small><i class="fas fa-info-circle"></i> {$property.note}</small></span>{/if}
 
 		{elseif $property.type == 'multiSelect'}
 			{include file="DataObjectUtil/multiSelect.tpl"}
+			{if $property.forcesReindex}<span id="{$propName}HelpBlock" class="help-block" style="margin-top:0"><small class="text-warning"><i class="fas fa-exclamation-circle"></i> {translate text="Updating this setting causes a nightly reindex" isAdminFacing=true}</small></span>{/if}
+			{if $property.affectsLiDA}<span id="{$propName}HelpBlock" class="help-block" style="margin-top:0"><small class="text-info"><i class="fas fa-info-circle"></i> {translate text="Aspen LiDA also uses this setting" isAdminFacing=true}</small></span>{/if}
+			{if $property.note}<span id="{$propName}HelpBlock" class="help-block" style="margin-top:0"><small><i class="fas fa-info-circle"></i> {$property.note}</small></span>{/if}
 
 		{elseif $property.type == 'image' || $property.type == 'file'}
 			{if !empty($propValue) && $property.type == 'image'}
@@ -266,9 +339,9 @@
 					<img src='/files/thumbnail/{$propValue}' style="display: block" alt="Selected Image for {$property.label}">
 				{else}
 					{if $property.displayUrl}
-						<img src='{$property.displayUrl}{$object->id}' style="display: block" alt="Selected Image for {$property.label}">
+						<img src='{$property.displayUrl}{$object->id}' style="display: block; max-width: 100%;" alt="Selected Image for {$property.label}">
 					{else}
-						<img src='/files/original/{$propValue}' style="display: block" alt="Selected Image for {$property.label}">
+						<img src='/files/original/{$propValue}' style="display: block; max-width: 100%" alt="Selected Image for {$property.label}">
 					{/if}
 				{/if}
 			{/if}
@@ -286,8 +359,10 @@
 				<input type='hidden' name='{$propName}_existing' id='{$propName}_existing' value='{$propValue|escape}'>
 			</div>
 			{if !empty($propValue)}
-				<div class="input-group">
-					<input type='checkbox' name='remove{$propName}' id='remove{$propName}'> <label for="remove{$propName}">{translate text="Remove"  isAdminFacing=true}</label>
+				<div class="checkbox" style="margin-top: 0">
+					<label for="remove{$propName}"><small class="text-danger"><i class="fas fa-trash"></i> {translate text="Remove" isAdminFacing=true}</small>
+						<input type='checkbox' name='remove{$propName}' id='remove{$propName}'>
+					</label>
 				</div>
 			{/if}
 			<script type="application/javascript">
@@ -300,11 +375,15 @@
 				{/literal}
 			</script>
 		{elseif $property.type == 'checkbox'}
-			<div class="checkbox">
+			<div class="checkbox" {if $property.forcesReindex || $property.affectsLiDA || $property.note}style="margin-bottom: 0"{/if}>
 				<label for='{$propName}'{if $property.description} title="{$property.description}"{/if}>
-					<input type='checkbox' name='{$propName}' id='{$propName}' {if ($propValue == 1)}checked='checked'{/if} {if $property.required && $objectAction != 'edit'}required{/if} {if !empty($property.readOnly)}readonly{/if}> {translate text=$property.label isAdminFacing=true} {if $property.forcesReindex}<small><em>({translate text="Causes Nightly Reindex" isAdminFacing=true})</em></small>{/if}
+					<input type='checkbox' name='{$propName}' id='{$propName}' {if ($propValue == 1)}checked='checked'{/if} {if $property.required && $objectAction != 'edit'}<span class="label label-danger" style="margin-right: .5em;">{translate text="Required" isAdminFacing=true}</span>{/if} {if !empty($property.readOnly)}readonly{/if}> {translate text=$property.label isAdminFacing=true}
 				</label>
+
 			</div>
+		{if $property.forcesReindex}<span id="{$propName}HelpBlock" class="help-block" style="margin-top:0"><small class="text-warning"><i class="fas fa-exclamation-circle"></i> {translate text="Updating this setting causes a nightly reindex" isAdminFacing=true}</small></span>{/if}
+		{if $property.affectsLiDA}<span id="{$propName}HelpBlock" class="help-block" style="margin-top:0"><small class="text-info"><i class="fas fa-info-circle"></i> {translate text="Aspen LiDA also uses this setting" isAdminFacing=true}</small></span>{/if}
+		{if $property.note}<span id="{$propName}HelpBlock" class="help-block" style="margin-top:0"><small><i class="fas fa-info-circle"></i> {$property.note}</small></span>{/if}
 		{elseif $property.type == 'webBuilderColor'}
 			<section style="display: flex; flex-flow: row wrap; margin-top: 2rem;">
 				{foreach from=$property.colorOptions item=colorOption}
@@ -317,6 +396,9 @@
 				{/foreach}
 			</section>
 		{elseif $property.type == 'oneToMany'}
+			{if $property.forcesReindex}<span id="{$propName}HelpBlock" class="help-block"><small class="text-warning"><i class="fas fa-exclamation-circle"></i> {translate text="Updating these settings causes a nightly reindex" isAdminFacing=true}</small></span>{/if}
+			{if $property.affectsLiDA}<span id="{$propName}HelpBlock" class="help-block"><small class="text-info"><i class="fas fa-info-circle"></i> {translate text="Aspen LiDA also uses these settings" isAdminFacing=true}</small></span>{/if}
+			{if $property.note}<span id="{$propName}HelpBlock" class="help-block"><small><i class="fas fa-info-circle"></i> {$property.note}</small></span>{/if}
 			{include file="DataObjectUtil/oneToMany.tpl"}
 		{elseif $property.type == 'portalRow'}
 			{include file="DataObjectUtil/portalRows.tpl"}

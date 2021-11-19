@@ -7,7 +7,7 @@
 					<a class="btn btn-default btn-sm" href='{$action.url}'>{$action.text}</a>
 				{/if}
 			{/foreach}
-			<a class="btn btn-sm btn-default" href='/SideLoads/SideLoads?objectAction=list'>{translate text="Return to List" isAdminFacing=true}</a>
+			<a class="btn btn-sm btn-default" href='/SideLoads/SideLoads?objectAction=list'><i class="fas fa-arrow-alt-circle-left"></i> {translate text="Return to List" isAdminFacing=true}</a>
 		</div>
 		<h1>{$IndexProfileName}</h1>
 		<div class="alert alert-warning">{$error}</div>
