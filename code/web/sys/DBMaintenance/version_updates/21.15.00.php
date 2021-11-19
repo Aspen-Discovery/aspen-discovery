@@ -184,18 +184,6 @@ function getUpdates21_15_00() : array
 						) ENGINE = INNODB;'
 			]
 		], //donations_createDonationsFormFields
-		'donations_addLibrarySettings' => [
-			'title' => 'Donations - Add options to Library table',
-			'description' => 'Add columns for options used by the Donations module in the Library config',
-			'sql' => [
-				'ALTER TABLE library ADD COLUMN enableDonations TINYINT(1) DEFAULT 0',
-				'ALTER TABLE library ADD COLUMN allowDonationsToBranch TINYINT(1) DEFAULT 0',
-				'ALTER TABLE library ADD COLUMN allowDonationEarmark TINYINT(1) DEFAULT 0',
-				'ALTER TABLE library ADD COLUMN allowDonationDedication TINYINT(1) DEFAULT 0',
-				'ALTER TABLE library ADD COLUMN donationsContent LONGTEXT DEFAULT NULL',
-				'ALTER TABLE library ADD COLUMN donationEmailTemplate TEXT DEFAULT NULL'
-			]
-		], //donations_addLibrarySettings
 		'donations_addLocationSettings' => [
 			'title' => 'Donations - Add options to Location table',
 			'description' => 'Add columns for options used by the Donations module in the Location config',
