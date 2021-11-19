@@ -448,7 +448,7 @@ abstract class MarcRecordProcessor {
 			Subfield subfieldA = targetAudience.getSubfield('a');
 			Subfield subfieldB = targetAudience.getSubfield('b');
 			if (subfieldA != null && subfieldB != null){
-				if (subfieldB.getData().equalsIgnoreCase("lexile")){
+				if (subfieldB.getData().toLowerCase().startsWith("lexile")){
 					String lexileValue = subfieldA.getData();
 					if (lexileValue.endsWith("L")){
 						lexileValue = lexileValue.substring(0, lexileValue.length() - 1);
