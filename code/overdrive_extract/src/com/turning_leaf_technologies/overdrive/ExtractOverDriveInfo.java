@@ -172,6 +172,7 @@ class ExtractOverDriveInfo {
 							totalRecordsWithChanges++;
 						}else{
 							allProductsInOverDrive.remove(curRecord.getId());
+							logger.info("Removing " + curRecord + " because it is not new and does not have changes");
 						}
 					}
 					logEntry.addNote("Preparing to update records.  There are " + allProductsInOverDrive.size() + " total records, " + numNewRecords + " are new, " + numRecordsToUpdate + " need metadata updates.");

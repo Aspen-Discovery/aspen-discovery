@@ -47,6 +47,7 @@ class OverDriveExtractLogEntry implements BaseLogEntry {
 	public synchronized void addNote(String note) {
 		Date date = new Date();
 		this.notes.add(dateFormat.format(date) + " - " + note);
+		logger.info(note);
 	}
 	
 	private String getNotesHtml() {
