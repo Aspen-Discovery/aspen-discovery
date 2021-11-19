@@ -570,7 +570,7 @@ public class IndexingUtils {
 				Process p = Runtime.getRuntime().exec("tasklist.exe /fo csv /nh /v /fi \"IMAGENAME eq cmd.exe\"");
 				BufferedReader input = new BufferedReader(new InputStreamReader(p.getInputStream()));
 				while ((line = input.readLine()) != null) {
-					logger.info(line);
+					//logger.info(line);
 					if (line.matches(".*reindexer\\.jar " + serverName + " nightly.*")){
 						return true;
 					}

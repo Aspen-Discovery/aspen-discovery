@@ -143,6 +143,7 @@ class ExtractOverDriveInfo {
 						}
 						if (!libraryConnectedToAspen) {
 							idsToRemove.add(recordInfo.getId());
+							logger.info("Removing " + recordInfo.getId() + " because there are no records connected to OverDrive");
 						}else{
 							if (recordInfo.hasChanges || recordInfo.isNew){
 								numProductsToUpdate++;
@@ -769,6 +770,8 @@ class ExtractOverDriveInfo {
 							logEntry.addNote(webServiceResponse.getMessage());
 						}
 					}
+				}else{
+					logger.debug("No Advantage accounts exist for the library.");
 				}
 
 				logEntry.setNumProducts(allProductsInOverDrive.size());
@@ -970,27 +973,17 @@ class ExtractOverDriveInfo {
 								OverDriveRecordInfo curRecord = loadOverDriveRecordFromJSON(collectionInfo, curProduct);
 								OverDriveRecordInfo previouslyLoadedProduct = allProductsInOverDrive.get(curRecord.getId());
 								if (loadType == LOAD_ALL_PRODUCTS) {
-									//if (previouslyLoadedProduct == null) {
-										setLastSeenForProduct(startTime, curRecord);
-
-										//Add to the list of all titles we have found
-									//	allProductsInOverDrive.put(curRecord.getId(), curRecord);
-
-									//	getExistingRecordInformationForProduct(curRecord);
-									//} else {
-									//	previouslyLoadedProduct.addCollection(collectionInfo);
-									//}
+									setLastSeenForProduct(startTime, curRecord);
 									totalProductsInCollection++;
 								} else {
 									if (previouslyLoadedProduct == null) {
-//										if (collectionInfo.getAspenLibraryId() != 0) {
-//											logger.warn("Found new product loading metadata and availability " + curRecord.getId());
-//										}
 										allProductsInOverDrive.put(curRecord.getId(), curRecord);
 										getExistingRecordInformationForProduct(curRecord);
 										previouslyLoadedProduct = curRecord;
+										logger.debug("    No previously loaded product for " + curRecord.getId());
 									} else {
 										previouslyLoadedProduct.hasChanges = true;
+										logger.debug("    Found previously loaded product for " + curRecord.getId());
 									}
 									previouslyLoadedProduct.addCollection(collectionInfo);
 								}
