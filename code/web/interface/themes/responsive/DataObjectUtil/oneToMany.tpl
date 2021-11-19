@@ -67,13 +67,15 @@
 					<td>
 						{if $subObject->canActiveUserEdit()}
 							{if $property.editLink neq ''}
+						    <div class="btn-group btn-group-vertical" style="padding-top: 0">
 								<a href='{$property.editLink}?objectAction=edit&widgetListId={$subObject->id}&widgetId={$widgetid}' class="btn btn-sm btn-default" title="edit">
-									{translate text="Edit" isAdminFacing=true}
+									<i class="fas fa-pencil-alt"></i> {translate text="Edit" isAdminFacing=true}
 								</a>
 							{elseif $property.canEdit}
 								{if method_exists($subObject, 'getEditLink')}
+								<div class="btn-group btn-group-vertical" style="padding-top: 0">
 									<a href='{$subObject->getEditLink()}' title='Edit' class="btn btn-sm btn-default">
-										{translate text="Edit" isAdminFacing=true}
+										<i class="fas fa-pencil-alt"></i> {translate text="Edit" isAdminFacing=true}
 									</a>
 								{else}
 									{translate text="Please add a getEditLink method to this object" isAdminFacing=true}
@@ -85,8 +87,9 @@
 						{* link to delete *}
 						<a href="#" class="btn btn-sm btn-warning" onclick="if (confirm('{translate text='Are you sure you want to delete this?' inAttribute=true isAdminFacing=true}')){literal}{{/literal}$('#{$propName}Deleted_{$subObject->id}').val('true');$('#{$propName}{$subObject->id}').hide().find('.required').removeClass('required'){literal}}{/literal};return false;">
 							{* On delete action, also remove class 'required' to turn off form validation of the deleted input; so that the form can be submitted by the user  *}
-							{translate text="Delete" isAdminFacing=true}
+							<i class="fas fa-trash"></i> {translate text="Delete" isAdminFacing=true}
 						</a>
+						{if $property.editLink neq '' || method_exists($subObject, 'getEditLink')}</div>{/if}
 					</td>
 				</tr>
 				{foreachelse}
@@ -98,11 +101,11 @@
 		</table>
 	</div>
 	<div class="{$propName}Actions">
-		<a href="#" onclick="addNew{$propName}();return false;" class="btn btn-primary btn-sm">{translate text="Add New" isAdminFacing=true}</a>
+		<a href="#" onclick="addNew{$propName}();return false;" class="btn btn-primary btn-sm"><i class="fas fa-plus"></i> {translate text="Add New" isAdminFacing=true}</a>
 		{if $property.additionalOneToManyActions && $id}{* Only display these actions for an existing object *}
-			<div class="btn-group pull-right">
+			<div class="btn-group pull-right" style="padding-top: 0">
 				{foreach from=$property.additionalOneToManyActions item=action}
-					<a class="btn {if $action.class}{$action.class}{else}btn-default{/if} btn-sm" href="{$action.url|replace:'$id':$id}">{translate text=$action.text isPublicFacing=true}</a>
+					<a class="btn {if $action.class}{$action.class}{else}btn-primary{/if} btn-sm" href="{$action.url|replace:'$id':$id}">{translate text=$action.text isPublicFacing=true}</a>
 				{/foreach}
 			</div>
 		{/if}

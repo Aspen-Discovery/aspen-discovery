@@ -6,7 +6,7 @@
 				<a class="btn btn-default btn-sm" href='{$action.url}'>{translate text=$action.text isAdminFacing=true}</a>
 			{/if}
 		{/foreach}
-		<a class="btn btn-sm btn-default" href='/ILS/TranslationMaps?objectAction=list'>{translate text="Return to List" isAdminFacing=true}</a>
+		<a class="btn btn-sm btn-default" href='/ILS/TranslationMaps?objectAction=list'><i class="fas fa-arrow-alt-circle-left"></i> {translate text="Return to List" isAdminFacing=true}</a>
 	</div>
 	<h2>{$mapName}</h2>
 	<div class="helpTextUnsized well">

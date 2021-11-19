@@ -1,7 +1,7 @@
 {strip}
 <h1>{$title}</h1>
 {if $showReturnToList}
-	<a class="btn btn-default" href='/{$module}/{$toolName}?objectAction=list'>{translate text="Return to List" isAdminFacing=true}</a>
+	<a class="btn btn-default" href='/{$module}/{$toolName}?objectAction=list'><i class="fas fa-arrow-alt-circle-left"></i> {translate text="Return to List" isAdminFacing=true}</a>
 {/if}
 <a class="btn btn-default" href='/{$module}/{$toolName}?objectAction=edit&id={$id}'>{translate text="Edit" isAdminFacing=true}</a>
 

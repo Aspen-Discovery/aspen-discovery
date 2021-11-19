@@ -102,6 +102,128 @@ function getUpdates21_15_00() : array
 				"ALTER TABLE search CHANGE COLUMN title title VARCHAR(225)",
 			]
 		], //search_increaseTitleLength
+		'userPayments_addTransactionType' => [
+			'title' => 'Add TransactionType column',
+			'description' => 'Add TransactionType column to user_payments table to support multiple use-cases of the payment system. Updates existing entries to value of fine.',
+			'sql' => [
+				"ALTER TABLE user_payments ADD COLUMN transactionType VARCHAR(75) DEFAULT NULL",
+				"UPDATE user_payments SET user_payments.transactionType=('fine') WHERE user_payments.transactionType IS NULL",
+			]
+		], //userPayments_addTransactionType
+		'donations_createInitialTable' => [
+			'title' => 'Donations - Create Donations Table',
+			'description' => 'Creates table to store donations',
+			'sql' => [
+				'CREATE TABLE IF NOT EXISTS donations (
+							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+							paymentId INT(11),
+							firstName VARCHAR(256),
+							lastName VARCHAR(256),
+							email VARCHAR(256),
+							anonymous TINYINT(1) default 0,
+							libraryId INT(11),
+							comments MEDIUMTEXT default null,
+							dedicate TINYINT(1) default 0,
+							dedicateType int(11),
+							honoreeFirstName VARCHAR(256) default null,
+							honoreeLastName VARCHAR(256) default null,
+							sendEmailToUser TINYINT(1) default 0
+						) ENGINE = INNODB;',
+			]
+		], //donations_createInitialTable
+		'donations_createDonationsValue' => [
+			'title' => 'Donations - Create DonationsValue Table',
+			'description' => 'Creates table to store donation values',
+			'sql' => [
+				'CREATE TABLE IF NOT EXISTS donations_value (
+							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+							value INT(11),
+							isDefault TINYINT(1) default 0,
+							libraryId VARCHAR(11)
+						) ENGINE = INNODB;'
+			]
+		], //donations_createDonationsValue
+		'donations_createDonationsDedicateType' => [
+			'title' => 'Donations - Create DedicateType Table',
+			'description' => 'Creates table to store dedication type values',
+			'sql' => [
+				'CREATE TABLE IF NOT EXISTS donations_dedicate_type (
+							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+							label VARCHAR(75),
+							libraryId VARCHAR(11)
+						) ENGINE = INNODB;'
+			]
+		], //donations_createDonationsDedicateType
+		'donations_createDonationsEarmarks' => [
+			'title' => 'Donations - Create Earmark Table',
+			'description' => 'Creates table to store earmark values',
+			'sql' => [
+				'CREATE TABLE IF NOT EXISTS donations_earmark (
+							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+							label VARCHAR(75),
+							libraryId VARCHAR(11),
+							weight SMALLINT(2)
+						) ENGINE = INNODB;'
+			]
+		], //donations_createDonationsEarmarks
+		'donations_createDonationsFormFields' => [
+			'title' => 'Donations - Create FormFields Table',
+			'description' => 'Creates table to store donation form fields',
+			'sql' => [
+				'CREATE TABLE IF NOT EXISTS donations_form_fields (
+							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+							textId VARCHAR(60) NOT NULL DEFAULT -1,
+							libraryId VARCHAR(11),
+							category VARCHAR(55),
+							label VARCHAR(255),
+							type VARCHAR(30),
+							note VARCHAR(75),
+							required TINYINT(1) default 0,
+							weight SMALLINT(2),
+							UNIQUE (textId)
+						) ENGINE = INNODB;'
+			]
+		], //donations_createDonationsFormFields
+		'donations_addLocationSettings' => [
+			'title' => 'Donations - Add options to Location table',
+			'description' => 'Add columns for options used by the Donations module in the Location config',
+			'sql' => [
+				'ALTER TABLE location ADD COLUMN showOnDonationsPage TINYINT(1) DEFAULT 1',
+			]
+		], //donations_addLocationSettings
+		'donations_settings' => [
+			'title' => 'Add settings for Donations',
+			'description' => 'Add table to store settings for Donations',
+			'sql' => [
+				'CREATE TABLE IF NOT EXISTS donations_settings (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, 
+					name VARCHAR(50) UNIQUE,
+					allowDonationsToBranch TINYINT(1) DEFAULT 0,
+					allowDonationEarmark TINYINT(1) DEFAULT 0,
+					allowDonationDedication TINYINT(1) DEFAULT 0,
+					donationsContent LONGTEXT DEFAULT NULL,
+					donationEmailTemplate TEXT DEFAULT NULL
+				) ENGINE INNODB',
+				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES ('eCommerce', 'Administer Donations', '', 10, 'Controls if the user can change Donations settings. <em>This has potential security and cost implications.</em>')",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer Donations'))",
+				"ALTER TABLE library ADD COLUMN donationSettingId INT(11) DEFAULT -1"
+			]
+		], //donations_settings
+		'addNewSystemBrowseCategories' => [
+			'title' => 'Add new system browse categories',
+			'description' => 'Adds browse categories for user lists and saved searches',
+			'sql' => [
+				"INSERT INTO browse_category (textId, label, source) VALUES ('system_user_lists', 'Your Lists', 'List')",
+				"INSERT INTO browse_category (textId, label, source) VALUES ('system_saved_searches', 'Your Saved Searches', 'GroupedWork')",
+			]
+		], //addNewSystemBrowseCategories
+		'addNumDismissedToBrowseCategory' => [
+			'title' => 'Add numTimesDismissed column',
+			'description' => 'Adds numTimesDismissed column to Browse Categories to get count of user dismissals',
+			'sql' => [
+				"ALTER TABLE browse_category ADD COLUMN numTimesDismissed MEDIUMINT(9) NOT NULL DEFAULT 0"
+			]
+		], //addNumDismissedToBrowseCategory
 	];
 }
 

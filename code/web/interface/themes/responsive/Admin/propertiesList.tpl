@@ -52,8 +52,8 @@
 							</div>
 							<div id="filterActions">
 								<div class="row">
-									<div class="col-tn-5 col-xs-3"><button class="btn btn-default btn-sm" onclick="return AspenDiscovery.Admin.addFilterRow('{$module}', '{$toolName}');">{translate text="Add Filter" isAdminFacing=true}</button></div>
-									<div class="col-tn-5 col-xs-3 col-tn-offset-2 col-xs-offset-6 text-right"><button class="btn btn-default btn-sm" onclick="$('#objectAction').val('list');$('#propertiesListForm').submit();">{translate text="Apply Filters" isAdminFacing=true}</button></div>
+									<div class="col-tn-5 col-xs-3"><button class="btn btn-default btn-sm" onclick="return AspenDiscovery.Admin.addFilterRow('{$module}', '{$toolName}');"><i class="fas fa-plus"></i> {translate text="Add Filter" isAdminFacing=true}</button></div>
+									<div class="col-tn-5 col-xs-3 col-tn-offset-2 col-xs-offset-6 text-right"><button class="btn btn-default btn-sm" onclick="$('#objectAction').val('list');$('#propertiesListForm').submit();"><i class="fas fa-filter"></i> {translate text="Apply Filters" isAdminFacing=true}</button></div>
 								</div>
 							</div>
 						</div>
@@ -161,8 +161,8 @@
 							<td>
 								<div class="btn-group-vertical">
 								{if $dataItem->canActiveUserEdit()}
-									<a href='/{$module}/{$toolName}?objectAction=edit&amp;id={$id}' class="btn btn-default btn-sm" aria-label="Edit Item {$id}">{translate text="Edit" isAdminFacing=true}</a>
-									<a href='/{$module}/{$toolName}?objectAction=history&amp;id={$id}' class="btn btn-default btn-sm" aria-label="History for Item {$id}">{translate text="History" isAdminFacing=true}</a>
+									<a href='/{$module}/{$toolName}?objectAction=edit&amp;id={$id}' class="btn btn-default btn-sm" aria-label="Edit Item {$id}"><i class="fas fa-pencil-alt"></i> {translate text="Edit" isAdminFacing=true}</a>
+									<a href='/{$module}/{$toolName}?objectAction=history&amp;id={$id}' class="btn btn-default btn-sm" aria-label="History for Item {$id}"><i class="fas fa-history"></i> {translate text="History" isAdminFacing=true}</a>
 								{/if}
 								{if $additionalActions}
 									{foreach from=$additionalActions item=action}
@@ -197,7 +197,7 @@
 	{/if}
 	{if $canAddNew}
 		<div class="btn-group">
-			<button type='submit' value='addNew' class="btn btn-primary" onclick="$('#objectAction').val('addNew')">{translate text='Add New' isAdminFacing=true}</button>
+			<button type='submit' value='addNew' class="btn btn-primary" onclick="$('#objectAction').val('addNew')"><i class="fas fa-plus"></i> {translate text='Add New' isAdminFacing=true}</button>
 		</div>
 	{/if}
 	<div class="btn-group">
