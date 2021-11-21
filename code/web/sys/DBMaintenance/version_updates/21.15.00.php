@@ -224,6 +224,13 @@ function getUpdates21_15_00() : array
 				"ALTER TABLE browse_category ADD COLUMN numTimesDismissed MEDIUMINT(9) NOT NULL DEFAULT 0"
 			]
 		], //addNumDismissedToBrowseCategory
+		'userPaymentTransactionId' => [
+			'title' => 'User Payment Transaction Id',
+			'description' => 'Add a transaction id to the user payment to capture transaction id when different from order ID (PayPal)',
+			'sql' => [
+				"ALTER TABLE user_payments ADD COLUMN transactionId VARCHAR(20) DEFAULT ''"
+			]
+		], //addNumDismissedToBrowseCategory
 	];
 }
 

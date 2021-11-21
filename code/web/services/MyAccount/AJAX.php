@@ -2808,7 +2808,7 @@ class MyAccount_AJAX extends JSON_Action
 			global $library;
 			$payment->paidFromInstance = $library->subdomain;
 			$paymentId = $payment->insert();
-			$purchaseUnits['custom_id'] = $paymentId;
+			$purchaseUnits['custom_id'] = $payment->id;
 
 			return [$paymentLibrary, $userLibrary, $payment, $purchaseUnits, $patron];
 		}
@@ -2868,6 +2868,7 @@ class MyAccount_AJAX extends JSON_Action
 			global $library;
 			foreach ($purchaseUnits['items'] as &$item){
 				$item['reference_id'] = $payment->id . "|" . $library->subdomain . "|" . $userLibrary->subdomain;
+				$item['invoice_id'] = $payment->id;
 			}
 
 			//Setup the payment request (https://developer.paypal.com/docs/checkout/reference/server-integration/set-up-transaction/)
@@ -2876,7 +2877,8 @@ class MyAccount_AJAX extends JSON_Action
 				"Accept: application/json",
 				"Content-Type: application/json",
 				"Accept-Language: en_US",
-				"Authorization: Bearer $accessToken"
+				"Authorization: Bearer $accessToken",
+				"Prefer: return=representation"
 			], false);
 			$paymentRequestUrl = $baseUrl . '/v2/checkout/orders';
 			$paymentRequestBody = [
@@ -2886,7 +2888,7 @@ class MyAccount_AJAX extends JSON_Action
 					'locale' => 'en-US',
 					'shipping_preferences' => 'NO_SHIPPING',
 					'user_action' => 'PAY_NOW',
-					'return_url' => $configArray['Site']['url'] . '/MyAccount/PayPalReturn',
+					'return_url' => $configArray['Site']['url'] . '/MyAccount/Fines',
 					'cancel_url' => $configArray['Site']['url'] . '/MyAccount/Fines',
 				],
 				'purchase_units' => [
@@ -2921,6 +2923,86 @@ class MyAccount_AJAX extends JSON_Action
 		$payment->orderId = $orderId;
 		$payment->userId = $patronId;
 		if ($payment->find(true)) {
+			$user = UserAccount::getLoggedInUser();
+			$patronId = $_REQUEST['patronId'];
+
+			$patron = $user->getUserReferredTo($patronId);
+			$userLibrary = $patron->getHomeLibrary();
+			global $library;
+			$paymentLibrary = $library;
+			$systemVariables = SystemVariables::getSystemVariables();
+			if ($systemVariables->libraryToUseForPayments == 0){
+				$paymentLibrary = $userLibrary;
+			}
+
+			require_once ROOT_DIR . '/sys/ECommerce/PayPalSetting.php';
+			$payPalSettings = new PayPalSetting();
+			$payPalSettings->id = $paymentLibrary->payPalSettingId;
+			if ($payPalSettings->find(true)){
+				//Get Payment details
+
+				require_once ROOT_DIR . '/sys/CurlWrapper.php';
+				$payPalAuthRequest = new CurlWrapper();
+				//Connect to PayPal
+				if ($payPalSettings->sandboxMode == 1) {
+					$baseUrl = 'https://api.sandbox.paypal.com';
+				} else {
+					$baseUrl = 'https://api.paypal.com';
+				}
+
+				$clientId = $payPalSettings->clientId;
+				$clientSecret = $payPalSettings->clientSecret;
+
+				//Get the access token
+				$authInfo = base64_encode("$clientId:$clientSecret");
+				$payPalAuthRequest->addCustomHeaders([
+					"Accept: application/json",
+					"Accept-Language: en_US",
+					"Authorization: Basic $authInfo"
+				], true);
+				$postParams = [
+					'grant_type' => 'client_credentials',
+				];
+
+				$accessTokenUrl = $baseUrl . "/v1/oauth2/token";
+				$accessTokenResults = $payPalAuthRequest->curlPostPage($accessTokenUrl, $postParams);
+				$accessTokenResults = json_decode($accessTokenResults);
+				if (empty($accessTokenResults->access_token)) {
+					return ['success' => false, 'message' => 'Unable to authenticate with PayPal, please try again in a few minutes.'];
+				} else {
+					$accessToken = $accessTokenResults->access_token;
+				}
+
+				$payPalPaymentRequest = new CurlWrapper();
+				$payPalPaymentRequest->addCustomHeaders([
+					"Accept: application/json",
+					"Content-Type: application/json",
+					"Accept-Language: en_US",
+					"Authorization: Bearer $accessToken",
+					"Prefer: return=representation"
+				], false);
+				$paymentRequestUrl = $baseUrl . '/v2/checkout/orders/' . $payment->orderId;
+
+				$paymentResponse = $payPalPaymentRequest->curlGetPage($paymentRequestUrl);
+				$paymentResponse = json_decode($paymentResponse);
+
+				$purchaseUnits = $paymentResponse->purchase_units;
+				if (!empty($purchaseUnits)){
+					$firstItem = reset($purchaseUnits);
+					$payments = $firstItem->payments;
+					if (!empty($payments->captures)){
+						foreach ($payments->captures as $capture){
+							if ($capture->status == 'COMPLETED'){
+								$paymentTransactionId = $capture->id;
+								$payment->transactionId = $paymentTransactionId;
+								$payment->update();
+								break;
+							}
+						}
+					}
+				}
+			}
+
 			if ($payment->completed) {
 				return ['success' => false, 'message' => 'This payment has already been processed'];
 			} else {

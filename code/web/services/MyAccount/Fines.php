@@ -43,6 +43,7 @@ class MyAccount_Fines extends MyAccount
 					$settings->id = $userLibrary->payPalSettingId;
 					if ($settings->find(true)) {
 						$interface->assign('payPalClientId', $settings->clientId);
+						$interface->assign('showPayLater', $settings->showPayLater);
 					}
 				}
 

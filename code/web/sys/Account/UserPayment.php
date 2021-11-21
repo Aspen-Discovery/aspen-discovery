@@ -10,6 +10,7 @@ class UserPayment extends DataObject
 	public $paidFromInstance;
 	public $paymentType;
 	public $orderId;
+	public $transactionId;
 	public $completed;
 	public $cancelled;
 	public $error;
@@ -27,6 +28,7 @@ class UserPayment extends DataObject
 			'paidFromInstance' => ['property' => 'paidFromInstance', 'type' => 'text', 'label' => 'Paid From', 'description' => 'The interface used when making the payment', 'readOnly' => true],
 			'library' => ['property' => 'library', 'type' => 'text', 'label' => 'Library', 'description' => 'The patron\'s home library', 'readOnly' => true],
 			'orderId' => ['property' => 'orderId', 'type' => 'text', 'label' => 'Order ID', 'description' => 'The ID of the order within the payment system', 'readOnly' => true],
+			'transactionId' => ['property' => 'transactionId', 'type' => 'text', 'label' => 'Transaction ID', 'description' => 'The ID of the transaction within the payment system (if different from order)', 'readOnly' => true],
 			'totalPaid' => ['property' => 'totalPaid', 'type' => 'currency', 'label' => 'Total Paid', 'description' => 'A list of fines paid as part of this transaction', 'displayFormat'=>'%0.2f', 'readOnly' => true],
 			'finesPaid' => ['property' => 'finesPaid', 'type' => 'text', 'label' => 'Fines Paid', 'description' => 'The ID of the order within the payment system', 'readOnly' => true],
 			'completed' => array('property' => 'completed', 'type' => 'checkbox', 'label' => 'Completed?', 'description' => 'Whether or not the payment has been completed', 'readOnly' => true),
