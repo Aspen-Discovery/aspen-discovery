@@ -18,6 +18,7 @@ class UserList extends DataObject
 	public $importedFrom;
 	public $nytListModified;
 	public $isCourseReserve;
+	public $courseLibrary;
 	public $courseInstructor;
 	public $courseNumber;
 	public $courseTitle;

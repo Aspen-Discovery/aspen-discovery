@@ -1,5 +1,6 @@
 package com.turning_leaf_technologies.symphony;
 
+import com.opencsv.CSVReader;
 import com.turning_leaf_technologies.config.ConfigUtil;
 import com.turning_leaf_technologies.file.JarUtil;
 import com.turning_leaf_technologies.grouping.MarcRecordGrouper;
@@ -100,8 +101,11 @@ public class SymphonyExportMain {
 
 			//Check for new marc out
 			exportVolumes(dbConn, indexingProfile, profileToLoad);
+
 			numChanges = updateRecords(dbConn);
 			processRecordsToReload(indexingProfile, logEntry);
+
+			processCourseReserves(dbConn, indexingProfile, logEntry);
 
 			if (recordGroupingProcessorSingleton != null) {
 				recordGroupingProcessorSingleton.close();
@@ -155,6 +159,98 @@ public class SymphonyExportMain {
 					logger.info("Thread was interrupted");
 				}
 			}
+		}
+	}
+
+	private static void processCourseReserves(Connection dbConn, IndexingProfile indexingProfile, IlsExtractLogEntry logEntry) {
+		File exportDir = new File(indexingProfile.getMarcPath() + "/..");
+		File[] courseReservesFiles = exportDir.listFiles(new FilenameFilter() {
+			@Override
+			public boolean accept(File dir, String name) {
+				return name.matches("course-reserves.*\\.txt");
+			}
+		});
+		if (courseReservesFiles == null){
+			return;
+		}
+		File newestFile = null;
+		long newestFileDate = 0;
+		for (File courseReservesFile: courseReservesFiles){
+			if (courseReservesFile.lastModified() > newestFileDate){
+				newestFileDate = courseReservesFile.lastModified();
+				newestFile = courseReservesFile;
+			}
+		}
+		for (File courseReservesFile: courseReservesFiles){
+			if (courseReservesFile != newestFile){
+				if (courseReservesFile.delete()){
+					logEntry.addNote("Deleted old course reserves file " + courseReservesFile.getAbsolutePath());
+				}
+			}
+		}
+		if (newestFile == null){
+			return;
+		}
+		//Make sure the file is not still changing
+		long newestFileSize = 0;
+		while (newestFileSize != newestFile.length()){
+			newestFileSize = newestFile.length();
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				logEntry.incErrors("Sleeping while looking for Course Reserve file changes was interrupted");
+			}
+		}
+
+		//Process the file
+		logEntry.addNote("Processing course reserves file " + newestFile.getAbsolutePath());
+		try {
+			PreparedStatement getExistingCourseReservesStmt = dbConn.prepareStatement("SELECT * FROM user_list WHERE isCourseReserve = 1", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			ResultSet existingCourseReservesRS = getExistingCourseReservesStmt.executeQuery();
+			HashMap<String, CourseInfo> existingCourses = new HashMap<>();
+			while (existingCourseReservesRS.next()){
+				CourseInfo courseInfo = new CourseInfo(
+						existingCourseReservesRS.getLong("id"),
+						existingCourseReservesRS.getString("courseLibrary"),
+						existingCourseReservesRS.getString("courseInstructor"),
+						existingCourseReservesRS.getString("courseNumber"),
+						existingCourseReservesRS.getString("courseTitle"));
+				existingCourses.put(courseInfo.toString(), courseInfo);
+			}
+			//Get existing grouped works for each course
+
+			@SuppressWarnings("deprecation")
+			CSVReader reader = new CSVReader(new FileReader(newestFile), '|');
+			String[] columns;
+			while ((columns = reader.readNext()) != null){
+				if (columns.length >= 6) {
+					String barcode = columns[0].trim();
+					//String status = columns[1];
+					String courseLibrary = columns[2];
+					String courseNumber = columns[3];
+					String courseTitle = columns[4];
+					String courseInstructor = columns[5];
+					//Get the current user list for this course
+					String key = courseLibrary + "-" + courseInstructor + "-" + courseNumber + "-" + courseTitle;
+					CourseInfo course = existingCourses.get(key);
+					if (course != null){
+						course.stillExists = true;
+					}else{
+						course = new CourseInfo(
+						-1L,
+							courseLibrary,
+							courseInstructor,
+							courseNumber,
+							courseTitle
+						);
+						course.stillExists = true;
+					}
+				}
+			}
+
+			//Remove any courses that no longer exist
+		} catch (IOException | SQLException e) {
+			logEntry.incErrors("Error processing course reserves file", e);
 		}
 	}
 

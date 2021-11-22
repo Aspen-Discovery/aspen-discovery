@@ -231,6 +231,13 @@ function getUpdates21_15_00() : array
 				"ALTER TABLE user_payments ADD COLUMN transactionId VARCHAR(20) DEFAULT ''"
 			]
 		], //addNumDismissedToBrowseCategory
+		'increaseExternalRequestResponseField' => [
+			'title' => 'Increase Response field length in External Request Log',
+			'description' => 'Increase Response field length in External Request Log',
+			'sql' => [
+				"ALTER TABLE external_request_log CHANGE COLUMN response response MEDIUMTEXT"
+			]
+		]
 	];
 }
 
