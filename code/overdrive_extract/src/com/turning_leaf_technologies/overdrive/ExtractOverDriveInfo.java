@@ -1710,23 +1710,25 @@ class ExtractOverDriveInfo {
 	}
 
 	void logExternalRequest(String requestType, String requestUrl, HashMap<String, String> requestHeaders, int responseCode, String response){
-		StringBuilder headers = new StringBuilder();
-		for (String requestHeader : requestHeaders.keySet()){
-			headers.append(requestHeader).append(": ").append(requestHeaders.get(requestHeader)).append("\n");
-		}
-		try {
-			logExternalRequestStmt.setString(1, requestType);
-			logExternalRequestStmt.setString(2, "GET");
-			logExternalRequestStmt.setString(3, requestUrl);
-			logExternalRequestStmt.setString(4, headers.toString());
-			logExternalRequestStmt.setString(5,"");
-			logExternalRequestStmt.setInt(6, responseCode);
-			logExternalRequestStmt.setString(7, response);
-			logExternalRequestStmt.setLong(8, new Date().getTime() / 1000);
+		if (settings.isEnableRequestLogging()) {
+			StringBuilder headers = new StringBuilder();
+			for (String requestHeader : requestHeaders.keySet()) {
+				headers.append(requestHeader).append(": ").append(requestHeaders.get(requestHeader)).append("\n");
+			}
+			try {
+				logExternalRequestStmt.setString(1, requestType);
+				logExternalRequestStmt.setString(2, "GET");
+				logExternalRequestStmt.setString(3, requestUrl);
+				logExternalRequestStmt.setString(4, headers.toString());
+				logExternalRequestStmt.setString(5, "");
+				logExternalRequestStmt.setInt(6, responseCode);
+				logExternalRequestStmt.setString(7, response);
+				logExternalRequestStmt.setLong(8, new Date().getTime() / 1000);
 
-			logExternalRequestStmt.executeUpdate();
-		}catch (Exception e){
-			logEntry.incErrors("Unable to log external request", e);
+				logExternalRequestStmt.executeUpdate();
+			} catch (Exception e) {
+				logEntry.incErrors("Unable to log external request", e);
+			}
 		}
 	}
 }

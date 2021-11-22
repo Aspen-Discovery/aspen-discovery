@@ -18,6 +18,7 @@ class OverDriveSetting extends DataObject
 	public $numExtractionThreads;
 	public $lastUpdateOfChangedRecords;
 	public $lastUpdateOfAllRecords;
+	public $enableRequestLogging;
 
 	public $_scopes;
 
@@ -26,7 +27,7 @@ class OverDriveSetting extends DataObject
 		$overdriveScopeStructure = OverDriveScope::getObjectStructure();
 		unset($overdriveScopeStructure['settingId']);
 
-		return array(
+		$objectStructure = array(
 			'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id'),
 			'url' => array('property' => 'url', 'type' => 'url', 'label' => 'url', 'description' => 'The publicly accessible URL', 'canBatchUpdate'=>false),
 			'patronApiUrl' => array('property' => 'patronApiUrl', 'type' => 'url', 'label' => 'Patron API URL', 'description' => 'The URL where the Patron API is located', 'canBatchUpdate'=>false),
@@ -42,6 +43,7 @@ class OverDriveSetting extends DataObject
 			'numExtractionThreads' => array('property' => 'numExtractionThreads', 'type' => 'integer', 'label' => 'Num Extraction Threads', 'description' => 'The number of threads to use when extracting from OverDrive', 'canBatchUpdate'=>false, 'default'=>10),
 			'lastUpdateOfChangedRecords' => array('property' => 'lastUpdateOfChangedRecords', 'type' => 'timestamp', 'label' => 'Last Update of Changed Records', 'description' => 'The timestamp when just changes were loaded', 'default' => 0),
 			'lastUpdateOfAllRecords' => array('property' => 'lastUpdateOfAllRecords', 'type' => 'timestamp', 'label' => 'Last Update of All Records', 'description' => 'The timestamp when just changes were loaded', 'default' => 0),
+			'enableRequestLogging' => array('property' => 'enableRequestLogging', 'type' => 'checkbox', 'label' => 'Enable Request Logging', 'description' => 'Whether or not request logging is done while extracting from Aspen.', 'default' => 0),
 			'scopes' => [
 				'property' => 'scopes',
 				'type' => 'oneToMany',
@@ -58,6 +60,10 @@ class OverDriveSetting extends DataObject
 				'additionalOneToManyActions' => []
 			]
 		);
+		if (!(UserAccount::getActiveUserObj()->source = 'admin' && UserAccount::getActiveUserObj()->cat_username == 'aspen_admin')){
+			unset($objectStructure['enableRequestLogging']);
+		}
+		return $objectStructure;
 	}
 
 	public function __toString()
