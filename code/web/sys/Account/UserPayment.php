@@ -44,6 +44,9 @@ class UserPayment extends DataObject
 	private static $usersById = [];
 	function __get($name){
 		if ($name == 'user'){
+			if(empty($this->userId)){
+				return translate(['text' => 'Guest', 'isPublicFacing'=>true]);
+			}
 			if (empty($this->_data['user'])){
 				if (!array_key_exists($this->userId, UserPayment::$usersById)){
 					$user = new User();
