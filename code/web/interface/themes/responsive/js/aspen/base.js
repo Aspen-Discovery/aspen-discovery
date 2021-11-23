@@ -15,6 +15,7 @@ var AspenDiscovery = (function(){
 
 		$("#modalDialog").modal({show:false});
 		$('[data-toggle="tooltip"]').tooltip();
+		$('[data-toggle="popover"]').popover();
 
 		$('.panel')
 				.on('show.bs.collapse', function () {

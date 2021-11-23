@@ -246,8 +246,13 @@ class Library extends DataObject
 	//Web Builder
 	public $enableWebBuilder;
 
+	//Donations
+	public $donationSettingId;
+	public $enableDonations;
+
 	private $_cloudLibraryScopes;
 	private $_libraryLinks;
+
 
 	public function getNumericColumnNames() : array {
 		return [
@@ -459,7 +464,7 @@ class Library extends DataObject
 			'isDefault' => array('property' => 'isDefault', 'type'=>'checkbox', 'label' => 'Default Library (one per install!)', 'description' => 'The default library instance for loading scoping information etc', 'hideInLists' => true, 'permissions' => ['Library Domain Settings']),
 			'libraryId' => array('property'=>'libraryId', 'type'=>'label', 'label'=>'Library Id', 'description'=>'The unique id of the library within the database', 'uniqueProperty' => true),
 			'subdomain' => array('property'=>'subdomain', 'type'=>'text', 'label'=>'Subdomain', 'description'=>'A unique id to identify the library within the system', 'uniqueProperty' => true, 'forcesReindex' => true, 'required' => true, 'permissions' => ['Library Domain Settings']),
-			'baseUrl' => array('property'=>'baseUrl', 'type'=>'text', 'label'=>'Base URL (include http:// or https:// as appropriate)', 'description'=>'The Base URL for the library instance including the protocol (http or https).', 'permissions' => ['Library Domain Settings']),
+			'baseUrl' => array('property'=>'baseUrl', 'type'=>'text', 'label'=>'Base URL', 'description'=>'The Base URL for the library instance including the protocol (http or https).', 'permissions' => ['Library Domain Settings'], 'note' => 'Include <code>http://</code> or <code>https://</code> as appropriate'),
 			'displayName' => array('property'=>'displayName', 'type'=>'text', 'label'=>'Display Name', 'description'=>'A name to identify the library within the system', 'size'=>'40', 'uniqueProperty' => true, 'forcesReindex' => true, 'required' => true, 'editPermissions' => ['Library Domain Settings']),
 			'showDisplayNameInHeader' => array('property'=>'showDisplayNameInHeader', 'type'=>'checkbox', 'label'=>'Show Display Name in Header', 'description'=>'Whether or not the display name should be shown in the header next to the logo', 'hideInLists' => true, 'default'=>false, 'permissions' => ['Library Theme Configuration']),
 			'isConsortialCatalog' => array('property' => 'isConsortialCatalog', 'type'=>'checkbox', 'label' => 'Consortial Interface?', 'description' => 'If this library is a consortial view', 'hideInLists' => true, 'permissions' => ['Library Domain Settings']),
@@ -498,8 +503,8 @@ class Library extends DataObject
 				'useScope' => array('property'=>'useScope', 'type'=>'checkbox', 'label'=>'Use Scope', 'description'=>'Whether or not the scope should be used when displaying holdings.', 'hideInLists' => true, 'permissions' => ['Library ILS Connection']),
 				'showCardExpirationDate' => array('property'=>'showCardExpirationDate', 'type'=>'checkbox', 'label'=>'Show Card Expiration Date', 'description'=>'Whether or not the user should be shown their cards expiration date on the My Library Card Page.', 'hideInLists' => true, 'default' => 1, 'permissions' => ['Library ILS Options']),
 				'showExpirationWarnings' => array('property'=>'showExpirationWarnings', 'type'=>'checkbox', 'label'=>'Show Expiration Warnings', 'description'=>'Whether or not the user should be shown expiration warnings if their card is nearly expired.', 'hideInLists' => true, 'default' => 1, 'permissions' => ['Library ILS Options']),
-				'expirationNearMessage' => array('property'=>'expirationNearMessage', 'type'=>'text', 'label'=>'Expiration Near Message (use the token %date% to insert the expiration date)', 'description'=>'A message to show in the menu when the user account will expire soon', 'hideInLists' => true, 'default' => '', 'permissions' => ['Library ILS Options']),
-				'expiredMessage' => array('property'=>'expiredMessage', 'type'=>'text', 'label'=>'Expired Message (use the token %date% to insert the expiration date)', 'description'=>'A message to show in the menu when the user account has expired', 'hideInLists' => true, 'default' => '', 'permissions' => ['Library ILS Options']),
+				'expirationNearMessage' => array('property'=>'expirationNearMessage', 'type'=>'text', 'label'=>'Expiration Near Message', 'description'=>'A message to show in the menu when the user account will expire soon', 'hideInLists' => true, 'default' => '', 'permissions' => ['Library ILS Options'], 'note' => 'Use the token <code>%date%</code> to insert the expiration date'),
+				'expiredMessage' => array('property'=>'expiredMessage', 'type'=>'text', 'label'=>'Expired Message', 'description'=>'A message to show in the menu when the user account has expired', 'hideInLists' => true, 'default' => '', 'permissions' => ['Library ILS Options'], 'note' => 'Use the token <code>%date%</code> to insert the expiration date'),
 				'showWhileYouWait' => array('property'=>'showWhileYouWait', 'type'=>'checkbox', 'label'=>'Show While You Wait', 'description'=>'Whether or not the user should be shown suggestions of other titles they might like.', 'hideInLists' => true, 'default' => 1, 'permissions' => ['Library ILS Options']),
 				'showMessagingSettings' => array('property'=>'showMessagingSettings', 'type'=>'checkbox', 'label'=>'Show Messaging Settings (Koha, Symphony)', 'description'=>'Whether or not the user should be able to view their messaging settings.', 'hideInLists' => true, 'default' => 1, 'permissions' => ['Library ILS Options']),
 				'allowLinkedAccounts' => array('property'=>'allowLinkedAccounts', 'type'=>'checkbox', 'label'=>'Allow Linked Accounts', 'description' => 'Whether or not users can link multiple library cards under a single Aspen Discovery account.', 'hideInLists' => true, 'default' => 1, 'permissions' => ['Library ILS Options']),
@@ -1551,7 +1556,6 @@ class Library extends DataObject
 		}
 		return $this->_materialsRequestFormats;
 	}
-
 	/**
 	 * @return Location[]
 	 */

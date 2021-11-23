@@ -84,6 +84,8 @@ class Location extends DataObject
 //	public /** @noinspection PhpUnused */ $includeAllRecordsInDateAddedFacets;
 	public /** @noinspection PhpUnused */ $includeLibraryRecordsToInclude;
 
+	public $allowDonations;
+
 	//Combined Results (Bento Box)
 	public /** @noinspection PhpUnused */ $enableCombinedResults;
 	public $combinedResultsLabel;
@@ -235,21 +237,22 @@ class Location extends DataObject
 			'displayName' => array('property' => 'displayName', 'type' => 'text', 'label' => 'Display Name', 'description' => 'The full name of the location for display to the user', 'size' => '40', 'forcesReindex' => true, 'canBatchUpdate'=>false, 'editPermissions' => ['Location Domain Settings']),
 			'createSearchInterface' => array('property' => 'createSearchInterface', 'type' => 'checkbox', 'label' => 'Create Search Interface', 'description' => 'Whether or not a search interface is created.  Things like lockers and drive through windows dow not need search interfaces.', 'forcesReindex' => true, 'editPermissions' => ['Location Domain Settings'], 'default' => true),
 			'showInSelectInterface' => array('property' => 'showInSelectInterface', 'type' => 'checkbox', 'label' => 'Show In Select Interface (requires Create Search Interface)', 'description' => 'Whether or not this Location will show in the Select Interface Page.', 'forcesReindex' => false, 'editPermissions' => ['Location Domain Settings'], 'default' => true),
-			'appSection' => array('property' => 'appSection', 'type' => 'section', 'label' => 'Mobile App Settings', 'hideInLists' => true, 'properties' => array(
-				'enableAppAccess' => array('property' => 'enableAppAccess', 'type' => 'checkbox', 'label' => 'Display Location in Mobile App', 'description' => 'Whether or not the location is available in the app.', 'editPermissions' => ['Location Domain Settings'], 'default' => false),
-				'appReleaseChannel' => array('property' => 'appReleaseChannel', 'type' => 'enum', 'values' => $releaseChannels, 'label' => 'Release Channel', 'description' => 'Is the location available in the main public app or private beta', 'editPermissions' => ['Location Domain Settings']),
+			'showOnDonationsPage' => array('property' => 'showOnDonationsPage', 'type' => 'checkbox', 'label' => 'Show Location on Donations page', 'description' => 'Whether or not this Location will show on the Donation page.', 'forcesReindex' => false, 'editPermissions' => ['Location Domain Settings'], 'default' => true),
+			'appSection' => array('property' => 'appSection', 'type' => 'section', 'label' => 'Aspen LiDA Settings', 'hideInLists' => true, 'properties' => array(
+				'enableAppAccess' => array('property' => 'enableAppAccess', 'type' => 'checkbox', 'label' => 'Display Location in Aspen LiDA', 'description' => 'Whether or not the location is available in Aspen LiDA.', 'editPermissions' => ['Location Domain Settings'], 'default' => false),
+				'appReleaseChannel' => array('property' => 'appReleaseChannel', 'type' => 'enum', 'values' => $releaseChannels, 'label' => 'Release Channel', 'description' => 'Is the location available in the production or beta/testing app', 'editPermissions' => ['Location Domain Settings']),
 			)),
 			'theme' => array('property' => 'theme', 'type' => 'enum', 'label' => 'Theme', 'values' => $availableThemes, 'description' => 'The theme which should be used for the library', 'hideInLists' => true, 'default' => 'default', 'editPermissions' => ['Location Theme Configuration']),
 			'showDisplayNameInHeader' => array('property' => 'showDisplayNameInHeader', 'type' => 'checkbox', 'label' => 'Show Display Name in Header', 'description' => 'Whether or not the display name should be shown in the header next to the logo', 'hideInLists' => true, 'default' => false, 'permissions' => ['Location Theme Configuration']),
 			'libraryId' => array('property' => 'libraryId', 'type' => 'enum', 'values' => $libraryList, 'label' => 'Library', 'description' => 'A link to the library which the location belongs to', 'editPermissions' => ['Location Domain Settings']),
 			'isMainBranch' => array('property' => 'isMainBranch', 'type' => 'checkbox', 'label' => 'Is Main Branch', 'description' => 'Is this location the main branch for it\'s library', 'default' => false, 'canBatchUpdate'=>false, 'editPermissions' => ['Location Domain Settings']),
-			'showInLocationsAndHoursList' => array('property' => 'showInLocationsAndHoursList', 'type' => 'checkbox', 'label' => 'Show In Locations And Hours List', 'description' => 'Whether or not this location should be shown in the list of library hours and locations', 'hideInLists' => true, 'default' => true, 'editPermissions' => ['Location Address and Hours Settings']),
-			'address' => array('property' => 'address', 'type' => 'textarea', 'label' => 'Address', 'description' => 'The address of the branch.', 'hideInLists' => true, 'editPermissions' => ['Location Address and Hours Settings']),
-			'phone' => array('property' => 'phone', 'type' => 'text', 'label' => 'Phone Number', 'description' => 'The main phone number for the site .', 'maxLength' => '25', 'hideInLists' => true, 'editPermissions' => ['Location Address and Hours Settings']),
-			'contactEmail' => array('property' => 'contactEmail', 'type' => 'text', 'label' => 'Email Address', 'description' => 'The main public email address for the site .', 'hideInLists' => true, 'editPermissions' => ['Location Address and Hours Settings']),
-			'latitude' => array('property' => 'latitude', 'type' => 'text', 'label' => 'Address Latitude', 'description' => 'The latitude of the address provided.', 'maxLength' => '25', 'hideInLists' => true, 'editPermissions' => ['Location Address and Hours Settings']),
-			'longitude' => array('property' => 'longitude', 'type' => 'text', 'label' => 'Address Longitude', 'description' => 'The longitude of the address provided', 'maxLength' => '25', 'hideInLists' => true, 'editPermissions' => ['Location Address and Hours Settings']),
-			'unit' => array('property' => 'unit', 'type' => 'text', 'label' => 'Units for Distance (Mi/Km)', 'description' => 'The unit of measurement for distance', 'maxLength' => '2', 'hideInLists' => true, 'editPermissions' => ['Location Address and Hours Settings']),
+			'showInLocationsAndHoursList' => array('property' => 'showInLocationsAndHoursList', 'type' => 'checkbox', 'label' => 'Show In Locations And Hours List', 'description' => 'Whether or not this location should be shown in the list of library hours and locations', 'hideInLists' => true, 'default' => true, 'editPermissions' => ['Location Address and Hours Settings'], 'affectsLiDA' => true),
+			'address' => array('property' => 'address', 'type' => 'textarea', 'label' => 'Address', 'description' => 'The address of the branch.', 'hideInLists' => true, 'editPermissions' => ['Location Address and Hours Settings'], 'affectsLiDA' => true),
+			'phone' => array('property' => 'phone', 'type' => 'text', 'label' => 'Phone Number', 'description' => 'The main phone number for the site .', 'maxLength' => '25', 'hideInLists' => true, 'editPermissions' => ['Location Address and Hours Settings'], 'affectsLiDA' => true),
+			'contactEmail' => array('property' => 'contactEmail', 'type' => 'text', 'label' => 'Email Address', 'description' => 'The main public email address for the site .', 'hideInLists' => true, 'editPermissions' => ['Location Address and Hours Settings'], 'affectsLiDA' => true),
+			'latitude' => array('property' => 'latitude', 'type' => 'text', 'label' => 'Address Latitude', 'description' => 'The latitude of the address provided.', 'maxLength' => '25', 'hideInLists' => true, 'editPermissions' => ['Location Address and Hours Settings'], 'affectsLiDA' => true),
+			'longitude' => array('property' => 'longitude', 'type' => 'text', 'label' => 'Address Longitude', 'description' => 'The longitude of the address provided', 'maxLength' => '25', 'hideInLists' => true, 'editPermissions' => ['Location Address and Hours Settings'], 'affectsLiDA' => true),
+			'unit' => array('property' => 'unit', 'type' => 'text', 'label' => 'Units for Distance (Mi/Km)', 'description' => 'The unit of measurement for distance', 'maxLength' => '2', 'hideInLists' => true, 'editPermissions' => ['Location Address and Hours Settings'], 'affectsLiDA' => true),
 			'tty' => array('property' => 'tty', 'type' => 'text', 'label' => 'TTY Number', 'description' => 'The tty number for the site .', 'maxLength' => '25', 'hideInLists' => true, 'editPermissions' => ['Location Address and Hours Settings']),
 			'description' => array('property' => 'description', 'type' => 'markdown', 'label' => 'Description', 'description' => 'Allows the display of a description in the Location and Hours dialog', 'hideInLists' => true, 'editPermissions' => ['Location Address and Hours Settings']),
 			'nearbyLocation1' => array('property' => 'nearbyLocation1', 'type' => 'enum', 'values' => $locationLookupList, 'label' => 'Nearby Location 1', 'description' => 'A secondary location which is nearby and could be used for pickup of materials.', 'hideInLists' => true, 'permissions' => ['Location Catalog Options']),
@@ -258,7 +261,7 @@ class Location extends DataObject
 			'automaticTimeoutLengthLoggedOut' => array('property' => 'automaticTimeoutLengthLoggedOut', 'type' => 'integer', 'label' => 'Automatic Timeout Length (logged out)', 'description' => 'The length of time before the catalog resets to the home page set to 0 to disable.', 'size' => '8', 'hideInLists' => true, 'default' => self::DEFAULT_AUTOLOGOUT_TIME_LOGGED_OUT, 'permissions' => ['Location Catalog Options']),
 
 			'displaySection' => array('property' => 'displaySection', 'type' => 'section', 'label' => 'Basic Display', 'hideInLists' => true, 'properties' => array(
-				array('property' => 'homeLink', 'type' => 'text', 'label' => 'Home Link', 'description' => 'The location to send the user when they click on the home button or logo.  Use default or blank to go back to the aspen home location.', 'hideInLists' => true, 'size' => '40', 'editPermissions' => ['Location Domain Settings']),
+				array('property' => 'homeLink', 'type' => 'text', 'label' => 'Home Link', 'description' => 'The location to send the user when they click on the home button or logo.  Use default or blank to go back to the aspen home location.', 'hideInLists' => true, 'size' => '40', 'editPermissions' => ['Location Domain Settings'], 'affectsLiDA' => true),
 				array('property' => 'additionalCss', 'type' => 'textarea', 'label' => 'Additional CSS', 'description' => 'Extra CSS to apply to the site.  Will apply to all pages.', 'hideInLists' => true, 'permissions' => ['Location Theme Configuration']),
 				array('property' => 'headerText', 'type' => 'html', 'label' => 'Header Text', 'description' => 'Optional Text to display in the header, between the logo and the log in/out buttons.  Will apply to all pages.', 'allowableTags' => '<p><em><i><strong><b><a><ul><ol><li><h1><h2><h3><h4><h5><h6><h7><pre><code><hr><table><tbody><tr><th><td><caption><img><br><div><span><sub><sup>', 'hideInLists' => true, 'permissions' => ['Location Theme Configuration']),
 			)),
@@ -332,7 +335,7 @@ class Location extends DataObject
 				),
 			)),
 
-			'browseCategoryGroupId' => array('property' => 'browseCategoryGroupId', 'type' => 'enum', 'values' => $browseCategoryGroups, 'label' => 'Browse Category Group', 'description' => 'The group of browse categories to show for this library', 'hideInLists' => true, 'permissions' => ['Location Browse Category Options']),
+			'browseCategoryGroupId' => array('property' => 'browseCategoryGroupId', 'required' => true, 'type' => 'enum', 'affectsLiDA' => true, 'values' => $browseCategoryGroups, 'label' => 'Browse Category Group', 'renderAsHeading' => true, 'description' => 'The group of browse categories to show for this library', 'hideInLists' => true, 'permissions' => ['Location Browse Category Options']),
 
 			'axis360Section' => array('property' => 'axis360Section', 'type' => 'section', 'label' => 'Axis 360', 'hideInLists' => true, 'renderAsHeading' => true, 'permissions' => ['Location Records included in Catalog'], 'properties' => array(
 				'axis360ScopeId' => array('property' => 'axis360ScopeId', 'type' => 'enum', 'values' => $axis360Scopes, 'label' => 'Axis 360 Scope', 'description' => 'The Axis 360 scope to use', 'hideInLists' => true, 'default' => -1, 'forcesReindex' => true),
@@ -361,7 +364,7 @@ class Location extends DataObject
 				'overDriveScopeId'               => array('property' => 'overDriveScopeId', 'type' => 'enum', 'values' => $overDriveScopes, 'label' => 'OverDrive Scope', 'description' => 'The OverDrive scope to use', 'hideInLists' => true, 'default' => -1, 'forcesReindex' => true),
 			)),
 
-			array(
+			'hours' =>	array(
 				'property' => 'hours',
 				'type' => 'oneToMany',
 				'keyThis' => 'locationId',
@@ -369,6 +372,7 @@ class Location extends DataObject
 				'subObjectType' => 'LocationHours',
 				'structure' => $hoursStructure,
 				'label' => 'Hours',
+				'renderAsHeading' => true,
 				'description' => 'Library Hours',
 				'sortable' => false,
 				'storeDb' => true,
@@ -379,6 +383,7 @@ class Location extends DataObject
 				'property' => 'recordsOwned',
 				'type' => 'oneToMany',
 				'label' => 'Records Owned',
+				'renderAsHeading' => true,
 				'description' => 'Information about what records are owned by the location',
 				'keyThis' => 'locationId',
 				'keyOther' => 'locationId',
@@ -396,6 +401,7 @@ class Location extends DataObject
 				'property' => 'recordsToInclude',
 				'type' => 'oneToMany',
 				'label' => 'Records To Include',
+				'renderAsHeading' => true,
 				'description' => 'Information about what records to include in this scope',
 				'keyThis' => 'locationId',
 				'keyOther' => 'locationId',
@@ -414,6 +420,7 @@ class Location extends DataObject
 				'property' => 'sideLoadScopes',
 				'type' => 'oneToMany',
 				'label' => 'Side Loaded eContent Scopes',
+				'renderAsHeading' => true,
 				'description' => 'Information about what Side Loads to include in this scope',
 				'keyThis' => 'libraryId',
 				'keyOther' => 'libraryId',
