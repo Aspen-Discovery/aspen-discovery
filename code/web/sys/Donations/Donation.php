@@ -188,7 +188,14 @@ class Donation extends DataObject
 				$replyToAddress = '';
 
 				$body = '*****This is an auto-generated email response. Please do not reply.*****';
-				$body .= "\r\n\r\n" . "emailTemplate from library settings";
+
+				require_once ROOT_DIR . '/sys/ECommerce/DonationsSetting.php';
+				$donationSettings = new DonationsSetting();
+				$donationSettings->id = $donationReceipt->donationSettingId;
+				if($donationSettings->find(true)) {
+					$emailTemplate = $donationSettings->donationEmailTemplate;
+					$body .= "\r\n\r\n" . $emailTemplate;
+				}
 
 				$error = $mail->send($this->email, translate(['text'=>"Your Donation Receipt",'isPublicFacing'=>true]), $body, $replyToAddress);
 				if (($error instanceof AspenError)) {
