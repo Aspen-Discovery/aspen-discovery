@@ -652,7 +652,7 @@ class UInterface extends Smarty
 				$this->assign('donationEmailTemplate', $donationEmailTemplate);
 			}
 		}catch (Exception $e){
-			//Donations are not setup yet. 
+			//Donations are not setup yet.
 		}
 
 		$this->assign('enableDonations', $enableDonationsModule);
