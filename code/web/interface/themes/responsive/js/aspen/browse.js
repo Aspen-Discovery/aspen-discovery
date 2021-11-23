@@ -329,6 +329,9 @@ AspenDiscovery.Browse = (function(){
 						$('#browse-sub-category-menu').html(data.subcategories).fadeIn();
 					}
 
+					$('.selected-browse-dismiss').removeAttr('onclick');
+					$('.selected-browse-dismiss').attr('onclick', 'AspenDiscovery.Account.dismissBrowseCategory("'+data.patronId+'","'+subCategoryTextId+'")');
+
 					var newSubCategoryLabel = data.subCategoryLabel; // get label from corresponding button
 					// Set the new browse category label (below the carousel)
 

@@ -688,6 +688,11 @@ class Browse_AJAX extends Action {
 			return array('success' => false);
 		}
 
+		if (UserAccount::isLoggedIn()) {
+			$user = UserAccount::getActiveUserObj();
+			$result['patronId'] = $user->id;
+		}
+
 		// Get Main Category Info
 		$this->setTextId();
 		$this->getBrowseCategory();
