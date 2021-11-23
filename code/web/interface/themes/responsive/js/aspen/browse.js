@@ -205,6 +205,9 @@ AspenDiscovery.Browse = (function(){
 						$('#browse-category-' + categoryTextId).addClass('selected');
 						$('.selected-browse-label-search-text').html(data.label); // update label
 
+						$('.selected-browse-dismiss').removeAttr('onclick');
+						$('.selected-browse-dismiss').attr('onclick', 'AspenDiscovery.Account.dismissBrowseCategory("'+data.patronId+'","'+categoryTextId+'")');
+
 						AspenDiscovery.Browse.curPage = 1;
 						AspenDiscovery.Browse.curCategory = data.textId;
 						AspenDiscovery.Browse.curSubCategory = data.subCategoryTextId || '';
@@ -271,7 +274,6 @@ AspenDiscovery.Browse = (function(){
 			// clear previous selections
 			$('#browse-sub-category-menu button').removeClass('selected');
 			$('.selected-browse-sub-category-label-search-text').fadeOut();
-
 			if (categoryId !== undefined && categoryId !== AspenDiscovery.Browse.curCategory){
 				$('.browse-category').removeClass('selected');
 
@@ -326,6 +328,9 @@ AspenDiscovery.Browse = (function(){
 					if (data.subcategories) {
 						$('#browse-sub-category-menu').html(data.subcategories).fadeIn();
 					}
+
+					$('.selected-browse-dismiss').removeAttr('onclick');
+					$('.selected-browse-dismiss').attr('onclick', 'AspenDiscovery.Account.dismissBrowseCategory("'+data.patronId+'","'+subCategoryTextId+'")');
 
 					var newSubCategoryLabel = data.subCategoryLabel; // get label from corresponding button
 					// Set the new browse category label (below the carousel)

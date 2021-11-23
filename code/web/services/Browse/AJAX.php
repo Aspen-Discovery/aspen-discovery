@@ -568,6 +568,11 @@ class Browse_AJAX extends Action {
 		}
 		$response['textId'] = $textId;
 
+		if (UserAccount::isLoggedIn()) {
+			$user = UserAccount::getActiveUserObj();
+			$response['patronId'] = $user->id;
+		}
+
 		$activeCategory = $this->getBrowseCategory(); // load sub-category
 		$response['label']  = translate(['text'=>$this->browseCategory->label,'isPublicFacing'=>true]);
 
@@ -681,6 +686,11 @@ class Browse_AJAX extends Action {
 		}
 		if ($subCategoryTextId == null){
 			return array('success' => false);
+		}
+
+		if (UserAccount::isLoggedIn()) {
+			$user = UserAccount::getActiveUserObj();
+			$result['patronId'] = $user->id;
 		}
 
 		// Get Main Category Info

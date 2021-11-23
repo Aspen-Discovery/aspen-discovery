@@ -425,6 +425,25 @@ AspenDiscovery.Admin = (function(){
 			}
 			return false;
 		},
+		updateDonationFields: function(){
+			var donationsEnabled = $("#enableDonations");
+			var donationsEnabledValue = $("#enableDonations:checked").val()
+			if(donationsEnabledValue == 1) {
+				$("#propertyRowallowDonationsToBranch").show();
+				$("#propertyRowallowDonationEarmark").show();
+				$("#propertyRowallowDonationDedication").show();
+				$("#propertyRowdonationValues").show();
+				$("#propertyRowdonationContent").show();
+			}else{
+				$("#propertyRowallowDonationsToBranch").hide();
+				$("#propertyRowallowDonationEarmark").hide();
+				$("#propertyRowallowDonationDedication").hide();
+				$("#propertyRowdonationValues").hide();
+				$("#propertyRowdonationContent").hide();
+			}
+
+			return false;
+		},
 		validateCompare: function() {
 			var selectedObjects = $('.selectedObject:checked');
 			if (selectedObjects.length === 2){
@@ -707,6 +726,37 @@ AspenDiscovery.Admin = (function(){
 					$("#propertyRowallowAccess").show();
 				}else{
 					$("#propertyRowallowAccess").hide();
+				}
+			});
+		},
+
+		updateDonationsSettingFields: function () {
+			var allowEarmarks = $('#allowDonationEarmark');
+			if(allowEarmarks.is(":checked")) {
+				$("#propertyRowdonationEarmarks").show();
+			} else {
+				$("#propertyRowdonationEarmarks").hide();
+			}
+			$(allowEarmarks).click(function() {
+				if(allowEarmarks.is(":checked")){
+					$("#propertyRowdonationEarmarks").show();
+				}else{
+					$("#propertyRowdonationEarmarks").hide();
+				}
+			});
+
+			var allowDedications = $('#allowDonationDedication');
+			if(allowDedications.is(":checked")) {
+				$("#propertyRowdonationDedicationTypes").show();
+			} else {
+				$("#propertyRowdonationDedicationTypes").hide();
+			}
+
+			$(allowDedications).click(function() {
+				if(allowDedications.is(":checked")){
+					$("#propertyRowdonationDedicationTypes").show();
+				}else{
+					$("#propertyRowdonationDedicationTypes").hide();
 				}
 			});
 		},

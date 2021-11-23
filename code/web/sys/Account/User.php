@@ -2356,11 +2356,12 @@ class User extends DataObject
 		$sections['third_party_enrichment']->addAction(new AdminAction('Wikipedia Integration', 'Modify which Wikipedia content is displayed for authors.', '/Admin/AuthorEnrichment'), 'Administer Wikipedia Integration');
 
 		$sections['ecommerce'] = new AdminSection('eCommerce');
-		$sections['ecommerce']->addAction(new AdminAction('eCommerce Report', 'View all payments initialted and completed within the sytem', '/Admin/eCommerceReport'), 'View eCommerce Reports');
+		$sections['ecommerce']->addAction(new AdminAction('eCommerce Report', 'View all payments initialted and completed within the system', '/Admin/eCommerceReport'), 'View eCommerce Reports');
 		$sections['ecommerce']->addAction(new AdminAction('Comprise Settings', 'Define Settings for Comprise SMARTPAY.', '/Admin/CompriseSettings'), 'Administer Comprise');
 		$sections['ecommerce']->addAction(new AdminAction('FIS WorldPay Settings', 'Define Settings for FIS WorldPay.', '/Admin/WorldPaySettings'), 'Administer WorldPay');
 		$sections['ecommerce']->addAction(new AdminAction('PayPal Settings', 'Define Settings for PayPal.', '/Admin/PayPalSettings'), 'Administer PayPal');
 		$sections['ecommerce']->addAction(new AdminAction('ProPay Settings', 'Define Settings for ProPay.', '/Admin/ProPaySettings'), 'Administer ProPay');
+		$sections['ecommerce']->addAction(new AdminAction('Donations Settings', 'Define Settings for Donations.', '/Admin/DonationsSettings'), 'Administer Donations');
 
 		$sections['ils_integration'] = new AdminSection('ILS Integration');
 		$indexingProfileAction = new AdminAction('Indexing Profiles', 'Define how records from the ILS are loaded into Aspen Discovery.', '/ILS/IndexingProfiles');

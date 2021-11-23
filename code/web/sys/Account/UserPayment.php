@@ -18,12 +18,14 @@ class UserPayment extends DataObject
 	public $finesPaid;
 	public $totalPaid;
 	public $transactionDate;
+	public $transactionType;
 
 	public static function getObjectStructure(){
 		return [
 			'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id within the database'),
 			'paymentType' => ['property' => 'paymentType', 'type' => 'text', 'label' => 'Payment Type', 'description' => 'The system the payment was made with', 'readOnly' => true],
 			'transactionDate' => ['property' => 'transactionDate', 'type' => 'timestamp', 'label' => 'Transaction Date', 'description' => 'The date the payment was started', 'readOnly' => true],
+			'transactionType' => ['property' => 'transactionType', 'type' => 'text', 'label' => 'Transaction Type', 'description' => 'The kind of transaction this was', 'readOnly' => true],
 			'user' => ['property' => 'user', 'type' => 'text', 'label' => 'User', 'description' => 'The user who made the payment', 'readOnly' => true],
 			'paidFromInstance' => ['property' => 'paidFromInstance', 'type' => 'text', 'label' => 'Paid From', 'description' => 'The interface used when making the payment', 'readOnly' => true],
 			'library' => ['property' => 'library', 'type' => 'text', 'label' => 'Library', 'description' => 'The patron\'s home library', 'readOnly' => true],
@@ -42,6 +44,9 @@ class UserPayment extends DataObject
 	private static $usersById = [];
 	function __get($name){
 		if ($name == 'user'){
+			if(empty($this->userId)){
+				return translate(['text' => 'Guest', 'isPublicFacing'=>true]);
+			}
 			if (empty($this->_data['user'])){
 				if (!array_key_exists($this->userId, UserPayment::$usersById)){
 					$user = new User();
@@ -99,23 +104,37 @@ class UserPayment extends DataObject
 						$userPayment->message = "Payment amount did not match, was $userPayment->totalPaid, paid $amountPaid. ";
 						$userPayment->totalPaid = $amountPaid;
 					}
-					$user = new User();
-					$user->id = $userPayment->userId;
 
 					if ($result == 0) {
-						if ($user->find(true)){
-							$finePaymentCompleted = $user->completeFinePayment($userPayment);
-							if ($finePaymentCompleted['success']) {
+						if($queryParams['type'] == 'donation') {
+							require_once ROOT_DIR . '/sys/Donations/Donation.php';
+							$donation = new Donation();
+							$donation->paymentId = $userPayment->id;
+							if($donation->find(true)) {
 								$success = true;
-								$message = 'Your payment has been completed. ';
-								$userPayment->message .= "Payment completed, TROUTD = $troutD, AUTHCODE = $authCode, CCNUMBER = $ccNumber. ";
+								$message = 'Your donation payment has been completed. ';
+								$userPayment->message .= "Donation payment completed, TROUTD = $troutD, AUTHCODE = $authCode, CCNUMBER = $ccNumber. ";
 							} else {
 								$userPayment->error = true;
-								$userPayment->message .= $finePaymentCompleted['message'];
+								$userPayment->message .= "Could not find donation to mark as paid. ";
 							}
-						}else{
-							$userPayment->error = true;
-							$userPayment->message .= "Could not find user to mark the fine paid in the ILS. ";
+						} else {
+							$user = new User();
+							$user->id = $userPayment->userId;
+							if ($user->find(true)){
+								$finePaymentCompleted = $user->completeFinePayment($userPayment);
+								if ($finePaymentCompleted['success']) {
+									$success = true;
+									$message = 'Your payment has been completed. ';
+									$userPayment->message .= "Payment completed, TROUTD = $troutD, AUTHCODE = $authCode, CCNUMBER = $ccNumber. ";
+								} else {
+									$userPayment->error = true;
+									$userPayment->message .= $finePaymentCompleted['message'];
+								}
+							}else{
+								$userPayment->error = true;
+								$userPayment->message .= "Could not find user to mark the fine paid in the ILS. ";
+							}
 						}
 						$userPayment->completed = true;
 					}else{

@@ -52,12 +52,12 @@ class BrowseCategoryGroupEntry extends DataObject
 	}
 
 	private $_browseCategory = null;
-	function getBrowseCategory() : ?BrowseCategory {
+	function getBrowseCategory(){
 		if ($this->_browseCategory == null){
 			$this->_browseCategory = new BrowseCategory();
 			$this->_browseCategory->id = $this->browseCategoryId;
 			if (!$this->_browseCategory->find(true)){
-				$this->_browseCategory= false;
+				$this->_browseCategory = false;
 			}
 		}
 		return $this->_browseCategory;

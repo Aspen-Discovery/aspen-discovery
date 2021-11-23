@@ -110,7 +110,14 @@ function getUpdates21_15_00() : array
 				"UPDATE user_payments SET user_payments.transactionType=('fine') WHERE user_payments.transactionType IS NULL",
 			]
 		], //userPayments_addTransactionType
-		'donations_createInitialTable' => [
+		'donations_createInitialTableA' => [
+			'title' => 'Donations - Drop donations Table',
+			'description' => 'Drops donations',
+			'sql' => [
+				'DROP TABLE IF EXISTS donations'
+			]
+		],
+		'donations_createInitialTableB' => [
 			'title' => 'Donations - Create Donations Table',
 			'description' => 'Creates table to store donations',
 			'sql' => [
@@ -121,17 +128,25 @@ function getUpdates21_15_00() : array
 							lastName VARCHAR(256),
 							email VARCHAR(256),
 							anonymous TINYINT(1) default 0,
-							libraryId INT(11),
 							comments MEDIUMTEXT default null,
 							dedicate TINYINT(1) default 0,
 							dedicateType int(11),
 							honoreeFirstName VARCHAR(256) default null,
 							honoreeLastName VARCHAR(256) default null,
-							sendEmailToUser TINYINT(1) default 0
+							sendEmailToUser TINYINT(1) default 0,
+							donateToLibraryId INT(11),
+							donationSettingId INT(11)
 						) ENGINE = INNODB;',
 			]
 		], //donations_createInitialTable
-		'donations_createDonationsValue' => [
+		'donations_createDonationsValueA' => [
+			'title' => 'Donations - Drop donations_value Table',
+			'description' => 'Drops donations_value',
+			'sql' => [
+				'DROP TABLE IF EXISTS donations_value'
+			]
+		],
+		'donations_createDonationsValueB' => [
 			'title' => 'Donations - Create DonationsValue Table',
 			'description' => 'Creates table to store donation values',
 			'sql' => [
@@ -139,47 +154,67 @@ function getUpdates21_15_00() : array
 							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
 							value INT(11),
 							isDefault TINYINT(1) default 0,
-							libraryId VARCHAR(11)
+							donationSettingId INT(11)
 						) ENGINE = INNODB;'
 			]
 		], //donations_createDonationsValue
-		'donations_createDonationsDedicateType' => [
+		'donations_donations_createDonationsDedicateTypeA' => [
+			'title' => 'Donations - Drop donations_dedicate_type Table',
+			'description' => 'Drops donations_dedicate_type',
+			'sql' => [
+				'DROP TABLE IF EXISTS donations_dedicate_type'
+			]
+		],
+		'donations_createDonationsDedicateTypeB' => [
 			'title' => 'Donations - Create DedicateType Table',
 			'description' => 'Creates table to store dedication type values',
 			'sql' => [
 				'CREATE TABLE IF NOT EXISTS donations_dedicate_type (
 							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
 							label VARCHAR(75),
-							libraryId VARCHAR(11)
+							donationSettingId INT(11)
 						) ENGINE = INNODB;'
 			]
 		], //donations_createDonationsDedicateType
-		'donations_createDonationsEarmarks' => [
+		'donations_createDonationsEarmarksA' => [
+			'title' => 'Donations - Drop donations_earmark Table',
+			'description' => 'Drops donations_earmark',
+			'sql' => [
+				'DROP TABLE IF EXISTS donations_earmark'
+			]
+		],
+		'donations_createDonationsEarmarksB' => [
 			'title' => 'Donations - Create Earmark Table',
 			'description' => 'Creates table to store earmark values',
 			'sql' => [
 				'CREATE TABLE IF NOT EXISTS donations_earmark (
 							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
 							label VARCHAR(75),
-							libraryId VARCHAR(11),
-							weight SMALLINT(2)
+							weight SMALLINT(2),
+							donationSettingId INT(11)
 						) ENGINE = INNODB;'
 			]
 		], //donations_createDonationsEarmarks
-		'donations_createDonationsFormFields' => [
+		'donations_createDonationsFormFieldsA' => [
+			'title' => 'Donations - Drop donations_form_fields Table',
+			'description' => 'Drops donations_form_fields',
+			'sql' => [
+				'DROP TABLE IF EXISTS donations_form_fields'
+			]
+		],
+		'donations_createDonationsFormFieldsB' => [
 			'title' => 'Donations - Create FormFields Table',
 			'description' => 'Creates table to store donation form fields',
 			'sql' => [
 				'CREATE TABLE IF NOT EXISTS donations_form_fields (
 							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
 							textId VARCHAR(60) NOT NULL DEFAULT -1,
-							libraryId VARCHAR(11),
 							category VARCHAR(55),
 							label VARCHAR(255),
 							type VARCHAR(30),
 							note VARCHAR(75),
 							required TINYINT(1) default 0,
-							weight SMALLINT(2),
+							donationSettingId INT(11),
 							UNIQUE (textId)
 						) ENGINE = INNODB;'
 			]
@@ -237,7 +272,14 @@ function getUpdates21_15_00() : array
 			'sql' => [
 				"ALTER TABLE external_request_log CHANGE COLUMN response response MEDIUMTEXT"
 			]
-		]
+		],
+		'changeBrowseCategoryIdType' => [
+			'title' => 'Update browseCategoryId column type',
+			'description' => 'Update browseCategoryId column type in browse_category_dismissals to varchar',
+			'sql' => [
+				"ALTER TABLE browse_category_dismissal CHANGE COLUMN browseCategoryId browseCategoryId VARCHAR(60)"
+			]
+		], //changeBrowseCategoryIdType
 	];
 }
 

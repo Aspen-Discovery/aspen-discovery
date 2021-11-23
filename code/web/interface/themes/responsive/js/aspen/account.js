@@ -1150,12 +1150,33 @@ AspenDiscovery.Account = (function(){
 			return false;
 		},
 
-		createGenericOrder: function(finesFormId, paymentType) {
+		createGenericOrder: function(finesFormId, paymentType, transactionType) {
 			var url = Globals.path + "/MyAccount/AJAX";
+
 			var params = {
 				method: "create" + paymentType + "Order",
-				patronId: $(finesFormId + " input[name=patronId]").val()
+				patronId: $(finesFormId + " input[name=patronId]").val(),
+				type: transactionType
 			};
+			if(transactionType === 'donation') {
+
+				if($(finesFormId + " input[name=customAmount]").val()) {
+					params.amount = $(finesFormId + " input[name=customAmount]").val();
+				} else {
+					params.amount = $(finesFormId + " input[name=predefinedAmount]:checked").val();
+				}
+				params.earmark = $(finesFormId + " select[name=earmark]").val();
+				params.toLocation = $(finesFormId + " select[name=toLocation]").val();
+				params.isDedicated = $(finesFormId + " input[name=shouldBeDedicated]:checked").val();
+				params.dedicationType = $(finesFormId + " input[name=dedicationType]:checked").val();
+				params.honoreeFirstName = $(finesFormId + " input[name=honoreeFirstName]").val();
+				params.honoreeLastName = $(finesFormId + " input[name=honoreeLastName]").val();
+				params.firstName = $(finesFormId + " input[name=firstName]").val();
+				params.lastName = $(finesFormId + " input[name=lastName]").val();
+				params.isAnonymous = $(finesFormId + " input[name=makeAnonymous]:checked").val();
+				params.emailAddress = $(finesFormId + " input[name=emailAddress]").val();
+				params.settingId = $(finesFormId + " input[name=settingId]").val();
+			}
 			$(finesFormId + " .selectedFine:checked").each(
 				function() {
 					var name = $(this).attr('name');
@@ -1196,8 +1217,8 @@ AspenDiscovery.Account = (function(){
 			return orderInfo;
 		},
 
-		createMSBOrder: function(finesFormId) {
-			var url = this.createGenericOrder(finesFormId, 'MSB');
+		createMSBOrder: function(finesFormId, transactionType) {
+			var url = this.createGenericOrder(finesFormId, 'MSB', transactionType);
 			if (url === false) {
 				// Do nothing; there was an error that should be displayed
 			} else {
@@ -1205,12 +1226,12 @@ AspenDiscovery.Account = (function(){
 			}
 		},
 
-		createPayPalOrder: function(finesFormId) {
-			return this.createGenericOrder(finesFormId, 'PayPal');
+		createPayPalOrder: function(finesFormId, transactionType) {
+			return this.createGenericOrder(finesFormId, 'PayPal', transactionType);
 		},
 
-		createCompriseOrder: function(finesFormId) {
-			var url = this.createGenericOrder(finesFormId, 'Comprise');
+		createCompriseOrder: function(finesFormId, transactionType) {
+			var url = this.createGenericOrder(finesFormId, 'Comprise', transactionType);
 			if (url === false) {
 				// Do nothing; there was an error that should be displayed
 			} else {
@@ -1218,8 +1239,8 @@ AspenDiscovery.Account = (function(){
 			}
 		},
 
-		createProPayOrder: function(finesFormId) {
-			var url = this.createGenericOrder(finesFormId, 'ProPay');
+		createProPayOrder: function(finesFormId, transactionType) {
+			var url = this.createGenericOrder(finesFormId, 'ProPay', transactionType);
 			if (url === false) {
 				// Do nothing; there was an error that should be displayed
 			} else {
@@ -1227,19 +1248,28 @@ AspenDiscovery.Account = (function(){
 			}
 		},
 
-		completePayPalOrder: function(orderId, patronId) {
+		completePayPalOrder: function(orderId, patronId, transactionType) {
 			var url = Globals.path + "/MyAccount/AJAX";
 			var params = {
 				method: "completePayPalOrder",
 				patronId: patronId,
-				orderId: orderId
+				orderId: orderId,
+				type: transactionType
 			};
 			// noinspection JSUnresolvedFunction
 			$.getJSON(url, params, function(data){
 				if (data.success) {
-					AspenDiscovery.showMessage('Thank you', 'Your payment was processed successfully, thank you', false, true);
+					if(data.isDonation) {
+						window.location.href = Globals.path + '/Donations/DonationCompleted?type=paypal&payment=' + data.paymentId + '&donation=' + data.donationId;
+					} else {
+						AspenDiscovery.showMessage('Thank you', 'Your payment was processed successfully, thank you', false, true);
+					}
 				} else {
-					AspenDiscovery.showMessage('Error', 'Unable to process your payment, please visit the library with your receipt', false);
+					if(data.isDonation) {
+						window.location.href = Globals.path + '/Donations/DonationCancelled?type=paypal&payment=' + data.paymentId + '&donation=' + data.donationId;
+					} else {
+						AspenDiscovery.showMessage('Error', 'Unable to process your payment, please visit the library with your receipt', false);
+					}
 				}
 			}).fail(AspenDiscovery.ajaxFail);
 		},
@@ -1280,7 +1310,53 @@ AspenDiscovery.Account = (function(){
 			}).fail(AspenDiscovery.ajaxFail);
 			return false;
 		},
+		dismissBrowseCategory:function(patronId, browseCategoryId) {
+			var url = Globals.path + "/MyAccount/AJAX";
+			var params = {
+				method: "dismissBrowseCategory",
+				browseCategoryId: browseCategoryId || AspenDiscovery.Browse.curCategory,
+				patronId: patronId
+			};
+			// noinspection JSUnresolvedFunction
+			$.getJSON(url, params, function(data){
+				if (data.success) {
+					window.location = window.location.href.split("?")[0];
+				} else {
+					AspenDiscovery.showMessage('Error', data.message, false, true);
+				}
+			}).fail(AspenDiscovery.ajaxFail);
+			return false;
+		},
+		showHiddenBrowseCategories: function(patronId) {
+			if (Globals.loggedIn){
+				AspenDiscovery.loadingMessage();
+				var url = Globals.path + "/MyAccount/AJAX";
+				var params = {
+					method: "getHiddenBrowseCategories",
+					patronId: patronId
+				};
 
+				// noinspection JSUnresolvedFunction
+				$.getJSON(url, params, function(data){
+					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+				}).fail(AspenDiscovery.ajaxFail);
+			}
+			return false;
+		},
+		showBrowseCategory:function() {
+			if (Globals.loggedIn) {
+				var selectedCategories = AspenDiscovery.getSelectedBrowseCategories();
+				var patronId = $("#updateBrowseCategories input[name=patronId]").val();
+				if (selectedCategories) {
+					$.getJSON(Globals.path + '/MyAccount/AJAX?method=showBrowseCategory&patronId=' + patronId + '&' + selectedCategories, function () {
+						location.reload();
+					});
+				}
+			} else {
+				this.ajaxLogin(null, this.showBrowseCategory, true);
+			}
+			return false
+		},
 		updateAutoRenewal:function(patronId) {
 			var url = Globals.path + "/MyAccount/AJAX";
 			var params = {
@@ -1423,6 +1499,19 @@ AspenDiscovery.Account = (function(){
 					alert("error loading enrichment: " + e);
 				}
 			});
+		},
+		getDonationValuesForDisplay: function(){
+			if($("input[name='customAmount']").val()) {
+				var amount = $("input[name='customAmount']").val();
+				$('#thisDonation').show();
+				document.getElementById("thisDonationValue").innerHTML=amount
+			} else if($("input[name='predefinedAmount']:checked").val()) {
+				var amount = $("input[name='predefinedAmount']:checked").val();
+				$('#thisDonation').show();
+				document.getElementById("thisDonationValue").innerHTML=amount
+			} else {
+				$('#thisDonation').hide();
+			}
 		}
 	};
 }(AspenDiscovery.Account || {}));

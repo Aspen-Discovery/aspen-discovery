@@ -18,6 +18,20 @@ class Search_Home extends Action {
 
 		$interface->assign('showBreadcrumbs', 0);
 
+		$interface->assign('isLoggedIn', false);
+		if (UserAccount::isLoggedIn()) {
+			$user = UserAccount::getActiveUserObj();
+			$loggedInUser = $user->id;
+			$interface->assign('isLoggedIn', true);
+			$interface->assign('loggedInUser', $loggedInUser);
+			require_once ROOT_DIR . '/sys/Browse/BrowseCategoryDismissal.php';
+			$browseCategoryDismissals = new BrowseCategoryDismissal();
+			$browseCategoryDismissals->userId = $loggedInUser;
+			$browseCategoryDismissals->find();
+			$numHiddenCategory = $browseCategoryDismissals->count();
+			$interface->assign('numHiddenCategory', $numHiddenCategory);
+		}
+
 		// Load browse categories
 		require_once ROOT_DIR . '/sys/Browse/BrowseCategory.php';
 
