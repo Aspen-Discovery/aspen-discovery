@@ -634,21 +634,25 @@ class UInterface extends Smarty
 
 		//Determine whether or not donations functionality should be enabled
 		$enableDonationsModule = false;
-		require_once ROOT_DIR . '/sys/ECommerce/DonationsSetting.php';
-		$donationSettings = new DonationsSetting();
-		$donationSettings->id = $library->donationSettingId;
-		if($donationSettings->find(true)){
-			$enableDonationsModule = true;
-			$allowDonationsToBranch = $donationSettings->allowDonationsToBranch;
-			$this->assign('allowDonationsToBranch', $allowDonationsToBranch);
-			$allowDonationEarmark = $donationSettings->allowDonationEarmark;
-			$this->assign('allowDonationEarmark', $allowDonationEarmark);
-			$allowDonationDedication = $donationSettings->allowDonationDedication;
-			$this->assign('allowDonationDedication', $allowDonationDedication);
-			$donationsContent = $donationSettings->donationsContent;
-			$this->assign('donationsContent', $donationsContent);
-			$donationEmailTemplate = $donationSettings->donationEmailTemplate;
-			$this->assign('donationEmailTemplate', $donationEmailTemplate);
+		try {
+			require_once ROOT_DIR . '/sys/ECommerce/DonationsSetting.php';
+			$donationSettings = new DonationsSetting();
+			$donationSettings->id = $library->donationSettingId;
+			if ($donationSettings->find(true)) {
+				$enableDonationsModule = true;
+				$allowDonationsToBranch = $donationSettings->allowDonationsToBranch;
+				$this->assign('allowDonationsToBranch', $allowDonationsToBranch);
+				$allowDonationEarmark = $donationSettings->allowDonationEarmark;
+				$this->assign('allowDonationEarmark', $allowDonationEarmark);
+				$allowDonationDedication = $donationSettings->allowDonationDedication;
+				$this->assign('allowDonationDedication', $allowDonationDedication);
+				$donationsContent = $donationSettings->donationsContent;
+				$this->assign('donationsContent', $donationsContent);
+				$donationEmailTemplate = $donationSettings->donationEmailTemplate;
+				$this->assign('donationEmailTemplate', $donationEmailTemplate);
+			}
+		}catch (Exception $e){
+			//Donations are not setup yet. 
 		}
 
 		$this->assign('enableDonations', $enableDonationsModule);
