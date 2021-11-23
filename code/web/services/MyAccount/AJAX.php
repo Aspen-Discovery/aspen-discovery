@@ -2766,6 +2766,7 @@ class MyAccount_AJAX extends JSON_Action
 		$donation->donateToLibraryId = $tempDonation['donateToLibraryId'];
 		$donation->comments = $tempDonation['comments'];
 		$donation->donationSettingId = $tempDonation['donationSettingId'];
+		$donation->sendEmailToUser = 1;
 		$donation->insert();
 
 		return $donation;
