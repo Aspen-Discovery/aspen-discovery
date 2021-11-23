@@ -275,7 +275,7 @@ var AspenDiscovery = (function(){
 			return selectedTitles;
 		},
 		getSelectedLists: function(){
-			var selectedLists = $("input.listSelect:checked ").map(function() {
+			var selectedLists = $("input.selectedLists:checked ").map(function() {
 				return $(this).attr('name') + "=" + $(this).val();
 			}).get().join("&");
 			if (selectedLists.length === 0){
@@ -283,7 +283,15 @@ var AspenDiscovery = (function(){
 			}
 			return selectedLists;
 		},
-
+		getSelectedBrowseCategories: function(){
+			var selectedCategories = $("input.categorySelect:checked ").map(function() {
+				return $(this).attr('name') + "=" + $(this).val();
+			}).get().join("&");
+			if (selectedCategories.length === 0){
+				var ret = confirm('No browse categories were selected');
+			}
+			return selectedCategories;
+		},
 
 		pwdToText: function(fieldId){
 			var elem = document.getElementById(fieldId);

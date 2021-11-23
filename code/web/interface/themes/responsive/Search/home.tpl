@@ -35,15 +35,22 @@
 		<div class="col-sm-12">
 
 			<div class="row" id="selected-browse-label">
+					<div class="btn-toolbar pull-right" style="padding: 0 8px; margin-right: 20px">
+						<div class="btn-group btn-group-sm" data-toggle="buttons">
+							<label for="covers" title="Covers" class="btn btn-sm btn-default"><input onchange="AspenDiscovery.Browse.toggleBrowseMode(this.id)" type="radio" id="covers">
+								<i class="fas fa-th"></i><span> {translate text='Covers' isPublicFacing=true}</span>
+							</label>
+							<label for="grid" title="Grid" class="btn btn-sm btn-default"><input onchange="AspenDiscovery.Browse.toggleBrowseMode(this.id);" type="radio" id="grid">
+								<i class="fas fa-th-list"></i> {translate text='Grid' isPublicFacing=true}</span>
+							</label>
+						</div>
+						{if $isLoggedIn}
+						<div class="btn-group" data-toggle="buttons" style="margin-top: -.15em; margin-left: 1em;">
+							<button class="btn btn-default selected-browse-dismiss" onclick=""><i class="fas fa-times"></i> Hide</button>
+						</div>
+						{/if}
+					</div>
 
-				<div class="btn-group btn-group-sm" data-toggle="buttons">
-					<label for="covers" title="Covers" class="btn btn-sm btn-default"><input onchange="AspenDiscovery.Browse.toggleBrowseMode(this.id)" type="radio" id="covers">
-						<span class="thumbnail-icon"></span><span> {translate text='Covers' isPublicFacing=true}</span>
-					</label>
-					<label for="grid" title="Grid" class="btn btn-sm btn-default"><input onchange="AspenDiscovery.Browse.toggleBrowseMode(this.id);" type="radio" id="grid">
-						<span class="grid-icon"></span><span> {translate text='Grid' isPublicFacing=true}</span>
-					</label>
-				</div>
 
 				<div class="selected-browse-label-search">
 					<a id="selected-browse-search-link" title="See the search results page for this browse category">
@@ -72,6 +79,16 @@
 					<span class="glyphicon glyphicon-chevron-down" aria-label="{translate text='Get More Results' inAttribute=true isPublicFacing=true}"></span>
 				</div>
 			</a>
+			{* add link to restore hidden browse categories if user has any hidden *}
+			{if $isLoggedIn && $numHiddenCategory > 0}
+			<div class="row text-center" style="margin-top: 2em">
+				<div class="col-xs-12">
+					<a role="button" title="{translate text='Show Hidden Browse Categories' inAttribute=true isPublicFacing=true}" tabindex="1">
+						<span class="btn btn-default btn-sm" aria-label="{translate text='Show Hidden Browse Categories' inAttribute=true isPublicFacing=true}" onclick="return AspenDiscovery.Account.showHiddenBrowseCategories('{$loggedInUser}')"><i class="fas fa-eye"></i> Show Hidden Browse Categories</span>
+					</a>
+				</div>
+			</div>
+			{/if}
 		</div>
 	</div>
 {/strip}

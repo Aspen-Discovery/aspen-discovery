@@ -568,6 +568,11 @@ class Browse_AJAX extends Action {
 		}
 		$response['textId'] = $textId;
 
+		if (UserAccount::isLoggedIn()) {
+			$user = UserAccount::getActiveUserObj();
+			$response['patronId'] = $user->id;
+		}
+
 		$activeCategory = $this->getBrowseCategory(); // load sub-category
 		$response['label']  = translate(['text'=>$this->browseCategory->label,'isPublicFacing'=>true]);
 

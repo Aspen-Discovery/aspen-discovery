@@ -21,6 +21,7 @@ class BrowseCategory extends BaseBrowsable
 
 	public $numTimesShown;
 	public $numTitlesClickedOn;
+	public $numTimesDismissed;
 
 	private $_subBrowseCategories;
 
@@ -256,6 +257,7 @@ class BrowseCategory extends BaseBrowsable
 			'defaultSort' => array('property' => 'defaultSort', 'type' => 'enum', 'label' => 'Default Sort', 'values' => array('relevance' => 'Best Match', 'popularity' => 'Popularity', 'newest_to_oldest' => 'Date Added', 'author' => 'Author', 'title' => 'Title', 'user_rating' => 'Rating', 'publication_year_desc' => 'Publication Year Desc', 'publication_year_asc' => 'Publication Year Asc', 'holds' => 'Number of Holds'), 'description' => 'The default sort for the search if none is specified', 'default' => 'relevance', 'hideInLists' => true),
 			'numTimesShown' => array('property' => 'numTimesShown', 'type' => 'label', 'label' => 'Times Shown', 'description' => 'The number of times this category has been shown to users'),
 			'numTitlesClickedOn' => array('property' => 'numTitlesClickedOn', 'type' => 'label', 'label' => 'Titles Clicked', 'description' => 'The number of times users have clicked on titles within this category'),
+			'numTimesDismissed' => array('property' => 'numTimesDismissed', 'type' => 'label', 'label' => 'Dismissed', 'description' => 'The number of times users have dismissed this category'),
 		);
 	}
 
@@ -326,6 +328,17 @@ class BrowseCategory extends BaseBrowsable
 				}
 			}
 			return false;
+		}
+		// check if user has dismissed
+		if (UserAccount::isLoggedIn()) {
+			$user = UserAccount::getActiveUserObj();
+			require_once ROOT_DIR . '/sys/Browse/BrowseCategoryDismissal.php';
+			$browseCategoryDismissal = new BrowseCategoryDismissal();
+			$browseCategoryDismissal->browseCategoryId = $this->textId;
+			$browseCategoryDismissal->userId = $user->id;
+			if($browseCategoryDismissal->find(true)){
+				return false;
+			}
 		}
 		return true;
 	}
