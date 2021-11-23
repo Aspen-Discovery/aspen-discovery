@@ -2622,6 +2622,156 @@ class MyAccount_AJAX extends JSON_Action
 	}
 
 	/** @noinspection PhpUnused */
+	function createGenericDonation($paymentType = '')
+	{
+		$transactionDate = time();
+		$user = UserAccount::getLoggedInUser();
+
+		global $library;
+		$paymentLibrary = $library;
+
+		$patronId = $_REQUEST['patronId'];
+		$donationSettingId = $_REQUEST['settingId'];
+		$currencyCode = 'USD'; // set a default, check system variables later
+
+		// if logged in validate the user
+		if ($patronId != 'Guest') {
+			if($user->getUserReferredTo($patronId)) {
+				$patron = $user->getUserReferredTo($patronId);
+				$userLibrary = $patron->getHomeLibrary();
+			} else {
+				return ['success' => false, 'message' => translate(['text' => 'Could not find the patron referred to, please try again.', 'isPublicFacing'=> true])];
+			}
+		} else {
+			$patron = null;
+			$patronId = null;
+			$userLibrary = $library;
+		}
+
+		$systemVariables = SystemVariables::getSystemVariables();
+		if ($systemVariables->find(true)) {
+			$currencyCode = $systemVariables->currencyCode;
+		}
+
+		$toLocation = isset($_REQUEST['toLocation']) ? $_REQUEST['toLocation'] : $library;
+
+		// check for a minimum value to donate
+		// for now we will use minimumFineAmount and decide later if donations should be separate
+		$minimumAmountToProcess = $paymentLibrary->minimumFineAmount;
+		$setupCurrencyFormat = numfmt_create($currencyCode, NumberFormatter::CURRENCY);
+		$currencyFormat = numfmt_format_currency($setupCurrencyFormat, $minimumAmountToProcess, $currencyCode);
+
+		// check for good values
+		if (empty($_REQUEST['amount']) || empty($_REQUEST['emailAddress']) || empty($_REQUEST['firstName']) || empty($_REQUEST['lastName']) || (isset($_REQUEST['amount'])) && ($_REQUEST['amount'] < $minimumAmountToProcess)) {
+			$message = null;
+			if(!empty($_REQUEST['amount']) && $_REQUEST['amount'] < $minimumAmountToProcess) {
+				$thisAmount = numfmt_format_currency($setupCurrencyFormat, $_REQUEST['amount'], $currencyCode);
+				$message .= "<div class='alert alert-danger'><p><b>The minimum value for donating online is $currencyFormat, but you entered $thisAmount</b>.</p></div>";
+			}
+
+			$message .= "<div class='alert alert-danger'><p><b>The following fields were left blank or contain invalid values</b></p>";
+			$message .= "<ul>";
+			if(empty($_REQUEST['amount'])) { $message .= "<li>A valid amount value to donate</li>"; }
+
+			if(empty($_REQUEST['emailAddress'])) { $message .= "<li>Your email address</li>"; }
+			if(empty($_REQUEST['firstName'])) { $message .= "<li>Your first name</li>"; }
+			if(empty($_REQUEST['lastName'])) { $message .= "<li>Your last name</li>"; }
+
+			if(isset($_REQUEST['isDedicated']) && ($_REQUEST['isDedicated'] == "on")) {
+				if(empty($_REQUEST['dedicationType'])) { $message .= "<li>The type of dedication you'd like</li>"; }
+				if(empty($_REQUEST['honoreeFirstName'])) { $message .= "<li>A first name for the dedication</li>"; }
+				if(empty($_REQUEST['honoreeLastName'])) { $message .= "<li>A last name for the dedication</li>"; }
+			}
+
+			$message .= "</ul></div>";
+			return ['success' => false, 'message' => $message, 'isPublicFacing'=> true];
+		}
+
+		$donationValue = $_REQUEST['amount'];
+
+		// prep donation for processor
+		$purchaseUnits['items'][] = [
+			'custom_id' => uniqid(time(), true),
+			'name' => 'Donation to Library',
+			'description' => 'Donation to ' . $library->displayName . ' for ' . numfmt_format_currency($setupCurrencyFormat, $donationValue, $currencyCode),
+			'unit_amount' => [
+				'currency_code' => $currencyCode,
+				'value' => round($donationValue, 2),
+			],
+			'quantity' => 1
+		];
+
+		$purchaseUnits['amount'] = [
+			'currency_code' => $currencyCode,
+			'value' => round($donationValue, 2),
+			'breakdown' => [
+				'item_total' => [
+					'currency_code' => $currencyCode,
+					'value' => round($donationValue, 2),
+				],
+			]
+		];
+
+		$tempDonation = [
+			'firstName' => $_REQUEST['firstName'],
+			'lastName' => $_REQUEST['lastName'],
+			'email' => $_REQUEST['emailAddress'],
+			'isAnonymous' => isset($_REQUEST['isAnonymous']) ? 1 : 0,
+			'donateToLibraryId' => $toLocation,
+			'isDedicated' => isset($_REQUEST['isDedicated']) ? 1 : 0,
+			'comments' => isset($_REQUEST['earmark']) ? $_REQUEST['earmark'] : "",
+			'donationSettingId' => $_REQUEST['settingId']
+		];
+
+		if($tempDonation['isDedicated'] == 1) {
+			$tempDonation['dedication'] = [
+				'type' => $_REQUEST['dedicationType'],
+				'honoreeFirstName' => $_REQUEST['honoreeFirstName'],
+				'honoreeLastName' => $_REQUEST['honoreeLastName'],
+			];
+		}
+
+		require_once ROOT_DIR . '/sys/Account/UserPayment.php';
+		$payment = new UserPayment();
+		$payment->userId = $patronId;
+		$payment->completed = 0;
+		$payment->finesPaid = null;
+		$payment->totalPaid = $donationValue;
+		$payment->paymentType = $paymentType;
+		$payment->transactionDate = $transactionDate;
+		$payment->transactionType = "donation";
+		global $library;
+		$payment->paidFromInstance = $library->subdomain;
+		$paymentId = $payment->insert();
+		$purchaseUnits['custom_id'] = $paymentId;
+
+		return [$paymentLibrary, $userLibrary, $payment, $purchaseUnits, $patron, $tempDonation];
+
+	}
+
+	function addDonation($payment, $tempDonation) {
+		require_once ROOT_DIR . '/sys/Donations/Donation.php';
+		$donation = new Donation();
+		$donation->paymentId = $payment->id;
+		$donation->firstName = $tempDonation['firstName'];
+		$donation->lastName = $tempDonation['lastName'];
+		$donation->email = $tempDonation['email'];
+		$donation->anonymous = $tempDonation['isAnonymous'];
+		$donation->dedicate = $tempDonation['isDedicated'];
+		if($tempDonation['isDedicated'] == 1) {
+			$donation->dedicateType = $tempDonation['dedication']['type'];
+			$donation->honoreeFirstName = $tempDonation['dedication']['honoreeFirstName'];
+			$donation->honoreeLastName = $tempDonation['dedication']['honoreeLastName'];
+		}
+		$donation->donateToLibraryId = $tempDonation['donateToLibraryId'];
+		$donation->comments = $tempDonation['comments'];
+		$donation->donationSettingId = $tempDonation['donationSettingId'];
+		$donation->insert();
+
+		return $donation;
+	}
+
+	/** @noinspection PhpUnused */
 	function createGenericOrder($paymentType = '')
 	{
 		$transactionDate = time();
@@ -2805,6 +2955,7 @@ class MyAccount_AJAX extends JSON_Action
 			$payment->totalPaid = $totalFines;
 			$payment->paymentType = $paymentType;
 			$payment->transactionDate = $transactionDate;
+			$payment->transactionType = "fine";
 			global $library;
 			$payment->paidFromInstance = $library->subdomain;
 			$paymentId = $payment->insert();
@@ -2817,7 +2968,13 @@ class MyAccount_AJAX extends JSON_Action
 	function createPayPalOrder(){
 		global $configArray;
 
-		$result = $this->createGenericOrder('paypal');
+		$transactionType = $_REQUEST['type'];
+		if($transactionType == 'donation') {
+			$result = $this->createGenericDonation('paypal');
+		} else {
+			$result = $this->createGenericOrder('paypal');
+		}
+
 		if (array_key_exists('success', $result) && $result['success'] === false) {
 			return $result;
 		} else {
@@ -2826,7 +2983,12 @@ class MyAccount_AJAX extends JSON_Action
 			/** @var UserPayment $payment */
 			/** @var User $patron */
 			/** @noinspection PhpUnusedLocalVariableInspection */
-			list($paymentLibrary, $userLibrary, $payment, $purchaseUnits, $patron) = $result;
+			if($transactionType == 'donation') {
+				list($paymentLibrary, $userLibrary, $payment, $purchaseUnits, $patron, $tempDonation) = $result;
+			} else {
+				list($paymentLibrary, $userLibrary, $payment, $purchaseUnits, $patron) = $result;
+			}
+
 			require_once ROOT_DIR . '/sys/ECommerce/PayPalSetting.php';
 			$payPalSettings = new PayPalSetting();
 			$payPalSettings->id = $paymentLibrary->payPalSettingId;
@@ -2907,6 +3069,10 @@ class MyAccount_AJAX extends JSON_Action
 			$payment->orderId = $paymentResponse->id;
 			$payment->update();
 
+			if($payment->transactionType == 'donation') {
+				$this->addDonation($payment, $tempDonation);
+			}
+
 			return ['success' => true, 'orderInfo' => $paymentResponse, 'orderID' => $paymentResponse->id];
 		}
 	}
@@ -2914,95 +3080,126 @@ class MyAccount_AJAX extends JSON_Action
 	/** @noinspection PhpUnused */
 	function completePayPalOrder()
 	{
+		global $configArray;
+
 		$orderId = $_REQUEST['orderId'];
 		$patronId = $_REQUEST['patronId'];
+		$transactionType = $_REQUEST['type'];
 
-		//Get the order information
-		require_once ROOT_DIR . '/sys/Account/UserPayment.php';
-		$payment = new UserPayment();
-		$payment->orderId = $orderId;
-		$payment->userId = $patronId;
-		if ($payment->find(true)) {
-			$user = UserAccount::getLoggedInUser();
-			$patronId = $_REQUEST['patronId'];
+		global $library;
+		$paymentLibrary = $library;
 
-			$patron = $user->getUserReferredTo($patronId);
-			$userLibrary = $patron->getHomeLibrary();
-			global $library;
-			$paymentLibrary = $library;
-			$systemVariables = SystemVariables::getSystemVariables();
-			if ($systemVariables->libraryToUseForPayments == 0){
-				$paymentLibrary = $userLibrary;
+		if($transactionType == 'donation') {
+			//Get the order information
+			require_once ROOT_DIR . '/sys/Account/UserPayment.php';
+			$payment = new UserPayment();
+			$payment->orderId = $orderId;
+			$payment->transactionType = 'donation';
+			if($payment->find(true)) {
+				require_once ROOT_DIR . '/sys/Donations/Donation.php';
+				$donation = new Donation();
+				$donation->paymentId = $payment->id;
+				if(!$donation->find(true)) {
+					header("Location: " . $configArray['Site']['url'] . '/Donations/DonationCancelled?type=paypal&payment=' . $payment->id . '&donation=' . $donation->id);
+				}
+			} else {
+				header("Location: " . $configArray['Site']['url'] . '/Donations/DonationCancelled?type=paypal&payment=' . $payment->id);
+			}
+		} else {
+			//Get the order information
+			require_once ROOT_DIR . '/sys/Account/UserPayment.php';
+			$payment = new UserPayment();
+			$payment->orderId = $orderId;
+			$payment->userId = $patronId;
+			if ($payment->find(true)) {
+
+				$user = UserAccount::getLoggedInUser();
+				$patronId = $_REQUEST['patronId'];
+
+				$patron = $user->getUserReferredTo($patronId);
+				$userLibrary = $patron->getHomeLibrary();
+				global $library;
+				$paymentLibrary = $library;
+				$systemVariables = SystemVariables::getSystemVariables();
+				if ($systemVariables->libraryToUseForPayments == 0) {
+					$paymentLibrary = $userLibrary;
+				}
+			}
+		}
+
+		require_once ROOT_DIR . '/sys/ECommerce/PayPalSetting.php';
+		$payPalSettings = new PayPalSetting();
+		$payPalSettings->id = $paymentLibrary->payPalSettingId;
+		if ($payPalSettings->find(true)) {
+			//Get Payment details
+
+			require_once ROOT_DIR . '/sys/CurlWrapper.php';
+			$payPalAuthRequest = new CurlWrapper();
+			//Connect to PayPal
+			if ($payPalSettings->sandboxMode == 1) {
+				$baseUrl = 'https://api.sandbox.paypal.com';
+			} else {
+				$baseUrl = 'https://api.paypal.com';
 			}
 
-			require_once ROOT_DIR . '/sys/ECommerce/PayPalSetting.php';
-			$payPalSettings = new PayPalSetting();
-			$payPalSettings->id = $paymentLibrary->payPalSettingId;
-			if ($payPalSettings->find(true)){
-				//Get Payment details
+			$clientId = $payPalSettings->clientId;
+			$clientSecret = $payPalSettings->clientSecret;
 
-				require_once ROOT_DIR . '/sys/CurlWrapper.php';
-				$payPalAuthRequest = new CurlWrapper();
-				//Connect to PayPal
-				if ($payPalSettings->sandboxMode == 1) {
-					$baseUrl = 'https://api.sandbox.paypal.com';
-				} else {
-					$baseUrl = 'https://api.paypal.com';
-				}
+			//Get the access token
+			$authInfo = base64_encode("$clientId:$clientSecret");
+			$payPalAuthRequest->addCustomHeaders([
+				"Accept: application/json",
+				"Accept-Language: en_US",
+				"Authorization: Basic $authInfo"
+			], true);
+			$postParams = [
+				'grant_type' => 'client_credentials',
+			];
 
-				$clientId = $payPalSettings->clientId;
-				$clientSecret = $payPalSettings->clientSecret;
+			$accessTokenUrl = $baseUrl . "/v1/oauth2/token";
+			$accessTokenResults = $payPalAuthRequest->curlPostPage($accessTokenUrl, $postParams);
+			$accessTokenResults = json_decode($accessTokenResults);
+			if (empty($accessTokenResults->access_token)) {
+				return ['success' => false, 'message' => 'Unable to authenticate with PayPal, please try again in a few minutes.'];
+			} else {
+				$accessToken = $accessTokenResults->access_token;
+			}
 
-				//Get the access token
-				$authInfo = base64_encode("$clientId:$clientSecret");
-				$payPalAuthRequest->addCustomHeaders([
-					"Accept: application/json",
-					"Accept-Language: en_US",
-					"Authorization: Basic $authInfo"
-				], true);
-				$postParams = [
-					'grant_type' => 'client_credentials',
-				];
+			$payPalPaymentRequest = new CurlWrapper();
+			$payPalPaymentRequest->addCustomHeaders([
+				"Accept: application/json",
+				"Content-Type: application/json",
+				"Accept-Language: en_US",
+				"Authorization: Bearer $accessToken",
+				"Prefer: return=representation"
+			], false);
+			$paymentRequestUrl = $baseUrl . '/v2/checkout/orders/' . $payment->orderId;
 
-				$accessTokenUrl = $baseUrl . "/v1/oauth2/token";
-				$accessTokenResults = $payPalAuthRequest->curlPostPage($accessTokenUrl, $postParams);
-				$accessTokenResults = json_decode($accessTokenResults);
-				if (empty($accessTokenResults->access_token)) {
-					return ['success' => false, 'message' => 'Unable to authenticate with PayPal, please try again in a few minutes.'];
-				} else {
-					$accessToken = $accessTokenResults->access_token;
-				}
+			$paymentResponse = $payPalPaymentRequest->curlGetPage($paymentRequestUrl);
+			$paymentResponse = json_decode($paymentResponse);
 
-				$payPalPaymentRequest = new CurlWrapper();
-				$payPalPaymentRequest->addCustomHeaders([
-					"Accept: application/json",
-					"Content-Type: application/json",
-					"Accept-Language: en_US",
-					"Authorization: Bearer $accessToken",
-					"Prefer: return=representation"
-				], false);
-				$paymentRequestUrl = $baseUrl . '/v2/checkout/orders/' . $payment->orderId;
-
-				$paymentResponse = $payPalPaymentRequest->curlGetPage($paymentRequestUrl);
-				$paymentResponse = json_decode($paymentResponse);
-
-				$purchaseUnits = $paymentResponse->purchase_units;
-				if (!empty($purchaseUnits)){
-					$firstItem = reset($purchaseUnits);
-					$payments = $firstItem->payments;
-					if (!empty($payments->captures)){
-						foreach ($payments->captures as $capture){
-							if ($capture->status == 'COMPLETED'){
-								$paymentTransactionId = $capture->id;
-								$payment->transactionId = $paymentTransactionId;
-								$payment->update();
-								break;
-							}
+			$purchaseUnits = $paymentResponse->purchase_units;
+			if (!empty($purchaseUnits)) {
+				$firstItem = reset($purchaseUnits);
+				$payments = $firstItem->payments;
+				if (!empty($payments->captures)) {
+					foreach ($payments->captures as $capture) {
+						if ($capture->status == 'COMPLETED') {
+							$paymentTransactionId = $capture->id;
+							$payment->transactionId = $paymentTransactionId;
+							$payment->update();
+							break;
 						}
 					}
 				}
 			}
+		}
 
+		if($transactionType == 'donation') {
+			$payment->completed = 1;
+			$payment->update();
+			return ['success' => true, 'isDonation' => true, 'paymentId' => $payment->id, 'donationId' => $donation->id];
+		} else {
 			if ($payment->completed) {
 				return ['success' => false, 'message' => 'This payment has already been processed'];
 			} else {
@@ -3010,8 +3207,6 @@ class MyAccount_AJAX extends JSON_Action
 				$patron = $user->getUserReferredTo($patronId);
 				return $patron->completeFinePayment($payment);
 			}
-		} else {
-			return ['success' => false, 'message' => 'Unable to find the order you processed, please visit the library with your receipt'];
 		}
 	}
 
@@ -3019,17 +3214,32 @@ class MyAccount_AJAX extends JSON_Action
 	function createMSBOrder()
 	{
 		global $configArray;
-		$result = $this->createGenericOrder('msb');
+
+		$transactionType = $_REQUEST['type'];
+		if($transactionType == 'donation') {
+			$result = $this->createGenericDonation('msb');
+		} else {
+			$result = $this->createGenericOrder('msb');
+		}
 		if (array_key_exists('success', $result) && $result['success'] === false) {
 			return $result;
 		} else {
 			/** @noinspection PhpUnusedLocalVariableInspection */
-			list($paymentLibrary, $userLibrary, $payment, $purchaseUnits) = $result;
+			if($transactionType == 'donation') {
+				list($paymentLibrary, $userLibrary, $payment, $purchaseUnits, $patron, $tempDonation) = $result;
+				$donation = $this->addDonation($payment, $tempDonation);
+			} else {
+				list($paymentLibrary, $userLibrary, $payment, $purchaseUnits) = $result;
+			}
 			$paymentRequestUrl = $paymentLibrary->msbUrl;
 			$paymentRequestUrl .= "?ReferenceID=" . $payment->id;
 			$paymentRequestUrl .= "&PaymentType=CC";
 			$paymentRequestUrl .= "&TotalAmount=" . $payment->totalPaid;
-			$paymentRequestUrl .= "&PaymentRedirectUrl=" . $configArray['Site']['url'] . '/MyAccount/Fines/' . $payment->id;
+			if($transactionType == 'donation') {
+				$paymentRequestUrl .= "&PaymentRedirectUrl=" . $configArray['Site']['url'] . '/Donations/DonationCompleted?type=msb&payment=' . $payment->id . '&donation=' . $donation->id;
+			} else {
+				$paymentRequestUrl .= "&PaymentRedirectUrl=" . $configArray['Site']['url'] . '/MyAccount/Fines/' . $payment->id;
+			}
 			return ['success' => true, 'message' => 'Redirecting to payment processor', 'paymentRequestUrl' => $paymentRequestUrl];
 		}
 	}
@@ -3037,7 +3247,14 @@ class MyAccount_AJAX extends JSON_Action
 	/** @noinspection PhpUnused */
 	function createCompriseOrder() {
 		global $configArray;
-		$result = $this->createGenericOrder('comprise');
+
+		$transactionType = $_REQUEST['type'];
+		if($transactionType == 'donation') {
+			$result = $this->createGenericDonation('comprise');
+		} else {
+			$result = $this->createGenericOrder('comprise');
+		}
+
 		if (array_key_exists('success', $result) && $result['success'] === false) {
 			return $result;
 		} else {
@@ -3055,7 +3272,12 @@ class MyAccount_AJAX extends JSON_Action
 			/** @var UserPayment $payment */
 			/** @var User $patron */
 			/** @noinspection PhpUnusedLocalVariableInspection */
-			list($paymentLibrary, $userLibrary, $payment, $purchaseUnits, $patron) = $result;
+			if($transactionType == 'donation') {
+				list($paymentLibrary, $userLibrary, $payment, $purchaseUnits, $patron, $tempDonation) = $result;
+				$donation = $this->addDonation($payment, $tempDonation);
+			} else {
+				list($paymentLibrary, $userLibrary, $payment, $purchaseUnits, $patron) = $result;
+			}
 			require_once ROOT_DIR . '/sys/ECommerce/CompriseSetting.php';
 			$compriseSettings = new CompriseSetting();
 			$compriseSettings->id = $paymentLibrary->compriseSettingId;
@@ -3063,13 +3285,23 @@ class MyAccount_AJAX extends JSON_Action
 				$paymentRequestUrl = 'https://smartpayapi2.comprisesmartterminal.com/smartpayapi/websmartpay.dll?GetCreditForm';
 				$paymentRequestUrl .= "&LocationID=" . $compriseSettings->username;
 				$paymentRequestUrl .= "&CustomerID=" . $compriseSettings->customerId;
-				$paymentRequestUrl .= "&PatronID=" . $patron->getBarcode();
+				if($transactionType == 'donation') {
+					$paymentRequestUrl .= "&PatronID=Guest";
+				} else {
+					$paymentRequestUrl .= "&PatronID=" . $patron->getBarcode();
+				}
 				$paymentRequestUrl .= '&UserName=' . urlencode($compriseSettings->username);
 				$paymentRequestUrl .= '&Password=' . $compriseSettings->password;
 				$paymentRequestUrl .= '&Amount=' . $currencyFormatter->format($payment->totalPaid);
-				$paymentRequestUrl .= "&URLPostBack=" . urlencode($configArray['Site']['url'] . '/Comprise/Complete');
-				$paymentRequestUrl .= "&URLReturn=" . urlencode($configArray['Site']['url'] . '/MyAccount/CompriseCompleted?payment=' . $payment->id);
-				$paymentRequestUrl .= "&URLCancel=" . urlencode($configArray['Site']['url'] . '/MyAccount/CompriseCancel?payment=' . $payment->id);
+				if($transactionType == 'donation') {
+					$paymentRequestUrl .= "&URLPostBack=" . urlencode($configArray['Site']['url'] . '/Comprise/Complete?type=' . $payment->transactionType . '&donation=' . $donation->id);
+					$paymentRequestUrl .= "&URLReturn=" . urlencode($configArray['Site']['url'] . '/Donations/DonationCompleted?type=comprise&payment=' . $payment->id . '&donation=' . $donation->id);
+					$paymentRequestUrl .= "&URLCancel=" . urlencode($configArray['Site']['url'] . '/Donations/DonationCompleted?type=comprise&payment=' . $payment->id . '&donation=' . $donation->id);
+				} else {
+					$paymentRequestUrl .= "&URLPostBack=" . urlencode($configArray['Site']['url'] . '/Comprise/Complete?type=' . $payment->transactionType);
+					$paymentRequestUrl .= "&URLReturn=" . urlencode($configArray['Site']['url'] . '/MyAccount/CompriseCompleted?payment=' . $payment->id);
+					$paymentRequestUrl .= "&URLCancel=" . urlencode($configArray['Site']['url'] . '/MyAccount/CompriseCancel?payment=' . $payment->id);
+				}
 				$paymentRequestUrl .= '&INVNUM=' . $payment->id;
 				$paymentRequestUrl .= '&Field1=';
 				$paymentRequestUrl .= '&Field2=';
@@ -3086,7 +3318,13 @@ class MyAccount_AJAX extends JSON_Action
 	/** @noinspection PhpUnused */
 	function createProPayOrder() {
 		global $configArray;
-		$result = $this->createGenericOrder('propay');
+
+		$transactionType = $_REQUEST['type'];
+		if($transactionType == 'donation') {
+			$result = $this->createGenericDonation('propay');
+		} else {
+			$result = $this->createGenericOrder('propay');
+		}
 		if (array_key_exists('success', $result) && $result['success'] === false) {
 			return $result;
 		} else {
@@ -3105,11 +3343,17 @@ class MyAccount_AJAX extends JSON_Action
 			/** @var UserPayment $payment */
 			/** @var User $patron */
 			/** @noinspection PhpUnusedLocalVariableInspection */
-			list($paymentLibrary, $userLibrary, $payment, $purchaseUnits, $patron) = $result;
+			if($transactionType == 'donation') {
+				list($paymentLibrary, $userLibrary, $payment, $purchaseUnits, $patron, $tempDonation) = $result;
+			} else {
+				list($paymentLibrary, $userLibrary, $payment, $purchaseUnits, $patron) = $result;
+			}
 			require_once ROOT_DIR . '/sys/ECommerce/ProPaySetting.php';
 			$proPaySetting = new ProPaySetting();
 			$proPaySetting->id = $paymentLibrary->proPaySettingId;
 			if ($proPaySetting->find(true)) {
+
+				if($transactionType == 'donation') { $donation = $this->addDonation($payment, $tempDonation); }
 				$curlWrapper = new CurlWrapper();
 				$authorization = $proPaySetting->billerAccountId . ':' . $proPaySetting->authenticationToken;
 				$authorization = 'Basic ' . base64_encode($authorization);
@@ -3139,8 +3383,13 @@ class MyAccount_AJAX extends JSON_Action
 					$createPayerResponse = $curlWrapper->curlSendPage($url, 'PUT', json_encode($createPayer));
 					if ($createPayerResponse && $curlWrapper->getResponseCode() == 200){
 						$jsonResponse = json_decode($createPayerResponse);
-						$patron->proPayPayerAccountId = $jsonResponse->ExternalAccountID;
-						$patron->update();
+						if($patron != null) {
+							$patron->proPayPayerAccountId = $jsonResponse->ExternalAccountID;
+							$proPayPayerAccountId = null;
+							$patron->update();
+						} else {
+							$proPayPayerAccountId = $jsonResponse->ExternalAccountID;
+						}
 					}
 				}
 
@@ -3178,7 +3427,7 @@ class MyAccount_AJAX extends JSON_Action
 					}
 				}
 
-				if (!empty($patron->proPayPayerAccountId)) {
+				if (!empty($patron->proPayPayerAccountId) || ($proPayPayerAccountId != null)) {
 					//Create the Hosted Transaction Instance
 					$requestElements = new stdClass();
 					$requestElements->Amount = (int)($payment->totalPaid * 100);
@@ -3191,18 +3440,30 @@ class MyAccount_AJAX extends JSON_Action
 					$requestElements->InvoiceNumber = (string)$payment->id;
 					$requestElements->MerchantProfileId = (int)$proPaySetting->merchantProfileId;
 					$requestElements->PaymentTypeId = "0";
-					$requestElements->PayerAccountId = (int)$patron->proPayPayerAccountId;
+					if($proPayPayerAccountId) {
+						$requestElements->PayerAccountId = (int)$proPayPayerAccountId;
+					} else {
+						$requestElements->PayerAccountId = (int)$patron->proPayPayerAccountId;
+					}
 					$requestElements->ProcessCard = true;
-					$requestElements->ReturnURL = $configArray['Site']['url'] . "/ProPay/{$payment->id}/Complete";
+					if($transactionType == 'donation') {
+						$requestElements->ReturnURL = $configArray['Site']['url'] . "/ProPay/{$payment->id}/Complete?type=" . $payment->transactionType . "&donation=" . $donation->id;
+					} else {
+						$requestElements->ReturnURL = $configArray['Site']['url'] . "/ProPay/{$payment->id}/Complete?type=" . $payment->transactionType;
+					}
 					$requestElements->SecurityCodeRequirementType = 1;
 					$requestElements->StoreCard = false;
-					$patron->loadContactInformation();
-					$requestElements->Address1 = $patron->_address1;
-					$requestElements->Address2 = $patron->_address2;
-					$requestElements->City = $patron->_city;
-					$requestElements->Name = $patron->_fullname;
-					$requestElements->State = $patron->_state;
-					$requestElements->ZipCode = $patron->_zip;
+					if($transactionType == 'donation' && $payment->userId == null) {
+						$requestElements->Name = $donation->firstName . $donation->lastName;
+					} else {
+						$patron->loadContactInformation();
+						$requestElements->Address1 = $patron->_address1;
+						$requestElements->Address2 = $patron->_address2;
+						$requestElements->City = $patron->_city;
+						$requestElements->Name = $patron->_fullname;
+						$requestElements->State = $patron->_state;
+						$requestElements->ZipCode = $patron->_zip;
+					}
 
 					//Issue PUT request to
 					if ($proPaySetting->useTestSystem) {
@@ -3267,6 +3528,137 @@ class MyAccount_AJAX extends JSON_Action
 					'success' => true
 				];
 			}
+		}
+
+		return $result;
+	}
+
+	/** @noinspection PhpUnused */
+	function dismissBrowseCategory(){
+		$patronId = $_REQUEST['patronId'];
+		$browseCategoryId = $_REQUEST['browseCategoryId'];
+
+		$result = [
+			'success' => false,
+			'message' => translate(['text'=>'Unknown Error', 'isPublicFacing'=>true]),
+		];
+
+		if ($patronId != UserAccount::getActiveUserId()){
+			$result['message'] = 'Incorrect user information, please login again.';
+		}else{
+			require_once ROOT_DIR . '/sys/Browse/BrowseCategory.php';
+			$browseCategory = new BrowseCategory();
+			$browseCategory->textId = $browseCategoryId;
+			if (!$browseCategory->find(true)){
+				$result['message'] = 'Invalid browse category provided, please try again.';
+			}else{
+				require_once ROOT_DIR . '/sys/Browse/BrowseCategoryDismissal.php';
+				$browseCategoryDismissal = new BrowseCategoryDismissal();
+				$browseCategoryDismissal->browseCategoryId = $browseCategoryId;
+				$browseCategoryDismissal->userId = $patronId;
+				if($browseCategoryDismissal->find(true)) {
+					$result['message'] = "User already dismissed this category.";
+				} else {
+					$browseCategoryDismissal->insert();
+					$browseCategory->numTimesDismissed += 1;
+					$browseCategory->update();
+					$result = [
+						'success' => true
+					];
+				}
+			}
+		}
+
+		return $result;
+	}
+
+	/** @noinspection PhpUnused */
+	function getHiddenBrowseCategories() {
+		global $interface;
+
+		if (isset($_REQUEST['patronId'])) {
+			$patronId = $_REQUEST['patronId'];
+			$interface->assign('patronId', $patronId);
+
+			$hiddenCategories = [];
+			require_once ROOT_DIR . '/sys/Browse/BrowseCategoryDismissal.php';
+			$browseCategoryDismissals = new BrowseCategoryDismissal();
+			$browseCategoryDismissals->userId = $patronId;
+			$browseCategoryDismissals->find();
+			while($browseCategoryDismissals->fetch()) {
+				$hiddenCategories[] = clone($browseCategoryDismissals);
+			}
+
+			if($browseCategoryDismissals->count() > 0) {
+				$categories = [];
+				foreach($hiddenCategories as $hiddenCategory) {
+					require_once ROOT_DIR . '/sys/Browse/BrowseCategory.php';
+					$browseCategory = new BrowseCategory();
+					$browseCategory->textId = $hiddenCategory->browseCategoryId;
+					if($browseCategory->find(true)){
+						$category['id'] = $browseCategory->textId;
+						$category['name'] = $browseCategory->label;
+						$category['description'] = $browseCategory->description;
+						$categories[] = $category;
+					}
+				}
+				$interface->assign('hiddenBrowseCategories', $categories);
+				return array(
+					'title' => 'Hidden browse categories',
+					'modalBody' => $interface->fetch('MyAccount/hiddenBrowseCategories.tpl'),
+					'modalButtons' => '<span class="tool btn btn-primary" onclick="return AspenDiscovery.Account.showBrowseCategory()">Show these Browse Categories</span>'
+				);
+			} else {
+				$interface->assign('message', 'You have no hidden browse categories.');
+				return [
+					'success' => false,
+					'title' => 'Error',
+					'modalBody' => $interface->fetch('MyAccount/hiddenBrowseCategories.tpl'),
+					'message' => 'You have no hidden browse categories.'
+				];
+			}
+		} else {
+			return [
+				'success' => false,
+				'message' => 'You must be logged in to show hidden browse categories.'
+			];
+		}
+	}
+
+	function showBrowseCategory(){
+		$result = [
+			'success' => false,
+			'title' => translate(['text'=>'Show hidden browse categories','isPublicFacing'=>true]),
+			'message' => translate(['text'=>'Sorry your visible browse categories not be updated','isPublicFacing'=>true])
+		];
+
+		$patronId = $_REQUEST['patronId'];
+
+		if (isset($_REQUEST['selected']) && is_array($_REQUEST['selected'])) {
+			$categoriesToShow = $_REQUEST['selected'];
+			foreach ($categoriesToShow as $showThisCategory => $selected){
+				require_once ROOT_DIR . '/sys/Browse/BrowseCategory.php';
+				$browseCategory = new BrowseCategory();
+				$browseCategory->textId = $showThisCategory;
+				if (!$browseCategory->find(true)) {
+					$result['message'] = 'Invalid browse category provided, please try again.';
+				} else {
+					require_once ROOT_DIR . '/sys/Browse/BrowseCategoryDismissal.php';
+					$browseCategoryDismissal = new BrowseCategoryDismissal();
+					$browseCategoryDismissal->browseCategoryId = $browseCategory->textId;
+					$browseCategoryDismissal->userId = $patronId;
+					if ($browseCategoryDismissal->find(true)) {
+						$browseCategoryDismissal->delete();
+						$result = [
+							'success' => true
+						];
+					} else {
+						$result['message'] = "User already had this category visible.";
+					}
+				}
+			}
+		} else {
+			$result['message'] = 'No browse categories were selected';
 		}
 
 		return $result;
