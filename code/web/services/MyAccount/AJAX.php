@@ -2691,7 +2691,7 @@ class MyAccount_AJAX extends JSON_Action
 
 		// prep donation for processor
 		$purchaseUnits['items'][] = [
-			'custom_id' => uniqid(time(), true),
+			'custom_id' => $paymentLibrary->subdomain,
 			'name' => 'Donation to Library',
 			'description' => 'Donation to ' . $library->displayName . ' for ' . numfmt_format_currency($setupCurrencyFormat, $donationValue, $currencyCode),
 			'unit_amount' => [
@@ -2743,7 +2743,7 @@ class MyAccount_AJAX extends JSON_Action
 		global $library;
 		$payment->paidFromInstance = $library->subdomain;
 		$paymentId = $payment->insert();
-		$purchaseUnits['custom_id'] = $paymentId;
+		$purchaseUnits['custom_id'] = $paymentLibrary->subdomain;
 
 		return [$paymentLibrary, $userLibrary, $payment, $purchaseUnits, $patron, $tempDonation];
 
@@ -2860,7 +2860,7 @@ class MyAccount_AJAX extends JSON_Action
 					}
 
 					$purchaseUnits['items'][] = [
-						'custom_id' => $fineId,
+						'custom_id' => $paymentLibrary->subdomain,
 						'name' => StringUtils::trimStringToLengthAtWordBoundary($fine['reason'], 120, true),
 						'description' => StringUtils::trimStringToLengthAtWordBoundary($fine['message'], 120, true),
 						'unit_amount' => [
@@ -2960,7 +2960,7 @@ class MyAccount_AJAX extends JSON_Action
 			global $library;
 			$payment->paidFromInstance = $library->subdomain;
 			$paymentId = $payment->insert();
-			$purchaseUnits['custom_id'] = $payment->id;
+			$purchaseUnits['custom_id'] = $paymentLibrary->subdomain;
 
 			return [$paymentLibrary, $userLibrary, $payment, $purchaseUnits, $patron];
 		}
@@ -2983,10 +2983,11 @@ class MyAccount_AJAX extends JSON_Action
 			/** @var Library $userLibrary */
 			/** @var UserPayment $payment */
 			/** @var User $patron */
-			/** @noinspection PhpUnusedLocalVariableInspection */
 			if($transactionType == 'donation') {
+				/** @noinspection PhpUnusedLocalVariableInspection */
 				list($paymentLibrary, $userLibrary, $payment, $purchaseUnits, $patron, $tempDonation) = $result;
 			} else {
+				/** @noinspection PhpUnusedLocalVariableInspection */
 				list($paymentLibrary, $userLibrary, $payment, $purchaseUnits, $patron) = $result;
 			}
 
