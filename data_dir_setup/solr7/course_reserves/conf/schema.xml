@@ -1,5 +1,5 @@
 <?xml version="1.0" ?>
-<schema name="User Lists Index" version="1.5">
+<schema name="Course Reserves Index" version="1.5">
 	<types>
 		<fieldType name="unchanged_string" class="StrField"/> 
 		<fieldType name="integer" class="IntPointField"/>
@@ -113,13 +113,13 @@
 		<field name="title" type="searchable_text" indexed="true" stored="true"/>
 		<field name="title_display" type="unchanged_string" indexed="false" stored="true"/>
 		<field name="title_sort" type="alphaOnlySort" indexed="true" stored="true"/> <!-- title for sorting -->
-		<field name="author" type="searchable_text" indexed="true" stored="false" />
-		<field name="author_display" type="unchanged_string" indexed="true" stored="true" multiValued="false"/> <!-- The author to display to the user -->
-		<field name="comments" type="searchable_text" indexed="true" stored="true"/>
+		<field name="instructor" type="searchable_text" indexed="true" stored="false" />
+		<field name="instructor_display" type="unchanged_string" indexed="true" stored="true" multiValued="false"/> <!-- The author to display to the user -->
+		<field name="course_number" type="unchanged_string" indexed="true" stored="true" />
+		<field name="course_title" type="unchanged_string" indexed="true" stored="true" />
 		<field name="table_of_contents" type="searchable_text" indexed="true" stored="true" multiValued="true"/>
 		<field name="table_of_contents_proper" type="textProper" indexed="true" stored="true" multiValued="true"/>
 		<field name="keywords" type="searchable_text" indexed="true" stored="false"/>
-		<field name="description" type="searchable_text" indexed="true" stored="true"/>
 		<field name="num_titles" type="integer" indexed="true" stored="true"/>
 		<field name="popularity" type="integer" indexed="true" stored="false" default="0"/>
 		<field name="date_added" type="date" indexed="true" stored="true" multiValued="false"/>
@@ -138,14 +138,15 @@
 		<field name="spelling" type="textSpelling" indexed="true" stored="false" multiValued="true"/>
 		<!-- suggestions (for type ahead) -->
 		<field name="title_suggestions" type="textSuggest" indexed="true" stored="true" multiValued="true"/>
-		<field name="author_suggestions" type="textSuggest" indexed="true" stored="true" multiValued="true"/>
+		<field name="instructor_suggestions" type="textSuggest" indexed="true" stored="true" multiValued="true"/>
 		<field name="keyword_suggestions" type="textSuggest" indexed="true" stored="true" multiValued="true"/>
 	</fields>
 
 	<copyField source="title" dest="title_suggestions"/>
-	<copyField source="author" dest="author_suggestions"/>
-	<copyField source="description" dest="keyword_suggestions"/>
+	<copyField source="instructor" dest="instructor_suggestions"/>
 	<copyField source="table_of_contents" dest="keyword_suggestions"/>
+	<copyField source="course_number" dest="keyword_suggestions"/>
+	<copyField source="course_title" dest="keyword_suggestions"/>
 
 	<copyField source="keywords" dest="spelling"/>
 
