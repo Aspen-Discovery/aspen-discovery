@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="course_reserves_indexer">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/../course_reserves_indexer/user_list_indexer.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

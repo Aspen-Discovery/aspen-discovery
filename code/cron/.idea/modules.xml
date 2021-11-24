@@ -5,6 +5,7 @@
       <module fileurl="file://$PROJECT_DIR$/../axis_360_export/axis_360_export.iml" filepath="$PROJECT_DIR$/../axis_360_export/axis_360_export.iml" />
       <module fileurl="file://$PROJECT_DIR$/../carlx_export/carlx_export.iml" filepath="$PROJECT_DIR$/../carlx_export/carlx_export.iml" />
       <module fileurl="file://$PROJECT_DIR$/../cloud_library_export/cloud_library_export.iml" filepath="$PROJECT_DIR$/../cloud_library_export/cloud_library_export.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../course_reserves_indexer/course_reserves_indexer.iml" filepath="$PROJECT_DIR$/../course_reserves_indexer/course_reserves_indexer.iml" />
       <module fileurl="file://$PROJECT_DIR$/cron.iml" filepath="$PROJECT_DIR$/cron.iml" />
       <module fileurl="file://$PROJECT_DIR$/../../data_dir_setup/data_dir_setup.iml" filepath="$PROJECT_DIR$/../../data_dir_setup/data_dir_setup.iml" />
       <module fileurl="file://$PROJECT_DIR$/../events_indexer/events_indexer.iml" filepath="$PROJECT_DIR$/../events_indexer/events_indexer.iml" />
