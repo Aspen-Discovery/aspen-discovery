@@ -1247,41 +1247,53 @@ class SearchAPI extends Action
 
 	private function getSavedSearchBrowseCategoryResults(int $pageSize)
 	{
-		if (!UserAccount::isLoggedIn()){
-			$response = [
-				'success' => false,
-				'message' => 'Your session has timed out, please login again to view suggestions'
-			];
-		}else{
+
+			if (!isset($_REQUEST['username']) || !isset($_REQUEST['password'])) {
+				return array('success' => false, 'message' => 'The username and password must be provided to load saved searches.');
+			}
+
+			$username = $_REQUEST['username'];
+			$password = $_REQUEST['password'];
+			$user = UserAccount::validateAccount($username, $password);
+
+			if ($user == false) {
+				return array('success' => false, 'message' => 'Sorry, we could not find a user with those credentials.');
+			}
+
 			$label = explode('_', $_REQUEST['id']);
 			$id = $label[3];
 			require_once ROOT_DIR . '/services/API/ListAPI.php';
 			$listApi = new ListAPI();
 			$records = $listApi->getSavedSearchTitles($id, $pageSize);
 			$response['items'] = $records;
-		}
+
 		return $response;
 	}
 
 	private function getUserListBrowseCategoryResults(int $pageToLoad, int $pageSize)
 	{
-		if (!UserAccount::isLoggedIn()){
-			$response = [
-				'success' => false,
-				'message' => 'Your session has timed out, please login again to view suggestions'
-			];
-		}else{
-			$label = explode('_', $_REQUEST['id']);
-			$id = $label[3];
-			require_once ROOT_DIR . '/sys/UserLists/UserList.php';
-			$sourceList = new UserList();
-			$sourceList->id = $id;
-			if ($sourceList->find(true)) {
-				$records = $sourceList->getBrowseRecordsRaw(($pageToLoad - 1) * $pageSize, $pageSize);
-			}
-			$response['items'] = $records;
-
+		if (!isset($_REQUEST['username']) || !isset($_REQUEST['password'])) {
+			return array('success' => false, 'message' => 'The username and password must be provided to load lists.');
 		}
+
+		$username = $_REQUEST['username'];
+		$password = $_REQUEST['password'];
+		$user = UserAccount::validateAccount($username, $password);
+
+		if ($user == false) {
+			return array('success' => false, 'message' => 'Sorry, we could not find a user with those credentials.');
+		}
+
+		$label = explode('_', $_REQUEST['id']);
+		$id = $label[3];
+		require_once ROOT_DIR . '/sys/UserLists/UserList.php';
+		$sourceList = new UserList();
+		$sourceList->id = $id;
+		if ($sourceList->find(true)) {
+			$records = $sourceList->getBrowseRecordsRaw(($pageToLoad - 1) * $pageSize, $pageSize);
+		}
+		$response['items'] = $records;
+
 		return $response;
 	}
 
@@ -1305,6 +1317,9 @@ class SearchAPI extends Action
 		//based off of url, branch parameter, or IP address
 		$activeLocation = $locationSingleton->getActiveLocation();
 
+		list($username, $password) = $this->loadUsernameAndPassword();
+		$appUser = UserAccount::validateAccount($username, $password);
+
 		//Get a list of browse categories for that library / location
 		/** @var BrowseCategoryGroupEntry[] $browseCategories */
 		if ($activeLocation == null){
@@ -1326,78 +1341,72 @@ class SearchAPI extends Action
 			$categoryInformation->id = $curCategory->browseCategoryId;
 
 			if ($categoryInformation->find(true)) {
-				if ($categoryInformation->isValidForDisplay()){
-					if ($categoryInformation->source != ''){
+				if ($categoryInformation->isValidForDisplay($appUser)) {
+					if ($categoryInformation->textId == ("system_saved_searches")) {
+						$savedSearches = $listApi->getSavedSearches();
+						$allSearches = $savedSearches['searches'];
+						$categoryResponse['subCategories'] = [];
+						foreach ($allSearches as $savedSearch) {
+							$categoryResponse['subCategories'][] = [
+								'key' => $categoryInformation->textId . '_' . $savedSearch['id'],
+								'title' => $categoryInformation->label . ': ' . $savedSearch['title'],
+								'source' => "SavedSearch",
+							];
+						}
+					} elseif ($categoryInformation->textId == ("system_user_lists")) {
+						$userLists = $listApi->getUserLists();
+						$categoryResponse['subCategories'] = [];
+						$allUserLists = $userLists['lists'];
+						if (count($allUserLists) > 0) {
+							foreach ($allUserLists as $userList) {
+								if ($userList['id'] != "recommendations") {
+									$categoryResponse['subCategories'][] = [
+										'key' => $categoryInformation->textId . '_' . $userList['id'],
+										'title' => $categoryInformation->label . ': ' . $userList['title'],
+										'source' => "List",
+									];
+								}
+							}
+						}
+					} else {
 						$categoryResponse = array(
 							'key' => $categoryInformation->textId,
 							'title' => $categoryInformation->label,
 							'source' => $categoryInformation->source,
 						);
-						if($categoryInformation->textId == "system_user_lists") {
-							$userLists = $listApi->getUserLists();
-							$categoryResponse['subCategories'] = [];
-							$allUserLists = $userLists['lists'];
-							if(count($allUserLists) > 0) {
-								foreach ($allUserLists as $userList) {
-									if($userList['id'] != "recommendations") {
-										$categoryResponse['subCategories'][] = [
-											'key' => $categoryInformation->textId . '_' . $userList['id'],
-											'title' => $categoryInformation->label . ': ' . $userList['title'],
-											'source' => "List",
-										];
-									}
-								}
-								$formattedCategories[] = $categoryResponse;
-							}
-						}
-						if($categoryInformation->textId == "system_saved_searches") {
-							$savedSearches = $listApi->getSavedSearches();
-							$allSearches = $savedSearches['searches'];
-							$categoryResponse['subCategories'] = [];
-								foreach ($allSearches as $savedSearch) {
-									$categoryResponse['subCategories'][] = [
-										'key' => $categoryInformation->textId . '_' . $savedSearch['id'],
-										'title' => $categoryInformation->label . ': ' . $savedSearch['title'],
-										'source' => "SavedSearch",
-									];
-								}
-							$formattedCategories[] = $categoryResponse;
-						}
 						if ($includeSubCategories) {
-							if($categoryInformation->textId != ("system_user_lists") && $categoryInformation->textId != ("system_saved_searches")) {
-								$subCategories = $categoryInformation->getSubCategories();
-								$categoryResponse['subCategories'] = [];
-								if (count($subCategories) > 0) {
-									foreach ($subCategories as $subCategory) {
-										$temp = new BrowseCategory();
-										$temp->id = $subCategory->subCategoryId;
-										if ($temp->find(true)) {
-											if ($temp->isValidForDisplay()) {
-												if ($temp->source != '') {
-													$parent = new BrowseCategory();
-													$parent->id = $subCategory->browseCategoryId;
-													if ($parent->find(true)) {
-														$parentLabel = $parent->label;
-													}
-													if ($parentLabel == $temp->label) {
-														$displayLabel = $temp->label;
-													} else {
-														$displayLabel = $parentLabel . ': ' . $temp->label;
-													}
-													$categoryResponse['subCategories'][] = [
-														'key' => $temp->textId,
-														'title' => $displayLabel,
-														'source' => $temp->source,
-													];
+							$subCategories = $categoryInformation->getSubCategories();
+							$categoryResponse['subCategories'] = [];
+							if (count($subCategories) > 0) {
+								foreach ($subCategories as $subCategory) {
+									$temp = new BrowseCategory();
+									$temp->id = $subCategory->subCategoryId;
+									if ($temp->find(true)) {
+										if ($temp->isValidForDisplay($appUser)) {
+											if ($temp->source != '') {
+												$parent = new BrowseCategory();
+												$parent->id = $subCategory->browseCategoryId;
+												if ($parent->find(true)) {
+													$parentLabel = $parent->label;
 												}
+												if ($parentLabel == $temp->label) {
+													$displayLabel = $temp->label;
+												} else {
+													$displayLabel = $parentLabel . ': ' . $temp->label;
+												}
+												$categoryResponse['subCategories'][] = [
+													'key' => $temp->textId,
+													'title' => $displayLabel,
+													'source' => $temp->source,
+												];
 											}
 										}
 									}
 								}
 							}
 						}
-						$formattedCategories[] = $categoryResponse;
 					}
+					$formattedCategories[] = $categoryResponse;
 				}
 			}
 		}
@@ -1482,5 +1491,30 @@ class SearchAPI extends Action
 		}
 
 		return $response;
+	}
+
+	/**
+	 * @return array
+	 * @noinspection PhpUnused
+	 */
+	private function loadUsernameAndPassword() : array
+	{
+		if (isset($_REQUEST['username'])) {
+			$username = $_REQUEST['username'];
+		} else {
+			$username = '';
+		}
+		if (isset($_REQUEST['password'])) {
+			$password = $_REQUEST['password'];
+		} else {
+			$password = '';
+		}
+		if (is_array($username)) {
+			$username = reset($username);
+		}
+		if (is_array($password)) {
+			$password = reset($password);
+		}
+		return array($username, $password);
 	}
 }
