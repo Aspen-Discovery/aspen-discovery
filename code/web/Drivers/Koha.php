@@ -1826,9 +1826,15 @@ class Koha extends AbstractIlsDriver
 			'message' => translate(['text' => 'Unable to thaw your hold.', 'isPublicFacing'=>true])
 		];
 
+		$result['api']['title'] = translate(['text'=>'Error thawing hold', 'isPublicFacing'=>true]);
+		$result['api']['message'] = translate(['text'=>'Unable to thaw your hold.', 'isPublicFacing'=>true]);
+
 		$oauthToken = $this->getOAuthToken();
 		if ($oauthToken == false) {
 			$result['message'] = translate(['text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.', 'isPublicFacing'=>true]);
+
+			$result['api']['title'] = translate(['text' => 'Error', 'isPublicFacing'=>true]);
+			$result['api']['message'] = translate(['text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.', 'isPublicFacing'=>true]);
 		} else {
 			$apiUrl = $this->getWebServiceUrl() . "/api/v1/holds/$itemToThawId/suspension";
 
@@ -1846,9 +1852,13 @@ class Koha extends AbstractIlsDriver
 			if (strlen($response) > 0) {
 				$result['message'] = $response;
 				$result['success'] = true;
+				$result['api']['message'] = $response;
 			} else {
 				$result['message'] = translate(['text'=>'Your hold was thawed successfully.', 'isPublicFacing'=>true]);
 				$result['success'] = true;
+
+				$result['api']['title'] = translate(['text'=>'Hold thawed', 'isPublicFacing'=>true]);
+				$result['api']['message'] = translate(['text'=>'Your hold was thawed successfully.', 'isPublicFacing'=>true]);
 				$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
 				$patron->forceReloadOfHolds();
 			}
