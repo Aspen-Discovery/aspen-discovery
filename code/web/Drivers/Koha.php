@@ -1475,7 +1475,7 @@ class Koha extends AbstractIlsDriver
 				$result['message'] = translate(['text'=>'Cancelled %1% hold(s) successfully.', 1=>count($holdKeys), 'isPublicFacing'=>true]);
 
 				$result['api']['title'] = translate(['text' => 'Hold cancelled', 'isPublicFacing'=> true]);
-				$result['api']['message'] = translate(['text'=>'Cancelled %1% hold(s) successfully.', 1=>count($holdKeys), 'isPublicFacing'=>true]);
+				$result['api']['message'] = translate(['text'=> 'The hold was successfully canceled', 'isPublicFacing'=>true]);
 
 				return $result;
 			} else {
@@ -1483,8 +1483,8 @@ class Koha extends AbstractIlsDriver
 				$result['success'] = false;
 				$result['message'] = translate(['text'=>'Some holds could not be cancelled.  Please try again later or see your librarian.', 'isPublicFacing'=>true]);
 
-				$result['api']['title'] = translate(['text' => 'Unable to cancel all holds', 'isPublicFacing'=> true]);
-				$result['api']['message'] = translate(['text' => 'Some holds could not be cancelled. Please try again later or see your librarian.', 'isPublicFacing'=>true]);
+				$result['api']['title'] = translate(['text' => 'Unable to cancel hold', 'isPublicFacing'=> true]);
+				$result['api']['message'] = translate(['text' => 'This hold could not be cancelled. Please try again later or see your librarian.', 'isPublicFacing'=>true]);
 
 				return $result;
 			}
@@ -1927,7 +1927,7 @@ class Koha extends AbstractIlsDriver
 						$result['api']['message'] = $hold_response->error;
 					} elseif ($hold_response->pickup_library_id != $newPickupLocation) {
 						$result['message'] = translate(['text'=>'Sorry, the pickup location of your hold could not be changed.', 'isPublicFacing'=>true]);
-						$result['success'] = true;
+						$result['success'] = false;
 
 						// Result for API or app use
 						$result['api']['title'] = translate(['text' => 'Unable to update pickup location', 'isPublicFacing'=> true]);
@@ -3435,7 +3435,7 @@ class Koha extends AbstractIlsDriver
 			if ($holdInfo->sourceId == $recordId) {
 				if (isset($holdInfo->position)) {
 					$hold_result['message'] .= '&nbsp;' . translate(['text'=>"You are number <b>%1%</b> in the queue.", '1' => $holdInfo->position, 'isPublicFacing'=>true]);
-					$hold_result['api']['message'] .= '&nbsp;' . translate(['text'=>"You are number %1% in the queue.", '1' => $holdInfo->position, 'isPublicFacing'=>true]);
+					$hold_result['api']['message'] .= ' ' . translate(['text'=>"You are number %1% in the queue.", '1' => $holdInfo->position, 'isPublicFacing'=>true]);
 
 				}
 				//Show the number of holds the patron has used.
@@ -3445,11 +3445,13 @@ class Koha extends AbstractIlsDriver
 				$remainingHolds = $maxReserves - $totalHolds;
 				if ($remainingHolds <= 3){
 					$hold_result['message'] .= '<br/>' . translate(['text'=>"You have %1% holds currently and can place %2% additional holds.", 1=>$totalHolds, 2=>$remainingHolds, 'isPublicFacing'=>true]);
-					$hold_result['api']['message'] .= '&nbsp;' . translate(['text'=>"You have %1% holds currently and can place %2% additional holds.", 1=>$totalHolds, 2=>$remainingHolds, 'isPublicFacing'=>true]);
+					$hold_result['api']['message'] .= ' ' . translate(['text'=>"You have %1% holds currently and can place %2% additional holds.", 1=>$totalHolds, 2=>$remainingHolds, 'isPublicFacing'=>true]);
 				}else{
 					$hold_result['message'] .= '<br/>' . translate(['text'=>"<br/>You have %1% holds currently.", 1 => $totalHolds, 'isPublicFacing'=>true]);
-					$hold_result['api']['message'] .= '&nbsp;' . translate(['text'=>"You have %1% holds currently.", 1=>$totalHolds, 'isPublicFacing'=>true]);
+					$hold_result['api']['message'] .= ' ' . translate(['text'=>"You have %1% holds currently.", 1=>$totalHolds, 'isPublicFacing'=>true]);
 				}
+
+				$hold_result['api']['action'] = translate(['text' => 'Go to Holds', 'isPublicFacing'=>true]);
 
 				break;
 			}
