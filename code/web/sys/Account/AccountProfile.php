@@ -69,7 +69,7 @@ class AccountProfile extends DataObject {
 			'staffUser'=>array('property'=>'staffUser', 'type' => 'section', 'label' =>'Staff Account Information (optional)', 'hideInLists' => true, 'properties' => array(
 					'domain' => array('property' => 'domain', 'type' => 'text', 'label' => 'Staff Domain', 'maxLength' => 100, 'description' => 'The domain to use when performing staff actions', 'required' => false),
 					'staffUsername' => array('property' => 'staffUsername', 'type' => 'text', 'label' => 'Staff Username', 'maxLength' => 100, 'description' => 'The Staff Username to use when performing staff actions', 'required' => false),
-					'staffPassword' => array('property' => 'staffPassword', 'type' => 'text', 'label' => 'Staff Password', 'maxLength' => 50, 'description' => 'The Staff Password to use when performing staff actions', 'required' => false),
+					'staffPassword' => array('property' => 'staffPassword', 'type' => 'storedPassword', 'label' => 'Staff Password', 'maxLength' => 50, 'description' => 'The Staff Password to use when performing staff actions', 'required' => false),
 				),
 			),
 			'recordSource' => array('property' => 'recordSource', 'type' => 'text', 'label' => 'Record Source', 'maxLength' => 50, 'description' => 'The record source of checkouts holds, etc.  Should match the name of an Indexing Profile.', 'required' => false),
