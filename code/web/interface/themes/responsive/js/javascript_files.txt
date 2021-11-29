@@ -29,6 +29,7 @@ aspen/authors.js
 aspen/axis360.js
 aspen/browse.js
 aspen/cloud-library.js
+aspen/course-reserves.js
 aspen/dpla.js
 aspen/ebsco.js
 aspen/econtent-record.js

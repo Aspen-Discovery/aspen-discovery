@@ -407,6 +407,10 @@ AspenDiscovery.Browse = (function(){
 			if (listId){
 				params['listId'] = listId.val()
 			}
+			var reserveId = $("#reserveId");
+			if (reserveId){
+				params['reserveId'] = reserveId.val()
+			}
 			$.getJSON(url, params, function (data) {
 				if (data.success === false) {
 					AspenDiscovery.showMessage("Unable to create category", data.message);

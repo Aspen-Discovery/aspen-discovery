@@ -20,6 +20,7 @@ class UserListEntry extends DataObject{
 	function insert($updateBrowseCategories = true)
 	{
 		$result = parent::insert();
+		/** @var Memcache $memCache */
 		global $memCache;
 		$memCache->delete('user_list_data_' . UserAccount::getActiveUserId());
 		return $result;
@@ -32,6 +33,7 @@ class UserListEntry extends DataObject{
 	function update($updateBrowseCategories = true)
 	{
 		$result = parent::update();
+		/** @var Memcache $memCache */
 		global $memCache;
 		$memCache->delete('user_list_data_' . UserAccount::getActiveUserId());
 		return $result;
@@ -45,6 +47,7 @@ class UserListEntry extends DataObject{
 	function delete($useWhere = false, $updateBrowseCategories = true)
 	{
 		$result = parent::delete($useWhere);
+		/** @var Memcache $memCache */
 		global $memCache;
 		$memCache->delete('user_list_data_' . UserAccount::getActiveUserId());
 		return $result;
@@ -82,19 +85,5 @@ class UserListEntry extends DataObject{
 		}else{
 			return null;
 		}
-	}
-
-	public function getUserListEntries() {
-		if (!isset($this->_entries) && $this->id){
-			$this->_entries = [];
-			$obj = new UserListEntry();
-			$obj->listId = $this->listId;
-			$obj->orderBy('weight ASC');
-			$obj->find();
-			while($obj->fetch()){
-				$this->_entries[$obj->listId] = clone $obj;
-			}
-		}
-		return $this->_entries;
 	}
 }

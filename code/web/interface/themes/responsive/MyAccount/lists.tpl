@@ -61,7 +61,7 @@
 					<div class="row">
 						<div class="result-label col-tn-3">{translate text="Number of Titles"} </div>
 						<div class="result-value col-tn-9 notranslate">
-							{translate text="%1% titles are in this list." 1=$list->numValidListItems()}
+							{translate text="%1% titles are in this list." 1=$list->numValidListItems() isPublicFacing=true}
 						</div>
 					</div>
 

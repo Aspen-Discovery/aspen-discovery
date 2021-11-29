@@ -98,6 +98,9 @@ class RecordDriverFactory {
 		}elseif ($recordType == 'open_archives'){
 			require_once ROOT_DIR . '/RecordDrivers/OpenArchivesRecordDriver.php';
 			$recordDriver = new OpenArchivesRecordDriver($recordId);
+		}elseif ($recordType == 'course_reserves'){
+			require_once ROOT_DIR . '/RecordDrivers/CourseReservesRecordDriver.php';
+			$recordDriver = new CourseReservesRecordDriver($recordId);
 		}else{
 			global $indexingProfiles;
 			global $sideLoadSettings;

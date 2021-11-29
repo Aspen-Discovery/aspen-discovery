@@ -7,6 +7,7 @@ abstract class BaseBrowsable extends DataObject
 	public $searchTerm;
 	public $defaultFilter;
 	public $sourceListId;
+	public $sourceCourseReserveId;
 	public $defaultSort;
 
 	public function getSolrSort()
@@ -109,6 +110,10 @@ abstract class BaseBrowsable extends DataObject
 		global $enabledModules;
 		if (array_key_exists('User Lists', $enabledModules)){
 			$spotlightSources['List'] = 'Public List';
+		}
+		if (array_key_exists('Course Reserves', $enabledModules)){
+			$spotlightSources['CourseReserve'] = 'Course Reserve';
+			$spotlightSources['CourseReserves'] = 'Course Reserves search';
 		}
 		if (array_key_exists('EBSCO EDS', $enabledModules)){
 			$spotlightSources['EbscoEds'] = 'EBSCO EDS Search';

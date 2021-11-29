@@ -595,11 +595,19 @@ AspenDiscovery.Admin = (function(){
 				$("#propertyRowdefaultFilter").hide();
 				$("#propertyRowdefaultSort").hide();
 				$("#propertyRowsourceListId").show();
+				$("#propertyRowsourceCourseReserveId").hide();
+			}else if (selectedSource === 'CourseReserve') {
+				$("#propertyRowsearchTerm").hide();
+				$("#propertyRowdefaultFilter").hide();
+				$("#propertyRowdefaultSort").hide();
+				$("#propertyRowsourceListId").hide();
+				$("#propertyRowsourceCourseReserveId").show();
 			}else{
 				$("#propertyRowsearchTerm").show();
 				$("#propertyRowdefaultFilter").show();
 				$("#propertyRowdefaultSort").show();
 				$("#propertyRowsourceListId").hide();
+				$("#propertyRowsourceCourseReserveId").hide();
 			}
 		},
 		updateIndexingProfileFields: function () {

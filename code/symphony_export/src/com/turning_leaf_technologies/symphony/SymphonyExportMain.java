@@ -102,10 +102,10 @@ public class SymphonyExportMain {
 			//Check for new marc out
 			exportVolumes(dbConn, indexingProfile, profileToLoad);
 
+			processCourseReserves(dbConn, indexingProfile, logEntry);
+
 			numChanges = updateRecords(dbConn);
 			processRecordsToReload(indexingProfile, logEntry);
-
-			processCourseReserves(dbConn, indexingProfile, logEntry);
 
 			if (recordGroupingProcessorSingleton != null) {
 				recordGroupingProcessorSingleton.close();
@@ -205,7 +205,16 @@ public class SymphonyExportMain {
 		//Process the file
 		logEntry.addNote("Processing course reserves file " + newestFile.getAbsolutePath());
 		try {
-			PreparedStatement getExistingCourseReservesStmt = dbConn.prepareStatement("SELECT * FROM user_list WHERE isCourseReserve = 1", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			//Setup statements
+			PreparedStatement getExistingCourseReservesStmt = dbConn.prepareStatement("SELECT * FROM course_reserve", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			PreparedStatement addCourseReserveListStmt = dbConn.prepareStatement("INSERT INTO course_reserve (created, dateUpdated, courseLibrary, courseInstructor, courseNumber, courseTitle) VALUES (?, ?, ?, ?, ?, ?)", PreparedStatement.RETURN_GENERATED_KEYS);
+			PreparedStatement getWorksForListStmt = dbConn.prepareStatement("SELECT * FROM course_reserve_entry WHERE courseReserveId = ?");
+			PreparedStatement getWorkIdForBarcodeStmt = dbConn.prepareStatement("SELECT permanent_id, full_title FROM grouped_work_record_items inner join grouped_work_records ON groupedWorkRecordId = grouped_work_records.id inner join grouped_work on grouped_work.id = groupedWorkId where itemId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			PreparedStatement addWorkToListStmt = dbConn.prepareStatement("INSERT INTO course_reserve_entry (source, sourceId, courseReserveId, title, dateAdded) VALUES ('GroupedWork', ?, ?, ?, ?)", PreparedStatement.RETURN_GENERATED_KEYS);
+			PreparedStatement removeWorkFromListStmt = dbConn.prepareStatement("DELETE FROM course_reserve_entry WHERE id = ?");
+			PreparedStatement updateListDateUpdatedStmt = dbConn.prepareStatement("UPDATE course_reserve SET dateUpdated = ? where id = ?");
+			PreparedStatement deleteListStmt = dbConn.prepareStatement("UPDATE course_reserve set deleted = 1, dateUpdated = ? where id = ?");
+
 			ResultSet existingCourseReservesRS = getExistingCourseReservesStmt.executeQuery();
 			HashMap<String, CourseInfo> existingCourses = new HashMap<>();
 			while (existingCourseReservesRS.next()){
@@ -214,10 +223,24 @@ public class SymphonyExportMain {
 						existingCourseReservesRS.getString("courseLibrary"),
 						existingCourseReservesRS.getString("courseInstructor"),
 						existingCourseReservesRS.getString("courseNumber"),
-						existingCourseReservesRS.getString("courseTitle"));
+						existingCourseReservesRS.getString("courseTitle"),
+						existingCourseReservesRS.getBoolean("deleted")
+				);
 				existingCourses.put(courseInfo.toString(), courseInfo);
 			}
 			//Get existing grouped works for each course
+			for (CourseInfo courseInfo : existingCourses.values()){
+				getWorksForListStmt.setLong(1, courseInfo.id);
+				ResultSet worksForListRS = getWorksForListStmt.executeQuery();
+				while (worksForListRS.next()){
+					CourseTitle existingTitle = new CourseTitle(
+						worksForListRS.getLong("id"),
+						worksForListRS.getString("sourceId")
+					);
+					courseInfo.existingWorks.put(existingTitle.groupedWorkPermanentId, existingTitle);
+				}
+			}
+
 
 			@SuppressWarnings("deprecation")
 			CSVReader reader = new CSVReader(new FileReader(newestFile), '|');
@@ -230,25 +253,111 @@ public class SymphonyExportMain {
 					String courseNumber = columns[3];
 					String courseTitle = columns[4];
 					String courseInstructor = columns[5];
-					//Get the current user list for this course
-					String key = courseLibrary + "-" + courseInstructor + "-" + courseNumber + "-" + courseTitle;
-					CourseInfo course = existingCourses.get(key);
-					if (course != null){
-						course.stillExists = true;
-					}else{
-						course = new CourseInfo(
-						-1L,
-							courseLibrary,
-							courseInstructor,
-							courseNumber,
-							courseTitle
-						);
-						course.stillExists = true;
+
+					//Get the grouped work id for the barcode, we won't add to the course if we can't find the book
+					getWorkIdForBarcodeStmt.setString(1, barcode);
+					ResultSet getWorkIdForBarcodeRS = getWorkIdForBarcodeStmt.executeQuery();
+					if (getWorkIdForBarcodeRS.next()){
+						String permanentId = getWorkIdForBarcodeRS.getString("permanent_id");
+						String title = getWorkIdForBarcodeRS.getString("full_title");
+
+						//Get the current user list for this course
+						String key = courseLibrary + "-" + courseInstructor + "-" + courseNumber + "-" + courseTitle;
+						CourseInfo course = existingCourses.get(key);
+						if (course != null){
+							course.stillExists = true;
+						}else{
+							long now = new Date().getTime() / 1000;
+							addCourseReserveListStmt.setLong(1, now);
+							addCourseReserveListStmt.setLong(2, now);
+							addCourseReserveListStmt.setString(3, courseLibrary);
+							addCourseReserveListStmt.setString(4, courseInstructor);
+							addCourseReserveListStmt.setString(5, courseNumber);
+							addCourseReserveListStmt.setString(6, courseTitle);
+							addCourseReserveListStmt.executeUpdate();
+							ResultSet generatedKeys = addCourseReserveListStmt.getGeneratedKeys();
+							if (generatedKeys.next()){
+								course = new CourseInfo(
+										generatedKeys.getLong(1),
+										courseLibrary,
+										courseInstructor,
+										courseNumber,
+										courseTitle,
+										false
+								);
+								course.stillExists = true;
+								existingCourses.put(key, course);
+							}else{
+								logEntry.incErrors("Failed to create Course Reserve.");
+							}
+						}
+
+						if (course != null) {
+							//Check to see if the title is already on the work
+							CourseTitle existingTitle = course.existingWorks.get(permanentId);
+							if (course.existingWorks.containsKey(permanentId)) {
+								existingTitle.stillExists = true;
+							}else{
+								//Add the title to the list
+								addWorkToListStmt.setString(1, permanentId);
+								addWorkToListStmt.setLong(2, course.id);
+								String truncatedTitle = title;
+								if (truncatedTitle.length() > 50){
+									truncatedTitle = truncatedTitle.substring(0, 50);
+								}
+								addWorkToListStmt.setString(3, truncatedTitle);
+								addWorkToListStmt.setLong(4, new Date().getTime() / 1000);
+								addWorkToListStmt.executeUpdate();
+
+								//Get the id for the new entry
+								ResultSet generatedKeys = addWorkToListStmt.getGeneratedKeys();
+								if (generatedKeys.next()){
+									existingTitle = new CourseTitle(
+											generatedKeys.getLong(1),
+											permanentId
+									);
+									existingTitle.stillExists = true;
+									course.existingWorks.put(existingTitle.groupedWorkPermanentId, existingTitle);
+								}
+
+								course.isUpdated = true;
+							}
+						}
 					}
 				}
 			}
 
-			//Remove any courses that no longer exist
+			//Check each course for titles that no longer exist
+			for (CourseInfo courseInfo : existingCourses.values()){
+				int numValidWorks = 0;
+				for (CourseTitle courseTitle : courseInfo.existingWorks.values()){
+					if (!courseTitle.stillExists){
+						removeWorkFromListStmt.setLong(1, courseTitle.id);
+						removeWorkFromListStmt.executeUpdate();
+						courseInfo.isUpdated = true;
+					}else{
+						numValidWorks++;
+					}
+				}
+				//Remove any courses that no longer exist or are empty
+				if (!courseInfo.stillExists || numValidWorks == 0){
+					deleteListStmt.setLong(1, new Date().getTime() /1000);
+					deleteListStmt.setLong(2, courseInfo.id);
+					deleteListStmt.executeUpdate();
+				}else if (courseInfo.isUpdated){
+					//Mark the course as updated in the database if isUpdated is true
+					updateListDateUpdatedStmt.setLong(1, new Date().getTime() /1000);
+					updateListDateUpdatedStmt.setLong(2, courseInfo.id);
+					updateListDateUpdatedStmt.executeUpdate();
+				}
+			}
+
+			//Delete the file
+			reader.close();
+			if (!newestFile.delete()){
+				logEntry.incErrors("Could not delete course reserves file " + newestFile.getAbsolutePath());
+			}
+
 		} catch (IOException | SQLException e) {
 			logEntry.incErrors("Error processing course reserves file", e);
 		}

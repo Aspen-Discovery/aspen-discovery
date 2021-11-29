@@ -169,6 +169,7 @@ class Admin_AJAX extends JSON_Action
 
 		$spotlightList = new CollectionSpotlightList();
 		$spotlightList->find();
+		$existingCollectionSpotlightLists = [];
 		while ($spotlightList->fetch()){
 			$existingCollectionSpotlightLists[] = clone $spotlightList;
 		}

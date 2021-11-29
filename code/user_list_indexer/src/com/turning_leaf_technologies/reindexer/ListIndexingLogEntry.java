@@ -134,12 +134,4 @@ class ListIndexingLogEntry implements BaseLogEntry {
 	void setNumLists(int size) {
 		numLists = size;
 	}
-
-	boolean hasErrors() {
-		return numErrors > 0;
-	}
-
-	void incNumProducts(int numResults) {
-		this.numLists += numResults;
-	}
 }

@@ -121,7 +121,6 @@ class Library extends DataObject
 	public /** @noinspection PhpUnused */ $prospectorCode;
 	public /** @noinspection PhpUnused */ $enableGenealogy;
 	public $showHoldCancelDate;
-	public /** @noinspection PhpUnused */ $enableCourseReserves;
 	public $displayItemBarcode;
 	public $enableSelfRegistration;
 	public $selfRegistrationPasswordNotes;
@@ -249,6 +248,10 @@ class Library extends DataObject
 	//Donations
 	public $donationSettingId;
 	public $enableDonations;
+
+	//Course Reserves
+	public /** @noinspection PhpUnused */ $enableCourseReserves;
+	public $courseReserveLibrariesToInclude;
 
 	private $_cloudLibraryScopes;
 	private $_libraryLinks;
@@ -509,7 +512,6 @@ class Library extends DataObject
 				'showMessagingSettings' => array('property'=>'showMessagingSettings', 'type'=>'checkbox', 'label'=>'Show Messaging Settings (Koha, Symphony)', 'description'=>'Whether or not the user should be able to view their messaging settings.', 'hideInLists' => true, 'default' => 1, 'permissions' => ['Library ILS Options']),
 				'allowLinkedAccounts' => array('property'=>'allowLinkedAccounts', 'type'=>'checkbox', 'label'=>'Allow Linked Accounts', 'description' => 'Whether or not users can link multiple library cards under a single Aspen Discovery account.', 'hideInLists' => true, 'default' => 1, 'permissions' => ['Library ILS Options']),
 				'showLibraryHoursNoticeOnAccountPages' => array('property'=>'showLibraryHoursNoticeOnAccountPages', 'type'=>'checkbox', 'label'=>'Show Library Hours Notice on Account Pages', 'description'=>'Whether or not the Library Hours notice should be shown at the top of My Account\'s Checked Out, and Holds pages.', 'hideInLists' => true, 'default'=>true, 'permissions' => ['Library ILS Options']),
-				'enableCourseReserves' => array('property'=>'enableCourseReserves', 'type'=>'checkbox', 'label'=>'Enable Repeat Search in Course Reserves', 'description'=>'Whether or not patrons can repeat searches within course reserves.', 'hideInLists' => true, 'permissions' => ['Library ILS Connection']),
 				'displayItemBarcode' => array('property'=>'displayItemBarcode', 'type'=>'checkbox', 'label'=>'Display item barcodes in patron checkouts', 'description'=>'Whether or not patrons can see item barcodes to materials they have checked out.', 'hideInLists' => true, 'permissions' => ['Library ILS Connection']),
 				'barcodeSection' => array('property' => 'barcodeSection', 'type' => 'section', 'label' => 'Barcode', 'hideInLists' => true, 'permissions' => ['Library ILS Options'], 'properties' => array(
 					'libraryCardBarcodeStyle' => array('property' => 'libraryCardBarcodeStyle', 'type'=>'enum', 'values'=>$barcodeTypes, 'label'=>'Library Barcode Style', 'description'=>'The style to show for the barcode on the Library Card page', 'hideInLists' => true, 'default' => 'none'),
@@ -750,6 +752,11 @@ class Library extends DataObject
 				),
 
 			)),
+			'courseReservesSection' => ['property'=>'courseReservesSection', 'type' => 'section', 'label' =>'Course Reserves', 'hideInLists' => true, 'permissions' => ['Administer Course Reserves', 'Library ILS Connection'],  'properties' => [
+					'enableCourseReserves' => array('property'=>'enableCourseReserves', 'type'=>'enum', 'values'=> [0 => 'None', 1 => 'Link to ILS Course Reserves', 2 => 'Aspen Course Reserves'],  'label'=>'Enable Repeat Search in Course Reserves', 'description'=>'Whether or not patrons can repeat searches within course reserves.', 'hideInLists' => true, 'permissions' => ['Administer Course Reserves', 'Library ILS Connection']),
+					'courseReserveLibrariesToInclude' => ['property'=> 'courseReserveLibrariesToInclude', 'type'=>'regularExpression', 'label'=>'Course Reserve Libraries To Include (regex)', 'description'=> 'A regular expression for the libraries to include in the index', 'maxLength'=>50]
+				]
+			],
 			'interLibraryLoanSection' => array('property'=>'interLibraryLoanSectionSection', 'type' => 'section', 'label' =>'Interlibrary loans', 'hideInLists' => true, 'permissions' => ['Library ILL Options'],  'properties' => array(
 				'interLibraryLoanName' => array('property'=>'interLibraryLoanName', 'type'=>'text', 'label'=>'Name of Interlibrary Loan Service', 'description'=>'The name to be displayed in the link to the ILL service ', 'hideInLists' => true, 'size'=>'80'),
 				'interLibraryLoanUrl' => array('property'=>'interLibraryLoanUrl',   'type'=>'text', 'label'=>'Interlibrary Loan URL', 'description'=>'The link for the ILL Service.', 'hideInLists' => true, 'size'=>'80'),

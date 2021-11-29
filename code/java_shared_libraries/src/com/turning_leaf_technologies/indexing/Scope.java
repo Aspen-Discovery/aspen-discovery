@@ -37,6 +37,8 @@ public class Scope implements Comparable<Scope>{
 	private String additionalLocationsToShowAvailabilityFor;
 	private Pattern additionalLocationsToShowAvailabilityForPattern;
 	private boolean includeAllLibraryBranchesInFacets; //Only applies to location scopes
+	private String courseReserveLibrariesToInclude;
+	private Pattern courseReserveLibrariesToIncludePattern;
 
 	private GroupedWorkDisplaySettings groupedWorkDisplaySettings;
 	private OverDriveScope overDriveScope;
@@ -291,6 +293,21 @@ public class Scope implements Comparable<Scope>{
 
 	public void setConsortialCatalog(boolean consortialCatalog) {
 		this.isConsortialCatalog = consortialCatalog;
+	}
+
+	public void setCourseReserveLibrariesToInclude(String courseReserveLibrariesToInclude) {
+		this.courseReserveLibrariesToInclude = courseReserveLibrariesToInclude;
+		if (courseReserveLibrariesToInclude != null && courseReserveLibrariesToInclude.length() > 0){
+			courseReserveLibrariesToIncludePattern = Pattern.compile(courseReserveLibrariesToInclude, Pattern.CASE_INSENSITIVE);
+		}
+	}
+
+	public boolean isCourseReserveLibaryIncluded(String courseLibary){
+		if (courseReserveLibrariesToIncludePattern == null){
+			return false;
+		}else{
+			return courseReserveLibrariesToIncludePattern.matcher(courseLibary).matches();
+		}
 	}
 
 	public static class InclusionResult{

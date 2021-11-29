@@ -24,6 +24,9 @@ class SearchSources{
 			case 'lists':
 				$searchObject = SearchObjectFactory::initSearchObject('Lists');
 				break;
+			case 'course_reserves':
+				$searchObject = SearchObjectFactory::initSearchObject('CourseReserves');
+				break;
 			case 'open_archives':
 				$searchObject = SearchObjectFactory::initSearchObject('OpenArchives');
 				break;
@@ -81,6 +84,7 @@ class SearchSources{
 		$repeatCourseReserves = $library->enableCourseReserves == 1;
 		$searchEbsco = array_key_exists('EBSCO EDS', $enabledModules) && $library->edsSettingsId != -1;
 		$searchOpenArchives = array_key_exists('Open Archives', $enabledModules) && $library->enableOpenArchives == 1;
+		$searchCourseReserves = $library->enableCourseReserves == 2;
 
 		list($enableCombinedResults, $showCombinedResultsFirst, $combinedResultsName) = self::getCombinedSearchSetupParameters($location, $library);
 
@@ -204,6 +208,15 @@ class SearchSources{
 			'catalogType' => 'lists',
 			'hasAdvancedSearch' => false
 		);
+
+		if (array_key_exists('Course Reserves', $enabledModules) && $searchCourseReserves){
+			$searchOptions['course_reserves'] = array(
+				'name' => 'Course Reserves',
+				'description' => 'Course Reserves',
+				'catalogType' => 'course_reserves',
+				'hasAdvancedSearch' => false
+			);
+		}
 
 		if (array_key_exists('Web Indexer', $enabledModules)){
 			require_once ROOT_DIR . '/sys/WebsiteIndexing/WebsiteIndexSetting.php';

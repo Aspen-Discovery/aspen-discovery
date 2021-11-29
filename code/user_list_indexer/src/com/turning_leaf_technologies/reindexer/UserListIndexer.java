@@ -108,8 +108,8 @@ class UserListIndexer {
 				numListsStmt = dbConn.prepareStatement("select count(id) as numLists from user_list WHERE deleted = 0 AND public = 1 and searchable = 1");
 				listsStmt = dbConn.prepareStatement("SELECT user_list.id as id, deleted, public, searchable, title, description, user_list.created, dateUpdated, username, firstname, lastname, displayName, homeLocationId, user_id from user_list INNER JOIN user on user_id = user.id WHERE public = 1 AND searchable = 1 AND deleted = 0");
 			}else{
-				//Get a list of all lists that are were changed since the last update
-				//Have to process all lists because one could have been deleted, made private, or made non searchable.
+				//Get a list of all lists that were changed since the last update
+				//Have to process all lists because one could have been deleted, made private, or made non-searchable.
 				numListsStmt = dbConn.prepareStatement("select count(id) as numLists from user_list");
 				listsStmt = dbConn.prepareStatement("SELECT user_list.id as id, deleted, public, searchable, title, description, user_list.created, dateUpdated, username, firstname, lastname, displayName, homeLocationId, user_id from user_list INNER JOIN user on user_id = user.id WHERE dateUpdated > ?");
 				listsStmt.setLong(1, lastReindexTime);
@@ -208,7 +208,7 @@ class UserListIndexer {
 				//Don't know the owning location
 				userListSolr.setOwningLocation(locationCodesByHomeLocation.getOrDefault(patronHomeLibrary, ""));
 
-				//Get information about all of the list titles.
+				//Get information about all the list titles.
 				getTitlesForListStmt.setLong(1, listId);
 				ResultSet allTitlesRS = getTitlesForListStmt.executeQuery();
 				while (allTitlesRS.next()) {
@@ -284,7 +284,7 @@ class UserListIndexer {
 					logEntry.incDeleted();
 				}
 			}catch (Exception e){
-				logEntry.addNote("Could not decrypt user information for " + listId + " - " + e.toString());
+				logEntry.addNote("Could not decrypt user information for " + listId + " - " + e);
 				logEntry.incSkipped();
 			}
 		}

@@ -7,10 +7,12 @@
 	</div>
 	<form method="post" name="createBrowseCategory" id="createBrowseCategory" action="/Browse/AJAX" class="form">
 		<div>
-			{if $searchId}
+			{if !empty($searchId)}
 				<input type="hidden" name="searchId" value="{$searchId}" id="searchId">
-			{else}
+			{elseif !empty($listId)}
 				<input type="hidden" name="listId" value="{$listId}" id="listId">
+			{elseif !empty($reserveId)}
+				<input type="hidden" name="reserveId" value="{$reserveId}" id="reserveId">
 			{/if}
 			<input type="hidden" name="method" value="createBrowseCategory">
 			<div class="form-group">

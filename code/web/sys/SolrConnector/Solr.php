@@ -1320,6 +1320,7 @@ abstract class Solr
 		$timer->logTime("build facet options");
 
 		//Check to see if there are filters we want to show all values for
+		global $solrScope;
 		if (isset($filters) && is_array($filters)) {
 			foreach ($filters as $key => $value) {
 				if (is_numeric($key)) {
