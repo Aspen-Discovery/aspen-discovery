@@ -975,7 +975,7 @@ class Library extends DataObject
 			$scopingSetting = $searchSource;
 			if ($scopingSetting == null){
 				return null;
-			} else if ($scopingSetting == 'local' || $scopingSetting == 'econtent' || $scopingSetting == 'library' || $scopingSetting == 'location' || $scopingSetting == 'websites' || $scopingSetting == 'lists' || $scopingSetting == 'open_archives'){
+			} else if ($scopingSetting == 'local' || $scopingSetting == 'econtent' || $scopingSetting == 'library' || $scopingSetting == 'location' || $scopingSetting == 'websites' || $scopingSetting == 'lists' || $scopingSetting == 'open_archives' || $scopingSetting == 'course_reserves'){
 				Library::$searchLibrary[$searchSource] = Library::getActiveLibrary();
 			}else if ($scopingSetting == 'marmot' || $scopingSetting == 'unscoped'){
 				//Get the default library
