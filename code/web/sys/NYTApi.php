@@ -59,12 +59,12 @@ class NYTApi {
 		$response = curl_exec($curl);
 		// Close request to clear up some resources
 		curl_close($curl);
+		//NYT recommends sleeping for 6 seconds between API calls to avoid rate limits.
+		sleep(6);
 
 		if ($list_name == 'names' && !isset(NYTApi::$allListsInfo)) {
 			NYTApi::$allListsInfo = $response;
 		}
-
-		//KK Todo: Check the response to see if it failed and if so update the log entry with the error
 
 		// return response
 		return $response;

@@ -1359,7 +1359,8 @@ class ExtractOverDriveInfo {
 			if (availabilityResponse.getResponseCode() == 404) {
 				//Add a note and skip to the next collection, in reality, this is probably deleted,
 				//but Nashville was having issues with 404s coming incorrectly so we can just keep retrying
-				logEntry.addNote("Got a 404 availability response code for " + url + " not updating for " + collectionInfo.getName());
+				//No longer needed for logging
+				//logEntry.addNote("Got a 404 availability response code for " + url + " not updating for " + collectionInfo.getName());
 			}else if (availabilityResponse.getResponseCode() != 200){
 				//We got an error calling the OverDrive API, do nothing.
 				if (singleWork) {

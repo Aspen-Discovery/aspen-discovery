@@ -359,7 +359,7 @@ class MillenniumHolds{
 		$pageContents = str_replace('<em>This hold can not be frozen.</em></tr>', '<em>This hold can not be frozen.</em></td></tr>', $pageContents);
 
 		//Get the headers from the table
-		preg_match_all('/<th\\s+class="patFuncHeaders">\\s*([\\w\\s]*?)\\s*<\/th>/si', $pageContents, $result, PREG_SET_ORDER);
+		preg_match_all('/<th\\s+(?:.*?)class="patFuncHeaders">\\s*([\\w\\s]*?)\\s*<\/th>/si', $pageContents, $result, PREG_SET_ORDER);
 		$sKeys = array();
 		for ($matchi = 0; $matchi < count($result); $matchi++) {
 			$sKeys[] = $result[$matchi][1];
@@ -375,7 +375,7 @@ class MillenniumHolds{
 		$sCount = 0;
 
 		foreach ($sRows as $sRow) {
-			preg_match_all('/<td.*?>(.*?)<\/td>/si', $sRow, $result, PREG_SET_ORDER);
+			preg_match_all('/<t[dh].*?>(.*?)<\/td>/si', $sRow, $result, PREG_SET_ORDER);
 			$sCols = array();
 			for ($matchi = 0; $matchi < count($result); $matchi++) {
 				$sCols[] = $result[$matchi][1];
@@ -408,11 +408,11 @@ class MillenniumHolds{
 						$curHold->cancelable = false;
 					}
 				} elseif (stripos($sKeys[$i], "TITLE") > -1) {
-					if (preg_match('/.*?<a href=\\"\/record=(.*?)(?:~S\\d{1,2})\\">(.*?)<\/a>.*/', $sCols[$i], $matches)) {
+					if (preg_match('/.*?<a (?:.*?)href=\\"\/record=(.*?)(?:~S\\d{1,2})\\">(.*?)<\/a>.*/', $sCols[$i], $matches)) {
 						$shortId = $matches[1];
 						$bibId = '.' . $matches[1] . $this->driver->getCheckDigit($shortId);
 						$title = strip_tags($matches[2]);
-					} elseif (preg_match('/.*<a href=".*?\/record\/C__R(.*?)\\?.*?">(.*?)<\/a>.*/si', $sCols[$i], $matches)) {
+					} elseif (preg_match('/.*<a (?:.*?)href=".*?\/record\/C__R(.*?)\\?.*?">(.*?)<\/a>.*/si', $sCols[$i], $matches)) {
 						$shortId = $matches[1];
 						$bibId = '.' . $matches[1] . $this->driver->getCheckDigit($shortId);
 						$title = strip_tags($matches[2]);
@@ -535,6 +535,8 @@ class MillenniumHolds{
 				if ($curHold->status == 'Pending'){
 					if (isset($curHold->canFreeze)){
 						$canFreeze = $curHold->canFreeze;
+					}else{
+						$canFreeze = false;
 					}
 					$curHold->canFreeze = $canFreeze && $this->driver->allowFreezingPendingHolds();
 				}

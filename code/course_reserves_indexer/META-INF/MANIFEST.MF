@@ -1,25 +1,24 @@
 Manifest-Version: 1.0
-Class-Path: ../java_shared_libraries/commons-beanutils-1.9.3.jar ../ja
- va_shared_libraries/commons-codec-1.12.jar ../java_shared_libraries/c
- ommons-collections4-4.3.jar ../java_shared_libraries/commons-lang3-3.
- 8.1.jar ../java_shared_libraries/commons-net-3.6.jar ../java_shared_l
- ibraries/commons-text-1.6.jar ../java_shared_libraries/ini4j-0.5.5-SN
- APSHOT.jar ../java_shared_libraries/log4j-api-2.11.2.jar ../java_shar
- ed_libraries/log4j-core-2.11.2.jar ../java_shared_libraries/mysql-con
- nector-java-8.0.15.jar ../java_shared_libraries/opencsv-4.5.jar ../..
- /sites/default/solr-7.6.0/dist/solr-solrj-7.6.0.jar ../../sites/defau
- lt/solr-7.6.0/dist/solrj-lib/commons-io-2.5.jar ../../sites/default/s
- olr-7.6.0/dist/solrj-lib/commons-math3-3.6.1.jar ../../sites/default/
- solr-7.6.0/dist/solrj-lib/httpclient-4.5.3.jar ../../sites/default/so
- lr-7.6.0/dist/solrj-lib/httpcore-4.4.6.jar ../../sites/default/solr-7
- .6.0/dist/solrj-lib/httpmime-4.5.3.jar ../../sites/default/solr-7.6.0
- /dist/solrj-lib/jcl-over-slf4j-1.7.24.jar ../../sites/default/solr-7.
- 6.0/dist/solrj-lib/noggit-0.8.jar ../../sites/default/solr-7.6.0/dist
- /solrj-lib/slf4j-api-1.7.24.jar ../../sites/default/solr-7.6.0/dist/s
- olrj-lib/stax2-api-3.1.4.jar ../../sites/default/solr-7.6.0/dist/solr
- j-lib/woodstox-core-asl-4.4.1.jar ../../sites/default/solr-7.6.0/dist
- /solrj-lib/zookeeper-3.4.11.jar ../../sites/default/solr-7.6.0/server
- /lib/ext/log4j-slf4j-impl-2.11.0.jar
-Main-Class: com.turning_leaf_technologies.reindexer.UserListIndexerMai
- n
+Class-Path: ../java_shared_libraries/commons-beanutils-1.9.3.jar ../java
+ _shared_libraries/commons-codec-1.12.jar ../java_shared_libraries/commo
+ ns-collections4-4.3.jar ../java_shared_libraries/commons-lang3-3.8.1.ja
+ r ../java_shared_libraries/commons-net-3.6.jar ../java_shared_libraries
+ /commons-text-1.6.jar ../java_shared_libraries/ini4j-0.5.5-SNAPSHOT.jar
+  ../java_shared_libraries/log4j-api-2.11.2.jar ../java_shared_libraries
+ /log4j-core-2.11.2.jar ../java_shared_libraries/mysql-connector-java-8.
+ 0.15.jar ../java_shared_libraries/opencsv-4.5.jar ../../sites/default/s
+ olr-7.6.0/dist/solr-solrj-7.6.0.jar ../../sites/default/solr-7.6.0/dist
+ /solrj-lib/commons-io-2.5.jar ../../sites/default/solr-7.6.0/dist/solrj
+ -lib/commons-math3-3.6.1.jar ../../sites/default/solr-7.6.0/dist/solrj-
+ lib/httpclient-4.5.3.jar ../../sites/default/solr-7.6.0/dist/solrj-lib/
+ httpcore-4.4.6.jar ../../sites/default/solr-7.6.0/dist/solrj-lib/httpmi
+ me-4.5.3.jar ../../sites/default/solr-7.6.0/dist/solrj-lib/jcl-over-slf
+ 4j-1.7.24.jar ../../sites/default/solr-7.6.0/dist/solrj-lib/noggit-0.8.
+ jar ../../sites/default/solr-7.6.0/dist/solrj-lib/slf4j-api-1.7.24.jar 
+ ../../sites/default/solr-7.6.0/dist/solrj-lib/stax2-api-3.1.4.jar ../..
+ /sites/default/solr-7.6.0/dist/solrj-lib/woodstox-core-asl-4.4.1.jar ..
+ /../sites/default/solr-7.6.0/dist/solrj-lib/zookeeper-3.4.11.jar ../../
+ sites/default/solr-7.6.0/server/lib/ext/log4j-slf4j-impl-2.11.0.jar
+Main-Class: com.turning_leaf_technologies.reindexer.CourseReservesIndexe
+ rMain
 

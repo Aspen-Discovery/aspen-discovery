@@ -767,7 +767,7 @@ public class PolarisExportMain {
 		DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH).withZone(ZoneId.systemDefault());
 		String formattedLastExtractTime = "";
 		if (!indexingProfile.isRunFullUpdate() && lastExtractTime != 0){
-			formattedLastExtractTime = dateFormatter.format(Instant.ofEpochSecond(lastExtractTime));
+			formattedLastExtractTime = dateFormatter.format(Instant.ofEpochSecond(lastExtractTime - (15 * 60)));
 			logEntry.addNote("Looking for changed records since " + formattedLastExtractTime);
 		}
 		if (indexingProfile.isRunFullUpdate() && indexingProfile.getLastChangeProcessed() > 0){
