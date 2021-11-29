@@ -237,6 +237,18 @@ class AJAX extends Action {
 					$result['currentIndex'] = $currentIndex;
 				}
 				$result['searchUrl'] = '/MyAccount/MyList/' . $collectionSpotlightList->sourceListId;
+			}elseif ($collectionSpotlightList->sourceCourseReserveId != null && $collectionSpotlightList->sourceCourseReserveId > 0){
+				require_once ROOT_DIR . '/sys/CourseReserves/CourseReserve.php';
+				$sourceList = new CourseReserve();
+				$sourceList->id = $collectionSpotlightList->sourceCourseReserveId;
+				if ($sourceList->find(true)) {
+					$result['listTitle'] = $sourceList->getTitle();
+					$result['listDescription'] = '';
+					$result['titles'] = $sourceList->getSpotlightTitles( $collectionSpotlight);
+					$currentIndex = 0;
+					$result['currentIndex'] = $currentIndex;
+				}
+				$result['searchUrl'] = '/CourseReserves/' . $collectionSpotlightList->sourceCourseReserveId;
 			}else{
 				$searchObject = $collectionSpotlightList->getSearchObject();
 

@@ -130,14 +130,26 @@ class Browse_AJAX extends Action {
 					);
 				}
 			}else{
-				require_once ROOT_DIR . '/sys/UserLists/UserList.php';
-				$listId = $_REQUEST['listId'];
-				$userList = new UserList();
-				$userList->id = $listId;
-				$userList->deleted = "0";
-				if ($userList->find(true)) {
-					$browseCategory->sourceListId = $listId;
-					$browseCategory->source = 'List';
+				if (isset($_REQUEST['listId'])) {
+					require_once ROOT_DIR . '/sys/UserLists/UserList.php';
+					$listId = $_REQUEST['listId'];
+					$userList = new UserList();
+					$userList->id = $listId;
+					$userList->deleted = "0";
+					if ($userList->find(true)) {
+						$browseCategory->sourceListId = $listId;
+						$browseCategory->source = 'List';
+					}
+				}elseif (isset($_REQUEST['reserveId'])) {
+					require_once ROOT_DIR . '/sys/CourseReserves/CourseReserve.php';
+					$listId = $_REQUEST['reserveId'];
+					$userList = new CourseReserve();
+					$userList->id = $listId;
+					$userList->deleted = "0";
+					if ($userList->find(true)) {
+						$browseCategory->sourceCourseReserveId = $listId;
+						$browseCategory->source = 'CourseReserve';
+					}
 				}
 
 			}
@@ -217,7 +229,7 @@ class Browse_AJAX extends Action {
 							'message' => "Sorry, this search is too complex to create a category from."
 					);
 				}
-			}else{
+			}else if (isset($_REQUEST['listId'])){
 				require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 				$listId = $_REQUEST['listId'];
 				$userList = new UserList();
@@ -226,6 +238,17 @@ class Browse_AJAX extends Action {
 				if ($userList->find(true)) {
 					$browseCategory->sourceListId = $listId;
 					$browseCategory->source = 'List';
+				}
+
+			}else{
+				require_once ROOT_DIR . '/sys/CourseReserves/CourseReserve.php';
+				$listId = $_REQUEST['reserveId'];
+				$userList = new CourseReserve();
+				$userList->id = $listId;
+				$userList->deleted = "0";
+				if ($userList->find(true)) {
+					$browseCategory->sourceCourseReserveId = $listId;
+					$browseCategory->source = 'CourseReserve';
 				}
 
 			}
@@ -428,7 +451,23 @@ class Browse_AJAX extends Action {
 						$records = array();
 					}
 					$result['searchUrl'] = '/MyAccount/MyList/' . $sourceListId;
-				}  else {
+				}  elseif ($browseCategory->source == 'CourseReserve') {
+					require_once ROOT_DIR . '/sys/CourseReserves/CourseReserve.php';
+					$sourceList     = new CourseReserve();
+					$sourceList->id = $browseCategory->sourceCourseReserveId;
+					if ($sourceList->find(true)) {
+						$records = $sourceList->getBrowseRecords(($pageToLoad - 1) * self::ITEMS_PER_PAGE, self::ITEMS_PER_PAGE);
+						$preloadedRecords = $sourceList->getBrowseRecords(($pageToLoad + 1) * self::ITEMS_PER_PAGE, self::ITEMS_PER_PAGE);
+						if($preloadedRecords == 0) {
+							$lastPage = true;
+						}
+					} else {
+						$records = array();
+					}
+					$result['searchUrl'] = '/CourseReserves/' . $browseCategory->sourceCourseReserveId;
+
+					// Search Browse Category //
+				} else {
 					if(strpos($this->textId,"system_saved_searches_") !== false) {
 						$label = explode('_', $this->textId);
 						$id = $label[3];

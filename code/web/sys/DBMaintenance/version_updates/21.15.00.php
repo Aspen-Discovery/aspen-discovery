@@ -279,7 +279,98 @@ function getUpdates21_15_00() : array
 			'sql' => [
 				"ALTER TABLE browse_category_dismissal CHANGE COLUMN browseCategoryId browseCategoryId VARCHAR(60)"
 			]
-		], //changeBrowseCategoryIdType
+		], //changeBrowseCategoryIdType,
+		'course_reserves_indexing' => [
+			'title' => 'Course Reserves Indexing',
+			'description' => 'Updates for Course Reserves Indexing',
+			'sql' => [
+				'CREATE TABLE IF NOT EXISTS course_reserves_indexing_settings(
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					runFullUpdate TINYINT(1) DEFAULT 1,
+					lastUpdateOfChangedCourseReserves INT(11) DEFAULT 0,
+					lastUpdateOfAllCourseReserves INT(11) DEFAULT 0
+				) ENGINE = InnoDB;',
+				'CREATE TABLE IF NOT EXISTS course_reserves_indexing_log(
+					id INT NOT NULL AUTO_INCREMENT,
+					startTime INT(11) NOT NULL,
+					endTime INT(11) NULL, 
+					lastUpdate INT(11) NULL, 
+					notes TEXT,
+					numLists INT(11) DEFAULT 0,
+					numAdded INT(11) DEFAULT 0,
+					numDeleted INT(11) DEFAULT 0,
+					numUpdated INT(11) DEFAULT 0,
+					numSkipped INT(11) DEFAULT 0,
+					numErrors INT(11) DEFAULT 0, 
+					PRIMARY KEY ( id )
+				) ENGINE = InnoDB;',
+				"CREATE TABLE IF NOT EXISTS course_reserve (
+					id int(11) NOT NULL AUTO_INCREMENT,
+					created int(11) DEFAULT NULL,
+					deleted tinyint(1) DEFAULT '0',
+					dateUpdated int(11) DEFAULT NULL,
+					courseLibrary VARCHAR(25),
+					courseInstructor VARCHAR(100),
+					courseNumber VARCHAR(50),
+					courseTitle VARCHAR(200),
+					PRIMARY KEY (id),
+					UNIQUE course(courseLibrary, courseNumber, courseInstructor)
+				) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci",
+				'DELETE FROM user_list where isCourseReserve = 1',
+				'ALTER TABLE user_list DROP COLUMN isCourseReserve',
+				'ALTER TABLE user_list DROP COLUMN courseInstructor',
+				'ALTER TABLE user_list DROP COLUMN courseNumber',
+				'ALTER TABLE user_list DROP COLUMN courseTitle',
+				"CREATE TABLE IF NOT EXISTS course_reserve_entry (
+					id int(11) NOT NULL AUTO_INCREMENT,
+					source varchar(20) COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'GroupedWork',
+					sourceId varchar(36) COLLATE utf8mb4_general_ci DEFAULT NULL,
+					courseReserveId int(11) DEFAULT NULL,
+					dateAdded int(11) DEFAULT NULL,
+					title varchar(50) COLLATE utf8mb4_general_ci DEFAULT '',
+					PRIMARY KEY (id),
+					KEY courseReserveId (courseReserveId),
+					KEY source (source,sourceId)
+				) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci"
+			]
+		], //course_reserves_indexing
+		'increaseFullMarcExportRecordIdThreshold' => [
+			'title' => 'Indexing Profile - Increase Full Export Record Threshold',
+			'description' => 'Increase threshold for maximum id threshold in indexing profiles',
+			'sql' => [
+				'ALTER TABLE indexing_profiles CHANGE COLUMN fullMarcExportRecordIdThreshold fullMarcExportRecordIdThreshold BIGINT DEFAULT 0'
+			]
+		], //increaseFullMarcExportRecordIdThreshold
+		'course_reserves_permissions' => [
+			'title' => 'Course Reserves Permissions',
+			'description' => 'Add new permissions for course reserves',
+			'sql' => [
+				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES ('Course Reserves', 'Administer Course Reserves', '', 10, 'Controls if the user can change Course Reserve settings.')",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer Course Reserves'))",
+			]
+		], //course_reserves_permissions
+		'course_reserves_module' => [
+			'title' => 'Course Reserves Module',
+			'description' => 'Add module for course reserves',
+			'sql' => [
+				"INSERT INTO modules (name, indexName, logClassName, logClassPath, settingsClassName, settingsClassPath, backgroundProcess, enabled) VALUES ('Course Reserves', 'course_reserves', 'CourseReservesIndexingLogEntry', '/sys/CourseReserves/CourseReservesIndexingLogEntry.php', 'CourseReservesIndexingSettings', '/sys/CourseReserves/CourseReservesIndexingSettings.php', 'course_reserves_indexer', 0)"
+			]
+		], //course_reserves_module
+		'library_course_reserves_libraries_to_include' => [
+			'title' => 'Library - Course Reserve Libraries to include',
+			'description' => 'Library - Course Reserve Libraries to include',
+			'sql' => [
+				"ALTER TABLE library ADD COLUMN courseReserveLibrariesToInclude VARCHAR(50)"
+			]
+		], //library_course_reserves_libraries_to_include
+		'browsable_course_reserves' => [
+			'title' => 'Make Course Reserves Browsable',
+			'description' => 'Make Course Reserves Browsable',
+			'sql' => [
+				"ALTER TABLE browse_category ADD COLUMN sourceCourseReserveId mediumint default -1",
+				"ALTER TABLE collection_spotlight_lists ADD COLUMN sourceCourseReserveId mediumint default -1"
+			]
+		], //browsable_course_reserves
 	];
 }
 

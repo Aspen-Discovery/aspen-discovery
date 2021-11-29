@@ -146,14 +146,24 @@
 			<div class="row">
 				<div class="col-xs-12">
 					<form class="navbar form-inline">
+						{if $recordCount > 20}
 						<label for="pageSize" class="control-label">{translate text='Records Per Page' isPublicFacing=true}</label>&nbsp;
 						<select id="pageSize" class="pageSize form-control-sm" onchange="AspenDiscovery.changePageSize()">
 							<option value="20"{if $recordsPerPage == 20} selected="selected"{/if}>20</option>
+							{if $recordCount > 20}
 							<option value="40"{if $recordsPerPage == 40} selected="selected"{/if}>40</option>
+							{/if}
+							{if $recordCount > 40}
 							<option value="60"{if $recordsPerPage == 60} selected="selected"{/if}>60</option>
+							{/if}
+							{if $recordCount > 60}
 							<option value="80"{if $recordsPerPage == 80} selected="selected"{/if}>80</option>
+							{/if}
+							{if $recordCount > 80}
 							<option value="100"{if $recordsPerPage == 100} selected="selected"{/if}>100</option>
+							{/if}
 						</select>
+						{/if}
 						<label for="hideCovers" class="control-label checkbox pull-right"> {translate text='Hide Covers' isPublicFacing=true} <input id="hideCovers" type="checkbox" onclick="AspenDiscovery.Account.toggleShowCovers(!$(this).is(':checked'))" {if $showCovers == false}checked="checked"{/if}></label>
 					</form>
 				</div>

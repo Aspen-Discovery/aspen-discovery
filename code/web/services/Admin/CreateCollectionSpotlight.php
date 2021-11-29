@@ -64,6 +64,7 @@ class Admin_CreateCollectionSpotlight extends Action
 				$spotlightList->displayFor = 'all';
 				if ($source == 'search') {
 					$spotlightList->sourceListId = -1;
+					$spotlightList->sourceCourseReserveId = -1;
 					/** @var SearchObject_GroupedWorkSearcher $searchObj */
 					$searchObj = SearchObjectFactory::initSearchObject();
 					$searchObj->init();
@@ -76,7 +77,12 @@ class Admin_CreateCollectionSpotlight extends Action
 					}
 				} elseif ($source == 'list') {
 					$spotlightList->sourceListId = $sourceId;
+					$spotlightList->sourceCourseReserveId = -1;
 					$spotlightList->source = 'List';
+				} elseif ($source == 'course_reserve') {
+					$spotlightList->sourceListId = -1;
+					$spotlightList->sourceCourseReserveId = $sourceId;
+					$spotlightList->source = 'CourseReserve';
 				}
 
 				$spotlightList->name = $spotlightName;
@@ -91,6 +97,7 @@ class Admin_CreateCollectionSpotlight extends Action
 				$spotlightList->find();
 				if ($source == 'search') {
 					$spotlightList->sourceListId = -1;
+					$spotlightList->sourceCourseReserveId = -1;
 					/** @var SearchObject_GroupedWorkSearcher $searchObj */
 					$searchObj = SearchObjectFactory::initSearchObject();
 					$searchObj->init();
@@ -103,7 +110,12 @@ class Admin_CreateCollectionSpotlight extends Action
 					}
 				} elseif ($source == 'list') {
 					$spotlightList->sourceListId = $sourceId;
+					$spotlightList->sourceCourseReserveId = -1;
 					$spotlightList->source = 'List';
+				} elseif ($source == 'course_reserve') {
+					$spotlightList->sourceListId = -1;
+					$spotlightList->sourceCourseReserveId = $sourceId;
+					$spotlightList->source = 'CourseReserve';
 				}
 				$spotlightList->name = $spotlightName;
 				$spotlightList->update();

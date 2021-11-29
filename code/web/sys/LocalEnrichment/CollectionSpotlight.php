@@ -75,6 +75,7 @@ class CollectionSpotlight extends DataObject
 		unset($spotlightListStructure['searchTerm']);
 		unset($spotlightListStructure['defaultFilter']);
 		unset($spotlightListStructure['sourceListId']);
+		unset($spotlightListStructure['sourceCourseReserveId']);
 		unset($spotlightListStructure['defaultSort']);
 		return array(
 			'id' => array(

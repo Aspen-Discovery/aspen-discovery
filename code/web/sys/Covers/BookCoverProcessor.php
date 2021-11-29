@@ -57,6 +57,10 @@ class BookCoverProcessor{
 			if ($this->getListCover($this->id)) {
 				return true;
 			}
+		} elseif ($this->type == 'course_reserves') {
+			if ($this->getCourseReservesCover($this->id)) {
+				return true;
+			}
 		} elseif ($this->type == 'library_calendar_event') {
 			if ($this->getLibraryCalendarCover($this->id)) {
 				return true;
@@ -1130,7 +1134,7 @@ class BookCoverProcessor{
 					if ($this->getZinioCover($relatedRecord->id)) {
 						return true;
 					}
-				} elseif (array_key_exists($relatedRecord->source, $sideLoadSettings)){
+				} elseif (array_key_exists(strtolower($relatedRecord->source), $sideLoadSettings)){
 					if ($this->getSideLoadedCover($relatedRecord->id)) {
 						return true;
 					}
@@ -1382,6 +1386,22 @@ class BookCoverProcessor{
 			return false;
 		}
 	}
+
+	private function getCourseReservesCover($id) {
+		if (strpos($id, ':') !== false) {
+			list(, $id) = explode(":", $id);
+		}
+		require_once ROOT_DIR . '/RecordDrivers/CourseReservesRecordDriver.php';
+		$driver = new CourseReservesRecordDriver($id);
+		if ($driver) {
+			require_once ROOT_DIR . '/sys/Covers/CourseReservesCoverBuilder.php';
+			$coverBuilder = new CourseReservesCoverBuilder();
+			$coverBuilder->getCover($driver->getTitle() . ' - ' . $driver->getPrimaryAuthor(), $this->cacheFile);
+			return $this->processImageURL('default_event', $this->cacheFile, false);
+		}
+		return false;
+	}
+
 
 	private function getLibraryCalendarCover($id) {
 		if (strpos($id, ':') !== false) {

@@ -1157,6 +1157,18 @@ class SearchAPI extends Action
 				$response['searchUrl'] = '/MyAccount/MyList/' . $browseCategory->sourceListId;
 
 				// Search Browse Category //
+			} elseif ($browseCategory->source == 'CourseReserve') {
+				require_once ROOT_DIR . '/sys/CourseReserves/CourseReserve.php';
+				$sourceList     = new CourseReserve();
+				$sourceList->id = $browseCategory->sourceCourseReserveId;
+				if ($sourceList->find(true)) {
+					$records = $sourceList->getBrowseRecordsRaw(($pageToLoad - 1) * $pageSize, $pageSize);
+				} else {
+					$records = array();
+				}
+				$response['searchUrl'] = '/CourseReserves/' . $browseCategory->sourceCourseReserveId;
+
+				// Search Browse Category //
 			} else {
 				$searchObject = SearchObjectFactory::initSearchObject($browseCategory->source);
 				$defaultFilterInfo  = $browseCategory->defaultFilter;
@@ -1435,6 +1447,17 @@ class SearchAPI extends Action
 						require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 						$sourceList = new UserList();
 						$sourceList->id = $browseCategory->sourceListId;
+						if ($sourceList->find(true)) {
+							$records = $sourceList->getBrowseRecordsRaw(($pageToLoad - 1) * $pageSize, $pageSize);
+						} else {
+							$records = array();
+						}
+
+						// Search Browse Category //
+					} elseif ($browseCategory->source == 'CourseReserve') {
+						require_once ROOT_DIR . '/sys/CourseReserves/CourseReserve.php';
+						$sourceList = new CourseReserve();
+						$sourceList->id = $browseCategory->sourceCourseReserveId;
 						if ($sourceList->find(true)) {
 							$records = $sourceList->getBrowseRecordsRaw(($pageToLoad - 1) * $pageSize, $pageSize);
 						} else {

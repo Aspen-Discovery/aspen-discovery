@@ -19,6 +19,9 @@ class CollectionSpotlightList extends BaseBrowsable
 		require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 		$sourceLists = UserList::getSourceListsForBrowsingAndCarousels();
 
+		require_once ROOT_DIR . '/sys/CourseReserves/CourseReserve.php';
+		$sourceCourseReserves = CourseReserve::getSourceListsForBrowsingAndCarousels();
+
 		$spotlightSources = BaseBrowsable::getBrowseSources();
 
 		return array(
@@ -65,6 +68,7 @@ class CollectionSpotlightList extends BaseBrowsable
 			'searchTerm' => array('property' => 'searchTerm', 'type' => 'text', 'label' => 'Search Term', 'description' => 'A default search term to apply to the category', 'default' => '', 'hideInLists' => true, 'maxLength' => 500),
 			'defaultFilter' => array('property' => 'defaultFilter', 'type' => 'textarea', 'label' => 'Default Filter(s)', 'description' => 'Filters to apply to the search by default.', 'hideInLists' => true, 'rows' => 3, 'cols' => 80),
 			'sourceListId' => array('property' => 'sourceListId', 'type' => 'enum', 'values' => $sourceLists, 'label' => 'Source List', 'description' => 'A public list to display titles from', 'translateValues'=>true, 'isAdminFacing' => true),
+			'sourceCourseReserveId' => array('property' => 'sourceCourseReserveId', 'type' => 'enum', 'values' => $sourceCourseReserves, 'label' => 'Source Course Reserve', 'description' => 'A course to display titles from'),
 			'defaultSort' => array('property' => 'defaultSort', 'type' => 'enum', 'label' => 'Default Sort', 'values' => array('relevance' => 'Best Match', 'popularity' => 'Popularity', 'newest_to_oldest' => 'Date Added', 'author' => 'Author', 'title' => 'Title', 'user_rating' => 'Rating'), 'description' => 'The default sort for the search if none is specified', 'default' => 'relevance', 'hideInLists' => true, 'translateValues'=>true, 'isAdminFacing' => true),
 		);
 	}
@@ -89,6 +93,16 @@ class CollectionSpotlightList extends BaseBrowsable
 				return "Invalid List ({$this->sourceListId})";
 			}
 
+		}elseif ($this->sourceCourseReserveId != null && $this->sourceCourseReserveId > 0) {
+			require_once ROOT_DIR . '/sys/CourseReserves/CourseReserve.php';
+			$userList = new CourseReserve();
+			$userList->id = $this->sourceCourseReserveId;
+			if ($userList->find(true)) {
+				return $userList->getTitle();
+			} else {
+				return "Invalid Course Reserve ({$this->sourceCourseReserveId})";
+			}
+
 		}else{
 			return "";
 		}
@@ -100,6 +114,8 @@ class CollectionSpotlightList extends BaseBrowsable
 		global $configArray;
 		if ($this->sourceListId != null && $this->sourceListId > 0){
 			return $configArray['Site']['url'] . '/MyAccount/MyList/' . $this->sourceListId;
+		}elseif ($this->sourceCourseReserveId != null && $this->sourceCourseReserveId > 0){
+			return $configArray['Site']['url'] . '/CourseReserves/' . $this->sourceCourseReserveId;
 		}else{
 			$searchObject = $this->getSearchObject();
 			$link = $configArray['Site']['url'] . $searchObject->renderSearchUrl();

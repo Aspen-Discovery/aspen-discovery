@@ -39,7 +39,7 @@
 			<tr class="sortable" id="{$list->id}">
 			<td>{$list->name}</td>
 			<td>{$list->displayFor}</td>
-			<td>{if $list->sourceListId == -1}{$list->searchTerm}<br/>{$list->defaultFilter}{else}{$list->getSourceListName()}{/if}</td>
+			<td>{if $list->sourceListId == -1 && $list->sourceCourseReserveId == -1}{$list->searchTerm}<br/>{$list->defaultFilter}{else}{$list->getSourceListName()}{/if}</td>
 			</tr>
 		{/foreach}
 		</tbody>

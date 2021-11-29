@@ -1,4 +1,4 @@
-CourseReserveKeyword:
+CourseReservesKeyword:
   QueryFields:
     - title:
       - [exact, 1000]
@@ -18,7 +18,7 @@ CourseReserveKeyword:
     - alternate_ids:
       - [and, 25]
 
-CourseReserveTitle:
+CourseReservesTitle:
   QueryFields:
     - title:
       - [exact, 1000]
@@ -27,7 +27,7 @@ CourseReserveTitle:
       - [exact, 1000]
       - [and, 250]
 
-CourseReserveInstructor:
+CourseReservesInstructor:
   QueryFields:
     - instructor:
       - [exact, 600]
