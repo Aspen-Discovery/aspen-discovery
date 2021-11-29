@@ -19,7 +19,7 @@ public class CourseReservesIndexerMain {
 	private static long endTime;
 	private static long lastReindexTime;
 
-	private static CourseReservesIndexer listProcessor;
+	private static CourseReservesIndexer courseReservesProcessor;
 
 	private static Connection dbConn;
 
@@ -53,10 +53,10 @@ public class CourseReservesIndexerMain {
 			CourseReservesIndexingLogEntry logEntry = initializeIndexer(serverName);
 
 			//Process lists
-			long numListsProcessed = 0;
+			long numReservesProcessed = 0;
 			try {
 				logger.info("Reindexing course reserves");
-				numListsProcessed += listProcessor.processCourseReserves(fullReindex, lastReindexTime, logEntry);
+				numReservesProcessed += courseReservesProcessor.processCourseReserves(fullReindex, lastReindexTime, logEntry);
 			} catch (Error e) {
 				logEntry.incErrors("Error processing reindex ", e);
 			} catch (Exception e) {
@@ -68,7 +68,7 @@ public class CourseReservesIndexerMain {
 			logEntry.setFinished();
 			finishIndexing(logEntry);
 
-			logger.info("Finished Reindex for " + serverName + " processed " + numListsProcessed);
+			logger.info("Finished Reindex for " + serverName + " processed " + numReservesProcessed);
 			long endTime = new Date().getTime();
 			long elapsedTime = endTime - startTime;
 			logger.info("Elapsed Minutes " + (elapsedTime / 60000));
@@ -76,8 +76,8 @@ public class CourseReservesIndexerMain {
 			//Disconnect from the database
 			disconnectDatabase(dbConn);
 
-			listProcessor.close();
-			listProcessor = null;
+			courseReservesProcessor.close();
+			courseReservesProcessor = null;
 
 			//Check to see if the jar has changes, and if so quit
 			if (myChecksumAtStart != JarUtil.getChecksumForJar(logger, processName, "./" + processName + ".jar")){
@@ -86,7 +86,7 @@ public class CourseReservesIndexerMain {
 			//Pause before running the next export (longer if we didn't get any actual changes)
 			System.gc();
 			try {
-				if (numListsProcessed == 0) {
+				if (numReservesProcessed == 0) {
 					Thread.sleep(1000 * 60 * 5);
 				} else {
 					Thread.sleep(1000 * 60);
@@ -112,9 +112,9 @@ public class CourseReservesIndexerMain {
 		logger.info("Time elapsed: " + elapsedMinutes + " minutes");
 
 		try {
-			String columnToUpdate = "lastUpdateOfChangedLists";
+			String columnToUpdate = "lastUpdateOfChangedCourseReserves";
 			if (fullReindex){
-				columnToUpdate = "lastUpdateOfAllLists";
+				columnToUpdate = "lastUpdateOfAllCourseReserves";
 			}
 			PreparedStatement finishedStatement = dbConn.prepareStatement("UPDATE  course_reserves_indexing_settings set runFullUpdate = 0, " + columnToUpdate + " = ?");
 			finishedStatement.setLong(1, startTime / 1000);
@@ -152,17 +152,17 @@ public class CourseReservesIndexerMain {
 			ResultSet loadSettingsRS = loadSettingsStmt.executeQuery();
 			if (loadSettingsRS.next()){
 				fullReindex = loadSettingsRS.getBoolean("runFullUpdate");
-				lastReindexTime = loadSettingsRS.getLong("lastUpdateOfChangedLists");
+				lastReindexTime = loadSettingsRS.getLong("lastUpdateOfChangedCourseReserves");
 			}else{
-				logEntry.incErrors("No Settings were found for list indexing");
+				logEntry.incErrors("No Settings were found for course reserve indexing");
 			}
 			loadSettingsRS.close();
 			loadSettingsStmt.close();
 		} catch (Exception e) {
-			logEntry.incErrors("Could not load last index time from variables table ", e);
+			logEntry.incErrors("Could not load last index time from settings table ", e);
 		}
 
-		listProcessor = new CourseReservesIndexer(serverName, configIni, dbConn, logger);
+		courseReservesProcessor = new CourseReservesIndexer(configIni, dbConn, logger);
 
 		return logEntry;
 	}
@@ -171,7 +171,7 @@ public class CourseReservesIndexerMain {
 		//Remove log entries older than 45 days
 		long earliestLogToKeep = (startTime / 1000) - (60 * 60 * 24 * 45);
 		try {
-			int numDeletions = aspenConn.prepareStatement("DELETE from course_reserves_index_log WHERE startTime < " + earliestLogToKeep).executeUpdate();
+			int numDeletions = aspenConn.prepareStatement("DELETE from course_reserves_indexing_log WHERE startTime < " + earliestLogToKeep).executeUpdate();
 			logger.info("Deleted " + numDeletions + " old log entries");
 		} catch (SQLException e) {
 			logger.error("Error deleting old log entries", e);

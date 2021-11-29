@@ -213,7 +213,7 @@ public class IndexingUtils {
 						"library.subdomain, location.facetLabel, location.displayName, library.restrictOwningBranchesAndSystems, location.publicListsToInclude, " +
 						"location.additionalLocationsToShowAvailabilityFor, includeAllLibraryBranchesInFacets, library.isConsortialCatalog, " +
 						"location.groupedWorkDisplaySettingId as groupedWorkDisplaySettingIdLocation, library.groupedWorkDisplaySettingId as groupedWorkDisplaySettingIdLibrary, " +
-						"location.includeLibraryRecordsToInclude, " +
+						"location.includeLibraryRecordsToInclude, library.courseReserveLibrariesToInclude, " +
 						"library.overDriveScopeId as overDriveScopeIdLibrary, location.overDriveScopeId as overDriveScopeIdLocation, " +
 						"library.hooplaScopeId as hooplaScopeLibrary, location.hooplaScopeId as hooplaScopeLocation, " +
 						"library.axis360ScopeId as axis360ScopeLibrary, location.axis360ScopeId as axis360ScopeLocation " +
@@ -271,6 +271,8 @@ public class IndexingUtils {
 			}
 			locationScopeInfo.setGroupedWorkDisplaySettings(groupedWorkDisplaySettings.get(groupedWorkDisplaySettingId));
 			boolean includeLibraryRecordsToInclude = locationInformationRS.getBoolean("includeLibraryRecordsToInclude");
+
+			locationScopeInfo.setCourseReserveLibrariesToInclude(locationInformationRS.getString("courseReserveLibrariesToInclude"));
 
 			long overDriveScopeIdLocation = locationInformationRS.getLong("overDriveScopeIdLocation");
 			long overDriveScopeIdLibrary = locationInformationRS.getLong("overDriveScopeIdLibrary");
@@ -439,7 +441,7 @@ public class IndexingUtils {
 	private static void loadLibraryScopes(TreeSet<Scope> scopes, HashMap<Long, GroupedWorkDisplaySettings> groupedWorkDisplaySettings, HashMap<Long, OverDriveScope> overDriveScopes, HashMap<Long, HooplaScope> hooplaScopes, HashMap<Long, CloudLibraryScope> cloudLibraryScopes, HashMap<Long, Axis360Scope> axis360Scopes, HashMap<Long, SideLoadScope> sideLoadScopes, Connection dbConn, Logger logger) throws SQLException {
 		PreparedStatement libraryInformationStmt = dbConn.prepareStatement("SELECT libraryId, ilsCode, subdomain, " +
 						"displayName, facetLabel, restrictOwningBranchesAndSystems, publicListsToInclude, isConsortialCatalog, " +
-						"additionalLocationsToShowAvailabilityFor, overDriveScopeId, " +
+						"additionalLocationsToShowAvailabilityFor, courseReserveLibrariesToInclude, overDriveScopeId, " +
 						"groupedWorkDisplaySettingId, hooplaScopeId, axis360ScopeId " +
 						"FROM library WHERE createSearchInterface = 1 ORDER BY ilsCode ASC",
 				ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
@@ -493,6 +495,7 @@ public class IndexingUtils {
 				logger.error("Invalid groupedWorkDisplaySettingId provided, got " + groupedWorkDisplaySettingId + " not loading library scope " + subdomain);
 				continue;
 			}
+			newScope.setCourseReserveLibrariesToInclude(libraryInformationRS.getString("courseReserveLibrariesToInclude"));
 
 			long overDriveScopeLibrary = libraryInformationRS.getLong("overDriveScopeId");
 			if (overDriveScopeLibrary != -1) {
