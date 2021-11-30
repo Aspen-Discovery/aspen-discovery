@@ -1384,7 +1384,15 @@ class SearchAPI extends Action
 								'key' => $categoryInformation->textId . '_' . $savedSearch['id'],
 								'title' => $categoryInformation->label . ': ' . $savedSearch['title'],
 								'source' => "SavedSearch",
+								'isHidden' => false,
 							];
+							require_once ROOT_DIR . '/sys/Browse/BrowseCategoryDismissal.php';
+							$browseCategoryDismissals = new BrowseCategoryDismissal();
+							$browseCategoryDismissals->userId = $appUser->id;
+							$browseCategoryDismissals->browseCategoryId = $categoryInformation->textId;
+							if($browseCategoryDismissals->find(true)) {
+								$categoryResponse['subCategories']['isHidden'] = true;
+							}
 						}
 					} elseif ($categoryInformation->textId == ("system_user_lists")) {
 						$userLists = $listApi->getUserLists();
@@ -1397,7 +1405,15 @@ class SearchAPI extends Action
 										'key' => $categoryInformation->textId . '_' . $userList['id'],
 										'title' => $categoryInformation->label . ': ' . $userList['title'],
 										'source' => "List",
+										'isHidden' => false,
 									];
+									require_once ROOT_DIR . '/sys/Browse/BrowseCategoryDismissal.php';
+									$browseCategoryDismissals = new BrowseCategoryDismissal();
+									$browseCategoryDismissals->userId = $appUser->id;
+									$browseCategoryDismissals->browseCategoryId = $categoryInformation->textId;
+									if($browseCategoryDismissals->find(true)) {
+										$categoryResponse['subCategories']['isHidden'] = true;
+									}
 								}
 							}
 						}
@@ -1406,7 +1422,15 @@ class SearchAPI extends Action
 							'key' => $categoryInformation->textId,
 							'title' => $categoryInformation->label,
 							'source' => $categoryInformation->source,
+							'isHidden' => false,
 						);
+						require_once ROOT_DIR . '/sys/Browse/BrowseCategoryDismissal.php';
+						$browseCategoryDismissals = new BrowseCategoryDismissal();
+						$browseCategoryDismissals->userId = $appUser->id;
+						$browseCategoryDismissals->browseCategoryId = $categoryInformation->textId;
+						if($browseCategoryDismissals->find(true)) {
+							$categoryResponse['isHidden'] = true;
+						}
 						if ($includeSubCategories) {
 							$subCategories = $categoryInformation->getSubCategories();
 							$categoryResponse['subCategories'] = [];
@@ -1431,7 +1455,15 @@ class SearchAPI extends Action
 													'key' => $temp->textId,
 													'title' => $displayLabel,
 													'source' => $temp->source,
+													'isHidden' => false,
 												];
+												require_once ROOT_DIR . '/sys/Browse/BrowseCategoryDismissal.php';
+												$browseCategoryDismissals = new BrowseCategoryDismissal();
+												$browseCategoryDismissals->userId = $appUser->id;
+												$browseCategoryDismissals->browseCategoryId = $temp->textId;
+												if($browseCategoryDismissals->find(true)) {
+													$categoryResponse['subCategories']['isHidden'] = true;
+												}
 											}
 										}
 									}
