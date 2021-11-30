@@ -1017,8 +1017,15 @@ class Koha extends AbstractIlsDriver
 	 */
 	public function placeHold($patron, $recordId, $pickupBranch = null, $cancelDate = null)
 	{
+		// Store result for API or app use
+		$hold_result['api'] = array();
+
 		$hold_result = array();
 		$hold_result['success'] = false;
+
+		// Result for API or app use
+		$hold_result['api']['title'] = translate(['text' => 'Unable to place hold', 'isPublicFacing'=> true]);
+		$hold_result['api']['message'] = translate(['text' => 'There was an error placing your hold.', 'isPublicFacing'=> true]);
 
 		//Set pickup location
 		$pickupBranch = strtoupper($pickupBranch);
@@ -1026,6 +1033,10 @@ class Koha extends AbstractIlsDriver
 		$patronEligibleForHolds = $this->patronEligibleForHolds($patron);
 		if (!$patronEligibleForHolds['isEligible']){
 			$hold_result['message'] = $patronEligibleForHolds['message'];
+
+			// Result for API or app use
+			$hold_result['api']['message'] = $patronEligibleForHolds['message'];
+
 			return $hold_result;
 		}
 
@@ -1035,6 +1046,10 @@ class Koha extends AbstractIlsDriver
 		$recordDriver = new MarcRecordDriver($recordId);
 		if (!$recordDriver->isValid()) {
 			$hold_result['message'] = 'Unable to find a valid record for this title.  Please try your search again.';
+
+			// Result for API or app use
+			$hold_result['api']['message'] = translate(['text' => 'Unable to find a valid record for this title.  Please try your search again.', 'isPublicFacing'=> true]);
+
 			return $hold_result;
 		}
 
@@ -1045,6 +1060,10 @@ class Koha extends AbstractIlsDriver
 			foreach ($existingCheckouts as $checkout) {
 				if ($checkout->recordId == $recordId) {
 					$hold_result['message'] = 'You already have that title checked out, you cannot place a hold on it until you check it in.';
+
+					// Result for API or app use
+					$hold_result['api']['message'] = translate(['text' => 'You already have that title checked out, you cannot place a hold on it until you check it in.', 'isPublicFacing'=> true]);
+
 					return $hold_result;
 				}
 			}
@@ -1092,6 +1111,9 @@ class Koha extends AbstractIlsDriver
 			$message = 'The item could not be placed on hold: ';
 			$message = $this->getHoldErrorMessage($error, $message);
 			$hold_result['message'] = translate(['text'=>$message,'isPublicFacing'=>true]);
+
+			// Result for API or app use
+			$hold_result['api']['message'] = translate(['text'=>$this->getHoldErrorMessage($error, ""),'isPublicFacing'=>true]);
 		}
 		return $hold_result;
 	}
@@ -1106,14 +1128,24 @@ class Koha extends AbstractIlsDriver
 	 */
 	public function placeVolumeHold(User $patron, $recordId, $volumeId, $pickupBranch)
 	{
+		// Store result for API or app use
+		$result['api'] = array();
+
 		$result = [
 			'success' => false,
 			'message' => 'Unknown error placing a hold on this volume.'
 		];
 
+		// Result for API or app use
+		$result['api']['title'] = translate(['text' => 'Unable to place hold', 'isPublicFacing'=> true]);
+		$result['api']['message'] = translate(['text' => 'Unknown error placing a hold on this volume.', 'isPublicFacing'=> true]);
+
 		$oauthToken = $this->getOAuthToken();
 		if ($oauthToken == false) {
 			$result['message'] = translate(['text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.', 'isPublicFacing'=>true]);
+
+			// Result for API or app use
+			$result['api']['message'] = translate(['text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.', 'isPublicFacing'=> true]);
 		} else {
 			$apiUrl = $this->getWebServiceUrl() . "/api/v1/holds";
 			$postParams = [
@@ -1139,6 +1171,11 @@ class Koha extends AbstractIlsDriver
 			if ($responseCode == 201){
 				$result['message'] = translate(['text'=>"Your hold was placed successfully.", 'isPublicFacing'=>true]);
 				$result['success'] = true;
+
+				// Result for API or app use
+				$result['api']['title'] = translate(['text' => 'Hold placed successfully', 'isPublicFacing'=> true]);
+				$result['api']['message'] = translate(['text' => 'Your hold was placed successfully.', 'isPublicFacing'=> true]);
+
 				$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
 				$patron->forceReloadOfHolds();
 			}else{
@@ -1146,6 +1183,10 @@ class Koha extends AbstractIlsDriver
 					'success' => false,
 					'message' => "Error ($responseCode) placing a hold on this volume."
 				];
+
+				// Result for API or app use
+				$result['api']['title'] = translate(['text' => 'Unable to place hold', 'isPublicFacing'=> true]);
+				$result['api']['message'] = "Error ($responseCode) placing a hold on this volume.";
 			}
 		}
 		return $result;
@@ -1167,18 +1208,29 @@ class Koha extends AbstractIlsDriver
 	 */
 	function placeItemHold($patron, $recordId, $itemId, $pickupBranch, $cancelDate = null)
 	{
+		// Store result for API or app use
+		$hold_result['api'] = array();
+
 		$hold_result = array();
 		$hold_result['success'] = false;
 
+		// Result for API or app use
+		$hold_result['api']['title'] = translate(['text' => 'Unable to place hold', 'isPublicFacing'=> true]);
+		$hold_result['api']['message'] = translate(['text' => 'There was an error placing your hold.', 'isPublicFacing'=> true]);
+
 		$patronEligibleForHolds = $this->patronEligibleForHolds($patron);
 		if ($patronEligibleForHolds['isEligible'] == false){
-			return $hold_result['message'] = $patronEligibleForHolds['message'];
+			$hold_result['message'] = $patronEligibleForHolds['message'];
+			$hold_result['api']['message'] = $patronEligibleForHolds['message'];
+			return $hold_result;
 		}
 
 		require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
 		$recordDriver = new MarcRecordDriver($this->getIndexingProfile()->name . ':' . $recordId);
 		if (!$recordDriver->isValid()) {
 			$hold_result['message'] = 'Unable to find a valid record for this title.  Please try your search again.';
+			$hold_result['api']['message'] = translate(['text' => 'Unable to find a valid record for this title.  Please try your search again.', 'isPublicFacing'=> true]);
+
 			return $hold_result;
 		}
 		$hold_result['title'] = $recordDriver->getTitle();
@@ -1231,6 +1283,8 @@ class Koha extends AbstractIlsDriver
 			$message = 'The item could not be placed on hold: ';
 			$message = $this->getHoldErrorMessage($error, $message);
 			$hold_result['message'] = translate(['text'=>$message,'isPublicFacing'=>true]);
+			$hold_result['api']['message'] = translate(['text' => $message, 'isPublicFacing'=> true]);
+
 		}
 		return $hold_result;
 	}
@@ -1416,31 +1470,43 @@ class Koha extends AbstractIlsDriver
 			$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
 			$patron->forceReloadOfHolds();
 			if ($allCancelsSucceed) {
-				return array(
-					'title' => $titles,
-					'success' => true,
-					'message' => translate(['text'=>'Cancelled %1% hold(s) successfully.', 1=>count($holdKeys), 'isPublicFacing'=>true])
-				);
+				$result['title'] = $titles;
+				$result['success'] = true;
+				$result['message'] = translate(['text'=>'Cancelled %1% hold(s) successfully.', 1=>count($holdKeys), 'isPublicFacing'=>true]);
+
+				$result['api']['title'] = translate(['text' => 'Hold cancelled', 'isPublicFacing'=> true]);
+				$result['api']['message'] = translate(['text'=> 'The hold was successfully canceled', 'isPublicFacing'=>true]);
+
+				return $result;
 			} else {
-				return array(
-					'title' => $titles,
-					'success' => false,
-					'message' => translate(['text'=>'Some holds could not be cancelled.  Please try again later or see your librarian.', 'isPublicFacing'=>true])
-				);
+				$result['title'] = $titles;
+				$result['success'] = false;
+				$result['message'] = translate(['text'=>'Some holds could not be cancelled.  Please try again later or see your librarian.', 'isPublicFacing'=>true]);
+
+				$result['api']['title'] = translate(['text' => 'Unable to cancel hold', 'isPublicFacing'=> true]);
+				$result['api']['message'] = translate(['text' => 'This hold could not be cancelled. Please try again later or see your librarian.', 'isPublicFacing'=>true]);
+
+				return $result;
 			}
 		} else {
 			if ($locationId) {
-				return array(
-					'title' => $titles,
-					'success' => false,
-					'message' => translate(['text'=>'Changing location for a hold is not supported.', 'isPublicFacing'=>true])
-				);
+				$result['title'] = $titles;
+				$result['success'] = false;
+				$result['message'] = translate(['text'=>'Changing location for a hold is not supported.', 'isPublicFacing'=>true]);
+
+				$result['api']['title'] = translate(['text' => 'Unable to update hold', 'isPublicFacing'=> true]);
+				$result['api']['message'] = translate(['text' => 'Changing location for a hold is not supported.', 'isPublicFacing'=>true]);
+
+				return $result;
 			} else {
-				return array(
-					'title' => $titles,
-					'success' => false,
-					'message' => translate(['text'=>'Freezing and thawing holds is not supported.', 'isPublicFacing'=>true])
-				);
+				$result['title'] = $titles;
+				$result['success'] = false;
+				$result['message'] = translate(['text'=>'Freezing and thawing holds is not supported.', 'isPublicFacing'=>true]);
+
+				$result['api']['title'] = translate(['text' => 'Unable to update hold', 'isPublicFacing'=> true]);
+				$result['api']['message'] = translate(['text' => 'Freezing and thawing holds is not supported.', 'isPublicFacing'=>true]);
+
+				return $result;
 			}
 		}
 	}
@@ -1500,6 +1566,7 @@ class Koha extends AbstractIlsDriver
 			$renewsRemaining = ($maxRenewals - $renewCount);
 			//We renewed the hold
 			$success = true;
+			$title = translate(['text'=>'Renewed title', 'isPublicFacing'=>true]);
 			$message = 'Your item was successfully renewed.';
 			$message .= ' ' . $renewsRemaining . ' of ' . $maxRenewals . ' renewals remaining.';
 			$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
@@ -1507,6 +1574,7 @@ class Koha extends AbstractIlsDriver
 		} else {
 			$error = $renewResponse->error;
 			$success = false;
+			$title = translate(['text'=>'Unable to renew title', 'isPublicFacing'=>true]);
 			$message = 'The item could not be renewed: ';
 			if($error == "too_many") {
 				$message .= 'Renewed the maximum number of times';
@@ -1541,10 +1609,15 @@ class Koha extends AbstractIlsDriver
 			}
 		}
 
-		return array(
-			'itemId' => $itemId,
-			'success' => $success,
-			'message' => $message);
+		$result['itemId'] = $itemId;
+		$result['success'] = $success;
+		$result['message'] = $message;
+
+		// Result for API or app use
+		$result['api']['title'] = $title;
+		$result['api']['message'] = $message;
+
+		return $result;
 	}
 
 	/**
@@ -1669,14 +1742,24 @@ class Koha extends AbstractIlsDriver
 
 	function freezeHold($patron, $recordId, $itemToFreezeId, $dateToReactivate)
 	{
+		// Store result for API or app use
+		$result['api'] = array();
+
 		$result = [
 			'success' => false,
-			'message' => translate(['text' => 'Unable to freeze your hold.', 'isPublicFacing'=>true])
+			'message' => translate(['text' => 'Unable to freeze your hold.', 'isPublicFacing'=>true]),
 		];
+
+		// Result for API or app use
+		$result['api']['title'] = translate(['text' => 'Unable to freeze hold', 'isPublicFacing'=> true]);
+		$result['api']['message'] = translate(['text' => 'There was an error freezing your hold.', 'isPublicFacing'=> true]);
 
 		$oauthToken = $this->getOAuthToken();
 		if ($oauthToken == false) {
 			$result['message'] = translate(['text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.', 'isPublicFacing'=>true]);
+
+			// Result for API or app use
+			$result['api']['message'] = translate(['text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.', 'isPublicFacing'=> true]);
 		} else {
 			$apiUrl = $this->getWebServiceUrl() . "/api/v1/holds/$itemToFreezeId/suspension";
 			$postParams = "";
@@ -1702,6 +1785,11 @@ class Koha extends AbstractIlsDriver
 				if ($this->apiCurlWrapper->getResponseCode() != 204) {
 					$result['message'] = translate(['text'=>'Your hold was frozen successfully.', 'isPublicFacing'=> true]);
 					$result['success'] = true;
+
+					// Result for API or app use
+					$result['api']['title'] = translate(['text' => 'Hold frozen', 'isPublicFacing'=> true]);
+					$result['api']['message'] = translate(['text' => 'Your hold was frozen successfully.', 'isPublicFacing'=> true]);
+
 					$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
 					$patron->forceReloadOfHolds();
 				}
@@ -1711,9 +1799,17 @@ class Koha extends AbstractIlsDriver
 				if (isset($hold_response->error)) {
 					$result['message'] = $hold_response->error;
 					$result['success'] = true;
+
+					// Result for API or app use
+					$result['api']['message'] = $hold_response->error;
 				} else {
 					$result['message'] = translate(['text'=>'Your hold was frozen successfully.', 'isPublicFacing'=> true]);
 					$result['success'] = true;
+
+					// Result for API or app use
+					$result['api']['title'] = translate(['text' => 'Hold frozen', 'isPublicFacing'=> true]);
+					$result['api']['message'] = translate(['text' => 'Your hold was frozen successfully.', 'isPublicFacing'=> true]);
+
 					$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
 					$patron->forceReloadOfHolds();
 				}
@@ -1730,9 +1826,15 @@ class Koha extends AbstractIlsDriver
 			'message' => translate(['text' => 'Unable to thaw your hold.', 'isPublicFacing'=>true])
 		];
 
+		$result['api']['title'] = translate(['text'=>'Error thawing hold', 'isPublicFacing'=>true]);
+		$result['api']['message'] = translate(['text'=>'Unable to thaw your hold.', 'isPublicFacing'=>true]);
+
 		$oauthToken = $this->getOAuthToken();
 		if ($oauthToken == false) {
 			$result['message'] = translate(['text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.', 'isPublicFacing'=>true]);
+
+			$result['api']['title'] = translate(['text' => 'Error', 'isPublicFacing'=>true]);
+			$result['api']['message'] = translate(['text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.', 'isPublicFacing'=>true]);
 		} else {
 			$apiUrl = $this->getWebServiceUrl() . "/api/v1/holds/$itemToThawId/suspension";
 
@@ -1750,9 +1852,13 @@ class Koha extends AbstractIlsDriver
 			if (strlen($response) > 0) {
 				$result['message'] = $response;
 				$result['success'] = true;
+				$result['api']['message'] = $response;
 			} else {
 				$result['message'] = translate(['text'=>'Your hold was thawed successfully.', 'isPublicFacing'=>true]);
 				$result['success'] = true;
+
+				$result['api']['title'] = translate(['text'=>'Hold thawed', 'isPublicFacing'=>true]);
+				$result['api']['message'] = translate(['text'=>'Your hold was thawed successfully.', 'isPublicFacing'=>true]);
 				$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
 				$patron->forceReloadOfHolds();
 			}
@@ -1763,14 +1869,24 @@ class Koha extends AbstractIlsDriver
 
 	function changeHoldPickupLocation(User $patron, $recordId, $itemToUpdateId, $newPickupLocation)
 	{
+		// Store result for API or app use
+		$result['api'] = array();
+
 		$result = [
 			'success' => false,
 			'message' => 'Unknown error changing hold pickup location.'
 		];
 
+		// Result for API or app use
+		$result['api']['title'] = translate(['text' => 'Unable to update pickup location', 'isPublicFacing'=> true]);
+		$result['api']['message'] = translate(['text' => 'Unknown error changing hold pickup location.', 'isPublicFacing'=> true]);
+
 		$oauthToken = $this->getOAuthToken();
 		if ($oauthToken == false) {
 			$result['message'] = translate(['text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.', 'isPublicFacing'=>true]);
+
+			// Result for API or app use
+			$result['api']['message'] = translate(['text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.', 'isPublicFacing'=> true]);
 		} else {
 			$this->apiCurlWrapper->addCustomHeaders([
 				'Authorization: Bearer ' . $oauthToken,
@@ -1818,12 +1934,21 @@ class Koha extends AbstractIlsDriver
 					if (isset($hold_response->error)) {
 						$result['message'] = $hold_response->error;
 						$result['success'] = true;
+						$result['api']['message'] = $hold_response->error;
 					} elseif ($hold_response->pickup_library_id != $newPickupLocation) {
 						$result['message'] = translate(['text'=>'Sorry, the pickup location of your hold could not be changed.', 'isPublicFacing'=>true]);
-						$result['success'] = true;
+						$result['success'] = false;
+
+						// Result for API or app use
+						$result['api']['title'] = translate(['text' => 'Unable to update pickup location', 'isPublicFacing'=> true]);
+						$result['api']['message'] = translate(['text' => 'Sorry, the pickup location of your hold could not be changed.', 'isPublicFacing'=> true]);
 					} else {
 						$result['message'] = translate(['text'=>'The pickup location of your hold was changed successfully.', 'isPublicFacing'=>true]);
 						$result['success'] = true;
+
+						// Result for API or app use
+						$result['api']['title'] = translate(['text' => 'Pickup location updated', 'isPublicFacing'=> true]);
+						$result['api']['message'] = translate(['text' => 'The pickup location of your hold was changed successfully.', 'isPublicFacing'=> true]);
 						$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
 						$patron->forceReloadOfHolds();
 					}
@@ -3310,12 +3435,18 @@ class Koha extends AbstractIlsDriver
 		$holds = $this->getHolds($patron, 1, -1, 'title');
 		$hold_result['success'] = true;
 		$hold_result['message'] = translate(['text'=>"Your hold was placed successfully.", 'isPublicFacing'=>true]);
+
+		$hold_result['api']['title'] = translate(['text'=>'Hold placed successfully', 'isPublicFacing'=>true]);
+		$hold_result['api']['message'] = translate(['text'=> 'Your hold was placed successfully.', 'isPublicFacing'=>true]);
+
 		//Find the correct hold (will be unavailable)
 		/** @var Hold $holdInfo */
 		foreach ($holds['unavailable'] as $holdInfo) {
 			if ($holdInfo->sourceId == $recordId) {
 				if (isset($holdInfo->position)) {
 					$hold_result['message'] .= '&nbsp;' . translate(['text'=>"You are number <b>%1%</b> in the queue.", '1' => $holdInfo->position, 'isPublicFacing'=>true]);
+					$hold_result['api']['message'] .= ' ' . translate(['text'=>"You are number %1% in the queue.", '1' => $holdInfo->position, 'isPublicFacing'=>true]);
+
 				}
 				//Show the number of holds the patron has used.
 				$accountSummary = $this->getAccountSummary($patron);
@@ -3324,9 +3455,13 @@ class Koha extends AbstractIlsDriver
 				$remainingHolds = $maxReserves - $totalHolds;
 				if ($remainingHolds <= 3){
 					$hold_result['message'] .= '<br/>' . translate(['text'=>"You have %1% holds currently and can place %2% additional holds.", 1=>$totalHolds, 2=>$remainingHolds, 'isPublicFacing'=>true]);
+					$hold_result['api']['message'] .= ' ' . translate(['text'=>"You have %1% holds currently and can place %2% additional holds.", 1=>$totalHolds, 2=>$remainingHolds, 'isPublicFacing'=>true]);
 				}else{
 					$hold_result['message'] .= '<br/>' . translate(['text'=>"<br/>You have %1% holds currently.", 1 => $totalHolds, 'isPublicFacing'=>true]);
+					$hold_result['api']['message'] .= ' ' . translate(['text'=>"You have %1% holds currently.", 1=>$totalHolds, 'isPublicFacing'=>true]);
 				}
+
+				$hold_result['api']['action'] = translate(['text' => 'Go to Holds', 'isPublicFacing'=>true]);
 
 				break;
 			}

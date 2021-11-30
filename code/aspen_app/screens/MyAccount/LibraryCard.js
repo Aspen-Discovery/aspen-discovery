@@ -40,6 +40,14 @@ export default class LibraryCard extends Component {
 
 	};
 
+	renderLibraryCard = () => {
+	    try {
+	     return (<Barcode value={this.state.libraryCard} format={this.state.barcodeStyle} />)
+	    } catch (e) {
+	        console.log(e);
+	    }
+	};
+
 	render() {
 		if (this.state.isLoading) {
 			return ( loadingSpinner() );
@@ -57,7 +65,7 @@ export default class LibraryCard extends Component {
 						</Flex>
 					</Center>
 					<Center pt={8} pb={8}>
-						{this.state.libraryCard ? <Barcode value={this.state.libraryCard} format={this.state.barcodeStyle} /> : null }
+						{this.renderLibraryCard()}
 					</Center>
                     <Center>
                     <Text bold mt={2} fontSize="lg">

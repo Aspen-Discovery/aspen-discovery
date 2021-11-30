@@ -44,7 +44,7 @@ class DonationsSetting extends DataObject
 			'allowDonationEarmark' => array('property'=>'allowDonationEarmark', 'type'=>'checkbox', 'label'=>'Allow users to choose an earmark for their donation', 'description'=>'Whether or not users can specify that their donation goes to a specific library need.', 'onchange' => 'return AspenDiscovery.Admin.updateDonationsSettingFields();'),
 			'allowDonationDedication' => array('property'=>'allowDonationDedication', 'type'=>'checkbox', 'label'=>'Allow users to make their donation in dedication of someone', 'description'=>'Whether or not users can ask that their donation be dedicated to someone.', 'onchange' => 'return AspenDiscovery.Admin.updateDonationsSettingFields();'),
 			'donationsContent' => array('property'=>'donationsContent', 'type'=>'html', 'label'=>'Page Content', 'description'=>'Content that is displayed on the page before the form.', 'hideInLists' => true),
-			'donationEmailTemplate' => array('property'=>'donationEmailTemplate', 'type'=>'html', 'label'=>'Email Template', 'description'=>'The Merchant Profile ID to use when paying fines.', 'hideInLists' => true),
+			'donationEmailTemplate' => array('property'=>'donationEmailTemplate', 'type'=>'html', 'label'=>'Email Template', 'description'=>'Content that is displayed in the user\'s email receipt.', 'hideInLists' => true),
 
 			'donationValues' => array(
 				'property'      => 'donationValues',

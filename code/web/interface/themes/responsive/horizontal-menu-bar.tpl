@@ -6,7 +6,7 @@
 				<i class="fas fa-home fa-lg"></i><span class="menu-bar-label hidden-inline-block-xs"></span>
 			</a>
 		{/if}
-		<a href="{if $useHomeLink == '0' || $useHomeLink == '2'}/{else}/Search/Home{/if}" id="homeLink" class="menu-icon menu-bar-option" title="{translate text='Browse the Catalog' inAttribute=true isPublicFacing=true}" aria-label="{translate text='Browse the Catalog' inAttribute=true isPublicFacing=true}" role="link">
+		<a href="{if $useHomeLink == '0' || $useHomeLink == '2'}/{else}/Search/Home{/if}" id="browseLink" class="menu-icon menu-bar-option" title="{translate text='Browse the Catalog' inAttribute=true isPublicFacing=true}" aria-label="{translate text='Browse the Catalog' inAttribute=true isPublicFacing=true}" role="link">
 			<i class="fas {if ($useHomeLink == '1' || $useHomeLink == '3') || ($showBookIcon == '1' && ($useHomeLink == '0' || $useHomeLink == '2'))}fa-book-open{else}fa-home{/if} fa-lg"></i>{if $useHomeLink == '1' || $useHomeLink == '3'}<span class="menu-bar-label visible-inline-block-lg">{translate text=$browseLinkText isPublicFacing=true}</span>{else}{/if}
 		</a>
 		{foreach from=$libraryLinks key=categoryName item=menuCategory}

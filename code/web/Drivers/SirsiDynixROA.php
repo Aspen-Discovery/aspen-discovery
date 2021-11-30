@@ -921,9 +921,12 @@ class SirsiDynixROA extends HorizonAPI
 		$staffSessionToken = $this->getStaffSessionToken();
 		$sessionToken = $this->getSessionToken($patron);
 		if (!$staffSessionToken) {
-			return array(
-				'success' => false,
-				'message' => 'Sorry, it does not look like you are logged in currently.  Please login and try again');
+			$result['success'] = false;
+			$result['message'] = translate(['text'=>"Sorry, it does not look like you are logged in currently.  Please login and try again", 'isPublicFacing'=>true]);
+
+			$result['api']['title'] = translate(['text'=>'Error', 'isPublicFacing'=>true]);
+			$result['api']['message'] = translate(['text'=> 'Sorry, it does not look like you are logged in currently.  Please login and try again', 'isPublicFacing'=>true]);
+			return $result;
 		}
 
 		if (strpos($recordId, ':') !== false){
@@ -952,17 +955,23 @@ class SirsiDynixROA extends HorizonAPI
 			$offlineHold->status        = 'Not Processed';
 			if ($offlineHold->insert()) {
 				//TODO: use bib or bid ??
-				return array(
-					'title' => $title,
-					'bib' => $shortId,
-					'success' => true,
-					'message' => 'The circulation system is currently offline.  This hold will be entered for you automatically when the circulation system is online.');
+				$result['success'] = true;
+				$result['title'] = $title;
+				$result['bib'] = $shortId;
+				$result['message'] = translate(['text'=>"The circulation system is currently offline.  This hold will be entered for you automatically when the circulation system is online.", 'isPublicFacing'=>true]);
+
+				$result['api']['title'] = translate(['text'=>'Circulation system offline', 'isPublicFacing'=>true]);
+				$result['api']['message'] = translate(['text'=> 'The circulation system is currently offline.  This hold will be entered for you automatically when the circulation system is online.', 'isPublicFacing'=>true]);
+				return $result;
 			} else {
-				return array(
-					'title' => $title,
-					'bib' => $shortId,
-					'success' => false,
-					'message' => 'The circulation system is currently offline and we could not place this hold.  Please try again later.');
+				$result['success'] = false;
+				$result['title'] = $title;
+				$result['bib'] = $shortId;
+				$result['message'] = translate(['text'=>"The circulation system is currently offline and we could not place this hold.  Please try again later.", 'isPublicFacing'=>true]);
+
+				$result['api']['title'] = translate(['text'=>'Circulation system offline', 'isPublicFacing'=>true]);
+				$result['api']['message'] = translate(['text'=> 'The circulation system is currently offline and we could not place this hold.  Please try again later.', 'isPublicFacing'=>true]);
+				return $result;
 			}
 
 		} else {
@@ -970,6 +979,7 @@ class SirsiDynixROA extends HorizonAPI
 				$result          = $this->updateHold($patron, $recordId, $type/*, $title*/);
 				$result['title'] = $title;
 				$result['bid']   = $shortId;
+
 				return $result;
 
 			} else {
@@ -1019,6 +1029,10 @@ class SirsiDynixROA extends HorizonAPI
 				if (isset($createHoldResponse->messageList)) {
 					$hold_result['success'] = false;
 					$hold_result['message'] = translate(['text'=>'Your hold could not be placed.', 'isPublicFacing'=>true]);
+
+					$hold_result['api']['title'] = translate(['text'=>'Unable to place hold', 'isPublicFacing'=>true]);
+					$hold_result['api']['message'] = translate(['text'=> 'Your hold could not be placed.', 'isPublicFacing'=>true]);
+
 					if (isset($createHoldResponse->messageList)) {
 						$hold_result['message'] .= ' ' . translate(['text'=> (string)$createHoldResponse->messageList[0]->message, 'isPublicFacing'=>true]);
 						global $logger;
@@ -1034,6 +1048,11 @@ class SirsiDynixROA extends HorizonAPI
 				} else {
 					$hold_result['success'] = true;
 					$hold_result['message'] = translate(['text'=>"Your hold was placed successfully.", 'isPublicFacing'=>true]);
+
+					$hold_result['api']['title'] = translate(['text'=>'Hold placed successfully', 'isPublicFacing'=>true]);
+					$hold_result['api']['message'] = translate(['text'=> 'Your hold was placed successfully.', 'isPublicFacing'=>true]);
+					$hold_result['api']['action'] = translate(['text' => 'Go to Holds', 'isPublicFacing'=>true]);
+
 					$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
 					$patron->forceReloadOfHolds();
 				}
@@ -1091,11 +1110,19 @@ class SirsiDynixROA extends HorizonAPI
 
 	function cancelHold($patron, $recordId, $cancelId = null)
 	{
+		$result = [];
 		$sessionToken = $this->getSessionToken($patron);
 		if (!$sessionToken) {
-			return array(
+			$result = [
 				'success' => false,
-				'message' => 'Sorry, we could not connect to the circulation system.');
+				'message' => translate(['text' => 'Sorry, we could not connect to the circulation system.', 'isPublicFacing'=>true]),
+			];
+
+			// Result for API or app use
+			$result['api']['title'] = translate(['text' => 'Error', 'isPublicFacing'=> true]);
+			$result['api']['message'] = translate(['text' => 'Sorry, we could not connect to the circulation system', 'isPublicFacing'=> true]);
+
+			return $result;
 		}
 
 		//create the hold using the web service
@@ -1106,10 +1133,14 @@ class SirsiDynixROA extends HorizonAPI
 		if (empty($cancelHoldResponse)) {
 			$patron->forceReloadOfHolds();
 			$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
-			return array(
-				'success' => true,
-				'message' => 'The hold was successfully canceled'
-			);
+			$result['success'] = true;
+			$result['message'] = translate(['text'=>'The hold was successfully canceled.', 'isPublicFacing'=> true]);
+
+			// Result for API or app use
+			$result['api']['title'] = translate(['text' => 'Hold cancelled', 'isPublicFacing'=> true]);
+			$result['api']['message'] = translate(['text' => 'The hold was successfully canceled', 'isPublicFacing'=> true]);
+
+			return $result;
 		} else {
 			global $logger;
 			$errorMessage = 'Sirsi ROA Cancel Hold Error: ';
@@ -1118,9 +1149,14 @@ class SirsiDynixROA extends HorizonAPI
 			}
 			$logger->log($errorMessage, Logger::LOG_ERROR);
 
-			return array(
-				'success' => false,
-				'message' => 'Sorry, the hold was not canceled');
+			$result['success'] = false;
+			$result['message'] = translate(['text'=>'Sorry, the hold was not canceled', 'isPublicFacing'=> true]);
+
+			// Result for API or app use
+			$result['api']['title'] = translate(['text' => 'Unable to cancel hold', 'isPublicFacing'=> true]);
+			$result['api']['message'] = translate(['text' => 'This hold could not be cancelled. Please try again later or see your librarian.', 'isPublicFacing'=> true]);
+
+			return $result;
 		}
 
 	}
@@ -1129,9 +1165,16 @@ class SirsiDynixROA extends HorizonAPI
 	{
 		$staffSessionToken = $this->getStaffSessionToken();
 		if (!$staffSessionToken) {
-			return array(
+			$result = [
 				'success' => false,
-				'message' => 'Sorry, it does not look like you are logged in currently.  Please login and try again');
+				'message' => translate(['text' => 'Sorry, it does not look like you are logged in currently.  Please login and try again', 'isPublicFacing'=>true]),
+			];
+
+			// Result for API or app use
+			$result['api']['title'] = translate(['text' => 'Error', 'isPublicFacing'=> true]);
+			$result['api']['message'] = translate(['text' => 'Sorry, it does not look like you are logged in currently.  Please login and try again', 'isPublicFacing'=> true]);
+
+			return $result;
 		}
 
 		//create the hold using the web service
@@ -1151,10 +1194,14 @@ class SirsiDynixROA extends HorizonAPI
 		$updateHoldResponse = $this->getWebServiceResponse('changePickupLibrary', $webServiceURL . "/circulation/holdRecord/changePickupLibrary", $params, $this->getSessionToken($patron), 'POST');
 		if (isset($updateHoldResponse->holdRecord->key)) {
 			$patron->forceReloadOfHolds();
-			return array(
-				'success' => true,
-				'message' => 'The pickup location has been updated.'
-			);
+			$result['message'] = translate(['text'=>'The pickup location has been updated.', 'isPublicFacing'=>true]);
+			$result['success'] = true;
+
+			// Result for API or app use
+			$result['api']['title'] = translate(['text' => 'Pickup location updated', 'isPublicFacing'=> true]);
+			$result['api']['message'] = translate(['text' => 'The pickup location of your hold was changed successfully.', 'isPublicFacing'=> true]);
+
+			return $result;
 		} else {
 			$messages = array();
 			if (isset($updateHoldResponse->messageList)) {
@@ -1170,6 +1217,15 @@ class SirsiDynixROA extends HorizonAPI
 				'success' => false,
 				'message' => 'Failed to update the pickup location : '. implode('; ', $messages)
 			);
+
+			$result['message'] = 'Failed to update the pickup location : '. implode('; ', $messages);
+			$result['success'] = false;
+
+			// Result for API or app use
+			$result['api']['title'] = translate(['text' => 'Unable to update pickup location', 'isPublicFacing'=> true]);
+			$result['api']['message'] = translate(['text' => 'Sorry, the pickup location of your hold could not be changed. ', 'isPublicFacing'=> true]);
+			$result['api']['message'] .= ' ' . implode('; ', $messages);
+			return $result;
 		}
 	}
 
@@ -1177,9 +1233,16 @@ class SirsiDynixROA extends HorizonAPI
 	{
 		$sessionToken = $this->getStaffSessionToken();
 		if (!$sessionToken) {
-			return array(
+			$result = [
 				'success' => false,
-				'message' => 'Sorry, it does not look like you are logged in currently.  Please login and try again');
+				'message' => translate(['text' => 'Sorry, it does not look like you are logged in currently.  Please login and try again', 'isPublicFacing'=>true]),
+			];
+
+			// Result for API or app use
+			$result['api']['title'] = translate(['text' => 'Error', 'isPublicFacing'=> true]);
+			$result['api']['message'] = translate(['text' => 'Sorry, it does not look like you are logged in currently.  Please login and try again', 'isPublicFacing'=> true]);
+
+			return $result;
 		}
 
 		//create the hold using the web service
@@ -1203,15 +1266,27 @@ class SirsiDynixROA extends HorizonAPI
 			$getHoldResponse = $this->getWebServiceResponse('getHold', $webServiceURL . "/circulation/holdRecord/key/$holdToFreezeId", null, $this->getSessionToken($patron));
 			if (isset($getHoldResponse->fields->status) && $getHoldResponse->fields->status == 'SUSPENDED'){
 				$patron->forceReloadOfHolds();
-				return array(
+				$result = [
 					'success' => true,
-					'message' => "The hold has been frozen."
-				);
+					'message' => translate(['text' => 'The hold has been frozen.', 'isPublicFacing'=>true]),
+				];
+
+				// Result for API or app use
+				$result['api']['title'] = translate(['text' => 'Hold frozen', 'isPublicFacing'=> true]);
+				$result['api']['message'] = translate(['text' => 'Your hold was frozen successfully.', 'isPublicFacing'=> true]);
+
+				return $result;
 			}else{
-				return array(
+				$result = [
 					'success' => false,
-					'message' => "The hold could not be frozen."
-				);
+					'message' => translate(['text' => 'The hold could not be frozen.', 'isPublicFacing'=>true]),
+				];
+
+				// Result for API or app use
+				$result['api']['title'] = translate(['text' => 'Unable to freeze hold', 'isPublicFacing'=> true]);
+				$result['api']['message'] = translate(['text' => 'There was an error freezing your hold.', 'isPublicFacing'=> true]);
+
+				return $result;
 			}
 
 		} else {
@@ -1226,10 +1301,17 @@ class SirsiDynixROA extends HorizonAPI
 			$errorMessage = 'Sirsi ROA Freeze Hold Error: '. ($messages ? implode('; ', $messages) : '');
 			$logger->log($errorMessage, Logger::LOG_ERROR);
 
-			return array(
+			$result = [
 				'success' => false,
-				'message' => translate(['text' => "Failed to freeze hold", 'isPublicFacing'=>true]) . ' - ' . implode('; ', $messages)
-			);
+				'message' => translate(['text' => "Failed to freeze hold", 'isPublicFacing'=>true]) . ' - ' . implode('; ', $messages),
+			];
+
+			// Result for API or app use
+			$result['api']['title'] = translate(['text' => 'Unable to freeze hold', 'isPublicFacing'=> true]);
+			$result['api']['message'] = translate(['text' => 'There was an error freezing your hold.', 'isPublicFacing'=> true]);
+			$result['api']['message'] .= ' ' . implode('; ', $messages);
+
+			return $result;
 		}
 	}
 
@@ -1237,9 +1319,16 @@ class SirsiDynixROA extends HorizonAPI
 	{
 		$sessionToken = $this->getStaffSessionToken();
 		if (!$sessionToken) {
-			return array(
+			$result = [
 				'success' => false,
-				'message' => 'Sorry, it does not look like you are logged in currently.  Please login and try again');
+				'message' => translate(['text' => 'Sorry, it does not look like you are logged in currently.  Please login and try again', 'isPublicFacing'=>true]),
+			];
+
+			// Result for API or app use
+			$result['api']['title'] = translate(['text' => 'Error', 'isPublicFacing'=> true]);
+			$result['api']['message'] = translate(['text' => 'Sorry, it does not look like you are logged in currently.  Please login and try again', 'isPublicFacing'=> true]);
+
+			return $result;
 		}
 
 		//create the hold using the web service
@@ -1256,10 +1345,16 @@ class SirsiDynixROA extends HorizonAPI
 
 		if (isset($updateHoldResponse->holdRecord->key)) {
 			$patron->forceReloadOfHolds();
-			return array(
+			$result = [
 				'success' => true,
-				'message' => "The hold has been thawed."
-			);
+				'message' => translate(['text' => 'The hold has been thawed.', 'isPublicFacing'=>true]),
+			];
+
+			// Result for API or app use
+			$result['api']['title'] = translate(['text' => 'Hold thawed', 'isPublicFacing'=> true]);
+			$result['api']['message'] = translate(['text' => 'Your hold was thawed successfully.', 'isPublicFacing'=> true]);
+
+			return $result;
 		} else {
 			$messages = array();
 			if (isset($updateHoldResponse->messageList)) {
@@ -1271,10 +1366,17 @@ class SirsiDynixROA extends HorizonAPI
 			$errorMessage = 'Sirsi ROA Thaw Hold Error: '. ($messages ? implode('; ', $messages) : '');
 			$logger->log($errorMessage, Logger::LOG_ERROR);
 
-			return array(
+			$result = [
 				'success' => false,
-				'message' => translate(['text' => "Failed to thaw hold", 'isPublicFacing'=>true]) . ' - '. implode('; ', $messages)
-			);
+				'message' => translate(['text' => "Failed to thaw hold", 'isPublicFacing'=>true]) . ' - ' . implode('; ', $messages),
+			];
+
+			// Result for API or app use
+			$result['api']['title'] = translate(['text' => 'Unable to thaw hold', 'isPublicFacing'=> true]);
+			$result['api']['message'] = translate(['text' => 'There was an error thawing your hold.', 'isPublicFacing'=> true]);
+			$result['api']['message'] .= ' ' . implode('; ', $messages);
+
+			return $result;
 		}
 	}
 
@@ -1289,9 +1391,16 @@ class SirsiDynixROA extends HorizonAPI
 	{
 		$sessionToken = $this->getSessionToken($patron);
 		if (!$sessionToken) {
-			return array(
+			$result = [
 				'success' => false,
-				'message' => 'Sorry, it does not look like you are logged in currently.  Please login and try again');
+				'message' => translate(['text' => 'Sorry, it does not look like you are logged in currently.  Please login and try again', 'isPublicFacing'=>true]),
+			];
+
+			// Result for API or app use
+			$result['api']['title'] = translate(['text' => 'Error', 'isPublicFacing'=> true]);
+			$result['api']['message'] = translate(['text' => 'Sorry, it does not look like you are logged in currently.  Please login and try again', 'isPublicFacing'=> true]);
+
+			return $result;
 		}
 
 		//create the hold using the web service
@@ -1309,11 +1418,17 @@ class SirsiDynixROA extends HorizonAPI
 		if (isset($circRenewResponse->circRecord->key)) {
 			// Success
 			$patron->forceReloadOfCheckouts();
-			return array(
-				'itemId'  => $circRenewResponse->circRecord->key,
+			$result = [
 				'success' => true,
-				'message' => "Your item was successfully renewed."
-			);
+				'itemId' => $circRenewResponse->circRecord->key,
+				'message' => translate(['text' => 'Your item was successfully renewed.', 'isPublicFacing'=>true]),
+			];
+
+			// Result for API or app use
+			$result['api']['title'] = translate(['text'=>'Renewed title', 'isPublicFacing'=>true]);
+			$result['api']['message'] = translate(['text' => 'Your item was successfully renewed.', 'isPublicFacing'=> true]);
+
+			return $result;
 		} else {
 			// Error
 			$messages = array();
@@ -1326,11 +1441,18 @@ class SirsiDynixROA extends HorizonAPI
 			$errorMessage = 'Sirsi ROA Renew Error: '. ($messages ? implode('; ', $messages) : '');
 			$logger->log($errorMessage, Logger::LOG_ERROR);
 
-			return array(
-				'itemId'  => $itemId,
-				'success' =>false,
-				'message' => "The item failed to renew". ($messages ? ': '. implode(';', $messages) : '')
-			);
+			$result = [
+				'success' => false,
+				'itemId' => $circRenewResponse->circRecord->key,
+				'message' => "The item failed to renew". ($messages ? ': '. implode(';', $messages) : ''),
+			];
+
+			// Result for API or app use
+			$result['api']['title'] = translate(['text'=>'Unable to renew title', 'isPublicFacing'=>true]);
+			$result['api']['message'] = translate(['text' => 'The item failed to renew.', 'isPublicFacing'=> true]);
+			$result['api']['message'] .= ' ' . ($messages ? ': '. implode(';', $messages) : '');
+
+			return $result;
 
 		}
 

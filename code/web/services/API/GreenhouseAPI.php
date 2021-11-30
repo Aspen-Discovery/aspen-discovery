@@ -9,7 +9,7 @@ class GreenhouseAPI extends Action
 	{
 		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
 		//Make sure the user can access the API based on the IP address
-		if (!in_array($method, array('getLibraries', 'getLibrary')) && !IPAddress::allowAPIAccessForClientIP()){
+		if (!in_array($method, array('getLibraries', 'getLibrary', 'authenticateTokens')) && !IPAddress::allowAPIAccessForClientIP()){
 			$this->forbidAPIAccess();
 		}
 
@@ -27,6 +27,37 @@ class GreenhouseAPI extends Action
 			$output = json_encode(array('error' => 'invalid_method'));
 		}
 		echo $output;
+	}
+
+	public function authenticateTokens() : array {
+		if (isset($_POST['key1']) && isset($_POST['key2'])) {
+
+			$key1 = $_POST['key1'];
+			$key2 = $_POST['key2'];
+
+			require_once ROOT_DIR . '/sys/Greenhouse/GreenhouseSettings.php';
+			$greenhouseSettings = new GreenhouseSettings();
+			$keychain = null;
+			if ($greenhouseSettings->find(true)) {
+				for ($key = 1; $key <= 5; $key += 1) {
+					$currentKey = "apiKey" . $key;
+
+					if ($key1 == $greenhouseSettings->$currentKey) {
+						$keychain['1'] = true;
+					}
+
+					if ($key2 == $greenhouseSettings->$currentKey) {
+						$keychain['2'] = true;
+					}
+				}
+			}
+
+			if ($keychain['1'] && $keychain['2'] == true) {
+				return ['success' => true];
+			}
+		}
+
+		return [ 'success' => false ];
 	}
 
 	public function updateSiteStatuses() {
