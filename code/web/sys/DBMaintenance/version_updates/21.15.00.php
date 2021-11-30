@@ -371,6 +371,17 @@ function getUpdates21_15_00() : array
 				"ALTER TABLE collection_spotlight_lists ADD COLUMN sourceCourseReserveId mediumint default -1"
 			]
 		], //browsable_course_reserves
+		'greenhouse_setting_apiKeys' => [
+			'title' => 'Add apiKey to Greenhouse',
+			'description' => 'Add columns to store api keys for app access',
+			'sql' => [
+				"ALTER TABLE greenhouse_settings ADD COLUMN apiKey1 VARCHAR(256) default NULL",
+				"ALTER TABLE greenhouse_settings ADD COLUMN apiKey2 VARCHAR(256) default NULL",
+				"ALTER TABLE greenhouse_settings ADD COLUMN apiKey3 VARCHAR(256) default NULL",
+				"ALTER TABLE greenhouse_settings ADD COLUMN apiKey4 VARCHAR(256) default NULL",
+				"ALTER TABLE greenhouse_settings ADD COLUMN apiKey5 VARCHAR(256) default NULL",
+			]
+		], //greenhouse_setting_apiKeys
 	];
 }
 

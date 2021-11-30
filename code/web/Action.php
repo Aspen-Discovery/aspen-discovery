@@ -77,5 +77,32 @@ abstract class Action
 		die();
 	}
 
+	protected function grantTokenAccess()
+	{
+		$postData = http_build_query(
+			array(
+				'key1' => base64_decode($_SERVER['PHP_AUTH_USER']),
+				'key2' => base64_decode($_SERVER['PHP_AUTH_USER'])
+			)
+		);
+		$opts = array('http' =>
+			array(
+				'method'  => 'POST',
+				'header'  => 'Content-Type: application/x-www-form-urlencoded',
+				'content' => $postData
+			)
+		);
+		$context  = stream_context_create($opts);
+		if ($result = file_get_contents('https://aspen-test.bywatersolutions.com/API/GreenhouseAPI?method=authenticateTokens', false, $context)) {
+			$data = json_decode($result, true);
+			$isValid = $data['success'];
+
+			if($isValid) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	abstract function getBreadcrumbs() : array;
 }
