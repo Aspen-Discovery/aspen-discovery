@@ -45,11 +45,11 @@ class Donations_NewDonation extends Action {
 			}
 
 			// Get the fields to display for the form
-			$donationFormFields = $donation->getDonationFormFields($library->libraryId);
+			$donationFormFields = $donation->getDonationFormFields($donationSettings->id);
 			$interface->assign('donationFormFields', $donationFormFields);
 
 			// Get the value options to display for the form
-			$values = Donation::getDonationValues($library->libraryId);
+			$values = Donation::getDonationValues($donationSettings->id);
 			$symbol = $donation->getCurrencySymbol();
 			$interface->assign('donationValues', $values);
 			$interface->assign('currencySymbol', $symbol);
@@ -64,14 +64,14 @@ class Donations_NewDonation extends Action {
 			// Get the earmark options to display for the form
 			$earmarks = [];
 			if ($donationSettings->allowDonationEarmark) {
-				$earmarks = Donation::getEarmarks($library->libraryId);
+				$earmarks = Donation::getEarmarks($donationSettings->id);
 			}
 			$interface->assign('donationEarmarks', $earmarks);
 
 			// Get the dedication options to display for the form
 			$dedications = [];
 			if ($donationSettings->allowDonationDedication) {
-				$dedications = Donation::getDedications($library->libraryId);
+				$dedications = Donation::getDedications($donationSettings->id);
 			}
 			$interface->assign('donationDedications', $dedications);
 
