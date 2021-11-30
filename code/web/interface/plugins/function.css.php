@@ -30,12 +30,17 @@ function smarty_function_css($params, &$smarty)
 		global $activeLanguage;
 		$rtl_langs = array('ar','he');
 
-		if (in_array($activeLanguage, $rtl_langs))
+		$fileFound = false;
+		if (in_array($activeLanguage, $rtl_langs)){
+		}
+
+		if (!$fileFound){
 		// If the file exists on the local file system, set $css to the relative
 		// path needed to link to it from the web interface.
 		if (file_exists("{$local}/interface/themes/{$theme}/css/{$filename}")) {
 			$css = "/interface/themes/{$theme}/css/{$filename}";
 			break;
+		}
 		}
 	}
 
