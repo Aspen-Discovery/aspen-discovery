@@ -549,16 +549,23 @@ abstract class HorizonAPI extends Horizon{
 			if ($allCancelsSucceed){
 				$plural = count($holdKeys) > 1;
 
-				return array(
-					'title' => $titles,
-					'success' => true,
-					'message' => 'Your hold'.($plural ? 's were' : ' was' ).' cancelled successfully.');
+				$result['title'] = $titles;
+				$result['success'] = true;
+				$result['message'] = 'Your hold'.($plural ? 's were' : ' was' ).' cancelled successfully.';
+
+				$result['api']['title'] = translate(['text' => 'Hold cancelled', 'isPublicFacing'=> true]);
+				$result['api']['message'] = translate(['text'=> 'The hold was successfully canceled', 'isPublicFacing'=>true]);
+
+				return $result;
 			}else{
-				return array(
-					'title' => $titles,
-					'success' => false,
-					'message' => $failure_messages
-				);
+				$result['title'] = $titles;
+				$result['success'] = false;
+				$result['message'] = $failure_messages;
+
+				$result['api']['title'] = translate(['text' => 'Unable to cancel hold', 'isPublicFacing'=> true]);
+				$result['api']['message'] = translate(['text'=> $failure_messages, 'isPublicFacing'=>true]);
+
+				return $result;
 			}
 
 		}else{
@@ -587,15 +594,23 @@ abstract class HorizonAPI extends Horizon{
 					}
 				}
 				if ($allLocationChangesSucceed){
-					return array(
-						'title' => $titles,
-						'success' => true,
-						'message' => 'Pickup location for your hold(s) was updated successfully.');
+					$result['title'] = $titles;
+					$result['success'] = true;
+					$result['message'] = translate(['text'=>'Pickup location for your hold(s) was updated successfully.', 'isPublicFacing'=>true]);
+
+					$result['api']['title'] = translate(['text' => 'Pickup location updated', 'isPublicFacing'=> true]);
+					$result['api']['message'] = translate(['text' => 'The pickup location of your hold was changed successfully.', 'isPublicFacing'=>true]);
+
+					return $result;
 				}else{
-					return array(
-						'title' => $titles,
-						'success' => false,
-						'message' => 'Pickup location for your hold(s) was could not be updated.  Please try again later or see your librarian.');
+					$result['title'] = $titles;
+					$result['success'] = false;
+					$result['message'] = translate(['text'=>'Pickup location for your hold(s) was could not be updated.  Please try again later or see your librarian.', 'isPublicFacing'=>true]);
+
+					$result['api']['title'] = translate(['text' => 'Unable to update hold', 'isPublicFacing'=> true]);
+					$result['api']['message'] = translate(['text' => 'Pickup location for your hold(s) was could not be updated.  Please try again later or see your librarian.', 'isPublicFacing'=>true]);
+
+					return $result;
 				}
 			}else{
 				//Freeze/Thaw the hold
@@ -619,15 +634,27 @@ abstract class HorizonAPI extends Horizon{
 					}
 
 					if ($allLocationChangesSucceed){
-						return array(
-							'title' => $titles,
-							'success' => true,
-							'message' => translate(['text' => "Your hold(s) were frozen successfully.", 'isPublicFacing'=>true]));
+						$result['title'] = $titles;
+						$result['message'] = translate(['text'=>'Your hold(s) were frozen successfully.', 'isPublicFacing'=> true]);
+						$result['success'] = true;
+
+						// Result for API or app use
+						$result['api']['title'] = translate(['text' => 'Hold frozen', 'isPublicFacing'=> true]);
+						$result['api']['message'] = translate(['text' => 'Your hold was frozen successfully.', 'isPublicFacing'=> true]);
+
+						return $result;
 					}else{
-						return array(
+						$result = [
 							'title' => $titles,
 							'success' => false,
-							'message' => translate(['text' => "Some holds could not be frozen.  Please try again later or see your librarian.", 'isPublicFacing'=>true]));
+							'message' => translate(['text' => 'Some holds could not be frozen.  Please try again later or see your librarian.', 'isPublicFacing'=>true]),
+						];
+
+						// Result for API or app use
+						$result['api']['title'] = translate(['text' => 'Unable to freeze hold', 'isPublicFacing'=> true]);
+						$result['api']['message'] = translate(['text' => 'There was an error freezing your hold.', 'isPublicFacing'=> true]);
+
+						return $result;
 					}
 				}else{
 					//Reactivate the hold
@@ -647,15 +674,27 @@ abstract class HorizonAPI extends Horizon{
 					}
 
 					if ($allUnsuspendsSucceed){
-						return array(
+						$result = [
 							'title' => $titles,
 							'success' => true,
-							'message' => translate(['text' => "Your hold(s) were thawed successfully.", 'isPublicFacing'=>true]));
+							'message' => translate(['text' => "Your hold(s) were thawed successfully.", 'isPublicFacing'=>true])
+						];
+
+						$result['api']['title'] = translate(['text'=>'Hold thawed', 'isPublicFacing'=>true]);
+						$result['api']['message'] = translate(['text'=>'Your hold was thawed successfully.', 'isPublicFacing'=>true]);
+
+						return $result;
 					}else{
-						return array(
+						$result = [
 							'title' => $titles,
 							'success' => false,
-							'message' => translate(['text' => "Some holds could not be thawed.  Please try again later or see your librarian.", 'isPublicFacing'=>true]));
+							'message' => translate(['text' => 'Some holds could not be thawed.  Please try again later or see your librarian.', 'isPublicFacing'=>true])
+						];
+
+						$result['api']['title'] = translate(['text'=>'Unable to thaw hold', 'isPublicFacing'=>true]);
+						$result['api']['message'] = translate(['text'=>'Some holds could not be thawed.  Please try again later or see your librarian.', 'isPublicFacing'=>true]);
+
+						return $result;
 					}
 				}
 			}

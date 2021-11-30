@@ -304,7 +304,7 @@ class BrowseCategory extends BaseBrowsable
 		return $validationResults;
 	}
 
-	public function isValidForDisplay(){
+	public function isValidForDisplay($appUser = null){
 		$curTime = time();
 		if ($this->startDate != 0 && $this->startDate > $curTime){
 			return false;
@@ -312,39 +312,57 @@ class BrowseCategory extends BaseBrowsable
 		if ($this->endDate != 0 && $this->endDate < $curTime){
 			return false;
 		}
-		if ($this->textId == 'system_recommended_for_you'){
-			if (UserAccount::isLoggedIn()) {
-				$user = UserAccount::getActiveUserObj();
-				if ($user->hasRatings()) {
-					return true;
-				}
-			}
-			return false;
+		if(!is_null($appUser)) {
+			$user = $appUser;
 		}
-		if ($this->textId == 'system_user_lists' || $this->textId == 'system_saved_searches') {
-			if (UserAccount::isLoggedIn()) {
-				$user = UserAccount::getActiveUserObj();
+		if ($this->textId == 'system_user_lists' || $this->textId == 'system_saved_searches' || $this->textId == 'system_recommended_for_you') {
+			if (UserAccount::isLoggedIn() || $appUser != null) {
+				if(is_null($appUser)) {
+					$user = UserAccount::getActiveUserObj();
+				}
 				if($this->textId == 'system_saved_searches' && $user->hasSavedSearches()) {
+					if($this->isDismissed($user)) {
+						return false;
+					}
 					return true;
 				}
 				if($this->textId == 'system_user_lists' && $user->hasLists()) {
+					if($this->isDismissed($user)) {
+						return false;
+					}
 					return true;
 				}
+				if($this->textId == 'system_recommended_for_you' && $user->hasRatings()) {
+					if($this->isDismissed($user)) {
+						return false;
+					}
+					return true;
+				}
+
 			}
 			return false;
 		}
-		// check if user has dismissed
-		if (UserAccount::isLoggedIn()) {
-			$user = UserAccount::getActiveUserObj();
-			require_once ROOT_DIR . '/sys/Browse/BrowseCategoryDismissal.php';
-			$browseCategoryDismissal = new BrowseCategoryDismissal();
-			$browseCategoryDismissal->browseCategoryId = $this->textId;
-			$browseCategoryDismissal->userId = $user->id;
-			if($browseCategoryDismissal->find(true)){
+
+		if (UserAccount::isLoggedIn() || $appUser != null) {
+			if(is_null($appUser)) {
+				$user = UserAccount::getActiveUserObj();
+			}
+			if($this->isDismissed($user)) {
 				return false;
 			}
 		}
 		return true;
+	}
+
+	function isDismissed($user) {
+		require_once ROOT_DIR . '/sys/Browse/BrowseCategoryDismissal.php';
+		$browseCategoryDismissal = new BrowseCategoryDismissal();
+		$browseCategoryDismissal->browseCategoryId = $this->textId;
+		$browseCategoryDismissal->userId = $user->id;
+		if($browseCategoryDismissal->find(true)){
+			return true;
+		}
+		return false;
 	}
 
 	public function canActiveUserEdit(){

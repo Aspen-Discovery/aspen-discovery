@@ -1028,6 +1028,8 @@ class UserAPI extends Action
 					require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
 					APIUsage::incrementStat('UserAPI', 'successfulRenewals');
 					return array('success' => true, 'renewalMessage' => $renewalMessage);
+				} else {
+					return array('success' => false, 'renewalMessage' => $renewalMessage);
 				}
 			} else if ($source == 'overdrive') {
 				return $this->renewOverDriveItem();
@@ -1169,7 +1171,9 @@ class UserAPI extends Action
 							return array('success' => false, 'message' => translate(['text' => 'You must place a volume hold on this title.']));
 						}
 					}
-					return $patron->placeHold($bibId, $pickupBranch);
+					$result = $patron->placeHold($bibId, $pickupBranch);
+					$action = $result['api']['action'] ?? null;
+					return array('success' => $result['success'], 'title' => $result['api']['title'], 'message' => $result['api']['message'], 'action' => $action);
 				} else if ($source == 'overdrive') {
 					return $this->placeOverDriveHold();
 				} else if ($source == 'cloud_library') {
@@ -1230,15 +1234,16 @@ class UserAPI extends Action
 	{
 		list($username, $password) = $this->loadUsernameAndPassword();
 		$holdId = $_REQUEST['holdId'];
-		$newLocation = $_REQUEST['location'];
+		$newLocation = $_REQUEST['newLocation'];
 		$patron = UserAccount::validateAccount($username, $password);
 		if ($patron && !($patron instanceof AspenError)) {
-			$locationValid = $patron->validatePickupBranch($newLocation);
+			list ($locationId, $locationCode) = explode('_', $newLocation);
+			$locationValid = $patron->validatePickupBranch($locationCode);
 			if (!$locationValid){
 				return array('success' => false, 'message' => translate(['text' => 'This location is no longer available, please select a different pickup location', 'isPublicFacing'=> true]));
 			}
-			$holdMessage = $patron->changeHoldPickUpLocation($holdId, $newLocation);
-			return array('success' => $holdMessage['success'], 'holdMessage' => $holdMessage['message']);
+			$result = $patron->changeHoldPickUpLocation($holdId, $locationCode);
+			return array('success' => $result['success'], 'title' => $result['api']['title'], 'message' => $result['api']['message']);
 		} else {
 			return array('success' => false, 'message' => 'Login unsuccessful');
 		}
@@ -2056,7 +2061,8 @@ class UserAPI extends Action
 
 		if ($patron && !($patron instanceof AspenError)) {
 			if ($source == 'ils' || $source == null) {
-				return $patron->cancelHold($recordId, $cancelId);
+				$result = $patron->cancelHold($recordId, $cancelId);
+				return array('success' => $result['success'], 'title' => $result['api']['title'], 'message' => $result['api']['message']);
 			} else if ($source == 'overdrive') {
 				return $this->cancelOverDriveHold();
 			} else if ($source == 'cloud_library') {
@@ -2511,6 +2517,140 @@ class UserAPI extends Action
 			$results['message'] = 'No patron id was provided';
 		}
 		return $results;
+	}
+
+	/** @noinspection PhpUnused */
+	function dismissBrowseCategory() : array
+	{
+		$result = [
+			'success' => false,
+			'title' => translate(['text' => 'Error updating preferences', 'isPublicFacing' => true]),
+			'message' => translate(['text'=>'Unknown Error', 'isPublicFacing'=>true]),
+		];
+
+		list($username, $password) = $this->loadUsernameAndPassword();
+		$patronId = $_REQUEST['patronId'];
+		$browseCategoryId = $_REQUEST['browseCategoryId'];
+		$user = UserAccount::validateAccount($username, $password);
+		if ($user && !($user instanceof AspenError)) {
+			require_once ROOT_DIR . '/sys/Browse/BrowseCategory.php';
+			$browseCategory = new BrowseCategory();
+			$browseCategory->textId = $browseCategoryId;
+			if (!$browseCategory->find(true)){
+				$result['message'] = translate(['text' => 'Invalid browse category provided, please try again', 'isPublicFacing' => true]);
+			}else{
+				require_once ROOT_DIR . '/sys/Browse/BrowseCategoryDismissal.php';
+				$browseCategoryDismissal = new BrowseCategoryDismissal();
+				$browseCategoryDismissal->browseCategoryId = $browseCategoryId;
+				$browseCategoryDismissal->userId = $patronId;
+				if($browseCategoryDismissal->find(true)) {
+					$result['message'] = translate(['text' => 'You already dismissed this browse category', 'isPublicFacing' => true]);
+				} else {
+					$browseCategoryDismissal->insert();
+					$browseCategory->numTimesDismissed += 1;
+					$browseCategory->update();
+					$result = [
+						'success' => true,
+						'title' => translate(['text' => 'Preferences updated', 'isPublicFacing' => true]),
+						'message' => translate(['text' => 'Browse category has been hidden', 'isPublicFacing' => true])
+					];
+				}
+			}
+		} else {
+			$result['message'] = translate(['text'=>'Incorrect user information, please login again', 'isPublicFacing'=>true]);
+		}
+
+		return $result;
+	}
+
+	/** @noinspection PhpUnused */
+	function showBrowseCategory() : array
+	{
+		$result = [
+			'success' => false,
+			'title' => translate(['text' => 'Error updating preferences', 'isPublicFacing' => true]),
+			'message' => translate(['text'=>'Unknown Error', 'isPublicFacing'=>true]),
+		];
+
+		list($username, $password) = $this->loadUsernameAndPassword();
+		$patronId = $_REQUEST['patronId'];
+		$browseCategoryId = $_REQUEST['browseCategoryId'];
+		$user = UserAccount::validateAccount($username, $password);
+		if ($user && !($user instanceof AspenError)) {
+			require_once ROOT_DIR . '/sys/Browse/BrowseCategory.php';
+			$browseCategory = new BrowseCategory();
+			$browseCategory->textId = $browseCategoryId;
+			if (!$browseCategory->find(true)){
+				$result['message'] = translate(['text' => 'Invalid browse category provided, please try again', 'isPublicFacing' => true]);
+			}else{
+				require_once ROOT_DIR . '/sys/Browse/BrowseCategoryDismissal.php';
+				$browseCategoryDismissal = new BrowseCategoryDismissal();
+				$browseCategoryDismissal->browseCategoryId = $browseCategoryId;
+				$browseCategoryDismissal->userId = $patronId;
+				if($browseCategoryDismissal->find(true)) {
+					$browseCategoryDismissal->delete();
+					$result = [
+						'success' => true,
+						'title' => translate(['text' => 'Preferences updated', 'isPublicFacing' => true]),
+						'message' => translate(['text' => 'Browse category will be visible again', 'isPublicFacing' => true])
+					];
+				} else {
+					$result['message'] = translate(['text' => 'You already have this browse category visible', 'isPublicFacing' => true]);
+				}
+			}
+		}
+
+		return $result;
+	}
+
+	/** @noinspection PhpUnused */
+	function getHiddenBrowseCategories() : array {
+		$result = [
+			'success' => false,
+			'title' => translate(['text' => 'Error updating preferences', 'isPublicFacing' => true]),
+			'message' => translate(['text'=>'Unknown Error', 'isPublicFacing'=>true]),
+		];
+
+		list($username, $password) = $this->loadUsernameAndPassword();
+		$patronId = $_REQUEST['patronId'];
+		$user = UserAccount::validateAccount($username, $password);
+		if ($user && !($user instanceof AspenError)) {
+			$hiddenCategories = [];
+			require_once ROOT_DIR . '/sys/Browse/BrowseCategoryDismissal.php';
+			$browseCategoryDismissals = new BrowseCategoryDismissal();
+			$browseCategoryDismissals->userId = $patronId;
+			$browseCategoryDismissals->find();
+			while($browseCategoryDismissals->fetch()) {
+				$hiddenCategories[] = clone($browseCategoryDismissals);
+			}
+
+			if($browseCategoryDismissals->count() > 0) {
+				$categories = [];
+				foreach($hiddenCategories as $hiddenCategory) {
+					require_once ROOT_DIR . '/sys/Browse/BrowseCategory.php';
+					$browseCategory = new BrowseCategory();
+					$browseCategory->textId = $hiddenCategory->browseCategoryId;
+					if($browseCategory->find(true)){
+						$category['id'] = $browseCategory->textId;
+						$category['name'] = $browseCategory->label;
+						$category['description'] = $browseCategory->description;
+						$categories[] = $category;
+					}
+				}
+				$result = [
+					'success' => true,
+					'title' => translate(['text' => 'Your hidden categories', 'isPublicFacing' => true]),
+					'message' => translate(['text' => 'You currently have these categories hidden', 'isPublicFacing' => true]),
+					'categories' => $categories,
+				];
+			} else {
+				$result = [
+					'message' => translate(['text' => 'You have no hidden browse categories', 'isPublicFacing' => true]),
+				];
+			}
+		}
+
+		return $result;
 	}
 
 	/** @noinspection PhpUnused */
