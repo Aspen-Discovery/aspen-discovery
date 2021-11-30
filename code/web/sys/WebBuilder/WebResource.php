@@ -163,7 +163,10 @@ class WebResource extends DataObject
 			$audienceLink->webResourceId = $this->id;
 			$audienceLink->find();
 			while($audienceLink->fetch()){
-				$this->_audiences[$audienceLink->audienceId] = $audienceLink->getAudience();
+				$audience = $audienceLink->getAudience();
+				if ($audience != false){
+					$this->_audiences[$audienceLink->audienceId] = $audience;
+				}
 			}
 			$sorter = function(WebBuilderAudience $a, WebBuilderAudience $b) {
 				return strcasecmp($a->name, $b->name);
