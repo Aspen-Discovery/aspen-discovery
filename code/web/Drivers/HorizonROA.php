@@ -1332,8 +1332,6 @@ abstract class HorizonROA extends AbstractIlsDriver
 		return $result;
 	}
 	public function selfRegister() {
-		global $configArray;
-
 		$patronFields = $this->getSelfRegistrationFields();
 		$body = [];
 		foreach ($patronFields as $field){
