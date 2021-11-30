@@ -93,12 +93,16 @@ abstract class Action
 			)
 		);
 		$context  = stream_context_create($opts);
-		if ($result = file_get_contents('https://aspen-test.bywatersolutions.com/API/GreenhouseAPI?method=authenticateTokens', false, $context)) {
-			$data = json_decode($result, true);
-			$isValid = $data['success'];
+		require_once ROOT_DIR . '/sys/SystemVariables.php';
+		$systemVariables = SystemVariables::getSystemVariables();
+		if ($systemVariables && !empty($systemVariables->greenhouseUrl)) {
+			if ($result = file_get_contents($systemVariables->greenhouseUrl . '/API/GreenhouseAPI?method=authenticateTokens', false, $context)) {
+				$data = json_decode($result, true);
+				$isValid = $data['success'];
 
-			if($isValid) {
-				return true;
+				if($isValid) {
+					return true;
+				}
 			}
 		}
 		return false;
