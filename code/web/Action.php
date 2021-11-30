@@ -82,7 +82,7 @@ abstract class Action
 		$postData = http_build_query(
 			array(
 				'key1' => base64_decode($_SERVER['PHP_AUTH_USER']),
-				'key2' => base64_decode($_SERVER['PHP_AUTH_USER'])
+				'key2' => base64_decode($_SERVER['PHP_AUTH_PW'])
 			)
 		);
 		$opts = array('http' =>
