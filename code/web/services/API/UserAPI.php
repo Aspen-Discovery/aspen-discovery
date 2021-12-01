@@ -14,28 +14,47 @@ class UserAPI extends Action
 	function launch()
 	{
 		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
+		$output = '';
 
-		//Make sure the user can access the API based on the IP address
-		if (!IPAddress::allowAPIAccessForClientIP() && !in_array($method, array('isLoggedIn', 'logout', 'checkoutItem', 'placeHold', 'renewItem', 'renewAll', 'viewOnlineItem', 'changeHoldPickUpLocation', 'getPatronProfile', 'validateAccount', 'getPatronHolds', 'getPatronCheckedOutItems', 'cancelHold', 'activateHold', 'freezeHold', 'returnCheckout', 'updateOverDriveEmail', 'getValidPickupLocations' )) && !IPAddress::allowAPIAccessForClientIP()){
-			$this->forbidAPIAccess();
-		}
-
+		//Set Headers
 		header('Content-type: application/json');
 		//header('Content-type: text/html');
 		header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
 		header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
 
-		if ($method != 'getUserForApiCall' && method_exists($this, $method)) {
-			$result = [
-				'result' => $this->$method()
-			];
-			$output = json_encode($result);
-			require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
-			APIUsage::incrementStat('UserAPI', $method);
+		if (isset($_SERVER['PHP_AUTH_USER'])) {
+			if($this->grantTokenAccess()) {
+				if (in_array($method, array('isLoggedIn', 'logout', 'checkoutItem', 'placeHold', 'renewItem', 'renewAll', 'viewOnlineItem', 'changeHoldPickUpLocation', 'getPatronProfile', 'validateAccount', 'getPatronHolds', 'getPatronCheckedOutItems', 'cancelHold', 'activateHold', 'freezeHold', 'returnCheckout', 'updateOverDriveEmail', 'getValidPickupLocations', 'getHiddenBrowseCategories'))) {
+					$result = [
+						'result' => $this->$method()
+					];
+					$output = json_encode($result);
+					header("Cache-Control: max-age=10800");
+					require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
+					APIUsage::incrementStat('UserAPI', $method);
+				} else {
+					$output = json_encode(array('error' => 'invalid_method'));
+				}
+			} else {
+				header('HTTP/1.0 401 Unauthorized');
+				$output = json_encode(array('error' => 'unauthorized_access'));
+			}
+			echo $output;
+		} elseif (IPAddress::allowAPIAccessForClientIP()) {
+			if ($method != 'getUserForApiCall' && method_exists($this, $method)) {
+				$result = [
+					'result' => $this->$method()
+				];
+				$output = json_encode($result);
+				require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
+				APIUsage::incrementStat('UserAPI', $method);
+			} else {
+				$output = json_encode(array('error' => 'invalid_method'));
+			}
+			echo $output;
 		} else {
-			$output = json_encode(array('error' => 'invalid_method'));
+			$this->forbidAPIAccess();
 		}
-		echo $output;
 	}
 
 	/**
@@ -418,6 +437,18 @@ class UserAPI extends Action
 			$userData->numHoldsAvailable = $numHoldsAvailable;
 
 			return array('success' => true, 'profile' => $userData);
+		} else {
+			return array('success' => false, 'message' => 'Login unsuccessful');
+		}
+	}
+
+	function getILSMessages() : array
+	{
+		list($username, $password) = $this->loadUsernameAndPassword();
+		$user = UserAccount::validateAccount($username, $password);
+		if ($user && !($user instanceof AspenError)) {
+			$messages = $user->getILSMessages();
+			return array('success' => true, 'messages' => $messages);
 		} else {
 			return array('success' => false, 'message' => 'Login unsuccessful');
 		}
@@ -2612,13 +2643,12 @@ class UserAPI extends Action
 		];
 
 		list($username, $password) = $this->loadUsernameAndPassword();
-		$patronId = $_REQUEST['patronId'];
 		$user = UserAccount::validateAccount($username, $password);
 		if ($user && !($user instanceof AspenError)) {
 			$hiddenCategories = [];
 			require_once ROOT_DIR . '/sys/Browse/BrowseCategoryDismissal.php';
 			$browseCategoryDismissals = new BrowseCategoryDismissal();
-			$browseCategoryDismissals->userId = $patronId;
+			$browseCategoryDismissals->userId = $user->id;
 			$browseCategoryDismissals->find();
 			while($browseCategoryDismissals->fetch()) {
 				$hiddenCategories[] = clone($browseCategoryDismissals);
