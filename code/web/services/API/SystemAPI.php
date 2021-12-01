@@ -8,31 +8,35 @@ class SystemAPI extends Action
 		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
 		$output = '';
 
+		//Make sure the user can access the API based on the IP address
+		if ((!IPAddress::allowAPIAccessForClientIP()) || !isset($_SERVER['PHP_AUTH_USER'])){
+			$this->forbidAPIAccess();
+		}
+
 		//Set Headers
 		header('Content-type: application/json');
 		//header('Content-type: text/html');
 		header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
 		header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
 
-		if (isset($_SERVER['PHP_AUTH_USER'])) {
-			if($this->grantTokenAccess()) {
-				if (in_array($method, array('getLibraryInfo', 'getLocationInfo'))) {
-					$result = [
-						'result' => $this->$method()
-					];
-					$output = json_encode($result);
-					header("Cache-Control: max-age=10800");
-					require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
-					APIUsage::incrementStat('SystemAPI', $method);
-				} else {
-					$output = json_encode(array('error' => 'invalid_method'));
-				}
+		//Check if user can access API with keys sent from LiDA
+		if (isset($_SERVER['PHP_AUTH_USER']) && $this->grantTokenAccess()) {
+			if (in_array($method, array('getLibraryInfo', 'getLocationInfo'))) {
+				$result = [
+					'result' => $this->$method()
+				];
+				$output = json_encode($result);
+				require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
+				APIUsage::incrementStat('SystemAPI', $method);
 			} else {
-				header('HTTP/1.0 401 Unauthorized');
-				$output = json_encode(array('error' => 'unauthorized_access'));
+				$output = json_encode(array('error' => 'invalid_method'));
 			}
-			echo $output;
-		} elseif (IPAddress::allowAPIAccessForClientIP()) {
+		} elseif (!(isset($_SERVER['PHP_AUTH_USER'])) || !$this->grantTokenAccess()) {
+			header('HTTP/1.0 401 Unauthorized');
+			$output = json_encode(array('error' => 'unauthorized_access'));
+		}
+
+		if (IPAddress::allowAPIAccessForClientIP()) {
 			if (!in_array($method, ['getCatalogConnection', 'getUserForApiCall', 'checkWhichUpdatesHaveRun', 'getPendingDatabaseUpdates', 'runSQLStatement', 'markUpdateAsRun'])
 				&& method_exists($this, $method)) {
 				$result = [
@@ -44,11 +48,9 @@ class SystemAPI extends Action
 			} else {
 				$output = json_encode(array('error' => 'invalid_method'));
 			}
-			echo $output;
-		} else {
-			$this->forbidAPIAccess();
 		}
 
+		echo $output;
 	}
 
 	public function getLibraries() : array
