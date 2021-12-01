@@ -1553,7 +1553,7 @@ class SirsiDynixROA extends HorizonAPI
 	}
 
     /**
-     * @param User $user
+     * @param User|null $user
      * @param string $newPin
      * @param string $resetToken
      * @return array
@@ -1572,10 +1572,10 @@ class SirsiDynixROA extends HorizonAPI
 			'resetPinToken' => $resetToken,
 			'newPin' => $newPin,
 		);
-		$changeMyPinResponse = $this->getWebServiceResponse('resetPin', $changeMyPinAPIUrl, $jsonParameters, null, 'POST');
-		if (is_object($changeMyPinResponse) &&  isset($changeMyPinResponse->messageList)) {
+		$resetPinResponse = $this->getWebServiceResponse('resetPin', $changeMyPinAPIUrl, $jsonParameters, null, 'POST');
+		if (is_object($resetPinResponse) &&  isset($resetPinResponse->messageList)) {
 			$errors = array();
-			foreach ($changeMyPinResponse->messageList as $message) {
+			foreach ($resetPinResponse->messageList as $message) {
 				$errors[] = $message->message;
 			}
 			global $logger;
@@ -1583,10 +1583,12 @@ class SirsiDynixROA extends HorizonAPI
 			return array(
 				'error' => 'Sorry, we encountered an error while attempting to update your pin. Please contact your local library.'
 			);
-		} elseif (!empty($changeMyPinResponse->sessionToken)){
-			if ($user->username == $changeMyPinResponse->patronKey) { // Check that the ILS user matches the Aspen Discovery user
-				$user->cat_password = $newPin;
-				$user->update();
+		} elseif (!empty($resetPinResponse->sessionToken)){
+			if ($user != null) {
+				if ($user->username == $resetPinResponse->patronKey) { // Check that the ILS user matches the Aspen Discovery user
+					$user->cat_password = $newPin;
+					$user->update();
+				}
 			}
 			return array(
 				'success' => true,
@@ -1649,7 +1651,7 @@ class SirsiDynixROA extends HorizonAPI
 			}
 		} else {
 			//Can't pre-validate the user, but still do the reset.
-			$aspenUserID = $barcode;
+			$aspenUserID = '';
 		}
 
 		// email the pin to the user
