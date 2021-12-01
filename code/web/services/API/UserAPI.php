@@ -2515,6 +2515,13 @@ class UserAPI extends Action
 		} else {
 			$password = '';
 		}
+
+		// check for post request data
+		if (isset($_POST['username']) && isset($_POST['password'])) {
+			$username = $_POST['username'];
+			$password = $_POST['password'];
+		}
+
 		if (is_array($username)) {
 			$username = reset($username);
 		}
