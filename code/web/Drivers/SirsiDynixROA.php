@@ -735,8 +735,8 @@ class SirsiDynixROA extends HorizonAPI
 						require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
 						$curCheckout->author = empty($bibInfo->fields->author) ? '' : StringUtils::removeTrailingPunctuation($bibInfo->fields->author);
 					}
-					if (!empty($checkout->fields->item->fields->itemType->key) && ($checkout->fields->item->fields->itemType->key == 'MAGAZINE' || $checkout->fields->item->fields->itemType->key == 'PERIODICAL') && !empty($checkout->fields->item->fields->call->fields->dispCallNumber)) {
-						$curCheckout->title2 = $checkout->fields->item->fields->call->fields->dispCallNumber;
+					if (!empty($checkout->fields->item->fields->call->fields->dispCallNumber)) {
+						$curCheckout->callNumber = $checkout->fields->item->fields->call->fields->dispCallNumber;
 					}
 
 					$sCount++;
@@ -1611,7 +1611,6 @@ class SirsiDynixROA extends HorizonAPI
 		$patron = new User;
 		$patron->get('cat_username', $barcode);
 		if (!empty($patron->id)) {
-			global $configArray;
 			$aspenUserID = $patron->id;
 
 			// If possible, check if ILS has an email address for the patron
@@ -1648,41 +1647,39 @@ class SirsiDynixROA extends HorizonAPI
 					}
 				}
 			}
-
-			// email the pin to the user
-			$resetPinAPIUrl = $this->getWebServiceUrl() . '/user/patron/resetMyPin';
-			$jsonPOST       = array(
-				'login' => $barcode,
-				'resetPinUrl' => $configArray['Site']['url'] . '/MyAccount/ResetPin?resetToken=<RESET_PIN_TOKEN>&uid=' . $aspenUserID
-			);
-
-			$resetPinResponse = $this->getWebServiceResponse('resetPin', $resetPinAPIUrl, $jsonPOST, null, 'POST');
-			if (is_object($resetPinResponse) && !isset($resetPinResponse->messageList)) {
-				// Reset Pin Response is empty JSON on success.
-				return array(
-					'success' => true,
-				);
-			} else {
-				$result = array(
-					'success' => false,
-					'error' => "Sorry, we could not email your pin to you.  Please visit the library to reset your pin."
-				);
-				if (isset($resetPinResponse->messageList)) {
-					$errors = array();
-					foreach ($resetPinResponse->messageList as $message) {
-						$errors[] = $message->message;
-					}
-					global $logger;
-					$logger->log('SirsiDynixROA Driver error updating user\'s Pin :' . implode(';', $errors), Logger::LOG_ERROR);
-				}
-				return $result;
-			}
-
 		} else {
+			//Can't pre-validate the user, but still do the reset.
+			$aspenUserID = $barcode;
+		}
+
+		// email the pin to the user
+		global $configArray;
+		$resetPinAPIUrl = $this->getWebServiceUrl() . '/user/patron/resetMyPin';
+		$jsonPOST       = array(
+			'login' => $barcode,
+			'resetPinUrl' => $configArray['Site']['url'] . '/MyAccount/ResetPin?resetToken=<RESET_PIN_TOKEN>&uid=' . $aspenUserID
+		);
+
+		$resetPinResponse = $this->getWebServiceResponse('resetPin', $resetPinAPIUrl, $jsonPOST, null, 'POST');
+		if (is_object($resetPinResponse) && !isset($resetPinResponse->messageList)) {
+			// Reset Pin Response is empty JSON on success.
 			return array(
-				'success' => false,
-				'error' => 'Sorry, we did not find the card number you entered or you have not logged into the catalog previously.  Please contact your library to reset your pin.'
+				'success' => true,
 			);
+		} else {
+			$result = array(
+				'success' => false,
+				'error' => "Sorry, we could not email your pin to you.  Please visit the library to reset your pin."
+			);
+			if (isset($resetPinResponse->messageList)) {
+				$errors = array();
+				foreach ($resetPinResponse->messageList as $message) {
+					$errors[] = $message->message;
+				}
+				global $logger;
+				$logger->log('SirsiDynixROA Driver error updating user\'s Pin :' . implode(';', $errors), Logger::LOG_ERROR);
+			}
+			return $result;
 		}
 	}
 
@@ -2450,6 +2447,37 @@ class SirsiDynixROA extends HorizonAPI
 		$logger->log("Marked fines as paid within Symphony for user {$patron->id}, {$result['message']}", Logger::LOG_ERROR);
 
 		return $result;
+	}
+
+	public function getSelfRegistrationFields() {
+		$lookupSelfRegistrationFieldsUrl = $this->getWebServiceURL() . '/standard/lookupSelfRegistrationFields';
+
+		$lookupSelfRegistrationFieldsResponse = $this->getWebServiceResponse('getSelfRegistrationFields', $lookupSelfRegistrationFieldsUrl);
+		$fields = array();
+		if ($lookupSelfRegistrationFieldsResponse){
+			foreach($lookupSelfRegistrationFieldsResponse->registrationField as $registrationField){
+				$newField = array(
+					'property' => (string)$registrationField->column,
+					'label' => (string)$registrationField->label,
+					'maxLength' => (int)$registrationField->length,
+					'type' => 'text',
+					'required' => (string)$registrationField->required == 'true',
+				);
+				if ((string)$registrationField->masked == 'true'){
+					$newField['type'] = 'password';
+				}
+				if (isset($registrationField->values)){
+					$newField['type'] = 'enum';
+					$values = array();
+					foreach($registrationField->values->value as $value){
+						$values[(string)$value->code] = (string)$value->description;
+					}
+					$newField['values'] = $values;
+				}
+				$fields[] = $newField;
+			}
+		}
+		return $fields;
 	}
 
 	/**
