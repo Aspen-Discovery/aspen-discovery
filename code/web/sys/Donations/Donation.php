@@ -214,12 +214,13 @@ class Donation extends DataObject
 			$user = UserAccount::getActiveUserObj();
 			$homeLibrary = Library::getLibraryForLocation($user->homeLocationId);
 			$userId = $user->id;
-			$paymentType = isset($homeLibrary) ? $homeLibrary->finePaymentType : 0;
-			if($user->username == "aspen_admin") {
-				$userId = "Guest";
-				$homeLibrary = $library->libraryId;
-				$paymentType = isset($library) ? $library->finePaymentType : 0;
+			if ($homeLibrary == null){
+				$homeLibrary = $library;
+				$paymentType = $library->finePaymentType;
+			}else{
+				$paymentType = $homeLibrary->finePaymentType;
 			}
+
 			if ($paymentType == 2) {
 				require_once ROOT_DIR . '/sys/ECommerce/PayPalSetting.php';
 				$payPalSetting = new PayPalSetting();

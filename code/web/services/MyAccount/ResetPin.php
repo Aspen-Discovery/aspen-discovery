@@ -25,10 +25,11 @@ class ResetPin extends Action{
 				$userID        = $_REQUEST['uid'];
 
 				if (!empty($userID)) {
-					$patron = new User;
-					$patron->get($userID);
-
-					if (empty($patron->id)) {
+					$patron = new User();
+					$patron->id = $userID;
+					if (!$patron->find(true)){
+						$barcode = $userID;
+						$resetPinResult = $driver->resetPinForBarcode($barcode, $newPin, $resetToken);
 						// Did not find a matching user to the uid
 						// This check could be optional if the resetPin method verifies that the ILS user matches the Aspen Discovery user.
 						$resetPinResult = array(

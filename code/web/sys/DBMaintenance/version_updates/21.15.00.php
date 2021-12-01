@@ -219,6 +219,14 @@ function getUpdates21_15_00() : array
 						) ENGINE = INNODB;'
 			]
 		], //donations_createDonationsFormFields
+		'donation_formFields_uniqueKey' => [
+			'title' => 'Donations - FormFields Table Unique Fields',
+			'description' => 'Creates table to store donation form fields',
+			'sql' => [
+				'ALTER TABLE donations_form_fields DROP KEY textId',
+				'ALTER TABLE donations_form_fields ADD UNIQUE textId(textId, donationSettingId)'
+			]
+		],
 		'donations_addLocationSettings' => [
 			'title' => 'Donations - Add options to Location table',
 			'description' => 'Add columns for options used by the Donations module in the Location config',

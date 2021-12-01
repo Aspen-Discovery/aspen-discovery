@@ -338,6 +338,18 @@ class User extends DataObject
 		}
 	}
 
+	function getBarcodeField(){
+		if ($this->getAccountProfile() == null) {
+			return 'cat_username';
+		}else{
+			if ($this->getAccountProfile()->loginConfiguration == 'barcode_pin') {
+				return 'cat_username';
+			} else {
+				return 'cat_password';
+			}
+		}
+	}
+
 	function saveRoles(){
 		if (isset($this->id) && isset($this->_roles) && is_array($this->_roles)){
 			require_once ROOT_DIR . '/sys/Administration/Role.php';
