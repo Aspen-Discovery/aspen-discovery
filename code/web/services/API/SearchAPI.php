@@ -11,31 +11,34 @@ class SearchAPI extends Action
 		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
 		$output = '';
 
-		//Make sure the user can access the API based on the IP address or if AUTH_USER is not set
-		if ((!IPAddress::allowAPIAccessForClientIP()) || !isset($_SERVER['PHP_AUTH_USER'])) {
-			$this->forbidAPIAccess();
-		}
+		//Set Headers
+		header('Content-type: application/json');
+		header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
+		header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
 
 		//Check if user can access API with keys sent from LiDA
-		if (isset($_SERVER['PHP_AUTH_USER']) && $this->grantTokenAccess()) {
-			if (in_array($method, array('getAppBrowseCategoryResults', 'getAppActiveBrowseCategories'))) {
-				$result = [
-					'result' => $this->$method()
-				];
-				$output = json_encode($result);
-				require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
-				APIUsage::incrementStat('SystemAPI', $method);
+		if (isset($_SERVER['PHP_AUTH_USER'])) {
+			if($this->grantTokenAccess()) {
+				if (in_array($method, array('getAppBrowseCategoryResults', 'getAppActiveBrowseCategories'))) {
+					$result = [
+						'result' => $this->$method()
+					];
+					$output = json_encode($result);
+					header("Cache-Control: max-age=10800");
+					require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
+					APIUsage::incrementStat('SystemAPI', $method);
+				} else {
+					$output = json_encode(array('error' => 'invalid_method'));
+				}
 			} else {
-				$output = json_encode(array('error' => 'invalid_method'));
+				header('HTTP/1.0 401 Unauthorized');
+				$output = json_encode(array('error' => 'unauthorized_access'));
 			}
-		} elseif (!(isset($_SERVER['PHP_AUTH_USER'])) || !$this->grantTokenAccess()) {
-			header('HTTP/1.0 401 Unauthorized');
-			$output = json_encode(array('error' => 'unauthorized_access'));
-		}
-
-		if (IPAddress::allowAPIAccessForClientIP()) {
+			echo $output;
+		} elseif (IPAddress::allowAPIAccessForClientIP()) {
 			if (!empty($method) && method_exists($this, $method)) {
 				if (in_array($method, array('getListWidget', 'getCollectionSpotlight'))) {
+					header('Content-type: text/html');
 					$output = $this->$method();
 				} else {
 					$jsonOutput = json_encode(array('result' => $this->$method()));
@@ -45,16 +48,9 @@ class SearchAPI extends Action
 			} else {
 				$jsonOutput = json_encode(array('error' => 'invalid_method'));
 			}
-		}
-
-		// Set Headers
-		if (isset($jsonOutput)) {
-			header('Content-type: application/json');
 		} else {
-			header('Content-type: text/html');
+			$this->forbidAPIAccess();
 		}
-		header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
-		header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
 
 		echo isset($jsonOutput) ? $jsonOutput : $output;
 	}
