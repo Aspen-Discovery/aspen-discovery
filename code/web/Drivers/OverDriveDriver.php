@@ -1500,12 +1500,52 @@ class OverDriveDriver extends AbstractEContentDriver{
 					$bookshelfItem->formats[] = $curFormat;
 				} else {
 					if (isset($curFormat['downloadUrl'])) {
-						if ($format->formatType = 'ebook-overdrive' || $format->formatType == 'ebook-mediado' || $format->formatType == 'magazine-overdrive') {
+						if ($format->formatType == 'ebook-overdrive' || $format->formatType == 'ebook-mediado' || $format->formatType == 'magazine-overdrive') {
 							$bookshelfItem->overdriveReadUrl = $curFormat['downloadUrl'];
 						} else if ($format->formatType == 'video-streaming') {
 							$bookshelfItem->overdriveVideoUrl = $curFormat['downloadUrl'];
 						} else {
 							$bookshelfItem->overdriveListenUrl = $curFormat['downloadUrl'];
+						}
+					}
+				}
+			}
+		} elseif($curTitle->isFormatLockedIn == false && isset($curTitle->actions->format)) {
+			foreach ($curTitle->actions->format->fields as $curFieldIndex => $curField) {
+				if (isset($curField->options)) {
+					foreach ($curField->options as $index => $format) {
+						if ($format == 'ebook-overdrive' || $format == 'ebook-mediado') {
+							$bookshelfItem->overdriveRead = true;
+						} else if ($format == 'audiobook-overdrive') {
+							$bookshelfItem->overdriveListen = true;
+						} else if ($format == 'video-streaming') {
+							$bookshelfItem->overdriveVideo = true;
+						} else if ($format == 'magazine-overdrive') {
+							$bookshelfItem->overdriveMagazine = true;
+							$bookshelfItem->allowDownload = false;
+						} else {
+							$bookshelfItem->selectedFormatName = $this->format_map[$format];
+							$bookshelfItem->selectedFormatValue = $format;
+						}
+						$curFormat = array();
+						$curFormat['id'] = $curFieldIndex;
+						$curFormat['format'] = $format;
+						$curFormat['name'] = $this->format_map[$format];
+						if (isset($format->links->downloadRedirect)) {
+							$curFormat['downloadUrl'] = $format->links->downloadRedirect->href . '/downloadlink';
+						}
+						if ($format != 'magazine-overdrive' && $format->formatType != 'ebook-overdrive' && $format->formatType != 'ebook-mediado' && $format->formatType != 'audiobook-overdrive' && $format->formatType != 'video-streaming') {
+							$bookshelfItem->formats[] = $curFormat;
+						} else {
+							if (isset($curFormat['downloadUrl'])) {
+								if ($format == 'ebook-overdrive' || $format == 'ebook-mediado' || $format == 'magazine-overdrive') {
+									$bookshelfItem->overdriveReadUrl = $curFormat['downloadUrl'];
+								} else if ($format == 'video-streaming') {
+									$bookshelfItem->overdriveVideoUrl = $curFormat['downloadUrl'];
+								} else {
+									$bookshelfItem->overdriveListenUrl = $curFormat['downloadUrl'];
+								}
+							}
 						}
 					}
 				}
