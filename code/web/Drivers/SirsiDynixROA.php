@@ -470,7 +470,7 @@ class SirsiDynixROA extends HorizonAPI
 
 			$createPatronInfoParameters['fields']['profile'] = array(
 				'resource' => '/policy/userProfile',
-				'key' => 'VIRTUAL',
+				'key' => 'SELFREG', //TODO: This needs to be configurable
 			);
 
 			if (!empty($_REQUEST['firstName'])) {
@@ -497,12 +497,14 @@ class SirsiDynixROA extends HorizonAPI
 					// Pin Mismatch
 					return array(
 						'success' => false,
+						'message' => 'The PINs provided did not match.'
 					);
 				}
 			} else {
 				// No Pin
 				return array(
 					'success' => false,
+					'message' => 'The PIN for the account was not provided.'
 				);
 			}
 
@@ -540,16 +542,18 @@ class SirsiDynixROA extends HorizonAPI
 				}
 			}
 
+			//TODO: We should be able to create either a random barcode or a barcode starting with a specific prefix and choose the length.
 			$barcode = new Variable();
-			if ($barcode->get('name', 'self_registration_card_number')) {
+			$barcode->name = 'self_registration_card_number';
+			if ($barcode->find(true)) {
 				$createPatronInfoParameters['fields']['barcode'] = $barcode->value;
 
-				global $configArray;
-				$overrideCode = $configArray['Catalog']['selfRegOverrideCode'];
-				$overrideHeaders = array('SD-Prompt-Return:USER_PRIVILEGE_OVRCD/' . $overrideCode);
+				//global $configArray;
+				//$overrideCode = $configArray['Catalog']['selfRegOverrideCode'];
+				//$overrideHeaders = array('SD-Prompt-Return:USER_PRIVILEGE_OVRCD/' . $overrideCode);
 
 
-				$createNewPatronResponse = $this->getWebServiceResponse('selfRegister', $webServiceURL . '/user/patron/', $createPatronInfoParameters, $sessionToken, 'POST', $overrideHeaders);
+				$createNewPatronResponse = $this->getWebServiceResponse('selfRegister', $webServiceURL . '/user/patron/', $createPatronInfoParameters, $sessionToken, 'POST');
 
 				if (isset($createNewPatronResponse->messageList)) {
 					foreach ($createNewPatronResponse->messageList as $message) {
@@ -569,7 +573,7 @@ class SirsiDynixROA extends HorizonAPI
 				} else {
 					$selfRegResult = array(
 						'success' => true,
-						'barcode' => $barcode->value++
+						'barcode' => ''
 					);
 					// Update the card number counter for the next Self-Reg user
 					if (!$barcode->update()) {
@@ -582,6 +586,7 @@ class SirsiDynixROA extends HorizonAPI
 				// Error: unable to set barcode number.
 				global $logger;
 				$logger->log('Sirsi Self Registration barcode counter was not found!', Logger::LOG_ERROR);
+				$selfRegResult['Barcode starting index was not found.'];
 			};
 		} else {
 			// Error: unable to login in staff user
@@ -2452,33 +2457,55 @@ class SirsiDynixROA extends HorizonAPI
 	}
 
 	public function getSelfRegistrationFields() {
-		$lookupSelfRegistrationFieldsUrl = $this->getWebServiceURL() . '/standard/lookupSelfRegistrationFields';
+		global $library;
 
-		$lookupSelfRegistrationFieldsResponse = $this->getWebServiceResponse('getSelfRegistrationFields', $lookupSelfRegistrationFieldsUrl);
-		$fields = array();
-		if ($lookupSelfRegistrationFieldsResponse){
-			foreach($lookupSelfRegistrationFieldsResponse->registrationField as $registrationField){
-				$newField = array(
-					'property' => (string)$registrationField->column,
-					'label' => (string)$registrationField->label,
-					'maxLength' => (int)$registrationField->length,
-					'type' => 'text',
-					'required' => (string)$registrationField->required == 'true',
-				);
-				if ((string)$registrationField->masked == 'true'){
-					$newField['type'] = 'password';
-				}
-				if (isset($registrationField->values)){
-					$newField['type'] = 'enum';
-					$values = array();
-					foreach($registrationField->values->value as $value){
-						$values[(string)$value->code] = (string)$value->description;
-					}
-					$newField['values'] = $values;
-				}
-				$fields[] = $newField;
-			}
+		$pickupLocations = array();
+		$location = new Location();
+		if ($library->selfRegistrationLocationRestrictions == 1) {
+			//Library Locations
+			$location->libraryId = $library->libraryId;
+		} elseif ($library->selfRegistrationLocationRestrictions == 2) {
+			//Valid pickup locations
+			$location->whereAdd('validHoldPickupBranch <> 2');
+		} elseif ($library->selfRegistrationLocationRestrictions == 3) {
+			//Valid pickup locations
+			$location->libraryId = $library->libraryId;
+			$location->whereAdd('validHoldPickupBranch <> 2');
 		}
+		if ($location->find()) {
+			while ($location->fetch()) {
+				$pickupLocations[$location->code] = $location->displayName;
+			}
+			asort($pickupLocations);
+			array_unshift($pickupLocations, translate(['text'=>'Please select a location', 'isPublicFacing'=>true]));
+		}
+
+		global $library;
+		$fields = array();
+		$fields[] = array('property'=>'firstName', 'type'=>'text', 'label'=>'First Name', 'maxLength' => 40, 'required' => true);
+		$fields[] = array('property'=>'middleName', 'type'=>'text', 'label'=>'Middle Name', 'maxLength' => 40, 'required' => false);
+		$fields[] = array('property'=>'lastName', 'type'=>'text', 'label'=>'Last Name', 'maxLength' => 40, 'required' => true);
+		if ($library && $library->promptForBirthDateInSelfReg){
+			$birthDateMin = date('Y-m-d', strtotime('-113 years'));
+			$birthDateMax = date('Y-m-d', strtotime('-13 years'));
+			$fields[] = array('property'=>'birthDate', 'type'=>'date', 'label'=>'Date of Birth (MM-DD-YYYY)', 'min'=>$birthDateMin, 'max'=>$birthDateMax, 'maxLength' => 10, 'required' => true);
+		}
+		$fields[] = array('property'=>'address', 'type'=>'text', 'label'=>'Mailing Address', 'maxLength' => 128, 'required' => true);
+		$fields[] = array('property'=>'city', 'type'=>'text', 'label'=>'City', 'maxLength' => 48, 'required' => true);
+		if (empty($library->validSelfRegistrationStates)){
+			$fields[] = array('property'=>'state', 'type'=>'text', 'label'=>'State', 'maxLength' => 2, 'required' => true);
+		}else{
+			$validStates = explode('|', $library->validSelfRegistrationStates);
+			$validStates = array_combine($validStates, $validStates);
+			$fields[] = array('property' => 'state', 'type' => 'enum', 'values' => $validStates, 'label' => 'State', 'description' => 'State', 'maxLength' => 32, 'required' => true);
+		}
+		$fields[] = array('property'=>'zip', 'type'=>'text', 'label'=>'Zip Code', 'maxLength' => 32, 'required' => true);
+		$fields[] = array('property'=>'phone', 'type'=>'text',  'label'=>'Primary Phone', 'maxLength'=>15, 'required'=>false);
+		$fields[] = array('property'=>'email',  'type'=>'email', 'label'=>'Email', 'maxLength' => 128, 'required' => true);
+		$fields[] = array('property'=>'email2',  'type'=>'email', 'label'=>'Confirm Email', 'maxLength' => 128, 'required' => true);
+		$fields[] = array('property'=>'pin',  'type'=>'text', 'label'=>'PIN (number of your choice)', 'maxLength' => 10, 'required' => true);
+		$fields[] = array('property'=>'pin1',  'type'=>'text', 'label'=>'Re-enter PIN (number of your choice)', 'maxLength' => 10, 'required' => true);
+		$fields[] = array('property'=>'pickupLocation',  'type'=>'enum', 'values' => $pickupLocations, 'label'=>'Library', 'maxLength' => 128, 'required' => true);
 		return $fields;
 	}
 
