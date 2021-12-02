@@ -1771,6 +1771,12 @@ class User extends DataObject
 			}
 		}
 		$this->clearCache();
+
+		$renewAllResults['title'] = translate(['text' => 'Renewing all titles', 'isPublicFacing'=>true]);
+		if($renewAllResults['Renewed'] == 0) {
+			$renewAllResults['title'] = translate(['text' => 'Unable to renew some titles', 'isPublicFacing'=>true]);
+		}
+
 		return $renewAllResults;
 	}
 
@@ -1990,10 +1996,10 @@ class User extends DataObject
 			$userMessage = new UserMessage();
 			$userMessage->userId = $this->id;
 			$userMessage->messageType = 'confirm_linked_accts';
-			$userMessage->message = "Other accounts have linked to your account.  Do you want to continue allowing them to link to you?";
-			$userMessage->action1Title = "Yes";
+			$userMessage->message = translate(['text' => "Other accounts have linked to your account.  Do you want to continue allowing them to link to you?", 'isPublicFacing'=>true]);
+			$userMessage->action1Title = translate(['text' => "Yes", 'isPublicFacing'=>true]);
 			$userMessage->action1 = "return AspenDiscovery.Account.enableAccountLinking()";
-			$userMessage->action2Title = "No";
+			$userMessage->action2Title = translate(['text' => "No", 'isPublicFacing'=>true]);
 			$userMessage->action2 = "return AspenDiscovery.Account.stopAccountLinking()";
 			$userMessage->messageLevel = 'warning';
 			$userMessage->insert();
@@ -2002,7 +2008,7 @@ class User extends DataObject
 				$userMessage->userId = $userLinks->primaryAccountId;
 				$userMessage->messageType = 'linked_acct_notify_pause_' . $this->id;
 				$userMessage->messageLevel = 'info';
-				$userMessage->message = "An account you are linking to changed their login. Account linking with them has been temporarily disabled.";
+				$userMessage->message = translate(['text' => "An account you are linking to changed their login. Account linking with them has been temporarily disabled.", 'isPublicFacing'=>true]);
 				$userMessage->insert();
 				$userLinks->linkingDisabled = 1;
 				$userLinks->update();
