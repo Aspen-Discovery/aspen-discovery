@@ -1210,6 +1210,9 @@ class OverDriveDriver extends AbstractEContentDriver{
 		}
 
 		$apiUrl = $response->links->downloadRedirect->href;
+		if (empty($apiUrl)){
+			return '';
+		}
 		$tokenData = $this->getPatronTokenData($user, true);
 		$authorizationData = $tokenData->token_type . ' ' . $tokenData->access_token;
 
