@@ -7,9 +7,13 @@ class Admin_HelpManual extends Action
 	function launch()
 	{
 		global $interface;
+		global $activeLanguage;
 
 		//Get a list of all available release notes
 		$helpManualPath = ROOT_DIR . '/manual';
+		if (file_exists($helpManualPath . '_' . $activeLanguage->code)){
+			$helpManualPath = $helpManualPath . '_' . $activeLanguage->code;
+		}
 		if (isset($_REQUEST['page'])){
 			$page = $_REQUEST['page'];
 		}else{

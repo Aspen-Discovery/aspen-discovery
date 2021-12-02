@@ -1,0 +1,73 @@
+.staff-member{
+	padding: 5px 10px;
+	border: 1px solid #bbb;
+	margin: 10px 0;
+}
+.staff-name{
+	font-size: 20px;
+	font-weight: bold;
+}
+.portal-cell{
+
+}
+.portal-row-edit{
+	border-color: dimgrey;
+	border-style: dashed;
+	border-width: 1px;
+	min-height: 100px;
+	padding:5px;
+}
+.portal-row-title-edit{
+
+}
+
+.portal-cell-edit{
+	border-color: dimgrey;
+	border-style: dotted;
+	border-width: 1px;
+	min-height: 90px;
+}
+
+.portal-cell-title-edit{
+	padding: 5px;
+	background-color: dimgrey;
+	color: white;
+	height: 50px;
+}
+
+input[type="radio"][name="colorScheme"] {
+	display: none;
+	~ label {
+		cursor: pointer;
+		height: 100%;
+		display: block;
+		border: 1px solid black;
+		padding-top: 3.5rem;
+		margin-bottom: 1rem;
+		text-align: center;
+		position: relative;
+		vertical-align: middle;
+		line-height: 18px;
+	}
+}
+input[type="radio"][name="colorScheme"]:checked + label::after {
+	color: black;
+	font-family:"Font Awesome 5 Free";
+	border: 1px solid black;
+	content: "\f00c";
+	font-size: 18px;
+	position: absolute;
+	top: -25px;
+	right: 50%;
+	transform: translateX(-50%);
+	height: 50px;
+	width: 50px;
+	line-height: 50px;
+	text-align: center;
+	border-radius: 50%;
+	background: white;
+}
+
+.webResourceRow{
+	margin-bottom: 4px;
+}

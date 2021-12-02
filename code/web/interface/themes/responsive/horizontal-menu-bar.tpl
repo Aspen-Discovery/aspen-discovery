@@ -90,7 +90,8 @@
 		{else} {* Not Logged In *}
 			{if $showLoginButton}
 			<a href="/MyAccount/Home" id="loginLink" onclick="{if $isLoginPage}$('#username').focus();return false;{else}return AspenDiscovery.Account.followLinkIfLoggedIn(this);{/if}" onkeypress="{if $isLoginPage}$('#username').focus();return false;{else}return AspenDiscovery.Account.followLinkIfLoggedIn(this);{/if}" data-login="true" class="menu-icon menu-bar-option" title="{translate text='Login' inAttribute=true isPublicFacing=true}">
-				<i id="loginLinkIcon" class="fas fa-sign-in-alt fa-lg"></i><span class="menu-bar-label hidden-inline-block-xs" id="login-button-label">{translate text="Sign in" isPublicFacing=true}</span>
+				<i class="fas fa-sign-in-alt fa-lg {if $userLang->isRTL()}fa-flip-horizontal{/if}"></i>
+				<span class="menu-bar-label hidden-inline-block-xs" id="login-button-label">{translate text="Sign in" isPublicFacing=true}</span>
 			</a>
 			{/if}
 		{/if}

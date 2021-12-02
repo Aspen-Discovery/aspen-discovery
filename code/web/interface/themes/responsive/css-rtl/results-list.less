@@ -1,0 +1,361 @@
+//@import (reference) "bootstrap/less/variables.less";
+@import (reference) "variables.less";
+// **
+// * Additional styling specific to the results list.
+// *
+// * If a rule is used as part of both a record and the results list it should be defined in record.less
+// **
+
+.result{
+  border-bottom: 2px solid #d5d6da;
+  padding: 10px 0 15px;
+  margin-right: 5px;
+  margin-left: 5px;
+  font-size: 12px;
+}
+.result-value-bold{
+  font-weight: bold;
+}
+.result-label{
+  font-weight: bold;
+  color: #44484a;
+}
+#formatCategories{
+  padding-top: 3px;
+}
+#availabilityControlContainer {
+  border-bottom: 3px solid #d5d6da;
+  padding-bottom: @padding-base-vertical;
+}
+#wikipedia_placeholder {
+  #availabilityControlContainer();
+  margin-bottom: @padding-large-vertical;
+  display: none;
+}
+.top-facet{
+ margin-bottom: 10px;
+}
+.facetCol{
+  display: inline-block;
+  padding: 15px;
+  width: 120px;
+  vertical-align: top;
+}
+.facetValue {
+  padding-right: 1.2em;
+  text-indent: -1.2em;
+  margin-right:30px;
+  color: #888888;
+  font-size: small;
+  font-weight: bold;
+  a {
+    color: #888888;
+  }
+  &:first-of-type {
+    margin-top: 3px;
+  }
+  &:last-of-type {
+    margin-bottom: 3px;
+  }
+}
+.facet-form{
+  margin: 5px 30px;
+}
+.sidebar-label{
+  text-align: center;
+  background-color: @sidebar-label-background-color;
+  //background: linear-gradient(to bottom, @sidebar-label-background-color, #3d4244); //TODO find precent darken for 2nd color and then change to a darken function
+  //background: linear-gradient(to bottom, @sidebar-label-background-color, darken(desaturate(spin(@sidebar-label-background-color, -42.8571), 5.0248), 23.5294)); //TODO find precent darken for 2nd color and then change to a darken function
+  color: @sidebar-label-color;
+  padding: 3px 0;
+  margin-top: 4.6px;
+}
+
+// The html tag also has .sidebar-label class so this is redundant
+//#narrow-search-label{
+//  text-align: center;
+//  background-color: #7c7c7d;
+//  background: linear-gradient(to bottom, #7c7c7d, #3d4244);
+//  color: #fff;
+//  padding: 3px 0;
+//  margin-top: 20px;
+//}
+
+.facetTitle, .exploreMoreTitle{
+  background-color: #e8e8e8;
+  //background: linear-gradient(to bottom, #e8e8e8, #d7d7d7);
+  color: #555555;
+  //text-shadow: 1px 1px #fcfcfc;
+  border-top: 1px solid #f4f4f4;
+  border-bottom: 1px solid #adadad;
+}
+.facetTitle{
+  padding: 8px 10px 6px 10px;
+}
+.exploreMoreTitle{
+  padding: 8px 30px 6px 15px;
+}
+
+
+.formatCategoryLabel {
+  vertical-align: central; // center not valid, set to central. plb 5-11-2015
+  color: #555555;
+  margin-top: 3px;
+  a {
+    color: #555555;
+  }
+}
+.top-facet{
+  @media print{
+    display: none;
+  }
+}
+.applied-filters{
+  .facetValue{
+    padding-right: 0;
+  }
+}
+
+.result-head{
+  font-size: smaller;
+  color: #3174AF;
+  #selected-browse-label{
+    .gray-line-mixin;
+  }
+
+}
+#replacement-search-info{
+  font-size: 16px;
+  font-style: italic;
+}
+#original-search-info{
+  font-size: 12px;
+}
+.replacement-search-info-text{
+  color: #888888;
+  font-style: normal;
+}
+.result-title{
+  font-weight: bold;
+  font-size: 18px;
+}
+.result-index{
+  font-size: 18px;
+}
+.result-tools-horizontal{
+  margin-top: 6px;
+  //margin-right: 30px; // disabled for search results. If needed elsewhere create a more specific rule. plb 1-28-2016
+}
+
+.gray-line-mixin() {
+  background: linear-gradient(to bottom, @content-bg, @content-bg 44%, #d5d6da 45%, #d5d6da 55%, @content-bg 56%);
+}
+
+.results-covers{
+  padding-top: @padding-base-vertical;
+  margin-top: @padding-base-vertical;
+  border-bottom: 1px solid #d5d6da;
+}
+.related-manifestations{
+  margin-top: 3px;
+}
+.related-manifestation.grouped {
+  padding-top: 10px;
+  padding-bottom: 10px;
+  border: 1px solid #c3c3c3;
+  border-radius: 8px;
+  margin-top: 1em;
+
+  .col-sm-12 .row.displayed {
+    padding-bottom: 1em;
+    margin-bottom: 1em !important;
+  }
+  .col-sm-12 .row.displayed.striped-odd {
+    background: #f8f8ff;
+    padding-top: 1em;
+  }
+}
+.related-manifestations-header{
+  border-bottom: 1px solid #d3d3d3;
+}
+// Make Choose a Format Label Larger
+.related-manifestations-label {
+  font-size:10pt;
+}
+.related-manifestations a.showHidden {
+  display: block;
+  padding-top:1em;
+}
+.manifestation-actions .btn-default{
+  background-color: #088ec6;
+  color: #fff;
+}
+.related-manifestations{
+  margin-bottom: 5px;
+}
+.manifestation-format{
+  font-size:14px;
+  font-weight: bold;
+  padding-bottom: .5em;
+  .btn{
+    width: 100%;
+  }
+  .btn-variation{
+    width: 100%;
+  }
+}
+.related-manifestation-shelf-status{
+  font-size: 13px;
+  font-weight: bold;
+  display: inline-block;
+  margin-bottom: 3px;
+  white-space: normal;
+}
+.related_record_status{
+  font-size: 13px;
+  font-weight: bold;
+}
+.related_record_status.available{
+  color: #2e7d32;
+  font-size: 14px;
+}
+.related_record_status.checked_out{
+  color: #c62828;
+}
+.related_record_status.availableOther{
+  color: #c62828;
+}
+.itemSummaryTable tr.available{
+  color: #2e7d32;
+  font-weight: bold;
+}
+.itemSummary{
+  font-size: 12px;
+  text-indent: -10px;
+  padding-right: 10px;
+}
+.moreFacetPopup{
+  -webkit-column-gap:   35px;
+  -moz-column-gap:      35px;
+  column-gap:           35px;
+  @media(min-width: 0){
+    -webkit-column-count: 1;
+    -moz-column-count:    1;
+    column-count:         1;
+  }
+  @media(min-width: @screen-sm-min){
+    -webkit-column-count: 1;
+    -moz-column-count:    1;
+    column-count:         1;
+  }
+  @media(min-width: @screen-md-min){
+    -webkit-column-count: 2;
+    -moz-column-count:    2;
+    column-count:         2;
+  }
+  .checkboxFacet label{
+    padding-right: 1.2em;
+    text-indent: -1.2em;
+  }
+  .standardFacet{
+    padding-right: 2.5em;
+    text-indent: -1em;
+  }
+}
+.highlight{
+  font-weight: bolder;
+  background-color: lemonchiffon;
+}
+
+// Description & View All Formats buttons in xs views
+.view-xs-button {
+  .coversColumn & {
+    margin-top: @padding-small-vertical;
+  }
+  margin-bottom: @padding-small-vertical;
+}
+
+// Special Rules for very narrow views
+@media (max-width: 400px) {
+  .coversColumn {
+    // make cover fit below in column
+    padding-right: 0;
+    padding-left: 0;
+  }
+  #availabilityControl button {
+    .btn-sm();
+  }
+  //.title-rating {
+  //  display: none;
+  //}
+}
+
+//// Hide Formats label when shown in modal pop-up
+//.modal .related-manifestations-header {
+//  display: none;
+//}
+
+.search-results-navigation {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items:center;
+  .previous {
+    flex-grow: 1;
+    cursor: pointer;
+    white-space: nowrap;
+    text-align: left
+  }
+  .return {
+    flex-grow: 3;
+    white-space: normal;
+    text-align: center;
+    padding-right: 2px;
+    padding-left: 2px;
+  }
+  .next {
+    white-space: nowrap;
+    cursor: pointer;
+    flex-grow: 1;
+  }
+}
+
+.yearbox{
+  padding: 3px 6px;
+}
+
+// Combined Results/Bento Box Search
+.combined-results-section {
+  .related-manifestation {
+    border-bottom: none;
+  }
+  width: 100%;
+  display: inline-block;
+  padding: 2px;
+  padding-bottom: 20px;
+  border-top: 5px solid @menu-bar-background-color;
+  margin-top: 15px;
+
+}
+.combined-results-section-title {
+  font-weight: bold;
+  margin-top: 10px;
+  margin-bottom: 15px;
+  float:right;
+}
+.combined-results-button{
+  float:left;
+  margin-top: 4px;
+  background-color: @menu-bar-background-color;
+	border-color: @menu-bar-background-color;
+}
+#results-sort {
+  width: 160px;
+  margin: 0 8px 0 18px;
+  height: 30px;
+  padding: 2px 5px;
+  border-radius: 3px;
+  border: 1px solid #ababab;
+  font-size: 12px;
+}
+

@@ -1,0 +1,118 @@
+//@import (reference) "bootstrap/less/variables.less";
+@import (reference) "variables.less";
+.graph-bar{
+  background-color: #088ec6;
+}
+// TODO used anymore?
+#side-bar .userreviewlink,
+#side-bar .addtolistlink{
+  width: 196px;
+}
+.userreviewlink, .addtolistlink{
+  background-color: #088ec6;
+  color: #ffffff;
+  &:hover {
+    background-color: #2897c6;
+    color: #ffffff;
+  }
+}
+
+.full-record-tools{
+  padding: 4px 0;
+}
+.full-rating{
+  padding: 10px 5px 4px;
+  white-space: nowrap;
+  font-size: 11px;
+}
+.rating-graph{
+  margin: 4px 0;
+  .row{
+    margin-top: 2px;
+  }
+}
+.title-rating{
+  margin-top: 4px;
+}
+// Modify placement of the tool bar on full record views
+#main-content .result-tools-horizontal {
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+.share-tools{
+  //background-color: #e6e6e6;
+  color: #666565;
+  //border-bottom: 1px solid #adadad;
+  font-weight: bold;
+  text-align: right;
+  padding: 5px 10px;
+  display: inline-block;
+  i{
+    width:1em;
+    vertical-align: middle;
+  }
+  img{
+    margin-right: 2px;
+    margin-left: 2px;
+  }
+}
+.share-tools-label{
+  padding-left: 10px;
+}
+
+//TODO: used anymore?
+#side-bar .share-tools{
+  margin-top: 8px;
+  width: 200px;
+}
+
+// More Like this formatting //
+#more-details-accordion {
+  .panel-group .panel + .panel{
+    margin-top: 0;
+  }
+  .panel-heading{
+    padding: 5px 15px;
+  }
+  .panel-title{
+    font-size: 13px;
+    //text-shadow: 1px 1px #fff;
+    h2{
+      font-size: 13px;
+      margin: unset;
+      font-weight: unset;
+      display: unset;
+    }
+  }
+  .panel-body{
+    font-size:12px;
+    color: @gray-dark;
+    background-color: #fcfcfc;
+    border-color: #c5c5c5;
+    border-width: 0 1px 1px 1px;
+    border-style: solid;
+  }
+}
+
+.novelist-similar-item{
+  padding: 6px;
+}
+.novelist-similar-item-header{
+  font-size: 14px;
+  font-weight: bold;
+  margin-bottom: 2px;
+}
+.novelist-similar-item-reason{
+  font-style: italic;
+  margin-right: 6px;
+}
+
+.tocEntry{
+  margin-bottom: 2px;
+}
+.tocLabel{
+  font-weight: bold;
+}
+.trackNumber{
+  font-weight: bold;
+}

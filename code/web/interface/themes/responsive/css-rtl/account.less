@@ -1,0 +1,75 @@
+//@import (reference) "bootstrap/less/variables.less";
+@import (reference) "variables.less";
+
+// Account Settings formatting //
+#account-settings-accordion .panel-group .panel + .panel{
+  margin-top: 0;
+}
+#account-settings-accordion .panel-heading{
+  padding: 5px 15px;
+  background: #e7e7e7;
+  //background: linear-gradient(to bottom, #e7e7e7, #d7d7d7);
+  border-bottom: 1px solid #a1a1a1;
+}
+#account-settings-accordion .active .panel-heading{
+  background: #4dacde;
+  //background: linear-gradient(to bottom, #4dacde, #0f8fd2);
+}
+#account-settings-accordion .panel-title{
+  font-size: 13px;
+  color: @gray-dark;
+  //text-shadow: 1px 1px #fff;
+}
+#account-link-accordion .panel.active, #account-settings-accordion .panel.active{
+  .panel-title {
+    color: white;
+
+    > a {
+      color: white;
+    }
+  }
+}
+#account-settings-accordion .panel-body{
+  font-size:12px;
+  color: @gray-dark;
+  background-color: #fcfcfc;
+  border-color: #c5c5c5;
+  border-width: 0 1px 1px 1px;
+  border-style: solid;
+}
+.overdueLabel{
+  color: #c62828;
+  font-weight: bold;
+}
+.return_claim{
+  color: #2e7d32;
+  font-weight: bold;
+}
+.holdDisclaimerLibrary{
+  font-weight: bold;
+}
+
+// Account Profile
+
+// make Receive Notices Toggle match color scheming of bootstrap switches
+#contactUpdateForm .btn-group .btn-default.active {
+  background-color: @btn-primary-bg;
+  .box-shadow(none);
+  color: @btn-primary-color;
+}
+
+#library-barcode{
+  text-align: center;
+  font-weight: bold;
+}
+
+#library-barcode-svg{
+  max-width: 100%;
+}
+
+.refresh-indicator{
+  font-size: 85%;
+  float: left !important;
+  margin-left: 6px;
+  margin-top: 6px;
+}
