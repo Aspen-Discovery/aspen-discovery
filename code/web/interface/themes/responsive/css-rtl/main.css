@@ -4095,10 +4095,10 @@ textarea.input-group-sm > .input-group-btn > .btn {
 }
 @media (min-width: 768px) {
   .navbar-right {
-    float: right !important;
+    float: left !important;
   }
   .navbar-left {
-    float: left !important;
+    float: right !important;
   }
 }
 .navbar-form {
@@ -5759,10 +5759,10 @@ button.close {
   margin-left: auto;
 }
 .pull-left {
-  float: left !important;
+  float: right !important;
 }
 .pull-right {
-  float: right !important;
+  float: left !important;
 }
 .hide {
   display: none !important;
@@ -9096,7 +9096,7 @@ a.browse-thumbnail-sorted.active {
   break-inside: avoid-column;
   -webkit-column-break-inside: avoid;
   display: inline-block;
-  text-align: left;
+  text-align: right;
   width: 100%;
 }
 .browse-list img {
