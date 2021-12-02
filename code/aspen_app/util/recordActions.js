@@ -9,13 +9,15 @@ import { create, CancelToken } from 'apisauce';
 import * as WebBrowser from 'expo-web-browser';
 
 // custom components and helper files
+import { createAuthTokens, postData, getHeaders } from "../util/apiAuth";
 import { translate } from "../util/translations";
+import { getProfile, getCheckedOutItems, getHolds } from "../util/loadPatron";
 import { popToast, popAlert } from "../components/loadError";
 
 export async function getGroupedWork(itemId) {
-    const api = create({ baseURL: global.libraryUrl + '/API', timeout: 5000 });
+    const api = create({ baseURL: global.libraryUrl + '/API', timeout: global.timeoutAverage, headers: getHeaders(), auth: createAuthTokens() });
     const response = await api.get('/ItemAPI?method=getAppGroupedWork', { id: itemId });
-
+    console.log(response);
     if(response.ok) {
         const fetchedData = response.data;
         return fetchedData;
@@ -25,12 +27,18 @@ export async function getGroupedWork(itemId) {
 }
 
 export async function checkoutItem(itemId, source, patronId) {
-    const api = create({ baseURL: global.libraryUrl + '/API', timeout: 5000 });
-    const response = await api.get('/UserAPI?method=checkoutItem', { username: global.userKey, password: global.secretKey, itemId: itemId, itemSource: source, patronId: patronId });
+    const postBody = await postData();
+    const api = create({ baseURL: global.libraryUrl + '/API', timeout: global.timeoutAverage, headers: getHeaders(), auth: createAuthTokens(), params: { itemId: itemId, itemSource: source, patronId: patronId } });
+    const response = await api.post('/UserAPI?method=checkoutItem', postBody);
 
     if(response.ok) {
         const responseData = response.data;
         const results = responseData.result;
+
+        // reload patron data in the background
+        await getProfile(true);
+        await getCheckedOutItems(true);
+
         return results;
     } else {
         popToast(translate('error.no_server_connection'), translate('error.no_library_connection'), "warning");
@@ -38,12 +46,19 @@ export async function checkoutItem(itemId, source, patronId) {
 }
 
 export async function placeHold(itemId, source, patronId, pickupBranch) {
-    const api = create({ baseURL: global.libraryUrl + '/API', timeout: 5000 });
-    const response = await api.get('/UserAPI?method=placeHold', { username: global.userKey, password: global.secretKey, itemId: itemId, itemSource: source, patronId: patronId, pickupBranch: pickupBranch });
+    const postBody = await postData();
+    const api = create({ baseURL: global.libraryUrl + '/API', timeout: global.timeoutAverage, headers: getHeaders(), auth: createAuthTokens(), params: { itemId: itemId, itemSource: source, patronId: patronId, pickupBranch: pickupBranch } });
+    const response = await api.post('/UserAPI?method=placeHold', postBody);
 
     if(response.ok) {
+        console.log(response);
         const responseData = response.data;
         const results = responseData.result;
+
+        // reload patron data in the background
+        await getProfile(true);
+        await getHolds(true);
+
         return results;
     } else {
         popToast(translate('error.no_server_connection'), translate('error.no_library_connection'), "warning");
@@ -51,10 +66,9 @@ export async function placeHold(itemId, source, patronId, pickupBranch) {
 }
 
 export async function overDriveSample(formatId, itemId, sampleNumber) {
-    const api = create({ baseURL: global.libraryUrl + '/API', timeout: 8000 });
-    const response = await api.get('/UserAPI?method=viewOnlineItem', { username: global.userKey, password: global.secretKey, overDriveId: itemId, formatId: formatId, sampleNumber: sampleNumber, itemSource: "overdrive", isPreview: "true" });
-
-
+    const postBody = await postData();
+    const api = create({ baseURL: global.libraryUrl + '/API', timeout: global.timeoutAverage, headers: getHeaders(), auth: createAuthTokens(), params: { overDriveId: itemId, formatId: formatId, sampleNumber: sampleNumber, itemSource: "overdrive", isPreview: "true" } });
+    const response = await api.post('/UserAPI?method=viewOnlineItem', postBody);
 
     if(response.ok) {
         const result = response.data;
@@ -121,4 +135,8 @@ export async function openSideLoad(redirectUrl) {
     } else {
         popToast(translate('error.no_open_resource'), translate('error.no_valid_url'), "warning");
     }
+}
+
+export function openCheckouts() {
+    navigation.navigate("CheckedOut");
 }
