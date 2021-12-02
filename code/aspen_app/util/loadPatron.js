@@ -48,7 +48,7 @@ export async function getProfile(forceReload = false) {
 
 export async function getILSMessages() {
     const postBody = await postData();
-    const api = create({ baseURL: global.libraryUrl + '/API', timeout: global.timeoutAverage, headers: getHeaders(true), auth: createAuthTokens() });
+    const api = create({ baseURL: global.libraryUrl + '/API', timeout: global.timeoutSlow, headers: getHeaders(true), auth: createAuthTokens() });
     const response = await api.post('/UserAPI?method=getILSMessages', postBody);
     console.log(response);
     if(response.ok) {

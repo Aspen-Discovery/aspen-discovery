@@ -56,6 +56,14 @@
     "web": {
       "favicon": "./assets/LiDA_Icon512.png"
     },
-    "description": ""
+    "description": "",
+    "build": {
+      "production": {
+        "releaseChannel": "production"
+      },
+      "beta": {
+        "releaseChannel": "beta"
+      }
+    }
   }
 }
