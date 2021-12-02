@@ -2,53 +2,41 @@ import React from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as SecureStore from 'expo-secure-store';
 import Constants from "expo-constants";
+import * as Device from 'expo-device';
 import * as Random from 'expo-random';
 import moment from "moment";
 import { create, CancelToken } from 'apisauce';
 
 // custom components and helper files
 import { translate } from "../util/translations";
+import { createAuthTokens, postData, getHeaders } from "../util/apiAuth";
 import { popToast, popAlert } from "../components/loadError";
 
 export async function getLocationInfo() {
-   const api = create({ baseURL: global.libraryUrl + '/API', timeout: 5000 });
+   const api = create({ baseURL: global.libraryUrl + '/API', timeout: global.timeoutAverage, headers: getHeaders(), auth: createAuthTokens() });
    const response = await api.get('/SystemAPI?method=getLocationInfo', { id: global.locationId, library: global.solrScope, version: global.version });
-
    if(response.ok) {
-       const result = response.data;
-       const libraryProfile = result.result;
-       const profile = libraryProfile.location;
+       const result = response.data.result;
+       const profile = result.location;
 
-       try {
-           await AsyncStorage.setItem('@libraryHomeLink', profile.homeLink);
-           await AsyncStorage.setItem('@libraryAddress', profile.address);
-           await AsyncStorage.setItem('@libraryPhone', profile.phone);
-           await AsyncStorage.setItem('@libraryDescription', profile.description);
-
-           if(profile.email) {
-                await AsyncStorage.setItem('@libraryEmail', profile.email);
-           } else {
-                await AsyncStorage.setItem('@libraryEmail', "null");
-           }
-
-           await AsyncStorage.setItem('@libraryShowHours', profile.showInLocationsAndHoursList);
-
-           if(profile.showInLocationsAndHoursList == 1) {
-              await AsyncStorage.setItem('@libraryHoursMessage', profile.hoursMessage);
-              await AsyncStorage.setItem('@libraryHours', JSON.stringify(profile.hours));
-           }
-
-           await AsyncStorage.setItem('@libraryLatitude', profile.latitude);
-           await AsyncStorage.setItem('@libraryLongitude', profile.longitude);
-
-       } catch (error) {
-         // unable to save data at this time
-         console.log("Unable to save data.")
-         console.log(error);
-       }
+        global.location_homeLink = profile.homeLink;
+        global.location_address = profile.address;
+        global.location_phone = profile.phone;
+        global.location_description = profile.description;
+        global.location_email = profile.email;
+        global.location_showInLocationsAndHoursList = profile.showInLocationsAndHoursList;
+        if(profile.showInLocationsAndHoursList == 1) {
+            global.location_hoursMessage = profile.hoursMessage;
+            global.location_hours = JSON.stringify(profile.hours);
+        } else {
+            global.location_hoursMessage = null;
+            global.location_hours = null;
+        }
+        global.location_latitude = profile.latitude;
+        global.location_longitude = profile.longitude;
 
        console.log("Location profile set")
-       return libraryProfile;
+       return profile;
    } else {
        // no data yet
    }
@@ -56,13 +44,12 @@ export async function getLocationInfo() {
 
 export async function getLibraryInfo() {
    const libraryId = await SecureStore.getItemAsync("library");
-   const api = create({ baseURL: global.libraryUrl + '/API', timeout: 5000 });
+   const api = create({ baseURL: global.libraryUrl + '/API', timeout: global.timeoutAverage, headers: getHeaders(), auth: createAuthTokens() });
    const response = await api.get('/SystemAPI?method=getLibraryInfo', { id: libraryId });
 
    if(response.ok) {
-       const result = response.data;
-       const libraryProfile = result.result;
-       const profile = libraryProfile.library;
+       const result = response.data.result;
+       const profile = result.library;
 
        try {
            await AsyncStorage.setItem('@libraryBarcodeStyle', profile.barcodeStyle);
@@ -73,25 +60,49 @@ export async function getLibraryInfo() {
        }
 
        console.log("Library profile set")
-       return libraryProfile;
+       return profile;
    } else {
        // no data yet
    }
 }
 
 export async function getPickupLocations() {
-   const api = create({ baseURL: global.libraryUrl + '/API', timeout: 5000 });
+   const api = create({ baseURL: global.libraryUrl + '/API', timeout: global.timeoutAverage, headers: getHeaders(), auth: createAuthTokens() });
    const response = await api.get('/UserAPI?method=getValidPickupLocations', { username: global.userKey, password: global.secretKey });
 
    if(response.ok) {
        const result = response.data;
        const fetchedData = result.result;
         var locations = fetchedData.pickupLocations.map(({ displayName, code, locationId }) => ({
-            key: code,
+            key: locationId,
             locationId: locationId,
+            code: code,
             name: displayName,
         }));
        return locations;
+   } else {
+       popToast(translate('error.no_server_connection'), translate('error.no_library_connection'), "warning");
+   }
+}
+
+export async function getActiveBrowseCategories() {
+   const api = create({ baseURL: global.libraryUrl + '/API', timeout: global.timeoutAverage, headers: getHeaders(), auth: createAuthTokens() });
+   const response = await api.get('/SearchAPI?method=getAppActiveBrowseCategories&includeSubCategories=true', { username: global.userKey, password: global.secretKey });
+
+   if(response.ok) {
+        const items = response.data;
+        const results = items.result;
+        var allCategories = [];
+        const categoriesArray = results.map(function (category, index, array) {
+            const subCategories = category['subCategories'];
+
+            if(subCategories.length != 0) {
+                subCategories.forEach(item => allCategories.push({'key':item.key, 'title':item.title, 'isHidden': false }))
+            } else {
+                allCategories.push({'key':category.key, 'title':category.title, 'isHidden': false });
+            }
+        });
+        return allCategories;
    } else {
        popToast(translate('error.no_server_connection'), translate('error.no_library_connection'), "warning");
    }

@@ -1534,7 +1534,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 						if (isset($format->links->downloadRedirect)) {
 							$curFormat['downloadUrl'] = $format->links->downloadRedirect->href . '/downloadlink';
 						}
-						if ($format != 'magazine-overdrive' && $format->formatType != 'ebook-overdrive' && $format->formatType != 'ebook-mediado' && $format->formatType != 'audiobook-overdrive' && $format->formatType != 'video-streaming') {
+						if ($format != 'magazine-overdrive' && $format != 'ebook-overdrive' && $format != 'ebook-mediado' && $format != 'audiobook-overdrive' && $format != 'video-streaming') {
 							$bookshelfItem->formats[] = $curFormat;
 						} else {
 							if (isset($curFormat['downloadUrl'])) {

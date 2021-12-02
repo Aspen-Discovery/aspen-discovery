@@ -1556,6 +1556,8 @@ class CarlX extends AbstractIlsDriver{
 		$success = false;
 		$title = '';
 		$message = 'Failed to connect to complete requested action.';
+		$apiResult['title'] = translate(['text' => 'Unable to place hold', 'isPublicFacing' => true]);
+
 		if ($mySip->connect()) {
 			//send self check status message
 			$in = $mySip->msgSCStatus();
@@ -1658,17 +1660,22 @@ class CarlX extends AbstractIlsDriver{
 						$title = $result['variable']['AJ'][0];
 					}
 					if ($success){
+						$apiResult['title'] = translate(['text' => 'Hold placed successfully', 'isPublicFacing' => true]);
+						$apiResult['action'] = translate(['text' => 'Go to Holds', 'isPublicFacing'=>true]);
 						$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
 						$patron->forceReloadOfHolds();
 					}
 				}
 			}
 		}
+
+		$apiResult['message'] = $message;
 		return array(
 				'title'   => $title,
 				'bib'     => $recordId,
 				'success' => $success,
-				'message' => translate(['text'=>$message,'isPublicFacing'=>true])
+				'message' => translate(['text'=>$message,'isPublicFacing'=>true]),
+				'api'     => $apiResult
 		);
 	}
 
@@ -1681,6 +1688,7 @@ class CarlX extends AbstractIlsDriver{
 
 		$success = false;
 		$message = 'Failed to connect to complete requested action.';
+		$apiResult['title'] = translate(['text' => 'Unable to renew item', 'isPublicFacing' => true]);
 		if ($mySip->connect()) {
 			//send selfcheck status message
 			$in = $mySip->msgSCStatus();
@@ -1722,9 +1730,10 @@ class CarlX extends AbstractIlsDriver{
 
 					if (!$success) {
 						$title = $result['variable']['AJ'][0];
-
+						$apiResult['message'] = $message;
 						$message = empty($title) ? $message : "<p style=\"font-style:italic\">$title</p><p>$message.</p>";
 					}else{
+						$apiResult['title'] = translate(['text' => 'Title renewed successfully', 'isPublicFacing' => true]);
 						$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
 						$patron->forceReloadOfCheckouts();
 					}
@@ -1734,12 +1743,14 @@ class CarlX extends AbstractIlsDriver{
 			}
 		}else{
 			$message = "Could not connect to circulation server, please try again later.";
+			$apiResult['message'] = $message;
 		}
 
 		return array(
 			'itemId'  => $itemId,
 			'success' => $success,
-			'message' => $message
+			'message' => $message,
+			'api'     => $apiResult
 		);
 	}
 

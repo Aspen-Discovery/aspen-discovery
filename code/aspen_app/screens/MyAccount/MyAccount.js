@@ -1,89 +1,255 @@
 import React, { Component, useState } from "react";
-import { Dimensions, Animated } from "react-native";
-import { Center, Stack, HStack, Spinner, Toast, Button, Divider, Flex, Box, Text, Icon, Avatar, Menu, Pressable, IconButton } from "native-base";
+import { Dimensions, Animated, RefreshControl } from "react-native";
+import { Center, Stack, HStack, Button, Divider, Flex, Box, Text, CloseIcon, Icon, Menu, Pressable, IconButton, FlatList, Badge, VStack, Alert } from "native-base";
 import * as SecureStore from 'expo-secure-store';
-import { TabView, SceneMap, TabBar, NavigationState, SceneRendererProps } from "react-native-tab-view";
-import { MaterialIcons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { MaterialIcons, Entypo, Ionicons } from "@expo/vector-icons";
 import moment from "moment";
 import Constants from 'expo-constants';
+import { ListItem } from "react-native-elements";
+import * as WebBrowser from 'expo-web-browser';
+import { create, CancelToken } from 'apisauce';
 
 // custom components and helper files
-import { translate } from '../../util/translations';
-import Summary from "./Summary";
-import CheckedOut from "./CheckedOut";
-import Holds from "./Holds";
+import { translate } from "../../util/translations";
+import { loadingSpinner } from "../../components/loadingSpinner";
+import { loadError } from "../../components/loadError";
+import { getProfile, getILSMessages } from '../../util/loadPatron';
+import { showILSMessage } from '../../components/Notifications';
 
-const initialLayout = { width: Dimensions.get("window").width };
-const renderScene = ({ route, navigation }) => {
-      switch (route.key) {
-        case 'first':
-           return <CheckedOut navigation={navigation}/>;
-        case 'second':
-          return <Holds navigation={navigation}/>;
-        default:
-          return null;
-      }
-}
+export default class MyAccount extends Component {
+	constructor() {
+		super();
+		this.state = {
+            isLoading: true,
+            hasError: false,
+            error: null,
+            hasUpdated: false,
+            isRefreshing: false,
+            ilsMessages: [],
+            defaultMenuItems: [
+                {
+                    key: '0',
+                    title: translate('checkouts.title'),
+                    path: 'CheckedOut',
+                    icon: null,
+                    external: false,
+                    description: null,
+                },
+                {
+                    key: '1',
+                    title: translate('holds.title'),
+                    path: 'Holds',
+                    icon: null,
+                    external: false,
+                    description: null,
+                },
+                {
+                    key: '2',
+                    title: translate('user_profile.home_screen_settings'),
+                    path: 'SettingsHomeScreen',
+                    icon: 'settings',
+                    external: false,
+                    description: translate('user_profile.home_screen_settings_description'),
+                }
+            ]
+		 };
+	}
 
-const handleIndexChange = (index: number) => this.setState({ index });
+	componentDidMount = async () => {
+        this.setState({
+            barcode: global.barcode,
+            numCheckedOut: global.numCheckedOut,
+            numHolds: global.numHolds,
+            numHoldsAvailable: global.numHoldsAvailable,
+            numOverdue: global.numOverdue,
+            isLoading: false,
+            thisPatron: global.patron + "'s",
+        });
 
-export default function MyItems() {
-	const [index, setIndex] = React.useState(0);
-	const [routes] = React.useState([
-		{ key: "first", title: translate('checkouts.title') },
-		{ key: "second", title: translate('holds.title') },
-	]);
-
-	const renderTabBar = (props) => {
-		const inputRange = props.navigationState.routes.map((x, i) => i);
-		return (
-			<Box flexDirection="row" backgroundColor="white">
-				{props.navigationState.routes.map((route, i) => {
-					const opacity = props.position.interpolate({
-						inputRange,
-						outputRange: inputRange.map((inputIndex) => (inputIndex === i ? 1 : 0.5)),
-					});
-					const color = index === i ? "#27272a" : "#d4d4d8";
-					const weight = index === i ? "bold" : "normal";
-					const borderColor = index === i ? "primary.900" : "coolGray.300";
-					const backgroundColor = index === i ? "#d4d4d4" : "#fafafa";
-
-					return (
-						<Box
-							backgroundColor={backgroundColor}
-							borderBottomWidth={3}
-							borderColor={borderColor}
-							flex={1}
-							alignItems="center"
-							p={3}
-							borderTopRightRadius={8}
-							borderTopLeftRadius={8}
-						>
-							<Pressable
-								onPress={() => {
-									setIndex(i);
-								}}
-							>
-								<Animated.Text style={{ color, fontWeight: weight }}>{route.title}</Animated.Text>
-							</Pressable>
-						</Box>
-					);
-				})}
-			</Box>
-		);
+        await this._fetchProfile();
+        await this._fetchILSMessages();
 	};
 
-	return (
-		<>
-			<Summary />
-			<TabView
-				navigationState={{ index, routes }}
-				renderScene={renderScene}
-				renderTabBar={renderTabBar}
-				onIndexChange={setIndex}
-				initialLayout={initialLayout}
-				swipeEnabled={false}
-			/>
-		</>
-	);
+    _fetchProfile = async () => {
+
+        this.setState({
+            isLoading: true,
+        });
+
+        const forceReload = this.state.isRefreshing;
+
+        await getProfile(true).then(response => {
+            if(response == "TIMEOUT_ERROR") {
+                this.setState({
+                    hasError: true,
+                    error: translate('error.timeout'),
+                    isLoading: false,
+                });
+            } else {
+                this.setState({
+                    hasError: false,
+                    error: null,
+                    isLoading: false,
+                });
+            }
+        })
+    }
+
+    _fetchILSMessages = async () => {
+
+        this.setState({
+            isLoading: true,
+        });
+
+        await getILSMessages().then(response => {
+            if(response == "TIMEOUT_ERROR") {
+                this.setState({
+                    hasError: true,
+                    error: translate('error.timeout'),
+                    isLoading: false,
+                });
+            } else {
+                var messageCount = response.length;
+                this.setState({
+                    hasError: false,
+                    error: null,
+                    isLoading: false,
+                    ilsMessages: response,
+                    ilsMessageCount: messageCount,
+                });
+            }
+        })
+    }
+
+	renderNativeItem = (item) => {
+        if(item.external) {
+            return (
+                <ListItem bottomDivider onPress={() => {this.openWebsite(item.path)} }>
+                {item.icon ? <Icon as={MaterialIcons} name={item.icon} /> : null }
+                    <ListItem.Content>
+                        <Text bold>{item.title}</Text>
+                        {item.description != null ? <Text fontSize="xs">{item.description}</Text> : null}
+                    </ListItem.Content>
+                    <ListItem.Chevron />
+                </ListItem>
+            );
+        } else {
+            return (
+                <ListItem bottomDivider onPress={() => {this.onPressMenuItem(item.path)} }>
+                {item.icon ? <Icon as={MaterialIcons} name={item.icon} /> : null }
+                    <ListItem.Content>
+                        <Text bold>{item.title}</Text>
+                        {item.description != null ? <Text fontSize="xs">{item.description}</Text> : null}
+                    </ListItem.Content>
+                    <ListItem.Chevron />
+                </ListItem>
+            );
+        }
+	};
+
+	onPressMenuItem = (item) => {
+		this.props.navigation.navigate(item, { item });
+	};
+
+	onPressLogout = async () => {
+	    await removeData();
+	    this.props.navigation.navigate("Permissions");
+	};
+
+	openWebsite = async (url) => {
+	    WebBrowser.openBrowserAsync(url);
+	};
+
+	displayILSMessage = (messages) => {
+	console.log(this.state.ilsMessages);
+        return (
+            messages.map((item, index) => {
+                return showILSMessage(item.messageStyle, item.message);
+            })
+        )
+	};
+
+	_onRefresh() {
+	    this.setState({ isRefreshing: true }, () => {
+            this._fetchProfile().then(() => {
+                this.setState({ isRefreshing: false });
+            });
+	    });
+	};
+
+	_renderSettingsHeader = () => {
+        return (
+        <Box safeArea={5}>
+            <Center>
+            <Text fontSize="2xl">{this.state.thisPatron} {translate('user_profile.title')}</Text>
+                {this.state.barcode ?
+                <HStack space={1} alignItems="center" mt={2} mb={2}><Icon as={Ionicons} name="card" size="sm" />
+                <Text bold fontSize="md" mr={0.5}>
+                    {this.state.barcode}
+                </Text>
+                </HStack>
+                : null}
+            </Center>
+            <Divider mt={2} mb={2} />
+            <HStack space={1} pb={10}>
+            <VStack width="50%">
+            <Center>
+                <Text fontSize="md" mb={1}>
+                    <Text bold>{translate('checkouts.title')}: </Text>{this.state.numCheckedOut}
+                </Text>
+                {this.state.numOverdue >= 0 ? <Badge colorScheme="danger" rounded="4px"><Text fontSize="xs" bold>{translate('checkouts.overdue_summary', { count: this.state.numOverdue })}</Text></Badge> : null}
+                </Center>
+            </VStack>
+            <VStack width="50%">
+            <Center>
+                <Text fontSize="md" mb={1}>
+                    <Text bold>{translate('holds.holds')}: </Text>{this.state.numHolds}
+                </Text>
+                {this.state.numHoldsAvailable >= 0 ? <Badge colorScheme="success" rounded="4px"><Text fontSize="xs" bold>{translate('holds.ready_for_pickup', { count: this.state.numHoldsAvailable})}</Text></Badge> : null}
+                </Center>
+            </VStack>
+            </HStack>
+            {this.state.ilsMessageCount >= 1 ? this.displayILSMessage(this.state.ilsMessages) : null}
+            </Box>
+        )
+	}
+
+    _renderSettingsFooter = () => {
+        return (
+        <Center>
+            <Button variant="link" size="xs" onPress={() => {this._fetchProfile()} } mt={25}>Reload Account Data</Button>
+        </Center>
+        )
+    }
+
+
+
+	render() {
+		if (this.state.isLoading) {
+			return ( loadingSpinner() );
+		}
+
+		if (this.state.hasError) {
+            return ( loadError(this.state.error) );
+		}
+
+		return (
+            <Box style={{ backgroundColor: "white" }}>
+				<FlatList
+					data={this.state.defaultMenuItems}
+					renderItem={({ item }) => this.renderNativeItem(item)}
+					keyExtractor={(item, index) => index.toString()}
+					ListHeaderComponent={this._renderSettingsHeader()}
+					ListFooterComponent={this._renderSettingsFooter()}
+					refreshControl={
+					    <RefreshControl
+					        refreshing={this.state.isRefreshing}
+					        onRefresh={this._onRefresh.bind(this)}
+                        />
+					}
+				/>
+			</Box>
+		);
+	}
 }

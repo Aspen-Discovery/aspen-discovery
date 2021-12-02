@@ -23,6 +23,7 @@ import MyAccount from "./screens/MyAccount/MyAccount";
 import CheckedOut from "./screens/MyAccount/CheckedOut";
 import Holds from "./screens/MyAccount/Holds";
 import LibraryCard from "./screens/MyAccount/LibraryCard";
+import Settings_HomeScreen from "./screens/MyAccount/Settings/HomeScreen";
 
 // browse category screens
 import BrowseCategoryHome from "./screens/BrowseCategory/Home";
@@ -37,6 +38,9 @@ import Results from "./screens/Search/Results";
 // library screens
 import Contact from "./screens/Library/Contact";
 
+// custom components and helper files
+import { translate } from "./util/translations";
+
 // defines the Card tab and how it is handled
 const CardTab = createStackNavigator(
 	{
@@ -48,7 +52,7 @@ const CardTab = createStackNavigator(
 				backgroundColor: "#4cc3cd",
 			},
 			headerTintColor: "#30373b",
-			title: "Library Card",
+			title: translate('user_profile.library_card'),
             cardStyle: { backgroundColor: "#ffffff" },
 		},
 	}
@@ -68,7 +72,7 @@ const SearchTab = createStackNavigator(
 			},
 			headerTintColor: "#30373b",
 			headerBackTitle: "",
-			title: "Search",
+			title: translate('search.title'),
 		},
 	}
 );
@@ -85,7 +89,7 @@ const MoreTab = createStackNavigator(
 				backgroundColor: "#4cc3cd",
 			},
 			headerTintColor: "#30373b",
-			title: "More",
+			title: translate('navigation.more'),
 		},
 	}
 );
@@ -97,6 +101,7 @@ const AccountTab = createStackNavigator(
 		CheckedOut: CheckedOut,
 		Holds: Holds,
 		GroupedWork: GroupedWork,
+		SettingsHomeScreen: Settings_HomeScreen,
 	},
 	{
 		defaultNavigationOptions: {
@@ -104,7 +109,7 @@ const AccountTab = createStackNavigator(
 				backgroundColor: "#4cc3cd",
 			},
 			headerTintColor: "#30373b",
-			title: "Account",
+			title: translate('navigation.account'),
 		},
 	}
 );
@@ -121,19 +126,46 @@ const DiscoveryTab = createStackNavigator(
 				backgroundColor: "#4cc3cd",
 			},
 			headerTintColor: "#30373b",
-			title: "Discover",
+			title: translate('navigation.home'),
 		},
 	}
 );
 
 // establishes the flow for the MainApp
+var menu_homeScreen = translate('navigation.home');
+
 const MainApp = createBottomTabNavigator(
 	{
-		Discover: DiscoveryTab,
-		Search: SearchTab,
-		Card: CardTab,
-		Account: AccountTab,
-		More: MoreTab,
+		Discover: {
+		    screen: DiscoveryTab,
+		    navigationOptions: ({ navigation }) => ({
+		        title: translate('navigation.home'),
+		    }),
+		},
+		Search: {
+		    screen: SearchTab,
+		    navigationOptions: ({ navigation }) => ({
+		        title: translate('navigation.search'),
+		    }),
+		},
+		Card: {
+		    screen: CardTab,
+		    navigationOptions: ({ navigation }) => ({
+		        title: translate('navigation.library_card'),
+		    }),
+		},
+        Account: {
+            screen: AccountTab,
+            navigationOptions: ({ navigation }) => ({
+                title: translate('navigation.account'),
+            }),
+        },
+		More: {
+		    screen: MoreTab,
+		    navigationOptions: ({ navigation }) => ({
+		        title: translate('navigation.more'),
+		    }),
+		},
 	},
 	{
 		resetOnBlur: true,
@@ -271,6 +303,8 @@ async function getPermissions() {
 async function getAppDetails() {
     try {
         global.releaseChannel = Updates.releaseChannel;
+        global.version = Constants.manifest.version;
+        global.build = Constants.nativeBuildVersion;
 
         if (global.releaseChannel == "production" || global.releaseChannel == "beta") {
             await SecureStore.setItemAsync("releaseChannel", global.releaseChannel);

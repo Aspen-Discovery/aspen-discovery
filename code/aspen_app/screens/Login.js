@@ -33,11 +33,13 @@ import * as Updates from "expo-updates";
 import Constants from "expo-constants";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import filter from "lodash";
+import _ from "lodash";
 import { create, CancelToken } from 'apisauce';
 
 // custom components and helper files
 import { translate } from "../util/translations";
 import { loadingSpinner } from "../components/loadingSpinner";
+import { createAuthTokens, getHeaders } from "../util/apiAuth";
 import { popToast, popAlert } from "../components/loadError";
 
 export default class Login extends Component {
@@ -129,7 +131,7 @@ export default class Login extends Component {
 						value: "",
 					});
 
-					this.filteredLibraries = res.libraries;
+					this.filteredLibraries = _.uniqBy(res.libraries, v => [v.librarySystem, v.name].join());
 				},
 				(err) => {
 				    this.setState({ error: true });
@@ -160,7 +162,7 @@ export default class Login extends Component {
 				Accept: "application/json",
 				"Content-Type": "application/json",
 			},
-			timeout: 15000,
+			timeout: 10000,
 		})
 			.then((res) => res.json())
 			.then(
@@ -171,7 +173,7 @@ export default class Login extends Component {
 						fullData: res.libraries,
 						isFetching: false,
 					});
-					this.arrayHolder = res.libraries;
+					this.arrayHolder = _.uniqBy(res.libraries, v => [v.librarySystem, v.name].join());
 				},
 				(err) => {
 					console.warn("Its borked! Aspen was unable to connect to the Greenhouse. Attempted connecting to <" + url + ">");
@@ -194,6 +196,7 @@ export default class Login extends Component {
     // When a library is picked it stores information from the Greenhouse API response used to validate login
     **/
 	showLibraries = () => {
+	const uniqueLibraries = _.uniqBy(this.state.libraryData, v => [v.librarySystem, v.name].join());
 		return (
 			<>
 				<Modal isOpen={this.state.modalOpened} onClose={this.handleModal} size="lg">
@@ -202,11 +205,11 @@ export default class Login extends Component {
 						<Modal.Header>{translate('login.find_your_library')}</Modal.Header>
 						<Modal.Body>
 								<FlatList
-									data={this.state.libraryData}
+									data={uniqueLibraries}
 									refreshing={this.state.isFetching}
 									renderItem={({ item }) => (
 										<ListItem bottomDivider onPress={() => this.onPressLibrary(item)}>
-											<Avatar source={{ uri: item.favicon }} size="36px" />
+											<Avatar bg="muted.50" source={{ uri: item.favicon }} size="36px" />
 											<ListItem.Content>
 												<Box _text={{ fontWeight: 600 }}>{item.name}</Box>
 												<Box
@@ -356,6 +359,7 @@ export default class Login extends Component {
                     {translate('login.reset_geolocation')}
                 </Button>
                     <Center>{isBeta ? <Badge colorScheme="secondary" rounded={5} mt={5}>{translate('app.beta')}</Badge> : null}</Center>
+                    <Center><Text mt={5} fontSize="xxs" color="coolGray.600">v{global.version} [b{global.build}]</Text></Center>
                 </KeyboardAvoidingView>
             </Box>
         );
@@ -413,11 +417,9 @@ const GetLoginForm = (props) => {
             bodyFormData.append('username', userKey);
             bodyFormData.append('password', secretKey);
 
-
             // build URL to verify if the login credentials match the system
-            const api = create({ baseURL: props.libraryUrl + '/API', timeout: 3000 });
-            const response = await api.get('/UserAPI?method=validateAccount', { username: userKey, password: secretKey });
-
+            const api = create({ baseURL: props.libraryUrl + '/API', timeout: 5000, headers: getHeaders(true), auth: createAuthTokens() });
+            const response = await api.post('/UserAPI?method=validateAccount', bodyFormData);
             if(response.ok) {
                 const result = response.data.result.success;
 

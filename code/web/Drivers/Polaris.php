@@ -339,11 +339,16 @@ class Polaris extends AbstractIlsDriver
 				if (isset($itemRenewResult->DueDateRows) && (count($itemRenewResult->DueDateRows) > 0)) {
 					$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
 					$patron->forceReloadOfCheckouts();
-					return array(
-						'itemId' => $itemId,
-						'success' => true,
-						'message' => "Your item was successfully renewed"
-					);
+
+					$result['itemId'] = $itemId;
+					$result['success'] = true;
+					$result['message'] = translate(['text' => 'Your item was successfully renewed', 'isPublicFacing' => true]);
+
+					// Result for API or app use
+					$result['api']['title'] = translate(['text'=>'Title renewed successfully', 'isPublicFacing'=>true]);
+					$result['api']['message'] = translate(['text' => 'Your item was renewed', 'isPublicFacing' => true]);
+
+					return $result;
 				}else{
 					$message = '';
 					foreach ($itemRenewResult->BlockRows as $blockRow){
@@ -355,30 +360,45 @@ class Polaris extends AbstractIlsDriver
 					if (strlen($message) == 0){
 						$message .= "This item could not be renewed";
 					}
-					return array(
-						'itemId' => $itemId,
-						'success' => true,
-						'message' => $message
-					);
+
+					$result['itemId'] = $itemId;
+					$result['success'] = true;
+					$result['message'] = $message;
+
+					// Result for API or app use
+					$result['api']['title'] = translate(['text'=>'Unable to renew title', 'isPublicFacing'=>true]);
+					$result['api']['message'] = translate(['text' => 'This item could not be renewed', 'isPublicFacing' => true]);
+
+					return $result;
 				}
 			}else{
 				$message = "The item could not be renewed. {$jsonResponse->ErrorMessage}";
-				return array(
-					'itemId' => $itemIndex,
-					'success' => false,
-					'message' => $message
-				);
+
+				$result['itemId'] = $itemIndex;
+				$result['success'] = false;
+				$result['message'] = $message;
+
+				// Result for API or app use
+				$result['api']['title'] = translate(['text'=>'Unable to renew title', 'isPublicFacing'=>true]);
+				$result['api']['message'] = $jsonResponse->ErrorMessage;
+
+				return $result;
 			}
 		}else{
 			$message = "The item could not be renewed";
 			if (IPAddress::showDebuggingInformation()){
 				$message .= " (HTTP Code: {$this->lastResponseCode})";
 			}
-			return array(
-				'itemId' => $itemIndex,
-				'success' => false,
-				'message' => $message
-			);
+
+			$result['itemId'] = $itemIndex;
+			$result['success'] = false;
+			$result['message'] = $message;
+
+			// Result for API or app use
+			$result['api']['title'] = translate(['text'=>'Unable to renew title', 'isPublicFacing'=>true]);
+			$result['api']['message'] = translate(['text'=>'The item could not be renewed', 'isPublicFacing'=>true]);
+
+			return $result;
 		}
 	}
 
@@ -529,17 +549,27 @@ class Polaris extends AbstractIlsDriver
 			$offlineHold->timeEntered   = time();
 			$offlineHold->status        = 'Not Processed';
 			if ($offlineHold->insert()) {
-				return array(
-					'title' => $title,
-					'bib' => $shortId,
-					'success' => true,
-					'message' => 'The circulation system is currently offline.  This hold will be entered for you automatically when the circulation system is online.');
+				$result['title'] = $title;
+				$result['bib'] = $shortId;
+				$result['success'] = true;
+				$result['message'] = translate(['text' => 'The circulation system is currently offline.  This hold will be entered for you automatically when the circulation system is online.', 'isPublicFacing' => true]);
+
+				// Result for API or app use
+				$result['api']['title'] = translate(['text'=>'Hold placed successfully', 'isPublicFacing'=>true]);
+				$result['api']['message'] = translate(['text'=>'The circulation system is currently offline.  This hold will be entered for you automatically when the circulation system is online.', 'isPublicFacing'=>true]);
+
+				return $result;
 			} else {
-				return array(
-					'title' => $title,
-					'bib' => $shortId,
-					'success' => false,
-					'message' => 'The circulation system is currently offline and we could not place this hold.  Please try again later.');
+				$result['title'] = $title;
+				$result['bib'] = $shortId;
+				$result['success'] = false;
+				$result['message'] = translate(['text' => 'The circulation system is currently offline and we could not place this hold.  Please try again later.', 'isPublicFacing' => true]);
+
+				// Result for API or app use
+				$result['api']['title'] = translate(['text'=>'Unable to place hold', 'isPublicFacing'=>true]);
+				$result['api']['message'] = translate(['text'=>'The circulation system is currently offline and we could not place this hold.  Please try again later.', 'isPublicFacing'=>true]);
+
+				return $result;
 			}
 
 		} else {
@@ -691,26 +721,39 @@ class Polaris extends AbstractIlsDriver
 			if ($jsonResponse->PAPIErrorCode == 0) {
 				$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
 				$patron->forceReloadOfHolds();
-				return array(
-					'success' => true,
-					'message' => "The hold has been cancelled."
-				);
+				$result['success'] = true;
+				$result['message'] = translate(['text'=>'The hold has been cancelled.', 'isPublicFacing'=>true]);;
+
+				// Result for API or app use
+				$result['api']['title'] = translate(['text'=>'Hold cancelled', 'isPublicFacing'=>true]);
+				$result['api']['message'] = translate(['text'=>'Your hold has been cancelled.', 'isPublicFacing'=>true]);
+
+				return $result;
 			}else{
 				$message = "The hold could not be cancelled. {$jsonResponse->ErrorMessage}";
-				return array(
-					'success' => false,
-					'message' => $message
-				);
+				$result['success'] = false;
+				$result['message'] = $message;
+
+				// Result for API or app use
+				$result['api']['title'] = translate(['text'=>'Unable to cancel hold', 'isPublicFacing'=>true]);
+				$result['api']['message'] = $jsonResponse->ErrorMessage;
+
+				return $result;
 			}
 		}else{
 			$message = "The hold could not be cancelled.";
 			if (IPAddress::showDebuggingInformation()){
 				$message .= " (HTTP Code: {$this->lastResponseCode})";
 			}
-			return array(
-				'success' => false,
-				'message' => $message
-			);
+			$result['success'] = false;
+			$result['message'] = $message;
+
+			// Result for API or app use
+			$result['api']['title'] = translate(['text'=>'Hold not cancelled', 'isPublicFacing'=>true]);
+			$result['api']['message'] = translate(['text'=>'The hold could not be cancelled.', 'isPublicFacing'=>true]);
+
+			return $result;
+
 		}
 	}
 
@@ -998,26 +1041,38 @@ class Polaris extends AbstractIlsDriver
 			$jsonResponse = json_decode($response);
 			if ($jsonResponse->PAPIErrorCode == 0) {
 				$patron->forceReloadOfHolds();
-				return array(
-					'success' => true,
-					'message' => "The hold has been frozen."
-				);
+				$result['success'] = false;
+				$result['message'] = translate(['text' => 'The hold has been frozen.', 'isPublicFacing' => true]);
+
+				// Result for API or app use
+				$result['api']['title'] = translate(['text'=>'Hold frozen successfully', 'isPublicFacing'=>true]);
+				$result['api']['message'] = translate(['text'=>'Your hold has been frozen.', 'isPublicFacing'=>true]);
+
+				return $result;
 			}else{
 				$message = "The hold could not be frozen. {$jsonResponse->ErrorMessage}";
-				return array(
-					'success' => false,
-					'message' => $message
-				);
+				$result['success'] = false;
+				$result['message'] = $message;
+
+				// Result for API or app use
+				$result['api']['title'] = translate(['text'=>'Hold not frozen', 'isPublicFacing'=>true]);
+				$result['api']['message'] = $jsonResponse->ErrorMessage;
+
+				return $result;
 			}
 		}else{
 			$message = "The hold could not be frozen.";
 			if (IPAddress::showDebuggingInformation()){
 				$message .= " (HTTP Code: {$this->lastResponseCode})";
 			}
-			return array(
-				'success' => false,
-				'message' => $message
-			);
+			$result['success'] = false;
+			$result['message'] = $message;
+
+			// Result for API or app use
+			$result['api']['title'] = translate(['text'=>'Hold not frozen', 'isPublicFacing'=>true]);
+			$result['api']['message'] = translate(['text'=>'Sorry, your hold could not be frozen.', 'isPublicFacing'=>true]);
+
+			return $result;
 		}
 	}
 
@@ -1034,26 +1089,36 @@ class Polaris extends AbstractIlsDriver
 			$jsonResponse = json_decode($response);
 			if ($jsonResponse->PAPIErrorCode == 0) {
 				$patron->forceReloadOfHolds();
-				return array(
-					'success' => true,
-					'message' => "The hold has been thawed."
-				);
+				$result['success'] = true;
+				$result['message'] = translate(['text'=>'The hold has been thawed.', 'isPublicFacing'=>true]);;
+
+				$result['api']['title'] = translate(['text'=>'Hold thawed', 'isPublicFacing'=>true]);
+				$result['api']['message'] = translate(['text'=>'Your hold has been thawed.', 'isPublicFacing'=>true]);
+
+				return $result;
 			}else{
 				$message = "The hold could not be thawed. {$jsonResponse->ErrorMessage}";
-				return array(
-					'success' => false,
-					'message' => $message
-				);
+				$result['success'] = false;
+				$result['message'] = $message;
+
+				$result['api']['title'] = translate(['text'=>'Unable to thaw hold', 'isPublicFacing'=>true]);
+				$result['api']['message'] = $jsonResponse->ErrorMessage;
+
+				return $result;
 			}
 		}else{
 			$message = "The hold could not be thawed.";
 			if (IPAddress::showDebuggingInformation()){
 				$message .= " (HTTP Code: {$this->lastResponseCode})";
 			}
-			return array(
-				'success' => false,
-				'message' => $message
-			);
+
+			$result['success'] = false;
+			$result['message'] = $message;
+
+			$result['api']['title'] = translate(['text'=>'Unable to thaw hold', 'isPublicFacing'=>true]);
+			$result['api']['message'] = translate(['text'=>'Your hold could not be thawed.', 'isPublicFacing'=>true]);
+
+			return $result;
 		}
 	}
 
@@ -1069,26 +1134,38 @@ class Polaris extends AbstractIlsDriver
 			$jsonResponse = json_decode($response);
 			if ($jsonResponse->PAPIErrorCode == 0) {
 				$patron->forceReloadOfHolds();
-				return array(
-					'success' => true,
-					'message' => translate(['text'=>'The pickup location of your hold was changed successfully.', 'isPublicFacing'=>true])
-				);
+				$result['success'] = true;
+				$result['message'] = translate(['text'=>'The pickup location of your hold was changed successfully.', 'isPublicFacing'=>true]);
+
+				// Result for API or app use
+				$result['api']['title'] = translate(['text'=>'Pickup location updated', 'isPublicFacing'=>true]);
+				$result['api']['message'] = translate(['text'=>'The pickup location of your hold was changed successfully.', 'isPublicFacing'=>true]);
+
+				return $result;
 			}else{
 				$message = translate(['text'=>'Sorry, the pickup location of your hold could not be changed.', 'isPublicFacing'=>true]) . " {$jsonResponse->ErrorMessage}";;
-				return array(
-					'success' => false,
-					'message' => $message
-				);
+				$result['success'] = false;
+				$result['message'] = $message;
+
+				// Result for API or app use
+				$result['api']['title'] = translate(['text'=>'Unable to update pickup location', 'isPublicFacing'=>true]);
+				$result['api']['message'] = $jsonResponse->ErrorMessage;
+
+				return $result;
 			}
 		}else{
 			$message = translate(['text'=>'Sorry, the pickup location of your hold could not be changed.', 'isPublicFacing'=>true]);
 			if (IPAddress::showDebuggingInformation()){
 				$message .= " (HTTP Code: {$this->lastResponseCode})";
 			}
-			return array(
-				'success' => false,
-				'message' => $message
-			);
+			$result['success'] = false;
+			$result['message'] = $message;
+
+			// Result for API or app use
+			$result['api']['title'] = translate(['text'=>'Unable to update pickup location', 'isPublicFacing'=>true]);
+			$result['api']['message'] = translate(['text'=>'Sorry, the pickup location of your hold could not be changed.', 'isPublicFacing'=>true]);
+
+			return $result;
 		}
 	}
 
@@ -1441,20 +1518,28 @@ class Polaris extends AbstractIlsDriver
 			$jsonResult = json_decode($response);
 			if ($jsonResult->PAPIErrorCode != 0) {
 				$hold_result['success'] = false;
-				$hold_result['message'] = 'Your hold could not be placed. ';
+				$hold_result['message'] = translate(['text'=>'Your hold could not be placed.', 'isPublicFacing'=>true]);
 				if (IPAddress::showDebuggingInformation()) {
 					$hold_result['message'] .= " ({$jsonResult->PAPIErrorCode})";
 				}
+				// Result for API or app use
+				$hold_result['api']['title'] = translate(['text'=>'Unable to place hold', 'isPublicFacing'=>true]);
+				$hold_result['api']['message'] = translate(['text'=>'Your hold could not be placed.', 'isPublicFacing'=>true]);
 			} else {
 				if ($jsonResult->StatusType == 1) {
 					$hold_result['success'] = false;
 					$hold_result['message'] = translate(['text'=>'Your hold could not be placed. ' . $jsonResult->Message, 'isPublicFacing'=>true]);
+					$hold_result['api']['message'] = $jsonResult->Message;
 				} else if ($jsonResult->StatusType == 2) {
 					$hold_result['success'] = true;
 					$hold_result['message'] = translate(['text' => "Your hold was placed successfully.", 'isPublicFacing'=>true]);
 					if (isset($jsonResult->QueuePosition)) {
 						$hold_result['message'] .= '&nbsp;' . translate(['text' => "You are number <b>%1%</b> in the queue.", '1' => $jsonResult->QueuePosition, 'isPublicFacing'=>true]);
 					}
+					// Result for API or app use
+					$hold_result['api']['title'] = translate(['text'=>'Hold placed successfully', 'isPublicFacing'=>true]);
+					$hold_result['api']['message'] = translate(['text' => "You are number %1% in the queue.", '1' => $jsonResult->QueuePosition, 'isPublicFacing'=>true]);
+					$hold_result['api']['action'] = translate(['text' => 'Go to Holds', 'isPublicFacing'=>true]);;
 					$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
 					$patron->forceReloadOfHolds();
 				} else if ($jsonResult->StatusType == 3) {
@@ -1483,6 +1568,8 @@ class Polaris extends AbstractIlsDriver
 			if (IPAddress::showDebuggingInformation()) {
 				$hold_result['message'] .= " (HTTP Code: {$this->lastResponseCode})";
 			}
+			$hold_result['api']['title'] = translate(['text'=>'Unable to place hold', 'isPublicFacing'=>true]);
+			$hold_result['api']['message'] = translate(['text'=>'Your hold could not be placed.', 'isPublicFacing'=>true]);
 		}
 		return $hold_result;
 	}

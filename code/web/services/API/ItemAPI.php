@@ -561,8 +561,11 @@ class ItemAPI extends Action {
 						foreach ($recordActions as $recordAction) {
 							$action = array(
 								'title' => $recordAction['title'],
-								'type' => $recordAction['type'],
 							);
+
+							if(isset($recordAction['type'])) {
+								$action['type'] = $recordAction['type'];
+							}
 
 							if(isset($recordAction['url'])) {
 								$action['url'] = $recordAction['url'];
@@ -572,9 +575,11 @@ class ItemAPI extends Action {
 								$action['redirectUrl'] = $recordAction['redirectUrl'];
 							}
 
-							if($relatedRecord->source == "overdrive" && $recordAction['type'] == "overdrive_sample") {
-								$action['formatId'] = $recordAction['formatId'];
-								$action['sampleNumber'] = $recordAction['sampleNumber'];
+							if($relatedRecord->source == "overdrive" && isset($recordAction['type'])) {
+								if($recordAction['type'] == "overdrive_sample") {
+									$action['formatId'] = $recordAction['formatId'];
+									$action['sampleNumber'] = $recordAction['sampleNumber'];
+								}
 							}
 							$actions[] = $action;
 						}
