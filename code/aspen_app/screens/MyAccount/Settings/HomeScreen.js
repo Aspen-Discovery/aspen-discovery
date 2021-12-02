@@ -6,6 +6,7 @@ import { ListItem } from "react-native-elements";
 import * as SecureStore from 'expo-secure-store';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Barcode from "react-native-barcode-expo";
+import _ from "lodash";
 
 // custom components and helper files
 import { translate } from '../../../util/translations';
@@ -80,10 +81,17 @@ export default class Settings_HomeScreen extends Component {
             } else {
                 const hiddenCategories = response;
                 const browseCategories = this.state.browseCategories;
-                const allCategories = hiddenCategories.concat(browseCategories);
+                if(typeof hiddenCategories === 'undefined') {
+                    var allCategories = browseCategories;
+                } else {
+                    var allCategories = hiddenCategories.concat(browseCategories);
+                }
+
+                var uniqueCategories = _.uniqBy(allCategories, 'key');
+
                 this.setState({
                     hiddenCategories: response,
-                    allCategories: allCategories,
+                    allCategories: uniqueCategories,
                     hasError: false,
                     error: null,
                     isLoading: false,
@@ -110,13 +118,16 @@ export default class Settings_HomeScreen extends Component {
             <Box safeArea={5} bgColor="white">
                 <HStack space={3} alignItems="center" justifyContent="space-between" pb={1}>
                     <Text isTruncated bold maxW="80%">{item.title}</Text>
-                    { item.isHidden ? <Switch size="md" onToggle={() => this.onPressItem(item)} /> : <Switch size="md" onToggle={() => this.onPressItem(item)} defaultIsChecked /> }
+                    { item.isHidden ? <Switch size="md" onToggle={() => this.onPressItem(item)} /> : <Switch size="md" onToggle={() => this.onPressItem(item)} isChecked /> }
                 </HStack>
             </Box>
         );
 	};
 
 	render() {
+
+	    const { isLoading, allCategories } = this.state;
+
 		if (this.state.isLoading) {
 			return ( loadingSpinner() );
 		}
@@ -124,6 +135,10 @@ export default class Settings_HomeScreen extends Component {
 		if (this.state.hasError) {
             return ( loadError(this.state.error) );
 		}
+
+        if(typeof allCategories === 'undefined') {
+            return ( loadError("No categories") );
+        }
 
 		return (
             <Box>
