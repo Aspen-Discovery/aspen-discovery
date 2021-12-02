@@ -11,7 +11,6 @@ import { loadingSpinner } from "../../components/loadingSpinner";
 import { loadError } from "../../components/loadError";
 
 export default class LibraryCard extends Component {
-	// done to allow the page title to change down in the code
 	static navigationOptions = ({ navigation }) => ({
 		title: typeof navigation.state.params === "undefined" || typeof navigation.state.params.title === "undefined" ? translate('user_profile.library_card') : navigation.state.params.title,
 	});
@@ -35,22 +34,25 @@ export default class LibraryCard extends Component {
 			isLoading: false,
 			libraryCard: global.barcode,
 			libraryName: global.libraryName,
-			barcodeStyle: await AsyncStorage.getItem('@libraryBarcodeStyle'),
+			barcodeStyle: global.barcodeStyle,
 		});
 
 	};
 
-	renderLibraryCard = () => {
-	    try {
-	     return (<Barcode value={this.state.libraryCard} format={this.state.barcodeStyle} />)
-	    } catch (e) {
-	        console.log(e);
-	    }
+	invalidFormat = () => {
+	     this.setState({
+	        hasError: true,
+	        error: "Invalid barcode for format"
+	     });
 	};
 
 	render() {
 		if (this.state.isLoading) {
 			return ( loadingSpinner() );
+		}
+
+		if (this.state.hasError) {
+            return ( loadError(this.state.error) );
 		}
 
 		return (
@@ -62,19 +64,14 @@ export default class LibraryCard extends Component {
                             source={{ uri: global.favicon }}
                             fallbackSource={require("../../themes/default/aspenLogo.png")}
 							w={38} h={38} alt={translate('user_profile.library_card')} />
+                            <Text bold ml={3} mt={2} fontSize="lg">
+                                {this.state.libraryName}
+                            </Text>
 						</Flex>
 					</Center>
-					<Center pt={8} pb={8}>
-						{this.renderLibraryCard()}
+					<Center pt={8}>
+						<Barcode value={this.state.libraryCard} format={this.state.barcodeStyle} text={this.state.libraryCard} onError={this.invalidFormat} />
 					</Center>
-                    <Center>
-                    <Text bold mt={2} fontSize="lg">
-                        {this.state.libraryName}
-                    </Text>
-                    <Text mt={2} fontSize="md">
-                        {this.state.libraryCard}
-                    </Text>
-                    </Center>
 				</Flex>
 			</Center>
 		);

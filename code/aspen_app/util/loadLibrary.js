@@ -6,6 +6,7 @@ import * as Device from 'expo-device';
 import * as Random from 'expo-random';
 import moment from "moment";
 import { create, CancelToken } from 'apisauce';
+import _ from "lodash";
 
 // custom components and helper files
 import { translate } from "../util/translations";
@@ -51,18 +52,15 @@ export async function getLibraryInfo() {
        const result = response.data.result;
        const profile = result.library;
 
-       try {
-           await AsyncStorage.setItem('@libraryBarcodeStyle', profile.barcodeStyle);
-       } catch (error) {
-         // unable to save data at this time
-          console.log("Unable to save data.")
-          console.log(error);
-       }
+       global.barcodeStyle = profile.barcodeStyle;
 
        console.log("Library profile set")
        return profile;
    } else {
        // no data yet
+       if(_.isUndefined(global.barcodeStyle)) {
+            global.barcodeStyle = 0
+       }
    }
 }
 
