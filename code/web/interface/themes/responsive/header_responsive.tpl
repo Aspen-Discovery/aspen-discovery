@@ -64,7 +64,7 @@
 		<div id="language-selection-header" class="hidden-tn col-xs-4 col-sm-4 col-md-4 col-lg-4 pull-right">
 	<div class="dropdown">
 		<button class="btn btn-default btn-sm dropdown-toggle" type="button" id="language-selection-dropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-			{translate text="Translate" isPublicFacing=true}&nbsp;<span class="caret"></span>
+			{translate text="Languages" isPublicFacing=true}&nbsp;<span class="caret"></span>
 		</button>
 		<ul id="select-language" class="dropdown-menu" aria-labelledby="language-selection-dropdown">
 			{foreach from=$validLanguages key=languageCode item=language}
