@@ -186,8 +186,8 @@ export default class Results extends Component {
 					keyExtractor={(item, index) => index.toString()}
 					ListFooterComponent={this._renderFooter}
 					onEndReached={this._handleLoadMore}
-					onEndReachedThreshold={0.5}
-					initialNumToRender={10}
+					onEndReachedThreshold={0.25}
+					initialNumToRender={25}
 					onRefresh={this._handleRefresh}
                     refreshing={this.state.refreshing}
 				/>
