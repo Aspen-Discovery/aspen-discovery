@@ -1,8 +1,16 @@
 {
   "app": {
-    "version": "App Version",
+    "version": "Version",
+    "build": "Build",
     "name": "LiDA",
     "beta": "Beta"
+  },
+  "navigation": {
+    "home": "Discover",
+    "search": "Search",
+    "library_card": "Card",
+    "account": "Account",
+    "more": "More"
   },
   "general": {
     "login": "Login",
@@ -30,7 +38,8 @@
     "by": "By",
     "language": "Language",
     "format": "Format",
-    "no_matches": "No matches found for this title in {{language}} for {{format}} format"
+    "no_matches": "No matches found for this title in {{language}} for {{format}} format",
+    "view_item_details": "View Item Details"
   },
   "library_contact": {
     "today_hours": "Today's Hours",
@@ -44,10 +53,13 @@
   "user_profile": {
     "title": "Account Summary",
     "library_card": "Library Card",
-    "remember_settings": "Remember these settings"
+    "remember_settings": "Remember these settings",
+    "settings": "Settings",
+    "home_screen_settings": "Manage Home Screen",
+    "home_screen_settings_description": "Show or Hide Browse Categories"
   },
   "checkouts": {
-    "title": "Checked Out",
+    "title": "Checked Out Titles",
     "no_checkouts": "You have no items checked out",
     "renew": "Renew",
     "renew_all": "Renew All",
@@ -60,10 +72,10 @@
     "access_online": "Access Online at {{source}}",
     "read_online": "Read Online at {{source}}",
     "listen_online": "Listen Online at {{source}}",
-    "watch_online": "Watch Online at {{source}}"
+    "watch_online": "Watch Online at {{source}}",
   },
   "holds": {
-    "title": "On Hold",
+    "title": "Titles On Hold",
     "ready_for_pickup": "{{count}} Ready for Pickup",
     "holds": "Holds",
     "no_holds": "You have no items on hold",
