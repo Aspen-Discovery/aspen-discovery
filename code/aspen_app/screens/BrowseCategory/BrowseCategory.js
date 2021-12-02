@@ -36,7 +36,7 @@ const BrowseCategory = (props) => {
             <View pb={5}>
                 <HStack space={3} alignItems="center" justifyContent="space-between" pb={2}>
                     <Text bold mb={1} fontSize={{ base: "lg", lg: "2xl" }}>{categoryLabel}</Text>
-                    <Button size="xs" colorScheme="trueGray" variant="outline" onPress={() => hideCategory(categoryKey)}>Hide</Button>
+                    <Button size="xs" colorScheme="trueGray" variant="outline" onPress={() => hideCategory(categoryKey)} startIcon={<Icon as={MaterialIcons} name="close" size="xs" mr={-1.5} />}>Hide</Button>
                 </HStack>
                 <FlatList
                     horizontal
