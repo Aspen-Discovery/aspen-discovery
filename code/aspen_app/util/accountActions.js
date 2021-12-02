@@ -342,7 +342,7 @@ export async function updateOverDriveEmail(itemId, source, patronId, overdriveEm
 export async function dismissBrowseCategory(browseCategoryId) {
     const postBody = await postData();
 
-    const api = create({ baseURL: global.libraryUrl + '/API', timeout: global.timeoutFast, headers: getHeaders(), auth: createAuthTokens(), params: { patronId: global.patronId, browseCategoryId: browseCategoryId } });
+    const api = create({ baseURL: global.libraryUrl + '/API', timeout: global.timeoutAverage, headers: getHeaders(), auth: createAuthTokens(), params: { patronId: global.patronId, browseCategoryId: browseCategoryId } });
     const response = await api.post('/UserAPI?method=dismissBrowseCategory', postBody);
 
     if(response.ok) {
@@ -360,7 +360,7 @@ export async function dismissBrowseCategory(browseCategoryId) {
 export async function showBrowseCategory(browseCategoryId) {
     const postBody = await postData();
 
-    const api = create({ baseURL: global.libraryUrl + '/API', timeout: global.timeoutFast, headers: getHeaders(), auth: createAuthTokens(), params: { patronId: global.patronId, browseCategoryId: browseCategoryId } });
+    const api = create({ baseURL: global.libraryUrl + '/API', timeout: global.timeoutAverage, headers: getHeaders(), auth: createAuthTokens(), params: { patronId: global.patronId, browseCategoryId: browseCategoryId } });
     const response = await api.get('/UserAPI?method=showBrowseCategory', postBody);
 
     if(response.ok) {
