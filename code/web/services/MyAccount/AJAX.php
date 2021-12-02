@@ -3031,7 +3031,7 @@ class MyAccount_AJAX extends JSON_Action
 
 			global $library;
 			foreach ($purchaseUnits['items'] as &$item){
-				$item['reference_id'] = $payment->id . "|" . $library->subdomain . "|" . $userLibrary->subdomain;
+				$item['reference_id'] = $payment->id . "|" . $library->subdomain . "|" . ($userLibrary == null ? 'none' : $userLibrary->subdomain) ;
 				$item['invoice_id'] = $payment->id;
 			}
 
