@@ -29,6 +29,7 @@ import { MaterialCommunityIcons, Ionicons, MaterialIcons } from "@expo/vector-ic
 import { translate } from '../../util/translations';
 import { loadingSpinner } from "../../components/loadingSpinner";
 import { loadError } from "../../components/loadError";
+import { searchResults } from "../../util/search";
 
 export default class Results extends Component {
 	static navigationOptions = ({ navigation }) => ({
@@ -63,31 +64,39 @@ export default class Results extends Component {
 
 	};
 
-	_fetchResults = () => {
+	_fetchResults = async () => {
 	    const { page } = this.state;
         const searchTerm = encodeURI(this.props.navigation.state.params.searchTerm.replace(" ", "%20"));
 
-        fetch(global.libraryUrl + "/app/aspenSearchResults.php?library=" + global.solrScope + "&lida=true" + "&searchTerm=" + searchTerm + "&page=" + page)
-            .then((res) => res.json())
-            .then((res) => {
-                this.setState((prevState, nextProps) => ({
-                    data:
-                        page === 1
-                            ? Array.from(res.Items)
-                            : [...this.state.data, ...res.Items],
+        await searchResults(searchTerm, 25, page).then(response => {
+            if(response == "TIMEOUT_ERROR") {
+                this.setState({
+                    hasError: true,
+                    error: translate('error.timeout'),
                     isLoading: false,
-                    isLoadingMore: false,
-                    refreshing: false
-                }));
-            })
-            .catch((error) => {
-				this.setState({
-					error: translate('error.no_page_load'),
-					isLoading: false,
-					isLoadingMore: false,
-					hasError: true,
-				});
-            });
+                });
+            } else {
+                if(response.data.result.success == true) {
+                    this.setState((prevState, nextProps) => ({
+                        data:
+                            page === 1
+                                ? Array.from(response.data.result.items)
+                                : [...this.state.data, ...response.data.result.items],
+                        isLoading: false,
+                        isLoadingMore: false,
+                        refreshing: false
+                    }));
+                } else {
+                    this.setState({
+                        hasError: true,
+                        error: response.data.result.message,
+                        isLoading: false,
+                        isLoadingMore: false,
+                        refreshing: false
+                    });
+                }
+            }
+        })
 
 	}
 
@@ -177,8 +186,8 @@ export default class Results extends Component {
 					keyExtractor={(item, index) => index.toString()}
 					ListFooterComponent={this._renderFooter}
 					onEndReached={this._handleLoadMore}
-					onEndReachedThreshold={0.25}
-					initialNumToRender={25}
+					onEndReachedThreshold={0.5}
+					initialNumToRender={10}
 					onRefresh={this._handleRefresh}
                     refreshing={this.state.refreshing}
 				/>
