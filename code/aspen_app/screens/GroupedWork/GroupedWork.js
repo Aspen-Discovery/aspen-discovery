@@ -65,12 +65,17 @@ export default class GroupedWork extends Component {
 		    language: null,
 		    status: null,
 		    alert: false,
+		    shouldReload: false,
 		};
 		this.locations = [];
 	}
 
 	authorSearch = (author) => {
 		this.props.navigation.push("SearchResults", { searchTerm: author });
+	};
+
+	openCheckouts = () => {
+		this.props.navigation.navigate("CheckedOut");
 	};
 
 	componentDidMount = async () => {
@@ -193,7 +198,6 @@ export default class GroupedWork extends Component {
 	}
 
 	showAlert = (response) => {
-	    console.log(response);
         if(response.message) {
             this.setState({
                 alert: true,
@@ -206,11 +210,11 @@ export default class GroupedWork extends Component {
             if(response.action) {
                 if(response.action.includes("Checkouts")) {
                     this.setState({
-                        alertNavigateTo: "Account",
+                        alertNavigateTo: "CheckedOut",
                     });
                 } else if(response.action.includes("Holds")) {
                     this.setState({
-                        alertNavigateTo: "Account",
+                        alertNavigateTo: "Holds",
                     });
                 }
             }
@@ -225,12 +229,31 @@ export default class GroupedWork extends Component {
         }
     }
 
+    _forceScreenReload = async () => {
+        var forceReload = true;
+
+        this.setState({
+            isLoading: true,
+            loadingMessage: "Updating your checkouts",
+        });
+    }
+
     hideAlert = () => {
-        this.setState({ alert: false })
+        this.setState({ alert: false });
+        setTimeout(
+            function() {
+                this._fetchItemData();
+            }.bind(this),1000
+        );
     }
 
     hidePrompt = () => {
-        this.setState({ prompt: false })
+        this.setState({ prompt: false });
+        setTimeout(
+            function() {
+                this._fetchItemData();
+            }.bind(this),1000
+        );
     }
 
     cancelRef = () => {
@@ -281,7 +304,7 @@ export default class GroupedWork extends Component {
                     <Text fontSize={{ base: "xs", lg: "md" }} bold mt={3} mb={1}>{translate('grouped_work.language')}</Text>
                     {this.state.languages ? <Button.Group colorScheme="tertiary">{this.languageOptions()}</Button.Group> : null }
 
-                    {this.state.variations ? <StatusIndicator data={this.state.variations} format={this.state.format} language={this.state.language} patronId={this.state.patronId} locations={this.state.locations} showAlert={this.showAlert} /> : null}
+                    {this.state.variations ? <StatusIndicator data={this.state.variations} format={this.state.format} language={this.state.language} patronId={this.state.patronId} locations={this.state.locations} showAlert={this.showAlert} openCheckouts={this.openCheckouts} /> : null}
 
 					<Text mt={5} mb={5} fontSize={{ base: "md", lg: "lg" }} lineHeight={{ base: "22px", lg: "26px" }}>
 						{this.state.data.description}
