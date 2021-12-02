@@ -8,17 +8,19 @@ import Constants from "expo-constants";
 import { MaterialIcons, Entypo } from "@expo/vector-icons";
 import ExpoFastImage from 'expo-fast-image'
 import NavigationService from '../../components/NavigationService';
-import BrowseCategory from './BrowseCategory';
 import * as Random from 'expo-random';
 import { create, CancelToken } from 'apisauce';
 import moment from "moment";
 import base64 from 'react-native-base64';
 
 // custom components and helper files
+import { createAuthTokens, postData, getHeaders } from "../../util/apiAuth";
+import BrowseCategory from './BrowseCategory';
 import { translate } from '../../util/translations';
 import { setGlobalVariables, setSession } from '../../util/setVariables';
-import { getProfile, getCheckedOutItems, getHolds } from '../../util/loadPatron';
+import { getProfile, getCheckedOutItems, getHolds, getHiddenBrowseCategories } from '../../util/loadPatron';
 import { getLocationInfo, getLibraryInfo } from '../../util/loadLibrary';
+import { dismissBrowseCategory } from "../../util/accountActions";
 import { loadingSpinner } from "../../components/loadingSpinner";
 import { loadError } from "../../components/loadError";
 
@@ -48,9 +50,9 @@ export default class BrowseCategoryHome extends Component {
        await setGlobalVariables();
        setTimeout(
          function() {
-            getCheckedOutItems();
-            getHolds();
-            getProfile();
+            getCheckedOutItems(true);
+            getHolds(true);
+            getProfile(true);
             getLocationInfo();
             getLibraryInfo();
          }
@@ -61,14 +63,17 @@ export default class BrowseCategoryHome extends Component {
        await this.getActiveBrowseCategories();
 	}
 
-	getActiveBrowseCategories = () => {
-        const api = create({ baseURL: global.libraryUrl + '/API/' , timeout: 5000});
-        api.get("SearchAPI?method=getAppActiveBrowseCategories&includeSubCategories=true")
+	getActiveBrowseCategories = async () => {
+        this.setState({
+            isLoading: true,
+        })
+        const postBody = await postData();
+        const api = create({ baseURL: global.libraryUrl + '/API', headers: getHeaders(), timeout: global.timeoutAverage, auth: createAuthTokens() });
+        api.post("/SearchAPI?method=getAppActiveBrowseCategories&includeSubCategories=true", postBody)
             .then(response => {
                 if(response.ok) {
                     const items = response.data;
                     const results = items.result;
-
                     var allCategories = [];
                     const categoriesArray = results.map(function (category, index, array) {
                         const subCategories = category['subCategories'];
@@ -82,18 +87,39 @@ export default class BrowseCategoryHome extends Component {
                         return allCategories;
                     });
 
-                        this.setState({
-                            isLoading: false,
-                            categories: categoriesArray[0],
-                        })
+                    this.setState({
+                        isLoading: false,
+                        categories: categoriesArray[0],
+                    });
                 } else {
                     this.setState({
                         hasError: true,
-                        error: "",
+                        error: response.problem,
+                        isLoading: false,
                     })
                 }
             })
     }
+
+    onHideCategory = async (item) => {
+        await dismissBrowseCategory(item).then(response => {
+            if(response == "TIMEOUT_ERROR") {
+                this.setState({
+                    hasError: true,
+                    error: translate('error.timeout'),
+                    isLoading: false,
+                });
+            } else {
+                this.setState({
+                    hasError: false,
+                    error: null,
+                    isLoading: false,
+                });
+            }
+        })
+
+        await this.getActiveBrowseCategories();
+    };
 
     onPressItem = (item) => {
         this.props.navigation.navigate("GroupedWork", { item });
@@ -101,6 +127,10 @@ export default class BrowseCategoryHome extends Component {
 
     onLoadMore = (item) => {
         this.props.navigation.navigate("GroupedWork", { item });
+    };
+
+    onPressSettings = () => {
+        this.props.navigation.navigate("SettingsHomeScreen");
     };
 
     _renderNativeItem = (data) => {
@@ -123,6 +153,10 @@ export default class BrowseCategoryHome extends Component {
             return ( loadError(this.state.error) );
         }
 
+        if(typeof categories === 'undefined') {
+            return ( loadError("No categories") );
+        }
+
         return (
         <ScrollView>
             <Box safeArea={5}>
@@ -134,9 +168,11 @@ export default class BrowseCategoryHome extends Component {
                         categoryKey={category.key}
                         renderItem={this._renderNativeItem}
                         loadMore={this.onLoadMore}
+                        hideCategory={this.onHideCategory}
                         />
                     );
                 })}
+                <Button mt={5} onPress={() => {this.onPressSettings()}} startIcon={<Icon as={MaterialIcons} name="settings" size="sm" />}>Manage Browse Categories</Button>
             </Box>
         </ScrollView>
         );
