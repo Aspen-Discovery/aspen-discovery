@@ -140,9 +140,10 @@ class History extends Action {
 						$thisSearch['description'] = "Anything (Empty search)";
 					}
 
-					if (empty($thisSearch['filters'])){
-						$thisSearch['filters'] = "No filters set";
-					}
+					//This breaks the save search form, better to just leave it empty
+//					if (empty($thisSearch['filters'])){
+//						$thisSearch['filters'] = "No filters set";
+//					}
 				}
 			}
 		}
