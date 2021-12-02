@@ -4504,7 +4504,8 @@ var Globals = (function () {
 		loadingTitle: 'Loading',
 		loadingBody: 'Loading, please wait',
 		requestFailedTitle: 'Request Failed',
-		requestFailedBody: 'There was an error with this AJAX Request.'
+		requestFailedBody: 'There was an error with this AJAX Request.',
+		rtl:false
 	}
 })(Globals || {});
 var AspenDiscovery = (function(){
