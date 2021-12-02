@@ -100,6 +100,7 @@ export default class More extends Component {
                 <Center mt={5}>
                     <Button onPress={() => {this.onPressLogout()} }>{translate('general.logout')}</Button>
                     <Text mt={10} fontSize="xs" bold>{translate('app.version')} <Text fontSize="xs" color="coolGray.600">{global.version}</Text></Text>
+                    <Text fontSize="xs" bold>{translate('app.build')} <Text fontSize="xs" color="coolGray.600">{global.build}</Text></Text>
                 </Center>
 			</Box>
 		);
