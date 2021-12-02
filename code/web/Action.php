@@ -104,6 +104,16 @@ abstract class Action
 					return true;
 				}
 			}
+		} else {
+			global $configArray;
+			if ($result = file_get_contents($configArray['Site']['url'] . '/API/GreenhouseAPI?method=authenticateTokens', false, $context)) {
+				$data = json_decode($result, true);
+				$isValid = $data['success'];
+
+				if($isValid) {
+					return true;
+				}
+			}
 		}
 		return false;
 	}
