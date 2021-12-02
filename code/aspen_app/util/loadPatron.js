@@ -6,6 +6,7 @@ import * as Device from 'expo-device';
 import * as Random from 'expo-random';
 import moment from "moment";
 import { create, CancelToken } from 'apisauce';
+import _ from "lodash";
 
 // custom components and helper files
 import { translate } from "../util/translations";
@@ -163,9 +164,11 @@ export async function getHiddenBrowseCategories() {
 
         var hiddenCategories = [];
 
-        const list = categories.map(function (category, index, array) {
-            hiddenCategories.push({'key':category.id, 'title':category.name, 'isHidden': true });
-        });
+        if(_.isArray(categories) == true) {
+            const list = categories.map(function (category, index, array) {
+                hiddenCategories.push({'key':category.id, 'title':category.name, 'isHidden': true });
+            });
+        }
 
         return hiddenCategories;
     } else {
