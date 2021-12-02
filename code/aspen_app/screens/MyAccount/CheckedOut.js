@@ -8,6 +8,7 @@ import { MaterialIcons, Entypo, Ionicons } from "@expo/vector-icons";
 import moment from "moment";
 import { create, CancelToken } from 'apisauce';
 import * as WebBrowser from 'expo-web-browser';
+import _ from "lodash";
 
 // custom components and helper files
 import { translate } from '../../util/translations';
@@ -17,6 +18,8 @@ import { getCheckedOutItems } from '../../util/loadPatron';
 import { isLoggedIn, renewCheckout, renewAllCheckouts, returnCheckout, viewOnlineItem, viewOverDriveItem } from '../../util/accountActions';
 
 export default class CheckedOut extends Component {
+	static navigationOptions = { title: translate('checkouts.title') };
+
 	constructor() {
 		super();
 		this.state = {
@@ -73,8 +76,14 @@ export default class CheckedOut extends Component {
         <CheckedOutItem
           data={item}
           openWebsite={this.openWebsite}
+          forceScreenReload={this._forceScreenReload}
+          openGroupedWork={this.openGroupedWork}
         />
 		);
+	};
+
+	openGroupedWork = (item) => {
+        this.props.navigation.navigate("GroupedWork", { item });
 	};
 
     openWebsite = async (url) => {
@@ -143,6 +152,35 @@ export default class CheckedOut extends Component {
 	    });
 	}
 
+    _forceScreenReload = async () => {
+        var forceReload = true;
+
+        this.setState({
+            isLoading: true,
+            loadingMessage: "Updating your checkouts",
+        });
+
+        await getCheckedOutItems(forceReload).then(response => {
+            if(response == "TIMEOUT_ERROR") {
+                this.setState({
+                    hasError: true,
+                    error: translate('error.timeout'),
+                    isLoading: false,
+                    loadingMessage: null,
+                    forceReload: false,
+                });
+            } else {
+                this.setState({
+                    hasError: false,
+                    error: null,
+                    isLoading: false,
+                    loadingMessage: null,
+                    forceReload: false,
+                });
+            }
+        })
+    }
+
 
 	render() {
 		if (this.state.isLoading) {
@@ -186,9 +224,7 @@ export default class CheckedOut extends Component {
 }
 
 function CheckedOutItem(props) {
-
-
-    const { openWebsite, renewItem, data } = props;
+    const { openWebsite, data, renewItem, forceScreenReload, openGroupedWork } = props;
     const { isOpen, onOpen, onClose } = useDisclose();
     const dueDate = moment.unix(data.dueDate);
     var itemDueOn = moment(dueDate).format("MMM D, YYYY");
@@ -294,10 +330,22 @@ function CheckedOutItem(props) {
             </Text>
           </Box>
           <Divider />
+        {data.groupedWorkId != null ?
+        <Actionsheet.Item startIcon={ <Icon as={MaterialIcons} name="search"  color="trueGray.400" mr="1" size="6" /> }
+            onPress={ () => {
+            openGroupedWork(data.groupedWorkId);
+            onClose(onClose);
+            }} >
+            {translate('grouped_work.view_item_details')}
+        </Actionsheet.Item>
+        : null
+        }
+
         {data.canRenew ?
         <Actionsheet.Item startIcon={ <Icon as={MaterialIcons} name="autorenew"  color="trueGray.400" mr="1" size="6" /> }
             onPress={ () => {
-            renewCheckout(data.barcode, data.recordId, data.source);
+            renewCheckout(data.barcode, data.recordId, data.source, data.itemId);
+            setTimeout(function(){forceScreenReload();}.bind(this),500);
             onClose(onClose);
             }} >
             {translate('checkouts.renew')}
@@ -329,6 +377,7 @@ function CheckedOutItem(props) {
         <Actionsheet.Item startIcon={ <Icon as={MaterialIcons} name="logout"  color="trueGray.400" mr="1" size="6" /> }
             onPress={ () => {
             returnCheckout(data.userId, data.recordId, data.source, data.overDriveId);
+            setTimeout(function(){forceScreenReload();}.bind(this),500);
             onClose(onClose);
             }}>
             {translate('checkouts.return_now')}
@@ -339,6 +388,7 @@ function CheckedOutItem(props) {
         <Actionsheet.Item startIcon={ <Icon as={MaterialIcons} name="logout"  color="trueGray.400" mr="1" size="6" /> }
             onPress={ () => {
             returnCheckout(data.userId, data.recordId, data.source, data.overDriveId);
+            setTimeout(function(){forceScreenReload();}.bind(this),500);
             onClose(onClose);
             }}>
             {translate('checkouts.return_now')}

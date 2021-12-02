@@ -19,6 +19,7 @@ import { freezeHold, thawHold, cancelHold, changeHoldPickUpLocation } from '../.
 import { getPickupLocations } from '../../util/loadLibrary';
 
 export default class Holds extends Component {
+	static navigationOptions = { title: translate('holds.title') };
 	constructor(props) {
 		super(props);
 		this.state = {
@@ -27,23 +28,21 @@ export default class Holds extends Component {
 			error: null,
 			isRefreshing: false,
 			locations: null,
+			forceReload: true,
+            data: global.allHolds,
+            unavailableHolds: global.unavailableHolds,
+            availableHolds: global.availableHolds,
+            allHolds: global.allUserHolds,
 		};
 	}
 
 	componentDidMount = async () => {
         this.setState({
-            data: global.allHolds,
-            unavailableHolds: global.unavailableHolds,
-            availableHolds: global.availableHolds,
-            allHolds: global.allUserHolds,
             isLoading: false,
         })
 
         await this._fetchLocations();
-
-        if(this.state.allHolds == null) {
-            await this._fetchHolds();
-        }
+        await this._fetchHolds();
 
 	};
 
@@ -54,7 +53,32 @@ export default class Holds extends Component {
             isLoading: true,
         });
 
-        const forceReload = this.state.isRefreshing;
+        await getHolds().then(response => {
+            if(response == "TIMEOUT_ERROR") {
+                this.setState({
+                    hasError: true,
+                    error: translate('error.timeout'),
+                    isLoading: false,
+                    forceReload: false,
+                });
+            } else {
+                this.setState({
+                    hasError: false,
+                    error: null,
+                    isLoading: false,
+                    forceReload: false,
+                });
+            }
+        })
+    }
+
+    _forceScreenReload = async () => {
+        var forceReload = true;
+
+        this.setState({
+            isLoading: true,
+            loadingMessage: "Updating your holds",
+        });
 
         await getHolds(forceReload).then(response => {
             if(response == "TIMEOUT_ERROR") {
@@ -62,16 +86,16 @@ export default class Holds extends Component {
                     hasError: true,
                     error: translate('error.timeout'),
                     isLoading: false,
+                    loadingMessage: null,
+                    forceReload: false,
                 });
             } else {
                 this.setState({
-                    data: response,
-                    unavailableHolds: Object.values(response.unavailable),
-                    allHolds: Object.values(response.available),
-                    allHolds: [...this.state.availableHolds, ...this.state.unavailableHolds],
                     hasError: false,
                     error: null,
                     isLoading: false,
+                    loadingMessage: null,
+                    forceReload: false,
                 });
             }
         })
@@ -101,10 +125,10 @@ export default class Holds extends Component {
         })
     }
 
-    // handles the on press action
-    onPressItem = (item, navigation) => {
-        NavigationService.navigate('ItemDetails', { item });
-    };
+    // handles the on-press action
+	openGroupedWork = (item) => {
+        this.props.navigation.navigate("GroupedWork", { item });
+	};
 
 	// renders the items on the screen
 	renderHoldItem = (item) => {
@@ -114,6 +138,8 @@ export default class Holds extends Component {
               onPressItem={this.onPressItem}
               navigation={this.props.navigation}
               locations={this.state.locations}
+              forceScreenReload={this._forceScreenReload}
+              openGroupedWork={this.openGroupedWork}
             />
         );
 	}
@@ -128,7 +154,7 @@ export default class Holds extends Component {
 
 	_onRefresh() {
 	    this.setState({ isRefreshing: true }, () => {
-            this._fetchHolds().then(() => {
+            this._forceScreenReload().then(() => {
                 this.setState({ isRefreshing: false });
             });
 	    });
@@ -146,7 +172,7 @@ export default class Holds extends Component {
 
 	render() {
 		if (this.state.isLoading) {
-			return ( loadingSpinner() );
+			return ( loadingSpinner(this.state.loadingMessage) );
 		}
 
         if (this.state.hasError) {
@@ -156,7 +182,7 @@ export default class Holds extends Component {
 		return (
 			<Box h="100%">
 				<FlatList
-					data={this.state.allHolds}
+					data={global.allUserHolds}
 					ListEmptyComponent={this._listEmptyComponent()}
 					renderItem={({ item }) => this.renderHoldItem(item)}
 					keyExtractor={(item) => item.id}
@@ -173,8 +199,15 @@ export default class Holds extends Component {
 }
 
 function HoldItem(props) {
-    const { onPressItem, data, navigation, locations } = props;
+    const { onPressItem, data, navigation, locations, forceScreenReload, openGroupedWork } = props;
     const { isOpen, onOpen, onClose } = useDisclose();
+
+    const [loading, setLoading] = useState(false);
+    const startLoading = () => {
+        setTimeout(() => {
+            setLoading(false)
+        }, 5000);
+    };
 
     // format some dates
     if(data.availableDate != null) {
@@ -298,10 +331,21 @@ function HoldItem(props) {
               {title}
             </Text>
           </Box>
+        {data.groupedWorkId != null ?
+        <Actionsheet.Item startIcon={ <Icon as={MaterialIcons} name="search"  color="trueGray.400" mr="1" size="6" /> }
+            onPress={ () => {
+            openGroupedWork(data.groupedWorkId);
+            onClose(onClose);
+            }} >
+            {translate('grouped_work.view_item_details')}
+        </Actionsheet.Item>
+        : null
+        }
         {cancelable ?
         <Actionsheet.Item startIcon={ <Icon as={MaterialIcons} name="cancel"  color="trueGray.400" mr="1" size="6" /> }
             onPress={ () => {
                 cancelHold(data.cancelId, data.recordId, data.source);
+                setTimeout(function(){forceScreenReload();}.bind(this),1000);
                 onClose(onClose);
             }} >
             {translate('holds.cancel_hold')}
@@ -310,11 +354,12 @@ function HoldItem(props) {
         {data.allowFreezeHolds ?
         <Actionsheet.Item startIcon={ <Icon as={MaterialCommunityIcons} name={icon}  color="trueGray.400" mr="1" size="6" /> }
             onPress={ () => {
-                if (data.frozen == true) {
-                    thawHold(data.cancelId, data.recordId, data.source)
-                } else {
-                    freezeHold(data.cancelId, data.recordId, data.source)
-                };
+                 if (data.frozen == true) {
+                     thawHold(data.cancelId, data.recordId, data.source);
+                 } else {
+                     freezeHold(data.cancelId, data.recordId, data.source);
+                 };
+                setTimeout(function(){forceScreenReload();}.bind(this),1000);
                 onClose(onClose);
             }}
             >
@@ -323,7 +368,7 @@ function HoldItem(props) {
          : null}
 
         {updateLocation ?
-        <SelectPickupLocation locations={locations} onClose={onClose} currentPickupId={data.pickupLocationId} holdId={data.cancelId} />
+        <SelectPickupLocation locations={locations} onClose={onClose} currentPickupId={data.pickupLocationId} holdId={data.cancelId}  />
          : null}
 
         </Actionsheet.Content>
@@ -363,7 +408,10 @@ const SelectPickupLocation = (props) => {
                             mt="1"
                         >
                             {locations.map((item, index) => {
-                                return <Radio value={item.locationId} my={1}>{item.name}</Radio>;
+                                const locationId = item.locationId;
+                                const code = item.code;
+                                const id = locationId.concat("_",code);
+                                return <Radio value={id} my={1}>{item.name}</Radio>;
                             })}
                         </Radio.Group>
                     </FormControl>

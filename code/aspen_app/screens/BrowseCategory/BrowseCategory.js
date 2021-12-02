@@ -1,14 +1,17 @@
 import React, { Component, useState, useCallback, useEffect, useRef } from 'react'
-import { Box, Text, FlatList, Spinner, ScrollView, View, TouchableWithoutFeedback, Button, Divider } from 'native-base';
+import { Box, Text, FlatList, Spinner, ScrollView, View, TouchableWithoutFeedback, Button, Divider, HStack, Icon } from 'native-base';
 import { create, CancelToken } from 'apisauce';
+import { MaterialIcons, Entypo } from "@expo/vector-icons";
+import _ from "lodash";
+
+import { createAuthTokens, postData, getHeaders } from "../../util/apiAuth";
 
 const BrowseCategory = (props) => {
-    const { isLoading, categoryLabel, categoryKey, renderItem, loadMore } = props
+    const { isLoading, categoryLabel, categoryKey, renderItem, loadMore, hideCategory } = props
     const [page, setPage] = React.useState(1);
     const [items, setItems] = React.useState([]);
     const [shouldFetch, setShouldFetch] = React.useState(true);
     const [initialLoad, setInitialLoad] = React.useState(false);
-
 
     const fetchMore = useCallback(() => setShouldFetch(true), []);
         useEffect(() => {
@@ -31,7 +34,10 @@ const BrowseCategory = (props) => {
     if(items.length != 0) {
         return (
             <View pb={5}>
-                <Text bold mb={1} fontSize={{ base: "lg", lg: "2xl" }}>{categoryLabel}</Text>
+                <HStack space={3} alignItems="center" justifyContent="space-between" pb={2}>
+                    <Text bold mb={1} fontSize={{ base: "lg", lg: "2xl" }}>{categoryLabel}</Text>
+                    <Button size="xs" colorScheme="trueGray" variant="outline" onPress={() => hideCategory(categoryKey)}>Hide</Button>
+                </HStack>
                 <FlatList
                     horizontal
                     data={items}
@@ -47,21 +53,31 @@ const BrowseCategory = (props) => {
 }
 
 async function getBrowseCategoryResults(categoryKey, limit = 25, page) {
-    const api = create({ baseURL: global.libraryUrl + '/API', timeout: 10000 });
-    const url = "/SearchAPI?method=getAppBrowseCategoryResults&limit=" + limit + "&id=" + categoryKey + "&page=" + page;
-    const response = await api.get(url);
-
+    const postBody = await postData();
+    const api = create({ baseURL: global.libraryUrl + '/API', timeout: global.timeoutSlow, headers: getHeaders(true), auth: createAuthTokens(), params: { limit: limit, id: categoryKey, page: page } });
+    const response = await api.post('/SearchAPI?method=getAppBrowseCategoryResults', postBody);
     if(response.ok) {
         const result = response.data;
         const itemResult = result.result;
         const records = itemResult.records;
-        if(records) {
+
+        if(_.isArray(records) == false) {
+            let array = _.values(records);
+            const items = array.map(({ id, title_display }) => ({
+                key: id,
+                title: title_display,
+            }));
+            return items;
+        }
+        if(_.isArray(records) == true) {
             const items = records.map(({ id, title_display }) => ({
                 key: id,
                 title: title_display,
             }));
             return items;
         }
+    } else {
+        console.log(response);
     }
 }
 

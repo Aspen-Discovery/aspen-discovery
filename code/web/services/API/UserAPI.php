@@ -19,28 +19,27 @@ class UserAPI extends Action
 		//Set Headers
 		header('Content-type: application/json');
 		//header('Content-type: text/html');
-		header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
 		header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
 
 		if (isset($_SERVER['PHP_AUTH_USER'])) {
 			if($this->grantTokenAccess()) {
-				if (in_array($method, array('isLoggedIn', 'logout', 'checkoutItem', 'placeHold', 'renewItem', 'renewAll', 'viewOnlineItem', 'changeHoldPickUpLocation', 'getPatronProfile', 'validateAccount', 'getPatronHolds', 'getPatronCheckedOutItems', 'cancelHold', 'activateHold', 'freezeHold', 'returnCheckout', 'updateOverDriveEmail', 'getValidPickupLocations', 'getHiddenBrowseCategories'))) {
-					$result = [
-						'result' => $this->$method()
-					];
-					$output = json_encode($result);
+				if (in_array($method, array('isLoggedIn', 'logout', 'checkoutItem', 'placeHold', 'renewItem', 'renewAll', 'viewOnlineItem', 'changeHoldPickUpLocation', 'getPatronProfile', 'validateAccount', 'getPatronHolds', 'getPatronCheckedOutItems', 'cancelHold', 'activateHold', 'freezeHold', 'returnCheckout', 'updateOverDriveEmail', 'getValidPickupLocations', 'getHiddenBrowseCategories', 'getILSMessages'))) {
 					header("Cache-Control: max-age=10800");
 					require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
 					APIUsage::incrementStat('UserAPI', $method);
+					$output = json_encode(array('result' => $this->$method()));
 				} else {
+					header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
 					$output = json_encode(array('error' => 'invalid_method'));
 				}
 			} else {
+				header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
 				header('HTTP/1.0 401 Unauthorized');
 				$output = json_encode(array('error' => 'unauthorized_access'));
 			}
 			echo $output;
 		} elseif (IPAddress::allowAPIAccessForClientIP()) {
+			header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
 			if ($method != 'getUserForApiCall' && method_exists($this, $method)) {
 				$result = [
 					'result' => $this->$method()
@@ -442,6 +441,12 @@ class UserAPI extends Action
 		}
 	}
 
+	/**
+	 * Returns messages for a patron from the ILS.
+	 *
+	 * @return array
+	 * @noinspection PhpUnused
+	 */
 	function getILSMessages() : array
 	{
 		list($username, $password) = $this->loadUsernameAndPassword();
@@ -1054,13 +1059,13 @@ class UserAPI extends Action
 		$user = UserAccount::validateAccount($username, $password);
 		if ($user && !($user instanceof AspenError)) {
 			if ($source == 'ils' || $source == null) {
-				$renewalMessage = $user->renewCheckout($user, $itemBarcode);
-				if ($renewalMessage['success']) {
+				$result = $user->renewCheckout($user, $itemBarcode);
+				if ($result['success']) {
 					require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
 					APIUsage::incrementStat('UserAPI', 'successfulRenewals');
-					return array('success' => true, 'renewalMessage' => $renewalMessage);
+					return array('success' => true, 'title' => $result['api']['title'], 'message' => $result['api']['message']);
 				} else {
-					return array('success' => false, 'renewalMessage' => $renewalMessage);
+					return array('success' => false, 'title' => $result['api']['title'], 'message' => $result['api']['message']);
 				}
 			} else if ($source == 'overdrive') {
 				return $this->renewOverDriveItem();
@@ -1104,14 +1109,16 @@ class UserAPI extends Action
 		list($username, $password) = $this->loadUsernameAndPassword();
 		$user = UserAccount::validateAccount($username, $password);
 		if ($user && !($user instanceof AspenError)) {
-			$renewalMessage = $user->renewAll();
-			$renewalMessage['message'] = array_merge([$renewalMessage['Renewed'] . ' of ' . $renewalMessage['Total'] . ' titles were renewed'],$renewalMessage['message']);
-			for ($i = 0; $i < $renewalMessage['Renewed']; $i++){
+			$result = $user->renewAll();
+			$message = array_merge([$result['Renewed'] . ' of ' . $result['Total'] . ' titles were renewed'],$result['message']);
+			for ($i = 0; $i < $result['Renewed']; $i++){
 				require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
 				APIUsage::incrementStat('UserAPI', 'successfulRenewals');
 			}
-			$renewalMessage['renewalMessage'] = $renewalMessage['message'];
-			return $renewalMessage;
+			if($result['Renewed'] == 0) {
+				$result['success'] = false;
+			}
+			return array('success' => $result['success'], 'title' => $result['title'], 'renewalMessage' => $message);
 		} else {
 			return array('success' => false, 'message' => 'Login unsuccessful');
 		}
@@ -1391,11 +1398,43 @@ class UserAPI extends Action
 
 	}
 
+	/**
+	 * Activates a hold that was previously suspended within OverDrive.
+	 *
+	 * Parameters:
+	 * <ul>
+	 * <li>username - The barcode of the user.  Can be truncated to the last 7 or 9 digits.</li>
+	 * <li>password - The pin/password for the user. </li>
+	 * <li>recordId - The recordId for the item. </li>
+	 * </ul>
+	 *
+	 * Returns:
+	 * <ul>
+	 * <li>success - true if the account is valid and the hold could be activated, false if the username or password were incorrect or the hold could not be activated.</li>
+	 * <li>title - a brief title of failure or success</li>
+	 * <li>message - a reason why the method failed if success is false</li>
+	 * </ul>
+	 *
+	 * Sample Call:
+	 * <code>
+	 * https://aspenurl/API/UserAPI?method=activateOverDriveHold&username=23025003575917&password=1234&recordId=1004012
+	 * </code>
+	 *
+	 * Sample Response:
+	 * <code>
+	 * {"result":{
+	 *   "success":true,
+	 *   "title":"Hold thawed successfully",
+	 *   "message":"Your hold was updated successfully."
+	 * }}
+	 * </code>
+	 *
+	 * @noinspection PhpUnused
+	 */
 	function activateOverDriveHold() : array
 	{
 		list($username, $password) = $this->loadUsernameAndPassword();
 		$id = $_REQUEST['recordId'];
-		$patronId = $_REQUEST['patronId'];
 
 		$user = UserAccount::validateAccount($username, $password);
 
@@ -1910,6 +1949,39 @@ class UserAPI extends Action
 		}
 	}
 
+	/**
+	 * Activates a hold that was previously suspended within Axis360.
+	 *
+	 * Parameters:
+	 * <ul>
+	 * <li>username - The barcode of the user.  Can be truncated to the last 7 or 9 digits.</li>
+	 * <li>password - The pin/password for the user. </li>
+	 * <li>recordId - The recordId for the item. </li>
+	 * </ul>
+	 *
+	 * Returns:
+	 * <ul>
+	 * <li>success - true if the account is valid and the hold could be activated, false if the username or password were incorrect or the hold could not be activated.</li>
+	 * <li>title - a brief title of failure or success</li>
+	 * <li>message - a reason why the method failed if success is false</li>
+	 * </ul>
+	 *
+	 * Sample Call:
+	 * <code>
+	 * https://aspenurl/API/UserAPI?method=activateAxis360Hold&username=23025003575917&password=1234&recordId=1004012
+	 * </code>
+	 *
+	 * Sample Response:
+	 * <code>
+	 * {"result":{
+	 *   "success":true,
+	 *   "title":"Hold thawed successfully",
+	 *   "message":"Your hold was updated successfully."
+	 * }}
+	 * </code>
+	 *
+	 * @noinspection PhpUnused
+	 */
 	function activateAxis360Hold() : array
 	{
 		list($username, $password) = $this->loadUsernameAndPassword();
@@ -2180,7 +2252,7 @@ class UserAPI extends Action
 	}
 
 	/**
-	 * Activates a hold that was previously suspended within the ILS.  Only unavailable holds can be activated.
+	 * Activates a hold that was previously suspended. For ILS, only unavailable holds can be activated.
 	 * Note:  Horizon implements suspending and activating holds as a toggle.  If a hold is suspended, it will be activated
 	 * and if a hold is active it will be suspended.  Care should be taken when calling the method with holds that are in the wrong state.
 	 *
@@ -2189,13 +2261,15 @@ class UserAPI extends Action
 	 * <li>username - The barcode of the user.  Can be truncated to the last 7 or 9 digits.</li>
 	 * <li>password - The pin number for the user. </li>
 	 * <li>recordId - </li>
-	 * <li>holdId - </li>
+	 * <li>holdId - Required for ILS holds</li>
+	 * <li>itemSource - The source of the item, i.e. overdrive, ils, axis360. If not provided, hold will be assumed as ils. </li>
 	 * </ul>
 	 *
 	 * Returns:
 	 * <ul>
 	 * <li>success - true if the account is valid and the hold could be activated, false if the username or password were incorrect or the hold could not be activated.</li>
-	 * <li>holdMessage - a reason why the method failed if success is false</li>
+	 * <li>title - </li>
+	 * <li>message - a reason why the method failed if success is false</li>
 	 * </ul>
 	 *
 	 * Sample Call:

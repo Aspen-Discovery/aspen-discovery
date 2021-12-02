@@ -35,27 +35,21 @@ export default class Contact extends Component {
 	    await getLocationInfo();
 	    await getLibraryInfo();
 
-		try {
-            this.setState({
-                showLibraryHours: await AsyncStorage.getItem('@libraryShowHours'),
-                hoursMessage: await AsyncStorage.getItem('@libraryHoursMessage'),
-                website: await AsyncStorage.getItem('@libraryHomeLink'),
-                address: await AsyncStorage.getItem('@libraryAddress'),
-                phone: await AsyncStorage.getItem('@libraryPhone'),
-                email: await AsyncStorage.getItem('@libraryEmail'),
-                description: await AsyncStorage.getItem('@libraryDescription'),
-                latitude: await AsyncStorage.getItem("@libraryLatitude"),
-                longitude: await AsyncStorage.getItem("@libraryLongitude"),
-                hours: JSON.parse(await AsyncStorage.getItem("@libraryHours")),
-                userLatitude: await SecureStore.getItemAsync("latitude"),
-                userLongitude: await SecureStore.getItemAsync("longitude"),
-                isLoading: false,
-            })
-
-		} catch (error) {
-		    console.log("Unable to load state data.")
-		}
-
+        this.setState({
+            showLibraryHours: global.location_showInLocationsAndHoursList,
+            hoursMessage: global.location_hoursMessage,
+            website: global.location_homeLink,
+            address: global.location_address,
+            phone: global.location_phone,
+            email: global.location_email,
+            description: global.location_description,
+            latitude: global.location_latitude,
+            longitude: global.location_longitude,
+            hours: JSON.parse(global.location_hours),
+            userLatitude: await SecureStore.getItemAsync("latitude"),
+            userLongitude: await SecureStore.getItemAsync("longitude"),
+            isLoading: false,
+        })
 
 	};
 
@@ -93,7 +87,6 @@ export default class Contact extends Component {
 	        longitude: this.state.longitude,
 	        sourceLatitude: this.state.userLatitude,
 	        sourceLongitude: this.state.userLongitude,
-	        title: global.libraryName,
 	        googleForceLatLon: true,
 	    })
 	};
@@ -103,11 +96,6 @@ export default class Contact extends Component {
 		if (this.state.isLoading) {
 			return ( loadingSpinner() );
 		}
-
-		console.log("showLibraryHours: " + this.state.showLibraryHours);
-		console.log("website: " + this.state.website);
-		console.log("latitude: " + this.state.latitude);
-		console.log("longitude: " + this.state.longitude);
 
 		return (
             <Box safeArea={5}>

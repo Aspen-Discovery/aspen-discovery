@@ -1566,56 +1566,29 @@ class Koha extends AbstractIlsDriver
 			$renewsRemaining = ($maxRenewals - $renewCount);
 			//We renewed the hold
 			$success = true;
-			$title = translate(['text'=>'Renewed title', 'isPublicFacing'=>true]);
 			$message = 'Your item was successfully renewed.';
 			$message .= ' ' . $renewsRemaining . ' of ' . $maxRenewals . ' renewals remaining.';
+
+			// Result for API or app use
+			$result['api']['title'] = translate(['text'=>'Title successfully renewed', 'isPublicFacing'=>true]);
+			$result['api']['message'] = $renewsRemaining . ' of ' . $maxRenewals . ' renewals remaining.';
+
 			$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
 			$patron->forceReloadOfCheckouts();
 		} else {
 			$error = $renewResponse->error;
 			$success = false;
-			$title = translate(['text'=>'Unable to renew title', 'isPublicFacing'=>true]);
 			$message = 'The item could not be renewed: ';
-			if($error == "too_many") {
-				$message .= 'Renewed the maximum number of times';
-			} elseif ($error == "no_item") {
-				$message .= 'No matching item could be found';
-			} elseif ($error == "too_soon") {
-				$message .= 'Cannot be renewed yet';
-			} elseif ($error == "no_checkout") {
-				$message .= 'Item is not checked out';
-			} elseif ($error == "auto_too_soon") {
-				$message .= 'Scheduled for automatic renewal and cannot be renewed yet';
-			} elseif ($error == "auto_too_late") {
-				$message .= 'Scheduled for automatic renewal and cannot be renewed any more';
-			} elseif ($error == "auto_account_expired") {
-				$message .= 'Scheduled for automatic renewal and cannot be renewed because the patron\'s account has expired';
-			} elseif ($error == "auto_renew") {
-				$message .= 'Scheduled for automatic renewal';
-			}  elseif ($error == "auto_too_much_oweing") {
-				$message .= 'Scheduled for automatic renewal and cannot be renewed because the patron has too many outstanding charges';
-			}  elseif ($error == "on_reserve") {
-				$message .= 'On hold for another patron';
-			}  elseif ($error == "patron_restricted") {
-				$message .= 'Patron is currently restricted';
-			}  elseif ($error == "item_denied_renewal") {
-				$message .= 'Item is not allowed renewal';
-			}  elseif ($error == "onsite_checkout") {
-				$message .= 'Item is an onsite checkout';
-			}  elseif ($error == "has_fine") {
-				$message .= 'Item has an outstanding fine';
-			}  else {
-				$message = 'The item could not be renewed';
-			}
+			$message = $this->getRenewErrorMessage($error, $message);
+
+			// Result for API or app use
+			$result['api']['title'] = translate(['text'=>'Unable to renew title', 'isPublicFacing'=>true]);
+			$result['api']['message'] = $this->getRenewErrorMessage($error, "");
 		}
 
 		$result['itemId'] = $itemId;
 		$result['success'] = $success;
 		$result['message'] = $message;
-
-		// Result for API or app use
-		$result['api']['title'] = $title;
-		$result['api']['message'] = $message;
 
 		return $result;
 	}
@@ -4249,6 +4222,47 @@ class Koha extends AbstractIlsDriver
 			$message .= 'Library is not a pickup location';
 		} else {
 			$message = "The item could not be placed on hold ($error)";
+		}
+		return $message;
+	}
+
+	/**
+	 * @param SimpleXMLElement $error
+	 * @param string $message
+	 * @return string
+	 */
+	protected function getRenewErrorMessage(?SimpleXMLElement $error, string $message): string
+	{
+		if($error == "too_many") {
+			$message .= 'Renewed the maximum number of times';
+		} elseif ($error == "no_item") {
+			$message .= 'No matching item could be found';
+		} elseif ($error == "too_soon") {
+			$message .= 'Cannot be renewed yet';
+		} elseif ($error == "no_checkout") {
+			$message .= 'Item is not checked out';
+		} elseif ($error == "auto_too_soon") {
+			$message .= 'Scheduled for automatic renewal and cannot be renewed yet';
+		} elseif ($error == "auto_too_late") {
+			$message .= 'Scheduled for automatic renewal and cannot be renewed any more';
+		} elseif ($error == "auto_account_expired") {
+			$message .= 'Scheduled for automatic renewal and cannot be renewed because the patron\'s account has expired';
+		} elseif ($error == "auto_renew") {
+			$message .= 'Scheduled for automatic renewal';
+		}  elseif ($error == "auto_too_much_oweing") {
+			$message .= 'Scheduled for automatic renewal and cannot be renewed because the patron has too many outstanding charges';
+		}  elseif ($error == "on_reserve") {
+			$message .= 'On hold for another patron';
+		}  elseif ($error == "patron_restricted") {
+			$message .= 'Patron is currently restricted';
+		}  elseif ($error == "item_denied_renewal") {
+			$message .= 'Item is not allowed renewal';
+		}  elseif ($error == "onsite_checkout") {
+			$message .= 'Item is an onsite checkout';
+		}  elseif ($error == "has_fine") {
+			$message .= 'Item has an outstanding fine';
+		}  else {
+			$message = 'Unknown error';
 		}
 		return $message;
 	}

@@ -1,7 +1,12 @@
 import Constants from 'expo-constants';
 import * as Notifications from 'expo-notifications';
-import React, { useState, useEffect, useRef } from 'react';
-import { Text, View, Button, Platform } from 'react-native';
+import React from 'react';
+import { View, Platform } from 'react-native';
+import { ScrollView, Center, HStack, VStack, Icon, CloseIcon, Heading, Button, Text, Toast, Collapse, AlertDialog, Alert, Box, IconButton } from "native-base";
+import { MaterialIcons, Entypo, Ionicons } from "@expo/vector-icons";
+
+// custom components and helper files
+import { translate } from "../util/translations";
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -97,4 +102,23 @@ async function registerForPushNotificationsAsync() {
   }
 
   return token;
+}
+
+/** status/colorScheme options: success, error, info, warning **/
+export function showILSMessage(type, message) {
+    return (
+        <Alert w="100%" status={type} colorScheme={type} mb={2}>
+            <HStack
+                flexShrink={1}
+                space={2}
+                alignItems="center"
+                justifyContent="space-between"
+                >
+                <HStack flexShrink={1} space={2} alignItems="center">
+                    <Alert.Icon />
+                    <Text fontSize="md" fontWeight="medium" color="coolGray.800">{message}</Text>
+                </HStack>
+            </HStack>
+        </Alert>
+    );
 }

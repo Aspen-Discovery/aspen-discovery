@@ -1,10 +1,15 @@
 {
 	"build": {
-		"release": {
-			"releaseChannel": "production"
+		"production": {
+			"releaseChannel": "production",
+			"distribution": "store",
+			"android": {
+				"buildType": "app-bundle"
+			}
 		},
 		"beta": {
-			"releaseChannel": "beta"
+			"releaseChannel": "beta",
+			"distribution": "store"
 		},
 		"development": {
 			"releaseChannel": "dev",

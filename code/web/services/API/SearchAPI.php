@@ -14,28 +14,26 @@ class SearchAPI extends Action
 		//Set Headers
 		header('Content-type: application/json');
 		header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
-		header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
 
 		//Check if user can access API with keys sent from LiDA
 		if (isset($_SERVER['PHP_AUTH_USER'])) {
 			if($this->grantTokenAccess()) {
-				if (in_array($method, array('getAppBrowseCategoryResults', 'getAppActiveBrowseCategories'))) {
-					$result = [
-						'result' => $this->$method()
-					];
-					$output = json_encode($result);
+				if (in_array($method, array('getAppBrowseCategoryResults', 'getAppActiveBrowseCategories', 'getAppSearchResults'))) {
 					header("Cache-Control: max-age=10800");
 					require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
 					APIUsage::incrementStat('SystemAPI', $method);
+					$jsonOutput = json_encode(array('result' => $this->$method()));
 				} else {
 					$output = json_encode(array('error' => 'invalid_method'));
 				}
 			} else {
+				header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
 				header('HTTP/1.0 401 Unauthorized');
 				$output = json_encode(array('error' => 'unauthorized_access'));
 			}
-			echo $output;
+			echo isset($jsonOutput) ? $jsonOutput : $output;
 		} elseif (IPAddress::allowAPIAccessForClientIP()) {
+			header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
 			if (!empty($method) && method_exists($this, $method)) {
 				if (in_array($method, array('getListWidget', 'getCollectionSpotlight'))) {
 					header('Content-type: text/html');
@@ -45,14 +43,13 @@ class SearchAPI extends Action
 				}
 				require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
 				APIUsage::incrementStat('SearchAPI', $method);
+				echo isset($jsonOutput) ? $jsonOutput : $output;
 			} else {
-				$jsonOutput = json_encode(array('error' => 'invalid_method'));
+				echo json_encode(array('error' => 'invalid_method'));
 			}
 		} else {
 			$this->forbidAPIAccess();
 		}
-
-		echo isset($jsonOutput) ? $jsonOutput : $output;
 	}
 
 	// The time intervals in seconds beyond which we consider the status as not current
@@ -1564,5 +1561,71 @@ class SearchAPI extends Action
 			$password = reset($password);
 		}
 		return array($username, $password);
+	}
+
+	/** @noinspection PhpUnused */
+	function getAppSearchResults() : array {
+		global $configArray;
+		$searchResults = $this->search();
+
+		$shortname = $_REQUEST['library'];
+
+		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+		if (!empty($searchResults['recordSet'])) {
+			foreach ($searchResults['recordSet'] as $item) {
+				$groupedWork = new GroupedWorkDriver($item);
+				$author = $item['author_display'];
+
+				$ccode = '';
+				if (isset($item['collection_' . $shortname][0])) {
+					$ccode = $item['collection_' . $shortname][0];
+				}
+
+				$format = '';
+				if (isset($item['format_' . $shortname][0])) {
+					$format = $item['format_' . $shortname][0];
+				}
+				$iconName = $configArray['Site']['url']  . "/bookcover.php?id=" . $item['id'] . "&size=medium&type=grouped_work";
+				$id = $item['id'];
+				if($ccode != '') {
+					$format = $format . ' - ' . $ccode;
+				} else {
+					$format = $format;
+				}
+
+				$summary = utf8_encode(trim(strip_tags($item['display_description'])));
+				$summary = str_replace('&#8211;', ' - ', $summary);
+				$summary = str_replace('&#8212;', ' - ', $summary);
+				$summary = str_replace('&#160;', ' ', $summary);
+				if (empty($summary)) {
+					$summary = 'There is no summary available for this title';
+				}
+
+				$title = ucwords($item['title_display']);
+				unset($itemList);
+
+				$relatedRecords = $groupedWork->getRelatedRecords();
+
+				foreach ($relatedRecords as $relatedRecord) {
+					if (!isset($itemList)) {
+						$itemList[] = array('id' => $relatedRecord->id, 'name' => $relatedRecord->format, 'source' => $relatedRecord->source);
+					} elseif (!in_array($relatedRecord->format, array_column($itemList, 'name'))) {
+						$itemList[] = array('id' => $relatedRecord->id, 'name' => $relatedRecord->format, 'source' => $relatedRecord->source);
+					}
+				}
+
+				if (!empty($itemList)) {
+					$results['items'][] = array('title' => trim($title), 'author' => $author, 'image' => $iconName, 'format' => $format, 'itemList' => $itemList, 'key' => $id, 'summary' => $summary);
+				}
+			}
+		}
+
+		$results['success'] = true;
+		if (empty($results['items'])) {
+			$results['message'] = "No search results found";
+			$results['success'] = false;
+		}
+
+		return $results;
 	}
 }
