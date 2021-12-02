@@ -28,19 +28,20 @@ function smarty_function_css($params, &$smarty)
 		$theme = trim($theme);
 
 		global $activeLanguage;
-		$rtl_langs = array('ar','he');
+		$rtl_languages = array('ar','he');
 
-		$fileFound = false;
-		if (in_array($activeLanguage, $rtl_langs)){
+		if (in_array($activeLanguage->code, $rtl_languages)){
+			if (file_exists("{$local}/interface/themes/{$theme}/css-rtl/{$filename}")) {
+				$css = "/interface/themes/{$theme}/css-rtl/{$filename}";
+				break;
+			}
 		}
 
-		if (!$fileFound){
 		// If the file exists on the local file system, set $css to the relative
 		// path needed to link to it from the web interface.
 		if (file_exists("{$local}/interface/themes/{$theme}/css/{$filename}")) {
 			$css = "/interface/themes/{$theme}/css/{$filename}";
 			break;
-		}
 		}
 	}
 
