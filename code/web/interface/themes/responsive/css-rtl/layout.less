@@ -98,6 +98,7 @@ hr.menu{
 #select-language.dropdown-menu {
   right: unset;
   left: 0;
+  overflow: hidden;
 }
 
 #menuToggleButton.selected{
@@ -124,6 +125,7 @@ hr.menu{
   z-index: 3;
   top: 35px;
   margin: 0;
+  overflow: hidden;
 
   #logoutLink {
     margin-top: 1em;
@@ -149,6 +151,7 @@ hr.menu{
   z-index: 3;
   top: 35px;
   margin: 0;
+  overflow: hidden;
 }
 
 #accountMenuToggleButton.selected{
@@ -215,7 +218,6 @@ hr.menu{
 }
 #install-info{
   padding-right: 20px;
-  text-align: right;
 }
 #connect-with-us-info{
   padding-left: 20px;
@@ -278,12 +280,11 @@ hr.menu{
     }
   }
 }
-
-.menu-section-right{
-  align-self: flex-end;
-}
 .menu-section-left{
   flex-grow: 10;
+}
+.menu-section-right{
+  align-self: flex-end;
 }
 
 // Sidebar & Main content
@@ -668,7 +669,7 @@ a.placard-link{
             position: absolute;
             top: 62px;
             transform: translate(-50%, -50%);
-            right: 50%;
+            right: -50%;
           }
         }
         figcaption {

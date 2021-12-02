@@ -480,10 +480,10 @@ cite {
   color: #245269;
 }
 .text-right {
-  text-align: right;
+  text-align: left;
 }
 .text-left {
-  text-align: left;
+  text-align: right;
 }
 .text-center {
   text-align: center;
@@ -7140,13 +7140,13 @@ body > .container {
 }
 .fieldset-collapsed .fieldset-collapsible-label:before {
   font-family: "Font Awesome 5 Free";
-  content: '\f105';
+  content: '\f104';
   font-weight: bold;
   padding-left: 0.25em;
 }
 .accordion .panel-title.collapsed:before {
   font-family: "Font Awesome 5 Free";
-  content: '\f105';
+  content: '\f104';
   font-weight: bold;
   padding-left: 0.25em;
 }
@@ -7168,7 +7168,7 @@ body > .container {
 }
 .panel .panel-title:before {
   font-family: "Font Awesome 5 Free";
-  content: '\f105';
+  content: '\f104';
   font-weight: bold;
   padding-left: 0.25em;
 }
@@ -7416,6 +7416,7 @@ a.bg-overdue:focus {
   list-style: none;
   margin: 0;
   padding: 0;
+  right: auto !important;
 }
 .jcarousel li {
   width: 200px;
@@ -7451,7 +7452,7 @@ a.bg-overdue:focus {
 .jcarousel-pagination {
   position: absolute;
   bottom: -25px;
-  right: 50%;
+  left: 50%;
   transform: translate(-50%, 0);
   margin: 0;
 }
@@ -7806,6 +7807,7 @@ hr.menu {
 #select-language.dropdown-menu {
   right: unset;
   left: 0;
+  overflow: hidden;
 }
 #menuToggleButton.selected {
   background-color: #ededed;
@@ -7829,6 +7831,7 @@ hr.menu {
   z-index: 3;
   top: 35px;
   margin: 0;
+  overflow: hidden;
 }
 #header-menu #logoutLink {
   margin-top: 1em;
@@ -7850,6 +7853,7 @@ hr.menu {
   z-index: 3;
   top: 35px;
   margin: 0;
+  overflow: hidden;
 }
 #accountMenuToggleButton.selected {
   background-color: #ededed;
@@ -7910,7 +7914,6 @@ hr.menu {
 }
 #install-info {
   padding-right: 20px;
-  text-align: right;
 }
 #connect-with-us-info {
   padding-left: 20px;
@@ -7970,11 +7973,11 @@ hr.menu {
   text-align: right;
   display: inline-block;
 }
-.menu-section-right {
-  align-self: flex-end;
-}
 .menu-section-left {
   flex-grow: 10;
+}
+.menu-section-right {
+  align-self: flex-end;
 }
 @media print {
   #side-bar {
@@ -8300,7 +8303,7 @@ a.placard-link {
   position: absolute;
   top: 62px;
   transform: translate(-50%, -50%);
-  right: 50%;
+  right: -50%;
 }
 .exploreMoreBar .jcarousel-wrapper .jcarousel .explore-more-option figcaption {
   margin-top: 4px;
@@ -9093,7 +9096,7 @@ a.browse-thumbnail-sorted.active {
   break-inside: avoid-column;
   -webkit-column-break-inside: avoid;
   display: inline-block;
-  text-align: right;
+  text-align: left;
   width: 100%;
 }
 .browse-list img {
