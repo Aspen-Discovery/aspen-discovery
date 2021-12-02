@@ -16,7 +16,7 @@ import { checkoutItem, placeHold, overDriveSample, openSideLoad } from "../../ut
 
 const StatusIndicator = (props) => {
 
-    const { data, format, language, patronId, locations, showAlert } = props;
+    const { data, format, language, patronId, locations, showAlert, openCheckouts } = props;
     var dataArray = Object.values(data);
     var arrayToSearch = data.[`${format}`];
 
@@ -47,7 +47,6 @@ const StatusIndicator = (props) => {
     }
 
     if(match.length == 1) {
-    console.log(match);
         const status = match[0].status;
         const available = match[0].available;
         const availableOnline = match[0].availableOnline;
@@ -87,7 +86,7 @@ const StatusIndicator = (props) => {
                                  <Button size={{ base: "xs", lg: "sm" }} colorScheme="primary" variant="outline" _text={{ padding: 0, textAlign: "center", fontSize: 12 }} style={{flex: 1, flexWrap: 'wrap'}} onPress={ () => doAction(id, action.type, global.patronId, action.formatId, action.sampleNumber)}>{action.title}</Button>
                             )
                         }
-                        if(action.type == "ils_hold" && locationCount > 1) {
+                        else if(action.type == "ils_hold" && locationCount > 1) {
                         /* Open pickup location modal */
                             if(locationCount > 1) {
                                  return (
@@ -99,15 +98,21 @@ const StatusIndicator = (props) => {
                                 );
                             }
                         }
-                        if(action.title == "Access Online") {
+                        else if(action.title == "Access Online") {
                         /* Open in browser window */
                             return (
                                  <Button size={{ base: "md", lg: "lg" }} colorScheme="primary" variant="solid" _text={{ padding: 0, textAlign: "center" }} style={{flex: 1, flexWrap: 'wrap'}} onPress={ async () => { openSideLoad(action.url) }}>{action.title}</Button>
                             )
                         }
+                        else if(action.title == "Checked Out to You") {
+                            return (
+                             <Button size={{ base: "md", lg: "lg" }} colorScheme="primary" variant="solid" _text={{ padding: 0, textAlign: "center" }} style={{flex: 1, flexWrap: 'wrap'}} onPress={() => { openCheckouts() }}>{action.title}</Button>
+                            )
+                        } else {
                             return (
                                  <Button size={{ base: "md", lg: "lg" }} colorScheme="primary" variant="solid" _text={{ padding: 0, textAlign: "center" }} style={{flex: 1, flexWrap: 'wrap'}} onPress={ async () => { await doAction(id, action.type, global.patronId).then(response => { showAlert(response) }) }}>{action.title}</Button>
                             );
+                        }
                         })}
                     </Button.Group>
                 </HStack>
@@ -140,7 +145,7 @@ const StatusIndicator = (props) => {
                                      <Button size={{ base: "xs", lg: "sm" }} colorScheme="primary" variant="outline" _text={{ padding: 0, textAlign: "center", fontSize: 12 }} style={{flex: 1, flexWrap: 'wrap'}} onPress={ () => doAction(item.id, action.type, global.patronId, action.formatId, action.sampleNumber)}>{action.title}</Button>
                                 )
                             }
-                            if(action.type == "ils_hold") {
+                            else if(action.type == "ils_hold") {
                                 /* Open pickup location modal */
                                 if(locationCount > 1) {
                                      return (
@@ -152,15 +157,21 @@ const StatusIndicator = (props) => {
                                     );
                                 }
                             }
-                            if(action.title == "Access Online") {
+                            else if(action.title == "Access Online") {
                             /* Open in browser window */
                                 return (
                                      <Button size={{ base: "md", lg: "lg" }} colorScheme="primary" variant="solid" _text={{ padding: 0, textAlign: "center" }} style={{flex: 1, flexWrap: 'wrap'}} onPress={ async () => { openSideLoad(action.url) }}>{action.title}</Button>
                                 )
                             }
-                            return (
-                                     <Button size={{ base: "md", lg: "lg" }} colorScheme="primary" variant="solid" _text={{ padding: 0, textAlign: "center" }} style={{flex: 1, flexWrap: 'wrap'}} onPress={ async () => { await doAction(item.id, action.type, global.patronId).then(response => { showAlert(response) }) }}>{action.title}</Button>
-                            );
+                            else if(action.title == "Checked Out to You") {
+                                return (
+                                 <Button size={{ base: "md", lg: "lg" }} colorScheme="primary" variant="solid" _text={{ padding: 0, textAlign: "center" }} style={{flex: 1, flexWrap: 'wrap'}} onPress={() => { openCheckouts() }}>{action.title}</Button>
+                                )
+                            } else {
+                                return (
+                                         <Button size={{ base: "md", lg: "lg" }} colorScheme="primary" variant="solid" _text={{ padding: 0, textAlign: "center" }} style={{flex: 1, flexWrap: 'wrap'}} onPress={ async () => { await doAction(item.id, action.type, global.patronId).then(response => { showAlert(response) }) }}>{action.title}</Button>
+                                );
+                            }
                         })}
                         </Button.Group>
                     </HStack>
@@ -174,8 +185,6 @@ async function doAction(id, actionType, patronId, formatId = null, sampleNumber 
     const recordId = id.split(":");
     const source = recordId[0];
     const itemId = recordId[1];
-
-    console.log(pickupBranch);
 
     if(actionType.includes("checkout")) {
         const response = await checkoutItem(itemId, source, patronId);
@@ -228,7 +237,7 @@ const SelectPickupLocation = (props) => {
                             mt="1"
                         >
                             {locations.map((item, index) => {
-                                return <Radio value={item.key} my={1}>{item.name}</Radio>;
+                                return <Radio value={item.code} my={1}>{item.name}</Radio>;
                             })}
                         </Radio.Group>
                     </FormControl>
@@ -237,7 +246,7 @@ const SelectPickupLocation = (props) => {
                     <Button.Group space={2} size="md">
                         <Button colorScheme="muted" variant="outline" onPress={() => setShowModal(false)}>{translate('general.close_window')}</Button>
                         <Button
-                            onPress={ async () => { await doAction(record, action, patron, value).then(response => { showAlert(response) }); setShowModal(false); }}
+                            onPress={ async () => { await doAction(record, action, patron, "", "", value).then(response => { showAlert(response) }); setShowModal(false); }}
                         >
                             {label}
                         </Button>
