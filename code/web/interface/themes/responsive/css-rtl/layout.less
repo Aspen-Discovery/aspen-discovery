@@ -7,6 +7,7 @@
 //Body
 body{
   color: @body-text-color;
+  direction: RTL;
 }
 #content-container{
   @media(max-width: @screen-sm-min){
@@ -214,6 +215,7 @@ hr.menu{
 }
 #install-info{
   padding-right: 20px;
+  text-align: right;
 }
 #connect-with-us-info{
   padding-left: 20px;
@@ -278,10 +280,10 @@ hr.menu{
 }
 
 .menu-section-right{
-  flex-grow: 10;
+  align-self: flex-end;
 }
 .menu-section-left{
-  align-self: flex-end;
+  flex-grow: 10;
 }
 
 // Sidebar & Main content

@@ -28,9 +28,8 @@ function smarty_function_css($params, &$smarty)
 		$theme = trim($theme);
 
 		global $activeLanguage;
-		$rtl_languages = array('ar','he');
 
-		if (in_array($activeLanguage->code, $rtl_languages)){
+		if ($activeLanguage->isRTL()){
 			if (file_exists("{$local}/interface/themes/{$theme}/css-rtl/{$filename}")) {
 				$css = "/interface/themes/{$theme}/css-rtl/{$filename}";
 				break;

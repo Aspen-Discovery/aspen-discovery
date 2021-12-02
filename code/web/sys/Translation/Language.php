@@ -41,4 +41,9 @@ class Language extends DataObject
 	{
 		return ['id', 'weight'];
 	}
+
+	static $rtl_languages = array('ar','he');
+	public function isRTL() {
+		return in_array($this->code, Language::$rtl_languages);
+	}
 }

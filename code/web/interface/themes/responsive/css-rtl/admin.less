@@ -1,0 +1,121 @@
+
+// Keep Tables within an Admin panel section navigable with a scroll bar
+.editor{
+  .panel-group {
+    .panel-body {
+      &>.form-group{
+        &>.controls {
+          overflow-x: auto;
+        }
+      }
+    }
+  }
+}
+
+.dashboardCategory{
+  .dashboardCategoryLabel{
+    font-size: 24px;
+    line-height: 36px;
+    margin-bottom: 10px;
+    font-family: serif;
+    //border-bottom: 2px solid darkred;
+    text-align: center;
+    text-decoration: underline darkred double;
+  }
+}
+
+.dashboardLabel{
+  font-size: 14px;
+  text-transform: uppercase;
+  text-align: center;
+}
+.dashboardValue{
+  font-size: 38px;
+  font-weight: bolder;
+  text-align: center;
+}
+
+.compareChanged{
+  background-color: #ffc9c9;
+  color: #111111;
+}
+
+.contrast_warning{
+  padding: 3px 5px;
+}
+
+.adminTableRegion{
+  width: 100%;
+  overflow-x: auto;
+}
+
+.siteStatusRegion, .fixed-height-table, .oneToManyTable{
+  overflow-x: auto;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+#adminSections .grid-col--2{
+  @media (max-width: @screen-sm-max) {
+    display: none;
+  }
+  @media (min-width: @screen-md-min) {
+    display: block;
+  }
+}
+
+.adminSection{
+  .adminPanel {
+    margin: 10px 0;
+    border: 1px solid #cccccc;
+    background-color: #f8f8f8;
+    color: #404040;
+
+    .adminSectionLabel {
+      font-size: 18px;
+      margin: 0;
+      padding: 3px 0;
+      text-transform: uppercase;
+      border-bottom: 1px solid #cccccc;
+      background-color: #4DACDE;
+      color: #333333;
+    }
+
+    .adminSectionActions {
+      padding: 5px 20px 5px 5px;
+    }
+
+    .adminAction {
+      margin-bottom: 6px;
+    }
+
+    .adminActionLabel {
+      font-size: 14px;
+      font-weight: bold;
+    }
+
+    .adminActionDescription {
+      font-size: 12px;
+    }
+  }
+}
+
+.permissionName, .permissionDescription{
+  margin-right: 10px;
+}
+.permissionDescription{
+  font-style: italic;
+  font-size: 10px;
+}
+
+#filtersList{
+  padding: 8px 0;
+}
+
+#filterActions{
+  padding-top: 4px;
+}
+
+#activeFilters select, #activeFilters input{
+  width: 100%;
+}

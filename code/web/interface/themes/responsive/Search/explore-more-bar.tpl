@@ -3,7 +3,13 @@
 <div class="exploreMoreBar row">
 	{*<div class="label-left">*}
 	<div class="label-top">
-		<div class="exploreMoreBarLabel"><i class="fas fa-share-square fa-x2"></i> {translate text='Explore More' isPublicFacing=true}</div>
+		<div class="exploreMoreBarLabel">
+			{if $userLang->isRTL()} <!-- Fixed by Kware -->
+				<i class="fas fa-share-square fa-flip-horizontal fa-x2"></i>
+			{else}
+				<i class="fas fa-share-square fa-x2"></i>
+			{/if} {translate text='Explore More' isPublicFacing=true}
+		</div>
 	</div>
 
 	<div class="exploreMoreContainer">
