@@ -372,7 +372,7 @@ class Axis360Driver extends AbstractEContentDriver
 	{
 		list($existingId, $summary) = $user->getCachedAccountSummary('axis360');
 
-		if ($summary === null) {
+		if ($summary === null || isset($_REQUEST['reload'])) {
 			//Get account information from api
 			require_once ROOT_DIR . '/sys/User/AccountSummary.php';
 			$summary = new AccountSummary();
