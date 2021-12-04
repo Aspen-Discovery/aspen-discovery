@@ -42,7 +42,7 @@ class Admin_Variables extends ObjectEditor{
 		return 'id';
 	}
 	function canAddNew(){
-		return false;
+		return UserAccount::getActiveUserObj()->source == 'admin' && UserAccount::getActiveUserObj()->cat_username == 'aspen_admin';
 	}
 	function canDelete(){
 		return true;
