@@ -49,7 +49,7 @@
 	{if $showTopOfPageButton}
 	<a class="top-link hide" href="" id="js-top">
 		<i class="fas fa-arrow-up fa-2x fa-fw"></i>
-		<span class="screen-reader-text">Back to top</span>
+		<span class="screen-reader-text">{translate text="Back to top" isPublicFacing=true}</span>
 	</a>
 	{/if}
 	{if $shouldShowAdminAlert}
