@@ -489,25 +489,6 @@ class SirsiDynixROA extends HorizonAPI
 				$birthdate = date_create_from_format('m-d-Y', trim($_REQUEST['birthDate']));
 				$createPatronInfoParameters['fields']['birthDate'] = $birthdate->format('Y-m-d');
 			}
-			if (!empty($_REQUEST['pin'])) {
-				$pin = trim($_REQUEST['pin']);
-				if (!empty($pin) && $pin == trim($_REQUEST['pin1'])) {
-					$createPatronInfoParameters['fields']['pin'] = $pin;
-				} else {
-					// Pin Mismatch
-					return array(
-						'success' => false,
-						'message' => 'The PINs provided did not match.'
-					);
-				}
-			} else {
-				// No Pin
-				return array(
-					'success' => false,
-					'message' => 'The PIN for the account was not provided.'
-				);
-			}
-
 
 			// Update Address Field with new data supplied by the user
 			if (isset($_REQUEST['email'])) {
@@ -571,11 +552,14 @@ class SirsiDynixROA extends HorizonAPI
 					global $logger;
 					$logger->log('Symphony Driver - Patron Info Update Error - Error from ILS : ' . implode(';', $updateErrors), Logger::LOG_ERROR);
 				} else {
+
 					$selfRegResult = array(
 						'success' => true,
-						'barcode' => ''
+						'barcode' => $barcode->value,
+						'requirePinReset' => true,
 					);
 					// Update the card number counter for the next Self-Reg user
+					$barcode->value++;
 					if (!$barcode->update()) {
 						// Log Error temp barcode number not
 						global $logger;
@@ -2503,8 +2487,6 @@ class SirsiDynixROA extends HorizonAPI
 		$fields[] = array('property'=>'phone', 'type'=>'text',  'label'=>'Primary Phone', 'maxLength'=>15, 'required'=>false);
 		$fields[] = array('property'=>'email',  'type'=>'email', 'label'=>'Email', 'maxLength' => 128, 'required' => true);
 		$fields[] = array('property'=>'email2',  'type'=>'email', 'label'=>'Confirm Email', 'maxLength' => 128, 'required' => true);
-		$fields[] = array('property'=>'pin',  'type'=>'text', 'label'=>'PIN (number of your choice)', 'maxLength' => 10, 'required' => true);
-		$fields[] = array('property'=>'pin1',  'type'=>'text', 'label'=>'Re-enter PIN (number of your choice)', 'maxLength' => 10, 'required' => true);
 		$fields[] = array('property'=>'pickupLocation',  'type'=>'enum', 'values' => $pickupLocations, 'label'=>'Library', 'maxLength' => 128, 'required' => true);
 		return $fields;
 	}
