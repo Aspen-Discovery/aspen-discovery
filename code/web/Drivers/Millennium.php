@@ -547,11 +547,15 @@ class Millennium extends AbstractIlsDriver
 				$extraPostInfo['addr1c'] = '';
 				$extraPostInfo['addr1d'] = '';
 			}
-			$extraPostInfo['tele1'] = $_REQUEST['phone'];
+			if (isset($_REQUEST['phone'])) {
+				$extraPostInfo['tele1'] = $_REQUEST['phone'];
+			}
 			if (isset($_REQUEST['workPhone'])){
 				$extraPostInfo['tele2'] = $_REQUEST['workPhone'];
 			}
-			$extraPostInfo['email'] = $_REQUEST['email'];
+			if (isset($_REQUEST['email'])) {
+				$extraPostInfo['email'] = $_REQUEST['email'];
+			}
 
 			if (!empty($_REQUEST['pickupLocation'])){
 				$pickupLocation = $_REQUEST['pickupLocation'];
