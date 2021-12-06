@@ -735,7 +735,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 	public function getAccountSummary(User $user) : AccountSummary{
 		list($existingId, $summary) = $user->getCachedAccountSummary('overdrive');
 
-		if ($summary === null) {
+		if ($summary === null || isset($_REQUEST['reload'])) {
 			//Get account information from api
 			require_once ROOT_DIR . '/sys/User/AccountSummary.php';
 			$summary = new AccountSummary();

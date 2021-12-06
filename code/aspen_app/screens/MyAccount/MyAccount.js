@@ -217,8 +217,8 @@ export default class MyAccount extends Component {
 
     _renderSettingsFooter = () => {
         return (
-        <Center>
-            <Button variant="link" size="xs" onPress={() => {this._fetchProfile()} } mt={25}>Reload Account Data</Button>
+        <Center pt={10}>
+            <Button variant="outline" size="xs" onPress={() => {this._fetchProfile()} } startIcon={<Icon as={MaterialIcons} name="refresh" size="xs" />}>Reload Account Data</Button>
         </Center>
         )
     }
@@ -235,7 +235,7 @@ export default class MyAccount extends Component {
 		}
 
 		return (
-            <Box style={{ backgroundColor: "white" }}>
+            <Box style={{ backgroundColor: "white" }} pb={10}>
 				<FlatList
 					data={this.state.defaultMenuItems}
 					renderItem={({ item }) => this.renderNativeItem(item)}

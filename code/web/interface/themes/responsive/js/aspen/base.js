@@ -276,7 +276,7 @@ var AspenDiscovery = (function(){
 			return selectedTitles;
 		},
 		getSelectedLists: function(){
-			var selectedLists = $("input.selectedLists:checked ").map(function() {
+			var selectedLists = $("input.listSelect:checked ").map(function() {
 				return $(this).attr('name') + "=" + $(this).val();
 			}).get().join("&");
 			if (selectedLists.length === 0){

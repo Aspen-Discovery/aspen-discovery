@@ -45,17 +45,19 @@ class BrowseCategory extends BaseBrowsable
 					$SearchEntry->user_id = UserAccount::getActiveUserId();
 					$SearchEntry->saved = "1";
 					$SearchEntry->orderBy('created');
-					$SearchEntry->limit(0,5);
 					$SearchEntry->find();
-					while($SearchEntry->fetch()) {
-						if ($SearchEntry->title) {
+					$count = 0;
+					do {
+						if($SearchEntry->title) {
+							$count++;
 							$searchId = $SearchEntry->id;
 							$this->_subBrowseCategories[$searchId] = clone($SearchEntry);
 							$this->_subBrowseCategories[$searchId]->id = $this->textId . '_' . $SearchEntry->id;
 							$this->_subBrowseCategories[$searchId]->label = $SearchEntry->title;
 							$this->_subBrowseCategories[$searchId]->source = "savedSearch";
 						}
-					}
+
+					} while($SearchEntry->fetch() && $count < 5);
 				} elseif ($this->textId == "system_user_lists") {
 					// fetch users list
 					require_once ROOT_DIR . '/sys/UserLists/UserList.php';
