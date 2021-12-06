@@ -182,7 +182,7 @@ class HooplaDriver extends AbstractEContentDriver{
 	public function getAccountSummary(User $user) : AccountSummary{
 		list($existingId, $summary) = $user->getCachedAccountSummary('hoopla');
 
-		if ($summary === null) {
+		if ($summary === null || isset($_REQUEST['reload'])) {
 			require_once ROOT_DIR . '/sys/User/AccountSummary.php';
 			$summary = new AccountSummary();
 			$summary->userId = $user->id;

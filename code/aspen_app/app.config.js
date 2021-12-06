@@ -3,7 +3,7 @@ export default {
   slug: "aspen-lida",
   owner: "bywater-solutions",
   privacy: "public",
-  version: "21.14.01",
+  version: "21.15.00",
   orientation: "portrait",
   icon: "./assets/LiDA_Icon1024.png",
   splash: {
@@ -18,7 +18,7 @@ export default {
     "**/*"
   ],
   ios: {
-    buildNumber: "16",
+    buildNumber: "17",
     bundleIdentifier: "org.aspendiscovery.mobile",
     supportsTablet: true,
     icon: "./assets/LiDA_Icon1024.png",
@@ -36,7 +36,7 @@ export default {
     },
     android: {
       package: "org.aspendiscovery.mobile",
-      versionCode: 16,
+      versionCode: 17,
       permissions: [
         "ACCESS_COARSE_LOCATION",
         "ACCESS_FINE_LOCATION",

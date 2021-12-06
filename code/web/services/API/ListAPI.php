@@ -157,6 +157,7 @@ class ListAPI extends Action
 
 		$list = new UserList();
 		$list->user_id = $userId;
+		$list->deleted = 0;
 		$list->find();
 		$results = array();
 		if ($list->getNumResults() > 0) {

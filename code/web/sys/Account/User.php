@@ -708,6 +708,7 @@ class User extends DataObject
 		require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 		$userList = new UserList();
 		$userList->user_id = $this->id;
+		$userList->deleted = 0;
 		$userList->find();
 		if ($userList->getNumResults() > 0){
 			return true;

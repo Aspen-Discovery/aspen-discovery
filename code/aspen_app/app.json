@@ -9,6 +9,7 @@
       "android"
     ],
     "version": "21.15.00",
+    "sdkVersion": "41.00.00",
     "orientation": "portrait",
     "icon": "./assets/LiDA_Icon1024.png",
     "splash": {
@@ -56,6 +57,14 @@
     "web": {
       "favicon": "./assets/LiDA_Icon512.png"
     },
-    "description": ""
+    "description": "",
+    "build": {
+      "production": {
+        "releaseChannel": "production"
+      },
+      "beta": {
+        "releaseChannel": "beta"
+      }
+    }
   }
 }
