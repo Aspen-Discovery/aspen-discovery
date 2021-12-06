@@ -399,4 +399,77 @@ class Sierra extends Millennium{
 
 		return $return;
 	}
+
+	public function getReadingHistory($patron, $page = 1, $recordsPerPage = -1, $sortOption = "checkedOut")
+	{
+		$readingHistoryEnabled = false;
+		$patronId = $patron->username;
+
+		$sierraUrl = $this->accountProfile->vendorOpacUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/patrons/".$patronId."/checkouts/history/activationStatus";
+
+		$readingHistoryEnabledResponse = $this->_callUrl($sierraUrl);
+
+		if (!empty($readingHistoryEnabledResponse)){
+			$readingHistoryEnabled = $readingHistoryEnabledResponse->readingHistoryActivation;
+		}
+		$readingHistoryTitles = array();
+		if ($readingHistoryEnabled){
+			$numProcessed = 0;
+			$totalToProcess = 1000;
+			while ($numProcessed < $totalToProcess){
+				$getReadingHistoryUrl = $this->accountProfile->vendorOpacUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/patrons/".$patronId."/checkouts/history?limit=100&offset=$numProcessed&sortField=outDate&sortOrder=desc";
+
+				$readingHistoryResponse = $this->_callUrl($getReadingHistoryUrl);
+				if ($readingHistoryResponse && $readingHistoryResponse->total > 0){
+					$totalToProcess = $readingHistoryResponse->total;
+					foreach ($readingHistoryResponse->entries as $historyEntry){
+						$curTitle = array();
+						preg_match($this->urlIdRegExp, $historyEntry->bib, $matches);
+						$bibId = ".b{$matches[1]}" . $this->getCheckDigit($matches[1]);
+						$curTitle['id'] = $bibId;
+						$curTitle['shortId'] = "{$matches[1]}";
+						$curTitle['recordId'] = $bibId;
+						$curTitle['checkout'] = strtotime($historyEntry->outDate);
+						$curTitle['checkin'] = null; //Polaris doesn't indicate when things are checked in
+						$curTitle['ratingData'] = null;
+						$curTitle['permanentId'] = null;
+						$curTitle['linkUrl'] = null;
+						$curTitle['coverUrl'] = null;
+						require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+						$recordDriver = new MarcRecordDriver($this->accountProfile->recordSource . ':' . $curTitle['recordId']);
+						if ($recordDriver->isValid()) {
+							$curTitle['ratingData'] = $recordDriver->getRatingData();
+							$curTitle['permanentId'] = $recordDriver->getPermanentId();
+							$curTitle['linkUrl'] = $recordDriver->getGroupedWorkDriver()->getLinkUrl();
+							$curTitle['coverUrl'] = $recordDriver->getBookcoverUrl('medium', true);
+							$curTitle['title'] = $recordDriver->getTitle();
+							$curTitle['format'] = $recordDriver->getFormats();
+							$curTitle['author'] = $recordDriver->getPrimaryAuthor();
+						}else{
+							//get title and author by looking up the bib
+							$getBibResponse = $this->_callUrl($this->accountProfile->vendorOpacUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/bibs/{$curTitle['shortId']}");
+							if ($getBibResponse){
+								$curTitle['title'] = $getBibResponse->title;
+								$curTitle['author'] = $getBibResponse->author;
+								$curTitle['format'] = isset($getBibResponse->materialType->value) ? $getBibResponse->materialType->value : 'Unknown';
+							}else{
+								$curTitle['title'] = 'Unknown';
+								$curTitle['author'] = 'Unknown';
+								$curTitle['format'] = 'Unknown';
+							}
+						}
+						$recordDriver->__destruct();
+						$recordDriver = null;
+
+						$readingHistoryTitles[] = $curTitle;
+					}
+					$numProcessed += count($readingHistoryResponse->entries);
+				}else{
+					break;
+				}
+			}
+		}
+
+		return array('historyActive' => $readingHistoryEnabled, 'titles' => $readingHistoryTitles, 'numTitles' => count($readingHistoryTitles));
+	}
 }
