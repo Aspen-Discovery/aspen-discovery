@@ -30,6 +30,9 @@ class DatabaseAuthentication implements Authentication {
 			}else{
 				if ($user->password != $password){
 					$user = new AspenError('Sorry that login information was not recognized, please try again.');
+				}else{
+					$user->lastLoginValidation = time();
+					$user->update();
 				}
 			}
 		}

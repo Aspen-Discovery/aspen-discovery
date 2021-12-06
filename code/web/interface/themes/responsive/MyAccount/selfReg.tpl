@@ -22,6 +22,9 @@
 			{if !empty($selfRegResult.message)}
 				<p id="selfRegMessage" class="alert alert-warning">{$selfRegResult.message}</p>
 			{/if}
+			{if !empty($selfRegResult.requirePinReset)}
+				<p id="selfRegResetPin">{translate text="To login to the catalog, you must first reset your PIN." isPublicFacing=true}  <a class="btn btn-default" href="/MyAccount/EmailResetPin">{translate text="Reset PIN/Password" isPublicFacing=true}</a> </p>
+			{/if}
 		</div>
 	{elseif (isset($selfRegResult) && $selfRegResult.success === false)}
 		{if (isset($selfRegResult))}
