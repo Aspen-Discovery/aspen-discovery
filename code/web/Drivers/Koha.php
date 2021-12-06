@@ -994,6 +994,7 @@ class Koha extends AbstractIlsDriver
 					$historyEntry['format'] = $recordDriver->getFormats();
 					$historyEntry['author'] = $recordDriver->getPrimaryAuthor();
 				}
+				$recordDriver->__destruct();
 				$recordDriver = null;
 			}
 			$readingHistoryTitles[$key] = $historyEntry;
@@ -1164,7 +1165,6 @@ class Koha extends AbstractIlsDriver
 				'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
 				'Accept-Encoding: gzip, deflate',
 			], true);
-			/** @noinspection PhpUnusedLocalVariableInspection */
 			$response = $this->apiCurlWrapper->curlPostBodyData($apiUrl, $postParams, false);
 			$responseCode = $this->apiCurlWrapper->getResponseCode();
 			ExternalRequestLogEntry::logRequest('koha.placeVolumeHold', 'POST', $apiUrl, $this->apiCurlWrapper->getHeaders(), $postParams, $this->apiCurlWrapper->getResponseCode(), $response, []);

@@ -845,6 +845,8 @@ class SirsiDynixROA extends HorizonAPI
 					$holds['unavailable'][] = $curHold;
 				} else {
 					$curHold->available = true;
+					$curHold->canFreeze = false;
+					$curHold->locationUpdateable = false;
 					$holds['available'][] = $curHold;
 				}
 			}
