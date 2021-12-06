@@ -37,6 +37,7 @@
     - 'Login Form Username Label' and 'Login Form Password Label' will display whatever you put within those boxes. This is what borrowers see and are prompted by when they login. 
   - Self Registration 
     - In order to enable self registration you can configure patrons options for self registration and the language they see during the self registration process
+    - The default path for the Self Registration page is: /MyAccount/SelfReg
   - Masquerade Mode, if enabled, allows staff to 'login' with a patrons cardnumber to show searches and information.
 - Fines/e-commerce is where you would set up the connection to your PayPal account. This is where you can update settings to allow certain actions. For example, you can choose between letting the patron choose what fines to pay or forcing them to pay all their fines. You can also set a minimum fine amount here. In order to connect to PayPal, you will need you PayPal ClientID and PayPal Client Secret from PayPal. 
 - If you set up different grouped work settings, you will define what your system uses with the 'Grouped Work Display Settings' dropdown.
