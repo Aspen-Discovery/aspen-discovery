@@ -340,6 +340,7 @@ AspenDiscovery.Browse = (function(){
 						// Set and Show sub-category label
 						$('.selected-browse-sub-category-label-search-text')
 							.html($('#browse-sub-category-' + data.subCategoryTextId).addClass('selected').text())
+							.html(newSubCategoryLabel)
 							.fadeIn();
 					}
 
