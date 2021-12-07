@@ -35,7 +35,7 @@ function importLists($startTime, $exportPath, &$existingUsers, &$missingUsers, &
 
 	require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 	require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
-	$listsfHnd = fopen($exportPath . "chanelslists.txt", 'r');
+	$listsfHnd = fopen($exportPath . "lists.txt", 'r');
 
 	$numImports = 0;
 	$batchStartTime = time();
