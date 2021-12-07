@@ -165,6 +165,150 @@ class Millennium extends AbstractIlsDriver
 		}
 	}
 
+	public function loadContactInformation(User $user)
+	{
+		$barcode = $user->getBarcode();
+		$patronDump = $this->_getPatronDump($barcode);
+		$this->loadContactInformationFromPatronDump($user, $patronDump);
+	}
+
+	public function loadContactInformationFromPatronDump(User $user, $patronDump){
+		//Setup home location
+		$location = null;
+		if (isset($patronDump['HOME_LIBR']) || isset($patronDump['HOLD_LIBR'])) {
+			$homeBranchCode = isset($patronDump['HOME_LIBR']) ? $patronDump['HOME_LIBR'] : $patronDump['HOLD_LIBR'];
+			$homeBranchCode = str_replace('+', '', $homeBranchCode); //Translate home branch to plain text
+			$location = new Location();
+			$location->code = $homeBranchCode;
+			if (!$location->find(true)) {
+				unset($location);
+			}
+		} else {
+			global $logger;
+			$logger->log('Millennium Driver: No Home Library Location or Hold location found in patron dump. User : ' . $user->id, Logger::LOG_ERROR);
+			// The code below will attempt to find a location for the library anyway if the homeLocation is already set
+		}
+
+		if (empty($user->homeLocationId) || (isset($location) && $user->homeLocationId != $location->locationId)) { // When homeLocation isn't set or has changed
+			if (empty($user->homeLocationId) && !isset($location)) {
+				// homeBranch Code not found in location table and the user doesn't have an assigned homelocation,
+				// try to find the main branch to assign to user
+				// or the first location for the library
+				global $library;
+
+				$location = new Location();
+				$location->libraryId = $library->libraryId;
+				$location->orderBy('isMainBranch desc'); // gets the main branch first or the first location
+				if (!$location->find(true)) {
+					// Seriously no locations even?
+					global $logger;
+					$logger->log('Failed to find any location to assign to user as home location', Logger::LOG_ERROR);
+					unset($location);
+				}
+			}
+			if (isset($location)) {
+				$user->homeLocationId = $location->locationId;
+				if (empty($user->myLocation1Id)) {
+					$user->myLocation1Id = ($location->nearbyLocation1 > 0) ? $location->nearbyLocation1 : $location->locationId;
+					/** @var /Location $location */
+					//Get display name for preferred location 1
+					$myLocation1 = new Location();
+					$myLocation1->locationId = $user->myLocation1Id;
+					if ($myLocation1->find(true)) {
+						$user->_myLocation1 = $myLocation1->displayName;
+					}
+				}
+
+				if (empty($user->myLocation2Id)) {
+					$user->myLocation2Id = ($location->nearbyLocation2 > 0) ? $location->nearbyLocation2 : $location->locationId;
+					//Get display name for preferred location 2
+					$myLocation2 = new Location();
+					$myLocation2->locationId = $user->myLocation2Id;
+					if ($myLocation2->find(true)) {
+						$user->_myLocation2 = $myLocation2->displayName;
+					}
+				}
+			}
+		}
+
+		if (isset($location)) {
+			//Get display names that aren't stored
+			$user->_homeLocationCode = $location->code;
+			$user->_homeLocation = $location->displayName;
+		}
+
+		$user->_expired = 0; // default setting
+		$user->_expireClose = 0;
+		//See if expiration date is close
+		if (trim($patronDump['EXP_DATE']) != '-  -') {
+			$user->_expires = $patronDump['EXP_DATE'];
+			list ($monthExp, $dayExp, $yearExp) = explode("-", $patronDump['EXP_DATE']);
+			$timeExpire = strtotime($monthExp . "/" . $dayExp . "/" . $yearExp);
+			$timeNow = time();
+			$timeToExpire = $timeExpire - $timeNow;
+			if ($timeToExpire <= 30 * 24 * 60 * 60) {
+				if ($timeToExpire <= 0) {
+					$user->_expired = 1;
+				}
+				$user->_expireClose = 1;
+			}
+		}
+
+		//Get additional information that doesn't necessarily get stored in the User Table
+		if (isset($patronDump['ADDRESS'])) {
+			$fullAddress = $patronDump['ADDRESS'];
+			$addressParts = explode('$', $fullAddress);
+			$user->_address1 = $addressParts[0];
+			$user->_city = isset($addressParts[1]) ? $addressParts[1] : '';
+			$user->_state = isset($addressParts[2]) ? $addressParts[2] : '';
+			$user->_zip = isset($addressParts[3]) ? $addressParts[3] : '';
+
+			if (preg_match('/(.*?),\\s+(.*)\\s+(\\d*(?:-\\d*)?)/', $user->_city, $matches)) {
+				$user->_city = $matches[1];
+				$user->_state = $matches[2];
+				$user->_zip = $matches[3];
+			} else if (preg_match('/(.*?)\\s+(\\w{2})\\s+(\\d*(?:-\\d*)?)/', $user->_city, $matches)) {
+				$user->_city = $matches[1];
+				$user->_state = $matches[2];
+				$user->_zip = $matches[3];
+			}
+		} else {
+			$user->_address1 = "";
+			$user->_city = "";
+			$user->_state = "";
+			$user->_zip = "";
+		}
+
+		$user->_address2 = $user->_city . ', ' . $user->_state;
+		$user->_workPhone = (isset($patronDump) && isset($patronDump['G/WK_PHONE'])) ? $patronDump['G/WK_PHONE'] : '';
+		if (isset($patronDump) && isset($patronDump['MOBILE_NO'])) {
+			$user->_mobileNumber = $patronDump['MOBILE_NO'];
+		} else {
+			if (isset($patronDump) && isset($patronDump['MOBILE_PH'])) {
+				$user->_mobileNumber = $patronDump['MOBILE_PH'];
+			} else {
+				$user->_mobileNumber = '';
+			}
+		}
+
+		$user->_finesVal = floatval(preg_replace('/[^\\d.]/', '', $patronDump['MONEY_OWED']));
+		$user->_fines = $patronDump['MONEY_OWED'];
+
+		$noticeLabels = array(
+			//'-' => 'Mail',  // officially None in Sierra, as in No Preference Selected.
+			'-' => '',  // notification will generally be based on what information is available so can't determine here. plb 12-02-2014
+			'a' => 'Mail', // officially Print in Sierra
+			'p' => 'Telephone',
+			'z' => 'Email',
+		);
+		$user->_notices = isset($patronDump) ? $patronDump['NOTICE_PREF'] : '-';
+		if (array_key_exists($user->_notices, $noticeLabels)) {
+			$user->_noticePreferenceLabel = $noticeLabels[$user->_notices];
+		} else {
+			$user->_noticePreferenceLabel = 'Unknown';
+		}
+	}
+
 	/**
 	 * Get a dump of information from Millennium that can be used in other
 	 * routines.
@@ -1426,126 +1570,7 @@ class Millennium extends AbstractIlsDriver
 			$user->_web_note = $patronDump['WEB_NOTE'];
 		}*/
 
-		//Setup home location
-		$location = null;
-		if (isset($patronDump['HOME_LIBR']) || isset($patronDump['HOLD_LIBR'])) {
-			$homeBranchCode = isset($patronDump['HOME_LIBR']) ? $patronDump['HOME_LIBR'] : $patronDump['HOLD_LIBR'];
-			$homeBranchCode = str_replace('+', '', $homeBranchCode); //Translate home branch to plain text
-			$location = new Location();
-			$location->code = $homeBranchCode;
-			if (!$location->find(true)) {
-				unset($location);
-			}
-		} else {
-			global $logger;
-			$logger->log('Millennium Driver: No Home Library Location or Hold location found in patron dump. User : ' . $user->id, Logger::LOG_ERROR);
-			// The code below will attempt to find a location for the library anyway if the homeLocation is already set
-		}
-
-		if (empty($user->homeLocationId) || (isset($location) && $user->homeLocationId != $location->locationId)) { // When homeLocation isn't set or has changed
-			if (empty($user->homeLocationId) && !isset($location)) {
-				// homeBranch Code not found in location table and the user doesn't have an assigned homelocation,
-				// try to find the main branch to assign to user
-				// or the first location for the library
-				global $library;
-
-				$location = new Location();
-				$location->libraryId = $library->libraryId;
-				$location->orderBy('isMainBranch desc'); // gets the main branch first or the first location
-				if (!$location->find(true)) {
-					// Seriously no locations even?
-					global $logger;
-					$logger->log('Failed to find any location to assign to user as home location', Logger::LOG_ERROR);
-					unset($location);
-				}
-			}
-			if (isset($location)) {
-				$user->homeLocationId = $location->locationId;
-				if (empty($user->myLocation1Id)) {
-					$user->myLocation1Id = ($location->nearbyLocation1 > 0) ? $location->nearbyLocation1 : $location->locationId;
-					/** @var /Location $location */
-					//Get display name for preferred location 1
-					$myLocation1 = new Location();
-					$myLocation1->locationId = $user->myLocation1Id;
-					if ($myLocation1->find(true)) {
-						$user->_myLocation1 = $myLocation1->displayName;
-					}
-				}
-
-				if (empty($user->myLocation2Id)) {
-					$user->myLocation2Id = ($location->nearbyLocation2 > 0) ? $location->nearbyLocation2 : $location->locationId;
-					//Get display name for preferred location 2
-					$myLocation2 = new Location();
-					$myLocation2->locationId = $user->myLocation2Id;
-					if ($myLocation2->find(true)) {
-						$user->_myLocation2 = $myLocation2->displayName;
-					}
-				}
-			}
-		}
-
-		if (isset($location)) {
-			//Get display names that aren't stored
-			$user->_homeLocationCode = $location->code;
-			$user->_homeLocation = $location->displayName;
-		}
-
-		$user->_expired = 0; // default setting
-		$user->_expireClose = 0;
-		//See if expiration date is close
-		if (trim($patronDump['EXP_DATE']) != '-  -') {
-			$user->_expires = $patronDump['EXP_DATE'];
-			list ($monthExp, $dayExp, $yearExp) = explode("-", $patronDump['EXP_DATE']);
-			$timeExpire = strtotime($monthExp . "/" . $dayExp . "/" . $yearExp);
-			$timeNow = time();
-			$timeToExpire = $timeExpire - $timeNow;
-			if ($timeToExpire <= 30 * 24 * 60 * 60) {
-				if ($timeToExpire <= 0) {
-					$user->_expired = 1;
-				}
-				$user->_expireClose = 1;
-			}
-		}
-
-		//Get additional information that doesn't necessarily get stored in the User Table
-		if (isset($patronDump['ADDRESS'])) {
-			$fullAddress = $patronDump['ADDRESS'];
-			$addressParts = explode('$', $fullAddress);
-			$user->_address1 = $addressParts[0];
-			$user->_city = isset($addressParts[1]) ? $addressParts[1] : '';
-			$user->_state = isset($addressParts[2]) ? $addressParts[2] : '';
-			$user->_zip = isset($addressParts[3]) ? $addressParts[3] : '';
-
-			if (preg_match('/(.*?),\\s+(.*)\\s+(\\d*(?:-\\d*)?)/', $user->_city, $matches)) {
-				$user->_city = $matches[1];
-				$user->_state = $matches[2];
-				$user->_zip = $matches[3];
-			} else if (preg_match('/(.*?)\\s+(\\w{2})\\s+(\\d*(?:-\\d*)?)/', $user->_city, $matches)) {
-				$user->_city = $matches[1];
-				$user->_state = $matches[2];
-				$user->_zip = $matches[3];
-			}
-		} else {
-			$user->_address1 = "";
-			$user->_city = "";
-			$user->_state = "";
-			$user->_zip = "";
-		}
-
-		$user->_address2 = $user->_city . ', ' . $user->_state;
-		$user->_workPhone = (isset($patronDump) && isset($patronDump['G/WK_PHONE'])) ? $patronDump['G/WK_PHONE'] : '';
-		if (isset($patronDump) && isset($patronDump['MOBILE_NO'])) {
-			$user->_mobileNumber = $patronDump['MOBILE_NO'];
-		} else {
-			if (isset($patronDump) && isset($patronDump['MOBILE_PH'])) {
-				$user->_mobileNumber = $patronDump['MOBILE_PH'];
-			} else {
-				$user->_mobileNumber = '';
-			}
-		}
-
-		$user->_finesVal = floatval(preg_replace('/[^\\d.]/', '', $patronDump['MONEY_OWED']));
-		$user->_fines = $patronDump['MONEY_OWED'];
+		$this->loadContactInformationFromPatronDump($user, $patronDump);
 
 		$numHoldsAvailable = 0;
 		$numHoldsRequested = 0;
@@ -1563,20 +1588,6 @@ class Millennium extends AbstractIlsDriver
 		$user->_numHoldsIls = isset($patronDump) ? (isset($patronDump['HOLD']) ? count($patronDump['HOLD']) : 0) : '?';
 		$user->_numHoldsAvailableIls = $numHoldsAvailable;
 		$user->_numHoldsRequestedIls = $numHoldsRequested;
-
-		$noticeLabels = array(
-			//'-' => 'Mail',  // officially None in Sierra, as in No Preference Selected.
-			'-' => '',  // notification will generally be based on what information is available so can't determine here. plb 12-02-2014
-			'a' => 'Mail', // officially Print in Sierra
-			'p' => 'Telephone',
-			'z' => 'Email',
-		);
-		$user->_notices = isset($patronDump) ? $patronDump['NOTICE_PREF'] : '-';
-		if (array_key_exists($user->_notices, $noticeLabels)) {
-			$user->_noticePreferenceLabel = $noticeLabels[$user->_notices];
-		} else {
-			$user->_noticePreferenceLabel = 'Unknown';
-		}
 
 		if ($userExistsInDB) {
 			$user->update();
