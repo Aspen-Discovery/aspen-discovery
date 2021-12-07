@@ -168,7 +168,7 @@ class UserList extends DataObject
 				'source' => $listEntry->source,
 				'sourceId' => $listEntry->sourceId,
 				'title' => $listEntry->title,
-				'notes' => $listEntry->notes,
+				'notes' => $listEntry->getNotes(),
 				'listEntryId' => $listEntry->id,
 				'listEntry' => $this->cleanListEntry(clone($listEntry)),
 				'weight' => $listEntry->weight,
@@ -253,14 +253,18 @@ class UserList extends DataObject
 				$listEntry->notes = $notesText;
 			}else{
 				//Check for bad words in the title or description
-				$titleText = $this->title;
-				if (isset($listEntry->description)){
-					$titleText .= ' ' . $listEntry->description;
+				$titleText = $badWords->censorBadWords($this->title);
+				$this->title = $titleText;
+
+				if (isset($this->description)){
+					if ($badWords->hasBadWords($this->description)){
+						$this->description = '';
+					}
 				}
 				//Filter notes
-				$titleText .= ' ' . $listEntry->notes;
-
-				if ($badWords->hasBadWords($titleText)) return false;
+				if ($badWords->hasBadWords($listEntry->notes)){
+					$listEntry->notes = '';
+				}
 			}
 		}
 		return $listEntry;
