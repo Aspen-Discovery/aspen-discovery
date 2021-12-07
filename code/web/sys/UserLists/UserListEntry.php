@@ -86,4 +86,22 @@ class UserListEntry extends DataObject{
 			return null;
 		}
 	}
+
+	public function getNotes(){
+		global $library;
+		require_once ROOT_DIR . '/sys/LocalEnrichment/BadWord.php';
+		$badWords = new BadWord();
+
+		//Determine if we should censor bad words or hide the comment completely.
+		$censorWords = $library->getGroupedWorkDisplaySettings()->hideCommentsWithBadWords == 0;
+		if ($censorWords){
+			return $badWords->censorBadWords($this->notes);
+		}else{
+			if ($badWords->hasBadWords($this->notes)){
+				return '';
+			}else{
+				return $this->notes;
+			}
+		}
+	}
 }

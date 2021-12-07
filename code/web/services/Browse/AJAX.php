@@ -534,8 +534,10 @@ class Browse_AJAX extends Action {
 					$records[] = $interface->fetch('Browse/noResults.tpl');
 				}
 
-				if(count($preloadedRecords) == 0) {
-					$lastPage = true;
+				if(isset($preloadedRecords)) {
+					if(count($preloadedRecords) == 0) {
+						$lastPage = true;
+					}
 				}
 
 				$result['records']    = implode('', $records);

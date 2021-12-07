@@ -1,4 +1,5 @@
 {strip}
+	{if $showBrowseContent}
 	<h1 class="hiddenTitle">{translate text='Browse the Catalog' isPublicFacing=true}</h1>
 	<div id="home-page-browse-header" class="row">
 		<div class="col-sm-12">
@@ -31,9 +32,11 @@
 			</div>
 		</div>
 	</div>
+	{/if}
 	<div id="home-page-browse-content" class="row">
 		<div class="col-sm-12">
 
+			{if $showBrowseContent}
 			<div class="row" id="selected-browse-label">
 					<div class="btn-toolbar pull-right" style="padding: 0 8px; margin-right: 20px">
 						<div class="btn-group btn-group-sm" data-toggle="buttons">
@@ -79,12 +82,21 @@
 					<span class="glyphicon glyphicon-chevron-down" aria-label="{translate text='Get More Results' inAttribute=true isPublicFacing=true}"></span>
 				</div>
 			</a>
+			{else}
+				<div class="row text-center" style="padding-bottom:1em">
+					<div class="col-md-6 col-md-offset-3">
+						<p class="lead">{translate text='It looks like you\'ve hidden everything' isPublicFacing=true}</p>
+						<p>{translate text='<strong>Start by making a search.</strong> Or, if you want to see curated content from the library again, update your hidden browse categories.' isPublicFacing=true}</p>
+					</div>
+				</div>
+			{/if}
+
 			{* add link to restore hidden browse categories if user has any hidden *}
 			{if $isLoggedIn && $numHiddenCategory > 0}
-			<div class="row text-center" style="margin-top: 2em">
+			<div class="row text-center" {if $showBrowseContent}style="margin-top: 2em"{/if}>
 				<div class="col-xs-12">
 					<a role="button" title="{translate text='Show Hidden Browse Categories' inAttribute=true isPublicFacing=true}" tabindex="1">
-						<span class="btn btn-default btn-sm" aria-label="{translate text='Show Hidden Browse Categories' inAttribute=true isPublicFacing=true}" onclick="return AspenDiscovery.Account.showHiddenBrowseCategories('{$loggedInUser}')"><i class="fas fa-eye"></i> Show Hidden Browse Categories</span>
+						<span class="btn {if $showBrowseContent}btn-default{else}btn-primary{/if}" aria-label="{translate text='Show Hidden Browse Categories' inAttribute=true isPublicFacing=true}" onclick="return AspenDiscovery.Account.showHiddenBrowseCategories('{$loggedInUser}')"><i class="fas fa-eye"></i> {translate text='Show Hidden Browse Categories' isPublicFacing=true}</span>
 					</a>
 				</div>
 			</div>

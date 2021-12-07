@@ -44,9 +44,16 @@ class Search_Home extends Action {
 			$browseCategories = $this->getBrowseCategories($library->getBrowseCategoryGroup()->getBrowseCategories());
 		}
 
+		$interface->assign('showBrowseContent', true);
+
 		// Get All Browse Categories if Location & Library had none set
 		if (empty($browseCategories)){
 			$browseCategories = $this->getBrowseCategories();
+			if(UserAccount::isLoggedIn()) {
+				if($numHiddenCategory != 0) {
+					$interface->assign('showBrowseContent', false);
+				}
+			}
 		}
 
 		$interface->assign('browseCategories', $browseCategories);
@@ -142,11 +149,17 @@ class Search_Home extends Action {
 			/** @var SubBrowseCategories $subCategory */
 			foreach ($selectedBrowseCategory->subBrowseCategories as $subCategory) {
 				// Get Needed Info about sub-category
-				$temp = new BrowseCategory();
-				$temp->get($subCategory->subCategoryId);
-				if ($temp) {
-					if ($temp->textId == $_REQUEST['subCategory']) $validSubCategory = true;
-					$subCategories[] = array('label' => $temp->label, 'textId' => $temp->textId);
+				if ($subCategory instanceof UserList){
+					$subCategories[] = array('label' => $subCategory->title, 'textId' => $subCategory->id);
+				}elseif ($subCategory instanceof SearchEntry){
+					$subCategories[] = array('label' => $subCategory->title, 'textId' => $subCategory->id);
+				}else{
+					$temp = new BrowseCategory();
+					$temp->get($subCategory->subCategoryId);
+					if ($temp) {
+						if ($temp->textId == $_REQUEST['subCategory']) $validSubCategory = true;
+						$subCategories[] = array('label' => $temp->label, 'textId' => $temp->textId);
+					}
 				}
 			}
 			if ($validSubCategory) {
