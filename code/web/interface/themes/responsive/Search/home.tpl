@@ -1,5 +1,5 @@
 {strip}
-	{if $countBrowseCategories > 0}
+	{if $showBrowseContent}
 	<h1 class="hiddenTitle">{translate text='Browse the Catalog' isPublicFacing=true}</h1>
 	<div id="home-page-browse-header" class="row">
 		<div class="col-sm-12">
@@ -36,7 +36,7 @@
 	<div id="home-page-browse-content" class="row">
 		<div class="col-sm-12">
 
-			{if $countBrowseCategories > 0}
+			{if $showBrowseContent}
 			<div class="row" id="selected-browse-label">
 					<div class="btn-toolbar pull-right" style="padding: 0 8px; margin-right: 20px">
 						<div class="btn-group btn-group-sm" data-toggle="buttons">
