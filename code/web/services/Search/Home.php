@@ -44,9 +44,16 @@ class Search_Home extends Action {
 			$browseCategories = $this->getBrowseCategories($library->getBrowseCategoryGroup()->getBrowseCategories());
 		}
 
+		$interface->assign('showBrowseContent', true);
+
 		// Get All Browse Categories if Location & Library had none set
 		if (empty($browseCategories)){
 			$browseCategories = $this->getBrowseCategories();
+			if(UserAccount::isLoggedIn()) {
+				if($numHiddenCategory != 0) {
+					$interface->assign('showBrowseContent', false);
+				}
+			}
 		}
 
 		$interface->assign('browseCategories', $browseCategories);
