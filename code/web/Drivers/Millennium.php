@@ -326,7 +326,7 @@ class Millennium extends AbstractIlsDriver
 	 * AspenError otherwise.
 	 * @access public
 	 */
-	public function getCheckouts($patron) {
+	public function getCheckouts(User $patron) {
 		require_once ROOT_DIR . '/Drivers/marmot_inc/MillenniumCheckouts.php';
 		$millenniumCheckouts = new MillenniumCheckouts($this);
 		return $millenniumCheckouts->getCheckouts($patron, $this->getIndexingProfile());

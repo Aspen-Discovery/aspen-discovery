@@ -150,6 +150,45 @@ class Sierra extends Millennium{
 		return null;
 	}
 
+	public function _postPage($url, $postParams){
+
+		$tokenData = $this->_connectToAPI();
+		if ($tokenData){
+			$ch = curl_init($url);
+			curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 30);
+			curl_setopt($ch, CURLOPT_USERAGENT,"Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)");
+			$headers = array(
+				"Authorization: " . $tokenData->token_type . " {$tokenData->access_token}",
+				"User-Agent: Aspen Discovery",
+				"X-Forwarded-For: " . IPAddress::getActiveIp(),
+				"Host: " . $_SERVER['SERVER_NAME'],
+			);
+			curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+			curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+			curl_setopt($ch, CURLOPT_TIMEOUT, 60);
+			curl_setopt($ch, CURLOPT_POST, true);
+			if ($postParams != null) {
+				if (is_string($postParams)) {
+					$post_string = $postParams;
+				} else {
+					$post_string = http_build_query($postParams);
+				}
+				curl_setopt($ch, CURLOPT_POSTFIELDS, $post_string);
+			}
+			$return = curl_exec($ch);
+			curl_close($ch);
+			$returnVal = json_decode($return);
+			if ($returnVal != null){
+				if (!isset($returnVal->message) || $returnVal->message != 'An unexpected error has occurred.'){
+					return $returnVal;
+				}
+			}
+		}
+		return null;
+	}
+
 	/**
 	 * Returns one of three values
 	 * - none - No forgot password functionality exists
@@ -357,21 +396,8 @@ class Sierra extends Millennium{
 				// for item level holds we need to grab the bib id.
 				$id = $sierraHold->record->id; //$m[1];
 				if($recordType == 'i') {
-					require_once ROOT_DIR . '/sys/Grouping/GroupedWorkItem.php';
-					require_once ROOT_DIR . '/sys/Grouping/GroupedWorkRecord.php';
-					$groupedWorkItem = new GroupedWorkItem();
-					$groupedWorkItem->itemId = ".i{$id}" . $this->getCheckDigit($id);
-					if ($groupedWorkItem->find(true)){
-						$groupedWorkRecord = new GroupedWorkRecord();
-						$groupedWorkRecord->id = $groupedWorkItem->groupedWorkRecordId;
-						if ($groupedWorkRecord->find(true)){
-							$id = $groupedWorkRecord->sourceId;
-						}else{
-							$id = false;
-						}
-					}else{
-						$id = false;
-					}
+					$itemId = ".i{$id}" . $this->getCheckDigit($id);
+					$id = $this->getBibIdForItem($itemId);
 				}
 
 				if ($id != false) {
@@ -471,5 +497,133 @@ class Sierra extends Millennium{
 		}
 
 		return array('historyActive' => $readingHistoryEnabled, 'titles' => $readingHistoryTitles, 'numTitles' => count($readingHistoryTitles));
+	}
+
+	public function getCheckouts(User $patron)
+	{
+		require_once ROOT_DIR . '/sys/User/Checkout.php';
+		$checkedOutTitles = array();
+
+		$patronId = $patron->username;
+
+		$numProcessed = 0;
+		$total = -1;
+
+		while ($numProcessed < $total || $total == -1){
+			$sierraUrl = $this->accountProfile->vendorOpacUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/patrons/".$patronId."/checkouts?fields=default,barcode,callNumber&limit=100&offset={$numProcessed}";
+			$checkouts = $this->_callUrl($sierraUrl);
+			if ($total == -1){
+				$total = $checkouts->total;
+			}
+
+			foreach ($checkouts->entries as $i => $entry){
+				preg_match($this->urlIdRegExp, $entry->id, $m);
+				$checkoutId = $m[1];
+
+				preg_match($this->urlIdRegExp, $entry->item, $m);
+				$itemIdShort = $m[1];
+				$itemId = ".i" . $itemIdShort . $this->getCheckDigit($itemIdShort);
+				$bibId = $this->getBibIdForItem($itemId);
+
+				$curCheckout = new Checkout();
+				$curCheckout->type = 'ils';
+				$curCheckout->source = $this->getIndexingProfile()->name;
+				$curCheckout->sourceId = $checkoutId;
+				$curCheckout->userId = $patron->id;
+				$curCheckout->dueDate = strtotime($entry->dueDate);
+				$curCheckout->checkoutDate = strtotime($entry->outDate);
+				$curCheckout->renewCount = $entry->numberOfRenewals;
+				$curCheckout->canRenew = true;
+				$curCheckout->callNumber = $entry->callNumber;
+				$curCheckout->barcode = $entry->barcode;
+				$curCheckout->itemId = $itemId;
+				$curCheckout->renewalId = $checkoutId;
+				$curCheckout->renewIndicator = $checkoutId;
+				if ($bibId != false){
+					$curCheckout->sourceId = $bibId;
+					$curCheckout->recordId = $bibId;
+					require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+					$recordDriver = new MarcRecordDriver((string)$curCheckout->recordId);
+					if ($recordDriver->isValid()){
+						$curCheckout->updateFromRecordDriver($recordDriver);
+					}else{
+						$bibIdShort = substr(str_replace('.b', 'b', $bibId), 0, -1);
+						$getBibResponse = $this->_callUrl($this->accountProfile->vendorOpacUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/bibs/{$bibIdShort}");
+						if ($getBibResponse){
+							$curCheckout->title = $getBibResponse->title;
+							$curCheckout->author = $getBibResponse->author;
+							$curCheckout->formats = [isset($getBibResponse->materialType->value) ? $getBibResponse->materialType->value : 'Unknown'];
+						}else{
+							$curCheckout->title = 'Unknown';
+							$curCheckout->author = 'Unknown';
+							$curCheckout->formats = ['Unknown'];
+						}
+					}
+				}else{
+					$curCheckout->sourceId = '';
+					$curCheckout->recordId = '';
+				}
+
+				$index = $i + $numProcessed;
+				$sortKey = "{$curCheckout->source}_{$curCheckout->sourceId}_$index";
+				$checkedOutTitles[$sortKey] = $curCheckout;
+			}
+			$numProcessed += $checkouts->total;
+		}
+
+		return $checkedOutTitles;
+	}
+
+	function renewCheckout($patron, $recordId, $itemId = null, $itemIndex = null)
+	{
+		$sierraUrl = $this->accountProfile->vendorOpacUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/patrons/checkouts/{$recordId}/renewal";
+		$renewResponse = $this->_postPage($sierraUrl, null);
+		if (!$renewResponse){
+			return [
+				'success' => false,
+				'message' => "Unable to renew your checkout"
+			];
+		}
+
+		$recordDriver = new MarcRecordDriver($this->accountProfile->recordSource . ":" . $recordId);
+		if ($recordDriver->isValid()) {
+			$title = $recordDriver->getTitle();
+		} else {
+			$title = false;
+		}
+
+		$return = ['success' => true];
+		if($title) {
+			$return['message'] = $title.' has been renewed.';
+		} else {
+			$return['message'] = 'Your item has been renewed';
+		}
+
+		$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
+		return $return;
+	}
+
+	/**
+	 * @param string $itemId
+	 * @return string|false
+	 */
+	private function getBibIdForItem(string $itemId)
+	{
+		require_once ROOT_DIR . '/sys/Grouping/GroupedWorkItem.php';
+		require_once ROOT_DIR . '/sys/Grouping/GroupedWorkRecord.php';
+		$groupedWorkItem = new GroupedWorkItem();
+		$groupedWorkItem->itemId = $itemId;
+		if ($groupedWorkItem->find(true)) {
+			$groupedWorkRecord = new GroupedWorkRecord();
+			$groupedWorkRecord->id = $groupedWorkItem->groupedWorkRecordId;
+			if ($groupedWorkRecord->find(true)) {
+				$id = $groupedWorkRecord->recordIdentifier;
+			} else {
+				$id = false;
+			}
+		} else {
+			$id = false;
+		}
+		return $id;
 	}
 }
