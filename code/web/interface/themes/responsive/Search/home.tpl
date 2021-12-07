@@ -82,14 +82,21 @@
 					<span class="glyphicon glyphicon-chevron-down" aria-label="{translate text='Get More Results' inAttribute=true isPublicFacing=true}"></span>
 				</div>
 			</a>
+			{else}
+				<div class="row text-center" style="padding-bottom:1em">
+					<div class="col-md-6 col-md-offset-3">
+						<p class="lead">{translate text='It looks like you\'ve hidden everything' isPublicFacing=true}</p>
+						<p>{translate text='<strong>Start by making a search.</strong> Or, if you want to see curated content from the library again, update your hidden browse categories.' isPublicFacing=true}</p>
+					</div>
+				</div>
 			{/if}
 
 			{* add link to restore hidden browse categories if user has any hidden *}
 			{if $isLoggedIn && $numHiddenCategory > 0}
-			<div class="row text-center" style="margin-top: 2em">
+			<div class="row text-center" {if $showBrowseContent}style="margin-top: 2em"{/if}>
 				<div class="col-xs-12">
 					<a role="button" title="{translate text='Show Hidden Browse Categories' inAttribute=true isPublicFacing=true}" tabindex="1">
-						<span class="btn btn-default" aria-label="{translate text='Show Hidden Browse Categories' inAttribute=true isPublicFacing=true}" onclick="return AspenDiscovery.Account.showHiddenBrowseCategories('{$loggedInUser}')"><i class="fas fa-eye"></i> {translate text='Show Hidden Browse Categories' isPublicFacing=true}</span>
+						<span class="btn {if $showBrowseContent}btn-default{else}btn-primary{/if}" aria-label="{translate text='Show Hidden Browse Categories' inAttribute=true isPublicFacing=true}" onclick="return AspenDiscovery.Account.showHiddenBrowseCategories('{$loggedInUser}')"><i class="fas fa-eye"></i> {translate text='Show Hidden Browse Categories' isPublicFacing=true}</span>
 					</a>
 				</div>
 			</div>
