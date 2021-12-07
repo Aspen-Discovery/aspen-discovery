@@ -581,7 +581,7 @@ class Sierra extends Millennium{
 
 	function renewCheckout($patron, $recordId, $itemId = null, $itemIndex = null)
 	{
-		$sierraUrl = $this->accountProfile->vendorOpacUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/patrons/checkouts/{$recordId}/renewal";
+		$sierraUrl = $this->accountProfile->vendorOpacUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/patrons/checkouts/{$itemId}/renewal";
 		$renewResponse = $this->_postPage($sierraUrl, null);
 		if (!$renewResponse){
 			return [
@@ -590,6 +590,7 @@ class Sierra extends Millennium{
 			];
 		}
 
+		require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
 		$recordDriver = new MarcRecordDriver($this->accountProfile->recordSource . ":" . $recordId);
 		if ($recordDriver->isValid()) {
 			$title = $recordDriver->getTitle();
