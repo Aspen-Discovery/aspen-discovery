@@ -21,7 +21,7 @@
 										<div class="adminMenuLink "><a href="{$adminAction->link}">{translate text=$adminAction->label isAdminFacing=true}</a></div>
 										{if !empty($adminAction->subActions)}
 											{foreach from=$adminAction->subActions item=adminSubAction}
-												<div class="adminMenuLink " style="font-style: italic"><i class="fas fa-level-down-alt fa-fw" style="transform: rotate(0.75turn) scaleX(-1); padding-right: .5em; margin-left: .5em; vertical-align: middle; position: relative; top: 1px"></i> <a href="{$adminSubAction->link}">{translate text=$adminSubAction->label isAdminFacing=true}</a></div>
+												<div class="adminMenuLink ">&nbsp;&raquo;&nbsp;<a href="{$adminSubAction->link}">{translate text=$adminSubAction->label isAdminFacing=true}</a></div>
 											{/foreach}
 										{/if}
 									{/foreach}
