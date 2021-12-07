@@ -8119,6 +8119,7 @@ AspenDiscovery.Browse = (function(){
 				// Set the new browse category labels (below the carousel)
 				$('.selected-browse-label-search-text,.selected-browse-sub-category-label-search-text').fadeOut(function(){
 					$('.selected-browse-label-search-text').html(newLabel).fadeIn()
+					$('.selected-browse-sub-category-label-search-text').html(newLabel).fadeIn()
 				});
 
 				// Hide current sub-categories while fetching new ones
@@ -8174,6 +8175,7 @@ AspenDiscovery.Browse = (function(){
 						// Set and Show sub-category label
 						$('.selected-browse-sub-category-label-search-text')
 							.html($('#browse-sub-category-' + data.subCategoryTextId).addClass('selected').text())
+							.html(newSubCategoryLabel)
 							.fadeIn();
 					}
 
