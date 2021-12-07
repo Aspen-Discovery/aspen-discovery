@@ -205,12 +205,17 @@ class Sierra extends Millennium{
 		}
 	}
 
-	public function patronLogin($username, $password, $validatedViaSSO)
-	{
-		if ($this->accountProfile->loginConfiguration == 'barcode_pin'){
-			//
-		}
-	}
+//	public function patronLogin($username, $password, $validatedViaSSO)
+//	{
+//		if ($this->accountProfile->loginConfiguration == 'barcode_pin'){
+//			//
+//		}
+//	}public function patronLogin($username, $password, $validatedViaSSO)
+//	{
+//		if ($this->accountProfile->loginConfiguration == 'barcode_pin'){
+//			//
+//		}
+//	}
 
 	public function getHolds($patron)
 	{
