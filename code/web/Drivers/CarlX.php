@@ -690,8 +690,10 @@ class CarlX extends AbstractIlsDriver{
 				$request->Patron = new stdClass();
 			}
 			// Patron Info to update.
-			$request->Patron->Email  = $_REQUEST['email'];
-			$patron->email = $_REQUEST['email'];
+			if (isset($_REQUEST['email'])) {
+				$request->Patron->Email = $_REQUEST['email'];
+				$patron->email = $_REQUEST['email'];
+			}
 			if (isset($_REQUEST['phone'])) {
 				$request->Patron->Phone1 = $_REQUEST['phone'];
 				$patron->phone = $_REQUEST['phone'];
