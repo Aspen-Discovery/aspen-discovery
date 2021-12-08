@@ -1265,74 +1265,42 @@ class Millennium extends AbstractIlsDriver
 		if (preg_match('/<table[^>]*?class="patFunc"[^>]*?>(.*?)<\/table>/si', $listsPage, $listsPageMatches)) {
 			$allListTable = $listsPageMatches[1];
 			//Now that we have the table, get the actual list names and ids
-			preg_match_all('/<tr[^>]*?class="patFuncEntry"[^>]*?>.*?<input type="checkbox" id ="(\\d+)".*?<a.*?>(.*?)<\/a>.*?<td[^>]*class="patFuncDetails">(.*?)<\/td>.*?<\/tr>/si', $allListTable, $listDetails, PREG_SET_ORDER);
-			for ($listIndex = 0; $listIndex < count($listDetails); $listIndex++ ){
-				$listId = $listDetails[$listIndex][1];
-				$title = $listDetails[$listIndex][2];
-				$description = str_replace('&nbsp;', '', $listDetails[$listIndex][3]);
+			if (preg_match_all('/<tr[^>]*?class="patFuncEntry"[^>]*?>.*?<input type="checkbox" id ="(\\d+)".*?<a.*?>(.*?)<\/a>.*?<td[^>]*class="patFuncDetails">(.*?)<\/td>.*?<\/tr>/si', $allListTable, $listDetails, PREG_SET_ORDER)) {
+				for ($listIndex = 0; $listIndex < count($listDetails); $listIndex++) {
+					$listId = $listDetails[$listIndex][1];
+					$title = $listDetails[$listIndex][2];
+					$description = str_replace('&nbsp;', '', $listDetails[$listIndex][3]);
 
-				//Create the list (or find one that already exists)
-				$newList = new UserList();
-				$newList->user_id = $user->id;
-				$newList->title = $title;
-				if (!$newList->find(true)){
-					$newList->description = strip_tags($description);
-					$newList->insert();
-				}
-
-				$currentListTitles = $newList->getListTitles();
-
-				//Get a list of all titles within the list to be imported
-				$listDetailsPage = $this->_fetchPatronInfoPage($patron, 'mylists?listNum='. $listId);
-				//Get the table for the details
-				if (preg_match('/<table[^>]*?class="patFunc"[^>]*?>(.*?)<\/table>/si', $listDetailsPage, $listsDetailsMatches)) {
-					$listTitlesTable = $listsDetailsMatches[1];
-					//Get the bib numbers for the title
-					preg_match_all('/<input type="checkbox" name="(b\\d{1,7})".*?<span[^>]*class="patFuncTitle(?:Main)?">(.*?)<\/span>/si', $listTitlesTable, $bibNumberMatches, PREG_SET_ORDER);
-					for ($bibCtr = 0; $bibCtr < count($bibNumberMatches); $bibCtr++){
-						$bibNumber = $bibNumberMatches[$bibCtr][1];
-						$bibTitle = strip_tags($bibNumberMatches[$bibCtr][2]);
-
-						//Get the grouped work for the resource
-						require_once ROOT_DIR . '/sys/Grouping/GroupedWorkPrimaryIdentifier.php';
-						require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
-						$primaryIdentifier = new GroupedWorkPrimaryIdentifier();
-						$groupedWork = new GroupedWork();
-						$primaryIdentifier->identifier = '.' . $bibNumber . $this->getCheckDigit($bibNumber);
-						$primaryIdentifier->type = 'ils';
-						$primaryIdentifier->joinAdd($groupedWork);
-						if ($primaryIdentifier->find(true)){
-							//Check to see if this title is already on the list.
-							$resourceOnList = false;
-							foreach ($currentListTitles as $currentTitle){
-								if ($currentTitle->groupedWorkPermanentId == $primaryIdentifier->permanent_id){
-									$resourceOnList = true;
-									break;
-								}
-							}
-
-							if (!$resourceOnList){
-								$listEntry = new UserListEntry();
-								$listEntry->source = 'GroupedWork';
-								$listEntry->sourceId = $primaryIdentifier->permanent_id;
-								$listEntry->listId = $newList->id;
-								$listEntry->notes = '';
-								$listEntry->dateAdded = time();
-								$listEntry->insert();
-							}
-						}else{
-							//The title is not in the resources, add an error to the results
-							if (!isset($results['errors'])){
-								$results['errors'] = array();
-							}
-							$results['errors'][] = "\"$bibTitle\" on list $title could not be found in the catalog and was not imported.";
-						}
-
-						$results['totalTitles']++;
+					//Create the list (or find one that already exists)
+					$newList = new UserList();
+					$newList->user_id = $user->id;
+					$newList->title = $title;
+					if (!$newList->find(true)) {
+						$newList->description = strip_tags($description);
+						$newList->insert();
 					}
-				}
 
-				$results['totalLists'] += 1;
+					$currentListTitles = $newList->getListTitles();
+					$this->getListTitlesFromWebPAC($patron, $listId, $currentListTitles, $newList, $results, $title);
+
+					$results['totalLists'] += 1;
+				}
+			}else if (preg_match_all('~<a.*?listNum=(\d+)">(.*?)<\/a>~si', $allListTable, $listDetails, PREG_SET_ORDER)) {
+				for ($listIndex = 0; $listIndex < count($listDetails); $listIndex++) {
+					$listId = $listDetails[$listIndex][1];
+					$title = $listDetails[$listIndex][2];
+					$newList = new UserList();
+					$newList->user_id = $user->id;
+					$newList->title = $title;
+					if (!$newList->find(true)) {
+						$newList->insert();
+					}
+
+					$currentListTitles = $newList->getListTitles();
+					$this->getListTitlesFromWebPAC($patron, $listId, $currentListTitles, $newList, $results, $title);
+
+					$results['totalLists'] += 1;
+				}
 			}
 		}
 
@@ -1596,5 +1564,69 @@ class Millennium extends AbstractIlsDriver
 			$user->insert();
 		}
 		return $user;
+	}
+
+	/**
+	 * @param $patron
+	 * @param $listId
+	 * @param array|null $currentListTitles
+	 * @param UserList $newList
+	 * @param array $results
+	 * @param $title
+	 */
+	private function getListTitlesFromWebPAC($patron, $listId, ?array $currentListTitles, UserList $newList, &$results, $title)
+	{
+		//Get a list of all titles within the list to be imported
+		$listDetailsPage = $this->_fetchPatronInfoPage($patron, 'mylists?listNum=' . $listId);
+		//Get the table for the details
+		$listsDetailsMatches = [];
+		if (preg_match('/<table[^>]*?class="patFunc"[^>]*?>(.*?)<\/table>/si', $listDetailsPage, $listsDetailsMatches)) {
+			$listTitlesTable = $listsDetailsMatches[1];
+			//Get the bib numbers for the title
+			preg_match_all('/<input type="checkbox" name=".*?(b\d{1,7})".*?<span[^>]*class="patFuncTitle(?:Main)?">(.*?)<\/span>/si', $listTitlesTable, $bibNumberMatches, PREG_SET_ORDER);
+			for ($bibCtr = 0; $bibCtr < count($bibNumberMatches); $bibCtr++) {
+				$bibNumber = $bibNumberMatches[$bibCtr][1];
+				$bibTitle = strip_tags($bibNumberMatches[$bibCtr][2]);
+
+				//Get the grouped work for the resource
+				require_once ROOT_DIR . '/sys/Grouping/GroupedWorkPrimaryIdentifier.php';
+				require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
+				$primaryIdentifier = new GroupedWorkPrimaryIdentifier();
+				$primaryIdentifier->identifier = '.' . $bibNumber . $this->getCheckDigit($bibNumber);
+				$primaryIdentifier->type = 'ils';
+				if ($primaryIdentifier->find(true)) {
+					$groupedWork = new GroupedWork();
+					$groupedWork->id = $primaryIdentifier->grouped_work_id;
+					if ($groupedWork->find(true)) {
+						//Check to see if this title is already on the list.
+						$resourceOnList = false;
+						foreach ($currentListTitles as $currentTitle) {
+							if ($currentTitle->groupedWorkPermanentId == $groupedWork->permanent_id) {
+								$resourceOnList = true;
+								break;
+							}
+						}
+
+						if (!$resourceOnList) {
+							$listEntry = new UserListEntry();
+							$listEntry->source = 'GroupedWork';
+							$listEntry->sourceId = $groupedWork->permanent_id;
+							$listEntry->listId = $newList->id;
+							$listEntry->notes = '';
+							$listEntry->dateAdded = time();
+							$listEntry->insert();
+						}
+					}
+				} else {
+					//The title is not in the resources, add an error to the results
+					if (!isset($results['errors'])) {
+						$results['errors'] = array();
+					}
+					$results['errors'][] = "\"$bibTitle\" on list $title could not be found in the catalog and was not imported.";
+				}
+
+				$results['totalTitles']++;
+			}
+		}
 	}
 }
