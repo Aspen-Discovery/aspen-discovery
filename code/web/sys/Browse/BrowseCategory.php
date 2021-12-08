@@ -44,7 +44,7 @@ class BrowseCategory extends BaseBrowsable
 					$SearchEntry = new SearchEntry();
 					$SearchEntry->user_id = UserAccount::getActiveUserId();
 					$SearchEntry->saved = "1";
-					$SearchEntry->orderBy('created');
+					$SearchEntry->orderBy('created desc');
 					$SearchEntry->find();
 					$count = 0;
 					do {
@@ -64,7 +64,7 @@ class BrowseCategory extends BaseBrowsable
 					$lists = new UserList();
 					$lists->user_id = UserAccount::getActiveUserId();
 					$lists->deleted = "0";
-					$lists->orderBy('created');
+					$lists->orderBy('dateUpdated desc');
 					$lists->limit(0,5);
 					$lists->find();
 					while ($lists->fetch()) {

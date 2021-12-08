@@ -623,10 +623,12 @@ class Browse_AJAX extends Action {
 		// If this category has subcategories, get the results of a sub-category instead.
 		if (!empty($response['subcategories'])) {
 			$subCategories = $activeCategory->getSubCategories();
+			$subBrowseCategoryLabel = "";
 			// passed URL variable, or first sub-category
 			if (!empty($_REQUEST['subCategoryTextId'])) {
 				$subCategoryTextId = $_REQUEST['subCategoryTextId'];
 			} else {
+				//Get the first sub category
 				foreach ($subCategories as $subCategoryId) {
 					if($subCategoryId->source == "userList") {
 						require_once ROOT_DIR . '/sys/UserLists/UserList.php';
@@ -634,31 +636,38 @@ class Browse_AJAX extends Action {
 						$id = $label[3];
 						$userList = new UserList();
 						$userList->id = $id;
-						if($userList->numValidListItems() > 0) {
-							$subCategoryTextId = $subCategoryId->id;
-							break;
+						if ($userList->find(true)) {
+							if ($userList->numValidListItems() > 0) {
+								$subCategoryTextId = $subCategoryId->id;
+								$subBrowseCategoryLabel = $userList->title;
+								break;
+							}
 						}
 					} elseif($subCategoryId->source == "savedSearch") {
 						$subCategoryTextId = $subCategoryId->id;
+						$subBrowseCategoryLabel = $subCategoryId->title;
 						break;
 					} else {
 						//Get the first sub category that is valid for display
 						$subCategory = new BrowseCategory();
-						$subCategory->id = $subCategoryId->id;
+						$subCategory->id = $subCategoryId->subCategoryId;
 						if ($subCategory->find(true)) {
 							if ($subCategory->isValidForDisplay()) {
 								$subCategoryTextId = $subCategory->textId;
+								$subBrowseCategoryLabel = $subCategory->label;
 								break;
 							}
 						}
 					}
 				}
 			}
+
 			if (!empty($subCategoryTextId)) {
 				$response['subCategoryTextId'] = $subCategoryTextId;
 
 				// Set the main category label before we fetch the sub-categories main results
-				$response['label']  = translate(['text'=>$this->browseCategory->label,'isPublicFacing'=>true]);
+				$response['label']  = translate(['text'=>$this->browseCategory->label,'isPublicFacing'=>true, 'isAdminEnteredData'=>true]);
+				$response['subCategoryLabel']  = translate(['text'=>$subBrowseCategoryLabel,'isPublicFacing'=>true, 'isAdminEnteredData'=>true]);
 
 				// Reset Main Category with SubCategory to fetch main results
 				$this->setTextId($subCategoryTextId);

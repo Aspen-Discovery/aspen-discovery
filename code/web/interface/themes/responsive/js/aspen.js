@@ -8039,8 +8039,9 @@ AspenDiscovery.Browse = (function(){
 						$('#browse-category-' + categoryTextId).addClass('selected');
 						$('.selected-browse-label-search-text').html(data.label); // update label
 
-						$('.selected-browse-dismiss').removeAttr('onclick');
-						$('.selected-browse-dismiss').attr('onclick', 'AspenDiscovery.Account.dismissBrowseCategory("'+data.patronId+'","'+categoryTextId+'")');
+						var dismissButton = $('.selected-browse-dismiss');
+						dismissButton.removeAttr('onclick');
+						dismissButton.attr('onclick', 'AspenDiscovery.Account.dismissBrowseCategory("'+data.patronId+'","'+categoryTextId+'")');
 
 						AspenDiscovery.Browse.curPage = 1;
 						AspenDiscovery.Browse.curCategory = data.textId;
@@ -8063,8 +8064,9 @@ AspenDiscovery.Browse = (function(){
 							$('#browse-sub-category-menu').html(data.subcategories).fadeIn();
 							if (data.subCategoryTextId) { // selected sub category
 								// Set and Show sub-category label
+								$('#browse-sub-category-' + data.subCategoryTextId).addClass('selected');
 								$('.selected-browse-sub-category-label-search-text')
-									.html($('#browse-sub-category-' + data.subCategoryTextId).addClass('selected').text())
+									.html(data.subCategoryLabel)
 									.fadeIn()
 							}
 						}
@@ -8174,6 +8176,7 @@ AspenDiscovery.Browse = (function(){
 						// Set and Show sub-category label
 						$('.selected-browse-sub-category-label-search-text')
 							.html($('#browse-sub-category-' + data.subCategoryTextId).addClass('selected').text())
+							.html(newSubCategoryLabel)
 							.fadeIn();
 					}
 
