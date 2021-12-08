@@ -8973,7 +8973,7 @@ AspenDiscovery.GroupedWork = (function(){
 				$.getJSON(
 						url, function(data){
 							if (data.result === true){
-								$("#notInterested" + recordId).css('background-color', '#f73d3d').css('color', 'white').prop("disabled", true);
+								$("#groupedRecord" + recordId).parent('.result').hide();
 							}else{
 								AspenDiscovery.showMessage('Sorry', data.message);
 							}
