@@ -31,7 +31,7 @@ export default class More extends Component {
                 {
                     key: '1',
                     title: 'Privacy Policy',
-                    path: 'https://bywatersolutions.com/lida-app-privacy-policy',
+                    path: 'https://bywatersolutions.com/projects/aspen-discovery/lida-app-privacy-policy',
                     external: true,
                 }
             ]
