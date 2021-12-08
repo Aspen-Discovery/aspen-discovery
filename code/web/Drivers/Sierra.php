@@ -4,91 +4,6 @@ require_once ROOT_DIR . '/Drivers/Millennium.php';
 class Sierra extends Millennium{
 	protected $urlIdRegExp = "/.*\/(\d*)$/";
 
-	public function getItemInfo($bibId){
-		global $configArray;
-		$apiVersion = $configArray['Catalog']['api_version'];
-		$apiUrl = $this->getVendorOpacUrl() . "/iii/sierra-api/v{$apiVersion}/items/{$bibId}";
-		$itemData = $this->_callUrl($apiUrl);
-		return $itemData;
-	}
-
-	public function getBib($bibId){
-		global $configArray;
-		$apiVersion = $configArray['Catalog']['api_version'];
-		$apiUrl = $this->getVendorOpacUrl() . "/iii/sierra-api/v{$apiVersion}/bibs/{$bibId}";
-		$itemData = $this->_callUrl($apiUrl);
-		return $itemData;
-	}
-
-	public function getMarc($bibId){
-		global $configArray;
-		$apiVersion = $configArray['Catalog']['api_version'];
-		$apiUrl = $this->getVendorOpacUrl() . "/iii/sierra-api/v{$apiVersion}/bibs/{$bibId}/marc";
-		$itemData = $this->_callUrl($apiUrl);
-		return $itemData;
-	}
-
-	public function getItemsForBib($bibId) {
-		global $configArray;
-		$apiVersion = $configArray['Catalog']['api_version'];
-		$apiUrl = $this->getVendorOpacUrl() . "/iii/sierra-api/v{$apiVersion}/items/?bibIds=$bibId";
-		$itemData = $this->_callUrl($apiUrl);
-		return $itemData;
-	}
-
-	public function getBibsChangedSince($date, $offset = 0) {
-		global $configArray;
-		$apiVersion = $configArray['Catalog']['api_version'];
-		$apiUrl = $this->getVendorOpacUrl() . "/iii/sierra-api/v{$apiVersion}/bibs/?updatedDate=[$date,]&limit=2000&fields=id&deleted=false&suppressed=false";
-		$itemData = $this->_callUrl($apiUrl);
-		$bibIds = array();
-		if (isset($itemData->entries)){
-			foreach ($itemData->entries as $entry){
-				$bibIds[] = '.b' . $entry->id . $this->getCheckDigit($entry->id);
-				//$bibIds[] = $entry->id;
-			}
-			if (count($itemData->entries) == 2000){
-				$bibIds = array_merge($bibIds, $this->getBibsChangedSince($date, $offset + 2000));
-			}
-		}
-		return $bibIds;
-	}
-
-	public function getBibsDeletedSince($date, $offset = 0) {
-		global $configArray;
-		$apiVersion = $configArray['Catalog']['api_version'];
-		$apiUrl = $this->getVendorOpacUrl() . "/iii/sierra-api/v{$apiVersion}/bibs/?deletedDate=[$date,]&limit=2000&fields=id&offset=$offset";
-		$itemData = $this->_callUrl($apiUrl);
-		$bibIds = array();
-		if (isset($itemData->entries)){
-			foreach ($itemData->entries as $entry){
-				$bibIds[] = '.b' . $entry->id . $this->getCheckDigit($entry->id);
-				//$bibIds[] = $entry->id;
-			}
-			if (count($itemData->entries) == 2000){
-				$bibIds = array_merge($bibIds, $this->getBibsDeletedSince($date, $offset + 2000));
-			}
-		}
-		return $bibIds;
-	}
-
-	public function getBibsCreatedSince($date, $offset = 0) {
-		global $configArray;
-		$apiVersion = $configArray['Catalog']['api_version'];
-		$apiUrl = $this->getVendorOpacUrl() . "/iii/sierra-api/v{$apiVersion}/bibs/?createdDate=[$date,]&limit=2000&fields=id&deleted=false&suppressed=false&offset=$offset";
-		$itemData = $this->_callUrl($apiUrl);
-		$bibIds = array();
-		if (isset($itemData->entries)){
-			foreach ($itemData->entries as $entry){
-				$bibIds[] = '.b' . $entry->id . $this->getCheckDigit($entry->id);
-			}
-			if (count($itemData->entries) == 2000){
-				$bibIds = array_merge($bibIds, $this->getBibsCreatedSince($date, $offset + 2000));
-			}
-		}
-		return $bibIds;
-	}
-
 	public function _connectToApi($forceNewConnection = false){
 		/** @var Memcache $memCache */
 		global $memCache;
@@ -121,7 +36,7 @@ class Sierra extends Millennium{
 		return $tokenData;
 	}
 
-	public function _callUrl($url){
+	public function _callUrl($requestType, $url){
 		$tokenData = $this->_connectToAPI();
 		if ($tokenData){
 			$ch = curl_init($url);
@@ -139,7 +54,12 @@ class Sierra extends Millennium{
 			curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
 			curl_setopt($ch, CURLOPT_TIMEOUT, 60);
 			$return = curl_exec($ch);
+			$curl_info = curl_getinfo($ch);
+			$responseCode = $curl_info['http_code'];
+
+			ExternalRequestLogEntry::logRequest($requestType, 'GET', $url, $headers, '', $responseCode, $return, []);
 			curl_close($ch);
+
 			$returnVal = json_decode($return);
 			if ($returnVal != null){
 				if (!isset($returnVal->message) || $returnVal->message != 'An unexpected error has occurred.'){
@@ -150,7 +70,7 @@ class Sierra extends Millennium{
 		return null;
 	}
 
-	public function _postPage($url, $postParams){
+	public function _postPage($requestType, $url, $postParams){
 
 		$tokenData = $this->_connectToAPI();
 		if ($tokenData){
@@ -176,8 +96,14 @@ class Sierra extends Millennium{
 					$post_string = http_build_query($postParams);
 				}
 				curl_setopt($ch, CURLOPT_POSTFIELDS, $post_string);
+			}else{
+				$post_string = '';
 			}
 			$return = curl_exec($ch);
+			$curl_info = curl_getinfo($ch);
+			$responseCode = $curl_info['http_code'];
+
+			ExternalRequestLogEntry::logRequest($requestType, 'POST', $url, $headers, $post_string, $responseCode, $return, []);
 			curl_close($ch);
 			$returnVal = json_decode($return);
 			if ($returnVal != null){
@@ -236,7 +162,7 @@ class Sierra extends Millennium{
 		} else {
 			$sierraUrl .= "?fields=default,frozen,priority,priorityQueueLength,notWantedBeforeDate,notNeededAfterDate&limit=1000";
 		}
-		$holds = $this->_callUrl($sierraUrl);
+		$holds = $this->_callUrl('sierra.getHolds', $sierraUrl);
 
 		if($holds->total == 0) {
 			return $return;
@@ -441,7 +367,7 @@ class Sierra extends Millennium{
 
 		$sierraUrl = $this->accountProfile->vendorOpacUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/patrons/".$patronId."/checkouts/history/activationStatus";
 
-		$readingHistoryEnabledResponse = $this->_callUrl($sierraUrl);
+		$readingHistoryEnabledResponse = $this->_callUrl('sierra.getReadingHistoryStatus', $sierraUrl);
 
 		if (!empty($readingHistoryEnabledResponse)){
 			$readingHistoryEnabled = $readingHistoryEnabledResponse->readingHistoryActivation;
@@ -453,7 +379,7 @@ class Sierra extends Millennium{
 			while ($numProcessed < $totalToProcess){
 				$getReadingHistoryUrl = $this->accountProfile->vendorOpacUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/patrons/".$patronId."/checkouts/history?limit=100&offset=$numProcessed&sortField=outDate&sortOrder=desc";
 
-				$readingHistoryResponse = $this->_callUrl($getReadingHistoryUrl);
+				$readingHistoryResponse = $this->_callUrl('sierra.getReadingHistory', $getReadingHistoryUrl);
 				if ($readingHistoryResponse && $readingHistoryResponse->total > 0){
 					$totalToProcess = $readingHistoryResponse->total;
 					foreach ($readingHistoryResponse->entries as $historyEntry){
@@ -481,7 +407,7 @@ class Sierra extends Millennium{
 							$curTitle['author'] = $recordDriver->getPrimaryAuthor();
 						}else{
 							//get title and author by looking up the bib
-							$getBibResponse = $this->_callUrl($this->accountProfile->vendorOpacUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/bibs/{$curTitle['shortId']}");
+							$getBibResponse = $this->_callUrl('sierra.getBib', $this->accountProfile->vendorOpacUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/bibs/{$curTitle['shortId']}");
 							if ($getBibResponse){
 								$curTitle['title'] = $getBibResponse->title;
 								$curTitle['author'] = $getBibResponse->author;
@@ -519,7 +445,7 @@ class Sierra extends Millennium{
 
 		while ($numProcessed < $total || $total == -1){
 			$sierraUrl = $this->accountProfile->vendorOpacUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/patrons/".$patronId."/checkouts?fields=default,barcode,callNumber&limit=100&offset={$numProcessed}";
-			$checkouts = $this->_callUrl($sierraUrl);
+			$checkouts = $this->_callUrl('sierra.getCheckouts', $sierraUrl);
 			if ($total == -1){
 				$total = $checkouts->total;
 			}
@@ -556,7 +482,7 @@ class Sierra extends Millennium{
 						$curCheckout->updateFromRecordDriver($recordDriver);
 					}else{
 						$bibIdShort = substr(str_replace('.b', 'b', $bibId), 0, -1);
-						$getBibResponse = $this->_callUrl($this->accountProfile->vendorOpacUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/bibs/{$bibIdShort}");
+						$getBibResponse = $this->_callUrl('sierra.getBib', $this->accountProfile->vendorOpacUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/bibs/{$bibIdShort}");
 						if ($getBibResponse){
 							$curCheckout->title = $getBibResponse->title;
 							$curCheckout->author = $getBibResponse->author;
@@ -585,7 +511,7 @@ class Sierra extends Millennium{
 	function renewCheckout($patron, $recordId, $itemId = null, $itemIndex = null)
 	{
 		$sierraUrl = $this->accountProfile->vendorOpacUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/patrons/checkouts/{$itemId}/renewal";
-		$renewResponse = $this->_postPage($sierraUrl, null);
+		$renewResponse = $this->_postPage('sierra.renewCheckout', $sierraUrl, null);
 		if (!$renewResponse){
 			return [
 				'success' => false,
