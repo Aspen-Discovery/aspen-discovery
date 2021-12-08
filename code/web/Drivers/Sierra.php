@@ -403,11 +403,14 @@ class Sierra extends Millennium{
 				if($recordType == 'i') {
 					$itemId = ".i{$id}" . $this->getCheckDigit($id);
 					$id = $this->getBibIdForItem($itemId);
+				}else{
+					$recordXD = $this->getCheckDigit($id);
+					$id = ".b{$id}{$recordXD}";
 				}
 
 				if ($id != false) {
-					$recordXD = $this->getCheckDigit($id);
-					$curHold->recordId = ".b{$id}{$recordXD}";
+
+					$curHold->recordId = $id;
 					$curHold->sourceId = $curHold->recordId;
 
 					// get more info from record
