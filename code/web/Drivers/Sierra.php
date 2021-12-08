@@ -9,7 +9,6 @@ class Sierra extends Millennium{
 		global $memCache;
 		$tokenData = $memCache->get('sierra_token');
 		if ($forceNewConnection || $tokenData == false){
-			global $configArray;
 			$apiVersion = $this->accountProfile->apiVersion;
 			$ch = curl_init($this->getVendorOpacUrl() . "/iii/sierra-api/v{$apiVersion}/token/");
 			curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 15);
@@ -158,7 +157,7 @@ class Sierra extends Millennium{
 
 		$sierraUrl = $sierraUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/patrons/".$patronId."/holds";
 		if ($this->accountProfile->apiVersion > 4){
-			$sierraUrl .= "?fields=default,pickupByDate,frozen,priority,priorityQueueLength,notWantedBeforeDate,notNeededAfterDate&limit=1000&expand=record";
+			$sierraUrl .= "?fields=default,pickupByDate,frozen,priority,priorityQueueLength,notWantedBeforeDate,notNeededAfterDate&limit=1000";
 		} else {
 			$sierraUrl .= "?fields=default,frozen,priority,priorityQueueLength,notWantedBeforeDate,notNeededAfterDate&limit=1000";
 		}
@@ -211,10 +210,12 @@ class Sierra extends Millennium{
 			// status, cancelable, freezable
 			$recordStatus = $sierraHold->status->code;
 			// check item record status
+			preg_match($this->urlIdRegExp, $sierraHold->record, $m);
+			$recordId = $m[1];
 			if ($sierraHold->recordType == 'i') {
-				$recordItemStatus = $sierraHold->record->status->code;
+				$recordItemStatus = $sierraHold->status->code;
 				// If this is an inn-reach exclude from check -- this comes later
-				if(! strstr($sierraHold->record->id, "@")) {
+				if(! strstr($recordId, "@")) {
 					// if the item status is "on hold shelf" (!) but the hold record status is "on hold" (0) use "on hold" status
 					// the "on hold shelf" status is for another patron.
 					if($recordItemStatus != "!" && $recordStatus != '0') {
@@ -316,7 +317,7 @@ class Sierra extends Millennium{
 
 			// determine if this is an innreach hold
 			// or if it's a regular ILS hold
-			if(strstr($sierraHold->record->id, "@")) {
+			if(strstr($recordId, "@")) {
 				//TODO: Handle INNREACH Holds
 			} else {
 				///////////////
@@ -325,7 +326,7 @@ class Sierra extends Millennium{
 				// record type and record id
 				$recordType = $sierraHold->recordType;
 				// for item level holds we need to grab the bib id.
-				$id = $sierraHold->record->id; //$m[1];
+				$id = $recordId; //$m[1];
 				if($recordType == 'i') {
 					$itemId = ".i{$id}" . $this->getCheckDigit($id);
 					$id = $this->getBibIdForItem($itemId);
