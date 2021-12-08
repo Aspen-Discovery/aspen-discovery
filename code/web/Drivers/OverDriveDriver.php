@@ -1138,7 +1138,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 		return OverDriveDriver::$validUsersOverDrive[$userBarcode];
 	}
 
-	public function getDownloadLink($overDriveId, $format, $user){
+	public function getDownloadLink($overDriveId, $format, $user, $isSupplement){
 		global $configArray;
 		$result = array();
 		$result['success'] = false;
@@ -1146,7 +1146,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 
 		// check the value of useFulfillmentInterface
 		$fulfillmentMethod = $this->getSettings()->useFulfillmentInterface;
-		if($fulfillmentMethod == 1 ) {
+		if($fulfillmentMethod == 1 && $isSupplement == 0) {
 			$showLibbyPromoSetting = $this->getSettings()->showLibbyPromo;
 			if($showLibbyPromoSetting == 1) {
 				$showLibbyPromo = "";
