@@ -59,7 +59,7 @@
 					</div>
 
 					<div class="row">
-						<div class="result-label col-tn-3">{translate text="Number of Titles"} </div>
+						<div class="result-label col-tn-3">{translate text="Number of Titles" isPublicFacing=true} </div>
 						<div class="result-value col-tn-9 notranslate">
 							{translate text="%1% titles are in this list." 1=$list->numValidListItems() isPublicFacing=true}
 						</div>
@@ -68,7 +68,7 @@
 					{* Description Section *}
 					{if $list->description}
 						<div class="row visible-xs">
-							<div class="result-label col-tn-3 col-xs-3">{translate text="Description"}</div>
+							<div class="result-label col-tn-3 col-xs-3">{translate text="Description" isPublicFacing=true}</div>
 							<div class="result-value col-tn-9 col-xs-9"><a id="descriptionLink{$list->id|escape}" href="#" onclick="$('#descriptionValue{$list->id|escape},#descriptionLink{$list->id|escape}').toggleClass('hidden-xs');return false;">Click to view</a></div>
 						</div>
 
@@ -82,7 +82,7 @@
 					<div class="row">
 
 						<div class="col-xs-12">
-							<p class="text-muted"><small>{translate text='Created on'} {$list->created|date_format:"%B %e, %Y %l:%M %p"}<br>
+							<p class="text-muted"><small>{translate text='Created on' isPublicFacing=true} {$list->created|date_format:"%B %e, %Y %l:%M %p"}<br>
 									{translate text='Last Updated'} {$list->dateUpdated|date_format:"%B %e, %Y %l:%M %p"}</small></p>
 						</div>
 					</div>

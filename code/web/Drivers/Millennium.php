@@ -165,6 +165,150 @@ class Millennium extends AbstractIlsDriver
 		}
 	}
 
+	public function loadContactInformation(User $user)
+	{
+		$barcode = $user->getBarcode();
+		$patronDump = $this->_getPatronDump($barcode);
+		$this->loadContactInformationFromPatronDump($user, $patronDump);
+	}
+
+	public function loadContactInformationFromPatronDump(User $user, $patronDump){
+		//Setup home location
+		$location = null;
+		if (isset($patronDump['HOME_LIBR']) || isset($patronDump['HOLD_LIBR'])) {
+			$homeBranchCode = isset($patronDump['HOME_LIBR']) ? $patronDump['HOME_LIBR'] : $patronDump['HOLD_LIBR'];
+			$homeBranchCode = str_replace('+', '', $homeBranchCode); //Translate home branch to plain text
+			$location = new Location();
+			$location->code = $homeBranchCode;
+			if (!$location->find(true)) {
+				unset($location);
+			}
+		} else {
+			global $logger;
+			$logger->log('Millennium Driver: No Home Library Location or Hold location found in patron dump. User : ' . $user->id, Logger::LOG_ERROR);
+			// The code below will attempt to find a location for the library anyway if the homeLocation is already set
+		}
+
+		if (empty($user->homeLocationId) || (isset($location) && $user->homeLocationId != $location->locationId)) { // When homeLocation isn't set or has changed
+			if (empty($user->homeLocationId) && !isset($location)) {
+				// homeBranch Code not found in location table and the user doesn't have an assigned homelocation,
+				// try to find the main branch to assign to user
+				// or the first location for the library
+				global $library;
+
+				$location = new Location();
+				$location->libraryId = $library->libraryId;
+				$location->orderBy('isMainBranch desc'); // gets the main branch first or the first location
+				if (!$location->find(true)) {
+					// Seriously no locations even?
+					global $logger;
+					$logger->log('Failed to find any location to assign to user as home location', Logger::LOG_ERROR);
+					unset($location);
+				}
+			}
+			if (isset($location)) {
+				$user->homeLocationId = $location->locationId;
+				if (empty($user->myLocation1Id)) {
+					$user->myLocation1Id = ($location->nearbyLocation1 > 0) ? $location->nearbyLocation1 : $location->locationId;
+					/** @var /Location $location */
+					//Get display name for preferred location 1
+					$myLocation1 = new Location();
+					$myLocation1->locationId = $user->myLocation1Id;
+					if ($myLocation1->find(true)) {
+						$user->_myLocation1 = $myLocation1->displayName;
+					}
+				}
+
+				if (empty($user->myLocation2Id)) {
+					$user->myLocation2Id = ($location->nearbyLocation2 > 0) ? $location->nearbyLocation2 : $location->locationId;
+					//Get display name for preferred location 2
+					$myLocation2 = new Location();
+					$myLocation2->locationId = $user->myLocation2Id;
+					if ($myLocation2->find(true)) {
+						$user->_myLocation2 = $myLocation2->displayName;
+					}
+				}
+			}
+		}
+
+		if (isset($location)) {
+			//Get display names that aren't stored
+			$user->_homeLocationCode = $location->code;
+			$user->_homeLocation = $location->displayName;
+		}
+
+		$user->_expired = 0; // default setting
+		$user->_expireClose = 0;
+		//See if expiration date is close
+		if (trim($patronDump['EXP_DATE']) != '-  -') {
+			$user->_expires = $patronDump['EXP_DATE'];
+			list ($monthExp, $dayExp, $yearExp) = explode("-", $patronDump['EXP_DATE']);
+			$timeExpire = strtotime($monthExp . "/" . $dayExp . "/" . $yearExp);
+			$timeNow = time();
+			$timeToExpire = $timeExpire - $timeNow;
+			if ($timeToExpire <= 30 * 24 * 60 * 60) {
+				if ($timeToExpire <= 0) {
+					$user->_expired = 1;
+				}
+				$user->_expireClose = 1;
+			}
+		}
+
+		//Get additional information that doesn't necessarily get stored in the User Table
+		if (isset($patronDump['ADDRESS'])) {
+			$fullAddress = $patronDump['ADDRESS'];
+			$addressParts = explode('$', $fullAddress);
+			$user->_address1 = $addressParts[0];
+			$user->_city = isset($addressParts[1]) ? $addressParts[1] : '';
+			$user->_state = isset($addressParts[2]) ? $addressParts[2] : '';
+			$user->_zip = isset($addressParts[3]) ? $addressParts[3] : '';
+
+			if (preg_match('/(.*?),\\s+(.*)\\s+(\\d*(?:-\\d*)?)/', $user->_city, $matches)) {
+				$user->_city = $matches[1];
+				$user->_state = $matches[2];
+				$user->_zip = $matches[3];
+			} else if (preg_match('/(.*?)\\s+(\\w{2})\\s+(\\d*(?:-\\d*)?)/', $user->_city, $matches)) {
+				$user->_city = $matches[1];
+				$user->_state = $matches[2];
+				$user->_zip = $matches[3];
+			}
+		} else {
+			$user->_address1 = "";
+			$user->_city = "";
+			$user->_state = "";
+			$user->_zip = "";
+		}
+
+		$user->_address2 = $user->_city . ', ' . $user->_state;
+		$user->_workPhone = (isset($patronDump) && isset($patronDump['G/WK_PHONE'])) ? $patronDump['G/WK_PHONE'] : '';
+		if (isset($patronDump) && isset($patronDump['MOBILE_NO'])) {
+			$user->_mobileNumber = $patronDump['MOBILE_NO'];
+		} else {
+			if (isset($patronDump) && isset($patronDump['MOBILE_PH'])) {
+				$user->_mobileNumber = $patronDump['MOBILE_PH'];
+			} else {
+				$user->_mobileNumber = '';
+			}
+		}
+
+		$user->_finesVal = floatval(preg_replace('/[^\\d.]/', '', $patronDump['MONEY_OWED']));
+		$user->_fines = $patronDump['MONEY_OWED'];
+
+		$noticeLabels = array(
+			//'-' => 'Mail',  // officially None in Sierra, as in No Preference Selected.
+			'-' => '',  // notification will generally be based on what information is available so can't determine here. plb 12-02-2014
+			'a' => 'Mail', // officially Print in Sierra
+			'p' => 'Telephone',
+			'z' => 'Email',
+		);
+		$user->_notices = isset($patronDump) ? $patronDump['NOTICE_PREF'] : '-';
+		if (array_key_exists($user->_notices, $noticeLabels)) {
+			$user->_noticePreferenceLabel = $noticeLabels[$user->_notices];
+		} else {
+			$user->_noticePreferenceLabel = 'Unknown';
+		}
+	}
+
 	/**
 	 * Get a dump of information from Millennium that can be used in other
 	 * routines.
@@ -326,7 +470,7 @@ class Millennium extends AbstractIlsDriver
 	 * AspenError otherwise.
 	 * @access public
 	 */
-	public function getCheckouts($patron) {
+	public function getCheckouts(User $patron) {
 		require_once ROOT_DIR . '/Drivers/marmot_inc/MillenniumCheckouts.php';
 		$millenniumCheckouts = new MillenniumCheckouts($this);
 		return $millenniumCheckouts->getCheckouts($patron, $this->getIndexingProfile());
@@ -547,11 +691,15 @@ class Millennium extends AbstractIlsDriver
 				$extraPostInfo['addr1c'] = '';
 				$extraPostInfo['addr1d'] = '';
 			}
-			$extraPostInfo['tele1'] = $_REQUEST['phone'];
+			if (isset($_REQUEST['phone'])) {
+				$extraPostInfo['tele1'] = $_REQUEST['phone'];
+			}
 			if (isset($_REQUEST['workPhone'])){
 				$extraPostInfo['tele2'] = $_REQUEST['workPhone'];
 			}
-			$extraPostInfo['email'] = $_REQUEST['email'];
+			if (isset($_REQUEST['email'])) {
+				$extraPostInfo['email'] = $_REQUEST['email'];
+			}
 
 			if (!empty($_REQUEST['pickupLocation'])){
 				$pickupLocation = $_REQUEST['pickupLocation'];
@@ -1117,74 +1265,42 @@ class Millennium extends AbstractIlsDriver
 		if (preg_match('/<table[^>]*?class="patFunc"[^>]*?>(.*?)<\/table>/si', $listsPage, $listsPageMatches)) {
 			$allListTable = $listsPageMatches[1];
 			//Now that we have the table, get the actual list names and ids
-			preg_match_all('/<tr[^>]*?class="patFuncEntry"[^>]*?>.*?<input type="checkbox" id ="(\\d+)".*?<a.*?>(.*?)<\/a>.*?<td[^>]*class="patFuncDetails">(.*?)<\/td>.*?<\/tr>/si', $allListTable, $listDetails, PREG_SET_ORDER);
-			for ($listIndex = 0; $listIndex < count($listDetails); $listIndex++ ){
-				$listId = $listDetails[$listIndex][1];
-				$title = $listDetails[$listIndex][2];
-				$description = str_replace('&nbsp;', '', $listDetails[$listIndex][3]);
+			if (preg_match_all('/<tr[^>]*?class="patFuncEntry"[^>]*?>.*?<input type="checkbox" id ="(\\d+)".*?<a.*?>(.*?)<\/a>.*?<td[^>]*class="patFuncDetails">(.*?)<\/td>.*?<\/tr>/si', $allListTable, $listDetails, PREG_SET_ORDER)) {
+				for ($listIndex = 0; $listIndex < count($listDetails); $listIndex++) {
+					$listId = $listDetails[$listIndex][1];
+					$title = $listDetails[$listIndex][2];
+					$description = str_replace('&nbsp;', '', $listDetails[$listIndex][3]);
 
-				//Create the list (or find one that already exists)
-				$newList = new UserList();
-				$newList->user_id = $user->id;
-				$newList->title = $title;
-				if (!$newList->find(true)){
-					$newList->description = strip_tags($description);
-					$newList->insert();
-				}
-
-				$currentListTitles = $newList->getListTitles();
-
-				//Get a list of all titles within the list to be imported
-				$listDetailsPage = $this->_fetchPatronInfoPage($patron, 'mylists?listNum='. $listId);
-				//Get the table for the details
-				if (preg_match('/<table[^>]*?class="patFunc"[^>]*?>(.*?)<\/table>/si', $listDetailsPage, $listsDetailsMatches)) {
-					$listTitlesTable = $listsDetailsMatches[1];
-					//Get the bib numbers for the title
-					preg_match_all('/<input type="checkbox" name="(b\\d{1,7})".*?<span[^>]*class="patFuncTitle(?:Main)?">(.*?)<\/span>/si', $listTitlesTable, $bibNumberMatches, PREG_SET_ORDER);
-					for ($bibCtr = 0; $bibCtr < count($bibNumberMatches); $bibCtr++){
-						$bibNumber = $bibNumberMatches[$bibCtr][1];
-						$bibTitle = strip_tags($bibNumberMatches[$bibCtr][2]);
-
-						//Get the grouped work for the resource
-						require_once ROOT_DIR . '/sys/Grouping/GroupedWorkPrimaryIdentifier.php';
-						require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
-						$primaryIdentifier = new GroupedWorkPrimaryIdentifier();
-						$groupedWork = new GroupedWork();
-						$primaryIdentifier->identifier = '.' . $bibNumber . $this->getCheckDigit($bibNumber);
-						$primaryIdentifier->type = 'ils';
-						$primaryIdentifier->joinAdd($groupedWork);
-						if ($primaryIdentifier->find(true)){
-							//Check to see if this title is already on the list.
-							$resourceOnList = false;
-							foreach ($currentListTitles as $currentTitle){
-								if ($currentTitle->groupedWorkPermanentId == $primaryIdentifier->permanent_id){
-									$resourceOnList = true;
-									break;
-								}
-							}
-
-							if (!$resourceOnList){
-								$listEntry = new UserListEntry();
-								$listEntry->source = 'GroupedWork';
-								$listEntry->sourceId = $primaryIdentifier->permanent_id;
-								$listEntry->listId = $newList->id;
-								$listEntry->notes = '';
-								$listEntry->dateAdded = time();
-								$listEntry->insert();
-							}
-						}else{
-							//The title is not in the resources, add an error to the results
-							if (!isset($results['errors'])){
-								$results['errors'] = array();
-							}
-							$results['errors'][] = "\"$bibTitle\" on list $title could not be found in the catalog and was not imported.";
-						}
-
-						$results['totalTitles']++;
+					//Create the list (or find one that already exists)
+					$newList = new UserList();
+					$newList->user_id = $user->id;
+					$newList->title = $title;
+					if (!$newList->find(true)) {
+						$newList->description = strip_tags($description);
+						$newList->insert();
 					}
-				}
 
-				$results['totalLists'] += 1;
+					$currentListTitles = $newList->getListTitles();
+					$this->getListTitlesFromWebPAC($patron, $listId, $currentListTitles, $newList, $results, $title);
+
+					$results['totalLists'] += 1;
+				}
+			}else if (preg_match_all('~<a.*?listNum=(\d+)">(.*?)<\/a>~si', $allListTable, $listDetails, PREG_SET_ORDER)) {
+				for ($listIndex = 0; $listIndex < count($listDetails); $listIndex++) {
+					$listId = $listDetails[$listIndex][1];
+					$title = $listDetails[$listIndex][2];
+					$newList = new UserList();
+					$newList->user_id = $user->id;
+					$newList->title = $title;
+					if (!$newList->find(true)) {
+						$newList->insert();
+					}
+
+					$currentListTitles = $newList->getListTitles();
+					$this->getListTitlesFromWebPAC($patron, $listId, $currentListTitles, $newList, $results, $title);
+
+					$results['totalLists'] += 1;
+				}
 			}
 		}
 
@@ -1422,126 +1538,7 @@ class Millennium extends AbstractIlsDriver
 			$user->_web_note = $patronDump['WEB_NOTE'];
 		}*/
 
-		//Setup home location
-		$location = null;
-		if (isset($patronDump['HOME_LIBR']) || isset($patronDump['HOLD_LIBR'])) {
-			$homeBranchCode = isset($patronDump['HOME_LIBR']) ? $patronDump['HOME_LIBR'] : $patronDump['HOLD_LIBR'];
-			$homeBranchCode = str_replace('+', '', $homeBranchCode); //Translate home branch to plain text
-			$location = new Location();
-			$location->code = $homeBranchCode;
-			if (!$location->find(true)) {
-				unset($location);
-			}
-		} else {
-			global $logger;
-			$logger->log('Millennium Driver: No Home Library Location or Hold location found in patron dump. User : ' . $user->id, Logger::LOG_ERROR);
-			// The code below will attempt to find a location for the library anyway if the homeLocation is already set
-		}
-
-		if (empty($user->homeLocationId) || (isset($location) && $user->homeLocationId != $location->locationId)) { // When homeLocation isn't set or has changed
-			if (empty($user->homeLocationId) && !isset($location)) {
-				// homeBranch Code not found in location table and the user doesn't have an assigned homelocation,
-				// try to find the main branch to assign to user
-				// or the first location for the library
-				global $library;
-
-				$location = new Location();
-				$location->libraryId = $library->libraryId;
-				$location->orderBy('isMainBranch desc'); // gets the main branch first or the first location
-				if (!$location->find(true)) {
-					// Seriously no locations even?
-					global $logger;
-					$logger->log('Failed to find any location to assign to user as home location', Logger::LOG_ERROR);
-					unset($location);
-				}
-			}
-			if (isset($location)) {
-				$user->homeLocationId = $location->locationId;
-				if (empty($user->myLocation1Id)) {
-					$user->myLocation1Id = ($location->nearbyLocation1 > 0) ? $location->nearbyLocation1 : $location->locationId;
-					/** @var /Location $location */
-					//Get display name for preferred location 1
-					$myLocation1 = new Location();
-					$myLocation1->locationId = $user->myLocation1Id;
-					if ($myLocation1->find(true)) {
-						$user->_myLocation1 = $myLocation1->displayName;
-					}
-				}
-
-				if (empty($user->myLocation2Id)) {
-					$user->myLocation2Id = ($location->nearbyLocation2 > 0) ? $location->nearbyLocation2 : $location->locationId;
-					//Get display name for preferred location 2
-					$myLocation2 = new Location();
-					$myLocation2->locationId = $user->myLocation2Id;
-					if ($myLocation2->find(true)) {
-						$user->_myLocation2 = $myLocation2->displayName;
-					}
-				}
-			}
-		}
-
-		if (isset($location)) {
-			//Get display names that aren't stored
-			$user->_homeLocationCode = $location->code;
-			$user->_homeLocation = $location->displayName;
-		}
-
-		$user->_expired = 0; // default setting
-		$user->_expireClose = 0;
-		//See if expiration date is close
-		if (trim($patronDump['EXP_DATE']) != '-  -') {
-			$user->_expires = $patronDump['EXP_DATE'];
-			list ($monthExp, $dayExp, $yearExp) = explode("-", $patronDump['EXP_DATE']);
-			$timeExpire = strtotime($monthExp . "/" . $dayExp . "/" . $yearExp);
-			$timeNow = time();
-			$timeToExpire = $timeExpire - $timeNow;
-			if ($timeToExpire <= 30 * 24 * 60 * 60) {
-				if ($timeToExpire <= 0) {
-					$user->_expired = 1;
-				}
-				$user->_expireClose = 1;
-			}
-		}
-
-		//Get additional information that doesn't necessarily get stored in the User Table
-		if (isset($patronDump['ADDRESS'])) {
-			$fullAddress = $patronDump['ADDRESS'];
-			$addressParts = explode('$', $fullAddress);
-			$user->_address1 = $addressParts[0];
-			$user->_city = isset($addressParts[1]) ? $addressParts[1] : '';
-			$user->_state = isset($addressParts[2]) ? $addressParts[2] : '';
-			$user->_zip = isset($addressParts[3]) ? $addressParts[3] : '';
-
-			if (preg_match('/(.*?),\\s+(.*)\\s+(\\d*(?:-\\d*)?)/', $user->_city, $matches)) {
-				$user->_city = $matches[1];
-				$user->_state = $matches[2];
-				$user->_zip = $matches[3];
-			} else if (preg_match('/(.*?)\\s+(\\w{2})\\s+(\\d*(?:-\\d*)?)/', $user->_city, $matches)) {
-				$user->_city = $matches[1];
-				$user->_state = $matches[2];
-				$user->_zip = $matches[3];
-			}
-		} else {
-			$user->_address1 = "";
-			$user->_city = "";
-			$user->_state = "";
-			$user->_zip = "";
-		}
-
-		$user->_address2 = $user->_city . ', ' . $user->_state;
-		$user->_workPhone = (isset($patronDump) && isset($patronDump['G/WK_PHONE'])) ? $patronDump['G/WK_PHONE'] : '';
-		if (isset($patronDump) && isset($patronDump['MOBILE_NO'])) {
-			$user->_mobileNumber = $patronDump['MOBILE_NO'];
-		} else {
-			if (isset($patronDump) && isset($patronDump['MOBILE_PH'])) {
-				$user->_mobileNumber = $patronDump['MOBILE_PH'];
-			} else {
-				$user->_mobileNumber = '';
-			}
-		}
-
-		$user->_finesVal = floatval(preg_replace('/[^\\d.]/', '', $patronDump['MONEY_OWED']));
-		$user->_fines = $patronDump['MONEY_OWED'];
+		$this->loadContactInformationFromPatronDump($user, $patronDump);
 
 		$numHoldsAvailable = 0;
 		$numHoldsRequested = 0;
@@ -1560,20 +1557,6 @@ class Millennium extends AbstractIlsDriver
 		$user->_numHoldsAvailableIls = $numHoldsAvailable;
 		$user->_numHoldsRequestedIls = $numHoldsRequested;
 
-		$noticeLabels = array(
-			//'-' => 'Mail',  // officially None in Sierra, as in No Preference Selected.
-			'-' => '',  // notification will generally be based on what information is available so can't determine here. plb 12-02-2014
-			'a' => 'Mail', // officially Print in Sierra
-			'p' => 'Telephone',
-			'z' => 'Email',
-		);
-		$user->_notices = isset($patronDump) ? $patronDump['NOTICE_PREF'] : '-';
-		if (array_key_exists($user->_notices, $noticeLabels)) {
-			$user->_noticePreferenceLabel = $noticeLabels[$user->_notices];
-		} else {
-			$user->_noticePreferenceLabel = 'Unknown';
-		}
-
 		if ($userExistsInDB) {
 			$user->update();
 		} else {
@@ -1581,5 +1564,69 @@ class Millennium extends AbstractIlsDriver
 			$user->insert();
 		}
 		return $user;
+	}
+
+	/**
+	 * @param $patron
+	 * @param $listId
+	 * @param array|null $currentListTitles
+	 * @param UserList $newList
+	 * @param array $results
+	 * @param $title
+	 */
+	private function getListTitlesFromWebPAC($patron, $listId, ?array $currentListTitles, UserList $newList, &$results, $title)
+	{
+		//Get a list of all titles within the list to be imported
+		$listDetailsPage = $this->_fetchPatronInfoPage($patron, 'mylists?listNum=' . $listId);
+		//Get the table for the details
+		$listsDetailsMatches = [];
+		if (preg_match('/<table[^>]*?class="patFunc"[^>]*?>(.*?)<\/table>/si', $listDetailsPage, $listsDetailsMatches)) {
+			$listTitlesTable = $listsDetailsMatches[1];
+			//Get the bib numbers for the title
+			preg_match_all('/<input type="checkbox" name=".*?(b\d{1,7})".*?<span[^>]*class="patFuncTitle(?:Main)?">(.*?)<\/span>/si', $listTitlesTable, $bibNumberMatches, PREG_SET_ORDER);
+			for ($bibCtr = 0; $bibCtr < count($bibNumberMatches); $bibCtr++) {
+				$bibNumber = $bibNumberMatches[$bibCtr][1];
+				$bibTitle = strip_tags($bibNumberMatches[$bibCtr][2]);
+
+				//Get the grouped work for the resource
+				require_once ROOT_DIR . '/sys/Grouping/GroupedWorkPrimaryIdentifier.php';
+				require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
+				$primaryIdentifier = new GroupedWorkPrimaryIdentifier();
+				$primaryIdentifier->identifier = '.' . $bibNumber . $this->getCheckDigit($bibNumber);
+				$primaryIdentifier->type = 'ils';
+				if ($primaryIdentifier->find(true)) {
+					$groupedWork = new GroupedWork();
+					$groupedWork->id = $primaryIdentifier->grouped_work_id;
+					if ($groupedWork->find(true)) {
+						//Check to see if this title is already on the list.
+						$resourceOnList = false;
+						foreach ($currentListTitles as $currentTitle) {
+							if ($currentTitle->groupedWorkPermanentId == $groupedWork->permanent_id) {
+								$resourceOnList = true;
+								break;
+							}
+						}
+
+						if (!$resourceOnList) {
+							$listEntry = new UserListEntry();
+							$listEntry->source = 'GroupedWork';
+							$listEntry->sourceId = $groupedWork->permanent_id;
+							$listEntry->listId = $newList->id;
+							$listEntry->notes = '';
+							$listEntry->dateAdded = time();
+							$listEntry->insert();
+						}
+					}
+				} else {
+					//The title is not in the resources, add an error to the results
+					if (!isset($results['errors'])) {
+						$results['errors'] = array();
+					}
+					$results['errors'][] = "\"$bibTitle\" on list $title could not be found in the catalog and was not imported.";
+				}
+
+				$results['totalTitles']++;
+			}
+		}
 	}
 }

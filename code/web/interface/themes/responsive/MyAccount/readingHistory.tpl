@@ -13,7 +13,7 @@
 			{include file='ilsMessages.tpl' messages=$ilsMessages}
 		{/if}
 
-		<h1>{translate text='My Reading History'} {if $historyActive == true}
+		<h1>{translate text='My Reading History' isPublicFacing = true} {if $historyActive == true}
 				<small><a id="readingListWhatsThis" href="#" onclick="$('#readingListDisclaimer').toggle();return false;">({translate text="What's This?" isPublicFacing=true})</a></small>
 			{/if}
 		</h1>
