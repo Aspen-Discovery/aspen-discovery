@@ -1022,8 +1022,6 @@ class SearchAPI extends Action
 						if ($temp->find(true)) {
 							$subCategories[] = array('label' => $subCategory->label, 'textId' => $temp->id, 'source' => "savedSearch");
 						}
-						// order searches from most recently saved to least recently
-						$subCategories = array_reverse($subCategories);
 					} elseif($textId == "system_user_lists") {
 						$label = explode('_', $subCategory->id);
 						$id = $label[3];
@@ -1035,8 +1033,6 @@ class SearchAPI extends Action
 								$subCategories[] = array('label' => $temp->title, 'textId' => $temp->id, 'source' => "userList");
 							}
 						}
-						// order lists from most recently created to least recently
-						$subCategories = array_reverse($subCategories);
 					} else {
 						$temp = new BrowseCategory();
 						$temp->id = $subCategory->subCategoryId;
