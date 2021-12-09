@@ -14,7 +14,6 @@ class DonationCompleted extends Action {
 			$error = 'No Donation ID was provided, could not complete the donation';
 		} else{
 			$paymentId = $_REQUEST['payment'];
-			$donationId = $_REQUEST['donation'];
 			require_once ROOT_DIR . '/sys/Account/UserPayment.php';
 			$userPayment = new UserPayment();
 			require_once ROOT_DIR . '/sys/Donations/Donation.php';
