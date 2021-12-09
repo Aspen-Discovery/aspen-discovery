@@ -1441,7 +1441,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			if (iTypeSubfieldValue != null){
 				String iTypeValue = iTypeSubfieldValue.getData();
 				//noinspection RedundantIfStatement
-				if (iTypesToSuppress.matcher(iTypeValue).matches()){
+				if (iTypesToSuppress != null && iTypesToSuppress.matcher(iTypeValue).matches()){
 					return true;
 				}
 			}

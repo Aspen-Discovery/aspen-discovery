@@ -480,8 +480,8 @@ public class SymphonyExportMain {
 									String volume = fullCallNumber.substring(startOfVolumeInfo);
 									VolumeInfo curVolume;
 
-									if (volumesForRecord.containsKey(volume)) {
-										curVolume = volumesForRecord.get(volume);
+									if (volumesForRecord.containsKey(fullCallNumber)) {
+										curVolume = volumesForRecord.get(fullCallNumber);
 									} else {
 										curVolume = new VolumeInfo();
 										curVolume.bibNumber = bibNumber;
@@ -490,7 +490,7 @@ public class SymphonyExportMain {
 										//of the first call number we find which works just fine when placing the hold
 										curVolume.volumeIdentifier = volumeIdentifier;
 										curVolume.displayOrder = curRow;
-										volumesForRecord.put(volume, curVolume);
+										volumesForRecord.put(fullCallNumber, curVolume);
 									}
 									curVolume.relatedItems.add(relatedItemNumber);
 								}

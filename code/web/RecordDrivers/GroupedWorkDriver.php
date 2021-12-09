@@ -2206,10 +2206,10 @@ class GroupedWorkDriver extends IndexRecordDriver
 		'On Order' => 2,
 		'Coming Soon' => 3,
 		'In Processing' => 3.5,
+		'In Transit' => 3.75, //This used to show as 6.5 (above available online), moved down because we don't know if it's in transit to another library, or if it's in transit to a hold shelf.
 		'Checked Out' => 4,
 		'Library Use Only' => 5,
 		'Available Online' => 6,
-		'In Transit' => 6.5,
 		'On Shelf' => 7
 	);
 
