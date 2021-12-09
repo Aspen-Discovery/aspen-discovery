@@ -119,23 +119,23 @@
 				<div class="col-xs-9 col-sm-8 col-md-4 col-lg-3">
 					<div class="btn-group btn-group-vertical btn-block">
 						{if $record->overdriveRead}
-							<a href="#" onclick="return AspenDiscovery.OverDrive.followOverDriveDownloadLink('{$record->userId}', '{$record->recordId}', 'ebook-overdrive')" class="btn btn-sm btn-action btn-wrap"><i class="fas fa-external-link-alt"></i> {translate text="Read Online" isPublicFacing=true}</a>
+							<a href="#" onclick="return AspenDiscovery.OverDrive.followOverDriveDownloadLink('{$record->userId}', '{$record->recordId}', 'ebook-overdrive', false)" class="btn btn-sm btn-action btn-wrap"><i class="fas fa-external-link-alt"></i> {translate text="Read Online" isPublicFacing=true}</a>
 						{/if}
 						{if $record->overdriveListen}
-							<a href="#" onclick="return AspenDiscovery.OverDrive.followOverDriveDownloadLink('{$record->userId}', '{$record->recordId}', 'audiobook-overdrive')" class="btn btn-sm btn-action btn-wrap"><i class="fas fa-external-link-alt"></i> {translate text="Listen Online" isPublicFacing=true}</a>
+							<a href="#" onclick="return AspenDiscovery.OverDrive.followOverDriveDownloadLink('{$record->userId}', '{$record->recordId}', 'audiobook-overdrive', false)" class="btn btn-sm btn-action btn-wrap"><i class="fas fa-external-link-alt"></i> {translate text="Listen Online" isPublicFacing=true}</a>
 						{/if}
 						{if !empty($record->overdriveVideo)}
-							<a href="#" onclick="return AspenDiscovery.OverDrive.followOverDriveDownloadLink('{$record->userId}', '{$record->recordId}', 'video-streaming')" class="btn btn-sm btn-action btn-wrap"><i class="fas fa-external-link-alt"></i> {translate text="Watch Online" isPublicFacing=true}</a>
+							<a href="#" onclick="return AspenDiscovery.OverDrive.followOverDriveDownloadLink('{$record->userId}', '{$record->recordId}', 'video-streaming', false)" class="btn btn-sm btn-action btn-wrap"><i class="fas fa-external-link-alt"></i> {translate text="Watch Online" isPublicFacing=true}</a>
 						{/if}
 						{if $record->overdriveMagazine}
-							<a href="#" onclick="return AspenDiscovery.OverDrive.followOverDriveDownloadLink('{$record->userId}', '{$record->recordId}', 'magazine-overdrive')" class="btn btn-sm btn-action btn-wrap"><i class="fas fa-external-link-alt"></i> {translate text="Read Online" isPublicFacing=true}</a>
+							<a href="#" onclick="return AspenDiscovery.OverDrive.followOverDriveDownloadLink('{$record->userId}', '{$record->recordId}', 'magazine-overdrive', false)" class="btn btn-sm btn-action btn-wrap"><i class="fas fa-external-link-alt"></i> {translate text="Read Online" isPublicFacing=true}</a>
 						{/if}
 						{if $record->formatSelected && empty($record->overdriveVideo)}
-							<a href="#" onclick="return AspenDiscovery.OverDrive.followOverDriveDownloadLink('{$record->userId}', '{$record->recordId}', '{$record->selectedFormatValue}')" class="btn btn-sm btn-action btn-wrap">{translate text="Download Again" isPublicFacing=true}</a>
+							<a href="#" onclick="return AspenDiscovery.OverDrive.followOverDriveDownloadLink('{$record->userId}', '{$record->recordId}', '{$record->selectedFormatValue}', false)" class="btn btn-sm btn-action btn-wrap">{translate text="Download Again" isPublicFacing=true}</a>
 						{/if}
 						{if !empty($record->supplementalMaterials)}
 							{foreach from=$record->supplementalMaterials item=supplement}
-								<a href="#" onclick="return AspenDiscovery.OverDrive.followOverDriveDownloadLink('{$record->userId}', '{$supplement->recordId}', '{$supplement->selectedFormatValue}')" class="btn btn-sm btn-default btn-wrap">{translate text="Download Supplemental %1%" 1=$supplement->selectedFormatName isPublicFacing=true}</a>
+								<a href="#" onclick="return AspenDiscovery.OverDrive.followOverDriveDownloadLink('{$record->userId}', '{$supplement->recordId}', '{$supplement->selectedFormatValue}', true)" class="btn btn-sm btn-default btn-wrap">{translate text="Download Supplemental %1%" 1=$supplement->selectedFormatName isPublicFacing=true}</a>
 							{/foreach}
 						{/if}
 						{if $record->canRenew}

@@ -25,6 +25,83 @@ class Donation extends DataObject
 	public $sendEmailToUser;
 	public $donationSettingId;
 
+	public static function getObjectStructure() {
+		return [
+			'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id within the database'),
+			'firstName' => ['property' => 'firstName', 'type' => 'text', 'label' => 'First Name', 'description' => 'The first name of the person making the donation', 'readOnly' => true],
+			'lastName' => ['property' => 'lastName', 'type' => 'text', 'label' => 'Last Name', 'description' => 'The last name of the person making the donation', 'readOnly' => true],
+			'email' => ['property' => 'email', 'type' => 'email', 'label' => 'Email', 'description' => 'The email of the person making the donation', 'readOnly' => true],
+			'anonymous' => ['property' => 'anonymous', 'type' => 'checkbox', 'label' => 'Anonymous?', 'description' => 'Whether or not the donor wants to remain anonymous', 'readOnly' => true],
+			'donationLibrary' => ['property' => 'donationLibrary', 'type' => 'text', 'label' => 'Donate To', 'description' => 'The location where the user wants to send the donation', 'readOnly' => true],
+			'earmark' => ['property' => 'earmark', 'type' => 'text', 'label' => 'Earmark', 'description' => 'An earmark the user would like the donation applied to', 'readOnly' => true],
+			'dedicateType' => ['property' => 'dedicateType', 'type' => 'text', 'label' => 'Dedication', 'description' => 'The location where the user wants to send the donation', 'readOnly' => true],
+			'honoreeFirstName' => ['property' => 'honoreeFirstName', 'type' => 'text', 'label' => 'Honoree First Name', 'description' => 'The first name of the person being honored', 'readOnly' => true],
+			'honoreeLastName' => ['property' => 'honoreeLastName', 'type' => 'text', 'label' => 'Honoree Last Name', 'description' => 'The last name of the person being honored', 'readOnly' => true],
+			'donationValue' => ['property' => 'donationValue', 'type' => 'text', 'label' => 'Donation Amount', 'description' => 'The amount donated', 'readOnly' => true],
+			'donationComplete' => ['property' => 'donationComplete', 'type' => 'text', 'label' => 'Donation Completed', 'description' => 'Whether or not payment for the donation has been completed', 'readOnly' => true],
+		];
+	}
+
+	function __get($name){
+		if ($name == 'donationValue'){
+			global $activeLanguage;
+			$currencyCode = 'USD';
+			$variables = new SystemVariables();
+			if ($variables->find(true)){
+				$currencyCode = $variables->currencyCode;
+			}
+
+			$currencyFormatter = new NumberFormatter( $activeLanguage->locale . '@currency=' . $currencyCode, NumberFormatter::CURRENCY );
+
+			require_once ROOT_DIR . '/sys/Account/UserPayment.php';
+			$payment = new UserPayment();
+			$payment->id = $this->paymentId;
+			if ($payment->find(true)){
+				return $currencyFormatter->formatCurrency(empty($payment->totalPaid) ? 0 : (int)$payment->totalPaid, $currencyCode);
+			}else{
+				return $currencyFormatter->formatCurrency(0, $currencyCode);
+			}
+		}elseif ($name == 'donationComplete') {
+			require_once ROOT_DIR . '/sys/Account/UserPayment.php';
+			$payment = new UserPayment();
+			$payment->id = $this->paymentId;
+			if ($payment->find(true)){
+				return $payment->completed ? 'true' : 'false';
+			}else{
+				return 'false';
+			}
+		}elseif ($name == 'donationLibrary'){
+			if (empty($this->donateToLibraryId)){
+				return 'None';
+			}else{
+				$location = new Location();
+				$location->locationId = $this->donateToLibraryId;
+				if ($location->find(true)){
+					return $location->displayName;
+				}else{
+					return 'Unknown';
+				}
+			}
+		}elseif ($name == 'earmark') {
+			if (empty($this->comments)){
+				return 'None';
+			}else{
+				require_once ROOT_DIR . '/sys/Donations/DonationEarmark.php';
+				$earmark = new DonationEarmark();
+				$earmark->donationSettingId = $this->donationSettingId;
+				$earmark->id = $this->comments;
+				if ($earmark->find(true)){
+					return $earmark->label;
+				}else{
+					return 'Unknown';
+				}
+
+			}
+		}else{
+			return $this->_data[$name];
+		}
+	}
+
 	function getDonationValue($paymentId){
 		require_once ROOT_DIR . '/sys/Account/UserPayment.php';
 		$payment = new UserPayment();
@@ -104,6 +181,7 @@ class Donation extends DataObject
 	}
 
 	static function getLocations() {
+		global $configArray;
 		$availableLocations = array();
 		$locations = array();
 		require_once ROOT_DIR . '/sys/LibraryLocation/Location.php';
@@ -250,4 +328,7 @@ class Donation extends DataObject
 		return array('paymentType' => $paymentType, 'currencyCode' => $currencyCode, 'userId' => $userId, 'clientId' => $clientId, 'showPayLater' => $showPayLater);
 	}
 
+	function canActiveUserEdit(){
+		return false;
+	}
 }

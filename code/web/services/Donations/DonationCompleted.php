@@ -14,7 +14,6 @@ class DonationCompleted extends Action {
 			$error = 'No Donation ID was provided, could not complete the donation';
 		} else{
 			$paymentId = $_REQUEST['payment'];
-			$donationId = $_REQUEST['donation'];
 			require_once ROOT_DIR . '/sys/Account/UserPayment.php';
 			$userPayment = new UserPayment();
 			require_once ROOT_DIR . '/sys/Donations/Donation.php';
@@ -25,6 +24,7 @@ class DonationCompleted extends Action {
 				if($donation->find(true)){
 					if($userPayment->completed == true){
 						$message = 'Your payment has been completed.';
+						$donation->sendReceiptEmail();
 					}else{
 						if(empty($userPayment->message)){
 							$error = 'Your payment has not been marked as complete within the system, please contact the library with your receipt to have the payment credited to your account.';

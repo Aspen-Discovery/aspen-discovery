@@ -161,6 +161,7 @@ class Polaris extends AbstractIlsDriver
 			$readingHistoryEnabled = $jsonResponse->PatronPreferences->ReadingListEnabled;
 		}
 
+		$readingHistoryTitles = [];
 		if ($readingHistoryEnabled) {
 			$readingHistoryTitles = array();
 			$polarisUrl = "/PAPIService/REST/public/v1/1033/100/1/patron/{$patron->getBarcode()}/readinghistory?rowsperpage=5&page=0";
@@ -194,6 +195,7 @@ class Polaris extends AbstractIlsDriver
 						$curTitle['format'] = $recordDriver->getFormats();
 						$curTitle['author'] = $recordDriver->getPrimaryAuthor();
 					}
+					$recordDriver->__destruct();
 					$recordDriver = null;
 					$readingHistoryTitles[] = $curTitle;
 				}

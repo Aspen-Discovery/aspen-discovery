@@ -45,6 +45,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	char subLocationSubfield;
 	char iTypeSubfield;
 	private Pattern nonHoldableITypes;
+	private Pattern iTypesToSuppress;
 	boolean useEContentSubfield = false;
 	char eContentSubfieldIndicator;
 	private Pattern suppressRecordsWithUrlsMatching;
@@ -53,6 +54,8 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	private char totalCheckoutSubfield;
 	boolean useICode2Suppression;
 	char iCode2Subfield;
+	protected Pattern iCode2sToSuppress;
+	protected Pattern bCode3sToSuppress;
 	private boolean useItemBasedCallNumbers;
 	private char callNumberPrestampSubfield;
 	private char callNumberSubfield;
@@ -182,6 +185,14 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			}catch (Exception e){
 				indexer.getLogEntry().incErrors("Could not load non holdable iTypes", e);
 			}
+			try {
+				String pattern = indexingProfileRS.getString("iTypesToSuppress");
+				if (pattern != null && pattern.length() > 0) {
+					iTypesToSuppress = Pattern.compile("^(" + pattern + ")$", Pattern.CASE_INSENSITIVE);
+				}
+			}catch (Exception e){
+				indexer.getLogEntry().incErrors("Could not load iTypes to Suppress", e);
+			}
 
 			dateCreatedSubfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "dateCreated");
 			dateAddedFormat = indexingProfileRS.getString("dateCreatedFormat");
@@ -191,6 +202,24 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 
 			iCode2Subfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "iCode2");
 			useICode2Suppression = indexingProfileRS.getBoolean("useICode2Suppression");
+
+			try {
+				String pattern = indexingProfileRS.getString("iCode2sToSuppress");
+				if (pattern != null && pattern.length() > 0) {
+					iCode2sToSuppress = Pattern.compile("^(" + pattern + ")$", Pattern.CASE_INSENSITIVE);
+				}
+			}catch (Exception e){
+				indexer.getLogEntry().incErrors("Could not load iCode2s to Suppress", e);
+			}
+
+			try {
+				String pattern = indexingProfileRS.getString("bCode3sToSuppress");
+				if (pattern != null && pattern.length() > 0) {
+					bCode3sToSuppress = Pattern.compile("^(" + pattern + ")$", Pattern.CASE_INSENSITIVE);
+				}
+			}catch (Exception e){
+				indexer.getLogEntry().incErrors("Could not load bCode3s to Suppress", e);
+			}
 
 			eContentSubfieldIndicator = getSubfieldIndicatorFromConfig(indexingProfileRS, "eContentDescriptor");
 			useEContentSubfield = eContentSubfieldIndicator != ' ';
@@ -1402,12 +1431,22 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			Subfield formatSubfieldValue = curItem.getSubfield(formatSubfield);
 			if (formatSubfieldValue != null){
 				String formatValue = formatSubfieldValue.getData();
-				//noinspection RedundantIfStatement
 				if (formatsToSuppress.contains(formatValue.toUpperCase())){
 					return true;
 				}
 			}
 		}
+		if (iTypeSubfield != ' '){
+			Subfield iTypeSubfieldValue = curItem.getSubfield(iTypeSubfield);
+			if (iTypeSubfieldValue != null){
+				String iTypeValue = iTypeSubfieldValue.getData();
+				//noinspection RedundantIfStatement
+				if (iTypesToSuppress.matcher(iTypeValue).matches()){
+					return true;
+				}
+			}
+		}
+
 		return false;
 	}
 

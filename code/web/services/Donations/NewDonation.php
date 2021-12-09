@@ -6,10 +6,8 @@ require_once ROOT_DIR . "/sys/ECommerce/DonationsSetting.php";
 class Donations_NewDonation extends Action {
 
 	function launch() {
-		global $configArray;
 		global $interface;
 		global $library;
-		global $location;
 
 		$donationSettings = new DonationsSetting();
 		$donationSettings->id = $library->donationSettingId;

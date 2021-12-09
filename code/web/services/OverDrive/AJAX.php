@@ -158,13 +158,14 @@ class OverDrive_AJAX extends JSON_Action
 		$user = UserAccount::getLoggedInUser();
 		$overDriveId = $_REQUEST['overDriveId'];
 		$formatId = $_REQUEST['formatId'];
+		$isSupplement = (int) filter_var($_REQUEST['isSupplement'], FILTER_VALIDATE_BOOLEAN);
 		if ($user) {
 			$patronId = $_REQUEST['patronId'];
 			$patron = $user->getUserReferredTo($patronId);
 			if ($patron) {
 				require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
 				$driver = new OverDriveDriver();
-				return $driver->getDownloadLink($overDriveId, $formatId, $patron);
+				return $driver->getDownloadLink($overDriveId, $formatId, $patron, $isSupplement);
 			} else {
 				return array('result' => false, 'message' => 'Sorry, it looks like you don\'t have permissions to download titles for that user.');
 			}

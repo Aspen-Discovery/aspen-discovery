@@ -62,6 +62,7 @@ class IndexingProfile extends DataObject
 	public /** @noinspection PhpUnused */ $totalRenewals;
 	public $iType;
 	public /** @noinspection PhpUnused */ $nonHoldableITypes;
+	public /** @noinspection PhpUnused */ $iTypesToSuppress;
 	public $noteSubfield;
 	public $dueDate;
 	public $dueDateFormat;
@@ -71,6 +72,8 @@ class IndexingProfile extends DataObject
 	public /** @noinspection PhpUnused */ $lastCheckinFormat;
 	public /** @noinspection PhpUnused */ $iCode2;
 	public /** @noinspection PhpUnused */ $useICode2Suppression;
+	public /** @noinspection PhpUnused */ $iCode2sToSuppress;
+	public /** @noinspection PhpUnused */ $bCode3sToSuppress;
 	public $format;
 	public /** @noinspection PhpUnused */ $eContentDescriptor;
 	public /** @noinspection PhpUnused */ $orderTag;
@@ -144,6 +147,8 @@ class IndexingProfile extends DataObject
 
 			'suppressRecordsWithUrlsMatching' => array('property' => 'suppressRecordsWithUrlsMatching', 'type'=>'regularExpression', 'label'=>'Suppress Records With Urls Matching', 'description'=> 'Any records with an 856u matching the pattern will be suppressed', 'defaultValue'=>'overdrive\.com|contentreserve\.com|hoopla|yourcloudlibrary|axis360\.baker-taylor\.com', 'hideInLists'=>true, 'forcesReindex'=> true),
 
+			'bCode3sToSuppress' => array('property' => 'bCode3sToSuppress', 'type' => 'text', 'label' => 'bCode3 values to suppress', 'description' => 'A regular expression containing the bCode3 values to suppress (Sierra Only).', 'forcesReindex' => true),
+
 			'determineAudienceBy' => ['property' => 'determineAudienceBy', 'type' => 'enum', 'values' => ['0' => 'By Bib Record Data', '1' => 'Item Collection using audience map', '2' => 'Item Shelf Location using audience map', '3' => 'Specified Item subfield using audience map'], 'label' => 'Determine Audience By', 'description' => 'How to determine the audience for each record', 'default' => '0', 'onchange'=>'return AspenDiscovery.Admin.updateIndexingProfileFields();'],
 			'audienceSubfield' => ['property' => 'audienceSubfield', 'type' => 'text', 'label' => 'Audience Subfield', 'maxLength' => 1, 'description' => 'Subfield to use when determining the audience', 'default' => ''],
 			'treatUnknownAudienceAs' => ['property' => 'treatUnknownAudienceAs', 'type'=>'enum', 'label' => 'Treat Unknown Audience As', 'values' => ['General' => 'General', 'Adult' => 'Adult', 'Unknown' => 'Unknown'], 'description' => 'Records with an Unknown Audience will use this audience instead.', 'default' => 'Unknown', 'forcesReindex' => true],
@@ -182,6 +187,7 @@ class IndexingProfile extends DataObject
 				'totalRenewals' => array('property' => 'totalRenewals', 'type' => 'text', 'label' => 'Total Renewals', 'maxLength' => 1, 'description' => 'Subfield for number of times this record has been renewed', 'forcesReindex' => true),
 				'iType' => array('property' => 'iType', 'type' => 'text', 'label' => 'iType', 'maxLength' => 1, 'description' => 'Subfield for iType', 'forcesReindex' => true),
 				'nonHoldableITypes' => array('property' => 'nonHoldableITypes', 'type' => 'text', 'label' => 'Non Holdable ITypes', 'maxLength' => 600, 'description' => 'A regular expression for any ITypes that should not allow holds', 'forcesReindex' => true),
+				'iTypesToSuppress' => array('property' => 'iTypesToSuppress', 'type' => 'text', 'label' => 'ITypes To Suppress', 'maxLength' => 100, 'description' => 'A regular expression for any ITypes that should be suppressed', 'forcesReindex' => true),
 				'dueDate' => array('property' => 'dueDate', 'type' => 'text', 'label' => 'Due Date', 'maxLength' => 1, 'description' => 'Subfield for when the item is due', 'forcesReindex' => true),
 				'dueDateFormat' => array('property' => 'dueDateFormat', 'type' => 'text', 'label' => 'Due Date Format', 'maxLength' => 20, 'description' => 'Subfield for when the item is due', 'forcesReindex' => true),
 				'dateCreated' => array('property' => 'dateCreated', 'type' => 'text', 'label' => 'Date Created', 'maxLength' => 1, 'description' => 'The format of the due date.  I.e. yyMMdd see SimpleDateFormat for Java', 'forcesReindex' => true),
@@ -190,6 +196,7 @@ class IndexingProfile extends DataObject
 				'lastCheckinFormat' => array('property' => 'lastCheckinFormat', 'type' => 'text', 'label' => 'Last Check In Format', 'maxLength' => 20, 'description' => 'The format of the date the item was last checked in.  I.e. yyMMdd see SimpleDateFormat for Java', 'forcesReindex' => true),
 				'iCode2' => array('property' => 'iCode2', 'type' => 'text', 'label' => 'iCode2', 'maxLength' => 1, 'description' => 'Subfield for iCode2', 'forcesReindex' => true),
 				'useICode2Suppression' => array('property' => 'useICode2Suppression', 'type' => 'checkbox', 'label' => 'Use iCode2 suppression for items', 'description' => 'Whether or not we should suppress items based on iCode2', 'forcesReindex' => true),
+				'iCode2sToSuppress' => array('property' => 'iCode2sToSuppress', 'type' => 'text', 'label' => 'iCode2 values to suppress', 'description' => 'A regular expression containing the iCode2 values to suppress (Sierra Only).', 'forcesReindex' => true),
 				'format' => array('property' => 'format', 'type' => 'text', 'label' => 'Format', 'maxLength' => 1, 'description' => 'The subfield to use when determining format based on item information', 'forcesReindex' => true),
 				'eContentDescriptor' => array('property' => 'eContentDescriptor', 'type' => 'text', 'label' => 'eContent Descriptor', 'maxLength' => 1, 'description' => 'Subfield to indicate that the item should be processed as eContent and how to process it', 'forcesReindex' => true),
 				'doAutomaticEcontentSuppression' => array('property' => 'doAutomaticEcontentSuppression', 'type' => 'checkbox', 'label' => 'Do Automatic eContent Suppression', 'description' => 'Whether or not eContent suppression for overdrive and hoopla records is done automatically', 'default' => false, 'forcesReindex' => true),

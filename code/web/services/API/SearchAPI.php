@@ -32,7 +32,7 @@ class SearchAPI extends Action
 				$output = json_encode(array('error' => 'unauthorized_access'));
 			}
 			echo isset($jsonOutput) ? $jsonOutput : $output;
-		} elseif (IPAddress::allowAPIAccessForClientIP()) {
+		} elseif (IPAddress::allowAPIAccessForClientIP() || in_array($method, ['getListWidget', 'getCollectionSpotlight'])) {
 			header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
 			if (!empty($method) && method_exists($this, $method)) {
 				if (in_array($method, array('getListWidget', 'getCollectionSpotlight'))) {

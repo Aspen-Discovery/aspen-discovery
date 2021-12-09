@@ -2631,7 +2631,6 @@ class MyAccount_AJAX extends JSON_Action
 		$paymentLibrary = $library;
 
 		$patronId = $_REQUEST['patronId'];
-		$donationSettingId = $_REQUEST['settingId'];
 		$currencyCode = 'USD'; // set a default, check system variables later
 
 		// if logged in validate the user

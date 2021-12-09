@@ -179,8 +179,8 @@ AspenDiscovery.OverDrive = (function(){
 			});
 		},
 
-		followOverDriveDownloadLink: function(patronId, overDriveId, formatId){
-			var ajaxUrl = Globals.path + "/OverDrive/AJAX?method=getDownloadLink&patronId=" + patronId + "&overDriveId=" + overDriveId + "&formatId=" + formatId;
+		followOverDriveDownloadLink: function(patronId, overDriveId, formatId, isSupplement){
+			var ajaxUrl = Globals.path + "/OverDrive/AJAX?method=getDownloadLink&patronId=" + patronId + "&overDriveId=" + overDriveId + "&formatId=" + formatId + "&isSupplement=" + isSupplement;
 			$.ajax({
 				url: ajaxUrl,
 				cache: false,
