@@ -340,7 +340,7 @@ class OverDrive_AJAX extends JSON_Action
 		$user = UserAccount::getLoggedInUser();
 		$patronId = $_REQUEST['patronId'];
 		$patronOwningHold = $user->getUserReferredTo($patronId);
-		if ($patronOwningHold == false) {
+		if ($patronOwningHold != false) {
 			$interface->assign('patronId', UserAccount::getActiveUserId());
 			$interface->assign('overDriveId', $_REQUEST['overDriveId']);
 
