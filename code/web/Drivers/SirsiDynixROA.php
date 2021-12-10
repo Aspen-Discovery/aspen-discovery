@@ -486,7 +486,7 @@ class SirsiDynixROA extends HorizonAPI
 				$createPatronInfoParameters['fields']['suffix'] = trim($_REQUEST['suffix']);
 			}
 			if (!empty($_REQUEST['birthDate'])) {
-				$birthdate = date_create_from_format('m-d-Y', trim($_REQUEST['birthDate']));
+				$birthdate = date_create_from_format('m/d/Y', trim($_REQUEST['birthDate']));
 				$createPatronInfoParameters['fields']['birthDate'] = $birthdate->format('Y-m-d');
 			}
 
@@ -2487,7 +2487,7 @@ class SirsiDynixROA extends HorizonAPI
 		if ($library && $library->promptForBirthDateInSelfReg){
 			$birthDateMin = date('Y-m-d', strtotime('-113 years'));
 			$birthDateMax = date('Y-m-d', strtotime('-13 years'));
-			$fields['identitySection']['properties'][] = array('property'=>'birthDate', 'type'=>'date', 'label'=>'Date of Birth (MM-DD-YYYY)', 'min'=>$birthDateMin, 'max'=>$birthDateMax, 'maxLength' => 10, 'required' => true);
+			$fields['identitySection']['properties'][] = array('property'=>'birthDate', 'type'=>'date', 'label'=>'Date of Birth (MM/DD/YYYY)', 'min'=>$birthDateMin, 'max'=>$birthDateMax, 'maxLength' => 10, 'required' => true);
 		}
 
 		$fields['mainAddressSection'] = array('property' => 'mainAddressSection', 'type' => 'section', 'label' => 'Main Address', 'hideInLists' => true, 'expandByDefault' => true, 'properties' => []);
