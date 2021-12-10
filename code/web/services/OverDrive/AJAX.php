@@ -340,7 +340,7 @@ class OverDrive_AJAX extends JSON_Action
 		$interface->assign('patronId', UserAccount::getActiveUserId());
 		$interface->assign('overDriveId', $_REQUEST['overDriveId']);
 
-		$title = translate(translate(['text' => 'Freeze Hold', 'isPublicFacing'=>true])); // language customization
+		$title = translate(['text' => 'Freeze Hold', 'isPublicFacing'=>true]); // language customization
 		return array(
 			'title' => $title,
 			'modalBody' => $interface->fetch("OverDrive/reactivationDate.tpl"),
