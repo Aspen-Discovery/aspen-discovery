@@ -931,21 +931,31 @@ class MyAccount_AJAX extends JSON_Action
 		global $interface;
 		global $configArray;
 
-		$id = $_REQUEST['holdId'];
-		$interface->assign('holdId', $id);
-		$interface->assign('patronId', UserAccount::getActiveUserId());
-		$interface->assign('recordId', $_REQUEST['recordId']);
+		$user = UserAccount::getLoggedInUser();
+		$patronId = $_REQUEST['patronId'];
+		$patronOwningHold = $user->getUserReferredTo($patronId);
+		if ($patronOwningHold != false) {
+			$id = $_REQUEST['holdId'];
+			$interface->assign('holdId', $id);
+			$interface->assign('patronId', $patronId);
+			$interface->assign('recordId', $_REQUEST['recordId']);
 
-		$ils = $configArray['Catalog']['ils'];
-		$reactivateDateNotRequired = ($ils == 'Symphony' || $ils == 'Koha' || $ils == 'Polaris');
-		$interface->assign('reactivateDateNotRequired', $reactivateDateNotRequired);
+			$ils = $configArray['Catalog']['ils'];
+			$reactivateDateNotRequired = ($ils == 'Symphony' || $ils == 'Koha' || $ils == 'Polaris');
+			$interface->assign('reactivateDateNotRequired', $reactivateDateNotRequired);
 
-		$title = translate(translate(['text' => 'Freeze Hold', 'isPublicFacing'=>true])); // language customization
-		return array(
-			'title' => $title,
-			'modalBody' => $interface->fetch("MyAccount/reactivationDate.tpl"),
-			'modalButtons' => "<button class='tool btn btn-primary' id='doFreezeHoldWithReactivationDate' onclick='$(\".form\").submit(); return false;'>$title</button>"
-		);
+			$title = translate(['text' => 'Freeze Hold', 'isPublicFacing' => true]); // language customization
+			return array(
+				'title' => $title,
+				'modalBody' => $interface->fetch("MyAccount/reactivationDate.tpl"),
+				'modalButtons' => "<button class='tool btn btn-primary' id='doFreezeHoldWithReactivationDate' onclick='$(\".form\").submit(); return false;'>$title</button>"
+			);
+		}else{
+			return [
+				'success' => false,
+				'message' => translate(['text' => 'Sorry, you do not have access to freeze holds for the supplied user.', 'isPublicFacing'=>true])
+			];
+		}
 	}
 
 	/** @noinspection PhpUnused */
