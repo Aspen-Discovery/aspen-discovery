@@ -471,17 +471,17 @@ class MyAccount_AJAX extends JSON_Action
 						}
 						if($frozen != 1 && $canFreeze == 1){
 							if ($holdType == 'ils') {
-								$tmpResult = $user->freezeHold($recordId, $holdId, false);
+								$tmpResult = $patronOwningHold->freezeHold($recordId, $holdId, false);
 								if($tmpResult['success']){$success++;}else{$failed++;}
 							} else if ($holdType == 'axis360') {
 								require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
 								$driver = new Axis360Driver();
-								$tmpResult = $driver->freezeHold($user, $recordId);
+								$tmpResult = $driver->freezeHold($patronOwningHold, $recordId);
 								if($tmpResult['success']){$success++;}else{$failed++;}
 							} else if ($holdType == 'overdrive') {
 								require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
 								$driver = new OverDriveDriver();
-								$tmpResult = $driver->freezeHold($user, $recordId, null);
+								$tmpResult = $driver->freezeHold($patronOwningHold, $recordId, null);
 								if($tmpResult['success']){$success++;}else{$failed++;}
 							//cloudLibrary holds can't be frozen
 //							} else if ($holdType == 'cloud_library') {
