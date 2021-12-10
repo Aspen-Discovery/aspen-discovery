@@ -486,8 +486,7 @@ class SirsiDynixROA extends HorizonAPI
 				$createPatronInfoParameters['fields']['suffix'] = trim($_REQUEST['suffix']);
 			}
 			if (!empty($_REQUEST['birthDate'])) {
-				$birthdate = date_create_from_format('m/d/Y', trim($_REQUEST['birthDate']));
-				$createPatronInfoParameters['fields']['birthDate'] = $birthdate->format('Y-m-d');
+				$createPatronInfoParameters['fields']['birthDate'] = trim($_REQUEST['birthDate']);
 			}
 
 			// Update Address Field with new data supplied by the user
