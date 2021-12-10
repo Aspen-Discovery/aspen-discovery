@@ -341,7 +341,7 @@ class OverDrive_AJAX extends JSON_Action
 		$patronId = $_REQUEST['patronId'];
 		$patronOwningHold = $user->getUserReferredTo($patronId);
 		if ($patronOwningHold != false) {
-			$interface->assign('patronId', UserAccount::getActiveUserId());
+			$interface->assign('patronId', $patronId);
 			$interface->assign('overDriveId', $_REQUEST['overDriveId']);
 
 			$title = translate(['text' => 'Freeze Hold', 'isPublicFacing' => true]); // language customization
