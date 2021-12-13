@@ -454,7 +454,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 			}
 
 			$content = $this->apiCurlWrapper->curlSendPage($url, "DELETE", false);
-			ExternalRequestLogEntry::logRequest('overdrive.callPatronDeleteUrl_' . $methodName, 'DEL', $url, $this->apiCurlWrapper->getHeaders(), false, $this->apiCurlWrapper->getResponseCode(), json_decode($content), []);
+			ExternalRequestLogEntry::logRequest('overdrive.callPatronDeleteUrl_' . $methodName, 'DEL', $url, $this->apiCurlWrapper->getHeaders(), false, $this->apiCurlWrapper->getResponseCode(), $content, []);
 			$responseCode = $this->apiCurlWrapper->getResponseCode();
 
 			if($responseCode == 204){
