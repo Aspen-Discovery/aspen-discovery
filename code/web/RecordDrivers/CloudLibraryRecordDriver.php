@@ -215,7 +215,11 @@ class CloudLibraryRecordDriver extends MarcRecordDriver {
 	 */
 	function getFormats()
 	{
-		return [$this->cloudLibraryProduct->format];
+		if ($this->cloudLibraryProduct){
+			return [$this->cloudLibraryProduct->format];
+		}else{
+			return ['Unknown'];
+		}
 	}
 
 	/**
@@ -225,10 +229,14 @@ class CloudLibraryRecordDriver extends MarcRecordDriver {
 	 */
 	function getFormatCategory()
 	{
-		if ($this->cloudLibraryProduct->format == "eAudio"){
-			return ['eBook', 'Audio Books'];
-		} else {
-			return ['eBook'];
+		if ($this->cloudLibraryProduct) {
+			if ($this->cloudLibraryProduct->format == "eAudio") {
+				return ['eBook', 'Audio Books'];
+			} else {
+				return ['eBook'];
+			}
+		}else{
+			return ['Unknown'];
 		}
 	}
 
@@ -256,26 +264,31 @@ class CloudLibraryRecordDriver extends MarcRecordDriver {
 		return $this->getGroupedWorkDriver()->getRelatedRecord($id);
 	}
 
-	public function getSemanticData() {
+	public function getSemanticData()
+	{
 		// Schema.org
 		// Get information about the record
-		require_once ROOT_DIR . '/RecordDrivers/LDRecordOffer.php';
-		$linkedDataRecord = new LDRecordOffer($this->getRelatedRecord());
-		$semanticData [] = array(
-			'@context' => 'http://schema.org',
-			'@type' => $linkedDataRecord->getWorkType(),
-			'name' => $this->getTitle(),
-			'creator' => $this->getPrimaryAuthor(),
-			'bookEdition' => $this->getEditions(),
-			'isAccessibleForFree' => true,
-			'image' => $this->getBookcoverUrl('medium'),
-			"offers" => $linkedDataRecord->getOffers()
-		);
+		if ($this->getRelatedRecord() != null) {
+			require_once ROOT_DIR . '/RecordDrivers/LDRecordOffer.php';
+			$linkedDataRecord = new LDRecordOffer($this->getRelatedRecord());
+			$semanticData [] = array(
+				'@context' => 'http://schema.org',
+				'@type' => $linkedDataRecord->getWorkType(),
+				'name' => $this->getTitle(),
+				'creator' => $this->getPrimaryAuthor(),
+				'bookEdition' => $this->getEditions(),
+				'isAccessibleForFree' => true,
+				'image' => $this->getBookcoverUrl('medium'),
+				"offers" => $linkedDataRecord->getOffers()
+			);
+		}
 
 		global $interface;
 		$interface->assign('og_title', $this->getTitle());
 		$interface->assign('og_description', $this->getDescriptionFast());
-		$interface->assign('og_type', $this->getGroupedWorkDriver()->getOGType());
+		if ($this->getGroupedWorkDriver() != null){
+			$interface->assign('og_type', $this->getGroupedWorkDriver()->getOGType());
+		}
 		$interface->assign('og_image', $this->getBookcoverUrl('medium'));
 		$interface->assign('og_url', $this->getAbsoluteUrl());
 		return $semanticData;

@@ -1660,6 +1660,8 @@ CREATE TABLE `hoopla_export_log` (
   `numDeleted` int(11) DEFAULT '0',
   `numUpdated` int(11) DEFAULT '0',
   `numSkipped` int(11) DEFAULT '0',
+  `numChangedAfterGrouping` int(11) DEFAULT '0',
+  `numRegrouped` int(11) DEFAULT '0',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
