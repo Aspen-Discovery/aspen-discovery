@@ -114,6 +114,63 @@ class Sierra extends Millennium{
 		return null;
 	}
 
+	public function _sendPage($requestType, $httpMethod, $url, $postParams){
+
+		$tokenData = $this->_connectToAPI();
+		if ($tokenData){
+			$ch = curl_init($url);
+			curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 30);
+			curl_setopt($ch, CURLOPT_USERAGENT,"Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)");
+			$headers = array(
+				"Authorization: " . $tokenData->token_type . " {$tokenData->access_token}",
+				"User-Agent: Aspen Discovery",
+				"X-Forwarded-For: " . IPAddress::getActiveIp(),
+				"Host: " . $_SERVER['SERVER_NAME'],
+			);
+			if ($httpMethod == 'PUT'){
+				$headers[] = 'Content-Type: application/json';
+				if ($postParams === null || $postParams === false) {
+					$headers[] = 'Content-Length: 0';
+				}
+			}
+			curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+			curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+			curl_setopt($ch, CURLOPT_TIMEOUT, 60);
+			if ($httpMethod == 'GET') {
+				curl_setopt($ch, CURLOPT_HTTPGET, true);
+			} elseif ($httpMethod == 'POST') {
+				curl_setopt($ch, CURLOPT_POST, true);
+			} elseif ($httpMethod == 'PUT') {
+				curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "PUT");
+			} else {
+				curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $httpMethod);
+			}
+			if ($postParams != null) {
+				if (is_array($postParams)){
+					$postFields = http_build_query($postParams);
+				}else{
+					$postFields = $postParams;
+				}
+				curl_setopt($ch, CURLOPT_POSTFIELDS, $postFields);
+			}
+			$return = curl_exec($ch);
+			$curl_info = curl_getinfo($ch);
+			$responseCode = $curl_info['http_code'];
+
+			ExternalRequestLogEntry::logRequest($requestType, $httpMethod, $url, $headers, json_encode($postParams), $responseCode, $return, []);
+			curl_close($ch);
+			$returnVal = json_decode($return);
+			if ($returnVal != null){
+				if (!isset($returnVal->message) || $returnVal->message != 'An unexpected error has occurred.'){
+					return $returnVal;
+				}
+			}
+		}
+		return null;
+	}
+
 	/**
 	 * Returns one of three values
 	 * - none - No forgot password functionality exists
@@ -239,8 +296,9 @@ class Sierra extends Millennium{
 					} else {
 						$status = 'On hold';
 					}
-					$cancelable = true;
 					$freezeable = true;
+					$cancelable = true;
+
 					if($canUpdatePL) {
 						$updatePickup = true;
 					} else {
@@ -561,5 +619,97 @@ class Sierra extends Millennium{
 			$id = false;
 		}
 		return $id;
+	}
+
+	function freezeHold($patron, $recordId, $itemToFreezeId, $dateToReactivate){
+		$sierraUrl = $this->accountProfile->vendorOpacUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/patrons/holds/{$itemToFreezeId}";
+		$params = [
+			'freeze' => true
+		];
+		$freezeResponse = $this->_sendPage('sierra.freezeHold', 'PUT', $sierraUrl, json_encode($params));
+		if (!$freezeResponse){
+			$patron->forceReloadOfHolds();
+			return [
+				'success' => true,
+				'message' => translate(['text'=>"Hold frozen successfully.", 'isPublicFacing'=>true])
+			];
+		}else{
+			$return = [
+				'success' => true,
+				'message' => translate(['text'=>"Unable to freeze your hold.", 'isPublicFacing'=>true])
+			];
+			$return['message'] .= ' ' . translate(['text'=>$freezeResponse->description, 'isPublicFacing'=>true]);
+			return $return;
+		}
+	}
+
+	function thawHold($patron, $recordId, $itemToThawId){
+		$sierraUrl = $this->accountProfile->vendorOpacUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/patrons/holds/{$itemToThawId}";
+		$params = [
+			'freeze' => false
+		];
+		$thawResponse = $this->_sendPage('sierra.thawHold', 'PUT', $sierraUrl, json_encode($params));
+		if (!$thawResponse){
+			$patron->forceReloadOfHolds();
+			return [
+				'success' => true,
+				'message' => translate(['text'=>'Hold thawed successfully.', 'isPublicFacing'=>true])
+			];
+		}else{
+			$return = [
+				'success' => true,
+				'message' => translate(['text'=>"Unable to thaw your hold.", 'isPublicFacing'=>true])
+			];
+			$return['message'] .= ' ' . translate(['text'=>$thawResponse->description, 'isPublicFacing'=>true]);
+			return $return;
+		}
+	}
+
+	function changeHoldPickupLocation(User $patron, $recordId, $itemToUpdateId, $newPickupLocation){
+		$sierraUrl = $this->accountProfile->vendorOpacUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/patrons/holds/{$itemToUpdateId}";
+		$params = [
+			'pickupLocation' => $newPickupLocation
+		];
+		$changePickupResponse = $this->_sendPage('sierra.changePickupLocation', 'PUT', $sierraUrl, json_encode($params));
+		if (!$changePickupResponse){
+			$patron->forceReloadOfHolds();
+			$result['success'] = true;
+			$result['message'] = translate(['text'=>'The pickup location of your hold was changed successfully.', 'isPublicFacing'=>true]);
+
+			// Result for API or app use
+			$result['api']['title'] = translate(['text'=>'Pickup location updated', 'isPublicFacing'=>true]);
+			$result['api']['message'] = translate(['text'=>'The pickup location of your hold was changed successfully.', 'isPublicFacing'=>true]);
+
+			return $result;
+		}else{
+			$message = translate(['text'=>'Sorry, the pickup location of your hold could not be changed.', 'isPublicFacing'=>true]) . " {$jsonResponse->ErrorMessage}";;
+			$result['success'] = false;
+			$result['message'] = $message;
+
+			// Result for API or app use
+			$result['api']['title'] = translate(['text'=>'Unable to update pickup location', 'isPublicFacing'=>true]);
+			$result['api']['message'] = $jsonResponse->ErrorMessage;
+
+			return $result;
+		}
+	}
+
+	public function cancelHold($patron, $recordId, $cancelId = null){
+		$sierraUrl = $this->accountProfile->vendorOpacUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/patrons/holds/{$cancelId}";
+		$cancelHoldResponse = $this->_sendPage('sierra.cancelHold', 'DELETE', $sierraUrl, '');
+		if (!$cancelHoldResponse){
+			$patron->forceReloadOfHolds();
+			return [
+				'success' => true,
+				'message' => translate(['text'=>'Hold cancelled successfully.', 'isPublicFacing'=>true])
+			];
+		}else{
+			$return = [
+				'success' => true,
+				'message' => translate(['text'=>"Unable to cancel your hold.", 'isPublicFacing'=>true])
+			];
+			$return['message'] .= ' ' . translate(['text'=>$cancelHoldResponse->description, 'isPublicFacing'=>true]);
+			return $return;
+		}
 	}
 }
