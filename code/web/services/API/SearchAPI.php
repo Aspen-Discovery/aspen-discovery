@@ -1566,9 +1566,12 @@ class SearchAPI extends Action
 	/** @noinspection PhpUnused */
 	function getAppSearchResults() : array {
 		global $configArray;
+		$results['success'] = true;
 		$searchResults = $this->search();
 
 		$shortname = $_REQUEST['library'];
+		$page = $_REQUEST['page'];
+		$results['count'] = count($searchResults['recordSet']);
 
 		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 		if (!empty($searchResults['recordSet'])) {
@@ -1620,10 +1623,13 @@ class SearchAPI extends Action
 			}
 		}
 
-		$results['success'] = true;
 		if (empty($results['items'])) {
-			$results['message'] = "No search results found";
-			$results['success'] = false;
+			$results['items'] = [];
+			if($page == 1) {
+				$results['message'] = "No search results found";
+			} else {
+				$results['message'] = "End of results";
+			}
 		}
 
 		return $results;
