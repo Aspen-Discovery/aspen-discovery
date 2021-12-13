@@ -530,8 +530,8 @@ class ExploreMore {
 
 						if ($numMatches > 1) {
 							$exploreMoreOptions['searchLinks'][] = array(
-								'label' => "All EBSCO Results ({$numMatches})",
-								'description' => "All Results in EBSCO related to {$searchTerm}",
+								'label' => translate(['text'=>"All EBSCO Results (%1%)", 1=>$numMatches, 'isPublicFacing'=>true]),
+								'description' => translate(['text'=>"All Results in EBSCO related to %1%", 1=>$searchTerm, 'isPublicFacing'=>true]),
 								'image' => '/interface/themes/responsive/images/ebsco_eds.png',
 								'link' => '/EBSCO/Results?lookfor=' . urlencode($searchTerm),
 								'openInNewWindow' => false
