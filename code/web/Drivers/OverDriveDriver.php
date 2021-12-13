@@ -1138,7 +1138,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 		return OverDriveDriver::$validUsersOverDrive[$userBarcode];
 	}
 
-	public function getDownloadLink($overDriveId, $format, $user, $isSupplement){
+	public function getDownloadLink($overDriveId, $format, $user, $isSupplement = false){
 		global $configArray;
 		$result = array();
 		$result['success'] = false;
