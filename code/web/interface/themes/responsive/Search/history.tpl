@@ -61,7 +61,7 @@
 							{/foreach}</td>
 							<td>{$info.source}</td>
 							<td>{$info.hits}</td>
-							<td><a class="btn btn-xs btn-info" role="button" href="/MyAccount/SaveSearch?save={$info.searchId|escape:"url"}&amp;mode=history">{translate text="Save" isPublicFacing=true}</a></td>
+							<td><a class="btn btn-xs btn-info" role="button" onclick="return AspenDiscovery.Account.showSaveSearchForm('{$info.searchId}')">{translate text="Save" isPublicFacing=true}</a></td>
 						</tr>
 					{/foreach}
 				</table>
