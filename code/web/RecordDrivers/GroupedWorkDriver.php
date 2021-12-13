@@ -753,16 +753,21 @@ class GroupedWorkDriver extends IndexRecordDriver
 	{
 		$description = null;
 		$cleanIsbn = $this->getCleanISBN();
-		if ($cleanIsbn != null && strlen($cleanIsbn) > 0) {
-			require_once ROOT_DIR . '/Drivers/marmot_inc/GoDeeperData.php';
-			$summaryInfo = GoDeeperData::getSummary($this->getPermanentId(), $cleanIsbn, $this->getCleanUPC());
-			if (isset($summaryInfo['summary'])) {
-				$description = $summaryInfo['summary'];
-			}
-		}
+		global $library;
 		if ($description == null) {
 			$description = $this->getDescriptionFast();
 		}
+		if ($library->getGroupedWorkDisplaySettings()->preferSyndeticsSummary == 1 || $description == null || strlen($description) == 0) {
+			if ($cleanIsbn != null && strlen($cleanIsbn) > 0) {
+				require_once ROOT_DIR . '/Drivers/marmot_inc/GoDeeperData.php';
+				$summaryInfo = GoDeeperData::getSummary($this->getPermanentId(), $cleanIsbn, $this->getCleanUPC());
+				if (isset($summaryInfo['summary'])) {
+					$description = $summaryInfo['summary'];
+				}
+			}
+		}
+
+
 		if ($description == null || strlen($description) == 0) {
 			$description = translate(['text' => 'Description Not Provided', 'isPublicFacing'=>true]);
 		}

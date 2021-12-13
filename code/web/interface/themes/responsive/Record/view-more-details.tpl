@@ -118,7 +118,7 @@
 	{/if}
 
 	{if $notes}
-		<h4>{translate text='Notes'}</h4>
+		<h4>{translate text='Notes' isPublicFacing=true}</h4>
 		{foreach from=$notes item=note name=loop}
 			<div class="row">
 				<div class="result-label col-sm-3">{translate text=$note.label isPublicFacing=true isMetadata=true}</div>
