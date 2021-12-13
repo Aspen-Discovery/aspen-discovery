@@ -42,6 +42,7 @@ export default class Results extends Component {
             isLoading: true,
             isLoadingMore: false,
             data: [],
+            searchMessage: null,
             page: 1,
             hasError: false,
             error: null,
@@ -66,7 +67,7 @@ export default class Results extends Component {
 
 	_fetchResults = async () => {
 	    const { page } = this.state;
-        const searchTerm = encodeURI(this.props.navigation.state.params.searchTerm.replace(" ", "%20"));
+        const searchTerm = this.props.navigation.state.params.searchTerm.replace(" ", "%20");
 
         await searchResults(searchTerm, 25, page).then(response => {
             if(response == "TIMEOUT_ERROR") {
@@ -76,7 +77,7 @@ export default class Results extends Component {
                     isLoading: false,
                 });
             } else {
-                if(response.data.result.success == true) {
+                if(!response.data.result.message) {
                     this.setState((prevState, nextProps) => ({
                         data:
                             page === 1
@@ -87,13 +88,25 @@ export default class Results extends Component {
                         refreshing: false
                     }));
                 } else {
-                    this.setState({
-                        hasError: true,
-                        error: response.data.result.message,
-                        isLoading: false,
-                        isLoadingMore: false,
-                        refreshing: false
-                    });
+                    if(page == 1 && response.data.result.count == 0) {
+                    /* No search results were found */
+                        this.setState({
+                            hasError: true,
+                            error: response.data.result.message,
+                            isLoading: false,
+                            isLoadingMore: false,
+                            refreshing: false,
+                            dataMessage: response.data.result.message,
+                        });
+                    } else {
+                        /* Tried to fetch next page, but end of results */
+                        this.setState({
+                            isLoading: false,
+                            isLoadingMore: false,
+                            refreshing: false,
+                            dataMessage: response.data.result.message,
+                        });
+                    }
                 }
             }
         })
@@ -152,14 +165,14 @@ export default class Results extends Component {
 		this.props.navigation.navigate("GroupedWork", { item });
 	};
 
+    // this one shouldn't probably ever load with the catches in the render, but just in case
 	_listEmptyComponent = () => {
 		return (
-			<Center flex={1} justifyContent="center" alignItems="center" pt="70%">
-				<VStack space={5}>
-					<Heading>{translate('search.no_results')}</Heading>
-					<Button onPress={() => this.props.navigation.goBack()}>{translate('search.new_search_button')}</Button>
-				</VStack>
-			</Center>
+            <Center flex={1}>
+                <Heading>{translate('search.no_results')}</Heading>
+                <Text bold w="75%" textAlign="center">"{this.props.navigation.state.params.searchTerm}"</Text>
+                <Button mt={3} onPress={() => this.props.navigation.goBack()}>{translate('search.new_search_button')}</Button>
+            </Center>
 		);
 	};
 
@@ -173,9 +186,19 @@ export default class Results extends Component {
 			return ( loadingSpinner() );
 		}
 
-		if (this.state.hasError) {
+		if (this.state.hasError && !this.state.dataMessage) {
             return ( loadError(this.state.error, this._fetchResults) );
 		}
+
+        if (this.state.hasError && this.state.dataMessage) {
+            return (
+                <Center flex={1}>
+                    <Heading>{translate('search.no_results')}</Heading>
+                    <Text bold w="75%" textAlign="center">"{this.props.navigation.state.params.searchTerm}"</Text>
+                    <Button mt={3} onPress={() => this.props.navigation.goBack()}>{translate('search.new_search_button')}</Button>
+                </Center>
+            );
+        }
 
 		return (
 			<Box>
@@ -185,11 +208,9 @@ export default class Results extends Component {
 					renderItem={({ item }) => this.renderNativeItem(item)}
 					keyExtractor={(item, index) => index.toString()}
 					ListFooterComponent={this._renderFooter}
-					onEndReached={this._handleLoadMore}
-					onEndReachedThreshold={0.25}
+					onEndReached={!this.state.dataMessage ? this._handleLoadMore : null} // only try to load more if no message has been set
+					onEndReachedThreshold={.5}
 					initialNumToRender={25}
-					onRefresh={this._handleRefresh}
-                    refreshing={this.state.refreshing}
 				/>
 			</Box>
 		);
