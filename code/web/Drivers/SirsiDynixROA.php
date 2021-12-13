@@ -398,9 +398,10 @@ class SirsiDynixROA extends HorizonAPI
 		$lookupMyAccountInfoResponse = $this->getWebServiceResponse('accountSummary', $accountInfoLookupURL, null, $sessionToken);
 
 		if ($lookupMyAccountInfoResponse && !isset($lookupMyAccountInfoResponse->messageList)) {
-			$summary->numCheckedOut = count($lookupMyAccountInfoResponse->fields->circRecordList);
-			foreach ($lookupMyAccountInfoResponse->fields->circRecordList as $checkout) {
-				if ($checkout->fields->overdue) {
+			$checkouts = $this->getCheckouts($patron);
+			$summary->numCheckedOut = count($checkouts);
+			foreach ($checkouts as $checkout) {
+				if ($checkout->isOverdue()) {
 					$summary->numOverdue++;
 				}
 			}
