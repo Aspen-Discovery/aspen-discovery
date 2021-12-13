@@ -28,8 +28,7 @@ class JavaScriptSnippet extends DataObject
 				'label' => 'Libraries',
 				'description' => 'Define libraries that use this snippet',
 				'values' => $libraryList,
-				'hideInLists' => true,
-				'forcesReindex' => true
+				'hideInLists' => true
 			),
 
 			'locations' => array(
@@ -39,8 +38,7 @@ class JavaScriptSnippet extends DataObject
 				'label' => 'Locations',
 				'description' => 'Define locations that use this snippet',
 				'values' => $locationList,
-				'hideInLists' => true,
-				'forcesReindex' => true
+				'hideInLists' => true
 			),
 		];
 	}
