@@ -3248,6 +3248,7 @@ class Koha extends AbstractIlsDriver
 		/** @noinspection SqlResolve */
 		$systemPreferencesSql = "SELECT * FROM systempreferences where variable = 'SMSSendDriver' OR variable ='TalkingTechItivaPhoneNotification' OR variable ='PhoneNotification'";
 		$systemPreferencesRS = mysqli_query($this->dbConnection, $systemPreferencesSql);
+		$enablePhoneMessaging = false;
 		while ($systemPreference = $systemPreferencesRS->fetch_assoc()) {
 			if ($systemPreference['variable'] == 'SMSSendDriver') {
 				$interface->assign('enableSmsMessaging', !empty($systemPreference['value']));
@@ -3262,9 +3263,10 @@ class Koha extends AbstractIlsDriver
 				}
 				$interface->assign('smsProviders', $smsProviders);
 			} elseif ($systemPreference['variable'] == 'TalkingTechItivaPhoneNotification' || $systemPreference['variable'] == 'PhoneNotification') {
-				$interface->assign('enablePhoneMessaging', !empty($systemPreference['value']));
+				$enablePhoneMessaging |= !empty($systemPreference['value']);
 			}
 		}
+		$interface->assign('enablePhoneMessaging', $enablePhoneMessaging);
 
 		/** @noinspection SqlResolve */
 		$borrowerSql = "SELECT smsalertnumber, sms_provider_id FROM borrowers where borrowernumber = {$patron->username}";
