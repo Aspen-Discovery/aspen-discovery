@@ -492,23 +492,23 @@ class SirsiDynixROA extends HorizonAPI
 
 			// Update Address Field with new data supplied by the user
 			if (isset($_REQUEST['email'])) {
-				$this->setPatronUpdateField('EMAIL', $_REQUEST['email'], $updatePatronInfoParameters, $preferredAddress, $index);
+				$this->setPatronUpdateField('EMAIL', $_REQUEST['email'], $createPatronInfoParameters, $preferredAddress, $index);
 			}
 
 			if (isset($_REQUEST['phone'])) {
-				$this->setPatronUpdateField('PHONE', $_REQUEST['phone'], $updatePatronInfoParameters, $preferredAddress, $index);
+				$this->setPatronUpdateField('PHONE', $_REQUEST['phone'], $createPatronInfoParameters, $preferredAddress, $index);
 			}
 
 			if (isset($_REQUEST['address'])) {
-				$this->setPatronUpdateField('STREET', $_REQUEST['address'], $updatePatronInfoParameters, $preferredAddress, $index);
+				$this->setPatronUpdateField('STREET', $_REQUEST['address'], $createPatronInfoParameters, $preferredAddress, $index);
 			}
 
 			if (isset($_REQUEST['city']) && isset($_REQUEST['state'])) {
-				$this->setPatronUpdateField('CITY/STATE', $_REQUEST['city'] . ' ' . $_REQUEST['state'], $updatePatronInfoParameters, $preferredAddress, $index);
+				$this->setPatronUpdateField('CITY/STATE', $_REQUEST['city'] . ' ' . $_REQUEST['state'], $createPatronInfoParameters, $preferredAddress, $index);
 			}
 
 			if (isset($_REQUEST['zip'])) {
-				$this->setPatronUpdateField('ZIP', $_REQUEST['zip'], $updatePatronInfoParameters, $preferredAddress, $index);
+				$this->setPatronUpdateField('ZIP', $_REQUEST['zip'], $createPatronInfoParameters, $preferredAddress, $index);
 			}
 
 			// Update Home Location
