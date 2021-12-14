@@ -453,6 +453,7 @@ class SirsiDynixROA extends HorizonAPI
 
 		$sessionToken = $this->getStaffSessionToken();
 		if (!empty($sessionToken)) {
+			global $library;
 			$webServiceURL = $this->getWebServiceURL();
 
 			// $patronDescribeResponse   = $this->getWebServiceResponse('patronDescribe', $webServiceURL . '/user/patron/describe');
@@ -475,40 +476,40 @@ class SirsiDynixROA extends HorizonAPI
 			);
 
 			if (!empty($_REQUEST['firstName'])) {
-				$createPatronInfoParameters['fields']['firstName'] = trim($_REQUEST['firstName']);
+				$createPatronInfoParameters['fields']['firstName'] = $this->getPatronFieldValue(trim($_REQUEST['firstName']), $library->useAllCapsWhenUpdatingProfile);
 			}
 			if (!empty($_REQUEST['middleName'])) {
-				$createPatronInfoParameters['fields']['middleName'] = trim($_REQUEST['middleName']);
+				$createPatronInfoParameters['fields']['middleName'] = $this->getPatronFieldValue(trim($_REQUEST['middleName']), $library->useAllCapsWhenUpdatingProfile);
 			}
 			if (!empty($_REQUEST['lastName'])) {
-				$createPatronInfoParameters['fields']['lastName'] = trim($_REQUEST['lastName']);
+				$createPatronInfoParameters['fields']['lastName'] = $this->getPatronFieldValue(trim($_REQUEST['lastName']), $library->useAllCapsWhenUpdatingProfile);
 			}
 			if (!empty($_REQUEST['suffix'])) {
-				$createPatronInfoParameters['fields']['suffix'] = trim($_REQUEST['suffix']);
+				$createPatronInfoParameters['fields']['suffix'] = $this->getPatronFieldValue(trim($_REQUEST['suffix']), $library->useAllCapsWhenUpdatingProfile);
 			}
 			if (!empty($_REQUEST['birthDate'])) {
-				$createPatronInfoParameters['fields']['birthDate'] = trim($_REQUEST['birthDate']);
+				$createPatronInfoParameters['fields']['birthDate'] = $this->getPatronFieldValue(trim($_REQUEST['birthDate']), $library->useAllCapsWhenUpdatingProfile);
 			}
 
 			// Update Address Field with new data supplied by the user
 			if (isset($_REQUEST['email'])) {
-				$this->setPatronUpdateField('EMAIL', $_REQUEST['email'], $createPatronInfoParameters, $preferredAddress, $index);
+				$this->setPatronUpdateField('EMAIL', $this->getPatronFieldValue($_REQUEST['email'], $library->useAllCapsWhenUpdatingProfile), $createPatronInfoParameters, $preferredAddress, $index);
 			}
 
 			if (isset($_REQUEST['phone'])) {
-				$this->setPatronUpdateField('PHONE', $_REQUEST['phone'], $createPatronInfoParameters, $preferredAddress, $index);
+				$this->setPatronUpdateField('HOMEPHONE', $_REQUEST['phone'], $createPatronInfoParameters, $preferredAddress, $index);
 			}
 
 			if (isset($_REQUEST['address'])) {
-				$this->setPatronUpdateField('STREET', $_REQUEST['address'], $createPatronInfoParameters, $preferredAddress, $index);
+				$this->setPatronUpdateField('STREET', $this->getPatronFieldValue($_REQUEST['address'], $library->useAllCapsWhenUpdatingProfile), $createPatronInfoParameters, $preferredAddress, $index);
 			}
 
 			if (isset($_REQUEST['city']) && isset($_REQUEST['state'])) {
-				$this->setPatronUpdateField('CITY/STATE', $_REQUEST['city'] . ' ' . $_REQUEST['state'], $createPatronInfoParameters, $preferredAddress, $index);
+				$this->setPatronUpdateField('CITY/STATE', $this->getPatronFieldValue($_REQUEST['city'] . ' ' . $_REQUEST['state'], $library->useAllCapsWhenUpdatingProfile), $createPatronInfoParameters, $preferredAddress, $index);
 			}
 
 			if (isset($_REQUEST['zip'])) {
-				$this->setPatronUpdateField('ZIP', $_REQUEST['zip'], $createPatronInfoParameters, $preferredAddress, $index);
+				$this->setPatronUpdateField('ZIP', $this->getPatronFieldValue($_REQUEST['zip'], $library->useAllCapsWhenUpdatingProfile), $createPatronInfoParameters, $preferredAddress, $index);
 			}
 
 			// Update Home Location
@@ -2507,6 +2508,15 @@ class SirsiDynixROA extends HorizonAPI
 		$fields['contactInformationSection']['properties'][] = array('property'=>'email',  'type'=>'email', 'label'=>'Email', 'maxLength' => 128, 'required' => true);
 		$fields['contactInformationSection']['properties'][] = array('property'=>'email2',  'type'=>'email', 'label'=>'Confirm Email', 'maxLength' => 128, 'required' => true);
 		return $fields;
+	}
+
+	private function getPatronFieldValue(string $value, $useAllCapsWhenUpdatingProfile)
+	{
+		if ($useAllCapsWhenUpdatingProfile){
+			return strtoupper($value);
+		}else{
+			return $value;
+		}
 	}
 
 	/**
