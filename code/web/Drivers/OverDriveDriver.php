@@ -68,7 +68,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 	}
 
 
-	private function getSettings()
+	public function getSettings()
 	{
 		if ($this->settings == null) {
 			try {

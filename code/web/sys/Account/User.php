@@ -1036,6 +1036,13 @@ class User extends DataObject
 			$this->checkoutInfoLastLoaded = time();
 			$this->update();
 		}else{
+			if ($source == 'all' || $source == 'overdrive'){
+				global $interface;
+				$driver = new OverDriveDriver();
+				$fulfillmentMethod = (string)$driver->getSettings()->useFulfillmentInterface;
+				$interface->assign('fulfillmentMethod', $fulfillmentMethod);
+			}
+
 			//fetch cached checkouts
 			$checkout = new Checkout();
 			$checkout->userId = $this->id;
