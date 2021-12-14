@@ -3246,7 +3246,7 @@ class Koha extends AbstractIlsDriver
 
 		//Figure out if SMS and Phone notifications are enabled
 		/** @noinspection SqlResolve */
-		$systemPreferencesSql = "SELECT * FROM systempreferences where variable = 'SMSSendDriver' OR variable ='TalkingTechItivaPhoneNotification'";
+		$systemPreferencesSql = "SELECT * FROM systempreferences where variable = 'SMSSendDriver' OR variable ='TalkingTechItivaPhoneNotification' OR variable ='PhoneNotification'";
 		$systemPreferencesRS = mysqli_query($this->dbConnection, $systemPreferencesSql);
 		while ($systemPreference = $systemPreferencesRS->fetch_assoc()) {
 			if ($systemPreference['variable'] == 'SMSSendDriver') {
@@ -3261,7 +3261,7 @@ class Koha extends AbstractIlsDriver
 					$smsProviders[$smsProvider['id']] = $smsProvider['name'];
 				}
 				$interface->assign('smsProviders', $smsProviders);
-			} elseif ($systemPreference['variable'] == 'TalkingTechItivaPhoneNotification') {
+			} elseif ($systemPreference['variable'] == 'TalkingTechItivaPhoneNotification' || $systemPreference['variable'] == 'PhoneNotification') {
 				$interface->assign('enablePhoneMessaging', !empty($systemPreference['value']));
 			}
 		}
