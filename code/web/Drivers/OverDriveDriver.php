@@ -1517,9 +1517,20 @@ class OverDriveDriver extends AbstractEContentDriver{
 			foreach ($curTitle->actions->format->fields as $curFieldIndex => $curField) {
 				if (isset($curField->options)) {
 					foreach ($curField->options as $index => $format) {
-						if ($format == 'ebook-overdrive' || $format == 'ebook-mediado') {
+						if ($format == 'ebook-overdrive' ||
+							$format == 'ebook-mediado' ||
+							$format == 'ebook-epub-adobe' ||
+							$format == 'ebook-epub-open' ||
+							$format == 'ebook-pdf-adobe' ||
+							$format == 'ebook-pdf-open' ||
+							$format == 'ebook-kindle') {
 							$bookshelfItem->overdriveRead = true;
-						} else if ($format == 'audiobook-overdrive') {
+						} else if (
+							$format == 'audiobook-overdrive' ||
+							$format == 'audiobook-wma' ||
+							$format == 'audiobook-mp3' ||
+							$format == 'audiobook-streaming' ||
+							$format == 'music-wma') {
 							$bookshelfItem->overdriveListen = true;
 						} else if ($format == 'video-streaming') {
 							$bookshelfItem->overdriveVideo = true;
