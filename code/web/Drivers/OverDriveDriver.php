@@ -533,7 +533,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 		}
 
 		global $interface;
-		$fulfillmentMethod = $this->getSettings()->useFulfillmentInterface;
+		$fulfillmentMethod = (string)$this->getSettings()->useFulfillmentInterface;
 		$interface->assign('fulfillmentMethod', $fulfillmentMethod);
 
 		$checkedOutTitles = [];
