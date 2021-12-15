@@ -233,7 +233,7 @@ class IIIRecordProcessor extends IlsRecordProcessor{
 			Subfield iCode2SubfieldValue = curItem.getSubfield(iCode2Subfield);
 			if (iCode2SubfieldValue != null){
 				String iCode2Value = iCode2SubfieldValue.getData();
-				if (iCode2sToSuppress.matcher(iCode2Value).matches()){
+				if (iCode2sToSuppress != null && iCode2sToSuppress.matcher(iCode2Value).matches()){
 					return true;
 				}
 			}
@@ -248,7 +248,7 @@ class IIIRecordProcessor extends IlsRecordProcessor{
 				Subfield bCode3Subfield = sierraFixedField.getSubfield(exportFieldMapping.getBcode3DestinationSubfield());
 				if (bCode3Subfield != null){
 					String bCode3 = bCode3Subfield.getData().toLowerCase().trim();
-					if (bCode3sToSuppress.matcher(bCode3).matches()){
+					if (bCode3sToSuppress != null && bCode3sToSuppress.matcher(bCode3).matches()){
 						if (logger.isDebugEnabled()) {
 							logger.debug("Bib record is suppressed due to BCode3 " + bCode3);
 						}

@@ -7,7 +7,6 @@ import com.turning_leaf_technologies.grouping.MarcRecordGrouper;
 import com.turning_leaf_technologies.grouping.RemoveRecordFromWorkResult;
 import com.turning_leaf_technologies.indexing.*;
 import com.turning_leaf_technologies.logging.LoggingUtil;
-import com.turning_leaf_technologies.marc.MarcUtil;
 import com.turning_leaf_technologies.reindexer.GroupedWorkIndexer;
 import com.turning_leaf_technologies.strings.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -163,7 +162,7 @@ public class SymphonyExportMain {
 	}
 
 	private static void processCourseReserves(Connection dbConn, IndexingProfile indexingProfile, IlsExtractLogEntry logEntry) {
-		File exportDir = new File(indexingProfile.getMarcPath() + "/..");
+		File exportDir = new File(indexingProfile.getMarcPath() + "/../course_reserves/");
 		File[] courseReservesFiles = exportDir.listFiles(new FilenameFilter() {
 			@Override
 			public boolean accept(File dir, String name) {
@@ -461,7 +460,7 @@ public class SymphonyExportMain {
 							if (!bibNumber.equals(curIlsId)){
 								if (curIlsId != null) {
 									//Save the current volume information
-									saveVolumes(volumesForRecord, addVolumeStmt, volumeUpdateInfo);
+									saveVolumes(curIlsId, volumesForRecord, addVolumeStmt, volumeUpdateInfo, deleteVolumeStmt);
 								}
 								volumesForRecord = new HashMap<>();
 								curIlsId = bibNumber;
@@ -513,7 +512,7 @@ public class SymphonyExportMain {
 					}
 					if (curIlsId != null) {
 						//Save the last volume information
-						saveVolumes(volumesForRecord, addVolumeStmt, volumeUpdateInfo);
+						saveVolumes(curIlsId, volumesForRecord, addVolumeStmt, volumeUpdateInfo, deleteVolumeStmt);
 					}
 
 					logEntry.addNote(numMalformattedRows + " rows were mal formatted in the volume export");
@@ -557,8 +556,14 @@ public class SymphonyExportMain {
 		}
 	}
 
-	private static void saveVolumes(HashMap<String, VolumeInfo> volumesForRecord, PreparedStatement addVolumeStmt, VolumeUpdateInfo volumeUpdateInfo) {
+	private static void saveVolumes(String recordId, HashMap<String, VolumeInfo> volumesForRecord, PreparedStatement addVolumeStmt, VolumeUpdateInfo volumeUpdateInfo, PreparedStatement deleteVolumeStmt) {
 		//Update the database
+		try {
+			deleteVolumeStmt.setString(1, recordId);
+			deleteVolumeStmt.executeUpdate();
+		}catch (Exception e){
+			logEntry.incErrors("Could not delete old volumes for recordId");
+		}
 		for (String curVolumeKey : volumesForRecord.keySet()){
 			VolumeInfo curVolume = volumesForRecord.get(curVolumeKey);
 			try{

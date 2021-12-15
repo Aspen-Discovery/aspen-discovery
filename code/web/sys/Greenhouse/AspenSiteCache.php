@@ -16,4 +16,12 @@ class AspenSiteCache extends DataObject
 	public $baseUrl;
 	public $lastUpdated;
 	public $releaseChannel;
+	public $logo;
+	public $favicon;
+	public $primaryBackgroundColor;
+	public $primaryForegroundColor;
+	public $secondaryBackgroundColor;
+	public $secondaryForegroundColor;
+	public $tertiaryBackgroundColor;
+	public $tertiaryForegroundColor;
 }

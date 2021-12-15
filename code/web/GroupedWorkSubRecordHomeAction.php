@@ -33,8 +33,10 @@ abstract class GroupedWorkSubRecordHomeAction extends Action
 		if (!empty($this->lastSearch)){
 			$breadcrumbs[] = new Breadcrumb($this->lastSearch, 'Catalog Search Results');
 		}
-		$breadcrumbs[] = new Breadcrumb($this->recordDriver->getGroupedWorkDriver()->getRecordUrl(), $this->recordDriver->getGroupedWorkDriver()->getTitle(), false);
-		$breadcrumbs[] = new Breadcrumb('', $this->recordDriver->getPrimaryFormat(), false);
+		if (!(empty($this->recordDriver) && $this->recordDriver->getGroupedWorkDriver()->isValid())){
+			$breadcrumbs[] = new Breadcrumb($this->recordDriver->getGroupedWorkDriver()->getRecordUrl(), $this->recordDriver->getGroupedWorkDriver()->getTitle(), false);
+			$breadcrumbs[] = new Breadcrumb('', $this->recordDriver->getPrimaryFormat(), false);
+		}
 		return $breadcrumbs;
 	}
 
@@ -42,10 +44,12 @@ abstract class GroupedWorkSubRecordHomeAction extends Action
 		global $interface;
 
 		$citationCount = 0;
-		$formats = $this->recordDriver->getCitationFormats();
-		foreach($formats as $current) {
-			$interface->assign(strtolower($current), $this->recordDriver->getCitation($current));
-			$citationCount++;
+		if (!(empty($this->recordDriver))){
+			$formats = $this->recordDriver->getCitationFormats();
+			foreach ($formats as $current) {
+				$interface->assign(strtolower($current), $this->recordDriver->getCitation($current));
+				$citationCount++;
+			}
 		}
 		$interface->assign('citationCount', $citationCount);
 	}

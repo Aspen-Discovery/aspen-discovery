@@ -1503,8 +1503,9 @@ class CarlX extends AbstractIlsDriver{
 				$mySip->patronpwd = $patron->cat_password;
 
 				$in = $mySip->msgPatronInformation('unavail',1,110); // hardcoded Nashville - circulation policy allows 100 holds for many borrower types
-				$result = $mySip->parsePatronInfoResponse( $mySip->get_message($in) );
-                ExternalRequestLogEntry::logRequest('carlx.getUnavailableHolds', 'SIP2', $mySip->hostname  . ':' . $mySip->port, [], $in, 0, $result, ['patronPwd'=>$patron->cat_password]);
+				$sipResponse = $mySip->get_message($in);
+				$result = $mySip->parsePatronInfoResponse( $sipResponse );
+                ExternalRequestLogEntry::logRequest('carlx.getUnavailableHolds', 'SIP2', $mySip->hostname  . ':' . $mySip->port, [], $in, 0, $sipResponse, ['patronPwd'=>$patron->cat_password]);
 				if ($result && !empty($result['variable']['CD'])) {
 					if (!is_array($result['variable']['CD'])) {
 						$result['variable']['CD'] = (array)$result['variable']['CD'];

@@ -1036,6 +1036,13 @@ class User extends DataObject
 			$this->checkoutInfoLastLoaded = time();
 			$this->update();
 		}else{
+			if ($source == 'all' || $source == 'overdrive'){
+				global $interface;
+				$driver = new OverDriveDriver();
+				$fulfillmentMethod = (string)$driver->getSettings()->useFulfillmentInterface;
+				$interface->assign('fulfillmentMethod', $fulfillmentMethod);
+			}
+
 			//fetch cached checkouts
 			$checkout = new Checkout();
 			$checkout->userId = $this->id;
@@ -1782,21 +1789,48 @@ class User extends DataObject
 	}
 
 	public function getReadingHistory($page = 1, $recordsPerPage = 20, $sortOption = "checkedOut", $filter = "", $forExport = false) {
-		return $this->getCatalogDriver()->getReadingHistory($this, $page, $recordsPerPage, $sortOption, $filter, $forExport);
+		$catalogDriver = $this->getCatalogDriver();
+		if ($catalogDriver != null) {
+			return $this->getCatalogDriver()->getReadingHistory($this, $page, $recordsPerPage, $sortOption, $filter, $forExport);
+		}else{
+			return [
+				'success' => false,
+				'message' => translate(['text'=>'Reading History Functionality is not available', 'isPublicFacing'=>true])
+			];
+		}
 	}
 
 	public function doReadingHistoryAction($readingHistoryAction, $selectedTitles){
-		$results = $this->getCatalogDriver()->doReadingHistoryAction($this, $readingHistoryAction, $selectedTitles);
-		$this->clearCache();
-		return $results;
+		$catalogDriver = $this->getCatalogDriver();
+		if ($catalogDriver != null) {
+			$results = $catalogDriver->doReadingHistoryAction($this, $readingHistoryAction, $selectedTitles);
+			$this->clearCache();
+			return $results;
+		}else{
+			return [
+				'success' => false,
+				'message' => translate(['text'=>'Reading History Functionality is not available', 'isPublicFacing'=>true])
+			];
+		}
 	}
 
 	public function deleteReadingHistoryEntryByTitleAuthor($title, $author) {
-		return $this->getCatalogDriver()->deleteReadingHistoryEntryByTitleAuthor($this, $title, $author);
+		$catalogDriver = $this->getCatalogDriver();
+		if ($catalogDriver != null) {
+			return $catalogDriver->deleteReadingHistoryEntryByTitleAuthor($this, $title, $author);
+		}else{
+			return [
+				'success' => false,
+				'message' => translate(['text'=>'Reading History Functionality is not available', 'isPublicFacing'=>true])
+			];
+		}
 	}
 
 	public function updateReadingHistoryBasedOnCurrentCheckouts() {
-		$this->getCatalogDriver()->updateReadingHistoryBasedOnCurrentCheckouts($this);
+		$catalogDriver = $this->getCatalogDriver();
+		if ($catalogDriver != null) {
+			$catalogDriver->updateReadingHistoryBasedOnCurrentCheckouts($this);
+		}
 	}
 
 	/**

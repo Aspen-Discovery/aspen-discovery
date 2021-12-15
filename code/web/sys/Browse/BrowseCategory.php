@@ -54,7 +54,7 @@ class BrowseCategory extends BaseBrowsable
 							$this->_subBrowseCategories[$searchId] = clone($SearchEntry);
 							$this->_subBrowseCategories[$searchId]->id = $this->textId . '_' . $SearchEntry->id;
 							$this->_subBrowseCategories[$searchId]->label = $SearchEntry->title;
-							$this->_subBrowseCategories[$searchId]->source = "savedSearch";
+							$this->_subBrowseCategories[$searchId]->_source = "savedSearch";
 						}
 
 					} while($SearchEntry->fetch() && $count < 5);
@@ -72,7 +72,7 @@ class BrowseCategory extends BaseBrowsable
 						$this->_subBrowseCategories[$id] = clone($lists);
 						$this->_subBrowseCategories[$id]->id = $this->textId . '_' . $id;
 						$this->_subBrowseCategories[$id]->label = $lists->title;
-						$this->_subBrowseCategories[$id]->source = "userList";
+						$this->_subBrowseCategories[$id]->_source = "userList";
 					}
 				} else {
 					$subCategory = new SubBrowseCategories();
@@ -81,7 +81,7 @@ class BrowseCategory extends BaseBrowsable
 					$subCategory->find();
 					while ($subCategory->fetch()) {
 						$this->_subBrowseCategories[$subCategory->id] = clone($subCategory);
-						$this->_subBrowseCategories[$subCategory->id]->source = "browseCategory";
+						$this->_subBrowseCategories[$subCategory->id]->_source = "browseCategory";
 					}
 				}
 			} else {
@@ -91,7 +91,7 @@ class BrowseCategory extends BaseBrowsable
 				$subCategory->find();
 				while ($subCategory->fetch()) {
 					$this->_subBrowseCategories[$subCategory->id] = clone($subCategory);
-					$this->_subBrowseCategories[$subCategory->id]->source = "browseCategory";
+					$this->_subBrowseCategories[$subCategory->id]->_source = "browseCategory";
 				}
 			}
 		}

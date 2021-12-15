@@ -753,16 +753,21 @@ class GroupedWorkDriver extends IndexRecordDriver
 	{
 		$description = null;
 		$cleanIsbn = $this->getCleanISBN();
-		if ($cleanIsbn != null && strlen($cleanIsbn) > 0) {
-			require_once ROOT_DIR . '/Drivers/marmot_inc/GoDeeperData.php';
-			$summaryInfo = GoDeeperData::getSummary($this->getPermanentId(), $cleanIsbn, $this->getCleanUPC());
-			if (isset($summaryInfo['summary'])) {
-				$description = $summaryInfo['summary'];
-			}
-		}
+		global $library;
 		if ($description == null) {
 			$description = $this->getDescriptionFast();
 		}
+		if ($library->getGroupedWorkDisplaySettings()->preferSyndeticsSummary == 1 || $description == null || strlen($description) == 0) {
+			if ($cleanIsbn != null && strlen($cleanIsbn) > 0) {
+				require_once ROOT_DIR . '/Drivers/marmot_inc/GoDeeperData.php';
+				$summaryInfo = GoDeeperData::getSummary($this->getPermanentId(), $cleanIsbn, $this->getCleanUPC());
+				if (isset($summaryInfo['summary'])) {
+					$description = $summaryInfo['summary'];
+				}
+			}
+		}
+
+
 		if ($description == null || strlen($description) == 0) {
 			$description = translate(['text' => 'Description Not Provided', 'isPublicFacing'=>true]);
 		}
@@ -2206,10 +2211,10 @@ class GroupedWorkDriver extends IndexRecordDriver
 		'On Order' => 2,
 		'Coming Soon' => 3,
 		'In Processing' => 3.5,
+		'In Transit' => 3.75, //This used to show as 6.5 (above available online), moved down because we don't know if it's in transit to another library, or if it's in transit to a hold shelf.
 		'Checked Out' => 4,
 		'Library Use Only' => 5,
 		'Available Online' => 6,
-		'In Transit' => 6.5,
 		'On Shelf' => 7
 	);
 

@@ -31,6 +31,7 @@ class SearchAPI extends Action
 				header('HTTP/1.0 401 Unauthorized');
 				$output = json_encode(array('error' => 'unauthorized_access'));
 			}
+			ExternalRequestLogEntry::logRequest('SearchAPI.' . $method, $_SERVER['REQUEST_METHOD'], $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'], getallheaders(), '', $_SERVER['REDIRECT_STATUS'], isset($jsonOutput) ? $jsonOutput : $output, []);
 			echo isset($jsonOutput) ? $jsonOutput : $output;
 		} elseif (IPAddress::allowAPIAccessForClientIP() || in_array($method, ['getListWidget', 'getCollectionSpotlight'])) {
 			header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
@@ -227,7 +228,7 @@ class SearchAPI extends Action
 				$this->addCheck($checks, 'Nightly Index', self::STATUS_CRITICAL, 'The last nightly index had errors');
 			}else{
 				//Check to see if it's after 8 am and the nightly index is still running.
-				if (empty($logEntry->endTime) && date('H') >= 8){
+				if (empty($logEntry->endTime) && date('H') >= 8 && date('H') < 21){
 					$this->addCheck($checks, 'Nightly Index', self::STATUS_CRITICAL, "Nightly index is still running after 8 am.");
 				}else {
 					$this->addCheck($checks, 'Nightly Index');
@@ -1566,12 +1567,16 @@ class SearchAPI extends Action
 	/** @noinspection PhpUnused */
 	function getAppSearchResults() : array {
 		global $configArray;
+		$results['success'] = true;
+		$results['message'] = '';
 		$searchResults = $this->search();
 
 		$shortname = $_REQUEST['library'];
+		$page = $_REQUEST['page'];
 
 		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 		if (!empty($searchResults['recordSet'])) {
+			$results['count'] = count($searchResults['recordSet']);
 			foreach ($searchResults['recordSet'] as $item) {
 				$groupedWork = new GroupedWorkDriver($item);
 				$author = $item['author_display'];
@@ -1620,10 +1625,14 @@ class SearchAPI extends Action
 			}
 		}
 
-		$results['success'] = true;
 		if (empty($results['items'])) {
-			$results['message'] = "No search results found";
-			$results['success'] = false;
+			$results['items'] = [];
+			$results['count'] = 0;
+			if($page == 1) {
+				$results['message'] = "No search results found";
+			} else {
+				$results['message'] = "End of results";
+			}
 		}
 
 		return $results;

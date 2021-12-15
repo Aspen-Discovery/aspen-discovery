@@ -49,7 +49,7 @@
 			<a href="{$rssLink|escape}">{translate text='Get RSS Feed' isPublicFacing=true}</a>
 			<a href="#" onclick="return AspenDiscovery.Account.ajaxLightbox('/Search/AJAX?method=getEmailForm', true); ">{translate text='Email this Search' isPublicFacing=true}</a>
 			{if $savedSearch}
-				<a href="#" onclick="return AspenDiscovery.Account.showSaveSearchForm('{$searchId}')">{translate text="Remove Saved Search" isPublicFacing=true}</a>
+				<a href="/MyAccount/SaveSearch?delete={$searchId}">{translate text="Remove Saved Search" isPublicFacing=true}</a>
 			{else}
 				<a href="#" onclick="return AspenDiscovery.Account.showSaveSearchForm('{$searchId}')">{translate text='Save Search' isPublicFacing=true}</a>
 			{/if}

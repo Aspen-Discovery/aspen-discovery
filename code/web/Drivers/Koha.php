@@ -976,6 +976,9 @@ class Koha extends AbstractIlsDriver
 		}
 
 		set_time_limit(20 * count($readingHistoryTitles));
+		$systemVariables = SystemVariables::getSystemVariables();
+		global $aspen_db;
+		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 		foreach ($readingHistoryTitles as $key => $historyEntry) {
 			//Get additional information from resources table
 			$historyEntry['ratingData'] = null;
@@ -983,19 +986,42 @@ class Koha extends AbstractIlsDriver
 			$historyEntry['linkUrl'] = null;
 			$historyEntry['coverUrl'] = null;
 			if (!empty($historyEntry['recordId'])) {
-//					if (is_int($historyEntry['recordId'])) $historyEntry['recordId'] = (string) $historyEntry['recordId']; // Marc Record Constructor expects the recordId as a string.
-				require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
-				$recordDriver = new MarcRecordDriver($this->accountProfile->recordSource . ':' . $historyEntry['recordId']);
-				if ($recordDriver->isValid()) {
-					$historyEntry['ratingData'] = $recordDriver->getRatingData();
-					$historyEntry['permanentId'] = $recordDriver->getPermanentId();
-					$historyEntry['linkUrl'] = $recordDriver->getGroupedWorkDriver()->getLinkUrl();
-					$historyEntry['coverUrl'] = $recordDriver->getBookcoverUrl('medium', true);
-					$historyEntry['format'] = $recordDriver->getFormats();
-					$historyEntry['author'] = $recordDriver->getPrimaryAuthor();
+				if ($systemVariables->storeRecordDetailsInDatabase){
+					$getRecordDetailsQuery = 'SELECT permanent_id, indexed_format.format FROM grouped_work_records 
+								  LEFT JOIN grouped_work ON groupedWorkId = grouped_work.id
+								  LEFT JOIN indexed_record_source ON sourceId = indexed_record_source.id
+								  LEFT JOIN indexed_format on formatId = indexed_format.id
+								  where source = ' . $aspen_db->quote($this->accountProfile->recordSource) . ' and recordIdentifier = ' . $aspen_db->quote($historyEntry['recordId']) ;
+					$results = $aspen_db->query($getRecordDetailsQuery, PDO::FETCH_ASSOC);
+					if ($results){
+						$result = $results->fetch();
+						if ($result) {
+							$groupedWorkDriver = new GroupedWorkDriver($result['permanent_id']);
+							if ($groupedWorkDriver->isValid()) {
+								$historyEntry['ratingData'] = $groupedWorkDriver->getRatingData();
+								$historyEntry['permanentId'] = $groupedWorkDriver->getPermanentId();
+								$historyEntry['linkUrl'] = $groupedWorkDriver->getLinkUrl();
+								$historyEntry['coverUrl'] = $groupedWorkDriver->getBookcoverUrl('medium', true);
+								$historyEntry['format'] = $result['format'];
+								$historyEntry['title'] = $groupedWorkDriver->getTitle();
+								$historyEntry['author'] = $groupedWorkDriver->getPrimaryAuthor();
+							}
+						}
+					}
+				}else {
+					require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+					$recordDriver = new MarcRecordDriver($this->accountProfile->recordSource . ':' . $historyEntry['recordId']);
+					if ($recordDriver->isValid()) {
+						$historyEntry['ratingData'] = $recordDriver->getRatingData();
+						$historyEntry['permanentId'] = $recordDriver->getPermanentId();
+						$historyEntry['linkUrl'] = $recordDriver->getGroupedWorkDriver()->getLinkUrl();
+						$historyEntry['coverUrl'] = $recordDriver->getBookcoverUrl('medium', true);
+						$historyEntry['format'] = $recordDriver->getFormats();
+						$historyEntry['author'] = $recordDriver->getPrimaryAuthor();
+					}
+					$recordDriver->__destruct();
+					$recordDriver = null;
 				}
-				$recordDriver->__destruct();
-				$recordDriver = null;
 			}
 			$readingHistoryTitles[$key] = $historyEntry;
 		}
@@ -3220,8 +3246,9 @@ class Koha extends AbstractIlsDriver
 
 		//Figure out if SMS and Phone notifications are enabled
 		/** @noinspection SqlResolve */
-		$systemPreferencesSql = "SELECT * FROM systempreferences where variable = 'SMSSendDriver' OR variable ='TalkingTechItivaPhoneNotification'";
+		$systemPreferencesSql = "SELECT * FROM systempreferences where variable = 'SMSSendDriver' OR variable ='TalkingTechItivaPhoneNotification' OR variable ='PhoneNotification'";
 		$systemPreferencesRS = mysqli_query($this->dbConnection, $systemPreferencesSql);
+		$enablePhoneMessaging = false;
 		while ($systemPreference = $systemPreferencesRS->fetch_assoc()) {
 			if ($systemPreference['variable'] == 'SMSSendDriver') {
 				$interface->assign('enableSmsMessaging', !empty($systemPreference['value']));
@@ -3235,10 +3262,11 @@ class Koha extends AbstractIlsDriver
 					$smsProviders[$smsProvider['id']] = $smsProvider['name'];
 				}
 				$interface->assign('smsProviders', $smsProviders);
-			} elseif ($systemPreference['variable'] == 'TalkingTechItivaPhoneNotification') {
-				$interface->assign('enablePhoneMessaging', !empty($systemPreference['value']));
+			} elseif ($systemPreference['variable'] == 'TalkingTechItivaPhoneNotification' || $systemPreference['variable'] == 'PhoneNotification') {
+				$enablePhoneMessaging |= !empty($systemPreference['value']);
 			}
 		}
+		$interface->assign('enablePhoneMessaging', $enablePhoneMessaging);
 
 		/** @noinspection SqlResolve */
 		$borrowerSql = "SELECT smsalertnumber, sms_provider_id FROM borrowers where borrowernumber = {$patron->username}";

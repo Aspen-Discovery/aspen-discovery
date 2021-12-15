@@ -337,15 +337,25 @@ class OverDrive_AJAX extends JSON_Action
 	{
 		global $interface;
 
-		$interface->assign('patronId', UserAccount::getActiveUserId());
-		$interface->assign('overDriveId', $_REQUEST['overDriveId']);
+		$user = UserAccount::getLoggedInUser();
+		$patronId = $_REQUEST['patronId'];
+		$patronOwningHold = $user->getUserReferredTo($patronId);
+		if ($patronOwningHold != false) {
+			$interface->assign('patronId', $patronId);
+			$interface->assign('overDriveId', $_REQUEST['overDriveId']);
 
-		$title = translate(translate(['text' => 'Freeze Hold', 'isPublicFacing'=>true])); // language customization
-		return array(
-			'title' => $title,
-			'modalBody' => $interface->fetch("OverDrive/reactivationDate.tpl"),
-			'modalButtons' => "<button class='tool btn btn-primary' id='doFreezeHoldWithReactivationDate' onclick='$(\".form\").submit(); return false;'>$title</button>"
-		);
+			$title = translate(['text' => 'Freeze Hold', 'isPublicFacing' => true]); // language customization
+			return array(
+				'title' => $title,
+				'modalBody' => $interface->fetch("OverDrive/reactivationDate.tpl"),
+				'modalButtons' => "<button class='tool btn btn-primary' id='doFreezeHoldWithReactivationDate' onclick='$(\".form\").submit(); return false;'>$title</button>"
+			);
+		}else{
+			return [
+				'success' => false,
+				'message' => translate(['text' => 'Sorry, you do not have access to freeze holds for the supplied user.', 'isPublicFacing'=>true])
+			];
+		}
 	}
 
 	function thawHold()
