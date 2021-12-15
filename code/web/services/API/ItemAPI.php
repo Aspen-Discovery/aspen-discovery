@@ -30,32 +30,52 @@ class ItemAPI extends Action {
 	{
 		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
 
-		//Make sure the user can access the API based on the IP address
-		if (!in_array($method, array('getAppBasicItemInfo', 'getAppGroupedWork')) && !IPAddress::allowAPIAccessForClientIP()){
+		header('Content-type: application/json');
+		header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
+		header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
+
+		if (isset($_SERVER['PHP_AUTH_USER'])) {
+			if($this->grantTokenAccess()) {
+				if ($method == 'getAppGroupedWork') {
+					header("Cache-Control: max-age=10800");
+					require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
+					APIUsage::incrementStat('ItemAPI', $method);
+					$output = json_encode($this->$method());
+				} else {
+					header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
+					$output = json_encode(array('error' => 'invalid_method'));
+				}
+			} else {
+				header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
+				header('HTTP/1.0 401 Unauthorized');
+				$output = json_encode(array('error' => 'unauthorized_access'));
+			}
+			ExternalRequestLogEntry::logRequest('ItemAPI.' . $method, $_SERVER['REQUEST_METHOD'], $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'], getallheaders(), '', $_SERVER['REDIRECT_STATUS'], $output, []);
+			echo $output;
+		} elseif (IPAddress::allowAPIAccessForClientIP()) {
+			if ($method != 'loadSolrRecord' && method_exists($this, $method)) {
+				// Connect to Catalog
+				if ($method != 'getBookcoverById' && $method != 'getBookCover'){
+					$this->catalog = CatalogFactory::getCatalogConnectionInstance();
+					header('Content-type: application/json');
+					header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
+					header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
+				}
+
+				if (in_array($method, array('getDescriptionByRecordId', 'getDescriptionByTitleAndAuthor'))){
+					$output = json_encode($this->$method());
+				}else{
+					$output = json_encode(array('result'=>$this->$method()));
+				}
+				require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
+				APIUsage::incrementStat('ItemAPI', $method);
+			} else {
+				$output = json_encode(array('error'=>"invalid_method '$method'"));
+			}
+			echo $output;
+		} else {
 			$this->forbidAPIAccess();
 		}
-
-		if ($method != 'loadSolrRecord' && method_exists($this, $method)) {
-			// Connect to Catalog
-			if ($method != 'getBookcoverById' && $method != 'getBookCover'){
-				$this->catalog = CatalogFactory::getCatalogConnectionInstance();
-				header('Content-type: application/json');
-				header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
-				header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
-			}
-
-			if (in_array($method, array('getDescriptionByRecordId', 'getDescriptionByTitleAndAuthor', 'getAppGroupedWork'))){
-				$output = json_encode($this->$method());
-			}else{
-				$output = json_encode(array('result'=>$this->$method()));
-			}
-			require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
-			APIUsage::incrementStat('ItemAPI', $method);
-		} else {
-			$output = json_encode(array('error'=>"invalid_method '$method'"));
-		}
-
-		echo $output;
 	}
 
 	/** @noinspection PhpUnused */
