@@ -37,6 +37,7 @@ class UserAPI extends Action
 				header('HTTP/1.0 401 Unauthorized');
 				$output = json_encode(array('error' => 'unauthorized_access'));
 			}
+			ExternalRequestLogEntry::logRequest('UserAPI.' . $method, $_SERVER['REQUEST_METHOD'], $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'], getallheaders(), '', $_SERVER['REDIRECT_STATUS'], $output, []);
 			echo $output;
 		} elseif (IPAddress::allowAPIAccessForClientIP()) {
 			header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
