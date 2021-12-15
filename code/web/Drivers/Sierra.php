@@ -4,11 +4,9 @@ require_once ROOT_DIR . '/Drivers/Millennium.php';
 class Sierra extends Millennium{
 	protected $urlIdRegExp = "/.*\/(\d*)$/";
 
-	public function _connectToApi($forceNewConnection = false){
-		/** @var Memcache $memCache */
-		global $memCache;
-		$tokenData = $memCache->get('sierra_token');
-		if ($forceNewConnection || $tokenData == false){
+	private $sierraToken = null;
+	public function _connectToApi(){
+		if ($this->sierraToken == null){
 			$apiVersion = $this->accountProfile->apiVersion;
 			$ch = curl_init($this->getVendorOpacUrl() . "/iii/sierra-api/v{$apiVersion}/token/");
 			curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 15);
@@ -27,12 +25,9 @@ class Sierra extends Millennium{
 			curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
 			$return = curl_exec($ch);
 			curl_close($ch);
-			$tokenData = json_decode($return);
-			if ($tokenData){
-				$memCache->set('sierra_token', $tokenData, $tokenData->expires_in - 10);
-			}
+			$this->sierraToken = json_decode($return);
 		}
-		return $tokenData;
+		return $this->sierraToken;
 	}
 
 	public function _callUrl($requestType, $url){
@@ -41,11 +36,12 @@ class Sierra extends Millennium{
 			$ch = curl_init($url);
 			curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 30);
 			curl_setopt($ch, CURLOPT_USERAGENT,"Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)");
+			$host = parse_url($url, PHP_URL_HOST);
 			$headers = array(
 					"Authorization: " . $tokenData->token_type . " {$tokenData->access_token}",
 					"User-Agent: Aspen Discovery",
 					"X-Forwarded-For: " . IPAddress::getActiveIp(),
-					"Host: " . $_SERVER['SERVER_NAME'],
+					"Host: " . $host,
 			);
 			curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -76,11 +72,12 @@ class Sierra extends Millennium{
 			$ch = curl_init($url);
 			curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 30);
 			curl_setopt($ch, CURLOPT_USERAGENT,"Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)");
+			$host = parse_url($url, PHP_URL_HOST);
 			$headers = array(
 				"Authorization: " . $tokenData->token_type . " {$tokenData->access_token}",
 				"User-Agent: Aspen Discovery",
 				"X-Forwarded-For: " . IPAddress::getActiveIp(),
-				"Host: " . $_SERVER['SERVER_NAME'],
+				"Host: " . $host,
 			);
 			curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -121,16 +118,21 @@ class Sierra extends Millennium{
 			$ch = curl_init($url);
 			curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 30);
 			curl_setopt($ch, CURLOPT_USERAGENT,"Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)");
+			$host = parse_url($url, PHP_URL_HOST);
 			$headers = array(
 				"Authorization: " . $tokenData->token_type . " {$tokenData->access_token}",
 				"User-Agent: Aspen Discovery",
 				"X-Forwarded-For: " . IPAddress::getActiveIp(),
-				"Host: " . $_SERVER['SERVER_NAME'],
+				"Host: " . $host,
 			);
 			if ($httpMethod == 'PUT'){
 				$headers[] = 'Content-Type: application/json';
 				if ($postParams === null || $postParams === false) {
 					$headers[] = 'Content-Length: 0';
+				}else{
+					if (is_array($postParams)) {
+						$postParams = json_encode($postParams);
+					}
 				}
 			}
 			curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
@@ -142,8 +144,6 @@ class Sierra extends Millennium{
 				curl_setopt($ch, CURLOPT_HTTPGET, true);
 			} elseif ($httpMethod == 'POST') {
 				curl_setopt($ch, CURLOPT_POST, true);
-			} elseif ($httpMethod == 'PUT') {
-				curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "PUT");
 			} else {
 				curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $httpMethod);
 			}
@@ -154,12 +154,14 @@ class Sierra extends Millennium{
 					$postFields = $postParams;
 				}
 				curl_setopt($ch, CURLOPT_POSTFIELDS, $postFields);
+			}else{
+				$postFields = '';
 			}
 			$return = curl_exec($ch);
 			$curl_info = curl_getinfo($ch);
 			$responseCode = $curl_info['http_code'];
 
-			ExternalRequestLogEntry::logRequest($requestType, $httpMethod, $url, $headers, json_encode($postParams), $responseCode, $return, []);
+			ExternalRequestLogEntry::logRequest($requestType, $httpMethod, $url, $headers, $postFields, $responseCode, $return, []);
 			curl_close($ch);
 			$returnVal = json_decode($return);
 			if ($returnVal != null){
@@ -348,6 +350,17 @@ class Sierra extends Millennium{
 					$updatePickup = false;
 			}
 			$curHold->status    = $status;
+			if(isset($curHold->holdQueueLength)) {
+				if(isset($curHold->position) && ((int)$curHold->position <= 2 && (int)$curHold->holdQueueLength >= 2)) {
+					$freezeable = false;
+					// if the patron is the only person on wait list hold can't be frozen
+				} elseif(isset($curHold->position) && ($curHold->position == 1 && (int)$curHold->holdQueueLength == 1)) {
+					$freezeable = false;
+					// if there is no priority set but queueLength = 1
+				} elseif(!isset($curHold->position) && $curHold->holdQueueLength == 1) {
+					$freezeable = false;
+				}
+			}
 			$curHold->canFreeze = $freezeable;
 			$curHold->cancelable = $cancelable;
 			$curHold->locationUpdateable = $updatePickup;
@@ -626,7 +639,7 @@ class Sierra extends Millennium{
 		$params = [
 			'freeze' => true
 		];
-		$freezeResponse = $this->_sendPage('sierra.freezeHold', 'PUT', $sierraUrl, json_encode($params));
+		$freezeResponse = $this->_sendPage('sierra.freezeHold', 'PUT', $sierraUrl, $params);
 		if (!$freezeResponse){
 			$patron->forceReloadOfHolds();
 			return [
@@ -638,7 +651,7 @@ class Sierra extends Millennium{
 				'success' => true,
 				'message' => translate(['text'=>"Unable to freeze your hold.", 'isPublicFacing'=>true])
 			];
-			$return['message'] .= ' ' . translate(['text'=>$freezeResponse->description, 'isPublicFacing'=>true]);
+			$return['message'] .= ' ' . translate(['text'=>trim(str_replace('WebPAC Error : ', '', $freezeResponse->description)), 'isPublicFacing'=>true]);
 			return $return;
 		}
 	}
@@ -660,7 +673,7 @@ class Sierra extends Millennium{
 				'success' => true,
 				'message' => translate(['text'=>"Unable to thaw your hold.", 'isPublicFacing'=>true])
 			];
-			$return['message'] .= ' ' . translate(['text'=>$thawResponse->description, 'isPublicFacing'=>true]);
+			$return['message'] .= ' ' . translate(['text'=>trim(str_replace('WebPAC Error : ', '', $thawResponse->description)), 'isPublicFacing'=>true]);
 			return $return;
 		}
 	}
@@ -682,13 +695,13 @@ class Sierra extends Millennium{
 
 			return $result;
 		}else{
-			$message = translate(['text'=>'Sorry, the pickup location of your hold could not be changed.', 'isPublicFacing'=>true]) . " {$jsonResponse->ErrorMessage}";;
+			$message = translate(['text'=>'Sorry, the pickup location of your hold could not be changed.', 'isPublicFacing'=>true]) . " {$changePickupResponse->ErrorMessage}";;
 			$result['success'] = false;
 			$result['message'] = $message;
 
 			// Result for API or app use
 			$result['api']['title'] = translate(['text'=>'Unable to update pickup location', 'isPublicFacing'=>true]);
-			$result['api']['message'] = $jsonResponse->ErrorMessage;
+			$result['api']['message'] = trim(str_replace('WebPAC Error : ', '', $changePickupResponse->ErrorMessage));
 
 			return $result;
 		}
@@ -708,7 +721,7 @@ class Sierra extends Millennium{
 				'success' => true,
 				'message' => translate(['text'=>"Unable to cancel your hold.", 'isPublicFacing'=>true])
 			];
-			$return['message'] .= ' ' . translate(['text'=>$cancelHoldResponse->description, 'isPublicFacing'=>true]);
+			$return['message'] .= ' ' . translate(['text'=>trim(str_replace('WebPAC Error : ', '', $cancelHoldResponse->description)), 'isPublicFacing'=>true]);
 			return $return;
 		}
 	}
