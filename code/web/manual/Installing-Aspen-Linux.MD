@@ -29,6 +29,7 @@ These instructions are designed for CentOS 7.  Other environments may require so
    System Admin -> DB Maintenance -> run
 
 Your site is now setup, but you will need to do some configuration of the site.
+1. Ensure all ports other than 80 and 443 (and 25 if needed for SSH access) are firewalled so they cannot be accessed by the world. 
 1. Add the server external IP to the list of IPs as 'Allow API Access'
 1. Setup Initial Library and Location information
 1. Setup Account Profile (this is setup during the install process if you are using Koha)
@@ -38,3 +39,4 @@ Your site is now setup, but you will need to do some configuration of the site.
 1. Run a new index
 1. Setup cron (not needed for development installs) 
 1. Setup SSL (not needed for development installs)
+

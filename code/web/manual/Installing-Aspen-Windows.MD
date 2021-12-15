@@ -14,6 +14,7 @@ For Windows, we also recommend using [GitHub Desktop](https://desktop.github.com
    System Admin -> DB Maintenance -> run
 
 Your site is now setup, but you will need to do some configuration of the site.
+1. Ensure all ports other than 80 and 443 (and 25 if needed for SSH access) are firewalled so they cannot be accessed by the world. 
 1. Add the hostname you want to use for aspen to c:\Windows\System32\drivers\etc\hosts
 1. Add the server external IP to the list of IPs as 'Allow API Access' (not needed for development installs)
 1. Setup Initial Library and Location information

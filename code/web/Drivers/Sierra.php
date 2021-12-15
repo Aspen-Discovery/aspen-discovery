@@ -289,6 +289,8 @@ class Sierra extends Millennium{
 					$recordStatus = $recordItemStatus;
 				}
 			}
+
+			$available = false;
 			// type hint so '0' != false
 			switch ((string)$recordStatus) {
 				case '0':
@@ -315,6 +317,7 @@ class Sierra extends Millennium{
 					$cancelable   = true;
 					$freezeable   = false;
 					$updatePickup = false;
+					$available = true;
 					break;
 				case 't':
 					$status     = 'In transit';
@@ -338,6 +341,7 @@ class Sierra extends Millennium{
 					$freezeable         = false;
 					$cancelable         = false;
 					$updatePickup = false;
+					$available = true;
 					break;
 				default:
 					if(isset($recordItemStatusMessage)) {
@@ -364,6 +368,7 @@ class Sierra extends Millennium{
 			$curHold->canFreeze = $freezeable;
 			$curHold->cancelable = $cancelable;
 			$curHold->locationUpdateable = $updatePickup;
+			$curHold->available = $available;
 			// unset for next round.
 			unset($status, $freezeable, $cancelable, $updatePickup);
 
@@ -422,7 +427,7 @@ class Sierra extends Millennium{
 					$curHold->recordId = '';
 				}
 			}
-			if($sierraHold->status->code == "b" || $sierraHold->status->code == "j" || $sierraHold->status->code == "i") {
+			if($available) {
 				$return['available'][] = $curHold;
 			} else {
 				$return['unavailable'][] = $curHold;
