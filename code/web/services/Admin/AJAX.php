@@ -224,6 +224,7 @@ class Admin_AJAX extends JSON_Action
 
 	/** @noinspection PhpUnused */
 	function getReleaseNotes(){
+		global $interface;
 		$release = $_REQUEST['release'];
 		$releaseNotesPath = ROOT_DIR . '/release_notes';
 		$results = [
@@ -238,6 +239,7 @@ class Admin_AJAX extends JSON_Action
 			$releaseNotesFormatted = $parsedown->parse(file_get_contents($releaseNotesPath . '/'. $release . '.MD'));
 			$results = [
 				'success' => true,
+				'release' => $release,
 				'releaseNotes' => $releaseNotesFormatted,
 				'actionItems' => '',
 				'testingSuggestions' => ''
@@ -245,12 +247,13 @@ class Admin_AJAX extends JSON_Action
 			if (file_exists($releaseNotesPath . '/'. $release . '_action_items.MD')){
 				$actionItemsFormatted = $parsedown->parse(file_get_contents($releaseNotesPath . '/'. $release . '_action_items.MD'));
 				$results['actionItems'] = $actionItemsFormatted;
+				$interface->assign('actionItemsFormatted', $actionItemsFormatted);
 			}
 			if (file_exists($releaseNotesPath . '/'. $release . '_testing.MD')){
 				$testingSuggestionsFormatted = $parsedown->parse(file_get_contents($releaseNotesPath . '/'. $release . '_testing.MD'));
 				$results['testingSuggestions'] = $testingSuggestionsFormatted;
+				$interface->assign('testingSuggestionsFormatted', $testingSuggestionsFormatted);
 			}
-
 		}
 		return $results;
 	}
