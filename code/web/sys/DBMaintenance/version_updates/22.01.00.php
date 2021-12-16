@@ -17,5 +17,12 @@ function getUpdates22_01_00() : array
 				"ALTER TABLE sierra_export_field_mapping ADD COLUMN itemPublicNoteExportSubfield VARCHAR(1) DEFAULT ''",
 			]
 		], //sierra_public_note_export
+		'greenhouse_add_ils'=> [
+			'title' => 'Greenhouse - Add ILS',
+			'description' => 'Track the active ILS for a site within the greenouse',
+			'sql' => [
+				'ALTER TABLE aspen_sites ADD COLUMN ils INT'
+			]
+		], //greenhouse_add_ils
 	];
 }
