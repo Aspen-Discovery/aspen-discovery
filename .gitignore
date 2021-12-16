@@ -101,8 +101,8 @@ org.eclipse.*.prefs
 *.css.map
 .settings/
 out/
-code/cron/.idea/workspace.xml
-code/web/.idea/workspace.xml
+code/cron/.idea/*
+code/web/.idea/*
 
 # OS generated files #
 ######################
@@ -175,10 +175,6 @@ sites/demo.localhost/conf/config.ini
 sites/demo.localhost/conf/crontab_settings.txt
 sites/demo.localhost/demo.localhost.sh
 sites/demo.localhost/httpd-demo.localhost.conf
-code/web/.idea/watcherTasks.xml
-code/web/.idea/workspace.xml
-code/web/.idea/workspace.xml
-code/web/.idea/watcherTasks.xml
 code/web/fonts/IndieFlower-Regular.ttf
 code/web/fonts/KleeOne-SemiBold.ttf
 code/aspen_app/package-lock.json
@@ -188,7 +184,4 @@ sites/demo.localhost/demo.localhost.bat
 code/aspen_app/.env
 code/aspen_app/.idea/aspen_app.iml
 code/aspen_app/.idea/workspace.xml
-code/web/.idea/dataSources.local.xml
-code/web/.idea/php.xml
-code/web/.idea/workspace.xml
 code/web/sys/Logger.php
