@@ -1115,8 +1115,10 @@ public class SierraExportAPIMain {
 							itemField.addSubfield(marcFactory.newSubfield(indexingProfile.getVolume(), allFieldContent.toString()));
 						}else if (fieldTag.equals(sierraExportFieldMapping.getUrlExportFieldTag())){
 							itemField.addSubfield(marcFactory.newSubfield(indexingProfile.getItemUrl(), allFieldContent.toString()));
-						}else if (fieldTag.equals(sierraExportFieldMapping.getEContentExportFieldTag())){
+						}else if (fieldTag.equals(sierraExportFieldMapping.getEContentExportFieldTag())) {
 							itemField.addSubfield(marcFactory.newSubfield(indexingProfile.getEContentDescriptor(), allFieldContent.toString()));
+						}else if (fieldTag.equals(sierraExportFieldMapping.getItemPublicNoteExportSubfield())){
+							itemField.addSubfield(marcFactory.newSubfield(indexingProfile.getNoteSubfield(), allFieldContent.toString()));
 						//}else{
 							//logger.debug("Unhandled item variable field " + fieldTag);
 						}
