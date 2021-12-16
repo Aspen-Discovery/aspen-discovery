@@ -106,7 +106,7 @@ class OverDriveProcessor {
 								break;
 						}
 
-						HashMap<String, String> metadata = loadOverDriveMetadata(groupedWork, productId, primaryFormat, logEntry);
+						HashMap<String, String> metadata = loadOverDriveMetadata(groupedWork, productId, primaryFormat, formatCategory, logEntry);
 
 						if (!metadata.containsKey("rawMetadata") || (metadata.get("rawMetadata") == null)){
 							//We didn't get metadata for the title.  This shouldn't happen in normal cases, but if it does,
@@ -287,7 +287,7 @@ class OverDriveProcessor {
 
 						String fullTitle = title + " " + subtitle;
 						fullTitle = fullTitle.trim();
-						groupedWork.setTitle(title, subtitle, title, metadata.get("sortTitle"), primaryFormat);
+						groupedWork.setTitle(title, subtitle, title, metadata.get("sortTitle"), primaryFormat, formatCategory);
 						groupedWork.addFullTitle(fullTitle);
 
 						if (series != null && series.length() > 0) {
@@ -691,7 +691,7 @@ class OverDriveProcessor {
 		return formats;
 	}
 
-	private HashMap<String, String> loadOverDriveMetadata(GroupedWorkSolr groupedWork, long productId, String format, BaseLogEntry logEntry) throws SQLException {
+	private HashMap<String, String> loadOverDriveMetadata(GroupedWorkSolr groupedWork, long productId, String format, String formatCategory, BaseLogEntry logEntry) throws SQLException {
 		HashMap<String, String> returnMetadata = new HashMap<>();
 		//Load metadata
 		getProductMetadataStmt.setLong(1, productId);
@@ -708,9 +708,9 @@ class OverDriveProcessor {
 			//Hopefully OverDrive will give us better stats in the near future that we can use.
 			groupedWork.addPopularity(metadataRS.getFloat("popularity") / 500f);
 			String shortDescription = metadataRS.getString("shortDescription");
-			groupedWork.addDescription(shortDescription, format);
+			groupedWork.addDescription(shortDescription, format, formatCategory);
 			String fullDescription = metadataRS.getString("fullDescription");
-			groupedWork.addDescription(fullDescription, format);
+			groupedWork.addDescription(fullDescription, format, formatCategory);
 
 			try {
 				byte[] rawDataBytes = metadataRS.getBytes("rawData");

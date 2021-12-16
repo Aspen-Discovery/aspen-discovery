@@ -76,11 +76,11 @@ class CloudLibraryProcessor extends MarcRecordProcessor {
 				MarcReader reader = new MarcPermissiveStreamReader(new ByteArrayInputStream(rawMarc.getBytes(StandardCharsets.UTF_8)), true, false, "UTF-8");
 				if (reader.hasNext()) {
 					Record marcRecord = reader.next();
-					updateGroupedWorkSolrDataBasedOnStandardMarcData(groupedWork, marcRecord, new ArrayList<>(), identifier, primaryFormat);
+					updateGroupedWorkSolrDataBasedOnStandardMarcData(groupedWork, marcRecord, new ArrayList<>(), identifier, primaryFormat, formatCategory);
 
 					//Special processing for ILS Records
 					String fullDescription = Util.getCRSeparatedString(MarcUtil.getFieldList(marcRecord, "520a"));
-					groupedWork.addDescription(fullDescription, format);
+					groupedWork.addDescription(fullDescription, format, formatCategory);
 					HashSet<RecordInfo> allRelatedRecords = new HashSet<>();
 					allRelatedRecords.add(cloudLibraryRecord);
 					loadEditions(groupedWork, marcRecord, allRelatedRecords);

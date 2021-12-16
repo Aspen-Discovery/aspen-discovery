@@ -76,7 +76,7 @@ class Axis360Processor {
 				if (rawResponse.has("subTitle")) {
 					subTitle = rawResponse.getString("subTitle");
 				}
-				groupedWork.setTitle(title, subTitle, title, title, primaryFormat);
+				groupedWork.setTitle(title, subTitle, title, title, primaryFormat, formatCategory);
 
 				String primaryAuthor = productRS.getString("primaryAuthor");
 				groupedWork.setAuthor(primaryAuthor);
@@ -112,7 +112,7 @@ class Axis360Processor {
 					groupedWork.addAuthor2Role(narratorsWithRoleToAdd);
 				}
 
-				groupedWork.addDescription(getFieldValue(rawResponse, "description"), formatType);
+				groupedWork.addDescription(getFieldValue(rawResponse, "description"), formatType, formatCategory);
 
 				String language = getFieldValue(rawResponse, "language");
 				groupedWork.addLanguage(indexer.translateSystemValue("language", language, identifier));

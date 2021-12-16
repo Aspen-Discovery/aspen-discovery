@@ -380,9 +380,11 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 
 			//Do updates based on the overall bib (shared regardless of scoping)
 			String primaryFormat = null;
+			String primaryFormatCategory = null;
 			for (RecordInfo ilsRecord : allRelatedRecords) {
 				primaryFormat = ilsRecord.getPrimaryFormat();
-				if (primaryFormat != null){
+				primaryFormatCategory = ilsRecord.getPrimaryFormatCategory();
+				if (primaryFormatCategory != null && primaryFormat != null){
 					break;
 				}
 			}
@@ -390,7 +392,11 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 				primaryFormat = "Unknown";
 				//logger.info("No primary format for " + recordInfo.getRecordIdentifier() + " found setting to unknown to load standard marc data");
 			}
-			updateGroupedWorkSolrDataBasedOnStandardMarcData(groupedWork, record, recordInfo.getRelatedItems(), identifier, primaryFormat);
+			if (primaryFormatCategory == null/* || primaryFormat.equals("Unknown")*/) {
+				primaryFormatCategory = "Unknown";
+				//logger.info("No primary format for " + recordInfo.getRecordIdentifier() + " found setting to unknown to load standard marc data");
+			}
+			updateGroupedWorkSolrDataBasedOnStandardMarcData(groupedWork, record, recordInfo.getRelatedItems(), identifier, primaryFormat, primaryFormatCategory);
 
 			//Special processing for ILS Records
 			String fullDescription = Util.getCRSeparatedString(MarcUtil.getFieldList(record, "520a"));
@@ -399,7 +405,11 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 				if (primaryFormatForRecord == null){
 					primaryFormatForRecord = "Unknown";
 				}
-				groupedWork.addDescription(fullDescription, primaryFormatForRecord);
+				String primaryFormatCategoryForRecord = ilsRecord.getPrimaryFormatCategory();
+				if (primaryFormatCategoryForRecord == null){
+					primaryFormatCategoryForRecord = "Unknown";
+				}
+				groupedWork.addDescription(fullDescription, primaryFormatForRecord, primaryFormatCategoryForRecord);
 			}
 			loadEditions(groupedWork, record, allRelatedRecords);
 			loadPhysicalDescription(groupedWork, record, allRelatedRecords);

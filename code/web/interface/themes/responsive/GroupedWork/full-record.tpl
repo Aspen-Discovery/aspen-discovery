@@ -53,7 +53,7 @@
 							{if $summPublisher}
 								{$summPublisher}
 							{else}
-								{translate text="Varies, see individual formats and editions"}
+								{translate text="Varies, see individual formats and editions" isPublicFacing=true}
 							{/if}
 						</div>
 					</div>
