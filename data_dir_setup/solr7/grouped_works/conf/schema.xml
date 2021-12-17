@@ -67,7 +67,7 @@
 				<tokenizer class="solr.KeywordTokenizerFactory"/>
 				<charFilter class="solr.PatternReplaceCharFilterFactory" pattern="^\s*(.*)\s*$" replacement="aaaa $1"/>
 				<filter class="solr.LowerCaseFilterFactory"/>
-				<filter class="solr.EdgeNGramFilterFactory" maxGramSize="50"/>
+				<filter class="solr.EdgeNGramFilterFactory" minGramSize="5" maxGramSize="50"/>
 				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
 			</analyzer>
 			<analyzer type="query">
