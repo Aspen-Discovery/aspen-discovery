@@ -82,7 +82,7 @@
 				{/if}
 			{elseif $historyActive == true}
 				{* No Items in the history, but the history is active *}
-				{translate text="You do not have any items in your reading list." isPublcFacing=true}
+				{translate text="You do not have any items in your reading list." isPublicFacing=true}
 			{/if}
 		</div>
 	{/if}

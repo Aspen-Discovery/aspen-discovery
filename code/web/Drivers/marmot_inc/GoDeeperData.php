@@ -219,7 +219,8 @@ class GoDeeperData{
 				if (isset($response[0]->AnnotationItems->AnnotationItem)){
 					foreach ($response[0]->AnnotationItems->AnnotationItem as $summary) {
 						//Correct poorly encoded quotes
-						$temp[strlen($summary->Annotation)] = str_replace('&amp;&#34;', '"', $summary->Annotation);
+						//Tickets (90861, )
+						$temp[strlen($summary->Annotation)] = html_entity_decode(str_replace('&amp;&#34;', '"', $summary->Annotation));
 					}
 					$summaryData['summary'] = end($temp); // Grab the Longest Summary
 				}

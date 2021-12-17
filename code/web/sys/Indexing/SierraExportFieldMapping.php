@@ -20,6 +20,7 @@ class SierraExportFieldMapping extends DataObject{
 	public /** @noinspection PhpUnused */ $callNumberExportSubfield;
 	public /** @noinspection PhpUnused */ $callNumberCutterExportSubfield;
 	public /** @noinspection PhpUnused */ $callNumberPoststampExportSubfield;
+	public /** @noinspection PhpUnused */ $itemPublicNoteExportSubfield;
 	public /** @noinspection PhpUnused */ $volumeExportFieldTag;
 	public /** @noinspection PhpUnused */ $urlExportFieldTag;
 	public /** @noinspection PhpUnused */ $eContentExportFieldTag;
@@ -45,6 +46,7 @@ class SierraExportFieldMapping extends DataObject{
 			'callNumberExportSubfield' => array('property' => 'callNumberExportSubfield', 'type' => 'text', 'label' => 'Call Number Export Subfield', 'maxLength' => 1, 'description' => 'The subfield where the call number is exported', 'forcesReindex' => true),
 			'callNumberCutterExportSubfield' => array('property' => 'callNumberCutterExportSubfield', 'type' => 'text', 'label' => 'Call Number Cutter Export Subfield', 'maxLength' => 1, 'description' => 'The subfield where the call number cutter is exported', 'forcesReindex' => true),
 			'callNumberPoststampExportSubfield' => array('property' => 'callNumberPoststampExportSubfield', 'type' => 'text', 'label' => 'Call Number Poststamp Export Subfield', 'maxLength' => 5, 'description' => 'The subfield where the call number poststamp is exported.  Multiple can be specified.  I.e. eS is both e and S', 'forcesReindex' => true),
+			'itemPublicNoteExportSubfield' => array('property' => 'itemPublicNoteExportSubfield', 'type' => 'text', 'label' => 'Item Public Note Subfield', 'maxLength' => 1, 'description' => 'The subfield where the item public note is exported.', 'forcesReindex' => true),
 			'volumeExportFieldTag' => array('property' => 'volumeExportFieldTag', 'type' => 'text', 'label' => 'Volume Export Field Tag', 'maxLength' => 1, 'description' => 'The Item Variable field tag where volume is exported', 'forcesReindex' => true),
 			'urlExportFieldTag' => array('property' => 'urlExportFieldTag', 'type' => 'text', 'label' => 'URL Export Field Tag', 'maxLength' => 1, 'description' => 'The Item Variable field tag where the url is exported', 'forcesReindex' => true),
 			'eContentExportFieldTag' => array('property' => 'eContentExportFieldTag', 'type' => 'text', 'label' => 'eContent Export Field Tag', 'maxLength' => 1, 'description' => 'The Item Variable field tag where eContent information (Marmot Only) is exported', 'forcesReindex' => true),

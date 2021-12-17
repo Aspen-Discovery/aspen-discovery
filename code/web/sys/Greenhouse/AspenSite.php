@@ -23,6 +23,7 @@ class AspenSite extends DataObject
 
 	public static $_implementationStatuses = [0 => 'Installing', 1 => 'Implementing', 2 => 'Soft Launch', 3 => 'Production', 4 => 'Retired'];
 	public static $_appAccess = [0 => 'None', 1 => 'LiDA Only', 2 => 'Whitelabel Only', 3 => 'LiDA + Whitelabel'];
+	public static $_validIls = [0 => 'Not Set', 1 => 'Koha', 2 => 'CARL.X', 3 => 'Evergreen', 4 => 'Millennium', 5=>'Polaris',6 => 'Sierra', 7 => 'Symphony'];
 
 	public static function getObjectStructure() : array {
 		return [
@@ -36,6 +37,7 @@ class AspenSite extends DataObject
 			'baseUrl' => ['property'=>'baseUrl', 'type'=>'url', 'label'=>'Site URL', 'description'=>'The URL to the Website', 'maxLength'=>255, 'required' => false],
 			'hosting' => ['property'=>'hosting', 'type'=>'text', 'label'=>'Hosting', 'description'=>'What hosting the site is on', 'maxLength'=>75, 'required' => false],
 			'appAccess' => ['property'=>'appAccess', 'type'=>'enum', 'values' => AspenSite::$_appAccess, 'label'=>'App Access Level', 'description'=>'The level of access to the Aspen app that the library has', 'required' => true, 'default' => 0],
+			'ils' => ['property'=>'ils', 'type'=>'enum', 'values' => AspenSite::$_validIls, 'label'=>'ILS', 'description'=>'The ils used by the library', 'required' => true, 'default' => 0],
 			'operatingSystem' => ['property'=>'operatingSystem', 'type'=>'text', 'label'=>'Operating System', 'description'=>'What operating system the site is on', 'maxLength'=>75, 'required' => false],
 			'notes' => ['property' => 'notes', 'type'=>'textarea', 'label'=>'Notes', 'description'=>'Notes on the site.', 'hideInLists' => true],
 			'lastNotificationTime' => ['property' => 'lastNotificationTime', 'type'=>'timestamp', 'label'=>'Last Notification Time', 'description'=>'When the last alert was sent.', 'hideInLists' => false],

@@ -471,17 +471,17 @@ class MyAccount_AJAX extends JSON_Action
 						}
 						if($frozen != 1 && $canFreeze == 1){
 							if ($holdType == 'ils') {
-								$tmpResult = $user->freezeHold($recordId, $holdId, false);
+								$tmpResult = $patronOwningHold->freezeHold($recordId, $holdId, false);
 								if($tmpResult['success']){$success++;}else{$failed++;}
 							} else if ($holdType == 'axis360') {
 								require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
 								$driver = new Axis360Driver();
-								$tmpResult = $driver->freezeHold($user, $recordId);
+								$tmpResult = $driver->freezeHold($patronOwningHold, $recordId);
 								if($tmpResult['success']){$success++;}else{$failed++;}
 							} else if ($holdType == 'overdrive') {
 								require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
 								$driver = new OverDriveDriver();
-								$tmpResult = $driver->freezeHold($user, $recordId, null);
+								$tmpResult = $driver->freezeHold($patronOwningHold, $recordId, null);
 								if($tmpResult['success']){$success++;}else{$failed++;}
 							//cloudLibrary holds can't be frozen
 //							} else if ($holdType == 'cloud_library') {
@@ -931,21 +931,31 @@ class MyAccount_AJAX extends JSON_Action
 		global $interface;
 		global $configArray;
 
-		$id = $_REQUEST['holdId'];
-		$interface->assign('holdId', $id);
-		$interface->assign('patronId', UserAccount::getActiveUserId());
-		$interface->assign('recordId', $_REQUEST['recordId']);
+		$user = UserAccount::getLoggedInUser();
+		$patronId = $_REQUEST['patronId'];
+		$patronOwningHold = $user->getUserReferredTo($patronId);
+		if ($patronOwningHold != false) {
+			$id = $_REQUEST['holdId'];
+			$interface->assign('holdId', $id);
+			$interface->assign('patronId', $patronId);
+			$interface->assign('recordId', $_REQUEST['recordId']);
 
-		$ils = $configArray['Catalog']['ils'];
-		$reactivateDateNotRequired = ($ils == 'Symphony' || $ils == 'Koha' || $ils == 'Polaris');
-		$interface->assign('reactivateDateNotRequired', $reactivateDateNotRequired);
+			$ils = $configArray['Catalog']['ils'];
+			$reactivateDateNotRequired = ($ils == 'Symphony' || $ils == 'Koha' || $ils == 'Polaris');
+			$interface->assign('reactivateDateNotRequired', $reactivateDateNotRequired);
 
-		$title = translate(translate(['text' => 'Freeze Hold', 'isPublicFacing'=>true])); // language customization
-		return array(
-			'title' => $title,
-			'modalBody' => $interface->fetch("MyAccount/reactivationDate.tpl"),
-			'modalButtons' => "<button class='tool btn btn-primary' id='doFreezeHoldWithReactivationDate' onclick='$(\".form\").submit(); return false;'>$title</button>"
-		);
+			$title = translate(['text' => 'Freeze Hold', 'isPublicFacing' => true]); // language customization
+			return array(
+				'title' => $title,
+				'modalBody' => $interface->fetch("MyAccount/reactivationDate.tpl"),
+				'modalButtons' => "<button class='tool btn btn-primary' id='doFreezeHoldWithReactivationDate' onclick='$(\".form\").submit(); return false;'>$title</button>"
+			);
+		}else{
+			return [
+				'success' => false,
+				'message' => translate(['text' => 'Sorry, you do not have access to freeze holds for the supplied user.', 'isPublicFacing'=>true])
+			];
+		}
 	}
 
 	/** @noinspection PhpUnused */

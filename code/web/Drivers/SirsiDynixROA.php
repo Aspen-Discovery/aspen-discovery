@@ -398,9 +398,10 @@ class SirsiDynixROA extends HorizonAPI
 		$lookupMyAccountInfoResponse = $this->getWebServiceResponse('accountSummary', $accountInfoLookupURL, null, $sessionToken);
 
 		if ($lookupMyAccountInfoResponse && !isset($lookupMyAccountInfoResponse->messageList)) {
-			$summary->numCheckedOut = count($lookupMyAccountInfoResponse->fields->circRecordList);
-			foreach ($lookupMyAccountInfoResponse->fields->circRecordList as $checkout) {
-				if ($checkout->fields->overdue) {
+			$checkouts = $this->getCheckouts($patron);
+			$summary->numCheckedOut = count($checkouts);
+			foreach ($checkouts as $checkout) {
+				if ($checkout->isOverdue()) {
 					$summary->numOverdue++;
 				}
 			}
@@ -452,6 +453,7 @@ class SirsiDynixROA extends HorizonAPI
 
 		$sessionToken = $this->getStaffSessionToken();
 		if (!empty($sessionToken)) {
+			global $library;
 			$webServiceURL = $this->getWebServiceURL();
 
 			// $patronDescribeResponse   = $this->getWebServiceResponse('patronDescribe', $webServiceURL . '/user/patron/describe');
@@ -474,41 +476,40 @@ class SirsiDynixROA extends HorizonAPI
 			);
 
 			if (!empty($_REQUEST['firstName'])) {
-				$createPatronInfoParameters['fields']['firstName'] = trim($_REQUEST['firstName']);
+				$createPatronInfoParameters['fields']['firstName'] = $this->getPatronFieldValue(trim($_REQUEST['firstName']), $library->useAllCapsWhenSubmittingSelfRegistration);
 			}
 			if (!empty($_REQUEST['middleName'])) {
-				$createPatronInfoParameters['fields']['middleName'] = trim($_REQUEST['middleName']);
+				$createPatronInfoParameters['fields']['middleName'] = $this->getPatronFieldValue(trim($_REQUEST['middleName']), $library->useAllCapsWhenSubmittingSelfRegistration);
 			}
 			if (!empty($_REQUEST['lastName'])) {
-				$createPatronInfoParameters['fields']['lastName'] = trim($_REQUEST['lastName']);
+				$createPatronInfoParameters['fields']['lastName'] = $this->getPatronFieldValue(trim($_REQUEST['lastName']), $library->useAllCapsWhenSubmittingSelfRegistration);
 			}
 			if (!empty($_REQUEST['suffix'])) {
-				$createPatronInfoParameters['fields']['suffix'] = trim($_REQUEST['suffix']);
+				$createPatronInfoParameters['fields']['suffix'] = $this->getPatronFieldValue(trim($_REQUEST['suffix']), $library->useAllCapsWhenSubmittingSelfRegistration);
 			}
 			if (!empty($_REQUEST['birthDate'])) {
-				$birthdate = date_create_from_format('m-d-Y', trim($_REQUEST['birthDate']));
-				$createPatronInfoParameters['fields']['birthDate'] = $birthdate->format('Y-m-d');
+				$createPatronInfoParameters['fields']['birthDate'] = $this->getPatronFieldValue(trim($_REQUEST['birthDate']), $library->useAllCapsWhenSubmittingSelfRegistration);
 			}
 
 			// Update Address Field with new data supplied by the user
 			if (isset($_REQUEST['email'])) {
-				$this->setPatronUpdateField('EMAIL', $_REQUEST['email'], $updatePatronInfoParameters, $preferredAddress, $index);
+				$this->setPatronUpdateField('EMAIL', $this->getPatronFieldValue($_REQUEST['email'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
 			}
 
 			if (isset($_REQUEST['phone'])) {
-				$this->setPatronUpdateField('PHONE', $_REQUEST['phone'], $updatePatronInfoParameters, $preferredAddress, $index);
+				$this->setPatronUpdateField('HOMEPHONE', $_REQUEST['phone'], $createPatronInfoParameters, $preferredAddress, $index);
 			}
 
 			if (isset($_REQUEST['address'])) {
-				$this->setPatronUpdateField('STREET', $_REQUEST['address'], $updatePatronInfoParameters, $preferredAddress, $index);
+				$this->setPatronUpdateField('STREET', $this->getPatronFieldValue($_REQUEST['address'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
 			}
 
 			if (isset($_REQUEST['city']) && isset($_REQUEST['state'])) {
-				$this->setPatronUpdateField('CITY/STATE', $_REQUEST['city'] . ' ' . $_REQUEST['state'], $updatePatronInfoParameters, $preferredAddress, $index);
+				$this->setPatronUpdateField('CITY/STATE', $this->getPatronFieldValue($_REQUEST['city'] . ' ' . $_REQUEST['state'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
 			}
 
 			if (isset($_REQUEST['zip'])) {
-				$this->setPatronUpdateField('ZIP', $_REQUEST['zip'], $updatePatronInfoParameters, $preferredAddress, $index);
+				$this->setPatronUpdateField('ZIP', $this->getPatronFieldValue($_REQUEST['zip'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
 			}
 
 			// Update Home Location
@@ -2468,29 +2469,54 @@ class SirsiDynixROA extends HorizonAPI
 
 		global $library;
 		$fields = array();
-		$fields[] = array('property'=>'firstName', 'type'=>'text', 'label'=>'First Name', 'maxLength' => 40, 'required' => true);
-		$fields[] = array('property'=>'middleName', 'type'=>'text', 'label'=>'Middle Name', 'maxLength' => 40, 'required' => false);
-		$fields[] = array('property'=>'lastName', 'type'=>'text', 'label'=>'Last Name', 'maxLength' => 40, 'required' => true);
+		if (count($pickupLocations) == 1){
+			$selectedPickupLocation = '';
+			foreach ($pickupLocations as $code => $name){
+				$selectedPickupLocation = $code;
+			}
+			$fields['pickupLocation'] = array('property' => 'pickupLocation', 'type' => 'hidden', 'label' => 'Home Library', 'description' => 'Please choose the Library location you would prefer to use', 'default' => $selectedPickupLocation, 'required' => true);
+		}else{
+			$fields['librarySection'] = array('property' => 'librarySection', 'type' => 'section', 'label' => 'Library', 'hideInLists' => true, 'expandByDefault' => true, 'properties' => [
+				'pickupLocation' => array('property' => 'pickupLocation', 'type' => 'enum', 'label' => 'Home Library', 'description' => 'Please choose the Library location you would prefer to use', 'values' => $pickupLocations, 'required' => true)
+			]);
+		}
+
+		$fields['identitySection'] = array('property' => 'identitySection', 'type' => 'section', 'label' => 'Identity', 'hideInLists' => true, 'expandByDefault' => true, 'properties' => []);
+		$fields['identitySection']['properties'][] = array('property'=>'firstName', 'type'=>'text', 'label'=>'First Name', 'maxLength' => 40, 'required' => true);
+		$fields['identitySection']['properties'][] = array('property'=>'middleName', 'type'=>'text', 'label'=>'Middle Name', 'maxLength' => 40, 'required' => false);
+		$fields['identitySection']['properties'][] = array('property'=>'lastName', 'type'=>'text', 'label'=>'Last Name', 'maxLength' => 40, 'required' => true);
 		if ($library && $library->promptForBirthDateInSelfReg){
 			$birthDateMin = date('Y-m-d', strtotime('-113 years'));
 			$birthDateMax = date('Y-m-d', strtotime('-13 years'));
-			$fields[] = array('property'=>'birthDate', 'type'=>'date', 'label'=>'Date of Birth (MM-DD-YYYY)', 'min'=>$birthDateMin, 'max'=>$birthDateMax, 'maxLength' => 10, 'required' => true);
+			$fields['identitySection']['properties'][] = array('property'=>'birthDate', 'type'=>'date', 'label'=>'Date of Birth (MM/DD/YYYY)', 'min'=>$birthDateMin, 'max'=>$birthDateMax, 'maxLength' => 10, 'required' => true);
 		}
-		$fields[] = array('property'=>'address', 'type'=>'text', 'label'=>'Mailing Address', 'maxLength' => 128, 'required' => true);
-		$fields[] = array('property'=>'city', 'type'=>'text', 'label'=>'City', 'maxLength' => 48, 'required' => true);
+
+		$fields['mainAddressSection'] = array('property' => 'mainAddressSection', 'type' => 'section', 'label' => 'Main Address', 'hideInLists' => true, 'expandByDefault' => true, 'properties' => []);
+		$fields['mainAddressSection']['properties'][] = array('property'=>'address', 'type'=>'text', 'label'=>'Mailing Address', 'maxLength' => 128, 'required' => true);
+		$fields['mainAddressSection']['properties'][] = array('property'=>'city', 'type'=>'text', 'label'=>'City', 'maxLength' => 48, 'required' => true);
 		if (empty($library->validSelfRegistrationStates)){
-			$fields[] = array('property'=>'state', 'type'=>'text', 'label'=>'State', 'maxLength' => 2, 'required' => true);
+			$fields['mainAddressSection']['properties'][] = array('property'=>'state', 'type'=>'text', 'label'=>'State', 'maxLength' => 2, 'required' => true);
 		}else{
 			$validStates = explode('|', $library->validSelfRegistrationStates);
 			$validStates = array_combine($validStates, $validStates);
-			$fields[] = array('property' => 'state', 'type' => 'enum', 'values' => $validStates, 'label' => 'State', 'description' => 'State', 'maxLength' => 32, 'required' => true);
+			$fields['mainAddressSection']['properties'][] = array('property' => 'state', 'type' => 'enum', 'values' => $validStates, 'label' => 'State', 'description' => 'State', 'maxLength' => 32, 'required' => true);
 		}
-		$fields[] = array('property'=>'zip', 'type'=>'text', 'label'=>'Zip Code', 'maxLength' => 32, 'required' => true);
-		$fields[] = array('property'=>'phone', 'type'=>'text',  'label'=>'Primary Phone', 'maxLength'=>15, 'required'=>false);
-		$fields[] = array('property'=>'email',  'type'=>'email', 'label'=>'Email', 'maxLength' => 128, 'required' => true);
-		$fields[] = array('property'=>'email2',  'type'=>'email', 'label'=>'Confirm Email', 'maxLength' => 128, 'required' => true);
-		$fields[] = array('property'=>'pickupLocation',  'type'=>'enum', 'values' => $pickupLocations, 'label'=>'Library', 'maxLength' => 128, 'required' => true);
+		$fields['mainAddressSection']['properties'][] = array('property'=>'zip', 'type'=>'text', 'label'=>'Zip Code', 'maxLength' => 32, 'required' => true);
+
+		$fields['contactInformationSection'] = array('property' => 'contactInformationSection', 'type' => 'section', 'label' => 'Contact Information', 'hideInLists' => true, 'expandByDefault' => true, 'properties' => []);
+		$fields['contactInformationSection']['properties'][] = array('property'=>'phone', 'type'=>'text',  'label'=>'Primary Phone', 'maxLength'=>15, 'required'=>false);
+		$fields['contactInformationSection']['properties'][] = array('property'=>'email',  'type'=>'email', 'label'=>'Email', 'maxLength' => 128, 'required' => true);
+		$fields['contactInformationSection']['properties'][] = array('property'=>'email2',  'type'=>'email', 'label'=>'Confirm Email', 'maxLength' => 128, 'required' => true);
 		return $fields;
+	}
+
+	private function getPatronFieldValue(string $value, $useAllCaps)
+	{
+		if ($useAllCaps){
+			return strtoupper($value);
+		}else{
+			return $value;
+		}
 	}
 
 	/**

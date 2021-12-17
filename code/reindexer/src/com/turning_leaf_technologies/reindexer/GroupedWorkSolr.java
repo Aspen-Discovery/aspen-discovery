@@ -880,15 +880,6 @@ public class GroupedWorkSolr implements Cloneable {
 		return false;
 	}
 
-	private void checkDefaultValue(Set<String> valuesCollection, String defaultValue) {
-		//Remove the default value if we get something more specific
-		if (valuesCollection.contains(defaultValue) && valuesCollection.size() > 1) {
-			valuesCollection.remove(defaultValue);
-		} else if (valuesCollection.size() == 0) {
-			valuesCollection.add(defaultValue);
-		}
-	}
-
 	private void checkDefaultValue(Map<String, Integer> valuesCollection, String defaultValue) {
 		//Remove the default value if we get something more specific
 		if (valuesCollection.containsKey(defaultValue) && valuesCollection.size() > 1) {
@@ -911,11 +902,11 @@ public class GroupedWorkSolr implements Cloneable {
 	private final static Pattern commonSubtitlePattern = Pattern.compile("(?i)((?:[(])?(?:a )?graphic novel|audio cd|book club kit|large print(?:[)])?)$");
 	private final static Pattern punctuationPattern = Pattern.compile("[.\\\\/()\\[\\]:;]");
 
-	void setTitle(String shortTitle, String subTitle, String displayTitle, String sortableTitle, String recordFormat) {
-		this.setTitle(shortTitle, subTitle, displayTitle, sortableTitle, recordFormat, false);
+	void setTitle(String shortTitle, String subTitle, String displayTitle, String sortableTitle, String recordFormat, String formatCategory) {
+		this.setTitle(shortTitle, subTitle, displayTitle, sortableTitle, recordFormat, formatCategory, false);
 	}
 
-	void setTitle(String shortTitle, String subTitle, String displayTitle, String sortableTitle, String recordFormat, boolean forceUpdate) {
+	void setTitle(String shortTitle, String subTitle, String displayTitle, String sortableTitle, String recordFormat, String formatCategory, boolean forceUpdate) {
 		if (shortTitle != null) {
 			shortTitle = StringUtils.trimTrailingPunctuation(shortTitle);
 
@@ -925,26 +916,26 @@ public class GroupedWorkSolr implements Cloneable {
 				updateTitle = true;
 			} else {
 				//Only overwrite if we get a better format
-				if (recordFormat.equals("Book")) {
+				if (formatCategory.equals("Books")) {
 					//We have a book, update if we didn't have a book before
-					if (!recordFormat.equals(titleFormat)) {
+					if (!formatCategory.equals(titleFormat)) {
 						updateTitle = true;
 						//Or update if we had a book before and this title is longer
 					} else if (shortTitle.length() > this.title.length()) {
 						updateTitle = true;
 					}
-				} else if (recordFormat.equals("eBook")) {
+				} else if (formatCategory.equals("eBook")) {
 					//Update if the format we had before is not a book
-					if (!titleFormat.equals("Book")) {
+					if (!titleFormat.equals("Books")) {
 						//And the new format was not an eBook or the new title is longer than what we had before
-						if (!recordFormat.equals(titleFormat)) {
+						if (!formatCategory.equals(titleFormat)) {
 							updateTitle = true;
 							//or update if we had a book before and this title is longer
 						} else if (shortTitle.length() > this.title.length()) {
 							updateTitle = true;
 						}
 					}
-				} else if (!titleFormat.equals("Book") && !titleFormat.equals("eBook")) {
+				} else if (!titleFormat.equals("Books") && !titleFormat.equals("eBook")) {
 					//If we don't have a Book or an eBook then we can update the title if we get a longer title
 					if (shortTitle.length() > this.title.length()) {
 						updateTitle = true;
@@ -964,7 +955,7 @@ public class GroupedWorkSolr implements Cloneable {
 					shortTitle = tmpTitle;
 				}
 				this.title = shortTitle;
-				this.titleFormat = recordFormat;
+				this.titleFormat = formatCategory;
 				//Strip out anything in brackets unless that would cause us to show nothing
 				tmpTitle = removeBracketsPattern.matcher(sortableTitle).replaceAll("").trim();
 				if (tmpTitle.length() > 0) {
@@ -992,7 +983,14 @@ public class GroupedWorkSolr implements Cloneable {
 				this.displayTitle = displayTitle.trim();
 
 				//SubTitle only gets set based on the main title.
-				setSubTitle(subTitle);
+				if (subTitle == null){
+					if (this.subTitle != null) {
+						//clear the subtitle if it was set by a previous record.
+						this.subTitle = null;
+					}
+				}else {
+					setSubTitle(subTitle);
+				}
 			}
 
 			//Create an alternate title for searching by replacing ampersands with the word and.
@@ -1663,7 +1661,7 @@ public class GroupedWorkSolr implements Cloneable {
 		this.keywords.add(keywords);
 	}
 
-	void addDescription(String description, @NotNull String recordFormat) {
+	void addDescription(String description, @NotNull String recordFormat, String formatCategory) {
 		if (description == null || description.length() == 0) {
 			return;
 		}
@@ -1673,26 +1671,26 @@ public class GroupedWorkSolr implements Cloneable {
 			updateDescription = true;
 		} else {
 			//Only overwrite if we get a better format
-			if (recordFormat.equals("Book")) {
+			if (formatCategory.equals("Books")) {
 				//We have a book, update if we didn't have a book before
-				if (!recordFormat.equals(displayDescriptionFormat)) {
+				if (!formatCategory.equals(displayDescriptionFormat)) {
 					updateDescription = true;
 					//or update if we had a book before and this Description is longer
 				} else if (description.length() > this.displayDescription.length()) {
 					updateDescription = true;
 				}
-			} else if (recordFormat.equals("eBook")) {
+			} else if (formatCategory.equals("eBook")) {
 				//Update if the format we had before is not a book
-				if (!displayDescriptionFormat.equals("Book")) {
+				if (!displayDescriptionFormat.equals("Books")) {
 					//And the new format was not an eBook or the new Description is longer than what we had before
-					if (!recordFormat.equals(displayDescriptionFormat)) {
+					if (!formatCategory.equals(displayDescriptionFormat)) {
 						updateDescription = true;
 						//or update if we had a book before and this Description is longer
 					} else if (description.length() > this.displayDescription.length()) {
 						updateDescription = true;
 					}
 				}
-			} else if (!displayDescriptionFormat.equals("Book") && !displayDescriptionFormat.equals("eBook")) {
+			} else if (!displayDescriptionFormat.equals("Books") && !displayDescriptionFormat.equals("eBook")) {
 				//If we don't have a Book or an eBook then we can update the Description if we get a longer Description
 				if (description.length() > this.displayDescription.length()) {
 					updateDescription = true;
@@ -1701,7 +1699,7 @@ public class GroupedWorkSolr implements Cloneable {
 		}
 		if (updateDescription) {
 			this.displayDescription = description;
-			this.displayDescriptionFormat = recordFormat;
+			this.displayDescriptionFormat = formatCategory;
 		}
 	}
 

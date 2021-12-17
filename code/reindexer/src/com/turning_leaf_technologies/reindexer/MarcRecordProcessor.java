@@ -381,8 +381,8 @@ abstract class MarcRecordProcessor {
 
 	}
 
-	void updateGroupedWorkSolrDataBasedOnStandardMarcData(GroupedWorkSolr groupedWork, Record record, ArrayList<ItemInfo> printItems, String identifier, String format) {
-		loadTitles(groupedWork, record, format);
+	void updateGroupedWorkSolrDataBasedOnStandardMarcData(GroupedWorkSolr groupedWork, Record record, ArrayList<ItemInfo> printItems, String identifier, String format, String formatCategory) {
+		loadTitles(groupedWork, record, format, formatCategory);
 		loadAuthors(groupedWork, record, identifier);
 		loadSubjects(groupedWork, record);
 
@@ -1019,12 +1019,12 @@ abstract class MarcRecordProcessor {
 		groupedWork.setAuthorDisplay(displayAuthor);
 	}
 
-	private void loadTitles(GroupedWorkSolr groupedWork, Record record, String format) {
+	private void loadTitles(GroupedWorkSolr groupedWork, Record record, String format, String formatCategory) {
 		//title (full title done by index process by concatenating short and subtitle
 
 		//title short
 		String subTitle = MarcUtil.getFirstFieldVal(record, "245bnp");
-		groupedWork.setTitle(MarcUtil.getFirstFieldVal(record, "245a"), subTitle, MarcUtil.getFirstFieldVal(record, "245abnp"), this.getSortableTitle(record), format);
+		groupedWork.setTitle(MarcUtil.getFirstFieldVal(record, "245a"), subTitle, MarcUtil.getFirstFieldVal(record, "245abnp"), this.getSortableTitle(record), format, formatCategory);
 		//title full
 		String authorInTitleField = MarcUtil.getFirstFieldVal(record, "245c");
 		String standardAuthorData = MarcUtil.getFirstFieldVal(record, "100abcdq:110ab");

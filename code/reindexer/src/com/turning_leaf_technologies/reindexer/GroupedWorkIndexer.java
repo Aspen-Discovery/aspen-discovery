@@ -964,7 +964,7 @@ public class GroupedWorkIndexer {
 			if (displayInfoRS.next()) {
 				String title = displayInfoRS.getString("title");
 				if (title.length() > 0){
-					groupedWork.setTitle(title, "", title, StringUtils.makeValueSortable(title), "", true);
+					groupedWork.setTitle(title, "", title, StringUtils.makeValueSortable(title), "", "", true);
 					groupedWork.clearSubTitle();
 				}
 				String author = displayInfoRS.getString("author");

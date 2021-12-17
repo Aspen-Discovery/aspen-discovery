@@ -163,6 +163,9 @@ class Checkout extends CircEntry
 		if (strlen($this->author) > 500){
 			$this->author = StringUtils::trimStringToLengthAtWordBoundary($this->author, 500, true);
 		}
+		if (strlen($this->callNumber) > 100){
+			$this->callNumber = StringUtils::trimStringToLengthAtWordBoundary($this->callNumber, 100, true);
+		}
 	}
 	public function insert()
 	{

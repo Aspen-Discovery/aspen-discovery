@@ -20,6 +20,7 @@ public class SierraExportFieldMapping {
 	private String volumeExportFieldTag;
 	private String urlExportFieldTag;
 	private String eContentExportFieldTag;
+	private String itemPublicNoteExportSubfield;
 
 	public String getFixedFieldDestinationField() {
 		return fixedFieldDestinationField;
@@ -120,6 +121,7 @@ public class SierraExportFieldMapping {
 				sierraFieldMapping.setVolumeExportFieldTag(getSierraFieldMappingsRS.getString("volumeExportFieldTag"));
 				sierraFieldMapping.setUrlExportFieldTag(getSierraFieldMappingsRS.getString("urlExportFieldTag"));
 				sierraFieldMapping.setEContentExportFieldTag(getSierraFieldMappingsRS.getString("eContentExportFieldTag"));
+				sierraFieldMapping.setItemPublicNoteExportSubfield(getSierraFieldMappingsRS.getString("itemPublicNoteExportSubfield"));
 
 				getSierraFieldMappingsRS.close();
 			}
@@ -129,6 +131,14 @@ public class SierraExportFieldMapping {
 			logger.error("Error reading sierra field mappings", e);
 		}
 		return sierraFieldMapping;
+	}
+
+	private void setItemPublicNoteExportSubfield(String itemPublicNoteExportSubfield) {
+		this.itemPublicNoteExportSubfield = itemPublicNoteExportSubfield;
+	}
+
+	public String getItemPublicNoteExportSubfield(){
+		return itemPublicNoteExportSubfield;
 	}
 
 	public char getMaterialTypeSubfield() {

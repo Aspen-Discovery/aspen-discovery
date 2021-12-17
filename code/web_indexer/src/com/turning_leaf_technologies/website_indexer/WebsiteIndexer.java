@@ -101,7 +101,7 @@ class WebsiteIndexer {
 
 		try {
 			addPageToStmt = aspenConn.prepareStatement("INSERT INTO website_pages SET websiteId = ?, url = ?, checksum = ?, deleted = 0, firstDetected = ? ON DUPLICATE KEY UPDATE checksum = VALUES(checksum)", Statement.RETURN_GENERATED_KEYS);
-			deletePageStmt = aspenConn.prepareStatement("UPDATE website_pages SET deleted = 1 where id = ?");
+			deletePageStmt = aspenConn.prepareStatement("UPDATE website_pages SET deleted = 1, deleteReason = ? where id = ?");
 		} catch (Exception e) {
 			logEntry.incErrors("Error setting up statements ", e);
 		}
@@ -129,7 +129,7 @@ class WebsiteIndexer {
 				solrUpdateServer.deleteByQuery("website_name:\"" + websiteName + "\"");
 				//3-19-2019 Don't commit so the index does not get cleared during run (but will clear at the end).
 			} catch (HttpSolrClient.RemoteSolrException rse) {
-				logEntry.addNote("Solr is not running properly, try restarting " + rse.toString());
+				logEntry.addNote("Solr is not running properly, try restarting " + rse);
 				System.exit(-1);
 			} catch (Exception e) {
 				logEntry.incErrors("Error deleting from index ", e);
@@ -165,7 +165,8 @@ class WebsiteIndexer {
 			for (WebPage curPage : existingPages.values()) {
 				try {
 					if (!curPage.isDeleted()) {
-						deletePageStmt.setLong(1, curPage.getId());
+						deletePageStmt.setString(1, "Page not found while spidering the site.");
+						deletePageStmt.setLong(2, curPage.getId());
 						deletePageStmt.executeUpdate();
 						logEntry.incDeleted();
 						solrUpdateServer.deleteByQuery("id:" + curPage.getId() + "AND website_name:\"" + websiteName + "\"");
@@ -371,12 +372,18 @@ class WebsiteIndexer {
 							solrUpdateServer.add(solrDocument);
 						}
 					}
-				} else if (status.getStatusCode() != 404 && status.getStatusCode() != 403){
-					logEntry.addNote("Received error " + status.getStatusCode() + " for url " + pageToProcess );
+				} else{
+					WebPage existingPage = existingPages.get(pageToProcess);
+					if (existingPage != null && !existingPage.isDeleted()){
+						deletePageStmt.setString(1, "Received " + status.getStatusCode() + " error code");
+						deletePageStmt.setLong(2, existingPage.getId());
+						deletePageStmt.executeUpdate();
+						existingPages.remove(existingPage);
+					}
 				}
 			}
 		} catch (IllegalArgumentException e) {
-			logEntry.addNote("Invalid path provided " + pageToProcess + " " + e.toString());
+			logEntry.addNote("Invalid path provided " + pageToProcess + " " + e);
 		} catch (Exception e) {
 			logEntry.incErrors("Error parsing page " + pageToProcess, e);
 		}

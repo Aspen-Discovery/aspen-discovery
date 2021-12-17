@@ -33,7 +33,11 @@ class ExternalEContent_AccessOnline extends Action
 
 		if ($this->recordDriver->isValid()) {
 			$relatedRecord = $this->recordDriver->getRelatedRecord();
-			$recordActions = $relatedRecord->getActions();
+			if ($relatedRecord) {
+				$recordActions = $relatedRecord->getActions();
+			}else{
+				$recordActions = [];
+			}
 
 			$actionIndex = $_REQUEST['index'];
 			$selectedAction = $recordActions[$actionIndex];

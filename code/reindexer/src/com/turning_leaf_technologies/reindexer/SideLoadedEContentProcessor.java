@@ -52,10 +52,12 @@ class SideLoadedEContentProcessor extends MarcRecordProcessor{
 			//Do updates based on the overall bib (shared regardless of scoping)
 			String primaryFormat = recordInfo.getPrimaryFormat();
 			if (primaryFormat == null) primaryFormat = "Unknown";
-			updateGroupedWorkSolrDataBasedOnStandardMarcData(groupedWork, record, recordInfo.getRelatedItems(), identifier, primaryFormat);
+			String primaryFormatCategory = recordInfo.getPrimaryFormatCategory();
+			if (primaryFormatCategory == null) primaryFormatCategory = "Unknown";
+			updateGroupedWorkSolrDataBasedOnStandardMarcData(groupedWork, record, recordInfo.getRelatedItems(), identifier, primaryFormat, primaryFormatCategory);
 
 			String fullDescription = Util.getCRSeparatedString(MarcUtil.getFieldList(record, "520a"));
-			groupedWork.addDescription(fullDescription, primaryFormat);
+			groupedWork.addDescription(fullDescription, primaryFormat, primaryFormatCategory);
 
 			loadEditions(groupedWork, record, allRelatedRecords);
 			loadPhysicalDescription(groupedWork, record, allRelatedRecords);

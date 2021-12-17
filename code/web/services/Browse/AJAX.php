@@ -630,7 +630,7 @@ class Browse_AJAX extends Action {
 			} else {
 				//Get the first sub category
 				foreach ($subCategories as $subCategoryId) {
-					if($subCategoryId->source == "userList") {
+					if($subCategoryId->_source == "userList") {
 						require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 						$label = explode('_', $subCategoryId->id);
 						$id = $label[3];
@@ -643,7 +643,7 @@ class Browse_AJAX extends Action {
 								break;
 							}
 						}
-					} elseif($subCategoryId->source == "savedSearch") {
+					} elseif($subCategoryId->_source == "savedSearch") {
 						$subCategoryTextId = $subCategoryId->id;
 						$subBrowseCategoryLabel = $subCategoryId->title;
 						break;

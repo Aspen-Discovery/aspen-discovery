@@ -8,6 +8,7 @@ class SubBrowseCategories extends DataObject {
 	public $weight;
 	public $browseCategoryId; // ID of the Main or Parent browse category
 	public $subCategoryId;    // ID of the browse Category which is the Sub-Category or Child browse category
+	public $_source; //Source of the sub browse category, loaded at runtime, will be browseCategory, userList, or savedSearch
 
 	static function getObjectStructure() : array{
 		$browseCategoryList = self::listBrowseCategories();
