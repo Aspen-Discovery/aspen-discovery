@@ -24,5 +24,12 @@ function getUpdates22_01_00() : array
 				'ALTER TABLE aspen_sites ADD COLUMN ils INT'
 			]
 		], //greenhouse_add_ils
+		'website_pages_deletionReason' => [
+			'title' => 'Add deletion reason to website pages',
+			'description' => 'Website Pages - Deletion Reason',
+			'sql' => [
+				"ALTER TABLE website_pages ADD COLUMN deleteReason VARCHAR(255) DEFAULT ''"
+			]
+		], //website_pages_deletionReason
 	];
 }

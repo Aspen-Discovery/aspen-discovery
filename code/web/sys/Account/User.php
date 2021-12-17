@@ -2527,6 +2527,7 @@ class User extends DataObject
 		if (array_key_exists('Web Indexer', $enabledModules)){
 			$sections['web_indexer'] = new AdminSection('Website Indexing');
 			$sections['web_indexer']->addAction(new AdminAction('Settings', 'Define settings for indexing websites within Aspen Discovery.', '/Websites/Settings'), 'Administer Website Indexing Settings');
+			$sections['web_indexer']->addAction(new AdminAction('Website Pages', 'A list of pages that have been indexed.', '/Websites/WebsitePages'), 'Administer Website Indexing Settings');
 			$sections['web_indexer']->addAction(new AdminAction('Indexing Log', 'View the indexing log for Websites.', '/Websites/IndexingLog'), ['View System Reports', 'View Indexing Logs']);
 			$sections['web_indexer']->addAction(new AdminAction('Dashboard', 'View the usage dashboard for indexed websites.', '/Websites/Dashboard'), ['View Dashboards', 'View System Reports']);
 		}
