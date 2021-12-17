@@ -552,6 +552,8 @@ class UInterface extends Smarty
 
 		$this->assign('showAlternateLibraryCard', $library->showAlternateLibraryCard);
 
+		$this->assign('showCurbsidePickups', ($library->curbsidePickupSettingId != -1) ? 1 : 0);
+
 		if ($location != null){ // library and location
 			$this->assign('showFavorites', $location->showFavorites && $library->showFavorites);
 			$this->assign('showComments', $location->getGroupedWorkDisplaySettings()->showComments);

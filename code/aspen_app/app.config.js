@@ -18,7 +18,7 @@ export default {
     "**/*"
   ],
   ios: {
-    buildNumber: "17",
+    buildNumber: "18",
     bundleIdentifier: "org.aspendiscovery.mobile",
     supportsTablet: true,
     icon: "./assets/LiDA_Icon1024.png",
@@ -36,7 +36,7 @@ export default {
     },
     android: {
       package: "org.aspendiscovery.mobile",
-      versionCode: 17,
+      versionCode: 18,
       permissions: [
         "ACCESS_COARSE_LOCATION",
         "ACCESS_FINE_LOCATION",

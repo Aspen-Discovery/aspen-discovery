@@ -4353,4 +4353,335 @@ class MyAccount_AJAX extends JSON_Action
 
 		return $result;
 	}
+
+	function getCurbsidePickupScheduler() {
+		global $interface;
+		global $library;
+
+		$result = array(
+			'success' => false,
+			'message' => 'Error loading curbside pickup scheduler'
+		);
+
+		$user = UserAccount::getActiveUserObj();
+		$interface->assign('patronId', $user->id);
+
+		if (isset($_REQUEST['pickupLocation'])) {
+			require_once ROOT_DIR . '/sys/LibraryLocation/Location.php';
+			$pickupLocation = [];
+			$location = new Location();
+			$location->locationId = $_REQUEST['pickupLocation'];
+			if($location->find(true)) {
+				$pickupLocation['id'] = $location->locationId;
+				$pickupLocation['code'] = $location->code;
+				$pickupLocation['name'] = $location->displayName;
+			}
+		} else {
+			// clear out anything that would load specific data
+			$pickupLocation = "any";
+		}
+		$interface->assign('pickupLocation', $pickupLocation);
+
+		require_once ROOT_DIR . '/sys/CurbsidePickups/CurbsidePickupSetting.php';
+		$curbsidePickupSetting = new CurbsidePickupSetting();
+		$curbsidePickupSetting->id = $library->curbsidePickupSettingId;
+		$curbsidePickupSetting->find();
+		if($curbsidePickupSetting->find(true)){
+			$interface->assign('instructionNewPickup', $curbsidePickupSetting->instructionNewPickup);
+			$interface->assign('useNote', $curbsidePickupSetting->useNote);
+			$interface->assign('noteLabel', $curbsidePickupSetting->noteLabel);
+			$interface->assign('noteInstruction', $curbsidePickupSetting->noteInstruction);
+
+			$pickupSettings = $user->getCatalogDriver()->getCurbsidePickupSettings($user->getHomeLocation()->code);
+
+			$result = array(
+				'success' => true,
+				'title' => translate(['text'=>'Schedule your pickup at ' . $pickupLocation["name"],'isPublicFacing'=>true]),
+				'body'    => $interface->fetch('MyAccount/curbsidePickupsNew.tpl'),
+				'buttons' => "<button class='btn btn-primary' onclick='return AspenDiscovery.Account.createCurbsidePickup();'>".translate(['text'=>'Schedule Pickup',  'isPublicFacing'=>true])."</button>",
+			);
+		} else {
+			// no settings found
+			$result['message'] = "Curbside pickup settings not found.";
+		}
+
+		return $result;
+	}
+
+	function createCurbsidePickup()
+	{
+		global $interface;
+		global $library;
+		$user = UserAccount::getLoggedInUser();
+		$result = array(
+			'success' => false,
+			'title' => translate(['text'=>'Scheduling curbside pickup','isPublicFacing'=>true]),
+			'message' => translate(['text' => 'Error scheduling curbside pickup', 'isPublicFacing'=>true])
+		);
+		if (!$user) {
+			$result['message'] = translate(['text' => 'You must be logged in to schedule a curbside pickup.  Please close this dialog and login again.', 'isPublicFacing'=>true]);
+		} elseif (!empty($_REQUEST['patronId'])) {
+			$patronId = $_REQUEST['patronId'];
+			$patronOwningHold = $user->getUserReferredTo($patronId);
+
+			if ($patronOwningHold == false) {
+				$result['message'] = translate(['text' => 'Sorry, you do not have access to schedule a curbside pickup for this patron.', 'isPublicFacing'=>true]);
+			} else {
+				if (empty($_REQUEST['location']) || empty($_REQUEST['date']) || empty($_REQUEST['time'])) {
+					// We aren't getting all the expected data, so make a log entry & tell user.
+					global $logger;
+					$logger->log('New curbside pickup, pickup library or pickup date/time was not passed in AJAX call.', Logger::LOG_ERROR);
+					$result['message'] = translate(['text' => 'Schedule information about the curbside pickup was not provided.', 'isPublicFacing'=>true]);
+				} else {
+					$pickupLocation = $_REQUEST['location'];
+					$pickupDate = $_REQUEST['date'];
+					$pickupTime = $_REQUEST['time'];
+					if(isset($_REQUEST['note'])) {
+						$pickupNote = $_REQUEST['note'];
+						if($pickupNote == 'undefined') {
+							$pickupNote = null;
+						}
+					}
+
+					$date = $pickupDate . " " . $pickupTime;
+					$pickupDateTime = strtotime($date);
+					$pickupDateTime = date('Y-m-d H:i:s', $pickupDateTime);
+
+					require_once ROOT_DIR . '/sys/CurbsidePickups/CurbsidePickupSetting.php';
+					$curbsidePickupSetting = new CurbsidePickupSetting();
+					$curbsidePickupSetting->id = $library->curbsidePickupSettingId;
+					if($curbsidePickupSetting->find(true)){
+						$interface->assign('contentSuccess', $curbsidePickupSetting->contentSuccess);
+					}
+
+					$result = $patronOwningHold->newCurbsidePickup($pickupLocation, $pickupDateTime, $pickupNote);
+					$interface->assign('scheduleResultMessage', $result['message']);
+					if ($result['success']) {
+						return array(
+							'success' => true,
+							'title'   => translate(['text'=>'Pickup scheduled','isPublicFacing'=>true]),
+							'body'    => $interface->fetch('MyAccount/curbsidePickupsNewSuccess.tpl'),
+						);
+					} else {
+						return array(
+							'title' => translate(['text'=>'Error scheduling curbside pickup','isPublicFacing'=>true]),
+							'message' => translate(['text'=> $result['message'],'isPublicFacing'=>true]),
+						);
+					}
+				}
+			}
+		} else {
+			// We aren't getting all the expected data, so make a log entry & tell user.
+			global $logger;
+			$logger->log('New curbside pickup, no patron Id was passed in AJAX call.', Logger::LOG_ERROR);
+			$result['message'] = translate(['text' => 'No patron was specified.', 'isPublicFacing'=>true]);
+		}
+
+		return $result;
+	}
+
+	function getCancelCurbsidePickup()
+	{
+		$patronId = $_REQUEST['patronId'];
+		$pickupId = $_REQUEST['pickupId'];
+		return array(
+			'title'     => translate(['text'=>'Cancel curbside pickup','isPublicFacing'=>true]),
+			'body'      => translate(['text'=>'Are you sure you want to cancel this curbside pickup?','isPublicFacing'=>true]),
+			'buttons'   => "<span class='btn btn-primary' onclick='AspenDiscovery.Account.cancelCurbsidePickup(\"$patronId\", \"$pickupId\")'>". translate(['text'=>'Yes, cancel pickup','isPublicFacing'=>true]) ."</span>",
+		);
+	}
+
+	function checkInCurbsidePickup()
+	{
+		global $interface;
+		global $library;
+		$results = array(
+			'success' => false,
+			'title' => translate(['text'=>'Checking in curbside pickup','isPublicFacing'=>true]),
+			'message' => translate(['text' => 'Error checking in for curbside pickup', 'isPublicFacing'=>true])
+		);
+
+		if(!isset($_REQUEST['patronId']) || !isset($_REQUEST['pickupId'])) {
+			// We aren't getting all the expected data, so make a log entry & tell user.
+			global $logger;
+			$logger->log('Check-in for curbside pickup, no patron Id and/or pickup Id was passed in AJAX call.', Logger::LOG_ERROR);
+			$results['message'] = translate(['text' => 'No patron or pickup was specified.', 'isPublicFacing'=>true]);
+		} else {
+			$patronId = $_REQUEST['patronId'];
+			$pickupId = $_REQUEST['pickupId'];
+
+			require_once ROOT_DIR . '/sys/CurbsidePickups/CurbsidePickupSetting.php';
+			$curbsidePickupSetting = new CurbsidePickupSetting();
+			$curbsidePickupSetting->id = $library->curbsidePickupSettingId;
+			if($curbsidePickupSetting->find(true)){
+				$interface->assign('contentCheckedIn', $curbsidePickupSetting->contentCheckedIn);
+			}
+
+			$user = UserAccount::getActiveUserObj();
+			$result = $user->getCatalogDriver()->checkInCurbsidePickup($patronId, $pickupId);
+
+			if($result['success']) {
+				$results = array(
+					'success'   => true,
+					'title'     => translate(['text'=>'Check-in successful','isPublicFacing'=>true]),
+					'body'      => $interface->fetch('MyAccount/curbsidePickupsNewSuccess.tpl'),
+				);
+			} else {
+				$results = array(
+					'title' => translate(['text' => 'Error checking in for curbside pickup', 'isPublicFacing'=>true]),
+					'body' => translate(['text'=> $result['message'],'isPublicFacing'=>true]),
+				);
+			}
+		}
+
+		return $results;
+	}
+
+	function cancelCurbsidePickup()
+	{
+		global $interface;
+		$results = array(
+			'success' => false,
+			'title' => translate(['text'=>'Cancel curbside pickup','isPublicFacing'=>true]),
+		);
+
+		if(!isset($_REQUEST['patronId']) || !isset($_REQUEST['pickupId'])) {
+			// We aren't getting all the expected data, so make a log entry & tell user.
+			global $logger;
+			$logger->log('Cancelling curbside pickup, no patron Id and/or pickup Id was passed in AJAX call.', Logger::LOG_ERROR);
+			$results['message'] = translate(['text' => 'No patron or pickup was specified.', 'isPublicFacing'=>true]);
+		} else {
+			$patronId = $_REQUEST['patronId'];
+			$pickupId = $_REQUEST['pickupId'];
+
+			$user = UserAccount::getActiveUserObj();
+			$result = $user->getCatalogDriver()->cancelCurbsidePickup($patronId, $pickupId);
+
+			if($result['success']) {
+				$results = array(
+					'success'   => true,
+					'title'     => translate(['text'=>'Cancel curbside pickup','isPublicFacing'=>true]),
+					'body'      => translate(['text'=> 'Your pickup was cancelled successfully.','isPublicFacing'=>true]),
+				);
+			} else {
+				$results = array(
+					'title' => translate(['text'=>'Cancel curbside pickup','isPublicFacing'=>true]),
+					'body' => translate(['text'=> $result['message'],'isPublicFacing'=>true]),
+				);
+			}
+		}
+
+		return $results;
+	}
+
+	function getCurbsidePickupUnavailableDays() {
+		if (isset($_REQUEST['locationCode'])) {
+			$pickupLocation = $_REQUEST['locationCode'];
+		} else {
+			return array(
+				'title' => translate(['text'=>'Error loading curbside pickup availability','isPublicFacing'=>true]),
+				'body'  => translate(['text'=>"A valid pickup location parameter was not provided.",'isPublicFacing'=>true]),
+			);
+		}
+		$user = UserAccount::getActiveUserObj();
+		$pickupSettings = $user->getCatalogDriver()->getCurbsidePickupSettings($pickupLocation);
+		return $pickupSettings['disabledDays'];
+	}
+
+function getCurbsidePickupAvailableTimes() {
+	if (isset($_REQUEST['locationCode']) && isset($_REQUEST['date'])) {
+		$pickupLocation = $_REQUEST['locationCode'];
+		$pickupDate = $_REQUEST['date'];
+		// check to make sure the date has been sent
+	} else {
+		return array(
+			'title' => translate(['text'=>'Error loading curbside pickup availability','isPublicFacing'=>true]),
+			'body'  => translate(['text'=>"A valid pickup date was not provided.",'isPublicFacing'=>true]),
+		);
+	}
+
+	$days = array(
+		0 => 'Mon',
+		1 => 'Tue',
+		2 => 'Wed',
+		3 => 'Thu',
+		4 => 'Fri',
+		5 => 'Sat',
+		6 => 'Sun',
+	);
+
+	$user = UserAccount::getActiveUserObj();
+	$pickupSettings = $user->getCatalogDriver()->getCurbsidePickupSettings($pickupLocation);
+
+	if($pickupSettings['success'] == true && $pickupSettings['enabled'] == 1) {
+
+		$date = strtotime($pickupDate);
+		$dayOfWeek = date('D', $date);
+		$todayDay = date('D');
+		$now = date('H:i');
+		$allPossibleTimes = $pickupSettings['pickupTimes'][$dayOfWeek];
+
+		// check if max number of patrons are signed up for timeWindow
+		$maxPatrons = $pickupSettings['maxPickupsPerInterval'];
+		$allScheduledPickups = $user->getCatalogDriver()->getAllCurbsidePickups();
+
+		if($allPossibleTimes){
+			$range = range(strtotime($allPossibleTimes['startTime']),strtotime($allPossibleTimes['endTime']),$pickupSettings['interval']*60);
+			$timeWindow = [];
+			foreach($range as $time){
+				$numPickups = 0;
+				$formattedTime = strtotime(date('H:i', $time));
+				if($dayOfWeek == $todayDay) {
+					if($formattedTime > strtotime($now)) {
+						if(!empty($allScheduledPickups['pickups'])) {
+							foreach($allScheduledPickups['pickups'] as $pickup){
+								if($pickupLocation == $pickup->branchcode){
+									$scheduledDate = strtotime($pickup->scheduled_pickup_datetime);
+									$scheduledDay = date('D', $scheduledDate);
+									$scheduledTime = date('H:i', $scheduledDate);
+									if ($dayOfWeek == $scheduledDay) {
+										if ($formattedTime == strtotime($scheduledTime)) {
+											$numPickups += 1;
+										}
+									}
+								}
+							}
+							if($numPickups < $maxPatrons) {
+								$timeWindow[] = date("g:i a",$time);
+							}
+						} else {
+							$timeWindow[] = date("g:i a",$time);
+						}
+					}
+				} else {
+					if(!empty($allScheduledPickups['pickups'])) {
+						foreach($allScheduledPickups['pickups'] as $pickup){
+							if($pickupLocation == $pickup->branchcode){
+								$scheduledDate = strtotime($pickup->scheduled_pickup_datetime);
+								$scheduledDay = date('D', $scheduledDate);
+								$scheduledTime = date('H:i', $scheduledDate);
+								if ($dayOfWeek == $scheduledDay) {
+									if ($formattedTime == strtotime($scheduledTime)) {
+										$numPickups += 1;
+									}
+								}
+							}
+						}
+						if($numPickups < $maxPatrons) {
+							$timeWindow[] = date("g:i a",$time);
+						}
+					} else {
+						$timeWindow[] = date("g:i a",$time);
+					}
+				}
+			}
+
+			return $timeWindow;
+		}
+	}
+	return array(
+		'title' => translate(['text'=>'Error','isPublicFacing'=>true]),
+		'body'  => translate(['text'=>"There was an error loading curbside pickup availability",'isPublicFacing'=>true]),
+	);
+}
 }

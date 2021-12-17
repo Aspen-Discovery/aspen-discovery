@@ -21,6 +21,11 @@
 						{translate text="Reading History" isPublicFacing=true}
 					</a>
 				</div>
+				{if $showCurbsidePickups}
+					<div class="header-menu-option">
+						<a href="/MyAccount/CurbsidePickups">{translate text='Curbside Pickups' isPublicFacing=true}</a>
+					</div>
+				{/if}
 				{if $showFines}
 					<div class="header-menu-option" >
 						<a href="/MyAccount/Fines">{translate text='Fines and Messages' isPublicFacing=true}</a>

@@ -253,6 +253,9 @@ class Library extends DataObject
 	public /** @noinspection PhpUnused */ $enableCourseReserves;
 	public $courseReserveLibrariesToInclude;
 
+	//Curbside Pickup
+	public $curbsidePickupSettingId;
+
 	private $_cloudLibraryScopes;
 	private $_libraryLinks;
 

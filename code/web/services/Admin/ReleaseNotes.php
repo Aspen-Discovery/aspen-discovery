@@ -24,6 +24,7 @@ class Admin_ReleaseNotes extends Action
 		$parsedown = AspenParsedown::instance();
 		$releaseNotesFormatted = $parsedown->parse(file_get_contents($releaseNotesPath . '/'. reset($releaseNotes) . '.MD'));
 		$interface->assign('releaseNotesFormatted', $releaseNotesFormatted);
+		$interface->assign('releaseVersion', array_values($releaseNotes)[0]);
 		if (file_exists($releaseNotesPath . '/'. reset($releaseNotes) . '_action_items.MD')){
 			$actionItemsFormatted = $parsedown->parse(file_get_contents($releaseNotesPath . '/'. reset($releaseNotes) . '_action_items.MD'));
 			$interface->assign('actionItemsFormatted', $actionItemsFormatted);

@@ -1141,4 +1141,43 @@ class CatalogConnection
 	public function treatVolumeHoldsAsItemHolds() {
 		return $this->driver->treatVolumeHoldsAsItemHolds();
 	}
+
+	public function getPluginStatus(string $pluginName) {
+		return $this->driver->getPluginStatus($pluginName);
+	}
+
+	public function getCurbsidePickupSettings($locationCode)
+	{
+		return $this->driver->getCurbsidePickupSettings($locationCode);
+	}
+
+	public function hasCurbsidePickups($user)
+	{
+		return $this->driver->hasCurbsidePickups($user);
+	}
+
+	public function getPatronCurbsidePickups($user)
+	{
+		return $this->driver->getPatronCurbsidePickups($user);
+	}
+
+	public function newCurbsidePickup($user, $pickupLocation, $pickupTime, $pickupNote)
+	{
+		return $this->driver->newCurbsidePickup($user, $pickupLocation, $pickupTime, $pickupNote);
+	}
+
+	public function cancelCurbsidePickup($user, $pickupId)
+	{
+		return $this->driver->cancelCurbsidePickup($user, $pickupId);
+	}
+
+	public function checkInCurbsidePickup($user, $pickupId)
+	{
+		return $this->driver->checkInCurbsidePickup($user, $pickupId);
+	}
+
+	public function getAllCurbsidePickups()
+	{
+		return $this->driver->getAllCurbsidePickups();
+	}
 }

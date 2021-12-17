@@ -14,6 +14,12 @@
 		{/if}
 	</p>
 	{if is_array($recordList.$sectionKey) && count($recordList.$sectionKey) > 0}
+        {if $source == 'ils' && $sectionKey == 'available' && $showCurbsidePickups}
+			<div id="curbsidePickupButton" style="margin-bottom: 1em">
+				<a href="/MyAccount/CurbsidePickups" class="btn btn-primary">{translate text="Schedule a Curbside Pickup" isPublicFacing=true}</a>
+			</div>
+        {/if}
+
 		<div id="pager" class="navbar form-inline">
 			<label for="{$sectionKey}HoldSort_{$source}" class="control-label">{translate text='Sort by' isPublicFacing=true}&nbsp;</label>
 			<select name="{$sectionKey}HoldSort_{$source}" id="{$sectionKey}HoldSort_{$source}" class="form-control" onchange="AspenDiscovery.Account.loadHolds('{$source}', $('#availableHoldSort_{$source} option:selected').val(), $('#unavailableHoldSort_{$source} option:selected').val());">

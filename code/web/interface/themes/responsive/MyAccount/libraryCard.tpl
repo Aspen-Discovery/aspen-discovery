@@ -44,20 +44,20 @@
 		<form name="alternateLibraryCard" method="post" class="form-horizontal">
 			<div class="form-group">
 				<label for="alternateLibraryCard" class="control-label col-xs-12 col-sm-4">{translate text=$alternateLibraryCardLabel isPublicFacing=true isAdminEnteredData=true} </label>
-				<div class="col-xs-12 col-sm-8">
+				<div class="col-md-6 col-md-offset-3">
 					<input type="text" name="alternateLibraryCard" id="alternateLibraryCard" value="{$user->alternateLibraryCard}" maxlength="60" class="form-control" onchange="updateAlternateLibraryCardBarcode()">
 				</div>
 			</div>
 			{if $showAlternateLibraryCardPassword}
 				<div class="form-group">
 					<label for="alternateLibraryCardPassword" class="control-label col-xs-12 col-sm-4">{translate text=$alternateLibraryCardPasswordLabel isPublicFacing=true isAdminEnteredData=true} </label>
-					<div class="col-xs-12 col-sm-8">
+					<div class="col-md-6 col-md-offset-3">
 						<input type="password" name="alternateLibraryCardPassword" id="alternateLibraryCardPassword" value="{$user->alternateLibraryCardPassword}"  maxlength="60" class="form-control">
 					</div>
 				</div>
 			{/if}
 			<div class="form-group">
-				<div class="col-xs-12 col-sm-offset-4 col-sm-8">
+				<div class="col-md-6 col-md-offset-3 text-center">
 					<input type="submit" name="submit" value="{translate text="Update" isPublicFacing=true}" id="alternateLibraryCardFormSubmit" class="btn btn-primary">
 				</div>
 			</div>

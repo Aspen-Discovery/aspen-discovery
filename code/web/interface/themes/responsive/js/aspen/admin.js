@@ -568,6 +568,7 @@ AspenDiscovery.Admin = (function(){
 			$.getJSON(url, params,
 				function(data) {
 					if (data.success) {
+						$("#releaseVersion").html(data.release);
 						$("#releaseNotes").html(data.releaseNotes);
 						if (data.actionItems === ''){
 							$("#actionItemsSection").hide();

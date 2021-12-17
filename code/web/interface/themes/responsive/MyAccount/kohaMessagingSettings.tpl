@@ -127,13 +127,10 @@
 		</table>
 
 		{if $enableSmsMessaging}
-			<div class="row form-group" id="smsNoticeRow">
-				<div class="col-md-3">
-				<label class="control-label">{translate text="Notice" isPublicFacing=true}</label>
-				</div>
-				<div class="col-md-9">
-					{translate text="Some charges for text messages may be incurred when using this service. Please check with your mobile service provider if you have questions." isPublicFacing=true}
-				</div>
+			<div id="smsNoticeRow">
+				<p class="help-block alert alert-info">
+					<span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span> {translate text="Some charges for text messages may be incurred when using this service. Please check with your mobile service provider if you have questions." isPublicFacing=true}
+				</p>
 			</div>
 			<div class="row form-group" id="smsNumberRow">
 				<div class="col-md-3">
@@ -141,7 +138,9 @@
 				</div>
 				<div class="col-md-9">
 					<input type="text" id="SMSnumber" name="SMSnumber" value="{$smsAlertNumber}" class="form-control" {if !$canSave}readonly{/if}>
-					<i>{translate text="Please enter numbers only. <b>(123) 456-7890</b> would be entered as <b>1234567890</b>." isPublicFacing=true}</i>
+					<span id="helpBlock_SMSnumber" class="help-block">
+					{translate text="Please enter numbers only. <b>(123) 456-7890</b> would be entered as <b>1234567890</b>." isPublicFacing=true}
+					</span>
 				</div>
 			</div>
 			<div class="row form-group" id="smsProviderRow">
@@ -155,7 +154,9 @@
 						<option value="{$id}" {if $smsProviderId==$id}selected="selected"{/if}>{$provider}</option>
 						{/foreach}
 					</select>
-					<i>{translate text="Please contact a library staff member if you are unsure of your mobile service provider, or you do not see your provider in this list." isPublicFacing=true}</i>
+					<span id="helpBlock_sms_provider_id" class="help-block">
+					{translate text="Please contact a library staff member if you are unsure of your mobile service provider, or you do not see your provider in this list." isPublicFacing=true}
+					</span>
 				</div>
 			</div>
 		{/if}

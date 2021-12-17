@@ -80,8 +80,8 @@
 								{else}
 									{if $profile->noPromptForUserReviews==0} {translate text='No' isPublicFacing=true}{else} {translate text='Yes' isPublicFacing=true}{/if}
 								{/if}
-								<p class="help-block alert alert-warning">
-									{translate text="When you rate an item by clicking on the stars, you will be asked to review that item also. Selecting this option lets us know you don't want to give reviews after you have rated an item by clicking its stars." isPublicFacing=true}
+								<p class="help-block alert alert-info">
+									<span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span> {translate text="When you rate an item by clicking on the stars, you will be asked to review that item also. Selecting this option lets us know you don't want to give reviews after you have rated an item by clicking its stars." isPublicFacing=true}
 								</p>
 							</div>
 						</div>
