@@ -16,7 +16,7 @@
 	{if is_array($recordList.$sectionKey) && count($recordList.$sectionKey) > 0}
         {if $source == 'ils' && $sectionKey == 'available' && $showCurbsidePickups}
 			<div id="curbsidePickupButton" style="margin-bottom: 1em">
-				<a href="/MyAccount/CurbsidePickups" class="btn btn-primary">Schedule a Curbside Pickup</a>
+				<a href="/MyAccount/CurbsidePickups" class="btn btn-primary">{translate text="Schedule a Curbside Pickup" isPublicFacing=true}</a>
 			</div>
         {/if}
 

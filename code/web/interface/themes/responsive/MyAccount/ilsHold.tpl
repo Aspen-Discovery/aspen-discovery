@@ -185,7 +185,7 @@
 					<div class="btn-group btn-group-vertical btn-block">
 						{if $section == 'available'}
                             {if $source == 'all' && $showCurbsidePickups}
-								<a class="btn btn-sm btn-primary btn-wrap" href="/MyAccount/CurbsidePickups">Schedule a Curbside Pickup</a>
+								<a class="btn btn-sm btn-primary btn-wrap" href="/MyAccount/CurbsidePickups">{translate text="Schedule a Curbside Pickup" isPublicFacing=true}</a>
                             {/if}
 							{if $record->cancelable}
 								{* First step in cancelling a hold is now fetching confirmation message, with better labeled buttons. *}
