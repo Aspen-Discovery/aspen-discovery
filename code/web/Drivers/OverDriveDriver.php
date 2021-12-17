@@ -68,7 +68,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 	}
 
 
-	public function getSettings()
+	private function getSettings()
 	{
 		if ($this->settings == null) {
 			try {
@@ -533,7 +533,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 		}
 
 		global $interface;
-		$fulfillmentMethod = (string)$this->getSettings()->useFulfillmentInterface;
+		$fulfillmentMethod = $this->getSettings()->useFulfillmentInterface;
 		$interface->assign('fulfillmentMethod', $fulfillmentMethod);
 
 		$checkedOutTitles = [];
@@ -1518,19 +1518,10 @@ class OverDriveDriver extends AbstractEContentDriver{
 				if (isset($curField->options)) {
 					foreach ($curField->options as $index => $format) {
 						if ($format == 'ebook-overdrive' ||
-							$format == 'ebook-mediado' ||
-							$format == 'ebook-epub-adobe' ||
-							$format == 'ebook-epub-open' ||
-							$format == 'ebook-pdf-adobe' ||
-							$format == 'ebook-pdf-open' ||
-							$format == 'ebook-kindle') {
+							$format == 'ebook-mediado') {
 							$bookshelfItem->overdriveRead = true;
 						} else if (
-							$format == 'audiobook-overdrive' ||
-							$format == 'audiobook-wma' ||
-							$format == 'audiobook-mp3' ||
-							$format == 'audiobook-streaming' ||
-							$format == 'music-wma') {
+							$format == 'audiobook-overdrive') {
 							$bookshelfItem->overdriveListen = true;
 						} else if ($format == 'video-streaming') {
 							$bookshelfItem->overdriveVideo = true;
