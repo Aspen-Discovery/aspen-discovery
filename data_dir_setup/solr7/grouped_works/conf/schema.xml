@@ -63,16 +63,18 @@
 			</analyzer>
 		</fieldType>
 		<fieldType name="text-left" class="solr.TextField" sortMissingLast="true" omitNorms="true">
-			<analyzer>
-				<!-- Whitespace tokenizer is needed so the Word Delimiter filter factory works properly
-				 For example, this allows E.T. The Extra-Terrestrial to be handled properly.  #ARL-168
-				-->
+			<analyzer type="index">
 				<tokenizer class="solr.KeywordTokenizerFactory"/>
-				<filter class="solr.ASCIIFoldingFilterFactory" preserveOriginal="false" />
+				<charFilter class="solr.PatternReplaceCharFilterFactory" pattern="^\s*(.*)\s*$" replacement="aaaa $1"/>
+				<filter class="solr.LowerCaseFilterFactory"/>
+				<filter class="solr.EdgeNGramFilterFactory" maxGramSize="50"/>
+				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
+			</analyzer>
+			<analyzer type="query">
+				<tokenizer class="solr.KeywordTokenizerFactory"/>
 				<charFilter class="solr.PatternReplaceCharFilterFactory" pattern="^\s*(.*)\s*$" replacement="aaaa $1"/>
 				<filter class="solr.LowerCaseFilterFactory"/>
 				<filter class="solr.TrimFilterFactory"/>
-				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
 			</analyzer>
 		</fieldType>
 		<!-- Text Field without Stemming, Synonyms, and stop Word removal -->
