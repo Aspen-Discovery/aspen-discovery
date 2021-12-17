@@ -172,6 +172,7 @@ abstract class Solr
 
 	public function pingServer($failOnError = true)
 	{
+		/** @var Memcache $memCache */
 		global $memCache;
 		global $timer;
 		global $configArray;
@@ -179,13 +180,11 @@ abstract class Solr
 		$hostEscaped = str_replace('/' . $this->index, '', $this->host);
 		$hostEscaped = preg_replace('[\W]', '_', $hostEscaped);
 		if (array_key_exists($hostEscaped, Solr::$serversPinged)) {
-			//$logger->log("Pinging solr has already been done this page load", Logger::LOG_DEBUG);
 			return Solr::$serversPinged[$hostEscaped];
 		}
 		if ($memCache) {
 			$pingDone = $memCache->get('solr_ping_' . $hostEscaped);
 			if ($pingDone !== false) {
-				//$logger->log("Not pinging solr {$this->host} because we have a cached ping $pingDone", Logger::LOG_DEBUG);
 				Solr::$serversPinged[$this->host] = $pingDone;
 				return Solr::$serversPinged[$this->host];
 			} else {
@@ -193,11 +192,9 @@ abstract class Solr
 			}
 		} else {
 			$pingDone = false;
-			//$logger->log("Pinging solr because memcache has not been initialized", Logger::LOG_DEBUG);
 		}
 
 		if ($pingDone == false) {
-			//$logger->log("Pinging solr server {$this->host} $hostEscaped", Logger::LOG_DEBUG);
 			// Test to see solr is online
 			$test_url = $this->host . "/admin/ping";
 			$test_client = new CurlWrapper();
@@ -239,12 +236,6 @@ abstract class Solr
 			Solr::$serversPinged[$hostEscaped] = true;
 		}
 		return Solr::$serversPinged[$hostEscaped];
-	}
-
-	public function setDebugging($enableDebug, $enableSolrQueryDebugging)
-	{
-		$this->debug = $enableDebug;
-		$this->debugSolrQuery = $enableDebug && $enableSolrQueryDebugging;
 	}
 
 	public function setTimeout($timeout){
@@ -1738,8 +1729,6 @@ abstract class Solr
 			global $logger;
 			$logger->log("Error updating document\r\n$xml", Logger::LOG_DEBUG);
 			return new AspenError("Unexpected response -- " . $errorMsg);
-		} elseif ($configArray['System']['debugSolr'] == true) {
-			$timer->logTime("Get response body");
 		}
 
 		return true;

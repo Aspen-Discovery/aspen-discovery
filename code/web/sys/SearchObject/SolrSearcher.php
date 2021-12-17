@@ -39,25 +39,8 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
 		global $configArray;
 		// Set appropriate debug mode:
 		// Debugging
-		if ($configArray['System']['debugSolr']) {
-			//Verify that the ip is ok
-			$activeIp = IPAddress::getActiveIp();
-			$maintenanceIps = $configArray['System']['maintenanceIps'];
-			$debug = true;
-			if (strlen($maintenanceIps) > 0) {
-				$debug = false;
-				$allowableIps = explode(',', $maintenanceIps);
-				if (in_array($activeIp, $allowableIps)) {
-					$debug = true;
-					if ($configArray['System']['debugSolrQuery'] == true) {
-						$this->debugSolrQuery = true;
-					}
-				}
-			}
-			$this->debug = $debug;
-		} else {
-			$this->debug = false;
-		}
+		$this->debug = IPAddress::showDebuggingInformation();
+		$this->debugSolrQuery = IPAddress::showDebuggingInformation();
 
 		//Setup Spellcheck
 		$this->spellcheckEnabled = true;

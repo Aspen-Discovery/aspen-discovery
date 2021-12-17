@@ -712,7 +712,7 @@ class GroupedWorkDriver extends IndexRecordDriver
 		$interface->assign('summLanguage', $summLanguage);
 		$timer->logTime("Finished assignment of data based on related records");
 
-		if ($configArray['System']['debugSolr']) {
+		if (IPAddress::showDebuggingInformation()) {
 			$interface->assign('summScore', $this->getScore());
 			$interface->assign('summExplain', $this->getExplain());
 		}
@@ -1062,7 +1062,7 @@ class GroupedWorkDriver extends IndexRecordDriver
 
 		$interface->assign('numRelatedRecords', $this->getNumRelatedRecords());
 
-		if ($configArray['System']['debugSolr']) {
+		if (IPAddress::showDebuggingInformation()) {
 			$interface->assign('summScore', $this->getScore());
 			$interface->assign('summExplain', $this->getExplain());
 		}
@@ -1137,7 +1137,7 @@ class GroupedWorkDriver extends IndexRecordDriver
 
 		$interface->assign('numRelatedRecords', $this->getNumRelatedRecords());
 
-		if ($configArray['System']['debugSolr']) {
+		if (IPAddress::showDebuggingInformation()) {
 			$interface->assign('summScore', $this->getScore());
 			$interface->assign('summExplain', $this->getExplain());
 		}
@@ -1704,7 +1704,7 @@ class GroupedWorkDriver extends IndexRecordDriver
 		$interface->assign('summLanguage', $summLanguage);
 		$timer->logTime("Finished assignment of data based on related records");
 
-		if ($configArray['System']['debugSolr']) {
+		if (IPAddress::showDebuggingInformation()) {
 			$interface->assign('summScore', $this->getScore());
 			$interface->assign('summExplain', $this->getExplain());
 		}
