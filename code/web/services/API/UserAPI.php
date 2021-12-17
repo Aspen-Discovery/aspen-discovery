@@ -221,22 +221,35 @@ class UserAPI extends Action
 	{
 		list($username, $password) = $this->loadUsernameAndPassword();
 
-		$result = UserAccount::validateAccount($username, $password);
-		if ($result != null) {
+		$user = UserAccount::validateAccount($username, $password);
+		if ($user != null) {
 			//TODO This needs to be updated to just export public information
 			//get rid of data object fields before returning the result
-			unset($result->__table);
-			unset($result->created);
-			unset($result->_DB_DataObject_version);
-			unset($result->_database_dsn);
-			unset($result->_database_dsn_md5);
-			unset($result->_database);
-			unset($result->_query);
-			unset($result->_DB_resultid);
-			unset($result->_resultFields);
-			unset($result->_link_loaded);
-			unset($result->_join);
-			unset($result->_lastError);
+			unset($user->__table);
+			unset($user->created);
+			unset($user->_DB_DataObject_version);
+			unset($user->_database_dsn);
+			unset($user->_database_dsn_md5);
+			unset($user->_database);
+			unset($user->_query);
+			unset($user->_DB_resultid);
+			unset($user->_resultFields);
+			unset($user->_link_loaded);
+			unset($user->_join);
+			unset($user->_lastError);
+
+			$result = new stdClass();
+			$properties = get_object_vars($user);
+			foreach ($properties as $name => $value) {
+				if ($name[0] != '_'){
+					$result->$name = $value;
+				}else if ($name[0] == '_' && strlen($name) > 1 && $name[1] != '_') {
+					if ($name != '_data'){
+						$result->$name = $value;
+					}
+				}
+			}
+			$result->homeLocationCode = $user->getHomeLocationCode();
 
 			return array('success' => $result);
 		} else {

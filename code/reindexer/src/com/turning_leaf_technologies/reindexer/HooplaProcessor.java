@@ -118,7 +118,7 @@ class HooplaProcessor {
 
 				String fullTitle = title + " " + subTitle;
 				fullTitle = fullTitle.trim();
-				groupedWork.setTitle(title, subTitle, title, title, primaryFormat);
+				groupedWork.setTitle(title, subTitle, title, title, primaryFormat, formatCategory);
 				groupedWork.addFullTitle(fullTitle);
 
 
@@ -328,7 +328,7 @@ class HooplaProcessor {
 				//Description
 				if (rawResponse.has("synopsis")) {
 					String description = rawResponse.getString("synopsis");
-					groupedWork.addDescription(description, primaryFormat);
+					groupedWork.addDescription(description, primaryFormat, formatCategory);
 				}
 
 				String isbn = rawResponse.getString("isbn");

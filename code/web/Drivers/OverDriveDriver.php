@@ -68,7 +68,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 	}
 
 
-	private function getSettings()
+	public function getSettings()
 	{
 		if ($this->settings == null) {
 			try {
@@ -454,7 +454,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 			}
 
 			$content = $this->apiCurlWrapper->curlSendPage($url, "DELETE", false);
-			ExternalRequestLogEntry::logRequest('overdrive.callPatronDeleteUrl_' . $methodName, 'DEL', $url, $this->apiCurlWrapper->getHeaders(), false, $this->apiCurlWrapper->getResponseCode(), json_decode($content), []);
+			ExternalRequestLogEntry::logRequest('overdrive.callPatronDeleteUrl_' . $methodName, 'DEL', $url, $this->apiCurlWrapper->getHeaders(), false, $this->apiCurlWrapper->getResponseCode(), $content, []);
 			$responseCode = $this->apiCurlWrapper->getResponseCode();
 
 			if($responseCode == 204){
@@ -533,7 +533,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 		}
 
 		global $interface;
-		$fulfillmentMethod = $this->getSettings()->useFulfillmentInterface;
+		$fulfillmentMethod = (string)$this->getSettings()->useFulfillmentInterface;
 		$interface->assign('fulfillmentMethod', $fulfillmentMethod);
 
 		$checkedOutTitles = [];
@@ -1138,7 +1138,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 		return OverDriveDriver::$validUsersOverDrive[$userBarcode];
 	}
 
-	public function getDownloadLink($overDriveId, $format, $user, $isSupplement){
+	public function getDownloadLink($overDriveId, $format, $user, $isSupplement = false){
 		global $configArray;
 		$result = array();
 		$result['success'] = false;

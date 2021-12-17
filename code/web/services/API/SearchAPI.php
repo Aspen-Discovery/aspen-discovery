@@ -228,7 +228,7 @@ class SearchAPI extends Action
 				$this->addCheck($checks, 'Nightly Index', self::STATUS_CRITICAL, 'The last nightly index had errors');
 			}else{
 				//Check to see if it's after 8 am and the nightly index is still running.
-				if (empty($logEntry->endTime) && date('H') >= 8){
+				if (empty($logEntry->endTime) && date('H') >= 8 && date('H') < 21){
 					$this->addCheck($checks, 'Nightly Index', self::STATUS_CRITICAL, "Nightly index is still running after 8 am.");
 				}else {
 					$this->addCheck($checks, 'Nightly Index');

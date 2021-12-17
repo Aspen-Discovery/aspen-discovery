@@ -130,12 +130,12 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			shelvingLocationSubfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "shelvingLocation");
 			collectionSubfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "collection");
 			String locationsToSuppress = indexingProfileRS.getString("locationsToSuppress");
-			if (locationsToSuppress.length() > 0){
+			if (locationsToSuppress != null && locationsToSuppress.length() > 0){
 				locationsToSuppressPattern = Pattern.compile(locationsToSuppress);
 			}
 
 			String collectionsToSuppress = indexingProfileRS.getString("collectionsToSuppress");
-			if (collectionsToSuppress.length() > 0){
+			if (collectionsToSuppress != null && collectionsToSuppress.length() > 0){
 				collectionsToSuppressPattern = Pattern.compile(collectionsToSuppress);
 			}
 
@@ -153,7 +153,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			}
 			statusSubfieldIndicator = getSubfieldIndicatorFromConfig(indexingProfileRS, "status");
 			String statusesToSuppress = indexingProfileRS.getString("statusesToSuppress");
-			if (statusesToSuppress.length() > 0){
+			if (statusesToSuppress != null && statusesToSuppress.length() > 0){
 				statusesToSuppressPattern = Pattern.compile(statusesToSuppress);
 			}
 
@@ -168,7 +168,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 
 			dueDateSubfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "dueDate");
 			String dueDateFormat = indexingProfileRS.getString("dueDateFormat");
-			if (dueDateFormat.length() > 0) {
+			if (dueDateFormat != null && dueDateFormat.length() > 0) {
 				dueDateFormatter = new SimpleDateFormat(dueDateFormat);
 			}
 
@@ -225,7 +225,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			useEContentSubfield = eContentSubfieldIndicator != ' ';
 
 			String suppressRecordsWithUrlsMatching = indexingProfileRS.getString("suppressRecordsWithUrlsMatching");
-			if (suppressRecordsWithUrlsMatching.length() == 0){
+			if (suppressRecordsWithUrlsMatching != null && suppressRecordsWithUrlsMatching.length() == 0){
 				this.suppressRecordsWithUrlsMatching = null;
 			}else {
 				this.suppressRecordsWithUrlsMatching = Pattern.compile(suppressRecordsWithUrlsMatching, Pattern.CASE_INSENSITIVE);
@@ -380,9 +380,11 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 
 			//Do updates based on the overall bib (shared regardless of scoping)
 			String primaryFormat = null;
+			String primaryFormatCategory = null;
 			for (RecordInfo ilsRecord : allRelatedRecords) {
 				primaryFormat = ilsRecord.getPrimaryFormat();
-				if (primaryFormat != null){
+				primaryFormatCategory = ilsRecord.getPrimaryFormatCategory();
+				if (primaryFormatCategory != null && primaryFormat != null){
 					break;
 				}
 			}
@@ -390,7 +392,11 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 				primaryFormat = "Unknown";
 				//logger.info("No primary format for " + recordInfo.getRecordIdentifier() + " found setting to unknown to load standard marc data");
 			}
-			updateGroupedWorkSolrDataBasedOnStandardMarcData(groupedWork, record, recordInfo.getRelatedItems(), identifier, primaryFormat);
+			if (primaryFormatCategory == null/* || primaryFormat.equals("Unknown")*/) {
+				primaryFormatCategory = "Unknown";
+				//logger.info("No primary format for " + recordInfo.getRecordIdentifier() + " found setting to unknown to load standard marc data");
+			}
+			updateGroupedWorkSolrDataBasedOnStandardMarcData(groupedWork, record, recordInfo.getRelatedItems(), identifier, primaryFormat, primaryFormatCategory);
 
 			//Special processing for ILS Records
 			String fullDescription = Util.getCRSeparatedString(MarcUtil.getFieldList(record, "520a"));
@@ -399,7 +405,11 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 				if (primaryFormatForRecord == null){
 					primaryFormatForRecord = "Unknown";
 				}
-				groupedWork.addDescription(fullDescription, primaryFormatForRecord);
+				String primaryFormatCategoryForRecord = ilsRecord.getPrimaryFormatCategory();
+				if (primaryFormatCategoryForRecord == null){
+					primaryFormatCategoryForRecord = "Unknown";
+				}
+				groupedWork.addDescription(fullDescription, primaryFormatForRecord, primaryFormatCategoryForRecord);
 			}
 			loadEditions(groupedWork, record, allRelatedRecords);
 			loadPhysicalDescription(groupedWork, record, allRelatedRecords);
@@ -1441,7 +1451,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			if (iTypeSubfieldValue != null){
 				String iTypeValue = iTypeSubfieldValue.getData();
 				//noinspection RedundantIfStatement
-				if (iTypesToSuppress.matcher(iTypeValue).matches()){
+				if (iTypesToSuppress != null && iTypesToSuppress.matcher(iTypeValue).matches()){
 					return true;
 				}
 			}
