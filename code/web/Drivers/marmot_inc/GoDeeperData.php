@@ -219,9 +219,11 @@ class GoDeeperData{
 				if (isset($response[0]->AnnotationItems->AnnotationItem)){
 					foreach ($response[0]->AnnotationItems->AnnotationItem as $summary) {
 						//Correct poorly encoded quotes
-						//Tickets (90861, )
-						$temp[strlen($summary->Annotation)] = html_entity_decode(str_replace('&amp;&#34;', '"', $summary->Annotation));
+						$tempAnnotation = str_replace('&amp;&#34;', '"', $summary->Annotation);
+						$tempAnnotation = str_replace('&amp;&#39;', "'", $tempAnnotation);
+						$temp[strlen($summary->Annotation)] = html_entity_decode($tempAnnotation);
 					}
+					ksort($temp);
 					$summaryData['summary'] = end($temp); // Grab the Longest Summary
 				}
 				if (!empty($summaryData['summary'])) {
