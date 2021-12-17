@@ -2748,7 +2748,7 @@ class User extends DataObject
 		if ($this->hasIlsConnection()){
 			return $this->getCatalogDriver()->getPluginStatus($pluginName);
 		}else {
-			return [];
+			return ['enabled' => false];
 		}
 	}
 
