@@ -184,6 +184,9 @@
 				<div class="col-xs-9 col-sm-8 col-md-4 col-lg-3">
 					<div class="btn-group btn-group-vertical btn-block">
 						{if $section == 'available'}
+                            {if $source == 'all' && $showCurbsidePickups}
+								<a class="btn btn-sm btn-primary btn-wrap" href="/MyAccount/CurbsidePickups">Schedule a Curbside Pickup</a>
+                            {/if}
 							{if $record->cancelable}
 								{* First step in cancelling a hold is now fetching confirmation message, with better labeled buttons. *}
 								<button onclick="return AspenDiscovery.Account.confirmCancelHold('{$record->userId}', '{$record->sourceId}', '{$record->cancelId}');" class="btn btn-sm btn-warning">{translate text="Cancel Hold" isPublicFacing=true}</button>

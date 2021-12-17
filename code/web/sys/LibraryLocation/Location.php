@@ -63,6 +63,7 @@ class Location extends DataObject
 	public /** @noinspection PhpUnused */ $hooplaScopeId;
 	public /** @noinspection PhpUnused */ $axis360ScopeId;
 	public $showHoldButton;
+	public $curbsidePickupInstructions;
 	public $repeatSearchOption;
 	public $repeatInOnlineCollection;
 	public $repeatInProspector;
@@ -273,6 +274,9 @@ class Location extends DataObject
 				array('property' => 'showHoldButton', 'type' => 'checkbox', 'label' => 'Show Hold Button', 'description' => 'Whether or not the hold button is displayed so patrons can place holds on items', 'hideInLists' => true, 'default' => true, 'permissions' => ['Location ILS Options']),
 				array('property' => 'ptypesToAllowRenewals', 'type' => 'text', 'label' => 'PTypes that can renew (Millennium/Sierra)', 'description' => 'A list of P-Types that can renew items or * to allow all P-Types to renew items.', 'hideInLists' => true, 'default' => '*', 'permissions' => ['Location ILS Connection']),
 			)),
+
+			//Curbside pickup for Koha plugin
+			'curbsidePickupSettings' => array('property' => 'curbsidePickupInstructions', 'type' => 'textarea', 'label' => 'Patron instructions for curbside pickup', 'description' => 'Instructions specific to this location for instructions to patrons when checking-in for picking up curbside.', 'hideInLists' => true, 'permissions' => ['Location ILS Connection'], 'note' => 'Koha only, requires Curbside Pickup plugin'),
 
 			//Grouped Work Display
 			'groupedWorkDisplaySettingId' => array('property' => 'groupedWorkDisplaySettingId', 'type' => 'enum', 'values'=>$groupedWorkDisplaySettings, 'label' => 'Grouped Work Display Settings', 'hideInLists' => false, 'permissions' => ['Location Catalog Options']),

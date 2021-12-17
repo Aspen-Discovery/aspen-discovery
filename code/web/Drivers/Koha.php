@@ -1708,6 +1708,18 @@ class Koha extends AbstractIlsDriver
 		return $this->oauthToken;
 	}
 
+	private $basicAuthToken = null;
+	function getBasicAuthToken()
+	{
+		if ($this->basicAuthToken == null) {
+			$client = UserAccount::getActiveUserObj();
+			$client_id = $client->getBarcode();
+			$client_secret = $client->getPasswordOrPin();
+			$this->basicAuthToken = base64_encode($client_id . ":" . $client_secret);
+		}
+		return $this->basicAuthToken;
+	}
+
 	function cancelHold($patron, $recordId, $cancelId = null)
 	{
 		return $this->updateHoldDetailed($patron, 'cancel', null, $cancelId, '', '');
@@ -4012,6 +4024,30 @@ class Koha extends AbstractIlsDriver
 		return $preference;
 	}
 
+	public function getPluginStatus(string $pluginName) {
+		$this->initDatabaseConnection();
+		/** @noinspection SqlResolve */
+		$sql = "SELECT * FROM plugin_data WHERE plugin_class LIKE '%{$pluginName}';";
+		$results = mysqli_query($this->dbConnection, $sql);
+
+		if ($results !== false) {
+			while ($curRow = $results->fetch_assoc()) {
+				if ($curRow['plugin_key'] == '__INSTALLED__') {
+					$plugin['installed'] = $curRow['plugin_value'];
+				}
+				if ($curRow['plugin_key'] == '__ENABLED__') {
+					$plugin['enabled'] = $curRow['plugin_value'];
+				}
+			}
+			$results->close();
+		}else{
+			global $logger;
+			$logger->log("Error loading plugins " . mysqli_error($this->dbConnection), Logger::LOG_ERROR);
+		}
+
+		return $plugin;
+	}
+
 	function getPasswordPinValidationRules(){
 		return [
 			'minLength' => $this->getKohaSystemPreference('minPasswordLength'),
@@ -4265,5 +4301,314 @@ class Koha extends AbstractIlsDriver
 			$message = 'Unknown error';
 		}
 		return $message;
+	}
+
+	public function getCurbsidePickupSettings($locationCode) {
+		$result = [
+			'success' => false,
+		];
+
+		$this->initDatabaseConnection();
+		/** @noinspection SqlResolve */
+		$sql = "SELECT * FROM curbside_pickup_policy WHERE branchcode='{$locationCode}';";
+		$results = mysqli_query($this->dbConnection, $sql);
+
+		if ($results !== false) {
+			while ($curRow = $results->fetch_assoc()) {
+				if ($curRow['enabled'] == '1' && $curRow['patron_scheduled_pickup'] == '1') {
+					$result['success'] = true;
+					$result['location'] = $curRow['branchcode'];
+					$result['enabled'] = $curRow['enabled'];
+					$result['interval'] = $curRow['pickup_interval'];
+					$result['maxPickupsPerInterval'] = $curRow['patrons_per_interval'];
+					$result['disabledDays'] = [];
+
+					if(isset($curRow['sunday_start_hour']) && isset($curRow['sunday_start_minute']) && isset($curRow['sunday_end_hour']) && isset($curRow['sunday_end_minute'])) {
+						$result['pickupTimes']['Sun']['startTime'] = date("H:i", $curRow['sunday_start_hour'] . ':' . $curRow['sunday_start_minute']);
+						$result['pickupTimes']['Sun']['endTime'] = date("H:i", $curRow['sunday_end_hour'] . ':' . $curRow['sunday_end_minute']);
+						$result['pickupTimes']['Sun']['available'] = true;
+					} else {
+						$result['pickupTimes']['Sun']['available'] = false;
+						$result['disabledDays'][] = 0;
+					}
+
+					if(isset($curRow['monday_start_hour']) && isset($curRow['monday_start_minute']) && isset($curRow['monday_end_hour']) && isset($curRow['monday_end_minute'])) {
+						$result['pickupTimes']['Mon']['startTime'] = date("H:i", strtotime($curRow['monday_start_hour'] . ':' . $curRow['monday_start_minute']));
+						$result['pickupTimes']['Mon']['endTime'] = date("H:i", strtotime($curRow['monday_end_hour'] . ':' . $curRow['monday_end_minute']));
+						$result['pickupTimes']['Mon']['available'] = true;
+					} else {
+						$result['pickupTimes']['Mon']['available'] = false;
+						$result['disabledDays'][] = 1;
+					}
+
+					if(isset($curRow['tuesday_start_hour']) && isset($curRow['tuesday_start_minute']) && isset($curRow['tuesday_end_hour']) && isset($curRow['tuesday_end_minute'])) {
+						$result['pickupTimes']['Tue']['startTime'] = date("H:i", strtotime($curRow['tuesday_start_hour'] . ':' . $curRow['tuesday_start_minute']));
+						$result['pickupTimes']['Tue']['endTime'] = date("H:i", strtotime($curRow['tuesday_end_hour'] . ':' . $curRow['tuesday_end_minute']));
+						$result['pickupTimes']['Tue']['available'] = true;
+					} else {
+						$result['pickupTimes']['Tue']['available'] = false;
+						$result['disabledDays'][] = 2;
+					}
+
+					if(isset($curRow['wednesday_start_hour']) && isset($curRow['wednesday_start_minute']) && isset($curRow['wednesday_end_hour']) && isset($curRow['wednesday_end_minute'])) {
+						$result['pickupTimes']['Wed']['startTime'] = date("H:i", strtotime($curRow['wednesday_start_hour'] . ':' . $curRow['wednesday_start_minute']));
+						$result['pickupTimes']['Wed']['endTime'] = date("H:i", strtotime($curRow['wednesday_end_hour'] . ':' . $curRow['wednesday_end_minute']));
+						$result['pickupTimes']['Wed']['available'] = true;
+					} else {
+						$result['pickupTimes']['Wed']['available'] = false;
+						$result['disabledDays'][] = 3;
+					}
+
+					if(isset($curRow['thursday_start_hour']) && isset($curRow['thursday_start_minute']) && isset($curRow['thursday_end_hour']) && isset($curRow['thursday_end_minute'])) {
+						$result['pickupTimes']['Thu']['startTime'] = date("H:i", strtotime($curRow['thursday_start_hour'] . ':' . $curRow['thursday_start_minute']));
+						$result['pickupTimes']['Thu']['endTime'] = date("H:i", strtotime($curRow['thursday_end_hour'] . ':' . $curRow['thursday_end_minute']));
+						$result['pickupTimes']['Thu']['available'] = true;
+					} else {
+						$result['pickupTimes']['Thu']['available'] = false;
+						$result['disabledDays'][] = 4;
+					}
+
+					if(isset($curRow['friday_start_hour']) && isset($curRow['friday_start_minute']) && isset($curRow['friday_end_hour']) && isset($curRow['friday_end_minute'])) {
+						$result['pickupTimes']['Fri']['startTime'] = date("H:i", strtotime($curRow['friday_start_hour'] . ':' . $curRow['friday_start_minute']));
+						$result['pickupTimes']['Fri']['endTime'] = date("H:i", strtotime($curRow['friday_end_hour'] . ':' . $curRow['friday_end_minute']));
+						$result['pickupTimes']['Fri']['available'] = true;
+					} else {
+						$result['pickupTimes']['Fri']['available'] = false;
+						$result['disabledDays'][] = 5;
+					}
+
+					if(isset($curRow['saturday_start_hour']) && isset($curRow['saturday_start_minute']) && isset($curRow['saturday_end_hour']) && isset($curRow['saturday_end_minute'])) {
+						$result['pickupTimes']['Sat']['startTime'] = date("H:i", strtotime($curRow['saturday_start_hour'] . ':' . $curRow['saturday_start_minute']));
+						$result['pickupTimes']['Sat']['endTime'] = date("H:i", strtotime($curRow['saturday_end_hour'] . ':' . $curRow['saturday_end_minute']));
+						$result['pickupTimes']['Sat']['available'] = true;
+					} else {
+						$result['pickupTimes']['Sat']['available'] = false;
+						$result['disabledDays'][] = 6;
+					}
+
+				}
+			}
+			$results->close();
+		}else{
+			global $logger;
+			$logger->log("Error loading plugins " . mysqli_error($this->dbConnection), Logger::LOG_ERROR);
+		}
+
+		return $result;
+	}
+
+	public function hasCurbsidePickups($patron) {
+		$result = [
+			'success' => false,
+		];
+
+		$basicAuthToken = $this->getBasicAuthToken();
+		$this->apiCurlWrapper->addCustomHeaders([
+			'Authorization: Basic ' . $basicAuthToken,
+			'User-Agent: Aspen Discovery',
+			'Accept: */*',
+			'Cache-Control: no-cache',
+			'Content-Type: application/json;charset=UTF-8',
+			'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
+		], true);
+
+		$apiUrl = $this->getWebServiceURL() . "/api/v1/contrib/curbsidepickup/patrons/" . $patron->username . "/pickups";
+
+		$response = $this->apiCurlWrapper->curlSendPage($apiUrl, 'GET');
+		ExternalRequestLogEntry::logRequest('koha.curbsidePickup_getPatrons', 'GET', $apiUrl, $this->apiCurlWrapper->getHeaders(), "", $this->apiCurlWrapper->getResponseCode(), $response, []);
+		$response = json_decode($response);
+
+		if ($this->apiCurlWrapper->getResponseCode() == 200) {
+			$result['success'] = true;
+			$result['hasPickups'] = false;
+			$result['numPickups'] = 0;
+			if(!empty($response)) {
+				$result['hasPickups'] = true;
+				$result['numPickups'] = count($response);
+			}
+		} else {
+			$result['message'] = $response->error;
+		}
+
+		return $result;
+	}
+
+	public function getPatronCurbsidePickups($patron) {
+		$result = [
+			'success' => false,
+		];
+
+		$basicAuthToken = $this->getBasicAuthToken();
+		$this->apiCurlWrapper->addCustomHeaders([
+			'Authorization: Basic ' . $basicAuthToken,
+			'User-Agent: Aspen Discovery',
+			'Accept: */*',
+			'Cache-Control: no-cache',
+			'Content-Type: application/json;charset=UTF-8',
+			'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
+		], true);
+
+		$apiUrl = $this->getWebServiceURL() . "/api/v1/contrib/curbsidepickup/patrons/" . $patron->username . "/pickups";
+
+		$response = $this->apiCurlWrapper->curlSendPage($apiUrl, 'GET');
+		ExternalRequestLogEntry::logRequest('koha.curbsidePickup_getPatrons', 'GET', $apiUrl, $this->apiCurlWrapper->getHeaders(), "", $this->apiCurlWrapper->getResponseCode(), $response, []);
+		$response = json_decode($response);
+
+		if ($this->apiCurlWrapper->getResponseCode() == 200) {
+			$result['success'] = true;
+			$result['pickups'] = $response;
+		} else {
+			$result['message'] = $response->error;
+		}
+
+		return $result;
+	}
+
+	public function newCurbsidePickup($patron, $location, $time, $note) {
+		$result = [
+			'success' => false,
+		];
+
+		$basicAuthToken = $this->getBasicAuthToken();
+		$this->apiCurlWrapper->addCustomHeaders([
+			'Authorization: Basic ' . $basicAuthToken,
+			'User-Agent: Aspen Discovery',
+			'Accept: */*',
+			'Cache-Control: no-cache',
+			'Content-Type: application/json;charset=UTF-8',
+			'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
+		], true);
+		$postVariables = [
+			'library_id' => $location,
+			'pickup_datetime' => $time,
+			'notes' => $note
+		];
+		$postParams = json_encode($postVariables);
+		$apiUrl = $this->getWebServiceURL() . "/api/v1/contrib/curbsidepickup/patrons/" . $patron->username . "/pickup";
+		$response = $this->apiCurlWrapper->curlSendPage($apiUrl, 'GET', $postParams);
+		ExternalRequestLogEntry::logRequest('koha.curbsidePickup_createNew', 'POST', $apiUrl, $this->apiCurlWrapper->getHeaders(), $postParams, $this->apiCurlWrapper->getResponseCode(), $response, []);
+		$response = json_decode($response);
+
+		if ($this->apiCurlWrapper->getResponseCode() != 200) {
+			$result['message'] = translate(['text' => 'Unable to schedule this curbside pickup.', 'isPublicFacing'=>true]);
+			if(isset($response->error)) {
+				$result['message'] .= ' ' . $response->error;
+			}
+		} else {
+			$result['success'] = true;
+			$result['message'] = translate(['text' => 'Your curbside pickup has been scheduled successfully.', 'isPublicFacing'=>true]);
+		}
+		return $result;
+	}
+
+	public function cancelCurbsidePickup($patron, $pickupId) {
+		$result = [
+			'success' => false,
+		];
+		$basicAuthToken = $this->getBasicAuthToken();
+		$this->apiCurlWrapper->addCustomHeaders([
+			'Authorization: Basic ' . $basicAuthToken,
+			'User-Agent: Aspen Discovery',
+			'Accept: */*',
+			'Cache-Control: no-cache',
+			'Content-Type: application/json;charset=UTF-8',
+			'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
+		], true);
+
+		$apiUrl = $this->getWebServiceURL() . "/api/v1/contrib/curbsidepickup/patrons/" . $patron . "/pickup/" . $pickupId;
+		$response = $this->apiCurlWrapper->curlSendPage($apiUrl, 'DELETE');
+
+		ExternalRequestLogEntry::logRequest('koha.curbsidePickup_cancel', 'DELETE', $apiUrl, $this->apiCurlWrapper->getHeaders(), "", $this->apiCurlWrapper->getResponseCode(), $response, []);
+		$response = json_decode($response);
+
+		if ($this->apiCurlWrapper->getResponseCode() == 200) {
+			if(isset($response->error)) {
+				$result['message'] = translate(['text' => "Unable to cancel this pickup.", 'isPublicFacing' => true]);
+				$result['message'] .= " " . translate(['text' => $response->error, 'isPublicFacing' => true]);
+			} else {
+				$result['success'] = true;
+				$result['message'] = translate(['text' => 'Pickup has been successfully canceled.', 'isPublicFacing' => true]);
+			}
+		} else {
+			$result['message'] = translate(['text' => 'Unable to cancel this pickup.', 'isPublicFacing' => true]);
+			if(isset($response->error)) {
+				$result['message'] .= ' ' . $response->error;
+			}
+		}
+
+		return $result;
+	}
+
+	public function checkInCurbsidePickup($patron, $pickupId) {
+		$result = [
+			'success' => false,
+		];
+
+		$basicAuthToken = $this->getBasicAuthToken();
+		$this->apiCurlWrapper->addCustomHeaders([
+			'Authorization: Basic ' . $basicAuthToken,
+			'User-Agent: Aspen Discovery',
+			'Accept: */*',
+			'Cache-Control: no-cache',
+			'Content-Type: application/json;charset=UTF-8',
+			'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
+		], true);
+
+		$apiUrl = $this->getWebServiceURL() . "/api/v1/contrib/curbsidepickup/patrons/" . $patron . "/mark_arrived/" . $pickupId;
+
+		$response = $this->apiCurlWrapper->curlSendPage($apiUrl, 'GET');
+		ExternalRequestLogEntry::logRequest('koha.curbsidePickup_markArrived', 'GET', $apiUrl, $this->apiCurlWrapper->getHeaders(), "", $this->apiCurlWrapper->getResponseCode(), $response, []);
+		$response = json_decode($response);
+
+		if ($this->apiCurlWrapper->getResponseCode() == 200) {
+			if(isset($response->error)) {
+				$result['message'] = translate(['text' => "Unable to check-in for this pickup.", 'isPublicFacing' => true]);
+				$result['message'] .= " " . translate(['text' => $response->error, 'isPublicFacing' => true]);
+			} else {
+				$result['success'] = true;
+				$result['message'] = translate(['text' => 'You are checked-in.', 'isPublicFacing' => true]);
+			}
+		} else {
+			$result['message'] = "Unable to check-in for this pickup.";
+			if(isset($response->error)) {
+				$result['message'] .= ' ' . $response->error;
+			}
+		}
+
+		return $result;
+	}
+
+	public function getAllCurbsidePickups() {
+		$result = [
+			'success' => false,
+		];
+
+		$oauthToken = $this->getOAuthToken();
+		if ($oauthToken == false) {
+			$result['messages'][] = translate(['text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.', 'isPublicFacing' => true]);
+		} else {
+			$this->apiCurlWrapper->addCustomHeaders([
+				'Authorization: Bearer ' . $oauthToken,
+				'User-Agent: Aspen Discovery',
+				'Accept: */*',
+				'Cache-Control: no-cache',
+				'Content-Type: application/json;charset=UTF-8',
+				'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
+			], true);
+
+			$apiUrl = $this->getWebServiceURL() . "/api/v1/contrib/curbsidepickup/patrons/pickups";
+
+			$response = $this->apiCurlWrapper->curlSendPage($apiUrl, 'GET');
+			ExternalRequestLogEntry::logRequest('koha.curbsidePickup_allPickups', 'GET', $apiUrl, $this->apiCurlWrapper->getHeaders(), "", $this->apiCurlWrapper->getResponseCode(), $response, []);
+			$response = json_decode($response);
+
+			if ($this->apiCurlWrapper->getResponseCode() == 200) {
+				$result['success'] = true;
+				$result['pickups'] = $response;
+			} else {
+				$result['message'] = "Error getting curbside pickups";
+			}
+		}
+		return $result;
 	}
 }

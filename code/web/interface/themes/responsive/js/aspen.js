@@ -6761,6 +6761,129 @@ AspenDiscovery.Account = (function(){
 			} else {
 				$('#thisDonation').hide();
 			}
+		},
+		getCurbsidePickupScheduler: function(locationId){
+			if (Globals.loggedIn){
+				AspenDiscovery.loadingMessage();
+				$.getJSON(Globals.path + "/MyAccount/AJAX?method=getCurbsidePickupScheduler&pickupLocation=" + locationId, function(data) {
+					if (data.success) {
+						AspenDiscovery.showMessageWithButtons(data.title, data.body, data.buttons)
+					} else {
+						AspenDiscovery.showMessage(data.title, data.message);
+					}
+				});
+			} else {
+				AspenDiscovery.Account.ajaxLogin(null, function(){
+					return AspenDiscovery.Account.getCurbsidePickupScheduler(locationId);
+				}, false);
+			}
+			return false;
+		},
+		createCurbsidePickup: function (){
+			if (Globals.loggedIn){
+
+				var patronId = $("#newCurbsidePickupForm input[name=patronId]").val();
+				var locationId = $("#newCurbsidePickupForm  input[name=pickupLibrary]").val();
+				var date = $("#newCurbsidePickupForm  input[name=pickupDate]").val();
+				var time = $("#newCurbsidePickupForm  input[name=pickupTime]:checked").val();
+				var note = $("#newCurbsidePickupForm  input[name=pickupNote]").text();
+
+				AspenDiscovery.loadingMessage();
+				$.getJSON(Globals.path + "/MyAccount/AJAX?method=createCurbsidePickup&patronId=" + patronId + "&location=" + locationId + "&date=" + date + "&time=" + time + "&note=" + note, function(data){
+					if (data.success) {
+						AspenDiscovery.showMessage(data.title, data.body, true, 2000)
+					} else {
+						AspenDiscovery.showMessage(data.title, data.message);
+					}
+				});
+			}else{
+				AspenDiscovery.Account.ajaxLogin(null, function(){
+					return AspenDiscovery.Account.createCurbsidePickup(patronId, locationId, dateTime, note);
+				}, false);
+			}
+			return false;
+		},
+		getCancelCurbsidePickup: function(patronId, pickupId) {
+			AspenDiscovery.loadingMessage();
+			// noinspection JSUnresolvedFunction
+			$.getJSON(Globals.path + "/MyAccount/AJAX?method=getCancelCurbsidePickup&patronId=" + patronId + "&pickupId=" + pickupId, function(data){
+				AspenDiscovery.showMessageWithButtons(data.title, data.body, data.buttons); // automatically close when successful
+			}).fail(AspenDiscovery.ajaxFail);
+			return false
+		},
+		cancelCurbsidePickup: function(patronId, pickupId) {
+			AspenDiscovery.loadingMessage();
+			// noinspection JSUnresolvedFunction
+			$.getJSON(Globals.path + "/MyAccount/AJAX?method=cancelCurbsidePickup&patronId=" + patronId + "&pickupId=" + pickupId, function(data){
+				AspenDiscovery.showMessage(data.title, data.body, true, 2000); // automatically close when successful
+			}).fail(AspenDiscovery.ajaxFail);
+			return false
+		},
+		checkInCurbsidePickup: function(patronId, pickupId) {
+			AspenDiscovery.loadingMessage();
+			// noinspection JSUnresolvedFunction
+			$.getJSON(Globals.path + "/MyAccount/AJAX?method=checkInCurbsidePickup&patronId=" + patronId + "&pickupId=" + pickupId, function(data){
+				AspenDiscovery.showMessage(data.title, data.body, false); // automatically close when successful
+			}).fail(AspenDiscovery.ajaxFail);
+			return false
+		},
+		curbsidePickupScheduler: function(locationCode) {
+			$.getJSON(Globals.path + "/MyAccount/AJAX?method=getCurbsidePickupUnavailableDays&locationCode=" + locationCode, function(data){
+				$("#pickupDate").flatpickr(
+					{
+						minDate: "today",
+						maxDate: new Date().fp_incr(14),
+						altInput: true,
+						altFormat: "M j, Y",
+						"disable": [
+							function(date) {
+								return data.includes(date.getDay());
+							}
+						],
+						"locale": {
+							"firstDayOfWeek": 0
+						},
+						onChange: function(selectedDates, dateStr, instance) {
+							//... send dateStr to check what times are available
+							$.getJSON(Globals.path + "/MyAccount/AJAX?method=getCurbsidePickupAvailableTimes&date=" + dateStr + "&locationCode=" + locationCode, function(data) {
+								// return available timeslots to dom
+								var numOfSlots = data.length;
+								var morningSlots = 0;
+								var afternoonSlots = 0;
+								var eveningSlots = 0;
+								for (var i = 0; i < numOfSlots; i++) {
+									if(data[i] < "12:00 pm") {
+										morningSlots++;
+										var timeSlotContainer = document.getElementById("morningTimeSlots");
+										timeSlotContainer.innerHTML += "<label class='btn btn-primary' style='margin-right: 1em; margin-bottom: 1em'><input type='radio' name='pickupTime' id='slot_" + data[i] + "' value='" + data[i] + "'> " + data[i] + "</label>";
+									} else if (data[i] < "5:00 pm") {
+										afternoonSlots++;
+										var timeSlotContainer = document.getElementById("afternoonTimeSlots");
+										timeSlotContainer.innerHTML += "<label class='btn btn-primary' style='margin-right: 1em; margin-bottom: 1em'><input type='radio' name='pickupTime' id='slot_" + data[i] + "' value='" + data[i] + "'> " + data[i] + "</label>";
+									} else {
+										eveningSlots++;
+										var timeSlotContainer = document.getElementById("eveningTimeSlots");
+										timeSlotContainer.innerHTML += "<label class='btn btn-primary' style='margin-right: 1em; margin-bottom: 1em'><input type='radio' name='pickupTime' id='slot_" + data[i] + "' value='" + data[i] + "'> " + data[i] + "</label>";
+									}
+								}
+
+								if(morningSlots === 0) {
+									$("#morningTimeSlotsAccordion").hide();
+								}
+								if(afternoonSlots === 0) {
+									$("#afternoonTimeSlotsAccordion").hide();
+								}
+								if(eveningSlots === 0) {
+									$("#eveningTimeSlotsAccordion").hide();
+								}
+								$('#availableTimeSlots').find('div.panel:visible:first').addClass('active');
+								$("#availableTimeSlots").show();
+							});
+						}
+					}
+				);
+			}).fail(AspenDiscovery.ajaxFail);
+			return false
 		}
 	};
 }(AspenDiscovery.Account || {}));
@@ -7334,6 +7457,7 @@ AspenDiscovery.Admin = (function(){
 			$.getJSON(url, params,
 				function(data) {
 					if (data.success) {
+						$("#releaseVersion").html(data.release);
 						$("#releaseNotes").html(data.releaseNotes);
 						if (data.actionItems === ''){
 							$("#actionItemsSection").hide();

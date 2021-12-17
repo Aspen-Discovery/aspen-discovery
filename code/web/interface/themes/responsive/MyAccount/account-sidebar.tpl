@@ -117,6 +117,11 @@
 										{translate text="Reading History" isPublicFacing=true} {if !$offline}<span class="badge"><span class="readingHistory-placeholder">??</span></span>{/if}
 									</a>
 								</div>
+								{if $showCurbsidePickups}
+									<div class="myAccountLink" title="Curbside Pickups">
+										<a href="/MyAccount/CurbsidePickups">{translate text='Curbside Pickups' isPublicFacing=true}</a>
+									</div>
+								{/if}
 								{if $showFines}
 									<hr class="menu">
 									<div class="myAccountLink" title="Fines and account messages">

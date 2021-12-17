@@ -372,4 +372,60 @@ abstract class AbstractIlsDriver extends AbstractDriver
 	public function treatVolumeHoldsAsItemHolds() {
 		return false;
 	}
+
+	public function getPluginStatus(string $pluginName) {
+		return [
+			'success' => false,
+			'message' => 'This functionality has not been implemented for this ILS'
+		];
+	}
+
+	public function getCurbsidePickupSettings($locationCode) {
+		return [
+			'success' => false,
+			'message' => 'This functionality has not been implemented for this ILS'
+		];
+	}
+
+	public function hasCurbsidePickups($patron) {
+		return [
+			'success' => false,
+			'message' => 'This functionality has not been implemented for this ILS'
+		];
+	}
+
+	public function getPatronCurbsidePickups($patron) {
+		return [
+			'success' => false,
+			'message' => 'This functionality has not been implemented for this ILS'
+		];
+	}
+
+	public function newCurbsidePickup($patron, $location, $time, $note) {
+		return [
+			'success' => false,
+			'message' => 'This functionality has not been implemented for this ILS'
+		];
+	}
+
+	public function cancelCurbsidePickup($patron, $pickupId) {
+		return [
+			'success' => false,
+			'message' => 'This functionality has not been implemented for this ILS'
+		];
+	}
+
+	public function checkInCurbsidePickup($patron, $pickupId) {
+		return [
+			'success' => false,
+			'message' => 'This functionality has not been implemented for this ILS'
+		];
+	}
+
+	public function getAllCurbsidePickups() {
+		return [
+			'success' => false,
+			'message' => 'This functionality has not been implemented for this ILS'
+		];
+	}
 }

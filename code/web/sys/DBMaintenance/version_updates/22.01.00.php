@@ -31,5 +31,20 @@ function getUpdates22_01_00() : array
 				"ALTER TABLE library ADD COLUMN curbsidePickupSettingId INT(11) DEFAULT -1"
 			]
 		], //curbside_pickup_settings
+		'curbside_pickup_settings_pt2' => [
+			'title' => 'Additional settings for Curbside Pickup',
+			'description' => 'Add additional settings for curbside pickup to curbside_pickup_settings and location',
+			'sql' => [
+				"ALTER TABLE curbside_pickup_settings ADD COLUMN timeAllowedBeforeCheckIn INT(5) default 30",
+				"ALTER TABLE location ADD COLUMN curbsidePickupInstructions VARCHAR(255)",
+			]
+		], //curbside_pickup_settings_pt2
+		'curbside_pickup_settings_pt3' => [
+			'title' => 'Additional settings for Curbside Pickup',
+			'description' => 'Add pickup instructions for curbside to curbside_pickup_settings',
+			'sql' => [
+				"ALTER TABLE curbside_pickup_settings ADD COLUMN curbsidePickupInstructions VARCHAR(255)",
+			]
+		], //curbside_pickup_settings_pt3
 	];
 }
