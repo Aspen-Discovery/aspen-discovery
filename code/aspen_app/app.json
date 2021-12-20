@@ -8,7 +8,7 @@
       "ios",
       "android"
     ],
-    "version": "21.15.00",
+    "version": "21.15.01",
     "sdkVersion": "41.00.00",
     "orientation": "portrait",
     "icon": "./assets/LiDA_Icon1024.png",
@@ -24,7 +24,7 @@
       "**/*"
     ],
     "ios": {
-      "buildNumber": "18",
+      "buildNumber": "19",
       "bundleIdentifier": "org.aspendiscovery.mobile",
       "supportsTablet": true,
       "icon": "./assets/LiDA_Icon1024.png",
@@ -42,7 +42,7 @@
     },
     "android": {
       "package": "org.aspendiscovery.mobile",
-      "versionCode": 18,
+      "versionCode": 19,
       "permissions": [
         "ACCESS_COARSE_LOCATION",
         "ACCESS_FINE_LOCATION",
@@ -57,14 +57,6 @@
     "web": {
       "favicon": "./assets/LiDA_Icon512.png"
     },
-    "description": "",
-    "build": {
-      "production": {
-        "releaseChannel": "production"
-      },
-      "beta": {
-        "releaseChannel": "beta"
-      }
-    }
+    "description": ""
   }
 }
