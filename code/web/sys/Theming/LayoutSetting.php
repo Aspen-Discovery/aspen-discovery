@@ -17,8 +17,14 @@ class LayoutSetting extends DataObject
 	public $showTopOfPageButton;
 	public $dismissPlacardButtonLocation;
 	public $dismissPlacardButtonIcon;
+	public $contrastRatio;
 
 	static function getObjectStructure() : array {
+		$contrastOptions = [
+			'4.50' => '4.5 (Default, WCAG 2.0 AA compliance)',
+			'7.00' => '7.0 (WCAG 2.1 AAA compliance)'
+		];
+
 		return [
 			'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id'),
 			'name' => array('property' => 'name', 'type' => 'text', 'label' => 'Name', 'description' => 'The Name of the Settings', 'maxLength' => 50, 'required' => true),
@@ -30,6 +36,7 @@ class LayoutSetting extends DataObject
 			'showTopOfPageButton' => array('property'=>'showTopOfPageButton', 'type'=>'checkbox', 'label'=>'Show Top of Page Button', 'description'=>'Whether or not to show button to go to top of page', 'default' => true),
 			'dismissPlacardButtonLocation' => array('property'=>'dismissPlacardButtonLocation', 'type'=>'checkbox', 'label'=>'Show Dismiss Placard Button in Top Right Corner', 'description'=>'Whether or not to show dismiss button in the top right corner instead of the bottom right', 'default' => false),
 			'dismissPlacardButtonIcon' => array('property'=>'dismissPlacardButtonIcon', 'type'=>'checkbox', 'label'=>'Show Dismiss Placard Button as <i class="fas fa-times"></i> (Close) Icon', 'description'=>'Whether or not to show icon instead of default dismiss placard text', 'default' => false),
+			'contrastRatio' => array('property' => 'contrastRatio', 'type' => 'enum', 'values' => $contrastOptions, 'label' => 'Minimum contrast required for themes', 'default' => 4.50)
 		];
 	}
 }

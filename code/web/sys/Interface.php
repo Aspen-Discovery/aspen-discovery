@@ -449,6 +449,9 @@ class UInterface extends Smarty
 			}
 		}
 
+		// set minimum theme contrast ratio
+		$this->assign('contrastRatio', $library->getLayoutSettings()->contrastRatio);
+
 		if (isset($location) && strlen($location->homeLink) > 0 && $location->homeLink != 'default'){
 			$this->assign('homeLink', $location->homeLink);
 		}elseif (strlen($library->homeLink) > 0 && $library->homeLink != 'default'){

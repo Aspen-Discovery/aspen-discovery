@@ -6823,7 +6823,7 @@ AspenDiscovery.Account = (function(){
 			AspenDiscovery.loadingMessage();
 			// noinspection JSUnresolvedFunction
 			$.getJSON(Globals.path + "/MyAccount/AJAX?method=checkInCurbsidePickup&patronId=" + patronId + "&pickupId=" + pickupId, function(data){
-				AspenDiscovery.showMessage(data.title, data.body, false); // automatically close when successful
+				AspenDiscovery.showMessage(data.title, data.body, false);
 			}).fail(AspenDiscovery.ajaxFail);
 			return false
 		},
@@ -7213,7 +7213,7 @@ AspenDiscovery.Admin = (function(){
 				document.getElementById(property1).value = "#D50000"
 			};
 		},
-		checkContrast: function (property1, property2,oneWay) {
+		checkContrast: function (property1, property2, oneWay, minRatio) {
 				if (oneWay === undefined) {
 					oneWay = false;
 				}
@@ -7239,7 +7239,7 @@ AspenDiscovery.Admin = (function(){
 						contrastSpan2.removeClass("alert-warning");
 						contrastSpan1.removeClass("alert-success");
 						contrastSpan2.removeClass("alert-success");
-					} else if (contrastRatio < 4.5) {
+					} else if (contrastRatio < minRatio) {
 						contrastSpan1.removeClass("alert-danger");
 						contrastSpan2.removeClass("alert-danger");
 						contrastSpan1.addClass("alert-warning");

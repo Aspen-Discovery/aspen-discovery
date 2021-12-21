@@ -67,5 +67,12 @@ function getUpdates22_01_00() : array
 				"ALTER TABLE website_pages ADD COLUMN deleteReason VARCHAR(255) DEFAULT ''"
 			]
 		], //website_pages_deletionReason
+		'layout_settings_contrast' => [
+			'title' => 'Add custom minimum contrast rule',
+			'description' => 'Allow libraries to set higher minimum contrasts for their themes',
+			'sql' => [
+				"ALTER TABLE layout_settings ADD COLUMN contrastRatio VARCHAR(5) DEFAULT 4.50"
+			]
+		], //layout_settings_contrast
 	];
 }
