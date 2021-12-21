@@ -357,6 +357,8 @@ class UInterface extends Smarty
 				$this->assign('extendedTheme', $theme->extendsTheme);
 			}
 
+			$this->assign('parentTheme', $theme->getParentTheme());
+
 			//Get Logo
 			$logoName = null;
 			foreach ($allAppliedThemes as $theme) {
