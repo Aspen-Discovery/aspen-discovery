@@ -256,7 +256,7 @@
 
 					if($(this).is(":checked")) {
 						$(this).attr("checked", true);
-						AspenDiscovery.Admin.getDefaultColor('{/literal}{$propName}{literal}','{/literal}{$fetchDefaultColor}{literal}');
+						AspenDiscovery.Admin.getDefaultColor('{/literal}{$propName}{literal}','{/literal}{$parentTheme->$propName}{literal}');
 						{/literal}
 						{if !empty($property.checkContrastWith)}AspenDiscovery.Admin.checkContrast('{$propName}', '{$property.checkContrastWith}', false, '{$checkContrast}');{/if}
 						{literal}
