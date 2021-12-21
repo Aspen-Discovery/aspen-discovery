@@ -426,8 +426,8 @@ class Browse_AJAX extends Action {
 					$sourceList->id = $browseCategory->sourceListId;
 					if ($sourceList->find(true)) {
 						$records = $sourceList->getBrowseRecords(($pageToLoad - 1) * self::ITEMS_PER_PAGE, self::ITEMS_PER_PAGE);
-						$preloadedRecords = $sourceList->getBrowseRecords(($pageToLoad + 1) * self::ITEMS_PER_PAGE, self::ITEMS_PER_PAGE);
-						if($preloadedRecords == 0) {
+						$preloadedRecords = $sourceList->getBrowseRecords(($pageToLoad) * self::ITEMS_PER_PAGE, self::ITEMS_PER_PAGE);
+						if(empty($preloadedRecords)) {
 							$lastPage = true;
 						}
 					} else {
@@ -443,8 +443,8 @@ class Browse_AJAX extends Action {
 					$sourceList->id = $sourceListId;
 					if ($sourceList->find(true)) {
 						$records = $sourceList->getBrowseRecords(($pageToLoad - 1) * self::ITEMS_PER_PAGE, self::ITEMS_PER_PAGE);
-						$preloadedRecords = $sourceList->getBrowseRecords(($pageToLoad + 1) * self::ITEMS_PER_PAGE, self::ITEMS_PER_PAGE);
-						if($preloadedRecords == 0) {
+						$preloadedRecords = $sourceList->getBrowseRecords(($pageToLoad) * self::ITEMS_PER_PAGE, self::ITEMS_PER_PAGE);
+						if(empty($preloadedRecords)) {
 							$lastPage = true;
 						}
 					} else {
@@ -457,8 +457,8 @@ class Browse_AJAX extends Action {
 					$sourceList->id = $browseCategory->sourceCourseReserveId;
 					if ($sourceList->find(true)) {
 						$records = $sourceList->getBrowseRecords(($pageToLoad - 1) * self::ITEMS_PER_PAGE, self::ITEMS_PER_PAGE);
-						$preloadedRecords = $sourceList->getBrowseRecords(($pageToLoad + 1) * self::ITEMS_PER_PAGE, self::ITEMS_PER_PAGE);
-						if($preloadedRecords == 0) {
+						$preloadedRecords = $sourceList->getBrowseRecords(($pageToLoad) * self::ITEMS_PER_PAGE, self::ITEMS_PER_PAGE);
+						if(empty($preloadedRecords)) {
 							$lastPage = true;
 						}
 					} else {
