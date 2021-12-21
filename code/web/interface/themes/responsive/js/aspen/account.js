@@ -1388,6 +1388,10 @@ AspenDiscovery.Account = (function(){
 				$.getJSON(url, params, function(data){
 					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
 				}).fail(AspenDiscovery.ajaxFail);
+			} else {
+				AspenDiscovery.Account.ajaxLogin(null, function(){
+					return AspenDiscovery.Account.showSaveToListForm(trigger, source, id);
+				}, false);
 			}
 			return false;
 		},
