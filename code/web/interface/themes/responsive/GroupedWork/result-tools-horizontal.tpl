@@ -1,10 +1,15 @@
 {strip}
 	{if $showComments || $showFavorites || $showEmailThis || $showShareOnExternalSites}
 		<div class="result-tools-horizontal btn-toolbar" role="toolbar">
-			{if $showRatings == 1 && $showNotInterested == true && !$showCovers}
-			    <div class="btn-group" role="group">
-				    <button id="notInterested{$summId}" style="word-break: keep-all; white-space: inherit" class="btn btn-warning btn-sm notInterested" title="{translate text="Select if you don't want to see this title recommended to you." inAttribute=true isPublicFacing=true }" onclick="return AspenDiscovery.GroupedWork.markNotInterested('{$summId}');">{translate text="Don't Recommend" isPublicFacing=true}</button>
-			    </div>
+			{if $showNotInterested == true}
+			{if !$showCovers}
+			<div class="btn-group" role="group">
+				<button id="notInterested{$summId}" style="word-break: keep-all; white-space: inherit"
+				        class="btn btn-warning btn-sm notInterested"
+				        title="{translate text="Select if you don't want to see this title recommended to you." inAttribute=true isPublicFacing=true }"
+				        onclick="return AspenDiscovery.GroupedWork.markNotInterested('{$summId}');">{translate text="Don't Recommend" isPublicFacing=true}</button>
+			</div>
+			{/if}
 			{/if}
 			<div class="btn-group" role="group">
 			{* More Info Link, only if we are showing other data *}

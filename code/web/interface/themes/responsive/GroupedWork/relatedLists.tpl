@@ -1,14 +1,14 @@
 {strip}
 {if count($appearsOnLists) > 0}
 	<div class="row">
-		<div class="result-label col-tn-3">
+		<div class="result-label col-sm-4 col-xs-12">
 			{if count($appearsOnLists) > 1}
 				{translate text="Appears on these lists" isPublicFacing=true}
 			{else}
 				{translate text="Appears on list" isPublicFacing=true}
 			{/if}
 		</div>
-		<div class="result-value col-tn-8">
+		<div class="result-value col-sm-8 col-xs-12">
 			{assign var=showMoreLists value="0"}
 			{if count($appearsOnLists) >= 5}
 				{assign var=showMoreLists value="1"}
