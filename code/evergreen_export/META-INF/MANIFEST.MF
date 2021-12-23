@@ -1,0 +1,12 @@
+Manifest-Version: 1.0
+Class-Path: ../java_shared_libraries/commons-beanutils-1.9.3.jar ../ja
+ va_shared_libraries/commons-codec-1.12.jar ../java_shared_libraries/c
+ ommons-collections4-4.3.jar ../java_shared_libraries/commons-lang3-3.
+ 8.1.jar ../java_shared_libraries/commons-text-1.6.jar ../java_shared_
+ libraries/ini4j-0.5.5-SNAPSHOT.jar ../java_shared_libraries/log4j-api
+ -2.11.2.jar ../java_shared_libraries/log4j-core-2.11.2.jar ../java_sh
+ ared_libraries/mysql-connector-java-8.0.15.jar ../java_shared_librari
+ es/opencsv-4.5.jar ../marc4j/marc4j-turningleaftech.jar ../reindexer/
+ reindexer.jar
+Main-Class: org.aspendiscovery.evergreen_export.EvergreenExportMain
+

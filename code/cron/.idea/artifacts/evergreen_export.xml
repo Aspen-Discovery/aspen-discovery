@@ -1,0 +1,12 @@
+<component name="ArtifactManager">
+  <artifact type="jar" build-on-make="true" name="evergreen_export">
+    <output-path>$PROJECT_DIR$/out/artifacts/evergreen_export</output-path>
+    <root id="archive" name="evergreen_export.jar">
+      <element id="directory" name="META-INF">
+        <element id="file-copy" path="$PROJECT_DIR$/../koha_export/META-INF/MANIFEST.MF" />
+      </element>
+      <element id="module-output" name="java_shared_libraries" />
+      <element id="module-output" name="evergreen_export" />
+    </root>
+  </artifact>
+</component>

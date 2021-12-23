@@ -312,7 +312,7 @@ class UserAccount
 
 				$userData->id = $activeUserId;
 				if ($userData->find(true)) {
-					$logger->log("Loading user {$userData->cat_username}, {$userData->cat_password} because we didn't have data in memcache", Logger::LOG_DEBUG);
+					$logger->log("Loading user {$userData->cat_username} because we didn't have data in memcache", Logger::LOG_DEBUG);
 					if (UserAccount::isUserMasquerading()){
 						return $userData;
 					}else {
