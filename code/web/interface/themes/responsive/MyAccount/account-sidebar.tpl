@@ -161,9 +161,11 @@
 								{if $allowAccountLinking}
 									<li class="myAccountLink">&nbsp;&nbsp;&raquo;&nbsp;<a href="/MyAccount/LinkedAccounts">{translate text='Linked Accounts' isPublicFacing=true}</a></li>
 								{/if}
-								{if $allowPinReset && !$offline}
-									<li class="myAccountLink">&nbsp;&nbsp;&raquo;&nbsp;<a href="/MyAccount/ResetPinPage">{translate text='Reset PIN/Password' isPublicFacing=true}</a></li>
-								{/if}
+								{if $twoFactorEnabled}
+									<li class="myAccountLink">&nbsp;&nbsp;&raquo;&nbsp;<a href="/MyAccount/Security">{translate text='Security Settings' isPublicFacing=true}</a></li>
+                                {elseif $allowPinReset && !$offline}
+									<li class="myAccountLink" >&nbsp;&nbsp;&raquo;&nbsp;<a href="/MyAccount/ResetPinPage">{translate text='Reset PIN/Password' isPublicFacing=true}</a></li>
+                                {/if}
 								{if $user->isValidForEContentSource('overdrive')}
 									<li class="myAccountLink">&nbsp;&nbsp;&raquo;&nbsp;<a href="/MyAccount/OverDriveOptions">{translate text='OverDrive Options' isPublicFacing=true}</a></li>
 								{/if}

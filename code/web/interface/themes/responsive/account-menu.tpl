@@ -67,9 +67,11 @@
 			{if $allowAccountLinking}
 				<div class="header-menu-option" ><a href="/MyAccount/LinkedAccounts">{translate text='Linked Accounts' isPublicFacing=true}</a></div>
 			{/if}
-			{if $allowPinReset && !$offline}
+            {if $twoFactorEnabled}
+				<div class="header-menu-option"><a href="/MyAccount/Security">{translate text='Security Settings' isPublicFacing=true}</a></div>
+            {elseif $allowPinReset && !$offline}
 				<div class="header-menu-option" ><a href="/MyAccount/ResetPinPage">{translate text='Reset PIN/Password' isPublicFacing=true}</a></div>
-			{/if}
+            {/if}
 			{if $user->isValidForEContentSource('overdrive')}
 				<div class="header-menu-option" ><a href="/MyAccount/OverDriveOptions">{translate text='OverDrive Options' isPublicFacing=true}</a></div>
 			{/if}

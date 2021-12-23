@@ -4684,4 +4684,177 @@ function getCurbsidePickupAvailableTimes() {
 		'body'  => translate(['text'=>"There was an error loading curbside pickup availability",'isPublicFacing'=>true]),
 	);
 }
+
+	/** @noinspection PhpUnused */
+	function get2FAEnrollment() {
+		global $interface;
+
+		// if there were multiple verification methods available, you'd want to fetch them here for display
+
+		$step = $_REQUEST['step'] ?? "register";
+		if($step == "register") {
+
+			function mask($str, $first, $last) {
+				$len = strlen($str);
+				$toShow = $first + $last;
+				return substr($str, 0, $len <= $toShow ? 0 : $first).str_repeat("*", $len - ($len <= $toShow ? 0 : $toShow)).substr($str, $len - $last, $len <= $toShow ? 0 : $last);
+			}
+
+			function mask_email($email) {
+				$mail_parts = explode("@", $email);
+				$domain_parts = explode('.', $mail_parts[1]);
+
+				$mail_parts[0] = mask($mail_parts[0], 2, 1); // show first 2 letters and last 1 letter
+				$domain_parts[0] = mask($domain_parts[0], 2, 1); // same here
+				$mail_parts[1] = implode('.', $domain_parts);
+
+				return implode("@", $mail_parts);
+			}
+
+			$email = null;
+			$user = new User();
+			$user->id = UserAccount::getActiveUserId();
+			if($user->find(true)) {
+				$email = mask_email($user->email);
+			}
+			$interface->assign('emailAddress', $email);
+
+			return array(
+				'success' => true,
+				'title' => translate(['text'=>'Two-Factor Authentication','isPublicFacing'=>true]),
+				'body' => $interface->fetch('MyAccount/2fa/enroll-register.tpl'),
+				'buttons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.Account.show2FAEnrollmentVerify(); return false;'>" . translate(['text'=>'Next','isPublicFacing'=>true]) . "</button>",
+			);
+		} elseif($step == "verify") {
+			require_once ROOT_DIR . '/sys/TwoFactorAuthCode.php';
+			$twoFactorAuth = new TwoFactorAuthCode();
+			$twoFactorAuth->createCode();
+
+			$invalid = $_REQUEST['invalid'] ?? false;
+			$alert = null;
+			if($invalid) {
+				$alert = 'The code entered is invalid.';
+			}
+			$interface->assign('alert', $alert);
+			return array(
+				'success' => true,
+				'title' => translate(['text'=>'Two-Factor Authentication','isPublicFacing'=>true]),
+				'body' => $interface->fetch('MyAccount/2fa/enroll-verify.tpl'),
+				'buttons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.Account.verify2FA(); return false;'>" . translate(['text'=>'Next','isPublicFacing'=>true]) . "</button>",
+			);
+		} elseif($step == "validate") {
+			require_once ROOT_DIR . '/sys/TwoFactorAuthCode.php';
+			$twoFactorAuth = new TwoFactorAuthCode();
+			$twoFactorAuth->createCode();
+
+			$invalid = $_REQUEST['invalid'] ?? false;
+			$alert = null;
+			if($invalid) {
+				$alert = 'The code entered is invalid.';
+			}
+			$interface->assign('alert', $alert);
+			return array(
+				'success' => true,
+				'title' => translate(['text'=>'Two-Factor Authentication','isPublicFacing'=>true]),
+				'body' => $interface->fetch('MyAccount/2fa/enroll-verify.tpl'),
+				'buttons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.Account.verify2FA(); return false;'>" . translate(['text'=>'Next','isPublicFacing'=>true]) . "</button>",
+			);
+		} elseif($step == "backup") {
+			require_once ROOT_DIR . '/sys/TwoFactorAuthCode.php';
+			$twoFactorAuth = new TwoFactorAuthCode();
+			$twoFactorAuth->createNewBackups();
+
+			$backupCode = new TwoFactorAuthCode();
+			$backupCodes = $backupCode->getBackups();
+			$interface->assign('backupCodes', $backupCodes);
+
+			return array(
+				'success' => true,
+				'title' => translate(['text'=>'Two-Factor Authentication','isPublicFacing'=>true]),
+				'body' => $interface->fetch('MyAccount/2fa/enroll-backup.tpl'),
+				'buttons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.Account.show2FAEnrollmentSuccess(); return false;'>" . translate(['text'=>'Next','isPublicFacing'=>true]) . "</button>",
+			);
+		} elseif($step == "complete") {
+			// update user table to enrolled status
+			$user = new User();
+			$user->id = UserAccount::getActiveUserId();
+			if($user->find(true)){
+				$user->twoFactorStatus = 1;
+				$user->update();
+			}
+			return array(
+				'success' => true,
+				'title' => translate(['text'=>'Two-Factor Authentication','isPublicFacing'=>true]),
+				'body' => $interface->fetch('MyAccount/2fa/enroll-success.tpl'),
+			);
+		} else {
+			return false;
+		}
+	}
+
+	/** @noinspection PhpUnused */
+	function verify2FA() {
+		$code = $_REQUEST['code'] ?? '0';
+		require_once ROOT_DIR . '/sys/TwoFactorAuthCode.php';
+		$twoFactorAuth = new TwoFactorAuthCode();
+		return $twoFactorAuth->validateCode($code);
+	}
+
+	/** @noinspection PhpUnused */
+	function confirmCancel2FA() {
+		global $interface;
+
+		// on submit of button, update user table for (un)enrollment status
+
+		return array(
+			'success' => true,
+			'title' => translate(['text'=>'Disable Two-Factor Authentication','isPublicFacing'=>true]),
+			'body' => $interface->fetch('MyAccount/2fa/unenroll.tpl'),
+			'buttons' => "<button class='tool btn btn-primary' onclick='return AspenDiscovery.Account.cancel2FA();'>Yes, turn off</button>",
+		);
+	}
+
+	/** @noinspection PhpUnused */
+	function cancel2FA() {
+		require_once ROOT_DIR . '/sys/TwoFactorAuthCode.php';
+		$twoFactorAuth = new TwoFactorAuthCode();
+		$twoFactorAuth->deactivate2FA();
+
+		return array(
+			'success' => true,
+			'title' => translate(['text'=>'Disable Two-Factor Authentication','isPublicFacing'=>true]),
+			'body' => translate(['text'=>'Two-factor authentication has been disabled for your account.','isPublicFacing'=>true]),
+		);
+	}
+
+	/** @noinspection PhpUnused */
+	function newBackupCodes() {
+		global $interface;
+
+		require_once ROOT_DIR . '/sys/TwoFactorAuthCode.php';
+		$twoFactorAuth = new TwoFactorAuthCode();
+		$twoFactorAuth->createNewBackups();
+
+		$backupCode = new TwoFactorAuthCode();
+		$backupCodes = $backupCode->getBackups();
+		$interface->assign('backupCodes', $backupCodes);
+
+		return array(
+			'success' => true,
+			'title' => translate(['text'=>'Two-Factor Authentication Backup Codes','isPublicFacing'=>true]),
+			'body' => $interface->fetch('MyAccount/2fa/backupCodes.tpl'),
+		);
+	}
+
+	/** @noinspection PhpUnused */
+	function new2FACode() {
+		require_once ROOT_DIR . '/sys/TwoFactorAuthCode.php';
+		$twoFactorAuth = new TwoFactorAuthCode();
+		$twoFactorAuth->createCode();
+
+		return array(
+			'success' => true,
+			'body' => translate(['text'=>'A new code was sent.','isPublicFacing'=>true]),
+		);
+	}
 }
