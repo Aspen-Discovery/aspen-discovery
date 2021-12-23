@@ -4747,12 +4747,6 @@ function getCurbsidePickupAvailableTimes() {
 			$twoFactorAuth = new TwoFactorAuthCode();
 			$twoFactorAuth->createCode();
 
-			$invalid = $_REQUEST['invalid'] ?? false;
-			$alert = null;
-			if($invalid) {
-				$alert = 'The code entered is invalid.';
-			}
-			$interface->assign('alert', $alert);
 			return array(
 				'success' => true,
 				'title' => translate(['text'=>'Two-Factor Authentication','isPublicFacing'=>true]),
@@ -4855,6 +4849,28 @@ function getCurbsidePickupAvailableTimes() {
 		return array(
 			'success' => true,
 			'body' => translate(['text'=>'A new code was sent.','isPublicFacing'=>true]),
+		);
+	}
+
+	/** @noinspection PhpUnused */
+	function auth2FALogin() {
+		global $interface;
+		global $logger;
+		$logger->log("Starting JSON/authLogin session: " . session_id(), Logger::LOG_DEBUG);
+		require_once ROOT_DIR . '/sys/TwoFactorAuthCode.php';
+		$twoFactorAuth = new TwoFactorAuthCode();
+		$twoFactorAuth->createCode();
+
+		$referer = $_REQUEST['referer'] ?? null;
+		$interface->assign('referer', $referer);
+		$name = $_REQUEST['name'] ?? null;
+		$interface->assign('name', $name);
+
+		return array(
+			'success' => true,
+			'title' => translate(['text'=>'Two-Factor Authentication','isPublicFacing'=>true]),
+			'body' => $interface->fetch('MyAccount/2fa/login.tpl'),
+			'buttons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.Account.verify2FALogin(); return false;'>" . translate(['text'=>'Verify','isPublicFacing'=>true]) . "</button>",
 		);
 	}
 }
