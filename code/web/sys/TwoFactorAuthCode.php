@@ -48,9 +48,9 @@ class TwoFactorAuthCode extends DataObject
 		require_once ROOT_DIR . '/sys/Email/Mailer.php';
 		$mail = new Mailer();
 		$replyToAddress = "";
-		$body = "*****This is an auto-generated email response. Please do not reply.*****";
-		$body .= "\r\n\r\n" . "Your code to login is " . $this->code;
-		$body .= "\r\n\r\n" . "This code is only valid for the next 15 minutes.";
+		$body = "*****". translate(['text' => 'This is an auto-generated email response. Please do not reply.', 'isPublicFacing' => true]) ."*****";
+		$body .= "\r\n\r\n" . translate(['text' => 'Your code to login is', 'isPublicFacing' => true]) . " " . $this->code;
+		$body .= "\r\n\r\n" . translate(['text' => 'This code is only valid for the next 15 minutes.', 'isPublicFacing' => true]);
 
 		$patron = new User();
 		$patron->id = $this->userId;
@@ -81,26 +81,26 @@ class TwoFactorAuthCode extends DataObject
 					$codeToCheck->update();
 					$result = array(
 						'success' => 'true',
-						'message' => 'Code OK'
+						'message' => translate(['text' => 'Code OK', 'isPublicFacing' => true])
 					);
 				} else {
 					$result = array(
 						'success' => 'false',
-						'message' => 'You have already used this code'
+						'message' => translate(['text' => 'You have already used this code', 'isPublicFacing' => true])
 					);
 				}
 			} else {
 				// code belongs to another user
 				$result = array(
 					'success' => 'false',
-					'message' => 'Sorry, this code is invalid'
+					'message' => translate(['text' => 'Sorry, this code is invalid', 'isPublicFacing' => true])
 				);
 			}
 		} else {
 			// code not found
 			$result = array(
 				'success' => 'false',
-				'message' => 'Sorry, this code is invalid'
+				'message' => translate(['text' => 'Sorry, this code is invalid', 'isPublicFacing' => true])
 			);
 		}
 
