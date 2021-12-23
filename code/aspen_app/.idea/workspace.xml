@@ -5,16 +5,65 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="9a5f64f5-13b8-49ff-9316-5e5798ffbd47" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/../web/interface/themes/responsive/MyAccount/securityPage.tpl" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../web/services/MyAccount/Security.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/App.js" beforeDir="false" afterPath="$PROJECT_DIR$/App.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app.config.js" beforeDir="false" afterPath="$PROJECT_DIR$/app.config.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app.json" beforeDir="false" afterPath="$PROJECT_DIR$/app.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/NavigationService.js" beforeDir="false" afterPath="$PROJECT_DIR$/components/NavigationService.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/Notifications.js" beforeDir="false" afterPath="$PROJECT_DIR$/components/Notifications.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/loadError.js" beforeDir="false" afterPath="$PROJECT_DIR$/components/loadError.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/components/loadingSpinner.js" beforeDir="false" afterPath="$PROJECT_DIR$/components/loadingSpinner.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/screens/BrowseCategory/BrowseCategory.js" beforeDir="false" afterPath="$PROJECT_DIR$/screens/BrowseCategory/BrowseCategory.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/screens/BrowseCategory/Home.js" beforeDir="false" afterPath="$PROJECT_DIR$/screens/BrowseCategory/Home.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/screens/GroupedWork/GroupedWork.js" beforeDir="false" afterPath="$PROJECT_DIR$/screens/GroupedWork/GroupedWork.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/screens/GroupedWork/StatusIndicator.js" beforeDir="false" afterPath="$PROJECT_DIR$/screens/GroupedWork/StatusIndicator.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/screens/Library/Contact.js" beforeDir="false" afterPath="$PROJECT_DIR$/screens/Library/Contact.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/screens/Library/HoursAndLocation.js" beforeDir="false" afterPath="$PROJECT_DIR$/screens/Library/HoursAndLocation.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/screens/Login.js" beforeDir="false" afterPath="$PROJECT_DIR$/screens/Login.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/screens/More.js" beforeDir="false" afterPath="$PROJECT_DIR$/screens/More.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/screens/MyAccount/CheckedOut.js" beforeDir="false" afterPath="$PROJECT_DIR$/screens/MyAccount/CheckedOut.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/screens/MyAccount/Holds.js" beforeDir="false" afterPath="$PROJECT_DIR$/screens/MyAccount/Holds.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/screens/MyAccount/LibraryCard.js" beforeDir="false" afterPath="$PROJECT_DIR$/screens/MyAccount/LibraryCard.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/screens/MyAccount/MyAccount.js" beforeDir="false" afterPath="$PROJECT_DIR$/screens/MyAccount/MyAccount.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/screens/MyAccount/Settings/HomeScreen.js" beforeDir="false" afterPath="$PROJECT_DIR$/screens/MyAccount/Settings/HomeScreen.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/screens/MyAccount/Summary.js" beforeDir="false" afterPath="$PROJECT_DIR$/screens/MyAccount/Summary.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/screens/Search/Results.js" beforeDir="false" afterPath="$PROJECT_DIR$/screens/Search/Results.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/screens/Search/Search.js" beforeDir="false" afterPath="$PROJECT_DIR$/screens/Search/Search.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/util/accountActions.js" beforeDir="false" afterPath="$PROJECT_DIR$/util/accountActions.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/util/apiAuth.js" beforeDir="false" afterPath="$PROJECT_DIR$/util/apiAuth.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/util/loadLibrary.js" beforeDir="false" afterPath="$PROJECT_DIR$/util/loadLibrary.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/util/loadPatron.js" beforeDir="false" afterPath="$PROJECT_DIR$/util/loadPatron.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/util/locales/en.json" beforeDir="false" afterPath="$PROJECT_DIR$/util/locales/en.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/util/logout.js" beforeDir="false" afterPath="$PROJECT_DIR$/util/logout.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/util/recordActions.js" beforeDir="false" afterPath="$PROJECT_DIR$/util/recordActions.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/util/search.js" beforeDir="false" afterPath="$PROJECT_DIR$/util/search.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/util/setVariables.js" beforeDir="false" afterPath="$PROJECT_DIR$/util/setVariables.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/util/translations.js" beforeDir="false" afterPath="$PROJECT_DIR$/util/translations.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../web/.idea/dataSources.local.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../web/.idea/dataSources.local.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/.idea/watcherTasks.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../web/.idea/watcherTasks.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/.idea/dataSources.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../web/.idea/dataSources.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/.idea/modules.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../web/.idea/modules.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/.idea/scopes/_less_files.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../web/.idea/scopes/_less_files.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/.idea/web.iml" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/../web/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../web/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/interface/themes/responsive/GroupedWork/copySummary.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/../web/interface/themes/responsive/GroupedWork/copySummary.tpl" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/interface/themes/responsive/GroupedWork/readingHistoryIndicator.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/../web/interface/themes/responsive/GroupedWork/readingHistoryIndicator.tpl" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/interface/themes/responsive/GroupedWork/relatedRecords.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/../web/interface/themes/responsive/GroupedWork/relatedRecords.tpl" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/interface/themes/responsive/MyAccount/account-sidebar.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/../web/interface/themes/responsive/MyAccount/account-sidebar.tpl" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/interface/themes/responsive/RecordDrivers/GroupedWork/result.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/../web/interface/themes/responsive/RecordDrivers/GroupedWork/result.tpl" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/sys/Account/PType.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/sys/Account/PType.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/sys/Account/User.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/sys/Account/User.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/sys/DBMaintenance/version_updates/22.01.00.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/sys/DBMaintenance/version_updates/22.01.00.php" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ComposerSettings">
+    <execution />
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/../.." />
@@ -41,11 +90,19 @@
     <property name="Repository.Attach.JavaDocs" value="false" />
     <property name="Repository.Attach.Sources" value="false" />
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
+    <property name="TODO_SCOPE" value="All Places" />
+    <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="node.js.detected.package.eslint" value="true" />
+    <property name="node.js.detected.package.tslint" value="true" />
+    <property name="node.js.selected.package.eslint" value="(autodetect)" />
+    <property name="node.js.selected.package.tslint" value="(autodetect)" />
+    <property name="nodejs_package_manager_path" value="yarn" />
     <property name="project.structure.last.edited" value="Libraries" />
     <property name="project.structure.proportion" value="0.15" />
     <property name="project.structure.side.proportion" value="0.2" />
     <property name="settings.editor.selected.configurable" value="project.propDebugger" />
+    <property name="vue.rearranger.settings.migration" value="true" />
   </component>
   <component name="RunManager">
     <configuration name="Login" type="AndroidJUnit" factoryName="Android JUnit">
@@ -75,8 +132,12 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1622921671332</updated>
+      <workItem from="1639697971846" duration="8620000" />
     </task>
     <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
   </component>
   <component name="UnknownFeatures">
     <option featureType="com.intellij.fileTypeFactory" implementationName="*.js" />

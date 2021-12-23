@@ -57,6 +57,9 @@ class User extends DataObject
 
 	public $lastLoginValidation;
 
+	public $twoFactorStatus;
+	public $twoFactorAuthSettingId;
+
 	public $updateMessage;
 	public $updateMessageIsError;
 
@@ -2338,6 +2341,7 @@ class User extends DataObject
 		$sections['primary_configuration']->addAction(new AdminAction('Block Patron Account Linking', 'Prevent accounts from linking to other accounts.', '/Admin/BlockPatronAccountLinks'), 'Block Patron Account Linking');
 		$sections['primary_configuration']->addAction(new AdminAction('Patron Types', 'Modify Permissions and limits based on Patron Type.', '/Admin/PTypes'), 'Administer Patron Types');
 		$sections['primary_configuration']->addAction(new AdminAction('Account Profiles', 'Define how account information is loaded from the ILS.', '/Admin/AccountProfiles'), 'Administer Account Profiles');
+		$sections['primary_configuration']->addAction(new AdminAction('Two-Factor Authentication', 'Administer two-factor authentication settings', '/Admin/TwoFactorAuth'), 'Administer Two-Factor Authentication');
 
 		//Materials Request if enabled
 		if (MaterialsRequest::enableAspenMaterialsRequest()){
@@ -2756,6 +2760,30 @@ class User extends DataObject
 		$result = $this->getCatalogDriver()->newCurbsidePickup($this, $pickupLocation, $pickupTime, $pickupNote);
 		$this->clearCache();
 		return $result;
+	}
+
+	public function get2FAStatusForPType(){
+		require_once ROOT_DIR . '/sys/Account/PType.php';
+		$patronType = new PType();
+		$patronType->pType = $this->patronType;
+		if($patronType->find(true)) {
+			require_once  ROOT_DIR . '/sys/TwoFactorAuthSetting.php';
+			$twoFactorAuthSetting = new TwoFactorAuthSetting();
+			$twoFactorAuthSetting->id = $patronType->twoFactorAuthSettingId;
+			if($twoFactorAuthSetting->find(true)) {
+				if($twoFactorAuthSetting->isEnabled != 'notAvailable') {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	public function get2FAStatus(){
+		$status = $this->twoFactorStatus;
+		if($status == '1') {
+			return true;
+		}
+		return false;
 	}
 }
 

@@ -58,18 +58,18 @@
 			</div>
 
 			<div class="row">
-				<div class="resultDetails col-xs-12 col-md-9">
+				<div class="resultDetails col-xs-12 col-md-8 col-lg-9">
 					{if !empty($record->volume)}
 						<div class="row">
-							<div class="result-label col-tn-4 col-lg-3">{translate text='Volume' isPublicFacing=true}</div>
-							<div class="result-value col-tn-8 col-lg-9">{$record->volume|escape}</div>
+							<div class="result-label col-sm-12 col-md-5">{translate text='Volume' isPublicFacing=true}</div>
+							<div class="col-sm-12 col-md-7 result-value">{$record->volume|escape}</div>
 						</div>
 					{/if}
 
 					{if $record->getAuthor()}
 						<div class="row">
-							<div class="result-label col-tn-4 col-lg-3">{translate text='Author' isPublicFacing=true}</div>
-							<div class="result-value col-tn-8 col-lg-9">
+							<div class="result-label col-sm-12 col-md-5">{translate text='Author' isPublicFacing=true}</div>
+							<div class="col-sm-12 col-md-7 result-value">
 								{if is_array($record->getAuthor())}
 									{foreach from=$record->getAuthor() item=author}
 										<a href='/Author/Home?author="{$author|escape:"url"}"'>{$author|highlight}</a>
@@ -83,8 +83,8 @@
 
                     {if !empty($record->callNumber)}
 						<div class="row">
-							<div class="result-label col-tn-4 col-lg-3">{translate text='Call Number' isPublicFacing=true}</div>
-							<div class="col-tn-8 col-lg-9 result-value">
+							<div class="result-label col-sm-12 col-md-5">{translate text='Call Number' isPublicFacing=true}</div>
+							<div class="col-sm-12 col-md-7 result-value">
                                 {$record->callNumber}
 							</div>
 						</div>
@@ -92,21 +92,21 @@
 
 					{if $showOut}
 						<div class="row">
-							<div class="result-label col-tn-4 col-lg-3">{translate text='Checked Out' isPublicFacing=true}</div>
-							<div class="result-value col-tn-8 col-lg-9">{$record->checkoutDate|date_format}</div>
+							<div class="result-label col-sm-12 col-md-5">{translate text='Checked Out' isPublicFacing=true}</div>
+							<div class="col-sm-12 col-md-7 result-value">{$record->checkoutDate|date_format}</div>
 						</div>
 					{/if}
 
 					<div class="row">
-						<div class="result-label col-tn-4 col-lg-3">{translate text='Format' isPublicFacing=true}</div>
-						<div class="result-value col-tn-8 col-lg-9">{implode subject=$record->getFormats()}</div>
+						<div class="result-label col-sm-12 col-md-5">{translate text='Format' isPublicFacing=true}</div>
+						<div class="col-sm-12 col-md-7 result-value">{implode subject=$record->getFormats()}</div>
 					</div>
 
 					{if $displayItemBarcode == 1}
 						{if !empty($record->barcode)}
 							<div class="row">
-								<div class="result-label col-tn-4 col-lg-3">{translate text='Barcode' isPublicFacing=true}</div>
-								<div class="col-tn-8 col-lg-9 result-value">
+								<div class="result-label col-sm-12 col-md-5">{translate text='Barcode' isPublicFacing=true}</div>
+								<div class="col-sm-12 col-md-7 result-value">
 									{$record->barcode}
 								</div>
 							</div>
@@ -115,8 +115,8 @@
 
 					{if $showRatings && $record->getGroupedWorkId() && $record->getRatingData()}
 						<div class="row">
-							<div class="result-label col-tn-4 col-lg-3">{translate text='Rating' isPublicFacing=true}</div>
-							<div class="result-value col-tn-8 col-lg-9">
+							<div class="result-label col-sm-12 col-md-5">{translate text='Rating' isPublicFacing=true}</div>
+							<div class="col-sm-12 col-md-7 result-value">
 								{include file="GroupedWork/title-rating.tpl" id=$record->getGroupedWorkId() summId=$record->getGroupedWorkId() ratingData=$record->getRatingData() showNotInterested=false}
 							</div>
 						</div>
@@ -124,8 +124,8 @@
 
 					{if $hasLinkedUsers}
 						<div class="row">
-							<div class="result-label col-tn-4 col-lg-3">{translate text='Checked Out To' isPublicFacing=true}</div>
-							<div class="result-value col-tn-8 col-lg-9">
+							<div class="result-label col-sm-12 col-md-5">{translate text='Checked Out To' isPublicFacing=true}</div>
+							<div class="col-sm-12 col-md-7 result-value">
 								{$record->getUserName()}
 							</div>
 						</div>
@@ -139,8 +139,8 @@
 						</div>
 					{else}
 						<div class="row">
-							<div class="result-label col-tn-4 col-lg-3">{translate text='Due' isPublicFacing=true}</div>
-							<div class="result-value col-tn-8 col-lg-9">
+							<div class="result-label col-sm-12 col-md-5">{translate text='Due' isPublicFacing=true}</div>
+							<div class="col-sm-12 col-md-7 result-value">
 								{$record->dueDate|date_format}
 								{if $record->isOverdue()}
 									&nbsp;<span class="label label-danger">{translate text="OVERDUE" isPublicFacing=true}</span>
@@ -157,8 +157,8 @@
 
 					{if !empty($record->fine)}
 						<div class="row">
-							<div class="result-label col-tn-4 col-lg-3">{translate text='Fine' isPublicFacing=true}</div>
-							<div class="result-value col-tn-8 col-lg-9">
+							<div class="result-label col-sm-12 col-md-5">{translate text='Fine' isPublicFacing=true}</div>
+							<div class="col-sm-12 col-md-7 result-value">
 								{if $record->fine}
 									<span class="overdueLabel"> {translate text="%1% (up to now)" 1=$record->fine isPublicFacing=true} </span>
 								{/if}
@@ -168,8 +168,8 @@
 
 					{if empty($record->returnClaim) && ($showRenewed && $record->renewCount || $defaultSortOption == 'renewed')}{* Show times renewed when sorting by that value (even if 0)*}
 						<div class="row">
-							<div class="result-label col-tn-4 col-lg-3">{translate text='Renewed' isPublicFacing=true}</div>
-							<div class="result-value col-tn-8 col-lg-9">
+							<div class="result-label col-sm-12 col-md-5">{translate text='Renewed' isPublicFacing=true}</div>
+							<div class="col-sm-12 col-md-7 result-value">
 								{if empty($record->maxRenewals)}
 									{translate text="%1% times" 1=$record->renewCount isPublicFacing=true}
 								{else}
@@ -181,8 +181,8 @@
 
 					{if $showWaitList}
 						<div class="row">
-							<div class="result-label col-tn-4 col-lg-3">{translate text='Wait List' isPublicFacing=true}</div>
-							<div class="result-value col-tn-8 col-lg-9">
+							<div class="result-label col-sm-12 col-md-5">{translate text='Wait List' isPublicFacing=true}</div>
+							<div class="col-sm-12 col-md-7 result-value">
 								{* Wait List goes here *}
 								{$record->holdQueueLength}
 							</div>
@@ -192,7 +192,7 @@
 
 				{* Actions for Title *}
 				{*<div class="{if $showCovers}col-xs-9 col-sm-8 col-md-4 col-lg-3{else}col-xs-11{/if}">*}
-				<div class="col-xs-12 col-md-3">
+				<div class="col-sm-12 col-md-4 col-lg-3">
 					<div class="btn-group btn-group-vertical btn-block">
 						{if empty($record->returnClaim)}
 							{if !isset($record->canRenew) || $record->canRenew == true}

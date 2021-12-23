@@ -3,8 +3,8 @@
 
 	{if $recordDriver->getUniformTitle()}
 		<div class="row">
-			<div class="result-label col-tn-3">{translate text="Uniform Title" isPublicFacing=true} </div>
-			<div class="col-tn-9 result-value">
+			<div class="result-label col-sm-4 col-xs-12">{translate text="Uniform Title" isPublicFacing=true} </div>
+			<div class="result-value col-sm-8 col-xs-12">
 				{foreach from=$recordDriver->getUniformTitle() item=uniformTitle}
 					<a href="/Search/Results?lookfor={$uniformTitle|escape:"url"}">{$uniformTitle|highlight}</a><br/>
 				{/foreach}
@@ -14,8 +14,8 @@
 
 	{if $recordDriver->getAuthor()}
 		<div class="row">
-			<div class="result-label col-tn-3">{translate text="Author" isPublicFacing=true} </div>
-			<div class="col-tn-9 result-value">
+			<div class="result-label col-sm-4 col-xs-12">{translate text="Author" isPublicFacing=true} </div>
+			<div class="result-value col-sm-8 col-xs-12">
 				<a href='/Author/Home?author="{$recordDriver->getAuthor()|escape:"url"}"'>{$recordDriver->getAuthor()|highlight}</a><br/>
 			</div>
 		</div>
@@ -23,8 +23,8 @@
 
 	{if $recordDriver->getDetailedContributors()}
 		<div class="row">
-			<div class="result-label col-tn-3">{translate text='Contributors' isPublicFacing=true}</div>
-			<div class="col-tn-9 result-value">
+			<div class="result-label col-sm-4 col-xs-12">{translate text='Contributors' isPublicFacing=true}</div>
+			<div class="result-value col-sm-8 col-xs-12">
 				{foreach from=$recordDriver->getDetailedContributors() item=contributor name=loop}
 					{if $smarty.foreach.loop.index == 5}
 						<div id="showAdditionalContributorsLink">
@@ -58,8 +58,8 @@
 
 	{if $showPublicationDetails && $recordDriver->getPublicationDetails()}
 		<div class="row">
-			<div class="result-label col-tn-3">{translate text='Published' isPublicFacing=true}</div>
-			<div class="col-tn-9 result-value">
+			<div class="result-label col-sm-4 col-xs-12">{translate text='Published' isPublicFacing=true}</div>
+			<div class="result-value col-sm-8 col-xs-12">
 				{implode subject=$recordDriver->getPublicationDetails() glue=", "}
 			</div>
 		</div>
@@ -67,8 +67,8 @@
 
 	{if $showFormats}
 	<div class="row">
-		<div class="result-label col-tn-3">{translate text='Format' isPublicFacing=true}</div>
-		<div class="col-tn-9 result-value">
+		<div class="result-label col-sm-4 col-xs-12">{translate text='Format' isPublicFacing=true}</div>
+		<div class="result-value col-sm-8 col-xs-12">
 			{implode subject=$recordFormat glue=", ", translate=true}
 		</div>
 	</div>
@@ -76,8 +76,8 @@
 
 	{if $showEditions && $recordDriver->getEditions()}
 		<div class="row">
-			<div class="result-label col-tn-3">{translate text='Edition' isPublicFacing=true}</div>
-			<div class="col-tn-9 result-value">
+			<div class="result-label col-sm-4 col-xs-12">{translate text='Edition' isPublicFacing=true}</div>
+			<div class="result-value col-sm-8 col-xs-12">
 				{implode subject=$recordDriver->getEditions() glue=", "}
 			</div>
 		</div>
@@ -85,8 +85,8 @@
 
 	{if $showISBNs && count($recordDriver->getISBNs()) > 0}
 		<div class="row">
-			<div class="result-label col-tn-3">{translate text='ISBN' isPublicFacing=true}</div>
-			<div class="col-tn-9 result-value">
+			<div class="result-label col-sm-4 col-xs-12">{translate text='ISBN' isPublicFacing=true}</div>
+			<div class="result-value col-sm-8 col-xs-12">
 				{implode subject=$recordDriver->getISBNs() glue=", "}
 			</div>
 		</div>
@@ -95,16 +95,16 @@
 	{if $showISBNs && count($recordDriver->getISSNs()) > 0}
 		{if $recordDriver->getISSNs()}
 			<div class="row">
-				<div class="result-label col-md-3">{translate text='ISSN' isPublicFacing=true}</div>
-				<div class="col-md-9 result-value">{implode subject=$recordDriver->getISSNs()}</div>
+				<div class="result-label col-sm-4 col-xs-12">{translate text='ISSN' isPublicFacing=true}</div>
+				<div class="result-value col-sm-8 col-xs-12">{implode subject=$recordDriver->getISSNs()}</div>
 			</div>
 		{/if}
 	{/if}
 
 	{if $showPhysicalDescriptions && $physicalDescriptions}
 		<div class="row">
-			<div class="result-label col-tn-3">{translate text='Physical Desc' isPublicFacing=true}</div>
-			<div class="col-tn-9 result-value">
+			<div class="result-label col-sm-4 col-xs-12">{translate text='Physical Desc' isPublicFacing=true}</div>
+			<div class="result-value col-sm-8 col-xs-12">
 				{implode subject=$physicalDescriptions glue="<br>"}
 			</div>
 		</div>
@@ -112,8 +112,8 @@
 
 	{if !empty($showArInfo) && $recordDriver->getAcceleratedReaderDisplayString()}
 		<div class="row">
-			<div class="result-label col-tn-3">{translate text='Accelerated Reader' isPublicFacing=true} </div>
-			<div class="result-value col-tn-9">
+			<div class="result-label col-sm-4 col-xs-12">{translate text='Accelerated Reader' isPublicFacing=true} </div>
+			<div class="result-value col-sm-8 col-xs-12">
 				{$recordDriver->getAcceleratedReaderDisplayString()}
 			</div>
 		</div>
@@ -121,8 +121,8 @@
 
 	{if !empty($showLexileInfo) && $recordDriver->getLexileDisplayString()}
 		<div class="row">
-			<div class="result-label col-tn-3">{translate text='Lexile measure' isPublicFacing=true} </div>
-			<div class="result-value col-tn-9">
+			<div class="result-label col-sm-4 col-xs-12">{translate text='Lexile measure' isPublicFacing=true} </div>
+			<div class="result-value col-sm-8 col-xs-12">
 				{$recordDriver->getLexileDisplayString()}
 			</div>
 		</div>
@@ -130,8 +130,8 @@
 
 	{if !empty($showFountasPinnell) && $recordDriver->getFountasPinnellLevel()}
 		<div class="row">
-			<div class="result-label col-tn-3">{translate text='Fountas & Pinnell' isPublicFacing=true}</div>
-			<div class="col-tn-9 result-value">
+			<div class="result-label col-sm-4 col-xs-12">{translate text='Fountas & Pinnell' isPublicFacing=true}</div>
+			<div class="result-value col-sm-8 col-xs-12">
 				{$recordDriver->getFountasPinnellLevel()|escape}
 			</div>
 		</div>
@@ -139,8 +139,8 @@
 
 	{if $mpaaRating}
 		<div class="row">
-			<div class="result-label col-tn-3">{translate text='Rating' isPublicFacing=true}</div>
-			<div class="col-tn-9 result-value">{$mpaaRating|escape}</div>
+			<div class="result-label col-sm-4 col-xs-12">{translate text='Rating' isPublicFacing=true}</div>
+			<div class="result-value col-sm-8 col-xs-12">{$mpaaRating|escape}</div>
 		</div>
 	{/if}
 
@@ -150,8 +150,8 @@
 
 	{* Detailed status information *}
 	<div class="row">
-		<div class="result-label col-tn-3">{translate text='Status' isPublicFacing=true}</div>
-		<div class="col-tn-9 result-value">
+		<div class="result-label col-sm-4 col-xs-12">{translate text='Status' isPublicFacing=true}</div>
+		<div class="result-value col-sm-8 col-xs-12">
 			{if $statusSummary}
 				{assign var=workId value=$recordDriver->getPermanentId()}
 				{include file='GroupedWork/statusIndicator.tpl' statusInformation=$statusSummary->getStatusInformation() viewingIndividualRecord=1}

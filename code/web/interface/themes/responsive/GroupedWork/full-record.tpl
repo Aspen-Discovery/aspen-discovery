@@ -34,8 +34,8 @@
 
 				{if $recordDriver->getPrimaryAuthor()}
 					<div class="row">
-						<div class="result-label col-tn-3">{translate text=Author isPublicFacing=true} </div>
-						<div class="col-tn-9 result-value notranslate">
+						<div class="result-label col-sm-4 col-xs-12">{translate text=Author isPublicFacing=true} </div>
+						<div class="result-value col-sm-8 col-xs-12 notranslate">
 							<a href='/Author/Home?author="{$recordDriver->getPrimaryAuthor()|escape:"url"}"'>{$recordDriver->getPrimaryAuthor()|highlight}</a>
 						</div>
 					</div>
@@ -48,8 +48,8 @@
 
 				{if $showPublicationDetails}
 					<div class="row">
-						<div class="result-label col-tn-3">{translate text=Publisher isPublicFacing=true} </div>
-						<div class="result-value col-tn-9">
+						<div class="result-label col-sm-4 col-xs-12">{translate text=Publisher isPublicFacing=true} </div>
+						<div class="result-value col-sm-8 col-xs-12">
 							{if $summPublisher}
 								{$summPublisher}
 							{else}
@@ -59,8 +59,8 @@
 					</div>
 
 					<div class="row">
-						<div class="result-label col-tn-3">{translate text="Publication Date" isPublicFacing=true} </div>
-						<div class="result-value col-tn-9">
+						<div class="result-label col-sm-4 col-xs-12">{translate text="Publication Date" isPublicFacing=true} </div>
+						<div class="result-value col-sm-8 col-xs-12">
 							{if $summPubDate}
 								{$summPubDate|escape}
 							{else}
@@ -72,8 +72,8 @@
 
 				{if $showEditions && $summEdition}
 					<div class="row">
-						<div class="result-label col-tn-3">{translate text="Edition" isPublicFacing=true} </div>
-						<div class="result-value col-tn-9">
+						<div class="result-label col-sm-4 col-xs-12">{translate text="Edition" isPublicFacing=true} </div>
+						<div class="result-value col-sm-8 col-xs-12">
 							{$summEdition}
 						</div>
 					</div>
@@ -81,8 +81,8 @@
 
 				{if $summLanguage}
 					<div class="row">
-						<div class="result-label col-tn-3">{translate text="Language" isPublicFacing=true} </div>
-						<div class="result-value col-tn-9">
+						<div class="result-label col-sm-4 col-xs-12">{translate text="Language" isPublicFacing=true} </div>
+						<div class="result-value col-sm-8 col-xs-12">
 							{if is_array($summLanguage)}
 								{implode subject=$summLanguage glue=', ' translate=true isPublicFacing=true}
 							{else}
@@ -94,8 +94,8 @@
 
 				{if !empty($showArInfo) && $summArInfo}
 					<div class="row">
-						<div class="result-label col-tn-3">{translate text='Accelerated Reader' isPublicFacing=true} </div>
-						<div class="result-value col-tn-9">
+						<div class="result-label col-sm-4 col-xs-12">{translate text='Accelerated Reader' isPublicFacing=true} </div>
+						<div class="result-value col-sm-8 col-xs-12">
 							{$summArInfo}
 						</div>
 					</div>
@@ -103,8 +103,8 @@
 
 				{if !empty($showLexileInfo) && $summLexileInfo}
 					<div class="row">
-						<div class="result-label col-tn-3">{translate text='Lexile measure' isPublicFacing=true} </div>
-						<div class="result-value col-tn-9">
+						<div class="result-label col-sm-4 col-xs-12">{translate text='Lexile measure' isPublicFacing=true} </div>
+						<div class="result-value col-sm-8 col-xs-12">
 							{$summLexileInfo}
 						</div>
 					</div>
@@ -112,8 +112,8 @@
 
 				{if !empty($showFountasPinnell) && $summFountasPinnell}
 					<div class="row">
-						<div class="result-label col-tn-3">{translate text='Fountas & Pinnell' isPublicFacing=true} </div>
-						<div class="result-value col-tn-9">
+						<div class="result-label col-sm-4 col-xs-12">{translate text='Fountas & Pinnell' isPublicFacing=true} </div>
+						<div class="result-value col-sm-8 col-xs-12">
 							{$summFountasPinnell}
 						</div>
 					</div>
@@ -126,7 +126,7 @@
 				{include file="GroupedWork/relatedManifestations.tpl" relatedManifestations=$recordDriver->getRelatedManifestations() workId=$recordDriver->getPermanentId()}
 
 				<div class="row">
-					{include file='GroupedWork/result-tools-horizontal.tpl' ratingData=$recordDriver->getRatingData() recordUrl=$recordDriver->getLinkUrl() showMoreInfo=false}
+					{include file='GroupedWork/result-tools-horizontal.tpl' ratingData=$recordDriver->getRatingData() recordUrl=$recordDriver->getLinkUrl() showMoreInfo=false showNotInterested=false}
 				</div>
 
 			</div>

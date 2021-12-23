@@ -67,9 +67,10 @@ export default class Results extends Component {
 
 	_fetchResults = async () => {
 	    const { page } = this.state;
-        const searchTerm = this.props.navigation.state.params.searchTerm.replace(" ", "%20");
+        const searchTerm = this.props.navigation.state.params.searchTerm.replace(/" "/g, "%20");
 
         await searchResults(searchTerm, 25, page).then(response => {
+        console.log(response);
             if(response == "TIMEOUT_ERROR") {
                 this.setState({
                     hasError: true,
@@ -77,7 +78,7 @@ export default class Results extends Component {
                     isLoading: false,
                 });
             } else {
-                if(!response.data.result.message) {
+                if(typeof response.data.result.message !== 'undefined') {
                     this.setState((prevState, nextProps) => ({
                         data:
                             page === 1

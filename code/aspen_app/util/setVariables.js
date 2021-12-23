@@ -1,64 +1,60 @@
 import React from "react";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as SecureStore from 'expo-secure-store';
 import Constants from "expo-constants";
-import * as Random from 'expo-random';
 import moment from "moment";
 
 // custom components and helper files
-import { translate } from "../util/translations";
-import { popToast, popAlert } from "../components/loadError";
 
 export async function setInitialVariables() {
-    try {
-        global.releaseChannel = await SecureStore.getItemAsync("releaseChannel");
-        global.latitude = await SecureStore.getItemAsync("latitude");
-        global.longitude = await SecureStore.getItemAsync("longitude");
-    } catch(e) {
-        console.log("Error setting fetching data from SecureStore.");
-        console.log(e);
-    }
-};
+	try {
+		global.releaseChannel = await SecureStore.getItemAsync("releaseChannel");
+		global.latitude = await SecureStore.getItemAsync("latitude");
+		global.longitude = await SecureStore.getItemAsync("longitude");
+	} catch (e) {
+		console.log("Error setting fetching data from SecureStore.");
+		console.log(e);
+	}
+}
 
 export async function setGlobalVariables() {
 
-    // prepare app data
-    global.version = Constants.manifest.version;
-    global.build = Constants.nativeAppVersion;
+	// prepare app data
+	global.version = Constants.manifest.version;
+	global.build = Constants.nativeAppVersion;
 
-    // set timeout options
-    global.timeoutFast = 3000;
-    global.timeoutAverage = 5000;
-    global.timeoutSlow = 10000;
+	// set timeout options
+	global.timeoutFast = 3000;
+	global.timeoutAverage = 5000;
+	global.timeoutSlow = 10000;
 
-    try {
-        // prepare user data
-        global.userKey = await SecureStore.getItemAsync("userKey");
-        global.secretKey = await SecureStore.getItemAsync("secretKey");
-        global.patron = await SecureStore.getItemAsync("patronName");
+	try {
+		// prepare user data
+		global.userKey = await SecureStore.getItemAsync("userKey");
+		global.secretKey = await SecureStore.getItemAsync("secretKey");
+		global.patron = await SecureStore.getItemAsync("patronName");
 
-        // prepare library data
-        global.libraryId = await SecureStore.getItemAsync("library");
-        global.libraryName = await SecureStore.getItemAsync("libraryName");
-        global.locationId = await SecureStore.getItemAsync("locationId");
-        global.solrScope = await SecureStore.getItemAsync("solrScope");
-        global.libraryUrl = await SecureStore.getItemAsync("pathUrl");
-        global.logo = await SecureStore.getItemAsync("logo");
-        global.favicon = await SecureStore.getItemAsync("favicon");
+		// prepare library data
+		global.libraryId = await SecureStore.getItemAsync("library");
+		global.libraryName = await SecureStore.getItemAsync("libraryName");
+		global.locationId = await SecureStore.getItemAsync("locationId");
+		global.solrScope = await SecureStore.getItemAsync("solrScope");
+		global.libraryUrl = await SecureStore.getItemAsync("pathUrl");
+		global.logo = await SecureStore.getItemAsync("logo");
+		global.favicon = await SecureStore.getItemAsync("favicon");
 
-        console.log("Global variables set.")
-    } catch(e) {
-        console.log("Error setting fetching data from SecureStore.");
-        console.log(e);
-    }
-};
+		console.log("Global variables set.")
+	} catch (e) {
+		console.log("Error setting fetching data from SecureStore.");
+		console.log(e);
+	}
+}
 
 export async function setSession() {
-   try {
-       global.sessionId = Constants.sessionId;
-   } catch {
-       const random = moment().unix();
-       global.sessionId = random;
-   }
-   console.log("Session created: " + global.sessionId)
-};
+	try {
+		global.sessionId = Constants.sessionId;
+	} catch {
+		const random = moment().unix();
+		global.sessionId = random;
+	}
+	console.log("Session created: " + global.sessionId)
+}

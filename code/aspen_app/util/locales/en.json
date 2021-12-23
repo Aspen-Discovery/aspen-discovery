@@ -72,7 +72,7 @@
     "access_online": "Access Online at {{source}}",
     "read_online": "Read Online at {{source}}",
     "listen_online": "Listen Online at {{source}}",
-    "watch_online": "Watch Online at {{source}}",
+    "watch_online": "Watch Online at {{source}}"
   },
   "holds": {
     "title": "Titles On Hold",

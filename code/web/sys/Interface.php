@@ -357,6 +357,8 @@ class UInterface extends Smarty
 				$this->assign('extendedTheme', $theme->extendsTheme);
 			}
 
+			$this->assign('parentTheme', $theme->getParentTheme());
+
 			//Get Logo
 			$logoName = null;
 			foreach ($allAppliedThemes as $theme) {
@@ -448,6 +450,9 @@ class UInterface extends Smarty
 				$this->assign('logoLink', $library->homeLink);
 			}
 		}
+
+		// set minimum theme contrast ratio
+		$this->assign('contrastRatio', $library->getLayoutSettings()->contrastRatio);
 
 		if (isset($location) && strlen($location->homeLink) > 0 && $location->homeLink != 'default'){
 			$this->assign('homeLink', $location->homeLink);

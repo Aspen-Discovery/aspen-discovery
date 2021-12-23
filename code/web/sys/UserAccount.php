@@ -715,6 +715,22 @@ class UserAccount
 		return UserAccount::$_accountProfiles;
 	}
 
+	static function has2FAEnabledForPType() {
+		UserAccount::loadUserObjectFromDatabase();
+		if (UserAccount::$primaryUserObjectFromDB != false) {
+			return UserAccount::$primaryUserObjectFromDB->get2FAStatusForPType();
+		}
+		return false;
+	}
+
+	static function has2FAEnabled() {
+		UserAccount::loadUserObjectFromDatabase();
+		if (UserAccount::$primaryUserObjectFromDB != false) {
+			return UserAccount::$primaryUserObjectFromDB->get2FAStatus();
+		}
+		return false;
+	}
+
 
 	/**
 	 * Look up in ILS for a user that has never logged into Aspen before, based on the patron's barcode.
