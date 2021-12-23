@@ -75,7 +75,7 @@ class TwoFactorAuthCode extends DataObject
 		$codeToCheck->code = $code;
 		if($codeToCheck->find(true)) {
 			if($codeToCheck->userId == UserAccount::getActiveUserId()){
-				if($codeToCheck->status != "used") {
+				if($codeToCheck->status != "used" || $codeToCheck->status != "expired") {
 					$codeToCheck->status = "used";
 					$codeToCheck->sessionId = session_id();
 					$codeToCheck->update();
