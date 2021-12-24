@@ -108,5 +108,13 @@ function getUpdates22_01_00() : array
 				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES ('Primary Configuration', 'Administer Two-Factor Authentication', '', 90, 'Controls if the user can change Two-Factor Authentication settings. <em>This has potential security and cost implications.</em>')",
 			]
 		], //two_factor_auth_permission
+		'login_unless_in_library' => [
+			'title' => 'Add option for web builder page access',
+			'description' => 'Add option to require login to access a page unless being viewed within the library',
+			'sql' => [
+				"ALTER TABLE web_builder_basic_page ADD COLUMN requireLoginUnlessInLibrary TINYINT(1) DEFAULT 0",
+				"ALTER TABLE web_builder_portal_page ADD COLUMN requireLoginUnlessInLibrary TINYINT(1) DEFAULT 0",
+			]
+		], //login_unless_in_library
 	];
 }

@@ -44,23 +44,28 @@ class WebBuilder_BasicPage extends Action{
 
 	function canView() : bool
 	{
+		global $locationSingleton;
 		require_once ROOT_DIR . '/sys/WebBuilder/BasicPageAccess.php';
 		require_once ROOT_DIR . '/sys/Account/PType.php';
 		require_once ROOT_DIR . '/sys/WebBuilder/BasicPage.php';
 
 		$requireLogin = 0;
+		$allowInLibrary = 0;
 		$id = strip_tags($_REQUEST['id']);
 		$page = new BasicPage();
 		$page->id = $id;
 		$page->find();
 		while($page->fetch()){
 			$requireLogin = $page->requireLogin;
+			$allowInLibrary = $page->requireLoginUnlessInLibrary;
 		}
 
-
+		$inLibrary = $locationSingleton->getIPLocation();
 		$user = UserAccount::getLoggedInUser();
-
 		if($requireLogin){
+			if($allowInLibrary && $inLibrary != null) {
+				return true;
+			}
 			if(!$user) {
 				return false;
 			}
