@@ -450,7 +450,7 @@ class Sierra extends Millennium{
 			$readingHistoryEnabled = $readingHistoryEnabledResponse->readingHistoryActivation;
 		}
 		$readingHistoryTitles = array();
-		if ($readingHistoryEnabled){
+		if (true || $readingHistoryEnabled){
 			$numProcessed = 0;
 			$totalToProcess = 1000;
 			while ($numProcessed < $totalToProcess){
