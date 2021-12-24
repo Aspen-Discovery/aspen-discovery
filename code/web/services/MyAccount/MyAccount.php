@@ -53,6 +53,10 @@ abstract class MyAccount extends Action
 
 			$ilsMessages = UserAccount::getActiveUserObj()->getILSMessages();
 			$interface->assign('ilsMessages', $ilsMessages);
+
+			// check if 2fa is available for user
+			$twoFactor = UserAccount::has2FAEnabledForPType();
+			$interface->assign('twoFactorEnabled', $twoFactor);
 		}
 		// Hide Covers when the user has set that setting on an Account Page
 		$this->setShowCovers();

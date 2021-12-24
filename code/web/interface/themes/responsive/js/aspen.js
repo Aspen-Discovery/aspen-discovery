@@ -5738,25 +5738,33 @@ AspenDiscovery.Account = (function(){
 				loadingElem.show();
 				// noinspection JSUnresolvedFunction
 				$.post(url, params, function(response){
-					loadingElem.hide();
 					if (response.result.success === true) {
-						$('#loginLinkIcon').removeClass('fa-sign-in-alt').addClass('fa-user');
-						$('#login-button-label').html(response.result.name);
-						$('#logoutLink').show();
+						if (response.result.twoFactor === true) {
+							$.getJSON(Globals.path + "/MyAccount/AJAX?method=auth2FALogin&referer=" + referer + "&name=" + response.result.name, function (data) {
+								if (data.success) {
+									AspenDiscovery.showMessageWithButtons(data.title, data.body, data.buttons);
+								}
+							});
+						} else {
+							loadingElem.hide();
+							$('#loginLinkIcon').removeClass('fa-sign-in-alt').addClass('fa-user');
+							$('#login-button-label').html(response.result.name);
+							$('#logoutLink').show();
 
-						if (AspenDiscovery.Account.closeModalOnAjaxSuccess) {
-							AspenDiscovery.closeLightbox();
-						}
+							if (AspenDiscovery.Account.closeModalOnAjaxSuccess) {
+								AspenDiscovery.closeLightbox();
+							}
 
-						Globals.loggedIn = true;
-						if (ajaxCallback !== undefined && typeof(ajaxCallback) === "function") {
-							ajaxCallback();
-						} else if (AspenDiscovery.Account.ajaxCallback !== undefined && typeof(AspenDiscovery.Account.ajaxCallback) === "function") {
-							AspenDiscovery.Account.ajaxCallback();
-							AspenDiscovery.Account.ajaxCallback = null;
-						}
-						if (multiStep !== 'true') {
-							window.location.replace(referer);
+							Globals.loggedIn = true;
+							if (ajaxCallback !== undefined && typeof(ajaxCallback) === "function") {
+								ajaxCallback();
+							} else if (AspenDiscovery.Account.ajaxCallback !== undefined && typeof(AspenDiscovery.Account.ajaxCallback) === "function") {
+								AspenDiscovery.Account.ajaxCallback();
+								AspenDiscovery.Account.ajaxCallback = null;
+							}
+							if (multiStep !== 'true') {
+								window.location.replace(referer);
+							}
 						}
 					} else {
 						loginErrorElem.text(response.result.message).show();
@@ -6637,6 +6645,10 @@ AspenDiscovery.Account = (function(){
 				$.getJSON(url, params, function(data){
 					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
 				}).fail(AspenDiscovery.ajaxFail);
+			} else {
+				AspenDiscovery.Account.ajaxLogin(null, function(){
+					return AspenDiscovery.Account.showSaveToListForm(trigger, source, id);
+				}, false);
 			}
 			return false;
 		},
@@ -6823,7 +6835,7 @@ AspenDiscovery.Account = (function(){
 			AspenDiscovery.loadingMessage();
 			// noinspection JSUnresolvedFunction
 			$.getJSON(Globals.path + "/MyAccount/AJAX?method=checkInCurbsidePickup&patronId=" + patronId + "&pickupId=" + pickupId, function(data){
-				AspenDiscovery.showMessage(data.title, data.body, false); // automatically close when successful
+				AspenDiscovery.showMessage(data.title, data.body, false);
 			}).fail(AspenDiscovery.ajaxFail);
 			return false
 		},
@@ -6884,7 +6896,191 @@ AspenDiscovery.Account = (function(){
 				);
 			}).fail(AspenDiscovery.ajaxFail);
 			return false
-		}
+		},
+		show2FAEnrollment: function(){
+			if (Globals.loggedIn){
+				AspenDiscovery.loadingMessage();
+				$.getJSON(Globals.path + "/MyAccount/AJAX?method=get2FAEnrollment&step=register", function(data) {
+					if (data.success) {
+						AspenDiscovery.showMessageWithButtons(data.title, data.body, data.buttons)
+					} else {
+						AspenDiscovery.showMessage(data.title, data.message);
+					}
+				});
+			} else {
+				AspenDiscovery.Account.ajaxLogin(null, function(){
+					return AspenDiscovery.Account.show2FAEnrollment();
+				}, false);
+			}
+			return false;
+		},
+		show2FAEnrollmentVerify: function(){
+			if (Globals.loggedIn){
+				$.getJSON(Globals.path + "/MyAccount/AJAX?method=get2FAEnrollment&step=verify", function(data) {
+					if (data.success) {
+						AspenDiscovery.showMessageWithButtons(data.title, data.body, data.buttons)
+					} else {
+						AspenDiscovery.showMessage(data.title, data.message);
+					}
+				});
+			} else {
+				AspenDiscovery.Account.ajaxLogin(null, function(){
+					return AspenDiscovery.Account.show2FAEnrollmentVerify();
+				}, false);
+			}
+			return false;
+		},
+		show2FAEnrollmentBackupCodes: function(){
+			if (Globals.loggedIn){
+				$.getJSON(Globals.path + "/MyAccount/AJAX?method=get2FAEnrollment&step=backup", function(data) {
+					if (data.success) {
+						AspenDiscovery.showMessageWithButtons(data.title, data.body, data.buttons)
+					} else {
+						AspenDiscovery.showMessage(data.title, data.message);
+					}
+				});
+			} else {
+				AspenDiscovery.Account.ajaxLogin(null, function(){
+					return AspenDiscovery.Account.show2FAEnrollmentBackupCodes();
+				}, false);
+			}
+			return false;
+		},
+		show2FAEnrollmentSuccess: function(){
+			if (Globals.loggedIn){
+				$.getJSON(Globals.path + "/MyAccount/AJAX?method=get2FAEnrollment&step=complete", function(data) {
+					if (data.success) {
+						AspenDiscovery.showMessage(data.title, data.body, false, 2000)
+					}
+				});
+			} else {
+				AspenDiscovery.Account.ajaxLogin(null, function(){
+					return AspenDiscovery.Account.show2FAEnrollmentSuccess();
+				}, false);
+			}
+			return false;
+		},
+		showCancel2FA: function(){
+			if (Globals.loggedIn){
+				AspenDiscovery.loadingMessage();
+				$.getJSON(Globals.path + "/MyAccount/AJAX?method=confirmCancel2FA", function(data) {
+					if (data.success) {
+						AspenDiscovery.showMessageWithButtons(data.title, data.body, data.buttons)
+					} else {
+						AspenDiscovery.showMessage(data.title, data.message);
+					}
+				});
+			} else {
+				AspenDiscovery.Account.ajaxLogin(null, function(){
+					return AspenDiscovery.Account.cancel2FA();
+				}, false);
+			}
+			return false;
+		},
+		cancel2FA: function(){
+			if (Globals.loggedIn){
+				AspenDiscovery.loadingMessage();
+				$.getJSON(Globals.path + "/MyAccount/AJAX?method=cancel2FA", function(data) {
+					if (data.success) {
+						AspenDiscovery.showMessage(data.title, data.body, true, 2000)
+					} else {
+						AspenDiscovery.showMessage(data.title, data.message);
+					}
+				});
+			} else {
+				AspenDiscovery.Account.ajaxLogin(null, function(){
+					return AspenDiscovery.Account.cancel2FA();
+				}, false);
+			}
+			return false;
+		},
+		verify2FA: function() {
+			var code = $("#code").val();
+			if (Globals.loggedIn){
+				$.getJSON(Globals.path + "/MyAccount/AJAX?method=verify2FA&code=" + code, function(data) {
+					// update #codeVerificationFailedPlaceholder with failed verification status, otherwise move onto next step
+					if(data.success === "true") {
+						return AspenDiscovery.Account.show2FAEnrollmentBackupCodes();
+					}
+					$("#codeVerificationFailedPlaceholder").html(data.message).show();
+					return data;
+				});
+			} else {
+				AspenDiscovery.Account.ajaxLogin(null, function(){
+					return AspenDiscovery.Account.verify2FA();
+				}, false);
+			}
+			return false;
+		},
+		new2FACode: function() {
+				$.getJSON(Globals.path + "/MyAccount/AJAX?method=new2FACode", function(data) {
+					// update #newCodeSentPlaceholder with sent status
+					$("#newCodeSentPlaceholder").html(data.body).show();
+					return data;
+				});
+			return false;
+		},
+		showNewBackupCodes: function(){
+			if (Globals.loggedIn){
+				AspenDiscovery.loadingMessage();
+				$.getJSON(Globals.path + "/MyAccount/AJAX?method=newBackupCodes", function(data) {
+					if (data.success) {
+						AspenDiscovery.showMessage(data.title, data.body, false, 2000)
+					}
+				});
+			} else {
+				AspenDiscovery.Account.ajaxLogin(null, function(){
+					return AspenDiscovery.Account.showNewBackupCodes();
+				}, false);
+			}
+			return false;
+		},
+		show2FALogin: function(){
+			if (Globals.loggedIn){
+				AspenDiscovery.loadingMessage();
+				$.getJSON(Globals.path + "/MyAccount/AJAX?method=newBackupCodes", function(data) {
+					if (data.success) {
+						AspenDiscovery.showMessage(data.title, data.body, false, 2000)
+					}
+				});
+			} else {
+				AspenDiscovery.Account.ajaxLogin(null, function(){
+					return AspenDiscovery.Account.show2FALogin();
+				}, false);
+			}
+			return false;
+		},
+		verify2FALogin: function(ajaxCallback) {
+			var code = $("#code").val();
+			var referer = $("#referer").val();
+			var name = $("#name").val();
+			$.getJSON(Globals.path + "/MyAccount/AJAX?method=verify2FA&code=" + code, function(data) {
+				// update #codeVerificationFailedPlaceholder with failed verification status, otherwise move onto next step
+				if(data.success === "true") {
+					$('#loginLinkIcon').removeClass('fa-sign-in-alt').addClass('fa-user');
+					$('#login-button-label').html(name);
+					$('#logoutLink').show();
+
+					if (AspenDiscovery.Account.closeModalOnAjaxSuccess) {
+						AspenDiscovery.closeLightbox();
+					}
+
+					Globals.loggedIn = true;
+					if (ajaxCallback !== undefined && typeof(ajaxCallback) === "function") {
+						ajaxCallback();
+					} else if (AspenDiscovery.Account.ajaxCallback !== undefined && typeof(AspenDiscovery.Account.ajaxCallback) === "function") {
+						AspenDiscovery.Account.ajaxCallback();
+						AspenDiscovery.Account.ajaxCallback = null;
+					}
+					if (multiStep !== 'true') {
+						window.location.replace(referer);
+					}
+				}
+				$("#codeVerificationFailedPlaceholder").html(data.message).show();
+				return data;
+			});
+			return false;
+		},
 	};
 }(AspenDiscovery.Account || {}));
 AspenDiscovery.Admin = (function(){
@@ -6917,303 +7113,874 @@ AspenDiscovery.Admin = (function(){
 			$('head').append('<link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=' + fontName + '">');
 			$('#' + fontSelector + '-sample-text').css('font-family', fontName);
 		},
-		getDefaultColor:function(property1,extendedTheme) {
-			if(property1 == 'pageBackgroundColor'){
-				// check if active theme has a value for "extendsTheme"
-				if(extendedTheme != null) {
+		getDefaultColor:function(property, extendedThemeDefault) {
+			if(property === 'pageBackgroundColor'){
+				if(extendedThemeDefault != null) {
 					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
 				} else {
-					document.getElementById(property1 + 'Hex').value = "#ffffff";
-					document.getElementById(property1).value = "#ffffff";
+					document.getElementById(property + 'Hex').value = "#ffffff";
+					document.getElementById(property).value = "#ffffff";
 				}
-			} else if(property1 == 'bodyBackgroundColor') {
-				document.getElementById(property1 + 'Hex').value = "#ffffff";
-				document.getElementById(property1).value = "#ffffff";
-			} else if(property1 == 'bodyTextColor') {
-				document.getElementById(property1 + 'Hex').value = "#6B6B6B";
-				document.getElementById(property1).value = "#6B6B6B";
-			} else if(property1 == 'linkColor') {
-				document.getElementById(property1 + 'Hex').value = "#3174AF";
-				document.getElementById(property1).value = "#3174AF";
-			} else if(property1 == 'linkHoverColor') {
-				document.getElementById(property1 + 'Hex').value = "#265a87";
-				document.getElementById(property1).value = "#265a87";
-			} else if(property1 == 'resultLabelColor') {
-				document.getElementById(property1 + 'Hex').value = "#44484a";
-				document.getElementById(property1).value = "#44484a";
-			} else if(property1 == 'resultValueColor') {
-				document.getElementById(property1 + 'Hex').value = "#6B6B6B";
-				document.getElementById(property1).value = "#6B6B6B";
-			} else if(property1 == 'headerBackgroundColor') {
-				document.getElementById(property1 + 'Hex').value = "#f1f1f1";
-				document.getElementById(property1).value = "#f1f1f1";
-			} else if(property1 == 'headerForegroundColor') {
-				document.getElementById(property1 + 'Hex').value = "#303030";
-				document.getElementById(property1).value = "#303030";
-			} else if(property1 == 'breadcrumbsBackgroundColor') {
-				document.getElementById(property1 + 'Hex').value = "#f5f5f5";
-				document.getElementById(property1).value = "#f5f5f5";
-			} else if(property1 == 'breadcrumbsForegroundColor') {
-				document.getElementById(property1 + 'Hex').value = "#6B6B6B";
-				document.getElementById(property1).value = "#6B6B6B";
-			} else if(property1 == 'searchToolsBackgroundColor') {
-				document.getElementById(property1 + 'Hex').value = "#f5f5f5";
-				document.getElementById(property1).value = "#f5f5f5";
-			} else if(property1 == 'searchToolsBorderColor') {
-				document.getElementById(property1 + 'Hex').value = "#e3e3e3";
-				document.getElementById(property1).value = "#e3e3e3";
-			} else if(property1 == 'searchToolsForegroundColor') {
-				document.getElementById(property1 + 'Hex').value = "#6B6B6B";
-				document.getElementById(property1).value = "#6B6B6B";
-			} else if(property1 == 'footerBackgroundColor') {
-				document.getElementById(property1 + 'Hex').value = "#f1f1f1";
-				document.getElementById(property1).value = "#f1f1f1";
-			} else if(property1 == 'footerForegroundColor') {
-				document.getElementById(property1 + 'Hex').value = "#303030";
-				document.getElementById(property1).value = "#303030";
-			} else if(property1 == 'primaryBackgroundColor') {
-				document.getElementById(property1 + 'Hex').value = "#0a7589";
-				document.getElementById(property1).value = "#0a7589";
-			} else if(property1 == 'primaryForegroundColor') {
-				document.getElementById(property1 + 'Hex').value = "#ffffff";
-				document.getElementById(property1).value = "#ffffff";
-			} else if(property1 == 'secondaryBackgroundColor') {
-				document.getElementById(property1 + 'Hex').value = "#de9d03";
-				document.getElementById(property1).value = "#de9d03";
-			} else if(property1 == 'secondaryForegroundColor') {
-				document.getElementById(property1 + 'Hex').value = "#303030";
-				document.getElementById(property1).value = "#303030";
-			} else if(property1 == 'tertiaryBackgroundColor') {
-				document.getElementById(property1 + 'Hex').value = "#de1f0b";
-				document.getElementById(property1).value = "#de1f0b";
-			} else if(property1 == 'tertiaryForegroundColor') {
-				document.getElementById(property1 + 'Hex').value = "#000000";
-				document.getElementById(property1).value = "#000000";
-			} else if(property1 == 'menubarBackgroundColor') {
-				document.getElementById(property1 + 'Hex').value = "#f1f1f1";
-				document.getElementById(property1).value = "#f1f1f1";
-			} else if(property1 == 'menubarForegroundColor') {
-				document.getElementById(property1 + 'Hex').value = "#303030";
-				document.getElementById(property1).value = "#303030";
-			} else if(property1 == 'menubarHighlightBackgroundColor') {
-				document.getElementById(property1 + 'Hex').value = "#f1f1f1";
-				document.getElementById(property1).value = "#f1f1f1";
-			} else if(property1 == 'menubarHighlightForegroundColor') {
-				document.getElementById(property1 + 'Hex').value = "#265a87";
-				document.getElementById(property1).value = "#265a87";
-			} else if(property1 == 'menuDropdownBackgroundColor') {
-				document.getElementById(property1 + 'Hex').value = "#ededed";
-				document.getElementById(property1).value = "#ededed";
-			} else if(property1 == 'menuDropdownForegroundColor') {
-				document.getElementById(property1 + 'Hex').value = "#404040";
-				document.getElementById(property1).value = "#404040";
-			} else if(property1 == 'modalDialogBackgroundColor') {
-				document.getElementById(property1 + 'Hex').value = "#ffffff";
-				document.getElementById(property1).value = "#ffffff";
-			} else if(property1 == 'modalDialogForegroundColor') {
-				document.getElementById(property1 + 'Hex').value = "#333333";
-				document.getElementById(property1).value = "#333333";
-			} else if(property1 == 'modalDialogHeaderFooterBackgroundColor') {
-				document.getElementById(property1 + 'Hex').value = "#ffffff";
-				document.getElementById(property1).value = "#ffffff";
-			} else if(property1 == 'modalDialogHeaderFooterForegroundColor') {
-				document.getElementById(property1 + 'Hex').value = "#333333";
-				document.getElementById(property1).value = "#333333";
-			} else if(property1 == 'modalDialogHeaderFooterBorderColor') {
-				document.getElementById(property1 + 'Hex').value = "#e5e5e5";
-				document.getElementById(property1).value = "#e5e5e5";
-			} else if(property1 == 'browseCategoryPanelColor') {
-				document.getElementById(property1 + 'Hex').value = "#d7dce3";
-				document.getElementById(property1).value = "#d7dce3";
-			} else if(property1 == 'selectedBrowseCategoryBackgroundColor') {
-				document.getElementById(property1 + 'Hex').value = "#0087AB";
-				document.getElementById(property1).value = "#0087AB";
-			} else if(property1 == 'selectedBrowseCategoryForegroundColor') {
-				document.getElementById(property1 + 'Hex').value = "#ffffff";
-				document.getElementById(property1).value = "#ffffff";
-			} else if(property1 == 'selectedBrowseCategoryBorderColor') {
-				document.getElementById(property1 + 'Hex').value = "#0087AB";
-				document.getElementById(property1).value = "#0087AB";
-			} else if(property1 == 'deselectedBrowseCategoryBackgroundColor') {
-				document.getElementById(property1 + 'Hex').value = "#0087AB";
-				document.getElementById(property1).value = "#0087AB";
-			} else if(property1 == 'deselectedBrowseCategoryForegroundColor') {
-				document.getElementById(property1 + 'Hex').value = "#ffffff";
-				document.getElementById(property1).value = "#ffffff";
-			} else if(property1 == 'deselectedBrowseCategoryBorderColor') {
-				document.getElementById(property1 + 'Hex').value = "#0087AB";
-				document.getElementById(property1).value = "#0087AB";
-			} else if(property1 == 'badgeBackgroundColor') {
-				document.getElementById(property1 + 'Hex').value = "#666666";
-				document.getElementById(property1).value = "#666666";
-			} else if(property1 == 'badgeForegroundColor') {
-				document.getElementById(property1 + 'Hex').value = "#ffffff";
-				document.getElementById(property1).value = "#ffffff";
-			} else if(property1 == 'closedPanelBackgroundColor') {
-				document.getElementById(property1 + 'Hex').value = "#e7e7e7";
-				document.getElementById(property1).value = "#e7e7e7";
-			} else if(property1 == 'closedPanelForegroundColor') {
-				document.getElementById(property1 + 'Hex').value = "#333333";
-				document.getElementById(property1).value = "#333333"
-			} else if(property1 == 'openPanelBackgroundColor') {
-				document.getElementById(property1 + 'Hex').value = "#333333";
-				document.getElementById(property1).value = "#333333"
-			} else if(property1 == 'openPanelForegroundColor') {
-				document.getElementById(property1 + 'Hex').value = "#ffffff";
-				document.getElementById(property1).value = "#ffffff"
-			} else if(property1 == 'panelBodyBackgroundColor') {
-				document.getElementById(property1 + 'Hex').value = "#ffffff";
-				document.getElementById(property1).value = "#ffffff"
-			} else if(property1 == 'panelBodyForegroundColor') {
-				document.getElementById(property1 + 'Hex').value = "#404040";
-				document.getElementById(property1).value = "#404040"
-			} else if(property1 == 'defaultButtonBackgroundColor') {
-				document.getElementById(property1 + 'Hex').value = "#ffffff";
-				document.getElementById(property1).value = "#ffffff"
-			} else if(property1 == 'defaultButtonForegroundColor') {
-				document.getElementById(property1 + 'Hex').value = "#333333";
-				document.getElementById(property1).value = "#333333"
-			} else if(property1 == 'defaultButtonBorderColor') {
-				document.getElementById(property1 + 'Hex').value = "#cccccc";
-				document.getElementById(property1).value = "#cccccc"
-			} else if(property1 == 'defaultButtonHoverBackgroundColor') {
-				document.getElementById(property1 + 'Hex').value = "#eeeeee";
-				document.getElementById(property1).value = "#eeeeee"
-			} else if(property1 == 'defaultButtonHoverForegroundColor') {
-				document.getElementById(property1 + 'Hex').value = "#333333";
-				document.getElementById(property1).value = "#333333"
-			} else if(property1 == 'defaultButtonHoverBorderColor') {
-				document.getElementById(property1 + 'Hex').value = "#cccccc";
-				document.getElementById(property1).value = "#cccccc"
-			} else if(property1 == 'primaryButtonBackgroundColor') {
-				document.getElementById(property1 + 'Hex').value = "#1b6ec2";
-				document.getElementById(property1).value = "#1b6ec2"
-			} else if(property1 == 'primaryButtonForegroundColor') {
-				document.getElementById(property1 + 'Hex').value = "#ffffff";
-				document.getElementById(property1).value = "#ffffff"
-			} else if(property1 == 'primaryButtonBorderColor') {
-				document.getElementById(property1 + 'Hex').value = "#1b6ec2";
-				document.getElementById(property1).value = "#1b6ec2"
-			} else if(property1 == 'primaryButtonHoverBackgroundColor') {
-				document.getElementById(property1 + 'Hex').value = "#ffffff";
-				document.getElementById(property1).value = "#ffffff"
-			} else if(property1 == 'primaryButtonHoverForegroundColor') {
-				document.getElementById(property1 + 'Hex').value = "#1b6ec2";
-				document.getElementById(property1).value = "#1b6ec2"
-			} else if(property1 == 'primaryButtonHoverBorderColor') {
-				document.getElementById(property1 + 'Hex').value = "#1b6ec2";
-				document.getElementById(property1).value = "#1b6ec2"
-			} else if(property1 == 'actionButtonBackgroundColor') {
-				document.getElementById(property1 + 'Hex').value = "#1b6ec2";
-				document.getElementById(property1).value = "#1b6ec2"
-			} else if(property1 == 'actionButtonForegroundColor') {
-				document.getElementById(property1 + 'Hex').value = "#ffffff";
-				document.getElementById(property1).value = "#ffffff"
-			} else if(property1 == 'actionButtonBorderColor') {
-				document.getElementById(property1 + 'Hex').value = "#1b6ec2";
-				document.getElementById(property1).value = "#1b6ec2"
-			} else if(property1 == 'actionButtonHoverBackgroundColor') {
-				document.getElementById(property1 + 'Hex').value = "#ffffff";
-				document.getElementById(property1).value = "#ffffff"
-			} else if(property1 == 'actionButtonHoverForegroundColor') {
-				document.getElementById(property1 + 'Hex').value = "#1b6ec2";
-				document.getElementById(property1).value = "#1b6ec2"
-			} else if(property1 == 'actionButtonHoverBorderColor') {
-				document.getElementById(property1 + 'Hex').value = "#1b6ec2";
-				document.getElementById(property1).value = "#1b6ec2"
-			} else if(property1 == 'editionsButtonBackgroundColor') {
-				document.getElementById(property1 + 'Hex').value = "#f8f9fa";
-				document.getElementById(property1).value = "#f8f9fa"
-			} else if(property1 == 'editionsButtonForegroundColor') {
-				document.getElementById(property1 + 'Hex').value = "#212529";
-				document.getElementById(property1).value = "#212529"
-			} else if(property1 == 'editionsButtonBorderColor') {
-				document.getElementById(property1 + 'Hex').value = "#999999";
-				document.getElementById(property1).value = "#999999"
-			} else if(property1 == 'editionsButtonHoverBackgroundColor') {
-				document.getElementById(property1 + 'Hex').value = "#ffffff";
-				document.getElementById(property1).value = "#ffffff"
-			} else if(property1 == 'editionsButtonHoverForegroundColor') {
-				document.getElementById(property1 + 'Hex').value = "#1b6ec2";
-				document.getElementById(property1).value = "#1b6ec2"
-			} else if(property1 == 'editionsButtonHoverBorderColor') {
-				document.getElementById(property1 + 'Hex').value = "#1b6ec2";
-				document.getElementById(property1).value = "#1b6ec2"
-			} else if(property1 == 'toolsButtonBackgroundColor') {
-				document.getElementById(property1 + 'Hex').value = "#747474";
-				document.getElementById(property1).value = "#747474"
-			} else if(property1 == 'toolsButtonForegroundColor') {
-				document.getElementById(property1 + 'Hex').value = "#ffffff";
-				document.getElementById(property1).value = "#ffffff"
-			} else if(property1 == 'toolsButtonBorderColor') {
-				document.getElementById(property1 + 'Hex').value = "#636363";
-				document.getElementById(property1).value = "#636363"
-			} else if(property1 == 'toolsButtonHoverBackgroundColor') {
-				document.getElementById(property1 + 'Hex').value = "#636363";
-				document.getElementById(property1).value = "#636363"
-			} else if(property1 == 'toolsButtonHoverForegroundColor') {
-				document.getElementById(property1 + 'Hex').value = "#ffffff";
-				document.getElementById(property1).value = "#ffffff"
-			} else if(property1 == 'toolsButtonHoverBorderColor') {
-				document.getElementById(property1 + 'Hex').value = "#636363";
-				document.getElementById(property1).value = "#636363"
-			} else if(property1 == 'infoButtonBackgroundColor') {
-				document.getElementById(property1 + 'Hex').value = "#8cd2e7";
-				document.getElementById(property1).value = "#8cd2e7"
-			} else if(property1 == 'infoButtonForegroundColor') {
-				document.getElementById(property1 + 'Hex').value = "#000000";
-				document.getElementById(property1).value = "#000000"
-			} else if(property1 == 'infoButtonBorderColor') {
-				document.getElementById(property1 + 'Hex').value = "#999999";
-				document.getElementById(property1).value = "#999999"
-			} else if(property1 == 'infoButtonHoverBackgroundColor') {
-				document.getElementById(property1 + 'Hex').value = "#ffffff";
-				document.getElementById(property1).value = "#ffffff"
-			} else if(property1 == 'infoButtonHoverForegroundColor') {
-				document.getElementById(property1 + 'Hex').value = "#217e9b";
-				document.getElementById(property1).value = "#217e9b"
-			} else if(property1 == 'infoButtonHoverBorderColor') {
-				document.getElementById(property1 + 'Hex').value = "#217e9b";
-				document.getElementById(property1).value = "#217e9b"
-			} else if(property1 == 'warningButtonBackgroundColor') {
-				document.getElementById(property1 + 'Hex').value = "#f4d03f";
-				document.getElementById(property1).value = "#f4d03f"
-			} else if(property1 == 'warningButtonForegroundColor') {
-				document.getElementById(property1 + 'Hex').value = "#000000";
-				document.getElementById(property1).value = "#000000"
-			} else if(property1 == 'warningButtonBorderColor') {
-				document.getElementById(property1 + 'Hex').value = "#999999";
-				document.getElementById(property1).value = "#999999"
-			} else if(property1 == 'warningButtonHoverBackgroundColor') {
-				document.getElementById(property1 + 'Hex').value = "#ffffff";
-				document.getElementById(property1).value = "#ffffff"
-			} else if(property1 == 'warningButtonHoverForegroundColor') {
-				document.getElementById(property1 + 'Hex').value = "#8d6708";
-				document.getElementById(property1).value = "#8d6708"
-			} else if(property1 == 'warningButtonHoverBorderColor') {
-				document.getElementById(property1 + 'Hex').value = "#8d6708";
-				document.getElementById(property1).value = "#8d6708"
-			} else if(property1 == 'dangerButtonBackgroundColor') {
-				document.getElementById(property1 + 'Hex').value = "#D50000";
-				document.getElementById(property1).value = "#D50000"
-			} else if(property1 == 'dangerButtonForegroundColor') {
-				document.getElementById(property1 + 'Hex').value = "#ffffff";
-				document.getElementById(property1).value = "#ffffff"
-			} else if(property1 == 'dangerButtonBorderColor') {
-				document.getElementById(property1 + 'Hex').value = "#999999";
-				document.getElementById(property1).value = "#999999"
-			} else if(property1 == 'dangerButtonHoverBackgroundColor') {
-				document.getElementById(property1 + 'Hex').value = "#ffffff";
-				document.getElementById(property1).value = "#ffffff"
-			} else if(property1 == 'dangerButtonHoverForegroundColor') {
-				document.getElementById(property1 + 'Hex').value = "#D50000";
-				document.getElementById(property1).value = "#D50000"
-			} else if(property1 == 'dangerButtonHoverBorderColor') {
-				document.getElementById(property1 + 'Hex').value = "#D50000";
-				document.getElementById(property1).value = "#D50000"
+			} else if(property === 'bodyBackgroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#ffffff";
+					document.getElementById(property).value = "#ffffff";
+				}
+			} else if(property === 'bodyTextColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#6B6B6B";
+					document.getElementById(property).value = "#6B6B6B";
+				}
+			} else if(property === 'linkColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#3174AF";
+					document.getElementById(property).value = "#3174AF";
+				}
+			} else if(property === 'linkHoverColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#265a87";
+					document.getElementById(property).value = "#265a87";
+				}
+			} else if(property === 'resultLabelColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#44484a";
+					document.getElementById(property).value = "#44484a";
+				}
+			} else if(property === 'resultValueColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#6B6B6B";
+					document.getElementById(property).value = "#6B6B6B";
+				}
+			} else if(property === 'headerBackgroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#f1f1f1";
+					document.getElementById(property).value = "#f1f1f1";
+				}
+			} else if(property === 'headerForegroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#303030";
+					document.getElementById(property).value = "#303030";
+				}
+			} else if(property === 'breadcrumbsBackgroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#f5f5f5";
+					document.getElementById(property).value = "#f5f5f5";
+				}
+			} else if(property === 'breadcrumbsForegroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#6B6B6B";
+					document.getElementById(property).value = "#6B6B6B";
+				}
+			} else if(property === 'searchToolsBackgroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#f5f5f5";
+					document.getElementById(property).value = "#f5f5f5";
+				}
+			} else if(property === 'searchToolsBorderColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#e3e3e3";
+					document.getElementById(property).value = "#e3e3e3";
+				}
+			} else if(property === 'searchToolsForegroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#6B6B6B";
+					document.getElementById(property).value = "#6B6B6B";
+				}
+			} else if(property === 'footerBackgroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#f1f1f1";
+					document.getElementById(property).value = "#f1f1f1";
+				}
+			} else if(property === 'footerForegroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#303030";
+					document.getElementById(property).value = "#303030";
+				}
+			} else if(property === 'primaryBackgroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#0a7589";
+					document.getElementById(property).value = "#0a7589";
+				}
+			} else if(property === 'primaryForegroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#ffffff";
+					document.getElementById(property).value = "#ffffff";
+				}
+			} else if(property === 'secondaryBackgroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#de9d03";
+					document.getElementById(property).value = "#de9d03";
+				}
+			} else if(property === 'secondaryForegroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#303030";
+					document.getElementById(property).value = "#303030";
+				}
+			} else if(property === 'tertiaryBackgroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#de1f0b";
+					document.getElementById(property).value = "#de1f0b";
+				}
+			} else if(property === 'tertiaryForegroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#000000";
+					document.getElementById(property).value = "#000000";
+				}
+			} else if(property === 'menubarBackgroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#f1f1f1";
+					document.getElementById(property).value = "#f1f1f1";
+				}
+			} else if(property === 'menubarForegroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#303030";
+					document.getElementById(property).value = "#303030";
+				}
+			} else if(property === 'menubarHighlightBackgroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#f1f1f1";
+					document.getElementById(property).value = "#f1f1f1";
+				}
+			} else if(property === 'menubarHighlightForegroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#265a87";
+					document.getElementById(property).value = "#265a87";
+				}
+			} else if(property === 'menuDropdownBackgroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#ededed";
+					document.getElementById(property).value = "#ededed";
+				}
+			} else if(property === 'menuDropdownForegroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#404040";
+					document.getElementById(property).value = "#404040";
+				}
+			} else if(property === 'modalDialogBackgroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#ffffff";
+					document.getElementById(property).value = "#ffffff";
+				}
+			} else if(property === 'modalDialogForegroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#333333";
+					document.getElementById(property).value = "#333333";
+				}
+			} else if(property === 'modalDialogHeaderFooterBackgroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#ffffff";
+					document.getElementById(property).value = "#ffffff";
+				}
+			} else if(property === 'modalDialogHeaderFooterForegroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#333333";
+					document.getElementById(property).value = "#333333";
+				}
+			} else if(property === 'modalDialogHeaderFooterBorderColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#e5e5e5";
+					document.getElementById(property).value = "#e5e5e5";
+				}
+			} else if(property === 'browseCategoryPanelColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#d7dce3";
+					document.getElementById(property).value = "#d7dce3";
+				}
+			} else if(property === 'selectedBrowseCategoryBackgroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#0087AB";
+					document.getElementById(property).value = "#0087AB";
+				}
+			} else if(property === 'selectedBrowseCategoryForegroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#ffffff";
+					document.getElementById(property).value = "#ffffff";
+				}
+			} else if(property === 'selectedBrowseCategoryBorderColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#0087AB";
+					document.getElementById(property).value = "#0087AB";
+				}
+			} else if(property === 'deselectedBrowseCategoryBackgroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#0087AB";
+					document.getElementById(property).value = "#0087AB";
+				}
+			} else if(property === 'deselectedBrowseCategoryForegroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#ffffff";
+					document.getElementById(property).value = "#ffffff";
+				}
+			} else if(property === 'deselectedBrowseCategoryBorderColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#0087AB";
+					document.getElementById(property).value = "#0087AB";
+				}
+			} else if(property === 'badgeBackgroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#666666";
+					document.getElementById(property).value = "#666666";
+				}
+			} else if(property === 'badgeForegroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#ffffff";
+					document.getElementById(property).value = "#ffffff";
+				}
+			} else if(property === 'closedPanelBackgroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#e7e7e7";
+					document.getElementById(property).value = "#e7e7e7";
+				}
+			} else if(property === 'closedPanelForegroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#333333";
+					document.getElementById(property).value = "#333333";
+				}
+			} else if(property === 'openPanelBackgroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#333333";
+					document.getElementById(property).value = "#333333";
+				}
+			} else if(property === 'openPanelForegroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#ffffff";
+					document.getElementById(property).value = "#ffffff";
+				}
+			} else if(property === 'panelBodyBackgroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#ffffff";
+					document.getElementById(property).value = "#ffffff";
+				}
+			} else if(property === 'panelBodyForegroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#404040";
+					document.getElementById(property).value = "#404040";
+				}
+			} else if(property === 'defaultButtonBackgroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#ffffff";
+					document.getElementById(property).value = "#ffffff";
+				}
+			} else if(property === 'defaultButtonForegroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#333333";
+					document.getElementById(property).value = "#333333";
+				}
+			} else if(property === 'defaultButtonBorderColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#cccccc";
+					document.getElementById(property).value = "#cccccc";
+				}
+			} else if(property === 'defaultButtonHoverBackgroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#eeeeee";
+					document.getElementById(property).value = "#eeeeee";
+				}
+			} else if(property === 'defaultButtonHoverForegroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#333333";
+					document.getElementById(property).value = "#333333";
+				}
+			} else if(property === 'defaultButtonHoverBorderColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#cccccc";
+					document.getElementById(property).value = "#cccccc";
+				}
+			} else if(property === 'primaryButtonBackgroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#1b6ec2";
+					document.getElementById(property).value = "#1b6ec2";
+				}
+			} else if(property === 'primaryButtonForegroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#ffffff";
+					document.getElementById(property).value = "#ffffff";
+				}
+			} else if(property === 'primaryButtonBorderColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#1b6ec2";
+					document.getElementById(property).value = "#1b6ec2";
+				}
+			} else if(property === 'primaryButtonHoverBackgroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#ffffff";
+					document.getElementById(property).value = "#ffffff";
+				}
+			} else if(property === 'primaryButtonHoverForegroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#1b6ec2";
+					document.getElementById(property).value = "#1b6ec2";
+				}
+			} else if(property === 'primaryButtonHoverBorderColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#1b6ec2";
+					document.getElementById(property).value = "#1b6ec2";
+				}
+			} else if(property === 'actionButtonBackgroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#1b6ec2";
+					document.getElementById(property).value = "#1b6ec2";
+				}
+			} else if(property === 'actionButtonForegroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#ffffff";
+					document.getElementById(property).value = "#ffffff";
+				}
+			} else if(property === 'actionButtonBorderColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#1b6ec2";
+					document.getElementById(property).value = "#1b6ec2";
+				}
+			} else if(property === 'actionButtonHoverBackgroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#ffffff";
+					document.getElementById(property).value = "#ffffff";
+				}
+			} else if(property === 'actionButtonHoverForegroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#1b6ec2";
+					document.getElementById(property).value = "#1b6ec2";
+				}
+			} else if(property === 'actionButtonHoverBorderColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#1b6ec2";
+					document.getElementById(property).value = "#1b6ec2";
+				}
+			} else if(property === 'editionsButtonBackgroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#f8f9fa";
+					document.getElementById(property).value = "#f8f9fa";
+				}
+			} else if(property === 'editionsButtonForegroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#212529";
+					document.getElementById(property).value = "#212529";
+				}
+			} else if(property === 'editionsButtonBorderColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#999999";
+					document.getElementById(property).value = "#999999";
+				}
+			} else if(property === 'editionsButtonHoverBackgroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#ffffff";
+					document.getElementById(property).value = "#ffffff";
+				}
+			} else if(property === 'editionsButtonHoverForegroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#1b6ec2";
+					document.getElementById(property).value = "#1b6ec2";
+				}
+			} else if(property === 'editionsButtonHoverBorderColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#1b6ec2";
+					document.getElementById(property).value = "#1b6ec2";
+				}
+			} else if(property === 'toolsButtonBackgroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#747474";
+					document.getElementById(property).value = "#747474";
+				}
+			} else if(property === 'toolsButtonForegroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#ffffff";
+					document.getElementById(property).value = "#ffffff";
+				}
+			} else if(property === 'toolsButtonBorderColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#636363";
+					document.getElementById(property).value = "#636363";
+				}
+			} else if(property === 'toolsButtonHoverBackgroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#636363";
+					document.getElementById(property).value = "#636363";
+				}
+			} else if(property === 'toolsButtonHoverForegroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#ffffff";
+					document.getElementById(property).value = "#ffffff";
+				}
+			} else if(property === 'toolsButtonHoverBorderColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#636363";
+					document.getElementById(property).value = "#636363";
+				}
+			} else if(property === 'infoButtonBackgroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#8cd2e7";
+					document.getElementById(property).value = "#8cd2e7";
+				}
+			} else if(property === 'infoButtonForegroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#000000";
+					document.getElementById(property).value = "#000000";
+				}
+			} else if(property === 'infoButtonBorderColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#999999";
+					document.getElementById(property).value = "#999999";
+				}
+			} else if(property === 'infoButtonHoverBackgroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#ffffff";
+					document.getElementById(property).value = "#ffffff";
+				}
+			} else if(property === 'infoButtonHoverForegroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#217e9b";
+					document.getElementById(property).value = "#217e9b";
+				}
+			} else if(property === 'infoButtonHoverBorderColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#217e9b";
+					document.getElementById(property).value = "#217e9b";
+				}
+			} else if(property === 'warningButtonBackgroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#f4d03f";
+					document.getElementById(property).value = "#f4d03f";
+				}
+			} else if(property === 'warningButtonForegroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#000000";
+					document.getElementById(property).value = "#000000";
+				}
+			} else if(property === 'warningButtonBorderColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#999999";
+					document.getElementById(property).value = "#999999";
+				}
+			} else if(property === 'warningButtonHoverBackgroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#ffffff";
+					document.getElementById(property).value = "#ffffff";
+				}
+			} else if(property === 'warningButtonHoverForegroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#8d6708";
+					document.getElementById(property).value = "#8d6708";
+				}
+			} else if(property === 'warningButtonHoverBorderColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#8d6708";
+					document.getElementById(property).value = "#8d6708";
+				}
+			} else if(property === 'dangerButtonBackgroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#D50000";
+					document.getElementById(property).value = "#D50000";
+				}
+			} else if(property === 'dangerButtonForegroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#ffffff";
+					document.getElementById(property).value = "#ffffff";
+				}
+			} else if(property === 'dangerButtonBorderColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#999999";
+					document.getElementById(property).value = "#999999";
+				}
+			} else if(property === 'dangerButtonHoverBackgroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#ffffff";
+					document.getElementById(property).value = "#ffffff";
+				}
+			} else if(property === 'dangerButtonHoverForegroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#D50000";
+					document.getElementById(property).value = "#D50000";
+				}
+			} else if(property === 'dangerButtonHoverBorderColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#D50000";
+					document.getElementById(property).value = "#D50000";
+				}
 			};
 		},
-		checkContrast: function (property1, property2,oneWay) {
+		checkContrast: function (property1, property2, oneWay, minRatio) {
 				if (oneWay === undefined) {
 					oneWay = false;
 				}
@@ -7232,27 +7999,52 @@ AspenDiscovery.Admin = (function(){
 					var contrastSpan2 = $("#contrast_" + property2);
 					contrastSpan1.text(contrastRatio.toFixed(2));
 					contrastSpan2.text(contrastRatio.toFixed(2));
-					if (contrastRatio < 3.5) {
-						contrastSpan1.addClass("alert-danger");
-						contrastSpan2.addClass("alert-danger");
-						contrastSpan1.removeClass("alert-warning");
-						contrastSpan2.removeClass("alert-warning");
-						contrastSpan1.removeClass("alert-success");
-						contrastSpan2.removeClass("alert-success");
-					} else if (contrastRatio < 4.5) {
-						contrastSpan1.removeClass("alert-danger");
-						contrastSpan2.removeClass("alert-danger");
-						contrastSpan1.addClass("alert-warning");
-						contrastSpan2.addClass("alert-warning");
-						contrastSpan1.removeClass("alert-success");
-						contrastSpan2.removeClass("alert-success");
+					if(minRatio === 7.0) {
+						if (contrastRatio < 4.5) {
+							contrastSpan1.addClass("alert-danger");
+							contrastSpan2.addClass("alert-danger");
+							contrastSpan1.removeClass("alert-warning");
+							contrastSpan2.removeClass("alert-warning");
+							contrastSpan1.removeClass("alert-success");
+							contrastSpan2.removeClass("alert-success");
+						} else if (contrastRatio < minRatio) {
+							contrastSpan1.removeClass("alert-danger");
+							contrastSpan2.removeClass("alert-danger");
+							contrastSpan1.addClass("alert-warning");
+							contrastSpan2.addClass("alert-warning");
+							contrastSpan1.removeClass("alert-success");
+							contrastSpan2.removeClass("alert-success");
+						} else {
+							contrastSpan1.removeClass("alert-danger");
+							contrastSpan2.removeClass("alert-danger");
+							contrastSpan1.removeClass("alert-warning");
+							contrastSpan2.removeClass("alert-warning");
+							contrastSpan1.addClass("alert-success");
+							contrastSpan2.addClass("alert-success");
+						}
 					} else {
-						contrastSpan1.removeClass("alert-danger");
-						contrastSpan2.removeClass("alert-danger");
-						contrastSpan1.removeClass("alert-warning");
-						contrastSpan2.removeClass("alert-warning");
-						contrastSpan1.addClass("alert-success");
-						contrastSpan2.addClass("alert-success");
+						if (contrastRatio < 3.5) {
+							contrastSpan1.addClass("alert-danger");
+							contrastSpan2.addClass("alert-danger");
+							contrastSpan1.removeClass("alert-warning");
+							contrastSpan2.removeClass("alert-warning");
+							contrastSpan1.removeClass("alert-success");
+							contrastSpan2.removeClass("alert-success");
+						} else if (contrastRatio < minRatio) {
+							contrastSpan1.removeClass("alert-danger");
+							contrastSpan2.removeClass("alert-danger");
+							contrastSpan1.addClass("alert-warning");
+							contrastSpan2.addClass("alert-warning");
+							contrastSpan1.removeClass("alert-success");
+							contrastSpan2.removeClass("alert-success");
+						} else {
+							contrastSpan1.removeClass("alert-danger");
+							contrastSpan2.removeClass("alert-danger");
+							contrastSpan1.removeClass("alert-warning");
+							contrastSpan2.removeClass("alert-warning");
+							contrastSpan1.addClass("alert-success");
+							contrastSpan2.addClass("alert-success");
+						}
 					}
 				} else {
 					$("#contrastCheck_" + property1).hide();

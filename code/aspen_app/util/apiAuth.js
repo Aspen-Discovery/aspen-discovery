@@ -1,5 +1,4 @@
 import React from "react";
-import Constants from "expo-constants";
 import * as Device from 'expo-device';
 import * as SecureStore from 'expo-secure-store';
 import base64 from 'react-native-base64';
@@ -7,61 +6,104 @@ import _ from "lodash";
 import {API_KEY_1, API_KEY_2, API_KEY_3, API_KEY_4, API_KEY_5} from '@env';
 
 // polyfill for base64 (required for authentication)
-if (!global.btoa) { global.btoa = base64.encode; }
-if (!global.atob) { global.atob = base64.decode; }
+if (!global.btoa) {
+	global.btoa = base64.encode;
+}
+if (!global.atob) {
+	global.atob = base64.decode;
+}
 
+/**
+ * Create authentication token to validate the API request to Aspen
+ **/
 export function createAuthTokens() {
-    var tokens = {};
-    tokens['username'] = makeNewSecret();
-    tokens['password'] = makeNewSecret();
-    return tokens;
+	const tokens = {};
+	tokens['username'] = makeNewSecret();
+	tokens['password'] = makeNewSecret();
+	return tokens;
 }
 
+/**
+ * Create secure data body to send the patron login information to Aspen via POST
+ **/
 export async function postData() {
-    var content = null;
-    var content = new FormData();
+	const secretKey = await SecureStore.getItemAsync("secretKey");
+	const userKey = await SecureStore.getItemAsync("userKey");
+	const content = new FormData();
+	content.append('username', userKey);
+	content.append('password', secretKey);
 
-    try {
-        var userKey = await SecureStore.getItemAsync("userKey");
-    } catch (e) {
-        var userKey = null;
-        console.log(e)
-    }
-
-    try {
-        var secretKey = await SecureStore.getItemAsync("secretKey");
-    } catch (e) {
-        var userKey = null;
-        console.log(e)
-    }
-
-    content.append('username', userKey);
-    content.append('password', secretKey);
-
-    return content;
+	return content;
 }
 
+/**
+ * Collect header information to send to Aspen
+ *
+ * Parameters:
+ * <ul>
+ *     <li>isPost - if request is POST type, set to true. Required for Aspen to see POST parameters.</li>
+ * </ul>
+ **/
 export function getHeaders(isPost = false) {
-    var headers = {};
+	const headers = {};
 
-    headers['User-Agent'] = 'Aspen LiDA ' + Device.modelName + ' ' + Device.osName + '/' + Device.osVersion;
-    headers['Version'] = 'v' + global.version + ' [b' + global.build + ']';
+	headers['User-Agent'] = 'Aspen LiDA ' + Device.modelName + ' ' + Device.osName + '/' + Device.osVersion;
+	headers['Version'] = 'v' + global.version + ' [b' + global.build + ']';
+	headers['LiDA-SessionID'] = global.sessionId;
+	headers['Cache-Control'] = 'max-age=10800';
 
-    if(isPost) {
-        headers['Content-Type'] = 'application/x-www-form-urlencoded';
-    };
+	if (isPost) {
+		headers['Content-Type'] = 'application/x-www-form-urlencoded';
+	}
 
-    return headers;
+	return headers;
 }
 
+/**
+ * Generate a random pairing of current keys
+ **/
 function makeNewSecret() {
-    const tokens = [API_KEY_1, API_KEY_2, API_KEY_3, API_KEY_4, API_KEY_5];
-    // Shuffle array & select random key
-    var thisKey = _.sample(_.shuffle(tokens));
-    return base64.encode(thisKey);
+	const tokens = [API_KEY_1, API_KEY_2, API_KEY_3, API_KEY_4, API_KEY_5];
+	const thisKey = _.sample(_.shuffle(tokens));
+	return base64.encode(thisKey);
 }
 
-async function getTokenValue(key) {
-    let result = await SecureStore.getItemAsync(key);
-    return result
-};
+/**
+ * Check the problem code sent to display appropriate error message
+ **/
+export function problemCodeMap(code) {
+	switch (code) {
+		case "CLIENT_ERROR":
+			return {
+				title: "There's been a glitch",
+				message: "We're not quite sure what went wrong. Try reloading the page or come back later.",
+			};
+		case "SERVER_ERROR":
+			return {
+				title: "Something went wrong",
+				message: "Looks like our server encountered an internal error or misconfiguration and was unable to complete your request. Please try again in a while.",
+			};
+		case "TIMEOUT_ERROR":
+			return {
+				title: "Connection timed out",
+				message: "Looks like the server is taking to long to respond, this can be caused by either poor connectivity or an error with our servers. Please try again in a while.",
+			};
+		case "CONNECTION_ERROR":
+			return {
+				title: "Problem connecting",
+				message: "Check your internet connection and try again.",
+			};
+		case "NETWORK_ERROR":
+			return {
+				title: "Problem connecting",
+				message: "Looks like our servers are currently unavailable. Please try again in a while.",
+			};
+		case "CANCEL_ERROR":
+			return {
+				title: "Something went wrong",
+				message: "We're not quite sure what went wrong so the request to our server was cancelled. Please try again in awhile.",
+			};
+		default:
+			return null;
+	}
+}

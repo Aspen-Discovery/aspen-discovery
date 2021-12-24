@@ -489,25 +489,33 @@ AspenDiscovery.Account = (function(){
 				loadingElem.show();
 				// noinspection JSUnresolvedFunction
 				$.post(url, params, function(response){
-					loadingElem.hide();
 					if (response.result.success === true) {
-						$('#loginLinkIcon').removeClass('fa-sign-in-alt').addClass('fa-user');
-						$('#login-button-label').html(response.result.name);
-						$('#logoutLink').show();
+						if (response.result.twoFactor === true) {
+							$.getJSON(Globals.path + "/MyAccount/AJAX?method=auth2FALogin&referer=" + referer + "&name=" + response.result.name, function (data) {
+								if (data.success) {
+									AspenDiscovery.showMessageWithButtons(data.title, data.body, data.buttons);
+								}
+							});
+						} else {
+							loadingElem.hide();
+							$('#loginLinkIcon').removeClass('fa-sign-in-alt').addClass('fa-user');
+							$('#login-button-label').html(response.result.name);
+							$('#logoutLink').show();
 
-						if (AspenDiscovery.Account.closeModalOnAjaxSuccess) {
-							AspenDiscovery.closeLightbox();
-						}
+							if (AspenDiscovery.Account.closeModalOnAjaxSuccess) {
+								AspenDiscovery.closeLightbox();
+							}
 
-						Globals.loggedIn = true;
-						if (ajaxCallback !== undefined && typeof(ajaxCallback) === "function") {
-							ajaxCallback();
-						} else if (AspenDiscovery.Account.ajaxCallback !== undefined && typeof(AspenDiscovery.Account.ajaxCallback) === "function") {
-							AspenDiscovery.Account.ajaxCallback();
-							AspenDiscovery.Account.ajaxCallback = null;
-						}
-						if (multiStep !== 'true') {
-							window.location.replace(referer);
+							Globals.loggedIn = true;
+							if (ajaxCallback !== undefined && typeof(ajaxCallback) === "function") {
+								ajaxCallback();
+							} else if (AspenDiscovery.Account.ajaxCallback !== undefined && typeof(AspenDiscovery.Account.ajaxCallback) === "function") {
+								AspenDiscovery.Account.ajaxCallback();
+								AspenDiscovery.Account.ajaxCallback = null;
+							}
+							if (multiStep !== 'true') {
+								window.location.replace(referer);
+							}
 						}
 					} else {
 						loginErrorElem.text(response.result.message).show();
@@ -1388,6 +1396,10 @@ AspenDiscovery.Account = (function(){
 				$.getJSON(url, params, function(data){
 					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
 				}).fail(AspenDiscovery.ajaxFail);
+			} else {
+				AspenDiscovery.Account.ajaxLogin(null, function(){
+					return AspenDiscovery.Account.showSaveToListForm(trigger, source, id);
+				}, false);
 			}
 			return false;
 		},
@@ -1635,6 +1647,190 @@ AspenDiscovery.Account = (function(){
 				);
 			}).fail(AspenDiscovery.ajaxFail);
 			return false
-		}
+		},
+		show2FAEnrollment: function(){
+			if (Globals.loggedIn){
+				AspenDiscovery.loadingMessage();
+				$.getJSON(Globals.path + "/MyAccount/AJAX?method=get2FAEnrollment&step=register", function(data) {
+					if (data.success) {
+						AspenDiscovery.showMessageWithButtons(data.title, data.body, data.buttons)
+					} else {
+						AspenDiscovery.showMessage(data.title, data.message);
+					}
+				});
+			} else {
+				AspenDiscovery.Account.ajaxLogin(null, function(){
+					return AspenDiscovery.Account.show2FAEnrollment();
+				}, false);
+			}
+			return false;
+		},
+		show2FAEnrollmentVerify: function(){
+			if (Globals.loggedIn){
+				$.getJSON(Globals.path + "/MyAccount/AJAX?method=get2FAEnrollment&step=verify", function(data) {
+					if (data.success) {
+						AspenDiscovery.showMessageWithButtons(data.title, data.body, data.buttons)
+					} else {
+						AspenDiscovery.showMessage(data.title, data.message);
+					}
+				});
+			} else {
+				AspenDiscovery.Account.ajaxLogin(null, function(){
+					return AspenDiscovery.Account.show2FAEnrollmentVerify();
+				}, false);
+			}
+			return false;
+		},
+		show2FAEnrollmentBackupCodes: function(){
+			if (Globals.loggedIn){
+				$.getJSON(Globals.path + "/MyAccount/AJAX?method=get2FAEnrollment&step=backup", function(data) {
+					if (data.success) {
+						AspenDiscovery.showMessageWithButtons(data.title, data.body, data.buttons)
+					} else {
+						AspenDiscovery.showMessage(data.title, data.message);
+					}
+				});
+			} else {
+				AspenDiscovery.Account.ajaxLogin(null, function(){
+					return AspenDiscovery.Account.show2FAEnrollmentBackupCodes();
+				}, false);
+			}
+			return false;
+		},
+		show2FAEnrollmentSuccess: function(){
+			if (Globals.loggedIn){
+				$.getJSON(Globals.path + "/MyAccount/AJAX?method=get2FAEnrollment&step=complete", function(data) {
+					if (data.success) {
+						AspenDiscovery.showMessage(data.title, data.body, false, 2000)
+					}
+				});
+			} else {
+				AspenDiscovery.Account.ajaxLogin(null, function(){
+					return AspenDiscovery.Account.show2FAEnrollmentSuccess();
+				}, false);
+			}
+			return false;
+		},
+		showCancel2FA: function(){
+			if (Globals.loggedIn){
+				AspenDiscovery.loadingMessage();
+				$.getJSON(Globals.path + "/MyAccount/AJAX?method=confirmCancel2FA", function(data) {
+					if (data.success) {
+						AspenDiscovery.showMessageWithButtons(data.title, data.body, data.buttons)
+					} else {
+						AspenDiscovery.showMessage(data.title, data.message);
+					}
+				});
+			} else {
+				AspenDiscovery.Account.ajaxLogin(null, function(){
+					return AspenDiscovery.Account.cancel2FA();
+				}, false);
+			}
+			return false;
+		},
+		cancel2FA: function(){
+			if (Globals.loggedIn){
+				AspenDiscovery.loadingMessage();
+				$.getJSON(Globals.path + "/MyAccount/AJAX?method=cancel2FA", function(data) {
+					if (data.success) {
+						AspenDiscovery.showMessage(data.title, data.body, true, 2000)
+					} else {
+						AspenDiscovery.showMessage(data.title, data.message);
+					}
+				});
+			} else {
+				AspenDiscovery.Account.ajaxLogin(null, function(){
+					return AspenDiscovery.Account.cancel2FA();
+				}, false);
+			}
+			return false;
+		},
+		verify2FA: function() {
+			var code = $("#code").val();
+			if (Globals.loggedIn){
+				$.getJSON(Globals.path + "/MyAccount/AJAX?method=verify2FA&code=" + code, function(data) {
+					// update #codeVerificationFailedPlaceholder with failed verification status, otherwise move onto next step
+					if(data.success === "true") {
+						return AspenDiscovery.Account.show2FAEnrollmentBackupCodes();
+					}
+					$("#codeVerificationFailedPlaceholder").html(data.message).show();
+					return data;
+				});
+			} else {
+				AspenDiscovery.Account.ajaxLogin(null, function(){
+					return AspenDiscovery.Account.verify2FA();
+				}, false);
+			}
+			return false;
+		},
+		new2FACode: function() {
+				$.getJSON(Globals.path + "/MyAccount/AJAX?method=new2FACode", function(data) {
+					// update #newCodeSentPlaceholder with sent status
+					$("#newCodeSentPlaceholder").html(data.body).show();
+					return data;
+				});
+			return false;
+		},
+		showNewBackupCodes: function(){
+			if (Globals.loggedIn){
+				AspenDiscovery.loadingMessage();
+				$.getJSON(Globals.path + "/MyAccount/AJAX?method=newBackupCodes", function(data) {
+					if (data.success) {
+						AspenDiscovery.showMessage(data.title, data.body, false, 2000)
+					}
+				});
+			} else {
+				AspenDiscovery.Account.ajaxLogin(null, function(){
+					return AspenDiscovery.Account.showNewBackupCodes();
+				}, false);
+			}
+			return false;
+		},
+		show2FALogin: function(){
+			if (Globals.loggedIn){
+				AspenDiscovery.loadingMessage();
+				$.getJSON(Globals.path + "/MyAccount/AJAX?method=newBackupCodes", function(data) {
+					if (data.success) {
+						AspenDiscovery.showMessage(data.title, data.body, false, 2000)
+					}
+				});
+			} else {
+				AspenDiscovery.Account.ajaxLogin(null, function(){
+					return AspenDiscovery.Account.show2FALogin();
+				}, false);
+			}
+			return false;
+		},
+		verify2FALogin: function(ajaxCallback) {
+			var code = $("#code").val();
+			var referer = $("#referer").val();
+			var name = $("#name").val();
+			$.getJSON(Globals.path + "/MyAccount/AJAX?method=verify2FA&code=" + code, function(data) {
+				// update #codeVerificationFailedPlaceholder with failed verification status, otherwise move onto next step
+				if(data.success === "true") {
+					$('#loginLinkIcon').removeClass('fa-sign-in-alt').addClass('fa-user');
+					$('#login-button-label').html(name);
+					$('#logoutLink').show();
+
+					if (AspenDiscovery.Account.closeModalOnAjaxSuccess) {
+						AspenDiscovery.closeLightbox();
+					}
+
+					Globals.loggedIn = true;
+					if (ajaxCallback !== undefined && typeof(ajaxCallback) === "function") {
+						ajaxCallback();
+					} else if (AspenDiscovery.Account.ajaxCallback !== undefined && typeof(AspenDiscovery.Account.ajaxCallback) === "function") {
+						AspenDiscovery.Account.ajaxCallback();
+						AspenDiscovery.Account.ajaxCallback = null;
+					}
+					if (multiStep !== 'true') {
+						window.location.replace(referer);
+					}
+				}
+				$("#codeVerificationFailedPlaceholder").html(data.message).show();
+				return data;
+			});
+			return false;
+		},
 	};
 }(AspenDiscovery.Account || {}));

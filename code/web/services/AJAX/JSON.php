@@ -207,12 +207,20 @@ class AJAX_JSON extends Action {
 			$user = UserAccount::getLoggedInUser();
 		}
 
+		if(UserAccount::has2FAEnabledForPType() && UserAccount::has2FAEnabled()) {
+			$logger->log("User needs to two-factor authenticate",Logger::LOG_DEBUG);
+			$twoFactorAuth = true;
+		} else {
+			$twoFactorAuth = false;
+		}
+
 		$patronHomeBranch = Location::getUserHomeLocation();
 		//Check to see if materials request should be activated
 		require_once ROOT_DIR . '/sys/MaterialsRequest.php';
 
 		return array(
 			'success' => true,
+			'twoFactor' => $twoFactorAuth,
 			'name' => $user->displayName,
 			'phone' => $user->phone,
 			'email' => $user->email,

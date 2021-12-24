@@ -1,34 +1,37 @@
 {strip}
 	{if $showComments || $showFavorites || $showEmailThis || $showShareOnExternalSites}
 		<div class="result-tools-horizontal btn-toolbar" role="toolbar">
+			{if $showNotInterested == true}
+			{if !$showCovers}
+			<div class="btn-group" role="group">
+				<button id="notInterested{$summId}" style="word-break: keep-all; white-space: inherit"
+				        class="btn btn-warning btn-sm notInterested"
+				        title="{translate text="Select if you don't want to see this title recommended to you." inAttribute=true isPublicFacing=true }"
+				        onclick="return AspenDiscovery.GroupedWork.markNotInterested('{$summId}');">{translate text="Don't Recommend" isPublicFacing=true}</button>
+			</div>
+			{/if}
+			{/if}
+			<div class="btn-group" role="group">
 			{* More Info Link, only if we are showing other data *}
 			{if $showMoreInfo || $showComments || $showFavorites}
 				{if $showMoreInfo !== false}
-					<div class="btn-group btn-group-sm">
-						<a href="{if $summUrl}{$summUrl}{else}{$recordDriver->getMoreInfoLinkUrl()}{/if}" class="btn btn-sm btn-tools" aria-label="{translate text="More Info for %1% record %2%" 1=$summTitle|escape:css 2=$recordDriver->getPermanentId() isPublicFacing=true inAttribute=true}">{translate text="More Info" isPublicFacing=true}</a>
-					</div>
+					<a href="{if $summUrl}{$summUrl}{else}{$recordDriver->getMoreInfoLinkUrl()}{/if}" class="btn btn-sm btn-tools" aria-label="{translate text="More Info for %1% record %2%" 1=$summTitle|escape:css 2=$recordDriver->getPermanentId() isPublicFacing=true inAttribute=true}">{translate text="More Info" isPublicFacing=true}</a>
 				{/if}
 				{if $showComments == 1}
-					<div class="btn-group btn-group-sm{if $module == 'Search' || ($action == 'MyList' && $module == 'MyAccount')} hidden-xs{/if}">
-						{* Hide Review Button for xs views in Search Results & User Lists *}
-						<button id="userreviewlink{$recordDriver->getPermanentId()}" class="resultAction btn btn-sm btn-tools" onclick="return AspenDiscovery.GroupedWork.showReviewForm(this, '{$recordDriver->getPermanentId()}')" onkeypress="return AspenDiscovery.GroupedWork.showReviewForm(this, '{$recordDriver->getPermanentId()}')">
-							{translate text='Add a Review' isPublicFacing=true}
-						</button>
-					</div>
+					{* Hide Review Button for xs views in Search Results & User Lists *}
+					<button id="userreviewlink{$recordDriver->getPermanentId()}" class="resultAction btn btn-sm btn-tools{if $module == 'Search' || ($action == 'MyList' && $module == 'MyAccount')} hidden-xs{/if}" onclick="return AspenDiscovery.GroupedWork.showReviewForm(this, '{$recordDriver->getPermanentId()}')" onkeypress="return AspenDiscovery.GroupedWork.showReviewForm(this, '{$recordDriver->getPermanentId()}')">
+						{translate text='Add a Review' isPublicFacing=true}
+					</button>
 				{/if}
 				{if $showFavorites == 1}
-					<div class="btn-group btn-group-sm">
-						<button onclick="return AspenDiscovery.Account.showSaveToListForm(this, 'GroupedWork', '{$recordDriver->getPermanentId()|escape}');" onkeypress="return AspenDiscovery.Account.showSaveToListForm(this, 'GroupedWork', '{$recordDriver->getPermanentId()|escape}');" class="btn btn-sm btn-tools">{translate text="Add to list" isPublicFacing=true}</button>
-					</div>
+					<button onclick="return AspenDiscovery.Account.showSaveToListForm(this, 'GroupedWork', '{$recordDriver->getPermanentId()|escape}');" onkeypress="return AspenDiscovery.Account.showSaveToListForm(this, 'GroupedWork', '{$recordDriver->getPermanentId()|escape}');" class="btn btn-sm btn-tools">{translate text="Add to list" isPublicFacing=true}</button>
 				{/if}
 				{if $loggedIn && $module == 'Search' && in_array('Manually Group and Ungroup Works', $userPermissions)}
-					<div class="btn-group btn-group-sm">
-						<button onclick="return AspenDiscovery.GroupedWork.getGroupWithSearchForm(this, '{$recordDriver->getPermanentId()}', '{$searchId}', '{$page}')" onkeypress="return AspenDiscovery.GroupedWork.getGroupWithSearchForm(this, '{$recordDriver->getPermanentId()}', '{$searchId}', '{$page}')" class="btn btn-sm btn-tools">{translate text='Group With' isAdminFacing=true}</button>
-					</div>
+					<button onclick="return AspenDiscovery.GroupedWork.getGroupWithSearchForm(this, '{$recordDriver->getPermanentId()}', '{$searchId}', '{$page}')" onkeypress="return AspenDiscovery.GroupedWork.getGroupWithSearchForm(this, '{$recordDriver->getPermanentId()}', '{$searchId}', '{$page}')" class="btn btn-sm btn-tools">{translate text='Group With' isAdminFacing=true}</button>
 				{/if}
 			{/if}
-
-			<div class="btn-group btn-group-sm">
+			</div>
+			<div class="btn-group btn-group-sm" role="group">
 				{include file="GroupedWork/share-tools.tpl"}
 			</div>
 		</div>

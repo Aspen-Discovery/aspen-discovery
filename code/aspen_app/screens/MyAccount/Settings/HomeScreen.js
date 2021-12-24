@@ -1,33 +1,27 @@
-import React, { Component } from "react";
-import { View } from "react-native";
-import { Center, Spinner, HStack, Text, Image, Flex, Box, FlatList, Icon, Button, Switch } from "native-base";
-import { MaterialIcons, Entypo, Ionicons } from "@expo/vector-icons";
-import { ListItem } from "react-native-elements";
-import * as SecureStore from 'expo-secure-store';
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import Barcode from "react-native-barcode-expo";
+import React, {Component} from "react";
+import {Box, FlatList, HStack, Switch, Text} from "native-base";
 import _ from "lodash";
 
 // custom components and helper files
-import { translate } from '../../../util/translations';
-import { loadingSpinner } from "../../../components/loadingSpinner";
-import { loadError } from "../../../components/loadError";
-import { getActiveBrowseCategories } from "../../../util/loadLibrary";
-import { getHiddenBrowseCategories } from "../../../util/loadPatron";
-import { showBrowseCategory, dismissBrowseCategory } from "../../../util/accountActions";
+import {translate} from '../../../util/translations';
+import {loadingSpinner} from "../../../components/loadingSpinner";
+import {loadError} from "../../../components/loadError";
+import {getActiveBrowseCategories} from "../../../util/loadLibrary";
+import {getHiddenBrowseCategories} from "../../../util/loadPatron";
+import {dismissBrowseCategory, showBrowseCategory} from "../../../util/accountActions";
 
 export default class Settings_HomeScreen extends Component {
-	static navigationOptions = { title: translate('user_profile.home_screen_settings') };
+	static navigationOptions = {title: translate('user_profile.home_screen_settings')};
 
 	constructor(props) {
 		super(props);
 		this.state = {
-            isLoading: true,
-            hasError: false,
-            error: null,
-            hasUpdated: false,
-            isRefreshing: false,
-            browseCategories: [],
+			isLoading: true,
+			hasError: false,
+			error: null,
+			hasUpdated: false,
+			isRefreshing: false,
+			browseCategories: [],
 		};
 	}
 
@@ -42,109 +36,109 @@ export default class Settings_HomeScreen extends Component {
 
 	};
 
-    _fetchBrowseCategoryList = async () => {
+	_fetchBrowseCategoryList = async () => {
 
-        this.setState({
-            isLoading: true,
-        });
+		this.setState({
+			isLoading: true,
+		});
 
-        await getActiveBrowseCategories().then(response => {
-            if(response == "TIMEOUT_ERROR") {
-                this.setState({
-                    hasError: true,
-                    error: translate('error.timeout'),
-                    isLoading: false,
-                });
-            } else {
-                this.setState({
-                    browseCategories: response,
-                    hasError: false,
-                    error: null,
-                    isLoading: false,
-                });
-            }
-        });
-    }
+		await getActiveBrowseCategories().then(response => {
+			if(response == "TIMEOUT_ERROR") {
+				this.setState({
+					hasError: true,
+					error: translate('error.timeout'),
+					isLoading: false,
+				});
+			} else {
+				this.setState({
+					browseCategories: response,
+					hasError: false,
+					error: null,
+					isLoading: false,
+				});
+			}
+		});
+	}
 
-    _fetchHiddenBrowseCategories = async () => {
-        this.setState({
-            isLoading: true,
-        });
+	_fetchHiddenBrowseCategories = async () => {
+		this.setState({
+			isLoading: true,
+		});
 
-        await getHiddenBrowseCategories().then(response => {
-            if(response == "TIMEOUT_ERROR") {
-                this.setState({
-                    hasError: true,
-                    error: translate('error.timeout'),
-                    isLoading: false,
-                });
-            } else {
-                const hiddenCategories = response;
-                const browseCategories = this.state.browseCategories;
-                if(typeof hiddenCategories === 'undefined') {
-                    var allCategories = browseCategories;
-                } else {
-                    var allCategories = hiddenCategories.concat(browseCategories);
-                }
+		await getHiddenBrowseCategories().then(response => {
+			if(response == "TIMEOUT_ERROR") {
+				this.setState({
+					hasError: true,
+					error: translate('error.timeout'),
+					isLoading: false,
+				});
+			} else {
+				const hiddenCategories = response;
+				const browseCategories = this.state.browseCategories;
+				if (typeof hiddenCategories === 'undefined') {
+					var allCategories = browseCategories;
+				} else {
+					var allCategories = hiddenCategories.concat(browseCategories);
+				}
 
-                var uniqueCategories = _.uniqBy(allCategories, 'key');
+				var uniqueCategories = _.uniqBy(allCategories, 'key');
 
-                this.setState({
-                    hiddenCategories: response,
-                    allCategories: uniqueCategories,
-                    hasError: false,
-                    error: null,
-                    isLoading: false,
-                });
-            }
-        });
-    }
+				this.setState({
+					hiddenCategories: response,
+					allCategories: uniqueCategories,
+					hasError: false,
+					error: null,
+					isLoading: false,
+				});
+			}
+		});
+	}
 
-    // handles the on-press action
-    onPressItem = async (item) => {
-        console.log(item);
-        if(item.isHidden == true) {
-            await showBrowseCategory(item.key);
-        } else {
-            await dismissBrowseCategory(item.key);
-        }
-            await this._fetchBrowseCategoryList();
-            await this._fetchHiddenBrowseCategories();
-    };
+	// Update the status of the browse category when the toggle switch is flipped
+	updateToggle = async (item) => {
+		if (item.isHidden === true) {
+			await showBrowseCategory(item.key);
+		} else {
+			await dismissBrowseCategory(item.key);
+		}
+		await this._fetchBrowseCategoryList();
+		await this._fetchHiddenBrowseCategories();
+	};
 
 
 	renderNativeItem = (item) => {
-        return (
-            <Box safeArea={5} bgColor="white">
-                <HStack space={3} alignItems="center" justifyContent="space-between" pb={1}>
-                    <Text isTruncated bold maxW="80%">{item.title}</Text>
-                    { item.isHidden ? <Switch size="md" onToggle={() => this.onPressItem(item)} /> : <Switch size="md" onToggle={() => this.onPressItem(item)} isChecked /> }
-                </HStack>
-            </Box>
-        );
+		return (
+			<Box safeArea={5} bgColor="white">
+				<HStack space={3} alignItems="center" justifyContent="space-between" pb={1}>
+					<Text isTruncated bold maxW="80%">{item.title}</Text>
+					{item.isHidden ? <Switch size="md" onToggle={() => this.updateToggle(item)}/> :
+						<Switch size="md" onToggle={() => this.updateToggle(item)} isChecked/>}
+				</HStack>
+			</Box>
+		);
 	};
 
 	render() {
 
-	    const { isLoading, allCategories } = this.state;
+		const allCategories = this.state;
 
 		if (this.state.isLoading) {
-			return ( loadingSpinner() );
+			return (loadingSpinner());
 		}
 
 		if (this.state.hasError) {
-            return ( loadError(this.state.error) );
+			return (loadError(this.state.error));
 		}
 
-        if(typeof allCategories === 'undefined') {
-            return ( loadError("No categories") );
-        }
+		if (typeof allCategories === 'undefined') {
+			return (loadError("No categories"));
+		}
 
 		return (
-            <Box>
+			<Box>
 				<FlatList
 					data={this.state.allCategories}
-					renderItem={({ item }) => this.renderNativeItem(item)}
+					renderItem={({item}) => this.renderNativeItem(item)}
 				/>
 			</Box>
 		);

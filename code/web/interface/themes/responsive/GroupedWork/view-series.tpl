@@ -12,8 +12,8 @@
 	{/if}
 	{if $seriesAuthors}
 	<div class="row">
-		<div class="result-label col-tn-3">{translate text="Author" isPublicFacing=true}</div>
-		<div class="col-tn-9 result-value notranslate">
+		<div class="result-label col-sm-4 col-xs-12">{translate text="Author" isPublicFacing=true}</div>
+		<div class="result-value col-sm-8 col-xs-12 notranslate">
 			{foreach from=$seriesAuthors item=author}
 				<span class="sidebarValue">{$author} </span>
 			{/foreach}

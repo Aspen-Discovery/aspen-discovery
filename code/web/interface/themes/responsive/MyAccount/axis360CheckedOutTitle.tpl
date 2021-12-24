@@ -52,23 +52,23 @@
 				</div>
 			</div>
 			<div class="row">
-				<div class="resultDetails col-xs-12 col-md-9">
+				<div class="resultDetails col-xs-12 col-md-8 col-lg-9">
 					{if strlen($record->getAuthor()) > 0}
 						<div class="row">
-							<div class="result-label col-tn-4 col-lg-3">{translate text='Author' isPublicFacing=true}</div>
-							<div class="result-value col-tn-8 col-lg-9">{$record->getAuthor()}</div>
+							<div class="result-label col-sm-12 col-md-5">{translate text='Author' isPublicFacing=true}</div>
+							<div class="col-sm-12 col-md-7 result-value">{$record->getAuthor()}</div>
 						</div>
 					{/if}
 
 					<div class="row">
-						<div class="result-label col-tn-4 col-lg-3">{translate text='Format' isPublicFacing=true}</div>
-						<div class="result-value col-tn-8 col-lg-9">{implode subject=$record->getFormats() translate=true isPublicFacing=true} - Axis 360</div>
+						<div class="result-label col-sm-12 col-md-5">{translate text='Format' isPublicFacing=true}</div>
+						<div class="col-sm-12 col-md-7 result-value">{implode subject=$record->getFormats() translate=true isPublicFacing=true} - Axis 360</div>
 					</div>
 
 					{if $showRatings && $record->getGroupedWorkId() && $record->getRatingData()}
 						<div class="row">
-							<div class="result-label col-tn-4 col-lg-3">{translate text='Rating' isPublicFacing=true}&nbsp;</div>
-							<div class="result-value col-tn-8 col-lg-9">
+							<div class="result-label col-sm-12 col-md-5">{translate text='Rating' isPublicFacing=true}&nbsp;</div>
+							<div class="col-sm-12 col-md-7 result-value">
 								{include file="GroupedWork/title-rating.tpl" id=$record->getGroupedWorkId() ratingData=$record->getRatingData() showNotInterested=false}
 							</div>
 						</div>
@@ -76,21 +76,21 @@
 
 					{if $hasLinkedUsers}
 						<div class="row">
-							<div class="result-label col-tn-4 col-lg-3">{translate text='Checked Out To' isPublicFacing=true}</div>
-							<div class="result-value col-tn-8 col-lg-9">
+							<div class="result-label col-sm-12 col-md-5">{translate text='Checked Out To' isPublicFacing=true}</div>
+							<div class="col-sm-12 col-md-7 result-value">
 								{$record->getUserName()}
 							</div>
 						</div>
 					{/if}
 
 					<div class="row">
-						<div class="result-label col-tn-4 col-lg-3">{translate text='Expires' isPublicFacing=true}</div>
-						<div class="result-value col-tn-8 col-lg-9">{$record->dueDate|date_format}</div>
+						<div class="result-label col-sm-12 col-md-5">{translate text='Expires' isPublicFacing=true}</div>
+						<div class="col-sm-12 col-md-7 result-value">{$record->dueDate|date_format}</div>
 					</div>
 				</div>
 
 				{* Actions for Title *}
-				<div class="col-xs-9 col-sm-8 col-md-4 col-lg-3">
+				<div class="col-sm-12 col-md-4 col-lg-3">
 					<div class="btn-group btn-group-vertical btn-block">
 						{if !empty($record->accessOnlineUrl)}
 							<a href="{$record->accessOnlineUrl}" target="_blank" class="btn btn-sm btn-action btn-wrap"><i class="fas fa-external-link-alt"></i> {translate text='Open in Axis 360' isPublicFacing=true}</a>

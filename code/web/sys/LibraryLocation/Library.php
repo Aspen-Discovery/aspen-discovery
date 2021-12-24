@@ -256,6 +256,9 @@ class Library extends DataObject
 	//Curbside Pickup
 	public $curbsidePickupSettingId;
 
+	//2FA settings ID
+	public $twoFactorAuthSettingId;
+
 	private $_cloudLibraryScopes;
 	private $_libraryLinks;
 

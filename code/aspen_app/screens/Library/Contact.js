@@ -1,18 +1,15 @@
-import React, { Component } from "react";
-import { Center, HStack, Spinner, Box, Button, Text, Heading, Icon, Divider, FlatList } from "native-base";
-import { Ionicons, MaterialIcons } from "@expo/vector-icons";
-import { Platform } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import React, {Component} from "react";
+import {Box, Button, Center, Icon} from "native-base";
+import {MaterialIcons} from "@expo/vector-icons";
 import * as SecureStore from 'expo-secure-store';
 import * as Linking from 'expo-linking';
 import * as WebBrowser from 'expo-web-browser';
-import { showLocation } from 'react-native-map-link';
-import moment from "moment";
+import {showLocation} from 'react-native-map-link';
 
 // custom components and helper files
-import { translate } from '../../util/translations';
-import { loadingSpinner } from "../../components/loadingSpinner";
-import { getLocationInfo, getLibraryInfo } from '../../util/loadLibrary';
+import {translate} from '../../util/translations';
+import {loadingSpinner} from "../../components/loadingSpinner";
+import {getLibraryInfo, getLocationInfo} from '../../util/loadLibrary';
 import HoursAndLocation from "./HoursAndLocation";
 
 export default class Contact extends Component {
@@ -32,24 +29,24 @@ export default class Contact extends Component {
 	}
 
 	componentDidMount = async () => {
-	    await getLocationInfo();
-	    await getLibraryInfo();
+		await getLocationInfo();
+		await getLibraryInfo();
 
-        this.setState({
-            showLibraryHours: global.location_showInLocationsAndHoursList,
-            hoursMessage: global.location_hoursMessage,
-            website: global.location_homeLink,
-            address: global.location_address,
-            phone: global.location_phone,
-            email: global.location_email,
-            description: global.location_description,
-            latitude: global.location_latitude,
-            longitude: global.location_longitude,
-            hours: JSON.parse(global.location_hours),
-            userLatitude: await SecureStore.getItemAsync("latitude"),
-            userLongitude: await SecureStore.getItemAsync("longitude"),
-            isLoading: false,
-        })
+		this.setState({
+			showLibraryHours: global.location_showInLocationsAndHoursList,
+			hoursMessage: global.location_hoursMessage,
+			website: global.location_homeLink,
+			address: global.location_address,
+			phone: global.location_phone,
+			email: global.location_email,
+			description: global.location_description,
+			latitude: global.location_latitude,
+			longitude: global.location_longitude,
+			hours: JSON.parse(global.location_hours),
+			userLatitude: await SecureStore.getItemAsync("latitude"),
+			userLongitude: await SecureStore.getItemAsync("longitude"),
+			isLoading: false,
+		})
 
 	};
 
@@ -60,17 +57,17 @@ export default class Contact extends Component {
 	};
 
 	sendEmail = (email) => {
-	    let emailAddress = "";
-	    emailAddress = `mailto:${email}`;
-	    Linking.openURL(emailAddress);
+		let emailAddress = "";
+		emailAddress = `mailto:${email}`;
+		Linking.openURL(emailAddress);
 	};
 
 	openWebsite = async (url) => {
-	    if(url == '/') {
-	        WebBrowser.openBrowserAsync(global.libraryUrl)
-	    } else {
-	    	WebBrowser.openBrowserAsync(url);
-	    }
+		if (url === '/') {
+			WebBrowser.openBrowserAsync(global.libraryUrl)
+		} else {
+			WebBrowser.openBrowserAsync(url);
+		}
 	}
 
 	handleClick = (linkToFollow) => {
@@ -82,33 +79,47 @@ export default class Contact extends Component {
 	};
 
 	getDirections = async () => {
-	    showLocation({
-	        latitude: this.state.latitude,
-	        longitude: this.state.longitude,
-	        sourceLatitude: this.state.userLatitude,
-	        sourceLongitude: this.state.userLongitude,
-	        googleForceLatLon: true,
-	    })
+		showLocation({
+			latitude: this.state.latitude,
+			longitude: this.state.longitude,
+			sourceLatitude: this.state.userLatitude,
+			sourceLongitude: this.state.userLongitude,
+			googleForceLatLon: true,
+		})
 	};
 
 
 	render() {
 		if (this.state.isLoading) {
-			return ( loadingSpinner() );
+			return (loadingSpinner());
 		}
 
 		return (
-            <Box safeArea={5}>
-            <Center>
-                {this.state.showLibraryHours == 1 ? <HoursAndLocation hoursMessage={this.state.hoursMessage} hours={this.state.hours} description={this.state.description} /> : null }
-                <Box>
-                    {this.state.phone ? <Button mb={3} onPress={() => { this.dialCall(this.state.phone); }} startIcon={<Icon as={MaterialIcons} name="call" size="sm" />} >{translate('library_contact.call_button')}</Button> : null }
-                    {this.state.email ? <Button mb={3} onPress={() => { this.sendEmail(this.state.email); }} startIcon={<Icon as={MaterialIcons} name="email" size="sm" />} >{translate('library_contact.email_button')}</Button> : null }
-                    {this.state.latitude != 0 ? <Button mb={3} onPress={() => { this.getDirections(); }} startIcon={<Icon as={MaterialIcons} name="map" size="sm" />} >{translate('library_contact.directions_button')}</Button> : null }
-                    {this.state.website ? <Button onPress={() => { this.openWebsite(this.state.website); }} startIcon={<Icon as={MaterialIcons} name="home" size="sm" />} >{translate('library_contact.website_button')}</Button> : null }
-                </Box>
-            </Center>
-            </Box>
+			<Box safeArea={5}>
+				<Center>
+					{this.state.showLibraryHours === 1 ?
+						<HoursAndLocation hoursMessage={this.state.hoursMessage} hours={this.state.hours}
+						                  description={this.state.description}/> : null}
+					<Box>
+						{this.state.phone ? <Button mb={3} onPress={() => {
+							this.dialCall(this.state.phone);
+						}} startIcon={<Icon as={MaterialIcons} name="call"
+						                    size="sm"/>}>{translate('library_contact.call_button')}</Button> : null}
+						{this.state.email ? <Button mb={3} onPress={() => {
+							this.sendEmail(this.state.email);
+						}} startIcon={<Icon as={MaterialIcons} name="email"
+						                    size="sm"/>}>{translate('library_contact.email_button')}</Button> : null}
+						{this.state.latitude !== 0 ? <Button mb={3} onPress={() => {
+							this.getDirections();
+						}} startIcon={<Icon as={MaterialIcons} name="map"
+						                    size="sm"/>}>{translate('library_contact.directions_button')}</Button> : null}
+						{this.state.website ? <Button onPress={() => {
+							this.openWebsite(this.state.website);
+						}} startIcon={<Icon as={MaterialIcons} name="home"
+						                    size="sm"/>}>{translate('library_contact.website_button')}</Button> : null}
+					</Box>
+				</Center>
+			</Box>
 		);
 	}
 }

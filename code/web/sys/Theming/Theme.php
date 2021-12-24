@@ -568,169 +568,176 @@ class Theme extends DataObject
 
 	/** @noinspection PhpUnused */
 	public function validateColorContrast(){
+		global $library;
 		//Setup validation return array
 		$validationResults = array(
 			'validatedOk' => true,
 			'errors' => [],
 		);
 
+		if($library->getLayoutSettings()->contrastRatio === 7.0) {
+			$minContrastRatio = 4.5;
+		} else {
+			$minContrastRatio = 3.5;
+		}
+
 		$this->applyDefaults();
 
 		require_once ROOT_DIR . '/sys/Utils/ColorUtils.php';
 		$bodyContrast = ColorUtils::calculateColorContrast($this->bodyBackgroundColor, $this->bodyTextColor);
-		if ($bodyContrast < 3.5){
+		if ($bodyContrast < $minContrastRatio){
 			$validationResults['errors'][] = 'Body contrast does not meet accessibility guidelines, contrast is: ' . $bodyContrast;
 		}
 		$linkContrast = ColorUtils::calculateColorContrast($this->bodyBackgroundColor, $this->linkColor);
-		if ($linkContrast < 3.5){
+		if ($linkContrast < $minContrastRatio){
 			$validationResults['errors'][] = 'Link contrast does not meet accessibility guidelines, contrast is: ' . $linkContrast;
 		}
 		$linkHoverContrast = ColorUtils::calculateColorContrast($this->bodyBackgroundColor, $this->linkHoverColor);
-		if ($linkHoverContrast < 3.5){
+		if ($linkHoverContrast < $minContrastRatio){
 			$validationResults['errors'][] = 'Link hover contrast does not meet accessibility guidelines, contrast is: ' . $linkHoverContrast;
 		}
 		$resultLabelContrast = ColorUtils::calculateColorContrast($this->bodyBackgroundColor, $this->resultLabelColor);
-		if ($resultLabelContrast < 3.5){
+		if ($resultLabelContrast < $minContrastRatio){
 			$validationResults['errors'][] = 'Result Label contrast does not meet accessibility guidelines, contrast is: ' . $resultLabelContrast;
 		}
 		$resultValueContrast = ColorUtils::calculateColorContrast($this->bodyBackgroundColor, $this->resultValueColor);
-		if ($resultValueContrast < 3.5){
+		if ($resultValueContrast < $minContrastRatio){
 			$validationResults['errors'][] = 'Result Value contrast does not meet accessibility guidelines, contrast is: ' . $resultValueContrast;
 		}
 		$headerContrast = ColorUtils::calculateColorContrast($this->headerBackgroundColor, $this->headerForegroundColor);
-		if ($headerContrast < 3.5){
+		if ($headerContrast < $minContrastRatio){
 			$validationResults['errors'][] = 'Header contrast does not meet accessibility guidelines, contrast is: ' . ($headerContrast);
 		}
 		$footerContrast = ColorUtils::calculateColorContrast($this->footerBackgroundColor, $this->footerForegroundColor);
-		if ($footerContrast < 3.5){
+		if ($footerContrast < $minContrastRatio){
 			$validationResults['errors'][] = 'Footer contrast does not meet accessibility guidelines, contrast is: ' . ($footerContrast);
 		}
 		$breadcrumbsContrast = ColorUtils::calculateColorContrast($this->breadcrumbsBackgroundColor, $this->breadcrumbsForegroundColor);
-		if ($breadcrumbsContrast < 3.5){
+		if ($breadcrumbsContrast < $minContrastRatio){
 			$validationResults['errors'][] = 'Breadcrumbs contrast does not meet accessibility guidelines, contrast is: ' . ($breadcrumbsContrast);
 		}
 		$searchToolsContrast = ColorUtils::calculateColorContrast($this->searchToolsBackgroundColor, $this->searchToolsForegroundColor);
-		if ($searchToolsContrast < 3.5){
+		if ($searchToolsContrast < $minContrastRatio){
 			$validationResults['errors'][] = 'Search Tools contrast does not meet accessibility guidelines, contrast is: ' . ($searchToolsContrast);
 		}
 		$primaryContrast = ColorUtils::calculateColorContrast($this->primaryBackgroundColor, $this->primaryForegroundColor);
-		if ($primaryContrast < 3.5){
+		if ($primaryContrast < $minContrastRatio){
 			$validationResults['errors'][] = 'Primary color contrast does not meet accessibility guidelines, contrast is: ' . ($primaryContrast);
 		}
 		$secondaryContrast = ColorUtils::calculateColorContrast($this->secondaryBackgroundColor, $this->secondaryForegroundColor);
-		if ($secondaryContrast < 3.5){
+		if ($secondaryContrast < $minContrastRatio){
 			$validationResults['errors'][] = 'Secondary color contrast does not meet accessibility guidelines, contrast is: ' . ($secondaryContrast);
 		}
 		$tertiaryContrast = ColorUtils::calculateColorContrast($this->tertiaryBackgroundColor, $this->tertiaryForegroundColor);
-		if ($tertiaryContrast < 3.5){
+		if ($tertiaryContrast < $minContrastRatio){
 			$validationResults['errors'][] = 'Tertiary color contrast does not meet accessibility guidelines, contrast is: ' . ($tertiaryContrast);
 		}
 		$menubarContrast = ColorUtils::calculateColorContrast($this->menubarBackgroundColor, $this->menubarForegroundColor);
-		if ($menubarContrast < 3.5){
+		if ($menubarContrast < $minContrastRatio){
 			$validationResults['errors'][] = 'Menu contrast does not meet accessibility guidelines, contrast is: ' . ($menubarContrast);
 		}
 		$menubarHighlightContrast = ColorUtils::calculateColorContrast($this->menubarHighlightBackgroundColor, $this->menubarHighlightForegroundColor);
-		if ($menubarHighlightContrast < 3.5){
+		if ($menubarHighlightContrast < $minContrastRatio){
 			$validationResults['errors'][] = 'Menu Highlight contrast does not meet accessibility guidelines, contrast is: ' . ($menubarHighlightContrast);
 		}
 		$menubarDropdownContrast = ColorUtils::calculateColorContrast($this->menuDropdownBackgroundColor, $this->menuDropdownForegroundColor);
-		if ($menubarDropdownContrast < 3.5){
+		if ($menubarDropdownContrast < $minContrastRatio){
 			$validationResults['errors'][] = 'Menu dropdown contrast does not meet accessibility guidelines, contrast is: ' . ($menubarDropdownContrast);
 		}
 		$modalDialogContrast = ColorUtils::calculateColorContrast($this->modalDialogBackgroundColor, $this->modalDialogForegroundColor);
-		if ($modalDialogContrast < 3.5){
+		if ($modalDialogContrast < $minContrastRatio){
 			$validationResults['errors'][] = 'Modal Dialog contrast does not meet accessibility guidelines, contrast is: ' . ($modalDialogContrast);
 		}
 		$modalDialogHeaderFooterContrast = ColorUtils::calculateColorContrast($this->modalDialogHeaderFooterBackgroundColor, $this->modalDialogHeaderFooterForegroundColor);
-		if ($modalDialogHeaderFooterContrast < 3.5){
+		if ($modalDialogHeaderFooterContrast < $minContrastRatio){
 			$validationResults['errors'][] = 'Modal Dialog Header Footer contrast does not meet accessibility guidelines, contrast is: ' . ($modalDialogHeaderFooterContrast);
 		}
 		$selectedBrowseCategoryContrast = ColorUtils::calculateColorContrast($this->selectedBrowseCategoryBackgroundColor, $this->selectedBrowseCategoryForegroundColor);
-		if ($selectedBrowseCategoryContrast < 3.5){
+		if ($selectedBrowseCategoryContrast < $minContrastRatio){
 			$validationResults['errors'][] = 'Selected Browse Category contrast does not meet accessibility guidelines, contrast is: ' . ($selectedBrowseCategoryContrast);
 		}
 		$deselectedBrowseCategoryContrast = ColorUtils::calculateColorContrast($this->deselectedBrowseCategoryBackgroundColor, $this->deselectedBrowseCategoryForegroundColor);
-		if ($deselectedBrowseCategoryContrast < 3.5){
+		if ($deselectedBrowseCategoryContrast < $minContrastRatio){
 			$validationResults['errors'][] = 'Deselected Browse Category contrast does not meet accessibility guidelines, contrast is: ' . ($deselectedBrowseCategoryContrast);
 		}
 		$badgeContrast = ColorUtils::calculateColorContrast($this->badgeBackgroundColor, $this->badgeForegroundColor);
-		if ($badgeContrast < 3.5){
+		if ($badgeContrast < $minContrastRatio){
 			$validationResults['errors'][] = 'Badge contrast does not meet accessibility guidelines, contrast is: ' . ($badgeContrast);
 		}
 		$closedPanelContrast = ColorUtils::calculateColorContrast($this->closedPanelBackgroundColor, $this->closedPanelForegroundColor);
-		if ($closedPanelContrast < 3.5){
+		if ($closedPanelContrast < $minContrastRatio){
 			$validationResults['errors'][] = 'Closed Panel contrast does not meet accessibility guidelines, contrast is: ' . ($closedPanelContrast);
 		}
 		$openPanelContrast = ColorUtils::calculateColorContrast($this->openPanelBackgroundColor, $this->openPanelForegroundColor);
-		if ($openPanelContrast < 3.5){
+		if ($openPanelContrast < $minContrastRatio){
 			$validationResults['errors'][] = 'Open Panel contrast does not meet accessibility guidelines, contrast is: ' . ($openPanelContrast);
 		}
 		$panelBodyContrast = ColorUtils::calculateColorContrast($this->panelBodyBackgroundColor, $this->panelBodyForegroundColor);
-		if ($panelBodyContrast < 3.5){
+		if ($panelBodyContrast < $minContrastRatio){
 			$validationResults['errors'][] = 'Open Panel contrast does not meet accessibility guidelines, contrast is: ' . ($panelBodyContrast);
 		}
 		$defaultButtonContrast = ColorUtils::calculateColorContrast($this->defaultButtonBackgroundColor, $this->defaultButtonForegroundColor);
-		if ($defaultButtonContrast < 3.5){
+		if ($defaultButtonContrast < $minContrastRatio){
 			$validationResults['errors'][] = 'Default Button contrast does not meet accessibility guidelines, contrast is: ' . ($defaultButtonContrast);
 		}
 		$defaultButtonHoverContrast = ColorUtils::calculateColorContrast($this->defaultButtonHoverBackgroundColor, $this->defaultButtonHoverForegroundColor);
-		if ($defaultButtonHoverContrast < 3.5){
+		if ($defaultButtonHoverContrast < $minContrastRatio){
 			$validationResults['errors'][] = 'Default Button Hover contrast does not meet accessibility guidelines, contrast is: ' . ($defaultButtonHoverContrast);
 		}
 		$primaryButtonContrast = ColorUtils::calculateColorContrast($this->primaryButtonBackgroundColor, $this->primaryButtonForegroundColor);
-		if ($primaryButtonContrast < 3.5){
+		if ($primaryButtonContrast < $minContrastRatio){
 			$validationResults['errors'][] = 'Primary Button contrast does not meet accessibility guidelines, contrast is: ' . ($primaryButtonContrast);
 		}
 		$primaryButtonHoverContrast = ColorUtils::calculateColorContrast($this->primaryButtonHoverBackgroundColor, $this->primaryButtonHoverForegroundColor);
-		if ($primaryButtonHoverContrast < 3.5){
+		if ($primaryButtonHoverContrast < $minContrastRatio){
 			$validationResults['errors'][] = 'Primary Button Hover contrast does not meet accessibility guidelines, contrast is: ' . ($primaryButtonHoverContrast);
 		}
 		$actionButtonContrast = ColorUtils::calculateColorContrast($this->actionButtonBackgroundColor, $this->actionButtonForegroundColor);
-		if ($actionButtonContrast < 3.5){
+		if ($actionButtonContrast < $minContrastRatio){
 			$validationResults['errors'][] = 'Action Button contrast does not meet accessibility guidelines, contrast is: ' . ($actionButtonContrast);
 		}
 		$actionButtonHoverContrast = ColorUtils::calculateColorContrast($this->actionButtonHoverBackgroundColor, $this->actionButtonHoverForegroundColor);
-		if ($actionButtonHoverContrast < 3.5){
+		if ($actionButtonHoverContrast < $minContrastRatio){
 			$validationResults['errors'][] = 'Action Button Hover contrast does not meet accessibility guidelines, contrast is: ' . ($actionButtonHoverContrast);
 		}
 		$editionsButtonContrast = ColorUtils::calculateColorContrast($this->editionsButtonBackgroundColor, $this->editionsButtonForegroundColor);
-		if ($editionsButtonContrast < 3.5){
+		if ($editionsButtonContrast < $minContrastRatio){
 			$validationResults['errors'][] = 'Editions Button contrast does not meet accessibility guidelines, contrast is: ' . ($editionsButtonContrast);
 		}
 		$editionsButtonHoverContrast = ColorUtils::calculateColorContrast($this->editionsButtonHoverBackgroundColor, $this->editionsButtonHoverForegroundColor);
-		if ($editionsButtonHoverContrast < 3.5){
+		if ($editionsButtonHoverContrast < $minContrastRatio){
 			$validationResults['errors'][] = 'Editions Button Hover contrast does not meet accessibility guidelines, contrast is: ' . ($editionsButtonHoverContrast);
 		}
 		$toolsButtonContrast = ColorUtils::calculateColorContrast($this->toolsButtonBackgroundColor, $this->toolsButtonForegroundColor);
-		if ($toolsButtonContrast < 3.5){
+		if ($toolsButtonContrast < $minContrastRatio){
 			$validationResults['errors'][] = 'Tools Button contrast does not meet accessibility guidelines, contrast is: ' . ($toolsButtonContrast);
 		}
 		$toolsButtonHoverContrast = ColorUtils::calculateColorContrast($this->toolsButtonHoverBackgroundColor, $this->toolsButtonHoverForegroundColor);
-		if ($toolsButtonHoverContrast < 3.5){
+		if ($toolsButtonHoverContrast < $minContrastRatio){
 			$validationResults['errors'][] = 'Tools Button Hover contrast does not meet accessibility guidelines, contrast is: ' . ($toolsButtonHoverContrast);
 		}
 		$infoButtonContrast = ColorUtils::calculateColorContrast($this->infoButtonBackgroundColor, $this->infoButtonForegroundColor);
-		if ($infoButtonContrast < 3.5){
+		if ($infoButtonContrast < $minContrastRatio){
 			$validationResults['errors'][] = 'Info Button contrast does not meet accessibility guidelines, contrast is: ' . ($infoButtonContrast);
 		}
 		$infoButtonHoverContrast = ColorUtils::calculateColorContrast($this->infoButtonHoverBackgroundColor, $this->infoButtonHoverForegroundColor);
-		if ($infoButtonHoverContrast < 3.5){
+		if ($infoButtonHoverContrast < $minContrastRatio){
 			$validationResults['errors'][] = 'Info Button Hover contrast does not meet accessibility guidelines, contrast is: ' . ($infoButtonHoverContrast);
 		}
 		$warningButtonContrast = ColorUtils::calculateColorContrast($this->warningButtonBackgroundColor, $this->warningButtonForegroundColor);
-		if ($warningButtonContrast < 3.5){
+		if ($warningButtonContrast < $minContrastRatio){
 			$validationResults['errors'][] = 'Warning Button contrast does not meet accessibility guidelines, contrast is: ' . ($warningButtonContrast);
 		}
 		$warningButtonHoverContrast = ColorUtils::calculateColorContrast($this->warningButtonHoverBackgroundColor, $this->warningButtonHoverForegroundColor);
-		if ($warningButtonHoverContrast < 3.5){
+		if ($warningButtonHoverContrast < $minContrastRatio){
 			$validationResults['errors'][] = 'Warning Button Hover contrast does not meet accessibility guidelines, contrast is: ' . ($warningButtonHoverContrast);
 		}
 		$dangerButtonContrast = ColorUtils::calculateColorContrast($this->dangerButtonBackgroundColor, $this->dangerButtonForegroundColor);
-		if ($dangerButtonContrast < 3.5){
+		if ($dangerButtonContrast < $minContrastRatio){
 			$validationResults['errors'][] = 'Danger Button contrast does not meet accessibility guidelines, contrast is: ' . ($dangerButtonContrast);
 		}
 		$dangerButtonHoverContrast = ColorUtils::calculateColorContrast($this->dangerButtonHoverBackgroundColor, $this->dangerButtonHoverForegroundColor);
-		if ($dangerButtonHoverContrast < 3.5){
+		if ($dangerButtonHoverContrast < $minContrastRatio){
 			$validationResults['errors'][] = 'Danger Button Hover contrast does not meet accessibility guidelines, contrast is: ' . ($dangerButtonHoverContrast);
 		}
 
@@ -1108,6 +1115,25 @@ class Theme extends DataObject
 			}
 		}
 		return $allAppliedThemes;
+	}
+
+	protected $_parentTheme = null;
+	public function getParentTheme()
+	{
+		if ($this->_parentTheme == null){
+			$theme = $this;
+			if(strlen($theme->extendsTheme) != 0) {
+				$extendsName = $theme->extendsTheme;
+				$theme = new Theme();
+				$theme->themeName = $extendsName;
+				if ($theme->find(true)) {
+					$this->_parentTheme = clone $theme;
+				}
+			} else {
+				$this->_parentTheme = null;
+			}
+		}
+		return $this->_parentTheme;
 	}
 
 	private function clearDefaultCovers()

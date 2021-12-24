@@ -1,6 +1,6 @@
 {strip}{if $showSeries}
-	<div class="result-label col-tn-3">{translate text='Series' isPublicFacing=true}</div>
-	<div class="col-tn-9 result-value">
+	<div class="result-label col-sm-4 col-xs-12">{translate text='Series' isPublicFacing=true}</div>
+	<div class="result-value col-sm-8 col-xs-12">
 		{assign var=summSeries value=$series}
 		{if $summSeries.fromNovelist}
 			<a href="/GroupedWork/{$recordDriver->getPermanentId()}/Series">{$summSeries.seriesTitle}</a>{if $summSeries.volume}<strong> {translate text="volume %1%" 1=$summSeries.volume isPublicFacing=true}</strong>{/if}
