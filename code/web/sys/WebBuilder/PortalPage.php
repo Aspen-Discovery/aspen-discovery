@@ -14,6 +14,7 @@ class PortalPage extends DataObject
 	public $title;
 	public $urlAlias;
 	public $requireLogin;
+	public $requireLoginUnlessInLibrary;
 	public $lastUpdate;
 
 	private $_rows;
@@ -52,6 +53,7 @@ class PortalPage extends DataObject
 			],
 
 			'requireLogin' => ['property' => 'requireLogin', 'type' => 'checkbox', 'label' => 'Require login to access', 'description' => 'Require login to access page', 'onchange' => 'return AspenDiscovery.WebBuilder.updateWebBuilderFields();', 'default' => 0],
+			'requireLoginUnlessInLibrary' => ['property' => 'requireLoginUnlessInLibrary', 'type' => 'checkbox', 'label' => 'Allow access without logging in while in library', 'description' => 'Require login to access page unless in library', 'default' => 0],
 			'allowAccess' => array(
 				'property' => 'allowAccess',
 				'type' => 'multiSelect',

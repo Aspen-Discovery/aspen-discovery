@@ -13,6 +13,7 @@ class BasicPage extends DataObject
 	public $title;
 	public $urlAlias;
 	public $requireLogin;
+	public $requireLoginUnlessInLibrary;
 	public $teaser;
 	public $contents;
 	public $lastUpdate;
@@ -35,6 +36,7 @@ class BasicPage extends DataObject
 			'teaser' => ['property' => 'teaser', 'type' => 'textarea', 'label' => 'Teaser', 'description' => 'Teaser for display on portals', 'maxLength' => 512, 'hideInLists' => true],
 			'contents' => array('property' => 'contents', 'type' => 'markdown', 'label' => 'Page Contents', 'description' => 'The contents of the page', 'hideInLists' => true),
 			'requireLogin' => ['property' => 'requireLogin', 'type' => 'checkbox', 'label' => 'Require login to access', 'description' => 'Require login to access page', 'onchange' => 'return AspenDiscovery.WebBuilder.updateWebBuilderFields();', 'default' => 0],
+			'requireLoginUnlessInLibrary' => ['property' => 'requireLoginUnlessInLibrary', 'type' => 'checkbox', 'label' => 'Allow access without logging in while in library', 'description' => 'Require login to access page unless in library', 'default' => 0],
 			'allowAccess' => array(
 				'property' => 'allowAccess',
 				'type' => 'multiSelect',

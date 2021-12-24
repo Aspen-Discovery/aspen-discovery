@@ -43,23 +43,28 @@ class WebBuilder_PortalPage extends Action
 
 	function canView() : bool
 	{
+		global $locationSingleton;
 		require_once ROOT_DIR . '/sys/WebBuilder/PortalPageAccess.php';
 		require_once ROOT_DIR . '/sys/Account/PType.php';
 		require_once ROOT_DIR . '/sys/WebBuilder/PortalPage.php';
 
 		$requireLogin = 0;
+		$allowInLibrary = 0;
 		$id = strip_tags($_REQUEST['id']);
 		$page = new PortalPage();
 		$page->id = $id;
 		$page->find();
 		while($page->fetch()){
 			$requireLogin = $page->requireLogin;
+			$allowInLibrary = $page->requireLoginUnlessInLibrary;
 		}
 
-
+		$inLibrary = $locationSingleton->getIPLocation();
 		$user = UserAccount::getLoggedInUser();
-
 		if($requireLogin){
+			if($allowInLibrary && $inLibrary != null) {
+				return true;
+			}
 			if(!$user) {
 				return false;
 			}

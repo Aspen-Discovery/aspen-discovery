@@ -12900,15 +12900,19 @@ AspenDiscovery.WebBuilder = (function () {
 			var requireLogin = $('#requireLogin');
 			if(requireLogin.is(":checked")) {
 				$("#propertyRowallowAccess").show();
+				$("#propertyRowrequireLoginUnlessInLibrary").show();
 			} else {
 				$("#propertyRowallowAccess").hide();
+				$("#propertyRowrequireLoginUnlessInLibrary").hide();
 			}
 
 			$(requireLogin).click(function() {
 				if(requireLogin.is(":checked")){
 					$("#propertyRowallowAccess").show();
+					$("#propertyRowrequireLoginUnlessInLibrary").show();
 				}else{
 					$("#propertyRowallowAccess").hide();
+					$("#propertyRowrequireLoginUnlessInLibrary").hide();
 				}
 			});
 		},
