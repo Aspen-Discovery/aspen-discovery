@@ -4,7 +4,7 @@ require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 require_once ROOT_DIR . '/sys/CurbsidePickups/CurbsidePickupSetting.php';
 
-class CurbsidePickup_Settings extends ObjectEditor
+class ILS_CurbsidePickupSettings extends ObjectEditor
 {
 	function getObjectType() : string {
 		return 'CurbsidePickupSetting';
@@ -12,7 +12,7 @@ class CurbsidePickup_Settings extends ObjectEditor
 
 	function getModule() : string
 	{
-		return "CurbsidePickup";
+		return "ILS";
 	}
 
 	function getToolName() : string {
@@ -62,7 +62,7 @@ class CurbsidePickup_Settings extends ObjectEditor
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home#ils_integration', 'ILS Integration');
-		$breadcrumbs[] = new Breadcrumb('/CurbsidePickup/Settings', 'Curbside Pickup Settings');
+		$breadcrumbs[] = new Breadcrumb('/ILS/CurbsidePickupSettings', 'Curbside Pickup Settings');
 		return $breadcrumbs;
 	}
 
