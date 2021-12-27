@@ -1239,6 +1239,16 @@ public class PolarisExportMain {
 					//Add Items to the MARC record
 					JSONObject bibItemsResponseJSON = bibItemsResponse.getJSONResponse();
 					JSONArray allItems = bibItemsResponseJSON.getJSONArray("ItemGetRows");
+
+					JSONArray allHoldings = null;
+					if (indexingProfile.getNoteSubfield() != ' ') {
+						String getHoldingsUrl = "/PAPIService/REST/public/v1/1033/100/1/bib/" + bibliographicRecordId + "/holdings";
+						WebServiceResponse bibHoldingsResponse = callPolarisAPI(getHoldingsUrl, null, "GET", "application/json", null);
+						if (bibHoldingsResponse.isSuccess()) {
+							JSONObject bibHoldingsResponseJSON = bibHoldingsResponse.getJSONResponse();
+							allHoldings = bibHoldingsResponseJSON.getJSONArray("BibHoldingsGetRows");
+						}
+					}
 					for (int j = 0; j < allItems.length(); j++) {
 						JSONObject curItem = allItems.getJSONObject(j);
 						if (curItem.getBoolean("IsDisplayInPAC")) {
@@ -1254,6 +1264,21 @@ public class PolarisExportMain {
 							updateItemField(marcFactory, curItem, itemField, indexingProfile.getItemStatusSubfield(), "CircStatus");
 							updateItemField(marcFactory, curItem, itemField, indexingProfile.getDueDateSubfield(), "DueDate");
 							updateItemField(marcFactory, curItem, itemField, indexingProfile.getLastCheckinDateSubfield(), "LastCircDate");
+
+							//Public note is only exported as part of holdings so get from there
+							if (indexingProfile.getNoteSubfield() != ' ' && allHoldings != null) {
+								//Get the holding based on the barcode
+								String itemBarcode = curItem.getString("Barcode");
+								if (itemBarcode != null) {
+									for (int k = 0; k < allHoldings.length(); k++) {
+										JSONObject curHolding = allHoldings.getJSONObject(k);
+										if (itemBarcode.equals(curHolding.getString("Barcode"))){
+											updateItemField(marcFactory, curHolding, itemField, indexingProfile.getNoteSubfield(), "PublicNote");
+											break;
+										}
+									}
+								}
+							}
 							if (indexingProfile.getDateCreatedSubfield() != ' ') {
 								String dateCreated = getItemFieldData(curItem, "FirstAvailableDate");
 								if (dateCreated.length() > 0) {
