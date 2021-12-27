@@ -2429,14 +2429,12 @@ class User extends DataObject
 		}else{
 			$sections['ils_integration']->addAction($translationMapsAction, 'Administer Translation Maps');
 		}
+		$ils = $configArray['Catalog']['ils'];
+		if ($ils == 'Koha') {
+			$sections['ils_integration']->addAction(new AdminAction('Curbside Pickup Settings', 'Define Settings for Curbside Pickup, requires Koha Curbside plugin', '/CurbsidePickup/Settings'), ['Administer Curbside Pickup']);
+		}
 		$sections['ils_integration']->addAction(new AdminAction('Indexing Log', 'View the indexing log for ILS records.', '/ILS/IndexingLog'), 'View Indexing Logs');
 		$sections['ils_integration']->addAction(new AdminAction('Dashboard', 'View the usage dashboard for ILS integration.', '/ILS/Dashboard'), ['View Dashboards', 'View System Reports']);
-
-		$curbsidePickup = $this->getPluginStatus('CurbsidePickup');
-		if(($curbsidePickup['enabled'] == 1) && ($curbsidePickup['installed'] == 1)) {
-			$sections['curbside_pickup'] = new AdminSection('Curbside Pickup');
-			$sections['curbside_pickup']->addAction(new AdminAction('Settings', 'Define Settings for Curbside Pickup', '/CurbsidePickup/Settings'), ['Administer Curbside Pickup']);
-		}
 
 		$sections['circulation_reports'] = new AdminSection('Circulation Reports');
 		$sections['circulation_reports']->addAction(new AdminAction('Holds Report', 'View a report of holds to be pulled from the shelf for patrons.', '/Report/HoldsReport'), ['View Location Holds Reports', 'View All Holds Reports']);

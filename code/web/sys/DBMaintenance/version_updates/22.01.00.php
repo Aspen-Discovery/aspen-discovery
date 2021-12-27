@@ -46,6 +46,13 @@ function getUpdates22_01_00() : array
 				"ALTER TABLE curbside_pickup_settings ADD COLUMN curbsidePickupInstructions VARCHAR(255)",
 			]
 		], //curbside_pickup_settings_pt3
+		'curbside_pickup_settings_pt4' => [
+			'title' => 'Curbside Pickups Pt 4 - default permissions',
+			'description' => 'Give opac admin permissions for curbside pickup',
+			'sql' => [
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer Curbside Pickup'))",
+			]
+		], //curbside_pickup_settings_pt3
 		'sierra_public_note_export' => [
 			'title' => 'Add export of public note from Sierra',
 			'description' => 'Add export of public note from Sierra',

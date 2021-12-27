@@ -9,7 +9,6 @@ class MyAccount_CurbsidePickups extends MyAccount
 	{
 		global $interface;
 		global $library;
-		global $locationSingleton;
 		$user = UserAccount::getActiveUserObj();
 		$interface->assign('patronId', $user->id);
 		$interface->assign('patron', $user->username);
