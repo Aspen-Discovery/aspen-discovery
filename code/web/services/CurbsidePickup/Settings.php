@@ -10,6 +10,11 @@ class CurbsidePickup_Settings extends ObjectEditor
 		return 'CurbsidePickupSetting';
 	}
 
+	function getModule() : string
+	{
+		return "CurbsidePickup";
+	}
+
 	function getToolName() : string {
 		return 'Settings';
 	}
