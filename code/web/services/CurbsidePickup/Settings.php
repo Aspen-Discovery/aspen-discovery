@@ -61,14 +61,14 @@ class CurbsidePickup_Settings extends ObjectEditor
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
-		$breadcrumbs[] = new Breadcrumb('/Admin/Home#curbside_pickup', 'Curbside Pickup');
-		$breadcrumbs[] = new Breadcrumb('/CurbsidePickup/Settings', 'Settings');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#ils_integration', 'ILS Integration');
+		$breadcrumbs[] = new Breadcrumb('/CurbsidePickup/Settings', 'Curbside Pickup Settings');
 		return $breadcrumbs;
 	}
 
 	function getActiveAdminSection() : string
 	{
-		return 'curbside_pickup';
+		return 'ils_integration';
 	}
 
 	function canView() : bool
