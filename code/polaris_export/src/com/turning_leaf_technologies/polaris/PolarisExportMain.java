@@ -1245,8 +1245,12 @@ public class PolarisExportMain {
 						String getHoldingsUrl = "/PAPIService/REST/public/v1/1033/100/1/bib/" + bibliographicRecordId + "/holdings";
 						WebServiceResponse bibHoldingsResponse = callPolarisAPI(getHoldingsUrl, null, "GET", "application/json", null);
 						if (bibHoldingsResponse.isSuccess()) {
-							JSONObject bibHoldingsResponseJSON = bibHoldingsResponse.getJSONResponse();
-							allHoldings = bibHoldingsResponseJSON.getJSONArray("BibHoldingsGetRows");
+							try {
+								JSONObject bibHoldingsResponseJSON = bibHoldingsResponse.getJSONResponse();
+								allHoldings = bibHoldingsResponseJSON.getJSONArray("BibHoldingsGetRows");
+							}catch (Exception e){
+								logEntry.incErrors("Error loading bib holdings", e);
+							}
 						}
 					}
 					for (int j = 0; j < allItems.length(); j++) {
