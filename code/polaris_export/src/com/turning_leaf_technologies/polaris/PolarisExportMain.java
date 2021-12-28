@@ -1249,7 +1249,8 @@ public class PolarisExportMain {
 								JSONObject bibHoldingsResponseJSON = bibHoldingsResponse.getJSONResponse();
 								allHoldings = bibHoldingsResponseJSON.getJSONArray("BibHoldingsGetRows");
 							}catch (Exception e){
-								logEntry.incErrors("Error loading bib holdings", e);
+								//Just add a note for this
+								logEntry.addNote("Error loading bib holdings " + e);
 							}
 						}
 					}
