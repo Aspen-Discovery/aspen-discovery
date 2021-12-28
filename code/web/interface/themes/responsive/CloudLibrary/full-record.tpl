@@ -7,7 +7,7 @@
 
 		{* Display Title *}
 		<h1>
-			{$recordDriver->getTitle()|removeTrailingPunctuation|escape}{if $recordDriver->getSubtitle()}: {$recordDriver->getSubtitle()|removeTrailingPunctuation|escape}{/if}
+			{$recordDriver->getTitle()|removeTrailingPunctuation}
 			{if $recordDriver->getFormats()}
 				<br><small>({implode subject=$recordDriver->getFormats() glue=", " translate=true isPublicFacing=true})</small>
 			{/if}

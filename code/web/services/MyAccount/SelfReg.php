@@ -31,8 +31,10 @@ class SelfReg extends Action {
 				foreach ($selfRegFields as &$property) {
 					if ($property['type'] == 'section') {
 						foreach ($property['properties'] as &$propertyInSection) {
-							$userValue = $_REQUEST[$propertyInSection['property']];
-							$propertyInSection['default'] = $userValue;
+							if (isset($_REQUEST[$propertyInSection['property']])) {
+								$userValue = $_REQUEST[$propertyInSection['property']];
+								$propertyInSection['default'] = $userValue;
+							}
 						}
 					} else {
 						$userValue = $_REQUEST[$property['property']];

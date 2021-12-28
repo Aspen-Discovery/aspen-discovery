@@ -615,7 +615,7 @@ class Polaris extends AbstractIlsDriver
 			$body->UserID = (int)$staffUserInfo['polarisId'];
 			$body->RequestingOrgID = (int)$patron->getHomeLocationCode();
 			$encodedBody = json_encode($body);
-			$response = $this->getWebServiceResponse($polarisUrl, 'POST', '', json_encode($body));
+			$response = $this->getWebServiceResponse($polarisUrl, 'POST', '', $encodedBody);
 			ExternalRequestLogEntry::logRequest('polaris.placeHold', 'POST', $this->getWebServiceURL() . $polarisUrl, $this->apiCurlWrapper->getHeaders(), $encodedBody, $this->lastResponseCode, $response, []);
 			$hold_result = $this->processHoldRequestResponse($response, $patron);
 
@@ -1677,7 +1677,6 @@ class Polaris extends AbstractIlsDriver
 			}
 		}
 
-
 		return $results;
 	}
 
@@ -1687,5 +1686,229 @@ class Polaris extends AbstractIlsDriver
 			'maxLength' => 14,
 			'onlyDigitsAllowed' => false,
 		];
+	}
+
+	function getSelfRegistrationFields($type = 'selfReg')
+	{
+		global $library;
+		$location = new Location();
+
+		$pickupLocations = array();
+		$validLibraries = [];
+		if ($library->selfRegistrationLocationRestrictions == 1) {
+			//Library Locations
+			$location->libraryId = $library->libraryId;
+		} elseif ($library->selfRegistrationLocationRestrictions == 2) {
+			//Valid pickup locations
+			$location->whereAdd('validHoldPickupBranch <> 2');
+		} elseif ($library->selfRegistrationLocationRestrictions == 3) {
+			//Valid pickup locations
+			$location->libraryId = $library->libraryId;
+			$location->whereAdd('validHoldPickupBranch <> 2');
+		}
+		if ($location->find()) {
+			while ($location->fetch()) {
+				if (count($validLibraries) == 0 || array_key_exists($location->code, $validLibraries)) {
+					$pickupLocations[$location->code] = $location->displayName;
+				}
+			}
+			asort($pickupLocations);
+			$pickupLocations = ['' => translate(['text'=>'Select a location', 'isPublicFacing'=>true])] + $pickupLocations;
+		}
+
+
+		$fields = array();
+		$fields['librarySection'] = array('property' => 'librarySection', 'type' => 'section', 'label' => 'Library', 'hideInLists' => true, 'expandByDefault' => true, 'properties' => [
+			'branchcode' => array('property' => 'branchcode', 'type' => 'enum', 'label' => 'Home Library', 'description' => 'Please choose the Library location you would prefer to use', 'values' => $pickupLocations, 'required' => true, 'default' => '')
+		]);
+		$fields['personalInformationSection'] = array('property' => 'personalInformationSection', 'type' => 'section', 'label' => 'Personal Information', 'hideInLists' => true, 'expandByDefault' => true, 'properties' => [
+			'firstName' => array('property' => 'firstName', 'type' => 'text', 'label' => 'First Name', 'description' => 'Your first name', 'maxLength' => 25, 'required' => true),
+			'middleName' => array('property' => 'middleName', 'type' => 'text', 'label' => 'Middle Name', 'description' => 'Your middle name', 'maxLength' => 25, 'required' => false),
+			'lastName' => array('property' => 'lastName', 'type' => 'text', 'label' => 'Last Name', 'description' => 'Your last name', 'maxLength' => 60, 'required' => true),
+		]);
+		$fields['nameOnIdentificationSection'] = array('property' => 'nameOnIdentificationSection', 'type' => 'section', 'label' => 'Name on Identification', 'hideInLists' => true, 'expandByDefault' => true, 'properties' => [
+			'firstNameOnIdentification' => array('property' => 'firstNameOnIdentification', 'type' => 'text', 'label' => 'First Name', 'description' => 'The first name on your ID', 'maxLength' => 25, 'required' => false),
+			'middleNameOnIdentification' => array('property' => 'middleNameOnIdentification', 'type' => 'text', 'label' => 'Middle Name', 'description' => 'The middle name on your ID', 'maxLength' => 25, 'required' => false),
+			'lastNameOnIdentification' => array('property' => 'lastNameOnIdentification', 'type' => 'text', 'label' => 'Last Name', 'description' => 'The last name on your ID', 'maxLength' => 60, 'required' => false),
+			'useNameOnIdForNotices' => array('property' => 'useNameOnIdForNotices', 'type' => 'checkbox', 'label' => 'Use name on ID for print / phone notices', 'description' => 'Whether or not the library should use the name on your ID when sending print and phone notices', 'required' => false),
+		]);
+		if ($library && $library->promptForBirthDateInSelfReg){
+			$birthDateMin = date('Y-m-d', strtotime('-113 years'));
+			$birthDateMax = date('Y-m-d', strtotime('-13 years'));
+			$fields['nameOnIdentificationSection']['properties'] = array('property'=>'birthDate', 'type'=>'date', 'label'=>'Date of Birth (MM-DD-YYYY)', 'min'=>$birthDateMin, 'max'=>$birthDateMax, 'maxLength' => 10, 'required' => true);
+		}
+		if (empty($library->validSelfRegistrationStates)){
+			$borrowerStateField = array('property' => 'state', 'type' => 'text', 'label' => 'State', 'description' => 'State', 'maxLength' => 32, 'required' => true);
+		}else{
+			$validStates = explode('|', $library->validSelfRegistrationStates);
+			$validStates = array_combine($validStates, $validStates);
+			$borrowerStateField = array('property' => 'state', 'type' => 'enum', 'values' => $validStates, 'label' => 'State', 'description' => 'State', 'maxLength' => 32, 'required' => true);
+		}
+		$fields['addressSection'] = array('property' => 'addressSection', 'type' => 'section', 'label' => 'Main Address', 'hideInLists' => true, 'expandByDefault' => true, 'properties' => [
+			'address' => array('property' => 'address', 'type' => 'text', 'label' => 'Address', 'description' => 'Address', 'maxLength' => 128, 'required' => true),
+			'address2' => array('property' => 'address2', 'type' => 'text', 'label' => 'Address 2', 'description' => 'Second line of the address', 'maxLength' => 128, 'required' => false),
+			'address3' => array('property' => 'address3', 'type' => 'text', 'label' => 'Address 3', 'description' => 'Third line of the address', 'maxLength' => 128, 'required' => false),
+			'city' => array('property' => 'city', 'type' => 'text', 'label' => 'City', 'description' => 'City', 'maxLength' => 48, 'required' => true),
+			'state' => $borrowerStateField,
+			'zipcode' => array('property' => 'zipcode', 'type' => 'text', 'label' => 'Zip Code', 'description' => 'Zip Code', 'maxLength' => 32, 'required' => true),
+		]);
+		if (!empty($library->validSelfRegistrationZipCodes)){
+			$fields['mainAddressSection']['properties']['borrower_zipcode']['validationPattern'] = $library->validSelfRegistrationZipCodes;
+			$fields['mainAddressSection']['properties']['borrower_zipcode']['validationMessage'] = translate(['text' => 'Please enter a valid zip code', 'isPublicFacing'=>true]);
+		}
+		if ($library->requireNumericPhoneNumbersWhenUpdatingProfile){
+			$phoneFormat = '';
+		}else{
+			$phoneFormat = ' (xxx-xxx-xxxx)';
+		}
+		$fields['contactInformationSection'] = array('property' => 'contactInformationSection', 'type' => 'section', 'label' => 'Contact Information', 'hideInLists' => true, 'expandByDefault' => true, 'properties' => [
+			'email' => array('property' => 'email', 'type' => 'email', 'label' => 'Email address', 'description' => 'Email', 'maxLength' => 128, 'required' => false),
+			'altEmail' => array('property' => 'altEmail', 'type' => 'email', 'label' => 'Alt. Email Address', 'description' => 'Email', 'maxLength' => 128, 'required' => false),
+			'phone1' => array('property' => 'phone1', 'type' => 'text', 'label' => 'Phone 1' . $phoneFormat, 'description' => 'Phone 1', 'maxLength' => 128, 'required' => false),
+			'phone2' => array('property' => 'phone2', 'type' => 'text', 'label' => 'Phone 2' . $phoneFormat, 'description' => 'Phone 2', 'maxLength' => 128, 'required' => false),
+			'phone3' => array('property' => 'phone3', 'type' => 'text', 'label' => 'Phone 3' . $phoneFormat, 'description' => 'Phone 3', 'maxLength' => 128, 'required' => false),
+		]);
+		$carriers = [
+			0=>'(Select a carrier)',
+			1=>'AT&amp;T',
+			2=>'Bell Canada',
+			15=>'Bell South',
+			17=>'Boost Mobile',
+			3=>'Cellular One',
+			27=>'Consumer Cingular',
+			19=>'Fido',
+			26=>'Google Fi',
+			18=>'Helio',
+			16=>'MetroPCS',
+			5=>'Nextel',
+			6=>'Qwest',
+			28=>'Republic Wireless',
+			21=>'Rogers AT&amp;T Wireless',
+			22=>'Rogers Canada',
+			7=>'Southwestern Bell',
+			8=>'Sprint',
+			24=>'Straight Talk AT&amp;T',
+			23=>'Straight Talk Verizon',
+			20=>'Telus',
+			9=>'T-Mobile',
+			10=>'Tracfone',
+			14=>'USA Mobility',
+			11=>'Verizon',
+			12=>'Virgin Mobile',
+			13=>'Virgin Mobile Canada',
+			25=>'Wind Mobile Canada',
+			29=>'Xfinity (Comcast) Mobile',
+		];
+		$fields['preferencesSection'] = array('property' => 'preferencesSection', 'type' => 'section', 'label' => 'Preferences', 'hideInLists' => true, 'expandByDefault' => true, 'properties' => [
+			'notices' => array('property' => 'notices', 'type' => 'enum', 'values'=>[2=>'Email Address', 1=>'Mailing Address', 3=>'Phone 1', 4=> 'Phone 2', 5=> 'Phone 3', '8'=>'TXT Messaging', 0=> 'None'], 'label' => 'My preference for receiving library notices', 'description' => 'My preference for receiving library notices', 'required' => false, 'default'=> 2),
+			'txtPhone' => array('property' => 'txtPhone', 'type' => 'enum', 'values'=>['(None)'=>'(None)', 1=>'Phone 1', 2=>'Phone 2', 3=>'Phone 3'], 'label' => 'Phone number for TXT messages', 'description' => 'Phone number for TXT messages', 'required' => false, 'default'=>'(None)'),
+			'txtCarrier' => array('property' => 'txtCarrier', 'type' => 'enum', 'values'=>$carriers, 'label' => 'Carrier', 'description' => 'The Carrier to use when sending TXT messages', 'required' => false),
+			'eReceipts' => array('property' => 'eReceipts', 'type' => 'enum', 'values'=>['(None)'=>'(None)', 'Email'=>'Email'], 'label' => 'E-receipts', 'description' => 'How you would like to receive E-receipts', 'maxLength' => 128, 'required' => false),
+		]);
+		$passwordLabel = $library->loginFormPasswordLabel;
+		$passwordNotes = $library->selfRegistrationPasswordNotes;
+		$fields['logonInformationSection'] = array('property' => 'logonInformationSection', 'type' => 'section', 'label' => 'Logon Information', 'hideInLists' => true, 'expandByDefault' => true, 'properties' => [
+			'patronUsername' => array('property' => 'patronUsername', 'type' => 'text', 'label' => 'Username (optional as an alternate to barcode)', 'description' => 'An optional username to use when logging in.', 'required' => false, 'maxLength' => 128),
+			'patronPassword' => array('property' => 'patronPassword', 'type' => 'password', 'label' => $passwordLabel, 'description' => $passwordNotes, 'minLength' => 3, 'maxLength' => 25, 'showConfirm' => true, 'required' => true, 'showDescription' => true),
+		]);
+
+		return $fields;
+	}
+
+	public function selfRegister()
+	{
+		global $library;
+		$result = [
+			'success' => false,
+		];
+
+		$polarisUrl = "/PAPIService/REST/public/v1/1033/100/1/patron";
+		$body = new stdClass();
+		$staffInfo = $this->getStaffUserInfo();
+		$body->LogonBranchID = $library->ilsCode;
+		$body->LogonUserID = (string)$staffInfo['polarisId'];
+		if (empty($library->workstationId)){
+			$body->LogonWorkstationID = (int)$this->accountProfile->workstationId;
+		}else{
+			$body->LogonWorkstationID = (int)$library->workstationId;
+		}
+		$body->PatronBranchID = $_REQUEST['branchcode'];
+		$body->PostalCode = $_REQUEST['zipcode'];
+		$body->ZipPlusFour = '';
+		$body->City = $_REQUEST['city'];
+		$body->State = $_REQUEST['state'];
+		$body->County = '';
+		//$body->CountryID = '';
+		$body->StreetOne = $_REQUEST['address'];
+		$body->StreetTwo = $_REQUEST['address2'];
+		$body->StreetThree = $_REQUEST['address3'];
+		$body->NameFirst = $_REQUEST['firstName'];
+		$body->NameLast = $_REQUEST['lastName'];
+		$body->NameMiddle = $_REQUEST['middleName'];
+		//$body->User1 = '';
+		//$body->User2 = '';
+		//$body->User3 = '';
+		//$body->User4 = '';
+		//$body->User5 = '';
+		//$body->Gender = '';
+		if ($library && $library->promptForBirthDateInSelfReg) {
+			$body->Birthdate = $_REQUEST['birthDate'];
+		}
+		$body->PhoneVoice1 = $_REQUEST['phone1'];
+		$body->PhoneVoice2 = $_REQUEST['phone2'];
+		$body->PhoneVoice3 = $_REQUEST['phone3'];
+		$body->PhoneVoice1Carrier = -2;
+		$body->PhoneVoice2Carrier = -2;
+		$body->PhoneVoice3Carrier = -2;
+		$txtCarrier = $_REQUEST['txtPhone'];
+		if ($txtCarrier != '(None)'){
+			$property =  'PhoneVoice' . $_REQUEST['txtPhone'] . 'CarrierID';
+			$body->$property = $_REQUEST['txtCarrier'];
+		}
+		$body->EmailAddress = $_REQUEST['email'];
+		$body->AltEmailAddress = $_REQUEST['altEmail'];
+		//$body->LanguageID = 1;
+		$body->Username = $_REQUEST['patronUsername'];
+		$body->Password = $_REQUEST['patronPassword'];
+		$body->Password2 = $_REQUEST['patronPasswordRepeat'];
+		$body->DeliveryOptionID = $_REQUEST['notices'];
+		if ($_REQUEST['txtPhone'] != '(None)') {
+			$body->EnableSMS = !empty($_REQUEST['txtPhone']) ? 1 : 0;
+			$body->TxtPhoneNumber = $_REQUEST['txtPhone'];
+		}else{
+			$body->EnableSMS = 0;
+			$body->TxtPhoneNumber = '';
+		}
+		//$body->Barcode = '';
+		if ($_REQUEST['eReceipts'] != '(None)') {
+			$body->EReceiptOptionID = $_REQUEST['eReceipts'];
+		}
+		//$body->PatronCode = '';
+		//$body->ExpirationDate = '';
+		//$body->AddrCheckDate = '';
+		//$body->GenderID = '';
+		$body->LegalNameFirst = $_REQUEST['firstNameOnIdentification'];
+		$body->LegalNameLast = $_REQUEST['lastNameOnIdentification'];
+		$body->UseLegalNameOnNotices = isset($_REQUEST['useNameOnIdForNotices']) ? true : false;
+		$body->RequestPickupBranchID = $_REQUEST['branchcode'];
+
+		$encodedBody = json_encode($body);
+		$response = $this->getWebServiceResponse($polarisUrl, 'POST', '', $encodedBody);
+		ExternalRequestLogEntry::logRequest('polaris.selfRegister', 'POST', $this->getWebServiceURL() . $polarisUrl, $this->apiCurlWrapper->getHeaders(), $encodedBody, $this->lastResponseCode, $response, []);
+		if ($response && $this->lastResponseCode == 200) {
+			$jsonResult = json_decode($response);
+			if ($jsonResult->PAPIErrorCode != 0) {
+				$result['message'] = translate(['text'=>"Could not create your account.", 'isPublicFacing'=>true]) . " " . translate(['text'=>$jsonResult->ErrorMessage, 'isPublicFacing'=>true]);
+				if (IPAddress::showDebuggingInformation()) {
+					$result['message'] .= " ({$jsonResult->PAPIErrorCode})";
+				}
+			}else{
+				$result['success'] = true;
+				$result['username'] = $_REQUEST['patronUsername'];
+				$result['barcode'] = $jsonResult->Barcode;
+			}
+		}
+
+		return $result;
 	}
 }

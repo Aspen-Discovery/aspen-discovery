@@ -4,7 +4,7 @@
 	{if (isset($selfRegResult) && $selfRegResult.success)}
 		<div id="selfRegSuccess" class="alert alert-success">
 			{if $selfRegistrationSuccessMessage}
-				{translate text=$selfRegistrationSuccessMessage}
+				{$selfRegistrationSuccessMessage}
 			{else}
 				{translate text='Congratulations, you have successfully registered for a new library card. You will have limited privileges initially.<br>	Please bring a valid ID to the library to receive a physical library card with full privileges.' isPublicFacing=true}
 			{/if}
@@ -30,7 +30,7 @@
 		{if (isset($selfRegResult))}
 			<div id="selfRegFail" class="alert alert-warning">
 				{if !empty($selfRegResult.message)}
-					{translate text=$selfRegResult.message}
+					{$selfRegResult.message}
 				{else}
 					{translate text='Sorry, we were unable to create a library card for you.<br>You may already have an account or there may be an error with the information you entered.<br>Please try again or visit the library in person (with a valid ID) so we can create a card for you.' isPublicFacing=true}
 				{/if}
