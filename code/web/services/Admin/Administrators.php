@@ -99,37 +99,44 @@ class Admin_Administrators extends ObjectEditor
 	function processNewAdministrator(){
 		global $interface;
 		global $configArray;
-		$login = trim($_REQUEST['login']);
-		$newAdmin = new User();
-		$barcodeProperty = $configArray['Catalog']['barcodeProperty'];
+		$loginRaw = trim($_REQUEST['login']);
+		$logins = preg_split("/\\r\\n|\\r|\\n/", $loginRaw);
+		$errors = [];
+		foreach ($logins as $login) {
+			$newAdmin = new User();
+			$barcodeProperty = $configArray['Catalog']['barcodeProperty'];
 
-		$newAdmin->$barcodeProperty = $login;
-		$newAdmin->find();
-		$numResults = $newAdmin->getNumResults();
-		if ($numResults == 0){
-			//See if we can fetch the user from the ils
-			$newAdmin = UserAccount::findNewUser($login);
-			if ($newAdmin == false){
-				$interface->assign('error', translate(['text' => 'Could not find a user with that barcode.', 'isAdminFacing'=>true]));
+			$newAdmin->$barcodeProperty = $login;
+			$newAdmin->find();
+			$numResults = $newAdmin->getNumResults();
+			if ($numResults == 0) {
+				//See if we can fetch the user from the ils
+				$newAdmin = UserAccount::findNewUser($login);
+				if ($newAdmin == false) {
+					$errors[$login] = translate(['text' => 'Could not find a user with that barcode.', 'isAdminFacing' => true]);
+				}
+			} elseif ($numResults == 1) {
+				$newAdmin->fetch();
+			} elseif ($numResults > 1) {
+				$newAdmin = false;
+				$errors[$login] = translate(['text' => "Found multiple (%1%) users with that barcode. (The database needs to be cleaned up.)", 'isAdminFacing' => true]);
 			}
-		}elseif ($numResults == 1){
-			$newAdmin->fetch();
-		}elseif ($numResults > 1){
-			$newAdmin = false;
-			$interface->assign('error', translate(['text' => "Found multiple (%1%) users with that barcode. (The database needs to be cleaned up.)", 'isAdminFacing'=>true]));
+
+			if ($newAdmin != false) {
+				if (isset($_REQUEST['roles'])) {
+					$newAdmin->setRoles($_REQUEST['roles']);
+					$newAdmin->update();
+				} else {
+					$newAdmin->query('DELETE FROM user_roles where user_roles.userId = ' . $newAdmin->id);
+				}
+			}
 		}
 
-		if ($newAdmin != false) {
-			if (isset($_REQUEST['roles'])) {
-				$newAdmin->setRoles($_REQUEST['roles']);
-				$newAdmin->update();
-			} else {
-				$newAdmin->query('DELETE FROM user_roles where user_roles.userId = ' . $newAdmin->id);
-			}
-
+		if (count($errors) == 0){
 			header("Location: /{$this->getModule()}/{$this->getToolName()}");
 			die();
-		}else{
+		} else {
+			$interface->assign('errors', $errors);
 			$interface->setTemplate('addAdministrator.tpl');
 		}
 	}

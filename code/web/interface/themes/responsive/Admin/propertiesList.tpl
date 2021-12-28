@@ -95,8 +95,9 @@
 								{if $property.type == 'label'}
 									{if $dataItem->class != 'objectDeleted'}
 										{if $dataItem->canActiveUserEdit()}
-											{if $propName == $dataItem->getPrimaryKey()}<a class="btn btn-default btn-sm" href='/{$module}/{$toolName}?objectAction=edit&amp;id={$id}'>{/if}
-											<i class="fas fa-pencil-alt fa-xs" style="padding-right: .5em"></i>{$propValue}
+											{if $propName == $dataItem->getPrimaryKey()}<a class="btn btn-default btn-sm" href='/{$module}/{$toolName}?objectAction=edit&amp;id={$id}'>
+											<i class="fas fa-pencil-alt fa-xs" style="padding-right: .5em"></i>{/if}
+											{$propValue}
 											{if $propName == $dataItem->getPrimaryKey()}</a>{/if}
 										{else}
 											{$propValue}

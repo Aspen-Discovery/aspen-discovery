@@ -1,19 +1,21 @@
 {strip}
 <div id="main-content" class="col-tn-12 col-xs-12">
-	{if !empty($error)}
-		<div class="alert alert-danger">{$error}</div>
-	{/if}
 	<h1>{translate text='Setup a new administrator' isAdminFacing=true}</h1>
+	{if !empty($errors)}
+		{foreach from=$errors item=error key=barcode}
+			<div class="alert alert-danger">{$barcode}: {$error}</div>
+		{/foreach}
+	{/if}
 	<form name="addAdministrator" method="post" enctype="multipart/form-data" class="form-horizontal">
 		<fieldset>
 			<input type="hidden" name="objectAction" value="processNewAdministrator">
 			<div class="row form-group">
-				<label for="login" class="col-sm-2 control-label">{translate text='Barcode' isAdminFacing=true}</label>
+				<label for="login" class="col-sm-2 control-label">{translate text='Barcode(s)' isAdminFacing=true}</label>
 				<div class="col-sm-10">
-					<input type="text" name="login" id="login" class="form-control">
+					<textarea name="login" id="login" class="form-control"></textarea>
 				</div>
 			</div>
-			<div class="alert alert-info">{translate text="Enter the barcode for the user who should be given administration privileges" isAdminFacing=true}</div>
+			<div class="alert alert-info">{translate text="Enter the barcode(s) for the user who should be given administration privileges.  To create multiple administrators at once, enter each barcode on it's own line." isAdminFacing=true}</div>
 
 			<div class="form-group">
 				{assign var=property value=$structure.roles}
