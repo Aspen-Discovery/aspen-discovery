@@ -1372,6 +1372,10 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 									$title .= $subFieldData;
 								}
 							}
+							$search = trim($search);
+							if (strlen($search) == 0){
+								continue;
+							}
 							$subject[$title] = array(
 									'search' => trim($search),
 									'title' => $title,

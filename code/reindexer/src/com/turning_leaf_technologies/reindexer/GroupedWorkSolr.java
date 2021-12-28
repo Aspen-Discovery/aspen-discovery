@@ -1596,7 +1596,11 @@ public class GroupedWorkSolr implements Cloneable {
 	}
 
 	void addBarcodes(Set<String> barcodeList) {
-		this.barcodes.addAll(barcodeList);
+		for (String barcode: barcodeList){
+			if (barcode.length() > 0){
+				this.barcodes.add(barcode);
+			}
+		}
 	}
 
 	void setRating(float rating) {

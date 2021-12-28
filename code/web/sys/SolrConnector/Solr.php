@@ -587,6 +587,11 @@ abstract class Solr
 						}
 					}
 
+					//Ignore empty searches
+					if (strlen($fieldValue) == 0){
+						continue;
+					}
+
 					// build a string like title:("one two")
 					$searchString = $field . ':(' . $fieldValue . ')';
 					//Check to make sure we don't already have this clause.  We will get the same clause if we have a single word and are doing different munges
@@ -642,6 +647,7 @@ abstract class Solr
 			$cleanedQuery = str_replace(':', ' ', $lookfor);
 			$cleanedQuery = str_replace('“', '"', $cleanedQuery);
 			$cleanedQuery = str_replace('”', '"', $cleanedQuery);
+			$cleanedQuery = str_replace('--', '', $cleanedQuery);
 			require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
 			$noTrailingPunctuation = StringUtils::removeTrailingPunctuation($cleanedQuery);
 
