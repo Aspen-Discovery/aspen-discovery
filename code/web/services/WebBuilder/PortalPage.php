@@ -59,10 +59,10 @@ class WebBuilder_PortalPage extends Action
 			$allowInLibrary = $page->requireLoginUnlessInLibrary;
 		}
 
-		$inLibrary = $locationSingleton->getIPLocation();
+		$activeLibrary = $locationSingleton->getActiveLocation();
 		$user = UserAccount::getLoggedInUser();
 		if($requireLogin){
-			if($allowInLibrary && $inLibrary != null) {
+			if($allowInLibrary && $activeLibrary != null) {
 				return true;
 			}
 			if(!$user) {
@@ -70,23 +70,25 @@ class WebBuilder_PortalPage extends Action
 			}
 			else {
 				$userPatronType = $user->patronType;
-				$userId = $user->id;
 
-				$patronType = new pType();
-				$patronType->pType = $userPatronType;
-				$patronType->find();
-				if ($userPatronType == NULL && $userId == 1) {
+				if ($userPatronType == NULL) {
+					return true;
+				} elseif (empty($page->getAccess())){
+					//No patron types defined, everyone can access
 					return true;
 				} else {
-					while ($patronType->fetch()) {
+					$patronType = new pType();
+					$patronType->pType = $userPatronType;
+					if ($patronType->find(true)){
 						$patronTypeId = $patronType->id;
+					}else{
+						return false;
 					}
 
 					$patronTypeLink = new PortalPageAccess();
 					$patronTypeLink->portalPageId = $id;
 					$patronTypeLink->patronTypeId = $patronTypeId;
-					$patronTypeLink->find();
-					if ($patronTypeLink->find()) {
+					if ($patronTypeLink->find(true)) {
 						return true;
 					} else {
 						return false;
@@ -103,9 +105,11 @@ class WebBuilder_PortalPage extends Action
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/', 'Home');
-		$breadcrumbs[] = new Breadcrumb('', $this->page->title, true);
-		if (UserAccount::userHasPermission(['Administer All Custom Pages', 'Administer Library Custom Pages'])){
-			$breadcrumbs[] = new Breadcrumb('/WebBuilder/PortalPages?id=' . $this->page->id . '&objectAction=edit', 'Edit', true);
+		if ($this->page != null) {
+			$breadcrumbs[] = new Breadcrumb('', $this->page->title, true);
+			if (UserAccount::userHasPermission(['Administer All Custom Pages', 'Administer Library Custom Pages'])) {
+				$breadcrumbs[] = new Breadcrumb('/WebBuilder/PortalPages?id=' . $this->page->id . '&objectAction=edit', 'Edit', true);
+			}
 		}
 		return $breadcrumbs;
 	}

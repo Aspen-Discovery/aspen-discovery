@@ -30,6 +30,7 @@ if (isset($_REQUEST['test_role'])){
 $interface = new UInterface();
 $timer->logTime('Create interface');
 
+/** @var Location $locationSingleton */
 global $locationSingleton;
 getGitBranch();
 //Set a counter for CSS and JavaScript so we can have browsers clear their cache automatically

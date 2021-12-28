@@ -1268,13 +1268,15 @@ public class PolarisExportMain {
 							//Public note is only exported as part of holdings so get from there
 							if (indexingProfile.getNoteSubfield() != ' ' && allHoldings != null) {
 								//Get the holding based on the barcode
-								String itemBarcode = curItem.getString("Barcode");
-								if (itemBarcode != null) {
-									for (int k = 0; k < allHoldings.length(); k++) {
-										JSONObject curHolding = allHoldings.getJSONObject(k);
-										if (itemBarcode.equals(curHolding.getString("Barcode"))){
-											updateItemField(marcFactory, curHolding, itemField, indexingProfile.getNoteSubfield(), "PublicNote");
-											break;
+								if (!curItem.isNull("Barcode")) {
+									String itemBarcode = curItem.getString("Barcode");
+									if (itemBarcode != null) {
+										for (int k = 0; k < allHoldings.length(); k++) {
+											JSONObject curHolding = allHoldings.getJSONObject(k);
+											if (!curHolding.isNull("Barcode") && itemBarcode.equals(curHolding.getString("Barcode"))) {
+												updateItemField(marcFactory, curHolding, itemField, indexingProfile.getNoteSubfield(), "PublicNote");
+												break;
+											}
 										}
 									}
 								}

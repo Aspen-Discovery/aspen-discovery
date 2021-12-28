@@ -113,4 +113,26 @@ class Memcache
 			}
 		}
 	}
+
+	public function deleteStartingWith($name)
+	{
+		foreach ($this->vars as $key => $value){
+			if (strpos($key, $name) === 0){
+				unset($this->vars[$key]);
+			}
+		}
+		if ($this->enableDbCache) {
+			try {
+				if (Memcache::$cachedValueCleaner == null) {
+					Memcache::$cachedValueCleaner = new CachedValue();
+				}
+
+				Memcache::$cachedValueCleaner->whereAdd();
+				Memcache::$cachedValueCleaner->whereAdd("cacheKey like '$name%'");
+				Memcache::$cachedValueCleaner->delete(true);
+			} catch (Exception $e) {
+				//Table has not been created ignore
+			}
+		}
+	}
 }

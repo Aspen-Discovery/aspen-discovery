@@ -800,14 +800,15 @@ class Location extends DataObject
 	private $_ipLocation = 'unset';
 
 	/**
-	 * @return Location|bool|null
+	 * @return Location|null
 	 */
-	function getIPLocation()
+	function getIPLocation() : ?Location
 	{
 		if ($this->_ipLocation != 'unset') {
 			return $this->_ipLocation;
 		}
 		global $timer;
+		/** @var Memcache $memCache */
 		global $memCache;
 		global $configArray;
 		//Check the current IP address to see if we are in a branch

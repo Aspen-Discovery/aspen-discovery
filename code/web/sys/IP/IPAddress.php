@@ -53,10 +53,18 @@ class IPAddress extends DataObject
 
 	function insert(){
 		$this->calcIpRange();
+		/** @var Memcache $memCache */
+		global $memCache;
+		$memCache->deleteStartingWith('ipId_for_ip_');
+		$memCache->deleteStartingWith('location_for_ip_');
 		return parent::insert();
 	}
 	function update(){
 		$this->calcIpRange();
+		/** @var Memcache $memCache */
+		global $memCache;
+		$memCache->deleteStartingWith('ipId_for_ip_');
+		$memCache->deleteStartingWith('location_for_ip_');
 		return parent::update();
 	}
 	function validateIPAddress(){

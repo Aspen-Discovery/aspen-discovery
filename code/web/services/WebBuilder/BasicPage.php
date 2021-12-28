@@ -7,6 +7,7 @@ class WebBuilder_BasicPage extends Action{
 
 	function __construct()
 	{
+		parent::__construct();
 		//Make sure the user has permission to access the page
 		$userCanAccess = $this->canView();
 
@@ -34,16 +35,19 @@ class WebBuilder_BasicPage extends Action{
 			$actionClass = new Error_Handle404();
 			$actionClass->launch();
 			die();
+		}else{
+			$title = $this->basicPage->title;
 		}
 
 		$interface->assign('contents', $this->basicPage->getFormattedContents());
-		$interface->assign('title', $this->basicPage->title);
+		$interface->assign('title', $title);
 
-		$this->display('basicPage.tpl', $this->basicPage->title, '', false);
+		$this->display('basicPage.tpl', $title, '', false);
 	}
 
 	function canView() : bool
 	{
+		/** @var Location $locationSingleton */
 		global $locationSingleton;
 		require_once ROOT_DIR . '/sys/WebBuilder/BasicPageAccess.php';
 		require_once ROOT_DIR . '/sys/Account/PType.php';
@@ -60,34 +64,35 @@ class WebBuilder_BasicPage extends Action{
 			$allowInLibrary = $page->requireLoginUnlessInLibrary;
 		}
 
-		$inLibrary = $locationSingleton->getIPLocation();
+		$activeLibrary = $locationSingleton->getActiveLocation();
 		$user = UserAccount::getLoggedInUser();
 		if($requireLogin){
-			if($allowInLibrary && $inLibrary != null) {
+			if($allowInLibrary && $activeLibrary != null) {
 				return true;
 			}
 			if(!$user) {
 				return false;
-			}
-			else {
+			} else {
 				$userPatronType = $user->patronType;
-				$userId = $user->id;
 
-				$patronType = new pType();
-				$patronType->pType = $userPatronType;
-				$patronType->find();
-				if ($userPatronType == NULL && $userId == 1) {
+				if ($userPatronType == NULL) {
+					return true;
+				} elseif (empty($page->getAccess())){
+					//No patron types defined, everyone can access
 					return true;
 				} else {
-					while ($patronType->fetch()) {
+					$patronType = new pType();
+					$patronType->pType = $userPatronType;
+					if ($patronType->find(true)){
 						$patronTypeId = $patronType->id;
+					}else{
+						return false;
 					}
 
 					$patronTypeLink = new BasicPageAccess();
 					$patronTypeLink->basicPageId = $id;
 					$patronTypeLink->patronTypeId = $patronTypeId;
-					$patronTypeLink->find();
-					if ($patronTypeLink->find()) {
+					if ($patronTypeLink->find(true)) {
 						return true;
 					} else {
 						return false;
@@ -103,9 +108,11 @@ class WebBuilder_BasicPage extends Action{
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/', 'Home');
-		$breadcrumbs[] = new Breadcrumb('', $this->basicPage->title, true);
-		if (UserAccount::userHasPermission(['Administer All Basic Pages', 'Administer Library Basic Pages'])){
-			$breadcrumbs[] = new Breadcrumb('/WebBuilder/BasicPages?id=' . $this->basicPage->id . '&objectAction=edit', 'Edit', true);
+		if ($this->basicPage != null) {
+			$breadcrumbs[] = new Breadcrumb('', $this->basicPage->title, true);
+			if (UserAccount::userHasPermission(['Administer All Basic Pages', 'Administer Library Basic Pages'])){
+				$breadcrumbs[] = new Breadcrumb('/WebBuilder/BasicPages?id=' . $this->basicPage->id . '&objectAction=edit', 'Edit', true);
+			}
 		}
 		return $breadcrumbs;
 	}
