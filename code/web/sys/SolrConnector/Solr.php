@@ -647,7 +647,7 @@ abstract class Solr
 			$cleanedQuery = str_replace(':', ' ', $lookfor);
 			$cleanedQuery = str_replace('“', '"', $cleanedQuery);
 			$cleanedQuery = str_replace('”', '"', $cleanedQuery);
-			$cleanedQuery = str_replace('--', '', $cleanedQuery);
+			$cleanedQuery = str_replace('--', ' ', $cleanedQuery);
 			require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
 			$noTrailingPunctuation = StringUtils::removeTrailingPunctuation($cleanedQuery);
 
