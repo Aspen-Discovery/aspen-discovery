@@ -57,7 +57,7 @@ class CarlX extends AbstractIlsDriver{
 		if ($result){
 			if (isset($result->Patron)){
 				//Check to see if the pin matches
-				if ($result->Patron->PatronPIN == $password || $validatedViaSSO){
+				if (($result->Patron->PatronID == $username) && ($result->Patron->PatronPIN == $password || $validatedViaSSO)){
 					//$fullName = $result->Patron->FullName;
 					$firstName = $result->Patron->FirstName;
 					$lastName = $result->Patron->LastName;
