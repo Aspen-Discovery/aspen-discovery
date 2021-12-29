@@ -12,7 +12,7 @@ class NovelistSetting extends DataObject
 	{
 		return [
 			'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id'),
-			'profile' => array('property' => 'profile', 'type' => 'text', 'label' => 'Profile', 'description' => 'The Profile Name for Novelist'),
+			'profile' => array('property' => 'profile', 'type' => 'text', 'label' => 'Profile ID', 'description' => 'The Profile Name for Novelist'),
 			'pwd' => array('property' => 'pwd', 'type' => 'storedPassword', 'label' => 'Profile Password', 'description' => 'The password for the Profile', 'hideInLists' => true),
 		];
 	}

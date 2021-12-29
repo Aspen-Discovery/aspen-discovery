@@ -146,13 +146,25 @@ public class CourseReservesIndexerMain {
 
 		CourseReservesIndexingLogEntry logEntry = createDbLogEntry(dbConn);
 
+		courseReservesProcessor = new CourseReservesIndexer(configIni, dbConn, logger);
+
 		//Load the last Index time
 		try {
-			PreparedStatement loadSettingsStmt = dbConn.prepareStatement("SELECT * from course_reserves_indexing_settings");
+			PreparedStatement loadSettingsStmt = dbConn.prepareStatement("SELECT * from course_reserves_indexing_settings", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			ResultSet loadSettingsRS = loadSettingsStmt.executeQuery();
 			if (loadSettingsRS.next()){
 				fullReindex = loadSettingsRS.getBoolean("runFullUpdate");
 				lastReindexTime = loadSettingsRS.getLong("lastUpdateOfChangedCourseReserves");
+
+				//Get library translations
+				PreparedStatement loadLibraryMapStmt = dbConn.prepareStatement("SELECT * FROM course_reserves_library_map where settingId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+				loadLibraryMapStmt.setLong(1, loadSettingsRS.getLong("id"));
+				ResultSet loadLibraryMapRS = loadLibraryMapStmt.executeQuery();
+				while (loadLibraryMapRS.next()){
+					courseReservesProcessor.addLibraryMap(loadLibraryMapRS.getString("value"), loadLibraryMapRS.getString("translation"));
+				}
+				loadLibraryMapRS.close();
+				loadLibraryMapStmt.close();
 			}else{
 				logEntry.incErrors("No Settings were found for course reserve indexing");
 			}
@@ -161,8 +173,6 @@ public class CourseReservesIndexerMain {
 		} catch (Exception e) {
 			logEntry.incErrors("Could not load last index time from settings table ", e);
 		}
-
-		courseReservesProcessor = new CourseReservesIndexer(configIni, dbConn, logger);
 
 		return logEntry;
 	}

@@ -20,6 +20,7 @@ class CourseReserveSolr {
 	private long numTitles = 0;
 	private long created;
 	private String courseLibrary;
+	private String displayLibrary;
 
 	CourseReserveSolr(CourseReservesIndexer courseReservesIndexer) {
 		this.courseReservesIndexer = courseReservesIndexer;
@@ -36,6 +37,8 @@ class CourseReserveSolr {
 		doc.addField("title_display", title);
 		
 		doc.addField("title_sort", StringUtils.makeValueSortable(title));
+
+		doc.addField("library", displayLibrary);
 
 		doc.addField("instructor", instructor);
 		doc.addField("instructor_display", instructor);
@@ -108,5 +111,9 @@ class CourseReserveSolr {
 
 	public void setCourseLibrary(String courseLibrary) {
 		this.courseLibrary = courseLibrary;
+	}
+
+	public void setDisplayLibrary(String displayLibrary) {
+		this.displayLibrary = displayLibrary;
 	}
 }

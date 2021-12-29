@@ -117,6 +117,7 @@
 		<field name="instructor_display" type="unchanged_string" indexed="true" stored="true" multiValued="false"/> <!-- The author to display to the user -->
 		<field name="course_number" type="unchanged_string" indexed="true" stored="true" />
 		<field name="course_title" type="unchanged_string" indexed="true" stored="true" />
+		<field name="library" type="unchanged_string" indexed="true" stored="true" />
 		<field name="table_of_contents" type="searchable_text" indexed="true" stored="true" multiValued="true"/>
 		<field name="table_of_contents_proper" type="textProper" indexed="true" stored="true" multiValued="true"/>
 		<field name="keywords" type="searchable_text" indexed="true" stored="false"/>

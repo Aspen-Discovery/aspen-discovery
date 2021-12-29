@@ -186,6 +186,17 @@ class SearchObject_CourseReservesSearcher extends SearchObject_SolrSearcher
 	{
 		if ($this->facetConfig == null) {
 			$facetConfig = [];
+			$libraryFacet = new LibraryFacetSetting();
+			$libraryFacet->id = 1;
+			$libraryFacet->multiSelect = true;
+			$libraryFacet->facetName = "library";
+			$libraryFacet->displayName = "Library";
+			$libraryFacet->numEntriesToShowByDefault = 5;
+			$libraryFacet->translate = false;
+			$libraryFacet->collapseByDefault = false;
+			$libraryFacet->useMoreFacetPopup = true;
+			$facetConfig["library"] = $libraryFacet;
+
 			$author = new LibraryFacetSetting();
 			$author->id = 1;
 			$author->multiSelect = true;

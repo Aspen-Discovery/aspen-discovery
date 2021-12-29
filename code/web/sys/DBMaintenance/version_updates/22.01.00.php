@@ -123,5 +123,17 @@ function getUpdates22_01_00() : array
 				"ALTER TABLE web_builder_portal_page ADD COLUMN requireLoginUnlessInLibrary TINYINT(1) DEFAULT 0",
 			]
 		], //login_unless_in_library
+		'course_reserves_library_mappings' => [
+			'title' => 'Course Reserves Library Mappings',
+			'description' => 'Add library mappings for course reservers',
+			'sql' => [
+				"CREATE TABLE IF NOT EXISTS course_reserves_library_map (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, 
+					settingId INT(11),
+					value VARCHAR(50) NOT NULL,
+					translation VARCHAR(255) NOT NULL 
+				) ENGINE INNODB",
+			]
+		]
 	];
 }

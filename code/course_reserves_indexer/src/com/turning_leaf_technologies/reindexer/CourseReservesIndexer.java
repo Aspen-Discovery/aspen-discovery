@@ -20,6 +20,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.TreeSet;
 
 class CourseReservesIndexer {
@@ -28,6 +30,7 @@ class CourseReservesIndexer {
 	private ConcurrentUpdateSolrClient updateServer;
 	private SolrClient groupedWorkServer;
 	private final TreeSet<Scope> scopes;
+	private HashMap<String, String> libraryTranslations = new HashMap<>();
 
 	CourseReservesIndexer(Ini configIni, Connection dbConn, Logger logger){
 		this.dbConn = dbConn;
@@ -130,6 +133,14 @@ class CourseReservesIndexer {
 			courseReserveSolr.setCourseNumber(courseNumber);
 			courseReserveSolr.setCourseTitle(courseTitle);
 			courseReserveSolr.setCourseLibrary(courseLibrary);
+
+			//Translate the library
+			String displayLibrary = libraryTranslations.get(courseLibrary);
+			if (displayLibrary == null){
+				displayLibrary = courseLibrary;
+			}
+			courseReserveSolr.setDisplayLibrary(displayLibrary);
+
 			courseReserveSolr.setInstructor(courseInstructor);
 
 			//Get information about all the titles on reserve
@@ -189,5 +200,9 @@ class CourseReservesIndexer {
 
 	TreeSet<Scope> getScopes() {
 		return this.scopes;
+	}
+
+	public void addLibraryMap(String value, String translation){
+		this.libraryTranslations.put(value, translation);
 	}
 }
