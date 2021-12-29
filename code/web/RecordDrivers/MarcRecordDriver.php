@@ -1325,8 +1325,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 		$localSubjects = array();
 		if ($marcRecord) {
 			if (isset($configArray['Content']['subjectFieldsToShow'])) {
-				$subjectFieldsToShow = $configArray['Content']['subjectFieldsToShow'];
-				$subjectFields = explode(',', $subjectFieldsToShow);
+				$subjectFields = [600,610,611,630,650,651,655,690];
 
 				$lcSubjectTagNumbers = array(600, 610, 611, 630, 650, 651, 655); 
 				foreach ($subjectFields as $subjectField) {
