@@ -16,6 +16,7 @@ class MyAccount_ContactInformation extends MyAccount
 		$interface->assign('showSMSNoticesInProfile', $ils == 'Sierra' && $smsEnabled == true);
 
 		if ($user) {
+
 			$patronUpdateForm = $user->getPatronUpdateForm();
 			if ($patronUpdateForm != null){
 				$interface->assign('patronUpdateForm', $patronUpdateForm);
@@ -23,6 +24,7 @@ class MyAccount_ContactInformation extends MyAccount
 				$user->loadContactInformation();
 			}
 
+			/** @var Library $librarySingleton */
 			global $librarySingleton;
 			// Get Library Settings from the home library of the current user-account being displayed
 			$patronHomeLibrary = $librarySingleton->getPatronHomeLibrary($user);

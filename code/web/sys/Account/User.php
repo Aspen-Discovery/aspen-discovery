@@ -2174,7 +2174,12 @@ class User extends DataObject
 	}
 
 	function getHomeLocationCode(){
-		return $this->getHomeLocation()->code;
+		$homeLocation = $this->getHomeLocation();
+		if ($homeLocation != null){
+			return $homeLocation->code;
+		}else{
+			return null;
+		}
 	}
 
 	function getPickupLocationCode(){

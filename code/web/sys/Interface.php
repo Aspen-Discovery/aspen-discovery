@@ -210,31 +210,35 @@ class UInterface extends Smarty
 			$user = UserAccount::getActiveUserObj();
 			//Figure out if we should show a link to pay fines.
 			$homeLibrary = Library::getLibraryForLocation($user->homeLocationId);
-			$finePaymentType = isset($homeLibrary) ? $homeLibrary->finePaymentType : 0;
+			if ($homeLibrary != null) {
+				$finePaymentType = isset($homeLibrary) ? $homeLibrary->finePaymentType : 0;
 
-			$this->assign('minimumFineAmount', $homeLibrary->minimumFineAmount);
-			$this->assign('payFinesLinkText', $homeLibrary->payFinesLinkText);
-			if ($finePaymentType == 1) {
-				$this->assign('showRefreshAccountButton', $homeLibrary->showRefreshAccountButton);
+				$this->assign('minimumFineAmount', $homeLibrary->minimumFineAmount);
+				$this->assign('payFinesLinkText', $homeLibrary->payFinesLinkText);
+				if ($finePaymentType == 1) {
+					$this->assign('showRefreshAccountButton', $homeLibrary->showRefreshAccountButton);
 
-				// Determine E-commerce Link
-				$eCommerceLink = null;
-				if ($homeLibrary->payFinesLink == 'default') {
-					global $configArray;
-					$defaultECommerceLink = $configArray['Site']['ecommerceLink'];
-					if (!empty($defaultECommerceLink)) {
-						$eCommerceLink = $defaultECommerceLink;
+					// Determine E-commerce Link
+					$eCommerceLink = null;
+					if ($homeLibrary->payFinesLink == 'default') {
+						global $configArray;
+						$defaultECommerceLink = $configArray['Site']['ecommerceLink'];
+						if (!empty($defaultECommerceLink)) {
+							$eCommerceLink = $defaultECommerceLink;
+						} else {
+							$finePaymentType = 0;
+						}
+					} elseif (!empty($homeLibrary->payFinesLink)) {
+						$eCommerceLink = $homeLibrary->payFinesLink;
 					} else {
 						$finePaymentType = 0;
 					}
-				} elseif (!empty($homeLibrary->payFinesLink)) {
-						$eCommerceLink = $homeLibrary->payFinesLink;
-				} else {
-					$finePaymentType = 0;
+					$this->assign('eCommerceLink', $eCommerceLink);
+				} elseif ($finePaymentType >= 2) {
+					$this->assign('eCommerceLink', '/MyAccount/Fines');
 				}
-				$this->assign('eCommerceLink', $eCommerceLink);
-			}elseif ($finePaymentType >= 2){
-				$this->assign('eCommerceLink', '/MyAccount/Fines');
+			}else{
+				$finePaymentType = 0;
 			}
 			$this->assign('finePaymentType', $finePaymentType);
 		}
