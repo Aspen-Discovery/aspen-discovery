@@ -1,7 +1,9 @@
 {strip}
 	<div id="main-content" class="col-md-12">
-		<h1>{translate text='Reindex Log' isAdminFacing=true}</h1>
-		<hr>
+		<h1>{translate text='Nightly Index Log' isAdminFacing=true}</h1>
+		<p class="alert alert-info">
+			{translate text="The nightly index log is run when we detect changes to settings related to indexing or when new Accelerated Reader data is available.  It can be forced to run by selecting <b>Run full index tonight</b> from the System Variables in the System Administration section." isAdminFacing=true}
+		</p>
 
 		<legend>{translate text="Filter by" isAdminFacing=true}</legend>
 
