@@ -62,4 +62,9 @@ class Admin_IPAddresses extends ObjectEditor
 	{
 		return UserAccount::userHasPermission('Administer IP Addresses');
 	}
+
+	protected function getDefaultRecordsPerPage()
+	{
+		return 100;
+	}
 }
