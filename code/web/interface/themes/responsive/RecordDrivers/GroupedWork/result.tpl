@@ -235,11 +235,9 @@
 						</div>
 
 						{* Mobile Description *}
-						<div class="hidden-xs">
-							{* Hide in mobile view *}
-							<div class="result-value col-sm-12" id="descriptionValue{$summId|escape}">
-								{$summDescription|highlight|truncate_html:450:"..."}
-							</div>
+						{* Hide in mobile view *}
+						<div class="hidden-xs result-value col-sm-12" id="descriptionValue{$summId|escape}">
+							{$summDescription|highlight|truncate_html:450:"..."}
 						</div>
 					{/if}
 

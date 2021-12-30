@@ -88,9 +88,9 @@
 				</div>
 
 				{* Mobile Description *}
-				<div class="row hidden-xs">
+				<div class="row">
 					{* Hide in mobile view *}
-					<div class="result-value col-sm-12" id="descriptionValue{$summId|escape}">
+					<div class="hidden-xs result-value col-sm-12" id="descriptionValue{$summId|escape}">
 						{$summDescription|highlight|truncate_html:450:"..."}
 					</div>
 				</div>
