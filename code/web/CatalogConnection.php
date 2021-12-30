@@ -704,7 +704,7 @@ class CatalogConnection
 	{
 		//Check to see if we need to update the reading history.  Only update every 5 minutes in normal situations.
 		$curTime = time();
-		if (($curTime - $patron->lastReadingHistoryUpdate) < 60 * 5 && !isset($_REQUEST['reload'])){
+		if ((($curTime - $patron->lastReadingHistoryUpdate) < 60 * 5) && !isset($_REQUEST['reload'])){
 			return;
 		}
 
@@ -720,8 +720,9 @@ class CatalogConnection
 		while ($readingHistoryDB->fetch()) {
 			$historyEntry = [];
 			$historyEntry['source'] = $readingHistoryDB->source;
-			$historyEntry['id'] = $readingHistoryDB->sourceId;
-			$key = strtolower($historyEntry['source'] . ':' . $historyEntry['id']);
+			$historyEntry['sourceId'] = $readingHistoryDB->sourceId;
+			$historyEntry['id'] = $readingHistoryDB->id;
+			$key = strtolower($historyEntry['source'] . ':' . $historyEntry['sourceId']);
 			$activeHistoryTitles[$key] = $historyEntry;
 		}
 
@@ -759,9 +760,7 @@ class CatalogConnection
 		foreach ($activeHistoryTitles as $historyEntry) {
 			//Update even if deleted to make sure code is cleaned up correctly
 			$historyEntryDB = new ReadingHistoryEntry();
-			$historyEntryDB->source = $historyEntry['source'];
-			$historyEntryDB->sourceId = $historyEntry['id'];
-			$historyEntryDB->whereAdd('checkInDate IS NULL');
+			$historyEntryDB->id = $historyEntry['id'];
 			if ($historyEntryDB->find(true)) {
 				$historyEntryDB->checkInDate = time();
 				$numUpdates = $historyEntryDB->update();
