@@ -63,6 +63,7 @@
       <w>datafield</w>
       <w>dateaccessioned</w>
       <w>datearrived</w>
+      <w>datecancelled</w>
       <w>datelastborrowed</w>
       <w>datelastseen</w>
       <w>deletedbiblio</w>
