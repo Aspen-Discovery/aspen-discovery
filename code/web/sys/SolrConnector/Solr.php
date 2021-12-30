@@ -1823,7 +1823,7 @@ abstract class Solr
 				}
 			} elseif ($words[$i] != '--') { //The -- word shows up with subject searches.  It causes other errors so don't tokenize it.
 				//If we are tokenizing, remove any punctuation
-				$tmpWord = preg_replace('/[^\s\-\w.\'aàáâãåäæeèéêëiìíîïoòóôõöøuùúûü&]/u', '', $words[$i]);
+				$tmpWord = preg_replace('/[[:punct:]]/', '', $words[$i]);
 				if (strlen($tmpWord) > 0) {
 					$newWords[] = trim($tmpWord);
 				}
