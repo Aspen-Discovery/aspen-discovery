@@ -117,7 +117,7 @@
 		{if $record.existsInCatalog}
 			<div class="row">
 				<div class="col-xs-12">
-					{include file='GroupedWork/result-tools-horizontal.tpl' recordDriver=$record.recordDriver ratingData=$record.ratingData recordUrl=$record.linkUrl showMoreInfo=true}
+					{include file='GroupedWork/result-tools-horizontal.tpl' recordDriver=$record.recordDriver ratingData=$record.ratingData recordUrl=$record.linkUrl showMoreInfo=true showNotInterested=false}
 				</div>
 			</div>
 		{/if}

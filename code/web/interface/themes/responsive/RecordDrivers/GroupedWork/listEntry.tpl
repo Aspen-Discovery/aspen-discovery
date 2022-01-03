@@ -117,7 +117,7 @@
 
 
 			<div class="resultActions row">
-				{include file='GroupedWork/result-tools-horizontal.tpl' ratingData=$summRating recordUrl=$summUrl showMoreInfo=true}
+				{include file='GroupedWork/result-tools-horizontal.tpl' ratingData=$summRating recordUrl=$summUrl showMoreInfo=true showNotInterested=false}
 			</div>
 		</div>
 
