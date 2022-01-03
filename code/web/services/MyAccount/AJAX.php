@@ -4647,10 +4647,10 @@ function getCurbsidePickupAvailableTimes() {
 								}
 							}
 							if($numPickups < $maxPatrons) {
-								$timeWindow[] = date("g:i a",$time);
+								$timeWindow[] = date("H:i",$time);
 							}
 						} else {
-							$timeWindow[] = date("g:i a",$time);
+							$timeWindow[] = date("H:i",$time);
 						}
 					}
 				} else {
@@ -4668,10 +4668,10 @@ function getCurbsidePickupAvailableTimes() {
 							}
 						}
 						if($numPickups < $maxPatrons) {
-							$timeWindow[] = date("g:i a",$time);
+							$timeWindow[] = date("H:i",$time);
 						}
 					} else {
-						$timeWindow[] = date("g:i a",$time);
+						$timeWindow[] = date("H:i",$time);
 					}
 				}
 			}
