@@ -134,6 +134,13 @@ function getUpdates22_01_00() : array
 					translation VARCHAR(255) NOT NULL 
 				) ENGINE INNODB",
 			]
-		]
+		],
+		'requireLogin_webResource' => [
+			'title' => 'Add option for requiring login when accessing web resource',
+			'description' => 'Add option for requiring login when accessing web resource outside of library',
+			'sql' => [
+				"ALTER TABLE web_builder_resource ADD COLUMN requireLoginUnlessInLibrary TINYINT(1) DEFAULT 0",
+			]
+		] //requireLogin_webResource
 	];
 }

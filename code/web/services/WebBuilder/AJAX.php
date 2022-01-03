@@ -701,4 +701,35 @@ class WebBuilder_AJAX extends JSON_Action
 		$interface->assign('libraryLocations', $libraryLocations);
 		return $interface->fetch('WebBuilder/libraryHoursAndLocations.tpl');
 	}
+
+	/** @noinspection PhpUnused */
+	function getWebResource(){
+		$result = [
+			'success' => false,
+			'message' => 'Unknown error getting web resource'
+		];
+		$resourceId = $_REQUEST['resourceId'];
+		require_once ROOT_DIR . '/sys/WebBuilder/WebResource.php';
+		$webResource = new WebResource();
+		$webResource->id = $resourceId;
+		if($webResource->find(true)) {
+			/** @var Location $locationSingleton */
+			global $locationSingleton;
+			$activeLibrary = $locationSingleton->getActiveLocation();
+			$result = [
+				'success' => true,
+				'url' => $webResource->url,
+				'requireLogin' => $webResource->requireLoginUnlessInLibrary == "1" ? true : false,
+				'inLibrary' => $activeLibrary != null ? true : false,
+				'openInNewTab' => $webResource->openInNewTab == "1" ? true : false,
+			];
+		} else {
+			$result = [
+				'success' => false,
+				'message' => 'Unable to find requested web resource'
+			];
+		}
+
+		return $result;
+	}
 }

@@ -12916,6 +12916,32 @@ AspenDiscovery.WebBuilder = (function () {
 				}
 			});
 		},
+
+		getWebResource:function (id) {
+			var url = Globals.path + "/WebBuilder/AJAX";
+			var params = {
+				method: "getWebResource",
+				resourceId: id
+			};
+			// noinspection JSUnresolvedFunction
+			$.getJSON(url, params, function(data){
+				if(data.requireLogin) {
+					if(Globals.loggedIn || data.inLibrary) {
+						if(data.openInNewTab) {
+							window.open(data.url, '_blank');
+						} else {
+							location.assign(data.url);
+						}
+					} else {
+						AspenDiscovery.Account.ajaxLogin(null, function(){
+							return AspenDiscovery.Account.getWebResource(id);
+						}, false);
+					}
+				}
+			}).fail(AspenDiscovery.ajaxFail);
+
+			return false;
+		}
 	};
 }(AspenDiscovery.WebBuilder || {}));
 AspenDiscovery.Websites = (function () {

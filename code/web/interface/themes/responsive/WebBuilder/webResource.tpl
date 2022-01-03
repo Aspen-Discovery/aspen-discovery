@@ -28,7 +28,7 @@
 					{translate text="This resource requires you to be in the library to use it." isPublicFacing=true}
 				</em></p>
 			{/if}
-			<a href="{$webResource->url}" class="btn btn-primary" {if $webResource->openInNewTab}target="_blank"{/if}>{translate text="Open Resource" isPublicFacing=true}</a>
+			<a class="btn btn-primary" onclick="return AspenDiscovery.WebBuilder.getWebResource('{$webResource->id}');">{translate text="Open Resource" isPublicFacing=true}</a>
 		</div>
 		<div class="col-sm-12 col-md-3">
 			{if !empty($webResource->getAudiences())}
