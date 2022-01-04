@@ -1,4 +1,4 @@
-AspenDiscovery.WebBuilder = (function () {
+AspenDiscovery.WebBuilder = function () {
 	// noinspection JSUnusedGlobalSymbols
 	return {
 		editors: [],
@@ -295,11 +295,18 @@ AspenDiscovery.WebBuilder = (function () {
 			$.getJSON(url, params, function(data){
 				if(data.requireLogin) {
 					if(Globals.loggedIn || data.inLibrary) {
-						if(data.openInNewTab) {
-							window.open(data.url, '_blank');
-						} else {
-							location.assign(data.url);
-						}
+						var params = {
+							method: "trackWebResourceUsage",
+							id: id,
+							authType: Globals.loggedIn ? "user" : "library"
+						};
+						$.getJSON(url, params, function(usage){
+							if(data.openInNewTab) {
+								window.open(data.url, '_blank');
+							} else {
+								location.assign(data.url);
+							}
+						})
 					} else {
 						AspenDiscovery.Account.ajaxLogin(null, function(){
 							return AspenDiscovery.Account.getWebResource(id);
@@ -311,4 +318,4 @@ AspenDiscovery.WebBuilder = (function () {
 			return false;
 		}
 	};
-}(AspenDiscovery.WebBuilder || {}));
+}(AspenDiscovery.WebBuilder || {});

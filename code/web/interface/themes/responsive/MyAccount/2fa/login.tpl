@@ -1,9 +1,9 @@
 <div id="main-content">
 		<form id="twoFactorAuthForm">
 			<div class="row">
-				<div class="col-md-10 col-md-offset-1 text-center">
+				<div class="col-md-10 col-md-offset-1">
 					<p>{translate text="Enter the code sent to your authentication method or provide a backup code." isPublicFacing=true}</p>
-					<div class="form-group text-left">
+					<div class="form-group">
 						<label for="code">{translate text="6-digit code" isPublicFacing=true}</label>
 						<input type="text" class="form-control" id="code" name="code" maxlength="6" spellcheck="false" autocomplete="false">
 					</div>

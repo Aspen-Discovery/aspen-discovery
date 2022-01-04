@@ -1368,7 +1368,7 @@ class SearchAPI extends Action
 			$categoryInformation->id = $curCategory->browseCategoryId;
 
 			if ($categoryInformation->find(true)) {
-				if ($categoryInformation->isValidForDisplay($appUser)) {
+				if ($categoryInformation->isValidForDisplay($appUser) && $categoryInformation->source != "OpenArchives") {
 					if ($categoryInformation->textId == ("system_saved_searches")) {
 						$savedSearches = $listApi->getSavedSearches();
 						$allSearches = $savedSearches['searches'];
