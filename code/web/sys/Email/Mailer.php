@@ -93,7 +93,7 @@ class Mailer {
 		}
 	}
 
-	private function sendViaAmazonSes(AmazonSesSetting $amazonSesSettings, string $to, ?string $replyTo, string $subject, string $body, string $htmlBody) : bool
+	private function sendViaAmazonSes(AmazonSesSetting $amazonSesSettings, string $to, ?string $replyTo, string $subject, ?string $body, ?string $htmlBody) : bool
 	{
 		require_once ROOT_DIR . '/sys/Email/AmazonSesMessage.php';
 		$message = new AmazonSesMessage();
