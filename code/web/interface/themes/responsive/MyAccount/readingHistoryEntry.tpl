@@ -1,4 +1,4 @@
-<div class="row result" id="readingHistoryEntry{$record.permanentId}">
+{strip}<div class="row result" id="readingHistoryEntry{$record.permanentId}">
 	{* Cover Column *}
 	{if $showCovers}
 		<div class="col-xs-3 col-sm-4 col-md-2 text-center">
@@ -124,3 +124,4 @@
 	</div>
 
 </div>
+{/strip}
