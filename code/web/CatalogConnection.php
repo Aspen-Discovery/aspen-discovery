@@ -717,15 +717,23 @@ class CatalogConnection
 		$readingHistoryDB->find();
 
 		$activeHistoryTitles = array();
+		global $logger;
 		while ($readingHistoryDB->fetch()) {
 			$historyEntry = [];
 			$historyEntry['source'] = $readingHistoryDB->source;
 			$historyEntry['sourceId'] = $readingHistoryDB->sourceId;
+			$historyEntry['ids'] = [];
 			$historyEntry['ids'][] = $readingHistoryDB->id;
 			$key = strtolower($historyEntry['source'] . ':' . $historyEntry['sourceId']);
 			if (array_key_exists($key, $activeHistoryTitles)){
+				if (IPAddress::showDebuggingInformation()){
+					$logger->log("Adding {$readingHistoryDB->id} to active history entries.", Logger::LOG_ERROR);
+				}
 				$activeHistoryTitles[$key]['ids'][] = $readingHistoryDB->id;
 			}else{
+				if (IPAddress::showDebuggingInformation()){
+					$logger->log("Adding new record {$readingHistoryDB->id} to active history entries.", Logger::LOG_ERROR);
+				}
 				$activeHistoryTitles[$key] = $historyEntry;
 			}
 		}
@@ -766,7 +774,9 @@ class CatalogConnection
 			$logger->log("There are " . count($activeHistoryTitles) . " titles that have been checked in.", Logger::LOG_ERROR);
 		}
 		foreach ($activeHistoryTitles as $historyEntry) {
-
+			if (IPAddress::showDebuggingInformation()){
+				$logger->log("There are " . count($historyEntry['ids']) . " ids for this history entry.", Logger::LOG_ERROR);
+			}
 			//Update even if deleted to make sure code is cleaned up correctly
 			$historyEntryDB = new ReadingHistoryEntry();
 			foreach ($historyEntry['ids'] as $id) {
