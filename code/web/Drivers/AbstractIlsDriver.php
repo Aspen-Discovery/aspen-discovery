@@ -114,10 +114,11 @@ abstract class AbstractIlsDriver extends AbstractDriver
 	}
 
 	/**
-	 * Returns one of three values
+	 * Returns one of four values
 	 * - none - No forgot password functionality exists
 	 * - emailResetLink - A link to reset the pin is emailed to the user
 	 * - emailPin - The pin itself is emailed to the user
+	 * - emailAspenResetLink - A link to reset the pin is emailed to the user.  Reset happens within Aspen.
 	 * @return string
 	 */
 	function getForgotPasswordType()
@@ -427,5 +428,13 @@ abstract class AbstractIlsDriver extends AbstractDriver
 			'success' => false,
 			'message' => 'This functionality has not been implemented for this ILS'
 		];
+	}
+
+	/**
+	 * @param string $patronBarcode
+	 * @return bool|User
+	 */
+	public function findNewUser($patronBarcode){
+		return false;
 	}
 }

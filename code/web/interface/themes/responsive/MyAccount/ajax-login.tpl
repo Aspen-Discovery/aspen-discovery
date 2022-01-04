@@ -34,7 +34,9 @@
 						{if $forgotPasswordType != 'null' && $forgotPasswordType != 'none'}
 							<p class="text-muted help-block">
 								<strong>{translate text="Forgot %1%?" 1=$passwordLabel isPublicFacing=true translateParameters=true}</strong>&nbsp;
-								{if $forgotPasswordType == 'emailResetLink'}
+								{if $forgotPasswordType == 'emailAspenResetLink'}
+									<a href="/MyAccount/InitiateResetPin">{translate text="Reset My %1%" 1=$passwordLabel isPublicFacing=true}</a>
+								{elseif $forgotPasswordType == 'emailResetLink'}
 									<a href="/MyAccount/EmailResetPin">{translate text="Reset My %1%" 1=$passwordLabel isPublicFacing=true}</a>
 								{else}
 									<a href="/MyAccount/EmailPin">{translate text="Email my %1%" 1=$passwordLabel isPublicFacing=true}</a>

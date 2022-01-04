@@ -70,7 +70,7 @@ class SirsiDynixROA extends HorizonAPI
 		}
 	}
 
-	function findNewUser($barcode)
+	function findNewUser($patronBarcode)
 	{
 		// Creates a new user like patronLogin but looks up user by barcode.
 		// Note: The user pin is not supplied in the Account Info Lookup call.
@@ -78,7 +78,7 @@ class SirsiDynixROA extends HorizonAPI
 		if (!empty($sessionToken)) {
 			$webServiceURL = $this->getWebServiceURL();
 			$includeFields = urlEncode("firstName,lastName,privilegeExpiresDate,preferredAddress,address1,address2,address3,library,primaryPhone,profile,pin,blockList{owed}");
-			$lookupMyAccountInfoResponse = $this->getWebServiceResponse('findNewUser', $webServiceURL . '/user/patron/search?q=ID:' . $barcode . '&rw=1&ct=1&includeFields=' . $includeFields, null, $sessionToken);
+			$lookupMyAccountInfoResponse = $this->getWebServiceResponse('findNewUser', $webServiceURL . '/user/patron/search?q=ID:' . $patronBarcode . '&rw=1&ct=1&includeFields=' . $includeFields, null, $sessionToken);
 			if (!empty($lookupMyAccountInfoResponse->result) && $lookupMyAccountInfoResponse->totalResults == 1) {
 				$userID = $lookupMyAccountInfoResponse->result[0]->key;
 				$lookupMyAccountInfoResponse = $lookupMyAccountInfoResponse->result[0];
@@ -110,7 +110,7 @@ class SirsiDynixROA extends HorizonAPI
 					$user->displayName = '';
 				}
 				$user->_fullname = isset($fullName) ? $fullName : '';
-				$user->cat_username = $barcode;
+				$user->cat_username = $patronBarcode;
 				if (!empty($lookupMyAccountInfoResponse->fields->pin)) {
 					$user->cat_password = $lookupMyAccountInfoResponse->fields->pin;
 				}
@@ -1205,11 +1205,7 @@ class SirsiDynixROA extends HorizonAPI
 			$errorMessage = 'Sirsi ROA Change Hold Pickup Location Error: '. ($messages ? implode('; ', $messages) : '');
 			$logger->log($errorMessage, Logger::LOG_ERROR);
 
-			return array(
-				'success' => false,
-				'message' => 'Failed to update the pickup location : '. implode('; ', $messages)
-			);
-
+			$result = [];
 			$result['message'] = 'Failed to update the pickup location : '. implode('; ', $messages);
 			$result['success'] = false;
 

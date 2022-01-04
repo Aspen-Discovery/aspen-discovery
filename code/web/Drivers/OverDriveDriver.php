@@ -132,6 +132,11 @@ class OverDriveDriver extends AbstractEContentDriver{
 		return $this->_connectToAPI(true, "getTokenData");
 	}
 
+	/**
+	 * @param User $user
+	 * @param bool $forceNewConnection
+	 * @return bool|mixed
+	 */
 	public function getPatronTokenData($user, $forceNewConnection = false) {
 		$userBarcode = $user->getBarcode();
 		if ($this->getRequirePin($user)){
@@ -144,7 +149,8 @@ class OverDriveDriver extends AbstractEContentDriver{
 		return $tokenData;
 	}
 
-	private function _connectToAPI($forceNewConnection = false, $methodName){
+	private function _connectToAPI($forceNewConnection, $methodName){
+		/** @var Memcache $memCache */
 		global $memCache;
 		$settings = $this->getSettings();
 		if ($settings == false){
@@ -194,6 +200,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 	}
 
 	private function _connectToPatronAPI($user, $patronBarcode, $patronPin, $methodName, $forceNewConnection = false){
+		/** @var Memcache $memCache */
 		global $memCache;
 		global $timer;
 		global $logger;
@@ -1016,7 +1023,13 @@ class OverDriveDriver extends AbstractEContentDriver{
 				if (isset($response->message)) $result['api']['message'] .= "  {$response->message}";
 			}
 
-			if ($response == false || (isset($response->errorCode) && ($response->errorCode == 'NoCopiesAvailable' || $response->errorCode == 'PatronHasExceededCheckoutLimit'))) {
+			if ($response == false){
+				//Give more information about why it might have failed, ie expired card or too many fines
+				$result['message'] .= ' ' . translate(['text' => 'Sorry, we could not checkout this title to you. Could not connect to OverDrive.', 'isPublicFacing'=>true]);
+
+				// Result for API or app use
+				$result['api']['message'] .= ' ' . translate(['text' => 'Sorry, we could not checkout this title to you. Could not connect to OverDrive.', 'isPublicFacing'=>true]);
+			}else if ( (isset($response->errorCode) && ($response->errorCode == 'NoCopiesAvailable' || $response->errorCode == 'PatronHasExceededCheckoutLimit'))) {
 				$result['noCopies'] = true;
 				$result['message'] .= "\r\n\r\n" . translate(['text' => 'Would you like to place a hold instead?', 'isPublicFacing'=>true]);
 
@@ -1124,13 +1137,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 		global $timer;
 		$userBarcode = $user->getBarcode();
 		if (!isset(OverDriveDriver::$validUsersOverDrive[$userBarcode])){
-			if ($this->getRequirePin($user)){
-				$userPin = $user->getPasswordOrPin();
-				// determine which column is the pin by using the opposing field to the barcode. (between catalog password & username)
-				$tokenData = $this->_connectToPatronAPI($user, $userBarcode, $userPin, "isUserValidForOverDrive", false);
-			}else{
-				$tokenData = $this->_connectToPatronAPI($user, $userBarcode, null, "isUserValidForOverDrive", false);
-			}
+			$tokenData = $this->getPatronTokenData($user, false);
 			$timer->logTime("Checked to see if the user $userBarcode is valid for OverDrive");
 			$isValid = ($tokenData !== false) && ($tokenData !== null) && !array_key_exists('error', $tokenData);
 			OverDriveDriver::$validUsersOverDrive[$userBarcode] = $isValid;

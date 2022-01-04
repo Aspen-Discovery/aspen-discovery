@@ -4,8 +4,8 @@ require_once ROOT_DIR . '/sys/Authentication/AuthenticationFactory.php';
 
 class UserAccount
 {
-	private static $isLoggedIn = null;
-	private static $primaryUserData = null;
+	public static $isLoggedIn = null;
+	public static $primaryUserData = null;
 	/** @var User|false */
 	private static $primaryUserObjectFromDB = null;
 	/** @var User|false $guidingUserObjectFromDB */
