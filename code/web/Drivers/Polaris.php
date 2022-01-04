@@ -2032,4 +2032,9 @@ class Polaris extends AbstractIlsDriver
 			$body->RequestPickupBranchID = $_REQUEST['branchcode'];
 		}
 	}
+
+	function getForgotPasswordType()
+	{
+		return 'emailAspenResetLink';
+	}
 }

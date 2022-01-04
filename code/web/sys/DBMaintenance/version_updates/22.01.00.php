@@ -134,6 +134,25 @@ function getUpdates22_01_00() : array
 					translation VARCHAR(255) NOT NULL 
 				) ENGINE INNODB",
 			]
-		]
+		],
+		'amazon_ses_secret_length' => [
+			'title' => 'Alter Amazon SES secret length',
+			'description' => 'Increase the max length for Amazon SES secret',
+			'sql' => [
+				'ALTER TABLE amazon_ses_settings CHANGE COLUMN accessKeySecret accessKeySecret VARCHAR(600)'
+			]
+		],
+		'pin_reset_token' => [
+			'title' => 'PIN Reset Token',
+			'description' => 'Create a table to store PIN reset tokens',
+			'sql' => [
+				'CREATE TABLE IF NOT EXISTS pin_reset_token (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, 
+					userId INT(11) NOT NULL,
+					token VARCHAR(12) NOT NULL, 
+					dateIssued INT(11) NOT NULL
+				) ENGINE INNODB'
+			]
+		],
 	];
 }
