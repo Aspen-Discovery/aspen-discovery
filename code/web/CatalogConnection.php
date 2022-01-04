@@ -761,7 +761,12 @@ class CatalogConnection
 		}
 
 		//Anything that was still active is now checked in
+		global $logger;
+		if (IPAddress::showDebuggingInformation()){
+			$logger->log("There are " . count($activeHistoryTitles) . " titles that have been checked in.", Logger::LOG_ERROR);
+		}
 		foreach ($activeHistoryTitles as $historyEntry) {
+
 			//Update even if deleted to make sure code is cleaned up correctly
 			$historyEntryDB = new ReadingHistoryEntry();
 			foreach ($historyEntry['ids'] as $id) {
@@ -769,10 +774,12 @@ class CatalogConnection
 				if ($historyEntryDB->find(true)) {
 					$historyEntryDB->checkInDate = time();
 					$numUpdates = $historyEntryDB->update();
-					if ($numUpdates != 1) {
-						global $logger;
-						$key = $historyEntry['source'] . ':' . $historyEntry['id'];
-						$logger->log("Could not update reading history entry $key", Logger::LOG_ERROR);
+					if (IPAddress::showDebuggingInformation()){
+						if ($numUpdates != 1) {
+							$logger->log("Could not update reading history entry $id", Logger::LOG_ERROR);
+						}else{
+							$logger->log("Marked $id as checked in.", Logger::LOG_ERROR);
+						}
 					}
 				}
 			}
