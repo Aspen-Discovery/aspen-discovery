@@ -118,7 +118,12 @@
 				{/literal}{*// $("#showPwd").prop("checked", showPwd  ? "checked" : '');
 //					if (showPwd) AspenDiscovery.pwdToText('password');*}{literal}
 			}
-			$("#rememberMe").prop("checked", rememberMe ? "checked" : '');
+			if(rememberMe || ({/literal}{$checkRememberMe}{literal} === 1)) {
+				$("#rememberMe").prop("checked", true);
+			} else {
+				$("#rememberMe").prop("checked", '');
+			}
+			//$("#rememberMe").prop("checked", rememberMe ? "checked" : '');
 			if (showCovers.length > 0) {
 				$("<input>").attr({
 					type: 'hidden',

@@ -259,6 +259,8 @@ class Library extends DataObject
 	//2FA settings ID
 	public $twoFactorAuthSettingId;
 
+	public $defaultRememberMe;
+
 	private $_cloudLibraryScopes;
 	private $_libraryLinks;
 
@@ -571,6 +573,7 @@ class Library extends DataObject
 				'loginSection' => array('property' => 'loginSection', 'type' => 'section', 'label' => 'Login', 'hideInLists' => true, 'permissions' => ['Library ILS Connection', 'Library ILS Options'], 'properties' => array(
 					'showLoginButton'         => array('property'=>'showLoginButton', 'type'=>'checkbox', 'label'=>'Show Login Button', 'description'=>'Whether or not the login button is displayed so patrons can login to the site', 'hideInLists' => true, 'default' => 1),
 					'preventExpiredCardLogin' => array('property'=>'preventExpiredCardLogin', 'type'=>'checkbox', 'label'=>'Prevent Login for Expired Cards', 'description'=>'Users with expired cards will not be allowed to login. They will receive an expired card notice instead.', 'hideInLists' => true, 'default' => 0),
+					'defaultRememberMe' => array('property' => 'defaultRememberMe', 'type' => 'checkbox', 'label' => 'Check "Remember Me" by default when outside the library', 'description' => 'Whether or not to check the "Remember Me" option by default when logging in outside the library', 'hideInLists' => true, 'default' => 0),
 					'loginFormUsernameLabel'  => array('property'=>'loginFormUsernameLabel', 'type'=>'text', 'label'=>'Login Form Username Label', 'description'=>'The label to show for the username when logging in', 'size'=>'100', 'hideInLists' => true, 'default'=>'Your Name'),
 					'loginFormPasswordLabel'  => array('property'=>'loginFormPasswordLabel', 'type'=>'text', 'label'=>'Login Form Password Label', 'description'=>'The label to show for the password when logging in', 'size'=>'100', 'hideInLists' => true, 'default'=>'Library Card Number'),
 					'loginNotes' => array('property' => 'loginNotes', 'type' => 'markdown', 'label' => 'Login Notes', 'description' => 'Additional notes to display under the login fields', 'hideInLists' => true),

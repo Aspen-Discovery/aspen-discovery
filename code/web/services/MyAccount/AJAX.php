@@ -823,9 +823,14 @@ class MyAccount_AJAX extends JSON_Action
 	{
 		global $interface;
 		global $library;
+		global $locationSingleton;
 
 		$interface->assign('enableSelfRegistration', $library->enableSelfRegistration);
 		$interface->assign('selfRegistrationUrl', $library->selfRegistrationUrl);
+		$interface->assign('checkRememberMe', 0);
+		if($library->defaultRememberMe && $locationSingleton->getOpacStatus() == false) {
+			$interface->assign('checkRememberMe', 1);
+		}
 		$interface->assign('usernameLabel', $library->loginFormUsernameLabel ? $library->loginFormUsernameLabel : 'Your Name');
 		$interface->assign('passwordLabel', $library->loginFormPasswordLabel ? $library->loginFormPasswordLabel : 'Library Card Number');
 		if (!empty($library->loginNotes)){
