@@ -724,7 +724,7 @@ class CatalogConnection
 			$historyEntry['ids'][] = $readingHistoryDB->id;
 			$key = strtolower($historyEntry['source'] . ':' . $historyEntry['sourceId']);
 			if (array_key_exists($key, $activeHistoryTitles)){
-				$activeHistoryTitles[$key]['ids'] = $readingHistoryDB->id;
+				$activeHistoryTitles[$key]['ids'][] = $readingHistoryDB->id;
 			}else{
 				$activeHistoryTitles[$key] = $historyEntry;
 			}
