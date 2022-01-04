@@ -8453,6 +8453,27 @@ AspenDiscovery.Admin = (function(){
 				}
 			});
 		},
+		createRecovery2FACode: function() {
+			var username = $("#username").val();
+			if (Globals.loggedIn){
+				$.getJSON(Globals.path + "/Admin/AJAX?method=createRecoveryCode&user=" + username, function(data) {
+					// update #codeVerificationFailedPlaceholder with failed verification status, otherwise move onto next step
+					if(data.success) {
+						$("#error").html(data.message).hide();
+						$("#generatedCode").html(data.message).show();
+					} else {
+						$("#generatedCode").html(data.message).hide();
+						$("#error").html(data.message).show();
+					}
+					return data;
+				});
+			} else {
+				AspenDiscovery.Account.ajaxLogin(null, function(){
+					return AspenDiscovery.Account.verify2FA();
+				}, false);
+			}
+			return false;
+		},
 	};
 }(AspenDiscovery.Admin || {}));
 AspenDiscovery.Authors = (function () {
@@ -12633,7 +12654,7 @@ TitleScroller.prototype.activateCurrentTitle = function() {
 	};
 })(jQuery);
 
-AspenDiscovery.WebBuilder = (function () {
+AspenDiscovery.WebBuilder = function () {
 	// noinspection JSUnusedGlobalSymbols
 	return {
 		editors: [],
@@ -12930,11 +12951,18 @@ AspenDiscovery.WebBuilder = (function () {
 			$.getJSON(url, params, function(data){
 				if(data.requireLogin) {
 					if(Globals.loggedIn || data.inLibrary) {
-						if(data.openInNewTab) {
-							window.open(data.url, '_blank');
-						} else {
-							location.assign(data.url);
-						}
+						var params = {
+							method: "trackWebResourceUsage",
+							id: id,
+							authType: Globals.loggedIn ? "user" : "library"
+						};
+						$.getJSON(url, params, function(usage){
+							if(data.openInNewTab) {
+								window.open(data.url, '_blank');
+							} else {
+								location.assign(data.url);
+							}
+						})
 					} else {
 						AspenDiscovery.Account.ajaxLogin(null, function(){
 							return AspenDiscovery.Account.getWebResource(id);
@@ -12946,7 +12974,7 @@ AspenDiscovery.WebBuilder = (function () {
 			return false;
 		}
 	};
-}(AspenDiscovery.WebBuilder || {}));
+}(AspenDiscovery.WebBuilder || {});
 AspenDiscovery.Websites = (function () {
 	return {
 		trackUsage: function (id) {

@@ -1365,5 +1365,26 @@ AspenDiscovery.Admin = (function(){
 				}
 			});
 		},
+		createRecovery2FACode: function() {
+			var username = $("#username").val();
+			if (Globals.loggedIn){
+				$.getJSON(Globals.path + "/Admin/AJAX?method=createRecoveryCode&user=" + username, function(data) {
+					// update #codeVerificationFailedPlaceholder with failed verification status, otherwise move onto next step
+					if(data.success) {
+						$("#error").html(data.message).hide();
+						$("#generatedCode").html(data.message).show();
+					} else {
+						$("#generatedCode").html(data.message).hide();
+						$("#error").html(data.message).show();
+					}
+					return data;
+				});
+			} else {
+				AspenDiscovery.Account.ajaxLogin(null, function(){
+					return AspenDiscovery.Account.verify2FA();
+				}, false);
+			}
+			return false;
+		},
 	};
 }(AspenDiscovery.Admin || {}));
