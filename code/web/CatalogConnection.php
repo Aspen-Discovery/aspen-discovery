@@ -727,12 +727,12 @@ class CatalogConnection
 			$key = strtolower($historyEntry['source'] . ':' . $historyEntry['sourceId']);
 			if (array_key_exists($key, $activeHistoryTitles)){
 				if (IPAddress::showDebuggingInformation()){
-					$logger->log("Adding {$readingHistoryDB->id} to active history entries.", Logger::LOG_ERROR);
+					$logger->log("Adding {$readingHistoryDB->id} to active history entry $key.", Logger::LOG_ERROR);
 				}
 				$activeHistoryTitles[$key]['ids'][] = $readingHistoryDB->id;
 			}else{
 				if (IPAddress::showDebuggingInformation()){
-					$logger->log("Adding new record {$readingHistoryDB->id} to active history entries.", Logger::LOG_ERROR);
+					$logger->log("Adding new record $key, {$readingHistoryDB->id} to active history entries.", Logger::LOG_ERROR);
 				}
 				$activeHistoryTitles[$key] = $historyEntry;
 			}
@@ -778,8 +778,8 @@ class CatalogConnection
 				$logger->log("There are " . count($historyEntry['ids']) . " ids for this history entry.", Logger::LOG_ERROR);
 			}
 			//Update even if deleted to make sure code is cleaned up correctly
-			$historyEntryDB = new ReadingHistoryEntry();
 			foreach ($historyEntry['ids'] as $id) {
+				$historyEntryDB = new ReadingHistoryEntry();
 				$historyEntryDB->id = $id;
 				if ($historyEntryDB->find(true)) {
 					$historyEntryDB->checkInDate = time();
