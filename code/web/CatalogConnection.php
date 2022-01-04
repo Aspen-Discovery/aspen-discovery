@@ -324,7 +324,7 @@ class CatalogConnection
 				$patron->initialReadingHistoryLoaded = true;
 				$patron->update();
 			}
-			//Do the
+			//Update the reading history based on titles that the patron currently has checked out if we are on the first page.
 			if ($page == 1 && empty($filter)) {
 				$this->updateReadingHistoryBasedOnCurrentCheckouts($patron);
 				$timer->logTime("Finished updating reading history based on current checkouts");
@@ -721,9 +721,13 @@ class CatalogConnection
 			$historyEntry = [];
 			$historyEntry['source'] = $readingHistoryDB->source;
 			$historyEntry['sourceId'] = $readingHistoryDB->sourceId;
-			$historyEntry['id'] = $readingHistoryDB->id;
+			$historyEntry['ids'][] = $readingHistoryDB->id;
 			$key = strtolower($historyEntry['source'] . ':' . $historyEntry['sourceId']);
-			$activeHistoryTitles[$key] = $historyEntry;
+			if (array_key_exists($key, $activeHistoryTitles)){
+				$activeHistoryTitles[$key]['ids'] = $readingHistoryDB->id;
+			}else{
+				$activeHistoryTitles[$key] = $historyEntry;
+			}
 		}
 
 		//Update reading history based on current checkouts.  That way it never looks out of date
@@ -760,14 +764,16 @@ class CatalogConnection
 		foreach ($activeHistoryTitles as $historyEntry) {
 			//Update even if deleted to make sure code is cleaned up correctly
 			$historyEntryDB = new ReadingHistoryEntry();
-			$historyEntryDB->id = $historyEntry['id'];
-			if ($historyEntryDB->find(true)) {
-				$historyEntryDB->checkInDate = time();
-				$numUpdates = $historyEntryDB->update();
-				if ($numUpdates != 1) {
-					global $logger;
-					$key = $historyEntry['source'] . ':' . $historyEntry['id'];
-					$logger->log("Could not update reading history entry $key", Logger::LOG_ERROR);
+			foreach ($historyEntry['ids'] as $id) {
+				$historyEntryDB->id = $id;
+				if ($historyEntryDB->find(true)) {
+					$historyEntryDB->checkInDate = time();
+					$numUpdates = $historyEntryDB->update();
+					if ($numUpdates != 1) {
+						global $logger;
+						$key = $historyEntry['source'] . ':' . $historyEntry['id'];
+						$logger->log("Could not update reading history entry $key", Logger::LOG_ERROR);
+					}
 				}
 			}
 		}
