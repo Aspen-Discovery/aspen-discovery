@@ -141,6 +141,23 @@ function getUpdates22_01_00() : array
 			'sql' => [
 				"ALTER TABLE web_builder_resource ADD COLUMN requireLoginUnlessInLibrary TINYINT(1) DEFAULT 0",
 			]
-		] //requireLogin_webResource
+		], //requireLogin_webResource
+		'web_resource_usage' => [
+			'title' => 'Add web resource usage table',
+			'description' => 'Add a table to track usage of web resources',
+			'sql' => [
+				'CREATE TABLE IF NOT EXISTS web_builder_resource_usage (
+							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+							year INT(4) NOT NULL,
+							month INT(2) NOT NULL,
+							resourceName VARCHAR(100) NOT NULL,
+							pageViews INT(11) DEFAULT 0,
+							pageViewsByAuthenticatedUsers INT(11) DEFAULT 0,
+							pageViewsInLibrary INT(11) DEFAULT 0,
+							instance VARCHAR(100)
+						) ENGINE = InnoDB',
+				'ALTER TABLE web_builder_resource_usage ADD INDEX (instance, year, month)',
+			]
+		] //web_resource_usage
 	];
 }
