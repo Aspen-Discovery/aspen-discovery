@@ -4424,8 +4424,8 @@ class Koha extends AbstractIlsDriver
 					$result['disabledDays'] = [];
 
 					if(isset($curRow['sunday_start_hour']) && isset($curRow['sunday_start_minute']) && isset($curRow['sunday_end_hour']) && isset($curRow['sunday_end_minute'])) {
-						$result['pickupTimes']['Sun']['startTime'] = date("H:i", $curRow['sunday_start_hour'] . ':' . $curRow['sunday_start_minute']);
-						$result['pickupTimes']['Sun']['endTime'] = date("H:i", $curRow['sunday_end_hour'] . ':' . $curRow['sunday_end_minute']);
+						$result['pickupTimes']['Sun']['startTime'] = date("H:i", strtotime($curRow['sunday_start_hour'] . ':' . $curRow['sunday_start_minute']));
+						$result['pickupTimes']['Sun']['endTime'] = date("H:i", strtotime($curRow['sunday_end_hour'] . ':' . $curRow['sunday_end_minute']));
 						$result['pickupTimes']['Sun']['available'] = true;
 					} else {
 						$result['pickupTimes']['Sun']['available'] = false;

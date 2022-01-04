@@ -6,6 +6,21 @@ require_once ROOT_DIR . '/sys/TwoFactorAuthSetting.php';
 
 class TwoFactorAuth extends ObjectEditor
 {
+	function launch()
+	{
+		global $interface;
+		global $library;
+		$objectAction = isset($_REQUEST['objectAction']) ? $_REQUEST['objectAction'] : null;
+		if ($objectAction == 'recoverAccount') {
+			$id = $_REQUEST['id'];
+			$interface->assign('id', $id);
+			$interface->assign('usernameLabel', str_replace('Your', '', $library->loginFormUsernameLabel ? $library->loginFormUsernameLabel : 'Name'));
+			$this->display('twoFactorAccountRecovery.tpl', 'Account Recovery');
+		} else {
+			parent::launch();
+		}
+	}
+	
 	function getObjectType() : string {
 		return 'TwoFactorAuthSetting';
 	}
@@ -50,6 +65,19 @@ class TwoFactorAuth extends ObjectEditor
 	function getIdKeyColumn() : string
 	{
 		return 'id';
+	}
+
+	function getAdditionalObjectActions($existingObject) : array
+	{
+		$actions = array();
+		if ($existingObject && $existingObject->id != '') {
+			$actions[] = array(
+				'text' => 'Recover User Account',
+				'url' => '/Admin/TwoFactorAuth?objectAction=recoverAccount&id=' . $existingObject->id,
+			);
+		}
+
+		return $actions;
 	}
 
 	function getBreadcrumbs() : array

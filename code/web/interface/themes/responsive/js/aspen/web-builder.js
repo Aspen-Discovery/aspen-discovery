@@ -1,4 +1,4 @@
-AspenDiscovery.WebBuilder = (function () {
+AspenDiscovery.WebBuilder = function () {
 	// noinspection JSUnusedGlobalSymbols
 	return {
 		editors: [],
@@ -284,5 +284,38 @@ AspenDiscovery.WebBuilder = (function () {
 				}
 			});
 		},
+
+		getWebResource:function (id) {
+			var url = Globals.path + "/WebBuilder/AJAX";
+			var params = {
+				method: "getWebResource",
+				resourceId: id
+			};
+			// noinspection JSUnresolvedFunction
+			$.getJSON(url, params, function(data){
+				if(data.requireLogin) {
+					if(Globals.loggedIn || data.inLibrary) {
+						var params = {
+							method: "trackWebResourceUsage",
+							id: id,
+							authType: Globals.loggedIn ? "user" : "library"
+						};
+						$.getJSON(url, params, function(usage){
+							if(data.openInNewTab) {
+								window.open(data.url, '_blank');
+							} else {
+								location.assign(data.url);
+							}
+						})
+					} else {
+						AspenDiscovery.Account.ajaxLogin(null, function(){
+							return AspenDiscovery.Account.getWebResource(id);
+						}, false);
+					}
+				}
+			}).fail(AspenDiscovery.ajaxFail);
+
+			return false;
+		}
 	};
-}(AspenDiscovery.WebBuilder || {}));
+}(AspenDiscovery.WebBuilder || {});

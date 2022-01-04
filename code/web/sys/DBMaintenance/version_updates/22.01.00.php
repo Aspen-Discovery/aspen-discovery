@@ -134,14 +134,14 @@ function getUpdates22_01_00() : array
 					translation VARCHAR(255) NOT NULL 
 				) ENGINE INNODB",
 			]
-		],
+		], //course_reserves_library_mappings
 		'amazon_ses_secret_length' => [
 			'title' => 'Alter Amazon SES secret length',
 			'description' => 'Increase the max length for Amazon SES secret',
 			'sql' => [
 				'ALTER TABLE amazon_ses_settings CHANGE COLUMN accessKeySecret accessKeySecret VARCHAR(600)'
 			]
-		],
+		], //amazon_ses_secret_length
 		'pin_reset_token' => [
 			'title' => 'PIN Reset Token',
 			'description' => 'Create a table to store PIN reset tokens',
@@ -153,6 +153,30 @@ function getUpdates22_01_00() : array
 					dateIssued INT(11) NOT NULL
 				) ENGINE INNODB'
 			]
-		],
+		], //pin_reset_token
+		'requireLogin_webResource' => [
+			'title' => 'Add option for requiring login when accessing web resource',
+			'description' => 'Add option for requiring login when accessing web resource outside of library',
+			'sql' => [
+				"ALTER TABLE web_builder_resource ADD COLUMN requireLoginUnlessInLibrary TINYINT(1) DEFAULT 0",
+			]
+		], //requireLogin_webResource
+		'web_resource_usage' => [
+			'title' => 'Add web resource usage table',
+			'description' => 'Add a table to track usage of web resources',
+			'sql' => [
+				'CREATE TABLE IF NOT EXISTS web_builder_resource_usage (
+							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+							year INT(4) NOT NULL,
+							month INT(2) NOT NULL,
+							resourceName VARCHAR(100) NOT NULL,
+							pageViews INT(11) DEFAULT 0,
+							pageViewsByAuthenticatedUsers INT(11) DEFAULT 0,
+							pageViewsInLibrary INT(11) DEFAULT 0,
+							instance VARCHAR(100)
+						) ENGINE = InnoDB',
+				'ALTER TABLE web_builder_resource_usage ADD INDEX (instance, year, month)',
+			]
+		] //web_resource_usage
 	];
 }

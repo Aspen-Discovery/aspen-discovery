@@ -1615,18 +1615,21 @@ AspenDiscovery.Account = (function(){
 								var afternoonSlots = 0;
 								var eveningSlots = 0;
 								for (var i = 0; i < numOfSlots; i++) {
-									if(data[i] < "12:00 pm") {
+									if(data[i] < "12:00") {
 										morningSlots++;
 										var timeSlotContainer = document.getElementById("morningTimeSlots");
-										timeSlotContainer.innerHTML += "<label class='btn btn-primary' style='margin-right: 1em; margin-bottom: 1em'><input type='radio' name='pickupTime' id='slot_" + data[i] + "' value='" + data[i] + "'> " + data[i] + "</label>";
-									} else if (data[i] < "5:00 pm") {
+										var slot = moment(data[i], "HH:mm").format("h:mm a");
+										timeSlotContainer.innerHTML += "<label class='btn btn-primary' style='margin-right: 1em; margin-bottom: 1em'><input type='radio' name='pickupTime' id='slot_" + data[i] + "' value='" + slot + "'> " + slot + "</label>";
+									} else if (data[i] < "17:00") {
 										afternoonSlots++;
 										var timeSlotContainer = document.getElementById("afternoonTimeSlots");
-										timeSlotContainer.innerHTML += "<label class='btn btn-primary' style='margin-right: 1em; margin-bottom: 1em'><input type='radio' name='pickupTime' id='slot_" + data[i] + "' value='" + data[i] + "'> " + data[i] + "</label>";
+										var slot = moment(data[i], "HH:mm").format("h:mm a");
+										timeSlotContainer.innerHTML += "<label class='btn btn-primary' style='margin-right: 1em; margin-bottom: 1em'><input type='radio' name='pickupTime' id='slot_" + data[i] + "' value='" + slot + "'> " + slot + "</label>";
 									} else {
 										eveningSlots++;
 										var timeSlotContainer = document.getElementById("eveningTimeSlots");
-										timeSlotContainer.innerHTML += "<label class='btn btn-primary' style='margin-right: 1em; margin-bottom: 1em'><input type='radio' name='pickupTime' id='slot_" + data[i] + "' value='" + data[i] + "'> " + data[i] + "</label>";
+										var slot = moment(data[i], "HH:mm").format("h:mm a");
+										timeSlotContainer.innerHTML += "<label class='btn btn-primary' style='margin-right: 1em; margin-bottom: 1em'><input type='radio' name='pickupTime' id='slot_" + data[i] + "' value='" + slot + "'> " + slot + "</label>";
 									}
 								}
 

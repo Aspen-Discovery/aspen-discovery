@@ -16,6 +16,7 @@ class WebResource extends DataObject
 	public /** @noinspection PhpUnused */ $featured;
 	public /** @noinspection PhpUnused */ $requiresLibraryCard;
 	public /** @noinspection PhpUnused */ $inLibraryUseOnly;
+	public $requireLoginUnlessInLibrary;
 	public /** @noinspection PhpUnused */ $teaser;
 	public $description;
 	public $lastUpdate;
@@ -43,6 +44,7 @@ class WebResource extends DataObject
 			'featured' => array('property' => 'featured', 'type' => 'checkbox', 'label' => 'Featured?', 'description' => 'Whether or not the resource is a featured resource', 'default'=>0),
 			'inLibraryUseOnly' => array('property' => 'inLibraryUseOnly', 'type' => 'checkbox', 'label' => 'In Library Use Only?', 'description' => 'Whether or not the resource can only be used in the library', 'default'=>0, 'hideInLists'=>true),
 			'requiresLibraryCard' => array('property' => 'requiresLibraryCard', 'type' => 'checkbox', 'label' => 'Requires Library Card?', 'description' => 'Whether or not the resource requires a library card to use it', 'default'=>0, 'hideInLists'=>true),
+			'requireLoginUnlessInLibrary' => array('property' => 'requireLoginUnlessInLibrary', 'type' => 'checkbox', 'label' => 'Requires being logged in to access, unless in library', 'description' => 'Whether or not the resource requires patron to be logged in to use it unless they are in the library', 'default'=>0, 'hideInLists'=>true),
 			'teaser' => array('property' => 'teaser', 'type' => 'markdown', 'label' => 'Teaser', 'description' => 'A short description of the resource to show in lists', 'hideInLists' => true),
 			'description' => array('property' => 'description', 'type' => 'markdown', 'label' => 'Description', 'description' => 'A description of the resource', 'hideInLists' => true),
 			'audiences' => array(

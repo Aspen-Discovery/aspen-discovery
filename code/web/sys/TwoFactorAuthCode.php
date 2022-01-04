@@ -44,6 +44,36 @@ class TwoFactorAuthCode extends DataObject
 		return true;
 	}
 
+	public function createRecoveryCode($username) {
+		$user = new User();
+		$user->cat_username = $username;
+		if($user->find(true)){
+			if($user->twoFactorStatus == '1') {
+				$twoFactorAuthCode = new TwoFactorAuthCode();
+				$twoFactorAuthCode->code = mt_rand(100000,999999);
+				$twoFactorAuthCode->userId = $user->id;
+				$twoFactorAuthCode->dateSent = time();
+				$twoFactorAuthCode->status = "recovery";
+				$twoFactorAuthCode->insert();
+				$result = array(
+					'success' => true,
+					'message' => translate(['text' => 'Recovery code: ' . $twoFactorAuthCode->code, 'isAdminFacing' => true])
+				);
+			} else {
+				$result = array(
+					'success' => false,
+					'message' => translate(['text' => 'User not setup for two-factor authentication', 'isAdminFacing' => true])
+				);
+			}
+		} else {
+			$result = array(
+				'success' => false,
+				'message' => translate(['text' => 'User not found', 'isAdminFacing' => true])
+			);
+		}
+		return $result;
+	}
+
 	function sendCode() {
 		require_once ROOT_DIR . '/sys/Email/Mailer.php';
 		$mail = new Mailer();
@@ -71,6 +101,16 @@ class TwoFactorAuthCode extends DataObject
 	}
 
 	function validateCode($code) {
+		global $library;
+		require_once ROOT_DIR . '/sys/TwoFactorAuthSetting.php';
+		$authSetting = new TwoFactorAuthSetting();
+		$authSetting->id = $library->twoFactorAuthSettingId;
+		if($authSetting->find(true)) {
+			$deniedMessage = $authSetting->deniedMessage;
+		} else {
+			$deniedMessage = "";
+		}
+
 		$codeToCheck = new TwoFactorAuthCode();
 		$codeToCheck->code = $code;
 		if($codeToCheck->find(true)) {
@@ -86,21 +126,21 @@ class TwoFactorAuthCode extends DataObject
 				} else {
 					$result = array(
 						'success' => 'false',
-						'message' => translate(['text' => 'You have already used this code', 'isPublicFacing' => true])
+						'message' => translate(['text' => 'You have already used this code. ' . $deniedMessage, 'isPublicFacing' => true]),
 					);
 				}
 			} else {
 				// code belongs to another user
 				$result = array(
 					'success' => 'false',
-					'message' => translate(['text' => 'Sorry, this code is invalid', 'isPublicFacing' => true])
+					'message' => translate(['text' => 'Sorry, this code is invalid. ' . $deniedMessage, 'isPublicFacing' => true]),
 				);
 			}
 		} else {
 			// code not found
 			$result = array(
 				'success' => 'false',
-				'message' => translate(['text' => 'Sorry, this code is invalid', 'isPublicFacing' => true])
+				'message' => translate(['text' => 'Sorry, this code is invalid. ' . $deniedMessage, 'isPublicFacing' => true]),
 			);
 		}
 
