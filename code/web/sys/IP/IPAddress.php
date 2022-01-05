@@ -9,6 +9,7 @@ class IPAddress extends DataObject
 	public $location;                //varchar(255)
 	public $ip;                      //varchar(255)
 	public $isOpac;                   //tinyint(1)
+	public $showLogMeOut;
 	public $blockAccess;
 	public $allowAPIAccess;
 	public $showDebuggingInformation;
@@ -39,6 +40,7 @@ class IPAddress extends DataObject
 			'location' => array('property'=>'location', 'type'=>'text', 'label'=>'Display Name', 'description'=>'Descriptive information for the IP Address for internal use'),
 			'locationid' => array('property'=>'locationid', 'type'=>'enum', 'values'=>$locationLookupList, 'label'=>'Location', 'description'=>'The Location which this IP address maps to'),
 			'isOpac' => array('property' => 'isOpac', 'type' => 'checkbox', 'label' => 'Treat as a Public OPAC', 'description' => 'This IP address will be treated as a public OPAC with autologout features turned on.', 'default' => true),
+			'showLogMeOut' => array('property' => 'showLogMeOut', 'type' => 'checkbox', 'label' => 'Show "Log me out" checkbox when placing a hold', 'description' => 'this is so freaking stupid', 'default' => true),
 			'blockAccess' => array('property' => 'blockAccess', 'type' => 'checkbox', 'label' => 'Block Access from this IP', 'description' => 'Traffic from this IP will not be allowed to use Aspen.', 'default' => false),
 			'allowAPIAccess' => array('property' => 'allowAPIAccess', 'type' => 'checkbox', 'label' => 'Allow API Access', 'description' => 'Traffic from this IP will be allowed to use Aspen APIs.', 'default' => false),
 			'showDebuggingInformation' => array('property' => 'showDebuggingInformation', 'type' => 'checkbox', 'label' => 'Show Debugging Information', 'description' => 'Traffic from this IP will have debugging information emitted for it.', 'default' => false),

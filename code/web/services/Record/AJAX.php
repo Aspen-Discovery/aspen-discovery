@@ -1060,6 +1060,14 @@ class Record_AJAX extends Action
 		$interface->assign('treatPrintNoticesAsPhoneNotices', $library->treatPrintNoticesAsPhoneNotices);
 		$interface->assign('allowRememberPickupLocation', $library->allowRememberPickupLocation);
 
+		$activeIP = IPAddress::getActiveIp();
+		$subnet = IPAddress::getIPAddressForIP($activeIP);
+		if ($subnet != false) {
+			$interface->assign('showLogMeOut', $subnet->showLogMeOut);
+		} else {
+			$interface->assign('showLogMeOut', 1);
+		}
+
 		$holdDisclaimers = array();
 		$patronLibrary = $user->getHomeLibrary();
 		if ($patronLibrary == null) {
