@@ -165,9 +165,11 @@
 						{/foreach}
 					{/if}
 					<br>
+					{if $showLogMeOut == 1}
 					<div class="form-group">
 						<label for="autologout" class="checkbox"><input type="checkbox" name="autologout" id="autologout" {if $isOpac == true}checked="checked"{/if}> {translate text="Log me out after requesting the item." isPublicFacing=true}</label>
 					</div>
+					{/if}
 				</div>
 			</fieldset>
 		</form>
