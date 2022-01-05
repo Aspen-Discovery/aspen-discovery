@@ -10,6 +10,14 @@ function getUpdates22_01_00() : array
 				''
 			]
 		], //sample*/
+                'ip_lookup_showlogmeout' => [
+                        'title' => 'Add Show Log Me Out option for IP Addresses',
+                        'description' => 'Adds a boolean for whether the autologout checkbox on the place hold screen should appear or not for a given IP',
+                        'sql' => [
+                                'ALTER TABLE ip_lookup ADD COLUMN showLogMeOut tinyint AFTER isOpac DEFAULT 1',
+                                'UPDATE	ip_lookup SET showLogMeOut = isOpac',
+                        ]
+                ], //add option	to hide	log me out checkbox
 		'curbside_pickup_settings' => [
 			'title' => 'Add settings for Curbside Pickup',
 			'description' => 'Add settings for Curbside Pickup',

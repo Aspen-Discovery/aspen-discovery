@@ -554,6 +554,15 @@ if (!empty($ipLocation) && !empty($library) && $ipLocation->libraryId != $librar
 $isOpac = $locationSingleton->getOpacStatus();
 $interface->assign('isOpac', $isOpac);
 
+$activeIP = IPAddress::getActiveIp();
+$subnet = IPAddress::getIPAddressForIP($activeIP);
+if ($subnet != false) {
+    $interface->assign('showLogMeOut', $subnet->showLogMeOut);
+} else {
+    $interface->assign('showLogMeOut', 1);
+}
+
+
 $onInternalIP = false;
 $includeAutoLogoutCode = false;
 $automaticTimeoutLength = 0;

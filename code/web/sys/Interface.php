@@ -199,6 +199,7 @@ class UInterface extends Smarty
 		if ($activeRecordProfile){
 			$this->assign('activeRecordProfileModule', $activeRecordProfile->recordUrlComponent);
 		}
+
 	}
 
 	/**
