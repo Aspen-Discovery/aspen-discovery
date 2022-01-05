@@ -5,6 +5,7 @@ require_once ROOT_DIR . '/sys/Authentication/AuthenticationFactory.php';
 class UserAccount
 {
 	public static $isLoggedIn = null;
+	public static $isAuthenticated = false;
 	public static $primaryUserData = null;
 	/** @var User|false */
 	private static $primaryUserObjectFromDB = null;
@@ -511,13 +512,20 @@ class UserAccount
 
 		// Send back the user object (which may be an AspenError):
 		if ($primaryUser) {
-			UserAccount::$isLoggedIn = true;
-			UserAccount::$primaryUserData = $primaryUser;
-			if (isset($_COOKIE['searchPreferenceLanguage']) && $primaryUser->searchPreferenceLanguage == -1) {
-				$primaryUser->searchPreferenceLanguage = $_COOKIE['searchPreferenceLanguage'];
-				$primaryUser->update();
+			if(UserAccount::has2FAEnabled() && UserAccount::$isAuthenticated === false) {
+				UserAccount::$isLoggedIn = false;
+				$logger->log("User needs to two-factor authenticate",Logger::LOG_DEBUG);
+				$needsToAuthenticate = new AspenError('You must authenticate before logging in. Please provide the 6-digit code that was emailed to you.');
+				return $needsToAuthenticate;
+			} else {
+				UserAccount::$isLoggedIn = true;
+				UserAccount::$primaryUserData = $primaryUser;
+				if (isset($_COOKIE['searchPreferenceLanguage']) && $primaryUser->searchPreferenceLanguage == -1) {
+					$primaryUser->searchPreferenceLanguage = $_COOKIE['searchPreferenceLanguage'];
+					$primaryUser->update();
+				}
+				return $primaryUser;
 			}
-			return $primaryUser;
 		} else {
 			$usageByIPAddress->numFailedLoginAttempts++;
 			return $lastError;

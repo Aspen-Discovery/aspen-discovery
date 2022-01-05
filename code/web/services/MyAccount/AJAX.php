@@ -4794,9 +4794,32 @@ function getCurbsidePickupAvailableTimes() {
 	/** @noinspection PhpUnused */
 	function verify2FA() {
 		$code = $_REQUEST['code'] ?? '0';
+		$isLoggingIn = $_REQUEST['loggingIn'] ?? false;
 		require_once ROOT_DIR . '/sys/TwoFactorAuthCode.php';
 		$twoFactorAuth = new TwoFactorAuthCode();
-		return $twoFactorAuth->validateCode($code);
+		if($isLoggingIn) {
+			global $logger;
+			$logger->log("Starting AJAX/2faLogin session: " . session_id(), Logger::LOG_DEBUG);
+			$result = $twoFactorAuth->validateCode($code);
+			if($result['success'] == true) {
+				UserAccount::$isAuthenticated = true;
+				try {
+					UserAccount::login();
+				} catch (UnknownAuthenticationMethodException $e) {
+					$logger->log("Error logging authenticated user in $e",Logger::LOG_DEBUG);
+					return array(
+						'success' => false,
+						'message' => $e->getMessage()
+					);
+				}
+			} else {
+				return $result;
+			}
+		} else {
+			$result = $twoFactorAuth->validateCode($code);
+		}
+
+		return $result;
 	}
 
 	/** @noinspection PhpUnused */
@@ -4861,7 +4884,7 @@ function getCurbsidePickupAvailableTimes() {
 	function auth2FALogin() {
 		global $interface;
 		global $logger;
-		$logger->log("Starting JSON/authLogin session: " . session_id(), Logger::LOG_DEBUG);
+		$logger->log("Creating AJAX/2faLogin session: " . session_id(), Logger::LOG_DEBUG);
 		require_once ROOT_DIR . '/sys/TwoFactorAuthCode.php';
 		$twoFactorAuth = new TwoFactorAuthCode();
 		$twoFactorAuth->createCode();

@@ -184,6 +184,14 @@ class AJAX_JSON extends Action {
 						);
 					}
 
+					// User needs to authenticate with 2FA
+					if ($user && $user->getMessage() == 'You must authenticate before logging in. Please provide the 6-digit code that was emailed to you.') {
+						return array(
+							'success' => false,
+							'twoFactor' => true
+						);
+					}
+
 					// General Login Error
 					/** @var AspenError $error */
 					$error = $user;
@@ -207,20 +215,13 @@ class AJAX_JSON extends Action {
 			$user = UserAccount::getLoggedInUser();
 		}
 
-		if(UserAccount::has2FAEnabledForPType() && UserAccount::has2FAEnabled()) {
-			$logger->log("User needs to two-factor authenticate",Logger::LOG_DEBUG);
-			$twoFactorAuth = true;
-		} else {
-			$twoFactorAuth = false;
-		}
-
 		$patronHomeBranch = Location::getUserHomeLocation();
 		//Check to see if materials request should be activated
 		require_once ROOT_DIR . '/sys/MaterialsRequest.php';
 
 		return array(
 			'success' => true,
-			'twoFactor' => $twoFactorAuth,
+			'twoFactor' => false,
 			'name' => $user->displayName,
 			'phone' => $user->phone,
 			'email' => $user->email,
