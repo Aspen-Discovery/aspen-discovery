@@ -531,7 +531,7 @@ public class SymphonyExportMain {
 								curIlsId = bibNumber;
 								allRecordsWithVolumes.remove(curIlsId);
 							}
-							String fullCallNumber = volumeInfoFields[1].trim();
+							String fullCallNumber = volumeInfoFields[1];
 							try {
 								int startOfVolumeInfo = Integer.parseInt(volumeInfoFields[2].trim());
 								//String dateUpdated = volumeInfoFields[3];
@@ -541,7 +541,7 @@ public class SymphonyExportMain {
 								String volumeIdentifier = shortBibNumber + ":" + volumeNumber;
 								//startOfVolumeInfo = 0 indicates this item is not part of a volume. Will need separate handling.
 								if (startOfVolumeInfo > 0 && startOfVolumeInfo < fullCallNumber.length()) {
-									String volume = fullCallNumber.substring(startOfVolumeInfo);
+									String volume = fullCallNumber.substring(startOfVolumeInfo).trim();
 									VolumeInfo curVolume;
 
 									if (volumesForRecord.containsKey(volume)) {
