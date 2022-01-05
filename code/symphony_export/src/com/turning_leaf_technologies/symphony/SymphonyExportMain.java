@@ -101,6 +101,8 @@ public class SymphonyExportMain {
 			//Check for new marc out
 			exportVolumes(dbConn, indexingProfile, profileToLoad);
 
+			exportHolds(dbConn, indexingProfile, profileToLoad);
+
 			processCourseReserves(dbConn, indexingProfile, logEntry);
 
 			numChanges = updateRecords(dbConn);
@@ -393,6 +395,69 @@ public class SymphonyExportMain {
 			getRecordsToReloadRS.close();
 		}catch (Exception e){
 			logEntry.incErrors("Error processing records to reload ", e);
+		}
+	}
+
+	private static void exportHolds(Connection dbConn, IndexingProfile indexingProfile, String profileToLoad){
+		File holdsExportFile = new File(indexingProfile.getMarcPath() + "/Holds.csv");
+		if (holdsExportFile.exists()){
+			long fileTimeStamp = holdsExportFile.lastModified();
+
+			logEntry.saveResults();
+			boolean fileChanging = true;
+			while (fileChanging){
+				fileChanging = false;
+				try {
+					Thread.sleep(1000);
+				} catch (InterruptedException e) {
+					logger.debug("Thread interrupted while checking if holds file is changing");
+				}
+				if (fileTimeStamp != holdsExportFile.lastModified()){
+					fileTimeStamp = holdsExportFile.lastModified();
+					fileChanging = true;
+				}
+			}
+
+			//Holds file exists and isn't changing, import it.
+			try {
+				logEntry.addNote("Starting export of holds " + dateTimeFormatter.format(new Date()));
+
+				//Start a transaction so we can rebuild an entire table
+				dbConn.setAutoCommit(false);
+				dbConn.prepareCall("TRUNCATE TABLE ils_hold_summary").executeUpdate();
+
+				PreparedStatement addIlsHoldSummary = dbConn.prepareStatement("INSERT INTO ils_hold_summary (ilsId, numHolds) VALUES (?, ?)");
+
+				BufferedReader csvReader = new BufferedReader(new FileReader(holdsExportFile));
+				String holdInfoLine = csvReader.readLine();
+				while (holdInfoLine != null) {
+					String[] holdInfoFields = holdInfoLine.split("\\|");
+					if (holdInfoFields.length == 2) {
+						String bibNumber = "a" + holdInfoFields[0].trim();
+						addIlsHoldSummary.setString(1, bibNumber);
+						addIlsHoldSummary.setString(2, holdInfoFields[1]);
+						addIlsHoldSummary.executeUpdate();
+					}
+					holdInfoLine = csvReader.readLine();
+
+				}
+				logEntry.addNote("Finished export of holds " + dateTimeFormatter.format(new Date()));
+
+				csvReader.close();
+				dbConn.setAutoCommit(true);
+				if (!holdsExportFile.delete()){
+					logEntry.incErrors("Could not delete holds export file");
+				}
+			} catch (FileNotFoundException e) {
+				logEntry.incErrors("Error loading holds", e);
+			} catch (IOException e) {
+				logEntry.incErrors("Error reading holds information", e);
+			} catch (SQLException e) {
+				logEntry.incErrors("Error reading and writing from database while loading holds", e);
+			}
+			logEntry.addNote("Finished export of hold information " + dateTimeFormatter.format(new Date()));
+		}else{
+			logEntry.addNote("Hold export file (Holds.csv) did not exist in " + SymphonyExportMain.indexingProfile.getMarcPath());
 		}
 	}
 
