@@ -8,7 +8,6 @@ class TwoFactorAuthSetting extends DataObject
 	public $isEnabled;
 	public $authMethod;
 	public $deniedMessage;
-	public $defaultRememberMe;
 
 	private $_libraries;
 	private $_ptypes;
@@ -31,10 +30,7 @@ class TwoFactorAuthSetting extends DataObject
 			'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id'),
 			'name' => array('property' => 'name', 'type' => 'text', 'label' => 'Name', 'description' => 'A name for the settings', 'maxLength' => 50),
 			'isEnabled' => array('property' => 'isEnabled', 'type' => 'enum', 'label' => 'Is Enabled', 'values' => $requiredList),
-
-			'deniedMessage' => array('property'=>'deniedMessage', 'type'=>'textarea', 'label'=>'Denied access message', 'note' => 'Instructions for accessing their account if the user fails authentication', 'hideInLists' => true),
-			'defaultRememberMe' => array('property'=>'defaultRememberMe', 'type'=>'checkbox', 'label'=>'Default "Remember Me" to On', 'description' => '', 'default' => 0),
-
+			'deniedMessage' => array('property'=>'deniedMessage', 'type'=>'textarea', 'label'=>'Denied access message', 'note' => 'Instructions for accessing their account if the user is unable to authenticate', 'hideInLists' => true),
 			'libraries' => array(
 				'property' => 'libraries',
 				'type' => 'multiSelect',

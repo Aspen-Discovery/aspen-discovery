@@ -105,7 +105,12 @@
 				$("#username").val(lastUserName);
 				$("#password").val(lastPwd);
 			}
-			$("#rememberMe").prop("checked", rememberMe ? "checked" : '');
+			if(rememberMe || ({/literal}{$checkRememberMe}{literal} === 1)) {
+				$("#rememberMe").prop("checked", true);
+			} else {
+				$("#rememberMe").prop("checked", '');
+			}
+			//$("#rememberMe").prop("checked", rememberMe ? "checked" : '');
 		} else {
 			{/literal}{* // disable, uncheck & hide RememberMe checkbox if localStorage isn't available.*}{literal}
 			$("#rememberMe").prop({checked: '', disabled: true}).parent().hide();

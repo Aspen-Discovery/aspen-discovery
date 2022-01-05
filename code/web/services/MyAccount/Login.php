@@ -10,6 +10,7 @@ class MyAccount_Login extends Action
 		global $module;
 		global $action;
 		global $library;
+		global $locationSingleton;
 
 		// We should never access this module directly -- this is called by other
 		// actions as a support function.  If accessed directly, just redirect to
@@ -52,6 +53,10 @@ class MyAccount_Login extends Action
 		}
 		$interface->assign('enableSelfRegistration', $library->enableSelfRegistration);
 		$interface->assign('selfRegistrationUrl', $library->selfRegistrationUrl);
+		$interface->assign('checkRememberMe', 0);
+		if($library->defaultRememberMe && $locationSingleton->getOpacStatus() == false) {
+			$interface->assign('checkRememberMe', 1);
+		}
 		$interface->assign('usernameLabel', $library->loginFormUsernameLabel ? $library->loginFormUsernameLabel : 'Your Name');
 		$interface->assign('passwordLabel', $library->loginFormPasswordLabel ? $library->loginFormPasswordLabel : 'Library Card Number');
 

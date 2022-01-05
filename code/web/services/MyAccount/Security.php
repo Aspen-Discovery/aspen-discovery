@@ -2,9 +2,10 @@
 
 require_once ROOT_DIR . "/Action.php";
 require_once ROOT_DIR . '/CatalogConnection.php';
+require_once ROOT_DIR . '/services/MyAccount/MyAccount.php';
 
-class Security extends Action{
-	function launch($msg = null)
+class Security extends MyAccount{
+	function launch()
 	{
 		global $interface;
 
