@@ -1,6 +1,7 @@
 <?php
 require_once ROOT_DIR . '/services/Admin/Dashboard.php';
 require_once ROOT_DIR . '/sys/SystemLogging/AspenUsage.php';
+require_once ROOT_DIR . '/sys/WebBuilder/WebResourceUsage.php';
 
 class Admin_UsageDashboard extends Admin_Dashboard
 {
@@ -8,18 +9,41 @@ class Admin_UsageDashboard extends Admin_Dashboard
 	{
 		global $interface;
 
-		$instanceName = $this->loadInstanceInformation('AspenUsage');
+		$instanceAspenUsage = $this->loadInstanceInformation('AspenUsage');
+		$instanceWebResourceUsage = $this->loadInstanceInformation('WebResourceUsage');
 		$this->loadDates();
 
-		$usageThisMonth = $this->getStats($instanceName, $this->thisMonth, $this->thisYear);
-		$interface->assign('usageThisMonth', $usageThisMonth);
-		$usageLastMonth = $this->getStats($instanceName, $this->lastMonth, $this->lastMonthYear);
-		$interface->assign('usageLastMonth', $usageLastMonth);
-		$usageThisYear = $this->getStats($instanceName, null, $this->thisYear);
-		$interface->assign('usageThisYear', $usageThisYear);
-		$usageAllTime = $this->getStats($instanceName, null, null);
-		$interface->assign('usageAllTime', $usageAllTime);
+		$aspenUsageThisMonth = $this->getStats($instanceAspenUsage, $this->thisMonth, $this->thisYear);
+		$interface->assign('aspenUsageThisMonth', $aspenUsageThisMonth);
+		$aspenUsageLastMonth = $this->getStats($instanceAspenUsage, $this->lastMonth, $this->lastMonthYear);
+		$interface->assign('aspenUsageLastMonth', $aspenUsageLastMonth);
+		$aspenUsageThisYear = $this->getStats($instanceAspenUsage, null, $this->thisYear);
+		$interface->assign('aspenUsageThisYear', $aspenUsageThisYear);
+		$aspenUsageAllTime = $this->getStats($instanceAspenUsage, null, null);
+		$interface->assign('aspenUsageAllTime', $aspenUsageAllTime);
 
+		$webResources = $this->getWebResources();
+		$webResourceUsage = [];
+		foreach ($webResources as $webResource) {
+			if (!isset($webResourceUsage)) {
+				$webResourceUsage[] = array(
+					'name' => $webResource,
+					'thisMonth' => $this->getWebResourceStats($instanceWebResourceUsage, $webResource, $this->thisMonth, $this->thisYear),
+					'lastMonth' => $this->getWebResourceStats($instanceWebResourceUsage, $webResource,  $this->lastMonth, $this->lastMonthYear),
+					'thisYear' => $this->getWebResourceStats($instanceWebResourceUsage, $webResource,  null, $this->thisYear),
+					'allTime' => $this->getWebResourceStats($instanceWebResourceUsage, $webResource,  null, null)
+				);
+			} elseif (!in_array( $webResource, array_column($webResourceUsage, 'name'))) {
+				$webResourceUsage[] = array(
+					'name' =>  $webResource,
+					'thisMonth' => $this->getWebResourceStats($instanceWebResourceUsage, $webResource, $this->thisMonth, $this->thisYear),
+					'lastMonth' => $this->getWebResourceStats($instanceWebResourceUsage, $webResource,  $this->lastMonth, $this->lastMonthYear),
+					'thisYear' => $this->getWebResourceStats($instanceWebResourceUsage, $webResource,  null, $this->thisYear),
+					'allTime' => $this->getWebResourceStats($instanceWebResourceUsage, $webResource,  null, null)
+				);
+			}
+		}
+		$interface->assign('webResourceUsage', $webResourceUsage);
 		$this->display('usage_dashboard.tpl', 'Aspen Usage Dashboard');
 	}
 
@@ -79,6 +103,57 @@ class Admin_UsageDashboard extends Admin_Dashboard
 			'totalEbscoEdsSearches' => $usage->totalEbscoEdsSearches,
 			'totalBlockedRequests' => $usage->totalBlockedRequests,
 			'totalBlockedApiRequests' => $usage->totalBlockedApiRequests,
+		];
+	}
+
+	function getWebResources(): array
+	{
+		require_once ROOT_DIR . '/sys/WebBuilder/WebResource.php';
+		$webResources = [];
+		$object = new WebResource();
+		$object->orderBy('name');
+		$object->find();
+		while ($object->fetch()) {
+			$webResources[$object->name] = $object->name;
+		}
+		return $webResources;
+	}
+	/**
+	 * @param string|null $instanceName
+	 * @param string $resourceName
+	 * @param string|null $month
+	 * @param string|null $year
+	 * @return int[]
+	 */
+	function getWebResourceStats($instanceName, $resourceName, $month, $year): array
+	{
+		$usage = new WebResourceUsage();
+		if (!empty($instanceName)){
+			$usage->instance = $instanceName;
+		}
+		if ($month != null){
+			$usage->month = $month;
+		}
+		if ($year != null){
+			$usage->year = $year;
+		}
+		if (!empty($resourceName)){
+			$usage->resourceName = $resourceName;
+		}
+
+		$usage->selectAdd();
+		$usage->selectAdd('SUM(pageViews) as totalViews');
+		$usage->selectAdd('SUM(pageViewsByAuthenticatedUsers) as totalPageViewsByAuthenticatedUsers');
+		$usage->selectAdd('SUM(pageViewsInLibrary) as totalPageViewsInLibrary');
+
+		$usage->find(true);
+
+		/** @noinspection PhpUndefinedFieldInspection */
+		return [
+			'name' => $usage->resourceName,
+			'totalViews' => $usage->totalViews,
+			'totalPageViewsByAuthenticatedUsers' => $usage->totalPageViewsByAuthenticatedUsers,
+			'totalPageViewsInLibrary' => $usage->totalPageViewsInLibrary,
 		];
 	}
 
