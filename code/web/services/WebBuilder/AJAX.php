@@ -732,4 +732,41 @@ class WebBuilder_AJAX extends JSON_Action
 
 		return $result;
 	}
+
+	/** @noinspection PhpUnused */
+	function trackWebResourceUsage() {
+		$id = $_REQUEST['id'];
+		$authType = $_REQUEST['authType'];
+
+		require_once ROOT_DIR . '/sys/WebBuilder/WebResource.php';
+		$webResource = new WebResource();
+		$webResource->id = $id;
+		if($webResource->find(true)) {
+			require_once ROOT_DIR . '/sys/WebBuilder/WebResourceUsage.php';
+			$webResourceUsage = new WebResourceUsage();
+			$webResourceUsage->year = date('Y');
+			$webResourceUsage->month = date('n');
+			$webResourceUsage->instance = $_SERVER['SERVER_NAME'];
+			$webResourceUsage->resourceName = $webResource->name;
+			if($webResourceUsage->find(true)) {
+				$webResourceUsage->pageViews++;
+				if ($authType == "user"){
+					$webResourceUsage->pageViewsByAuthenticatedUsers++;
+				}
+				else {
+					$webResourceUsage->pageViewsInLibrary++;
+				}
+				$webResourceUsage->update();
+			} else {
+				$webResourceUsage->pageViews++;
+				if ($authType == "user"){
+					$webResourceUsage->pageViewsByAuthenticatedUsers++;
+				}
+				else {
+					$webResourceUsage->pageViewsInLibrary++;
+				}
+				$webResourceUsage->insert();
+			}
+		}
+	}
 }
