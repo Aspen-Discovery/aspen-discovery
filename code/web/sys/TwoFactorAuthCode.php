@@ -38,7 +38,7 @@ class TwoFactorAuthCode extends DataObject
 			$twoFactorAuthCode->insert();
 
 			if(!$backup) {
-				$this->sendCode();
+				$twoFactorAuthCode->sendCode();
 			}
 		}
 		return true;
@@ -111,17 +111,26 @@ class TwoFactorAuthCode extends DataObject
 			$deniedMessage = "";
 		}
 
+		//TODO: Set anything that is sent and dateSent is > 15 min to expired
+
+		//TODO: Delete anything where expired or used AND dateSent is > 60 min ago
+
 		$codeToCheck = new TwoFactorAuthCode();
 		$codeToCheck->code = $code;
 		if($codeToCheck->find(true)) {
 			if($codeToCheck->userId == UserAccount::getActiveUserId()){
-				if($codeToCheck->status != "used" || $codeToCheck->status != "expired") {
+				if($codeToCheck->status != "used" && $codeToCheck->status != "expired") {
 					$codeToCheck->status = "used";
 					$codeToCheck->sessionId = session_id();
 					$codeToCheck->update();
 					$result = array(
 						'success' => 'true',
 						'message' => translate(['text' => 'Code OK', 'isPublicFacing' => true])
+					);
+				} elseif($codeToCheck->status == "expired") {
+					$result = array(
+						'success' => 'false',
+						'message' => translate(['text' => 'This code has expired. ' . $deniedMessage, 'isPublicFacing' => true]),
 					);
 				} else {
 					$result = array(

@@ -57,8 +57,8 @@ class User extends DataObject
 
 	public $lastLoginValidation;
 
-	public $twoFactorStatus;
-	public $twoFactorAuthSettingId;
+	public $twoFactorStatus; //Whether or not the user has enrolled
+	public $twoFactorAuthSettingId; //The settings based on their PType
 
 	public $updateMessage;
 	public $updateMessageIsError;

@@ -14,7 +14,7 @@ function getUpdates22_01_00() : array
 			'title' => 'Add Show Log Me Out option for IP Addresses',
 			'description' => 'Adds a boolean for whether the autologout checkbox on the place hold screen should appear or not for a given IP',
 			'sql' => [
-				'ALTER TABLE ip_lookup ADD COLUMN showLogMeOut tinyint AFTER isOpac DEFAULT 1',
+				'ALTER TABLE ip_lookup ADD COLUMN showLogMeOut tinyint(1) DEFAULT 1',
 				'UPDATE ip_lookup SET showLogMeOut = isOpac',
 			]
 		], //add optionto hide log me out checkbox
@@ -194,5 +194,12 @@ function getUpdates22_01_00() : array
 				"ALTER TABLE library ADD COLUMN defaultRememberMe TINYINT(1) DEFAULT 0",
 			]
 		], //remove2FADefaultRememberMe
+		'2fa_permissions' => [
+			'title' => 'Two-Factor Authentication Permissions',
+			'description' => 'Add new permissions for Two-Factor Authentication',
+			'sql' => [
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer Two-Factor Authentication'))",
+			]
+		], //course_reserves_permissions
 	];
 }

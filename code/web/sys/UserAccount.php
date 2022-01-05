@@ -15,6 +15,38 @@ class UserAccount
 	private static $userPermissions = null;
 
 	/**
+	 * Check to see if the user is enrolled in 2 factor authentication and has been sent a verification code, but has not verified it.
+	 *
+	 * @return bool
+	 */
+	public static function needsToComplete2FA() : bool{
+		require_once ROOT_DIR . '/sys/TwoFactorAuthSetting.php';
+		$twoFactorSetting = new TwoFactorAuthSetting();
+		$twoFactorSetting->whereAdd("isEnabled = 'optional' OR isEnabled = 'mandatory'");
+		if ($twoFactorSetting->find()){
+
+			//Two factor might be required
+			if (UserAccount::has2FAEnabled()){
+				//Two factor is required, check to see if it's complete.
+				//Check the session to see if it is complete
+				require_once ROOT_DIR . '/sys/TwoFactorAuthCode.php';
+				$authCodeForSession = new TwoFactorAuthCode();
+				$authCodeForSession->sessionId = session_id();
+				$authCodeForSession->userId = $_SESSION['activeUserId'];
+				if ($authCodeForSession->find(true)){
+					$needsToComplete2FA = $authCodeForSession->status != 'used';
+				}else{
+					$needsToComplete2FA = true;
+				}
+			}else{
+				$needsToComplete2FA = false;
+			}
+		}else {
+			$needsToComplete2FA = false;
+		}
+		return $needsToComplete2FA;
+	}
+	/**
 	 *
 	 * Checks whether the user is logged in.
 	 *
@@ -27,7 +59,7 @@ class UserAccount
 	{
 		if (UserAccount::$isLoggedIn == null) {
 			if (isset($_SESSION['activeUserId'])) {
-				UserAccount::$isLoggedIn = true;
+				UserAccount::$isLoggedIn = !UserAccount::needsToComplete2FA();
 			} else {
 				UserAccount::$isLoggedIn = false;
 				//Need to check cas just in case the user logged in from another site
