@@ -7,8 +7,8 @@
 					<div class="alert alert-danger">{$error}</div>
 				{/if}
 				{if !empty($result) && $result.success}
-					<div class="alert alert-success">{translate text='Your PIN has been reset and you have been logged in successfully.' isPublicFacing=true}</div>
-					<div ><a href="/MyAccount/Home" class="btn btn-primary">{translate text='Continue to your account' isPublicFacing=true}</a> </div>
+					<div class="alert alert-success">{translate text='Your PIN has been reset.' isPublicFacing=true}</div>
+					<div ><a href="/MyAccount/Home" class="btn btn-primary">{translate text='Continue to login' isPublicFacing=true}</a> </div>
 				{else}
 					{if $tokenValid}
 						<form method="post" role="form" action="/MyAccount/CompletePinReset">
