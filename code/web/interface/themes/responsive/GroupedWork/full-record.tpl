@@ -6,8 +6,12 @@
 
 		{* Display Title *}
 		<h1 class="notranslate">
-			{$recordDriver->getShortTitle()|removeTrailingPunctuation|escape}{if $recordDriver->getSubtitle()}
-				: {$recordDriver->getSubtitle()|removeTrailingPunctuation|escape}
+			{if empty($recordDriver->getShortTitle())}
+				{$recordDriver->getTitle()|removeTrailingPunctuation|escape}
+			{else}
+				{$recordDriver->getShortTitle()|removeTrailingPunctuation|escape}{if $recordDriver->getSubtitle()}
+					: {$recordDriver->getSubtitle()|removeTrailingPunctuation|escape}
+				{/if}
 			{/if}
 		</h1>
 

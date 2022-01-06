@@ -466,8 +466,14 @@ class GroupedWorkDriver extends IndexRecordDriver
 		$url = $this->getMoreInfoLinkUrl();
 
 		$interface->assign('summUrl', $url);
-		$interface->assign('summTitle', $this->getShortTitle());
-		$interface->assign('summSubTitle', $this->getSubtitle());
+		$shortTitle = $this->getShortTitle();
+		if (empty($shortTitle)){
+			$interface->assign('summTitle', $this->getTitle());
+			$interface->assign('summSubTitle', '');
+		}else {
+			$interface->assign('summTitle', $this->getShortTitle());
+			$interface->assign('summSubTitle', $this->getSubtitle());
+		}
 		$interface->assign('summAuthor', $this->getPrimaryAuthor());
 
 		//Get Rating
@@ -656,8 +662,14 @@ class GroupedWorkDriver extends IndexRecordDriver
 		}
 
 		$interface->assign('summUrl', $linkUrl);
-		$interface->assign('summTitle', $this->getShortTitle(true));
-		$interface->assign('summSubTitle', $this->getSubtitle(true));
+		$shortTitle = $this->getShortTitle();
+		if (empty($shortTitle)){
+			$interface->assign('summTitle', $this->getTitle());
+			$interface->assign('summSubTitle', '');
+		}else {
+			$interface->assign('summTitle', $this->getShortTitle());
+			$interface->assign('summSubTitle', $this->getSubtitle());
+		}
 		$interface->assign('summAuthor', rtrim($this->getPrimaryAuthor(true), ','));
 		$isbn = $this->getCleanISBN();
 		$interface->assign('summISBN', $isbn);
@@ -1050,8 +1062,14 @@ class GroupedWorkDriver extends IndexRecordDriver
 		$linkUrl .= '?searchId=' . $interface->get_template_vars('searchId') . '&amp;recordIndex=' . $interface->get_template_vars('recordIndex') . '&amp;page=' . $interface->get_template_vars('page');
 
 		$interface->assign('summUrl', $linkUrl);
-		$interface->assign('summTitle', $this->getShortTitle());
-		$interface->assign('summSubTitle', $this->getSubtitle());
+		$shortTitle = $this->getShortTitle();
+		if (empty($shortTitle)){
+			$interface->assign('summTitle', $this->getTitle());
+			$interface->assign('summSubTitle', '');
+		}else {
+			$interface->assign('summTitle', $this->getShortTitle());
+			$interface->assign('summSubTitle', $this->getSubtitle());
+		}
 		$interface->assign('summAuthor', $this->getPrimaryAuthor());
 		$isbn = $this->getCleanISBN();
 		$interface->assign('summISBN', $isbn);
@@ -1125,8 +1143,14 @@ class GroupedWorkDriver extends IndexRecordDriver
 		$linkUrl .= '?searchId=' . $interface->get_template_vars('searchId') . '&amp;recordIndex=' . $interface->get_template_vars('recordIndex') . '&amp;page=' . $interface->get_template_vars('page');
 
 		$interface->assign('summUrl', $linkUrl);
-		$interface->assign('summTitle', $this->getShortTitle());
-		$interface->assign('summSubTitle', $this->getSubtitle());
+		$shortTitle = $this->getShortTitle();
+		if (empty($shortTitle)){
+			$interface->assign('summTitle', $this->getTitle());
+			$interface->assign('summSubTitle', '');
+		}else {
+			$interface->assign('summTitle', $this->getShortTitle());
+			$interface->assign('summSubTitle', $this->getSubtitle());
+		}
 		$interface->assign('summAuthor', $this->getPrimaryAuthor());
 		$isbn = $this->getCleanISBN();
 		$interface->assign('summISBN', $isbn);
@@ -1606,7 +1630,6 @@ class GroupedWorkDriver extends IndexRecordDriver
 		}
 
 		// Displaying results as the default list
-		global $configArray;
 		global $interface;
 		global $timer;
 		global $memoryWatcher;
@@ -1641,8 +1664,14 @@ class GroupedWorkDriver extends IndexRecordDriver
 		}
 
 		$interface->assign('summUrl', $linkUrl);
-		$interface->assign('summTitle', $this->getShortTitle(true));
-		$interface->assign('summSubTitle', $this->getSubtitle(true));
+		$shortTitle = $this->getShortTitle();
+		if (empty($shortTitle)){
+			$interface->assign('summTitle', $this->getTitle());
+			$interface->assign('summSubTitle', '');
+		}else {
+			$interface->assign('summTitle', $this->getShortTitle());
+			$interface->assign('summSubTitle', $this->getSubtitle());
+		}
 		$interface->assign('summAuthor', rtrim($this->getPrimaryAuthor(true), ','));
 		$isbn = $this->getCleanISBN();
 		$interface->assign('summISBN', $isbn);
