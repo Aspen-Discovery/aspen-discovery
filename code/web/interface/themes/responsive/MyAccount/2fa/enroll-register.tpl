@@ -1,5 +1,4 @@
 <div id="main-content">
-{if $loggedIn}
 	<form class="form-horizontal">
 		<!-- Stepper -->
 		<div class="steps-form">
@@ -32,5 +31,4 @@
 			</div>
 			</div>
 	</form>
-{/if}
 </div>

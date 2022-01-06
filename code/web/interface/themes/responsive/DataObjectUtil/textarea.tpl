@@ -13,7 +13,10 @@
 		convert_urls: false,
 		theme: 'modern',
 		valid_elements : '*[*]',
-		extended_valid_elements : '*[*]',
+		extended_valid_elements : [
+			'*[*]',
+			'img[class=img-responsive|src|border=0|alt|title]'
+		]
 	});
 	{/literal}
 	</script>

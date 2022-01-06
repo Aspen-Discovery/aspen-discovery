@@ -39,6 +39,8 @@ class UserAccount
 					} else {
 						$needsToComplete2FA = true;
 					}
+				} elseif (UserAccount::isRequired2FA() && !UserAccount::has2FAEnabled()) {
+					$needsToComplete2FA = true;
 				} else {
 					$needsToComplete2FA = false;
 				}
@@ -549,7 +551,12 @@ class UserAccount
 
 		// Send back the user object (which may be an AspenError):
 		if ($primaryUser) {
-			if(UserAccount::has2FAEnabled() && UserAccount::$isAuthenticated === false) {
+			if(UserAccount::isRequired2FA() && !UserAccount::has2FAEnabled() && UserAccount::$isAuthenticated === false) {
+				UserAccount::$isLoggedIn = false;
+				$logger->log("User needs to enroll in two-factor authentication",Logger::LOG_DEBUG);
+				$needsToAuthenticate = new AspenError('You must enroll into two-factor authentication before logging in.');
+				return $needsToAuthenticate;
+			} else if(UserAccount::has2FAEnabled() && UserAccount::$isAuthenticated === false) {
 				UserAccount::$isLoggedIn = false;
 				$logger->log("User needs to two-factor authenticate",Logger::LOG_DEBUG);
 				$needsToAuthenticate = new AspenError('You must authenticate before logging in. Please provide the 6-digit code that was emailed to you.');
@@ -764,6 +771,14 @@ class UserAccount
 		UserAccount::loadUserObjectFromDatabase();
 		if (UserAccount::$primaryUserObjectFromDB != false) {
 			return UserAccount::$primaryUserObjectFromDB->get2FAStatusForPType();
+		}
+		return false;
+	}
+
+	static function isRequired2FA() {
+		UserAccount::loadUserObjectFromDatabase();
+		if (UserAccount::$primaryUserObjectFromDB != false) {
+			return UserAccount::$primaryUserObjectFromDB->is2FARequired();
 		}
 		return false;
 	}

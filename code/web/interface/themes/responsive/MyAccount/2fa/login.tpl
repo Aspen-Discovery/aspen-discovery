@@ -1,4 +1,7 @@
 <div id="main-content">
+    {if $message}
+	    <h1>{translate text='Sign in to your account' isPublicFacing=true}</h1>
+    {/if}
 		<form id="twoFactorAuthForm">
 			<div class="row">
 				<div class="col-md-10 col-md-offset-1">
@@ -14,5 +17,6 @@
 			</div>
 			<input type="hidden" id="referer" value="{$referer}" />
 			<input type="hidden" id="name" value="{$name}" />
+			<input type="hidden" id="myAccountAuth" value="false">
 		</form>
 </div>

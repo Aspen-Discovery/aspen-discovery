@@ -24,7 +24,7 @@
 						onError: function(error) {ldelim}
 							AspenDiscovery.Account.handlePayPalError(error);
 						{rdelim},
-						onCancel: function(data) {ldelim}
+						onCancel: function() {ldelim}
 							AspenDiscovery.Account.cancelPayPalError();
 						{rdelim},
 					{rdelim}).render('#paypal-button-container{$userId}');
