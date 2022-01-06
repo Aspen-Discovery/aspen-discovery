@@ -20,28 +20,33 @@ class UserAccount
 	 * @return bool
 	 */
 	public static function needsToComplete2FA() : bool{
-		require_once ROOT_DIR . '/sys/TwoFactorAuthSetting.php';
-		$twoFactorSetting = new TwoFactorAuthSetting();
-		$twoFactorSetting->whereAdd("isEnabled = 'optional' OR isEnabled = 'mandatory'");
-		if ($twoFactorSetting->find()){
+		try {
+			require_once ROOT_DIR . '/sys/TwoFactorAuthSetting.php';
+			$twoFactorSetting = new TwoFactorAuthSetting();
+			$twoFactorSetting->whereAdd("isEnabled = 'optional' OR isEnabled = 'mandatory'");
+			if ($twoFactorSetting->find()) {
 
-			//Two factor might be required
-			if (UserAccount::has2FAEnabled()){
-				//Two factor is required, check to see if it's complete.
-				//Check the session to see if it is complete
-				require_once ROOT_DIR . '/sys/TwoFactorAuthCode.php';
-				$authCodeForSession = new TwoFactorAuthCode();
-				$authCodeForSession->sessionId = session_id();
-				$authCodeForSession->userId = $_SESSION['activeUserId'];
-				if ($authCodeForSession->find(true)){
-					$needsToComplete2FA = $authCodeForSession->status != 'used';
-				}else{
-					$needsToComplete2FA = true;
+				//Two factor might be required
+				if (UserAccount::has2FAEnabled()) {
+					//Two factor is required, check to see if it's complete.
+					//Check the session to see if it is complete
+					require_once ROOT_DIR . '/sys/TwoFactorAuthCode.php';
+					$authCodeForSession = new TwoFactorAuthCode();
+					$authCodeForSession->sessionId = session_id();
+					$authCodeForSession->userId = $_SESSION['activeUserId'];
+					if ($authCodeForSession->find(true)) {
+						$needsToComplete2FA = $authCodeForSession->status != 'used';
+					} else {
+						$needsToComplete2FA = true;
+					}
+				} else {
+					$needsToComplete2FA = false;
 				}
-			}else{
+			} else {
 				$needsToComplete2FA = false;
 			}
-		}else {
+		}catch (PDOException $e){
+			//This happens if the table has not been created.
 			$needsToComplete2FA = false;
 		}
 		return $needsToComplete2FA;
