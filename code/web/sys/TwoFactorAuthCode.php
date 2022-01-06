@@ -199,7 +199,7 @@ class TwoFactorAuthCode extends DataObject
 		// delete codes with a status of: sent or created codes AND are older than 15 minutes
 		$codesToExpire = new TwoFactorAuthCode();
 		$codesToExpire->whereAdd("status = 'sent' OR status = 'created'");
-		$codesToExpire->whereAdd("dateSent < 'time() - 60 * 30'");
+		$codesToExpire->whereAdd("dateSent < " . (time() - 60 * 30));
 		$codesToExpire->find();
 		while($codesToExpire->fetch()) {
 			$codeToDelete = clone $codesToExpire;

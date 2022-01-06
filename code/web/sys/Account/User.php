@@ -2781,6 +2781,24 @@ class User extends DataObject
 		}
 		return false;
 	}
+
+	public function is2FARequired(){
+		require_once ROOT_DIR . '/sys/Account/PType.php';
+		$patronType = new PType();
+		$patronType->pType = $this->patronType;
+		if($patronType->find(true)) {
+			require_once  ROOT_DIR . '/sys/TwoFactorAuthSetting.php';
+			$twoFactorAuthSetting = new TwoFactorAuthSetting();
+			$twoFactorAuthSetting->id = $patronType->twoFactorAuthSettingId;
+			if($twoFactorAuthSetting->find(true)) {
+				if($twoFactorAuthSetting->isEnabled == 'mandatory') {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
 	public function get2FAStatus(){
 		$status = $this->twoFactorStatus;
 		if($status == '1') {

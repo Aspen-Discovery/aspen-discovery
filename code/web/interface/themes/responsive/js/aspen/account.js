@@ -509,7 +509,9 @@ AspenDiscovery.Account = (function(){
 						if (multiStep !== 'true') {
 							window.location.replace(referer);
 						}
-					} else if(response.result.success === false && response.result.twoFactor === true) {
+					} else if(response.result.success === false && response.result.enroll2FA === true) {
+						AspenDiscovery.showMessageWithButtons('Error', 'Your patron type requires that you enroll into two-factor authentication before logging in.', '<button class=\'tool btn btn-primary\' onclick=\'AspenDiscovery.Account.show2FAEnrollment(true); return false;\'>Continue</button>');
+					} else if(response.result.success === false && response.result.has2FA === true) {
 						$.getJSON(Globals.path + "/MyAccount/AJAX?method=auth2FALogin&referer=" + referer + "&name=" + response.result.name, function (data) {
 							if (data.success) {
 								AspenDiscovery.showMessageWithButtons(data.title, data.body, data.buttons);
@@ -1654,10 +1656,10 @@ AspenDiscovery.Account = (function(){
 			}).fail(AspenDiscovery.ajaxFail);
 			return false
 		},
-		show2FAEnrollment: function(){
-			if (Globals.loggedIn){
+		show2FAEnrollment: function(mandatoryEnroll){
+			if (Globals.loggedIn || mandatoryEnroll){
 				AspenDiscovery.loadingMessage();
-				$.getJSON(Globals.path + "/MyAccount/AJAX?method=get2FAEnrollment&step=register", function(data) {
+				$.getJSON(Globals.path + "/MyAccount/AJAX?method=get2FAEnrollment&step=register&mandatoryEnrollment=" + mandatoryEnroll, function (data) {
 					if (data.success) {
 						AspenDiscovery.showMessageWithButtons(data.title, data.body, data.buttons)
 					} else {
@@ -1666,14 +1668,14 @@ AspenDiscovery.Account = (function(){
 				});
 			} else {
 				AspenDiscovery.Account.ajaxLogin(null, function(){
-					return AspenDiscovery.Account.show2FAEnrollment();
+					return AspenDiscovery.Account.show2FAEnrollmentVerify(mandatoryEnroll);
 				}, false);
 			}
 			return false;
 		},
-		show2FAEnrollmentVerify: function(){
-			if (Globals.loggedIn){
-				$.getJSON(Globals.path + "/MyAccount/AJAX?method=get2FAEnrollment&step=verify", function(data) {
+		show2FAEnrollmentVerify: function(mandatoryEnroll){
+			if (Globals.loggedIn || mandatoryEnroll){
+				$.getJSON(Globals.path + "/MyAccount/AJAX?method=get2FAEnrollment&step=verify&mandatoryEnrollment=" + mandatoryEnroll, function(data) {
 					if (data.success) {
 						AspenDiscovery.showMessageWithButtons(data.title, data.body, data.buttons)
 					} else {
@@ -1682,14 +1684,14 @@ AspenDiscovery.Account = (function(){
 				});
 			} else {
 				AspenDiscovery.Account.ajaxLogin(null, function(){
-					return AspenDiscovery.Account.show2FAEnrollmentVerify();
+					return AspenDiscovery.Account.show2FAEnrollmentVerify(mandatoryEnroll);
 				}, false);
 			}
 			return false;
 		},
-		show2FAEnrollmentBackupCodes: function(){
-			if (Globals.loggedIn){
-				$.getJSON(Globals.path + "/MyAccount/AJAX?method=get2FAEnrollment&step=backup", function(data) {
+		show2FAEnrollmentBackupCodes: function(mandatoryEnroll){
+			if (Globals.loggedIn || mandatoryEnroll){
+				$.getJSON(Globals.path + "/MyAccount/AJAX?method=get2FAEnrollment&step=backup&mandatoryEnrollment=" + mandatoryEnroll, function(data) {
 					if (data.success) {
 						AspenDiscovery.showMessageWithButtons(data.title, data.body, data.buttons)
 					} else {
@@ -1698,21 +1700,21 @@ AspenDiscovery.Account = (function(){
 				});
 			} else {
 				AspenDiscovery.Account.ajaxLogin(null, function(){
-					return AspenDiscovery.Account.show2FAEnrollmentBackupCodes();
+					return AspenDiscovery.Account.show2FAEnrollmentBackupCodes(mandatoryEnroll);
 				}, false);
 			}
 			return false;
 		},
-		show2FAEnrollmentSuccess: function(){
-			if (Globals.loggedIn){
-				$.getJSON(Globals.path + "/MyAccount/AJAX?method=get2FAEnrollment&step=complete", function(data) {
+		show2FAEnrollmentSuccess: function(mandatoryEnroll){
+			if (Globals.loggedIn || mandatoryEnroll){
+				$.getJSON(Globals.path + "/MyAccount/AJAX?method=get2FAEnrollment&step=complete&mandatoryEnrollment=" + mandatoryEnroll, function(data) {
 					if (data.success) {
 						AspenDiscovery.showMessage(data.title, data.body, false, 2000)
 					}
 				});
 			} else {
 				AspenDiscovery.Account.ajaxLogin(null, function(){
-					return AspenDiscovery.Account.show2FAEnrollmentSuccess();
+					return AspenDiscovery.Account.show2FAEnrollmentSuccess(mandatoryEnroll);
 				}, false);
 			}
 			return false;
@@ -1751,13 +1753,14 @@ AspenDiscovery.Account = (function(){
 			}
 			return false;
 		},
-		verify2FA: function() {
+		verify2FA: function(mandatoryEnrollment) {
 			var code = $("#code").val();
-			if (Globals.loggedIn){
-				$.getJSON(Globals.path + "/MyAccount/AJAX?method=verify2FA&loggingIn=false&code=" + code, function(data) {
+			var loggingIn = mandatoryEnrollment ? true : false;
+			if (Globals.loggedIn || mandatoryEnrollment){
+				$.getJSON(Globals.path + "/MyAccount/AJAX?method=verify2FA&loggingIn=" + loggingIn + "&code=" + code + "&mandatoryEnrollment=" + mandatoryEnrollment, function(data) {
 					// update #codeVerificationFailedPlaceholder with failed verification status, otherwise move onto next step
 					if(data.success === "true") {
-						return AspenDiscovery.Account.show2FAEnrollmentBackupCodes();
+						return AspenDiscovery.Account.show2FAEnrollmentBackupCodes(mandatoryEnrollment);
 					}
 					$("#codeVerificationFailedPlaceholder").html(data.message).show();
 					return data;
