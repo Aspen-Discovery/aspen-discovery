@@ -7063,9 +7063,15 @@ AspenDiscovery.Account = (function(){
 			var code = $("#code").val();
 			var referer = $("#referer").val();
 			var name = $("#name").val();
+			var myAccountAuth = $("#myAccountAuth").val();
 			$.getJSON(Globals.path + "/MyAccount/AJAX?method=verify2FA&loggingIn=true&code=" + code, function(data) {
 				// update #codeVerificationFailedPlaceholder with failed verification status, otherwise move onto next step
 				if(data.success === "true") {
+					Globals.loggedIn = true;
+
+					if(myAccountAuth === 'true') {
+						window.location.reload();
+					}
 					$('#loginLinkIcon').removeClass('fa-sign-in-alt').addClass('fa-user');
 					$('#login-button-label').html(name);
 					$('#logoutLink').show();
@@ -7074,7 +7080,6 @@ AspenDiscovery.Account = (function(){
 						AspenDiscovery.closeLightbox();
 					}
 
-					Globals.loggedIn = true;
 					if (ajaxCallback !== undefined && typeof(ajaxCallback) === "function") {
 						ajaxCallback();
 					} else if (AspenDiscovery.Account.ajaxCallback !== undefined && typeof(AspenDiscovery.Account.ajaxCallback) === "function") {
