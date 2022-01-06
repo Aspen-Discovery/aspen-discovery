@@ -6528,7 +6528,12 @@ AspenDiscovery.Account = (function(){
 				}
 			}).fail(AspenDiscovery.ajaxFail);
 		},
-
+		handlePayPalError: function(error){
+			AspenDiscovery.showMessage('Error', 'There was an error completing your payment. ' + error, true);
+		},
+		cancelPayPalError: function(){
+			AspenDiscovery.showMessage('Payment cancelled', 'Your payment has successfully been cancelled.', true);
+		},
 		updateFineTotal: function(finesFormId, userId, paymentType) {
 			var totalFineAmt = 0;
 			var totalOutstandingAmt = 0;
