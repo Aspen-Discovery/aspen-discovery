@@ -32,6 +32,7 @@ abstract class MarcRecordProcessor {
 	boolean createFolderFromLeadingCharacters;
 	String individualMarcPath;
 	String formatSource;
+	String fallbackFormatField; //Only used for IlsRecordProcessor, but defined here
 	String specifiedFormat;
 	String specifiedFormatCategory;
 	int specifiedFormatBoost;
@@ -1154,6 +1155,9 @@ abstract class MarcRecordProcessor {
 		getFormatFromSubjects(record, printFormats);
 		getFormatFromTitle(record, printFormats);
 		getFormatFromDigitalFileCharacteristics(record, printFormats);
+		if (printFormats.size() == 0 && fallbackFormatField != null && fallbackFormatField.length() > 0){
+			getFormatFromFallbackField(record, printFormats);
+		}
 		if (printFormats.size() == 0 || printFormats.contains("MusicRecording") || (printFormats.size() == 1 && printFormats.contains("Book"))) {
 			//Only get from fixed field information if we don't have anything yet since the cataloging of
 			//fixed fields is not kept up to date reliably.  #D-87
@@ -1191,6 +1195,11 @@ abstract class MarcRecordProcessor {
 		}
 		return printFormats;
 	}
+
+	protected void getFormatFromFallbackField(Record record, LinkedHashSet<String> printFormats) {
+		//Do nothing by default, this is overridden in IlsRecordProcessor
+	}
+
 	private final HashSet<String> formatsToFilter = new HashSet<>();
 
 	private void getFormatFromDigitalFileCharacteristics(Record record, LinkedHashSet<String> printFormats) {

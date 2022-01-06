@@ -27,6 +27,7 @@ class IndexingProfile extends DataObject
 	public /** @noinspection PhpUnused */ $treatUnknownLanguageAs;
 	public /** @noinspection PhpUnused */ $treatUndeterminedLanguageAs;
 	public /** @noinspection PhpUnused */ $formatSource;
+	public /** @noinspection PhpUnused */ $fallbackFormatField;
 	public /** @noinspection PhpUnused */ $specifiedFormat;
 	public /** @noinspection PhpUnused */ $specifiedFormatCategory;
 	public /** @noinspection PhpUnused */ $specifiedFormatBoost;
@@ -205,6 +206,7 @@ class IndexingProfile extends DataObject
 
 			'formatSection' => ['property' => 'formatMappingSection', 'type' => 'section', 'label' => 'Format Information', 'hideInLists' => true, 'properties' => [
 				'formatSource' => array('property' => 'formatSource', 'type' => 'enum', 'label' => 'Load Format from', 'values' => array('bib' => 'Bib Record', 'item' => 'Item Record', 'specified' => 'Specified Value'), 'default' => 'bib', 'forcesReindex' => true, 'onchange'=>'return AspenDiscovery.Admin.updateIndexingProfileFields();'),
+				'fallbackFormatField' => array('property' => 'fallbackFormatField', 'type' => 'text', 'label' => 'Fallback Format Field', 'maxLength' => 5, 'description' => 'A fallback field to to load format from if format cannot be clearly determined', 'required' => false, 'default' => '', 'forcesReindex' => true),
 				'specifiedFormat' => array('property' => 'specifiedFormat', 'type' => 'text', 'label' => 'Specified Format', 'maxLength' => 50, 'description' => 'The format to set when using a defined format', 'required' => false, 'default' => '', 'forcesReindex' => true),
 				'specifiedFormatCategory' => array('property' => 'specifiedFormatCategory', 'type' => 'enum', 'values' => array('', 'Books' => 'Books', 'eBook' => 'eBook', 'Audio Books' => 'Audio Books', 'Movies' => 'Movies', 'Music' => 'Music', 'Other' => 'Other'), 'label' => 'Specified Format Category', 'maxLength' => 50, 'description' => 'The format category to set when using a defined format', 'required' => false, 'default' => '', 'forcesReindex' => true),
 				'specifiedFormatBoost' => array('property' => 'specifiedFormatBoost', 'type' => 'enum', 'values'=>[1=>'None', '3'=>'Low',6=>'Medium', 9=>'High', '12'=>'Very High'], 'label' => 'Specified Format Boost', 'description' => 'The format boost to set when using a defined format', 'default' => '8', 'required' => false, 'forcesReindex' => true),

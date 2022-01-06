@@ -201,5 +201,12 @@ function getUpdates22_01_00() : array
 				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer Two-Factor Authentication'))",
 			]
 		], //course_reserves_permissions
+		'indexing_profile_fallbackFormatField' => [
+			'title' => 'Indexing Profiles - fallbackFormatField',
+			'description' => 'Add a fallback field for determining format',
+			'sql' => [
+				'ALTER TABLE indexing_profiles ADD COLUMN fallbackFormatField VARCHAR(5)'
+			]
+		], //indexing_profile_fallbackFormatField
 	];
 }

@@ -56,6 +56,7 @@ public class IndexingProfile extends BaseIndexingSettings {
 	private long lastUpdateOfAuthorities;
 	private long lastChangeProcessed;
 	private Pattern suppressRecordsWithUrlsMatching;
+	private String fallbackFormatField;
 
 	public IndexingProfile(ResultSet indexingProfileRS)  throws SQLException {
 		this.setId(indexingProfileRS.getLong("id"));
@@ -92,6 +93,7 @@ public class IndexingProfile extends BaseIndexingSettings {
 
 		this.setGroupingClass(indexingProfileRS.getString("groupingClass"));
 		this.setFormatSource(indexingProfileRS.getString("formatSource"));
+		this.setFallbackFormatField(indexingProfileRS.getString("fallbackFormatField"));
 		this.setSpecifiedFormatCategory(indexingProfileRS.getString("specifiedFormatCategory"));
 		this.setFormat(getCharFromRecordSet(indexingProfileRS, "format"));
 		this.setCheckRecordForLargePrint(indexingProfileRS.getBoolean("checkRecordForLargePrint"));
@@ -578,5 +580,13 @@ public class IndexingProfile extends BaseIndexingSettings {
 
 	public Pattern getSuppressRecordsWithUrlsMatching() {
 		return suppressRecordsWithUrlsMatching;
+	}
+
+	public void setFallbackFormatField(String fallbackFormatField) {
+		this.fallbackFormatField = fallbackFormatField;
+	}
+
+	public String getFallbackFormatField() {
+		return fallbackFormatField;
 	}
 }

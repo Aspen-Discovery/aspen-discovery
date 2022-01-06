@@ -142,6 +142,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			itemUrlSubfieldIndicator = getSubfieldIndicatorFromConfig(indexingProfileRS, "itemUrl");
 
 			formatSource = indexingProfileRS.getString("formatSource");
+			fallbackFormatField = indexingProfileRS.getString("fallbackFormatField");
 			specifiedFormat = indexingProfileRS.getString("specifiedFormat");
 			specifiedFormatCategory = indexingProfileRS.getString("specifiedFormatCategory");
 			specifiedFormatBoost = indexingProfileRS.getInt("specifiedFormatBoost");
@@ -1666,5 +1667,15 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 
 	public boolean isHideNotCodedLiteraryForm() {
 		return hideNotCodedLiteraryForm;
+	}
+
+	@Override
+	protected void getFormatFromFallbackField(Record record, LinkedHashSet<String> printFormats) {
+		Set<String> fields = MarcUtil.getFieldList(record, fallbackFormatField);
+		for (String curField : fields) {
+			if (hasTranslation("format", curField.toLowerCase())){
+				printFormats.add(curField);
+			}
+		}
 	}
 }
