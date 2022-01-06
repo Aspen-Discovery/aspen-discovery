@@ -43,13 +43,9 @@ class CompletePinReset extends Action
 					$interface->assign('result', $result);
 					if (!$result['success']){
 						$interface->assign('error', $result['message']);
-					}else{
-						$user = UserAccount::validateAccount($userToResetPinFor->getBarcode(), $pin1);
-						if ($user != false){
-							UserAccount::updateSession($user);
-							UserAccount::$isLoggedIn = true;
-							UserAccount::$primaryUserData = $user;
-						}
+					//}else{
+						//We were successful!
+						//TODO: Try to log the patron in automatically
 					}
 				}
 			}else{

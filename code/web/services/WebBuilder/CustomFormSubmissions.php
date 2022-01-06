@@ -60,7 +60,7 @@ class WebBuilder_CustomFormSubmissions extends ObjectEditor
 		return 'id';
 	}
 
-	function canEdit(){
+	function canEdit(DataObject $object){
 		return false;
 	}
 
