@@ -33,7 +33,7 @@
 				</div>
 				<div class="col-xs-6 text-right">
 					{if $twoFactorStatus == '0'}
-						<button type="button" name="2faStatus" class="btn btn-primary" onclick="return AspenDiscovery.Account.show2FAEnrollment();">{translate text="Set up" isPublicFacing=true}</button>
+						<button type="button" name="2faStatus" class="btn btn-primary" onclick="return AspenDiscovery.Account.show2FAEnrollment(false);">{translate text="Set up" isPublicFacing=true}</button>
                     {else}
 						<button type="button" name="2faStatus" class="btn btn-primary" onclick="return AspenDiscovery.Account.showCancel2FA();" {if !$enableDeactivation}disabled{/if}>{translate text="Turn off" isPublicFacing=true}</button>
                         {if !$enableDeactivation}<small class="help-block">{translate text="Your account is required to have 2FA enabled" isPublicFacing=true}</small>{/if}

@@ -41,6 +41,9 @@ class TwoFactorAuthCode extends DataObject
 				$twoFactorAuthCode->sendCode();
 			}
 		}
+
+		$this->cleanupOldCodes();
+
 		return true;
 	}
 
@@ -53,7 +56,7 @@ class TwoFactorAuthCode extends DataObject
 				$twoFactorAuthCode->code = mt_rand(100000,999999);
 				$twoFactorAuthCode->userId = $user->id;
 				$twoFactorAuthCode->dateSent = time();
-				$twoFactorAuthCode->status = "recovery";
+				$twoFactorAuthCode->status = "created";
 				$twoFactorAuthCode->insert();
 				$result = array(
 					'success' => true,
@@ -91,11 +94,9 @@ class TwoFactorAuthCode extends DataObject
 				$this->update();
 				return true;
 			} else {
-				// no email setup, probably won't happen?
 				return false;
 			}
 		} else {
-			// patron not found
 			return false;
 		}
 	}
@@ -111,15 +112,11 @@ class TwoFactorAuthCode extends DataObject
 			$deniedMessage = "";
 		}
 
-		//TODO: Set anything that is sent and dateSent is > 15 min to expired
-
-		//TODO: Delete anything where expired or used AND dateSent is > 60 min ago
-
 		$codeToCheck = new TwoFactorAuthCode();
 		$codeToCheck->code = $code;
 		if($codeToCheck->find(true)) {
 			if($codeToCheck->userId == UserAccount::getActiveUserId()){
-				if($codeToCheck->status != "used" && $codeToCheck->status != "expired") {
+				if($codeToCheck->status != "used") {
 					$codeToCheck->status = "used";
 					$codeToCheck->sessionId = session_id();
 					$codeToCheck->update();
@@ -127,15 +124,10 @@ class TwoFactorAuthCode extends DataObject
 						'success' => 'true',
 						'message' => translate(['text' => 'Code OK', 'isPublicFacing' => true])
 					);
-				} elseif($codeToCheck->status == "expired") {
-					$result = array(
-						'success' => 'false',
-						'message' => translate(['text' => 'This code has expired. ' . $deniedMessage, 'isPublicFacing' => true]),
-					);
 				} else {
 					$result = array(
 						'success' => 'false',
-						'message' => translate(['text' => 'You have already used this code. ' . $deniedMessage, 'isPublicFacing' => true]),
+						'message' => translate(['text' => 'You have already used this code or it expired. ' . $deniedMessage, 'isPublicFacing' => true]),
 					);
 				}
 			} else {
@@ -188,6 +180,31 @@ class TwoFactorAuthCode extends DataObject
 			return true;
 		}
 		return false;
+	}
+
+	function cleanupOldCodes() {
+		// delete codes with a used status and no longer have a valid session id
+		$codesFromOldSessions = new TwoFactorAuthCode();
+		$codesFromOldSessions->status = "used";
+		$codesFromOldSessions->whereAdd("sessionId != 'null'");
+		$codesFromOldSessions->find();
+		while($codesFromOldSessions->fetch()) {
+			$session = new Session();
+			$session->session_id = $codesFromOldSessions->sessionId;
+			if(!$session->find()) {
+				$codeToDelete = clone $codesFromOldSessions;
+				$codeToDelete->delete();
+			}
+		}
+		// delete codes with a status of: sent or created codes AND are older than 15 minutes
+		$codesToExpire = new TwoFactorAuthCode();
+		$codesToExpire->whereAdd("status = 'sent' OR status = 'created'");
+		$codesToExpire->whereAdd("dateSent < " . (time() - 60 * 30));
+		$codesToExpire->find();
+		while($codesToExpire->fetch()) {
+			$codeToDelete = clone $codesToExpire;
+			$codeToDelete->delete();
+		}
 	}
 
 	function deactivate2FA() {

@@ -80,7 +80,15 @@ class MyAccount_Login extends Action
 
 		$interface->assign('isLoginPage', true);
 
-		$this->display('../MyAccount/login.tpl', 'Login', '');
+		if($msg === 'You must authenticate before logging in. Please provide the 6-digit code that was emailed to you.') {
+			require_once ROOT_DIR . '/sys/TwoFactorAuthCode.php';
+			$twoFactorAuthCode = new TwoFactorAuthCode();
+			$twoFactorAuthCode->createCode();
+			$this->display('../MyAccount/login-2fa.tpl', 'Login', '');
+		} else {
+			$this->display('../MyAccount/login.tpl', 'Login', '');
+		}
+
 	}
 
 	function getBreadcrumbs() : array

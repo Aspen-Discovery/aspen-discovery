@@ -3290,7 +3290,6 @@ class MyAccount_AJAX extends JSON_Action
 			/** @noinspection PhpUnusedLocalVariableInspection */
 			if($transactionType == 'donation') {
 				list($paymentLibrary, $userLibrary, $payment, $purchaseUnits, $patron, $tempDonation) = $result;
-				$donation = $this->addDonation($payment, $tempDonation);
 			} else {
 				list($paymentLibrary, $userLibrary, $payment, $purchaseUnits, $patron) = $result;
 			}
@@ -3310,6 +3309,7 @@ class MyAccount_AJAX extends JSON_Action
 				$paymentRequestUrl .= '&Password=' . $compriseSettings->password;
 				$paymentRequestUrl .= '&Amount=' . $currencyFormatter->format($payment->totalPaid);
 				if($transactionType == 'donation') {
+					$donation = $this->addDonation($payment, $tempDonation);
 					$paymentRequestUrl .= "&URLPostBack=" . urlencode($configArray['Site']['url'] . '/Comprise/Complete?type=' . $payment->transactionType . '&donation=' . $donation->id);
 					$paymentRequestUrl .= "&URLReturn=" . urlencode($configArray['Site']['url'] . '/Donations/DonationCompleted?type=comprise&payment=' . $payment->id . '&donation=' . $donation->id);
 					$paymentRequestUrl .= "&URLCancel=" . urlencode($configArray['Site']['url'] . '/Donations/DonationCompleted?type=comprise&payment=' . $payment->id . '&donation=' . $donation->id);
@@ -4697,6 +4697,8 @@ function getCurbsidePickupAvailableTimes() {
 		// if there were multiple verification methods available, you'd want to fetch them here for display
 
 		$step = $_REQUEST['step'] ?? "register";
+		$mandatoryEnrollment = $_REQUEST['mandatoryEnrollment'] ?? false;
+
 		if($step == "register") {
 
 			function mask($str, $first, $last) {
@@ -4728,7 +4730,7 @@ function getCurbsidePickupAvailableTimes() {
 				'success' => true,
 				'title' => translate(['text'=>'Two-Factor Authentication','isPublicFacing'=>true]),
 				'body' => $interface->fetch('MyAccount/2fa/enroll-register.tpl'),
-				'buttons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.Account.show2FAEnrollmentVerify(); return false;'>" . translate(['text'=>'Next','isPublicFacing'=>true]) . "</button>",
+				'buttons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.Account.show2FAEnrollmentVerify(\"{$mandatoryEnrollment}\"); return false;'>" . translate(['text'=>'Next','isPublicFacing'=>true]) . "</button>",
 			);
 		} elseif($step == "verify") {
 			require_once ROOT_DIR . '/sys/TwoFactorAuthCode.php';
@@ -4745,7 +4747,7 @@ function getCurbsidePickupAvailableTimes() {
 				'success' => true,
 				'title' => translate(['text'=>'Two-Factor Authentication','isPublicFacing'=>true]),
 				'body' => $interface->fetch('MyAccount/2fa/enroll-verify.tpl'),
-				'buttons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.Account.verify2FA(); return false;'>" . translate(['text'=>'Next','isPublicFacing'=>true]) . "</button>",
+				'buttons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.Account.verify2FA(\"{$mandatoryEnrollment}\"); return false;'>" . translate(['text'=>'Next','isPublicFacing'=>true]) . "</button>",
 			);
 		} elseif($step == "validate") {
 			require_once ROOT_DIR . '/sys/TwoFactorAuthCode.php';
@@ -4756,7 +4758,7 @@ function getCurbsidePickupAvailableTimes() {
 				'success' => true,
 				'title' => translate(['text'=>'Two-Factor Authentication','isPublicFacing'=>true]),
 				'body' => $interface->fetch('MyAccount/2fa/enroll-verify.tpl'),
-				'buttons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.Account.verify2FA(); return false;'>" . translate(['text'=>'Next','isPublicFacing'=>true]) . "</button>",
+				'buttons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.Account.verify2FA(\"{$mandatoryEnrollment}\"); return false;'>" . translate(['text'=>'Next','isPublicFacing'=>true]) . "</button>",
 			);
 		} elseif($step == "backup") {
 			require_once ROOT_DIR . '/sys/TwoFactorAuthCode.php';
@@ -4771,7 +4773,7 @@ function getCurbsidePickupAvailableTimes() {
 				'success' => true,
 				'title' => translate(['text'=>'Two-Factor Authentication','isPublicFacing'=>true]),
 				'body' => $interface->fetch('MyAccount/2fa/enroll-backup.tpl'),
-				'buttons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.Account.show2FAEnrollmentSuccess(); return false;'>" . translate(['text'=>'Next','isPublicFacing'=>true]) . "</button>",
+				'buttons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.Account.show2FAEnrollmentSuccess(\"{$mandatoryEnrollment}\"); return false;'>" . translate(['text'=>'Next','isPublicFacing'=>true]) . "</button>",
 			);
 		} elseif($step == "complete") {
 			// update user table to enrolled status
@@ -4885,20 +4887,23 @@ function getCurbsidePickupAvailableTimes() {
 		global $interface;
 		global $logger;
 		$logger->log("Creating AJAX/2faLogin session: " . session_id(), Logger::LOG_DEBUG);
-		require_once ROOT_DIR . '/sys/TwoFactorAuthCode.php';
-		$twoFactorAuth = new TwoFactorAuthCode();
-		$twoFactorAuth->createCode();
 
-		$referer = $_REQUEST['referer'] ?? null;
-		$interface->assign('referer', $referer);
-		$name = $_REQUEST['name'] ?? null;
-		$interface->assign('name', $name);
 
-		return array(
-			'success' => true,
-			'title' => translate(['text'=>'Two-Factor Authentication','isPublicFacing'=>true]),
-			'body' => $interface->fetch('MyAccount/2fa/login.tpl'),
-			'buttons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.Account.verify2FALogin(); return false;'>" . translate(['text'=>'Verify','isPublicFacing'=>true]) . "</button>",
-		);
+			require_once ROOT_DIR . '/sys/TwoFactorAuthCode.php';
+			$twoFactorAuth = new TwoFactorAuthCode();
+			$twoFactorAuth->createCode();
+
+			$referer = $_REQUEST['referer'] ?? null;
+			$interface->assign('referer', $referer);
+			$name = $_REQUEST['name'] ?? null;
+			$interface->assign('name', $name);
+
+			return array(
+				'success' => true,
+				'title' => translate(['text'=>'Two-Factor Authentication','isPublicFacing'=>true]),
+				'body' => $interface->fetch('MyAccount/2fa/login.tpl'),
+				'buttons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.Account.verify2FALogin(); return false;'>" . translate(['text'=>'Verify','isPublicFacing'=>true]) . "</button>",
+			);
+
 	}
 }

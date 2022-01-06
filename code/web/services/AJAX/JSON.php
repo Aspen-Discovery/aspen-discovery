@@ -184,11 +184,19 @@ class AJAX_JSON extends Action {
 						);
 					}
 
+					// User needs to enroll into 2FA
+					if($user && $user->getMessage() == 'You must enroll into two-factor authentication before logging in.') {
+						return array(
+							'success' => false,
+							'enroll2FA' => true
+						);
+					}
+
 					// User needs to authenticate with 2FA
 					if ($user && $user->getMessage() == 'You must authenticate before logging in. Please provide the 6-digit code that was emailed to you.') {
 						return array(
 							'success' => false,
-							'twoFactor' => true
+							'has2FA' => true
 						);
 					}
 
