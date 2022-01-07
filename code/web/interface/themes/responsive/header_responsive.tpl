@@ -33,7 +33,7 @@
 		</div>
 	{/if}
 	{if count($validLanguages) > 1 && count($validLanguages) <= 2}
-		<div id="language-selection-header" class="hidden-tn col-xs-4 col-sm-4 col-md-4 col-lg-4 pull-right">
+		<div id="language-selection-header" class="col-tn-12 col-xs-4 col-sm-4 col-md-4 col-lg-4 pull-right">
 			<div class="btn-group btn-group-sm" role="group">
 			{foreach from=$validLanguages key=languageCode item=language}
 				<div class="availableLanguage btn btn-sm btn-default {if $userLang->code==$languageCode}active{/if}">
@@ -61,7 +61,7 @@
 		</div>
 	{/if}
 	{if count($validLanguages) >= 3}
-		<div id="language-selection-header" class="hidden-tn col-xs-4 col-sm-4 col-md-4 col-lg-4 pull-right">
+		<div id="language-selection-header" class="col-tn-12 col-xs-4 col-sm-4 col-md-4 col-lg-4 pull-right">
 	<div class="dropdown">
 		<button class="btn btn-default btn-sm dropdown-toggle" type="button" id="language-selection-dropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
 			{translate text="Languages" isPublicFacing=true}&nbsp;<span class="caret"></span>

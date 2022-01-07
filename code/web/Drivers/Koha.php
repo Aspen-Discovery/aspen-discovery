@@ -2379,6 +2379,8 @@ class Koha extends AbstractIlsDriver
 						if((array_key_exists($fieldName, $unwantedFields) && array_key_exists($fieldName, $requiredFields))) {
 							$section['properties'][$fieldKey]['type'] = 'hidden';
 							$section['properties'][$fieldKey]['required'] = false;
+						} else {
+							$field['required'] = array_key_exists($fieldName, $requiredFields);
 						}
 					} else {
 						$field['required'] = array_key_exists($fieldName, $requiredFields);

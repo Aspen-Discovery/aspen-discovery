@@ -85,6 +85,8 @@ class MyAccount_Login extends Action
 			$twoFactorAuthCode = new TwoFactorAuthCode();
 			$twoFactorAuthCode->createCode();
 			$this->display('../MyAccount/login-2fa.tpl', 'Login', '');
+		} elseif($msg === 'You must enroll into two-factor authentication before logging in.') {
+			$this->display('../MyAccount/login-2fa-enroll.tpl', 'Login', '');
 		} else {
 			$this->display('../MyAccount/login.tpl', 'Login', '');
 		}
