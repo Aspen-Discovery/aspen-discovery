@@ -71,8 +71,9 @@ AspenDiscovery.Record = (function(){
 		},
 
 		submitHoldForm: function(){
-			$('#requestTitleButton').prop('disabled', true);
-			$('#requestTitleButton').addClass('disabled');
+			var requestTitleButton = $('#requestTitleButton');
+			requestTitleButton.prop('disabled', true);
+			requestTitleButton.addClass('disabled');
 			document.querySelector('.fa-spinner').classList.remove('hidden');
 			var id = $('#id').val();
 			var autoLogOut = $('#autologout').prop('checked');
@@ -114,6 +115,10 @@ AspenDiscovery.Record = (function(){
 			$.getJSON(Globals.path + "/" + module +  "/" + id + "/AJAX", params, function(data){
 				if (data.success){
 					if (data.needsItemLevelHold){
+						var requestTitleButton = $('#requestTitleButton');
+						requestTitleButton.prop('disabled', false);
+						requestTitleButton.removeClass('disabled');
+						document.querySelector('.fa-spinner').classList.add('hidden');
 						$('.modal-body').html(data.message);
 					}else{
 						AspenDiscovery.showMessage(data.title, data.message, false, data.autologout);
@@ -166,6 +171,10 @@ AspenDiscovery.Record = (function(){
 			$.getJSON(Globals.path + "/" + module +  "/" + id + "/AJAX", params, function(data){
 				if (data.success){
 					if (data.needsItemLevelHold){
+						var requestTitleButton = $('#requestTitleButton');
+						requestTitleButton.prop('disabled', false);
+						requestTitleButton.removeClass('disabled');
+						document.querySelector('.fa-spinner').classList.add('hidden');
 						$('.modal-body').html(data.message);
 					}else{
 						AspenDiscovery.showMessage(data.title, data.message, false, autoLogOut);
@@ -185,6 +194,10 @@ AspenDiscovery.Record = (function(){
 			$.getJSON(Globals.path + "/" + module +  "/" + bibId + "/AJAX", params, function(data){
 				if (data.success){
 					if (data.needsItemLevelHold){
+						var requestTitleButton = $('#requestTitleButton');
+						requestTitleButton.prop('disabled', false);
+						requestTitleButton.removeClass('disabled');
+						document.querySelector('.fa-spinner').classList.add('hidden');
 						$('.modal-body').html(data.message);
 					}else{
 						AspenDiscovery.showMessage(data.title, data.message, false);
