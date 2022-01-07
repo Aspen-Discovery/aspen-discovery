@@ -17,7 +17,15 @@ function getUpdates22_01_00() : array
 				'ALTER TABLE ip_lookup ADD COLUMN showLogMeOut tinyint(1) DEFAULT 1',
 				'UPDATE ip_lookup SET showLogMeOut = isOpac',
 			]
-		], //add optionto hide log me out checkbox
+		], //ip_lookup_showlogmeout
+		'logout_after_hold_options' => [
+			'title' => 'Alter settings for log me out after placing a hold',
+			'description' => 'Adds a boolean for whether the autologout checkbox on the place hold screen should appear or not for a given IP',
+			'sql' => [
+				'ALTER TABLE ip_lookup CHANGE COLUMN showLogMeOut defaultLogMeOutAfterPlacingHoldOn tinyint(1) DEFAULT 1',
+				'ALTER TABLE library ADD COLUMN showLogMeOutAfterPlacingHolds TINYINT(1) DEFAULT 1',
+			]
+		], //logout_after_hold_options
 		'curbside_pickup_settings' => [
 			'title' => 'Add settings for Curbside Pickup',
 			'description' => 'Add settings for Curbside Pickup',

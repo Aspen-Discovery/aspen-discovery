@@ -1059,13 +1059,15 @@ class Record_AJAX extends Action
 		$interface->assign('showDetailedHoldNoticeInformation', $library->showDetailedHoldNoticeInformation);
 		$interface->assign('treatPrintNoticesAsPhoneNotices', $library->treatPrintNoticesAsPhoneNotices);
 		$interface->assign('allowRememberPickupLocation', $library->allowRememberPickupLocation);
+		$interface->assign('showLogMeOut', $library->showLogMeOutAfterPlacingHolds);
 
 		$activeIP = IPAddress::getActiveIp();
 		$subnet = IPAddress::getIPAddressForIP($activeIP);
+
 		if ($subnet != false) {
-			$interface->assign('showLogMeOut', $subnet->showLogMeOut);
+			$interface->assign('logMeOutDefault', $subnet->defaultLogMeOutAfterPlacingHoldOn);
 		} else {
-			$interface->assign('showLogMeOut', 1);
+			$interface->assign('logMeOutDefault', 0);
 		}
 
 		$holdDisclaimers = array();
