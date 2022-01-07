@@ -2192,4 +2192,8 @@ EOT;
 		'L'		=> '07'
 	];
 
+	function getForgotPasswordType()
+	{
+		return 'emailAspenResetLink';
+	}
 }
