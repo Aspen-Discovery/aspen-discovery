@@ -106,18 +106,14 @@ class UserPayment extends DataObject
 					}
 
 					if ($result == 0) {
-						if($queryParams['type'] == 'donation') {
-							require_once ROOT_DIR . '/sys/Donations/Donation.php';
-							$donation = new Donation();
-							$donation->paymentId = $userPayment->id;
-							if($donation->find(true)) {
-								$success = true;
-								$message = 'Your donation payment has been completed. ';
-								$userPayment->message .= "Donation payment completed, TROUTD = $troutD, AUTHCODE = $authCode, CCNUMBER = $ccNumber. ";
-							} else {
-								$userPayment->error = true;
-								$userPayment->message .= "Could not find donation to mark as paid. ";
-							}
+						//Check to see if we have a donation for this payment
+						require_once ROOT_DIR . '/sys/Donations/Donation.php';
+						$donation = new Donation();
+						$donation->paymentId = $userPayment->id;
+						if($donation->find(true)) {
+							$success = true;
+							$message = 'Your donation payment has been completed. ';
+							$userPayment->message .= "Donation payment completed, TROUTD = $troutD, AUTHCODE = $authCode, CCNUMBER = $ccNumber. ";
 						} else {
 							$user = new User();
 							$user->id = $userPayment->userId;
