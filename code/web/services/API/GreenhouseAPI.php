@@ -23,6 +23,7 @@ class GreenhouseAPI extends Action
 			$output = json_encode($result);
 			require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
 			APIUsage::incrementStat('GreenhouseAPI', $method);
+			ExternalRequestLogEntry::logRequest('GreenhouseAPI.' . $method, $_SERVER['REQUEST_METHOD'], $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'], getallheaders(), '', $_SERVER['REDIRECT_STATUS'], $output, []);
 		} else {
 			$output = json_encode(array('error' => 'invalid_method'));
 		}

@@ -575,7 +575,7 @@ class Theme extends DataObject
 			'errors' => [],
 		);
 
-		if($library->getLayoutSettings()->contrastRatio === 7.0) {
+		if($library->getLayoutSettings()->contrastRatio == 7.0) {
 			$minContrastRatio = 4.5;
 		} else {
 			$minContrastRatio = 3.5;
