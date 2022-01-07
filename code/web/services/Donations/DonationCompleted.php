@@ -3,15 +3,13 @@ require_once ROOT_DIR . "/sys/Donations/Donation.php";
 require_once ROOT_DIR . "/sys/ECommerce/DonationsSetting.php";
 require_once ROOT_DIR . "/sys/Account/UserPayment.php";
 
-class DonationCompleted extends Action {
+class Donations_DonationCompleted extends Action {
 	public function launch(){
 		global $interface;
 		$error = '';
 		$message = '';
 		if (empty($_REQUEST['payment'])) {
 			$error = 'No Payment ID was provided, could not complete the payment';
-		} elseif (empty($_REQUEST['donation'])) {
-			$error = 'No Donation ID was provided, could not complete the donation';
 		} else{
 			$paymentId = $_REQUEST['payment'];
 			require_once ROOT_DIR . '/sys/Account/UserPayment.php';

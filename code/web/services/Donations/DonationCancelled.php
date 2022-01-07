@@ -3,7 +3,7 @@ require_once ROOT_DIR . "/sys/Donations/Donation.php";
 require_once ROOT_DIR . "/sys/ECommerce/DonationsSetting.php";
 require_once ROOT_DIR . "/sys/Account/UserPayment.php";
 
-class DonationCancelled extends Action {
+class Donations_DonationCancelled extends Action {
 	public function launch(){
 		global $interface;
 		$error = '';
@@ -25,7 +25,7 @@ class DonationCancelled extends Action {
 		}
 		$interface->assign('error', $error);
 		$interface->assign('message', $message);
-		$this->display('paymentCancelled.tpl', 'Payment Cancelled');
+		$this->display('donationCancelled.tpl', 'Payment Cancelled');
 	}
 
 	function getBreadcrumbs() : array

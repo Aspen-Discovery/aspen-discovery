@@ -1,4 +1,4 @@
-<h1>{translate text='Payment Completed' isPublicFacing=true}</h1>
+<h1>{translate text='Donation Payment Completed' isPublicFacing=true}</h1>
 {if !empty($error)}
     <div class="row">
         <div class="col-xs-12">

@@ -21,7 +21,6 @@ class Comprise_Complete extends Action
 
 	function getBreadcrumbs() : array
 	{
-		$breadcrumbs = [];
-		return $breadcrumbs;
+		return [];
 	}
 }

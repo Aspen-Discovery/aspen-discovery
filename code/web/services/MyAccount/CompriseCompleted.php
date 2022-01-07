@@ -1,7 +1,7 @@
 <?php
 require_once ROOT_DIR . '/services/MyAccount/MyAccount.php';
 
-class CompriseCompleted extends MyAccount
+class MyAccount_CompriseCompleted extends MyAccount
 {
 	public function launch(){
 		global $interface;

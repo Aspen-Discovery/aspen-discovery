@@ -2667,7 +2667,7 @@ class MyAccount_AJAX extends JSON_Action
 			$currencyCode = $systemVariables->currencyCode;
 		}
 
-		$toLocation = isset($_REQUEST['toLocation']) ? $_REQUEST['toLocation'] : $library;
+		$toLocation = isset($_REQUEST['toLocation']) ? $_REQUEST['toLocation'] : $library->libraryId;
 
 		// check for a minimum value to donate
 		// for now we will use minimumFineAmount and decide later if donations should be separate
@@ -3287,7 +3287,6 @@ class MyAccount_AJAX extends JSON_Action
 			/** @var Library $userLibrary */
 			/** @var UserPayment $payment */
 			/** @var User $patron */
-			/** @noinspection PhpUnusedLocalVariableInspection */
 			if($transactionType == 'donation') {
 				list($paymentLibrary, $userLibrary, $payment, $purchaseUnits, $patron, $tempDonation) = $result;
 			} else {
@@ -3310,11 +3309,11 @@ class MyAccount_AJAX extends JSON_Action
 				$paymentRequestUrl .= '&Amount=' . $currencyFormatter->format($payment->totalPaid);
 				if($transactionType == 'donation') {
 					$donation = $this->addDonation($payment, $tempDonation);
-					$paymentRequestUrl .= "&URLPostBack=" . urlencode($configArray['Site']['url'] . '/Comprise/Complete?type=' . $payment->transactionType . '&donation=' . $donation->id);
-					$paymentRequestUrl .= "&URLReturn=" . urlencode($configArray['Site']['url'] . '/Donations/DonationCompleted?type=comprise&payment=' . $payment->id . '&donation=' . $donation->id);
-					$paymentRequestUrl .= "&URLCancel=" . urlencode($configArray['Site']['url'] . '/Donations/DonationCompleted?type=comprise&payment=' . $payment->id . '&donation=' . $donation->id);
+					$paymentRequestUrl .= "&URLPostBack=" . urlencode($configArray['Site']['url'] . '/Comprise/Complete');
+					$paymentRequestUrl .= "&URLReturn=" . urlencode($configArray['Site']['url'] . '/Donations/DonationCompleted?payment=' . $payment->id);
+					$paymentRequestUrl .= "&URLCancel=" . urlencode($configArray['Site']['url'] . '/Donations/DonationCancelled?payment=' . $payment->id);
 				} else {
-					$paymentRequestUrl .= "&URLPostBack=" . urlencode($configArray['Site']['url'] . '/Comprise/Complete?type=' . $payment->transactionType);
+					$paymentRequestUrl .= "&URLPostBack=" . urlencode($configArray['Site']['url'] . '/Comprise/Complete');
 					$paymentRequestUrl .= "&URLReturn=" . urlencode($configArray['Site']['url'] . '/MyAccount/CompriseCompleted?payment=' . $payment->id);
 					$paymentRequestUrl .= "&URLCancel=" . urlencode($configArray['Site']['url'] . '/MyAccount/CompriseCancel?payment=' . $payment->id);
 				}
