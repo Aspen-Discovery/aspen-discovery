@@ -121,6 +121,7 @@ class Library extends DataObject
 	public /** @noinspection PhpUnused */ $prospectorCode;
 	public /** @noinspection PhpUnused */ $enableGenealogy;
 	public $showHoldCancelDate;
+	public $showLogMeOutAfterPlacingHolds;
 	public $displayItemBarcode;
 	public $enableSelfRegistration;
 	public $selfRegistrationPasswordNotes;
@@ -560,6 +561,7 @@ class Library extends DataObject
 					'allowPickupLocationUpdates'        => array('property' => 'allowPickupLocationUpdates', 'type'=>'checkbox', 'label'=>'Allow Patrons to Update Their Pickup Location', 'description'=>'Whether or not patrons should be able to update their preferred pickup location in their profile.', 'hideInLists' => true, 'default' => 0),
 					'allowRememberPickupLocation'       => array('property'=>'allowRememberPickupLocation', 'type'=>'checkbox','label'=>'Allow Patrons to remember their preferred pickup location', 'description'=>'Whether or not patrons can remember their preferred pickup location when placing holds', 'hideInLists' => true, 'default', 'true'),
 					'showHoldCancelDate'                => array('property'=>'showHoldCancelDate', 'type'=>'checkbox', 'label'=>'Show Cancellation Date', 'description'=>'Whether or not the patron should be able to set a cancellation date (not needed after date) when placing holds.', 'hideInLists' => true, 'default' => 1),
+					'showLogMeOutAfterPlacingHolds'     => array('property'=>'showLogMeOutAfterPlacingHolds', 'type'=>'checkbox', 'label'=>'Show Log Me Out After Placing Holds', 'description'=>'Whether or a checkbox should be shown that will automatically log patrons out after a hold is placed.', 'hideInLists' => true, 'default' => 1),
 					'treatBibOrItemHoldsAs'             => array('property'=>'treatBibOrItemHoldsAs', 'type'=>'enum', 'values'=>array('1'=>'Either Bib or Item Level Hold', '2'=>'Force Bib Level Hold', '3' => 'Force Item Level Hold'), 'label'=>'Treat holds for formats that allow either bib or item holds as ', 'description'=>'How to handle holds when either bib or item level holds are allowed.'),
 					'allowFreezeHolds'                  => array('property'=>'allowFreezeHolds', 'type'=>'checkbox', 'label'=>'Allow Freezing Holds', 'description'=>'Whether or not the user can freeze their holds.', 'hideInLists' => true, 'default' => 1),
 					'maxDaysToFreeze'                   => array('property'=>'maxDaysToFreeze', 'type'=>'integer', 'label'=>'Max Days to Freeze Holds', 'description'=>'Number of days that a user can suspend a hold for. Use -1 for no limit.', 'hideInLists' => true),
