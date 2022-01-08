@@ -1441,64 +1441,64 @@ public class SierraExportAPIMain {
 		return null;
 	}
 
-	private static String getMarcFromSierraApiURL(SierraInstanceInformation sierraInstanceInformation, String baseUrl, String sierraUrl, @SuppressWarnings("SameParameterValue") boolean logErrors) {
-		if (connectToSierraAPI(sierraInstanceInformation, baseUrl)){
-			//Connect to the API to get our token
-			HttpURLConnection conn;
-			try {
-				URL emptyIndexURL = new URL(sierraUrl);
-				conn = (HttpURLConnection) emptyIndexURL.openConnection();
-				if (conn instanceof HttpsURLConnection){
-					HttpsURLConnection sslConn = (HttpsURLConnection)conn;
-					sslConn.setHostnameVerifier((hostname, session) -> {
-						//Do not verify host names
-						return true;
-					});
-				}
-				conn.setRequestMethod("GET");
-				conn.setRequestProperty("Accept-Charset", "UTF-8");
-				conn.setRequestProperty("Authorization", sierraAPITokenType + " " + sierraAPIToken);
-				conn.setRequestProperty("Accept", "application/marc-json");
-				conn.setReadTimeout(20000);
-				conn.setConnectTimeout(5000);
-
-				StringBuilder response = new StringBuilder();
-				if (conn.getResponseCode() == 200) {
-					// Get the response
-					BufferedReader rd = new BufferedReader(new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8));
-					String line;
-					while ((line = rd.readLine()) != null) {
-						response.append(line);
-					}
-					//logger.debug("  Finished reading response");
-					rd.close();
-					return response.toString();
-				} else {
-					if (logErrors) {
-						logger.error("Received error " + conn.getResponseCode() + " calling sierra API " + sierraUrl);
-						// Get any errors
-						BufferedReader rd = new BufferedReader(new InputStreamReader(conn.getErrorStream(), StandardCharsets.UTF_8));
-						String line;
-						while ((line = rd.readLine()) != null) {
-							response.append(line);
-						}
-						logger.error("  Finished reading response");
-						logger.error(response.toString());
-
-						rd.close();
-					}
-				}
-
-			} catch (java.net.SocketTimeoutException e) {
-				logger.error("Socket timeout talking to to sierra API (getMarcFromSierraApiURL) " + e );
-			} catch (java.net.ConnectException e) {
-				logger.error("Timeout connecting to sierra API (getMarcFromSierraApiURL) " + e );
-			} catch (Exception e) {
-				logger.error("Error loading data from sierra API (getMarcFromSierraApiURL) ", e );
-			}
-		}
-		return null;
-	}
+//	private static String getMarcFromSierraApiURL(SierraInstanceInformation sierraInstanceInformation, String baseUrl, String sierraUrl, @SuppressWarnings("SameParameterValue") boolean logErrors) {
+//		if (connectToSierraAPI(sierraInstanceInformation, baseUrl)){
+//			//Connect to the API to get our token
+//			HttpURLConnection conn;
+//			try {
+//				URL emptyIndexURL = new URL(sierraUrl);
+//				conn = (HttpURLConnection) emptyIndexURL.openConnection();
+//				if (conn instanceof HttpsURLConnection){
+//					HttpsURLConnection sslConn = (HttpsURLConnection)conn;
+//					sslConn.setHostnameVerifier((hostname, session) -> {
+//						//Do not verify host names
+//						return true;
+//					});
+//				}
+//				conn.setRequestMethod("GET");
+//				conn.setRequestProperty("Accept-Charset", "UTF-8");
+//				conn.setRequestProperty("Authorization", sierraAPITokenType + " " + sierraAPIToken);
+//				conn.setRequestProperty("Accept", "application/marc-json");
+//				conn.setReadTimeout(20000);
+//				conn.setConnectTimeout(5000);
+//
+//				StringBuilder response = new StringBuilder();
+//				if (conn.getResponseCode() == 200) {
+//					// Get the response
+//					BufferedReader rd = new BufferedReader(new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8));
+//					String line;
+//					while ((line = rd.readLine()) != null) {
+//						response.append(line);
+//					}
+//					//logger.debug("  Finished reading response");
+//					rd.close();
+//					return response.toString();
+//				} else {
+//					if (logErrors) {
+//						logger.error("Received error " + conn.getResponseCode() + " calling sierra API " + sierraUrl);
+//						// Get any errors
+//						BufferedReader rd = new BufferedReader(new InputStreamReader(conn.getErrorStream(), StandardCharsets.UTF_8));
+//						String line;
+//						while ((line = rd.readLine()) != null) {
+//							response.append(line);
+//						}
+//						logger.error("  Finished reading response");
+//						logger.error(response.toString());
+//
+//						rd.close();
+//					}
+//				}
+//
+//			} catch (java.net.SocketTimeoutException e) {
+//				logger.error("Socket timeout talking to to sierra API (getMarcFromSierraApiURL) " + e );
+//			} catch (java.net.ConnectException e) {
+//				logger.error("Timeout connecting to sierra API (getMarcFromSierraApiURL) " + e );
+//			} catch (Exception e) {
+//				logger.error("Error loading data from sierra API (getMarcFromSierraApiURL) ", e );
+//			}
+//		}
+//		return null;
+//	}
 
 	private static JSONObject getMarcJSONFromSierraApiURL(SierraInstanceInformation sierraInstanceInformation, String baseUrl, String sierraUrl) {
 		if (connectToSierraAPI(sierraInstanceInformation, baseUrl)){
