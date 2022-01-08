@@ -378,6 +378,21 @@ class File_MARC_Record
     }
     // }}}
 
+	function sortFields(){
+		$sorter = function(File_MARC_Field $a, File_MARC_Field $b) {
+			return strcmp($a->getTag(), $b->getTag());
+		};
+		$fieldsArray = [];
+		foreach ($this->fields as $field){
+			$fieldsArray[] = $field;
+		}
+		uasort($fieldsArray, $sorter);
+		$this->fields = new File_MARC_List();
+		foreach ($fieldsArray as $field){
+			$this->fields->appendNode($field);
+		}
+	}
+
     // {{{ deleteFields()
     /**
      * Delete all occurrences of a field matching a tag name from the record.
