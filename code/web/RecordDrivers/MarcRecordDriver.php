@@ -1804,7 +1804,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 	public function loadPeriodicalInformation()
 	{
 		$catalogDriver = $this->getCatalogDriver();
-		if (method_exists($catalogDriver, 'getIssueSummaries')) {
+		if ($catalogDriver->hasIssueSummaries()){
 			$issueSummaries = $catalogDriver->getIssueSummaries($this->id);
 			if (count($issueSummaries)) {
 				//Insert copies into the information about the periodicals
