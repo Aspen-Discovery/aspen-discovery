@@ -121,7 +121,7 @@ public class WebsiteIndexerMain {
 						}
 
 						WebsiteIndexLogEntry logEntry = createDbLogEntry(websiteName, startTime, aspenConn);
-						WebsiteIndexer indexer = new WebsiteIndexer(websiteId, websiteName, searchCategory, siteUrl, pageTitleExpression, descriptionExpression, pathsToExclude, maxPagesToIndex, scopesToInclude, fullReload, logEntry, aspenConn, solrUpdateServer);
+						WebsiteIndexer indexer = new WebsiteIndexer(websiteId, websiteName, searchCategory, siteUrl, pageTitleExpression, descriptionExpression, pathsToExclude, maxPagesToIndex, scopesToInclude, fullReload, logEntry, aspenConn, solrUpdateServer, logger);
 						indexer.spiderWebsite();
 
 						updateLastIndexedStmt.setLong(1, currentTime);
