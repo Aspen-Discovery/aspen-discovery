@@ -210,6 +210,7 @@ class WebsiteIndexer {
 					ContentType contentType = ContentType.getOrDefault(entity1);
 					String mimeType = contentType.getMimeType();
 					if (!mimeType.equals("text/html")) {
+						logger.info("Non HTML page, skipping");
 						//TODO: Index PDFs
 						//Don't log this for now since it just distracts from actual errors
 //						if (!mimeType.equals("application/pdf")) {
@@ -380,11 +381,13 @@ class WebsiteIndexer {
 						}
 					}
 				} else{
+					logger.info("Got error processing the page");
 					WebPage existingPage = existingPages.get(pageToProcess);
 					if (existingPage != null && !existingPage.isDeleted()){
 						deletePageStmt.setString(1, "Received " + status.getStatusCode() + " error code");
 						deletePageStmt.setLong(2, existingPage.getId());
 						deletePageStmt.executeUpdate();
+						solrUpdateServer.deleteByQuery("id:" + existingPage.getId() + "AND website_name:\"" + websiteName + "\"");
 						existingPages.remove(pageToProcess);
 					}
 				}
