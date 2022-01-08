@@ -473,8 +473,10 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 			// It's important to remember here we are talking about on-screen
 			//   sort values, not what is sent to Solr, since this screen
 			//   is really using facet sorting.
-			return array('relevance' => 'sort_author_relevance',
-				'author' => 'sort_author_author');
+			return array(
+				'relevance' => 'sort_author_relevance',
+				'author' => 'sort_author_author'
+			);
 		}
 
 		// Everywhere else -- use normal default behavior
@@ -875,6 +877,9 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 		// The "relevance" sort option is a VuFind reserved word; we need to make
 		// this null in order to achieve the desired effect with Solr:
 		$finalSort = ($this->sort == 'relevance') ? null : $this->sort;
+		if ($finalSort == 'days_since_added asc'){
+			$finalSort = 'local_days_since_added_' . $solrScope . ' asc';
+		}
 
 		// The first record to retrieve:
 		//  (page - 1) * limit = start
