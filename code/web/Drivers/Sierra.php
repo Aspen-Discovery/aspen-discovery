@@ -789,6 +789,8 @@ class Sierra extends Millennium{
 
 	public function patronLogin($username, $password, $validatedViaSSO)
 	{
+		$username = trim($username);
+		$password = trim($password);
 		$loginMethod = $this->accountProfile->loginConfiguration;
 		if ($loginMethod == 'barcode_pin'){
 			//If we use user names, we may need to lookup the barcode by the user name.
@@ -1015,9 +1017,97 @@ class Sierra extends Millennium{
 
 	public function getFines($patron = null, $includeMessages = false)
 	{
-		return parent::getFines($patron, $includeMessages);
-		// TODO: Use Sierra APIs to get Fines
+		$fines = [];
+
+		$params = [
+			'fields' => 'default,assessedDate,itemCharge,processingFee,billingFee,chargeType,paidAmount,datePaid,description,returnDate,location,description,invoiceNumber'
+		];
+
+		$patronId = $patron->username;
+		$sierraUrl = $this->accountProfile->vendorOpacUrl;
+		$sierraUrl = $sierraUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/patrons/".$patronId."/fines?";
+		$sierraUrl .= http_build_query($params);
+
+		$finesResponse = $this->_callUrl('sierra.getFines', $sierraUrl);
+		if ($finesResponse && $finesResponse->total > 0){
+			foreach ($finesResponse->entries as $fineEntry){
+				$fineUrl = $fineEntry->id;
+				$fineId = substr($fineUrl, strrpos($fineUrl, '/') + 1);
+				$fineAmount = $fineEntry->itemCharge + $fineEntry->processingFee + $fineEntry->billingFee;
+				$fines[] = [
+					'fineId' => $fineId,
+					'reason' => $fineEntry->chargeType->display,
+					'type' => $fineEntry->chargeType->display,
+					'amount' => $fineAmount,
+					'amountVal' => $fineAmount,
+					'message' => $fineEntry->description,
+					'amountOutstanding' => $fineAmount - $fineEntry->paidAmount,
+					'amountOutstandingVal' => $fineAmount - $fineEntry->paidAmount,
+					'date' => date('M j, Y', strtotime($fineEntry->assessedDate)),
+					'invoiceNumber' => $fineEntry->invoiceNumber,
+				];
+			}
+		}
+		return $fines;
 	}
+
+	public function completeFinePayment(User $patron, UserPayment $payment){
+		$result = [
+			'success' => false,
+			'message' => ''
+		];
+
+		$userFines = $this->getFines($patron);
+
+		//Before adding payments, we need to
+
+		$paymentParams = [
+			'payments' => []
+		];
+
+		$finePayments = explode(',', $payment->finesPaid);
+		foreach ($finePayments as $finePayment){
+			list($fineId, $paymentAmount) = explode('|', $finePayment);
+
+			//Find the fine in the list of user payments so we can tell if it's fully paid or partially paid
+			$fineInvoiceNumber = '';
+			$oldTotal = 0;
+			foreach ($userFines as $userFine){
+				if ($userFine['fineId'] == $fineId){
+					$oldTotal = $userFine['amountOutstandingVal'];
+					$fineInvoiceNumber = $userFine['invoiceNumber'];
+					break;
+				}
+			}
+
+			$paymentType = 1; //Fully or partially paid, do not waive the remainder
+
+			$tmpPayment = new stdClass();
+			$tmpPayment->amount = (int)((float)$paymentAmount * 100);
+			$tmpPayment->paymentType = $paymentType;
+			$tmpPayment->invoiceNumber = (string)$fineInvoiceNumber;
+			$tmpPayment->initials = 'aspen';
+
+			$paymentParams['payments'][] = $tmpPayment;
+		}
+
+		$patronId = $patron->username;
+		$sierraUrl = $this->accountProfile->vendorOpacUrl;
+		$sierraUrl = $sierraUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/patrons/".$patronId."/fines/payment";
+
+		$makePaymentResponse = $this->_sendPage('sierra.addPayment', 'PUT', $sierraUrl, json_encode($paymentParams));
+
+		if ($this->lastResponseCode == 200 || $this->lastResponseCode == 204){
+			$result['success'] = true;
+		}else{
+			$result['success'] = false;
+			$result['message'] = 'Could not record fine payment.';
+			if (isset($makePaymentResponse->description)){
+				$result['message'] .= ' '. $makePaymentResponse->description;
+			}
+		}
+	}
+
 
 	public function getEmailResetPinTemplate(){
 		return 'requestPinReset.tpl';
