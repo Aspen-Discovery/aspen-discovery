@@ -5,6 +5,10 @@ class Sierra extends Millennium{
 	protected $urlIdRegExp = "/.*\/(\d*)$/";
 
 	private $sierraToken = null;
+	private $lastResponseCode;
+	private $lastError;
+	private $lastErrorMessage;
+
 	public function _connectToApi(){
 		if ($this->sierraToken == null){
 			$apiVersion = $this->accountProfile->apiVersion;
@@ -51,6 +55,7 @@ class Sierra extends Millennium{
 			$return = curl_exec($ch);
 			$curl_info = curl_getinfo($ch);
 			$responseCode = $curl_info['http_code'];
+			$this->lastResponseCode = $responseCode;
 
 			ExternalRequestLogEntry::logRequest($requestType, 'GET', $url, $headers, '', $responseCode, $return, []);
 			curl_close($ch);
@@ -79,6 +84,9 @@ class Sierra extends Millennium{
 				"X-Forwarded-For: " . IPAddress::getActiveIp(),
 				"Host: " . $host,
 			);
+			if ($postParams != null && is_string($postParams)){
+				$headers[] = 'Content-Type: application/json';
+			}
 			curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
@@ -98,6 +106,10 @@ class Sierra extends Millennium{
 			$return = curl_exec($ch);
 			$curl_info = curl_getinfo($ch);
 			$responseCode = $curl_info['http_code'];
+			$this->lastResponseCode = $responseCode;
+			$this->lastError = curl_errno($ch);
+			$this->lastErrorMessage = curl_error($ch);
+
 
 			ExternalRequestLogEntry::logRequest($requestType, 'POST', $url, $headers, $post_string, $responseCode, $return, []);
 			curl_close($ch);
@@ -160,6 +172,7 @@ class Sierra extends Millennium{
 			$return = curl_exec($ch);
 			$curl_info = curl_getinfo($ch);
 			$responseCode = $curl_info['http_code'];
+			$this->lastResponseCode = $responseCode;
 
 			ExternalRequestLogEntry::logRequest($requestType, $httpMethod, $url, $headers, $postFields, $responseCode, $return, []);
 			curl_close($ch);
@@ -188,18 +201,6 @@ class Sierra extends Millennium{
 			return 'none';
 		}
 	}
-
-//	public function patronLogin($username, $password, $validatedViaSSO)
-//	{
-//		if ($this->accountProfile->loginConfiguration == 'barcode_pin'){
-//			//
-//		}
-//	}public function patronLogin($username, $password, $validatedViaSSO)
-//	{
-//		if ($this->accountProfile->loginConfiguration == 'barcode_pin'){
-//			//
-//		}
-//	}
 
 	public function getHolds($patron)
 	{
@@ -728,6 +729,425 @@ class Sierra extends Millennium{
 			];
 			$return['message'] .= ' ' . translate(['text'=>trim(str_replace('WebPAC Error : ', '', $cancelHoldResponse->description)), 'isPublicFacing'=>true]);
 			return $return;
+		}
+	}
+
+	public function placeHold($patron, $recordId, $pickupBranch = null, $cancelDate = null)
+	{
+		parent::placeHold($patron, $recordId, $pickupBranch, $cancelDate);
+
+		//TODO: Use Sierra APIs to place holds
+//		$recordType = substr($recordId, 1, 1);
+//		$recordNumber = substr($recordId, 2, -1);
+//
+//		$params = [
+//			'recordType' => $recordType,
+//			'recordNumber' => $recordNumber,
+//			'pickupLocation' => $pickupBranch
+//		];
+//
+//		if ($cancelDate != null){
+//			$params['neededBy'] = $cancelDate;
+//		}
+//		$sierraUrl = $this->accountProfile->vendorOpacUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/patrons/holds/requests";
+//
+//		$placeHoldResponse = $this->_postPage('sierra.placeHold', $sierraUrl, $params);
+//		if (!$placeHoldResponse){
+//			if ($this->lastResponseCode == 405){
+//
+//			}else {
+//				return [
+//					'success' => false,
+//					'message' => translate(['text'=> "Unable to place your hold", 'isPublicFacing'=>true])
+//				];
+//			}
+//		}else{
+//
+//		}
+	}
+
+	public function placeItemHold($patron, $recordId, $itemId, $pickupBranch, $cancelDate = null)
+	{
+		return parent::placeItemHold($patron, $recordId, $itemId, $pickupBranch, $cancelDate);
+		// TODO: Use Sierra APIs to place item holds
+	}
+
+	public function placeVolumeHold(User $patron, $recordId, $volumeId, $pickupBranch)
+	{
+		return parent::placeVolumeHold($patron, $recordId, $volumeId, $pickupBranch);
+		// TODO: Use Sierra APIs to place volume holds
+	}
+
+	function allowFreezingPendingHolds(){
+		return false;
+	}
+
+	public function hasFastRenewAll(){
+		return false;
+	}
+
+	public function patronLogin($username, $password, $validatedViaSSO)
+	{
+		$loginMethod = $this->accountProfile->loginConfiguration;
+		if ($loginMethod == 'barcode_pin'){
+			//If we use user names, we may need to lookup the barcode by the user name.
+			$params = [
+				'varFieldTag' => 'i',
+				'varFieldContent' => $username,
+				'fields' => 'id,barcodes'
+			];
+			$sierraUrl = $this->accountProfile->vendorOpacUrl;
+			$sierraUrl .= '/iii/sierra-api/v{$this->accountProfile->apiVersion}/patrons/find?';
+			$sierraUrl .= http_build_query($params);
+			$patronInfo = $this->_callUrl('sierra.getPatronByUsername', $sierraUrl);
+			if (!empty($patronInfo->barcodes)){
+				$username = reset($patronInfo->barcodes);
+			}
+
+			//No validate the barcode and pin
+			$params = [
+				'barcode' => $username,
+				'pin' => $password
+			];
+
+			$sierraUrl = $this->accountProfile->vendorOpacUrl;
+			$sierraUrl .= "/iii/sierra-api/v{$this->accountProfile->apiVersion}/patrons/validate";
+			$this->_postPage('sierra.validatePatron', $sierraUrl, json_encode($params));
+			if ($this->lastResponseCode != 204){
+				return false;
+			}
+
+
+		}else{ // $loginMethod == 'name_barcode'
+
+		}
+
+		//We've passed validation, get information for the patron
+		$patronInfo = $this->getPatronInfoByBarcode($username);
+
+		if (!$patronInfo){
+			return false;
+		}
+
+		$userExistsInDB = false;
+		$user = new User();
+		$user->source = $this->accountProfile->name;
+		$user->username = $patronInfo->id;
+		if ($user->find(true)){
+			$userExistsInDB = true;
+		}
+		$user->cat_username = $username;
+		$user->cat_password = $password;
+
+		$forceDisplayNameUpdate = false;
+		$primaryName = reset($patronInfo->names);
+		if (strpos($primaryName, ',') !== false){
+			list($firstName, $lastName) = explode(',', $primaryName, 2);
+		}else{
+			$lastName = $primaryName;
+			$firstName = '';
+		}
+		$firstName = trim($firstName);
+		$lastName = trim($lastName);
+		if ($user->firstname != $firstName) {
+			$user->firstname = $firstName;
+			$forceDisplayNameUpdate = true;
+		}
+		if ($user->lastname != $lastName) {
+			$user->lastname = isset($lastName) ? $lastName : '';
+			$forceDisplayNameUpdate = true;
+		}
+		if ($forceDisplayNameUpdate) {
+			$user->displayName = '';
+		}
+
+		$this->loadContactInformationFromApiResult($user, $patronInfo);
+
+		if ($userExistsInDB) {
+			$user->update();
+		} else {
+			$user->created = date('Y-m-d');
+			$user->insert();
+		}
+		return $user;
+	}
+
+	public function getPatronInfoByBarcode($barcode){
+		$params = [
+			'varFieldTag' => 'b',
+			'varFieldContent' => $barcode,
+			'fields' => 'id,names,deleted,suppressed,addresses,phones,emails,expirationDate,homeLibraryCode,moneyOwed,patronType,patronCodes,blockInfo,message,pMessage,langPref,fixedFields,varFields,updatedDate,createdDate'
+		];
+
+		$sierraUrl = $this->accountProfile->vendorOpacUrl;
+		$sierraUrl .= "/iii/sierra-api/v{$this->accountProfile->apiVersion}/patrons/find?";
+		$sierraUrl .= http_build_query($params);
+
+		$response = $this->_callUrl('sierra.findPatronByBarcode', $sierraUrl);
+		if (!$response){
+			return false;
+		}else{
+			if ($response->deleted || $response->suppressed){
+				return false;
+			}else{
+				return $response;
+			}
+		}
+	}
+
+	public function findNewUser($patronBarcode)
+	{
+		$patronId = $this->getPatronInfoByBarcode($patronBarcode);
+
+		if (!$patronId){
+			return false;
+		}
+		return parent::findNewUser($patronBarcode);
+	}
+
+	public function getAccountSummary(User $patron): AccountSummary
+	{
+		require_once ROOT_DIR . '/sys/User/AccountSummary.php';
+		$summary = new AccountSummary();
+		$summary->userId = $patron->id;
+		$summary->source = 'ils';
+		$summary->resetCounters();
+		$patronInfo = $this->getPatronInfoByBarcode($patron->getBarcode());
+		if ($patronInfo){
+			$checkouts = $this->getCheckouts($patron);
+			$summary->numCheckedOut = count($checkouts);
+			foreach ($checkouts as $checkout) {
+				if ($checkout->isOverdue()) {
+					$summary->numOverdue++;
+				}
+			}
+
+			$holds = $this->getHolds($patron);
+			$summary->numAvailableHolds = count($holds['available']);
+			$summary->numUnavailableHolds = count($holds['unavailable']);
+
+			$summary->totalFines = $patronInfo->moneyOwed;
+
+			list ($yearExp, $monthExp, $dayExp) = explode("-", $patronInfo->expirationDate);
+			$summary->expirationDate = strtotime($monthExp . "/" . $dayExp . "/" . $yearExp);
+		}
+
+		return $summary;
+	}
+
+	public function updatePatronInfo($patron, $canUpdateContactInfo, $fromMasquerade)
+	{
+		$result = [
+			'success' => false,
+			'messages' => []
+		];
+
+		if ($canUpdateContactInfo){
+			global $library;
+			$params = [];
+
+			if (isset($_REQUEST['email'])){
+				$patron->email = $_REQUEST['email'];
+				$params['emails'] = [$_REQUEST['email']];
+			}
+			if ($library->allowPatronPhoneNumberUpdates) {
+				$params['phones'] = [];
+				if (isset($_REQUEST['phone'])) {
+					$patron->phone = $_REQUEST['phone'];
+					$tmpPhone = new stdClass();
+					$tmpPhone->type = 'p';
+					$tmpPhone->number = $_REQUEST['phone'];
+					$params['phones'][] = $tmpPhone;
+				}
+			}
+			if ($library->allowPatronAddressUpdates){
+				$params['addresses'] = [];
+				$address = new stdClass();
+				$address->lines = [];
+				$address->type = 'a';
+				$address->lines[] = $_REQUEST['address1'];
+				$cityStateZip = $_REQUEST['city'] . ', ' . $_REQUEST['state'] . ' ' . $_REQUEST['zip'];
+				$address->lines[] = $cityStateZip;
+
+				$params['addresses'][] = $address;
+			}
+
+			if (isset($_REQUEST['notices']) && !empty($_REQUEST['notices'])){
+				$params['fixedFields'] = [];
+				$noticeField = new stdClass();
+				$fieldValue = new stdClass();
+				$fieldValue->label = 'Notice Preference';
+				$fieldValue->value = $_REQUEST['notices'];
+				$noticeField->{'268'} = $fieldValue;
+				$params['fixedFields']['268'] = $fieldValue;
+			}
+
+			$sierraUrl = $this->accountProfile->vendorOpacUrl;
+			$sierraUrl = $sierraUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/patrons/".$patron->username;
+			$updatePatronResponse = $this->_sendPage('sierra.updatePatron', 'PUT', $sierraUrl, json_encode($params));
+
+			if ($this->lastResponseCode == 204){
+				$result['success'] = true;
+				$result['messages'][] = 'Your account was updated successfully.';
+				$patron->update();
+			}else{
+				$result['messages'][] = 'Unable to update patron. ' . $this->lastErrorMessage;
+			}
+		}else{
+			$result['messages'][] = 'You do not have permission to update profile information.';
+		}
+
+		return $result;
+	}
+
+	public function getSelfRegistrationFields()
+	{
+		return parent::getSelfRegistrationFields();
+		// TODO: Use Sierra APIs to get Self Registration fields
+	}
+
+	public function selfRegister()
+	{
+		return parent::selfRegister();
+		// TODO: Use Sierra APIs to self register
+	}
+
+	public function getFines($patron = null, $includeMessages = false)
+	{
+		return parent::getFines($patron, $includeMessages);
+		// TODO: Use Sierra APIs to get Fines
+	}
+
+	public function getEmailResetPinTemplate(){
+		return 'requestPinReset.tpl';
+	}
+
+	public function getEmailResetPinResultsTemplate(){
+		return 'requestPinResetResults.tpl';
+	}
+
+	public function processEmailResetPinForm()
+	{
+		return parent::processEmailResetPinForm();
+		// TODO: Use Sierra APIs for PIN Reset
+	}
+
+	function importListsFromIls($patron)
+	{
+		//There is no way to do this from the APIs so we need to resort to screen scraping.
+		return parent::importListsFromIls($patron);
+	}
+
+	private function loadContactInformationFromApiResult(User $user, stdClass $patronInfo)
+	{
+		$user->_fullname = reset($patronInfo->names);
+		if (!empty($patronInfo->addresses)) {
+			$primaryAddress = reset($patronInfo->addresses);
+			$user->_address1 = $primaryAddress->lines[0];
+			$line2 = $primaryAddress->lines[1];
+			if (strpos($line2, ',')){
+				$user->_city = substr($line2, 0, strrpos($line2, ','));
+				$stateZip = substr($line2, strrpos($line2, ','));
+				$user->_state = substr($stateZip, 0, strrpos($stateZip, ' '));
+				$user->_zip = substr($stateZip, strrpos($stateZip, ' '));
+			}else{
+				$user->_city = $line2;
+			}
+		}
+		$primaryPhone = reset($patronInfo->phones);
+		if (!empty($primaryPhone)){
+			$user->phone = $primaryPhone->number;
+		}
+		$user->email = reset($patronInfo->emails);
+
+		$homeLocationCode = $patronInfo->homeLibraryCode;
+		$location = new Location();
+		$location->code = $homeLocationCode;
+		if (!$location->find(true)) {
+			unset($location);
+		}
+
+		if (empty($user->homeLocationId) || (isset($location) && $user->homeLocationId != $location->locationId)) { // When homeLocation isn't set or has changed
+			if (empty($user->homeLocationId) && !isset($location)) {
+				// homeBranch Code not found in location table and the user doesn't have an assigned homelocation,
+				// try to find the main branch to assign to user
+				// or the first location for the library
+				global $library;
+
+				$location = new Location();
+				$location->libraryId = $library->libraryId;
+				$location->orderBy('isMainBranch desc'); // gets the main branch first or the first location
+				if (!$location->find(true)) {
+					// Seriously no locations even?
+					global $logger;
+					$logger->log('Failed to find any location to assign to user as home location', Logger::LOG_ERROR);
+					unset($location);
+				}
+			}
+			if (isset($location)) {
+				$user->homeLocationId = $location->locationId;
+				if (empty($user->myLocation1Id)) {
+					$user->myLocation1Id = ($location->nearbyLocation1 > 0) ? $location->nearbyLocation1 : $location->locationId;
+					//Get display name for preferred location 1
+					$myLocation1 = new Location();
+					$myLocation1->locationId = $user->myLocation1Id;
+					if ($myLocation1->find(true)) {
+						$user->_myLocation1 = $myLocation1->displayName;
+					}
+				}
+
+				if (empty($user->myLocation2Id)) {
+					$user->myLocation2Id = ($location->nearbyLocation2 > 0) ? $location->nearbyLocation2 : $location->locationId;
+					//Get display name for preferred location 2
+					$myLocation2 = new Location();
+					$myLocation2->locationId = $user->myLocation2Id;
+					if ($myLocation2->find(true)) {
+						$user->_myLocation2 = $myLocation2->displayName;
+					}
+				}
+			}
+		}
+
+		if (isset($location)) {
+			//Get display names that aren't stored
+			$user->_homeLocationCode = $location->code;
+			$user->_homeLocation = $location->displayName;
+		}
+
+		if ($patronInfo->expirationDate){
+			$user->_expires = $patronInfo->expirationDate;
+			list ($yearExp, $monthExp, $dayExp) = explode("-", $user->_expires);
+			$timeExpire = strtotime($monthExp . "/" . $dayExp . "/" . $yearExp);
+			$timeNow = time();
+			$timeToExpire = $timeExpire - $timeNow;
+			if ($timeToExpire <= 30 * 24 * 60 * 60) {
+				if ($timeToExpire <= 0) {
+					$user->_expired = 1;
+				}
+				$user->_expireClose = 1;
+			}
+		}
+
+		$finesVal = $patronInfo->moneyOwed;
+		$user->_fines = sprintf('$%01.2f', $finesVal);
+		$user->_finesVal = $finesVal;
+		$user->patronType = $patronInfo->patronType;
+		$user->_notices = $patronInfo->fixedFields->{'268'}->value;
+		switch ($user->_notices) {
+			case '-':
+				$user->_noticePreferenceLabel = 'none';
+				break;
+			case 'a':
+				$user->_noticePreferenceLabel = 'Mail';
+				break;
+			case 'p':
+				$user->_noticePreferenceLabel = 'Telephone';
+				break;
+			case 'z':
+				$user->_noticePreferenceLabel = 'Email';
+				break;
+			default:
+				$user->_noticePreferenceLabel = 'none';
 		}
 	}
 }
