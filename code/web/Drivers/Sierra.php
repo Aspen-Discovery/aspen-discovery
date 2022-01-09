@@ -606,13 +606,14 @@ class Sierra extends Millennium{
 		}
 
 		$return = ['success' => true];
-		if($title) {
+		if ($title) {
 			$return['message'] = $title.' has been renewed.';
 		} else {
 			$return['message'] = 'Your item has been renewed';
 		}
 
 		$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
+		$patron->forceReloadOfCheckouts();
 		return $return;
 	}
 
