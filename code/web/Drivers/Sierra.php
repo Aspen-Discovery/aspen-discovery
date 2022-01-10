@@ -735,42 +735,77 @@ class Sierra extends Millennium{
 
 	public function placeHold($patron, $recordId, $pickupBranch = null, $cancelDate = null)
 	{
-		parent::placeHold($patron, $recordId, $pickupBranch, $cancelDate);
+		$hold_result = [
+			'success' => false,
+			'message' => translate(['text' => 'There was an error placing your hold.', 'isPublicFacing'=> true]),
+			'api' => [
+				'title' => translate(['text' => 'Unable to place hold', 'isPublicFacing'=> true]),
+				'message' => translate(['text' => 'There was an error placing your hold.', 'isPublicFacing'=> true])
+			],
+		];
 
-		//TODO: Use Sierra APIs to place holds
-//		$recordType = substr($recordId, 1, 1);
-//		$recordNumber = substr($recordId, 2, -1);
-//
-//		$params = [
-//			'recordType' => $recordType,
-//			'recordNumber' => $recordNumber,
-//			'pickupLocation' => $pickupBranch
-//		];
-//
-//		if ($cancelDate != null){
-//			$params['neededBy'] = $cancelDate;
-//		}
-//		$sierraUrl = $this->accountProfile->vendorOpacUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/patrons/holds/requests";
-//
-//		$placeHoldResponse = $this->_postPage('sierra.placeHold', $sierraUrl, $params);
-//		if (!$placeHoldResponse){
-//			if ($this->lastResponseCode == 405){
-//
-//			}else {
-//				return [
-//					'success' => false,
-//					'message' => translate(['text'=> "Unable to place your hold", 'isPublicFacing'=>true])
-//				];
-//			}
-//		}else{
-//
-//		}
+		$recordType = substr($recordId, 1, 1);
+		$recordNumber = substr($recordId, 2, -1);
+
+		$params = [
+			'recordType' => $recordType,
+			'recordNumber' => (int)$recordNumber,
+			'pickupLocation' => $pickupBranch
+		];
+
+		if ($cancelDate != null){
+			$params['neededBy'] = $cancelDate;
+		}
+
+		require_once ROOT_DIR . '/RecordDrivers/RecordDriverFactory.php';
+		$record = RecordDriverFactory::initRecordDriverById($this->accountProfile->recordSource . ':' . $recordId);
+		$hold_result['bib'] = $recordId;
+		if (!$record) {
+			$title = null;
+		} else {
+			$title = $record->getTitle();
+			$hold_result['title'] = $title;
+		}
+
+		$sierraUrl = $this->accountProfile->vendorOpacUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/patrons/{$patron->username}/holds/requests";
+		$placeHoldResponse = $this->_postPage('sierra.placeHold', $sierraUrl, json_encode($params));
+		if ($placeHoldResponse == null && ($this->lastResponseCode == 200 || $this->lastResponseCode = 204)){
+			$hold_result['success'] = true;
+			$hold_result['message'] = translate(['text'=>"Your hold was placed successfully.", 'isPublicFacing'=>true]);
+
+			$hold_result['api']['title'] = translate(['text'=>'Hold placed successfully', 'isPublicFacing'=>true]);
+			$hold_result['api']['message'] = translate(['text'=> 'Your hold was placed successfully.', 'isPublicFacing'=>true]);
+			$hold_result['api']['action'] = translate(['text' => 'Go to Holds', 'isPublicFacing'=>true]);
+
+			$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
+			$patron->forceReloadOfHolds();
+		}else{
+			$message = isset($placeHoldResponse->description) ? $placeHoldResponse->description : $placeHoldResponse->name;
+			$hold_result['success'] = false;
+			$hold_result['message'] = translate(['text'=>$message, 'isPublicFacing'=>true]);
+
+			$hold_result['api']['title'] = translate(['text'=>$message, 'isPublicFacing'=>true]);
+			$hold_result['api']['message'] = translate(['text'=> $message, 'isPublicFacing'=>true]);
+			if (isset($placeHoldResponse->code) && isset($placeHoldResponse->details->itemsAsVolumes)){
+				$items = [];
+				foreach ($placeHoldResponse->details->itemsAsVolumes as $itemFromSierra){
+					$items[] = [
+						'itemNumber' => '.i' . $itemFromSierra->id . $this->getCheckDigit($itemFromSierra->id),
+						'location' => $itemFromSierra->location->name,
+						'callNumber' => $itemFromSierra->callNumber,
+						'status' => $itemFromSierra->status->display
+					];
+				}
+				$hold_result['items'] = $items;
+			}
+		}
+
+		return $hold_result;
 	}
 
 	public function placeItemHold($patron, $recordId, $itemId, $pickupBranch, $cancelDate = null)
 	{
-		return parent::placeItemHold($patron, $recordId, $itemId, $pickupBranch, $cancelDate);
-		// TODO: Use Sierra APIs to place item holds
+		return $this->placeHold($patron, $itemId, $pickupBranch, $cancelDate);
 	}
 
 	public function placeVolumeHold(User $patron, $recordId, $volumeId, $pickupBranch)

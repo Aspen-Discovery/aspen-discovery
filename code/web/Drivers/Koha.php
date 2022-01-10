@@ -1044,15 +1044,14 @@ class Koha extends AbstractIlsDriver
 	 */
 	public function placeHold($patron, $recordId, $pickupBranch = null, $cancelDate = null)
 	{
-		// Store result for API or app use
-		$hold_result['api'] = array();
-
-		$hold_result = array();
-		$hold_result['success'] = false;
-
-		// Result for API or app use
-		$hold_result['api']['title'] = translate(['text' => 'Unable to place hold', 'isPublicFacing'=> true]);
-		$hold_result['api']['message'] = translate(['text' => 'There was an error placing your hold.', 'isPublicFacing'=> true]);
+		$hold_result = [
+			'success' => false,
+			'message' => translate(['text' => 'There was an error placing your hold.', 'isPublicFacing'=> true]),
+			'api' => [
+				'title' => translate(['text' => 'Unable to place hold', 'isPublicFacing'=> true]),
+				'message' => translate(['text' => 'There was an error placing your hold.', 'isPublicFacing'=> true])
+			],
+		];
 
 		$oauthToken = $this->getOAuthToken();
 		if ($oauthToken == false) {
