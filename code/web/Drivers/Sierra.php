@@ -1276,4 +1276,12 @@ class Sierra extends Millennium{
 				$user->_noticePreferenceLabel = 'none';
 		}
 	}
+
+	function getPasswordPinValidationRules(){
+		return [
+			'minLength' => 4,
+			'maxLength' => 60,
+			'onlyDigitsAllowed' => false,
+		];
+	}
 }
