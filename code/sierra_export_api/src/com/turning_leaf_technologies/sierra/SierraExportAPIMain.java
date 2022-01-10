@@ -1415,19 +1415,36 @@ public class SierraExportAPIMain {
 					}
 
 				} else {
-					if (logErrors) {
-						logger.error("Received error " + conn.getResponseCode() + " calling sierra API " + sierraUrl);
-						// Get any errors
-						BufferedReader rd = new BufferedReader(new InputStreamReader(conn.getErrorStream(), StandardCharsets.UTF_8));
-						String line;
-						while ((line = rd.readLine()) != null) {
-							response.append(line);
+					//Check to see if we failed due to the grant being invalid.
+					logger.error("Received error " + conn.getResponseCode() + " calling sierra API " + sierraUrl);
+					// Get any errors
+					BufferedReader rd = new BufferedReader(new InputStreamReader(conn.getErrorStream(), StandardCharsets.UTF_8));
+					String line;
+					while ((line = rd.readLine()) != null) {
+						response.append(line);
+					}
+					try{
+						JSONObject errorResponse = new JSONObject(response.toString());
+						if (errorResponse.has("httpStatus") && errorResponse.has("description") && errorResponse.getInt("httpStatus") == 401 && errorResponse.getString("description").equals("invalid_grant")){
+							sierraAPIToken = null;
+							sierraAPITokenType = null;
+							//pause for a minute to let the api come back
+							logEntry.addNote("Reconnecting to the Sierra API");
+							try {
+								Thread.sleep(60000);
+							} catch (InterruptedException e) {
+								logger.error("Sleep was interrupted", e);
+							}
+							return callSierraApiURL(sierraInstanceInformation, baseUrl, sierraUrl, logErrors);
 						}
+					}catch (JSONException jse){
+						logger.error("Error parsing response \n" + response, jse);
+					}
+					if (logErrors) {
 						logger.error("  Finished reading response");
 						logger.error(response.toString());
-
-						rd.close();
 					}
+					rd.close();
 				}
 
 			} catch (java.net.SocketTimeoutException e) {
