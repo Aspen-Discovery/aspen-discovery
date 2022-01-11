@@ -76,7 +76,12 @@ class Hold extends CircEntry
 		$hold['expire'] = $hold['expirationDate'];
 		$hold['frozen'] = (boolean)$hold['frozen'];
 		$hold['cancelable'] = (boolean)$hold['cancelable'];
-		$hold['automaticCancellation'] = $hold['automaticCancellationDate'];
+		if($hold['automaticCancellationDate'] == 0 || empty($hold['automaticCancellationDate'])) {
+			$hold['automaticCancellation'] = null;
+			$hold['automaticCancellationDate'] = null;
+		} else {
+			$hold['automaticCancellation'] = $hold['automaticCancellationDate'];
+		}
 		if ($this->type == 'ils' || $this->type == 'overdrive') {
 			$hold['format'] = $this->getFormats();
 		}
