@@ -228,11 +228,11 @@ abstract class SearchObject_BaseSearcher
 		// Make sure the field exists
 		if (isset($this->filterList[$field])) {
 			// Loop through all filters on the field
-			for ($i = 0; $i < count($this->filterList[$field]); $i++) {
+			foreach ($this->filterList[$field] as $key => $existingValue) {
 				// Does it contain the value we don't want?
-				if ($this->filterList[$field][$i] == $value) {
+				if ($existingValue == $value) {
 					// If so remove it.
-					unset($this->filterList[$field][$i]);
+					unset($this->filterList[$field][$key]);
 				}
 			}
 		}
