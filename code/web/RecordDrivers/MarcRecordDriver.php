@@ -1326,89 +1326,88 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 		$oclcFastSubjects = array();
 		$localSubjects = array();
 		if ($marcRecord) {
-			if (isset($configArray['Content']['subjectFieldsToShow'])) {
-				$subjectFields = [600,610,611,630,650,651,655,690];
+			$subjectFields = [600,610,611,630,650,651,655,690];
 
-				$lcSubjectTagNumbers = array(600, 610, 611, 630, 650, 651, 655); 
-				foreach ($subjectFields as $subjectField) {
-					/** @var File_MARC_Data_Field[] $marcFields */
-					$marcFields = $marcRecord->getFields($subjectField);
-					if ($marcFields) {
-						foreach ($marcFields as $marcField) {
-							$subject = array();
-							//Determine the type of the subject
-							$type = 'other';
-							if (in_array($subjectField, $lcSubjectTagNumbers)){
-								if ($marcField->getIndicator(2) == 0) {
-									$type = 'lc';
-								}
+			$lcSubjectTagNumbers = array(600, 610, 611, 630, 650, 651, 655);
+			foreach ($subjectFields as $subjectField) {
+				/** @var File_MARC_Data_Field[] $marcFields */
+				$marcFields = $marcRecord->getFields($subjectField);
+				if ($marcFields) {
+					foreach ($marcFields as $marcField) {
+						$subject = array();
+						//Determine the type of the subject
+						$type = 'other';
+						if (in_array($subjectField, $lcSubjectTagNumbers)){
+							if ($marcField->getIndicator(2) == 0) {
+								$type = 'lc';
 							}
-							$subjectSource = $marcField->getSubfield('2');
-							if ($subjectSource != null) {
-								if ($subjectSource->getData() == 'lcgft') {
-									$type = 'lc';
-								} elseif (preg_match('/bisac/i', $subjectSource->getData())) {
-									$type = 'bisac';
-								} elseif (preg_match('/fast/i', $subjectSource->getData())) {
-									$type = 'fast';
-								}
-							}
-							if ($marcField->getTag() == '690') {
-								$type = 'local';
-							}
-
-							$search = '';
-							$title = '';
-							foreach ($marcField->getSubFields() as $subField) {
-								/** @var File_MARC_Subfield $subField */
-								if ($subField->getCode() != '2' && $subField->getCode() != '0' && $subField->getCode() != '9') {
-									$subFieldData = $subField->getData();
-									if ($type == 'bisac' && $subField->getCode() == 'a') {
-										$subFieldData = ucwords(strtolower($subFieldData));
-									}
-									$search .= " " . $subFieldData;
-									if (strlen($title) > 0) {
-										$title .= ' -- ';
-									}
-									$title .= $subFieldData;
-								}
-							}
-							$search = trim($search);
-							if (strlen($search) == 0){
-								continue;
-							}
-							$subject[$title] = array(
-									'search' => trim($search),
-									'title' => $title,
-							);
-							switch ($type) {
-								case 'fast' :
-									// Suppress fast subjects by default
-									$oclcFastSubjects[] = $subject;
-									break;
-								case 'local' :
-									$localSubjects[] = $subject;
-									$subjects[] = $subject;
-									break;
-								case 'bisac' :
-									$bisacSubjects[] = $subject;
-									$subjects[] = $subject;
-									break;
-								case 'lc' :
-									$lcSubjects[] = $subject;
-									$subjects[] = $subject;
-									break;
-								case 'other' :
-									$otherSubjects[] = $subject;
-									break;
-								default :
-									$subjects[] = $subject;
-							}
-
 						}
+						$subjectSource = $marcField->getSubfield('2');
+						if ($subjectSource != null) {
+							if ($subjectSource->getData() == 'lcgft') {
+								$type = 'lc';
+							} elseif (preg_match('/bisac/i', $subjectSource->getData())) {
+								$type = 'bisac';
+							} elseif (preg_match('/fast/i', $subjectSource->getData())) {
+								$type = 'fast';
+							}
+						}
+						if ($marcField->getTag() == '690') {
+							$type = 'local';
+						}
+
+						$search = '';
+						$title = '';
+						foreach ($marcField->getSubFields() as $subField) {
+							/** @var File_MARC_Subfield $subField */
+							if ($subField->getCode() != '2' && $subField->getCode() != '0' && $subField->getCode() != '9') {
+								$subFieldData = $subField->getData();
+								if ($type == 'bisac' && $subField->getCode() == 'a') {
+									$subFieldData = ucwords(strtolower($subFieldData));
+								}
+								$search .= " " . $subFieldData;
+								if (strlen($title) > 0) {
+									$title .= ' -- ';
+								}
+								$title .= $subFieldData;
+							}
+						}
+						$search = trim($search);
+						if (strlen($search) == 0){
+							continue;
+						}
+						$subject[$title] = array(
+								'search' => trim($search),
+								'title' => $title,
+						);
+						switch ($type) {
+							case 'fast' :
+								// Suppress fast subjects by default
+								$oclcFastSubjects[] = $subject;
+								break;
+							case 'local' :
+								$localSubjects[] = $subject;
+								$subjects[] = $subject;
+								break;
+							case 'bisac' :
+								$bisacSubjects[] = $subject;
+								$subjects[] = $subject;
+								break;
+							case 'lc' :
+								$lcSubjects[] = $subject;
+								$subjects[] = $subject;
+								break;
+							case 'other' :
+								$otherSubjects[] = $subject;
+								break;
+							default :
+								$subjects[] = $subject;
+						}
+
 					}
 				}
 			}
+			
 			$subjectTitleCompareFunction = function ($subjectArray0, $subjectArray1) {
 				return strcasecmp(key($subjectArray0), key($subjectArray1));
 			};
