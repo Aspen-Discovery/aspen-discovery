@@ -1636,7 +1636,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 	{
 		if ($this->overdriveApiHost == null) {
 			$patronApiHost = $this->getPatronApiHost();
-			if (strpos($patronApiHost, 'integration') >= 0){
+			if (strpos($patronApiHost, 'integration') !== false){
 				$this->overdriveApiHost = 'integration.api.overdrive.com';
 			}else{
 				$this->overdriveApiHost = 'api.overdrive.com';
