@@ -1104,6 +1104,10 @@ class Koha extends AbstractIlsDriver
 			//Just a regular bib level hold
 			$hold_result['title'] = $recordDriver->getTitle();
 
+			if (strpos($recordId, ':') !== false){
+				list($source, $recordId) = explode(':', $recordId);
+			}
+
 			$holdParams = [
 				'patron_id' => (int)$patron->username,
 				'pickup_library_id' => $pickupBranch,
