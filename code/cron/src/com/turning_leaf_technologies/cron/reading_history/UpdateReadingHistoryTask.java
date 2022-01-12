@@ -54,6 +54,9 @@ public class UpdateReadingHistoryTask implements Runnable {
 				URL patronApiUrl = new URL(aspenUrl + "/API/UserAPI?method=updatePatronReadingHistory&username=" + URLEncoder.encode(cat_username, "UTF-8") + "&password=" + URLEncoder.encode(cat_password, "UTF-8"));
 				//logger.error("Updating reading history for " + cat_username);
 				HttpURLConnection conn = (HttpURLConnection) patronApiUrl.openConnection();
+				//Give 10 seconds for connection timeout and 60 seconds for read timeout
+				conn.setConnectTimeout(10000);
+				conn.setReadTimeout(60000);
 				conn.addRequestProperty("User-Agent", "Aspen Discovery");
 				conn.addRequestProperty("Accept", "*/*");
 				conn.addRequestProperty("Cache-Control", "no-cache");
@@ -90,9 +93,6 @@ public class UpdateReadingHistoryTask implements Runnable {
 						processLog.incErrors("Error " + conn.getResponseCode() + " retrieving information from patron API for " + cat_username + " base url is " + aspenUrl + " " + errorResponse);
 						retry = true;
 					}
-				}
-				if (numTries > 3){
-					break;
 				}
 			}
 		} catch (MalformedURLException e) {
