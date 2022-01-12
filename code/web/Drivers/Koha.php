@@ -1162,6 +1162,7 @@ class Koha extends AbstractIlsDriver
 					if (!empty($jsonResponse->error)){
 						$hold_result['message'] = translate(['text' => $jsonResponse->error, 'isPublicFacing' => true]);
 						$hold_result['api']['message'] =translate(['text' => $jsonResponse->error, 'isPublicFacing' => true]);
+						$foundMessage = true;
 					}
 				}
 
