@@ -12992,6 +12992,19 @@ AspenDiscovery.WebBuilder = function () {
 							return AspenDiscovery.Account.getWebResource(id);
 						}, false);
 					}
+				} else {
+					var params = {
+						method: "trackWebResourceUsage",
+						id: id,
+						authType: "none"
+					};
+					$.getJSON(url, params, function(usage){
+						if(data.openInNewTab) {
+							window.open(data.url, '_blank');
+						} else {
+							location.assign(data.url);
+						}
+					})
 				}
 			}).fail(AspenDiscovery.ajaxFail);
 
