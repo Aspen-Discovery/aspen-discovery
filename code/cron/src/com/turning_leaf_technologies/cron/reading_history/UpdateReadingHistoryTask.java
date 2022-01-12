@@ -48,7 +48,6 @@ public class UpdateReadingHistoryTask implements Runnable {
 				}else{
 					logger.debug(++numTasksRun + ") Updating reading history for " + cat_username);
 				}
-				hadError = false;
 				retry = false;
 				// Call the patron API to get their checked out items
 				URL patronApiUrl = new URL(aspenUrl + "/API/UserAPI?method=updatePatronReadingHistory&username=" + URLEncoder.encode(cat_username, "UTF-8") + "&password=" + URLEncoder.encode(cat_password, "UTF-8"));
@@ -90,8 +89,10 @@ public class UpdateReadingHistoryTask implements Runnable {
 					//Received an error
 					String errorResponse = StringUtils.convertStreamToString(conn.getErrorStream());
 					if (numTries < 3){
-						processLog.incErrors("Error " + conn.getResponseCode() + " retrieving information from patron API for " + cat_username + " base url is " + aspenUrl + " " + errorResponse);
 						retry = true;
+					}else{
+						processLog.incErrors("Error " + conn.getResponseCode() + " retrieving information from patron API for " + cat_username + " base url is " + aspenUrl + " " + errorResponse);
+						hadError = true;
 					}
 				}
 			}
