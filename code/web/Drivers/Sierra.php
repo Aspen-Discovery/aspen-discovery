@@ -1078,13 +1078,37 @@ class Sierra extends Millennium{
 				$fineUrl = $fineEntry->id;
 				$fineId = substr($fineUrl, strrpos($fineUrl, '/') + 1);
 				$fineAmount = $fineEntry->itemCharge + $fineEntry->processingFee + $fineEntry->billingFee;
+				$message = '';
+				if (isset($fineEntry->description)){
+					$message = $fineEntry->description;
+				}else{
+					if (isset($fineEntry->item)){
+						preg_match($this->urlIdRegExp, $fineEntry->item, $m);
+						$itemIdShort = $m[1];
+						$itemId = ".i" . $itemIdShort . $this->getCheckDigit($itemIdShort);
+						$bibId = $this->getBibIdForItem($itemId, $itemIdShort);
+						if ($bibId != false){
+							require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+							$recordDriver = new MarcRecordDriver((string)$bibId);
+							if ($recordDriver->isValid()){
+								$message = $recordDriver->getTitle();
+							}else{
+								$bibIdShort = substr(str_replace('.b', 'b', $bibId), 0, -1);
+								$getBibResponse = $this->_callUrl('sierra.getBib', $this->accountProfile->vendorOpacUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/bibs/{$bibIdShort}");
+								if ($getBibResponse){
+									$message = $getBibResponse->title;
+								}
+							}
+						}
+					}
+				}
 				$fines[] = [
 					'fineId' => $fineId,
 					'reason' => $fineEntry->chargeType->display,
 					'type' => $fineEntry->chargeType->display,
 					'amount' => $fineAmount,
 					'amountVal' => $fineAmount,
-					'message' => $fineEntry->description,
+					'message' => $message,
 					'amountOutstanding' => $fineAmount - $fineEntry->paidAmount,
 					'amountOutstandingVal' => $fineAmount - $fineEntry->paidAmount,
 					'date' => date('M j, Y', strtotime($fineEntry->assessedDate)),
