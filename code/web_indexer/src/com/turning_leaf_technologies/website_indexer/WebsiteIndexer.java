@@ -199,6 +199,7 @@ class WebsiteIndexer {
 				CloseableHttpResponse response1 = httpclient.execute(httpGet);
 				StatusLine status = response1.getStatusLine();
 				if (status.getStatusCode() == 200) {
+					logger.info("Got successful response");
 					WebPage page;
 					if (existingPages.containsKey(pageToProcess)) {
 						page = existingPages.get(pageToProcess);
