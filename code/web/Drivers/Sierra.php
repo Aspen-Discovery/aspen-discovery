@@ -760,6 +760,10 @@ class Sierra extends Millennium{
 			],
 		];
 
+		if (strpos($recordId, ':')){
+			list(,$recordId) = explode(':', $recordId);
+		}
+
 		$recordType = substr($recordId, 1, 1);
 		$recordNumber = substr($recordId, 2, -1);
 
