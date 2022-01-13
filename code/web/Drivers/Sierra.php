@@ -840,18 +840,18 @@ class Sierra extends Millennium{
 		$loginMethod = $this->accountProfile->loginConfiguration;
 		if ($loginMethod == 'barcode_pin'){
 			//If we use user names, we may need to lookup the barcode by the user name.
-			$params = [
-				'varFieldTag' => 'i',
-				'varFieldContent' => $username,
-				'fields' => 'id,barcodes'
-			];
-			$sierraUrl = $this->accountProfile->vendorOpacUrl;
-			$sierraUrl .= "/iii/sierra-api/v{$this->accountProfile->apiVersion}/patrons/find?";
-			$sierraUrl .= http_build_query($params);
-			$patronInfo = $this->_callUrl('sierra.getPatronByUsername', $sierraUrl);
-			if (!empty($patronInfo->barcodes)){
-				$username = reset($patronInfo->barcodes);
-			}
+//			$params = [
+//				'varFieldTag' => 'i',
+//				'varFieldContent' => $username,
+//				'fields' => 'id,barcodes'
+//			];
+//			$sierraUrl = $this->accountProfile->vendorOpacUrl;
+//			$sierraUrl .= "/iii/sierra-api/v{$this->accountProfile->apiVersion}/patrons/find?";
+//			$sierraUrl .= http_build_query($params);
+//			$patronInfo = $this->_callUrl('sierra.getPatronByUsername', $sierraUrl);
+//			if (!empty($patronInfo->barcodes)){
+//				$username = reset($patronInfo->barcodes);
+//			}
 
 			//No validate the barcode and pin
 			$params = [
@@ -1338,7 +1338,14 @@ class Sierra extends Millennium{
 			$patron->cat_password = $newPin;
 			$patron->update();
 		}else{
-			$result['messages'][] = 'Unable to update PIN. ' . $this->lastErrorMessage;
+			$message = 'Unable to update PIN. ';
+			if (!empty($this->lastErrorMessage)){
+				$message .= $this->lastErrorMessage;
+			}
+			if (!empty($updatePatronResponse) && !empty($updatePatronResponse->description)){
+				$message .= '<br/>' . $updatePatronResponse->description;
+			}
+			$result['messages'][] = $message;
 		}
 		return $result;
 	}
