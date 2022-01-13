@@ -592,26 +592,31 @@ class Sierra extends Millennium{
 	{
 		$sierraUrl = $this->accountProfile->vendorOpacUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/patrons/checkouts/{$itemId}/renewal";
 		$renewResponse = $this->_postPage('sierra.renewCheckout', $sierraUrl, null);
-		if (!$renewResponse){
+
+		if ($this->lastResponseCode == 200 || $this->lastResponseCode == 204){
+			require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+			$recordDriver = new MarcRecordDriver($this->accountProfile->recordSource . ":" . $recordId);
+			if ($recordDriver->isValid()) {
+				$title = $recordDriver->getTitle();
+			} else {
+				$title = false;
+			}
+
+			$return = ['success' => true];
+			if ($title) {
+				$return['message'] = $title.' has been renewed.';
+			} else {
+				$return['message'] = 'Your item has been renewed';
+			}
+		}else{
+			$message = "Unable to renew your checkout";
+			if (!empty($renewResponse) && !empty($renewResponse->description)){
+				$message .= '<br/>' . $renewResponse->description;
+			}
 			return [
 				'success' => false,
-				'message' => "Unable to renew your checkout"
+				'message' => $message
 			];
-		}
-
-		require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
-		$recordDriver = new MarcRecordDriver($this->accountProfile->recordSource . ":" . $recordId);
-		if ($recordDriver->isValid()) {
-			$title = $recordDriver->getTitle();
-		} else {
-			$title = false;
-		}
-
-		$return = ['success' => true];
-		if ($title) {
-			$return['message'] = $title.' has been renewed.';
-		} else {
-			$return['message'] = 'Your item has been renewed';
 		}
 
 		$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
