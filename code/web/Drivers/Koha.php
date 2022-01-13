@@ -1103,6 +1103,10 @@ class Koha extends AbstractIlsDriver
 			//Just a regular bib level hold
 			$hold_result['title'] = $recordDriver->getTitle();
 
+			if (strpos($recordId, ':') !== false){
+				list($source, $recordId) = explode(':', $recordId);
+			}
+
 			$holdParams = [
 				'patron_id' => (int)$patron->username,
 				'pickup_library_id' => $pickupBranch,
@@ -1143,14 +1147,29 @@ class Koha extends AbstractIlsDriver
 				$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
 				$patron->forceReloadOfHolds();
 			} else if ($responseCode == 403) {
+				$foundMessage = false;
 				$hold_result = [
 					'success' => false,
-					'message' => translate(['text'=>"Error placing a hold on this title, the hold was not allowed.", 1=>$responseCode, 'isPublicFacing'=> true])
+					'api' => [
+						'title' => translate(['text' => 'Unable to place hold', 'isPublicFacing' => true])
+					]
 				];
 
-				// Result for API or app use
-				$hold_result['api']['title'] = translate(['text' => 'Unable to place hold', 'isPublicFacing'=> true]);
-				$hold_result['api']['message'] = translate(['text'=>"Error placing a hold on this title, the hold was not allowed.", 1=>$responseCode, 'isPublicFacing'=> true]);
+				if (!empty($response)){
+					$jsonResponse = json_decode($response);
+
+					if (!empty($jsonResponse->error)){
+						$hold_result['message'] = translate(['text' => $jsonResponse->error, 'isPublicFacing' => true]);
+						$hold_result['api']['message'] =translate(['text' => $jsonResponse->error, 'isPublicFacing' => true]);
+						$foundMessage = true;
+					}
+				}
+
+				if (!$foundMessage) {
+					$hold_result['message'] = translate(['text' => "Error placing a hold on this title, the hold was not allowed.", 1 => $responseCode, 'isPublicFacing' => true]);
+					// Result for API or app use
+					$hold_result['api']['message'] = translate(['text' => "Error placing a hold on this title, the hold was not allowed.", 1 => $responseCode, 'isPublicFacing' => true]);
+				}
 			} else {
 				$hold_result = [
 					'success' => false,

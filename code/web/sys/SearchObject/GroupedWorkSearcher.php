@@ -1430,11 +1430,6 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 		}
 	}
 
-	public function pingServer($failOnError = true)
-	{
-		return $this->indexEngine->pingServer($failOnError);
-	}
-
 	public function getSearchIndexes()
 	{
 		return [
