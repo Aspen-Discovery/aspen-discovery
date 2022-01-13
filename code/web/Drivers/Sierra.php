@@ -1317,4 +1317,27 @@ class Sierra extends Millennium{
 			'onlyDigitsAllowed' => false,
 		];
 	}
+
+	function updatePin(User $patron, string $oldPin, string $newPin)
+	{
+		if ($patron->cat_password != $oldPin) {
+			return ['success' => false, 'message' => "The old PIN provided is incorrect."];
+		}
+		$result = ['success' => false, 'message' => "Unknown error updating password."];
+		$params = [
+			'pin' => $newPin,
+		];
+		$sierraUrl = $this->accountProfile->vendorOpacUrl;
+		$sierraUrl = $sierraUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/patrons/".$patron->username;
+		$updatePatronResponse = $this->_sendPage('sierra.updatePatron', 'PUT', $sierraUrl, json_encode($params));
+		if ($this->lastResponseCode == 204){
+			$result['success'] = true;
+			$result['messages'][] = 'Your password was updated successfully.';
+			$patron->cat_password = $newPin;
+			$patron->update();
+		}else{
+			$result['messages'][] = 'Unable to update PIN. ' . $this->lastErrorMessage;
+		}
+		return $result;
+	}
 }
