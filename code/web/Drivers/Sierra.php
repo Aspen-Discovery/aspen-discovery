@@ -44,7 +44,7 @@ class Sierra extends Millennium{
 			$headers = array(
 					"Authorization: " . $tokenData->token_type . " {$tokenData->access_token}",
 					"User-Agent: Aspen Discovery",
-					"X-Forwarded-For: " . IPAddress::getActiveIp(),
+					//"X-Forwarded-For: " . IPAddress::getActiveIp(),
 					"Host: " . $host,
 			);
 			curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
@@ -81,7 +81,7 @@ class Sierra extends Millennium{
 			$headers = array(
 				"Authorization: " . $tokenData->token_type . " {$tokenData->access_token}",
 				"User-Agent: Aspen Discovery",
-				"X-Forwarded-For: " . IPAddress::getActiveIp(),
+				//"X-Forwarded-For: " . IPAddress::getActiveIp(),
 				"Host: " . $host,
 			);
 			if ($postParams != null && is_string($postParams)){
@@ -134,7 +134,7 @@ class Sierra extends Millennium{
 			$headers = array(
 				"Authorization: " . $tokenData->token_type . " {$tokenData->access_token}",
 				"User-Agent: Aspen Discovery",
-				"X-Forwarded-For: " . IPAddress::getActiveIp(),
+				//"X-Forwarded-For: " . IPAddress::getActiveIp(),
 				"Host: " . $host,
 			);
 			if ($httpMethod == 'PUT'){
@@ -604,14 +604,17 @@ class Sierra extends Millennium{
 
 			$return = ['success' => true];
 			if ($title) {
-				$return['message'] = $title.' has been renewed.';
+				$return['message'] = translate(['text' => '%1% has been renewed.', 1=> $title, 'isPublicFacing' => true]);
 			} else {
-				$return['message'] = 'Your item has been renewed';
+				$return['message'] = translate(['text' => 'Your item has been renewed', 'isPublicFacing' => true]);
 			}
+
+			$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
+			$patron->forceReloadOfCheckouts();
 		}else{
-			$message = "Unable to renew your checkout";
+			$message = translate(['text' => "Unable to renew your checkout", 'isPublicFacing' => true]);
 			if (!empty($renewResponse) && !empty($renewResponse->description)){
-				$message .= '<br/>' . $renewResponse->description;
+				$message .= '<br/>' . translate(['text' => $renewResponse->description, 'isPublicFacing' => true]);
 			}
 			return [
 				'success' => false,
@@ -619,8 +622,6 @@ class Sierra extends Millennium{
 			];
 		}
 
-		$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
-		$patron->forceReloadOfCheckouts();
 		return $return;
 	}
 
