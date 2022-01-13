@@ -789,6 +789,7 @@ class Sierra extends Millennium{
 			$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
 			$patron->forceReloadOfHolds();
 		}else{
+			//Get the hold form
 			$message = isset($placeHoldResponse->description) ? $placeHoldResponse->description : $placeHoldResponse->name;
 			$hold_result['success'] = false;
 			$hold_result['message'] = translate(['text'=>$message, 'isPublicFacing'=>true]);
@@ -814,7 +815,8 @@ class Sierra extends Millennium{
 
 	public function placeItemHold($patron, $recordId, $itemId, $pickupBranch, $cancelDate = null)
 	{
-		return $this->placeHold($patron, $itemId, $pickupBranch, $cancelDate);
+		return parent::placeItemHold($patron, $recordId, $itemId, $pickupBranch, $cancelDate);
+		//return $this->placeHold($patron, $itemId, $pickupBranch, $cancelDate);
 	}
 
 	public function placeVolumeHold(User $patron, $recordId, $volumeId, $pickupBranch)

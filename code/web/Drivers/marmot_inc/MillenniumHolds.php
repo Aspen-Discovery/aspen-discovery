@@ -706,6 +706,9 @@ class MillenniumHolds{
 			$post_data['pat_submit']="submit";
 			$post_data['locx00']= str_pad($pickupBranch, 5); // padded with spaces, which will get url-encoded into plus signs by httpd_build_query() in the curlPostPage() method.
 			if (!empty($itemId) && $itemId != -1){
+				if ($itemId[0] == '.'){
+					$itemId = substr($itemId, 1, -1);
+				}
 				$post_data['radio']=$itemId;
 			}
 
