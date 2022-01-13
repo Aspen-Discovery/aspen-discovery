@@ -9,6 +9,9 @@
 	<h1 class="notranslate">
 		{$seriesTitle}
 	</h1>
+	{elseif !empty($error)}
+		<h1>{translate text="Error" isPublicFacing=true}</h1>
+		<div class="alert alert-danger">{$error}</div>
 	{/if}
 	{if $seriesAuthors}
 	<div class="row">
