@@ -173,6 +173,8 @@ class Sierra extends Millennium{
 			$curl_info = curl_getinfo($ch);
 			$responseCode = $curl_info['http_code'];
 			$this->lastResponseCode = $responseCode;
+			$this->lastError = curl_errno($ch);
+			$this->lastErrorMessage = curl_error($ch);
 
 			ExternalRequestLogEntry::logRequest($requestType, $httpMethod, $url, $headers, $postFields, $responseCode, $return, []);
 			curl_close($ch);
@@ -1334,7 +1336,7 @@ class Sierra extends Millennium{
 		$updatePatronResponse = $this->_sendPage('sierra.updatePatron', 'PUT', $sierraUrl, json_encode($params));
 		if ($this->lastResponseCode == 204){
 			$result['success'] = true;
-			$result['messages'][] = 'Your password was updated successfully.';
+			$result['message'] = 'Your password was updated successfully.';
 			$patron->cat_password = $newPin;
 			$patron->update();
 		}else{
@@ -1345,7 +1347,7 @@ class Sierra extends Millennium{
 			if (!empty($updatePatronResponse) && !empty($updatePatronResponse->description)){
 				$message .= '<br/>' . $updatePatronResponse->description;
 			}
-			$result['messages'][] = $message;
+			$result['message'] = $message;
 		}
 		return $result;
 	}
