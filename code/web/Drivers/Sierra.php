@@ -406,7 +406,7 @@ class Sierra extends Millennium{
 				$id = $recordId; //$m[1];
 				if($recordType == 'i') {
 					$itemId = ".i{$id}" . $this->getCheckDigit($id);
-					$id = $this->getBibIdForItem($itemId);
+					$id = $this->getBibIdForItem($itemId, $id);
 				}else{
 					$recordXD = $this->getCheckDigit($id);
 					$id = ".b{$id}{$recordXD}";
@@ -535,7 +535,7 @@ class Sierra extends Millennium{
 				preg_match($this->urlIdRegExp, $entry->item, $m);
 				$itemIdShort = $m[1];
 				$itemId = ".i" . $itemIdShort . $this->getCheckDigit($itemIdShort);
-				$bibId = $this->getBibIdForItem($itemId);
+				$bibId = $this->getBibIdForItem($itemId, $itemIdShort);
 
 				$curCheckout = new Checkout();
 				$curCheckout->type = 'ils';
@@ -621,7 +621,7 @@ class Sierra extends Millennium{
 	 * @param string $itemId
 	 * @return string|false
 	 */
-	private function getBibIdForItem(string $itemId)
+	private function getBibIdForItem(string $itemId, $shortId)
 	{
 		require_once ROOT_DIR . '/sys/Grouping/GroupedWorkItem.php';
 		require_once ROOT_DIR . '/sys/Grouping/GroupedWorkRecord.php';
@@ -636,7 +636,16 @@ class Sierra extends Millennium{
 				$id = false;
 			}
 		} else {
-			$id = false;
+			//Lookup the bib id from the Sierra APIs
+			$sierraUrl = $this->accountProfile->vendorOpacUrl;
+			$sierraUrl .= "/iii/sierra-api/v{$this->accountProfile->apiVersion}/items/$shortId";
+			$itemInfo = $this->_callUrl('sierra.getItemInfo', $sierraUrl);
+			if (!empty($itemInfo)){
+				$id = reset($itemInfo->bibIds);
+				$id = '.b' . $id . $this->getCheckDigit($id);
+			}else{
+				$id = false;
+			}
 		}
 		return $id;
 	}
@@ -835,7 +844,7 @@ class Sierra extends Millennium{
 				'fields' => 'id,barcodes'
 			];
 			$sierraUrl = $this->accountProfile->vendorOpacUrl;
-			$sierraUrl .= '/iii/sierra-api/v{$this->accountProfile->apiVersion}/patrons/find?';
+			$sierraUrl .= "/iii/sierra-api/v{$this->accountProfile->apiVersion}/patrons/find?";
 			$sierraUrl .= http_build_query($params);
 			$patronInfo = $this->_callUrl('sierra.getPatronByUsername', $sierraUrl);
 			if (!empty($patronInfo->barcodes)){
