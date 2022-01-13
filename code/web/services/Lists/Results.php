@@ -54,7 +54,11 @@ class Lists_Results extends ResultsAction
 
 		// Process Search
 		$result = $searchObject->processSearch(true, true);
-		if ($result instanceof AspenError || !empty($result['error'])) {
+		if ($result == null) {
+			$interface->assign('error', 'The Solr index is offline, please try your search again in a few minutes.');
+			$this->display('searchError.tpl', 'Error in Search', '');
+			return;
+		}elseif ($result instanceof AspenError || !empty($result['error'])) {
 			/** @var AspenError $result */
 			$this->getKeywordSearchResults($searchObject, $interface);
 

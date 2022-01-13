@@ -205,15 +205,22 @@ class GroupedWork_AJAX extends JSON_Action
 
 		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 		$groupedWorkDriver = new GroupedWorkDriver($id);
-		$whileYouWaitTitles = $groupedWorkDriver->getWhileYouWait();
+		if ($groupedWorkDriver->isValid()) {
+			$whileYouWaitTitles = $groupedWorkDriver->getWhileYouWait();
 
-		$interface->assign('whileYouWaitTitles', $whileYouWaitTitles);
+			$interface->assign('whileYouWaitTitles', $whileYouWaitTitles);
 
-		return [
-			'success' => true,
-			'title' => translate(['text'=>'While You Wait', 'isPublicFacing'=>'true']),
-			'body' => $interface->fetch('GroupedWork/whileYouWait.tpl'),
-		];
+			return [
+				'success' => true,
+				'title' => translate(['text' => 'While You Wait', 'isPublicFacing' => 'true']),
+				'body' => $interface->fetch('GroupedWork/whileYouWait.tpl'),
+			];
+		}else{
+			return [
+				'success' => false,
+				'message' => translate(['text' => 'That title could not be found', 'isPublicFacing' => 'true']),
+			];
+		}
 	}
 
 	/** @noinspection PhpUnused */
