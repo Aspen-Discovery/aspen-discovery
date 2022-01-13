@@ -345,7 +345,7 @@ abstract class Solr
 			$validFields = $this->loadValidFields();
 			$fieldsToReturn = implode(',', $validFields);
 		}
-		$this->pingServer();
+		//$this->pingServer();
 		// Query String Parameters
 		$options = array('q' => "id:\"$id\"");
 		$options['fl'] = $fieldsToReturn;
@@ -387,7 +387,7 @@ abstract class Solr
 		$startIndex = 0;
 		$batchSize = 40;
 
-		$this->pingServer();
+		//$this->pingServer();
 
 		$lastBatch = false;
 		while (true) {
@@ -411,9 +411,12 @@ abstract class Solr
 			$result = $this->client->curlGetPage($this->host . "/select?" . http_build_query($options));
 			$timer->logTime("Send data to solr for getRecords");
 
-			$result = $this->_process($result);
-			foreach ($result['response']['docs'] as $record) {
-				$records[$record['id']] = $record;
+			if ($result) {
+				$result = $this->_process($result);
+
+				foreach ($result['response']['docs'] as $record) {
+					$records[$record['id']] = $record;
+				}
 			}
 			if ($lastBatch) {
 				break;
@@ -1622,7 +1625,7 @@ abstract class Solr
 
 		$memoryWatcher->logMemory('Start Solr Select');
 
-		$this->pingServer();
+		//$this->pingServer();
 
 		$params['wt'] = 'json';
 		$params['json.nl'] = 'arrarr';
@@ -1703,7 +1706,6 @@ abstract class Solr
 	 */
 	private function _update($xml)
 	{
-		global $configArray;
 		global $timer;
 
 		$this->pingServer();

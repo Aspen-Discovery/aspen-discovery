@@ -196,7 +196,11 @@ class Search_Results extends ResultsAction {
 
 		// Process Search
 		$result = $searchObject->processSearch(true, true);
-		if ($result instanceof AspenError || !empty($result['error'])) {
+		if ($result == null) {
+			$interface->assign('error', 'The Solr index is offline, please try your search again in a few minutes.');
+			$this->display('searchError.tpl', 'Error in Search', '');
+			return;
+		}elseif ($result instanceof AspenError || !empty($result['error'])) {
 			//Don't record an error, but send it to issues just to be sure everything looks good
 			global $serverName;
 			$logSearchError = true;
