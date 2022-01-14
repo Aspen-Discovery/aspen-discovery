@@ -109,7 +109,11 @@ class Sierra extends Millennium{
 			$this->lastResponseCode = $responseCode;
 			$this->lastError = curl_errno($ch);
 			$this->lastErrorMessage = curl_error($ch);
-
+			if ($responseCode == 400){
+				global $logger;
+				$logger->log("Got 400 error POSTING to '" . $url . "'", Logger::LOG_ERROR);
+				$logger->log(print_r($curl_info, true), Logger::LOG_ERROR);
+			}
 
 			ExternalRequestLogEntry::logRequest($requestType, 'POST', $url, $headers, $post_string, $responseCode, $return, []);
 			curl_close($ch);
