@@ -82,6 +82,7 @@ class Sierra extends Millennium{
 				"Authorization: " . $tokenData->token_type . " {$tokenData->access_token}",
 				"User-Agent: Aspen Discovery",
 				//"X-Forwarded-For: " . IPAddress::getActiveIp(),
+				"Accept-Language: *",
 				"Host: " . $host,
 			);
 			if ($postParams != null && is_string($postParams)){
