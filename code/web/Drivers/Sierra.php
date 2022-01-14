@@ -86,6 +86,7 @@ class Sierra extends Millennium{
 			);
 			if ($postParams != null && is_string($postParams)){
 				$headers[] = 'Content-Type: application/json';
+				$headers[] = 'Accept: application/json';
 			}
 			curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
