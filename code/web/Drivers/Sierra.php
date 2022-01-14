@@ -12,23 +12,29 @@ class Sierra extends Millennium{
 	public function _connectToApi(){
 		if ($this->sierraToken == null){
 			$apiVersion = $this->accountProfile->apiVersion;
-			$ch = curl_init($this->getVendorOpacUrl() . "/iii/sierra-api/v{$apiVersion}/token/");
+			$tokenUrl = $this->getVendorOpacUrl() . "/iii/sierra-api/v{$apiVersion}/token/";
+			$ch = curl_init($tokenUrl);
 			curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 15);
 			curl_setopt($ch, CURLOPT_USERAGENT,"Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)");
 			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 			curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
 			$authInfo = base64_encode($this->accountProfile->oAuthClientId . ":" . $this->accountProfile->oAuthClientSecret);
-			curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-					'Content-Type: application/x-www-form-urlencoded;charset=UTF-8',
-					'Authorization: Basic ' . $authInfo,
-			));
+			$headers = array(
+				'Content-Type: application/x-www-form-urlencoded;charset=UTF-8',
+				'Authorization: Basic ' . $authInfo,
+			);
+			curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 			curl_setopt($ch, CURLOPT_TIMEOUT, 30);
 			curl_setopt($ch, CURLOPT_POST, 1);
 			curl_setopt($ch, CURLOPT_POSTFIELDS, "grant_type=client_credentials");
 			curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
 			$return = curl_exec($ch);
+			$curl_info = curl_getinfo($ch);
+			$responseCode = $curl_info['http_code'];
 			curl_close($ch);
+			ExternalRequestLogEntry::logRequest('sierra.connectToApi', 'POST', $tokenUrl, $headers, "grant_type=client_credentials", $responseCode, $return, []);
+			
 			$this->sierraToken = json_decode($return);
 		}
 		return $this->sierraToken;
@@ -109,11 +115,11 @@ class Sierra extends Millennium{
 			$this->lastResponseCode = $responseCode;
 			$this->lastError = curl_errno($ch);
 			$this->lastErrorMessage = curl_error($ch);
-			if ($responseCode == 400){
-				global $logger;
-				$logger->log("Got 400 error POSTING to '" . $url . "'", Logger::LOG_ERROR);
-				$logger->log(print_r($curl_info, true), Logger::LOG_ERROR);
-			}
+//			if ($responseCode == 400){
+//				global $logger;
+//				$logger->log("Got 400 error POSTING to '" . $url . "'", Logger::LOG_ERROR);
+//				$logger->log(print_r($curl_info, true), Logger::LOG_ERROR);
+//			}
 
 			ExternalRequestLogEntry::logRequest($requestType, 'POST', $url, $headers, $post_string, $responseCode, $return, []);
 			curl_close($ch);
