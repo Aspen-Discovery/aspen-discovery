@@ -81,14 +81,12 @@ class Sierra extends Millennium{
 			$headers = array(
 				"Authorization: " . $tokenData->token_type . " {$tokenData->access_token}",
 				"User-Agent: Aspen Discovery",
-				//"X-Forwarded-For: " . IPAddress::getActiveIp(),
+				"X-Forwarded-For: " . IPAddress::getActiveIp(),
 				"Accept-Language: *",
 				"Host: " . $host,
+				'Content-Type: application/json',
+				'Accept: application/json'
 			);
-			if ($postParams != null && is_string($postParams)){
-				$headers[] = 'Content-Type: application/json';
-				$headers[] = 'Accept: application/json';
-			}
 			curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
