@@ -753,7 +753,7 @@ class WebBuilder_AJAX extends JSON_Action
 				if ($authType == "user"){
 					$webResourceUsage->pageViewsByAuthenticatedUsers++;
 				}
-				else {
+				elseif($authType == "library") {
 					$webResourceUsage->pageViewsInLibrary++;
 				}
 				$webResourceUsage->update();
@@ -762,7 +762,7 @@ class WebBuilder_AJAX extends JSON_Action
 				if ($authType == "user"){
 					$webResourceUsage->pageViewsByAuthenticatedUsers++;
 				}
-				else {
+				elseif($authType == "library") {
 					$webResourceUsage->pageViewsInLibrary++;
 				}
 				$webResourceUsage->insert();

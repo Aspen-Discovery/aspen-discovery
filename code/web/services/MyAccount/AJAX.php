@@ -4190,10 +4190,10 @@ class MyAccount_AJAX extends JSON_Action
 				$moveToPosition = $_REQUEST['position'];
 				$moveFromPosition = $userListEntry->weight;
 
-				$moveTo = new UserListEntry();
-				$moveTo->listId = $_REQUEST['listId'];
-				$moveTo->weight = $moveToPosition;
-				if ($moveTo->find(true)){
+				$listEntryMoveTo = new UserListEntry();
+				$listEntryMoveTo->listId = $_REQUEST['listId'];
+				$listEntryMoveTo->weight = $moveToPosition;
+				if ($listEntryMoveTo->find(true)){
 					$listEntry = new UserListEntry();
 					$listEntry->listId = $_REQUEST['listId'];
 					$maxPosition = $listEntry->count();

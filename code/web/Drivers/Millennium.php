@@ -598,18 +598,6 @@ class Millennium extends AbstractIlsDriver
 		return $millenniumHolds->placeVolumeHold($patron, $recordId, $volumeId, $pickupBranch);
 	}
 
-	public function updateHold($patron, $requestId, $type){
-		require_once ROOT_DIR . '/Drivers/marmot_inc/MillenniumHolds.php';
-		$millenniumHolds = new MillenniumHolds($this);
-		return $millenniumHolds->updateHold($patron, $requestId, $type, $this->getIndexingProfile());
-	}
-
-	public function updateHoldDetailed($patron, $type, $xNum, $cancelId, $locationId, $freezeValue='off'){
-		require_once ROOT_DIR . '/Drivers/marmot_inc/MillenniumHolds.php';
-		$millenniumHolds = new MillenniumHolds($this);
-		return $millenniumHolds->updateHoldDetailed($patron, $type, $xNum, $cancelId, $this->getIndexingProfile(), $locationId, $freezeValue);
-	}
-
 	public function cancelHold($patron, $recordId, $cancelId = null){
 		require_once ROOT_DIR . '/Drivers/marmot_inc/MillenniumHolds.php';
 		$millenniumHolds = new MillenniumHolds($this);
@@ -808,6 +796,10 @@ class Millennium extends AbstractIlsDriver
 		}
 	}
 
+	public function hasIssueSummaries(){
+		return true;
+	}
+
 	/**
 	 * Checks millennium to determine if there are issue summaries available.
 	 * If there are issue summaries available, it will return them in an array.
@@ -926,83 +918,6 @@ class Millennium extends AbstractIlsDriver
 			}
 		}
 		return $checkInData;
-	}
-
-	function _getItemDetails($id, $holdings){
-		global $logger;
-		global $configArray;
-		$scope = $this->getDefaultScope();
-
-		$shortId = substr(str_replace('.b', 'b', $id), 0, -1);
-
-		//Login to the site using vufind login.
-		$cookie = tempnam ("/tmp", "CURLCOOKIE");
-		$curl_url = $this->getVendorOpacUrl() . "/patroninfo";
-		$logger->log('Loading page ' . $curl_url, Logger::LOG_NOTICE);
-		//echo "$curl_url";
-		$curl_connection = curl_init($curl_url);
-		curl_setopt($curl_connection, CURLOPT_CONNECTTIMEOUT, 30);
-		curl_setopt($curl_connection, CURLOPT_USERAGENT,"Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)");
-		curl_setopt($curl_connection, CURLOPT_RETURNTRANSFER, true);
-		curl_setopt($curl_connection, CURLOPT_SSL_VERIFYPEER, false);
-		curl_setopt($curl_connection, CURLOPT_FOLLOWLOCATION, 1);
-		curl_setopt($curl_connection, CURLOPT_UNRESTRICTED_AUTH, true);
-		$post_data['name'] = $configArray['Catalog']['ils_admin_user'];
-		$post_data['code'] = $configArray['Catalog']['ils_admin_pwd'];
-//		$post_items = array();
-//		foreach ($post_data as $key => $value) {
-//			$post_items[] = $key . '=' . urlencode($value);
-//		}
-//		$post_string = implode ('&', $post_items);
-		$post_string = http_build_query($post_data);
-		curl_setopt($curl_connection, CURLOPT_POSTFIELDS, $post_string);
-		curl_exec($curl_connection);
-
-		foreach ($holdings as $itemNumber => $holding){
-			//Get the staff page for the record
-			//$curl_url = "https://sierra.marmot.org/search~S93?/Ypig&searchscope=93&SORT=D/Ypig&searchscope=93&SORT=D&SUBKEY=pig/1,383,383,B/staffi1~$shortId&FF=Ypig&2,2,";
-			$curl_url = $this->getVendorOpacUrl() . "/search~S{$scope}?/Ypig&searchscope={$scope}&SORT=D/Ypig&searchscope={$scope}&SORT=D&SUBKEY=pig/1,383,383,B/staffi$itemNumber~$shortId&FF=Ypig&2,2,";
-			$logger->log('Loading page ' . $curl_url, Logger::LOG_NOTICE);
-			//echo "$curl_url";
-			curl_setopt($curl_connection, CURLOPT_URL, $curl_url);
-			curl_setopt($curl_connection, CURLOPT_CONNECTTIMEOUT, 30);
-			curl_setopt($curl_connection, CURLOPT_USERAGENT,"Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)");
-			curl_setopt($curl_connection, CURLOPT_RETURNTRANSFER, true);
-			curl_setopt($curl_connection, CURLOPT_SSL_VERIFYPEER, false);
-			curl_setopt($curl_connection, CURLOPT_FOLLOWLOCATION, 1);
-			curl_setopt($curl_connection, CURLOPT_UNRESTRICTED_AUTH, true);
-			curl_setopt($curl_connection, CURLOPT_COOKIEJAR, $cookie );
-			curl_setopt($curl_connection, CURLOPT_COOKIESESSION, false);
-			$sResult = curl_exec($curl_connection);
-
-			//Extract Item information
-			if (preg_match('/<!-- Fixfields -->.*?<table.*?>(.*?)<\/table>.*?<!-- Varfields -->.*?<table.*?>(.*?)<\/table>.*?<!-- Lnkfields -->.*?<table.*?>(.*?)<\/table>/s', $sResult, $matches)) {
-				$fixFieldString = $matches[1];
-				$varFieldString = $matches[2];
-			}
-
-			//Extract the fixFields into an array of name value pairs
-			$fixFields = array();
-			if (isset($fixFieldString)){
-				preg_match_all('/<td><font size="-1"><em>(.*?)<\/em><\/font>&nbsp;<strong>(.*?)<\/strong><\/td>/s', $fixFieldString, $fieldData, PREG_PATTERN_ORDER);
-				for ($i = 0; $i < count($fieldData[0]); $i++) {
-					$fixFields[$fieldData[1][$i]] = $fieldData[2][$i];
-				}
-			}
-
-			//Extract the fixFields into an array of name value pairs
-			$varFields = array();
-			if (isset($varFieldString)){
-				preg_match_all('/<td.*?><font size="-1"><em>(.*?)<\/em><\/font><\/td><td width="80%">(.*?)<\/td>/s', $varFieldString, $fieldData, PREG_PATTERN_ORDER);
-				for ($i = 0; $i < count($fieldData[0]); $i++) {
-					$varFields[$fieldData[1][$i]] = $fieldData[2][$i];
-				}
-			}
-
-			//Add on the item information
-			$holdings[$itemNumber] = array_merge($fixFields, $varFields, $holding);
-		}
-		curl_close($curl_connection);
 	}
 
 	function combineCityStateZipInSelfRegistration(){
@@ -1192,8 +1107,8 @@ class Millennium extends AbstractIlsDriver
 	}
 
 	public function getEmailResetPinTemplate(){
-		return 'requestPinReset.tpl';
-	}
+	return 'requestPinReset.tpl';
+}
 
 	public function getEmailResetPinResultsTemplate(){
 		return 'requestPinResetResults.tpl';

@@ -20,7 +20,7 @@
 					<label for="password" style="font-size: 18px">{translate text='PIN/Password' isPublicFacing=true}</label>
 				</div>
 				<div class="col-xs-6 text-right">
-					<button type="button" name="resetPinPassword" class="btn btn-default" {if $offline}disabled{/if}>{translate text='Reset PIN/Password' isPublicFacing=true}</button>{if $offline}<small class="muted help-block">Catalog is currently offline, please try again later.</small>{/if}
+					<a href="/MyAccount/ResetPinPage" id="resetPinPassword" class="btn btn-default {if $offline}disabled{/if}">{translate text='Reset PIN/Password' isPublicFacing=true}</a>{if $offline}<small class="muted help-block">Catalog is currently offline, please try again later.</small>{/if}
 				</div>
 			</div>
             {/if}

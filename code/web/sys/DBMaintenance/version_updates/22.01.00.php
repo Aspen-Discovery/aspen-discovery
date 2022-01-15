@@ -216,5 +216,12 @@ function getUpdates22_01_00() : array
 				'ALTER TABLE indexing_profiles ADD COLUMN fallbackFormatField VARCHAR(5)'
 			]
 		], //indexing_profile_fallbackFormatField
+		'update_overdrive_fulfillment' => [
+			'title' => 'Update OverDrive settings to use new fulfillment method',
+			'description' => 'Update OverDrive settings to use new fulfillment method',
+			'sql' => [
+				'UPDATE overdrive_settings SET useFulfillmentInterface=1 WHERE useFulfillmentInterface=0'
+			]
+		], //update_overdrive_fulfillment
 	];
 }
