@@ -34,7 +34,7 @@ class Sierra extends Millennium{
 			$responseCode = $curl_info['http_code'];
 			curl_close($ch);
 			ExternalRequestLogEntry::logRequest('sierra.connectToApi', 'POST', $tokenUrl, $headers, "grant_type=client_credentials", $responseCode, $return, []);
-			
+
 			$this->sierraToken = json_decode($return);
 		}
 		return $this->sierraToken;
@@ -108,6 +108,8 @@ class Sierra extends Millennium{
 				curl_setopt($ch, CURLOPT_POSTFIELDS, $post_string);
 			}else{
 				$post_string = '';
+				curl_setopt($ch, CURLOPT_POSTFIELDS, $post_string);
+				$headers[] = 'Content-Length: 0';
 			}
 			$return = curl_exec($ch);
 			$curl_info = curl_getinfo($ch);
