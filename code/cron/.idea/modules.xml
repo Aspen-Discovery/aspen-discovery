@@ -10,6 +10,7 @@
       <module fileurl="file://$PROJECT_DIR$/../../data_dir_setup/data_dir_setup.iml" filepath="$PROJECT_DIR$/../../data_dir_setup/data_dir_setup.iml" />
       <module fileurl="file://$PROJECT_DIR$/../events_indexer/events_indexer.iml" filepath="$PROJECT_DIR$/../events_indexer/events_indexer.iml" />
       <module fileurl="file://$PROJECT_DIR$/../evergreen_export/evergreen_export.iml" filepath="$PROJECT_DIR$/../evergreen_export/evergreen_export.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../folio_export/folio_export.iml" filepath="$PROJECT_DIR$/../folio_export/folio_export.iml" />
       <module fileurl="file://$PROJECT_DIR$/../hoopla_export/hoopla_export.iml" filepath="$PROJECT_DIR$/../hoopla_export/hoopla_export.iml" />
       <module fileurl="file://$PROJECT_DIR$/../horizon_export/horizon_export.iml" filepath="$PROJECT_DIR$/../horizon_export/horizon_export.iml" />
       <module fileurl="file://$PROJECT_DIR$/../../install/install.iml" filepath="$PROJECT_DIR$/../../install/install.iml" />
