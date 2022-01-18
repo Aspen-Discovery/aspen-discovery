@@ -437,4 +437,8 @@ abstract class AbstractIlsDriver extends AbstractDriver
 	public function findNewUser($patronBarcode){
 		return false;
 	}
+
+	public function hasIssueSummaries(){
+		return false;
+	}
 }

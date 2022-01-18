@@ -175,7 +175,7 @@ class Record_AJAX extends Action
 					}
 					$results['message'] = "<div class='alert alert-success'>" . $results['message'] . '</div>';
 				}else{
-					if ($results['confirmationNeeded']){
+					if (isset($results['confirmationNeeded']) && $results['confirmationNeeded'] == true){
 						$results['modalButtons'] = '<a href="#" class="btn btn-primary" onclick="return AspenDiscovery.Record.confirmHold(\'Record\', \'' . $shortId . '\', ' . $results['confirmationId'] . ')">' . translate(['text'=>'Yes, Place Hold','isPublicFacing'=>true]) . '</a>';
 					}
 				}

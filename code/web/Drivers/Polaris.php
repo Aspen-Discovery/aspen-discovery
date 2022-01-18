@@ -1962,42 +1962,72 @@ class Polaris extends AbstractIlsDriver
 		if (isset($_REQUEST['branchcode'])) {
 			$body->PatronBranchID = $_REQUEST['branchcode'];
 		}
-		$body->PostalCode = $_REQUEST['zipcode'];
+		if (isset($_REQUEST['zipcode'])){
+			$body->PostalCode = $_REQUEST['zipcode'];
+		}
 		$body->ZipPlusFour = '';
-		$body->City = $_REQUEST['city'];
-		$body->State = $_REQUEST['state'];
+		if (isset($_REQUEST['city'])) {
+			$body->City = $_REQUEST['city'];
+		}
+		if (isset($_REQUEST['state'])) {
+			$body->State = $_REQUEST['state'];
+		}
 		$body->County = '';
 		//$body->CountryID = '';
-		$body->StreetOne = $_REQUEST['address'];
-		$body->StreetTwo = $_REQUEST['address2'];
-		$body->StreetThree = $_REQUEST['address3'];
-		$body->NameFirst = $_REQUEST['firstName'];
-		$body->NameLast = $_REQUEST['lastName'];
-		$body->NameMiddle = $_REQUEST['middleName'];
+		if (isset($_REQUEST['address'])){
+			$body->StreetOne = $_REQUEST['address'];
+		}
+		if (isset($_REQUEST['address2'])){
+			$body->StreetTwo = $_REQUEST['address2'];
+		}
+		if (isset($_REQUEST['address3'])){
+			$body->StreetThree = $_REQUEST['address3'];
+		}
+		if (isset($_REQUEST['firstName'])){
+			$body->NameFirst = $_REQUEST['firstName'];
+		}
+		if (isset($_REQUEST['lastName'])){
+			$body->NameLast = $_REQUEST['lastName'];
+		}
+		if (isset($_REQUEST['middleName'])){
+			$body->NameMiddle = $_REQUEST['middleName'];
+		}
 		//$body->User1 = '';
 		//$body->User2 = '';
 		//$body->User3 = '';
 		//$body->User4 = '';
 		//$body->User5 = '';
 		//$body->Gender = '';
-		if ($type == 'selfReg' && $library && $library->promptForBirthDateInSelfReg) {
-			$body->Birthdate = $_REQUEST['birthDate'];
+		if (isset($_REQUEST['birthDate'])) {
+			if ($type == 'selfReg' && $library && $library->promptForBirthDateInSelfReg) {
+				$body->Birthdate = $_REQUEST['birthDate'];
+			}
 		}
-		$body->PhoneVoice1 = $_REQUEST['phone1'];
-		$body->PhoneVoice2 = $_REQUEST['phone2'];
-		$body->PhoneVoice3 = $_REQUEST['phone3'];
+		if (isset($_REQUEST['phone1'])){
+			$body->PhoneVoice1 = $_REQUEST['phone1'];
+		}
+		if (isset($_REQUEST['phone2'])){
+			$body->PhoneVoice2 = $_REQUEST['phone2'];
+		}
+		if (isset($_REQUEST['phone3'])){
+			$body->PhoneVoice3 = $_REQUEST['phone3'];
+		}
 		$body->PhoneVoice1Carrier = -2;
 		$body->PhoneVoice2Carrier = -2;
 		$body->PhoneVoice3Carrier = -2;
-		$txtCarrier = $_REQUEST['txtPhone'];
-		if ($txtCarrier != '(None)') {
-			$property = 'PhoneVoice' . $_REQUEST['txtPhone'] . 'CarrierID';
-			$body->$property = $_REQUEST['txtCarrier'];
+		if (isset($_REQUEST['txtPhone'])) {
+			$txtCarrier = $_REQUEST['txtPhone'];
+			if ($txtCarrier != '(None)') {
+				$property = 'PhoneVoice' . $_REQUEST['txtPhone'] . 'CarrierID';
+				$body->$property = $_REQUEST['txtCarrier'];
+			}
 		}
 		if (isset($_REQUEST['email'])) {
 			$body->EmailAddress = $_REQUEST['email'];
 		}
-		$body->AltEmailAddress = $_REQUEST['altEmail'];
+		if (isset($_REQUEST['altEmail'])) {
+			$body->AltEmailAddress = $_REQUEST['altEmail'];
+		}
 		//$body->LanguageID = 1;
 		if (isset($_REQUEST['patronUsername'])) {
 			$body->Username = $_REQUEST['patronUsername'];
@@ -2008,26 +2038,40 @@ class Polaris extends AbstractIlsDriver
 		if (isset($_REQUEST['patronPasswordRepeat'])) {
 			$body->Password2 = $_REQUEST['patronPasswordRepeat'];
 		}
-		$body->DeliveryOptionID = $_REQUEST['notices'];
-		if ($_REQUEST['txtPhone'] != '(None)') {
-			$body->EnableSMS = !empty($_REQUEST['txtPhone']) ? 1 : 0;
-			$body->TxtPhoneNumber = $_REQUEST['txtPhone'];
-		} else {
-			$body->EnableSMS = 0;
-			$body->TxtPhoneNumber = '';
+		if (isset($_REQUEST['notices'])) {
+			$body->DeliveryOptionID = $_REQUEST['notices'];
+		}
+		if (isset($_REQUEST['txtPhone'])) {
+			if ($_REQUEST['txtPhone'] != '(None)') {
+				$body->EnableSMS = !empty($_REQUEST['txtPhone']) ? 1 : 0;
+				$body->TxtPhoneNumber = $_REQUEST['txtPhone'];
+			} else {
+				$body->EnableSMS = 0;
+				$body->TxtPhoneNumber = '';
+			}
 		}
 		//$body->Barcode = '';
-		if ($_REQUEST['eReceipts'] != '(None)') {
-			$body->EReceiptOptionID = $_REQUEST['eReceipts'];
+		if (isset($_REQUEST['eReceipts'])) {
+			if ($_REQUEST['eReceipts'] != '(None)') {
+				$body->EReceiptOptionID = $_REQUEST['eReceipts'];
+			}
 		}
 		//$body->PatronCode = '';
 		//$body->ExpirationDate = '';
 		//$body->AddrCheckDate = '';
 		//$body->GenderID = '';
-		$body->LegalNameFirst = $_REQUEST['firstNameOnIdentification'];
-		$body->LegalNameMiddle = $_REQUEST['middleNameOnIdentification'];
-		$body->LegalNameLast = $_REQUEST['lastNameOnIdentification'];
-		$body->UseLegalNameOnNotices = isset($_REQUEST['useNameOnIdForNotices']) ? true : false;
+		if (isset($_REQUEST['firstNameOnIdentification'])) {
+			$body->LegalNameFirst = $_REQUEST['firstNameOnIdentification'];
+		}
+		if (isset($_REQUEST['middleNameOnIdentification'])) {
+			$body->LegalNameMiddle = $_REQUEST['middleNameOnIdentification'];
+		}
+		if (isset($_REQUEST['lastNameOnIdentification'])) {
+			$body->LegalNameLast = $_REQUEST['lastNameOnIdentification'];
+		}
+		if (isset($_REQUEST['useNameOnIdForNotices'])) {
+			$body->UseLegalNameOnNotices = isset($_REQUEST['useNameOnIdForNotices']) ? true : false;
+		}
 		if (isset($_REQUEST['branchcode'])) {
 			$body->RequestPickupBranchID = $_REQUEST['branchcode'];
 		}

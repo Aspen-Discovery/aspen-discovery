@@ -109,7 +109,11 @@ class Genealogy_Results extends ResultsAction {
 
 		// Process Search
 		$result = $searchObject->processSearch(true, true);
-		if ($result instanceof AspenError) {
+		if ($result == null) {
+			$interface->assign('error', 'The Solr index is offline, please try your search again in a few minutes.');
+			$this->display('searchError.tpl', 'Error in Search', '');
+			return;
+		}elseif ($result instanceof AspenError) {
 			AspenError::raiseError($result->getMessage());
 		}
 		$timer->logTime('Process Search');

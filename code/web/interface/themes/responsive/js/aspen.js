@@ -8013,7 +8013,7 @@ AspenDiscovery.Admin = (function(){
 					var contrastSpan2 = $("#contrast_" + property2);
 					contrastSpan1.text(contrastRatio.toFixed(2));
 					contrastSpan2.text(contrastRatio.toFixed(2));
-					if(minRatio === 7.0) {
+					if(minRatio == 7.0) {
 						if (contrastRatio < 4.5) {
 							contrastSpan1.addClass("alert-danger");
 							contrastSpan2.addClass("alert-danger");

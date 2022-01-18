@@ -4,16 +4,19 @@ import com.turning_leaf_technologies.strings.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.StatusLine;
+import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.entity.ContentType;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
+import org.apache.logging.log4j.Logger;
 import org.apache.solr.client.solrj.impl.ConcurrentUpdateSolrClient;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.common.SolrInputDocument;
 
+import java.io.IOException;
 import java.sql.*;
 import java.util.HashMap;
 import java.util.ArrayList;
@@ -33,6 +36,7 @@ class WebsiteIndexer {
 	private final boolean fullReload;
 	private final long maxPagesToIndex;
 	private final WebsiteIndexLogEntry logEntry;
+	private final Logger logger;
 	private final Connection aspenConn;
 	private final HashMap<String, WebPage> existingPages = new HashMap<>();
 	private final HashMap<String, Boolean> allLinks = new HashMap<>();
@@ -49,7 +53,7 @@ class WebsiteIndexer {
 
 	private final ConcurrentUpdateSolrClient solrUpdateServer;
 
-	WebsiteIndexer(Long websiteId, String websiteName, String searchCategory, String initialUrl, String pageTitleExpression, String descriptionExpression, String pathsToExclude, long maxPagesToIndex, HashSet<String> scopesToInclude, boolean fullReload, WebsiteIndexLogEntry logEntry, Connection aspenConn, ConcurrentUpdateSolrClient solrUpdateServer) {
+	WebsiteIndexer(Long websiteId, String websiteName, String searchCategory, String initialUrl, String pageTitleExpression, String descriptionExpression, String pathsToExclude, long maxPagesToIndex, HashSet<String> scopesToInclude, boolean fullReload, WebsiteIndexLogEntry logEntry, Connection aspenConn, ConcurrentUpdateSolrClient solrUpdateServer, Logger logger) {
 		this.websiteId = websiteId;
 		this.websiteName = websiteName;
 		this.searchCategory = searchCategory;
@@ -63,6 +67,7 @@ class WebsiteIndexer {
 		this.maxPagesToIndex = maxPagesToIndex;
 
 		this.logEntry = logEntry;
+		this.logger = logger;
 		this.aspenConn = aspenConn;
 		this.fullReload = fullReload;
 		this.solrUpdateServer = solrUpdateServer;
@@ -100,7 +105,7 @@ class WebsiteIndexer {
 		}
 
 		try {
-			addPageToStmt = aspenConn.prepareStatement("INSERT INTO website_pages SET websiteId = ?, url = ?, checksum = ?, deleted = 0, firstDetected = ? ON DUPLICATE KEY UPDATE checksum = VALUES(checksum)", Statement.RETURN_GENERATED_KEYS);
+			addPageToStmt = aspenConn.prepareStatement("INSERT INTO website_pages SET websiteId = ?, url = ?, checksum = ?, deleted = 0, firstDetected = ? ON DUPLICATE KEY UPDATE checksum = VALUES(checksum), deleted = 0", Statement.RETURN_GENERATED_KEYS);
 			deletePageStmt = aspenConn.prepareStatement("UPDATE website_pages SET deleted = 1, deleteReason = ? where id = ?");
 		} catch (Exception e) {
 			logEntry.incErrors("Error setting up statements ", e);
@@ -188,10 +193,13 @@ class WebsiteIndexer {
 		try {
 			CloseableHttpClient httpclient = HttpClients.createDefault();
 			pageToProcess = pageToProcess.replaceAll("\\s", "%20");
+			logger.info("Processing page " + pageToProcess);
 			HttpGet httpGet = new HttpGet(pageToProcess);
-			try (CloseableHttpResponse response1 = httpclient.execute(httpGet)) {
+			try{
+				CloseableHttpResponse response1 = httpclient.execute(httpGet);
 				StatusLine status = response1.getStatusLine();
 				if (status.getStatusCode() == 200) {
+					logger.info("Got successful response");
 					WebPage page;
 					if (existingPages.containsKey(pageToProcess)) {
 						page = existingPages.get(pageToProcess);
@@ -203,6 +211,7 @@ class WebsiteIndexer {
 					ContentType contentType = ContentType.getOrDefault(entity1);
 					String mimeType = contentType.getMimeType();
 					if (!mimeType.equals("text/html")) {
+						logger.info("Non HTML page, skipping");
 						//TODO: Index PDFs
 						//Don't log this for now since it just distracts from actual errors
 //						if (!mimeType.equals("application/pdf")) {
@@ -337,7 +346,7 @@ class WebsiteIndexer {
 
 						existingPages.remove(pageToProcess);
 
-						if (checksum != page.getChecksum() || fullReload) {
+						if (checksum != page.getChecksum() || fullReload || page.isDeleted()) {
 							//Save the page to the database
 							addPageToStmt.setLong(1, websiteId);
 							addPageToStmt.setString(2, pageToProcess);
@@ -373,14 +382,20 @@ class WebsiteIndexer {
 						}
 					}
 				} else{
+					logger.info("Got error processing the page");
 					WebPage existingPage = existingPages.get(pageToProcess);
 					if (existingPage != null && !existingPage.isDeleted()){
 						deletePageStmt.setString(1, "Received " + status.getStatusCode() + " error code");
 						deletePageStmt.setLong(2, existingPage.getId());
 						deletePageStmt.executeUpdate();
-						existingPages.remove(existingPage);
+						solrUpdateServer.deleteByQuery("id:" + existingPage.getId() + "AND website_name:\"" + websiteName + "\"");
+						existingPages.remove(pageToProcess);
 					}
 				}
+			}catch (ClientProtocolException e2){
+				logEntry.incErrors("Client ProtocolException loading " + pageToProcess, e2);
+			}catch (IOException e1){
+				logEntry.incErrors("IO Exception loading " + pageToProcess, e1);
 			}
 		} catch (IllegalArgumentException e) {
 			logEntry.addNote("Invalid path provided " + pageToProcess + " " + e);

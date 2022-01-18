@@ -829,6 +829,13 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
 	}
 
 	/**
+	 * @param String $fields - a list of comma separated fields to return
+	 */
+	function setFieldsToReturn($fields){
+		//Do nothing, the fields are not customizable at this level
+	}
+
+	/**
 	 * Retrieves a document specified by the ID.
 	 *
 	 * @param string $id The document to retrieve from Solr
