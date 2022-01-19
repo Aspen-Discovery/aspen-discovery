@@ -1609,6 +1609,7 @@ class Library extends DataObject
 			'tiktokLink' => $this->tiktokLink,
 			'generalContactLink' => $this->generalContactLink,
 			'email' => $this->contactEmail,
+			'themeId' => $this->theme,
 		];
 		if (empty($this->baseUrl)){
 			$apiInfo['baseUrl'] = $configArray['Site']['url'];
