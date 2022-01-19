@@ -1300,4 +1300,22 @@ class Theme extends DataObject
 		}
 	}
 
+	public function getApiInfo()
+	{
+		global $configArray;
+
+		$apiInfo = $this;
+		$this->logoName = $configArray['Site']['url'] . '/files/original/' . $this->logoName;
+		$this->favicon = $configArray['Site']['url'] . '/files/original/' . $this->favicon;
+		unset($this->additionalCssType);
+		unset($this->additionalCss);
+		unset($this->generatedCss);
+		unset($this->__table);
+		unset($this->__primaryKey);
+		unset($this->__displayNameColumn);
+		unset($this->_deleteOnSave);
+
+		return $apiInfo;
+	}
+
 }

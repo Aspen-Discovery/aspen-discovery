@@ -1463,6 +1463,11 @@ class Location extends DataObject
 			'hoursMessage' => Location::getLibraryHoursMessage($this->locationId),
 			'hours' => []
 		];
+		if($this->theme == "-1") {
+			$apiInfo['theme'] = $parentLibrary->theme;
+		} else {
+			$apiInfo['theme'] = $this->theme;
+		}
 		if((empty($this->homeLink) || $this->homeLink == "default" || $this->homeLink == "/")) {
 			if($parentLibrary == null) {
 				$apiInfo['homeLink'] = '';

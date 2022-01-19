@@ -1,5 +1,6 @@
 <?php
 require_once 'bootstrap.php';
+require_once ROOT_DIR . '/sys/BotChecker.php';
 if (file_exists('bootstrap_aspen.php')) {
 	require_once 'bootstrap_aspen.php';
 }
@@ -436,7 +437,6 @@ if ($action == "AJAX" || $action == "JSON" || $module == 'API'){
 		$aspenUsage->ajaxRequests++;
 	}
 }else{
-	require_once ROOT_DIR . '/sys/BotChecker.php';
 	if (BotChecker::isRequestFromBot()){
 		$aspenUsage->pageViewsByBots++;
 	}else{
