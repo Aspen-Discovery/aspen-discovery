@@ -12966,6 +12966,7 @@ AspenDiscovery.WebBuilder = function () {
 		},
 
 		getWebResource:function (id) {
+			var newTab = window.open();
 			var url = Globals.path + "/WebBuilder/AJAX";
 			var params = {
 				method: "getWebResource",
@@ -12982,7 +12983,7 @@ AspenDiscovery.WebBuilder = function () {
 						};
 						$.getJSON(url, params, function(usage){
 							if(data.openInNewTab) {
-								window.open(data.url, '_blank');
+								newTab.location.href = data.url;
 							} else {
 								location.assign(data.url);
 							}
@@ -13000,7 +13001,7 @@ AspenDiscovery.WebBuilder = function () {
 					};
 					$.getJSON(url, params, function(usage){
 						if(data.openInNewTab) {
-							window.open(data.url, '_blank');
+							newTab.location.href = data.url;
 						} else {
 							location.assign(data.url);
 						}
