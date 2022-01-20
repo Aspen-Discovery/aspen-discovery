@@ -276,7 +276,7 @@ if ($isLoggedIn) {
 	$interface->assign('user', $activeUserObject);
 	$userIsStaff = $activeUserObject->isStaff();
 	$interface->assign('userIsStaff', $userIsStaff);
-} else if ( (isset($_POST['username']) && isset($_POST['password']) && ($action != 'Account' && $module != 'AJAX')) || isset($_REQUEST['casLogin']) ) {
+} else if ( (isset($_POST['username']) && isset($_POST['password']) && ($action != 'Account' && $module != 'AJAX') && ($module != 'API')) || isset($_REQUEST['casLogin']) ) {
 	//The user is trying to log in
     try {
         $user = UserAccount::login();
