@@ -1207,6 +1207,7 @@ class UserAPI extends Action
 								foreach ($userPickupLocations as $tmpLocation) {
 									if ($tmpLocation->code == $patron->getPickupLocationCode()) {
 										$pickupBranch = $tmpLocation->code;
+										break;
 									}
 								}
 							} else {
