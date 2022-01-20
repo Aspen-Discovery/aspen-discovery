@@ -47,7 +47,11 @@ class PType extends DataObject
 		$patronType->find();
 		$patronTypeList = [];
 		while ($patronType->fetch()) {
-			$patronTypeList[$patronType->id] = $patronType->pType;
+			$patronTypeLabel = $patronType->pType;
+			if (!empty($patronType->description)){
+				$patronTypeLabel .= ' - ' . $patronType->description;
+			}
+			$patronTypeList[$patronType->id] = $patronTypeLabel;
 		}
 		return $patronTypeList;
 	}
