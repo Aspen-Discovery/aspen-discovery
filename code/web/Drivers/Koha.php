@@ -1815,6 +1815,7 @@ class Koha extends AbstractIlsDriver
 			], false);
 			$response = $this->curlWrapper->curlPostPage($apiUrl, $postParams);
 			$json_response = json_decode($response);
+			ExternalRequestLogEntry::logRequest('koha.getOAuthToken', 'POST', $apiUrl, $this->curlWrapper->getHeaders(), json_encode($postParams), $this->curlWrapper->getResponseCode(), $response, ['client_secret'=>$this->accountProfile->oAuthClientSecret]);
 			if (!empty($json_response->access_token)) {
 				$this->oauthToken = $json_response->access_token;
 			} else {
