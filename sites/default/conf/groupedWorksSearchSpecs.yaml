@@ -308,9 +308,9 @@ Keyword:
     -
       - [OR, 300]
       - id:
-        - [onephrase, ~]
+        - [exact, ~]
       - alternate_ids:
-        - [onephrase, ~]
+        - [exact, ~]
       - barcode:
         - [onephrase, ~]
       - issn:
@@ -409,10 +409,11 @@ KeywordProper:
       - [or, ~]
     - callnumber-subject:
       - [onephrase, ~]
+      - [exact, ~]
     - id:
-      - [onephrase, ~]
+      - [exact, ~]
     - alternate_ids:
-      - [onephrase, ~]
+      - [exact, ~]
     - local_callnumber_exact:
       - [localized_callnumber, 800]
     - local_callnumber_left:
@@ -423,10 +424,10 @@ KeywordProper:
 id:
   QueryFields:
     - id:
-      - [onephrase, ~]
+      - [exact, ~]
       - [or, ~]
     - alternate_ids:
-      - [onephrase, ~]
+      - [exact, ~]
       - [or, ~]
 
 LocalCallNumber:
