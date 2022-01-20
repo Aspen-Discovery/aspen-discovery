@@ -35,7 +35,7 @@ class SIPAuthentication implements Authentication {
 					if (preg_match("/^98/", $msg_result)) {
 						$result = $mysip->parseACSStatusResponse($msg_result);
 
-						//  Use result to populate SIP2 setings
+						//  Use result to populate SIP2 settings
 						$mysip->AO = $result['variable']['AO'][0]; /* set AO to value returned */
 						$mysip->AN = $result['variable']['AN'][0]; /* set AN to value returned */
 
