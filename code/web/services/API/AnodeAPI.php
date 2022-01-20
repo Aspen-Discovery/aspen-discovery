@@ -32,7 +32,8 @@ class AnodeAPI extends Action
 		header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
 		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
 		if (method_exists($this, $method)) {
-			$output = json_encode(array('result' => $this->$method()), JSON_PRETTY_PRINT);
+			$result = $this->$method();
+			$output = json_encode(array('result' => $result));
 			require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
 			APIUsage::incrementStat('AnodeAPI', $method);
 		} else {
@@ -110,7 +111,10 @@ class AnodeAPI extends Action
 		if (!isset($result['titles'])) {
 			$result['titles'] = array();
 		} else {
-			foreach ($result['titles'] as &$groupedWork) {
+			//Rebuild the titles array since we don't want indexes to have gaps in them (so we don't convert the array to an object in json)
+			$titles = $result['titles'];
+			$result['titles'] = [];
+			foreach ($titles as &$groupedWork) {
 				$itemAPI = new ItemAPI();
 				$_GET['id'] = $groupedWork['id'];
 				$groupedWorkRecord = $itemAPI->loadSolrRecord($groupedWork['id']);
@@ -214,6 +218,7 @@ class AnodeAPI extends Action
 				unset($groupedWork['accelerated_reader_point_value']);
 				unset($groupedWork['accelerated_reader_reading_level']);
 
+				$result['titles'][] = $groupedWork;
 			}
 		}
 		return $result;
