@@ -10,9 +10,9 @@
 	{/if}
 	<div class="row">
 		<div class="col-sm-2">
-			<a href="{$webResource->url}" {if $webResource->openInNewTab}target="_blank"{/if}>
-				<img class="img-responsive img-thumbnail" src="{$logo}" alt="{$title|escape}">
-			</a>
+
+				<img class="img-responsive img-thumbnail" src="{$logo}" alt="{$title|escape}" onclick="return AspenDiscovery.WebBuilder.getWebResource('{$webResource->id}');">
+
 		</div>
 		<div class="col-sm-10 col-md-7">
 			{$description}
