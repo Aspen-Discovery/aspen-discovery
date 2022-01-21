@@ -527,6 +527,7 @@ class UserAccount
 					return $cardExpired;
 				}
 
+				/** @var Memcache $memCache */
 				global $memCache;
 				global $serverName;
 				global $configArray;
@@ -633,6 +634,7 @@ class UserAccount
 				}
 				$validatedUser = $authN->validateAccount($username, $password, $parentAccount, $validatedViaSSO);
 				if ($validatedUser && !($validatedUser instanceof AspenError)) {
+					/** @var Memcache $memCache */
 					global $memCache;
 					global $serverName;
 					global $configArray;

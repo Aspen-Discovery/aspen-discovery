@@ -2314,6 +2314,17 @@ class User extends DataObject
 		$sections['system_admin']->addAction(new AdminAction('Variables', 'Variables set by the Aspen Discovery itself as part of background processes.', '/Admin/Variables'), 'Administer System Variables');
 		$sections['system_admin']->addAction(new AdminAction('System Variables', 'Settings for Aspen Discovery that apply to all libraries on this installation.', '/Admin/SystemVariables'), 'Administer System Variables');
 
+		if (UserAccount::getActiveUserObj()->source == 'admin' && UserAccount::getActiveUserObj()->cat_username == 'aspen_admin') {
+			require_once ROOT_DIR . '/sys/SystemVariables.php';
+			$systemVariables = SystemVariables::getSystemVariables();
+			$sections['greenhouse'] = new AdminSection('Aspen Greenhouse');
+			$sections['greenhouse']->addAction(new AdminAction('Site Listing', 'Manage Site Listings in the Greenhouse', $systemVariables->greenhouseUrl . '/Greenhouse/Sites'), 'Run Database Maintenance');
+			$sections['greenhouse']->addAction(new AdminAction('Site Status', 'Site Statuses for the Greenhouse', $systemVariables->greenhouseUrl . '/Greenhouse/SiteStatus'), 'Run Database Maintenance');
+			$sections['greenhouse']->addAction(new AdminAction('Update Center', 'Check version status for sites in the Greenhouse', $systemVariables->greenhouseUrl . '/Greenhouse/UpdateCenter'), 'Run Database Maintenance');
+			$sections['greenhouse']->addAction(new AdminAction('Settings', 'Settings for the Greenhouse', $systemVariables->greenhouseUrl . '/Greenhouse/Settings'), 'Run Database Maintenance');
+			$sections['greenhouse']->addAction(new AdminAction('External Request Log', 'View External Request Logs', '/Greenhouse/ExternalRequestLog'), 'Run Database Maintenance');
+		}
+
 		$sections['system_reports'] = new AdminSection('System Reports');
 		$sections['system_reports']->addAction(new AdminAction('Site Status', 'View Status of Aspen Discovery.', '/Admin/SiteStatus'), 'View System Reports');
 		$sections['system_reports']->addAction(new AdminAction('Usage Dashboard', 'Usage Report for Aspen Discovery.', '/Admin/UsageDashboard'), ['View Dashboards', 'View System Reports']);
@@ -2347,6 +2358,8 @@ class User extends DataObject
 		$sections['primary_configuration']->addAction(new AdminAction('Patron Types', 'Modify Permissions and limits based on Patron Type.', '/Admin/PTypes'), 'Administer Patron Types');
 		$sections['primary_configuration']->addAction(new AdminAction('Account Profiles', 'Define how account information is loaded from the ILS.', '/Admin/AccountProfiles'), 'Administer Account Profiles');
 		$sections['primary_configuration']->addAction(new AdminAction('Two-Factor Authentication', 'Administer two-factor authentication settings', '/Admin/TwoFactorAuth'), 'Administer Two-Factor Authentication');
+		$sections['primary_configuration']->addAction(new AdminAction('Aspen LiDA Settings', 'Administer Aspen LiDA settings', '/Admin/AspenLiDA'), 'Administer Aspen LiDA Settings');
+
 
 		//Materials Request if enabled
 		if (MaterialsRequest::enableAspenMaterialsRequest()){

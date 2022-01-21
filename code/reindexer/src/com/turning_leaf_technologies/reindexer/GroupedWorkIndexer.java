@@ -345,6 +345,12 @@ public class GroupedWorkIndexer {
 						case "Polaris":
 							ilsRecordProcessors.put(curType, new PolarisRecordProcessor(this, curType, dbConn, indexingProfileRS, logger, fullReindex));
 							break;
+						case "Evergreen":
+							ilsRecordProcessors.put(curType, new EvergreenRecordProcessor(this, curType, dbConn, indexingProfileRS, logger, fullReindex));
+							break;
+						case "Folio":
+							ilsRecordProcessors.put(curType, new FolioRecordProcessor(this, curType, dbConn, indexingProfileRS, logger, fullReindex));
+							break;
 						default:
 							logEntry.incErrors("Unknown indexing class " + ilsIndexingClassString);
 							break;

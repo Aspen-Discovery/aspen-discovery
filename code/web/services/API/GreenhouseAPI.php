@@ -305,6 +305,7 @@ class GreenhouseAPI extends Action
 		require_once ROOT_DIR . '/sys/LibraryLocation/Location.php';
 		require_once ROOT_DIR . '/sys/Theming/Theme.php';
 
+		$num = 0;
 		$location = new Location();
 		$location->find();
 		while($location->fetch()) {
@@ -382,9 +383,13 @@ class GreenhouseAPI extends Action
 						'releaseChannel' => $location->appReleaseChannel,
 						'theme' => $themeArray,
 					];
+
+					$num = $num + 1;
 				}
 			}
 		}
+
+		$return['count'] = $num;
 
 		return $return;
 	}

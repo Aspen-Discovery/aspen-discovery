@@ -16,7 +16,7 @@ class SystemAPI extends Action
 
 		if (isset($_SERVER['PHP_AUTH_USER'])) {
 			if($this->grantTokenAccess()) {
-				if (in_array($method, array('getLibraryInfo', 'getLocationInfo'))) {
+				if (in_array($method, array('getLibraryInfo', 'getLocationInfo', 'getThemeInfo', 'getAppSettings'))) {
 					$result = [
 						'result' => $this->$method()
 					];
@@ -97,6 +97,41 @@ class SystemAPI extends Action
 			}
 		}else{
 			return ['success' => false, 'message' => 'id not provided'];
+		}
+	}
+
+	/** @noinspection PhpUnused */
+	public function getThemeInfo() : array
+	{
+		if (isset($_REQUEST['id']) && is_numeric($_REQUEST['id'])) {
+			$theme = new Theme();
+			$theme->id = $_REQUEST['id'];
+			if ($theme->find(true)){
+				return ['success' => true, 'theme' => $theme->getApiInfo()];
+			}else{
+				return ['success' => false, 'message' => 'Theme not found'];
+			}
+		}else{
+			return ['success' => false, 'message' => 'Theme id not provided'];
+		}
+	}
+
+	/** @noinspection PhpUnused */
+	public function getAppSettings() : array
+	{
+		if (isset($_REQUEST['slug'])) {
+			$app = new AspenLiDASetting();
+			$app->slugName = $_REQUEST['slug'];
+			if ($app->find(true)){
+				return [
+					'success' => true,
+					'settings' => $app,
+				];
+			}else{
+				return ['success' => false, 'message' => 'App settings for slug name not found'];
+			}
+		}else{
+			return ['success' => false, 'message' => 'Slug name for app not provided'];
 		}
 	}
 
