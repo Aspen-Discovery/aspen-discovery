@@ -529,7 +529,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 	 */
 	public function getTitle()
 	{
-		return $this->getFirstFieldValue('245', array('a', 'b', 'n', 'p'));
+		return $this->getFirstFieldValue('245', array('a', 'b', 'f', 'g', 'n', 'p'));
 	}
 
 	/**
