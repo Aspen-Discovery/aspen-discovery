@@ -1695,7 +1695,7 @@ class SirsiDynixROA extends HorizonAPI
 					if ($updatePatronInfoParametersClass) {
 						//Convert from stdClass to associative array
 						$updatePatronInfoParameters = json_decode(json_encode($updatePatronInfoParametersClass), true);
-						if ($result['success'] == true) {
+						if (isset($updatePatronInfoParameters['resource']) && $updatePatronInfoParameters['resource'] == '/user/patron') {
 							$preferredAddress = $updatePatronInfoParameters['fields']['preferredAddress'];
 
 							// Update Address Field with new data supplied by the user
@@ -1751,7 +1751,7 @@ class SirsiDynixROA extends HorizonAPI
 								$patron->update();
 							}
 						}else{
-							$result['messages'][] = 'Could not load patron account information.';
+							$result['messages'][] = 'Could not load existing contact information to update.';
 						}
 					}else{
 						$result['messages'][] = 'Could not find the account to update.';
