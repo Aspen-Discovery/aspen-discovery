@@ -1024,8 +1024,8 @@ abstract class MarcRecordProcessor {
 		//title (full title done by index process by concatenating short and subtitle
 
 		//title short
-		String subTitle = MarcUtil.getFirstFieldVal(record, "245bnp");
-		groupedWork.setTitle(MarcUtil.getFirstFieldVal(record, "245a"), subTitle, MarcUtil.getFirstFieldVal(record, "245abnp"), this.getSortableTitle(record), format, formatCategory);
+		String subTitle = MarcUtil.getFirstFieldVal(record, "245bfgnp");
+		groupedWork.setTitle(MarcUtil.getFirstFieldVal(record, "245a"), subTitle, MarcUtil.getFirstFieldVal(record, "245abfgnp"), this.getSortableTitle(record), format, formatCategory);
 		//title full
 		String authorInTitleField = MarcUtil.getFirstFieldVal(record, "245c");
 		String standardAuthorData = MarcUtil.getFirstFieldVal(record, "100abcdq:110ab");
@@ -1040,7 +1040,7 @@ abstract class MarcRecordProcessor {
 		}
 
 		//title alt
-		groupedWork.addAlternateTitles(MarcUtil.getFieldList(record, "130adfgklnpst:240a:246abnp:700tnr:730adfgklnpst:740a"));
+		groupedWork.addAlternateTitles(MarcUtil.getFieldList(record, "130adfgklnpst:240a:246abfgnp:700tnr:730adfgklnpst:740a"));
 		//title old
 		groupedWork.addOldTitles(MarcUtil.getFieldList(record, "780ast"));
 		//title new
@@ -1077,7 +1077,7 @@ abstract class MarcRecordProcessor {
 	}
 
 	/**
-	 * Get the title (245abnp) from a record, without non-filing chars as specified
+	 * Get the title (245abfgnp) from a record, without non-filing chars as specified
 	 * in 245 2nd indicator, and lower cased.
 	 *
 	 * @return 245a and 245b and 245n and 245p values concatenated, with trailing punctuation removed, and
@@ -1091,7 +1091,7 @@ abstract class MarcRecordProcessor {
 
 		int nonFilingInt = getInd2AsInt(titleField);
 
-		String title = MarcUtil.getFirstFieldVal(record, "245abnp");
+		String title = MarcUtil.getFirstFieldVal(record, "245abfgnp");
 		if (title == null){
 			return "";
 		}
