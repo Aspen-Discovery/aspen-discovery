@@ -573,11 +573,11 @@ abstract class Solr
 							}
 						}
 					} elseif ($field == 'id') {
-						if (!preg_match('/^"?(\d+|.[boi]\d+x?|[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12})"?$/i', $fieldValue)) {
+						if (!preg_match('/^"?(\d+|.[boi]\d+x?|[A-Fa-f0-9]{8}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{12})"?$/i', $fieldValue)) {
 							continue;
 						}
 					} elseif ($field == 'alternate_ids') {
-						if (!preg_match('/^"?(\d+|.?[boi]\d+x?|[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}|MWT\d+|CARL\d+)"?$/i', $fieldValue)) {
+						if (!preg_match('/^"?(\d+|.?[boi]\d+x?|[A-Fa-f0-9]{8}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{12}|MWT\d+|CARL\d+)"?$/i', $fieldValue)) {
 							continue;
 						}
 					} elseif ($field == 'issn') {
