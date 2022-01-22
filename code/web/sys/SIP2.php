@@ -781,7 +781,7 @@ class sip2
 		return trim($result);
 	}
 
-	function connect()
+	function connect($sipLogin = null, $sipPassword = null)
 	{
 		global $logger;
 		/* Socket Communications  */
@@ -834,53 +834,61 @@ class sip2
 
 		$this->_debugmsg( "SIP2: --- SOCKET READY ---" );
 
-		global $configArray;
-		if (isset($configArray['SIP2']['sipLogin']) && isset($configArray['SIP2']['sipPassword']) &&
-				$configArray['SIP2']['sipLogin'] != '' && $configArray['SIP2']['sipPassword'] != ''
-			){
+		if (!empty($sipLogin) && !empty($sipPassword)){
+			$loginMessage = $this->msgLogin($sipLogin, $sipPassword);
+			$loginResult = $this->get_message($loginMessage);
+			$loginResponse = $this->parseLoginResponse($loginResult);
 
-			$lineEnding = "\r\n";
-
-			//Send login
-			//Read the login prompt
-			$prompt = $this->getResponse();
-			$logger->log("Login Prompt Received was " . $prompt, Logger::LOG_DEBUG);
-			$login = $configArray['SIP2']['sipLogin'];
-            /** @noinspection PhpUnusedLocalVariableInspection */
-			$ret = socket_write($this->socket, $login, strlen($login));
-			$ret = socket_write($this->socket, $lineEnding, strlen($lineEnding));
-			$logger->log("Wrote $ret bytes for login", Logger::LOG_DEBUG);
-			$this->Sleep();
-
-			$prompt = $this->getResponse();
-			$logger->log("Password Prompt Received was " . $prompt, Logger::LOG_DEBUG);
-			$password = $configArray['SIP2']['sipPassword'];
-            /** @noinspection PhpUnusedLocalVariableInspection */
-            $ret = socket_write($this->socket, $password, strlen($password));
-			$ret = socket_write($this->socket, $lineEnding, strlen($lineEnding));
-			$logger->log("Wrote $ret bytes for password", Logger::LOG_DEBUG);
-
-			if ($this->use_usleep){
-				usleep($this->loginsleeptime);
-			}else{
-				sleep(1);
-			}
-
-			//Wait for a response
-			$initialLoginResponse = $this->getResponse();
-			$logger->log("Login response is " . $initialLoginResponse, Logger::LOG_DEBUG);
-			$this->Sleep();
-
-			//$loginData = $this->parseLoginResponse($loginResponse);
-			if (strpos($initialLoginResponse, 'Login OK.  Initiating SIP') === 0){
-				$logger->log("Logged into SIP client with telnet credentials", Logger::LOG_DEBUG);
+			if ($loginResponse['fixed']['Ok'] == 1){
+				$logger->log("Logged into SIP client with SIP credentials", Logger::LOG_DEBUG);
 				$this->_debugmsg( "SIP2: --- LOGIN TO SIP SUCCEEDED ---" );
 			}else{
-				$logger->log("Unable to login to SIP server using telnet credentials", Logger::LOG_ERROR);
-				$this->_debugmsg( "SIP2: --- LOGIN TO SIP FAILED ---" );
-				$this->_debugmsg( $initialLoginResponse);
 				return false;
 			}
+
+			//TODO: If a partner ever needs Telnet login, this may need to be reinstituted.
+//			$lineEnding = "\r\n";
+//
+//			//Send login
+//			//Read the login prompt
+//			$prompt = $this->getResponse();
+//			$logger->log("Login Prompt Received was " . $prompt, Logger::LOG_DEBUG);
+//			$login = $sipLogin;
+//            /** @noinspection PhpUnusedLocalVariableInspection */
+//			$ret = socket_write($this->socket, $login, strlen($login));
+//			$ret = socket_write($this->socket, $lineEnding, strlen($lineEnding));
+//			$logger->log("Wrote $ret bytes for login", Logger::LOG_DEBUG);
+//			$this->Sleep();
+//
+//			$prompt = $this->getResponse();
+//			$logger->log("Password Prompt Received was " . $prompt, Logger::LOG_DEBUG);
+//			$password = $sipPassword;
+//            /** @noinspection PhpUnusedLocalVariableInspection */
+//            $ret = socket_write($this->socket, $password, strlen($password));
+//			$ret = socket_write($this->socket, $lineEnding, strlen($lineEnding));
+//			$logger->log("Wrote $ret bytes for password", Logger::LOG_DEBUG);
+//
+//			if ($this->use_usleep){
+//				usleep($this->loginsleeptime);
+//			}else{
+//				sleep(1);
+//			}
+
+//			//Wait for a response
+//			$initialLoginResponse = $this->getResponse();
+//			$logger->log("Login response is " . $initialLoginResponse, Logger::LOG_DEBUG);
+//			$this->Sleep();
+//
+//			//$loginData = $this->parseLoginResponse($loginResponse);
+//			if (strpos($initialLoginResponse, 'Login OK.  Initiating SIP') === 0){
+//				$logger->log("Logged into SIP client with telnet credentials", Logger::LOG_DEBUG);
+//				$this->_debugmsg( "SIP2: --- LOGIN TO SIP SUCCEEDED ---" );
+//			}else{
+//				$logger->log("Unable to login to SIP server using telnet credentials", Logger::LOG_ERROR);
+//				$this->_debugmsg( "SIP2: --- LOGIN TO SIP FAILED ---" );
+//				$this->_debugmsg( $initialLoginResponse);
+//				return false;
+//			}
 		}
 		/* return the result from the socket connect */
 		return true;

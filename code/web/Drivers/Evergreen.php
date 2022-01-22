@@ -4,11 +4,6 @@ require_once ROOT_DIR . '/Drivers/SIP2Driver.php';
 class Evergreen extends SIP2Driver
 {
 
-	public function hasNativeReadingHistory()
-	{
-		return false;
-	}
-
 	/**
 	 * @inheritDoc
 	 */
