@@ -1284,6 +1284,7 @@ class Polaris extends AbstractIlsDriver
 		$body->LogonWorkstationID = $this->getWorkstationID($patron);
 		$body->Password = $newPin;
 		$encodedBody = json_encode($body);
+
 		$response = $this->getWebServiceResponse($polarisUrl, 'PUT', $this->getAccessToken($patron->getBarcode(), $patron->getPasswordOrPin()), $encodedBody, UserAccount::isUserMasquerading());
 		ExternalRequestLogEntry::logRequest('polaris.updatePin', 'PUT', $this->getWebServiceURL() . $polarisUrl, $this->apiCurlWrapper->getHeaders(), $encodedBody, $this->lastResponseCode, $response, ['newPin'=>$newPin]);
 		if ($response && $this->lastResponseCode == 200) {
@@ -1297,7 +1298,7 @@ class Polaris extends AbstractIlsDriver
 				$result['message'] = "Error updating your password. (Error {$jsonResponse->PAPIErrorCode}).";
 			}
 		}else{
-			$result['messages'] = "Error updating your password. ({$this->lastResponseCode}).";
+			$result['message'] = "Error updating your password. ({$this->lastResponseCode}).";
 		}
 		return $result;
 	}
