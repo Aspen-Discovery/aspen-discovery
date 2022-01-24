@@ -1297,7 +1297,7 @@ class Polaris extends AbstractIlsDriver
 				$result['message'] = "Error updating your password. (Error {$jsonResponse->PAPIErrorCode}).";
 			}
 		}else{
-			$result['messages'] = "Error updating your password. ({$this->lastResponseCode}).";
+			$result['message'] = "Error updating your password. ({$this->lastResponseCode}).";
 		}
 		return $result;
 	}
