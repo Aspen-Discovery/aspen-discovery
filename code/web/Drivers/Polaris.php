@@ -806,7 +806,9 @@ class Polaris extends AbstractIlsDriver
 				$userExistsInDB = isset($user->id);
 			}
 			$user->cat_username = $patronBarcode;
-			$user->cat_password = $password;
+			if (!empty($password)) {
+				$user->cat_password = $password;
+			}
 
 			$forceDisplayNameUpdate = false;
 			$firstName = isset($patronBasicData->NameFirst) ? $patronBasicData->NameFirst : '';
