@@ -119,13 +119,30 @@ class SystemAPI extends Action
 	/** @noinspection PhpUnused */
 	public function getAppSettings() : array
 	{
+		global $configArray;
 		if (isset($_REQUEST['slug'])) {
 			$app = new AspenLiDASetting();
 			$app->slugName = $_REQUEST['slug'];
 			if ($app->find(true)){
+				$settings = [];
+				if($app->logoLogin) {
+					$settings['logo'] = $configArray['Site']['url'] . '/files/original/' . $app->logoLogin;
+				}
+				if($app->privacyPolicy) {
+					$settings['privacyPolicy'] = $app->privacyPolicy;
+				}
+
+				$quickSearches = new AspenLiDAQuickSearch();
+				$quickSearches->aspenLidaSettingId = $app->id;
+				if($quickSearches->find()) {
+					while($quickSearches->fetch()) {
+						$settings['quickSearches'][$quickSearches->id] = clone $quickSearches;
+					}
+				}
+
 				return [
 					'success' => true,
-					'settings' => $app,
+					'settings' => $settings,
 				];
 			}else{
 				return ['success' => false, 'message' => 'App settings for slug name not found'];
