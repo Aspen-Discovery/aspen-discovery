@@ -11,8 +11,8 @@ function getUpdates22_02_00() : array
 			]
 		], //sample*/
 		'aspen_lida_settings' => [
-			'title' => 'Add settings for Aspen LiDA',
-			'description' => 'Add settings for Aspen LiDA',
+			'title' => 'Add settings for white-label Aspen LiDA',
+			'description' => 'Add settings for white-label Aspen LiDA',
 			'sql' => [
 				'CREATE TABLE IF NOT EXISTS aspen_lida_settings (
 					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, 
@@ -22,5 +22,21 @@ function getUpdates22_02_00() : array
 				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer Aspen LiDA Settings'))",
 			]
 		], //aspen_lida_settings
+		'aspen_lida_settings_2' => [
+			'title' => 'Add additional settings for white-label Aspen LiDA',
+			'description' => 'Add additional library settings for white-label Aspen LiDA',
+			'sql' => [
+				'ALTER TABLE aspen_lida_settings ADD COLUMN logoLogin VARCHAR(100)',
+				'ALTER TABLE aspen_lida_settings ADD COLUMN privacyPolicy VARCHAR(255)',
+				'CREATE TABLE IF NOT EXISTS aspen_lida_quick_searches (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, 
+					aspenLidaSettingId INT(11) DEFAULT -1,
+					weight INT NOT NULL DEFAULT 0,
+					searchTerm VARCHAR(500) NOT NULL,
+					label VARCHAR(50) NOT NULL
+				) ENGINE INNODB',
+				'ALTER TABLE themes ADD COLUMN logoApp VARCHAR(100)',
+			]
+		], //aspen_lida_settings_2
 	];
 }
