@@ -37,7 +37,7 @@ class Polaris extends AbstractIlsDriver
 		$summary->source = 'ils';
 		$summary->resetCounters();
 
-		//Can't se the quick response since it includes eContent.
+		//Can't use the quick response since it includes eContent.
 		$checkouts = $this->getCheckouts($patron);
 		$summary->numCheckedOut = count($checkouts);
 		$numOverdue = 0;
