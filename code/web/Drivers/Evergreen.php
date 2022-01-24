@@ -39,22 +39,6 @@ class Evergreen extends SIP2Driver
 	/**
 	 * @inheritDoc
 	 */
-	public function getHolds(User $patron)
-	{
-		// TODO: Implement getHolds() method.
-	}
-
-	/**
-	 * @inheritDoc
-	 */
-	function placeHold(User $patron, $recordId, $pickupBranch = null, $cancelDate = null)
-	{
-		// TODO: Implement placeHold() method.
-	}
-
-	/**
-	 * @inheritDoc
-	 */
 	function cancelHold(User $patron, $recordId, $cancelId = null)
 	{
 		// TODO: Implement cancelHold() method.
@@ -86,10 +70,5 @@ class Evergreen extends SIP2Driver
 	function updatePatronInfo(User $patron, $canUpdateContactInfo, $fromMasquerade)
 	{
 		// TODO: Implement updatePatronInfo() method.
-	}
-
-	public function getFines(User $patron, $includeMessages = false)
-	{
-		// TODO: Implement getFines() method.
 	}
 }
