@@ -1284,7 +1284,12 @@ class Polaris extends AbstractIlsDriver
 		$body->LogonWorkstationID = $this->getWorkstationID($patron);
 		$body->Password = $newPin;
 		$encodedBody = json_encode($body);
-		$response = $this->getWebServiceResponse($polarisUrl, 'PUT', $this->getAccessToken($patron->getBarcode(), $patron->getPasswordOrPin()), $encodedBody, UserAccount::isUserMasquerading());
+		if (empty($patron->getPasswordOrPin())){
+			$accessToken = $staffInfo['accessToken'];
+		}else{
+			$accessToken = $this->getAccessToken($patron->getBarcode(), $patron->getPasswordOrPin());
+		}
+		$response = $this->getWebServiceResponse($polarisUrl, 'PUT', $accessToken, $encodedBody, UserAccount::isUserMasquerading());
 		ExternalRequestLogEntry::logRequest('polaris.updatePin', 'PUT', $this->getWebServiceURL() . $polarisUrl, $this->apiCurlWrapper->getHeaders(), $encodedBody, $this->lastResponseCode, $response, ['newPin'=>$newPin]);
 		if ($response && $this->lastResponseCode == 200) {
 			$jsonResponse = json_decode($response);
