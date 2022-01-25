@@ -118,7 +118,7 @@ class UserAPI extends Action
 			$user = UserAccount::getLoggedInUser();
 			if ($user && !($user instanceof AspenError)) {
 				$logger->log("User is already logged in",Logger::LOG_DEBUG);
-				return array('success' => true, 'name' => ucwords($user->firstname . ' ' . $user->lastname));
+				return array('success' => true, 'name' => ucwords($user->firstname . ' ' . $user->lastname), 'session' => session_id());
 			} else {
 				try {
 					$user = UserAccount::login();
