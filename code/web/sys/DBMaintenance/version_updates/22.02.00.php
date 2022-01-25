@@ -22,8 +22,8 @@ function getUpdates22_02_00() : array
 				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer Aspen LiDA Settings'))",
 			]
 		], //aspen_lida_settings
-		'name' => [
-			'title' => 'open_archives_multiple_imageRegex',
+		'open_archives_multiple_imageRegex' => [
+			'title' => 'Open Archives Multiple imageRegex',
 			'description' => 'Allow multiple Image Regular Expressions to be defined for an Open Archives Collection',
 			'sql' => [
 				"ALTER TABLE open_archives_collection CHANGE COLUMN imageRegex imageRegex TEXT"
