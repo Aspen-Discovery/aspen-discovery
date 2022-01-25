@@ -1284,7 +1284,7 @@ class Polaris extends AbstractIlsDriver
 		$body->LogonWorkstationID = $this->getWorkstationID($patron);
 		$body->Password = $newPin;
 		$encodedBody = json_encode($body);
-		$response = $this->getWebServiceResponse($polarisUrl, 'PUT', $this->getAccessToken($patron->getBarcode(), $patron->getPasswordOrPin()), $encodedBody, UserAccount::isUserMasquerading());
+		$response = $this->getWebServiceResponse($polarisUrl, 'PUT', $staffInfo['accessSecret'], $encodedBody, true);
 		ExternalRequestLogEntry::logRequest('polaris.updatePin', 'PUT', $this->getWebServiceURL() . $polarisUrl, $this->apiCurlWrapper->getHeaders(), $encodedBody, $this->lastResponseCode, $response, ['newPin'=>$newPin]);
 		if ($response && $this->lastResponseCode == 200) {
 			$jsonResponse = json_decode($response);
@@ -1297,7 +1297,7 @@ class Polaris extends AbstractIlsDriver
 				$result['message'] = "Error updating your password. (Error {$jsonResponse->PAPIErrorCode}).";
 			}
 		}else{
-			$result['messages'] = "Error updating your password. ({$this->lastResponseCode}).";
+			$result['message'] = "Error updating your password. ({$this->lastResponseCode}).";
 		}
 		return $result;
 	}
@@ -1768,6 +1768,8 @@ class Polaris extends AbstractIlsDriver
 		$location = new Location();
 
 		$pickupLocations = array();
+
+		$fields = array();
 		$validLibraries = [];
 		if ($type == 'selfReg') {
 			if ($library->selfRegistrationLocationRestrictions == 1) {
@@ -1790,26 +1792,30 @@ class Polaris extends AbstractIlsDriver
 				asort($pickupLocations);
 				$pickupLocations = ['' => translate(['text' => 'Select a location', 'isPublicFacing' => true])] + $pickupLocations;
 			}
+
+			$fields['librarySection'] = array('property' => 'librarySection', 'type' => 'section', 'label' => 'Library', 'hideInLists' => true, 'expandByDefault' => true, 'properties' => [
+				'branchcode' => array('property' => 'branchcode', 'type' => 'enum', 'label' => 'Home Library', 'description' => 'Please choose the Library location you would prefer to use', 'values' => $pickupLocations, 'required' => true, 'default' => '')
+			]);
 		}else{
-			$patron = UserAccount::getActiveUserObj();
-			$userPickupLocations = $patron->getValidPickupBranches($patron->getAccountProfile()->recordSource);
-			$pickupLocations = [];
-			foreach ($userPickupLocations as $key => $location){
-				if ($location instanceof Location){
-					$pickupLocations[$location->code] = $location->displayName;
-				}else{
-					if ($key == '0default'){
-						$pickupLocations[-1] = $location;
+			if ($library->allowHomeLibraryUpdates) {
+				$patron = UserAccount::getActiveUserObj();
+				$userPickupLocations = $patron->getValidPickupBranches($patron->getAccountProfile()->recordSource);
+				$pickupLocations = [];
+				foreach ($userPickupLocations as $key => $location) {
+					if ($location instanceof Location) {
+						$pickupLocations[$location->code] = $location->displayName;
+					} else {
+						if ($key == '0default') {
+							$pickupLocations[-1] = $location;
+						}
 					}
 				}
+				$fields['librarySection'] = array('property' => 'librarySection', 'type' => 'section', 'label' => 'Library', 'hideInLists' => true, 'expandByDefault' => true, 'properties' => [
+					'branchcode' => array('property' => 'branchcode', 'type' => 'enum', 'label' => 'Home Library', 'description' => 'Please choose the Library location you would prefer to use', 'values' => $pickupLocations, 'required' => true, 'default' => '')
+				]);
 			}
 		}
 
-
-		$fields = array();
-		$fields['librarySection'] = array('property' => 'librarySection', 'type' => 'section', 'label' => 'Library', 'hideInLists' => true, 'expandByDefault' => true, 'properties' => [
-			'branchcode' => array('property' => 'branchcode', 'type' => 'enum', 'label' => 'Home Library', 'description' => 'Please choose the Library location you would prefer to use', 'values' => $pickupLocations, 'required' => true, 'default' => '')
-		]);
 		$fields['personalInformationSection'] = array('property' => 'personalInformationSection', 'type' => 'section', 'label' => 'Personal Information', 'hideInLists' => true, 'expandByDefault' => true, 'properties' => [
 			'firstName' => array('property' => 'firstName', 'type' => 'text', 'label' => 'First Name', 'description' => 'Your first name', 'maxLength' => 25, 'required' => true, 'readOnly' => ($type == 'patronUpdate')),
 			'middleName' => array('property' => 'middleName', 'type' => 'text', 'label' => 'Middle Name', 'description' => 'Your middle name', 'maxLength' => 25, 'required' => false, 'readOnly' => ($type == 'patronUpdate')),
