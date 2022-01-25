@@ -11,8 +11,8 @@ function getUpdates22_02_00() : array
 			]
 		], //sample*/
 		'aspen_lida_settings' => [
-			'title' => 'Add settings for white-label Aspen LiDA',
-			'description' => 'Add settings for white-label Aspen LiDA',
+			'title' => 'Add settings for library branded Aspen LiDA',
+			'description' => 'Add settings for library branded Aspen LiDA',
 			'sql' => [
 				'CREATE TABLE IF NOT EXISTS aspen_lida_settings (
 					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, 
@@ -23,8 +23,8 @@ function getUpdates22_02_00() : array
 			]
 		], //aspen_lida_settings
 		'aspen_lida_settings_2' => [
-			'title' => 'Add additional settings for white-label Aspen LiDA',
-			'description' => 'Add additional library settings for white-label Aspen LiDA',
+			'title' => 'Add additional settings for library branded Aspen LiDA',
+			'description' => 'Add additional library settings for library branded Aspen LiDA',
 			'sql' => [
 				'ALTER TABLE aspen_lida_settings ADD COLUMN logoLogin VARCHAR(100)',
 				'ALTER TABLE aspen_lida_settings ADD COLUMN privacyPolicy VARCHAR(255)',
