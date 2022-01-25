@@ -124,7 +124,7 @@ class UserAPI extends Action
 					$user = UserAccount::login();
 					if ($user && !($user instanceof AspenError)) {
 						$logger->log("User was logged in successfully session: " . session_id(),Logger::LOG_DEBUG);
-						return array('success' => true, 'name' => ucwords($user->firstname . ' ' . $user->lastname));
+						return array('success' => true, 'name' => ucwords($user->firstname . ' ' . $user->lastname), 'session' => session_id());
 					} else {
 						$logger->log("Incorrect login parameters",Logger::LOG_DEBUG);
 						return array('success' => false);
