@@ -103,7 +103,7 @@
 											{$propValue}
 										{/if}
 									{/if}
-								{elseif $property.type == 'regularExpression'}
+								{elseif $property.type == 'regularExpression' || $property.type =='multilineRegularExpression'}
 									{$propValue|escape}
 								{elseif $property.type == 'text' || $property.type == 'hidden' || $property.type == 'file' || $property.type == 'integer' || $property.type == 'email' || $property.type == 'url'}
 									{$propValue}
