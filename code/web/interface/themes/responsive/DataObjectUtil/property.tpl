@@ -415,6 +415,7 @@
 					</label>
 				</div>
 			{/if}
+            {if $property.note}<span id="{$propName}HelpBlock" class="help-block" style="margin-top:0"><small><i class="fas fa-info-circle"></i> {$property.note}</small></span>{/if}
 			<script type="application/javascript">
 				{literal}
 				$(document).on('change', '#{/literal}{$propName}{literal}:file', function() {
