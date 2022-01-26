@@ -1703,6 +1703,9 @@ class Library extends DataObject
 			if($activeTheme->favicon) {
 				$apiInfo['favicon'] = $configArray['Site']['url'] . '/files/original/' . $activeTheme->favicon;
 			}
+			if($activeTheme->logoApp) {
+				$apiInfo['logoApp'] = $configArray['Site']['url'] . '/files/original/' . $activeTheme->logoApp;
+			}
 			$apiInfo['primaryBackgroundColor'] = $activeTheme->primaryBackgroundColor;
 			$apiInfo['primaryForegroundColor'] = $activeTheme->primaryForegroundColor;
 			$apiInfo['secondaryBackgroundColor'] = $activeTheme->secondaryBackgroundColor;
