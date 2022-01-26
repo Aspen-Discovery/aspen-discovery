@@ -30,12 +30,14 @@ function getUpdates22_02_00() : array
 				'ALTER TABLE aspen_lida_settings ADD COLUMN privacyPolicy VARCHAR(255)',
 				'CREATE TABLE IF NOT EXISTS aspen_lida_quick_searches (
 					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, 
-					aspenLidaSettingId INT(11) DEFAULT -1,
+					libraryId INT(11) DEFAULT -1,
 					weight INT NOT NULL DEFAULT 0,
 					searchTerm VARCHAR(500) NOT NULL,
 					label VARCHAR(50) NOT NULL
 				) ENGINE INNODB',
 				'ALTER TABLE themes ADD COLUMN logoApp VARCHAR(100)',
+				'ALTER TABLE aspen_lida_settings ADD COLUMN logoSplash VARCHAR(100)',
+				'ALTER TABLE aspen_lida_settings ADD COLUMN logoAppIcon VARCHAR(100)'
 			]
 		], //aspen_lida_settings_2
 	];

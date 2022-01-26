@@ -6,7 +6,7 @@ class AspenLiDAQuickSearch extends DataObject
 	public $__table = 'aspen_lida_quick_searches';
 	public $id;
 	public $weight;
-	public $aspenLidaSettingId;
+	public $libraryId;
 	public $searchTerm;
 	public $label;
 
