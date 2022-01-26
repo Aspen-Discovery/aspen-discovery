@@ -1683,6 +1683,16 @@ class Library extends DataObject
 		} else {
 			$apiInfo['barcodeStyle'] = null;
 		}
+		$quickSearches = $this->getQuickSearches();
+		$apiInfo['quickSearches'] = [];
+		foreach($quickSearches as $quickSearch){
+			$apiInfo['quickSearches'][$quickSearch->id] = [
+				'id' => $quickSearch->id,
+				'label' => $quickSearch->label,
+				'searchTerm' => $quickSearch->searchTerm,
+				'weight' => $quickSearch->weight
+			];
+		}
 		$activeTheme = new Theme();
 		$activeTheme->id = $this->theme;
 		if ($activeTheme->find(true)){

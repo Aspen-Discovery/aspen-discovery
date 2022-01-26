@@ -130,18 +130,15 @@ class SystemAPI extends Action
 			if ($app->find(true)){
 				$settings = [];
 				if($app->logoLogin) {
-					$settings['logo'] = $configArray['Site']['url'] . '/files/original/' . $app->logoLogin;
-				}
-				if($app->privacyPolicy) {
-					$settings['privacyPolicy'] = $app->privacyPolicy;
+					$settings['logoLogin'] = $configArray['Site']['url'] . '/files/original/' . $app->logoLogin;
 				}
 
-				$quickSearches = new AspenLiDAQuickSearch();
-				$quickSearches->aspenLidaSettingId = $app->id;
-				if($quickSearches->find()) {
-					while($quickSearches->fetch()) {
-						$settings['quickSearches'][$quickSearches->id] = clone $quickSearches;
-					}
+				if($app->logoSplash) {
+					$settings['logoSplash'] = $configArray['Site']['url'] . '/files/original/' . $app->logoSplash;
+				}
+
+				if($app->privacyPolicy) {
+					$settings['privacyPolicy'] = $app->privacyPolicy;
 				}
 
 				return [
