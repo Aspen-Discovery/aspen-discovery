@@ -40,5 +40,12 @@ function getUpdates22_02_00() : array
 				'ALTER TABLE aspen_lida_settings ADD COLUMN logoAppIcon VARCHAR(100)'
 			]
 		], //aspen_lida_settings_2
+		'open_archives_multiple_imageRegex' => [
+			'title' => 'Open Archives Multiple imageRegex',
+			'description' => 'Allow multiple Image Regular Expressions to be defined for an Open Archives Collection',
+			'sql' => [
+				"ALTER TABLE open_archives_collection CHANGE COLUMN imageRegex imageRegex TEXT"
+			]
+		], //open_archives_multiple_imageRegex
 	];
 }

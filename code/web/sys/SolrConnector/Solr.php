@@ -198,8 +198,9 @@ abstract class Solr
 			// Test to see solr is online
 			$test_url = $this->host . "/admin/ping";
 			$test_client = new CurlWrapper();
-			$test_client->setTimeout(1);
-			$test_client->setConnectTimeout(1);
+			//We can get false positives if the Solr server is busy and timeouts are short.
+			//$test_client->setTimeout(1);
+			//$test_client->setConnectTimeout(1);
 			$result = $test_client->curlGetPage($test_url);
 			if ($result !== false) {
 				// Even if we get a response, make sure it's a 'good' one.
@@ -699,9 +700,7 @@ abstract class Solr
 			$values['single_word_removal'] = $singleWordRemoval;
 			//Create localized call number
 			$noWildCardLookFor = str_replace('*', '', $noTrailingPunctuation);
-			if (strpos($lookfor, '*') !== false) {
-				$noWildCardLookFor = str_replace('*', '', $noTrailingPunctuation);
-			}
+			$noWildCardLookFor = str_replace('?', '', $noWildCardLookFor);
 			$values['localized_callnumber'] = str_replace(array('"', ':', '/'), ' ', $noWildCardLookFor);
 			$values['text_left'] = str_replace(array('"', ':', '/'), ' ', $noWildCardLookFor) ;
 		} else {
@@ -846,9 +845,9 @@ abstract class Solr
 
 		// If the query ends in a question mark, the user may not really intend to
 		// use the question mark as a wildcard -- let's account for that possibility
-		if (substr($query, -1) == '?') {
-			$query = "({$query}) OR (" . substr($query, 0, strlen($query) - 1) . ")";
-		}
+//		if (substr($query, -1) == '?') {
+//			$query = "({$query}) OR (" . substr($query, 0, strlen($query) - 1) . ")";
+//		}
 
 		// We're now ready to use the regular YAML query handler but with the
 		// $tokenize parameter set to false so that we leave the advanced query
