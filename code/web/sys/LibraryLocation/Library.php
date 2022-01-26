@@ -1686,7 +1686,7 @@ class Library extends DataObject
 		$quickSearches = $this->getQuickSearches();
 		$apiInfo['quickSearches'] = [];
 		foreach($quickSearches as $quickSearch){
-			$apiInfo['quickSearches'][$quickSearch->id] = [
+			$apiInfo['quickSearches'][] = [
 				'id' => $quickSearch->id,
 				'label' => $quickSearch->label,
 				'searchTerm' => $quickSearch->searchTerm,
