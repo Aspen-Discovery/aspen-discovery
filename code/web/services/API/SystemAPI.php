@@ -14,9 +14,13 @@ class SystemAPI extends Action
 		header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
 		header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
 
+		if($method === "getLogoFile") {
+			return $this->$method();
+		};
+
 		if (isset($_SERVER['PHP_AUTH_USER'])) {
 			if($this->grantTokenAccess()) {
-				if (in_array($method, array('getLibraryInfo', 'getLocationInfo', 'getThemeInfo', 'getAppSettings'))) {
+				if (in_array($method, array('getLibraryInfo', 'getLocationInfo', 'getThemeInfo', 'getAppSettings', 'getLogoFile'))) {
 					$result = [
 						'result' => $this->$method()
 					];
@@ -441,6 +445,81 @@ class SystemAPI extends Action
 			}
 		}
 		return false;
+	}
+
+	public function getLogoFile()
+	{
+		if (isset($_REQUEST['themeId']) && isset($_REQUEST['type'])) {
+			global $configArray;
+			require_once ROOT_DIR . '/sys/Theming/Theme.php';
+			$id = strip_tags($_REQUEST['themeId']);
+			$type = strip_tags($_REQUEST['type']);
+
+			$theme = new Theme();
+			$theme->id = $id;
+			if (!$theme->find(true)) {
+				die();
+			}
+
+			$app = new AspenLiDASetting();
+			if(isset($_REQUEST['slug'])) {
+				$app->slugName = $_REQUEST['slug'];
+				if (!$app->find(true)) {
+					die();
+				}
+			}
+
+			$dataPath = $configArray['Site']['local'] . '/files/original/';
+
+			if ($type === "logo") {
+				$fileName = $theme->logoName;
+			} elseif ($type === "favicon") {
+				$fileName = $theme->favicon;
+			} elseif ($type === "footerLogo") {
+				$fileName = $theme->footerLogo;
+			} elseif ($type === "logoApp") {
+				$fileName = $theme->logoApp;
+			} elseif ($type === "appSplash") {
+				$fileName = $app->logoSplash;
+			} elseif ($type === "appLogin") {
+				$fileName = $app->logoLogin;
+			} elseif ($type === "appIcon") {
+				$fileName = $app->logoAppIcon;
+			} else {
+				die();
+			}
+
+			$fullPath = $dataPath . $fileName;
+
+			if ($file = @fopen($fullPath, 'r')) {
+				set_time_limit(300);
+				$chunkSize = 2 * (1024 * 1024);
+
+				$size = intval(sprintf("%u", filesize($fullPath)));
+
+				header('Content-Type: image/png');
+				header('Content-Transfer-Encoding: binary');
+				header('Content-Length: ' . $size);
+
+				if ($size > $chunkSize) {
+					$handle = fopen($fullPath, 'rb');
+
+					while (!feof($handle)) {
+						set_time_limit(300);
+						print(@fread($handle, $chunkSize));
+
+						ob_flush();
+						flush();
+					}
+
+					fclose($handle);
+				} else {
+					readfile($fullPath);
+				}
+
+				die();
+			}
+		}
 	}
 
 	function getBreadcrumbs() : array
