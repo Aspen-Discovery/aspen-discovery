@@ -7928,6 +7928,7 @@ hr.menu {
   border-top: 8px solid #088ec6;
   padding-top: 3px;
   margin-top: 1em;
+  min-height: 150px;
 }
 @media screen and (max-width: 767px) {
   #footer-container {
