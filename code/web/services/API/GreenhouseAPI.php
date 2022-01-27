@@ -376,11 +376,15 @@ class GreenhouseAPI extends Action
 						'longitude' => $longitude,
 						'unit' => $location->unit,
 						'locationName' => $location->displayName,
+						'name' => $location->displayName,
 						'locationId' => $location->locationId,
 						'libraryId' => $libraryId,
+						'siteId' => $libraryId . '.' . $location->locationId,
 						'solrScope' => $solrScope,
 						'baseUrl' => $baseUrl,
 						'releaseChannel' => $location->appReleaseChannel,
+						'favicon' => $themeArray['favicon'],
+						'logo' => $themeArray['logo'],
 						'theme' => $themeArray,
 					];
 
