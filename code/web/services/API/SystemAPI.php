@@ -519,6 +519,43 @@ class SystemAPI extends Action
 		}
 	}
 
+
+	function getTranslation(){
+		if (isset($_REQUEST['term'])){
+			$terms[] = $_REQUEST['term'];
+		}elseif (isset($_REQUEST['terms'])){
+			if (is_array($_REQUEST['terms'])) {
+				$terms = $_REQUEST['terms'];
+			}else{
+				$terms[] = $_REQUEST['term'];
+			}
+		}else{
+			return [
+				'success' => false,
+				'message' => 'Please provide at least one term to translate.'
+			];
+		}
+
+		if (isset($_REQUEST['language'])){
+			$languageCode = $_REQUEST['language'];
+		}else{
+			return [
+				'success' => false,
+				'message' => 'Please provide the term to translate into.'
+			];
+		}
+
+		$response = [
+			'success' => true,
+			'translations' => [],
+		];
+		$translator = new Translator('lang', $languageCode);
+		foreach ($terms as $term){
+			$response[$term] = $translator->translate($term, [], true, true);
+		}
+		return $response;
+	}
+
 	function getBreadcrumbs() : array
 	{
 		return [];
