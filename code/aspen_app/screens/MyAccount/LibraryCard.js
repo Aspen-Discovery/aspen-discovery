@@ -1,6 +1,7 @@
 import React, {Component} from "react";
 import {Center, Flex, Image, Text} from "native-base";
 import Barcode from "react-native-barcode-expo";
+import Constants from 'expo-constants';
 
 // custom components and helper files
 import {translate} from '../../util/translations';
@@ -21,10 +22,6 @@ export default class LibraryCard extends Component {
 
 	}
 
-	static navigationOptions = ({navigation}) => ({
-		title: typeof navigation.state.params === "undefined" || typeof navigation.state.params.title === "undefined" ? translate('user_profile.library_card') : navigation.state.params.title,
-	});
-
 	// store the values into the state
 	componentDidMount = async () => {
 		this.setState({
@@ -44,6 +41,7 @@ export default class LibraryCard extends Component {
 	};
 
 	render() {
+		const logo = Constants.manifest.extra.libraryCardLogo;
 		if (this.state.isLoading) {
 			return (loadingSpinner());
 		}
@@ -54,21 +52,21 @@ export default class LibraryCard extends Component {
 
 		return (
 			<Center flex={1} px={3}>
-				<Flex direction="column">
+				<Flex direction="column" bg="white" maxW="90%" px={8} py={5} borderRadius={20}>
 					<Center>
 						<Flex direction="row">
 							<Image
-								source={{uri: global.favicon}}
+								source={{uri: logo}}
 								fallbackSource={require("../../themes/default/aspenLogo.png")}
-								w={38} h={38} alt={translate('user_profile.library_card')}/>
-							<Text bold ml={3} mt={2} fontSize="lg">
+								w={42} h={42} alt={translate('user_profile.library_card')}/>
+							<Text bold ml={3} mt={2} fontSize="lg" color="darkText">
 								{this.state.libraryName}
 							</Text>
 						</Flex>
 					</Center>
 					<Center pt={8}>
 						<Barcode value={this.state.libraryCard} format={this.state.barcodeStyle}
-						         text={this.state.libraryCard} onError={this.invalidFormat}/>
+						         text={this.state.libraryCard} onError={this.invalidFormat} background="warmGray.100"/>
 					</Center>
 				</Flex>
 			</Center>

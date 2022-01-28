@@ -16,7 +16,9 @@
     "login": "Login",
     "logout": "Logout",
     "button_ok": "OK",
-    "close_window": "Close"
+    "close_window": "Close",
+    "privacy_policy": "Privacy Policy",
+    "contact": "Contact"
   },
   "login": {
     "select_your_library": "Select Your Library",
@@ -105,7 +107,7 @@
   },
   "search": {
     "title": "Search",
-    "search_results_title": "Results for",
+    "search_results_title": "Results for ",
     "no_results": "No results found",
     "quick_search_title": "Quick Searches",
     "new_search_button": "Try a new search",

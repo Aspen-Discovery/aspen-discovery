@@ -8,12 +8,12 @@
       "ios",
       "android"
     ],
-    "version": "21.15.01",
-    "sdkVersion": "41.00.00",
-    "orientation": "portrait",
+    "version": "21.15.1",
+    "sdkVersion": "41.0.0",
+    "orientation": "default",
     "icon": "./assets/LiDA_Icon1024.png",
     "splash": {
-      "image": "./assets/android/PNG/xxxhdpi/LiDA_xxxhdpi_432px_Icon.png",
+      "image": "https://aspen-test.bywatersolutions.com/API/SystemAPI?method=getLogoFile&themeId=1&type=appSplash&slug=aspen-lida",
       "resizeMode": "contain",
       "backgroundColor": "#333D42"
     },
@@ -27,6 +27,7 @@
       "buildNumber": "19",
       "bundleIdentifier": "org.aspendiscovery.mobile",
       "supportsTablet": true,
+      "requireFullScreen": true,
       "icon": "./assets/LiDA_Icon1024.png",
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "This app uses your location to find nearby libraries to make logging in easier",
@@ -57,6 +58,13 @@
     "web": {
       "favicon": "./assets/LiDA_Icon512.png"
     },
-    "description": ""
+    "description": "",
+    "extra": {
+      "apiUrl": "https://aspen-test.bywatersolutions.com/",
+      "greenhouse": "https://aspen-test.bywatersolutions.com/",
+      "loginLogo": "https://aspen-test.bywatersolutions.com/API/SystemAPI?method=getLogoFile&themeId=1&type=appLogin&slug=aspen-lida",
+      "libraryCardLogo": "https://aspen-test.bywatersolutions.com/API/SystemAPI?method=getLogoFile&themeId=1&type=logoApp",
+      "mainLibrary": "5"
+    }
   }
 }

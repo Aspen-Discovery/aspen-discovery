@@ -14,9 +14,10 @@ import {
 	Pressable,
 	Radio,
 	Text,
-	useDisclose
+	useDisclose,
+	HStack,
+	VStack
 } from "native-base";
-import {ListItem} from "react-native-elements";
 import {Ionicons, MaterialCommunityIcons, MaterialIcons} from "@expo/vector-icons";
 import moment from "moment";
 
@@ -29,7 +30,6 @@ import {cancelHold, changeHoldPickUpLocation, freezeHold, thawHold} from '../../
 import {getPickupLocations} from '../../util/loadLibrary';
 
 export default class Holds extends Component {
-	static navigationOptions = {title: translate('holds.title')};
 
 	constructor(props) {
 		super(props);
@@ -48,12 +48,12 @@ export default class Holds extends Component {
 	}
 
 	componentDidMount = async () => {
+		await this._fetchLocations();
+		await this._fetchHolds();
+
 		this.setState({
 			isLoading: false,
 		})
-
-		await this._fetchLocations();
-		await this._fetchHolds();
 
 	};
 
@@ -295,38 +295,33 @@ function HoldItem(props) {
 
 	return (
 		<>
-			<Pressable onPress={onOpen}>
-				<ListItem bottomDivider>
-					<Avatar source={{uri: data.coverUrl}} size="56px" alt={data.title}/>
-					<ListItem.Content>
-						<Text fontSize="sm" bold mb={1}>
+			<Pressable onPress={onOpen} borderBottomWidth="1" _dark={{ borderColor: "gray.600" }} borderColor="coolGray.200" pl="4" pr="5" py="2">
+				<HStack space={3}>
+					<Avatar source={{uri: data.coverUrl}} borderRadius="md" size={{base: "80px", lg: "120px"}} alt={data.title}/>
+					<VStack maxW="75%">
+						<Text bold mb={1} fontSize={{base: "sm", lg: "lg"}}>{title}</Text>
 							{data.frozen ?
-								<Badge colorScheme="yellow" rounded="4px" mt={-.5}>{data.status}</Badge> : null}
+								<Text><Badge colorScheme="yellow" rounded="4px" mt={-.5}>{data.status}</Badge></Text> : null}
 							{data.available ?
-								<Badge colorScheme="green" rounded="4px" mt={-.5}>{readyMessage}</Badge>
-								: null} {title}
-						</Text>
+								<Text><Badge colorScheme="green" rounded="4px" mt={-.5}>{readyMessage}</Badge></Text>
+								: null}
 
 						{author ?
-							<Text bold fontSize="xs">
-								{translate('grouped_work.author')}: <Text fontSize="xs">{author}</Text>
+							<Text fontSize={{base: "xs", lg: "sm"}}>
+								<Text bold>{translate('grouped_work.author')}:</Text> {author}
 							</Text>
 							: null}
-						<Text bold fontSize="xs">
-							{translate('grouped_work.format')}: <Text fontSize="xs">{data.format}</Text>
+						<Text fontSize={{base: "xs", lg: "sm"}}>
+							<Text bold>{translate('grouped_work.format')}:</Text> {data.format}
 						</Text>
-						{data.source === "ils" ? <Text bold fontSize="xs">
-								{translate('pickup_locations.pickup_location')}: <Text
-								fontSize="xs">{data.currentPickupName}</Text>
-							</Text>
+						{data.source === "ils" ? <Text fontSize={{base: "xs", lg: "sm"}}>
+								<Text bold>{translate('pickup_locations.pickup_location')}:</Text> {data.currentPickupName}</Text>
 							: null}
-						{data.available ? <Text bold fontSize="xs">{translate('holds.pickup_by')}: <Text
-								fontSize="xs">{expirationDate}</Text></Text> :
-							<Text bold fontSize="xs">{translate('holds.position_queue')}: <Text
-								fontSize="xs">{data.position}</Text></Text>}
-					</ListItem.Content>
+						{data.available ? <Text fontSize={{base: "xs", lg: "sm"}}><Text bold>{translate('holds.pickup_by')}:</Text> {expirationDate}</Text> :
+							<Text fontSize={{base: "xs", lg: "sm"}}><Text bold>{translate('holds.position_queue')}:</Text> {data.position}</Text>}
+					</VStack>
 
-				</ListItem>
+				</HStack>
 			</Pressable>
 			<Actionsheet isOpen={isOpen} onClose={onClose} size="full">
 				<Actionsheet.Content>
@@ -350,7 +345,7 @@ function HoldItem(props) {
 							}}>
 							{translate('grouped_work.view_item_details')}
 						</Actionsheet.Item>
-						: null
+						: ""
 					}
 					{cancelable ?
 						<Actionsheet.Item
@@ -361,10 +356,11 @@ function HoldItem(props) {
 									forceScreenReload();
 								}.bind(this), 1000);
 								onClose(onClose);
-							}}>
+							}}
+						>
 							{translate('holds.cancel_hold')}
 						</Actionsheet.Item>
-						: null}
+						: ""}
 					{data.allowFreezeHolds ?
 						<Actionsheet.Item
 							startIcon={<Icon as={MaterialCommunityIcons} name={icon} color="trueGray.400" mr="1"
@@ -384,12 +380,12 @@ function HoldItem(props) {
 						>
 							{label}
 						</Actionsheet.Item>
-						: null}
+						: ""}
 
 					{updateLocation ?
 						<SelectPickupLocation locations={locations} onClose={onClose}
 						                      currentPickupId={data.pickupLocationId} holdId={data.cancelId}/>
-						: null}
+						: ""}
 
 				</Actionsheet.Content>
 			</Actionsheet>

@@ -1,5 +1,5 @@
 import React, {Component} from "react";
-import {Box, Button, Center, Icon} from "native-base";
+import {Box, Button, Center, Icon, Heading} from "native-base";
 import {MaterialIcons} from "@expo/vector-icons";
 import * as SecureStore from 'expo-secure-store';
 import * as Linking from 'expo-linking';
@@ -25,12 +25,13 @@ export default class Contact extends Component {
 			phone: null,
 			email: null,
 			description: null,
+			libraryName: global.libraryName,
 		};
 	}
 
 	componentDidMount = async () => {
 		await getLocationInfo();
-		await getLibraryInfo();
+		await getLibraryInfo(global.libraryId, global.libraryUrl, global.timeoutAverage);
 
 		this.setState({
 			showLibraryHours: global.location_showInLocationsAndHoursList,
@@ -70,14 +71,6 @@ export default class Contact extends Component {
 		}
 	}
 
-	handleClick = (linkToFollow) => {
-		Linking.canOpenURL(linkToFollow).then((supported) => {
-			if (supported) {
-				Linking.openURL(linkToFollow);
-			}
-		});
-	};
-
 	getDirections = async () => {
 		showLocation({
 			latitude: this.state.latitude,
@@ -97,6 +90,7 @@ export default class Contact extends Component {
 		return (
 			<Box safeArea={5}>
 				<Center>
+					<Heading mb={3}>{this.state.libraryName}</Heading>
 					{this.state.showLibraryHours === 1 ?
 						<HoursAndLocation hoursMessage={this.state.hoursMessage} hours={this.state.hours}
 						                  description={this.state.description}/> : null}

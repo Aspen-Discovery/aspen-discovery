@@ -1,6 +1,6 @@
 import React, {Component} from "react";
 import {RefreshControl} from "react-native";
-import {Badge, Box, Button, Center, Divider, FlatList, HStack, Icon, Text, VStack} from "native-base";
+import {Badge, Box, Button, Center, Divider, FlatList, HStack, Icon, Text, VStack, Pressable} from "native-base";
 import {Ionicons, MaterialIcons} from "@expo/vector-icons";
 import {ListItem} from "react-native-elements";
 import * as WebBrowser from 'expo-web-browser';
@@ -10,7 +10,7 @@ import {translate} from "../../util/translations";
 import {loadingSpinner} from "../../components/loadingSpinner";
 import {loadError} from "../../components/loadError";
 import {getILSMessages, getProfile} from '../../util/loadPatron';
-import {showILSMessage} from '../../components/Notifications';
+import {showILSMessage} from '../../components/notifications';
 
 export default class MyAccount extends Component {
 	constructor() {
@@ -120,29 +120,31 @@ export default class MyAccount extends Component {
 	renderNativeItem = (item) => {
 		if (item.external) {
 			return (
-				<ListItem bottomDivider onPress={() => {
+				<Pressable borderBottomWidth="1" _dark={{ borderColor: "gray.600" }} borderColor="coolGray.200" pl="4" pr="5" py="2" onPress={() => {
 					this.openWebsite(item.path)
 				}}>
-					{item.icon ? <Icon as={MaterialIcons} name={item.icon}/> : null}
-					<ListItem.Content>
-						<Text bold>{item.title}</Text>
-						{item.description != null ? <Text fontSize="xs">{item.description}</Text> : null}
-					</ListItem.Content>
-					<ListItem.Chevron/>
-				</ListItem>
+					<HStack space={3}>
+						{item.icon ? <Icon as={MaterialIcons} name={item.icon}/> : null}
+						<VStack>
+							<Text _dark={{ color: "warmGray.50" }} color="coolGray.800" bold fontSize={{base: "lg", lg: "xl"}}>{item.title}</Text>
+							{item.description != null ? <Text fontSize={{base: "xs", lg: "sm"}}>{item.description}</Text> : null}
+						</VStack>
+					</HStack>
+				</Pressable>
 			);
 		} else {
 			return (
-				<ListItem bottomDivider onPress={() => {
+				<Pressable borderBottomWidth="1" _dark={{ borderColor: "gray.600" }} borderColor="coolGray.200" pl="4" pr="5" py="2" onPress={() => {
 					this.onPressMenuItem(item.path)
 				}}>
-					{item.icon ? <Icon as={MaterialIcons} name={item.icon}/> : null}
-					<ListItem.Content>
-						<Text bold>{item.title}</Text>
-						{item.description != null ? <Text fontSize="xs">{item.description}</Text> : null}
-					</ListItem.Content>
-					<ListItem.Chevron/>
-				</ListItem>
+					<HStack space={3}>
+						{item.icon ? <Icon as={MaterialIcons} name={item.icon}/> : null}
+						<VStack>
+							<Text _dark={{ color: "warmGray.50" }} color="coolGray.800" bold fontSize={{base: "lg", lg: "xl"}}>{item.title}</Text>
+							{item.description != null ? <Text fontSize={{base: "xs", lg: "sm"}}>{item.description}</Text> : null}
+						</VStack>
+					</HStack>
+				</Pressable>
 			);
 		}
 	};
@@ -181,7 +183,7 @@ export default class MyAccount extends Component {
 		return (
 			<Box safeArea={5}>
 				<Center>
-					<Text fontSize="2xl">{this.state.thisPatron} {translate('user_profile.title')}</Text>
+					<Text fontSize="xl">{this.state.thisPatron} {translate('user_profile.title')}</Text>
 					{this.state.barcode ?
 						<HStack space={1} alignItems="center" mt={2} mb={2}><Icon as={Ionicons} name="card" size="sm"/>
 							<Text bold fontSize="md" mr={0.5}>
@@ -238,7 +240,7 @@ export default class MyAccount extends Component {
 		}
 
 		return (
-			<Box style={{backgroundColor: "white"}} pb={10}>
+			<Box pb={10}>
 				<FlatList
 					data={this.state.defaultMenuItems}
 					renderItem={({item}) => this.renderNativeItem(item)}

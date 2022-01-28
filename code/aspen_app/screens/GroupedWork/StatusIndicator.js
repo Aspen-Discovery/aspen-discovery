@@ -25,7 +25,7 @@ const StatusIndicator = (props) => {
 
 		return (
 			<Center>
-				<VStack mt={5} mb={0} bgColor="white" p={3} rounded="8px" shadow={1} alignItems="center"
+				<VStack mt={5} mb={0} bgColor="white" _dark={{ bgColor: "coolGray.900" }} p={3} rounded="8px" alignItems="center"
 				        width={{base: "100%", lg: "75%"}}>
 					<Text bold textAlign="center">{translate('grouped_work.no_matches', {
 						language: language,
@@ -63,7 +63,7 @@ const StatusIndicator = (props) => {
 
 		return (
 			<Center>
-				<HStack justifyContent="space-around" mt={5} bgColor="white" p={3} rounded="8px" shadow={1}
+				<HStack justifyContent="space-around" mt={5} bgColor="white" _dark={{ bgColor: "coolGray.900" }} p={3} rounded="8px"
 				        alignItems="center" width={{base: "100%", lg: "75%"}} space={2} flex={1}>
 					<VStack space={1} alignItems="center" w="40%" flex={1}>
 						<Badge colorScheme={badgeColor} rounded="4px" _text={{fontSize: 14}} mb={.5}>{status}</Badge>
@@ -71,7 +71,7 @@ const StatusIndicator = (props) => {
 						                            textAlign="center">{location ?
 							<Text fontSize={{base: "sm", lg: "lg"}}
 							      bold>{location}{"\n"}</Text> : null} {callNumber}</Text></> : null}
-						{copiesMessage !== "" ? <><Text fontSize={{base: "xxs", lg: "xs"}} color="muted.400"
+						{copiesMessage !== "" ? <><Text fontSize={{base: "xs", lg: "xs"}} color="muted.400"
 						                                textAlign="center">{copiesMessage}</Text></> : null}
 					</VStack>
 					<Button.Group direction="column" alignItems="center" flex={1}>
@@ -150,7 +150,7 @@ const StatusIndicator = (props) => {
 
 			return (
 				<Center>
-					<HStack justifyContent="space-around" mt={5} mb={0} bgColor="white" p={3} rounded="8px" shadow={1}
+					<HStack justifyContent="space-around" mt={5} mb={0} bgColor="white" _dark={{ bgColor: "coolGray.900" }} p={3} rounded="8px" shadow={1}
 					        alignItems="center" width={{base: "100%", lg: "75%"}} space={2} flex={1}>
 						<VStack space={1} alignItems="center" w="40%" flex={1}>
 							<Badge colorScheme={badgeColor} rounded="4px" _text={{fontSize: 14,}}>{item.status}</Badge>
@@ -158,9 +158,9 @@ const StatusIndicator = (props) => {
 							                                 mt={-.5}>{item.shelfLocation ?
 								<Text fontSize={{base: "sm", lg: "lg"}}
 								      bold>{item.shelfLocation}{"\n"}</Text> : null} {item.callNumber}</Text></> : null}
-							{item.publicationDate ? <Text fontSize={{base: "xxs", lg: "xs"}}
+							{item.publicationDate ? <Text fontSize={{base: "xs", lg: "xs"}}
 							                              color="muted.600">{item.publicationDate}</Text> : null}
-							{item.copiesMessage !== "" ? <><Text fontSize={{base: "xxs", lg: "xs"}} color="muted.400"
+							{item.copiesMessage !== "" ? <><Text fontSize={{base: "xs", lg: "xs"}} color="muted.400"
 							                                     textAlign="center">{item.copiesMessage}</Text></> : null}
 						</VStack>
 						<Button.Group direction="column" alignItems="center" flex={1}>

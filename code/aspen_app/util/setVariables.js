@@ -2,6 +2,7 @@ import React from "react";
 import * as SecureStore from 'expo-secure-store';
 import Constants from "expo-constants";
 import moment from "moment";
+import {getAppSettings, getLibraryInfo} from "./loadLibrary";
 
 // custom components and helper files
 
@@ -28,6 +29,10 @@ export async function setGlobalVariables() {
 	global.timeoutSlow = 10000;
 
 	try {
+		// prepare app data
+		global.slug = await SecureStore.getItemAsync("slug");
+		global.apiUrl = await SecureStore.getItemAsync("apiUrl");
+
 		// prepare user data
 		global.userKey = await SecureStore.getItemAsync("userKey");
 		global.secretKey = await SecureStore.getItemAsync("secretKey");
