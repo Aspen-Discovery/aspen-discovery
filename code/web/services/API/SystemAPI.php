@@ -6,7 +6,6 @@ class SystemAPI extends Action
 	function launch()
 	{
 		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
-		$output = '';
 
 		//Set Headers
 		header('Content-type: application/json');
@@ -537,7 +536,17 @@ class SystemAPI extends Action
 		}
 
 		if (isset($_REQUEST['language'])){
-			$languageCode = $_REQUEST['language'];
+			$language = new Language();
+			$language->code = $_REQUEST['language'];
+			if ($language->find(true)) {
+				global $activeLanguage;
+				$activeLanguage = $language;
+			}else{
+				return [
+					'success' => false,
+					'message' => 'Invalid language provided.'
+				];
+			}
 		}else{
 			return [
 				'success' => false,
@@ -549,7 +558,8 @@ class SystemAPI extends Action
 			'success' => true,
 			'translations' => [],
 		];
-		$translator = new Translator('lang', $languageCode);
+		/** @var Translator $translator */
+		global $translator;
 		foreach ($terms as $term){
 			$response[$term] = $translator->translate($term, $term, [], true, true);
 		}
