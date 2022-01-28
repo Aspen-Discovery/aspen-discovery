@@ -2767,10 +2767,30 @@ class UserAPI extends Action
 					$browseCategory = new BrowseCategory();
 					$browseCategory->textId = $hiddenCategory->browseCategoryId;
 					if($browseCategory->find(true)){
-						$category['id'] = $browseCategory->textId;
-						$category['name'] = $browseCategory->label;
-						$category['description'] = $browseCategory->description;
-						$categories[] = $category;
+						$categoryResponse = array(
+							'id' => $browseCategory->textId,
+							'title' => $browseCategory->label
+						);
+						$subCategories = $browseCategory->getSubCategories();
+						$categoryResponse['subCategories'] = [];
+						if (count($subCategories) > 0) {
+							foreach ($subCategories as $subCategory) {
+								$tempA = new BrowseCategory();
+								$tempA->id = $subCategory->subCategoryId;
+								if($tempA->find(true)) {
+									$tempB = new BrowseCategoryDismissal();
+									$tempB->userId = $user->id;
+									$tempB->browseCategoryId = $tempA->textId;
+									if($tempB->find(true)){
+										$categoryResponse['subCategories'][] = [
+											'key' => $tempA->textId,
+											'title' => $browseCategory->label . ': ' . $tempA->label,
+										];
+									}
+								}
+							}
+						}
+						$categories[] = $categoryResponse;
 					}
 				}
 				$result = [
