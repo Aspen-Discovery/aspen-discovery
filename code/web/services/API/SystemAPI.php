@@ -551,7 +551,7 @@ class SystemAPI extends Action
 		];
 		$translator = new Translator('lang', $languageCode);
 		foreach ($terms as $term){
-			$response[$term] = $translator->translate($term, [], true, true);
+			$response[$term] = $translator->translate($term, $term, [], true, true);
 		}
 		return $response;
 	}
