@@ -1201,7 +1201,7 @@ class UserAPI extends Action
 				if ($source == 'ils' || $source == null) {
 					if (isset($_REQUEST['pickupBranch']) || isset($_REQUEST['campus'])) {
 						if (isset($_REQUEST['pickupBranch'])) {
-							if($_REQUEST['pickupBranch'] == "null") {
+							if(is_null($_REQUEST['pickupBranch'])) {
 								$location = new Location();
 								$userPickupLocations = $location->getPickupBranches($patron);
 								foreach ($userPickupLocations as $tmpLocation) {
