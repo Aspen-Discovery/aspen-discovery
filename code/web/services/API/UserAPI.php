@@ -2769,7 +2769,7 @@ class UserAPI extends Action
 					if($browseCategory->find(true)){
 						$categoryResponse = array(
 							'id' => $browseCategory->textId,
-							'title' => $browseCategory->label
+							'name' => $browseCategory->label
 						);
 						$subCategories = $browseCategory->getSubCategories();
 						$categoryResponse['subCategories'] = [];
@@ -2783,8 +2783,8 @@ class UserAPI extends Action
 									$tempB->browseCategoryId = $tempA->textId;
 									if($tempB->find(true)){
 										$categoryResponse['subCategories'][] = [
-											'key' => $tempA->textId,
-											'title' => $browseCategory->label . ': ' . $tempA->label,
+											'id' => $tempA->textId,
+											'name' => $browseCategory->label . ': ' . $tempA->label,
 										];
 									}
 								}
