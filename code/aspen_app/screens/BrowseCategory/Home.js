@@ -1,5 +1,6 @@
 import React, {Component} from "react";
 import {Box, Button, Icon, Pressable, ScrollView} from "native-base";
+import * as SecureStore from 'expo-secure-store';
 import {MaterialIcons} from "@expo/vector-icons";
 import ExpoFastImage from 'expo-fast-image'
 import {create} from 'apisauce';
@@ -33,18 +34,18 @@ export default class BrowseCategoryHome extends Component {
 	componentDidMount = async () => {
 		this.setState({
 			isLoading: true,
-
 		});
 
 		await setSession();
 		await setGlobalVariables();
+
 		setTimeout(
 			function () {
 				getCheckedOutItems(true);
 				getHolds(true);
 				getProfile(true);
 				getLocationInfo();
-				getLibraryInfo();
+				getLibraryInfo(global.libraryId, global.libraryUrl, global.timeoutAverage);
 			}
 				.bind(this),
 			1000
@@ -58,15 +59,15 @@ export default class BrowseCategoryHome extends Component {
 			isLoading: true,
 		})
 		const postBody = await postData();
+		const apiUrl = await SecureStore.getItemAsync("pathUrl");
 		const api = create({
-			baseURL: global.libraryUrl + '/API',
+			baseURL: apiUrl + '/API',
 			headers: getHeaders(),
-			timeout: global.timeoutAverage,
+			timeout: global.timeoutSlow,
 			auth: createAuthTokens()
 		});
 		api.post("/SearchAPI?method=getAppActiveBrowseCategories&includeSubCategories=true", postBody)
 			.then(response => {
-				console.log(response)
 				if (response.ok) {
 					const items = response.data;
 					const results = items.result;
@@ -99,7 +100,7 @@ export default class BrowseCategoryHome extends Component {
 	}
 
 	onHideCategory = async (item) => {
-		await dismissBrowseCategory(item).then(response => {
+		await dismissBrowseCategory(item).then(res => {
 			this.setState({
 				isLoading: false,
 			});
@@ -116,7 +117,7 @@ export default class BrowseCategoryHome extends Component {
 	};
 
 	onPressSettings = () => {
-		this.props.navigation.navigate("SettingsHomeScreen");
+		this.props.navigation.navigate("AccountStack", {screen: "SettingsHomeScreen"});
 	};
 
 	_renderNativeItem = (data) => {
@@ -160,7 +161,7 @@ export default class BrowseCategoryHome extends Component {
 							/>
 						);
 					})}
-					<Button mt={5} onPress={() => {
+					<Button colorScheme="primary" mt={5} onPress={() => {
 						this.onPressSettings()
 					}} startIcon={<Icon as={MaterialIcons} name="settings" size="sm"/>}>Manage Browse
 						Categories</Button>

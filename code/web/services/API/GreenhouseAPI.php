@@ -439,7 +439,11 @@ class GreenhouseAPI extends Action
 				$libraryLocation->siteId = $aspenSite->id;
 				$libraryLocation->libraryId = $findLibrary->libraryId;
 				$libraryLocation->locationId = $findLibrary->locationId;
-				$libraryLocation->name = $findLibrary->name;
+				if(is_null($findLibrary->name)) {
+					$libraryLocation->name = $findLibrary->locationName;
+				} else {
+					$libraryLocation->name = $findLibrary->name;
+				}
 				$libraryLocation->solrScope = $findLibrary->solrScope;
 				$libraryLocation->latitude = $findLibrary->latitude;
 				$libraryLocation->longitude = $findLibrary->longitude;

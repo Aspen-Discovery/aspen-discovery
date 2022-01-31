@@ -47,5 +47,12 @@ function getUpdates22_02_00() : array
 				"ALTER TABLE open_archives_collection CHANGE COLUMN imageRegex imageRegex TEXT"
 			]
 		], //open_archives_multiple_imageRegex
+		'aspen_lida_settings_3' => [
+			'title' => 'Add additional settings for library branded Aspen LiDA',
+			'description' => 'Add additional library settings for library branded Aspen LiDA',
+			'sql' => [
+				'ALTER TABLE aspen_lida_settings ADD COLUMN showFavicons INT(1) DEFAULT 0',
+			]
+		], //aspen_lida_settings_3
 	];
 }

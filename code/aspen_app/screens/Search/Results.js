@@ -1,29 +1,21 @@
 import React, { Component } from "react";
 import { ListItem } from "react-native-elements";
 import {
-	Alert,
-	Container,
-	HStack,
-	VStack,
 	Center,
-	Spinner,
 	Button,
-	Divider,
-	Flex,
 	Box,
 	Badge,
 	Text,
-	Icon,
-	ChevronRightIcon,
-	Input,
-	FormControl,
 	FlatList,
 	Heading,
-	Avatar,
+	Image,
 	Stack,
+	HStack,
+	VStack,
+	Avatar,
+	Pressable
 } from "native-base";
-import * as SecureStore from 'expo-secure-store';
-import { MaterialCommunityIcons, Ionicons, MaterialIcons } from "@expo/vector-icons";
+import { CommonActions } from '@react-navigation/native';
 
 // custom components and helper files
 import { translate } from '../../util/translations';
@@ -32,10 +24,6 @@ import { loadError } from "../../components/loadError";
 import { searchResults } from "../../util/search";
 
 export default class Results extends Component {
-	static navigationOptions = ({ navigation }) => ({
-		title: typeof navigation.state.params === "undefined"  || typeof navigation.state.params.title === "undefined" ? translate('search.search_results') : navigation.state.params.title,
-	});
-
 	constructor() {
 		super();
 		this.state = {
@@ -57,21 +45,17 @@ export default class Results extends Component {
 		//const searchType = this.props.navigation.state.params.searchType;
 
 		await this._fetchResults();
-		if(this.props.navigation.state.params.searchTerm != null) {
-		    this.props.navigation.setParams({ title: translate('search.search_results_title') + " " + this.props.navigation.state.params.searchTerm });
-		} else {
-		    this.props.navigation.setParams({ title: translate('search.search_results') });
-		}
 
 	};
 
 	_fetchResults = async () => {
 	    const { page } = this.state;
-        const searchTerm = this.props.navigation.state.params.searchTerm.replace(/" "/g, "%20");
+		const { navigation, route } = this.props;
+		const givenSearch = route.params?.searchTerm ?? '%20';
+        const searchTerm = givenSearch.replace(/" "/g, "%20");
 
         await searchResults(searchTerm, 25, page).then(response => {
-        console.log(response);
-            if(response == "TIMEOUT_ERROR") {
+            if(response === "TIMEOUT_ERROR") {
                 this.setState({
                     hasError: true,
                     error: translate('error.timeout'),
@@ -89,7 +73,7 @@ export default class Results extends Component {
                         refreshing: false
                     }));
                 } else {
-                    if(page == 1 && response.data.result.count == 0) {
+                    if(page === 1 && response.data.result.count === 0) {
                     /* No search results were found */
                         this.setState({
                             hasError: true,
@@ -142,7 +126,7 @@ export default class Results extends Component {
 	renderNativeItem = (item) => {
         return (
             <ListItem bottomDivider onPress={() => this.onPressItem(item.key)}>
-                <Avatar source={{ uri: item.image }} size={{ base: '80px', lg: '120px'}} alt={item.title} />
+                <Image source={{ uri: item.image }} size={{ base: '80px', lg: '120px'}} alt={item.title} borderRadius="md" />
                 <ListItem.Content>
                     <Text fontSize={{ base: "md", lg: "xl"}} bold mb={0.5} color="coolGray.800">
                         {item.title}
@@ -152,7 +136,7 @@ export default class Results extends Component {
                     </Text> : null }
                     <Stack mt={1.5} direction="row" space={1} flexWrap="wrap">
                         {item.itemList.map((item, index) => {
-                            return <Badge colorScheme="tertiary" mt={1} variant="outline" rounded="4px">{item.name}</Badge>;
+                            return <Badge colorScheme="secondary" mt={1} variant="outline" rounded="4px">{item.name}</Badge>;
                         })}
                     </Stack>
                 </ListItem.Content>
@@ -161,18 +145,44 @@ export default class Results extends Component {
         );
 	};
 
+	renderItem = (item) => {
+		return (
+			<Pressable borderBottomWidth="1" _dark={{ borderColor: "gray.600" }} borderColor="coolGray.200" pl="4" pr="5" py="2" onPress={() => this.onPressItem(item.key)}>
+				<HStack space={3}>
+					<Avatar source={{ uri: item.image }} alt={item.title} borderRadius="md" size={{base: "80px", lg: "120px"}} />
+					<VStack maxW="80%">
+						<Text _dark={{ color: "warmGray.50" }} color="coolGray.800" bold fontSize={{base: "md", lg: "lg"}}>{item.title}</Text>
+						{item.author ? <Text _dark={{ color: "warmGray.50" }} color="coolGray.800">{translate('grouped_work.by')} {item.author}</Text> : null }
+						<Stack mt={1.5} direction="row" space={1} flexWrap="wrap">
+							{item.itemList.map((item, i) => {
+								return <Badge colorScheme="secondary" mt={1} variant="outline" rounded="4px" _text={{ fontSize: 12 }}>{item.name}</Badge>;
+							})}
+						</Stack>
+					</VStack>
+				</HStack>
+			</Pressable>
+		)
+	}
+
 	// handles the on press action
 	onPressItem = (item) => {
-		this.props.navigation.navigate("GroupedWork", { item });
+		const { navigation, route } = this.props;
+		navigation.dispatch(CommonActions.navigate({
+			name: 'GroupedWork',
+			params: {
+				item: item,
+			},
+		}));
 	};
 
     // this one shouldn't probably ever load with the catches in the render, but just in case
 	_listEmptyComponent = () => {
+		const { navigation, route } = this.props;
 		return (
             <Center flex={1}>
                 <Heading>{translate('search.no_results')}</Heading>
-                <Text bold w="75%" textAlign="center">"{this.props.navigation.state.params.searchTerm}"</Text>
-                <Button mt={3} onPress={() => this.props.navigation.goBack()}>{translate('search.new_search_button')}</Button>
+                <Text bold w="75%" textAlign="center">"search term"</Text>
+                <Button mt={3} onPress={() => navigation.dispatch(CommonActions.goBack())}>{translate('search.new_search_button')}</Button>
             </Center>
 		);
 	};
@@ -183,6 +193,8 @@ export default class Results extends Component {
 	}
 
 	render() {
+		const { navigation, route } = this.props;
+
 		if (this.state.isLoading) {
 			return ( loadingSpinner() );
 		}
@@ -195,8 +207,8 @@ export default class Results extends Component {
             return (
                 <Center flex={1}>
                     <Heading>{translate('search.no_results')}</Heading>
-                    <Text bold w="75%" textAlign="center">"{this.props.navigation.state.params.searchTerm}"</Text>
-                    <Button mt={3} onPress={() => this.props.navigation.goBack()}>{translate('search.new_search_button')}</Button>
+                    <Text bold w="75%" textAlign="center">"search term"</Text>
+                    <Button mt={3} onPress={() => navigation.dispatch(CommonActions.goBack())}>{translate('search.new_search_button')}</Button>
                 </Center>
             );
         }
@@ -206,7 +218,7 @@ export default class Results extends Component {
 				<FlatList
 					data={this.state.data}
 					ListEmptyComponent={this._listEmptyComponent()}
-					renderItem={({ item }) => this.renderNativeItem(item)}
+					renderItem={({ item }) => this.renderItem(item)}
 					keyExtractor={(item, index) => index.toString()}
 					ListFooterComponent={this._renderFooter}
 					onEndReached={!this.state.dataMessage ? this._handleLoadMore : null} // only try to load more if no message has been set

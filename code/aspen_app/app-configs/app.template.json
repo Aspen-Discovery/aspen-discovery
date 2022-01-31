@@ -1,0 +1,70 @@
+{
+  "expo": {
+    "name": "appName",
+    "slug": "appSlug",
+    "owner": "bywater-solutions",
+    "privacy": "public",
+    "platforms": [
+      "ios",
+      "android"
+    ],
+    "version": "21.15.1",
+    "sdkVersion": "41.0.0",
+    "orientation": "default",
+    "icon": "libraryUrl/API/SystemAPI?method=getLogoFile&themeId=1&type=appIcon&slug=appSlug",
+    "splash": {
+      "image": "libraryUrl/API/SystemAPI?method=getLogoFile&themeId=1&type=appSplash&slug=appSlug",
+      "resizeMode": "contain",
+      "backgroundColor": "bgColor"
+    },
+    "updates": {
+      "fallbackToCacheTimeout": 0
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "buildNumber": "19",
+      "bundleIdentifier": "org.aspendiscovery.bundleId",
+      "supportsTablet": true,
+      "requireFullScreen": true,
+      "icon": "libraryUrl/API/SystemAPI?method=getLogoFile&themeId=1&type=appIcon&slug=appSlug",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "This app uses your location to find nearby libraries to make logging in easier",
+        "LSApplicationQueriesSchemes": [
+          "comgooglemaps",
+          "citymapper",
+          "uber",
+          "lyft",
+          "waze"
+        ],
+        "CFBundleAllowMixedLocalizations": true
+      }
+    },
+    "android": {
+      "package": "org.aspendiscovery.bundleId",
+      "versionCode": 19,
+      "permissions": [
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION",
+        "FOREGROUND_SERVICE"
+      ],
+      "adaptiveIcon": {
+        "foregroundImage": "libraryUrl/API/SystemAPI?method=getLogoFile&themeId=1&type=appIcon&slug=appSlug",
+        "backgroundColor": "bgColor"
+      },
+      "icon": "libraryUrl/API/SystemAPI?method=getLogoFile&themeId=1&type=appIcon&slug=appSlug"
+    },
+    "web": {
+      "favicon": "libraryUrl/API/SystemAPI?method=getLogoFile&themeId=1&type=appIcon&slug=appSlug"
+    },
+    "description": "",
+    "extra": {
+      "apiUrl": "libraryUrl",
+      "greenhouse": "https://aspen-test.bywatersolutions.com/",
+      "loginLogo": "libraryUrl/API/SystemAPI?method=getLogoFile&themeId=1&type=appLogin&slug=appSlug",
+      "libraryCardLogo": "libraryUrl/API/SystemAPI?method=getLogoFile&themeId=1&type=logoApp",
+      "mainLibrary": "libraryId"
+    }
+  }
+}

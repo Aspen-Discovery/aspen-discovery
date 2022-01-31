@@ -19,12 +19,12 @@ import {popToast} from "../components/loadError";
 export async function getGroupedWork(itemId) {
 	const api = create({
 		baseURL: global.libraryUrl + '/API',
-		timeout: global.timeoutAverage,
+		timeout: global.timeoutSlow,
 		headers: getHeaders(),
 		auth: createAuthTokens()
 	});
 	const response = await api.get('/ItemAPI?method=getAppGroupedWork', {id: itemId});
-	console.log(response);
+	//console.log(response);
 	if (response.ok) {
 		return response.data;
 	} else {
@@ -91,9 +91,8 @@ export async function placeHold(itemId, source, patronId, pickupBranch) {
 		params: {itemId: itemId, itemSource: source, patronId: patronId, pickupBranch: pickupBranch}
 	});
 	const response = await api.post('/UserAPI?method=placeHold', postBody);
-
 	if (response.ok) {
-		console.log(response);
+		//console.log(response);
 		const responseData = response.data;
 		const results = responseData.result;
 

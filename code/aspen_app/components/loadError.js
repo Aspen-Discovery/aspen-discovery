@@ -124,14 +124,14 @@ export function popAlert(title, description, status) {
 								<HStack flexShrink={1} space={2} alignItems="center" justifyContent="space-between">
 									<HStack space={2} flexShrink={1} alignItems="center">
 										<Alert.Icon/>
-										<Alert.Title>
+										<Text bold>
 											{title}
-										</Alert.Title>
+										</Text>
 									</HStack>
 								</HStack>
-								<Alert.Description>
+								<Text>
 									{description}
-								</Alert.Description>
+								</Text>
 							</VStack>
 						</Alert>
 					</ScrollView>

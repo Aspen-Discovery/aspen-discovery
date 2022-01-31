@@ -445,16 +445,17 @@ class SystemAPI extends Action
 
 	public function getLogoFile()
 	{
-		if (isset($_REQUEST['themeId']) && isset($_REQUEST['type'])) {
+		if (isset($_REQUEST['type'])) {
 			global $configArray;
-			require_once ROOT_DIR . '/sys/Theming/Theme.php';
-			$id = strip_tags($_REQUEST['themeId']);
 			$type = strip_tags($_REQUEST['type']);
 
+			require_once ROOT_DIR . '/sys/Theming/Theme.php';
 			$theme = new Theme();
-			$theme->id = $id;
-			if (!$theme->find(true)) {
-				die();
+			if(isset($_REQUEST['themeId'])) {
+				$theme->id = $_REQUEST['themeId'];
+				if (!$theme->find(true)) {
+					die();
+				}
 			}
 
 			$app = new AspenLiDASetting();

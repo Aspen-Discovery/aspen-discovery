@@ -1,5 +1,4 @@
 import React from "react";
-import * as SecureStore from 'expo-secure-store';
 import {create} from 'apisauce';
 import _ from "lodash";
 
@@ -42,6 +41,7 @@ export async function getLocationInfo() {
 		}
 		global.location_latitude = profile.latitude;
 		global.location_longitude = profile.longitude;
+		global.locationTheme = profile.theme;
 
 		console.log("Location profile set")
 		return profile;
@@ -53,21 +53,21 @@ export async function getLocationInfo() {
 /**
  * Fetch library information
  **/
-export async function getLibraryInfo() {
-	const libraryId = await SecureStore.getItemAsync("library");
+export async function getLibraryInfo(libraryId, libraryUrl, timeout) {
 	const api = create({
-		baseURL: global.libraryUrl + '/API',
-		timeout: global.timeoutAverage,
+		baseURL: libraryUrl + '/API',
+		timeout: timeout,
 		headers: getHeaders(),
 		auth: createAuthTokens()
 	});
 	const response = await api.get('/SystemAPI?method=getLibraryInfo', {id: libraryId});
-
 	if (response.ok) {
 		const result = response.data.result;
 		const profile = result.library;
 
 		global.barcodeStyle = profile.barcodeStyle;
+		global.libraryTheme = profile.themeId;
+		global.quickSearches = profile.quickSearches;
 
 		console.log("Library profile set")
 		return profile;
@@ -76,6 +76,26 @@ export async function getLibraryInfo() {
 		if (_.isUndefined(global.barcodeStyle)) {
 			global.barcodeStyle = 0
 		}
+	}
+}
+
+/**
+ * Fetch settings for app that are maintained by the library
+ **/
+export async function getAppSettings(url, timeout, slug) {
+	const api = create({
+		baseURL: url + '/API',
+		timeout: timeout,
+		headers: getHeaders(),
+		auth: createAuthTokens()
+	});
+	const response = await api.get('/SystemAPI?method=getAppSettings', {slug: slug});
+	if (response.ok) {
+		global.privacyPolicy = response.data.result.settings.privacyPolicy;
+		console.log("App settings set.")
+		return response.data.result;
+	} else {
+		console.log(response.problem);
 	}
 }
 
@@ -122,6 +142,7 @@ export async function getActiveBrowseCategories() {
 	});
 	const response = await api.post('/SearchAPI?method=getAppActiveBrowseCategories&includeSubCategories=true', postBody);
 	if (response.ok) {
+		//console.log(response);
 		const items = response.data;
 		const results = items.result;
 		var allCategories = [];

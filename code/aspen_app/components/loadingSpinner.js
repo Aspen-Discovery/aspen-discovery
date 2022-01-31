@@ -10,7 +10,7 @@ export function loadingSpinner(message = "") {
 		return (
 			<Center flex={1} px="3">
 				<HStack space={2} alignItems="center">
-					<Spinner accessibilityLabel="Loading..."/>
+					<Spinner size="lg" accessibilityLabel="Loading..."/>
 					<Heading fontSize="md">
 						{message}
 					</Heading>
@@ -22,7 +22,7 @@ export function loadingSpinner(message = "") {
 	return (
 		<Center flex={1}>
 			<HStack>
-				<Spinner accessibilityLabel="Loading..."/>
+				<Spinner size="lg" accessibilityLabel="Loading..."/>
 			</HStack>
 		</Center>
 	);
