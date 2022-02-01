@@ -123,7 +123,7 @@ abstract class SIP2Driver extends AbstractIlsDriver{
 	private function loadPatronInformation($info, $username, $password, $patronInfoResponse){
 		global $timer;
 		$user = new User();
-		$user->username = $info['variable']['AA'][0];
+		$user->username = $patronInfoResponse['variable']['XI'][0];
 		if ($user->find(true)) {
 			$insert = false;
 		} else {
