@@ -376,7 +376,7 @@ public class EvergreenExportMain {
 
 		MarcFactory marcFactory = MarcFactory.newInstance();
 
-		String getBibUrl = baseUrl + "/opac/extras/feed/freshmeat/marcxml-full/biblio/import/100";
+		String getBibUrl = baseUrl + "/opac/extras/feed/freshmeat/marcxml-full/biblio/import/50";
 		ProcessBibRequestResponse response = processGetBibsRequest(getBibUrl, marcFactory, lastExtractTime, true);
 
 
