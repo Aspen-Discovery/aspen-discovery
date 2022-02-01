@@ -2044,7 +2044,7 @@ abstract class Solr
 
 	function loadDynamicFields()
 	{
-		global $memCache;
+		global /** @var Memcache $memCache*/ $memCache;
 		global $solrScope;
 		$fields = $memCache->get("schema_dynamic_fields_{$solrScope}_{$this->index}");
 		if (!$fields || isset($_REQUEST['reload'])) {
