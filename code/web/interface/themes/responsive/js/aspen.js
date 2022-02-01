@@ -11326,11 +11326,10 @@ AspenDiscovery.Prospector = (function(){
 			$.ajax({
 				url: fullUrl,
 				success: function(data) {
-					var prospectorSearchResults = $(data).find("ProspectorSearchResults").text();
-					if (prospectorSearchResults) {
-						if (prospectorSearchResults.length > 0){
-							$("#prospectorSearchResultsPlaceholder").html(prospectorSearchResults);
-						}
+					if (data.numTitles == 0){
+						$("#prospectorSearchResultsPlaceholder").hide();
+					}else{
+						$("#prospectorSearchResultsPlaceholder").html(data.formattedData);
 					}
 				}
 			});
