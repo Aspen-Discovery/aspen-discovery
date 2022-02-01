@@ -1159,6 +1159,9 @@ abstract class MarcRecordProcessor {
 			getFormatFromFallbackField(record, printFormats);
 		}
 		if (printFormats.size() == 0 || printFormats.contains("MusicRecording") || (printFormats.size() == 1 && printFormats.contains("Book"))) {
+			if (printFormats.size() == 1 && printFormats.contains("Book")){
+				printFormats.clear();
+			}
 			//Only get from fixed field information if we don't have anything yet since the cataloging of
 			//fixed fields is not kept up to date reliably.  #D-87
 			getFormatFrom007(record, printFormats);

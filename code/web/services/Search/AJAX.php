@@ -130,7 +130,11 @@ class AJAX extends Action {
 		$prospectorLink = $prospector->getSearchLink($searchObject->getSearchTerms());
 		$interface->assign('prospectorLink', $prospectorLink);
 		$timer->logTime('load Prospector titles');
-		echo $interface->fetch('Search/ajax-innreach.tpl');
+		//echo $interface->fetch('Search/ajax-innreach.tpl');
+		return array(
+			'numTitles' => count($prospectorResults),
+			'formattedData' => $interface->fetch('Search/ajax-innreach.tpl')
+		);
 	}
 
 	/**

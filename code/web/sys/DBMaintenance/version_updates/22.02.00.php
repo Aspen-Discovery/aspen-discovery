@@ -54,5 +54,19 @@ function getUpdates22_02_00() : array
 				'ALTER TABLE aspen_lida_settings ADD COLUMN showFavicons INT(1) DEFAULT 0',
 			]
 		], //aspen_lida_settings_3
+		'records_to_exclude_increase_length' => [
+			'title' => 'Increase the length of records to exclude',
+			'description' => 'Make records to exclude fields longer',
+			'sql' => [
+				"ALTER TABLE library_records_owned CHANGE COLUMN locationsToExclude locationsToExclude VARCHAR(200) NOT NULL DEFAULT ''",
+				"ALTER TABLE location_records_owned CHANGE COLUMN locationsToExclude locationsToExclude VARCHAR(200) NOT NULL DEFAULT ''",
+				"ALTER TABLE library_records_to_include CHANGE COLUMN locationsToExclude locationsToExclude VARCHAR(200) NOT NULL DEFAULT ''",
+				"ALTER TABLE location_records_to_include CHANGE COLUMN locationsToExclude locationsToExclude VARCHAR(200) NOT NULL DEFAULT ''",
+				"ALTER TABLE library_records_owned CHANGE COLUMN subLocationsToExclude subLocationsToExclude VARCHAR(200) NOT NULL DEFAULT ''",
+				"ALTER TABLE location_records_owned CHANGE COLUMN subLocationsToExclude subLocationsToExclude VARCHAR(200) NOT NULL DEFAULT ''",
+				"ALTER TABLE library_records_to_include CHANGE COLUMN subLocationsToExclude subLocationsToExclude VARCHAR(200) NOT NULL DEFAULT ''",
+				"ALTER TABLE location_records_to_include CHANGE COLUMN subLocationsToExclude subLocationsToExclude VARCHAR(200) NOT NULL DEFAULT ''",
+			]
+		], //records_to_exclude_increase_length
 	];
 }
