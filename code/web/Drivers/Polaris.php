@@ -7,7 +7,7 @@
 
 class Polaris extends AbstractIlsDriver
 {
-	//Caching of sessionIds by patron for performance (also stored within memcache)
+	//Caching of sessionIds by patron for performance
 	private static $accessTokensForUsers = array();
 
 	/** @var CurlWrapper */
