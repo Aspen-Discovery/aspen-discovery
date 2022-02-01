@@ -174,20 +174,31 @@ export async function getHiddenBrowseCategories() {
 	});
 	const response = await api.post('/UserAPI?method=getHiddenBrowseCategories', postBody);
 	if (response.ok) {
-		//console.log(response);
 		const result = response.data.result;
 		const categories = result.categories;
-
+		console.log(result);
 		const hiddenCategories = [];
 		if (_.isArray(categories) === true) {
-			if (categories.length > 0) {
-				categories.map(function (category, index, array) {
-					hiddenCategories.push({'key': category.id, 'title': category.name, 'isHidden': true});
-				});
+			if (typeof categories != "undefined") {
+				if(categories.length > 0){
+					categories.map(function (category, index, array) {
+						const subCategories = category['subCategories'];
+
+						if (subCategories.length !== 0) {
+							subCategories.forEach(item => hiddenCategories.push({
+								'key': item.id,
+								'title': item.name,
+								'isHidden': true
+							}))
+						} else {
+							hiddenCategories.push({'key': category.id, 'title': category.name, 'isHidden': true});
+						}
+					});
+				}
 			}
 		}
 
-
+		console.log(hiddenCategories)
 		return hiddenCategories;
 	} else {
 		const problem = problemCodeMap(response.problem);

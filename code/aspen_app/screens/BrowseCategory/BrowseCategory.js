@@ -60,7 +60,7 @@ async function getBrowseCategoryResults(categoryKey, limit = 25, page) {
 	const postBody = await postData();
 	const api = create({
 		baseURL: global.libraryUrl + '/API',
-		timeout: global.timeoutSlow,
+		timeout: 60000,
 		headers: getHeaders(true),
 		auth: createAuthTokens(),
 		params: {limit: limit, id: categoryKey, page: page}
