@@ -8,8 +8,8 @@
       "ios",
       "android"
     ],
-    "version": "22.02.00",
-    "sdkVersion": "44.0.0",
+    "version": "21.15.1",
+    "sdkVersion": "41.0.0",
     "orientation": "default",
     "icon": "libraryUrl/API/SystemAPI?method=getLogoFile&themeId=1&type=appIcon&slug=appSlug",
     "splash": {
@@ -18,13 +18,13 @@
       "backgroundColor": "bgColor"
     },
     "updates": {
-      "fallbackToCacheTimeout": 5000
+      "fallbackToCacheTimeout": 0
     },
     "assetBundlePatterns": [
       "**/*"
     ],
     "ios": {
-      "buildNumber": "20",
+      "buildNumber": "19",
       "bundleIdentifier": "org.aspendiscovery.bundleId",
       "supportsTablet": true,
       "requireFullScreen": true,
@@ -43,7 +43,7 @@
     },
     "android": {
       "package": "org.aspendiscovery.bundleId",
-      "versionCode": 20,
+      "versionCode": 19,
       "permissions": [
         "ACCESS_COARSE_LOCATION",
         "ACCESS_FINE_LOCATION",

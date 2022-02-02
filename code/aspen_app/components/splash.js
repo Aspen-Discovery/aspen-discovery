@@ -1,7 +1,6 @@
 import React, {Component} from "react";
 import * as SecureStore from 'expo-secure-store';
-import * as Updates from "expo-updates";
-import * as Constants from "expo-constants";
+import * as Location from "expo-location";
 
 export default class Splash extends Component {
 	constructor() {
@@ -26,7 +25,6 @@ export default class Splash extends Component {
 async function setAppDetails() {
 	try {
 		global.releaseChannel = Updates.releaseChannel;
-		console.log(Constants);
 		global.version = Constants.manifest.version;
 		global.build = Constants.nativeBuildVersion;
 
@@ -45,7 +43,6 @@ async function setAppDetails() {
 
 		console.log("Release channel variable set.")
 	} catch (e) {
-		console.log(e);
 		console.log("Error setting release channel variable.")
 	}
 }

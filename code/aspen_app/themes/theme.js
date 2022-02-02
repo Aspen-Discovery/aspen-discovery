@@ -1,6 +1,5 @@
 import React from "react";
-import {extendTheme, Box, Icon, IconButton, useColorMode, useColorModeValue} from "native-base";
-import {Ionicons} from "@expo/vector-icons";
+import {extendTheme} from "native-base";
 import {create} from 'apisauce';
 import Constants from "expo-constants";
 import chroma from "chroma-js";
@@ -32,7 +31,7 @@ async function getThemeInfo() {
 		console.log("Theme downloaded and swatches generated from <" + Constants.manifest.extra.apiUrl + "> from theme used for library #" + Constants.manifest.extra.mainLibrary + ".");
 		return palettes;
 	} else {
-		console.log(response.problem);
+		console.log(reponse.problem);
 	}
 }
 
@@ -159,14 +158,4 @@ export async function fetchTheme() {
 	} catch (e) {
 		console.log("Unable to fetch essential colors from async storage.");
 	}
-}
-
-export function UseColorMode() {
-	const {toggleColorMode} = useColorMode();
-	const currentMode = useColorModeValue("moon", "sunny");
-	return (
-		<Box alignItems="center" mt={5}>
-			<IconButton onPress={toggleColorMode} icon={<Icon as={Ionicons} name={currentMode} />} borderRadius="full" _icon={{ size: "lg" }} />
-		</Box>
-	)
 }

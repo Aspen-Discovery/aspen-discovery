@@ -63,7 +63,7 @@ export default class BrowseCategoryHome extends Component {
 		const api = create({
 			baseURL: apiUrl + '/API',
 			headers: getHeaders(),
-			timeout: 60000,
+			timeout: global.timeoutSlow,
 			auth: createAuthTokens()
 		});
 		api.post("/SearchAPI?method=getAppActiveBrowseCategories&includeSubCategories=true", postBody)
@@ -109,11 +109,11 @@ export default class BrowseCategoryHome extends Component {
 	};
 
 	onPressItem = (item) => {
-		this.props.navigation.navigate("Home_GroupedWork", {item});
+		this.props.navigation.navigate("GroupedWork", {item});
 	};
 
 	onLoadMore = (item) => {
-		this.props.navigation.navigate("Home_GroupedWork", {item});
+		this.props.navigation.navigate("GroupedWork", {item});
 	};
 
 	onPressSettings = () => {
