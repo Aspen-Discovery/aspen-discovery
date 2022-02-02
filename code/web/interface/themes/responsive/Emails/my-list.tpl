@@ -3,10 +3,10 @@
 {$list->description}
 ------------------------------------------------------------
 {if !empty($from)}
-{translate text="This email was sent from"}: {$from}
+{translate text="This email was sent from %1%" 1=$from isPublicFacing=true}
 {/if}
 {if !empty($message)}
-{translate text="Message From Sender"}:
+{translate text="Message From Sender" isPublicFacing=true}
 {$message}
 ------------------------------------------------------------
 {/if}
