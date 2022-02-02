@@ -9,17 +9,17 @@ class Admin_UsageDashboard extends Admin_Dashboard
 	{
 		global $interface;
 
-		$instanceAspenUsage = $this->loadInstanceInformation('AspenUsage');
-		$instanceWebResourceUsage = $this->loadInstanceInformation('WebResourceUsage');
+		$instanceName = $this->loadInstanceInformation('AspenUsage');
+		//$instanceWebResourceUsage = $this->loadInstanceInformation('WebResourceUsage');
 		$this->loadDates();
 
-		$aspenUsageThisMonth = $this->getStats($instanceAspenUsage, $this->thisMonth, $this->thisYear);
+		$aspenUsageThisMonth = $this->getStats($instanceName, $this->thisMonth, $this->thisYear);
 		$interface->assign('aspenUsageThisMonth', $aspenUsageThisMonth);
-		$aspenUsageLastMonth = $this->getStats($instanceAspenUsage, $this->lastMonth, $this->lastMonthYear);
+		$aspenUsageLastMonth = $this->getStats($instanceName, $this->lastMonth, $this->lastMonthYear);
 		$interface->assign('aspenUsageLastMonth', $aspenUsageLastMonth);
-		$aspenUsageThisYear = $this->getStats($instanceAspenUsage, null, $this->thisYear);
+		$aspenUsageThisYear = $this->getStats($instanceName, null, $this->thisYear);
 		$interface->assign('aspenUsageThisYear', $aspenUsageThisYear);
-		$aspenUsageAllTime = $this->getStats($instanceAspenUsage, null, null);
+		$aspenUsageAllTime = $this->getStats($instanceName, null, null);
 		$interface->assign('aspenUsageAllTime', $aspenUsageAllTime);
 
 		$webResources = $this->getWebResources();
@@ -28,18 +28,18 @@ class Admin_UsageDashboard extends Admin_Dashboard
 			if (!isset($webResourceUsage)) {
 				$webResourceUsage[] = array(
 					'name' => $webResource,
-					'thisMonth' => $this->getWebResourceStats($instanceWebResourceUsage, $webResource, $this->thisMonth, $this->thisYear),
-					'lastMonth' => $this->getWebResourceStats($instanceWebResourceUsage, $webResource,  $this->lastMonth, $this->lastMonthYear),
-					'thisYear' => $this->getWebResourceStats($instanceWebResourceUsage, $webResource,  null, $this->thisYear),
-					'allTime' => $this->getWebResourceStats($instanceWebResourceUsage, $webResource,  null, null)
+					'thisMonth' => $this->getWebResourceStats($instanceName, $webResource, $this->thisMonth, $this->thisYear),
+					'lastMonth' => $this->getWebResourceStats($instanceName, $webResource,  $this->lastMonth, $this->lastMonthYear),
+					'thisYear' => $this->getWebResourceStats($instanceName, $webResource,  null, $this->thisYear),
+					'allTime' => $this->getWebResourceStats($instanceName, $webResource,  null, null)
 				);
 			} elseif (!in_array( $webResource, array_column($webResourceUsage, 'name'))) {
 				$webResourceUsage[] = array(
 					'name' =>  $webResource,
-					'thisMonth' => $this->getWebResourceStats($instanceWebResourceUsage, $webResource, $this->thisMonth, $this->thisYear),
-					'lastMonth' => $this->getWebResourceStats($instanceWebResourceUsage, $webResource,  $this->lastMonth, $this->lastMonthYear),
-					'thisYear' => $this->getWebResourceStats($instanceWebResourceUsage, $webResource,  null, $this->thisYear),
-					'allTime' => $this->getWebResourceStats($instanceWebResourceUsage, $webResource,  null, null)
+					'thisMonth' => $this->getWebResourceStats($instanceName, $webResource, $this->thisMonth, $this->thisYear),
+					'lastMonth' => $this->getWebResourceStats($instanceName, $webResource,  $this->lastMonth, $this->lastMonthYear),
+					'thisYear' => $this->getWebResourceStats($instanceName, $webResource,  null, $this->thisYear),
+					'allTime' => $this->getWebResourceStats($instanceName, $webResource,  null, null)
 				);
 			}
 		}
