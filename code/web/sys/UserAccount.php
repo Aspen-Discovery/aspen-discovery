@@ -26,21 +26,25 @@ class UserAccount
 			$twoFactorSetting->whereAdd("isEnabled = 'optional' OR isEnabled = 'mandatory'");
 			if ($twoFactorSetting->find()) {
 
-				//Two factor might be required
-				if (UserAccount::has2FAEnabled()) {
-					//Two factor is required, check to see if it's complete.
-					//Check the session to see if it is complete
-					require_once ROOT_DIR . '/sys/TwoFactorAuthCode.php';
-					$authCodeForSession = new TwoFactorAuthCode();
-					$authCodeForSession->sessionId = session_id();
-					$authCodeForSession->userId = $_SESSION['activeUserId'];
-					if ($authCodeForSession->find(true)) {
-						$needsToComplete2FA = $authCodeForSession->status != 'used';
-					} else {
+				if(!UserAccount::isUserMasquerading()) {
+					//Two factor might be required
+					if (UserAccount::has2FAEnabled()) {
+						//Two factor is required, check to see if it's complete.
+						//Check the session to see if it is complete
+						require_once ROOT_DIR . '/sys/TwoFactorAuthCode.php';
+						$authCodeForSession = new TwoFactorAuthCode();
+						$authCodeForSession->sessionId = session_id();
+						$authCodeForSession->userId = $_SESSION['activeUserId'];
+						if ($authCodeForSession->find(true)) {
+							$needsToComplete2FA = $authCodeForSession->status != 'used';
+						} else {
+							$needsToComplete2FA = true;
+						}
+					} elseif (UserAccount::isRequired2FA() && !UserAccount::has2FAEnabled()) {
 						$needsToComplete2FA = true;
+					} else {
+						$needsToComplete2FA = false;
 					}
-				} elseif (UserAccount::isRequired2FA() && !UserAccount::has2FAEnabled()) {
-					$needsToComplete2FA = true;
 				} else {
 					$needsToComplete2FA = false;
 				}
