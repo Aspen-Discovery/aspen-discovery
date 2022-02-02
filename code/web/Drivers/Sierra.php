@@ -1200,6 +1200,9 @@ class Sierra extends Millennium{
 				$result['message'] .= ' '. $makePaymentResponse->description;
 			}
 		}
+
+		$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
+		return $result;
 	}
 
 
@@ -1223,6 +1226,15 @@ class Sierra extends Millennium{
 		return parent::importListsFromIls($patron);
 	}
 
+	public function loadContactInformation(User $user){
+		$patronInfo = $this->getPatronInfoByBarcode($user->getBarcode());
+
+		if (!$patronInfo){
+			return;
+		}
+		$this->loadContactInformationFromApiResult($user, $patronInfo);
+	}
+
 	private function loadContactInformationFromApiResult(User $user, stdClass $patronInfo)
 	{
 		$user->_fullname = reset($patronInfo->names);
@@ -1232,7 +1244,7 @@ class Sierra extends Millennium{
 			$line2 = $primaryAddress->lines[1];
 			if (strpos($line2, ',')){
 				$user->_city = substr($line2, 0, strrpos($line2, ','));
-				$stateZip = substr($line2, strrpos($line2, ','));
+				$stateZip = trim(substr($line2, strrpos($line2, ',') + 1));
 				$user->_state = substr($stateZip, 0, strrpos($stateZip, ' '));
 				$user->_zip = substr($stateZip, strrpos($stateZip, ' '));
 			}else{

@@ -1210,7 +1210,9 @@ class BookCoverProcessor{
 						require_once ROOT_DIR . '/sys/Enrichment/GoogleApiSetting.php';
 						$googleApiSettings = new GoogleApiSetting();
 						if ($googleApiSettings->find(true)) {
-							$hasGoogleSettings = true;
+							if (!empty($googleApiSettings->googleBooksKey)) {
+								$hasGoogleSettings = true;
+							}
 						}
 
 						//Only look by ISBN if we don't have Coce support
