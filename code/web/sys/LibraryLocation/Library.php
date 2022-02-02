@@ -99,7 +99,7 @@ class Library extends DataObject
 	public $showRefreshAccountButton;    // specifically to refresh account after paying fines online
 	public $msbUrl;
 	public $symphonyPaymentType;
-	public $symphonyPaymentPolicy;
+	//public $symphonyPaymentPolicy;
 	public $compriseSettingId;
 	public $payPalSettingId;
 	public $proPaySettingId;
@@ -645,7 +645,7 @@ class Library extends DataObject
 				'proPaySettingId'  => array('property' => 'proPaySettingId', 'type' => 'enum', 'values' => $proPaySettings, 'label' => 'ProPay Settings', 'description' => 'The ProPay settings to use', 'hideInLists' => true, 'default' => -1),
 				'msbUrl' => array('property'=>'msbUrl', 'type'=>'text', 'label'=>'MSB URL', 'description'=>'The MSB payment form URL and path (but NOT the query or parameters)', 'hideInLists' => true, 'default'=>'', 'size'=>80),
 				'symphonyPaymentType' => array('property'=>'symphonyPaymentType', 'type'=>'text', 'label'=>'Symphony Payment Type', 'description'=>'Payment type to use when adding transactions to Symphony.', 'hideInLists' => true, 'default' => '', 'maxLength' => 8),
-				'symphonyPaymentPolicy' => array('property'=>'symphonyPaymentPolicy', 'type'=>'text', 'label'=>'Symphony Payment Policy', 'description'=>'Payment policy to use when adding transactions to Symphony.', 'hideInLists' => true, 'default' => '', 'maxLength' => 8),
+				//'symphonyPaymentPolicy' => array('property'=>'symphonyPaymentPolicy', 'type'=>'text', 'label'=>'Symphony Payment Policy', 'description'=>'Payment policy to use when adding transactions to Symphony.', 'hideInLists' => true, 'default' => '', 'maxLength' => 8),
 			)),
 
 			//Grouped Work Display
