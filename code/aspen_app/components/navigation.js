@@ -1,4 +1,5 @@
-import React from "react";
+import React, {useState} from "react";
+import * as ErrorRecovery from "expo-error-recovery";
 import * as SecureStore from 'expo-secure-store';
 import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -46,7 +47,7 @@ function HomeStack() {
 				}}
 			/>
 			<Stack.Screen
-				name="GroupedWork"
+				name="Home_GroupedWork"
 				component={GroupedWork}
 				options={{ title: translate('grouped_work.title') }}
 			/>
@@ -150,36 +151,35 @@ function AppStack() {
 	return (
 		<Tab.Navigator
 			initialRouteName="Home"
-			tabBarOptions={{
-				activeTintColor: activeIcon,
-				inactiveTintColor: inactiveIcon,
-				labelStyle: {
-					fontWeight: '400'
-				},
-				style: {
-					backgroundColor: tabBarBackgroundColor
-				}
-			}}
 			screenOptions={({ route }) => ({
+				headerShown: false,
 				tabBarIcon: ({ focused, color, size }) => {
 					let iconName;
-					if(route.name === 'Home') {
+					if(route.name === 'HomeScreen') {
 						iconName = focused ? 'library' : 'library-outline';
-					} else if (route.name === 'Search') {
+					} else if (route.name === 'SearchScreen') {
 						iconName = focused ? 'search' : 'search-outline';
 					} else if (route.name === 'Library Card') {
 						iconName = focused ? 'card' : 'card-outline';
-					} else if (route.name === 'Account') {
+					} else if (route.name === 'AccountScreen') {
 						iconName = focused ? 'person' : 'person-outline';
-					} else if (route.name === 'More') {
+					} else if (route.name === 'MoreScreen') {
 						iconName = focused ? 'ellipsis-horizontal' : 'ellipsis-horizontal-outline';
 					}
 					return <Ionicons name={iconName} size={size} color={color} />;
 				},
+				tabBarActiveTintColor: activeIcon,
+				tabBarInactiveTintColor: inactiveIcon,
+				tabBarLabelStyle: {
+					fontWeight: '400'
+				},
+				tabBarStyle: {
+					backgroundColor: tabBarBackgroundColor
+				}
 			})}
 		>
 			<Tab.Screen
-				name="Home"
+				name="HomeScreen"
 				component={HomeStack}
 				options={{
 					tabBarLabel: translate('navigation.home'),
@@ -187,7 +187,7 @@ function AppStack() {
 				}}
 			/>
 			<Tab.Screen
-				name="Search"
+				name="SearchScreen"
 				component={SearchStack}
 				options={{
 					tabBarLabel: translate('navigation.search'),
@@ -201,14 +201,14 @@ function AppStack() {
 				}}
 			/>
 			<Tab.Screen
-				name="Account"
+				name="AccountScreen"
 				component={AccountStack}
 				options={{
 					tabBarLabel: translate('navigation.account'),
 				}}
 			/>
 			<Tab.Screen
-				name="More"
+				name="MoreScreen"
 				component={MoreStack}
 				options={{
 					tabBarLabel: translate('navigation.more'),
@@ -217,6 +217,14 @@ function AppStack() {
 		</Tab.Navigator>
 	)
 }
+
+const defaultErrorHandler = ErrorUtils.getGlobalHandler();
+const globalErrorHandler = (err, isFatal) => {
+	console.log("globalErrorHandler called!");
+	ErrorRecovery.setRecoveryProps({ info: err });
+	defaultErrorHandler(err, isFatal);
+};
+ErrorUtils.setGlobalHandler(globalErrorHandler);
 
 export default function App() {
 
@@ -263,6 +271,24 @@ export default function App() {
 			userToken: null,
 		}
 	);
+
+	React.useEffect(() => {
+		const timer = setInterval(async () => {
+			if(!__DEV__){
+				const update = await Updates.checkForUpdateAsync()
+				if (update.isAvailable) {
+					try {
+						await Updates.fetchUpdateAsync();
+						// ... notify user of update ...
+						await Updates.reloadAsync();
+					} catch (e) {
+						console.log(e);
+					}
+				}
+			}
+		}, 3000)
+		return () => clearInterval(timer)
+	}, [])
 
 	React.useEffect(() => {
 		const bootstrapAsync = async () => {
@@ -369,7 +395,9 @@ export default function App() {
 	return (
 		<AuthContext.Provider value={authContext}>
 		<NavigationContainer theme={navigationTheme}>
-			<Stack.Navigator>
+			<Stack.Navigator
+				screenOptions={{ headerShown: false }}
+			>
 				{state.isLoading ? (
 					<Stack.Screen
 						name="Splash"

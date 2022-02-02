@@ -10,6 +10,14 @@ echo Name of new app, as it appears in the stores:
 read appName
 sed -i'.bak' "s/appName/$appName/g" $fullFileName
 
+echo Organization or individual owner of Expo project:
+read expoOwner
+sed -i'.bak' "s/expoOwner/$expoOwner/g" $fullFileName
+
+echo Reverse DNS of domain for bundle id:
+read reverseDNS
+sed -i'.bak' "s/reverseDNS/$reverseDNS/g" $fullFileName
+
 echo Slug name of the app, must match value in Aspen App Settings:
 read appSlug
 sed -i'.bak' "s/appSlug/$appSlug/g" $fullFileName
