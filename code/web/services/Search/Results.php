@@ -508,7 +508,8 @@ class Search_Results extends ResultsAction {
 				}
 			}
 			if ($placardToDisplay == null && !empty($_REQUEST['replacementTerm'])) {
-				$trigger->whereAdd($trigger->escape($_REQUEST['replacementTerm'] . ' like triggerWord' ));
+				$trigger = new PlacardTrigger();
+				$trigger->whereAdd($trigger->escape($_REQUEST['replacementTerm']). " like concat('%', triggerWord, '%')");
 				//$trigger->triggerWord = $_REQUEST['replacementTerm'];
 				$trigger->find();
 				while ($trigger->fetch()) {
