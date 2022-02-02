@@ -1,5 +1,5 @@
 import React, {Component} from "react";
-import {Box, Icon, Button, Center, FlatList, Text, useColorMode, Pressable, HStack, useColorModeValue, IconButton} from "native-base";
+import {Box, Button, Center, FlatList, Text, Pressable, HStack} from "native-base";
 import {Ionicons} from "@expo/vector-icons";
 import * as WebBrowser from 'expo-web-browser';
 
@@ -7,6 +7,7 @@ import * as WebBrowser from 'expo-web-browser';
 import {translate} from "../util/translations";
 import {loadingSpinner} from "../components/loadingSpinner";
 import {loadError} from "../components/loadError";
+import {UseColorMode} from "../themes/theme";
 import {AuthContext} from "../components/navigation";
 
 export default class More extends Component {
@@ -91,10 +92,8 @@ export default class More extends Component {
 
 				<Center mt={5}>
 					<LogOutButton/>
-					<Text mt={10} fontSize="xs" bold>{translate('app.version')} <Text fontSize="xs"
-					                                                                  color="coolGray.600">{global.version}</Text></Text>
-					<Text fontSize="xs" bold>{translate('app.build')} <Text fontSize="xs"
-					                                                        color="coolGray.600">{global.build}</Text></Text>
+					<Text mt={10} fontSize="xs" bold>{translate('app.version')} <Text color="coolGray.600" _dark={{ color: "warmGray.400" }}>{global.version}</Text></Text>
+					<Text fontSize="xs" bold>{translate('app.build')} <Text color="coolGray.600" _dark={{ color: "warmGray.400" }}>{global.build}</Text></Text>
 				</Center>
 				<UseColorMode/>
 			</Box>
@@ -107,15 +106,5 @@ function LogOutButton() {
 
 	return(
 		<Button onPress={signOut}>{translate('general.logout')}</Button>
-	)
-}
-
-function UseColorMode() {
-	const {toggleColorMode} = useColorMode();
-	const currentMode = useColorModeValue("moon", "sunny");
-	return (
-			<Box alignItems="center" mt={5}>
-				<IconButton onPress={toggleColorMode} icon={<Icon as={Ionicons} name={currentMode} />} borderRadius="full" _icon={{ size: "lg" }} />
-			</Box>
 	)
 }
