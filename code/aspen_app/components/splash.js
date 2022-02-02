@@ -1,6 +1,7 @@
 import React, {Component} from "react";
 import * as SecureStore from 'expo-secure-store';
-import * as Location from "expo-location";
+import * as Updates from "expo-updates";
+import * as Constants from "expo-constants";
 
 export default class Splash extends Component {
 	constructor() {

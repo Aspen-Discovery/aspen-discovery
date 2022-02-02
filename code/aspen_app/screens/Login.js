@@ -30,6 +30,8 @@ import Constants from "expo-constants";
 import {translate} from "../util/translations";
 import {AuthContext} from "../components/navigation";
 import {getHeaders} from "../util/apiAuth";
+import {createTheme, saveTheme} from "../themes/theme";
+import {makeGreenhouseRequest} from "../util/greenhouse";
 
 export default class Login extends Component {
 
@@ -75,9 +77,6 @@ export default class Login extends Component {
 		if(Constants.manifest.slug === "aspen-lida") {
 			// fetch greenhouse data to populate libraries for community app
 			await this.makeFullGreenhouseRequest();
-		} else {
-
-			//TODO: For branded apps, check if the library wants to make branches selectable here
 		}
 
 	};
@@ -89,6 +88,44 @@ export default class Login extends Component {
 		});
 	};
 
+	makeGreenhouseRequest_New = async () => {
+		this.setState({ isFetching: true });
+		let slug = Constants.manifest.slug;
+		let method;
+		if(slug === "aspen-lida") { method = "getLibraries"; } else { method = "getLibrary"; }
+		await makeGreenhouseRequest(method).then(async res => {
+			if(slug === "aspen-lida") {
+				this.filteredLibraries = [];
+				this.setState({
+					libraryData: res.libraries,
+					isFetching: false,
+					value: "",
+				});
+				this.filteredLibraries = _.uniqBy(res.library, v => [v.locationId, v.libraryId].join());
+			} else {
+				this.filteredLibraries = [];
+				this.setState({
+					locationNum: res.count,
+					libraryData: res.library,
+					isFetching: false,
+					value: "",
+				});
+				this.filteredLibraries = _.uniqBy(res.library, v => [v.locationId, v.name].join());
+			}
+		});
+	};
+
+	makeFullGreenhouseRequest_New = async () => {
+		this.setState({ isFetching: true });
+		await makeGreenhouseRequest("getLibraries", true).then(async res => {
+			this.arrayHolder = [];
+			this.setState({
+				fullData: res.libraries,
+				isFetching: false,
+			});
+			this.arrayHolder = _.uniqBy(res.libraries, v => [v.librarySystem, v.name].join());
+		});
+	};
 	// fetch the list of libraries based on distance and initial population of showLibraries modal
 	makeGreenhouseRequest = async () => {
 		// set state to fetching to display spinner

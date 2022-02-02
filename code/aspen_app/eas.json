@@ -17,5 +17,14 @@
 			"developmentClient": true,
 			"distribution": "internal"
 		}
+	},
+	"expo": {
+		"version": "1.0.0",
+		"ios": {
+			"buildNumber": 1
+		},
+		"android": {
+			"versionCode": 1
+		}
 	}
 }

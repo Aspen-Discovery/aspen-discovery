@@ -2,14 +2,14 @@
   "expo": {
     "name": "appName",
     "slug": "appSlug",
-    "owner": "bywater-solutions",
+    "owner": "expoOwner",
     "privacy": "public",
     "platforms": [
       "ios",
       "android"
     ],
-    "version": "21.15.1",
-    "sdkVersion": "41.0.0",
+    "version": "22.02.00",
+    "sdkVersion": "44.0.0",
     "orientation": "default",
     "icon": "libraryUrl/API/SystemAPI?method=getLogoFile&themeId=1&type=appIcon&slug=appSlug",
     "splash": {
@@ -18,14 +18,16 @@
       "backgroundColor": "bgColor"
     },
     "updates": {
-      "fallbackToCacheTimeout": 0
+      "enabled": true,
+      "checkAutomatically": "ON_LOAD",
+      "fallbackToCacheTimeout": 5000
     },
     "assetBundlePatterns": [
       "**/*"
     ],
     "ios": {
       "buildNumber": "19",
-      "bundleIdentifier": "org.aspendiscovery.bundleId",
+      "bundleIdentifier": "reverseDNS.bundleId",
       "supportsTablet": true,
       "requireFullScreen": true,
       "icon": "libraryUrl/API/SystemAPI?method=getLogoFile&themeId=1&type=appIcon&slug=appSlug",
@@ -42,7 +44,7 @@
       }
     },
     "android": {
-      "package": "org.aspendiscovery.bundleId",
+      "package": "reverseDNS.bundleId",
       "versionCode": 19,
       "permissions": [
         "ACCESS_COARSE_LOCATION",
@@ -66,5 +68,16 @@
       "libraryCardLogo": "libraryUrl/API/SystemAPI?method=getLogoFile&themeId=1&type=logoApp",
       "mainLibrary": "libraryId"
     }
-  }
+  },
+  "hooks": {
+    "postPublish": [{
+      "file": "sentry-expo/upload-sourcemaps",
+      "config": {
+        "organization": "",
+        "project": "",
+        "authToken": ""
+      }
+    }]
+  },
+  "plugins": ["sentry-expo"]
 }
