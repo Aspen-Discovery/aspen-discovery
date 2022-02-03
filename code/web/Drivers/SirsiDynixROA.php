@@ -1013,6 +1013,17 @@ class SirsiDynixROA extends HorizonAPI
 				if ($cancelIfNotFilledByDate) {
 					$holdData['fillByDate'] = date('Y-m-d', strtotime($cancelIfNotFilledByDate));
 				}
+
+				global $library;
+				if (UserAccount::isUserMasquerading()){
+					if (!empty($library->systemHoldNoteMasquerade)){
+						$holdData['comment'] = $library->systemHoldNoteMasquerade;
+					}
+				}else{
+					if (!empty($library->systemHoldNote)){
+						$holdData['comment'] = $library->systemHoldNote;
+					}
+				}
 				//$holdRecord         = $this->getWebServiceResponse('holdRecordDescribe', $webServiceURL . "/circulation/holdRecord/describe", null, $sessionToken);
 				//$placeHold          = $this->getWebServiceResponse('placeHoldDescribe', $webServiceURL . "/circulation/holdRecord/placeHold/describe", null, $sessionToken);
 				$createHoldResponse = $this->getWebServiceResponse('placeHold', $webServiceURL . "/circulation/holdRecord/placeHold", $holdData, $sessionToken);

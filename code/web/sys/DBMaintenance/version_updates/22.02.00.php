@@ -68,5 +68,13 @@ function getUpdates22_02_00() : array
 				"ALTER TABLE location_records_to_include CHANGE COLUMN subLocationsToExclude subLocationsToExclude VARCHAR(200) NOT NULL DEFAULT ''",
 			]
 		], //records_to_exclude_increase_length
+		'library_systemHoldNotes' => [
+			'title' => 'Library System Hold Notes',
+			'description' => 'Add System Hold Notes ',
+			'sql' => [
+				"ALTER TABLE library ADD COLUMN systemHoldNote VARCHAR(50) DEFAULT ''",
+				"ALTER TABLE library ADD COLUMN systemHoldNoteMasquerade VARCHAR(50) DEFAULT ''",
+			]
+		], //library_systemHoldNotes
 	];
 }

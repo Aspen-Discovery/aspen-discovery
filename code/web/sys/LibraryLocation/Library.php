@@ -133,6 +133,8 @@ class Library extends DataObject
 	public $showItsHere;
 	public $holdDisclaimer;
 	public $availableHoldDelay;
+	public $systemHoldNote;
+	public $systemHoldNoteMasquerade;
 	public $enableMaterialsRequest;
 	public $displayMaterialsRequestToPublic;
 	public $allowDeletingILSRequests;
@@ -596,6 +598,8 @@ class Library extends DataObject
 					'validPickupSystems'                => array('property'=>'validPickupSystems', 'type'=>'text', 'label'=>'Valid Pickup Library Systems', 'description'=>'Additional Library Systems that can be used as pickup locations if the &quot;In System Pickups Only&quot; is on. List the libraries\' subdomains separated by pipes |', 'size'=>'20', 'hideInLists' => true, 'permissions' => ['Library ILS Connection']),
 					'holdDisclaimer'                    => array('property'=>'holdDisclaimer', 'type'=>'textarea', 'label'=>'Hold Disclaimer', 'description'=>'A disclaimer to display to patrons when they are placing a hold on items letting them know that their information may be available to other libraries.  Leave blank to not show a disclaimer.', 'hideInLists' => true,),
 					'availableHoldDelay'                => array('property'=>'availableHoldDelay', 'type'=>'integer', 'label'=>'Delay showing holds available for # of days', 'description'=>'Delay showing holds as a available for a specific number of days to account for shelving time', 'hideInLists' => true, 'default'=>0),
+					'systemHoldNote'                    => array('property'=>'systemHoldNote', 'type'=>'text', 'label'=>'System Hold Note (Symphony Only)', 'description'=>'A note to automatically add when placing a hold', 'hideInLists' => true, 'maxLength'=>50, 'default'=>''),
+					'systemHoldNoteMasquerade'          => array('property'=>'systemHoldNoteMasquerade', 'type'=>'text', 'label'=>'System Hold Note Masquerade (Symphony Only)', 'description'=>'A note to automatically add when placing a hold when a librarian is Masquerading and places a hold', 'hideInLists' => true, 'maxLength'=>50, 'default'=>''),
 				)),
 				'loginSection' => array('property' => 'loginSection', 'type' => 'section', 'label' => 'Login', 'hideInLists' => true, 'permissions' => ['Library ILS Connection', 'Library ILS Options'], 'properties' => array(
 					'showLoginButton'         => array('property'=>'showLoginButton', 'type'=>'checkbox', 'label'=>'Show Login Button', 'description'=>'Whether or not the login button is displayed so patrons can login to the site', 'hideInLists' => true, 'default' => 1),
