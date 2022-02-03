@@ -773,12 +773,21 @@ class Theme extends DataObject
 			$this->saveLocations();
 
 			//Check to see what has been derived from this theme and regenerate CSS for those themes as well
+			$extendedThemeIds = [];
 			$childTheme = new Theme();
 			$childTheme->extendsTheme = $this->themeName;
 			$childTheme->find();
 			while ($childTheme->fetch()){
 				if ($childTheme->id != $this->id) {
-					$childTheme->generateCss(true);
+					$extendedThemeIds[] = $childTheme->id;
+				}
+			}
+
+			foreach ($extendedThemeIds as $themeId){
+				$child = new Theme();
+				$child->id = $themeId;
+				if ($child->find(true)) {
+					$child->generateCss(true);
 				}
 			}
 		}
