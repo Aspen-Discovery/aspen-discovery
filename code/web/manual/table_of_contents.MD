@@ -48,6 +48,7 @@
     - [Novelist](/Admin/HelpManual?page=Novelist)
     - [Syndetics](/Admin/HelpManual?page=Syndetics)
     - [Wikipedia](/Admin/HelpManual?page=Wikipedia)
+  - [Ecommerce] (/Admin/HelpManual?page=eCommerce)
   - [ILS Integration](/Admin/HelpManual?page=ILS-Integration)
     - Indexing Profiles
       - Format Information
