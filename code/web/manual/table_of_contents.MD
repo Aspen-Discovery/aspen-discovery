@@ -48,7 +48,8 @@
     - [Novelist](/Admin/HelpManual?page=Novelist)
     - [Syndetics](/Admin/HelpManual?page=Syndetics)
     - [Wikipedia](/Admin/HelpManual?page=Wikipedia)
-  - [Ecommerce] (/Admin/HelpManual?page=eCommerce)
+  - [eCommerce](/Admin/HelpManual?page=eCommerce)
+    -  [eCommerce Reports](/Admin/HelpManual?page=eCommerceinfo)
   - [ILS Integration](/Admin/HelpManual?page=ILS-Integration)
     - Indexing Profiles
       - Format Information
@@ -89,7 +90,6 @@
 - Citations
 - [Collection Spotlights](/Admin/HelpManual?page=Collection-Spotlights)
 - [Covers](/Admin/HelpManual?page=Cover-Images)
-- [eCommerce](/Admin/HelpManual?page=eCommerce)
 - Email
 - Events
   - Library Calendar
