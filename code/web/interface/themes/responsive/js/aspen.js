@@ -5727,9 +5727,11 @@ AspenDiscovery.Account = (function(){
 
 				var referer;
 				if ((module === "WebBuilder") && ((action === "BasicPage") || (action === "PortalPage"))){
-					referer = "MyAccount/Home";
+					referer = "/MyAccount/Home";
 				} else if ((module === "Search") && (action === "Home")) {
-					referer = "MyAccount/Home";
+					referer = "/MyAccount/Home";
+				} else if ((module === "MyAccount") && (action === "InitiateResetPin" || $action === 'CompletePinReset')) {
+					referer = "/MyAccount/Home";
 				} else {
 					referer = window.location;
 				}

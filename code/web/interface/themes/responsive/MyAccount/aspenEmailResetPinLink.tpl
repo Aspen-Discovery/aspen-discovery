@@ -8,7 +8,7 @@
 			<div class="form-group">
 				<label for="username" class="control-label col-xs-12 col-sm-4">{translate text=$usernameLabel isPublicFacing=true}</label>
 				<div class="col-xs-12 col-sm-8">
-					<input id="username" name="username" type="text" size="14" maxlength="50" required class="form-control" {if !empty($username)}value="{$username}"{/if}>
+					<input id="reset_username" name="reset_username" type="text" size="14" maxlength="50" required class="form-control" {if !empty($username)}value="{$username}"{/if}>
 				</div>
 			</div>
 			<div class="form-group">

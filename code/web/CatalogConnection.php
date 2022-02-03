@@ -948,10 +948,10 @@ class CatalogConnection
 			);
 
 			//Get the user from the driver
-			if (empty($_REQUEST['username'])){
+			if (empty($_REQUEST['reset_username'])){
 				$result['error'] = translate(['text' => "Barcode not provided. You must provide a barcode to use password reset.", 'isPublicFacing'=>true]);
 			}else{
-				$barcode = $_REQUEST['username'];
+				$barcode = $_REQUEST['reset_username'];
 				$userToResetPin = new User();
 				$barcodeProperty = $this->accountProfile->loginConfiguration == 'barcode_pin' ? 'cat_username' : 'cat_password';
 				$userToResetPin->$barcodeProperty = $barcode;
