@@ -656,5 +656,14 @@ class Grouping_Record
 		return $this->_volumeData;
 	}
 
+	/**
+	 * @return string
+	 */
+	public function getFormat(): string
+	{
+		return $this->format;
+	}
+
+
 
 }

@@ -618,6 +618,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 						$overDriveRecord = new OverDriveRecordDriver($checkout->sourceId);
 						if ($overDriveRecord->isValid()) {
 							$checkout->updateFromRecordDriver($overDriveRecord);
+							$checkout->format = $checkout->getRecordFormatCategory();
 						}else{
 							//The title doesn't exist in the collection - this happens with Magazines right now (early 2021).
 							//Load the title information from metadata, but don't link it.
