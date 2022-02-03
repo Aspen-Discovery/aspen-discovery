@@ -1,4 +1,4 @@
-### eCommerce
+### eCommerce Reports
 
 ## eCommerce Report
 - **Payment Type:** Payment type
