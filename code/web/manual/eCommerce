@@ -1,0 +1,31 @@
+###eCommerce
+##eCommerce Report
+- **Payment Type:** Payment type
+- **Transaction Date:**	Date of transaction 
+- **Transaction Type:**	The kind of transaction it was 
+- **User:**	The user who made the payment
+- **Paid From:** The interface used when making the payment
+- **Library:**	The patron's home library
+- **Order ID:**	The ID of the order within the payment system
+- **Transaction ID:**	The ID of the transaction order within the payment system (if different from the order id)
+- **Total Paid:**	Amount paid
+- **Fines Paid:**	The ID of the order within the payment system
+- **Completed?:** The payment processor accepted the transaction
+- **Cancelled?:**	The user cancelled the payment
+- **Error:** If we got an error back from the payment processor or if we got an error updating the ILS
+- **Message:**	A message returned by the payment system
+
+##Donation Report
+- **Id:**	Numerical assignment after transcation
+- **First Name:**	First name of person making donation
+- **Last Name:**	Last name of person making donation
+- **Email:**	Email of person making donation
+- **Anonymous:**	Can check if the person making the donation would like to remain anoymous
+- **Donate To:**	Library location or branch donation is to go to
+- **Earmark:**	Specific program or initiative funds should be donated to
+- **Dedication:**	If they have selected to donate money in someones honor or memory; 1 is yes
+- **Honoree First Name:**	If above is selected, first name of honoree
+- **Honoree Last Name:**	If above is selected, last name of honoree
+- **Donation Amount:**	Amount of donation
+- **Donation Completed:**	Confirmation of transaction completion
+- **Actions:**	{can ignore this}
