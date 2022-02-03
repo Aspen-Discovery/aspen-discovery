@@ -1042,8 +1042,13 @@ class User extends DataObject
 			if ($source == 'all' || $source == 'overdrive'){
 				global $interface;
 				$driver = new OverDriveDriver();
-				$fulfillmentMethod = (string)$driver->getSettings()->useFulfillmentInterface;
-				$interface->assign('fulfillmentMethod', $fulfillmentMethod);
+				$settings = $driver->getSettings();
+				if ($settings != null){
+					$fulfillmentMethod = (string)$driver->getSettings()->useFulfillmentInterface;
+					$interface->assign('fulfillmentMethod', $fulfillmentMethod);
+				}else{
+					$interface->assign('fulfillmentMethod', true);
+				}
 			}
 
 			//fetch cached checkouts
