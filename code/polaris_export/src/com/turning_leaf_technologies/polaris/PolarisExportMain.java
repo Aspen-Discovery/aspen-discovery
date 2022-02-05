@@ -967,7 +967,6 @@ public class PolarisExportMain {
 		return response.numChanges;
 	}
 
-	@SuppressWarnings("SpellCheckingInspection")
 	static Pattern polarisDatePattern = Pattern.compile("/Date\\((-?\\d+)(-\\d{4})\\)/");
 	private static ProcessBibRequestResponse processGetBibsRequest(String getBibsRequestUrl, MarcFactory marcFactory, long lastExtractTime, boolean incrementProductsInLog){
 		ProcessBibRequestResponse response = new ProcessBibRequestResponse();
