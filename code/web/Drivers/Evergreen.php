@@ -181,7 +181,54 @@ class Evergreen extends AbstractIlsDriver
 	 */
 	function cancelHold(User $patron, $recordId, $cancelId = null)
 	{
-		// TODO: Implement cancelHold() method.
+		$result = [
+			'success' => false,
+			'message' => translate(['text'=>"The hold could not be cancelled.", 'isPublicFacing'=>true]),
+			'api' => [
+				'title' => translate(['text'=>'Hold not cancelled', 'isPublicFacing'=>true]),
+				'message' => translate(['text'=>'The hold could not be cancelled.', 'isPublicFacing'=>true])
+			]
+		];
+		$authToken = $this->getAPIAuthToken($patron);
+		if ($authToken != null) {
+			$evergreenUrl = $this->accountProfile->patronApiUrl . '/osrf-gateway-v1';
+			$headers = array(
+				'Content-Type: application/x-www-form-urlencoded',
+			);
+			$this->apiCurlWrapper->addCustomHeaders($headers, false);
+
+			$request = 'service=open-ils.circ&method=open-ils.circ.hold.cancel';
+			$request .= '&param=' . json_encode($authToken);
+			$request .= '&param=' . json_encode([(int)$cancelId]);
+			$request .= '&param=';
+			$request .= '&param=' . json_encode("Hold cancelled in Aspen Discovery");
+
+			$apiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $request);
+
+			if ($this->apiCurlWrapper->getResponseCode() == 200) {
+				$apiResponse = json_decode($apiResponse);
+				if (isset($apiResponse->payload[0]) && isset($apiResponse->payload[0]->desc)){
+					$result['message'] = $apiResponse->payload[0]->desc;
+				}elseif (isset($apiResponse->payload[0]) && isset($apiResponse->payload[0]->result->desc)){
+					$result['message'] = $apiResponse->payload[0]->result->desc;
+				}elseif (IPAddress::showDebuggingInformation() && isset($apiResponse->debug)){
+					$result['message'] = $apiResponse->debug;
+				}elseif ($apiResponse->payload[0] == 1 ){
+					$result['message'] = translate(['text' => "The hold has been cancelled.", 'isPublicFacing' => true]);
+					$result['success'] = true;
+
+					// Result for API or app use
+					$result['api']['title'] = translate(['text' => 'Hold cancelled', 'isPublicFacing' => true]);
+					$result['api']['message'] = translate(['text' => 'Your hold has been cancelled,', 'isPublicFacing' => true]);
+
+					$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
+					$patron->forceReloadOfHolds();
+				}
+			}
+		}else{
+			$result['message'] = translate(['text'=>'Could not connect to the circulation system', 'isPublicFacing'=>true]);
+		}
+		return $result;
 	}
 
 	/**
