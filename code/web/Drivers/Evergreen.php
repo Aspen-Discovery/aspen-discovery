@@ -241,12 +241,114 @@ class Evergreen extends AbstractIlsDriver
 
 	function freezeHold(User $patron, $recordId, $itemToFreezeId, $dateToReactivate)
 	{
-		// TODO: Implement freezeHold() method.
+		$result = [
+			'success' => false,
+			'message' => translate(['text'=>"The hold could not be frozen.", 'isPublicFacing'=>true]),
+			'api' => [
+				'title' => translate(['text'=>'Hold not frozen', 'isPublicFacing'=>true]),
+				'message' => translate(['text'=>'The hold could not be frozen.', 'isPublicFacing'=>true])
+			]
+		];
+
+		$authToken = $this->getAPIAuthToken($patron);
+		if ($authToken != null) {
+			$evergreenUrl = $this->accountProfile->patronApiUrl . '/osrf-gateway-v1';
+			$headers = array(
+				'Content-Type: application/x-www-form-urlencoded',
+			);
+			$this->apiCurlWrapper->addCustomHeaders($headers, false);
+
+			$namedParams = [
+				'id' => $itemToFreezeId,
+				'frozen' => 't'
+			];
+
+			$request = 'service=open-ils.circ&method=open-ils.circ.hold.update';
+			$request .= '&param=' . json_encode($authToken);
+			$request .= '&param=';
+			$request .= '&param=' . json_encode($namedParams);
+
+			$apiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $request);
+
+			if ($this->apiCurlWrapper->getResponseCode() == 200){
+				$apiResponse = json_decode($apiResponse);
+				if (isset($apiResponse->payload[0]) && isset($apiResponse->payload[0]->desc)){
+					$result['message'] = $apiResponse->payload[0]->desc;
+				}elseif (isset($apiResponse->payload[0]) && isset($apiResponse->payload[0]->result->desc)){
+					$result['message'] = $apiResponse->payload[0]->result->desc;
+				}elseif (IPAddress::showDebuggingInformation() && isset($apiResponse->debug)){
+					$result['message'] = $apiResponse->debug;
+				}elseif ($apiResponse->payload[0] > 0 ){
+					$result['message'] = translate(['text' => "Your hold was frozen successfully.", 'isPublicFacing' => true]);
+					$result['success'] = true;
+
+					// Result for API or app use
+					$result['api']['title'] = translate(['text' => 'Hold frozen successfully', 'isPublicFacing' => true]);
+					$result['api']['message'] = translate(['text' => 'Your hold was frozen successfully.', 'isPublicFacing' => true]);
+
+					$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
+					$patron->forceReloadOfHolds();
+				}
+			}
+		}
+
+		return $result;
 	}
 
 	function thawHold(User $patron, $recordId, $itemToThawId)
 	{
-		// TODO: Implement thawHold() method.
+		$result = [
+			'success' => false,
+			'message' => translate(['text'=>"The hold could not be thawed.", 'isPublicFacing'=>true]),
+			'api' => [
+				'title' => translate(['text'=>'Hold not thawed', 'isPublicFacing'=>true]),
+				'message' => translate(['text'=>'The hold could not be thawed.', 'isPublicFacing'=>true])
+			]
+		];
+
+		$authToken = $this->getAPIAuthToken($patron);
+		if ($authToken != null) {
+			$evergreenUrl = $this->accountProfile->patronApiUrl . '/osrf-gateway-v1';
+			$headers = array(
+				'Content-Type: application/x-www-form-urlencoded',
+			);
+			$this->apiCurlWrapper->addCustomHeaders($headers, false);
+
+			$namedParams = [
+				'id' => $itemToThawId,
+				'frozen' => 'f'
+			];
+
+			$request = 'service=open-ils.circ&method=open-ils.circ.hold.update';
+			$request .= '&param=' . json_encode($authToken);
+			$request .= '&param=';
+			$request .= '&param=' . json_encode($namedParams);
+
+			$apiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $request);
+
+			if ($this->apiCurlWrapper->getResponseCode() == 200){
+				$apiResponse = json_decode($apiResponse);
+				if (isset($apiResponse->payload[0]) && isset($apiResponse->payload[0]->desc)){
+					$result['message'] = $apiResponse->payload[0]->desc;
+				}elseif (isset($apiResponse->payload[0]) && isset($apiResponse->payload[0]->result->desc)){
+					$result['message'] = $apiResponse->payload[0]->result->desc;
+				}elseif (IPAddress::showDebuggingInformation() && isset($apiResponse->debug)){
+					$result['message'] = $apiResponse->debug;
+				}elseif ($apiResponse->payload[0] > 0 ){
+					$result['message'] = translate(['text' => "Your hold was thawed successfully.", 'isPublicFacing' => true]);
+					$result['success'] = true;
+
+					// Result for API or app use
+					$result['api']['title'] = translate(['text' => 'Hold thawed successfully', 'isPublicFacing' => true]);
+					$result['api']['message'] = translate(['text' => 'Your hold was thawed successfully.', 'isPublicFacing' => true]);
+
+					$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
+					$patron->forceReloadOfHolds();
+				}
+			}
+		}
+
+		return $result;
 	}
 
 	function changeHoldPickupLocation(User $patron, $recordId, $itemToUpdateId, $newPickupLocation)
