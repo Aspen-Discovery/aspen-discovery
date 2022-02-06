@@ -626,6 +626,9 @@ class User extends DataObject
 		if (empty($this->created)) {
 			$this->created = date('Y-m-d');
 		}
+		if ($this->pickupLocationId == 0) {
+			$this->pickupLocationId = $this->homeLocationId;
+		}
 		$this->fixFieldLengths();
 		$result = parent::update();
 		$this->saveRoles();

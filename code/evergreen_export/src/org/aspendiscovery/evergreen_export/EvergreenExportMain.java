@@ -252,7 +252,7 @@ public class EvergreenExportMain {
 			existingAspenLocationStmt = dbConn.prepareStatement("SELECT libraryId, locationId, isMainBranch from location where code = ?");
 			existingAspenLibraryStmt = dbConn.prepareStatement("SELECT libraryId from library where ilsCode = ?");
 			addAspenLibraryStmt = dbConn.prepareStatement("INSERT INTO library (subdomain, displayName, ilsCode, browseCategoryGroupId, groupedWorkDisplaySettingId) VALUES (?, ?, ?, 1, 1)", Statement.RETURN_GENERATED_KEYS);
-			addAspenLocationStmt = dbConn.prepareStatement("INSERT INTO location (libraryId, displayName, code, browseCategoryGroupId, groupedWorkDisplaySettingId) VALUES (?, ?, ?, -1, -1)", Statement.RETURN_GENERATED_KEYS);
+			addAspenLocationStmt = dbConn.prepareStatement("INSERT INTO location (libraryId, displayName, code, historicCode, browseCategoryGroupId, groupedWorkDisplaySettingId) VALUES (?, ?, ?, ?, -1, -1)", Statement.RETURN_GENERATED_KEYS);
 			addAspenLocationRecordsOwnedStmt = dbConn.prepareStatement("INSERT INTO location_records_owned (locationId, indexingProfileId, location, subLocation) VALUES (?, ?, ?, '')");
 			addAspenLocationRecordsToIncludeStmt = dbConn.prepareStatement("INSERT INTO location_records_to_include (locationId, indexingProfileId, location, subLocation, weight) VALUES (?, ?, '.*', '', 1)");
 			addAspenLibraryRecordsOwnedStmt = dbConn.prepareStatement("INSERT INTO library_records_owned (libraryId, indexingProfileId, location, subLocation) VALUES (?, ?, ?, '') ON DUPLICATE KEY UPDATE location = CONCAT(location, '|', VALUES(location))");
@@ -364,7 +364,7 @@ public class EvergreenExportMain {
 					addAspenLibraryRecordsToIncludeStmt.setLong(2, indexingProfile.getId());
 					addAspenLibraryRecordsToIncludeStmt.executeUpdate();
 				}else{
-					existingLibraryRS.getLong("libraryId");
+					libraryId = existingLibraryRS.getLong("libraryId");
 				}
 			}catch (Exception e){
 				logEntry.incErrors("Error adding library " + mappedOrgUnitField.get("shortname") + " to Aspen", e);
@@ -382,6 +382,7 @@ public class EvergreenExportMain {
 		}else if(level == 2){
 			//This is a branch, add it to the system
 			try {
+				Integer branchId = (Integer) mappedOrgUnitField.get("id");
 				String shortName = (String) mappedOrgUnitField.get("shortname");
 				existingAspenLocationStmt.setString(1, shortName);
 				ResultSet existingLocationRS = existingAspenLocationStmt.executeQuery();
@@ -389,6 +390,7 @@ public class EvergreenExportMain {
 					addAspenLocationStmt.setLong(1, parentId);
 					addAspenLocationStmt.setString(2, StringUtils.trimTo(60, (String)mappedOrgUnitField.get("name")));
 					addAspenLocationStmt.setString(3, shortName);
+					addAspenLocationStmt.setInt(4, branchId);
 
 					addAspenLocationStmt.executeUpdate();
 					ResultSet addAspenLocationRS = addAspenLocationStmt.getGeneratedKeys();
