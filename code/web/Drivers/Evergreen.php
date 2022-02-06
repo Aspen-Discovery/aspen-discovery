@@ -149,7 +149,34 @@ class Evergreen extends AbstractIlsDriver
 	 */
 	public function getCheckouts(User $patron)
 	{
-		// TODO: Implement getCheckouts() method.
+		require_once ROOT_DIR . '/sys/User/Checkout.php';
+		$checkedOutTitles = array();
+
+		$authToken = $this->getAPIAuthToken($patron);
+		if ($authToken != null) {
+			//Get a list of holds
+			$evergreenUrl = $this->accountProfile->patronApiUrl . '/osrf-gateway-v1';
+			$headers = array(
+				'Content-Type: application/x-www-form-urlencoded',
+			);
+			$this->apiCurlWrapper->addCustomHeaders($headers, false);
+			$request = 'service=open-ils.actor&method=open-ils.actor.user.checked_out';
+			$request .= '&param=' . json_encode($authToken);
+			$request .= '&param=' . $patron->username;
+			$apiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $request);
+
+			if ($this->apiCurlWrapper->getResponseCode() == 200) {
+				$apiResponse = json_decode($apiResponse);
+				foreach ($apiResponse->payload[0] as $payload) {
+					//Process overdue titles
+
+					//Process out titles
+
+				}
+			}
+		}
+
+		return $checkedOutTitles;
 	}
 
 	/**
@@ -764,5 +791,44 @@ class Evergreen extends AbstractIlsDriver
 		}else{
 			return null;
 		}
+	}
+
+	public function getAccountSummary(User $patron) : AccountSummary
+	{
+		require_once ROOT_DIR . '/sys/User/AccountSummary.php';
+		$summary = new AccountSummary();
+		$summary->userId = $patron->id;
+		$summary->source = 'ils';
+		$summary->resetCounters();
+
+		//Can't use the quick response since it includes eContent.
+		$checkouts = $this->getCheckouts($patron);
+		$summary->numCheckedOut = count($checkouts);
+		$numOverdue = 0;
+		foreach ($checkouts as $checkout){
+			if ($checkout->isOverdue()){
+				$numOverdue++;
+			}
+		}
+		$summary->numOverdue = $numOverdue;
+
+		$holds = $this->getHolds($patron);
+		$summary->numAvailableHolds = count($holds['available']);
+		$summary->numUnavailableHolds = count($holds['unavailable']);
+
+		//Get additional information
+		$authToken = $this->getAPIAuthToken($patron);
+		if ($authToken != null){
+			$sessionData = $this->fetchSession($authToken);
+			if ($sessionData != null){
+				$expireTime = $sessionData['expire_date'];
+				$expireTime = strtotime($expireTime);
+				$summary->expirationDate = date('n-j-Y', $expireTime);
+				//TODO : Load total charge balance
+				//$summary->totalFines = $basicDataResponse->ChargeBalance;
+			}
+		}
+
+		return $summary;
 	}
 }
