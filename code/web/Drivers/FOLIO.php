@@ -365,6 +365,9 @@ class FOLIO extends AbstractIlsDriver
 	 */
 	function placeHold($patron, $recordId, $pickupBranch = null, $cancelDate = null)
 	{
+		// title-level holds are currently implemented through the same API
+		// as item-level holds, just without an item Id.
+		return placeItemHold($patron, $recordId, '', $pickupBranch, $cancelDate);
 	}
 
 	/**
