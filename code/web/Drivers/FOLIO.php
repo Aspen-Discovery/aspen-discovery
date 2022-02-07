@@ -413,6 +413,30 @@ class FOLIO extends AbstractIlsDriver
 
 	function changeHoldPickupLocation($patron, $recordId, $itemToUpdateId, $newPickupLocation)
 	{
+		global $logger;
+		$hold = $this->makeRequest('GET', '/circulation/requests/' . $recordId);
+		$hold = json_decode($hold, true);
+
+		$hold['pikcupServicePointId'] = $newPickupLocation;
+
+		$response = $this->makeRequest('PUT', '/circulation/requests/' . $recordId, json_encode($hold));
+
+		$responseCode = $this->apiCurlWrapper->getResponseCode();
+		if ($responseCode == '204') {
+			$message = 'Pickup Location Updated!';
+			$success = true;
+		} else {
+			$errorMsg = json_decode($response);
+			$message = $errorMsg->errors[0]->message;
+			$success = false;
+		}
+
+		$logger->log($message, Logger::LOG_ERROR);
+		return array(
+			'itemId' => $itemToUpdateId,
+			'success' => $success,
+			'message' => $message
+		);
 
 	}
 
