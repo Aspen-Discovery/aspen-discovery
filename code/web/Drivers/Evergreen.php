@@ -167,16 +167,41 @@ class Evergreen extends AbstractIlsDriver
 
 			if ($this->apiCurlWrapper->getResponseCode() == 200) {
 				$apiResponse = json_decode($apiResponse);
-				foreach ($apiResponse->payload[0] as $payload) {
-					//Process overdue titles
-
+				if (isset($apiResponse->payload[0])) {
 					//Process out titles
-
+					foreach ($apiResponse->payload[0]->out as $checkoutId) {
+						$checkout = $this->loadCheckoutData($checkoutId, $authToken);
+						if ($checkout != null){
+							$checkedOutTitles[] = $checkout;
+						}
+					}
+					//Process overdue titles
+					foreach ($apiResponse->payload[0]->overdue as $checkoutId) {
+						$checkout = $this->loadCheckoutData($checkoutId, $authToken);
+						if ($checkout != null){
+							$checkedOutTitles[] = $checkout;
+						}
+					}
 				}
 			}
 		}
 
 		return $checkedOutTitles;
+	}
+
+	private function loadCheckoutData($checkoutId, $authToken){
+		$evergreenUrl = $this->accountProfile->patronApiUrl . '/osrf-gateway-v1';
+		$request = 'service=open-ils.circ&method=open-ils.circ.retrieve';
+		$request .= '&param=' . json_encode($authToken);
+		$request .= '&param=' . $checkoutId;
+		$apiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $request);
+
+		if ($this->apiCurlWrapper->getResponseCode() == 200) {
+			$apiResponse = json_decode($apiResponse);
+			if (isset($apiResponse->payload[0])) {
+
+			}
+		}
 	}
 
 	/**
