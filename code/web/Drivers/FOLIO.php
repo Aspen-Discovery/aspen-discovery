@@ -396,12 +396,16 @@ class FOLIO extends AbstractIlsDriver
 
 	function freezeHold($patron, $recordId, $itemToFreezeId, $dateToReactivate)
 	{
-
+		return array(
+			'success' => false,
+			'message' => 'Freezing holds not implemented for this ILS');
 	}
 
 	function thawHold($patron, $recordId, $itemToThawId)
 	{
-
+		return array(
+			'success' => false,
+			'message' => 'Thawing holds not implemented for this ILS');
 	}
 
 	function changeHoldPickupLocation($patron, $recordId, $itemToUpdateId, $newPickupLocation)
