@@ -1374,12 +1374,12 @@ class Sierra extends Millennium{
 			$patron->cat_password = $newPin;
 			$patron->update();
 		}else{
-			$message = 'Unable to update PIN. ';
+			$message = translate(['text'=>'Unable to update PIN. ', 'isPublicFacing'=>true, 'inAttribute'=>true]);
 			if (!empty($this->lastErrorMessage)){
-				$message .= $this->lastErrorMessage;
+				$message .= translate(['text'=>$this->lastErrorMessage, 'isPublicFacing'=>true, 'inAttribute'=>true]);
 			}
 			if (!empty($updatePatronResponse) && !empty($updatePatronResponse->description)){
-				$message .= '<br/>' . $updatePatronResponse->description;
+				$message .= '<br/>' . translate(['text'=>$updatePatronResponse->description, 'isPublicFacing'=>true, 'inAttribute'=>true]);
 			}
 			$result['message'] = $message;
 		}
