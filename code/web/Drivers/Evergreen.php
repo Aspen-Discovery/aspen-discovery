@@ -128,6 +128,70 @@ class Evergreen extends AbstractIlsDriver
 		"usr_activity",
 		"usr_work_ou_map",
 	];
+	private $circFields = [
+		'checkin_lib',
+		'checkin_staff',
+		'checkin_time',
+		'circ_lib',
+		'circ_staff',
+		'desk_renewal',
+		'due_date',
+		'duration',
+		'duration_rule',
+		'fine_interval',
+		'id',
+		'max_fine',
+		'max_fine_rule',
+		'opac_renewal',
+		'phone_renewal',
+		'recurring_fine',
+		'recurring_fine_rule',
+		'renewal_remaining',
+		'grace_period',
+		'stop_fines',
+		'stop_fines_time',
+		'target_copy',
+		'usr',
+		'xact_finish',
+		'xact_start',
+		'create_time',
+		'workstation',
+		'checkin_workstation',
+		'checkin_scan_time',
+		'parent_circ',
+		'billings',
+		'payments',
+		'billable_transaction',
+		'circ_type',
+		'billing_total',
+		'payment_total',
+		'unrecovered',
+		'copy_location',
+		'aaactsc_entries',
+		'aaasc_entries',
+		'auto_renewal',
+		'auto_renewal_remaining',
+	];
+	private $mvrFields = [
+		'title',
+		'author',
+		'doc_id',
+		'doc_type',
+		'pubdate',
+		'isbn',
+		'publisher',
+		'tcn',
+		'subject',
+		'types_of_resource',
+		'call_numbers',
+		'edition',
+		'online_loc',
+		'synopsis',
+		'physical_description',
+		'toc',
+		'copy_count',
+		'series',
+	];
 	/**
 	 * @param AccountProfile $accountProfile
 	 */
@@ -165,21 +229,26 @@ class Evergreen extends AbstractIlsDriver
 			$request .= '&param=' . $patron->username;
 			$apiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $request);
 
+			$index = 0;
 			if ($this->apiCurlWrapper->getResponseCode() == 200) {
 				$apiResponse = json_decode($apiResponse);
 				if (isset($apiResponse->payload[0])) {
 					//Process out titles
 					foreach ($apiResponse->payload[0]->out as $checkoutId) {
-						$checkout = $this->loadCheckoutData($checkoutId, $authToken);
+						$checkout = $this->loadCheckoutData($patron, $checkoutId, $authToken);
 						if ($checkout != null){
-							$checkedOutTitles[] = $checkout;
+							$index++;
+							$sortKey = "{$checkout->source}_{$checkout->sourceId}_$index";
+							$checkedOutTitles[$sortKey] = $checkout;
 						}
 					}
 					//Process overdue titles
 					foreach ($apiResponse->payload[0]->overdue as $checkoutId) {
-						$checkout = $this->loadCheckoutData($checkoutId, $authToken);
+						$checkout = $this->loadCheckoutData($patron, $checkoutId, $authToken);
 						if ($checkout != null){
-							$checkedOutTitles[] = $checkout;
+							$index++;
+							$sortKey = "{$checkout->source}_{$checkout->sourceId}_$index";
+							$checkedOutTitles[$sortKey] = $checkout;
 						}
 					}
 				}
@@ -189,7 +258,8 @@ class Evergreen extends AbstractIlsDriver
 		return $checkedOutTitles;
 	}
 
-	private function loadCheckoutData($checkoutId, $authToken){
+	private function loadCheckoutData(User $patron, $checkoutId, $authToken) : ?Checkout {
+		$curCheckout = null;
 		$evergreenUrl = $this->accountProfile->patronApiUrl . '/osrf-gateway-v1';
 		$request = 'service=open-ils.circ&method=open-ils.circ.retrieve';
 		$request .= '&param=' . json_encode($authToken);
@@ -199,11 +269,58 @@ class Evergreen extends AbstractIlsDriver
 		if ($this->apiCurlWrapper->getResponseCode() == 200) {
 			$apiResponse = json_decode($apiResponse);
 			if (isset($apiResponse->payload[0])) {
+				$mappedCheckout = $this->mapEvergreenFields($apiResponse->payload[0]->__p, $this->circFields);
+				$curCheckout = new Checkout();
+				$curCheckout->type = 'ils';
+				$curCheckout->source = $this->getIndexingProfile()->name;
 
+				$curCheckout->sourceId = $mappedCheckout['target_copy'];
+				$curCheckout->userId = $patron->id;
+
+				$modsForCopy = $this->getModsForCopy($mappedCheckout['target_copy']);
+
+				$curCheckout->recordId = $modsForCopy['doc_id'];
+				$curCheckout->itemId = $mappedCheckout['target_copy'];
+
+				$curCheckout->dueDate = strtotime($mappedCheckout['due_date']);
+				$curCheckout->checkoutDate = strtotime($mappedCheckout['create_time']);
+
+				//$curCheckout->renewCount = $itemOut->RenewalCount;
+				$curCheckout->canRenew = $mappedCheckout['renewal_remaining'] > 0;
+				$curCheckout->maxRenewals = $mappedCheckout['renewal_remaining'];
+				$curCheckout->renewalId = $mappedCheckout['id'];
+				$curCheckout->renewIndicator = $mappedCheckout['id'];
+
+				$curCheckout->title = $modsForCopy['title'];
+				$curCheckout->author = $modsForCopy['author'];
+				$curCheckout->callNumber = reset($modsForCopy['call_numbers']);
+
+				require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+				$recordDriver = new MarcRecordDriver((string)$curCheckout->recordId);
+				if ($recordDriver->isValid()){
+					$curCheckout->updateFromRecordDriver($recordDriver);
+				}
 			}
 		}
+		return $curCheckout;
 	}
 
+	private function getModsForCopy($copyId){
+		$evergreenUrl = $this->accountProfile->patronApiUrl . '/osrf-gateway-v1';
+		$request = 'service=open-ils.search&method=open-ils.search.biblio.mods_from_copy';
+		$request .= '&param=' . $copyId;
+		$apiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $request);
+
+		if ($this->apiCurlWrapper->getResponseCode() == 200) {
+			$apiResponse = json_decode($apiResponse);
+			if (isset($apiResponse->payload[0])) {
+				$mods = $apiResponse->payload[0]->__p;
+				$mods = $this->mapEvergreenFields($mods, $this->mvrFields);
+				return $mods;
+			}
+		}
+		return null;
+	}
 	/**
 	 * @inheritDoc
 	 */
@@ -633,10 +750,8 @@ class Evergreen extends AbstractIlsDriver
 		//return parent::patronLogin($username, $password, $validatedViaSSO);
 		$session = $this->validatePatronAndGetAuthToken($username, $password);
 		if ($session['userValid']){
-			$sessionData = $this->fetchSession($session['authToken']);
-			if ($sessionData != null){
-				$userData = $this->mapEvergreenFields($sessionData, $this->auFields);
-
+			$userData = $this->fetchSession($session['authToken']);
+			if ($userData != null){
 				$user = $this->loadPatronInformation($userData, $username, $password);
 
 				$user->password = $password;
@@ -787,7 +902,7 @@ class Evergreen extends AbstractIlsDriver
 		if ($this->apiCurlWrapper->getResponseCode() == 200){
 			$getSessionResponse = json_decode($getSessionResponse);
 			if ($getSessionResponse->payload[0]->__c == 'au'){ //class
-				return $getSessionResponse->payload[0]->__p; //payload
+				return $this->mapEvergreenFields($getSessionResponse->payload[0]->__p, $this->auFields); //payload
 			}
 		}
 		return null;
