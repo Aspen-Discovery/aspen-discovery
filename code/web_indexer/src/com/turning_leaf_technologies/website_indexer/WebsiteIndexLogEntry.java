@@ -104,12 +104,21 @@ class WebsiteIndexLogEntry implements BaseLogEntry {
 	}
 	void incAdded(){
 		numAdded++;
+		if ((numAdded + numUpdated) % 100 == 0){
+			this.saveResults();
+		}
 	}
 	void incDeleted(){
 		numDeleted++;
+		if ((numDeleted) % 50 == 0){
+			this.saveResults();
+		}
 	}
 	void incUpdated(){
 		numUpdated++;
+		if ((numAdded + numUpdated) % 100 == 0){
+			this.saveResults();
+		}
 	}
 	void incNumPages() {
 		numPages++;

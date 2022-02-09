@@ -174,6 +174,7 @@ export async function getHiddenBrowseCategories() {
 	});
 	const response = await api.post('/UserAPI?method=getHiddenBrowseCategories', postBody);
 	if (response.ok) {
+		//console.log(response);
 		const result = response.data.result;
 		const categories = result.categories;
 

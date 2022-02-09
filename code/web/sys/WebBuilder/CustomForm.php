@@ -207,6 +207,20 @@ class CustomForm extends DataObject
 		} else {
 			$interface->assign('objectAction', '');
 		}
+
+		if (!UserAccount::isLoggedIn()) {
+			if (!$this->requireLogin) {
+				require_once ROOT_DIR . '/sys/Enrichment/RecaptchaSetting.php';
+				require_once ROOT_DIR . '/recaptcha/recaptchalib.php';
+				$recaptcha = new RecaptchaSetting();
+				if ($recaptcha->find(true) && !empty($recaptcha->publicKey)) {
+					$captchaCode = recaptcha_get_html($recaptcha->publicKey);
+					$interface->assign('captcha', $captchaCode);
+				}
+			}else{
+				return "<div class='alert alert-warning'>" . translate(['text'=>"You must be logged to submit this form", 'isPublicFacing'=> true]) . "</div>";
+			}
+		}
 		return $interface->fetch('DataObjectUtil/objectEditForm.tpl');
 	}
 }

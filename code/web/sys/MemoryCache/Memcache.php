@@ -27,7 +27,7 @@ class Memcache
 	public function get($name)
 	{
 		if (!array_key_exists($name, $this->vars)) {
-			if ($this->enableDbCache) {
+			if ($this->enableDbCache && !isset($_REQUEST['reload'])) {
 				try {
 					$cachedValue = new CachedValue();
 					$cachedValue->cacheKey = $name;

@@ -1,13 +1,14 @@
 import React, {Component} from "react";
-import {Box, Button, Center, FlatList, Text} from "native-base";
-import {ListItem} from "react-native-elements";
+import {Box, Button, Center, FlatList, Text, Pressable, HStack} from "native-base";
+import {Ionicons} from "@expo/vector-icons";
 import * as WebBrowser from 'expo-web-browser';
 
 // custom components and helper files
 import {translate} from "../util/translations";
 import {loadingSpinner} from "../components/loadingSpinner";
 import {loadError} from "../components/loadError";
-import {removeData} from "../util/logout";
+import {UseColorMode} from "../themes/theme";
+import {AuthContext} from "../components/navigation";
 
 export default class More extends Component {
 	constructor() {
@@ -19,14 +20,14 @@ export default class More extends Component {
 			defaultMenuItems: [
 				{
 					key: '0',
-					title: 'Contact',
+					title: translate('general.contact'),
 					path: 'Contact',
 					external: false,
 				},
 				{
 					key: '1',
-					title: 'Privacy Policy',
-					path: 'https://bywatersolutions.com/projects/aspen-discovery/lida-app-privacy-policy',
+					title: translate('general.privacy_policy'),
+					path: global.privacyPolicy,
 					external: true,
 				}
 			]
@@ -42,25 +43,23 @@ export default class More extends Component {
 	renderNativeItem = (item) => {
 		if (item.external) {
 			return (
-				<ListItem bottomDivider onPress={() => {
+				<Pressable borderBottomWidth="1" _dark={{ borderColor: "gray.600" }} borderColor="coolGray.200" pl="4" pr="5" py="2" onPress={() => {
 					this.openWebsite(item.path)
 				}}>
-					<ListItem.Content>
-						<Text bold>{item.title}</Text>
-					</ListItem.Content>
-					<ListItem.Chevron/>
-				</ListItem>
+					<HStack space={3}>
+						<Text _dark={{ color: "warmGray.50" }} color="coolGray.800" bold fontSize={{base: "lg", lg: "xl"}}>{item.title}</Text>
+					</HStack>
+				</Pressable>
 			);
 		} else {
 			return (
-				<ListItem bottomDivider onPress={() => {
+				<Pressable borderBottomWidth="1" _dark={{ borderColor: "gray.600" }} borderColor="coolGray.200" pl="4" pr="5" py="2" onPress={() => {
 					this.onPressMenuItem(item.path)
 				}}>
-					<ListItem.Content>
-						<Text bold>{item.title}</Text>
-					</ListItem.Content>
-					<ListItem.Chevron/>
-				</ListItem>
+					<HStack>
+						<Text _dark={{ color: "warmGray.50" }} color="coolGray.800" bold fontSize={{base: "lg", lg: "xl"}}>{item.title}</Text>
+					</HStack>
+				</Pressable>
 			);
 		}
 	};
@@ -69,15 +68,10 @@ export default class More extends Component {
 		this.props.navigation.navigate(item, {item});
 	};
 
-	onPressLogout = async () => {
-		await removeData();
-		this.props.navigation.navigate("Permissions");
-	}
 
 	openWebsite = async (url) => {
 		WebBrowser.openBrowserAsync(url);
 	}
-
 
 	render() {
 		if (this.state.isLoading) {
@@ -97,15 +91,20 @@ export default class More extends Component {
 				/>
 
 				<Center mt={5}>
-					<Button onPress={() => {
-						this.onPressLogout()
-					}}>{translate('general.logout')}</Button>
-					<Text mt={10} fontSize="xs" bold>{translate('app.version')} <Text fontSize="xs"
-					                                                                  color="coolGray.600">{global.version}</Text></Text>
-					<Text fontSize="xs" bold>{translate('app.build')} <Text fontSize="xs"
-					                                                        color="coolGray.600">{global.build}</Text></Text>
+					<LogOutButton/>
+					<Text mt={10} fontSize="xs" bold>{translate('app.version')} <Text color="coolGray.600" _dark={{ color: "warmGray.400" }}>{global.version}</Text></Text>
+					<Text fontSize="xs" bold>{translate('app.build')} <Text color="coolGray.600" _dark={{ color: "warmGray.400" }}>{global.build}</Text></Text>
 				</Center>
+				<UseColorMode/>
 			</Box>
 		);
 	}
+}
+
+function LogOutButton() {
+	const { signOut } = React.useContext(AuthContext);
+
+	return(
+		<Button onPress={signOut}>{translate('general.logout')}</Button>
+	)
 }

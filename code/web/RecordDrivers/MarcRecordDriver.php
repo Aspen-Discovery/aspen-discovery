@@ -211,7 +211,9 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 
 		$interface->assign('bookcoverInfo', $this->getBookcoverInfo());
 
-		$interface->assign('marcRecord', $this->getMarcRecord());
+		$marcRecord = $this->getMarcRecord();
+		$marcRecord->sortFields();
+		$interface->assign('marcRecord', $marcRecord);
 
 		$lastMarcModificationTime = MarcLoader::lastModificationTimeForIlsId("{$this->profileType}:{$this->id}");
 		$interface->assign('lastMarcModificationTime', $lastMarcModificationTime);
@@ -527,7 +529,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 	 */
 	public function getTitle()
 	{
-		return $this->getFirstFieldValue('245', array('a', 'b', 'n', 'p'));
+		return $this->getFirstFieldValue('245', array('a', 'b', 'f', 'g', 'n', 'p'));
 	}
 
 	/**
@@ -1801,7 +1803,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 	public function loadPeriodicalInformation()
 	{
 		$catalogDriver = $this->getCatalogDriver();
-		if (method_exists($catalogDriver, 'getIssueSummaries')) {
+		if ($catalogDriver->hasIssueSummaries()){
 			$issueSummaries = $catalogDriver->getIssueSummaries($this->id);
 			if (count($issueSummaries)) {
 				//Insert copies into the information about the periodicals

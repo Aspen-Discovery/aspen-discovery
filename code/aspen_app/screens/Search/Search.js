@@ -1,5 +1,6 @@
 import React, {Component} from "react";
 import {Box, Button, Center, FlatList, FormControl, Input, Text} from "native-base";
+import _ from "lodash";
 
 // custom components and helper files
 import {translate} from '../../util/translations';
@@ -11,50 +12,38 @@ export default class Search extends Component {
 		this.state = {
 			isLoading: true,
 			searchTerm: "",
-			defaultSearches: [
-				{
-					key: 0,
-					label: "New York Times",
-					term: "new york times",
-				},
-				{
-					key: 1,
-					label: "Autobiography",
-					term: "autobiography",
-				},
-				{
-					key: 2,
-					label: "Super Heroes",
-					term: "super hero",
-				},
-				{
-					key: 3,
-					label: "US History",
-					term: "us history",
-				},
-			]
+			quickSearches: null,
 		};
 	}
 
 	componentDidMount = async () => {
-		this.setState({isLoading: false});
+		this.setState({
+			isLoading: false,
+		});
+
+		if(typeof global.quickSearches !== "undefined") {
+			this.setState({
+				quickSearches: global.quickSearches,
+			});
+		}
 	};
 
 	initiateSearch = async () => {
 		const {searchTerm} = this.state;
-		this.props.navigation.navigate("SearchResults", {
+		const { navigation } = this.props;
+		navigation.navigate("SearchResults", {
 			searchTerm: searchTerm
 		});
 	};
 
 	renderItem = (item) => {
-		const {navigate} = this.props.navigation;
+		const { navigation } = this.props;
 		return (
 			<Button
 				mb={3}
 				onPress={() =>
-					navigate("SearchResults", {
-						searchTerm: item.term,
+					navigation.navigate("SearchResults", {
+						searchTerm: item.searchTerm,
 					})
 				}
 			>
@@ -68,6 +57,9 @@ export default class Search extends Component {
 	};
 
 	render() {
+		const quickSearches = this.state.quickSearches;
+		console.log(quickSearches);
+
 		if (this.state.isLoading) {
 			return (loadingSpinner());
 		}
@@ -86,16 +78,19 @@ export default class Search extends Component {
 						value={this.state.searchTerm}
 						size="xl"
 					/>
-					<Center>
-						<Text mt={8} mb={2} fontSize="xl" bold>
-							{translate('search.quick_search_title')}
-						</Text>
-					</Center>
 				</FormControl>
-				<FlatList
-					data={this.state.defaultSearches}
-					renderItem={({item}) => this.renderItem(item)}
-				/>
+
+				{quickSearches ?
+				<Center>
+					<Text mt={8} mb={2} fontSize="xl" bold>
+						{translate('search.quick_search_title')}
+					</Text>
+				</Center>
+				: null }
+					<FlatList
+						data={_.sortBy(quickSearches, ['weight', 'label'])}
+						renderItem={({item}) => this.renderItem(item)}
+					/>
 			</Box>
 		);
 	}

@@ -8,7 +8,7 @@ import {translate} from '../../util/translations';
 
 const HoursAndLocation = (props) => {
 
-	const {hoursMessage, hours, description} = props
+	const {hoursMessage, description} = props
 
 	return (
 		<>
@@ -25,32 +25,6 @@ const HoursAndLocation = (props) => {
 			<Divider mb={10}/>
 		</>
 	)
-}
-
-function renderHours(item) {
-	let hours;
-	const openTime = moment(item.open, "HH:mm").format("h:mm A");
-	const closingTime = moment(item.close, "HH:mm").format("h:mm A");
-
-	if (item.isClosed) {
-		hours = translate('library_contact.closed');
-	} else {
-		hours = openTime + " - " + closingTime;
-	}
-
-	return (
-		<Box>
-			<Center>
-				<VStack space={1} alignItems="flex-start">
-					<Text bold fontSize="sm">{item.dayName}</Text>
-					<Text fontSize="sm">{hours}</Text>
-				</VStack>
-			</Center>
-			{item.notes ?
-				<Text bold>{translate('library_contact.note')}: <Text>{item.notes}</Text></Text>
-				: null}
-		</Box>
-	);
 }
 
 export default HoursAndLocation;

@@ -50,7 +50,7 @@ class SymphonyRecordProcessor extends IlsRecordProcessor {
 		}else{
 			shelfLocationData = "";
 		}
-		if (shelfLocationData.equalsIgnoreCase("Z-ON-ORDER") || shelfLocationData.equalsIgnoreCase("ON-ORDER")) {
+		if (shelfLocationData.equalsIgnoreCase("Z-ON-ORDER") || shelfLocationData.equalsIgnoreCase("ON-ORDER") || shelfLocationData.equalsIgnoreCase("ONORDER")) {
 			statusFieldData = "On Order";
 		}else {
 			if (statusFieldData == null) {

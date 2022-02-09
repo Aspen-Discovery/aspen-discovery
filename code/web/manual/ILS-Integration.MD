@@ -17,8 +17,17 @@ View the indexing log for ILS records.
 #### Offline Holds Report
 View a report of holds that were submitted while the ILS was offline.
 #### Dashboard
-View the usage dashboard for ILS integration.
-
+The dashboard contains the following information:
+- **User Logins:**	Users that log in to Aspen
+- **Self Registrations:**	New users that register through Aspen
+- **Users Who Placed At Least One Hold:**	Users who placed at least one hold in Aspen
+- **Records Held:**	Unique number of titles or bib records with at least one hold placed on them
+- **Users Who Downloaded at Least One PDF:**	Users who downloaded at least one PDF
+- **Users Who Viewed at Least One PDF:**	Number of Users who viewed at least one PDF
+- **PDFs Downloaded:**	Number of PDFs Downloaded within Aspen
+- **PDFs Viewed:**	Number of PDFs Viewed within Aspen
+- **Users Who Downloaded at Least One Supplemental File:**	Users who downloaded at least one supplemental file in Aspen
+- **Supplemental Files Downloaded:**	Number of supplemental files downloaded in Aspen
 ### Video Tutorial
 
 #### ILS Integration

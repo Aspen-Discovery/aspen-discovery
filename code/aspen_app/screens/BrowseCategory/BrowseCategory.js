@@ -8,7 +8,7 @@ import {createAuthTokens, getHeaders, postData, problemCodeMap} from "../../util
 import {popToast} from "../../components/loadError";
 
 const BrowseCategory = (props) => {
-	const {isLoading, categoryLabel, categoryKey, renderItem, loadMore, hideCategory} = props
+	const {categoryLabel, categoryKey, renderItem, hideCategory} = props
 	const [page, setPage] = React.useState(1);
 	const [items, setItems] = React.useState([]);
 	const [shouldFetch, setShouldFetch] = React.useState(true);
@@ -38,8 +38,8 @@ const BrowseCategory = (props) => {
 		return (
 			<View pb={5}>
 				<HStack space={3} alignItems="center" justifyContent="space-between" pb={2}>
-					<Text bold mb={1} fontSize={{base: "lg", lg: "2xl"}}>{categoryLabel}</Text>
-					<Button size="xs" colorScheme="trueGray" variant="outline" onPress={() => hideCategory(categoryKey)}
+					<Text maxWidth="80%" bold mb={1} fontSize={{base: "lg", lg: "2xl"}}>{categoryLabel}</Text>
+					<Button size="xs" colorScheme="trueGray" variant="ghost" onPress={() => hideCategory(categoryKey)}
 					        startIcon={<Icon as={MaterialIcons} name="close" size="xs" mr={-1.5}/>}>Hide</Button>
 				</HStack>
 				<FlatList
@@ -60,7 +60,7 @@ async function getBrowseCategoryResults(categoryKey, limit = 25, page) {
 	const postBody = await postData();
 	const api = create({
 		baseURL: global.libraryUrl + '/API',
-		timeout: global.timeoutSlow,
+		timeout: 60000,
 		headers: getHeaders(true),
 		auth: createAuthTokens(),
 		params: {limit: limit, id: categoryKey, page: page}
@@ -69,6 +69,7 @@ async function getBrowseCategoryResults(categoryKey, limit = 25, page) {
 	if (response.ok) {
 		const result = response.data;
 		const itemResult = result.result;
+		//console.log(result);
 		const records = itemResult.records;
 
 		if (_.isArray(records) === false) {

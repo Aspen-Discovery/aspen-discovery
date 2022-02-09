@@ -12,7 +12,7 @@ class Mailer {
 	 * @param string $body Message body
 	 * @param string $replyTo Someone to reply to
 	 * @param bool $htmlMessage True to send the email as html
-	 * @param string $htmlBody Message body
+	 * @param string? $htmlBody Message body
 	 *
 	 * @return  boolean
 	 */
@@ -43,7 +43,7 @@ class Mailer {
 	 * @param string $body
 	 * @return bool
 	 */
-	protected function sendViaSendGrid(SendGridSetting $sendGridSettings, string $to, ?string $replyTo, string $subject, string $body, string $htmlBody)
+	protected function sendViaSendGrid(SendGridSetting $sendGridSettings, string $to, ?string $replyTo, string $subject, string $body, ?string $htmlBody)
 	{
 		//Send the email
 		$curlWrapper = new CurlWrapper();

@@ -25,8 +25,6 @@ import {getPickupLocations} from "../../util/loadLibrary";
 import {updateOverDriveEmail} from "../../util/accountActions";
 
 export default class GroupedWork extends Component {
-	static navigationOptions = {title: translate('grouped_work.title')};
-
 	constructor() {
 		super();
 		this.state = {
@@ -67,8 +65,10 @@ export default class GroupedWork extends Component {
 	_fetchItemData = async () => {
 
 		this.setState({isLoading: true});
+		const { navigation, route } = this.props;
+		const givenItem = route.params?.item ?? 'null';
 
-		await getGroupedWork(this.props.navigation.state.params.item).then(response => {
+		await getGroupedWork(givenItem).then(response => {
 			if (response === "TIMEOUT_ERROR") {
 				this.setState({
 					hasError: true,
@@ -135,10 +135,10 @@ export default class GroupedWork extends Component {
 			return (
 				<Button
 					pt={2}
-					size={{base: "xs", lg: "md"}}
+					size={{base: "sm", lg: "md"}}
 					variant="link"
+					colorScheme="tertiary"
 					_text={{
-						color: "primary.500",
 						fontWeight: "600",
 					}}
 					onPress={() => this.authorSearch(this.state.data.author)}
@@ -152,11 +152,7 @@ export default class GroupedWork extends Component {
 	formatOptions = () => {
 		return this.state.formats.map((format, index) => {
 
-			if (this.state.format === format.format) {
-				var btnVariant = "solid";
-			} else {
-				var btnVariant = "outline";
-			}
+			const btnVariant = this.state.format === format.format ? "solid" : "outline";
 
 			return <Button variant={btnVariant} size={{base: "sm", lg: "lg"}} mb={1}
 			               onPress={() => this.setState({format: format.format})}>{format.format}</Button>
@@ -167,11 +163,7 @@ export default class GroupedWork extends Component {
 
 		return this.state.languages.map((language, index) => {
 
-			if (this.state.language == language.language) {
-				var btnVariant = "solid";
-			} else {
-				var btnVariant = "outline";
-			}
+			const btnVariant = this.state.language === language.language ? "solid" : "outline";
 
 			return <Button variant={btnVariant} size={{base: "sm", lg: "lg"}}
 			               onPress={() => this.setState({language: language.language})}>{language.language}</Button>
@@ -199,7 +191,7 @@ export default class GroupedWork extends Component {
 					});
 				}
 			}
-		} else if (response.getPrompt == true) {
+		} else if (response.getPrompt === true) {
 			this.setState({
 				prompt: true,
 				promptItemId: response.itemId,
@@ -266,9 +258,19 @@ export default class GroupedWork extends Component {
 			return (loadError(this.state.error, this._fetchResults));
 		}
 
+		let ratingCount = 0;
+		if(this.state.ratingData != null) {
+			ratingCount = this.state.ratingData.count;
+		}
+
+		let ratingAverage = 0;
+		if(this.state.ratingData != null) {
+			ratingAverage = this.state.ratingData.average;
+		}
+
 		return (
 			<ScrollView>
-				<Box h={{base: 125, lg: 200}} w="100%" bgColor="muted.200" zIndex={-1} position="absolute" left={0}
+				<Box h={{base: 125, lg: 200}} w="100%" bgColor="warmGray.200" _dark={{ bgColor: "coolGray.900" }} zIndex={-1} position="absolute" left={0}
 				     top={0}></Box>
 				<Box flex={1} safeArea={5}>
 					<Center mt={5}>
@@ -281,18 +283,18 @@ export default class GroupedWork extends Component {
 							{this.state.data.title} {this.state.data.subtitle}
 						</Text>
 						{this.showAuthor()}
-						{this.state.ratingData.count > 0 ?
-							<Rating imageSize={20} readonly count={this.state.ratingData.count}
-							        startingValue={this.state.ratingData.average} type='custom' tintColor="#F2F2F2"
+						{ratingCount > 0 ?
+							<Rating imageSize={20} readonly count={ratingCount}
+							        startingValue={ratingAverage} type='custom' tintColor="white"
 							        ratingBackgroundColor="#E5E5E5" style={{paddingTop: 5}}/> : null}
 					</Center>
 					<Text fontSize={{base: "xs", lg: "md"}} bold mt={3} mb={1}>{translate('grouped_work.format')}</Text>
 					{this.state.formats ?
-						<Button.Group style={{flex: 1, flexWrap: 'wrap'}}>{this.formatOptions()}</Button.Group> : null}
+						<Button.Group colorScheme="secondary" style={{flex: 1, flexWrap: 'wrap'}}>{this.formatOptions()}</Button.Group> : null}
 					<Text fontSize={{base: "xs", lg: "md"}} bold mt={3}
 					      mb={1}>{translate('grouped_work.language')}</Text>
 					{this.state.languages ?
-						<Button.Group colorScheme="tertiary">{this.languageOptions()}</Button.Group> : null}
+						<Button.Group colorScheme="secondary">{this.languageOptions()}</Button.Group> : null}
 
 					{this.state.variations ? <StatusIndicator data={this.state.variations} format={this.state.format}
 					                                          language={this.state.language}

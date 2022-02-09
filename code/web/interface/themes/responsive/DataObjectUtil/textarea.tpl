@@ -15,7 +15,7 @@
 		valid_elements : '*[*]',
 		extended_valid_elements : [
 			'*[*]',
-			'img[class=img-responsive|src|border=0|alt|title]'
+			'img[class=img-responsive|src|border=0|alt|title|width|height]'
 		]
 	});
 	{/literal}

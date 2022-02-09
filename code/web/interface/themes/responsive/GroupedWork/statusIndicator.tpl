@@ -4,7 +4,11 @@
 		{if $statusInformation->isAvailableOnline()}
 			<div class="related-manifestation-shelf-status status-available-online label label-success label-wrap">{translate text='Available Online' isPublicFacing=true}</div>
 		{else}
-			<div class="related-manifestation-shelf-status status-checked-out label label-danger label-wrap">{translate text='Checked Out' isPublicFacing=true}</div>
+			{if $statusInformation->getGroupedStatus() == 'On Order'}
+				<div class="related-manifestation-shelf-status status-checked-out label label-danger label-wrap">{translate text='On Order' isPublicFacing=true}</div>
+			{else}
+				<div class="related-manifestation-shelf-status status-checked-out label label-danger label-wrap">{translate text='Checked Out' isPublicFacing=true}</div>
+			{/if}
 		{/if}
 	{/if}
 {else}

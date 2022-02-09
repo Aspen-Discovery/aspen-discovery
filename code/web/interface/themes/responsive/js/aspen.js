@@ -5727,9 +5727,11 @@ AspenDiscovery.Account = (function(){
 
 				var referer;
 				if ((module === "WebBuilder") && ((action === "BasicPage") || (action === "PortalPage"))){
-					referer = "MyAccount/Home";
+					referer = "/MyAccount/Home";
 				} else if ((module === "Search") && (action === "Home")) {
-					referer = "MyAccount/Home";
+					referer = "/MyAccount/Home";
+				} else if ((module === "MyAccount") && (action === "InitiateResetPin" || $action === 'CompletePinReset')) {
+					referer = "/MyAccount/Home";
 				} else {
 					referer = window.location;
 				}
@@ -11326,11 +11328,10 @@ AspenDiscovery.Prospector = (function(){
 			$.ajax({
 				url: fullUrl,
 				success: function(data) {
-					var prospectorSearchResults = $(data).find("ProspectorSearchResults").text();
-					if (prospectorSearchResults) {
-						if (prospectorSearchResults.length > 0){
-							$("#prospectorSearchResultsPlaceholder").html(prospectorSearchResults);
-						}
+					if (data.numTitles == 0){
+						$("#prospectorSearchResultsPlaceholder").hide();
+					}else{
+						$("#prospectorSearchResultsPlaceholder").html(data.formattedData);
 					}
 				}
 			});
@@ -12966,6 +12967,7 @@ AspenDiscovery.WebBuilder = function () {
 		},
 
 		getWebResource:function (id) {
+			var newTab = window.open();
 			var url = Globals.path + "/WebBuilder/AJAX";
 			var params = {
 				method: "getWebResource",
@@ -12982,7 +12984,7 @@ AspenDiscovery.WebBuilder = function () {
 						};
 						$.getJSON(url, params, function(usage){
 							if(data.openInNewTab) {
-								window.open(data.url, '_blank');
+								newTab.location.href = data.url;
 							} else {
 								location.assign(data.url);
 							}
@@ -13000,7 +13002,7 @@ AspenDiscovery.WebBuilder = function () {
 					};
 					$.getJSON(url, params, function(usage){
 						if(data.openInNewTab) {
-							window.open(data.url, '_blank');
+							newTab.location.href = data.url;
 						} else {
 							location.assign(data.url);
 						}

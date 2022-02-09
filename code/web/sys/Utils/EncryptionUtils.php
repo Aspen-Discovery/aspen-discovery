@@ -51,7 +51,7 @@ class EncryptionUtils
 
 	private static $_key = null;
 	private static function loadKey(){
-		/** MemoryCache $memCache */
+		/** @var MemCache $memCache */
 		global $memCache;
 		if (EncryptionUtils::$_key == null){
 			global $serverName;

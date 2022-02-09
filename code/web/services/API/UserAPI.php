@@ -118,13 +118,13 @@ class UserAPI extends Action
 			$user = UserAccount::getLoggedInUser();
 			if ($user && !($user instanceof AspenError)) {
 				$logger->log("User is already logged in",Logger::LOG_DEBUG);
-				return array('success' => true, 'name' => ucwords($user->firstname . ' ' . $user->lastname));
+				return array('success' => true, 'name' => ucwords($user->firstname . ' ' . $user->lastname), 'session' => session_id());
 			} else {
 				try {
 					$user = UserAccount::login();
 					if ($user && !($user instanceof AspenError)) {
 						$logger->log("User was logged in successfully session: " . session_id(),Logger::LOG_DEBUG);
-						return array('success' => true, 'name' => ucwords($user->firstname . ' ' . $user->lastname));
+						return array('success' => true, 'name' => ucwords($user->firstname . ' ' . $user->lastname), 'session' => session_id());
 					} else {
 						$logger->log("Incorrect login parameters",Logger::LOG_DEBUG);
 						return array('success' => false);
@@ -1201,7 +1201,18 @@ class UserAPI extends Action
 				if ($source == 'ils' || $source == null) {
 					if (isset($_REQUEST['pickupBranch']) || isset($_REQUEST['campus'])) {
 						if (isset($_REQUEST['pickupBranch'])) {
-							$pickupBranch = trim($_REQUEST['pickupBranch']);
+							if(is_null($_REQUEST['pickupBranch'])) {
+								$location = new Location();
+								$userPickupLocations = $location->getPickupBranches($patron);
+								foreach ($userPickupLocations as $tmpLocation) {
+									if ($tmpLocation->code == $patron->getPickupLocationCode()) {
+										$pickupBranch = $tmpLocation->code;
+										break;
+									}
+								}
+							} else {
+								$pickupBranch = trim($_REQUEST['pickupBranch']);
+							}
 						} else {
 							$pickupBranch = trim($_REQUEST['campus']);
 						}
@@ -2756,10 +2767,30 @@ class UserAPI extends Action
 					$browseCategory = new BrowseCategory();
 					$browseCategory->textId = $hiddenCategory->browseCategoryId;
 					if($browseCategory->find(true)){
-						$category['id'] = $browseCategory->textId;
-						$category['name'] = $browseCategory->label;
-						$category['description'] = $browseCategory->description;
-						$categories[] = $category;
+						$categoryResponse = array(
+							'id' => $browseCategory->textId,
+							'name' => $browseCategory->label
+						);
+						$subCategories = $browseCategory->getSubCategories();
+						$categoryResponse['subCategories'] = [];
+						if (count($subCategories) > 0) {
+							foreach ($subCategories as $subCategory) {
+								$tempA = new BrowseCategory();
+								$tempA->id = $subCategory->subCategoryId;
+								if($tempA->find(true)) {
+									$tempB = new BrowseCategoryDismissal();
+									$tempB->userId = $user->id;
+									$tempB->browseCategoryId = $tempA->textId;
+									if($tempB->find(true)){
+										$categoryResponse['subCategories'][] = [
+											'id' => $tempA->textId,
+											'name' => $browseCategory->label . ': ' . $tempA->label,
+										];
+									}
+								}
+							}
+						}
+						$categories[] = $categoryResponse;
 					}
 				}
 				$result = [

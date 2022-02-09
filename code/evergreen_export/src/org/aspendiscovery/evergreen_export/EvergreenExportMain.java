@@ -7,7 +7,9 @@ import com.turning_leaf_technologies.grouping.RemoveRecordFromWorkResult;
 import com.turning_leaf_technologies.indexing.IlsExtractLogEntry;
 import com.turning_leaf_technologies.indexing.IndexingProfile;
 import com.turning_leaf_technologies.indexing.IndexingUtils;
+import com.turning_leaf_technologies.indexing.RecordIdentifier;
 import com.turning_leaf_technologies.logging.LoggingUtil;
+import com.turning_leaf_technologies.marc.MarcUtil;
 import com.turning_leaf_technologies.net.NetworkUtils;
 import com.turning_leaf_technologies.net.WebServiceResponse;
 import com.turning_leaf_technologies.reindexer.GroupedWorkIndexer;
@@ -15,13 +17,23 @@ import com.turning_leaf_technologies.strings.StringUtils;
 import org.apache.commons.net.util.Base64;
 import org.apache.logging.log4j.Logger;
 import org.ini4j.Ini;
-import org.marc4j.marc.MarcFactory;
-import org.marc4j.marc.Record;
+import org.marc4j.marc.*;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.sql.*;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.Date;
 
@@ -310,7 +322,7 @@ public class EvergreenExportMain {
 
 				//Update records
 				boolean allowDeletingExistingRecords = indexingProfile.getLastChangeProcessed() == 0;
-				totalChanges += updateBibsFromEvergreen(lastExtractTime);
+				totalChanges += updateBibsFromEvergreen(lastExtractTime, true);
 				if (!indexingProfile.isRunFullUpdate()) {
 					//Process deleted bibs
 					//TODO: extract deleted bibs
@@ -359,11 +371,15 @@ public class EvergreenExportMain {
 		return response.numChanges;
 	}
 
-	private static int updateBibsFromEvergreen(long lastExtractTime) throws UnsupportedEncodingException {
+	private static int updateBibsFromEvergreen(long lastExtractTime, boolean incrementProductsInLog) throws UnsupportedEncodingException {
 		int numChanges = 0;
 
-		String getBibUrl = baseUrl + "/opac/extras/feed/freshmeat/marcxml-full/biblio/import";
-		//ProcessBibRequestResponse response = processGetBibsRequest(getBibUrl, marcFactory, lastExtractTime, incrementProductsInLog);
+		MarcFactory marcFactory = MarcFactory.newInstance();
+
+		String getBibUrl = baseUrl + "/opac/extras/feed/freshmeat/marcxml-full/biblio/import/50";
+		ProcessBibRequestResponse response = processGetBibsRequest(getBibUrl, marcFactory, lastExtractTime, true);
+
+
 
 		return numChanges;
 	}
@@ -375,10 +391,15 @@ public class EvergreenExportMain {
 	}
 
 	private static ProcessBibRequestResponse processGetBibsRequest(String getBibsRequestUrl, MarcFactory marcFactory, long lastExtractTime, boolean incrementProductsInLog) {
+		if (incrementProductsInLog) {
+			logEntry.incProducts();
+		}
+
 		ProcessBibRequestResponse response = new ProcessBibRequestResponse();
 		if (marcFactory == null) {
 			marcFactory = MarcFactory.newInstance();
 		}
+		SimpleDateFormat evergreenDateParser = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
 
 		int numTries = 0;
 		boolean successfulResponse = false;
@@ -386,7 +407,150 @@ public class EvergreenExportMain {
 			numTries++;
 			WebServiceResponse getBibsResponse = callEvergreenAPI(getBibsRequestUrl, null, "GET", "text/xml");
 			if (getBibsResponse.isSuccess()) {
-				successfulResponse = true;
+				try {
+					successfulResponse = true;
+
+					Document getBibsDocument = createXMLDocumentForWebServiceResponse(getBibsResponse);
+					Element collectionsResult = (Element) getBibsDocument.getFirstChild();
+
+					NodeList recordNotes = collectionsResult.getElementsByTagName("record");
+					for (int i = 0; i < recordNotes.getLength(); i++){
+						Record marcRecord = marcFactory.newRecord();
+
+						Node curRecordNode = recordNotes.item(i);
+						for (int j = 0; j < curRecordNode.getChildNodes().getLength(); j++){
+							Node curChild = curRecordNode.getChildNodes().item(j);
+							if (curChild instanceof Element){
+								Element curElement = (Element)curChild;
+								switch (curElement.getTagName()) {
+									case "leader":
+										String leader = curElement.getTextContent().trim();
+										marcRecord.setLeader(marcFactory.newLeader(leader));
+										break;
+									case "controlfield": {
+										String tag = curElement.getAttribute("tag");
+										String value = curElement.getTextContent();
+										marcRecord.addVariableField(marcFactory.newControlField(tag, value));
+										break;
+									}
+									case "datafield": {
+										String tag = curElement.getAttribute("tag");
+										String ind1 = curElement.getAttribute("ind1");
+										String ind2 = curElement.getAttribute("ind2");
+										DataField curField = marcFactory.newDataField(tag, ind1.charAt(0), ind2.charAt(0));
+										for (int k = 0; k < curElement.getChildNodes().getLength(); k++) {
+											Node curChild2 = curElement.getChildNodes().item(k);
+											if (curChild2 instanceof Element) {
+												Element curElement2 = (Element) curChild2;
+												if (curElement2.getTagName().equals("subfield")) {
+													String code = curElement2.getAttribute("code");
+													String data = curElement2.getTextContent();
+													Subfield curSubField = marcFactory.newSubfield(code.charAt(0), data);
+													curField.addSubfield(curSubField);
+												}
+											}
+										}
+										marcRecord.addVariableField(curField);
+										break;
+									}
+									case "holdings":
+										NodeList volumesList = curElement.getElementsByTagName("volumes");
+										for (int n = 0; n < volumesList.getLength(); n++) {
+											Element curVolumeListElement = (Element)volumesList.item(n);
+											//Get all the volumes
+											NodeList volumes = curVolumeListElement.getElementsByTagName("volume");
+											for (int k = 0; k < volumes.getLength(); k++) {
+												Element curVolume = (Element) volumes.item(k);
+												//Get all the copies within each volume
+												NodeList copies = curVolume.getElementsByTagName("copies");
+												if (copies.getLength() > 0) {
+													Element copiesElement = (Element) copies.item(0);
+													NodeList copyList = copiesElement.getElementsByTagName("copy");
+													for (int l = 0; l < copyList.getLength(); l++) {
+														Element curCopy = (Element) copyList.item(l);
+														String deleted = curCopy.getAttribute("deleted");
+														if (deleted.equals("t")) {
+															continue;
+														}
+														DataField curItemField = marcFactory.newDataField(indexingProfile.getItemTag(), ' ', ' ');
+														String itemId = curCopy.getAttribute("id");
+														itemId = itemId.substring(itemId.lastIndexOf('/') + 1, itemId.length());
+														curItemField.addSubfield(marcFactory.newSubfield(indexingProfile.getItemRecordNumberSubfield(), itemId));
+														String createDate = curCopy.getAttribute("create_date");
+														createDate = createDate.substring(0, createDate.indexOf("T"));
+														curItemField.addSubfield(marcFactory.newSubfield(indexingProfile.getDateCreatedSubfield(), createDate));
+														//String holdable = curCopy.getAttribute("holdable");
+														//TODO: Figure out where the holdable flag should go
+														//TODO: Do we need to load circulate, ref, or deposit flags?
+														String barcode = curCopy.getAttribute("barcode");
+														curItemField.addSubfield(marcFactory.newSubfield(indexingProfile.getBarcodeSubfield(), barcode));
+														String itemType = curCopy.getAttribute("circ_modifier");
+														curItemField.addSubfield(marcFactory.newSubfield(indexingProfile.getITypeSubfield(), itemType));
+
+														for (int m = 0; m < curCopy.getChildNodes().getLength(); m++) {
+															Node curCopySubNode = curCopy.getChildNodes().item(m);
+															if (curCopySubNode instanceof Element) {
+																Element curCopySubElement = (Element) curCopySubNode;
+																switch (curCopySubElement.getTagName()) {
+																	case "status":
+																		String statusCode = curCopySubElement.getTextContent();
+																		curItemField.addSubfield(marcFactory.newSubfield(indexingProfile.getItemStatusSubfield(), statusCode));
+																		break;
+																	case "location":
+																		String shelfLocation = curCopySubElement.getTextContent();
+																		curItemField.addSubfield(marcFactory.newSubfield(indexingProfile.getShelvingLocationSubfield(), shelfLocation));
+																		break;
+																	case "circ_lib":
+																		String locationCode = curCopySubElement.getAttribute("shortname");
+																		curItemField.addSubfield(marcFactory.newSubfield(indexingProfile.getLocationSubfield(), locationCode));
+																		break;
+																}
+															}
+														}
+
+														marcRecord.addVariableField(curItemField);
+													}
+												}
+											}
+										}
+										break;
+									case "subscriptions":
+										//TODO: This may not be needed
+										break;
+								}
+							}
+						}
+
+						//Save the MARC record
+						RecordIdentifier bibliographicRecordId = getRecordGroupingProcessor().getPrimaryIdentifierFromMarcRecord(marcRecord, indexingProfile);
+						if (bibliographicRecordId != null) {
+
+							GroupedWorkIndexer.MarcStatus saveMarcResult = getGroupedWorkIndexer().saveMarcRecordToDatabase(indexingProfile, bibliographicRecordId.getIdentifier(), marcRecord);
+							if (saveMarcResult == GroupedWorkIndexer.MarcStatus.CHANGED) {
+								logEntry.incUpdated();
+							} else if (saveMarcResult == GroupedWorkIndexer.MarcStatus.NEW) {
+								logEntry.incAdded();
+							} else {
+								//No change has been made, we could skip this
+								if (!indexingProfile.isRunFullUpdate()) {
+									//TODO: Actually skip re-processing the record?
+									logEntry.incSkipped();
+								}
+							}
+
+							//Regroup the record
+							String groupedWorkId = groupEvergreenRecord(marcRecord);
+							if (groupedWorkId != null) {
+								//Reindex the record
+								getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
+							}
+						}
+						response.numChanges++;
+					}
+				} catch (Exception e) {
+					logEntry.incErrors("Unable to parse document for paged bibs response", e);
+					response.doneLoading = true;
+				}
 			} else {
 				if (numTries == 3) {
 					logEntry.incErrors("Could not get bibs from " + getBibsRequestUrl + " " + getBibsResponse.getResponseCode() + " " + getBibsResponse.getMessage());
@@ -414,5 +578,22 @@ public class EvergreenExportMain {
 		String lastId;
 		boolean doneLoading = false;
 		int numChanges = 0;
+	}
+
+	private static Document createXMLDocumentForWebServiceResponse(WebServiceResponse response) throws ParserConfigurationException, IOException, SAXException {
+		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+		dbFactory.setValidating(false);
+		dbFactory.setIgnoringElementContentWhitespace(true);
+
+		DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+
+		byte[] soapResponseByteArray = response.getMessage().getBytes(StandardCharsets.UTF_8);
+		ByteArrayInputStream soapResponseByteArrayInputStream = new ByteArrayInputStream(soapResponseByteArray);
+		InputSource soapResponseInputSource = new InputSource(soapResponseByteArrayInputStream);
+
+		Document doc = dBuilder.parse(soapResponseInputSource);
+		doc.getDocumentElement().normalize();
+
+		return doc;
 	}
 }

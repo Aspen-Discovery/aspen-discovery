@@ -305,6 +305,7 @@ class GreenhouseAPI extends Action
 		require_once ROOT_DIR . '/sys/LibraryLocation/Location.php';
 		require_once ROOT_DIR . '/sys/Theming/Theme.php';
 
+		$num = 0;
 		$location = new Location();
 		$location->find();
 		while($location->fetch()) {
@@ -374,17 +375,24 @@ class GreenhouseAPI extends Action
 						'latitude' => $latitude,
 						'longitude' => $longitude,
 						'unit' => $location->unit,
-						'locationName' => $location->displayName,
+						'name' => $location->displayName,
 						'locationId' => $location->locationId,
 						'libraryId' => $libraryId,
+						'siteId' => $libraryId . '.' . $location->locationId,
 						'solrScope' => $solrScope,
 						'baseUrl' => $baseUrl,
 						'releaseChannel' => $location->appReleaseChannel,
+						'favicon' => $themeArray['favicon'],
+						'logo' => $themeArray['logo'],
 						'theme' => $themeArray,
 					];
+
+					$num = $num + 1;
 				}
 			}
 		}
+
+		$return['count'] = $num;
 
 		return $return;
 	}
@@ -431,7 +439,11 @@ class GreenhouseAPI extends Action
 				$libraryLocation->siteId = $aspenSite->id;
 				$libraryLocation->libraryId = $findLibrary->libraryId;
 				$libraryLocation->locationId = $findLibrary->locationId;
-				$libraryLocation->name = $findLibrary->locationName;
+				if(is_null($findLibrary->name)) {
+					$libraryLocation->name = $findLibrary->locationName;
+				} else {
+					$libraryLocation->name = $findLibrary->name;
+				}
 				$libraryLocation->solrScope = $findLibrary->solrScope;
 				$libraryLocation->latitude = $findLibrary->latitude;
 				$libraryLocation->longitude = $findLibrary->longitude;

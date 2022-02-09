@@ -79,4 +79,5 @@ function smarty_function_implode($params, &$smarty)
 	}else{
 		$smarty->assign($params['assign'], $implodedValue);
 	}
+	return null;
 }

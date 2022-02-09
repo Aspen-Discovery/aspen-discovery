@@ -181,6 +181,7 @@ class HooplaProcessor {
 								if (kind.equals("MOVIE") || kind.equals("TELEVISION")) {
 									switch (rating) {
 										case "R":
+										case "NR":
 										case "NRA":
 										case "NRM":
 										case "NRC":

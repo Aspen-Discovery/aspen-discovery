@@ -30,8 +30,9 @@
 				<tokenizer class="solr.StandardTokenizerFactory"/>
 				<filter class="solr.ICUFoldingFilterFactory"/>
 				<filter class="solr.WordDelimiterGraphFilterFactory" generateWordParts="1" generateNumberParts="1" catenateWords="1" catenateNumbers="1" catenateAll="0" splitOnCaseChange="1" preserveOriginal="1"/>
-				<filter class="solr.CommonGramsFilterFactory" words="stopwords.txt" ignoreCase="true"/>
-				<filter class="solr.KeywordMarkerFilterFactory" protected="protwords.txt"/>
+				<!-- We have not defined words so this is not needed <filter class="solr.CommonGramsFilterFactory" words="stopwords.txt" ignoreCase="true"/> -->
+				<!-- We have not defined words so this is not needed <filter class="solr.KeywordMarkerFilterFactory" protected="protwords.txt"/> -->
+				<filter class="solr.KeywordRepeatFilterFactory" />
 				<filter class="solr.SnowballPorterFilterFactory" language="English"/>
 				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
 			</analyzer>
@@ -43,9 +44,56 @@
 				<filter class="solr.ICUFoldingFilterFactory"/>
 <!--				<filter class="solr.SynonymGraphFilterFactory" synonyms="synonyms.txt" ignoreCase="true" expand="true"/>-->
 				<filter class="solr.WordDelimiterGraphFilterFactory" generateWordParts="1" generateNumberParts="1" catenateWords="1" catenateNumbers="1" catenateAll="0" splitOnCaseChange="1" preserveOriginal="1"/>
-				<filter class="solr.CommonGramsFilterFactory" words="stopwords.txt" ignoreCase="true"/>
-				<filter class="solr.KeywordMarkerFilterFactory" protected="protwords.txt"/>
-				<filter class="solr.SnowballPorterFilterFactory" language="English"/>
+				<!-- We have not defined words so this is not needed <filter class="solr.CommonGramsFilterFactory" words="stopwords.txt" ignoreCase="true"/> -->
+				<!-- We have not defined words so this is not needed <filter class="solr.KeywordMarkerFilterFactory" protected="protwords.txt"/> -->
+				<!-- Don't need to stem the search <filter class="solr.SnowballPorterFilterFactory" language="English"/> -->
+				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
+			</analyzer>
+		</fieldType>
+		<fieldType name="searchable_text_minimal_stem" class="solr.TextField" positionIncrementGap="100">
+			<analyzer type="index">
+				<!-- Whitespace tokenizer is needed so the Word Delimiter filter factory works properly
+				 For example, this allows E.T. The Extra-Terrestrial to be handled properly.  #ARL-168
+				-->
+				<tokenizer class="solr.StandardTokenizerFactory"/>
+				<filter class="solr.ICUFoldingFilterFactory"/>
+				<filter class="solr.WordDelimiterGraphFilterFactory" generateWordParts="1" generateNumberParts="1" catenateWords="1" catenateNumbers="1" catenateAll="0" splitOnCaseChange="1" preserveOriginal="1"/>
+				<filter class="solr.KeywordRepeatFilterFactory" />
+				<filter class="solr.KStemFilterFactory"/>
+				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
+			</analyzer>
+			<analyzer type="query">
+				<!-- Whitespace tokenizer is needed so the Word Delimiter filter factory works properly
+				 For example, this allows E.T. The Extra-Terrestrial to be handled properly.  #ARL-168
+				-->
+				<tokenizer class="solr.StandardTokenizerFactory"/>
+				<filter class="solr.ICUFoldingFilterFactory"/>
+				<!--				<filter class="solr.SynonymGraphFilterFactory" synonyms="synonyms.txt" ignoreCase="true" expand="true"/>-->
+				<filter class="solr.WordDelimiterGraphFilterFactory" generateWordParts="1" generateNumberParts="1" catenateWords="1" catenateNumbers="1" catenateAll="0" splitOnCaseChange="1" preserveOriginal="1"/>
+				<!-- Don't need to stem the search <filter class="solr.SnowballPorterFilterFactory" language="English"/> -->
+				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
+			</analyzer>
+		</fieldType>
+		<fieldType name="searchable_text_unstemmed" class="solr.TextField" positionIncrementGap="100">
+			<analyzer type="index">
+				<!-- Whitespace tokenizer is needed so the Word Delimiter filter factory works properly
+				 For example, this allows E.T. The Extra-Terrestrial to be handled properly.  #ARL-168
+				-->
+				<tokenizer class="solr.StandardTokenizerFactory"/>
+				<filter class="solr.ICUFoldingFilterFactory"/>
+				<filter class="solr.WordDelimiterGraphFilterFactory" generateWordParts="1" generateNumberParts="1" catenateWords="1" catenateNumbers="1" catenateAll="0" splitOnCaseChange="1" preserveOriginal="1"/>
+				<filter class="solr.KeywordRepeatFilterFactory" />
+				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
+			</analyzer>
+			<analyzer type="query">
+				<!-- Whitespace tokenizer is needed so the Word Delimiter filter factory works properly
+				 For example, this allows E.T. The Extra-Terrestrial to be handled properly.  #ARL-168
+				-->
+				<tokenizer class="solr.StandardTokenizerFactory"/>
+				<filter class="solr.ICUFoldingFilterFactory"/>
+				<!--				<filter class="solr.SynonymGraphFilterFactory" synonyms="synonyms.txt" ignoreCase="true" expand="true"/>-->
+				<filter class="solr.WordDelimiterGraphFilterFactory" generateWordParts="1" generateNumberParts="1" catenateWords="1" catenateNumbers="1" catenateAll="0" splitOnCaseChange="1" preserveOriginal="1"/>
+				<!-- Don't need to stem the search <filter class="solr.SnowballPorterFilterFactory" language="English"/> -->
 				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
 			</analyzer>
 		</fieldType>
@@ -150,7 +198,7 @@
 		<field name="title_new" type="searchable_text" indexed="true" stored="false" multiValued="true"/>
 
 		<!-- AUTHOR INFORMATION -->
-		<field name="author" type="searchable_text" indexed="true" stored="false" />
+		<field name="author" type="searchable_text_unstemmed" indexed="true" stored="false" />
 		<field name="author_display" type="unchanged_string" indexed="false" stored="true" multiValued="false"/> <!-- The author to display to the user -->
 		<field name="authorStr" type="unchanged_string" indexed="true" stored="true" termVectors="true"/>
 		<field name="author_exact" type="text-exact" indexed="true" stored="true" />
@@ -158,7 +206,7 @@
 		<field name="author-letter" type="unchanged_string" indexed="true" stored="true"/>
 		<field name="auth_author" type="textProper" indexed="true" stored="false"/>
 		<field name="auth_authorStr" type="unchanged_string" indexed="true" stored="false"/>
-		<field name="author2" type="searchable_text" indexed="true" stored="true" multiValued="true"/>
+		<field name="author2" type="searchable_text_unstemmed" indexed="true" stored="true" multiValued="true"/>
 		<field name="author2Str" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
 		<field name="author2-role" type="unchanged_string" indexed="true" stored="true" multiValued="true"/> <!-- The contributor with role and title appended -->
 		<field name="auth_author2" type="textProper" indexed="true" stored="true" multiValued="true"/>
@@ -209,7 +257,7 @@
 		<field name="language_boost_es" type="integer" indexed="true" stored="false" multiValued="false" omitNorms="true" default="1"/>
 
 		<!-- Publication information -->
-		<field name="publisher" type="searchable_text" indexed="true" stored="true" multiValued="true"/>
+		<field name="publisher" type="searchable_text_minimal_stem" indexed="true" stored="true" multiValued="true"/>
 		<field name="publisherStr" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
 		<field name="publishDate" type="unchanged_string" indexed="true" stored="true" multiValued="true" docValues="true"/>
 		<field name="publishDateSort" type="unchanged_string" indexed="true" stored="true"/>
@@ -220,17 +268,17 @@
 		<field name="dateSpan" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
 		<dynamicField name="econtent_source_*" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
 		<field name="subject_facet" type="unchanged_string" indexed="true" stored="true" multiValued="true" docValues="true" termVectors="true"/>
-		<field name="subject" type="searchable_text" indexed="true" stored="true" multiValued="true"/>
+		<field name="subject" type="searchable_text_minimal_stem" indexed="true" stored="true" multiValued="true"/>
 		<field name="subject_proper" type="textProper" indexed="true" stored="false" multiValued="true"/>
-		<field name="topic" type="searchable_text" indexed="true" stored="true" multiValued="true"/>
+		<field name="topic" type="searchable_text_minimal_stem" indexed="true" stored="true" multiValued="true"/>
 		<field name="topic_proper" type="textProper" indexed="true" stored="false" multiValued="true"/>
 		<field name="topic_facet" type="unchanged_string" indexed="true" stored="true" multiValued="true" docValues="true" termVectors="true"/>
 		<field name="lc_subject" type="unchanged_string" indexed="true" stored="true" multiValued="true" docValues="true"/>
 		<field name="bisac_subject" type="unchanged_string" indexed="true" stored="true" multiValued="true" docValues="true"/>
-		<field name="genre" type="searchable_text" indexed="true" stored="true" multiValued="true"/>
+		<field name="genre" type="searchable_text_minimal_stem" indexed="true" stored="true" multiValued="true"/>
 		<field name="genre_proper" type="textProper" indexed="true" stored="false" multiValued="true"/>
 		<field name="genre_facet" type="unchanged_string" indexed="true" stored="true" multiValued="true" docValues="true" termVectors="true"/>
-		<field name="geographic" type="searchable_text" indexed="true" stored="true" multiValued="true"/>
+		<field name="geographic" type="searchable_text_minimal_stem" indexed="true" stored="true" multiValued="true"/>
 		<field name="geographic_proper" type="textProper" indexed="true" stored="false" multiValued="true"/>
 		<field name="geographic_facet" type="unchanged_string" indexed="true" stored="true" multiValued="true" docValues="true" termVectors="true"/>
 		<field name="era" type="unchanged_string" indexed="true" stored="true" multiValued="true" docValues="true" termVectors="true"/>

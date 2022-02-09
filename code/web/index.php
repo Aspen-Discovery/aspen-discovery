@@ -1,5 +1,6 @@
 <?php
 require_once 'bootstrap.php';
+require_once ROOT_DIR . '/sys/BotChecker.php';
 if (file_exists('bootstrap_aspen.php')) {
 	require_once 'bootstrap_aspen.php';
 }
@@ -275,7 +276,7 @@ if ($isLoggedIn) {
 	$interface->assign('user', $activeUserObject);
 	$userIsStaff = $activeUserObject->isStaff();
 	$interface->assign('userIsStaff', $userIsStaff);
-} else if ( (isset($_POST['username']) && isset($_POST['password']) && ($action != 'Account' && $module != 'AJAX')) || isset($_REQUEST['casLogin']) ) {
+} else if ( (isset($_POST['username']) && isset($_POST['password']) && ($action != 'Account' && $module != 'AJAX') && ($module != 'API')) || isset($_REQUEST['casLogin']) ) {
 	//The user is trying to log in
     try {
         $user = UserAccount::login();
@@ -436,7 +437,6 @@ if ($action == "AJAX" || $action == "JSON" || $module == 'API'){
 		$aspenUsage->ajaxRequests++;
 	}
 }else{
-	require_once ROOT_DIR . '/sys/BotChecker.php';
 	if (BotChecker::isRequestFromBot()){
 		$aspenUsage->pageViewsByBots++;
 	}else{

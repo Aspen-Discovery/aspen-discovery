@@ -1,5 +1,5 @@
 import React, {Component} from "react";
-import {Box, FlatList, HStack, Switch, Text} from "native-base";
+import {Box, FlatList, HStack, Switch, Text, VStack, Pressable} from "native-base";
 import _ from "lodash";
 
 // custom components and helper files
@@ -11,7 +11,6 @@ import {getHiddenBrowseCategories} from "../../../util/loadPatron";
 import {dismissBrowseCategory, showBrowseCategory} from "../../../util/accountActions";
 
 export default class Settings_HomeScreen extends Component {
-	static navigationOptions = {title: translate('user_profile.home_screen_settings')};
 
 	constructor(props) {
 		super(props);
@@ -43,7 +42,7 @@ export default class Settings_HomeScreen extends Component {
 		});
 
 		await getActiveBrowseCategories().then(response => {
-			if(response == "TIMEOUT_ERROR") {
+			if(response === "TIMEOUT_ERROR") {
 				this.setState({
 					hasError: true,
 					error: translate('error.timeout'),
@@ -66,7 +65,7 @@ export default class Settings_HomeScreen extends Component {
 		});
 
 		await getHiddenBrowseCategories().then(response => {
-			if(response == "TIMEOUT_ERROR") {
+			if(response === "TIMEOUT_ERROR") {
 				this.setState({
 					hasError: true,
 					error: translate('error.timeout'),
@@ -108,11 +107,11 @@ export default class Settings_HomeScreen extends Component {
 
 	renderNativeItem = (item) => {
 		return (
-			<Box safeArea={5} bgColor="white">
+			<Box borderBottomWidth="1" _dark={{ borderColor: "gray.600" }} borderColor="coolGray.200" pl="4" pr="5" py="2">
 				<HStack space={3} alignItems="center" justifyContent="space-between" pb={1}>
-					<Text isTruncated bold maxW="80%">{item.title}</Text>
-					{item.isHidden ? <Switch size="md" onToggle={() => this.updateToggle(item)}/> :
-						<Switch size="md" onToggle={() => this.updateToggle(item)} isChecked/>}
+					<Text isTruncated bold maxW="80%" fontSize={{base: "lg", lg: "xl"}}>{item.title}</Text>
+					{item.isHidden ? <Switch size={{base: "md", lg: "lg"}} onToggle={() => this.updateToggle(item)}/> :
+						<Switch size={{base: "md", lg: "lg"}} onToggle={() => this.updateToggle(item)} isChecked/>}
 				</HStack>
 			</Box>
 		);

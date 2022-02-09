@@ -6,7 +6,6 @@ class SystemAPI extends Action
 	function launch()
 	{
 		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
-		$output = '';
 
 		//Set Headers
 		header('Content-type: application/json');
@@ -14,9 +13,13 @@ class SystemAPI extends Action
 		header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
 		header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
 
+		if($method === "getLogoFile") {
+			return $this->$method();
+		};
+
 		if (isset($_SERVER['PHP_AUTH_USER'])) {
 			if($this->grantTokenAccess()) {
-				if (in_array($method, array('getLibraryInfo', 'getLocationInfo'))) {
+				if (in_array($method, array('getLibraryInfo', 'getLocationInfo', 'getThemeInfo', 'getAppSettings'))) {
 					$result = [
 						'result' => $this->$method()
 					];
@@ -97,6 +100,55 @@ class SystemAPI extends Action
 			}
 		}else{
 			return ['success' => false, 'message' => 'id not provided'];
+		}
+	}
+
+	/** @noinspection PhpUnused */
+	public function getThemeInfo() : array
+	{
+		if (isset($_REQUEST['id']) && is_numeric($_REQUEST['id'])) {
+			$theme = new Theme();
+			$theme->id = $_REQUEST['id'];
+			if ($theme->find(true)){
+				return ['success' => true, 'theme' => $theme->getApiInfo()];
+			}else{
+				return ['success' => false, 'message' => 'Theme not found'];
+			}
+		}else{
+			return ['success' => false, 'message' => 'Theme id not provided'];
+		}
+	}
+
+	/** @noinspection PhpUnused */
+	public function getAppSettings() : array
+	{
+		global $configArray;
+		if (isset($_REQUEST['slug'])) {
+			$app = new AspenLiDASetting();
+			$app->slugName = $_REQUEST['slug'];
+			if ($app->find(true)){
+				$settings = [];
+				if($app->logoLogin) {
+					$settings['logoLogin'] = $configArray['Site']['url'] . '/files/original/' . $app->logoLogin;
+				}
+
+				if($app->logoSplash) {
+					$settings['logoSplash'] = $configArray['Site']['url'] . '/files/original/' . $app->logoSplash;
+				}
+
+				if($app->privacyPolicy) {
+					$settings['privacyPolicy'] = $app->privacyPolicy;
+				}
+
+				return [
+					'success' => true,
+					'settings' => $settings,
+				];
+			}else{
+				return ['success' => false, 'message' => 'App settings for slug name not found'];
+			}
+		}else{
+			return ['success' => false, 'message' => 'Slug name for app not provided'];
 		}
 	}
 
@@ -389,6 +441,130 @@ class SystemAPI extends Action
 			}
 		}
 		return false;
+	}
+
+	public function getLogoFile()
+	{
+		if (isset($_REQUEST['type'])) {
+			global $configArray;
+			$type = strip_tags($_REQUEST['type']);
+
+			require_once ROOT_DIR . '/sys/Theming/Theme.php';
+			$theme = new Theme();
+			if(isset($_REQUEST['themeId'])) {
+				$theme->id = $_REQUEST['themeId'];
+				if (!$theme->find(true)) {
+					die();
+				}
+			}
+
+			$app = new AspenLiDASetting();
+			if(isset($_REQUEST['slug'])) {
+				$app->slugName = $_REQUEST['slug'];
+				if (!$app->find(true)) {
+					die();
+				}
+			}
+
+			$dataPath = $configArray['Site']['local'] . '/files/original/';
+
+			if ($type === "logo") {
+				$fileName = $theme->logoName;
+			} elseif ($type === "favicon") {
+				$fileName = $theme->favicon;
+			} elseif ($type === "footerLogo") {
+				$fileName = $theme->footerLogo;
+			} elseif ($type === "logoApp") {
+				$fileName = $theme->logoApp;
+			} elseif ($type === "appSplash") {
+				$fileName = $app->logoSplash;
+			} elseif ($type === "appLogin") {
+				$fileName = $app->logoLogin;
+			} elseif ($type === "appIcon") {
+				$fileName = $app->logoAppIcon;
+			} else {
+				die();
+			}
+
+			$fullPath = $dataPath . $fileName;
+
+			if ($file = @fopen($fullPath, 'r')) {
+				set_time_limit(300);
+				$chunkSize = 2 * (1024 * 1024);
+
+				$size = intval(sprintf("%u", filesize($fullPath)));
+
+				header('Content-Type: image/png');
+				header('Content-Transfer-Encoding: binary');
+				header('Content-Length: ' . $size);
+
+				if ($size > $chunkSize) {
+					$handle = fopen($fullPath, 'rb');
+
+					while (!feof($handle)) {
+						set_time_limit(300);
+						print(@fread($handle, $chunkSize));
+
+						ob_flush();
+						flush();
+					}
+
+					fclose($handle);
+				} else {
+					readfile($fullPath);
+				}
+
+				die();
+			}
+		}
+	}
+
+
+	function getTranslation(){
+		if (isset($_REQUEST['term'])){
+			$terms[] = $_REQUEST['term'];
+		}elseif (isset($_REQUEST['terms'])){
+			if (is_array($_REQUEST['terms'])) {
+				$terms = $_REQUEST['terms'];
+			}else{
+				$terms[] = $_REQUEST['term'];
+			}
+		}else{
+			return [
+				'success' => false,
+				'message' => 'Please provide at least one term to translate.'
+			];
+		}
+
+		if (isset($_REQUEST['language'])){
+			$language = new Language();
+			$language->code = $_REQUEST['language'];
+			if ($language->find(true)) {
+				global $activeLanguage;
+				$activeLanguage = $language;
+			}else{
+				return [
+					'success' => false,
+					'message' => 'Invalid language provided.'
+				];
+			}
+		}else{
+			return [
+				'success' => false,
+				'message' => 'Please provide the term to translate into.'
+			];
+		}
+
+		$response = [
+			'success' => true,
+			'translations' => [],
+		];
+		/** @var Translator $translator */
+		global $translator;
+		foreach ($terms as $term){
+			$response[$term] = $translator->translate($term, $term, [], true, true);
+		}
+		return $response;
 	}
 
 	function getBreadcrumbs() : array

@@ -1042,8 +1042,13 @@ class User extends DataObject
 			if ($source == 'all' || $source == 'overdrive'){
 				global $interface;
 				$driver = new OverDriveDriver();
-				$fulfillmentMethod = (string)$driver->getSettings()->useFulfillmentInterface;
-				$interface->assign('fulfillmentMethod', $fulfillmentMethod);
+				$settings = $driver->getSettings();
+				if ($settings != null){
+					$fulfillmentMethod = (string)$driver->getSettings()->useFulfillmentInterface;
+					$interface->assign('fulfillmentMethod', $fulfillmentMethod);
+				}else{
+					$interface->assign('fulfillmentMethod', true);
+				}
 			}
 
 			//fetch cached checkouts
@@ -2347,6 +2352,8 @@ class User extends DataObject
 		$sections['primary_configuration']->addAction(new AdminAction('Patron Types', 'Modify Permissions and limits based on Patron Type.', '/Admin/PTypes'), 'Administer Patron Types');
 		$sections['primary_configuration']->addAction(new AdminAction('Account Profiles', 'Define how account information is loaded from the ILS.', '/Admin/AccountProfiles'), 'Administer Account Profiles');
 		$sections['primary_configuration']->addAction(new AdminAction('Two-Factor Authentication', 'Administer two-factor authentication settings', '/Admin/TwoFactorAuth'), 'Administer Two-Factor Authentication');
+		$sections['primary_configuration']->addAction(new AdminAction('Aspen LiDA Settings', 'Administer Aspen LiDA settings', '/Admin/AspenLiDA'), 'Administer Aspen LiDA Settings');
+
 
 		//Materials Request if enabled
 		if (MaterialsRequest::enableAspenMaterialsRequest()){

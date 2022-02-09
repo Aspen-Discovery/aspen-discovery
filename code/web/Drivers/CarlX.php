@@ -1559,7 +1559,9 @@ class CarlX extends AbstractIlsDriver{
 		$success = false;
 		$title = '';
 		$message = 'Failed to connect to complete requested action.';
-		$apiResult['title'] = translate(['text' => 'Unable to place hold', 'isPublicFacing' => true]);
+		$apiResult = [
+			'title' => translate(['text' => 'Unable to place hold', 'isPublicFacing' => true])
+		];
 
 		if ($mySip->connect()) {
 			//send self check status message
@@ -2194,6 +2196,6 @@ EOT;
 
 	function getForgotPasswordType()
 	{
-		return 'none';
+		return 'emailAspenResetLink';
 	}
 }

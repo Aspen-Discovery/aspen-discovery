@@ -48,6 +48,8 @@
     - [Novelist](/Admin/HelpManual?page=Novelist)
     - [Syndetics](/Admin/HelpManual?page=Syndetics)
     - [Wikipedia](/Admin/HelpManual?page=Wikipedia)
+  - [eCommerce](/Admin/HelpManual?page=eCommerce)
+    -  [eCommerce Reports](/Admin/HelpManual?page=eCommerceinfo)
   - [ILS Integration](/Admin/HelpManual?page=ILS-Integration)
     - Indexing Profiles
       - Format Information
@@ -88,7 +90,6 @@
 - Citations
 - [Collection Spotlights](/Admin/HelpManual?page=Collection-Spotlights)
 - [Covers](/Admin/HelpManual?page=Cover-Images)
-- [eCommerce](/Admin/HelpManual?page=eCommerce)
 - Email
 - Events
   - Library Calendar
@@ -104,21 +105,6 @@
 - Searching
   - Search Types
   - [Facets](/Admin/HelpManual?page=Facets)
-    - [Literary Form (Nonfiction/Fiction) Facet](/Admin/HelpManual?page=Literary-Forms)
-    - [Subjects (Full Subject) Facet](/Admin/HelpManual?page=FullSubject-Facet)
-    - [Bisac Subject Facet](/Admin/HelpManual?page=BISACSubject-Facet)
-    - [LC Subject Facet](/Admin/HelpManual?page=LCSubject-Facet)
-    - [Audience Facet](/Admin/HelpManual?page=Audience-Facets)
-    - [Reading Level Facet](/Admin/HelpManual?page=ReadingLevel-Facets)
-    - [Era Facet](/Admin/HelpManual?page=Era-Facets)
-    - [Topics Facet](/Admin/HelpManual?page=Topic-Facets)
-    - [Genre Facet](/Admin/HelpManual?page=Genre-Facets)
-    - [Region Facet](/Admin/HelpManual?page=GeographicRegion-Facets)
-    - [Language Facet](/Admin/HelpManual?page=Language-Facet)
-    - [Awards Facet](/Admin/HelpManual?page=Awards-Facet)
-    - [Item Type Facet](/Admin/HelpManual?page=itemtype-facet)
-    - [Collection Facet](/Admin/HelpManual?page=Collection-Facet)
-    - [Shelf Location Facet](/Admin/HelpManual?page=ShelfLocation-Facet)
 - [Relevancy](/Admin/HelpManual?page=Search-Relevancy)
 - System Messages
 - [While You Wait](/Admin/HelpManual?page=While-You-Wait)

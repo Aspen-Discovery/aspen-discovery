@@ -104,4 +104,10 @@ class WebBuilder_PortalPages extends ObjectEditor
 	{
 		return 'web_builder';
 	}
+
+	function viewIndividualObject($structure){
+		global $interface;
+		$interface->assign('previewMode', true);
+		return parent::viewIndividualObject($structure);
+	}
 }

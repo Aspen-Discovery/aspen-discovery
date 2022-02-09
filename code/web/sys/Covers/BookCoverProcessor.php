@@ -1210,7 +1210,9 @@ class BookCoverProcessor{
 						require_once ROOT_DIR . '/sys/Enrichment/GoogleApiSetting.php';
 						$googleApiSettings = new GoogleApiSetting();
 						if ($googleApiSettings->find(true)) {
-							$hasGoogleSettings = true;
+							if (!empty($googleApiSettings->googleBooksKey)) {
+								$hasGoogleSettings = true;
+							}
 						}
 
 						//Only look by ISBN if we don't have Coce support
@@ -1354,9 +1356,16 @@ class BookCoverProcessor{
 				$sourceCollection = new OpenArchivesCollection();
 				$sourceCollection->id = $openArchivesRecord->sourceCollection;
 				if ($sourceCollection->find(true)){
-					if (!empty($sourceCollection->imageRegex) && preg_match($sourceCollection->imageRegex, $pageContents, $matches)){
-						$bookcoverUrl = str_replace( '&amp;', '&', $matches[1]);
-						return $this->processImageURL('open_archives', $bookcoverUrl, true);
+					if (!empty($sourceCollection->imageRegex)){
+						$expressions = preg_split("/[\r\n]+/", $sourceCollection->imageRegex);
+						foreach ($expressions as $expression){
+							if (!empty($expression) && preg_match('~' . $expression . '~i', $pageContents, $matches)) {
+								$bookcoverUrl = str_replace('&amp;', '&', $matches[1]);
+								if ($this->processImageURL('open_archives', $bookcoverUrl, true)){
+									return true;
+								}
+							}
+						}
 					}
 				}
 			}

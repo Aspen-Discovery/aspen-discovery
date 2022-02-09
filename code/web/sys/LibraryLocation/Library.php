@@ -30,6 +30,8 @@ if (file_exists(ROOT_DIR . '/sys/CloudLibrary/LibraryCloudLibraryScope.php')) {
 	require_once ROOT_DIR . '/sys/CloudLibrary/LibraryCloudLibraryScope.php';
 }
 
+require_once ROOT_DIR . '/sys/AspenLiDAQuickSearch.php';
+
 class Library extends DataObject
 {
 	public $__table = 'library';    // table name
@@ -97,7 +99,7 @@ class Library extends DataObject
 	public $showRefreshAccountButton;    // specifically to refresh account after paying fines online
 	public $msbUrl;
 	public $symphonyPaymentType;
-	public $symphonyPaymentPolicy;
+	//public $symphonyPaymentPolicy;
 	public $compriseSettingId;
 	public $payPalSettingId;
 	public $proPaySettingId;
@@ -131,6 +133,8 @@ class Library extends DataObject
 	public $showItsHere;
 	public $holdDisclaimer;
 	public $availableHoldDelay;
+	public $systemHoldNote;
+	public $systemHoldNoteMasquerade;
 	public $enableMaterialsRequest;
 	public $displayMaterialsRequestToPublic;
 	public $allowDeletingILSRequests;
@@ -470,6 +474,10 @@ class Library extends DataObject
 			$validSelfRegistrationOptions[3] = 'Quipu eCARD';
 		}
 
+		// Aspen LiDA //
+		$quickSearches = AspenLiDAQuickSearch::getObjectStructure();
+		unset($quickSearches['libraryId']);
+
 		/** @noinspection HtmlRequiredAltAttribute */
 		/** @noinspection RequiredAttributes */
 		$structure = array(
@@ -484,6 +492,25 @@ class Library extends DataObject
 			'showInSelectInterface' => array('property' => 'showInSelectInterface', 'type' => 'checkbox', 'label' => 'Show In Select Interface (requires Create Search Interface)', 'description' => 'Whether or not this Library will show in the Select Interface Page.', 'forcesReindex' => false, 'editPermissions' => ['Library Domain Settings'], 'default' => true),
 			'systemMessage' => array('property'=>'systemMessage', 'type'=>'html', 'label'=>'System Message', 'description'=>'A message to be displayed at the top of the screen', 'size'=>'80', 'maxLength' =>'512', 'allowableTags' => "<p><em><i><strong><b><a><ul><ol><li><h1><h2><h3><h4><h5><h6><h7><pre><code><hr><table><tbody><tr><th><td><caption><img><br><div><span><sub><sup><script>", 'hideInLists' => true, 'permissions' => ['Library Theme Configuration']),
 			'generateSitemap' => array('property'=>'generateSitemap', 'type'=>'checkbox', 'label'=>'Generate Sitemap', 'description'=>'Whether or not a sitemap should be generated for the library.', 'hideInLists' => true, 'permissions' => ['Library Domain Settings']),
+
+			// Aspen LiDA //
+			'aspenLiDASection' =>array('property'=>'aspenLiDASection', 'type' => 'section', 'label' =>'Aspen LiDA', 'hideInLists' => true, 'properties' => array(
+				'quickSearches' => array(
+					'property'      => 'quickSearches',
+					'type'          => 'oneToMany',
+					'label'         => 'Quick Searches',
+					'description'   => 'Define quick searches for this app',
+					'keyThis'       => 'libraryId',
+					'keyOther'      => 'libraryId',
+					'subObjectType' => 'AspenLiDAQuickSearch',
+					'structure'     => $quickSearches,
+					'sortable'      => true,
+					'storeDb'       => true,
+					'allowEdit'     => false,
+					'canEdit'       => false,
+					'hideInLists'   => true
+				),
+			)),
 
 			// Basic Display //
 			'displaySection' =>array('property'=>'displaySection', 'type' => 'section', 'label' =>'Basic Display', 'hideInLists' => true, 'properties' => array(
@@ -571,6 +598,8 @@ class Library extends DataObject
 					'validPickupSystems'                => array('property'=>'validPickupSystems', 'type'=>'text', 'label'=>'Valid Pickup Library Systems', 'description'=>'Additional Library Systems that can be used as pickup locations if the &quot;In System Pickups Only&quot; is on. List the libraries\' subdomains separated by pipes |', 'size'=>'20', 'hideInLists' => true, 'permissions' => ['Library ILS Connection']),
 					'holdDisclaimer'                    => array('property'=>'holdDisclaimer', 'type'=>'textarea', 'label'=>'Hold Disclaimer', 'description'=>'A disclaimer to display to patrons when they are placing a hold on items letting them know that their information may be available to other libraries.  Leave blank to not show a disclaimer.', 'hideInLists' => true,),
 					'availableHoldDelay'                => array('property'=>'availableHoldDelay', 'type'=>'integer', 'label'=>'Delay showing holds available for # of days', 'description'=>'Delay showing holds as a available for a specific number of days to account for shelving time', 'hideInLists' => true, 'default'=>0),
+					'systemHoldNote'                    => array('property'=>'systemHoldNote', 'type'=>'text', 'label'=>'System Hold Note (Symphony Only)', 'description'=>'A note to automatically add when placing a hold', 'hideInLists' => true, 'maxLength'=>50, 'default'=>''),
+					'systemHoldNoteMasquerade'          => array('property'=>'systemHoldNoteMasquerade', 'type'=>'text', 'label'=>'System Hold Note Masquerade (Symphony Only)', 'description'=>'A note to automatically add when placing a hold when a librarian is Masquerading and places a hold', 'hideInLists' => true, 'maxLength'=>50, 'default'=>''),
 				)),
 				'loginSection' => array('property' => 'loginSection', 'type' => 'section', 'label' => 'Login', 'hideInLists' => true, 'permissions' => ['Library ILS Connection', 'Library ILS Options'], 'properties' => array(
 					'showLoginButton'         => array('property'=>'showLoginButton', 'type'=>'checkbox', 'label'=>'Show Login Button', 'description'=>'Whether or not the login button is displayed so patrons can login to the site', 'hideInLists' => true, 'default' => 1),
@@ -620,7 +649,7 @@ class Library extends DataObject
 				'proPaySettingId'  => array('property' => 'proPaySettingId', 'type' => 'enum', 'values' => $proPaySettings, 'label' => 'ProPay Settings', 'description' => 'The ProPay settings to use', 'hideInLists' => true, 'default' => -1),
 				'msbUrl' => array('property'=>'msbUrl', 'type'=>'text', 'label'=>'MSB URL', 'description'=>'The MSB payment form URL and path (but NOT the query or parameters)', 'hideInLists' => true, 'default'=>'', 'size'=>80),
 				'symphonyPaymentType' => array('property'=>'symphonyPaymentType', 'type'=>'text', 'label'=>'Symphony Payment Type', 'description'=>'Payment type to use when adding transactions to Symphony.', 'hideInLists' => true, 'default' => '', 'maxLength' => 8),
-				'symphonyPaymentPolicy' => array('property'=>'symphonyPaymentPolicy', 'type'=>'text', 'label'=>'Symphony Payment Policy', 'description'=>'Payment policy to use when adding transactions to Symphony.', 'hideInLists' => true, 'default' => '', 'maxLength' => 8),
+				//'symphonyPaymentPolicy' => array('property'=>'symphonyPaymentPolicy', 'type'=>'text', 'label'=>'Symphony Payment Policy', 'description'=>'Payment policy to use when adding transactions to Symphony.', 'hideInLists' => true, 'default' => '', 'maxLength' => 8),
 			)),
 
 			//Grouped Work Display
@@ -1179,6 +1208,8 @@ class Library extends DataObject
 			}
 		} elseif ($name == 'cloudLibraryScopes') {
 			return $this->getCloudLibraryScopes();
+		} elseif($name == 'quickSearches') {
+			return $this->getQuickSearches();
 		} else {
 			return $this->_data[$name];
 		}
@@ -1212,7 +1243,9 @@ class Library extends DataObject
 			$this->combinedResultSections = $value;
 		} elseif ($name == 'cloudLibraryScopes') {
 			$this->_cloudLibraryScopes = $value;
-		}else{
+		} elseif($name == 'quickSearches') {
+			$this->_quickSearches = $value;
+		} else{
 			$this->_data[$name] = $value;
 		}
 	}
@@ -1243,6 +1276,7 @@ class Library extends DataObject
 			$this->saveLibraryLinks();
 			$this->saveCombinedResultSections();
 			$this->saveCloudLibraryScopes();
+			$this->saveQuickSearches();
 		}
 		if ($this->_patronNameDisplayStyleChanged){
 			$libraryLocations = new Location();
@@ -1296,6 +1330,7 @@ class Library extends DataObject
 			$this->saveLibraryLinks();
 			$this->saveCombinedResultSections();
 			$this->saveCloudLibraryScopes();
+			$this->saveQuickSearches();
 		}
 		return $ret;
 	}
@@ -1591,6 +1626,39 @@ class Library extends DataObject
 		return $locations;
 	}
 
+	private $_quickSearches;
+	public function setQuickSearches($value)
+	{
+		$this->_quickSearches = $value;
+	}
+
+	/**
+	 * @return array|null
+	 */
+	public function getQuickSearches()
+	{
+		if (!isset($this->_quickSearches) && $this->libraryId) {
+			$this->_quickSearches = array();
+
+			$quickSearches = new AspenLiDAQuickSearch();
+			$quickSearches->libraryId = $this->libraryId;
+			if ($quickSearches->find()) {
+				while ($quickSearches->fetch()) {
+					$this->_quickSearches[$quickSearches->id] = clone $quickSearches;
+				}
+			}
+
+		}
+		return $this->_quickSearches;
+	}
+
+	public function saveQuickSearches(){
+		if (isset ($this->_quickSearches) && is_array($this->_quickSearches)){
+			$this->saveOneToManyOptions($this->_quickSearches, 'libraryId');
+			unset($this->_quickSearches);
+		}
+	}
+
 	public function getApiInfo() : array
 	{
 		global $configArray;
@@ -1609,6 +1677,7 @@ class Library extends DataObject
 			'tiktokLink' => $this->tiktokLink,
 			'generalContactLink' => $this->generalContactLink,
 			'email' => $this->contactEmail,
+			'themeId' => $this->theme,
 		];
 		if (empty($this->baseUrl)){
 			$apiInfo['baseUrl'] = $configArray['Site']['url'];
@@ -1617,6 +1686,16 @@ class Library extends DataObject
 			$apiInfo['barcodeStyle'] = $this->libraryCardBarcodeStyle;
 		} else {
 			$apiInfo['barcodeStyle'] = null;
+		}
+		$quickSearches = $this->getQuickSearches();
+		$apiInfo['quickSearches'] = [];
+		foreach($quickSearches as $quickSearch){
+			$apiInfo['quickSearches'][$quickSearch->id] = [
+				'id' => $quickSearch->id,
+				'label' => $quickSearch->label,
+				'searchTerm' => $quickSearch->searchTerm,
+				'weight' => $quickSearch->weight
+			];
 		}
 		$activeTheme = new Theme();
 		$activeTheme->id = $this->theme;
@@ -1627,6 +1706,9 @@ class Library extends DataObject
 			}
 			if($activeTheme->favicon) {
 				$apiInfo['favicon'] = $configArray['Site']['url'] . '/files/original/' . $activeTheme->favicon;
+			}
+			if($activeTheme->logoApp) {
+				$apiInfo['logoApp'] = $configArray['Site']['url'] . '/files/original/' . $activeTheme->logoApp;
 			}
 			$apiInfo['primaryBackgroundColor'] = $activeTheme->primaryBackgroundColor;
 			$apiInfo['primaryForegroundColor'] = $activeTheme->primaryForegroundColor;

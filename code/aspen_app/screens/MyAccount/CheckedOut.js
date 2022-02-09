@@ -12,7 +12,9 @@ import {
 	Icon,
 	Pressable,
 	Text,
-	useDisclose
+	useDisclose,
+	HStack,
+	VStack
 } from "native-base";
 import {ListItem} from "react-native-elements";
 import {MaterialIcons} from "@expo/vector-icons";
@@ -34,8 +36,6 @@ import {
 } from '../../util/accountActions';
 
 export default class CheckedOut extends Component {
-	static navigationOptions = {title: translate('checkouts.title')};
-
 	constructor() {
 		super();
 		this.state = {
@@ -48,14 +48,12 @@ export default class CheckedOut extends Component {
 	}
 
 	componentDidMount = async () => {
+		await this._fetchCheckouts();
+
 		this.setState({
 			data: global.checkedOutItems,
 			isLoading: false,
 		})
-
-		if (!global.checkedOutItems) {
-			await this._fetchCheckouts();
-		}
 	};
 
 	// grabs the items checked out to the account
@@ -210,7 +208,7 @@ export default class CheckedOut extends Component {
 		return (
 			<Box h="100%">
 				{this.state.numCheckedOut > 0 ?
-					<Center bg="white" pt={3} pb={3}>
+					<Center pt={3} pb={3}>
 						<Button
 							size="sm"
 							colorScheme="primary"
@@ -294,45 +292,34 @@ function CheckedOutItem(props) {
 
 	return (
 		<>
-			<Pressable onPress={onOpen}>
-				<ListItem bottomDivider>
-					<Avatar source={{uri: data.coverUrl}} size="56px" alt={data.title}/>
-					<ListItem.Content>
-						<Text fontSize="sm" bold mb={1}>
-							{data.overdue ? <Badge colorScheme="danger" rounded="4px"
-							                       mt={-.5}>{translate('checkouts.overdue')}</Badge> : null} {title}
-						</Text>
+			<Pressable onPress={onOpen} borderBottomWidth="1" _dark={{ borderColor: "gray.600" }} borderColor="coolGray.200" pl="4" pr="5" py="2">
+				<HStack space={3}>
+					<Avatar source={{uri: data.coverUrl}} borderRadius="md" size={{base: "80px", lg: "120px"}} alt={data.title}/>
+					<VStack maxW="75%">
+						<Text bold mb={1} fontSize={{base: "sm", lg: "lg"}}>{title}</Text>
+							{data.overdue ? <Text><Badge colorScheme="danger" rounded="4px"
+							                       mt={-.5}>{translate('checkouts.overdue')}</Badge></Text> : null}
 
 						{data.author ?
-							<Text fontSize="xs">
-								<Text bold fontSize="xs">
-									{translate('grouped_work.author')}
-									<Text fontSize="xs"> {author}</Text>
-								</Text>
+							<Text fontSize={{base: "xs", lg: "sm"}}>
+								<Text bold>{translate('grouped_work.author')}:</Text> {author}
 							</Text>
 							: null}
 						{data.format !== "Unknown" ?
-							<Text fontSize="xs">
-								<Text bold fontSize="xs">
-									{translate('grouped_work.format')}
-									<Text fontSize="xs"> {data.format}</Text>
-								</Text>
+							<Text fontSize={{base: "xs", lg: "sm"}}>
+								<Text bold>{translate('grouped_work.format')}:</Text> {data.format}
 							</Text>
 							: null}
-						<Text fontSize="xs">
-							<Text bold fontSize="xs">
-								{translate('checkouts.due')}
-								<Text fontSize="xs"> {itemDueOn}</Text>
-							</Text>
+						<Text fontSize={{base: "xs", lg: "sm"}}>
+							<Text bold>{translate('checkouts.due')}:</Text> {itemDueOn}
 						</Text>
 						{data.autoRenew === 1 ?
 							<Box mt={1} p={.5} bgColor="muted.100">
-								<Text fontSize="xs">{translate('checkouts.auto_renew')} {data.renewalDate}</Text>
+								<Text fontSize={{base: "xs", lg: "sm"}}><Text bold>{translate('checkouts.auto_renew')}:</Text> {data.renewalDate}</Text>
 							</Box>
 							: null}
-					</ListItem.Content>
-
-				</ListItem>
+					</VStack>
+				</HStack>
 			</Pressable>
 			<Actionsheet isOpen={isOpen} onClose={onClose} size="full">
 				<Actionsheet.Content>

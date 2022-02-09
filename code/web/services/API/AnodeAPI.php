@@ -32,7 +32,8 @@ class AnodeAPI extends Action
 		header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
 		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
 		if (method_exists($this, $method)) {
-			$output = json_encode(array('result' => $this->$method()), JSON_PRETTY_PRINT);
+			$result = $this->$method();
+			$output = json_encode(array('result' => $result));
 			require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
 			APIUsage::incrementStat('AnodeAPI', $method);
 		} else {
@@ -110,7 +111,10 @@ class AnodeAPI extends Action
 		if (!isset($result['titles'])) {
 			$result['titles'] = array();
 		} else {
-			foreach ($result['titles'] as &$groupedWork) {
+			//Rebuild the titles array since we don't want indexes to have gaps in them (so we don't convert the array to an object in json)
+			$titles = $result['titles'];
+			$result['titles'] = [];
+			foreach ($titles as &$groupedWork) {
 				$itemAPI = new ItemAPI();
 				$_GET['id'] = $groupedWork['id'];
 				$groupedWorkRecord = $itemAPI->loadSolrRecord($groupedWork['id']);
@@ -164,44 +168,30 @@ class AnodeAPI extends Action
 // TO DO: include MPAA ratings, Explicit Lyrics advisory, etc.
 //				$groupedWork['contentRating'] = $groupedWorkRecord['???'];
 
-				foreach ($groupedWorkRecord['scoping_details_' . $branch] as $item) {
-					$item = explode('|', $item);
-					$item['availableHere'] = false;
-					if ($item[4] == 'true' && $item[5] == 'true') {
-						$item['availableHere'] = true;
-						$groupedWork['availableHere'] = true;
-					}
-					$groupedWork['items'][] = array(
-						'01_bibIdentifier' => $item[0],
-						'02_itemIdentifier' => $item[1],
-						'05_statusGrouped' => $item[2],
-						'06_status' => $item[3],
-						'07_availableHere' => $item['availableHere'],
-						'11_available' => $item[5]
-					);
-					foreach ($groupedWorkRecord['item_details'] as $itemDetail) {
-						if (strpos($itemDetail, $item[0] . '|' . $item[1]) === 0) {
-							$itemDetail = explode('|', $itemDetail);
-							$groupedWork['items'][count($groupedWork['items']) - 1] += array(
-								'08_itemShelfLocation' => $itemDetail[2],
-								'09_itemLocationCode' => $itemDetail[15],
-								'10_itemCallNumber' => $itemDetail[3]
-							);
-							break;
+				$groupedWorkDriver = new GroupedWorkDriver($groupedWork['id']);
+
+				$relatedRecords = $groupedWorkDriver->getRelatedRecords();
+				foreach ($relatedRecords as $relatedRecord){
+					foreach ($relatedRecord->getItems() as $item){
+						$groupedWork['items'][] = array(
+							'01_bibIdentifier' => $relatedRecord->id,
+							'02_itemIdentifier' => $item->itemId,
+							'03_bibFormat' => $relatedRecord->format,
+							'04_bibFormatCategory' => $relatedRecord->formatCategory,
+							'05_statusGrouped' => $item->groupedStatus,
+							'06_status' => $item->status,
+							'07_availableHere' => $item->locallyOwned && $item->available,
+							'08_itemShelfLocation' => $item->shelfLocation,
+							'09_itemLocationCode' => $item->locationCode,
+							'10_itemCallNumber' => $item->callNumber,
+							'11_available' => $item->available
+						);
+						if ($item->locallyOwned && $item->available){
+							$groupedWork['availableHere'] = true;
 						}
 					}
-					foreach ($groupedWorkRecord['record_details'] as $bibRecord) {
-						if (strpos($bibRecord, $item[0]) === 0) {
-							$bibRecord = explode('|', $bibRecord);
-							$groupedWork['items'][count($groupedWork['items']) - 1] += array(
-								'03_bibFormat' => $bibRecord[1],
-								'04_bibFormatCategory' => $bibRecord[2]
-							);
-							break;
-						}
-					}
-					ksort($groupedWork['items'][count($groupedWork['items']) - 1]);
 				}
+
 				unset($groupedWork['length']);
 				unset($groupedWork['ratingData']);
 				unset($groupedWork['shortId']);
@@ -228,6 +218,7 @@ class AnodeAPI extends Action
 				unset($groupedWork['accelerated_reader_point_value']);
 				unset($groupedWork['accelerated_reader_reading_level']);
 
+				$result['titles'][] = $groupedWork;
 			}
 		}
 		return $result;

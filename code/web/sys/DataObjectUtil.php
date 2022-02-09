@@ -142,7 +142,7 @@ class DataObjectUtil
 			foreach ($property['properties'] as $subProperty){
 				DataObjectUtil::processProperty($object, $subProperty);
 			}
-		}else if (in_array($property['type'], array('regularExpression'))){
+		}else if (in_array($property['type'], array('regularExpression', 'multilineRegularExpression'))){
 			if (isset($_REQUEST[$propertyName])){
 				$object->setProperty($propertyName, trim($_REQUEST[$propertyName]), $property);
 			} else {
@@ -470,7 +470,7 @@ class DataObjectUtil
 						foreach ($subStructure as $subProperty){
 							$requestKey = $propertyName . '_' . $subProperty['property'];
 							$subPropertyName = $subProperty['property'];
-							if (in_array($subProperty['type'], array('text', 'enum', 'integer', 'numeric', 'textarea', 'html', 'markdown','javascript', 'multiSelect', 'regularExpression') )){
+							if (in_array($subProperty['type'], array('text', 'enum', 'integer', 'numeric', 'textarea', 'html', 'markdown','javascript', 'multiSelect', 'regularExpression', 'multilineRegularExpression') )){
 								$subObject->setProperty($subPropertyName, $_REQUEST[$requestKey][$id], $subProperty);
 							}elseif (in_array($subProperty['type'], array('checkbox') )){
 								$subObject->setProperty($subPropertyName, isset($_REQUEST[$requestKey][$id]) ? 1 : 0, $subProperty);

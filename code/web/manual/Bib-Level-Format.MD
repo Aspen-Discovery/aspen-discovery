@@ -7,55 +7,6 @@ Within Aspen you have the capability to assign format based on bibliographic rec
   * If position 6 of the leader contains a,t,A or T and the 008 position 23 is 'f' then the format is "Braille"
   * If position 6 of the leader contains a,t,A or T and the 008 position 23 is 'd' then the format is "LargePrint"
 
-The following rules reference the 347$b. 
-
-  * If the 347b contains "Blu-Ray" then the format will be "Blu-ray"
-  * If the 347b contains "DVD video" then the format will be "DVD"
-  * If the 347b contains "Archival Materials then the format will be "Archival Materials"
-  * If the 347b contains "SoundCassette" and "MusicRecording" then format will be "MusicCassette"
-  * If the 347b contains Thesis" then the format will be "Thesis"
-  * If the 347b contains "Phonograph" then the format will be "Phonograph"
-  * If the 347b contains "MusicRecording" and "CD" then the format will be "MusicCD"
-  * If the 347b contains "SoundDisc" then the format will be "MusicCD"
-  * If the 347b contains "PlayawayView" then the format will be "PlayawayView"
-  * If the 347b contains "Playaway" then the format will be "Playaway"
-  * If the 347b contains "GoReader" then the format will be "GoReader"
-  * If the 347b contains "Video" and "DVD" then the format will be "Video"
-  * If the 347b contains "VideoDisc" and "DVD" then the format will be "DVD"
-  * If the 347b contains "Video" and "VideoDisc" then the format will be "VideoDisc"
-  * If the 347b contains "Video" and "VideoCassette" then the format will be "VideoCassette"
-  * If the 347b contains "DVD" then the format will be "DVD"
-  * If the 347b contains "Blu-ray" then the format will be "Blu-ray"
-  * If the 347b contains "SoundDisc" then the format will be "SoundDisc"
-  * If the 347b contains "SoundCassette" then the format will be "SoundCassette"
-  * If the 347b contains "SoundRecording" and "CDROM" then the format will be "SoundDisc"
-  * If the 347b contains "Book" and "LargePrint" then the format will be "LargePrint"
-  * If the 347b contains "Book" and "Manuscript" then the format will be "Manuscript"
-  * If the 347b contains "Book" and "GraphicNovel" then the format will be "GraphicNovel"
-  * If the 347b contains "Book" and "MusicalScore" then the format will be "MusicalScore"
-  * If the 347b contains "Book" and "BookClubKit" then the format will be "BookClubKit"
-  * If the 347b contains "Book" and "Kit" then the format will be "Kit"
-  * If the 347b contains "AudioCD" and "CD" then the format will be "CD"
-  * If the 347b contains "CD" and "SoundDisc" then the format will be "SoundDisc"
-  * If the 347b contains "CompactDisc" and "SoundDisc" then the format will be "SoundDisc"
-  * If the 347b contains "CompactDisc" then the format will be "CompactDisc"
-  * If the 347b contains "GraphicNovel" then the format will be "GraphicNovel"
-  * If the 347b contains "Atlas" and "Map" then the format will be "Map"
-  * If the 347b contains "LargePrint" then the format will be "LargePrint"
-  * If the 347b contains "Kinect" then the format will be "Kinect"
-  * If the 347b contains "XBox360" then the format will be "XBox360"
-  * If the 347b contains "XBoxOne" then the format will be "XBoxOne"
-  * If the 347b contains "PlayStation" then the format will be "PlayStation"
-  * If the 347b contains "PlayStation3" then the format will be "PlayStation3"
-  * If the 347b contains "PlayStation4" then the format will be "PlayStation4"
-  * If the 347b contains "Wii" then the format will be "Wii"
-  * If the 347b contains "WiiU" then the format will be "WiiU"
-  * If the 347b contains "3DS" then the format will be "3DS"
-  * If the 347b contains "WindowsGame" then the format will be "WindowsGame"
-  * If the 347b contains "LibraryOfThings" then the format will be "LibraryOfThings"
-  * If the 347b contains "CD+DVD" then the format will be "CD+DVD"
-  * If the 347b contains "VoxBooks" then the format will be "VoxBooks"
-  * If the 347b contains "BookClubKit" & "LargePrint" then the format will be "BookClubKitLarge"
 
 
 The following rules reference the 245$h. 
@@ -255,6 +206,48 @@ The following rules reference the leader.
 
 If there are no formats found, Aspen defaults to the format 'Book'
 
-Aspen will weight the different formats coming from all of these places and the format with the highest occurence, will bt the format Aspen chooses for the record. 
+Aspen will weight the different formats coming from all of these places and the format with the highest occurence, will be the format Aspen chooses for the record.
+
+In the event of a "tie" between different formats, Aspen will use the following rules to determine format:
+
+
+  * If the bib info contains indicators for "SoundCassette" and "MusicRecording" then format will be "MusicCassette"
+  * If the bib info contains indicators for "MusicRecording" and "CD" then the format will be "MusicCD"
+  * If the bib info contains indicators for "Video" and "DVD" then the format will be "Video"
+  * If the bib info contains indicators for "VideoDisc" and "DVD" then the format will be "DVD"
+  * If the bib info contains indicators for "Video" and "VideoDisc" then the format will be "VideoDisc"
+  * If the bib info contains indicators for "Video" and "VideoCassette" then the format will be "VideoCassette"
+  * If the bib info contains indicators for "SoundRecording" and "CDROM" then the format will be "SoundDisc"
+  * If the bib info contains indicators for "Book" and "LargePrint" then the format will be "LargePrint"
+  * If the bib info contains indicators for "Book" and "Manuscript" then the format will be "Manuscript"
+  * If the bib info contains indicators for "Book" and "GraphicNovel" then the format will be "GraphicNovel"
+  * If the bib info contains indicators for "Book" and "MusicalScore" then the format will be "MusicalScore"
+  * If the bib info contains indicators for "Book" and "BookClubKit" then the format will be "BookClubKit"
+  * If the bib info contains indicators for "Book" and "Kit" then the format will be "Kit"
+  * If the bib info contains indicators for "AudioCD" and "CD" then the format will be "CD"
+  * If the bib info contains indicators for "CD" and "SoundDisc" then the format will be "SoundDisc"
+  * If the bib info contains indicators for "CompactDisc" and "SoundDisc" then the format will be "SoundDisc"
+  * If the bib info contains indicators for "Atlas" and "Map" then the format will be "Map"
+  * If the bib info contains indicators for "BookClubKit" & "LargePrint" then the format will be "BookClubKitLarge"
+  
+  
+  If Aspen finds any of the following formats based on the rules outlined in previous sections, these will override any other found formats:
+  
+  * CompactDisc
+  * GraphicNovel
+  * LargePrint
+  * Kinect
+  * XBox360
+  * PlayStation
+  * PlayStation3
+  * PlayStation4
+  * Wii
+  * WiiU
+  * 3DS
+  * WindowsGame
+  * LibraryOfThings
+  * CD+DVD
+  * VoxBooks
+  
 
 You can translate the formats and the way they are displayed to the patron in the ILS Integration Indexing Profile. 

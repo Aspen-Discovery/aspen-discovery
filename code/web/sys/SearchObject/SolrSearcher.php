@@ -36,7 +36,6 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
 	public function __construct()
 	{
 		parent::__construct();
-		global $configArray;
 		// Set appropriate debug mode:
 		// Debugging
 		$this->debug = IPAddress::showDebuggingInformation();

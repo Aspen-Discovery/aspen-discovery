@@ -1,0 +1,70 @@
+{
+  "expo": {
+    "name": "Aspen LiDA",
+    "slug": "aspen-lida",
+    "owner": "bywater-solutions",
+    "privacy": "public",
+    "platforms": [
+      "ios",
+      "android"
+    ],
+    "version": "21.15.1",
+    "sdkVersion": "41.0.0",
+    "orientation": "default",
+    "icon": "./assets/LiDA_Icon1024.png",
+    "splash": {
+      "image": "https://aspen-test.bywatersolutions.com/API/SystemAPI?method=getLogoFile&themeId=1&type=appSplash&slug=aspen-lida",
+      "resizeMode": "contain",
+      "backgroundColor": "#333D42"
+    },
+    "updates": {
+      "fallbackToCacheTimeout": 0
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "buildNumber": "19",
+      "bundleIdentifier": "org.aspendiscovery.mobile",
+      "supportsTablet": true,
+      "requireFullScreen": true,
+      "icon": "./assets/LiDA_Icon1024.png",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "This app uses your location to find nearby libraries to make logging in easier",
+        "LSApplicationQueriesSchemes": [
+          "comgooglemaps",
+          "citymapper",
+          "uber",
+          "lyft",
+          "waze"
+        ],
+        "CFBundleAllowMixedLocalizations": true
+      }
+    },
+    "android": {
+      "package": "org.aspendiscovery.mobile",
+      "versionCode": 19,
+      "permissions": [
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION",
+        "FOREGROUND_SERVICE"
+      ],
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/android/png/xxxhdpi/LiDA_xxxhdpi_432px_Icon.png",
+        "backgroundImage": "./assets/android/png/xxxhdpi/LiDA_xxxhdpi_432px_Background.png"
+      },
+      "icon": "./assets/LiDA_Icon512.png"
+    },
+    "web": {
+      "favicon": "./assets/LiDA_Icon512.png"
+    },
+    "description": "",
+    "extra": {
+      "apiUrl": "https://aspen-test.bywatersolutions.com/",
+      "greenhouse": "https://aspen-test.bywatersolutions.com/",
+      "loginLogo": "https://aspen-test.bywatersolutions.com/API/SystemAPI?method=getLogoFile&themeId=1&type=appLogin&slug=aspen-lida",
+      "libraryCardLogo": "https://aspen-test.bywatersolutions.com/API/SystemAPI?method=getLogoFile&themeId=1&type=logoApp",
+      "mainLibrary": "5"
+    }
+  }
+}

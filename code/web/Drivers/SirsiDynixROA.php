@@ -1013,6 +1013,17 @@ class SirsiDynixROA extends HorizonAPI
 				if ($cancelIfNotFilledByDate) {
 					$holdData['fillByDate'] = date('Y-m-d', strtotime($cancelIfNotFilledByDate));
 				}
+
+				global $library;
+				if (UserAccount::isUserMasquerading()){
+					if (!empty($library->systemHoldNoteMasquerade)){
+						$holdData['comment'] = $library->systemHoldNoteMasquerade;
+					}
+				}else{
+					if (!empty($library->systemHoldNote)){
+						$holdData['comment'] = $library->systemHoldNote;
+					}
+				}
 				//$holdRecord         = $this->getWebServiceResponse('holdRecordDescribe', $webServiceURL . "/circulation/holdRecord/describe", null, $sessionToken);
 				//$placeHold          = $this->getWebServiceResponse('placeHoldDescribe', $webServiceURL . "/circulation/holdRecord/placeHold/describe", null, $sessionToken);
 				$createHoldResponse = $this->getWebServiceResponse('placeHold', $webServiceURL . "/circulation/holdRecord/placeHold", $holdData, $sessionToken);
@@ -1695,7 +1706,7 @@ class SirsiDynixROA extends HorizonAPI
 					if ($updatePatronInfoParametersClass) {
 						//Convert from stdClass to associative array
 						$updatePatronInfoParameters = json_decode(json_encode($updatePatronInfoParametersClass), true);
-						if ($result['success'] == true) {
+						if (isset($updatePatronInfoParameters['resource']) && $updatePatronInfoParameters['resource'] == '/user/patron') {
 							$preferredAddress = $updatePatronInfoParameters['fields']['preferredAddress'];
 
 							// Update Address Field with new data supplied by the user
@@ -1751,7 +1762,7 @@ class SirsiDynixROA extends HorizonAPI
 								$patron->update();
 							}
 						}else{
-							$result['messages'][] = 'Could not load patron account information.';
+							$result['messages'][] = 'Could not load existing contact information to update.';
 						}
 					}else{
 						$result['messages'][] = 'Could not find the account to update.';
@@ -2497,7 +2508,11 @@ class SirsiDynixROA extends HorizonAPI
 			$validStates = array_combine($validStates, $validStates);
 			$fields['mainAddressSection']['properties'][] = array('property' => 'state', 'type' => 'enum', 'values' => $validStates, 'label' => 'State', 'description' => 'State', 'maxLength' => 32, 'required' => true);
 		}
-		$fields['mainAddressSection']['properties'][] = array('property'=>'zip', 'type'=>'text', 'label'=>'Zip Code', 'maxLength' => 32, 'required' => true);
+		$fields['mainAddressSection']['properties']['zip'] = array('property'=>'zip', 'type'=>'text', 'label'=>'Zip Code', 'maxLength' => 32, 'required' => true);
+		if (!empty($library->validSelfRegistrationZipCodes)){
+			$fields['mainAddressSection']['properties']['zip']['validationPattern'] = $library->validSelfRegistrationZipCodes;
+			$fields['mainAddressSection']['properties']['zip']['validationMessage'] = translate(['text' => 'Please enter a valid zip code', 'isPublicFacing'=>true]);
+		}
 
 		$fields['contactInformationSection'] = array('property' => 'contactInformationSection', 'type' => 'section', 'label' => 'Contact Information', 'hideInLists' => true, 'expandByDefault' => true, 'properties' => []);
 		$fields['contactInformationSection']['properties'][] = array('property'=>'phone', 'type'=>'text',  'label'=>'Primary Phone', 'maxLength'=>15, 'required'=>false);

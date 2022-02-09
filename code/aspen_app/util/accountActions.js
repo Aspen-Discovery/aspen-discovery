@@ -8,6 +8,7 @@ import {createAuthTokens, getHeaders, postData, problemCodeMap} from "./apiAuth"
 import {translate} from "./translations";
 import {popAlert, popToast} from "../components/loadError";
 import {getCheckedOutItems, getHolds, getProfile} from './loadPatron';
+import {getActiveBrowseCategories} from "./loadLibrary";
 
 
 export async function isLoggedIn() {
@@ -86,7 +87,7 @@ export async function renewAllCheckouts() {
 		auth: createAuthTokens()
 	});
 	const response = await api.post('/UserAPI?method=renewAll', postBody);
-	console.log(response);
+	//console.log(response);
 	if (response.ok) {
 		const fetchedData = response.data;
 		const result = fetchedData.result;
@@ -435,8 +436,11 @@ export async function dismissBrowseCategory(browseCategoryId) {
 	const response = await api.post('/UserAPI?method=dismissBrowseCategory', postBody);
 
 	if (response.ok) {
+		//console.log(response);
+
 		const fetchedData = response.data;
 		const result = fetchedData.result;
+		await getActiveBrowseCategories(true);
 
 		if (result.success === false) {
 			popAlert("Error updating preferences", result.message, "error");
@@ -460,6 +464,8 @@ export async function showBrowseCategory(browseCategoryId) {
 	const response = await api.post('/UserAPI?method=showBrowseCategory', postBody);
 
 	if (response.ok) {
+		//console.log(response);
+
 		const fetchedData = response.data;
 		const result = fetchedData.result;
 
