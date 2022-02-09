@@ -25,5 +25,12 @@ function getUpdates22_03_00() : array
 				'ALTER TABLE library change COLUMN displayName displayName VARCHAR(80) COLLATE utf8mb4_general_ci NOT NULL '
 			]
 		], //library_displayName_length
+        'selfRegistrationZipCodeValidation' => [
+            'title' => 'Increase Zip Code Validation regex',
+            'description' => 'Increase Zip Code Validation regex',
+            'sql' => [
+                "ALTER TABLE library MODIFY validSelfRegistrationZipCodes VARCHAR(400) DEFAULT ''"
+            ]
+        ], //validSelfRegistrationZipCodes
 	];
 }
