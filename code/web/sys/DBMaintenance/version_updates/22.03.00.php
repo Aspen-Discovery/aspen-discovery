@@ -29,7 +29,7 @@ function getUpdates22_03_00() : array
             'title' => 'Increase Zip Code Validation regex',
             'description' => 'Increase Zip Code Validation regex',
             'sql' => [
-                "ALTER TABLE library MODIFY validSelfRegistrationZipCodes VARCHAR(400) DEFAULT ''"
+                "ALTER TABLE library MODIFY validSelfRegistrationZipCodes VARCHAR(500) DEFAULT ''"
             ]
         ], //validSelfRegistrationZipCodes
 	];
