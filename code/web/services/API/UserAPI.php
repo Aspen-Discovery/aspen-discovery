@@ -578,7 +578,8 @@ class UserAPI extends Action
 			$user = $this->getUserForApiCall();
 			if ($user && !($user instanceof AspenError)) {
 				$source = $_REQUEST['source'] ?? 'all';
-				$allHolds = $user->getHolds(false, 'sortTitle', 'expire', $source);
+				$linkedUsers = $_REQUEST['linkedUsers'] ?? false;
+				$allHolds = $user->getHolds($linkedUsers, 'sortTitle', 'expire', $source);
 				$holdsToReturn = [
 					'available' => [],
 					'unavailable' => [],
@@ -918,7 +919,8 @@ class UserAPI extends Action
 			$user = $this->getUserForApiCall();
 			if ($user && !($user instanceof AspenError)) {
 				$source = $_REQUEST['source'] ?? 'all';
-				$allCheckedOut = $user->getCheckouts(false, $source);
+				$linkedUsers = $_REQUEST['linkedUsers'] ?? false;
+				$allCheckedOut = $user->getCheckouts($linkedUsers, $source);
 				$checkoutsList = [];
 				foreach ($allCheckedOut as $checkoutObj){
 					$checkoutsList[] = $checkoutObj->getArrayForAPIs();
