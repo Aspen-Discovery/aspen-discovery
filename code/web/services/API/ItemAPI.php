@@ -806,4 +806,22 @@ class ItemAPI extends Action {
 
 	}
 
+	function getItemDetails() {
+		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+
+		$groupedWorkId = $_REQUEST['recordId'];
+		$format = $_REQUEST['format'];
+
+		$recordDriver = new GroupedWorkDriver($groupedWorkId);
+
+		$relatedManifestation = null;
+		foreach($recordDriver->getRelatedManifestations() as $relatedManifestation){
+			if($relatedManifestation->format == $format) {
+				break;
+			}
+		}
+
+		return $relatedManifestation->getItemSummary();
+	}
+
 }
