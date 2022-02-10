@@ -39,6 +39,7 @@
     - [Browse Categories](/Admin/HelpManual?page=Browse-Categories)
     - [Collection Spotlights](/Admin/HelpManual?page=Collection-Spotlights)
     - [Placards](/Admin/HelpManual?page=Placards)
+    - [System Messages](/Admin/HelpManual?page=System-Messages)
   - Third Party Enrichment
     - [Accelerated Reader](/Admin/HelpManual?page=Accelerated-Reader)
     - [Content Cafe](/Admin/HelpManual?page=Content-Cafe)
