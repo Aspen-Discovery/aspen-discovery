@@ -626,6 +626,9 @@ class User extends DataObject
 		if (empty($this->created)) {
 			$this->created = date('Y-m-d');
 		}
+		if ($this->pickupLocationId == 0) {
+			$this->pickupLocationId = $this->homeLocationId;
+		}
 		$this->fixFieldLengths();
 		$result = parent::update();
 		$this->saveRoles();
@@ -2319,18 +2322,6 @@ class User extends DataObject
 		$sections['system_admin']->addAction(new AdminAction('Variables', 'Variables set by the Aspen Discovery itself as part of background processes.', '/Admin/Variables'), 'Administer System Variables');
 		$sections['system_admin']->addAction(new AdminAction('System Variables', 'Settings for Aspen Discovery that apply to all libraries on this installation.', '/Admin/SystemVariables'), 'Administer System Variables');
 
-		if (UserAccount::getActiveUserObj()->source == 'admin' && UserAccount::getActiveUserObj()->cat_username == 'aspen_admin') {
-			require_once ROOT_DIR . '/sys/SystemVariables.php';
-			$systemVariables = SystemVariables::getSystemVariables();
-			$sections['greenhouse'] = new AdminSection('Aspen Greenhouse');
-			if (!empty($systemVariables->greenhouseUrl)) {
-				$sections['greenhouse']->addAction(new AdminAction('Site Listing', 'Manage Site Listings in the Greenhouse', $systemVariables->greenhouseUrl . '/Greenhouse/Sites'), 'Run Database Maintenance');
-				$sections['greenhouse']->addAction(new AdminAction('Site Status', 'Site Statuses for the Greenhouse', $systemVariables->greenhouseUrl . '/Greenhouse/SiteStatus'), 'Run Database Maintenance');
-				$sections['greenhouse']->addAction(new AdminAction('Update Center', 'Check version status for sites in the Greenhouse', $systemVariables->greenhouseUrl . '/Greenhouse/UpdateCenter'), 'Run Database Maintenance');
-				$sections['greenhouse']->addAction(new AdminAction('Settings', 'Settings for the Greenhouse', $systemVariables->greenhouseUrl . '/Greenhouse/Settings'), 'Run Database Maintenance');
-			}
-		}
-
 		$sections['system_reports'] = new AdminSection('System Reports');
 		$sections['system_reports']->addAction(new AdminAction('Site Status', 'View Status of Aspen Discovery.', '/Admin/SiteStatus'), 'View System Reports');
 		$sections['system_reports']->addAction(new AdminAction('Usage Dashboard', 'Usage Report for Aspen Discovery.', '/Admin/UsageDashboard'), ['View Dashboards', 'View System Reports']);
@@ -2339,9 +2330,6 @@ class User extends DataObject
 		$sections['system_reports']->addAction(new AdminAction('Nightly Index Log', 'Nightly indexing log for Aspen Discovery.  The nightly index updates all records if needed.', '/Admin/ReindexLog'), ['View System Reports', 'View Indexing Logs']);
 		$sections['system_reports']->addAction(new AdminAction('Cron Log', 'View Cron Log. The cron process handles periodic cleanup tasks and updates reading history for users.', '/Admin/CronLog'), 'View System Reports');
 		$sections['system_reports']->addAction(new AdminAction('Performance Report', 'View Aspen Performance Report.', '/Admin/PerformanceReport'), 'View System Reports');
-		if (UserAccount::getActiveUserObj()->source == 'admin' && UserAccount::getActiveUserObj()->cat_username == 'aspen_admin') {
-			$sections['system_reports']->addAction(new AdminAction('External Request Log', 'View External Request Logs', '/Greenhouse/ExternalRequestLog'), 'Run Database Maintenance');
-		}
 		$sections['system_reports']->addAction(new AdminAction('Error Log', 'View Aspen Error Log.', '/Admin/ErrorReport'), 'View System Reports');
 		$sections['system_reports']->addAction(new AdminAction('PHP Information', 'Display configuration information for PHP on the server.', '/Admin/PHPInfo'), 'View System Reports');
 

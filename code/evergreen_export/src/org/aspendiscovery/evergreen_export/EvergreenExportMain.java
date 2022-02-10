@@ -17,6 +17,8 @@ import com.turning_leaf_technologies.strings.StringUtils;
 import org.apache.commons.net.util.Base64;
 import org.apache.logging.log4j.Logger;
 import org.ini4j.Ini;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.marc4j.marc.*;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -137,6 +139,13 @@ public class EvergreenExportMain {
 					}else {
 						logEntry.setIsFullUpdate(indexingProfile.isRunFullUpdate());
 
+						if (!extractSingleWork) {
+							updateBranchInfo(dbConn);
+							logEntry.addNote("Finished updating branch information");
+
+
+						}
+
 						//Update works that have changed since the last index
 						numChanges = updateRecords(singleWorkId);
 					}
@@ -227,6 +236,197 @@ public class EvergreenExportMain {
 				}
 			}
 		} //Infinite loop
+	}
+
+	private static PreparedStatement existingAspenLocationStmt;
+	private static PreparedStatement existingAspenLibraryStmt;
+	private static PreparedStatement addAspenLibraryStmt;
+	private static PreparedStatement addAspenLocationStmt;
+	private static PreparedStatement addAspenLocationRecordsOwnedStmt;
+	private static PreparedStatement addAspenLocationRecordsToIncludeStmt;
+	private static PreparedStatement addAspenLibraryRecordsOwnedStmt;
+	private static PreparedStatement addAspenLibraryRecordsToIncludeStmt;
+	private static void updateBranchInfo(Connection dbConn) {
+		//Setup our prepared statements
+		try {
+			existingAspenLocationStmt = dbConn.prepareStatement("SELECT libraryId, locationId, isMainBranch from location where code = ?");
+			existingAspenLibraryStmt = dbConn.prepareStatement("SELECT libraryId from library where ilsCode = ?");
+			addAspenLibraryStmt = dbConn.prepareStatement("INSERT INTO library (subdomain, displayName, ilsCode, browseCategoryGroupId, groupedWorkDisplaySettingId) VALUES (?, ?, ?, 1, 1)", Statement.RETURN_GENERATED_KEYS);
+			addAspenLocationStmt = dbConn.prepareStatement("INSERT INTO location (libraryId, displayName, code, historicCode, browseCategoryGroupId, groupedWorkDisplaySettingId) VALUES (?, ?, ?, ?, -1, -1)", Statement.RETURN_GENERATED_KEYS);
+			addAspenLocationRecordsOwnedStmt = dbConn.prepareStatement("INSERT INTO location_records_owned (locationId, indexingProfileId, location, subLocation) VALUES (?, ?, ?, '')");
+			addAspenLocationRecordsToIncludeStmt = dbConn.prepareStatement("INSERT INTO location_records_to_include (locationId, indexingProfileId, location, subLocation, weight) VALUES (?, ?, '.*', '', 1)");
+			addAspenLibraryRecordsOwnedStmt = dbConn.prepareStatement("INSERT INTO library_records_owned (libraryId, indexingProfileId, location, subLocation) VALUES (?, ?, ?, '') ON DUPLICATE KEY UPDATE location = CONCAT(location, '|', VALUES(location))");
+			addAspenLibraryRecordsToIncludeStmt = dbConn.prepareStatement("INSERT INTO library_records_to_include (libraryId, indexingProfileId, location, subLocation, weight) VALUES (?, ?, '.*', '', 1)");
+		}catch (Exception e){
+			logEntry.incErrors("Could not setup database statements to update branch information", e);
+			return;
+		}
+
+
+		//Get the organization tree
+		String apiUrl = baseUrl +  "/osrf-gateway-v1";
+		String params = "service=open-ils.actor&method=open-ils.actor.org_tree.retrieve";
+		HashMap<String, String> headers = new HashMap<>();
+
+		WebServiceResponse response = NetworkUtils.postToURL(apiUrl, params, "application/x-www-form-urlencoded", null, logger);
+		if (response.isSuccess()){
+			JSONObject orgData = response.getJSONResponse();
+			if (orgData.has("payload")){
+				JSONArray mainPayload = orgData.getJSONArray("payload");
+				for (int i = 0; i < mainPayload.length(); i++){
+					JSONObject mainPayloadObject = mainPayload.getJSONObject(i);
+					if (mainPayloadObject.has("__p")){
+						JSONArray subPayload = mainPayloadObject.getJSONArray("__p");
+						loadOrganizationalUnit(subPayload, 0, 0);
+					}
+				}
+			}
+		}
+
+		try {
+			existingAspenLocationStmt.close();
+			existingAspenLibraryStmt.close();
+			addAspenLibraryStmt.close();
+			addAspenLocationStmt.close();
+			addAspenLocationRecordsOwnedStmt.close();
+			addAspenLocationRecordsToIncludeStmt.close();
+			addAspenLibraryRecordsOwnedStmt.close();
+			addAspenLibraryRecordsToIncludeStmt.close();
+		}catch (Exception e){
+			logEntry.incErrors("Error closing statements while updating branch info", e);
+		}
+
+	}
+
+	static String[] orgUnitFields = new String[]{"children",
+		"billing_address",
+		"holds_address",
+		"id",
+		"ill_address",
+		"mailing_address",
+		"name",
+		"ou_type",
+		"parent_ou",
+		"shortname",
+		"email",
+		"phone",
+		"opac_visible",
+		"fiscal_calendar",
+		"users",
+		"closed_dates",
+		"circulations",
+		"settings",
+		"addresses",
+		"checkins",
+		"workstations",
+		"fund_alloc_pcts",
+		"copy_location_orders",
+		"atc_prev_dests",
+		"resv_requests",
+		"resv_pickups",
+		"rsrc_types",
+		"resources",
+		"rsrc_attrs",
+		"attr_vals",
+		"hours_of_operation"
+	};
+	private static void loadOrganizationalUnit(JSONArray orgUnitPayload, int level, long parentId) {
+		HashMap<String, Object> mappedOrgUnitField = mapFields(orgUnitPayload, orgUnitFields);
+		if (level == 0){
+			//This is the top level unit, it is not written to Aspen, just process all the children
+			JSONArray children = (JSONArray) mappedOrgUnitField.get("children");
+			for (int i = 0; i < children.length(); i++){
+				JSONObject curObject = children.getJSONObject(i);
+				if (curObject.has("__p")){
+					JSONArray libraryUnitPayload = curObject.getJSONArray("__p");
+					loadOrganizationalUnit(libraryUnitPayload, level +1, 0);
+				}
+			}
+		}else if(level == 1){
+			//This is a library, add it into the system.
+			long libraryId = 0;
+			try {
+				String shortName = (String) mappedOrgUnitField.get("shortname");
+				existingAspenLibraryStmt.setString(1, shortName);
+				ResultSet existingLibraryRS = existingAspenLibraryStmt.executeQuery();
+				if (!existingLibraryRS.next()) {
+					addAspenLibraryStmt.setString(1, shortName);
+					addAspenLibraryStmt.setString(2, (String)mappedOrgUnitField.get("name"));
+					addAspenLibraryStmt.setString(3, shortName);
+					addAspenLibraryStmt.executeUpdate();
+					ResultSet addAspenLibraryRS = addAspenLibraryStmt.getGeneratedKeys();
+					if (addAspenLibraryRS.next()){
+						libraryId = addAspenLibraryRS.getLong(1);
+					}
+
+					//Add records to include for the library
+					addAspenLibraryRecordsToIncludeStmt.setLong(1, libraryId);
+					addAspenLibraryRecordsToIncludeStmt.setLong(2, indexingProfile.getId());
+					addAspenLibraryRecordsToIncludeStmt.executeUpdate();
+				}else{
+					libraryId = existingLibraryRS.getLong("libraryId");
+				}
+			}catch (Exception e){
+				logEntry.incErrors("Error adding library " + mappedOrgUnitField.get("shortname") + " to Aspen", e);
+			}
+
+			JSONArray children = (JSONArray) mappedOrgUnitField.get("children");
+			for (int i = 0; i < children.length(); i++){
+				JSONObject curObject = children.getJSONObject(i);
+				if (curObject.has("__p")){
+					JSONArray libraryUnitPayload = curObject.getJSONArray("__p");
+					loadOrganizationalUnit(libraryUnitPayload, level +1, libraryId);
+				}
+			}
+
+		}else if(level == 2){
+			//This is a branch, add it to the system
+			try {
+				Integer branchId = (Integer) mappedOrgUnitField.get("id");
+				String shortName = (String) mappedOrgUnitField.get("shortname");
+				existingAspenLocationStmt.setString(1, shortName);
+				ResultSet existingLocationRS = existingAspenLocationStmt.executeQuery();
+				if (!existingLocationRS.next()){
+					addAspenLocationStmt.setLong(1, parentId);
+					addAspenLocationStmt.setString(2, StringUtils.trimTo(60, (String)mappedOrgUnitField.get("name")));
+					addAspenLocationStmt.setString(3, shortName);
+					addAspenLocationStmt.setInt(4, branchId);
+
+					addAspenLocationStmt.executeUpdate();
+					ResultSet addAspenLocationRS = addAspenLocationStmt.getGeneratedKeys();
+					if (addAspenLocationRS.next()){
+						long locationId = addAspenLocationRS.getLong(1);
+
+						//Add records owned for the location
+						addAspenLocationRecordsOwnedStmt.setLong(1, locationId);
+						addAspenLocationRecordsOwnedStmt.setLong(2, indexingProfile.getId());
+						addAspenLocationRecordsOwnedStmt.setString(3, shortName);
+						addAspenLocationRecordsOwnedStmt.executeUpdate();
+
+						//Add records owned for the library, since we have multiple locations defined by ID, we will add separate rows for each.
+						addAspenLibraryRecordsOwnedStmt.setLong(1, parentId);
+						addAspenLibraryRecordsOwnedStmt.setLong(2, indexingProfile.getId());
+						addAspenLibraryRecordsOwnedStmt.setString(3, shortName);
+						addAspenLibraryRecordsOwnedStmt.executeUpdate();
+
+						//Add records to include for the location
+						addAspenLocationRecordsToIncludeStmt.setLong(1, locationId);
+						addAspenLocationRecordsToIncludeStmt.setLong(2, indexingProfile.getId());
+						addAspenLocationRecordsToIncludeStmt.executeUpdate();
+					}
+				}
+			}catch (Exception e){
+				logEntry.incErrors("Error adding branch " + mappedOrgUnitField.get("shortname") + " to Aspen", e);
+			}
+		}
+	}
+
+	private static HashMap<String, Object> mapFields(JSONArray orgUnitPayload, String[] orgUnitFields) {
+		HashMap<String, Object> mappedFields = new HashMap<>();
+		for (int i = 0; i < orgUnitPayload.length(); i++){
+			mappedFields.put(orgUnitFields[i], orgUnitPayload.get(i));
+		}
+		return mappedFields;
 	}
 
 	private static void disconnectDatabase() {

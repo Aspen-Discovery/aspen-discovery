@@ -1,7 +1,6 @@
 <?php
-require_once ROOT_DIR . '/Drivers/SIP2Driver.php';
 
-class Evergreen extends SIP2Driver
+class Evergreen extends AbstractIlsDriver
 {
 	//Caching of sessionIds by patron for performance
 	private static $accessTokensForUsers = array();
@@ -9,7 +8,190 @@ class Evergreen extends SIP2Driver
 	/** @var CurlWrapper */
 	private $apiCurlWrapper;
 
-	private $ahrFields = ['Status', 'Transit', 'Capture_Date_Time', 'Currently_Targeted_Copy', 'Notify_by_Email', 'Hold_Expire_Date_Time', 'Fulfilling_Library', 'Fulfilling_Staff', 'Fulfillment_Date_Time', 'Hold_Type', 'Holdable_Formats', 'Hold_ID', 'Notifications_Phone_Number', 'Notifications_SMS_Number', 'Notifications_SMS_Carrier', 'Pickup_Library', 'Last_Targeting_Date_Time', 'Requesting_Library', 'Request_Date_Time', 'Requesting_User', 'Item_Selection_Depth', 'Selection_Locus', 'Target_Object_ID', 'Hold_User', 'Hold_Cancel_Date_Time', 'Notify_Time', 'Notify_Count', 'Notifications', 'Bib_Record_link', 'Eligible_Copies', 'Currently_Frozen', 'Activation_Date', 'Shelf_Time', 'Cancelation_cause', 'Cancelation_note', 'Top_of_Queue', 'Is_Mint_Condition', 'Shelf_Expire_Time', 'Notes', 'Current_Shelf_Lib', 'Behind_Desk', 'Acquisition_Request', 'Hopeless_Date'];
+	private $ahrFields = [
+		"status",
+		"transit",
+		"capture_time",
+		"current_copy",
+		"email_notify",
+		"expire_time",
+		"fulfillment_lib",
+		"fulfillment_staff",
+		"fulfillment_time",
+		"hold_type",
+		"holdable_formats",
+		"id",
+		"phone_notify",
+		"sms_notify",
+		"sms_carrier",
+		"pickup_lib",
+		"prev_check_time",
+		"request_lib",
+		"request_time",
+		"requestor",
+		"selection_depth",
+		"selection_ou",
+		"target",
+		"usr",
+		"cancel_time",
+		"notify_time",
+		"notify_count",
+		"notifications",
+		"bib_rec",
+		"eligible_copies",
+		"frozen",
+		"thaw_date",
+		"shelf_time",
+		"cancel_cause",
+		"cancel_note",
+		"cut_in_line",
+		"mint_condition",
+		"shelf_expire_time",
+		"notes",
+		"current_shelf_lib",
+		"behind_desk",
+		"acq_request",
+		"hopeless_date",
+	];
+	private $auFields = [
+		"addresses",
+		"cards",
+		"checkouts",
+		"hold_requests",
+		"permissions",
+		"settings",
+		"standing_penalties",
+		"stat_cat_entries",
+		"survey_responses",
+		"waiver_entries",
+		"ws_ou",
+		"wsid",
+		"active",
+		"alert_message",
+		"barred",
+		"billing_address",
+		"card",
+		"claims_returned_count",
+		"claims_never_checked_out_count",
+		"create_date",
+		"credit_forward_balance",
+		"day_phone",
+		"dob",
+		"email",
+		"evening_phone",
+		"expire_date",
+		"family_name",
+		"first_given_name",
+		"home_ou",
+		"id",
+		"ident_type",
+		"ident_type2",
+		"ident_value",
+		"ident_value2",
+		"last_xact_id",
+		"mailing_address",
+		"master_account",
+		"net_access_level",
+		"other_phone",
+		"passwd",
+		"photo_url",
+		"prefix",
+		"profile",
+		"second_given_name",
+		"standing",
+		"suffix",
+		"super_user",
+		"usrgroup",
+		"usrname",
+		"alias",
+		"juvenile",
+		"last_update_time",
+		"pref_prefix",
+		"pref_first_given_name",
+		"pref_second_given_name",
+		"pref_family_name",
+		"pref_suffix",
+		"guardian",
+		"name_keywords",
+		"name_kw_tsvector",
+		"groups",
+		"deleted",
+		"notes",
+		"demographic",
+		"billable_transactions",
+		"money_summary",
+		"open_billable_transactions_summary",
+		"checkins",
+		"performed_circulations",
+		"fund_alloc_pcts",
+		"reservations",
+		"usr_activity",
+		"usr_work_ou_map",
+	];
+	private $circFields = [
+		'checkin_lib',
+		'checkin_staff',
+		'checkin_time',
+		'circ_lib',
+		'circ_staff',
+		'desk_renewal',
+		'due_date',
+		'duration',
+		'duration_rule',
+		'fine_interval',
+		'id',
+		'max_fine',
+		'max_fine_rule',
+		'opac_renewal',
+		'phone_renewal',
+		'recurring_fine',
+		'recurring_fine_rule',
+		'renewal_remaining',
+		'grace_period',
+		'stop_fines',
+		'stop_fines_time',
+		'target_copy',
+		'usr',
+		'xact_finish',
+		'xact_start',
+		'create_time',
+		'workstation',
+		'checkin_workstation',
+		'checkin_scan_time',
+		'parent_circ',
+		'billings',
+		'payments',
+		'billable_transaction',
+		'circ_type',
+		'billing_total',
+		'payment_total',
+		'unrecovered',
+		'copy_location',
+		'aaactsc_entries',
+		'aaasc_entries',
+		'auto_renewal',
+		'auto_renewal_remaining',
+	];
+	private $mvrFields = [
+		'title',
+		'author',
+		'doc_id',
+		'doc_type',
+		'pubdate',
+		'isbn',
+		'publisher',
+		'tcn',
+		'subject',
+		'types_of_resource',
+		'call_numbers',
+		'edition',
+		'online_loc',
+		'synopsis',
+		'physical_description',
+		'toc',
+		'copy_count',
+		'series',
+	];
 	/**
 	 * @param AccountProfile $accountProfile
 	 */
@@ -31,9 +213,114 @@ class Evergreen extends SIP2Driver
 	 */
 	public function getCheckouts(User $patron)
 	{
-		// TODO: Implement getCheckouts() method.
+		require_once ROOT_DIR . '/sys/User/Checkout.php';
+		$checkedOutTitles = array();
+
+		$authToken = $this->getAPIAuthToken($patron);
+		if ($authToken != null) {
+			//Get a list of holds
+			$evergreenUrl = $this->accountProfile->patronApiUrl . '/osrf-gateway-v1';
+			$headers = array(
+				'Content-Type: application/x-www-form-urlencoded',
+			);
+			$this->apiCurlWrapper->addCustomHeaders($headers, false);
+			$request = 'service=open-ils.actor&method=open-ils.actor.user.checked_out';
+			$request .= '&param=' . json_encode($authToken);
+			$request .= '&param=' . $patron->username;
+			$apiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $request);
+
+			$index = 0;
+			if ($this->apiCurlWrapper->getResponseCode() == 200) {
+				$apiResponse = json_decode($apiResponse);
+				if (isset($apiResponse->payload[0])) {
+					//Process out titles
+					foreach ($apiResponse->payload[0]->out as $checkoutId) {
+						$checkout = $this->loadCheckoutData($patron, $checkoutId, $authToken);
+						if ($checkout != null){
+							$index++;
+							$sortKey = "{$checkout->source}_{$checkout->sourceId}_$index";
+							$checkedOutTitles[$sortKey] = $checkout;
+						}
+					}
+					//Process overdue titles
+					foreach ($apiResponse->payload[0]->overdue as $checkoutId) {
+						$checkout = $this->loadCheckoutData($patron, $checkoutId, $authToken);
+						if ($checkout != null){
+							$index++;
+							$sortKey = "{$checkout->source}_{$checkout->sourceId}_$index";
+							$checkedOutTitles[$sortKey] = $checkout;
+						}
+					}
+				}
+			}
+		}
+
+		return $checkedOutTitles;
 	}
 
+	private function loadCheckoutData(User $patron, $checkoutId, $authToken) : ?Checkout {
+		$curCheckout = null;
+		$evergreenUrl = $this->accountProfile->patronApiUrl . '/osrf-gateway-v1';
+		$request = 'service=open-ils.circ&method=open-ils.circ.retrieve';
+		$request .= '&param=' . json_encode($authToken);
+		$request .= '&param=' . $checkoutId;
+		$apiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $request);
+
+		if ($this->apiCurlWrapper->getResponseCode() == 200) {
+			$apiResponse = json_decode($apiResponse);
+			if (isset($apiResponse->payload[0])) {
+				$mappedCheckout = $this->mapEvergreenFields($apiResponse->payload[0]->__p, $this->circFields);
+				$curCheckout = new Checkout();
+				$curCheckout->type = 'ils';
+				$curCheckout->source = $this->getIndexingProfile()->name;
+
+				$curCheckout->sourceId = $mappedCheckout['target_copy'];
+				$curCheckout->userId = $patron->id;
+
+				$modsForCopy = $this->getModsForCopy($mappedCheckout['target_copy']);
+
+				$curCheckout->recordId = $modsForCopy['doc_id'];
+				$curCheckout->itemId = $mappedCheckout['target_copy'];
+
+				$curCheckout->dueDate = strtotime($mappedCheckout['due_date']);
+				$curCheckout->checkoutDate = strtotime($mappedCheckout['create_time']);
+
+				//$curCheckout->renewCount = $itemOut->RenewalCount;
+				$curCheckout->canRenew = $mappedCheckout['renewal_remaining'] > 0;
+				$curCheckout->maxRenewals = $mappedCheckout['renewal_remaining'];
+				$curCheckout->renewalId = $mappedCheckout['id'];
+				$curCheckout->renewIndicator = $mappedCheckout['id'];
+
+				$curCheckout->title = $modsForCopy['title'];
+				$curCheckout->author = $modsForCopy['author'];
+				$curCheckout->callNumber = reset($modsForCopy['call_numbers']);
+
+				require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+				$recordDriver = new MarcRecordDriver((string)$curCheckout->recordId);
+				if ($recordDriver->isValid()){
+					$curCheckout->updateFromRecordDriver($recordDriver);
+				}
+			}
+		}
+		return $curCheckout;
+	}
+
+	private function getModsForCopy($copyId){
+		$evergreenUrl = $this->accountProfile->patronApiUrl . '/osrf-gateway-v1';
+		$request = 'service=open-ils.search&method=open-ils.search.biblio.mods_from_copy';
+		$request .= '&param=' . $copyId;
+		$apiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $request);
+
+		if ($this->apiCurlWrapper->getResponseCode() == 200) {
+			$apiResponse = json_decode($apiResponse);
+			if (isset($apiResponse->payload[0])) {
+				$mods = $apiResponse->payload[0]->__p;
+				$mods = $this->mapEvergreenFields($mods, $this->mvrFields);
+				return $mods;
+			}
+		}
+		return null;
+	}
 	/**
 	 * @inheritDoc
 	 */
@@ -63,7 +350,54 @@ class Evergreen extends SIP2Driver
 	 */
 	function cancelHold(User $patron, $recordId, $cancelId = null)
 	{
-		// TODO: Implement cancelHold() method.
+		$result = [
+			'success' => false,
+			'message' => translate(['text'=>"The hold could not be cancelled.", 'isPublicFacing'=>true]),
+			'api' => [
+				'title' => translate(['text'=>'Hold not cancelled', 'isPublicFacing'=>true]),
+				'message' => translate(['text'=>'The hold could not be cancelled.', 'isPublicFacing'=>true])
+			]
+		];
+		$authToken = $this->getAPIAuthToken($patron);
+		if ($authToken != null) {
+			$evergreenUrl = $this->accountProfile->patronApiUrl . '/osrf-gateway-v1';
+			$headers = array(
+				'Content-Type: application/x-www-form-urlencoded',
+			);
+			$this->apiCurlWrapper->addCustomHeaders($headers, false);
+
+			$request = 'service=open-ils.circ&method=open-ils.circ.hold.cancel';
+			$request .= '&param=' . json_encode($authToken);
+			$request .= '&param=' . json_encode([(int)$cancelId]);
+			$request .= '&param=';
+			$request .= '&param=' . json_encode("Hold cancelled in Aspen Discovery");
+
+			$apiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $request);
+
+			if ($this->apiCurlWrapper->getResponseCode() == 200) {
+				$apiResponse = json_decode($apiResponse);
+				if (isset($apiResponse->payload[0]) && isset($apiResponse->payload[0]->desc)){
+					$result['message'] = $apiResponse->payload[0]->desc;
+				}elseif (isset($apiResponse->payload[0]) && isset($apiResponse->payload[0]->result->desc)){
+					$result['message'] = $apiResponse->payload[0]->result->desc;
+				}elseif (IPAddress::showDebuggingInformation() && isset($apiResponse->debug)){
+					$result['message'] = $apiResponse->debug;
+				}elseif ($apiResponse->payload[0] == 1 ){
+					$result['message'] = translate(['text' => "The hold has been cancelled.", 'isPublicFacing' => true]);
+					$result['success'] = true;
+
+					// Result for API or app use
+					$result['api']['title'] = translate(['text' => 'Hold cancelled', 'isPublicFacing' => true]);
+					$result['api']['message'] = translate(['text' => 'Your hold has been cancelled,', 'isPublicFacing' => true]);
+
+					$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
+					$patron->forceReloadOfHolds();
+				}
+			}
+		}else{
+			$result['message'] = translate(['text'=>'Could not connect to the circulation system', 'isPublicFacing'=>true]);
+		}
+		return $result;
 	}
 
 	/**
@@ -76,12 +410,114 @@ class Evergreen extends SIP2Driver
 
 	function freezeHold(User $patron, $recordId, $itemToFreezeId, $dateToReactivate)
 	{
-		// TODO: Implement freezeHold() method.
+		$result = [
+			'success' => false,
+			'message' => translate(['text'=>"The hold could not be frozen.", 'isPublicFacing'=>true]),
+			'api' => [
+				'title' => translate(['text'=>'Hold not frozen', 'isPublicFacing'=>true]),
+				'message' => translate(['text'=>'The hold could not be frozen.', 'isPublicFacing'=>true])
+			]
+		];
+
+		$authToken = $this->getAPIAuthToken($patron);
+		if ($authToken != null) {
+			$evergreenUrl = $this->accountProfile->patronApiUrl . '/osrf-gateway-v1';
+			$headers = array(
+				'Content-Type: application/x-www-form-urlencoded',
+			);
+			$this->apiCurlWrapper->addCustomHeaders($headers, false);
+
+			$namedParams = [
+				'id' => $itemToFreezeId,
+				'frozen' => 't'
+			];
+
+			$request = 'service=open-ils.circ&method=open-ils.circ.hold.update';
+			$request .= '&param=' . json_encode($authToken);
+			$request .= '&param=';
+			$request .= '&param=' . json_encode($namedParams);
+
+			$apiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $request);
+
+			if ($this->apiCurlWrapper->getResponseCode() == 200){
+				$apiResponse = json_decode($apiResponse);
+				if (isset($apiResponse->payload[0]) && isset($apiResponse->payload[0]->desc)){
+					$result['message'] = $apiResponse->payload[0]->desc;
+				}elseif (isset($apiResponse->payload[0]) && isset($apiResponse->payload[0]->result->desc)){
+					$result['message'] = $apiResponse->payload[0]->result->desc;
+				}elseif (IPAddress::showDebuggingInformation() && isset($apiResponse->debug)){
+					$result['message'] = $apiResponse->debug;
+				}elseif ($apiResponse->payload[0] > 0 ){
+					$result['message'] = translate(['text' => "Your hold was frozen successfully.", 'isPublicFacing' => true]);
+					$result['success'] = true;
+
+					// Result for API or app use
+					$result['api']['title'] = translate(['text' => 'Hold frozen successfully', 'isPublicFacing' => true]);
+					$result['api']['message'] = translate(['text' => 'Your hold was frozen successfully.', 'isPublicFacing' => true]);
+
+					$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
+					$patron->forceReloadOfHolds();
+				}
+			}
+		}
+
+		return $result;
 	}
 
 	function thawHold(User $patron, $recordId, $itemToThawId)
 	{
-		// TODO: Implement thawHold() method.
+		$result = [
+			'success' => false,
+			'message' => translate(['text'=>"The hold could not be thawed.", 'isPublicFacing'=>true]),
+			'api' => [
+				'title' => translate(['text'=>'Hold not thawed', 'isPublicFacing'=>true]),
+				'message' => translate(['text'=>'The hold could not be thawed.', 'isPublicFacing'=>true])
+			]
+		];
+
+		$authToken = $this->getAPIAuthToken($patron);
+		if ($authToken != null) {
+			$evergreenUrl = $this->accountProfile->patronApiUrl . '/osrf-gateway-v1';
+			$headers = array(
+				'Content-Type: application/x-www-form-urlencoded',
+			);
+			$this->apiCurlWrapper->addCustomHeaders($headers, false);
+
+			$namedParams = [
+				'id' => $itemToThawId,
+				'frozen' => 'f'
+			];
+
+			$request = 'service=open-ils.circ&method=open-ils.circ.hold.update';
+			$request .= '&param=' . json_encode($authToken);
+			$request .= '&param=';
+			$request .= '&param=' . json_encode($namedParams);
+
+			$apiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $request);
+
+			if ($this->apiCurlWrapper->getResponseCode() == 200){
+				$apiResponse = json_decode($apiResponse);
+				if (isset($apiResponse->payload[0]) && isset($apiResponse->payload[0]->desc)){
+					$result['message'] = $apiResponse->payload[0]->desc;
+				}elseif (isset($apiResponse->payload[0]) && isset($apiResponse->payload[0]->result->desc)){
+					$result['message'] = $apiResponse->payload[0]->result->desc;
+				}elseif (IPAddress::showDebuggingInformation() && isset($apiResponse->debug)){
+					$result['message'] = $apiResponse->debug;
+				}elseif ($apiResponse->payload[0] > 0 ){
+					$result['message'] = translate(['text' => "Your hold was thawed successfully.", 'isPublicFacing' => true]);
+					$result['success'] = true;
+
+					// Result for API or app use
+					$result['api']['title'] = translate(['text' => 'Hold thawed successfully', 'isPublicFacing' => true]);
+					$result['api']['message'] = translate(['text' => 'Your hold was thawed successfully.', 'isPublicFacing' => true]);
+
+					$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
+					$patron->forceReloadOfHolds();
+				}
+			}
+		}
+
+		return $result;
 	}
 
 	function changeHoldPickupLocation(User $patron, $recordId, $itemToUpdateId, $newPickupLocation)
@@ -140,26 +576,26 @@ class Evergreen extends SIP2Driver
 						$curHold->type = 'ils';
 						$curHold->source = $this->getIndexingProfile()->name;
 
-						$curHold->sourceId = $holdInfo['Hold_ID'];
-						$curHold->recordId = $holdInfo['Target_Object_ID'];
-						$curHold->cancelId = $holdInfo['Hold_ID'];
+						$curHold->sourceId = $holdInfo['id'];
+						$curHold->recordId = $holdInfo['target'];
+						$curHold->cancelId = $holdInfo['id'];
 
 						//TODO: Validate if these are accurate
 						$curHold->locationUpdateable = true;
 						$curHold->cancelable = true;
 
 
-						if ($holdInfo['Currently_Frozen'] == 't'){
+						if ($holdInfo['frozen'] == 't'){
 							$curHold->frozen = true;
 							$curHold->status = "Frozen";
 							$curHold->canFreeze = true;
-							if ($holdInfo['ActivationDate'] != null) {
-								$curHold->status .= ' until ' . date("m/d/Y", strtotime($holdInfo['ActivationDate']));
+							if ($holdInfo['thaw_date'] != null) {
+								$curHold->status .= ' until ' . date("m/d/Y", strtotime($holdInfo['thaw_date']));
 							}
 							$curHold->locationUpdateable = true;
-						}elseif (!empty($holdInfo['Transit'])){
+						}elseif (!empty($holdInfo['transit'])){
 							$curHold->status = 'In Transit';
-						}elseif (!empty($holdInfo['Capture_Date_Time'])){
+						}elseif (!empty($holdInfo['capture_time'])){
 							$curHold->cancelable = false;
 							$curHold->status = "Ready to Pickup";
 						}else{
@@ -202,31 +638,89 @@ class Evergreen extends SIP2Driver
 			],
 		];
 
-		$apiToken = $this->getAPIAuthToken($patron);
-		if ($apiToken != null){
+		$authToken = $this->getAPIAuthToken($patron);
+		if ($authToken != null){
 			$evergreenUrl = $this->accountProfile->patronApiUrl . '/osrf-gateway-v1';
 			$headers  = array(
 				'Content-Type: application/x-www-form-urlencoded',
 			);
 			$this->apiCurlWrapper->addCustomHeaders($headers, false);
 
-			$params = [
-				'service' => 'open-ils.circ',
-				'method' => 'open-ils.circ_holds.test_and_create.batch',
-				'param' => [
-					"patronid" => $patron->username,
-					"pickup_lib" => $pickupBranch,
-					"hold_type" => 'T',
-//					"email_notify" => $patron->email,
-//					"expire_time" to expireTime,
-//					"frozen" to suspendHold
-				]
+			//Translate to numeric location id
+			$location = new Location();
+			$location->code = $pickupBranch;
+			if ($location->find(true)){
+				$pickupBranch = $location->historicCode;
+			}
+			if ($cancelDate == null){
+				global $library;
+				if ($library->defaultNotNeededAfterDays == 0){
+					//Default to a date 6 months (half a year) in the future.
+					$sixMonthsFromNow = time() + 182.5 * 24 * 60 * 60;
+					$cancelDate = date( DateTime::ISO8601, $sixMonthsFromNow);
+				}else{
+					//Default to a date 6 months (half a year) in the future.
+					$nnaDate = time() + $library->defaultNotNeededAfterDays * 24 * 60 * 60;
+					$cancelDate = date( DateTime::ISO8601, $nnaDate);
+				}
+			}
+			$namedParams = [
+				'patronid' => (int)$patron->username,
+				"pickup_lib" => (int)$pickupBranch,
+				"hold_type" => 'T',
+//				"email_notify" => $patron->email,
+//				"request_lib" =>  (int)$pickupBranch,
+//				"request_time" => date( DateTime::ISO8601),
+//				"expire_time" => $cancelDate,
+//				"frozen" => 'f'
 			];
 
-			$apiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $params);
+			$request = 'service=open-ils.circ&method=open-ils.circ.holds.test_and_create.batch';
+			$request .= '&param=' . json_encode($authToken);
+			$request .= '&param=' . json_encode($namedParams);
+			$request .= '&param=' . json_encode([(int)$recordId]);
+
+			//First check to see if the hold can be placed
+			$requestB = 'service=open-ils.circ&method=open-ils.circ.title_hold.is_possible';
+			$requestB .= '&param=' . json_encode($authToken);
+			$namedParamsB = [
+				'patronid' => (int)$patron->username,
+				"pickup_lib" => (int)$pickupBranch,
+				"hold_type" => 'T',
+				"titleid" => (int)$recordId
+			];
+			$requestB .= '&param=' . json_encode($namedParamsB);
+
+			$apiResponseB = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $requestB);
+			if ($this->apiCurlWrapper->getResponseCode() == 200) {
+				$apiResponseB = json_decode($apiResponseB);
+				if ($apiResponseB->payload[0]->success == 0){
+					$hold_result['message'] = "Holds cannot be placed on this title";
+					return $hold_result;
+				}
+			}
+
+			$apiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $request);
 
 			if ($this->apiCurlWrapper->getResponseCode() == 200){
 				$apiResponse = json_decode($apiResponse);
+				if (isset($apiResponse->payload[0]) && isset($apiResponse->payload[0]->desc)){
+					$hold_result['message'] = $apiResponse->payload[0]->desc;
+				}elseif (isset($apiResponse->payload[0]) && isset($apiResponse->payload[0]->result->desc)){
+					$hold_result['message'] = $apiResponse->payload[0]->result->desc;
+				}elseif (IPAddress::showDebuggingInformation() && isset($apiResponse->debug)){
+					$hold_result['message'] = $apiResponse->debug;
+				}elseif (isset($apiResponse->payload[0]->result) &&$apiResponse->payload[0]->result > 0 ){
+					$hold_result['message'] = translate(['text' => "Your hold was placed successfully.", 'isPublicFacing' => true]);
+					$hold_result['success'] = true;
+
+					// Result for API or app use
+					$hold_result['api']['title'] = translate(['text' => 'Hold placed successfully', 'isPublicFacing' => true]);
+					$hold_result['api']['message'] = translate(['text' => 'Your hold was placed successfully.', 'isPublicFacing' => true]);
+
+					$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
+					$patron->forceReloadOfHolds();
+				}
 			}
 		}
 
@@ -249,6 +743,106 @@ class Evergreen extends SIP2Driver
 	public function getFines(User $patron, $includeMessages = false)
 	{
 		// TODO: Implement getFines() method.
+	}
+
+	public function patronLogin($username, $password, $validatedViaSSO)
+	{
+		//return parent::patronLogin($username, $password, $validatedViaSSO);
+		$session = $this->validatePatronAndGetAuthToken($username, $password);
+		if ($session['userValid']){
+			$userData = $this->fetchSession($session['authToken']);
+			if ($userData != null){
+				$user = $this->loadPatronInformation($userData, $username, $password);
+
+				$user->password = $password;
+
+				return $user;
+			}else{
+				return null;
+			}
+		}else{
+			return null;
+		}
+	}
+
+	private function loadPatronInformation($userData, $username, $password) {
+		$user = new User();
+		$user->username = $userData['id'];
+		if ($user->find(true)) {
+			$insert = false;
+		} else {
+			$insert = true;
+		}
+
+		$firstName = $userData['first_given_name'];
+		$lastName = $userData['family_name'];
+		$user->_fullname = $lastName . ',' . $firstName;
+		$forceDisplayNameUpdate = false;
+		if ($user->firstname != $firstName) {
+			$user->firstname = $firstName;
+			$forceDisplayNameUpdate = true;
+		}
+		if ($user->lastname != $lastName) {
+			$user->lastname = isset($lastName) ? $lastName : '';
+			$forceDisplayNameUpdate = true;
+		}
+		if ($forceDisplayNameUpdate) {
+			$user->displayName = '';
+		}
+
+		$user->cat_username = $username;
+		$user->cat_password = $password;
+		$user->email = $userData['email'];
+		if (!empty($userData['day_phone'])){
+			$user->phone = $userData['day_phone'];
+		}elseif (!empty($userData['evening_phone'])){
+			$user->phone = $userData['evening_phone'];
+		}elseif (!empty($userData['other_phone'])){
+			$user->phone = $userData['other_phone'];
+		}
+
+		$user->patronType = $userData['usrgroup'];
+
+		//TODO: Figure out how to parse the address we will need to look it up in web services
+		$fullAddress = $userData['mailing_address'];
+
+		if (!empty($userData['expire_date'])){
+			$expireTime = $userData['expire_date'];
+			$expireTime = strtotime($expireTime);
+			$user->_expires = date('n-j-Y', $expireTime);
+			if (!empty($user->_expires)) {
+				$timeNow = time();
+				$timeToExpire = $expireTime - $timeNow;
+				if ($timeToExpire <= 30 * 24 * 60 * 60) {
+					if ($timeToExpire <= 0) {
+						$user->_expired = 1;
+					}
+					$user->_expireClose = 1;
+				}
+			}
+		}
+
+		//Get home location
+		$location = new Location();
+		$location->historicCode = $userData['home_ou'];
+
+		if ($location->find(true)){
+			if ($user->homeLocationId != $location->locationId){
+				$user->homeLocationId = $location->locationId;
+				$user->pickupLocationId = $user->homeLocationId;
+			}
+		}else{
+			$user->homeLocationId = 0;
+		}
+
+		if ($insert) {
+			$user->created = date('Y-m-d');
+			$user->insert();
+		} else {
+			$user->update();
+		}
+
+		return $user;
 	}
 
 	private function validatePatronAndGetAuthToken(string $username, string $password)
@@ -308,39 +902,22 @@ class Evergreen extends SIP2Driver
 		if ($this->apiCurlWrapper->getResponseCode() == 200){
 			$getSessionResponse = json_decode($getSessionResponse);
 			if ($getSessionResponse->payload[0]->__c == 'au'){ //class
-				return $getSessionResponse->payload[0]->__p; //payload
+				return $this->mapEvergreenFields($getSessionResponse->payload[0]->__p, $this->auFields); //payload
 			}
 		}
 		return null;
-	}
-
-	private function loadPatronBasicData(string $username, string $password, $session, $authToken)
-	{
-		$evergreenUrl = $this->accountProfile->patronApiUrl . '/osrf-gateway-v1';
-		$params = [
-			'service' => 'open-ils.actor',
-			'method' => 'open-ils.actor.user.fleshed.retrieve',
-		];
-		$params = http_build_query($params) . '&param=' . json_encode($authToken);
-		$headers  = array(
-			'Content-Type: application/x-www-form-urlencoded',
-		);
-		$this->apiCurlWrapper->addCustomHeaders($headers, false);
-		$getUserResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $params);
-
-		if ($this->apiCurlWrapper->getResponseCode() == 200){
-
-		}else{
-			return null;
-		}
-
 	}
 
 	private function mapEvergreenFields($rawResult, array $ahrFields)
 	{
 		$mappedResult = [];
 		foreach ($ahrFields as $position => $label){
-			$mappedResult[$label] = $rawResult[$position];
+			if (isset($rawResult[$position])){
+				$mappedResult[$label] = $rawResult[$position];
+			}else{
+				$mappedResult[$label] = null;
+			}
+
 		}
 		return $mappedResult;
 	}
@@ -354,5 +931,44 @@ class Evergreen extends SIP2Driver
 		}else{
 			return null;
 		}
+	}
+
+	public function getAccountSummary(User $patron) : AccountSummary
+	{
+		require_once ROOT_DIR . '/sys/User/AccountSummary.php';
+		$summary = new AccountSummary();
+		$summary->userId = $patron->id;
+		$summary->source = 'ils';
+		$summary->resetCounters();
+
+		//Can't use the quick response since it includes eContent.
+		$checkouts = $this->getCheckouts($patron);
+		$summary->numCheckedOut = count($checkouts);
+		$numOverdue = 0;
+		foreach ($checkouts as $checkout){
+			if ($checkout->isOverdue()){
+				$numOverdue++;
+			}
+		}
+		$summary->numOverdue = $numOverdue;
+
+		$holds = $this->getHolds($patron);
+		$summary->numAvailableHolds = count($holds['available']);
+		$summary->numUnavailableHolds = count($holds['unavailable']);
+
+		//Get additional information
+		$authToken = $this->getAPIAuthToken($patron);
+		if ($authToken != null){
+			$sessionData = $this->fetchSession($authToken);
+			if ($sessionData != null){
+				$expireTime = $sessionData['expire_date'];
+				$expireTime = strtotime($expireTime);
+				$summary->expirationDate = date('n-j-Y', $expireTime);
+				//TODO : Load total charge balance
+				//$summary->totalFines = $basicDataResponse->ChargeBalance;
+			}
+		}
+
+		return $summary;
 	}
 }

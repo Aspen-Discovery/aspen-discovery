@@ -23,7 +23,7 @@
 				<div class="result record{$smarty.foreach.recordLoop.iteration}">
 					{$suggestion}
 				</div>
-				{foreachelse}
+			{foreachelse}
 				<div class="alert alert-info">{translate text='You have not rated any titles.  Please rate some titles so we can display suggestions for you.' isPublicFacing=true} </div>
 			{/foreach}
 		</div>
