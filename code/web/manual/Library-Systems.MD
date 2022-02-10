@@ -11,9 +11,13 @@
 - To edit already created systems you can either click the 'Edit' box on the right hand side of the screen or click the Library ID
 - Underneath the edit button the right hand side, there is a 'History' box. This shows you changes made in the configuration. 
 
-- Within library systems you can customize many aspects of Aspen for your system. You will want include subdomain and base URL in your options. This lets Aspen know which URL is specific to a system. This is especially important if you have many systems and subdomains.
+- Within library systems you can customize many aspects of Aspen for your system.
+- You will want include subdomain and base URL in your options. This lets Aspen know which URL is specific to a system. This is especially important if you have many systems and subdomains.
 - If you fill in 'Display Name' that will display within the header of Aspen if you click the box 'Show Display Name in Header'.
-- Systems Message allows you to add customized language if you have an annoucement for your patrons. This message will display in the header.
+- If you click the box 'Consortial Interface' it treats this Library system as part of a consortium including other Library systems on the same Aspen installation.
+- The 'Create Search Interface' checkbox enables...
+- The 'Show in Select Interface' checkbox enables... (It requires the 'Create Search Interface' checkbox to be ticked)
+- Systems Message allows you to add customized messages if you have an annoucement for your patrons. This message will display in the header of all Library Locations in this Library System. More granular system messages down to Library Location level, and also with time/date publishing controls can be configured under >Local Catalog Enrichment>System Messages. [Read more here](/Admin/HelpManual?page=System-Messages).
 - The checkbox 'Generate Sitemap' will allow pages within Aspen to be searchable on search engines like Google.
 - The dropdown for 'Basic Display' allows you to reference which of your themes you want to use for your system.
 - The 'Contact Links' allows you to input the appropriate links for social media pages. When you input a link, the social media icon will appear at the bottom right of your Aspen page. The icons are clickable and redirect patrons to those pages.
@@ -49,8 +53,8 @@
 - Similarly, Interlibrary loans is where you establish what system you use for ILL
 - Below all of these dropdowns, you also have the option to enable Genealogy functionality, include DPLA content in searches, and add library holidays
   - In addition to enabling DPLA content in searches, you will need to set up a connection to DP.LA - see the DP.LA section of the manual for more information.
-- Records owned allows you to tell Aspen what items are owned by your system. If you are a one branch system, you can input .* as your location, which tells Aspen all of the locations are your items. If you are a multi-branch system then you will need to define your distinct locations in the locations section under Library Systems. You can find more information on that on the location page of the manual. 
-- Records to Include tells Aspen what records should be included in your searches.
+- Records Owned allows you to tell Aspen what items are owned by your system. If you are a one branch system, you can input .* as your location, which tells Aspen all items from all of the locations in this Library System are owned by this Library System. If you are a multi-branch system then you will need to define your distinct locations in the locations section under Primary Configuration. You can find more information on that on the [location page](/Admin/HelpManual?page=Library-Systems-Locations) of the manual. You can also use this section to exclude specific locations or sub-locations from the System's 'records owned'.
+- Records to Include tells Aspen what records should be included in your searches. Again .* can be used in the 'Locations' box to include all locations that are associated with this Library system. Alternatively each location can be added as a line and its location code used in the 'locations' box. Against each line there are further options to include and excluded different item types, audiences, formats, items on order etc.
 
 ## Video Tutorial 
 
