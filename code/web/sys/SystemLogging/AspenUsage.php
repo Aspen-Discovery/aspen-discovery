@@ -24,6 +24,9 @@ class AspenUsage extends DataObject
 	public $ebscoEdsSearches;
 	public $blockedRequests;
 	public $blockedApiRequests;
+	public $timedOutSearches;
+	public $timedOutSearchesWithHighLoad;
+	public $searchesWithErrors;
 
 	public function getNumericColumnNames() : array
 	{
@@ -41,7 +44,10 @@ class AspenUsage extends DataObject
 			'openArchivesSearches',
 			'userListSearches',
 			'websiteSearches',
-			'eventsSearches'
+			'eventsSearches',
+			'timedOutSearches',
+			'timedOutSearchesWithHighLoad',
+			'searchesWithErrors'
 		];
 	}
 }
