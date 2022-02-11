@@ -417,7 +417,7 @@ class FOLIO extends AbstractIlsDriver
 		$hold = $this->makeRequest('GET', '/circulation/requests/' . $recordId);
 		$hold = json_decode($hold, true);
 
-		$hold['pikcupServicePointId'] = $newPickupLocation;
+		$hold['pickupServicePointId'] = $newPickupLocation;
 
 		$response = $this->makeRequest('PUT', '/circulation/requests/' . $recordId, json_encode($hold));
 
