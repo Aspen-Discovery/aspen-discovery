@@ -2,6 +2,8 @@
 
 This is where you can set up and enable Two-Factor Authentication (2FA) profiles. You can create different profiles and apply them to selected Library Systems and/or selected Patron Types.
 
+Information about how Patrons Manage their 2FA settings is on the [Security Settings](/Admin/HelpManual?page=My-Security-Settings) page.
+
 When editing a particular profile, you can give it a name to distinguish it from other profiles - eg 'Main Staff 2FA' for the Staff Patron Type at the Main Library.
 
 You can choose whether 2FA is enabled:
