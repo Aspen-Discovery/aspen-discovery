@@ -1,4 +1,4 @@
-##Two-Factor Authentication
+## Two-Factor Authentication
 
 This is where you can set up and enable Two-Factor Authentication (2FA) profiles. You can create different profiles and apply them to selected Library Systems and/or selected Patron Types.
 
