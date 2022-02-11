@@ -4,4 +4,6 @@ This page is part of the [My Account](/MyAccount) area and depends on Account Li
 
 It shows the patron any currently linked accounts and allows them to add other linked accounts. They need the account login credentials of any account they want to link to.
 
+## Screenshot
+
 ![Screenshot of Linked Accounts page](/manual/images/Linked_Accounts_SS.png)
