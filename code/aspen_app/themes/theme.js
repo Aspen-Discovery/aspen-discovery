@@ -1,6 +1,6 @@
 import React from "react";
 import {extendTheme, Box, Icon, IconButton, useColorMode, useColorModeValue} from "native-base";
-import {Ionicons} from "@expo/vector-icons";
+import {Ionicons, MaterialIcons} from "@expo/vector-icons";
 import {create} from 'apisauce';
 import Constants from "expo-constants";
 import chroma from "chroma-js";
@@ -163,10 +163,10 @@ export async function fetchTheme() {
 
 export function UseColorMode() {
 	const {toggleColorMode} = useColorMode();
-	const currentMode = useColorModeValue("moon", "sunny");
+	const currentMode = useColorModeValue("nightlight-round", "wb-sunny");
 	return (
-		<Box alignItems="center" mt={5}>
-			<IconButton onPress={toggleColorMode} icon={<Icon as={Ionicons} name={currentMode} />} borderRadius="full" _icon={{ size: "lg" }} />
+		<Box alignItems="center">
+			<IconButton onPress={toggleColorMode} icon={<Icon as={MaterialIcons} name={currentMode} />} borderRadius="full" _icon={{ size: "sm" }} />
 		</Box>
 	)
 }

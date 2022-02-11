@@ -85,6 +85,8 @@ export default class GroupedWork extends Component {
 						languages: response.filterOn.language,
 						format: response.filterOn.format[0].format,
 						language: response.filterOn.language[0].language,
+						groupedWorkId: response.id,
+						groupedWorkTitle: response.title,
 						hasError: false,
 						error: null,
 						isLoading: false,
@@ -301,6 +303,8 @@ export default class GroupedWork extends Component {
 					                                          patronId={this.state.patronId}
 					                                          locations={this.state.locations}
 					                                          showAlert={this.showAlert}
+					                                          groupedWorkId={this.state.groupedWorkId}
+					                                          groupedWorkTitle={this.state.groupedWorkTitle}
 					                                          openCheckouts={this.openCheckouts}/> : null}
 
 					<Text mt={5} mb={5} fontSize={{base: "md", lg: "lg"}} lineHeight={{base: "22px", lg: "26px"}}>

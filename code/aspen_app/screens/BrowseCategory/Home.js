@@ -14,6 +14,7 @@ import {getLibraryInfo, getLocationInfo} from '../../util/loadLibrary';
 import {dismissBrowseCategory} from "../../util/accountActions";
 import {loadingSpinner} from "../../components/loadingSpinner";
 import {loadError} from "../../components/loadError";
+import {removeData} from "../../util/logout";
 
 export default class BrowseCategoryHome extends Component {
 	constructor() {
@@ -64,10 +65,15 @@ export default class BrowseCategoryHome extends Component {
 			baseURL: apiUrl + '/API',
 			headers: getHeaders(),
 			timeout: 60000,
-			auth: createAuthTokens()
+			auth: createAuthTokens(),
 		});
 		api.post("/SearchAPI?method=getAppActiveBrowseCategories&includeSubCategories=true", postBody)
-			.then(response => {
+			.then(async response => {
+				if (response.status === 403) {
+					await removeData().then(res => {
+						console.log("Session ended.")
+					});
+				}
 				if (response.ok) {
 					const items = response.data;
 					const results = items.result;
@@ -109,11 +115,11 @@ export default class BrowseCategoryHome extends Component {
 	};
 
 	onPressItem = (item) => {
-		this.props.navigation.navigate("Home_GroupedWork", {item});
+		this.props.navigation.navigate("GroupedWorkScreen", {item});
 	};
 
 	onLoadMore = (item) => {
-		this.props.navigation.navigate("Home_GroupedWork", {item});
+		this.props.navigation.navigate("GroupedWorkScreen", {item});
 	};
 
 	onPressSettings = () => {
