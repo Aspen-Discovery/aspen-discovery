@@ -82,6 +82,9 @@ class Admin_UsageDashboard extends Admin_Dashboard
 		$usage->selectAdd('SUM(ebscoEdsSearches) as totalEbscoEdsSearches');
 		$usage->selectAdd('SUM(blockedRequests) as totalBlockedRequests');
 		$usage->selectAdd('SUM(blockedApiRequests) as totalBlockedApiRequests');
+		$usage->selectAdd('SUM(timedOutSearches) as totalTimedOutSearches');
+		$usage->selectAdd('SUM(timedOutSearchesWithHighLoad) as totalTimedOutSearchesWithHighLoad');
+		$usage->selectAdd('SUM(searchesWithErrors) as totalSearchesWithErrors');
 
 		$usage->find(true);
 
@@ -103,6 +106,9 @@ class Admin_UsageDashboard extends Admin_Dashboard
 			'totalEbscoEdsSearches' => $usage->totalEbscoEdsSearches,
 			'totalBlockedRequests' => $usage->totalBlockedRequests,
 			'totalBlockedApiRequests' => $usage->totalBlockedApiRequests,
+			'totalTimedOutSearches' => $usage->totalTimedOutSearches,
+			'totalTimedOutSearchesWithHighLoad' => $usage->totalTimedOutSearchesWithHighLoad,
+			'totalSearchesWithErrors' => $usage->totalSearchesWithErrors,
 		];
 	}
 
