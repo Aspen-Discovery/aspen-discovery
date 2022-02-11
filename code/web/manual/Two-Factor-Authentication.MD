@@ -15,4 +15,6 @@ Be careful not to set up mandatory 2FA until email settings are configured for y
 
 The Denied Access Message can be used for giving instructions to users about recovering their account if they fail the 2FA process. There is a button at the top of the screen 'Recover User Account'. Use this to generate a one-time use code for a specific user if they request account recovery.
 
+## Screenshot
+
 ![Screenshot of Two-Factor Authentication Settings page](/manual/images/Two-Factor_Authentication_Settings_SS.png)
