@@ -14,8 +14,13 @@
   - [Primary Configuration](/Admin/HelpManual?page=Primary-Configuration)
     - [Library Systems](/Admin/HelpManual?page=Library-Systems)
       - [Menu Links](/Admin/HelpManual?page=Menu-Links)
-    - [Locations](/Admin/HelpManual?page=Library-Systems-Locations)
-    - [IP Addresses](/Admin/HelpManual?page=Location-IP-Addresses)
+      - [Locations](/Admin/HelpManual?page=Library-Systems-Locations)
+      - [IP Addresses](/Admin/HelpManual?page=Location-IP-Addresses)
+      - Host Information
+    - [Block Patron Account Linking](/Admin/HelpManual?page=Block-Patron-Account-Linking)
+    - Patron Types
+    - Account Profiles
+    - [Two-Factor Authentication](/Admin/HelpManual?page=Two-Factor-Authentication)
   - [Web Builder](/Admin/HelpManual?page=Web-Builder)
     - [Basic Pages](/Admin/HelpManual?page=Web-Builder_Basic-Pages)
     - [Custom Pages](/Admin/HelpManual?page=Web-Builder_Custom-Pages)
@@ -111,6 +116,7 @@
 - [While You Wait](/Admin/HelpManual?page=While-You-Wait)
 
 #### Patron Account
+- [My Account](/Admin/HelpManual?page=My-Account)
   - [Checked Out Titles](/Admin/HelpManual?page=Check-Out-Titles)
   - [Titles On Hold](/Admin/HelpManual?page=Titles-On-Hold)
   - [Reading History](/Admin/HelpManual?page=Reading-History)
@@ -119,8 +125,13 @@
   - [Ratings and Reviews](/Admin/HelpManual?page=Ratings-And-Reviews)
   - [Recommendations](/Admin/HelpManual?page=Recommendations)
   - [Account Settings](/Admin/HelpManual?page=Account-Settings)
-    - Preferences and Language Settings
-    - Linked Accounts
+    -  [My Library Card](/Admin/HelpManual?page=My-Library-Card)
+    -  [My Preferences (and Language settings)](/Admin/HelpManual?page=My-Preferences)
+    -  [Contact Information](/Admin/HelpManual?page=My-Contact-Information)
+    -  [Messaging Settings](/Admin/HelpManual?page=My-Messaging-Settings)
+    -  [Linked Accounts](/Admin/HelpManual?page=My-Linked-Accounts)
+    -  [Security Settings](/Admin/HelpManual?page=My-Security-Settings)
+    -  [OverDrive Options](/Admin/HelpManual?page=My-Overdrive-Options)
   - [Search History](/Admin/HelpManual?page=Search-History)
   - [User Lists](/Admin/HelpManual?page=User-Lists)
 
