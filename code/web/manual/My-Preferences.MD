@@ -10,4 +10,6 @@ The patron can toggle on and off the 'research starters' if EBSCO EDS is being i
 
 The patron can set their home library from a choice of all library locations on the system (requires the location to be configured as a pick-up location in [Locations](/Admin/HelpManual?page=Library-Systems-Locations) settings. They can also choose their preferred and two alternate pickup locations. They can toggle the pickup location prompt on and off.
 
+## Screenshot
+
 ![Image of My Preferences page](/manual/images/My_Preferences_SS.png)
