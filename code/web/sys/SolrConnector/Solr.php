@@ -1687,6 +1687,13 @@ abstract class Solr
 		if ($method == 'GET') {
 			$result = $this->client->curlGetPage($this->host . "/$queryHandler/?$queryString");
 		} elseif ($method == 'POST') {
+			$systemVariables = SystemVariables::getSystemVariables();
+			if ($systemVariables && $systemVariables->solrConnectTimeout > 0) {
+				$this->client->setConnectTimeout($systemVariables->solrConnectTimeout);
+			}
+			if ($systemVariables && $systemVariables->solrQueryTimeout > 0){
+				$this->client->setTimeout($systemVariables->solrQueryTimeout);
+			}
 			$result = $this->client->curlPostPage($this->host . "/$queryHandler/", $queryString);
 		}
 

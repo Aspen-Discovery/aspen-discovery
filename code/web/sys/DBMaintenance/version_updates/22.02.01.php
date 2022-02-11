@@ -21,5 +21,22 @@ function getUpdates22_02_01() : array
 				'ALTER TABLE course_reserve ADD UNIQUE course(courseLibrary, courseNumber, courseInstructor, courseTitle)'
 			]
 		], //course_reserves_unique_index
+		'configurable_solr_timeouts' => [
+			'title' => 'Configurable Solr Timeouts',
+			'description' => 'Setup Configurable Solr Timeouts',
+			'sql' => [
+				'ALTER TABLE system_variables ADD COLUMN solrConnectTimeout INT DEFAULT 2',
+				'ALTER TABLE system_variables ADD COLUMN solrQueryTimeout INT DEFAULT 10',
+			]
+		], //configurable_solr_timeouts
+		'solrTimeoutStats' => [
+			'title' => 'Solr Timeout Stats',
+			'description' => 'Add stats when solr times out or has errors',
+			'sql' => [
+				'ALTER TABLE aspen_usage ADD COLUMN timedOutSearches INT DEFAULT 0',
+				'ALTER TABLE aspen_usage ADD COLUMN timedOutSearchesWithHighLoad INT DEFAULT 0',
+				'ALTER TABLE aspen_usage ADD COLUMN searchesWithErrors INT DEFAULT 0',
+			]
+		], //solrTimeoutStats
 	];
 }
