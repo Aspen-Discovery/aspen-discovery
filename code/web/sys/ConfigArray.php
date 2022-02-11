@@ -362,7 +362,10 @@ function updateConfigForScoping($configArray)
 									$library = $Library;
 									$timer->logTime("found the library based on the default");
 								} else {
-									echo("Could not determine the correct library to use for this install");
+									//Just grab the first library sorted alphabetically by subdomain
+									$library = new Library();
+									$library->orderBy('subdomain');
+									$library->find(true);
 								}
 							}
 						}

@@ -230,4 +230,14 @@ abstract class CircEntry extends DataObject
 		$this->coverUrl = $recordDriver->getBookcoverUrl('medium', true);
 		$this->linkUrl = $recordDriver->getLinkUrl();
 	}
+
+	public function getRecordFormatCategory() {
+		$recordDriver = $this->getRecordDriver();
+		$record = $recordDriver->getRelatedRecord();
+		if($record) {
+			return $record->getFormat();
+		} else {
+			return "Unknown";
+		}
+	}
 }
