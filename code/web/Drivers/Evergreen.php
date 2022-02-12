@@ -963,7 +963,7 @@ class Evergreen extends AbstractIlsDriver
 			if ($sessionData != null){
 				$expireTime = $sessionData['expire_date'];
 				$expireTime = strtotime($expireTime);
-				$summary->expirationDate = date('n-j-Y', $expireTime);
+				$summary->expirationDate = $expireTime;
 				//TODO : Load total charge balance
 				//$summary->totalFines = $basicDataResponse->ChargeBalance;
 			}
