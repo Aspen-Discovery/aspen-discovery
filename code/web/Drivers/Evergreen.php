@@ -209,7 +209,14 @@ class Evergreen extends AbstractIlsDriver
 	}
 
 	/**
-	 * @inheritDoc
+	 * Get Patron Checkouts
+	 *
+	 * This is responsible for retrieving all checkouts (i.e. checked out items)
+	 * by a specific patron.
+	 *
+	 * @param User $patron The user to load transactions for
+	 * @return Checkout[]        Array of the patron's transactions on success
+	 * @access public
 	 */
 	public function getCheckouts(User $patron)
 	{
@@ -288,8 +295,8 @@ class Evergreen extends AbstractIlsDriver
 				//$curCheckout->renewCount = $itemOut->RenewalCount;
 				$curCheckout->canRenew = $mappedCheckout['renewal_remaining'] > 0;
 				$curCheckout->maxRenewals = $mappedCheckout['renewal_remaining'];
-				$curCheckout->renewalId = $mappedCheckout['id'];
-				$curCheckout->renewIndicator = $mappedCheckout['id'];
+				$curCheckout->renewalId = $mappedCheckout['target_copy'];
+				$curCheckout->renewIndicator = $mappedCheckout['target_copy'];
 
 				$curCheckout->title = $modsForCopy['title'];
 				$curCheckout->author = $modsForCopy['author'];
@@ -305,7 +312,13 @@ class Evergreen extends AbstractIlsDriver
 		return $curCheckout;
 	}
 
-	private function getModsForCopy($copyId){
+	/**
+	 * Load mods data based on an item id
+	 *
+	 * @param int $copyId
+	 * @return string[]|null
+	 */
+	private function getModsForCopy($copyId) {
 		$evergreenUrl = $this->accountProfile->patronApiUrl . '/osrf-gateway-v1';
 		$request = 'service=open-ils.search&method=open-ils.search.biblio.mods_from_copy';
 		$request .= '&param=' . $copyId;
@@ -321,12 +334,13 @@ class Evergreen extends AbstractIlsDriver
 		}
 		return null;
 	}
+
 	/**
-	 * @inheritDoc
+	 * @return boolean true if the driver can renew all titles in a single pass
 	 */
 	public function hasFastRenewAll()
 	{
-		return true;
+		return false;
 	}
 
 	/**
@@ -334,7 +348,7 @@ class Evergreen extends AbstractIlsDriver
 	 */
 	public function renewAll(User $patron)
 	{
-		// TODO: Implement renewAll() method.
+		return false;
 	}
 
 	/**
@@ -342,7 +356,62 @@ class Evergreen extends AbstractIlsDriver
 	 */
 	function renewCheckout(User $patron, $recordId, $itemId = null, $itemIndex = null)
 	{
-		// TODO: Implement renewCheckout() method.
+		$result = [
+			'itemId' => $itemId,
+			'success' => false,
+			'message' => translate(['text' => 'Unknown Error renewing checkout', 'isPublicFacing' => true]),
+			'api' => [
+				'title' => translate(['text'=>'Checkout could not be renewed', 'isPublicFacing'=>true]),
+				'message' => translate(['text' => 'Unknown Error renewing checkout', 'isPublicFacing' => true]),
+			]
+		];
+
+		$authToken = $this->getAPIAuthToken($patron);
+		if ($authToken != null) {
+			$evergreenUrl = $this->accountProfile->patronApiUrl . '/osrf-gateway-v1';
+			$headers = array(
+				'Content-Type: application/x-www-form-urlencoded',
+			);
+			$this->apiCurlWrapper->addCustomHeaders($headers, false);
+
+			$request = 'service=open-ils.circ&method=open-ils.circ.renew';
+			$request .= '&param=' . json_encode($authToken);
+			$namedParams = [
+				'patron_id' => (int)$patron->username,
+				"copy_id" => $itemId,
+//				'id' => $itemId,
+//				'circ' => [
+//					'copy_id' => $itemId
+//				]
+				//"opac_renewal" => 1,
+			];
+			$request .= '&param=' . json_encode($namedParams);
+
+			$apiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $request);
+			if ($this->apiCurlWrapper->getResponseCode() == 200){
+				$apiResponse = json_decode($apiResponse);
+				if (isset($apiResponse->payload[0]) && isset($apiResponse->payload[0]->desc)){
+					$result['message'] = $apiResponse->payload[0]->desc;
+					$result['api']['message'] = $apiResponse->payload[0]->desc;
+				}elseif (isset($apiResponse->payload[0]) && isset($apiResponse->payload[0]->result->desc)){
+					$result['message'] = $apiResponse->payload[0]->result->desc;
+				}elseif (IPAddress::showDebuggingInformation() && isset($apiResponse->debug)){
+					$result['message'] = $apiResponse->debug;
+				}elseif (isset($apiResponse->payload[0]->textcode) &&$apiResponse->payload[0]->textcode == 'SUCCESS' ){
+					$result['message'] = translate(['text' => "Your hold was placed successfully.", 'isPublicFacing' => true]);
+					$result['success'] = true;
+
+					// Result for API or app use
+					$result['api']['title'] = translate(['text' => 'Hold placed successfully', 'isPublicFacing' => true]);
+					$result['api']['message'] = translate(['text' => 'Your hold was placed successfully.', 'isPublicFacing' => true]);
+
+					$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
+					$patron->forceReloadOfHolds();
+				}
+			}
+
+		}
+		return $result;
 	}
 
 	/**
