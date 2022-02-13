@@ -672,7 +672,7 @@ public class SymphonyExportMain {
 		//Get the last export from MARC time
 		long lastUpdateFromMarc = indexingProfile.getLastUpdateFromMarcExport();
 
-		//These are all of the full exports, we only want one full export to be processed
+		//These are all the full exports, we only want one full export to be processed
 		File marcExportPath = new File(indexingProfile.getMarcPath());
 		File[] exportedMarcFiles = marcExportPath.listFiles((dir, name) -> name.endsWith("mrc") || name.endsWith("marc"));
 		ArrayList<File> filesToProcess = new ArrayList<>();
@@ -875,7 +875,7 @@ public class SymphonyExportMain {
 								} else {
 									logEntry.incSkipped();
 								}
-								if (totalChanges % 5000 == 0) {
+								if (totalChanges > 0 && totalChanges % 5000 == 0) {
 									getGroupedWorkIndexer(dbConn).commitChanges();
 								}
 								//Mark that the record was processed

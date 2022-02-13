@@ -19,6 +19,9 @@ import org.apache.logging.log4j.Logger;
 import org.ini4j.Ini;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.marc4j.MarcException;
+import org.marc4j.MarcPermissiveStreamReader;
+import org.marc4j.MarcReader;
 import org.marc4j.marc.*;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -30,9 +33,7 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.sql.*;
 import java.text.SimpleDateFormat;
@@ -492,73 +493,382 @@ public class EvergreenExportMain {
 	}
 
 	private static int updateRecords(String singleWorkId) {
+		//Check to see if we should regroup all existing records
+		try {
+			if (indexingProfile.isRegroupAllRecords()) {
+				MarcRecordGrouper recordGrouper = getRecordGroupingProcessor();
+				recordGrouper.regroupAllRecords(dbConn, indexingProfile, getGroupedWorkIndexer(), logEntry);
+			}
+		}catch (Exception e){
+			logEntry.incErrors("Error regrouping all records", e);
+		}
+
 		int totalChanges = 0;
 
-		try {
-			//Get the time the last extract was done
-			logger.info("Starting to load changed records from Evergreen using the APIs");
-
-			if (singleWorkId != null){
-				//TODO: Single work indexing
-				updateBibFromEvergreen(singleWorkId, null, 0, true);
-			}else {
-				long lastExtractTime = 0;
-				if (!indexingProfile.isRunFullUpdate()) {
-					lastExtractTime = indexingProfile.getLastUpdateOfChangedRecords();
-					if (lastExtractTime == 0 || (indexingProfile.getLastUpdateOfAllRecords() > indexingProfile.getLastUpdateOfChangedRecords())) {
-						//Give a small buffer (1 minute to account for server time differences)
-						lastExtractTime = indexingProfile.getLastUpdateOfAllRecords() - 60 * 1000 ;
+		//Get the last export from MARC time
+		long lastUpdateFromMarc = indexingProfile.getLastUpdateFromMarcExport();
+		//These are all the full exports, we only want one full export to be processed
+		File marcExportPath = new File(indexingProfile.getMarcPath());
+		File[] exportedMarcFiles = marcExportPath.listFiles((dir, name) -> name.endsWith("mrc") || name.endsWith("marc"));
+		ArrayList<File> filesToProcess = new ArrayList<>();
+		File latestFile = null;
+		long latestMarcFile = 0;
+		boolean hasFullExportFile = false;
+		File fullExportFile = null;
+		if (exportedMarcFiles != null && exportedMarcFiles.length > 0){
+			for (File exportedMarcFile : exportedMarcFiles) {
+				//Remove any files that are older than the last time we processed files.
+				if (exportedMarcFile.lastModified() / 1000 < lastUpdateFromMarc){
+					if (exportedMarcFile.delete()){
+						logEntry.addNote("Removed old file " + exportedMarcFile.getAbsolutePath());
 					}
-				} else {
-					getRecordGroupingProcessor().loadExistingTitles(logEntry);
-				}
-
-				//Check to see if we should regroup all records
-				if (indexingProfile.isRegroupAllRecords()){
-					//Regrouping takes a long time, and we don't need koha DB connection so close it while we regroup
-					MarcRecordGrouper recordGrouper = getRecordGroupingProcessor();
-					recordGrouper.regroupAllRecords(dbConn, indexingProfile, getGroupedWorkIndexer(), logEntry);
-				}
-
-				//Update records
-				boolean allowDeletingExistingRecords = indexingProfile.getLastChangeProcessed() == 0;
-				totalChanges += updateBibsFromEvergreen(lastExtractTime, true);
-				if (!indexingProfile.isRunFullUpdate()) {
-					//Process deleted bibs
-					//TODO: extract deleted bibs
-					//totalChanges += extractDeletedBibs(lastExtractTime);
-				} else {
-					//Loop through remaining records and delete them
-					if (allowDeletingExistingRecords) {
-						logEntry.addNote("Starting to delete records that no longer exist");
-						GroupedWorkIndexer groupedWorkIndexer = getGroupedWorkIndexer();
-						MarcRecordGrouper recordGroupingProcessor = getRecordGroupingProcessor();
-						for (String ilsId : recordGroupingProcessor.getExistingRecords().keySet()) {
-							RemoveRecordFromWorkResult result = recordGroupingProcessor.removeRecordFromGroupedWork(indexingProfile.getName(), ilsId);
-							if (result.permanentId != null) {
-								if (result.reindexWork) {
-									groupedWorkIndexer.processGroupedWork(result.permanentId);
-								} else if (result.deleteWork) {
-									//Delete the work from solr and the database
-									groupedWorkIndexer.deleteRecord(result.permanentId);
-								}
-								logEntry.incDeleted();
-								if (logEntry.getNumDeleted() % 250 == 0) {
-									logEntry.saveResults();
-								}
-							}
-						}
-						logEntry.addNote("Finished deleting records that no longer exist");
-					}else{
-						logEntry.addNote("Skipping deleting records that no longer exist because we skipped some records at the start");
+				}else{
+					if (exportedMarcFile.lastModified() / 1000 > latestMarcFile){
+						latestMarcFile = exportedMarcFile.lastModified();
+						latestFile = exportedMarcFile;
 					}
 				}
 			}
-		} catch (Exception e) {
-			logEntry.incErrors("Error loading changed records from Evergreen APIs", e);
-			//Don't quit since that keeps the exporter from running continuously
 		}
-		logger.info("Finished loading changed records from Evergreen APIs");
+
+		if (latestFile != null) {
+			filesToProcess.add(latestFile);
+			hasFullExportFile = true;
+			fullExportFile = latestFile;
+		}
+
+		//Get a list of marc deltas since the last marc record
+		File marcDeltaPath = new File(marcExportPath.getParentFile() + "/marc_delta");
+		File[] exportedMarcDeltaFiles = marcDeltaPath.listFiles((dir, name) -> name.endsWith("mrc") || name.endsWith("marc"));
+		if (exportedMarcDeltaFiles != null && exportedMarcDeltaFiles.length > 0){
+			for (File exportedMarcDeltaFile : exportedMarcDeltaFiles) {
+				if (exportedMarcDeltaFile.lastModified() / 1000 < lastUpdateFromMarc){
+					if (exportedMarcDeltaFile.delete()){
+						logEntry.addNote("Removed old delta file " + exportedMarcDeltaFile.getAbsolutePath());
+					}
+				}else{
+					if (exportedMarcDeltaFile.lastModified() > latestMarcFile){
+						filesToProcess.add(exportedMarcDeltaFile);
+					}
+				}
+			}
+		}
+
+		if (filesToProcess.size() > 0){
+			//Update all records based on the MARC export
+			logEntry.addNote("Updating based on MARC extract");
+			totalChanges = updateRecordsUsingMarcExtract(filesToProcess, hasFullExportFile, fullExportFile, dbConn);
+		}else {
+			//Process based on API exports
+			try {
+				//Get the time the last extract was done
+				logger.info("Starting to load changed records from Evergreen using the APIs");
+
+				if (singleWorkId != null) {
+					//TODO: Single work indexing
+					updateBibFromEvergreen(singleWorkId, null, 0, true);
+				} else {
+					long lastExtractTime = 0;
+					if (!indexingProfile.isRunFullUpdate()) {
+						lastExtractTime = indexingProfile.getLastUpdateOfChangedRecords();
+						if (lastExtractTime == 0 || (indexingProfile.getLastUpdateOfAllRecords() > indexingProfile.getLastUpdateOfChangedRecords())) {
+							//Give a small buffer (1 minute to account for server time differences)
+							lastExtractTime = indexingProfile.getLastUpdateOfAllRecords() - 60 * 1000;
+						}
+					} else {
+						getRecordGroupingProcessor().loadExistingTitles(logEntry);
+					}
+
+					//Check to see if we should regroup all records
+					if (indexingProfile.isRegroupAllRecords()) {
+						//Regrouping takes a long time, and we don't need koha DB connection so close it while we regroup
+						MarcRecordGrouper recordGrouper = getRecordGroupingProcessor();
+						recordGrouper.regroupAllRecords(dbConn, indexingProfile, getGroupedWorkIndexer(), logEntry);
+					}
+
+					//Update records
+					boolean allowDeletingExistingRecords = indexingProfile.getLastChangeProcessed() == 0;
+					totalChanges += updateBibsFromEvergreen(lastExtractTime, true);
+					if (!indexingProfile.isRunFullUpdate()) {
+						//Process deleted bibs
+						//TODO: extract deleted bibs
+						//totalChanges += extractDeletedBibs(lastExtractTime);
+					} else {
+						//Loop through remaining records and delete them
+						if (allowDeletingExistingRecords) {
+							logEntry.addNote("Starting to delete records that no longer exist");
+							GroupedWorkIndexer groupedWorkIndexer = getGroupedWorkIndexer();
+							MarcRecordGrouper recordGroupingProcessor = getRecordGroupingProcessor();
+							for (String ilsId : recordGroupingProcessor.getExistingRecords().keySet()) {
+								RemoveRecordFromWorkResult result = recordGroupingProcessor.removeRecordFromGroupedWork(indexingProfile.getName(), ilsId);
+								if (result.permanentId != null) {
+									if (result.reindexWork) {
+										groupedWorkIndexer.processGroupedWork(result.permanentId);
+									} else if (result.deleteWork) {
+										//Delete the work from solr and the database
+										groupedWorkIndexer.deleteRecord(result.permanentId);
+									}
+									logEntry.incDeleted();
+									if (logEntry.getNumDeleted() % 250 == 0) {
+										logEntry.saveResults();
+									}
+								}
+							}
+							logEntry.addNote("Finished deleting records that no longer exist");
+						} else {
+							logEntry.addNote("Skipping deleting records that no longer exist because we skipped some records at the start");
+						}
+					}
+				}
+			} catch (Exception e) {
+				logEntry.incErrors("Error loading changed records from Evergreen APIs", e);
+				//Don't quit since that keeps the exporter from running continuously
+			}
+			logger.info("Finished loading changed records from Evergreen APIs");
+		}
+
+		return totalChanges;
+	}
+
+	/**
+	 * Updates Aspen using the MARC export or exports provided.
+	 * To see which records are deleted it needs to get a list of all records that are already in the database
+	 * so it can detect what has been deleted.
+	 *
+	 * @param exportedMarcFiles - An array of files to process
+	 * @param hasFullExportFile - Whether or not we are including a full export.  We will only delete records if we have a full export.
+	 * @param fullExportFile
+	 * @param dbConn            - Connection to the Aspen database
+	 * @return - total number of changes that were found
+	 */
+	private static int updateRecordsUsingMarcExtract(ArrayList<File> exportedMarcFiles, boolean hasFullExportFile, File fullExportFile, Connection dbConn) {
+		int totalChanges = 0;
+		MarcRecordGrouper recordGroupingProcessor = getRecordGroupingProcessor();
+		if (!recordGroupingProcessor.isValid()){
+			logEntry.incErrors("Record Grouping Processor was not valid");
+			return totalChanges;
+		}else if (!recordGroupingProcessor.loadExistingTitles(logEntry)){
+			return totalChanges;
+		}
+
+		//Make sure that none of the files are still changing
+		for (File curBibFile : exportedMarcFiles) {
+			//Make sure the file is not currently changing.
+			boolean isFileChanging = true;
+			long lastSizeCheck = curBibFile.length();
+			while (isFileChanging) {
+				try {
+					Thread.sleep(5000); //Wait 5 seconds
+				} catch (InterruptedException e) {
+					logEntry.incErrors("Error checking if a file is still changing", e);
+				}
+				if (lastSizeCheck == curBibFile.length()) {
+					isFileChanging = false;
+				} else {
+					lastSizeCheck = curBibFile.length();
+				}
+			}
+		}
+
+		//Validate that the FullMarcExportRecordIdThreshold has been met if we are running a full export.
+		long maxIdInExport = 0;
+		if (hasFullExportFile){
+			logEntry.addNote("Validating that full export is the correct size");
+			logEntry.saveResults();
+
+			int numRecordsRead = 0;
+			String lastRecordProcessed = "";
+			try {
+				FileInputStream marcFileStream = new FileInputStream(fullExportFile);
+				MarcReader catalogReader = new MarcPermissiveStreamReader(marcFileStream, true, true, indexingProfile.getMarcEncoding());
+				while (catalogReader.hasNext()) {
+					numRecordsRead++;
+					Record curBib = catalogReader.next();
+					RecordIdentifier recordIdentifier = recordGroupingProcessor.getPrimaryIdentifierFromMarcRecord(curBib, indexingProfile);
+					if (recordIdentifier != null) {
+						String recordNumber = recordIdentifier.getIdentifier();
+						lastRecordProcessed = recordNumber;
+						recordNumber = recordNumber.replaceAll("[^\\d]", "");
+						long recordNumberDigits = Long.parseLong(recordNumber);
+						if (recordNumberDigits > maxIdInExport) {
+							maxIdInExport = recordNumberDigits;
+						}
+					}
+				}
+			} catch (Exception e) {
+				logEntry.incErrors("Error loading Symphony bibs on record " + numRecordsRead + " in profile " + indexingProfile.getName() + " the last record processed was " + lastRecordProcessed + " file " + fullExportFile.getAbsolutePath(), e);
+				logEntry.addNote("Not processing MARC export due to error reading MARC files.");
+				return totalChanges;
+			}
+			logEntry.addNote("Full export " + fullExportFile + " contains " + numRecordsRead + " records.");
+			logEntry.saveResults();
+
+			if (maxIdInExport < indexingProfile.getFullMarcExportRecordIdThreshold()){
+				logEntry.incErrors("Full MARC export appears to be truncated, MAX Record ID in the export was " + maxIdInExport + " expected to be greater than or equal to " + indexingProfile.getFullMarcExportRecordIdThreshold());
+				logEntry.addNote("Not processing the full export");
+				exportedMarcFiles.remove(fullExportFile);
+				hasFullExportFile = false;
+			}else{
+				logEntry.addNote("The full export is the correct size.");
+				logEntry.saveResults();
+			}
+		}
+
+		GroupedWorkIndexer reindexer = getGroupedWorkIndexer();
+		for (File curBibFile : exportedMarcFiles) {
+			logEntry.addNote("Processing file " + curBibFile.getAbsolutePath());
+
+			String lastRecordProcessed = "";
+			if (hasFullExportFile && curBibFile.equals(fullExportFile) && indexingProfile.getLastChangeProcessed() > 0){
+				logEntry.addNote("Skipping the first " + indexingProfile.getLastChangeProcessed() + " records because they were processed previously see (Last Record ID Processed for the Indexing Profile).");
+			}
+			int numRecordsRead = 0;
+			try {
+				FileInputStream marcFileStream = new FileInputStream(curBibFile);
+				MarcReader catalogReader = new MarcPermissiveStreamReader(marcFileStream, true, true, indexingProfile.getMarcEncoding());
+				//Symphony handles bib records with a large number of items by breaking the MARC export into multiple records. The records are always sequential.
+				//To solve this, we need to track which id we processed last and if the record has already been processed, we will need to append items from the new
+				//record to the old record and then reprocess it.
+				RecordIdentifier lastIdentifier = null;
+				while (catalogReader.hasNext()) {
+					logEntry.incProducts();
+					try{
+						Record curBib = catalogReader.next();
+						numRecordsRead++;
+						if (hasFullExportFile && curBibFile.equals(fullExportFile) && (numRecordsRead < indexingProfile.getLastChangeProcessed())) {
+							RecordIdentifier recordIdentifier = recordGroupingProcessor.getPrimaryIdentifierFromMarcRecord(curBib, indexingProfile);
+							if (recordIdentifier != null) {
+								recordGroupingProcessor.removeExistingRecord(recordIdentifier.getIdentifier());
+							}
+							logEntry.incSkipped();
+						}else {
+							RecordIdentifier recordIdentifier = recordGroupingProcessor.getPrimaryIdentifierFromMarcRecord(curBib, indexingProfile);
+							boolean deleteRecord = false;
+							if (recordIdentifier == null) {
+								//logger.debug("Record with control number " + curBib.getControlNumber() + " was suppressed or is eContent");
+								String controlNumber = curBib.getControlNumber();
+								if (controlNumber == null) {
+									logger.warn("Bib did not have control number or identifier");
+								}
+							} else if (!recordIdentifier.isSuppressed()) {
+								String recordNumber = recordIdentifier.getIdentifier();
+								GroupedWorkIndexer.MarcStatus marcStatus;
+								if (lastIdentifier != null && lastIdentifier.equals(recordIdentifier)) {
+									marcStatus = reindexer.appendItemsToExistingRecord(indexingProfile, curBib, recordNumber);
+								} else {
+									marcStatus = reindexer.saveMarcRecordToDatabase(indexingProfile, recordNumber, curBib);
+								}
+
+								if (marcStatus != GroupedWorkIndexer.MarcStatus.UNCHANGED || indexingProfile.isRunFullUpdate()) {
+									String permanentId = recordGroupingProcessor.processMarcRecord(curBib, marcStatus != GroupedWorkIndexer.MarcStatus.UNCHANGED, null);
+									if (permanentId == null) {
+										//Delete the record since it is suppressed
+										deleteRecord = true;
+									} else {
+										if (marcStatus == GroupedWorkIndexer.MarcStatus.NEW) {
+											logEntry.incAdded();
+										} else {
+											logEntry.incUpdated();
+										}
+										getGroupedWorkIndexer().processGroupedWork(permanentId);
+										totalChanges++;
+									}
+								} else {
+									logEntry.incSkipped();
+								}
+								if (totalChanges > 0 && totalChanges % 5000 == 0) {
+									getGroupedWorkIndexer().commitChanges();
+								}
+								//Mark that the record was processed
+								recordGroupingProcessor.removeExistingRecord(recordIdentifier.getIdentifier());
+								lastRecordProcessed = recordNumber;
+							} else {
+								//Delete the record since it is suppressed
+								deleteRecord = true;
+							}
+							lastIdentifier = recordIdentifier;
+							indexingProfile.setLastChangeProcessed(numRecordsRead);
+							if (deleteRecord) {
+								RemoveRecordFromWorkResult result = recordGroupingProcessor.removeRecordFromGroupedWork(indexingProfile.getName(), recordIdentifier.getIdentifier());
+								if (result.reindexWork) {
+									getGroupedWorkIndexer().processGroupedWork(result.permanentId);
+								} else if (result.deleteWork) {
+									//Delete the work from solr and the database
+									getGroupedWorkIndexer().deleteRecord(result.permanentId);
+								}
+								logEntry.incDeleted();
+								totalChanges++;
+							}
+						}
+					}catch (MarcException me){
+						logEntry.incErrors("Error processing individual record  on record " + numRecordsRead + " of " + curBibFile.getAbsolutePath() + " the last record processed was " + lastRecordProcessed + " trying to continue", me);
+					}
+					if (numRecordsRead % 250 == 0) {
+						logEntry.saveResults();
+						indexingProfile.updateLastChangeProcessed(dbConn, logEntry);
+					}
+				}
+				marcFileStream.close();
+
+				if (hasFullExportFile){
+					indexingProfile.setLastChangeProcessed(0);
+					indexingProfile.updateLastChangeProcessed(dbConn, logEntry);
+					logEntry.addNote("Updated " + numRecordsRead + " records");
+					logEntry.saveResults();
+				}
+			} catch (Exception e) {
+				logEntry.incErrors("Error loading Symphony bibs on record " + numRecordsRead + " in profile " + indexingProfile.getName() + " the last record processed was " + lastRecordProcessed + " file " + curBibFile.getAbsolutePath(), e);
+			}
+		}
+
+		//Loop through remaining records and delete them
+		if (hasFullExportFile) {
+			logEntry.addNote("Deleting " + recordGroupingProcessor.getExistingRecords().size() + " records that were not contained in the export");
+			for (String identifier : recordGroupingProcessor.getExistingRecords().keySet()) {
+				RemoveRecordFromWorkResult result = recordGroupingProcessor.removeRecordFromGroupedWork(indexingProfile.getName(), identifier);
+				if (result.reindexWork){
+					getGroupedWorkIndexer().processGroupedWork(result.permanentId);
+				}else if (result.deleteWork){
+					//Delete the work from solr and the database
+					getGroupedWorkIndexer().deleteRecord(result.permanentId);
+				}
+				logEntry.incDeleted();
+				totalChanges++;
+				if (logEntry.getNumDeleted() % 250 == 0){
+					logEntry.saveResults();
+				}
+			}
+			logEntry.saveResults();
+
+			try {
+				PreparedStatement updateMarcExportStmt = dbConn.prepareStatement("UPDATE indexing_profiles set fullMarcExportRecordIdThreshold = ? where id = ?");
+				updateMarcExportStmt.setLong(1, maxIdInExport);
+				updateMarcExportStmt.setLong(2, indexingProfile.getId());
+				updateMarcExportStmt.executeUpdate();
+			}catch (Exception e){
+				logEntry.incErrors("Error updating lastUpdateFromMarcExport", e);
+			}
+		}
+
+		try {
+			PreparedStatement updateMarcExportStmt = dbConn.prepareStatement("UPDATE indexing_profiles set lastUpdateFromMarcExport = ? where id = ?");
+			updateMarcExportStmt.setLong(1, startTimeForLogging);
+			updateMarcExportStmt.setLong(2, indexingProfile.getId());
+			updateMarcExportStmt.executeUpdate();
+		}catch (Exception e){
+			logEntry.incErrors("Error updating lastUpdateFromMarcExport", e);
+		}
+
+		if (hasFullExportFile && indexingProfile.isRunFullUpdate()){
+			//Disable runFullUpdate
+			try {
+				PreparedStatement updateIndexingProfileStmt = dbConn.prepareStatement("UPDATE indexing_profiles set runFullUpdate = 0 where id = ?");
+				updateIndexingProfileStmt.setLong(1, indexingProfile.getId());
+				updateIndexingProfileStmt.executeUpdate();
+			}catch (Exception e){
+				logEntry.incErrors("Error updating disabling runFullUpdate", e);
+			}
+		}
 
 		return totalChanges;
 	}
