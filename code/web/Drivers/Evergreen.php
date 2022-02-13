@@ -192,6 +192,28 @@ class Evergreen extends AbstractIlsDriver
 		'copy_count',
 		'series',
 	];
+	private $mousFields = [
+		'balance_owed',
+		'total_owed',
+		'total_paid',
+		'usr',
+	];
+	private $mbtsFields = [
+		'balance_owed',
+		'id',
+		'last_billing_note',
+		'last_billing_ts',
+		'last_billing_type',
+		'last_payment_note',
+		'last_payment_ts',
+		'last_payment_type',
+		'total_owed',
+		'total_paid',
+		'usr',
+		'xact_finish',
+		'xact_start',
+		'xact_type',
+	];
 	/**
 	 * @param AccountProfile $accountProfile
 	 */
@@ -889,7 +911,59 @@ class Evergreen extends AbstractIlsDriver
 
 	public function getFines(User $patron, $includeMessages = false)
 	{
-		// TODO: Implement getFines() method.
+		require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
+
+		global $activeLanguage;
+
+		$currencyCode = 'USD';
+		$variables = new SystemVariables();
+		if ($variables->find(true)){
+			$currencyCode = $variables->currencyCode;
+		}
+
+		$currencyFormatter = new NumberFormatter( $activeLanguage->locale . '@currency=' . $currencyCode, NumberFormatter::CURRENCY );
+
+		$fines = [];
+
+		$authToken = $this->getAPIAuthToken($patron);
+		if ($authToken != null) {
+			//Get a list of holds
+			$evergreenUrl = $this->accountProfile->patronApiUrl . '/osrf-gateway-v1';
+			$headers = array(
+				'Content-Type: application/x-www-form-urlencoded',
+			);
+			$this->apiCurlWrapper->addCustomHeaders($headers, false);
+			$request = 'service=open-ils.actor&method=open-ils.actor.user.transactions.have_charge.fleshed';
+			$request .= '&param=' . json_encode($authToken);
+			$request .= '&param=' . $patron->username;
+			$apiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $request);
+
+			if ($this->apiCurlWrapper->getResponseCode() == 200) {
+				$apiResponse = json_decode($apiResponse);
+				if (isset($apiResponse->payload)){
+					foreach ($apiResponse->payload[0] as $transactionList){
+						foreach ($transactionList as $transactionObj){
+							$transaction = $transactionObj->__p;
+							$transactionObj = $this->mapEvergreenFields($transaction, $this->mbtsFields);
+							$curFine = [
+								'fineId' => $transactionObj['id'],
+								'date' => strtotime($transactionObj['xact_start']),
+								'type' => $transactionObj['xact_type'],
+								'reason' => $transactionObj['last_billing_type'],
+								'message' => $transactionObj['last_billing_note'],
+								'amountVal' => $transactionObj['total_owed'],
+								'amountOutstandingVal' => $transactionObj['total_owed'] - $transactionObj['total_paid'],
+								'amount' => $currencyFormatter->formatCurrency($transactionObj['total_owed'], $currencyCode),
+								'amountOutstanding' => $currencyFormatter->formatCurrency($transactionObj['total_owed'] - $transactionObj['total_paid'], $currencyCode),
+							];
+							$fines[] = $curFine;
+						}
+					}
+				}
+			}
+		}
+
+		return $fines;
 	}
 
 	public function patronLogin($username, $password, $validatedViaSSO)
@@ -1113,6 +1187,24 @@ class Evergreen extends AbstractIlsDriver
 				$summary->expirationDate = $expireTime;
 				//TODO : Load total charge balance
 				//$summary->totalFines = $basicDataResponse->ChargeBalance;
+
+				$evergreenUrl = $this->accountProfile->patronApiUrl . '/osrf-gateway-v1';
+				$headers = array(
+					'Content-Type: application/x-www-form-urlencoded',
+				);
+				$this->apiCurlWrapper->addCustomHeaders($headers, false);
+				$request = 'service=open-ils.actor&method=open-ils.actor.user.fines.summary';
+				$request .= '&param=' . json_encode($authToken);
+				$request .= '&param=' . $patron->username;
+				$apiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $request);
+
+				if ($this->apiCurlWrapper->getResponseCode() == 200) {
+					$apiResponse = json_decode($apiResponse);
+					if (isset($apiResponse->payload) && isset($apiResponse->payload[0]->__p)){
+						$moneySummary = $this->mapEvergreenFields($apiResponse->payload[0]->__p, $this->mousFields);
+						$summary->totalFines = $moneySummary['balance_owed'];
+					}
+				}
 			}
 		}
 
