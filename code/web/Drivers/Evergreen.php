@@ -415,7 +415,12 @@ class Evergreen extends AbstractIlsDriver
 	}
 
 	/**
-	 * @inheritDoc
+	 * Cancels a hold for a patron
+	 *
+	 * @param User $patron The User to cancel the hold for
+	 * @param string $recordId The id of the bib record
+	 * @param string $cancelId Information about the hold to be cancelled
+	 * @return  array
 	 */
 	function cancelHold(User $patron, $recordId, $cancelId = null)
 	{
@@ -474,7 +479,8 @@ class Evergreen extends AbstractIlsDriver
 	 */
 	function placeItemHold(User $patron, $recordId, $itemId, $pickupBranch, $cancelDate = null)
 	{
-		// TODO: Implement placeItemHold() method.
+		//TODO: Determine if this is needed
+		return false;
 	}
 
 	function freezeHold(User $patron, $recordId, $itemToFreezeId, $dateToReactivate)
@@ -533,6 +539,13 @@ class Evergreen extends AbstractIlsDriver
 		return $result;
 	}
 
+	/**
+	 * @param User $patron
+	 * @param string|int $recordId
+	 * @param string|int $itemToThawId
+	 *
+	 * @return array
+	 */
 	function thawHold(User $patron, $recordId, $itemToThawId)
 	{
 		$result = [
@@ -591,7 +604,65 @@ class Evergreen extends AbstractIlsDriver
 
 	function changeHoldPickupLocation(User $patron, $recordId, $itemToUpdateId, $newPickupLocation)
 	{
-		// TODO: Implement changeHoldPickupLocation() method.
+		$result = [
+			'success' => false,
+			'message' => translate(['text'=>"The pickup location for the hold could not be changed.", 'isPublicFacing'=>true]),
+			'api' => [
+				'title' => translate(['text'=>'Hold location not changed', 'isPublicFacing'=>true]),
+				'message' => translate(['text'=>'The pickup location for the hold could not be changed.', 'isPublicFacing'=>true])
+			]
+		];
+
+		$authToken = $this->getAPIAuthToken($patron);
+		if ($authToken != null) {
+			$evergreenUrl = $this->accountProfile->patronApiUrl . '/osrf-gateway-v1';
+			$headers = array(
+				'Content-Type: application/x-www-form-urlencoded',
+			);
+			$this->apiCurlWrapper->addCustomHeaders($headers, false);
+
+			//Translate to numeric location id
+			$location = new Location();
+			$location->code = $newPickupLocation;
+			if ($location->find(true)){
+				$newPickupLocation = $location->historicCode;
+			}
+
+			$namedParams = [
+				'id' => $itemToUpdateId,
+				'pickup_lib' => (int)$newPickupLocation
+			];
+
+			$request = 'service=open-ils.circ&method=open-ils.circ.hold.update';
+			$request .= '&param=' . json_encode($authToken);
+			$request .= '&param=';
+			$request .= '&param=' . json_encode($namedParams);
+
+			$apiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $request);
+
+			if ($this->apiCurlWrapper->getResponseCode() == 200){
+				$apiResponse = json_decode($apiResponse);
+				if (isset($apiResponse->payload[0]) && isset($apiResponse->payload[0]->desc)){
+					$result['message'] = $apiResponse->payload[0]->desc;
+				}elseif (isset($apiResponse->payload[0]) && isset($apiResponse->payload[0]->result->desc)){
+					$result['message'] = $apiResponse->payload[0]->result->desc;
+				}elseif (IPAddress::showDebuggingInformation() && isset($apiResponse->debug)){
+					$result['message'] = $apiResponse->debug;
+				}elseif ($apiResponse->payload[0] > 0 ){
+					$result['message'] = translate(['text' => "The pickup location for the hold was changed.", 'isPublicFacing' => true]);
+					$result['success'] = true;
+
+					// Result for API or app use
+					$result['api']['title'] = translate(['text' => 'Hold updated', 'isPublicFacing' => true]);
+					$result['api']['message'] = translate(['text' => 'The pickup location for the hold was changed.', 'isPublicFacing' => true]);
+
+					$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
+					$patron->forceReloadOfHolds();
+				}
+			}
+		}
+
+		return $result;
 	}
 
 	function updatePatronInfo(User $patron, $canUpdateContactInfo, $fromMasquerade)
@@ -653,6 +724,13 @@ class Evergreen extends AbstractIlsDriver
 						$curHold->locationUpdateable = true;
 						$curHold->cancelable = true;
 
+						//Get hold location
+						$location = new Location();
+						$location->historicCode = $holdInfo['pickup_lib'];
+						if ($location->find(true)){
+							$curHold->pickupLocationId = $location->locationId;
+							$curHold->pickupLocationName = $location->displayName;
+						}
 
 						if ($holdInfo['frozen'] == 't'){
 							$curHold->frozen = true;
