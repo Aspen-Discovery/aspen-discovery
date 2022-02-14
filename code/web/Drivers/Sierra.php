@@ -554,14 +554,15 @@ class Sierra extends Millennium{
 				$curCheckout = new Checkout();
 				$curCheckout->type = 'ils';
 				$curCheckout->source = $this->getIndexingProfile()->name;
-				$curCheckout->sourceId = $checkoutId;
 				$curCheckout->userId = $patron->id;
 				$curCheckout->dueDate = strtotime($entry->dueDate);
 				$curCheckout->checkoutDate = strtotime($entry->outDate);
 				$curCheckout->renewCount = $entry->numberOfRenewals;
 				$curCheckout->canRenew = true;
 				$curCheckout->callNumber = $entry->callNumber;
-				$curCheckout->barcode = $entry->barcode;
+				if (isset($entry->barcode)) {
+					$curCheckout->barcode = $entry->barcode;
+				}
 				$curCheckout->itemId = $itemId;
 				$curCheckout->renewalId = $checkoutId;
 				$curCheckout->renewIndicator = $checkoutId;
@@ -572,6 +573,21 @@ class Sierra extends Millennium{
 					$recordDriver = new MarcRecordDriver((string)$curCheckout->recordId);
 					if ($recordDriver->isValid()){
 						$curCheckout->updateFromRecordDriver($recordDriver);
+						$relatedRecord = $recordDriver->getRelatedRecord();
+						if ($relatedRecord != null) {
+							//Check to see if we have volume info for the item
+							foreach ($relatedRecord->getItems() as $item) {
+								if ($item->itemId == $itemId) {
+									if (!empty($item->volume)) {
+										$curCheckout->volume = $item->volume;
+									}
+									if ($item->callNumber != $curCheckout->callNumber){
+										$curCheckout->callNumber = $item->callNumber;
+									}
+									break;
+								}
+							}
+						}
 					}else{
 						$bibIdShort = substr(str_replace('.b', 'b', $bibId), 0, -1);
 						$getBibResponse = $this->_callUrl('sierra.getBib', $this->accountProfile->vendorOpacUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/bibs/{$bibIdShort}");
