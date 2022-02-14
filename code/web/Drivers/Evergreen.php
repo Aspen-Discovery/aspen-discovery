@@ -192,6 +192,28 @@ class Evergreen extends AbstractIlsDriver
 		'copy_count',
 		'series',
 	];
+	private $mousFields = [
+		'balance_owed',
+		'total_owed',
+		'total_paid',
+		'usr',
+	];
+	private $mbtsFields = [
+		'balance_owed',
+		'id',
+		'last_billing_note',
+		'last_billing_ts',
+		'last_billing_type',
+		'last_payment_note',
+		'last_payment_ts',
+		'last_payment_type',
+		'total_owed',
+		'total_paid',
+		'usr',
+		'xact_finish',
+		'xact_start',
+		'xact_type',
+	];
 	/**
 	 * @param AccountProfile $accountProfile
 	 */
@@ -209,7 +231,14 @@ class Evergreen extends AbstractIlsDriver
 	}
 
 	/**
-	 * @inheritDoc
+	 * Get Patron Checkouts
+	 *
+	 * This is responsible for retrieving all checkouts (i.e. checked out items)
+	 * by a specific patron.
+	 *
+	 * @param User $patron The user to load transactions for
+	 * @return Checkout[]        Array of the patron's transactions on success
+	 * @access public
 	 */
 	public function getCheckouts(User $patron)
 	{
@@ -288,8 +317,8 @@ class Evergreen extends AbstractIlsDriver
 				//$curCheckout->renewCount = $itemOut->RenewalCount;
 				$curCheckout->canRenew = $mappedCheckout['renewal_remaining'] > 0;
 				$curCheckout->maxRenewals = $mappedCheckout['renewal_remaining'];
-				$curCheckout->renewalId = $mappedCheckout['id'];
-				$curCheckout->renewIndicator = $mappedCheckout['id'];
+				$curCheckout->renewalId = $mappedCheckout['target_copy'];
+				$curCheckout->renewIndicator = $mappedCheckout['target_copy'];
 
 				$curCheckout->title = $modsForCopy['title'];
 				$curCheckout->author = $modsForCopy['author'];
@@ -305,7 +334,13 @@ class Evergreen extends AbstractIlsDriver
 		return $curCheckout;
 	}
 
-	private function getModsForCopy($copyId){
+	/**
+	 * Load mods data based on an item id
+	 *
+	 * @param int $copyId
+	 * @return string[]|null
+	 */
+	private function getModsForCopy($copyId) {
 		$evergreenUrl = $this->accountProfile->patronApiUrl . '/osrf-gateway-v1';
 		$request = 'service=open-ils.search&method=open-ils.search.biblio.mods_from_copy';
 		$request .= '&param=' . $copyId;
@@ -321,12 +356,13 @@ class Evergreen extends AbstractIlsDriver
 		}
 		return null;
 	}
+
 	/**
-	 * @inheritDoc
+	 * @return boolean true if the driver can renew all titles in a single pass
 	 */
 	public function hasFastRenewAll()
 	{
-		return true;
+		return false;
 	}
 
 	/**
@@ -334,7 +370,7 @@ class Evergreen extends AbstractIlsDriver
 	 */
 	public function renewAll(User $patron)
 	{
-		// TODO: Implement renewAll() method.
+		return false;
 	}
 
 	/**
@@ -342,11 +378,71 @@ class Evergreen extends AbstractIlsDriver
 	 */
 	function renewCheckout(User $patron, $recordId, $itemId = null, $itemIndex = null)
 	{
-		// TODO: Implement renewCheckout() method.
+		$result = [
+			'itemId' => $itemId,
+			'success' => false,
+			'message' => translate(['text' => 'Unknown Error renewing checkout', 'isPublicFacing' => true]),
+			'api' => [
+				'title' => translate(['text'=>'Checkout could not be renewed', 'isPublicFacing'=>true]),
+				'message' => translate(['text' => 'Unknown Error renewing checkout', 'isPublicFacing' => true]),
+			]
+		];
+
+		$authToken = $this->getAPIAuthToken($patron);
+		if ($authToken != null) {
+			$evergreenUrl = $this->accountProfile->patronApiUrl . '/osrf-gateway-v1';
+			$headers = array(
+				'Content-Type: application/x-www-form-urlencoded',
+			);
+			$this->apiCurlWrapper->addCustomHeaders($headers, false);
+
+			$request = 'service=open-ils.circ&method=open-ils.circ.renew';
+			$request .= '&param=' . json_encode($authToken);
+			$namedParams = [
+				'patron_id' => (int)$patron->username,
+				"copy_id" => $itemId,
+//				'id' => $itemId,
+//				'circ' => [
+//					'copy_id' => $itemId
+//				]
+				//"opac_renewal" => 1,
+			];
+			$request .= '&param=' . json_encode($namedParams);
+
+			$apiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $request);
+			if ($this->apiCurlWrapper->getResponseCode() == 200){
+				$apiResponse = json_decode($apiResponse);
+				if (isset($apiResponse->payload[0]) && isset($apiResponse->payload[0]->desc)){
+					$result['message'] = $apiResponse->payload[0]->desc;
+					$result['api']['message'] = $apiResponse->payload[0]->desc;
+				}elseif (isset($apiResponse->payload[0]) && isset($apiResponse->payload[0]->result->desc)){
+					$result['message'] = $apiResponse->payload[0]->result->desc;
+				}elseif (IPAddress::showDebuggingInformation() && isset($apiResponse->debug)){
+					$result['message'] = $apiResponse->debug;
+				}elseif (isset($apiResponse->payload[0]->textcode) &&$apiResponse->payload[0]->textcode == 'SUCCESS' ){
+					$result['message'] = translate(['text' => "Your hold was placed successfully.", 'isPublicFacing' => true]);
+					$result['success'] = true;
+
+					// Result for API or app use
+					$result['api']['title'] = translate(['text' => 'Hold placed successfully', 'isPublicFacing' => true]);
+					$result['api']['message'] = translate(['text' => 'Your hold was placed successfully.', 'isPublicFacing' => true]);
+
+					$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
+					$patron->forceReloadOfHolds();
+				}
+			}
+
+		}
+		return $result;
 	}
 
 	/**
-	 * @inheritDoc
+	 * Cancels a hold for a patron
+	 *
+	 * @param User $patron The User to cancel the hold for
+	 * @param string $recordId The id of the bib record
+	 * @param string $cancelId Information about the hold to be cancelled
+	 * @return  array
 	 */
 	function cancelHold(User $patron, $recordId, $cancelId = null)
 	{
@@ -405,7 +501,8 @@ class Evergreen extends AbstractIlsDriver
 	 */
 	function placeItemHold(User $patron, $recordId, $itemId, $pickupBranch, $cancelDate = null)
 	{
-		// TODO: Implement placeItemHold() method.
+		//TODO: Determine if this is needed
+		return false;
 	}
 
 	function freezeHold(User $patron, $recordId, $itemToFreezeId, $dateToReactivate)
@@ -464,6 +561,13 @@ class Evergreen extends AbstractIlsDriver
 		return $result;
 	}
 
+	/**
+	 * @param User $patron
+	 * @param string|int $recordId
+	 * @param string|int $itemToThawId
+	 *
+	 * @return array
+	 */
 	function thawHold(User $patron, $recordId, $itemToThawId)
 	{
 		$result = [
@@ -522,7 +626,65 @@ class Evergreen extends AbstractIlsDriver
 
 	function changeHoldPickupLocation(User $patron, $recordId, $itemToUpdateId, $newPickupLocation)
 	{
-		// TODO: Implement changeHoldPickupLocation() method.
+		$result = [
+			'success' => false,
+			'message' => translate(['text'=>"The pickup location for the hold could not be changed.", 'isPublicFacing'=>true]),
+			'api' => [
+				'title' => translate(['text'=>'Hold location not changed', 'isPublicFacing'=>true]),
+				'message' => translate(['text'=>'The pickup location for the hold could not be changed.', 'isPublicFacing'=>true])
+			]
+		];
+
+		$authToken = $this->getAPIAuthToken($patron);
+		if ($authToken != null) {
+			$evergreenUrl = $this->accountProfile->patronApiUrl . '/osrf-gateway-v1';
+			$headers = array(
+				'Content-Type: application/x-www-form-urlencoded',
+			);
+			$this->apiCurlWrapper->addCustomHeaders($headers, false);
+
+			//Translate to numeric location id
+			$location = new Location();
+			$location->code = $newPickupLocation;
+			if ($location->find(true)){
+				$newPickupLocation = $location->historicCode;
+			}
+
+			$namedParams = [
+				'id' => $itemToUpdateId,
+				'pickup_lib' => (int)$newPickupLocation
+			];
+
+			$request = 'service=open-ils.circ&method=open-ils.circ.hold.update';
+			$request .= '&param=' . json_encode($authToken);
+			$request .= '&param=';
+			$request .= '&param=' . json_encode($namedParams);
+
+			$apiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $request);
+
+			if ($this->apiCurlWrapper->getResponseCode() == 200){
+				$apiResponse = json_decode($apiResponse);
+				if (isset($apiResponse->payload[0]) && isset($apiResponse->payload[0]->desc)){
+					$result['message'] = $apiResponse->payload[0]->desc;
+				}elseif (isset($apiResponse->payload[0]) && isset($apiResponse->payload[0]->result->desc)){
+					$result['message'] = $apiResponse->payload[0]->result->desc;
+				}elseif (IPAddress::showDebuggingInformation() && isset($apiResponse->debug)){
+					$result['message'] = $apiResponse->debug;
+				}elseif ($apiResponse->payload[0] > 0 ){
+					$result['message'] = translate(['text' => "The pickup location for the hold was changed.", 'isPublicFacing' => true]);
+					$result['success'] = true;
+
+					// Result for API or app use
+					$result['api']['title'] = translate(['text' => 'Hold updated', 'isPublicFacing' => true]);
+					$result['api']['message'] = translate(['text' => 'The pickup location for the hold was changed.', 'isPublicFacing' => true]);
+
+					$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
+					$patron->forceReloadOfHolds();
+				}
+			}
+		}
+
+		return $result;
 	}
 
 	function updatePatronInfo(User $patron, $canUpdateContactInfo, $fromMasquerade)
@@ -584,6 +746,13 @@ class Evergreen extends AbstractIlsDriver
 						$curHold->locationUpdateable = true;
 						$curHold->cancelable = true;
 
+						//Get hold location
+						$location = new Location();
+						$location->historicCode = $holdInfo['pickup_lib'];
+						if ($location->find(true)){
+							$curHold->pickupLocationId = $location->locationId;
+							$curHold->pickupLocationName = $location->displayName;
+						}
 
 						if ($holdInfo['frozen'] == 't'){
 							$curHold->frozen = true;
@@ -742,7 +911,59 @@ class Evergreen extends AbstractIlsDriver
 
 	public function getFines(User $patron, $includeMessages = false)
 	{
-		// TODO: Implement getFines() method.
+		require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
+
+		global $activeLanguage;
+
+		$currencyCode = 'USD';
+		$variables = new SystemVariables();
+		if ($variables->find(true)){
+			$currencyCode = $variables->currencyCode;
+		}
+
+		$currencyFormatter = new NumberFormatter( $activeLanguage->locale . '@currency=' . $currencyCode, NumberFormatter::CURRENCY );
+
+		$fines = [];
+
+		$authToken = $this->getAPIAuthToken($patron);
+		if ($authToken != null) {
+			//Get a list of holds
+			$evergreenUrl = $this->accountProfile->patronApiUrl . '/osrf-gateway-v1';
+			$headers = array(
+				'Content-Type: application/x-www-form-urlencoded',
+			);
+			$this->apiCurlWrapper->addCustomHeaders($headers, false);
+			$request = 'service=open-ils.actor&method=open-ils.actor.user.transactions.have_charge.fleshed';
+			$request .= '&param=' . json_encode($authToken);
+			$request .= '&param=' . $patron->username;
+			$apiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $request);
+
+			if ($this->apiCurlWrapper->getResponseCode() == 200) {
+				$apiResponse = json_decode($apiResponse);
+				if (isset($apiResponse->payload)){
+					foreach ($apiResponse->payload[0] as $transactionList){
+						foreach ($transactionList as $transactionObj){
+							$transaction = $transactionObj->__p;
+							$transactionObj = $this->mapEvergreenFields($transaction, $this->mbtsFields);
+							$curFine = [
+								'fineId' => $transactionObj['id'],
+								'date' => strtotime($transactionObj['xact_start']),
+								'type' => $transactionObj['xact_type'],
+								'reason' => $transactionObj['last_billing_type'],
+								'message' => $transactionObj['last_billing_note'],
+								'amountVal' => $transactionObj['total_owed'],
+								'amountOutstandingVal' => $transactionObj['total_owed'] - $transactionObj['total_paid'],
+								'amount' => $currencyFormatter->formatCurrency($transactionObj['total_owed'], $currencyCode),
+								'amountOutstanding' => $currencyFormatter->formatCurrency($transactionObj['total_owed'] - $transactionObj['total_paid'], $currencyCode),
+							];
+							$fines[] = $curFine;
+						}
+					}
+				}
+			}
+		}
+
+		return $fines;
 	}
 
 	public function patronLogin($username, $password, $validatedViaSSO)
@@ -963,9 +1184,27 @@ class Evergreen extends AbstractIlsDriver
 			if ($sessionData != null){
 				$expireTime = $sessionData['expire_date'];
 				$expireTime = strtotime($expireTime);
-				$summary->expirationDate = date('n-j-Y', $expireTime);
+				$summary->expirationDate = $expireTime;
 				//TODO : Load total charge balance
 				//$summary->totalFines = $basicDataResponse->ChargeBalance;
+
+				$evergreenUrl = $this->accountProfile->patronApiUrl . '/osrf-gateway-v1';
+				$headers = array(
+					'Content-Type: application/x-www-form-urlencoded',
+				);
+				$this->apiCurlWrapper->addCustomHeaders($headers, false);
+				$request = 'service=open-ils.actor&method=open-ils.actor.user.fines.summary';
+				$request .= '&param=' . json_encode($authToken);
+				$request .= '&param=' . $patron->username;
+				$apiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $request);
+
+				if ($this->apiCurlWrapper->getResponseCode() == 200) {
+					$apiResponse = json_decode($apiResponse);
+					if (isset($apiResponse->payload) && isset($apiResponse->payload[0]->__p)){
+						$moneySummary = $this->mapEvergreenFields($apiResponse->payload[0]->__p, $this->mousFields);
+						$summary->totalFines = $moneySummary['balance_owed'];
+					}
+				}
 			}
 		}
 
