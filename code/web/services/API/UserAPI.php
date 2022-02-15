@@ -2606,16 +2606,8 @@ class UserAPI extends Action
 	 */
 	private function loadUsernameAndPassword() : array
 	{
-		if (isset($_REQUEST['username'])) {
-			$username = $_REQUEST['username'];
-		} else {
-			$username = '';
-		}
-		if (isset($_REQUEST['password'])) {
-			$password = $_REQUEST['password'];
-		} else {
-			$password = '';
-		}
+		$username = $_REQUEST['username'] ?? '';
+		$password = $_REQUEST['password'] ?? '';
 
 		// check for post request data
 		if (isset($_POST['username']) && isset($_POST['password'])) {
@@ -2850,6 +2842,102 @@ class UserAPI extends Action
 			$user = UserAccount::validateAccount($username, $password);
 		}
 		return $user;
+	}
+
+	function getLinkedAccounts()
+	{
+		list($username, $password) = $this->loadUsernameAndPassword();
+		$patron = UserAccount::validateAccount($username, $password);
+
+		if ($patron && !($patron instanceof AspenError)) {
+			$linkedAccounts = $patron->getLinkedUsers();
+			if (count($linkedAccounts) > 0) {
+				$account = [];
+				foreach($linkedAccounts as $linkedAccount) {
+					$account[$linkedAccount->id]['displayName'] = $linkedAccount->displayName;
+					$account[$linkedAccount->id]['homeLocation'] = $linkedAccount->_homeLocation;
+					$account[$linkedAccount->id]['barcode'] = $linkedAccount->cat_username;
+				}
+				return array(
+					'success' => true,
+					'linkedAccounts' => $account
+				);
+			} else {
+				return array('success' => false, 'title' =>  translate(['text' => 'Error', 'isPublicFacing' => true]), 'message' =>  translate(['text' => 'You have no linked accounts', 'isPublicFacing' => true]));
+			}
+		} else {
+			return array('success' => false, 'title' =>  translate(['text' => 'Error', 'isPublicFacing' => true]), 'message' => translate(['text' => 'Unable to validate user', 'isPublicFacing' => true]));
+		}
+	}
+
+	function addAccountLink()
+	{
+		list($username, $password) = $this->loadUsernameAndPassword();
+
+		$accountToLinkUsername = $_REQUEST['accountToLinkUsername'] ?? '';
+		$accountToLinkPassword = $_REQUEST['accountToLinkPassword'] ?? '';
+
+		$accountToLink = UserAccount::validateAccount($accountToLinkUsername, $accountToLinkPassword);
+		$patron = UserAccount::validateAccount($username, $password);
+
+		if ($patron && !($patron instanceof AspenError)) {
+			if($accountToLink) {
+				if($accountToLink->id != $patron->id) {
+					$addResult = $patron->addLinkedUser($accountToLink);
+					if($addResult === true) {
+						return array(
+							'success' => true,
+							'title' => translate(['text' => 'Accounts linked', 'isPublicFacing' => true]),
+							'message' => translate(['text'=>'Successfully linked accounts.', 'isPublicFacing'=>true])
+						);
+					} else {
+						return array(
+							'success' => false,
+							'title' => translate(['text' => 'Unable to link accounts', 'isPublicFacing' => true]),
+							'message' => translate(['text'=>'Sorry, we could not link to that account.  Accounts cannot be linked if all libraries do not allow account linking.  Please contact your local library if you have questions.', 'isPublicFacing'=>true])
+						);
+					}
+				} else {
+					return array(
+						'success' => false,
+						'title' => translate(['text' => 'Unable to link accounts', 'isPublicFacing' => true]),
+						'message' => translate(['text'=>'You cannot link to yourself.', 'isPublicFacing'=>true])
+					);
+				}
+			} else {
+				return array(
+					'success' => false,
+					'title' => translate(['text' => 'Unable to link accounts', 'isPublicFacing' => true]),
+					'message' => translate(['text'=>'Sorry, we could not find a user with that information to link to.', 'isPublicFacing'=>true])
+				);
+			}
+		} else {
+			return array('success' => false, 'title' =>  translate(['text' =>  translate(['text' => 'Error', 'isPublicFacing' => true]), 'isPublicFacing' => true]), 'message' => translate(['text' => 'Unable to validate user', 'isPublicFacing' => true]));
+		}
+	}
+
+	function removeAccountLink()
+	{
+		list($username, $password) = $this->loadUsernameAndPassword();
+		$patron = UserAccount::validateAccount($username, $password);
+		if ($patron && !($patron instanceof AspenError)) {
+			$accountToRemove = $_REQUEST['idToRemove'];
+			if($patron->removeLinkedUser($accountToRemove)) {
+				return array(
+					'success' => true,
+					'title' => translate(['text' => 'Accounts no longer linked', 'isPublicFacing' => true]),
+					'message' => translate(['text'=>'Successfully removed linked account.', 'isPublicFacing'=>true])
+				);
+			} else {
+				return array(
+					'success' => false,
+					'title' => translate(['text' => 'Unable to unlink accounts', 'isPublicFacing' => true]),
+					'message' => translate(['text'=>'Sorry, we could remove that account.', 'isPublicFacing'=>true])
+				);
+			}
+		} else {
+			return array('success' => false, 'title' => 'Error', 'message' => 'Unable to validate user');
+		}
 	}
 
 	function getBreadcrumbs() : array
