@@ -23,7 +23,7 @@ class UserAPI extends Action
 
 		if (isset($_SERVER['PHP_AUTH_USER'])) {
 			if($this->grantTokenAccess()) {
-				if (in_array($method, array('isLoggedIn', 'logout', 'login', 'checkoutItem', 'placeHold', 'renewItem', 'renewAll', 'viewOnlineItem', 'changeHoldPickUpLocation', 'getPatronProfile', 'validateAccount', 'getPatronHolds', 'getPatronCheckedOutItems', 'cancelHold', 'activateHold', 'freezeHold', 'returnCheckout', 'updateOverDriveEmail', 'getValidPickupLocations', 'getHiddenBrowseCategories', 'getILSMessages', 'dismissBrowseCategory', 'showBrowseCategory', 'getLinkedAccounts', 'addAccountLink', 'removeAccountLink'))) {
+				if (in_array($method, array('isLoggedIn', 'logout', 'login', 'checkoutItem', 'placeHold', 'renewItem', 'renewAll', 'viewOnlineItem', 'changeHoldPickUpLocation', 'getPatronProfile', 'validateAccount', 'getPatronHolds', 'getPatronCheckedOutItems', 'cancelHold', 'activateHold', 'freezeHold', 'returnCheckout', 'updateOverDriveEmail', 'getValidPickupLocations', 'getHiddenBrowseCategories', 'getILSMessages', 'dismissBrowseCategory', 'showBrowseCategory', 'getLinkedAccounts', 'getViewers', 'addAccountLink', 'removeAccountLink'))) {
 					header("Cache-Control: max-age=10800");
 					require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
 					APIUsage::incrementStat('UserAPI', $method);
@@ -2941,6 +2941,37 @@ class UserAPI extends Action
 			} else {
 				return array('success' => false, 'title' =>  translate(['text' => 'Error', 'isPublicFacing' => true]), 'message' =>  translate(['text' => 'You have no linked accounts', 'isPublicFacing' => true]));
 			}
+		} else {
+			return array('success' => false, 'title' =>  translate(['text' => 'Error', 'isPublicFacing' => true]), 'message' => translate(['text' => 'Unable to validate user', 'isPublicFacing' => true]));
+		}
+	}
+
+	function getViewers() {
+		list($username, $password) = $this->loadUsernameAndPassword();
+		$patron = UserAccount::validateAccount($username, $password);
+
+		if ($patron && !($patron instanceof AspenError)) {
+			$viewers = [];
+			require_once ROOT_DIR . '/sys/Account/UserLink.php';
+			$userLink = new UserLink();
+			$userLink->linkedAccountId = $patron->id;
+			$userLink->linkingDisabled = "0";
+			$userLink->find();
+			while($userLink->fetch()) {
+				$linkedUser = new User();
+				$linkedUser->id = $userLink->primaryAccountId;
+				if ($linkedUser->find(true)){
+					if (!$linkedUser->isBlockedAccount($patron->id)) {
+						$viewers[$linkedUser->id]['displayName'] = $linkedUser->displayName;
+						$viewers[$linkedUser->id]['homeLocation'] = $linkedUser->_homeLocation;
+					}
+				}
+			}
+
+			return array (
+				'success' => true,
+				'viewers' => $viewers,
+			);
 		} else {
 			return array('success' => false, 'title' =>  translate(['text' => 'Error', 'isPublicFacing' => true]), 'message' => translate(['text' => 'Unable to validate user', 'isPublicFacing' => true]));
 		}
