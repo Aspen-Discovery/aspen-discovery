@@ -374,6 +374,8 @@ class UserAPI extends Action
 				}
 			}
 
+			$linkedUsers = $_REQUEST['linkedUsers'] ?? false;
+
 			$numCheckedOut = 0;
 			$numOverdue = 0;
 			$numHolds = 0;
@@ -394,7 +396,8 @@ class UserAPI extends Action
 			$userData->expireClose = $accountSummary->isExpirationClose();
 			$userData->expired = $accountSummary->isExpired();
 
-			if ($user->getLinkedUsers() != null) {
+
+			if ($linkedUsers && $user->getLinkedUsers() != null) {
 				/** @var User $user */
 				foreach ($user->getLinkedUsers() as $linkedUser) {
 					$linkedUserSummary = $linkedUser->getCatalogDriver()->getAccountSummary($linkedUser);
@@ -433,7 +436,7 @@ class UserAPI extends Action
 				$numHolds += (int)$overDriveSummary->getNumHolds();
 				$numHoldsAvailable += (int)$overDriveSummary->numAvailableHolds;
 
-				if ($user->getLinkedUsers() != null) {
+				if ($linkedUsers && $user->getLinkedUsers() != null) {
 					/** @var User $user */
 					foreach ($user->getLinkedUsers() as $linkedUser) {
 						$linkedUserSummary_OverDrive = $driver->getAccountSummary($linkedUser);
@@ -456,7 +459,7 @@ class UserAPI extends Action
 				$userData->numCheckedOut_Hoopla = (int)$hooplaSummary->numCheckedOut;
 				$numCheckedOut += (int)$hooplaSummary->numCheckedOut;
 
-				if ($user->getLinkedUsers() != null) {
+				if ($linkedUsers && $user->getLinkedUsers() != null) {
 					/** @var User $user */
 					foreach ($user->getLinkedUsers() as $linkedUser) {
 						$linkedUserSummary_Hoopla = $driver->getAccountSummary($linkedUser);
@@ -478,7 +481,7 @@ class UserAPI extends Action
 				$numHolds += (int)$cloudLibrarySummary->getNumHolds();
 				$numHoldsAvailable += (int)$cloudLibrarySummary->numAvailableHolds;
 
-				if ($user->getLinkedUsers() != null) {
+				if ($linkedUsers && $user->getLinkedUsers() != null) {
 					/** @var User $user */
 					foreach ($user->getLinkedUsers() as $linkedUser) {
 						$linkedUserSummary_cloudLibrary = $driver->getAccountSummary($linkedUser);
@@ -504,7 +507,7 @@ class UserAPI extends Action
 				$numHolds += (int)$axis360Summary->getNumHolds();
 				$numHoldsAvailable += (int)$axis360Summary->numAvailableHolds;
 
-				if ($user->getLinkedUsers() != null) {
+				if ($linkedUsers && $user->getLinkedUsers() != null) {
 					/** @var User $user */
 					foreach ($user->getLinkedUsers() as $linkedUser) {
 						$linkedUserSummary_axis360 = $driver->getAccountSummary($linkedUser);
