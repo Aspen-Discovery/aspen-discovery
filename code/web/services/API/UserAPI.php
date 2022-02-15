@@ -381,8 +381,8 @@ class UserAPI extends Action
 			$accountSummary = $user->getAccountSummary();
 			$userData->numCheckedOutIls = (int)$accountSummary->numCheckedOut;
 			$userData->numHoldsIls =(int) $accountSummary->getNumHolds();
-			$userData->numHoldsAvailableIls = ($accountSummary->numAvailableHolds == null ? 0 : $accountSummary->numAvailableHolds);
-			$userData->numHoldsRequestedIls = ($accountSummary->numUnavailableHolds == null ? 0 :  $accountSummary->numUnavailableHolds);
+			$userData->numHoldsAvailableIls = (int)($accountSummary->numAvailableHolds == null ? 0 : $accountSummary->numAvailableHolds);
+			$userData->numHoldsRequestedIls = (int)($accountSummary->numUnavailableHolds == null ? 0 :  $accountSummary->numUnavailableHolds);
 			$userData->numOverdue = (int)$accountSummary->numOverdue;
 			$userData->finesVal = (float)$accountSummary->totalFines;
 			$numCheckedOut += $userData->numCheckedOutIls;
@@ -402,8 +402,8 @@ class UserAPI extends Action
 					$userData->numHoldsIls = (int)$linkedUserSummary->getNumHolds();
 					$userData->numCheckedOutIls += (int)$linkedUserSummary->numCheckedOut;
 					$userData->numOverdue += (int)$linkedUserSummary->numOverdue;
-					$userData->numHoldsAvailableIls += ($linkedUserSummary->numAvailableHolds == null ? 0 : $linkedUserSummary->numAvailableHolds);
-					$userData->numHoldsRequestedIls += ($linkedUserSummary->numUnavailableHolds == null ? 0 : $linkedUserSummary->numUnavailableHolds);
+					$userData->numHoldsAvailableIls += (int)($linkedUserSummary->numAvailableHolds == null ? 0 : $linkedUserSummary->numAvailableHolds);
+					$userData->numHoldsRequestedIls += (int)($linkedUserSummary->numUnavailableHolds == null ? 0 : $linkedUserSummary->numUnavailableHolds);
 					$numCheckedOut += (int)$linkedUserSummary->numCheckedOut;
 					$numHolds += (int)$linkedUserSummary->getNumHolds();
 					$numHoldsAvailable += ($linkedUserSummary->numAvailableHolds == null ? 0 : $linkedUserSummary->numAvailableHolds);
