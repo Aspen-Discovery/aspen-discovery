@@ -2950,8 +2950,8 @@ class UserAPI extends Action
 	{
 		list($username, $password) = $this->loadUsernameAndPassword();
 
-		$accountToLinkUsername = $_REQUEST['accountToLinkUsername'] ?? '';
-		$accountToLinkPassword = $_REQUEST['accountToLinkPassword'] ?? '';
+		$accountToLinkUsername = $_POST['accountToLinkUsername'] ?? '';
+		$accountToLinkPassword = $_POST['accountToLinkPassword'] ?? '';
 
 		$accountToLink = UserAccount::validateAccount($accountToLinkUsername, $accountToLinkPassword);
 		$patron = UserAccount::validateAccount($username, $password);
