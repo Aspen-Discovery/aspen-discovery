@@ -2927,8 +2927,8 @@ class UserAPI extends Action
 
 		if ($patron && !($patron instanceof AspenError)) {
 			$linkedAccounts = $patron->getLinkedUsers();
+			$account = [];
 			if (count($linkedAccounts) > 0) {
-				$account = [];
 				foreach($linkedAccounts as $linkedAccount) {
 					$account[$linkedAccount->id]['displayName'] = $linkedAccount->displayName;
 					$account[$linkedAccount->id]['homeLocation'] = $linkedAccount->_homeLocation;
@@ -2939,7 +2939,7 @@ class UserAPI extends Action
 					'linkedAccounts' => $account
 				);
 			} else {
-				return array('success' => false, 'title' =>  translate(['text' => 'Error', 'isPublicFacing' => true]), 'message' =>  translate(['text' => 'You have no linked accounts', 'isPublicFacing' => true]));
+				return array('success' => false, 'title' =>  translate(['text' => 'Error', 'isPublicFacing' => true]), 'message' =>  translate(['text' => 'You have no linked accounts', 'isPublicFacing' => true]), 'linkedAccounts' => $account);
 			}
 		} else {
 			return array('success' => false, 'title' =>  translate(['text' => 'Error', 'isPublicFacing' => true]), 'message' => translate(['text' => 'Unable to validate user', 'isPublicFacing' => true]));
