@@ -19,7 +19,7 @@ class SystemAPI extends Action
 
 		if (isset($_SERVER['PHP_AUTH_USER'])) {
 			if($this->grantTokenAccess()) {
-				if (in_array($method, array('getLibraryInfo', 'getLocationInfo', 'getThemeInfo', 'getAppSettings'))) {
+				if (in_array($method, array('getLibraryInfo', 'getLocationInfo', 'getThemeInfo', 'getAppSettings', 'getTranslation', 'getLanguages'))) {
 					$result = [
 						'result' => $this->$method()
 					];
@@ -557,14 +557,34 @@ class SystemAPI extends Action
 
 		$response = [
 			'success' => true,
-			'translations' => [],
 		];
 		/** @var Translator $translator */
 		global $translator;
 		foreach ($terms as $term){
-			$response[$term] = $translator->translate($term, $term, [], true, true);
+			$response['translations'][$term] = $translator->translate($term, $term, [], true, true);
 		}
 		return $response;
+	}
+
+	function getLanguages() {
+		$validLanguages = [];
+		require_once ROOT_DIR . '/sys/Translation/Language.php';
+		$validLanguage = new Language();
+		$validLanguage->orderBy("weight");
+		$validLanguage->find();
+		while($validLanguage->fetch()) {
+			if (!$validLanguage->displayToTranslatorsOnly) {
+				$validLanguages[$validLanguage->code]['id'] = $validLanguage->id;
+				$validLanguages[$validLanguage->code]['code'] = $validLanguage->code;
+				$validLanguages[$validLanguage->code]['displayName'] = $validLanguage->displayName;
+				$validLanguages[$validLanguage->code]['displayNameEnglish'] = $validLanguage->displayNameEnglish;
+			}
+		}
+
+		return array (
+			'success' => true,
+			'languages' => $validLanguages,
+		);
 	}
 
 	function getBreadcrumbs() : array
