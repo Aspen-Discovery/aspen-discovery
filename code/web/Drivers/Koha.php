@@ -856,6 +856,7 @@ class Koha extends AbstractIlsDriver
 		$timer->logTime("Created Koha Driver");
 		$this->curlWrapper = new CurlWrapper();
 		$this->apiCurlWrapper = new CurlWrapper();
+		$this->apiCurlWrapper->setTimeout(15);
 	}
 
 	function __destruct()
