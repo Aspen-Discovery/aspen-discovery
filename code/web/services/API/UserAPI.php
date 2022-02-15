@@ -375,18 +375,42 @@ class UserAPI extends Action
 			}
 
 			$numCheckedOut = 0;
+			$numOverdue = 0;
 			$numHolds = 0;
 			$numHoldsAvailable = 0;
 			$accountSummary = $user->getAccountSummary();
 			$userData->numCheckedOutIls = (int)$accountSummary->numCheckedOut;
 			$userData->numHoldsIls =(int) $accountSummary->getNumHolds();
-			$userData->numHoldsAvailableIls = (int) ($accountSummary->numAvailableHolds == null ? 0 : $accountSummary->numAvailableHolds);
-			$userData->numHoldsRequestedIls = (int) ($accountSummary->numUnavailableHolds == null ? 0 :  $accountSummary->numUnavailableHolds);
+			$userData->numHoldsAvailableIls = ($accountSummary->numAvailableHolds == null ? 0 : $accountSummary->numAvailableHolds);
+			$userData->numHoldsRequestedIls = ($accountSummary->numUnavailableHolds == null ? 0 :  $accountSummary->numUnavailableHolds);
 			$userData->numOverdue = (int)$accountSummary->numOverdue;
 			$userData->finesVal = (float)$accountSummary->totalFines;
 			$numCheckedOut += $userData->numCheckedOutIls;
 			$numHolds += $userData->numHoldsIls;
 			$numHoldsAvailable += $userData->numHoldsAvailableIls;
+			$numOverdue += $userData->numOverdue;
+
+			$userData->expires = $accountSummary->expiresOn();
+			$userData->expireClose = $accountSummary->isExpirationClose();
+			$userData->expired = $accountSummary->isExpired();
+
+			if ($user->getLinkedUsers() != null) {
+				/** @var User $user */
+				foreach ($user->getLinkedUsers() as $linkedUser) {
+					$linkedUserSummary = $linkedUser->getCatalogDriver()->getAccountSummary($linkedUser);
+					$userData->finesVal += (int)$linkedUserSummary->totalFines;
+					$userData->numHoldsIls = (int)$linkedUserSummary->getNumHolds();
+					$userData->numCheckedOutIls += (int)$linkedUserSummary->numCheckedOut;
+					$userData->numOverdue += (int)$linkedUserSummary->numOverdue;
+					$userData->numHoldsAvailableIls += ($linkedUserSummary->numAvailableHolds == null ? 0 : $linkedUserSummary->numAvailableHolds);
+					$userData->numHoldsRequestedIls += ($linkedUserSummary->numUnavailableHolds == null ? 0 : $linkedUserSummary->numUnavailableHolds);
+					$numCheckedOut += (int)$linkedUserSummary->numCheckedOut;
+					$numHolds += (int)$linkedUserSummary->getNumHolds();
+					$numHoldsAvailable += ($linkedUserSummary->numAvailableHolds == null ? 0 : $linkedUserSummary->numAvailableHolds);
+					$numOverdue += (int)$linkedUserSummary->numOverdue;
+				}
+			}
+
 			global $activeLanguage;
 			$currencyCode = 'USD';
 			$variables = new SystemVariables();
@@ -405,9 +429,23 @@ class UserAPI extends Action
 				$userData->numCheckedOutOverDrive = (int)$overDriveSummary->numCheckedOut;
 				$userData->numHoldsOverDrive = (int)$overDriveSummary->getNumHolds();
 				$userData->numHoldsAvailableOverDrive = (int)$overDriveSummary->numAvailableHolds;
-				$numCheckedOut += $userData->numCheckedOutOverDrive;
-				$numHolds += $userData->numHoldsOverDrive;
-				$numHoldsAvailable += $userData->numHoldsAvailableOverDrive;
+				$numCheckedOut += (int)$overDriveSummary->numCheckedOut;
+				$numHolds += (int)$overDriveSummary->getNumHolds();
+				$numHoldsAvailable += (int)$overDriveSummary->numAvailableHolds;
+
+				if ($user->getLinkedUsers() != null) {
+					/** @var User $user */
+					foreach ($user->getLinkedUsers() as $linkedUser) {
+						$linkedUserSummary_OverDrive = $driver->getAccountSummary($linkedUser);
+						$userData->numCheckedOutOverDrive += (int)$linkedUserSummary_OverDrive->numCheckedOut;
+						$userData->numHoldsOverDrive += (int)$linkedUserSummary_OverDrive->getNumHolds();
+						$userData->numHoldsAvailableOverDrive += (int)$linkedUserSummary_OverDrive->numAvailableHolds;
+						$numCheckedOut += (int)$linkedUserSummary_OverDrive->numCheckedOut;
+						$numHolds += (int)$linkedUserSummary_OverDrive->getNumHolds();
+						$numHoldsAvailable += (int)$linkedUserSummary_OverDrive->numAvailableHolds;
+					}
+				}
+
 			}
 
 			//Add hoopla data
@@ -416,7 +454,16 @@ class UserAPI extends Action
 				$driver = new HooplaDriver();
 				$hooplaSummary = $driver->getAccountSummary($user);
 				$userData->numCheckedOut_Hoopla = (int)$hooplaSummary->numCheckedOut;
-				$numCheckedOut += $userData->numCheckedOut_Hoopla;
+				$numCheckedOut += (int)$hooplaSummary->numCheckedOut;
+
+				if ($user->getLinkedUsers() != null) {
+					/** @var User $user */
+					foreach ($user->getLinkedUsers() as $linkedUser) {
+						$linkedUserSummary_Hoopla = $driver->getAccountSummary($linkedUser);
+						$userData->numCheckedOut_Hoopla += (int)$linkedUserSummary_Hoopla->numCheckedOut;
+						$numCheckedOut += (int)$linkedUserSummary_Hoopla->numCheckedOut;
+					}
+				}
 			}
 
 			//Add cloudLibrary data
@@ -427,9 +474,22 @@ class UserAPI extends Action
 				$userData->numCheckedOut_cloudLibrary = (int)$cloudLibrarySummary->numCheckedOut;
 				$userData->numHolds_cloudLibrary = (int)$cloudLibrarySummary->getNumHolds();
 				$userData->numHoldsAvailable_cloudLibrary = (int)$cloudLibrarySummary->numAvailableHolds;
-				$numCheckedOut += $userData->numCheckedOut_cloudLibrary;
-				$numHolds += $userData->numHolds_cloudLibrary;
-				$numHoldsAvailable += $userData->numHoldsAvailable_cloudLibrary;
+				$numCheckedOut += (int)$cloudLibrarySummary->numCheckedOut;
+				$numHolds += (int)$cloudLibrarySummary->getNumHolds();
+				$numHoldsAvailable += (int)$cloudLibrarySummary->numAvailableHolds;
+
+				if ($user->getLinkedUsers() != null) {
+					/** @var User $user */
+					foreach ($user->getLinkedUsers() as $linkedUser) {
+						$linkedUserSummary_cloudLibrary = $driver->getAccountSummary($linkedUser);
+						$userData->numCheckedOut_cloudLibrary += (int)$linkedUserSummary_cloudLibrary->numCheckedOut;
+						$userData->numHolds_cloudLibrary += (int)$linkedUserSummary_cloudLibrary->getNumHolds();
+						$userData->numHoldsAvailable_cloudLibrary += (int)$linkedUserSummary_cloudLibrary->numAvailableHolds;
+						$numCheckedOut += (int)$linkedUserSummary_cloudLibrary->numCheckedOut;
+						$numHolds += (int)$linkedUserSummary_cloudLibrary->getNumHolds();
+						$numHoldsAvailable += (int)$linkedUserSummary_cloudLibrary->numAvailableHolds;
+					}
+				}
 			}
 
 			//Add axis360 data
@@ -440,9 +500,22 @@ class UserAPI extends Action
 				$userData->numCheckedOut_axis360 = (int)$axis360Summary->numCheckedOut;
 				$userData->numHolds_axis360 = (int)$axis360Summary->getNumHolds();
 				$userData->numHoldsAvailable_axis360 = (int)$axis360Summary->numAvailableHolds;
-				$numCheckedOut += $userData->numCheckedOut_axis360;
-				$numHolds += $userData->numHolds_axis360;
-				$numHoldsAvailable += $userData->numHoldsAvailable_axis360;
+				$numCheckedOut += (int)$axis360Summary->numCheckedOut;
+				$numHolds += (int)$axis360Summary->getNumHolds();
+				$numHoldsAvailable += (int)$axis360Summary->numAvailableHolds;
+
+				if ($user->getLinkedUsers() != null) {
+					/** @var User $user */
+					foreach ($user->getLinkedUsers() as $linkedUser) {
+						$linkedUserSummary_axis360 = $driver->getAccountSummary($linkedUser);
+						$userData->numCheckedOut_axis360 += (int)$linkedUserSummary_axis360->numCheckedOut;
+						$userData->numHolds_axis360 += (int)$linkedUserSummary_axis360->getNumHolds();
+						$userData->numHoldsAvailable_axis360 += (int)$linkedUserSummary_axis360->numAvailableHolds;
+						$numCheckedOut += (int)$linkedUserSummary_axis360->numCheckedOut;
+						$numHolds += (int)$linkedUserSummary_axis360->getNumHolds();
+						$numHoldsAvailable += (int)$linkedUserSummary_axis360->numAvailableHolds;
+					}
+				}
 			}
 
 			$userData->numCheckedOut = $numCheckedOut;
