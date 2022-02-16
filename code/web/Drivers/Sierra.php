@@ -1161,6 +1161,11 @@ class Sierra extends Millennium{
 		return $fines;
 	}
 
+	function showOutstandingFines()
+	{
+		return true;
+	}
+
 	public function completeFinePayment(User $patron, UserPayment $payment){
 		$result = [
 			'success' => false,

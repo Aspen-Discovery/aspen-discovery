@@ -209,6 +209,7 @@ public class SymphonyExportMain {
 			//Setup statements
 			PreparedStatement getExistingCourseReservesStmt = dbConn.prepareStatement("SELECT * FROM course_reserve", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			PreparedStatement addCourseReserveListStmt = dbConn.prepareStatement("INSERT INTO course_reserve (created, dateUpdated, courseLibrary, courseInstructor, courseNumber, courseTitle) VALUES (?, ?, ?, ?, ?, ?)", PreparedStatement.RETURN_GENERATED_KEYS);
+			PreparedStatement undeleteCourseReserveStmt = dbConn.prepareStatement("UPDATE course_reserve set deleted = 0, dateUpdated = ? where id = ?");
 			PreparedStatement getWorksForListStmt = dbConn.prepareStatement("SELECT * FROM course_reserve_entry WHERE courseReserveId = ?");
 			PreparedStatement getWorkIdForBarcodeStmt = dbConn.prepareStatement("SELECT permanent_id, full_title FROM grouped_work_record_items inner join grouped_work_records ON groupedWorkRecordId = grouped_work_records.id inner join grouped_work on grouped_work.id = groupedWorkId where itemId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			PreparedStatement addWorkToListStmt = dbConn.prepareStatement("INSERT INTO course_reserve_entry (source, sourceId, courseReserveId, title, dateAdded) VALUES ('GroupedWork', ?, ?, ?, ?)", PreparedStatement.RETURN_GENERATED_KEYS);
@@ -267,6 +268,14 @@ public class SymphonyExportMain {
 						CourseInfo course = existingCourses.get(key);
 						if (course != null){
 							course.stillExists = true;
+							if (course.isDeleted){
+								//Restore the course
+								long now = new Date().getTime() / 1000;
+								undeleteCourseReserveStmt.setLong(1, now);
+								undeleteCourseReserveStmt.setLong(2, course.id);
+								undeleteCourseReserveStmt.executeUpdate();
+								course.isDeleted = false;
+							}
 						}else{
 							long now = new Date().getTime() / 1000;
 							addCourseReserveListStmt.setLong(1, now);
