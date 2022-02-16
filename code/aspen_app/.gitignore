@@ -34,4 +34,4 @@ web-build/
 !/app-configs/bumpVersions.php
 !/app-configs/makeNew.sh
 !/app-configs/README.md
-/.tmp/
+/.tmp/*
