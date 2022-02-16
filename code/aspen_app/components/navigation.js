@@ -1,222 +1,27 @@
-import React, {useState} from "react";
+import React from "react";
 import * as ErrorRecovery from "expo-error-recovery";
 import * as SecureStore from 'expo-secure-store';
 import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { useToken, useContrastText, useColorModeValue } from 'native-base';
+import { Button, useToken, useContrastText, useColorModeValue } from 'native-base';
 import * as Location from "expo-location";
 import * as Updates from 'expo-updates';
 import Constants from "expo-constants";
-import {Ionicons} from "@expo/vector-icons";
 import {create} from 'apisauce';
 
 import LoadingScreen from "../components/splash";
-import Search from "../screens/Search/Search";
-import GroupedWork from "../screens/GroupedWork/GroupedWork";
-import Results from "../screens/Search/Results";
-import More from "../screens/More";
-import Contact from "../screens/Library/Contact";
-import MyAccount from "../screens/MyAccount/MyAccount";
-import CheckedOut from "../screens/MyAccount/CheckedOut";
-import Holds from "../screens/MyAccount/Holds";
-import Settings_HomeScreen from "../screens/MyAccount/Settings/HomeScreen";
-import BrowseCategoryHome from "../screens/BrowseCategory/Home";
 import Login from "../screens/Login";
-import LibraryCard from "../screens/MyAccount/LibraryCard";
 
+import AccountDrawer from "../navigations/drawer/DrawerNavigator";
+import TabNavigator from "../navigations/tab/TabNavigator";
 import {translate} from "../util/translations";
 import {createAuthTokens, getHeaders} from "../util/apiAuth";
 import {popAlert, popToast} from "./loadError";
 import {removeData} from "../util/logout";
-import {createTheme, saveTheme} from "../themes/theme";
 
 const Stack = createNativeStackNavigator();
-const Tab = createBottomTabNavigator();
 
 export const AuthContext = React.createContext();
-
-function HomeStack() {
-	return (
-		<Stack.Navigator>
-			<Stack.Screen
-				name="Home"
-				component={BrowseCategoryHome}
-				options={{
-					title: translate('navigation.home'),
-				}}
-			/>
-			<Stack.Screen
-				name="Home_GroupedWork"
-				component={GroupedWork}
-				options={{ title: translate('grouped_work.title') }}
-			/>
-		</Stack.Navigator>
-	)
-}
-
-function CardStack() {
-	return (
-		<Stack.Navigator>
-			<Stack.Screen
-				name="Card"
-				component={LibraryCard}
-				options={{ title: translate('user_profile.library_card') }}
-			/>
-		</Stack.Navigator>
-	)
-}
-
-function SearchStack({ route, navigation }) {
-	return (
-		<Stack.Navigator
-			initialRouteName="Search"
-		>
-			<Stack.Screen
-				name="Search"
-				component={Search}
-				options={{ title: translate('search.title') }}
-			/>
-			<Stack.Screen
-				name="SearchResults"
-				component={Results}
-				options={({ route, navigation }) => ({
-					title: translate('search.search_results_title') + route.params.searchTerm,
-				})}
-			/>
-			<Stack.Screen
-				name="GroupedWork"
-				component={GroupedWork}
-				options={{ title: translate('grouped_work.title') }}
-			/>
-		</Stack.Navigator>
-	)
-}
-
-function AccountStack() {
-	return (
-		<Stack.Navigator
-			initialRouteName="Account"
-		>
-			<Stack.Screen
-				name="Account"
-				component={MyAccount}
-				options={{ title: translate('user_profile.title') }}
-			/>
-			<Stack.Screen
-				name="CheckedOut"
-				component={CheckedOut}
-				options={{ title: translate('checkouts.title') }}
-			/>
-			<Stack.Screen
-				name="Holds"
-				component={Holds}
-				options={{ title: translate('holds.title') }}
-			/>
-			<Stack.Screen
-				name="GroupedWork"
-				component={GroupedWork}
-				options={{ title: translate('grouped_work.title') }}
-			/>
-			<Stack.Screen
-				name="SettingsHomeScreen"
-				component={Settings_HomeScreen}
-				options={{ title: translate('user_profile.home_screen_settings') }}
-			/>
-		</Stack.Navigator>
-	)
-}
-
-function MoreStack({ route, navigation }) {
-	return (
-		<Stack.Navigator
-			initialRouteName="More"
-		>
-			<Stack.Screen
-				name="More"
-				component={More}
-				options={{ title: translate('navigation.more') }}
-			/>
-			<Stack.Screen
-				name="Contact"
-				component={Contact}
-			/>
-		</Stack.Navigator>
-	)
-}
-
-function AppStack() {
-	const [activeIcon, inactiveIcon] = useToken("colors", [useColorModeValue("gray.800", "coolGray.200"), useColorModeValue("gray.500", "coolGray.600")]);
-	const tabBarBackgroundColor = useToken("colors", useColorModeValue("warmGray.100", "coolGray.900"));
-	return (
-		<Tab.Navigator
-			initialRouteName="Home"
-			screenOptions={({ route }) => ({
-				headerShown: false,
-				tabBarIcon: ({ focused, color, size }) => {
-					let iconName;
-					if(route.name === 'HomeScreen') {
-						iconName = focused ? 'library' : 'library-outline';
-					} else if (route.name === 'SearchScreen') {
-						iconName = focused ? 'search' : 'search-outline';
-					} else if (route.name === 'Library Card') {
-						iconName = focused ? 'card' : 'card-outline';
-					} else if (route.name === 'AccountScreen') {
-						iconName = focused ? 'person' : 'person-outline';
-					} else if (route.name === 'MoreScreen') {
-						iconName = focused ? 'ellipsis-horizontal' : 'ellipsis-horizontal-outline';
-					}
-					return <Ionicons name={iconName} size={size} color={color} />;
-				},
-				tabBarActiveTintColor: activeIcon,
-				tabBarInactiveTintColor: inactiveIcon,
-				tabBarLabelStyle: {
-					fontWeight: '400'
-				},
-				tabBarStyle: {
-					backgroundColor: tabBarBackgroundColor
-				}
-			})}
-		>
-			<Tab.Screen
-				name="HomeScreen"
-				component={HomeStack}
-				options={{
-					tabBarLabel: translate('navigation.home'),
-					unmountOnBlur: true,
-				}}
-			/>
-			<Tab.Screen
-				name="SearchScreen"
-				component={SearchStack}
-				options={{
-					tabBarLabel: translate('navigation.search'),
-				}}
-			/>
-			<Tab.Screen
-				name="Library Card"
-				component={CardStack}
-				options={{
-					tabBarLabel: translate('navigation.library_card'),
-				}}
-			/>
-			<Tab.Screen
-				name="AccountScreen"
-				component={AccountStack}
-				options={{
-					tabBarLabel: translate('navigation.account'),
-				}}
-			/>
-			<Tab.Screen
-				name="MoreScreen"
-				component={MoreStack}
-				options={{
-					tabBarLabel: translate('navigation.more'),
-				}}
-			/>
-		</Tab.Navigator>
-	)
-}
 
 const defaultErrorHandler = ErrorUtils.getGlobalHandler();
 const globalErrorHandler = (err, isFatal) => {
@@ -313,7 +118,8 @@ export default function App() {
 		() => ({
 			signIn: async (data) => {
 				let userToken;
-				let libraryData = data.libraryData;
+				let patronsLibrary = data.patronsLibrary;
+				//console.log(patronsLibrary);
 				try {
 					const postBody = new FormData();
 					postBody.append('username', data.valueUser);
@@ -348,20 +154,26 @@ export default function App() {
 								userToken = JSON.stringify(result.firstname + " " + result.lastname)
 								console.log("Valid user: " + userToken);
 								// store login data for safe keeping
-								await SecureStore.setItemAsync("userKey", data.valueUser);
-								await SecureStore.setItemAsync("secretKey", data.valueSecret);
-								await SecureStore.setItemAsync("userToken", userToken);
-								// save variables in the Secure Store to access later on
-								await SecureStore.setItemAsync("patronName", patronName);
-								await SecureStore.setItemAsync("library", libraryData['libraryId']);
-								await SecureStore.setItemAsync("libraryName", libraryData['name']);
-								await SecureStore.setItemAsync("locationId", libraryData['locationId']);
-								await SecureStore.setItemAsync("solrScope", libraryData['solrScope']);
-								await SecureStore.setItemAsync("pathUrl", libraryData['baseUrl']);
-								await SecureStore.setItemAsync("logo", libraryData['logo']);
-								await SecureStore.setItemAsync("favicon", libraryData['favicon']);
-								//await SecureStore.setItemAsync("aspenSession", result.session);
-								dispatch({ type: 'SIGN_IN', token: userToken });
+								//console.log(data);
+								try {
+									await SecureStore.setItemAsync("userKey", data.valueUser);
+									await SecureStore.setItemAsync("secretKey", data.valueSecret);
+									await SecureStore.setItemAsync("userToken", userToken);
+									// save variables in the Secure Store to access later on
+									await SecureStore.setItemAsync("patronName", patronName);
+									await SecureStore.setItemAsync("library", patronsLibrary['libraryId']);
+									await SecureStore.setItemAsync("libraryName", patronsLibrary['name']);
+									await SecureStore.setItemAsync("locationId", patronsLibrary['locationId']);
+									await SecureStore.setItemAsync("solrScope", patronsLibrary['solrScope']);
+									await SecureStore.setItemAsync("pathUrl", patronsLibrary['baseUrl']);
+									await SecureStore.setItemAsync("logo", patronsLibrary['logo']);
+									await SecureStore.setItemAsync("favicon", patronsLibrary['favicon']);
+									//await SecureStore.setItemAsync("aspenSession", result.session);
+									dispatch({type: 'SIGN_IN', token: userToken});
+								} catch(e) {
+									console.log("Unable to log in user.");
+									console.log(e);
+								}
 							} else {
 								console.log("Invalid user. Unable to store data.");
 								popAlert(translate('login.unable_to_login'), translate('login.invalid_user'), "error");
@@ -394,7 +206,7 @@ export default function App() {
 
 	return (
 		<AuthContext.Provider value={authContext}>
-		<NavigationContainer theme={navigationTheme}>
+		<NavigationContainer theme={navigationTheme} >
 			<Stack.Navigator
 				screenOptions={{ headerShown: false }}
 			>
@@ -420,10 +232,7 @@ export default function App() {
 					// User is signed in
 					<Stack.Screen
 						name={translate('navigation.home')}
-						component={AppStack}
-						options={{
-							headerShown: false,
-						}}
+						component={TabNavigator}
 					/>
 				)}
 			</Stack.Navigator>

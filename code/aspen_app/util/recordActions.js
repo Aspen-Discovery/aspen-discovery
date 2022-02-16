@@ -24,7 +24,7 @@ export async function getGroupedWork(itemId) {
 		auth: createAuthTokens()
 	});
 	const response = await api.get('/ItemAPI?method=getAppGroupedWork', {id: itemId});
-	//console.log(response);
+	//console.log(response.data);
 	if (response.ok) {
 		return response.data;
 	} else {
@@ -192,4 +192,21 @@ export async function openSideLoad(redirectUrl) {
 
 export function openCheckouts() {
 	navigation.navigate("CheckedOut");
+}
+
+export async function getItemDetails(id, format) {
+	const postBody = await postData();
+	const api = create({
+		baseURL: global.libraryUrl + '/API',
+		timeout: global.timeoutAverage,
+		headers: getHeaders(),
+		auth: createAuthTokens(),
+		params: {recordId: id, format: format}
+	});
+	const response = await api.post('/ItemAPI?method=getItemDetails', postBody);
+	if (response.ok) {
+		return response.data;
+	} else {
+		popToast(translate('error.no_server_connection'), translate('error.no_library_connection'), "warning");
+	}
 }

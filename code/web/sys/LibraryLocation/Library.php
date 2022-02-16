@@ -1678,6 +1678,7 @@ class Library extends DataObject
 			'generalContactLink' => $this->generalContactLink,
 			'email' => $this->contactEmail,
 			'themeId' => $this->theme,
+			'allowLinkedAccounts' => $this->allowLinkedAccounts,
 		];
 		if (empty($this->baseUrl)){
 			$apiInfo['baseUrl'] = $configArray['Site']['url'];

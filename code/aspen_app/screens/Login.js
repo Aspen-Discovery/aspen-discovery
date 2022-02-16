@@ -29,9 +29,9 @@ import Constants from "expo-constants";
 // custom components and helper files
 import {translate} from "../util/translations";
 import {AuthContext} from "../components/navigation";
-import {getHeaders} from "../util/apiAuth";
-import {createTheme, saveTheme} from "../themes/theme";
-import {makeGreenhouseRequest} from "../util/greenhouse";
+import {getHeaders, problemCodeMap} from "../util/apiAuth";
+import {popToast} from "../components/loadError";
+
 
 export default class Login extends Component {
 
@@ -88,52 +88,16 @@ export default class Login extends Component {
 		});
 	};
 
-	makeGreenhouseRequest_New = async () => {
-		this.setState({ isFetching: true });
-		let slug = Constants.manifest.slug;
-		let method;
-		if(slug === "aspen-lida") { method = "getLibraries"; } else { method = "getLibrary"; }
-		await makeGreenhouseRequest(method).then(async res => {
-			if(slug === "aspen-lida") {
-				this.filteredLibraries = [];
-				this.setState({
-					libraryData: res.libraries,
-					isFetching: false,
-					value: "",
-				});
-				this.filteredLibraries = _.uniqBy(res.library, v => [v.locationId, v.libraryId].join());
-			} else {
-				this.filteredLibraries = [];
-				this.setState({
-					locationNum: res.count,
-					libraryData: res.library,
-					isFetching: false,
-					value: "",
-				});
-				this.filteredLibraries = _.uniqBy(res.library, v => [v.locationId, v.name].join());
-			}
-		});
-	};
-
-	makeFullGreenhouseRequest_New = async () => {
-		this.setState({ isFetching: true });
-		await makeGreenhouseRequest("getLibraries", true).then(async res => {
-			this.arrayHolder = [];
-			this.setState({
-				fullData: res.libraries,
-				isFetching: false,
-			});
-			this.arrayHolder = _.uniqBy(res.libraries, v => [v.librarySystem, v.name].join());
-		});
-	};
 	// fetch the list of libraries based on distance and initial population of showLibraries modal
 	makeGreenhouseRequest = async () => {
 		// set state to fetching to display spinner
 		this.setState({isFetching: true});
 		let method;
+		let baseApiUrl;
 		if(Constants.manifest.slug === "aspen-lida") { method = "getLibraries"; } else { method = "getLibrary"; }
+		if(Constants.manifest.slug === "aspen-lida") { baseApiUrl = Constants.manifest.extra.greenhouse; } else { baseApiUrl = Constants.manifest.extra.apiUrl; }
 		const api = create({
-			baseURL: Constants.manifest.extra.apiUrl + '/API',
+			baseURL: baseApiUrl + '/API',
 			timeout: 5000,
 			headers: getHeaders(),
 		});
@@ -142,7 +106,6 @@ export default class Login extends Component {
 			longitude: global.longitude,
 			release_channel: global.releaseChannel
 		});
-
 		if (response.ok) {
 			let res = response.data;
 			if(Constants.manifest.slug === "aspen-lida") {
@@ -167,57 +130,39 @@ export default class Login extends Component {
 			}
 		} else {
 			this.setState({error: true});
-			Toast.show({
-				title: "Unable to connect",
-				description: "There was an error fetching the libraries. Please try again.",
-				isClosable: true,
-				duration: 8000,
-				status: "error",
-				accessibilityAnnouncement: "There was an error fetching the libraries. Please try again.",
-			});
+			console.log(response.problem);
+			const problem = problemCodeMap(response.problem);
+			popToast(problem.title, problem.message, "warning");
 		}
 		console.log("Greenhouse request completed.");
 	};
 
 	// fetch the entire list of available libraries to search from showLibraries modal search box
-	makeFullGreenhouseRequest = () => {
-		// build url to Greenhouse
-		const url = "https://aspen-test.bywatersolutions.com/API/GreenhouseAPI?method=getLibraries&release_channel=" + global.releaseChannel;
-
+	makeFullGreenhouseRequest = async () => {
 		// set state to fetching to display spinner
 		this.setState({isFetching: true});
-
-		// fetch greenhouse data
-		fetch(url, {
-			header: {
-				Accept: "application/json",
-				"Content-Type": "application/json",
-			},
+		const api = create({
+			baseURL: Constants.manifest.extra.greenhouse + '/API',
 			timeout: 10000,
-		})
-			.then((res) => res.json())
-			.then(
-				(res) => {
-					this.arrayHolder = [];
-					this.setState({
-						fullData: res.libraries,
-						isFetching: false,
-					});
-					this.arrayHolder = _.uniqBy(res.libraries, v => [v.librarySystem, v.name].join());
-				},
-				(err) => {
-					console.warn("Its borked! Aspen was unable to connect to the Greenhouse. Attempted connecting to <" + url + ">");
-					console.warn("Error: ", err);
-					Toast.show({
-						title: "Unable to connect",
-						description: "There was an error fetching the libraries. Please try again.",
-						isClosable: true,
-						duration: 8000,
-						status: "error",
-						accessibilityAnnouncement: "There was an error fetching the libraries. Please try again.",
-					});
-				}
-			);
+			headers: getHeaders(),
+		});
+		const response = await api.get('/GreenhouseAPI?method=getLibraries', {
+			release_channel: global.releaseChannel
+		});
+		//console.log(response);
+		if(response.ok) {
+			let results = response.data;
+			this.arrayHolder = [];
+			this.setState({
+				fullData: results.libraries,
+				isFetching: false,
+			});
+			this.arrayHolder = _.uniqBy(results.libraries, v => [v.librarySystem, v.name].join());
+		} else {
+			this.setState({error: true});
+			console.log(response.problem);
+		}
+		console.log("Full greenhouse request completed.");
 	};
 
 	/**
@@ -232,7 +177,6 @@ export default class Login extends Component {
 			uniqueLibraries = _.uniqBy(this.state.libraryData, v => [v.librarySystem, v.name].join());
 		} else {
 			uniqueLibraries = _.uniqBy(this.state.libraryData, v => [v.libraryId, v.name].join());
-			console.log(uniqueLibraries[0]);
 			if(this.state.locationNum <= 1) {
 				showSelectLibrary = false;
 				this.setLibraryBranch(uniqueLibraries[0]);
@@ -342,7 +286,7 @@ export default class Login extends Component {
 			modalOpened: false,
 			favicon: item.favicon,
 			logo: item.logo,
-			libraryData: item,
+			patronsLibrary: item,
 		});
 	};
 
@@ -378,7 +322,7 @@ export default class Login extends Component {
 							logo={this.state.logo}
 							sessionId={this.state.sessionId}
 							navigation={this.props.navigation}
-							libraryData={this.state.libraryData}
+							patronsLibrary={this.state.patronsLibrary}
 						/>
 						: null}
 
@@ -421,7 +365,7 @@ const GetLoginForm = (props) => {
 	const passwordRef = useRef();
 	const { signIn } = React.useContext(AuthContext);
 	const libraryUrl = props.libraryUrl;
-	const libraryData = props.libraryData;
+	const patronsLibrary = props.patronsLibrary;
 
 	return (
 		<>
@@ -488,7 +432,7 @@ const GetLoginForm = (props) => {
 					size={{base: "md", lg: "lg"}}
 					color="#30373b"
 					onPress={() => {
-						signIn({ valueUser, valueSecret, libraryUrl, libraryData})
+						signIn({ valueUser, valueSecret, libraryUrl, patronsLibrary})
 					}}
 				>
 					{translate('general.login')}

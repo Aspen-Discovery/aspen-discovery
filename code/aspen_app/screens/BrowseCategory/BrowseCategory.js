@@ -30,7 +30,7 @@ const BrowseCategory = (props) => {
 				fetch();
 			}
 				.bind(this),
-			1000);
+			2000);
 		setInitialLoad(true);
 	}, [fetchMore]);
 

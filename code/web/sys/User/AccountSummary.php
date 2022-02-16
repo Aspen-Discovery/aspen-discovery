@@ -96,6 +96,10 @@ class AccountSummary extends DataObject
 		return $this->_expireClose;
 	}
 
+	public function expiresOn(){
+		return date('M j, Y', $this->expirationDate);
+	}
+
 	private $_expirationFinesNotice = '';
 	public function setExpirationFinesNotice(string $notice)
 	{
