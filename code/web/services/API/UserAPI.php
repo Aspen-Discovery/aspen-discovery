@@ -2931,8 +2931,9 @@ class UserAPI extends Action
 			if (count($linkedAccounts) > 0) {
 				foreach($linkedAccounts as $linkedAccount) {
 					$account[$linkedAccount->id]['displayName'] = $linkedAccount->displayName;
-					$account[$linkedAccount->id]['homeLocation'] = $linkedAccount->_homeLocation;
+					$account[$linkedAccount->id]['homeLocation'] = $linkedAccount->getHomeLocation()->displayName;
 					$account[$linkedAccount->id]['barcode'] = $linkedAccount->cat_username;
+					$account[$linkedAccount->id]['id'] = $linkedAccount->id;
 				}
 				return array(
 					'success' => true,
@@ -2963,7 +2964,9 @@ class UserAPI extends Action
 				if ($linkedUser->find(true)){
 					if (!$linkedUser->isBlockedAccount($patron->id)) {
 						$viewers[$linkedUser->id]['displayName'] = $linkedUser->displayName;
-						$viewers[$linkedUser->id]['homeLocation'] = $linkedUser->_homeLocation;
+						$viewers[$linkedUser->id]['homeLocation'] = $linkedUser->getHomeLocation()->displayName;
+						$viewers[$linkedUser->id]['barcode'] = $linkedUser->cat_username;
+						$viewers[$linkedUser->id]['id'] = $linkedUser->id;
 					}
 				}
 			}
