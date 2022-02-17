@@ -659,8 +659,9 @@ abstract class Solr
 			$tokenized = $this->tokenizeInput($noTrailingPunctuation);
 
 			// Create AND'd and OR'd queries
-			$andQuery = implode(' AND ', $tokenized);
-			$orQuery = implode(' OR ', $tokenized);
+			$tokenizedNoStopWords = $this->removeStopWords($tokenized);
+			$andQuery = implode(' AND ', $tokenizedNoStopWords);
+			$orQuery = implode(' OR ', $tokenizedNoStopWords);
 
 			// Build possible inputs for searching:
 			$values = array();
@@ -2120,6 +2121,30 @@ abstract class Solr
 		$options['hl.fl'] = $highlightFields;
 		$options['hl.simple.pre'] = '{{{{START_HILITE}}}}';
 		$options['hl.simple.post'] = '{{{{END_HILITE}}}}';
+	}
+
+	private static $stopWords = ["a", "an", "and", "are", "as", "at", "be", "but", "by",
+		"for", "if", "in", "into", "is", "it",
+		"no", "not", "of", "on", "or", "such",
+		"that", "the", "their", "then", "there", "these",
+		"they", "this", "to", "was", "will", "with"];
+
+	/**
+	 * @param string[] $tokenized
+	 * @return string[]
+	 */
+	private function removeStopWords(array $tokenized) :array
+	{
+		$tokenizedNoStopWords = [];
+		foreach ($tokenized as $word){
+			if (!in_array($word, Solr::$stopWords)){
+				$tokenizedNoStopWords[] = $word;
+			}
+		}
+		if (count($tokenizedNoStopWords) == 0){
+			return $tokenized;
+		}
+		return $tokenizedNoStopWords;
 	}
 }
 
