@@ -35,6 +35,7 @@
 				<filter class="solr.KeywordRepeatFilterFactory" />
 				<filter class="solr.SnowballPorterFilterFactory" language="English"/>
 				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
+				<filter class="solr.LowerCaseFilterFactory"/>
 			</analyzer>
 			<analyzer type="query">
 				<!-- Whitespace tokenizer is needed so the Word Delimiter filter factory works properly
@@ -48,6 +49,7 @@
 				<!-- We have not defined words so this is not needed <filter class="solr.KeywordMarkerFilterFactory" protected="protwords.txt"/> -->
 				<!-- Don't need to stem the search <filter class="solr.SnowballPorterFilterFactory" language="English"/> -->
 				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
+				<filter class="solr.LowerCaseFilterFactory"/>
 			</analyzer>
 		</fieldType>
 		<fieldType name="searchable_text_minimal_stem" class="solr.TextField" positionIncrementGap="100">
@@ -61,6 +63,7 @@
 				<filter class="solr.KeywordRepeatFilterFactory" />
 				<filter class="solr.KStemFilterFactory"/>
 				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
+				<filter class="solr.LowerCaseFilterFactory"/>
 			</analyzer>
 			<analyzer type="query">
 				<!-- Whitespace tokenizer is needed so the Word Delimiter filter factory works properly
@@ -72,6 +75,7 @@
 				<filter class="solr.WordDelimiterGraphFilterFactory" generateWordParts="1" generateNumberParts="1" catenateWords="1" catenateNumbers="1" catenateAll="0" splitOnCaseChange="1" preserveOriginal="1"/>
 				<!-- Don't need to stem the search <filter class="solr.SnowballPorterFilterFactory" language="English"/> -->
 				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
+				<filter class="solr.LowerCaseFilterFactory"/>
 			</analyzer>
 		</fieldType>
 		<fieldType name="searchable_text_unstemmed" class="solr.TextField" positionIncrementGap="100">
