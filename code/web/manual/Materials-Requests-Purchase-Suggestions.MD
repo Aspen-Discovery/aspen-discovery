@@ -20,6 +20,7 @@ Simply choose the External Request Link option, make sure “Turn on Materials R
 
 ![External Materials Request](/manual/images/ExternalMaterialsRequest.png)
 
+
 **Submitting Material Requests**
 
 If you have any of the purchase suggestion options enabled, patrons can always find a link to submit requests at the bottom of search results. This will either take them to a form to complete, or to the external link you’ve specified in the settings.
@@ -114,7 +115,60 @@ You can also access numbers for individual users in the **Report By User** secti
 
 ![Material Requests Report](/manual/images/MRReports.png)
 
+**Ready for Your Patrons**
+Once you’re ready to go live with your materials request form, return to the **Library System** settings, navigate to the Materials Request section, and make sure that **Turn on Materials Request for Public** is checked on. Now your patrons will be able to access the link to the form at the bottom of search results and from within their account. 
 
+![Didnt Find It](/manual/images/DidntFindIt.png)
+
+![Patron Materials Requests](/manual/images/PatronMaterialsRequest.png)
+
+When users visit the Materials Requests section of their account, they’ll have a button to submit a new request along with a summary of their materials requests. They will be able to filter by only open requests or all requests. The user can see the full details of their request, the status of their request, or cancel if desired.
+
+![My Materials Requests](/manual/images/MyMaterialsRequests.png)
+
+### Customizing Materials Request Emails
+
+Once you have setup the material requests module, you can customize emails sent to patrons as you apply your customized statuses to a purchase suggestion placed by a patron. So when a patron places a materials request, you can have Aspen automatically send them a notice letting them know you received that request! Or when you need more information from the patron, you can apply the appropriate status to the request and automate an email to send to the patron letting them know that! You can go beyond a generic message here and customize the email to include details from the specific suggestions. You can use tokens to input data that varies by purchase suggestion. For example, if you want the email to say
+
+Hello John! Your suggestion of 'Harry Potter and the Halfblood Prince' will be purchased by our library and placed on hold for you on arrival.
+You can use tokens to allow this! The above message in the email form would look like:
+
+Hello {firstname}! Your suggestion of {title} will be purchased by our library and placed on hold for you on arrival.
+The tokens available for use in email forms are below:
+
+- firstname
+- lastname
+- email
+- phone
+- cat_username (this is patron cardnumber)
+- title
+- season
+- magazineTItle
+- magazineDate
+- magazineVolume
+- magazineTitle
+- magazineDate
+- magazineVolume
+- magazineNumber
+- magazinePageNumbers
+- author
+- format
+- formatId
+- subFormat
+- ageLevel
+- bookType
+- isbn
+- upc
+- issn
+- oclcNumber
+- publisher
+- publicationYear
+- abridged
+- about
+- comments
+- status
+- phone
+- email
 
 [![Materials Request](/manual/images/Materials-Request.jpg)](https://youtu.be/b7kEoeN6jKo)
 
