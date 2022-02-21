@@ -170,7 +170,8 @@ class UserAccount
 
 				$loadDefaultPermissions = false;
 				try{
-					UserAccount::$userPermissions = UserAccount::getActiveUserObj()->getPermissions();
+					$activeUser = UserAccount::getActiveUserObj();
+					UserAccount::$userPermissions = $activeUser->getPermissions();
 				}catch (Exception $e){
 					$loadDefaultPermissions = true;
 				}
@@ -815,6 +816,26 @@ class UserAccount
 				$tmpUser = $catalogConnectionInstance->driver->findNewUser($patronBarcode);
 				if (!empty($tmpUser) && !($tmpUser instanceof AspenError)) {
 					return $tmpUser;
+				}
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Used to determine if the active user is a staff member (has Aspen privileges or is marked as staff in the PType).
+	 * @return bool
+	 */
+	public static function isStaff(){
+		if (UserAccount::isLoggedIn()) {
+			if (count(UserAccount::getActiveRoles()) > 0) {
+				return true;
+			} else {
+				require_once ROOT_DIR . '/sys/Account/PType.php';
+				$pType = new PType();
+				$pType->pType = UserAccount::getUserPType();
+				if ($pType->find(true)) {
+					return $pType->isStaff;
 				}
 			}
 		}
