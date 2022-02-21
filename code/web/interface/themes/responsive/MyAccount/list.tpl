@@ -110,7 +110,9 @@
 							{/if}
 
 							<div class="btn-group btn-group-sm">
+								{if $showEmailThis}
 								<button value="emailList" id="FavEmail" class="btn btn-sm btn-default listViewButton" onclick='return AspenDiscovery.Lists.emailListAction("{$userList->id}")'>{translate text='Email List' isPublicFacing=true}</button>
+								{/if}
 								<button value="printList" id="FavPrint" class="btn btn-sm btn-default listViewButton" onclick='return AspenDiscovery.Lists.printListAction()'>{translate text='Print List' isPublicFacing=true}</button>
 								<button value="citeList" id="FavCite" class="btn btn-sm btn-default listViewButton" onclick='return AspenDiscovery.Lists.citeListAction("{$userList->id}")'>{translate text='Generate Citations' isPublicFacing=true}</button>
 
