@@ -152,6 +152,8 @@
 									{if ($propValue == 1)}{translate text="Yes" isAdminFacing=true}{elseif ($propValue == 0)}{translate text="No" isAdminFacing=true}{else}{$propValue}{/if}
 								{elseif $property.type == 'image'}
 									<img src="{$property.displayUrl}{$dataItem->id}" class="img-responsive" alt="{$propName}">
+								{elseif $property.type == 'textarea'}
+									{$propValue|truncate:255:'...'}
 								{else}
 									{translate text="Unknown type to display %1%" 1=$property.type isAdminFacing=true}
 								{/if}

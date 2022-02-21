@@ -54,5 +54,16 @@ function getUpdates22_03_00() : array
 				'ALTER TABLE grouped_work_test_search ADD COLUMN notes VARCHAR(500)',
 			]
 		], //search_test_notes
+		'search_test_search_index_multiple_terms' => [
+			'title' => 'Search Test add index and multiple terms',
+			'description' => 'Add search index and allow multiple terms per result ',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE grouped_work_test_search DROP INDEX searchTerm',
+				"ALTER TABLE grouped_work_test_search ADD COLUMN searchIndex VARCHAR(40) DEFAULT 'Keyword'",
+				'ALTER TABLE grouped_work_test_search CHANGE COLUMN searchTerm searchTerm TEXT COLLATE utf8_bin',
+				'ALTER TABLE grouped_work_test_search CHANGE COLUMN notes notes TEXT',
+			]
+		], //search_test_search_index_multiple_terms
 	];
 }

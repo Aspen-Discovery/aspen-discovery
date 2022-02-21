@@ -82,4 +82,30 @@ class Admin_GroupedWorkSearchTests extends ObjectEditor
 		$structure = $this->applyPermissionsToObjectStructure($structure);
 		$this->viewExistingObjects($structure);
 	}
+
+	function getAdditionalObjectActions($existingObject) : array{
+		$objectActions = array();
+		if (isset($existingObject) && $existingObject != null){
+			$objectActions[] = array(
+				'text' => 'Run Test',
+				'url' => '/Admin/GroupedWorkSearchTests?objectAction=runTest&id=' . $existingObject->id,
+			);
+		}
+		return $objectActions;
+	}
+
+	function runTest(){
+		set_time_limit(0);
+		$searchTest = new GroupedWorkTestSearch();
+		$searchTest->id = $_REQUEST['id'];
+		if ($searchTest->find(true)){
+			$searchTest->runTest();
+		}else{
+			AspenError::raiseError("Could not find a test with that id");
+		}
+
+		$structure = $this->getObjectStructure();
+		$structure = $this->applyPermissionsToObjectStructure($structure);
+		$this->viewIndividualObject($structure);
+	}
 }
