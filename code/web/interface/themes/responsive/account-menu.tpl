@@ -16,11 +16,13 @@
 					</a>
 				</div>
 
-				<div class="header-menu-option" >
-					<a href="/MyAccount/ReadingHistory">
-						{translate text="Reading History" isPublicFacing=true}
-					</a>
-				</div>
+				{if $enableReadingHistory}
+					<div class="header-menu-option" >
+						<a href="/MyAccount/ReadingHistory">
+							{translate text="Reading History" isPublicFacing=true}
+						</a>
+					</div>
+				{/if}
 				{if $showCurbsidePickups}
 					<div class="header-menu-option">
 						<a href="/MyAccount/CurbsidePickups">{translate text='Curbside Pickups' isPublicFacing=true}</a>

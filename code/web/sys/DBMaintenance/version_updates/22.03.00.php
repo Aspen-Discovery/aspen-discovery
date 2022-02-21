@@ -65,5 +65,12 @@ function getUpdates22_03_00() : array
 				'ALTER TABLE grouped_work_test_search CHANGE COLUMN notes notes TEXT',
 			]
 		], //search_test_search_index_multiple_terms
+		'library_enableReadingHistory' => [
+			'title' => 'Library - Enable Reading History',
+			'description' => 'Add an option for if reading history should be enabled for a library',
+			'sql' => [
+				'ALTER TABLE library add COLUMN enableReadingHistory TINYINT(1) DEFAULT 1'
+			]
+		], //library_enableReadingHistory
 	];
 }

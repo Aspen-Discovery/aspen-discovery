@@ -112,11 +112,13 @@
 									{/if}
 								</ul>
 
-								<div class="myAccountLink">
-									<a href="/MyAccount/ReadingHistory">
-										{translate text="Reading History" isPublicFacing=true} {if !$offline}<span class="badge"><span class="readingHistory-placeholder">??</span></span>{/if}
-									</a>
-								</div>
+								{if $enableReadingHistory}
+									<div class="myAccountLink">
+										<a href="/MyAccount/ReadingHistory">
+											{translate text="Reading History" isPublicFacing=true} {if !$offline}<span class="badge"><span class="readingHistory-placeholder">??</span></span>{/if}
+										</a>
+									</div>
+								{/if}
 								{if $showCurbsidePickups}
 									<div class="myAccountLink" title="Curbside Pickups">
 										<a href="/MyAccount/CurbsidePickups">{translate text='Curbside Pickups' isPublicFacing=true}</a>
