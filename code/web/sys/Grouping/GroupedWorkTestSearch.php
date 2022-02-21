@@ -17,11 +17,11 @@ class GroupedWorkTestSearch extends DataObject
 		$searchIndexes = $searchObject->getSearchIndexes();
 		return [
 			'id' => array('property'=>'id', 'type'=>'label', 'label'=>'Id', 'description'=>'The unique id of the in the system'),
-			'searchIndex' => array('property'=>'searchIndex', 'type'=>'enum', 'values' => $searchIndexes, 'label'=>'Search Index', 'description'=>'The index to search in.', 'default'=>$searchObject->getDefaultIndex()),
-			'searchTerm' => array('property'=>'searchTerm', 'type'=>'textarea', 'label'=>'Search Term', 'description'=>'The term to search for.'),
+			'searchIndex' => array('property'=>'searchIndex', 'type'=>'enum', 'values' => $searchIndexes, 'label'=>'Search Index', 'description'=>'The index to search in.', 'default'=>$searchObject->getDefaultIndex(), 'required'=>true),
+			'searchTerm' => array('property'=>'searchTerm', 'type'=>'textarea', 'label'=>'Search Term', 'description'=>'The term to search for.', 'required'=>true),
 			'expectedGroupedWorks' => array('property'=>'expectedGroupedWorks', 'type'=>'textarea', 'label'=>'Expected Grouped Works', 'description'=>'Grouped Works that should be shown on the first page.'),
 			'unexpectedGroupedWorks' => array('property'=>'unexpectedGroupedWorks', 'type'=>'textarea', 'label'=>'Unexpected Grouped Works', 'description'=>'Grouped Works that should not be shown on the first page.'),
-			'status'  => array('property' => 'status', 'type' => 'enum', 'label' => 'Status', 'values' => ['0' => 'Not tested', '1' => 'Running', '2' => 'Passed', '3' => 'Failed'], 'description' => 'The status of the test', 'required' => true, 'default' => '0', 'readOnly'=>true),
+			'status'  => array('property' => 'status', 'type' => 'enum', 'label' => 'Status', 'values' => ['0' => 'Not tested', '1' => 'Running', '2' => 'Passed', '3' => 'Failed'], 'description' => 'The status of the test', 'default' => '0', 'readOnly'=>true),
 			'notes' => array('property'=>'notes', 'type'=>'textarea', 'label'=>'Notes', 'description'=>'Notes related to the last run.', 'readOnly'=>true),
 		];
 	}
@@ -39,6 +39,7 @@ class GroupedWorkTestSearch extends DataObject
 			$searchObject->init('local');
 			$searchObject->setSearchTermWithIndex($this->searchIndex, $searchTerm);
 			$searchObject->setFieldsToReturn('id,display_title');
+			$searchObject->disableSpelling();
 			$searchObject->setPrimarySearch(false);
 			$result = $searchObject->processSearch(true, false);
 			$this->notes .= $searchTerm . ': ';

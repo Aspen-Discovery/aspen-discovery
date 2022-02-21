@@ -649,6 +649,7 @@ abstract class SearchObject_BaseSearcher
 			}
 		}
 
+		$this->searchTerms = array();
 		$this->searchTerms[] = array(
 			'index' => $type,
 			'lookfor' => $searchTerm
