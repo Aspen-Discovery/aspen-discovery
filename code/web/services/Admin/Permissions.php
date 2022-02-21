@@ -40,6 +40,7 @@ class Admin_Permissions extends Admin_Admin
 		$permission = new Permission();
 		$permission->orderBy(['sectionName', 'weight']);
 		$permission->find();
+		$selectedSections = [];
 		while ($permission->fetch()){
 			if (!empty($permission->requiredModule) && !array_key_exists($permission->requiredModule, $enabledModules)){
 				continue;
@@ -47,9 +48,13 @@ class Admin_Permissions extends Admin_Admin
 			if (!array_key_exists($permission->sectionName, $permissions)){
 				$permissions[$permission->sectionName] = [];
 			}
+			if ($selectedRole->hasPermission($permission->name)){
+				$selectedSections[$permission->sectionName] = $permission->sectionName;
+			}
 			$permissions[$permission->sectionName][$permission->id] = clone $permission;
 		}
 		$interface->assign('permissions', $permissions);
+		$interface->assign('selectedSections', $selectedSections);
 
 		$this->display('permissions.tpl', 'Permissions');
 
