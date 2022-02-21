@@ -564,6 +564,7 @@ class UInterface extends Smarty
 		$this->assign('showCurbsidePickups', ($library->curbsidePickupSettingId != -1) ? 1 : 0);
 
 		$this->assign('enableReadingHistory', $library->enableReadingHistory);
+		$this->assign('showCitationStyleGuides', $library->showCitationStyleGuides);
 
 		if ($location != null){ // library and location
 			$this->assign('showFavorites', $location->showFavorites && $library->showFavorites);

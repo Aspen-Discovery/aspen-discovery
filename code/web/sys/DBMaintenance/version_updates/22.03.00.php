@@ -72,5 +72,12 @@ function getUpdates22_03_00() : array
 				'ALTER TABLE library add COLUMN enableReadingHistory TINYINT(1) DEFAULT 1'
 			]
 		], //library_enableReadingHistory
+		'library_citationOptions' => [
+			'title' => 'Library - Citation Options',
+			'description' => 'Add options for the display of Citation Style Guides',
+			'sql' => [
+				'ALTER TABLE library ADD COLUMN showCitationStyleGuides TINYINT(1) DEFAULT 1'
+			]
+		], //library_citationOptions
 	];
 }

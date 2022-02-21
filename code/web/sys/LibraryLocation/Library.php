@@ -150,6 +150,7 @@ class Library extends DataObject
 
 	public /** @noinspection PhpUnused */ $publicListsToInclude;
 	public /** @noinspection PhpUnused */ $showWikipediaContent;
+	public $showCitationStyleGuides;
 	public $restrictOwningBranchesAndSystems;
 	public $allowPatronAddressUpdates;
 	public $allowPatronPhoneNumberUpdates;
@@ -706,6 +707,7 @@ class Library extends DataObject
 					'showFavorites'            => array('property'=>'showFavorites', 'type'=>'checkbox', 'label'=>'Enable User Lists', 'description'=>'Whether or not users can maintain favorites lists', 'hideInLists' => true, 'default' => 1),
 					'showConvertListsFromClassic' => array('property'=>'showConvertListsFromClassic', 'type'=>'checkbox', 'label'=>'Enable Importing Lists From Old Catalog', 'description'=>'Whether or not users can import lists from the ILS', 'hideInLists' => true, 'default' => 0),
 					'showWikipediaContent'     => array('property'=>'showWikipediaContent', 'type'=>'checkbox', 'label'=>'Show Wikipedia Content', 'description'=>'Whether or not Wikipedia content should be shown on author page', 'default'=>'1', 'hideInLists' => true,),
+					'showCitationStyleGuides'     => array('property'=>'showCitationStyleGuides', 'type'=>'checkbox', 'label'=>'Show Citation Style Guides', 'description'=>'Whether or not citations style guides should be shown', 'default'=>'1', 'hideInLists' => true,),
 				]
 			],
 
