@@ -430,10 +430,10 @@ class OverDrive_AJAX extends JSON_Action
 			if ($format->find(true)){
 				$result['success'] = true;
 				if ($_REQUEST['sampleNumber'] == 2){
-					$result['title'] =  translate(['text' => 'Preview ' . $format->sampleSource_2, 'isPublicFacing'=>true, 'isAdminEnteredData'=>true]),;
+					$result['title'] =  translate(['text' => 'Preview ' . $format->sampleSource_2, 'isPublicFacing'=>true, 'isAdminEnteredData'=>true]);
 					$sampleUrl = $format->sampleUrl_2;
 				}else{
-					$result['title'] =  translate(['text' => 'Preview ' . $format->sampleSource_1, 'isPublicFacing'=>true, 'isAdminEnteredData'=>true]),;
+					$result['title'] =  translate(['text' => 'Preview ' . $format->sampleSource_1, 'isPublicFacing'=>true, 'isAdminEnteredData'=>true]);
 					$sampleUrl = $format->sampleUrl_1;
 				}
 
