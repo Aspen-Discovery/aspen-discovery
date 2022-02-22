@@ -84,6 +84,7 @@
   - Server Setup
     - Installation
     - Background tasks
+    - [Remove a site from the server](/Admin/HelpManual?page=Remove-Site)
   - System Messages
   - Uploaded PDFs
   - [Aspen Discovery Help](/Admin/HelpManual?page=Aspen-Discovery-Help)
