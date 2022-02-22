@@ -79,5 +79,12 @@ function getUpdates22_03_00() : array
 				'ALTER TABLE library ADD COLUMN showCitationStyleGuides TINYINT(1) DEFAULT 1'
 			]
 		], //library_citationOptions
+		'addVersionToCachedGreenhouseData' => [
+			'title' => 'Add Version to Cached Greenhouse Data',
+			'description' => 'Add Aspen Discovery version to cached Greenhouse data to share with LiDA',
+			'sql' => [
+				'ALTER TABLE greenhouse_cache ADD COLUMN version VARCHAR(25)',
+			]
+		], //addVersionToCachedGreenhouseData
 	];
 }
