@@ -98,7 +98,7 @@
 - [Covers](/Admin/HelpManual?page=Cover-Images)
 - Email
 - Events
-  - Library Calendar
+  - [Library Calendar](/Admin/HelpManual?page=Library-Calendar)
 - [Explore More](/Admin/HelpManual?page=Explore-More)
 - Full Record Pages
 - [Genealogy](/Admin/HelpManual?page=Genealogy)
