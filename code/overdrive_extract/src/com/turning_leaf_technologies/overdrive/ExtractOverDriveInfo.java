@@ -162,6 +162,9 @@ class ExtractOverDriveInfo {
 					int numNewRecords = 0;
 					int totalRecordsWithChanges = 0;
 					for (OverDriveRecordInfo curRecord : allProductsInOverDrive.values()) {
+						if (settings.getProductsToUpdate().contains(curRecord.getId().toLowerCase())){
+							curRecord.hasChanges = true;
+						}
 						//Extract data from overdrive and update the database
 						if (curRecord.isNew){
 							numNewRecords++;
@@ -200,7 +203,8 @@ class ExtractOverDriveInfo {
 										try {
 											updateOverDriveMetaData(curRecord);
 										} catch (SocketTimeoutException e) {
-											logEntry.incErrors("Error loading metadata for " + curRecord.getId(), e);
+											settings.addProductToUpdateNextTime(curRecord.getId());
+											logEntry.addNote("Error loading metadata for " + curRecord.getId() + " " + e.getMessage());
 											errorsEncountered[0] = true;
 										}
 									});
@@ -213,7 +217,8 @@ class ExtractOverDriveInfo {
 										try {
 											updateOverDriveAvailability(curRecord, curRecord.getDatabaseId(), false);
 										} catch (SocketTimeoutException e) {
-											logEntry.incErrors("Error loading availability for " + curRecord.getId(), e);
+											settings.addProductToUpdateNextTime(curRecord.getId());
+											logEntry.addNote("Error loading availability for " + curRecord.getId() + " " + e.getMessage());
 											errorsEncountered[0] = true;
 										}
 									});
@@ -306,6 +311,11 @@ class ExtractOverDriveInfo {
 							logger.info("Did not delete " + totalRecordsToDelete + " records that no longer exist because we received errors from OverDrive.");
 						}
 					}
+
+					PreparedStatement saveProductsToUpdateStmt = dbConn.prepareStatement("UPDATE overdrive_settings set productsToUpdate = ? WHERE id = ?");
+					saveProductsToUpdateStmt.setString(1, settings.getProductsToUpdateNextTimeAsString());
+					saveProductsToUpdateStmt.setLong(2, settings.getId());
+					saveProductsToUpdateStmt.executeUpdate();
 
 					//For any records that have been marked to reload, regroup and reindex the records
 					processRecordsToReload(logEntry);
@@ -960,8 +970,9 @@ class ExtractOverDriveInfo {
 				logger.debug("Processing " + collectionInfo.getName() + " batch from " + i + " to " + (i + batchSize));
 				batchUrl += "offset=" + i + "&limit=" + batchSize;
 
-				for (int tries = 0; tries < 3; tries++){
-					WebServiceResponse productBatchInfoResponse = callOverDriveURL("overdriveExtract.getProductsBatch", batchUrl, tries == 2);
+				int maxTries = Math.max(1, settings.getNumRetriesOnError() + 1);
+				for (int tries = 0; tries < maxTries; tries++){
+					WebServiceResponse productBatchInfoResponse = callOverDriveURL("overdriveExtract.getProductsBatch", batchUrl, tries == maxTries -1);
 					if (productBatchInfoResponse.getResponseCode() == 200) {
 						JSONObject productBatchInfo = productBatchInfoResponse.getJSONResponse();
 						if (productBatchInfo != null && productBatchInfo.has("products")) {
@@ -1004,7 +1015,7 @@ class ExtractOverDriveInfo {
 							logEntry.incErrors("Batch " + i + " did not have any products in it, but we got back a 200 code");
 						}
 					} else {
-						if (tries == 2) {
+						if (tries == maxTries - 1) {
 							logEntry.incErrors("Could not load product batch: response code " + productBatchInfoResponse.getResponseCode() + " - " + productBatchInfoResponse.getMessage());
 							logEntry.addNote(batchUrl);
 							errorsWhileLoadingProducts = true;
@@ -1069,7 +1080,8 @@ class ExtractOverDriveInfo {
 		String url = "https://api.overdrive.com/v1/collections/" + apiKey + "/products/" + overDriveInfo.getId() + "/metadata";
 		WebServiceResponse metaDataResponse = callOverDriveURL("overdriveExtract.getProductMetadata", url);
 		if (metaDataResponse.getResponseCode() != 200){
-			logEntry.incErrors("Could not load metadata (code " + metaDataResponse.getResponseCode() + ") from " + url );
+			settings.addProductToUpdateNextTime(overDriveInfo.getId());
+			logEntry.addNote("Could not load metadata (code " + metaDataResponse.getResponseCode() + ") from " + url );
 			logger.info(metaDataResponse.getResponseCode() + ":" + metaDataResponse.getMessage());
 		}else{
 			saveMetadataToDatabase(overDriveInfo, curTime, metaDataResponse);
@@ -1366,8 +1378,11 @@ class ExtractOverDriveInfo {
 				if (singleWork) {
 					logEntry.addNote("Found availability for api key " + apiKey);
 				}
-				logEntry.incErrors("Error availability API for product " + overDriveInfo.getId() + " response code " + availabilityResponse.getResponseCode());
+				settings.addProductToUpdateNextTime(overDriveInfo.getId());
+				logEntry.addNote("Error availability API for product " + overDriveInfo.getId() + " collection " + collectionInfo.getName() + " response code " + availabilityResponse.getResponseCode());
 				logger.info(availabilityResponse.getResponseCode() + ":" + availabilityResponse.getMessage());
+				//Skip updating the availability to make sure we don't delete availability due to errors, we'll just process next time
+				return;
 			}else if (availabilityResponse.getMessage() == null){
 				//Delete all availability for this record
 				if (singleWork) {
@@ -1548,12 +1563,13 @@ class ExtractOverDriveInfo {
 			headers.put("Authorization", overDriveAPITokenType + " " + overDriveAPIToken);
 			int numTries = 0;
 			WebServiceResponse response = null;
-			while (numTries < 3) {
+			int maxTries = Math.max(1, settings.getNumRetriesOnError() + 1);
+			while (numTries < maxTries) {
 				numTries++;
 				//logger.error(numTries + " - " + overdriveUrl);
-				response = NetworkUtils.getURL(overdriveUrl, logger, headers, 300000, logFailures);
+				response = NetworkUtils.getURL(overdriveUrl, logger, headers, 10000, logFailures);
 				logExternalRequest(requestType, overdriveUrl, headers, response.getResponseCode(), response.getMessage());
-				if (response.isCallTimedOut() && numTries == 3) {
+				if (response.isCallTimedOut() && numTries == maxTries) {
 					this.hadTimeoutsFromOverDrive = true;
 					try {
 						Thread.sleep(30000);
