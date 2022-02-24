@@ -402,6 +402,7 @@ class GreenhouseAPI extends Action
 
 		$thisLibrary = [
 			'name' => $libraryLocation->name,
+			'version' => $aspenSite->version,
 			'librarySystem' => $aspenSite->name,
 			'libraryId' => $libraryLocation->libraryId,
 			'locationId' => $libraryLocation->locationId,
@@ -437,6 +438,7 @@ class GreenhouseAPI extends Action
 				$libraryLocation = new AspenSiteCache();
 
 				$libraryLocation->siteId = $aspenSite->id;
+				$libraryLocation->version = $aspenSite->version;
 				$libraryLocation->libraryId = $findLibrary->libraryId;
 				$libraryLocation->locationId = $findLibrary->locationId;
 				if(is_null($findLibrary->name)) {
