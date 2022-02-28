@@ -1369,13 +1369,13 @@ class Sierra extends Millennium{
 		}
 	}
 
-	function getPasswordPinValidationRules(){
-		return [
-			'minLength' => 4,
-			'maxLength' => 60,
-			'onlyDigitsAllowed' => false,
-		];
-	}
+//	function getPasswordPinValidationRules(){
+//		return [
+//			'minLength' => 4,
+//			'maxLength' => 60,
+//			'onlyDigitsAllowed' => false,
+//		];
+//	}
 
 	function updatePin(User $patron, string $oldPin, string $newPin)
 	{

@@ -4171,9 +4171,10 @@ class Koha extends AbstractIlsDriver
 	}
 
 	function getPasswordPinValidationRules(){
+		global $library;
 		return [
 			'minLength' => $this->getKohaSystemPreference('minPasswordLength'),
-			'maxLength' => 60,
+			'maxLength' => $library->maxPinLength,
 			'onlyDigitsAllowed' => false,
 		];
 	}

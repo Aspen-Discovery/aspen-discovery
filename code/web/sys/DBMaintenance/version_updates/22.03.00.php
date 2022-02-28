@@ -86,5 +86,38 @@ function getUpdates22_03_00() : array
 				'ALTER TABLE greenhouse_cache ADD COLUMN version VARCHAR(25)',
 			]
 		], //addVersionToCachedGreenhouseData
+		'pinResetRules' => [
+			'title' => 'PIN Reset Rules',
+			'description' => 'Define ruled for PINs to be used during the reset process',
+			'sql' => [
+				'ALTER TABLE library ADD column minPinLength INT default 4',
+				'ALTER TABLE library ADD column maxPinLength INT default 6',
+				'ALTER TABLE library ADD column onlyDigitsAllowedInPin INT default 1',
+				'setPinResetRulesByILS'
+			]
+		], //pinResetRules
 	];
+}
+
+function setPinResetRulesByILS(){
+	$ils = '';
+	$accountProfiles = new AccountProfile();
+	$accountProfiles->find();
+	while ($accountProfiles->fetch()){
+		if ($accountProfiles->ils != 'na'){
+			$ils = $accountProfiles->ils;
+		}
+	}
+	$library = new Library();
+	if ($ils == 'polaris'){
+		$update = 'UPDATE library set maxPinLength = 14, onlyDigitsAllowedInPin = 0';
+		$library->query($update);
+	}elseif ($ils == 'sierra'){
+		$update = 'UPDATE library set maxPinLength = 60, onlyDigitsAllowedInPin = 0';
+		$library->query($update);
+	}elseif ($ils == 'symphony'){
+		$update = 'UPDATE library set maxPinLength = 60, onlyDigitsAllowedInPin = 0';
+		$library->query($update);
+	}
+
 }

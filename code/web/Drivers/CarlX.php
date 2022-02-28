@@ -2077,13 +2077,14 @@ EOT;
 		return $data;
 	}
 
-	function getPasswordPinValidationRules(){
-		return [
-			'minLength' => 4,
-			'maxLength' => 6,
-			'onlyDigitsAllowed' => true,
-		];
-	}
+	//Defaults are correct for this
+//	function getPasswordPinValidationRules(){
+//		return [
+//			'minLength' => 4,
+//			'maxLength' => 6,
+//			'onlyDigitsAllowed' => true,
+//		];
+//	}
 
 	/**
 	 * Loads any contact information that is not stored by Aspen Discovery from the ILS. Updates the user object.

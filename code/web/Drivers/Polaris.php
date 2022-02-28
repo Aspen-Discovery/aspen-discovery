@@ -1692,13 +1692,14 @@ class Polaris extends AbstractIlsDriver
 		return $results;
 	}
 
-	function getPasswordPinValidationRules(){
-		return [
-			'minLength' => 4,
-			'maxLength' => 14,
-			'onlyDigitsAllowed' => false,
-		];
-	}
+	//Use the values
+//	function getPasswordPinValidationRules(){
+//		return [
+//			'minLength' => 4,
+//			'maxLength' => 14,
+//			'onlyDigitsAllowed' => false,
+//		];
+//	}
 
 	function getPatronUpdateForm($user){
 		$patronUpdateFields = $this->getSelfRegistrationFields('patronUpdate');

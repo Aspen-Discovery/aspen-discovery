@@ -176,6 +176,9 @@ class Library extends DataObject
 	public $contactEmail;
 
 	public $allowPinReset;
+	public $minPinLength;
+	public $maxPinLength;
+	public $onlyDigitsAllowedInPin;
 	public $enableForgotPasswordLink;
 	public /** @noinspection PhpUnused */ $preventExpiredCardLogin;
 	public /** @noinspection PhpUnused */ $showLibraryHoursNoticeOnAccountPages;
@@ -575,7 +578,6 @@ class Library extends DataObject
 					'useAllCapsWhenUpdatingProfile'        => array('property' => 'useAllCapsWhenUpdatingProfile', 'type' => 'checkbox', 'label' => 'Use All Caps When Updating Profile', 'description'=>'Whether or not modifications to the patron profile will be submitted using all caps', 'default'=> 0, 'permissions' => ['Library ILS Options']),
 					'requireNumericPhoneNumbersWhenUpdatingProfile' => array('property' => 'requireNumericPhoneNumbersWhenUpdatingProfile', 'type' => 'checkbox', 'label' => 'Require Numeric Phone Numbers When Updating Profile', 'description'=>'Whether or not modifications to the patron phone numbers will be submitted with numbers only', 'default'=> 0, 'permissions' => ['Library ILS Options']),
 					'bypassReviewQueueWhenUpdatingProfile' => array('property' => 'bypassReviewQueueWhenUpdatingProfile', 'type' => 'checkbox', 'label' => 'Bypass Review Queue Updating Profile', 'description'=>'Whether or not the Koha review queue for patron modifications is bypassed when updates are submitted', 'default'=> 0, 'permissions' => ['Library ILS Connection']),
-					'allowPinReset'                        => array('property'=>'allowPinReset', 'type'=>'checkbox', 'label'=>'Allow PIN Reset', 'description'=>'Whether or not the user can reset their PIN if they forget it.', 'hideInLists' => true, 'default' => 0, 'permissions' => ['Library ILS Connection']),
 					'enableForgotPasswordLink'             => array('property'=>'enableForgotPasswordLink', 'type'=>'checkbox', 'label'=>'Enable Forgot Password Link', 'description'=>'Whether or not the user can click a link to reset their password.', 'hideInLists' => true, 'default' => 1, 'permissions' => ['Library ILS Connection']),
 					'showAlternateLibraryOptionsInProfile' => array('property' => 'showAlternateLibraryOptionsInProfile', 'type'=>'checkbox', 'label'=>'Allow Patrons to Update their Alternate Libraries', 'description'=>'Allow Patrons to See and Change Alternate Library Settings in the Catalog Options Tab in their profile.', 'hideInLists' => true, 'default' => 1, 'permissions' => ['Library ILS Options']),
 					'showWorkPhoneInProfile'               => array('property' => 'showWorkPhoneInProfile', 'type'=>'checkbox', 'label'=>'Show Work Phone in Profile', 'description'=>'Whether or not patrons should be able to change a secondary/work phone number in their profile.', 'hideInLists' => true, 'default' => 0, 'permissions' => ['Library ILS Connection']),
@@ -583,6 +585,12 @@ class Library extends DataObject
 					'showNoticeTypeInProfile'              => array('property' => 'showNoticeTypeInProfile', 'type'=>'checkbox', 'label'=>'Show Notice Type in Profile', 'description'=>'Whether or not patrons should be able to change how they receive notices in their profile.', 'hideInLists' => true, 'default' => 0, 'permissions' => ['Library ILS Connection']),
 					'addSMSIndicatorToPhone'               => array('property' => 'addSMSIndicatorToPhone', 'type'=>'checkbox', 'label'=>'Add SMS Indicator to Primary Phone', 'description'=>'Whether or not add ### TEXT ONLY to the user\'s primary phone number when they opt in to SMS notices.', 'hideInLists' => true, 'default' => 0, 'permissions' => ['Library ILS Connection']),
 					'maxFinesToAllowAccountUpdates'        => array('property' => 'maxFinesToAllowAccountUpdates', 'type'=>'currency', 'displayFormat'=>'%0.2f', 'label'=>'Maximum Fine Amount to Allow Account Updates', 'description'=>'The maximum amount that a patron can owe and still update their account. Any value <= 0 will disable this functionality.', 'hideInLists' => true, 'default' => 10, 'permissions' => ['Library ILS Options'])
+				)),
+				'pinSection' => array('property' => 'pinSection', 'type' => 'section', 'label' => 'PIN / Password', 'hideInLists' => true, 'helpLink'=>'', 'permissions' => ['Library ILS Connection'], 'properties' => array(
+					'allowPinReset'                        => array('property'=>'allowPinReset', 'type'=>'checkbox', 'label'=>'Allow PIN Reset', 'description'=>'Whether or not the user can reset their PIN if they forget it.', 'hideInLists' => true, 'default' => 0, 'permissions' => ['Library ILS Connection']),
+					'minPinLength'                         => array('property'=>'minPinLength', 'type'=>'integer', 'label'=>'Minimum PIN Length', 'description'=>'The minimum PIN length.', 'hideInLists' => true, 'default' => 4, 'permissions' => ['Library ILS Connection']),
+					'maxPinLength'                         => array('property'=>'maxPinLength', 'type'=>'integer', 'label'=>'Maximum PIN Length', 'description'=>'The maximum PIN length.', 'hideInLists' => true, 'default' => 4, 'permissions' => ['Library ILS Connection']),
+					'onlyDigitsAllowedInPin'               => array('property'=>'onlyDigitsAllowedInPin', 'type'=>'checkbox', 'label'=>'Only digits allowed in PIN', 'description'=>'Whether or not the user can use only digits in the PIN.', 'hideInLists' => true, 'default' => 1, 'permissions' => ['Library ILS Connection']),
 				)),
 				'holdsSection' => array('property' => 'holdsSection', 'type' => 'section', 'label' => 'Holds', 'hideInLists' => true, 'helpLink'=>'', 'permissions' => ['Library ILS Connection', 'Library ILS Options'], 'properties' => array(
 					'showHoldButton'                    => array('property'=>'showHoldButton', 'type'=>'checkbox', 'label'=>'Show Hold Button', 'description'=>'Whether or not the hold button is displayed so patrons can place holds on items', 'hideInLists' => true, 'default' => 1),
