@@ -21,11 +21,13 @@ $files = scandir($marcDirName);
 if (count($files) > 0) {
 	$latestFile = null;
 	$latestFileModificationTime = 0;
+	$latestFileSize = 0;
 	foreach ($files as $file) {
 		if ($file != '.' && $file != '..' && is_file($marcDirName . $file)) {
 			$lastModificationTime = filemtime($marcDirName . $file);
 			if ($lastModificationTime > $latestFileModificationTime) {
 				$latestFileModificationTime = $lastModificationTime;
+				$latestFileSize = filesize($marcDirName . $file);
 				$latestFile = [
 					'fullPath' => $marcDirName . $file,
 					'name' => $file
@@ -37,7 +39,7 @@ if (count($files) > 0) {
 	//If we got a file, check to see if it is changing
 	if ($latestFile != null){
 		sleep(2);
-		if (filemtime($latestFile['fullPath']) == $latestFileModificationTime){
+		if (filemtime($latestFile['fullPath']) == $latestFileModificationTime && $latestFileSize == filesize($latestFile['fullPath'])){
 			//File is not changing, we can move it.
 			rename($latestFile['fullPath'], $marcDestDirName . $latestFile['name']);
 
@@ -61,15 +63,16 @@ if (!is_dir($marcDeltaDestDirName)){
 if (!is_dir($marcDeltaDirName)) {
 	die("Could not find marc_delta directory at $marcDirName \n");
 }
-//We just want the latest full export.  If there are others they can be deleted.
+//Want all marc_delta files, not just the latest
 $files = scandir($marcDeltaDirName);
 if (count($files) > 0) {
 	foreach ($files as $file) {
 		if ($file != '.' && $file != '..' && is_file($marcDeltaDirName . $file)) {
 			//make sure the file is not still changing.  If it is, skip for now
 			$lastModificationTime = filemtime($marcDeltaDirName . $file);
+			$lastFileSize = filesize($marcDeltaDirName . $file);
 			sleep(2);
-			if (filemtime($marcDeltaDirName . $file) == $lastModificationTime){
+			if (filemtime($marcDeltaDirName . $file) == $lastModificationTime && $lastFileSize == filesize($marcDeltaDirName . $file)){
 				//File is not changing, we can move it.
 				rename($marcDeltaDirName . $file, $marcDeltaDestDirName . $file);
 			}
