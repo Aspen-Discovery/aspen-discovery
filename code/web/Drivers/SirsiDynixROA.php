@@ -10,10 +10,19 @@ class SirsiDynixROA extends HorizonAPI
 	private static $logAllAPICalls = false;
 
 	// $customRequest is for curl, can be 'PUT', 'DELETE', 'POST'
-	public function getWebServiceResponse($requestType, $url, $params = null, $sessionToken = null, $customRequest = null, $additionalHeaders = null, $dataToSanitize = [])
+	public function getWebServiceResponse($requestType, $url, $params = null, $sessionToken = null, $customRequest = null, $additionalHeaders = null, $dataToSanitize = [], $workingLibraryId = null)
 	{
 		global $logger;
 		global $library;
+		global $locationSingleton;
+		$physicalLocation = $locationSingleton->getPhysicalLocation();
+
+		if (empty($workingLibraryId)) {
+			$workingLibraryId = $library->ilsCode;
+			if (!empty($physicalLocation)) {
+				$workingLibraryId = $physicalLocation->code;
+			}
+		}
 		$logger->log('WebServiceURL :' . $url, Logger::LOG_NOTICE);
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_URL, $url);
@@ -22,7 +31,7 @@ class SirsiDynixROA extends HorizonAPI
 			'Accept: application/json',
 			'Content-Type: application/json',
 			'SD-Originating-App-Id: Aspen Discovery',
-			'SD-Working-LibraryID: ' . $library->ilsCode,
+			'SD-Working-LibraryID: ' . $workingLibraryId,
 			'x-sirs-clientID: ' . $clientId,
 		);
 		if ($sessionToken != null) {
@@ -1041,7 +1050,21 @@ class SirsiDynixROA extends HorizonAPI
 				}
 				//$holdRecord         = $this->getWebServiceResponse('holdRecordDescribe', $webServiceURL . "/circulation/holdRecord/describe", null, $sessionToken);
 				//$placeHold          = $this->getWebServiceResponse('placeHoldDescribe', $webServiceURL . "/circulation/holdRecord/placeHold/describe", null, $sessionToken);
-				$createHoldResponse = $this->getWebServiceResponse('placeHold', $webServiceURL . "/circulation/holdRecord/placeHold", $holdData, $sessionToken);
+				global $locationSingleton;
+				$physicalLocation = $locationSingleton->getPhysicalLocation();
+
+				$workingLibraryId = $library->ilsCode;
+				if (!empty($physicalLocation)) {
+					$workingLibraryId = $physicalLocation->code;
+				}else{
+					if ($library->getNumLocationsForLibrary() > 1){
+						//Use the pickup location
+						$workingLibraryId = $pickupBranch;
+					}
+				}
+
+
+				$createHoldResponse = $this->getWebServiceResponse('placeHold', $webServiceURL . "/circulation/holdRecord/placeHold", $holdData, $sessionToken, null, null, null, $workingLibraryId);
 
 				$hold_result = array();
 				if (isset($createHoldResponse->messageList)) {
@@ -1490,6 +1513,8 @@ class SirsiDynixROA extends HorizonAPI
 			$blockList = $this->getWebServiceResponse('getFines', $webServiceURL . '/user/patron/key/' . $patron->username . '?includeFields=' . $includeFields, null, $sessionToken);
 			// Include Title data if available
 
+			$totalFinesOwed = 0;
+
 			if (!empty($blockList->fields->blockList)) {
 				foreach ($blockList->fields->blockList as $block) {
 					$fine = $block->fields;
@@ -1513,7 +1538,13 @@ class SirsiDynixROA extends HorizonAPI
 						'amountOutstandingVal' => $fine->owed->amount,
 						'date' => $fine->billDate
 					);
+					$totalFinesOwed += $fine->owed->amount;
 				}
+			}
+
+			$accountSummary = $patron->getAccountSummary();
+			if ($accountSummary->totalFines != $totalFinesOwed){
+				$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
 			}
 		}
 		return $fines;
@@ -1900,13 +1931,13 @@ class SirsiDynixROA extends HorizonAPI
 		}
 	}
 
-	function getPasswordPinValidationRules(){
-		return [
-			'minLength' => 4,
-			'maxLength' => 60,
-			'onlyDigitsAllowed' => false,
-		];
-	}
+//	function getPasswordPinValidationRules(){
+//		return [
+//			'minLength' => 4,
+//			'maxLength' => 60,
+//			'onlyDigitsAllowed' => false,
+//		];
+//	}
 
 	/**
 	 * Loads any contact information that is not stored by Aspen Discovery from the ILS. Updates the user object.
