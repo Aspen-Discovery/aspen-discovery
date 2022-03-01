@@ -96,6 +96,13 @@ function getUpdates22_03_00() : array
 				'setPinResetRulesByILS'
 			]
 		], //pinResetRules
+		'library_enableSavedSearches' => [
+			'title' => 'Library - Enable Saved Searches',
+			'description' => 'Add an option for if saved searches should be enabled for a library',
+			'sql' => [
+				'ALTER TABLE library add COLUMN enableSavedSearches TINYINT(1) DEFAULT 1'
+			]
+		], //library_enableSavedSearches
 	];
 }
 
