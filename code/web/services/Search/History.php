@@ -22,6 +22,19 @@ class History extends Action {
 			exit();
 		}
 
+		global $library;
+		if (!$library->enableSavedSearches){
+			//User shouldn't get here
+			$module = 'Error';
+			$action = 'Handle404';
+			$interface->assign('module','Error');
+			$interface->assign('action','Handle404');
+			require_once ROOT_DIR . "/services/Error/Handle404.php";
+			$actionClass = new Error_Handle404();
+			$actionClass->launch();
+			die();
+		}
+
 		// Retrieve search history
 		$s = new SearchEntry();
 		$searchHistory = $s->getSearches(session_id(), UserAccount::isLoggedIn() ? UserAccount::getActiveUserId() : null);

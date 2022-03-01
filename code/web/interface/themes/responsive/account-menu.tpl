@@ -83,8 +83,10 @@
 			{if $userIsStaff}
 				<div class="header-menu-option" ><a href="/MyAccount/StaffSettings">{translate text='Staff Settings' isPublicFacing=true}</a></div>
 			{/if}
-			{* Only highlight saved searches as active if user is logged in: *}
-			<div class="header-menu-option" ><a href="/Search/History?require_login">{translate text='Search History' isPublicFacing=true}</a></div>
+			{if $enableSavedSearches}
+				{* Only highlight saved searches as active if user is logged in: *}
+				<div class="header-menu-option" ><a href="/Search/History?require_login">{translate text='Search History' isPublicFacing=true}</a></div>
+			{/if}
 
 			{if $allowMasqueradeMode && !$masqueradeMode}
 				{if $canMasquerade}

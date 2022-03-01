@@ -178,8 +178,10 @@
 									<li class="myAccountLink">&nbsp;&nbsp;&raquo;&nbsp;<a href="/MyAccount/StaffSettings">{translate text='Staff Settings' isPublicFacing=true}</a></li>
 								{/if}
 							</ul>
-							{* Only highlight saved searches as active if user is logged in: *}
-							<div class="myAccountLink{if $user && $pageTemplate=="history.tpl"} active{/if}"><a href="/Search/History?require_login">{translate text='Search History' isPublicFacing=true}</a></div>
+							{if $enableSavedSearches}
+								{* Only highlight saved searches as active if user is logged in: *}
+								<div class="myAccountLink{if $user && $pageTemplate=="history.tpl"} active{/if}"><a href="/Search/History?require_login">{translate text='Search History' isPublicFacing=true}</a></div>
+							{/if}
 							{if $allowMasqueradeMode && !$masqueradeMode}
 								{if $canMasquerade}
 									<hr class="menu">

@@ -227,6 +227,7 @@ class Library extends DataObject
 	public $allowMasqueradeMode;
 	public $allowReadingHistoryDisplayInMasqueradeMode;
 	public $enableReadingHistory;
+	public $enableSavedSearches;
 	public /** @noinspection PhpUnused */ $newMaterialsRequestSummary;  // (Text at the top of the Materials Request Form.)
 	public /** @noinspection PhpUnused */ $materialsRequestDaysToPreserve;
 	public $showGroupedHoldCopiesCount;
@@ -555,6 +556,7 @@ class Library extends DataObject
 				'showLibraryHoursNoticeOnAccountPages' => array('property'=>'showLibraryHoursNoticeOnAccountPages', 'type'=>'checkbox', 'label'=>'Show Library Hours Notice on Account Pages', 'description'=>'Whether or not the Library Hours notice should be shown at the top of My Account\'s Checked Out, and Holds pages.', 'hideInLists' => true, 'default'=>true, 'permissions' => ['Library ILS Options']),
 				'displayItemBarcode' => array('property'=>'displayItemBarcode', 'type'=>'checkbox', 'label'=>'Display item barcodes in patron checkouts', 'description'=>'Whether or not patrons can see item barcodes to materials they have checked out.', 'hideInLists' => true, 'permissions' => ['Library ILS Connection']),
 				'enableReadingHistory' => array('property'=>'enableReadingHistory', 'type'=>'checkbox', 'label'=>'Enable Reading History', 'description' => 'Whether or not users reading history is shown within Aspen.', 'hideInLists' => true, 'default' => 1, 'permissions' => ['Library ILS Options']),
+				'enableSavedSearches' => array('property'=>'enableSavedSearches', 'type'=>'checkbox', 'label'=>'Enable Saved Searches', 'description' => 'Whether or not users can save searches within Aspen.', 'hideInLists' => true, 'default' => 1, 'permissions' => ['Library ILS Options']),
 				'barcodeSection' => array('property' => 'barcodeSection', 'type' => 'section', 'label' => 'Barcode', 'hideInLists' => true, 'permissions' => ['Library ILS Options'], 'properties' => array(
 					'libraryCardBarcodeStyle' => array('property' => 'libraryCardBarcodeStyle', 'type'=>'enum', 'values'=>$barcodeTypes, 'label'=>'Library Barcode Style', 'description'=>'The style to show for the barcode on the Library Card page', 'hideInLists' => true, 'default' => 'none'),
 					'minBarcodeLength' => array('property'=>'minBarcodeLength', 'type'=>'integer', 'label'=>'Min Barcode Length', 'description'=>'A minimum length the patron barcode is expected to be. Leave as 0 to extra processing of barcodes.', 'hideInLists' => true, 'default'=>0),
