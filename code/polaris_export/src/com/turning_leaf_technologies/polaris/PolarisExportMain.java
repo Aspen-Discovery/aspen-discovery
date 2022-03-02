@@ -82,6 +82,8 @@ public class PolarisExportMain {
 	private static PreparedStatement deleteVolumeStmt;
 	private static PreparedStatement updateVolumeStmt;
 	private static PreparedStatement getBibIdForItemIdStmt;
+	private static PreparedStatement getRecordIdForItemIdStmt;
+	private static PreparedStatement sourceForPolarisStmt;
 
 	private static Set<String> bibIdsUpdatedDuringContinuous;
 	private static Set<Long> itemIdsUpdatedDuringContinuous;
@@ -564,6 +566,12 @@ public class PolarisExportMain {
 
 	private static void processRecordsToReload(IndexingProfile indexingProfile, IlsExtractLogEntry logEntry) {
 		try {
+			PreparedStatement getNumRecordsToReloadStmt = dbConn.prepareStatement("SELECT count(*) from record_identifiers_to_reload WHERE processed = 0 and type='" + indexingProfile.getName() + "'", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			ResultSet getNumRecordsToReloadRS = getNumRecordsToReloadStmt.executeQuery();
+			if (getNumRecordsToReloadRS.next()){
+				logEntry.addNote("Processing " + getNumRecordsToReloadRS.getLong(1) + " records to reload");
+				logEntry.saveResults();
+			}
 			PreparedStatement getRecordsToReloadStmt = dbConn.prepareStatement("SELECT * from record_identifiers_to_reload WHERE processed = 0 and type='" + indexingProfile.getName() + "'", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			PreparedStatement markRecordToReloadAsProcessedStmt = dbConn.prepareStatement("UPDATE record_identifiers_to_reload SET processed = 1 where id = ?");
 			ResultSet getRecordsToReloadRS = getRecordsToReloadStmt.executeQuery();
@@ -586,6 +594,7 @@ public class PolarisExportMain {
 			}
 			if (numRecordsToReloadProcessed > 0) {
 				logEntry.addNote("Regrouped " + numRecordsToReloadProcessed + " records marked for reprocessing");
+				logEntry.saveResults();
 			}
 			getRecordsToReloadRS.close();
 		}catch (Exception e){
@@ -630,7 +639,9 @@ public class PolarisExportMain {
 			updateVolumeStmt = dbConn.prepareStatement("UPDATE ils_volume_info SET displayLabel = ?, relatedItems = ?, displayOrder = ? WHERE id = ?");
 			deleteAllVolumesStmt = dbConn.prepareStatement("DELETE from ils_volume_info where recordId = ?");
 			deleteVolumeStmt = dbConn.prepareStatement("DELETE from ils_volume_info where id = ?");
-			getBibIdForItemIdStmt = dbConn.prepareStatement("SELECT recordIdentifier from grouped_work_record_items inner join grouped_work_records ON grouped_work_record_items.groupedWorkRecordId = grouped_work_records.id WHERE itemId = ? and sourceId = (select id from indexed_record_source where source = ?)", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			sourceForPolarisStmt = dbConn.prepareStatement("select id from indexed_record_source where source = ?");
+			getBibIdForItemIdStmt = dbConn.prepareStatement("SELECT recordIdentifier from grouped_work_records WHERE grouped_work_records.id = ? and sourceId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			getRecordIdForItemIdStmt = dbConn.prepareStatement("SELECT groupedWorkRecordId FROM grouped_work_record_items WHERE itemId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			if (singleWorkId != null){
 				bibIdsUpdatedDuringContinuous = Collections.synchronizedSet(new HashSet<>());
 				itemIdsUpdatedDuringContinuous = Collections.synchronizedSet(new HashSet<>());
@@ -663,9 +674,9 @@ public class PolarisExportMain {
 				} else {
 					//Loop through remaining records and delete them
 					if (allowDeletingExistingRecords) {
-						logEntry.addNote("Starting to delete records that no longer exist");
 						GroupedWorkIndexer groupedWorkIndexer = getGroupedWorkIndexer();
 						MarcRecordGrouper recordGroupingProcessor = getRecordGroupingProcessor();
+						logEntry.addNote("Starting to delete " + recordGroupingProcessor.getExistingRecords().size() + " records that no longer exist");
 						for (String ilsId : recordGroupingProcessor.getExistingRecords().keySet()) {
 							RemoveRecordFromWorkResult result = recordGroupingProcessor.removeRecordFromGroupedWork(indexingProfile.getName(), ilsId);
 							if (result.permanentId != null) {
@@ -682,6 +693,7 @@ public class PolarisExportMain {
 							}
 						}
 						logEntry.addNote("Finished deleting records that no longer exist");
+						logEntry.saveResults();
 					}else{
 						logEntry.addNote("Skipping deleting records that no longer exist because we skipped some records at the start");
 					}
@@ -863,6 +875,20 @@ public class PolarisExportMain {
 			logEntry.addNote("Getting a list of all items that have been updated");
 			logEntry.saveResults();
 
+			long sourceId = -1;
+			try {
+				sourceForPolarisStmt.setString(1, indexingProfile.getName());
+				ResultSet sourceForPolarisRS = sourceForPolarisStmt.executeQuery();
+				if (sourceForPolarisRS.next()){
+					sourceId = sourceForPolarisRS.getLong(1);
+				}else{
+					logEntry.incErrors("Could not get source id for Polaris");
+					return numChanges;
+				}
+			} catch (Exception e) {
+				logEntry.incErrors("Unable to get source id for " + indexingProfile.getName(), e);
+			}
+
 			// Get a list of items that have been deleted and update those MARC records too
 			String getDeletedItemsUrl = "/PAPIService/REST/protected/v1/1033/100/1/" + accessToken + "/synch/items/deleted?deletedate=" + formattedLastItemExtractTime;
 			WebServiceResponse pagedDeletedItems = callPolarisAPI(getDeletedItemsUrl, null, "GET", "application/json", accessSecret);
@@ -877,7 +903,7 @@ public class PolarisExportMain {
 						JSONObject curItem = allItems.getJSONObject(i);
 						long itemId = curItem.getLong("ItemRecordID");
 						//Figure out the bib record based on the item id.
-						String bibForItem = getBibIdForItemIdFromAspen(itemId);
+						String bibForItem = getBibIdForItemIdFromAspen(itemId, sourceId);
 						if (bibForItem != null) {
 							if (!bibsToUpdate.contains(bibForItem)) {
 								logEntry.incProducts();
@@ -887,8 +913,12 @@ public class PolarisExportMain {
 									logEntry.saveResults();
 								}
 							}
-						}else{
-							logger.info("The bib was deleted when the item was.");
+//						}else{
+//							logger.info("The bib was deleted when item " + itemId + " was.");
+						}
+						if (i > 0 && (i % 250 == 0)){
+							logEntry.addNote("Processed " + i + " items looking for the bib that was deleted");
+							logEntry.saveResults();
 						}
 					}
 				} catch (Exception e) {
@@ -913,7 +943,12 @@ public class PolarisExportMain {
 						long itemId = curItem.getLong("ItemRecordID");
 						if (!itemIdsUpdatedDuringContinuous.contains(itemId)) {
 							//Figure out the bib record based on the item id.
-							String bibForItem = getBibIdForItemId(itemId);
+							//Getting from Aspen is faster if we can get it.
+							String bibForItem = getBibIdForItemIdFromAspen(itemId, sourceId);
+							if (bibForItem == null) {
+								//Use the APIs to get the bib id
+								bibForItem = getBibIdForItemId(itemId);
+							}
 							if (bibForItem != null) {
 								//check we've already updated this bib, if so it's ok to skip
 								if (!bibIdsUpdatedDuringContinuous.contains(bibForItem)) {
@@ -926,7 +961,10 @@ public class PolarisExportMain {
 								}
 							}
 						}else{
-							logger.info("Not updating item " + itemId + "because it was already processed when updating bibgs");
+							logger.info("Not updating item " + itemId + "because it was already processed when updating bibs");
+						}
+						if (i > 0 && (i % 500 == 0)){
+							logEntry.addNote("Processed " + i + " items to load bib id for the item");
 						}
 					}
 				} catch (Exception e) {
@@ -938,20 +976,32 @@ public class PolarisExportMain {
 
 			//Now that we have a list of all bibs that need to be updated based on item changes, reindex the bib
 			for(String bibNumber: bibsToUpdate){
+				logger.debug("Updating " + bibNumber);
 				numChanges += updateBibFromPolaris(bibNumber, marcFactory, lastExtractTime, false);
 			}
+
+			logEntry.addNote("Finished updating bibs");
+			logEntry.saveResults();
 		}
 
 		return numChanges;
 	}
 
-	private static String getBibIdForItemIdFromAspen(long itemId) {
+	private static String getBibIdForItemIdFromAspen(long itemId, long sourceId) {
+		if (sourceId == -1){
+			//No records have been saved yet
+			return null;
+		}
 		try {
-			getBibIdForItemIdStmt.setLong(1, itemId);
-			getBibIdForItemIdStmt.setString(2, indexingProfile.getName());
-			ResultSet getBibIdForItemIdRS = getBibIdForItemIdStmt.executeQuery();
-			if (getBibIdForItemIdRS.next()){
-				return getBibIdForItemIdRS.getString("recordIdentifier");
+			getRecordIdForItemIdStmt.setLong(1, itemId);
+			ResultSet getRecordIdForItemIdRS = getRecordIdForItemIdStmt.executeQuery();
+			while (getRecordIdForItemIdRS.next()){
+				getBibIdForItemIdStmt.setLong(1, getRecordIdForItemIdRS.getLong("groupedWorkRecordId"));
+				getBibIdForItemIdStmt.setLong(2, sourceId);
+				ResultSet getBibIdForItemIdRS = getBibIdForItemIdStmt.executeQuery();
+				if (getBibIdForItemIdRS.next()){
+					return getBibIdForItemIdRS.getString("recordIdentifier");
+				}
 			}
 		} catch (SQLException e) {
 			logEntry.incErrors("Error getting bib for item id from Aspen", e);
@@ -968,6 +1018,7 @@ public class PolarisExportMain {
 	}
 
 	static Pattern polarisDatePattern = Pattern.compile("/Date\\((-?\\d+)(-\\d{4})\\)/");
+	static Pattern lastCheckInPattern = Pattern.compile("\\w{3}\\s+\\d{1,2}\\s+\\d{4}");
 	private static ProcessBibRequestResponse processGetBibsRequest(String getBibsRequestUrl, MarcFactory marcFactory, long lastExtractTime, boolean incrementProductsInLog){
 		ProcessBibRequestResponse response = new ProcessBibRequestResponse();
 		if (marcFactory == null){
@@ -1075,19 +1126,24 @@ public class PolarisExportMain {
 			WebServiceResponse getBibResponse = callPolarisAPI(getBibUrl, null, "GET", "application/json", null);
 			if (getBibResponse.isSuccess()){
 				JSONObject bibInfo = getBibResponse.getJSONResponse();
-				JSONArray bibRows = bibInfo.getJSONArray("BibGetRows");
-				for (int j = 0; j < bibRows.length(); j++){
-					JSONObject bibRow = bibRows.getJSONObject(j);
-					if (bibRow.getInt("ElementID") == 8){
-						int numHolds = Integer.parseInt(bibRow.getString("Value"));
-						try {
-							addIlsHoldSummary.setString(1, bibliographicRecordId);
-							addIlsHoldSummary.setInt(2, numHolds);
-							addIlsHoldSummary.executeUpdate();
-						} catch (SQLException e) {
-							logEntry.incErrors("Unable to update hold summary", e);
+				if (bibInfo.has("BibGetRows") && bibInfo.get("BibGetRows") instanceof JSONArray) {
+					JSONArray bibRows = bibInfo.getJSONArray("BibGetRows");
+					for (int j = 0; j < bibRows.length(); j++) {
+						JSONObject bibRow = bibRows.getJSONObject(j);
+						if (bibRow.getInt("ElementID") == 8) {
+							int numHolds = Integer.parseInt(bibRow.getString("Value"));
+							try {
+								addIlsHoldSummary.setString(1, bibliographicRecordId);
+								addIlsHoldSummary.setInt(2, numHolds);
+								addIlsHoldSummary.executeUpdate();
+							} catch (SQLException e) {
+								logEntry.incErrors("Unable to update hold summary", e);
+							}
 						}
 					}
+				}else{
+					logEntry.addNote("Did not get a bib record for " + bibliographicRecordId + " skipping");
+					return;
 				}
 			}
 			try {
@@ -1267,7 +1323,14 @@ public class PolarisExportMain {
 							updateItemField(marcFactory, curItem, itemField, indexingProfile.getITypeSubfield(), "MaterialType");
 							updateItemField(marcFactory, curItem, itemField, indexingProfile.getItemStatusSubfield(), "CircStatus");
 							updateItemField(marcFactory, curItem, itemField, indexingProfile.getDueDateSubfield(), "DueDate");
-							updateItemField(marcFactory, curItem, itemField, indexingProfile.getLastCheckinDateSubfield(), "LastCircDate");
+							String circDate = getItemFieldData(curItem, "LastCircDate").trim();
+							if (circDate.length() > 0 && lastCheckInPattern.matcher(circDate).matches()){
+								SimpleDateFormat lastCheckInParser = new SimpleDateFormat("MMM dd yyy");
+								Date lastCheckInDate = lastCheckInParser.parse(circDate);
+								itemField.addSubfield(marcFactory.newSubfield(indexingProfile.getLastCheckinDateSubfield(), indexingProfile.getLastCheckinFormatter().format(lastCheckInDate)));
+							}else {
+								updateItemField(marcFactory, curItem, itemField, indexingProfile.getLastCheckinDateSubfield(), "LastCircDate");
+							}
 
 							//Public note is only exported as part of holdings so get from there
 							if (indexingProfile.getNoteSubfield() != ' ' && allHoldings != null) {
