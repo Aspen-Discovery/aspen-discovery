@@ -946,6 +946,7 @@ public class PolarisExportMain {
 
 			//Now that we have a list of all bibs that need to be updated based on item changes, reindex the bib
 			for(String bibNumber: bibsToUpdate){
+				logger.debug("Updating " + bibNumber);
 				numChanges += updateBibFromPolaris(bibNumber, marcFactory, lastExtractTime, false);
 			}
 
