@@ -916,7 +916,7 @@ public class PolarisExportMain {
 //						}else{
 //							logger.info("The bib was deleted when item " + itemId + " was.");
 						}
-						if (i > 0 && (i % 250 == 0)){
+						if (i > 0 && (i % 1000 == 0)){
 							logEntry.addNote("Processed " + i + " items looking for the bib that was deleted");
 							logEntry.saveResults();
 						}
@@ -993,7 +993,8 @@ public class PolarisExportMain {
 			return null;
 		}
 		try {
-			getRecordIdForItemIdStmt.setLong(1, itemId);
+			String itemIdString = Long.toString(itemId);
+			getRecordIdForItemIdStmt.setString(1, itemIdString);
 			ResultSet getRecordIdForItemIdRS = getRecordIdForItemIdStmt.executeQuery();
 			while (getRecordIdForItemIdRS.next()){
 				getBibIdForItemIdStmt.setLong(1, getRecordIdForItemIdRS.getLong("groupedWorkRecordId"));
