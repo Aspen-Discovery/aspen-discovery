@@ -207,7 +207,7 @@
 									<select name="newStatus" id="newStatus" class="form-control">
 										<option value="unselected">{translate text="Select One" isAdminFacing=true}</option>
 										{foreach from=$availableStatuses item=statusLabel key=status}
-											<option value="{$status}">{translate text="$statusLabel" inAttribute=true}</option>
+											<option value="{$status}">{translate text="$statusLabel"  isAdminFacing=true inAttribute=true}</option>
 										{/foreach}
 									</select>
 									<span class="btn btn-sm btn-primary input-group-addon" onclick="return AspenDiscovery.MaterialsRequest.updateSelectedRequests();">{translate text="Update Selected Requests" isAdminFacing=true}</span>

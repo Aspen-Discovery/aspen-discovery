@@ -2,7 +2,7 @@
 	{if $loggedIn}
 		{* Setup the accoridon *}
 		<!--suppress HtmlUnknownTarget -->
-		<div id="account-menu" class="dropdown-menu dropdownMenu" aria-labelledby="account-menu-dropdown" aria-label="{translate text="Account Menu" isPublicFacing=true}">
+		<div id="account-menu" class="dropdown-menu dropdownMenu" aria-labelledby="account-menu-dropdown" aria-label="{translate text="Account Menu" isPublicFacing=true inAttribute=true}">
 			<span class="expirationFinesNotice-placeholder"></span>
 			{if $userHasCatalogConnection}
 				<a href="/MyAccount/CheckedOut">
