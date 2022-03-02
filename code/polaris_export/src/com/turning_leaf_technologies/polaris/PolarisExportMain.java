@@ -82,6 +82,7 @@ public class PolarisExportMain {
 	private static PreparedStatement deleteVolumeStmt;
 	private static PreparedStatement updateVolumeStmt;
 	private static PreparedStatement getBibIdForItemIdStmt;
+	private static PreparedStatement sourceForPolarisStmt;
 
 	private static Set<String> bibIdsUpdatedDuringContinuous;
 	private static Set<Long> itemIdsUpdatedDuringContinuous;
@@ -637,7 +638,8 @@ public class PolarisExportMain {
 			updateVolumeStmt = dbConn.prepareStatement("UPDATE ils_volume_info SET displayLabel = ?, relatedItems = ?, displayOrder = ? WHERE id = ?");
 			deleteAllVolumesStmt = dbConn.prepareStatement("DELETE from ils_volume_info where recordId = ?");
 			deleteVolumeStmt = dbConn.prepareStatement("DELETE from ils_volume_info where id = ?");
-			getBibIdForItemIdStmt = dbConn.prepareStatement("SELECT recordIdentifier from grouped_work_record_items inner join grouped_work_records ON grouped_work_record_items.groupedWorkRecordId = grouped_work_records.id WHERE itemId = ? and sourceId = (select id from indexed_record_source where source = ?)", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			sourceForPolarisStmt = dbConn.prepareStatement("select id from indexed_record_source where source = ?");
+			getBibIdForItemIdStmt = dbConn.prepareStatement("SELECT recordIdentifier from grouped_work_record_items inner join grouped_work_records ON grouped_work_record_items.groupedWorkRecordId = grouped_work_records.id WHERE itemId = ? and sourceId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			if (singleWorkId != null){
 				bibIdsUpdatedDuringContinuous = Collections.synchronizedSet(new HashSet<>());
 				itemIdsUpdatedDuringContinuous = Collections.synchronizedSet(new HashSet<>());
@@ -881,11 +883,19 @@ public class PolarisExportMain {
 					JSONArray allItems = response.getJSONArray("ItemIDListRows");
 					logEntry.addNote("There were " + allItems.length() + " items that have been deleted");
 					logEntry.saveResults();
+					sourceForPolarisStmt.setString(1, indexingProfile.getName());
+					ResultSet sourceForPolarisRS = sourceForPolarisStmt.executeQuery();
+					long sourceId = 0;
+					if (sourceForPolarisRS.next()){
+						sourceId = sourceForPolarisRS.getLong(1);
+					}else{
+						logEntry.incErrors("Could not get source id for Polaris");
+					}
 					for (int i = 0; i < allItems.length(); i++) {
 						JSONObject curItem = allItems.getJSONObject(i);
 						long itemId = curItem.getLong("ItemRecordID");
 						//Figure out the bib record based on the item id.
-						String bibForItem = getBibIdForItemIdFromAspen(itemId);
+						String bibForItem = getBibIdForItemIdFromAspen(itemId, sourceId);
 						if (bibForItem != null) {
 							if (!bibsToUpdate.contains(bibForItem)) {
 								logEntry.incProducts();
@@ -898,7 +908,7 @@ public class PolarisExportMain {
 						}else{
 							logger.info("The bib was deleted when item " + itemId + " was.");
 						}
-						if (i % 500 == 0){
+						if (i > 0 && i % 500 == 0){
 							logEntry.addNote("Processed " + i + " items looking for the bib that was deleted");
 							logEntry.saveResults();
 						}
@@ -961,10 +971,10 @@ public class PolarisExportMain {
 		return numChanges;
 	}
 
-	private static String getBibIdForItemIdFromAspen(long itemId) {
+	private static String getBibIdForItemIdFromAspen(long itemId, long sourceId) {
 		try {
 			getBibIdForItemIdStmt.setLong(1, itemId);
-			getBibIdForItemIdStmt.setString(2, indexingProfile.getName());
+			getBibIdForItemIdStmt.setLong(2, sourceId);
 			ResultSet getBibIdForItemIdRS = getBibIdForItemIdStmt.executeQuery();
 			if (getBibIdForItemIdRS.next()){
 				return getBibIdForItemIdRS.getString("recordIdentifier");
