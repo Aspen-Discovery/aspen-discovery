@@ -103,6 +103,30 @@ function getUpdates22_03_00() : array
 				'ALTER TABLE library add COLUMN enableSavedSearches TINYINT(1) DEFAULT 1'
 			]
 		], //library_enableSavedSearches
+		'support_connection' => [
+			'title' => 'Support - Request Tracker connection',
+			'description' => 'Allow Libraries to define connection to request tracker their development priorities',
+			'continueOnError' => true,
+			'sql' => [
+				'CREATE TABLE IF NOT EXISTS request_tracker_connection (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, 
+					baseUrl VARCHAR(255),
+					activeTicketFeed TEXT
+				) ENGINE INNODB',
+				'CREATE TABLE IF NOT EXISTS development_priorities (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, 
+					priority1 VARCHAR(50),
+					priority2 VARCHAR(50),
+					priority3 VARCHAR(50)
+				) ENGINE INNODB',
+				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES ('Aspen Discovery Support', 'Administer Request Tracker Connection', '', 10, 'Allows configuration of connection to the support system.')",
+				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES ('Aspen Discovery Support', 'View Active Tickets', '', 20, 'Allows display of active tickets within the support system.')",
+				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES ('Aspen Discovery Support', 'Set Development Priorities', '', 30, 'Allows setting of priorities for development.')",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer Request Tracker Connection'))",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='View Active Tickets'))",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Set Development Priorities'))",
+			]
+		], //support_connection
 	];
 }
 
