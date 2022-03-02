@@ -385,7 +385,7 @@ function updateConfigForScoping($configArray)
 			$library = $Library;
 		}
 	}
-	
+
 	if ($library == null) {
 		echo("Could not find the active library, please review configuration settings");
 		die();
