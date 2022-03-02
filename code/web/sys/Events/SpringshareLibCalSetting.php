@@ -2,11 +2,11 @@
 require_once ROOT_DIR . '/sys/Events/LibraryEventsSetting.php';
 
 /**
- * Settings for LibraryMarket - LibraryCalendar integration
+ * Settings for Springshare - LibCal integration
  */
-class LMLibraryCalendarSetting extends DataObject
+class SpringshareLibCalSetting extends DataObject
 {
-	public $__table = 'lm_library_calendar_settings';
+	public $__table = 'springshare_libcal_settings';
 	public $id;
 	public $name;
 	public $baseUrl;
@@ -19,16 +19,17 @@ class LMLibraryCalendarSetting extends DataObject
 
 	public static function getObjectStructure() : array
 	{
-		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer LibraryMarket LibraryCalendar Settings'));
+		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer Springshare LibCal Settings'));
 
 		return array(
 			'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id'),
 			'name' => array('property' => 'name', 'type' => 'text', 'label' => 'Name', 'description' => 'A name for the settings'),
-			'baseUrl' => array('property' => 'baseUrl', 'type' => 'url', 'label' => 'Base URL (i.e. https://yoursite.librarycalendar.com)', 'description' => 'The URL for the site'),
-			'clientId' => array('property' => 'clientId', 'type' => 'text', 'label' => 'Client ID', 'description' => 'Client ID for retrieving the staff feed', 'maxLength' => 36),
-			'clientSecret' => array('property' => 'clientSecret', 'type' => 'storedPassword', 'label' => 'Client Secret', 'description' => 'Client Secret for retrieving the staff feed', 'maxLength' => 36, 'hideInLists' => true),
-			'username' => array('property' => 'username', 'type' => 'text', 'label' => 'LibraryCalendar Admin Username', 'description' => 'Username for retrieving the staff feed', 'default'=>'lc_feeds_staffadmin', 'maxLength' => 36),
-			'password' => array('property' => 'password', 'type' => 'storedPassword', 'label' => 'LibraryCalendar Admin Password', 'description' => 'Password for retrieving the staff feed', 'maxLength' => 36, 'hideInLists' => true),
+			'baseUrl' => array('property' => 'baseUrl', 'type' => 'url', 'label' => 'Base URL (i.e. https://yoursite.libcal.com)', 'description' => 'The URL for the site'),
+			'calId' => array('property' => 'calId', 'type' => 'integer', 'label' => 'Calendar ID', 'description' => 'Calendar ID you wish to return data from'),
+            'clientId' => array('property' => 'clientId', 'type' => 'text', 'label' => 'Client ID', 'description' => 'Client ID', 'maxLength' => 36),
+			'clientSecret' => array('property' => 'clientSecret', 'type' => 'storedPassword', 'label' => 'Client Secret', 'description' => 'Client Secret', 'maxLength' => 36, 'hideInLists' => true),
+			'username' => array('property' => 'username', 'type' => 'text', 'label' => 'Springshare LibCal Admin Username', 'description' => 'Username', 'default'=>'', 'maxLength' => 36),
+			'password' => array('property' => 'password', 'type' => 'storedPassword', 'label' => 'Springshare LibCal Admin Password', 'description' => 'Password', 'maxLength' => 36, 'hideInLists' => true),
 
 			'libraries' => array(
 				'property' => 'libraries',
@@ -98,7 +99,7 @@ class LMLibraryCalendarSetting extends DataObject
 		if (!isset($this->_libraries) && $this->id){
 			$this->_libraries = array();
 			$library = new LibraryEventsSetting();
-			$library->settingSource = 'library_market';
+			$library->settingSource = 'springshare';
 			$library->settingId = $this->id;
 			$library->find();
 			while($library->fetch()){
@@ -115,7 +116,7 @@ class LMLibraryCalendarSetting extends DataObject
 			foreach ($this->_libraries as $libraryId) {
 				$libraryEventSetting = new LibraryEventsSetting();
 
-				$libraryEventSetting->settingSource = 'library_market';
+				$libraryEventSetting->settingSource = 'springshare';
 				$libraryEventSetting->settingId = $this->id;
 				$libraryEventSetting->libraryId = $libraryId;
 				$libraryEventSetting->insert();
@@ -128,7 +129,7 @@ class LMLibraryCalendarSetting extends DataObject
 	{
 		//Delete links to the libraries
 		$libraryEventSetting = new LibraryEventsSetting();
-		$libraryEventSetting->settingSource = 'library_market';
+		$libraryEventSetting->settingSource = 'springshare';
 		$libraryEventSetting->settingId = $this->id;
 		return $libraryEventSetting->delete(true);
 	}

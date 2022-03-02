@@ -2,9 +2,9 @@
 
 require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
-require_once ROOT_DIR . '/sys/Events/LMLibraryCalendarSetting.php';
+require_once ROOT_DIR . '/sys/Events/SpringshareLibCalSetting.php';
 
-class Events_LMLibraryCalendarSettings extends ObjectEditor
+class Events_SpringshareLibCalSettings extends ObjectEditor
 {
 
 	/**
@@ -12,7 +12,7 @@ class Events_LMLibraryCalendarSettings extends ObjectEditor
 	 */
 	function getObjectType() : string
 	{
-		return 'LMLibraryCalendarSetting';
+		return 'SpringshareLibCalSetting';
 	}
 
 	/**
@@ -20,7 +20,7 @@ class Events_LMLibraryCalendarSettings extends ObjectEditor
 	 */
 	function getToolName() : string
 	{
-		return 'LMLibraryCalendarSettings';
+		return 'SpringshareLibCalSettings';
 	}
 
 	function getModule() : string
@@ -33,7 +33,7 @@ class Events_LMLibraryCalendarSettings extends ObjectEditor
 	 */
 	function getPageTitle() : string
 	{
-		return 'LibraryMarket - LibraryCalendar Settings';
+		return 'Springshare LibCal Settings';
 	}
 
 	/**
@@ -41,7 +41,7 @@ class Events_LMLibraryCalendarSettings extends ObjectEditor
 	 */
 	function getAllObjects($page, $recordsPerPage) : array
 	{
-		$object = new LMLibraryCalendarSetting();
+		$object = new SpringshareLibCalSetting();
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$this->applyFilters($object);
 		$object->orderBy($this->getSort());
@@ -63,7 +63,7 @@ class Events_LMLibraryCalendarSettings extends ObjectEditor
 	 */
 	function getObjectStructure() : array
 	{
-		return LMLibraryCalendarSetting::getObjectStructure();
+		return SpringshareLibCalSetting::getObjectStructure();
 	}
 
 	/**
@@ -87,13 +87,13 @@ class Events_LMLibraryCalendarSettings extends ObjectEditor
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home#events', 'Events');
-		$breadcrumbs[] = new Breadcrumb('/Events/LMLibraryCalendarSettings', 'LibraryMarket - LibraryCalendar Settings');
+		$breadcrumbs[] = new Breadcrumb('/Events/SpringshareLibCalSettings', 'Springshare - LibCal Settings');
 		return $breadcrumbs;
 	}
 
 	function canView() : bool
 	{
-		return UserAccount::userHasPermission('Administer LibraryMarket LibraryCalendar Settings');
+		return UserAccount::userHasPermission('Administer Springshare LibCal Settings');
 	}
 
 	function getActiveAdminSection() : string
