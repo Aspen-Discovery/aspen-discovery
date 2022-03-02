@@ -1049,7 +1049,7 @@ class Polaris extends AbstractIlsDriver
 			$jsonResponse = json_decode($response);
 			if ($jsonResponse->PAPIErrorCode == 0) {
 				$patron->forceReloadOfHolds();
-				$result['success'] = false;
+				$result['success'] = true;
 				$result['message'] = translate(['text' => 'The hold has been frozen.', 'isPublicFacing' => true]);
 
 				// Result for API or app use
