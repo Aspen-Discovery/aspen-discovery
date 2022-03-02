@@ -564,6 +564,12 @@ public class PolarisExportMain {
 
 	private static void processRecordsToReload(IndexingProfile indexingProfile, IlsExtractLogEntry logEntry) {
 		try {
+			PreparedStatement getNumRecordsToReloadStmt = dbConn.prepareStatement("SELECT count(*) from record_identifiers_to_reload WHERE processed = 0 and type='" + indexingProfile.getName() + "'", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			ResultSet getNumRecordsToReloadRS = getNumRecordsToReloadStmt.executeQuery();
+			if (getNumRecordsToReloadRS.next()){
+				logEntry.addNote("Processing " + getNumRecordsToReloadRS.getLong(1) + " records to reload");
+				logEntry.saveResults();
+			}
 			PreparedStatement getRecordsToReloadStmt = dbConn.prepareStatement("SELECT * from record_identifiers_to_reload WHERE processed = 0 and type='" + indexingProfile.getName() + "'", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			PreparedStatement markRecordToReloadAsProcessedStmt = dbConn.prepareStatement("UPDATE record_identifiers_to_reload SET processed = 1 where id = ?");
 			ResultSet getRecordsToReloadRS = getRecordsToReloadStmt.executeQuery();
@@ -586,6 +592,7 @@ public class PolarisExportMain {
 			}
 			if (numRecordsToReloadProcessed > 0) {
 				logEntry.addNote("Regrouped " + numRecordsToReloadProcessed + " records marked for reprocessing");
+				logEntry.saveResults();
 			}
 			getRecordsToReloadRS.close();
 		}catch (Exception e){
@@ -663,9 +670,9 @@ public class PolarisExportMain {
 				} else {
 					//Loop through remaining records and delete them
 					if (allowDeletingExistingRecords) {
-						logEntry.addNote("Starting to delete records that no longer exist");
 						GroupedWorkIndexer groupedWorkIndexer = getGroupedWorkIndexer();
 						MarcRecordGrouper recordGroupingProcessor = getRecordGroupingProcessor();
+						logEntry.addNote("Starting to delete " + recordGroupingProcessor.getExistingRecords().size() + " records that no longer exist");
 						for (String ilsId : recordGroupingProcessor.getExistingRecords().keySet()) {
 							RemoveRecordFromWorkResult result = recordGroupingProcessor.removeRecordFromGroupedWork(indexingProfile.getName(), ilsId);
 							if (result.permanentId != null) {
@@ -682,6 +689,7 @@ public class PolarisExportMain {
 							}
 						}
 						logEntry.addNote("Finished deleting records that no longer exist");
+						logEntry.saveResults();
 					}else{
 						logEntry.addNote("Skipping deleting records that no longer exist because we skipped some records at the start");
 					}
@@ -940,6 +948,9 @@ public class PolarisExportMain {
 			for(String bibNumber: bibsToUpdate){
 				numChanges += updateBibFromPolaris(bibNumber, marcFactory, lastExtractTime, false);
 			}
+
+			logEntry.addNote("Finished updating bibs");
+			logEntry.saveResults();
 		}
 
 		return numChanges;
@@ -1076,19 +1087,24 @@ public class PolarisExportMain {
 			WebServiceResponse getBibResponse = callPolarisAPI(getBibUrl, null, "GET", "application/json", null);
 			if (getBibResponse.isSuccess()){
 				JSONObject bibInfo = getBibResponse.getJSONResponse();
-				JSONArray bibRows = bibInfo.getJSONArray("BibGetRows");
-				for (int j = 0; j < bibRows.length(); j++){
-					JSONObject bibRow = bibRows.getJSONObject(j);
-					if (bibRow.getInt("ElementID") == 8){
-						int numHolds = Integer.parseInt(bibRow.getString("Value"));
-						try {
-							addIlsHoldSummary.setString(1, bibliographicRecordId);
-							addIlsHoldSummary.setInt(2, numHolds);
-							addIlsHoldSummary.executeUpdate();
-						} catch (SQLException e) {
-							logEntry.incErrors("Unable to update hold summary", e);
+				if (bibInfo.has("BibGetRows") && bibInfo.get("BibGetRows") instanceof JSONArray) {
+					JSONArray bibRows = bibInfo.getJSONArray("BibGetRows");
+					for (int j = 0; j < bibRows.length(); j++) {
+						JSONObject bibRow = bibRows.getJSONObject(j);
+						if (bibRow.getInt("ElementID") == 8) {
+							int numHolds = Integer.parseInt(bibRow.getString("Value"));
+							try {
+								addIlsHoldSummary.setString(1, bibliographicRecordId);
+								addIlsHoldSummary.setInt(2, numHolds);
+								addIlsHoldSummary.executeUpdate();
+							} catch (SQLException e) {
+								logEntry.incErrors("Unable to update hold summary", e);
+							}
 						}
 					}
+				}else{
+					logEntry.addNote("Did not get a bib record for " + bibliographicRecordId + " skipping");
+					return;
 				}
 			}
 			try {
