@@ -556,6 +556,50 @@ class Koha extends AbstractIlsDriver
 		}
 	}
 
+	public function getPostedXMLWebServiceResponse($url, $body)
+	{
+		global $logger;
+		if (IPAddress::showDebuggingInformation()){
+			$logger->log("Koha API Call to: " . $url, Logger::LOG_ERROR);
+		}
+		$headers  = array(
+			'Content-Type: application/x-www-form-urlencoded',
+		);
+		$this->curlWrapper->addCustomHeaders($headers, false);
+		$xml = $this->curlWrapper->curlPostPage($url, $body, false);
+		if ($xml !== false && $xml !== 'false') {
+			if (strpos($xml, '<') !== false) {
+				//Strip any non-UTF-8 characters
+				$xml = preg_replace('/[^(\x20-\x7F)]*/', '', $xml);
+				libxml_use_internal_errors(true);
+				$parsedXml = simplexml_load_string($xml);
+				if ($parsedXml === false) {
+					//Failed to load xml
+					$logger->log("Error parsing xml", Logger::LOG_ERROR);
+					$logger->log($xml, Logger::LOG_DEBUG);
+					foreach (libxml_get_errors() as $error) {
+						$logger->log("\t {$error->message}", Logger::LOG_ERROR);
+					}
+					return false;
+				} else {
+					if (IPAddress::showDebuggingInformation()){
+						$logger->log("Koha API response: " . $xml, Logger::LOG_ERROR);
+					}
+					return $parsedXml;
+				}
+			} else {
+				if (IPAddress::showDebuggingInformation()){
+					$logger->log("Koha API response: " . $xml, Logger::LOG_ERROR);
+				}
+				return $xml;
+			}
+		} else {
+			global $logger;
+			$logger->log('Curl problem in getWebServiceResponse', Logger::LOG_WARNING);
+			return false;
+		}
+	}
+
 	/**
 	 * @param string $username
 	 * @param string $password
@@ -588,9 +632,14 @@ class Koha extends AbstractIlsDriver
 		$userExistsInDB = false;
 		foreach ($barcodesToTest as $i => $barcode) {
 			//Authenticate the user using KOHA ILSDI
-			$authenticationURL = $this->getWebServiceUrl() . '/cgi-bin/koha/ilsdi.pl?service=AuthenticatePatron&username=' . urlencode($barcode) . '&password=' . urlencode($password);
-			$authenticationResponse = $this->getXMLWebServiceResponse($authenticationURL);
-			ExternalRequestLogEntry::logRequest('koha.authenticatePatron', 'GET', $authenticationURL, $this->curlWrapper->getHeaders(), '', $this->curlWrapper->getResponseCode(), $authenticationResponse, ['password' => urlencode($password)]);
+			$authenticationURL = $this->getWebServiceUrl() . '/cgi-bin/koha/ilsdi.pl';
+			$params = [
+				'service' => 'AuthenticatePatron',
+				'username' => $barcode,
+				'password' => $password
+			];
+			$authenticationResponse = $this->getPostedXMLWebServiceResponse($authenticationURL, $params);
+			ExternalRequestLogEntry::logRequest('koha.authenticatePatron', 'POST', $authenticationURL, $this->curlWrapper->getHeaders(), json_encode($params), $this->curlWrapper->getResponseCode(), $authenticationResponse, ['password' => urlencode($password)]);
 			if (isset($authenticationResponse->id)) {
 				$patronId = $authenticationResponse->id;
 				$result = $this->loadPatronInfoFromDB($patronId, $password);
