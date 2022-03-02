@@ -1249,6 +1249,19 @@ class Polaris extends AbstractIlsDriver
 					$body->RequestPickupBranchID = $homeBranchCode;
 				}
 			}
+
+			if (!$library->allowPatronPhoneNumberUpdates){
+				unset($body->PhoneVoice1);
+				unset($body->PhoneVoice2);
+				unset($body->PhoneVoice3);
+				unset($body->PhoneVoice1Carrier);
+				unset($body->PhoneVoice2Carrier);
+				unset($body->PhoneVoice3Carrier);
+				unset($body->TxtPhoneNumber);
+			}
+			if (!$library->showNoticeTypeInProfile){
+				unset($body->DeliveryOptionID);
+			}
 			$encodedBody = json_encode($body);
 			$response = $this->getWebServiceResponse($polarisUrl, 'PUT', $this->getAccessToken($patron->getBarcode(), $patron->getPasswordOrPin()), $encodedBody, $fromMasquerade || UserAccount::isUserMasquerading());
 			ExternalRequestLogEntry::logRequest('polaris.updatePatronInfo', 'PUT', $this->getWebServiceURL() . $polarisUrl, $this->apiCurlWrapper->getHeaders(), $encodedBody, $this->lastResponseCode, $response, []);
