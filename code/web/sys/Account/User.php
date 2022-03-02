@@ -2570,35 +2570,39 @@ class User extends DataObject
 			$sections['course_reserves']->addAction(new AdminAction('Indexing Log', 'View the indexing log for Course Reserves.', '/CourseReserves/IndexingLog'), ['View System Reports', 'View Indexing Logs']);
 		}
 
-		$sections['support'] = new AdminSection('Support');
+		$sections['support'] = new AdminSection('Aspen Discovery Support');
 		$sections['support']->addAction(new AdminAction('Request Tracker Settings', 'Define settings for a Request Tracker support system.', '/Support/RequestTrackerConnections'), 'Administer Request Tracker Connection');
 		try {
 			require_once ROOT_DIR . '/sys/Support/RequestTrackerConnection.php';
 			$supportConnections = new RequestTrackerConnection();
-			if ($supportConnections->find(true)) {
+			$hasSupportConnection = false;
+			if ($supportConnections->find(true)){
+				$hasSupportConnection = true;
+			}
+			if ($hasSupportConnection) {
 				$sections['support']->addAction(new AdminAction('View Active Tickets', 'View Active Tickets.', '/Support/ViewTickets'), 'View Active Tickets');
+			}
+			$showSubmitTicket = false;
+			try {
+				require_once ROOT_DIR . '/sys/SystemVariables.php';
+				$systemVariables = new SystemVariables();
+				if ($systemVariables->find(true) && !empty($systemVariables->ticketEmail)) {
+					$showSubmitTicket = true;
+				}
+			}catch (Exception $e) {
+				//This happens before the table is setup
+			}
+			if ($showSubmitTicket) {
+				$sections['support']->addAction(new AdminAction('Submit Ticket', 'Submit a support ticket for assistance with Aspen Discovery.', '/Admin/SubmitTicket'), 'Submit Ticket');
+			}
+			if ($hasSupportConnection) {
 				$sections['support']->addAction(new AdminAction('Set Priorities', 'Set Development Priorities.', '/Support/SetDevelopmentPriorities'), 'Set Development Priorities');
 			}
 		}catch (Exception $e){
 			//This happens before tables are created, ignore
 		}
-
-		$sections['aspen_help'] = new AdminSection('Aspen Discovery Help');
-		$sections['aspen_help']->addAction(new AdminAction('Help Manual', 'View Help Manual for Aspen Discovery.', '/Admin/HelpManual?page=table_of_contents'), true);
-		$sections['aspen_help']->addAction(new AdminAction('Release Notes', 'View release notes for Aspen Discovery which contain information about new functionality and fixes for each release.', '/Admin/ReleaseNotes'), true);
-		$showSubmitTicket = false;
-		try {
-			require_once ROOT_DIR . '/sys/SystemVariables.php';
-			$systemVariables = new SystemVariables();
-			if ($systemVariables->find(true) && !empty($systemVariables->ticketEmail)) {
-				$showSubmitTicket = true;
-			}
-		}catch (Exception $e) {
-			//This happens before the table is setup
-		}
-		if ($showSubmitTicket) {
-			$sections['aspen_help']->addAction(new AdminAction('Submit Ticket', 'Submit a support ticket for assistance with Aspen Discovery.', '/Admin/SubmitTicket'), 'Submit Ticket');
-		}
+		$sections['support']->addAction(new AdminAction('Help Manual', 'View Help Manual for Aspen Discovery.', '/Admin/HelpManual?page=table_of_contents'), true);
+		$sections['support']->addAction(new AdminAction('Release Notes', 'View release notes for Aspen Discovery which contain information about new functionality and fixes for each release.', '/Admin/ReleaseNotes'), true);
 
 		return $sections;
 	}

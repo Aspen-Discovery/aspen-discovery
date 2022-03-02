@@ -68,14 +68,14 @@ class SubmitTicket extends Admin_Admin
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
-		$breadcrumbs[] = new Breadcrumb('/Admin/Home#aspen_help', 'Aspen Discovery Help');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#support', 'Aspen Discovery Support');
 		$breadcrumbs[] = new Breadcrumb('', 'Submit Support Ticket');
 		return $breadcrumbs;
 	}
 
 	function getActiveAdminSection() : string
 	{
-		return 'aspen_help';
+		return 'support';
 	}
 
 	function canView() : bool
