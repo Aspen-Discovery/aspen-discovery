@@ -82,6 +82,7 @@ public class PolarisExportMain {
 	private static PreparedStatement deleteVolumeStmt;
 	private static PreparedStatement updateVolumeStmt;
 	private static PreparedStatement getBibIdForItemIdStmt;
+	private static PreparedStatement getRecordIdForItemIdStmt;
 	private static PreparedStatement sourceForPolarisStmt;
 
 	private static Set<String> bibIdsUpdatedDuringContinuous;
@@ -639,7 +640,8 @@ public class PolarisExportMain {
 			deleteAllVolumesStmt = dbConn.prepareStatement("DELETE from ils_volume_info where recordId = ?");
 			deleteVolumeStmt = dbConn.prepareStatement("DELETE from ils_volume_info where id = ?");
 			sourceForPolarisStmt = dbConn.prepareStatement("select id from indexed_record_source where source = ?");
-			getBibIdForItemIdStmt = dbConn.prepareStatement("SELECT recordIdentifier from grouped_work_record_items inner join grouped_work_records ON grouped_work_record_items.groupedWorkRecordId = grouped_work_records.id WHERE itemId = ? and sourceId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			getBibIdForItemIdStmt = dbConn.prepareStatement("SELECT recordIdentifier from grouped_work_records WHERE grouped_work_records.id = ? and sourceId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			getRecordIdForItemIdStmt = dbConn.prepareStatement("SELECT groupedWorkRecordId FROM grouped_work_record_items WHERE itemId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			if (singleWorkId != null){
 				bibIdsUpdatedDuringContinuous = Collections.synchronizedSet(new HashSet<>());
 				itemIdsUpdatedDuringContinuous = Collections.synchronizedSet(new HashSet<>());
@@ -973,11 +975,15 @@ public class PolarisExportMain {
 
 	private static String getBibIdForItemIdFromAspen(long itemId, long sourceId) {
 		try {
-			getBibIdForItemIdStmt.setLong(1, itemId);
-			getBibIdForItemIdStmt.setLong(2, sourceId);
-			ResultSet getBibIdForItemIdRS = getBibIdForItemIdStmt.executeQuery();
-			if (getBibIdForItemIdRS.next()){
-				return getBibIdForItemIdRS.getString("recordIdentifier");
+			getRecordIdForItemIdStmt.setLong(1, itemId);
+			ResultSet getRecordIdForItemIdRS = getRecordIdForItemIdStmt.executeQuery();
+			while (getRecordIdForItemIdRS.next()){
+				getBibIdForItemIdStmt.setLong(1, getRecordIdForItemIdRS.getLong("groupedWorkRecordId"));
+				getBibIdForItemIdStmt.setLong(2, sourceId);
+				ResultSet getBibIdForItemIdRS = getBibIdForItemIdStmt.executeQuery();
+				if (getBibIdForItemIdRS.next()){
+					return getBibIdForItemIdRS.getString("recordIdentifier");
+				}
 			}
 		} catch (SQLException e) {
 			logEntry.incErrors("Error getting bib for item id from Aspen", e);
