@@ -981,6 +981,7 @@ public class PolarisExportMain {
 
 	@SuppressWarnings("SpellCheckingInspection")
 	static Pattern polarisDatePattern = Pattern.compile("/Date\\((-?\\d+)(-\\d{4})\\)/");
+	static Pattern lastCheckInPattern = Pattern.compile("\\w{3}\\s+\\d{1,2}\\s+\\d{4}");
 	private static ProcessBibRequestResponse processGetBibsRequest(String getBibsRequestUrl, MarcFactory marcFactory, long lastExtractTime, boolean incrementProductsInLog){
 		ProcessBibRequestResponse response = new ProcessBibRequestResponse();
 		if (marcFactory == null){
@@ -1285,7 +1286,14 @@ public class PolarisExportMain {
 							updateItemField(marcFactory, curItem, itemField, indexingProfile.getITypeSubfield(), "MaterialType");
 							updateItemField(marcFactory, curItem, itemField, indexingProfile.getItemStatusSubfield(), "CircStatus");
 							updateItemField(marcFactory, curItem, itemField, indexingProfile.getDueDateSubfield(), "DueDate");
-							updateItemField(marcFactory, curItem, itemField, indexingProfile.getLastCheckinDateSubfield(), "LastCircDate");
+							String circDate = getItemFieldData(curItem, "LastCircDate").trim();
+							if (circDate.length() > 0 && lastCheckInPattern.matcher(circDate).matches()){
+								SimpleDateFormat lastCheckInParser = new SimpleDateFormat("MMM dd yyy");
+								Date lastCheckInDate = lastCheckInParser.parse(circDate);
+								itemField.addSubfield(marcFactory.newSubfield(indexingProfile.getDateCreatedSubfield(), indexingProfile.getLastCheckinFormatter().format(lastCheckInDate)));
+							}else {
+								updateItemField(marcFactory, curItem, itemField, indexingProfile.getLastCheckinDateSubfield(), "LastCircDate");
+							}
 
 							//Public note is only exported as part of holdings so get from there
 							if (indexingProfile.getNoteSubfield() != ' ' && allHoldings != null) {
