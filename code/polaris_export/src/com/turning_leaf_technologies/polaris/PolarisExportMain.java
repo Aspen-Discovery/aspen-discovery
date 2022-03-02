@@ -896,7 +896,11 @@ public class PolarisExportMain {
 								}
 							}
 						}else{
-							logger.info("The bib was deleted when the item was.");
+							logger.info("The bib was deleted when item " + itemId + " was.");
+						}
+						if (i % 500 == 0){
+							logEntry.addNote("Processed " + i + " items looking for the bib that was deleted");
+							logEntry.saveResults();
 						}
 					}
 				} catch (Exception e) {
