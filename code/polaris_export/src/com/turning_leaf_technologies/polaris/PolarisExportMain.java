@@ -960,11 +960,11 @@ public class PolarisExportMain {
 									}
 								}
 							}
-							if (i > 0 && (i % 500 == 0)){
-								logEntry.addNote("Processed " + i + " items to load bib id for the item");
-							}
 						}else{
 							logger.info("Not updating item " + itemId + "because it was already processed when updating bibs");
+						}
+						if (i > 0 && (i % 500 == 0)){
+							logEntry.addNote("Processed " + i + " items to load bib id for the item");
 						}
 					}
 				} catch (Exception e) {
