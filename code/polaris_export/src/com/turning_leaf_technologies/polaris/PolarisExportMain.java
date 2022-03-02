@@ -1294,7 +1294,7 @@ public class PolarisExportMain {
 							if (circDate.length() > 0 && lastCheckInPattern.matcher(circDate).matches()){
 								SimpleDateFormat lastCheckInParser = new SimpleDateFormat("MMM dd yyy");
 								Date lastCheckInDate = lastCheckInParser.parse(circDate);
-								itemField.addSubfield(marcFactory.newSubfield(indexingProfile.getDateCreatedSubfield(), indexingProfile.getLastCheckinFormatter().format(lastCheckInDate)));
+								itemField.addSubfield(marcFactory.newSubfield(indexingProfile.getLastCheckinDateSubfield(), indexingProfile.getLastCheckinFormatter().format(lastCheckInDate)));
 							}else {
 								updateItemField(marcFactory, curItem, itemField, indexingProfile.getLastCheckinDateSubfield(), "LastCircDate");
 							}
