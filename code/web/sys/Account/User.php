@@ -1648,15 +1648,15 @@ class User extends DataObject
 		}
 
 		if ($success >= 1) {
-			$message = '<div class="alert alert-success">' . $success . ' of ' . $total . ' holds were frozen.</div>';
+			$message = '<div class="alert alert-success">' . translate(['text' => '%1% of %2% holds were frozen', 1 => $success, 2 => $total, 'isPublicFacing' => true, 'inAttribute'=>true]) . '</div>';
 
 			if ($failed >= 1) {
-				$message .= '<div class="alert alert-warning">' . $failed . ' holds failed to freeze.</div>';
+				$message .= '<div class="alert alert-warning">' . translate(['text' => '%1% holds failed to freeze', 1 => $failed, 2 => $total, 'isPublicFacing' => true, 'inAttribute'=>true]).'</div>';
 			}
 
 			$tmpResult['message'] = $message;
 		} else {
-			$tmpResult['message'] = '<div class="alert alert-warning">All holds already frozen</div>';
+			$tmpResult['message'] = '<div class="alert alert-warning">' . translate(['text' => 'All holds already frozen', 'isPublicFacing' => true, 'inAttribute'=>true]) . '</div>';
 		}
 
 		return $tmpResult;
@@ -1713,15 +1713,15 @@ class User extends DataObject
 				}
 
 				if ($success >= 1 ){
-					$message = '<div class="alert alert-success">' . $success . ' of ' . $total . ' holds were thawed.</div>';
+					$message = '<div class="alert alert-success">' . translate(['text' => '%1% of %2% holds were thawed', 1 => $success, 2 => $total, 'isPublicFacing' => true, 'inAttribute'=>true]) . '</div>';
 
 					if ($failed >= 1) {
-						$message .= '<div class="alert alert-warning">' . $failed . ' holds failed to thaw.</div>';
+						$message .= '<div class="alert alert-warning">' . translate(['text' => '%1% holds failed to thaw', 1 => $failed, 'isPublicFacing' => true, 'inAttribute'=>true]) . '</div>';
 					}
 
 					$tmpResult['message'] = $message;
 				} else {
-					$tmpResult['message'] = '<div class="alert alert-warning">All holds already thawed</div>';
+					$tmpResult['message'] = '<div class="alert alert-warning">' . translate(['text' => 'All holds already thawed']) . '</div>';
 				}
 			}
 		} else {
