@@ -913,10 +913,10 @@ public class PolarisExportMain {
 									logEntry.saveResults();
 								}
 							}
-						}else{
-							logger.info("The bib was deleted when item " + itemId + " was.");
+//						}else{
+//							logger.info("The bib was deleted when item " + itemId + " was.");
 						}
-						if (i > 0 && (i % 500 == 0)){
+						if (i > 0 && (i % 250 == 0)){
 							logEntry.addNote("Processed " + i + " items looking for the bib that was deleted");
 							logEntry.saveResults();
 						}
