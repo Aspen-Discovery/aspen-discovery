@@ -377,6 +377,16 @@ function updateConfigForScoping($configArray)
 
 	$timer->logTime('found library and location');
 	if ($library == null) {
+		$Library = new Library();
+		$Library->isDefault = 1;
+		$Library->find();
+		if ($Library->getNumResults() == 1) {
+			$Library->fetch();
+			$library = $Library;
+		}
+	}
+	
+	if ($library == null) {
 		echo("Could not find the active library, please review configuration settings");
 		die();
 	} else {
