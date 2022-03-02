@@ -875,6 +875,20 @@ public class PolarisExportMain {
 			logEntry.addNote("Getting a list of all items that have been updated");
 			logEntry.saveResults();
 
+			long sourceId = -1;
+			try {
+				sourceForPolarisStmt.setString(1, indexingProfile.getName());
+				ResultSet sourceForPolarisRS = sourceForPolarisStmt.executeQuery();
+				if (sourceForPolarisRS.next()){
+					sourceId = sourceForPolarisRS.getLong(1);
+				}else{
+					logEntry.incErrors("Could not get source id for Polaris");
+					return numChanges;
+				}
+			} catch (Exception e) {
+				logEntry.incErrors("Unable to get source id for " + indexingProfile.getName(), e);
+			}
+
 			// Get a list of items that have been deleted and update those MARC records too
 			String getDeletedItemsUrl = "/PAPIService/REST/protected/v1/1033/100/1/" + accessToken + "/synch/items/deleted?deletedate=" + formattedLastItemExtractTime;
 			WebServiceResponse pagedDeletedItems = callPolarisAPI(getDeletedItemsUrl, null, "GET", "application/json", accessSecret);
@@ -885,14 +899,6 @@ public class PolarisExportMain {
 					JSONArray allItems = response.getJSONArray("ItemIDListRows");
 					logEntry.addNote("There were " + allItems.length() + " items that have been deleted");
 					logEntry.saveResults();
-					sourceForPolarisStmt.setString(1, indexingProfile.getName());
-					ResultSet sourceForPolarisRS = sourceForPolarisStmt.executeQuery();
-					long sourceId = 0;
-					if (sourceForPolarisRS.next()){
-						sourceId = sourceForPolarisRS.getLong(1);
-					}else{
-						logEntry.incErrors("Could not get source id for Polaris");
-					}
 					for (int i = 0; i < allItems.length(); i++) {
 						JSONObject curItem = allItems.getJSONObject(i);
 						long itemId = curItem.getLong("ItemRecordID");
@@ -910,7 +916,7 @@ public class PolarisExportMain {
 						}else{
 							logger.info("The bib was deleted when item " + itemId + " was.");
 						}
-						if (i > 0 && i % 500 == 0){
+						if (i > 0 && (i % 500 == 0)){
 							logEntry.addNote("Processed " + i + " items looking for the bib that was deleted");
 							logEntry.saveResults();
 						}
@@ -937,7 +943,12 @@ public class PolarisExportMain {
 						long itemId = curItem.getLong("ItemRecordID");
 						if (!itemIdsUpdatedDuringContinuous.contains(itemId)) {
 							//Figure out the bib record based on the item id.
-							String bibForItem = getBibIdForItemId(itemId);
+							//Getting from Aspen is faster if we can get it.
+							String bibForItem = getBibIdForItemIdFromAspen(itemId, sourceId);
+							if (bibForItem == null) {
+								//Use the APIs to get the bib id
+								bibForItem = getBibIdForItemId(itemId);
+							}
 							if (bibForItem != null) {
 								//check we've already updated this bib, if so it's ok to skip
 								if (!bibIdsUpdatedDuringContinuous.contains(bibForItem)) {
@@ -949,8 +960,11 @@ public class PolarisExportMain {
 									}
 								}
 							}
+							if (i > 0 && (i % 500 == 0)){
+								logEntry.addNote("Processed " + i + " items to load bib id for the item");
+							}
 						}else{
-							logger.info("Not updating item " + itemId + "because it was already processed when updating bibgs");
+							logger.info("Not updating item " + itemId + "because it was already processed when updating bibs");
 						}
 					}
 				} catch (Exception e) {
@@ -974,6 +988,10 @@ public class PolarisExportMain {
 	}
 
 	private static String getBibIdForItemIdFromAspen(long itemId, long sourceId) {
+		if (sourceId == -1){
+			//No records have been saved yet
+			return null;
+		}
 		try {
 			getRecordIdForItemIdStmt.setLong(1, itemId);
 			ResultSet getRecordIdForItemIdRS = getRecordIdForItemIdStmt.executeQuery();
