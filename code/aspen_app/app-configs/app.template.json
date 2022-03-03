@@ -66,7 +66,8 @@
       "greenhouse": "https://aspen-test.bywatersolutions.com/",
       "loginLogo": "libraryUrl/API/SystemAPI?method=getLogoFile&themeId=1&type=appLogin&slug=appSlug",
       "libraryCardLogo": "libraryUrl/API/SystemAPI?method=getLogoFile&themeId=1&type=logoApp",
-      "mainLibrary": "libraryId"
+      "mainLibrary": "libraryId",
+      "sentryDSN": ""
     }
   },
   "hooks": {
