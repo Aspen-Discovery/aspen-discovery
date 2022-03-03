@@ -1,0 +1,143 @@
+{
+  "app": {
+    "version": "Version",
+    "build": "Build",
+    "name": "LiDA",
+    "beta": "Beta"
+  },
+  "navigation": {
+    "home": "Discover",
+    "search": "Search",
+    "library_card": "Card",
+    "account": "Account",
+    "more": "More"
+  },
+  "general": {
+    "login": "Login",
+    "logout": "Logout",
+    "button_ok": "OK",
+    "close_window": "Close",
+    "privacy_policy": "Privacy Policy",
+    "contact": "Contact"
+  },
+  "login": {
+    "select_your_library": "Select Your Library",
+    "find_your_library": "Find Your Library",
+    "reset_geolocation": "Reset Geolocation",
+    "username": "Library Barcode",
+    "password": "Password/PIN",
+    "invalid_user": "Barcode and/or PIN is incorrect",
+    "unable_to_login": "Unable to log in",
+    "not_enough_data": "Please complete all fields",
+    "no_session_created": "Unable to start a user session. Please try to log in again."
+  },
+  "browse_category": {
+    "empty": "No items to load"
+  },
+  "grouped_work": {
+    "title": "Item Details",
+    "author": "Author",
+    "by": "By",
+    "language": "Language",
+    "format": "Format",
+    "no_matches": "No matches found for this title in {{language}} for {{format}} format",
+    "view_item_details": "View Item Details"
+  },
+  "library_contact": {
+    "today_hours": "Today's Hours",
+    "note": "Note",
+    "call_button": "Call the Library",
+    "email_button": "Email a Librarian",
+    "directions_button": "Get Directions",
+    "website_button": "Visit Our Website",
+    "closed": "Closed"
+  },
+  "user_profile": {
+    "title": "Account Summary",
+    "library_card": "Library Card",
+    "remember_settings": "Remember these settings",
+    "settings": "Settings",
+    "home_screen_settings": "Manage Browse Categories",
+    "home_screen_settings_description": "Show or Hide Browse Categories",
+    "preferences": "Preferences",
+    "linked_accounts": "Linked Accounts",
+    "profile": "Profile",
+    "my_lists": "My Lists"
+  },
+  "linked_accounts": {
+    "account_to_manage": "Account to Manage",
+    "username": "Library Card Number",
+    "password": "PIN/Password",
+    "add": "Add Account",
+    "remove": "Remove",
+    "none": "None"
+  },
+  "checkouts": {
+    "title": "Checked Out Titles",
+    "no_checkouts": "You have no items checked out",
+    "renew": "Renew",
+    "renew_all": "Renew All",
+    "auto_renew": "If eligible, this item will renew on",
+    "no_renewals": "This item is not eligible for renewal",
+    "due": "Due",
+    "overdue": "Overdue",
+    "overdue_summary": "{{count}} Overdue",
+    "return_now": "Return Now",
+    "access_online": "Access Online at {{source}}",
+    "read_online": "Read Online at {{source}}",
+    "listen_online": "Listen Online at {{source}}",
+    "watch_online": "Watch Online at {{source}}"
+  },
+  "holds": {
+    "title": "Titles On Hold",
+    "ready_for_pickup": "{{count}} Ready for Pickup",
+    "holds": "Holds",
+    "no_holds": "You have no items on hold",
+    "place_hold": "Place Hold",
+    "cancel_hold": "Cancel Hold",
+    "thaw_hold": "Thaw Hold",
+    "thaw_all_holds": "Thaw All",
+    "freeze_hold": "Freeze Hold",
+    "freeze_hold_with_reactivation": "Freeze Hold for 30 Days",
+    "freeze_all_holds": "Freeze All",
+    "position_queue": "Position",
+    "hold_options": "Hold Options",
+    "pickup_by": "Pickup By"
+  },
+  "pickup_locations": {
+    "text": "I want to pick this up at",
+    "pickup_location": "Pickup Location",
+    "change_location": "Change Location",
+    "change_pickup_location": "Change Pickup Location",
+    "change_hold_location": "Change Hold Location",
+    "select_new_pickup": "Select a new location to pickup your hold"
+  },
+  "overdrive": {
+    "email_field": "Enter an email to be notified when the title is ready for you",
+    "hold_ready": "Ready to Checkout",
+    "delay_checkout": "Delay Checkout for 30 Days"
+  },
+  "search": {
+    "title": "Search",
+    "search_results_title": "Results for ",
+    "no_results": "No results found",
+    "quick_search_title": "Quick Searches",
+    "new_search_button": "Try a new search",
+    "search_results": "Search Results"
+  },
+  "error": {
+    "title": "Error",
+    "message": "There was an error loading results from the library",
+    "reload_button": "Reload",
+    "timeout": "Connection to the library timed out",
+    "no_filters_available": "Unable to load filters",
+    "no_data": "Unable to load data for this title",
+    "no_page_load": "Unable to load page",
+    "no_library_connection": "Unable to connect to the library. Please try again later.",
+    "no_server_connection": "Server connection error",
+    "permission_error": "The library has incorrect permissions for connecting via LiDA",
+    "no_open_resource": "Unable to open resource",
+    "no_valid_url": "A valid access URL has not been provided for the record",
+    "device_block_browser": "There was a problem opening item. Try again"
+  }
+}

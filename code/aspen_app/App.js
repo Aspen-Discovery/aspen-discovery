@@ -1,17 +1,18 @@
 import React, {Component} from "react";
+import Constants from 'expo-constants';
 import {NativeBaseProvider, StatusBar} from "native-base";
 import {SSRProvider} from "@react-aria/ssr";
 import * as Sentry from 'sentry-expo';
-import App from "./components/navigation";
-import {createTheme, saveTheme} from "./themes/theme";
+import App from "./src/components/navigation";
+import {createTheme, saveTheme} from "./src/themes/theme";
 
 import { LogBox } from 'react-native';
-//LogBox.ignoreLogs(['Warning: ...']); // Ignore log notification by message
-//LogBox.ignoreAllLogs();//Ignore all log notifications
+LogBox.ignoreLogs(['Warning: ...']); // Ignore log notification by message
+LogBox.ignoreAllLogs();//Ignore all log notifications
 
 if (!__DEV__) {
 	Sentry.init({
-		dsn: 'https://7fe05c932e2b4fd7b93fa3a0acae0649@o994439.ingest.sentry.io/5952947',
+		dsn: Constants.manifest.extra.sentryDSN,
 		enableInExpoDevelopment: true,
 		enableAutoSessionTracking: false,
 		sessionTrackingIntervalMillis: 10000,
@@ -23,7 +24,9 @@ if (!__DEV__) {
 export default class AppContainer extends Component {
 	constructor(props) {
 		super(props);
-		this.state = { themeSet: false };
+		this.state = {
+			themeSet: false,
+		};
 		this.aspenTheme = null;
 	}
 
