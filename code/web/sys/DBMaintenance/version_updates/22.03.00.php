@@ -127,6 +127,18 @@ function getUpdates22_03_00() : array
 				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Set Development Priorities'))",
 			]
 		], //support_connection
+		'greenhouse_contact_and_go_live' => [
+			'title' => 'Greenhouse contact and go live fields',
+			'description' => 'Add additional greenhouse fields',
+			'sql' => [
+				'ALTER TABLE aspen_sites add COLUMN contractSigningDate DATE',
+				'ALTER TABLE aspen_sites add COLUMN goLiveDate DATE',
+				'ALTER TABLE aspen_sites add COLUMN contactFrequency TINYINT DEFAULT 3',
+				'ALTER TABLE aspen_sites add COLUMN lastContacted DATE',
+				'ALTER TABLE aspen_sites add COLUMN nextMeetingDate DATE',
+				'ALTER TABLE aspen_sites add COLUMN nextMeetingPerson VARCHAR(50)',
+			]
+		], //greenhouse_contact_and_go_live
 	];
 }
 
