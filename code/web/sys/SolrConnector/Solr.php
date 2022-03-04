@@ -1688,6 +1688,7 @@ abstract class Solr
 		if ($method == 'GET') {
 			$result = $this->client->curlGetPage($this->host . "/$queryHandler/?$queryString");
 		} elseif ($method == 'POST') {
+			require_once ROOT_DIR . '/sys/SystemVariables.php';
 			$systemVariables = SystemVariables::getSystemVariables();
 			if ($systemVariables && $systemVariables->solrConnectTimeout > 0) {
 				$this->client->setConnectTimeout($systemVariables->solrConnectTimeout);
