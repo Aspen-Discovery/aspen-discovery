@@ -587,10 +587,11 @@ class SystemAPI extends Action
 		);
 	}
 
-	function getDevelopmentPriorities() {
+	function getDevelopmentPriorities() : array {
 		require_once ROOT_DIR . '/sys/Support/RequestTrackerConnection.php';
 		$supportConnections = new RequestTrackerConnection();
 		$activeTickets = [];
+		$numActiveTickets = 0;
 		$priorities = [
 			'priority1' => ['id' => '-1', 'title' => 'none', 'link'=>''],
 			'priority2' => ['id' => '-1', 'title' => 'none', 'link'=>''],
@@ -598,6 +599,7 @@ class SystemAPI extends Action
 		];
 		if ($supportConnections->find(true)) {
 			$activeTickets = $supportConnections->getActiveTickets();
+			$numActiveTickets = count($activeTickets);
 
 			require_once ROOT_DIR . '/sys/Support/DevelopmentPriorities.php';
 			$developmentPriorities = new DevelopmentPriorities();
@@ -610,7 +612,8 @@ class SystemAPI extends Action
 
 		return array(
 			'success' => true,
-			'priorities' => $priorities
+			'priorities' => $priorities,
+			'numActiveTickets' => $numActiveTickets,
 		);
 	}
 
