@@ -1198,7 +1198,7 @@ class Sierra extends Millennium{
 			$paymentType = 1; //Fully or partially paid, do not waive the remainder
 
 			$tmpPayment = new stdClass();
-			$tmpPayment->amount = (int)((float)$paymentAmount * 100);
+			$tmpPayment->amount = (int)(round((float)$paymentAmount * 100));
 			$tmpPayment->paymentType = $paymentType;
 			$tmpPayment->invoiceNumber = (string)$fineInvoiceNumber;
 			$tmpPayment->initials = 'aspen';

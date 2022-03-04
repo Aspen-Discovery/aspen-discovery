@@ -3445,7 +3445,7 @@ class MyAccount_AJAX extends JSON_Action
 				if (!empty($patron->proPayPayerAccountId) || ($proPayPayerAccountId != null)) {
 					//Create the Hosted Transaction Instance
 					$requestElements = new stdClass();
-					$requestElements->Amount = (int)($payment->totalPaid * 100);
+					$requestElements->Amount = (int)round($payment->totalPaid * 100);
 					$requestElements->AuthOnly = false;
 					$requestElements->AvsRequirementType = 2;
 					$requestElements->BillerAccountId = $proPaySetting->billerAccountId;

@@ -230,7 +230,7 @@ class UserPayment extends DataObject
 								if ($jsonResponse->Result->ResultValue == 'SUCCESS'){
 									$success = true;
 									$amountPaid = $jsonResponse->HostedTransaction->GrossAmt;
-									if ($amountPaid != (int)($userPayment->totalPaid * 100)){
+									if ($amountPaid != (int)round($userPayment->totalPaid * 100)){
 										$userPayment->message = "Payment amount did not match, was $userPayment->totalPaid, paid $amountPaid. ";
 										$userPayment->totalPaid = $amountPaid;
 									}
