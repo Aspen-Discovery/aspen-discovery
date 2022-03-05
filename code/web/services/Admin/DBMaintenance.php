@@ -36,6 +36,10 @@ class Admin_DBMaintenance extends Admin_Admin
 
 		$interface->assign('sqlUpdates', $availableUpdates);
 
+		//Also force a nightly index
+		require_once ROOT_DIR . '/sys/SystemVariables.php';
+		SystemVariables::forceNightlyIndex();
+
 		$this->display('dbMaintenance.tpl', 'Database Maintenance');
 
 	}

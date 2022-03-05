@@ -1066,7 +1066,7 @@ abstract class Solr
 		if (is_array($query)) {
 			echo("Invalid query " . print_r($query, true));
 		}
-		if (preg_match('/\\".+?\\"/', $query)) {
+		if (preg_match('/^\\"[^\\"]+?\\"$/', $query)) {
 			if ($handler == 'Keyword') {
 				$handler = 'KeywordProper';
 			} else if ($handler == 'Author') {
