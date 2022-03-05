@@ -1064,7 +1064,7 @@ class SirsiDynixROA extends HorizonAPI
 				}
 
 
-				$createHoldResponse = $this->getWebServiceResponse('placeHold', $webServiceURL . "/circulation/holdRecord/placeHold", $holdData, $sessionToken, null, null, null, $workingLibraryId);
+				$createHoldResponse = $this->getWebServiceResponse('placeHold', $webServiceURL . "/circulation/holdRecord/placeHold", $holdData, $sessionToken, null, null, [], $workingLibraryId);
 
 				$hold_result = array();
 				if (isset($createHoldResponse->messageList)) {
