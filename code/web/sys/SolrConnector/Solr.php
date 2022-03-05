@@ -597,7 +597,11 @@ abstract class Solr
 					}
 
 					// build a string like title:("one two")
-					$searchString = $field . ':(' . $fieldValue . ')';
+					if ($fieldValue[0] != '(') {
+						$searchString = $field . ':(' . $fieldValue . ')';
+					}else{
+						$searchString = $field . ':' . $fieldValue;
+					}
 					//Check to make sure we don't already have this clause.  We will get the same clause if we have a single word and are doing different munges
 					$okToAdd = true;
 					foreach ($clauses as $clause) {
@@ -608,7 +612,7 @@ abstract class Solr
 					}
 					if (!$okToAdd) continue;
 
-					// Add the weight it we have one. Yes, I know, it's redundant code.
+					// Add the weight if we have one. Yes, I know, it's redundant code.
 					$weight = $spec[1];
 					if (!is_null($weight) && $weight && $weight > 0) {
 						$searchString .= '^' . $weight;
@@ -711,7 +715,11 @@ abstract class Solr
 			// except that we'll try to do the "one phrase" in quotes if possible.
 			$cleanedQuery = str_replace('“', '"', $lookfor);
 			$cleanedQuery = str_replace('”', '"', $cleanedQuery);
-			$onephrase = strstr($lookfor, '"') ? $cleanedQuery : '"' . $cleanedQuery . '"';
+			if (strlen($cleanedQuery) > 0 && $cleanedQuery[0] == '('){
+				$onephrase = $cleanedQuery;
+			}else{
+				$onephrase = strstr($lookfor, '"') ? $cleanedQuery : '"' . $cleanedQuery . '"';
+			}
 			$values = array(
 				'exact' => $onephrase,
 				'onephrase' => $onephrase,
@@ -721,7 +729,7 @@ abstract class Solr
 				'single_word_removal' => $onephrase,
 				'exact_quoted' => $onephrase,
 				'localized_callnumber' => str_replace(array('"', ':', '/'), ' ', $cleanedQuery),
-				'text_left' => str_replace(array('"', ':', '/'), ' ', $cleanedQuery) . '*',
+				'text_left' => str_replace(array('"', ':', '/'), ' ', $cleanedQuery) ,
 			);
 		}
 
@@ -1416,7 +1424,7 @@ abstract class Solr
 	 * @param Location $searchLocation
 	 * @return array
 	 */
-	public function getScopingFilters(/** @noinspection PhpUnusedParameterInspection */ $searchLibrary, $searchLocation)
+	public function getScopingFilters($searchLibrary, $searchLocation)
 	{
 		return [];
 	}
