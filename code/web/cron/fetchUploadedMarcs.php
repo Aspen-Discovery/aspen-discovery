@@ -4,7 +4,7 @@ $config = parse_ini_file('./fetchMarc.ini', true);
 $sshConnection = ssh2_connect($config['SFTP_Server']['host'], $config['SFTP_Server']['port'], array('hostkey'=>'ssh-rsa'));
 
 if (!ssh2_auth_pubkey_file($sshConnection, 'aspen_file_xfer', $config['SFTP_Server']['publicKey'], $config['SFTP_Server']['privateKey'], '')) {
-	die('Public Key Authentication Failed');
+	die(date('Y-m-d H:i:s') . "Public Key Authentication Failed \n");
 }
 
 //Make sftp connection
@@ -12,7 +12,7 @@ $sftpConnection = @ssh2_sftp($sshConnection);
 
 if (!$sftpConnection){
 	ssh2_disconnect($sshConnection);
-	die('Could not establish SFTP Connection');
+	die(date('Y-m-d H:i:s') . "Could not establish SFTP Connection\n");
 }
 
 //Copy Files
@@ -42,10 +42,13 @@ function copyFiles($sshConnection, $sftpConnection, $remotePath, $localPath){
 				//delete the original file
 				rename('/tmp/' . $exportName, $localPath . '/' . $exportName);
 				ssh2_sftp_unlink($sftpConnection, $remotePath . '/' . $exportName);
+				echo(date('Y-m-d H:i:s') . "Copied file $exportName to " . $remotePath . '/' . $exportName);
 			}else{
 				ssh2_disconnect($sshConnection);
-				die("Could not write file " . $localPath . '/' . $exportName);
+				die(date('Y-m-d H:i:s') . "Could not write file " . $localPath . '/' . $exportName . "\n");
 			}
+		}else{
+			echo(date('Y-m-d H:i:s') . $remote_path . "/$exportName is still changing");
 		}
 	}
 }
