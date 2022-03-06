@@ -40,15 +40,19 @@ function copyFiles($sshConnection, $sftpConnection, $remotePath, $localPath){
 			//save the file locally
 			if (ssh2_scp_recv($sshConnection, $remotePath . '/' . $exportName, '/tmp/' . $exportName)){
 				//delete the original file
-				rename('/tmp/' . $exportName, $localPath . '/' . $exportName);
-				ssh2_sftp_unlink($sftpConnection, $remotePath . '/' . $exportName);
-				echo(date('Y-m-d H:i:s') . "Copied file $exportName to " . $remotePath . '/' . $exportName);
+				if (rename('/tmp/' . $exportName, $localPath . '/' . $exportName)){
+					ssh2_sftp_unlink($sftpConnection, $remotePath . '/' . $exportName);
+					echo(date('Y-m-d H:i:s') . "Copied file /tmp/$exportName to " . $localPath . '/' . $exportName . "\n");
+				}else{
+					echo(date('Y-m-d H:i:s') . "ERROR could not move /tmp/$exportName to " . $localPath . '/' . $exportName . "\n");
+				}
+
 			}else{
 				ssh2_disconnect($sshConnection);
-				die(date('Y-m-d H:i:s') . "Could not write file " . $localPath . '/' . $exportName . "\n");
+				die(date('Y-m-d H:i:s') . "Could not write file /tmp/" . $exportName . "\n");
 			}
 		}else{
-			echo(date('Y-m-d H:i:s') . $remote_path . "/$exportName is still changing");
+			echo(date('Y-m-d H:i:s') . $remote_path . "/$exportName is still changing\n");
 		}
 	}
 }
