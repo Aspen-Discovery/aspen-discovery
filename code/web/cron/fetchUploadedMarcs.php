@@ -1,6 +1,8 @@
 <?php
 $config = parse_ini_file('./fetchMarc.ini', true);
 
+date_default_timezone_set($config['SFTP_Server']['localTimezone']);
+
 $sshConnection = ssh2_connect($config['SFTP_Server']['host'], $config['SFTP_Server']['port'], array('hostkey'=>'ssh-rsa'));
 
 if (!ssh2_auth_pubkey_file($sshConnection, 'aspen_file_xfer', $config['SFTP_Server']['publicKey'], $config['SFTP_Server']['privateKey'], '')) {
