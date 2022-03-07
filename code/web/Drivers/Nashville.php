@@ -39,12 +39,12 @@ class Nashville extends CarlX {
 				}
 			}
 			if ($allPaymentsSucceed === false) {
-				//$success = false;
+				$paymentSuccess = false;
 				$message = "MSB Payment CarlX update failed for Payment Reference ID $payment->id . See messages.log for details on individual items.";
 				$level = Logger::LOG_ERROR;
 				$payment->completed = 9;
 			} else {
-				//$success = true;
+				$paymentSuccess = true;
 				$message = "MSB payment successfully recorded in CarlX for Payment Reference ID $payment->id .";
 				$level = Logger::LOG_NOTICE;
 				$payment->completed = 1;
@@ -52,7 +52,7 @@ class Nashville extends CarlX {
 			$payment->update();
 			$this->createPatronPaymentNote($patronId, $payment->id);
 		} else {
-			$success = false;
+			$paymentSuccess = false;
 			$message = 'User Payment ' . $payment->id . 'failed with Invalid Patron';
 			$level = Logger::LOG_ERROR;
 		}
@@ -62,7 +62,7 @@ class Nashville extends CarlX {
 				$mailer->send($systemVariables->errorEmail, "$serverName Error with MSB Payment", $message);
 			}
 		}
-		return ['success' => $success, 'message' => $message];
+		return ['success' => $paymentSuccess, 'message' => $message];
 	}
 
 	public function canPayFine($system): bool
