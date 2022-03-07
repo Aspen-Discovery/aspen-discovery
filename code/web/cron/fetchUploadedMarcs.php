@@ -1,10 +1,12 @@
 <?php
 $config = parse_ini_file('./fetchMarc.ini', true);
 
+date_default_timezone_set($config['SFTP_Server']['localTimezone']);
+
 $sshConnection = ssh2_connect($config['SFTP_Server']['host'], $config['SFTP_Server']['port'], array('hostkey'=>'ssh-rsa'));
 
 if (!ssh2_auth_pubkey_file($sshConnection, 'aspen_file_xfer', $config['SFTP_Server']['publicKey'], $config['SFTP_Server']['privateKey'], '')) {
-	die('Public Key Authentication Failed');
+	die(date('Y-m-d H:i:s') . "Public Key Authentication Failed \n");
 }
 
 //Make sftp connection
@@ -12,7 +14,7 @@ $sftpConnection = @ssh2_sftp($sshConnection);
 
 if (!$sftpConnection){
 	ssh2_disconnect($sshConnection);
-	die('Could not establish SFTP Connection');
+	die(date('Y-m-d H:i:s') . "Could not establish SFTP Connection\n");
 }
 
 //Copy Files
@@ -40,12 +42,19 @@ function copyFiles($sshConnection, $sftpConnection, $remotePath, $localPath){
 			//save the file locally
 			if (ssh2_scp_recv($sshConnection, $remotePath . '/' . $exportName, '/tmp/' . $exportName)){
 				//delete the original file
-				rename('/tmp/' . $exportName, $localPath . '/' . $exportName);
-				ssh2_sftp_unlink($sftpConnection, $remotePath . '/' . $exportName);
+				if (rename('/tmp/' . $exportName, $localPath . '/' . $exportName)){
+					ssh2_sftp_unlink($sftpConnection, $remotePath . '/' . $exportName);
+					echo(date('Y-m-d H:i:s') . "Copied file /tmp/$exportName to " . $localPath . '/' . $exportName . "\n");
+				}else{
+					echo(date('Y-m-d H:i:s') . "ERROR could not move /tmp/$exportName to " . $localPath . '/' . $exportName . "\n");
+				}
+
 			}else{
 				ssh2_disconnect($sshConnection);
-				die("Could not write file " . $localPath . '/' . $exportName);
+				die(date('Y-m-d H:i:s') . "Could not write file /tmp/" . $exportName . "\n");
 			}
+		}else{
+			echo(date('Y-m-d H:i:s') . $remote_path . "/$exportName is still changing\n");
 		}
 	}
 }
@@ -58,11 +67,15 @@ function listFilesInDir($path){
 		if (substr("$file", 0, 1) != "."){
 			//Don't recurse into subdirectories
 			if (!is_dir("$path/$file")){
+				echo(date('Y-m-d H:i:s') . " Found $path/$file\n");
 				$contents[] = $file;
 			}
 		}
 	}
 	closedir($handle);
 
+	if (count($contents) == 0){
+		echo(date('Y-m-d H:i:s') . " No files found in $path\n");
+	}
 	return $contents;
 }
