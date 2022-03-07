@@ -74,5 +74,8 @@ function listFilesInDir($path){
 	}
 	closedir($handle);
 
+	if (count($contents) == 0){
+		echo(date('Y-m-d H:i:s') . " No files found in $path\n");
+	}
 	return $contents;
 }
