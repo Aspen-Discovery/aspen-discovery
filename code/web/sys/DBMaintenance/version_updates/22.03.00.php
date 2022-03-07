@@ -139,6 +139,13 @@ function getUpdates22_03_00() : array
 				'ALTER TABLE aspen_sites add COLUMN nextMeetingPerson VARCHAR(50)',
 			]
 		], //greenhouse_contact_and_go_live
+		'library_holdPlacedAt' => [
+			'title' => 'Library - Hold Placed At',
+			'description' => 'Add an option for where the hold was placed to library settings',
+			'sql' => [
+				'ALTER TABLE library add COLUMN holdPlacedAt TINYINT(1) DEFAULT 0'
+			]
+		], //library_holdPlacedAt
 	];
 }
 

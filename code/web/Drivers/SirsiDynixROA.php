@@ -1053,16 +1053,16 @@ class SirsiDynixROA extends HorizonAPI
 				global $locationSingleton;
 				$physicalLocation = $locationSingleton->getPhysicalLocation();
 
-				$workingLibraryId = $library->ilsCode;
-				if (!empty($physicalLocation)) {
-					$workingLibraryId = $physicalLocation->code;
-				}else{
-					if ($library->getNumLocationsForLibrary() > 1){
-						//Use the pickup location
-						$workingLibraryId = $pickupBranch;
+				if ($library->holdPlacedAt == 0){
+					$workingLibraryId = $library->ilsCode;
+					if (!empty($physicalLocation)) {
+						$workingLibraryId = $physicalLocation->code;
 					}
+				}elseif ($library->holdPlacedAt == 1){
+					$workingLibraryId = $patron->getHomeLocation()->code;
+				}else{
+					$workingLibraryId = $pickupBranch;
 				}
-
 
 				$createHoldResponse = $this->getWebServiceResponse('placeHold', $webServiceURL . "/circulation/holdRecord/placeHold", $holdData, $sessionToken, null, null, [], $workingLibraryId);
 
