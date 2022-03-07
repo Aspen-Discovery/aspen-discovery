@@ -67,6 +67,7 @@ function listFilesInDir($path){
 		if (substr("$file", 0, 1) != "."){
 			//Don't recurse into subdirectories
 			if (!is_dir("$path/$file")){
+				echo(date('Y-m-d H:i:s') . " Found $path/$file\n");
 				$contents[] = $file;
 			}
 		}
