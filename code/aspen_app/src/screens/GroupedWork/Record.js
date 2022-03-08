@@ -11,12 +11,12 @@ const DisplayRecord = (props) => {
 	const {available, availableOnline, actions, edition, format, publisher, publicationDate, status, copiesMessage, source, id, title, locationCount, locations, showAlert, itemDetails, user} = props;
 
 	let actionCount = 1;
-	if(typeof actions !== "undefined") {
+	if(typeof actions !== 'undefined') {
 		actionCount = _.size(actions);
 	}
 
 	let copyCount = 1;
-	if(typeof itemDetails !== "undefined") {
+	if(typeof itemDetails !== 'undefined') {
 		copyCount = _.size(itemDetails);
 	}
 
