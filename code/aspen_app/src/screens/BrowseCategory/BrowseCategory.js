@@ -34,7 +34,7 @@ const BrowseCategory = (props) => {
 		setInitialLoad(true);
 	}, [fetchMore]);
 
-	if(typeof items !== "undefined") {
+	if(typeof items !== 'undefined') {
 		if (items.length !== 0) {
 			return (
 				<View pb={5} height="225">
