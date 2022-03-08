@@ -5,6 +5,7 @@ class GroupedWorkTestSearch extends DataObject
 	public $__table = 'grouped_work_test_search';
 
 	public $id;
+	public $description;
 	public $searchIndex;
 	public $searchTerm;
 	public $expectedGroupedWorks;
@@ -17,6 +18,7 @@ class GroupedWorkTestSearch extends DataObject
 		$searchIndexes = $searchObject->getSearchIndexes();
 		return [
 			'id' => array('property'=>'id', 'type'=>'label', 'label'=>'Id', 'description'=>'The unique id of the in the system'),
+			'description' => array('property'=>'description', 'type'=>'textarea', 'label'=>'Description', 'description'=>'A brief description of the test.'),
 			'searchIndex' => array('property'=>'searchIndex', 'type'=>'enum', 'values' => $searchIndexes, 'label'=>'Search Index', 'description'=>'The index to search in.', 'default'=>$searchObject->getDefaultIndex(), 'required'=>true),
 			'searchTerm' => array('property'=>'searchTerm', 'type'=>'textarea', 'label'=>'Search Term', 'description'=>'The term to search for.', 'required'=>true),
 			'expectedGroupedWorks' => array('property'=>'expectedGroupedWorks', 'type'=>'textarea', 'label'=>'Expected Grouped Works', 'description'=>'Grouped Works that should be shown on the first page.'),

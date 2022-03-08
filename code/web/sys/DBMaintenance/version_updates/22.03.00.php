@@ -65,6 +65,13 @@ function getUpdates22_03_00() : array
 				'ALTER TABLE grouped_work_test_search CHANGE COLUMN notes notes TEXT',
 			]
 		], //search_test_search_index_multiple_terms
+		'search_test_description' => [
+			'title' => 'Add description to search tests',
+			'description' => 'Add description to search tests',
+			'sql' => [
+				'ALTER TABLE grouped_work_test_search ADD COLUMN description TEXT',
+			]
+		], //search_test_notes
 		'library_enableReadingHistory' => [
 			'title' => 'Library - Enable Reading History',
 			'description' => 'Add an option for if reading history should be enabled for a library',
