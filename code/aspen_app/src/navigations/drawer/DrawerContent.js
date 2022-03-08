@@ -56,7 +56,6 @@ export class DrawerContent extends Component {
 		getHolds();
 		getPickupLocations();
 		getPatronBrowseCategories();
-		getDefaultTranslations();
 		this.loadUser();
 		this.loadLibrary();
 		this.loadILSMessages();
