@@ -65,24 +65,26 @@ class MaterialsRequest_NewRequest extends Action
 					$searchObj = SearchObjectFactory::initSearchObject();
 					$searchObj->init();
 					$searchObj = $searchObj->restoreSavedSearch($lastSearchId, false, true);
+					if ($searchObj != false) {
 
-					$searchTerms = $searchObj->getSearchTerms();
-					if (is_array($searchTerms)) {
-						if (count($searchTerms) == 1) {
-							if (!isset($searchTerms[0]['index'])) {
-								$request->title = $searchObj->displayQuery();
-							} else if ($searchTerms[0]['index'] == $searchObj->getDefaultIndex()) {
-								$request->title = $searchTerms[0]['lookfor'];
-							} else {
-								if ($searchTerms[0]['index'] == 'Author'){
-									$request->author = $searchTerms[0]['lookfor'];
-								}else{
+						$searchTerms = $searchObj->getSearchTerms();
+						if (is_array($searchTerms)) {
+							if (count($searchTerms) == 1) {
+								if (!isset($searchTerms[0]['index'])) {
+									$request->title = $searchObj->displayQuery();
+								} else if ($searchTerms[0]['index'] == $searchObj->getDefaultIndex()) {
 									$request->title = $searchTerms[0]['lookfor'];
+								} else {
+									if ($searchTerms[0]['index'] == 'Author') {
+										$request->author = $searchTerms[0]['lookfor'];
+									} else {
+										$request->title = $searchTerms[0]['lookfor'];
+									}
 								}
 							}
+						} else {
+							$request->title = $searchTerms;
 						}
-					} else {
-						$request->title = $searchTerms;
 					}
 				}
 			}
