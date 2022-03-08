@@ -19,46 +19,89 @@ if (!is_dir($marcDirName)) {
 //We just want the latest full export.  If there are others they can be deleted.
 $files = scandir($marcDirName);
 if (count($files) > 0) {
-	$latestFile = null;
-	$latestFileModificationTime = 0;
-	$latestFileSize = 0;
+	$latestMarcFile = null;
+	$latestMarcFileModificationTime = 0;
+	$latestMarcFileSize = 0;
+
+	$latestIdsFile = null;
+	$latestIdsFileModificationTime = 0;
+	$latestIdsFileSize = 0;
 	foreach ($files as $file) {
 		if ($file != '.' && $file != '..' && is_file($marcDirName . $file)) {
-			$lastModificationTime = filemtime($marcDirName . $file);
-			if ($lastModificationTime > $latestFileModificationTime) {
-				$latestFileModificationTime = $lastModificationTime;
-				$latestFileSize = filesize($marcDirName . $file);
-				$latestFile = [
-					'fullPath' => $marcDirName . $file,
-					'name' => $file
-				];
+			if (strpos($file, ".mrc") > 0) {
+				$lastModificationTime = filemtime($marcDirName . $file);
+				if ($lastModificationTime > $latestMarcFileModificationTime) {
+					$latestMarcFileModificationTime = $lastModificationTime;
+					$latestMarcFileSize = filesize($marcDirName . $file);
+					$latestMarcFile = [
+						'fullPath' => $marcDirName . $file,
+						'name' => $file
+					];
+				}
+			}elseif (strpos($file, ".ids") > 0) {
+				$lastModificationTime = filemtime($marcDirName . $file);
+				if ($lastModificationTime > $latestIdsFileModificationTime) {
+					$latestIdsFileModificationTime = $lastModificationTime;
+					$latestIdsFileSize = filesize($marcDirName . $file);
+					$latestIdsFile = [
+						'fullPath' => $marcDirName . $file,
+						'name' => $file
+					];
+				}
+			}else{
+				echo(date('Y-m-d H:i:s') . " unknown file type for $file\n");
 			}
 		}
 	}
 
 	//If we got a file, check to see if it is changing
-	if ($latestFile != null){
-		echo(date('Y-m-d H:i:s') . "Found full export " . $latestFile['fullPath'] . "\n");
+	if ($latestMarcFile != null){
+		echo(date('Y-m-d H:i:s') . "Found full export " . $latestMarcFile['fullPath'] . "\n");
 		sleep(2);
-		if (filemtime($latestFile['fullPath']) == $latestFileModificationTime && $latestFileSize == filesize($latestFile['fullPath'])){
+		if (filemtime($latestMarcFile['fullPath']) == $latestMarcFileModificationTime && $latestMarcFileSize == filesize($latestMarcFile['fullPath'])){
 			//File is not changing, we can move it.
-			if (rename($latestFile['fullPath'], $marcDestDirName . $latestFile['name'])){
+			if (rename($latestMarcFile['fullPath'], $marcDestDirName . $latestMarcFile['name'])){
 				echo(date('Y-m-d H:i:s') . " moved full export to dest dir\n");
 			}else{
-				echo(date('Y-m-d H:i:s') . " ERROR could not move full export to dest dir\n");
+				echo(date('Y-m-d H:i:s') . " ERROR could not move full export to dest dir $marcDestDirName\n");
 			}
 
 			//Delete any other files that were in the directory since they are just old files.
 			$files = scandir($marcDirName);
 			foreach ($files as $file) {
-				if ($file != '.' && $file != '..'){
+				if ($file != '.' && $file != '..' && strpos($file, ".mrc") > 0){
 					if (unlink($marcDirName . $file)){
-						echo(date('Y-m-d H:i:s') . "Deleted full export " . $latestFile['fullPath'] . " that was older than the latest\n") ;
+						echo(date('Y-m-d H:i:s') . "Deleted full export " . $marcDirName . $file . " that was older than the latest\n") ;
 					}
 				}
 			}
 		}else{
 			echo(date('Y-m-d H:i:s') . " full export is still changing\n");
+		}
+	}
+
+	if ($latestIdsFile != null){
+		echo(date('Y-m-d H:i:s') . "Found all ids export " . $latestIdsFile['fullPath'] . "\n");
+		sleep(2);
+		if (filemtime($latestIdsFile['fullPath']) == $latestIdsFileModificationTime && $latestIdsFileSize == filesize($latestIdsFile['fullPath'])){
+			//File is not changing, we can move it.
+			if (rename($latestIdsFile['fullPath'], $marcDestDirName . $latestIdsFile['name'])){
+				echo(date('Y-m-d H:i:s') . " moved ids file to dest dir\n");
+			}else{
+				echo(date('Y-m-d H:i:s') . " ERROR could not move ids file to dest dir $marcDestDirName\n");
+			}
+
+			//Delete any other files that were in the directory since they are just old files.
+			$files = scandir($marcDirName);
+			foreach ($files as $file) {
+				if ($file != '.' && $file != '..' && strpos($file, ".ids") > 0){
+					if (unlink($marcDirName . $file)){
+						echo(date('Y-m-d H:i:s') . "Deleted ids file " . $marcDirName . $file . " that was older than the latest\n") ;
+					}
+				}
+			}
+		}else{
+			echo(date('Y-m-d H:i:s') . " all ids export is still changing\n");
 		}
 	}
 }
@@ -87,7 +130,7 @@ if (count($files) > 0) {
 				if (rename($marcDeltaDirName . $file, $marcDeltaDestDirName . $file)){
 					echo(date('Y-m-d H:i:s') . " moved delta export to dest dir\n");
 				}else{
-					echo(date('Y-m-d H:i:s') . " ERROR could not move delta export to dest dir\n");
+					echo(date('Y-m-d H:i:s') . " ERROR could not move delta export to dest dir $marcDeltaDestDirName\n");
 				}
 			}else{
 				echo(date('Y-m-d H:i:s') . " delta export is still changing\n");
