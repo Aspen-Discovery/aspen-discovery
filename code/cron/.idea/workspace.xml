@@ -83,6 +83,8 @@
       <recent name="C:\web\aspen-discovery\sites" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\web\aspen-discovery\data_dir_setup\solr7\grouped_works\lib" />
+      <recent name="C:\web\aspen-discovery\sites\default\solr-7.6.0\server\lib" />
       <recent name="C:\web\aspen-discovery\code\reindexer" />
       <recent name="C:\web\aspen-discovery\code\cron" />
       <recent name="C:\web\aspen-discovery\code" />
@@ -105,7 +107,6 @@
     <key name="CopyClassDialog.RECENTS_KEY">
       <recent name="com.turning_leaf_technogies.axis360" />
       <recent name="" />
-      <recent name="com.turning_leaf_technologies.reindexer" />
       <recent name="com.turning_leaf_technologies.indexing" />
       <recent name="com.turning_leaf_technologies.oai" />
     </key>
@@ -262,7 +263,7 @@
     <configuration name="SymphonyExport" type="Application" factoryName="Application">
       <option name="MAIN_CLASS_NAME" value="com.turning_leaf_technologies.symphony.SymphonyExportMain" />
       <module name="symphony_export" />
-      <option name="PROGRAM_PARAMETERS" value="swan.localhost" />
+     <option name="PROGRAM_PARAMETERS" value="swan.localhost" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/../symphony_export" />
       <method v="2">
         <option name="Make" enabled="true" />
@@ -339,6 +340,10 @@
       <breakpoints>
       </breakpoints>
     </breakpoint-manager>
+  </component>
+  <component name="XSLT-Support.FileAssociations.UIState">
+    <expand />
+    <select />
   </component>
   <component name="antWorkspaceConfiguration">
     <option name="IS_AUTOSCROLL_TO_SOURCE" value="false" />
