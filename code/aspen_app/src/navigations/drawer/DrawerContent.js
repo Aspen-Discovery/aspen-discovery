@@ -56,7 +56,6 @@ export class DrawerContent extends Component {
 		getHolds();
 		getPickupLocations();
 		getPatronBrowseCategories();
-		getDefaultTranslations();
 		this.loadUser();
 		this.loadLibrary();
 		this.loadILSMessages();
@@ -231,14 +230,16 @@ export class DrawerContent extends Component {
 											</Text>
 										</HStack>
 									</Pressable>
-									<Pressable px="2" py="2" onPress={() => this.handleNavigation('AccountScreenTab', 'LinkedAccounts')}>
-										<HStack space="1" alignItems="center">
-											<Icon as={MaterialIcons} name="chevron-right" size="7" />
-											<Text fontWeight="500">
-												{translate('user_profile.linked_accounts')}
-											</Text>
-										</HStack>
-									</Pressable>
+									{global.allowLinkedAccounts ? (
+										<Pressable px="2" py="2" onPress={() => this.handleNavigation('AccountScreenTab', 'LinkedAccounts')}>
+											<HStack space="1" alignItems="center">
+												<Icon as={MaterialIcons} name="chevron-right" size="7" />
+												<Text fontWeight="500">
+													{translate('user_profile.linked_accounts')}
+												</Text>
+											</HStack>
+										</Pressable>
+									) : null}
 									<Pressable px="2" py="3" onPress={() => { this.handleNavigation('AccountScreenTab', 'Preferences')}}>
 										<HStack space="1" alignItems="center">
 											<Icon as={MaterialIcons} name="chevron-right" size="7" />

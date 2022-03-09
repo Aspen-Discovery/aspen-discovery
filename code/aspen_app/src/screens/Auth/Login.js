@@ -149,7 +149,6 @@ export default class Login extends Component {
 		const response = await api.get('/GreenhouseAPI?method=getLibraries', {
 			release_channel: global.releaseChannel
 		});
-		//console.log(response);
 		if(response.ok) {
 			let results = response.data;
 			this.arrayHolder = [];

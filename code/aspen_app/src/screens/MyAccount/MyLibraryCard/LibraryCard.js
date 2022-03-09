@@ -3,6 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import {Center, Flex, Image, Text} from "native-base";
 import Barcode from "react-native-barcode-expo";
 import Constants from 'expo-constants';
+import _ from "lodash";
 
 // custom components and helper files
 import {translate} from '../../../translations/translations';
@@ -55,10 +56,17 @@ export default class LibraryCard extends Component {
 	loadLibrary = async () => {
 		const tmp = await AsyncStorage.getItem('@libraryInfo');
 		const profile = JSON.parse(tmp);
-		this.setState({
-			library: profile,
-			isLoading: false,
-		})
+		console.log(profile);
+		if(typeof profile.barcodeStyle !== null){
+			this.setState({
+				library: profile,
+				isLoading: false,
+			})
+		} else {
+			this.setState({
+				isLoading: false,
+			})
+		}
 	}
 
 
@@ -97,7 +105,7 @@ export default class LibraryCard extends Component {
 			return (loadError(this.state.error));
 		}
 
-		if(this.state.barcodeStyleInvalid) {
+		if(_.isNull(this.state.barcodeStyle)) {
 			return (
 				<Center flex={1} px={3}>
 					<Flex direction="column" bg="white" maxW="90%" px={8} py={5} borderRadius={20}>

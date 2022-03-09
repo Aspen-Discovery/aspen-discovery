@@ -195,16 +195,18 @@ export default function App() {
 							} else {
 								console.log("Invalid user. Unable to store data.");
 								popAlert(translate('login.unable_to_login'), translate('login.invalid_user'), "error");
+								console.log(response);
 							}
 						} else {
 							console.log("Unable to validate user account. ");
 							popAlert(translate('error.no_server_connection'), 'We\'re unable to validate your account at this time.', "warning");
+							console.log(response);
 						}
 
 					} else {
 						const result = response.problem;
 						popToast(translate('error.no_server_connection'), translate('error.no_library_connection'), "warning");
-						console.log(result);
+						console.log(response);
 					}
 				} catch (error) {
 					popAlert(translate('login.unable_to_login'), translate('login.not_enough_data'), "error");

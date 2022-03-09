@@ -10,16 +10,19 @@ import _ from "lodash";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 async function getThemeInfo() {
-	await getLibraryInfo(Constants.manifest.extra.mainLibrary, Constants.manifest.extra.apiUrl, 5000);
-	await getAppSettings(Constants.manifest.extra.apiUrl, 5000, Constants.manifest.slug);
+	let themeId = 1;
+	await getLibraryInfo(Constants.manifest.extra.mainLibrary, Constants.manifest.extra.apiUrl, 10000).then(res => {
+		themeId = res.themeId;
+	});
+	await getAppSettings(Constants.manifest.extra.apiUrl, 10000, Constants.manifest.slug);
 	const api = create({
 		baseURL: Constants.manifest.extra.apiUrl + '/API',
-		timeout: 5000,
+		timeout: 10000,
 		headers: getHeaders(),
 		auth: createAuthTokens()
 	});
 	const response = await api.get('/SystemAPI?method=getThemeInfo', {
-		id: global.libraryTheme,
+		id: themeId,
 	});
 	if (response.ok) {
 		const result = response.data.result.theme;
@@ -33,6 +36,14 @@ async function getThemeInfo() {
 		return palettes;
 	} else {
 		console.log(response);
+		const COLOR_SCHEMES = [
+			'#3dbdd6',
+			'#9acf87',
+			'#c1adcc'
+		];
+		const palettes = COLOR_SCHEMES.map(generateSwatches);
+		console.log("Backup theme loaded.");
+		return palettes;
 	}
 }
 
@@ -144,6 +155,8 @@ export async function saveTheme() {
 			//save error
 			console.log("Unable to save essential colors to async storage in theme.js");
 		}
+
+
 	})
 }
 

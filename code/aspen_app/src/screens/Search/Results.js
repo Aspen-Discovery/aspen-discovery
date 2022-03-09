@@ -20,6 +20,7 @@ import { translate } from '../../translations/translations';
 import { loadingSpinner } from "../../components/loadingSpinner";
 import { loadError } from "../../components/loadError";
 import { searchResults } from "../../util/search";
+import _ from "lodash";
 
 export default class Results extends Component {
 	constructor() {
@@ -34,6 +35,8 @@ export default class Results extends Component {
             error: null,
             refreshing: false,
             filtering: false,
+			endOfResults: false,
+			dataMessage: null
 		};
 	}
 
@@ -52,15 +55,9 @@ export default class Results extends Component {
 		const givenSearch = route.params?.searchTerm ?? '%20';
         const searchTerm = givenSearch.replace(/" "/g, "%20");
 
-        await searchResults(searchTerm, 25, page).then(response => {
-            if(response === "TIMEOUT_ERROR") {
-                this.setState({
-                    hasError: true,
-                    error: translate('error.timeout'),
-                    isLoading: false,
-                });
-            } else {
-                if(typeof response.data.result.message !== 'undefined') {
+        await searchResults(searchTerm, 100, page).then(response => {
+            if(response.ok) {
+                if(response.data.result.count > 0) {
                     this.setState((prevState, nextProps) => ({
                         data:
                             page === 1
@@ -71,7 +68,7 @@ export default class Results extends Component {
                         refreshing: false
                     }));
                 } else {
-                    if(page === 1 && response.data.result.count === 0) {
+	                if(page === 1 && response.data.result.count === 0) {
                     /* No search results were found */
                         this.setState({
                             hasError: true,
@@ -88,6 +85,7 @@ export default class Results extends Component {
                             isLoadingMore: false,
                             refreshing: false,
                             dataMessage: response.data.result.message,
+	                        endOfResults: true,
                         });
                     }
                 }
@@ -95,18 +93,6 @@ export default class Results extends Component {
         })
 
 	}
-
-	_handleRefresh = () => {
-	    this.setState(
-	    {
-	        page: 1,
-	        refreshing: true
-	    },
-	    () => {
-	        this._fetchResults();
-	    }
-	    );
-	};
 
 	_handleLoadMore = () => {
 	    this.setState(
@@ -194,7 +180,7 @@ export default class Results extends Component {
 					data={this.state.data}
 					ListEmptyComponent={this._listEmptyComponent()}
 					renderItem={({ item }) => this.renderItem(item)}
-					keyExtractor={(item, index) => index.toString()}
+					keyExtractor={(item) => item.key}
 					ListFooterComponent={this._renderFooter}
 					onEndReached={!this.state.dataMessage ? this._handleLoadMore : null} // only try to load more if no message has been set
 					onEndReachedThreshold={.5}

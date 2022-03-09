@@ -8,7 +8,7 @@ export const GLOBALS = {
 	'appVersion': Constants.manifest.version,
 	'appBuild': Constants.nativeAppVersion,
 	'appSessionId': Constants.sessionId,
-	'appPatch': 0,
+	'appPatch': 1,
 	'slug': Constants.manifest.slug,
 	'apiUrl': Constants.manifest.extra.apiUrl,
 	'releaseChannel': Updates.releaseChannel,
