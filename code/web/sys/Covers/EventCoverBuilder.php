@@ -62,7 +62,14 @@ class EventCoverBuilder extends AbstractCoverBuilder
 		$y = addCenteredWrappedTextToImage($imageCanvas, $this->titleFont, $dayOfWeek, $title_font_size, $title_font_size * .15, $x, $y, $this->imageWidth - 30, $textColor);
 		$y += 10;
 		$month = $eventDate->format('F');
-		$y = addCenteredWrappedTextToImage($imageCanvas, $this->titleFont, $month, $title_font_size * 1.75, $title_font_size * .15 * 1.75, $x, $y, $this->imageWidth - 30, $textColor);
+		$fontMultiplier = 1.75;
+		if (strlen($month) > 5){
+			$fontMultiplier = 1.5;
+		}
+		if (strlen($month) > 7){
+			$fontMultiplier = 1.3;
+		}
+		$y = addCenteredWrappedTextToImage($imageCanvas, $this->titleFont, $month, $title_font_size * $fontMultiplier, $title_font_size * .15 * 1.65, $x, $y, $this->imageWidth - 30, $textColor);
 		$y += 20;
 		$dayOfMonth = $eventDate->format('j');
 		$y = addCenteredWrappedTextToImage($imageCanvas, $this->titleFont, $dayOfMonth, $title_font_size * 5, $title_font_size * .15 * 5 , $x, $y, $this->imageWidth - 30, $textColor);

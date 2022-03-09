@@ -24,6 +24,7 @@
       <w>bcode</w>
       <w>bdigital</w>
       <w>bestguess</w>
+      <w>bibid</w>
       <w>biblio</w>
       <w>biblionumber</w>
       <w>bisac</w>
@@ -62,6 +63,7 @@
       <w>datafield</w>
       <w>dateaccessioned</w>
       <w>datearrived</w>
+      <w>datecancelled</w>
       <w>datelastborrowed</w>
       <w>datelastseen</w>
       <w>deletedbiblio</w>
@@ -129,6 +131,7 @@
       <w>longoverdue</w>
       <w>marcout</w>
       <w>marcs</w>
+      <w>materialtypes</w>
       <w>mclauth</w>
       <w>mcpld</w>
       <w>mediado</w>
@@ -156,9 +159,11 @@
       <w>oneclickdigital</w>
       <w>onloan</w>
       <w>onshelf</w>
+      <w>opac</w>
       <w>overdriveid</w>
       <w>overidden</w>
       <w>patronbarcode</w>
+      <w>patroncodes</w>
       <w>photonegative</w>
       <w>physicalobject</w>
       <w>pika</w>
@@ -194,6 +199,7 @@
       <w>soundrecording</w>
       <w>sourcebrowse</w>
       <w>spellcheck</w>
+      <w>spidering</w>
       <w>sslfactory</w>
       <w>sssxxx</w>
       <w>startdate</w>
@@ -204,6 +210,7 @@
       <w>subfields</w>
       <w>sublocation</w>
       <w>subpurpose</w>
+      <w>synch</w>
       <w>tapecartridge</w>
       <w>tapecassette</w>
       <w>taperecording</w>
@@ -212,7 +219,9 @@
       <w>transbid</w>
       <w>transcode</w>
       <w>transitem</w>
+      <w>unencoded</w>
       <w>unscoped</w>
+      <w>unstemmed</w>
       <w>upcs</w>
       <w>validationstatus</w>
       <w>verticalfile</w>

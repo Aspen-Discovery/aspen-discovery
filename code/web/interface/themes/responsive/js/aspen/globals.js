@@ -17,6 +17,10 @@ var Globals = (function () {
 		hasCloudLibraryConnection: false,
 		hasHooplaConnection: false,
 		hasOverDriveConnection: false,
-		hasRBdigitalConnection: false
+		loadingTitle: 'Loading',
+		loadingBody: 'Loading, please wait',
+		requestFailedTitle: 'Request Failed',
+		requestFailedBody: 'There was an error with this AJAX Request.',
+		rtl:false
 	}
 })(Globals || {});

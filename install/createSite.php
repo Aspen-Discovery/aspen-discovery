@@ -7,7 +7,7 @@
 echo("This will create the proper directories and configuration files for a new site\r\n");
 $sitename = '';
 while (empty($sitename)) {
-	$sitename = readline("Enter the sitename to be setup (i.e. demo.localhost, demo.production) > ");
+	$sitename = readline("Enter the sitename to be setup (e.g., demo.localhost, library.production) > ");
 }
 $cleanSitename = preg_replace('/\W/', '_', $sitename);
 $variables = [
@@ -64,21 +64,21 @@ if (file_exists($siteDir)){
 //Prompt for needed information
 $variables['library'] = '';
 while (empty($variables['library'])) {
-	$variables['library'] = readline("Enter the library or consortium name i.e. Aspen Library > ");
+	$variables['library'] = readline("Enter the library or consortium name, e.g., Aspen Public Library > ");
 }
 
 $variables['title'] = '';
 while (empty($variables['title'])) {
-	$variables['title'] = readline("Enter the title of the site i.e. Aspen Demo > ");
+	$variables['title'] = readline("Enter the title of the site, e.g., Aspen Demo (may be same as library name) > ");
 }
 
 $variables['url'] = '';
 while (empty($variables['url'])) {
-	$variables['url'] = readline("Enter the url where the site will be accessed i.e. https://aspen.turningleaftechnologies.com > ");
+	$variables['url'] = readline("Enter the url where the site will be accessed, e.g., https://aspen.turningleaftechnologies.com or http://demo.localhost > ");
 }
 $variables['servername'] = preg_replace('~https?://~', '', $variables['url']);
 
-$siteOnWindows = readline("Will the site run on windows (y/N)? ");
+$siteOnWindows = readline("Will Aspen run on Windows (y/N)? ");
 if (empty($siteOnWindows) || ($siteOnWindows != 'Y' && $siteOnWindows != 'y')){
 	$siteOnWindows = false;
 }else{
@@ -88,16 +88,16 @@ if (empty($siteOnWindows) || ($siteOnWindows != 'Y' && $siteOnWindows != 'y')){
 if (!$siteOnWindows) {
 	$linuxOS = '';
 	while (empty($linuxOS) || !in_array($linuxOS, $linuxArray)) {
-		$linuxOS = readline("Enter the name of your Linux OS (i.e. ".implode (" / ", $linuxArray)." ) > ");
+		$linuxOS = readline("Enter the name of your Linux OS (e.g., ".implode (" / ", $linuxArray)." ) > ");
 	}
 }
 
-$variables['solrPort'] = readline("Which port should solr run on (8080)? ");
+$variables['solrPort'] = readline("Which port should Solr run on (typically 8080)? ");
 if (empty($variables['solrPort'])){
 	$variables['solrPort'] = "8080";
 }
 
-$variables['ils'] = readline("Which ils does the library use (Koha)? ");
+$variables['ils'] = readline("Which ILS does the library use? (default is Koha) > ");
 if (empty($variables['ils'])){
 	$variables['ils'] = "Koha";
 }
@@ -106,30 +106,30 @@ if ($variables['ils'] == 'Koha'){
 	$variables['ilsDriver'] = 'Koha';
 	$variables['ilsDBHost'] = '';
 	while (empty($variables['ilsDBHost'])) {
-		$variables['ilsDBHost'] = readline("Database Host for the Koha Database  > ");
+		$variables['ilsDBHost'] = readline("Database host for Koha > ");
 	}
 	$variables['ilsDBName'] = '';
 	while (empty($variables['ilsDBName'])) {
-		$variables['ilsDBName'] = readline("Database name for the Koha Database  > ");
+		$variables['ilsDBName'] = readline("Database name for Koha > ");
 	}
 	$variables['ilsDBUser'] = '';
 	while (empty($variables['ilsDBUser'])) {
-		$variables['ilsDBUser'] = readline("Database Username for the Koha Database  > ");
+		$variables['ilsDBUser'] = readline("Database username for Koha > ");
 	}
 	$variables['ilsDBPwd'] = '';
 	while (empty($variables['ilsDBPwd'])) {
-		$variables['ilsDBPwd'] = readline("Database Password for the Koha Database  > ");
+		$variables['ilsDBPwd'] = readline("Database password for {$variables['ilsDBUser']} for Koha > ");
 	}
 	$variables['ilsDBPort'] = '';
 	while (empty($variables['ilsDBPort'])) {
-		$variables['ilsDBPort'] = readline("Database Port for the Koha Database  > ");
+		$variables['ilsDBPort'] = readline("Database port for Koha > ");
 	}
-	$variables['ilsDBTimezone'] = readline("Database timezone for the Koha Database (US/Pacific) > ");
+	$variables['ilsDBTimezone'] = readline("Database timezone for Koha (e.g., US/Pacific) > ");
 	if (empty($variables['ilsDBTimezone'])){
 		$variables['ilsDBTimezone'] = 'US/Pacific';
 	}
-	$variables['ilsClientId'] = readline("Client Id for the Koha API > ");
-	$variables['ilsClientSecret'] = readline("Client Secret for the Koha API > ");
+	$variables['ilsClientId'] = readline("Client ID for Koha API > ");
+	$variables['ilsClientSecret'] = readline("Client Secret for Koha API > ");
 }
 while (empty($variables['ilsDriver'])) {
 	$variables['ilsDriver'] = readline("Enter the Aspen Driver for the ILS  > ");
@@ -143,29 +143,29 @@ while (empty($variables['ilsUrl'])) {
 //This can be blank
 $variables['staffUrl'] = readline("Enter the url of the staff client for the ILS  > ");
 
-$variables['aspenDBName'] =  readline("Enter the name of the database for aspen (aspen) > ");
+$variables['aspenDBName'] =  readline("Database name for Aspen (default: aspen) > ");
 if (empty($variables['aspenDBName'])){
 	$variables['aspenDBName'] = "aspen";
 }
 
-$variables['aspenDBUser'] =  readline("Enter the user name of the database for aspen (root) > ");
+$variables['aspenDBUser'] =  readline("Database username for Aspen (default: root) > ");
 if (empty($variables['aspenDBUser'])){
 	$variables['aspenDBUser'] = "root";
 }
 
 $variables['aspenDBPwd'] = '';
 while (empty($variables['aspenDBPwd'])) {
-	$variables['aspenDBPwd'] = readline("Enter the password for {$variables['aspenDBUser']} in the aspen database > ");
+	$variables['aspenDBPwd'] = readline("Database password for {$variables['aspenDBUser']} for Aspen > ");
 }
 
-$variables['timezone'] =  readline("Enter the timezone of the library (America/Los_Angeles) > ");
+$variables['timezone'] =  readline("Enter the timezone of the library (e.g. America/Los_Angeles, check http://www.php.net/manual/en/timezones.php) > ");
 if (empty($variables['timezone'])){
 	$variables['timezone'] = "America/Los_Angeles";
 }
 
 $variables['aspenAdminPwd'] = '';
 while (empty($variables['aspenAdminPwd'])) {
-	$variables['aspenAdminPwd'] = readline("Enter the password for the aspen_admin user on this server > ");
+	$variables['aspenAdminPwd'] = readline("Select a password for the 'aspen_admin' user > ");
 }
 
 /*
@@ -209,7 +209,7 @@ if ($clearExisting) {
 	exec("mysql -u{$variables['aspenDBUser']} -p\"{$variables['aspenDBPwd']}\" -e\"DROP DATABASE IF EXISTS {$variables['aspenDBName']}\"");
 }
 echo("Creating database\r\n");
-exec("mysql -u{$variables['aspenDBUser']} -p\"{$variables['aspenDBPwd']}\" -e\"CREATE DATABASE {$variables['aspenDBName']} DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci\"");
+exec("mysql -u{$variables['aspenDBUser']} -p\"{$variables['aspenDBPwd']}\" -e\"CREATE DATABASE {$variables['aspenDBName']} DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci\"");
 echo("Loading default database\r\n");
 exec("mysql -u{$variables['aspenDBUser']} -p\"{$variables['aspenDBPwd']}\" {$variables['aspenDBName']} < $installDir/install/aspen.sql");
 
@@ -288,11 +288,7 @@ if (!$siteOnWindows){
 	exec('chown -R solr:solr ' . $dataDir . '/solr7');
 }
 
-if ($siteOnWindows){
-	//Start solr
-	chdir($siteDir);
-	execInBackground( "{$sitename}.bat");
-}else{
+if (!$siteOnWindows){
 	//Start solr
 	exec('chmod +x ' . $siteDir . "/{$sitename}.sh");
 	execInBackground($siteDir . "/{$sitename}.sh");
@@ -301,9 +297,7 @@ if ($siteOnWindows){
 }
 
 //Update my.cnf for backups
-if ($siteOnWindows){
-	replaceVariables("/etc/my.cnf", $variables);
-} else {
+if (!$siteOnWindows){
 	replaceVariables($$linuxOS['mysqlConf'], $variables);
 }
 
@@ -316,6 +310,7 @@ if ($siteOnWindows) {
 	echo($step++ . ") Add Include \"$siteDir/httpd-{$sitename}.conf\" to the httpd.conf file\r\n");
 	echo($step++ . ") Add {$variables['servername']} to the hosts file\r\n");
 	echo($step++ . ") Restart apache\r\n");
+	echo($step++ . ") Start Solr\r\n");
 }
 echo($step++ . ") Login to the server as aspen_admin and run database updates\r\n");
 echo($step++ . ") Setup library(ies) within the admin interface\r\n");

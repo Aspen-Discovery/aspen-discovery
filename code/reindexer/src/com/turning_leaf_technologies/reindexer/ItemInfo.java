@@ -2,13 +2,13 @@ package com.turning_leaf_technologies.reindexer;
 
 import com.turning_leaf_technologies.indexing.Scope;
 import com.turning_leaf_technologies.logging.BaseLogEntry;
+import com.turning_leaf_technologies.marc.MarcUtil;
 import com.turning_leaf_technologies.strings.StringUtils;
 import org.marc4j.marc.DataField;
 import org.marc4j.marc.Subfield;
 
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
+import java.util.*;
 
 public class ItemInfo{
 	private String itemIdentifier;
@@ -40,6 +40,13 @@ public class ItemInfo{
 	private String collection;
 	private Date lastCheckinDate;
 	private String volumeField;
+	private String status;
+	private String groupedStatus;
+	private boolean available;
+	private boolean holdable;
+	private boolean bookable = false;
+	private boolean inLibraryUseOnly;
+
 	private RecordInfo recordInfo;
 
 	private final HashMap<String, ScopingInfo> scopingInfo = new HashMap<>();
@@ -188,7 +195,7 @@ public class ItemInfo{
 			}
 			//Cache the part that doesn't change depending on the scope
 			baseDetails = recordInfo.getFullIdentifier() + "|" +
-					Util.getCleanDetailValue(itemIdentifier) + "|" +
+					Util.getCleanDetailValue(getItemIdentifier()) + "|" +
 					Util.getCleanDetailValue(detailedLocation) + "|" +
 					Util.getCleanDetailValue(callNumber) + "|" +
 					Util.getCleanDetailValue(format) + "|" +
@@ -314,10 +321,6 @@ public class ItemInfo{
 		return scopingInfo;
 	}
 
-	boolean isValidForScope(Scope scope){
-		return scopingInfo.containsKey(scope.getScopeName());
-	}
-
 	boolean isValidForScope(String scopeName){
 		return scopingInfo.containsKey(scopeName);
 	}
@@ -384,6 +387,53 @@ public class ItemInfo{
 		}
 	}
 
+	public List<String> getSubfields(char subFieldSpec) {
+		List<Subfield> subfields = this.marcField.getSubfields(subFieldSpec);
+		List<String> subfieldData = new ArrayList<>();
+		for (Subfield subfield : subfields){
+			if (subfield.getData() != null){
+				subfieldData.add(subfield.getData());
+			}
+		}
+		return subfieldData;
+	}
+
+	void setGroupedStatus(String groupedStatus) {
+		this.groupedStatus = groupedStatus;
+	}
+
+	public String getGroupedStatus() {
+		return this.groupedStatus;
+	}
+
+	public boolean isAvailable() {
+		return available;
+	}
+
+	public void setAvailable(boolean available) {
+		this.available = available;
+	}
+
+	void setHoldable(boolean holdable) {
+		this.holdable = holdable;
+	}
+
+	public boolean isHoldable() {
+		return holdable;
+	}
+
+	public boolean isBookable() {
+		return false;
+	}
+
+	void setInLibraryUseOnly(boolean inLibraryUseOnly) {
+		this.inLibraryUseOnly = inLibraryUseOnly;
+	}
+
+	public boolean isInLibraryUseOnly() {
+		return inLibraryUseOnly;
+	}
+
 	public void copyFrom(ItemInfo itemInfo) {
 		this.itemIdentifier = itemInfo.itemIdentifier;
 		this.locationCode = itemInfo.locationCode;
@@ -412,6 +462,12 @@ public class ItemInfo{
 		this.shelfLocationCode = itemInfo.shelfLocationCode;
 		this.autoReindexTime = itemInfo.autoReindexTime;
 		this.marcField = itemInfo.marcField;
+		this.status = itemInfo.status;
+		this.groupedStatus = itemInfo.groupedStatus;
+		this.available = itemInfo.available;
+		this.holdable = itemInfo.holdable;
+		this.bookable = itemInfo.bookable;
+		this.inLibraryUseOnly = itemInfo.inLibraryUseOnly;
 		for (String scope : itemInfo.scopingInfo.keySet()){
 			ScopingInfo curScopingInfo = itemInfo.scopingInfo.get(scope);
 			ScopingInfo clonedScope = addScope(curScopingInfo.getScope());
@@ -430,4 +486,65 @@ public class ItemInfo{
 	public String getVolumeField() {
 		return this.volumeField;
 	}
+
+	private StringBuffer locationOwnedScopes = null;
+	private StringBuffer libraryOwnedScopes = null;
+	private StringBuffer recordsIncludedScopes = null;
+	private HashSet<String> locationOwnedNames = null;
+	private HashSet<String> libraryOwnedNames = null;
+	public String getLocationOwnedScopes() {
+		if (this.locationOwnedScopes == null){
+			this.createScopingStrings();
+		}
+		return locationOwnedScopes.toString();
+	}
+
+	public String getLibraryOwnedScopes() {
+		if (this.libraryOwnedScopes == null){
+			this.createScopingStrings();
+		}
+		return libraryOwnedScopes.toString();
+	}
+
+	public String getRecordsIncludedScopes() {
+		if (this.recordsIncludedScopes == null){
+			this.createScopingStrings();
+		}
+		return recordsIncludedScopes.toString();
+	}
+	public HashSet<String> getLocationOwnedNames() {
+		if (this.locationOwnedNames == null){
+			this.createScopingStrings();
+		}
+		return locationOwnedNames;
+	}
+
+	public HashSet<String> getLibraryOwnedNames() {
+		if (this.libraryOwnedNames == null){
+			this.createScopingStrings();
+		}
+		return libraryOwnedNames;
+	}
+
+	private void createScopingStrings() {
+		locationOwnedScopes = new StringBuffer("~");
+		libraryOwnedScopes = new StringBuffer("~");
+		recordsIncludedScopes = new StringBuffer("~");
+		locationOwnedNames = new HashSet<>();
+		libraryOwnedNames = new HashSet<>();
+		for (ScopingInfo scope : scopingInfo.values()){
+			if (scope.isLocallyOwned()){
+				locationOwnedScopes.append(scope.getScope().getId()).append("~");
+				locationOwnedNames.add(scope.getScope().getFacetLabel());
+			}else if (scope.isLibraryOwned()){
+				libraryOwnedScopes.append(scope.getScope().getId()).append("~");
+				libraryOwnedNames.add(scope.getScope().getFacetLabel());
+			}else {
+				recordsIncludedScopes.append(scope.getScope().getId()).append("~");
+			}
+		}
+	}
+
+
+
 }

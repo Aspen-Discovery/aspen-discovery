@@ -205,7 +205,7 @@ class HooplaRecordDriver extends GroupedWorkSubDriver {
 	}
 
 	protected $_actions = null;
-	function getRecordActions($relatedRecord, $recordAvailable, $recordHoldable, $recordBookable, $volumeData = null){
+	function getRecordActions($relatedRecord, $recordAvailable, $recordHoldable, $volumeData = null){
 		if ($this->_actions === null) {
 			$this->_actions = array();
 			//Check to see if the title is on hold or checked out to the patron.
@@ -221,7 +221,7 @@ class HooplaRecordDriver extends GroupedWorkSubDriver {
 				$searchLibrary = Library::getSearchLibrary();
 				if ($searchLibrary->hooplaLibraryID > 0) { // Library is enabled for Hoopla patron action integration
 					$id = $this->id;
-					$title = 'Check Out Hoopla';
+					$title = translate(['text'=>'Check Out Hoopla','isPublicFacing'=>true]);
 					$this->_actions[] = array(
 						'onclick' => "return AspenDiscovery.Hoopla.getCheckOutPrompts('$id')",
 						'title' => $title,
@@ -306,7 +306,7 @@ class HooplaRecordDriver extends GroupedWorkSubDriver {
 		return ucfirst(strtolower($this->hooplaRawMetadata->language));
 	}
 
-	public function getNumHolds(){
+	public function getNumHolds() : int{
 		return 0;
 	}
 
@@ -382,6 +382,7 @@ class HooplaRecordDriver extends GroupedWorkSubDriver {
 
 			global $interface;
 			$interface->assign('og_title', $this->getTitle());
+			$interface->assign('og_description', $this->getDescription());
 			$interface->assign('og_type', $this->getGroupedWorkDriver()->getOGType());
 			$interface->assign('og_image', $this->getBookcoverUrl('medium', true));
 			$interface->assign('og_url', $this->getAbsoluteUrl());
@@ -432,7 +433,7 @@ class HooplaRecordDriver extends GroupedWorkSubDriver {
 		/** @var Library $searchLibrary */
 		$searchLibrary = Library::getSearchLibrary();
 		if ($searchLibrary->hooplaLibraryID > 0) { // Library is enabled for Hoopla patron action integration
-			$title = 'Check Out Hoopla';
+			$title = translate(['text'=>'Check Out Hoopla','isPublicFacing'=>true]);
 			$actions[] = array(
 				'onclick' => "return AspenDiscovery.Hoopla.getCheckOutPrompts('{$this->id}')",
 				'title'   => $title
@@ -447,7 +448,7 @@ class HooplaRecordDriver extends GroupedWorkSubDriver {
 
 	public function getAccessLink()
 	{
-		$title      = translate('hoopla_url_action');
+		$title = translate(['text' => 'hoopla_url_action', 'isPublicFacing'=>true]);
 		$accessLink = array(
 			'url' => $this->hooplaRawMetadata->url,
 			'title' => $title,

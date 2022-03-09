@@ -44,6 +44,9 @@ class Grouping_Manifestation
 		$this->_variations[] = $variation;
 	}
 
+	function removeVariation($variationKey){
+		unset($this->_variations[$variationKey]);
+	}
 	function addRecord(Grouping_Record $record)
 	{
 		//Check our variations to see if we need to create a new one
@@ -67,6 +70,10 @@ class Grouping_Manifestation
 		}
 
 		$this->_relatedRecords[] = $record;
+	}
+
+	function setSortedRelatedRecords($relatedRecords){
+		$this->_relatedRecords = $relatedRecords;
 	}
 
 	/**
@@ -368,6 +375,17 @@ class Grouping_Manifestation
 	public function getCopies()
 	{
 		return $this->_statusInformation->getCopies();
+	}
+
+	function getNumberOfCopiesMessage()
+	{
+		return $this->_statusInformation->getNumberOfCopiesMessage();
+	}
+
+
+	function getVariationInformation()
+	{
+		return $this->_variations;
 	}
 
 }

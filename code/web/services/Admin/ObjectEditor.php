@@ -39,13 +39,7 @@ abstract class ObjectEditor extends Admin_Admin
 		$customListActions = $this->customListActions();
 		$interface->assign('customListActions', $customListActions);
 		if (is_null($objectAction) || $objectAction == 'list'){
-			$interface->assign('instructions', $this->getListInstructions());
-			$interface->assign('sortableFields', $this->getSortableFields($structure));
-			$interface->assign('sort', $this->getSort());
-			$filterFields = $this->getFilterFields($structure);
-			$interface->assign('filterFields', $filterFields);
-			$interface->assign('appliedFilters', $this->getAppliedFilters($filterFields));
-			$this->viewExistingObjects();
+			$this->viewExistingObjects($structure);
 		}elseif (($objectAction == 'save' || $objectAction == 'delete')) {
 			$this->editObject($objectAction, $structure);
 		}elseif ($objectAction == 'compare') {
@@ -146,7 +140,7 @@ abstract class ObjectEditor extends Admin_Admin
 				if ($newObject->getLastError()) {
 					$errorDescription = $newObject->getLastError();
 				} else {
-					$errorDescription = 'Unknown error';
+					$errorDescription = translate(['text'=>'Unknown Error', 'isPublicFacing'=>true]);
 				}
 				$logger->log('Could not insert new object ' . $ret . ' ' . $errorDescription, Logger::LOG_DEBUG);
 				$user = UserAccount::getActiveUserObj();
@@ -176,8 +170,10 @@ abstract class ObjectEditor extends Admin_Admin
 			$propertyName = $property['property'];
 			if (isset($_REQUEST[$propertyName])){
 				$object->$propertyName = $_REQUEST[$propertyName];
-			}elseif (!empty($property['default'])){
+			}elseif (isset($property['default'])){
 				$object->$propertyName = $property['default'];
+			}elseif ($property['type'] == 'section'){
+				$this->setDefaultValues($object, $property['properties']);
 			}
 		}
 	}
@@ -186,8 +182,15 @@ abstract class ObjectEditor extends Admin_Admin
 		DataObjectUtil::updateFromUI($object, $structure);
 		return DataObjectUtil::validateObject($structure, $object);
 	}
-	function viewExistingObjects(){
+	function viewExistingObjects($structure){
 		global $interface;
+		$interface->assign('instructions', $this->getListInstructions());
+		$interface->assign('sortableFields', $this->getSortableFields($structure));
+		$interface->assign('sort', $this->getSort());
+		$filterFields = $this->getFilterFields($structure);
+		$interface->assign('filterFields', $filterFields);
+		$interface->assign('appliedFilters', $this->getAppliedFilters($filterFields));
+
 		$numObjects = $this->getNumObjects();
 		$page = isset($_REQUEST['page']) ? $_REQUEST['page'] : 1;
 		if (!is_numeric($page)){
@@ -227,11 +230,21 @@ abstract class ObjectEditor extends Admin_Admin
 		if (isset($_REQUEST['id'])){
 			$id = $_REQUEST['id'];
 			$existingObject = $this->getExistingObjectById($id);
-			$interface->assign('id', $id);
-			if (method_exists($existingObject, 'label')){
-				$interface->assign('objectName', $existingObject->label());
+			if ($existingObject != null){
+				if ($existingObject->canActiveUserEdit()) {
+					$interface->assign('id', $id);
+					if (method_exists($existingObject, 'label')) {
+						$interface->assign('objectName', $existingObject->label());
+					}
+					$this->activeObject = $existingObject;
+				}else{
+					$interface->setTemplate('../Admin/noPermission.tpl');
+					return;
+				}
+			}else{
+				$interface->setTemplate('../Admin/invalidObject.tpl');
+				return;
 			}
-			$this->activeObject = $existingObject;
 		}else{
 			$existingObject = null;
 		}
@@ -281,7 +294,7 @@ abstract class ObjectEditor extends Admin_Admin
 							if ($curObject->_lastError) {
 								$errorDescription = $curObject->_lastError->getUserInfo();
 							} else {
-								$errorDescription = 'Unknown error';
+								$errorDescription = translate(['text'=>'Unknown Error', 'isPublicFacing'=>true]);
 							}
 							$user->updateMessage = "An error occurred updating {$this->getObjectType()} with id of $id <br/>{$errorDescription}";
 							$user->updateMessageIsError = true;
@@ -356,6 +369,10 @@ abstract class ObjectEditor extends Admin_Admin
 
 	public function canCopy() {
 		return $this->canAddNew();
+	}
+
+	public function canEdit(DataObject $object){
+		return true;
 	}
 
 	public function canCompare() {
@@ -494,9 +511,17 @@ abstract class ObjectEditor extends Admin_Admin
 	function getPropertyValue($property, $propertyValue, $propertyType)
 	{
 		if ($propertyType == 'oneToMany' || $propertyType == 'multiSelect') {
-			return implode('<br/>', $propertyValue);
+			if ($propertyValue == null){
+				return 'null';
+			}else {
+				return implode('<br/>', $propertyValue);
+			}
 		}elseif ($propertyType == 'enum') {
-			return $property['values'][$propertyValue];
+			if (isset($property['values'][$propertyValue])){
+				return $property['values'][$propertyValue];
+			}else{
+				return translate(['text'=>'Undefined value %1%',1=>$propertyValue,'isAdminFacing'=>true]);
+			}
 		} else {
 			return is_array($propertyValue) ? implode(', ', $propertyValue) : (is_object($propertyValue) ? (string)$propertyValue : $propertyValue);
 		}
@@ -520,9 +545,9 @@ abstract class ObjectEditor extends Admin_Admin
 			$historyEntry->objectType = get_class($curObject);
 			$historyEntry->objectId = $curObject->$primaryField;
 			if ($displayNameColumn != null){
-				$title = 'History for ' . $curObject->$displayNameColumn;
+				$title = translate(["text"=>'History for %1%', 1=>$curObject->$displayNameColumn, "isAdminFacing"=>true]);
 			}else{
-				$title = 'History for ' . $historyEntry->objectType . ' - ' . $historyEntry->objectId;
+				$title = translate(["text"=>'History for %1%', 1=>$historyEntry->objectType . ' - ' . $historyEntry->objectId, "isAdminFacing"=>true]);
 			}
 			$interface->assign('title', $title);
 			$historyEntry->orderBy('changeDate desc');
@@ -608,7 +633,6 @@ abstract class ObjectEditor extends Admin_Admin
 	}
 
 	function applyFilters(DataObject $object){
-		/** @noinspection PhpPossiblePolymorphicInvocationInspection */
 		$appliedFilters = $this->getAppliedFilters($object::getObjectStructure());
 		foreach ($appliedFilters as $fieldName => $filter){
 			if ($filter['filterType'] == 'matches'){
@@ -677,7 +701,7 @@ abstract class ObjectEditor extends Admin_Admin
 		return $userHasExistingObjects;
 	}
 
-	private function applyPermissionsToObjectStructure(array $structure)
+	protected function applyPermissionsToObjectStructure(array $structure)
 	{
 		foreach ($structure as $key => &$property){
 			if ($property['type'] == 'section'){

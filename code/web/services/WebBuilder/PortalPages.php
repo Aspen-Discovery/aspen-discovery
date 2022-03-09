@@ -81,6 +81,11 @@ class WebBuilder_PortalPages extends ObjectEditor
 		return '';
 	}
 
+	function getInitializationJs() : string
+	{
+		return 'AspenDiscovery.WebBuilder.updateWebBuilderFields()';
+	}
+
 	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];
@@ -98,5 +103,11 @@ class WebBuilder_PortalPages extends ObjectEditor
 	function getActiveAdminSection() : string
 	{
 		return 'web_builder';
+	}
+
+	function viewIndividualObject($structure){
+		global $interface;
+		$interface->assign('previewMode', true);
+		return parent::viewIndividualObject($structure);
 	}
 }

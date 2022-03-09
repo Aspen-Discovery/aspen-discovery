@@ -11,8 +11,13 @@ class SideLoad extends DataObject
 
 	public $id;
 	public $name;
+	public $accessButtonLabel;
+	public $showStatus;
 	public $marcPath;
 	public /** @noinspection PhpUnused */ $filenamesToInclude;
+
+	public $deletedRecordsIds;
+
 	public /** @noinspection PhpUnused */ $marcEncoding;
 	public $individualMarcPath;
 	public $numCharsToCreateFolderFrom;
@@ -68,7 +73,11 @@ class SideLoad extends DataObject
 		return [
 			'id' => ['property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id within the database'],
 			'name' => ['property' => 'name', 'type' => 'text', 'label' => 'Name', 'maxLength' => 50, 'description' => 'A name for this side load', 'required' => true],
+			'accessButtonLabel' => ['property' => 'accessButtonLabel', 'type' => 'text', 'label' => 'Access Button Label', 'maxLength' => 50, 'description' => 'A label for the button to use when accessing the record', 'required' => true, 'default'=>'Access Online'],
+			'showStatus' => ['property' => 'showStatus', 'type' => 'checkbox', 'label' => 'Show Status', 'description' => 'Whether or not status should be shown for the record', 'default'=>1],
 			'recordUrlComponent' => ['property' => 'recordUrlComponent', 'type' => 'text', 'label' => 'Record URL Component', 'maxLength' => 50, 'description' => 'The Module to use within the URL', 'required' => true, 'default' => '{Change based on name}'],
+
+			'deletedRecordsIds' => ['property' => 'deletedRecordsIds', 'type' => 'textarea', 'label' => 'Deleted Records', 'description' => 'A list of records to that have been deleted, can be separated by commas or line breaks', 'forcesReindex' => true],
 
 			'marcPath' => ['property' => 'marcPath', 'type' => 'text', 'label' => 'MARC Path', 'maxLength' => 100, 'description' => 'The path on the server where MARC records can be found', 'required' => true, 'default' => "/data/aspen-discovery/{$serverName}/{sideload_name}/marc", 'forcesReindex' => true],
 			'filenamesToInclude' => ['property' => 'filenamesToInclude', 'type' => 'text', 'label' => 'Filenames to Include', 'maxLength' => 250, 'description' => 'A regular expression to determine which files should be grouped and indexed', 'required' => true, 'default' => '.*\.ma?rc', 'forcesReindex' => true],
@@ -130,6 +139,9 @@ class SideLoad extends DataObject
 
 	public function update()
 	{
+		if (in_array('deletedRecordsIds', $this->_changedFields)){
+			$this->runFullUpdate = true;
+		}
 		$ret = parent::update();
 		if ($ret !== FALSE) {
 			if (!file_exists($this->marcPath)) {

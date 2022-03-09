@@ -10,21 +10,20 @@
 # ****************************************************************************************************************************
 # * include the helper file that holds the URL information by client
 # ****************************************************************************************************************************
-include_once 'config.php';
+require_once '../bootstrap.php';
+require_once '../bootstrap_aspen.php';
 
 # ****************************************************************************************************************************
 # * grab the passed location parameter, then find the path
 # ****************************************************************************************************************************
-$library      = $_GET['library'];
-$locationInfo = urlPath($library);
-$urlPath      = $locationInfo[0];
-$shortname    = $locationInfo[1];
+$urlPath = 'https://'.$_SERVER['SERVER_NAME'];
+$shortname = $_GET['library'];
 
 # ****************************************************************************************************************************
 # * Prep the patron information for checking - dummy out something just in case
 # ****************************************************************************************************************************
-$barcode = "thisisadummybarcodeincaseitisleftblank";
-$pin     = 1234567890;
+$barcode = '';
+$pin     = '';
 
 if (! empty($_GET['barcode'])) { $barcode = $_GET['barcode']; }
 if (! empty($_GET['pin'])) { $pin = $_GET['pin']; }  
@@ -45,9 +44,30 @@ if (! empty($jsonData['result']['holds']['available'])) {
 # * clean up the title and convert the due date from a timestamp
 # ****************************************************************************************************************************
     if(substr($item['title'], -1) == '/') { $item['title'] = substr($item['title'], 0, -1); }
-    $pickUpDetails = 'Ready for pickup at ' . $item['currentPickupName'] . ' until ' . date('Y-m-d', $item['expire']);
+    if($item['pickupLocationName'] && $item['expire']) {
+	    $pickUpDetails = $item['pickupLocationName'] . ',' . date('Y-m-d', $item['expire']);
 
-    $holdInfo['Items'][] = array('key' => ucwords($item['title']), 'holdSource' => $item['holdSource'], 'position' => $pickUpDetails, 'thumbnail' => $item['coverUrl'], 'author' => $item['author']); 
+    } else {
+	    $pickUpDetails = date('Y-m-d', $item['expire']);
+    }
+
+	$type = '';
+	if($item['source']) {
+	  $type = $item['source'].':';
+	}
+	// make sure an id always populates
+	if(!$item['id']) {
+	  $id = $type . $item['recordId'];
+	} else {
+	  $id = $type . $item['id'];
+	}
+
+	$format = '';
+	if($item['format'][0]) {
+	  $format = $item['format'][0];
+	}
+
+    $holdInfo['Items'][] = array('key' => ucwords($item['title']), 'holdSource' => $item['holdSource'], 'position' => $pickUpDetails, 'thumbnail' => $item['coverUrl'], 'author' => $item['author'], 'id' => $id, 'format' => $format);
   }
 }
 
@@ -61,8 +81,24 @@ if (! empty($jsonData['result']['holds']['unavailable'])) {
 # * clean up the title and convert the due date from a timestamp
 # ****************************************************************************************************************************
     if(substr($item['title'], -1) == '/') { $item['title'] = substr($item['title'], 0, -1); }
+
+	  $type = '';
+	  if($item['type']) {
+		  $type = $item['type'].':';
+	  }
+	  // make sure an id always populates
+	  if(!$item['id']) {
+		  $id = $type . $item['recordId'];
+	  } else {
+		  $id = $type . $item['id'];
+	  }
+
+	  $format = '';
+	  if($item['format'][0]) {
+		  $format = $item['format'][0];
+	  }
   
-    $holdInfo['Items'][] = array('key' => ucwords($item['title']), 'holdSource' => $item['holdSource'], 'position' => $item['position'], 'thumbnail' => $item['coverUrl'], 'author' => $item['author']); 
+    $holdInfo['Items'][] = array('key' => ucwords($item['title']), 'holdSource' => $item['holdSource'], 'position' => $item['position'], 'thumbnail' => $item['coverUrl'], 'author' => $item['author'], 'id' => $id, 'format' => $format);
   }
 }
 

@@ -7,6 +7,8 @@ class PortalRow extends DataObject
 	public $weight;
 	public $id;
 	public $makeAccordion;
+	public $colorScheme;
+	public $invertColor;
 	public $portalPageId;
 	public /** @noinspection PhpUnused */ $rowTitle;
 
@@ -15,13 +17,23 @@ class PortalRow extends DataObject
 	static function getObjectStructure() : array {
 		$portalCellStructure = PortalCell::getObjectStructure();
 
+		$colorOptions = [
+			'default' => 'default',
+			'primary' => 'primary',
+			'secondary' => 'secondary',
+			'tertiary' => 'tertiary',
+		];
+
 		return [
 			'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id within the database'),
 			'weight' => array('property' => 'weight', 'type' => 'numeric', 'label' => 'Weight', 'weight' => 'Defines how items are sorted.  Lower weights are displayed higher.', 'required'=> true),
 			'portalPageId' => array('property'=>'portalPageId', 'type'=>'label', 'label'=>'Portal Page', 'description'=>'The parent page'),
 			'makeAccordion' => array('property' => 'makeAccordion', 'type' => 'checkbox', 'label' => 'Make row accordion (Row Title is required to use)', 'description' => 'Make the entire row contents an accordion box', 'onchange'=>'return AspenDiscovery.Admin.updateMakeRowAccordion();'),
 			'rowTitle' => array('property' => 'rowTitle', 'type' => 'text', 'label' => 'Row Title', 'description' => 'The title of the row (blank for none)', 'size' => '40', 'maxLength'=>100),
-
+			'designSettingsSection' => ['property' => 'designSettingsSection', 'type' => 'section', 'label' => 'Design Options', 'hideInLists' => true, 'properties' => [
+				'colorScheme' => ['property'=> 'colorScheme', 'type'=> 'webBuilderColor', 'label'=> 'Select a Color Scheme for Row', 'colorOptions'=>$colorOptions, 'description'=>'Pick the colors from on theme settings'],
+				'invertColor' => ['property' => 'invertColor', 'type' => 'checkbox', 'label' => 'Invert background and foreground colors', 'description' => 'Changes the background to be the text color and text color to be the background'],
+			]],
 			'cells' => [
 				'property'=>'cells',
 				'type'=>'oneToMany',

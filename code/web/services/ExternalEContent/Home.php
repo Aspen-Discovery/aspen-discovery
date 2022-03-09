@@ -20,7 +20,7 @@ class ExternalEContent_Home extends GroupedWorkSubRecordHomeAction{
 		}else{
 			$interface->assign('recordDriver', $this->recordDriver);
 
-			$this->loadCitations($this->recordDriver);
+			$this->loadCitations();
 
 			$interface->assign('cleanDescription', strip_tags($this->recordDriver->getDescriptionFast(), '<p><br><b><i><em><strong>'));
 

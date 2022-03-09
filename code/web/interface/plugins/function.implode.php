@@ -38,8 +38,18 @@ function smarty_function_implode($params, &$smarty)
 	$implodedValue = null;
 	if (is_array($subject)){
 		if ($translate){
+			if (isset($params['isPublicFacing'])) {
+				$isPublicFacing = $params['isPublicFacing'];
+			}else{
+				$isPublicFacing = false;
+			}
+			if (isset($params['isAdminFacing'])) {
+				$isAdminFacing = $params['isAdminFacing'];
+			}else{
+				$isAdminFacing = false;
+			}
 			foreach ($subject as $index => $value){
-				$subject[$index] = translate($value);
+				$subject[$index] = translate(['text' => $value, 'isPublicFacing'=>$isPublicFacing, 'isAdminFacing'=>$isAdminFacing]);
 			}
 		}
 		if (isset($params['sort'])){
@@ -48,7 +58,17 @@ function smarty_function_implode($params, &$smarty)
 		$implodedValue = implode($params['glue'], $subject);
 	}else{
 		if ($translate){
-			$implodedValue = translate($subject);
+			if (isset($params['isPublicFacing'])) {
+				$isPublicFacing = $params['isPublicFacing'];
+			}else{
+				$isPublicFacing = false;
+			}
+			if (isset($params['isAdminFacing'])) {
+				$isAdminFacing = $params['isAdminFacing'];
+			}else{
+				$isAdminFacing = false;
+			}
+			$implodedValue = translate(['text' => $subject, 'isPublicFacing'=>$isPublicFacing, 'isAdminFacing'=>$isAdminFacing]);
 		}else{
 			$implodedValue = $subject;
 		}
@@ -59,4 +79,5 @@ function smarty_function_implode($params, &$smarty)
 	}else{
 		$smarty->assign($params['assign'], $implodedValue);
 	}
+	return null;
 }

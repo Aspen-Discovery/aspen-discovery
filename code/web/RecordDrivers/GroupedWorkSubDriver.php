@@ -94,7 +94,7 @@ abstract class GroupedWorkSubDriver extends RecordInterface
 	public function getCitation($format)
 	{
 		require_once ROOT_DIR . '/sys/CitationBuilder.php';
-
+		global $interface;
 		// Build author list:
 		$authors = array();
 		$primary = $this->getPrimaryAuthor();
@@ -117,6 +117,9 @@ abstract class GroupedWorkSubDriver extends RecordInterface
 			'edition' => $this->getEditions(),
 			'format' => $this->getFormats()
 		);
+
+		$interface->assign('dc_pubName', count($publishers) > 0 ? $publishers[0] : null);
+		$interface->assign('dc_pubDate', count($pubDates) > 0 ? $pubDates[0] : null);
 
 		// Build the citation:
 		$citation = new CitationBuilder($details);
@@ -280,41 +283,7 @@ abstract class GroupedWorkSubDriver extends RecordInterface
 
 	public function getExploreMoreInfo()
 	{
-		global $interface;
-		global $configArray;
-		$exploreMoreOptions = array();
-		if ($configArray['Catalog']['showExploreMoreForFullRecords']) {
-			$interface->assign('showMoreLikeThisInExplore', true);
-
-			if ($this->getCleanISBN()) {
-				if ($interface->getVariable('showSimilarTitles')) {
-					$exploreMoreOptions['similarTitles'] = array(
-						'label' => 'Similar Titles From NoveList',
-						'body' => '<div id="novelistTitlesPlaceholder"></div>',
-						'hideByDefault' => true
-					);
-				}
-				if ($interface->getVariable('showSimilarAuthors')) {
-					$exploreMoreOptions['similarAuthors'] = array(
-						'label' => 'Similar Authors From NoveList',
-						'body' => '<div id="novelistAuthorsPlaceholder"></div>',
-						'hideByDefault' => true
-					);
-				}
-				if ($interface->getVariable('showSimilarTitles')) {
-					$exploreMoreOptions['similarSeries'] = array(
-						'label' => 'Similar Series From NoveList',
-						'body' => '<div id="novelistSeriesPlaceholder"></div>',
-						'hideByDefault' => true
-					);
-				}
-			}
-
-			require_once ROOT_DIR . '/sys/ExploreMore.php';
-			$exploreMore = new ExploreMore();
-			$exploreMore->loadExploreMoreSidebar('catalog', $this);
-		}
-		return $exploreMoreOptions;
+		return [];
 	}
 
 	/**
@@ -399,7 +368,7 @@ abstract class GroupedWorkSubDriver extends RecordInterface
 
 	public abstract function getLanguage();
 
-	public abstract function getNumHolds();
+	public abstract function getNumHolds() : int;
 
 	public function getPermanentId()
 	{
@@ -469,12 +438,10 @@ abstract class GroupedWorkSubDriver extends RecordInterface
 	 * @param Grouping_Record $relatedRecord
 	 * @param boolean $isAvailable
 	 * @param boolean $isHoldable
-	 * @param boolean $isBookable
-	 * @param null|string[] $relatedUrls
 	 * @param null|IlsVolumeInfo[] $volumeData
 	 * @return array
 	 */
-	public abstract function getRecordActions($relatedRecord, $isAvailable, $isHoldable, $isBookable, $volumeData = null);
+	public abstract function getRecordActions($relatedRecord, $isAvailable, $isHoldable, $volumeData = null);
 
 	/**
 	 * Load Record actions when we don't have detailed information about the record yet
@@ -486,6 +453,8 @@ abstract class GroupedWorkSubDriver extends RecordInterface
 			$relatedRecords = $groupedWork->getRelatedRecords();
 			foreach ($relatedRecords as $relatedRecord) {
 				if ($relatedRecord->id == $this->getIdWithSource()) {
+					return $relatedRecord->getActions();
+				}else if ($relatedRecord->id == strtolower($this->getIdWithSource())) {
 					return $relatedRecord->getActions();
 				}
 			}

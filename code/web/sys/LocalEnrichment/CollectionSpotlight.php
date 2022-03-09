@@ -75,6 +75,7 @@ class CollectionSpotlight extends DataObject
 		unset($spotlightListStructure['searchTerm']);
 		unset($spotlightListStructure['defaultFilter']);
 		unset($spotlightListStructure['sourceListId']);
+		unset($spotlightListStructure['sourceCourseReserveId']);
 		unset($spotlightListStructure['defaultSort']);
 		return array(
 			'id' => array(
@@ -145,6 +146,8 @@ class CollectionSpotlight extends DataObject
 				'storeDb' => true,
 				'default' => 'horizontal',
 				'hideInLists' => true,
+				'translateValues'=>true,
+				'isAdminFacing' => true,
 			),
 			'autoRotate' => array(
 				'property' => 'autoRotate',
@@ -161,6 +164,8 @@ class CollectionSpotlight extends DataObject
 				'storeDb' => true,
 				'default' => 'medium',
 				'hideInLists' => true,
+				'translateValues'=>true,
+				'isAdminFacing' => true,
 			),
 			'customCss' => array(
 				'property' => 'customCss',
@@ -181,6 +186,8 @@ class CollectionSpotlight extends DataObject
 				'description' => 'The method used to show the user the multiple lists associated with the display.',
 				'storeDb' => true,
 				'hideInLists' => true,
+				'translateValues'=>true,
+				'isAdminFacing' => true,
 			),
 			'showSpotlightTitle' => array(
 				'property' => 'showSpotlightTitle',
@@ -210,6 +217,8 @@ class CollectionSpotlight extends DataObject
 				'description' => 'The mode to show full results in when the View More link is clicked.',
 				'storeDb' => true,
 				'hideInLists' => true,
+				'translateValues'=>true,
+				'isAdminFacing' => true,
 			),
 			'lists' => array(
 				'property' => 'lists',
@@ -351,7 +360,7 @@ class CollectionSpotlight extends DataObject
 	{
 		if ($this->_lists != null) {
 			foreach ($this->_lists as $list) {
-				if (isset($list->deleteOnSave) && $list->deleteOnSave == true) {
+				if ($list->_deleteOnSave == true) {
 					$list->delete();
 				} else {
 					if (isset($list->id) && is_numeric($list->id)) {
@@ -382,7 +391,7 @@ class CollectionSpotlight extends DataObject
 
 		if ($this->_lists != null){
 			foreach ($this->_lists as $list) {
-				if (isset($list->deleteOnSave) && $list->deleteOnSave == true) {
+				if ($list->_deleteOnSave == true) {
 					//Don't validate
 				} else {
 					//Check to make sure that all list names are unique

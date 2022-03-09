@@ -1,12 +1,12 @@
 {* This is a text-only email template; do not include HTML! *}
-{translate text="This email was sent from"}: {$from}
+{translate text="This email was sent from %1%" 1=$from isPublicFacing=true}
 ------------------------------------------------------------
 
 {if !empty($message)}
-{translate text="Message From Sender"}:
+{translate text="Message From Sender" isPublicFacing=true}
 {$message}
 
 {/if}
-  {translate text="email_link"}: {$msgUrl}
+  {translate text="Link" isPublicFacing=true} {$msgUrl}
 ------------------------------------------------------------
 

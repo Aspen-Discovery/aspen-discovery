@@ -17,10 +17,10 @@ class NonGroupedRecord extends DataObject{
 		foreach ($sideLoadSettings as $profile){
 			$availableSources[$profile->name] = $profile->name;
 		}
-		$availableSources['cloud_library'] = 'Cloud Library';
+		$availableSources['axis360'] = 'Axis 360';
+		$availableSources['cloud_library'] = 'cloudLibrary';
 		$availableSources['hoopla'] = 'Hoopla';
 		$availableSources['overdrive'] = 'Overdrive';
-		$availableSources['rbdigital'] = 'RBdigital';
 
 		return [
 			[

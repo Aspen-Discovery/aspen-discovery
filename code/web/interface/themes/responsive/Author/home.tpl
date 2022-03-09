@@ -14,22 +14,6 @@
 
 	{* Information about the search *}
 	<div class="result-head">
-		<div>
-			{if !empty($replacementTerm)}
-				<div id="replacement-search-info">
-					<span class="replacement-search-info-text">Showing Results for </span>{$replacementTerm}<span class="replacement-search-info-text">.  Search instead for <span class="replacement-search-info-text"><a href="{$oldSearchUrl}">{$oldTerm}</a>
-				</div>
-			{/if}
-
-			{if $spellingSuggestions}
-				<br><br><div class="correction"><strong>{translate text='spell_suggest'}</strong>:<br>
-				{foreach from=$spellingSuggestions item=details key=term name=termLoop}
-					{$term|escape} &raquo; {foreach from=$details.suggestions item=data key=word name=suggestLoop}<a href="{$data.replace_url|escape}">{$data.phrase|escape}</a>{if $data.expand_url} <a href="{$data.expand_url|escape}"><img src="/images/silk/expand.png" alt="{translate text='spell_expand_alt'}"/></a> {/if}{if !$smarty.foreach.suggestLoop.last}, {/if}{/foreach}{if !$smarty.foreach.termLoop.last}<br>{/if}
-				{/foreach}
-			</div>
-			{/if}
-		</div>
-
 		{* User's viewing mode toggle switch *}
 		{include file="Search/results-displayMode-toggle.tpl"}
 
@@ -41,9 +25,9 @@
 
 	{if $displayMode == 'covers'}
 		{if $recordEnd < $recordCount}
-			<a onclick="return AspenDiscovery.Searches.getMoreResults()" role="button" title="{translate text='Get More Results' inAttribute=true}">
+			<a onclick="return AspenDiscovery.Searches.getMoreResults()" role="button" title="{translate text='Get More Results' inAttribute=true isPublicFacing=true}">
 				<div class="row" id="more-browse-results">
-					<span class="glyphicon glyphicon-chevron-down" aria-label="{translate text='Get More Results' inAttribute=true}"></span>
+					<span class="glyphicon glyphicon-chevron-down" aria-label="{translate text='Get More Results' inAttribute=true isPublicFacing=true}"></span>
 				</div>
 			</a>
 		{/if}
@@ -53,9 +37,9 @@
 
 	{if $showSearchTools}
 		<div class="well small">
-			<strong>{translate text='Search Tools'}:</strong>
-			<a href="{$rssLink|escape}">{translate text='Get RSS Feed'}</a>
-			<a href="#" onclick="return AspenDiscovery.Account.ajaxLightbox('/Search/AJAX?method=getEmailForm', true);">{translate text='Email this Search'}</a>
+			<strong>{translate text='Search Tools' isPublicFacing=true} </strong> &nbsp;
+			<a href="{$rssLink|escape}">{translate text='Get RSS Feed' isPublicFacing=true}</a> &nbsp;
+			<a href="#" onclick="return AspenDiscovery.Account.ajaxLightbox('/Search/AJAX?method=getEmailForm', true);">{translate text='Email this Search' isPublicFacing=true}</a>
 		</div>
 	{/if}
 </div>

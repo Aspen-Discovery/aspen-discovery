@@ -18,15 +18,15 @@ class Admin_AJAX extends JSON_Action
 			'modalButtons' => ''
 		);
 		if ($reindexProcess->find(true)) {
-			$results['title'] = "Reindex Notes";
+			$results['title'] = translate(['text'=>"Reindex Notes", 'isAdminFacing'=>true]);
 			if (strlen(trim($reindexProcess->notes)) == 0) {
-				$results['modalBody'] = "No notes have been entered yet";
+				$results['modalBody'] = translate(['text'=>"No notes have been entered yet", 'isAdminFacing'=>true]);
 			} else {
 				$results['modalBody'] = "<div class='helpText'>{$reindexProcess->notes}</div>";
 			}
 		} else {
-			$results['title'] = "Error";
-			$results['modalBody'] = "We could not find a reindex entry with that id.  No notes available.";
+			$results['title'] = translate(['text'=>"Error", 'isAdminFacing'=>true]);
+			$results['modalBody'] = translate(['text'=>"We could not find a reindex entry with that id.  No notes available.", 'isAdminFacing'=>true]);
 		}
 		return $results;
 	}
@@ -43,15 +43,15 @@ class Admin_AJAX extends JSON_Action
 			'modalButtons' => ""
 		);
 		if ($cronProcess->find(true)) {
-			$results['title'] = "{$cronProcess->processName} Notes";
+			$results['title'] = translate(['text'=>"%1% Notes",1=>$cronProcess->processName, 'isAdminFacing'=>true]);
 			if (strlen($cronProcess->notes) == 0) {
-				$results['modalBody'] = "No notes have been entered for this process";
+				$results['modalBody'] = translate(['text'=>"No notes have been entered for this process", 'isAdminFacing'=>true]);
 			} else {
 				$results['modalBody'] = "<div class='helpText'>{$cronProcess->notes}</div>";
 			}
 		} else {
 			$results['title'] = "Error";
-			$results['modalBody'] = "We could not find a process with that id.  No notes available.";
+			$results['modalBody'] = translate(['text'=>"We could not find a process with that id.  No notes available.", 'isAdminFacing'=>true]);
 		}
 		return $results;
 	}
@@ -69,15 +69,15 @@ class Admin_AJAX extends JSON_Action
 			'modalButtons' => ""
 		);
 		if ($cronLog->find(true)) {
-			$results['title'] = "Cron Process {$cronLog->id} Notes";
+			$results['title'] = translate(['text'=>"Cron Process %1% Notes", 1=>$cronLog->id, 'isAdminFacing'=>true]);
 			if (strlen($cronLog->notes) == 0) {
-				$results['modalBody'] = "No notes have been entered for this cron run";
+				$results['modalBody'] = translate(['text'=>"No notes have been entered for this cron run", 'isAdminFacing'=>true]);
 			} else {
 				$results['modalBody'] = "<div class='helpText'>{$cronLog->notes}</div>";
 			}
 		} else {
-			$results['title'] = "Error";
-			$results['modalBody'] = "We could not find a cron entry with that id.  No notes available.";
+			$results['title'] = translate(['text'=>"Error", 'isAdminFacing'=>true]);
+			$results['modalBody'] = translate(['text'=>"We could not find a cron entry with that id.  No notes available.", 'isAdminFacing'=>true]);
 		}
 		return $results;
 	}
@@ -97,9 +97,6 @@ class Admin_AJAX extends JSON_Action
 		} elseif ($source == 'hoopla') {
 			require_once ROOT_DIR . '/sys/Hoopla/HooplaExportLogEntry.php';
 			$extractLog = new HooplaExportLogEntry();
-		} elseif ($source == 'rbdigital') {
-			require_once ROOT_DIR . '/sys/RBdigital/RBdigitalExportLogEntry.php';
-			$extractLog = new RBdigitalExportLogEntry();
 		} elseif ($source == 'cloud_library') {
 			require_once ROOT_DIR . '/sys/CloudLibrary/CloudLibraryExportLogEntry.php';
 			$extractLog = new CloudLibraryExportLogEntry();
@@ -121,11 +118,14 @@ class Admin_AJAX extends JSON_Action
 		} elseif ($source == 'open_archives') {
 			require_once ROOT_DIR . '/sys/OpenArchives/OpenArchivesExportLogEntry.php';
 			$extractLog = new OpenArchivesExportLogEntry();
+		} elseif ($source == 'events') {
+			require_once ROOT_DIR . '/sys/Events/EventsIndexingLogEntry.php';
+			$extractLog = new EventsIndexingLogEntry();
 		}
 
 		if ($extractLog == null) {
-			$results['title'] = "Error";
-			$results['modalBody'] = "Invalid source for loading notes.";
+			$results['title'] = translate(['text'=>"Error", 'isAdminFacing'=>true]);
+			$results['modalBody'] = translate(['text'=>"Invalid source for loading notes.", 'isAdminFacing'=>true]);
 		} else {
 			$extractLog->id = $id;
 			$results = array(
@@ -134,15 +134,15 @@ class Admin_AJAX extends JSON_Action
 				'modalButtons' => ""
 			);
 			if ($extractLog->find(true)) {
-				$results['title'] = "Extract {$extractLog->id} Notes";
+				$results['title'] = translate(['text'=>"Extract %1% Notes", 1=>$extractLog->id, 'isAdminFacing'=>true]);
 				if (strlen($extractLog->notes) == 0) {
-					$results['modalBody'] = "No notes have been entered for this run";
+					$results['modalBody'] = translate(['text'=>"No notes have been entered for this run", 'isAdminFacing'=>true]);
 				} else {
 					$results['modalBody'] = "<div class='helpText'>{$extractLog->notes}</div>";
 				}
 			} else {
-				$results['title'] = "Error";
-				$results['modalBody'] = "We could not find an extract entry with that id.  No notes available.";
+				$results['title'] = translate(['text'=>"Error", 'isAdminFacing'=>true]);
+				$results['modalBody'] = translate(['text'=>"We could not find an extract entry with that id.  No notes available.", 'isAdminFacing'=>true]);
 			}
 		}
 
@@ -169,6 +169,7 @@ class Admin_AJAX extends JSON_Action
 
 		$spotlightList = new CollectionSpotlightList();
 		$spotlightList->find();
+		$existingCollectionSpotlightLists = [];
 		while ($spotlightList->fetch()){
 			$existingCollectionSpotlightLists[] = clone $spotlightList;
 		}
@@ -176,9 +177,9 @@ class Admin_AJAX extends JSON_Action
 		$interface->assign('existingCollectionSpotlightLists', $existingCollectionSpotlightLists);
 		$interface->assign('existingCollectionSpotlights', $existingCollectionSpotlights);
 		return array(
-			'title' => 'Create a Spotlight',
+			'title' => translate(["text"=>'Create a Spotlight', "isAdminFacing"=>true]),
 			'modalBody' => $interface->fetch('Admin/addToSpotlightForm.tpl'),
-			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#addSpotlight\").submit();'>Create Spotlight</button>"
+			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#addSpotlight\").submit();'>" . translate(["text"=>"Create Spotlight", "isAdminFacing"=>true]) . "</button>"
 		);
 	}
 
@@ -186,7 +187,7 @@ class Admin_AJAX extends JSON_Action
 	function ungroupRecord(){
 		$results = [
 			'success' => false,
-			'message' => 'Unknown Error'
+			'message' => translate(['text'=>'Unknown Error', 'isPublicFacing'=>true])
 		];
 		if (UserAccount::isLoggedIn() && (UserAccount::userHasPermission('Manually Group and Ungroup Works'))) {
 			require_once ROOT_DIR . '/sys/Grouping/NonGroupedRecord.php';
@@ -216,13 +217,14 @@ class Admin_AJAX extends JSON_Action
 			}
 
 		}else{
-			$results['message'] = "You do not have the correct permissions for this operation";
+			$results['message'] = translate(['text'=>"You do not have the correct permissions for this operation", 'isAdminFacing'=>true]);
 		}
 		return $results;
 	}
 
 	/** @noinspection PhpUnused */
 	function getReleaseNotes(){
+		global $interface;
 		$release = $_REQUEST['release'];
 		$releaseNotesPath = ROOT_DIR . '/release_notes';
 		$results = [
@@ -237,8 +239,21 @@ class Admin_AJAX extends JSON_Action
 			$releaseNotesFormatted = $parsedown->parse(file_get_contents($releaseNotesPath . '/'. $release . '.MD'));
 			$results = [
 				'success' => true,
-				'releaseNotes' => $releaseNotesFormatted
+				'release' => $release,
+				'releaseNotes' => $releaseNotesFormatted,
+				'actionItems' => '',
+				'testingSuggestions' => ''
 			];
+			if (file_exists($releaseNotesPath . '/'. $release . '_action_items.MD')){
+				$actionItemsFormatted = $parsedown->parse(file_get_contents($releaseNotesPath . '/'. $release . '_action_items.MD'));
+				$results['actionItems'] = $actionItemsFormatted;
+				$interface->assign('actionItemsFormatted', $actionItemsFormatted);
+			}
+			if (file_exists($releaseNotesPath . '/'. $release . '_testing.MD')){
+				$testingSuggestionsFormatted = $parsedown->parse(file_get_contents($releaseNotesPath . '/'. $release . '_testing.MD'));
+				$results['testingSuggestions'] = $testingSuggestionsFormatted;
+				$interface->assign('testingSuggestionsFormatted', $testingSuggestionsFormatted);
+			}
 		}
 		return $results;
 	}
@@ -249,14 +264,14 @@ class Admin_AJAX extends JSON_Action
 		global $interface;
 		if (UserAccount::userHasPermission('Administer Permissions')) {
 			return [
-				'title' => 'Create a Spotlight',
+				'title' => translate(['text'=>'Create New Role','isAdminFacing'=>true]),
 				'modalBody' => $interface->fetch('Admin/createRoleForm.tpl'),
-				'modalButtons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.Admin.createRole();'>Create Role</button>"
+				'modalButtons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.Admin.createRole();'>" . translate(['text'=>"Create Role",'isAdminFacing'=>true]) , "</button>"
 			];
 		}else{
 			return [
 				'success' => false,
-				'message' => "Sorry, you don't have permissions to add roles",
+				'message' => translate(['text'=>"Sorry, you don't have permissions to add roles",'isAdminFacing'=>true]),
 			];
 		}
 	}
@@ -295,7 +310,7 @@ class Admin_AJAX extends JSON_Action
 		}else{
 			return [
 				'success' => false,
-				'message' => "Sorry, you don't have permissions to add roles",
+				'message' => translate(['text'=>"Sorry, you don't have permissions to add roles",'isAdminFacing'=>true]),
 			];
 		}
 	}
@@ -357,9 +372,9 @@ class Admin_AJAX extends JSON_Action
 			$modalBody = $interface->fetch('Admin/batchUpdateFieldForm.tpl');
 			return [
 				'success' => true,
-				'title' => "Batch Update {$tool->getPageTitle()}",
+				'title' => translate(['text' => "Batch Update {$tool->getPageTitle()}", 'isAdminFacing'=>true]),
 				'modalBody' => $modalBody,
-				'modalButtons' => "<button onclick=\"return AspenDiscovery.Admin.processBatchUpdateFieldForm('{$moduleName}', '{$toolName}', '{$batchUpdateScope}');\" class=\"modal-buttons btn btn-primary\">" . translate('Update') . "</button>"
+				'modalButtons' => "<button onclick=\"return AspenDiscovery.Admin.processBatchUpdateFieldForm('{$moduleName}', '{$toolName}', '{$batchUpdateScope}');\" class=\"modal-buttons btn btn-primary\">" . translate(['text' => 'Update', 'isAdminFacing'=>true]) . "</button>"
 			];
 		}else{
 			return [
@@ -471,9 +486,9 @@ class Admin_AJAX extends JSON_Action
 				$modalBody = $interface->fetch('Admin/selectFilterForm.tpl');
 				return [
 					'success' => true,
-					'title' => 'Filter by',
+					'title' => translate(['text' => 'Filter by', 'isAdminFacing'=>true]),
 					'modalBody' => $modalBody,
-					'modalButtons' => "<button onclick=\"return AspenDiscovery.Admin.getNewFilterRow('{$moduleName}', '{$toolName}');\" class=\"modal-buttons btn btn-primary\">" . translate('Add Filter') . "</button>"
+					'modalButtons' => "<button onclick=\"return AspenDiscovery.Admin.getNewFilterRow('{$moduleName}', '{$toolName}');\" class=\"modal-buttons btn btn-primary\">" . translate(['text' => 'Add Filter', 'isAdminFacing'=>true]) . "</button>"
 				];
 			}
 		}else{
@@ -509,16 +524,57 @@ class Admin_AJAX extends JSON_Action
 			}else{
 				return [
 					'success' => false,
-					'title' => 'Error',
-					'message' => "Cannot filter by the selected field",
+					'title' => translate(['text' => 'Error', 'isAdminFacing'=>true]),
+					'message' => translate(['text' => "Cannot filter by the selected field", 'isAdminFacing'=>true]),
 				];
 			}
 		}else{
 			return [
 				'success' => false,
-				'title' => 'Error',
-				'message' => "Sorry, this form cannot be filtered",
+				'title' => translate(['text' => 'Error', 'isAdminFacing'=>true]),
+				'message' => translate(['text' => "Sorry, this form cannot be filtered", 'isAdminFacing'=>true]),
 			];
 		}
+	}
+
+	function deleteNYTList() {
+		$result = [
+			'success' => false,
+			'message' => translate(['text' => 'Something went wrong.', 'isAdminFacing'=>true])
+		];
+
+		require_once ROOT_DIR . '/sys/UserLists/UserList.php';
+		require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
+
+			$listId = $_REQUEST['id'];
+			$list = new UserList();
+			$list->id = $listId;
+
+			$listName = $list->title;
+
+			//Perform an action on the list, but verify that the user has permission to do so.
+			$userCanEdit = false;
+			$userObj = UserAccount::getActiveUserObj();
+			if ($userObj != false){
+				$userCanEdit = $userObj->canEditList($list);
+			}
+			if ($userCanEdit) {
+				$list->find();
+				$list->delete();
+				$result['success'] = true;
+				$result['message'] = 'List deleted successfully';
+			} else {
+				$result['success'] = false;
+				$result['message'] = 'You do not have permission to delete this list';
+			}
+		return $result;
+	}
+
+	/** @noinspection PhpUnused */
+	function createRecoveryCode() {
+		$user = $_REQUEST['user'] ?? '0';
+		require_once ROOT_DIR . '/sys/TwoFactorAuthCode.php';
+		$twoFactorAuth = new TwoFactorAuthCode();
+		return $twoFactorAuth->createRecoveryCode($user);
 	}
 }

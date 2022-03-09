@@ -1,13 +1,12 @@
 package com.turning_leaf_technologies.symphony;
 
+import com.opencsv.CSVReader;
 import com.turning_leaf_technologies.config.ConfigUtil;
 import com.turning_leaf_technologies.file.JarUtil;
-import com.turning_leaf_technologies.grouping.BaseMarcRecordGrouper;
 import com.turning_leaf_technologies.grouping.MarcRecordGrouper;
 import com.turning_leaf_technologies.grouping.RemoveRecordFromWorkResult;
 import com.turning_leaf_technologies.indexing.*;
 import com.turning_leaf_technologies.logging.LoggingUtil;
-import com.turning_leaf_technologies.marc.MarcUtil;
 import com.turning_leaf_technologies.reindexer.GroupedWorkIndexer;
 import com.turning_leaf_technologies.strings.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -97,9 +96,15 @@ public class SymphonyExportMain {
 			//TODO: Load the account profile with additional information about Symphony connection if needed.
 
 			indexingProfile = IndexingProfile.loadIndexingProfile(dbConn, profileToLoad, logger);
+			logEntry.setIsFullUpdate(indexingProfile.isRunFullUpdate());
 
 			//Check for new marc out
 			exportVolumes(dbConn, indexingProfile, profileToLoad);
+
+			exportHolds(dbConn, indexingProfile, profileToLoad);
+
+			processCourseReserves(dbConn, indexingProfile, logEntry);
+
 			numChanges = updateRecords(dbConn);
 			processRecordsToReload(indexingProfile, logEntry);
 
@@ -158,6 +163,216 @@ public class SymphonyExportMain {
 		}
 	}
 
+	private static void processCourseReserves(Connection dbConn, IndexingProfile indexingProfile, IlsExtractLogEntry logEntry) {
+		File exportDir = new File(indexingProfile.getMarcPath() + "/../course_reserves/");
+		File[] courseReservesFiles = exportDir.listFiles(new FilenameFilter() {
+			@Override
+			public boolean accept(File dir, String name) {
+				return name.matches("course-reserves.*\\.txt");
+			}
+		});
+		if (courseReservesFiles == null){
+			return;
+		}
+		File newestFile = null;
+		long newestFileDate = 0;
+		for (File courseReservesFile: courseReservesFiles){
+			if (courseReservesFile.lastModified() > newestFileDate){
+				newestFileDate = courseReservesFile.lastModified();
+				newestFile = courseReservesFile;
+			}
+		}
+		for (File courseReservesFile: courseReservesFiles){
+			if (courseReservesFile != newestFile){
+				if (courseReservesFile.delete()){
+					logEntry.addNote("Deleted old course reserves file " + courseReservesFile.getAbsolutePath());
+				}
+			}
+		}
+		if (newestFile == null){
+			return;
+		}
+		//Make sure the file is not still changing
+		long newestFileSize = 0;
+		while (newestFileSize != newestFile.length()){
+			newestFileSize = newestFile.length();
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				logEntry.incErrors("Sleeping while looking for Course Reserve file changes was interrupted");
+			}
+		}
+
+		//Process the file
+		logEntry.addNote("Processing course reserves file " + newestFile.getAbsolutePath());
+		try {
+			//Setup statements
+			PreparedStatement getExistingCourseReservesStmt = dbConn.prepareStatement("SELECT * FROM course_reserve", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			PreparedStatement addCourseReserveListStmt = dbConn.prepareStatement("INSERT INTO course_reserve (created, dateUpdated, courseLibrary, courseInstructor, courseNumber, courseTitle) VALUES (?, ?, ?, ?, ?, ?)", PreparedStatement.RETURN_GENERATED_KEYS);
+			PreparedStatement undeleteCourseReserveStmt = dbConn.prepareStatement("UPDATE course_reserve set deleted = 0, dateUpdated = ? where id = ?");
+			PreparedStatement getWorksForListStmt = dbConn.prepareStatement("SELECT * FROM course_reserve_entry WHERE courseReserveId = ?");
+			PreparedStatement getWorkIdForBarcodeStmt = dbConn.prepareStatement("SELECT permanent_id, full_title FROM grouped_work_record_items inner join grouped_work_records ON groupedWorkRecordId = grouped_work_records.id inner join grouped_work on grouped_work.id = groupedWorkId where itemId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			PreparedStatement addWorkToListStmt = dbConn.prepareStatement("INSERT INTO course_reserve_entry (source, sourceId, courseReserveId, title, dateAdded) VALUES ('GroupedWork', ?, ?, ?, ?)", PreparedStatement.RETURN_GENERATED_KEYS);
+			PreparedStatement removeWorkFromListStmt = dbConn.prepareStatement("DELETE FROM course_reserve_entry WHERE id = ?");
+			PreparedStatement updateListDateUpdatedStmt = dbConn.prepareStatement("UPDATE course_reserve SET dateUpdated = ? where id = ?");
+			PreparedStatement deleteListStmt = dbConn.prepareStatement("UPDATE course_reserve set deleted = 1, dateUpdated = ? where id = ?");
+
+			ResultSet existingCourseReservesRS = getExistingCourseReservesStmt.executeQuery();
+			HashMap<String, CourseInfo> existingCourses = new HashMap<>();
+			while (existingCourseReservesRS.next()){
+				CourseInfo courseInfo = new CourseInfo(
+						existingCourseReservesRS.getLong("id"),
+						existingCourseReservesRS.getString("courseLibrary"),
+						existingCourseReservesRS.getString("courseInstructor"),
+						existingCourseReservesRS.getString("courseNumber"),
+						existingCourseReservesRS.getString("courseTitle"),
+						existingCourseReservesRS.getBoolean("deleted")
+				);
+				existingCourses.put(courseInfo.toString(), courseInfo);
+			}
+			//Get existing grouped works for each course
+			for (CourseInfo courseInfo : existingCourses.values()){
+				getWorksForListStmt.setLong(1, courseInfo.id);
+				ResultSet worksForListRS = getWorksForListStmt.executeQuery();
+				while (worksForListRS.next()){
+					CourseTitle existingTitle = new CourseTitle(
+						worksForListRS.getLong("id"),
+						worksForListRS.getString("sourceId")
+					);
+					courseInfo.existingWorks.put(existingTitle.groupedWorkPermanentId, existingTitle);
+				}
+			}
+
+
+			@SuppressWarnings("deprecation")
+			CSVReader reader = new CSVReader(new FileReader(newestFile), '|');
+			String[] columns;
+			while ((columns = reader.readNext()) != null){
+				if (columns.length >= 6) {
+					String barcode = columns[0].trim();
+					//String status = columns[1];
+					String courseLibrary = columns[2];
+					String courseNumber = columns[3];
+					String courseTitle = columns[4];
+					String courseInstructor = columns[5];
+
+					//Get the grouped work id for the barcode, we won't add to the course if we can't find the book
+					getWorkIdForBarcodeStmt.setString(1, barcode);
+					ResultSet getWorkIdForBarcodeRS = getWorkIdForBarcodeStmt.executeQuery();
+					if (getWorkIdForBarcodeRS.next()){
+						String permanentId = getWorkIdForBarcodeRS.getString("permanent_id");
+						String title = getWorkIdForBarcodeRS.getString("full_title");
+
+						//Get the current user list for this course
+						String key = courseLibrary + "-" + courseInstructor + "-" + courseNumber + "-" + courseTitle;
+						CourseInfo course = existingCourses.get(key);
+						if (course != null){
+							course.stillExists = true;
+							if (course.isDeleted){
+								//Restore the course
+								long now = new Date().getTime() / 1000;
+								undeleteCourseReserveStmt.setLong(1, now);
+								undeleteCourseReserveStmt.setLong(2, course.id);
+								undeleteCourseReserveStmt.executeUpdate();
+								course.isDeleted = false;
+							}
+						}else{
+							long now = new Date().getTime() / 1000;
+							addCourseReserveListStmt.setLong(1, now);
+							addCourseReserveListStmt.setLong(2, now);
+							addCourseReserveListStmt.setString(3, courseLibrary);
+							addCourseReserveListStmt.setString(4, courseInstructor);
+							addCourseReserveListStmt.setString(5, courseNumber);
+							addCourseReserveListStmt.setString(6, courseTitle);
+							addCourseReserveListStmt.executeUpdate();
+							ResultSet generatedKeys = addCourseReserveListStmt.getGeneratedKeys();
+							if (generatedKeys.next()){
+								course = new CourseInfo(
+										generatedKeys.getLong(1),
+										courseLibrary,
+										courseInstructor,
+										courseNumber,
+										courseTitle,
+										false
+								);
+								course.stillExists = true;
+								existingCourses.put(key, course);
+							}else{
+								logEntry.incErrors("Failed to create Course Reserve.");
+							}
+						}
+
+						if (course != null) {
+							//Check to see if the title is already on the work
+							CourseTitle existingTitle = course.existingWorks.get(permanentId);
+							if (course.existingWorks.containsKey(permanentId)) {
+								existingTitle.stillExists = true;
+							}else{
+								//Add the title to the list
+								addWorkToListStmt.setString(1, permanentId);
+								addWorkToListStmt.setLong(2, course.id);
+								String truncatedTitle = title;
+								if (truncatedTitle.length() > 50){
+									truncatedTitle = truncatedTitle.substring(0, 50);
+								}
+								addWorkToListStmt.setString(3, truncatedTitle);
+								addWorkToListStmt.setLong(4, new Date().getTime() / 1000);
+								addWorkToListStmt.executeUpdate();
+
+								//Get the id for the new entry
+								ResultSet generatedKeys = addWorkToListStmt.getGeneratedKeys();
+								if (generatedKeys.next()){
+									existingTitle = new CourseTitle(
+											generatedKeys.getLong(1),
+											permanentId
+									);
+									existingTitle.stillExists = true;
+									course.existingWorks.put(existingTitle.groupedWorkPermanentId, existingTitle);
+								}
+
+								course.isUpdated = true;
+							}
+						}
+					}
+				}
+			}
+
+			//Check each course for titles that no longer exist
+			for (CourseInfo courseInfo : existingCourses.values()){
+				int numValidWorks = 0;
+				for (CourseTitle courseTitle : courseInfo.existingWorks.values()){
+					if (!courseTitle.stillExists){
+						removeWorkFromListStmt.setLong(1, courseTitle.id);
+						removeWorkFromListStmt.executeUpdate();
+						courseInfo.isUpdated = true;
+					}else{
+						numValidWorks++;
+					}
+				}
+				//Remove any courses that no longer exist or are empty
+				if (!courseInfo.stillExists || numValidWorks == 0){
+					deleteListStmt.setLong(1, new Date().getTime() /1000);
+					deleteListStmt.setLong(2, courseInfo.id);
+					deleteListStmt.executeUpdate();
+				}else if (courseInfo.isUpdated){
+					//Mark the course as updated in the database if isUpdated is true
+					updateListDateUpdatedStmt.setLong(1, new Date().getTime() /1000);
+					updateListDateUpdatedStmt.setLong(2, courseInfo.id);
+					updateListDateUpdatedStmt.executeUpdate();
+				}
+			}
+
+			//Delete the file
+			reader.close();
+			if (!newestFile.delete()){
+				logEntry.incErrors("Could not delete course reserves file " + newestFile.getAbsolutePath());
+			}
+
+		} catch (IOException | SQLException e) {
+			logEntry.incErrors("Error processing course reserves file", e);
+		}
+	}
+
 	private static void processRecordsToReload(IndexingProfile indexingProfile, IlsExtractLogEntry logEntry) {
 		try {
 			MarcRecordGrouper recordGroupingProcessor = getRecordGroupingProcessor(dbConn);
@@ -170,9 +385,9 @@ public class SymphonyExportMain {
 			while (getRecordsToReloadRS.next()) {
 				long recordToReloadId = getRecordsToReloadRS.getLong("id");
 				String recordIdentifier = getRecordsToReloadRS.getString("identifier");
-				File marcFile = indexingProfile.getFileForIlsRecord(recordIdentifier);
-				Record marcRecord = MarcUtil.readIndividualRecord(marcFile, logEntry);
+				Record marcRecord = indexer.loadMarcRecordFromDatabase(indexingProfile.getName(), recordIdentifier, logEntry);
 				if (marcRecord != null) {
+					logEntry.incRecordsRegrouped();
 					//Regroup the record
 					String permanentId = recordGroupingProcessor.processMarcRecord(marcRecord, true, null);
 					//Reindex the record
@@ -192,12 +407,75 @@ public class SymphonyExportMain {
 		}
 	}
 
+	private static void exportHolds(Connection dbConn, IndexingProfile indexingProfile, String profileToLoad){
+		File holdsExportFile = new File(indexingProfile.getMarcPath() + "/Holds.csv");
+		if (holdsExportFile.exists()){
+			long fileTimeStamp = holdsExportFile.lastModified();
+
+			logEntry.saveResults();
+			boolean fileChanging = true;
+			while (fileChanging){
+				fileChanging = false;
+				try {
+					Thread.sleep(1000);
+				} catch (InterruptedException e) {
+					logger.debug("Thread interrupted while checking if holds file is changing");
+				}
+				if (fileTimeStamp != holdsExportFile.lastModified()){
+					fileTimeStamp = holdsExportFile.lastModified();
+					fileChanging = true;
+				}
+			}
+
+			//Holds file exists and isn't changing, import it.
+			try {
+				logEntry.addNote("Starting export of holds " + dateTimeFormatter.format(new Date()));
+
+				//Start a transaction so we can rebuild an entire table
+				dbConn.setAutoCommit(false);
+				dbConn.prepareCall("TRUNCATE TABLE ils_hold_summary").executeUpdate();
+
+				PreparedStatement addIlsHoldSummary = dbConn.prepareStatement("INSERT INTO ils_hold_summary (ilsId, numHolds) VALUES (?, ?)");
+
+				BufferedReader csvReader = new BufferedReader(new FileReader(holdsExportFile));
+				String holdInfoLine = csvReader.readLine();
+				while (holdInfoLine != null) {
+					String[] holdInfoFields = holdInfoLine.split("\\|");
+					if (holdInfoFields.length == 2) {
+						String bibNumber = "a" + holdInfoFields[0].trim();
+						addIlsHoldSummary.setString(1, bibNumber);
+						addIlsHoldSummary.setString(2, holdInfoFields[1]);
+						addIlsHoldSummary.executeUpdate();
+					}
+					holdInfoLine = csvReader.readLine();
+
+				}
+				logEntry.addNote("Finished export of holds " + dateTimeFormatter.format(new Date()));
+
+				csvReader.close();
+				dbConn.setAutoCommit(true);
+				if (!holdsExportFile.delete()){
+					logEntry.incErrors("Could not delete holds export file");
+				}
+			} catch (FileNotFoundException e) {
+				logEntry.incErrors("Error loading holds", e);
+			} catch (IOException e) {
+				logEntry.incErrors("Error reading holds information", e);
+			} catch (SQLException e) {
+				logEntry.incErrors("Error reading and writing from database while loading holds", e);
+			}
+			logEntry.addNote("Finished export of hold information " + dateTimeFormatter.format(new Date()));
+		}else{
+			logEntry.addNote("Hold export file (Holds.csv) did not exist in " + SymphonyExportMain.indexingProfile.getMarcPath());
+		}
+	}
+
 	private static void exportVolumes(Connection dbConn, IndexingProfile indexingProfile, String profileToLoad) {
 		File volumeExportFile = new File(indexingProfile.getMarcPath() + "/volumes.txt");
 		if (volumeExportFile.exists()){
 			long lastVolumeTimeStamp = indexingProfile.getLastVolumeExportTimestamp();
 			long fileTimeStamp = volumeExportFile.lastModified();
-			if (fileTimeStamp / 1000 > lastVolumeTimeStamp){
+			if ((fileTimeStamp / 1000) > lastVolumeTimeStamp){
 				logEntry.addNote("Checking to see if the volume file is still changing");
 				logEntry.saveResults();
 				boolean fileChanging = true;
@@ -250,17 +528,19 @@ public class SymphonyExportMain {
 							volumeInfoFields = repairedVolumeInfo;
 						}
 						if (volumeInfoFields.length == 7) {
-							String bibNumber = profileToLoad + ":" + volumeInfoFields[0].trim();
+							//It is more reliable to get the volume from the short bib number rather than the first field
+							//String bibNumber = profileToLoad + ":" + volumeInfoFields[0].trim();
+							String bibNumber = profileToLoad + ":a" + volumeInfoFields[5].trim();
 							if (!bibNumber.equals(curIlsId)){
 								if (curIlsId != null) {
 									//Save the current volume information
-									saveVolumes(volumesForRecord, addVolumeStmt, volumeUpdateInfo);
+									saveVolumes(curIlsId, volumesForRecord, addVolumeStmt, volumeUpdateInfo, deleteVolumeStmt);
 								}
 								volumesForRecord = new HashMap<>();
 								curIlsId = bibNumber;
 								allRecordsWithVolumes.remove(curIlsId);
 							}
-							String fullCallNumber = volumeInfoFields[1].trim();
+							String fullCallNumber = volumeInfoFields[1];
 							try {
 								int startOfVolumeInfo = Integer.parseInt(volumeInfoFields[2].trim());
 								//String dateUpdated = volumeInfoFields[3];
@@ -270,7 +550,7 @@ public class SymphonyExportMain {
 								String volumeIdentifier = shortBibNumber + ":" + volumeNumber;
 								//startOfVolumeInfo = 0 indicates this item is not part of a volume. Will need separate handling.
 								if (startOfVolumeInfo > 0 && startOfVolumeInfo < fullCallNumber.length()) {
-									String volume = fullCallNumber.substring(startOfVolumeInfo);
+									String volume = fullCallNumber.substring(startOfVolumeInfo).trim();
 									VolumeInfo curVolume;
 
 									if (volumesForRecord.containsKey(volume)) {
@@ -306,7 +586,7 @@ public class SymphonyExportMain {
 					}
 					if (curIlsId != null) {
 						//Save the last volume information
-						saveVolumes(volumesForRecord, addVolumeStmt, volumeUpdateInfo);
+						saveVolumes(curIlsId, volumesForRecord, addVolumeStmt, volumeUpdateInfo, deleteVolumeStmt);
 					}
 
 					logEntry.addNote(numMalformattedRows + " rows were mal formatted in the volume export");
@@ -350,8 +630,14 @@ public class SymphonyExportMain {
 		}
 	}
 
-	private static void saveVolumes(HashMap<String, VolumeInfo> volumesForRecord, PreparedStatement addVolumeStmt, VolumeUpdateInfo volumeUpdateInfo) {
+	private static void saveVolumes(String recordId, HashMap<String, VolumeInfo> volumesForRecord, PreparedStatement addVolumeStmt, VolumeUpdateInfo volumeUpdateInfo, PreparedStatement deleteVolumeStmt) {
 		//Update the database
+		try {
+			deleteVolumeStmt.setString(1, recordId);
+			deleteVolumeStmt.executeUpdate();
+		}catch (Exception e){
+			logEntry.incErrors("Could not delete old volumes for recordId");
+		}
 		for (String curVolumeKey : volumesForRecord.keySet()){
 			VolumeInfo curVolume = volumesForRecord.get(curVolumeKey);
 			try{
@@ -395,7 +681,7 @@ public class SymphonyExportMain {
 		//Get the last export from MARC time
 		long lastUpdateFromMarc = indexingProfile.getLastUpdateFromMarcExport();
 
-		//These are all of the full exports, we only want one full export to be processed
+		//These are all the full exports, we only want one full export to be processed
 		File marcExportPath = new File(indexingProfile.getMarcPath());
 		File[] exportedMarcFiles = marcExportPath.listFiles((dir, name) -> name.endsWith("mrc") || name.endsWith("marc"));
 		ArrayList<File> filesToProcess = new ArrayList<>();
@@ -506,7 +792,7 @@ public class SymphonyExportMain {
 				while (catalogReader.hasNext()) {
 					numRecordsRead++;
 					Record curBib = catalogReader.next();
-					RecordIdentifier recordIdentifier = recordGroupingProcessor.getPrimaryIdentifierFromMarcRecord(curBib, indexingProfile.getName(), indexingProfile.isDoAutomaticEcontentSuppression());
+					RecordIdentifier recordIdentifier = recordGroupingProcessor.getPrimaryIdentifierFromMarcRecord(curBib, indexingProfile);
 					if (recordIdentifier != null) {
 						String recordNumber = recordIdentifier.getIdentifier();
 						lastRecordProcessed = recordNumber;
@@ -536,6 +822,7 @@ public class SymphonyExportMain {
 			}
 		}
 
+		GroupedWorkIndexer reindexer = getGroupedWorkIndexer(dbConn);
 		for (File curBibFile : exportedMarcFiles) {
 			logEntry.addNote("Processing file " + curBibFile.getAbsolutePath());
 
@@ -557,13 +844,13 @@ public class SymphonyExportMain {
 						Record curBib = catalogReader.next();
 						numRecordsRead++;
 						if (hasFullExportFile && curBibFile.equals(fullExportFile) && (numRecordsRead < indexingProfile.getLastChangeProcessed())) {
-							RecordIdentifier recordIdentifier = recordGroupingProcessor.getPrimaryIdentifierFromMarcRecord(curBib, indexingProfile.getName(), indexingProfile.isDoAutomaticEcontentSuppression());
+							RecordIdentifier recordIdentifier = recordGroupingProcessor.getPrimaryIdentifierFromMarcRecord(curBib, indexingProfile);
 							if (recordIdentifier != null) {
 								recordGroupingProcessor.removeExistingRecord(recordIdentifier.getIdentifier());
 							}
 							logEntry.incSkipped();
 						}else {
-							RecordIdentifier recordIdentifier = recordGroupingProcessor.getPrimaryIdentifierFromMarcRecord(curBib, indexingProfile.getName(), indexingProfile.isDoAutomaticEcontentSuppression());
+							RecordIdentifier recordIdentifier = recordGroupingProcessor.getPrimaryIdentifierFromMarcRecord(curBib, indexingProfile);
 							boolean deleteRecord = false;
 							if (recordIdentifier == null) {
 								//logger.debug("Record with control number " + curBib.getControlNumber() + " was suppressed or is eContent");
@@ -573,20 +860,20 @@ public class SymphonyExportMain {
 								}
 							} else if (!recordIdentifier.isSuppressed()) {
 								String recordNumber = recordIdentifier.getIdentifier();
-								BaseMarcRecordGrouper.MarcStatus marcStatus;
+								GroupedWorkIndexer.MarcStatus marcStatus;
 								if (lastIdentifier != null && lastIdentifier.equals(recordIdentifier)) {
-									marcStatus = recordGroupingProcessor.appendItemsToExistingRecord(indexingProfile, curBib, recordNumber, logger);
+									marcStatus = reindexer.appendItemsToExistingRecord(indexingProfile, curBib, recordNumber);
 								} else {
-									marcStatus = recordGroupingProcessor.writeIndividualMarc(indexingProfile, curBib, recordNumber, logger);
+									marcStatus = reindexer.saveMarcRecordToDatabase(indexingProfile, recordNumber, curBib);
 								}
 
-								if (marcStatus != BaseMarcRecordGrouper.MarcStatus.UNCHANGED || indexingProfile.isRunFullUpdate()) {
-									String permanentId = recordGroupingProcessor.processMarcRecord(curBib, marcStatus != BaseMarcRecordGrouper.MarcStatus.UNCHANGED, null);
+								if (marcStatus != GroupedWorkIndexer.MarcStatus.UNCHANGED || indexingProfile.isRunFullUpdate()) {
+									String permanentId = recordGroupingProcessor.processMarcRecord(curBib, marcStatus != GroupedWorkIndexer.MarcStatus.UNCHANGED, null);
 									if (permanentId == null) {
 										//Delete the record since it is suppressed
 										deleteRecord = true;
 									} else {
-										if (marcStatus == BaseMarcRecordGrouper.MarcStatus.NEW) {
+										if (marcStatus == GroupedWorkIndexer.MarcStatus.NEW) {
 											logEntry.incAdded();
 										} else {
 											logEntry.incUpdated();
@@ -597,7 +884,7 @@ public class SymphonyExportMain {
 								} else {
 									logEntry.incSkipped();
 								}
-								if (totalChanges % 5000 == 0) {
+								if (totalChanges > 0 && totalChanges % 5000 == 0) {
 									getGroupedWorkIndexer(dbConn).commitChanges();
 								}
 								//Mark that the record was processed
@@ -716,7 +1003,7 @@ public class SymphonyExportMain {
 				dbConn = null;
 			}
 		} catch (Exception e) {
-			System.out.println("Error closing aspen connection: " + e.toString());
+			System.out.println("Error closing aspen connection: " + e);
 			e.printStackTrace();
 		}
 	}

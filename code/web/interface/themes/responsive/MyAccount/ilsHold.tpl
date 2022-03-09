@@ -13,10 +13,10 @@
 					{if !empty($record->getCoverUrl())}
 						{if !empty($record->getLinkUrl())}
 							<a href="{$record->getLinkUrl()}" id="descriptionTrigger{$record->recordId|escape:"url"}" aria-hidden="true">
-								<img src="{$record->getCoverUrl()}" class="listResultImage img-thumbnail img-responsive" alt="{translate text='Cover Image' inAttribute=true}">
+								<img src="{$record->getCoverUrl()}" class="listResultImage img-thumbnail img-responsive" alt="{translate text='Cover Image' inAttribute=true isPublicFacing=true}">
 							</a>
 						{else} {* Cover Image but no Record-View link *}
-							<img src="{$record->getCoverUrl()}" class="listResultImage img-thumbnail img-responsive" alt="{translate text='Cover Image' inAttribute=true}" aria-hidden="true">
+							<img src="{$record->getCoverUrl()}" class="listResultImage img-thumbnail img-responsive" alt="{translate text='Cover Image' inAttribute=true isPublicFacing=true}" aria-hidden="true">
 						{/if}
 					{/if}
 
@@ -32,11 +32,11 @@
 					<span class="result-index">{$resultIndex})</span>&nbsp;
 					{if $record->getLinkUrl()}
 						<a href="{$record->getLinkUrl()}" class="result-title notranslate">
-							{if !$record->getTitle()|removeTrailingPunctuation}{translate text='Title not available'}{else}{$record->getTitle()|removeTrailingPunctuation|truncate:180:"..."|highlight}{/if}
+							{if !$record->getTitle()|removeTrailingPunctuation} {translate text='Title not available' isPublicFacing=true}{else}{$record->getTitle()|removeTrailingPunctuation|truncate:180:"..."|highlight}{/if}
 						</a>
 					{else}
 						<span class="result-title notranslate">
-							{if !$record->getTitle()|removeTrailingPunctuation}{translate text='Title not available'}{else}{$record->getTitle()|removeTrailingPunctuation|truncate:180:"..."|highlight}{/if}
+							{if !$record->getTitle()|removeTrailingPunctuation} {translate text='Title not available' isPublicFacing=true}{else}{$record->getTitle()|removeTrailingPunctuation|truncate:180:"..."|highlight}{/if}
 						</span>
 					{/if}
 					{if !empty($record->title2)}
@@ -53,7 +53,7 @@
 				<div class="resultDetails col-xs-12 col-md-8 col-lg-9">
 					{if !empty($record->volume)}
 						<div class="row">
-							<div class="result-label col-tn-4">{translate text='Volume'}</div>
+							<div class="result-label col-tn-4">{translate text='Volume' isPublicFacing=true}</div>
 							<div class="col-tn-8 result-value">
 								{$record->volume}
 							</div>
@@ -62,7 +62,7 @@
 
 					{if !empty($record->getAuthor())}
 						<div class="row">
-							<div class="result-label col-tn-4">{translate text='Author'}</div>
+							<div class="result-label col-tn-4">{translate text='Author' isPublicFacing=true}</div>
 							<div class="col-tn-8 result-value">
 								{if is_array($record->getAuthor())}
 									{foreach from=$record->getAuthor() item=author}
@@ -77,7 +77,7 @@
 
 					{if !empty($record->callNumber)}
 						<div class="row">
-							<div class="result-label col-tn-4">{translate text='Call Number'}</div>
+							<div class="result-label col-tn-4">{translate text='Call Number' isPublicFacing=true}</div>
 							<div class="col-tn-8 result-value">
 								{$record->callNumber}
 							</div>
@@ -86,16 +86,16 @@
 
 					{if !empty($record->getFormats())}
 						<div class="row">
-							<div class="result-label col-tn-4">{translate text='Format'}</div>
+							<div class="result-label col-tn-4">{translate text='Format' isPublicFacing=true}</div>
 							<div class="col-tn-8 result-value">
-								{implode subject=$record->getFormats() glue=", " translate=true}
+								{implode subject=$record->getFormats() glue=", " translate=true isPublicFacing=true}
 							</div>
 						</div>
 					{/if}
 
 					{if $hasLinkedUsers}
 					<div class="row">
-						<div class="result-label col-tn-4">{translate text='On Hold For'}</div>
+						<div class="result-label col-tn-4">{translate text='On Hold For' isPublicFacing=true}</div>
 						<div class="col-tn-8 result-value">
 							{$record->getUserName()}
 						</div>
@@ -103,7 +103,7 @@
 					{/if}
 
 					<div class="row">
-						<div class="result-label col-tn-4">{translate text='Pickup Location'}</div>
+						<div class="result-label col-tn-4">{translate text='Pickup Location' isPublicFacing=true}</div>
 						<div class="col-tn-8 result-value">
 							{$record->pickupLocationName}
 						</div>
@@ -111,7 +111,7 @@
 
 					{if $showPlacedColumn && $record->createDate}
 						<div class="row">
-							<div class="result-label col-tn-4">{translate text='Date Placed'}</div>
+							<div class="result-label col-tn-4">{translate text='Date Placed' isPublicFacing=true}</div>
 							<div class="col-tn-8 result-value">
 								{$record->createDate|date_format:"%b %d, %Y"}
 							</div>
@@ -121,15 +121,15 @@
 					{if $section == 'available'}
 						{* Available Hold *}
 						<div class="row">
-							<div class="result-label col-tn-4">{translate text='Available'}</div>
+							<div class="result-label col-tn-4">{translate text='Available' isPublicFacing=true}</div>
 							<div class="col-tn-8 result-value">
 								{if $record->availableDate}
 									{$record->availableDate|date_format:"%b %d, %Y at %l:%M %p"}
 								{else}
 									{if strcasecmp($record->status, 'Hold Being Shelved') === 0}
-										<strong>{$record->status|translate}</strong>
+										<strong>{translate text=$record->status isPublicFacing=true}</strong>
 									{else}
-										{translate text=Now}
+										{translate text=Now isPublicFacing=true}
 									{/if}
 								{/if}
 							</div>
@@ -137,7 +137,7 @@
 
 						{if $record->expirationDate}
 							<div class="row">
-								<div class="result-label col-tn-4">{translate text='Pickup By'}</div>
+								<div class="result-label col-tn-4">{translate text='Pickup By' isPublicFacing=true}</div>
 								<div class="col-tn-8 result-value">
 									<strong>{$record->expirationDate|date_format:"%b %d, %Y"}</strong>
 								</div>
@@ -146,28 +146,32 @@
 					{else}
 						{* Unavailable hold *}
 						<div class="row">
-							<div class="result-label col-tn-4">{translate text='Status'}</div>
+							<div class="result-label col-tn-4">{translate text='Status' isPublicFacing=true}</div>
 							<div class="col-tn-8 result-value">
 								{if $record->frozen}
 									<span class="frozenHold label label-warning">
 								{/if}
-								{$record->status|translate}
+								{translate text=$record->status isPublicFacing=true}
 								{if $record->frozen && $showDateWhenSuspending && !empty($record->reactivateDate)} until {$record->reactivateDate|date_format:"%b %d, %Y"}</span>{/if}
 							</div>
 						</div>
 
 						{if $showPosition && $record->position}
 							<div class="row">
-								<div class="result-label col-tn-4">{translate text='Position'}</div>
+								<div class="result-label col-tn-4">{translate text='Position' isPublicFacing=true}</div>
 								<div class="col-tn-8 result-value">
-									{$record->position}
+									{if $record->holdQueueLength}
+										{translate text="%1% of %2%" 1=$record->position 2=$record->holdQueueLength isPublicFacing=true}
+									{else}
+                                        {$record->position}
+									{/if}
 								</div>
 							</div>
 						{/if}
 
 						{if !empty($record->automaticCancellationDate) && $showHoldCancelDate}
 							<div class="row">
-								<div class="result-label col-tn-4">{translate text='Cancels on'}</div>
+								<div class="result-label col-tn-4">{translate text='Cancels on' isPublicFacing=true}</div>
 								<div class="col-tn-8 result-value">
 									{$record->automaticCancellationDate|date_format:"%b %d, %Y"}
 								</div>
@@ -180,31 +184,34 @@
 				<div class="col-xs-9 col-sm-8 col-md-4 col-lg-3">
 					<div class="btn-group btn-group-vertical btn-block">
 						{if $section == 'available'}
+                            {if $source == 'all' && $showCurbsidePickups}
+								<a class="btn btn-sm btn-primary btn-wrap" href="/MyAccount/CurbsidePickups">{translate text="Schedule a Curbside Pickup" isPublicFacing=true}</a>
+                            {/if}
 							{if $record->cancelable}
 								{* First step in cancelling a hold is now fetching confirmation message, with better labeled buttons. *}
-								<button onclick="return AspenDiscovery.Account.confirmCancelHold('{$record->userId}', '{$record->sourceId}', '{$record->cancelId}');" class="btn btn-sm btn-warning">{translate text="Cancel Hold"}</button>
+								<button onclick="return AspenDiscovery.Account.confirmCancelHold('{$record->userId}', '{$record->sourceId}', '{$record->cancelId}');" class="btn btn-sm btn-warning">{translate text="Cancel Hold" isPublicFacing=true}</button>
 							{/if}
 						{else}
 							{if $record->cancelable}
 								{* First step in cancelling a hold is now fetching confirmation message, with better labeled buttons. *}
-								<button onclick="return AspenDiscovery.Account.confirmCancelHold('{$record->userId}', '{$record->sourceId}', '{$record->cancelId}');" class="btn btn-sm btn-warning">{translate text="Cancel Hold"}</button>
+								<button onclick="return AspenDiscovery.Account.confirmCancelHold('{$record->userId}', '{$record->sourceId}', '{$record->cancelId}');" class="btn btn-sm btn-warning">{translate text="Cancel Hold" isPublicFacing=true}</button>
 							{/if}
 							{if $record->canFreeze}
 								{if $record->frozen}
-									<button onclick="return AspenDiscovery.Account.thawHold('{$record->userId}', '{$record->sourceId}', '{$record->cancelId}', this);" class="btn btn-sm btn-default">{translate text="Thaw Hold"}</button>
+									<button onclick="return AspenDiscovery.Account.thawHold('{$record->userId}', '{$record->sourceId}', '{$record->cancelId}', this);" class="btn btn-sm btn-default">{translate text="Thaw Hold" isPublicFacing=true}</button>
 								{else}
-									<button onclick="return AspenDiscovery.Account.freezeHold('{$record->userId}', '{$record->sourceId}', '{$record->cancelId}', {if $suspendRequiresReactivationDate}true{else}false{/if}, this);" class="btn btn-sm btn-default">{translate text="Freeze Hold"}</button>
+									<button onclick="return AspenDiscovery.Account.freezeHold('{$record->userId}', '{$record->sourceId}', '{$record->cancelId}', {if $suspendRequiresReactivationDate}true{else}false{/if}, this);" class="btn btn-sm btn-default">{translate text="Freeze Hold" isPublicFacing=true}</button>
 								{/if}
 							{/if}
-							{if $record->locationUpdateable}
-								<button onclick="return AspenDiscovery.Account.changeHoldPickupLocation('{$record->userId}', '{$record->sourceId}', '{$record->cancelId}', '{$record->pickupLocationId}');" class="btn btn-sm btn-default">{translate text="Change Pickup Loc."}</button>
+							{if $record->locationUpdateable && $numPickupBranches > 1}
+								<button onclick="return AspenDiscovery.Account.changeHoldPickupLocation('{$record->userId}', '{$record->sourceId}', '{$record->cancelId}', '{$record->pickupLocationId}');" class="btn btn-sm btn-default btn-wrap"">{translate text="Change Pickup Loc." isPublicFacing=true}</button>
 							{/if}
 						{/if}
 					</div>
 					{if $showWhileYouWait}
 						<div class="btn-group btn-group-vertical btn-block">
 							{if !empty($record->getGroupedWorkId())}
-								<button onclick="return AspenDiscovery.GroupedWork.getWhileYouWait('{$record->getGroupedWorkId()}');" class="btn btn-sm btn-default btn-wrap">{translate text="While You Wait"}</button>
+								<button onclick="return AspenDiscovery.GroupedWork.getWhileYouWait('{$record->getGroupedWorkId()}');" class="btn btn-sm btn-default btn-wrap">{translate text="While You Wait" isPublicFacing=true}</button>
 							{/if}
 						</div>
 					{/if}

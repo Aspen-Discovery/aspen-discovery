@@ -9,9 +9,13 @@ var AspenDiscovery = (function(){
 		AspenDiscovery.initializeModalDialogs();
 		AspenDiscovery.setupFieldSetToggles();
 		AspenDiscovery.initCarousels();
+		AspenDiscovery.toggleMenu();
+		AspenDiscovery.autoOpenPanel();
+		AspenDiscovery.scrollToTopPage();
 
 		$("#modalDialog").modal({show:false});
 		$('[data-toggle="tooltip"]').tooltip();
+		$('[data-toggle="popover"]').popover();
 
 		$('.panel')
 				.on('show.bs.collapse', function () {
@@ -23,11 +27,7 @@ var AspenDiscovery = (function(){
 
 		$(window).on("popstate", function () {
 			// if the state is the page you expect, pull the name and load it.
-			if (history.state && history.state.page === "MapExhibit") {
-				AspenDiscovery.Archive.handleMapClick(history.state.marker, history.state.exhibitPid, history.state.placePid, history.state.label, false, history.state.showTimeline);
-			}else if (history.state && history.state.page === "Book") {
-				AspenDiscovery.Archive.handleBookClick(history.state.bookPid, history.state.pagePid, history.state.viewer);
-			}else if (history.state && history.state.page === "Checkouts") {
+			if (history.state && history.state.page === "Checkouts") {
 				var selector1 = '#checkoutsTab a[href="#' + history.state.source + '"]';
 				$(selecto1r).tab('show');
 			}else if (history.state && history.state.page === "Holds") {
@@ -43,6 +43,8 @@ var AspenDiscovery = (function(){
 				}
 			}
 		});
+
+
 	});
 
 	return {
@@ -282,7 +284,15 @@ var AspenDiscovery = (function(){
 			}
 			return selectedLists;
 		},
-
+		getSelectedBrowseCategories: function(){
+			var selectedCategories = $("input.categorySelect:checked ").map(function() {
+				return $(this).attr('name') + "=" + $(this).val();
+			}).get().join("&");
+			if (selectedCategories.length === 0){
+				var ret = confirm('No browse categories were selected');
+			}
+			return selectedCategories;
+		},
 
 		pwdToText: function(fieldId){
 			var elem = document.getElementById(fieldId);
@@ -372,12 +382,12 @@ var AspenDiscovery = (function(){
 
 		// common loading message for lightbox while waiting for AJAX processes to complete.
 		loadingMessage: function() {
-			AspenDiscovery.showMessage('Loading', 'Loading, please wait.')
+			AspenDiscovery.showMessage(Globals.loadingTitle, Globals.loadingBody)
 		},
 
 		// common message for when an AJAX call has failed.
 		ajaxFail: function() {
-			if (!Globals.LeavingPage) AspenDiscovery.showMessage('Request Failed', 'There was an error with this AJAX Request.');
+			if (!Globals.LeavingPage) AspenDiscovery.showMessage(Globals.requestFailedTitle, Globals.requestFailedBody);
 		},
 
 		showElementInPopup: function(title, elementId, buttonsElementId){
@@ -534,45 +544,54 @@ var AspenDiscovery = (function(){
 						$("#term_" + termId ).hide();
 						AspenDiscovery.closeLightbox();
 					} else {
-						AspenDiscovery.showMessage("Error", data.message);
+						AspenDiscovery.showMessage(data.title, data.message);
 					}
 				}
 			).fail(AspenDiscovery.ajaxFail);
 			return false;
 		},
 		toggleMenu: function() {
-			var headerMenu = $('#header-menu');
-			var menuButton = $('#menuToggleButton');
-			var menuButtonIcon = $('#menuToggleButton > i');
-			if (headerMenu.is(':visible')){
-				this.closeMenu();
-			}else{
-				this.closeAccountMenu();
-				$('.dropdownMenu').slideUp('slow');
-				var menuButtonPosition = menuButton.position();
-				headerMenu.css('left', menuButtonPosition.left + menuButton.outerWidth() - headerMenu.outerWidth() + 5);
-				headerMenu.css('top', menuButtonPosition.top + menuButton.outerHeight());
-				menuButton.addClass('selected');
-				headerMenu.slideDown('slow');
-				menuButtonIcon.removeClass('fa-bars');
-				menuButtonIcon.addClass('fa-times');
-			}
+			// fixed bootstrap account-menu toggle
+			$('div.dropdown.menuToggleButton.accountMenu a').on('click', function (event) {
+				$(this).parent().toggleClass('open');
+			});
+			$('div.dropdown.menuToggleButton.accountMenu').on('keyup', function (event) {
+				$(this).addClass('open');
+			});
+			$(document).on('click', function (e) {
+				var $trigger = $("div.dropdown.menuToggleButton.accountMenu");
+				if($trigger !== event.target && !$trigger.has(event.target).length){
+					$('div.dropdown.menuToggleButton.accountMenu').removeClass('open');
+				}
+			});
+			$(document).on('keyup', function (e) {
+				var $trigger = $("div.dropdown.menuToggleButton.accountMenu");
+				if($trigger !== event.target && !$trigger.has(event.target).length){
+					$('div.dropdown.menuToggleButton.accountMenu').removeClass('open');
+				}
+			});
+			// fixed bootstrap header-menu toggle
+			$('div.dropdown.menuToggleButton.headerMenu a').on('click', function (event) {
+				$(this).parent().toggleClass('open');
+			});
 
-			$('#header-menu.dropdownMenu').mouseleave(function() {
-				setTimeout(function () {
-					$('#header-menu.dropdownMenu').slideUp('slow');
-					menuButton.removeClass('selected');
-					menuButtonIcon.removeClass('fa-times');
-					menuButtonIcon.addClass('fa-bars');
-				}, 1000);
-			})
+			$('div.dropdown.menuToggleButton.headerMenu').on('keyup', function (event) {
+				$(this).addClass('open');
+			});
 
-			$(document).on('touchstart', function(e) {
-				$('#header-menu.dropdownMenu').slideUp('slow');
-				menuButton.removeClass('selected');
-				menuButtonIcon.removeClass('fa-times');
-				menuButtonIcon.addClass('fa-bars');
-			})
+			$(document).on('click', function (e) {
+				var $trigger = $("div.dropdown.menuToggleButton.headerMenu");
+				if($trigger !== event.target && !$trigger.has(event.target).length){
+					$('div.dropdown.menuToggleButton.headerMenu').removeClass('open');
+				}
+			});
+
+			$(document).on('keyup', function (e) {
+				var $trigger = $("div.dropdown.menuToggleButton.headerMenu");
+				if($trigger !== event.target && !$trigger.has(event.target).length){
+					$('div.dropdown.menuToggleButton.headerMenu').removeClass('open');
+				}
+			});
 			return false;
 		},
 		closeMenu: function(){
@@ -599,66 +618,17 @@ var AspenDiscovery = (function(){
 
 			return false;
 		},
-		toggleAccountMenu: function() {
-			var accountMenu = $('#account-menu');
-			var accountMenuButton = $('#accountMenuToggleButton');
-			if (accountMenu.is(':visible')){
-				this.closeAccountMenu();
-			}else{
-				this.closeMenu();
-				$('.dropdownMenu').slideUp('slow');
-				var accountMenuButtonPosition = accountMenuButton.position();
-				accountMenu.css('left', accountMenuButtonPosition.left + accountMenuButton.outerWidth() - accountMenu.outerWidth() + 4);
-				accountMenu.css('top', accountMenuButtonPosition.top + accountMenuButton.outerHeight());
-				accountMenuButton.addClass('selected');
-				accountMenu.slideDown('slow');
-			}
-
-			$('#account-menu.dropdownMenu').mouseleave(function() {
-				setTimeout(function () {
-					accountMenuButton.removeClass('selected');
-					$('#account-menu.dropdownMenu').slideUp('slow');
-				}, 1000);
-			})
-
-			$(document).on('touchstart', function(e) {
-				accountMenuButton.removeClass('selected');
-				$('#account-menu.dropdownMenu').slideUp('slow');
-			})
-
-			return false;
-		},
-		closeAccountMenu: function(){
-			var accountMenu = $('#account-menu');
-			var accountMenuButton = $('#accountMenuToggleButton');
-			accountMenu.slideUp('slow');
-			accountMenuButton.removeClass('selected');
-		},
 		showCustomMenu: function (menuName) {
-			this.closeMenu();
-			this.closeAccountMenu();
-			var customMenu = $('#' + menuName + '-menu');
-			if (customMenu.is(':visible')){
-				customMenu.slideUp('slow');
-			}else{
-				$('.dropdownMenu').slideUp('slow');
-				var customMenuTrigger = $('#' + menuName + '-menu-trigger')
-				var customMenuTriggerPosition = customMenuTrigger.position();
-				customMenu.css('left', customMenuTriggerPosition.left);
-				customMenu.css('top', customMenuTriggerPosition.top + customMenuTrigger.outerHeight());
-				customMenu.slideDown('slow');
-			}
-
-			$(customMenu).mouseleave(function() {
-				setTimeout(function () {
-					$(customMenu).slideUp('slow');
-				}, 1000)
-			})
-
-			$(document).on('touchstart', function(e) {
-				$(customMenu).slideUp('slow');
-			})
-			return false;
+			// fixed bootstrap custom menu toggles
+			$('div.dropdown.menuToggleButton.' + menuName + 'Menu a').on('click', function (event) {
+				$(this).parent().toggleClass('open');
+			});
+			$(document).on('click', function (e) {
+				var trigger = $('div.dropdown.menuToggleButton.' + menuName + 'Menu');
+				if(trigger !== event.target && !trigger.has(event.target).length){
+					$('div.dropdown.menuToggleButton.' + menuName + 'Menu').removeClass('open');
+				}
+			});
 		},
 		formatCurrency: function(currencyValue, elementToUpdate){
 			var url = Globals.path + "/AJAX/JSON";
@@ -676,6 +646,63 @@ var AspenDiscovery = (function(){
 				}
 			).fail(AspenDiscovery.ajaxFail);
 			return false;
+		},
+		resetSearchBox: function() {
+			document.getElementById("lookfor").value = "";
+		},
+		autoOpenPanel: function() {
+			var hash = window.location.hash.substr(1);
+			if (hash) {
+				var requestedPanel = hash;
+				var element = '#'.concat(requestedPanel);
+				$(element).addClass('active');
+				var element2 = '#'.concat(requestedPanel, "Body");
+				$(element2).removeClass('collapse');
+				$(element2).addClass('in');
+				$(element2).css("height","auto");
+			}
+		},
+		scrollToTopPage: function() {
+			// Set a variable for our button element.
+			var scrollToTopButton = document.getElementById('js-top');
+			if (scrollToTopButton) {
+				window.addEventListener("scroll", AspenDiscovery.scrollFunc);
+
+				// When the button is clicked, run our ScrollToTop function
+				scrollToTopButton.onclick = function (e) {
+					e.preventDefault();
+					AspenDiscovery.scrollToTop();
+				}
+			}
+		},
+
+		// Let's set up a function that shows our scroll-to-top button if we scroll beyond the height of the initial window.
+		scrollFunc: function () {
+			var scrollToTopButton = document.getElementById('js-top');
+			// Get the current scroll value
+			var y = window.scrollY;
+
+			// If the scroll value is greater than the window height, let's add a class to the scroll-to-top button to show it!
+			if (y > 0) {
+				scrollToTopButton.className = "top-link show";
+			} else {
+				scrollToTopButton.className = "top-link hide";
+			}
+		},
+
+		scrollToTop: function () {
+			// Let's set a variable for the number of pixels we are from the top of the document.
+			var c = document.documentElement.scrollTop || document.body.scrollTop;
+
+			// If that number is greater than 0, we'll scroll back to 0, or the top of the document.
+			// We'll also animate that scroll with requestAnimationFrame:
+			// https://developer.mozilla.org/en-US/docs/Web/API/window/requestAnimationFrame
+			if (c > 0) {
+				window.requestAnimationFrame(AspenDiscovery.scrollToTop);
+				// ScrollTo takes an x and a y coordinate.
+				// Increase the '10' value to get a smoother/slower scroll!
+				window.scrollTo(0, c - c / 10);
+			}
 		}
 	}
 
@@ -693,49 +720,6 @@ jQuery.validator.addMethod("multiemail", function (value, element) {
 	}
 	return valid;
 }, "Invalid email format: please use a comma to separate multiple email addresses.");
-
-/**
- *  Modified from above code, for Aspen Discovery self registration form.
- *
- * Return true, if the value is a valid date, also making this formal check mm-dd-yyyy.
- *
- * @example jQuery.validator.methods.date("01-01-1900")
- * @result true
- *
- * @example jQuery.validator.methods.date("01-13-1990")
- * @result false
- *
- * @example jQuery.validator.methods.date("01.01.1900")
- * @result false
- *
- * @example <input name="pippo" class="{dateAspen:true}" />
- * @desc Declares an optional input element whose value must be a valid date.
- *
- * @name jQuery.validator.methods.dateAspen
- * @type Boolean
- * @cat Plugins/Validate/Methods
- */
-jQuery.validator.addMethod(
-	"dateAspen",
-	function(value, element) {
-		var check = false;
-		var re = /^\d{1,2}(-)\d{1,2}(-)\d{4}$/;
-		if( re.test(value)){
-			var adata = value.split('-');
-			var mm = parseInt(adata[0],10);
-			var dd = parseInt(adata[1],10);
-			var aaaa = parseInt(adata[2],10);
-			var xdata = new Date(aaaa,mm-1,dd);
-			if ( ( xdata.getFullYear() == aaaa ) && ( xdata.getMonth () == mm - 1 ) && ( xdata.getDate() == dd ) )
-				check = true;
-			else
-				check = false;
-		} else
-			check = false;
-		return this.optional(element) || check;
-	},
-	"Please enter a correct date"
-);
 
 $.validator.addMethod('repeat', function(value, element){
 	if(element.id.lastIndexOf('Repeat') === element.id.length - 6) {

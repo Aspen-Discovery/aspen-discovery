@@ -1,15 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<module type="WEB_MODULE" version="4">
+<module version="4">
   <component name="NewModuleRootManager">
     <content url="file://$MODULE_DIR$">
-      <excludeFolder url="file://$MODULE_DIR$/interface/cache" />
-      <excludeFolder url="file://$MODULE_DIR$/interface/compile" />
-      <excludeFolder url="file://$MODULE_DIR$/PHPExcel/Shared/PDF" />
+      <sourceFolder url="file://$MODULE_DIR$" isTestSource="false" />
     </content>
-    <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="module" module-name="aspen.demo" />
-    <orderEntry type="module" module-name="sites" />
-    <orderEntry type="module" module-name="install" />
   </component>
 </module>

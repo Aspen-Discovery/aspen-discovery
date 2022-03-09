@@ -4,8 +4,9 @@ require_once ROOT_DIR . '/sys/Authentication/AuthenticationFactory.php';
 
 class UserAccount
 {
-	private static $isLoggedIn = null;
-	private static $primaryUserData = null;
+	public static $isLoggedIn = null;
+	public static $isAuthenticated = false;
+	public static $primaryUserData = null;
 	/** @var User|false */
 	private static $primaryUserObjectFromDB = null;
 	/** @var User|false $guidingUserObjectFromDB */
@@ -13,6 +14,49 @@ class UserAccount
 	private static $userRoles = null;
 	private static $userPermissions = null;
 
+	/**
+	 * Check to see if the user is enrolled in 2 factor authentication and has been sent a verification code, but has not verified it.
+	 *
+	 * @return bool
+	 */
+	public static function needsToComplete2FA() : bool{
+		try {
+			require_once ROOT_DIR . '/sys/TwoFactorAuthSetting.php';
+			$twoFactorSetting = new TwoFactorAuthSetting();
+			$twoFactorSetting->whereAdd("isEnabled = 'optional' OR isEnabled = 'mandatory'");
+			if ($twoFactorSetting->find()) {
+
+				if(!UserAccount::isUserMasquerading()) {
+					//Two factor might be required
+					if (UserAccount::has2FAEnabled()) {
+						//Two factor is required, check to see if it's complete.
+						//Check the session to see if it is complete
+						require_once ROOT_DIR . '/sys/TwoFactorAuthCode.php';
+						$authCodeForSession = new TwoFactorAuthCode();
+						$authCodeForSession->sessionId = session_id();
+						$authCodeForSession->userId = $_SESSION['activeUserId'];
+						if ($authCodeForSession->find(true)) {
+							$needsToComplete2FA = $authCodeForSession->status != 'used';
+						} else {
+							$needsToComplete2FA = true;
+						}
+					} elseif (UserAccount::isRequired2FA() && !UserAccount::has2FAEnabled()) {
+						$needsToComplete2FA = true;
+					} else {
+						$needsToComplete2FA = false;
+					}
+				} else {
+					$needsToComplete2FA = false;
+				}
+			} else {
+				$needsToComplete2FA = false;
+			}
+		}catch (PDOException $e){
+			//This happens if the table has not been created.
+			$needsToComplete2FA = false;
+		}
+		return $needsToComplete2FA;
+	}
 	/**
 	 *
 	 * Checks whether the user is logged in.
@@ -26,7 +70,7 @@ class UserAccount
 	{
 		if (UserAccount::$isLoggedIn == null) {
 			if (isset($_SESSION['activeUserId'])) {
-				UserAccount::$isLoggedIn = true;
+				UserAccount::$isLoggedIn = !UserAccount::needsToComplete2FA();
 			} else {
 				UserAccount::$isLoggedIn = false;
 				//Need to check cas just in case the user logged in from another site
@@ -126,7 +170,8 @@ class UserAccount
 
 				$loadDefaultPermissions = false;
 				try{
-					UserAccount::$userPermissions = UserAccount::getActiveUserObj()->getPermissions();
+					$activeUser = UserAccount::getActiveUserObj();
+					UserAccount::$userPermissions = $activeUser->getPermissions();
 				}catch (Exception $e){
 					$loadDefaultPermissions = true;
 				}
@@ -312,7 +357,7 @@ class UserAccount
 
 				$userData->id = $activeUserId;
 				if ($userData->find(true)) {
-					$logger->log("Loading user {$userData->cat_username}, {$userData->cat_password} because we didn't have data in memcache", Logger::LOG_DEBUG);
+					$logger->log("Loading user {$userData->cat_username} because we didn't have data in memcache", Logger::LOG_DEBUG);
 					if (UserAccount::isUserMasquerading()){
 						return $userData;
 					}else {
@@ -482,11 +527,12 @@ class UserAccount
 				global $library;
 				if ($library->preventExpiredCardLogin && $tempUser->_expired) {
 					// Create error
-					$cardExpired = new AspenError('expired_library_card');
+					$cardExpired = new AspenError('Your library card has expired. Please contact your local library to have your library card renewed.');
 					$usageByIPAddress->numFailedLoginAttempts++;
 					return $cardExpired;
 				}
 
+				/** @var Memcache $memCache */
 				global $memCache;
 				global $serverName;
 				global $configArray;
@@ -511,13 +557,25 @@ class UserAccount
 
 		// Send back the user object (which may be an AspenError):
 		if ($primaryUser) {
-			UserAccount::$isLoggedIn = true;
-			UserAccount::$primaryUserData = $primaryUser;
-			if (isset($_COOKIE['searchPreferenceLanguage']) && $primaryUser->searchPreferenceLanguage == -1) {
-				$primaryUser->searchPreferenceLanguage = $_COOKIE['searchPreferenceLanguage'];
-				$primaryUser->update();
+			if(UserAccount::isRequired2FA() && !UserAccount::has2FAEnabled() && UserAccount::$isAuthenticated === false) {
+				UserAccount::$isLoggedIn = false;
+				$logger->log("User needs to enroll in two-factor authentication",Logger::LOG_DEBUG);
+				$needsToAuthenticate = new AspenError('You must enroll into two-factor authentication before logging in.');
+				return $needsToAuthenticate;
+			} else if(UserAccount::has2FAEnabled() && UserAccount::$isAuthenticated === false) {
+				UserAccount::$isLoggedIn = false;
+				$logger->log("User needs to two-factor authenticate",Logger::LOG_DEBUG);
+				$needsToAuthenticate = new AspenError('You must authenticate before logging in. Please provide the 6-digit code that was emailed to you.');
+				return $needsToAuthenticate;
+			} else {
+				UserAccount::$isLoggedIn = true;
+				UserAccount::$primaryUserData = $primaryUser;
+				if (isset($_COOKIE['searchPreferenceLanguage']) && $primaryUser->searchPreferenceLanguage == -1) {
+					$primaryUser->searchPreferenceLanguage = $_COOKIE['searchPreferenceLanguage'];
+					$primaryUser->update();
+				}
+				return $primaryUser;
 			}
-			return $primaryUser;
 		} else {
 			$usageByIPAddress->numFailedLoginAttempts++;
 			return $lastError;
@@ -581,6 +639,7 @@ class UserAccount
 				}
 				$validatedUser = $authN->validateAccount($username, $password, $parentAccount, $validatedViaSSO);
 				if ($validatedUser && !($validatedUser instanceof AspenError)) {
+					/** @var Memcache $memCache */
 					global $memCache;
 					global $serverName;
 					global $configArray;
@@ -715,6 +774,30 @@ class UserAccount
 		return UserAccount::$_accountProfiles;
 	}
 
+	static function has2FAEnabledForPType() {
+		UserAccount::loadUserObjectFromDatabase();
+		if (UserAccount::$primaryUserObjectFromDB != false) {
+			return UserAccount::$primaryUserObjectFromDB->get2FAStatusForPType();
+		}
+		return false;
+	}
+
+	static function isRequired2FA() {
+		UserAccount::loadUserObjectFromDatabase();
+		if (UserAccount::$primaryUserObjectFromDB != false) {
+			return UserAccount::$primaryUserObjectFromDB->is2FARequired();
+		}
+		return false;
+	}
+
+	static function has2FAEnabled() {
+		UserAccount::loadUserObjectFromDatabase();
+		if (UserAccount::$primaryUserObjectFromDB != false) {
+			return UserAccount::$primaryUserObjectFromDB->get2FAStatus();
+		}
+		return false;
+	}
+
 
 	/**
 	 * Look up in ILS for a user that has never logged into Aspen before, based on the patron's barcode.
@@ -733,6 +816,26 @@ class UserAccount
 				$tmpUser = $catalogConnectionInstance->driver->findNewUser($patronBarcode);
 				if (!empty($tmpUser) && !($tmpUser instanceof AspenError)) {
 					return $tmpUser;
+				}
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Used to determine if the active user is a staff member (has Aspen privileges or is marked as staff in the PType).
+	 * @return bool
+	 */
+	public static function isStaff(){
+		if (UserAccount::isLoggedIn()) {
+			if (count(UserAccount::getActiveRoles()) > 0) {
+				return true;
+			} else {
+				require_once ROOT_DIR . '/sys/Account/PType.php';
+				$pType = new PType();
+				$pType->pType = UserAccount::getUserPType();
+				if ($pType->find(true)) {
+					return $pType->isStaff;
 				}
 			}
 		}

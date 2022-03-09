@@ -16,7 +16,7 @@ class Axis360_AJAX extends JSON_Action
 				$driver = new Axis360Driver();
 				return $driver->placeHold($patron, $id);
 			} else {
-				return array('result' => false, 'message' => translate(['text' => 'no_permissions_for_hold', 'defaultText' => 'Sorry, it looks like you don\'t have permissions to place holds for that user.']));
+				return array('result' => false, 'message' => translate(['text' => 'Sorry, it looks like you don\'t have permissions to place holds for that user.', 'isPublicFacing'=> true]));
 			}
 		} else {
 			return array('result' => false, 'message' => 'You must be logged in to place a hold.');
@@ -37,17 +37,17 @@ class Axis360_AJAX extends JSON_Action
 				//$logger->log("Checkout result = $result", Logger::LOG_NOTICE);
 				if ($result['success']) {
 					/** @noinspection HtmlUnknownTarget */
-					$result['title'] = translate("Title Checked Out Successfully");
-					$result['buttons'] = '<a class="btn btn-primary" href="/MyAccount/CheckedOut" role="button">' . translate('View My Check Outs') . '</a>';
+					$result['title'] = translate(['text'=>"Title Checked Out Successfully", 'isPublicFacing'=>true]);
+					$result['buttons'] = '<a class="btn btn-primary" href="/MyAccount/CheckedOut" role="button">' . translate(['text'=>'View My Check Outs', 'isPublicFacing'=>true]) . '</a>';
 				} else {
-					$result['title'] = translate("Error Checking Out Title");
+					$result['title'] = translate(['text'=>"Error Checking Out Title", 'isPublicFacing'=>true]);
 				}
 				return $result;
 			} else {
-				return array('result' => false, 'title' => translate("Error Checking Out Title"), 'message' => translate(['text' => 'no_permission_to_checkout', 'defaultText' => 'Sorry, it looks like you don\'t have permissions to checkout titles for that user.']));
+				return array('result' => false, 'title' => translate(['text'=>"Error Checking Out Title", 'isPublicFacing'=>true]), 'message' => translate(['text' => 'Sorry, it looks like you don\'t have permissions to checkout titles for that user.', 'isPublicFacing'=>true]));
 			}
 		} else {
-			return array('result' => false, 'title' => translate("Error Checking Out Title"), 'message' => translate('You must be logged in to checkout an item.'));
+			return array('result' => false, 'title' => translate(['text'=>"Error Checking Out Title", 'isPublicFacing'=>true]), 'message' => translate(['text'=>'You must be logged in to checkout an item.', 'isPublicFacing'=>true]));
 		}
 	}
 
@@ -62,12 +62,12 @@ class Axis360_AJAX extends JSON_Action
 		$usersWithAxis360Access = $this->getAxis360Users($user);
 
 		if (count($usersWithAxis360Access) > 1) {
-			$promptTitle = 'Axis 360 Hold Options';
+			$promptTitle = translate(['text'=>'Axis 360 Hold Options', 'isPublicFacing'=>true]);
 			return array(
 					'promptNeeded' => true,
 					'promptTitle' => $promptTitle,
 					'prompts' => $interface->fetch('Axis360/ajax-hold-prompt.tpl'),
-					'buttons' => '<input class="btn btn-primary" type="submit" name="submit" value="Place Hold" onclick="return AspenDiscovery.Axis360.processHoldPrompts();">'
+					'buttons' => '<input class="btn btn-primary" type="submit" name="submit" value="' . translate(['text'=>'Place Hold', 'isPublicFacing'=>true, 'inAttribute'=>true]) . '" onclick="return AspenDiscovery.Axis360.processHoldPrompts();">'
 			);
 		} elseif (count($usersWithAxis360Access) == 1) {
 			return array(
@@ -76,12 +76,12 @@ class Axis360_AJAX extends JSON_Action
 				);
 		} else {
 			// No Axis 360 Account Found, let the user create one if they want
-			return array(
-					'promptNeeded' => true,
-					'promptTitle' => 'No Account Found',
-					'prompts' => "Sorry, you don't have access to Axis 360",
-					'buttons' => ''
-				);
+			return [
+				'promptNeeded' => true,
+				'promptTitle' => translate(['text'=>'Error', 'isPublicFacing'=>true]),
+				'prompts' => translate(['text'=>'Your account is not valid for Axis360, please contact your local library.', 'isPublicFacing'=>true]),
+				'buttons' => ''
+			];
 		}
 	}
 
@@ -97,12 +97,12 @@ class Axis360_AJAX extends JSON_Action
 		$usersWithAxis360Access = $this->getAxis360Users($user);
 
 		if (count($usersWithAxis360Access) > 1) {
-			$promptTitle = 'Axis 360 Checkout Options';
+			$promptTitle = translate(['text' => 'Axis 360 Checkout Options', 'isPublicFacing'=>true]);
 			return array(
 					'promptNeeded' => true,
 					'promptTitle' => $promptTitle,
 					'prompts' => $interface->fetch('Axis360/ajax-checkout-prompt.tpl'),
-					'buttons' => '<input class="btn btn-primary" type="submit" name="submit" value="Checkout Title" onclick="return AspenDiscovery.Axis360.processCheckoutPrompts();">'
+					'buttons' => '<input class="btn btn-primary" type="submit" name="submit" value="' . translate(['text' => 'Checkout Title', 'inAttribute'=>true, 'isPublicFacing'=>true]) . '" onclick="return AspenDiscovery.Axis360.processCheckoutPrompts();">'
 				);
 		} elseif (count($usersWithAxis360Access) == 1) {
 			return array(
@@ -111,12 +111,12 @@ class Axis360_AJAX extends JSON_Action
 				);
 		} else {
 			// No Axis 360 Account Found, let the user create one if they want
-			return array(
-					'promptNeeded' => true,
-					'promptTitle' => 'Create an Account',
-					'prompts' => $interface->fetch('Axis360/ajax-create-account-prompt.tpl'),
-					'buttons' => '<input class="btn btn-primary" type="submit" name="submit" value="Create Account" onclick="return AspenDiscovery.Axis360.createAccount(\'checkout\', ' . $user->id . ', ' . $id . ');">'
-				);
+			return [
+				'promptNeeded' => true,
+				'promptTitle' => translate(['Error', 'isPublicFacing'=>true]),
+				'prompts' => translate(['Your account is not valid for Axis360, please contact your local library.', 'isPublicFacing'=>true]),
+				'buttons' => ''
+			];
 		}
 	}
 
@@ -132,10 +132,10 @@ class Axis360_AJAX extends JSON_Action
 				$driver = new Axis360Driver();
 				return $driver->cancelHold($patron, $id);
 			} else {
-				return array('result' => false, 'message' => 'Sorry, it looks like you don\'t have permissions to cancel holds for that user.');
+				return array('result' => false, 'message' => translate(['text'=>'Sorry, it looks like you don\'t have permissions to cancel holds for that user.', 'isPublicFacing'=>true]));
 			}
 		} else {
-			return array('result' => false, 'message' => 'You must be logged in to cancel holds.');
+			return array('result' => false, 'message' => translate(['text'=>'You must be logged in to cancel holds.', 'isPublicFacing'=>true]));
 		}
 	}
 
@@ -151,10 +151,10 @@ class Axis360_AJAX extends JSON_Action
 				$driver = new Axis360Driver();
 				return $driver->renewCheckout($patron, $id);
 			} else {
-				return array('result' => false, 'message' => 'Sorry, it looks like you don\'t have permissions to modify checkouts for that user.');
+				return array('result' => false, 'message' => translate(['text'=>'Sorry, it looks like you don\'t have permissions to modify checkouts for that user.', 'isPublicFacing'=>true]));
 			}
 		} else {
-			return array('result' => false, 'message' => 'You must be logged in to renew titles.');
+			return array('result' => false, 'message' => translate(['text'=>'You must be logged in to renew titles.', 'isPublicFacing'=>true]));
 		}
 	}
 
@@ -171,10 +171,10 @@ class Axis360_AJAX extends JSON_Action
 				$driver = new Axis360Driver();
 				return $driver->returnCheckout($patron, $id);
 			} else {
-				return array('result' => false, 'message' => 'Sorry, it looks like you don\'t have permissions to modify checkouts for that user.');
+				return array('result' => false, 'message' => translate(['text'=>'Sorry, it looks like you don\'t have permissions to modify checkouts for that user.', 'isPublicFacing'=>true]));
 			}
 		} else {
-			return array('result' => false, 'message' => 'You must be logged in to return titles.');
+			return array('result' => false, 'message' => translate(['text'=>'You must be logged in to return titles.', 'isPublicFacing'=>true]));
 		}
 	}
 	/**
@@ -197,7 +197,7 @@ class Axis360_AJAX extends JSON_Action
 	function getStaffView(){
 		$result = [
 			'success' => false,
-			'message' => 'Unknown error loading staff view'
+			'message' => translate(['text'=>'Unknown error loading staff view', 'isPublicFacing'=>true])
 		];
 		$id = $_REQUEST['id'];
 		require_once ROOT_DIR . '/RecordDrivers/Axis360RecordDriver.php';
@@ -210,7 +210,7 @@ class Axis360_AJAX extends JSON_Action
 				'staffView' => $interface->fetch($recordDriver->getStaffView())
 			];
 		}else{
-			$result['message'] = 'Could not find that record';
+			$result['message'] = translate(['text'=>'Could not find that record', 'isPublicFacing'=>true]);
 		}
 		return $result;
 	}
@@ -220,20 +220,20 @@ class Axis360_AJAX extends JSON_Action
 		$user = UserAccount::getLoggedInUser();
 		$result = array(
 			'success' => false,
-			'message' => 'Error ' . translate('freezing') . ' hold.'
+			'message' => translate(['text'=>'Error freezing hold.', 'isPublicFacing'=>true])
 		);
 		if (!$user) {
-			$result['message'] = 'You must be logged in to ' . translate('freeze') . ' a hold.  Please close this dialog and login again.';
+			$result['message'] = translate(['text'=>'You must be logged in to freeze a hold.  Please close this dialog and login again.', 'isPublicFacing'=>true]);
 		} elseif (!empty($_REQUEST['patronId'])) {
 			$patronId = $_REQUEST['patronId'];
 			$patronOwningHold = $user->getUserReferredTo($patronId);
 
 			if ($patronOwningHold == false) {
-				$result['message'] = 'Sorry, you do not have access to ' . translate('freeze') . ' holds for the supplied user.';
+				$result['message'] = translate(['text'=>'Sorry, you do not have access to freeze holds for the supplied user.', 'isPublicFacing'=>true]);
 			} else {
 				if (empty($_REQUEST['recordId'])) {
 					// We aren't getting all the expected data, so make a log entry & tell user.
-					$result['message'] = 'Information about the hold to be ' . translate('frozen') . ' was not provided.';
+					$result['message'] = translate(['text'=>'Information about the hold to be frozen was not provided.', 'isPublicFacing'=>true]);
 				} else {
 					$recordId = $_REQUEST['recordId'];
 					$result = $patronOwningHold->freezeAxis360Hold($recordId);
@@ -243,7 +243,7 @@ class Axis360_AJAX extends JSON_Action
 			// We aren't getting all the expected data, so make a log entry & tell user.
 			global $logger;
 			$logger->log('Freeze Hold, no patron Id was passed in AJAX call.', Logger::LOG_ERROR);
-			$result['message'] = 'No Patron was specified.';
+			$result['message'] = translate(['text'=>'No Patron was specified.', 'isPublicFacing'=>true]);
 		}
 
 		return $result;
@@ -254,20 +254,20 @@ class Axis360_AJAX extends JSON_Action
 		$user = UserAccount::getLoggedInUser();
 		$result = array( // set default response
 			'success' => false,
-			'message' => 'Error thawing hold.'
+			'message' => translate(['text'=>'Error thawing hold.', 'isPublicFacing'=>true])
 		);
 
 		if (!$user) {
-			$result['message'] = 'You must be logged in to ' . translate('thaw') . ' a hold.  Please close this dialog and login again.';
+			$result['message'] = translate(['text'=>'You must be logged in to thaw a hold.  Please close this dialog and login again.', 'isPublicFacing'=>true]);
 		} elseif (!empty($_REQUEST['patronId'])) {
 			$patronId = $_REQUEST['patronId'];
 			$patronOwningHold = $user->getUserReferredTo($patronId);
 
 			if ($patronOwningHold == false) {
-				$result['message'] = 'Sorry, you do not have access to ' . translate('thaw') . ' holds for the supplied user.';
+				$result['message'] = translate(['text'=>'Sorry, you do not have access to thaw holds for the supplied user.', 'isPublicFacing'=>true]);
 			} else {
 				if (empty($_REQUEST['recordId'])) {
-					$result['message'] = 'Information about the hold to be ' . translate('thawed') . ' was not provided.';
+					$result['message'] = translate(['text'=>'Information about the hold to be thawed was not provided.', 'isPublicFacing'=>true]);
 				} else {
 					$recordId = $_REQUEST['recordId'];
 					$result = $patronOwningHold->thawAxis360Hold($recordId);
@@ -277,7 +277,7 @@ class Axis360_AJAX extends JSON_Action
 			// We aren't getting all the expected data, so make a log entry & tell user.
 			global $logger;
 			$logger->log('Thaw Hold, no patron Id was passed in AJAX call.', Logger::LOG_ERROR);
-			$result['message'] = 'No Patron was specified.';
+			$result['message'] = translate(['text'=>'No Patron was specified.', 'isPublicFacing'=>true]);
 		}
 
 		return $result;
@@ -291,7 +291,7 @@ class Axis360_AJAX extends JSON_Action
 		$interface->assign('id', $id);
 
 		return array(
-			'title' => 'Cover Image',
+			'title' => translate(['text'=>'Cover Image', 'isPublicFacing'=>true]),
 			'modalBody' => $interface->fetch("Axis360/largeCover.tpl"),
 			'modalButtons' => ""
 		);

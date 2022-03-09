@@ -38,33 +38,37 @@ class OwnershipRule {
 	}
 
 	private final HashMap<String, Boolean> ownershipResults = new HashMap<>();
-	boolean isItemOwned(@NotNull String recordType, @NotNull String locationCode, @NotNull String subLocationCode){
-		Boolean isOwned = false;
-		if (this.recordType.equals(recordType)){
-			String key = locationCode + "-" + subLocationCode;
-			isOwned = ownershipResults.get(key);
-			if (isOwned != null){
-				return isOwned;
-			}
+	boolean isItemOwned(String fullKey, @NotNull String recordType, @NotNull String locationCode, @NotNull String subLocationCode){
+		Boolean isOwned = ownershipResults.get(fullKey);
+		if (isOwned == null) {
+			return this.calcOwnership(fullKey, recordType, locationCode, subLocationCode);
+		}
+		return  isOwned;
+	}
 
+	private boolean calcOwnership(String fullKey, String recordType, String locationCode, String subLocationCode) {
+		boolean isOwned;
+		if (this.recordType.equals(recordType)){
 			if (locationCode == null ){
 				if (matchAllLocations) {
-					isOwned =  (matchAllSubLocations || subLocationCode == null || subLocationCodePattern.matcher(subLocationCode).lookingAt());
+					isOwned =  (matchAllSubLocations || subLocationCode == null || subLocationCodePattern.matcher(subLocationCode).matches());
 				}else{
 					isOwned = false;
 				}
 			}else{
-				isOwned = locationCodePattern.matcher(locationCode).lookingAt() && (matchAllSubLocations || subLocationCode == null || subLocationCodePattern.matcher(subLocationCode).lookingAt());
+				isOwned = locationCodePattern.matcher(locationCode).matches() && (matchAllSubLocations || subLocationCode == null || subLocationCodePattern.matcher(subLocationCode).matches());
 			}
 			//Make sure that we are not excluding the result
 			if (isOwned && locationCode != null && locationsToExcludePattern != null) {
-				isOwned = !locationsToExcludePattern.matcher(locationCode).lookingAt();
+				isOwned = !locationsToExcludePattern.matcher(locationCode).matches();
 			}
 			if (isOwned && subLocationCode != null && subLocationsToExcludePattern != null) {
-				isOwned = !subLocationsToExcludePattern.matcher(subLocationCode).lookingAt();
+				isOwned = !subLocationsToExcludePattern.matcher(subLocationCode).matches();
 			}
-			ownershipResults.put(key, isOwned);
+		}else{
+			isOwned = false;
 		}
-		return  isOwned;
+		ownershipResults.put(fullKey, isOwned);
+		return isOwned;
 	}
 }

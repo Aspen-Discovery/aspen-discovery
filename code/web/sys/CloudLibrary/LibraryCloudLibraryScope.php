@@ -20,7 +20,7 @@ class LibraryCloudLibraryScope extends DataObject
 		$cloudLibraryScope->orderBy('name');
 		$cloudLibraryScopes = [];
 		$cloudLibraryScope->find();
-		$cloudLibraryScopes[-1] = translate('Select a value');
+		$cloudLibraryScopes[-1] = translate(['text' => 'Select a value', 'isPublicFacing'=>true]);
 		while ($cloudLibraryScope->fetch()) {
 			$cloudLibraryScopes[$cloudLibraryScope->id] = (string)$cloudLibraryScope;
 		}
@@ -40,7 +40,7 @@ class LibraryCloudLibraryScope extends DataObject
 		return [
 			'id' => array('property'=>'id', 'type'=>'label', 'label'=>'Id', 'description'=>'The unique id'),
 			'libraryId' => array('property'=>'libraryId', 'type'=>'enum', 'values'=>$libraryList, 'label'=>'Library', 'description'=>'The id of a library'),
-			'scopeId' =>array('property'=>'scopeId', 'type'=>'enum','values'=>$cloudLibraryScopes,  'label'=>'Cloud Library Scope', 'description'=>'The Cloud Library scope to use', 'hideInLists' => true, 'default'=>-1, 'forcesReindex' => true),
+			'scopeId' =>array('property'=>'scopeId', 'type'=>'enum','values'=>$cloudLibraryScopes,  'label'=>'cloudLibrary Scope', 'description'=>'The cloudLibrary scope to use', 'hideInLists' => true, 'default'=>-1, 'forcesReindex' => true),
 		];
 	}
 

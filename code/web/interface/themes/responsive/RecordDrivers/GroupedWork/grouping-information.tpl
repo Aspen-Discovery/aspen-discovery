@@ -1,13 +1,13 @@
 {strip}
-<h4>Grouping Information</h4>
+<h4>{translate text="Grouping Information" isPublicFacing=true}</h4>
 <table class="table-striped table table-condensed notranslate">
 	<tr>
-		<th>Grouped Work ID</th>
+		<th>{translate text="Grouped Work ID" isPublicFacing=true}</th>
 		<td>{$recordDriver->getPermanentId()}</td>
 	</tr>
 	{foreach from=$groupedWorkDetails key='field' item='value'}
 	<tr>
-		<th>{$field|escape}</th>
+		<th>{translate text=$field isPublicFacing=true}</th>
 		<td>
 			{$value}
 		</td>
@@ -17,16 +17,16 @@
 
 {if !empty($specifiedDisplayInfo)}
 	<div id="groupedWorkDisplayInfo">
-		<h4>Display Information</h4>
+		<h4>{translate text="Display Information" isPublicFacing=true}</h4>
 		<table class="table-striped table table-condensed notranslate">
-			<tr><th>Title</th><td>{$specifiedDisplayInfo->title}</td></tr>
-			<tr><th>Subtitle</th><td>{$specifiedDisplayInfo->subtitle}</td></tr>
-			<tr><th>Author</th><td>{$specifiedDisplayInfo->author}</td></tr>
-			<tr><th>Series Name</th><td>{$specifiedDisplayInfo->seriesName}</td></tr>
-			<tr><th>Series Display Order</th><td>{if $specifiedDisplayInfo->seriesDisplayOrder != 0}{$specifiedDisplayInfo->seriesDisplayOrder}{/if}</td></tr>
+			<tr><th>{translate text="Title" isPublicFacing=true}</th><td>{$specifiedDisplayInfo->title}</td></tr>
+			<tr><th>{translate text="Subtitle" isPublicFacing=true}</th><td>{$specifiedDisplayInfo->subtitle}</td></tr>
+			<tr><th>{translate text="Author" isPublicFacing=true}</th><td>{$specifiedDisplayInfo->author}</td></tr>
+			<tr><th>{translate text="Series Name" isPublicFacing=true}</th><td>{$specifiedDisplayInfo->seriesName}</td></tr>
+			<tr><th>{translate text="Series Display Order" isPublicFacing=true}</th><td>{if $specifiedDisplayInfo->seriesDisplayOrder != 0}{$specifiedDisplayInfo->seriesDisplayOrder}{/if}</td></tr>
 		</table>
 		{if $loggedIn && in_array('Set Grouped Work Display Information', $userPermissions)}
-			<tr><th></th><td><a onclick="AspenDiscovery.GroupedWork.deleteDisplayInfo('{$recordDriver->getPermanentId()}')" class="btn btn-danger btn-sm">Delete</a></td></tr>
+			<tr><th></th><td><a onclick="AspenDiscovery.GroupedWork.deleteDisplayInfo('{$recordDriver->getPermanentId()}')" class="btn btn-danger btn-sm">{translate text="Delete" isPublicFacing=true}</a></td></tr>
 		{/if}
 	</div>
 {/if}
@@ -35,14 +35,14 @@
 	<h4>Alternate Titles and Authors</h4>
 	<table class="table-striped table table-condensed notranslate">
 		<thead>
-		<tr><th>Title</th><th>Author</th>{if $loggedIn && in_array('Manually Group and Ungroup Works', $userPermissions)}<th>Actions</th>{/if}</tr>
+		<tr><th>{translate text="Title" isPublicFacing=true}</th><th>{translate text="Author" isPublicFacing=true}</th>{if $loggedIn && in_array('Manually Group and Ungroup Works', $userPermissions)}<th>{translate text="Actions" isPublicFacing=true}</th>{/if}</tr>
 		</thead>
 		{foreach from=$alternateTitles item="alternateTitle"}
 			<tr id="alternateTitle{$alternateTitle->id}">
 				<td>{$alternateTitle->alternateTitle}</td>
 				<td>{$alternateTitle->alternateAuthor}</td>
 				{if $loggedIn && in_array('Manually Group and Ungroup Works', $userPermissions)}
-					<td><a onclick="AspenDiscovery.GroupedWork.deleteAlternateTitle('{$alternateTitle->id}')" class="btn btn-danger btn-sm">Delete</a></td>
+					<td><a onclick="AspenDiscovery.GroupedWork.deleteAlternateTitle('{$alternateTitle->id}')" class="btn btn-danger btn-sm">{translate text="Delete" isPublicFacing=true}</a></td>
 				{/if}
 			</tr>
 		{/foreach}
@@ -50,17 +50,17 @@
 {/if}
 
 {if (!empty($primaryIdentifiers))}
-	<h4>Grouped Records</h4>
+	<h4>{translate text="Grouped Records" isPublicFacing=true}</h4>
 	<table class="table-striped table table-condensed notranslate">
 		<thead>
-		<tr><th>Type</th><th>Identifier</th><th>Use Cover for Grouped Work</th></tr>
+		<tr><th>{translate text="Type" isPublicFacing=true}</th><th>{translate text="Identifier" isPublicFacing=true}</th><th>{translate text="Use Cover for Grouped Work" isPublicFacing=true}</th></tr>
 		</thead>
 		{foreach from=$primaryIdentifiers item="groupedRecord"}
 			<tr>
 				<td>{$groupedRecord->type}</td>
 				<td>{$groupedRecord->identifier}</td>
 				<td><button onclick="return AspenDiscovery.GroupedWork.getPreviewRelatedCover('{$groupedRecord->identifier}', '{$recordDriver->getPermanentId()}', '{$groupedRecord->type}')" class="btn btn-sm {if strpos($bookcoverInfo->imageSource, $groupedRecord->identifier) == true}btn-info{else}btn-default{/if}">
-					{if strpos($bookcoverInfo->imageSource, $groupedRecord->identifier) == true}{translate text="Using this Cover"}{else}{translate text="Preview Cover"}{/if}</button>{if strpos($bookcoverInfo->imageSource, $groupedRecord->identifier) == true} <button onclick="return AspenDiscovery.GroupedWork.clearRelatedCover('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-warning">{translate text="Reset"}</button>{/if}
+					{if strpos($bookcoverInfo->imageSource, $groupedRecord->identifier) == true}{translate text="Using this Cover" isPublicFacing=true}{else}{translate text="Preview Cover" isPublicFacing=true}{/if}</button>{if strpos($bookcoverInfo->imageSource, $groupedRecord->identifier) == true} <button onclick="return AspenDiscovery.GroupedWork.clearRelatedCover('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-warning">{translate text="Reset" isPublicFacing=true}</button>{/if}
 				</td>
 			</tr>
 		{/foreach}
@@ -70,9 +70,9 @@
 {if !empty($bookcoverInfo)}
 	<h4>Book Cover Information</h4>
 	<table class="table-striped table table-condensed notranslate">
-		<tr><th>Image Source</th><td>{$bookcoverInfo->imageSource}</td></tr>
-		<tr><th>First Loaded</th><td>{$bookcoverInfo->firstLoaded|date_format}</td></tr>
-		<tr><th>Last Used</th><td>{$bookcoverInfo->lastUsed|date_format}</td></tr>
+		<tr><th>{translate text="Image Source" isPublicFacing=true}</th><td>{$bookcoverInfo->imageSource}</td></tr>
+		<tr><th>{translate text="First Loaded" isPublicFacing=true}</th><td>{$bookcoverInfo->firstLoaded|date_format}</td></tr>
+		<tr><th>{translate text="Last Used" isPublicFacing=true}</th><td>{$bookcoverInfo->lastUsed|date_format}</td></tr>
 	</table>
 {/if}
 {/strip}

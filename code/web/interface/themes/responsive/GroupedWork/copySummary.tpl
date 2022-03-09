@@ -3,7 +3,7 @@
 		{if $recordViewUrl && $showQuickCopy}
 			<div class="itemSummary">
 				&nbsp;&nbsp;<a href="{$recordViewUrl}#copiesPanelBody">
-					{translate text="Quick Copy View"}
+					{translate text="Quick Copy View" isPublicFacing=true}
 				</a>
 			</div>
 		{/if}
@@ -12,22 +12,20 @@
 		{assign var=numRowsShown value="0"}
 		{foreach from=$summary item="item"}
 			{if $item.displayByDefault && $numRowsShown<3}
-				<div class="itemSummary row">
-					<div class="col-xs-{if $item.isEContent == false}7{else}11{/if}">
-						<span class="notranslate"><strong>{$item.shelfLocation}</strong>
-							{if $item.availableCopies > 9999}
-								&nbsp;has unlimited
-							{elseif $item.availableCopies > 1}
-								&nbsp;has&nbsp;{$item.availableCopies}
-							{/if}
-						</span>
+				{if $item.isEContent == false}
+					<div class="itemSummary row" style="margin: 0">
+						<div class="col-lg-7">
+							<span class="notranslate">{if !$item.isEContent}<strong>{$item.shelfLocation}</strong>{/if}
+								{if $item.availableCopies < 999}
+									&nbsp; {translate text="%1% available" 1=$item.availableCopies isPublicFacing=true}
+								{/if}
+							</span>
+						</div>
+						<div class="col-lg-4">
+								<span class="notranslate"><strong>{$item.callNumber}</strong></span>
+						</div>
 					</div>
-						{if $item.isEContent == false}
-					<div class="col-xs-4">
-							<span class="notranslate"><strong>{$item.callNumber}</strong></span>
-					</div>
-						{/if}
-				</div>
+				{/if}
 				{assign var=numDefaultItems value=$numDefaultItems+$item.totalCopies}
 				{assign var=numRowsShown value=$numRowsShown+1}
 			{/if}
@@ -38,14 +36,14 @@
 				{if $showQuickCopy}
 					<div class="itemSummary">
 						{* showElementInPopup('Copy Summary', '#itemSummaryPopup_{$itemSummaryId|escapeCSS}_{$relatedManifestation->format|escapeCSS}'{if !empty($recordViewUrl)}, '#itemSummaryPopupButtons_{$itemSummaryId|escapeCSS}_{$relatedManifestation->format|escapeCSS}'{/if}); *}
-						<a href="#" onclick="return AspenDiscovery.GroupedWork.showCopyDetails('{$workId}', '{$relatedManifestation->format}', '{$itemSummaryId}');">
-							{translate text="Quick Copy View"}
+						<a href="#" onclick="return AspenDiscovery.GroupedWork.showCopyDetails('{$workId}', '{$relatedManifestation->format|urlencode}', '{$itemSummaryId}');">
+							{translate text="Quick Copy View" isPublicFacing=true}
 						</a>
 					</div>
 				{/if}
 				{if !empty($recordViewUrl)}
 					<div id="itemSummaryPopupButtons_{$itemSummaryId|escapeCSS}_{$relatedManifestation->format|escapeCSS}" style="display: none">
-						<a href="{$recordViewUrl}" class="btn btn-primary" role="button">{translate text="See Full Copy Details"}</a>
+						<a href="{$recordViewUrl}" class="btn btn-primary" role="button">{translate text="See Full Copy Details" isPublicFacing=true}</a>
 					</div>
 				{/if}
 			{/if}

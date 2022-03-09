@@ -177,6 +177,7 @@ class Novelist3{
 					$req->setTimeout(20);
 
 					$response = $req->curlGetPage($requestUrl);
+					ExternalRequestLogEntry::logRequest('novelist.contentByQuery', 'GET', $requestUrl, [], '', $req->getResponseCode(), $response, ['password'=>$novelistSettings->pwd]);
 					$timer->logTime("Made call to Novelist for enrichment information $isbnParam");
 
 
@@ -185,12 +186,19 @@ class Novelist3{
 					$bestResponse = '';
 					$primaryISBN = '';
 					$numManifestationsForBest = -1;
+					$numISBNMatchesForBest = -1;
 					//Get the ISBN
 					if (!empty($decodedData->titles)) {
 						foreach ($decodedData->titles as $title) {
 							if (!is_null($title->TitleInfo)) {
 								$numManifestations = count($title->TitleInfo->manifestations);
-								if ($numManifestations > 0 && $numManifestations > $numManifestationsForBest) {
+								$numISBNMatches = 0;
+								foreach($title->TitleInfo->manifestations as $manifestation) {
+									if(in_array($manifestation->ISBN, $isbns)) {
+										$numISBNMatches = $numISBNMatches + 1;
+									}
+								}
+								if (($numManifestations > 0 && $numISBNMatches > $numISBNMatchesForBest)){
 									$novelistData->hasNovelistData = 1;
 
 									$bestResponse = json_encode($title);
@@ -198,6 +206,7 @@ class Novelist3{
 										$primaryISBN = $title->TitleInfo->primary_isbn;
 									}
 									$numManifestationsForBest = $numManifestations;
+									$numISBNMatchesForBest = $numISBNMatches;
 								}
 							}
 						}

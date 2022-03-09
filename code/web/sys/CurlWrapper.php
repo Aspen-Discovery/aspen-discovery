@@ -9,6 +9,8 @@ class CurlWrapper
 	public $curl_connection; // need access in order to check for curl errors.
 	public $connectTimeout = 2;
 	public $timeout = 10;
+	public $responseHeaders = [];
+	public $cookies = [];
 
 	public function __construct()
 	{
@@ -30,6 +32,18 @@ class CurlWrapper
 		$header[] = "Accept-Language: en-us,en;q=0.5";
 		$header[] = "User-Agent: Aspen Discovery " . $gitBranch;
 		$this->headers = $header;
+
+		$default_options = array(
+			CURLOPT_RETURNTRANSFER => true,
+			CURLOPT_SSL_VERIFYPEER => false,
+			CURLOPT_FOLLOWLOCATION => true,
+			CURLOPT_UNRESTRICTED_AUTH => true,
+			CURLOPT_COOKIESESSION => false,
+			CURLOPT_FORBID_REUSE => false,
+			CURLOPT_HEADER => false,
+			CURLOPT_AUTOREFERER => true,
+		);
+		$this->options = $default_options;
 	}
 
 	public function __destruct()
@@ -69,33 +83,21 @@ class CurlWrapper
 			$cookie = $this->getCookieJar();
 
 			$this->curl_connection = curl_init($curlUrl);
-			$default_curl_options = array(
-				CURLOPT_CONNECTTIMEOUT => $this->connectTimeout,
-				CURLOPT_TIMEOUT => $this->timeout,
-				CURLOPT_HTTPHEADER => $this->headers,
-				CURLOPT_RETURNTRANSFER => true,
-				CURLOPT_SSL_VERIFYPEER => false,
-				CURLOPT_FOLLOWLOCATION => true,
-				CURLOPT_UNRESTRICTED_AUTH => true,
-				CURLOPT_COOKIEJAR => $cookie,
-				CURLOPT_COOKIESESSION => false,
-				CURLOPT_FORBID_REUSE => false,
-				CURLOPT_HEADER => false,
-				CURLOPT_AUTOREFERER => true,
-			);
+			$this->setOption(CURLOPT_COOKIEJAR, $cookie);
+			$this->setOption(CURLOPT_CONNECTTIMEOUT, $this->connectTimeout);
+			$this->setOption(CURLOPT_TIMEOUT, $this->timeout);
+			$this->setOption(CURLOPT_HTTPHEADER, $this->headers);
+			$this->setOption(CURLOPT_HEADERFUNCTION, [$this, 'curlResponseHeaderCallback']);
 
 			global $configArray;
 			if (IPAddress::showDebuggingInformation() && $configArray['System']['debugCurl']){
-				$default_curl_options[CURLOPT_VERBOSE] = true;
+				$this->setOption(CURLOPT_VERBOSE, true);
 			}
 
-			if (!empty($this->options)){
-				$default_curl_options = array_merge($default_curl_options, $this->options);
-			}
 			if ($curl_options) {
-				$default_curl_options = array_merge($default_curl_options, $curl_options);
+				curl_setopt_array($this->curl_connection, $curl_options);
 			}
-			curl_setopt_array($this->curl_connection, $default_curl_options);
+			curl_setopt_array($this->curl_connection, $this->options);
 		} else {
 			//Reset to HTTP GET and set the active URL
 			curl_setopt($this->curl_connection, CURLOPT_HTTPGET, true);
@@ -129,6 +131,7 @@ class CurlWrapper
 	{
 		$this->curl_connect($url);
 		curl_setopt($this->curl_connection, CURLOPT_HTTPGET, true);
+		$this->responseHeaders = [];
 		$return = curl_exec($this->curl_connection);
 		if (!$return) { // log curl error
 			global $logger;
@@ -158,8 +161,11 @@ class CurlWrapper
 			CURLOPT_POSTFIELDS => $post_string
 		));
 		if ($curlOptions != null){
-			curl_setopt_array($this->curl_connection, $curlOptions);
+			foreach ($curlOptions as $key => $value) {
+				curl_setopt($this->curl_connection, $key, $value);
+			}
 		}
+		$this->responseHeaders = [];
 		$return = curl_exec($this->curl_connection);
 		if (!$return) { // log curl error
 			global $logger;
@@ -190,7 +196,7 @@ class CurlWrapper
 			CURLOPT_POST => true,
 			CURLOPT_POSTFIELDS => $post_string,
 		));
-
+		$this->responseHeaders = [];
 		$return = curl_exec($this->curl_connection);
 		if (!$return) { // log curl error
 			global $logger;
@@ -218,6 +224,7 @@ class CurlWrapper
 		if ($body != null) {
 			curl_setopt($this->curl_connection, CURLOPT_POSTFIELDS, $body);
 		}
+		$this->responseHeaders = [];
 		$return = curl_exec($this->curl_connection);
 		if (!$return) { // log curl error
 			global $configArray;
@@ -235,6 +242,11 @@ class CurlWrapper
 	{
 		$curl_info = curl_getinfo($this->curl_connection);
 		return $curl_info['http_code'];
+	}
+
+	function getInfo()
+	{
+		return curl_getinfo($this->curl_connection);
 	}
 
 	function getHeaders()
@@ -289,5 +301,13 @@ class CurlWrapper
 		if (!empty($this->curl_connection)){
 			curl_setopt($this->curl_connection, CURLOPT_CONNECTTIMEOUT, $this->connectTimeout);
 		}
+	}
+
+	function curlResponseHeaderCallback($ch, $headerLine) {
+		$this->responseHeaders[] = $headerLine;
+		if (preg_match('/^Set-Cookie:\s*([^;]*)/mi', $headerLine, $cookie) == 1) {
+			$this->cookies[] = $cookie[1];
+		}
+		return strlen($headerLine); // Needed by curl
 	}
 }

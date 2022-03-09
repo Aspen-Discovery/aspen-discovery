@@ -3,6 +3,7 @@ package com.turning_leaf_technologies.grouping;
 import com.turning_leaf_technologies.indexing.*;
 import com.turning_leaf_technologies.logging.BaseLogEntry;
 import com.turning_leaf_technologies.marc.MarcUtil;
+import com.turning_leaf_technologies.reindexer.GroupedWorkIndexer;
 import org.apache.logging.log4j.Logger;
 import org.marc4j.marc.*;
 
@@ -26,7 +27,6 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 
 	//Existing records
 	private HashMap<String, IlsTitle> existingRecords = new HashMap<>();
-	private static PreparedStatement insertMarcRecordChecksum;
 
 	private boolean isValid = true;
 
@@ -38,18 +38,11 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 		recordNumberPrefix = settings.getRecordNumberPrefix();
 
 		baseSettings = settings;
-
-		try {
-			insertMarcRecordChecksum = dbConn.prepareStatement("INSERT INTO ils_marc_checksums (ilsId, source, checksum, dateFirstDetected) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE checksum = VALUES(checksum), dateFirstDetected=VALUES(dateFirstDetected)");
-		} catch (Exception e) {
-			logEntry.incErrors("Error setting up database statement");
-			isValid = false;
-		}
 	}
 
 	public abstract String processMarcRecord(Record marcRecord, boolean primaryDataChanged, String originalGroupedWorkId);
 
-	public RecordIdentifier getPrimaryIdentifierFromMarcRecord(Record marcRecord, String recordType) {
+	public RecordIdentifier getPrimaryIdentifierFromMarcRecord(Record marcRecord, BaseIndexingSettings indexingProfile) {
 		RecordIdentifier identifier = null;
 		VariableField recordNumberField = marcRecord.getVariableField(recordNumberTag);
 		//Make sure we only get one ils identifier
@@ -63,14 +56,14 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 						if (recordNumber.indexOf(' ') > 0){
 							recordNumber = recordNumber.substring(0, recordNumber.indexOf(' '));
 						}
-						identifier = new RecordIdentifier(recordType, recordNumber);
+						identifier = new RecordIdentifier(indexingProfile.getName(), recordNumber);
 					}
 				}
 			} else {
 				//It's a control field
 				ControlField curRecordNumberField = (ControlField) recordNumberField;
 				String recordNumber = curRecordNumberField.getData().trim();
-				identifier = new RecordIdentifier(recordType, recordNumber);
+				identifier = new RecordIdentifier(indexingProfile.getName(), recordNumber);
 			}
 		}
 
@@ -431,6 +424,7 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 		DataField field100 = marcRecord.getDataField("100");
 		DataField field110 = marcRecord.getDataField("110");
 		DataField field260 = marcRecord.getDataField("260");
+		DataField field264 = marcRecord.getDataField("264");
 		DataField field710 = marcRecord.getDataField("710");
 
 		//Depending on the format we will promote the use of the 245c
@@ -450,6 +444,8 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 			author = field710.getSubfield('a').getData();
 		} else if (field260 != null && field260.getSubfield('b') != null) {
 			author = field260.getSubfield('b').getData();
+		} else if (field264 != null && field264.getSubfield('b') != null) {
+			author = field264.getSubfield('b').getData();
 		} else if (!groupingFormat.equals("book") && field245 != null && field245.getSubfield('c') != null) {
 			author = field245.getSubfield('c').getData();
 			if (author.indexOf(';') > 0) {
@@ -494,14 +490,14 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 		return null;
 	}
 
-	private void assignTitleInfoFromMarcField(GroupedWork workForTitle, DataField field245, int nonFilingCharactersIndicator) {
-		String fullTitle = field245.getSubfield('a').getData();
+	private void assignTitleInfoFromMarcField(GroupedWork workForTitle, DataField titleField, int nonFilingCharactersIndicator) {
+		String fullTitle = titleField.getSubfield('a').getData();
 
 		char nonFilingCharacters;
 		if (nonFilingCharactersIndicator == 1){
-			nonFilingCharacters = field245.getIndicator1();
+			nonFilingCharacters = titleField.getIndicator1();
 		}else {
-			nonFilingCharacters = field245.getIndicator2();
+			nonFilingCharacters = titleField.getIndicator2();
 		}
 		if (nonFilingCharacters == ' ') nonFilingCharacters = '0';
 		int numNonFilingCharacters = 0;
@@ -509,21 +505,38 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 			numNonFilingCharacters = Integer.parseInt(Character.toString(nonFilingCharacters));
 		}
 
+		boolean isUniformTitle = false;
+		if (titleField.getTag().equals("130")){
+			isUniformTitle = true;
+		}
+
 		//Add in subtitle (subfield b as well to avoid problems with gov docs, etc)
 		StringBuilder groupingSubtitle = new StringBuilder();
-		if (field245.getSubfield('b') != null) {
-			groupingSubtitle.append(field245.getSubfield('b').getData());
+		if (titleField.getSubfield('b') != null) {
+			groupingSubtitle.append(titleField.getSubfield('b').getData());
 		}
 
 		//Group volumes, seasons, etc. independently
 		StringBuilder partInfo = new StringBuilder();
-		if (field245.getSubfield('n') != null) {
+		if (isUniformTitle && titleField.getSubfield('m') != null){
 			if (partInfo.length() > 0) partInfo.append(" ");
-			partInfo.append(field245.getSubfield('n').getData());
+			partInfo.append(titleField.getSubfield('m').getData());
 		}
-		if (field245.getSubfield('p') != null) {
+		if (titleField.getSubfield('n') != null) {
 			if (partInfo.length() > 0) partInfo.append(" ");
-			partInfo.append(field245.getSubfield('p').getData());
+			partInfo.append(titleField.getSubfield('n').getData());
+		}
+		if (isUniformTitle && titleField.getSubfield('o') != null){
+			if (partInfo.length() > 0) partInfo.append(" ");
+			partInfo.append(titleField.getSubfield('o').getData());
+		}
+		if (titleField.getSubfield('p') != null) {
+			if (partInfo.length() > 0) partInfo.append(" ");
+			partInfo.append(titleField.getSubfield('p').getData());
+		}
+		if (isUniformTitle && titleField.getSubfield('s') != null){
+			if (partInfo.length() > 0) partInfo.append(" ");
+			partInfo.append(titleField.getSubfield('s').getData());
 		}
 
 		workForTitle.setTitle(fullTitle, numNonFilingCharacters, groupingSubtitle.toString(), partInfo.toString());
@@ -549,88 +562,6 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 		return existingRecords;
 	}
 
-	public enum MarcStatus {
-		UNCHANGED, CHANGED, NEW
-	}
-
-	//TODO: A similar version of this also exists in RecordGrouperMain.  See if we can combine the two
-	public MarcStatus writeIndividualMarc(BaseIndexingSettings indexingSettings, Record marcRecord, String recordNumber, Logger logger) {
-		MarcStatus marcRecordStatus = MarcStatus.UNCHANGED;
-		//Copy the record to the individual marc path
-		if (recordNumber != null) {
-			long checksum = MarcUtil.getChecksum(marcRecord);
-			File individualFile = indexingSettings.getFileForIlsRecord(recordNumber);
-
-			Long existingChecksum = getExistingChecksum(recordNumber);
-			//If we are doing partial regrouping or full regrouping without clearing the previous results,
-			//Check to see if the record needs to be written before writing it.
-			boolean checksumUpToDate = false;
-			if (!indexingSettings.isRunFullUpdate()) {
-				checksumUpToDate = existingChecksum != null && existingChecksum.equals(checksum);
-			}
-			boolean fileExists = individualFile.exists();
-			if (!fileExists) {
-				marcRecordStatus = MarcStatus.NEW;
-			} else if (!checksumUpToDate) {
-				marcRecordStatus = MarcStatus.CHANGED;
-			}
-
-			if (marcRecordStatus != MarcStatus.UNCHANGED || indexingSettings.isRunFullUpdate()) {
-				try {
-					MarcUtil.outputMarcRecord(marcRecord, individualFile, logger);
-					Long dateAdded = MarcUtil.getDateAddedForRecord(marcRecord, recordNumber, indexingSettings.getName(), individualFile, logger);
-					updateMarcRecordChecksum(recordNumber, indexingSettings.getName(), checksum, dateAdded);
-					//logger.debug("checksum changed for " + recordNumber + " was " + existingChecksum + " now its " + checksum);
-				} catch (IOException e) {
-					logEntry.incErrors("Error writing marc", e);
-				}
-			} else {
-				//Update date first detected if needed
-				IlsTitle existingTitle = existingRecords.get(recordNumber);
-				if (existingTitle != null && existingTitle.getDateFirstDetected() == null) {
-					Long dateAdded = MarcUtil.getDateAddedForRecord(marcRecord, recordNumber, indexingSettings.getName(), individualFile, logger);
-					updateMarcRecordChecksum(recordNumber, indexingSettings.getName(), checksum, dateAdded);
-				}
-			}
-			//Verify the record has been grouped
-			if (marcRecordStatus == MarcStatus.UNCHANGED) {
-				String existingWorkId = getPermanentIdForRecord(indexingSettings.getName(), recordNumber);
-				if (existingWorkId == null){
-					marcRecordStatus = MarcStatus.CHANGED;
-				}
-			}
-		} else {
-			logEntry.incErrors("Error did not find record number for MARC record");
-		}
-		return marcRecordStatus;
-	}
-
-	public MarcStatus appendItemsToExistingRecord(IndexingProfile indexingSettings, Record recordWithAdditionalItems, String recordNumber, Logger logger) {
-		MarcStatus marcRecordStatus = MarcStatus.UNCHANGED;
-		//Copy the record to the individual marc path
-		if (recordNumber != null) {
-			File individualFile = indexingSettings.getFileForIlsRecord(recordNumber);
-			Record mergedRecord = MarcUtil.readIndividualRecord(individualFile, logEntry);
-
-			List<DataField> additionalItems = recordWithAdditionalItems.getDataFields(indexingSettings.getItemTag());
-			for (DataField additionalItem : additionalItems) {
-				mergedRecord.addVariableField(additionalItem);
-			}
-
-			long updatedChecksum = MarcUtil.getChecksum(recordWithAdditionalItems);
-			marcRecordStatus = MarcStatus.CHANGED;
-			try{
-				MarcUtil.outputMarcRecord(mergedRecord, individualFile, logger);
-				Long dateAdded = MarcUtil.getDateAddedForRecord(mergedRecord, recordNumber, indexingSettings.getName(), individualFile, logger);
-				updateMarcRecordChecksum(recordNumber, indexingSettings.getName(), updatedChecksum, dateAdded);
-			} catch (IOException e) {
-				logEntry.incErrors("Error writing marc", e);
-			}
-		} else {
-			logEntry.incErrors("Error did not find record number for MARC record");
-		}
-		return marcRecordStatus;
-	}
 
 	private Long getExistingChecksum(String recordNumber) {
 		IlsTitle curTitle = existingRecords.get(recordNumber);
@@ -644,36 +575,30 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 	public boolean loadExistingTitles(BaseLogEntry logEntry) {
 		try {
 			if (existingRecords == null) existingRecords = new HashMap<>();
-			PreparedStatement getAllExistingRecordsStmt = dbConn.prepareStatement("SELECT * FROM ils_marc_checksums where source = ?;");
+			PreparedStatement getAllExistingRecordsStmt = dbConn.prepareStatement("SELECT ilsId, checksum, dateFirstDetected, deleted FROM ils_records where source = ?;");
 			getAllExistingRecordsStmt.setString(1, baseSettings.getName());
 			ResultSet allRecordsRS = getAllExistingRecordsStmt.executeQuery();
+			int numDeletedTitles = 0;
 			while (allRecordsRS.next()) {
 				String ilsId = allRecordsRS.getString("ilsId");
 				IlsTitle newTitle = new IlsTitle(
 						allRecordsRS.getLong("checksum"),
-						allRecordsRS.getLong("dateFirstDetected")
+						allRecordsRS.getLong("dateFirstDetected"),
+						allRecordsRS.getBoolean("deleted")
 				);
 				existingRecords.put(ilsId, newTitle);
+				if (newTitle.isDeleted()){
+					numDeletedTitles++;
+				}
 			}
 			allRecordsRS.close();
 			getAllExistingRecordsStmt.close();
+			logEntry.addNote("There are " + existingRecords.size() + " records that have already been loaded " + numDeletedTitles + " are deleted, and " + (existingRecords.size() - numDeletedTitles) + " are active");
 			return true;
 		} catch (SQLException e) {
 			logEntry.incErrors("Error loading existing titles", e);
 			logEntry.addNote("Error loading existing titles" + e.toString());
 			return false;
-		}
-	}
-
-	private void updateMarcRecordChecksum(String recordNumber, String source, long checksum, long dateFirstDetected) {
-		try {
-			insertMarcRecordChecksum.setString(1, recordNumber);
-			insertMarcRecordChecksum.setString(2, source);
-			insertMarcRecordChecksum.setLong(3, checksum);
-			insertMarcRecordChecksum.setLong(4, dateFirstDetected);
-			insertMarcRecordChecksum.executeUpdate();
-		} catch (SQLException e) {
-			logEntry.incErrors("Unable to update checksum for ils marc record", e);
 		}
 	}
 

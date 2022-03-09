@@ -558,9 +558,9 @@ class LibrarySolution extends AbstractIlsDriver {
 			foreach ($placeHoldResponse->placeHoldInfos as $holdResponse){
 				if ($holdResponse->success){
 					$result['success'] = true;
-					$result['message'] = translate(['text'=>"ils_hold_success", 'defaultText'=>"Your hold was placed successfully."]);
+					$result['message'] = translate(['text'=>"Your hold was placed successfully.",'isPublicFacing'=>true]);
 				}else{
-					$result['message'] = 'Sorry, your hold could not be placed.  ' . htmlentities(translate($holdResponse->message));
+					$result['message'] = 'Sorry, your hold could not be placed.  ' . htmlentities(translate(['text'=>$holdResponse->message,'isPublicFacing'=>true]));
 				}
 			}
 		}else{
@@ -650,9 +650,9 @@ class LibrarySolution extends AbstractIlsDriver {
 			foreach ($response->suspendHoldInfos as $itemResponse){
 				if ($itemResponse->success){
 					$result['success'] = true;
-					$result['message'] = translate(['text'=>'ils_freeze_hold_success', 'defaultText' => 'Your hold was frozen successfully.']);
+					$result['message'] = translate(['text'=>'Your hold was frozen successfully.', 'isPublicFacing'=> true]);
 				}else{
-					$result['message'] = translate(['text'=>'ils_freeze_hold_failure', 'defaultText' => 'Sorry, your hold could not be frozen.']);
+					$result['message'] = translate(['text'=>'Sorry, your hold could not be frozen.', 'isPublicFacing'=> true]);
 				}
 			}
 		}else{
@@ -716,7 +716,7 @@ class LibrarySolution extends AbstractIlsDriver {
 		return $fines;
 	}
 
-	function updatePatronInfo($patron, $canUpdateContactInfo)
+	function updatePatronInfo($patron, $canUpdateContactInfo, $fromMasquerade)
 	{
 		return [
 			'success' => false,

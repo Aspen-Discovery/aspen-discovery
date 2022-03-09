@@ -9,7 +9,7 @@
 		{if $showCovers}
 			<div class="col-xs-3 col-sm-3 col-md-3 col-lg-2 text-center">
 				<a href="{$summUrl}" aria-hidden="true">
-					<img src="{$bookCoverUrlMedium}" class="listResultImage img-thumbnail{* img-responsive*}" alt="{translate text='Cover Image' inAttribute=true}">
+					<img src="{$bookCoverUrlMedium}" class="listResultImage img-thumbnail{* img-responsive*}" alt="{translate text='Cover Image' inAttribute=true isPublicFacing=true}">
 				</a>
 				{if $showRatings}
 					{include file="GroupedWork/title-rating.tpl" id=$summId ratingData=$summRating showNotInterested=false}
@@ -29,7 +29,7 @@
 
 			{if $summAuthor}
 				<div class="row">
-					<div class="result-label col-tn-3 col-xs-3">{translate text="Author"} </div>
+					<div class="result-label col-tn-3 col-xs-3">{translate text="Author" isPublicFacing=true} </div>
 					<div class="result-value col-tn-9 col-xs-9 notranslate">
 						{if is_array($summAuthor)}
 							{foreach from=$summAuthor item=author}
@@ -44,16 +44,16 @@
 
 			{if $summSeries}
 				<div class="series{$summISBN} row">
-					<div class="result-label col-xs-3">{translate text="Series"} </div>
+					<div class="result-label col-xs-3">{translate text="Series" isPublicFacing=true} </div>
 					<div class="result-value col-xs-9">
-						<a href="/GroupedWork/{$summId}/Series">{$summSeries.seriesTitle}</a>{if $summSeries.volume}<strong> {translate text="volume %1%" 1=$summSeries.volume}</strong>{/if}
+						<a href="/GroupedWork/{$summId}/Series">{$summSeries.seriesTitle}</a>{if $summSeries.volume}<strong> {translate text="volume %1%" 1=$summSeries.volume isPublicFacing=true}</strong>{/if}
 					</div>
 				</div>
 			{/if}
 
 			{if $listEntryNotes}
 				<div class="row">
-					<div class="result-label col-md-3">{translate text="Notes"} </div>
+					<div class="result-label col-md-3">{translate text="Notes" isPublicFacing=true} </div>
 					<div class="user-list-entry-note result-value col-md-9">
 						{$listEntryNotes}
 					</div>
@@ -100,8 +100,8 @@
 			{* Description Section *}
 			{if $summDescription}
 				<div class="row visible-xs">
-					<div class="result-label col-tn-3 col-xs-3">{translate text="Description"}</div>
-					<div class="result-value col-tn-9 col-xs-9"><a id="descriptionLink{$summId|escape}" href="#" onclick="$('#descriptionValue{$summId|escape},#descriptionLink{$summId|escape}').toggleClass('hidden-xs');return false;">Click to view</a></div>
+					<div class="result-label col-tn-3 col-xs-3">{translate text="Description" isPublicFacing=true}</div>
+					<div class="result-value col-tn-9 col-xs-9"><a id="descriptionLink{$summId|escape}" href="#" onclick="$('#descriptionValue{$summId|escape},#descriptionLink{$summId|escape}').toggleClass('hidden-xs');return false;">{translate text="Click to view" isPublicFacing=true}</a></div>
 				</div>
 			{/if}
 
@@ -117,20 +117,20 @@
 
 
 			<div class="resultActions row">
-				{include file='GroupedWork/result-tools-horizontal.tpl' ratingData=$summRating recordUrl=$summUrl showMoreInfo=true}
+				{include file='GroupedWork/result-tools-horizontal.tpl' ratingData=$summRating recordUrl=$summUrl showMoreInfo=true showNotInterested=false}
 			</div>
 		</div>
 
 		{if $listEditAllowed}
-		<div class="col-xs-2 col-sm-2 col-md-2 col-lg-2 text-right">
+			<div class="col-xs-2 col-sm-2 col-md-2 col-lg-2 text-right">
 				<div class="btn-group-vertical" role="group">
-					{if $userSort && ($resultIndex != '1')}<span class="btn btn-xs btn-default" onclick="return AspenDiscovery.Lists.changeWeight('{$listEntryId}', 'up');" title="{translate text="Move Up"}">&#x25B2;</span>{/if}
+					{if $userSort && ($resultIndex != '1')}<span class="btn btn-xs btn-default" onclick="return AspenDiscovery.Lists.changeWeight('{$listEntryId}', 'up');" title="{translate text="Move Up" isPublicFacing=true}">&#x25B2;</span>{/if}
 					<a href="#" onclick="return AspenDiscovery.Account.getEditListForm({$listEntryId},{$listSelected})" class="btn btn-default">Edit</a>
 					{* Use a different delete URL if we're removing from a specific list or the overall favorites: *}
-					<a href="/MyAccount/MyList/{$listSelected|escape:"url"}?delete={$listEntryId|escape:"url"}" onclick="return confirm('Are you sure you want to delete this?');" class="btn btn-danger">{translate text='Delete'}</a>
-					{if $userSort && ($resultIndex != $listEntryCount)}<span class="btn btn-xs btn-default" onclick="return AspenDiscovery.Lists.changeWeight('{$listEntryId}', 'down');" title="{translate text="Move Down"}">&#x25BC;</span>{/if}
+					<a href="/MyAccount/MyList/{$listSelected|escape:"url"}?delete={$listEntryId|escape:"url"}" onclick="return confirm('Are you sure you want to delete this?');" class="btn btn-danger">{translate text='Delete' isPublicFacing=true}</a>
+					{if $userSort && ($resultIndex != $listEntryCount)}<span class="btn btn-xs btn-default" onclick="return AspenDiscovery.Lists.changeWeight('{$listEntryId}', 'down');" title="{translate text="Move Down" isPublicFacing=true}">&#x25BC;</span>{/if}
 				</div>
-		</div>
+			</div>
 		{/if}
 	</div>
 </div>

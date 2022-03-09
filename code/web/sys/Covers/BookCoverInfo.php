@@ -27,4 +27,9 @@ class BookCoverInfo extends DataObject
 	{
 		$this->query("UPDATE " . $this->__table . " SET thumbnailLoaded = 0, mediumLoaded = 0, largeLoaded = 0 where imageSource = 'default'");
 	}
+
+	public function reloadOMDBCovers()
+	{
+		$this->query("UPDATE " . $this->__table . " SET thumbnailLoaded = 0, mediumLoaded = 0, largeLoaded = 0 where imageSource = 'omdb_title' OR imageSource = 'omdb_title_year'");
+	}
 }

@@ -10,15 +10,14 @@
 # ****************************************************************************************************************************
 # * include the helper file that holds the URL information by client
 # ****************************************************************************************************************************
-include_once 'config.php';
+require_once '../bootstrap.php';
+require_once '../bootstrap_aspen.php';
 
 # ****************************************************************************************************************************
 # * grab the passed location parameter, then find the path
 # ****************************************************************************************************************************
-$library      = $_GET['library'];
-$locationInfo = urlPath($library);
-$urlPath      = $locationInfo[0];
-$shortname    = $locationInfo[1];
+$urlPath = 'https://'.$_SERVER['SERVER_NAME'];
+$shortname = $_GET['library'];
 
 # ****************************************************************************************************************************
 # * Prep the patron information for checking - dummy out something just in case
@@ -44,12 +43,12 @@ if (strcmp($itemId, 'all') == 0) {
 # ****************************************************************************************************************************
 $jsonData = json_decode(file_get_contents($renewal), true);
 
-$renewalInfo['renewed'] = $jsonData['result']['renewalMessage']['success'];
-$renewalInfo['message'] = $jsonData['result']['renewalMessage']['message'];
-
 if (strcmp($itemId, 'all') == 0) {
   $renewalInfo['renewed'] = $jsonData['result']['success'];
   $renewalInfo['message'] = $jsonData['result']['message'][0];
+} else {
+	$renewalInfo['renewed'] = $jsonData['result']['renewalMessage']['success'];
+	$renewalInfo['message'] = $jsonData['result']['renewalMessage']['message'];
 }
 
 # ****************************************************************************************************************************

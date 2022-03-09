@@ -21,11 +21,6 @@
 						</div>
 					</div>
 				</div>
-{*				<div class="row">*}
-{*					<div class="col-tn-12" style="padding-top: 5px">*}
-{*					<a href="{$whileYouWaitTitle.url}" class="btn btn-primary btn-sm">{translate text="More Info"}</a>*}
-{*					</div>*}
-{*				</div>*}
 			</div>
 		{/foreach}
 	</div>

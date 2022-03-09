@@ -1,0 +1,34 @@
+CourseReservesKeyword:
+  QueryFields:
+    - title:
+      - [exact, 1000]
+      - [and, 250]
+    - table_of_contents:
+      - [exact, 600]
+      - [and, 250]
+    - keywords:
+      - [exact, 300]
+      - [and, 50]
+    - instructor:
+      - [exact, 300]
+      - [and, 50]
+    - course_number:
+      - [exact, 300]
+      - [and, 50]
+    - alternate_ids:
+      - [and, 25]
+
+CourseReservesTitle:
+  QueryFields:
+    - title:
+      - [exact, 1000]
+      - [and, 250]
+    - table_of_contents:
+      - [exact, 1000]
+      - [and, 250]
+
+CourseReservesInstructor:
+  QueryFields:
+    - instructor:
+      - [exact, 600]
+      - [and, 250]

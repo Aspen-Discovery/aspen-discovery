@@ -10,15 +10,13 @@
 # ****************************************************************************************************************************
 # * include the helper file that holds the URL information by client
 # ****************************************************************************************************************************
-include_once 'config.php';
+require_once '../bootstrap.php';
+require_once '../bootstrap_aspen.php';
 
 # ****************************************************************************************************************************
 # * grab the passed location parameter, then find the path
 # ****************************************************************************************************************************
-$library      = $_GET['library'];
-$locationInfo = urlPath($library);
-$urlPath      = $locationInfo[0];
-$shortname    = $locationInfo[1];
+$urlPath = 'https://'.$_SERVER['SERVER_NAME'];
 
 # ****************************************************************************************************************************
 # * Prep the login information for checking - dummy out something just in case
@@ -30,7 +28,7 @@ $pin     = 1234567890;
 # * grab the variables
 # ****************************************************************************************************************************
 if (! empty($_GET['barcode'])) { $barcode = $_GET['barcode']; }
-if (! empty($_GET['pin'])) { $pin = $_GET['pin']; }  
+if (! empty($_GET['pin'])) { $pin = $_GET['pin']; }
 
 # ****************************************************************************************************************************
 # * assemble the login API URL

@@ -1,13 +1,13 @@
 <div id="portal-cell-{$portalCell->id}" class="portal-cell-edit col-tn-{$portalCell->widthTiny} col-xs-{$portalCell->widthXs} col-sm-{$portalCell->widthSm} col-md-{$portalCell->widthMd} col-lg-{$portalCell->widthLg}">
 	<div class="row portal-cell-title-edit">
 		<div class="col-xs-8">
-			{$portalCell->sourceType} : {$portalCell->sourceId}
+			{translate text=$portalCell->sourceType isAdminFacing=true}{if !empty($portalCell->sourceId)} : {$portalCell->sourceId}{/if}
 		</div>
 		<div class="col-xs-4 text-right">
-			{if $portalCell->weight != 0}<span class="btn btn-xs btn-default" onclick="return AspenDiscovery.WebBuilder.moveCell('{$portalCell->id}', 'left');" title="{translate text="Move Left"}">&#x25C0;</span>{/if}
-			<a href="/WebBuilder/PortalCells?objectAction=edit&id={$portalCell->id}"><img src="/images/silk/edit.png" alt="{translate text="Edit"}" /></a>
-			<a onclick="return AspenDiscovery.WebBuilder.deleteCell('{$portalCell->id}')"><img src="/images/silk/delete.png" alt="{translate text="Delete"}" /></a>
-			{if !$portalCell->isLastCell()}<span class="btn btn-xs btn-default" onclick="return AspenDiscovery.WebBuilder.moveCell('{$portalCell->id}', 'right');" title="{translate text="Move Right"}">&#x25B6;</span>{/if}
+			{if $portalCell->weight != 0}<span class="btn btn-xs btn-default" onclick="return AspenDiscovery.WebBuilder.moveCell('{$portalCell->id}', 'left');" title="{translate text="Move Left" isAdminFacing=true inAttribute=true}"><i class="fas fa-caret-left fa"></i></span>{/if}
+			<a href="/WebBuilder/PortalCells?objectAction=edit&id={$portalCell->id}" class="btn btn-xs btn-default" title="{translate text="Edit" isAdminFacing=true inAttribute=true}"><i class="fas fa-edit fa"></i></a>
+			<span class="btn btn-xs btn-danger"  onclick="return AspenDiscovery.WebBuilder.deleteCell('{$portalCell->id}')" title="{translate text="Delete" isAdminFacing=true inAttribute=true}"><i class="fas fa-minus-circle fa"></i></span>
+			{if !$portalCell->isLastCell()}<span class="btn btn-xs btn-default" onclick="return AspenDiscovery.WebBuilder.moveCell('{$portalCell->id}', 'right');" title="{translate text="Move Right" isAdminFacing=true inAttribute=true}"><i class="fas fa-caret-right fa"></i></span>{/if}
 		</div>
 	</div>
 	<div class="row">

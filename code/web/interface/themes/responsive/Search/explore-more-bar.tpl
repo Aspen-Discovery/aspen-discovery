@@ -3,7 +3,13 @@
 <div class="exploreMoreBar row">
 	{*<div class="label-left">*}
 	<div class="label-top">
-		<div class="exploreMoreBarLabel"><i class="fas fa-share-square fa-x2"></i> {translate text='Explore More'}</div>
+		<div class="exploreMoreBarLabel">
+			{if $userLang->isRTL()} <!-- Fixed by Kware -->
+				<i class="fas fa-share-square fa-flip-horizontal fa-x2"></i>
+			{else}
+				<i class="fas fa-share-square fa-x2"></i>
+			{/if} {translate text='Explore More' isPublicFacing=true}
+		</div>
 	</div>
 
 	<div class="exploreMoreContainer">
@@ -26,7 +32,7 @@
 								<figure class="thumbnail" title="{$exploreMoreCategory.label|escape}">
 									<div class="explore-more-image">
 										<a href='{$exploreMoreCategory.link}' {if $exploreMoreCategory.onclick}onclick="{$exploreMoreCategory.onclick}"{/if} {if $exploreMoreCategory.openInNewWindow}target="_blank" {/if}>
-											<img src="{$exploreMoreCategory.image}" alt="{$exploreMoreCategory.label|escape}">
+											<img src="{$exploreMoreCategory.image}" alt="{translate text="Explore more on"  inAttribute=true isPublicFacing=true} {$exploreMoreCategory.label|escape:css}">
 											<figcaption class="explore-more-category-title">
 												<strong>{$exploreMoreCategory.label|truncate:30}</strong>
 											</figcaption>

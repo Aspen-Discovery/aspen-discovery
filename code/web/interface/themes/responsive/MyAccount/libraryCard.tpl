@@ -12,7 +12,7 @@
 		{include file='ilsMessages.tpl' messages=$ilsMessages}
 	{/if}
 
-	<h1>{translate text="Library Card"}</h1>
+	<h1>{translate text="Library Card" isPublicFacing=true}</h1>
 	<div class="row">
 		<div class="col-xs-12" id="library-barcode">
 			{if $libraryCardBarcodeStyle != 'none'}
@@ -25,11 +25,14 @@
 			{if count($linkedCards) > 0}
 				<div>{$profile->displayName}</div>
 			{/if}
+			{if $showCardExpirationDate && !empty($expirationDate)}
+				{translate text="Expires %1%" 1=$expirationDate|date_format:"%b %d, %Y" isPublicFacing=true}
+			{/if}
 		</div>
 	</div>
 
 	{if $showAlternateLibraryCard}
-		<h1>{$alternateLibraryCardLabel|translate}</h1>
+		<h1>{translate text=$alternateLibraryCardLabel isPublicFacing=true isAdminEnteredData=true}</h1>
 		{if $alternateLibraryCardStyle != 'none'}
 			<div class="row">
 				<div class="col-xs-12 text-center" id="library-alternateLibraryCard" style="display: none">
@@ -40,29 +43,29 @@
 		{/if}
 		<form name="alternateLibraryCard" method="post" class="form-horizontal">
 			<div class="form-group">
-				<label for="alternateLibraryCard" class="control-label col-xs-12 col-sm-4">{$alternateLibraryCardLabel|translate} </label>
-				<div class="col-xs-12 col-sm-8">
+				<label for="alternateLibraryCard" class="control-label col-xs-12 col-sm-4">{translate text=$alternateLibraryCardLabel isPublicFacing=true isAdminEnteredData=true} </label>
+				<div class="col-md-6 col-md-offset-3">
 					<input type="text" name="alternateLibraryCard" id="alternateLibraryCard" value="{$user->alternateLibraryCard}" maxlength="60" class="form-control" onchange="updateAlternateLibraryCardBarcode()">
 				</div>
 			</div>
 			{if $showAlternateLibraryCardPassword}
 				<div class="form-group">
-					<label for="alternateLibraryCardPassword" class="control-label col-xs-12 col-sm-4">{$alternateLibraryCardPasswordLabel|translate} </label>
-					<div class="col-xs-12 col-sm-8">
+					<label for="alternateLibraryCardPassword" class="control-label col-xs-12 col-sm-4">{translate text=$alternateLibraryCardPasswordLabel isPublicFacing=true isAdminEnteredData=true} </label>
+					<div class="col-md-6 col-md-offset-3">
 						<input type="password" name="alternateLibraryCardPassword" id="alternateLibraryCardPassword" value="{$user->alternateLibraryCardPassword}"  maxlength="60" class="form-control">
 					</div>
 				</div>
 			{/if}
 			<div class="form-group">
-				<div class="col-xs-12 col-sm-offset-4 col-sm-8">
-					<input type="submit" name="submit" value="Update" id="alternateLibraryCardFormSubmit" class="btn btn-primary">
+				<div class="col-md-6 col-md-offset-3 text-center">
+					<input type="submit" name="submit" value="{translate text="Update" isPublicFacing=true}" id="alternateLibraryCardFormSubmit" class="btn btn-primary">
 				</div>
 			</div>
 		</form>
 	{/if}
 
 	{if count($linkedCards) > 0}
-		<h1>{translate text='Linked cards'}</h1>
+		<h1>{translate text='Linked cards' isPublicFacing=true}</h1>
 		{foreach from=$linkedCards item=linkedCard}
 			<div class="row">
 				<div class="col-xs-12" id="library-barcode">
@@ -74,6 +77,9 @@
 						{$linkedCard.barcode}
 					</div>
 					<div>{$linkedCard.fullName}</div>
+					{if $showCardExpirationDate && !empty($linkedCard.expirationDate)}
+						{translate text="Expires %1%" 1=$linkedCard.expirationDate|date_format:"%D" isPublicFacing=true}
+					{/if}
 				</div>
 			</div>
 		{/foreach}
@@ -107,5 +113,5 @@
 		{/if}
 	</script>
 {else}
-	{translate text="login_to_view_account_notice" defaultText="You must sign in to view this information. Click <a href="/MyAccount/Login">here</a> to sign in."}
+	{translate text="You must sign in to view this information." isPublicFacing=true}<a href='/MyAccount/Login' class="btn btn-primary">{translate text="Sign In" isPublicFacing=true}</a>
 {/if}

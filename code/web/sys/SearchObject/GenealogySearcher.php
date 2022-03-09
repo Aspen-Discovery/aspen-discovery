@@ -52,26 +52,21 @@ class SearchObject_GenealogySearcher extends SearchObject_SolrSearcher
 		}
 
 		// Load sort preferences (or defaults if none in .ini file):
-		if (isset($searchSettings['Sorting'])) {
-			$this->sortOptions = $searchSettings['Sorting'];
-		} else {
-			$this->sortOptions = array('relevance' => 'sort_relevance',
-				'year' => 'sort_year', 'year asc' => 'sort_year asc',
-				'title' => 'sort_title');
-		}
+		$this->sortOptions = array(
+			'relevance' => 'Best Match',
+			'lastName' => 'Last Name',
+			'firstName' => 'First Name',
+			'deathYear desc' => 'Year of Death',
+			'deathYear asc' => "Year of Death Asc",
+			'birthYear desc' => 'Year of Birth',
+			'birthYear asc' => "Year of Birth Asc",
+		);
 
 		// Debugging
 		$this->indexEngine->debug = $this->debug;
 		$this->indexEngine->debugSolrQuery = $this->debugSolrQuery;
 
 		$timer->logTime('Setup Genealogy Search Object');
-	}
-
-	public function setDebugging($enableDebug, $enableSolrQueryDebugging)
-	{
-		$this->debug = $enableDebug;
-		$this->debugSolrQuery = $enableDebug && $enableSolrQueryDebugging;
-		$this->getIndexEngine()->setDebugging($enableDebug, $enableSolrQueryDebugging);
 	}
 
 	/**
@@ -357,7 +352,7 @@ class SearchObject_GenealogySearcher extends SearchObject_SolrSearcher
 				// Initialize the array of data about the current facet:
 				$currentSettings = array();
 				$currentSettings['value'] = $facet[0];
-				$currentSettings['display'] = $translate ? translate($facet[0]) : $facet[0];
+				$currentSettings['display'] = $translate ? translate(['text'=>$facet[0],'isPublicFacing'=>true,'isMetadata'=>true]) : $facet[0];
 				$currentSettings['count'] = $facet[1];
 				$currentSettings['isApplied'] = false;
 				$currentSettings['url'] = $this->renderLinkWithFilter($field, $facet[0]);
@@ -522,8 +517,8 @@ class SearchObject_GenealogySearcher extends SearchObject_SolrSearcher
 	public function getSearchIndexes()
 	{
 		return [
-			"GenealogyKeyword" => "Keyword",
-			"GenealogyName" => "Name"
+			"GenealogyKeyword" => translate(['text'=>"Keyword", 'isPublicFacing'=>true, 'inAttribute'=>true]),
+			"GenealogyName" => translate(['text'=>"Name", 'isPublicFacing'=>true, 'inAttribute'=>true])
 		];
 	}
 

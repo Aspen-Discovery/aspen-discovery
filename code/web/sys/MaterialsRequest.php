@@ -43,10 +43,16 @@ class MaterialsRequest extends DataObject
 	public $holdPickupLocation;
 	public $bookmobileStop;
 	public $assignedTo;
+	public $staffComments;
 
 	//Dynamic properties setup by joins
 	public $numRequests;
 	public $description;
+
+	public function getNumericColumnNames(): array
+	{
+		return ['emailSent', 'holdsCreated', 'assignedTo'];
+	}
 
 	static function getFormats(){
 		require_once ROOT_DIR . '/sys/MaterialsRequestFormats.php';
@@ -125,15 +131,6 @@ class MaterialsRequest extends DataObject
 				$enableAspenMaterialsRequest = false;
 			}else if ($homeLibrary->libraryId != $library->libraryId){
 				$enableAspenMaterialsRequest = false;
-			}else if (isset($configArray['MaterialsRequest']['allowablePatronTypes'])){
-				//Check to see if we need to do additional restrictions by patron type
-				$allowablePatronTypes = $configArray['MaterialsRequest']['allowablePatronTypes'];
-				if (strlen($allowablePatronTypes) > 0){
-					$user = UserAccount::getLoggedInUser();
-					if (!preg_match("/^$allowablePatronTypes$/i", $user->patronType)){
-						$enableAspenMaterialsRequest = false;
-					}
-				}
 			}
 		}
 
@@ -165,7 +162,8 @@ class MaterialsRequest extends DataObject
 
 		if (!$isStaffRequest){
 			foreach ($fieldsToSortByCategory as $fieldKey => $fieldDetails){
-				if (in_array($fieldDetails->fieldType, array('assignedTo','createdBy','libraryCardNumber','id','status'))){
+				//Remove any fields that are available to staff only
+				if (in_array($fieldDetails->fieldType, array('assignedTo','createdBy','libraryCardNumber','id','status','staffComments'))){
 					unset($fieldsToSortByCategory[$fieldKey]);
 				}
 			}
@@ -231,7 +229,7 @@ class MaterialsRequest extends DataObject
 						$body = str_replace('{' . $fieldName . '}', $fieldValue, $body);
 					}
 				}
-				$error = $mail->send($this->email, "Your Materials Request Update", $body, $replyToAddress);
+				$error = $mail->send($this->email, translate(['text'=>"Your Materials Request Update",'isPublicFacing'=>true]), $body, $replyToAddress);
 				if (($error instanceof AspenError)) {
 					global $interface;
 					$interface->assign('error', $error->getMessage());
@@ -297,6 +295,7 @@ class MaterialsRequest extends DataObject
 		return $this->_assigneeUser;
 	}
 
+	/** @noinspection PhpUnused */
 	function getAssigneeName(){
 		if ($this->getAssigneeUser() != false) {
 			return $this->_assigneeUser->displayName;

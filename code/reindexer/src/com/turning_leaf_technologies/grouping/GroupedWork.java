@@ -26,7 +26,7 @@ class GroupedWork implements Cloneable {
 	//The id of the work within the database.
 	String permanentId;
 
-	String fullTitle = "";              //Up to 100 chars
+	String fullTitle = "";              //Up to 200 chars
 	String originalAuthorName = "";
 	protected String author = "";             //Up to 50  chars
 	String groupingCategory = "";   //Up to 25  chars
@@ -107,6 +107,7 @@ class GroupedWork implements Cloneable {
 
 	void makeUnique(String primaryIdentifier) {
 		uniqueIdentifier = primaryIdentifier;
+		this.permanentId = null;
 	}
 
 	private String normalizeAuthor(String author) {
@@ -146,7 +147,7 @@ class GroupedWork implements Cloneable {
 		//Remove editions
 		groupingTitle = removeEditionInformation(groupingTitle);
 
-		int titleEnd = 100;
+		int titleEnd = 200;
 		if (titleEnd < groupingTitle.length()) {
 			groupingTitle = groupingTitle.substring(0, titleEnd);
 		}

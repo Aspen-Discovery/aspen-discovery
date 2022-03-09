@@ -11,6 +11,7 @@ class UserListEntry extends DataObject{
 	public $dateAdded;                       // timestamp(19)  not_null unsigned zerofill binary timestamp
 	public $weight;                          //Where to position the entry in the overall list
 	public $importedFrom;
+	public $title;
 
 	/**
 	 * @param bool $updateBrowseCategories
@@ -19,6 +20,7 @@ class UserListEntry extends DataObject{
 	function insert($updateBrowseCategories = true)
 	{
 		$result = parent::insert();
+		/** @var Memcache $memCache */
 		global $memCache;
 		$memCache->delete('user_list_data_' . UserAccount::getActiveUserId());
 		return $result;
@@ -31,6 +33,7 @@ class UserListEntry extends DataObject{
 	function update($updateBrowseCategories = true)
 	{
 		$result = parent::update();
+		/** @var Memcache $memCache */
 		global $memCache;
 		$memCache->delete('user_list_data_' . UserAccount::getActiveUserId());
 		return $result;
@@ -44,6 +47,7 @@ class UserListEntry extends DataObject{
 	function delete($useWhere = false, $updateBrowseCategories = true)
 	{
 		$result = parent::delete($useWhere);
+		/** @var Memcache $memCache */
 		global $memCache;
 		$memCache->delete('user_list_data_' . UserAccount::getActiveUserId());
 		return $result;
@@ -68,7 +72,7 @@ class UserListEntry extends DataObject{
 			if ($recordDriver->isValid()){
 				return $recordDriver;
 			}else{
-				return $null;
+				return null;
 			}
 		}elseif ($this->source == 'Genealogy'){
 			require_once ROOT_DIR . '/RecordDrivers/PersonRecord.php';
@@ -83,17 +87,21 @@ class UserListEntry extends DataObject{
 		}
 	}
 
-	public function getUserListEntries() {
-		if (!isset($this->_entries) && $this->id){
-			$this->_entries = [];
-			$obj = new UserListEntry();
-			$obj->listId = $this->listId;
-			$obj->orderBy('weight ASC');
-			$obj->find();
-			while($obj->fetch()){
-				$this->_entries[$obj->listId] = clone $obj;
+	public function getNotes(){
+		global $library;
+		require_once ROOT_DIR . '/sys/LocalEnrichment/BadWord.php';
+		$badWords = new BadWord();
+
+		//Determine if we should censor bad words or hide the comment completely.
+		$censorWords = $library->getGroupedWorkDisplaySettings()->hideCommentsWithBadWords == 0;
+		if ($censorWords){
+			return $badWords->censorBadWords($this->notes);
+		}else{
+			if ($badWords->hasBadWords($this->notes)){
+				return '';
+			}else{
+				return $this->notes;
 			}
 		}
-		return $this->_entries;
 	}
 }

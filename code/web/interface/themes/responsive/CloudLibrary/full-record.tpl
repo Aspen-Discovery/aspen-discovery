@@ -7,9 +7,9 @@
 
 		{* Display Title *}
 		<h1>
-			{$recordDriver->getTitle()|removeTrailingPunctuation|escape}{if $recordDriver->getSubtitle()}: {$recordDriver->getSubtitle()|removeTrailingPunctuation|escape}{/if}
+			{$recordDriver->getTitle()|removeTrailingPunctuation}
 			{if $recordDriver->getFormats()}
-				<br><small>({implode subject=$recordDriver->getFormats() glue=", "})</small>
+				<br><small>({implode subject=$recordDriver->getFormats() glue=", " translate=true isPublicFacing=true})</small>
 			{/if}
 		</h1>
 
@@ -17,7 +17,7 @@
 			<div class="col-xs-4 col-sm-5 col-md-4 col-lg-3 text-center">
 				{if $disableCoverArt != 1}
 					<div id="recordCover" class="text-center row">
-						<a href="#" onclick="return AspenDiscovery.CloudLibrary.getLargeCover('{$recordDriver->getId()}')"><img alt="{translate text='Book Cover' inAttribute=true}" class="img-thumbnail" src="{$recordDriver->getBookcoverUrl('medium')}"></a>
+						<a href="#" onclick="return AspenDiscovery.CloudLibrary.getLargeCover('{$recordDriver->getId()}')"><img alt="{translate text='Book Cover' inAttribute=true isPublicFacing=true}" class="img-thumbnail" src="{$recordDriver->getBookcoverUrl('medium')}"></a>
 					</div>
 				{/if}
 				{if $showRatings}
@@ -45,9 +45,9 @@
 							<div class="btn-group btn-group-vertical btn-block">
 								{foreach from=$actions item=curAction}
 									{if $curAction.url && strlen($curAction.url) > 0}
-										<a href="{$curAction.url}" class="btn btn-sm {if empty($curAction.btnType)}btn-action{else}{$curAction.btnType}{/if} btn-wrap" onclick="{if $curAction.requireLogin}return AspenDiscovery.Account.followLinkIfLoggedIn(this, '{$curAction.url}');{/if}" {if $curAction.alt}title="{translate text=$curAction.alt inAttribute=true}"{/if}>{$curAction.title|translate}</a>
+										<a href="{$curAction.url}" class="btn btn-sm {if empty($curAction.btnType)}btn-action{else}{$curAction.btnType}{/if} btn-wrap" onclick="{if $curAction.requireLogin}return AspenDiscovery.Account.followLinkIfLoggedIn(this, '{$curAction.url}');{/if}" {if $curAction.alt}title="{translate text=$curAction.alt inAttribute=true isPublicFacing=true}"{/if}>{translate text=$curAction.title isPublicFacing=true}</a>
 									{else}
-										<a href="#" class="btn btn-sm {if empty($curAction.btnType)}btn-action{else}{$curAction.btnType}{/if} btn-wrap" onclick="{$curAction.onclick}" {if $curAction.alt}title="{translate text=$curAction.alt inAttribute=true}"{/if}>{$curAction.title|translate}</a>
+										<a href="#" class="btn btn-sm {if empty($curAction.btnType)}btn-action{else}{$curAction.btnType}{/if} btn-wrap" onclick="{$curAction.onclick}" {if $curAction.alt}title="{translate text=$curAction.alt inAttribute=true isPublicFacing=true}"{/if}>{translate text=$curAction.title isPublicFacing=true}</a>
 									{/if}
 								{/foreach}
 							</div>
@@ -56,7 +56,7 @@
 				</div>
 
 				<div class="row">
-					{include file='GroupedWork/result-tools-horizontal.tpl' ratingData=$recordDriver->getRatingData() recordUrl=$recordDriver->getLinkUrl() showMoreInfo=false}
+					{include file='GroupedWork/result-tools-horizontal.tpl' ratingData=$recordDriver->getRatingData() recordUrl=$recordDriver->getLinkUrl() showMoreInfo=false showNotInterested=false}
 				</div>
 
 			</div>

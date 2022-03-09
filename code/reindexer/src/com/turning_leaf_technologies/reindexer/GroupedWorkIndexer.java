@@ -1,9 +1,13 @@
 package com.turning_leaf_technologies.reindexer;
 
+import com.turning_leaf_technologies.indexing.BaseIndexingSettings;
+import com.turning_leaf_technologies.indexing.IndexingProfile;
 import com.turning_leaf_technologies.indexing.IndexingUtils;
 import com.turning_leaf_technologies.indexing.Scope;
 import com.turning_leaf_technologies.logging.BaseLogEntry;
+import com.turning_leaf_technologies.marc.MarcUtil;
 import com.turning_leaf_technologies.strings.StringUtils;
+import com.turning_leaf_technologies.util.MaxSizeHashMap;
 import org.apache.solr.client.solrj.impl.BinaryRequestWriter;
 import org.apache.solr.client.solrj.impl.ConcurrentUpdateSolrClient;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
@@ -12,11 +16,17 @@ import org.apache.solr.common.SolrInputDocument;
 import org.ini4j.Ini;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.sql.*;
 import java.util.*;
 import java.util.Date;
+import java.util.zip.CRC32;
 
 import org.apache.logging.log4j.Logger;
+import org.marc4j.MarcJsonWriter;
+import org.marc4j.MarcWriter;
+import org.marc4j.marc.DataField;
+import org.marc4j.marc.Record;
 
 public class GroupedWorkIndexer {
 	private final String serverName;
@@ -28,8 +38,6 @@ public class GroupedWorkIndexer {
 	private final HashMap<String, MarcRecordProcessor> ilsRecordProcessors = new HashMap<>();
 	private final HashMap<String, SideLoadedEContentProcessor> sideLoadProcessors = new HashMap<>();
 	private OverDriveProcessor overDriveProcessor;
-	private RbdigitalProcessor rbdigitalProcessor;
-	private RbdigitalMagazineProcessor rbdigitalMagazineProcessor;
 	private CloudLibraryProcessor cloudLibraryProcessor;
 	private Axis360Processor axis360Processor;
 	private HooplaProcessor hooplaProcessor;
@@ -72,8 +80,11 @@ public class GroupedWorkIndexer {
 	private PreparedStatement updateScopeStmt;
 	private PreparedStatement removeScopeStmt;
 
+	private PreparedStatement marcIlsRecordAsDeletedStmt;
 	private PreparedStatement getExistingRecordsForWorkStmt;
 	private PreparedStatement addRecordForWorkStmt;
+	private PreparedStatement updateRecordForWorkStmt;
+	private PreparedStatement getIdForRecordStmt;
 	private PreparedStatement removeRecordForWorkStmt;
 	private PreparedStatement getExistingVariationsForWorkStmt;
 	private PreparedStatement addVariationForWorkStmt;
@@ -81,10 +92,8 @@ public class GroupedWorkIndexer {
 	private PreparedStatement getExistingItemsForRecordStmt;
 	private PreparedStatement removeItemStmt;
 	private PreparedStatement addItemForRecordStmt;
-	private PreparedStatement getExistingScopesForItemStmt;
-	private PreparedStatement removeItemScopeStmt;
-	private PreparedStatement addScopeForItemStmt;
-	private PreparedStatement updateScopeForItemStmt;
+	private PreparedStatement updateItemForRecordStmt;
+	private PreparedStatement addItemUrlStmt;
 	private PreparedStatement getRecordSourceStmt;
 	private PreparedStatement getRecordSourceWithNoSubSourceStmt;
 	private PreparedStatement addRecordSourceStmt;
@@ -115,9 +124,25 @@ public class GroupedWorkIndexer {
 	private PreparedStatement getSubLocationCodeStmt;
 	private PreparedStatement addSubLocationCodeStmt;
 
+	private PreparedStatement getExistingRecordInfoForIdentifierStmt;
+	private PreparedStatement getRecordForIdentifierStmt;
+	private PreparedStatement addRecordToDBStmt;
+	private PreparedStatement updateRecordInDBStmt;
+	private final CRC32 checksumCalculator = new CRC32();
+
 	private boolean removeRedundantHooplaRecords = false;
 
 	private boolean storeRecordDetailsInSolr = false;
+	private boolean storeRecordDetailsInDatabase = true;
+
+	private boolean hideUnknownLiteraryForm;
+	private boolean hideNotCodedLiteraryForm;
+
+	private String treatUnknownAudienceAs = "Unknown";
+	private boolean treatUnknownAudienceAsUnknown = false;
+	private boolean treatUnknownAudienceAsGeneral = false;
+	private boolean treatUnknownAudienceAsAdult = false;
+	private String treatUnknownLanguageAs = "English";
 
 	public GroupedWorkIndexer(String serverName, Connection dbConn, Ini configIni, boolean fullReindex, boolean clearIndex, BaseLogEntry logEntry, Logger logger) {
 		indexStartTime = new Date().getTime() / 1000;
@@ -146,10 +171,11 @@ public class GroupedWorkIndexer {
 
 		//Check to see if we should store record details in Solr
 		try{
-			PreparedStatement systemVariablesStmt = dbConn.prepareStatement("SELECT storeRecordDetailsInSolr from system_variables");
+			PreparedStatement systemVariablesStmt = dbConn.prepareStatement("SELECT storeRecordDetailsInSolr, storeRecordDetailsInDatabase from system_variables");
 			ResultSet systemVariablesRS = systemVariablesStmt.executeQuery();
 			if (systemVariablesRS.next()){
 				this.storeRecordDetailsInSolr = systemVariablesRS.getBoolean("storeRecordDetailsInSolr");
+				this.storeRecordDetailsInDatabase = systemVariablesRS.getBoolean("storeRecordDetailsInDatabase");
 			}
 			systemVariablesRS.close();
 			systemVariablesStmt.close();
@@ -169,25 +195,26 @@ public class GroupedWorkIndexer {
 			markScheduledWorkProcessedStmt = dbConn.prepareStatement("UPDATE grouped_work_scheduled_index set processed = 1 where id = ?");
 			addScheduledWorkStmt = dbConn.prepareStatement("INSERT INTO grouped_work_scheduled_index (permanent_id, indexAfter) VALUES (?, ?)");
 
+			marcIlsRecordAsDeletedStmt = dbConn.prepareStatement("UPDATE ils_records set deleted = 1, dateDeleted = ? where source = ? and ilsId = ?");
 			getExistingScopesStmt = dbConn.prepareStatement("SELECT * from scope", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			addScopeStmt = dbConn.prepareStatement("INSERT INTO scope (name, isLibraryScope, isLocationScope) VALUES (?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
 			updateScopeStmt = dbConn.prepareStatement("UPDATE scope set isLibraryScope = ?, isLocationScope = ? WHERE id = ?");
 			removeScopeStmt = dbConn.prepareStatement("DELETE FROM scope where id = ?");
-			getExistingRecordsForWorkStmt = dbConn.prepareStatement("SELECT id, sourceId, recordIdentifier from grouped_work_records where groupedWorkId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
-			addRecordForWorkStmt = dbConn.prepareStatement("INSERT INTO grouped_work_records (groupedWorkId, sourceId, recordIdentifier, editionId, publisherId, publicationDateId, physicalDescriptionId, formatId, formatCategoryId, languageId) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY " +
-					"UPDATE editionId = VALUES(editionId), publisherId = VALUES(publisherId), publicationDateId = VALUES(publicationDateId), physicalDescriptionId = VALUES(physicalDescriptionId), formatId = VALUES(formatId), formatCategoryId = VALUES(formatCategoryId), languageId = VALUES(languageId)", PreparedStatement.RETURN_GENERATED_KEYS);
+			getExistingRecordsForWorkStmt = dbConn.prepareStatement("SELECT id, sourceId, recordIdentifier, groupedWorkId, editionId, publisherId, publicationDateId, physicalDescriptionId, formatId, formatCategoryId, languageId from grouped_work_records where groupedWorkId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+			addRecordForWorkStmt = dbConn.prepareStatement("INSERT INTO grouped_work_records (groupedWorkId, sourceId, recordIdentifier, editionId, publisherId, publicationDateId, physicalDescriptionId, formatId, formatCategoryId, languageId) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) " +
+					"ON DUPLICATE KEY UPDATE groupedWorkId = VALUES(groupedWorkId), editionId = VALUES(editionId), publisherId = VALUES(publisherId), publicationDateId = VALUES(publicationDateId), physicalDescriptionId = VALUES(physicalDescriptionId), formatId = VALUES(formatId), formatCategoryId = VALUES(formatCategoryId), languageId = VALUES(languageId)", PreparedStatement.RETURN_GENERATED_KEYS);
+			updateRecordForWorkStmt = dbConn.prepareStatement("UPDATE grouped_work_records SET groupedWorkId = ?, editionId = ?, publisherId = ?, publicationDateId = ?, physicalDescriptionId = ?, formatId = ?, formatCategoryId = ?, languageId = ? where id = ?");
 			removeRecordForWorkStmt = dbConn.prepareStatement("DELETE FROM grouped_work_records where id = ?");
+			getIdForRecordStmt = dbConn.prepareStatement("SELECT id from grouped_work_records where sourceId = ? and recordIdentifier = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			getExistingVariationsForWorkStmt = dbConn.prepareStatement("SELECT * from grouped_work_variation where groupedWorkId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			addVariationForWorkStmt = dbConn.prepareStatement("INSERT INTO grouped_work_variation (groupedWorkId, primaryLanguageId, eContentSourceId, formatId, formatCategoryId) VALUES (?, ?, ?, ?, ?)", PreparedStatement.RETURN_GENERATED_KEYS);
 			removeVariationStmt = dbConn.prepareStatement("DELETE FROM grouped_work_variation WHERE id = ?");
-			getExistingItemsForRecordStmt = dbConn.prepareStatement("SELECT itemId, id from grouped_work_record_items WHERE groupedWorkRecordId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
-			addItemForRecordStmt = dbConn.prepareStatement("INSERT INTO grouped_work_record_items (groupedWorkRecordId, groupedWorkVariationId, itemId, shelfLocationId, callNumberId, sortableCallNumberId, numCopies, isOrderItem, statusId, dateAdded, locationCodeId, subLocationCodeId, lastCheckInDate) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE " +
-					"groupedWorkVariationId = VALUES(groupedWorkVariationId), shelfLocationId = VALUES(shelfLocationId), callNumberId = VALUES(callNumberId), sortableCallNumberId = VALUES(sortableCallNumberId), numCopies = VALUES(numCopies), isOrderItem = VALUES(isOrderItem), statusId = VALUES(statusId), dateAdded = VALUES(dateAdded), locationCodeId = VALUES(locationCodeId), subLocationCodeId = VALUES(subLocationCodeId), lastCheckInDate = VALUES(lastCheckInDate)", PreparedStatement.RETURN_GENERATED_KEYS);
+			getExistingItemsForRecordStmt = dbConn.prepareStatement("SELECT * from grouped_work_record_items WHERE groupedWorkRecordId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+			addItemForRecordStmt = dbConn.prepareStatement("INSERT INTO grouped_work_record_items (groupedWorkRecordId, groupedWorkVariationId, itemId, shelfLocationId, callNumberId, sortableCallNumberId, numCopies, isOrderItem, statusId, dateAdded, locationCodeId, subLocationCodeId, lastCheckInDate, groupedStatusId, available, holdable, inLibraryUseOnly, locationOwnedScopes, libraryOwnedScopes, recordIncludedScopes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", PreparedStatement.RETURN_GENERATED_KEYS);
+			updateItemForRecordStmt = dbConn.prepareStatement("UPDATE grouped_work_record_items set groupedWorkVariationId = ?, shelfLocationId = ?, callNumberId = ?, sortableCallNumberId = ?, numCopies = ?, isOrderItem = ?, statusId = ?, dateAdded = ?, " +
+					"locationCodeId = ?, subLocationCodeId = ?, lastCheckInDate = ?, groupedStatusId = ?, available = ?, holdable = ?, inLibraryUseOnly = ?, locationOwnedScopes = ?, libraryOwnedScopes = ?, recordIncludedScopes = ? WHERE id = ?");
 			removeItemStmt = dbConn.prepareStatement("DELETE FROM grouped_work_record_items WHERE id = ?");
-			getExistingScopesForItemStmt = dbConn.prepareStatement("SELECT * from grouped_work_record_scope WHERE groupedWorkItemId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
-			removeItemScopeStmt = dbConn.prepareStatement("DELETE FROM grouped_work_record_scope WHERE id = ?");
-			addScopeForItemStmt = dbConn.prepareStatement("INSERT INTO grouped_work_record_scope (groupedWorkItemId, scopeId, groupedStatusId, statusId, available, holdable, inLibraryUseOnly, localUrl, locallyOwned, libraryOwned) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-			updateScopeForItemStmt = dbConn.prepareStatement("UPDATE grouped_work_record_scope set groupedStatusId = ?, statusId = ?, available = ?, holdable = ?, inLibraryUseOnly = ?, localUrl = ?, locallyOwned = ?, libraryOwned = ? where id = ?");
+			addItemUrlStmt = dbConn.prepareStatement("INSERT INTO grouped_work_record_item_url (groupedWorkItemId, scopeId, url) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE url = VALUES(url) ");
 			getRecordSourceStmt = dbConn.prepareStatement("SELECT id from indexed_record_source where source = ? and subSource = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			getRecordSourceWithNoSubSourceStmt = dbConn.prepareStatement("SELECT id from indexed_record_source where source = ? and subSource IS NULL", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			addRecordSourceStmt = dbConn.prepareStatement("INSERT INTO indexed_record_source (source, subSource) VALUES (?, ?)", Statement.RETURN_GENERATED_KEYS);
@@ -217,6 +244,11 @@ public class GroupedWorkIndexer {
 			addLocationCodeStmt = dbConn.prepareStatement("INSERT INTO indexed_locationCode (locationCode) VALUES (?)", Statement.RETURN_GENERATED_KEYS);
 			getSubLocationCodeStmt = dbConn.prepareStatement("SELECT id from indexed_subLocationCode where subLocationCode = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			addSubLocationCodeStmt = dbConn.prepareStatement("INSERT INTO indexed_subLocationCode (subLocationCode) VALUES (?)", Statement.RETURN_GENERATED_KEYS);
+
+			getExistingRecordInfoForIdentifierStmt = dbConn.prepareStatement("SELECT id, checksum, deleted, UNCOMPRESSED_LENGTH(sourceData) as sourceDataLength FROM ils_records where ilsId = ? and source = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			getRecordForIdentifierStmt = dbConn.prepareStatement("SELECT UNCOMPRESS(sourceData) as sourceData FROM ils_records where ilsId = ? and source = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			addRecordToDBStmt = dbConn.prepareStatement("INSERT INTO ils_records set ilsId = ?, source = ?, checksum = ?, dateFirstDetected = ?, deleted = 0, suppressedNoMarcAvailable = 0, sourceData = COMPRESS(?), lastModified = ?", PreparedStatement.RETURN_GENERATED_KEYS);
+			updateRecordInDBStmt = dbConn.prepareStatement("UPDATE ils_records set checksum = ?, sourceData = COMPRESS(?), lastModified = ?, deleted = 0, suppressedNoMarcAvailable = 0 WHERE id = ?", PreparedStatement.RETURN_GENERATED_KEYS);
 		} catch (Exception e){
 			logEntry.incErrors("Could not load statements to get identifiers ", e);
 			this.okToIndex = false;
@@ -292,62 +324,55 @@ public class GroupedWorkIndexer {
 				if (indexingProfileRS.next()){
 					String ilsIndexingClassString = indexingProfileRS.getString("indexingClass");
 					switch (ilsIndexingClassString) {
-						case "Marmot":
-							ilsRecordProcessors.put(curType, new MarmotRecordProcessor(this, dbConn, indexingProfileRS, logger, fullReindex));
-							break;
-						case "WCPL":
-							ilsRecordProcessors.put(curType, new WCPLRecordProcessor(this, dbConn, indexingProfileRS, logger, fullReindex));
-							break;
-						case "Aspencat":
-							ilsRecordProcessors.put(curType, new AspencatRecordProcessor(this, dbConn, configIni, indexingProfileRS, logger, fullReindex));
-							break;
-						case "Flatirons":
-							ilsRecordProcessors.put(curType, new FlatironsRecordProcessor(this, dbConn, indexingProfileRS, logger, fullReindex));
-							break;
-						case "Arlington":
-							ilsRecordProcessors.put(curType, new ArlingtonRecordProcessor(this, dbConn, indexingProfileRS, logger, fullReindex));
-							break;
 						case "ArlingtonKoha":
-							ilsRecordProcessors.put(curType, new ArlingtonKohaRecordProcessor(this, dbConn, indexingProfileRS, logger, fullReindex));
+							ilsRecordProcessors.put(curType, new ArlingtonKohaRecordProcessor(this, curType, dbConn, indexingProfileRS, logger, fullReindex));
 							break;
 						case "CarlX":
-							ilsRecordProcessors.put(curType, new CarlXRecordProcessor(this, dbConn, indexingProfileRS, logger, fullReindex));
+							ilsRecordProcessors.put(curType, new CarlXRecordProcessor(this, curType, dbConn, indexingProfileRS, logger, fullReindex));
 							break;
 						case "III":
-							ilsRecordProcessors.put(curType, new IIIRecordProcessor(this, dbConn, indexingProfileRS, logger, fullReindex));
-							break;
-						case "SantaFe":
-							ilsRecordProcessors.put(curType, new SantaFeRecordProcessor(this, dbConn, indexingProfileRS, logger, fullReindex));
-							break;
-						case "AACPL":
-							ilsRecordProcessors.put(curType, new AACPLRecordProcessor(this, dbConn, indexingProfileRS, logger, fullReindex));
-							break;
-						case "Lion":
-							ilsRecordProcessors.put(curType, new LionRecordProcessor(this, dbConn, indexingProfileRS, logger, fullReindex));
+							ilsRecordProcessors.put(curType, new IIIRecordProcessor(this, curType, dbConn, indexingProfileRS, logger, fullReindex));
 							break;
 						case "SideLoadedEContent":
-							ilsRecordProcessors.put(curType, new SideLoadedEContentProcessor(this, dbConn, indexingProfileRS, logger, fullReindex));
+							ilsRecordProcessors.put(curType, new SideLoadedEContentProcessor(this, curType, dbConn, indexingProfileRS, logger, fullReindex));
 							break;
 						case "Koha":
-							ilsRecordProcessors.put(curType, new KohaRecordProcessor(this, dbConn, indexingProfileRS, logger, fullReindex));
+							ilsRecordProcessors.put(curType, new KohaRecordProcessor(this, curType, dbConn, indexingProfileRS, logger, fullReindex));
 							break;
 						case "Symphony":
-							ilsRecordProcessors.put(curType, new SymphonyRecordProcessor(this, dbConn, indexingProfileRS, logger, fullReindex));
+							ilsRecordProcessors.put(curType, new SymphonyRecordProcessor(this, curType, dbConn, indexingProfileRS, logger, fullReindex));
 							break;
 						case "Polaris":
-							ilsRecordProcessors.put(curType, new PolarisRecordProcessor(this, dbConn, indexingProfileRS, logger, fullReindex));
+							ilsRecordProcessors.put(curType, new PolarisRecordProcessor(this, curType, dbConn, indexingProfileRS, logger, fullReindex));
+							break;
+						case "Evergreen":
+							ilsRecordProcessors.put(curType, new EvergreenRecordProcessor(this, curType, dbConn, indexingProfileRS, logger, fullReindex));
+							break;
+						case "Folio":
+							ilsRecordProcessors.put(curType, new FolioRecordProcessor(this, curType, dbConn, indexingProfileRS, logger, fullReindex));
 							break;
 						default:
 							logEntry.incErrors("Unknown indexing class " + ilsIndexingClassString);
 							break;
 					}
-				}else if (!curType.equals("cloud_library") && !curType.equals("rbdigital") && !curType.equals("rbdigital_magazine") && !curType.equals("hoopla") && !curType.equals("overdrive") && !curType.equals("axis360")) {
+					if (ilsRecordProcessors.containsKey(curType)){
+						this.treatUnknownAudienceAs = indexingProfileRS.getString("treatUnknownAudienceAs");
+						if (this.treatUnknownAudienceAs.equals("Unknown")){
+							treatUnknownAudienceAsUnknown = true;
+						}else if (this.treatUnknownAudienceAs.equals("Adult")){
+							treatUnknownAudienceAsAdult = true;
+						}else if (this.treatUnknownAudienceAs.equals("General")){
+							treatUnknownAudienceAsGeneral = true;
+						}
+						this.treatUnknownLanguageAs = indexingProfileRS.getString("treatUnknownLanguageAs");
+					}
+				}else if (!curType.equals("cloud_library")  && !curType.equals("hoopla") && !curType.equals("overdrive") && !curType.equals("axis360")) {
 					getSideLoadSettings.setString(1, curType);
 					ResultSet getSideLoadSettingsRS = getSideLoadSettings.executeQuery();
 					if (getSideLoadSettingsRS.next()){
 						String sideLoadIndexingClassString = getSideLoadSettingsRS.getString("indexingClass");
 						if ("SideLoadedEContent".equals(sideLoadIndexingClassString) || "SideLoadedEContentProcessor".equals(sideLoadIndexingClassString)) {
-							sideLoadProcessors.put(curType, new SideLoadedEContentProcessor(this, dbConn, getSideLoadSettingsRS, logger, fullReindex));
+							sideLoadProcessors.put(curType, new SideLoadedEContentProcessor(this, curType, dbConn, getSideLoadSettingsRS, logger, fullReindex));
 						} else {
 							logEntry.incErrors("Unknown side load processing class " + sideLoadIndexingClassString);
 							getSideLoadSettings.close();
@@ -372,15 +397,24 @@ public class GroupedWorkIndexer {
 		}
 		overDriveProcessor = new OverDriveProcessor(this, dbConn, logger);
 
-		rbdigitalProcessor = new RbdigitalProcessor(this, dbConn, logger);
-
-		rbdigitalMagazineProcessor = new RbdigitalMagazineProcessor(this, dbConn, logger);
-
-		cloudLibraryProcessor = new CloudLibraryProcessor(this, dbConn, logger);
+		cloudLibraryProcessor = new CloudLibraryProcessor(this, "cloud_library", dbConn, logger);
 
 		hooplaProcessor = new HooplaProcessor(this, dbConn, logger);
 
 		axis360Processor = new Axis360Processor(this, dbConn, logger);
+
+		//Check to see if we want to display Unknown and Not Coded Literary Forms.  This is done by looking
+		//at the indexing profiles since that is the least confusing place to put the settings.
+		for (MarcRecordProcessor recordProcessor : ilsRecordProcessors.values()){
+			if (recordProcessor instanceof IlsRecordProcessor){
+				if (((IlsRecordProcessor) recordProcessor).isHideNotCodedLiteraryForm()){
+					this.hideNotCodedLiteraryForm = true;
+				}
+				if (((IlsRecordProcessor) recordProcessor).isHideUnknownLiteraryForm()){
+					this.hideUnknownLiteraryForm = true;
+				}
+			}
+		}
 
 		//Load translation maps
 		loadSystemTranslationMaps();
@@ -411,8 +445,6 @@ public class GroupedWorkIndexer {
 		ilsRecordProcessors.clear();
 		sideLoadProcessors.clear();
 		overDriveProcessor = null;
-		rbdigitalProcessor = null;
-		rbdigitalMagazineProcessor = null;
 		cloudLibraryProcessor = null;
 		axis360Processor = null;
 		hooplaProcessor = null;
@@ -489,7 +521,7 @@ public class GroupedWorkIndexer {
 		}
 	}
 
-	public void deleteRecord(String permanentId) {
+	public synchronized void deleteRecord(String permanentId) {
 		logger.info("Clearing existing work " + permanentId + " from index");
 		try {
 			updateServer.deleteById(permanentId);
@@ -517,7 +549,7 @@ public class GroupedWorkIndexer {
 
 	public void finishIndexingFromExtract(BaseLogEntry logEntry){
 		try {
-			processScheduledWorks(logEntry);
+			processScheduledWorks(logEntry, true);
 
 			updateServer.commit(false, false, true);
 			logEntry.addNote("Shutting down the update server");
@@ -536,9 +568,11 @@ public class GroupedWorkIndexer {
 		}
 	}
 
-	public void processScheduledWorks(BaseLogEntry logEntry) {
+	public void processScheduledWorks(BaseLogEntry logEntry, boolean doLogging) {
 		//Check to see what records still need to be indexed based on a timed index
-		logEntry.addNote("Checking for additional works that need to be indexed");
+		if (doLogging) {
+			logEntry.addNote("Checking for additional works that need to be indexed");
+		}
 
 		try {
 			int numWorksProcessed = 0;
@@ -557,7 +591,10 @@ public class GroupedWorkIndexer {
 			}
 			scheduledWorksRS.close();
 			if (numWorksProcessed > 0){
-				logEntry.addNote("Processed " + numWorksProcessed + " works that were scheduled for indexing");
+				if (doLogging) {
+					logEntry.addNote("Processed " + numWorksProcessed + " works that were scheduled for indexing");
+				}
+				updateServer.commit(false, false, true);
 			}
 		}catch (Exception e){
 			logEntry.addNote("Error updating scheduled works " + e);
@@ -677,7 +714,7 @@ public class GroupedWorkIndexer {
 		logger.info("Finished processing grouped works.  Processed a total of " + numWorksProcessed + " grouped works");
 	}
 
-	public void processGroupedWork(String permanentId) {
+	public synchronized void processGroupedWork(String permanentId) {
 		try{
 			getGroupedWorkInfoStmt.setString(1, permanentId);
 			ResultSet getGroupedWorkInfoRS = getGroupedWorkInfoStmt.executeQuery();
@@ -697,7 +734,7 @@ public class GroupedWorkIndexer {
 
 	}
 
-	void processGroupedWork(Long id, String permanentId, String grouping_category) throws SQLException {
+	synchronized void processGroupedWork(Long id, String permanentId, String grouping_category) throws SQLException {
 		//Create a solr record for the grouped work
 		GroupedWorkSolr groupedWork = new GroupedWorkSolr(this, logger);
 		groupedWork.setId(permanentId);
@@ -738,7 +775,7 @@ public class GroupedWorkIndexer {
 		groupedWorkPrimaryIdentifiers.close();
 
 		if (numPrimaryIdentifiers > 0) {
-			//Strip out any hoopla records that have the same format as an rbdigital or overdrive record
+			//Strip out any hoopla records that have the same format as another econtent record with apis
 			if (removeRedundantHooplaRecords) {
 				groupedWork.removeRedundantHooplaRecords();
 			}
@@ -758,7 +795,9 @@ public class GroupedWorkIndexer {
 
 			//Write the record to Solr.
 			try {
-				groupedWork.saveRecordsToDatabase(id, logEntry);
+				if (this.isStoreRecordDetailsInDatabase()) {
+					groupedWork.saveRecordsToDatabase(id);
+				}
 				SolrInputDocument inputDocument = groupedWork.getSolrDocument(logEntry);
 				UpdateResponse response = updateServer.add(inputDocument);
 				if (response.getException() != null){
@@ -863,32 +902,42 @@ public class GroupedWorkIndexer {
 
 	private void loadUserLinkages(GroupedWorkSolr groupedWork) {
 		try {
-			//Add users with the work in their reading history
-			getUserReadingHistoryLinkStmt.setString(1, groupedWork.getId());
-			ResultSet userReadingHistoryRS = getUserReadingHistoryLinkStmt.executeQuery();
-			while (userReadingHistoryRS.next()){
-				groupedWork.addReadingHistoryLink(userReadingHistoryRS.getLong("userId"));
-			}
-			userReadingHistoryRS.close();
-			//Add users who rated the title
-			getUserRatingLinkStmt.setString(1, groupedWork.getId());
-			ResultSet userRatingRS = getUserRatingLinkStmt.executeQuery();
-			while (userRatingRS.next()){
-				groupedWork.addRatingLink(userRatingRS.getLong("userId"));
-			}
-			userRatingRS.close();
-			//Add users who are not interested in the title
-			getUserNotInterestedLinkStmt.setString(1, groupedWork.getId());
-			ResultSet userNotInterestedRS = getUserNotInterestedLinkStmt.executeQuery();
-			while (userNotInterestedRS.next()) {
-				groupedWork.addNotInterestedLink(userNotInterestedRS.getLong("userId"));
-			}
-			userNotInterestedRS.close();
-			//Add users who have a hold on the title
-			//Add users who have the title checked out
+			loadReadingHistoryLinksForUsers(groupedWork);
+			loadRatingLinksForUsers(groupedWork);
+			loadNotInterestedLinksForUsers(groupedWork);
 		}catch (Exception e){
 			logEntry.incErrors("Unable to load user linkages", e);
 		}
+	}
+
+	private void loadNotInterestedLinksForUsers(GroupedWorkSolr groupedWork) throws SQLException {
+		//Add users who are not interested in the title
+		getUserNotInterestedLinkStmt.setString(1, groupedWork.getId());
+		ResultSet userNotInterestedRS = getUserNotInterestedLinkStmt.executeQuery();
+		while (userNotInterestedRS.next()) {
+			groupedWork.addNotInterestedLink(userNotInterestedRS.getLong("userId"));
+		}
+		userNotInterestedRS.close();
+	}
+
+	private void loadRatingLinksForUsers(GroupedWorkSolr groupedWork) throws SQLException {
+		//Add users who rated the title
+		getUserRatingLinkStmt.setString(1, groupedWork.getId());
+		ResultSet userRatingRS = getUserRatingLinkStmt.executeQuery();
+		while (userRatingRS.next()){
+			groupedWork.addRatingLink(userRatingRS.getLong("userId"));
+		}
+		userRatingRS.close();
+	}
+
+	private void loadReadingHistoryLinksForUsers (GroupedWorkSolr groupedWork) throws SQLException {
+		//Add users with the work in their reading history
+		getUserReadingHistoryLinkStmt.setString(1, groupedWork.getId());
+		ResultSet userReadingHistoryRS = getUserReadingHistoryLinkStmt.executeQuery();
+		while (userReadingHistoryRS.next()){
+			groupedWork.addReadingHistoryLink(userReadingHistoryRS.getLong("userId"));
+		}
+		userReadingHistoryRS.close();
 	}
 
 	private void loadNovelistInfo(GroupedWorkSolr groupedWork){
@@ -921,7 +970,7 @@ public class GroupedWorkIndexer {
 			if (displayInfoRS.next()) {
 				String title = displayInfoRS.getString("title");
 				if (title.length() > 0){
-					groupedWork.setTitle(title, title, StringUtils.makeValueSortable(title), "", true);
+					groupedWork.setTitle(title, "", title, StringUtils.makeValueSortable(title), "", "", true);
 					groupedWork.clearSubTitle();
 				}
 				String author = displayInfoRS.getString("author");
@@ -950,12 +999,6 @@ public class GroupedWorkIndexer {
 		switch (type) {
 			case "overdrive":
 				overDriveProcessor.processRecord(groupedWork, identifier, logEntry);
-				break;
-			case "rbdigital":
-				rbdigitalProcessor.processRecord(groupedWork, identifier, logEntry);
-				break;
-			case "rbdigital_magazine":
-				rbdigitalMagazineProcessor.processRecord(groupedWork, identifier, logEntry);
 				break;
 			case "hoopla":
 				hooplaProcessor.processRecord(groupedWork, identifier, logEntry);
@@ -1085,15 +1128,15 @@ public class GroupedWorkIndexer {
 		return this.scopes;
 	}
 
-	public HashMap<String, Long> getExistingRecordsForGroupedWork(long groupedWorkId)
+	public HashMap<String, SavedRecordInfo> getExistingRecordsForGroupedWork(long groupedWorkId)
 	{
-		HashMap<String, Long> existingRecords = new HashMap<>();
+		HashMap<String, SavedRecordInfo> existingRecords = new HashMap<>();
 		try {
 			getExistingRecordsForWorkStmt.setLong(1, groupedWorkId);
 			ResultSet getExistingRecordsForWorkRS = getExistingRecordsForWorkStmt.executeQuery();
 			while (getExistingRecordsForWorkRS.next()){
 				String key = getExistingRecordsForWorkRS.getString("sourceId") + ":" + getExistingRecordsForWorkRS.getString("recordIdentifier");
-				existingRecords.put(key, getExistingRecordsForWorkRS.getLong("id"));
+				existingRecords.put(key, new SavedRecordInfo(getExistingRecordsForWorkRS));
 			}
 		} catch (SQLException e) {
 			logEntry.incErrors("Error loading existing records for grouped works", e);
@@ -1102,22 +1145,64 @@ public class GroupedWorkIndexer {
 		return existingRecords;
 	}
 
-	public long saveGroupedWorkRecord(long groupedWorkId, RecordInfo recordInfo, long recordId) {
+	public long saveGroupedWorkRecord(long groupedWorkId, RecordInfo recordInfo, SavedRecordInfo existingRecord) {
+		long recordId = -1;
 		try {
-			addRecordForWorkStmt.setLong(1, groupedWorkId);
-			addRecordForWorkStmt.setLong(2, getSourceId(recordInfo.getSource(), recordInfo.getSubSource()));
-			addRecordForWorkStmt.setString(3, recordInfo.getRecordIdentifier());
-			addRecordForWorkStmt.setLong(4, getEditionId(recordInfo.getEdition()));
-			addRecordForWorkStmt.setLong(5, getPublisherId(recordInfo.getPublisher()));
-			addRecordForWorkStmt.setLong(6, getPublicationDateId(recordInfo.getPublicationDate()));
-			addRecordForWorkStmt.setLong(7, getPhysicalDescriptionId(recordInfo.getPhysicalDescription()));
-			addRecordForWorkStmt.setLong(8, getFormatId(recordInfo.getPrimaryFormat()));
-			addRecordForWorkStmt.setLong(9, getFormatCategoryId(recordInfo.getPrimaryFormatCategory()));
-			addRecordForWorkStmt.setLong(10, getLanguageId(recordInfo.getPrimaryLanguage()));
-			addRecordForWorkStmt.executeUpdate();
-			ResultSet addRecordForWorkRS = addRecordForWorkStmt.getGeneratedKeys();
-			if (addRecordForWorkRS.next()){
-				recordId = addRecordForWorkRS.getLong(1);
+			if (existingRecord == null) {
+				addRecordForWorkStmt.setLong(1, groupedWorkId);
+				long sourceId = getSourceId(recordInfo.getSource(), recordInfo.getSubSource());
+				addRecordForWorkStmt.setLong(2, sourceId);
+				addRecordForWorkStmt.setString(3, recordInfo.getRecordIdentifier());
+				addRecordForWorkStmt.setLong(4, getEditionId(recordInfo.getEdition()));
+				addRecordForWorkStmt.setLong(5, getPublisherId(recordInfo.getPublisher()));
+				addRecordForWorkStmt.setLong(6, getPublicationDateId(recordInfo.getPublicationDate()));
+				addRecordForWorkStmt.setLong(7, getPhysicalDescriptionId(recordInfo.getPhysicalDescription()));
+				addRecordForWorkStmt.setLong(8, getFormatId(recordInfo.getPrimaryFormat()));
+				addRecordForWorkStmt.setLong(9, getFormatCategoryId(recordInfo.getPrimaryFormatCategory()));
+				addRecordForWorkStmt.setLong(10, getLanguageId(recordInfo.getPrimaryLanguage()));
+				addRecordForWorkStmt.executeUpdate();
+				ResultSet addRecordForWorkRS = addRecordForWorkStmt.getGeneratedKeys();
+				if (addRecordForWorkRS.next()) {
+					recordId = addRecordForWorkRS.getLong(1);
+				} else {
+					getIdForRecordStmt.setLong(1, sourceId);
+					getIdForRecordStmt.setString(2, recordInfo.getRecordIdentifier());
+					ResultSet getIdForRecordRS = getIdForRecordStmt.executeQuery();
+					if (getIdForRecordRS.next()) {
+						recordId = getIdForRecordRS.getLong("id");
+					}
+				}
+			}else{
+				recordId = existingRecord.id;
+				//Check to see if we have any changes
+				boolean hasChanges = false;
+				long editionId = getEditionId(recordInfo.getEdition());
+				long publisherId = getPublisherId(recordInfo.getPublisher());
+				long publicationDateId = getPublicationDateId(recordInfo.getPublicationDate());
+				long physicalDescriptionId = getPhysicalDescriptionId(recordInfo.getPhysicalDescription());
+				long formatId = getFormatId(recordInfo.getPrimaryFormat());
+				long formatCategoryId = getFormatCategoryId(recordInfo.getPrimaryFormatCategory());
+				long languageId = getLanguageId(recordInfo.getPrimaryLanguage());
+				if (groupedWorkId != existingRecord.groupedWorkId) { hasChanges = true; }
+				if (editionId != existingRecord.editionId) { hasChanges = true; }
+				if (publisherId != existingRecord.publisherId) { hasChanges = true; }
+				if (publicationDateId != existingRecord.publicationDateId) { hasChanges = true; }
+				if (physicalDescriptionId != existingRecord.physicalDescriptionId) { hasChanges = true; }
+				if (formatId != existingRecord.formatId) { hasChanges = true; }
+				if (formatCategoryId != existingRecord.formatCategoryId) { hasChanges = true; }
+				if (languageId != existingRecord.languageId) { hasChanges = true; }
+				if (hasChanges){
+					updateRecordForWorkStmt.setLong(1, groupedWorkId);
+					updateRecordForWorkStmt.setLong(2, editionId);
+					updateRecordForWorkStmt.setLong(3, publisherId);
+					updateRecordForWorkStmt.setLong(4, publicationDateId);
+					updateRecordForWorkStmt.setLong(5, physicalDescriptionId);
+					updateRecordForWorkStmt.setLong(6, formatId);
+					updateRecordForWorkStmt.setLong(7, formatCategoryId);
+					updateRecordForWorkStmt.setLong(8, languageId);
+					updateRecordForWorkStmt.setLong(9, existingRecord.id);
+					updateRecordForWorkStmt.executeUpdate();
+				}
 			}
 		} catch (SQLException e) {
 			logEntry.incErrors("Error saving grouped work record", e);
@@ -1260,10 +1345,13 @@ public class GroupedWorkIndexer {
 		return id;
 	}
 
-	private final HashMap<String, Long> editionIds = new HashMap<>();
+	private final MaxSizeHashMap<String, Long> editionIds = new MaxSizeHashMap<>(1000);
 	private long getEditionId(String edition) {
 		if (edition == null){
 			return -1;
+		}
+		if (edition.length() > 255) {
+			edition = edition.substring(0, 255);
 		}
 		Long id = editionIds.get(edition);
 		if (id == null){
@@ -1292,10 +1380,14 @@ public class GroupedWorkIndexer {
 		return id;
 	}
 
-	private final HashMap<String, Long> publisherIds = new HashMap<>();
+	private final MaxSizeHashMap<String, Long> publisherIds = new MaxSizeHashMap<>(1000);
 	private long getPublisherId(String publisher) {
 		if (publisher == null){
 			return -1;
+		}
+		if (publisher.length() > 500) {
+			logEntry.incErrors("Publisher was more than 500 characters (" + publisher.length() + ") " + publisher);
+			publisher = publisher.substring(0, 500);
 		}
 		Long id = publisherIds.get(publisher);
 		if (id == null){
@@ -1316,7 +1408,7 @@ public class GroupedWorkIndexer {
 					}
 				}
 			} catch (SQLException e) {
-				logEntry.incErrors("Error getting publisher id", e);
+				logEntry.incErrors("Error getting publisher id (" + publisher.length() + ") " + publisher, e);
 				id = -1L;
 			}
 			publisherIds.put(publisher, id);
@@ -1324,7 +1416,7 @@ public class GroupedWorkIndexer {
 		return id;
 	}
 
-	private final HashMap<String, Long> publicationDateIds = new HashMap<>();
+	private final MaxSizeHashMap<String, Long> publicationDateIds = new MaxSizeHashMap<>(1000);
 	private long getPublicationDateId(String publicationDate) {
 		if (publicationDate == null){
 			return -1;
@@ -1356,7 +1448,7 @@ public class GroupedWorkIndexer {
 		return id;
 	}
 
-	private final HashMap<String, Long> physicalDescriptionIds = new HashMap<>();
+	private final MaxSizeHashMap<String, Long> physicalDescriptionIds = new MaxSizeHashMap<>(1000);
 	private long getPhysicalDescriptionId(String physicalDescription) {
 		if (physicalDescription == null){
 			return -1;
@@ -1455,7 +1547,7 @@ public class GroupedWorkIndexer {
 		return id;
 	}
 
-	private final HashMap<String, Long> callNumberIds = new HashMap<>();
+	private final MaxSizeHashMap<String, Long> callNumberIds = new MaxSizeHashMap<>(1000);
 	private long getCallNumberId(String callNumber) {
 		if (callNumber == null){
 			return -1;
@@ -1655,16 +1747,16 @@ public class GroupedWorkIndexer {
 
 	}
 
-	HashMap<String, Long> getExistingItemsForRecord(long recordId) {
-		HashMap<String, Long> existingItems = new HashMap<>();
+	HashMap<String, SavedItemInfo> getExistingItemsForRecord(long recordId) {
+		HashMap<String, SavedItemInfo> existingItems = new HashMap<>();
 		try{
 			getExistingItemsForRecordStmt.setLong(1, recordId);
 			ResultSet getExistingItemsForRecordRS = getExistingItemsForRecordStmt.executeQuery();
 			while (getExistingItemsForRecordRS.next()){
-				existingItems.put(getExistingItemsForRecordRS.getString("itemId"), getExistingItemsForRecordRS.getLong("id"));
+				existingItems.put(getExistingItemsForRecordRS.getString("itemId"), new SavedItemInfo(getExistingItemsForRecordRS));
 			}
 		}catch (SQLException e){
-			logEntry.incErrors("Error loading existing items for record");
+			logEntry.incErrors("Error loading existing items for record", e);
 		}
 		return existingItems;
 	}
@@ -1678,101 +1770,120 @@ public class GroupedWorkIndexer {
 		}
 	}
 
-	long saveItemForRecord(long recordId, long variationId, ItemInfo itemInfo, HashMap<String, Long> existingItems) {
-		Long itemId = existingItems.get(itemInfo.getItemIdentifier());
-		if (itemId == null){
-			itemId = -1L;
+	long saveItemForRecord(long recordId, long variationId, ItemInfo itemInfo, HashMap<String, SavedItemInfo> existingItems) {
+		SavedItemInfo savedItem = existingItems.get(itemInfo.getItemIdentifier());
+		long itemId = -1;
+		if (savedItem != null){
+			itemId = savedItem.id;
 		}
 		try {
-			addItemForRecordStmt.setLong(1, recordId);
-			addItemForRecordStmt.setLong(2, variationId);
-			addItemForRecordStmt.setString(3, itemInfo.getItemIdentifier());
-			addItemForRecordStmt.setLong(4, this.getShelfLocationId(itemInfo.getDetailedLocation()));
-			addItemForRecordStmt.setLong(5, this.getCallNumberId(itemInfo.getCallNumber()));
-			addItemForRecordStmt.setLong(6, this.getCallNumberId(itemInfo.getSortableCallNumber()));
-			addItemForRecordStmt.setLong(7, itemInfo.getNumCopies());
-			addItemForRecordStmt.setBoolean(8, itemInfo.isOrderItem());
-			addItemForRecordStmt.setLong(9, this.getStatusId(itemInfo.getDetailedStatus()));
-			if (itemInfo.getDateAdded() == null) {
-				addItemForRecordStmt.setNull(10, Types.BIGINT);
+			long shelfLocationId = this.getShelfLocationId(itemInfo.getDetailedLocation());
+			long callNumberId = this.getCallNumberId(itemInfo.getCallNumber());
+			long sortableCallNumberId;
+			if (StringUtils.compareStrings(itemInfo.getCallNumber(), itemInfo.getSortableCallNumber())){
+				sortableCallNumberId = callNumberId;
 			}else{
-				addItemForRecordStmt.setLong(10, itemInfo.getDateAdded().getTime() / 1000);
+				sortableCallNumberId = this.getCallNumberId(itemInfo.getSortableCallNumber());
 			}
-			addItemForRecordStmt.setLong(11, this.getLocationCodeId(itemInfo.getLocationCode()));
-			addItemForRecordStmt.setLong(12, this.getSubLocationCodeId(itemInfo.getSubLocationCode()));
-			if (itemInfo.getLastCheckinDate() ==  null){
-				addItemForRecordStmt.setNull(13, Types.INTEGER);
-			}else {
-				addItemForRecordStmt.setLong(13, itemInfo.getLastCheckinDate().getTime() / 1000);
+			long statusId = this.getStatusId(itemInfo.getDetailedStatus());
+			long locationCodeId = this.getLocationCodeId(itemInfo.getLocationCode());
+			long subLocationId = this.getSubLocationCodeId(itemInfo.getSubLocationCode());
+			long groupedStatusId = this.getStatusId(itemInfo.getGroupedStatus());
+			if (savedItem == null) {
+				addItemForRecordStmt.setLong(1, recordId);
+				addItemForRecordStmt.setLong(2, variationId);
+				addItemForRecordStmt.setString(3, itemInfo.getItemIdentifier());
+				addItemForRecordStmt.setLong(4, shelfLocationId);
+				addItemForRecordStmt.setLong(5, callNumberId);
+				addItemForRecordStmt.setLong(6, sortableCallNumberId);
+				addItemForRecordStmt.setLong(7, itemInfo.getNumCopies());
+				addItemForRecordStmt.setBoolean(8, itemInfo.isOrderItem());
+				addItemForRecordStmt.setLong(9, statusId);
+				if (itemInfo.getDateAdded() == null) {
+					addItemForRecordStmt.setNull(10, Types.BIGINT);
+				} else {
+					addItemForRecordStmt.setLong(10, itemInfo.getDateAdded().getTime() / 1000);
+				}
+				addItemForRecordStmt.setLong(11, locationCodeId);
+				addItemForRecordStmt.setLong(12, subLocationId);
+				if (itemInfo.getLastCheckinDate() == null) {
+					addItemForRecordStmt.setNull(13, Types.INTEGER);
+				} else {
+					addItemForRecordStmt.setLong(13, itemInfo.getLastCheckinDate().getTime() / 1000);
+				}
+				addItemForRecordStmt.setLong(14, groupedStatusId);
+				addItemForRecordStmt.setBoolean(15, itemInfo.isAvailable());
+				addItemForRecordStmt.setBoolean(16, itemInfo.isHoldable());
+				addItemForRecordStmt.setBoolean(17, itemInfo.isInLibraryUseOnly());
+				addItemForRecordStmt.setString(18, itemInfo.getLocationOwnedScopes());
+				addItemForRecordStmt.setString(19, itemInfo.getLibraryOwnedScopes());
+				addItemForRecordStmt.setString(20, itemInfo.getRecordsIncludedScopes());
+				addItemForRecordStmt.executeUpdate();
+				ResultSet addItemForWorkRS = addItemForRecordStmt.getGeneratedKeys();
+				if (addItemForWorkRS.next()) {
+					itemId = addItemForWorkRS.getLong(1);
+				}
+				SavedItemInfo savedItemInfo = new SavedItemInfo(itemId, recordId, variationId, itemInfo.getItemIdentifier(), shelfLocationId, callNumberId, sortableCallNumberId, itemInfo.getNumCopies(),
+						itemInfo.isOrderItem(), statusId, itemInfo.getDateAdded(), locationCodeId, subLocationId, itemInfo.getLastCheckinDate(), groupedStatusId, itemInfo.isAvailable(),
+						itemInfo.isHoldable(), itemInfo.isInLibraryUseOnly(), itemInfo.getLocationOwnedScopes(), itemInfo.getLibraryOwnedScopes(), itemInfo.getRecordsIncludedScopes());
+
+				existingItems.put(itemInfo.getItemIdentifier(), savedItemInfo);
+			}else if (savedItem.hasChanged(recordId, variationId, itemInfo.getItemIdentifier(), shelfLocationId, callNumberId, sortableCallNumberId, itemInfo.getNumCopies(),
+					itemInfo.isOrderItem(), statusId, itemInfo.getDateAdded(), locationCodeId, subLocationId, itemInfo.getLastCheckinDate(), groupedStatusId, itemInfo.isAvailable(),
+					itemInfo.isHoldable(), itemInfo.isInLibraryUseOnly(), itemInfo.getLocationOwnedScopes(), itemInfo.getLibraryOwnedScopes(), itemInfo.getRecordsIncludedScopes())){
+				updateItemForRecordStmt.setLong(1, variationId);
+				updateItemForRecordStmt.setLong(2, shelfLocationId);
+				updateItemForRecordStmt.setLong(3, callNumberId);
+				updateItemForRecordStmt.setLong(4, sortableCallNumberId);
+				updateItemForRecordStmt.setLong(5, itemInfo.getNumCopies());
+				updateItemForRecordStmt.setBoolean(6, itemInfo.isOrderItem());
+				updateItemForRecordStmt.setLong(7, statusId);
+				if (itemInfo.getDateAdded() == null) {
+					updateItemForRecordStmt.setNull(8, Types.BIGINT);
+				} else {
+					updateItemForRecordStmt.setLong(8, itemInfo.getDateAdded().getTime() / 1000);
+				}
+				updateItemForRecordStmt.setLong(9, locationCodeId);
+				updateItemForRecordStmt.setLong(10, subLocationId);
+				if (itemInfo.getLastCheckinDate() == null) {
+					updateItemForRecordStmt.setNull(11, Types.INTEGER);
+				} else {
+					updateItemForRecordStmt.setLong(11, itemInfo.getLastCheckinDate().getTime() / 1000);
+				}
+				updateItemForRecordStmt.setLong(12, groupedStatusId);
+				updateItemForRecordStmt.setBoolean(13, itemInfo.isAvailable());
+				updateItemForRecordStmt.setBoolean(14, itemInfo.isHoldable());
+				updateItemForRecordStmt.setBoolean(15, itemInfo.isInLibraryUseOnly());
+				updateItemForRecordStmt.setString(16, itemInfo.getLocationOwnedScopes());
+				updateItemForRecordStmt.setString(17, itemInfo.getLibraryOwnedScopes());
+				updateItemForRecordStmt.setString(18, itemInfo.getRecordsIncludedScopes());
+				updateItemForRecordStmt.setLong(19, itemId);
+				updateItemForRecordStmt.executeUpdate();
 			}
-			addItemForRecordStmt.executeUpdate();
-			ResultSet addItemForWorkRS = addItemForRecordStmt.getGeneratedKeys();
-			if (addItemForWorkRS.next()){
-				itemId = addItemForWorkRS.getLong(1);
-				existingItems.put(itemInfo.getItemIdentifier(), itemId);
+
+			if (itemInfo.geteContentUrl() != null){
+				addItemUrlStmt.setLong(1, itemId);
+				addItemUrlStmt.setLong(2, -1);
+				addItemUrlStmt.setString(3, itemInfo.geteContentUrl());
+				addItemUrlStmt.executeUpdate();
+
+				//Check to see if we need to save local urls
+				for (ScopingInfo scopingInfo : itemInfo.getScopingInfo().values()) {
+					String localUrl = scopingInfo.getLocalUrl();
+					if (localUrl != null && localUrl.length() > 0 && !localUrl.equals(itemInfo.geteContentUrl())) {
+						addItemUrlStmt.setLong(1, itemId);
+						addItemUrlStmt.setLong(2, scopingInfo.getScope().getId());
+						addItemUrlStmt.setString(3, localUrl);
+						addItemUrlStmt.executeUpdate();
+					}
+				}
 			}
+
 		} catch (SQLException e) {
 			logEntry.incErrors("Error saving grouped work item", e);
 		}
 
 		return itemId;
-	}
-
-	HashMap<Long, SavedScopingInfo> getExistingScopesForItem(long itemId) {
-		HashMap<Long, SavedScopingInfo> existingScopes = new HashMap<>();
-		try{
-			getExistingScopesForItemStmt.setLong(1, itemId);
-			ResultSet getExistingScopesForItemRS = getExistingScopesForItemStmt.executeQuery();
-			while (getExistingScopesForItemRS.next()){
-				existingScopes.put(getExistingScopesForItemRS.getLong("scopeId"), new SavedScopingInfo(getExistingScopesForItemRS));
-			}
-		}catch (SQLException e){
-			logEntry.incErrors("Error loading existing scopes for item");
-		}
-		return existingScopes;
-	}
-
-	void saveScopeForItem(long itemId, ScopingInfo scopingInfo, HashMap<Long, SavedScopingInfo> existingScopes) {
-		SavedScopingInfo savedScopingInfo = existingScopes.get(scopingInfo.getScope().getId());
-		if (savedScopingInfo == null){
-			try {
-				addScopeForItemStmt.setLong(1, itemId);
-				addScopeForItemStmt.setLong(2, scopingInfo.getScope().getId());
-				addScopeForItemStmt.setLong(3, this.getStatusId(scopingInfo.getGroupedStatus()));
-				addScopeForItemStmt.setLong(4, this.getStatusId(scopingInfo.getStatus()));
-				addScopeForItemStmt.setBoolean(5, scopingInfo.isAvailable());
-				addScopeForItemStmt.setBoolean(6, scopingInfo.isHoldable());
-				addScopeForItemStmt.setBoolean(7, scopingInfo.isInLibraryUseOnly());
-				addScopeForItemStmt.setString(8, scopingInfo.getLocalUrl());
-				addScopeForItemStmt.setBoolean(9, scopingInfo.isLocallyOwned());
-				addScopeForItemStmt.setBoolean(10, scopingInfo.isLibraryOwned());
-				addScopeForItemStmt.executeUpdate();
-			} catch (SQLException e) {
-				logEntry.incErrors("Error saving grouped work scope", e);
-			}
-		}else{
-			long groupedStatusId = this.getStatusId(scopingInfo.getGroupedStatus());
-			long statusId = this.getStatusId(scopingInfo.getStatus());
-			if (savedScopingInfo.hasChanged(groupedStatusId, statusId, scopingInfo)) {
-				try {
-					updateScopeForItemStmt.setLong(1, groupedStatusId);
-					updateScopeForItemStmt.setLong(2, statusId);
-					updateScopeForItemStmt.setBoolean(3, scopingInfo.isAvailable());
-					updateScopeForItemStmt.setBoolean(4, scopingInfo.isHoldable());
-					updateScopeForItemStmt.setBoolean(5, scopingInfo.isInLibraryUseOnly());
-					updateScopeForItemStmt.setString(6, scopingInfo.getLocalUrl());
-					updateScopeForItemStmt.setBoolean(7, scopingInfo.isLocallyOwned());
-					updateScopeForItemStmt.setBoolean(8, scopingInfo.isLibraryOwned());
-					updateScopeForItemStmt.setLong(9, savedScopingInfo.id);
-					updateScopeForItemStmt.executeUpdate();
-				} catch (SQLException e) {
-					logEntry.incErrors("Error updating grouped work scope", e);
-				}
-			}
-		}
-
-
-		//return scopeId;
 	}
 
 	void removeScope(Long scopeId) {
@@ -1832,17 +1943,9 @@ public class GroupedWorkIndexer {
 		return existingScopes;
 	}
 
-	public void removeItemScope(long scopeId) {
-		try {
-			removeItemScopeStmt.setLong(1, scopeId);
-			removeItemScopeStmt.executeUpdate();
-		}catch (SQLException e) {
-			logEntry.incErrors("Error removing scope for item", e);
-		}
-	}
-
 	public int disabledAutoCommitCounter = 0;
 	void disableAutoCommit(){
+
 		disabledAutoCommitCounter++;
 		if (disabledAutoCommitCounter == 1) {
 			try {
@@ -1866,5 +1969,169 @@ public class GroupedWorkIndexer {
 
 	public boolean isStoreRecordDetailsInSolr(){
 		return storeRecordDetailsInSolr;
+	}
+
+	public boolean isStoreRecordDetailsInDatabase() {
+		return storeRecordDetailsInDatabase;
+	}
+
+	public void markIlsRecordAsDeleted(String name, String existingIdentifier) {
+		try {
+			marcIlsRecordAsDeletedStmt.setLong(1, new Date().getTime() / 1000);
+			marcIlsRecordAsDeletedStmt.setString(2, name);
+			marcIlsRecordAsDeletedStmt.setString(3, existingIdentifier);
+			marcIlsRecordAsDeletedStmt.executeUpdate();
+		}catch (Exception e) {
+			logEntry.incErrors("Could not mark ils record as deleted", e);
+		}
+	}
+
+	public BaseLogEntry getLogEntry() {
+		return logEntry;
+	}
+
+	public boolean isHideUnknownLiteraryForm() {
+		return hideUnknownLiteraryForm;
+	}
+
+	public boolean isHideNotCodedLiteraryForm() {
+		return hideNotCodedLiteraryForm;
+	}
+
+	public String getTreatUnknownAudienceAs() {
+		return treatUnknownAudienceAs;
+	}
+
+	public String getTreatUnknownLanguageAs() {
+		return treatUnknownLanguageAs;
+	}
+
+	public boolean isTreatUnknownAudienceAsUnknown() {
+		return treatUnknownAudienceAsUnknown;
+	}
+
+	public boolean isTreatUnknownAudienceAsGeneral() {
+		return treatUnknownAudienceAsGeneral;
+	}
+
+	public boolean isTreatUnknownAudienceAsAdult() {
+		return treatUnknownAudienceAsAdult;
+	}
+
+	public enum MarcStatus {
+		UNCHANGED, CHANGED, NEW
+	}
+
+	public MarcStatus appendItemsToExistingRecord(IndexingProfile indexingSettings, Record recordWithAdditionalItems, String recordNumber) {
+		MarcStatus marcRecordStatus = MarcStatus.UNCHANGED;
+		//Copy the record to the individual marc path
+		if (recordNumber != null) {
+			Record mergedRecord = loadMarcRecordFromDatabase(indexingSettings.getName(), recordNumber, logEntry);
+
+			List<DataField> additionalItems = recordWithAdditionalItems.getDataFields(indexingSettings.getItemTag());
+			for (DataField additionalItem : additionalItems) {
+				mergedRecord.addVariableField(additionalItem);
+			}
+
+			marcRecordStatus = MarcStatus.CHANGED;
+			saveMarcRecordToDatabase(indexingSettings, recordNumber, mergedRecord);
+		} else {
+			logEntry.incErrors("Error did not find record number for MARC record");
+		}
+		return marcRecordStatus;
+	}
+
+	/**
+	 *
+	 * @param indexingProfile - the indexing profile for the record
+	 * @param ilsId - The id of the record to save
+	 * @param marcRecord - The contents of the marc record
+	 * @return int 0 if the marc has not changed, 1 if the marc is new, and 2 if the marc has changes
+	 */
+	public synchronized MarcStatus saveMarcRecordToDatabase(BaseIndexingSettings indexingProfile, String ilsId, Record marcRecord) {
+		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+		MarcWriter writer = new MarcJsonWriter(outputStream);
+		writer.write(marcRecord);
+		checksumCalculator.reset();
+		byte[] marcAsBytes = outputStream.toByteArray();
+
+		checksumCalculator.update(marcAsBytes);
+		MarcStatus returnValue = MarcStatus.UNCHANGED;
+		boolean foundExisting = false;
+		try {
+			//check to see if we need to make an update
+			getExistingRecordInfoForIdentifierStmt.setString(1, ilsId);
+			getExistingRecordInfoForIdentifierStmt.setString(2, indexingProfile.getName());
+			ResultSet getExistingRecordInfoForIdentifierRS = getExistingRecordInfoForIdentifierStmt.executeQuery();
+			if (getExistingRecordInfoForIdentifierRS.next()){
+				foundExisting = true;
+				long existingChecksum = getExistingRecordInfoForIdentifierRS.getLong("checksum");
+				long uncompressedLength = getExistingRecordInfoForIdentifierRS.getLong("sourceDataLength");
+				boolean deleted = getExistingRecordInfoForIdentifierRS.getBoolean("deleted");
+				//String marcAsString = new String(marcAsBytes);
+				if (deleted || (marcAsBytes.length != uncompressedLength) || (existingChecksum != checksumCalculator.getValue())){
+					long curTime = new Date().getTime() / 1000;
+					updateRecordInDBStmt.setLong(1, checksumCalculator.getValue());
+					updateRecordInDBStmt.setBlob(2, new ByteArrayInputStream(marcAsBytes));
+					updateRecordInDBStmt.setLong(3, curTime);
+					updateRecordInDBStmt.setLong(4, getExistingRecordInfoForIdentifierRS.getLong("id"));
+					updateRecordInDBStmt.executeUpdate();
+					returnValue = MarcStatus.CHANGED;
+				}
+			}else{
+				File marcFile = indexingProfile.getFileForIlsRecord(ilsId);
+				long lastModified;
+				if (marcFile.exists()) {
+					lastModified = marcFile.lastModified() / 1000;
+				}else{
+					lastModified = new Date().getTime() / 1000;
+				}
+
+				addRecordToDBStmt.setString(1, ilsId);
+				addRecordToDBStmt.setString(2, indexingProfile.getName());
+				addRecordToDBStmt.setLong(3, checksumCalculator.getValue());
+				addRecordToDBStmt.setLong(4, lastModified);
+				addRecordToDBStmt.setBlob(5, new ByteArrayInputStream(marcAsBytes));
+				addRecordToDBStmt.setLong(6, lastModified);
+				addRecordToDBStmt.executeUpdate();
+				returnValue = MarcStatus.NEW;
+				if (marcFile.exists() && !marcFile.delete()) {
+					logEntry.incErrors("Could not delete individual marc " + marcFile.getAbsolutePath());
+				}
+			}
+
+		}catch (Exception e){
+			logEntry.incErrors("Error saving MARC record to database for " + ilsId + " found existing? " + foundExisting, e);
+		}
+		marcRecordCache.put(indexingProfile.getName() + ilsId, marcRecord);
+
+		return returnValue;
+	}
+
+	//Create a small cache to hold recently used marc records to avoid time reloading them.
+	public MaxSizeHashMap<String, Record> marcRecordCache = new MaxSizeHashMap<>(100);
+	public Record loadMarcRecordFromDatabase(String source, String identifier, BaseLogEntry logEntry) {
+		String key = source + identifier;
+		Record marcRecord = marcRecordCache.get(key);
+		if (marcRecord == null) {
+			try {
+				getRecordForIdentifierStmt.setString(1, identifier);
+				getRecordForIdentifierStmt.setString(2, source);
+				ResultSet getRecordForIdentifierRS = getRecordForIdentifierStmt.executeQuery();
+				if (getRecordForIdentifierRS.next()) {
+					byte[] marcData = getRecordForIdentifierRS.getBytes("sourceData");
+					if (marcData != null && marcData.length > 0) {
+						String marcRecordRaw = new String(marcData, StandardCharsets.UTF_8);
+						marcRecord = MarcUtil.readJsonFormattedRecord(identifier, marcRecordRaw, logEntry);
+						marcRecordCache.put(key, marcRecord);
+					}
+				}
+				getRecordForIdentifierRS.close();
+			} catch (Exception e) {
+				logEntry.incErrors("Error loading MARC record from database", e);
+			}
+		}
+		return marcRecord;
+
 	}
 }

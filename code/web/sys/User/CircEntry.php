@@ -59,20 +59,6 @@ abstract class CircEntry extends DataObject
 				if (!$this->_recordDriver->isValid()){
 					$this->_recordDriver = false;
 				}
-			} elseif ($this->type == 'rbdigital') {
-				if ($this->source == 'rbdigital'){
-					require_once ROOT_DIR . '/RecordDrivers/RBdigitalRecordDriver.php';
-					$this->_recordDriver = new RBdigitalRecordDriver($this->recordId);
-					if (!$this->_recordDriver->isValid()){
-						$this->_recordDriver = false;
-					}
-				} elseif ($this->source == 'rbdigital_magazine') {
-					require_once ROOT_DIR . '/RecordDrivers/RBdigitalMagazineDriver.php';
-					$this->_recordDriver = new RBdigitalMagazineDriver($this->recordId);
-					if (!$this->_recordDriver->isValid()) {
-						$this->_recordDriver = false;
-					}
-				}
 			} else {
 				$this->_recordDriver = false;
 			}
@@ -243,5 +229,15 @@ abstract class CircEntry extends DataObject
 		$this->format = $recordDriver->getPrimaryFormat();
 		$this->coverUrl = $recordDriver->getBookcoverUrl('medium', true);
 		$this->linkUrl = $recordDriver->getLinkUrl();
+	}
+
+	public function getRecordFormatCategory() {
+		$recordDriver = $this->getRecordDriver();
+		$record = $recordDriver->getRelatedRecord();
+		if($record) {
+			return $record->getFormat();
+		} else {
+			return "Unknown";
+		}
 	}
 }

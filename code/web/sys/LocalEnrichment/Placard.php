@@ -3,6 +3,8 @@
 require_once ROOT_DIR . '/sys/LocalEnrichment/PlacardTrigger.php';
 require_once ROOT_DIR . '/sys/LocalEnrichment/PlacardLibrary.php';
 require_once ROOT_DIR . '/sys/LocalEnrichment/PlacardLocation.php';
+require_once ROOT_DIR . '/sys/LocalEnrichment/PlacardLanguage.php';
+
 class Placard extends DataObject
 {
 	public $__table = 'placards';
@@ -10,6 +12,7 @@ class Placard extends DataObject
 	public $title;
 	public $body;
 	public $image;
+	public /** @noinspection PhpUnused */ $altText;
 	public $link;
 	public $css;
 	public /** @noinspection PhpUnused */ $dismissable;
@@ -18,7 +21,7 @@ class Placard extends DataObject
 
 	private $_libraries;
 	private $_locations;
-	//TODO: add additional triggers
+	private $_languages;
 
 	static function getObjectStructure() : array {
 		$placardTriggerStructure = PlacardTrigger::getObjectStructure();
@@ -26,6 +29,7 @@ class Placard extends DataObject
 
 		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Placards'));
 		$locationList = Location::getLocationList(!UserAccount::userHasPermission('Administer All Placards'));
+		$languageList = Language::getLanguageList();
 
 		return [
 			'id' => array('property'=>'id', 'type'=>'label', 'label'=>'Id', 'description'=>'The unique id'),
@@ -33,9 +37,10 @@ class Placard extends DataObject
 			'startDate' => array('property'=>'startDate', 'type'=>'timestamp','label'=>'Start Date to Show', 'description'=> 'The first date the placard should be shown, leave blank to always show', 'unsetLabel'=>'No start date'),
 			'endDate' => array('property'=>'endDate', 'type'=>'timestamp','label'=>'End Date to Show', 'description'=> 'The end date the placard should be shown, leave blank to always show', 'unsetLabel'=>'No end date'),
 			'dismissable' => array('property' => 'dismissable', 'type' => 'checkbox', 'label' => 'Dismissable', 'description' => 'Whether or not a user can dismiss the placard'),
-			'body' => array('property'=>'body', 'type'=>'html', 'label'=>'Body', 'description'=>'The body of the placard', 'allowableTags' => '<a><b><em><div><script><span><p><strong><sub><sup>', 'hideInLists' => true),
+			'body' => array('property'=>'body', 'type'=>'html', 'label'=>'Body', 'description'=>'The body of the placard', 'allowableTags' => '<p><em><i><strong><b><a><ul><ol><li><h1><h2><h3><h4><h5><h6><h7><pre><code><hr><table><tbody><tr><th><td><caption><img><br><div><span><sub><sup>', 'hideInLists' => true),
 			'css' => array('property'=>'css', 'type'=>'textarea', 'label'=>'CSS', 'description'=>'Additional styling to apply to the placard', 'hideInLists' => true),
 			'image' => array('property' => 'image', 'type' => 'image', 'label' => 'Image (800px x 150px max)', 'description' => 'The logo for use in the header', 'required' => false, 'maxWidth' => 800, 'maxHeight' => 150, 'hideInLists' => true),
+			'altText' => array('property'=>'altText', 'type'=>'text', 'label'=>'Alt Text', 'description'=>'Alt Text for the image', 'maxLength'=>500, 'hideInLists' => true),
 			'link' => array('property' => 'link', 'type' => 'url', 'label' => 'Link', 'description' => 'An optional link when clicking on the placard (or link in the placard)', 'hideInLists' => true),
 			'triggers' => array(
 				'property'=>'triggers',
@@ -50,6 +55,15 @@ class Placard extends DataObject
 				'storeDb' => true,
 				'allowEdit' => false,
 				'canEdit' => false,
+			),
+			'languages' => array(
+				'property' => 'languages',
+				'type' => 'multiSelect',
+				'listStyle' => 'checkboxSimple',
+				'label' => 'Languages',
+				'description' => 'Define languages that use this placard',
+				'values' => $languageList,
+				'hideInLists' => true,
 			),
 			'libraries' => array(
 				'property' => 'libraries',
@@ -99,6 +113,9 @@ class Placard extends DataObject
 			$this->getTriggers();
 			/** @noinspection PhpUndefinedFieldInspection */
 			return $this->triggers;
+		} elseif ($name == 'languages') {
+			$this->getLanguages();
+			return $this->_languages;
 		}else{
 			return $this->_data[$name];
 		}
@@ -112,6 +129,8 @@ class Placard extends DataObject
 		}elseif ($name == 'triggers') {
 			/** @noinspection PhpUndefinedFieldInspection */
 			$this->triggers = $value;
+		}elseif ($name == 'languages') {
+			$this->_languages = $value;
 		}else{
 			$this->_data[$name] = $value;
 		}
@@ -128,6 +147,7 @@ class Placard extends DataObject
 			$this->saveLibraries();
 			$this->saveLocations();
 			$this->saveTriggers();
+			$this->saveLanguages();
 		}
 		return $ret;
 	}
@@ -139,6 +159,14 @@ class Placard extends DataObject
 			$this->saveLibraries();
 			$this->saveLocations();
 			$this->saveTriggers();
+			//When inserting a placard, if nothing exists, apply to all languages
+			if (empty($this->_languages)){
+				$languageList = Language::getLanguageList();
+				foreach ($languageList as $languageId => $displayName) {
+					$this->_languages[$languageId] = $languageId;
+				}
+			}
+			$this->saveLanguages();
 		}
 		return $ret;
 	}
@@ -158,6 +186,10 @@ class Placard extends DataObject
 			$placardLocation = new PlacardLocation();
 			$placardLocation->placardId = $this->id;
 			$placardLocation->delete(true);
+
+			$placardLocation = new PlacardLanguage();
+			$placardLocation->placardId = $this->id;
+			$placardLocation->delete(true);
 		}
 		return $ret;
 	}
@@ -166,7 +198,7 @@ class Placard extends DataObject
 		if (isset ($this->triggers) && is_array($this->triggers)) {
 			/** @var PlacardTrigger $trigger */
 			foreach ($this->triggers as $trigger) {
-				if (isset($trigger->deleteOnSave) && $trigger->deleteOnSave == true) {
+				if ($trigger->_deleteOnSave == true) {
 					$trigger->delete();
 				} else {
 					if (isset($trigger->id) && is_numeric($trigger->id)) {
@@ -193,6 +225,19 @@ class Placard extends DataObject
 			}
 		}
 		return $this->triggers;
+	}
+
+	public function getLanguages(){
+		if (!isset($this->_languages) && $this->id) {
+			$this->_languages = [];
+			$language = new PlacardLanguage();
+			$language->placardId = $this->id;
+			$language->find();
+			while ($language->fetch()) {
+				$this->_languages[$language->languageId] = $language->languageId;
+			}
+		}
+		return $this->_languages;
 	}
 
 	public function saveLibraries(){
@@ -223,6 +268,26 @@ class Placard extends DataObject
 				$obj->placardId = $this->id;
 				$obj->locationId = $locationId;
 				if (in_array($locationId, $this->_locations)) {
+					if (!$obj->find(true)) {
+						$obj->insert();
+					}
+				} else {
+					if ($obj->find(true)) {
+						$obj->delete();
+					}
+				}
+			}
+		}
+	}
+
+	public function saveLanguages(){
+		if (isset ($this->_languages) && is_array($this->_languages)){
+			$languageList = Language::getLanguageList();
+			foreach ($languageList as $languageId => $displayName) {
+				$obj = new PlacardLanguage();
+				$obj->placardId = $this->id;
+				$obj->languageId = $languageId;
+				if (in_array($languageId, $this->_languages)) {
 					if (!$obj->find(true)) {
 						$obj->insert();
 					}
@@ -287,6 +352,12 @@ class Placard extends DataObject
 			return false;
 		}
 		if (!$this->isValidForScope()){
+			return false;
+		}
+		//Check to see if the placard is valid based on the language
+		global $activeLanguage;
+		$validLanguages = $this->getLanguages();
+		if (!in_array($activeLanguage->id, $validLanguages)){
 			return false;
 		}
 		return true;

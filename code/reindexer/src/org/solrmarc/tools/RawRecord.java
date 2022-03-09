@@ -161,6 +161,8 @@ public class RawRecord implements MarcReader {
 		} catch (NumberFormatException e) {
 			throw new IOException("unable to parse record length");
 		}
+		tmp = null;
+		isr.close();
 		return (length);
 	}
 

@@ -308,15 +308,10 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 		$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Magazine');
 		$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Author');
 		$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Format');
-		if ($configArray['MaterialsRequest']['showEbookFormatField']/* || $configArray['MaterialsRequest']['showEaudioFormatField']*/){
-			$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Sub Format');
-		}
-		if ($configArray['MaterialsRequest']['showBookTypeField']){
-			$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Type');
-		}
-		if ($configArray['MaterialsRequest']['showAgeField']){
-			$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Age Level');
-		}
+		$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Sub Format');
+
+		$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Type');
+		$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Age Level');
 		$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'ISBN');
 		$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'UPC');
 		$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'ISSN');
@@ -330,12 +325,9 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 		$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Barcode');
 		$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Email');
 
-		if ($configArray['MaterialsRequest']['showPlaceHoldField']){
-			$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Hold');
-		}
-		if ($configArray['MaterialsRequest']['showIllField']){
-			$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'ILL');
-		}
+		$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Hold');
+		$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'ILL');
+
 		$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Status');
 		$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Date Created');
 		$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Assigned To');
@@ -370,15 +362,9 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 				$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, trim($magazineInfo));
 				$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $request->author);
 				$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $request->format);
-				if ($configArray['MaterialsRequest']['showEbookFormatField']/* || $configArray['MaterialsRequest']['showEaudioFormatField']*/){
-					$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $request->subFormat);
-				}
-				if ($configArray['MaterialsRequest']['showBookTypeField']){
-					$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $request->bookType);
-				}
-				if ($configArray['MaterialsRequest']['showAgeField']){
-					$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $request->ageLevel);
-				}
+				$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $request->subFormat);
+				$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $request->bookType);
+				$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $request->ageLevel);
 				$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $request->isbn);
 				$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $request->upc);
 				$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $request->issn);
@@ -391,26 +377,23 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 				$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $request->getCreatedByLastName() . ', ' . $request->getCreatedByFirstName());
 				$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $request->getCreatedByUser()->getBarcode());
 				$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $request->getCreatedByUser()->email);
-				if ($configArray['MaterialsRequest']['showPlaceHoldField']){
-					if ($request->placeHoldWhenAvailable == 1){
-						$value = 'Yes ' . $request->holdPickupLocation;
-						if ($request->bookmobileStop){
-							$value .= ' ' . $request->bookmobileStop;
-						}
-					}else{
-						$value = 'No';
+				if ($request->placeHoldWhenAvailable == 1){
+					$value = 'Yes ' . $request->holdPickupLocation;
+					if ($request->bookmobileStop){
+						$value .= ' ' . $request->bookmobileStop;
 					}
-					$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $value);
+				}else{
+					$value = 'No';
 				}
-				if ($configArray['MaterialsRequest']['showIllField']){
-					if ($request->illItem == 1){
-						$value = 'Yes';
-					}else{
-						$value = 'No';
-					}
-					$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $value);
+				$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $value);
+				if ($request->illItem == 1){
+					$value = 'Yes';
+				}else{
+					$value = 'No';
 				}
-				$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, translate($request->status));
+				$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $value);
+
+				$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, translate(['text'=>$request->status,'isPublicFacing'=>true,'isMetadata'=>true]));
 				$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, date('m/d/Y', $request->dateCreated));
 				$activeSheet->setCellValueByColumnAndRow($curCol, $curRow, $request->assignedTo);
 			}

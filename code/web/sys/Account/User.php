@@ -34,11 +34,7 @@ class User extends DataObject
 	public $hooplaCheckOutConfirmation;
 	public $preferredLibraryInterface;
 	public $noPromptForUserReviews; //tinyint(1)
-    public $rbdigitalId;
-	public $rbdigitalUsername;
-	public $rbdigitalPassword;
-	public $rbdigitalLastAccountCheck;
-	public $lockedFacets;
+    public $lockedFacets;
 	public $alternateLibraryCard;
 	public $alternateLibraryCardPassword;
 	public $hideResearchStarters;
@@ -61,8 +57,13 @@ class User extends DataObject
 
 	public $lastLoginValidation;
 
+	public $twoFactorStatus; //Whether or not the user has enrolled
+	public $twoFactorAuthSettingId; //The settings based on their PType
+
 	public $updateMessage;
 	public $updateMessageIsError;
+
+	public $proPayPayerAccountId;
 
 	/** @var User $parentUser */
 	private $parentUser;
@@ -97,11 +98,7 @@ class User extends DataObject
 	private $_numCheckedOutOverDrive = 0;
 	private $_numHoldsOverDrive = 0;
 	private $_numHoldsAvailableOverDrive = 0;
-	private $_numCheckedOutRBdigital = 0;
-    private $_numHoldsRBdigital = 0;
-    private $_numHoldsAvailableRBdigital = 0;
 	private $_numCheckedOutHoopla = 0;
-	public $_numBookings;
 	public $_notices;
 	public $_noticePreferenceLabel;
 	private $_numMaterialsRequests = 0;
@@ -119,7 +116,7 @@ class User extends DataObject
 	}
 
 	function getEncryptedFieldNames() : array {
-		return ['password', 'firstname', 'lastname', 'email', 'displayName', 'phone', 'overdriveEmail', 'rbdigitalPassword', 'alternateLibraryCardPassword', $this->getPasswordOrPinField()];
+		return ['password', 'firstname', 'lastname', 'email', 'displayName', 'phone', 'overdriveEmail', 'alternateLibraryCardPassword', $this->getPasswordOrPinField()];
 	}
 
 	function getLists() {
@@ -344,6 +341,18 @@ class User extends DataObject
 		}
 	}
 
+	function getBarcodeField(){
+		if ($this->getAccountProfile() == null) {
+			return 'cat_username';
+		}else{
+			if ($this->getAccountProfile()->loginConfiguration == 'barcode_pin') {
+				return 'cat_username';
+			} else {
+				return 'cat_password';
+			}
+		}
+	}
+
 	function saveRoles(){
 		if (isset($this->id) && isset($this->_roles) && is_array($this->_roles)){
 			require_once ROOT_DIR . '/sys/Administration/Role.php';
@@ -504,30 +513,18 @@ class User extends DataObject
 			$userHomeLibrary = Library::getPatronHomeLibrary($this);
 			if ($userHomeLibrary) {
 				if ($source == 'overdrive') {
-					return array_key_exists('OverDrive', $enabledModules) && $userHomeLibrary->overDriveScopeId > 0;
+					if (array_key_exists('OverDrive', $enabledModules) && $userHomeLibrary->overDriveScopeId > 0){
+						$driver = OverDriveDriver::getOverDriveDriver();
+						return $driver->isCirculationEnabled();
+					}else {
+						return false;
+					}
 				} elseif ($source == 'hoopla') {
 					return array_key_exists('Hoopla', $enabledModules) && $userHomeLibrary->hooplaLibraryID > 0;
-				} elseif ($source == 'rbdigital') {
-					return array_key_exists('RBdigital', $enabledModules) && ($userHomeLibrary->rbdigitalScopeId > 0);
 				} elseif ($source == 'cloud_library') {
 					return array_key_exists('Cloud Library', $enabledModules) && (count($userHomeLibrary->cloudLibraryScopes) > 0);
 				} elseif ($source == 'axis360') {
 					return array_key_exists('Axis 360', $enabledModules) && ($userHomeLibrary->axis360ScopeId > 0);
-				}
-			}
-		}
-		return false;
-	}
-
-	public function showRBdigitalHolds(){
-		if ($this->parentUser == null || ($this->getBarcode() != $this->parentUser->getBarcode())) {
-			$userHomeLibrary = Library::getPatronHomeLibrary($this);
-			if ($userHomeLibrary->rbdigitalScopeId > 0){
-				require_once ROOT_DIR . '/sys/RBdigital/RBdigitalScope.php';
-				$scope = new RBdigitalScope();
-				$scope->id = $userHomeLibrary->rbdigitalScopeId;
-				if ($scope->find(true)){
-					return $scope->includeEAudiobook || $scope->includeEBooks;
 				}
 			}
 		}
@@ -629,6 +626,9 @@ class User extends DataObject
 		if (empty($this->created)) {
 			$this->created = date('Y-m-d');
 		}
+		if ($this->pickupLocationId == 0) {
+			$this->pickupLocationId = $this->homeLocationId;
+		}
 		$this->fixFieldLengths();
 		$result = parent::update();
 		$this->saveRoles();
@@ -698,6 +698,31 @@ class User extends DataObject
 		}
 	}
 
+	function hasSavedSearches(){
+		$searchEntry = new SearchEntry();
+		$searchEntry->user_id = $this->id;
+		$searchEntry->saved = "1";
+		$searchEntry->find();
+		if ($searchEntry->getNumResults() > 0){
+			return true;
+		}else{
+			return false;
+		}
+	}
+
+	function hasLists(){
+		require_once ROOT_DIR . '/sys/UserLists/UserList.php';
+		$userList = new UserList();
+		$userList->user_id = $this->id;
+		$userList->deleted = 0;
+		$userList->find();
+		if ($userList->getNumResults() > 0){
+			return true;
+		}else{
+			return false;
+		}
+	}
+
 	private $_runtimeInfoUpdated = false;
 	function updateRuntimeInformation(){
 		if (!$this->_runtimeInfoUpdated) {
@@ -743,18 +768,6 @@ class User extends DataObject
 			$this->hooplaCheckOutConfirmation = 0;
 		}
 		$this->update();
-	}
-
-	public function updateRbdigitalOptions()
-	{
-		if (isset($_REQUEST['rbdigitalUsername'])){
-			$this->rbdigitalUsername = strip_tags($_REQUEST['rbdigitalUsername']);
-		}
-		if (isset($_REQUEST['rbdigitalPassword'])){
-			$this->rbdigitalPassword = strip_tags($_REQUEST['rbdigitalPassword']);
-		}
-		$this->update();
-		return true;
 	}
 
 	function updateStaffSettings(){
@@ -900,7 +913,7 @@ class User extends DataObject
 	/** @noinspection PhpUnused */
 	public function getNumHoldsAvailableTotal($includeLinkedUsers = true){
 		$this->updateRuntimeInformation();
-		$myHolds = $this->_numHoldsAvailableIls + $this->_numHoldsAvailableOverDrive + $this->_numHoldsAvailableRBdigital;
+		$myHolds = $this->_numHoldsAvailableIls + $this->_numHoldsAvailableOverDrive;
 		if ($includeLinkedUsers){
 			if ($this->getLinkedUsers() != null) {
 				foreach ($this->linkedUsers as $user) {
@@ -910,19 +923,6 @@ class User extends DataObject
 		}
 
 		return $myHolds;
-	}
-
-	public function getNumBookingsTotal($includeLinkedUsers = true){
-		$myBookings = $this->_numBookings;
-		if ($includeLinkedUsers){
-			if ($this->getLinkedUsers() != null) {
-				foreach ($this->linkedUsers as $user) {
-					$myBookings += $user->getNumBookingsTotal(false);
-				}
-			}
-		}
-
-		return $myBookings;
 	}
 
 	private $totalFinesForLinkedUsers = -1;
@@ -951,6 +951,9 @@ class User extends DataObject
 	 * Will check:
 	 * 1) The current ILS for the user
 	 * 2) OverDrive
+	 * 3) Hoopla
+	 * 4) cloudLibrary
+	 * 5) Axis360
 	 *
 	 * @param bool $includeLinkedUsers
 	 * @param string $source
@@ -1005,17 +1008,6 @@ class User extends DataObject
 				}
 			}
 
-			if ($this->isValidForEContentSource('rbdigital')) {
-				require_once ROOT_DIR . '/Drivers/RBdigitalDriver.php';
-				$rbdigitalDriver = new RBdigitalDriver();
-				$rbdigitalCheckedOutItems = $rbdigitalDriver->getCheckouts($this);
-				$allCheckedOut = array_merge($allCheckedOut, $rbdigitalCheckedOutItems);
-				$timer->logTime("Loaded transactions from rbdigital. {$this->id}");
-				if ($source == 'all' || $source == 'rbdigital') {
-					$checkoutsToReturn = array_merge($checkoutsToReturn, $rbdigitalCheckedOutItems);
-				}
-			}
-
 			if ($this->isValidForEContentSource('cloud_library')) {
 				require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
 				$cloudLibraryDriver = new CloudLibraryDriver();
@@ -1050,6 +1042,18 @@ class User extends DataObject
 			$this->checkoutInfoLastLoaded = time();
 			$this->update();
 		}else{
+			if ($source == 'all' || $source == 'overdrive'){
+				global $interface;
+				$driver = new OverDriveDriver();
+				$settings = $driver->getSettings();
+				if ($settings != null){
+					$fulfillmentMethod = (string)$driver->getSettings()->useFulfillmentInterface;
+					$interface->assign('fulfillmentMethod', $fulfillmentMethod);
+				}else{
+					$interface->assign('fulfillmentMethod', true);
+				}
+			}
+
 			//fetch cached checkouts
 			$checkout = new Checkout();
 			$checkout->userId = $this->id;
@@ -1129,18 +1133,7 @@ class User extends DataObject
 				}
 			}
 
-			//Get holds from RBdigital
-			if ($this->isValidForEContentSource('rbdigital') && $this->showRBdigitalHolds()) {
-				require_once ROOT_DIR . '/Drivers/RBdigitalDriver.php';
-				$driver = new RBdigitalDriver();
-				$rbdigitalHolds = $driver->getHolds($this);
-				$allHolds = array_merge_recursive($allHolds, $rbdigitalHolds);
-				if ($source == 'all' || $source == 'rbdigital') {
-					$holdsToReturn = array_merge_recursive($holdsToReturn, $rbdigitalHolds);
-				}
-			}
-
-			//Get holds from Cloud Library
+			//Get holds from cloudLibrary
 			if ($this->isValidForEContentSource('cloud_library')) {
 				require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
 				$driver = new CloudLibraryDriver();
@@ -1327,14 +1320,14 @@ class User extends DataObject
 //		}
 		if ($this->isRecordCheckedOut($source, $recordId)) {
 			$actions[] = array(
-				'title' => translate(['text' => 'Checked Out to %1%', 1 => $showUserName ? $this->displayName : 'You']),
+				'title' => translate(['text' => 'Checked Out to %1%', 1 => $showUserName ? $this->displayName : 'You', 'isPublicFacing' => true]),
 				'url' => "/MyAccount/CheckedOut",
 				'requireLogin' => false,
 				'btnType' => 'btn-info'
 			);
 		} elseif ($source != 'hoopla' && $this->isRecordOnHold($source, $recordId)) {
 			$actions[] = array(
-				'title' => translate(['text' => 'On Hold for %1%', 1 => $showUserName ? $this->displayName : 'You']),
+				'title' => translate(['text' => 'On Hold for %1%', 1 => $showUserName ? $this->displayName : 'You', 'isPublicFacing' => true]),
 				'url' => "/MyAccount/Holds",
 				'requireLogin' => false,
 				'btnType' => 'btn-info'
@@ -1347,22 +1340,6 @@ class User extends DataObject
 			}
 		}
 		return $actions;
-	}
-
-	public function getMyBookings($includeLinkedUsers = true){
-		$ilsBookings = $this->getCatalogDriver()->getMyBookings($this);
-		if ($ilsBookings instanceof AspenError) {
-			$ilsBookings = array();
-		}
-
-		if ($includeLinkedUsers) {
-			if ($this->getLinkedUsers() != null) {
-				foreach ($this->getLinkedUsers() as $user) {
-					$ilsBookings = array_merge_recursive($ilsBookings, $user->getMyBookings(false));
-				}
-			}
-		}
-		return $ilsBookings;
 	}
 
 	private $ilsFinesForUser;
@@ -1387,7 +1364,7 @@ class User extends DataObject
 	}
 
 	public function getNameAndLibraryLabel(){
-		return $this->displayName . ' - ' . $this->getHomeLibrarySystemName();
+		return $this->getDisplayName() . ' - ' . $this->getHomeLibrarySystemName();
 	}
 
 	public function getValidHomeLibraryBranches($recordSource){
@@ -1511,14 +1488,6 @@ class User extends DataObject
 		return $result;
 	}
 
-	function bookMaterial($recordId, $startDate, $startTime, $endDate, $endTime){
-		$result = $this->getCatalogDriver()->bookMaterial($this, $recordId, $startDate, $startTime, $endDate, $endTime);
-		if ($result['success']){
-			$this->clearCache();
-		}
-		return $result;
-	}
-
 	function updateAltLocationForHold($pickupBranch){
 		if ($this->_homeLocationCode != $pickupBranch) {
 			global $logger;
@@ -1540,35 +1509,6 @@ class User extends DataObject
 				$logger->log("Could not find location for $pickupBranch", Logger::LOG_ERROR);
 			}
 		}
-	}
-
-	function cancelBookedMaterial($cancelId){
-		$result = $this->getCatalogDriver()->cancelBookedMaterial($this, $cancelId);
-		$this->clearCache();
-		return $result;
-	}
-
-	function cancelAllBookedMaterial($includeLinkedUsers = true){
-		$result = $this->getCatalogDriver()->cancelAllBookedMaterial($this);
-		$this->clearCache();
-
-		if ($includeLinkedUsers) {
-			if ($this->getLinkedUsers() != null) {
-				foreach ($this->getLinkedUsers() as $user) {
-
-					$additionalResults = $user->cancelAllBookedMaterial(false);
-					if (!$additionalResults['success']) { // if we received failures
-						if ($result['success']) {
-							$result = $additionalResults; // first set of failures, overwrite currently successful results
-						} else { // if there were already failures, add the extra failure messages
-							$result['message'] = array_merge($result['message'], $additionalResults['message']);
-						}
-					}
-				}
-			}
-		}
-
-		return $result;
 	}
 
 	/**
@@ -1708,15 +1648,15 @@ class User extends DataObject
 		}
 
 		if ($success >= 1) {
-			$message = '<div class="alert alert-success">' . $success . ' of ' . $total . ' holds were frozen.</div>';
+			$message = '<div class="alert alert-success">' . translate(['text' => '%1% of %2% holds were frozen', 1 => $success, 2 => $total, 'isPublicFacing' => true, 'inAttribute'=>true]) . '</div>';
 
 			if ($failed >= 1) {
-				$message .= '<div class="alert alert-warning">' . $failed . ' holds failed to freeze.</div>';
+				$message .= '<div class="alert alert-warning">' . translate(['text' => '%1% holds failed to freeze', 1 => $failed, 2 => $total, 'isPublicFacing' => true, 'inAttribute'=>true]).'</div>';
 			}
 
 			$tmpResult['message'] = $message;
 		} else {
-			$tmpResult['message'] = '<div class="alert alert-warning">All holds already frozen</div>';
+			$tmpResult['message'] = '<div class="alert alert-warning">' . translate(['text' => 'All holds already frozen', 'isPublicFacing' => true, 'inAttribute'=>true]) . '</div>';
 		}
 
 		return $tmpResult;
@@ -1773,15 +1713,15 @@ class User extends DataObject
 				}
 
 				if ($success >= 1 ){
-					$message = '<div class="alert alert-success">' . $success . ' of ' . $total . ' holds were thawed.</div>';
+					$message = '<div class="alert alert-success">' . translate(['text' => '%1% of %2% holds were thawed', 1 => $success, 2 => $total, 'isPublicFacing' => true, 'inAttribute'=>true]) . '</div>';
 
 					if ($failed >= 1) {
-						$message .= '<div class="alert alert-warning">' . $failed . ' holds failed to thaw.</div>';
+						$message .= '<div class="alert alert-warning">' . translate(['text' => '%1% holds failed to thaw', 1 => $failed, 'isPublicFacing' => true, 'inAttribute'=>true]) . '</div>';
 					}
 
 					$tmpResult['message'] = $message;
 				} else {
-					$tmpResult['message'] = '<div class="alert alert-warning">All holds already thawed</div>';
+					$tmpResult['message'] = '<div class="alert alert-warning">' . translate(['text' => 'All holds already thawed']) . '</div>';
 				}
 			}
 		} else {
@@ -1850,21 +1790,58 @@ class User extends DataObject
 			}
 		}
 		$this->clearCache();
+
+		$renewAllResults['title'] = translate(['text' => 'Renewing all titles', 'isPublicFacing'=>true]);
+		if($renewAllResults['Renewed'] == 0) {
+			$renewAllResults['title'] = translate(['text' => 'Unable to renew some titles', 'isPublicFacing'=>true]);
+		}
+
 		return $renewAllResults;
 	}
 
-	public function getReadingHistory($page, $recordsPerPage, $selectedSortOption, $filter, $forExport) {
-		return $this->getCatalogDriver()->getReadingHistory($this, $page, $recordsPerPage, $selectedSortOption, $filter, $forExport);
+	public function getReadingHistory($page = 1, $recordsPerPage = 20, $sortOption = "checkedOut", $filter = "", $forExport = false) {
+		$catalogDriver = $this->getCatalogDriver();
+		if ($catalogDriver != null) {
+			return $this->getCatalogDriver()->getReadingHistory($this, $page, $recordsPerPage, $sortOption, $filter, $forExport);
+		}else{
+			return [
+				'success' => false,
+				'message' => translate(['text'=>'Reading History Functionality is not available', 'isPublicFacing'=>true])
+			];
+		}
 	}
 
 	public function doReadingHistoryAction($readingHistoryAction, $selectedTitles){
-		$results = $this->getCatalogDriver()->doReadingHistoryAction($this, $readingHistoryAction, $selectedTitles);
-		$this->clearCache();
-		return $results;
+		$catalogDriver = $this->getCatalogDriver();
+		if ($catalogDriver != null) {
+			$results = $catalogDriver->doReadingHistoryAction($this, $readingHistoryAction, $selectedTitles);
+			$this->clearCache();
+			return $results;
+		}else{
+			return [
+				'success' => false,
+				'message' => translate(['text'=>'Reading History Functionality is not available', 'isPublicFacing'=>true])
+			];
+		}
 	}
 
 	public function deleteReadingHistoryEntryByTitleAuthor($title, $author) {
-		return $this->getCatalogDriver()->deleteReadingHistoryEntryByTitleAuthor($this, $title, $author);
+		$catalogDriver = $this->getCatalogDriver();
+		if ($catalogDriver != null) {
+			return $catalogDriver->deleteReadingHistoryEntryByTitleAuthor($this, $title, $author);
+		}else{
+			return [
+				'success' => false,
+				'message' => translate(['text'=>'Reading History Functionality is not available', 'isPublicFacing'=>true])
+			];
+		}
+	}
+
+	public function updateReadingHistoryBasedOnCurrentCheckouts() {
+		$catalogDriver = $this->getCatalogDriver();
+		if ($catalogDriver != null) {
+			$catalogDriver->updateReadingHistoryBasedOnCurrentCheckouts($this);
+		}
 	}
 
 	/**
@@ -1885,8 +1862,8 @@ class User extends DataObject
 		return false;
 	}
 
-	public function updatePatronInfo($canUpdateContactInfo){
-		$result = $this->getCatalogDriver()->updatePatronInfo($this, $canUpdateContactInfo);
+	public function updatePatronInfo($canUpdateContactInfo, $fromMasquerade = false){
+		$result = $this->getCatalogDriver()->updatePatronInfo($this, $canUpdateContactInfo, $fromMasquerade);
 		$this->clearCache();
 		return $result;
 	}
@@ -2023,10 +2000,13 @@ class User extends DataObject
 
 	/** @noinspection PhpUnused */
 	function showMessagingSettings(){
-		if ($this->hasIlsConnection()){
-			return $this->getCatalogDriver()->showMessagingSettings();
-		}else{
-			return false;
+		global $library;
+		if ($library->showMessagingSettings) {
+			if ($this->hasIlsConnection()) {
+				return $this->getCatalogDriver()->showMessagingSettings();
+			} else {
+				return false;
+			}
 		}
 	}
 
@@ -2062,10 +2042,10 @@ class User extends DataObject
 			$userMessage = new UserMessage();
 			$userMessage->userId = $this->id;
 			$userMessage->messageType = 'confirm_linked_accts';
-			$userMessage->message = "Other accounts have linked to your account.  Do you want to continue allowing them to link to you?";
-			$userMessage->action1Title = "Yes";
+			$userMessage->message = translate(['text' => "Other accounts have linked to your account.  Do you want to continue allowing them to link to you?", 'isPublicFacing'=>true]);
+			$userMessage->action1Title = translate(['text' => "Yes", 'isPublicFacing'=>true]);
 			$userMessage->action1 = "return AspenDiscovery.Account.enableAccountLinking()";
-			$userMessage->action2Title = "No";
+			$userMessage->action2Title = translate(['text' => "No", 'isPublicFacing'=>true]);
 			$userMessage->action2 = "return AspenDiscovery.Account.stopAccountLinking()";
 			$userMessage->messageLevel = 'warning';
 			$userMessage->insert();
@@ -2074,7 +2054,7 @@ class User extends DataObject
 				$userMessage->userId = $userLinks->primaryAccountId;
 				$userMessage->messageType = 'linked_acct_notify_pause_' . $this->id;
 				$userMessage->messageLevel = 'info';
-				$userMessage->message = "An account you are linking to changed their login. Account linking with them has been temporarily disabled.";
+				$userMessage->message = translate(['text' => "An account you are linking to changed their login. Account linking with them has been temporarily disabled.", 'isPublicFacing'=>true]);
 				$userMessage->insert();
 				$userLinks->linkingDisabled = 1;
 				$userLinks->update();
@@ -2202,20 +2182,23 @@ class User extends DataObject
 	}
 
 	function getHomeLocationCode(){
-		return $this->getHomeLocation()->code;
+		$homeLocation = $this->getHomeLocation();
+		if ($homeLocation != null){
+			return $homeLocation->code;
+		}else{
+			return null;
+		}
 	}
 
 	function getPickupLocationCode(){
-		if ($this->rememberHoldPickupLocation){
-			if ($this->pickupLocationId != $this->homeLocationId) {
-				$pickupBranch = $this->pickupLocationId;
-				$locationLookup = new Location();
-				$locationLookup->locationId = $pickupBranch;
-				if ($locationLookup->find(true)) {
-					$pickupBranch = $locationLookup->code;
-				} else {
-					$pickupBranch = $this->getHomeLocation()->code;
-				}
+		//Always check if a preferred pickup location has been selected.  If not, use the home location
+		if ($this->pickupLocationId > 0 && $this->pickupLocationId != $this->homeLocationId) {
+			$pickupBranch = $this->pickupLocationId;
+			$locationLookup = new Location();
+			$locationLookup->locationId = $pickupBranch;
+			//Make sure that the hold location is a valid pickup location just in case it's been hidden since
+			if ($locationLookup->find(true) && $locationLookup->validHoldPickupBranch != 2) {
+				$pickupBranch = $locationLookup->code;
 			} else {
 				$pickupBranch = $this->getHomeLocation()->code;
 			}
@@ -2308,6 +2291,8 @@ class User extends DataObject
 		if ($this->hasIlsConnection()) {
 			$this->getCatalogDriver()->logout($this);
 		}
+		$this->lastLoginValidation = 0;
+		$this->update();
 	}
 
 	public function treatVolumeHoldsAsItemHolds() {
@@ -2369,6 +2354,9 @@ class User extends DataObject
 		$sections['primary_configuration']->addAction(new AdminAction('Block Patron Account Linking', 'Prevent accounts from linking to other accounts.', '/Admin/BlockPatronAccountLinks'), 'Block Patron Account Linking');
 		$sections['primary_configuration']->addAction(new AdminAction('Patron Types', 'Modify Permissions and limits based on Patron Type.', '/Admin/PTypes'), 'Administer Patron Types');
 		$sections['primary_configuration']->addAction(new AdminAction('Account Profiles', 'Define how account information is loaded from the ILS.', '/Admin/AccountProfiles'), 'Administer Account Profiles');
+		$sections['primary_configuration']->addAction(new AdminAction('Two-Factor Authentication', 'Administer two-factor authentication settings', '/Admin/TwoFactorAuth'), 'Administer Two-Factor Authentication');
+		$sections['primary_configuration']->addAction(new AdminAction('Aspen LiDA Settings', 'Administer Aspen LiDA settings', '/Admin/AspenLiDA'), 'Administer Aspen LiDA Settings');
+
 
 		//Materials Request if enabled
 		if (MaterialsRequest::enableAspenMaterialsRequest()){
@@ -2407,6 +2395,7 @@ class User extends DataObject
 		$sections['cataloging']->addAction(new AdminAction('Manual Grouping Authorities', 'View a list of all title author/authorities that have been added to Aspen to merge works.', '/Admin/AlternateTitles'), 'Manually Group and Ungroup Works');
 		$sections['cataloging']->addAction(new AdminAction('Author Authorities', 'Create and edit authorities for authors.', '/Admin/AuthorAuthorities'), 'Manually Group and Ungroup Works');
 		$sections['cataloging']->addAction(new AdminAction('Records To Not Group', 'Lists records that should not be grouped.', '/Admin/NonGroupedRecords'), 'Manually Group and Ungroup Works');
+		$sections['cataloging']->addAction(new AdminAction('Search Tests', 'Tests to be run to verify searching is generating optimal results.', '/Admin/GroupedWorkSearchTests'), 'Administer Grouped Work Tests');
 		//$sections['cataloging']->addAction(new AdminAction('Print Barcodes', 'Lists records that should not be grouped.', '/Admin/PrintBarcodes'), 'Print Barcodes');
 
 		$sections['local_enrichment'] = new AdminSection('Local Catalog Enrichment');
@@ -2415,7 +2404,7 @@ class User extends DataObject
 		$sections['local_enrichment']->addAction($browseCategoryGroupsAction, ['Administer All Browse Categories', 'Administer Library Browse Categories']);
 		$sections['local_enrichment']->addAction(new AdminAction('Collection Spotlights', 'Define basic information about how pages are displayed in Aspen Discovery.', '/Admin/CollectionSpotlights'), ['Administer All Collection Spotlights', 'Administer Library Collection Spotlights']);
 		$sections['local_enrichment']->addAction(new AdminAction('JavaScript Snippets', 'JavaScript Snippets to be added to the site when pages are rendered.', '/Admin/JavaScriptSnippets'), ['Administer All JavaScript Snippets', 'Administer Library JavaScript Snippets']);
-		$sections['local_enrichment']->addAction(new AdminAction('Placards', 'Placards allow you to promote services that do not have MARC records or APIs for inclusion in the catalog.', '/Admin/Placards'), ['Administer All Placards', 'Administer Library Placards']);
+		$sections['local_enrichment']->addAction(new AdminAction('Placards', 'Placards allow you to promote services that do not have MARC records or APIs for inclusion in the catalog.', '/Admin/Placards'), ['Administer All Placards', 'Administer Library Placards', 'Edit Library Placards']);
 		$sections['local_enrichment']->addAction(new AdminAction('System Messages', 'System Messages allow you to display messages to your patrons in specific locations.', '/Admin/SystemMessages'), ['Administer All System Messages', 'Administer Library System Messages']);
 
 		$sections['third_party_enrichment'] = new AdminSection('Third Party Enrichment');
@@ -2439,8 +2428,14 @@ class User extends DataObject
 		$sections['third_party_enrichment']->addAction(new AdminAction('Syndetics Settings', 'Define settings for Syndetics integration.', '/Enrichment/SyndeticsSettings'), 'Administer Third Party Enrichment API Keys');
 		$sections['third_party_enrichment']->addAction(new AdminAction('Wikipedia Integration', 'Modify which Wikipedia content is displayed for authors.', '/Admin/AuthorEnrichment'), 'Administer Wikipedia Integration');
 
-		$sections['ecommerce'] = new AdminSection('eCommerce Settings');
+		$sections['ecommerce'] = new AdminSection('eCommerce');
+		$sections['ecommerce']->addAction(new AdminAction('eCommerce Report', 'View all payments initiated and completed within the system', '/Admin/eCommerceReport'), 'View eCommerce Reports');
+		$sections['ecommerce']->addAction(new AdminAction('Donations Report', 'View all donations initiated and completed within the system', '/Admin/DonationsReport'), 'View Donations Reports');
 		$sections['ecommerce']->addAction(new AdminAction('Comprise Settings', 'Define Settings for Comprise SMARTPAY.', '/Admin/CompriseSettings'), 'Administer Comprise');
+		$sections['ecommerce']->addAction(new AdminAction('FIS WorldPay Settings', 'Define Settings for FIS WorldPay.', '/Admin/WorldPaySettings'), 'Administer WorldPay');
+		$sections['ecommerce']->addAction(new AdminAction('PayPal Settings', 'Define Settings for PayPal.', '/Admin/PayPalSettings'), 'Administer PayPal');
+		$sections['ecommerce']->addAction(new AdminAction('ProPay Settings', 'Define Settings for ProPay.', '/Admin/ProPaySettings'), 'Administer ProPay');
+		$sections['ecommerce']->addAction(new AdminAction('Donations Settings', 'Define Settings for Donations.', '/Admin/DonationsSettings'), 'Administer Donations');
 
 		$sections['ils_integration'] = new AdminSection('ILS Integration');
 		$indexingProfileAction = new AdminAction('Indexing Profiles', 'Define how records from the ILS are loaded into Aspen Discovery.', '/ILS/IndexingProfiles');
@@ -2450,8 +2445,11 @@ class User extends DataObject
 		}else{
 			$sections['ils_integration']->addAction($translationMapsAction, 'Administer Translation Maps');
 		}
+		$ils = $configArray['Catalog']['ils'];
+		if ($ils == 'Koha') {
+			$sections['ils_integration']->addAction(new AdminAction('Curbside Pickup Settings', 'Define Settings for Curbside Pickup, requires Koha Curbside plugin', '/ILS/CurbsidePickupSettings'), ['Administer Curbside Pickup']);
+		}
 		$sections['ils_integration']->addAction(new AdminAction('Indexing Log', 'View the indexing log for ILS records.', '/ILS/IndexingLog'), 'View Indexing Logs');
-		$sections['ils_integration']->addAction(new AdminAction('Offline Holds Report', 'View a report of holds that were submitted while the ILS was offline.', '/Circa/OfflineHoldsReport'), 'View Offline Holds Report');
 		$sections['ils_integration']->addAction(new AdminAction('Dashboard', 'View the usage dashboard for ILS integration.', '/ILS/Dashboard'), ['View Dashboards', 'View System Reports']);
 
 		$sections['circulation_reports'] = new AdminSection('Circulation Reports');
@@ -2473,16 +2471,16 @@ class User extends DataObject
 		}
 
 		if (array_key_exists('Cloud Library', $enabledModules)) {
-			$sections['cloud_library'] = new AdminSection('Cloud Library');
-			$cloudLibrarySettingsAction = new AdminAction('Settings', 'Define connection information between Cloud Library and Aspen Discovery.', '/CloudLibrary/Settings');
+			$sections['cloud_library'] = new AdminSection('cloudLibrary');
+			$cloudLibrarySettingsAction = new AdminAction('Settings', 'Define connection information between cloudLibrary and Aspen Discovery.', '/CloudLibrary/Settings');
 			$cloudLibraryScopesAction = new AdminAction('Scopes', 'Define which records are loaded for each library and location.', '/CloudLibrary/Scopes');
 			if ($sections['cloud_library']->addAction($cloudLibrarySettingsAction, 'Administer Cloud Library')) {
 				$cloudLibrarySettingsAction->addSubAction($cloudLibraryScopesAction, 'Administer Cloud Library');
 			} else {
 				$sections['cloud_library']->addAction($cloudLibraryScopesAction, 'Administer Cloud Library');
 			}
-			$sections['cloud_library']->addAction(new AdminAction('Indexing Log', 'View the indexing log for Cloud Library.', '/CloudLibrary/IndexingLog'), ['View System Reports', 'View Indexing Logs']);
-			$sections['cloud_library']->addAction(new AdminAction('Dashboard', 'View the usage dashboard for Cloud Library integration.', '/CloudLibrary/Dashboard'), ['View Dashboards', 'View System Reports']);
+			$sections['cloud_library']->addAction(new AdminAction('Indexing Log', 'View the indexing log for cloudLibrary.', '/CloudLibrary/IndexingLog'), ['View System Reports', 'View Indexing Logs']);
+			$sections['cloud_library']->addAction(new AdminAction('Dashboard', 'View the usage dashboard for cloudLibrary integration.', '/CloudLibrary/Dashboard'), ['View Dashboards', 'View System Reports']);
 		}
 
 		if (array_key_exists('EBSCO EDS', $enabledModules)) {
@@ -2521,14 +2519,6 @@ class User extends DataObject
 
 		if (array_key_exists('RBdigital', $enabledModules)) {
 			$sections['rbdigital'] = new AdminSection('RBdigital');
-			$rbdigitalSettingsAction = new AdminAction('Settings', 'Define connection information between RBdigital and Aspen Discovery.', '/RBdigital/Settings');
-			$rbdigitalScopesAction = new AdminAction('Scopes', 'Define which records are loaded for each library and location.', '/RBdigital/Scopes');
-			if ($sections['rbdigital']->addAction($rbdigitalSettingsAction, 'Administer RBdigital')) {
-				$rbdigitalSettingsAction->addSubAction($rbdigitalScopesAction, 'Administer RBdigital');
-			} else {
-				$sections['rbdigital']->addAction($rbdigitalScopesAction, 'Administer RBdigital');
-			}
-			$sections['rbdigital']->addAction(new AdminAction('Indexing Log', 'View the indexing log for RBdigital.', '/RBdigital/IndexingLog'), ['View System Reports', 'View Indexing Logs']);
 			$sections['rbdigital']->addAction(new AdminAction('Dashboard', 'View the usage dashboard for RBdigital integration.', '/RBdigital/Dashboard'), ['View Dashboards', 'View System Reports']);
 		}
 
@@ -2543,16 +2533,6 @@ class User extends DataObject
 			}
 			$sections['side_loads']->addAction(new AdminAction('Indexing Log', 'View the indexing log for Side Loads.', '/SideLoads/IndexingLog'), ['View System Reports', 'View Indexing Logs']);
 			$sections['side_loads']->addAction(new AdminAction('Dashboard', 'View the usage dashboard for Side Loads integration.', '/SideLoads/Dashboard'), ['View Dashboards', 'View System Reports']);
-		}
-
-		if ($configArray['Islandora']['enabled'] && array_key_exists('Islandora Archives', $enabledModules)){
-			$sections['islandora_archive'] = new AdminSection('Islandora Archives');
-			$sections['islandora_archive']->addAction(new AdminAction('Authorship Claims', 'View submissions from users that they are the author of materials within the archive.', '/Admin/AuthorshipClaims'), 'View Archive Authorship Claims');
-			$sections['islandora_archive']->addAction(new AdminAction('Clear Cache', 'Clear Archive information that has been cached within Aspen Discovery.', '/Admin/ClearArchiveCache'), 'Administer Islandora Archive');
-			$sections['islandora_archive']->addAction(new AdminAction('Material Requests', 'View requests for copies of materials from the archive.', '/Admin/ArchiveRequests'), 'View Archive Material Requests');
-			$sections['islandora_archive']->addAction(new AdminAction('Subject Control', 'Determine how subjects are handled when loading explore more information from the archive.', '/Admin/ArchiveSubjects'), 'Administer Islandora Archive');
-			$sections['islandora_archive']->addAction(new AdminAction('Private Collections', 'Setup collections within the archive that should not be private.', '/Admin/ArchivePrivateCollections'), 'Administer Islandora Archive');
-			$sections['islandora_archive']->addAction(new AdminAction('Usage Statistics', 'View statistics for number of records and drive space used by each library contributing content to the archive.', '/Admin/ArchiveUsage'), 'View Islandora Archive Usage');
 		}
 
 		if (array_key_exists('Open Archives', $enabledModules)){
@@ -2571,6 +2551,7 @@ class User extends DataObject
 		if (array_key_exists('Web Indexer', $enabledModules)){
 			$sections['web_indexer'] = new AdminSection('Website Indexing');
 			$sections['web_indexer']->addAction(new AdminAction('Settings', 'Define settings for indexing websites within Aspen Discovery.', '/Websites/Settings'), 'Administer Website Indexing Settings');
+			$sections['web_indexer']->addAction(new AdminAction('Website Pages', 'A list of pages that have been indexed.', '/Websites/WebsitePages'), 'Administer Website Indexing Settings');
 			$sections['web_indexer']->addAction(new AdminAction('Indexing Log', 'View the indexing log for Websites.', '/Websites/IndexingLog'), ['View System Reports', 'View Indexing Logs']);
 			$sections['web_indexer']->addAction(new AdminAction('Dashboard', 'View the usage dashboard for indexed websites.', '/Websites/Dashboard'), ['View Dashboards', 'View System Reports']);
 		}
@@ -2583,22 +2564,45 @@ class User extends DataObject
 			//$sections['user_lists']->addAction(new AdminAction('Dashboard', 'View the usage dashboard for indexed User Lists.', '/UserLists/Dashboard'), ['View Dashboards', 'View System Reports']);
 		}
 
-		$sections['aspen_help'] = new AdminSection('Aspen Discovery Help');
-		$sections['aspen_help']->addAction(new AdminAction('Help Manual', 'View Help Manual for Aspen Discovery.', '/Admin/HelpManual?page=table_of_contents'), true);
-		$sections['aspen_help']->addAction(new AdminAction('Release Notes', 'View release notes for Aspen Discovery which contain information about new functionality and fixes for each release.', '/Admin/ReleaseNotes'), true);
-		$showSubmitTicket = false;
+		if (array_key_exists('Course Reserves', $enabledModules)){
+			$sections['course_reserves'] = new AdminSection('Course Reserves');
+			$sections['course_reserves']->addAction(new AdminAction('Settings', 'Define settings for indexing course reserves within Aspen Discovery.', '/CourseReserves/Settings'), 'Administer Course Reserves');
+			$sections['course_reserves']->addAction(new AdminAction('Indexing Log', 'View the indexing log for Course Reserves.', '/CourseReserves/IndexingLog'), ['View System Reports', 'View Indexing Logs']);
+		}
+
+		$sections['support'] = new AdminSection('Aspen Discovery Support');
+		$sections['support']->addAction(new AdminAction('Request Tracker Settings', 'Define settings for a Request Tracker support system.', '/Support/RequestTrackerConnections'), 'Administer Request Tracker Connection');
 		try {
-			require_once ROOT_DIR . '/sys/SystemVariables.php';
-			$systemVariables = new SystemVariables();
-			if ($systemVariables->find(true) && !empty($systemVariables->ticketEmail)) {
-				$showSubmitTicket = true;
+			require_once ROOT_DIR . '/sys/Support/RequestTrackerConnection.php';
+			$supportConnections = new RequestTrackerConnection();
+			$hasSupportConnection = false;
+			if ($supportConnections->find(true)){
+				$hasSupportConnection = true;
 			}
-		}catch (Exception $e) {
-			//This happens before the table is setup
+			if ($hasSupportConnection) {
+				$sections['support']->addAction(new AdminAction('View Active Tickets', 'View Active Tickets.', '/Support/ViewTickets'), 'View Active Tickets');
+			}
+			$showSubmitTicket = false;
+			try {
+				require_once ROOT_DIR . '/sys/SystemVariables.php';
+				$systemVariables = new SystemVariables();
+				if ($systemVariables->find(true) && !empty($systemVariables->ticketEmail)) {
+					$showSubmitTicket = true;
+				}
+			}catch (Exception $e) {
+				//This happens before the table is setup
+			}
+			if ($showSubmitTicket) {
+				$sections['support']->addAction(new AdminAction('Submit Ticket', 'Submit a support ticket for assistance with Aspen Discovery.', '/Admin/SubmitTicket'), 'Submit Ticket');
+			}
+			if ($hasSupportConnection) {
+				$sections['support']->addAction(new AdminAction('Set Priorities', 'Set Development Priorities.', '/Support/SetDevelopmentPriorities'), 'Set Development Priorities');
+			}
+		}catch (Exception $e){
+			//This happens before tables are created, ignore
 		}
-		if ($showSubmitTicket) {
-			$sections['aspen_help']->addAction(new AdminAction('Submit Ticket', 'Submit a support ticket for assistance with Aspen Discovery.', '/Admin/SubmitTicket'), 'Submit Ticket');
-		}
+		$sections['support']->addAction(new AdminAction('Help Manual', 'View Help Manual for Aspen Discovery.', '/Admin/HelpManual?page=table_of_contents'), true);
+		$sections['support']->addAction(new AdminAction('Release Notes', 'View release notes for Aspen Discovery which contain information about new functionality and fixes for each release.', '/Admin/ReleaseNotes'), true);
 
 		return $sections;
 	}
@@ -2675,6 +2679,15 @@ class User extends DataObject
 		return false;
 	}
 
+	public function getAccountSummary()
+	{
+		if ($this->hasIlsConnection()){
+			return $this->getCatalogDriver()->getAccountSummary($this);
+		}else {
+			return [];
+		}
+	}
+
 	public function getCachedAccountSummary(string $source)
 	{
 		//Check to see if we have cached summary information
@@ -2734,7 +2747,7 @@ class User extends DataObject
 
 	public function getFormattedHoldInfoLastLoaded(){
 		if ($this->holdInfoLastLoaded == 0){
-			return translate("Loading...");
+			return translate(['text' => "Loading...", 'isPublicFacing'=>true]);
 		}else{
 			return strftime("%I:%M %p", $this->holdInfoLastLoaded);
 		}
@@ -2742,7 +2755,7 @@ class User extends DataObject
 
 	public function getFormattedCheckoutInfoLastLoaded(){
 		if ($this->checkoutInfoLastLoaded == 0){
-			return translate("Loading...");
+			return translate(['text' => "Loading...", 'isPublicFacing'=>true]);
 		}else{
 			return strftime("%I:%M %p", $this->checkoutInfoLastLoaded);
 		}
@@ -2764,6 +2777,62 @@ class User extends DataObject
 			$this->update();
 		}
 		return $this->displayName;
+	}
+
+	public function getPluginStatus(string $pluginName){
+		if ($this->hasIlsConnection()){
+			return $this->getCatalogDriver()->getPluginStatus($pluginName);
+		}else {
+			return ['enabled' => false];
+		}
+	}
+
+	function newCurbsidePickup($pickupLocation, $pickupTime, $pickupNote){
+		$result = $this->getCatalogDriver()->newCurbsidePickup($this, $pickupLocation, $pickupTime, $pickupNote);
+		$this->clearCache();
+		return $result;
+	}
+
+	public function get2FAStatusForPType(){
+		require_once ROOT_DIR . '/sys/Account/PType.php';
+		$patronType = new PType();
+		$patronType->pType = $this->patronType;
+		if($patronType->find(true)) {
+			require_once  ROOT_DIR . '/sys/TwoFactorAuthSetting.php';
+			$twoFactorAuthSetting = new TwoFactorAuthSetting();
+			$twoFactorAuthSetting->id = $patronType->twoFactorAuthSettingId;
+			if($twoFactorAuthSetting->find(true)) {
+				if($twoFactorAuthSetting->isEnabled != 'notAvailable') {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	public function is2FARequired(){
+		require_once ROOT_DIR . '/sys/Account/PType.php';
+		$patronType = new PType();
+		$patronType->pType = $this->patronType;
+		if($patronType->find(true)) {
+			require_once  ROOT_DIR . '/sys/TwoFactorAuthSetting.php';
+			$twoFactorAuthSetting = new TwoFactorAuthSetting();
+			$twoFactorAuthSetting->id = $patronType->twoFactorAuthSettingId;
+			if($twoFactorAuthSetting->find(true)) {
+				if($twoFactorAuthSetting->isEnabled == 'mandatory') {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	public function get2FAStatus(){
+		$status = $this->twoFactorStatus;
+		if($status == '1') {
+			return true;
+		}
+		return false;
 	}
 }
 

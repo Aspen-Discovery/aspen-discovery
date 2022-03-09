@@ -52,7 +52,7 @@ abstract class AbstractIlsDriver extends AbstractDriver
 
 	abstract function changeHoldPickupLocation(User $patron, $recordId, $itemToUpdateId, $newPickupLocation);
 
-	abstract function updatePatronInfo(User $patron, $canUpdateContactInfo);
+	abstract function updatePatronInfo(User $patron, $canUpdateContactInfo, $fromMasquerade);
 
 	function updateHomeLibrary(User $patron, string $homeLibraryCode){
 		return [
@@ -114,10 +114,11 @@ abstract class AbstractIlsDriver extends AbstractDriver
 	}
 
 	/**
-	 * Returns one of three values
+	 * Returns one of four values
 	 * - none - No forgot password functionality exists
 	 * - emailResetLink - A link to reset the pin is emailed to the user
 	 * - emailPin - The pin itself is emailed to the user
+	 * - emailAspenResetLink - A link to reset the pin is emailed to the user.  Reset happens within Aspen.
 	 * @return string
 	 */
 	function getForgotPasswordType()
@@ -252,27 +253,7 @@ abstract class AbstractIlsDriver extends AbstractDriver
 		];
 	}
 
-	public function bookMaterial($patron, $recordId, $startDate, $startTime, $endDate, $endTime)
-	{
-		return array('success' => false, 'message' => 'Not Implemented.');
-	}
-
-	public function cancelBookedMaterial($patron, $cancelIds)
-	{
-		return array('success' => false, 'message' => 'Not Implemented.');
-	}
-
-	public function cancelAllBookedMaterial($patron)
-	{
-		return array('success' => false, 'message' => 'Not Implemented.');
-	}
-
-	public function getMyBookings(User $patron)
-	{
-		return [];
-	}
-
-	public function placeVolumeHold($patron, $recordId, $volumeId, $pickupBranch)
+	public function placeVolumeHold(User $patron, $recordId, $volumeId, $pickupBranch)
 	{
 		return array(
 			'success' => false,
@@ -329,10 +310,11 @@ abstract class AbstractIlsDriver extends AbstractDriver
 	}
 
 	function getPasswordPinValidationRules(){
+		global $library;
 		return [
-			'minLength' => 4,
-			'maxLength' => 4,
-			'onlyDigitsAllowed' => true,
+			'minLength' => $library->minPinLength,
+			'maxLength' => $library->maxPinLength,
+			'onlyDigitsAllowed' => $library->onlyDigitsAllowedInPin,
 		];
 	}
 
@@ -390,6 +372,74 @@ abstract class AbstractIlsDriver extends AbstractDriver
 	}
 
 	public function treatVolumeHoldsAsItemHolds() {
+		return false;
+	}
+
+	public function getPluginStatus(string $pluginName) {
+		return [
+			'success' => false,
+			'message' => 'This functionality has not been implemented for this ILS'
+		];
+	}
+
+	public function getCurbsidePickupSettings($locationCode) {
+		return [
+			'success' => false,
+			'message' => 'This functionality has not been implemented for this ILS'
+		];
+	}
+
+	public function hasCurbsidePickups($patron) {
+		return [
+			'success' => false,
+			'message' => 'This functionality has not been implemented for this ILS'
+		];
+	}
+
+	public function getPatronCurbsidePickups($patron) {
+		return [
+			'success' => false,
+			'message' => 'This functionality has not been implemented for this ILS'
+		];
+	}
+
+	public function newCurbsidePickup($patron, $location, $time, $note) {
+		return [
+			'success' => false,
+			'message' => 'This functionality has not been implemented for this ILS'
+		];
+	}
+
+	public function cancelCurbsidePickup($patron, $pickupId) {
+		return [
+			'success' => false,
+			'message' => 'This functionality has not been implemented for this ILS'
+		];
+	}
+
+	public function checkInCurbsidePickup($patron, $pickupId) {
+		return [
+			'success' => false,
+			'message' => 'This functionality has not been implemented for this ILS'
+		];
+	}
+
+	public function getAllCurbsidePickups() {
+		return [
+			'success' => false,
+			'message' => 'This functionality has not been implemented for this ILS'
+		];
+	}
+
+	/**
+	 * @param string $patronBarcode
+	 * @return bool|User
+	 */
+	public function findNewUser($patronBarcode){
+		return false;
+	}
+
+	public function hasIssueSummaries(){
 		return false;
 	}
 }

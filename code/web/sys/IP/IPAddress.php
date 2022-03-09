@@ -9,6 +9,7 @@ class IPAddress extends DataObject
 	public $location;                //varchar(255)
 	public $ip;                      //varchar(255)
 	public $isOpac;                   //tinyint(1)
+	public $defaultLogMeOutAfterPlacingHoldOn;
 	public $blockAccess;
 	public $allowAPIAccess;
 	public $showDebuggingInformation;
@@ -39,6 +40,7 @@ class IPAddress extends DataObject
 			'location' => array('property'=>'location', 'type'=>'text', 'label'=>'Display Name', 'description'=>'Descriptive information for the IP Address for internal use'),
 			'locationid' => array('property'=>'locationid', 'type'=>'enum', 'values'=>$locationLookupList, 'label'=>'Location', 'description'=>'The Location which this IP address maps to'),
 			'isOpac' => array('property' => 'isOpac', 'type' => 'checkbox', 'label' => 'Treat as a Public OPAC', 'description' => 'This IP address will be treated as a public OPAC with autologout features turned on.', 'default' => true),
+			'defaultLogMeOutAfterPlacingHoldOn' => array('property' => 'defaultLogMeOutAfterPlacingHoldOn', 'type' => 'checkbox', 'label' => 'Default "Log me out" checkbox on when placing a hold', 'description' => 'Whether or not the log me out checkbox is defaulted on or off. Turning this off is useful for minimizing patron disruption, but you should be sure to have a way to automatically logout patron sessions on shared computers.', 'default' => true),
 			'blockAccess' => array('property' => 'blockAccess', 'type' => 'checkbox', 'label' => 'Block Access from this IP', 'description' => 'Traffic from this IP will not be allowed to use Aspen.', 'default' => false),
 			'allowAPIAccess' => array('property' => 'allowAPIAccess', 'type' => 'checkbox', 'label' => 'Allow API Access', 'description' => 'Traffic from this IP will be allowed to use Aspen APIs.', 'default' => false),
 			'showDebuggingInformation' => array('property' => 'showDebuggingInformation', 'type' => 'checkbox', 'label' => 'Show Debugging Information', 'description' => 'Traffic from this IP will have debugging information emitted for it.', 'default' => false),
@@ -53,10 +55,18 @@ class IPAddress extends DataObject
 
 	function insert(){
 		$this->calcIpRange();
+		/** @var Memcache $memCache */
+		global $memCache;
+		$memCache->deleteStartingWith('ipId_for_ip_');
+		$memCache->deleteStartingWith('location_for_ip_');
 		return parent::insert();
 	}
 	function update(){
 		$this->calcIpRange();
+		/** @var Memcache $memCache */
+		global $memCache;
+		$memCache->deleteStartingWith('ipId_for_ip_');
+		$memCache->deleteStartingWith('location_for_ip_');
 		return parent::update();
 	}
 	function validateIPAddress(){
@@ -188,6 +198,7 @@ class IPAddress extends DataObject
 			$ip = $_COOKIE['test_ip'];
 		} else {
 			$ip = IPAddress::getClientIP();
+			setcookie('test_ip', $ip, time() - 1000, '/');
 		}
 		IPAddress::$activeIp = $ip;
 		$timer->logTime("getActiveIp");

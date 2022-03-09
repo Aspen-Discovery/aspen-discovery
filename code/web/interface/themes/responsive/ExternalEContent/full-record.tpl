@@ -9,7 +9,7 @@
 		<h1>
 			{$recordDriver->getTitle()|removeTrailingPunctuation|escape}
 			{if $recordDriver->getFormats()}
-				<br><small>({implode subject=$recordDriver->getFormats() glue=", "})</small>
+				<br><small>({implode subject=$recordDriver->getFormats() glue=", " translate=true isPublicFacing=true})</small>
 			{/if}
 		</h1>
 
@@ -17,7 +17,7 @@
 			<div class="col-xs-4 col-sm-5 col-md-4 col-lg-3 text-center">
 				{if $disableCoverArt != 1}
 					<div id="recordCover" class="text-center row">
-						<img alt="{translate text='Book Cover' inAttribute=true}" class="img-thumbnail" src="{$recordDriver->getBookcoverUrl('medium')}">
+						<img alt="{translate text='Book Cover' isPublicFacing=true inAttribute=true}" class="img-thumbnail" src="{$recordDriver->getBookcoverUrl('medium')}">
 					</div>
 				{/if}
 				{if $showRatings}
@@ -45,7 +45,7 @@
 							<div class="btn-group btn-group-vertical btn-block">
 								{* Options for the user to view online or download *}
 								{foreach from=$actions item=link}
-									<a href="{if $link.url}{$link.url}{else}#{/if}" {if $link.onclick}onclick="{$link.onclick}"{/if} class="btn btn-sm btn-action btn-wrap" {if !empty($link.target)}target="{$link.target}"{/if}>{$link.title}</a>&nbsp;
+									<a href="{if $link.url}{$link.url}{else}#{/if}" {if $link.onclick}onclick="{$link.onclick}"{/if} class="btn btn-sm btn-action btn-wrap" {if !empty($link.target)}target="{$link.target}"{/if}>{translate text=$link.title isPublicFacing=true}</a>&nbsp;
 								{/foreach}
 							</div>
 						</div>
@@ -53,7 +53,7 @@
 				</div>
 
 				<div class="row">
-					{include file='GroupedWork/result-tools-horizontal.tpl' ratingData=$recordDriver->getRatingData() recordUrl=$recordDriver->getLinkUrl() showMoreInfo=false}
+					{include file='GroupedWork/result-tools-horizontal.tpl' ratingData=$recordDriver->getRatingData() recordUrl=$recordDriver->getLinkUrl() showMoreInfo=false showNotInterested=false}
 				</div>
 
 			</div>

@@ -40,7 +40,7 @@ class MillenniumHolds{
 				//Hold was successful
 				$hold_result['success'] = true;
 				if (!isset($reason) || strlen($reason) == 0){
-					$hold_result['message'] = translate(['text'=>"millennium_hold_success", 'defaultText'=>"Your hold was placed successfully.  It may take up to 45 seconds for the hold to appear on your account."]);
+					$hold_result['message'] = translate(['text'=>"Your hold was placed successfully.  It may take up to 45 seconds for the hold to appear on your account.", 'isPublicFacing'=>true]);
 				}else{
 					$hold_result['message'] = $reason;
 				}
@@ -236,7 +236,7 @@ class MillenniumHolds{
 							$title = (array_key_exists($tmpBib, $titles) && $titles[$tmpBib] != '') ? $titles[$tmpBib] : 'an item';
 
 							if (!empty($hold->_freezeError)) {
-								$failure_messages[$tmpXnumInfo] = "The hold for $title could not be ". translate('frozen') .'.  Please try again later or see your librarian.';
+								$failure_messages[$tmpXnumInfo] = translate(['text' => "The hold for %1% could not be frozen.  Please try again later or see your librarian.", 1=>$title, 'isPublicFacing'=>true]);
 								// use original id as index so that javascript functions can pick out failed cancels
 							}
 
@@ -279,17 +279,29 @@ class MillenniumHolds{
 		} elseif ($type == 'update') {
 			// Thaw Hold
 			if ($freezeValue == 'off') {
+				if ($isPlural){
+					$message = 'Your holds were thawed successfully.';
+				}else{
+					$message = 'Your holds was thawed successfully.';
+				}
 				return array(
 					'title' => $titles,
 					'success' => true,
-					'message' => 'Your hold'.($isPlural ? 's were' : ' was' ).' '. translate('thawed') .' successfully.');
+					'message' => translate(['text' => $message, 'isPublicFacing'=>true])
+				);
 			} elseif ($freezeValue == 'on') {
 				//TODO check for error messages
 				if ($success) { // All were successful
+					if ($isPlural){
+						$message = 'Your holds were frozen successfully.';
+					}else{
+						$message = 'Your holds was frozen successfully.';
+					}
 					return array(
 						'title' => $titles,
 						'success' => true,
-						'message' => 'Your hold' . ($isPlural ? 's were' : ' was') . ' '. translate('frozen') .' successfully.');
+						'message' => translate(['text' => $message, 'isPublicFacing'=>true])
+					);
 				} else { // at least one failure
 					return array(
 						'title' => $titles,
@@ -300,17 +312,29 @@ class MillenniumHolds{
 			} elseif ($freezeValue == '') {
 				// Change Pick-up Location
 				//TODO check for error messages
+				if ($isPlural){
+					$message = 'Your holds were updated successfully.';
+				}else{
+					$message = 'Your holds was updated successfully.';
+				}
 				return array(
 					'title' => $titles,
 					'success' => true,
-					'message' => 'Your hold'.($isPlural ? 's were' : ' was' ).' updated successfully.');
+					'message' => translate(['text' => $message, 'isPublicFacing'=>true])
+				);
 			}
 
 		}else{
+			if ($isPlural){
+				$message = 'Your holds were updated successfully.';
+			}else{
+				$message = 'Your holds was updated successfully.';
+			}
 			return array(
 				'title' => $titles,
 				'success' => true,
-				'message' => 'Your hold'.($isPlural ? 's were' : ' was' ).' updated successfully.');
+				'message' => translate(['text' => $message, 'isPublicFacing'=>true])
+			);
 		}
 		return null;
 	}
@@ -335,7 +359,7 @@ class MillenniumHolds{
 		$pageContents = str_replace('<em>This hold can not be frozen.</em></tr>', '<em>This hold can not be frozen.</em></td></tr>', $pageContents);
 
 		//Get the headers from the table
-		preg_match_all('/<th\\s+class="patFuncHeaders">\\s*([\\w\\s]*?)\\s*<\/th>/si', $pageContents, $result, PREG_SET_ORDER);
+		preg_match_all('/<th\\s+(?:.*?)class="patFuncHeaders">\\s*([\\w\\s]*?)\\s*<\/th>/si', $pageContents, $result, PREG_SET_ORDER);
 		$sKeys = array();
 		for ($matchi = 0; $matchi < count($result); $matchi++) {
 			$sKeys[] = $result[$matchi][1];
@@ -351,7 +375,7 @@ class MillenniumHolds{
 		$sCount = 0;
 
 		foreach ($sRows as $sRow) {
-			preg_match_all('/<td.*?>(.*?)<\/td>/si', $sRow, $result, PREG_SET_ORDER);
+			preg_match_all('/<t[dh].*?>(.*?)<\/td>/si', $sRow, $result, PREG_SET_ORDER);
 			$sCols = array();
 			for ($matchi = 0; $matchi < count($result); $matchi++) {
 				$sCols[] = $result[$matchi][1];
@@ -384,11 +408,11 @@ class MillenniumHolds{
 						$curHold->cancelable = false;
 					}
 				} elseif (stripos($sKeys[$i], "TITLE") > -1) {
-					if (preg_match('/.*?<a href=\\"\/record=(.*?)(?:~S\\d{1,2})\\">(.*?)<\/a>.*/', $sCols[$i], $matches)) {
+					if (preg_match('/.*?<a (?:.*?)href=\\"\/record=(.*?)(?:~S\\d{1,2})\\">(.*?)<\/a>.*/', $sCols[$i], $matches)) {
 						$shortId = $matches[1];
 						$bibId = '.' . $matches[1] . $this->driver->getCheckDigit($shortId);
 						$title = strip_tags($matches[2]);
-					} elseif (preg_match('/.*<a href=".*?\/record\/C__R(.*?)\\?.*?">(.*?)<\/a>.*/si', $sCols[$i], $matches)) {
+					} elseif (preg_match('/.*<a (?:.*?)href=".*?\/record\/C__R(.*?)\\?.*?">(.*?)<\/a>.*/si', $sCols[$i], $matches)) {
 						$shortId = $matches[1];
 						$bibId = '.' . $matches[1] . $this->driver->getCheckDigit($shortId);
 						$title = strip_tags($matches[2]);
@@ -511,6 +535,8 @@ class MillenniumHolds{
 				if ($curHold->status == 'Pending'){
 					if (isset($curHold->canFreeze)){
 						$canFreeze = $curHold->canFreeze;
+					}else{
+						$canFreeze = false;
 					}
 					$curHold->canFreeze = $canFreeze && $this->driver->allowFreezingPendingHolds();
 				}
@@ -680,6 +706,9 @@ class MillenniumHolds{
 			$post_data['pat_submit']="submit";
 			$post_data['locx00']= str_pad($pickupBranch, 5); // padded with spaces, which will get url-encoded into plus signs by httpd_build_query() in the curlPostPage() method.
 			if (!empty($itemId) && $itemId != -1){
+				if ($itemId[0] == '.'){
+					$itemId = substr($itemId, 1, -1);
+				}
 				$post_data['radio']=$itemId;
 			}
 
@@ -714,7 +743,7 @@ class MillenniumHolds{
 	 *                                If an error occurs, return a AspenError
 	 * @access  public
 	 */
-	function placeVolumeHold($patron, $recordId, $volumeId, $pickupBranch) {
+	function placeVolumeHold(User $patron, $recordId, $volumeId, $pickupBranch) {
 		global $logger;
 
 		if (strpos($recordId, ':')){

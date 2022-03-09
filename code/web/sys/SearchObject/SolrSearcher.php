@@ -36,28 +36,10 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
 	public function __construct()
 	{
 		parent::__construct();
-		global $configArray;
 		// Set appropriate debug mode:
 		// Debugging
-		if ($configArray['System']['debugSolr']) {
-			//Verify that the ip is ok
-			$activeIp = IPAddress::getActiveIp();
-			$maintenanceIps = $configArray['System']['maintenanceIps'];
-			$debug = true;
-			if (strlen($maintenanceIps) > 0) {
-				$debug = false;
-				$allowableIps = explode(',', $maintenanceIps);
-				if (in_array($activeIp, $allowableIps)) {
-					$debug = true;
-					if ($configArray['System']['debugSolrQuery'] == true) {
-						$this->debugSolrQuery = true;
-					}
-				}
-			}
-			$this->debug = $debug;
-		} else {
-			$this->debug = false;
-		}
+		$this->debug = IPAddress::showDebuggingInformation();
+		$this->debugSolrQuery = IPAddress::showDebuggingInformation();
 
 		//Setup Spellcheck
 		$this->spellcheckEnabled = true;
@@ -611,7 +593,7 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
 				// Initialize the array of data about the current facet:
 				$currentSettings = array();
 				$currentSettings['value'] = $facet[0];
-				$currentSettings['display'] = $translate ? translate($facet[0]) : $facet[0];
+				$currentSettings['display'] = $translate ? translate(['text'=>$facet[0],'isPublicFacing'=>true, 'isMetadata'=>true]) : $facet[0];
 				$currentSettings['count'] = $facet[1];
 				$currentSettings['isApplied'] = false;
 				$currentSettings['url'] = $this->renderLinkWithFilter($field, $facet[0]);
@@ -728,7 +710,7 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
 
 		if (count($this->filterList) > 0) {
 			// TODO : better display of filters
-			$interface->assign('lookfor', $lookfor . " (" . translate('with filters') . ")");
+			$interface->assign('lookfor', $lookfor . " (" . translate(['text' => 'with filters', 'isPublicFacing'=>true]) . ")");
 		} else {
 			$interface->assign('lookfor', $lookfor);
 		}
@@ -846,6 +828,13 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
 	}
 
 	/**
+	 * @param String $fields - a list of comma separated fields to return
+	 */
+	function setFieldsToReturn($fields){
+		//Do nothing, the fields are not customizable at this level
+	}
+
+	/**
 	 * Retrieves a document specified by the ID.
 	 *
 	 * @param string $id The document to retrieve from Solr
@@ -903,6 +892,11 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
 	public function setSearchTerm($searchTerm)
 	{
 		$this->initBasicSearch($searchTerm);
+	}
+
+	public function setSearchTermWithIndex($searchIndex, $searchTerm)
+	{
+		$this->initBasicSearchWithIndex($searchIndex, $searchTerm);
 	}
 
 	public function getSpotlightResults(CollectionSpotlight $spotlight){

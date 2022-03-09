@@ -245,7 +245,7 @@ AspenDiscovery.GroupedWork = (function(){
 				$.getJSON(
 						url, function(data){
 							if (data.result === true){
-								$("#notInterested" + recordId).css('background-color', '#f73d3d').css('color', 'white').prop("disabled", true);
+								$("#groupedRecord" + recordId).parent('.result').hide();
 							}else{
 								AspenDiscovery.showMessage('Sorry', data.message);
 							}
@@ -268,15 +268,6 @@ AspenDiscovery.GroupedWork = (function(){
 
 		reloadEnrichment: function (id){
 			AspenDiscovery.GroupedWork.loadEnrichmentInfo(id, true);
-		},
-
-		reloadIslandora: function(id){
-			var url = Globals.path + '/GroupedWork/' + id + '/AJAX?method=reloadIslandora';
-			$.getJSON(url, function (data){
-					AspenDiscovery.showMessage("Success", data.message, true, true);
-				}
-			);
-			return false;
 		},
 
 		saveReview: function(id){

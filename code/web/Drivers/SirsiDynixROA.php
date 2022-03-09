@@ -9,22 +9,20 @@ class SirsiDynixROA extends HorizonAPI
 	private static $sessionIdsForUsers = array();
 	private static $logAllAPICalls = false;
 
-	private function staffOrPatronSessionTokenSwitch()
-	{
-		$useStaffAccountForWebServices = true;
-		global $configArray;
-		if (isset($configArray['Catalog']['useStaffSessionTokens'])) {
-			$useStaffAccountForWebServices = $configArray['Catalog']['useStaffSessionTokens'];
-		}
-		return $useStaffAccountForWebServices;
-
-	}
-
 	// $customRequest is for curl, can be 'PUT', 'DELETE', 'POST'
-	public function getWebServiceResponse($url, $params = null, $sessionToken = null, $customRequest = null, $additionalHeaders = null)
+	public function getWebServiceResponse($requestType, $url, $params = null, $sessionToken = null, $customRequest = null, $additionalHeaders = null, $dataToSanitize = [], $workingLibraryId = null)
 	{
 		global $logger;
 		global $library;
+		global $locationSingleton;
+		$physicalLocation = $locationSingleton->getPhysicalLocation();
+
+		if (empty($workingLibraryId)) {
+			$workingLibraryId = $library->ilsCode;
+			if (!empty($physicalLocation)) {
+				$workingLibraryId = $physicalLocation->code;
+			}
+		}
 		$logger->log('WebServiceURL :' . $url, Logger::LOG_NOTICE);
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_URL, $url);
@@ -33,7 +31,7 @@ class SirsiDynixROA extends HorizonAPI
 			'Accept: application/json',
 			'Content-Type: application/json',
 			'SD-Originating-App-Id: Aspen Discovery',
-			'SD-Working-LibraryID: ' . $library->ilsCode,
+			'SD-Working-LibraryID: ' . $workingLibraryId,
 			'x-sirs-clientID: ' . $clientId,
 		);
 		if ($sessionToken != null) {
@@ -43,6 +41,7 @@ class SirsiDynixROA extends HorizonAPI
 			$headers = array_merge($headers, $additionalHeaders);
 		}
 		if (empty($customRequest)) {
+            $customRequest = 'GET';
 			curl_setopt($ch, CURLOPT_HTTPGET, true);
 		} elseif ($customRequest == 'POST') {
 			curl_setopt($ch, CURLOPT_POST, true);
@@ -69,6 +68,7 @@ class SirsiDynixROA extends HorizonAPI
 			$logger->log(print_r($json, true), Logger::LOG_ERROR);
 		}
 
+        ExternalRequestLogEntry::logRequest('symphony.' . $requestType, $customRequest, $url, $headers, json_encode($params), curl_getinfo($ch)['http_code'], $json, $dataToSanitize);
 		if ($json !== false && $json !== 'false') {
 			curl_close($ch);
 			return json_decode($json);
@@ -79,7 +79,7 @@ class SirsiDynixROA extends HorizonAPI
 		}
 	}
 
-	function findNewUser($barcode)
+	function findNewUser($patronBarcode)
 	{
 		// Creates a new user like patronLogin but looks up user by barcode.
 		// Note: The user pin is not supplied in the Account Info Lookup call.
@@ -87,7 +87,7 @@ class SirsiDynixROA extends HorizonAPI
 		if (!empty($sessionToken)) {
 			$webServiceURL = $this->getWebServiceURL();
 			$includeFields = urlEncode("firstName,lastName,privilegeExpiresDate,preferredAddress,address1,address2,address3,library,primaryPhone,profile,pin,blockList{owed}");
-			$lookupMyAccountInfoResponse = $this->getWebServiceResponse($webServiceURL . '/user/patron/search?q=ID:' . $barcode . '&rw=1&ct=1&includeFields=' . $includeFields, null, $sessionToken);
+			$lookupMyAccountInfoResponse = $this->getWebServiceResponse('findNewUser', $webServiceURL . '/user/patron/search?q=ID:' . $patronBarcode . '&rw=1&ct=1&includeFields=' . $includeFields, null, $sessionToken);
 			if (!empty($lookupMyAccountInfoResponse->result) && $lookupMyAccountInfoResponse->totalResults == 1) {
 				$userID = $lookupMyAccountInfoResponse->result[0]->key;
 				$lookupMyAccountInfoResponse = $lookupMyAccountInfoResponse->result[0];
@@ -119,7 +119,7 @@ class SirsiDynixROA extends HorizonAPI
 					$user->displayName = '';
 				}
 				$user->_fullname = isset($fullName) ? $fullName : '';
-				$user->cat_username = $barcode;
+				$user->cat_username = $patronBarcode;
 				if (!empty($lookupMyAccountInfoResponse->fields->pin)) {
 					$user->cat_password = $lookupMyAccountInfoResponse->fields->pin;
 				}
@@ -149,14 +149,19 @@ class SirsiDynixROA extends HorizonAPI
 								break;
 							case 'CITY/STATE' :
 								$cityState = $fields->data;
-								if (substr_count($cityState, ' ') > 1) {
-									//Splitting multiple word cities
-									$last_space = strrpos($cityState, ' ');
-									$City = substr($cityState, 0, $last_space);
-									$State = substr($cityState, $last_space + 1);
+								if (!empty($cityState)) {
+									if (substr_count($cityState, ' ') > 1) {
+										//Splitting multiple word cities
+										$last_space = strrpos($cityState, ' ');
+										$City = substr($cityState, 0, $last_space);
+										$State = substr($cityState, $last_space + 1);
 
-								} else {
-									list($City, $State) = explode(' ', $cityState);
+									} else {
+										list($City, $State) = explode(' ', $cityState);
+									}
+								}else{
+									$City = '';
+									$State = '';
 								}
 								break;
 							case 'ZIP' :
@@ -328,17 +333,17 @@ class SirsiDynixROA extends HorizonAPI
 			$webServiceURL = $this->getWebServiceURL();
 
 			//  Calls that show how patron-related data is represented
-			//	$patronDescribeResponse           = $this->getWebServiceResponse($webServiceURL . '/user/patron/describe', null, $sessionToken);
-			//	$patronPhoneDescribeResponse           = $this->getWebServiceResponse($webServiceURL . '/user/patron/phone/describe', null, $sessionToken);
-			//	$patronPhoneListDescribeResponse           = $this->getWebServiceResponse($webServiceURL . '/user/patron/phoneList/describe', null, $sessionToken);
-			//	$patronStatusInfoDescribeResponse = $this->getWebServiceResponse($webServiceURL . '/user/patronStatusInfo/describe', null, $sessionToken);
-			//	$patronAddress1PolicyDescribeResponse = $this->getWebServiceResponse($webServiceURL . '/user/patron/address1/describe', null, $sessionToken);
+			//	$patronDescribeResponse           = $this->getWebServiceResponse('patronDescribe', $webServiceURL . '/user/patron/describe', null, $sessionToken);
+			//	$patronPhoneDescribeResponse           = $this->getWebServiceResponse('patronPhoneDescribe', $webServiceURL . '/user/patron/phone/describe', null, $sessionToken);
+			//	$patronPhoneListDescribeResponse           = $this->getWebServiceResponse('patronPhoneListDescribe', $webServiceURL . '/user/patron/phoneList/describe', null, $sessionToken);
+			//	$patronStatusInfoDescribeResponse = $this->getWebServiceResponse('patronStatusInfoDescribe', $webServiceURL . '/user/patronStatusInfo/describe', null, $sessionToken);
+			//	$patronAddress1PolicyDescribeResponse = $this->getWebServiceResponse('patronDAddress1PolicyDescribe', $webServiceURL . '/user/patron/address1/describe', null, $sessionToken);
 
 			$includeFields = urlEncode("firstName,lastName,privilegeExpiresDate,preferredAddress,address1,address2,address3,library,primaryPhone,profile,blockList{owed}");
 			$accountInfoLookupURL = $webServiceURL . '/user/patron/key/' . $sirsiRoaUserID . '?includeFields=' . $includeFields;
 
 			// phoneList is for texting notification preferences
-			$lookupMyAccountInfoResponse = $this->getWebServiceResponse($accountInfoLookupURL, null, $staffSessionToken);
+			$lookupMyAccountInfoResponse = $this->getWebServiceResponse('accountLookupForLogin', $accountInfoLookupURL, null, $staffSessionToken);
 			if ($lookupMyAccountInfoResponse && !isset($lookupMyAccountInfoResponse->messageList)) {
 				$userExistsInDB = false;
 				$user = new User();
@@ -399,12 +404,13 @@ class SirsiDynixROA extends HorizonAPI
 		$accountInfoLookupURL = $webServiceURL . '/user/patron/key/' . $patron->username . '?includeFields=' . $includeFields;
 
 		$sessionToken = $this->getSessionToken($patron);
-		$lookupMyAccountInfoResponse = $this->getWebServiceResponse($accountInfoLookupURL, null, $sessionToken);
+		$lookupMyAccountInfoResponse = $this->getWebServiceResponse('accountSummary', $accountInfoLookupURL, null, $sessionToken);
 
 		if ($lookupMyAccountInfoResponse && !isset($lookupMyAccountInfoResponse->messageList)) {
-			$summary->numCheckedOut = count($lookupMyAccountInfoResponse->fields->circRecordList);
-			foreach ($lookupMyAccountInfoResponse->fields->circRecordList as $checkout) {
-				if ($checkout->fields->overdue) {
+			$checkouts = $this->getCheckouts($patron);
+			$summary->numCheckedOut = count($checkouts);
+			foreach ($checkouts as $checkout) {
+				if ($checkout->isOverdue()) {
 					$summary->numOverdue++;
 				}
 			}
@@ -441,12 +447,9 @@ class SirsiDynixROA extends HorizonAPI
 
 	private function getStaffSessionToken()
 	{
-		global $configArray;
 		$staffSessionToken = false;
-		if (!empty($configArray['Catalog']['selfRegStaffUser']) && !empty($configArray['Catalog']['selfRegStaffPassword'])) {
-			$selfRegStaffUser = $configArray['Catalog']['selfRegStaffUser'];
-			$selfRegStaffPassword = $configArray['Catalog']['selfRegStaffPassword'];
-			list(, $staffSessionToken) = $this->staffLoginViaWebService($selfRegStaffUser, $selfRegStaffPassword);
+		if (!empty($this->accountProfile->staffUsername) && !empty($this->accountProfile->staffPassword)) {
+			list(, $staffSessionToken) = $this->staffLoginViaWebService($this->accountProfile->staffUsername, $this->accountProfile->staffPassword);
 		}
 		return $staffSessionToken;
 	}
@@ -459,12 +462,13 @@ class SirsiDynixROA extends HorizonAPI
 
 		$sessionToken = $this->getStaffSessionToken();
 		if (!empty($sessionToken)) {
+			global $library;
 			$webServiceURL = $this->getWebServiceURL();
 
-			// $patronDescribeResponse   = $this->getWebServiceResponse($webServiceURL . '/user/patron/describe');
-			// $address1DescribeResponse = $this->getWebServiceResponse($webServiceURL . '/user/patron/address1/describe');
-			// $addressDescribeResponse  = $this->getWebServiceResponse($webServiceURL . '/user/patron/address/describe');
-			// $userProfileDescribeResponse  = $this->getWebServiceResponse($webServiceURL . '/policy/userProfile/describe');
+			// $patronDescribeResponse   = $this->getWebServiceResponse('patronDescribe', $webServiceURL . '/user/patron/describe');
+			// $address1DescribeResponse = $this->getWebServiceResponse('address1Describe', $webServiceURL . '/user/patron/address1/describe');
+			// $addressDescribeResponse  = $this->getWebServiceResponse('addressDescribe', $webServiceURL . '/user/patron/address/describe');
+			// $userProfileDescribeResponse  = $this->getWebServiceResponse('userProfileDescribe', $webServiceURL . '/policy/userProfile/describe');
 
 			$createPatronInfoParameters = array(
 				'fields' => array(),
@@ -477,62 +481,44 @@ class SirsiDynixROA extends HorizonAPI
 
 			$createPatronInfoParameters['fields']['profile'] = array(
 				'resource' => '/policy/userProfile',
-				'key' => 'VIRTUAL',
+				'key' => 'SELFREG', //TODO: This needs to be configurable
 			);
 
 			if (!empty($_REQUEST['firstName'])) {
-				$createPatronInfoParameters['fields']['firstName'] = trim($_REQUEST['firstName']);
+				$createPatronInfoParameters['fields']['firstName'] = $this->getPatronFieldValue(trim($_REQUEST['firstName']), $library->useAllCapsWhenSubmittingSelfRegistration);
 			}
 			if (!empty($_REQUEST['middleName'])) {
-				$createPatronInfoParameters['fields']['middleName'] = trim($_REQUEST['middleName']);
+				$createPatronInfoParameters['fields']['middleName'] = $this->getPatronFieldValue(trim($_REQUEST['middleName']), $library->useAllCapsWhenSubmittingSelfRegistration);
 			}
 			if (!empty($_REQUEST['lastName'])) {
-				$createPatronInfoParameters['fields']['lastName'] = trim($_REQUEST['lastName']);
+				$createPatronInfoParameters['fields']['lastName'] = $this->getPatronFieldValue(trim($_REQUEST['lastName']), $library->useAllCapsWhenSubmittingSelfRegistration);
 			}
 			if (!empty($_REQUEST['suffix'])) {
-				$createPatronInfoParameters['fields']['suffix'] = trim($_REQUEST['suffix']);
+				$createPatronInfoParameters['fields']['suffix'] = $this->getPatronFieldValue(trim($_REQUEST['suffix']), $library->useAllCapsWhenSubmittingSelfRegistration);
 			}
 			if (!empty($_REQUEST['birthDate'])) {
-				$birthdate = date_create_from_format('m-d-Y', trim($_REQUEST['birthDate']));
-				$createPatronInfoParameters['fields']['birthDate'] = $birthdate->format('Y-m-d');
+				$createPatronInfoParameters['fields']['birthDate'] = $this->getPatronFieldValue(trim($_REQUEST['birthDate']), $library->useAllCapsWhenSubmittingSelfRegistration);
 			}
-			if (!empty($_REQUEST['pin'])) {
-				$pin = trim($_REQUEST['pin']);
-				if (!empty($pin) && $pin == trim($_REQUEST['pin1'])) {
-					$createPatronInfoParameters['fields']['pin'] = $pin;
-				} else {
-					// Pin Mismatch
-					return array(
-						'success' => false,
-					);
-				}
-			} else {
-				// No Pin
-				return array(
-					'success' => false,
-				);
-			}
-
 
 			// Update Address Field with new data supplied by the user
 			if (isset($_REQUEST['email'])) {
-				$this->setPatronUpdateField('EMAIL', $_REQUEST['email'], $updatePatronInfoParameters, $preferredAddress, $index);
+				$this->setPatronUpdateField('EMAIL', $this->getPatronFieldValue($_REQUEST['email'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
 			}
 
 			if (isset($_REQUEST['phone'])) {
-				$this->setPatronUpdateField('PHONE', $_REQUEST['phone'], $updatePatronInfoParameters, $preferredAddress, $index);
+				$this->setPatronUpdateField('HOMEPHONE', $_REQUEST['phone'], $createPatronInfoParameters, $preferredAddress, $index);
 			}
 
 			if (isset($_REQUEST['address'])) {
-				$this->setPatronUpdateField('STREET', $_REQUEST['address'], $updatePatronInfoParameters, $preferredAddress, $index);
+				$this->setPatronUpdateField('STREET', $this->getPatronFieldValue($_REQUEST['address'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
 			}
 
 			if (isset($_REQUEST['city']) && isset($_REQUEST['state'])) {
-				$this->setPatronUpdateField('CITY/STATE', $_REQUEST['city'] . ' ' . $_REQUEST['state'], $updatePatronInfoParameters, $preferredAddress, $index);
+				$this->setPatronUpdateField('CITY/STATE', $this->getPatronFieldValue($_REQUEST['city'] . ' ' . $_REQUEST['state'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
 			}
 
 			if (isset($_REQUEST['zip'])) {
-				$this->setPatronUpdateField('ZIP', $_REQUEST['zip'], $updatePatronInfoParameters, $preferredAddress, $index);
+				$this->setPatronUpdateField('ZIP', $this->getPatronFieldValue($_REQUEST['zip'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
 			}
 
 			// Update Home Location
@@ -547,16 +533,18 @@ class SirsiDynixROA extends HorizonAPI
 				}
 			}
 
+			//TODO: We should be able to create either a random barcode or a barcode starting with a specific prefix and choose the length.
 			$barcode = new Variable();
-			if ($barcode->get('name', 'self_registration_card_number')) {
+			$barcode->name = 'self_registration_card_number';
+			if ($barcode->find(true)) {
 				$createPatronInfoParameters['fields']['barcode'] = $barcode->value;
 
-				global $configArray;
-				$overrideCode = $configArray['Catalog']['selfRegOverrideCode'];
-				$overrideHeaders = array('SD-Prompt-Return:USER_PRIVILEGE_OVRCD/' . $overrideCode);
+				//global $configArray;
+				//$overrideCode = $configArray['Catalog']['selfRegOverrideCode'];
+				//$overrideHeaders = array('SD-Prompt-Return:USER_PRIVILEGE_OVRCD/' . $overrideCode);
 
 
-				$createNewPatronResponse = $this->getWebServiceResponse($webServiceURL . '/user/patron/', $createPatronInfoParameters, $sessionToken, 'POST', $overrideHeaders);
+				$createNewPatronResponse = $this->getWebServiceResponse('selfRegister', $webServiceURL . '/user/patron/', $createPatronInfoParameters, $sessionToken, 'POST');
 
 				if (isset($createNewPatronResponse->messageList)) {
 					foreach ($createNewPatronResponse->messageList as $message) {
@@ -574,11 +562,14 @@ class SirsiDynixROA extends HorizonAPI
 					global $logger;
 					$logger->log('Symphony Driver - Patron Info Update Error - Error from ILS : ' . implode(';', $updateErrors), Logger::LOG_ERROR);
 				} else {
+
 					$selfRegResult = array(
 						'success' => true,
-						'barcode' => $barcode->value++
+						'barcode' => $barcode->value,
+						'requirePinReset' => true,
 					);
 					// Update the card number counter for the next Self-Reg user
+					$barcode->value++;
 					if (!$barcode->update()) {
 						// Log Error temp barcode number not
 						global $logger;
@@ -589,6 +580,7 @@ class SirsiDynixROA extends HorizonAPI
 				// Error: unable to set barcode number.
 				global $logger;
 				$logger->log('Sirsi Self Registration barcode counter was not found!', Logger::LOG_ERROR);
+				$selfRegResult['Barcode starting index was not found.'];
 			};
 		} else {
 			// Error: unable to login in staff user
@@ -601,6 +593,7 @@ class SirsiDynixROA extends HorizonAPI
 
 	protected function loginViaWebService($username, $password)
 	{
+		/** @var Memcache $memCache */
 		global $memCache;
 		global $library;
 		$memCacheKey = "sirsiROA_session_token_info_{$library->libraryId}_$username";
@@ -617,7 +610,7 @@ class SirsiDynixROA extends HorizonAPI
 				'login' => $username,
 				'password' => $password,
 			];
-			$loginUserResponse = $this->getWebServiceResponse($loginUserUrl, $params);
+			$loginUserResponse = $this->getWebServiceResponse('patronLogin', $loginUserUrl, $params, null, null, null, ['password', $password]);
 			if ($loginUserResponse && isset($loginUserResponse->sessionToken)) {
 				//We got at valid user (A bad call will have isset($loginUserResponse->messageList) )
 				$sirsiRoaUserID = $loginUserResponse->patronKey;
@@ -634,6 +627,7 @@ class SirsiDynixROA extends HorizonAPI
 				}
 				$logger->log($errorMessage, Logger::LOG_ERROR);
 				$logger->log(print_r($loginUserResponse, true), Logger::LOG_ERROR);
+				$session = array(false, '', '');
 			}
 		}
 		return $session;
@@ -641,6 +635,7 @@ class SirsiDynixROA extends HorizonAPI
 
 	protected function staffLoginViaWebService($username, $password)
 	{
+		/** @var Memcache $memCache */
 		global $memCache;
 		global $library;
 		$memCacheKey = "sirsiROA_session_token_info_{$library->libraryId}_$username";
@@ -651,13 +646,12 @@ class SirsiDynixROA extends HorizonAPI
 		} else {
 			$session = array(false, false, false);
 			$webServiceURL = $this->getWebServiceURL();
-			// $loginDescribeResponse = $this->getWebServiceResponse($webServiceURL . '/user/patron/login/describe');
 			$loginUserUrl = $webServiceURL . '/user/staff/login';
 			$params = array(
 				'login' => $username,
 				'password' => $password,
 			);
-			$loginUserResponse = $this->getWebServiceResponse($loginUserUrl, $params);
+			$loginUserResponse = $this->getWebServiceResponse('staffLogin', $loginUserUrl, $params, null, null, null, ['password', $password]);
 			if ($loginUserResponse && isset($loginUserResponse->sessionToken)) {
 				//We got at valid user (A bad call will have isset($loginUserResponse->messageList) )
 
@@ -701,8 +695,8 @@ class SirsiDynixROA extends HorizonAPI
 		//Now that we have the session token, get holds information
 		$webServiceURL = $this->getWebServiceURL();
 		//Get a list of holds for the user
-		$includeFields = urlencode('circRecordList{*,item{bib{title,author},itemType,call{dispCallNumber}}}');
-		$patronCheckouts = $this->getWebServiceResponse($webServiceURL . '/user/patron/key/' . $patron->username . '?includeFields=' . $includeFields, null, $sessionToken);
+		$includeFields = urlencode('circRecordList{*,item{barcode,bib{title,author},itemType,call{dispCallNumber}}}');
+		$patronCheckouts = $this->getWebServiceResponse('getCheckouts', $webServiceURL . '/user/patron/key/' . $patron->username . '?includeFields=' . $includeFields, null, $sessionToken);
 
 		if (!empty($patronCheckouts->fields->circRecordList)) {
 			$sCount = 0;
@@ -718,6 +712,14 @@ class SirsiDynixROA extends HorizonAPI
 
 					list($bibId) = explode(':', $checkout->key);
 					$curCheckout->recordId = 'a' . $bibId;
+					require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+					$recordDriver = RecordDriverFactory::initRecordDriverById($this->getIndexingProfile()->name . ':' . $curCheckout->recordId);
+					if (!$recordDriver->isValid()){
+						$recordDriver = RecordDriverFactory::initRecordDriverById($this->getIndexingProfile()->name . ':' . 'u' . $bibId);
+						if ($recordDriver->isValid()){
+							$curCheckout->recordId = 'u' . $bibId;
+						}
+					}
 					$curCheckout->itemId = $checkout->fields->item->key;
 
 					$curCheckout->dueDate = strtotime($checkout->fields->dueDate);
@@ -727,8 +729,8 @@ class SirsiDynixROA extends HorizonAPI
 					$curCheckout->canRenew = $checkout->fields->seenRenewalsRemaining > 0;
 					$curCheckout->renewalId = $checkout->fields->item->key;
 					$curCheckout->renewIndicator = $checkout->fields->item->key;
+					$curCheckout->barcode = $checkout->fields->item->fields->barcode;
 
-					$recordDriver = RecordDriverFactory::initRecordDriverById($this->getIndexingProfile()->name . ':' . $curCheckout->recordId);
 					if ($recordDriver->isValid()){
 						$curCheckout->updateFromRecordDriver($recordDriver);
 					}else{
@@ -739,8 +741,8 @@ class SirsiDynixROA extends HorizonAPI
 						require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
 						$curCheckout->author = empty($bibInfo->fields->author) ? '' : StringUtils::removeTrailingPunctuation($bibInfo->fields->author);
 					}
-					if (!empty($checkout->fields->item->fields->itemType->key) && ($checkout->fields->item->fields->itemType->key == 'MAGAZINE' || $checkout->fields->item->fields->itemType->key == 'PERIODICAL') && !empty($checkout->fields->item->fields->call->fields->dispCallNumber)) {
-						$curCheckout->title2 = $checkout->fields->item->fields->call->fields->dispCallNumber;
+					if (!empty($checkout->fields->item->fields->call->fields->dispCallNumber)) {
+						$curCheckout->callNumber = $checkout->fields->item->fields->call->fields->dispCallNumber;
 					}
 
 					$sCount++;
@@ -781,16 +783,16 @@ class SirsiDynixROA extends HorizonAPI
 		//Now that we have the session token, get holds information
 		$webServiceURL = $this->getWebServiceURL();
 
-		//$patronDescribeResponse = $this->getWebServiceResponse($webServiceURL . '/user/patron/describe', null, $sessionToken);
-		//$holdRecord  = $this->getWebServiceResponse($webServiceURL . "/circulation/holdRecord/describe", null, $sessionToken);
-		//$itemDescribe  = $this->getWebServiceResponse($webServiceURL . "/catalog/item/describe", null, $sessionToken);
-		//$callDescribe  = $this->getWebServiceResponse($webServiceURL . "/catalog/call/describe", null, $sessionToken);
-		//$copyDescribe  = $this->getWebServiceResponse($webServiceURL . "/catalog/copy/describe", null, $sessionToken);
+		//$patronDescribeResponse = $this->getWebServiceResponse('patronDescribe', $webServiceURL . '/user/patron/describe', null, $sessionToken);
+		//$holdRecord  = $this->getWebServiceResponse('holdRecordDescribe', $webServiceURL . "/circulation/holdRecord/describe", null, $sessionToken);
+		//$itemDescribe  = $this->getWebServiceResponse('itemDescribe', $webServiceURL . "/catalog/item/describe", null, $sessionToken);
+		//$callDescribe  = $this->getWebServiceResponse('callDescribe', $webServiceURL . "/catalog/call/describe", null, $sessionToken);
+		//$copyDescribe  = $this->getWebServiceResponse('copyDescribe', $webServiceURL . "/catalog/copy/describe", null, $sessionToken);
 
 		//Get a list of holds for the user
 		// (Call now includes Item information for when the hold is an item level hold.)
 		$includeFields = urlencode("holdRecordList{*,bib{title,author},selectedItem{call{*},itemType{*}}}");
-		$patronHolds = $this->getWebServiceResponse($webServiceURL . '/user/patron/key/' . $patron->username . '?includeFields=' . $includeFields, null, $sessionToken);
+		$patronHolds = $this->getWebServiceResponse('getHolds', $webServiceURL . '/user/patron/key/' . $patron->username . '?includeFields=' . $includeFields, null, $sessionToken);
 		if ($patronHolds && isset($patronHolds->fields)) {
 			require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
 			foreach ($patronHolds->fields->holdRecordList as $hold) {
@@ -809,6 +811,15 @@ class SirsiDynixROA extends HorizonAPI
 				$curHold->cancelId = $hold->key;
 				$curHold->position = $hold->fields->queuePosition;
 				$curHold->recordId = 'a' . $bibId;
+				require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+				$recordDriver = RecordDriverFactory::initRecordDriverById($this->getIndexingProfile()->name . ':' . $curHold->recordId);
+				if (!$recordDriver->isValid()){
+					$recordDriver = RecordDriverFactory::initRecordDriverById($this->getIndexingProfile()->name . ':' . 'u' . $bibId);
+					if ($recordDriver->isValid()){
+						$curHold->recordId = 'u' . $bibId;
+					}
+				}
+
 				$curHold->shortId = $bibId;
 				$curPickupBranch = new Location();
 				$curPickupBranch->code = $hold->fields->pickupLibrary->key;
@@ -849,8 +860,6 @@ class SirsiDynixROA extends HorizonAPI
 					$curHold->author = $bibInfo->fields->author;
 				}
 
-				require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
-				$recordDriver = new MarcRecordDriver($curHold->recordId); // This needs the $carlID
 				if ($recordDriver->isValid()){
 					$curHold->updateFromRecordDriver($recordDriver);
 				}
@@ -860,6 +869,8 @@ class SirsiDynixROA extends HorizonAPI
 					$holds['unavailable'][] = $curHold;
 				} else {
 					$curHold->available = true;
+					$curHold->canFreeze = false;
+					$curHold->locationUpdateable = false;
 					$holds['available'][] = $curHold;
 				}
 			}
@@ -925,9 +936,12 @@ class SirsiDynixROA extends HorizonAPI
 		$staffSessionToken = $this->getStaffSessionToken();
 		$sessionToken = $this->getSessionToken($patron);
 		if (!$staffSessionToken) {
-			return array(
-				'success' => false,
-				'message' => 'Sorry, it does not look like you are logged in currently.  Please login and try again');
+			$result['success'] = false;
+			$result['message'] = translate(['text'=>"Sorry, it does not look like you are logged in currently.  Please login and try again", 'isPublicFacing'=>true]);
+
+			$result['api']['title'] = translate(['text'=>'Error', 'isPublicFacing'=>true]);
+			$result['api']['message'] = translate(['text'=> 'Sorry, it does not look like you are logged in currently.  Please login and try again', 'isPublicFacing'=>true]);
+			return $result;
 		}
 
 		if (strpos($recordId, ':') !== false){
@@ -956,17 +970,23 @@ class SirsiDynixROA extends HorizonAPI
 			$offlineHold->status        = 'Not Processed';
 			if ($offlineHold->insert()) {
 				//TODO: use bib or bid ??
-				return array(
-					'title' => $title,
-					'bib' => $shortId,
-					'success' => true,
-					'message' => 'The circulation system is currently offline.  This hold will be entered for you automatically when the circulation system is online.');
+				$result['success'] = true;
+				$result['title'] = $title;
+				$result['bib'] = $shortId;
+				$result['message'] = translate(['text'=>"The circulation system is currently offline.  This hold will be entered for you automatically when the circulation system is online.", 'isPublicFacing'=>true]);
+
+				$result['api']['title'] = translate(['text'=>'Circulation system offline', 'isPublicFacing'=>true]);
+				$result['api']['message'] = translate(['text'=> 'The circulation system is currently offline.  This hold will be entered for you automatically when the circulation system is online.', 'isPublicFacing'=>true]);
+				return $result;
 			} else {
-				return array(
-					'title' => $title,
-					'bib' => $shortId,
-					'success' => false,
-					'message' => 'The circulation system is currently offline and we could not place this hold.  Please try again later.');
+				$result['success'] = false;
+				$result['title'] = $title;
+				$result['bib'] = $shortId;
+				$result['message'] = translate(['text'=>"The circulation system is currently offline and we could not place this hold.  Please try again later.", 'isPublicFacing'=>true]);
+
+				$result['api']['title'] = translate(['text'=>'Circulation system offline', 'isPublicFacing'=>true]);
+				$result['api']['message'] = translate(['text'=> 'The circulation system is currently offline and we could not place this hold.  Please try again later.', 'isPublicFacing'=>true]);
+				return $result;
 			}
 
 		} else {
@@ -974,6 +994,7 @@ class SirsiDynixROA extends HorizonAPI
 				$result          = $this->updateHold($patron, $recordId, $type/*, $title*/);
 				$result['title'] = $title;
 				$result['bid']   = $shortId;
+
 				return $result;
 
 			} else {
@@ -1002,6 +1023,7 @@ class SirsiDynixROA extends HorizonAPI
 					$holdData['holdType'] = 'COPY';
 				} else {
 					$shortRecordId = str_replace('a', '', $shortId);
+					$shortRecordId = str_replace('u', '', $shortRecordId);
 					$holdData['bib'] = array(
 						'resource' => '/catalog/bib',
 						'key' => $shortRecordId
@@ -1015,16 +1037,45 @@ class SirsiDynixROA extends HorizonAPI
 				if ($cancelIfNotFilledByDate) {
 					$holdData['fillByDate'] = date('Y-m-d', strtotime($cancelIfNotFilledByDate));
 				}
-				//$holdRecord         = $this->getWebServiceResponse($webServiceURL . "/circulation/holdRecord/describe", null, $sessionToken);
-				//$placeHold          = $this->getWebServiceResponse($webServiceURL . "/circulation/holdRecord/placeHold/describe", null, $sessionToken);
-				$createHoldResponse = $this->getWebServiceResponse($webServiceURL . "/circulation/holdRecord/placeHold", $holdData, $sessionToken);
+
+				global $library;
+				if (UserAccount::isUserMasquerading()){
+					if (!empty($library->systemHoldNoteMasquerade)){
+						$holdData['comment'] = $library->systemHoldNoteMasquerade;
+					}
+				}else{
+					if (!empty($library->systemHoldNote)){
+						$holdData['comment'] = $library->systemHoldNote;
+					}
+				}
+				//$holdRecord         = $this->getWebServiceResponse('holdRecordDescribe', $webServiceURL . "/circulation/holdRecord/describe", null, $sessionToken);
+				//$placeHold          = $this->getWebServiceResponse('placeHoldDescribe', $webServiceURL . "/circulation/holdRecord/placeHold/describe", null, $sessionToken);
+				global $locationSingleton;
+				$physicalLocation = $locationSingleton->getPhysicalLocation();
+
+				if ($library->holdPlacedAt == 0){
+					$workingLibraryId = $library->ilsCode;
+					if (!empty($physicalLocation)) {
+						$workingLibraryId = $physicalLocation->code;
+					}
+				}elseif ($library->holdPlacedAt == 1){
+					$workingLibraryId = $patron->getHomeLocation()->code;
+				}else{
+					$workingLibraryId = $pickupBranch;
+				}
+
+				$createHoldResponse = $this->getWebServiceResponse('placeHold', $webServiceURL . "/circulation/holdRecord/placeHold", $holdData, $sessionToken, null, null, [], $workingLibraryId);
 
 				$hold_result = array();
 				if (isset($createHoldResponse->messageList)) {
 					$hold_result['success'] = false;
-					$hold_result['message'] = 'Your hold could not be placed. ';
+					$hold_result['message'] = translate(['text'=>'Your hold could not be placed.', 'isPublicFacing'=>true]);
+
+					$hold_result['api']['title'] = translate(['text'=>'Unable to place hold', 'isPublicFacing'=>true]);
+					$hold_result['api']['message'] = translate(['text'=> 'Your hold could not be placed.', 'isPublicFacing'=>true]);
+
 					if (isset($createHoldResponse->messageList)) {
-						$hold_result['message'] .= (string)$createHoldResponse->messageList[0]->message;
+						$hold_result['message'] .= ' ' . translate(['text'=> (string)$createHoldResponse->messageList[0]->message, 'isPublicFacing'=>true]);
 						global $logger;
 						$errorMessage = 'Sirsi ROA Place Hold Error: ';
 						foreach ($createHoldResponse->messageList as $error){
@@ -1037,7 +1088,12 @@ class SirsiDynixROA extends HorizonAPI
 					}
 				} else {
 					$hold_result['success'] = true;
-					$hold_result['message'] = translate(['text'=>"ils_hold_success", 'defaultText'=>"Your hold was placed successfully."]);
+					$hold_result['message'] = translate(['text'=>"Your hold was placed successfully.", 'isPublicFacing'=>true]);
+
+					$hold_result['api']['title'] = translate(['text'=>'Hold placed successfully', 'isPublicFacing'=>true]);
+					$hold_result['api']['message'] = translate(['text'=> 'Your hold was placed successfully.', 'isPublicFacing'=>true]);
+					$hold_result['api']['action'] = translate(['text' => 'Go to Holds', 'isPublicFacing'=>true]);
+
 					$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
 					$patron->forceReloadOfHolds();
 				}
@@ -1049,7 +1105,7 @@ class SirsiDynixROA extends HorizonAPI
 		}
 	}
 
-	public function placeVolumeHold($patron, $recordId, $volumeId, $pickupBranch)
+	public function placeVolumeHold(User $patron, $recordId, $volumeId, $pickupBranch)
 	{
 		//To place a volume hold in Symphony, we just need to place a hold on one of the items for the volume.
 		require_once ROOT_DIR . '/sys/ILS/IlsVolumeInfo.php';
@@ -1068,41 +1124,64 @@ class SirsiDynixROA extends HorizonAPI
 	}
 
 
-	 private function getSessionToken($patron)
-	 {
-		 $sirsiRoaUserId = $patron->username;
+	private function getSessionToken($patron)
+	{
+		if (UserAccount::isUserMasquerading()){
+			//If the user is masquerading, we will use the staff login since we might not have the patron PIN
+			$sirsiRoaUserId = UserAccount::getGuidingUserObject()->username;
+		}else{
+			$sirsiRoaUserId = $patron->username;
+		}
 
-		 //Get the session token for the user
-		 if (isset(SirsiDynixROA::$sessionIdsForUsers[$sirsiRoaUserId])) {
-			 return SirsiDynixROA::$sessionIdsForUsers[$sirsiRoaUserId];
-		 } else {
-			 list(, $sessionToken) = $this->loginViaWebService($patron->cat_username, $patron->cat_password);
-			 return $sessionToken;
-		 }
-	 }
+
+		//Get the session token for the user
+		if (isset(SirsiDynixROA::$sessionIdsForUsers[$sirsiRoaUserId])) {
+			return SirsiDynixROA::$sessionIdsForUsers[$sirsiRoaUserId];
+		} else {
+			if (UserAccount::isUserMasquerading()){
+				//If the user is masquerading, we will use the staff login since we might not have the patron PIN
+				//list($userValid, $sessionToken) = $this->loginViaWebService(UserAccount::getGuidingUserObject()->cat_username, UserAccount::getGuidingUserObject()->cat_password);
+				$sessionToken = $this->getStaffSessionToken();
+				return $sessionToken;
+			}
+			list(, $sessionToken) = $this->loginViaWebService($patron->cat_username, $patron->cat_password);
+			return $sessionToken;
+		}
+	}
 
 	function cancelHold($patron, $recordId, $cancelId = null)
 	{
-//		$sessionToken = $this->getStaffSessionToken();
-		$sessionToken = $this->staffOrPatronSessionTokenSwitch() ? $this->getStaffSessionToken() : $this->getSessionToken($patron);
+		$result = [];
+		$sessionToken = $this->getSessionToken($patron);
 		if (!$sessionToken) {
-			return array(
+			$result = [
 				'success' => false,
-				'message' => 'Sorry, we could not connect to the circulation system.');
+				'message' => translate(['text' => 'Sorry, we could not connect to the circulation system.', 'isPublicFacing'=>true]),
+			];
+
+			// Result for API or app use
+			$result['api']['title'] = translate(['text' => 'Error', 'isPublicFacing'=> true]);
+			$result['api']['message'] = translate(['text' => 'Sorry, we could not connect to the circulation system', 'isPublicFacing'=> true]);
+
+			return $result;
 		}
 
 		//create the hold using the web service
 		$webServiceURL = $this->getWebServiceURL();
 
-		$cancelHoldResponse = $this->getWebServiceResponse($webServiceURL . "/circulation/holdRecord/key/$cancelId", null, $sessionToken, 'DELETE');
+		$cancelHoldResponse = $this->getWebServiceResponse('cancelHold', $webServiceURL . "/circulation/holdRecord/key/$cancelId", null, $sessionToken, 'DELETE');
 
 		if (empty($cancelHoldResponse)) {
 			$patron->forceReloadOfHolds();
 			$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
-			return array(
-				'success' => true,
-				'message' => 'The hold was successfully canceled'
-			);
+			$result['success'] = true;
+			$result['message'] = translate(['text'=>'The hold was successfully canceled.', 'isPublicFacing'=> true]);
+
+			// Result for API or app use
+			$result['api']['title'] = translate(['text' => 'Hold cancelled', 'isPublicFacing'=> true]);
+			$result['api']['message'] = translate(['text' => 'The hold was successfully canceled', 'isPublicFacing'=> true]);
+
+			return $result;
 		} else {
 			global $logger;
 			$errorMessage = 'Sirsi ROA Cancel Hold Error: ';
@@ -1111,9 +1190,14 @@ class SirsiDynixROA extends HorizonAPI
 			}
 			$logger->log($errorMessage, Logger::LOG_ERROR);
 
-			return array(
-				'success' => false,
-				'message' => 'Sorry, the hold was not canceled');
+			$result['success'] = false;
+			$result['message'] = translate(['text'=>'Sorry, the hold was not canceled', 'isPublicFacing'=> true]);
+
+			// Result for API or app use
+			$result['api']['title'] = translate(['text' => 'Unable to cancel hold', 'isPublicFacing'=> true]);
+			$result['api']['message'] = translate(['text' => 'This hold could not be cancelled. Please try again later or see your librarian.', 'isPublicFacing'=> true]);
+
+			return $result;
 		}
 
 	}
@@ -1122,9 +1206,16 @@ class SirsiDynixROA extends HorizonAPI
 	{
 		$staffSessionToken = $this->getStaffSessionToken();
 		if (!$staffSessionToken) {
-			return array(
+			$result = [
 				'success' => false,
-				'message' => 'Sorry, it does not look like you are logged in currently.  Please login and try again');
+				'message' => translate(['text' => 'Sorry, it does not look like you are logged in currently.  Please login and try again', 'isPublicFacing'=>true]),
+			];
+
+			// Result for API or app use
+			$result['api']['title'] = translate(['text' => 'Error', 'isPublicFacing'=> true]);
+			$result['api']['message'] = translate(['text' => 'Sorry, it does not look like you are logged in currently.  Please login and try again', 'isPublicFacing'=> true]);
+
+			return $result;
 		}
 
 		//create the hold using the web service
@@ -1141,13 +1232,17 @@ class SirsiDynixROA extends HorizonAPI
 			],
 		];
 
-		$updateHoldResponse = $this->getWebServiceResponse($webServiceURL . "/circulation/holdRecord/changePickupLibrary", $params, $this->getSessionToken($patron), 'POST');
+		$updateHoldResponse = $this->getWebServiceResponse('changePickupLibrary', $webServiceURL . "/circulation/holdRecord/changePickupLibrary", $params, $this->getSessionToken($patron), 'POST');
 		if (isset($updateHoldResponse->holdRecord->key)) {
 			$patron->forceReloadOfHolds();
-			return array(
-				'success' => true,
-				'message' => 'The pickup location has been updated.'
-			);
+			$result['message'] = translate(['text'=>'The pickup location has been updated.', 'isPublicFacing'=>true]);
+			$result['success'] = true;
+
+			// Result for API or app use
+			$result['api']['title'] = translate(['text' => 'Pickup location updated', 'isPublicFacing'=> true]);
+			$result['api']['message'] = translate(['text' => 'The pickup location of your hold was changed successfully.', 'isPublicFacing'=> true]);
+
+			return $result;
 		} else {
 			$messages = array();
 			if (isset($updateHoldResponse->messageList)) {
@@ -1159,10 +1254,15 @@ class SirsiDynixROA extends HorizonAPI
 			$errorMessage = 'Sirsi ROA Change Hold Pickup Location Error: '. ($messages ? implode('; ', $messages) : '');
 			$logger->log($errorMessage, Logger::LOG_ERROR);
 
-			return array(
-				'success' => false,
-				'message' => 'Failed to update the pickup location : '. implode('; ', $messages)
-			);
+			$result = [];
+			$result['message'] = 'Failed to update the pickup location : '. implode('; ', $messages);
+			$result['success'] = false;
+
+			// Result for API or app use
+			$result['api']['title'] = translate(['text' => 'Unable to update pickup location', 'isPublicFacing'=> true]);
+			$result['api']['message'] = translate(['text' => 'Sorry, the pickup location of your hold could not be changed. ', 'isPublicFacing'=> true]);
+			$result['api']['message'] .= ' ' . implode('; ', $messages);
+			return $result;
 		}
 	}
 
@@ -1170,9 +1270,16 @@ class SirsiDynixROA extends HorizonAPI
 	{
 		$sessionToken = $this->getStaffSessionToken();
 		if (!$sessionToken) {
-			return array(
+			$result = [
 				'success' => false,
-				'message' => 'Sorry, it does not look like you are logged in currently.  Please login and try again');
+				'message' => translate(['text' => 'Sorry, it does not look like you are logged in currently.  Please login and try again', 'isPublicFacing'=>true]),
+			];
+
+			// Result for API or app use
+			$result['api']['title'] = translate(['text' => 'Error', 'isPublicFacing'=> true]);
+			$result['api']['message'] = translate(['text' => 'Sorry, it does not look like you are logged in currently.  Please login and try again', 'isPublicFacing'=> true]);
+
+			return $result;
 		}
 
 		//create the hold using the web service
@@ -1190,21 +1297,33 @@ class SirsiDynixROA extends HorizonAPI
 			'suspendEndDate' => $formattedDateToReactivate
 		);
 
-		$updateHoldResponse = $this->getWebServiceResponse($webServiceURL . "/circulation/holdRecord/suspendHold", $params, $sessionToken, 'POST');
+		$updateHoldResponse = $this->getWebServiceResponse('suspendHold', $webServiceURL . "/circulation/holdRecord/suspendHold", $params, $sessionToken, 'POST');
 
 		if (isset($updateHoldResponse->holdRecord->key)) {
-			$getHoldResponse = $this->getWebServiceResponse($webServiceURL . "/circulation/holdRecord/key/$holdToFreezeId", null, $this->getSessionToken($patron));
+			$getHoldResponse = $this->getWebServiceResponse('getHold', $webServiceURL . "/circulation/holdRecord/key/$holdToFreezeId", null, $this->getSessionToken($patron));
 			if (isset($getHoldResponse->fields->status) && $getHoldResponse->fields->status == 'SUSPENDED'){
 				$patron->forceReloadOfHolds();
-				return array(
+				$result = [
 					'success' => true,
-					'message' => "The hold has been frozen."
-				);
+					'message' => translate(['text' => 'The hold has been frozen.', 'isPublicFacing'=>true]),
+				];
+
+				// Result for API or app use
+				$result['api']['title'] = translate(['text' => 'Hold frozen', 'isPublicFacing'=> true]);
+				$result['api']['message'] = translate(['text' => 'Your hold was frozen successfully.', 'isPublicFacing'=> true]);
+
+				return $result;
 			}else{
-				return array(
+				$result = [
 					'success' => false,
-					'message' => "The hold could not be frozen."
-				);
+					'message' => translate(['text' => 'The hold could not be frozen.', 'isPublicFacing'=>true]),
+				];
+
+				// Result for API or app use
+				$result['api']['title'] = translate(['text' => 'Unable to freeze hold', 'isPublicFacing'=> true]);
+				$result['api']['message'] = translate(['text' => 'There was an error freezing your hold.', 'isPublicFacing'=> true]);
+
+				return $result;
 			}
 
 		} else {
@@ -1214,16 +1333,22 @@ class SirsiDynixROA extends HorizonAPI
 					$messages[] = $message->message;
 				}
 			}
-			$freeze = translate('freeze');
 
 			global $logger;
 			$errorMessage = 'Sirsi ROA Freeze Hold Error: '. ($messages ? implode('; ', $messages) : '');
 			$logger->log($errorMessage, Logger::LOG_ERROR);
 
-			return array(
+			$result = [
 				'success' => false,
-				'message' => "Failed to $freeze hold : ". implode('; ', $messages)
-			);
+				'message' => translate(['text' => "Failed to freeze hold", 'isPublicFacing'=>true]) . ' - ' . implode('; ', $messages),
+			];
+
+			// Result for API or app use
+			$result['api']['title'] = translate(['text' => 'Unable to freeze hold', 'isPublicFacing'=> true]);
+			$result['api']['message'] = translate(['text' => 'There was an error freezing your hold.', 'isPublicFacing'=> true]);
+			$result['api']['message'] .= ' ' . implode('; ', $messages);
+
+			return $result;
 		}
 	}
 
@@ -1231,9 +1356,16 @@ class SirsiDynixROA extends HorizonAPI
 	{
 		$sessionToken = $this->getStaffSessionToken();
 		if (!$sessionToken) {
-			return array(
+			$result = [
 				'success' => false,
-				'message' => 'Sorry, it does not look like you are logged in currently.  Please login and try again');
+				'message' => translate(['text' => 'Sorry, it does not look like you are logged in currently.  Please login and try again', 'isPublicFacing'=>true]),
+			];
+
+			// Result for API or app use
+			$result['api']['title'] = translate(['text' => 'Error', 'isPublicFacing'=> true]);
+			$result['api']['message'] = translate(['text' => 'Sorry, it does not look like you are logged in currently.  Please login and try again', 'isPublicFacing'=> true]);
+
+			return $result;
 		}
 
 		//create the hold using the web service
@@ -1246,14 +1378,20 @@ class SirsiDynixROA extends HorizonAPI
 			],
 		);
 
-		$updateHoldResponse = $this->getWebServiceResponse($webServiceURL . "/circulation/holdRecord/unsuspendHold", $params, $sessionToken, 'POST');
+		$updateHoldResponse = $this->getWebServiceResponse('unsuspendHold', $webServiceURL . "/circulation/holdRecord/unsuspendHold", $params, $sessionToken, 'POST');
 
 		if (isset($updateHoldResponse->holdRecord->key)) {
 			$patron->forceReloadOfHolds();
-			return array(
+			$result = [
 				'success' => true,
-				'message' => "The hold has been thawed."
-			);
+				'message' => translate(['text' => 'The hold has been thawed.', 'isPublicFacing'=>true]),
+			];
+
+			// Result for API or app use
+			$result['api']['title'] = translate(['text' => 'Hold thawed', 'isPublicFacing'=> true]);
+			$result['api']['message'] = translate(['text' => 'Your hold was thawed successfully.', 'isPublicFacing'=> true]);
+
+			return $result;
 		} else {
 			$messages = array();
 			if (isset($updateHoldResponse->messageList)) {
@@ -1265,11 +1403,17 @@ class SirsiDynixROA extends HorizonAPI
 			$errorMessage = 'Sirsi ROA Thaw Hold Error: '. ($messages ? implode('; ', $messages) : '');
 			$logger->log($errorMessage, Logger::LOG_ERROR);
 
-			$thaw = translate('thaw');
-			return array(
+			$result = [
 				'success' => false,
-				'message' => "Failed to $thaw hold : ". implode('; ', $messages)
-			);
+				'message' => translate(['text' => "Failed to thaw hold", 'isPublicFacing'=>true]) . ' - ' . implode('; ', $messages),
+			];
+
+			// Result for API or app use
+			$result['api']['title'] = translate(['text' => 'Unable to thaw hold', 'isPublicFacing'=> true]);
+			$result['api']['message'] = translate(['text' => 'There was an error thawing your hold.', 'isPublicFacing'=> true]);
+			$result['api']['message'] .= ' ' . implode('; ', $messages);
+
+			return $result;
 		}
 	}
 
@@ -1282,11 +1426,18 @@ class SirsiDynixROA extends HorizonAPI
 	 */
 	public function renewCheckout($patron, $recordId, $itemId = null, $itemIndex = null)
 	{
-		$sessionToken = $this->staffOrPatronSessionTokenSwitch() ? $this->getStaffSessionToken() : $this->getSessionToken($patron);
+		$sessionToken = $this->getSessionToken($patron);
 		if (!$sessionToken) {
-			return array(
+			$result = [
 				'success' => false,
-				'message' => 'Sorry, it does not look like you are logged in currently.  Please login and try again');
+				'message' => translate(['text' => 'Sorry, it does not look like you are logged in currently.  Please login and try again', 'isPublicFacing'=>true]),
+			];
+
+			// Result for API or app use
+			$result['api']['title'] = translate(['text' => 'Error', 'isPublicFacing'=> true]);
+			$result['api']['message'] = translate(['text' => 'Sorry, it does not look like you are logged in currently.  Please login and try again', 'isPublicFacing'=> true]);
+
+			return $result;
 		}
 
 		//create the hold using the web service
@@ -1299,16 +1450,22 @@ class SirsiDynixROA extends HorizonAPI
 			)
 		);
 
-		$circRenewResponse  = $this->getWebServiceResponse($webServiceURL . "/circulation/circRecord/renew", $params, $sessionToken, 'POST');
+		$circRenewResponse  = $this->getWebServiceResponse('renewCheckout', $webServiceURL . "/circulation/circRecord/renew", $params, $sessionToken, 'POST');
 
 		if (isset($circRenewResponse->circRecord->key)) {
 			// Success
 			$patron->forceReloadOfCheckouts();
-			return array(
-				'itemId'  => $circRenewResponse->circRecord->key,
+			$result = [
 				'success' => true,
-				'message' => "Your item was successfully renewed."
-			);
+				'itemId' => $circRenewResponse->circRecord->key,
+				'message' => translate(['text' => 'Your item was successfully renewed.', 'isPublicFacing'=>true]),
+			];
+
+			// Result for API or app use
+			$result['api']['title'] = translate(['text'=>'Renewed title', 'isPublicFacing'=>true]);
+			$result['api']['message'] = translate(['text' => 'Your item was successfully renewed.', 'isPublicFacing'=> true]);
+
+			return $result;
 		} else {
 			// Error
 			$messages = array();
@@ -1321,11 +1478,18 @@ class SirsiDynixROA extends HorizonAPI
 			$errorMessage = 'Sirsi ROA Renew Error: '. ($messages ? implode('; ', $messages) : '');
 			$logger->log($errorMessage, Logger::LOG_ERROR);
 
-			return array(
-				'itemId'  => $itemId,
-				'success' =>false,
-				'message' => "The item failed to renew". ($messages ? ': '. implode(';', $messages) : '')
-			);
+			$result = [
+				'success' => false,
+				'itemId' => $circRenewResponse->circRecord->key,
+				'message' => "The item failed to renew". ($messages ? ': '. implode(';', $messages) : ''),
+			];
+
+			// Result for API or app use
+			$result['api']['title'] = translate(['text'=>'Unable to renew title', 'isPublicFacing'=>true]);
+			$result['api']['message'] = translate(['text' => 'The item failed to renew.', 'isPublicFacing'=> true]);
+			$result['api']['message'] .= ' ' . ($messages ? ': '. implode(';', $messages) : '');
+
+			return $result;
 
 		}
 
@@ -1346,8 +1510,10 @@ class SirsiDynixROA extends HorizonAPI
 			$webServiceURL = $this->getWebServiceURL();
 
 			$includeFields = urlencode("blockList{*,item{bib{title,author}}}");
-			$blockList = $this->getWebServiceResponse($webServiceURL . '/user/patron/key/' . $patron->username . '?includeFields=' . $includeFields, null, $sessionToken);
+			$blockList = $this->getWebServiceResponse('getFines', $webServiceURL . '/user/patron/key/' . $patron->username . '?includeFields=' . $includeFields, null, $sessionToken);
 			// Include Title data if available
+
+			$totalFinesOwed = 0;
 
 			if (!empty($blockList->fields->blockList)) {
 				foreach ($blockList->fields->blockList as $block) {
@@ -1362,7 +1528,9 @@ class SirsiDynixROA extends HorizonAPI
 
 					}
 					$fines[] = array(
-						'reason' => $fine->block->key,
+						'fineId' => str_replace(':', '_', $block->key),
+						'reason' => translate(['text'=>$fine->block->key, 'isPublicFacing'=>true, 'isAdminEnteredData'=>true]),
+						'type' => $fine->block->key,
 						'amount' => $fine->amount->amount,
 						'amountVal' => $fine->amount->amount,
 						'message' => $title,
@@ -1370,7 +1538,13 @@ class SirsiDynixROA extends HorizonAPI
 						'amountOutstandingVal' => $fine->owed->amount,
 						'date' => $fine->billDate
 					);
+					$totalFinesOwed += $fine->owed->amount;
 				}
+			}
+
+			$accountSummary = $patron->getAccountSummary();
+			if ($accountSummary->totalFines != $totalFinesOwed){
+				$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
 			}
 		}
 		return $fines;
@@ -1396,7 +1570,7 @@ class SirsiDynixROA extends HorizonAPI
 
 		$webServiceURL = $this->getWebServiceURL();
 
-		$updatePinResponse = $this->getWebServiceResponse($webServiceURL . "/user/patron/changeMyPin", $params, $sessionToken, 'POST');
+		$updatePinResponse = $this->getWebServiceResponse('changePin', $webServiceURL . "/user/patron/changeMyPin", $params, $sessionToken, 'POST');
 		if (!empty($updatePinResponse->patronKey) && $updatePinResponse->patronKey ==  $patron->username) {
 			$patron->cat_password = $newPin;
 			$patron->update();
@@ -1424,7 +1598,7 @@ class SirsiDynixROA extends HorizonAPI
 	}
 
     /**
-     * @param User $user
+     * @param User|null $user
      * @param string $newPin
      * @param string $resetToken
      * @return array
@@ -1443,10 +1617,10 @@ class SirsiDynixROA extends HorizonAPI
 			'resetPinToken' => $resetToken,
 			'newPin' => $newPin,
 		);
-		$changeMyPinResponse = $this->getWebServiceResponse($changeMyPinAPIUrl, $jsonParameters, null, 'POST');
-		if (is_object($changeMyPinResponse) &&  isset($changeMyPinResponse->messageList)) {
+		$resetPinResponse = $this->getWebServiceResponse('resetPin', $changeMyPinAPIUrl, $jsonParameters, null, 'POST');
+		if (is_object($resetPinResponse) &&  isset($resetPinResponse->messageList)) {
 			$errors = array();
-			foreach ($changeMyPinResponse->messageList as $message) {
+			foreach ($resetPinResponse->messageList as $message) {
 				$errors[] = $message->message;
 			}
 			global $logger;
@@ -1454,10 +1628,12 @@ class SirsiDynixROA extends HorizonAPI
 			return array(
 				'error' => 'Sorry, we encountered an error while attempting to update your pin. Please contact your local library.'
 			);
-		} elseif (!empty($changeMyPinResponse->sessionToken)){
-			if ($user->username == $changeMyPinResponse->patronKey) { // Check that the ILS user matches the Aspen Discovery user
-				$user->cat_password = $newPin;
-				$user->update();
+		} elseif (!empty($resetPinResponse->sessionToken)){
+			if ($user != null) {
+				if ($user->username == $resetPinResponse->patronKey) { // Check that the ILS user matches the Aspen Discovery user
+					$user->cat_password = $newPin;
+					$user->update();
+				}
 			}
 			return array(
 				'success' => true,
@@ -1482,7 +1658,6 @@ class SirsiDynixROA extends HorizonAPI
 		$patron = new User;
 		$patron->get('cat_username', $barcode);
 		if (!empty($patron->id)) {
-			global $configArray;
 			$aspenUserID = $patron->id;
 
 			// If possible, check if ILS has an email address for the patron
@@ -1492,7 +1667,7 @@ class SirsiDynixROA extends HorizonAPI
 					// Yay! We were able to login with the pin Aspen has!
 
 					//Now check for an email address
-					$lookupMyAccountInfoResponse = $this->getWebServiceResponse($this->getWebServiceURL() . '/user/patron/key/' . $userID . '?includeFields=preferredAddress,address1,address2,address3', null, $sessionToken);
+					$lookupMyAccountInfoResponse = $this->getWebServiceResponse('lookupAccountInfo', $this->getWebServiceURL() . '/user/patron/key/' . $userID . '?includeFields=preferredAddress,address1,address2,address3', null, $sessionToken);
 					if ($lookupMyAccountInfoResponse) {
 						if (isset($lookupMyAccountInfoResponse->fields->preferredAddress)){
 							$preferredAddress = $lookupMyAccountInfoResponse->fields->preferredAddress;
@@ -1519,50 +1694,49 @@ class SirsiDynixROA extends HorizonAPI
 					}
 				}
 			}
-
-			// email the pin to the user
-			$resetPinAPIUrl = $this->getWebServiceUrl() . '/user/patron/resetMyPin';
-			$jsonPOST       = array(
-				'login' => $barcode,
-				'resetPinUrl' => $configArray['Site']['url'] . '/MyAccount/ResetPin?resetToken=<RESET_PIN_TOKEN>&uid=' . $aspenUserID
-			);
-
-			$resetPinResponse = $this->getWebServiceResponse($resetPinAPIUrl, $jsonPOST, null, 'POST');
-			if (is_object($resetPinResponse) && !isset($resetPinResponse->messageList)) {
-				// Reset Pin Response is empty JSON on success.
-				return array(
-					'success' => true,
-				);
-			} else {
-				$result = array(
-					'success' => false,
-					'error' => "Sorry, we could not email your pin to you.  Please visit the library to reset your pin."
-				);
-				if (isset($resetPinResponse->messageList)) {
-					$errors = array();
-					foreach ($resetPinResponse->messageList as $message) {
-						$errors[] = $message->message;
-					}
-					global $logger;
-					$logger->log('SirsiDynixROA Driver error updating user\'s Pin :' . implode(';', $errors), Logger::LOG_ERROR);
-				}
-				return $result;
-			}
-
 		} else {
+			//Can't pre-validate the user, but still do the reset.
+			$aspenUserID = '';
+		}
+
+		// email the pin to the user
+		global $configArray;
+		$resetPinAPIUrl = $this->getWebServiceUrl() . '/user/patron/resetMyPin';
+		$jsonPOST       = array(
+			'login' => $barcode,
+			'resetPinUrl' => $configArray['Site']['url'] . '/MyAccount/ResetPin?resetToken=<RESET_PIN_TOKEN>&uid=' . $aspenUserID
+		);
+
+		$resetPinResponse = $this->getWebServiceResponse('resetPin', $resetPinAPIUrl, $jsonPOST, null, 'POST');
+		if (is_object($resetPinResponse) && !isset($resetPinResponse->messageList)) {
+			// Reset Pin Response is empty JSON on success.
 			return array(
-				'success' => false,
-				'error' => 'Sorry, we did not find the card number you entered or you have not logged into the catalog previously.  Please contact your library to reset your pin.'
+				'success' => true,
 			);
+		} else {
+			$result = array(
+				'success' => false,
+				'error' => "Sorry, we could not email your pin to you.  Please visit the library to reset your pin."
+			);
+			if (isset($resetPinResponse->messageList)) {
+				$errors = array();
+				foreach ($resetPinResponse->messageList as $message) {
+					$errors[] = $message->message;
+				}
+				global $logger;
+				$logger->log('SirsiDynixROA Driver error updating user\'s Pin :' . implode(';', $errors), Logger::LOG_ERROR);
+			}
+			return $result;
 		}
 	}
 
 	/**
 	 * @param User $patron
 	 * @param bool $canUpdateContactInfo
+	 * @param bool $fromMasquerade
 	 * @return array
 	 */
-	function updatePatronInfo($patron, $canUpdateContactInfo)
+	function updatePatronInfo($patron, $canUpdateContactInfo, $fromMasquerade)
 	{
 		$result = [
 			'success' => false,
@@ -1574,63 +1748,67 @@ class SirsiDynixROA extends HorizonAPI
 				$webServiceURL = $this->getWebServiceURL();
 				if ($userID = $patron->username) {
 					//To update the patron, we need to load the patron from Symphony so we only overwrite changed values.
-					$updatePatronInfoParametersClass = $this->getWebServiceResponse($this->getWebServiceURL() . '/user/patron/key/' . $userID .'?includeFields=*,preferredAddress,address1,address2,address3', null, $sessionToken );
+					$updatePatronInfoParametersClass = $this->getWebServiceResponse('getPatronInfo', $this->getWebServiceURL() . '/user/patron/key/' . $userID .'?includeFields=*,preferredAddress,address1,address2,address3', null, $sessionToken );
 					if ($updatePatronInfoParametersClass) {
 						//Convert from stdClass to associative array
 						$updatePatronInfoParameters = json_decode(json_encode($updatePatronInfoParametersClass), true);
-						$preferredAddress = $updatePatronInfoParameters['fields']['preferredAddress'];
+						if (isset($updatePatronInfoParameters['resource']) && $updatePatronInfoParameters['resource'] == '/user/patron') {
+							$preferredAddress = $updatePatronInfoParameters['fields']['preferredAddress'];
 
-						// Update Address Field with new data supplied by the user
-						if (isset($_REQUEST['email'])) {
-							$this->setPatronUpdateFieldBySearch('EMAIL', $_REQUEST['email'], $updatePatronInfoParameters, $preferredAddress);
-							$patron->email = $_REQUEST['email'];
-						}
-
-						if (isset($_REQUEST['phone'])) {
-							$this->setPatronUpdateFieldBySearch('PHONE', $_REQUEST['phone'], $updatePatronInfoParameters, $preferredAddress);
-							$patron->phone = $_REQUEST['phone'];
-						}
-
-						if (isset($_REQUEST['address1'])) {
-							$this->setPatronUpdateFieldBySearch('STREET', $_REQUEST['address1'], $updatePatronInfoParameters, $preferredAddress);
-							$patron->_address1 = $_REQUEST['address1'];
-						}
-
-						if (isset($_REQUEST['city']) && isset($_REQUEST['state'])) {
-							$this->setPatronUpdateFieldBySearch('CITY/STATE', $_REQUEST['city'] . ' ' . $_REQUEST['state'], $updatePatronInfoParameters, $preferredAddress);
-							$patron->_city = $_REQUEST['city'];
-							$patron->_state = $_REQUEST['state'];
-						}
-
-						if (isset($_REQUEST['zip'])) {
-							$this->setPatronUpdateFieldBySearch('ZIP', $_REQUEST['zip'], $updatePatronInfoParameters, $preferredAddress);
-							$patron->_zip = $_REQUEST['zip'];
-						}
-
-						// Update Home Location
-						if (!empty($_REQUEST['pickupLocation'])) {
-							$homeLibraryLocation = new Location();
-							if ($homeLibraryLocation->get('code', $_REQUEST['pickupLocation'])) {
-								$homeBranchCode = strtoupper($homeLibraryLocation->code);
-								$updatePatronInfoParameters['fields']['library'] = array(
-									'key' => $homeBranchCode,
-									'resource' => '/policy/library'
-								);
+							// Update Address Field with new data supplied by the user
+							if (isset($_REQUEST['email'])) {
+								$this->setPatronUpdateFieldBySearch('EMAIL', $_REQUEST['email'], $updatePatronInfoParameters, $preferredAddress);
+								$patron->email = $_REQUEST['email'];
 							}
-						}
 
-						$updateAccountInfoResponse = $this->getWebServiceResponse($webServiceURL . '/user/patron/key/' . $userID.'?includeFields=*,preferredAddress,address1,address2,address3', $updatePatronInfoParameters, $sessionToken, 'PUT');
-
-						if (isset($updateAccountInfoResponse->messageList)) {
-							foreach ($updateAccountInfoResponse->messageList as $message) {
-								$result['messages'][] = $message->message;
+							if (isset($_REQUEST['phone'])) {
+								$this->setPatronUpdateFieldBySearch('PHONE', $_REQUEST['phone'], $updatePatronInfoParameters, $preferredAddress);
+								$patron->phone = $_REQUEST['phone'];
 							}
-							global $logger;
-							$logger->log('Symphony Driver - Patron Info Update Error - Error from ILS : ' . implode(';', $result['messages']), Logger::LOG_ERROR);
-						} else {
-							$result['success'] = true;
-							$result['messages'][] = 'Your account was updated successfully.';
-							$patron->update();
+
+							if (isset($_REQUEST['address1'])) {
+								$this->setPatronUpdateFieldBySearch('STREET', $_REQUEST['address1'], $updatePatronInfoParameters, $preferredAddress);
+								$patron->_address1 = $_REQUEST['address1'];
+							}
+
+							if (isset($_REQUEST['city']) && isset($_REQUEST['state'])) {
+								$this->setPatronUpdateFieldBySearch('CITY/STATE', $_REQUEST['city'] . ' ' . $_REQUEST['state'], $updatePatronInfoParameters, $preferredAddress);
+								$patron->_city = $_REQUEST['city'];
+								$patron->_state = $_REQUEST['state'];
+							}
+
+							if (isset($_REQUEST['zip'])) {
+								$this->setPatronUpdateFieldBySearch('ZIP', $_REQUEST['zip'], $updatePatronInfoParameters, $preferredAddress);
+								$patron->_zip = $_REQUEST['zip'];
+							}
+
+							// Update Home Location
+							if (!empty($_REQUEST['pickupLocation'])) {
+								$homeLibraryLocation = new Location();
+								if ($homeLibraryLocation->get('code', $_REQUEST['pickupLocation'])) {
+									$homeBranchCode = strtoupper($homeLibraryLocation->code);
+									$updatePatronInfoParameters['fields']['library'] = array(
+										'key' => $homeBranchCode,
+										'resource' => '/policy/library'
+									);
+								}
+							}
+
+							$updateAccountInfoResponse = $this->getWebServiceResponse('updatePatronInfo', $webServiceURL . '/user/patron/key/' . $userID . '?includeFields=*,preferredAddress,address1,address2,address3', $updatePatronInfoParameters, $sessionToken, 'PUT');
+
+							if (isset($updateAccountInfoResponse->messageList)) {
+								foreach ($updateAccountInfoResponse->messageList as $message) {
+									$result['messages'][] = $message->message;
+								}
+								global $logger;
+								$logger->log('Symphony Driver - Patron Info Update Error - Error from ILS : ' . implode(';', $result['messages']), Logger::LOG_ERROR);
+							} else {
+								$result['success'] = true;
+								$result['messages'][] = 'Your account was updated successfully.';
+								$patron->update();
+							}
+						}else{
+							$result['messages'][] = 'Could not load existing contact information to update.';
 						}
 					}else{
 						$result['messages'][] = 'Could not find the account to update.';
@@ -1694,6 +1872,7 @@ class SirsiDynixROA extends HorizonAPI
 		return isset($statusMap[$statusCode]) ? $statusMap[$statusCode] : 'Unknown (' . $statusCode . ')';
 	}
 	public function logout(User $user){
+		/** @var Memcache $memCache */
 		global $memCache;
 		global $library;
 		$memCacheKey = "sirsiROA_session_token_info_{$library->libraryId}_{$user->getBarcode()}";
@@ -1752,13 +1931,13 @@ class SirsiDynixROA extends HorizonAPI
 		}
 	}
 
-	function getPasswordPinValidationRules(){
-		return [
-			'minLength' => 4,
-			'maxLength' => 60,
-			'onlyDigitsAllowed' => false,
-		];
-	}
+//	function getPasswordPinValidationRules(){
+//		return [
+//			'minLength' => 4,
+//			'maxLength' => 60,
+//			'onlyDigitsAllowed' => false,
+//		];
+//	}
 
 	/**
 	 * Loads any contact information that is not stored by Aspen Discovery from the ILS. Updates the user object.
@@ -1773,7 +1952,7 @@ class SirsiDynixROA extends HorizonAPI
 		$accountInfoLookupURL = $webServiceURL . '/user/patron/key/' . $user->username . '?includeFields=' . $includeFields;
 
 		// phoneList is for texting notification preferences
-		$lookupMyAccountInfoResponse = $this->getWebServiceResponse($accountInfoLookupURL, null, $staffSessionToken);
+		$lookupMyAccountInfoResponse = $this->getWebServiceResponse('loadContactInformation', $accountInfoLookupURL, null, $staffSessionToken);
 		if ($lookupMyAccountInfoResponse && !isset($lookupMyAccountInfoResponse->messageList)) {
 			$this->loadContactInformationFromApiResult($user, $lookupMyAccountInfoResponse);
 		}
@@ -1816,14 +1995,18 @@ class SirsiDynixROA extends HorizonAPI
 						break;
 					case 'CITY/STATE' :
 						$cityState = $fields->data;
-						if (substr_count($cityState, ' ') > 1) {
-							//Splitting multiple word cities
-							$last_space = strrpos($cityState, ' ');
-							$City = substr($cityState, 0, $last_space);
-							$State = substr($cityState, $last_space + 1);
-
-						} else {
-							list($City, $State) = explode(' ', $cityState);
+						if (!empty($cityState)) {
+							if (substr_count($cityState, ' ') > 1) {
+								//Splitting multiple word cities
+								$last_space = strrpos($cityState, ' ');
+								$City = substr($cityState, 0, $last_space);
+								$State = substr($cityState, $last_space + 1);
+							} else {
+								list($City, $State) = explode(' ', $cityState);
+							}
+						}else{
+							$City = '';
+							$State = '';
 						}
 						break;
 					case 'ZIP' :
@@ -1957,7 +2140,7 @@ class SirsiDynixROA extends HorizonAPI
 		$staffSessionToken = $this->getStaffSessionToken();
 		if (!empty($staffSessionToken)) {
 			$defaultCountryCode = '';
-			$getCountryCodesResponse = $this->getWebServiceResponse($webServiceURL . '/policy/countryCode/simpleQuery?key=*', null, $staffSessionToken);
+			$getCountryCodesResponse = $this->getWebServiceResponse('getMessagingSettings', $webServiceURL . '/policy/countryCode/simpleQuery?key=*', null, $staffSessionToken);
 			$countryCodes = [];
 			foreach ($getCountryCodesResponse as $countryCodeInfo){
 				//This gets flipped later
@@ -1988,7 +2171,7 @@ class SirsiDynixROA extends HorizonAPI
 
 			//Get a list of phone numbers for the patron from the APIs.
 			$includeFields = urlencode("phoneList{*}");
-			$getPhoneListResponse = $this->getWebServiceResponse($webServiceURL . "/user/patron/key/{$patron->username}?includeFields=$includeFields", null, $staffSessionToken);
+			$getPhoneListResponse = $this->getWebServiceResponse('getPhoneList', $webServiceURL . "/user/patron/key/{$patron->username}?includeFields=$includeFields", null, $staffSessionToken);
 
 			if ($getPhoneListResponse != null){
 				foreach ($getPhoneListResponse->fields->phoneList as $index => $phoneInfo){
@@ -2090,7 +2273,7 @@ class SirsiDynixROA extends HorizonAPI
 		//Compact the array
 		$getPhoneListResponse->fields->phoneList = array_values($getPhoneListResponse->fields->phoneList);
 
-		$updateAccountInfoResponse = $this->getWebServiceResponse($webServiceURL . '/user/patron/key/' . $patron->username .'?includeFields=' . $includeFields, $getPhoneListResponse, $staffSessionToken, 'PUT');
+		$updateAccountInfoResponse = $this->getWebServiceResponse('processMessagingSettings', $webServiceURL . '/user/patron/key/' . $patron->username .'?includeFields=' . $includeFields, $getPhoneListResponse, $staffSessionToken, 'PUT');
 		if (isset($updateAccountInfoResponse->messageList)) {
 			$result['message'] = '';
 			foreach ($updateAccountInfoResponse->messageList as $message) {
@@ -2130,9 +2313,9 @@ class SirsiDynixROA extends HorizonAPI
 		$staffSessionToken = $this->getStaffSessionToken();
 		if (!empty($staffSessionToken)) {
 			$webServiceURL = $this->getWebServiceURL();
-			$includeFields = urlEncode("keepCircHistory,circHistoryRecordList{*,bib{title,author}}");
+			$includeFields = urlEncode("keepCircHistory,circHistoryRecordList{checkInDate,checkOutDate,itemType,bib,title,author}");
 			$getCircHistoryUrl = $webServiceURL . '/user/patron/barcode/' . $patron->getBarcode() . '?includeFields=' . $includeFields;
-			$getCircHistoryResponse = $this->getWebServiceResponse($getCircHistoryUrl, null, $staffSessionToken);
+			$getCircHistoryResponse = $this->getWebServiceResponse('getReadingHistory', $getCircHistoryUrl, null, $staffSessionToken);
 			if ($getCircHistoryResponse && !isset($getCircHistoryResponse->messageList)) {
 				$keepCircHistory = $getCircHistoryResponse->fields->keepCircHistory;
 				if ($keepCircHistory == 'ALLCHARGES'){
@@ -2147,8 +2330,13 @@ class SirsiDynixROA extends HorizonAPI
 				}
 				if ($historyActive){
 					$readingHistoryTitles = array();
+					$systemVariables = SystemVariables::getSystemVariables();
+					global $aspen_db;
+					require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+
 					foreach ( $getCircHistoryResponse->fields->circHistoryRecordList as $circEntry){
 						$historyEntry = array();
+						$shortId = $circEntry->fields->bib->key;
 						$bibId = 'a' . $circEntry->fields->bib->key;
 						$historyEntry['id'] = $bibId;
 						$historyEntry['shortId'] = $bibId;
@@ -2157,29 +2345,54 @@ class SirsiDynixROA extends HorizonAPI
 						$historyEntry['permanentId'] = null;
 						$historyEntry['linkUrl'] = null;
 						$historyEntry['coverUrl'] = null;
+						$historyEntry['title'] = $circEntry->fields->title;
+						$historyEntry['author'] = $circEntry->fields->author;
+						$historyEntry['format'] = $circEntry->fields->itemType->key;
+						$historyEntry['checkout'] = strtotime($circEntry->fields->checkOutDate);
+						$historyEntry['checkin'] = strtotime($circEntry->fields->checkInDate);
 						if (!empty($historyEntry['recordId'])) {
-							require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
-							$recordDriver = new MarcRecordDriver($this->accountProfile->recordSource . ':' . $historyEntry['recordId']);
-							if ($recordDriver->isValid()) {
-								$historyEntry['ratingData'] = $recordDriver->getRatingData();
-								$historyEntry['permanentId'] = $recordDriver->getPermanentId();
-								$historyEntry['linkUrl'] = $recordDriver->getGroupedWorkDriver()->getLinkUrl();
-								$historyEntry['coverUrl'] = $recordDriver->getBookcoverUrl('medium', true);
-								$historyEntry['format'] = $recordDriver->getFormats();
-								$historyEntry['title'] = $recordDriver->getTitle();
-								$historyEntry['author'] = $recordDriver->getPrimaryAuthor();
-							}else{
-								//No point keeping this since we don't know what the title is?
-								$historyEntry['title'] = $circEntry->fields->bib->fields->title;
-								$historyEntry['author'] = $circEntry->fields->itemType->key;
-								$historyEntry['format'] = $circEntry->fields->bib->fields->author;
+							if ($systemVariables->storeRecordDetailsInDatabase){
+                                $getRecordDetailsQuery = 'SELECT permanent_id, indexed_format.format, recordIdentifier FROM grouped_work_records 
+								  LEFT JOIN grouped_work ON groupedWorkId = grouped_work.id
+								  LEFT JOIN indexed_record_source ON sourceId = indexed_record_source.id
+								  LEFT JOIN indexed_format on formatId = indexed_format.id
+								  where source = ' . $aspen_db->quote($this->accountProfile->recordSource) . ' AND (recordIdentifier = ' . $aspen_db->quote('a' . $shortId) . ' OR recordIdentifier = ' . $aspen_db->quote('u' . $shortId) . ')';
+								$results = $aspen_db->query($getRecordDetailsQuery, PDO::FETCH_ASSOC);
+								if ($results){
+									$result = $results->fetch();
+									if ($result) {
+										$historyEntry['id'] = $result['recordIdentifier'];
+										$historyEntry['shortId'] = $result['recordIdentifier'];
+										$historyEntry['recordId'] = $result['recordIdentifier'];
+										$groupedWorkDriver = new GroupedWorkDriver($result['permanent_id']);
+										if ($groupedWorkDriver->isValid()) {
+											$historyEntry['ratingData'] = $groupedWorkDriver->getRatingData();
+											$historyEntry['permanentId'] = $groupedWorkDriver->getPermanentId();
+											$historyEntry['linkUrl'] = $groupedWorkDriver->getLinkUrl();
+											$historyEntry['coverUrl'] = $groupedWorkDriver->getBookcoverUrl('medium', true);
+											$historyEntry['format'] = $result['format'];
+											$historyEntry['title'] = $groupedWorkDriver->getTitle();
+											$historyEntry['author'] = $groupedWorkDriver->getPrimaryAuthor();
+										}
+									}
+								}
+							}else {
+								require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+								$recordDriver = new MarcRecordDriver($this->accountProfile->recordSource . ':' . $historyEntry['recordId']);
+								if ($recordDriver->isValid()) {
+									$historyEntry['ratingData'] = $recordDriver->getRatingData();
+									$historyEntry['permanentId'] = $recordDriver->getPermanentId();
+									$historyEntry['linkUrl'] = $recordDriver->getGroupedWorkDriver()->getLinkUrl();
+									$historyEntry['coverUrl'] = $recordDriver->getBookcoverUrl('medium', true);
+									$historyEntry['format'] = $recordDriver->getFormats();
+									$historyEntry['title'] = $recordDriver->getTitle();
+									$historyEntry['author'] = $recordDriver->getPrimaryAuthor();
+								}
 							}
 							$recordDriver = null;
 						}else{
 							continue;
 						}
-						$historyEntry['checkout'] = strtotime($circEntry->fields->checkOutDate);
-						$historyEntry['checkin'] = strtotime($circEntry->fields->checkInDate);
 						$readingHistoryTitles[] = $historyEntry;
 					}
 				}
@@ -2187,4 +2400,252 @@ class SirsiDynixROA extends HorizonAPI
 		}
 		return array('historyActive' => $historyActive, 'titles' => $readingHistoryTitles, 'numTitles' => count($readingHistoryTitles));
 	}
+
+	public function performsReadingHistoryUpdatesOfILS(){
+		return true;
+	}
+
+	public function doReadingHistoryAction(User $patron, $action, $selectedTitles)
+	{
+		if ($action == 'optIn' || $action == 'optOut') {
+			$sessionToken = $this->getStaffSessionToken();
+			if ($sessionToken) {
+				$webServiceURL = $this->getWebServiceURL();
+				if ($userID = $patron->username) {
+					//To update the patron, we need to load the patron from Symphony so we only overwrite changed values.
+					$updatePatronInfoParametersClass = $this->getWebServiceResponse('getPatronInformation', $this->getWebServiceURL() . '/user/patron/key/' . $userID .'?includeFields=*,preferredAddress,address1,address2,address3', null, $sessionToken );
+					if ($updatePatronInfoParametersClass) {
+						//Convert from stdClass to associative array
+						$updatePatronInfoParameters = json_decode(json_encode($updatePatronInfoParametersClass), true);
+						if ($action == 'optOut') {
+							$updatePatronInfoParameters['keepCircHistory'] = 'NOHISTORY';
+						} elseif ($action == 'optIn') {
+							$updatePatronInfoParameters['keepCircHistory'] = 'ALLCHARGES';
+						}
+
+						$updateAccountInfoResponse = $this->getWebServiceResponse('updateReadingHistory', $webServiceURL . '/user/patron/key/' . $userID.'?includeFields=*,preferredAddress,address1,address2,address3', $updatePatronInfoParameters, $sessionToken, 'PUT');
+
+						if (isset($updateAccountInfoResponse->messageList)) {
+							foreach ($updateAccountInfoResponse->messageList as $message) {
+								$result['messages'][] = $message->message;
+							}
+							global $logger;
+							$logger->log('Symphony Driver - Patron Info Update Error - Error updating reading history : ' . implode(';', $result['messages']), Logger::LOG_ERROR);
+						} else {
+							$patron->update();
+						}
+					}
+				}
+			}
+		}
+	}
+
+	public function completeFinePayment(User $patron, UserPayment $payment)
+	{
+		$result = [
+			'success' => false,
+			'message' => ''
+		];
+
+		$currencyCode = 'USD';
+		$systemVariables = SystemVariables::getSystemVariables();
+
+		if (!empty($systemVariables->currencyCode)) {
+			$currencyCode = $systemVariables->currencyCode;
+		}
+
+		global $library;
+		$paymentType = empty($library->symphonyPaymentType) ? 'CREDITCARD' : $library->symphonyPaymentType;
+		$sessionToken = $this->getStaffSessionToken();
+		if ($sessionToken) {
+			$finePayments = explode(',', $payment->finesPaid);
+			$allPaymentsSucceed = true;
+			foreach ($finePayments as $finePayment) {
+				list($fineId, $paymentAmount) = explode('|', $finePayment);
+				$creditRequestBody = [
+					'blockKey' => str_replace('_', ':', $fineId),
+					'amount' => [
+						'amount' => $paymentAmount,
+						'currencyCode' => $currencyCode
+					],
+					'paymentType' => [
+						'resource' => '/policy/paymentType',
+						'key' => $paymentType
+					],
+					//We could include the actual transaction id from the processor, but it's limited to 30 chars so we can just use Aspen ID.
+					'vendorTransactionID' => $payment->id,
+					'creditReason' => [
+						'resource' => '/policy/creditReason',
+						'key' => 'PAYMENT'
+					]
+				];
+				$postCreditResponse = $this->getWebServiceResponse('addPayment', $this->getWebServiceURL() . '/circulation/block/addPayment', $creditRequestBody, $sessionToken, 'POST');
+				if (isset($postCreditResponse->messageList)){
+					$messages = [];
+					foreach ($postCreditResponse->messageList as $message){
+						$messages[] = $message->message;
+					}
+					$result['message'] = implode("<br/>", $messages);
+					$allPaymentsSucceed = false;
+				}
+			}
+			$result['success'] = $allPaymentsSucceed;
+		}else{
+			$result['message'] = 'Could not connect to Symphony APIs';
+		}
+
+		global $logger;
+		$logger->log("Marked fines as paid within Symphony for user {$patron->id}, {$result['message']}", Logger::LOG_ERROR);
+
+		return $result;
+	}
+
+	public function getSelfRegistrationFields() {
+		global $library;
+
+		$pickupLocations = array();
+		$location = new Location();
+		if ($library->selfRegistrationLocationRestrictions == 1) {
+			//Library Locations
+			$location->libraryId = $library->libraryId;
+		} elseif ($library->selfRegistrationLocationRestrictions == 2) {
+			//Valid pickup locations
+			$location->whereAdd('validHoldPickupBranch <> 2');
+		} elseif ($library->selfRegistrationLocationRestrictions == 3) {
+			//Valid pickup locations
+			$location->libraryId = $library->libraryId;
+			$location->whereAdd('validHoldPickupBranch <> 2');
+		}
+		if ($location->find()) {
+			while ($location->fetch()) {
+				$pickupLocations[$location->code] = $location->displayName;
+			}
+			asort($pickupLocations);
+			array_unshift($pickupLocations, translate(['text'=>'Please select a location', 'isPublicFacing'=>true]));
+		}
+
+		global $library;
+		$fields = array();
+		if (count($pickupLocations) == 1){
+			$selectedPickupLocation = '';
+			foreach ($pickupLocations as $code => $name){
+				$selectedPickupLocation = $code;
+			}
+			$fields['pickupLocation'] = array('property' => 'pickupLocation', 'type' => 'hidden', 'label' => 'Home Library', 'description' => 'Please choose the Library location you would prefer to use', 'default' => $selectedPickupLocation, 'required' => true);
+		}else{
+			$fields['librarySection'] = array('property' => 'librarySection', 'type' => 'section', 'label' => 'Library', 'hideInLists' => true, 'expandByDefault' => true, 'properties' => [
+				'pickupLocation' => array('property' => 'pickupLocation', 'type' => 'enum', 'label' => 'Home Library', 'description' => 'Please choose the Library location you would prefer to use', 'values' => $pickupLocations, 'required' => true)
+			]);
+		}
+
+		$fields['identitySection'] = array('property' => 'identitySection', 'type' => 'section', 'label' => 'Identity', 'hideInLists' => true, 'expandByDefault' => true, 'properties' => []);
+		$fields['identitySection']['properties'][] = array('property'=>'firstName', 'type'=>'text', 'label'=>'First Name', 'maxLength' => 40, 'required' => true);
+		$fields['identitySection']['properties'][] = array('property'=>'middleName', 'type'=>'text', 'label'=>'Middle Name', 'maxLength' => 40, 'required' => false);
+		$fields['identitySection']['properties'][] = array('property'=>'lastName', 'type'=>'text', 'label'=>'Last Name', 'maxLength' => 40, 'required' => true);
+		if ($library && $library->promptForBirthDateInSelfReg){
+			$birthDateMin = date('Y-m-d', strtotime('-113 years'));
+			$birthDateMax = date('Y-m-d', strtotime('-13 years'));
+			$fields['identitySection']['properties'][] = array('property'=>'birthDate', 'type'=>'date', 'label'=>'Date of Birth (MM/DD/YYYY)', 'min'=>$birthDateMin, 'max'=>$birthDateMax, 'maxLength' => 10, 'required' => true);
+		}
+
+		$fields['mainAddressSection'] = array('property' => 'mainAddressSection', 'type' => 'section', 'label' => 'Main Address', 'hideInLists' => true, 'expandByDefault' => true, 'properties' => []);
+		$fields['mainAddressSection']['properties'][] = array('property'=>'address', 'type'=>'text', 'label'=>'Mailing Address', 'maxLength' => 128, 'required' => true);
+		$fields['mainAddressSection']['properties'][] = array('property'=>'city', 'type'=>'text', 'label'=>'City', 'maxLength' => 48, 'required' => true);
+		if (empty($library->validSelfRegistrationStates)){
+			$fields['mainAddressSection']['properties'][] = array('property'=>'state', 'type'=>'text', 'label'=>'State', 'maxLength' => 2, 'required' => true);
+		}else{
+			$validStates = explode('|', $library->validSelfRegistrationStates);
+			$validStates = array_combine($validStates, $validStates);
+			$fields['mainAddressSection']['properties'][] = array('property' => 'state', 'type' => 'enum', 'values' => $validStates, 'label' => 'State', 'description' => 'State', 'maxLength' => 32, 'required' => true);
+		}
+		$fields['mainAddressSection']['properties']['zip'] = array('property'=>'zip', 'type'=>'text', 'label'=>'Zip Code', 'maxLength' => 32, 'required' => true);
+		if (!empty($library->validSelfRegistrationZipCodes)){
+			$fields['mainAddressSection']['properties']['zip']['validationPattern'] = $library->validSelfRegistrationZipCodes;
+			$fields['mainAddressSection']['properties']['zip']['validationMessage'] = translate(['text' => 'Please enter a valid zip code', 'isPublicFacing'=>true]);
+		}
+
+		$fields['contactInformationSection'] = array('property' => 'contactInformationSection', 'type' => 'section', 'label' => 'Contact Information', 'hideInLists' => true, 'expandByDefault' => true, 'properties' => []);
+		$fields['contactInformationSection']['properties'][] = array('property'=>'phone', 'type'=>'text',  'label'=>'Primary Phone', 'maxLength'=>15, 'required'=>false);
+		$fields['contactInformationSection']['properties'][] = array('property'=>'email',  'type'=>'email', 'label'=>'Email', 'maxLength' => 128, 'required' => true);
+		$fields['contactInformationSection']['properties'][] = array('property'=>'email2',  'type'=>'email', 'label'=>'Confirm Email', 'maxLength' => 128, 'required' => true);
+		return $fields;
+	}
+
+	private function getPatronFieldValue(string $value, $useAllCaps)
+	{
+		if ($useAllCaps){
+			return strtoupper($value);
+		}else{
+			return $value;
+		}
+	}
+
+	/**
+	 * Import Lists from the ILS
+	 *
+	 * @param User $patron
+	 * @return array - an array of results including the names of the lists that were imported as well as number of titles.
+	 */
+//	function importListsFromIls($patron)
+//	{
+//		$results =[
+//			'success' => false,
+//			'errors' => []
+//		];
+//		require_once ROOT_DIR . '/sys/UserLists/UserList.php';
+//		require_once ROOT_DIR . '/sys/Grouping/GroupedWorkPrimaryIdentifier.php';
+//		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
+//
+//		$curlWrapper = new CurlWrapper();
+//		//Login to Enterprise
+//		$enterpriseUrl = $this->accountProfile->vendorOpacUrl;
+//		if (substr($enterpriseUrl, -1, 1) != '/'){
+//			$enterpriseUrl .= '/';
+//		}
+//
+//		//First navigate to the main page to get cookies and other info needed for login
+//		$result = $curlWrapper->curlGetPage($enterpriseUrl . 'search/mylists?ic=true');
+//
+//		//Extract the login form
+//		$formData = [];
+/*		if (preg_match('%<form class="loginPageForm".*?>(.*?)</form>%s', $result, $matches)){*/
+//			$formElement = $matches[1];
+//		}else{
+//			$results['errors'][] = "Could not connect to the old catalog to import lists";
+//			return $results;
+//		}
+//
+//		$matches = [];
+//		if (preg_match('%<input value="(.*?)" name="t:formdata" type="hidden"></input>%s', $formElement, $matches)){
+//			$formData['t:formdata'] = $matches[1];
+//		}else{
+//			$results['errors'][] = "Could not connect to the old catalog to import lists";
+//			return $results;
+//		}
+//
+//		$formData['t:submit'] = '["submit_0","submit_0"]';
+//		$formData['textfield'] = '';
+//		$formData['textfield_0'] = '';
+//		$formData['hidden'] = 'SYMWS';
+//		$formData['j_username'] = $patron->getBarcode();
+//		$formData['j_password'] = $patron->getPasswordOrPin();
+//		$formData['t:zoneid'] = 'loginFormZone';
+//
+//		$loginUrl = $enterpriseUrl . "index.template.patronloginform.loginpageform/false?ic=true";
+//
+//		$headers  = array(
+//			'Accept: text/javascript, text/html, application/xml, text/xml, */*',
+//			'Accept-Encoding: gzip, deflate, br',
+//			'Accept-Language: en-US,en;q=0.5',
+//			'Content-Type: application/x-www-form-urlencoded; charset=UTF-8',
+//			'User-Agent: Aspen Discovery'
+//		);
+//		$curlWrapper->addCustomHeaders($headers, true);
+//		$result = $curlWrapper->curlPostPage($loginUrl, $formData);
+//
+//		//Get the mylists page now that we are logged in
+//		$result = $curlWrapper->curlGetPage($enterpriseUrl . 'search/mylists?ic=true');
+//
+//		return $results;
+//	}
 }

@@ -24,6 +24,7 @@ public class RecordInfo {
 	private String physicalDescription;
 
 	private final ArrayList<ItemInfo> relatedItems = new ArrayList<>();
+
 	public RecordInfo(String source, String recordIdentifier){
 		this.source = source;
 		this.recordIdentifier = recordIdentifier;

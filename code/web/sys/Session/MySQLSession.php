@@ -89,7 +89,8 @@ class MySQLSession extends SessionInterface
 			$s->remember_me = 0;
 			$result = $s->insert();
 			//Don't bother to count sessions that are from bots.
-			if (!BotChecker::isRequestFromBot()) {
+			global $isAJAX;
+			if (!BotChecker::isRequestFromBot() && !$isAJAX) {
 				global $aspenUsage;
 				$aspenUsage->sessionsStarted++;
 				if (!empty($aspenUsage->id)) {

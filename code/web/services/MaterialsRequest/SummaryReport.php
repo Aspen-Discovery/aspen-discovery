@@ -24,35 +24,35 @@ class MaterialsRequest_SummaryReport extends Admin_Admin {
 		}
 		$interface->assign('period', $period);
 
-		$endDate = (isset($_REQUEST['endDate']) && strlen($_REQUEST['endDate']) > 0) ? DateTime::createFromFormat('m/d/Y', $_REQUEST['endDate']) : new DateTime();
-		$interface->assign('endDate', $endDate->format('m/d/Y'));
+		$endDate = (isset($_REQUEST['endDate']) && strlen($_REQUEST['endDate']) > 0) ? DateTime::createFromFormat('Y-m-d', $_REQUEST['endDate']) : new DateTime();
+		$interface->assign('endDate', $endDate->format('Y-m-d'));
 
 		if (isset($_REQUEST['startDate']) && strlen($_REQUEST['startDate']) > 0){
-			$startDate = DateTime::createFromFormat('m/d/Y', $_REQUEST['startDate']);
+			$startDate = DateTime::createFromFormat('Y-m-d', $_REQUEST['startDate']);
 		} else{
 			if ($period == 'day'){
-				$startDate = new DateTime($endDate->format('m/d/Y') . " - 7 days");
+				$startDate = new DateTime($endDate->format('Y-m-d') . " - 7 days");
 			}elseif ($period == 'week'){
 				//Get the sunday after this
 				$endDate->setISODate($endDate->format('Y'), $endDate->format("W"), 0);
 				$endDate->modify("+7 days");
-				$startDate = new DateTime($endDate->format('m/d/Y') . " - 28 days");
+				$startDate = new DateTime($endDate->format('Y-m-d') . " - 28 days");
 			}elseif ($period == 'month'){
 				$endDate->modify("+1 month");
 				$numDays = $endDate->format("d");
 				$endDate->modify(" -$numDays days");
-				$startDate = new DateTime($endDate->format('m/d/Y') . " - 6 months");
+				$startDate = new DateTime($endDate->format('Y-m-d') . " - 6 months");
 			}else{ //year
 				$endDate->modify("+1 year");
 				$numDays = $endDate->format("m");
 				$endDate->modify(" -$numDays months");
 				$numDays = $endDate->format("d");
 				$endDate->modify(" -$numDays days");
-				$startDate = new DateTime($endDate->format('m/d/Y') . " - 2 years");
+				$startDate = new DateTime($endDate->format('Y-m-d') . " - 2 years");
 			}
 		}
 
-		$interface->assign('startDate', $startDate->format('m/d/Y'));
+		$interface->assign('startDate', $startDate->format('Y-m-d'));
 
 		//Set the end date to the end of the day
 		$endDate->setTime(24, 0, 0);
@@ -146,7 +146,7 @@ class MaterialsRequest_SummaryReport extends Admin_Admin {
 		$statuses = array();
 		foreach ($periodData as $periodInfo){
 			foreach ($periodInfo as $status => $numRequests){
-				$statuses[$status] = translate($status);
+				$statuses[$status] = translate(['text'=>$status, 'isAdminFacing'=>true]);
 			}
 		}
 		$interface->assign('statuses', $statuses);

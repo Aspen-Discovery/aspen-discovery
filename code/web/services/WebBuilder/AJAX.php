@@ -7,7 +7,7 @@ class WebBuilder_AJAX extends JSON_Action
 	function getPortalCellValuesForSource() {
 		$result = [
 			'success' => false,
-			'message' => 'Unknown error'
+			'message' => translate(['text'=>'Unknown Error', 'isPublicFacing'=>true])
 		];
 
 		$sourceType = $_REQUEST['sourceType'];
@@ -86,6 +86,22 @@ class WebBuilder_AJAX extends JSON_Action
 				'values' => $list
 			];
 			break;
+		case 'pdf':
+			require_once ROOT_DIR . '/sys/File/FileUpload.php';
+			$list = [];
+			$list['-1'] = 'Select a PDF';
+			$object = new FileUpload();
+			$object->type = 'web_builder_pdf';
+			$object->orderBy('title');
+			$object->find();
+			while ($object->fetch()) {
+				$list[$object->id] =$object->title;
+			}
+			$result = [
+				'success' => true,
+				'values' => $list
+			];
+			break;
 		case 'video':
 			require_once ROOT_DIR . '/sys/File/FileUpload.php';
 			$list = [];
@@ -152,6 +168,8 @@ class WebBuilder_AJAX extends JSON_Action
 						$image = new ImageUpload();
 						$image->type = 'web_builder_image';
 						$image->fullSizePath = $file['name'];
+						$image->generateXLargeSize = true;
+						$image->generateLargeSize = true;
 						$image->generateMediumSize = true;
 						$image->generateSmallSize = true;
 						$destFileName = $file['name'];
@@ -177,6 +195,60 @@ class WebBuilder_AJAX extends JSON_Action
 								'success' => true,
 								'title' => $image->title,
 								'imageUrl' => $image->getDisplayUrl('full')
+							];
+							break;
+						}else{
+							$result['message'] = 'Could not save the image to disk';
+						}
+					}
+				}else{
+					$result['message'] = 'No file was selected';
+				}
+			}else{
+				$result['message'] = 'You don\'t have the correct permissions to upload an image';
+			}
+		}else{
+			$result['message'] = 'You must be logged in to upload an image';
+		}
+		return $result;
+	}
+
+	/** @noinspection PhpUnused */
+	function uploadImageTinyMCE(){
+		if (UserAccount::isLoggedIn()){
+			if (UserAccount::userHasPermission('Administer All Web Content')){
+				if (! empty($_FILES)) {
+					require_once ROOT_DIR . '/sys/File/ImageUpload.php';
+					$structure = ImageUpload::getObjectStructure();
+					foreach ($_FILES as $file) {
+						$image = new ImageUpload();
+						$image->type = 'web_builder_image';
+						$image->fullSizePath = $file['name'];
+						$image->generateXLargeSize = true;
+						$image->generateLargeSize = true;
+						$image->generateMediumSize = true;
+						$image->generateSmallSize = true;
+						$destFileName = $file['name'];
+						$destFolder = $structure['fullSizePath']['path'];
+						if (!is_dir($destFolder)){
+							if (!mkdir($destFolder, 0755, true)){
+								$result['message'] = 'Could not create directory to upload files';
+								if (IPAddress::showDebuggingInformation()){
+									$result['message'] .= " " . $destFolder;
+								}
+							}
+						}
+						$destFullPath = $destFolder . '/' . $destFileName;
+						if (file_exists($destFullPath)){
+							$image->find(true);
+						}
+
+						$image->title = $file['name'];
+						$copyResult = copy($file["tmp_name"], $destFullPath);
+						if ($copyResult) {
+							$image->update();
+							$result = [
+								'location' => $image->getDisplayUrl('full')
 							];
 							break;
 						}else{
@@ -515,7 +587,7 @@ class WebBuilder_AJAX extends JSON_Action
 						$result['message'] = 'Display form';
 						$result['title'] = 'Edit Cell';
 						$result['modalBody'] = $interface->fetch('DataObjectUtil/objectEditForm.tpl');
-						$result['modalButtons'] = "<button class='tool btn btn-primary' onclick='AspenDiscovery.WebBuilder.editCell()'>" . translate('Update Cell') . "</button>";
+						$result['modalButtons'] = "<button class='tool btn btn-primary' onclick='AspenDiscovery.WebBuilder.editCell()'>" . translate(['text' => 'Update Cell', 'isAdminFacing'=>true]) . "</button>";
 					}else{
 						$result['message'] = 'Unable to find that cell';
 					}
@@ -628,5 +700,73 @@ class WebBuilder_AJAX extends JSON_Action
 		global $interface;
 		$interface->assign('libraryLocations', $libraryLocations);
 		return $interface->fetch('WebBuilder/libraryHoursAndLocations.tpl');
+	}
+
+	/** @noinspection PhpUnused */
+	function getWebResource(){
+		$result = [
+			'success' => false,
+			'message' => 'Unknown error getting web resource'
+		];
+		$resourceId = $_REQUEST['resourceId'];
+		require_once ROOT_DIR . '/sys/WebBuilder/WebResource.php';
+		$webResource = new WebResource();
+		$webResource->id = $resourceId;
+		if($webResource->find(true)) {
+			/** @var Location $locationSingleton */
+			global $locationSingleton;
+			$activeLibrary = $locationSingleton->getActiveLocation();
+			$result = [
+				'success' => true,
+				'url' => $webResource->url,
+				'requireLogin' => $webResource->requireLoginUnlessInLibrary == "1" ? true : false,
+				'inLibrary' => $activeLibrary != null ? true : false,
+				'openInNewTab' => $webResource->openInNewTab == "1" ? true : false,
+			];
+		} else {
+			$result = [
+				'success' => false,
+				'message' => 'Unable to find requested web resource'
+			];
+		}
+
+		return $result;
+	}
+
+	/** @noinspection PhpUnused */
+	function trackWebResourceUsage() {
+		$id = $_REQUEST['id'];
+		$authType = $_REQUEST['authType'];
+
+		require_once ROOT_DIR . '/sys/WebBuilder/WebResource.php';
+		$webResource = new WebResource();
+		$webResource->id = $id;
+		if($webResource->find(true)) {
+			require_once ROOT_DIR . '/sys/WebBuilder/WebResourceUsage.php';
+			$webResourceUsage = new WebResourceUsage();
+			$webResourceUsage->year = date('Y');
+			$webResourceUsage->month = date('n');
+			$webResourceUsage->instance = $_SERVER['SERVER_NAME'];
+			$webResourceUsage->resourceName = $webResource->name;
+			if($webResourceUsage->find(true)) {
+				$webResourceUsage->pageViews++;
+				if ($authType == "user"){
+					$webResourceUsage->pageViewsByAuthenticatedUsers++;
+				}
+				elseif($authType == "library") {
+					$webResourceUsage->pageViewsInLibrary++;
+				}
+				$webResourceUsage->update();
+			} else {
+				$webResourceUsage->pageViews++;
+				if ($authType == "user"){
+					$webResourceUsage->pageViewsByAuthenticatedUsers++;
+				}
+				elseif($authType == "library") {
+					$webResourceUsage->pageViewsInLibrary++;
+				}
+				$webResourceUsage->insert();
+			}
+		}
 	}
 }

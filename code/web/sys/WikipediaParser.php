@@ -5,6 +5,9 @@ class WikipediaParser {
 
 	public function __construct($lang){
 		if ($lang) {
+			if ($lang == 'pi' || $lang == 'ub'){
+				$lang = 'en';
+			}
 			$this->lang = $lang;
 		}else{
 			$this->lang = 'en';
@@ -197,7 +200,7 @@ class WikipediaParser {
 
 		// Fix pronunciation guides
 		$pattern[] = '/({{)pron-en\|([^}]*)(}})/Us';
-		$replacement[] = translate("pronounced") . " /$2/";
+		$replacement[] = translate(['text' => "pronounced", 'isPublicFacing'=>true]) . " /$2/";
 
 		// Removes citations
 		$pattern[] = '/({{)[^}]*(}})/Us';

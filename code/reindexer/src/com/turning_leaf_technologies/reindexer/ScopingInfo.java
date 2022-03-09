@@ -5,13 +5,7 @@ import com.turning_leaf_technologies.indexing.Scope;
 class ScopingInfo{
 	private final ItemInfo item;
 	private final Scope scope;
-	private String status;
-	private String groupedStatus;
-	private boolean available;
-	private boolean holdable;
 	private boolean locallyOwned;
-	private boolean bookable = false;
-	private boolean inLibraryUseOnly;
 	private boolean libraryOwned;
 	private String localUrl;
 
@@ -20,48 +14,29 @@ class ScopingInfo{
 		this.scope = scope;
 	}
 
-	public void setStatus(String status) {
-		this.status = status;
-	}
-
-	void setGroupedStatus(String groupedStatus) {
-		this.groupedStatus = groupedStatus;
-	}
-
-	public boolean isAvailable() {
-		return available;
-	}
-
-	public void setAvailable(boolean available) {
-		this.available = available;
-	}
-
-	void setHoldable(boolean holdable) {
-		this.holdable = holdable;
-	}
-
 	boolean isLocallyOwned() {
 		return locallyOwned;
 	}
 
 	void setLocallyOwned(boolean locallyOwned) {
-		this.locallyOwned = locallyOwned;
+		if (locallyOwned) {
+			this.locallyOwned = locallyOwned;
+		}
 	}
 
 	public Scope getScope() {
 		return scope;
 	}
 
-	void setInLibraryUseOnly(boolean inLibraryUseOnly) {
-		this.inLibraryUseOnly = inLibraryUseOnly;
-	}
 
 	boolean isLibraryOwned() {
 		return libraryOwned;
 	}
 
 	void setLibraryOwned(boolean libraryOwned) {
-		this.libraryOwned = libraryOwned;
+		if (libraryOwned){
+			this.libraryOwned = libraryOwned;
+		}
 	}
 
 	String scopingDetails = null;
@@ -71,13 +46,13 @@ class ScopingInfo{
 			if (itemIdentifier == null) itemIdentifier = "";
 			scopingDetails = item.getFullRecordIdentifier() + "|" +
 					itemIdentifier + "|" +
-					groupedStatus + "|" +
-					status + "|" +
+					item.getGroupedStatus() + "|" +
+					item.getDetailedStatus() + "|" +
 					locallyOwned + "|" +
-					available + "|" +
-					holdable + "|" +
-					bookable + "|" +
-					inLibraryUseOnly + "|" +
+					item.isAvailable() + "|" +
+					item.isHoldable() + "|" +
+					item.isBookable() + "|" +
+					item.isInLibraryUseOnly() + "|" +
 					libraryOwned + "|" +
 					"|" + //holdable PTypes (removed)
 					"|" + //bookable PTypes (removed)
@@ -92,34 +67,16 @@ class ScopingInfo{
 	}
 
 	void copyFrom(ScopingInfo scopingInfo) {
-		this.status = scopingInfo.status;
-		this.groupedStatus = scopingInfo.groupedStatus;
-		this.available = scopingInfo.available;
-		this.holdable = scopingInfo.holdable;
 		this.locallyOwned = scopingInfo.locallyOwned;
-		this.bookable = scopingInfo.bookable;
-		this.inLibraryUseOnly = scopingInfo.inLibraryUseOnly;
 		this.libraryOwned = scopingInfo.libraryOwned;
 		this.localUrl = scopingInfo.localUrl;
 	}
 
-	public String getStatus() {
-		return status;
-	}
-
-	public String getGroupedStatus() {
-		return groupedStatus;
-	}
-
-	public boolean isHoldable() {
-		return holdable;
-	}
-
-	public boolean isInLibraryUseOnly() {
-		return inLibraryUseOnly;
-	}
-
 	public String getLocalUrl() {
 		return localUrl;
+	}
+
+	public ItemInfo getItem(){
+		return item;
 	}
 }

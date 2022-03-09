@@ -11,10 +11,10 @@
 					{if $record->getCoverUrl()}
 						{if $record->sourceId && $record->getLinkUrl()}
 							<a href="{$record->getLinkUrl()}" id="descriptionTrigger{$record->sourceId|escape:"url"}" aria-hidden="true">
-								<img src="{$record->getCoverUrl()}" class="listResultImage img-thumbnail img-responsive" alt="{translate text='Cover Image' inAttribute=true}">
+								<img src="{$record->getCoverUrl()}" class="listResultImage img-thumbnail img-responsive" alt="{translate text='Cover Image' inAttribute=true isPublicFacing=true}">
 							</a>
 						{else} {* Cover Image but no Record-View link *}
-							<img src="{$record->getCoverUrl()}" class="listResultImage img-thumbnail img-responsive" alt="{translate text='Cover Image' inAttribute=true}" aria-hidden="true">
+							<img src="{$record->getCoverUrl()}" class="listResultImage img-thumbnail img-responsive" alt="{translate text='Cover Image' inAttribute=true isPublicFacing=true}" aria-hidden="true">
 						{/if}
 					{/if}
 				</div>
@@ -30,11 +30,11 @@
 					<span class="result-index">{$resultIndex})</span>&nbsp;
 					{if $record->getLinkUrl()}
 						<a href="{$record->getLinkUrl()}" class="result-title notranslate">
-							{if !$record->getTitle()|removeTrailingPunctuation}{translate text='Title not available'}{else}{$record->getTitle()|removeTrailingPunctuation|truncate:180:"..."|highlight}{/if}
+							{if !$record->getTitle()|removeTrailingPunctuation}{translate text='Title not available' isPublicFacing=true}{else}{$record->getTitle()|removeTrailingPunctuation|truncate:180:"..."|highlight}{/if}
 						</a>
 					{else}
 						<span class="result-title notranslate">
-							{if !$record->getTitle()|removeTrailingPunctuation}{translate text='Title not available'}{else}{$record->getTitle()|removeTrailingPunctuation|truncate:180:"..."|highlight}{/if}
+							{if !$record->getTitle()|removeTrailingPunctuation}{translate text='Title not available' isPublicFacing=true}{else}{$record->getTitle()|removeTrailingPunctuation|truncate:180:"..."|highlight}{/if}
 						</span>
 					{/if}
 				</div>
@@ -44,7 +44,7 @@
 				<div class="resultDetails col-xs-12 col-md-8 col-lg-9">
 					{if $record->getAuthor()}
 						<div class="row">
-							<div class="result-label col-tn-4">{translate text='Author'}</div>
+							<div class="result-label col-tn-4">{translate text='Author' isPublicFacing=true}</div>
 							<div class="col-tn-8 result-value">
 								<a href='/Author/Home?author="{$record->getAuthor()|escape:"url"}"'>{$record->getAuthor()|highlight}</a>
 							</div>
@@ -52,15 +52,15 @@
 					{/if}
 
 					<div class="row">
-						<div class="result-label col-tn-4">{translate text='Source'}</div>
+						<div class="result-label col-tn-4">{translate text='Source' isPublicFacing=true}</div>
 						<div class="col-tn-8 result-value">
-							{translate text="CloudLibrary"}
+							{translate text="CloudLibrary" isPublicFacing=true}
 						</div>
 					</div>
 
 					{if $record->getFormats()}
 						<div class="row">
-							<div class="result-label col-tn-4">{translate text='Format'}</div>
+							<div class="result-label col-tn-4">{translate text='Format' isPublicFacing=true}</div>
 							<div class="col-tn-8 result-value">
 								{implode subject=$record->getFormats() glue=", "}
 							</div>
@@ -69,7 +69,7 @@
 
 					{if $hasLinkedUsers}
 					<div class="row">
-						<div class="result-label col-tn-4">{translate text='On Hold For'}</div>
+						<div class="result-label col-tn-4">{translate text='On Hold For' isPublicFacing=true}</div>
 						<div class="col-tn-8 result-value">
 							{$record->getUserName()}
 						</div>
@@ -78,7 +78,7 @@
 
 					{if !empty($record->position)}
 						<div class="row">
-							<div class="result-label col-tn-4">{translate text='Position'}</div>
+							<div class="result-label col-tn-4">{translate text='Position' isPublicFacing=true}</div>
 							<div class="col-tn-8 result-value">
 								{$record->position}
 							</div>
@@ -90,14 +90,14 @@
 				<div class="col-xs-9 col-sm-8 col-md-4 col-lg-3">
 					<div class="btn-group btn-group-vertical btn-block">
 						{if $section == 'available'}
-							<button onclick="return AspenDiscovery.CloudLibrary.checkOutTitle('{$record->userId}', '{$record->sourceId}');" class="btn btn-sm btn-action">{translate text="Checkout"}</button>
+							<button onclick="return AspenDiscovery.CloudLibrary.checkOutTitle('{$record->userId}', '{$record->sourceId}');" class="btn btn-sm btn-action">{translate text="Checkout" isPublicFacing=true}</button>
 						{/if}
-						<button onclick="return AspenDiscovery.CloudLibrary.cancelHold('{$record->userId}', '{$record->sourceId}');" class="btn btn-sm btn-warning">Cancel Hold</button>
+						<button onclick="return AspenDiscovery.CloudLibrary.cancelHold('{$record->userId}', '{$record->sourceId}');" class="btn btn-sm btn-warning">{translate text="Cancel Hold" isPublicFacing=true}</button>
 					</div>
 					{if $showWhileYouWait}
 						<div class="btn-group btn-group-vertical btn-block">
 							{if !empty($record->getGroupedWorkId())}
-								<button onclick="return AspenDiscovery.GroupedWork.getWhileYouWait('{$record->getGroupedWorkId()}');" class="btn btn-sm btn-default btn-wrap">{translate text="While You Wait"}</button>
+								<button onclick="return AspenDiscovery.GroupedWork.getWhileYouWait('{$record->getGroupedWorkId()}');" class="btn btn-sm btn-default btn-wrap">{translate text="While You Wait" isPublicFacing=true}</button>
 							{/if}
 						</div>
 					{/if}

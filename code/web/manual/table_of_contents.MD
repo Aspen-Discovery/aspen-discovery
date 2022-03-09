@@ -14,8 +14,13 @@
   - [Primary Configuration](/Admin/HelpManual?page=Primary-Configuration)
     - [Library Systems](/Admin/HelpManual?page=Library-Systems)
       - [Menu Links](/Admin/HelpManual?page=Menu-Links)
-    - [Locations](/Admin/HelpManual?page=Library-Systems-Locations)
-    - [IP Addresses](/Admin/HelpManual?page=Location-IP-Addresses)
+      - [Locations](/Admin/HelpManual?page=Library-Systems-Locations)
+      - [IP Addresses](/Admin/HelpManual?page=Location-IP-Addresses)
+      - Host Information
+    - [Block Patron Account Linking](/Admin/HelpManual?page=Block-Patron-Account-Linking)
+    - Patron Types
+    - Account Profiles
+    - [Two-Factor Authentication](/Admin/HelpManual?page=Two-Factor-Authentication)
   - [Web Builder](/Admin/HelpManual?page=Web-Builder)
     - [Basic Pages](/Admin/HelpManual?page=Web-Builder_Basic-Pages)
     - [Custom Pages](/Admin/HelpManual?page=Web-Builder_Custom-Pages)
@@ -28,15 +33,18 @@
   - [Catalog / Grouped Works](/Admin/HelpManual?page=Catalog-Grouped-Works)
     - [Cataloging](/Admin/HelpManual?page=Cataloging)
       - [Bib Level Format](/Admin/HelpManual?page=Bib-Level-Format)
+      - [Defining Covers in MARC](/Admin/HelpManual?page=Defining-Covers-MARC)
     - [Grouped Works](/Admin/HelpManual?page=Grouped-Works)
     - [Grouped Work Display Settings](/Admin/HelpManual?page=Grouped-Work-Display-Settings)
     - [Grouped Work Facets](/Admin/HelpManual?page=Grouped-Work-Facets)
       - [Manually grouping records](/Admin/HelpManual?page=Manually-grouping-records)
+    - [Author Authorities](/Admin/HelpManual?page=author-authorities)
   - [Local Catalog Enrichment](/Admin/HelpManual?page=Local-Catalog-Enrichment)
     - [Browse Category Groups](/Admin/HelpManual?page=Browse-Category-Groups)
     - [Browse Categories](/Admin/HelpManual?page=Browse-Categories)
     - [Collection Spotlights](/Admin/HelpManual?page=Collection-Spotlights)
     - [Placards](/Admin/HelpManual?page=Placards)
+    - [System Messages](/Admin/HelpManual?page=System-Messages)
   - Third Party Enrichment
     - [Accelerated Reader](/Admin/HelpManual?page=Accelerated-Reader)
     - [Content Cafe](/Admin/HelpManual?page=Content-Cafe)
@@ -46,6 +54,8 @@
     - [Novelist](/Admin/HelpManual?page=Novelist)
     - [Syndetics](/Admin/HelpManual?page=Syndetics)
     - [Wikipedia](/Admin/HelpManual?page=Wikipedia)
+  - [eCommerce](/Admin/HelpManual?page=eCommerce)
+    -  [eCommerce Reports](/Admin/HelpManual?page=eCommerceinfo)
   - [ILS Integration](/Admin/HelpManual?page=ILS-Integration)
     - Indexing Profiles
       - Format Information
@@ -86,11 +96,10 @@
 - Citations
 - [Collection Spotlights](/Admin/HelpManual?page=Collection-Spotlights)
 - [Covers](/Admin/HelpManual?page=Cover-Images)
-- [eCommerce](/Admin/HelpManual?page=eCommerce)
 - Email
 - Events
-  - Library Calendar
-- Explore More
+  - [Library Calendar](/Admin/HelpManual?page=Library-Calendar)
+- [Explore More](/Admin/HelpManual?page=Explore-More)
 - Full Record Pages
 - [Genealogy](/Admin/HelpManual?page=Genealogy)
 - Interlibrary Loans
@@ -102,26 +111,12 @@
 - Searching
   - Search Types
   - [Facets](/Admin/HelpManual?page=Facets)
-    - [Literary Form (Nonfiction/Fiction) Facet](/Admin/HelpManual?page=Literary-Forms)
-    - [Subjects (Full Subject) Facet](/Admin/HelpManual?page=FullSubject-Facet)
-    - [Bisac Subject Facet](/Admin/HelpManual?page=BISACSubject-Facet)
-    - [LC Subject Facet](/Admin/HelpManual?page=LCSubject-Facet)
-    - [Audience Facet](/Admin/HelpManual?page=Audience-Facets)
-    - [Reading Level Facet](/Admin/HelpManual?page=ReadingLevel-Facets)
-    - [Era Facet](/Admin/HelpManual?page=Era-Facets)
-    - [Topics Facet](/Admin/HelpManual?page=Topic-Facets)
-    - [Genre Facet](/Admin/HelpManual?page=Genre-Facets)
-    - [Region Facet](/Admin/HelpManual?page=GeographicRegion-Facets)
-    - [Language Facet](/Admin/HelpManual?page=Language-Facet)
-    - [Awards Facet](/Admin/HelpManual?page=Awards-Facet)
-    - [Item Type Facet](/Admin/HelpManual?page=itemtype-facet)
-    - [Collection Facet](/Admin/HelpManual?page=Collection-Facet)
-    - [Shelf Location Facet](/Admin/HelpManual?page=ShelfLocation-Facet)
 - [Relevancy](/Admin/HelpManual?page=Search-Relevancy)
 - System Messages
 - [While You Wait](/Admin/HelpManual?page=While-You-Wait)
 
 #### Patron Account
+- [My Account](/Admin/HelpManual?page=My-Account)
   - [Checked Out Titles](/Admin/HelpManual?page=Check-Out-Titles)
   - [Titles On Hold](/Admin/HelpManual?page=Titles-On-Hold)
   - [Reading History](/Admin/HelpManual?page=Reading-History)
@@ -130,11 +125,21 @@
   - [Ratings and Reviews](/Admin/HelpManual?page=Ratings-And-Reviews)
   - [Recommendations](/Admin/HelpManual?page=Recommendations)
   - [Account Settings](/Admin/HelpManual?page=Account-Settings)
-    - Preferences and Language Settings
-    - Linked Accounts
+    -  [My Library Card](/Admin/HelpManual?page=My-Library-Card)
+    -  [My Preferences (and Language settings)](/Admin/HelpManual?page=My-Preferences)
+    -  [Contact Information](/Admin/HelpManual?page=My-Contact-Information)
+    -  [Messaging Settings](/Admin/HelpManual?page=My-Messaging-Settings)
+    -  [Linked Accounts](/Admin/HelpManual?page=My-Linked-Accounts)
+    -  [Security Settings](/Admin/HelpManual?page=My-Security-Settings)
+    -  [OverDrive Options](/Admin/HelpManual?page=My-Overdrive-Options)
   - [Search History](/Admin/HelpManual?page=Search-History)
   - [User Lists](/Admin/HelpManual?page=User-Lists)
 
-## Troubleshooting
+### Development
+-  [Setting Up Your Development Environment](/Admin/HelpManual?page=Development-Environment)
+-  [Installing on Linux or Mac OS X](/Admin/HelpManual?page=Installing-Aspen-Linux)
+-  [Installing on Windows](/Admin/HelpManual?page=Installing-Aspen-Windows)
+
+### Troubleshooting
   - [Administration Issues](/Admin/HelpManual?page=Troubleshooting-Administration)
   - [End User Issues](/Admin/HelpManual?page=Troubleshooting-End-User)

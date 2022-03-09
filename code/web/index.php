@@ -1,5 +1,6 @@
 <?php
 require_once 'bootstrap.php';
+require_once ROOT_DIR . '/sys/BotChecker.php';
 if (file_exists('bootstrap_aspen.php')) {
 	require_once 'bootstrap_aspen.php';
 }
@@ -30,105 +31,11 @@ if (isset($_REQUEST['test_role'])){
 $interface = new UInterface();
 $timer->logTime('Create interface');
 
+/** @var Location $locationSingleton */
 global $locationSingleton;
 getGitBranch();
 //Set a counter for CSS and JavaScript so we can have browsers clear their cache automatically
-$interface->assign('cssJsCacheCounter', 8);
-
-$interface->loadDisplayOptions();
-$timer->logTime('Loaded display options within interface');
-
-global $active_ip;
-
-try {
-	require_once ROOT_DIR . '/sys/Enrichment/GoogleApiSetting.php';
-	$googleSettings = new GoogleApiSetting();
-	if ($googleSettings->find(true)) {
-		$googleAnalyticsId = $googleSettings->googleAnalyticsTrackingId;
-		$googleAnalyticsLinkingId = $googleSettings->googleAnalyticsTrackingId;
-		$interface->assign('googleAnalyticsId', $googleSettings->googleAnalyticsTrackingId);
-		$interface->assign('googleAnalyticsLinkingId', $googleSettings->googleAnalyticsLinkingId);
-		$interface->assign('googleAnalyticsVersion', empty($googleSettings->googleAnalyticsVersion) ? 'v3' : $googleSettings->googleAnalyticsVersion);
-		$linkedProperties = '';
-		if (!empty($googleSettings->googleAnalyticsLinkedProperties)) {
-			$linkedPropertyArray = preg_split('~\\r\\n|\\r|\\n~', $googleSettings->googleAnalyticsLinkedProperties);
-			foreach ($linkedPropertyArray as $linkedProperty) {
-				if (strlen($linkedProperties) > 0) {
-					$linkedProperties .= ', ';
-				}
-				$linkedProperties .= "'{$linkedProperty}'";
-			}
-		}
-		$interface->assign('googleAnalyticsLinkedProperties', $linkedProperties);
-		if ($googleAnalyticsId) {
-			$googleAnalyticsDomainName = !empty($googleSettings->googleAnalyticsDomainName) ? $googleSettings->googleAnalyticsDomainName : strstr($_SERVER['SERVER_NAME'], '.');
-			// check for a config setting, use that if found, otherwise grab domain name  but remove the first subdomain
-			$interface->assign('googleAnalyticsDomainName', $googleAnalyticsDomainName);
-		}
-	}
-}catch (Exception $e){
-	//This happens when Google analytics settings aren't setup yet
-}
-
-global $library;
-global $offlineMode;
-global $configArray;
-
-$interface->assign('islandoraEnabled', $configArray['Islandora']['enabled']);
-
-//Get the name of the active instance
-//$inLibrary, is used to pre-select auto-logout on place hold forms;
-// to hide the remember me option on login pages;
-// and to show the Location in the page footer
-if ($locationSingleton->getIPLocation() != null){
-	$interface->assign('inLibrary', true);
-	$physicalLocation = $locationSingleton->getIPLocation()->displayName;
-}else{
-	$interface->assign('inLibrary', false);
-	$physicalLocation = 'Home';
-}
-$interface->assign('physicalLocation', $physicalLocation);
-
-$productionServer = $configArray['Site']['isProduction'];
-$interface->assign('productionServer', $productionServer);
-
-$location = $locationSingleton->getActiveLocation();
-
-// Determine Module and Action
-$module = (isset($_GET['module'])) ? $_GET['module'] : null;
-$module = preg_replace('/[^\w]/', '', $module);
-$action = (isset($_GET['action'])) ? $_GET['action'] : null;
-$action = preg_replace('/[^\w]/', '', $action);
-
-//Redirect some common spam components so they go to a valid place, and redirect old actions to new
-if ($action == 'trackback'){
-	$action = null;
-}
-if ($action == 'SimilarTitles'){
-	$action = 'Home';
-}
-//Set these initially in case user login fails, we will need the module to be set.
-$interface->assign('module', $module);
-$interface->assign('action', $action);
-
-global $solrScope;
-global $scopeType;
-global $isGlobalScope;
-$interface->assign('scopeType', $scopeType);
-$interface->assign('solrScope', "$solrScope - $scopeType");
-$interface->assign('isGlobalScope', $isGlobalScope);
-
-$interface->assign('showFines', $configArray['Catalog']['showFines']);
-
-$interface->assign('activeIp', IPAddress::getActiveIp());
-
-// Check system availability
-$mode = checkAvailabilityMode();
-if ($mode['online'] === false) {
-	$interface->display($mode['template']);
-	exit();
-}
-$timer->logTime('Checked availability mode');
+$interface->assign('cssJsCacheCounter', 17);
 
 // Setup Translator
 global $language;
@@ -209,6 +116,99 @@ $interface->assign('translationModeActive', $translator->translationModeActive()
 
 $interface->setLanguage($activeLanguage);
 
+$interface->loadDisplayOptions();
+$timer->logTime('Loaded display options within interface');
+
+global $active_ip;
+
+try {
+	require_once ROOT_DIR . '/sys/Enrichment/GoogleApiSetting.php';
+	$googleSettings = new GoogleApiSetting();
+	if ($googleSettings->find(true)) {
+		$googleAnalyticsId = $googleSettings->googleAnalyticsTrackingId;
+		$googleAnalyticsLinkingId = $googleSettings->googleAnalyticsTrackingId;
+		$interface->assign('googleAnalyticsId', $googleSettings->googleAnalyticsTrackingId);
+		$interface->assign('googleAnalyticsLinkingId', $googleSettings->googleAnalyticsLinkingId);
+		$interface->assign('googleAnalyticsVersion', empty($googleSettings->googleAnalyticsVersion) ? 'v3' : $googleSettings->googleAnalyticsVersion);
+		$linkedProperties = '';
+		if (!empty($googleSettings->googleAnalyticsLinkedProperties)) {
+			$linkedPropertyArray = preg_split('~\\r\\n|\\r|\\n~', $googleSettings->googleAnalyticsLinkedProperties);
+			foreach ($linkedPropertyArray as $linkedProperty) {
+				if (strlen($linkedProperties) > 0) {
+					$linkedProperties .= ', ';
+				}
+				$linkedProperties .= "'{$linkedProperty}'";
+			}
+		}
+		$interface->assign('googleAnalyticsLinkedProperties', $linkedProperties);
+		if ($googleAnalyticsId) {
+			$googleAnalyticsDomainName = !empty($googleSettings->googleAnalyticsDomainName) ? $googleSettings->googleAnalyticsDomainName : strstr($_SERVER['SERVER_NAME'], '.');
+			// check for a config setting, use that if found, otherwise grab domain name  but remove the first subdomain
+			$interface->assign('googleAnalyticsDomainName', $googleAnalyticsDomainName);
+		}
+	}
+}catch (Exception $e){
+	//This happens when Google analytics settings aren't setup yet
+}
+
+global $library;
+global $offlineMode;
+global $configArray;
+
+//Get the name of the active instance
+//$inLibrary, is used to pre-select auto-logout on place hold forms;
+// to hide the remember me option on login pages;
+// and to show the Location in the page footer
+if ($locationSingleton->getIPLocation() != null){
+	$interface->assign('inLibrary', true);
+	$physicalLocation = $locationSingleton->getIPLocation()->displayName;
+}else{
+	$interface->assign('inLibrary', false);
+	$physicalLocation = 'Home';
+}
+$interface->assign('physicalLocation', $physicalLocation);
+
+$productionServer = $configArray['Site']['isProduction'];
+$interface->assign('productionServer', $productionServer);
+
+$location = $locationSingleton->getActiveLocation();
+
+// Determine Module and Action
+$module = (isset($_GET['module'])) ? $_GET['module'] : null;
+$module = preg_replace('/[^\w]/', '', $module);
+$action = (isset($_GET['action'])) ? $_GET['action'] : null;
+$action = preg_replace('/[^\w]/', '', $action);
+
+//Redirect some common spam components so they go to a valid place, and redirect old actions to new
+if ($action == 'trackback'){
+	$action = null;
+}
+if ($action == 'SimilarTitles'){
+	$action = 'Home';
+}
+//Set these initially in case user login fails, we will need the module to be set.
+$interface->assign('module', $module);
+$interface->assign('action', $action);
+
+global $solrScope;
+global $scopeType;
+global $isGlobalScope;
+$interface->assign('scopeType', $scopeType);
+$interface->assign('solrScope', "$solrScope - $scopeType");
+$interface->assign('isGlobalScope', $isGlobalScope);
+
+$interface->assign('showFines', $configArray['Catalog']['showFines']);
+
+$interface->assign('activeIp', IPAddress::getActiveIp());
+
+// Check system availability
+$mode = checkAvailabilityMode();
+if ($mode['online'] === false) {
+	$interface->display($mode['template']);
+	exit();
+}
+$timer->logTime('Checked availability mode');
+
 //Check to see if we should show the submit ticket option
 $interface->assign('showSubmitTicket', false);
 if (UserAccount::isLoggedIn() && UserAccount::userHasPermission('Submit Ticket')) {
@@ -276,7 +276,7 @@ if ($isLoggedIn) {
 	$interface->assign('user', $activeUserObject);
 	$userIsStaff = $activeUserObject->isStaff();
 	$interface->assign('userIsStaff', $userIsStaff);
-} else if ( (isset($_POST['username']) && isset($_POST['password']) && ($action != 'Account' && $module != 'AJAX')) || isset($_REQUEST['casLogin']) ) {
+} else if ( (isset($_POST['username']) && isset($_POST['password']) && ($action != 'Account' && $module != 'AJAX') && ($module != 'API')) || isset($_REQUEST['casLogin']) ) {
 	//The user is trying to log in
     try {
         $user = UserAccount::login();
@@ -287,7 +287,7 @@ if ($isLoggedIn) {
 	if ($user instanceof AspenError) {
 		require_once ROOT_DIR . '/services/MyAccount/Login.php';
 		$launchAction = new MyAccount_Login();
-		$error_msg    = translate($user->getMessage());
+		$error_msg    = translate(['text'=>$user->getMessage(),'isPublicFacing'=>true]);
 		$launchAction->launch($error_msg);
 		exit();
 	}elseif(!$user){
@@ -437,7 +437,6 @@ if ($action == "AJAX" || $action == "JSON" || $module == 'API'){
 		$aspenUsage->ajaxRequests++;
 	}
 }else{
-	require_once ROOT_DIR . '/sys/BotChecker.php';
 	if (BotChecker::isRequestFromBot()){
 		$aspenUsage->pageViewsByBots++;
 	}else{
@@ -465,10 +464,6 @@ if ($action == "AJAX" || $action == "JSON" || $module == 'API'){
 
 	if ($library->enableGenealogy){
 		$interface->assign('enableGenealogy', true);
-	}
-
-	if ($library->enableArchive){
-		$interface->assign('enableArchive', true);
 	}
 
 	if ($library->enableOpenArchives) {
@@ -792,29 +787,30 @@ function getGitBranch(){
 
 	$gitName = $configArray['System']['gitVersionFile'];
 	$branchName = 'Unknown';
+	$branchNameWithCommit = 'Unknown';
 	if ($gitName == 'HEAD'){
 		$stringFromFile = file('../../.git/HEAD', FILE_USE_INCLUDE_PATH);
 		$stringFromFile = $stringFromFile[0]; //get the string from the array
 		$explodedString = explode("/", $stringFromFile); //separate out by the "/" in the string
 		$branchName = trim($explodedString[2]); //get the one that is always the branch name
+		$branchNameWithCommit = $branchName;
 	}else{
 		if (file_exists('../../.git/FETCH_HEAD')) {
 			$stringFromFile = file('../../.git/FETCH_HEAD', FILE_USE_INCLUDE_PATH);
 			if (!empty($stringFromFile)) {
 				$stringFromFile = $stringFromFile[0]; //get the string from the array
 				if (preg_match('/(.*?)\s+branch\s+\'(.*?)\'.*/', $stringFromFile, $matches)) {
-					if (IPAddress::showDebuggingInformation()) {
-						$branchName = $matches[2] . ' (' . $matches[1] . ')'; //get the branch name
-					} else {
-						$branchName = $matches[2]; //get the branch name
-					}
+					$branchName = $matches[2]; //get the branch name
+					$branchNameWithCommit = $matches[2] . ' (' . substr($matches[1], 0,7) . ')'; //get the branch name
 				}
 			}
 		}else{
 			$branchName = 'Unknown';
+			$branchNameWithCommit = 'Unknown';
 		}
 	}
 	$interface->assign('gitBranch', $branchName);
+	$interface->assign('gitBranchWithCommit', $branchNameWithCommit);
 }
 // Set up autoloader (needed for YAML)
 function aspen_autoloader($class) {
@@ -872,7 +868,7 @@ function loadModuleActionId(){
 	global $indexingProfiles;
 	/** SideLoad[] $sideLoadSettings */
 	global $sideLoadSettings;
-	$allRecordModules = "OverDrive|GroupedWork|Record|ExternalEContent|Person|Library|RBdigital|Hoopla|RBdigitalMagazine|CloudLibrary|Files|Axis360|WebBuilder";
+	$allRecordModules = "OverDrive|GroupedWork|Record|ExternalEContent|Person|Library|RBdigital|Hoopla|RBdigitalMagazine|CloudLibrary|Files|Axis360|WebBuilder|ProPay|CourseReserves";
 	foreach ($indexingProfiles as $profile){
 		$allRecordModules .= '|' . $profile->recordUrlComponent;
 	}

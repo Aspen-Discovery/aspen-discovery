@@ -10,8 +10,6 @@ if(!fast){item.width=t.outerWidth();item.height=t.outerHeight()}p=t.offset();ite
 this.focus(event,newItem)}},expand:function(event){var newItem=this.active&&this.active.children(".ui-menu ").children(".ui-menu-item").first();if(newItem&&newItem.length){this._open(newItem.parent());this._delay(function(){this.focus(event,newItem)})}},next:function(event){this._move("next","first",event)},previous:function(event){this._move("prev","last",event)},isFirstItem:function(){return this.active&&!this.active.prevAll(".ui-menu-item").length},isLastItem:function(){return this.active&&!this.active.nextAll(".ui-menu-item").length},_move:function(direction,filter,event){var next;if(this.active){if(direction==="first"||direction==="last"){next=this.active[direction==="first"?"prevAll":"nextAll"](".ui-menu-item").eq(-1)}else{next=this.active[direction+"All"](".ui-menu-item").eq(0)}}if(!next||!next.length||!this.active){next=this.activeMenu.children(".ui-menu-item")[filter]()}this.focus(event,next)},nextPage:function(event){var item,base,height;if(!this.active){this.next(event);return}if(this.isLastItem()){return}if(this._hasScroll()){base=this.active.offset().top;height=this.element.height();this.active.nextAll(".ui-menu-item").each(function(){item=$(this);return item.offset().top-base-height<0});this.focus(event,item)}else{this.focus(event,this.activeMenu.children(".ui-menu-item")[!this.active?"first":"last"]())}},previousPage:function(event){var item,base,height;if(!this.active){this.next(event);return}if(this.isFirstItem()){return}if(this._hasScroll()){base=this.active.offset().top;height=this.element.height();this.active.prevAll(".ui-menu-item").each(function(){item=$(this);return item.offset().top-base+height>0});this.focus(event,item)}else{this.focus(event,this.activeMenu.children(".ui-menu-item").first())}},_hasScroll:function(){return this.element.outerHeight()<this.element.prop("scrollHeight")},select:function(event){this.active=this.active||$(event.target).closest(".ui-menu-item");var ui={item:this.active};if(!this.active.has(".ui-menu").length){this.collapseAll(event,true)}this._trigger("select",event,ui)}})})(jQuery);
 if(typeof jQuery==="undefined"){throw new Error("Bootstrap requires jQuery")}+function($){"use strict";function transitionEnd(){var el=document.createElement("bootstrap");var transEndEventNames={WebkitTransition:"webkitTransitionEnd",MozTransition:"transitionend",OTransition:"oTransitionEnd otransitionend",transition:"transitionend"};for(var name in transEndEventNames){if(el.style[name]!==undefined){return{end:transEndEventNames[name]}}}}$.fn.emulateTransitionEnd=function(duration){var called=false,$el=this;$(this).one($.support.transition.end,function(){called=true});var callback=function(){if(!called)$($el).trigger($.support.transition.end)};setTimeout(callback,duration);return this};$(function(){$.support.transition=transitionEnd()})}(jQuery);+function($){"use strict";var dismiss='[data-dismiss="alert"]';var Alert=function(el){$(el).on("click",dismiss,this.close)};Alert.prototype.close=function(e){var $this=$(this);var selector=$this.attr("data-target");if(!selector){selector=$this.attr("href");selector=selector&&selector.replace(/.*(?=#[^\s]*$)/,"")}var $parent=$(selector);if(e)e.preventDefault();if(!$parent.length){$parent=$this.hasClass("alert")?$this:$this.parent()}$parent.trigger(e=$.Event("close.bs.alert"));if(e.isDefaultPrevented())return;$parent.removeClass("in");function removeElement(){$parent.trigger("closed.bs.alert").remove()}$.support.transition&&$parent.hasClass("fade")?$parent.one($.support.transition.end,removeElement).emulateTransitionEnd(150):removeElement()};var old=$.fn.alert;$.fn.alert=function(option){return this.each(function(){var $this=$(this);var data=$this.data("bs.alert");if(!data)$this.data("bs.alert",data=new Alert(this));if(typeof option=="string")data[option].call($this)})};$.fn.alert.Constructor=Alert;$.fn.alert.noConflict=function(){$.fn.alert=old;return this};$(document).on("click.bs.alert.data-api",dismiss,Alert.prototype.close)}(jQuery);+function($){"use strict";var Button=function(element,options){this.$element=$(element);this.options=$.extend({},Button.DEFAULTS,options)};Button.DEFAULTS={loadingText:"loading..."};Button.prototype.setState=function(state){var d="disabled";var $el=this.$element;var val=$el.is("input")?"val":"html";var data=$el.data();state=state+"Text";if(!data.resetText)$el.data("resetText",$el[val]());$el[val](data[state]||this.options[state]);setTimeout(function(){state=="loadingText"?$el.addClass(d).attr(d,d):$el.removeClass(d).removeAttr(d)},0)};Button.prototype.toggle=function(){var $parent=this.$element.closest('[data-toggle="buttons"]');var changed=true;if($parent.length){var $input=this.$element.find("input");if($input.prop("type")==="radio"){if($input.prop("checked")&&this.$element.hasClass("active"))changed=false;else $parent.find(".active").removeClass("active")}if(changed)$input.prop("checked",!this.$element.hasClass("active")).trigger("change")}if(changed)this.$element.toggleClass("active")};var old=$.fn.button;$.fn.button=function(option){return this.each(function(){var $this=$(this);var data=$this.data("bs.button");var options=typeof option=="object"&&option;if(!data)$this.data("bs.button",data=new Button(this,options));if(option=="toggle")data.toggle();else if(option)data.setState(option)})};$.fn.button.Constructor=Button;$.fn.button.noConflict=function(){$.fn.button=old;return this};$(document).on("click.bs.button.data-api","[data-toggle^=button]",function(e){var $btn=$(e.target);if(!$btn.hasClass("btn"))$btn=$btn.closest(".btn");$btn.button("toggle");e.preventDefault()})}(jQuery);+function($){"use strict";var Carousel=function(element,options){this.$element=$(element);this.$indicators=this.$element.find(".carousel-indicators");this.options=options;this.paused=this.sliding=this.interval=this.$active=this.$items=null;this.options.pause=="hover"&&this.$element.on("mouseenter",$.proxy(this.pause,this)).on("mouseleave",$.proxy(this.cycle,this))};Carousel.DEFAULTS={interval:5e3,pause:"hover",wrap:true};Carousel.prototype.cycle=function(e){e||(this.paused=false);this.interval&&clearInterval(this.interval);this.options.interval&&!this.paused&&(this.interval=setInterval($.proxy(this.next,this),this.options.interval));return this};Carousel.prototype.getActiveIndex=function(){this.$active=this.$element.find(".item.active");this.$items=this.$active.parent().children();return this.$items.index(this.$active)};Carousel.prototype.to=function(pos){var that=this;var activeIndex=this.getActiveIndex();if(pos>this.$items.length-1||pos<0)return;if(this.sliding)return this.$element.one("slid.bs.carousel",function(){that.to(pos)});if(activeIndex==pos)return this.pause().cycle();return this.slide(pos>activeIndex?"next":"prev",$(this.$items[pos]))};Carousel.prototype.pause=function(e){e||(this.paused=true);if(this.$element.find(".next, .prev").length&&$.support.transition.end){this.$element.trigger($.support.transition.end);this.cycle(true)}this.interval=clearInterval(this.interval);return this};Carousel.prototype.next=function(){if(this.sliding)return;return this.slide("next")};Carousel.prototype.prev=function(){if(this.sliding)return;return this.slide("prev")};Carousel.prototype.slide=function(type,next){var $active=this.$element.find(".item.active");var $next=next||$active[type]();var isCycling=this.interval;var direction=type=="next"?"left":"right";var fallback=type=="next"?"first":"last";var that=this;if(!$next.length){if(!this.options.wrap)return;$next=this.$element.find(".item")[fallback]()}this.sliding=true;isCycling&&this.pause();var e=$.Event("slide.bs.carousel",{relatedTarget:$next[0],direction:direction});if($next.hasClass("active"))return;if(this.$indicators.length){this.$indicators.find(".active").removeClass("active");this.$element.one("slid.bs.carousel",function(){var $nextIndicator=$(that.$indicators.children()[that.getActiveIndex()]);$nextIndicator&&$nextIndicator.addClass("active")})}if($.support.transition&&this.$element.hasClass("slide")){this.$element.trigger(e);if(e.isDefaultPrevented())return;$next.addClass(type);$next[0].offsetWidth;$active.addClass(direction);$next.addClass(direction);$active.one($.support.transition.end,function(){$next.removeClass([type,direction].join(" ")).addClass("active");$active.removeClass(["active",direction].join(" "));that.sliding=false;setTimeout(function(){that.$element.trigger("slid.bs.carousel")},0)}).emulateTransitionEnd(600)}else{this.$element.trigger(e);if(e.isDefaultPrevented())return;$active.removeClass("active");$next.addClass("active");this.sliding=false;this.$element.trigger("slid.bs.carousel")}isCycling&&this.cycle();return this};var old=$.fn.carousel;$.fn.carousel=function(option){return this.each(function(){var $this=$(this);var data=$this.data("bs.carousel");var options=$.extend({},Carousel.DEFAULTS,$this.data(),typeof option=="object"&&option);var action=typeof option=="string"?option:options.slide;if(!data)$this.data("bs.carousel",data=new Carousel(this,options));if(typeof option=="number")data.to(option);else if(action)data[action]();else if(options.interval)data.pause().cycle()})};$.fn.carousel.Constructor=Carousel;$.fn.carousel.noConflict=function(){$.fn.carousel=old;return this};$(document).on("click.bs.carousel.data-api","[data-slide], [data-slide-to]",function(e){var $this=$(this),href;var $target=$($this.attr("data-target")||(href=$this.attr("href"))&&href.replace(/.*(?=#[^\s]+$)/,""));var options=$.extend({},$target.data(),$this.data());var slideIndex=$this.attr("data-slide-to");if(slideIndex)options.interval=false;$target.carousel(options);if(slideIndex=$this.attr("data-slide-to")){$target.data("bs.carousel").to(slideIndex)}e.preventDefault()});$(window).on("load",function(){$('[data-ride="carousel"]').each(function(){var $carousel=$(this);$carousel.carousel($carousel.data())})})}(jQuery);+function($){"use strict";var Collapse=function(element,options){this.$element=$(element);this.options=$.extend({},Collapse.DEFAULTS,options);this.transitioning=null;if(this.options.parent)this.$parent=$(this.options.parent);if(this.options.toggle)this.toggle()};Collapse.DEFAULTS={toggle:true};Collapse.prototype.dimension=function(){var hasWidth=this.$element.hasClass("width");return hasWidth?"width":"height"};Collapse.prototype.show=function(){if(this.transitioning||this.$element.hasClass("in"))return;var startEvent=$.Event("show.bs.collapse");this.$element.trigger(startEvent);if(startEvent.isDefaultPrevented())return;var actives=this.$parent&&this.$parent.find("> .panel > .in");if(actives&&actives.length){var hasData=actives.data("bs.collapse");if(hasData&&hasData.transitioning)return;actives.collapse("hide");hasData||actives.data("bs.collapse",null)}var dimension=this.dimension();this.$element.removeClass("collapse").addClass("collapsing")[dimension](0);this.transitioning=1;var complete=function(){this.$element.removeClass("collapsing").addClass("in")[dimension]("auto");this.transitioning=0;this.$element.trigger("shown.bs.collapse")};if(!$.support.transition)return complete.call(this);var scrollSize=$.camelCase(["scroll",dimension].join("-"));this.$element.one($.support.transition.end,$.proxy(complete,this)).emulateTransitionEnd(350)[dimension](this.$element[0][scrollSize])};Collapse.prototype.hide=function(){if(this.transitioning||!this.$element.hasClass("in"))return;var startEvent=$.Event("hide.bs.collapse");this.$element.trigger(startEvent);if(startEvent.isDefaultPrevented())return;var dimension=this.dimension();this.$element[dimension](this.$element[dimension]())[0].offsetHeight;this.$element.addClass("collapsing").removeClass("collapse").removeClass("in");this.transitioning=1;var complete=function(){this.transitioning=0;this.$element.trigger("hidden.bs.collapse").removeClass("collapsing").addClass("collapse")};if(!$.support.transition)return complete.call(this);this.$element[dimension](0).one($.support.transition.end,$.proxy(complete,this)).emulateTransitionEnd(350)};Collapse.prototype.toggle=function(){this[this.$element.hasClass("in")?"hide":"show"]()};var old=$.fn.collapse;$.fn.collapse=function(option){return this.each(function(){var $this=$(this);var data=$this.data("bs.collapse");var options=$.extend({},Collapse.DEFAULTS,$this.data(),typeof option=="object"&&option);if(!data)$this.data("bs.collapse",data=new Collapse(this,options));if(typeof option=="string")data[option]()})};$.fn.collapse.Constructor=Collapse;$.fn.collapse.noConflict=function(){$.fn.collapse=old;return this};$(document).on("click.bs.collapse.data-api","[data-toggle=collapse]",function(e){var $this=$(this),href;var target=$this.attr("data-target")||e.preventDefault()||(href=$this.attr("href"))&&href.replace(/.*(?=#[^\s]+$)/,"");var $target=$(target);var data=$target.data("bs.collapse");var option=data?"toggle":$this.data();var parent=$this.attr("data-parent");var $parent=parent&&$(parent);if(!data||!data.transitioning){if($parent)$parent.find('[data-toggle=collapse][data-parent="'+parent+'"]').not($this).addClass("collapsed");$this[$target.hasClass("in")?"addClass":"removeClass"]("collapsed")}$target.collapse(option)})}(jQuery);+function($){"use strict";var backdrop=".dropdown-backdrop";var toggle="[data-toggle=dropdown]";var Dropdown=function(element){$(element).on("click.bs.dropdown",this.toggle)};Dropdown.prototype.toggle=function(e){var $this=$(this);if($this.is(".disabled, :disabled"))return;var $parent=getParent($this);var isActive=$parent.hasClass("open");clearMenus();if(!isActive){if("ontouchstart"in document.documentElement&&!$parent.closest(".navbar-nav").length){$('<div class="dropdown-backdrop"/>').insertAfter($(this)).on("click",clearMenus)}$parent.trigger(e=$.Event("show.bs.dropdown"));if(e.isDefaultPrevented())return;$parent.toggleClass("open").trigger("shown.bs.dropdown");$this.focus()}return false};Dropdown.prototype.keydown=function(e){if(!/(38|40|27)/.test(e.keyCode))return;var $this=$(this);e.preventDefault();e.stopPropagation();if($this.is(".disabled, :disabled"))return;var $parent=getParent($this);var isActive=$parent.hasClass("open");if(!isActive||isActive&&e.keyCode==27){if(e.which==27)$parent.find(toggle).focus();return $this.click()}var $items=$("[role=menu] li:not(.divider):visible a",$parent);if(!$items.length)return;var index=$items.index($items.filter(":focus"));if(e.keyCode==38&&index>0)index--;if(e.keyCode==40&&index<$items.length-1)index++;if(!~index)index=0;$items.eq(index).focus()};function clearMenus(){$(backdrop).remove();$(toggle).each(function(e){var $parent=getParent($(this));if(!$parent.hasClass("open"))return;$parent.trigger(e=$.Event("hide.bs.dropdown"));if(e.isDefaultPrevented())return;$parent.removeClass("open").trigger("hidden.bs.dropdown")})}function getParent($this){var selector=$this.attr("data-target");if(!selector){selector=$this.attr("href");selector=selector&&/#/.test(selector)&&selector.replace(/.*(?=#[^\s]*$)/,"")}var $parent=selector&&$(selector);return $parent&&$parent.length?$parent:$this.parent()}var old=$.fn.dropdown;$.fn.dropdown=function(option){return this.each(function(){var $this=$(this);var data=$this.data("bs.dropdown");if(!data)$this.data("bs.dropdown",data=new Dropdown(this));if(typeof option=="string")data[option].call($this)})};$.fn.dropdown.Constructor=Dropdown;$.fn.dropdown.noConflict=function(){$.fn.dropdown=old;return this};$(document).on("click.bs.dropdown.data-api",clearMenus).on("click.bs.dropdown.data-api",".dropdown form",function(e){e.stopPropagation()}).on("click.bs.dropdown.data-api",toggle,Dropdown.prototype.toggle).on("keydown.bs.dropdown.data-api",toggle+", [role=menu]",Dropdown.prototype.keydown)}(jQuery);+function($){"use strict";var Modal=function(element,options){this.options=options;this.$element=$(element);this.$backdrop=this.isShown=null;if(this.options.remote)this.$element.load(this.options.remote)};Modal.DEFAULTS={backdrop:true,keyboard:true,show:true};Modal.prototype.toggle=function(_relatedTarget){return this[!this.isShown?"show":"hide"](_relatedTarget)};Modal.prototype.show=function(_relatedTarget){var that=this;var e=$.Event("show.bs.modal",{relatedTarget:_relatedTarget});this.$element.trigger(e);if(this.isShown||e.isDefaultPrevented())return;this.isShown=true;this.escape();this.$element.on("click.dismiss.modal",'[data-dismiss="modal"]',$.proxy(this.hide,this));this.backdrop(function(){var transition=$.support.transition&&that.$element.hasClass("fade");if(!that.$element.parent().length){that.$element.appendTo(document.body)}that.$element.show();if(transition){that.$element[0].offsetWidth}that.$element.addClass("in").attr("aria-hidden",false);that.enforceFocus();var e=$.Event("shown.bs.modal",{relatedTarget:_relatedTarget});transition?that.$element.find(".modal-dialog").one($.support.transition.end,function(){that.$element.focus().trigger(e)}).emulateTransitionEnd(300):that.$element.focus().trigger(e)})};Modal.prototype.hide=function(e){if(e)e.preventDefault();e=$.Event("hide.bs.modal");this.$element.trigger(e);if(!this.isShown||e.isDefaultPrevented())return;this.isShown=false;this.escape();$(document).off("focusin.bs.modal");this.$element.removeClass("in").attr("aria-hidden",true).off("click.dismiss.modal");$.support.transition&&this.$element.hasClass("fade")?this.$element.one($.support.transition.end,$.proxy(this.hideModal,this)).emulateTransitionEnd(300):this.hideModal()};Modal.prototype.enforceFocus=function(){$(document).off("focusin.bs.modal").on("focusin.bs.modal",$.proxy(function(e){if(this.$element[0]!==e.target&&!this.$element.has(e.target).length){this.$element.focus()}},this))};Modal.prototype.escape=function(){if(this.isShown&&this.options.keyboard){this.$element.on("keyup.dismiss.bs.modal",$.proxy(function(e){e.which==27&&this.hide()},this))}else if(!this.isShown){this.$element.off("keyup.dismiss.bs.modal")}};Modal.prototype.hideModal=function(){var that=this;this.$element.hide();this.backdrop(function(){that.removeBackdrop();that.$element.trigger("hidden.bs.modal")})};Modal.prototype.removeBackdrop=function(){this.$backdrop&&this.$backdrop.remove();this.$backdrop=null};Modal.prototype.backdrop=function(callback){var that=this;var animate=this.$element.hasClass("fade")?"fade":"";if(this.isShown&&this.options.backdrop){var doAnimate=$.support.transition&&animate;this.$backdrop=$('<div class="modal-backdrop '+animate+'" />').appendTo(document.body);this.$element.on("click.dismiss.modal",$.proxy(function(e){if(e.target!==e.currentTarget)return;this.options.backdrop=="static"?this.$element[0].focus.call(this.$element[0]):this.hide.call(this)},this));if(doAnimate)this.$backdrop[0].offsetWidth;this.$backdrop.addClass("in");if(!callback)return;doAnimate?this.$backdrop.one($.support.transition.end,callback).emulateTransitionEnd(150):callback()}else if(!this.isShown&&this.$backdrop){this.$backdrop.removeClass("in");$.support.transition&&this.$element.hasClass("fade")?this.$backdrop.one($.support.transition.end,callback).emulateTransitionEnd(150):callback()}else if(callback){callback()}};var old=$.fn.modal;$.fn.modal=function(option,_relatedTarget){return this.each(function(){var $this=$(this);var data=$this.data("bs.modal");var options=$.extend({},Modal.DEFAULTS,$this.data(),typeof option=="object"&&option);if(!data)$this.data("bs.modal",data=new Modal(this,options));if(typeof option=="string")data[option](_relatedTarget);else if(options.show)data.show(_relatedTarget)})};$.fn.modal.Constructor=Modal;$.fn.modal.noConflict=function(){$.fn.modal=old;return this};$(document).on("click.bs.modal.data-api",'[data-toggle="modal"]',function(e){var $this=$(this);var href=$this.attr("href");var $target=$($this.attr("data-target")||href&&href.replace(/.*(?=#[^\s]+$)/,""));var option=$target.data("modal")?"toggle":$.extend({remote:!/#/.test(href)&&href},$target.data(),$this.data());e.preventDefault();$target.modal(option,this).one("hide",function(){$this.is(":visible")&&$this.focus()})});$(document).on("show.bs.modal",".modal",function(){$(document.body).addClass("modal-open")}).on("hidden.bs.modal",".modal",function(){$(document.body).removeClass("modal-open")})}(jQuery);+function($){"use strict";var Tooltip=function(element,options){this.type=this.options=this.enabled=this.timeout=this.hoverState=this.$element=null;this.init("tooltip",element,options)};Tooltip.DEFAULTS={animation:true,placement:"top",selector:false,template:'<div class="tooltip"><div class="tooltip-arrow"></div><div class="tooltip-inner"></div></div>',trigger:"hover focus",title:"",delay:0,html:false,container:false};Tooltip.prototype.init=function(type,element,options){this.enabled=true;this.type=type;this.$element=$(element);this.options=this.getOptions(options);var triggers=this.options.trigger.split(" ");for(var i=triggers.length;i--;){var trigger=triggers[i];if(trigger=="click"){this.$element.on("click."+this.type,this.options.selector,$.proxy(this.toggle,this))}else if(trigger!="manual"){var eventIn=trigger=="hover"?"mouseenter":"focus";var eventOut=trigger=="hover"?"mouseleave":"blur";this.$element.on(eventIn+"."+this.type,this.options.selector,$.proxy(this.enter,this));this.$element.on(eventOut+"."+this.type,this.options.selector,$.proxy(this.leave,this))}}this.options.selector?this._options=$.extend({},this.options,{trigger:"manual",selector:""}):this.fixTitle()};Tooltip.prototype.getDefaults=function(){return Tooltip.DEFAULTS};Tooltip.prototype.getOptions=function(options){options=$.extend({},this.getDefaults(),this.$element.data(),options);if(options.delay&&typeof options.delay=="number"){options.delay={show:options.delay,hide:options.delay}}return options};Tooltip.prototype.getDelegateOptions=function(){var options={};var defaults=this.getDefaults();this._options&&$.each(this._options,function(key,value){if(defaults[key]!=value)options[key]=value});return options};Tooltip.prototype.enter=function(obj){var self=obj instanceof this.constructor?obj:$(obj.currentTarget)[this.type](this.getDelegateOptions()).data("bs."+this.type);clearTimeout(self.timeout);self.hoverState="in";if(!self.options.delay||!self.options.delay.show)return self.show();self.timeout=setTimeout(function(){if(self.hoverState=="in")self.show()},self.options.delay.show)};Tooltip.prototype.leave=function(obj){var self=obj instanceof this.constructor?obj:$(obj.currentTarget)[this.type](this.getDelegateOptions()).data("bs."+this.type);clearTimeout(self.timeout);self.hoverState="out";if(!self.options.delay||!self.options.delay.hide)return self.hide();self.timeout=setTimeout(function(){if(self.hoverState=="out")self.hide()},self.options.delay.hide)};Tooltip.prototype.show=function(){var e=$.Event("show.bs."+this.type);if(this.hasContent()&&this.enabled){this.$element.trigger(e);if(e.isDefaultPrevented())return;var $tip=this.tip();this.setContent();if(this.options.animation)$tip.addClass("fade");var placement=typeof this.options.placement=="function"?this.options.placement.call(this,$tip[0],this.$element[0]):this.options.placement;var autoToken=/\s?auto?\s?/i;var autoPlace=autoToken.test(placement);if(autoPlace)placement=placement.replace(autoToken,"")||"top";$tip.detach().css({top:0,left:0,display:"block"}).addClass(placement);this.options.container?$tip.appendTo(this.options.container):$tip.insertAfter(this.$element);var pos=this.getPosition();var actualWidth=$tip[0].offsetWidth;var actualHeight=$tip[0].offsetHeight;if(autoPlace){var $parent=this.$element.parent();var orgPlacement=placement;var docScroll=document.documentElement.scrollTop||document.body.scrollTop;var parentWidth=this.options.container=="body"?window.innerWidth:$parent.outerWidth();var parentHeight=this.options.container=="body"?window.innerHeight:$parent.outerHeight();var parentLeft=this.options.container=="body"?0:$parent.offset().left;placement=placement=="bottom"&&pos.top+pos.height+actualHeight-docScroll>parentHeight?"top":placement=="top"&&pos.top-docScroll-actualHeight<0?"bottom":placement=="right"&&pos.right+actualWidth>parentWidth?"left":placement=="left"&&pos.left-actualWidth<parentLeft?"right":placement;$tip.removeClass(orgPlacement).addClass(placement)}var calculatedOffset=this.getCalculatedOffset(placement,pos,actualWidth,actualHeight);this.applyPlacement(calculatedOffset,placement);this.$element.trigger("shown.bs."+this.type)}};Tooltip.prototype.applyPlacement=function(offset,placement){var replace;var $tip=this.tip();var width=$tip[0].offsetWidth;var height=$tip[0].offsetHeight;var marginTop=parseInt($tip.css("margin-top"),10);var marginLeft=parseInt($tip.css("margin-left"),10);if(isNaN(marginTop))marginTop=0;if(isNaN(marginLeft))marginLeft=0;offset.top=offset.top+marginTop;offset.left=offset.left+marginLeft;$tip.offset(offset).addClass("in");var actualWidth=$tip[0].offsetWidth;var actualHeight=$tip[0].offsetHeight;if(placement=="top"&&actualHeight!=height){replace=true;offset.top=offset.top+height-actualHeight}if(/bottom|top/.test(placement)){var delta=0;if(offset.left<0){delta=offset.left*-2;offset.left=0;$tip.offset(offset);actualWidth=$tip[0].offsetWidth;actualHeight=$tip[0].offsetHeight}this.replaceArrow(delta-width+actualWidth,actualWidth,"left")}else{this.replaceArrow(actualHeight-height,actualHeight,"top")}if(replace)$tip.offset(offset)};Tooltip.prototype.replaceArrow=function(delta,dimension,position){this.arrow().css(position,delta?50*(1-delta/dimension)+"%":"")};Tooltip.prototype.setContent=function(){var $tip=this.tip();var title=this.getTitle();$tip.find(".tooltip-inner")[this.options.html?"html":"text"](title);$tip.removeClass("fade in top bottom left right")};Tooltip.prototype.hide=function(){var that=this;var $tip=this.tip();var e=$.Event("hide.bs."+this.type);function complete(){if(that.hoverState!="in")$tip.detach()}this.$element.trigger(e);if(e.isDefaultPrevented())return;$tip.removeClass("in");$.support.transition&&this.$tip.hasClass("fade")?$tip.one($.support.transition.end,complete).emulateTransitionEnd(150):complete();this.$element.trigger("hidden.bs."+this.type);return this};Tooltip.prototype.fixTitle=function(){var $e=this.$element;if($e.attr("title")||typeof $e.attr("data-original-title")!="string"){$e.attr("data-original-title",$e.attr("title")||"").attr("title","")}};Tooltip.prototype.hasContent=function(){return this.getTitle()};Tooltip.prototype.getPosition=function(){var el=this.$element[0];return $.extend({},typeof el.getBoundingClientRect=="function"?el.getBoundingClientRect():{width:el.offsetWidth,height:el.offsetHeight},this.$element.offset())};Tooltip.prototype.getCalculatedOffset=function(placement,pos,actualWidth,actualHeight){return placement=="bottom"?{top:pos.top+pos.height,left:pos.left+pos.width/2-actualWidth/2}:placement=="top"?{top:pos.top-actualHeight,left:pos.left+pos.width/2-actualWidth/2}:placement=="left"?{top:pos.top+pos.height/2-actualHeight/2,left:pos.left-actualWidth}:{top:pos.top+pos.height/2-actualHeight/2,left:pos.left+pos.width}};Tooltip.prototype.getTitle=function(){var title;var $e=this.$element;var o=this.options;title=$e.attr("data-original-title")||(typeof o.title=="function"?o.title.call($e[0]):o.title);return title};Tooltip.prototype.tip=function(){return this.$tip=this.$tip||$(this.options.template)};Tooltip.prototype.arrow=function(){return this.$arrow=this.$arrow||this.tip().find(".tooltip-arrow")};Tooltip.prototype.validate=function(){if(!this.$element[0].parentNode){this.hide();this.$element=null;this.options=null}};Tooltip.prototype.enable=function(){this.enabled=true};Tooltip.prototype.disable=function(){this.enabled=false};Tooltip.prototype.toggleEnabled=function(){this.enabled=!this.enabled};Tooltip.prototype.toggle=function(e){var self=e?$(e.currentTarget)[this.type](this.getDelegateOptions()).data("bs."+this.type):this;self.tip().hasClass("in")?self.leave(self):self.enter(self)};Tooltip.prototype.destroy=function(){this.hide().$element.off("."+this.type).removeData("bs."+this.type)};var old=$.fn.tooltip;$.fn.tooltip=function(option){return this.each(function(){var $this=$(this);var data=$this.data("bs.tooltip");var options=typeof option=="object"&&option;if(!data)$this.data("bs.tooltip",data=new Tooltip(this,options));if(typeof option=="string")data[option]()})};$.fn.tooltip.Constructor=Tooltip;$.fn.tooltip.noConflict=function(){$.fn.tooltip=old;return this}}(jQuery);+function($){"use strict";var Popover=function(element,options){this.init("popover",element,options)};if(!$.fn.tooltip)throw new Error("Popover requires tooltip.js");Popover.DEFAULTS=$.extend({},$.fn.tooltip.Constructor.DEFAULTS,{placement:"right",trigger:"click",content:"",template:'<div class="popover"><div class="arrow"></div><h3 class="popover-title"></h3><div class="popover-content"></div></div>'});Popover.prototype=$.extend({},$.fn.tooltip.Constructor.prototype);Popover.prototype.constructor=Popover;Popover.prototype.getDefaults=function(){return Popover.DEFAULTS};Popover.prototype.setContent=function(){var $tip=this.tip();var title=this.getTitle();var content=this.getContent();$tip.find(".popover-title")[this.options.html?"html":"text"](title);$tip.find(".popover-content")[this.options.html?"html":"text"](content);$tip.removeClass("fade top bottom left right in");if(!$tip.find(".popover-title").html())$tip.find(".popover-title").hide()};Popover.prototype.hasContent=function(){return this.getTitle()||this.getContent()};Popover.prototype.getContent=function(){var $e=this.$element;var o=this.options;return $e.attr("data-content")||(typeof o.content=="function"?o.content.call($e[0]):o.content)};Popover.prototype.arrow=function(){return this.$arrow=this.$arrow||this.tip().find(".arrow")};Popover.prototype.tip=function(){if(!this.$tip)this.$tip=$(this.options.template);return this.$tip};var old=$.fn.popover;$.fn.popover=function(option){return this.each(function(){var $this=$(this);var data=$this.data("bs.popover");var options=typeof option=="object"&&option;if(!data)$this.data("bs.popover",data=new Popover(this,options));if(typeof option=="string")data[option]()})};$.fn.popover.Constructor=Popover;$.fn.popover.noConflict=function(){$.fn.popover=old;return this}}(jQuery);+function($){"use strict";function ScrollSpy(element,options){var href;var process=$.proxy(this.process,this);this.$element=$(element).is("body")?$(window):$(element);this.$body=$("body");this.$scrollElement=this.$element.on("scroll.bs.scroll-spy.data-api",process);this.options=$.extend({},ScrollSpy.DEFAULTS,options);this.selector=(this.options.target||(href=$(element).attr("href"))&&href.replace(/.*(?=#[^\s]+$)/,"")||"")+" .nav li > a";this.offsets=$([]);this.targets=$([]);this.activeTarget=null;this.refresh();this.process()}ScrollSpy.DEFAULTS={offset:10};ScrollSpy.prototype.refresh=function(){var offsetMethod=this.$element[0]==window?"offset":"position";this.offsets=$([]);this.targets=$([]);var self=this;var $targets=this.$body.find(this.selector).map(function(){var $el=$(this);var href=$el.data("target")||$el.attr("href");var $href=/^#\w/.test(href)&&$(href);return $href&&$href.length&&[[$href[offsetMethod]().top+(!$.isWindow(self.$scrollElement.get(0))&&self.$scrollElement.scrollTop()),href]]||null}).sort(function(a,b){return a[0]-b[0]}).each(function(){self.offsets.push(this[0]);self.targets.push(this[1])})};ScrollSpy.prototype.process=function(){var scrollTop=this.$scrollElement.scrollTop()+this.options.offset;var scrollHeight=this.$scrollElement[0].scrollHeight||this.$body[0].scrollHeight;var maxScroll=scrollHeight-this.$scrollElement.height();var offsets=this.offsets;var targets=this.targets;var activeTarget=this.activeTarget;var i;if(scrollTop>=maxScroll){return activeTarget!=(i=targets.last()[0])&&this.activate(i)}for(i=offsets.length;i--;){activeTarget!=targets[i]&&scrollTop>=offsets[i]&&(!offsets[i+1]||scrollTop<=offsets[i+1])&&this.activate(targets[i])}};ScrollSpy.prototype.activate=function(target){this.activeTarget=target;$(this.selector).parents(".active").removeClass("active");var selector=this.selector+'[data-target="'+target+'"],'+this.selector+'[href="'+target+'"]';var active=$(selector).parents("li").addClass("active");if(active.parent(".dropdown-menu").length){active=active.closest("li.dropdown").addClass("active")}active.trigger("activate.bs.scrollspy")};var old=$.fn.scrollspy;$.fn.scrollspy=function(option){return this.each(function(){var $this=$(this);var data=$this.data("bs.scrollspy");var options=typeof option=="object"&&option;if(!data)$this.data("bs.scrollspy",data=new ScrollSpy(this,options));if(typeof option=="string")data[option]()})};$.fn.scrollspy.Constructor=ScrollSpy;$.fn.scrollspy.noConflict=function(){$.fn.scrollspy=old;return this};$(window).on("load",function(){$('[data-spy="scroll"]').each(function(){var $spy=$(this);$spy.scrollspy($spy.data())})})}(jQuery);+function($){"use strict";var Tab=function(element){this.element=$(element)};Tab.prototype.show=function(){var $this=this.element;var $ul=$this.closest("ul:not(.dropdown-menu)");var selector=$this.data("target");if(!selector){selector=$this.attr("href");selector=selector&&selector.replace(/.*(?=#[^\s]*$)/,"")}if($this.parent("li").hasClass("active"))return;var previous=$ul.find(".active:last a")[0];var e=$.Event("show.bs.tab",{relatedTarget:previous});$this.trigger(e);if(e.isDefaultPrevented())return;var $target=$(selector);this.activate($this.parent("li"),$ul);this.activate($target,$target.parent(),function(){$this.trigger({type:"shown.bs.tab",relatedTarget:previous})})};Tab.prototype.activate=function(element,container,callback){var $active=container.find("> .active");var transition=callback&&$.support.transition&&$active.hasClass("fade");function next(){$active.removeClass("active").find("> .dropdown-menu > .active").removeClass("active");element.addClass("active");if(transition){element[0].offsetWidth;element.addClass("in")}else{element.removeClass("fade")}if(element.parent(".dropdown-menu")){element.closest("li.dropdown").addClass("active")}callback&&callback()}transition?$active.one($.support.transition.end,next).emulateTransitionEnd(150):next();$active.removeClass("in")};var old=$.fn.tab;$.fn.tab=function(option){return this.each(function(){var $this=$(this);var data=$this.data("bs.tab");
 if(!data)$this.data("bs.tab",data=new Tab(this));if(typeof option=="string")data[option]()})};$.fn.tab.Constructor=Tab;$.fn.tab.noConflict=function(){$.fn.tab=old;return this};$(document).on("click.bs.tab.data-api",'[data-toggle="tab"], [data-toggle="pill"]',function(e){e.preventDefault();$(this).tab("show")})}(jQuery);+function($){"use strict";var Affix=function(element,options){this.options=$.extend({},Affix.DEFAULTS,options);this.$window=$(window).on("scroll.bs.affix.data-api",$.proxy(this.checkPosition,this)).on("click.bs.affix.data-api",$.proxy(this.checkPositionWithEventLoop,this));this.$element=$(element);this.affixed=this.unpin=null;this.checkPosition()};Affix.RESET="affix affix-top affix-bottom";Affix.DEFAULTS={offset:0};Affix.prototype.checkPositionWithEventLoop=function(){setTimeout($.proxy(this.checkPosition,this),1)};Affix.prototype.checkPosition=function(){if(!this.$element.is(":visible"))return;var scrollHeight=$(document).height();var scrollTop=this.$window.scrollTop();var position=this.$element.offset();var offset=this.options.offset;var offsetTop=offset.top;var offsetBottom=offset.bottom;if(typeof offset!="object")offsetBottom=offsetTop=offset;if(typeof offsetTop=="function")offsetTop=offset.top();if(typeof offsetBottom=="function")offsetBottom=offset.bottom();var affix=this.unpin!=null&&scrollTop+this.unpin<=position.top?false:offsetBottom!=null&&position.top+this.$element.height()>=scrollHeight-offsetBottom?"bottom":offsetTop!=null&&scrollTop<=offsetTop?"top":false;if(this.affixed===affix)return;if(this.unpin)this.$element.css("top","");this.affixed=affix;this.unpin=affix=="bottom"?position.top-scrollTop:null;this.$element.removeClass(Affix.RESET).addClass("affix"+(affix?"-"+affix:""));if(affix=="bottom"){this.$element.offset({top:document.body.offsetHeight-offsetBottom-this.$element.height()})}};var old=$.fn.affix;$.fn.affix=function(option){return this.each(function(){var $this=$(this);var data=$this.data("bs.affix");var options=typeof option=="object"&&option;if(!data)$this.data("bs.affix",data=new Affix(this,options));if(typeof option=="string")data[option]()})};$.fn.affix.Constructor=Affix;$.fn.affix.noConflict=function(){$.fn.affix=old;return this};$(window).on("load",function(){$('[data-spy="affix"]').each(function(){var $spy=$(this);var data=$spy.data();data.offset=data.offset||{};if(data.offsetBottom)data.offset.bottom=data.offsetBottom;if(data.offsetTop)data.offset.top=data.offsetTop;$spy.affix(data)})})}(jQuery);
-(function($,undefined){function UTCDate(){return new Date(Date.UTC.apply(Date,arguments))}function UTCToday(){var today=new Date;return UTCDate(today.getFullYear(),today.getMonth(),today.getDate())}function isUTCEquals(date1,date2){return date1.getUTCFullYear()===date2.getUTCFullYear()&&date1.getUTCMonth()===date2.getUTCMonth()&&date1.getUTCDate()===date2.getUTCDate()}function alias(method){return function(){return this[method].apply(this,arguments)}}var DateArray=function(){var extras={get:function(i){return this.slice(i)[0]},contains:function(d){var val=d&&d.valueOf();for(var i=0,l=this.length;i<l;i++)if(this[i].valueOf()===val)return i;return-1},remove:function(i){this.splice(i,1)},replace:function(new_array){if(!new_array)return;if(!$.isArray(new_array))new_array=[new_array];this.clear();this.push.apply(this,new_array)},clear:function(){this.length=0},copy:function(){var a=new DateArray;a.replace(this);return a}};return function(){var a=[];a.push.apply(a,arguments);$.extend(a,extras);return a}}();var Datepicker=function(element,options){this._process_options(options);this.dates=new DateArray;this.viewDate=this.o.defaultViewDate;this.focusDate=null;this.element=$(element);this.isInline=false;this.isInput=this.element.is("input");this.component=this.element.hasClass("date")?this.element.find(".add-on, .input-group-addon, .btn"):false;this.hasInput=this.component&&this.element.find("input").length;if(this.component&&this.component.length===0)this.component=false;this.picker=$(DPGlobal.template);this._buildEvents();this._attachEvents();if(this.isInline){this.picker.addClass("datepicker-inline").appendTo(this.element)}else{this.picker.addClass("datepicker-dropdown dropdown-menu")}if(this.o.rtl){this.picker.addClass("datepicker-rtl")}this.viewMode=this.o.startView;if(this.o.calendarWeeks)this.picker.find("tfoot .today, tfoot .clear").attr("colspan",function(i,val){return parseInt(val)+1});this._allow_update=false;this.setStartDate(this._o.startDate);this.setEndDate(this._o.endDate);this.setDaysOfWeekDisabled(this.o.daysOfWeekDisabled);this.setDatesDisabled(this.o.datesDisabled);this.fillDow();this.fillMonths();this._allow_update=true;this.update();this.showMode();if(this.isInline){this.show()}};Datepicker.prototype={constructor:Datepicker,_process_options:function(opts){this._o=$.extend({},this._o,opts);var o=this.o=$.extend({},this._o);var lang=o.language;if(!dates[lang]){lang=lang.split("-")[0];if(!dates[lang])lang=defaults.language}o.language=lang;switch(o.startView){case 2:case"decade":o.startView=2;break;case 1:case"year":o.startView=1;break;default:o.startView=0}switch(o.minViewMode){case 1:case"months":o.minViewMode=1;break;case 2:case"years":o.minViewMode=2;break;default:o.minViewMode=0}o.startView=Math.max(o.startView,o.minViewMode);if(o.multidate!==true){o.multidate=Number(o.multidate)||false;if(o.multidate!==false)o.multidate=Math.max(0,o.multidate)}o.multidateSeparator=String(o.multidateSeparator);o.weekStart%=7;o.weekEnd=(o.weekStart+6)%7;var format=DPGlobal.parseFormat(o.format);if(o.startDate!==-Infinity){if(!!o.startDate){if(o.startDate instanceof Date)o.startDate=this._local_to_utc(this._zero_time(o.startDate));else o.startDate=DPGlobal.parseDate(o.startDate,format,o.language)}else{o.startDate=-Infinity}}if(o.endDate!==Infinity){if(!!o.endDate){if(o.endDate instanceof Date)o.endDate=this._local_to_utc(this._zero_time(o.endDate));else o.endDate=DPGlobal.parseDate(o.endDate,format,o.language)}else{o.endDate=Infinity}}o.daysOfWeekDisabled=o.daysOfWeekDisabled||[];if(!$.isArray(o.daysOfWeekDisabled))o.daysOfWeekDisabled=o.daysOfWeekDisabled.split(/[,\s]*/);o.daysOfWeekDisabled=$.map(o.daysOfWeekDisabled,function(d){return parseInt(d,10)});o.datesDisabled=o.datesDisabled||[];if(!$.isArray(o.datesDisabled)){var datesDisabled=[];datesDisabled.push(DPGlobal.parseDate(o.datesDisabled,format,o.language));o.datesDisabled=datesDisabled}o.datesDisabled=$.map(o.datesDisabled,function(d){return DPGlobal.parseDate(d,format,o.language)});var plc=String(o.orientation).toLowerCase().split(/\s+/g),_plc=o.orientation.toLowerCase();plc=$.grep(plc,function(word){return/^auto|left|right|top|bottom$/.test(word)});o.orientation={x:"auto",y:"auto"};if(!_plc||_plc==="auto");else if(plc.length===1){switch(plc[0]){case"top":case"bottom":o.orientation.y=plc[0];break;case"left":case"right":o.orientation.x=plc[0];break}}else{_plc=$.grep(plc,function(word){return/^left|right$/.test(word)});o.orientation.x=_plc[0]||"auto";_plc=$.grep(plc,function(word){return/^top|bottom$/.test(word)});o.orientation.y=_plc[0]||"auto"}if(o.defaultViewDate){var year=o.defaultViewDate.year||(new Date).getFullYear();var month=o.defaultViewDate.month||0;var day=o.defaultViewDate.day||1;o.defaultViewDate=UTCDate(year,month,day)}else{o.defaultViewDate=UTCToday()}o.showOnFocus=o.showOnFocus!==undefined?o.showOnFocus:true},_events:[],_secondaryEvents:[],_applyEvents:function(evs){for(var i=0,el,ch,ev;i<evs.length;i++){el=evs[i][0];if(evs[i].length===2){ch=undefined;ev=evs[i][1]}else if(evs[i].length===3){ch=evs[i][1];ev=evs[i][2]}el.on(ev,ch)}},_unapplyEvents:function(evs){for(var i=0,el,ev,ch;i<evs.length;i++){el=evs[i][0];if(evs[i].length===2){ch=undefined;ev=evs[i][1]}else if(evs[i].length===3){ch=evs[i][1];ev=evs[i][2]}el.off(ev,ch)}},_buildEvents:function(){var events={keyup:$.proxy(function(e){if($.inArray(e.keyCode,[27,37,39,38,40,32,13,9])===-1)this.update()},this),keydown:$.proxy(this.keydown,this)};if(this.o.showOnFocus===true){events.focus=$.proxy(this.show,this)}if(this.isInput){this._events=[[this.element,events]]}else if(this.component&&this.hasInput){this._events=[[this.element.find("input"),events],[this.component,{click:$.proxy(this.show,this)}]]}else if(this.element.is("div")){this.isInline=true}else{this._events=[[this.element,{click:$.proxy(this.show,this)}]]}this._events.push([this.element,"*",{blur:$.proxy(function(e){this._focused_from=e.target},this)}],[this.element,{blur:$.proxy(function(e){this._focused_from=e.target},this)}]);this._secondaryEvents=[[this.picker,{click:$.proxy(this.click,this)}],[$(window),{resize:$.proxy(this.place,this)}],[$(document),{"mousedown touchstart":$.proxy(function(e){if(!(this.element.is(e.target)||this.element.find(e.target).length||this.picker.is(e.target)||this.picker.find(e.target).length)){this.hide()}},this)}]]},_attachEvents:function(){this._detachEvents();this._applyEvents(this._events)},_detachEvents:function(){this._unapplyEvents(this._events)},_attachSecondaryEvents:function(){this._detachSecondaryEvents();this._applyEvents(this._secondaryEvents)},_detachSecondaryEvents:function(){this._unapplyEvents(this._secondaryEvents)},_trigger:function(event,altdate){var date=altdate||this.dates.get(-1),local_date=this._utc_to_local(date);this.element.trigger({type:event,date:local_date,dates:$.map(this.dates,this._utc_to_local),format:$.proxy(function(ix,format){if(arguments.length===0){ix=this.dates.length-1;format=this.o.format}else if(typeof ix==="string"){format=ix;ix=this.dates.length-1}format=format||this.o.format;var date=this.dates.get(ix);return DPGlobal.formatDate(date,format,this.o.language)},this)})},show:function(){if(this.element.attr("readonly")&&this.o.enableOnReadonly===false)return;if(!this.isInline)this.picker.appendTo(this.o.container);this.place();this.picker.show();this._attachSecondaryEvents();this._trigger("show");if((window.navigator.msMaxTouchPoints||"ontouchstart"in document)&&this.o.disableTouchKeyboard){$(this.element).blur()}return this},hide:function(){if(this.isInline)return this;if(!this.picker.is(":visible"))return this;this.focusDate=null;this.picker.hide().detach();this._detachSecondaryEvents();this.viewMode=this.o.startView;this.showMode();if(this.o.forceParse&&(this.isInput&&this.element.val()||this.hasInput&&this.element.find("input").val()))this.setValue();this._trigger("hide");return this},remove:function(){this.hide();this._detachEvents();this._detachSecondaryEvents();this.picker.remove();delete this.element.data().datepicker;if(!this.isInput){delete this.element.data().date}return this},_utc_to_local:function(utc){return utc&&new Date(utc.getTime()+utc.getTimezoneOffset()*6e4)},_local_to_utc:function(local){return local&&new Date(local.getTime()-local.getTimezoneOffset()*6e4)},_zero_time:function(local){return local&&new Date(local.getFullYear(),local.getMonth(),local.getDate())},_zero_utc_time:function(utc){return utc&&new Date(Date.UTC(utc.getUTCFullYear(),utc.getUTCMonth(),utc.getUTCDate()))},getDates:function(){return $.map(this.dates,this._utc_to_local)},getUTCDates:function(){return $.map(this.dates,function(d){return new Date(d)})},getDate:function(){return this._utc_to_local(this.getUTCDate())},getUTCDate:function(){var selected_date=this.dates.get(-1);if(typeof selected_date!=="undefined"){return new Date(selected_date)}else{return null}},clearDates:function(){var element;if(this.isInput){element=this.element}else if(this.component){element=this.element.find("input")}if(element){element.val("").change()}this.update();this._trigger("changeDate");if(this.o.autoclose){this.hide()}},setDates:function(){var args=$.isArray(arguments[0])?arguments[0]:arguments;this.update.apply(this,args);this._trigger("changeDate");this.setValue();return this},setUTCDates:function(){var args=$.isArray(arguments[0])?arguments[0]:arguments;this.update.apply(this,$.map(args,this._utc_to_local));this._trigger("changeDate");this.setValue();return this},setDate:alias("setDates"),setUTCDate:alias("setUTCDates"),setValue:function(){var formatted=this.getFormattedDate();if(!this.isInput){if(this.component){this.element.find("input").val(formatted).change()}}else{this.element.val(formatted).change()}return this},getFormattedDate:function(format){if(format===undefined)format=this.o.format;var lang=this.o.language;return $.map(this.dates,function(d){return DPGlobal.formatDate(d,format,lang)}).join(this.o.multidateSeparator)},setStartDate:function(startDate){this._process_options({startDate:startDate});this.update();this.updateNavArrows();return this},setEndDate:function(endDate){this._process_options({endDate:endDate});this.update();this.updateNavArrows();return this},setDaysOfWeekDisabled:function(daysOfWeekDisabled){this._process_options({daysOfWeekDisabled:daysOfWeekDisabled});this.update();this.updateNavArrows();return this},setDatesDisabled:function(datesDisabled){this._process_options({datesDisabled:datesDisabled});this.update();this.updateNavArrows()},place:function(){if(this.isInline)return this;var calendarWidth=this.picker.outerWidth(),calendarHeight=this.picker.outerHeight(),visualPadding=10,windowWidth=$(this.o.container).width(),windowHeight=$(this.o.container).height(),scrollTop=$(this.o.container).scrollTop(),appendOffset=$(this.o.container).offset();var parentsZindex=[];this.element.parents().each(function(){var itemZIndex=$(this).css("z-index");if(itemZIndex!=="auto"&&itemZIndex!==0)parentsZindex.push(parseInt(itemZIndex))});var zIndex=Math.max.apply(Math,parentsZindex)+10;var offset=this.component?this.component.parent().offset():this.element.offset();var height=this.component?this.component.outerHeight(true):this.element.outerHeight(false);var width=this.component?this.component.outerWidth(true):this.element.outerWidth(false);var left=offset.left-appendOffset.left,top=offset.top-appendOffset.top;this.picker.removeClass("datepicker-orient-top datepicker-orient-bottom "+"datepicker-orient-right datepicker-orient-left");if(this.o.orientation.x!=="auto"){this.picker.addClass("datepicker-orient-"+this.o.orientation.x);if(this.o.orientation.x==="right")left-=calendarWidth-width}else{if(offset.left<0){this.picker.addClass("datepicker-orient-left");left-=offset.left-visualPadding}else if(left+calendarWidth>windowWidth){this.picker.addClass("datepicker-orient-right");left=offset.left+width-calendarWidth}else{this.picker.addClass("datepicker-orient-left")}}var yorient=this.o.orientation.y,top_overflow,bottom_overflow;if(yorient==="auto"){top_overflow=-scrollTop+top-calendarHeight;bottom_overflow=scrollTop+windowHeight-(top+height+calendarHeight);if(Math.max(top_overflow,bottom_overflow)===bottom_overflow)yorient="top";else yorient="bottom"}this.picker.addClass("datepicker-orient-"+yorient);if(yorient==="top")top+=height;else top-=calendarHeight+parseInt(this.picker.css("padding-top"));if(this.o.rtl){var right=windowWidth-(left+width);this.picker.css({top:top,right:right,zIndex:zIndex})}else{this.picker.css({top:top,left:left,zIndex:zIndex})}return this},_allow_update:true,update:function(){if(!this._allow_update)return this;var oldDates=this.dates.copy(),dates=[],fromArgs=false;if(arguments.length){$.each(arguments,$.proxy(function(i,date){if(date instanceof Date)date=this._local_to_utc(date);dates.push(date)},this));fromArgs=true}else{dates=this.isInput?this.element.val():this.element.data("date")||this.element.find("input").val();if(dates&&this.o.multidate)dates=dates.split(this.o.multidateSeparator);else dates=[dates];delete this.element.data().date}dates=$.map(dates,$.proxy(function(date){return DPGlobal.parseDate(date,this.o.format,this.o.language)},this));dates=$.grep(dates,$.proxy(function(date){return date<this.o.startDate||date>this.o.endDate||!date},this),true);this.dates.replace(dates);if(this.dates.length)this.viewDate=new Date(this.dates.get(-1));else if(this.viewDate<this.o.startDate)this.viewDate=new Date(this.o.startDate);else if(this.viewDate>this.o.endDate)this.viewDate=new Date(this.o.endDate);if(fromArgs){this.setValue()}else if(dates.length){if(String(oldDates)!==String(this.dates))this._trigger("changeDate")}if(!this.dates.length&&oldDates.length)this._trigger("clearDate");this.fill();return this},fillDow:function(){var dowCnt=this.o.weekStart,html="<tr>";if(this.o.calendarWeeks){this.picker.find(".datepicker-days thead tr:first-child .datepicker-switch").attr("colspan",function(i,val){return parseInt(val)+1});var cell='<th class="cw">&#160;</th>';html+=cell}while(dowCnt<this.o.weekStart+7){html+='<th class="dow">'+dates[this.o.language].daysMin[dowCnt++%7]+"</th>"}html+="</tr>";this.picker.find(".datepicker-days thead").append(html)},fillMonths:function(){var html="",i=0;while(i<12){html+='<span class="month">'+dates[this.o.language].monthsShort[i++]+"</span>"}this.picker.find(".datepicker-months td").html(html)},setRange:function(range){if(!range||!range.length)delete this.range;else this.range=$.map(range,function(d){return d.valueOf()});this.fill()},getClassNames:function(date){var cls=[],year=this.viewDate.getUTCFullYear(),month=this.viewDate.getUTCMonth(),today=new Date;if(date.getUTCFullYear()<year||date.getUTCFullYear()===year&&date.getUTCMonth()<month){cls.push("old")}else if(date.getUTCFullYear()>year||date.getUTCFullYear()===year&&date.getUTCMonth()>month){cls.push("new")}if(this.focusDate&&date.valueOf()===this.focusDate.valueOf())cls.push("focused");if(this.o.todayHighlight&&date.getUTCFullYear()===today.getFullYear()&&date.getUTCMonth()===today.getMonth()&&date.getUTCDate()===today.getDate()){cls.push("today")}if(this.dates.contains(date)!==-1)cls.push("active");if(date.valueOf()<this.o.startDate||date.valueOf()>this.o.endDate||$.inArray(date.getUTCDay(),this.o.daysOfWeekDisabled)!==-1){cls.push("disabled")}if(this.o.datesDisabled.length>0&&$.grep(this.o.datesDisabled,function(d){return isUTCEquals(date,d)}).length>0){cls.push("disabled","disabled-date")}if(this.range){if(date>this.range[0]&&date<this.range[this.range.length-1]){cls.push("range")}if($.inArray(date.valueOf(),this.range)!==-1){cls.push("selected")}}return cls},fill:function(){var d=new Date(this.viewDate),year=d.getUTCFullYear(),month=d.getUTCMonth(),startYear=this.o.startDate!==-Infinity?this.o.startDate.getUTCFullYear():-Infinity,startMonth=this.o.startDate!==-Infinity?this.o.startDate.getUTCMonth():-Infinity,endYear=this.o.endDate!==Infinity?this.o.endDate.getUTCFullYear():Infinity,endMonth=this.o.endDate!==Infinity?this.o.endDate.getUTCMonth():Infinity,todaytxt=dates[this.o.language].today||dates["en"].today||"",cleartxt=dates[this.o.language].clear||dates["en"].clear||"",tooltip;if(isNaN(year)||isNaN(month))return;this.picker.find(".datepicker-days thead .datepicker-switch").text(dates[this.o.language].months[month]+" "+year);this.picker.find("tfoot .today").text(todaytxt).toggle(this.o.todayBtn!==false);this.picker.find("tfoot .clear").text(cleartxt).toggle(this.o.clearBtn!==false);this.updateNavArrows();this.fillMonths();var prevMonth=UTCDate(year,month-1,28),day=DPGlobal.getDaysInMonth(prevMonth.getUTCFullYear(),prevMonth.getUTCMonth());prevMonth.setUTCDate(day);prevMonth.setUTCDate(day-(prevMonth.getUTCDay()-this.o.weekStart+7)%7);var nextMonth=new Date(prevMonth);nextMonth.setUTCDate(nextMonth.getUTCDate()+42);nextMonth=nextMonth.valueOf();var html=[];var clsName;while(prevMonth.valueOf()<nextMonth){if(prevMonth.getUTCDay()===this.o.weekStart){html.push("<tr>");if(this.o.calendarWeeks){var ws=new Date(+prevMonth+(this.o.weekStart-prevMonth.getUTCDay()-7)%7*864e5),th=new Date(Number(ws)+(7+4-ws.getUTCDay())%7*864e5),yth=new Date(Number(yth=UTCDate(th.getUTCFullYear(),0,1))+(7+4-yth.getUTCDay())%7*864e5),calWeek=(th-yth)/864e5/7+1;html.push('<td class="cw">'+calWeek+"</td>")}}clsName=this.getClassNames(prevMonth);clsName.push("day");if(this.o.beforeShowDay!==$.noop){var before=this.o.beforeShowDay(this._utc_to_local(prevMonth));if(before===undefined)before={};else if(typeof before==="boolean")before={enabled:before};else if(typeof before==="string")before={classes:before};if(before.enabled===false)clsName.push("disabled");if(before.classes)clsName=clsName.concat(before.classes.split(/\s+/));if(before.tooltip)tooltip=before.tooltip}clsName=$.unique(clsName);html.push('<td class="'+clsName.join(" ")+'"'+(tooltip?' title="'+tooltip+'"':"")+">"+prevMonth.getUTCDate()+"</td>");tooltip=null;if(prevMonth.getUTCDay()===this.o.weekEnd){html.push("</tr>")}prevMonth.setUTCDate(prevMonth.getUTCDate()+1)}this.picker.find(".datepicker-days tbody").empty().append(html.join(""));var months=this.picker.find(".datepicker-months").find("th:eq(1)").text(year).end().find("span").removeClass("active");$.each(this.dates,function(i,d){if(d.getUTCFullYear()===year)months.eq(d.getUTCMonth()).addClass("active")});if(year<startYear||year>endYear){months.addClass("disabled")}if(year===startYear){months.slice(0,startMonth).addClass("disabled")}if(year===endYear){months.slice(endMonth+1).addClass("disabled")}if(this.o.beforeShowMonth!==$.noop){var that=this;$.each(months,function(i,month){if(!$(month).hasClass("disabled")){var moDate=new Date(year,i,1);var before=that.o.beforeShowMonth(moDate);if(before===false)$(month).addClass("disabled")}})}html="";year=parseInt(year/10,10)*10;var yearCont=this.picker.find(".datepicker-years").find("th:eq(1)").text(year+"-"+(year+9)).end().find("td");year-=1;var years=$.map(this.dates,function(d){return d.getUTCFullYear()}),classes;for(var i=-1;i<11;i++){classes=["year"];if(i===-1)classes.push("old");else if(i===10)classes.push("new");if($.inArray(year,years)!==-1)classes.push("active");if(year<startYear||year>endYear)classes.push("disabled");html+='<span class="'+classes.join(" ")+'">'+year+"</span>";year+=1}yearCont.html(html)},updateNavArrows:function(){if(!this._allow_update)return;var d=new Date(this.viewDate),year=d.getUTCFullYear(),month=d.getUTCMonth();switch(this.viewMode){case 0:if(this.o.startDate!==-Infinity&&year<=this.o.startDate.getUTCFullYear()&&month<=this.o.startDate.getUTCMonth()){this.picker.find(".prev").css({visibility:"hidden"})}else{this.picker.find(".prev").css({visibility:"visible"})}if(this.o.endDate!==Infinity&&year>=this.o.endDate.getUTCFullYear()&&month>=this.o.endDate.getUTCMonth()){this.picker.find(".next").css({visibility:"hidden"})}else{this.picker.find(".next").css({visibility:"visible"})}break;case 1:case 2:if(this.o.startDate!==-Infinity&&year<=this.o.startDate.getUTCFullYear()){this.picker.find(".prev").css({visibility:"hidden"})}else{this.picker.find(".prev").css({visibility:"visible"})}if(this.o.endDate!==Infinity&&year>=this.o.endDate.getUTCFullYear()){this.picker.find(".next").css({visibility:"hidden"})}else{this.picker.find(".next").css({visibility:"visible"})}break}},click:function(e){e.preventDefault();var target=$(e.target).closest("span, td, th"),year,month,day;if(target.length===1){switch(target[0].nodeName.toLowerCase()){case"th":switch(target[0].className){case"datepicker-switch":this.showMode(1);break;case"prev":case"next":var dir=DPGlobal.modes[this.viewMode].navStep*(target[0].className==="prev"?-1:1);switch(this.viewMode){case 0:this.viewDate=this.moveMonth(this.viewDate,dir);this._trigger("changeMonth",this.viewDate);break;case 1:case 2:this.viewDate=this.moveYear(this.viewDate,dir);if(this.viewMode===1)this._trigger("changeYear",this.viewDate);break}this.fill();break;case"today":var date=new Date;date=UTCDate(date.getFullYear(),date.getMonth(),date.getDate(),0,0,0);this.showMode(-2);var which=this.o.todayBtn==="linked"?null:"view";this._setDate(date,which);break;case"clear":this.clearDates();break}break;case"span":if(!target.hasClass("disabled")){this.viewDate.setUTCDate(1);if(target.hasClass("month")){day=1;month=target.parent().find("span").index(target);year=this.viewDate.getUTCFullYear();this.viewDate.setUTCMonth(month);this._trigger("changeMonth",this.viewDate);if(this.o.minViewMode===1){this._setDate(UTCDate(year,month,day))}}else{day=1;month=0;year=parseInt(target.text(),10)||0;this.viewDate.setUTCFullYear(year);this._trigger("changeYear",this.viewDate);if(this.o.minViewMode===2){this._setDate(UTCDate(year,month,day))}}this.showMode(-1);this.fill()}break;case"td":if(target.hasClass("day")&&!target.hasClass("disabled")){day=parseInt(target.text(),10)||1;year=this.viewDate.getUTCFullYear();month=this.viewDate.getUTCMonth();if(target.hasClass("old")){if(month===0){month=11;year-=1}else{month-=1}}else if(target.hasClass("new")){if(month===11){month=0;year+=1}else{month+=1}}this._setDate(UTCDate(year,month,day))}break}}if(this.picker.is(":visible")&&this._focused_from){$(this._focused_from).focus()}delete this._focused_from},_toggle_multidate:function(date){var ix=this.dates.contains(date);if(!date){this.dates.clear()}if(ix!==-1){if(this.o.multidate===true||this.o.multidate>1||this.o.toggleActive){this.dates.remove(ix)}}else if(this.o.multidate===false){this.dates.clear();this.dates.push(date)}else{this.dates.push(date)}if(typeof this.o.multidate==="number")while(this.dates.length>this.o.multidate)this.dates.remove(0)},_setDate:function(date,which){if(!which||which==="date")this._toggle_multidate(date&&new Date(date));if(!which||which==="view")this.viewDate=date&&new Date(date);this.fill();this.setValue();if(!which||which!=="view"){this._trigger("changeDate")}var element;if(this.isInput){element=this.element}else if(this.component){element=this.element.find("input")}if(element){element.change()}if(this.o.autoclose&&(!which||which==="date")){this.hide()}},moveMonth:function(date,dir){if(!date)return undefined;if(!dir)return date;var new_date=new Date(date.valueOf()),day=new_date.getUTCDate(),month=new_date.getUTCMonth(),mag=Math.abs(dir),new_month,test;dir=dir>0?1:-1;if(mag===1){test=dir===-1?function(){return new_date.getUTCMonth()===month}:function(){return new_date.getUTCMonth()!==new_month};new_month=month+dir;new_date.setUTCMonth(new_month);if(new_month<0||new_month>11)new_month=(new_month+12)%12}else{for(var i=0;i<mag;i++)new_date=this.moveMonth(new_date,dir);new_month=new_date.getUTCMonth();new_date.setUTCDate(day);test=function(){return new_month!==new_date.getUTCMonth()}}while(test()){new_date.setUTCDate(--day);new_date.setUTCMonth(new_month)}return new_date},moveYear:function(date,dir){return this.moveMonth(date,dir*12)},dateWithinRange:function(date){return date>=this.o.startDate&&date<=this.o.endDate},keydown:function(e){if(!this.picker.is(":visible")){if(e.keyCode===27)this.show();return}var dateChanged=false,dir,newDate,newViewDate,focusDate=this.focusDate||this.viewDate;switch(e.keyCode){case 27:if(this.focusDate){this.focusDate=null;this.viewDate=this.dates.get(-1)||this.viewDate;this.fill()}else this.hide();e.preventDefault();break;case 37:case 39:if(!this.o.keyboardNavigation)break;dir=e.keyCode===37?-1:1;if(e.ctrlKey){newDate=this.moveYear(this.dates.get(-1)||UTCToday(),dir);newViewDate=this.moveYear(focusDate,dir);this._trigger("changeYear",this.viewDate)}else if(e.shiftKey){newDate=this.moveMonth(this.dates.get(-1)||UTCToday(),dir);newViewDate=this.moveMonth(focusDate,dir);this._trigger("changeMonth",this.viewDate)}else{newDate=new Date(this.dates.get(-1)||UTCToday());newDate.setUTCDate(newDate.getUTCDate()+dir);newViewDate=new Date(focusDate);newViewDate.setUTCDate(focusDate.getUTCDate()+dir)}if(this.dateWithinRange(newViewDate)){this.focusDate=this.viewDate=newViewDate;this.setValue();this.fill();e.preventDefault()}break;case 38:case 40:if(!this.o.keyboardNavigation)break;dir=e.keyCode===38?-1:1;if(e.ctrlKey){newDate=this.moveYear(this.dates.get(-1)||UTCToday(),dir);newViewDate=this.moveYear(focusDate,dir);this._trigger("changeYear",this.viewDate)}else if(e.shiftKey){newDate=this.moveMonth(this.dates.get(-1)||UTCToday(),dir);newViewDate=this.moveMonth(focusDate,dir);this._trigger("changeMonth",this.viewDate)}else{newDate=new Date(this.dates.get(-1)||UTCToday());newDate.setUTCDate(newDate.getUTCDate()+dir*7);newViewDate=new Date(focusDate);newViewDate.setUTCDate(focusDate.getUTCDate()+dir*7)}if(this.dateWithinRange(newViewDate)){this.focusDate=this.viewDate=newViewDate;this.setValue();this.fill();e.preventDefault()}break;case 32:break;case 13:focusDate=this.focusDate||this.dates.get(-1)||this.viewDate;if(this.o.keyboardNavigation){this._toggle_multidate(focusDate);dateChanged=true}this.focusDate=null;this.viewDate=this.dates.get(-1)||this.viewDate;this.setValue();this.fill();if(this.picker.is(":visible")){e.preventDefault();if(typeof e.stopPropagation==="function"){e.stopPropagation()}else{e.cancelBubble=true}if(this.o.autoclose)this.hide()}break;case 9:this.focusDate=null;this.viewDate=this.dates.get(-1)||this.viewDate;this.fill();this.hide();break}if(dateChanged){if(this.dates.length)this._trigger("changeDate");else this._trigger("clearDate");var element;if(this.isInput){element=this.element}else if(this.component){element=this.element.find("input")}if(element){element.change()}}},showMode:function(dir){if(dir){this.viewMode=Math.max(this.o.minViewMode,Math.min(2,this.viewMode+dir))}this.picker.children("div").hide().filter(".datepicker-"+DPGlobal.modes[this.viewMode].clsName).css("display","block");this.updateNavArrows()}};var DateRangePicker=function(element,options){this.element=$(element);this.inputs=$.map(options.inputs,function(i){return i.jquery?i[0]:i});delete options.inputs;datepickerPlugin.call($(this.inputs),options).bind("changeDate",$.proxy(this.dateUpdated,this));this.pickers=$.map(this.inputs,function(i){return $(i).data("datepicker")});this.updateDates()};DateRangePicker.prototype={updateDates:function(){this.dates=$.map(this.pickers,function(i){return i.getUTCDate()});this.updateRanges()},updateRanges:function(){var range=$.map(this.dates,function(d){return d.valueOf()});$.each(this.pickers,function(i,p){p.setRange(range)})},dateUpdated:function(e){if(this.updating)return;this.updating=true;var dp=$(e.target).data("datepicker"),new_date=dp.getUTCDate(),i=$.inArray(e.target,this.inputs),j=i-1,k=i+1,l=this.inputs.length;if(i===-1)return;$.each(this.pickers,function(i,p){if(!p.getUTCDate())p.setUTCDate(new_date)});if(new_date<this.dates[j]){while(j>=0&&new_date<this.dates[j]){this.pickers[j--].setUTCDate(new_date)}}else if(new_date>this.dates[k]){while(k<l&&new_date>this.dates[k]){this.pickers[k++].setUTCDate(new_date)}}this.updateDates();delete this.updating},remove:function(){$.map(this.pickers,function(p){p.remove()});delete this.element.data().datepicker}};function opts_from_el(el,prefix){var data=$(el).data(),out={},inkey,replace=new RegExp("^"+prefix.toLowerCase()+"([A-Z])");prefix=new RegExp("^"+prefix.toLowerCase());function re_lower(_,a){return a.toLowerCase()}for(var key in data)if(prefix.test(key)){inkey=key.replace(replace,re_lower);out[inkey]=data[key]}return out}function opts_from_locale(lang){var out={};if(!dates[lang]){lang=lang.split("-")[0];if(!dates[lang])return}var d=dates[lang];$.each(locale_opts,function(i,k){if(k in d)out[k]=d[k]});return out}var old=$.fn.datepicker;var datepickerPlugin=function(option){var args=Array.apply(null,arguments);args.shift();var internal_return;this.each(function(){var $this=$(this),data=$this.data("datepicker"),options=typeof option==="object"&&option;if(!data){var elopts=opts_from_el(this,"date"),xopts=$.extend({},defaults,elopts,options),locopts=opts_from_locale(xopts.language),opts=$.extend({},defaults,locopts,elopts,options);if($this.hasClass("input-daterange")||opts.inputs){var ropts={inputs:opts.inputs||$this.find("input").toArray()};$this.data("datepicker",data=new DateRangePicker(this,$.extend(opts,ropts)))}else{$this.data("datepicker",data=new Datepicker(this,opts))}}if(typeof option==="string"&&typeof data[option]==="function"){internal_return=data[option].apply(data,args);if(internal_return!==undefined)return false}});if(internal_return!==undefined)return internal_return;else return this};$.fn.datepicker=datepickerPlugin;var defaults=$.fn.datepicker.defaults={autoclose:false,beforeShowDay:$.noop,beforeShowMonth:$.noop,calendarWeeks:false,clearBtn:false,toggleActive:false,daysOfWeekDisabled:[],datesDisabled:[],endDate:Infinity,forceParse:true,format:"mm/dd/yyyy",keyboardNavigation:true,language:"en",minViewMode:0,multidate:false,multidateSeparator:",",orientation:"auto",rtl:false,startDate:-Infinity,startView:0,todayBtn:false,todayHighlight:false,weekStart:0,disableTouchKeyboard:false,enableOnReadonly:true,container:"body"};var locale_opts=$.fn.datepicker.locale_opts=["format","rtl","weekStart"];$.fn.datepicker.Constructor=Datepicker;var dates=$.fn.datepicker.dates={en:{days:["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"],daysShort:["Sun","Mon","Tue","Wed","Thu","Fri","Sat","Sun"],daysMin:["Su","Mo","Tu","We","Th","Fr","Sa","Su"],months:["January","February","March","April","May","June","July","August","September","October","November","December"],monthsShort:["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],today:"Today",clear:"Clear"}};var DPGlobal={modes:[{clsName:"days",navFnc:"Month",navStep:1},{clsName:"months",navFnc:"FullYear",navStep:1},{clsName:"years",navFnc:"FullYear",navStep:10}],isLeapYear:function(year){return year%4===0&&year%100!==0||year%400===0},getDaysInMonth:function(year,month){return[31,DPGlobal.isLeapYear(year)?29:28,31,30,31,30,31,31,30,31,30,31][month]},validParts:/dd?|DD?|mm?|MM?|yy(?:yy)?/g,nonpunctuation:/[^ -\/:-@\[\u3400-\u9fff-`{-~\t\n\r]+/g,parseFormat:function(format){var separators=format.replace(this.validParts,"\x00").split("\x00"),parts=format.match(this.validParts);if(!separators||!separators.length||!parts||parts.length===0){throw new Error("Invalid date format.")}return{separators:separators,parts:parts}},parseDate:function(date,format,language){if(!date)return undefined;if(date instanceof Date)return date;if(typeof format==="string")format=DPGlobal.parseFormat(format);var part_re=/([\-+]\d+)([dmwy])/,parts=date.match(/([\-+]\d+)([dmwy])/g),part,dir,i;if(/^[\-+]\d+[dmwy]([\s,]+[\-+]\d+[dmwy])*$/.test(date)){date=new Date;for(i=0;i<parts.length;i++){part=part_re.exec(parts[i]);dir=parseInt(part[1]);switch(part[2]){case"d":date.setUTCDate(date.getUTCDate()+dir);break;case"m":date=Datepicker.prototype.moveMonth.call(Datepicker.prototype,date,dir);break;case"w":date.setUTCDate(date.getUTCDate()+dir*7);break;case"y":date=Datepicker.prototype.moveYear.call(Datepicker.prototype,date,dir);break}}return UTCDate(date.getUTCFullYear(),date.getUTCMonth(),date.getUTCDate(),0,0,0)}parts=date&&date.match(this.nonpunctuation)||[];
-date=new Date;var parsed={},setters_order=["yyyy","yy","M","MM","m","mm","d","dd"],setters_map={yyyy:function(d,v){return d.setUTCFullYear(v)},yy:function(d,v){return d.setUTCFullYear(2e3+v)},m:function(d,v){if(isNaN(d))return d;v-=1;while(v<0)v+=12;v%=12;d.setUTCMonth(v);while(d.getUTCMonth()!==v)d.setUTCDate(d.getUTCDate()-1);return d},d:function(d,v){return d.setUTCDate(v)}},val,filtered;setters_map["M"]=setters_map["MM"]=setters_map["mm"]=setters_map["m"];setters_map["dd"]=setters_map["d"];date=UTCDate(date.getFullYear(),date.getMonth(),date.getDate(),0,0,0);var fparts=format.parts.slice();if(parts.length!==fparts.length){fparts=$(fparts).filter(function(i,p){return $.inArray(p,setters_order)!==-1}).toArray()}function match_part(){var m=this.slice(0,parts[i].length),p=parts[i].slice(0,m.length);return m.toLowerCase()===p.toLowerCase()}if(parts.length===fparts.length){var cnt;for(i=0,cnt=fparts.length;i<cnt;i++){val=parseInt(parts[i],10);part=fparts[i];if(isNaN(val)){switch(part){case"MM":filtered=$(dates[language].months).filter(match_part);val=$.inArray(filtered[0],dates[language].months)+1;break;case"M":filtered=$(dates[language].monthsShort).filter(match_part);val=$.inArray(filtered[0],dates[language].monthsShort)+1;break}}parsed[part]=val}var _date,s;for(i=0;i<setters_order.length;i++){s=setters_order[i];if(s in parsed&&!isNaN(parsed[s])){_date=new Date(date);setters_map[s](_date,parsed[s]);if(!isNaN(_date))date=_date}}}return date},formatDate:function(date,format,language){if(!date)return"";if(typeof format==="string")format=DPGlobal.parseFormat(format);var val={d:date.getUTCDate(),D:dates[language].daysShort[date.getUTCDay()],DD:dates[language].days[date.getUTCDay()],m:date.getUTCMonth()+1,M:dates[language].monthsShort[date.getUTCMonth()],MM:dates[language].months[date.getUTCMonth()],yy:date.getUTCFullYear().toString().substring(2),yyyy:date.getUTCFullYear()};val.dd=(val.d<10?"0":"")+val.d;val.mm=(val.m<10?"0":"")+val.m;date=[];var seps=$.extend([],format.separators);for(var i=0,cnt=format.parts.length;i<=cnt;i++){if(seps.length)date.push(seps.shift());date.push(val[format.parts[i]])}return date.join("")},headTemplate:"<thead>"+"<tr>"+'<th class="prev">&#171;</th>'+'<th colspan="5" class="datepicker-switch"></th>'+'<th class="next">&#187;</th>'+"</tr>"+"</thead>",contTemplate:'<tbody><tr><td colspan="7"></td></tr></tbody>',footTemplate:"<tfoot>"+"<tr>"+'<th colspan="7" class="today"></th>'+"</tr>"+"<tr>"+'<th colspan="7" class="clear"></th>'+"</tr>"+"</tfoot>"};DPGlobal.template='<div class="datepicker">'+'<div class="datepicker-days">'+'<table class=" table-condensed">'+DPGlobal.headTemplate+"<tbody></tbody>"+DPGlobal.footTemplate+"</table>"+"</div>"+'<div class="datepicker-months">'+'<table class="table-condensed">'+DPGlobal.headTemplate+DPGlobal.contTemplate+DPGlobal.footTemplate+"</table>"+"</div>"+'<div class="datepicker-years">'+'<table class="table-condensed">'+DPGlobal.headTemplate+DPGlobal.contTemplate+DPGlobal.footTemplate+"</table>"+"</div>"+"</div>";$.fn.datepicker.DPGlobal=DPGlobal;$.fn.datepicker.noConflict=function(){$.fn.datepicker=old;return this};$.fn.datepicker.version="1.4.0";$(document).on("focus.datepicker.data-api click.datepicker.data-api",'[data-provide="datepicker"]',function(e){var $this=$(this);if($this.data("datepicker"))return;e.preventDefault();datepickerPlugin.call($this,"show")});$(function(){datepickerPlugin.call($('[data-provide="datepicker-inline"]'))})})(window.jQuery);
 (function(){var t=[].slice;!function(e,o){"use strict";var n;return n=function(){function t(t,o){null==o&&(o={}),this.$element=e(t),this.options=e.extend({},e.fn.bootstrapSwitch.defaults,o,{state:this.$element.is(":checked"),size:this.$element.data("size"),animate:this.$element.data("animate"),disabled:this.$element.is(":disabled"),readonly:this.$element.is("[readonly]"),onColor:this.$element.data("on-color"),offColor:this.$element.data("off-color"),onText:this.$element.data("on-text"),offText:this.$element.data("off-text"),labelText:this.$element.data("label-text")}),this.$on=e("<span>",{"class":""+this.name+"-handle-on "+this.name+"-"+this.options.onColor,html:this.options.onText}),this.$off=e("<span>",{"class":""+this.name+"-handle-off "+this.name+"-"+this.options.offColor,html:this.options.offText}),this.$label=e("<label>",{"for":this.$element.attr("id"),html:this.options.labelText}),this.$wrapper=e("<div>"),this.$wrapper.addClass(function(t){return function(){var e;return e=[""+t.name],e.push(t.options.state?""+t.name+"-on":""+t.name+"-off"),null!=t.options.size&&e.push(""+t.name+"-"+t.options.size),t.options.animate&&e.push(""+t.name+"-animate"),t.options.disabled&&e.push(""+t.name+"-disabled"),t.options.readonly&&e.push(""+t.name+"-readonly"),t.$element.attr("id")&&e.push(""+t.name+"-id-"+t.$element.attr("id")),e.join(" ")}}(this)),this.$element.on("init",function(t){return function(){return t.options.on.init.call()}}(this)),this.$element.on("switchChange",function(t){return function(){return t.options.on.switchChange.call()}}(this)),this.$div=this.$element.wrap(e("<div>")).parent(),this.$wrapper=this.$div.wrap(this.$wrapper).parent(),this.$element.before(this.$on).before(this.$label).before(this.$off).trigger("init"),this._elementHandlers(),this._handleHandlers(),this._labelHandlers(),this._formHandler()}return t.prototype.name="bootstrap-switch",t.prototype._constructor=t,t.prototype.state=function(t,e){return"undefined"==typeof t?this.options.state:this.options.disabled||this.options.readonly?this.$element:(t=!!t,this.$element.prop("checked",t).trigger("change.bootstrapSwitch",e),this.$element)},t.prototype.toggleState=function(t){return this.options.disabled||this.options.readonly?this.$element:this.$element.prop("checked",!this.options.state).trigger("change.bootstrapSwitch",t)},t.prototype.size=function(t){return"undefined"==typeof t?this.options.size:(null!=this.options.size&&this.$wrapper.removeClass(""+this.name+"-"+this.options.size),this.$wrapper.addClass(""+this.name+"-"+t),this.options.size=t,this.$element)},t.prototype.animate=function(t){return"undefined"==typeof t?this.options.animate:(t=!!t,this.$wrapper[t?"addClass":"removeClass"](""+this.name+"-animate"),this.options.animate=t,this.$element)},t.prototype.disabled=function(t){return"undefined"==typeof t?this.options.disabled:(t=!!t,this.$wrapper[t?"addClass":"removeClass"](""+this.name+"-disabled"),this.$element.prop("disabled",t),this.options.disabled=t,this.$element)},t.prototype.toggleDisabled=function(){return this.$element.prop("disabled",!this.options.disabled),this.$wrapper.toggleClass(""+this.name+"-disabled"),this.options.disabled=!this.options.disabled,this.$element},t.prototype.readonly=function(t){return"undefined"==typeof t?this.options.readonly:(t=!!t,this.$wrapper[t?"addClass":"removeClass"](""+this.name+"-readonly"),this.$element.prop("readonly",t),this.options.readonly=t,this.$element)},t.prototype.toggleReadonly=function(){return this.$element.prop("readonly",!this.options.readonly),this.$wrapper.toggleClass(""+this.name+"-readonly"),this.options.readonly=!this.options.readonly,this.$element},t.prototype.onColor=function(t){var e;return e=this.options.onColor,"undefined"==typeof t?e:(null!=e&&this.$on.removeClass(""+this.name+"-"+e),this.$on.addClass(""+this.name+"-"+t),this.options.onColor=t,this.$element)},t.prototype.offColor=function(t){var e;return e=this.options.offColor,"undefined"==typeof t?e:(null!=e&&this.$off.removeClass(""+this.name+"-"+e),this.$off.addClass(""+this.name+"-"+t),this.options.offColor=t,this.$element)},t.prototype.onText=function(t){return"undefined"==typeof t?this.options.onText:(this.$on.html(t),this.options.onText=t,this.$element)},t.prototype.offText=function(t){return"undefined"==typeof t?this.options.offText:(this.$off.html(t),this.options.offText=t,this.$element)},t.prototype.labelText=function(t){return"undefined"==typeof t?this.options.labelText:(this.$label.html(t),this.options.labelText=t,this.$element)},t.prototype.destroy=function(){var t;return t=this.$element.closest("form"),t.length&&t.off("reset.bootstrapSwitch").removeData("bootstrap-switch"),this.$div.children().not(this.$element).remove(),this.$element.unwrap().unwrap().off(".bootstrapSwitch").removeData("bootstrap-switch"),this.$element},t.prototype._elementHandlers=function(){return this.$element.on({"change.bootstrapSwitch":function(t){return function(o,n){var i;return o.preventDefault(),o.stopPropagation(),o.stopImmediatePropagation(),i=t.$element.is(":checked"),i!==t.options.state?(t.options.state=i,t.$wrapper.removeClass(i?""+t.name+"-off":""+t.name+"-on").addClass(i?""+t.name+"-on":""+t.name+"-off"),n?void 0:(t.$element.is(":radio")&&e("[name='"+t.$element.attr("name")+"']").not(t.$element).prop("checked",!1).trigger("change.bootstrapSwitch",!0),t.$element.trigger("switchChange",{el:t.$element,value:i}))):void 0}}(this),"focus.bootstrapSwitch":function(t){return function(e){return e.preventDefault(),e.stopPropagation(),e.stopImmediatePropagation(),t.$wrapper.addClass(""+t.name+"-focused")}}(this),"blur.bootstrapSwitch":function(t){return function(e){return e.preventDefault(),e.stopPropagation(),e.stopImmediatePropagation(),t.$wrapper.removeClass(""+t.name+"-focused")}}(this),"keydown.bootstrapSwitch":function(t){return function(e){if(e.which&&!t.options.disabled&&!t.options.readonly)switch(e.which){case 32:return e.preventDefault(),e.stopPropagation(),e.stopImmediatePropagation(),t.toggleState();case 37:return e.preventDefault(),e.stopPropagation(),e.stopImmediatePropagation(),t.state(!1);case 39:return e.preventDefault(),e.stopPropagation(),e.stopImmediatePropagation(),t.state(!0)}}}(this)})},t.prototype._handleHandlers=function(){return this.$on.on("click.bootstrapSwitch",function(t){return function(){return t.state(!1),t.$element.trigger("focus.bootstrapSwitch")}}(this)),this.$off.on("click.bootstrapSwitch",function(t){return function(){return t.state(!0),t.$element.trigger("focus.bootstrapSwitch")}}(this))},t.prototype._labelHandlers=function(){return this.$label.on({"mousemove.bootstrapSwitch":function(t){return function(e){var o,n,i;if(t.drag)return n=(e.pageX-t.$wrapper.offset().left)/t.$wrapper.width()*100,o=25,i=75,o>n?n=o:n>i&&(n=i),t.$div.css("margin-left",""+(n-i)+"%"),t.$element.trigger("focus.bootstrapSwitch")}}(this),"mousedown.bootstrapSwitch":function(t){return function(){return t.drag||t.options.disabled||t.options.readonly?void 0:(t.drag=!0,t.options.animate&&t.$wrapper.removeClass(""+t.name+"-animate"),t.$element.trigger("focus.bootstrapSwitch"))}}(this),"mouseup.bootstrapSwitch":function(t){return function(){return t.drag?(t.drag=!1,t.$element.prop("checked",parseInt(t.$div.css("margin-left"),10)>-25).trigger("change.bootstrapSwitch"),t.$div.css("margin-left",""),t.options.animate?t.$wrapper.addClass(""+t.name+"-animate"):void 0):void 0}}(this),"mouseleave.bootstrapSwitch":function(t){return function(){return t.$label.trigger("mouseup.bootstrapSwitch")}}(this),"click.bootstrapSwitch":function(t){return function(e){return e.preventDefault(),e.stopImmediatePropagation(),t.toggleState(),t.$element.trigger("focus.bootstrapSwitch")}}(this)})},t.prototype._formHandler=function(){var t;return t=this.$element.closest("form"),t.data("bootstrap-switch")?void 0:t.on("reset.bootstrapSwitch",function(){return o.setTimeout(function(){return t.find("input").filter(function(){return e(this).data("bootstrap-switch")}).each(function(){return e(this).bootstrapSwitch("state",!1)})},1)}).data("bootstrap-switch",!0)},t}(),e.fn.bootstrapSwitch=function(){var o,i,s;return i=arguments[0],o=2<=arguments.length?t.call(arguments,1):[],s=this,this.each(function(){var t,r;return t=e(this),r=t.data("bootstrap-switch"),r||t.data("bootstrap-switch",r=new n(this,i)),"string"==typeof i?s=r[i].apply(r,o):void 0}),s},e.fn.bootstrapSwitch.Constructor=n,e.fn.bootstrapSwitch.defaults={state:!0,size:null,animate:!0,disabled:!1,readonly:!1,onColor:"primary",offColor:"default",onText:"ON",offText:"OFF",labelText:"&nbsp;",on:{init:function(){},switchChange:function(){}}}}(window.jQuery,window)}).call(this);
 (function($){"use strict";var jCarousel=$.jCarousel={};jCarousel.version="0.3.0";var rRelativeTarget=/^([+\-]=)?(.+)$/;jCarousel.parseTarget=function(target){var relative=false,parts=typeof target!=="object"?rRelativeTarget.exec(target):null;if(parts){target=parseInt(parts[2],10)||0;if(parts[1]){relative=true;if(parts[1]==="-="){target*=-1}}}else if(typeof target!=="object"){target=parseInt(target,10)||0}return{target:target,relative:relative}};jCarousel.detectCarousel=function(element){var carousel;while(element.length>0){carousel=element.filter("[data-jcarousel]");if(carousel.length>0){return carousel}carousel=element.find("[data-jcarousel]");if(carousel.length>0){return carousel}element=element.parent()}return null};jCarousel.base=function(pluginName){return{version:jCarousel.version,_options:{},_element:null,_carousel:null,_init:$.noop,_create:$.noop,_destroy:$.noop,_reload:$.noop,create:function(){this._element.attr("data-"+pluginName.toLowerCase(),true).data(pluginName,this);if(false===this._trigger("create")){return this}this._create();this._trigger("createend");return this},destroy:function(){if(false===this._trigger("destroy")){return this}this._destroy();this._trigger("destroyend");this._element.removeData(pluginName).removeAttr("data-"+pluginName.toLowerCase());return this},reload:function(options){if(false===this._trigger("reload")){return this}if(options){this.options(options)}this._reload();this._trigger("reloadend");return this},element:function(){return this._element},options:function(key,value){if(arguments.length===0){return $.extend({},this._options)}if(typeof key==="string"){if(typeof value==="undefined"){return typeof this._options[key]==="undefined"?null:this._options[key]}this._options[key]=value}else{this._options=$.extend({},this._options,key)}return this},carousel:function(){if(!this._carousel){this._carousel=jCarousel.detectCarousel(this.options("carousel")||this._element);if(!this._carousel){$.error('Could not detect carousel for plugin "'+pluginName+'"')}}return this._carousel},_trigger:function(type,element,data){var event,defaultPrevented=false;data=[this].concat(data||[]);(element||this._element).each(function(){event=$.Event((pluginName+":"+type).toLowerCase());$(this).trigger(event,data);if(event.isDefaultPrevented()){defaultPrevented=true}});return!defaultPrevented}}};jCarousel.plugin=function(pluginName,pluginPrototype){var Plugin=$[pluginName]=function(element,options){this._element=$(element);this.options(options);this._init();this.create()};Plugin.fn=Plugin.prototype=$.extend({},jCarousel.base(pluginName),pluginPrototype);$.fn[pluginName]=function(options){var args=Array.prototype.slice.call(arguments,1),returnValue=this;if(typeof options==="string"){this.each(function(){var instance=$(this).data(pluginName);if(!instance){return $.error("Cannot call methods on "+pluginName+" prior to initialization; "+'attempted to call method "'+options+'"')}if(!$.isFunction(instance[options])||options.charAt(0)==="_"){return $.error('No such method "'+options+'" for '+pluginName+" instance")}var methodValue=instance[options].apply(instance,args);if(methodValue!==instance&&typeof methodValue!=="undefined"){returnValue=methodValue;return false}})}else{this.each(function(){var instance=$(this).data(pluginName);if(instance instanceof Plugin){instance.reload(options)}else{new Plugin(this,options)}})}return returnValue};return Plugin}})(jQuery);(function($,window){"use strict";var toFloat=function(val){return parseFloat(val)||0};$.jCarousel.plugin("jcarousel",{animating:false,tail:0,inTail:false,resizeTimer:null,lt:null,vertical:false,rtl:false,circular:false,underflow:false,relative:false,_options:{list:function(){return this.element().children().eq(0)},items:function(){return this.list().children()},animation:400,transitions:false,wrap:null,vertical:null,rtl:null,center:false},_list:null,_items:null,_target:null,_first:null,_last:null,_visible:null,_fullyvisible:null,_init:function(){var self=this;this.onWindowResize=function(){if(self.resizeTimer){clearTimeout(self.resizeTimer)}self.resizeTimer=setTimeout(function(){self.reload()},100)};return this},_create:function(){this._reload();$(window).on("resize.jcarousel",this.onWindowResize)},_destroy:function(){$(window).off("resize.jcarousel",this.onWindowResize)},_reload:function(){this.vertical=this.options("vertical");if(this.vertical==null){this.vertical=this.list().height()>this.list().width()}this.rtl=this.options("rtl");if(this.rtl==null){this.rtl=function(element){if((""+element.attr("dir")).toLowerCase()==="rtl"){return true}var found=false;element.parents("[dir]").each(function(){if(/rtl/i.test($(this).attr("dir"))){found=true;return false}});return found}(this._element)}this.lt=this.vertical?"top":"left";this.relative=this.list().css("position")==="relative";this._list=null;this._items=null;var item=this._target&&this.index(this._target)>=0?this._target:this.closest();this.circular=this.options("wrap")==="circular";this.underflow=false;var props={left:0,top:0};if(item.length>0){this._prepare(item);this.list().find("[data-jcarousel-clone]").remove();this._items=null;this.underflow=this._fullyvisible.length>=this.items().length;this.circular=this.circular&&!this.underflow;props[this.lt]=this._position(item)+"px"}this.move(props);return this},list:function(){if(this._list===null){var option=this.options("list");this._list=$.isFunction(option)?option.call(this):this._element.find(option)}return this._list},items:function(){if(this._items===null){var option=this.options("items");this._items=($.isFunction(option)?option.call(this):this.list().find(option)).not("[data-jcarousel-clone]")}return this._items},index:function(item){return this.items().index(item)},closest:function(){var self=this,pos=this.list().position()[this.lt],closest=$(),stop=false,lrb=this.vertical?"bottom":this.rtl&&!this.relative?"left":"right",width;if(this.rtl&&this.relative&&!this.vertical){pos+=this.list().width()-this.clipping()}this.items().each(function(){closest=$(this);if(stop){return false}var dim=self.dimension(closest);pos+=dim;if(pos>=0){width=dim-toFloat(closest.css("margin-"+lrb));if(Math.abs(pos)-dim+width/2<=0){stop=true}else{return false}}});return closest},target:function(){return this._target},first:function(){return this._first},last:function(){return this._last},visible:function(){return this._visible},fullyvisible:function(){return this._fullyvisible},hasNext:function(){if(false===this._trigger("hasnext")){return true}var wrap=this.options("wrap"),end=this.items().length-1;return end>=0&&(wrap&&wrap!=="first"||this.index(this._last)<end||this.tail&&!this.inTail)?true:false},hasPrev:function(){if(false===this._trigger("hasprev")){return true}var wrap=this.options("wrap");return this.items().length>0&&(wrap&&wrap!=="last"||this.index(this._first)>0||this.tail&&this.inTail)?true:false},clipping:function(){return this._element["inner"+(this.vertical?"Height":"Width")]()},dimension:function(element){return element["outer"+(this.vertical?"Height":"Width")](true)},scroll:function(target,animate,callback){if(this.animating){return this}if(false===this._trigger("scroll",null,[target,animate])){return this}if($.isFunction(animate)){callback=animate;animate=true}var parsed=$.jCarousel.parseTarget(target);if(parsed.relative){var end=this.items().length-1,scroll=Math.abs(parsed.target),wrap=this.options("wrap"),current,first,index,start,curr,isVisible,props,i;if(parsed.target>0){var last=this.index(this._last);if(last>=end&&this.tail){if(!this.inTail){this._scrollTail(animate,callback)}else{if(wrap==="both"||wrap==="last"){this._scroll(0,animate,callback)}else{if($.isFunction(callback)){callback.call(this,false)}}}}else{current=this.index(this._target);if(this.underflow&&current===end&&(wrap==="circular"||wrap==="both"||wrap==="last")||!this.underflow&&last===end&&(wrap==="both"||wrap==="last")){this._scroll(0,animate,callback)}else{index=current+scroll;if(this.circular&&index>end){i=end;curr=this.items().get(-1);while(i++<index){curr=this.items().eq(0);isVisible=this._visible.index(curr)>=0;if(isVisible){curr.after(curr.clone(true).attr("data-jcarousel-clone",true))}this.list().append(curr);if(!isVisible){props={};props[this.lt]=this.dimension(curr);this.moveBy(props)}this._items=null}this._scroll(curr,animate,callback)}else{this._scroll(Math.min(index,end),animate,callback)}}}}else{if(this.inTail){this._scroll(Math.max(this.index(this._first)-scroll+1,0),animate,callback)}else{first=this.index(this._first);current=this.index(this._target);start=this.underflow?current:first;index=start-scroll;if(start<=0&&(this.underflow&&wrap==="circular"||wrap==="both"||wrap==="first")){this._scroll(end,animate,callback)}else{if(this.circular&&index<0){i=index;curr=this.items().get(0);while(i++<0){curr=this.items().eq(-1);isVisible=this._visible.index(curr)>=0;if(isVisible){curr.after(curr.clone(true).attr("data-jcarousel-clone",true))}this.list().prepend(curr);this._items=null;var dim=this.dimension(curr);props={};props[this.lt]=-dim;this.moveBy(props)}this._scroll(curr,animate,callback)}else{this._scroll(Math.max(index,0),animate,callback)}}}}}else{this._scroll(parsed.target,animate,callback)}this._trigger("scrollend");return this},moveBy:function(properties,opts){var position=this.list().position(),multiplier=1,correction=0;if(this.rtl&&!this.vertical){multiplier=-1;if(this.relative){correction=this.list().width()-this.clipping()}}if(properties.left){properties.left=position.left+correction+toFloat(properties.left)*multiplier+"px"}if(properties.top){properties.top=position.top+correction+toFloat(properties.top)*multiplier+"px"}return this.move(properties,opts)},move:function(properties,opts){opts=opts||{};var option=this.options("transitions"),transitions=!!option,transforms=!!option.transforms,transforms3d=!!option.transforms3d,duration=opts.duration||0,list=this.list();if(!transitions&&duration>0){list.animate(properties,opts);return}var complete=opts.complete||$.noop,css={};if(transitions){var backup=list.css(["transitionDuration","transitionTimingFunction","transitionProperty"]),oldComplete=complete;complete=function(){$(this).css(backup);oldComplete.call(this)};css={transitionDuration:(duration>0?duration/1e3:0)+"s",transitionTimingFunction:option.easing||opts.easing,transitionProperty:duration>0?function(){if(transforms||transforms3d){return"all"}return properties.left?"left":"top"}():"none",transform:"none"}}if(transforms3d){css.transform="translate3d("+(properties.left||0)+","+(properties.top||0)+",0)"}else if(transforms){css.transform="translate("+(properties.left||0)+","+(properties.top||0)+")"}else{$.extend(css,properties)}if(transitions&&duration>0){list.one("transitionend webkitTransitionEnd oTransitionEnd otransitionend MSTransitionEnd",complete)}list.css(css);if(duration<=0){list.each(function(){complete.call(this)})}},_scroll:function(item,animate,callback){if(this.animating){if($.isFunction(callback)){callback.call(this,false)}return this}if(typeof item!=="object"){item=this.items().eq(item)}else if(typeof item.jquery==="undefined"){item=$(item)}if(item.length===0){if($.isFunction(callback)){callback.call(this,false)}return this}this.inTail=false;this._prepare(item);var pos=this._position(item),currPos=this.list().position()[this.lt];if(pos===currPos){if($.isFunction(callback)){callback.call(this,false)}return this}var properties={};properties[this.lt]=pos+"px";this._animate(properties,animate,callback);return this},_scrollTail:function(animate,callback){if(this.animating||!this.tail){if($.isFunction(callback)){callback.call(this,false)}return this}var pos=this.list().position()[this.lt];if(this.rtl&&this.relative&&!this.vertical){pos+=this.list().width()-this.clipping()}if(this.rtl&&!this.vertical){pos+=this.tail}else{pos-=this.tail}this.inTail=true;var properties={};properties[this.lt]=pos+"px";this._update({target:this._target.next(),fullyvisible:this._fullyvisible.slice(1).add(this._visible.last())});this._animate(properties,animate,callback);return this},_animate:function(properties,animate,callback){callback=callback||$.noop;if(false===this._trigger("animate")){callback.call(this,false);return this}this.animating=true;var animation=this.options("animation"),complete=$.proxy(function(){this.animating=false;var c=this.list().find("[data-jcarousel-clone]");if(c.length>0){c.remove();this._reload()}this._trigger("animateend");callback.call(this,true)},this);var opts=typeof animation==="object"?$.extend({},animation):{duration:animation},oldComplete=opts.complete||$.noop;if(animate===false){opts.duration=0}else if(typeof $.fx.speeds[opts.duration]!=="undefined"){opts.duration=$.fx.speeds[opts.duration]}opts.complete=function(){complete();oldComplete.call(this)};this.move(properties,opts);return this},_prepare:function(item){var index=this.index(item),idx=index,wh=this.dimension(item),clip=this.clipping(),lrb=this.vertical?"bottom":this.rtl?"left":"right",center=this.options("center"),update={target:item,first:item,last:item,visible:item,fullyvisible:wh<=clip?item:$()},curr,isVisible,margin,dim;if(center){wh/=2;clip/=2}if(wh<clip){while(true){curr=this.items().eq(++idx);if(curr.length===0){if(!this.circular){break}curr=this.items().eq(0);if(item.get(0)===curr.get(0)){break}isVisible=this._visible.index(curr)>=0;if(isVisible){curr.after(curr.clone(true).attr("data-jcarousel-clone",true))}this.list().append(curr);if(!isVisible){var props={};props[this.lt]=this.dimension(curr);this.moveBy(props)}this._items=null}dim=this.dimension(curr);if(dim===0){break}wh+=dim;update.last=curr;update.visible=update.visible.add(curr);margin=toFloat(curr.css("margin-"+lrb));if(wh-margin<=clip){update.fullyvisible=update.fullyvisible.add(curr)}if(wh>=clip){break}}}if(!this.circular&&!center&&wh<clip){idx=index;while(true){if(--idx<0){break}curr=this.items().eq(idx);if(curr.length===0){break}dim=this.dimension(curr);if(dim===0){break}wh+=dim;update.first=curr;update.visible=update.visible.add(curr);margin=toFloat(curr.css("margin-"+lrb));if(wh-margin<=clip){update.fullyvisible=update.fullyvisible.add(curr)}if(wh>=clip){break}}}this._update(update);this.tail=0;if(!center&&this.options("wrap")!=="circular"&&this.options("wrap")!=="custom"&&this.index(update.last)===this.items().length-1){wh-=toFloat(update.last.css("margin-"+lrb));if(wh>clip){this.tail=wh-clip}}return this},_position:function(item){var first=this._first,pos=first.position()[this.lt],center=this.options("center"),centerOffset=center?this.clipping()/2-this.dimension(first)/2:0;if(this.rtl&&!this.vertical){if(this.relative){pos-=this.list().width()-this.dimension(first)}else{pos-=this.clipping()-this.dimension(first)}pos+=centerOffset}else{pos-=centerOffset}if(!center&&(this.index(item)>this.index(first)||this.inTail)&&this.tail){pos=this.rtl&&!this.vertical?pos-this.tail:pos+this.tail;this.inTail=true}else{this.inTail=false}return-pos},_update:function(update){var self=this,current={target:this._target||$(),first:this._first||$(),last:this._last||$(),visible:this._visible||$(),fullyvisible:this._fullyvisible||$()},back=this.index(update.first||current.first)<this.index(current.first),key,doUpdate=function(key){var elIn=[],elOut=[];update[key].each(function(){if(current[key].index(this)<0){elIn.push(this)}});current[key].each(function(){if(update[key].index(this)<0){elOut.push(this)}});if(back){elIn=elIn.reverse()}else{elOut=elOut.reverse()}self._trigger(key+"in",$(elIn));self._trigger(key+"out",$(elOut));self["_"+key]=update[key]};for(key in update){doUpdate(key)}return this}})})(jQuery,window);(function($){"use strict";$.jcarousel.fn.scrollIntoView=function(target,animate,callback){var parsed=$.jCarousel.parseTarget(target),first=this.index(this._fullyvisible.first()),last=this.index(this._fullyvisible.last()),index;if(parsed.relative){index=parsed.target<0?Math.max(0,first+parsed.target):last+parsed.target}else{index=typeof parsed.target!=="object"?parsed.target:this.index(parsed.target)}if(index<first){return this.scroll(index,animate,callback)}if(index>=first&&index<=last){if($.isFunction(callback)){callback.call(this,false)}return this}var items=this.items(),clip=this.clipping(),lrb=this.vertical?"bottom":this.rtl?"left":"right",wh=0,curr;while(true){curr=items.eq(index);if(curr.length===0){break}wh+=this.dimension(curr);if(wh>=clip){var margin=parseFloat(curr.css("margin-"+lrb))||0;if(wh-margin!==clip){index++}break}if(index<=0){break}index--}return this.scroll(index,animate,callback)}})(jQuery);(function($){"use strict";$.jCarousel.plugin("jcarouselControl",{_options:{target:"+=1",event:"click",method:"scroll"},_active:null,_init:function(){this.onDestroy=$.proxy(function(){this._destroy();this.carousel().one("jcarousel:createend",$.proxy(this._create,this))},this);this.onReload=$.proxy(this._reload,this);this.onEvent=$.proxy(function(e){e.preventDefault();var method=this.options("method");if($.isFunction(method)){method.call(this)}else{this.carousel().jcarousel(this.options("method"),this.options("target"))}},this)},_create:function(){this.carousel().one("jcarousel:destroy",this.onDestroy).on("jcarousel:reloadend jcarousel:scrollend",this.onReload);this._element.on(this.options("event")+".jcarouselcontrol",this.onEvent);this._reload()},_destroy:function(){this._element.off(".jcarouselcontrol",this.onEvent);this.carousel().off("jcarousel:destroy",this.onDestroy).off("jcarousel:reloadend jcarousel:scrollend",this.onReload)},_reload:function(){var parsed=$.jCarousel.parseTarget(this.options("target")),carousel=this.carousel(),active;if(parsed.relative){active=carousel.jcarousel(parsed.target>0?"hasNext":"hasPrev")}else{var target=typeof parsed.target!=="object"?carousel.jcarousel("items").eq(parsed.target):parsed.target;active=carousel.jcarousel("target").index(target)>=0}if(this._active!==active){this._trigger(active?"active":"inactive");this._active=active}return this}})})(jQuery);(function($){"use strict";$.jCarousel.plugin("jcarouselPagination",{_options:{perPage:null,item:function(page){return'<a href="#'+page+'">'+page+"</a>"},event:"click",method:"scroll"},_pages:{},_items:{},_currentPage:null,_init:function(){this.onDestroy=$.proxy(function(){this._destroy();this.carousel().one("jcarousel:createend",$.proxy(this._create,this))},this);this.onReload=$.proxy(this._reload,this);this.onScroll=$.proxy(this._update,this)},_create:function(){this.carousel().one("jcarousel:destroy",this.onDestroy).on("jcarousel:reloadend",this.onReload).on("jcarousel:scrollend",this.onScroll);this._reload()},_destroy:function(){this._clear();this.carousel().off("jcarousel:destroy",this.onDestroy).off("jcarousel:reloadend",this.onReload).off("jcarousel:scrollend",this.onScroll)},_reload:function(){var perPage=this.options("perPage");this._pages={};this._items={};if($.isFunction(perPage)){perPage=perPage.call(this)}if(perPage==null){this._pages=this._calculatePages()}else{var pp=parseInt(perPage,10)||0,items=this.carousel().jcarousel("items"),page=1,i=0,curr;while(true){curr=items.eq(i++);if(curr.length===0){break}if(!this._pages[page]){this._pages[page]=curr}else{this._pages[page]=this._pages[page].add(curr)}if(i%pp===0){page++}}}this._clear();var self=this,carousel=this.carousel().data("jcarousel"),element=this._element,item=this.options("item");$.each(this._pages,function(page,carouselItems){var currItem=self._items[page]=$(item.call(self,page,carouselItems));currItem.on(self.options("event")+".jcarouselpagination",$.proxy(function(){var target=carouselItems.eq(0);if(carousel.circular){var currentIndex=carousel.index(carousel.target()),newIndex=carousel.index(target);if(parseFloat(page)>parseFloat(self._currentPage)){if(newIndex<currentIndex){target="+="+(carousel.items().length-currentIndex+newIndex)}}else{if(newIndex>currentIndex){target="-="+(currentIndex+(carousel.items().length-newIndex))}}}carousel[this.options("method")](target)},self));element.append(currItem)});this._update()},_update:function(){var target=this.carousel().jcarousel("target"),currentPage;$.each(this._pages,function(page,carouselItems){carouselItems.each(function(){if(target.is(this)){currentPage=page;return false}});if(currentPage){return false}});if(this._currentPage!==currentPage){this._trigger("inactive",this._items[this._currentPage]);this._trigger("active",this._items[currentPage])}this._currentPage=currentPage},items:function(){return this._items},_clear:function(){this._element.empty();this._currentPage=null},_calculatePages:function(){var carousel=this.carousel().data("jcarousel"),items=carousel.items(),clip=carousel.clipping(),wh=0,idx=0,page=1,pages={},curr;while(true){curr=items.eq(idx++);if(curr.length===0){break}if(!pages[page]){pages[page]=curr}else{pages[page]=pages[page].add(curr)}wh+=carousel.dimension(curr);if(wh>=clip){page++;wh=0}}return pages}})})(jQuery);(function($){"use strict";$.jCarousel.plugin("jcarouselAutoscroll",{_options:{target:"+=1",interval:3e3,autostart:true},_timer:null,_init:function(){this.onDestroy=$.proxy(function(){this._destroy();this.carousel().one("jcarousel:createend",$.proxy(this._create,this))},this);this.onAnimateEnd=$.proxy(this.start,this)},_create:function(){this.carousel().one("jcarousel:destroy",this.onDestroy);if(this.options("autostart")){this.start()}},_destroy:function(){this.stop();this.carousel().off("jcarousel:destroy",this.onDestroy)},start:function(){this.stop();this.carousel().one("jcarousel:animateend",this.onAnimateEnd);this._timer=setTimeout($.proxy(function(){this.carousel().jcarousel("scroll",this.options("target"))},this),this.options("interval"));return this},stop:function(){if(this._timer){this._timer=clearTimeout(this._timer)}this.carousel().off("jcarousel:animateend",this.onAnimateEnd);return this}})})(jQuery);
 /*! jсarouselSwipe - v0.3.4 - 2016-02-18
@@ -4503,7 +4501,11 @@ var Globals = (function () {
 		hasCloudLibraryConnection: false,
 		hasHooplaConnection: false,
 		hasOverDriveConnection: false,
-		hasRBdigitalConnection: false
+		loadingTitle: 'Loading',
+		loadingBody: 'Loading, please wait',
+		requestFailedTitle: 'Request Failed',
+		requestFailedBody: 'There was an error with this AJAX Request.',
+		rtl:false
 	}
 })(Globals || {});
 var AspenDiscovery = (function(){
@@ -4517,9 +4519,13 @@ var AspenDiscovery = (function(){
 		AspenDiscovery.initializeModalDialogs();
 		AspenDiscovery.setupFieldSetToggles();
 		AspenDiscovery.initCarousels();
+		AspenDiscovery.toggleMenu();
+		AspenDiscovery.autoOpenPanel();
+		AspenDiscovery.scrollToTopPage();
 
 		$("#modalDialog").modal({show:false});
 		$('[data-toggle="tooltip"]').tooltip();
+		$('[data-toggle="popover"]').popover();
 
 		$('.panel')
 				.on('show.bs.collapse', function () {
@@ -4531,11 +4537,7 @@ var AspenDiscovery = (function(){
 
 		$(window).on("popstate", function () {
 			// if the state is the page you expect, pull the name and load it.
-			if (history.state && history.state.page === "MapExhibit") {
-				AspenDiscovery.Archive.handleMapClick(history.state.marker, history.state.exhibitPid, history.state.placePid, history.state.label, false, history.state.showTimeline);
-			}else if (history.state && history.state.page === "Book") {
-				AspenDiscovery.Archive.handleBookClick(history.state.bookPid, history.state.pagePid, history.state.viewer);
-			}else if (history.state && history.state.page === "Checkouts") {
+			if (history.state && history.state.page === "Checkouts") {
 				var selector1 = '#checkoutsTab a[href="#' + history.state.source + '"]';
 				$(selecto1r).tab('show');
 			}else if (history.state && history.state.page === "Holds") {
@@ -4551,6 +4553,8 @@ var AspenDiscovery = (function(){
 				}
 			}
 		});
+
+
 	});
 
 	return {
@@ -4790,7 +4794,15 @@ var AspenDiscovery = (function(){
 			}
 			return selectedLists;
 		},
-
+		getSelectedBrowseCategories: function(){
+			var selectedCategories = $("input.categorySelect:checked ").map(function() {
+				return $(this).attr('name') + "=" + $(this).val();
+			}).get().join("&");
+			if (selectedCategories.length === 0){
+				var ret = confirm('No browse categories were selected');
+			}
+			return selectedCategories;
+		},
 
 		pwdToText: function(fieldId){
 			var elem = document.getElementById(fieldId);
@@ -4880,12 +4892,12 @@ var AspenDiscovery = (function(){
 
 		// common loading message for lightbox while waiting for AJAX processes to complete.
 		loadingMessage: function() {
-			AspenDiscovery.showMessage('Loading', 'Loading, please wait.')
+			AspenDiscovery.showMessage(Globals.loadingTitle, Globals.loadingBody)
 		},
 
 		// common message for when an AJAX call has failed.
 		ajaxFail: function() {
-			if (!Globals.LeavingPage) AspenDiscovery.showMessage('Request Failed', 'There was an error with this AJAX Request.');
+			if (!Globals.LeavingPage) AspenDiscovery.showMessage(Globals.requestFailedTitle, Globals.requestFailedBody);
 		},
 
 		showElementInPopup: function(title, elementId, buttonsElementId){
@@ -5042,45 +5054,54 @@ var AspenDiscovery = (function(){
 						$("#term_" + termId ).hide();
 						AspenDiscovery.closeLightbox();
 					} else {
-						AspenDiscovery.showMessage("Error", data.message);
+						AspenDiscovery.showMessage(data.title, data.message);
 					}
 				}
 			).fail(AspenDiscovery.ajaxFail);
 			return false;
 		},
 		toggleMenu: function() {
-			var headerMenu = $('#header-menu');
-			var menuButton = $('#menuToggleButton');
-			var menuButtonIcon = $('#menuToggleButton > i');
-			if (headerMenu.is(':visible')){
-				this.closeMenu();
-			}else{
-				this.closeAccountMenu();
-				$('.dropdownMenu').slideUp('slow');
-				var menuButtonPosition = menuButton.position();
-				headerMenu.css('left', menuButtonPosition.left + menuButton.outerWidth() - headerMenu.outerWidth() + 5);
-				headerMenu.css('top', menuButtonPosition.top + menuButton.outerHeight());
-				menuButton.addClass('selected');
-				headerMenu.slideDown('slow');
-				menuButtonIcon.removeClass('fa-bars');
-				menuButtonIcon.addClass('fa-times');
-			}
+			// fixed bootstrap account-menu toggle
+			$('div.dropdown.menuToggleButton.accountMenu a').on('click', function (event) {
+				$(this).parent().toggleClass('open');
+			});
+			$('div.dropdown.menuToggleButton.accountMenu').on('keyup', function (event) {
+				$(this).addClass('open');
+			});
+			$(document).on('click', function (e) {
+				var $trigger = $("div.dropdown.menuToggleButton.accountMenu");
+				if($trigger !== event.target && !$trigger.has(event.target).length){
+					$('div.dropdown.menuToggleButton.accountMenu').removeClass('open');
+				}
+			});
+			$(document).on('keyup', function (e) {
+				var $trigger = $("div.dropdown.menuToggleButton.accountMenu");
+				if($trigger !== event.target && !$trigger.has(event.target).length){
+					$('div.dropdown.menuToggleButton.accountMenu').removeClass('open');
+				}
+			});
+			// fixed bootstrap header-menu toggle
+			$('div.dropdown.menuToggleButton.headerMenu a').on('click', function (event) {
+				$(this).parent().toggleClass('open');
+			});
 
-			$('#header-menu.dropdownMenu').mouseleave(function() {
-				setTimeout(function () {
-					$('#header-menu.dropdownMenu').slideUp('slow');
-					menuButton.removeClass('selected');
-					menuButtonIcon.removeClass('fa-times');
-					menuButtonIcon.addClass('fa-bars');
-				}, 1000);
-			})
+			$('div.dropdown.menuToggleButton.headerMenu').on('keyup', function (event) {
+				$(this).addClass('open');
+			});
 
-			$(document).on('touchstart', function(e) {
-				$('#header-menu.dropdownMenu').slideUp('slow');
-				menuButton.removeClass('selected');
-				menuButtonIcon.removeClass('fa-times');
-				menuButtonIcon.addClass('fa-bars');
-			})
+			$(document).on('click', function (e) {
+				var $trigger = $("div.dropdown.menuToggleButton.headerMenu");
+				if($trigger !== event.target && !$trigger.has(event.target).length){
+					$('div.dropdown.menuToggleButton.headerMenu').removeClass('open');
+				}
+			});
+
+			$(document).on('keyup', function (e) {
+				var $trigger = $("div.dropdown.menuToggleButton.headerMenu");
+				if($trigger !== event.target && !$trigger.has(event.target).length){
+					$('div.dropdown.menuToggleButton.headerMenu').removeClass('open');
+				}
+			});
 			return false;
 		},
 		closeMenu: function(){
@@ -5107,66 +5128,17 @@ var AspenDiscovery = (function(){
 
 			return false;
 		},
-		toggleAccountMenu: function() {
-			var accountMenu = $('#account-menu');
-			var accountMenuButton = $('#accountMenuToggleButton');
-			if (accountMenu.is(':visible')){
-				this.closeAccountMenu();
-			}else{
-				this.closeMenu();
-				$('.dropdownMenu').slideUp('slow');
-				var accountMenuButtonPosition = accountMenuButton.position();
-				accountMenu.css('left', accountMenuButtonPosition.left + accountMenuButton.outerWidth() - accountMenu.outerWidth() + 4);
-				accountMenu.css('top', accountMenuButtonPosition.top + accountMenuButton.outerHeight());
-				accountMenuButton.addClass('selected');
-				accountMenu.slideDown('slow');
-			}
-
-			$('#account-menu.dropdownMenu').mouseleave(function() {
-				setTimeout(function () {
-					accountMenuButton.removeClass('selected');
-					$('#account-menu.dropdownMenu').slideUp('slow');
-				}, 1000);
-			})
-
-			$(document).on('touchstart', function(e) {
-				accountMenuButton.removeClass('selected');
-				$('#account-menu.dropdownMenu').slideUp('slow');
-			})
-
-			return false;
-		},
-		closeAccountMenu: function(){
-			var accountMenu = $('#account-menu');
-			var accountMenuButton = $('#accountMenuToggleButton');
-			accountMenu.slideUp('slow');
-			accountMenuButton.removeClass('selected');
-		},
 		showCustomMenu: function (menuName) {
-			this.closeMenu();
-			this.closeAccountMenu();
-			var customMenu = $('#' + menuName + '-menu');
-			if (customMenu.is(':visible')){
-				customMenu.slideUp('slow');
-			}else{
-				$('.dropdownMenu').slideUp('slow');
-				var customMenuTrigger = $('#' + menuName + '-menu-trigger')
-				var customMenuTriggerPosition = customMenuTrigger.position();
-				customMenu.css('left', customMenuTriggerPosition.left);
-				customMenu.css('top', customMenuTriggerPosition.top + customMenuTrigger.outerHeight());
-				customMenu.slideDown('slow');
-			}
-
-			$(customMenu).mouseleave(function() {
-				setTimeout(function () {
-					$(customMenu).slideUp('slow');
-				}, 1000)
-			})
-
-			$(document).on('touchstart', function(e) {
-				$(customMenu).slideUp('slow');
-			})
-			return false;
+			// fixed bootstrap custom menu toggles
+			$('div.dropdown.menuToggleButton.' + menuName + 'Menu a').on('click', function (event) {
+				$(this).parent().toggleClass('open');
+			});
+			$(document).on('click', function (e) {
+				var trigger = $('div.dropdown.menuToggleButton.' + menuName + 'Menu');
+				if(trigger !== event.target && !trigger.has(event.target).length){
+					$('div.dropdown.menuToggleButton.' + menuName + 'Menu').removeClass('open');
+				}
+			});
 		},
 		formatCurrency: function(currencyValue, elementToUpdate){
 			var url = Globals.path + "/AJAX/JSON";
@@ -5184,6 +5156,63 @@ var AspenDiscovery = (function(){
 				}
 			).fail(AspenDiscovery.ajaxFail);
 			return false;
+		},
+		resetSearchBox: function() {
+			document.getElementById("lookfor").value = "";
+		},
+		autoOpenPanel: function() {
+			var hash = window.location.hash.substr(1);
+			if (hash) {
+				var requestedPanel = hash;
+				var element = '#'.concat(requestedPanel);
+				$(element).addClass('active');
+				var element2 = '#'.concat(requestedPanel, "Body");
+				$(element2).removeClass('collapse');
+				$(element2).addClass('in');
+				$(element2).css("height","auto");
+			}
+		},
+		scrollToTopPage: function() {
+			// Set a variable for our button element.
+			var scrollToTopButton = document.getElementById('js-top');
+			if (scrollToTopButton) {
+				window.addEventListener("scroll", AspenDiscovery.scrollFunc);
+
+				// When the button is clicked, run our ScrollToTop function
+				scrollToTopButton.onclick = function (e) {
+					e.preventDefault();
+					AspenDiscovery.scrollToTop();
+				}
+			}
+		},
+
+		// Let's set up a function that shows our scroll-to-top button if we scroll beyond the height of the initial window.
+		scrollFunc: function () {
+			var scrollToTopButton = document.getElementById('js-top');
+			// Get the current scroll value
+			var y = window.scrollY;
+
+			// If the scroll value is greater than the window height, let's add a class to the scroll-to-top button to show it!
+			if (y > 0) {
+				scrollToTopButton.className = "top-link show";
+			} else {
+				scrollToTopButton.className = "top-link hide";
+			}
+		},
+
+		scrollToTop: function () {
+			// Let's set a variable for the number of pixels we are from the top of the document.
+			var c = document.documentElement.scrollTop || document.body.scrollTop;
+
+			// If that number is greater than 0, we'll scroll back to 0, or the top of the document.
+			// We'll also animate that scroll with requestAnimationFrame:
+			// https://developer.mozilla.org/en-US/docs/Web/API/window/requestAnimationFrame
+			if (c > 0) {
+				window.requestAnimationFrame(AspenDiscovery.scrollToTop);
+				// ScrollTo takes an x and a y coordinate.
+				// Increase the '10' value to get a smoother/slower scroll!
+				window.scrollTo(0, c - c / 10);
+			}
 		}
 	}
 
@@ -5201,49 +5230,6 @@ jQuery.validator.addMethod("multiemail", function (value, element) {
 	}
 	return valid;
 }, "Invalid email format: please use a comma to separate multiple email addresses.");
-
-/**
- *  Modified from above code, for Aspen Discovery self registration form.
- *
- * Return true, if the value is a valid date, also making this formal check mm-dd-yyyy.
- *
- * @example jQuery.validator.methods.date("01-01-1900")
- * @result true
- *
- * @example jQuery.validator.methods.date("01-13-1990")
- * @result false
- *
- * @example jQuery.validator.methods.date("01.01.1900")
- * @result false
- *
- * @example <input name="pippo" class="{dateAspen:true}" />
- * @desc Declares an optional input element whose value must be a valid date.
- *
- * @name jQuery.validator.methods.dateAspen
- * @type Boolean
- * @cat Plugins/Validate/Methods
- */
-jQuery.validator.addMethod(
-	"dateAspen",
-	function(value, element) {
-		var check = false;
-		var re = /^\d{1,2}(-)\d{1,2}(-)\d{4}$/;
-		if( re.test(value)){
-			var adata = value.split('-');
-			var mm = parseInt(adata[0],10);
-			var dd = parseInt(adata[1],10);
-			var aaaa = parseInt(adata[2],10);
-			var xdata = new Date(aaaa,mm-1,dd);
-			if ( ( xdata.getFullYear() == aaaa ) && ( xdata.getMonth () == mm - 1 ) && ( xdata.getDate() == dd ) )
-				check = true;
-			else
-				check = false;
-		} else
-			check = false;
-		return this.optional(element) || check;
-	},
-	"Please enter a correct date"
-);
 
 $.validator.addMethod('repeat', function(value, element){
 	if(element.id.lastIndexOf('Repeat') === element.id.length - 6) {
@@ -5354,7 +5340,7 @@ AspenDiscovery.Account = (function(){
 				$('.modal-body').html("Loading...");
 				$(".modal-content").load(dialogDestination);
 				$(".modal-title").text(dialogTitle);
-				modalDialog.removeClass('image-popup')
+				modalDialog.removeClass('image-popup');
 				modalDialog.modal("show");
 			}
 			return false;
@@ -5445,8 +5431,6 @@ AspenDiscovery.Account = (function(){
 					label = 'OverDrive Checkouts';
 				}else if (source === 'hoopla'){
 					label = 'Hoopla Checkouts';
-				}else if (source === 'rbdigital'){
-					label = 'RBdigital Checkouts';
 				}else if (source === 'cloud_library'){
 					label = 'Cloud Library Checkouts';
 				}else if (source === 'axis360'){
@@ -5515,8 +5499,6 @@ AspenDiscovery.Account = (function(){
 					label = 'Physical Holds';
 				}else if (source === 'overdrive'){
 					label = 'OverDrive Holds';
-				}else if (source === 'rbdigital'){
-					label = 'RBdigital Holds';
 				}else if (source === 'cloud_library'){
 					label = 'Cloud Library Holds';
 				}else if (source === 'axis360'){
@@ -5560,7 +5542,7 @@ AspenDiscovery.Account = (function(){
 				selectedUser: selectedUser,
 				sort: sort,
 				showCovers: showCovers,
-				readingHistoryFilter: filter,
+				readingHistoryFilter: filter
 			};
 			var newUrl = AspenDiscovery.buildUrl(document.location.origin + document.location.pathname, 'selectedUser', selectedUser);
 			newUrl = AspenDiscovery.buildUrl(newUrl, 'page', page);
@@ -5596,7 +5578,6 @@ AspenDiscovery.Account = (function(){
 			var url = Globals.path + "/MyAccount/AJAX?method=getRatingsData&activeModule=" + Globals.activeModule + '&activeAction=' + Globals.activeAction;
 			$.getJSON(url, function(data){
 				$(".ratings-placeholder").html(data.ratings);
-				$(".recommendations-placeholder").html(data.recommendations);
 			});
 			return false;
 		},
@@ -5614,6 +5595,8 @@ AspenDiscovery.Account = (function(){
 						if (data.summary.numOverdue > 0) {
 							$(".ils-overdue-placeholder").html(data.summary.numOverdue);
 							$(".ils-overdue").show();
+						}else{
+							$(".ils-overdue-placeholder").html("0");
 						}
 						$(".ils-holds-placeholder").html(data.summary.numHolds);
 						totalHolds += parseInt(data.summary.numHolds);
@@ -5621,24 +5604,12 @@ AspenDiscovery.Account = (function(){
 						if (data.summary.numAvailableHolds > 0) {
 							$(".ils-available-holds-placeholder").html(data.summary.numAvailableHolds);
 							$(".ils-available-holds").show();
+						}else{
+							$(".ils-available-holds-placeholder").html("0");
 						}
 						$(".readingHistory-placeholder").html(data.summary.readingHistory);
 						$(".materialsRequests-placeholder").html(data.summary.materialsRequests);
-						$(".bookings-placeholder").html(data.summary.bookings);
 						$(".expirationFinesNotice-placeholder").html(data.summary.expirationFinesNotice);
-					}
-				});
-			}
-			if (Globals.hasRBdigitalConnection) {
-				var rbdigitalUrl = Globals.path + "/MyAccount/AJAX?method=getMenuDataRBdigital&activeModule=" + Globals.activeModule + '&activeAction=' + Globals.activeAction;
-				$.getJSON(rbdigitalUrl, function (data) {
-					if (data.success) {
-						$(".rbdigital-checkouts-placeholder").html(data.summary.numCheckedOut);
-						totalCheckouts += parseInt(data.summary.numCheckedOut);
-						$(".checkouts-placeholder").html(totalCheckouts);
-						$(".rbdigital-holds-placeholder").html(data.summary.numUnavailableHolds);
-						totalHolds += parseInt(data.summary.numUnavailableHolds);
-						$(".holds-placeholder").html(totalHolds);
 					}
 				});
 			}
@@ -5754,20 +5725,23 @@ AspenDiscovery.Account = (function(){
 				var module = Globals.activeModule;
 				var action = Globals.activeAction;
 
-				if ((module == "WebBuilder") && ((action == "BasicPage") || (action == "PortalPage"))){
-					var referer = "MyAccount/Home";
-				} else if ((module == "Search") && (action == "Home")) {
-					var referer = "MyAccount/Home";
+				var referer;
+				if ((module === "WebBuilder") && ((action === "BasicPage") || (action === "PortalPage"))){
+					referer = "/MyAccount/Home";
+				} else if ((module === "Search") && (action === "Home")) {
+					referer = "/MyAccount/Home";
+				} else if ((module === "MyAccount") && (action === "InitiateResetPin" || $action === 'CompletePinReset')) {
+					referer = "/MyAccount/Home";
 				} else {
-					var referer = window.location;
+					referer = window.location;
 				}
 
 				loginErrorElem.hide();
 				loadingElem.show();
 				// noinspection JSUnresolvedFunction
 				$.post(url, params, function(response){
-					loadingElem.hide();
 					if (response.result.success === true) {
+						loadingElem.hide();
 						$('#loginLinkIcon').removeClass('fa-sign-in-alt').addClass('fa-user');
 						$('#login-button-label').html(response.result.name);
 						$('#logoutLink').show();
@@ -5786,6 +5760,14 @@ AspenDiscovery.Account = (function(){
 						if (multiStep !== 'true') {
 							window.location.replace(referer);
 						}
+					} else if(response.result.success === false && response.result.enroll2FA === true) {
+						AspenDiscovery.showMessageWithButtons('Error', 'Your patron type requires that you enroll into two-factor authentication before logging in.', '<button class=\'tool btn btn-primary\' onclick=\'AspenDiscovery.Account.show2FAEnrollment(true); return false;\'>Continue</button>');
+					} else if(response.result.success === false && response.result.has2FA === true) {
+						$.getJSON(Globals.path + "/MyAccount/AJAX?method=auth2FALogin&referer=" + referer + "&name=" + response.result.name, function (data) {
+							if (data.success) {
+								AspenDiscovery.showMessageWithButtons(data.title, data.body, data.buttons);
+							}
+						});
 					} else {
 						loginErrorElem.text(response.result.message).show();
 					}
@@ -5808,7 +5790,7 @@ AspenDiscovery.Account = (function(){
 					data: {username: username, password: password},
 					success: function (response) {
 						if (response.result === true) {
-							AspenDiscovery.showMessage("Account to Manage", response.message ? response.message : "Successfully linked the account.", true, true);
+							AspenDiscovery.showMessage(response.title, response.message ? response.message : "Successfully linked the account.", true, true);
 						} else {
 							loginErrorElem.text(response.message);
 							loginErrorElem.show();
@@ -6002,98 +5984,6 @@ AspenDiscovery.Account = (function(){
 			return false;
 		},
 
-		cancelBooking: function(patronId, cancelId){
-			if (confirm("Are you sure you want to cancel this scheduled item?")){
-				if (Globals.loggedIn) {
-					AspenDiscovery.loadingMessage();
-					var c = {};
-					c[patronId] = cancelId;
-					// noinspection JSUnresolvedFunction
-					$.getJSON(Globals.path + "/MyAccount/AJAX", {method:"cancelBooking", cancelId:c}, function(data){
-						AspenDiscovery.showMessage(data.title, data.modalBody, data.success); // automatically close when successful
-						if (data.success) {
-							// remove canceled item from page
-							var escapedId = cancelId.replace(/:/g, "\\:"); // needed for jquery selector to work correctly
-							// first backslash for javascript escaping, second for css escaping (within jquery)
-							$('div.result').has('#selected'+escapedId).remove();
-						}
-					}).fail(AspenDiscovery.ajaxFail)
-				} else {
-					this.ajaxLogin(null, function () {
-						AspenDiscovery.Account.cancelBooking(cancelId)
-					}, false);
-				}
-			}
-
-			return false
-		},
-
-		cancelSelectedBookings: function(){
-			if (Globals.loggedIn) {
-				var selectedTitles = this.getSelectedTitles();
-				var numBookings = $("input.titleSelect:checked").length;
-				// if numBookings equals 0, quit because user has canceled in getSelectedTitles()
-				if (numBookings > 0 && confirm('Cancel ' + numBookings + ' selected scheduled item' + (numBookings > 1 ? 's' : '') + '?')) {
-					AspenDiscovery.loadingMessage();
-					// noinspection JSUnresolvedFunction
-					$.getJSON(Globals.path + "/MyAccount/AJAX?method=cancelBooking&"+selectedTitles, function(data){
-						AspenDiscovery.showMessage(data.title, data.modalBody, data.success); // automatically close when successful
-						if (data.success) {
-							// remove canceled items from page
-							$("input.titleSelect:checked").closest('div.result').remove();
-						} else {
-							if (data.failed) { // remove items that didn't fail
-								var searchArray = data.failed.map(function(ele){return ele.toString()});
-								// convert any number values to string, this is needed bcs inArray() below does strict comparisons
-								// & id will be a string. (sometimes the id values are of type number )
-								$("input.titleSelect:checked").each(function(){
-									var id = $(this).attr('id').replace(/selected/g, ''); //strip down to just the id part
-									if ($.inArray(id, searchArray) === -1) // if the item isn't one of the failed cancels, get rid of its containing div.
-										$(this).closest('div.result').remove();
-								});
-							}
-						}
-					}).fail(AspenDiscovery.ajaxFail);
-				}
-			} else {
-				this.ajaxLogin(null, AspenDiscovery.Account.cancelSelectedBookings, false);
-			}
-			return false;
-
-		},
-
-		cancelAllBookings: function(){
-			if (Globals.loggedIn) {
-				if (confirm('Cancel all of your scheduled items?')) {
-					AspenDiscovery.loadingMessage();
-					// noinspection JSUnresolvedFunction
-					$.getJSON(Globals.path + "/MyAccount/AJAX?method=cancelBooking&cancelAll=1", function(data){
-						AspenDiscovery.showMessage(data.title, data.modalBody, data.success); // automatically close when successful
-						if (data.success) {
-							// remove canceled items from page
-							$("input.titleSelect").closest('div.result').remove();
-						} else {
-							if (data.failed) { // remove items that didn't fail
-								var searchArray = data.failed.map(function (ele) {
-									return ele.toString()
-								});
-								// convert any number values to string, this is needed bcs inArray() below does strict comparisons
-								// & id will be a string. (sometimes the id values are of type number )
-								$("input.titleSelect").each(function () {
-									var id = $(this).attr('id').replace(/selected/g, ''); //strip down to just the id part
-									if ($.inArray(id, searchArray) === -1) // if the item isn't one of the failed cancels, get rid of its containing div.
-										$(this).closest('div.result').remove();
-								});
-							}
-						}
-					}).fail(AspenDiscovery.ajaxFail);
-				}
-			} else {
-				this.ajaxLogin(null, AspenDiscovery.Account.cancelAllBookings, false);
-			}
-			return false;
-		},
-
 		changeAccountSort: function (newSort, sortParameterName){
 			if (typeof sortParameterName === 'undefined') {
 				sortParameterName = 'accountSort'
@@ -6239,7 +6129,6 @@ AspenDiscovery.Account = (function(){
 
 		freezeHoldAll: function(userId, caller){
 			if (Globals.loggedIn) {
-				var userId = userId;
 				var popUpBoxTitle = $(caller).text() || "Freezing Holds";
 				if (confirm('Freeze all holds?')) {
 					AspenDiscovery.loadingMessage();
@@ -6289,7 +6178,6 @@ AspenDiscovery.Account = (function(){
 
 		thawHoldAll: function(userId, caller){
 			if (Globals.loggedIn) {
-				var userId = userId;
 				var popUpBoxTitle = $(caller).text() || "Thawing Holds";
 				if (confirm('Thaw all holds?')) {
 					AspenDiscovery.loadingMessage();
@@ -6328,9 +6216,6 @@ AspenDiscovery.Account = (function(){
 			return queryString;
 		},
 		getSelectedLists: function(promptForSelectAll){
-			if (promptForSelectAll === undefined){
-				promptForSelectAll = true;
-			}
 			var selectedLists = $("input.listSelect:checked ");
 			// noinspection UnnecessaryLocalVariableJS
 			var queryString = selectedLists.map(function() {
@@ -6339,6 +6224,7 @@ AspenDiscovery.Account = (function(){
 
 			return queryString;
 		},
+
 		saveSearch: function(searchId){
 			if (!Globals.loggedIn){
 				AspenDiscovery.Account.ajaxLogin(null, function(){
@@ -6346,17 +6232,38 @@ AspenDiscovery.Account = (function(){
 				}, false);
 			}else{
 				var url = Globals.path + "/MyAccount/AJAX";
-				var params = {method :'saveSearch', searchId :searchId};
+				var params = {
+					'method': 'saveSearch',
+					'searchId': $('#searchId').val(),
+					'title': $('#searchName').val()
+				};
 				// noinspection JSUnresolvedFunction
 				$.getJSON(url, params,
 						function(data){
-							if (data.result) {
-								AspenDiscovery.showMessage("Success", data.message);
+							if (data.success) {
+								AspenDiscovery.showMessage("Saved Successfully", data.message, data.modalButtons);
 							} else {
 								AspenDiscovery.showMessage("Error", data.message);
 							}
 						}
 				).fail(AspenDiscovery.ajaxFail);
+			}
+			return false;
+		},
+
+		showSaveSearchForm: function(searchId) {
+			if (Globals.loggedIn){
+				AspenDiscovery.loadingMessage();
+				var url = Globals.path + "/MyAccount/AJAX";
+				var params = {
+					method: 'getSaveSearchForm',
+					searchId: searchId
+				};
+
+				// noinspection JSUnresolvedFunction
+				$.getJSON(url, params, function(data){
+					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+				}).fail(AspenDiscovery.ajaxFail);
 			}
 			return false;
 		},
@@ -6485,7 +6392,7 @@ AspenDiscovery.Account = (function(){
 		enableAccountLinking: function(){
 			var url = Globals.path + "/MyAccount/AJAX";
 			var params = {
-				method: "enableAccountLinking",
+				method: "enableAccountLinking"
 			};
 			// noinspection JSUnresolvedFunction
 			$.getJSON(url, params).fail(AspenDiscovery.ajaxFail);
@@ -6495,19 +6402,40 @@ AspenDiscovery.Account = (function(){
 		stopAccountLinking: function(){
 			var url = Globals.path + "/MyAccount/AJAX";
 			var params = {
-				method: "stopAccountLinking",
+				method: "stopAccountLinking"
 			};
 			// noinspection JSUnresolvedFunction
 			$.getJSON(url, params).fail(AspenDiscovery.ajaxFail);
 			return false;
 		},
 
-		createGenericOrder: function(finesFormId, paymentType) {
+		createGenericOrder: function(finesFormId, paymentType, transactionType) {
 			var url = Globals.path + "/MyAccount/AJAX";
+
 			var params = {
 				method: "create" + paymentType + "Order",
 				patronId: $(finesFormId + " input[name=patronId]").val(),
+				type: transactionType
 			};
+			if(transactionType === 'donation') {
+
+				if($(finesFormId + " input[name=customAmount]").val()) {
+					params.amount = $(finesFormId + " input[name=customAmount]").val();
+				} else {
+					params.amount = $(finesFormId + " input[name=predefinedAmount]:checked").val();
+				}
+				params.earmark = $(finesFormId + " select[name=earmark]").val();
+				params.toLocation = $(finesFormId + " select[name=toLocation]").val();
+				params.isDedicated = $(finesFormId + " input[name=shouldBeDedicated]:checked").val();
+				params.dedicationType = $(finesFormId + " input[name=dedicationType]:checked").val();
+				params.honoreeFirstName = $(finesFormId + " input[name=honoreeFirstName]").val();
+				params.honoreeLastName = $(finesFormId + " input[name=honoreeLastName]").val();
+				params.firstName = $(finesFormId + " input[name=firstName]").val();
+				params.lastName = $(finesFormId + " input[name=lastName]").val();
+				params.isAnonymous = $(finesFormId + " input[name=makeAnonymous]:checked").val();
+				params.emailAddress = $(finesFormId + " input[name=emailAddress]").val();
+				params.settingId = $(finesFormId + " input[name=settingId]").val();
+			}
 			$(finesFormId + " .selectedFine:checked").each(
 				function() {
 					var name = $(this).attr('name');
@@ -6533,11 +6461,13 @@ AspenDiscovery.Account = (function(){
 						AspenDiscovery.showMessage("Error", response.message);
 						return false;
 					}else{
-						if(paymentType == 'PayPal') {
+						if(paymentType === 'PayPal') {
 							orderInfo = response.orderID;
-						} else if(paymentType == 'MSB') {
+						} else if(paymentType === 'MSB') {
 							orderInfo = response.paymentRequestUrl;
-						} else if(paymentType == 'Comprise') {
+						} else if(paymentType === 'Comprise') {
+							orderInfo = response.paymentRequestUrl;
+						} else if(paymentType === 'ProPay') {
 							orderInfo = response.paymentRequestUrl;
 						}
 					}
@@ -6546,8 +6476,8 @@ AspenDiscovery.Account = (function(){
 			return orderInfo;
 		},
 
-		createMSBOrder: function(finesFormId) {
-			var url = this.createGenericOrder(finesFormId, 'MSB');
+		createMSBOrder: function(finesFormId, transactionType) {
+			var url = this.createGenericOrder(finesFormId, 'MSB', transactionType);
 			if (url === false) {
 				// Do nothing; there was an error that should be displayed
 			} else {
@@ -6555,37 +6485,59 @@ AspenDiscovery.Account = (function(){
 			}
 		},
 
-		createPayPalOrder: function(finesFormId) {
-			return this.createGenericOrder(finesFormId, 'PayPal');
+		createPayPalOrder: function(finesFormId, transactionType) {
+			return this.createGenericOrder(finesFormId, 'PayPal', transactionType);
 		},
 
-		createCompriseOrder: function(finesFormId) {
-			var url = this.createGenericOrder(finesFormId, 'Comprise');
+		createCompriseOrder: function(finesFormId, transactionType) {
+			var url = this.createGenericOrder(finesFormId, 'Comprise', transactionType);
 			if (url === false) {
 				// Do nothing; there was an error that should be displayed
 			} else {
-				$(finesFormId).attr('action', url).submit();
-				return true;
+				window.location.href = url;
 			}
 		},
 
-		completePayPalOrder: function(orderId, patronId) {
+		createProPayOrder: function(finesFormId, transactionType) {
+			var url = this.createGenericOrder(finesFormId, 'ProPay', transactionType);
+			if (url === false) {
+				// Do nothing; there was an error that should be displayed
+			} else {
+				window.location.href = url;
+			}
+		},
+
+		completePayPalOrder: function(orderId, patronId, transactionType) {
 			var url = Globals.path + "/MyAccount/AJAX";
 			var params = {
 				method: "completePayPalOrder",
 				patronId: patronId,
 				orderId: orderId,
+				type: transactionType
 			};
 			// noinspection JSUnresolvedFunction
 			$.getJSON(url, params, function(data){
 				if (data.success) {
-					AspenDiscovery.showMessage('Thank you', 'Your payment was processed successfully, thank you', false, true);
+					if(data.isDonation) {
+						window.location.href = Globals.path + '/Donations/DonationCompleted?type=paypal&payment=' + data.paymentId + '&donation=' + data.donationId;
+					} else {
+						AspenDiscovery.showMessage('Thank you', 'Your payment was processed successfully, thank you', false, true);
+					}
 				} else {
-					AspenDiscovery.showMessage('Error', 'Unable to process your payment, please visit the library with your receipt', false);
+					if(data.isDonation) {
+						window.location.href = Globals.path + '/Donations/DonationCancelled?type=paypal&payment=' + data.paymentId + '&donation=' + data.donationId;
+					} else {
+						AspenDiscovery.showMessage('Error', 'Unable to process your payment, please visit the library with your receipt', false);
+					}
 				}
 			}).fail(AspenDiscovery.ajaxFail);
 		},
-
+		handlePayPalError: function(error){
+			AspenDiscovery.showMessage('Error', 'There was an error completing your payment. ' + error, true);
+		},
+		cancelPayPalError: function(){
+			AspenDiscovery.showMessage('Payment cancelled', 'Your payment has successfully been cancelled.', true);
+		},
 		updateFineTotal: function(finesFormId, userId, paymentType) {
 			var totalFineAmt = 0;
 			var totalOutstandingAmt = 0;
@@ -6610,7 +6562,7 @@ AspenDiscovery.Account = (function(){
 			var params = {
 				method: "dismissPlacard",
 				placardId: placardId,
-				patronId: patronId,
+				patronId: patronId
 			};
 			// noinspection JSUnresolvedFunction
 			$.getJSON(url, params, function(data){
@@ -6622,13 +6574,59 @@ AspenDiscovery.Account = (function(){
 			}).fail(AspenDiscovery.ajaxFail);
 			return false;
 		},
+		dismissBrowseCategory:function(patronId, browseCategoryId) {
+			var url = Globals.path + "/MyAccount/AJAX";
+			var params = {
+				method: "dismissBrowseCategory",
+				browseCategoryId: browseCategoryId || AspenDiscovery.Browse.curCategory,
+				patronId: patronId
+			};
+			// noinspection JSUnresolvedFunction
+			$.getJSON(url, params, function(data){
+				if (data.success) {
+					window.location = window.location.href.split("?")[0];
+				} else {
+					AspenDiscovery.showMessage('Error', data.message, false, true);
+				}
+			}).fail(AspenDiscovery.ajaxFail);
+			return false;
+		},
+		showHiddenBrowseCategories: function(patronId) {
+			if (Globals.loggedIn){
+				AspenDiscovery.loadingMessage();
+				var url = Globals.path + "/MyAccount/AJAX";
+				var params = {
+					method: "getHiddenBrowseCategories",
+					patronId: patronId
+				};
 
+				// noinspection JSUnresolvedFunction
+				$.getJSON(url, params, function(data){
+					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+				}).fail(AspenDiscovery.ajaxFail);
+			}
+			return false;
+		},
+		showBrowseCategory:function() {
+			if (Globals.loggedIn) {
+				var selectedCategories = AspenDiscovery.getSelectedBrowseCategories();
+				var patronId = $("#updateBrowseCategories input[name=patronId]").val();
+				if (selectedCategories) {
+					$.getJSON(Globals.path + '/MyAccount/AJAX?method=showBrowseCategory&patronId=' + patronId + '&' + selectedCategories, function () {
+						location.reload();
+					});
+				}
+			} else {
+				this.ajaxLogin(null, this.showBrowseCategory, true);
+			}
+			return false
+		},
 		updateAutoRenewal:function(patronId) {
 			var url = Globals.path + "/MyAccount/AJAX";
 			var params = {
 				method: "updateAutoRenewal",
 				allowAutoRenewal: $('#allowAutoRenewal').prop("checked"),
-				patronId: patronId,
+				patronId: patronId
 			};
 			// noinspection JSUnresolvedFunction
 			$.getJSON(url, params, function(data){
@@ -6649,15 +6647,15 @@ AspenDiscovery.Account = (function(){
 					method: "getSaveToListForm",
 					sourceId: id,
 					source: source
-				}
+				};
 				// noinspection JSUnresolvedFunction
 				$.getJSON(url, params, function(data){
 					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
 				}).fail(AspenDiscovery.ajaxFail);
-			}else{
-				AspenDiscovery.Account.ajaxLogin($(trigger), function (){
-					AspenDiscovery.Account.showSaveToListForm(trigger, source, id);
-				});
+			} else {
+				AspenDiscovery.Account.ajaxLogin(null, function(){
+					return AspenDiscovery.Account.showSaveToListForm(trigger, source, id);
+				}, false);
 			}
 			return false;
 		},
@@ -6687,7 +6685,7 @@ AspenDiscovery.Account = (function(){
 		deleteAll: function(id){
 			if (confirm("Are you sure you want to delete all items in this list?")){
 				var url = Globals.path + '/MyAccount/AJAX?method=deleteListItems&id=' + id;
-				$.getJSON(url, function(data){
+				$.getJSON(url, function(){
 					location.reload();
 				});
 			}
@@ -6697,20 +6695,22 @@ AspenDiscovery.Account = (function(){
 			var selectedTitles = AspenDiscovery.getSelectedTitles();
 			if (selectedTitles) {
 				if (confirm("Are you sure you want to delete the selected items from this list?")){
-					$.getJSON(Globals.path + '/MyAccount/AJAX?method=deleteListItems&id=' + id + '&' + selectedTitles, function (data) {
+					$.getJSON(Globals.path + '/MyAccount/AJAX?method=deleteListItems&id=' + id + '&' + selectedTitles, function () {
 						location.reload();
-					})
-				}}
+					});
+				}
+			}
 			return false;
 		},
 		deleteSelectedLists: function(id){
 			var selectedLists = AspenDiscovery.getSelectedLists();
 			if (selectedLists) {
 				if (confirm("Are you sure you want to delete the selected lists?")){
-					$.getJSON(Globals.path + '/MyAccount/AJAX?method=deleteList&id=' + id + '&' + selectedLists, function (data) {
+					$.getJSON(Globals.path + '/MyAccount/AJAX?method=deleteList&id=' + id + '&' + selectedLists, function () {
 						location.reload();
-					})
-				}}
+					});
+				}
+			}
 			return false;
 		},
 		getEditListForm: function(listEntryId, listId) {
@@ -6737,7 +6737,366 @@ AspenDiscovery.Account = (function(){
 				processData: false
 			});
 			return false;
-		}
+		},
+		loadRecommendations: function () {
+			var url = Globals.path + "/MyAccount/AJAX",
+				params = {'method':'getSuggestionsSpotlight'};
+			$.getJSON(url, params, function(data) {
+				try{
+					var suggestionsData = data.suggestions;
+					if (suggestionsData && suggestionsData.length > 0) {
+						//Create an unordered list for display
+						var html = '<ul>';
+
+						$.each(suggestionsData, function() {
+							html += '<li class="carouselTitleWrapper">' + this.formattedTitle + '</li>';
+						});
+
+						html += '</ul>';
+
+						var carouselElement = $('#recommendationsCarousel');
+						carouselElement.html(html);
+						var jCarousel = carouselElement.jcarousel({wrap:null});
+
+						// Reload carousel
+						jCarousel.jcarousel('reload');
+					}else{
+						$('#recommendedForYouInfo').hide();
+					}
+				} catch (e) {
+					alert("error loading enrichment: " + e);
+				}
+			});
+		},
+		getDonationValuesForDisplay: function(){
+			if($("input[name='customAmount']").val()) {
+				var amount = $("input[name='customAmount']").val();
+				$('#thisDonation').show();
+				document.getElementById("thisDonationValue").innerHTML=amount
+			} else if($("input[name='predefinedAmount']:checked").val()) {
+				var amount = $("input[name='predefinedAmount']:checked").val();
+				$('#thisDonation').show();
+				document.getElementById("thisDonationValue").innerHTML=amount
+			} else {
+				$('#thisDonation').hide();
+			}
+		},
+		getCurbsidePickupScheduler: function(locationId){
+			if (Globals.loggedIn){
+				AspenDiscovery.loadingMessage();
+				$.getJSON(Globals.path + "/MyAccount/AJAX?method=getCurbsidePickupScheduler&pickupLocation=" + locationId, function(data) {
+					if (data.success) {
+						AspenDiscovery.showMessageWithButtons(data.title, data.body, data.buttons)
+					} else {
+						AspenDiscovery.showMessage(data.title, data.message);
+					}
+				});
+			} else {
+				AspenDiscovery.Account.ajaxLogin(null, function(){
+					return AspenDiscovery.Account.getCurbsidePickupScheduler(locationId);
+				}, false);
+			}
+			return false;
+		},
+		createCurbsidePickup: function (){
+			if (Globals.loggedIn){
+
+				var patronId = $("#newCurbsidePickupForm input[name=patronId]").val();
+				var locationId = $("#newCurbsidePickupForm  input[name=pickupLibrary]").val();
+				var date = $("#newCurbsidePickupForm  input[name=pickupDate]").val();
+				var time = $("#newCurbsidePickupForm  input[name=pickupTime]:checked").val();
+				var note = $("#newCurbsidePickupForm  input[name=pickupNote]").text();
+
+				AspenDiscovery.loadingMessage();
+				$.getJSON(Globals.path + "/MyAccount/AJAX?method=createCurbsidePickup&patronId=" + patronId + "&location=" + locationId + "&date=" + date + "&time=" + time + "&note=" + note, function(data){
+					if (data.success) {
+						AspenDiscovery.showMessage(data.title, data.body, true, 2000)
+					} else {
+						AspenDiscovery.showMessage(data.title, data.message);
+					}
+				});
+			}else{
+				AspenDiscovery.Account.ajaxLogin(null, function(){
+					return AspenDiscovery.Account.createCurbsidePickup(patronId, locationId, dateTime, note);
+				}, false);
+			}
+			return false;
+		},
+		getCancelCurbsidePickup: function(patronId, pickupId) {
+			AspenDiscovery.loadingMessage();
+			// noinspection JSUnresolvedFunction
+			$.getJSON(Globals.path + "/MyAccount/AJAX?method=getCancelCurbsidePickup&patronId=" + patronId + "&pickupId=" + pickupId, function(data){
+				AspenDiscovery.showMessageWithButtons(data.title, data.body, data.buttons); // automatically close when successful
+			}).fail(AspenDiscovery.ajaxFail);
+			return false
+		},
+		cancelCurbsidePickup: function(patronId, pickupId) {
+			AspenDiscovery.loadingMessage();
+			// noinspection JSUnresolvedFunction
+			$.getJSON(Globals.path + "/MyAccount/AJAX?method=cancelCurbsidePickup&patronId=" + patronId + "&pickupId=" + pickupId, function(data){
+				AspenDiscovery.showMessage(data.title, data.body, true, 2000); // automatically close when successful
+			}).fail(AspenDiscovery.ajaxFail);
+			return false
+		},
+		checkInCurbsidePickup: function(patronId, pickupId) {
+			AspenDiscovery.loadingMessage();
+			// noinspection JSUnresolvedFunction
+			$.getJSON(Globals.path + "/MyAccount/AJAX?method=checkInCurbsidePickup&patronId=" + patronId + "&pickupId=" + pickupId, function(data){
+				AspenDiscovery.showMessage(data.title, data.body, false);
+			}).fail(AspenDiscovery.ajaxFail);
+			return false
+		},
+		curbsidePickupScheduler: function(locationCode) {
+			$.getJSON(Globals.path + "/MyAccount/AJAX?method=getCurbsidePickupUnavailableDays&locationCode=" + locationCode, function(data){
+				$("#pickupDate").flatpickr(
+					{
+						minDate: "today",
+						maxDate: new Date().fp_incr(14),
+						altInput: true,
+						altFormat: "M j, Y",
+						"disable": [
+							function(date) {
+								return data.includes(date.getDay());
+							}
+						],
+						"locale": {
+							"firstDayOfWeek": 0
+						},
+						onChange: function(selectedDates, dateStr, instance) {
+							//... send dateStr to check what times are available
+							$.getJSON(Globals.path + "/MyAccount/AJAX?method=getCurbsidePickupAvailableTimes&date=" + dateStr + "&locationCode=" + locationCode, function(data) {
+								// return available timeslots to dom
+								var numOfSlots = data.length;
+								var morningSlots = 0;
+								var afternoonSlots = 0;
+								var eveningSlots = 0;
+								for (var i = 0; i < numOfSlots; i++) {
+									if(data[i] < "12:00") {
+										morningSlots++;
+										var timeSlotContainer = document.getElementById("morningTimeSlots");
+										var slot = moment(data[i], "HH:mm").format("h:mm a");
+										timeSlotContainer.innerHTML += "<label class='btn btn-primary' style='margin-right: 1em; margin-bottom: 1em'><input type='radio' name='pickupTime' id='slot_" + data[i] + "' value='" + slot + "'> " + slot + "</label>";
+									} else if (data[i] < "17:00") {
+										afternoonSlots++;
+										var timeSlotContainer = document.getElementById("afternoonTimeSlots");
+										var slot = moment(data[i], "HH:mm").format("h:mm a");
+										timeSlotContainer.innerHTML += "<label class='btn btn-primary' style='margin-right: 1em; margin-bottom: 1em'><input type='radio' name='pickupTime' id='slot_" + data[i] + "' value='" + slot + "'> " + slot + "</label>";
+									} else {
+										eveningSlots++;
+										var timeSlotContainer = document.getElementById("eveningTimeSlots");
+										var slot = moment(data[i], "HH:mm").format("h:mm a");
+										timeSlotContainer.innerHTML += "<label class='btn btn-primary' style='margin-right: 1em; margin-bottom: 1em'><input type='radio' name='pickupTime' id='slot_" + data[i] + "' value='" + slot + "'> " + slot + "</label>";
+									}
+								}
+
+								if(morningSlots === 0) {
+									$("#morningTimeSlotsAccordion").hide();
+								}
+								if(afternoonSlots === 0) {
+									$("#afternoonTimeSlotsAccordion").hide();
+								}
+								if(eveningSlots === 0) {
+									$("#eveningTimeSlotsAccordion").hide();
+								}
+								$('#availableTimeSlots').find('div.panel:visible:first').addClass('active');
+								$("#availableTimeSlots").show();
+							});
+						}
+					}
+				);
+			}).fail(AspenDiscovery.ajaxFail);
+			return false
+		},
+		show2FAEnrollment: function(mandatoryEnroll){
+			if (Globals.loggedIn || mandatoryEnroll){
+				AspenDiscovery.loadingMessage();
+				$.getJSON(Globals.path + "/MyAccount/AJAX?method=get2FAEnrollment&step=register&mandatoryEnrollment=" + mandatoryEnroll, function (data) {
+					if (data.success) {
+						AspenDiscovery.showMessageWithButtons(data.title, data.body, data.buttons)
+					} else {
+						AspenDiscovery.showMessage(data.title, data.message);
+					}
+				});
+			} else {
+				AspenDiscovery.Account.ajaxLogin(null, function(){
+					return AspenDiscovery.Account.show2FAEnrollmentVerify(mandatoryEnroll);
+				}, false);
+			}
+			return false;
+		},
+		show2FAEnrollmentVerify: function(mandatoryEnroll){
+			if (Globals.loggedIn || mandatoryEnroll){
+				$.getJSON(Globals.path + "/MyAccount/AJAX?method=get2FAEnrollment&step=verify&mandatoryEnrollment=" + mandatoryEnroll, function(data) {
+					if (data.success) {
+						AspenDiscovery.showMessageWithButtons(data.title, data.body, data.buttons)
+					} else {
+						AspenDiscovery.showMessage(data.title, data.message);
+					}
+				});
+			} else {
+				AspenDiscovery.Account.ajaxLogin(null, function(){
+					return AspenDiscovery.Account.show2FAEnrollmentVerify(mandatoryEnroll);
+				}, false);
+			}
+			return false;
+		},
+		show2FAEnrollmentBackupCodes: function(mandatoryEnroll){
+			if (Globals.loggedIn || mandatoryEnroll){
+				$.getJSON(Globals.path + "/MyAccount/AJAX?method=get2FAEnrollment&step=backup&mandatoryEnrollment=" + mandatoryEnroll, function(data) {
+					if (data.success) {
+						AspenDiscovery.showMessageWithButtons(data.title, data.body, data.buttons)
+					} else {
+						AspenDiscovery.showMessage(data.title, data.message);
+					}
+				});
+			} else {
+				AspenDiscovery.Account.ajaxLogin(null, function(){
+					return AspenDiscovery.Account.show2FAEnrollmentBackupCodes(mandatoryEnroll);
+				}, false);
+			}
+			return false;
+		},
+		show2FAEnrollmentSuccess: function(mandatoryEnroll){
+			if (Globals.loggedIn || mandatoryEnroll){
+				$.getJSON(Globals.path + "/MyAccount/AJAX?method=get2FAEnrollment&step=complete&mandatoryEnrollment=" + mandatoryEnroll, function(data) {
+					if (data.success) {
+						AspenDiscovery.showMessage(data.title, data.body, false, 2000)
+					}
+				});
+			} else {
+				AspenDiscovery.Account.ajaxLogin(null, function(){
+					return AspenDiscovery.Account.show2FAEnrollmentSuccess(mandatoryEnroll);
+				}, false);
+			}
+			return false;
+		},
+		showCancel2FA: function(){
+			if (Globals.loggedIn){
+				AspenDiscovery.loadingMessage();
+				$.getJSON(Globals.path + "/MyAccount/AJAX?method=confirmCancel2FA", function(data) {
+					if (data.success) {
+						AspenDiscovery.showMessageWithButtons(data.title, data.body, data.buttons)
+					} else {
+						AspenDiscovery.showMessage(data.title, data.message);
+					}
+				});
+			} else {
+				AspenDiscovery.Account.ajaxLogin(null, function(){
+					return AspenDiscovery.Account.cancel2FA();
+				}, false);
+			}
+			return false;
+		},
+		cancel2FA: function(){
+			if (Globals.loggedIn){
+				AspenDiscovery.loadingMessage();
+				$.getJSON(Globals.path + "/MyAccount/AJAX?method=cancel2FA", function(data) {
+					if (data.success) {
+						AspenDiscovery.showMessage(data.title, data.body, true, 2000)
+					} else {
+						AspenDiscovery.showMessage(data.title, data.message);
+					}
+				});
+			} else {
+				AspenDiscovery.Account.ajaxLogin(null, function(){
+					return AspenDiscovery.Account.cancel2FA();
+				}, false);
+			}
+			return false;
+		},
+		verify2FA: function(mandatoryEnrollment) {
+			var code = $("#code").val();
+			var loggingIn = mandatoryEnrollment ? true : false;
+			if (Globals.loggedIn || mandatoryEnrollment){
+				$.getJSON(Globals.path + "/MyAccount/AJAX?method=verify2FA&loggingIn=" + loggingIn + "&code=" + code + "&mandatoryEnrollment=" + mandatoryEnrollment, function(data) {
+					// update #codeVerificationFailedPlaceholder with failed verification status, otherwise move onto next step
+					if(data.success === "true") {
+						return AspenDiscovery.Account.show2FAEnrollmentBackupCodes(mandatoryEnrollment);
+					}
+					$("#codeVerificationFailedPlaceholder").html(data.message).show();
+					return data;
+				});
+			} else {
+				AspenDiscovery.Account.ajaxLogin(null, function(){
+					return AspenDiscovery.Account.verify2FA();
+				}, false);
+			}
+			return false;
+		},
+		new2FACode: function() {
+				$.getJSON(Globals.path + "/MyAccount/AJAX?method=new2FACode", function(data) {
+					// update #newCodeSentPlaceholder with sent status
+					$("#newCodeSentPlaceholder").html(data.body).show();
+					return data;
+				});
+			return false;
+		},
+		showNewBackupCodes: function(){
+			if (Globals.loggedIn){
+				AspenDiscovery.loadingMessage();
+				$.getJSON(Globals.path + "/MyAccount/AJAX?method=newBackupCodes", function(data) {
+					if (data.success) {
+						AspenDiscovery.showMessage(data.title, data.body, false, 2000)
+					}
+				});
+			} else {
+				AspenDiscovery.Account.ajaxLogin(null, function(){
+					return AspenDiscovery.Account.showNewBackupCodes();
+				}, false);
+			}
+			return false;
+		},
+		show2FALogin: function(){
+			if (Globals.loggedIn){
+				AspenDiscovery.loadingMessage();
+				$.getJSON(Globals.path + "/MyAccount/AJAX?method=newBackupCodes", function(data) {
+					if (data.success) {
+						AspenDiscovery.showMessage(data.title, data.body, false, 2000)
+					}
+				});
+			} else {
+				AspenDiscovery.Account.ajaxLogin(null, function(){
+					return AspenDiscovery.Account.show2FALogin();
+				}, false);
+			}
+			return false;
+		},
+		verify2FALogin: function(ajaxCallback) {
+			var code = $("#code").val();
+			var referer = $("#referer").val();
+			var name = $("#name").val();
+			var myAccountAuth = $("#myAccountAuth").val();
+			$.getJSON(Globals.path + "/MyAccount/AJAX?method=verify2FA&loggingIn=true&code=" + code, function(data) {
+				// update #codeVerificationFailedPlaceholder with failed verification status, otherwise move onto next step
+				if(data.success === "true") {
+					Globals.loggedIn = true;
+
+					if(myAccountAuth === 'true') {
+						window.location.reload();
+					}
+					$('#loginLinkIcon').removeClass('fa-sign-in-alt').addClass('fa-user');
+					$('#login-button-label').html(name);
+					$('#logoutLink').show();
+
+					if (AspenDiscovery.Account.closeModalOnAjaxSuccess) {
+						AspenDiscovery.closeLightbox();
+					}
+
+					if (ajaxCallback !== undefined && typeof(ajaxCallback) === "function") {
+						ajaxCallback();
+					} else if (AspenDiscovery.Account.ajaxCallback !== undefined && typeof(AspenDiscovery.Account.ajaxCallback) === "function") {
+						AspenDiscovery.Account.ajaxCallback();
+						AspenDiscovery.Account.ajaxCallback = null;
+					}
+					if (multiStep !== 'true') {
+						window.location.replace(referer);
+					}
+				}
+				$("#codeVerificationFailedPlaceholder").html(data.message).show();
+				return data;
+			});
+			return false;
+		},
 	};
 }(AspenDiscovery.Account || {}));
 AspenDiscovery.Admin = (function(){
@@ -6770,57 +7129,949 @@ AspenDiscovery.Admin = (function(){
 			$('head').append('<link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=' + fontName + '">');
 			$('#' + fontSelector + '-sample-text').css('font-family', fontName);
 		},
-		checkContrast: function (property1, property2,oneWay) {
-			if (oneWay === undefined){
-				oneWay = false;
-			}
-			var color1 = $('#' + property1).val();
-			var color2 = $('#' + property2).val();
-			if (color1.length === 7 && color2.length === 7){
-				var luminance1 = AspenDiscovery.Admin.getLuminanceForColor(color1);
-				var luminance2 = AspenDiscovery.Admin.getLuminanceForColor(color2);
-				var contrastRatio;
-				if (luminance1 > luminance2) {
-					contrastRatio = ((luminance1 + 0.05) / (luminance2 + 0.05));
+		getDefaultColor:function(property, extendedThemeDefault) {
+			if(property === 'pageBackgroundColor'){
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
 				} else {
-					contrastRatio = ((luminance2 + 0.05) / (luminance1 + 0.05));
+					document.getElementById(property + 'Hex').value = "#ffffff";
+					document.getElementById(property).value = "#ffffff";
 				}
-				var contrastSpan1 = $("#contrast_" + property1);
-				var contrastSpan2 = $("#contrast_" + property2);
-				contrastSpan1.text(contrastRatio.toFixed(2));
-				contrastSpan2.text(contrastRatio.toFixed(2));
-				if (contrastRatio < 3.5) {
-					contrastSpan1.addClass("alert-danger");
-					contrastSpan2.addClass("alert-danger");
-					contrastSpan1.removeClass("alert-warning");
-					contrastSpan2.removeClass("alert-warning");
-					contrastSpan1.removeClass("alert-success");
-					contrastSpan2.removeClass("alert-success");
-				}else if (contrastRatio < 4.5) {
-					contrastSpan1.removeClass("alert-danger");
-					contrastSpan2.removeClass("alert-danger");
-					contrastSpan1.addClass("alert-warning");
-					contrastSpan2.addClass("alert-warning");
-					contrastSpan1.removeClass("alert-success");
-					contrastSpan2.removeClass("alert-success");
-				}else{
-					contrastSpan1.removeClass("alert-danger");
-					contrastSpan2.removeClass("alert-danger");
-					contrastSpan1.removeClass("alert-warning");
-					contrastSpan2.removeClass("alert-warning");
-					contrastSpan1.addClass("alert-success");
-					contrastSpan2.addClass("alert-success");
+			} else if(property === 'bodyBackgroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#ffffff";
+					document.getElementById(property).value = "#ffffff";
 				}
-			}else{
-				$("#contrastCheck_" + property1).hide();
-				if (!oneWay) {
-					$("#contrastCheck_" + property2).hide();
+			} else if(property === 'bodyTextColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#6B6B6B";
+					document.getElementById(property).value = "#6B6B6B";
 				}
-				$("#contrast_" + property1).innerHTML = 'Unknown';
-				if (!oneWay) {
-					$("#contrast_" + property2).innerHTML = 'Unknown';
+			} else if(property === 'linkColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#3174AF";
+					document.getElementById(property).value = "#3174AF";
 				}
-			}
+			} else if(property === 'linkHoverColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#265a87";
+					document.getElementById(property).value = "#265a87";
+				}
+			} else if(property === 'resultLabelColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#44484a";
+					document.getElementById(property).value = "#44484a";
+				}
+			} else if(property === 'resultValueColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#6B6B6B";
+					document.getElementById(property).value = "#6B6B6B";
+				}
+			} else if(property === 'headerBackgroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#f1f1f1";
+					document.getElementById(property).value = "#f1f1f1";
+				}
+			} else if(property === 'headerForegroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#303030";
+					document.getElementById(property).value = "#303030";
+				}
+			} else if(property === 'breadcrumbsBackgroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#f5f5f5";
+					document.getElementById(property).value = "#f5f5f5";
+				}
+			} else if(property === 'breadcrumbsForegroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#6B6B6B";
+					document.getElementById(property).value = "#6B6B6B";
+				}
+			} else if(property === 'searchToolsBackgroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#f5f5f5";
+					document.getElementById(property).value = "#f5f5f5";
+				}
+			} else if(property === 'searchToolsBorderColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#e3e3e3";
+					document.getElementById(property).value = "#e3e3e3";
+				}
+			} else if(property === 'searchToolsForegroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#6B6B6B";
+					document.getElementById(property).value = "#6B6B6B";
+				}
+			} else if(property === 'footerBackgroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#f1f1f1";
+					document.getElementById(property).value = "#f1f1f1";
+				}
+			} else if(property === 'footerForegroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#303030";
+					document.getElementById(property).value = "#303030";
+				}
+			} else if(property === 'primaryBackgroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#0a7589";
+					document.getElementById(property).value = "#0a7589";
+				}
+			} else if(property === 'primaryForegroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#ffffff";
+					document.getElementById(property).value = "#ffffff";
+				}
+			} else if(property === 'secondaryBackgroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#de9d03";
+					document.getElementById(property).value = "#de9d03";
+				}
+			} else if(property === 'secondaryForegroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#303030";
+					document.getElementById(property).value = "#303030";
+				}
+			} else if(property === 'tertiaryBackgroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#de1f0b";
+					document.getElementById(property).value = "#de1f0b";
+				}
+			} else if(property === 'tertiaryForegroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#000000";
+					document.getElementById(property).value = "#000000";
+				}
+			} else if(property === 'menubarBackgroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#f1f1f1";
+					document.getElementById(property).value = "#f1f1f1";
+				}
+			} else if(property === 'menubarForegroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#303030";
+					document.getElementById(property).value = "#303030";
+				}
+			} else if(property === 'menubarHighlightBackgroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#f1f1f1";
+					document.getElementById(property).value = "#f1f1f1";
+				}
+			} else if(property === 'menubarHighlightForegroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#265a87";
+					document.getElementById(property).value = "#265a87";
+				}
+			} else if(property === 'menuDropdownBackgroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#ededed";
+					document.getElementById(property).value = "#ededed";
+				}
+			} else if(property === 'menuDropdownForegroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#404040";
+					document.getElementById(property).value = "#404040";
+				}
+			} else if(property === 'modalDialogBackgroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#ffffff";
+					document.getElementById(property).value = "#ffffff";
+				}
+			} else if(property === 'modalDialogForegroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#333333";
+					document.getElementById(property).value = "#333333";
+				}
+			} else if(property === 'modalDialogHeaderFooterBackgroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#ffffff";
+					document.getElementById(property).value = "#ffffff";
+				}
+			} else if(property === 'modalDialogHeaderFooterForegroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#333333";
+					document.getElementById(property).value = "#333333";
+				}
+			} else if(property === 'modalDialogHeaderFooterBorderColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#e5e5e5";
+					document.getElementById(property).value = "#e5e5e5";
+				}
+			} else if(property === 'browseCategoryPanelColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#d7dce3";
+					document.getElementById(property).value = "#d7dce3";
+				}
+			} else if(property === 'selectedBrowseCategoryBackgroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#0087AB";
+					document.getElementById(property).value = "#0087AB";
+				}
+			} else if(property === 'selectedBrowseCategoryForegroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#ffffff";
+					document.getElementById(property).value = "#ffffff";
+				}
+			} else if(property === 'selectedBrowseCategoryBorderColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#0087AB";
+					document.getElementById(property).value = "#0087AB";
+				}
+			} else if(property === 'deselectedBrowseCategoryBackgroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#0087AB";
+					document.getElementById(property).value = "#0087AB";
+				}
+			} else if(property === 'deselectedBrowseCategoryForegroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#ffffff";
+					document.getElementById(property).value = "#ffffff";
+				}
+			} else if(property === 'deselectedBrowseCategoryBorderColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#0087AB";
+					document.getElementById(property).value = "#0087AB";
+				}
+			} else if(property === 'badgeBackgroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#666666";
+					document.getElementById(property).value = "#666666";
+				}
+			} else if(property === 'badgeForegroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#ffffff";
+					document.getElementById(property).value = "#ffffff";
+				}
+			} else if(property === 'closedPanelBackgroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#e7e7e7";
+					document.getElementById(property).value = "#e7e7e7";
+				}
+			} else if(property === 'closedPanelForegroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#333333";
+					document.getElementById(property).value = "#333333";
+				}
+			} else if(property === 'openPanelBackgroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#333333";
+					document.getElementById(property).value = "#333333";
+				}
+			} else if(property === 'openPanelForegroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#ffffff";
+					document.getElementById(property).value = "#ffffff";
+				}
+			} else if(property === 'panelBodyBackgroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#ffffff";
+					document.getElementById(property).value = "#ffffff";
+				}
+			} else if(property === 'panelBodyForegroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#404040";
+					document.getElementById(property).value = "#404040";
+				}
+			} else if(property === 'defaultButtonBackgroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#ffffff";
+					document.getElementById(property).value = "#ffffff";
+				}
+			} else if(property === 'defaultButtonForegroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#333333";
+					document.getElementById(property).value = "#333333";
+				}
+			} else if(property === 'defaultButtonBorderColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#cccccc";
+					document.getElementById(property).value = "#cccccc";
+				}
+			} else if(property === 'defaultButtonHoverBackgroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#eeeeee";
+					document.getElementById(property).value = "#eeeeee";
+				}
+			} else if(property === 'defaultButtonHoverForegroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#333333";
+					document.getElementById(property).value = "#333333";
+				}
+			} else if(property === 'defaultButtonHoverBorderColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#cccccc";
+					document.getElementById(property).value = "#cccccc";
+				}
+			} else if(property === 'primaryButtonBackgroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#1b6ec2";
+					document.getElementById(property).value = "#1b6ec2";
+				}
+			} else if(property === 'primaryButtonForegroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#ffffff";
+					document.getElementById(property).value = "#ffffff";
+				}
+			} else if(property === 'primaryButtonBorderColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#1b6ec2";
+					document.getElementById(property).value = "#1b6ec2";
+				}
+			} else if(property === 'primaryButtonHoverBackgroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#ffffff";
+					document.getElementById(property).value = "#ffffff";
+				}
+			} else if(property === 'primaryButtonHoverForegroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#1b6ec2";
+					document.getElementById(property).value = "#1b6ec2";
+				}
+			} else if(property === 'primaryButtonHoverBorderColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#1b6ec2";
+					document.getElementById(property).value = "#1b6ec2";
+				}
+			} else if(property === 'actionButtonBackgroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#1b6ec2";
+					document.getElementById(property).value = "#1b6ec2";
+				}
+			} else if(property === 'actionButtonForegroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#ffffff";
+					document.getElementById(property).value = "#ffffff";
+				}
+			} else if(property === 'actionButtonBorderColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#1b6ec2";
+					document.getElementById(property).value = "#1b6ec2";
+				}
+			} else if(property === 'actionButtonHoverBackgroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#ffffff";
+					document.getElementById(property).value = "#ffffff";
+				}
+			} else if(property === 'actionButtonHoverForegroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#1b6ec2";
+					document.getElementById(property).value = "#1b6ec2";
+				}
+			} else if(property === 'actionButtonHoverBorderColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#1b6ec2";
+					document.getElementById(property).value = "#1b6ec2";
+				}
+			} else if(property === 'editionsButtonBackgroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#f8f9fa";
+					document.getElementById(property).value = "#f8f9fa";
+				}
+			} else if(property === 'editionsButtonForegroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#212529";
+					document.getElementById(property).value = "#212529";
+				}
+			} else if(property === 'editionsButtonBorderColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#999999";
+					document.getElementById(property).value = "#999999";
+				}
+			} else if(property === 'editionsButtonHoverBackgroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#ffffff";
+					document.getElementById(property).value = "#ffffff";
+				}
+			} else if(property === 'editionsButtonHoverForegroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#1b6ec2";
+					document.getElementById(property).value = "#1b6ec2";
+				}
+			} else if(property === 'editionsButtonHoverBorderColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#1b6ec2";
+					document.getElementById(property).value = "#1b6ec2";
+				}
+			} else if(property === 'toolsButtonBackgroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#747474";
+					document.getElementById(property).value = "#747474";
+				}
+			} else if(property === 'toolsButtonForegroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#ffffff";
+					document.getElementById(property).value = "#ffffff";
+				}
+			} else if(property === 'toolsButtonBorderColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#636363";
+					document.getElementById(property).value = "#636363";
+				}
+			} else if(property === 'toolsButtonHoverBackgroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#636363";
+					document.getElementById(property).value = "#636363";
+				}
+			} else if(property === 'toolsButtonHoverForegroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#ffffff";
+					document.getElementById(property).value = "#ffffff";
+				}
+			} else if(property === 'toolsButtonHoverBorderColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#636363";
+					document.getElementById(property).value = "#636363";
+				}
+			} else if(property === 'infoButtonBackgroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#8cd2e7";
+					document.getElementById(property).value = "#8cd2e7";
+				}
+			} else if(property === 'infoButtonForegroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#000000";
+					document.getElementById(property).value = "#000000";
+				}
+			} else if(property === 'infoButtonBorderColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#999999";
+					document.getElementById(property).value = "#999999";
+				}
+			} else if(property === 'infoButtonHoverBackgroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#ffffff";
+					document.getElementById(property).value = "#ffffff";
+				}
+			} else if(property === 'infoButtonHoverForegroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#217e9b";
+					document.getElementById(property).value = "#217e9b";
+				}
+			} else if(property === 'infoButtonHoverBorderColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#217e9b";
+					document.getElementById(property).value = "#217e9b";
+				}
+			} else if(property === 'warningButtonBackgroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#f4d03f";
+					document.getElementById(property).value = "#f4d03f";
+				}
+			} else if(property === 'warningButtonForegroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#000000";
+					document.getElementById(property).value = "#000000";
+				}
+			} else if(property === 'warningButtonBorderColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#999999";
+					document.getElementById(property).value = "#999999";
+				}
+			} else if(property === 'warningButtonHoverBackgroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#ffffff";
+					document.getElementById(property).value = "#ffffff";
+				}
+			} else if(property === 'warningButtonHoverForegroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#8d6708";
+					document.getElementById(property).value = "#8d6708";
+				}
+			} else if(property === 'warningButtonHoverBorderColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#8d6708";
+					document.getElementById(property).value = "#8d6708";
+				}
+			} else if(property === 'dangerButtonBackgroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#D50000";
+					document.getElementById(property).value = "#D50000";
+				}
+			} else if(property === 'dangerButtonForegroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#ffffff";
+					document.getElementById(property).value = "#ffffff";
+				}
+			} else if(property === 'dangerButtonBorderColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#999999";
+					document.getElementById(property).value = "#999999";
+				}
+			} else if(property === 'dangerButtonHoverBackgroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#ffffff";
+					document.getElementById(property).value = "#ffffff";
+				}
+			} else if(property === 'dangerButtonHoverForegroundColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#D50000";
+					document.getElementById(property).value = "#D50000";
+				}
+			} else if(property === 'dangerButtonHoverBorderColor') {
+				if(extendedThemeDefault != null) {
+					// if a value is present, grab the color from that theme instead of Aspen default
+					document.getElementById(property + 'Hex').value = extendedThemeDefault;
+					document.getElementById(property).value = extendedThemeDefault;
+				} else {
+					document.getElementById(property + 'Hex').value = "#D50000";
+					document.getElementById(property).value = "#D50000";
+				}
+			};
+		},
+		checkContrast: function (property1, property2, oneWay, minRatio) {
+				if (oneWay === undefined) {
+					oneWay = false;
+				}
+				var color1 = $('#' + property1).val();
+				var color2 = $('#' + property2).val();
+				if (color1.length === 7 && color2.length === 7) {
+					var luminance1 = AspenDiscovery.Admin.getLuminanceForColor(color1);
+					var luminance2 = AspenDiscovery.Admin.getLuminanceForColor(color2);
+					var contrastRatio;
+					if (luminance1 > luminance2) {
+						contrastRatio = ((luminance1 + 0.05) / (luminance2 + 0.05));
+					} else {
+						contrastRatio = ((luminance2 + 0.05) / (luminance1 + 0.05));
+					}
+					var contrastSpan1 = $("#contrast_" + property1);
+					var contrastSpan2 = $("#contrast_" + property2);
+					contrastSpan1.text(contrastRatio.toFixed(2));
+					contrastSpan2.text(contrastRatio.toFixed(2));
+					if(minRatio == 7.0) {
+						if (contrastRatio < 4.5) {
+							contrastSpan1.addClass("alert-danger");
+							contrastSpan2.addClass("alert-danger");
+							contrastSpan1.removeClass("alert-warning");
+							contrastSpan2.removeClass("alert-warning");
+							contrastSpan1.removeClass("alert-success");
+							contrastSpan2.removeClass("alert-success");
+						} else if (contrastRatio < minRatio) {
+							contrastSpan1.removeClass("alert-danger");
+							contrastSpan2.removeClass("alert-danger");
+							contrastSpan1.addClass("alert-warning");
+							contrastSpan2.addClass("alert-warning");
+							contrastSpan1.removeClass("alert-success");
+							contrastSpan2.removeClass("alert-success");
+						} else {
+							contrastSpan1.removeClass("alert-danger");
+							contrastSpan2.removeClass("alert-danger");
+							contrastSpan1.removeClass("alert-warning");
+							contrastSpan2.removeClass("alert-warning");
+							contrastSpan1.addClass("alert-success");
+							contrastSpan2.addClass("alert-success");
+						}
+					} else {
+						if (contrastRatio < 3.5) {
+							contrastSpan1.addClass("alert-danger");
+							contrastSpan2.addClass("alert-danger");
+							contrastSpan1.removeClass("alert-warning");
+							contrastSpan2.removeClass("alert-warning");
+							contrastSpan1.removeClass("alert-success");
+							contrastSpan2.removeClass("alert-success");
+						} else if (contrastRatio < minRatio) {
+							contrastSpan1.removeClass("alert-danger");
+							contrastSpan2.removeClass("alert-danger");
+							contrastSpan1.addClass("alert-warning");
+							contrastSpan2.addClass("alert-warning");
+							contrastSpan1.removeClass("alert-success");
+							contrastSpan2.removeClass("alert-success");
+						} else {
+							contrastSpan1.removeClass("alert-danger");
+							contrastSpan2.removeClass("alert-danger");
+							contrastSpan1.removeClass("alert-warning");
+							contrastSpan2.removeClass("alert-warning");
+							contrastSpan1.addClass("alert-success");
+							contrastSpan2.addClass("alert-success");
+						}
+					}
+				} else {
+					$("#contrastCheck_" + property1).hide();
+					if (!oneWay) {
+						$("#contrastCheck_" + property2).hide();
+					}
+					$("#contrast_" + property1).innerHTML = 'Unknown';
+					if (!oneWay) {
+						$("#contrast_" + property2).innerHTML = 'Unknown';
+					}
+				}
 
 		},
 		getLuminanceForColor: function(color){
@@ -6869,6 +8120,25 @@ AspenDiscovery.Admin = (function(){
 				$("#propertyRowmaterialsRequestFormats").hide();
 				$("#propertyRowmaterialsRequestFormFields").hide()
 			}
+			return false;
+		},
+		updateDonationFields: function(){
+			var donationsEnabled = $("#enableDonations");
+			var donationsEnabledValue = $("#enableDonations:checked").val()
+			if(donationsEnabledValue == 1) {
+				$("#propertyRowallowDonationsToBranch").show();
+				$("#propertyRowallowDonationEarmark").show();
+				$("#propertyRowallowDonationDedication").show();
+				$("#propertyRowdonationValues").show();
+				$("#propertyRowdonationContent").show();
+			}else{
+				$("#propertyRowallowDonationsToBranch").hide();
+				$("#propertyRowallowDonationEarmark").hide();
+				$("#propertyRowallowDonationDedication").hide();
+				$("#propertyRowdonationValues").hide();
+				$("#propertyRowdonationContent").hide();
+			}
+
 			return false;
 		},
 		validateCompare: function() {
@@ -6995,7 +8265,20 @@ AspenDiscovery.Admin = (function(){
 			$.getJSON(url, params,
 				function(data) {
 					if (data.success) {
+						$("#releaseVersion").html(data.release);
 						$("#releaseNotes").html(data.releaseNotes);
+						if (data.actionItems === ''){
+							$("#actionItemsSection").hide();
+						}else{
+							$("#actionItemsSection").show();
+							$("#actionItems").html(data.actionItems);
+						}
+						if (data.testingSuggestions === ''){
+							$("#testingSection").hide();
+						}else{
+							$("#testingSection").show();
+							$("#testingSuggestions").html(data.testingSuggestions);
+						}
 					} else {
 						$("#releaseNotes").html("Error + " + data.message);
 					}
@@ -7010,11 +8293,19 @@ AspenDiscovery.Admin = (function(){
 				$("#propertyRowdefaultFilter").hide();
 				$("#propertyRowdefaultSort").hide();
 				$("#propertyRowsourceListId").show();
+				$("#propertyRowsourceCourseReserveId").hide();
+			}else if (selectedSource === 'CourseReserve') {
+				$("#propertyRowsearchTerm").hide();
+				$("#propertyRowdefaultFilter").hide();
+				$("#propertyRowdefaultSort").hide();
+				$("#propertyRowsourceListId").hide();
+				$("#propertyRowsourceCourseReserveId").show();
 			}else{
 				$("#propertyRowsearchTerm").show();
 				$("#propertyRowdefaultFilter").show();
 				$("#propertyRowdefaultSort").show();
 				$("#propertyRowsourceListId").hide();
+				$("#propertyRowsourceCourseReserveId").hide();
 			}
 		},
 		updateIndexingProfileFields: function () {
@@ -7047,6 +8338,14 @@ AspenDiscovery.Admin = (function(){
 			}else{
 				$("#propertyRowshowBookIcon").hide();
 				$("#propertyRowhomeLinkText").show();
+			}
+		},
+		updateBrowseCategoryFields: function () {
+			var sharingType = $('#sharingSelect').val();
+			if (sharingType === 'library') {
+				$("#propertyRowlibraryId").show();
+			}else{
+				$("#propertyRowlibraryId").hide();
 			}
 		},
 		showCreateRoleForm: function(){
@@ -7108,630 +8407,88 @@ AspenDiscovery.Admin = (function(){
 					$("#title").removeAttr('required');
 				}
 			});
-		}
+		},
+
+		deleteNYTList: function(id){
+			var listId = id;
+			if (confirm("Are you sure you want to delete this list?")){
+				$.getJSON(Globals.path + '/Admin/AJAX?method=deleteNYTList&id=' + listId, function (data) {
+					AspenDiscovery.showMessage("Success", data.message, true, true);
+				})
+			}
+			return false;
+		},
+
+		updateLibraryLinksFields: function () {
+			var requireLogin = $('#showToLoggedInUsersOnly');
+			if(requireLogin.is(":checked")) {
+				$("#propertyRowallowAccess").show();
+			} else {
+				$("#propertyRowallowAccess").hide();
+			}
+
+			$(requireLogin).click(function() {
+				if(requireLogin.is(":checked")){
+					$("#propertyRowallowAccess").show();
+				}else{
+					$("#propertyRowallowAccess").hide();
+				}
+			});
+		},
+
+		updateDonationsSettingFields: function () {
+			var allowEarmarks = $('#allowDonationEarmark');
+			if(allowEarmarks.is(":checked")) {
+				$("#propertyRowdonationEarmarks").show();
+			} else {
+				$("#propertyRowdonationEarmarks").hide();
+			}
+			$(allowEarmarks).click(function() {
+				if(allowEarmarks.is(":checked")){
+					$("#propertyRowdonationEarmarks").show();
+				}else{
+					$("#propertyRowdonationEarmarks").hide();
+				}
+			});
+
+			var allowDedications = $('#allowDonationDedication');
+			if(allowDedications.is(":checked")) {
+				$("#propertyRowdonationDedicationTypes").show();
+			} else {
+				$("#propertyRowdonationDedicationTypes").hide();
+			}
+
+			$(allowDedications).click(function() {
+				if(allowDedications.is(":checked")){
+					$("#propertyRowdonationDedicationTypes").show();
+				}else{
+					$("#propertyRowdonationDedicationTypes").hide();
+				}
+			});
+		},
+		createRecovery2FACode: function() {
+			var username = $("#username").val();
+			if (Globals.loggedIn){
+				$.getJSON(Globals.path + "/Admin/AJAX?method=createRecoveryCode&user=" + username, function(data) {
+					// update #codeVerificationFailedPlaceholder with failed verification status, otherwise move onto next step
+					if(data.success) {
+						$("#error").html(data.message).hide();
+						$("#generatedCode").html(data.message).show();
+					} else {
+						$("#generatedCode").html(data.message).hide();
+						$("#error").html(data.message).show();
+					}
+					return data;
+				});
+			} else {
+				AspenDiscovery.Account.ajaxLogin(null, function(){
+					return AspenDiscovery.Account.verify2FA();
+				}, false);
+			}
+			return false;
+		},
 	};
 }(AspenDiscovery.Admin || {}));
-AspenDiscovery.Archive = (function(){
-	var date = new Date();
-	date.setTime(date.getTime() + (1 /*days*/ * 24 * 60 * 60 * 1000));
-	expires = "; expires=" + date.toGMTString();
-	document.cookie = encodeURIComponent('exhibitNavigation') + "=" + encodeURIComponent(0) + expires + "; path=/";
-	document.cookie = encodeURIComponent('collectionPid') + "=" + encodeURIComponent('') + expires + "; path=/";
-	// document.cookie = encodeURIComponent('exhibitInAExhibitParentPid') + "=" + encodeURIComponent('') + expires + "; path=/";
-
-	return {
-		archive_map: null,
-		archive_info_window: null,
-		curPage: 1,
-		markers: [],
-		geomarkers: [],
-		sort: 'title',
-		openSeaDragonViewer: null,
-		pageDetails: [],
-		multiPage: false,
-		allowPDFView: true,
-		activeBookViewer: 'jp2',
-		activeBookPage: null,
-		activeBookPid: null,
-
-		// Archive Collection Display Mode (different from search)
-		displayMode: 'list', // default display Mode for collections
-		displayModeClasses: { // browse mode to css class correspondence
-			covers: 'home-page-browse-thumbnails',
-			list: ''
-		},
-
-		getPreferredDisplayMode: function(){
-			if (!Globals.opac && AspenDiscovery.hasLocalStorage()){
-				temp = window.localStorage.getItem('archiveCollectionDisplayMode');
-				if (AspenDiscovery.Archive.displayModeClasses.hasOwnProperty(temp)) {
-					AspenDiscovery.Archive.displayMode = temp; // if stored value is empty or a bad value, fall back on default setting ("null" is returned from local storage when not set)
-				}
-			}
-		},
-
-		toggleDisplayMode : function(selectedMode){
-			var mode = this.displayModeClasses.hasOwnProperty(selectedMode) ? selectedMode : this.displayMode; // check that selected mode is a valid option
-			this.displayMode = mode; // set the mode officially
-			this.curPage = 1; // reset js page counting
-			if (!Globals.opac && AspenDiscovery.hasLocalStorage() ) { // store setting in browser if not an opac computer
-				window.localStorage.setItem('archiveCollectionDisplayMode', this.displayMode);
-			}
-			if (mode == 'list') $('#hideSearchCoversSwitch').show(); else $('#hideSearchCoversSwitch').hide();
-			this.ajaxReloadCallback()
-		},
-
-		ajaxReloadCallback: function () {
-			// Placeholder for the function that will be call when the display mode is toggled.
-		},
-
-		toggleShowCovers: function(showCovers){
-			AspenDiscovery.Account.showCovers = showCovers;
-			if (!Globals.opac && AspenDiscovery.hasLocalStorage()) { // store setting in browser if not an opac computer
-				window.localStorage.setItem('showCovers', this.showCovers ? 'on' : 'off');
-			}
-			this.ajaxReloadCallback()
-		},
-
-
-		openSeadragonViewerSettings: function(){
-			return {
-				"id": "custom-openseadragon",
-				"prefixUrl": Globals.encodedRepositoryUrl + "\/sites\/all\/libraries\/openseadragon\/images\/",
-				"debugMode": false,
-				"djatokaServerBaseURL": Globals.encodedRepositoryUrl + "\/AJAX\/DjatokaResolver",
-				"tileSize": 256,
-				"tileOverlap": 0,
-				"animationTime": 1.5,
-				"blendTime": 0.1,
-				"alwaysBlend": false,
-				"autoHideControls": 1,
-				"immediateRender": true,
-				"wrapHorizontal": false,
-				"wrapVertical": false,
-				"wrapOverlays": false,
-				"panHorizontal": 1,
-				"panVertical": 1,
-				"minZoomImageRatio": 0.35,
-				"maxZoomPixelRatio": 2,
-				"visibilityRatio": 0.5,
-				"springStiffness": 5,
-				"imageLoaderLimit": 5,
-				"clickTimeThreshold": 300,
-				"clickDistThreshold": 5,
-				"zoomPerClick": 2,
-				"zoomPerScroll": 1.2,
-				"zoomPerSecond": 2,
-				"showNavigator": 1,
-				"defaultZoomLevel": 0,
-				"homeFillsViewer": false
-			}
-		},
-
-		changeActiveBookViewer: function(viewerName, pagePid){
-			this.activeBookViewer = viewerName;
-			// $('#view-toggle').children(".btn .active").removeClass('active');
-			if (viewerName == 'pdf' && this.allowPDFView){
-				$('#view-toggle-pdf').prop('checked', true);
-						// .parent('.btn').addClass('active');
-				$("#view-pdf").show();
-				$("#view-image").hide();
-				$("#view-transcription").hide();
-				$("#view-audio").hide();
-				$("#view-video").hide();
-			}else if (viewerName == 'image' || (viewerName == 'pdf' && !this.allowPDFView)){
-				$('#view-toggle-image').prop('checked', true);
-						// .parent('.btn').addClass('active');
-				$("#view-image").show();
-				$("#view-pdf").hide();
-				$("#view-transcription").hide();
-				$("#view-audio").hide();
-				$("#view-video").hide();
-				this.activeBookViewer = 'image';
-			}else if (viewerName == 'transcription'){
-				$('#view-toggle-transcription').prop('checked', true);
-					// .parent('.btn').addClass('active');
-				$("#view-transcription").show();
-				$("#view-pdf").hide();
-				$("#view-image").hide();
-				$("#view-audio").hide();
-				$("#view-video").hide();
-			}else if (viewerName == 'audio'){
-				$('#view-toggle-transcription').prop('checked', true);
-				// .parent('.btn').addClass('active');
-				$("#view-audio").show();
-				$("#view-pdf").hide();
-				$("#view-image").hide();
-				$("#view-transcription").hide();
-				$("#view-video").hide();
-			}else if (viewerName == 'video'){
-				$('#view-toggle-transcription').prop('checked', true);
-				// .parent('.btn').addClass('active');
-				$("#view-video").show();
-				$("#view-pdf").hide();
-				$("#view-image").hide();
-				$("#view-transcription").hide();
-				$("#view-audio").hide();
-
-			}
-			return this.loadPage(pagePid);
-		},
-
-		clearCache:function(id){
-			var url = Globals.path + "/Archive/AJAX?id=" + encodeURI(id) + "&method=clearCache";
-			AspenDiscovery.loadingMessage();
-			$.getJSON(url, function(data){
-				if (data.success) {
-					AspenDiscovery.showMessage("Cache Cleared Successfully", data.message, 2000); // auto-close after 2 seconds.
-				} else {
-					AspenDiscovery.showMessage("Error", data.message);
-				}
-			}).fail(AspenDiscovery.ajaxFail);
-			return false;
-		},
-
-		initializeOpenSeadragon: function(viewer){
-
-		},
-
-		getMoreExhibitResults: function(exhibitPid, reloadHeader){
-			this.curPage = this.curPage +1;
-			if (typeof reloadHeader == 'undefined') {
-				reloadHeader = 0;
-			}
-			if (reloadHeader) {
-				$("#exhibit-results-loading").show();
-				this.curPage = 1;
-			}
-			var url = Globals.path + "/Archive/AJAX?method=getRelatedObjectsForExhibit&collectionId=" + exhibitPid + "&page=" + this.curPage + "&sort=" + this.sort + '&archiveCollectionView=' + this.displayMode + '&showCovers=' + AspenDiscovery.Account.showCovers;
-			url = url + "&reloadHeader=" + reloadHeader;
-
-			$.getJSON(url, function(data){
-				if (data.success){
-					if (reloadHeader){
-						$("#related-objects-for-exhibit").hide().html(data.relatedObjects).fadeIn('slow');
-					}else{
-						$("#nextInsertPoint").hide().replaceWith(data.relatedObjects).fadeIn('slow');
-					}
-					$("#exhibit-results-loading").hide();
-				}
-			});
-		},
-
-		getMoreMapResults: function(exhibitPid, placePid, showTimeline){
-			this.curPage = this.curPage +1;
-			var url = Globals.path + "/Archive/AJAX?method=getRelatedObjectsForMappedCollection&collectionId=" + exhibitPid + "&placeId=" + placePid + "&page=" + this.curPage + "&sort=" + this.sort + "&showTimeline=" + showTimeline;
-			$("input[name=dateFilter]:checked").each(function(){
-				url = url + "&dateFilter="+$(this).val();
-			});
-			url = url + "&reloadHeader=0";
-
-			$.getJSON(url, function(data){
-				if (data.success){
-					$("#nextInsertPoint").replaceWith(data.relatedObjects);
-				}
-			});
-		},
-
-		getMoreTimelineResults: function(exhibitPid){
-			this.curPage = this.curPage +1;
-			var url = Globals.path + "/Archive/AJAX?method=getRelatedObjectsForTimelineExhibit&collectionId=" + exhibitPid + "&page=" + this.curPage + "&sort=" + this.sort;
-			$("input[name=dateFilter]:checked").each(function(){
-				url = url + "&dateFilter="+$(this).val();
-			});
-			url = url + "&reloadHeader=0";
-
-			$.getJSON(url, function(data){
-				if (data.success){
-					$("#nextInsertPoint").replaceWith(data.relatedObjects);
-				}
-			});
-		},
-
-		getMoreScrollerResults: function(pid){
-			this.curPage = this.curPage +1;
-			var url = Globals.path + "/Archive/AJAX?method=getRelatedObjectsForScroller&pid=" + pid + "&page=" + this.curPage + "&sort=" + this.sort;
-
-			$.getJSON(url, function(data){
-				if (data.success){
-					$("#nextInsertPoint").replaceWith(data.relatedObjects);
-				}
-			});
-		},
-
-		handleMapClick: function(markerIndex, exhibitPid, placePid, label, redirect, showTimeline){
-			$("#exhibit-results-loading").show();
-			this.archive_info_window.setContent(label);
-			if (markerIndex >= 0){
-				this.archive_info_window.open(this.archive_map, this.markers[markerIndex]);
-			}
-
-			if (redirect != "undefined" && redirect === true){
-				var newUrl = AspenDiscovery.buildUrl(document.location.origin + document.location.pathname, 'placePid', placePid);
-				newUrl = AspenDiscovery.buildUrl(newUrl, 'style', 'map');
-				document.location.href = newUrl;
-			}
-			if (showTimeline == "undefined"){
-				showTimeline = true;
-			}
-			$.getJSON(Globals.path + "/Archive/AJAX?method=getRelatedObjectsForMappedCollection&collectionId=" + exhibitPid + "&placeId=" + placePid + "&showTimeline=" + showTimeline, function(data){
-				if (data.success){
-					$("#related-objects-for-exhibit").html(data.relatedObjects);
-					$("#exhibit-results-loading").hide();
-				}
-			});
-			var stateObj = {
-				marker: markerIndex,
-				exhibitPid: exhibitPid,
-				placePid: placePid,
-				label: label,
-				showTimeline: showTimeline,
-				page: "MapExhibit"
-			};
-			var newUrl = AspenDiscovery.buildUrl(document.location.origin + document.location.pathname, 'placePid', placePid);
-			var currentParameters = AspenDiscovery.getQuerystringParameters();
-			if (currentParameters["style"] != undefined){
-				newUrl = AspenDiscovery.buildUrl(newUrl, 'style', currentParameters["style"]);
-			}
-			//Push the new url, but only if we aren't going back where we just were.
-			if (document.location.href != newUrl){
-				history.pushState(stateObj, label, newUrl);
-			}
-			return false;
-		},
-
-		handleTimelineClick: function(exhibitPid){
-			$("#exhibit-results-loading").show();
-
-			$.getJSON(Globals.path + "/Archive/AJAX?method=getRelatedObjectsForTimelineExhibit&collectionId=" + exhibitPid, function(data){
-				if (data.success){
-					$("#related-objects-for-exhibit").html(data.relatedObjects);
-					$("#exhibit-results-loading").hide();
-				}
-			});
-			return false;
-		},
-
-		handleCollectionScrollerClick: function(pid){
-			$("#exhibit-results-loading").show();
-
-			$.getJSON(Globals.path + "/Archive/AJAX?method=getRelatedObjectsForScroller&pid=" + pid, function(data){
-				if (data.success){
-					$("#related-objects-for-exhibit").html(data.relatedObjects);
-					$("#exhibit-results-loading").hide();
-				}
-			});
-			return false;
-		},
-
-		handleBookClick: function(bookPid, pagePid, bookViewer) {
-			// Load specified page & viewer
-			//Loading message
-			//Load Page  set-up
-			AspenDiscovery.Archive.activeBookPid = bookPid;
-			AspenDiscovery.Archive.changeActiveBookViewer(bookViewer, pagePid);
-
-			// store in browser history
-			var stateObj = {
-				bookPid: bookPid,
-				pagePid: pagePid,
-				viewer: bookViewer,
-				page: 'Book'
-			};
-			var newUrl = AspenDiscovery.buildUrl(document.location.origin + document.location.pathname, 'bookPid', bookPid);
-			newUrl = AspenDiscovery.buildUrl(newUrl, 'pagePid', pagePid);
-			newUrl = AspenDiscovery.buildUrl(newUrl, 'viewer', bookViewer);
-			//Push the new url, but only if we aren't going back where we just were.
-			if (document.location.href != newUrl){
-				history.pushState(stateObj, '', newUrl);
-			}
-			return false;
-
-		},
-
-		reloadMapResults: function(exhibitPid, placePid, reloadHeader,showTimeline){
-			$("#exhibit-results-loading").show();
-			this.curPage = 1;
-			var url = Globals.path + "/Archive/AJAX?method=getRelatedObjectsForMappedCollection&collectionId=" + exhibitPid + "&placeId=" + placePid + "&page=" + this.curPage + "&sort=" + this.sort + '&archiveCollectionView=' + this.displayMode + '&showCovers=' + AspenDiscovery.Account.showCovers + '&showTimeline=' + showTimeline;
-			$("input[name=dateFilter]:checked").each(function(){
-				url = url + "&dateFilter="+$(this).val();
-			});
-			url = url + "&reloadHeader=" + reloadHeader;
-
-			$.getJSON(url, function(data){
-				if (data.success){
-					if (reloadHeader){
-						$("#related-objects-for-exhibit").html(data.relatedObjects);
-					}else{
-						$("#results").html(data.relatedObjects);
-					}
-					$("#exhibit-results-loading").hide();
-				}
-			});
-		},
-
-		reloadTimelineResults: function(exhibitPid, reloadHeader){
-			$("#exhibit-results-loading").show();
-			this.curPage = 1;
-			var url = Globals.path + "/Archive/AJAX?method=getRelatedObjectsForTimelineExhibit&collectionId=" + exhibitPid + "&page=" + this.curPage + "&sort=" + this.sort + '&archiveCollectionView=' + this.displayMode + '&showCovers=' + AspenDiscovery.Account.showCovers;
-			$("input[name=dateFilter]:checked").each(function(){
-				url = url + "&dateFilter="+$(this).val();
-			});
-			url = url + "&reloadHeader=" + reloadHeader;
-
-			$.getJSON(url, function(data){
-				if (data.success){
-					if (reloadHeader){
-						$("#related-objects-for-exhibit").html(data.relatedObjects);
-					}else{
-						$("#results").html(data.relatedObjects);
-					}
-					$("#exhibit-results-loading").hide();
-				}
-			});
-		},
-
-		reloadScrollerResults: function(pid, reloadHeader){
-			$("#exhibit-results-loading").show();
-			this.curPage = 1;
-			var url = Globals.path + "/Archive/AJAX?method=getRelatedObjectsForScroller&pid=" + pid + "&page=" + this.curPage + "&sort=" + this.sort + '&archiveCollectionView=' + this.displayMode + '&showCovers=' + AspenDiscovery.Account.showCovers;
-			url = url + "&reloadHeader=" + reloadHeader;
-
-			$.getJSON(url, function(data){
-				if (data.success){
-					if (reloadHeader){
-						$("#related-objects-for-exhibit").html(data.relatedObjects);
-					}else{
-						$("#results").html(data.relatedObjects);
-					}
-					$("#exhibit-results-loading").hide();
-				}
-			});
-		},
-
-		loadMetadata: function(pid, secondaryId){
-			var url = Globals.path + "/Archive/AJAX?id=" + encodeURI(pid) + "&method=getMetadata";
-			if (secondaryId !== undefined){
-				url += "&secondaryId=" + secondaryId;
-			}
-			var metadataTarget = $('#archive-metadata');
-			metadataTarget.html("Please wait while we load information about this object...")
-			$.getJSON(url, function(data) {
-				if (data.success) {
-					metadataTarget.html(data.metadata);
-				}
-			}).fail(
-					function(){metadataTarget.html("Could not load metadata.")}
-			);
-		},
-
-		/**
-		 * Load a new page into the active viewer
-		 *
-		 * @param pid
-		 */
-		loadPage: function(pid){
-			if (pid == null){
-				return false;
-			}
-			var pageChanged = false;
-			if (this.activeBookPage != pid){
-				pageChanged = true;
-				this.curPage = this.pageDetails[pid]['index'];
-			}
-			this.activeBookPage = pid;
-			// console.log('Page: '+ this.activeBookPage, 'Active Viewer : '+ this.activeBookViewer);
-			if (this.pageDetails[pid]['transcript'] == ''){
-				$('#view-toggle-transcription').parent().hide();
-				if (this.activeBookViewer == 'transcription') {
-					this.changeActiveBookViewer('image', pid);
-					return false;
-				}
-			}else{
-				$('#view-toggle-transcription').parent().show();
-			}
-			if (this.pageDetails[pid]['pdf'] == ''){
-				$('#view-toggle-pdf').parent().hide();
-			}else{
-				$('#view-toggle-pdf').parent().show();
-			}
-			if (this.pageDetails[pid]['jp2'] == ''){
-				$('#view-toggle-image').parent().hide();
-			}else{
-				$('#view-toggle-image').parent().show();
-			}
-			if (this.pageDetails[pid]['audio'] == ''){
-				$('#view-toggle-audio').parent().hide();
-			}else{
-				$('#view-toggle-audio').parent().show();
-			}
-			if (this.pageDetails[pid]['video'] == ''){
-				$('#view-toggle-video').parent().hide();
-			}else{
-				$('#view-toggle-video').parent().show();
-			}
-
-			if (this.activeBookViewer == 'pdf') {
-				// console.log('PDF View called');
-				$('#view-pdf').html(
-						$('<object />').attr({
-							type: 'application/pdf',
-							data: this.pageDetails[pid]['pdf'],
-							class: 'book-pdf' // Class that styles/sizes the PDF page
-						})
-				);
-			}else if(this.activeBookViewer == 'transcription') {
-				// console.log('Transcript Viewer called');
-				var transcriptIdentifier = this.pageDetails[pid]['transcript'];
-				var url = Globals.path + "/Archive/AJAX?transcriptId=" + encodeURI(transcriptIdentifier) + "&method=getTranscript";
-				var transcriptionTarget = $('#view-transcription');
-				transcriptionTarget.html("Loading Transcript, please wait.");
-				$.getJSON(url, function(data) {
-					if (data.success) {
-						transcriptionTarget.html(data.transcript);
-					}
-				}).fail(
-					function(){transcriptionTarget.html("Could not load Transcript.")}
-				);
-
-				// var islandoraURL = this.pageDetails[pid]['transcript'];
-				// var reverseProxy = islandoraURL.replace(/([^\/]*)(?=\/islandora\/)/, location.host);
-				// // reverseProxy = reverseProxy.replace('https', 'http'); // TODO: remove, for local instance only (no https)
-				// // console.log('Fetching: '+reverseProxy);
-				//
-				// $('#view-transcription').load(reverseProxy);
-			}else if (this.activeBookViewer == 'image'){
-				var tile = new OpenSeadragon.DjatokaTileSource(
-						Globals.url + "/AJAX/DjatokaResolver",
-						this.pageDetails[pid]['jp2'],
-						AspenDiscovery.Archive.openSeadragonViewerSettings()
-				);
-				if (!$('#custom-openseadragon').hasClass('processed')) {
-					$('#custom-openseadragon').addClass('processed');
-					settings = AspenDiscovery.Archive.openSeadragonViewerSettings();
-					settings.tileSources = [];
-					settings.tileSources.push(tile);
-					AspenDiscovery.Archive.openSeaDragonViewer = new OpenSeadragon(settings);
-				}else{
-					AspenDiscovery.Archive.openSeaDragonViewer.open(tile);
-				}
-			}else if(this.activeBookViewer == 'audio') {
-				$('#view-audio').show();
-				$('#audio-player-src').attr('src', this.pageDetails[pid]['audio']);
-				var audioPlayer = document.getElementById("audio-player");
-				audioPlayer.load();
-			}else if(this.activeBookViewer == 'video') {
-				$('#view-video').show();
-				$('#video-player-src').attr('src', this.pageDetails[pid]['video']);
-				var videoPlayer = document.getElementById("video-player");
-				videoPlayer.load();
-			}
-			if (pageChanged && this.multiPage){
-				var numSectionsShown = 0;
-				if (this.pageDetails[pid]['transcript'] == ''){
-					$('#view-toggle-transcription').parent().hide();
-				}else{
-					$('#view-toggle-transcription').parent().show();
-					numSectionsShown++;
-				}
-				if (this.pageDetails[pid]['pdf'] == ''){
-					$('#view-toggle-pdf').parent().hide();
-				}else{
-					$('#view-toggle-pdf').parent().show();
-					imageOnlyShown = false;
-					numSectionsShown++;
-				}
-				if (this.pageDetails[pid]['jp2'] == ''){
-					$('#view-toggle-image').parent().hide();
-				}else{
-					$('#view-toggle-image').parent().show();
-					numSectionsShown++;
-				}
-				if (this.pageDetails[pid]['audio'] == ''){
-					$('#view-toggle-audio').parent().hide();
-				}else{
-					$('#view-toggle-audio').parent().show();
-					numSectionsShown++;
-				}
-				if (this.pageDetails[pid]['video'] == ''){
-					$('#view-toggle-video').parent().hide();
-				}else{
-					$('#view-toggle-video').parent().show();
-					numSectionsShown++;
-				}
-				if (numSectionsShown <= 1){
-					$('#view-toggle').hide();
-				}else{
-					$('#view-toggle').show();
-				}
-
-				this.loadMetadata(this.activeBookPid, pid);
-				//$("#downloadPageAsPDF").href = Globals.path + "/Archive/" + pid + "/DownloadPDF";
-				url = Globals.path + "/Archive/AJAX?method=getAdditionalRelatedObjects&id=" + pid;
-				var additionalRelatedObjectsTarget = $("#additional-related-objects");
-				additionalRelatedObjectsTarget.html("");
-				$.getJSON(url, function(data) {
-					if (data.success) {
-						additionalRelatedObjectsTarget.html(data.additionalObjects);
-					}
-				});
-
-				var pageScroller = $("#book-sections .jcarousel");
-				if (pageScroller){
-					pageScroller.jcarousel('scroll', this.curPage - 1, true);
-					$('#book-sections li').removeClass('active');
-					$('#book-sections .jcarousel li:eq(' + (this.curPage - 1) + ')').addClass('active');
-				}
-			}
-			//alert("Changing display to pid " + pid + " active viewer is " + this.activeBookViewer)
-			return false;
-		},
-
-		nextRandomObject: function(pid){
-			var url = Globals.path + "/Archive/AJAX?id=" + encodeURI(pid) + "&method=getNextRandomObject";
-			$.getJSON(url, function(data){
-				$('#randomImagePlaceholder').html(data.image);
-			}).fail(AspenDiscovery.ajaxFail);
-			return false;
-		},
-
-		setForExhibitInAExhibitNavigation : function (exhibitInAExhibitParentPid) {
-			var date = new Date();
-			date.setTime(date.getTime() + (1 /*days*/ * 24 * 60 * 60 * 1000));
-			expires = "; expires=" + date.toGMTString();
-			document.cookie = encodeURIComponent('exhibitInAExhibitParentPid') + "=" + encodeURIComponent(exhibitInAExhibitParentPid) + expires + "; path=/";
-		},
-
-		setForExhibitNavigation : function (recordIndex, page, collectionPid) {
-			var date = new Date();
-			date.setTime(date.getTime() + (1 /*days*/ * 24 * 60 * 60 * 1000));
-			expires = "; expires=" + date.toGMTString();
-			if (typeof recordIndex != 'undefined') {
-				document.cookie = encodeURIComponent('recordIndex') + "=" + encodeURIComponent(recordIndex) + expires + "; path=/";
-			}
-			if (typeof page != 'undefined') {
-				document.cookie = encodeURIComponent('page') + "=" + encodeURIComponent(page) + expires + "; path=/";
-			}
-			if (typeof collectionPid != 'undefined') {
-				document.cookie = encodeURIComponent('collectionPid') + "=" + encodeURIComponent(collectionPid) + expires + "; path=/";
-			}
-			document.cookie = encodeURIComponent('exhibitNavigation') + "=" + encodeURIComponent(1) + expires + "; path=/";
-		},
-
-		showBrowseEntityFilterPopup: function(exhibitPid, facetName, title){
-			var url = Globals.path + "/Archive/AJAX?id=" + encodeURI(exhibitPid) + "&method=getEntityFacetValuesForExhibit&facetName=" + encodeURI(facetName);
-			AspenDiscovery.loadingMessage();
-			$.getJSON(url, function(data){
-				AspenDiscovery.showMessage(title, data.modalBody);
-			}).fail(AspenDiscovery.ajaxFail);
-			return false;
-		},
-
-		showBrowseFilterPopup: function(exhibitPid, facetName, title){
-			var url = Globals.path + "/Archive/AJAX?id=" + encodeURI(exhibitPid) + "&method=getFacetValuesForExhibit&facetName=" + encodeURI(facetName);
-			AspenDiscovery.loadingMessage();
-			$.getJSON(url, function(data){
-				AspenDiscovery.showMessage(title, data.modalBody);
-			}).fail(AspenDiscovery.ajaxFail);
-			return false;
-		},
-
-		showObjectInPopup: function(pid, recordIndex, page){
-			var url = Globals.path + "/Archive/AJAX?id=" + encodeURI(pid) + "&method=getObjectInfo";
-					// (typeof collectionSearchId == 'undefined' ? '' : '&collectionSearchId=' + encodeURI(collectionSearchId)) +
-					// (typeof recordIndex == 'undefined' ? '' : '&recordIndex=' + encodeURI(recordIndex));
-			AspenDiscovery.loadingMessage();
-			this.setForExhibitNavigation(recordIndex, page);
-
-			$.getJSON(url, function(data){
-				AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
-			}).fail(AspenDiscovery.ajaxFail);
-			return false;
-		},
-
-	}
-
-}(AspenDiscovery.Archive || {}));
 AspenDiscovery.Authors = (function () {
 	return {
 		loadEnrichmentInfo: function (id) {
@@ -8235,6 +8992,10 @@ AspenDiscovery.Browse = (function(){
 						$('#browse-category-' + categoryTextId).addClass('selected');
 						$('.selected-browse-label-search-text').html(data.label); // update label
 
+						var dismissButton = $('.selected-browse-dismiss');
+						dismissButton.removeAttr('onclick');
+						dismissButton.attr('onclick', 'AspenDiscovery.Account.dismissBrowseCategory("'+data.patronId+'","'+categoryTextId+'")');
+
 						AspenDiscovery.Browse.curPage = 1;
 						AspenDiscovery.Browse.curCategory = data.textId;
 						AspenDiscovery.Browse.curSubCategory = data.subCategoryTextId || '';
@@ -8256,10 +9017,16 @@ AspenDiscovery.Browse = (function(){
 							$('#browse-sub-category-menu').html(data.subcategories).fadeIn();
 							if (data.subCategoryTextId) { // selected sub category
 								// Set and Show sub-category label
+								$('#browse-sub-category-' + data.subCategoryTextId).addClass('selected');
 								$('.selected-browse-sub-category-label-search-text')
-									.html($('#browse-sub-category-' + data.subCategoryTextId).addClass('selected').text())
+									.html(data.subCategoryLabel)
 									.fadeIn()
 							}
+						}
+						if (data.lastPage){
+							$('#more-browse-results').hide(); // hide the load more results
+						} else {
+							$('#more-browse-results').show();
 						}
 					}
 				}
@@ -8296,7 +9063,6 @@ AspenDiscovery.Browse = (function(){
 			// clear previous selections
 			$('#browse-sub-category-menu button').removeClass('selected');
 			$('.selected-browse-sub-category-label-search-text').fadeOut();
-
 			if (categoryId !== undefined && categoryId !== AspenDiscovery.Browse.curCategory){
 				$('.browse-category').removeClass('selected');
 
@@ -8352,6 +9118,9 @@ AspenDiscovery.Browse = (function(){
 						$('#browse-sub-category-menu').html(data.subcategories).fadeIn();
 					}
 
+					$('.selected-browse-dismiss').removeAttr('onclick');
+					$('.selected-browse-dismiss').attr('onclick', 'AspenDiscovery.Account.dismissBrowseCategory("'+data.patronId+'","'+subCategoryTextId+'")');
+
 					var newSubCategoryLabel = data.subCategoryLabel; // get label from corresponding button
 					// Set the new browse category label (below the carousel)
 
@@ -8360,6 +9129,7 @@ AspenDiscovery.Browse = (function(){
 						// Set and Show sub-category label
 						$('.selected-browse-sub-category-label-search-text')
 							.html($('#browse-sub-category-' + data.subCategoryTextId).addClass('selected').text())
+							.html(newSubCategoryLabel)
 							.fadeIn();
 					}
 
@@ -8370,6 +9140,12 @@ AspenDiscovery.Browse = (function(){
 					AspenDiscovery.Browse.colcade.append($(data.records));
 
 					$('#selected-browse-search-link').attr('href', data.searchUrl); // update the search link
+
+					if (data.lastPage){
+						$('#more-browse-results').hide(); // hide the load more results
+					} else {
+						$('#more-browse-results').show();
+					}
 				}
 			}).fail(function(){
 				AspenDiscovery.ajaxFail();
@@ -8420,6 +9196,10 @@ AspenDiscovery.Browse = (function(){
 			var listId = $("#listId");
 			if (listId){
 				params['listId'] = listId.val()
+			}
+			var reserveId = $("#reserveId");
+			if (reserveId){
+				params['reserveId'] = reserveId.val()
 			}
 			$.getJSON(url, params, function (data) {
 				if (data.success === false) {
@@ -8479,12 +9259,12 @@ AspenDiscovery.CloudLibrary = (function () {
 				dataType: 'json',
 				async: false,
 				error: function () {
-					AspenDiscovery.showMessage("Error Cancelling Hold", "An error occurred processing your request in Cloud Library.  Please try again in a few minutes.", false);
+					AspenDiscovery.showMessage("Error Cancelling Hold", "An error occurred processing your request in cloudLibrary.  Please try again in a few minutes.", false);
 				}
 			});
 		},
 
-		checkOutTitle: function (id) {
+		checkOutTitle: function (patronId, id) {
 			if (Globals.loggedIn) {
 				//Get any prompts needed for checking out a title
 				var promptInfo = AspenDiscovery.CloudLibrary.getCheckOutPrompts(id);
@@ -8494,7 +9274,7 @@ AspenDiscovery.CloudLibrary = (function () {
 				}
 			} else {
 				AspenDiscovery.Account.ajaxLogin(null, function () {
-					AspenDiscovery.CloudLibrary.checkOutTitle(id);
+					AspenDiscovery.CloudLibrary.checkOutTitle(patronId, id);
 				});
 			}
 			return false;
@@ -8526,7 +9306,7 @@ AspenDiscovery.CloudLibrary = (function () {
 					dataType: 'json',
 					async: false,
 					error: function () {
-						alert("An error occurred processing your request in Cloud Library.  Please try again in a few minutes.");
+						alert("An error occurred processing your request in cloudLibrary.  Please try again in a few minutes.");
 						//alert("ajaxUrl = " + ajaxUrl);
 						AspenDiscovery.closeLightbox();
 					}
@@ -8556,7 +9336,7 @@ AspenDiscovery.CloudLibrary = (function () {
 				dataType: 'json',
 				async: false,
 				error: function () {
-					AspenDiscovery.showMessage("Error Placing Hold", "An error occurred processing your request in Cloud Library.  Please try again in a few minutes.", false);
+					AspenDiscovery.showMessage("Error Placing Hold", "An error occurred processing your request in cloudLibrary.  Please try again in a few minutes.", false);
 				}
 			});
 		},
@@ -8602,7 +9382,7 @@ AspenDiscovery.CloudLibrary = (function () {
 				dataType: 'json',
 				async: false,
 				error: function () {
-					alert("An error occurred processing your request in Cloud Library.  Please try again in a few minutes.");
+					alert("An error occurred processing your request in cloudLibrary.  Please try again in a few minutes.");
 					AspenDiscovery.closeLightbox();
 				}
 			});
@@ -8655,7 +9435,7 @@ AspenDiscovery.CloudLibrary = (function () {
 				dataType: 'json',
 				async: false,
 				error: function () {
-					AspenDiscovery.showMessage("Error Renewing Checkout", "An error occurred processing your request in Cloud Library.  Please try again in a few minutes.", false);
+					AspenDiscovery.showMessage("Error Renewing Checkout", "An error occurred processing your request in cloudLibrary.  Please try again in a few minutes.", false);
 				}
 			});
 		},
@@ -8677,7 +9457,7 @@ AspenDiscovery.CloudLibrary = (function () {
 				dataType: 'json',
 				async: false,
 				error: function () {
-					AspenDiscovery.showMessage("Error Returning Checkout", "An error occurred processing your request in Cloud Library.  Please try again in a few minutes.", false);
+					AspenDiscovery.showMessage("Error Returning Checkout", "An error occurred processing your request in cloudLibrary.  Please try again in a few minutes.", false);
 				}
 			});
 		},
@@ -8703,6 +9483,129 @@ AspenDiscovery.CloudLibrary = (function () {
 		},
 	}
 }(AspenDiscovery.CloudLibrary || {}));
+AspenDiscovery.CourseReserves = (function(){
+	// noinspection JSUnusedGlobalSymbols
+	return {
+		addToHomePage: function(reserveId){
+			AspenDiscovery.Account.ajaxLightbox(Globals.path + '/CourseReserves/AJAX?method=getAddBrowseCategoryFromCourseReservesForm&reserveId=' + reserveId, true);
+			return false;
+		},
+
+		editAction: function (){
+			$('#listDescription,#listTitle,#FavEdit,.listViewButton').hide();
+			$('#listEditControls,#FavSave,.listEditButton').show();
+			return false;
+		},
+
+		cancelEditAction: function (){
+			$('#listDescription,#listTitle,#FavEdit,.listViewButton').show();
+			$('#listEditControls,#FavSave,.listEditButton').hide();
+			return false;
+		},
+
+		emailAction: function (reserveId) {
+			var urlToDisplay = Globals.path + '/CourseReserves/AJAX';
+			AspenDiscovery.loadingMessage();
+			$.getJSON(urlToDisplay, {
+					method  : 'getEmailCourseReserveForm'
+					,reserveId : reserveId
+				},
+				function(data){
+					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+				}
+			);
+			return false;
+		},
+
+		sendEmail: function () {
+			var url = Globals.path + "/CourseReserves/AJAX";
+
+			$.getJSON(url,
+				{ // form inputs passed as data
+					reserveId   : $('#emailCourseReserveForm input[name="reserveId"]').val()
+					,to      : $('#emailCourseReserveForm input[name="to"]').val()
+					,from    : $('#emailCourseReserveForm input[name="from"]').val()
+					,message : $('#emailCourseReserveForm textarea[name="message"]').val()
+					,method  : 'sendEmail'
+				},
+				function(data) {
+					if (data.result) {
+						AspenDiscovery.showMessage("Success", data.message);
+					} else {
+						AspenDiscovery.showMessage("Error", data.message);
+					}
+				}
+			);
+		},
+
+		citeAction: function (id) {
+			return AspenDiscovery.Account.ajaxLightbox(Globals.path + '/CourseReserves/AJAX?method=getCitationFormatsForm&reserveId=' + id, false);
+		},
+
+		processCiteForm: function(){
+			$("#citeListForm").submit();
+		},
+
+		printAction: function (){
+			window.print();
+			return false;
+		},
+
+		getUploadListCoverForm: function (id){
+			var url = Globals.path + '/CourseReserves/AJAX?id=' + id + '&method=getUploadListCoverForm';
+			$.getJSON(url, function (data){
+					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+				}
+			);
+			return false;
+		},
+
+		uploadListCover: function (id){
+			var url = Globals.path + '/CourseReserves/AJAX?id=' + id + '&method=uploadListCover';
+			var uploadCoverData = new FormData($("#uploadListCoverForm")[0]);
+			$.ajax({
+				url: url,
+				type: 'POST',
+				data: uploadCoverData,
+				dataType: 'json',
+				success: function(data) {
+					AspenDiscovery.showMessage(data.title, data.message, true, data.success);
+				},
+				async: false,
+				contentType: false,
+				processData: false
+			});
+			return false;
+		},
+
+		getUploadListCoverFormByURL: function (id){
+			var url = Globals.path + '/CourseReserves/AJAX?id=' + id + '&method=getUploadListCoverFormByURL';
+			$.getJSON(url, function (data){
+					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+				}
+			);
+			return false;
+		},
+
+		uploadListCoverByURL: function (id){
+			var url = Globals.path + '/CourseReserves/AJAX?id=' + id + '&method=uploadListCoverByURL';
+			var uploadCoverData = new FormData($("#uploadListCoverFormByURL")[0]);
+			$.ajax({
+				url: url,
+				type: 'POST',
+				data: uploadCoverData,
+				dataType: 'json',
+				success: function(data) {
+					AspenDiscovery.showMessage(data.title, data.message, true, data.success);
+				},
+				async: false,
+				contentType: false,
+				processData: false
+			});
+			return false;
+		}
+	};
+}(AspenDiscovery.CourseReserves || {}));
 AspenDiscovery.DPLA = (function(){
 	return {
 		getDPLAResults: function(searchTerm){
@@ -9023,7 +9926,7 @@ AspenDiscovery.GroupedWork = (function(){
 				$.getJSON(
 						url, function(data){
 							if (data.result === true){
-								$("#notInterested" + recordId).css('background-color', '#f73d3d').css('color', 'white').prop("disabled", true);
+								$("#groupedRecord" + recordId).parent('.result').hide();
 							}else{
 								AspenDiscovery.showMessage('Sorry', data.message);
 							}
@@ -9046,15 +9949,6 @@ AspenDiscovery.GroupedWork = (function(){
 
 		reloadEnrichment: function (id){
 			AspenDiscovery.GroupedWork.loadEnrichmentInfo(id, true);
-		},
-
-		reloadIslandora: function(id){
-			var url = Globals.path + '/GroupedWork/' + id + '/AJAX?method=reloadIslandora';
-			$.getJSON(url, function (data){
-					AspenDiscovery.showMessage("Success", data.message, true, true);
-				}
-			);
-			return false;
 		},
 
 		saveReview: function(id){
@@ -9677,6 +10571,10 @@ AspenDiscovery.CollectionSpotlights = (function(){
 			AspenDiscovery.Account.ajaxLightbox(Globals.path + '/Admin/AJAX?method=getAddToSpotlightForm&source=list&id=' + listId, true);
 			return false;
 		},
+		createSpotlightFromCourseReserve: function (courseReserveId){
+			AspenDiscovery.Account.ajaxLightbox(Globals.path + '/Admin/AJAX?method=getAddToSpotlightForm&source=course_reserve&id=' + courseReserveId, true);
+			return false;
+		},
 		createSpotlightFromSearch: function (searchId){
 			AspenDiscovery.Account.ajaxLightbox(Globals.path + '/Admin/AJAX?method=getAddToSpotlightForm&source=search&id=' + searchId, true);
 			return false;
@@ -9755,28 +10653,6 @@ AspenDiscovery.CollectionSpotlights = (function(){
 }(AspenDiscovery.CollectionSpotlights || {}));
 AspenDiscovery.MaterialsRequest = (function(){
 	return {
-		getWorldCatIdentifiers: function(){
-			var title = $("#title").val();
-			var author = $("#author").val();
-			var format = $("#format").val();
-			if (title == '' && author == ''){
-				alert("Please enter a title and author before checking for an ISBN and OCLC Number");
-			}else{
-				var requestUrl = Globals.path + "/MaterialsRequest/AJAX?method=GetWorldCatIdentifiers&title=" + encodeURIComponent(title) + "&author=" + encodeURIComponent(author)  + "&format=" + encodeURIComponent(format);
-				$.getJSON(requestUrl, function(data){
-					if (data.success == true){
-						//Dislay the results of the suggestions
-						var suggestedIdentifiers = $("#suggestedIdentifiers");
-						suggestedIdentifiers.html(data.formattedSuggestions);
-						suggestedIdentifiers.slideDown();
-					}else{
-						alert(data.error);
-					}
-				});
-			}
-			return false;
-		},
-
 		cancelMaterialsRequest: function(id){
 			if (confirm("Are you sure you want to cancel this request?")){
 				var url = Globals.path + "/MaterialsRequest/AJAX?method=cancelRequest&id=" + id;
@@ -9937,7 +10813,7 @@ AspenDiscovery.MaterialsRequest = (function(){
 			//Update labels as needed
 			if (AspenDiscovery.MaterialsRequest.authorLabels){
 				if (AspenDiscovery.MaterialsRequest.authorLabels[selectedFormat]) {
-					$("#authorFieldLabel").html(AspenDiscovery.MaterialsRequest.authorLabels[selectedFormat] + ': ');
+					$("#authorFieldLabel").html(AspenDiscovery.MaterialsRequest.authorLabels[selectedFormat]);
 				//	TODO: Set when required
 				}
 			}
@@ -9947,12 +10823,14 @@ AspenDiscovery.MaterialsRequest = (function(){
 				$("#acceptCopyrightYes").addClass('required');
 				$("#copyright").show();
 				$("#supplementalDetails").hide();
-				$("#titleLabel").html("Article Title <span class='requiredIndicator'>*</span>");
+				$("#titleLabel").hide();
+				$("#articleTitleLabel").show();
 			}else{
 				$("#magazineTitle,#acceptCopyrightYes").removeClass('required');
 				$("#copyright").hide();
 				$("#supplementalDetails").show();
-				$("#titleLabel").html("Title <span class='requiredIndicator'>*</span>");
+				$("#titleLabel").show();
+				$("#articleTitleLabel").hide();
 			}
 
 		},
@@ -10160,19 +11038,27 @@ AspenDiscovery.OverDrive = (function(){
 			});
 		},
 
-		followOverDriveDownloadLink: function(patronId, overDriveId, formatId){
-			var ajaxUrl = Globals.path + "/OverDrive/AJAX?method=getDownloadLink&patronId=" + patronId + "&overDriveId=" + overDriveId + "&formatId=" + formatId;
+		followOverDriveDownloadLink: function(patronId, overDriveId, formatId, isSupplement){
+			var ajaxUrl = Globals.path + "/OverDrive/AJAX?method=getDownloadLink&patronId=" + patronId + "&overDriveId=" + overDriveId + "&formatId=" + formatId + "&isSupplement=" + isSupplement;
 			$.ajax({
 				url: ajaxUrl,
 				cache: false,
 				success: function(data){
-					if (data.success){
+					if (data.success && data.fulfillment == "download"){
 						//Reload the page
 						var win = window.open(data.downloadUrl, '_blank');
 						win.focus();
 						//window.location.href = data.downloadUrl ;
 					}else{
 						AspenDiscovery.showMessage('An Error occurred', data.message);
+					}
+
+					if (data.success && data.fulfillment == "redirect") {
+						if (data.success){
+							AspenDiscovery.showMessageWithButtons(data.message, data.modalBody, data.modalButtons);
+						}else{
+							AspenDiscovery.showMessage('Error', data.message);
+						}
 					}
 				},
 				dataType: 'json',
@@ -10375,7 +11261,7 @@ AspenDiscovery.Hoopla = (function(){
 						AspenDiscovery.showMessageWithButtons(data.title, data.message, data.buttons);
 						AspenDiscovery.Account.loadMenuData();
 					} else {
-						AspenDiscovery.showMessage("Checking Out Title", data.message);
+						AspenDiscovery.showMessage(data.title, data.message);
 					}
 				}).fail(AspenDiscovery.ajaxFail)
 			}else{
@@ -10442,11 +11328,10 @@ AspenDiscovery.Prospector = (function(){
 			$.ajax({
 				url: fullUrl,
 				success: function(data) {
-					var prospectorSearchResults = $(data).find("ProspectorSearchResults").text();
-					if (prospectorSearchResults) {
-						if (prospectorSearchResults.length > 0){
-							$("#prospectorSearchResultsPlaceholder").html(prospectorSearchResults);
-						}
+					if (data.numTitles == 0){
+						$("#prospectorSearchResultsPlaceholder").hide();
+					}else{
+						$("#prospectorSearchResultsPlaceholder").html(data.formattedData);
 					}
 				}
 			});
@@ -10610,417 +11495,6 @@ $.fn.rater.rate = function($this, opts, rating) {
 		}, true);
 	}
 };
-AspenDiscovery.RBdigital = (function () {
-	return {
-		cancelHold: function (patronId, id) {
-			var url = Globals.path + "/RBdigital/AJAX?method=cancelHold&patronId=" + patronId + "&recordId=" + id;
-			$.ajax({
-				url: url,
-				cache: false,
-				success: function (data) {
-					if (data.success) {
-						AspenDiscovery.showMessage("Hold Cancelled", data.message, true);
-						$("#rbdigitalHold_" + id).hide();
-						AspenDiscovery.Account.loadMenuData();
-					} else {
-						AspenDiscovery.showMessage("Error Cancelling Hold", data.message, true);
-					}
-
-				},
-				dataType: 'json',
-				async: false,
-				error: function () {
-					AspenDiscovery.showMessage("Error Cancelling Hold", "An error occurred processing your request in RBdigital.  Please try again in a few minutes.", false);
-				}
-			});
-		},
-
-		checkOutTitle: function (id) {
-			if (Globals.loggedIn) {
-				//Get any prompts needed for checking out a title
-				var promptInfo = AspenDiscovery.RBdigital.getCheckOutPrompts(id);
-				// noinspection JSUnresolvedVariable
-				if (!promptInfo.promptNeeded) {
-					AspenDiscovery.RBdigital.doCheckOut(promptInfo.patronId, id);
-				}
-			} else {
-				AspenDiscovery.Account.ajaxLogin(null, function () {
-					AspenDiscovery.RBdigital.checkOutTitle(id);
-				});
-			}
-			return false;
-		},
-
-		checkOutMagazine: function (id) {
-			if (Globals.loggedIn) {
-				//Get any prompts needed for checking out a title
-				var promptInfo = AspenDiscovery.RBdigital.getMagazineCheckOutPrompts(id);
-				// noinspection JSUnresolvedVariable
-				if (!promptInfo.promptNeeded) {
-					AspenDiscovery.RBdigital.doMagazineCheckOut(promptInfo.patronId, id);
-				}
-			} else {
-				AspenDiscovery.Account.ajaxLogin(null, function () {
-					AspenDiscovery.RBdigital.checkOutMagazine(id);
-				});
-			}
-			return false;
-		},
-
-		createAccount: function (action, patronId, id) {
-			if (Globals.loggedIn) {
-				//Check form validation
-				var accountForm = $('#createRBdigitalAccount');
-
-				if (!accountForm[0].checkValidity()) {
-					// If the form is invalid, submit it. The form won't actually submit;
-					// this will just cause the browser to display the native HTML5 error messages.
-					accountForm.find(':submit').click();
-					return false;
-				}
-
-				var formValues = 'username=' + encodeURIComponent($("#username").val());
-				var password1 = encodeURIComponent($('#password1').val());
-				var password2 = encodeURIComponent($('#password2').val());
-				if (password1 !== password2) {
-					$("#password_validation").show().focus();
-					return false;
-				} else {
-					$("#password_validation").hide();
-				}
-				formValues += '&password=' + password1;
-				formValues += '&libraryCard=' + encodeURIComponent($('#libraryCard').val());
-				formValues += '&firstName=' + encodeURIComponent($('#firstName').val());
-				formValues += '&lastName=' + encodeURIComponent($('#lastName').val());
-				formValues += '&email=' + encodeURIComponent($('#email').val());
-				formValues += '&postalCode=' + encodeURIComponent($('#postalCode').val());
-				formValues += '&followupAction=' + encodeURIComponent(action);
-				formValues += '&patronId=' + encodeURIComponent(patronId);
-				formValues += '&id=' + encodeURIComponent(id);
-				formValues += '&method=createAccount';
-
-				var ajaxUrl = Globals.path + "/RBdigital/AJAX?" + formValues;
-
-				$.ajax({
-					url: ajaxUrl,
-					cache: false,
-					success: function (data) {
-						if (data.success === true) {
-							AspenDiscovery.showMessageWithButtons("Success", data.message, data.buttons);
-						} else {
-							AspenDiscovery.showMessage("Error", data.message, false);
-						}
-					},
-					dataType: 'json',
-					async: false,
-					error: function () {
-						AspenDiscovery.showMessage("Error", "An error occurred processing your request in RBdigital.  Please try again in a few minutes.");
-					}
-				});
-			} else {
-				AspenDiscovery.showMessage("Error", "You must be logged in before creating an RBdigital account.", false);
-			}
-			return false;
-		},
-
-		doCheckOut: function (patronId, id) {
-			if (Globals.loggedIn) {
-				var ajaxUrl = Globals.path + "/RBdigital/AJAX?method=checkOutTitle&patronId=" + patronId + "&id=" + id;
-				$.ajax({
-					url: ajaxUrl,
-					cache: false,
-					success: function (data) {
-						if (data.success === true) {
-							AspenDiscovery.showMessageWithButtons(data.title, data.message, data.buttons);
-							AspenDiscovery.Account.loadMenuData();
-						} else {
-							// noinspection JSUnresolvedVariable
-							if (data.noCopies === true) {
-								AspenDiscovery.closeLightbox();
-								var ret = confirm(data.message);
-								if (ret === true) {
-									AspenDiscovery.RBdigital.doHold(patronId, id);
-								}
-							} else {
-								AspenDiscovery.showMessage(data.title, data.message, false);
-							}
-						}
-					},
-					dataType: 'json',
-					async: false,
-					error: function () {
-						alert("An error occurred processing your request in RBdigital.  Please try again in a few minutes.");
-						//alert("ajaxUrl = " + ajaxUrl);
-						AspenDiscovery.closeLightbox();
-					}
-				});
-			} else {
-				AspenDiscovery.Account.ajaxLogin(null, function () {
-					AspenDiscovery.RBdigital.checkOutTitle(id);
-				}, false);
-			}
-			return false;
-		},
-
-		doMagazineCheckOut: function (patronId, id) {
-			if (Globals.loggedIn) {
-				var ajaxUrl = Globals.path + "/RBdigital/AJAX?method=checkOutMagazine&patronId=" + patronId + "&id=" + id;
-				$.ajax({
-					url: ajaxUrl,
-					cache: false,
-					success: function (data) {
-						if (data.success === true) {
-							AspenDiscovery.showMessageWithButtons("Magazine Checked Out Successfully", data.message, data.buttons);
-							AspenDiscovery.Account.loadMenuData();
-						} else {
-							// noinspection JSUnresolvedVariable
-							AspenDiscovery.showMessage("Error Checking Out Magazine", data.message, false);
-						}
-					},
-					dataType: 'json',
-					async: false,
-					error: function () {
-						alert("An error occurred processing your request in RBdigital.  Please try again in a few minutes.");
-						//alert("ajaxUrl = " + ajaxUrl);
-						AspenDiscovery.closeLightbox();
-					}
-				});
-			} else {
-				AspenDiscovery.Account.ajaxLogin(null, function () {
-					AspenDiscovery.RBdigital.checkOutMagazine(id);
-				}, false);
-			}
-			return false;
-		},
-
-		doHold: function (patronId, id) {
-			var url = Globals.path + "/RBdigital/AJAX?method=placeHold&patronId=" + patronId + "&id=" + id;
-			$.ajax({
-				url: url,
-				cache: false,
-				success: function (data) {
-					// noinspection JSUnresolvedVariable
-					if (data.availableForCheckout) {
-						AspenDiscovery.RBdigital.doCheckOut(patronId, id);
-					} else {
-						AspenDiscovery.showMessage("Placed Hold", data.message, !data.hasWhileYouWait);
-						AspenDiscovery.Account.loadMenuData();
-					}
-				},
-				dataType: 'json',
-				async: false,
-				error: function () {
-					AspenDiscovery.showMessage("Error Placing Hold", "An error occurred processing your request in RBdigital.  Please try again in a few minutes.", false);
-				}
-			});
-		},
-
-		getCheckOutPrompts: function (id) {
-			var url = Globals.path + "/RBdigital/" + id + "/AJAX?method=getCheckOutPrompts";
-			var result = true;
-			$.ajax({
-				url: url,
-				cache: false,
-				success: function (data) {
-					result = data;
-					// noinspection JSUnresolvedVariable
-					if (data.promptNeeded) {
-						// noinspection JSUnresolvedVariable
-						AspenDiscovery.showMessageWithButtons(data.promptTitle, data.prompts, data.buttons);
-					}
-				},
-				dataType: 'json',
-				async: false,
-				error: function () {
-					alert("An error occurred processing your request.  Please try again in a few minutes.");
-					AspenDiscovery.closeLightbox();
-				}
-			});
-			return result;
-		},
-
-		getMagazineCheckOutPrompts: function (id) {
-			var url = Globals.path + "/RBdigital/" + id + "/AJAX?method=getMagazineCheckOutPrompts";
-			var result = true;
-			$.ajax({
-				url: url,
-				cache: false,
-				success: function (data) {
-					result = data;
-					// noinspection JSUnresolvedVariable
-					if (data.promptNeeded) {
-						// noinspection JSUnresolvedVariable
-						AspenDiscovery.showMessageWithButtons(data.promptTitle, data.prompts, data.buttons);
-					}
-				},
-				dataType: 'json',
-				async: false,
-				error: function () {
-					alert("An error occurred processing your request.  Please try again in a few minutes.");
-					AspenDiscovery.closeLightbox();
-				}
-			});
-			return result;
-		},
-
-		getHoldPrompts: function (id) {
-			var url = Globals.path + "/RBdigital/" + id + "/AJAX?method=getHoldPrompts";
-			var result = true;
-			$.ajax({
-				url: url,
-				cache: false,
-				success: function (data) {
-					result = data;
-					// noinspection JSUnresolvedVariable
-					if (data.promptNeeded) {
-						// noinspection JSUnresolvedVariable
-						AspenDiscovery.showMessageWithButtons(data.promptTitle, data.prompts, data.buttons);
-					}
-				},
-				dataType: 'json',
-				async: false,
-				error: function () {
-					alert("An error occurred processing your request in RBdigital.  Please try again in a few minutes.");
-					AspenDiscovery.closeLightbox();
-				}
-			});
-			return result;
-		},
-
-		placeHold: function (id) {
-			if (Globals.loggedIn) {
-				//Get any prompts needed for placing holds (email and format depending on the interface.
-				var promptInfo = AspenDiscovery.RBdigital.getHoldPrompts(id, 'hold');
-				// noinspection JSUnresolvedVariable
-				if (!promptInfo.promptNeeded) {
-					AspenDiscovery.RBdigital.doHold(promptInfo.patronId, id);
-				}
-			} else {
-				AspenDiscovery.Account.ajaxLogin(null, function () {
-					AspenDiscovery.RBdigital.placeHold(id);
-				});
-			}
-			return false;
-		},
-
-		processCheckoutPrompts: function () {
-			var id = $("#id").val();
-			var checkoutType = $("#checkoutType").val();
-			var patronId = $("#patronId option:selected").val();
-			AspenDiscovery.closeLightbox();
-			if (checkoutType === 'book') {
-				return AspenDiscovery.RBdigital.doCheckOut(patronId, id);
-			} else {
-				return AspenDiscovery.RBdigital.doMagazineCheckOut(patronId, id);
-			}
-		},
-
-		processHoldPrompts: function () {
-			var id = $("#id").val();
-			var patronId = $("#patronId option:selected").val();
-			AspenDiscovery.closeLightbox();
-			return AspenDiscovery.RBdigital.doHold(patronId, id);
-		},
-
-		renewCheckout: function (patronId, recordId) {
-			var url = Globals.path + "/RBdigital/AJAX?method=renewCheckout&patronId=" + patronId + "&recordId=" + recordId;
-			$.ajax({
-				url: url,
-				cache: false,
-				success: function (data) {
-					if (data.success) {
-						AspenDiscovery.showMessage("Title Renewed", data.message, true);
-					} else {
-						AspenDiscovery.showMessage("Unable to Renew Title", data.message, true);
-					}
-
-				},
-				dataType: 'json',
-				async: false,
-				error: function () {
-					AspenDiscovery.showMessage("Error Renewing Checkout", "An error occurred processing your request in RBdigital.  Please try again in a few minutes.", false);
-				}
-			});
-		},
-
-		returnCheckout: function (patronId, recordId) {
-			var url = Globals.path + "/RBdigital/AJAX?method=returnCheckout&patronId=" + patronId + "&recordId=" + recordId;
-			$.ajax({
-				url: url,
-				cache: false,
-				success: function (data) {
-					if (data.success) {
-						AspenDiscovery.showMessage("Title Returned", data.message, true);
-						$("#rbdigitalCheckout_" + recordId).hide();
-						AspenDiscovery.Account.loadMenuData();
-					} else {
-						AspenDiscovery.showMessage("Error Returning Title", data.message, true);
-					}
-
-				},
-				dataType: 'json',
-				async: false,
-				error: function () {
-					AspenDiscovery.showMessage("Error Returning Checkout", "An error occurred processing your request in RBdigital.  Please try again in a few minutes.", false);
-				}
-			});
-		},
-
-		returnMagazine: function (patronId, recordId) {
-			var url = Globals.path + "/RBdigital/AJAX?method=returnMagazine&patronId=" + patronId + "&recordId=" + recordId;
-			$.ajax({
-				url: url,
-				cache: false,
-				success: function (data) {
-					if (data.success) {
-						AspenDiscovery.showMessage("Magazine Returned", data.message, true);
-						$(".rbdigitalMagazineCheckout_" + recordId).hide();
-						AspenDiscovery.Account.loadMenuData();
-					} else {
-						AspenDiscovery.showMessage("Error Returning Magazine", data.message, true);
-					}
-
-				},
-				dataType: 'json',
-				async: false,
-				error: function () {
-					AspenDiscovery.showMessage("Error Returning Magazine", "An error occurred processing your request in RBdigital.  Please try again in a few minutes.", false);
-				}
-			});
-		},
-
-		getStaffView: function (id) {
-			var url = Globals.path + "/RBdigital/" + id + "/AJAX?method=getStaffView";
-			$.getJSON(url, function (data) {
-				if (!data.success) {
-					AspenDiscovery.showMessage('Error', data.message);
-				} else {
-					$("#staffViewPlaceHolder").replaceWith(data.staffView);
-				}
-			});
-		},
-
-		getMagazineStaffView: function (id) {
-			var url = Globals.path + "/RBdigital/" + id + "/AJAX?method=getMagazineStaffView";
-			$.getJSON(url, function (data) {
-				if (!data.success) {
-					AspenDiscovery.showMessage('Error', data.message);
-				} else {
-					$("#staffViewPlaceHolder").replaceWith(data.staffView);
-				}
-			});
-		},
-
-		getLargeCover: function (id){
-			var url = Globals.path + '/RBdigital/' + id + '/AJAX?method=getLargeCover';
-			$.getJSON(url, function (data){
-					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
-				}
-			);
-			return false;
-		},
-	}
-}(AspenDiscovery.RBdigital || {}));
 AspenDiscovery.Account.ReadingHistory = (function(){
 	return {
 		deleteEntry: function (patronId, id){
@@ -11103,17 +11577,20 @@ AspenDiscovery.Record = (function(){
 							if (data.needsItemLevelHold){
 								AspenDiscovery.showMessageWithButtons(data.title, data.message, data.modalButtons);
 							}else {
-								AspenDiscovery.showMessage('Hold Placed Successfully', data.message, false, false);
+								AspenDiscovery.showMessage(data.title, data.message, false, false);
 								AspenDiscovery.Account.loadMenuData();
 							}
+						}else if (data.confirmationNeeded){
+							AspenDiscovery.showMessageWithButtons(data.title, data.message, data.modalButtons);
 						} else {
-							AspenDiscovery.showMessage('Hold Failed', data.message, false, false);
+							AspenDiscovery.showMessage(data.title, data.message, false, false);
 						}
-					}
-					if (data.success){
-						AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
-					}else{
-						AspenDiscovery.showMessage(data.title, data.message);
+					}else {
+						if (data.success) {
+							AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+						} else {
+							AspenDiscovery.showMessage(data.title, data.message);
+						}
 					}
 				}).fail(AspenDiscovery.ajaxFail);
 			}else{
@@ -11155,41 +11632,11 @@ AspenDiscovery.Record = (function(){
 			return false;
 		},
 
-		showBookMaterial: function(module, id){
-			if (Globals.loggedIn){
-				AspenDiscovery.loadingMessage();
-				//var source; // source not used for booking at this time
-				if (id.indexOf(":") > 0){
-					var idParts = id.split(":", 2);
-					//source = idParts[0];
-					id = idParts[1];
-				//}else{
-				//	source = 'ils';
-				}
-				$.getJSON(Globals.path + "/" + module + "/" + id + "/AJAX?method=getBookMaterialForm", function(data){
-					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
-				}).fail(AspenDiscovery.ajaxFail)
-			}else{
-				AspenDiscovery.Account.ajaxLogin(null, function(){
-					AspenDiscovery.Record.showBookMaterial(id);
-				}, false)
-			}
-			return false;
-		},
-
-		submitBookMaterialForm: function(){
-			var params = $('#bookMaterialForm').serialize();
-			var module = $('#module').val();
-			AspenDiscovery.showMessage('Scheduling', 'Processing, please wait.');
-			$.getJSON(Globals.path + "/" + module +"/AJAX", params+'&method=bookMaterial', function(data){
-				if (data.modalBody) AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
-					// For errors that can be fixed by the user, the form will be re-displayed
-				if (data.success) AspenDiscovery.showMessage('Success', data.message/*, true*/);
-				else if (data.message) AspenDiscovery.showMessage('Error', data.message);
-			}).fail(AspenDiscovery.ajaxFail);
-		},
-
 		submitHoldForm: function(){
+			var requestTitleButton = $('#requestTitleButton');
+			requestTitleButton.prop('disabled', true);
+			requestTitleButton.addClass('disabled');
+			document.querySelector('.fa-spinner').classList.remove('hidden');
 			var id = $('#id').val();
 			var autoLogOut = $('#autologout').prop('checked');
 			var selectedItem = $('#selectedItem');
@@ -11230,17 +11677,21 @@ AspenDiscovery.Record = (function(){
 			$.getJSON(Globals.path + "/" + module +  "/" + id + "/AJAX", params, function(data){
 				if (data.success){
 					if (data.needsItemLevelHold){
+						var requestTitleButton = $('#requestTitleButton');
+						requestTitleButton.prop('disabled', false);
+						requestTitleButton.removeClass('disabled');
+						document.querySelector('.fa-spinner').classList.add('hidden');
 						$('.modal-body').html(data.message);
 					}else{
-						AspenDiscovery.showMessage('Hold Placed Successfully', data.message, false, data.autologout);
+						AspenDiscovery.showMessage(data.title, data.message, false, data.autologout);
 						if (!data.autologout){
 							AspenDiscovery.Account.loadMenuData();
 						}
 					}
 				}else if (data.confirmationNeeded){
-					AspenDiscovery.showMessageWithButtons('Place Hold?', data.message, data.modalButtons);
+					AspenDiscovery.showMessageWithButtons(data.title, data.message, data.modalButtons);
 				}else{
-					AspenDiscovery.showMessage('Hold Failed', data.message, false, false);
+					AspenDiscovery.showMessage(data.title, data.message, false, false);
 				}
 			}).fail(AspenDiscovery.ajaxFail);
 		},
@@ -11282,13 +11733,17 @@ AspenDiscovery.Record = (function(){
 			$.getJSON(Globals.path + "/" + module +  "/" + id + "/AJAX", params, function(data){
 				if (data.success){
 					if (data.needsItemLevelHold){
+						var requestTitleButton = $('#requestTitleButton');
+						requestTitleButton.prop('disabled', false);
+						requestTitleButton.removeClass('disabled');
+						document.querySelector('.fa-spinner').classList.add('hidden');
 						$('.modal-body').html(data.message);
 					}else{
-						AspenDiscovery.showMessage('Hold Placed Successfully', data.message, false, autoLogOut);
+						AspenDiscovery.showMessage(data.title, data.message, false, autoLogOut);
 						AspenDiscovery.Account.loadMenuData();
 					}
 				}else{
-					AspenDiscovery.showMessage('Hold Failed', data.message, false, autoLogOut);
+					AspenDiscovery.showMessage(data.title, data.message, false, autoLogOut);
 				}
 			}).fail(AspenDiscovery.ajaxFail);
 		},
@@ -11301,13 +11756,17 @@ AspenDiscovery.Record = (function(){
 			$.getJSON(Globals.path + "/" + module +  "/" + bibId + "/AJAX", params, function(data){
 				if (data.success){
 					if (data.needsItemLevelHold){
+						var requestTitleButton = $('#requestTitleButton');
+						requestTitleButton.prop('disabled', false);
+						requestTitleButton.removeClass('disabled');
+						document.querySelector('.fa-spinner').classList.add('hidden');
 						$('.modal-body').html(data.message);
 					}else{
-						AspenDiscovery.showMessage('Hold Placed Successfully', data.message, false);
+						AspenDiscovery.showMessage(data.title, data.message, false);
 						AspenDiscovery.Account.loadMenuData();
 					}
 				}else{
-					AspenDiscovery.showMessage('Hold Failed', data.message, false);
+					AspenDiscovery.showMessage(data.title, data.message, false);
 				}
 			}).fail(AspenDiscovery.ajaxFail);
 			return false;
@@ -11436,8 +11895,7 @@ AspenDiscovery.Record = (function(){
 					$("#staffViewPlaceHolder").replaceWith(data.staffView);
 				}
 			});
-		},
-
+		}
 	};
 }(AspenDiscovery.Record || {}));
 AspenDiscovery.Responsive = (function(){
@@ -12221,7 +12679,7 @@ TitleScroller.prototype.activateCurrentTitle = function() {
 	};
 })(jQuery);
 
-AspenDiscovery.WebBuilder = (function () {
+AspenDiscovery.WebBuilder = function () {
 	// noinspection JSUnusedGlobalSymbols
 	return {
 		editors: [],
@@ -12235,32 +12693,39 @@ AspenDiscovery.WebBuilder = (function () {
 				$("#propertyRowsourceId").hide();
 				$('#propertyRowframeHeight').hide();
 				$('#propertyRowimageURL').hide();
+				$('#propertyRowpdfView').hide();
 			}else if (sourceType === 'youtube_video' || sourceType === 'vimeo_video') {
 				$('#propertyRowmarkdown').hide();
 				$('#propertyRowsourceInfo').show();
 				$("#propertyRowsourceId").hide();
 				$('#propertyRowframeHeight').hide();
 				$('#propertyRowimageURL').hide();
+				$('#propertyRowpdfView').hide();
 			}else if (sourceType === 'iframe') {
 				$('#propertyRowmarkdown').hide();
 				$('#propertyRowsourceInfo').show();
 				$("#propertyRowsourceId").hide();
 				$('#propertyRowframeHeight').show();
 				$('#propertyRowimageURL').hide();
+				$('#propertyRowpdfView').hide();
 			}else if (sourceType === 'hours_locations') {
 				$('#propertyRowmarkdown').hide();
 				$('#propertyRowsourceInfo').hide();
 				$("#propertyRowsourceId").hide();
 				$('#propertyRowframeHeight').hide();
 				$('#propertyRowimageURL').hide();
+				$('#propertyRowpdfView').hide();
 			}else {
 				$('#propertyRowmarkdown').hide();
 				$('#propertyRowsourceInfo').hide();
 				$("#propertyRowsourceId").show();
 				$('#propertyRowframeHeight').hide();
 				$('#propertyRowimageURL').hide();
+				$('#propertyRowpdfView').hide();
 				if (sourceType === 'image') {
 					$('#propertyRowimageURL').show();
+				} else if (sourceType === 'pdf') {
+					$('#propertyRowpdfView').show();
 				}
 
 				var url = Globals.path + '/WebBuilder/AJAX?method=getPortalCellValuesForSource&portalCellId=' + portalCellId + '&sourceType=' + sourceType;
@@ -12478,9 +12943,78 @@ AspenDiscovery.WebBuilder = (function () {
 				modalDialog.modal('show');
 				return false;
 			}
+		},
+
+		updateWebBuilderFields: function () {
+			var requireLogin = $('#requireLogin');
+			if(requireLogin.is(":checked")) {
+				$("#propertyRowallowAccess").show();
+				$("#propertyRowrequireLoginUnlessInLibrary").show();
+			} else {
+				$("#propertyRowallowAccess").hide();
+				$("#propertyRowrequireLoginUnlessInLibrary").hide();
+			}
+
+			$(requireLogin).click(function() {
+				if(requireLogin.is(":checked")){
+					$("#propertyRowallowAccess").show();
+					$("#propertyRowrequireLoginUnlessInLibrary").show();
+				}else{
+					$("#propertyRowallowAccess").hide();
+					$("#propertyRowrequireLoginUnlessInLibrary").hide();
+				}
+			});
+		},
+
+		getWebResource:function (id) {
+			var url = Globals.path + "/WebBuilder/AJAX";
+			var params = {
+				method: "getWebResource",
+				resourceId: id
+			};
+			// noinspection JSUnresolvedFunction
+			$.getJSON(url, params, function(data){
+				if(data.requireLogin) {
+					if(Globals.loggedIn || data.inLibrary) {
+						var params = {
+							method: "trackWebResourceUsage",
+							id: id,
+							authType: Globals.loggedIn ? "user" : "library"
+						};
+						$.getJSON(url, params, function(usage){
+							if(data.openInNewTab) {
+								var newTab = window.open();
+								newTab.location.href = data.url;
+							} else {
+								location.assign(data.url);
+							}
+						})
+					} else {
+						AspenDiscovery.Account.ajaxLogin(null, function(){
+							return AspenDiscovery.Account.getWebResource(id);
+						}, false);
+					}
+				} else {
+					var params = {
+						method: "trackWebResourceUsage",
+						id: id,
+						authType: "none"
+					};
+					$.getJSON(url, params, function(usage){
+						if(data.openInNewTab) {
+							var newTab = window.open();
+							newTab.location.href = data.url;
+						} else {
+							location.assign(data.url);
+						}
+					})
+				}
+			}).fail(AspenDiscovery.ajaxFail);
+
+			return false;
 		}
 	};
-}(AspenDiscovery.WebBuilder || {}));
+}(AspenDiscovery.WebBuilder || {});
 AspenDiscovery.Websites = (function () {
 	return {
 		trackUsage: function (id) {

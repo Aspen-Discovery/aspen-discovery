@@ -465,12 +465,6 @@ function getUserUpdates()
 					,('Third Party Enrichment', 'Administer Third Party Enrichment API Keys', '', 0, 'Allows the user to define connection to external enrichment systems like Content Cafe, Syndetics, Google, Novelist etc.')
 					,('Third Party Enrichment', 'Administer Wikipedia Integration', '', 10, 'Allows the user to control how authors are matched to Wikipedia entries.')
 					,('Third Party Enrichment', 'View New York Times Lists', '', 20, 'Allows the user to view and update lists loaded from the New York Times.')
-					,('Islandora Archives', 'Administer Islandora Archive', 'Islandora', 0, 'Allows the user to administer integration with an Islandora archive.')
-					,('Islandora Archives', 'View Archive Authorship Claims', 'Islandora', 10, 'Allows the user to view authorship claims for Islandora archive materials.')
-					,('Islandora Archives', 'View Library Archive Authorship Claims', 'Islandora', 12, 'Allows the user to view authorship claims for Islandora archive materials.')
-					,('Islandora Archives', 'View Archive Material Requests', 'Islandora', 20, 'Allows the user to view material requests for Islandora archive materials.')
-					,('Islandora Archives', 'View Library Archive Material Requests', 'Islandora', 22, 'Allows the user to view material requests for Islandora archive materials.')
-					,('Islandora Archives', 'View Islandora Archive Usage', 'Islandora', 30, 'Allows the view a report of objects in the repository by library.')
 					,('Open Archives', 'Administer Open Archives', 'Open Archives', 0, 'Allows the user to administer integration with Open Archives repositories for all libraries.')
 					,('Events', 'Administer Library Calendar Settings', 'Events', 10, 'Allows the user to administer integration with Library Calendar for all libraries.')
 					,('Website Indexing', 'Administer Website Indexing Settings', 'Web Indexer', 0, 'Allows the user to administer the indexing of websites for all libraries.')
@@ -709,7 +703,7 @@ function getUserUpdates()
 				"ALTER TABLE user CHANGE COLUMN displayName displayName VARCHAR(256) NOT NULL DEFAULT ''",
 				"ALTER TABLE user CHANGE COLUMN phone phone VARCHAR(256) NOT NULL DEFAULT ''",
 				"ALTER TABLE user CHANGE COLUMN overdriveEmail overdriveEmail VARCHAR(256) NOT NULL DEFAULT ''",
-				'ALTER TABLE user CHANGE COLUMN rbdigitalPassword rbdigitalPassword VARCHAR(256)',
+				//'ALTER TABLE user CHANGE COLUMN rbdigitalPassword rbdigitalPassword VARCHAR(256)',
 				"ALTER TABLE user CHANGE COLUMN alternateLibraryCardPassword alternateLibraryCardPassword VARCHAR(256) NOT NULL DEFAULT ''",
 				//Now do the actual encryption
 				'encryptUserFields'

@@ -12,21 +12,22 @@ class Mailer {
 	 * @param string $body Message body
 	 * @param string $replyTo Someone to reply to
 	 * @param bool $htmlMessage True to send the email as html
+	 * @param string? $htmlBody Message body
 	 *
 	 * @return  boolean
 	 */
-	public function send($to, $subject, $body, $replyTo = null, $htmlMessage = false) {
+	public function send($to, $subject, $body, $replyTo = null, $htmlBody = null) {
 		require_once ROOT_DIR . '/sys/Email/SendGridSetting.php';
 		require_once ROOT_DIR . '/sys/Email/AmazonSesSetting.php';
 		require_once ROOT_DIR . '/sys/CurlWrapper.php';
 		//TODO: Do validation of the address
 		$amazonSesSettings = new AmazonSesSetting();
 		if ($amazonSesSettings->find(true)){
-			return $this->sendViaAmazonSes($amazonSesSettings, $to, $replyTo, $subject, $htmlMessage, $body);
+			return $this->sendViaAmazonSes($amazonSesSettings, $to, $replyTo, $subject, $body, $htmlBody);
 		}else{
 			$sendGridSettings = new SendGridSetting();
 			if ($sendGridSettings->find(true)){
-				return $this->sendViaSendGrid($sendGridSettings, $to, $replyTo, $subject, $htmlMessage, $body);
+				return $this->sendViaSendGrid($sendGridSettings, $to, $replyTo, $subject, $body, $htmlBody);
 			}else{
 				return false;
 			}
@@ -42,7 +43,7 @@ class Mailer {
 	 * @param string $body
 	 * @return bool
 	 */
-	protected function sendViaSendGrid(SendGridSetting $sendGridSettings, string $to, ?string $replyTo, string $subject, bool $htmlMessage, string $body)
+	protected function sendViaSendGrid(SendGridSetting $sendGridSettings, string $to, ?string $replyTo, string $subject, string $body, ?string $htmlBody)
 	{
 		//Send the email
 		$curlWrapper = new CurlWrapper();
@@ -72,12 +73,14 @@ class Mailer {
 		$apiBody->subject = $subject;
 		$apiBody->content = [];
 		$content = new stdClass();
-		if ($htmlMessage) {
+		if (!empty($htmlBody)) {
 			$content->type = 'text/html';
+			$content->value = $htmlBody;
 		} else {
 			$content->type = 'text/plain';
+			$content->value = $body;
 		}
-		$content->value = $body;
+
 		$apiBody->content[] = $content;
 
 		$response = $curlWrapper->curlPostPage('https://api.sendgrid.com/v3/mail/send', json_encode($apiBody));
@@ -90,26 +93,27 @@ class Mailer {
 		}
 	}
 
-	private function sendViaAmazonSes(AmazonSesSetting $amazonSesSettings, string $to, ?string $replyTo, string $subject, bool $htmlMessage, string $body) : bool
+	private function sendViaAmazonSes(AmazonSesSetting $amazonSesSettings, string $to, ?string $replyTo, string $subject, ?string $body, ?string $htmlBody) : bool
 	{
 		require_once ROOT_DIR . '/sys/Email/AmazonSesMessage.php';
 		$message = new AmazonSesMessage();
-		$message->setTo($to);
+		$toAddresses = explode(';', $to);
+		$message->addTo($toAddresses);
 		if (!empty($replyTo)){
 			$message->addReplyTo($replyTo);
 		}
 		$message->setSubject($subject);
-		if ($htmlMessage){
-			$message->setMessageFromString(null, $body);
-		}else{
-			$message->setMessageFromString($body, null);
-		}
+		$message->setMessageFromString($body, $htmlBody);
 
 		$response = $amazonSesSettings->sendEmail($message, false, false);
 		if ($response == false){
 			return false;
 		}else{
-			return true;
+			if (isset($response->error) && count($response->error) > 0){
+				return false;
+			}else {
+				return true;
+			}
 		}
 	}
 }

@@ -205,6 +205,10 @@ AspenDiscovery.Browse = (function(){
 						$('#browse-category-' + categoryTextId).addClass('selected');
 						$('.selected-browse-label-search-text').html(data.label); // update label
 
+						var dismissButton = $('.selected-browse-dismiss');
+						dismissButton.removeAttr('onclick');
+						dismissButton.attr('onclick', 'AspenDiscovery.Account.dismissBrowseCategory("'+data.patronId+'","'+categoryTextId+'")');
+
 						AspenDiscovery.Browse.curPage = 1;
 						AspenDiscovery.Browse.curCategory = data.textId;
 						AspenDiscovery.Browse.curSubCategory = data.subCategoryTextId || '';
@@ -226,10 +230,16 @@ AspenDiscovery.Browse = (function(){
 							$('#browse-sub-category-menu').html(data.subcategories).fadeIn();
 							if (data.subCategoryTextId) { // selected sub category
 								// Set and Show sub-category label
+								$('#browse-sub-category-' + data.subCategoryTextId).addClass('selected');
 								$('.selected-browse-sub-category-label-search-text')
-									.html($('#browse-sub-category-' + data.subCategoryTextId).addClass('selected').text())
+									.html(data.subCategoryLabel)
 									.fadeIn()
 							}
+						}
+						if (data.lastPage){
+							$('#more-browse-results').hide(); // hide the load more results
+						} else {
+							$('#more-browse-results').show();
 						}
 					}
 				}
@@ -266,7 +276,6 @@ AspenDiscovery.Browse = (function(){
 			// clear previous selections
 			$('#browse-sub-category-menu button').removeClass('selected');
 			$('.selected-browse-sub-category-label-search-text').fadeOut();
-
 			if (categoryId !== undefined && categoryId !== AspenDiscovery.Browse.curCategory){
 				$('.browse-category').removeClass('selected');
 
@@ -322,6 +331,9 @@ AspenDiscovery.Browse = (function(){
 						$('#browse-sub-category-menu').html(data.subcategories).fadeIn();
 					}
 
+					$('.selected-browse-dismiss').removeAttr('onclick');
+					$('.selected-browse-dismiss').attr('onclick', 'AspenDiscovery.Account.dismissBrowseCategory("'+data.patronId+'","'+subCategoryTextId+'")');
+
 					var newSubCategoryLabel = data.subCategoryLabel; // get label from corresponding button
 					// Set the new browse category label (below the carousel)
 
@@ -330,6 +342,7 @@ AspenDiscovery.Browse = (function(){
 						// Set and Show sub-category label
 						$('.selected-browse-sub-category-label-search-text')
 							.html($('#browse-sub-category-' + data.subCategoryTextId).addClass('selected').text())
+							.html(newSubCategoryLabel)
 							.fadeIn();
 					}
 
@@ -340,6 +353,12 @@ AspenDiscovery.Browse = (function(){
 					AspenDiscovery.Browse.colcade.append($(data.records));
 
 					$('#selected-browse-search-link').attr('href', data.searchUrl); // update the search link
+
+					if (data.lastPage){
+						$('#more-browse-results').hide(); // hide the load more results
+					} else {
+						$('#more-browse-results').show();
+					}
 				}
 			}).fail(function(){
 				AspenDiscovery.ajaxFail();
@@ -390,6 +409,10 @@ AspenDiscovery.Browse = (function(){
 			var listId = $("#listId");
 			if (listId){
 				params['listId'] = listId.val()
+			}
+			var reserveId = $("#reserveId");
+			if (reserveId){
+				params['reserveId'] = reserveId.val()
 			}
 			$.getJSON(url, params, function (data) {
 				if (data.success === false) {

@@ -3,19 +3,21 @@ package com.turning_leaf_technologies.grouping;
 import com.turning_leaf_technologies.indexing.IlsExtractLogEntry;
 import com.turning_leaf_technologies.indexing.IndexingProfile;
 import com.turning_leaf_technologies.indexing.RecordIdentifier;
+import com.turning_leaf_technologies.indexing.TranslationMap;
 import com.turning_leaf_technologies.logging.BaseLogEntry;
 import com.turning_leaf_technologies.marc.MarcUtil;
 import com.turning_leaf_technologies.reindexer.GroupedWorkIndexer;
 import org.apache.logging.log4j.Logger;
 import org.marc4j.marc.*;
 
-import java.io.File;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 /**
@@ -74,6 +76,20 @@ public class MarcRecordGrouper extends BaseMarcRecordGrouper {
 				translationMaps.put(mapName, translationMap);
 			}
 			translationMapsRS.close();
+
+			PreparedStatement getFormatMapStmt = dbConnection.prepareStatement("SELECT * from format_map_values WHERE indexingProfileId = ?");
+			getFormatMapStmt.setLong(1, profile.getId());
+			ResultSet formatMapRS = getFormatMapStmt.executeQuery();
+			HashMap <String, String> formatMap = new HashMap<>();
+			translationMaps.put("format", formatMap);
+			HashMap <String, String> formatCategoryMap = new HashMap<>();
+			translationMaps.put("formatCategory", formatCategoryMap);
+			while (formatMapRS.next()){
+				String format = formatMapRS.getString("value");
+				formatMap.put(format.toLowerCase(), formatMapRS.getString("format"));
+				formatCategoryMap.put(format.toLowerCase(), formatMapRS.getString("formatCategory"));
+			}
+			formatMapRS.close();
 		}catch (Exception e){
 			logEntry.incErrors("Error loading translation maps", e);
 		}
@@ -87,20 +103,24 @@ public class MarcRecordGrouper extends BaseMarcRecordGrouper {
 		for (DataField itemField : itemFields) {
 			if (itemField.getSubfield(formatSubfield) != null) {
 				String originalFormat = itemField.getSubfield(formatSubfield).getData().toLowerCase();
-				String format = translateValue("item_format", originalFormat);
-				if (format != null && !format.equals(originalFormat)){
-					return format;
+				if (translationMaps.get("formatCategory").containsKey(originalFormat)){
+					String format = translateValue("formatCategory", originalFormat);
+					String formatCategory = categoryMap.get(format.toLowerCase());
+					if (formatCategory != null){
+						return formatCategory;
+					}else{
+						logger.warn("Did not find a grouping category for format " + format.toLowerCase());
+					}
+				}else{
+					logger.warn("Did not find a format category for format " + originalFormat);
 				}
 			}
 		}
-		//We didn't get a format from the items, check the bib as backup
-		String format = getFormatFromBib(record);
-		format = categoryMap.get(formatsToFormatCategory.get(format.toLowerCase()));
-		return format;
+		return null;
 	}
 
 	public String processMarcRecord(Record marcRecord, boolean primaryDataChanged, String originalGroupedWorkId) {
-		RecordIdentifier primaryIdentifier = getPrimaryIdentifierFromMarcRecord(marcRecord, profile.getName(), profile.isDoAutomaticEcontentSuppression());
+		RecordIdentifier primaryIdentifier = getPrimaryIdentifierFromMarcRecord(marcRecord, profile);
 
 		if (primaryIdentifier != null){
 			//Get data for the grouped record
@@ -119,16 +139,24 @@ public class MarcRecordGrouper extends BaseMarcRecordGrouper {
 		if (profile.getFormatSource().equals("item")){
 			//get format from item
 			groupingFormat = getFormatFromItems(marcRecord, profile.getFormat());
+			if (groupingFormat == null || groupingFormat.length() == 0){
+				//Do a bib level determination
+				String format = getFormatFromBib(marcRecord);
+				groupingFormat = categoryMap.get(formatsToFormatCategory.get(format.toLowerCase()));
+				workForTitle.setGroupingCategory(groupingFormat);
+			}else {
+				workForTitle.setGroupingCategory(groupingFormat);
+			}
 		}else{
 			groupingFormat = super.setGroupingCategoryForWork(marcRecord, workForTitle);
 		}
 		return groupingFormat;
 	}
 
-	public RecordIdentifier getPrimaryIdentifierFromMarcRecord(Record marcRecord, String recordType, boolean doAutomaticEcontentSuppression){
-		RecordIdentifier identifier = super.getPrimaryIdentifierFromMarcRecord(marcRecord, recordType);
+	public RecordIdentifier getPrimaryIdentifierFromMarcRecord(Record marcRecord, IndexingProfile indexingProfile){
+		RecordIdentifier identifier = super.getPrimaryIdentifierFromMarcRecord(marcRecord, indexingProfile);
 
-		if (doAutomaticEcontentSuppression) {
+		if (indexingProfile.isDoAutomaticEcontentSuppression()) {
 			//Check to see if the record is an overdrive record
 			if (useEContentSubfield) {
 				boolean allItemsSuppressed = true;
@@ -166,12 +194,23 @@ public class MarcRecordGrouper extends BaseMarcRecordGrouper {
 					for (DataField linkField : linkFields) {
 						if (linkField.getSubfield('u') != null) {
 							//Check the url to see if it is from OverDrive
-							//TODO: Suppress Rbdigital and Hoopla records as well?
+							//TODO: Suppress other eContent records as well?
 							String linkData = linkField.getSubfield('u').getData().trim();
 							if (MarcRecordGrouper.overdrivePattern.matcher(linkData).matches()) {
 								identifier.setSuppressed();
 							}
 						}
+					}
+				}
+			}
+		}
+
+		if (identifier != null) {
+			if (indexingProfile.getSuppressRecordsWithUrlsMatching() != null) {
+				Set<String> linkFields = MarcUtil.getFieldList(marcRecord, "856u");
+				for (String linkData : linkFields) {
+					if (indexingProfile.getSuppressRecordsWithUrlsMatching().matcher(linkData).matches()) {
+						identifier.setSuppressed();
 					}
 				}
 			}
@@ -200,26 +239,39 @@ public class MarcRecordGrouper extends BaseMarcRecordGrouper {
 
 	public void regroupAllRecords(Connection dbConn, IndexingProfile indexingProfile, GroupedWorkIndexer indexer, IlsExtractLogEntry logEntry)  throws SQLException {
 		logEntry.addNote("Starting to regroup all records");
-		PreparedStatement getAllRecordsToRegroupStmt = dbConn.prepareStatement("SELECT identifier, permanent_id from grouped_work_primary_identifiers left join grouped_work on grouped_work_id = grouped_work.id WHERE type = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+		PreparedStatement getAllRecordsToRegroupStmt = dbConn.prepareStatement("SELECT ilsId from ils_records where source = ? and deleted = 0", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+		PreparedStatement getOriginalPermanentIdForRecordStmt = dbConn.prepareStatement("SELECT permanent_id from grouped_work_primary_identifiers join grouped_work on grouped_work_id = grouped_work.id WHERE type = ? and identifier = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 		getAllRecordsToRegroupStmt.setString(1, indexingProfile.getName());
 		ResultSet allRecordsToRegroupRS = getAllRecordsToRegroupStmt.executeQuery();
 		while (allRecordsToRegroupRS.next()) {
 			logEntry.incRecordsRegrouped();
-			String recordIdentifier = allRecordsToRegroupRS.getString("identifier");
-			String originalGroupedWorkId = allRecordsToRegroupRS.getString("permanent_id");
-			File marcFile = indexingProfile.getFileForIlsRecord(recordIdentifier);
-			Record marcRecord = MarcUtil.readIndividualRecord(marcFile, logEntry);
+			String recordIdentifier = allRecordsToRegroupRS.getString("ilsId");
+			String originalGroupedWorkId;
+			getOriginalPermanentIdForRecordStmt.setString(1, indexingProfile.getName());
+			getOriginalPermanentIdForRecordStmt.setString(2, recordIdentifier);
+			ResultSet getOriginalPermanentIdForRecordRS = getOriginalPermanentIdForRecordStmt.executeQuery();
+			if (getOriginalPermanentIdForRecordRS.next()){
+				originalGroupedWorkId = getOriginalPermanentIdForRecordRS.getString("permanent_id");
+			}else{
+				originalGroupedWorkId = "false";
+			}
+			Record marcRecord = indexer.loadMarcRecordFromDatabase(indexingProfile.getName(), recordIdentifier, logEntry);
 			if (marcRecord != null) {
-				String groupedWorkId = processMarcRecord(marcRecord, false, originalGroupedWorkId);
+				//Pass null to processMarcRecord.  It will do the lookup to see if there is an existing id there.
+				String groupedWorkId = processMarcRecord(marcRecord, false, null);
 				if (originalGroupedWorkId == null || !originalGroupedWorkId.equals(groupedWorkId)) {
 					logEntry.incChangedAfterGrouping();
+					//process records to regroup after every 1000 changes so we keep up with the changes.
+					if (logEntry.getNumChangedAfterGrouping() % 1000 == 0){
+						indexer.processScheduledWorks(logEntry, false);
+					}
 				}
 			}
 		}
 
-		//Process all of the records to reload which will handle reindexing anything that just changed
+		//Finish reindexing anything that just changed
 		if (logEntry.getNumChangedAfterGrouping() > 0){
-			indexer.processScheduledWorks(logEntry);
+			indexer.processScheduledWorks(logEntry, false);
 		}
 
 		indexingProfile.clearRegroupAllRecords(dbConn, logEntry);

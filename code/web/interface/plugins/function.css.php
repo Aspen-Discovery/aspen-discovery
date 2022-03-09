@@ -27,6 +27,15 @@ function smarty_function_css($params, &$smarty)
 	foreach ($themes as $theme) {
 		$theme = trim($theme);
 
+		global $activeLanguage;
+
+		if ($activeLanguage->isRTL()){
+			if (file_exists("{$local}/interface/themes/{$theme}/css-rtl/{$filename}")) {
+				$css = "/interface/themes/{$theme}/css-rtl/{$filename}";
+				break;
+			}
+		}
+
 		// If the file exists on the local file system, set $css to the relative
 		// path needed to link to it from the web interface.
 		if (file_exists("{$local}/interface/themes/{$theme}/css/{$filename}")) {

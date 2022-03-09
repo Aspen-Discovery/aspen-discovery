@@ -4,6 +4,6 @@ Account setting is a highly customizable section of the patron account and there
 
 ## Tutorial Video
 
-[![Accelerated Reader](/manual/images/Accelerated-Reader.jpg)](https://youtu.be/FSPzWPiyd_4)
+[![Account Settings](/manual/images/Account-Settings.jpg)](https://www.youtube.com/watch?v=NI3CPg6nBPg)
 
-[Watch on Youtube](https://youtu.be/FSPzWPiyd_4)
+[Watch on Youtube](https://www.youtube.com/watch?v=NI3CPg6nBPg)

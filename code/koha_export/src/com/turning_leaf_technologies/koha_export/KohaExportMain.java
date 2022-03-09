@@ -78,7 +78,7 @@ public class KohaExportMain {
 		while (true) {
 			Date startTime = new Date();
 			startTimeForLogging = startTime.getTime() / 1000;
-			logger.info(startTime.toString() + ": Starting Koha Extract");
+			logger.info(startTime + ": Starting Koha Extract");
 
 			// Read the base INI file to get information about the server (current directory/conf/config.ini)
 			configIni = ConfigUtil.loadConfigFile("config.ini", serverName, logger);
@@ -121,6 +121,7 @@ public class KohaExportMain {
 				}
 
 				indexingProfile = IndexingProfile.loadIndexingProfile(dbConn, profileToLoad, logger);
+				logEntry.setIsFullUpdate(indexingProfile.isRunFullUpdate());
 
 				if (!extractSingleWork) {
 					updateBranchInfo(dbConn, kohaConn);
@@ -150,7 +151,7 @@ public class KohaExportMain {
 				logEntry.setFinished();
 
 				Date currentTime = new Date();
-				logger.info(currentTime.toString() + ": Finished Koha Extract");
+				logger.info(currentTime + ": Finished Koha Extract");
 			} catch (Exception e) {
 				logger.error("Error connecting to database ", e);
 				//Don't exit, we will try again in a few minutes
@@ -259,12 +260,38 @@ public class KohaExportMain {
 		}
 	}
 
+	private static float kohaVersion = -1;
+	private static float getKohaVersion(Connection kohaConn){
+		if (kohaVersion == -1) {
+			try {
+				PreparedStatement getKohaVersionStmt = kohaConn.prepareStatement("SELECT value FROM systempreferences WHERE variable='Version'", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+				ResultSet kohaVersionRS = getKohaVersionStmt.executeQuery();
+				while (kohaVersionRS.next()){
+					kohaVersion = kohaVersionRS.getFloat("value");
+					logEntry.addNote("Koha version is " + kohaVersion);
+					break;
+				}
+			} catch (SQLException e) {
+				logEntry.incErrors("Error loading koha version", e);
+			}
+		}
+		return kohaVersion;
+	}
+
 	private static void exportBookCovers(Connection dbConn, Connection kohaConn) {
 		//Get a list of all images within the Koha database
 		int numCoversExported = 0;
 		try{
-			PreparedStatement getKohaCoversStmt = kohaConn.prepareStatement("SELECT imagenumber, biblionumber from biblioimages", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-			PreparedStatement getKohaCoverStmt = kohaConn.prepareStatement("SELECT imagefile, mimetype from biblioimages  where imagenumber = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			PreparedStatement getKohaCoversStmt;
+			PreparedStatement getKohaCoverStmt;
+			float kohaVersion = getKohaVersion(kohaConn);
+			if (kohaVersion >= 20.11) {
+				getKohaCoversStmt = kohaConn.prepareStatement("SELECT timestamp, imagenumber, biblionumber from cover_images", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+				getKohaCoverStmt = kohaConn.prepareStatement("SELECT imagefile, mimetype from cover_images  where imagenumber = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			}else{
+				getKohaCoversStmt = kohaConn.prepareStatement("SELECT timestamp, imagenumber, biblionumber from biblioimages", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+				getKohaCoverStmt = kohaConn.prepareStatement("SELECT imagefile, mimetype from biblioimages  where imagenumber = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			}
 			PreparedStatement getGroupedWorkForRecordStmt = dbConn.prepareStatement("SELECT permanent_id from grouped_work inner join grouped_work_primary_identifiers on grouped_work.id = grouped_work_id where type = ? and identifier = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			PreparedStatement clearBookCoverInfoStmt = dbConn.prepareStatement("UPDATE bookcover_info set imageSource = '', thumbnailLoaded=0, mediumLoaded=0, largeLoaded= 0 where recordType = 'grouped_work' and recordId = ?");
 
@@ -278,7 +305,13 @@ public class KohaExportMain {
 					//Check to see if we have an existing uploaded record
 					String groupedWorkId = getGroupedWorkForRecordRS.getString("permanent_id");
 					File coverFile = new File(coversPath + groupedWorkId + ".png");
-					if (!coverFile.exists() || coverFile.length() == 0) {
+					Timestamp kohaCoverTimestamp = null;
+					try{
+						kohaCoverTimestamp = kohaCoversRS.getTimestamp("timestamp");
+					}catch (SQLException e){
+						logger.warn("Null timestamp found while exporting bookcovers, ignoring.");
+					}
+					if (!coverFile.exists() || coverFile.length() == 0 || kohaCoverTimestamp == null || (coverFile.lastModified() < kohaCoverTimestamp.getTime())) {
 						getKohaCoverStmt.setLong(1, kohaCoversRS.getLong("imagenumber"));
 						ResultSet kohaCoverRS = getKohaCoverStmt.executeQuery();
 						if (kohaCoverRS.next()){
@@ -331,7 +364,7 @@ public class KohaExportMain {
 				dbConn = null;
 			}
 		} catch (Exception e) {
-			System.out.println("Error closing aspen connection: " + e.toString());
+			System.out.println("Error closing aspen connection: " + e);
 			e.printStackTrace();
 		}
 	}
@@ -1003,7 +1036,7 @@ public class KohaExportMain {
 					logEntry.addNote("Getting all records from Koha");
 				} else {
 					getChangedBibsFromKohaStmt = kohaConn.prepareStatement("select biblionumber from biblio where timestamp >= ?");
-					logEntry.addNote("Getting changes to records since " + lastExtractTimestamp.toString() + " UTC");
+					logEntry.addNote("Getting changes to records since " + lastExtractTimestamp + " UTC");
 
 					getChangedBibsFromKohaStmt.setTimestamp(1, lastExtractTimestamp);
 				}
@@ -1016,7 +1049,7 @@ public class KohaExportMain {
 				//Get a list of changed bibs by biblio_metadata timestamp as well
 				if (!indexingProfile.isRunFullUpdate()){
 					PreparedStatement getChangedBibMetadataFromKohaStmt = kohaConn.prepareStatement("select biblionumber from biblio_metadata where timestamp >= ?");
-					logEntry.addNote("Getting changes to record metadata since " + lastExtractTimestamp.toString() + " UTC");
+					logEntry.addNote("Getting changes to record metadata since " + lastExtractTimestamp + " UTC");
 
 					getChangedBibMetadataFromKohaStmt.setTimestamp(1, lastExtractTimestamp);
 
@@ -1034,7 +1067,7 @@ public class KohaExportMain {
 				// specifically we know that moving one item bib to another does not update the original bib
 				if (!indexingProfile.isRunFullUpdate()){
 					PreparedStatement getZebraQueueBibsToReindexStmt = kohaConn.prepareStatement("select biblio_auth_number from zebraqueue where time >= ? AND server = 'biblioserver'");
-					logEntry.addNote("Getting records to reindex from zebra queue since " + lastExtractTimestamp.toString() + " UTC");
+					logEntry.addNote("Getting records to reindex from zebra queue since " + lastExtractTimestamp + " UTC");
 
 					getZebraQueueBibsToReindexStmt.setTimestamp(1, lastExtractTimestamp);
 					ResultSet getZebraQueueBibsToReindexRS = getZebraQueueBibsToReindexStmt.executeQuery();
@@ -1076,6 +1109,7 @@ public class KohaExportMain {
 				logEntry.addNote("Skipping the first " + indexingProfile.getLastChangeProcessed() + " records because they were processed previously see (Last Record ID Processed for the Indexing Profile).");
 			}
 			for (String curBibId : changedBibIds) {
+				logEntry.setCurrentId(curBibId);
 				if ((singleWorkId != null) || (numProcessed >= indexingProfile.getLastChangeProcessed())) {
 					//Update the marc record
 					updateBibRecord(curBibId);
@@ -1174,8 +1208,7 @@ public class KohaExportMain {
 			while (getRecordsToReloadRS.next()) {
 				long recordToReloadId = getRecordsToReloadRS.getLong("id");
 				String recordIdentifier = getRecordsToReloadRS.getString("identifier");
-				File marcFile = indexingProfile.getFileForIlsRecord(recordIdentifier);
-				Record marcRecord = MarcUtil.readIndividualRecord(marcFile, logEntry);
+				Record marcRecord = getGroupedWorkIndexer().loadMarcRecordFromDatabase(indexingProfile.getName(), recordIdentifier, logEntry);
 				if (marcRecord != null){
 					logEntry.incRecordsRegrouped();
 					//Regroup the record
@@ -1198,14 +1231,9 @@ public class KohaExportMain {
 		}
 	}
 
-	private static void updateBibRecord(String curBibId) throws FileNotFoundException, SQLException {
+	private static void updateBibRecord(String curBibId) throws SQLException {
 		//Load the existing marc record from file
 		try {
-			File marcFile = indexingProfile.getFileForIlsRecord(curBibId);
-			if (!marcFile.getParentFile().exists()) {
-				//noinspection ResultOfMethodCallIgnored
-				marcFile.getParentFile().mkdirs();
-			}
 
 			//Create a new record from data in the database (faster and more reliable than using ILSDI or OAI export)
 			getBaseMarcRecordStmt.setString(1, curBibId);
@@ -1246,7 +1274,7 @@ public class KohaExportMain {
 						addSubfield(itemField, 'h', bibItemsRS.getString("enumchron"));
 						addSubfield(itemField, 'i', bibItemsRS.getString("stocknumber"));
 						addSubfield(itemField, 'j', bibItemsRS.getString("stack"));
-						addSubfield(itemField, 'k', bibItemsRS.getString("date_due")); //This is non standard added by Aspen
+						addSubfield(itemField, 'k', bibItemsRS.getString("date_due")); //This is non-standard added by Aspen
 						addSubfield(itemField, 'l', bibItemsRS.getString("issues"));
 						addSubfield(itemField, 'm', bibItemsRS.getString("renewals"));
 						addSubfield(itemField, 'n', bibItemsRS.getString("renewals"));
@@ -1264,14 +1292,18 @@ public class KohaExportMain {
 						marcRecord.addVariableField(itemField);
 					}
 
-					if (marcFile.exists()) {
+					GroupedWorkIndexer.MarcStatus saveMarcResult = getGroupedWorkIndexer().saveMarcRecordToDatabase(indexingProfile, curBibId, marcRecord);
+					if (saveMarcResult == GroupedWorkIndexer.MarcStatus.CHANGED){
 						logEntry.incUpdated();
-					} else {
+					}else if (saveMarcResult == GroupedWorkIndexer.MarcStatus.NEW){
 						logEntry.incAdded();
+					}else{
+						//No change has been made, we could skip this
+						if (!indexingProfile.isRunFullUpdate()){
+							logEntry.incSkipped();
+							return;
+						}
 					}
-					MarcWriter writer = new MarcStreamWriter(new FileOutputStream(marcFile), "UTF-8", true);
-					writer.write(marcRecord);
-					writer.close();
 
 					//Regroup the record
 					String groupedWorkId = groupKohaRecord(marcRecord);

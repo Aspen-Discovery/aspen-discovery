@@ -79,6 +79,11 @@ class WebBuilder_BasicPages extends ObjectEditor
 		return '';
 	}
 
+	function getInitializationJs() : string
+	{
+		return 'AspenDiscovery.WebBuilder.updateWebBuilderFields()';
+	}
+
 	function getBreadcrumbs() : array
 	{
 		$breadcrumbs = [];

@@ -8,10 +8,7 @@ import org.marc4j.marc.Record;
 import org.marc4j.marc.Subfield;
 
 import java.net.URLEncoder;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
+import java.sql.*;
 import java.util.*;
 
 class KohaRecordProcessor extends IlsRecordProcessor {
@@ -21,8 +18,8 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 	private final HashMap<String, String> damagedStatuses = new HashMap<>();
 	private final HashMap<String, String> notForLoanStatuses = new HashMap<>();
 
-	KohaRecordProcessor(GroupedWorkIndexer indexer, Connection dbConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
-		this (indexer, dbConn, indexingProfileRS, logger, fullReindex, null);
+	KohaRecordProcessor(GroupedWorkIndexer indexer, String profileType, Connection dbConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
+		this (indexer, profileType, dbConn, indexingProfileRS, logger, fullReindex, null);
 		suppressRecordsWithNoCollection = false;
 	}
 
@@ -71,8 +68,8 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 		return kohaConnection;
 	}
 
-	private KohaRecordProcessor(GroupedWorkIndexer indexer, Connection dbConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex, Connection kohaConnection) {
-		super(indexer, dbConn, indexingProfileRS, logger, fullReindex);
+	private KohaRecordProcessor(GroupedWorkIndexer indexer, String profileType, Connection dbConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex, Connection kohaConnection) {
+		super(indexer, profileType, dbConn, indexingProfileRS, logger, fullReindex);
 		boolean valid = false;
 		int tries = 0;
 		while (tries < 3 && !valid) {
@@ -111,7 +108,13 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 
 					//Get a list of all items that are in transit
 					//PreparedStatement getInTransitItemsStmt = kohaConn.prepareStatement("SELECT itemnumber from reserves WHERE found = 'T'");
-					PreparedStatement getInTransitItemsStmt = kohaConnection.prepareStatement("SELECT itemnumber from branchtransfers WHERE datearrived IS NULL");
+					PreparedStatement getInTransitItemsStmt;
+					if (getKohaVersion(kohaConnection) >= 21.05){
+						getInTransitItemsStmt = kohaConnection.prepareStatement("SELECT itemnumber from branchtransfers WHERE datearrived IS NULL AND datecancelled IS NULL");
+					}else{
+						getInTransitItemsStmt = kohaConnection.prepareStatement("SELECT itemnumber from branchtransfers WHERE datearrived IS NULL");
+					}
+
 					ResultSet inTransitItemsRS = getInTransitItemsStmt.executeQuery();
 					while (inTransitItemsRS.next()) {
 						inTransitItems.add(inTransitItemsRS.getString("itemnumber"));
@@ -143,6 +146,23 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 		if (!valid) {
 			logger.error("Could not connect to Koha database, watch out for dragons");
 		}
+	}
+
+	private float kohaVersion = -1;
+	private float getKohaVersion(Connection kohaConn){
+		if (kohaVersion == -1) {
+			try {
+				PreparedStatement getKohaVersionStmt = kohaConn.prepareStatement("SELECT value FROM systempreferences WHERE variable='Version'", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+				ResultSet kohaVersionRS = getKohaVersionStmt.executeQuery();
+				while (kohaVersionRS.next()){
+					kohaVersion = kohaVersionRS.getFloat("value");
+					break;
+				}
+			} catch (SQLException e) {
+				logger.error("Error loading koha version", e);
+			}
+		}
+		return kohaVersion;
 	}
 
 	@Override

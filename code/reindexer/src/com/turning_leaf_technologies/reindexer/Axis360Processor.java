@@ -72,11 +72,12 @@ class Axis360Processor {
 
 				JSONObject rawResponse = new JSONObject(productRS.getString("rawResponse"));
 
-				groupedWork.setTitle(title, title, title, primaryFormat);
+				String subTitle = "";
 				if (rawResponse.has("subTitle")) {
-					String subtitle = rawResponse.getString("subTitle");
-					groupedWork.setSubTitle(subtitle);
+					subTitle = rawResponse.getString("subTitle");
 				}
+				groupedWork.setTitle(title, subTitle, title, title, primaryFormat, formatCategory);
+
 				String primaryAuthor = productRS.getString("primaryAuthor");
 				groupedWork.setAuthor(primaryAuthor);
 				groupedWork.setAuthAuthor(primaryAuthor);
@@ -111,7 +112,7 @@ class Axis360Processor {
 					groupedWork.addAuthor2Role(narratorsWithRoleToAdd);
 				}
 
-				groupedWork.addDescription(getFieldValue(rawResponse, "description"), formatType);
+				groupedWork.addDescription(getFieldValue(rawResponse, "description"), formatType, formatCategory);
 
 				String language = getFieldValue(rawResponse, "language");
 				groupedWork.addLanguage(indexer.translateSystemValue("language", language, identifier));
@@ -149,11 +150,16 @@ class Axis360Processor {
 					int ownedQty = availabilityRS.getInt("ownedQty");
 					itemInfo.setNumCopies(ownedQty);
 					long settingId = availabilityRS.getLong("settingId");
+					itemInfo.setAvailable(available);
 					if (available) {
 						itemInfo.setDetailedStatus("Available Online");
+						itemInfo.setGroupedStatus("Available Online");
 					} else {
 						itemInfo.setDetailedStatus("Checked Out");
+						itemInfo.setGroupedStatus("Checked Out");
 					}
+					itemInfo.setHoldable(true);
+					itemInfo.setInLibraryUseOnly(false);
 					for (Scope scope : indexer.getScopes()) {
 						boolean okToAdd = false;
 						Axis360Scope axis360Scope = scope.getAxis360Scope();
@@ -164,18 +170,10 @@ class Axis360Processor {
 						}
 						if (okToAdd) {
 							ScopingInfo scopingInfo = itemInfo.addScope(scope);
-							scopingInfo.setAvailable(available);
-							if (available) {
-								scopingInfo.setStatus("Available Online");
-								scopingInfo.setGroupedStatus("Available Online");
-							} else {
-								scopingInfo.setStatus("Checked Out");
-								scopingInfo.setGroupedStatus("Checked Out");
-							}
-							scopingInfo.setHoldable(true);
+							groupedWork.addScopingInfo(scope.getScopeName(), scopingInfo);
+
 							scopingInfo.setLibraryOwned(true);
 							scopingInfo.setLocallyOwned(true);
-							scopingInfo.setInLibraryUseOnly(false);
 						}
 					}
 				}

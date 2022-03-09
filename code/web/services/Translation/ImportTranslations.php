@@ -6,6 +6,11 @@ class Translation_ImportTranslations extends Admin_Admin
 {
 	function launch(){
 		global $interface;
+
+		//Figure out the maximum upload size
+		require_once ROOT_DIR . '/sys/Utils/SystemUtils.php';
+		$interface->assign('max_file_size', SystemUtils::file_upload_max_size() / (1024 * 1024));
+
 		if (isset($_REQUEST['submit'])){
 			//Make sure we don't time out while loading translations
 			set_time_limit(-1);
@@ -69,34 +74,46 @@ class Translation_ImportTranslations extends Admin_Admin
 								}
 							}
 						}
+						/** @var Memcache $memCache */
 						global $memCache;
 						while ($curRow = fgetcsv($fHnd)) {
 							$term = $curRow[0];
-							$translationTerm = new TranslationTerm();
-							$translationTerm->term = $term;
-							if (!$translationTerm->find(true)){
-								$translationTerm->insert();
-							}
+							//Make sure there is at least one translation for the term before importing it.
+							$hasTranslations = false;
 							foreach ($languagesToImport as $code => $columnIndex){
 								$newValue = $curRow[$columnIndex];
 								if (!empty($newValue)){
-									$translation = new Translation();
-									$translation->languageId = $codeToLanguageId[$code];
-									$translation->termId = $translationTerm->id;
-									if ($translation->find(true)){
-										if (!$translation->translated || $overrideExistingTranslations){
+									$hasTranslations = true;
+								}
+							}
+							if ($hasTranslations) {
+								$translationTerm = new TranslationTerm();
+								$translationTerm->term = $term;
+								if (!$translationTerm->find(true)) {
+									$translationTerm->insert();
+								}
+								foreach ($languagesToImport as $code => $columnIndex) {
+									$newValue = $curRow[$columnIndex];
+									if (!empty($newValue)) {
+										$translation = new Translation();
+										$translation->languageId = $codeToLanguageId[$code];
+										$translation->termId = $translationTerm->id;
+										if ($translation->find(true)) {
+											if (!$translation->translated || $overrideExistingTranslations) {
+												$translation->translation = $newValue;
+												$translation->translated = true;
+												$translation->update();
+											}
+										} else {
 											$translation->translation = $newValue;
 											$translation->translated = true;
-											$translation->update();
+											$translation->insert();
 										}
-									}else{
-										$translation->translation = $newValue;
-										$translation->translated = true;
-										$translation->insert();
+										$memCache->delete('translation_' . $codeToLanguageId[$code] . '_0_' . $term);
+										$memCache->delete('translation_' . $codeToLanguageId[$code] . '_1_' . $term);
 									}
-									$memCache->delete('translation_' . $codeToLanguageId[$code] . '_0_' . $term);
-									$memCache->delete('translation_' . $codeToLanguageId[$code] . '_1_' . $term);
 								}
+								$translationTerm = null;
 							}
 						}
 						fclose($fHnd);
@@ -104,7 +121,7 @@ class Translation_ImportTranslations extends Admin_Admin
 						die();
 					}
 				} else {
-					$interface->assign('error', translate('Please select a file to import'));
+					$interface->assign('error', translate(['text' => 'Please select a file to import', 'isAdminFacing'=>true]));
 				}
 			}
 

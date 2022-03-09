@@ -32,6 +32,10 @@ abstract class DataObject
 
 	protected $_data = [];
 
+	protected $_changedFields = [];
+
+	public $_deleteOnSave;
+
 	/**
 	 * @return string[]
 	 */
@@ -52,6 +56,14 @@ abstract class DataObject
 	 * @return string[]
 	 */
 	function getSerializedFieldNames() : array
+	{
+		return [];
+	}
+
+	/**
+	 * @return string[]
+	 */
+	public function getCompressedColumnNames() : array
 	{
 		return [];
 	}
@@ -254,6 +266,7 @@ abstract class DataObject
 		$numericColumns = $this->getNumericColumnNames();
 		$encryptedFields = $this->getEncryptedFieldNames();
 		$serializedFields = $this->getSerializedFieldNames();
+		$compressedFields = $this->getCompressedColumnNames();
 
 		$properties = get_object_vars($this);
 		$propertyNames = '';
@@ -283,6 +296,12 @@ abstract class DataObject
 					}else{
 						$propertyValues .= "''";
 					}
+				}elseif (in_array($name, $compressedFields)) {
+					if (!empty($value)) {
+						$propertyValues .= 'COMPRESS(' . $aspen_db->quote($value) . ')';
+					}else{
+						$propertyValues .= "''";
+					}
 				} else {
 					$propertyValues .= $aspen_db->quote($value);
 				}
@@ -294,6 +313,17 @@ abstract class DataObject
 				$propertyNames .= $name;
 				if (!empty($value)) {
 					$propertyValues .= $aspen_db->quote(serialize($value));
+				}else{
+					$propertyValues .= "''";
+				}
+			}elseif (is_array($value) && in_array($name, $compressedFields)){
+				if (strlen($propertyNames) != 0) {
+					$propertyNames .= ', ';
+					$propertyValues .= ', ';
+				}
+				$propertyNames .= $name;
+				if (!empty($value)) {
+					$propertyValues .= 'COMPRESS(' . $aspen_db->quote($value) . ')';
 				}else{
 					$propertyValues .= "''";
 				}
@@ -325,6 +355,7 @@ abstract class DataObject
 		$numericColumns = $this->getNumericColumnNames();
 		$encryptedFields = $this->getEncryptedFieldNames();
 		$serializedFields = $this->getSerializedFieldNames();
+		$compressedFields = $this->getCompressedColumnNames();
 
 		$properties = get_object_vars($this);
 		$updates = '';
@@ -351,12 +382,24 @@ abstract class DataObject
 					}else{
 						$updates .= $name . ' = ' .  $aspen_db->quote('');
 					}
+				}elseif (in_array($name, $compressedFields)) {
+					if (!empty($value)) {
+						$updates .= $name . ' = COMPRESS(' . $aspen_db->quote($value) . ')';
+					}else{
+						$updates .= $name . ' = ' .  $aspen_db->quote('');
+					}
 				} else {
 					$updates .= $name . ' = ' . $aspen_db->quote($value);
 				}
 			}elseif (is_array($value) && in_array($name, $serializedFields)){
 				if (!empty($value)) {
 					$updates .= $name . ' = ' . $aspen_db->quote(serialize($value));
+				}else{
+					$updates .= $name . ' = ' .  $aspen_db->quote('');
+				}
+			}elseif (is_array($value) && in_array($name, $compressedFields)){
+				if (!empty($value)) {
+					$updates .= $name . ' = COMPRESS(' . $aspen_db->quote($value) . ')';
 				}else{
 					$updates .= $name . ' = ' .  $aspen_db->quote('');
 				}
@@ -553,20 +596,39 @@ abstract class DataObject
 	 */
 	public function getSelectQuery(PDO $aspen_db): string
 	{
-		$selectClause = $this->__table . '.*';
+		$properties = get_object_vars($this);
+		$compressedFields = $this->getCompressedColumnNames();
+		if (count($compressedFields) == 0){
+			$selectClause = $this->__table . '.*';
+		}else{
+			$selectClause = '';
+			foreach ($properties as $name => $value) {
+				if ($name[0] != '_') {
+					if (!empty($selectClause)) {
+						$selectClause .= ', ';
+					}
+					if (in_array($name, $compressedFields)) {
+						$selectClause .= 'UNCOMPRESS(' . $this->__table . '.' . $name . ') as ' . $name;
+					} else {
+						$selectClause .= $this->__table . '.' . $name;
+					}
+				}
+			}
+		}
+
 		if (count($this->__additionalSelects) > 0) {
 			$selectClause = implode($this->__additionalSelects, ',');
 			if ($this->__selectAllColumns) {
 				$selectClause = '*, ' . $selectClause;
 			}
 		}
+
 		$query = 'SELECT ' . $selectClause . ' from ' . $this->__table;
 
 		foreach ($this->__joins as $join) {
 			$query .= $this->getJoinQuery($join);
 		}
 
-		$properties = get_object_vars($this);
 		$where = '';
 		foreach ($properties as $name => $value) {
 			if ($value !== null && $name[0] != '_') {
@@ -664,7 +726,7 @@ abstract class DataObject
 	{
 		/** @var DataObject $oneToManyDBObject */
 		foreach ($oneToManySettings as $oneToManyDBObject) {
-			if (isset($oneToManyDBObject->deleteOnSave) && $oneToManyDBObject->deleteOnSave == true){
+			if ( $oneToManyDBObject->_deleteOnSave == true){
 				$oneToManyDBObject->delete();
 			}else{
 				if (isset($oneToManyDBObject->{$oneToManyDBObject->__primaryKey}) && is_numeric($oneToManyDBObject->{$oneToManyDBObject->__primaryKey})){ // (negative ids need processed with insert)
@@ -759,6 +821,7 @@ abstract class DataObject
 	{
 		$propertyChanged = $this->$propertyName != $newValue || (is_null($this->$propertyName) && !is_null($newValue));
 		if ($propertyChanged) {
+			$this->_changedFields[] = $propertyName;
 			$oldValue = $this->$propertyName;
 			if ($propertyStructure['type'] == 'checkbox'){
 				if ($newValue == 'off' || $newValue == false){
@@ -806,6 +869,7 @@ abstract class DataObject
 		foreach ($encryptedFields as $fieldName){
 			$this->$fieldName = EncryptionUtils::decryptField($this->$fieldName);
 		}
+		//compressed fields also get serialized automatically
 		$serializedFields = $this->getSerializedFieldNames();
 		foreach ($serializedFields as $fieldName) {
 			if (!empty($this->$fieldName) && $this->$fieldName !== null && is_string($this->$fieldName)) {
@@ -828,5 +892,9 @@ abstract class DataObject
 			}
 		}
 		return $return;
+	}
+
+	public function canActiveUserEdit(){
+		return true;
 	}
 }

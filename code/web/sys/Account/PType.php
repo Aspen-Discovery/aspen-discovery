@@ -12,6 +12,12 @@ class PType extends DataObject
 	public $assignedRoleId;
 	public $restrictMasquerade;
 	public $isStaff;
+	public $twoFactorAuthSettingId;
+
+	public function getNumericColumnNames(): array
+	{
+		return ['isStaff', 'maxHolds', 'restrictMasquerade'];
+	}
 
 	static function getObjectStructure() : array
 	{
@@ -30,11 +36,28 @@ class PType extends DataObject
 			'maxHolds' => array('property' => 'maxHolds', 'type' => 'integer', 'label' => 'Max Holds', 'description' => 'The maximum holds that a patron can have.', 'default' => 300),
 			'assignedRoleId' => array('property' => 'assignedRoleId', 'type' => 'enum', 'values' => $roles, 'label' => 'Assigned Role', 'description' => 'Automatically assign a role to a user based on patron type', 'default' => '-1'),
 			'isStaff' => array('property' => 'isStaff', 'type' => 'checkbox', 'label' => 'Treat as staff', 'description' => 'Treat the user as staff, but without specific permissions in Aspen','default' => 0),
-			'restrictMasquerade' => array('property' => 'restrictMasquerade', 'type' => 'checkbox', 'label' => 'Restrict masquerade from accessing patrons of this type', 'description' => 'Users without the ability to masquerade as restricted patrons will not be able to masquerade as this type','default' => 0)
+			'restrictMasquerade' => array('property' => 'restrictMasquerade', 'type' => 'checkbox', 'label' => 'Restrict masquerade from accessing patrons of this type', 'description' => 'Users without the ability to masquerade as restricted patrons will not be able to masquerade as this type','default' => 0),
+			'twoFactorAuthSettingId' => array('property' => 'twoFactorAuthSettingId', 'type' => 'text', 'label' => 'Two-factor authentication setting', 'description' => 'The unique id of the two-factor authentication setting tied to this patron type','readonly'=>true)
 		);
 		if (!UserAccount::userHasPermission('Administer Permissions')){
 			unset($structure['assignedRoleId']);
 		}
 		return $structure;
+	}
+
+	static function getPatronTypeList(): array
+	{
+		$patronType = new pType();
+		$patronType->orderBy('pType');
+		$patronType->find();
+		$patronTypeList = [];
+		while ($patronType->fetch()) {
+			$patronTypeLabel = $patronType->pType;
+			if (!empty($patronType->description)){
+				$patronTypeLabel .= ' - ' . $patronType->description;
+			}
+			$patronTypeList[$patronType->id] = $patronTypeLabel;
+		}
+		return $patronTypeList;
 	}
 }

@@ -18,20 +18,26 @@
 # ****************************************************************************************************************************
 # * include the helper file that holds the URL information by client
 # ****************************************************************************************************************************
-include_once 'config.php';
+//include_once 'config.php';
+require_once '../bootstrap.php';
+require_once '../bootstrap_aspen.php';
 
 # ****************************************************************************************************************************
 # * grab the passed location parameter, then find the path
 # ****************************************************************************************************************************
-$library      = $_GET['library'];
-$locationInfo = urlPath($library);
-$urlPath      = $locationInfo[0];
-$shortname    = $locationInfo[1];
+$urlPath = 'https://'.$_SERVER['SERVER_NAME'];
+$shortname = $_GET['library'];
 
 # ****************************************************************************************************************************
 # * give the number of results to return from the search - needed to accomodate for the culling of Hoopla and Kanopy
 # ****************************************************************************************************************************
 $searchLimit = 100;
+
+if(isset($_GET['page'])) {
+	$page = $_GET['page'];
+} else {
+	$page = 1;
+}
 
 # ****************************************************************************************************************************
 # * grab the parameters needed and clean it up
@@ -42,7 +48,7 @@ $searchTerm = str_replace(' ', '+', $searchTerm);
 # ****************************************************************************************************************************
 # * search link to the catalogue
 # ****************************************************************************************************************************
-$reportURL = $urlPath . '/API/SearchAPI?method=search&lookfor=' . $searchTerm . '&pageSize=' . $searchLimit;
+$reportURL = $urlPath . '/API/SearchAPI?method=search&lookfor=' . $searchTerm . '&pageSize=' . $searchLimit . '&page=' . $page;
 
 # ****************************************************************************************************************************
 # * run the report and grab the JSON
@@ -53,63 +59,93 @@ $jsonData = json_decode(file_get_contents($reportURL), true);
 # * loop over results and massage - so do the test first
 # * - https://stackoverflow.com/questions/6964403/parsing-json-with-php
 # ****************************************************************************************************************************
-if (! empty($jsonData['result']['recordSet'])) {
-  foreach($jsonData['result']['recordSet'] as $item) {
-    $author      = $item['author_display'];
+require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+if (!empty($jsonData['result']['recordSet'])) {
+	foreach ($jsonData['result']['recordSet'] as $item) {
+		$groupedWork = new GroupedWorkDriver($item);
+		$author = $item['author_display'];
 
 # ****************************************************************************************************************************
 # * collection code may be empty - need to dummy it out just in case
 # ****************************************************************************************************************************
-    $ccode       = '';
-    if (isset($item['collection_' . $shortname][0])) { $ccode = $item['collection_' . $shortname][0]; }
-    
-	$format      = '';
-	if (isset($item['format_' . $shortname][0])) { $format      = $item['format_' . $shortname][0]; }
-    $iconName    = $urlPath . "/bookcover.php?id=" . $item['id'] . "&size=medium&type=grouped_work";
-    $id          = $item['id'];
-  
+		$ccode = '';
+		if (isset($item['collection_' . $shortname][0])) {
+			$ccode = $item['collection_' . $shortname][0];
+		}
+
+		$format = '';
+		if (isset($item['format_' . $shortname][0])) {
+			$format = $item['format_' . $shortname][0];
+		}
+		$iconName = $urlPath . "/bookcover.php?id=" . $item['id'] . "&size=medium&type=grouped_work";
+		$id = $item['id'];
+		if($ccode != '') {
+			$format = $format . ' - ' . $ccode;
+		} else {
+			$format = $format;
+		}
+
 # ****************************************************************************************************************************
 # * clean up the summary to remove some of the &# codes
 # ****************************************************************************************************************************
-    $summary     = utf8_encode(trim(strip_tags($item['display_description'])));
-    $summary     = str_replace('&#8211;', ' - ', $summary);
-    $summary     = str_replace('&#8212;', ' - ', $summary);
-    $summary     = str_replace('&#160;', ' ', $summary);
-    if (empty($summary)) { $summary = 'There is no summary available for this title'; }
-    
-    $title       = ucwords($item['title_display']);
-    unset($itemList);
-  
+		$summary = utf8_encode(trim(strip_tags($item['display_description'])));
+		$summary = str_replace('&#8211;', ' - ', $summary);
+		$summary = str_replace('&#8212;', ' - ', $summary);
+		$summary = str_replace('&#160;', ' ', $summary);
+		if (empty($summary)) {
+			$summary = 'There is no summary available for this title';
+		}
+
+		$title = ucwords($item['title_display']);
+		unset($itemList);
+
 # ****************************************************************************************************************************
 # * need to parse over the bib records
 # ****************************************************************************************************************************
-    foreach($item['record_details'] as $itemRecords) {
-      if (strpos($itemRecords, 'ils:') > -1 || strpos($itemRecords, 'overdrive:') > -1) {
-        $itemListing = explode('|', $itemRecords);
-	    
-	  //if (! is_array($itemList)) {
-	  if (! isset($itemList)) {
-	      $itemList[] = array('type' => $itemListing[0], 'name' => $itemListing[1]);
-	    } elseif (! in_array($itemListing[1], array_column($itemList, 'name'))) {
-          $itemList[] = array('type' => $itemListing[0], 'name' => $itemListing[1]);
-        }
-	  } 
-    }
+		$relatedRecords = $groupedWork->getRelatedRecords();
+
+		if(isset($_GET['lida'])) {
+			$lida = $_GET['lida'];
+		} else {
+			$lida = false;
+		}
+
+		if($lida == false) {
+			foreach ($relatedRecords as $relatedRecord) {
+				if (strpos($relatedRecord->id, 'ils:') > -1 || strpos($relatedRecord->id, 'overdrive:') > -1) {
+
+					//if (! is_array($itemList)) {
+					if (!isset($itemList)) {
+						$itemList[] = array('type' => $relatedRecord->id, 'name' => $relatedRecord->format);
+					} elseif (!in_array($relatedRecord->format, array_column($itemList, 'name'))) {
+						$itemList[] = array('type' => $relatedRecord->id, 'name' => $relatedRecord->format);
+					}
+				}
+			}
+		} else {
+			foreach ($relatedRecords as $relatedRecord) {
+				if (!isset($itemList)) {
+					$itemList[] = array('id' => $relatedRecord->id, 'name' => $relatedRecord->format, 'source' => $relatedRecord->source);
+				} elseif (!in_array($relatedRecord->format, array_column($itemList, 'name'))) {
+					$itemList[] = array('id' => $relatedRecord->id, 'name' => $relatedRecord->format, 'source' => $relatedRecord->source);
+				}
+			}
+		}
 
 # ****************************************************************************************************************************
 # * Build out results array ... ensure we have at least one item available
 # ****************************************************************************************************************************
-    if (! empty($itemList)) {
-	  $searchResults['Items'][] = array('title' => trim($title), 'author' => $author, 'image' => $iconName, 'format' => $format . ' - ' . $ccode, 'itemList' => $itemList, 'key' => $id, 'summary' => $summary); 
-    }
-  }
+		if (!empty($itemList)) {
+			$searchResults['Items'][] = array('title' => trim($title), 'author' => $author, 'image' => $iconName, 'format' => $format, 'itemList' => $itemList, 'key' => $id, 'summary' => $summary);
+		}
+	}
 }
 
 # ****************************************************************************************************************************
 # * Just in case there are no values to return, check and spit out empty rather than null
 # ****************************************************************************************************************************
 if (empty($searchResults['Items'])) {
-  $searchResults['Items'] = '';
+	$searchResults['Items'] = '';
 }
 
 # ****************************************************************************************************************************
@@ -117,4 +153,3 @@ if (empty($searchResults['Items'])) {
 # ****************************************************************************************************************************
 header('Content-Type: application/json');
 echo json_encode($searchResults);
-?>

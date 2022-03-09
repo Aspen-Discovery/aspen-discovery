@@ -8,9 +8,9 @@
 		</div>
 	{/foreach}
 	{* Show more facet popup list *}
-	<div class="facetValue" id="more{$title}"><a href="#" onclick="AspenDiscovery.ResultsList.multiSelectMoreFacetPopup('More {$cluster.displayNamePlural}', '{$title}'); return false;">{translate text='more'} ...</a></div>
+	<div class="facetValue" id="more{$title}"><a href="#" onclick="AspenDiscovery.ResultsList.multiSelectMoreFacetPopup('More {$cluster.displayNamePlural}', '{$title}'); return false;">{translate text='more' isPublicFacing=true} ...</a></div>
 	<div id="moreFacetPopup_{$title}" style="display:none">
-		<p>{translate text="more_facet_popup_descriptions" defaultText="Please select one of the items below to narrow your search by %1%." 1=$cluster.label}</p>
+		<p>{translate text="Please select one of the items below to narrow your search by %1%." 1=$cluster.label isPublicFacing=true}</p>
 		<form id="facetPopup_{$title|escapeCSS}" onsubmit="return AspenDiscovery.ResultsList.processMultiSelectMoreFacetForm('#facetPopup_{$title|escapeCSS}', '{$cluster.field_name}');">
 			<div class="container-12">
 				<div class="row moreFacetPopup">
@@ -34,20 +34,20 @@
 	{foreach from=$cluster.list item=thisFacet name="narrowLoop"}
 		{if $smarty.foreach.narrowLoop.iteration == ($cluster.valuesToShow + 1)}
 		{* Show More link*}
-			<div class="facetValue" id="more{$title}"><a href="#" onclick="AspenDiscovery.ResultsList.moreFacets('{$title}'); return false;">{translate text='more'} ...</a></div>
+			<div class="facetValue" id="more{$title}"><a href="#" onclick="AspenDiscovery.ResultsList.moreFacets('{$title}'); return false;">{translate text='more' isPublicFacing=true} ...</a></div>
 		{* Start div for hidden content*}
 			<div class="narrowGroupHidden" id="narrowGroupHidden_{$title}" style="display:none">
 		{/if}
 		<div class="facetValue">
 			<label for="{$title}_{$thisFacet.value|escapeCSS}">
-				<input type="checkbox" {if $thisFacet.isApplied}checked{/if} name="{$title}_{$thisFacet.value|escapeCSS}" id="{$title}_{$thisFacet.value|escapeCSS}" onclick="document.location = '{if $thisFacet.isApplied}{$thisFacet.removalUrl|escape}{else}{$thisFacet.url|escape}{/if}';">
+				<input type="checkbox" {if $thisFacet.isApplied}checked{/if} name="{$title}_{$thisFacet.value|escapeCSS}" id="{$title}_{$thisFacet.value|escapeCSS}" onclick="document.location = '{if $thisFacet.isApplied}{$thisFacet.removalUrl|escape}{else}{$thisFacet.url|escape}{/if}';" onkeypress="document.location = '{if $thisFacet.isApplied}{$thisFacet.removalUrl|escape}{else}{$thisFacet.url|escape}{/if}';">
 				{$thisFacet.display}{if $thisFacet.count != ''}&nbsp;({$thisFacet.count|number_format}){/if}
 			</label>
 		</div>
 	{/foreach}
 	{if $smarty.foreach.narrowLoop.total > $cluster.valuesToShow}
 		<div class="facetValue">
-			<a href="#" onclick="AspenDiscovery.ResultsList.lessFacets('{$title}'); return false;">{translate text='less'} ...</a>
+			<a href="#" onclick="AspenDiscovery.ResultsList.lessFacets('{$title}'); return false;">{translate text='less' isPublicFacing=true} ...</a>
 		</div>
 		</div>{* closes hidden div *}
 	{/if}

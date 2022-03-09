@@ -130,7 +130,6 @@ class CloudLibraryRecordDriver extends MarcRecordDriver {
 		$interface->assign('availability', $availability);
 
 		//Other editions if applicable (only if we aren't the only record!)
-		/** @noinspection DuplicatedCode */
 		$groupedWorkDriver = $this->getGroupedWorkDriver();
 		if ($groupedWorkDriver != null){
 			$relatedRecords = $groupedWorkDriver->getRelatedRecords();
@@ -174,7 +173,7 @@ class CloudLibraryRecordDriver extends MarcRecordDriver {
 	}
 
 	protected $_actions = null;
-	public function getRecordActions($relatedRecord, $isAvailable, $isHoldable, $isBookable, $volumeData = null)
+	public function getRecordActions($relatedRecord, $isAvailable, $isHoldable, $volumeData = null)
 	{
 		if ($this->_actions === null) {
 			$this->_actions = array();
@@ -188,15 +187,19 @@ class CloudLibraryRecordDriver extends MarcRecordDriver {
 
 			if ($loadDefaultActions) {
 				if ($isAvailable) {
+					$userId = UserAccount::getActiveUserId();
+					if ($userId == false){
+						$userId = 'null';
+					}
 					$this->_actions[] = array(
-						'title' => 'Check Out Cloud Library',
-						'onclick' => "return AspenDiscovery.CloudLibrary.checkOutTitle('{$this->id}');",
+						'title' => translate(['text'=>'Check Out cloudLibrary','isPublicFacing'=>true]),
+						'onclick' => "return AspenDiscovery.CloudLibrary.checkOutTitle({$userId}, '{$this->id}');",
 						'requireLogin' => false,
 						'type' => 'cloud_library_checkout'
 					);
 				} else {
 					$this->_actions[] = array(
-						'title' => 'Place Hold Cloud Library',
+						'title' => translate(['text'=>'Place Hold cloudLibrary','isPublicFacing'=>true]),
 						'onclick' => "return AspenDiscovery.CloudLibrary.placeHold('{$this->id}');",
 						'requireLogin' => false,
 						'type' => 'cloud_library_hold'
@@ -212,7 +215,11 @@ class CloudLibraryRecordDriver extends MarcRecordDriver {
 	 */
 	function getFormats()
 	{
-		return [$this->cloudLibraryProduct->format];
+		if ($this->cloudLibraryProduct){
+			return [$this->cloudLibraryProduct->format];
+		}else{
+			return ['Unknown'];
+		}
 	}
 
 	/**
@@ -222,14 +229,18 @@ class CloudLibraryRecordDriver extends MarcRecordDriver {
 	 */
 	function getFormatCategory()
 	{
-		if ($this->cloudLibraryProduct->format == "eAudio"){
-			return ['eBook', 'Audio Books'];
-		} else {
-			return ['eBook'];
+		if ($this->cloudLibraryProduct) {
+			if ($this->cloudLibraryProduct->format == "eAudio") {
+				return ['eBook', 'Audio Books'];
+			} else {
+				return ['eBook'];
+			}
+		}else{
+			return ['Unknown'];
 		}
 	}
 
-	public function getNumHolds(){
+	public function getNumHolds() : int{
 		//TODO:  Check to see if we can determine number of holds on a title
 		return 0;
 	}
@@ -253,25 +264,31 @@ class CloudLibraryRecordDriver extends MarcRecordDriver {
 		return $this->getGroupedWorkDriver()->getRelatedRecord($id);
 	}
 
-	public function getSemanticData() {
+	public function getSemanticData()
+	{
 		// Schema.org
 		// Get information about the record
-		require_once ROOT_DIR . '/RecordDrivers/LDRecordOffer.php';
-		$linkedDataRecord = new LDRecordOffer($this->getRelatedRecord());
-		$semanticData [] = array(
-			'@context' => 'http://schema.org',
-			'@type' => $linkedDataRecord->getWorkType(),
-			'name' => $this->getTitle(),
-			'creator' => $this->getPrimaryAuthor(),
-			'bookEdition' => $this->getEditions(),
-			'isAccessibleForFree' => true,
-			'image' => $this->getBookcoverUrl('medium'),
-			"offers" => $linkedDataRecord->getOffers()
-		);
+		if ($this->getRelatedRecord() != null) {
+			require_once ROOT_DIR . '/RecordDrivers/LDRecordOffer.php';
+			$linkedDataRecord = new LDRecordOffer($this->getRelatedRecord());
+			$semanticData [] = array(
+				'@context' => 'http://schema.org',
+				'@type' => $linkedDataRecord->getWorkType(),
+				'name' => $this->getTitle(),
+				'creator' => $this->getPrimaryAuthor(),
+				'bookEdition' => $this->getEditions(),
+				'isAccessibleForFree' => true,
+				'image' => $this->getBookcoverUrl('medium'),
+				"offers" => $linkedDataRecord->getOffers()
+			);
+		}
 
 		global $interface;
 		$interface->assign('og_title', $this->getTitle());
-		$interface->assign('og_type', $this->getGroupedWorkDriver()->getOGType());
+		$interface->assign('og_description', $this->getDescriptionFast());
+		if ($this->getGroupedWorkDriver() != null){
+			$interface->assign('og_type', $this->getGroupedWorkDriver()->getOGType());
+		}
 		$interface->assign('og_image', $this->getBookcoverUrl('medium'));
 		$interface->assign('og_url', $this->getAbsoluteUrl());
 		return $semanticData;
@@ -306,7 +323,7 @@ class CloudLibraryRecordDriver extends MarcRecordDriver {
 		$relatedRecord = $this->getRelatedRecord();
 		$statusSummary = array();
 		if ($relatedRecord != null && $relatedRecord->getAvailableCopies() > 0){
-			$statusSummary['status'] = "Available from Cloud Library";
+			$statusSummary['status'] = "Available from cloudLibrary";
 			$statusSummary['available'] = true;
 			$statusSummary['class'] = 'available';
 			$statusSummary['showPlaceHold'] = false;

@@ -7,6 +7,7 @@ abstract class BaseBrowsable extends DataObject
 	public $searchTerm;
 	public $defaultFilter;
 	public $sourceListId;
+	public $sourceCourseReserveId;
 	public $defaultSort;
 
 	public function getSolrSort()
@@ -23,6 +24,12 @@ abstract class BaseBrowsable extends DataObject
 			return 'title,author';
 		} elseif ($this->defaultSort == 'user_rating') {
 			return 'rating desc,title';
+		} elseif ($this->defaultSort == 'holds') {
+			return 'total_holds desc';
+		} elseif ($this->defaultSort == 'publication_year_desc') {
+			return 'year desc,title asc';
+		} elseif ($this->defaultSort == 'publication_year_asc') {
+			return 'year asc,title asc';
 		} else {
 			return 'relevance';
 		}
@@ -83,6 +90,12 @@ abstract class BaseBrowsable extends DataObject
 			$this->defaultSort = 'title';
 		} elseif ($solrSort == 'rating desc,title') {
 			$this->defaultSort = 'user_rating';
+		} elseif ($solrSort == 'year desc,title asc') {
+			$this->defaultSort = 'publication_year_desc';
+		} elseif ($solrSort == 'year asc,title asc') {
+			$this->defaultSort = 'publication_year_asc';
+		} elseif ($solrSort == 'total_holds desc') {
+			$this->defaultSort = 'holds';
 		} else {
 			$this->defaultSort = 'relevance';
 		}
@@ -97,6 +110,10 @@ abstract class BaseBrowsable extends DataObject
 		global $enabledModules;
 		if (array_key_exists('User Lists', $enabledModules)){
 			$spotlightSources['List'] = 'Public List';
+		}
+		if (array_key_exists('Course Reserves', $enabledModules)){
+			$spotlightSources['CourseReserve'] = 'Course Reserve';
+			$spotlightSources['CourseReserves'] = 'Course Reserves search';
 		}
 		if (array_key_exists('EBSCO EDS', $enabledModules)){
 			$spotlightSources['EbscoEds'] = 'EBSCO EDS Search';

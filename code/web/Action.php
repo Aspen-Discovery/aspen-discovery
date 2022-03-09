@@ -26,7 +26,7 @@ abstract class Action
 		if (!empty($sidebarTemplate)) $interface->assign('sidebar', $sidebarTemplate);
 		$interface->assign('breadcrumbs', $this->getBreadcrumbs());
 		$interface->setTemplate($mainContentTemplate);
-		$interface->setPageTitle($pageTitle, $translateTitle);
+		$interface->setPageTitle($pageTitle, $translateTitle, false, true);
 		$interface->assign('moreDetailsTemplate', 'GroupedWork/moredetails-accordion.tpl');
 		global $isAJAX;
 		if (!$isAJAX && UserAccount::isLoggedIn()){
@@ -75,6 +75,47 @@ abstract class Action
 		$clientIP = IPAddress::getClientIP();
 		echo("<h1>Forbidden</h1><p><strong>API requests from {$clientIP} are forbidden.</strong></p>");
 		die();
+	}
+
+	protected function grantTokenAccess()
+	{
+		$postData = http_build_query(
+			array(
+				'key1' => base64_decode($_SERVER['PHP_AUTH_USER']),
+				'key2' => base64_decode($_SERVER['PHP_AUTH_PW'])
+			)
+		);
+		$opts = array('http' =>
+			array(
+				'method'  => 'POST',
+				'header'  => 'Content-Type: application/x-www-form-urlencoded',
+				'content' => $postData
+			)
+		);
+		$context  = stream_context_create($opts);
+		require_once ROOT_DIR . '/sys/SystemVariables.php';
+		$systemVariables = SystemVariables::getSystemVariables();
+		if ($systemVariables && !empty($systemVariables->greenhouseUrl)) {
+			if ($result = file_get_contents($systemVariables->greenhouseUrl . '/API/GreenhouseAPI?method=authenticateTokens', false, $context)) {
+				$data = json_decode($result, true);
+				$isValid = $data['success'];
+
+				if($isValid) {
+					return true;
+				}
+			}
+		} else {
+			global $configArray;
+			if ($result = file_get_contents($configArray['Site']['url'] . '/API/GreenhouseAPI?method=authenticateTokens', false, $context)) {
+				$data = json_decode($result, true);
+				$isValid = $data['success'];
+
+				if($isValid) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 
 	abstract function getBreadcrumbs() : array;

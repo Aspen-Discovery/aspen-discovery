@@ -1,0 +1,314 @@
+.titleScrollerHeader {
+  background-color: #4dacde;
+  padding: 2px;
+  color: white;
+  font-size: 12px;
+  font-weight: bold;
+  height: 20px;
+
+  .linkTab {
+    padding-left: 10px;
+    float: right;
+    .first {
+      padding-left: 0;
+    }
+  }
+}
+.titleScrollerViewMore{
+  padding-left: 5px;
+  float: left;
+}
+
+#listSelection{
+  border: none;
+  background: none;
+  color: #00125E;
+}
+
+.titleScrollerBody{
+  background-color: #fff;
+  clear: both;
+  position: relative;
+}
+// combined rules
+.leftScrollerButton,.rightScrollerButton{
+  display: inline-block;
+  height: 135px;
+  line-height: 115px;
+  vertical-align: middle;
+  width: 25px;
+  float: right;
+  cursor: pointer;
+  margin-right: 5px;
+  margin-top: 5px;
+  zoom: 1;
+  *display: inline;
+}
+.leftScrollerButton{
+  float: right;
+  margin-right: 5px; // TODO: not needed, I believe. plb 2-10-16
+}
+.rightScrollerButton{
+  float: left;
+  margin-left: 5px;
+  z-index: 100;
+}
+// combined rules
+.scrollerButtonUp, .scrollerButtonDown{
+  z-index: 100;
+  position: absolute;
+  height: 25px;
+  width: 148px;
+  cursor: pointer;
+  text-align: center;
+}
+// specific rules
+.scrollerButtonUp{
+  top: 0;
+  right: 0;
+}
+.scrollerButtonDown{
+  bottom: 0;
+  right: 0;
+}
+
+.titleScrollerSelectedTitle{
+  width: 100%;
+  text-align: center;
+  font-weight: bold;
+  color: #00125E;
+}
+.titleScrollerSelectedAuthor{
+  width: 100%;
+  text-align: center;
+  font-weight: bold;
+  color: #A9A9A9;
+}
+.scrollerBodyContainer{
+  position: relative;
+  overflow: hidden;
+  margin: 5px 40px;
+}
+.scrollerBody{
+  padding: 7px;
+  margin: 0 7px;
+  height: 140px;
+  position: relative;
+}
+.scrollerWithRatings .scrollerBody{
+  height: 155px;
+}
+.scrollerLoadingContainer{
+  width: 100%;
+  padding-top: 40px;
+  text-align: center;
+}
+.scrollerTitleCover{
+  width: auto;
+  height: auto;
+  max-width: 125px;
+  max-height: 125px;
+  padding: 3px;
+  margin: auto;
+}
+
+.horizontalCarouselSpotlightWrapper {
+  .scrollerTitleCover {
+    position: absolute;
+    width: 125px;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+  }
+}
+
+.moreLikeThisWrapper,.seriesWrapper {
+  li.carouselTitleWrapper {
+    width: 140px !important;
+  }
+  .scrollerTitleCover {
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+  }
+}
+
+.collectionSpotlightSelector{
+  width: 100%;
+  text-align: left;
+}
+.horizontalCarouselSpotlightWrapper,.moreLikeThisWrapper,.seriesWrapper{
+  .jcarousel-control-prev, .jcarousel-control-next {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: transparent;
+    color: @browseCarouselControlColor;
+    height: 100%;
+    font-size: 50px;
+    box-shadow: none;
+    &:focus {
+      text-decoration: none;
+      outline: none;
+    }
+    &:hover {
+      text-decoration: none;
+    }
+  }
+
+  .jcarousel-pagination a {
+    &, &:hover, &:active, &:visited {
+      outline: none;
+    }
+  }
+}
+.jcarousel li.carouselTitleWrapper{
+  border-width: 0;
+
+}
+.carouselScrollerTitle{
+  display: inline-block;
+  text-align: center;
+  width: 100%;
+  a{
+    display: block;
+  }
+  .carouselScrollerTitleImage{
+    position: relative;
+    height: 200px;
+  }
+}
+// Horizontal Scrollers
+.scrollerTitle{
+  display: inline-block;
+  margin: 2px;
+  vertical-align:middle;
+  padding: 3px;
+  max-width: 129px;
+  zoom: 1;
+  *display: inline;
+
+  img{
+    opacity: .6;
+  }
+  &:hover img{
+    opacity: .8;
+  }
+  &.selected{
+    border: 3px solid #00125E;
+    border-radius: 3px;
+    padding: 0;
+    img{
+      opacity: 1;
+    }
+  }
+}
+.verticalTitleScroller {
+  width: 150px;
+  height: 100%;
+
+  .titleScrollerBody {
+    position: relative;
+    overflow: hidden;
+  }
+  .scrollerTitle {
+    display: block;
+  }
+  .scrollerBodyContainer {
+    margin: 5px;
+    text-align: center;
+  }
+}
+.singleTitleSpotlight {
+  width: 200px;
+
+  .scrollerTitle img {
+    display: inline-block;
+    opacity: 1;
+  }
+  .scrollerTitle.selected img {
+    display: inline-block;
+  }
+  .scrollerTitle.selected {
+    border: 0 solid black;
+    border-radius: 3px;
+    padding: 0;
+  }
+  .scrollerBodyContainer {
+    margin: 5px 0;
+    text-align: center;
+    width: 100%;
+  }
+}
+.singleTitleWithNextSpotlight {
+  width: 200px;
+
+  .scrollerTitle img {
+    display: inline-block;
+    opacity: 1;
+  }
+  .scrollerTitle.selected img {
+    display: inline-block;
+  }
+  .scrollerTitle.selected {
+    border: 0 solid black;
+    border-radius: 3px;
+    padding: 0;
+  }
+  .scrollerBodyContainer {
+    margin: 5px 0;
+    text-align: center;
+    width: 100%;
+  }
+  .rightScrollerButton {
+    float: none;
+    position: absolute;
+    left: 5px;
+  }
+}
+.textListScroller{
+  width: 100%;
+  height: 100%;
+
+  .scrollerBodyContainer {
+    margin: 5px;
+  }
+  .scrollerTitle{
+    max-width: none;
+    display: block;
+  }
+
+}
+.mediumScroller{
+  &.singleTitleWithNextSpotlight, &.singleTitleSpotlight {
+    width: 275px;
+  }
+  &.verticalTitleScroller{
+    width: 225px;
+  }
+  .scrollerTitleCover{
+    max-height: 200px;
+    max-width: 200px;
+  }
+  .scrollerTitle{
+    max-width: 204px;
+  }
+  &.textListScroller {
+    .scrollerTitle{ // override the max-width rule above
+      max-width: none;
+    }
+  }  .scrollerBody{
+    height: 215px;
+  }
+  &.scrollerWithRatings .scrollerBody{
+    height: 230px;
+  }
+  .leftScrollerButton, .rightScrollerButton{
+    line-height: 200px;
+  }
+  .scrollerButtonUp, .scrollerButtonDown{
+    width: 223px;
+  }
+}

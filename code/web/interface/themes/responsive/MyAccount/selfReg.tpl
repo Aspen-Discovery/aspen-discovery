@@ -1,35 +1,38 @@
 {strip}
-<h1>{translate text='Register for a Library Card'}</h1>
+<h1>{translate text='Register for a Library Card' isPublicFacing=true}</h1>
 <div class="page">
 	{if (isset($selfRegResult) && $selfRegResult.success)}
 		<div id="selfRegSuccess" class="alert alert-success">
 			{if $selfRegistrationSuccessMessage}
-				{translate text=$selfRegistrationSuccessMessage}
+				{$selfRegistrationSuccessMessage}
 			{else}
-				{translate text='selfreg_success' defaultText='Congratulations, you have successfully registered for a new library card. You will have limited privileges initially.<br>	Please bring a valid ID to the library to receive a physical library card with full privileges.'}
+				{translate text='Congratulations, you have successfully registered for a new library card. You will have limited privileges initially.<br>	Please bring a valid ID to the library to receive a physical library card with full privileges.' isPublicFacing=true}
 			{/if}
 		</div>
-		<div class="alert alert-info">
+		<div id="selfRegAccountInfo" class="alert alert-info">
 			{if !empty($selfRegResult.barcode)}
-				<p>{translate text='Your library card number is <strong>%1%</strong>' 1=$selfRegResult.barcode}</p>
+				<p id="selfRegBarcode">{translate text='Your library card number is <strong>%1%</strong>' 1=$selfRegResult.barcode isPublicFacing=true}</p>
 			{/if}
 			{if !empty($selfRegResult.username)}
-				<p>{translate text='Your username is <strong>%1%</strong>' 1=$selfRegResult.username}</p>
+				<p id="selfRegUsername">{translate text='Your username is <strong>%1%</strong>' 1=$selfRegResult.username isPublicFacing=true}</p>
 			{/if}
 			{if !empty($selfRegResult.password)}
-				<p>{translate text='Your initial password is <strong>%1%</strong>' 1=$selfRegResult.password}</p>
+				<p id="selfRegPassword">{translate text='Your initial password is <strong>%1%</strong>' 1=$selfRegResult.password isPublicFacing=true}</p>
 			{/if}
 			{if !empty($selfRegResult.message)}
-				<p class="alert alert-warning">{$selfRegResult.message}</p>
+				<p id="selfRegMessage" class="alert alert-warning">{$selfRegResult.message}</p>
+			{/if}
+			{if !empty($selfRegResult.requirePinReset)}
+				<p id="selfRegResetPin">{translate text="To login to the catalog, you must first reset your PIN." isPublicFacing=true}  <a class="btn btn-default" href="/MyAccount/EmailResetPin">{translate text="Reset PIN/Password" isPublicFacing=true}</a> </p>
 			{/if}
 		</div>
 	{elseif (isset($selfRegResult) && $selfRegResult.success === false)}
 		{if (isset($selfRegResult))}
 			<div id="selfRegFail" class="alert alert-warning">
 				{if !empty($selfRegResult.message)}
-					{translate text=$selfRegResult.message}
+					{$selfRegResult.message}
 				{else}
-					{translate text='selfreg_fail' defaultText='Sorry, we were unable to create a library card for you.<br>You may already have an account or there may be an error with the information you entered.<br>Please try again or visit the library in person (with a valid ID) so we can create a card for you.'}
+					{translate text='Sorry, we were unable to create a library card for you.<br>You may already have an account or there may be an error with the information you entered.<br>Please try again or visit the library in person (with a valid ID) so we can create a card for you.' isPublicFacing=true}
 				{/if}
 			</div>
 		{/if}
@@ -47,9 +50,9 @@
 
 		<div id="selfRegDescription" class="alert alert-info">
 			{if $selfRegistrationFormMessage}
-				{translate text=$selfRegistrationFormMessage}
+				{translate text=$selfRegistrationFormMessage isPublicFacing=true isAdminEnteredData=true}
 			{else}
-				{translate text='selfreg_info' defaultText='This page allows you to register as a patron of our library online. You will have limited privileges initially.'}
+				{translate text='This page allows you to register as a patron of our library online. You will have limited privileges initially.' isPublicFacing=true}
 			{/if}
 		</div>
 		<div id="selfRegistrationFormContainer">
@@ -60,17 +63,6 @@
 {/strip}
 {if $promptForBirthDateInSelfReg}
 <script type="text/javascript">
-	{* #borrower_note is birthdate for anythink *}
-	{* this is bootstrap datepicker, not jquery ui *}
-	{literal}
-	$(document).ready(function(){
-		$('input.dateAspen').datepicker({
-			format: "mm-dd-yyyy"
-			,endDate: "+0d"
-			,startView: 2
-		});
-	});
-	{/literal}
 	{* Pin Validation for CarlX, Sirsi *}
 	{literal}
 	if ($('#pin').length > 0 && $('#pin1').length > 0) {

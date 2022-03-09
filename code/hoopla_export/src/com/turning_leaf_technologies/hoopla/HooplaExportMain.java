@@ -2,10 +2,14 @@ package com.turning_leaf_technologies.hoopla;
 
 import com.turning_leaf_technologies.config.ConfigUtil;
 import com.turning_leaf_technologies.file.JarUtil;
+import com.turning_leaf_technologies.grouping.MarcRecordGrouper;
 import com.turning_leaf_technologies.grouping.RecordGroupingProcessor;
 import com.turning_leaf_technologies.grouping.RemoveRecordFromWorkResult;
+import com.turning_leaf_technologies.indexing.IlsExtractLogEntry;
+import com.turning_leaf_technologies.indexing.IndexingProfile;
 import com.turning_leaf_technologies.indexing.IndexingUtils;
 import com.turning_leaf_technologies.indexing.RecordIdentifier;
+import com.turning_leaf_technologies.logging.BaseLogEntry;
 import com.turning_leaf_technologies.logging.LoggingUtil;
 import com.turning_leaf_technologies.net.NetworkUtils;
 import com.turning_leaf_technologies.net.WebServiceResponse;
@@ -16,7 +20,9 @@ import org.ini4j.Ini;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.marc4j.marc.Record;
 
+import java.nio.charset.StandardCharsets;
 import java.sql.*;
 import java.util.Date;
 import java.util.HashMap;
@@ -34,6 +40,7 @@ public class HooplaExportMain {
 
 	private static Connection aspenConn;
 	private static PreparedStatement getAllExistingHooplaItemsStmt;
+	private static PreparedStatement addHooplaTitleToDB = null;
 	private static PreparedStatement updateHooplaTitleInDB = null;
 	private static PreparedStatement deleteHooplaItemStmt;
 
@@ -154,7 +161,7 @@ public class HooplaExportMain {
 		try {
 			PreparedStatement getRecordsToReloadStmt = aspenConn.prepareStatement("SELECT * from record_identifiers_to_reload WHERE processed = 0 and type='hoopla'", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			PreparedStatement markRecordToReloadAsProcessedStmt = aspenConn.prepareStatement("UPDATE record_identifiers_to_reload SET processed = 1 where id = ?");
-			PreparedStatement getItemDetailsForRecordStmt = aspenConn.prepareStatement("SELECT rawResponse from hoopla_export where hooplaId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			PreparedStatement getItemDetailsForRecordStmt = aspenConn.prepareStatement("SELECT UNCOMPRESS(rawResponse) as rawResponse from hoopla_export where hooplaId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			ResultSet getRecordsToReloadRS = getRecordsToReloadStmt.executeQuery();
 			int numRecordsToReloadProcessed = 0;
 			while (getRecordsToReloadRS.next()){
@@ -200,7 +207,7 @@ public class HooplaExportMain {
 		int numDeleted = 0;
 		try {
 			for (HooplaTitle hooplaTitle : existingRecords.values()) {
-				if (hooplaTitle.isActive()) {
+				if (!hooplaTitle.isFoundInExport() && hooplaTitle.isActive()) {
 					deleteHooplaItemStmt.setLong(1, hooplaTitle.getId());
 					deleteHooplaItemStmt.executeUpdate();
 					RemoveRecordFromWorkResult result = getRecordGroupingProcessor().removeRecordFromGroupedWork("hoopla", Long.toString(hooplaTitle.getHooplaId()));
@@ -234,7 +241,8 @@ public class HooplaExportMain {
 						allRecordsRS.getLong("id"),
 						hooplaId,
 						allRecordsRS.getLong("rawChecksum"),
-						allRecordsRS.getBoolean("active")
+						allRecordsRS.getBoolean("active"),
+						allRecordsRS.getLong("rawResponseLength")
 				);
 				existingRecords.put(hooplaId, newTitle);
 			}
@@ -277,13 +285,18 @@ public class HooplaExportMain {
 				long lastUpdateOfChangedRecords = getSettingsRS.getLong("lastUpdateOfChangedRecords");
 				long lastUpdateOfAllRecords = getSettingsRS.getLong("lastUpdateOfAllRecords");
 				long lastUpdate = Math.max(lastUpdateOfChangedRecords, lastUpdateOfAllRecords);
+				boolean isRegroupAllRecords = getSettingsRS.getBoolean("regroupAllRecords");
 				boolean doFullReload = getSettingsRS.getBoolean("runFullUpdate");
 				long settingsId = getSettingsRS.getLong("id");
 				if (doFullReload){
-					//Un mark that a full update needs to be done
+					//Unset that a full update needs to be done
 					PreparedStatement updateSettingsStmt = aspenConn.prepareStatement("UPDATE hoopla_settings set runFullUpdate = 0 where id = ?");
 					updateSettingsStmt.setLong(1, settingsId);
 					updateSettingsStmt.executeUpdate();
+				}
+
+				if (isRegroupAllRecords) {
+					regroupAllRecords(aspenConn, settingsId, getGroupedWorkIndexer(), logEntry);
 				}
 
 				String accessToken = getAccessToken(apiUsername, apiPassword);
@@ -405,7 +418,7 @@ public class HooplaExportMain {
 				boolean recordUpdated = false;
 				if (existingTitle != null) {
 					//Record exists
-					if (existingTitle.getChecksum() != rawChecksum){
+					if ((existingTitle.getChecksum() != rawChecksum) || (existingTitle.getRawResponseLength() != rawResponse.length())){
 						recordUpdated = true;
 						logEntry.incUpdated();
 						if (existingTitle.isActive() != curTitleActive) {
@@ -418,7 +431,7 @@ public class HooplaExportMain {
 							logEntry.incUpdated();
 						}
 					}
-					existingRecords.remove(hooplaId);
+					existingTitle.setFoundInExport(true);
 				}else{
 					if (!curTitleActive){
 						logEntry.incSkipped();
@@ -442,21 +455,45 @@ public class HooplaExportMain {
 					deleteHooplaItemStmt.setLong(1, existingTitle.getId());
 					deleteHooplaItemStmt.executeUpdate();
 				}else {
-					if (recordUpdated || doFullReload){
-						updateHooplaTitleInDB.setLong(1, hooplaId);
-						updateHooplaTitleInDB.setBoolean(2, true);
-						updateHooplaTitleInDB.setString(3, curTitle.getString("title"));
-						updateHooplaTitleInDB.setString(4, curTitle.getString("kind"));
-						updateHooplaTitleInDB.setBoolean(5, curTitle.getBoolean("pa"));
-						updateHooplaTitleInDB.setBoolean(6, curTitle.getBoolean("demo"));
-						updateHooplaTitleInDB.setBoolean(7, curTitle.getBoolean("profanity"));
-						updateHooplaTitleInDB.setString(8, curTitle.has("rating") ? curTitle.getString("rating") : "");
-						updateHooplaTitleInDB.setBoolean(9, curTitle.getBoolean("abridged"));
-						updateHooplaTitleInDB.setBoolean(10, curTitle.getBoolean("children"));
-						updateHooplaTitleInDB.setDouble(11, curTitle.getDouble("price"));
-						updateHooplaTitleInDB.setLong(12, rawChecksum);
-						updateHooplaTitleInDB.setString(13, rawResponse);
-						updateHooplaTitleInDB.setLong(14, startTimeForLogging);
+					if (existingTitle == null){
+						addHooplaTitleToDB.setLong(1, hooplaId);
+						addHooplaTitleToDB.setBoolean(2, true);
+						addHooplaTitleToDB.setString(3, curTitle.getString("title"));
+						addHooplaTitleToDB.setString(4, curTitle.getString("kind"));
+						addHooplaTitleToDB.setBoolean(5, curTitle.getBoolean("pa"));
+						addHooplaTitleToDB.setBoolean(6, curTitle.getBoolean("demo"));
+						addHooplaTitleToDB.setBoolean(7, curTitle.getBoolean("profanity"));
+						addHooplaTitleToDB.setString(8, curTitle.has("rating") ? curTitle.getString("rating") : "");
+						addHooplaTitleToDB.setBoolean(9, curTitle.getBoolean("abridged"));
+						addHooplaTitleToDB.setBoolean(10, curTitle.getBoolean("children"));
+						addHooplaTitleToDB.setDouble(11, curTitle.getDouble("price"));
+						addHooplaTitleToDB.setLong(12, rawChecksum);
+						addHooplaTitleToDB.setString(13, rawResponse);
+						addHooplaTitleToDB.setLong(14, startTimeForLogging);
+						try {
+							addHooplaTitleToDB.executeUpdate();
+
+							String groupedWorkId = groupRecord(curTitle, hooplaId);
+							indexRecord(groupedWorkId);
+						}catch (DataTruncation e) {
+							logEntry.addNote("Record " + hooplaId + " " + curTitle.getString("title") + " contained invalid data " + e.toString());
+						}catch (SQLException e){
+							logEntry.incErrors("Error adding hoopla title to database record " + hooplaId + " " + curTitle.getString("title"), e);
+						}
+					}else if (recordUpdated || doFullReload){
+						updateHooplaTitleInDB.setBoolean(1, true);
+						updateHooplaTitleInDB.setString(2, curTitle.getString("title"));
+						updateHooplaTitleInDB.setString(3, curTitle.getString("kind"));
+						updateHooplaTitleInDB.setBoolean(4, curTitle.getBoolean("pa"));
+						updateHooplaTitleInDB.setBoolean(5, curTitle.getBoolean("demo"));
+						updateHooplaTitleInDB.setBoolean(6, curTitle.getBoolean("profanity"));
+						updateHooplaTitleInDB.setString(7, curTitle.has("rating") ? curTitle.getString("rating") : "");
+						updateHooplaTitleInDB.setBoolean(8, curTitle.getBoolean("abridged"));
+						updateHooplaTitleInDB.setBoolean(9, curTitle.getBoolean("children"));
+						updateHooplaTitleInDB.setDouble(10, curTitle.getDouble("price"));
+						updateHooplaTitleInDB.setLong(11, rawChecksum);
+						updateHooplaTitleInDB.setString(12, rawResponse);
+						updateHooplaTitleInDB.setLong(13, existingTitle.getId());
 						try {
 							updateHooplaTitleInDB.executeUpdate();
 
@@ -489,7 +526,11 @@ public class HooplaExportMain {
 			subTitle = itemDetails.getString("title");
 		}else {
 			title = itemDetails.getString("title");
-			subTitle = "";
+			if (itemDetails.has("subtitle")){
+				subTitle = itemDetails.getString("subtitle");
+			}else{
+				subTitle = "";
+			}
 		}
 		String mediaType = itemDetails.getString("kind");
 		String primaryFormat;
@@ -557,10 +598,10 @@ public class HooplaExportMain {
 			String databaseConnectionInfo = ConfigUtil.cleanIniValue(configIni.get("Database", "database_aspen_jdbc"));
 			if (databaseConnectionInfo != null) {
 				aspenConn = DriverManager.getConnection(databaseConnectionInfo);
-				getAllExistingHooplaItemsStmt = aspenConn.prepareStatement("SELECT id, hooplaId, rawChecksum, active from hoopla_export");
-				updateHooplaTitleInDB = aspenConn.prepareStatement("INSERT INTO hoopla_export (hooplaId, active, title, kind, pa, demo, profanity, rating, abridged, children, price, rawChecksum, rawResponse, dateFirstDetected) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?) ON DUPLICATE KEY " +
-						"UPDATE active = VALUES(active), title = VALUES(title), kind = VALUES(kind), pa = VALUES(pa), demo = VALUES(demo), profanity = VALUES(profanity), " +
-						"rating = VALUES(rating), abridged = VALUES(abridged), children = VALUES(children), price = VALUES(price), rawChecksum = VALUES(rawChecksum), rawResponse = VALUES(rawResponse)");
+				getAllExistingHooplaItemsStmt = aspenConn.prepareStatement("SELECT id, hooplaId, rawChecksum, active, UNCOMPRESSED_LENGTH(rawResponse) as rawResponseLength from hoopla_export");
+				addHooplaTitleToDB = aspenConn.prepareStatement("INSERT INTO hoopla_export (hooplaId, active, title, kind, pa, demo, profanity, rating, abridged, children, price, rawChecksum, rawResponse, dateFirstDetected) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,COMPRESS(?),?) ");
+				updateHooplaTitleInDB = aspenConn.prepareStatement("UPDATE hoopla_export set active = ?, title = ?, kind = ?, pa = ?, demo = ?, profanity = ?, " +
+						"rating = ?, abridged = ?, children = ?, price = ?, rawChecksum = ?, rawResponse = COMPRESS(?) where id = ?");
 				deleteHooplaItemStmt = aspenConn.prepareStatement("DELETE FROM hoopla_export where id = ?");
 			}else{
 				logger.error("Aspen database connection information was not provided");
@@ -575,6 +616,8 @@ public class HooplaExportMain {
 
 	private static void disconnectDatabase(Connection aspenConn) {
 		try{
+			addHooplaTitleToDB.close();
+			addHooplaTitleToDB = null;
 			updateHooplaTitleInDB.close();
 			updateHooplaTitleInDB = null;
 			deleteHooplaItemStmt.close();
@@ -600,5 +643,55 @@ public class HooplaExportMain {
 			recordGroupingProcessorSingleton = new RecordGroupingProcessor(aspenConn, serverName, logEntry, logger);
 		}
 		return recordGroupingProcessorSingleton;
+	}
+
+	private static void regroupAllRecords(Connection dbConn, long settingsId, GroupedWorkIndexer indexer, HooplaExtractLogEntry logEntry)  throws SQLException {
+		logEntry.addNote("Starting to regroup all records");
+		PreparedStatement getAllRecordsToRegroupStmt = dbConn.prepareStatement("SELECT hooplaId, UNCOMPRESS(rawResponse) as rawResponse from hoopla_export where active = 1", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+		//It turns out to be quite slow to look this up repeatedly, just grab the existing values for all and store in memory
+		PreparedStatement getOriginalPermanentIdForRecordStmt = dbConn.prepareStatement("SELECT identifier, permanent_id from grouped_work_primary_identifiers join grouped_work on grouped_work_id = grouped_work.id WHERE type = 'hoopla'", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+		HashMap<Long, String> allPermanentIdsForHoopla = new HashMap<>();
+		ResultSet getOriginalPermanentIdForRecordRS = getOriginalPermanentIdForRecordStmt.executeQuery();
+		while (getOriginalPermanentIdForRecordRS.next()){
+			allPermanentIdsForHoopla.put(getOriginalPermanentIdForRecordRS.getLong("identifier"), getOriginalPermanentIdForRecordRS.getString("permanent_id"));
+		}
+		getOriginalPermanentIdForRecordRS.close();
+		getOriginalPermanentIdForRecordStmt.close();
+		ResultSet allRecordsToRegroupRS = getAllRecordsToRegroupStmt.executeQuery();
+		while (allRecordsToRegroupRS.next()) {
+			logEntry.incRecordsRegrouped();
+			long recordIdentifier = allRecordsToRegroupRS.getLong("hooplaId");
+			String originalGroupedWorkId;
+			originalGroupedWorkId = allPermanentIdsForHoopla.get(recordIdentifier);
+			if (originalGroupedWorkId == null){
+				originalGroupedWorkId = "false";
+			}
+			String rawResponseString = new String(allRecordsToRegroupRS.getBytes("rawResponse"), StandardCharsets.UTF_8);
+			JSONObject rawResponse = new JSONObject(rawResponseString);
+			//Pass null to processMarcRecord.  It will do the lookup to see if there is an existing id there.
+			String groupedWorkId = groupRecord(rawResponse, recordIdentifier);
+			if (!originalGroupedWorkId.equals(groupedWorkId)) {
+				logEntry.incChangedAfterGrouping();
+			}
+			//process records to regroup after every 1000 changes so we keep up with the changes.
+			if (logEntry.getNumChangedAfterGrouping() % 1000 == 0){
+				indexer.processScheduledWorks(logEntry, false);
+			}
+		}
+
+		//Finish reindexing anything that just changed
+		if (logEntry.getNumChangedAfterGrouping() > 0){
+			indexer.processScheduledWorks(logEntry, false);
+		}
+
+		try {
+			PreparedStatement clearRegroupAllRecordsStmt = dbConn.prepareStatement("UPDATE hoopla_settings set regroupAllRecords = 0 where id =?");
+			clearRegroupAllRecordsStmt.setLong(1, settingsId);
+			clearRegroupAllRecordsStmt.executeUpdate();
+		}catch (Exception e){
+			logEntry.incErrors("Could not clear regroup all records", e);
+		}
+		logEntry.addNote("Finished regrouping all records");
+		logEntry.saveResults();
 	}
 }

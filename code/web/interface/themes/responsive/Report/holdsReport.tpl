@@ -2,7 +2,7 @@
 	<div id="main-content" class="col-md-12">
 		<div class="doNotPrint">
 		{if $loggedIn}
-			<h1>Holds Report</h1>
+			<h1>{translate text="Holds Report" isAdminFacing=true}</h1>
 			{foreach from=$errors item=error}
 				<div class="error">{$error}</div>
 			{/foreach}
@@ -10,18 +10,19 @@
 
 				{html_options name=location options=$locationLookupList selected=$selectedLocation class="form-control input-sm"}
 
-				<input type="submit" name="showData" value="Show Data" class="btn btn-sm btn-primary"/>
+				<input type="submit" name="showData" value="{translate text="Show Data" inAttribute=true isAdminFacing=true}" class="btn btn-sm btn-primary"/>
 				&nbsp;
-				<input type="button" name="printSlips" value="Print Slips" class="btn btn-sm btn-primary" onclick="{literal} JsBarcode('.barcode').init(); var x = document.querySelectorAll('.holdsReportSlipContainer'); var i; for (i = 0; i < x.length; i++) { x[i].style.pageBreakBefore = 'auto'; } window.print(); {/literal}" />
+				<input type="button" name="printSlips" value="{translate text="Print Slips" inAttribute=true isAdminFacing=true}" class="btn btn-sm btn-primary" onclick="{literal} JsBarcode('.barcode').init(); var x = document.querySelectorAll('.holdsReportSlipContainer'); var i; for (i = 0; i < x.length; i++) { x[i].style.pageBreakBefore = 'auto'; } window.print(); {/literal}" />
 				&nbsp;
-				<input type="submit" name="download" value="Download CSV" class="btn btn-sm btn-info"/>
+				<input type="submit" name="download" value="{translate text="Download CSV" inAttribute=true isAdminFacing=true}" class="btn btn-sm btn-info"/>
 				&nbsp;
 			</form>
 			{if $reportData}
 				<br/>
 				<p>
-					There are a total of <strong>{$reportData|@count}</strong> Fill List items{/if}.
+					There are a total of <strong>{$reportData|@count}</strong> Fill List items.
 				</p>
+            {/if}
 		</div>
 {literal}
 <style type="text/css">
@@ -183,8 +184,8 @@
 							</div>
 							<div class="placeHolder">
                                 <p>Thank you for checking out from your school library.</p>
-                                <p>Books are due in 3 weeks.</p>
-                                <p>DVDs are due in 3 weeks.</p>
+                                <p>Books are due in 2 weeks.</p>
+                                <p>DVDs are due in 1 week.</p>
                                 <p>Check your account online at https://limitlesslibraries.org</p>
 							</div>
 							<div class="item">

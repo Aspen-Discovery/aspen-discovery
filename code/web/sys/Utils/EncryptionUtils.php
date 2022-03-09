@@ -22,7 +22,11 @@ class EncryptionUtils
 	public static function decryptField($fieldData){
 		$key = EncryptionUtils::loadKey();
 		if ($key == false){
-			return $fieldData;
+			if (strlen($fieldData) > 4 && substr($fieldData, 0, 4) == 'AEF~'){
+				return "Invalid encryption";
+			}else{
+				return $fieldData;
+			}
 		}else{
 			if (strlen($fieldData) > 4 && substr($fieldData, 0, 4) == 'AEF~'){
 				$decodedData = base64_decode(substr($fieldData, 4));
@@ -47,7 +51,7 @@ class EncryptionUtils
 
 	private static $_key = null;
 	private static function loadKey(){
-		/** MemoryCache $memCache */
+		/** @var MemCache $memCache */
 		global $memCache;
 		if (EncryptionUtils::$_key == null){
 			global $serverName;

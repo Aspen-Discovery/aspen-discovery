@@ -3,6 +3,7 @@
 require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/sys/Pager.php';
 require_once ROOT_DIR . '/sys/UserLists/UserList.php';
+require_once ROOT_DIR . '/sys/SearchEntry.php';
 
 class ListAPI extends Action
 {
@@ -67,6 +68,7 @@ class ListAPI extends Action
 		global $aspen_db;
 		$list = new UserList();
 		$list->public = 1;
+		$list->deleted = 0;
 		$list->find();
 		$results = array();
 		if ($list->getNumResults() > 0) {
@@ -87,6 +89,45 @@ class ListAPI extends Action
 					'title' => $list->title,
 					'description' => $list->description,
 					'numTitles' => $numTitles,
+					'dateUpdated' => $list->dateUpdated,
+				);
+			}
+		}
+		return array('success' => true, 'lists' => $results);
+	}
+
+	/**
+	 * Get all public lists
+	 * includes id, title, description, and number of titles
+	 */
+	function getSearchableLists()
+	{
+		global $aspen_db;
+		$list = new UserList();
+		$list->public = 1;
+		$list->searchable = 1;
+		$list->deleted = 0;
+		$list->find();
+		$results = array();
+		if ($list->getNumResults() > 0) {
+			while ($list->fetch()) {
+				$query = "SELECT count(id) as numTitles FROM user_list_entry where listId = " . $list->id;
+				$stmt = $aspen_db->prepare($query);
+				$stmt->setFetchMode(PDO::FETCH_ASSOC);
+				$success = $stmt->execute();
+				if ($success) {
+					$row = $stmt->fetch();
+					$numTitles = $row['numTitles'];
+				} else {
+					$numTitles = -1;
+				}
+
+				$results[] = array(
+					'id' => $list->id,
+					'title' => $list->title,
+					'description' => $list->description,
+					'numTitles' => $numTitles,
+					'dateUpdated' => $list->dateUpdated,
 				);
 			}
 		}
@@ -116,6 +157,7 @@ class ListAPI extends Action
 
 		$list = new UserList();
 		$list->user_id = $userId;
+		$list->deleted = 0;
 		$list->find();
 		$results = array();
 		if ($list->getNumResults() > 0) {
@@ -126,6 +168,8 @@ class ListAPI extends Action
 					'description' => $list->description,
 					'numTitles' => $list->numValidListItems(),
 					'public' => $list->public == 1,
+					'created' => $list->created,
+					'dateUpdated' => $list->dateUpdated,
 				);
 			}
 		}
@@ -259,7 +303,7 @@ class ListAPI extends Action
 		return array('success' => true, 'lists' => $systemLists);
 	}
 
-	private function _getUserListTitles($listId, $numTitlesToShow)
+	private function _getUserListTitles($listId, $numTitlesToShow, $user)
 	{
 		//The list is a patron generated list
 		$list = new UserList();
@@ -315,7 +359,7 @@ class ListAPI extends Action
 			if (isset($listInfo)) {
 				$listId = $listInfo[1];
 			}
-			return $this->_getUserListTitles($listId, $numTitlesToShow);
+			return $this->_getUserListTitles($listId, $numTitlesToShow, $user);
 		} elseif (preg_match('/search:(?<searchID>.*)/', $listId, $searchInfo)) {
 			if (is_numeric($searchInfo[1])) {
 				$titles = $this->getSavedSearchTitles($searchInfo[1], $numTitlesToShow);
@@ -373,7 +417,8 @@ class ListAPI extends Action
 							'image' => $imageUrl,
 							'small_image' => $smallImageUrl,
 							'title' => $suggestion['titleInfo']['title'],
-							'author' => $suggestion['titleInfo']['author']
+							'author' => $suggestion['titleInfo']['author'],
+
 						);
 					}
 					return array('success' => true, 'listTitle' => $systemList['title'], 'listDescription' => $systemList['description'], 'titles' => $titles);
@@ -455,6 +500,43 @@ class ListAPI extends Action
 				'fullListLink' => ''
 			);
 		}
+	}
+
+	function getSavedSearches() : array
+	{
+		$userId = null;
+		if (!UserAccount::isLoggedIn()){
+			if (!isset($_REQUEST['username']) || !isset($_REQUEST['password'])) {
+				return array('success' => false, 'message' => 'The username and password must be provided to load saved searches.');
+			}
+
+			$username = $_REQUEST['username'];
+			$password = $_REQUEST['password'];
+			$user = UserAccount::validateAccount($username, $password);
+
+			if ($user == false) {
+				return array('success' => false, 'message' => 'Sorry, we could not find a user with those credentials.');
+			}
+
+			$userId = $user->id;
+		}
+
+		$result = [];
+		$searchEntry = new SearchEntry();
+		$savedSearchLists = $searchEntry->getSearches(session_id(), $userId);
+
+		foreach($savedSearchLists as $savedSearchList) {
+			if($savedSearchList->title && $savedSearchList->saved == 1) {
+				$savedSearch = array(
+					'id' => $savedSearchList->id,
+					'title' => $savedSearchList->title,
+					'created' => $savedSearchList->created,
+					'searchUrl' => $savedSearchList->searchUrl,
+				);
+				$result[] = $savedSearch;
+			}
+		}
+		return array('success' => true, 'searches' => $result);
 	}
 
 	function getSavedSearchTitles($searchId, $numTitlesToShow)
@@ -548,7 +630,6 @@ class ListAPI extends Action
 	 * <li>password - The pin number for the user. </li>
 	 * <li>listId   - The id of the list to add items to.</li>
 	 * <li>recordIds - The id of the record(s) to add to the list.</li>
-	 * <li>tags   - A comma separated string of tags to apply to the titles within the list. (optional)</li>
 	 * <li>notes  - descriptive text to apply to the titles.  Can be viewed while on the list.  Notes will apply to all titles being added.  (optional)</li>
 	 * </ul>
 	 *
@@ -717,7 +798,7 @@ class ListAPI extends Action
 	 * @return array
 	 * @throws Exception
 	 */
-	public function createUserListFromNYT($selectedList = null, $nytUpdateLog): array
+	public function createUserListFromNYT($selectedList = null, $nytUpdateLog = null): array
 	{
 		if ($selectedList == null) {
 			$selectedList = $_REQUEST['listToUpdate'];
@@ -726,7 +807,9 @@ class ListAPI extends Action
 		require_once ROOT_DIR . '/sys/Enrichment/NewYorkTimesSetting.php';
 		$nytSettings = new NewYorkTimesSetting();
 		if (!$nytSettings->find(true)) {
-			$nytUpdateLog->addError("API Key missing");
+			if ($nytUpdateLog != null) {
+				$nytUpdateLog->addError("API Key missing");
+			}
 			return array(
 				'success' => false,
 				'message' => 'API Key missing'
@@ -738,7 +821,9 @@ class ListAPI extends Action
 		$nytListUser = new User();
 		$nytListUser->username = 'nyt_user';
 		if (!$nytListUser->find(true)) {
-			$nytUpdateLog->addError("NY Times user has not been created");
+			if ($nytUpdateLog != null) {
+				$nytUpdateLog->addError("NY Times user has not been created");
+			}
 			return array(
 				'success' => false,
 				'message' => 'NY Times user has not been created'
@@ -765,7 +850,9 @@ class ListAPI extends Action
 			}
 		}
 		if (empty($selectedListTitleShort)) {
-			$nytUpdateLog->addError("We did not find list '{$selectedList}' in The New York Times API");
+			if ($nytUpdateLog != null) {
+				$nytUpdateLog->addError("We did not find list '{$selectedList}' in The New York Times API");
+			}
 			return array(
 				'success' => false,
 				'message' => "We did not find list '{$selectedList}' in The New York Times API"
@@ -787,15 +874,21 @@ class ListAPI extends Action
 					if (strpos($listTitles->fault->faultstring, 'quota violation')) {
 						$retry = ($numTries <= 3);
 						if ($retry){
-							sleep(60);
+							sleep(rand(60, 300));
 						}else{
-							$nytUpdateLog->addError("Did not get a good response from the API. {$listTitles->fault->faultstring}");
+							if ($nytUpdateLog != null) {
+								$nytUpdateLog->addError("Did not get a good response from the API. {$listTitles->fault->faultstring}");
+							}
 						}
 					} else {
-						$nytUpdateLog->addError("Did not get a good response from the API. {$listTitles->fault->faultstring}");
+						if ($nytUpdateLog != null) {
+							$nytUpdateLog->addError("Did not get a good response from the API. {$listTitles->fault->faultstring}");
+						}
 					}
 				} else {
-					$nytUpdateLog->addError("Did not get a good response from the API");
+					if ($nytUpdateLog != null) {
+						$nytUpdateLog->addError("Did not get a good response from the API");
+					}
 				}
 			}
 		}
@@ -821,11 +914,12 @@ class ListAPI extends Action
 		if (!$listExistsInAspen) {
 			$nytList = new UserList();
 			$nytList->title = $selectedListTitle;
-			$nytList->description = "New York Times - $selectedListTitleShort $lastModifiedDay<br/>{$listTitles->copyright}";
+			$nytList->description = "New York Times - $selectedListTitleShort<br/>{$listTitles->copyright}";
 			$nytList->public = 1;
 			$nytList->searchable = 1;
 			$nytList->defaultSort = 'custom';
 			$nytList->user_id = $nytListUser->id;
+			$nytList->nytListModified = $lastModifiedDay;
 			$success = $nytList->insert();
 			$nytList->find(true);
 
@@ -834,7 +928,9 @@ class ListAPI extends Action
 				$listID = $nytList->id;
 				global $logger;
 				$logger->log('Created list: ' . $selectedListTitle, Logger::LOG_NOTICE);
-				$nytUpdateLog->numAdded++;
+				if ($nytUpdateLog != null) {
+					$nytUpdateLog->numAdded++;
+				}
 				$results = array(
 					'success' => true,
 					'message' => "Created list <a href='/MyAccount/MyList/{$listID}'>{$selectedListTitle}</a>"
@@ -843,7 +939,9 @@ class ListAPI extends Action
 				//Update log that this failed
                 global $logger;
                 $logger->log('Could not create list: ' . $selectedListTitle, Logger::LOG_ERROR);
-				$nytUpdateLog->addError('Could not create list: ' . $selectedListTitle);
+				if ($nytUpdateLog != null) {
+					$nytUpdateLog->addError('Could not create list: ' . $selectedListTitle);
+				}
 				return array(
 					'success' => false,
 					'message' => 'Could not create list'
@@ -852,17 +950,22 @@ class ListAPI extends Action
 
 		} else {
 			$listID = $nytList->id;
-			$newDescription = "New York Times - $selectedListTitleShort $lastModifiedDay<br/>{$listTitles->copyright}";
-			if ($nytList->description == $newDescription){
-				$nytUpdateLog->numSkipped++;
+			if ($nytList->nytListModified == $lastModifiedDay){
+				if ($nytUpdateLog != null) {
+					$nytUpdateLog->numSkipped++;
+				}
 				//Nothing has changed, no need to update
 				return array(
 					'success' => true,
 					'message' => "List <a href='/MyAccount/MyList/{$listID}'>{$selectedListTitle}</a> has not changed since it was last loaded."
 				);
 			}
-			$nytUpdateLog->numUpdated++;
-			$nytList->description = "New York Times - $selectedListTitleShort $lastModifiedDay<br/>{$listTitles->copyright}";
+			if ($nytUpdateLog != null) {
+				$nytUpdateLog->numUpdated++;
+			}
+			$nytList->description = "New York Times - $selectedListTitleShort<br/>{$listTitles->copyright}";
+			$nytList->nytListModified = $lastModifiedDay;
+			$nytList->update();
 			$results = array(
 				'success' => true,
 				'message' => "Updated list <a href='/MyAccount/MyList/{$listID}'>{$selectedListTitle}</a>"

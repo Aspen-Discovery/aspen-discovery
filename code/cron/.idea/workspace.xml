@@ -5,14 +5,19 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="9a7bc6aa-b294-4e08-985c-3b6e4b5b29e4" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/../axis_360_export/axis_360_export.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../axis_360_export/axis_360_export.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../carlx_export/carlx_export.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../carlx_export/carlx_export.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../cloud_library_export/cloud_library_export.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../cloud_library_export/cloud_library_export.jar" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/artifacts/evergreen_export.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../evergreen_export/META-INF/MANIFEST.MF" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../evergreen_export/evergreen_export.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../evergreen_export/src/org/aspendiscovery/evergreen_export/EvergreenExportMain.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/EvergreenRecordProcessor.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../web/Drivers/Evergreen.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../aspen_app/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../aspen_app/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/.idea/dataSources.local.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../web/.idea/dataSources.local.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../reindexer/reindexer.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../reindexer/reindexer.jar" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../web/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../web/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/services/Search/Results.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/services/Search/Results.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../data_dir_setup/solr7/grouped_works/conf/stopwords.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../../data_dir_setup/solr7/grouped_works/conf/stopwords.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/release_notes/22.01.00.MD" beforeDir="false" afterPath="$PROJECT_DIR$/../web/release_notes/22.01.00.MD" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/sys/Account/AccountProfile.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/sys/Account/AccountProfile.php" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -61,26 +66,26 @@
     <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1557953281623" />
     <property name="extract.method.default.visibility" value="private" />
     <property name="last_directory_selection" value="$PROJECT_DIR$/../java_shared_libraries/src/com/turning_leaf_technologies" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/../aspen_app" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../evergreen_export" />
     <property name="project.structure.last.edited" value="Artifacts" />
     <property name="project.structure.proportion" value="0.15" />
     <property name="project.structure.side.proportion" value="0.2" />
-    <property name="settings.editor.selected.configurable" value="preferences.pluginManager" />
+    <property name="settings.editor.selected.configurable" value="jprofiler" />
   </component>
   <component name="RecentsManager">
     <key name="CreateClassDialog.RecentsKey">
       <recent name="com.turning_leaf_technologies.symphony" />
+      <recent name="com.turning_leaf_technologies.reindexer" />
       <recent name="com.turning_leaf_technologies.events" />
       <recent name="com.turning_leaf_technologies.sierra" />
       <recent name="com.turning_leaf_technologies.indexing" />
-      <recent name="com.turning_leaf_technologies.website_indexer" />
     </key>
     <key name="CopyFile.RECENT_KEYS">
-      <recent name="C:\web\aspen-discovery\install" />
-      <recent name="C:\web\aspen-discovery\code\overdrive_extract\src\com\turning_leaf_technologies\overdrive" />
-      <recent name="C:\web\aspen-discovery\code\axis_360_export\src" />
+      <recent name="C:\web\aspen-discovery\code\evergreen_export" />
+      <recent name="C:\web\aspen-discovery\code" />
       <recent name="C:\web\aspen-discovery\data_dir_setup\solr7" />
-      <recent name="C:\web\aspen-discovery\sites" />
+      <recent name="C:\web\aspen-discovery\data_dir_setup\solr7\grouped_works\conf" />
+      <recent name="C:\web\aspen-discovery\install" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="C:\web\aspen-discovery\data_dir_setup\solr7\grouped_works\lib" />
@@ -105,13 +110,13 @@
       <recent name="com.turning_leaf_technologies" />
     </key>
     <key name="CopyClassDialog.RECENTS_KEY">
+      <recent name="com.turning_leaf_technologies.util" />
       <recent name="com.turning_leaf_technogies.axis360" />
       <recent name="" />
       <recent name="com.turning_leaf_technologies.indexing" />
-      <recent name="com.turning_leaf_technologies.oai" />
     </key>
   </component>
-  <component name="RunManager" selected="Application.Polaris Export">
+  <component name="RunManager" selected="Application.Evergreen Export">
     <configuration name="Axis 360 Export" type="Application" factoryName="Application">
       <option name="MAIN_CLASS_NAME" value="com.turning_leaf_technogies.axis360.Axis360ExportMain" />
       <module name="axis_360_export" />
@@ -136,6 +141,14 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
+    <configuration name="Course Reserves Indexer" type="Application" factoryName="Application">
+      <option name="MAIN_CLASS_NAME" value="com.turning_leaf_technologies.reindexer.CourseReservesIndexerMain" />
+      <module name="course_reserves_indexer" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/../course_reserves_indexer" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="Cron BookCoverCleanup" type="Application" factoryName="Application">
       <option name="MAIN_CLASS_NAME" value="com.turning_leaf_technologies.cron.Cron" />
       <module name="cron" />
@@ -147,7 +160,7 @@
     <configuration name="Cron" type="Application" factoryName="Application">
       <option name="MAIN_CLASS_NAME" value="com.turning_leaf_technologies.cron.Cron" />
       <module name="cron" />
-      <option name="PROGRAM_PARAMETERS" value="model.localhost UpdateReadingHistory" />
+      <option name="PROGRAM_PARAMETERS" value="model.localhost" />
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
@@ -155,8 +168,16 @@
     <configuration name="Events Indexing" type="Application" factoryName="Application">
       <option name="MAIN_CLASS_NAME" value="com.turning_leaf_technologies.events.EventsIndexerMain" />
       <module name="events_indexer" />
-      <option name="PROGRAM_PARAMETERS" value="basinlibraries.localhost" />
+      <option name="PROGRAM_PARAMETERS" value="okaloosa.localhost" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/../events_indexer" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="Evergreen Export" type="Application" factoryName="Application">
+      <option name="MAIN_CLASS_NAME" value="org.aspendiscovery.evergreen_export.EvergreenExportMain" />
+      <module name="evergreen_export" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/../evergreen_export" />
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
@@ -209,14 +230,6 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
-    <configuration name="Rbdigital Export" type="Application" factoryName="Application">
-      <option name="MAIN_CLASS_NAME" value="com.turning_leaf_technologies.rbdigital.RbdigitalExportMain" />
-      <module name="rbdigital_export" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/../rbdigital_export" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
     <configuration name="Reindexer - Is Nightly Index Running" type="Application" factoryName="Application">
       <option name="MAIN_CLASS_NAME" value="com.turning_leaf_technologies.reindexer.GroupedReindexMain" />
       <module name="reindexer" />
@@ -229,7 +242,7 @@
     <configuration name="Reindexer Full" type="Application" factoryName="Application">
       <option name="MAIN_CLASS_NAME" value="com.turning_leaf_technologies.reindexer.GroupedReindexMain" />
       <module name="reindexer" />
-      <option name="PROGRAM_PARAMETERS" value="model.localhost nightly" />
+      <option name="PROGRAM_PARAMETERS" value="yavapai.localhost fullNoClear" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/../reindexer" />
       <method v="2">
         <option name="Make" enabled="true" />
@@ -238,7 +251,7 @@
     <configuration name="Reindexer Single Work" type="Application" factoryName="Application">
       <option name="MAIN_CLASS_NAME" value="com.turning_leaf_technologies.reindexer.GroupedReindexMain" />
       <module name="reindexer" />
-      <option name="PROGRAM_PARAMETERS" value="model.localhost singleWork" />
+      <option name="PROGRAM_PARAMETERS" value="yavapai.localhost singleWork" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/../reindexer" />
       <method v="2">
         <option name="Make" enabled="true" />
@@ -263,7 +276,7 @@
     <configuration name="SymphonyExport" type="Application" factoryName="Application">
       <option name="MAIN_CLASS_NAME" value="com.turning_leaf_technologies.symphony.SymphonyExportMain" />
       <module name="symphony_export" />
-     <option name="PROGRAM_PARAMETERS" value="swan.localhost" />
+      <option name="PROGRAM_PARAMETERS" value="yavapai.localhost" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/../symphony_export" />
       <method v="2">
         <option name="Make" enabled="true" />
@@ -289,16 +302,17 @@
       <item itemvalue="Application.Axis 360 Export" />
       <item itemvalue="Application.CARLX Export" />
       <item itemvalue="Application.Cloud Library Export" />
+      <item itemvalue="Application.Course Reserves Indexer" />
       <item itemvalue="Application.Cron BookCoverCleanup" />
       <item itemvalue="Application.Cron" />
       <item itemvalue="Application.Events Indexing" />
       <item itemvalue="Application.Genealogy Cleanup/Reindex" />
       <item itemvalue="Application.Hoopla Export" />
       <item itemvalue="Application.Koha Export" />
-      <item itemvalue="Application.Polaris Export" />
+      <item itemvalue="Application.Evergreen Export" />
       <item itemvalue="Application.OAI Indexer" />
       <item itemvalue="Application.OverDrive Export" />
-      <item itemvalue="Application.Rbdigital Export" />
+      <item itemvalue="Application.Polaris Export" />
       <item itemvalue="Application.Reindexer - Is Nightly Index Running" />
       <item itemvalue="Application.Reindexer Full" />
       <item itemvalue="Application.Reindexer Single Work" />
@@ -335,11 +349,235 @@
       <is-autoscroll-to-source value="true" />
     </todo-panel>
   </component>
+  <component name="UnknownFeatures">
+    <option featureType="com.intellij.fileTypeFactory" implementationName="*.sql" />
+  </component>
+  <component name="Vcs.Log.History.Properties">
+    <option name="COLUMN_ID_ORDER">
+      <list>
+        <option value="Default.Root" />
+        <option value="Default.Author" />
+        <option value="Default.Date" />
+        <option value="Default.Subject" />
+      </list>
+    </option>
+  </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/grouping/RecordGroupingProcessor.java</url>
+          <line>831</line>
+          <option name="timeStamp" value="24" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/../cloud_library_export/src/com/turning_leaf_technologies/cloud_library/CloudLibraryExportMain.java</url>
+          <line>116</line>
+          <option name="timeStamp" value="68" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/../polaris_export/src/com/turning_leaf_technologies/polaris/PolarisExportMain.java</url>
+          <line>678</line>
+          <option name="timeStamp" value="83" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/../overdrive_extract/src/com/turning_leaf_technologies/overdrive/ExtractOverDriveInfo.java</url>
+          <line>610</line>
+          <option name="timeStamp" value="137" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/../hoopla_export/src/com/turning_leaf_technologies/hoopla/HooplaExportMain.java</url>
+          <line>687</line>
+          <option name="timeStamp" value="224" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/../hoopla_export/src/com/turning_leaf_technologies/hoopla/HooplaExportMain.java</url>
+          <line>683</line>
+          <option name="timeStamp" value="226" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/../hoopla_export/src/com/turning_leaf_technologies/hoopla/HooplaExportMain.java</url>
+          <line>666</line>
+          <option name="timeStamp" value="230" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/GroupedWorkIndexer.java</url>
+          <line>387</line>
+          <option name="timeStamp" value="246" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/../koha_export/src/com/turning_leaf_technologies/koha_export/KohaExportMain.java</url>
+          <line>114</line>
+          <option name="timeStamp" value="282" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/../koha_export/src/com/turning_leaf_technologies/koha_export/KohaExportMain.java</url>
+          <line>533</line>
+          <option name="timeStamp" value="285" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/../koha_export/src/com/turning_leaf_technologies/koha_export/KohaExportMain.java</url>
+          <line>555</line>
+          <option name="timeStamp" value="286" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/HooplaProcessor.java</url>
+          <line>213</line>
+          <option name="timeStamp" value="346" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/GroupedWorkIndexer.java</url>
+          <line>838</line>
+          <option name="timeStamp" value="372" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/../events_indexer/src/com/turning_leaf_technologies/events/LibraryCalendarIndexer.java</url>
+          <line>107</line>
+          <option name="timeStamp" value="394" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/grouping/GroupedWork.java</url>
+          <line>70</line>
+          <option name="timeStamp" value="402" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/grouping/MarcRecordGrouper.java</url>
+          <line>111</line>
+          <option name="timeStamp" value="414" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/grouping/MarcRecordGrouper.java</url>
+          <line>114</line>
+          <option name="timeStamp" value="415" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/../overdrive_extract/src/com/turning_leaf_technologies/overdrive/ExtractOverDriveInfo.java</url>
+          <line>144</line>
+          <option name="timeStamp" value="441" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/../overdrive_extract/src/com/turning_leaf_technologies/overdrive/ExtractOverDriveInfo.java</url>
+          <line>153</line>
+          <option name="timeStamp" value="442" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/GroupedWorkIndexer.java</url>
+          <line>985</line>
+          <option name="timeStamp" value="457" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/grouping/OverDriveRecordGrouper.java</url>
+          <line>42</line>
+          <option name="timeStamp" value="458" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/OverDriveProcessor.java</url>
+          <line>503</line>
+          <option name="timeStamp" value="459" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/com/turning_leaf_technologies/cron/DatabaseCleanup.java</url>
+          <line>80</line>
+          <option name="timeStamp" value="491" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/../overdrive_extract/src/com/turning_leaf_technologies/overdrive/ExtractOverDriveInfo.java</url>
+          <line>247</line>
+          <option name="timeStamp" value="508" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/../overdrive_extract/src/com/turning_leaf_technologies/overdrive/ExtractOverDriveInfo.java</url>
+          <line>1713</line>
+          <option name="timeStamp" value="512" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/../symphony_export/src/com/turning_leaf_technologies/symphony/SymphonyExportMain.java</url>
+          <line>354</line>
+          <option name="timeStamp" value="516" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/../symphony_export/src/com/turning_leaf_technologies/symphony/SymphonyExportMain.java</url>
+          <line>329</line>
+          <option name="timeStamp" value="522" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <condition expression="courseNumber.length() &gt; 50" language="JAVA" />
+          <url>file://$PROJECT_DIR$/../symphony_export/src/com/turning_leaf_technologies/symphony/SymphonyExportMain.java</url>
+          <line>273</line>
+          <option name="timeStamp" value="530" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/../symphony_export/src/com/turning_leaf_technologies/symphony/SymphonyExportMain.java</url>
+          <line>343</line>
+          <option name="timeStamp" value="531" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/../course_reserves_indexer/src/com/turning_leaf_technologies/reindexer/CourseReservesIndexerMain.java</url>
+          <line>32</line>
+          <option name="timeStamp" value="532" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/../course_reserves_indexer/src/com/turning_leaf_technologies/reindexer/CourseReservesIndexer.java</url>
+          <line>177</line>
+          <option name="timeStamp" value="549" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/../course_reserves_indexer/src/com/turning_leaf_technologies/reindexer/CourseReservesIndexer.java</url>
+          <line>181</line>
+          <option name="timeStamp" value="550" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/KohaRecordProcessor.java</url>
+          <line>561</line>
+          <option name="timeStamp" value="551" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/KohaRecordProcessor.java</url>
+          <line>629</line>
+          <option name="timeStamp" value="552" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/IIIRecordProcessor.java</url>
+          <line>260</line>
+          <option name="timeStamp" value="561" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/../symphony_export/src/com/turning_leaf_technologies/symphony/SymphonyExportMain.java</url>
+          <line>103</line>
+          <option name="timeStamp" value="580" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/../symphony_export/src/com/turning_leaf_technologies/symphony/SymphonyExportMain.java</url>
+          <line>579</line>
+          <option name="timeStamp" value="587" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/../symphony_export/src/com/turning_leaf_technologies/symphony/SymphonyExportMain.java</url>
+          <line>399</line>
+          <option name="timeStamp" value="590" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/../koha_export/src/com/turning_leaf_technologies/koha_export/KohaExportMain.java</url>
+          <line>427</line>
+          <option name="timeStamp" value="591" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/../evergreen_export/src/org/aspendiscovery/evergreen_export/EvergreenExportMain.java</url>
+          <line>356</line>
+          <option name="timeStamp" value="592" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/../evergreen_export/src/org/aspendiscovery/evergreen_export/EvergreenExportMain.java</url>
+          <line>121</line>
+          <option name="timeStamp" value="595" />
+        </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
+    <watches-manager>
+      <configuration name="Application">
+        <watch expression="record.hashCode()" />
+      </configuration>
+    </watches-manager>
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />
@@ -348,7 +586,5 @@
   <component name="antWorkspaceConfiguration">
     <option name="IS_AUTOSCROLL_TO_SOURCE" value="false" />
     <option name="FILTER_TARGETS" value="false" />
-  </component>
-  <component name="com.intellij.coverage.CoverageDataManagerImpl">
   </component>
 </project>

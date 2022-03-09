@@ -4,6 +4,10 @@ AspenDiscovery.CollectionSpotlights = (function(){
 			AspenDiscovery.Account.ajaxLightbox(Globals.path + '/Admin/AJAX?method=getAddToSpotlightForm&source=list&id=' + listId, true);
 			return false;
 		},
+		createSpotlightFromCourseReserve: function (courseReserveId){
+			AspenDiscovery.Account.ajaxLightbox(Globals.path + '/Admin/AJAX?method=getAddToSpotlightForm&source=course_reserve&id=' + courseReserveId, true);
+			return false;
+		},
 		createSpotlightFromSearch: function (searchId){
 			AspenDiscovery.Account.ajaxLightbox(Globals.path + '/Admin/AJAX?method=getAddToSpotlightForm&source=search&id=' + searchId, true);
 			return false;

@@ -4,7 +4,8 @@
 		<div id="videoContainer">
 			<video width="100%" id="player" controls>
 				<source src="{$videoPath}" type="video/mp4">
-				Your browser does not support the display of Videos or the file ({$fileSize}) is too large to display.  Click <a href="{$videoPath}">here</a> to open the file.
+                {translate text="Your browser does not support the display of Videos or the file (%1%) is too large to display." 1=$fileSize  isPublicFacing=true}
+				<a class="btn btn-primary" href="{$videoPath}">{translate text="Open the file" isPublicFacing=true}</a>
 			</video>
 		</div>
 	</div>

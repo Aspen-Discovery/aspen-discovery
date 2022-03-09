@@ -1,15 +1,15 @@
 package com.turning_leaf_technologies.marc;
 
+import com.mysql.cj.util.LRUCache;
 import com.turning_leaf_technologies.logging.BaseLogEntry;
+import com.turning_leaf_technologies.util.MaxSizeHashMap;
 import org.apache.logging.log4j.Logger;
 import com.turning_leaf_technologies.strings.StringUtils;
-import org.marc4j.MarcException;
-import org.marc4j.MarcPermissiveStreamReader;
-import org.marc4j.MarcStreamReader;
-import org.marc4j.MarcStreamWriter;
+import org.marc4j.*;
 import org.marc4j.marc.*;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
@@ -24,6 +24,8 @@ import java.util.zip.CRC32;
  * Class to handle loading data from MARC records
  */
 public class MarcUtil {
+	private static HashMap<String, Set<String>> marcRecordFieldListCache = new HashMap<>();
+	private static long lastRecordHashCode;
 	/**
 	 * Get Set of Strings as indicated by tagStr. For each field spec in the
 	 * tagStr that is NOT about bytes (i.e. not a 008[7-12] type fieldspec), the
@@ -46,8 +48,17 @@ public class MarcUtil {
 	 *         of Strings.
 	 */
 	public static Set<String> getFieldList(Record record, String tagStr) {
+		if (lastRecordHashCode != record.hashCode()){
+			marcRecordFieldListCache.clear();
+			lastRecordHashCode = record.hashCode();
+		}
+		Set<String> result = marcRecordFieldListCache.get(tagStr);
+		if (result != null){
+			return result;
+		}
+
 		String[] tags = tagStr.split(":");
-		Set<String> result = new LinkedHashSet<>();
+		result = new LinkedHashSet<>();
 		for (String tag1 : tags) {
 			// Check to ensure tag length is at least 3 characters
 			if (tag1.length() < 3) {
@@ -103,6 +114,7 @@ public class MarcUtil {
 					result.addAll(getSubfieldDataAsSet(record, tag, subfield, separator));
 			}
 		}
+		marcRecordFieldListCache.put(tagStr, result);
 		return result;
 	}
 
@@ -522,7 +534,7 @@ public class MarcUtil {
 		return timeAdded;
 	}
 
-	public static Record readIndividualRecord(File marcFile, BaseLogEntry logEntry){
+	public static Record readMarcRecordFromFile(File marcFile, BaseLogEntry logEntry){
 		try {
 			FileInputStream marcFileStream = new FileInputStream(marcFile);
 
@@ -536,7 +548,8 @@ public class MarcUtil {
 			}
 			marcFileStream.close();
 		}catch (FileNotFoundException fne){
-			logEntry.addNote("Could not find marcFile " + marcFile.getAbsolutePath());
+			//These will now show up in the suppression so we don't need to add them to notes.
+			//logEntry.addNote("Could not find marcFile " + marcFile.getAbsolutePath());
 			return null;
 		}catch (Exception e){
 			//This happens if the file has too many items. Ignore and read with permissive handler.
@@ -545,10 +558,10 @@ public class MarcUtil {
 
 		//If we got here, it didn't read successfully.  Try again using the Permissinve Reader
 		//The Permissive Reader allows reading large files.
-		return readIndividualRecordPermissive(marcFile, logEntry);
+		return readMarcRecordFromFilePermissive(marcFile, logEntry);
 	}
 
-	private static Record readIndividualRecordPermissive(File marcFile, BaseLogEntry logEntry){
+	private static Record readMarcRecordFromFilePermissive(File marcFile, BaseLogEntry logEntry){
 		try {
 			FileInputStream marcFileStream = new FileInputStream(marcFile);
 
@@ -563,6 +576,29 @@ public class MarcUtil {
 			}
 		}catch (Exception e){
 			logEntry.incErrors("Could not read marc file " + marcFile.getAbsolutePath(), e);
+		}
+
+		return null;
+	}
+
+	public static Record readJsonFormattedRecord(String identifier, String marcContents, BaseLogEntry logEntry){
+		try {
+			InputStream marcFileStream = new ByteArrayInputStream(marcContents.getBytes(StandardCharsets.UTF_8));
+
+			MarcReader streamReader = new MarcJsonReader(marcFileStream);
+			try{
+				Record marcRecord = streamReader.next();
+				marcFileStream.close();
+				streamReader = null;
+				return marcRecord;
+			}catch (MarcException me){
+				//Could not read the marc record, there likely was not a record in the file, but ignore and use the permissive read.
+				logEntry.incErrors("Could not read MARC for " + identifier, me);
+			}
+			streamReader = null;
+			marcFileStream.close();
+		}catch (Exception e){
+			logEntry.incErrors("Could not parse marc in json format for " + identifier, e);
 		}
 
 		return null;

@@ -33,7 +33,11 @@ class ExternalEContent_AccessOnline extends Action
 
 		if ($this->recordDriver->isValid()) {
 			$relatedRecord = $this->recordDriver->getRelatedRecord();
-			$recordActions = $relatedRecord->getActions();
+			if ($relatedRecord) {
+				$recordActions = $relatedRecord->getActions();
+			}else{
+				$recordActions = [];
+			}
 
 			$actionIndex = $_REQUEST['index'];
 			$selectedAction = $recordActions[$actionIndex];
@@ -106,7 +110,7 @@ class ExternalEContent_AccessOnline extends Action
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
-		$breadcrumbs[] = new Breadcrumb($this->recordDriver->getRecordUrl(), $this->recordDriver->getTitle());
+		$breadcrumbs[] = new Breadcrumb($this->recordDriver->getRecordUrl(), $this->recordDriver->getTitle(), false);
 		$breadcrumbs[] = new Breadcrumb('', 'Access Online');
 		return $breadcrumbs;
 	}

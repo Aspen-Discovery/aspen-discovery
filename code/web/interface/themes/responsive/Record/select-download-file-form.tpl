@@ -5,7 +5,7 @@
 	<div class="form-group">
 		<div class="form-group">
 			<label for="selectedFile">
-				{translate text="Select a file to download"}
+				{translate text="Select a file to download" isPublicFacing=true}
 			</label>
 			<select name="selectedFile" id="selectedFile" class="form-control">
 				{foreach from=$validFiles item=title key=fileId}

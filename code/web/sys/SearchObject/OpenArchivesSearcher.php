@@ -42,13 +42,10 @@ class SearchObject_OpenArchivesSearcher extends SearchObject_SolrSearcher
 		}
 
 		// Load sort preferences (or defaults if none in .ini file):
-		if (isset($searchSettings['Sorting'])) {
-			$this->sortOptions = $searchSettings['Sorting'];
-		} else {
-			$this->sortOptions = array('relevance' => 'sort_relevance',
-				'year' => 'sort_year', 'year asc' => 'sort_year asc',
-				'title' => 'sort_title');
-		}
+		$this->sortOptions = array(
+			'relevance' => 'Best Match',
+			'title' => 'Title'
+		);
 
 		// Debugging
 		$this->indexEngine->debug = $this->debug;
@@ -106,9 +103,9 @@ class SearchObject_OpenArchivesSearcher extends SearchObject_SolrSearcher
 	public function getSearchIndexes()
 	{
 		return [
-			'OpenArchivesKeyword' => 'Keyword',
-			'OpenArchivesTitle' => 'Title',
-			'OpenArchivesSubject' => 'Subject',
+			'OpenArchivesKeyword' => translate(['text'=>'Keyword', 'Keyword', 'isPublicFacing'=>true, 'inAttribute'=>true]),
+			'OpenArchivesTitle' => translate(['text'=>'Keyword', 'Title', 'isPublicFacing'=>true, 'inAttribute'=>true]),
+			'OpenArchivesSubject' => translate(['text'=>'Keyword', 'Subject', 'isPublicFacing'=>true, 'inAttribute'=>true]),
 		];
 	}
 

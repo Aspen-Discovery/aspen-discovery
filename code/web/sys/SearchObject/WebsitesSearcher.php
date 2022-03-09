@@ -42,12 +42,10 @@ class SearchObject_WebsitesSearcher extends SearchObject_SolrSearcher
 		}
 
 		// Load sort preferences (or defaults if none in .ini file):
-		if (isset($searchSettings['Sorting'])) {
-			$this->sortOptions = $searchSettings['Sorting'];
-		} else {
-			$this->sortOptions = array('relevance' => 'sort_relevance',
-				'title' => 'sort_title');
-		}
+		$this->sortOptions = array(
+			'relevance' => 'Best Match',
+			'title' => 'Title'
+		);
 
 		// Debugging
 		$this->indexEngine->debug = $this->debug;
@@ -106,8 +104,8 @@ class SearchObject_WebsitesSearcher extends SearchObject_SolrSearcher
 	public function getSearchIndexes()
 	{
 		return [
-			'WebsiteKeyword' => 'Keyword',
-			'WebsiteTitle' => 'Title',
+			'WebsiteKeyword' => translate(['text'=>'Keyword', 'isPublicFacing'=>true, 'inAttribute'=>true]),
+			'WebsiteTitle' => translate(['text'=>'Title', 'isPublicFacing'=>true, 'inAttribute'=>true]),
 		];
 	}
 

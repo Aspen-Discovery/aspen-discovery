@@ -1,14 +1,14 @@
 {strip}
 	<div id="main-content" class="col-md-12">
-		<h1>{translate text='Events Indexing Log'}</h1>
+		<h1>{translate text='Events Indexing Log' isAdminFacing=true}</h1>
 		<hr>
 
-		<h4>Filter by</h4>
+		<h4>{translate text="Filter by" isAdminFacing=true}</h4>
 
 		<form class="navbar form-inline row">
 			<div class="form-group col-xs-5">
 				<span class="pull-right">
-					<label for="pageSize" class="control-label">Entries Per Page&nbsp;</label>
+					<label for="pageSize" class="control-label">{translate text="Entries Per Page" isAdminFacing=true}&nbsp;</label>
 					<select id="pageSize" name="pageSize" class="pageSize form-control input-sm" onchange="AspenDiscovery.changePageSize()">
 						<option value="30"{if $recordsPerPage == 30} selected="selected"{/if}>30</option>
 						<option value="50"{if $recordsPerPage == 50} selected="selected"{/if}>50</option>
@@ -18,10 +18,10 @@
 				</span>
 			</div>
 		</form>
-		<div id="rbdigitalExportLogContainer">
+		<div id="eventsExportLogContainer">
 			<table class="logEntryDetails table table-condensed table-hover">
 				<thead>
-					<tr><th>Id</th><th>Name</th><th>Started</th><th>Last Update</th><th>Finished</th><th>Elapsed</th><th>Total Events</th><th>Num Errors</th><th>Pages Added</th><th>Pages Deleted</th><th>Pages Updated</th><th>Notes</th></tr>
+					<tr><th>{translate text="Id" isAdminFacing=true}</th><th>{translate text="Name" isAdminFacing=true}</th><th>{translate text="Started" isAdminFacing=true}</th><th>{translate text="Last Update" isAdminFacing=true}</th><th>{translate text="Finished" isAdminFacing=true}</th><th>{translate text="Elapsed" isAdminFacing=true}</th><th>{translate text="Total Events" isAdminFacing=true}</th><th>{translate text="Num Errors" isAdminFacing=true}</th><th>{translate text="Pages Added" isAdminFacing=true}</th><th>{translate text="Pages Deleted" isAdminFacing=true}</th><th>{translate text="Pages Updated" isAdminFacing=true}</th><th>{translate text="Notes" isAdminFacing=true}</th></tr>
 				</thead>
 				<tbody>
 					{foreach from=$logEntries item=logEntry}
@@ -37,7 +37,7 @@
 							<td>{$logEntry->numAdded}</td>
 							<td>{$logEntry->numDeleted}</td>
 							<td>{$logEntry->numUpdated}</td>
-							<td><a href="#" onclick="return AspenDiscovery.Admin.showExtractNotes('{$logEntry->id}', 'events');">Show Notes</a></td>
+							<td><a href="#" onclick="return AspenDiscovery.Admin.showExtractNotes('{$logEntry->id}', 'events');">{translate text="Show Notes" isAdminFacing=true}</a></td>
 						</tr>
 					{/foreach}
 				</tbody>

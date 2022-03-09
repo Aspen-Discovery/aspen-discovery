@@ -48,9 +48,9 @@ class Hoopla_AJAX extends Action
 
 					return
 						array(
-							'title'   => 'Hoopla Check Out',
+							'title'   => translate(['text'=>'Hoopla Check Out', 'isPublicFacing'=>true]),
 							'body'    => $interface->fetch('Hoopla/ajax-checkout-prompt.tpl'),
-							'buttons' => '<button class="btn btn-primary" type= "button" title="Check Out" onclick="return AspenDiscovery.Hoopla.checkOutHooplaTitle(\'' . $id . '\');">Check Out</button>'
+							'buttons' => '<button class="btn btn-primary" type= "button" title="Check Out" onclick="return AspenDiscovery.Hoopla.checkOutHooplaTitle(\'' . $id . '\');">' . translate(['text'=>'Check Out', 'isPublicFacing'=>true]) . '</button>'
 						);
 				} elseif (count($hooplaUsers) == 1) {
 					$hooplaUser = reset($hooplaUsers);
@@ -62,61 +62,61 @@ class Hoopla_AJAX extends Action
 						require_once ROOT_DIR . '/RecordDrivers/HooplaRecordDriver.php';
 						$hooplaRecord = new HooplaRecordDriver($id);
 
-                        // Base Hoopla Title View Url
-                        $accessLink = $hooplaRecord->getAccessLink();
-                        $hooplaRegistrationUrl = $accessLink['url'];
-                        $hooplaRegistrationUrl .= (parse_url($hooplaRegistrationUrl, PHP_URL_QUERY) ? '&' : '?') . 'showRegistration=true'; // Add Registration URL parameter
+						// Base Hoopla Title View Url
+						$accessLink = $hooplaRecord->getAccessLink();
+						$hooplaRegistrationUrl = $accessLink['url'];
+						$hooplaRegistrationUrl .= (parse_url($hooplaRegistrationUrl, PHP_URL_QUERY) ? '&' : '?') . 'showRegistration=true'; // Add Registration URL parameter
 
-                        return array(
-                            'title'   => 'Create Hoopla Account',
-                            'body'    => $interface->fetch('Hoopla/ajax-hoopla-single-user-checkout-prompt.tpl'),
-                            'buttons' =>
-                                '<button id="theHooplaButton" class="btn btn-default" type="button" title="Check Out" onclick="return AspenDiscovery.Hoopla.checkOutHooplaTitle(\'' . $id . '\', ' . $hooplaUser->id . ')">I registered, Check Out now</button>'
-                                .'<a class="btn btn-primary" role="button" href="'.$hooplaRegistrationUrl.'" target="_blank" title="Register at Hoopla" onclick="$(\'#theHooplaButton+a,#theHooplaButton\').toggleClass(\'btn-primary btn-default\');">Register at Hoopla</a>'
-                        );
+						return array(
+							'title'   => translate(['text'=>'Create Hoopla Account', 'isPublicFacing'=>true]),
+							'body'    => $interface->fetch('Hoopla/ajax-hoopla-single-user-checkout-prompt.tpl'),
+							'buttons' =>
+								'<button id="theHooplaButton" class="btn btn-default" type="button" title="Check Out" onclick="return AspenDiscovery.Hoopla.checkOutHooplaTitle(\'' . $id . '\', ' . $hooplaUser->id . ')">' . translate(['text'=>'I registered, Check Out now', 'isPublicFacing'=>true]) . '</button>'
+								.'<a class="btn btn-primary" role="button" href="'.$hooplaRegistrationUrl.'" target="_blank" title="Register at Hoopla" onclick="$(\'#theHooplaButton+a,#theHooplaButton\').toggleClass(\'btn-primary btn-default\');">' . translate(['text'=>'Register at Hoopla', 'isPublicFacing'=>true]) . '</a>'
+						);
 					}
 					if ($hooplaUser->hooplaCheckOutConfirmation) {
 						$interface->assign('hooplaPatronStatus', $checkOutStatus);
 						return
 							array(
-								'title'   => 'Confirm Hoopla Check Out',
+								'title'   => translate(['text'=>'Confirm Hoopla Check Out', 'isPublicFacing'=>true]),
 								'body'    => $interface->fetch('Hoopla/ajax-hoopla-single-user-checkout-prompt.tpl'),
-								'buttons' => '<button class="btn btn-primary" type="button" title="Check Out" onclick="return AspenDiscovery.Hoopla.checkOutHooplaTitle(\'' . $id . '\', ' . $hooplaUser->id . ')">Check Out</button>'
+								'buttons' => '<button class="btn btn-primary" type="button" title="Check Out" onclick="return AspenDiscovery.Hoopla.checkOutHooplaTitle(\'' . $id . '\', ' . $hooplaUser->id . ')">' . translate(['text'=>'Check Out', 'isPublicFacing'=>true]) . '</button>'
 							);
 					}else{
 						// Go ahead and checkout the title
 						return array(
-							'title'   => 'Checking out Hoopla title',
+							'title'   => translate(['text'=>'Checking out Hoopla title', 'isPublicFacing'=>true]),
 							'body'    => "<script>AspenDiscovery.Hoopla.checkOutHooplaTitle('{$id}', '{$hooplaUser->id}')</script>",
 							'buttons' => ''
 						);
 					}
 				} else {
 					// No Hoopla Account Found, give the user an error message
-					$invalidAccountMessage = translate('hoopla_invalid_account_or_library');
+					$invalidAccountMessage = translate(['text' => 'The barcode or library for this account is not valid for Hoopla. Please contact your local library for more information.', 'isPublicFacing'=>true]);
 					global $logger;
 					$logger->log('No valid Hoopla account was found to check out a Hoopla title.', Logger::LOG_ERROR);
 					return
 						array(
-							'title'   => 'Invalid Hoopla Account',
+							'title'   => translate(['text'=>'Invalid Hoopla Account', 'isPublicFacing'=>true]),
 							'body'    => '<p class="alert alert-danger">'. $invalidAccountMessage .'</p>',
 							'buttons' => ''
 						);
 				}
 			} else {
-                return array(
-                    'title'   => 'Error',
-                    'body'    => 'Item to checkout was not provided.',
-                    'buttons' => ''
-                );
+				return array(
+					'title'   => translate(['text'=>'Error', 'isPublicFacing'=>true]),
+					'body'    => translate(['text'=>'Item to checkout was not provided.', 'isPublicFacing'=>true]),
+					'buttons' => ''
+				);
             }
 		}else{
-            return array(
-                'title'   => 'Error',
-                'body'    => 'You must be logged in to checkout an item.'
-                    .'<script>Globals.loggedIn = false;  AspenDiscovery.Hoopla.getCheckOutPrompts(\''.$id.'\')</script>',
-                'buttons' => ''
-            );
+			return array(
+				'title'   => translate(['text'=>'Error', 'isPublicFacing'=>true]),
+				'body'    => translate(['text'=>'You must be logged in to checkout an item.', 'isPublicFacing'=>true])
+					.'<script>Globals.loggedIn = false;  AspenDiscovery.Hoopla.getCheckOutPrompts(\''.$id.'\')</script>',
+				'buttons' => ''
+			);
 		}
 
 	}
@@ -144,22 +144,22 @@ class Hoopla_AJAX extends Action
 				if ($result['success']) {
 					$checkOutStatus = $driver->getAccountSummary($patron);
 					$interface->assign('hooplaPatronStatus', $checkOutStatus);
-					$title = empty($result['title']) ? "Title checked out successfully" : $result['title'] . " checked out successfully";
+					$title = empty($result['title']) ? translate(['text'=>"Title checked out successfully", 'isPublicFacing'=>true]) : translate(['text'=> "%1% checked out successfully", 1=>$result['title'],'isPublicFacing'=>true]);
                     /** @noinspection HtmlUnknownTarget */
                     return array(
 						'success' => true,
 						'title'   => $title,
 						'message' => $interface->fetch('Hoopla/hoopla-checkout-success.tpl'),
-						'buttons' => '<a class="btn btn-primary" href="/MyAccount/CheckedOut" role="button">' . translate('View My Check Outs') . '</a>'
+						'buttons' => '<a class="btn btn-primary" href="/MyAccount/CheckedOut" role="button">' . translate(['text'=>'View My Check Outs', 'isPublicFacing'=>true]) . '</a>'
 					);
 				} else {
 					return $result;
 				}
 			}else{
-				return array('success'=>false, 'message'=>'Sorry, it looks like you don\'t have permissions to checkout titles for that user.');
+				return array('success'=>false, 'message'=>translate(['text'=>'Sorry, it looks like you don\'t have permissions to checkout titles for that user.', 'isPublicFacing'=>true]));
 			}
 		}else{
-			return array('success'=>false, 'message'=>'You must be logged in to checkout an item.');
+			return array('success'=>false, 'message'=>translate(['text'=>'You must be logged in to checkout an item.', 'isPublicFacing'=>true]));
 		}
 	}
 
@@ -175,10 +175,10 @@ class Hoopla_AJAX extends Action
 				$driver = new HooplaDriver();
 				return $driver->returnCheckout($patron, $id);
 			}else{
-				return array('success'=>false, 'message'=>'Sorry, it looks like you don\'t have permissions to return titles for that user.');
+				return array('success'=>false, 'message'=>translate(['text'=>'Sorry, it looks like you don\'t have permissions to return titles for that user.', 'isPublicFacing'=>true]));
 			}
 		}else{
-			return array('success'=>false, 'message'=>'You must be logged in to return an item.');
+			return array('success'=>false, 'message'=>translate(['text'=>'You must be logged in to return an item.', 'isPublicFacing'=>true]));
 		}
 	}
 
@@ -191,7 +191,7 @@ class Hoopla_AJAX extends Action
 		$interface->assign('id', $id);
 
 		return array(
-			'title' => 'Cover Image',
+			'title' => translate(['text'=>'Cover Image', 'isPublicFacing'=>true]),
 			'modalBody' => $interface->fetch("Hoopla/largeCover.tpl"),
 			'modalButtons' => ""
 		);

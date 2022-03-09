@@ -8,7 +8,7 @@
 {/if}
 
 {* Create the base form *}
-<form id='objectEditor' method="post" {if !empty($contentType)}enctype="{$contentType}"{/if} action="{$submitUrl}" role="form" onsubmit="setFormSubmitting();" aria-label="{$formLabel}">
+<form id='objectEditor' method="post" {if !empty($contentType)}enctype="{$contentType}"{/if} action="{$submitUrl}" role="form" onsubmit="setFormSubmitting();" aria-label="{translate text=$formLabel isAdminFacing=true inAttribute=true}">
 	<div class='editor'>
 		<input type='hidden' name='objectAction' value='save' />
 		{if !empty($id)}
@@ -27,17 +27,17 @@
 			</div>
 			{/if}
 
-			<div>
+			<div class="form-group">
 				{if $saveButtonText}
-					<button type="submit" name="submit" value="{$saveButtonText}" class="btn btn-primary">{$saveButtonText|translate}</button>
+					<button type="submit" name="submit" value="{$saveButtonText}" class="btn btn-primary">{translate text=$saveButtonText isAdminFacing=true}</button>
 				{else}
-					<div id="objectEditorSaveButtons">
-					<button type="submit" name="submitReturnToList" value="Save Changes and Return" class="btn btn-primary">{translate text="Save Changes and Return"}</button>
+					<div id="objectEditorSaveButtons" class="btn-group">
+					<button type="submit" name="submitReturnToList" value="Save Changes and Return" class="btn btn-primary"><i class="fas fa-save"></i> {translate text="Save Changes and Return" isAdminFacing=true}</button>
 					{if $id}
-						<button type="submit" name="submitStay" value="Save Changes and Stay Here" class="btn">{translate text="Save Changes and Stay Here"}</button>
+						<button type="submit" name="submitStay" value="Save Changes and Stay Here" class="btn btn-default"><i class="fas fa-pencil-alt"></i> {translate text="Save Changes and Stay Here" isAdminFacing=true}</button>
 					{else}
-						<button type="submit" name="submitStay" value="Save Changes and Continue Editing" class="btn">{translate text="Save Changes and Continue Editing"}</button>
-						<button type="submit" name="submitAddAnother" value="Save Changes and Add Another" class="btn">{translate text="Save Changes and Add Another"}</button>
+						<button type="submit" name="submitStay" value="Save Changes and Continue Editing" class="btn btn-default"><i class="fas fa-pencil-alt"></i> {translate text="Save Changes and Continue Editing" isAdminFacing=true}</button>
+						<button type="submit" name="submitAddAnother" value="Save Changes and Add Another" class="btn btn-default"><i class="fas fa-plus"></i> {translate text="Save Changes and Add Another" isAdminFacing=true}</button>
 					{/if}
 					</div>
 				{/if}
@@ -57,7 +57,7 @@
 				var re = new RegExp(regexp);
 				return this.optional(element) || re.test(value);
 			},
-			"Please check your input."
+			"{/literal}{translate text="Please check your input." isAdminFacing=true inAttribute=true}{literal}"
 		);
 		$(document).ready(function(){
 			var objectEditorObject = $('#objectEditor');
@@ -82,7 +82,7 @@
 					// if form state change show warning box, else don't show it.
 					var objectEditorObject = $('#objectEditor');
 					if (objectEditorObject.serialize() !== objectEditorObject.data('serialize')) {
-						return 'You have made changes to the configuration, would you like to save them before continuing?';
+						return "{/literal}{translate text="You have made changes to the configuration, would you like to save them before continuing?" isAdminFacing=true inAttribute=true}{literal}";
 					} else {
 						e = null;
 					}

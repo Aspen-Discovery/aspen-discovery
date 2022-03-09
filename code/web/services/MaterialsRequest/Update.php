@@ -69,10 +69,12 @@ class MaterialsRequest_Update extends Action {
 				$materialsRequest->publicationYear     = empty($_REQUEST['publicationYear']) ? '' : strip_tags($_REQUEST['publicationYear']);
 				$materialsRequest->about               = empty($_REQUEST['about']) ? '' : strip_tags($_REQUEST['about']);
 				$materialsRequest->comments            = empty($_REQUEST['comments']) ? '' : strip_tags($_REQUEST['comments']);
+				$materialsRequest->staffComments       = empty($_REQUEST['staffComments']) ? '' : strip_tags($_REQUEST['staffComments']);
 				$materialsRequest->placeHoldWhenAvailable = empty($_REQUEST['placeHoldWhenAvailable']) ? 0: $_REQUEST['placeHoldWhenAvailable'];
 				$materialsRequest->holdPickupLocation  = empty($_REQUEST['holdPickupLocation']) ? '' : $_REQUEST['holdPickupLocation'];
 				$materialsRequest->bookmobileStop      = empty($_REQUEST['bookmobileStop']) ? '' : $_REQUEST['bookmobileStop'];
 				$materialsRequest->illItem             = empty($_REQUEST['illItem']) ? 0 : $_REQUEST['illItem'];
+				$materialsRequest->emailSent           = empty($_REQUEST['emailSent']) ? 0 : $_REQUEST['emailSent'];
 				$statusChanged = false;
 				if (!empty($_REQUEST['status'])){
 					if ($materialsRequest->status != $_REQUEST['status']){
@@ -127,8 +129,6 @@ class MaterialsRequest_Update extends Action {
 		//Get a list of formats to show
 		$availableFormats = MaterialsRequest::getFormats();
 		$interface->assign('availableFormats', $availableFormats);
-		$interface->assign('showEbookFormatField', $configArray['MaterialsRequest']['showEbookFormatField']);
-//		$interface->assign('showEaudioFormatField', $configArray['MaterialsRequest']['showEaudioFormatField']);
 
 		$this->display('update-result.tpl', 'Update Result');
 	}

@@ -1,0 +1,340 @@
+@import (reference) "bootstrap/less/glyphicons.less";
+@import (reference) "variables.less";
+
+//
+// Styling for home page elements
+//
+
+// Side-bar Search Box
+#home-page-search{
+  background-color: @home-search-top-color;
+  //background: linear-gradient(to bottom, @home-search-top-color, @home-search-bottom-color);
+  padding: 20px 0 10px;
+  margin-bottom:5px;
+}
+#home-page-search-label{
+  font-size:35px;
+  color: @home-search-label-color;
+  //text-shadow: 1px 1px @gray-light;
+}
+// Hide the Place Holder text on the search box by default for
+.placeholder-mixin() {
+  font-size: 0; // zero out the text as a fail safe
+  color: transparent;
+  //text-shadow: none;
+  border: 0;
+}
+
+// Must keep selectors separate because if the browser does not
+// recognize one of the selectors, it will dispose of the ruleset.
+#lookfor:-ms-input-placeholder{.placeholder-mixin;}
+#lookfor::-webkit-input-placeholder{.placeholder-mixin;}
+#lookfor:-moz-placeholder{.placeholder-mixin;}
+#lookfor::-moz-placeholder{.placeholder-mixin;}
+#lookfor::placeholder {.placeholder-mixin;}
+
+.searchTypeHome,.searchSource{
+  margin: 5px 0 0;
+  color: #fff;
+  background-color: @home-search-bottom-color;
+  border: none;
+  width: 90% !important;
+}
+
+// Horizontal Search Box Styling
+#horizontal-search-box {
+  background-color: @home-search-top-color;
+  //background: linear-gradient(to bottom, @home-search-top-color, @home-search-bottom-color);
+  padding: 15px 0;
+  #searchForm {
+    .row {
+      // undo margin-adjusting for this row.
+      margin-right: 0;
+      margin-left: 0;
+      &>div {
+        margin-top: 4px; // provides vertical spacing between inputs for smaller screen widths.
+      }
+    }
+    #horizontal-search-button-container {
+      margin-top: 4px; // provides vertical spacing between inputs for smaller screen widths.
+      padding-right: 0; // remove gap between button and input box on the left.
+      & > div.row {
+        padding-right: 0;
+        margin-top: 0;
+        & > div {
+          margin-top: 0; // !important;
+        }
+      }
+      @media (max-width: @screen-sm-min) {
+        padding-right: 4px;
+      }
+    }
+  }
+
+  div {
+    padding-right: 4px;
+    padding-left: 0;
+    @media (max-width: @screen-sm-min) {
+      padding-right: 1px;
+      padding-left: 1px;
+    }
+  }
+
+  #horizontal-search-label {
+    color: @horizontal-search-label-color;
+    font-size: 14px;
+    @media (max-width: @screen-md-max) {
+      margin-top: 4px;
+    }
+    @media (min-width: @screen-lg-min) {
+      margin-top: 7px;
+    }
+
+    line-height: 20px;
+  }
+
+  #lookfor-label {
+    height: 34px;
+    width: 40px;
+    text-align: center;
+  }
+  #lookfor {
+    height: 34px;
+    width: calc(100% - 35px);
+    display: inline-block;
+  }
+  .searchSourceHorizontal,
+  .searchTypeHorizontal {
+    width: 100%;
+    margin: 0 0;
+    border: none;
+    border-radius: 0;
+  }
+  #keepFiltersSwitchLabel {
+    margin-bottom: 0;
+  }
+}
+
+#home-page-library-section{
+  padding: 15px 0;
+  > a {
+    &, &:visited, &:hover {
+      color: #fff;
+    }
+  }
+}
+.sidebar-button{
+  text-align: center;
+  background-color: #7c7c7d;
+  background: linear-gradient(to bottom, #7c7c7d, #3d4244);
+  color: #fff;
+  padding: 3px 0;
+  margin-bottom: 15px;
+}
+
+// Library Link Formatting
+.sidebar-links {
+  .panel-group .panel + .panel {
+    margin-top: 0;
+  }
+  .panel-heading {
+    padding: 5px 15px;
+    background-color: @accordion-header-bg-color;
+    border-bottom: 1px solid #a1a1a1;
+  }
+  .panel {
+    & > a { // keep the title's link underlining the same color as the title
+      // these end up applying to content in div.panel-title
+      &, &:visited, &:hover {
+        font-size: @sidebar-font-size;
+        color: @gray-dark;
+        text-decoration: none;
+        //text-shadow: 1px 1px #fff;
+      }
+    }
+    &.active {
+      & > a { // keep the title's link underlining the same color as the title
+        // these end up applying to content in .active div.panel-title
+        &, &:visited, &:hover {
+          color: @accordion-active-header-color;
+          //text-shadow: 1px 1px @gray;
+          outline: none;
+        }
+      }
+    }
+  }
+  .active {
+    .panel-heading {
+      background-color: @accordion-active-header-backgroundcolor;
+    }
+    .panel-title {
+
+    }
+  }
+  .panel-body {
+    font-size: 13px;
+    color: @gray-dark;
+    background-color: #fcfcfc;
+    border-color: #c5c5c5;
+    border-width: 0 1px 1px 1px;
+    border-style: solid;
+    a {
+      &, &:visited, &:hover {
+        &:not(.btn) { // Let buttons in the sidebar have their normal font color.
+          color: @sidebar-link-color;
+        }
+      }
+    }
+  }
+}
+
+// Theming for auto-complete widget //
+.ui-helper-hidden {
+  display: none;
+}
+.ui-helper-hidden-accessible {
+  border: 0;
+  clip: rect(0 0 0 0);
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  width: 1px;
+}
+.ui-autocomplete {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  z-index: 1000;
+  float: right;
+  display: none;
+  min-width: 160px;
+  _width: 160px;
+  padding: 4px 0;
+  margin: 2px 0 0 0;
+  list-style: none;
+  background-color: #ffffff;
+  border-color: #ccc;
+  border-color: rgba(0, 0, 0, 0.2);
+  border-style: solid;
+  border-width: 1px;
+  //-webkit-border-radius: 5px;
+  //-moz-border-radius: 5px;
+  border-radius: 5px;
+  //-webkit-box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+  //-moz-box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+  //-webkit-background-clip: padding-box;
+  //-moz-background-clip: padding;
+  background-clip: padding-box;
+  *border-left-width: 2px;
+  *border-bottom-width: 2px;
+
+  .ui-menu-item > a.ui-corner-all {
+    display: block;
+    padding: 3px 15px;
+    clear: both;
+    font-weight: normal;
+    line-height: 18px;
+    color: #555555;
+    white-space: nowrap;
+
+    &.ui-state-hover, &.ui-state-active {
+      color: #ffffff;
+      text-decoration: none;
+      background-color: #0088cc;
+      border-radius: 0;
+      //-webkit-border-radius: 0;
+      //-moz-border-radius: 0;
+      background-image: none;
+    }
+  }
+}
+
+// Keep Format Category images & labels apart from each other
+.categoryValue {
+  font-size: smaller;
+  & img {
+    max-width: 50px;
+    height: 50px;
+  }
+  &:hover img {
+    opacity: 0.7;
+  }
+}
+
+// Put Labels beneath icons on small screens when the sidebar has moved across the top
+@media (max-width: 540px) {
+  .formatCategoryLabel {
+    float: none;
+    clear: both;
+  }
+}
+// shrink icons for a range where the labels slightly overlap & the sidebar still acts as a sidebar
+// the upper limit looks to be the width at which the #availabilityControlContainer div wraps
+@media (min-width: @screen-sm-min) and (max-width:999px) {
+  .formatCategoryLabel {
+    float: none;
+    clear: both;
+  }
+}
+// Fix searchbox border radius
+#lookfor {
+  border-radius: @border-radius-small 0 0 @border-radius-small;
+  overflow-y: hidden;
+  padding-top: 0.4em;
+  height: 18px; //TODO set to 34px to match .formcontrol
+  line-height: 20px;
+  min-height: 18px;
+}
+#search-actions.input-group-btn{
+  vertical-align: top;
+}
+
+// Makes record-view descriptions more legible
+#descriptionPanelBody > .panel-body {
+  white-space: pre-line;
+}
+
+// User List sorting drop-down
+// taken from bootstrap css
+.dropdown-menu-left{
+  left:0;
+  right:auto
+}
+#home-page-browse-results .grid-col{
+  text-align: center;
+}
+#home-page-browse-results .grid-col--3{
+  @media (max-width: @screen-tn-max) {
+    display: none;
+  }
+  @media (min-width: @screen-xs-min) {
+    display: block;
+  }
+}
+#home-page-browse-results .grid-col--4{
+  @media (max-width: @screen-sm-max) {
+    display: none;
+  }
+  @media (min-width: @screen-md-min) {
+    display: block;
+  }
+}
+#home-page-browse-results .grid-col--5{
+  @media (max-width: @screen-md-max) {
+    display: none;
+  }
+  @media (min-width: @screen-lg-min) {
+    display: block;
+  }
+}
+#home-page-browse-results .grid-col--6{
+  @media (max-width: @screen-md-max) {
+    display: none;
+  }
+  @media (min-width: @screen-lg-min) {
+    display: block;
+  }
+}

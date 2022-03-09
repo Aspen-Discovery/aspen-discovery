@@ -1,0 +1,30 @@
+{
+	"build": {
+		"production": {
+			"releaseChannel": "production",
+			"distribution": "store"
+		},
+		"beta": {
+			"releaseChannel": "beta",
+			"distribution": "store",
+			"android": {
+				"track": "beta",
+				"releaseStatus": "completed"
+			}
+		},
+		"development": {
+			"releaseChannel": "dev",
+			"developmentClient": true,
+			"distribution": "internal"
+		}
+	},
+	"expo": {
+		"version": "1.0.0",
+		"ios": {
+			"buildNumber": 1
+		},
+		"android": {
+			"versionCode": 1
+		}
+	}
+}

@@ -1,7 +1,6 @@
 <component name="libraryTable">
   <library name="lib2">
     <CLASSES>
-      <root url="jar://$PROJECT_DIR$/../carlx_export/lib/codec-1.6.jar!/" />
       <root url="jar://$PROJECT_DIR$/../carlx_export/lib/ojdbc6.jar!/" />
     </CLASSES>
     <JAVADOC />

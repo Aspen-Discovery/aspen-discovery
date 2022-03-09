@@ -54,7 +54,7 @@ class Admin_BrowseCategories extends ObjectEditor
 	}
 
 	function getInitializationJs() : string {
-		return 'return AspenDiscovery.Admin.updateBrowseSearchForSource();';
+		return 'AspenDiscovery.Admin.updateBrowseSearchForSource();return AspenDiscovery.Admin.updateBrowseCategoryFields();';
 	}
 
 	function getBreadcrumbs() : array
@@ -108,4 +108,5 @@ class Admin_BrowseCategories extends ObjectEditor
 		}
 		return $this->_numObjects;
 	}
+
 }

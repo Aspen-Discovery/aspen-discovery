@@ -179,19 +179,27 @@ AspenDiscovery.OverDrive = (function(){
 			});
 		},
 
-		followOverDriveDownloadLink: function(patronId, overDriveId, formatId){
-			var ajaxUrl = Globals.path + "/OverDrive/AJAX?method=getDownloadLink&patronId=" + patronId + "&overDriveId=" + overDriveId + "&formatId=" + formatId;
+		followOverDriveDownloadLink: function(patronId, overDriveId, formatId, isSupplement){
+			var ajaxUrl = Globals.path + "/OverDrive/AJAX?method=getDownloadLink&patronId=" + patronId + "&overDriveId=" + overDriveId + "&formatId=" + formatId + "&isSupplement=" + isSupplement;
 			$.ajax({
 				url: ajaxUrl,
 				cache: false,
 				success: function(data){
-					if (data.success){
+					if (data.success && data.fulfillment == "download"){
 						//Reload the page
 						var win = window.open(data.downloadUrl, '_blank');
 						win.focus();
 						//window.location.href = data.downloadUrl ;
 					}else{
 						AspenDiscovery.showMessage('An Error occurred', data.message);
+					}
+
+					if (data.success && data.fulfillment == "redirect") {
+						if (data.success){
+							AspenDiscovery.showMessageWithButtons(data.message, data.modalBody, data.modalButtons);
+						}else{
+							AspenDiscovery.showMessage('Error', data.message);
+						}
 					}
 				},
 				dataType: 'json',

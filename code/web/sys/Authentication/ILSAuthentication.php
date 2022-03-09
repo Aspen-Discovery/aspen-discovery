@@ -47,7 +47,7 @@ class ILSAuthentication implements Authentication {
 
 		$logger->log("Authenticating user '{$this->username}' via the ILS", Logger::LOG_DEBUG);
 		if(!$validatedViaSSO && ($this->username == '' || $this->password == '')){
-			$user = new AspenError('authentication_error_blank');
+			$user = new AspenError('Login information cannot be blank.');
 		} else {
 			// Connect to the correct catalog depending on the driver for this account
 			$catalog = $this->catalogConnection;
@@ -60,10 +60,10 @@ class ILSAuthentication implements Authentication {
 				} elseif (($patron instanceof AspenError)){
 					$user = $patron;
 				} else{
-					$user = new AspenError('authentication_error_invalid');
+					$user = new AspenError('Sorry that login information was not recognized, please try again.');
 				}
 			} else {
-				$user = new AspenError('authentication_error_technical');
+				$user = new AspenError('We cannot log you in at this time.  Please try again later.');
 			}
 		}
 		return $user;
@@ -77,7 +77,7 @@ class ILSAuthentication implements Authentication {
 		$logger->log("validating account for user '{$this->username}' via the ILS", Logger::LOG_DEBUG);
 		//Password is not required if we have validated via single sign on or if the user is masquerading
 		if($this->username == '' || ($this->password == '' && !$validatedViaSSO && !UserAccount::isUserMasquerading())){
-			$validUser = new AspenError('authentication_error_blank');
+			$validUser = new AspenError('Login information cannot be blank.');
 		} else {
 			// Connect to the correct catalog depending on the driver for this account
 			$catalog = CatalogFactory::getCatalogConnectionInstance($this->driverName);
@@ -89,10 +89,10 @@ class ILSAuthentication implements Authentication {
 				} elseif (($patron instanceof AspenError)){
 					$validUser = $patron;
 				} else{
-					$validUser = new AspenError('authentication_error_invalid');
+					$validUser = new AspenError('Sorry that login information was not recognized, please try again.');
 				}
 			} else {
-				$validUser = new AspenError('authentication_error_technical');
+				$validUser = new AspenError('We cannot log you in at this time.  Please try again later.');
 			}
 		}
 		return $validUser;

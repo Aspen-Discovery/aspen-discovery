@@ -18,7 +18,7 @@
   - Display name is the full name of the library
   - Searching options, like if lists are searchable
   - Full record display allows you to give patrons the ability to share records on external sites or through email 
-  - You can choose what Overdrive, Hoopla, RBDigital, and Cloud Library accounts to use
+  - You can choose what Overdrive, Hoopla, RBDigital, and cloudLibrary accounts to use
 
 - Locations is a lot like Library System but when you have multiple branches within a system you need to define at a branch level as well.
 

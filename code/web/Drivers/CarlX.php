@@ -52,13 +52,13 @@ class CarlX extends AbstractIlsDriver{
 		$request->SearchID   = $username;
 		$request->Modifiers  = '';
 
-		$result = $this->doSoapRequest('getPatronInformation', $request);
+		$result = $this->doSoapRequest('getPatronInformation', $request, '', [], ['password' => $password]);
 
 		if ($result){
 			if (isset($result->Patron)){
 				//Check to see if the pin matches
-				if ($result->Patron->PatronPIN == $password || $validatedViaSSO){
-					$fullName = $result->Patron->FullName;
+				if (($result->Patron->PatronID == $username) && ($result->Patron->PatronPIN == $password || $validatedViaSSO)){
+					//$fullName = $result->Patron->FullName;
 					$firstName = $result->Patron->FirstName;
 					$lastName = $result->Patron->LastName;
 
@@ -175,9 +175,9 @@ class CarlX extends AbstractIlsDriver{
 		global $logger;
 
 		//renew the item via SIP 2
-		$mysip = new sip2();
-		$mysip->hostname = $this->accountProfile->sipHost;
-		$mysip->port = $this->accountProfile->sipPort;
+		$mySip = new sip2();
+		$mySip->hostname = $this->accountProfile->sipHost;
+		$mySip->port = $this->accountProfile->sipPort;
 
 		$renew_result = array(
 			'success' => false,
@@ -186,37 +186,39 @@ class CarlX extends AbstractIlsDriver{
 			'NotRenewed' => $patron->_numCheckedOutIls,
 			'Total' => $patron->_numCheckedOutIls
 		);
-		if ($mysip->connect()) {
+		if ($mySip->connect()) {
 			//send selfcheck status message
-			$in = $mysip->msgSCStatus();
-			$msg_result = $mysip->get_message($in);
+			$in = $mySip->msgSCStatus();
+			$msg_result = $mySip->get_message($in);
+            ExternalRequestLogEntry::logRequest('carlx.selfCheckStatus', 'SIP2', $mySip->hostname  . ':' . $mySip->port, [], $in, 0, $msg_result, []);
 			// Make sure the response is 98 as expected
 			if (preg_match("/^98/", $msg_result)) {
-				$result = $mysip->parseACSStatusResponse($msg_result);
+				$result = $mySip->parseACSStatusResponse($msg_result);
 
 				//  Use result to populate SIP2 settings
 				// These settings don't seem to apply to the CarlX Sandbox. pascal 7-12-2016
 				if (isset($result['variable']['AO'][0])){
-					$mysip->AO = $result['variable']['AO'][0]; /* set AO to value returned */
+					$mySip->AO = $result['variable']['AO'][0]; /* set AO to value returned */
 				}else{
-					$mysip->AO = 'NASH'; /* set AO to value returned */
+					$mySip->AO = 'NASH'; /* set AO to value returned */
 				}
 				if (isset($result['variable']['AN'][0])) {
-					$mysip->AN = $result['variable']['AN'][0]; /* set AN to value returned */
+					$mySip->AN = $result['variable']['AN'][0]; /* set AN to value returned */
 				}else{
-					$mysip->AN = '';
+					$mySip->AN = '';
 				}
 
-				$mysip->patron    = $patron->cat_username;
-				$mysip->patronpwd = $patron->cat_password;
+				$mySip->patron    = $patron->cat_username;
+				$mySip->patronpwd = $patron->cat_password;
 
-				$in = $mysip->msgRenewAll();
+				$in = $mySip->msgRenewAll();
 				//print_r($in . '<br/>');
-				$msg_result = $mysip->get_message($in);
+				$msg_result = $mySip->get_message($in);
+                ExternalRequestLogEntry::logRequest('carlx.renewAll', 'SIP2', $mySip->hostname  . ':' . $mySip->port, [], $in, 0, $msg_result, ['patronPwd'=>$patron->cat_password]);
 				//print_r($msg_result);
 
 				if (preg_match("/^66/", $msg_result)) {
-					$result = $mysip->parseRenewAllResponse($msg_result);
+					$result = $mySip->parseRenewAllResponse($msg_result);
 					$logger->log("Renew all response\r\n" . print_r($msg_result, true), Logger::LOG_ERROR);
 
 					$renew_result['success'] = ($result['fixed']['Ok'] == 1);
@@ -268,7 +270,7 @@ class CarlX extends AbstractIlsDriver{
 	 * @param array $soapRequestOptions
 	 * @return false|stdClass
 	 */
-	protected function doSoapRequest($requestName, $request, $WSDL = '', $soapRequestOptions = array()) {
+	protected function doSoapRequest($requestName, $request, string $WSDL = '', array $soapRequestOptions = [], $dataToSanitize = []) {
 		if (empty($WSDL)) { // Let the patron WSDL be the assumed default WSDL when not specified.
 			if (!empty($this->patronWsdl)) {
 				$WSDL = $this->patronWsdl;
@@ -283,11 +285,17 @@ class CarlX extends AbstractIlsDriver{
 		$connectionPassed = false;
 		$numTries = 0;
 		$result = false;
+        if (IPAddress::showDebuggingInformation()) {
+            $soapRequestOptions['trace'] = true;
+        }
 		while (!$connectionPassed && $numTries < 2){
 			try {
 				$this->soapClient = new SoapClient($WSDL, $soapRequestOptions);
 				$result = $this->soapClient->$requestName($request);
 				$connectionPassed = true;
+				if (IPAddress::showDebuggingInformation()) {
+					ExternalRequestLogEntry::logRequest('carlx.' . $requestName, 'GET', $WSDL, $this->soapClient->__getLastRequestHeaders(), $this->soapClient->__getLastRequest(), 0, $this->soapClient->__getLastResponse(), $dataToSanitize);
+				}
 				if (is_null($result)) {
 					$lastResponse = $this->soapClient->__getLastResponse();
 					$lastResponse = simplexml_load_string($lastResponse, NULL, NULL, 'http://schemas.xmlsoap.org/soap/envelope/');
@@ -500,6 +508,10 @@ class CarlX extends AbstractIlsDriver{
 	 */
 	function placeItemHold(User $patron, $recordId, $itemId, $pickupBranch, $cancelDate = null) {
 		// TODO: Implement placeItemHold() method. // CarlX [9.6.4.3] does not allow item level holds via SIP2
+		return [
+			'success' => false,
+			'message' => 'Unable to place item holds for CARL.X'
+		];
 	}
 
 	/**
@@ -516,9 +528,12 @@ class CarlX extends AbstractIlsDriver{
 	}
 
 	function freezeHold(User $patron, $recordId, $itemToFreezeId, $dateToReactivate) {
-		$unavailableHoldViaSIP = $this->getUnavailableHoldViaSIP($patron, $recordId);
+		$unavailableHoldViaSIP = $this->getUnavailableHoldViaSIP($patron, $recordId); // "unavailable hold" is CarlX-speak for holds not yet on the hold shelf, i.e., "holds not yet ready for pickup"
 		$queuePosition = $unavailableHoldViaSIP['queuePosition'];
 		$pickupLocation = $unavailableHoldViaSIP['pickupLocation']; // NB branchcode not branchnumber
+		if (preg_match('/\d{4}-\d{2}-\d{2}/', $dateToReactivate)) { // Aspen 21.10 set YYYY-MM-DD as reactivationDate format; CarlX 9.6.8 expects MM/DD/YYYY
+			$dateToReactivate = preg_replace('/(\d{4})-(\d{2})-(\d{2})/', '$2/$3/$1', $dateToReactivate);
+		}
 		$freezeReactivationDate = $dateToReactivate . 'B';
 		$result = $this->placeHoldViaSIP($patron, $recordId, $pickupLocation, null, 'update', $queuePosition, 'freeze', $freezeReactivationDate);
 		return $result;
@@ -605,20 +620,20 @@ class CarlX extends AbstractIlsDriver{
 		$request = $this->getSearchbyPatronIdRequest($patron);
 		$request->Patron = new stdClass();
 		$request->Patron->PatronPIN = $newPin;
-		$result = $this->doSoapRequest('updatePatron', $request, $this->patronWsdl, $this->genericResponseSOAPCallOptions);
+		$result = $this->doSoapRequest('updatePatron', $request, $this->patronWsdl, $this->genericResponseSOAPCallOptions, ['pin'=>$newPin]);
 		if($result) {
 			$success = stripos($result->ResponseStatuses->ResponseStatus->ShortMessage, 'Success') !== false;
 			if (!$success) {
-				return ['success' => false, 'message' => translate(['text' => 'update_pin_failed', 'defaultText' => 'Failed to update your PIN.'])];
+				return ['success' => false, 'message' => translate(['text' => 'Failed to update your PIN.', 'isPublicFacing'=> true])];
 			} else {
 				$patron->cat_password = $newPin;
 				$patron->update();
-				return ['success' => true, 'message' => translate(['text'=> 'update_pin_success', 'defaultText' => 'Your PIN was updated successfully.'])];
+				return ['success' => true, 'message' => translate(['text'=> 'Your PIN was updated successfully.', 'isPublicFacing'=> true])];
 			}
 		} else {
 			global $logger;
 			$logger->log('CarlX ILS gave no response when attempting to update Patron PIN.', Logger::LOG_ERROR);
-			return ['success' => false, 'message' => translate(['text' => 'update_pin_failed', 'defaultText' => 'Failed to update your PIN.'])];
+			return ['success' => false, 'message' => translate(['text' => 'Failed to update your PIN.', 'isPublicFacing'=> true])];
 		}
 	}
 
@@ -661,9 +676,10 @@ class CarlX extends AbstractIlsDriver{
 	/**
 	 * @param User $patron
 	 * @param boolean $canUpdateContactInfo
+	 * @param boolean $fromMasquerade
 	 * @return array
 	 */
-	public function updatePatronInfo(User $patron, $canUpdateContactInfo) {
+	public function updatePatronInfo(User $patron, $canUpdateContactInfo, $fromMasqueradeo) {
 		$result = [
 			'success' => false,
 			'messages' => []
@@ -674,8 +690,10 @@ class CarlX extends AbstractIlsDriver{
 				$request->Patron = new stdClass();
 			}
 			// Patron Info to update.
-			$request->Patron->Email  = $_REQUEST['email'];
-			$patron->email = $_REQUEST['email'];
+			if (isset($_REQUEST['email'])) {
+				$request->Patron->Email = $_REQUEST['email'];
+				$patron->email = $_REQUEST['email'];
+			}
 			if (isset($_REQUEST['phone'])) {
 				$request->Patron->Phone1 = $_REQUEST['phone'];
 				$patron->phone = $_REQUEST['phone'];
@@ -1003,6 +1021,7 @@ class CarlX extends AbstractIlsDriver{
 					$request->SearchID   	= $tempPatronID;
 					$request->Modifiers  	= '';
 
+					/** @noinspection PhpUnusedLocalVariableInspection */
 					$result = $this->doSoapRequest('getPatronInformation', $request);
 
 					// FOLLOWING SUCCESSFUL SELF REGISTRATION, INPUT PATRON IP ADDRESS INTO PATRON RECORD NOTE
@@ -1030,7 +1049,7 @@ class CarlX extends AbstractIlsDriver{
 					// FOLLOWING SUCCESSFUL SELF REGISTRATION, EMAIL PATRON THE LIBRARY CARD NUMBER
 					try {
 						$body = $firstName . " " . $lastName . "\n\n";
-						$body .= translate(['text' => 'selfreg_email_1', 'defaultText' =>'Thank you for registering for a Digital Access Card at the Nashville Public Library. Your library card number is:']);
+						$body .= translate(['text' => 'Thank you for registering for a Digital Access Card at the Nashville Public Library. Your library card number is:', 'isPublicFacing'=> true, 'isAdminEnteredData'=>true]);
 						$body .= "\n\n" . $tempPatronID . "\n\n";
 						$body_template = $interface->fetch($this->getSelfRegTemplate('success'));
 						$body .= $body_template;
@@ -1069,7 +1088,7 @@ class CarlX extends AbstractIlsDriver{
 		}elseif ($reason == 'success') {
 			return 'Emails/self-registration.tpl';
 		}else{
-			return;
+			return null;
 		}
 	}
 
@@ -1348,6 +1367,7 @@ class CarlX extends AbstractIlsDriver{
 	}
 
 	private function getBranchInformation($branchNumber = null, $branchCode = null) {
+		/** @var Memcache $memCache */
 		global $memCache;
 
 		if (!empty($branchNumber)) {
@@ -1446,9 +1466,10 @@ class CarlX extends AbstractIlsDriver{
 	private function getUnavailableHoldViaSIP(User $patron, $holdId) {
 		$request = $this->getSearchbyPatronIdRequest($patron);
 		$request->TransactionType = 'UnavailableHold';
+
+		/** @noinspection PhpUnusedLocalVariableInspection */
 		$result = $this->doSoapRequest('getPatronTransactions', $request);
 
-		global $configArray;
 		//Place the hold via SIP 2
 		$mySip = new sip2();
 		$mySip->hostname = $this->accountProfile->sipHost;
@@ -1460,6 +1481,7 @@ class CarlX extends AbstractIlsDriver{
 			//send self check status message
 			$in = $mySip->msgSCStatus();
 			$msg_result = $mySip->get_message($in);
+            ExternalRequestLogEntry::logRequest('carlx.selfCheckStatus', 'SIP2', $mySip->hostname  . ':' . $mySip->port, [], $in, 0, $msg_result, []);
 			// Make sure the response is 98 as expected
 			if (preg_match("/^98/", $msg_result)) {
 				$result = $mySip->parseACSStatusResponse($msg_result);
@@ -1481,8 +1503,9 @@ class CarlX extends AbstractIlsDriver{
 				$mySip->patronpwd = $patron->cat_password;
 
 				$in = $mySip->msgPatronInformation('unavail',1,110); // hardcoded Nashville - circulation policy allows 100 holds for many borrower types
-				$result = $mySip->parsePatronInfoResponse( $mySip->get_message($in) );
-
+				$sipResponse = $mySip->get_message($in);
+				$result = $mySip->parsePatronInfoResponse( $sipResponse );
+                ExternalRequestLogEntry::logRequest('carlx.getUnavailableHolds', 'SIP2', $mySip->hostname  . ':' . $mySip->port, [], $in, 0, $sipResponse, ['patronPwd'=>$patron->cat_password]);
 				if ($result && !empty($result['variable']['CD'])) {
 					if (!is_array($result['variable']['CD'])) {
 						$result['variable']['CD'] = (array)$result['variable']['CD'];
@@ -1528,7 +1551,6 @@ class CarlX extends AbstractIlsDriver{
 		if (strpos($holdId, $this->accountProfile->recordSource . ':') === 0) {
 			$holdId = str_replace($this->accountProfile->recordSource . ':', '', $holdId);
 		}
-		global $configArray;
 		//Place the hold via SIP 2
 		$mySip = new sip2();
 		$mySip->hostname = $this->accountProfile->sipHost;
@@ -1537,10 +1559,15 @@ class CarlX extends AbstractIlsDriver{
 		$success = false;
 		$title = '';
 		$message = 'Failed to connect to complete requested action.';
+		$apiResult = [
+			'title' => translate(['text' => 'Unable to place hold', 'isPublicFacing' => true])
+		];
+
 		if ($mySip->connect()) {
 			//send self check status message
 			$in = $mySip->msgSCStatus();
 			$msg_result = $mySip->get_message($in);
+            ExternalRequestLogEntry::logRequest('carlx.selfCheckStatus', 'SIP2', $mySip->hostname  . ':' . $mySip->port, [], $in, 0, $msg_result, []);
 			// Make sure the response is 98 as expected
 			if (preg_match("/^98/", $msg_result)) {
 				$result = $mySip->parseACSStatusResponse($msg_result);
@@ -1576,7 +1603,6 @@ class CarlX extends AbstractIlsDriver{
 				$pickupBranchNumber = $pickupBranchInfo->BranchNumber;
 
 				//place the hold
-				$holdType = '2'; // any copy of title
 				$itemId = '';
 				$recordId = '';
 				if (strpos($holdId, 'ITEM ID: ') === 0){
@@ -1629,6 +1655,7 @@ class CarlX extends AbstractIlsDriver{
 
 				$in = $mySip->msgHoldCarlX($mode, $expirationTime, $holdType, $itemId, $recordId, '', $pickupBranchNumber, $queuePosition, $freeze, $freezeReactivationDate);
 				$msg_result = $mySip->get_message($in);
+                ExternalRequestLogEntry::logRequest('carlx.placeHold', 'SIP2', $mySip->hostname  . ':' . $mySip->port, [], $in, 0, $msg_result, ['patronPwd'=>$patron->cat_password]);
 
 				if (preg_match("/^16/", $msg_result)) {
 					$result = $mySip->parseHoldResponse($msg_result );
@@ -1638,60 +1665,68 @@ class CarlX extends AbstractIlsDriver{
 						$title = $result['variable']['AJ'][0];
 					}
 					if ($success){
+						$apiResult['title'] = translate(['text' => 'Hold placed successfully', 'isPublicFacing' => true]);
+						$apiResult['action'] = translate(['text' => 'Go to Holds', 'isPublicFacing'=>true]);
 						$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
 						$patron->forceReloadOfHolds();
 					}
 				}
 			}
 		}
+
+		$apiResult['message'] = $message;
 		return array(
 				'title'   => $title,
 				'bib'     => $recordId,
 				'success' => $success,
-				'message' => translate($message)
+				'message' => translate(['text'=>$message,'isPublicFacing'=>true]),
+				'api'     => $apiResult
 		);
 	}
 
 
-	public function renewCheckoutViaSIP(User $patron, $itemId, $useAlternateSIP = false){
+	public function renewCheckoutViaSIP(User $patron, $itemId){
 		//renew the item via SIP 2
-		$mysip = new sip2();
-		$mysip->hostname = $this->accountProfile->sipHost;
-		$mysip->port = $this->accountProfile->sipPort;
+		$mySip = new sip2();
+		$mySip->hostname = $this->accountProfile->sipHost;
+		$mySip->port = $this->accountProfile->sipPort;
 
 		$success = false;
 		$message = 'Failed to connect to complete requested action.';
-		if ($mysip->connect()) {
+		$apiResult['title'] = translate(['text' => 'Unable to renew item', 'isPublicFacing' => true]);
+		if ($mySip->connect()) {
 			//send selfcheck status message
-			$in = $mysip->msgSCStatus();
-			$msg_result = $mysip->get_message($in);
+			$in = $mySip->msgSCStatus();
+			$msg_result = $mySip->get_message($in);
+            ExternalRequestLogEntry::logRequest('carlx.selfCheckStatus', 'SIP2', $mySip->hostname  . ':' . $mySip->port, [], $in, 0, $msg_result, []);
 			// Make sure the response is 98 as expected
 			if (preg_match("/^98/", $msg_result)) {
-				$result = $mysip->parseACSStatusResponse($msg_result);
+				$result = $mySip->parseACSStatusResponse($msg_result);
 
 				//  Use result to populate SIP2 settings
 				// These settings don't seem to apply to the CarlX Sandbox. pascal 7-12-2016
 				if (isset($result['variable']['AO'][0])){
-					$mysip->AO = $result['variable']['AO'][0]; /* set AO to value returned */
+					$mySip->AO = $result['variable']['AO'][0]; /* set AO to value returned */
 				}else{
-					$mysip->AO = 'NASH'; /* set AO to value returned */
+					$mySip->AO = 'NASH'; /* set AO to value returned */
 				}
 				if (isset($result['variable']['AN'][0])) {
-					$mysip->AN = $result['variable']['AN'][0]; /* set AN to value returned */
+					$mySip->AN = $result['variable']['AN'][0]; /* set AN to value returned */
 				}else{
-					$mysip->AN = '';
+					$mySip->AN = '';
 				}
 
-				$mysip->patron    = $patron->cat_username;
-				$mysip->patronpwd = $patron->cat_password;
+				$mySip->patron    = $patron->cat_username;
+				$mySip->patronpwd = $patron->cat_password;
 
-				$in = $mysip->msgRenew($itemId, '', '', '', 'N', 'N', 'Y');
+				$in = $mySip->msgRenew($itemId, '', '', '', 'N', 'N', 'Y');
 				//print_r($in . '<br/>');
-				$msg_result = $mysip->get_message($in);
+				$msg_result = $mySip->get_message($in);
+                ExternalRequestLogEntry::logRequest('carlx.renewCheckout', 'SIP2', $mySip->hostname  . ':' . $mySip->port, [], $in, 0, $msg_result, ['patronPwd'=>$patron->cat_password]);
 				//print_r($msg_result);
 
 				if (preg_match("/^30/", $msg_result)) {
-					$result = $mysip->parseRenewResponse($msg_result);
+					$result = $mySip->parseRenewResponse($msg_result);
 
 //					$title = $result['variable']['AJ'][0];
 
@@ -1700,9 +1735,10 @@ class CarlX extends AbstractIlsDriver{
 
 					if (!$success) {
 						$title = $result['variable']['AJ'][0];
-
+						$apiResult['message'] = $message;
 						$message = empty($title) ? $message : "<p style=\"font-style:italic\">$title</p><p>$message.</p>";
 					}else{
+						$apiResult['title'] = translate(['text' => 'Title renewed successfully', 'isPublicFacing' => true]);
 						$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
 						$patron->forceReloadOfCheckouts();
 					}
@@ -1712,12 +1748,14 @@ class CarlX extends AbstractIlsDriver{
 			}
 		}else{
 			$message = "Could not connect to circulation server, please try again later.";
+			$apiResult['message'] = $message;
 		}
 
 		return array(
 			'itemId'  => $itemId,
 			'success' => $success,
-			'message' => $message
+			'message' => $message,
+			'api'     => $apiResult
 		);
 	}
 
@@ -2039,13 +2077,14 @@ EOT;
 		return $data;
 	}
 
-	function getPasswordPinValidationRules(){
-		return [
-			'minLength' => 4,
-			'maxLength' => 6,
-			'onlyDigitsAllowed' => true,
-		];
-	}
+	//Defaults are correct for this
+//	function getPasswordPinValidationRules(){
+//		return [
+//			'minLength' => 4,
+//			'maxLength' => 6,
+//			'onlyDigitsAllowed' => true,
+//		];
+//	}
 
 	/**
 	 * Loads any contact information that is not stored by Aspen Discovery from the ILS. Updates the user object.
@@ -2156,4 +2195,8 @@ EOT;
 		'L'		=> '07'
 	];
 
+	function getForgotPasswordType()
+	{
+		return 'emailAspenResetLink';
+	}
 }

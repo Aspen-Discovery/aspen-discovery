@@ -6,6 +6,11 @@ class Translation_ImportBulkTranslations extends Admin_Admin
 {
 	function launch(){
 		global $interface;
+
+		//Figure out the maximum upload size
+		require_once ROOT_DIR . '/sys/Utils/SystemUtils.php';
+		$interface->assign('max_file_size', SystemUtils::file_upload_max_size() / (1024 * 1024));
+
 		if (isset($_REQUEST['submit'])){
 			global $activeLanguage;
 			//Import the translations and redirect back to the main translations page
@@ -85,7 +90,7 @@ class Translation_ImportBulkTranslations extends Admin_Admin
 					die();
 				}
 			} else {
-				$interface->assign('error', translate('Please select a file to import'));
+				$interface->assign('error', translate(['text' => 'Please select a file to import', 'isPublicFacing'=>true]));
 			}
 
 		}

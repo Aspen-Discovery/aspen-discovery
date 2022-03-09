@@ -9,6 +9,7 @@ class Theme extends DataObject
 	public $extendsTheme;
 	public $logoName;
 	public $favicon;
+	public $logoApp;
 
 	public $headerBackgroundColor;
 	public /** @noinspection PhpUnused */ $headerBackgroundColorDefault;
@@ -45,6 +46,7 @@ class Theme extends DataObject
 
 	public $footerLogo;
 	public $footerLogoLink;
+	public $footerLogoAlt;
 	public $footerBackgroundColor;
 	public /** @noinspection PhpUnused */ $footerBackgroundColorDefault;
 	public $footerForegroundColor;
@@ -366,8 +368,10 @@ class Theme extends DataObject
 			'id' => ['property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id', 'uniqueProperty' => true],
 			'themeName' => ['property' => 'themeName', 'type' => 'text', 'label' => 'Theme Name', 'description' => 'The Name of the Theme', 'maxLength' => 50, 'required' => true, 'uniqueProperty' => true],
 			'extendsTheme' => ['property' => 'extendsTheme', 'type' => 'enum', 'values' => $themesToExtend, 'label' => 'Extends Theme', 'description' => 'A theme that this overrides (leave blank if none is overridden)', 'maxLength' => 50, 'required' => false],
-			'logoName' => ['property' => 'logoName', 'type' => 'image', 'label' => 'Logo (750px x 150px max) - (250 x 100px max if showing library name in header)', 'description' => 'The logo for use in the header', 'required' => false, 'maxWidth' => 750, 'maxHeight' => 150, 'hideInLists' => true],
+			'logoName' => ['property' => 'logoName', 'type' => 'image', 'label' => 'Logo (1170 x 250px max) - (250 x 100px max if showing library name in header)', 'description' => 'The logo for use in the header', 'required' => false, 'thumbWidth' => 750, 'maxWidth' => 1170, 'maxHeight' => 250, 'hideInLists' => true],
 			'favicon' => ['property' => 'favicon', 'type' => 'image', 'label' => 'favicon (32px x 32px max)', 'description' => 'The icon for use in the tab', 'required' => false, 'maxWidth' => 32, 'maxHeight' => 32, 'hideInLists' => true],
+			'logoApp' => ['property' => 'logoApp', 'type' => 'image', 'label' => 'Logo for Aspen LiDA (512x512 pixels)', 'description' => 'The logo for use in Aspen LiDA, if none provided will use favicon', 'required' => false, 'thumbWidth' => 180, 'maxWidth' => 512, 'maxHeight' => 512, 'hideInLists' => true],
+
 			//Overall page colors
 			'pageBackgroundColor' => ['property' => 'pageBackgroundColor', 'type' => 'color', 'label' => 'Page Background Color', 'description' => 'Page Background Color behind all content', 'required' => false, 'hideInLists' => true, 'default' => '#ffffff', 'serverValidation' => 'validateColorContrast'],
 			'bodyBackgroundColor' => ['property' => 'bodyBackgroundColor', 'type' => 'color', 'label' => 'Body Background Color', 'description' => 'Body Background Color for main content', 'required' => false, 'hideInLists' => true, 'default' => '#ffffff', 'checkContrastWith'=>'bodyTextColor'],
@@ -396,6 +400,8 @@ class Theme extends DataObject
 			'footerForegroundColor' => ['property' => 'footerForegroundColor', 'type' => 'color', 'label' => 'Footer Text Color', 'description' => 'Footer Foreground Color', 'required' => false, 'hideInLists' => true, 'default' => '#303030', 'checkContrastWith'=>'footerBackgroundColor'],
 			'footerImage' => ['property' => 'footerLogo', 'type' => 'image', 'label' => 'Footer Image (250px x 150px max)', 'description' => 'An image to be displayed in the footer', 'required' => false, 'maxWidth' => 250, 'maxHeight' => 150, 'hideInLists' => true],
 			'footerImageLink' => ['property' => 'footerLogoLink', 'type' => 'url', 'label' => 'Footer Image Link', 'description' => 'A link to be added to the footer logo', 'required' => false, 'hideInLists' => true],
+			'footerImageAlt' => ['property' => 'footerLogoAlt', 'type' => 'text', 'label' => 'Footer Image Alternative Text', 'description' => 'The text to be used for screen readers', 'required' => false, 'hideInLists' => true],
+
 			//Primary Color
 			'primaryBackgroundColor' => ['property' => 'primaryBackgroundColor', 'type' => 'color', 'label' => 'Primary Background Color', 'description' => 'Primary Background Color', 'required' => false, 'hideInLists' => true, 'default' => '#0a7589', 'checkContrastWith'=>'primaryForegroundColor'],
 			'primaryForegroundColor' => ['property' => 'primaryForegroundColor', 'type' => 'color', 'label' => 'Primary Text Color', 'description' => 'Primary Foreground Color', 'required' => false, 'hideInLists' => true, 'default' => '#ffffff', 'checkContrastWith'=>'primaryBackgroundColor'],
@@ -462,7 +468,7 @@ class Theme extends DataObject
 				'openPanelBackgroundColor' => ['property' => 'openPanelBackgroundColor', 'type' => 'color', 'label' => 'Open Panel Background Color', 'description' => 'Panel Category Background Color while open', 'required' => false, 'hideInLists' => true, 'default' => '#4DACDE', 'checkContrastWith'=>'openPanelForegroundColor'],
 				'openPanelForegroundColor' => ['property' => 'openPanelForegroundColor', 'type' => 'color', 'label' => 'Open Panel Text Color', 'description' => 'Panel Category Foreground Color while open', 'required' => false, 'hideInLists' => true, 'default' => '#303030', 'checkContrastWith'=>'openPanelBackgroundColor'],
 				'panelBodyBackgroundColor' => ['property' => 'panelBodyBackgroundColor', 'type' => 'color', 'label' => 'Panel Body Background Color', 'description' => 'Panel Body Background Color', 'required' => false, 'hideInLists' => true, 'default' => '#f8f8f8', 'checkContrastWith'=>'panelBodyForegroundColor'],
-				'panelBodyForegroundColor' => ['property' => 'panelBodyForegroundColor', 'type' => 'color', 'label' => 'Open Panel Text Color', 'description' => 'Panel Body Foreground Color', 'required' => false, 'hideInLists' => true, 'default' => '#404040', 'checkContrastWith'=>'panelBodyBackgroundColor'],
+				'panelBodyForegroundColor' => ['property' => 'panelBodyForegroundColor', 'type' => 'color', 'label' => 'Panel Body Text Color', 'description' => 'Panel Body Foreground Color', 'required' => false, 'hideInLists' => true, 'default' => '#404040', 'checkContrastWith'=>'panelBodyBackgroundColor'],
 			]],
 
 			'buttonSection' =>['property'=>'buttonSection', 'type' => 'section', 'label' =>'Buttons', 'hideInLists' => true, 'properties' => [
@@ -565,169 +571,176 @@ class Theme extends DataObject
 
 	/** @noinspection PhpUnused */
 	public function validateColorContrast(){
+		global $library;
 		//Setup validation return array
 		$validationResults = array(
 			'validatedOk' => true,
 			'errors' => [],
 		);
 
+		if($library->getLayoutSettings()->contrastRatio == 7.0) {
+			$minContrastRatio = 4.5;
+		} else {
+			$minContrastRatio = 3.5;
+		}
+
 		$this->applyDefaults();
 
 		require_once ROOT_DIR . '/sys/Utils/ColorUtils.php';
 		$bodyContrast = ColorUtils::calculateColorContrast($this->bodyBackgroundColor, $this->bodyTextColor);
-		if ($bodyContrast < 3.5){
+		if ($bodyContrast < $minContrastRatio){
 			$validationResults['errors'][] = 'Body contrast does not meet accessibility guidelines, contrast is: ' . $bodyContrast;
 		}
 		$linkContrast = ColorUtils::calculateColorContrast($this->bodyBackgroundColor, $this->linkColor);
-		if ($linkContrast < 3.5){
+		if ($linkContrast < $minContrastRatio){
 			$validationResults['errors'][] = 'Link contrast does not meet accessibility guidelines, contrast is: ' . $linkContrast;
 		}
 		$linkHoverContrast = ColorUtils::calculateColorContrast($this->bodyBackgroundColor, $this->linkHoverColor);
-		if ($linkHoverContrast < 3.5){
+		if ($linkHoverContrast < $minContrastRatio){
 			$validationResults['errors'][] = 'Link hover contrast does not meet accessibility guidelines, contrast is: ' . $linkHoverContrast;
 		}
 		$resultLabelContrast = ColorUtils::calculateColorContrast($this->bodyBackgroundColor, $this->resultLabelColor);
-		if ($resultLabelContrast < 3.5){
+		if ($resultLabelContrast < $minContrastRatio){
 			$validationResults['errors'][] = 'Result Label contrast does not meet accessibility guidelines, contrast is: ' . $resultLabelContrast;
 		}
 		$resultValueContrast = ColorUtils::calculateColorContrast($this->bodyBackgroundColor, $this->resultValueColor);
-		if ($resultValueContrast < 3.5){
+		if ($resultValueContrast < $minContrastRatio){
 			$validationResults['errors'][] = 'Result Value contrast does not meet accessibility guidelines, contrast is: ' . $resultValueContrast;
 		}
 		$headerContrast = ColorUtils::calculateColorContrast($this->headerBackgroundColor, $this->headerForegroundColor);
-		if ($headerContrast < 3.5){
+		if ($headerContrast < $minContrastRatio){
 			$validationResults['errors'][] = 'Header contrast does not meet accessibility guidelines, contrast is: ' . ($headerContrast);
 		}
 		$footerContrast = ColorUtils::calculateColorContrast($this->footerBackgroundColor, $this->footerForegroundColor);
-		if ($footerContrast < 3.5){
+		if ($footerContrast < $minContrastRatio){
 			$validationResults['errors'][] = 'Footer contrast does not meet accessibility guidelines, contrast is: ' . ($footerContrast);
 		}
 		$breadcrumbsContrast = ColorUtils::calculateColorContrast($this->breadcrumbsBackgroundColor, $this->breadcrumbsForegroundColor);
-		if ($breadcrumbsContrast < 3.5){
+		if ($breadcrumbsContrast < $minContrastRatio){
 			$validationResults['errors'][] = 'Breadcrumbs contrast does not meet accessibility guidelines, contrast is: ' . ($breadcrumbsContrast);
 		}
 		$searchToolsContrast = ColorUtils::calculateColorContrast($this->searchToolsBackgroundColor, $this->searchToolsForegroundColor);
-		if ($searchToolsContrast < 3.5){
+		if ($searchToolsContrast < $minContrastRatio){
 			$validationResults['errors'][] = 'Search Tools contrast does not meet accessibility guidelines, contrast is: ' . ($searchToolsContrast);
 		}
 		$primaryContrast = ColorUtils::calculateColorContrast($this->primaryBackgroundColor, $this->primaryForegroundColor);
-		if ($primaryContrast < 3.5){
+		if ($primaryContrast < $minContrastRatio){
 			$validationResults['errors'][] = 'Primary color contrast does not meet accessibility guidelines, contrast is: ' . ($primaryContrast);
 		}
 		$secondaryContrast = ColorUtils::calculateColorContrast($this->secondaryBackgroundColor, $this->secondaryForegroundColor);
-		if ($secondaryContrast < 3.5){
+		if ($secondaryContrast < $minContrastRatio){
 			$validationResults['errors'][] = 'Secondary color contrast does not meet accessibility guidelines, contrast is: ' . ($secondaryContrast);
 		}
 		$tertiaryContrast = ColorUtils::calculateColorContrast($this->tertiaryBackgroundColor, $this->tertiaryForegroundColor);
-		if ($tertiaryContrast < 3.5){
+		if ($tertiaryContrast < $minContrastRatio){
 			$validationResults['errors'][] = 'Tertiary color contrast does not meet accessibility guidelines, contrast is: ' . ($tertiaryContrast);
 		}
 		$menubarContrast = ColorUtils::calculateColorContrast($this->menubarBackgroundColor, $this->menubarForegroundColor);
-		if ($menubarContrast < 3.5){
+		if ($menubarContrast < $minContrastRatio){
 			$validationResults['errors'][] = 'Menu contrast does not meet accessibility guidelines, contrast is: ' . ($menubarContrast);
 		}
 		$menubarHighlightContrast = ColorUtils::calculateColorContrast($this->menubarHighlightBackgroundColor, $this->menubarHighlightForegroundColor);
-		if ($menubarHighlightContrast < 3.5){
+		if ($menubarHighlightContrast < $minContrastRatio){
 			$validationResults['errors'][] = 'Menu Highlight contrast does not meet accessibility guidelines, contrast is: ' . ($menubarHighlightContrast);
 		}
 		$menubarDropdownContrast = ColorUtils::calculateColorContrast($this->menuDropdownBackgroundColor, $this->menuDropdownForegroundColor);
-		if ($menubarDropdownContrast < 3.5){
+		if ($menubarDropdownContrast < $minContrastRatio){
 			$validationResults['errors'][] = 'Menu dropdown contrast does not meet accessibility guidelines, contrast is: ' . ($menubarDropdownContrast);
 		}
 		$modalDialogContrast = ColorUtils::calculateColorContrast($this->modalDialogBackgroundColor, $this->modalDialogForegroundColor);
-		if ($modalDialogContrast < 3.5){
+		if ($modalDialogContrast < $minContrastRatio){
 			$validationResults['errors'][] = 'Modal Dialog contrast does not meet accessibility guidelines, contrast is: ' . ($modalDialogContrast);
 		}
 		$modalDialogHeaderFooterContrast = ColorUtils::calculateColorContrast($this->modalDialogHeaderFooterBackgroundColor, $this->modalDialogHeaderFooterForegroundColor);
-		if ($modalDialogHeaderFooterContrast < 3.5){
+		if ($modalDialogHeaderFooterContrast < $minContrastRatio){
 			$validationResults['errors'][] = 'Modal Dialog Header Footer contrast does not meet accessibility guidelines, contrast is: ' . ($modalDialogHeaderFooterContrast);
 		}
 		$selectedBrowseCategoryContrast = ColorUtils::calculateColorContrast($this->selectedBrowseCategoryBackgroundColor, $this->selectedBrowseCategoryForegroundColor);
-		if ($selectedBrowseCategoryContrast < 3.5){
+		if ($selectedBrowseCategoryContrast < $minContrastRatio){
 			$validationResults['errors'][] = 'Selected Browse Category contrast does not meet accessibility guidelines, contrast is: ' . ($selectedBrowseCategoryContrast);
 		}
 		$deselectedBrowseCategoryContrast = ColorUtils::calculateColorContrast($this->deselectedBrowseCategoryBackgroundColor, $this->deselectedBrowseCategoryForegroundColor);
-		if ($deselectedBrowseCategoryContrast < 3.5){
+		if ($deselectedBrowseCategoryContrast < $minContrastRatio){
 			$validationResults['errors'][] = 'Deselected Browse Category contrast does not meet accessibility guidelines, contrast is: ' . ($deselectedBrowseCategoryContrast);
 		}
 		$badgeContrast = ColorUtils::calculateColorContrast($this->badgeBackgroundColor, $this->badgeForegroundColor);
-		if ($badgeContrast < 3.5){
+		if ($badgeContrast < $minContrastRatio){
 			$validationResults['errors'][] = 'Badge contrast does not meet accessibility guidelines, contrast is: ' . ($badgeContrast);
 		}
 		$closedPanelContrast = ColorUtils::calculateColorContrast($this->closedPanelBackgroundColor, $this->closedPanelForegroundColor);
-		if ($closedPanelContrast < 3.5){
+		if ($closedPanelContrast < $minContrastRatio){
 			$validationResults['errors'][] = 'Closed Panel contrast does not meet accessibility guidelines, contrast is: ' . ($closedPanelContrast);
 		}
 		$openPanelContrast = ColorUtils::calculateColorContrast($this->openPanelBackgroundColor, $this->openPanelForegroundColor);
-		if ($openPanelContrast < 3.5){
+		if ($openPanelContrast < $minContrastRatio){
 			$validationResults['errors'][] = 'Open Panel contrast does not meet accessibility guidelines, contrast is: ' . ($openPanelContrast);
 		}
 		$panelBodyContrast = ColorUtils::calculateColorContrast($this->panelBodyBackgroundColor, $this->panelBodyForegroundColor);
-		if ($panelBodyContrast < 3.5){
+		if ($panelBodyContrast < $minContrastRatio){
 			$validationResults['errors'][] = 'Open Panel contrast does not meet accessibility guidelines, contrast is: ' . ($panelBodyContrast);
 		}
 		$defaultButtonContrast = ColorUtils::calculateColorContrast($this->defaultButtonBackgroundColor, $this->defaultButtonForegroundColor);
-		if ($defaultButtonContrast < 3.5){
+		if ($defaultButtonContrast < $minContrastRatio){
 			$validationResults['errors'][] = 'Default Button contrast does not meet accessibility guidelines, contrast is: ' . ($defaultButtonContrast);
 		}
 		$defaultButtonHoverContrast = ColorUtils::calculateColorContrast($this->defaultButtonHoverBackgroundColor, $this->defaultButtonHoverForegroundColor);
-		if ($defaultButtonHoverContrast < 3.5){
+		if ($defaultButtonHoverContrast < $minContrastRatio){
 			$validationResults['errors'][] = 'Default Button Hover contrast does not meet accessibility guidelines, contrast is: ' . ($defaultButtonHoverContrast);
 		}
 		$primaryButtonContrast = ColorUtils::calculateColorContrast($this->primaryButtonBackgroundColor, $this->primaryButtonForegroundColor);
-		if ($primaryButtonContrast < 3.5){
+		if ($primaryButtonContrast < $minContrastRatio){
 			$validationResults['errors'][] = 'Primary Button contrast does not meet accessibility guidelines, contrast is: ' . ($primaryButtonContrast);
 		}
 		$primaryButtonHoverContrast = ColorUtils::calculateColorContrast($this->primaryButtonHoverBackgroundColor, $this->primaryButtonHoverForegroundColor);
-		if ($primaryButtonHoverContrast < 3.5){
+		if ($primaryButtonHoverContrast < $minContrastRatio){
 			$validationResults['errors'][] = 'Primary Button Hover contrast does not meet accessibility guidelines, contrast is: ' . ($primaryButtonHoverContrast);
 		}
 		$actionButtonContrast = ColorUtils::calculateColorContrast($this->actionButtonBackgroundColor, $this->actionButtonForegroundColor);
-		if ($actionButtonContrast < 3.5){
+		if ($actionButtonContrast < $minContrastRatio){
 			$validationResults['errors'][] = 'Action Button contrast does not meet accessibility guidelines, contrast is: ' . ($actionButtonContrast);
 		}
 		$actionButtonHoverContrast = ColorUtils::calculateColorContrast($this->actionButtonHoverBackgroundColor, $this->actionButtonHoverForegroundColor);
-		if ($actionButtonHoverContrast < 3.5){
+		if ($actionButtonHoverContrast < $minContrastRatio){
 			$validationResults['errors'][] = 'Action Button Hover contrast does not meet accessibility guidelines, contrast is: ' . ($actionButtonHoverContrast);
 		}
 		$editionsButtonContrast = ColorUtils::calculateColorContrast($this->editionsButtonBackgroundColor, $this->editionsButtonForegroundColor);
-		if ($editionsButtonContrast < 3.5){
+		if ($editionsButtonContrast < $minContrastRatio){
 			$validationResults['errors'][] = 'Editions Button contrast does not meet accessibility guidelines, contrast is: ' . ($editionsButtonContrast);
 		}
 		$editionsButtonHoverContrast = ColorUtils::calculateColorContrast($this->editionsButtonHoverBackgroundColor, $this->editionsButtonHoverForegroundColor);
-		if ($editionsButtonHoverContrast < 3.5){
+		if ($editionsButtonHoverContrast < $minContrastRatio){
 			$validationResults['errors'][] = 'Editions Button Hover contrast does not meet accessibility guidelines, contrast is: ' . ($editionsButtonHoverContrast);
 		}
 		$toolsButtonContrast = ColorUtils::calculateColorContrast($this->toolsButtonBackgroundColor, $this->toolsButtonForegroundColor);
-		if ($toolsButtonContrast < 3.5){
+		if ($toolsButtonContrast < $minContrastRatio){
 			$validationResults['errors'][] = 'Tools Button contrast does not meet accessibility guidelines, contrast is: ' . ($toolsButtonContrast);
 		}
 		$toolsButtonHoverContrast = ColorUtils::calculateColorContrast($this->toolsButtonHoverBackgroundColor, $this->toolsButtonHoverForegroundColor);
-		if ($toolsButtonHoverContrast < 3.5){
+		if ($toolsButtonHoverContrast < $minContrastRatio){
 			$validationResults['errors'][] = 'Tools Button Hover contrast does not meet accessibility guidelines, contrast is: ' . ($toolsButtonHoverContrast);
 		}
 		$infoButtonContrast = ColorUtils::calculateColorContrast($this->infoButtonBackgroundColor, $this->infoButtonForegroundColor);
-		if ($infoButtonContrast < 3.5){
+		if ($infoButtonContrast < $minContrastRatio){
 			$validationResults['errors'][] = 'Info Button contrast does not meet accessibility guidelines, contrast is: ' . ($infoButtonContrast);
 		}
 		$infoButtonHoverContrast = ColorUtils::calculateColorContrast($this->infoButtonHoverBackgroundColor, $this->infoButtonHoverForegroundColor);
-		if ($infoButtonHoverContrast < 3.5){
+		if ($infoButtonHoverContrast < $minContrastRatio){
 			$validationResults['errors'][] = 'Info Button Hover contrast does not meet accessibility guidelines, contrast is: ' . ($infoButtonHoverContrast);
 		}
 		$warningButtonContrast = ColorUtils::calculateColorContrast($this->warningButtonBackgroundColor, $this->warningButtonForegroundColor);
-		if ($warningButtonContrast < 3.5){
+		if ($warningButtonContrast < $minContrastRatio){
 			$validationResults['errors'][] = 'Warning Button contrast does not meet accessibility guidelines, contrast is: ' . ($warningButtonContrast);
 		}
 		$warningButtonHoverContrast = ColorUtils::calculateColorContrast($this->warningButtonHoverBackgroundColor, $this->warningButtonHoverForegroundColor);
-		if ($warningButtonHoverContrast < 3.5){
+		if ($warningButtonHoverContrast < $minContrastRatio){
 			$validationResults['errors'][] = 'Warning Button Hover contrast does not meet accessibility guidelines, contrast is: ' . ($warningButtonHoverContrast);
 		}
 		$dangerButtonContrast = ColorUtils::calculateColorContrast($this->dangerButtonBackgroundColor, $this->dangerButtonForegroundColor);
-		if ($dangerButtonContrast < 3.5){
+		if ($dangerButtonContrast < $minContrastRatio){
 			$validationResults['errors'][] = 'Danger Button contrast does not meet accessibility guidelines, contrast is: ' . ($dangerButtonContrast);
 		}
 		$dangerButtonHoverContrast = ColorUtils::calculateColorContrast($this->dangerButtonHoverBackgroundColor, $this->dangerButtonHoverForegroundColor);
-		if ($dangerButtonHoverContrast < 3.5){
+		if ($dangerButtonHoverContrast < $minContrastRatio){
 			$validationResults['errors'][] = 'Danger Button Hover contrast does not meet accessibility guidelines, contrast is: ' . ($dangerButtonHoverContrast);
 		}
 
@@ -760,12 +773,21 @@ class Theme extends DataObject
 			$this->saveLocations();
 
 			//Check to see what has been derived from this theme and regenerate CSS for those themes as well
+			$extendedThemeIds = [];
 			$childTheme = new Theme();
 			$childTheme->extendsTheme = $this->themeName;
 			$childTheme->find();
 			while ($childTheme->fetch()){
 				if ($childTheme->id != $this->id) {
-					$childTheme->generateCss(true);
+					$extendedThemeIds[] = $childTheme->id;
+				}
+			}
+
+			foreach ($extendedThemeIds as $themeId){
+				$child = new Theme();
+				$child->id = $themeId;
+				if ($child->find(true)) {
+					$child->generateCss(true);
 				}
 			}
 		}
@@ -916,7 +938,7 @@ class Theme extends DataObject
 		$interface->assign('bodyTextColor', $this->bodyTextColor);
 		$interface->assign('linkColor', $this->linkColor);
 		$interface->assign('linkHoverColor', $this->linkHoverColor);
-		$tableStripeBackgroundColor = ColorUtils::lightenColor($this->bodyBackgroundColor, 1.02);
+		$tableStripeBackgroundColor = ColorUtils::lightenColor($this->bodyBackgroundColor, 0.50);
 		if (ColorUtils::calculateColorContrast($tableStripeBackgroundColor, $this->bodyTextColor) < 4.5 ||
 			ColorUtils::calculateColorContrast($tableStripeBackgroundColor, $this->linkColor) < 4.5 ||
 			ColorUtils::calculateColorContrast($tableStripeBackgroundColor, $this->linkHoverColor) < 4.5){
@@ -1107,6 +1129,25 @@ class Theme extends DataObject
 		return $allAppliedThemes;
 	}
 
+	protected $_parentTheme = null;
+	public function getParentTheme()
+	{
+		if ($this->_parentTheme == null){
+			$theme = $this;
+			if(strlen($theme->extendsTheme) != 0) {
+				$extendsName = $theme->extendsTheme;
+				$theme = new Theme();
+				$theme->themeName = $extendsName;
+				if ($theme->find(true)) {
+					$this->_parentTheme = clone $theme;
+				}
+			} else {
+				$this->_parentTheme = null;
+			}
+		}
+		return $this->_parentTheme;
+	}
+
 	private function clearDefaultCovers()
 	{
 		require_once ROOT_DIR . '/sys/Covers/BookCoverInfo.php';
@@ -1117,16 +1158,7 @@ class Theme extends DataObject
 	public function __get($name)
 	{
 		if ($name == "libraries") {
-			if (!isset($this->_libraries) && $this->id){
-				$this->_libraries = [];
-				$obj = new Library();
-				$obj->theme = $this->id;
-				$obj->find();
-				while($obj->fetch()){
-					$this->_libraries[$obj->libraryId] = $obj->libraryId;
-				}
-			}
-			return $this->_libraries;
+			return $this->getLibraries();
 		} elseif ($name == "locations") {
 			if (!isset($this->_locations) && $this->id){
 				$this->_locations = [];
@@ -1220,6 +1252,15 @@ class Theme extends DataObject
 	 */
 	public function getLibraries()
 	{
+		if (!isset($this->_libraries) && $this->id){
+			$this->_libraries = [];
+			$obj = new Library();
+			$obj->theme = $this->id;
+			$obj->find();
+			while($obj->fetch()){
+				$this->_libraries[$obj->libraryId] = $obj->libraryId;
+			}
+		}
 		return $this->_libraries;
 	}
 
@@ -1253,6 +1294,40 @@ class Theme extends DataObject
 	public function clearLocations(){
 		$this->clearOneToManyOptions('Location', 'theme');
 		unset($this->_locations);
+	}
+
+	public function canActiveUserEdit(){
+		if ( UserAccount::userHasPermission('Administer All Themes')){
+			return true;
+		}else if (UserAccount::userHasPermission('Administer Library Themes')){
+			$libraries = $this->getLibraries();
+			$homeLibrary = UserAccount::getActiveUserObj()->getHomeLibrary();
+			if (array_key_exists($homeLibrary->libraryId, $libraries)){
+				return true;
+			}else{
+				return false;
+			}
+		}else{
+			return false;
+		}
+	}
+
+	public function getApiInfo()
+	{
+		global $configArray;
+
+		$apiInfo = $this;
+		$this->logoName = $configArray['Site']['url'] . '/files/original/' . $this->logoName;
+		$this->favicon = $configArray['Site']['url'] . '/files/original/' . $this->favicon;
+		unset($this->additionalCssType);
+		unset($this->additionalCss);
+		unset($this->generatedCss);
+		unset($this->__table);
+		unset($this->__primaryKey);
+		unset($this->__displayNameColumn);
+		unset($this->_deleteOnSave);
+
+		return $apiInfo;
 	}
 
 }

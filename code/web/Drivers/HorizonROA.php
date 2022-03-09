@@ -385,7 +385,7 @@ abstract class HorizonROA extends AbstractIlsDriver
 	 * @param  string|int $bibId
 	 * @return bool|int
 	 */
-	public function getNumHolds($bibId) {
+	public function getNumHolds($bibId) : int {
 		//This uses the standard / REST method to retrieve this information from the ILS.
 		// It isn't an ROA call.
 		global $offlineMode;
@@ -822,7 +822,7 @@ abstract class HorizonROA extends AbstractIlsDriver
 			$logger->log('Horizon ROA Place Hold Error: ' . $errorMessage, Logger::LOG_ERROR);
 		} elseif (!empty($createHoldResponse->holdRecord)) {
 			$hold_result['success'] = true;
-			$hold_result['message'] = translate(['text'=>"ils_hold_success", 'defaultText'=>"Your hold was placed successfully."]);
+			$hold_result['message'] = translate(['text'=>"Your hold was placed successfully.", 'isPublicFacing'=>true]);
 		}
 		// Retrieve Full Marc Record
 		require_once ROOT_DIR . '/RecordDrivers/RecordDriverFactory.php';
@@ -886,10 +886,9 @@ abstract class HorizonROA extends AbstractIlsDriver
 //		$describe  = $this->getWebServiceResponse($webServiceURL . "/v1/circulation/holdRecord/unsuspendHold/describe", null, $sessionToken);
 		$updateHoldResponse = $this->getWebServiceResponse($webServiceURL . "/v1/circulation/holdRecord/suspendHold", $params, $sessionToken, 'POST');
 		if (!empty($updateHoldResponse->holdRecord)) {
-			$frozen = translate('frozen');
 			return array(
 				'success' => true,
-				'message' => "The hold has been $frozen."
+				'message' => translate(['text' => "The hold has been frozen.", 'isPublicFacing'=>true])
 			);
 		} else {
 			$messages = array();
@@ -898,13 +897,12 @@ abstract class HorizonROA extends AbstractIlsDriver
 					$messages[] = $message->message;
 				}
 			}
-			$freeze = translate('freeze');
 			global $logger;
 			$errorMessage = 'Horizon ROA Freeze Hold Error: '. ($messages ? implode('; ', $messages) : '');
 			$logger->log($errorMessage, Logger::LOG_ERROR);
 			return array(
 				'success' => false,
-				'message' => "Failed to $freeze hold : ". implode('; ', $messages)
+				'message' => translate(['text' => "Failed to freeze hold", 'isPublicFacing'=>true]) . ' - '. implode('; ', $messages)
 			);
 		}
 	}
@@ -930,10 +928,9 @@ abstract class HorizonROA extends AbstractIlsDriver
 		$describe  = $this->getWebServiceResponse($webServiceURL . "/circulation/holdRecord/changePickupLibrary/describe", null, $sessionToken);
 		$updateHoldResponse = $this->getWebServiceResponse($webServiceURL . "/v1/circulation/holdRecord/unsuspendHold", $params, $sessionToken, 'POST');
 		if (!empty($updateHoldResponse->holdRecord)) {
-			$thawed = translate('thawed');
 			return array(
 				'success' => true,
-				'message' => "The hold has been $thawed."
+				'message' => translate(['text' => "The hold has been thawed.", 'isPublicFacing'=>true])
 			);
 		} else {
 			$messages = array();
@@ -942,13 +939,12 @@ abstract class HorizonROA extends AbstractIlsDriver
 					$messages[] = $message->message;
 				}
 			}
-			$thaw = translate('thaw');
 			global $logger;
 			$errorMessage = 'Horizon ROA Thaw Hold Error: '. ($messages ? implode('; ', $messages) : '');
 			$logger->log($errorMessage, Logger::LOG_ERROR);
 			return array(
 				'success' => false,
-				'message' => "Failed to $thaw hold : ". implode('; ', $messages)
+				'message' => translate(['text' => "Failed to thaw hold ", 'isPublicFacing'=>true]) . ' - '. implode('; ', $messages)
 			);
 		}
 	}
@@ -1279,9 +1275,10 @@ abstract class HorizonROA extends AbstractIlsDriver
 	/**
 	 * @param User $patron                   The User Object to make updates to
 	 * @param boolean $canUpdateContactInfo  Permission check that updating is allowed
+	 * @param boolean $fromMasquerade
 	 * @return array                         Array of error messages for errors that occurred
 	 */
-	function updatePatronInfo($patron, $canUpdateContactInfo) {
+	function updatePatronInfo($patron, $canUpdateContactInfo, $fromMasquerade) {
 		$result = [
 			'success' => false,
 			'messages' => []
@@ -1335,8 +1332,6 @@ abstract class HorizonROA extends AbstractIlsDriver
 		return $result;
 	}
 	public function selfRegister() {
-		global $configArray;
-
 		$patronFields = $this->getSelfRegistrationFields();
 		$body = [];
 		foreach ($patronFields as $field){
@@ -1363,7 +1358,6 @@ abstract class HorizonROA extends AbstractIlsDriver
 	public function getSelfRegistrationFields()
 	{
 		// SelfRegistrationEnabled?
-		/** @noinspection PhpUnusedLocalVariableInspection */
 		$patronRegDescribeResponse = $this->getWebServiceResponse($this->webServiceURL . '/user/patron/register/describe');
 
 		if(!$patronRegDescribeResponse) {

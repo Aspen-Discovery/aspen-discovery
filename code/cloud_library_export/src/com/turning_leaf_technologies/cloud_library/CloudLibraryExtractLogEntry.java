@@ -105,7 +105,7 @@ class CloudLibraryExtractLogEntry implements BaseLogEntry {
 
 	public void setFinished() {
 		this.endTime = new Date();
-		this.addNote("Finished Cloud Library extraction");
+		this.addNote("Finished cloudLibrary extraction");
 		this.saveResults();
 	}
 

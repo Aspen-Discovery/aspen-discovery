@@ -7,13 +7,13 @@
 				<input type="hidden" name="method" value="translateTerm">
 				{if !empty($englishTranslation)}
 					<div class="form-group">
-						<label for="englishTranslation" class="control-label">{translate text='English Translation'}</label>
+						<label for="englishTranslation" class="control-label">{translate text='English Translation' isAdminFacing=true}</label>
 						<textarea id="englishTranslation" name="englishTranslation" class="form-control" readonly>{$englishTranslation->translation}</textarea>
 					</div>
 				{/if}
 
 				<div class="form-group">
-					<label for="translation" class="control-label">{translate text=Translation}</label>
+					<label for="translation" class="control-label">{translate text=Translation isAdminFacing=true}</label>
 					<textarea id="translation" name="translation" class="form-control required">{$translation->translation}</textarea>
 				</div>
 			</div>

@@ -7,8 +7,7 @@ class EBSCO_Results extends ResultsAction {
 		global $aspenUsage;
 
 		if (!isset($_REQUEST['lookfor']) || empty($_REQUEST['lookfor'])){
-			$this->display('noSearchTerm.tpl', 'Please enter a search term');
-			return;
+			$_REQUEST['lookfor'] = '*';
 		}
 
 		$aspenUsage->ebscoEdsSearches++;

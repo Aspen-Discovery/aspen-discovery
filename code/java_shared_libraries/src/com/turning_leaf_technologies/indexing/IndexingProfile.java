@@ -3,7 +3,9 @@ package com.turning_leaf_technologies.indexing;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.SimpleDateFormat;
+import java.util.regex.Pattern;
 
 import com.turning_leaf_technologies.logging.BaseLogEntry;
 import org.apache.logging.log4j.Logger;
@@ -46,8 +48,94 @@ public class IndexingProfile extends BaseIndexingSettings {
 	private char subLocationSubfield;
 	private int determineAudienceBy;
 	private char audienceSubfield;
+	private int determineLiteraryFormBy;
+	private char literaryFormSubfield;
+	private boolean hideUnknownLiteraryForm;
+	private boolean hideNotCodedLiteraryForm;
+	private char noteSubfield;
 	private long lastUpdateOfAuthorities;
 	private long lastChangeProcessed;
+	private Pattern suppressRecordsWithUrlsMatching;
+	private String fallbackFormatField;
+
+	public IndexingProfile(ResultSet indexingProfileRS)  throws SQLException {
+		this.setId(indexingProfileRS.getLong("id"));
+		this.setName(indexingProfileRS.getString("name"));
+		this.setFilenamesToInclude(indexingProfileRS.getString("filenamesToInclude"));
+		this.setMarcPath(indexingProfileRS.getString("marcPath"));
+		this.setMarcEncoding(indexingProfileRS.getString("marcEncoding"));
+		this.setRecordNumberTag(indexingProfileRS.getString("recordNumberTag"));
+		this.setRecordNumberSubfield(getCharFromRecordSet(indexingProfileRS, "recordNumberSubfield"));
+		this.setRecordNumberPrefix(indexingProfileRS.getString("recordNumberPrefix"));
+		this.setItemTag(indexingProfileRS.getString("itemTag"));
+		this.setItemRecordNumberSubfield(getCharFromRecordSet(indexingProfileRS,"itemRecordNumber"));
+		this.setLastCheckinDateSubfield(getCharFromRecordSet(indexingProfileRS,"lastCheckinDate"));
+		this.setLastCheckinFormat(indexingProfileRS.getString("lastCheckinFormat"));
+		this.setLocationSubfield(getCharFromRecordSet(indexingProfileRS,"location"));
+		this.setItemStatusSubfield(getCharFromRecordSet(indexingProfileRS,"status"));
+		this.setDueDateSubfield(getCharFromRecordSet(indexingProfileRS,"dueDate"));
+		this.setDueDateFormat(indexingProfileRS.getString("dueDateFormat"));
+		this.setDateCreatedSubfield(getCharFromRecordSet(indexingProfileRS,"dateCreated"));
+		this.setDateCreatedFormat(indexingProfileRS.getString("dateCreatedFormat"));
+		this.setCallNumberSubfield(getCharFromRecordSet(indexingProfileRS,"callNumber"));
+		this.setTotalCheckoutsSubfield(getCharFromRecordSet(indexingProfileRS,"totalCheckouts"));
+		this.setYearToDateCheckoutsSubfield(getCharFromRecordSet(indexingProfileRS,"yearToDateCheckouts"));
+
+		this.setIndividualMarcPath(indexingProfileRS.getString("individualMarcPath"));
+		this.setName(indexingProfileRS.getString("name"));
+		this.setNumCharsToCreateFolderFrom(indexingProfileRS.getInt("numCharsToCreateFolderFrom"));
+		this.setCreateFolderFromLeadingCharacters(indexingProfileRS.getBoolean("createFolderFromLeadingCharacters"));
+
+		this.setShelvingLocationSubfield(getCharFromRecordSet(indexingProfileRS,"shelvingLocation"));
+		this.setITypeSubfield(getCharFromRecordSet(indexingProfileRS,"iType"));
+		this.setCollectionSubfield(getCharFromRecordSet(indexingProfileRS,"collection"));
+		this.setSubLocationSubfield(getCharFromRecordSet(indexingProfileRS,"subLocation"));
+
+		this.setGroupingClass(indexingProfileRS.getString("groupingClass"));
+		this.setFormatSource(indexingProfileRS.getString("formatSource"));
+		this.setFallbackFormatField(indexingProfileRS.getString("fallbackFormatField"));
+		this.setSpecifiedFormatCategory(indexingProfileRS.getString("specifiedFormatCategory"));
+		this.setFormat(getCharFromRecordSet(indexingProfileRS, "format"));
+		this.setCheckRecordForLargePrint(indexingProfileRS.getBoolean("checkRecordForLargePrint"));
+
+		this.setDoAutomaticEcontentSuppression(indexingProfileRS.getBoolean("doAutomaticEcontentSuppression"));
+		this.setSuppressRecordsWithUrlsMatching(indexingProfileRS.getString("suppressRecordsWithUrlsMatching"));
+		this.setEContentDescriptor(getCharFromRecordSet(indexingProfileRS, "eContentDescriptor"));
+
+		this.setLastYearCheckoutsSubfield(getCharFromRecordSet(indexingProfileRS, "lastYearCheckouts"));
+		this.setBarcodeSubfield(getCharFromRecordSet(indexingProfileRS, "barcode"));
+		if (this.getItemRecordNumberSubfield() == ' '){
+			this.setItemRecordNumberSubfield(this.getBarcodeSubfield());
+		}
+		this.setTotalRenewalsSubfield(getCharFromRecordSet(indexingProfileRS, "totalRenewals"));
+		this.setICode2Subfield(getCharFromRecordSet(indexingProfileRS, "iCode2"));
+
+		this.setCallNumberCutterSubfield(getCharFromRecordSet(indexingProfileRS, "callNumberCutter"));
+		this.setCallNumberPoststampSubfield(getCharFromRecordSet(indexingProfileRS, "callNumberPoststamp"));
+		this.setVolume(getCharFromRecordSet(indexingProfileRS, "volume"));
+		this.setItemUrl(getCharFromRecordSet(indexingProfileRS, "itemUrl"));
+
+		this.setDetermineAudienceBy(indexingProfileRS.getInt("determineAudienceBy"));
+		this.setAudienceSubfield(getCharFromRecordSet(indexingProfileRS, "audienceSubfield"));
+
+		this.determineLiteraryFormBy = indexingProfileRS.getInt("determineLiteraryFormBy");
+		this.literaryFormSubfield = getCharFromRecordSet(indexingProfileRS, "literaryFormSubfield");
+		this.hideUnknownLiteraryForm = indexingProfileRS.getBoolean("hideUnknownLiteraryForm");
+		this.hideNotCodedLiteraryForm = indexingProfileRS.getBoolean("hideNotCodedLiteraryForm");
+
+		this.setNoteSubfield(getCharFromRecordSet(indexingProfileRS, "noteSubfield"));
+
+		this.setLastUpdateOfChangedRecords(indexingProfileRS.getLong("lastUpdateOfChangedRecords"));
+		this.setLastUpdateOfAllRecords(indexingProfileRS.getLong("lastUpdateOfAllRecords"));
+		this.setLastUpdateFromMarcExport(indexingProfileRS.getLong("lastUpdateFromMarcExport"));
+		this.setFullMarcExportRecordIdThreshold(indexingProfileRS.getLong("fullMarcExportRecordIdThreshold"));
+		this.setLastVolumeExportTimestamp(indexingProfileRS.getLong("lastVolumeExportTimestamp"));
+		this.setLastUpdateOfAuthorities(indexingProfileRS.getLong("lastUpdateOfAuthorities"));
+		this.setLastChangeProcessed(indexingProfileRS.getLong("lastChangeProcessed"));
+
+		this.setRunFullUpdate(indexingProfileRS.getBoolean("runFullUpdate"));
+		this.setRegroupAllRecords(indexingProfileRS.getBoolean("regroupAllRecords"));
+	}
 
 	private void setFilenamesToInclude(String filenamesToInclude) {
 		this.filenamesToInclude = filenamesToInclude;
@@ -83,79 +171,13 @@ public class IndexingProfile extends BaseIndexingSettings {
 
 	public static IndexingProfile loadIndexingProfile(Connection dbConn, String profileToLoad, Logger logger) {
 		//Get the Indexing Profile from the database
-		IndexingProfile indexingProfile = new IndexingProfile();
+		IndexingProfile indexingProfile = null;
 		try {
 			PreparedStatement getIndexingProfileStmt = dbConn.prepareStatement("SELECT * FROM indexing_profiles where name ='" + profileToLoad + "'");
 			ResultSet indexingProfileRS = getIndexingProfileStmt.executeQuery();
 			if (indexingProfileRS.next()) {
+				indexingProfile = new IndexingProfile(indexingProfileRS);
 
-				indexingProfile.setId(indexingProfileRS.getLong("id"));
-				indexingProfile.setName(indexingProfileRS.getString("name"));
-				indexingProfile.setFilenamesToInclude(indexingProfileRS.getString("filenamesToInclude"));
-				indexingProfile.setMarcPath(indexingProfileRS.getString("marcPath"));
-				indexingProfile.setMarcEncoding(indexingProfileRS.getString("marcEncoding"));
-				indexingProfile.setRecordNumberTag(indexingProfileRS.getString("recordNumberTag"));
-				indexingProfile.setRecordNumberSubfield(getCharFromRecordSet(indexingProfileRS, "recordNumberSubfield"));
-				indexingProfile.setRecordNumberPrefix(indexingProfileRS.getString("recordNumberPrefix"));
-				indexingProfile.setItemTag(indexingProfileRS.getString("itemTag"));
-				indexingProfile.setItemRecordNumberSubfield(getCharFromRecordSet(indexingProfileRS,"itemRecordNumber"));
-				indexingProfile.setLastCheckinDateSubfield(getCharFromRecordSet(indexingProfileRS,"lastCheckinDate"));
-				indexingProfile.setLastCheckinFormat(indexingProfileRS.getString("lastCheckinFormat"));
-				indexingProfile.setLocationSubfield(getCharFromRecordSet(indexingProfileRS,"location"));
-				indexingProfile.setItemStatusSubfield(getCharFromRecordSet(indexingProfileRS,"status"));
-				indexingProfile.setDueDateSubfield(getCharFromRecordSet(indexingProfileRS,"dueDate"));
-				indexingProfile.setDueDateFormat(indexingProfileRS.getString("dueDateFormat"));
-				indexingProfile.setDateCreatedSubfield(getCharFromRecordSet(indexingProfileRS,"dateCreated"));
-				indexingProfile.setDateCreatedFormat(indexingProfileRS.getString("dateCreatedFormat"));
-				indexingProfile.setCallNumberSubfield(getCharFromRecordSet(indexingProfileRS,"callNumber"));
-				indexingProfile.setTotalCheckoutsSubfield(getCharFromRecordSet(indexingProfileRS,"totalCheckouts"));
-				indexingProfile.setYearToDateCheckoutsSubfield(getCharFromRecordSet(indexingProfileRS,"yearToDateCheckouts"));
-
-				indexingProfile.setIndividualMarcPath(indexingProfileRS.getString("individualMarcPath"));
-				indexingProfile.setName(indexingProfileRS.getString("name"));
-				indexingProfile.setNumCharsToCreateFolderFrom(indexingProfileRS.getInt("numCharsToCreateFolderFrom"));
-				indexingProfile.setCreateFolderFromLeadingCharacters(indexingProfileRS.getBoolean("createFolderFromLeadingCharacters"));
-
-				indexingProfile.setShelvingLocationSubfield(getCharFromRecordSet(indexingProfileRS,"shelvingLocation"));
-				indexingProfile.setITypeSubfield(getCharFromRecordSet(indexingProfileRS,"iType"));
-				indexingProfile.setCollectionSubfield(getCharFromRecordSet(indexingProfileRS,"collection"));
-				indexingProfile.setSubLocationSubfield(getCharFromRecordSet(indexingProfileRS,"subLocation"));
-
-				indexingProfile.setGroupingClass(indexingProfileRS.getString("groupingClass"));
-				indexingProfile.setFormatSource(indexingProfileRS.getString("formatSource"));
-				indexingProfile.setSpecifiedFormatCategory(indexingProfileRS.getString("specifiedFormatCategory"));
-				indexingProfile.setFormat(getCharFromRecordSet(indexingProfileRS, "format"));
-				indexingProfile.setCheckRecordForLargePrint(indexingProfileRS.getBoolean("checkRecordForLargePrint"));
-
-				indexingProfile.setDoAutomaticEcontentSuppression(indexingProfileRS.getBoolean("doAutomaticEcontentSuppression"));
-				indexingProfile.setEContentDescriptor(getCharFromRecordSet(indexingProfileRS, "eContentDescriptor"));
-
-				indexingProfile.setLastYearCheckoutsSubfield(getCharFromRecordSet(indexingProfileRS, "lastYearCheckouts"));
-				indexingProfile.setBarcodeSubfield(getCharFromRecordSet(indexingProfileRS, "barcode"));
-				if (indexingProfile.getItemRecordNumberSubfield() == ' '){
-					indexingProfile.setItemRecordNumberSubfield(indexingProfile.getBarcodeSubfield());
-				}
-				indexingProfile.setTotalRenewalsSubfield(getCharFromRecordSet(indexingProfileRS, "totalRenewals"));
-				indexingProfile.setICode2Subfield(getCharFromRecordSet(indexingProfileRS, "iCode2"));
-
-				indexingProfile.setCallNumberCutterSubfield(getCharFromRecordSet(indexingProfileRS, "callNumberCutter"));
-				indexingProfile.setCallNumberPoststampSubfield(getCharFromRecordSet(indexingProfileRS, "callNumberPoststamp"));
-				indexingProfile.setVolume(getCharFromRecordSet(indexingProfileRS, "volume"));
-				indexingProfile.setItemUrl(getCharFromRecordSet(indexingProfileRS, "itemUrl"));
-
-				indexingProfile.setDetermineAudienceBy(indexingProfileRS.getInt("determineAudienceBy"));
-				indexingProfile.setAudienceSubfield(getCharFromRecordSet(indexingProfileRS, "audienceSubfield"));
-
-				indexingProfile.setLastUpdateOfChangedRecords(indexingProfileRS.getLong("lastUpdateOfChangedRecords"));
-				indexingProfile.setLastUpdateOfAllRecords(indexingProfileRS.getLong("lastUpdateOfAllRecords"));
-				indexingProfile.setLastUpdateFromMarcExport(indexingProfileRS.getLong("lastUpdateFromMarcExport"));
-				indexingProfile.setFullMarcExportRecordIdThreshold(indexingProfileRS.getLong("fullMarcExportRecordIdThreshold"));
-				indexingProfile.setLastVolumeExportTimestamp(indexingProfileRS.getLong("lastVolumeExportTimestamp"));
-				indexingProfile.setLastUpdateOfAuthorities(indexingProfileRS.getLong("lastUpdateOfAuthorities"));
-				indexingProfile.setLastChangeProcessed(indexingProfileRS.getLong("lastChangeProcessed"));
-
-				indexingProfile.setRunFullUpdate(indexingProfileRS.getBoolean("runFullUpdate"));
-				indexingProfile.setRegroupAllRecords(indexingProfileRS.getBoolean("regroupAllRecords"));
 			} else {
 				logger.error("Unable to find " + profileToLoad + " indexing profile, please create a profile with the name ils.");
 			}
@@ -397,6 +419,14 @@ public class IndexingProfile extends BaseIndexingSettings {
 		this.iCode2Subfield = iCode2Subfield;
 	}
 
+	public char getNoteSubfield() {
+		return noteSubfield;
+	}
+
+	private void setNoteSubfield(char noteSubfield){
+		this.noteSubfield = noteSubfield;
+	}
+
 	public char getCallNumberCutterSubfield() {
 		return callNumberCutterSubfield;
 	}
@@ -538,5 +568,25 @@ public class IndexingProfile extends BaseIndexingSettings {
 		}catch (Exception e){
 			logEntry.incErrors("Could not set last record processed", e);
 		}
+	}
+
+	public void setSuppressRecordsWithUrlsMatching(String suppressRecordsWithUrlsMatching) {
+		if (suppressRecordsWithUrlsMatching.length() == 0){
+			this.suppressRecordsWithUrlsMatching = null;
+		}else {
+			this.suppressRecordsWithUrlsMatching = Pattern.compile(suppressRecordsWithUrlsMatching, Pattern.CASE_INSENSITIVE);
+		}
+	}
+
+	public Pattern getSuppressRecordsWithUrlsMatching() {
+		return suppressRecordsWithUrlsMatching;
+	}
+
+	public void setFallbackFormatField(String fallbackFormatField) {
+		this.fallbackFormatField = fallbackFormatField;
+	}
+
+	public String getFallbackFormatField() {
+		return fallbackFormatField;
 	}
 }

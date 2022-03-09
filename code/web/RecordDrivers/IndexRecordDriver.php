@@ -9,7 +9,6 @@ require_once ROOT_DIR . '/RecordDrivers/RecordInterface.php';
  *  - Grouped Works
  *  - People
  *  - Lists
- *  - Islandora Objects
  */
 abstract class IndexRecordDriver extends RecordInterface
 {

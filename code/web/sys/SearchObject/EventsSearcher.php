@@ -43,12 +43,11 @@ class SearchObject_EventsSearcher extends SearchObject_SolrSearcher
 		}
 
 		// Load sort preferences (or defaults if none in .ini file):
-		if (isset($searchSettings['Sorting'])) {
-			$this->sortOptions = $searchSettings['Sorting'];
-		} else {
-			$this->sortOptions = array('relevance' => 'sort_relevance',
-				'title' => 'sort_title');
-		}
+		$this->sortOptions = array(
+			'start_date_sort asc' => 'Event Date',
+			'relevance' => 'Best Match',
+			'title' => 'Title'
+		);
 
 		// Debugging
 		$this->indexEngine->debug = $this->debug;
@@ -132,8 +131,8 @@ class SearchObject_EventsSearcher extends SearchObject_SolrSearcher
 	public function getSearchIndexes()
 	{
 		return [
-			'EventsKeyword' => 'Keyword',
-			'EventsTitle' => 'Title',
+			'EventsKeyword' => translate(['text'=>'Keyword', 'isPublicFacing'=>true, 'inAttribute'=>true]),
+			'EventsTitle' => translate(['text'=>'Title', 'isPublicFacing'=>true, 'inAttribute'=>true]),
 		];
 	}
 

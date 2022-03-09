@@ -87,10 +87,6 @@ class ListsRecordDriver extends IndexRecordDriver
 			$interface->assign('appearsOnLists', $appearsOnLists);
 		}
 
-		// Obtain and assign snippet (highlighting) information:
-		$snippets = $this->getHighlightedSnippets();
-		$interface->assign('summSnippets', $snippets);
-
 		return 'RecordDrivers/List/result.tpl';
 	}
 

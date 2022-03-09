@@ -2,6 +2,7 @@ package com.turning_leaf_technologies.reindexer;
 
 import com.turning_leaf_technologies.indexing.Scope;
 import com.turning_leaf_technologies.indexing.SideLoadScope;
+import com.turning_leaf_technologies.indexing.SideLoadSettings;
 import com.turning_leaf_technologies.marc.MarcUtil;
 import org.apache.logging.log4j.Logger;
 import org.marc4j.marc.Record;
@@ -13,15 +14,15 @@ import java.util.*;
 
 class SideLoadedEContentProcessor extends MarcRecordProcessor{
 	private long sideLoadId;
-	private String profileType;
 	protected boolean fullReindex;
 	private PreparedStatement getDateAddedStmt;
 
-	SideLoadedEContentProcessor(GroupedWorkIndexer indexer, Connection dbConn, ResultSet sideLoadSettingsRS, Logger logger, boolean fullReindex) {
-		super(indexer, logger);
+	SideLoadedEContentProcessor(GroupedWorkIndexer indexer, String profileType, Connection dbConn, ResultSet sideLoadSettingsRS, Logger logger, boolean fullReindex) {
+		super(indexer, profileType, dbConn, logger);
 		this.fullReindex = fullReindex;
 
 		try{
+			settings = new SideLoadSettings(sideLoadSettingsRS);
 			sideLoadId = sideLoadSettingsRS.getLong("id");
 			profileType = sideLoadSettingsRS.getString("name");
 			numCharsToCreateFolderFrom = sideLoadSettingsRS.getInt("numCharsToCreateFolderFrom");
@@ -35,7 +36,7 @@ class SideLoadedEContentProcessor extends MarcRecordProcessor{
 			treatUnknownLanguageAs = sideLoadSettingsRS.getString("treatUnknownLanguageAs");
 			treatUndeterminedLanguageAs = sideLoadSettingsRS.getString("treatUndeterminedLanguageAs");
 
-			getDateAddedStmt = dbConn.prepareStatement("SELECT dateFirstDetected FROM ils_marc_checksums WHERE source = ? and ilsId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			getDateAddedStmt = dbConn.prepareStatement("SELECT dateFirstDetected FROM ils_records WHERE source = ? and ilsId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 		}catch (Exception e){
 			logger.error("Error setting up side load processor");
 		}
@@ -51,10 +52,12 @@ class SideLoadedEContentProcessor extends MarcRecordProcessor{
 			//Do updates based on the overall bib (shared regardless of scoping)
 			String primaryFormat = recordInfo.getPrimaryFormat();
 			if (primaryFormat == null) primaryFormat = "Unknown";
-			updateGroupedWorkSolrDataBasedOnStandardMarcData(groupedWork, record, recordInfo.getRelatedItems(), identifier, primaryFormat);
+			String primaryFormatCategory = recordInfo.getPrimaryFormatCategory();
+			if (primaryFormatCategory == null) primaryFormatCategory = "Unknown";
+			updateGroupedWorkSolrDataBasedOnStandardMarcData(groupedWork, record, recordInfo.getRelatedItems(), identifier, primaryFormat, primaryFormatCategory);
 
 			String fullDescription = Util.getCRSeparatedString(MarcUtil.getFieldList(record, "520a"));
-			groupedWork.addDescription(fullDescription, primaryFormat);
+			groupedWork.addDescription(fullDescription, primaryFormat, primaryFormatCategory);
 
 			loadEditions(groupedWork, record, allRelatedRecords);
 			loadPhysicalDescription(groupedWork, record, allRelatedRecords);
@@ -70,19 +73,19 @@ class SideLoadedEContentProcessor extends MarcRecordProcessor{
 
 			groupedWork.addHoldings(1);
 
-			scopeItems(recordInfo, record);
+			scopeItems(groupedWork, recordInfo, record);
 		}catch (Exception e){
 			logger.error("Error updating grouped work for side loaded eContent MARC record with identifier " + identifier, e);
 		}
 	}
 
-	private void scopeItems(RecordInfo recordInfo, Record record){
+	private void scopeItems(GroupedWorkSolr groupedWork, RecordInfo recordInfo, Record record){
 		for (ItemInfo itemInfo : recordInfo.getRelatedItems()){
-			loadScopeInfoForEContentItem(itemInfo, record);
+			loadScopeInfoForEContentItem(groupedWork, itemInfo, record);
 		}
 	}
 
-	private void loadScopeInfoForEContentItem(ItemInfo itemInfo, Record record) {
+	private void loadScopeInfoForEContentItem(GroupedWorkSolr groupedWork, ItemInfo itemInfo, Record record) {
 		String originalUrl = itemInfo.geteContentUrl();
 		for (Scope curScope : indexer.getScopes()){
 			SideLoadScope sideLoadScope = curScope.getSideLoadScope(sideLoadId);
@@ -90,13 +93,10 @@ class SideLoadedEContentProcessor extends MarcRecordProcessor{
 				boolean itemPartOfScope = sideLoadScope.isItemPartOfScope(record);
 				if (itemPartOfScope) {
 					ScopingInfo scopingInfo = itemInfo.addScope(curScope);
-					scopingInfo.setAvailable(true);
-					scopingInfo.setStatus("Available Online");
-					scopingInfo.setGroupedStatus("Available Online");
-					scopingInfo.setHoldable(false);
+					groupedWork.addScopingInfo(curScope.getScopeName(), scopingInfo);
+
 					scopingInfo.setLibraryOwned(true);
 					scopingInfo.setLocallyOwned(true);
-					scopingInfo.setInLibraryUseOnly(false);
 
 					//Check to see if we need to do url rewriting
 					if (originalUrl != null) {
@@ -123,24 +123,28 @@ class SideLoadedEContentProcessor extends MarcRecordProcessor{
 		itemInfo.setIsEContent(true);
 
 		loadDateAdded(identifier, itemInfo);
-		itemInfo.setLocationCode(profileType);
-		itemInfo.setCallNumber("Online " + profileType);
+		itemInfo.setLocationCode(settings.getName());
+		itemInfo.setCallNumber("Online " + settings.getName());
 		itemInfo.setItemIdentifier(identifier);
-		itemInfo.setShelfLocation(profileType);
-		itemInfo.setDetailedLocation(profileType);
+		itemInfo.setShelfLocation(settings.getName());
+		itemInfo.setDetailedLocation(settings.getName());
 
 		//No Collection for Side loaded eContent
 		//itemInfo.setCollection(translateValue("collection", getItemSubfieldData(collectionSubfield, itemField), identifier));
+		itemInfo.setAvailable(true);
+		itemInfo.setDetailedStatus("Available Online");
+		itemInfo.setGroupedStatus("Available Online");
+		itemInfo.setHoldable(false);
+		itemInfo.setInLibraryUseOnly(false);
 
-		itemInfo.seteContentSource(profileType);
+		itemInfo.seteContentSource(settings.getName());
 
-		RecordInfo relatedRecord = groupedWork.addRelatedRecord(profileType, identifier);
+		RecordInfo relatedRecord = groupedWork.addRelatedRecord(settings.getName(), identifier);
+		//RecordInfo relatedRecord = groupedWork.addRelatedRecord(profileType, identifier);
 		relatedRecord.addItem(itemInfo);
 		loadEContentUrl(record, itemInfo);
 
 		loadEContentFormatInformation(record, relatedRecord, itemInfo);
-
-		itemInfo.setDetailedStatus("Available Online");
 
 		return relatedRecord;
 	}

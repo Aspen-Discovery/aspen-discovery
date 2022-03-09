@@ -1,18 +1,18 @@
 {strip}
 	<div id="main-content" class="col-sm-12">
-		<h1>Performance Dashboard</h1>
-		<h2>Pages Load Times</h2>
-		<table id="slowPages" class="table table-striped table-condensed tablesorter" aria-label="Page Load Times Table">
+		<h1>{translate text='Performance Dashboard' isAdminFacing=true}</h1>
+		<h2>{translate text='Pages Load Times' isAdminFacing=true}</h2>
+		<table id="slowPages" class="table table-striped table-condensed tablesorter" aria-label="{translate text='Page Load Times Table' isAdminFacing=true inAttribute=true}">
 			<thead>
 				<tr>
-					<th>Module</th>
-					<th>Action</th>
-					<th>Fast<br>&lt; 0.5 sec</th>
-					<th>Acceptable<br>&lt; 1sec</th>
-					<th>Slow<br>&lt; 2sec</th>
-					<th>Slower<br>&lt; 4sec</th>
-					<th>Very Slow<br>&gt;= 4sec</th>
-					<th>Total</th>
+					<th>{translate text='Module' isAdminFacing=true}</th>
+					<th>{translate text='Action' isAdminFacing=true}</th>
+					<th>{translate text='Fast<br>&lt; 0.5 sec' isAdminFacing=true}</th>
+					<th>{translate text='Acceptable<br>&lt; 1sec' isAdminFacing=true}</th>
+					<th>{translate text='Slow<br>&lt; 2sec' isAdminFacing=true}</th>
+					<th>{translate text='Slower<br>&lt; 4sec' isAdminFacing=true}</th>
+					<th>{translate text='Very Slow<br>&gt;= 4sec' isAdminFacing=true}</th>
+					<th>{translate text='Total' isAdminFacing=true}</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -51,19 +51,19 @@
 			</tbody>
 		</table>
 
-		<h2>Asynchronous Request Load Times</h2>
+		<h2>{translate text='Asynchronous Request Load Times' isAdminFacing=true}</h2>
 		<table id="slowRequests" class="table table-striped table-condensed tablesorter" aria-label="Asynchronous Request Load Times Table">
 			<thead>
 				<tr>
-					<th>Module</th>
-					<th>Action</th>
-					<th>Method</th>
-					<th>Fast<br>&lt; 0.5 sec</th>
-					<th>Acceptable<br>&lt; 1sec</th>
-					<th>Slow<br>&lt; 2sec</th>
-					<th>Slower<br>&lt; 4sec</th>
-					<th>Very Slow<br>&gt;= 4sec</th>
-					<th>Total</th>
+					<th>{translate text='Module' isAdminFacing=true}</th>
+					<th>{translate text='Action' isAdminFacing=true}</th>
+					<th>{translate text='Method' isAdminFacing=true}</th>
+					<th>{translate text='Fast<br>&lt; 0.5 sec' isAdminFacing=true}</th>
+					<th>{translate text='Acceptable<br>&lt; 1sec' isAdminFacing=true}</th>
+					<th>{translate text='Slow<br>&lt; 2sec' isAdminFacing=true}</th>
+					<th>{translate text='Slower<br>&lt; 4sec' isAdminFacing=true}</th>
+					<th>{translate text='Very Slow<br>&gt;= 4sec' isAdminFacing=true}</th>
+					<th>{translate text='Total' isAdminFacing=true}</th>
 				</tr>
 			</thead>
 			<tbody>

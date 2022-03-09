@@ -40,14 +40,6 @@ class Union_Search extends ResultsAction {
 			$interface->assign('action', $action);
 			$this->searchResultsAction = new Genealogy_Results();
 			$this->searchResultsAction->launch();
-		}else if ($searchSource == 'islandora'){
-			require_once (ROOT_DIR . '/services/Archive/Results.php');
-			$module = 'Archive';
-			$interface->assign('module', $module);
-			$action = 'Results';
-			$interface->assign('action', $action);
-			$this->searchResultsAction = new Archive_Results();
-			$this->searchResultsAction->launch();
 		} else if ($searchSource == 'open_archives') {
 			require_once(ROOT_DIR . '/services/OpenArchives/Results.php');
 			$module = 'OpenArchives';
@@ -63,6 +55,14 @@ class Union_Search extends ResultsAction {
 			$action = 'Results';
 			$interface->assign('action', $action);
 			$this->searchResultsAction = new Lists_Results();
+			$this->searchResultsAction->launch();
+		} else if ($searchSource == 'course_reserves') {
+			require_once(ROOT_DIR . '/services/CourseReserves/Results.php');
+			$module = 'CourseReserves';
+			$interface->assign('module', $module);
+			$action = 'Results';
+			$interface->assign('action', $action);
+			$this->searchResultsAction = new CourseReserves_Results();
 			$this->searchResultsAction->launch();
 		}else if ($searchSource == 'websites'){
 			require_once(ROOT_DIR . '/services/Websites/Results.php');

@@ -351,7 +351,7 @@ class EbscoRecordDriver extends RecordInterface
 
 	public function getDescription()
 	{
-		if (count($this->recordData->Items)) {
+		if (!empty($this->recordData->Items)) {
 			/** @var stdClass $item */
 			foreach ($this->recordData->Items as $item) {
 				if ($item->Name == 'Abstract') {
@@ -401,14 +401,7 @@ class EbscoRecordDriver extends RecordInterface
 
 	public function getExploreMoreInfo()
 	{
-		global $configArray;
-		$exploreMoreOptions = array();
-		if ($configArray['Catalog']['showExploreMoreForFullRecords']) {
-			require_once ROOT_DIR . '/sys/ExploreMore.php';
-			$exploreMore = new ExploreMore();
-			$exploreMore->loadExploreMoreSidebar('ebsco_eds', $this);
-		}
-		return $exploreMoreOptions;
+		return [];
 	}
 
 	public function getAllSubjectHeadings()

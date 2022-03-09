@@ -28,33 +28,54 @@ class ItemAPI extends Action {
 
 	function launch()
 	{
-		//Make sure the user can access the API based on the IP address
-		if (!IPAddress::allowAPIAccessForClientIP()){
+		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
+
+		header('Content-type: application/json');
+		header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
+		header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
+
+		if (isset($_SERVER['PHP_AUTH_USER'])) {
+			if($this->grantTokenAccess()) {
+				if (in_array($method, array('getAppGroupedWork', 'getItemDetails'))) {
+					header("Cache-Control: max-age=10800");
+					require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
+					APIUsage::incrementStat('ItemAPI', $method);
+					$output = json_encode($this->$method());
+				} else {
+					header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
+					$output = json_encode(array('error' => 'invalid_method'));
+				}
+			} else {
+				header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
+				header('HTTP/1.0 401 Unauthorized');
+				$output = json_encode(array('error' => 'unauthorized_access'));
+			}
+			ExternalRequestLogEntry::logRequest('ItemAPI.' . $method, $_SERVER['REQUEST_METHOD'], $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'], getallheaders(), '', $_SERVER['REDIRECT_STATUS'], $output, []);
+			echo $output;
+		} elseif (IPAddress::allowAPIAccessForClientIP()) {
+			if ($method != 'loadSolrRecord' && method_exists($this, $method)) {
+				// Connect to Catalog
+				if ($method != 'getBookcoverById' && $method != 'getBookCover'){
+					$this->catalog = CatalogFactory::getCatalogConnectionInstance();
+					header('Content-type: application/json');
+					header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
+					header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
+				}
+
+				if (in_array($method, array('getDescriptionByRecordId', 'getDescriptionByTitleAndAuthor'))){
+					$output = json_encode($this->$method());
+				}else{
+					$output = json_encode(array('result'=>$this->$method()));
+				}
+				require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
+				APIUsage::incrementStat('ItemAPI', $method);
+			} else {
+				$output = json_encode(array('error'=>"invalid_method '$method'"));
+			}
+			echo $output;
+		} else {
 			$this->forbidAPIAccess();
 		}
-
-		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
-		if ($method != 'loadSolrRecord' && method_exists($this, $method)) {
-			// Connect to Catalog
-			if ($method != 'getBookcoverById' && $method != 'getBookCover'){
-				$this->catalog = CatalogFactory::getCatalogConnectionInstance();
-				header('Content-type: application/json');
-				header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
-				header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
-			}
-
-			if (in_array($method, array('getDescriptionByRecordId', 'getDescriptionByTitleAndAuthor'))){
-				$output = json_encode($this->$method());
-			}else{
-				$output = json_encode(array('result'=>$this->$method()));
-			}
-			require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
-			APIUsage::incrementStat('ItemAPI', $method);
-		} else {
-			$output = json_encode(array('error'=>"invalid_method '$method'"));
-		}
-
-		echo $output;
 	}
 
 	/** @noinspection PhpUnused */
@@ -353,7 +374,6 @@ class ItemAPI extends Action {
 						'type' => 'holding',
 						'availability' => $copy['available'],
 						'holdable' => ($copy['holdable'] && $library->showHoldButton) ? 1 : 0,
-						'bookable' => $copy['bookable'] ? 1 : 0,
 						'libraryDisplayName' => $copy['shelfLocation'],
 						'section' => $copy['section'],
 						'sectionId' => $copy['sectionId'],
@@ -516,4 +536,292 @@ class ItemAPI extends Action {
 	{
 		return [];
 	}
+
+# ****************************************************************************************************************************
+# * Functions for Aspen LiDA
+# *
+# ****************************************************************************************************************************
+	/** @noinspection PhpUnused */
+	function getAppGroupedWork() {
+
+		//Load basic information
+		$this->id = $_GET['id'];
+		$itemData['id'] = $this->id;
+
+		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+		$groupedWorkDriver = new GroupedWorkDriver($this->id);
+
+		if ($groupedWorkDriver->isValid()) {
+			$itemData['title'] = $groupedWorkDriver->getShortTitle();
+			$itemData['subtitle'] = $groupedWorkDriver->getSubtitle();
+			$itemData['author'] = $groupedWorkDriver->getPrimaryAuthor();
+			$itemData['description'] = strip_tags($groupedWorkDriver->getDescriptionFast());
+			if($itemData['description'] == '') {
+				$itemData['description'] = "Description Not Provided";
+			}
+			$itemData['cover'] = $groupedWorkDriver->getBookcoverUrl('large', true);
+
+			$ratingData = $groupedWorkDriver->getRatingData();
+			$itemData['ratingData']['average'] = $ratingData['average'];
+			$itemData['ratingData']['count'] = $ratingData['count'];
+
+			$relatedManifestations = $groupedWorkDriver->getRelatedManifestations();
+			foreach ($relatedManifestations as $relatedManifestation){
+
+				/** @var  $relatedVariations Grouping_Variation[] */
+				$relatedVariations = $relatedManifestation->getVariationInformation();
+				$records = [];
+				foreach ($relatedVariations as $relatedVariation) {
+					$relatedRecords = $relatedVariation->getRecords();
+
+
+					foreach ($relatedRecords as $relatedRecord) {
+						$recordActions = $relatedRecord->getActions();
+						$actions = [];
+						foreach ($recordActions as $recordAction) {
+							$action = array(
+								'title' => $recordAction['title'],
+							);
+
+							if(isset($recordAction['type'])) {
+								$action['type'] = $recordAction['type'];
+							}
+
+							if(isset($recordAction['url'])) {
+								$action['url'] = $recordAction['url'];
+							}
+
+							if(isset($recordAction['redirectUrl'])) {
+								$action['redirectUrl'] = $recordAction['redirectUrl'];
+							}
+
+							if($relatedRecord->source == "overdrive" && isset($recordAction['type'])) {
+								if($recordAction['type'] == "overdrive_sample") {
+									$action['formatId'] = $recordAction['formatId'];
+									$action['sampleNumber'] = $recordAction['sampleNumber'];
+								}
+							}
+							$actions[] = $action;
+						}
+
+						$isAvailable = $relatedRecord->isAvailable();
+						$isAvailableOnline = $relatedRecord->isAvailableOnline();
+						$groupedStatus = $relatedRecord->getGroupedStatus();
+						$isEContent = $relatedRecord->isEContent();
+
+						$items = $relatedRecord->getItems();
+						foreach ($items as $item) {
+							$shelfLocation = $item->shelfLocation;
+							$callNumber = $item->callNumber;
+
+							if($item->eContentSource == "Hoopla") {
+								require_once ROOT_DIR . '/RecordDrivers/HooplaRecordDriver.php';
+								$hooplaDriver = new HooplaRecordDriver($item->itemId);
+								$publicationDate = $hooplaDriver->getPublicationDates();
+								if(is_array($publicationDate) && $publicationDate != null) {
+									$publicationDate = $publicationDate[0];
+								} elseif (count($publicationDate) == 0) {
+									$publicationDate = $relatedRecord->publicationDate;
+								}
+								$publisher = $hooplaDriver->getPublishers();
+								if(is_array($publisher) && $publisher != null) {
+									$publisher = $publisher[0];
+								} elseif (count($publisher) == 0) {
+									$publisher = $relatedRecord->publisher;
+								}
+								$edition = $hooplaDriver->getEditions();
+								if(is_array($edition) && $edition != null) {
+									$edition = $edition[0];
+								} elseif (count($edition) == 0) {
+									$edition = $relatedRecord->edition;
+								}
+								$physical = $hooplaDriver->getPhysicalDescriptions();
+								if(is_array($physical) && $physical != null) {
+									$physical = $physical[0];
+								} elseif (count($physical) == 0) {
+									$physical = $relatedRecord->physical;
+								}
+							} elseif($item->eContentSource == "OverDrive") {
+								require_once ROOT_DIR . '/RecordDrivers/OverDriveRecordDriver.php';
+								$overdriveDriver = new OverDriveRecordDriver($item->itemId);
+								$publicationDate = $relatedRecord->publicationDate;
+								$publisher = $relatedRecord->publisher;
+								$edition = $relatedRecord->edition;
+								$physical = $relatedRecord->physical;
+							} elseif($item->eContentSource == "CloudLibrary") {
+								require_once ROOT_DIR . '/RecordDrivers/CloudLibraryRecordDriver.php';
+								$cloudLibraryDriver = new CloudLibraryRecordDriver($item->itemId);
+								$publicationDate = $cloudLibraryDriver->getPublicationDates();
+								$publisher = $cloudLibraryDriver->getPublishers();
+								$edition = $cloudLibraryDriver->getEditions();
+								$physical = $relatedRecord->physical;
+							} elseif($item->eContentSource == "Axis360") {
+								require_once ROOT_DIR . '/RecordDrivers/Axis360RecordDriver.php';
+								$axis360Driver = new Axis360RecordDriver($item->itemId);
+								$publicationDate = $axis360Driver->getPublicationDates();
+								$publisher = $axis360Driver->getPublishers();
+								$edition = $axis360Driver->getEditions();
+								$physical = $relatedRecord->physical;
+							} else {
+								$publicationDate = $relatedRecord->publicationDate;
+								$publisher = $relatedRecord->publisher;
+								$edition = $relatedRecord->edition;
+								$physical = $relatedRecord->physical;
+							}
+						}
+
+
+						$holdable = $relatedRecord->isHoldable();
+						$record = array(
+							'id' => $relatedRecord->id,
+							'source' => $relatedRecord->source,
+							'format' => $relatedRecord->format,
+							'language' => $relatedRecord->language,
+							'available' => $isAvailable,
+							'availableOnline' => $isAvailableOnline,
+							'eContent' => $isEContent,
+							'status' => $groupedStatus,
+							'holdable' => $holdable,
+							'shelfLocation' => $shelfLocation,
+							'callNumber' => $callNumber,
+							'copiesMessage' => $relatedManifestation->getNumberOfCopiesMessage(),
+							'edition' => $edition,
+							'publisher' => $publisher,
+							'publicationDate' => $publicationDate,
+							'physical' => $physical,
+							'action' => $actions,
+						);
+						$records[] = $record;
+
+					}
+					$variationCategoryInfo[$relatedManifestation->format] = $records;
+
+
+					$itemData['variation'] = $variationCategoryInfo;
+				}
+
+				/** @var  $allVariationsFormat Grouping_Variation[] */
+				/** @var  $allVariationsLanguage Grouping_Variation[] */
+
+				foreach($relatedManifestation->getVariations() as $filter) {
+					if (!isset($filterOnFormat)) {
+						$filterOnFormat[] = array('format' => $filter->manifestation->format, 'format' => $filter->manifestation->format);
+					} elseif (!in_array( $filter->manifestation->format, array_column($filterOnFormat, 'format'))) {
+						$filterOnFormat[] = array('format' =>  $filter->manifestation->format, 'format' => $filter->manifestation->format);
+					}
+					if (!isset($filterOnLanguage)) {
+						$filterOnLanguage[] = array('language' => $filter->language);
+					} elseif (!in_array( $filter->language, array_column($filterOnLanguage, 'language'))) {
+						$filterOnLanguage[] = array('language' =>  $filter->language);
+					}
+				}
+
+				$itemData['filterOn'] = array('format' => $filterOnFormat, 'language' => $filterOnLanguage);
+
+			}
+			return $itemData;
+		}
+	}
+
+	/** @noinspection PhpUnused */
+	function getAppBasicItemInfo(){
+		$itemData = array();
+
+		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
+		require_once ROOT_DIR . '/sys/Grouping/Manifestation.php';
+		require_once ROOT_DIR . '/sys/Grouping/Variation.php';
+		require_once ROOT_DIR . '/sys/Grouping/Record.php';
+		require_once ROOT_DIR . '/sys/Grouping/Item.php';
+
+		//Load basic information
+		$this->id = $_GET['id'];
+		$itemData['id'] = $this->id;
+
+		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+		$groupedWorkDriver = new GroupedWorkDriver($this->id);
+		if ($groupedWorkDriver->isValid()) {
+
+
+			$itemData['title'] = $groupedWorkDriver->getShortTitle();
+			$itemData['author'] = $groupedWorkDriver->getPrimaryAuthor();
+			$itemData['formats'] = $groupedWorkDriver->getFormatsArray();
+			$itemData['description'] = $groupedWorkDriver->getDescriptionFast();
+			if($itemData['description'] == '') {
+				$itemData['description'] = "Description Not Provided";
+			}
+			$itemData['cover'] = $groupedWorkDriver->getBookcoverUrl('large', true);
+
+			$ratingData = $groupedWorkDriver->getRatingData();
+			$itemData['ratingData']['average'] = $ratingData['average'];
+			$itemData['ratingData']['count'] = $ratingData['count'];
+
+			$relatedManifestations = $groupedWorkDriver->getRelatedManifestations();
+			$allVariations = [];
+
+			foreach($relatedManifestations as $manifestation) {
+
+				$statusMessage = $manifestation->getNumberOfCopiesMessage();
+				if($statusMessage == '') {
+					$statusMessage = $manifestation->getStatusInformation()->_groupedStatus;
+				}
+
+				$action = $manifestation->getActions();
+
+				$manifestationSummary = array(
+					'format' => $manifestation->format,
+					'records' => $manifestation->getItemSummary(),
+					'variation' => $manifestation->getVariations(),
+					'status' => $statusMessage,
+					'action' => $action,
+				);
+
+				$itemList[] = $manifestationSummary;
+
+				/** @var  $allVariationsFormat Grouping_Variation[] */
+				/** @var  $allVariationsLanguage Grouping_Variation[] */
+
+				foreach($manifestation->getVariations() as $variation) {
+					if (!isset($allVariationsFormat)) {
+						$allVariationsFormat[] = array('format' => $variation->manifestation->format, 'formatCategory' => $variation->manifestation->formatCategory);
+					} elseif (!in_array( $variation->manifestation->format, array_column($allVariationsFormat, 'format'))) {
+						$allVariationsFormat[] = array('format' =>  $variation->manifestation->format, 'formatCategory' => $variation->manifestation->formatCategory);
+					}
+					if (!isset($allVariationsLanguage)) {
+						$allVariationsLanguage[] = array('language' => $variation->language);
+					} elseif (!in_array( $variation->language, array_column($allVariationsLanguage, 'language'))) {
+						$allVariationsLanguage[] = array('language' =>  $variation->language);
+					}
+				}
+
+
+			}
+
+
+			$itemData['variations_format'] = $allVariationsFormat;
+			$itemData['variations_language'] = $allVariationsLanguage;
+			$itemData['manifestations'] = $itemList;
+
+			return $itemData;
+		}
+
+	}
+
+	function getItemDetails() {
+		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+
+		$groupedWorkId = $_REQUEST['recordId'];
+		$format = $_REQUEST['format'];
+
+		$recordDriver = new GroupedWorkDriver($groupedWorkId);
+
+		$relatedManifestation = null;
+		foreach($recordDriver->getRelatedManifestations() as $relatedManifestation){
+			if($relatedManifestation->format == $format) {
+				break;
+			}
+		}
+
+		return $relatedManifestation->getItemSummary();
+	}
+
 }

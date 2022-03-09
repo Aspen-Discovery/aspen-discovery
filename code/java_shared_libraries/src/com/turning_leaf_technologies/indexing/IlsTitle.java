@@ -1,19 +1,25 @@
 package com.turning_leaf_technologies.indexing;
 
 public class IlsTitle {
-    private Long checksum;
-    private Long dateFirstDetected;
+	private long checksum;
+	private long dateFirstDetected;
+	private boolean isDeleted;
 
-    public IlsTitle(Long checksum, Long dateFirstDetected) {
-        this.checksum = checksum;
-        this.dateFirstDetected = dateFirstDetected;
-    }
+	public IlsTitle(long checksum, long dateFirstDetected, boolean isDeleted) {
+		this.checksum = checksum;
+		this.dateFirstDetected = dateFirstDetected;
+		this.isDeleted = isDeleted;
+	}
 
-    public Long getChecksum() {
-        return checksum;
-    }
+	public Long getChecksum() {
+		return checksum;
+	}
 
-    public Long getDateFirstDetected() {
-        return dateFirstDetected;
+	public Long getDateFirstDetected() {
+		return dateFirstDetected;
+	}
+
+    public boolean isDeleted() {
+        return isDeleted;
     }
 }

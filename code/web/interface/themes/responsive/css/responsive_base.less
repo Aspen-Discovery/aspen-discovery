@@ -62,25 +62,37 @@ body {
   font-size: 14px;
 }
 .fieldset-collapsible-label:before{
-  content: "▼ ";
+  font-family: "Font Awesome 5 Free";
+  content: '\f078';
+  font-weight: bold;
+  padding-right: .25em;
 }
 .fieldset-collapsed .fieldset-collapsible-label {
   background-position: 4px 4px;
 }
 .fieldset-collapsed .fieldset-collapsible-label:before{
-  content: "► ";
+  font-family: "Font Awesome 5 Free";
+  content: '\f105';
+  font-weight: bold;
+  padding-right: .25em;
 }
 
 
 .accordion {
   .panel-title.collapsed:before {
-    content: "► ";
+    font-family: "Font Awesome 5 Free";
+    content: '\f105';
+    font-weight: bold;
+    padding-right: .25em;
     @media print {
       content: "";
     }
   }
   .panel-title.expanded:before {
-    content: "▼ ";
+    font-family: "Font Awesome 5 Free";
+    content: '\f078';
+    font-weight: bold;
+    padding-right: .25em;
     @media print{
       content: "";
     }
@@ -88,13 +100,19 @@ body {
 }
 
 .panel .panel-title:before {
-  content: "► ";
+  font-family: "Font Awesome 5 Free";
+  content: '\f105';
+  font-weight: bold;
+  padding-right: .25em;
   @media print{
     content: "";
   }
 }
 .panel.active .panel-title:before {
-  content: "▼ ";
+  font-family: "Font Awesome 5 Free";
+  content: '\f078';
+  font-weight: bold;
+  padding-right: .25em;
   @media print{
     content: "";
   }
@@ -300,7 +318,6 @@ div.striped {
 
 // Third party imports
 @import "ratings.less";
-@import "datepicker.less";
 @import "jcarousel.responsive.less";
 @import "lib/fontawesome-all.min.css";
 @import "lib/bootstrap-switch.less";
@@ -323,7 +340,6 @@ div.striped {
 @import "prospector.less";
 @import "calendar.less";
 @import "genealogy.less";
-@import "repository.less";
 @import "admin.less";
 @import "web-builder.less";
 @import "ebsco.less";

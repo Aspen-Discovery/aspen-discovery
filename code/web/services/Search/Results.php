@@ -196,7 +196,30 @@ class Search_Results extends ResultsAction {
 
 		// Process Search
 		$result = $searchObject->processSearch(true, true);
-		if ($result instanceof AspenError || !empty($result['error'])) {
+		if ($result == null) {
+			$timeoutMessage = "Ooops, your search timed out. Try a simpler search if possible.";
+			global $configArray;
+			if ($configArray['System']['operatingSystem'] == 'linux'){
+				//Get the number of CPUs available
+				$numCPUs = (int)shell_exec("cat /proc/cpuinfo | grep processor | wc -l");
+
+				//Check load (use the 5 minute load)
+				$load = sys_getloadavg();
+				$loadPerCpu = $load[1] / $numCPUs;
+				if ($loadPerCpu > 1.5){
+					$timeoutMessage = "Ooops, your search timed out. Our servers are busy helping other people, please try your search again.";
+					$aspenUsage->timedOutSearchesWithHighLoad++;
+				}else{
+					$aspenUsage->timedOutSearches++;
+				}
+			}else{
+				$aspenUsage->timedOutSearches++;
+			}
+			$interface->assign('error', $timeoutMessage);
+			$this->display('searchError.tpl', 'Error in Search', '');
+			return;
+		}elseif ($result instanceof AspenError || !empty($result['error'])) {
+			$aspenUsage->searchesWithErrors++;
 			//Don't record an error, but send it to issues just to be sure everything looks good
 			global $serverName;
 			$logSearchError = true;
@@ -504,7 +527,8 @@ class Search_Results extends ResultsAction {
 				}
 			}
 			if ($placardToDisplay == null && !empty($_REQUEST['replacementTerm'])) {
-				$trigger->whereAdd($trigger->escape($_REQUEST['replacementTerm'] . ' like triggerWord' ));
+				$trigger = new PlacardTrigger();
+				$trigger->whereAdd($trigger->escape($_REQUEST['replacementTerm']). " like concat('%', triggerWord, '%')");
 				//$trigger->triggerWord = $_REQUEST['replacementTerm'];
 				$trigger->find();
 				while ($trigger->fetch()) {

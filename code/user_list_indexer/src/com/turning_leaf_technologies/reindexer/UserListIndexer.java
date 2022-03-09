@@ -108,8 +108,8 @@ class UserListIndexer {
 				numListsStmt = dbConn.prepareStatement("select count(id) as numLists from user_list WHERE deleted = 0 AND public = 1 and searchable = 1");
 				listsStmt = dbConn.prepareStatement("SELECT user_list.id as id, deleted, public, searchable, title, description, user_list.created, dateUpdated, username, firstname, lastname, displayName, homeLocationId, user_id from user_list INNER JOIN user on user_id = user.id WHERE public = 1 AND searchable = 1 AND deleted = 0");
 			}else{
-				//Get a list of all lists that are were changed since the last update
-				//Have to process all lists because one could have been deleted, made private, or made non searchable.
+				//Get a list of all lists that were changed since the last update
+				//Have to process all lists because one could have been deleted, made private, or made non-searchable.
 				numListsStmt = dbConn.prepareStatement("select count(id) as numLists from user_list");
 				listsStmt = dbConn.prepareStatement("SELECT user_list.id as id, deleted, public, searchable, title, description, user_list.created, dateUpdated, username, firstname, lastname, displayName, homeLocationId, user_id from user_list INNER JOIN user on user_id = user.id WHERE dateUpdated > ?");
 				listsStmt.setLong(1, lastReindexTime);
@@ -174,113 +174,118 @@ class UserListIndexer {
 			long created = allPublicListsRS.getLong("created");
 			userListSolr.setCreated(created);
 
-			String displayName = EncryptionUtils.decryptString(allPublicListsRS.getString("displayName"), serverName, logEntry);
-			String firstName = EncryptionUtils.decryptString(allPublicListsRS.getString("firstname"), serverName, logEntry);
-			String lastName = EncryptionUtils.decryptString(allPublicListsRS.getString("lastname"), serverName, logEntry);
-			String userName = allPublicListsRS.getString("username");
+			try {
+				String displayName = EncryptionUtils.decryptString(allPublicListsRS.getString("displayName"), serverName, logEntry);
+				String firstName = EncryptionUtils.decryptString(allPublicListsRS.getString("firstname"), serverName, logEntry);
+				String lastName = EncryptionUtils.decryptString(allPublicListsRS.getString("lastname"), serverName, logEntry);
+				String userName = allPublicListsRS.getString("username");
 
-			if (userName.equalsIgnoreCase("nyt_user")) {
-				userListSolr.setOwnerCanShareListsInSearchResults(true);
-			}else{
-				userListSolr.setOwnerCanShareListsInSearchResults(usersThatCanShareLists.contains(userId));
-			}
-			if (displayName != null && displayName.length() > 0){
-				userListSolr.setAuthor(displayName);
-			}else{
-				if (firstName == null) firstName = "";
-				if (lastName == null) lastName = "";
-				String firstNameFirstChar = "";
-				if (firstName.length() > 0){
-					firstNameFirstChar = firstName.charAt(0) + ". ";
-				}
-				userListSolr.setAuthor(firstNameFirstChar + lastName);
-			}
-
-			long patronHomeLibrary = allPublicListsRS.getLong("homeLocationId");
-			if (librariesByHomeLocation.containsKey(patronHomeLibrary)){
-				userListSolr.setOwningLibrary(librariesByHomeLocation.get(patronHomeLibrary));
-			} else {
-				//Don't know the owning library for some reason, most likely this is an admin user.
-				userListSolr.setOwningLibrary(-1);
-			}
-
-			//Don't know the owning location
-			userListSolr.setOwningLocation(locationCodesByHomeLocation.getOrDefault(patronHomeLibrary, ""));
-
-			//Get information about all of the list titles.
-			getTitlesForListStmt.setLong(1, listId);
-			ResultSet allTitlesRS = getTitlesForListStmt.executeQuery();
-			while (allTitlesRS.next()) {
-				String source = allTitlesRS.getString("source");
-				String sourceId = allTitlesRS.getString("sourceId");
-				if (!allTitlesRS.wasNull()){
-					if (sourceId.length() > 0 && source.equals("GroupedWork")) {
-						// Skip archive object Ids
-						SolrQuery query = new SolrQuery();
-						query.setQuery("id:" + sourceId);
-						query.setFields("title_display", "author_display");
-
-						try {
-							QueryResponse response = groupedWorkServer.query(query);
-							SolrDocumentList results = response.getResults();
-							//Should only ever get one response
-							if (results.size() >= 1) {
-								SolrDocument curWork = results.get(0);
-								userListSolr.addListTitle("grouped_work", sourceId, curWork.getFieldValue("title_display"), curWork.getFieldValue("author_display"));
-							}
-						} catch (Exception e) {
-							logger.error("Error loading information about title " + sourceId);
-						}
-					}else if (source.equals("OpenArchives")){
-						// Skip archive object Ids
-						SolrQuery query = new SolrQuery();
-						query.setQuery("id:" + sourceId);
-						query.setFields("title", "creator");
-
-						try {
-							QueryResponse response = openArchivesServer.query(query);
-							SolrDocumentList results = response.getResults();
-							//Should only ever get one response
-							if (results.size() >= 1) {
-								SolrDocument curWork = results.get(0);
-								userListSolr.addListTitle("open_archives", sourceId, curWork.getFieldValue("title"), curWork.getFieldValue("creator"));
-							}
-						} catch (Exception e) {
-							logger.error("Error loading information about title " + sourceId);
-						}
-					}else if (source.equals("Lists")){
-						getListDisplayNameAndAuthorStmt.setString(1, sourceId);
-						ResultSet listDisplayNameAndAuthorRS = getListDisplayNameAndAuthorStmt.executeQuery();
-						if (listDisplayNameAndAuthorRS.next()){
-							String decryptedName = EncryptionUtils.decryptString(listDisplayNameAndAuthorRS.getString("displayName"), serverName, logEntry);
-							userListSolr.addListTitle("lists", sourceId, listDisplayNameAndAuthorRS.getString("title"), decryptedName);
-						}
-						listDisplayNameAndAuthorRS.close();
-					}else{
-						logEntry.incErrors("Unhandled source " + source);
-					}
-					//TODO: Handle other types of objects within a User List
-					//people, etc.
-				}
-			}
-			if (userListSolr.getNumTitles() >= 3) {
-				// Index in the solr catalog
-				SolrInputDocument document = userListSolr.getSolrDocument();
-				if (document != null){
-					updateServer.add(document);
-					if (created > lastReindexTime){
-						logEntry.incAdded();
-					}else{
-						logEntry.incUpdated();
-					}
-					indexed = true;
+				if (userName.equalsIgnoreCase("nyt_user")) {
+					userListSolr.setOwnerCanShareListsInSearchResults(true);
 				}else{
+					userListSolr.setOwnerCanShareListsInSearchResults(usersThatCanShareLists.contains(userId));
+				}
+				if (displayName != null && displayName.length() > 0){
+					userListSolr.setAuthor(displayName);
+				}else{
+					if (firstName == null) firstName = "";
+					if (lastName == null) lastName = "";
+					String firstNameFirstChar = "";
+					if (firstName.length() > 0){
+						firstNameFirstChar = firstName.charAt(0) + ". ";
+					}
+					userListSolr.setAuthor(firstNameFirstChar + lastName);
+				}
+
+				long patronHomeLibrary = allPublicListsRS.getLong("homeLocationId");
+				if (librariesByHomeLocation.containsKey(patronHomeLibrary)){
+					userListSolr.setOwningLibrary(librariesByHomeLocation.get(patronHomeLibrary));
+				} else {
+					//Don't know the owning library for some reason, most likely this is an admin user.
+					userListSolr.setOwningLibrary(-1);
+				}
+
+				//Don't know the owning location
+				userListSolr.setOwningLocation(locationCodesByHomeLocation.getOrDefault(patronHomeLibrary, ""));
+
+				//Get information about all the list titles.
+				getTitlesForListStmt.setLong(1, listId);
+				ResultSet allTitlesRS = getTitlesForListStmt.executeQuery();
+				while (allTitlesRS.next()) {
+					String source = allTitlesRS.getString("source");
+					String sourceId = allTitlesRS.getString("sourceId");
+					if (!allTitlesRS.wasNull()){
+						if (sourceId.length() > 0 && source.equals("GroupedWork")) {
+							// Skip archive object Ids
+							SolrQuery query = new SolrQuery();
+							query.setQuery("id:" + sourceId);
+							query.setFields("title_display", "author_display");
+
+							try {
+								QueryResponse response = groupedWorkServer.query(query);
+								SolrDocumentList results = response.getResults();
+								//Should only ever get one response
+								if (results.size() >= 1) {
+									SolrDocument curWork = results.get(0);
+									userListSolr.addListTitle("grouped_work", sourceId, curWork.getFieldValue("title_display"), curWork.getFieldValue("author_display"));
+								}
+							} catch (Exception e) {
+								logger.error("Error loading information about title " + sourceId);
+							}
+						}else if (source.equals("OpenArchives")){
+							// Skip archive object Ids
+							SolrQuery query = new SolrQuery();
+							query.setQuery("id:" + sourceId);
+							query.setFields("title", "creator");
+
+							try {
+								QueryResponse response = openArchivesServer.query(query);
+								SolrDocumentList results = response.getResults();
+								//Should only ever get one response
+								if (results.size() >= 1) {
+									SolrDocument curWork = results.get(0);
+									userListSolr.addListTitle("open_archives", sourceId, curWork.getFieldValue("title"), curWork.getFieldValue("creator"));
+								}
+							} catch (Exception e) {
+								logger.error("Error loading information about title " + sourceId);
+							}
+						}else if (source.equals("Lists")){
+							getListDisplayNameAndAuthorStmt.setString(1, sourceId);
+							ResultSet listDisplayNameAndAuthorRS = getListDisplayNameAndAuthorStmt.executeQuery();
+							if (listDisplayNameAndAuthorRS.next()){
+								String decryptedName = EncryptionUtils.decryptString(listDisplayNameAndAuthorRS.getString("displayName"), serverName, logEntry);
+								userListSolr.addListTitle("lists", sourceId, listDisplayNameAndAuthorRS.getString("title"), decryptedName);
+							}
+							listDisplayNameAndAuthorRS.close();
+						}else{
+							logEntry.incErrors("Unhandled source " + source);
+						}
+						//TODO: Handle other types of objects within a User List
+						//people, etc.
+					}
+				}
+				if (userListSolr.getNumTitles() >= 3) {
+					// Index in the solr catalog
+					SolrInputDocument document = userListSolr.getSolrDocument();
+					if (document != null){
+						updateServer.add(document);
+						if (created > lastReindexTime){
+							logEntry.incAdded();
+						}else{
+							logEntry.incUpdated();
+						}
+						indexed = true;
+					}else{
+						updateServer.deleteByQuery("id:" + listId);
+						logEntry.incDeleted();
+					}
+				} else {
 					updateServer.deleteByQuery("id:" + listId);
 					logEntry.incDeleted();
 				}
-			} else {
-				updateServer.deleteByQuery("id:" + listId);
-				logEntry.incDeleted();
+			}catch (Exception e){
+				logEntry.addNote("Could not decrypt user information for " + listId + " - " + e);
+				logEntry.incSkipped();
 			}
 		}
 

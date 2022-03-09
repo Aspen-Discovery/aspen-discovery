@@ -224,19 +224,21 @@ class GroupedWorkDriver extends IndexRecordDriver
 	 */
 	static function compareLocalAvailableItemsForRecords($a, $b)
 	{
-		if (($a->getStatusInformation()->isAvailableHere() || $a->getStatusInformation()->isAvailableOnline()) && ($b->getStatusInformation()->isAvailableHere() || $b->getStatusInformation()->isAvailableOnline())) {
-			if (($a->getStatusInformation()->isAvailableLocally() || $a->getStatusInformation()->isAvailableOnline()) && ($b->getStatusInformation()->isAvailableLocally() || $b->getStatusInformation()->isAvailableOnline())) {
+		$statusA = $a->getStatusInformation();
+		$statusB = $b->getStatusInformation();
+		if (($statusA->isAvailableHere() || $statusA->isAvailableOnline()) && ($statusB->isAvailableHere() || $statusB->isAvailableOnline())) {
+			if (($statusA->isAvailableLocally() || $statusA->isAvailableOnline()) && ($statusB->isAvailableLocally() || $statusB->isAvailableOnline())) {
 				return 0;
-			} elseif ($a->getStatusInformation()->isAvailableLocally() || $a->getStatusInformation()->isAvailableOnline()) {
+			} elseif ($statusA->isAvailableLocally() || $statusA->isAvailableOnline()) {
 				return -1;
-			} elseif ($b->getStatusInformation()->isAvailableLocally() || $b->getStatusInformation()->isAvailableOnline()) {
+			} elseif ($statusB->isAvailableLocally() || $statusB->isAvailableOnline()) {
 				return 1;
 			} else {
 				return 0;
 			}
-		} elseif ($a->getStatusInformation()->isAvailableHere() || $a->getStatusInformation()->isAvailableOnline()) {
+		} elseif ($statusA->isAvailableHere() || $statusA->isAvailableOnline()) {
 			return -1;
-		} elseif ($b->getStatusInformation()->isAvailableHere() || $b->getStatusInformation()->isAvailableOnline()) {
+		} elseif ($statusB->isAvailableHere() || $statusB->isAvailableOnline()) {
 			return 1;
 		} else {
 			return 0;
@@ -422,85 +424,6 @@ class GroupedWorkDriver extends IndexRecordDriver
 
 	private $archiveLink = 'unset';
 
-	function getArchiveLink()
-	{
-		if ($this->archiveLink === 'unset') {
-			$this->archiveLink = GroupedWorkDriver::getArchiveLinkForWork($this->getUniqueID());
-		}
-		return $this->archiveLink;
-	}
-
-	static function getArchiveLinkForWork($groupedWorkId)
-	{
-		//Check to see if the record is available within the archive
-		global $library;
-		global $timer;
-		$archiveLink = '';
-		if ($library->enableArchive) {
-			if (array_key_exists($groupedWorkId, GroupedWorkDriver::$archiveLinksForWorkIds)) {
-				$archiveLink = GroupedWorkDriver::$archiveLinksForWorkIds[$groupedWorkId];
-			} else {
-				require_once ROOT_DIR . '/sys/Islandora/IslandoraSamePikaCache.php';
-				//Check for cached links
-				$sameCatalogRecordCache = new IslandoraSamePikaCache();
-				$sameCatalogRecordCache->groupedWorkId = $groupedWorkId;
-				$foundLink = false;
-				if ($sameCatalogRecordCache->find(true)) {
-					GroupedWorkDriver::$archiveLinksForWorkIds[$groupedWorkId] = $sameCatalogRecordCache->archiveLink;
-					$archiveLink = $sameCatalogRecordCache->archiveLink;
-					$foundLink = true;
-				} else {
-					GroupedWorkDriver::$archiveLinksForWorkIds[$groupedWorkId] = false;
-					$sameCatalogRecordCache->archiveLink = '';
-					$sameCatalogRecordCache->insert();
-				}
-
-				if (!$foundLink || isset($_REQUEST['reload'])) {
-					/** @var SearchObject_IslandoraSearcher $searchObject */
-					$searchObject = SearchObjectFactory::initSearchObject('Islandora');
-					$searchObject->init();
-					$searchObject->disableLogging();
-					$searchObject->setDebugging(false, false);
-					$searchObject->setBasicQuery("mods_extension_marmotLocal_externalLink_samePika_link_s:*" . $groupedWorkId);
-					//Clear existing filters so search filters don't apply to this query
-					$searchObject->clearFilters();
-					$searchObject->clearFacets();
-
-					$searchObject->setLimit(1);
-
-					$response = $searchObject->processSearch(true, false, true);
-
-					if ($response && isset($response['response'])) {
-						//Get information about each project
-						if ($searchObject->getResultTotal() > 0) {
-							$firstObjectDriver = RecordDriverFactory::initRecordDriver($response['response']['docs'][0]);
-
-							$archiveLink = $firstObjectDriver->getRecordUrl();
-
-							$sameCatalogRecordCache = new IslandoraSamePikaCache();
-							$sameCatalogRecordCache->groupedWorkId = $groupedWorkId;
-							if ($sameCatalogRecordCache->find(true) && $sameCatalogRecordCache->archiveLink != $archiveLink) {
-								$sameCatalogRecordCache->archiveLink = $archiveLink;
-								$sameCatalogRecordCache->pid = $firstObjectDriver->getUniqueID();
-								$numUpdates = $sameCatalogRecordCache->update();
-								if ($numUpdates == 0) {
-									global $logger;
-									$logger->log("Did not update same catalog record cache " . print_r($sameCatalogRecordCache->getLastError(), true), Logger::LOG_ERROR);
-								}
-							}
-							GroupedWorkDriver::$archiveLinksForWorkIds[$groupedWorkId] = $archiveLink;
-							$timer->logTime("Loaded archive link for work $groupedWorkId");
-						}
-					}
-
-					$searchObject = null;
-					unset($searchObject);
-				}
-			}
-		}
-		return $archiveLink;
-	}
-
 	/**
 	 * Get the authors of the work.
 	 *
@@ -543,8 +466,14 @@ class GroupedWorkDriver extends IndexRecordDriver
 		$url = $this->getMoreInfoLinkUrl();
 
 		$interface->assign('summUrl', $url);
-		$interface->assign('summTitle', $this->getShortTitle());
-		$interface->assign('summSubTitle', $this->getSubtitle());
+		$shortTitle = $this->getShortTitle();
+		if (empty($shortTitle)){
+			$interface->assign('summTitle', $this->getTitle());
+			$interface->assign('summSubTitle', '');
+		}else {
+			$interface->assign('summTitle', $this->getShortTitle());
+			$interface->assign('summSubTitle', $this->getSubtitle());
+		}
 		$interface->assign('summAuthor', $this->getPrimaryAuthor());
 
 		//Get Rating
@@ -733,8 +662,14 @@ class GroupedWorkDriver extends IndexRecordDriver
 		}
 
 		$interface->assign('summUrl', $linkUrl);
-		$interface->assign('summTitle', $this->getShortTitle(true));
-		$interface->assign('summSubTitle', $this->getSubtitle(true));
+		$shortTitle = $this->getShortTitle();
+		if (empty($shortTitle)){
+			$interface->assign('summTitle', $this->getTitle());
+			$interface->assign('summSubTitle', '');
+		}else {
+			$interface->assign('summTitle', $this->getShortTitle());
+			$interface->assign('summSubTitle', $this->getSubtitle());
+		}
 		$interface->assign('summAuthor', rtrim($this->getPrimaryAuthor(true), ','));
 		$isbn = $this->getCleanISBN();
 		$interface->assign('summISBN', $isbn);
@@ -765,19 +700,19 @@ class GroupedWorkDriver extends IndexRecordDriver
 				$summLanguage = $relatedRecord->language;
 			} else {
 				if ($summPublisher != $relatedRecord->publisher) {
-					$summPublisher = $alwaysShowMainDetails ? translate('Varies, see individual formats and editions') : null;
+					$summPublisher = $alwaysShowMainDetails ? translate(['text' => 'Varies, see individual formats and editions', 'isPublicFacing'=>true]) : null;
 				}
 				if ($summPubDate != $relatedRecord->publicationDate) {
-					$summPubDate = $alwaysShowMainDetails ? translate('Varies, see individual formats and editions') : null;
+					$summPubDate = $alwaysShowMainDetails ? translate(['text' => 'Varies, see individual formats and editions', 'isPublicFacing'=>true]) : null;
 				}
 				if ($summPhysicalDesc != $relatedRecord->physical) {
-					$summPhysicalDesc = $alwaysShowMainDetails ? translate('Varies, see individual formats and editions') : null;
+					$summPhysicalDesc = $alwaysShowMainDetails ? translate(['text' => 'Varies, see individual formats and editions', 'isPublicFacing'=>true]) : null;
 				}
 				if ($summEdition != $relatedRecord->edition) {
-					$summEdition = $alwaysShowMainDetails ? translate('Varies, see individual formats and editions') : null;
+					$summEdition = $alwaysShowMainDetails ? translate(['text' => 'Varies, see individual formats and editions', 'isPublicFacing'=>true]) : null;
 				}
 				if ($summLanguage != $relatedRecord->language) {
-					$summLanguage = $alwaysShowMainDetails ? translate('Varies, see individual formats and editions') : null;
+					$summLanguage = $alwaysShowMainDetails ? translate(['text' => 'Varies, see individual formats and editions', 'isPublicFacing'=>true]) : null;
 				}
 			}
 			$isFirst = false;
@@ -789,7 +724,7 @@ class GroupedWorkDriver extends IndexRecordDriver
 		$interface->assign('summLanguage', $summLanguage);
 		$timer->logTime("Finished assignment of data based on related records");
 
-		if ($configArray['System']['debugSolr']) {
+		if (IPAddress::showDebuggingInformation()) {
 			$interface->assign('summScore', $this->getScore());
 			$interface->assign('summExplain', $this->getExplain());
 		}
@@ -830,18 +765,23 @@ class GroupedWorkDriver extends IndexRecordDriver
 	{
 		$description = null;
 		$cleanIsbn = $this->getCleanISBN();
-		if ($cleanIsbn != null && strlen($cleanIsbn) > 0) {
-			require_once ROOT_DIR . '/Drivers/marmot_inc/GoDeeperData.php';
-			$summaryInfo = GoDeeperData::getSummary($this->getPermanentId(), $cleanIsbn, $this->getCleanUPC());
-			if (isset($summaryInfo['summary'])) {
-				$description = $summaryInfo['summary'];
-			}
-		}
+		global $library;
 		if ($description == null) {
 			$description = $this->getDescriptionFast();
 		}
+		if ($library->getGroupedWorkDisplaySettings()->preferSyndeticsSummary == 1 || $description == null || strlen($description) == 0) {
+			if ($cleanIsbn != null && strlen($cleanIsbn) > 0) {
+				require_once ROOT_DIR . '/Drivers/marmot_inc/GoDeeperData.php';
+				$summaryInfo = GoDeeperData::getSummary($this->getPermanentId(), $cleanIsbn, $this->getCleanUPC());
+				if (isset($summaryInfo['summary'])) {
+					$description = $summaryInfo['summary'];
+				}
+			}
+		}
+
+
 		if ($description == null || strlen($description) == 0) {
-			$description = 'Description Not Provided';
+			$description = translate(['text' => 'Description Not Provided', 'isPublicFacing'=>true]);
 		}
 		return $description;
 	}
@@ -938,37 +878,7 @@ class GroupedWorkDriver extends IndexRecordDriver
 
 	public function getExploreMoreInfo()
 	{
-		global $interface;
-		global $configArray;
-		$exploreMoreOptions = array();
-		if ($configArray['Catalog']['showExploreMoreForFullRecords']) {
-			$interface->assign('showMoreLikeThisInExplore', true);
-			$interface->assign('showExploreMore', true);
-			if ($this->getCleanISBN()) {
-				if ($interface->getVariable('showSimilarTitles')) {
-					$exploreMoreOptions['similarTitles'] = array(
-						'label' => 'Similar Titles From NoveList',
-						'body' => '<div id="novelistTitlesPlaceholder"></div>',
-						'hideByDefault' => true
-					);
-				}
-				if ($interface->getVariable('showSimilarAuthors')) {
-					$exploreMoreOptions['similarAuthors'] = array(
-						'label' => 'Similar Authors From NoveList',
-						'body' => '<div id="novelistAuthorsPlaceholder"></div>',
-						'hideByDefault' => true
-					);
-				}
-				if ($interface->getVariable('showSimilarTitles')) {
-					$exploreMoreOptions['similarSeries'] = array(
-						'label' => 'Similar Series From NoveList',
-						'body' => '<div id="novelistSeriesPlaceholder"></div>',
-						'hideByDefault' => true
-					);
-				}
-			}
-		}
-		return $exploreMoreOptions;
+		return [];
 	}
 
 	public function getFountasPinnellLevel()
@@ -1152,8 +1062,14 @@ class GroupedWorkDriver extends IndexRecordDriver
 		$linkUrl .= '?searchId=' . $interface->get_template_vars('searchId') . '&amp;recordIndex=' . $interface->get_template_vars('recordIndex') . '&amp;page=' . $interface->get_template_vars('page');
 
 		$interface->assign('summUrl', $linkUrl);
-		$interface->assign('summTitle', $this->getShortTitle());
-		$interface->assign('summSubTitle', $this->getSubtitle());
+		$shortTitle = $this->getShortTitle();
+		if (empty($shortTitle)){
+			$interface->assign('summTitle', $this->getTitle());
+			$interface->assign('summSubTitle', '');
+		}else {
+			$interface->assign('summTitle', $this->getShortTitle());
+			$interface->assign('summSubTitle', $this->getSubtitle());
+		}
 		$interface->assign('summAuthor', $this->getPrimaryAuthor());
 		$isbn = $this->getCleanISBN();
 		$interface->assign('summISBN', $isbn);
@@ -1164,7 +1080,7 @@ class GroupedWorkDriver extends IndexRecordDriver
 
 		$interface->assign('numRelatedRecords', $this->getNumRelatedRecords());
 
-		if ($configArray['System']['debugSolr']) {
+		if (IPAddress::showDebuggingInformation()) {
 			$interface->assign('summScore', $this->getScore());
 			$interface->assign('summExplain', $this->getExplain());
 		}
@@ -1177,7 +1093,7 @@ class GroupedWorkDriver extends IndexRecordDriver
 		$timer->logTime('Finished Loading Description');
 		if ($this->hasCachedSeries()) {
 			$interface->assign('ajaxSeries', false);
-			$interface->assign('summSeries', $this->getSeries());
+			$interface->assign('summSeries', $this->getSeries(false));
 		} else {
 			$interface->assign('ajaxSeries', true);
 			$interface->assign('summSeries', '');
@@ -1191,6 +1107,87 @@ class GroupedWorkDriver extends IndexRecordDriver
 		$interface->assign('recordDriver', $this);
 
 		return 'RecordDrivers/GroupedWork/listEntry.tpl';
+	}
+
+	/**
+	 * Assign necessary Smarty variables and return a template name to
+	 * load in order to display a summary of the item suitable for use in
+	 * user's favorites list.
+	 *
+	 * @access  public
+	 * @param int $listId ID of list containing desired tags/notes (or
+	 *                              null to show tags/notes from all user's lists).
+	 * @return  string              Name of Smarty template file to display.
+	 */
+	public function getCourseReserveEntry($listId = null)
+	{
+		global $configArray;
+		global $interface;
+		global $timer;
+
+		$id = $this->getUniqueID();
+		$timer->logTime("Starting to load search result for grouped work $id");
+		$interface->assign('summId', $id);
+		if (substr($id, 0, 1) == '.') {
+			$interface->assign('summShortId', substr($id, 1));
+		} else {
+			$interface->assign('summShortId', $id);
+		}
+
+		$relatedManifestations = $this->getRelatedManifestations();
+		$interface->assign('relatedManifestations', $relatedManifestations);
+
+		//Build the link URL.
+		//If there is only one record for the work we will link straight to that.
+		$linkUrl = $this->getMoreInfoLinkUrl();
+		$linkUrl .= '?searchId=' . $interface->get_template_vars('searchId') . '&amp;recordIndex=' . $interface->get_template_vars('recordIndex') . '&amp;page=' . $interface->get_template_vars('page');
+
+		$interface->assign('summUrl', $linkUrl);
+		$shortTitle = $this->getShortTitle();
+		if (empty($shortTitle)){
+			$interface->assign('summTitle', $this->getTitle());
+			$interface->assign('summSubTitle', '');
+		}else {
+			$interface->assign('summTitle', $this->getShortTitle());
+			$interface->assign('summSubTitle', $this->getSubtitle());
+		}
+		$interface->assign('summAuthor', $this->getPrimaryAuthor());
+		$isbn = $this->getCleanISBN();
+		$interface->assign('summISBN', $isbn);
+		$interface->assign('summFormats', $this->getFormats());
+
+		$this->assignBasicTitleDetails();
+
+
+		$interface->assign('numRelatedRecords', $this->getNumRelatedRecords());
+
+		if (IPAddress::showDebuggingInformation()) {
+			$interface->assign('summScore', $this->getScore());
+			$interface->assign('summExplain', $this->getExplain());
+		}
+
+		//Get Rating
+		$interface->assign('summRating', $this->getRatingData());
+
+		//Description
+		$interface->assign('summDescription', $this->getDescriptionFast());
+		$timer->logTime('Finished Loading Description');
+		if ($this->hasCachedSeries()) {
+			$interface->assign('ajaxSeries', false);
+			$interface->assign('summSeries', $this->getSeries(false));
+		} else {
+			$interface->assign('ajaxSeries', true);
+			$interface->assign('summSeries', '');
+		}
+
+		$timer->logTime('Finished Loading Series');
+
+		$interface->assign('bookCoverUrl', $this->getBookcoverUrl('small'));
+		$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('medium'));
+
+		$interface->assign('recordDriver', $this);
+
+		return 'RecordDrivers/GroupedWork/courseReserveEntry.tpl';
 	}
 
 	public function getSpotlightResult(CollectionSpotlight $collectionSpotlight, string $index){
@@ -1229,6 +1226,31 @@ class GroupedWorkDriver extends IndexRecordDriver
 		}else{
 			$result['formattedTitle']= $interface->fetch('CollectionSpotlight/formattedTitle.tpl');
 		}
+
+		return $result;
+	}
+
+	public function getSuggestionSpotlightResult(string $index){
+		global $interface;
+		$interface->assign('showRatings', false);
+
+		$interface->assign('key', $index);
+
+		$imageUrl = $this->getBookcoverUrl('medium');
+
+		$interface->assign('title', $this->getTitle());
+		$interface->assign('author', $this->getPrimaryAuthor());
+		$interface->assign('description', $this->getDescriptionFast());
+		$interface->assign('shortId', $this->getId());
+		$interface->assign('id', $this->getId());
+		$interface->assign('titleURL', $this->getRecordUrl());
+		$interface->assign('imageUrl', $imageUrl);
+
+		$result = [
+			'title' => $this->getTitle(),
+			'author' => $this->getPrimaryAuthor(),
+		];
+		$result['formattedTitle'] = $interface->fetch('CollectionSpotlight/formattedHorizontalCarouselTitle.tpl');
 
 		return $result;
 	}
@@ -1469,21 +1491,21 @@ class GroupedWorkDriver extends IndexRecordDriver
 			if (isset($_REQUEST['filter'])) {
 				foreach ($_REQUEST['filter'] as $filter) {
 					if (preg_match('/^format_category\w*:"?(.+?)"?$/', $filter, $matches)) {
-						$selectedFormatCategory[] = urldecode($matches[1]);
+						$selectedFormatCategory[] = $matches[1];
 					} elseif (preg_match('/^format\w*:"?(.+?)"?$/', $filter, $matches)) {
-						$selectedFormat[] = urldecode($matches[1]);
+						$selectedFormat[] = $matches[1];
 					} elseif (preg_match('/^availability_toggle\w*:"?(.+?)"?$/', $filter, $matches)) {
 						if ($matches[1] != '"') {
-							$selectedAvailability[] = urldecode($matches[1]);
+							$selectedAvailability[] = $matches[1];
 						}
 					} elseif (preg_match('/^availability_by_format[\w_]*:"?(.+?)"?$/', $filter, $matches)) {
-						$selectedAvailability[] = urldecode($matches[1]);
+						$selectedAvailability[] = $matches[1];
 					} elseif (preg_match('/^available_at[\w_]*:"?(.+?)"?$/', $filter, $matches)) {
-						$selectedDetailedAvailability = urldecode($matches[1]);
+						$selectedDetailedAvailability = $matches[1];
 					} elseif (preg_match('/^econtent_source[\w_]*:"?(.+?)"?$/', $filter, $matches)) {
-						$selectedEcontentSources[] = urldecode($matches[1]);
+						$selectedEcontentSources[] = $matches[1];
 					} elseif (preg_match('/^language:"?(.+?)"?$/', $filter, $matches)) {
-						$selectedLanguages[] = urldecode($matches[1]);
+						$selectedLanguages[] = $matches[1];
 					}
 				}
 			}
@@ -1562,6 +1584,8 @@ class GroupedWorkDriver extends IndexRecordDriver
 		$this->loadRelatedRecords();
 		if (isset($this->relatedRecords[$recordIdentifier])) {
 			return $this->relatedRecords[$recordIdentifier];
+		} elseif (isset($this->relatedRecords[strtolower($recordIdentifier)])) {
+			return $this->relatedRecords[strtolower($recordIdentifier)];
 		} else {
 			return null;
 		}
@@ -1606,7 +1630,6 @@ class GroupedWorkDriver extends IndexRecordDriver
 		}
 
 		// Displaying results as the default list
-		global $configArray;
 		global $interface;
 		global $timer;
 		global $memoryWatcher;
@@ -1641,8 +1664,14 @@ class GroupedWorkDriver extends IndexRecordDriver
 		}
 
 		$interface->assign('summUrl', $linkUrl);
-		$interface->assign('summTitle', $this->getShortTitle(true));
-		$interface->assign('summSubTitle', $this->getSubtitle(true));
+		$shortTitle = $this->getShortTitle();
+		if (empty($shortTitle)){
+			$interface->assign('summTitle', $this->getTitle());
+			$interface->assign('summSubTitle', '');
+		}else {
+			$interface->assign('summTitle', $this->getShortTitle());
+			$interface->assign('summSubTitle', $this->getSubtitle());
+		}
 		$interface->assign('summAuthor', rtrim($this->getPrimaryAuthor(true), ','));
 		$isbn = $this->getCleanISBN();
 		$interface->assign('summISBN', $isbn);
@@ -1655,11 +1684,6 @@ class GroupedWorkDriver extends IndexRecordDriver
 		$interface->assign('summFountasPinnell', $this->getFountasPinnellLevel());
 		$timer->logTime("Finished assignment of main data");
 		$memoryWatcher->logMemory("Finished assignment of main data");
-
-		// Obtain and assign snippet (highlighting) information:
-		$snippets = $this->getHighlightedSnippets();
-		$interface->assign('summSnippets', $snippets);
-		$timer->logTime("Loaded highlighted snippets");
 
 		//Check to see if there are lists the record is on
 		require_once ROOT_DIR . '/sys/UserLists/UserList.php';
@@ -1685,19 +1709,19 @@ class GroupedWorkDriver extends IndexRecordDriver
 				$summLanguage = $relatedRecord->language;
 			} else {
 				if ($summPublisher != $relatedRecord->publisher) {
-					$summPublisher = $alwaysShowMainDetails ? translate('Varies, see individual formats and editions') : null;
+					$summPublisher = $alwaysShowMainDetails ? translate(['text' => 'Varies, see individual formats and editions', 'isPublicFacing'=>true]) : null;
 				}
 				if ($summPubDate != $relatedRecord->publicationDate) {
-					$summPubDate = $alwaysShowMainDetails ? translate('Varies, see individual formats and editions') : null;
+					$summPubDate = $alwaysShowMainDetails ? translate(['text' => 'Varies, see individual formats and editions', 'isPublicFacing'=>true]) : null;
 				}
 				if ($summPhysicalDesc != $relatedRecord->physical) {
-					$summPhysicalDesc = $alwaysShowMainDetails ? translate('Varies, see individual formats and editions') : null;
+					$summPhysicalDesc = $alwaysShowMainDetails ? translate(['text' => 'Varies, see individual formats and editions', 'isPublicFacing'=>true]) : null;
 				}
 				if ($summEdition != $relatedRecord->edition) {
-					$summEdition = $alwaysShowMainDetails ? translate('Varies, see individual formats and editions') : null;
+					$summEdition = $alwaysShowMainDetails ? translate(['text' => 'Varies, see individual formats and editions', 'isPublicFacing'=>true]) : null;
 				}
 				if ($summLanguage != $relatedRecord->language) {
-					$summLanguage = $alwaysShowMainDetails ? translate('Varies, see individual formats and editions') : null;
+					$summLanguage = $alwaysShowMainDetails ? translate(['text' => 'Varies, see individual formats and editions', 'isPublicFacing'=>true]) : null;
 				}
 			}
 			$isFirst = false;
@@ -1709,7 +1733,7 @@ class GroupedWorkDriver extends IndexRecordDriver
 		$interface->assign('summLanguage', $summLanguage);
 		$timer->logTime("Finished assignment of data based on related records");
 
-		if ($configArray['System']['debugSolr']) {
+		if (IPAddress::showDebuggingInformation()) {
 			$interface->assign('summScore', $this->getScore());
 			$interface->assign('summExplain', $this->getExplain());
 		}
@@ -1778,6 +1802,7 @@ class GroupedWorkDriver extends IndexRecordDriver
 		//Open graph data (goes in meta tags)
 		global $interface;
 		$interface->assign('og_title', $this->getTitle());
+		$interface->assign('og_description', $this->getDescriptionFast());
 		$interface->assign('og_type', $this->getOGType());
 		$interface->assign('og_image', $this->getBookcoverUrl('medium', true));
 		$interface->assign('og_url', $this->getLinkUrl(true));
@@ -1881,6 +1906,30 @@ class GroupedWorkDriver extends IndexRecordDriver
 		$fields = $this->fields;
 		ksort($fields);
 		$interface->assign('details', $fields);
+
+		if (IPAddress::showDebuggingInformation()) {
+			require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
+			$groupedWork = new GroupedWork();
+			$groupedWork->permanent_id = $this->getUniqueID();
+			if (!empty($groupedWork->permanent_id) && $groupedWork->find(true)) {
+				global $aspen_db;
+				//Get the scopeId for the active scope
+				global $solrScope;
+				$scopeIdQuery = "SELECT id from scope where name = '$solrScope'";
+				$scopeId = -1;
+				$results = $aspen_db->query($scopeIdQuery, PDO::FETCH_ASSOC);
+				if ($scopeResults = $results->fetch()) {
+					$scopeId = $scopeResults['id'];
+				}
+
+				$interface->assign('groupedWorkInternalId',  $groupedWork->id);
+				$interface->assign('activeScopeId',  $scopeId);
+				$databaseIds = $this->getVariationRecordAndItemIdsFromDB($scopeId, $groupedWork->id);
+				$interface->assign('variationData', $this->getRawVariationsDataFromDB($databaseIds['uniqueVariationIds']));
+				$interface->assign('recordData', $this->getRawRecordDataFromDB($databaseIds['uniqueRecordIds']));
+				$interface->assign('itemData', $this->getRawItemDataFromDB($databaseIds['uniqueItemIds']));
+			}
+		}
 
 		$this->assignGroupedWorkStaffView();
 
@@ -2137,7 +2186,7 @@ class GroupedWorkDriver extends IndexRecordDriver
 		// Determine if we should censor bad words or hide the comment completely.
 		global $library;
 		$censorWords = !$library->getGroupedWorkDisplaySettings()->hideCommentsWithBadWords; // censor if not hiding
-		require_once(ROOT_DIR . '/Drivers/marmot_inc/BadWord.php');
+		require_once ROOT_DIR . '/sys/LocalEnrichment/BadWord.php';
 		$badWords = new BadWord();
 
 		// Get the Reviews
@@ -2191,10 +2240,10 @@ class GroupedWorkDriver extends IndexRecordDriver
 		'On Order' => 2,
 		'Coming Soon' => 3,
 		'In Processing' => 3.5,
+		'In Transit' => 3.75, //This used to show as 6.5 (above available online), moved down because we don't know if it's in transit to another library, or if it's in transit to a hold shelf.
 		'Checked Out' => 4,
 		'Library Use Only' => 5,
 		'Available Online' => 6,
-		'In Transit' => 6.5,
 		'On Shelf' => 7
 	);
 
@@ -2217,87 +2266,6 @@ class GroupedWorkDriver extends IndexRecordDriver
 			return $groupedStatus;
 		} else {
 			return $groupedStatus1;
-		}
-	}
-
-	static $archiveLinksForWorkIds = array();
-
-	/**
-	 * @param string[] $groupedWorkIds
-	 */
-	static function loadArchiveLinksForWorks($groupedWorkIds)
-	{
-		global $library;
-		global $timer;
-		if ($library->enableArchive && count($groupedWorkIds) > 0) {
-			require_once ROOT_DIR . '/sys/Islandora/IslandoraSamePikaCache.php';
-			$groupedWorkIdsToSearch = array();
-			foreach ($groupedWorkIds as $groupedWorkId) {
-				//Check for cached links
-				$sameCatalogRecordCache = new IslandoraSamePikaCache();
-				$sameCatalogRecordCache->groupedWorkId = $groupedWorkId;
-				if ($sameCatalogRecordCache->find(true)) {
-					GroupedWorkDriver::$archiveLinksForWorkIds[$groupedWorkId] = $sameCatalogRecordCache->archiveLink;
-				} else {
-					GroupedWorkDriver::$archiveLinksForWorkIds[$groupedWorkId] = false;
-					$sameCatalogRecordCache->archiveLink = '';
-					$sameCatalogRecordCache->insert();
-					$groupedWorkIdsToSearch[] = $groupedWorkId;
-				}
-			}
-
-			if (isset($_REQUEST['reload'])) {
-				$groupedWorkIdsToSearch = $groupedWorkIds;
-			}
-			/** @var SearchObject_IslandoraSearcher $searchObject */
-			$searchObject = SearchObjectFactory::initSearchObject('Islandora');
-			$searchObject->init();
-			if ($searchObject->pingServer(false)) {
-				$searchObject->disableLogging();
-				$searchObject->setDebugging(false, false);
-				$query = 'mods_extension_marmotLocal_externalLink_samePika_link_s:*' . implode('* OR mods_extension_marmotLocal_externalLink_samePika_link_s:*', $groupedWorkIdsToSearch) . '*';
-				$searchObject->setBasicQuery($query);
-				//Clear existing filters so search filters don't apply to this query
-				$searchObject->clearFilters();
-				$searchObject->clearFacets();
-				$searchObject->addFieldsToReturn(array('mods_extension_marmotLocal_externalLink_samePika_link_s'));
-
-				$searchObject->setLimit(count($groupedWorkIdsToSearch));
-
-				$response = $searchObject->processSearch(true, false, true);
-
-				if ($response && isset($response['response'])) {
-					//Get information about each project
-					if ($searchObject->getResultTotal() > 0) {
-						foreach ($response['response']['docs'] as $doc) {
-							$firstObjectDriver = RecordDriverFactory::initRecordDriver($doc);
-
-							$archiveLink = $firstObjectDriver->getRecordUrl();
-							foreach ($groupedWorkIdsToSearch as $groupedWorkId) {
-								if (strpos($doc['mods_extension_marmotLocal_externalLink_samePika_link_s'], $groupedWorkId) !== false) {
-									$sameCatalogRecordCache = new IslandoraSamePikaCache();
-									$sameCatalogRecordCache->groupedWorkId = $groupedWorkId;
-									if ($sameCatalogRecordCache->find(true) && $sameCatalogRecordCache->archiveLink != $archiveLink) {
-										$sameCatalogRecordCache->archiveLink = $archiveLink;
-										$sameCatalogRecordCache->pid = $firstObjectDriver->getUniqueID();
-										$numUpdates = $sameCatalogRecordCache->update();
-										if ($numUpdates == 0) {
-											global $logger;
-											$logger->log("Did not update same catalog record cache " . print_r($sameCatalogRecordCache->getLastError(), true), Logger::LOG_ERROR);
-										}
-									}
-									GroupedWorkDriver::$archiveLinksForWorkIds[$groupedWorkId] = $archiveLink;
-									break;
-								}
-							}
-						}
-					}
-				}
-			}
-			$timer->logTime("Loaded archive links for work " . count($groupedWorkIds) . " works");
-
-			$searchObject = null;
-			unset($searchObject);
 		}
 	}
 
@@ -2387,16 +2355,6 @@ class GroupedWorkDriver extends IndexRecordDriver
 				$user = UserAccount::getActiveUserObj();
 
 				$searchLocation = Location::getSearchLocation();
-				$activePTypes = array();
-				if ($user) {
-					$activePTypes = array_merge($activePTypes, $user->getRelatedPTypes());
-				}
-				if ($searchLocation) {
-					$activePTypes[$searchLocation->defaultPType] = $searchLocation->defaultPType;
-				}
-				if ($library) {
-					$activePTypes[$library->defaultPType] = $library->defaultPType;
-				}
 				list($scopingInfo, $validRecordIds, $validItemIds) = $this->loadScopingDetails($solrScope);
 				$timer->logTime("Loaded Scoping Details from the index");
 				$memoryWatcher->logMemory("Loaded scoping details from the index");
@@ -2420,7 +2378,7 @@ class GroupedWorkDriver extends IndexRecordDriver
 					if ($groupedWork->find(true)) {
 						//Generate record information based on the information we have in the index
 						foreach ($recordsFromIndex as $recordDetails) {
-							$relatedRecord = $this->setupRelatedRecordDetails($recordDetails, $groupedWork, $timer, $scopingInfo, $activePTypes, $searchLocation, $library, $forCovers);
+							$relatedRecord = $this->setupRelatedRecordDetails($recordDetails, $groupedWork, $timer, $scopingInfo, $searchLocation, $library, $forCovers);
 							if ($relatedRecord != null) {
 								$relatedRecords[$relatedRecord->id] = $relatedRecord;
 								$memoryWatcher->logMemory("Setup related record details for " . $relatedRecord->id);
@@ -2443,19 +2401,18 @@ class GroupedWorkDriver extends IndexRecordDriver
 				$groupedWork->permanent_id = $this->getUniqueID();
 				if (!empty($groupedWork->permanent_id) && $groupedWork->find(true)) {
 					global $aspen_db;
-					//Load manifestation and variation information
-					$variationQuery = "SELECT grouped_work_variation.id, indexed_language.language, indexed_eContentSource.eContentSource, indexed_format.format, indexed_format_category.formatCategory FROM grouped_work_variation 
-									  LEFT JOIN indexed_language on primaryLanguageId = indexed_language.id
-									  LEFT JOIN indexed_eContentSource on eContentSourceId = indexed_eContentSource.id
-									  LEFT JOIN indexed_format on formatId = indexed_format.id
-									  LEFT JOIN indexed_format_category on formatCategoryId = indexed_format_category.id
-									  where grouped_work_variation.id IN (SELECT DISTINCT grouped_work_record_items.groupedWorkVariationId
-									  FROM grouped_work_record_scope 
-									  JOIN grouped_work_record_items ON groupedWorkItemId = grouped_work_record_items.id
-									  where scopeId = (SELECT id from scope where name = '$solrScope') AND groupedWorkItemId IN (SELECT id from grouped_work_record_items WHERE groupedWorkRecordId IN (SELECT id from grouped_work_records where groupedWorkId = {$groupedWork->id})))";
-					$results = $aspen_db->query($variationQuery, PDO::FETCH_ASSOC);
-					$variations = $results->fetchAll();
-					$results->closeCursor();
+					//Get the scopeId for the active scope
+					$scopeIdQuery = "SELECT id from scope where name = '$solrScope'";
+					$scopeId = -1;
+					$results = $aspen_db->query($scopeIdQuery, PDO::FETCH_ASSOC);
+					if ($scopeResults = $results->fetch()) {
+						$scopeId = $scopeResults['id'];
+					}
+
+					//Get the ids of all the variations, records, and items attached to the work
+					$databaseIds = $this->getVariationRecordAndItemIdsFromDB($scopeId, $groupedWork->id);
+
+					$variations = $this->getRawVariationsDataFromDB($databaseIds['uniqueVariationIds']);
 					$this->_relatedManifestations = array();
 					/** @var  $allVariations Grouping_Variation[] */
 					$allVariations = [];
@@ -2468,23 +2425,9 @@ class GroupedWorkDriver extends IndexRecordDriver
 						$allVariations[$variationObj->databaseId] = $variationObj;
 					}
 
-					//Load record information
-					$recordQuery = "SELECT grouped_work_records.id, recordIdentifier, indexed_record_source.source, indexed_record_source.subSource, indexed_edition.edition, indexed_publisher.publisher, indexed_publicationDate.publicationDate, indexed_physicalDescription.physicalDescription, indexed_format.format, indexed_format_category.formatCategory, indexed_language.language FROM grouped_work_records 
-								  LEFT JOIN indexed_record_source ON sourceId = indexed_record_source.id
-								  LEFT JOIN indexed_edition ON editionId = indexed_edition.id
-								  LEFT JOIN indexed_publisher ON publisherId = indexed_publisher.id
-								  LEFT JOIN indexed_publicationDate ON publicationDateId = indexed_publicationDate.id
-								  LEFT JOIN indexed_physicalDescription ON physicalDescriptionId = indexed_physicalDescription.id
-								  LEFT JOIN indexed_format on formatId = indexed_format.id
-								  LEFT JOIN indexed_format_category on formatCategoryId = indexed_format_category.id
-								  LEFT JOIN indexed_language on languageId = indexed_language.id
-								  where grouped_work_records.id IN (SELECT DISTINCT grouped_work_record_items.groupedWorkRecordId
-								  FROM grouped_work_record_scope 
-								  JOIN grouped_work_record_items ON groupedWorkItemId = grouped_work_record_items.id
-								  where scopeId = (SELECT id from scope where name = '$solrScope') AND groupedWorkItemId IN (SELECT id from grouped_work_record_items WHERE groupedWorkRecordId IN (SELECT id from grouped_work_records where groupedWorkId = {$groupedWork->id})))";
-					$results = $aspen_db->query($recordQuery, PDO::FETCH_ASSOC);
-					$records = $results->fetchAll();
-					$results->closeCursor();
+					$records = $this->getRawRecordDataFromDB($databaseIds['uniqueRecordIds']);
+
+					/** @var Grouping_Record[] $allRecords */
 					$allRecords = [];
 					foreach ($records as $record){
 						/** GroupedWorkSubDriver $recordDriver */
@@ -2500,26 +2443,22 @@ class GroupedWorkDriver extends IndexRecordDriver
 						$allRecords[$relatedRecord->databaseId] = $relatedRecord;
 					}
 
-					//Load item/scope information
-					$scopeQuery = "SELECT grouped_work_record_scope.groupedWorkItemId, scopeId, available, holdable, inLibraryUseOnly, locallyOwned, libraryOwned, localUrl, groupedStatusTbl.status as groupedStatus, statusTbl.status as status, 
-								  grouped_work_record_items.groupedWorkRecordId, grouped_work_record_items.groupedWorkVariationId, grouped_work_record_items.itemId, indexed_callNumber.callNumber, indexed_shelfLocation.shelfLocation, numCopies, isOrderItem, dateAdded, 
-       							  indexed_locationCode.locationCode, indexed_subLocationCode.subLocationCode, lastCheckInDate
-								  FROM grouped_work_record_scope 
-								  LEFT JOIN indexed_status as groupedStatusTbl on groupedStatusId = groupedStatusTbl.id 
-								  LEFT JOIN indexed_status as statusTbl on statusId = statusTbl.id 
-								  LEFT JOIN grouped_work_record_items ON groupedWorkItemId = grouped_work_record_items.id
-								  LEFT JOIN indexed_callNumber ON callNumberId = indexed_callNumber.id
-								  LEFT JOIN indexed_shelfLocation ON shelfLocationId = indexed_shelfLocation.id
-								  LEFT JOIN indexed_locationCode on locationCodeId = indexed_locationCode.id
-								  LEFT JOIN indexed_subLocationCode on subLocationCodeId = indexed_subLocationCode.id
-								  where scopeId = (SELECT id from scope where name = '$solrScope') AND groupedWorkItemId IN (SELECT id from grouped_work_record_items WHERE groupedWorkRecordId IN (SELECT id from grouped_work_records where groupedWorkId = {$groupedWork->id}))";
-					$results = $aspen_db->query($scopeQuery, PDO::FETCH_ASSOC);
-					$scopedItems = $results->fetchAll();
+					$scopedItems = $this->getRawItemDataFromDB($databaseIds['uniqueItemIds']);
+
 					foreach ($scopedItems as $scopedItem) {
 						$relatedRecord = $allRecords[$scopedItem['groupedWorkRecordId']];
 						$relatedVariation = $allVariations[$scopedItem['groupedWorkVariationId']];
 						$scopedItem['isEcontent'] = $relatedVariation->isEcontent;
 						$scopedItem['eContentSource'] = $relatedVariation->econtentSource;
+						$scopedItem['scopeId'] = $scopeId;
+						//Look for urls for the item
+						$itemUrlQuery = "SELECT url from grouped_work_record_item_url where groupedWorkItemId = {$scopedItem['groupedWorkItemId']} AND (scopeId = -1 OR scopeId = $scopeId) ORDER BY scopeId desc limit 1";
+						$results = $aspen_db->query($itemUrlQuery, PDO::FETCH_ASSOC);
+						$itemUrls = $results->fetchAll();
+						if (count($itemUrls) > 0){
+							$scopedItem['localUrl'] = $itemUrls[0]['url'];
+						}
+						$results->closeCursor();
 						$itemData = new Grouping_Item($scopedItem, null, $searchLocation, $library);
 						$relatedRecord->addItem($itemData);
 					}
@@ -2527,10 +2466,38 @@ class GroupedWorkDriver extends IndexRecordDriver
 					//Finally add records to the correct manifestation (so status updates properly)
 					foreach ($allRecords as $record) {
 						//Add to the correct manifestation
-						$this->_relatedManifestations[$record->format]->addRecord($record);
+						if (isset( $this->_relatedManifestations[$record->format])) {
+							$this->_relatedManifestations[$record->format]->addRecord($record);
+						}else{
+							//This should not happen
+							$manifestation = new Grouping_Manifestation($record);
+							$this->_relatedManifestations[$record->format] = $manifestation;
+							global $logger;
+							$logger->log("Manifestation not found for record {$record->id} {$record->format}", Logger::LOG_ERROR);
+						}
 					}
 
-					$results->closeCursor();
+					//Sort Records within each manifestation and variation
+					foreach ($this->_relatedManifestations as $manifestationKey => $manifestation){
+						$relatedRecordsForManifestation = $manifestation->getRelatedRecords();
+						if (count($relatedRecordsForManifestation) > 1) {
+							uasort($relatedRecordsForManifestation, array($this, "compareRelatedRecords"));
+							$manifestation->setSortedRelatedRecords($relatedRecordsForManifestation);
+							foreach ($manifestation->getVariations() as $variationKey => $variation) {
+								$relatedRecordsForVariation = $variation->getRelatedRecords();
+								if (count($relatedRecordsForVariation) > 1){
+									uasort($relatedRecordsForVariation, array($this, "compareRelatedRecords"));
+									$variation->setSortedRelatedRecords($relatedRecordsForVariation);
+								}elseif (count($relatedRecordsForVariation) == 0){
+									$manifestation->removeVariation($variationKey);
+								}
+							}
+						}elseif (count($relatedRecordsForManifestation) == 0){
+							unset($this->_relatedManifestations[$manifestationKey]);
+						}
+					}
+
+					uasort($this->_relatedManifestations, array($this, "compareRelatedManifestations"));
 				}
 			}
 
@@ -2571,6 +2538,99 @@ class GroupedWorkDriver extends IndexRecordDriver
 		return array($scopingInfo, $validRecordIds, $validItemIds);
 	}
 
+	private function getVariationRecordAndItemIdsFromDB($scopeId, $groupedWorkId){
+		global $aspen_db;
+		$getIdsQuery = "select groupedWorkId, groupedWorkVariationId, groupedWorkRecordId, grouped_work_record_items.id as groupedRecordItemId FROM 
+										grouped_work_record_items inner join grouped_work_records on groupedWorkRecordId = grouped_work_records.id where 
+										(locationOwnedScopes like '%~$scopeId~%' OR libraryOwnedScopes like '%~$scopeId~%' OR recordIncludedScopes LIKE '%~$scopeId~%') and groupedWorkId = {$groupedWorkId}";
+		$results = $aspen_db->query($getIdsQuery, PDO::FETCH_ASSOC);
+		$allIds = $results->fetchAll();
+		$results->closeCursor();
+		$uniqueVariationIds = [];
+		$uniqueRecordIds = [];
+		$uniqueItemIds = [];
+		foreach ($allIds as $id) {
+			$uniqueVariationIds[$id['groupedWorkVariationId']] = $id['groupedWorkVariationId'];
+			$uniqueRecordIds[$id['groupedWorkRecordId']] = $id['groupedWorkRecordId'];
+			$uniqueItemIds[$id['groupedRecordItemId']] = $id['groupedRecordItemId'];
+		}
+		return [
+			'uniqueVariationIds' => $uniqueVariationIds,
+			'uniqueRecordIds' => $uniqueRecordIds,
+			'uniqueItemIds' => $uniqueItemIds
+		];
+	}
+	private function getRawVariationsDataFromDB($uniqueVariationIds){
+		global $aspen_db;
+
+		//Load manifestation and variation information
+		if (count($uniqueVariationIds) == 0) {
+			$variations = [];
+		}else{
+			$uniqueVariationsIdsString = implode(',', $uniqueVariationIds);
+			$variationQuery = "SELECT grouped_work_variation.id, indexed_language.language, indexed_eContentSource.eContentSource, indexed_format.format, indexed_format_category.formatCategory FROM grouped_work_variation 
+									  LEFT JOIN indexed_language on primaryLanguageId = indexed_language.id
+									  LEFT JOIN indexed_eContentSource on eContentSourceId = indexed_eContentSource.id
+									  LEFT JOIN indexed_format on formatId = indexed_format.id
+									  LEFT JOIN indexed_format_category on formatCategoryId = indexed_format_category.id
+									  where grouped_work_variation.id IN ($uniqueVariationsIdsString)";
+			$variationResults = $aspen_db->query($variationQuery, PDO::FETCH_ASSOC);
+			$variations = $variationResults->fetchAll();
+			$variationResults->closeCursor();
+		}
+		return $variations;
+	}
+
+	private function getRawRecordDataFromDB($uniqueRecordIds){
+		global $aspen_db;
+
+		//Load record information
+		if (count($uniqueRecordIds) == 0){
+			$records = [];
+		}else {
+			$uniqueRecordIdsString = implode(',', $uniqueRecordIds);
+			$recordQuery = "SELECT grouped_work_records.id, recordIdentifier, indexed_record_source.source, indexed_record_source.subSource, indexed_edition.edition, indexed_publisher.publisher, indexed_publicationDate.publicationDate, indexed_physicalDescription.physicalDescription, indexed_format.format, indexed_format_category.formatCategory, indexed_language.language FROM grouped_work_records 
+								  LEFT JOIN indexed_record_source ON sourceId = indexed_record_source.id
+								  LEFT JOIN indexed_edition ON editionId = indexed_edition.id
+								  LEFT JOIN indexed_publisher ON publisherId = indexed_publisher.id
+								  LEFT JOIN indexed_publicationDate ON publicationDateId = indexed_publicationDate.id
+								  LEFT JOIN indexed_physicalDescription ON physicalDescriptionId = indexed_physicalDescription.id
+								  LEFT JOIN indexed_format on formatId = indexed_format.id
+								  LEFT JOIN indexed_format_category on formatCategoryId = indexed_format_category.id
+								  LEFT JOIN indexed_language on languageId = indexed_language.id
+								  where grouped_work_records.id IN ($uniqueRecordIdsString)";
+			$results = $aspen_db->query($recordQuery, PDO::FETCH_ASSOC);
+			$records = $results->fetchAll();
+			$results->closeCursor();
+		}
+		return $records;
+	}
+
+	private function getRawItemDataFromDB($uniqueItemIds){
+		global $aspen_db;
+		//Load item/scope information
+		if (count($uniqueItemIds) == 0){
+			$scopedItems = [];
+		}else {
+			$uniqueItemIdsString = implode(',', $uniqueItemIds);
+			$scopeQuery = "SELECT grouped_work_record_items.id as groupedWorkItemId, available, holdable, inLibraryUseOnly, locationOwnedScopes, libraryOwnedScopes, groupedStatusTbl.status as groupedStatus, statusTbl.status as status, 
+								  grouped_work_record_items.groupedWorkRecordId, grouped_work_record_items.groupedWorkVariationId, grouped_work_record_items.itemId, indexed_callNumber.callNumber, indexed_shelfLocation.shelfLocation, numCopies, isOrderItem, dateAdded, 
+       							  indexed_locationCode.locationCode, indexed_subLocationCode.subLocationCode, lastCheckInDate
+								  FROM grouped_work_record_items
+								  LEFT JOIN indexed_status as groupedStatusTbl on groupedStatusId = groupedStatusTbl.id 
+								  LEFT JOIN indexed_status as statusTbl on statusId = statusTbl.id 
+								  LEFT JOIN indexed_callNumber ON callNumberId = indexed_callNumber.id
+								  LEFT JOIN indexed_shelfLocation ON shelfLocationId = indexed_shelfLocation.id
+								  LEFT JOIN indexed_locationCode on locationCodeId = indexed_locationCode.id
+								  LEFT JOIN indexed_subLocationCode on subLocationCodeId = indexed_subLocationCode.id
+								  where grouped_work_record_items.id IN ($uniqueItemIdsString)";
+			$results = $aspen_db->query($scopeQuery, PDO::FETCH_ASSOC);
+			$scopedItems = $results->fetchAll();
+			$results->closeCursor();
+		}
+		return $scopedItems;
+	}
+
 	private static function normalizeEdition($edition)
 	{
 		$edition = strtolower($edition);
@@ -2598,13 +2658,12 @@ class GroupedWorkDriver extends IndexRecordDriver
 	 * @param GroupedWork $groupedWork
 	 * @param Timer $timer
 	 * @param $scopingInfo
-	 * @param $activePTypes
 	 * @param Location $searchLocation
 	 * @param Library $library
 	 * @param bool $forCovers Optimization if we are only loading info for the covers
 	 * @return Grouping_Record
 	 */
-	protected function setupRelatedRecordDetails($recordDetails, $groupedWork, $timer, $scopingInfo, $activePTypes, $searchLocation, $library, $forCovers = false)
+	protected function setupRelatedRecordDetails($recordDetails, $groupedWork, $timer, $scopingInfo, $searchLocation, $library, $forCovers = false)
 	{
 		global $memoryWatcher;
 		//Check to see if we have any volume data for the record
@@ -2691,11 +2750,14 @@ class GroupedWorkDriver extends IndexRecordDriver
 				if ($libraryCallNumber == null) {
 					$libraryCallNumber = $item->callNumber;
 				}
-				if ($item->available && !$item->isEContent) {
+				//We don't want to set this if we are in a location scope and it isn't available at that branch
+				//if it was, location owned would be set
+				if ($item->available && !$item->isEContent && empty($physicalLocation)) {
 					$relatedRecord->getStatusInformation()->setAvailableLocally(true);
 				}
 				$relatedRecord->addLocalCopies($item->numCopies);
-				if ($searchLocation == null || $item->isEContent) {
+				//If we are inside a branch, we only set that it has a local item if locationOwned is true
+				if (empty($physicalLocation) && ($searchLocation == null || $item->isEContent)) {
 					$relatedRecord->setHasLocalItem(true);
 				}
 				$key = '5 ' . $key;
@@ -2731,7 +2793,6 @@ class GroupedWorkDriver extends IndexRecordDriver
 				'statusFull' => $item->status,
 				'available' => $item->available,
 				'holdable' => $item->holdable,
-				'bookable' => $item->bookable,
 				'sectionId' => $sectionId,
 				'section' => $section,
 				'relatedUrls' => $item->getRelatedUrls(),
@@ -2771,7 +2832,7 @@ class GroupedWorkDriver extends IndexRecordDriver
 		$memoryWatcher->logMemory("Setup record items");
 
 		if (!$forCovers) {
-			$relatedRecord->setActions($recordDriver != null ? $recordDriver->getRecordActions($relatedRecord, $relatedRecord->getStatusInformation()->isAvailableLocally() || $relatedRecord->getStatusInformation()->isAvailableOnline(), $relatedRecord->isHoldable(), $relatedRecord->isBookable(), $volumeData) : array());
+			$relatedRecord->setActions($recordDriver != null ? $recordDriver->getRecordActions($relatedRecord, $relatedRecord->getStatusInformation()->isAvailableLocally() || $relatedRecord->getStatusInformation()->isAvailableOnline(), $relatedRecord->isHoldable(), $volumeData) : array());
 			$timer->logTime("Loaded actions");
 			$memoryWatcher->logMemory("Loaded actions");
 		}

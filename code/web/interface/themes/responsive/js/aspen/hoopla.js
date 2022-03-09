@@ -18,7 +18,7 @@ AspenDiscovery.Hoopla = (function(){
 						AspenDiscovery.showMessageWithButtons(data.title, data.message, data.buttons);
 						AspenDiscovery.Account.loadMenuData();
 					} else {
-						AspenDiscovery.showMessage("Checking Out Title", data.message);
+						AspenDiscovery.showMessage(data.title, data.message);
 					}
 				}).fail(AspenDiscovery.ajaxFail)
 			}else{

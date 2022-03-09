@@ -8,6 +8,7 @@ class Search_Home extends Action {
 	{
 		global $interface;
 		global $library;
+		/** @var Location $locationSingleton*/
 		global $locationSingleton;
 		global $timer;
 
@@ -16,6 +17,20 @@ class Search_Home extends Action {
 		$timer->logTime('Include search engine');
 
 		$interface->assign('showBreadcrumbs', 0);
+
+		$interface->assign('isLoggedIn', false);
+		if (UserAccount::isLoggedIn()) {
+			$user = UserAccount::getActiveUserObj();
+			$loggedInUser = $user->id;
+			$interface->assign('isLoggedIn', true);
+			$interface->assign('loggedInUser', $loggedInUser);
+			require_once ROOT_DIR . '/sys/Browse/BrowseCategoryDismissal.php';
+			$browseCategoryDismissals = new BrowseCategoryDismissal();
+			$browseCategoryDismissals->userId = $loggedInUser;
+			$browseCategoryDismissals->find();
+			$numHiddenCategory = $browseCategoryDismissals->count();
+			$interface->assign('numHiddenCategory', $numHiddenCategory);
+		}
 
 		// Load browse categories
 		require_once ROOT_DIR . '/sys/Browse/BrowseCategory.php';
@@ -29,9 +44,16 @@ class Search_Home extends Action {
 			$browseCategories = $this->getBrowseCategories($library->getBrowseCategoryGroup()->getBrowseCategories());
 		}
 
+		$interface->assign('showBrowseContent', true);
+
 		// Get All Browse Categories if Location & Library had none set
 		if (empty($browseCategories)){
 			$browseCategories = $this->getBrowseCategories();
+			if(UserAccount::isLoggedIn()) {
+				if($numHiddenCategory != 0) {
+					$interface->assign('showBrowseContent', false);
+				}
+			}
 		}
 
 		$interface->assign('browseCategories', $browseCategories);
@@ -69,11 +91,6 @@ class Search_Home extends Action {
 				$browseCategory->find(true);
 				if($browseCategory->isValidForDisplay()){
 					// Only Show the Recommended for You browse category if the user is logged in and has rated titles
-					if (($browseCategory->textId == 'system_recommended_for_you' && (!$user || !$user->hasRatings()))) {
-						unset($localBrowseCategories[$index]);
-						continue;
-					}
-
 					if ($browseCategory->isValidForDisplay()) {
 						$browseCategories[] = clone($browseCategory);
 					}
@@ -132,11 +149,17 @@ class Search_Home extends Action {
 			/** @var SubBrowseCategories $subCategory */
 			foreach ($selectedBrowseCategory->subBrowseCategories as $subCategory) {
 				// Get Needed Info about sub-category
-				$temp = new BrowseCategory();
-				$temp->get($subCategory->subCategoryId);
-				if ($temp) {
-					if ($temp->textId == $_REQUEST['subCategory']) $validSubCategory = true;
-					$subCategories[] = array('label' => $temp->label, 'textId' => $temp->textId);
+				if ($subCategory instanceof UserList){
+					$subCategories[] = array('label' => $subCategory->title, 'textId' => $subCategory->id);
+				}elseif ($subCategory instanceof SearchEntry){
+					$subCategories[] = array('label' => $subCategory->title, 'textId' => $subCategory->id);
+				}else{
+					$temp = new BrowseCategory();
+					$temp->get($subCategory->subCategoryId);
+					if ($temp) {
+						if ($temp->textId == $_REQUEST['subCategory']) $validSubCategory = true;
+						$subCategories[] = array('label' => $temp->label, 'textId' => $temp->textId);
+					}
 				}
 			}
 			if ($validSubCategory) {

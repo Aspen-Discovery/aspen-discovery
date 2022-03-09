@@ -46,9 +46,9 @@ class MyAccount_AJAX extends JSON_Action
 		// Display Page
 		$interface->assign('listId', strip_tags($_REQUEST['listId']));
 		return array(
-			'title' => 'Add as Browse Category to Home Page',
+			'title' => translate(['text'=>'Add as Browse Category to Home Page', 'isAdminFacing'=>'true']),
 			'modalBody' => $interface->fetch('Browse/newBrowseCategoryForm.tpl'),
-			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#createBrowseCategory\").submit();'>Create Category</button>"
+			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#createBrowseCategory\").submit();'>" . translate(['text'=>'Create Category', 'isAdminFacing'=>'true']) . "</button>"
 		);
 	}
 
@@ -58,7 +58,7 @@ class MyAccount_AJAX extends JSON_Action
 		if (!UserAccount::isLoggedIn()) {
 			$result = array(
 				'result' => false,
-				'message' => 'Sorry, you must be logged in to manage accounts.'
+				'message' => translate(['text'=>'Sorry, you must be logged in to manage accounts.', 'isPublicFacing'=>true])
 			);
 		} else {
 			$username = $_REQUEST['username'];
@@ -70,7 +70,7 @@ class MyAccount_AJAX extends JSON_Action
 			if (!UserAccount::isLoggedIn()) {
 				$result = array(
 					'result' => false,
-					'message' => 'You must be logged in to link accounts, please login again'
+					'message' => translate(['text'=>'You must be logged in to link accounts, please login again', 'isPublicFacing'=>true])
 				);
 			} elseif ($accountToLink) {
 				if ($accountToLink->id != $user->id) {
@@ -78,24 +78,24 @@ class MyAccount_AJAX extends JSON_Action
 					if ($addResult === true) {
 						$result = array(
 							'result' => true,
-							'message' => 'Successfully linked accounts.'
+							'message' => translate(['text'=>'Successfully linked accounts.', 'isPublicFacing'=>true])
 						);
 					} else { // insert failure or user is blocked from linking account or account & account to link are the same account
 						$result = array(
 							'result' => false,
-							'message' => 'Sorry, we could not link to that account.  Accounts cannot be linked if all libraries do not allow account linking.  Please contact your local library if you have questions.'
+							'message' => translate(['text'=>'Sorry, we could not link to that account.  Accounts cannot be linked if all libraries do not allow account linking.  Please contact your local library if you have questions.', 'isPublicFacing'=>true])
 						);
 					}
 				} else {
 					$result = array(
 						'result' => false,
-						'message' => 'You cannot link to yourself.'
+						'message' => translate(['text'=>'You cannot link to yourself.', 'isPublicFacing'=>true])
 					);
 				}
 			} else {
 				$result = array(
 					'result' => false,
-					'message' => 'Sorry, we could not find a user with that information to link to.'
+					'message' => translate(['text'=>'Sorry, we could not find a user with that information to link to.', 'isPublicFacing'=>true])
 				);
 			}
 		}
@@ -109,7 +109,7 @@ class MyAccount_AJAX extends JSON_Action
 		if (!UserAccount::isLoggedIn()) {
 			$result = array(
 				'result' => false,
-				'message' => 'Sorry, you must be logged in to manage accounts.'
+				'message' => translate(['text'=>'Sorry, you must be logged in to manage accounts.', 'isPublicFacing'=>true])
 			);
 		} else {
 			$accountToRemove = $_REQUEST['idToRemove'];
@@ -117,12 +117,12 @@ class MyAccount_AJAX extends JSON_Action
 			if ($user->removeLinkedUser($accountToRemove)) {
 				$result = array(
 					'result' => true,
-					'message' => 'Successfully removed linked account.'
+					'message' => translate(['text'=>'Successfully removed linked account.', 'isPublicFacing'=>true])
 				);
 			} else {
 				$result = array(
 					'result' => false,
-					'message' => 'Sorry, we could remove that account.'
+					'message' => translate(['text'=>'Sorry, we could remove that account.', 'isPublicFacing'=>true])
 				);
 			}
 		}
@@ -140,9 +140,9 @@ class MyAccount_AJAX extends JSON_Action
 		$interface->assign('passwordLabel', str_replace('Your', '', $library->loginFormPasswordLabel ? $library->loginFormPasswordLabel : 'Library Card Number'));
 		// Display Page
 		return array(
-			'title' => 'Account to Manage',
+			'title' => translate(['text'=>'Account to Manage','isPublicFacing'=>true]),
 			'modalBody' => $interface->fetch('MyAccount/addAccountLink.tpl'),
-			'modalButtons' => "<span class='tool btn btn-primary' onclick='AspenDiscovery.Account.processAddLinkedUser(); return false;'>Add Account</span>"
+			'modalButtons' => "<span class='tool btn btn-primary' onclick='AspenDiscovery.Account.processAddLinkedUser(); return false;'>" . translate(['text'=>"Add Account",'isPublicFacing'=>true]) . "</span>"
 		);
 	}
 
@@ -152,42 +152,66 @@ class MyAccount_AJAX extends JSON_Action
 		global $interface;
 		// Display Page
 		$interface->assign('listId', strip_tags($_REQUEST['listId']));
-		$interface->assign('popupTitle', 'Add titles to list');
 		return array(
-			'title' => 'Add titles to list',
+			'title' => translate(['text'=>'Add titles to list','isPublicFacing'=>true]),
 			'modalBody' => $interface->fetch('MyAccount/bulkAddToListPopup.tpl'),
-			'modalButtons' => "<span class='tool btn btn-primary' onclick='AspenDiscovery.Lists.processBulkAddForm(); return false;'>Add To List</span>"
+			'modalButtons' => "<span class='tool btn btn-primary' onclick='AspenDiscovery.Lists.processBulkAddForm(); return false;'>" . translate(['text'=>"Add To List",'isPublicFacing'=>true]) . "</span>"
 		);
 	}
 
 	/** @noinspection PhpUnused */
 	function saveSearch()
 	{
+		$result = [
+			'success' => false,
+			'message' => 'Unknown error saving search'
+		];
 		$searchId = $_REQUEST['searchId'];
+		$title = $_REQUEST['title'];
 		$search = new SearchEntry();
 		$search->id = $searchId;
-		$saveOk = false;
 		if ($search->find(true)) {
 			// Found, make sure this is a search from this user
 			if ($search->session_id == session_id() || $search->user_id == UserAccount::getActiveUserId()) {
 				if ($search->saved != 1) {
 					$search->user_id = UserAccount::getActiveUserId();
 					$search->saved = 1;
-					$saveOk = ($search->update() !== FALSE);
-					$message = $saveOk ? 'Your search was saved successfully.  You can view the saved search by clicking on <a href="/Search/History?require_login">Search History</a> within ' . translate('My Account') . '.' : "Sorry, we could not save that search for you.  It may have expired.";
+					$search->title = $title;
+					if($search->update() !== FALSE) {
+						$result['success'] = true;
+						$result['message'] = translate(['text' => "Your search was saved successfully.  You can view the saved search by clicking on Search History within the Account Menu.", 'isPublicFacing'=>true]);
+						$result['modalButtons'] = "<a class='tool btn btn-primary' id='viewSavedSearches' href='/Search/History?require_login'>" . translate(['text' => "View Saved Searches", 'isPublicFacing'=>true]). "</a>";
+					} else {
+						$result['message'] = translate(['text' => "Sorry, we could not save that search for you.  It may have expired.", 'isPublicFacing'=>true]);
+					}
 				} else {
-					$saveOk = true;
-					$message = "That search was already saved.";
+					$result['success'] = true;
+					$result['message'] = translate(['text' => "That search was already saved.", 'isPublicFacing'=>true]);
+					$result['modalButtons'] = "<a class='tool btn btn-primary' id='viewSavedSearches' href='/Search/History?require_login'>" . translate(['text' => "View Saved Searches", 'isPublicFacing'=>true]). "</a>";
 				}
 			} else {
-				$message = "Sorry, it looks like that search does not belong to you.";
+				$result['message'] = translate(['text' => "Sorry, it looks like that search does not belong to you.", 'isPublicFacing'=>true]);
 			}
 		} else {
-			$message = "Sorry, it looks like that search has expired.";
+			$result['message'] = translate(['text' => "Sorry, it looks like that search has expired.", 'isPublicFacing'=>true]);
 		}
+		return $result;
+	}
+
+	/** @noinspection PhpUnused */
+	function getSaveSearchForm() {
+		global $interface;
+
+		$searchId = $_REQUEST['searchId'];
+		$interface->assign('searchId', $searchId);
+
+		require_once ROOT_DIR . '/services/Search/History.php';
+		History::getSearchForSaveForm($searchId);
+
 		return array(
-			'result' => $saveOk,
-			'message' => $message,
+			'title' => translate(['text'=>'Save Search','isPublicFacing'=>true]),
+			'modalBody' => $interface->fetch('MyAccount/saveSearch.tpl'),
+			'modalButtons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.Account.saveSearch(); return false;'>" . translate(['text'=>'Save','isPublicFacing'=>true]) . "</button>",
 		);
 	}
 
@@ -197,10 +221,10 @@ class MyAccount_AJAX extends JSON_Action
 		$patronId = $_REQUEST['patronId'];
 		$recordId = $_REQUEST['recordId'];
 		$cancelId = $_REQUEST['cancelId'];
-		$cancelButtonLabel = translate('Confirm Cancel Hold');
+		$cancelButtonLabel = translate(['text'=>'Confirm Cancel Hold','isPublicFacing'=>true]);
 		return array(
-			'title' => translate('Cancel Hold'),
-			'body' => translate("Are you sure you want to cancel this hold?"),
+			'title' => translate(['text'=>'Cancel Hold','isPublicFacing'=>true]),
+			'body' => translate(['text'=>"Are you sure you want to cancel this hold?",'isPublicFacing'=>true]),
 			'buttons' => "<span class='tool btn btn-primary' onclick='AspenDiscovery.Account.cancelHold(\"$patronId\", \"$recordId\", \"$cancelId\")'>$cancelButtonLabel</span>",
 		);
 	}
@@ -209,11 +233,11 @@ class MyAccount_AJAX extends JSON_Action
 	{
 		$result = array(
 			'success' => false,
-			'message' => 'Error cancelling hold.'
+			'message' => translate(['text'=>'Error cancelling hold.','isPublicFacing'=>true])
 		);
 
 		if (!UserAccount::isLoggedIn()) {
-			$result['message'] = 'You must be logged in to cancel a hold.  Please close this dialog and login again.';
+			$result['message'] = translate(['text'=>'You must be logged in to cancel a hold.  Please close this dialog and login again.','isPublicFacing'=>true]);;
 		} else {
 			//Determine which user the hold is on so we can cancel it.
 			$patronId = $_REQUEST['patronId'];
@@ -221,11 +245,11 @@ class MyAccount_AJAX extends JSON_Action
 			$patronOwningHold = $user->getUserReferredTo($patronId);
 
 			if ($patronOwningHold == false) {
-				$result['message'] = 'Sorry, you do not have access to cancel holds for the supplied user.';
+				$result['message'] = translate(['text'=>'Sorry, you do not have access to cancel holds for the supplied user.','isPublicFacing'=>true]);;
 			} else {
 				//MDN 9/20/2015 The recordId can be empty for Prospector holds
 				if (empty($_REQUEST['cancelId']) && empty($_REQUEST['recordId'])) {
-					$result['message'] = 'Information about the hold to be cancelled was not provided.';
+					$result['message'] = translate(['text'=>'Information about the hold to be cancelled was not provided.','isPublicFacing'=>true]);;
 				} else {
 					$cancelId = $_REQUEST['cancelId'];
 					$recordId = $_REQUEST['recordId'];
@@ -244,7 +268,7 @@ class MyAccount_AJAX extends JSON_Action
 		$interface->assign('cancelResults', $result);
 
 		return array(
-			'title' => 'Cancel Hold',
+			'title' => translate(['text'=>'Cancel Hold','isPublicFacing'=>true]),
 			'body' => $interface->fetch('MyAccount/cancelHold.tpl'),
 			'success' => $result['success']
 		);
@@ -301,12 +325,12 @@ class MyAccount_AJAX extends JSON_Action
 							if($tmpResult['success']){$success++;}
 						}
 
-						$message = '<div class="alert alert-success">' . $success . ' of ' . $total . ' holds were canceled.</div>';
+						$message = '<div class="alert alert-success">' . translate(['text' => '%1% of %2% holds were cancelled', 1 => $success, 2 => $total, 'isPublicFacing' => true, 'inAttribute'=>true]) . '</div>';
 						$tmpResult['message'] = $message;
 					}
 				}
 			} else {
-				$tmpResult['message'] = 'No holds were selected to canceled';
+				$tmpResult['message'] = translate(['text' => 'No holds were selected to canceled', 'isPublicFacing' => true, 'inAttribute'=>true]);
 			}
 		}
 
@@ -351,74 +375,15 @@ class MyAccount_AJAX extends JSON_Action
 					if($tmpResult['success']){$success++;}
 				}
 
-				$message = '<div class="alert alert-success">' . $success . ' of ' . $total . ' holds were canceled.</div>';
+				$message = '<div class="alert alert-success">' .translate(['text' => '%1% of %2% holds were canceled', 1 => $success, 2 => $total, 'isPublicFacing' => true, 'inAttribute'=>true]) . '</div>';
 				$tmpResult['message'] = $message;
 
 			}
 		} else {
-			$tmpResult['message'] = 'You must be logged in to cancel holds';
+			$tmpResult['message'] = translate(['text' => 'You must be logged in to cancel holds', 'isPublicFacing' => true, 'inAttribute'=>true]);
 		}
 
 		return $tmpResult;
-	}
-
-	/** @noinspection PhpUnused */
-	function cancelBooking()
-	{
-		$totalCancelled = null;
-		$numCancelled = null;
-		try {
-			$user = UserAccount::getLoggedInUser();
-
-			if (!empty($_REQUEST['cancelAll']) && $_REQUEST['cancelAll'] == 1) {
-				$result = $user->cancelAllBookedMaterial();
-			} else {
-				$cancelIds = !empty($_REQUEST['cancelId']) ? $_REQUEST['cancelId'] : array();
-
-				$totalCancelled = 0;
-				$numCancelled = 0;
-				$result = array(
-					'success' => true,
-					'message' => 'Your scheduled items were successfully canceled.'
-				);
-				foreach ($cancelIds as $userId => $cancelId) {
-					$patron = $user->getUserReferredTo($userId);
-					$userResult = $patron->cancelBookedMaterial($cancelId);
-					$numCancelled += $userResult['success'] ? count($cancelId) : count($cancelId) - count($userResult['message']);
-					$totalCancelled += count($cancelId);
-					// either all were canceled or total canceled minus the number of errors (1 error per failure)
-
-					if (!$userResult['success']) {
-						if ($result['success']) { // the first failure
-							$result = $userResult;
-						} else { // additional failures
-							$result['message'] = array_merge($result['message'], $userResult['message']);
-						}
-					}
-				}
-			}
-		} catch (PDOException $e) {
-			global $logger;
-			$logger->log('Booking : ' . $e->getMessage(), Logger::LOG_ERROR);
-
-			$result = array(
-				'success' => false,
-				'message' => 'We could not connect to the circulation system, please try again later.'
-			);
-		}
-		$failed = (!$result['success'] && is_array($result['message']) && !empty($result['message'])) ? array_keys($result['message']) : null; //returns failed id for javascript function
-
-		global $interface;
-		$interface->assign('cancelResults', $result);
-		$interface->assign('numCancelled', $numCancelled);
-		$interface->assign('totalCancelled', $totalCancelled);
-
-		return array(
-			'title' => 'Cancel Booking',
-			'modalBody' => $interface->fetch('MyAccount/cancelBooking.tpl'),
-			'success' => $result['success'],
-			'failed' => $failed
-		);
 	}
 
 	function freezeHold()
@@ -426,33 +391,29 @@ class MyAccount_AJAX extends JSON_Action
 		$user = UserAccount::getLoggedInUser();
 		$result = array(
 			'success' => false,
-			'message' => 'Error ' . translate('freezing') . ' hold.'
+			'message' => translate(['text' => 'Error freezing hold.', 'isPublicFacing'=>true])
 		);
 		if (!$user) {
-			$result['message'] = 'You must be logged in to ' . translate('freeze') . ' a hold.  Please close this dialog and login again.';
+			$result['message'] = translate(['text' => 'You must be logged in to freeze a hold.  Please close this dialog and login again.', 'isPublicFacing'=>true]);
 		} elseif (!empty($_REQUEST['patronId'])) {
 			$patronId = $_REQUEST['patronId'];
 			$patronOwningHold = $user->getUserReferredTo($patronId);
 
 			if ($patronOwningHold == false) {
-				$result['message'] = 'Sorry, you do not have access to ' . translate('freeze') . ' holds for the supplied user.';
+				$result['message'] = translate(['text' => 'Sorry, you do not have access to freeze holds for the supplied user.', 'isPublicFacing'=>true]);
 			} else {
 				if (empty($_REQUEST['recordId']) || empty($_REQUEST['holdId'])) {
 					// We aren't getting all the expected data, so make a log entry & tell user.
 					global $logger;
 					$logger->log('Freeze Hold, no record or hold Id was passed in AJAX call.', Logger::LOG_ERROR);
-					$result['message'] = 'Information about the hold to be ' . translate('frozen') . ' was not provided.';
+					$result['message'] = translate(['text' => 'Information about the hold to be frozen was not provided.', 'isPublicFacing'=>true]);
 				} else {
 					$recordId = $_REQUEST['recordId'];
 					$holdId = $_REQUEST['holdId'];
 					$reactivationDate = isset($_REQUEST['reactivationDate']) ? $_REQUEST['reactivationDate'] : null;
 					$result = $patronOwningHold->freezeHold($recordId, $holdId, $reactivationDate);
 					if ($result['success']) {
-						$notice = translate('freeze_info_notice');
-						if (translate('frozen') != 'frozen') {
-							$notice = str_replace('frozen', translate('frozen'), $notice);  // Translate the phrase frozen from the notice.
-						}
-						$message = '<div class="alert alert-success">' . $result['message'] . '</div>' . ($notice ? '<div class="alert alert-info">' . $notice . '</div>' : '');
+						$message = '<div class="alert alert-success">' . $result['message'] . '</div>';
 						$result['message'] = $message;
 					}
 
@@ -469,7 +430,7 @@ class MyAccount_AJAX extends JSON_Action
 			// We aren't getting all the expected data, so make a log entry & tell user.
 			global $logger;
 			$logger->log('Freeze Hold, no patron Id was passed in AJAX call.', Logger::LOG_ERROR);
-			$result['message'] = 'No Patron was specified.';
+			$result['message'] = translate(['text' => 'No Patron was specified.', 'isPublicFacing'=>true]);
 		}
 
 		return $result;
@@ -497,7 +458,7 @@ class MyAccount_AJAX extends JSON_Action
 					if ($patronOwningHold == false) {
 						$tmpResult = array(
 							'success' => false,
-							'message' => 'Sorry, it looks like you don\'t have access to that patron.'
+							'message' => translate(['text' => 'Sorry, it looks like you don\'t have access to that patron.', 'isPublicFacing' => true, 'inAttribute'=>true])
 						);
 					} else {
 						foreach ($allUnavailableHolds as $key) {
@@ -510,23 +471,24 @@ class MyAccount_AJAX extends JSON_Action
 						}
 						if($frozen != 1 && $canFreeze == 1){
 							if ($holdType == 'ils') {
-								$tmpResult = $user->freezeHold($recordId, $holdId, false);
+								$tmpResult = $patronOwningHold->freezeHold($recordId, $holdId, false);
 								if($tmpResult['success']){$success++;}else{$failed++;}
 							} else if ($holdType == 'axis360') {
 								require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
 								$driver = new Axis360Driver();
-								$tmpResult = $driver->freezeHold($user, $recordId);
+								$tmpResult = $driver->freezeHold($patronOwningHold, $recordId);
 								if($tmpResult['success']){$success++;}else{$failed++;}
 							} else if ($holdType == 'overdrive') {
 								require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
 								$driver = new OverDriveDriver();
-								$tmpResult = $driver->freezeHold($user, $recordId);
+								$tmpResult = $driver->freezeHold($patronOwningHold, $recordId, null);
 								if($tmpResult['success']){$success++;}else{$failed++;}
-							} else if ($holdType == 'cloud_library') {
-								require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
-								$driver = new CloudLibraryDriver();
-								$tmpResult = $driver->freezeHold($user, $recordId);
-								if($tmpResult['success']){$success++;}else{$failed++;}
+							//cloudLibrary holds can't be frozen
+//							} else if ($holdType == 'cloud_library') {
+//								require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
+//								$driver = new CloudLibraryDriver();
+//								$tmpResult = $driver->freezeHold($user, $recordId);
+//								if($tmpResult['success']){$success++;}else{$failed++;}
 							} else {
 								$failed++;
 							}
@@ -536,13 +498,13 @@ class MyAccount_AJAX extends JSON_Action
 							$failed++;
 						}
 
-						$message = '<div class="alert alert-success">' . $success . ' of ' . $total . ' holds were frozen.</div>';
+						$message = '<div class="alert alert-success">' . translate(['text' => '%1% of %2% holds were frozen', 1 => $success, 2 => $total, 'isPublicFacing' => true, 'inAttribute'=>true]) . '</div>';
 						$tmpResult['message'] = $message;
 
 					}
 				}
 			} else {
-				$tmpResult['message'] = 'No holds were selected to freeze';
+				$tmpResult['message'] =  translate(['text' => 'No holds were selected to freeze', 'isPublicFacing' => true, 'inAttribute'=>true]);
 			}
 		}
 
@@ -573,16 +535,16 @@ class MyAccount_AJAX extends JSON_Action
 		);
 
 		if (!$user) {
-			$result['message'] = 'You must be logged in to ' . translate('thaw') . ' a hold.  Please close this dialog and login again.';
+			$result['message'] = translate(['text' => 'You must be logged in to thaw a hold.  Please close this dialog and login again.', 'isPublicFacing'=>true]);
 		} elseif (!empty($_REQUEST['patronId'])) {
 			$patronId = $_REQUEST['patronId'];
 			$patronOwningHold = $user->getUserReferredTo($patronId);
 
 			if ($patronOwningHold == false) {
-				$result['message'] = 'Sorry, you do not have access to ' . translate('thaw') . ' holds for the supplied user.';
+				$result['message'] = translate(['text' => 'Sorry, you do not have access to thaw holds for the supplied user.', 'isPublicFacing'=>true]);
 			} else {
 				if (empty($_REQUEST['recordId']) || empty($_REQUEST['holdId'])) {
-					$result['message'] = 'Information about the hold to be ' . translate('thawed') . ' was not provided.';
+					$result['message'] = translate(['text' => 'Information about the hold to be thawed was not provided.', 'isPublicFacing'=>true]);
 				} else {
 					$recordId = $_REQUEST['recordId'];
 					$holdId = $_REQUEST['holdId'];
@@ -597,7 +559,7 @@ class MyAccount_AJAX extends JSON_Action
 			// We aren't getting all the expected data, so make a log entry & tell user.
 			global $logger;
 			$logger->log('Thaw Hold, no patron Id was passed in AJAX call.', Logger::LOG_ERROR);
-			$result['message'] = 'No Patron was specified.';
+			$result['message'] = translate(['text' => 'No Patron was specified.', 'isPublicFacing'=>true]);
 		}
 
 		return $result;
@@ -612,7 +574,6 @@ class MyAccount_AJAX extends JSON_Action
 		if (!UserAccount::isLoggedIn()) {
 			$result['message'] = 'You must be logged in to thaw a hold.  Please close this dialog and login again.';
 		} else {
-			$failure_messages = array();
 			$success = 0;
 			$failed = 0;
 			$user = UserAccount::getLoggedInUser();
@@ -661,13 +622,13 @@ class MyAccount_AJAX extends JSON_Action
 							}
 						}
 
-						$message = '<div class="alert alert-success">' . $success . ' of ' . $total . ' holds were thawed.</div>';
+						$message = '<div class="alert alert-success">' . translate(['text' => '%1% of %2% holds were thawed', 1 => $success, 2 => $total, 'isPublicFacing' => true, 'inAttribute'=>true]) . '</div>';
 						$tmpResult['message'] = $message;
 
 					}
 				}
 			} else {
-				$tmpResult['message'] = 'No holds were selected to thaw';
+				$tmpResult['message'] = translate(['text' => 'No holds were selected to thaw', 'isPublicFacing' => true, 'inAttribute'=>true]);
 			}
 		}
 
@@ -741,6 +702,8 @@ class MyAccount_AJAX extends JSON_Action
 					$list->insert();
 				}
 
+				$totalRecords = $list->numValidListItems();
+
 				if (!empty($_REQUEST['sourceId']) && !is_array($_REQUEST['sourceId'])) {
 					$sourceId = urldecode($_REQUEST['sourceId']);
 					$source = urldecode($_REQUEST['source']);
@@ -750,8 +713,45 @@ class MyAccount_AJAX extends JSON_Action
 					$userListEntry->listId = $list->id;
 					$userListEntry->source = $source;
 					$userListEntry->sourceId = $sourceId;
+					$userListEntry->weight = $totalRecords++;
 					if (!$userListEntry->find(true)) {
 						$userListEntry->dateAdded = time();
+						if($userListEntry->source == 'GroupedWork') {
+							require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
+							$groupedWork = new GroupedWork();
+							$groupedWork->permanent_id = $userListEntry->sourceId;
+							if ($groupedWork->find(true)) {
+								$userListEntry->title = substr($groupedWork->full_title, 0, 50);
+							}
+						}elseif($userListEntry->source == 'Lists') {
+							require_once ROOT_DIR . '/sys/UserLists/UserList.php';
+							$list = new UserList();
+							$list->id  = $userListEntry->sourceId;
+							if ($list->find(true)) {
+								$userListEntry->title = substr($list->title, 0, 50);
+							}
+						}elseif($userListEntry->source == 'OpenArchives') {
+							require_once ROOT_DIR . '/RecordDrivers/OpenArchivesRecordDriver.php';
+							$recordDriver = new OpenArchivesRecordDriver($userListEntry->sourceId);
+							if ($recordDriver->isValid()){
+								$title = $recordDriver->getTitle();
+								$userListEntry->title = substr($title, 0, 50);
+							}
+						}elseif($userListEntry->source == 'Genealogy') {
+							require_once ROOT_DIR . '/sys/Genealogy/Person.php';
+							$person = new Person();
+							$person->personId = $userListEntry->sourceId;
+							if ($person->find(true)) {
+								$userListEntry->title = substr($person->firstName . $person->middleName . $person->lastName, 0, 50);
+							}
+						}elseif($userListEntry->source == 'EbscoEds') {
+							require_once ROOT_DIR . '/RecordDrivers/EbscoRecordDriver.php';
+							$recordDriver = new EbscoRecordDriver($userListEntry->sourceId);
+							if ($recordDriver->isValid()) {
+								$title = $recordDriver->getTitle();
+								$userListEntry->title = substr($title, 0, 50);
+							}
+						}
 						$userListEntry->insert();
 					}
 				}
@@ -823,9 +823,14 @@ class MyAccount_AJAX extends JSON_Action
 	{
 		global $interface;
 		global $library;
+		global $locationSingleton;
 
 		$interface->assign('enableSelfRegistration', $library->enableSelfRegistration);
 		$interface->assign('selfRegistrationUrl', $library->selfRegistrationUrl);
+		$interface->assign('checkRememberMe', 0);
+		if($library->defaultRememberMe && $locationSingleton->getOpacStatus() == false) {
+			$interface->assign('checkRememberMe', 1);
+		}
 		$interface->assign('usernameLabel', $library->loginFormUsernameLabel ? $library->loginFormUsernameLabel : 'Your Name');
 		$interface->assign('passwordLabel', $library->loginFormPasswordLabel ? $library->loginFormPasswordLabel : 'Library Card Number');
 		if (!empty($library->loginNotes)){
@@ -857,9 +862,9 @@ class MyAccount_AJAX extends JSON_Action
 	{
 		global $interface;
 		return array(
-			'title' => translate('Masquerade As'),
+			'title' => translate(['text'=>'Masquerade As','isPublicFacing'=>true]),
 			'modalBody' => $interface->fetch("MyAccount/ajax-masqueradeAs.tpl"),
-			'modalButtons' => '<button class="tool btn btn-primary" onclick="$(\'#masqueradeForm\').submit()">Start</button>'
+			'modalButtons' => '<button class="tool btn btn-primary" onclick="$(\'#masqueradeForm\').submit()">' . translate(['text'=>'Start','isPublicFacing'=>true]) . '</button>'
 		);
 	}
 
@@ -910,14 +915,14 @@ class MyAccount_AJAX extends JSON_Action
 			$interface->assign('pickupLocations', $pickupBranches);
 
 			$results = array(
-				'title' => 'Change Hold Location',
+				'title' => translate(['text'=>'Change Hold Location','isPublicFacing'=>true]),
 				'modalBody' => $interface->fetch("MyAccount/changeHoldLocation.tpl"),
-				'modalButtons' => '<span class="tool btn btn-primary" onclick="AspenDiscovery.Account.doChangeHoldLocation(); return false;">Change Location</span>'
+				'modalButtons' => '<span class="tool btn btn-primary" onclick="AspenDiscovery.Account.doChangeHoldLocation(); return false;">' . translate(['text'=>'Change Location','isPublicFacing'=>true]) . '</span>'
 			);
 		} else {
 			$results = array(
 				'title' => 'Please login',
-				'modalBody' => "You must be logged in.  Please close this dialog and login before changing your hold's pick-up location.",
+				'modalBody' => translate(['text'=>"You must be logged in.  Please close this dialog and login before changing your hold's pick-up location.",'isPublicFacing'=>true]),
 				'modalButtons' => ""
 			);
 		}
@@ -931,21 +936,31 @@ class MyAccount_AJAX extends JSON_Action
 		global $interface;
 		global $configArray;
 
-		$id = $_REQUEST['holdId'];
-		$interface->assign('holdId', $id);
-		$interface->assign('patronId', UserAccount::getActiveUserId());
-		$interface->assign('recordId', $_REQUEST['recordId']);
+		$user = UserAccount::getLoggedInUser();
+		$patronId = $_REQUEST['patronId'];
+		$patronOwningHold = $user->getUserReferredTo($patronId);
+		if ($patronOwningHold != false) {
+			$id = $_REQUEST['holdId'];
+			$interface->assign('holdId', $id);
+			$interface->assign('patronId', $patronId);
+			$interface->assign('recordId', $_REQUEST['recordId']);
 
-		$ils = $configArray['Catalog']['ils'];
-		$reactivateDateNotRequired = ($ils == 'Symphony' || $ils == 'Koha');
-		$interface->assign('reactivateDateNotRequired', $reactivateDateNotRequired);
+			$ils = $configArray['Catalog']['ils'];
+			$reactivateDateNotRequired = ($ils == 'Symphony' || $ils == 'Koha' || $ils == 'Polaris');
+			$interface->assign('reactivateDateNotRequired', $reactivateDateNotRequired);
 
-		$title = translate('Freeze Hold'); // language customization
-		return array(
-			'title' => $title,
-			'modalBody' => $interface->fetch("MyAccount/reactivationDate.tpl"),
-			'modalButtons' => "<button class='tool btn btn-primary' id='doFreezeHoldWithReactivationDate' onclick='$(\".form\").submit(); return false;'>$title</button>"
-		);
+			$title = translate(['text' => 'Freeze Hold', 'isPublicFacing' => true]); // language customization
+			return array(
+				'title' => $title,
+				'modalBody' => $interface->fetch("MyAccount/reactivationDate.tpl"),
+				'modalButtons' => "<button class='tool btn btn-primary' id='doFreezeHoldWithReactivationDate' onclick='$(\".form\").submit(); return false;'>$title</button>"
+			);
+		}else{
+			return [
+				'success' => false,
+				'message' => translate(['text' => 'Sorry, you do not have access to freeze holds for the supplied user.', 'isPublicFacing'=>true])
+			];
+		}
 	}
 
 	/** @noinspection PhpUnused */
@@ -965,19 +980,19 @@ class MyAccount_AJAX extends JSON_Action
 					}else{
 						return array(
 							'result' => false,
-							'message' => 'The selected pickup location is not valid.'
+							'message' => translate(['text'=>'The selected pickup location is not valid.','isPublicFacing'=>true])
 						);
 					}
 				}else{
 					return array(
 						'result' => false,
-						'message' => 'The logged in user does not have permission to change hold location for the specified user, please login as that user.'
+						'message' => translate(['text'=>'The logged in user does not have permission to change hold location for the specified user, please login as that user.','isPublicFacing'=>true])
 					);
 				}
 			} else {
 				return $results = array(
-					'title' => 'Please login',
-					'modalBody' => "You must be logged in.  Please close this dialog and login to change this hold's pick up location.",
+					'title' => translate(['text'=>'Please login','isPublicFacing'=>true]),
+					'modalBody' => translate(['text'=>"You must be logged in.  Please close this dialog and login to change this hold's pick up location.",'isPublicFacing'=>true]),
 					'modalButtons' => ""
 				);
 			}
@@ -992,7 +1007,7 @@ class MyAccount_AJAX extends JSON_Action
 		}
 		return array(
 			'result' => false,
-			'message' => 'We could not connect to the circulation system, please try again later.'
+			'message' => translate(['text'=>'We could not connect to the circulation system, please try again later.','isPublicFacing'=>true])
 		);
 	}
 
@@ -1009,15 +1024,14 @@ class MyAccount_AJAX extends JSON_Action
 	function getCitationFormatsForm()
 	{
 		global $interface;
-		$interface->assign('popupTitle', 'Please select a citation format');
 		$interface->assign('listId', $_REQUEST['listId']);
 		$citationFormats = CitationBuilder::getCitationFormats();
 		$interface->assign('citationFormats', $citationFormats);
 		$pageContent = $interface->fetch('MyAccount/getCitationFormatPopup.tpl');
 		return array(
-			'title' => 'Select Citation Format',
+			'title' => translate(['text'=>'Select Citation Format','isPublicFacing'=>true]),
 			'modalBody' => $pageContent,
-			'modalButtons' => '<input class="btn btn-primary" onclick="AspenDiscovery.Lists.processCiteListForm(); return false;" value="' . translate('Generate Citations') . '">'
+			'modalButtons' => '<input class="btn btn-primary" onclick="AspenDiscovery.Lists.processCiteListForm(); return false;" value="' . translate(['text'=>'Generate Citations','isPublicFacing'=>true, 'inAttribute'=>true]) . '">'
 		);
 	}
 
@@ -1168,7 +1182,7 @@ class MyAccount_AJAX extends JSON_Action
 		global $interface;
 		$interface->assign('renewResults', $renewResults);
 		return array(
-			'title' => translate('Renew') . ' Item',
+			'title' => translate(['text' => 'Renew Item', 'isPublicFacing'=>true]),
 			'modalBody' => $interface->fetch('MyAccount/renew-item-results.tpl'),
 			'success' => $renewResults['success']
 		);
@@ -1240,7 +1254,7 @@ class MyAccount_AJAX extends JSON_Action
 		$interface->assign('renew_message_data', $renewResults);
 
 		return array(
-			'title' => translate('Renew') . ' Selected Items',
+			'title' => translate(['text' => 'Renew Selected Items', 'isPublicFacing'=>true]),
 			'modalBody' => $interface->fetch('Record/renew-results.tpl'),
 			'success' => $renewResults['success'],
 			'renewed' => isset($renewResults['Renewed']) ? $renewResults['Renewed'] : []
@@ -1263,7 +1277,7 @@ class MyAccount_AJAX extends JSON_Action
 		global $interface;
 		$interface->assign('renew_message_data', $renewResults);
 		return array(
-			'title' => translate('Renew') . ' All',
+			'title' => translate(['text' => 'Renew All', 'isPublicFacing'=>true]),
 			'modalBody' => $interface->fetch('Record/renew-results.tpl'),
 			'success' => $renewResults['success'],
 			'renewed' => $renewResults['Renewed']
@@ -1311,7 +1325,7 @@ class MyAccount_AJAX extends JSON_Action
 
 		$result = [
 			'success' => false,
-			'message' => 'Unknown error'
+			'message' => translate(['text'=>'Unknown Error', 'isPublicFacing'=>true])
 		];
 		if (UserAccount::isLoggedIn()) {
 			$user = UserAccount::getActiveUserObj();
@@ -1334,11 +1348,6 @@ class MyAccount_AJAX extends JSON_Action
 
 				$ilsSummary->setReadingHistory($user->getReadingHistorySize());
 
-				global $library;
-				if ($library->enableMaterialsBooking) {
-					$ilsSummary->numBookings = $user->getNumBookingsTotal();
-				}
-
 				//Expiration and fines
 				$interface->assign('ilsSummary', $ilsSummary);
 				$interface->setFinesRelatedTemplateVariables();
@@ -1355,45 +1364,7 @@ class MyAccount_AJAX extends JSON_Action
 					'summary' => $ilsSummary->toArray()
 				];
 			} else {
-				$result['message'] = 'Unknown error';
-			}
-		} else {
-			$result['message'] = 'You must be logged in to get menu data';
-		}
-		return $result;
-	}
-
-	/** @noinspection PhpUnused */
-	function getMenuDataRBdigital()
-	{
-		global $timer;
-		$result = [
-			'success' => false,
-			'message' => 'Unknown error'
-		];
-		if (UserAccount::isLoggedIn()) {
-			$user = UserAccount::getActiveUserObj();
-			if ($user->isValidForEContentSource('rbdigital')) {
-				require_once ROOT_DIR . '/Drivers/RBdigitalDriver.php';
-				$driver = new RBdigitalDriver();
-				$rbdigitalSummary = $driver->getAccountSummary($user);
-				if ($user->getLinkedUsers() != null) {
-					/** @var User $user */
-					foreach ($user->getLinkedUsers() as $linkedUser) {
-						if ($linkedUser->isValidForEContentSource('rbdigital')){
-							$linkedUserSummary = $driver->getAccountSummary($linkedUser);
-							$rbdigitalSummary->numCheckedOut += $linkedUserSummary->numCheckedOut;
-							$rbdigitalSummary->numUnavailableHolds += $linkedUserSummary->numUnavailableHolds;
-						}
-					}
-				}
-				$timer->logTime("Loaded RBdigital Summary for User and linked users");
-				$result = [
-					'success' => true,
-					'summary' => $rbdigitalSummary->toArray()
-				];
-			} else {
-				$result['message'] = 'Invalid for RBdigital';
+				$result['message'] = translate(['text'=>'Unknown Error', 'isPublicFacing'=>true]);
 			}
 		} else {
 			$result['message'] = 'You must be logged in to get menu data';
@@ -1407,7 +1378,7 @@ class MyAccount_AJAX extends JSON_Action
 		global $timer;
 		$result = [
 			'success' => false,
-			'message' => 'Unknown error'
+			'message' => translate(['text'=>'Unknown Error', 'isPublicFacing'=>true])
 		];
 		if (UserAccount::isLoggedIn()) {
 			$user = UserAccount::getActiveUserObj();
@@ -1424,13 +1395,13 @@ class MyAccount_AJAX extends JSON_Action
 						$cloudLibrarySummary->numAvailableHolds += $linkedUserSummary->numAvailableHolds;
 					}
 				}
-				$timer->logTime("Loaded Cloud Library Summary for User and linked users");
+				$timer->logTime("Loaded cloudLibrary Summary for User and linked users");
 				$result = [
 					'success' => true,
 					'summary' => $cloudLibrarySummary->toArray()
 				];
 			} else {
-				$result['message'] = 'Unknown error';
+				$result['message'] = translate(['text'=>'Unknown Error', 'isPublicFacing'=>true]);
 			}
 		} else {
 			$result['message'] = 'You must be logged in to get menu data';
@@ -1444,7 +1415,7 @@ class MyAccount_AJAX extends JSON_Action
 		global $timer;
 		$result = [
 			'success' => false,
-			'message' => 'Unknown error'
+			'message' => translate(['text'=>'Unknown Error', 'isPublicFacing'=>true])
 		];
 		if (UserAccount::isLoggedIn()) {
 			$user = UserAccount::getActiveUserObj();
@@ -1467,7 +1438,7 @@ class MyAccount_AJAX extends JSON_Action
 					'summary' => $axis360Summary->toArray()
 				];
 			} else {
-				$result['message'] = 'Unknown error';
+				$result['message'] = translate(['text'=>'Unknown Error', 'isPublicFacing'=>true]);
 			}
 		} else {
 			$result['message'] = 'You must be logged in to get menu data';
@@ -1481,7 +1452,7 @@ class MyAccount_AJAX extends JSON_Action
 		global $timer;
 		$result = [
 			'success' => false,
-			'message' => 'Unknown error'
+			'message' => translate(['text'=>'Unknown Error', 'isPublicFacing'=>true])
 		];
 		if (UserAccount::isLoggedIn()) {
 			$user = UserAccount::getActiveUserObj();
@@ -1520,7 +1491,7 @@ class MyAccount_AJAX extends JSON_Action
 		global $timer;
 		$result = [
 			'success' => false,
-			'message' => 'Unknown error'
+			'message' => translate(['text'=>'Unknown Error', 'isPublicFacing'=>true])
 		];
 		if (UserAccount::isLoggedIn()) {
 			$user = UserAccount::getActiveUserObj();
@@ -1573,6 +1544,7 @@ class MyAccount_AJAX extends JSON_Action
 		global $timer;
 		global $interface;
 		global $configArray;
+		/** @var Memcache $memCache */
 		global $memCache;
 		$result = array();
 		if (UserAccount::isLoggedIn()) {
@@ -1628,7 +1600,7 @@ class MyAccount_AJAX extends JSON_Action
 
 		$ils = $configArray['Catalog']['ils'];
 		$showOut = ($ils == 'Horizon');
-		$showRenewed = ($ils == 'Horizon' || $ils == 'Millennium' || $ils == 'Sierra' || $ils == 'Koha' || $ils == 'Symphony' || $ils == 'CarlX');
+		$showRenewed = ($ils == 'Horizon' || $ils == 'Millennium' || $ils == 'Sierra' || $ils == 'Koha' || $ils == 'Symphony' || $ils == 'CarlX'|| $ils == 'Polaris');
 		$showWaitList = $ils == 'Horizon';
 
 		// Create new PHPExcel object
@@ -1767,12 +1739,8 @@ class MyAccount_AJAX extends JSON_Action
 		}
 
 		$allHolds = $user->getHolds(true, $selectedUnavailableSortOption, $selectedAvailableSortOption, $source);
-		if ($source == 'rbdigital') {
-			//RBdigital automatically checks out records so don't show the available section
-			unset($allHolds['available']);
-		}
 
-		$showDateWhenSuspending = ($ils == 'Horizon' || $ils == 'CarlX' || $ils == 'Symphony' || $ils == 'Koha');
+		$showDateWhenSuspending = ($ils == 'Horizon' || $ils == 'CarlX' || $ils == 'Symphony' || $ils == 'Koha' || $ils == 'Polaris');
 
 		// Create new PHPExcel object
 		$objPHPExcel = new PHPExcel();
@@ -1803,28 +1771,28 @@ class MyAccount_AJAX extends JSON_Action
 					$objPHPExcel->setActiveSheetIndex(0)->setCellValue('A' . $curRow, 'Holds - ' . ucfirst($exportType));
 					$curRow += 2;
 
-					$objPHPExcel->getActiveSheet()->setCellValue('A' . $curRow, 'Title')
-						->setCellValue('B' . $curRow, 'Author')
-						->setCellValue('C' . $curRow, 'Format')
-						->setCellValue('D' . $curRow, 'Placed')
-						->setCellValue('E' . $curRow, 'Pickup')
-						->setCellValue('F' . $curRow, 'Available')
-						->setCellValue('G' . $curRow, translate('Pickup By'));
+					$objPHPExcel->getActiveSheet()->setCellValue('A' . $curRow, translate(['text' => 'Title', 'isPublicFacing'=>true]))
+						->setCellValue('B' . $curRow, translate(['text' => 'Author', 'isPublicFacing'=>true]))
+						->setCellValue('C' . $curRow, translate(['text' => 'Format', 'isPublicFacing'=>true]))
+						->setCellValue('D' . $curRow, translate(['text' => 'Placed', 'isPublicFacing'=>true]))
+						->setCellValue('E' . $curRow, translate(['text' => 'Pickup', 'isPublicFacing'=>true]))
+						->setCellValue('F' . $curRow, translate(['text' => 'Available', 'isPublicFacing'=>true]))
+						->setCellValue('G' . $curRow, translate(['text' => 'Pickup By', 'isPublicFacing'=>true]));
 					if ($hasLinkedUsers){
 						$userPosition = 'H';
-						$objPHPExcel->getActiveSheet()->setCellValue('H' . $curRow, translate('User'));
+						$objPHPExcel->getActiveSheet()->setCellValue('H' . $curRow, translate(['text' => 'User', 'isPublicFacing'=>true]));
 					}
 				} else {
-					$objPHPExcel->setActiveSheetIndex(0)->setCellValue('A' . $curRow, 'Holds - ' . ucfirst($exportType));
+					$objPHPExcel->setActiveSheetIndex(0)->setCellValue('A' . $curRow, translate(['text' => 'Holds - ' . ucfirst($exportType), 'isPublicFacing'=>true]));
 					$curRow += 2;
-					$objPHPExcel->getActiveSheet()->setCellValue('A' . $curRow, 'Title')
-						->setCellValue('B' . $curRow, 'Author')
-						->setCellValue('C' . $curRow, 'Format')
-						->setCellValue('D' . $curRow, 'Placed')
-						->setCellValue('E' . $curRow, 'Pickup');
+					$objPHPExcel->getActiveSheet()->setCellValue('A' . $curRow, translate(['text' => 'Title', 'isPublicFacing'=>true]))
+						->setCellValue('B' . $curRow, translate(['text' => 'Author', 'isPublicFacing'=>true]))
+						->setCellValue('C' . $curRow, translate(['text' => 'Format', 'isPublicFacing'=>true]))
+						->setCellValue('D' . $curRow, translate(['text' => 'Placed', 'isPublicFacing'=>true]))
+						->setCellValue('E' . $curRow, translate(['text' => 'Pickup', 'isPublicFacing'=>true]));
 
 					if ($showPosition) {
-						$objPHPExcel->getActiveSheet()->setCellValue('F' . $curRow, 'Position');
+						$objPHPExcel->getActiveSheet()->setCellValue('F' . $curRow, translate(['text' => 'Position', 'isPublicFacing'=>true]));
 						$statusPosition = 'G';
 						if ($showExpireTime) {
 							$expiresPosition = 'H';
@@ -1850,12 +1818,12 @@ class MyAccount_AJAX extends JSON_Action
 							}
 						}
 					}
-					$objPHPExcel->getActiveSheet()->setCellValue($statusPosition . $curRow, 'Status');
+					$objPHPExcel->getActiveSheet()->setCellValue($statusPosition . $curRow, translate(['text' => 'Status', 'isPublicFacing'=>true]));
 					if ($expiresPosition != null) {
-						$objPHPExcel->getActiveSheet()->setCellValue($expiresPosition . $curRow, 'Expires');
+						$objPHPExcel->getActiveSheet()->setCellValue($expiresPosition . $curRow, translate(['text' => 'Expires', 'isPublicFacing'=>true]));
 					}
 					if ($userPosition != null){
-						$objPHPExcel->getActiveSheet()->setCellValue($userPosition . $curRow, translate('User'));
+						$objPHPExcel->getActiveSheet()->setCellValue($userPosition . $curRow, translate(['text' => 'User', 'isPublicFacing'=>true]));
 					}
 				}
 
@@ -1936,7 +1904,7 @@ class MyAccount_AJAX extends JSON_Action
 							->setCellValue('F' . $curRow, $availableDate)
 							->setCellValue('G' . $curRow, $expireDate);
 						if ($userPosition != null){
-							$objPHPExcel->getActiveSheet()->setCellValue($userPosition . $curRow, translate($row->getUserName()));
+							$objPHPExcel->getActiveSheet()->setCellValue($userPosition . $curRow, $row->getUserName());
 						}
 					} else {
 						if (isset($row->status)) {
@@ -1982,7 +1950,7 @@ class MyAccount_AJAX extends JSON_Action
 							$objPHPExcel->getActiveSheet()->setCellValue($expiresPosition . $curRow, $expireDate);
 						}
 						if ($userPosition != null){
-							$objPHPExcel->getActiveSheet()->setCellValue($userPosition . $curRow, translate($row->getUserName()));
+							$objPHPExcel->getActiveSheet()->setCellValue($userPosition . $curRow, $row->getUserName());
 						}
 					}
 					$curRow++;
@@ -1999,7 +1967,7 @@ class MyAccount_AJAX extends JSON_Action
 			$objPHPExcel->getActiveSheet()->getColumnDimension('H')->setAutoSize(true);
 
 			// Rename sheet
-			$objPHPExcel->getActiveSheet()->setTitle('Holds');
+			$objPHPExcel->getActiveSheet()->setTitle(translate(['text' => 'Holds', 'isPublicFacing'=>true]));
 
 			// Redirect output to a client's web browser (Excel5)
 			header('Content-Type: application/vnd.ms-excel');
@@ -2049,7 +2017,7 @@ class MyAccount_AJAX extends JSON_Action
 
 					$format = is_array($row['format']) ? implode(',', $row['format']) : $row['format'];
 					if ($row['checkedOut']) {
-						$lastCheckout = translate('In Use');
+						$lastCheckout = translate(['text' => 'In Use', 'isPublicFacing'=>true]);
 					} else {
 						if (is_numeric($row['checkout'])) {
 							$lastCheckout = date('M Y', $row['checkout']);
@@ -2098,7 +2066,7 @@ class MyAccount_AJAX extends JSON_Action
 
 		$result = [
 			'success' => false,
-			'message' => 'Unknown error',
+			'message' => translate(['text'=>'Unknown Error', 'isPublicFacing'=>true]),
 		];
 
 		global $offlineMode;
@@ -2112,7 +2080,7 @@ class MyAccount_AJAX extends JSON_Action
 			//Determine which columns to show
 			$ils = $configArray['Catalog']['ils'];
 			$showOut = ($ils == 'Horizon');
-			$showRenewed = ($source == 'ils' || $source == 'all') && ($ils == 'Horizon' || $ils == 'Millennium' || $ils == 'Sierra' || $ils == 'Koha' || $ils == 'Symphony' || $ils == 'CarlX');
+			$showRenewed = ($source == 'ils' || $source == 'all') && ($ils == 'Horizon' || $ils == 'Millennium' || $ils == 'Sierra' || $ils == 'Koha' || $ils == 'Symphony' || $ils == 'CarlX' || $ils == 'Polaris');
 			$showWaitList = ($source == 'ils' || $source == 'all') && ($ils == 'Horizon');
 
 			$interface->assign('showOut', $showOut);
@@ -2129,7 +2097,7 @@ class MyAccount_AJAX extends JSON_Action
 			);
 			$user = UserAccount::getActiveUserObj();
 			if (UserAccount::isLoggedIn() == false || empty($user)){
-				$result['message'] = translate(['text' => 'login_expired', 'defaultText' => "Your login has timed out. Please login again."]);
+				$result['message'] = translate(['text' => "Your login has timed out. Please login again.", 'isPublicFacing'=> true]);
 			}else{
 				if (count($user->getLinkedUsers()) > 0) {
 					$sortOptions['libraryAccount'] = 'Library Account';
@@ -2170,7 +2138,7 @@ class MyAccount_AJAX extends JSON_Action
 				$result['checkouts'] = $interface->fetch('MyAccount/checkoutsList.tpl');
 			}
 		} else {
-			$result['message'] = translate('The catalog is offline');
+			$result['message'] = translate(['text' => 'The catalog is offline', 'isPublicFacing'=>true]);
 		}
 
 		return $result;
@@ -2182,7 +2150,7 @@ class MyAccount_AJAX extends JSON_Action
 
 		$result = [
 			'success' => false,
-			'message' => 'Unknown error',
+			'message' => translate(['text'=>'Unknown Error', 'isPublicFacing'=>true]),
 		];
 
 		global $offlineMode;
@@ -2198,18 +2166,27 @@ class MyAccount_AJAX extends JSON_Action
 
 			$user = UserAccount::getActiveUserObj();
 			if (UserAccount::isLoggedIn() == false || empty($user)){
-				$result['message'] = translate(['text' => 'login_expired', 'defaultText' => "Your login has timed out. Please login again."]);
+				$result['message'] = translate(['text' => "Your login has timed out. Please login again.", 'isPublicFacing'=> true]);
 			}else {
+				$allowFreezeHolds = $user->getHomeLibrary()->allowFreezeHolds;
+				if($allowFreezeHolds) {
+					$interface->assign('allowFreezeAllHolds', true);
+				} else {
+					$interface->assign('allowFreezeAllHolds', false);
+				}
+
 				$interface->assign('allowFreezeHolds', true);
 
 				$ils = $configArray['Catalog']['ils'];
-				$showPosition = ($ils == 'Horizon' || $ils == 'Koha' || $ils == 'Symphony' || $ils == 'CarlX');
+				$showPosition = ($ils == 'Horizon' || $ils == 'Koha' || $ils == 'Symphony' || $ils == 'CarlX' || 'Polaris');
 				$suspendRequiresReactivationDate = ($ils == 'Horizon' || $ils == 'CarlX' || $ils == 'Symphony' || $ils == 'Koha');
 				$interface->assign('suspendRequiresReactivationDate', $suspendRequiresReactivationDate);
-				$canChangePickupLocation = ($ils != 'Koha');
-				$interface->assign('canChangePickupLocation', $canChangePickupLocation);
 				$showPlacedColumn = ($ils == 'Symphony');
 				$interface->assign('showPlacedColumn', $showPlacedColumn);
+
+				$location = new Location();
+				$pickupBranches = $location->getPickupBranches($user);
+				$interface->assign('numPickupBranches', count($pickupBranches));
 
 				// Define sorting options
 				$unavailableHoldSortOptions = array(
@@ -2217,13 +2194,11 @@ class MyAccount_AJAX extends JSON_Action
 					'author' => 'Author',
 					'format' => 'Format',
 				);
-				if ($source != 'rbdigital') {
-					$unavailableHoldSortOptions['status'] = 'Status';
-				}
+				$unavailableHoldSortOptions['status'] = 'Status';
 				if ($source == 'all' || $source == 'ils') {
 					$unavailableHoldSortOptions['location'] = 'Pickup Location';
 				}
-				if ($showPosition && $source != 'rbdigital') {
+				if ($showPosition) {
 					$unavailableHoldSortOptions['position'] = 'Position';
 				}
 				if ($showPlacedColumn) {
@@ -2263,7 +2238,7 @@ class MyAccount_AJAX extends JSON_Action
 
 				$allowChangeLocation = ($ils == 'Millennium' || $ils == 'Sierra');
 				$interface->assign('allowChangeLocation', $allowChangeLocation);
-				$showDateWhenSuspending = ($ils == 'Horizon' || $ils == 'CarlX' || $ils == 'Symphony' || $ils == 'Koha');
+				$showDateWhenSuspending = ($ils == 'Horizon' || $ils == 'CarlX' || $ils == 'Symphony' || $ils == 'Koha' || $ils == 'Polaris');
 				$interface->assign('showDateWhenSuspending', $showDateWhenSuspending);
 
 				$interface->assign('showPosition', $showPosition);
@@ -2273,10 +2248,6 @@ class MyAccount_AJAX extends JSON_Action
 				if (!$offlineMode) {
 					if ($user) {
 						$allHolds = $user->getHolds(true, $selectedUnavailableSortOption, $selectedAvailableSortOption, $source);
-						if ($source == 'rbdigital') {
-							//RBdigital automatically checks out records so don't show the available section
-							unset($allHolds['available']);
-						}
 						$interface->assign('recordList', $allHolds);
 					}
 				}
@@ -2298,7 +2269,7 @@ class MyAccount_AJAX extends JSON_Action
 				$result['holds'] = $interface->fetch('MyAccount/holdsList.tpl');
 			}
 		} else {
-			$result['message'] = translate('The catalog is offline');
+			$result['message'] = translate(['text' => 'The catalog is offline', 'isPublicFacing'=>true]);
 		}
 
 		return $result;
@@ -2312,7 +2283,7 @@ class MyAccount_AJAX extends JSON_Action
 
 		$result = [
 			'success' => false,
-			'message' => 'Unknown error',
+			'message' => translate(['text'=>'Unknown Error', 'isPublicFacing'=>true]),
 		];
 
 
@@ -2489,8 +2460,8 @@ class MyAccount_AJAX extends JSON_Action
 	{
 		$result = [
 			'success' => false,
-			'title' => translate('Error'),
-			'message' => translate('Unknown error'),
+			'title' => translate(['text' => 'Error', 'isPublicFacing'=>true]),
+			'message' => translate(['text'=>'Unknown Error', 'isPublicFacing'=>true]),
 		];
 
 		$user = UserAccount::getActiveUserObj();
@@ -2516,8 +2487,8 @@ class MyAccount_AJAX extends JSON_Action
 	{
 		$result = [
 			'success' => false,
-			'title' => translate('Error'),
-			'message' => translate('Unknown error'),
+			'title' => translate(['text' => 'Error', 'isPublicFacing'=>true]),
+			'message' => translate(['text'=>'Unknown Error', 'isPublicFacing'=>true]),
 		];
 
 		$user = UserAccount::getActiveUserObj();
@@ -2666,26 +2637,181 @@ class MyAccount_AJAX extends JSON_Action
 	}
 
 	/** @noinspection PhpUnused */
+	function createGenericDonation($paymentType = '')
+	{
+		$transactionDate = time();
+		$user = UserAccount::getLoggedInUser();
+
+		global $library;
+		$paymentLibrary = $library;
+
+		$patronId = $_REQUEST['patronId'];
+		$currencyCode = 'USD'; // set a default, check system variables later
+
+		// if logged in validate the user
+		if ($patronId != 'Guest') {
+			if($user->getUserReferredTo($patronId)) {
+				$patron = $user->getUserReferredTo($patronId);
+				$userLibrary = $patron->getHomeLibrary();
+			} else {
+				return ['success' => false, 'message' => translate(['text' => 'Could not find the patron referred to, please try again.', 'isPublicFacing'=> true])];
+			}
+		} else {
+			$patron = null;
+			$patronId = null;
+			$userLibrary = $library;
+		}
+
+		$systemVariables = SystemVariables::getSystemVariables();
+		if ($systemVariables->find(true)) {
+			$currencyCode = $systemVariables->currencyCode;
+		}
+
+		$toLocation = isset($_REQUEST['toLocation']) ? $_REQUEST['toLocation'] : $library->libraryId;
+
+		// check for a minimum value to donate
+		// for now we will use minimumFineAmount and decide later if donations should be separate
+		$minimumAmountToProcess = $paymentLibrary->minimumFineAmount;
+		$setupCurrencyFormat = numfmt_create($currencyCode, NumberFormatter::CURRENCY);
+		$currencyFormat = numfmt_format_currency($setupCurrencyFormat, $minimumAmountToProcess, $currencyCode);
+
+		// check for good values
+		if (empty($_REQUEST['amount']) || empty($_REQUEST['emailAddress']) || empty($_REQUEST['firstName']) || empty($_REQUEST['lastName']) || (isset($_REQUEST['amount'])) && ($_REQUEST['amount'] < $minimumAmountToProcess)) {
+			$message = null;
+			if(!empty($_REQUEST['amount']) && $_REQUEST['amount'] < $minimumAmountToProcess) {
+				$thisAmount = numfmt_format_currency($setupCurrencyFormat, $_REQUEST['amount'], $currencyCode);
+				$message .= "<div class='alert alert-danger'><p><b>The minimum value for donating online is $currencyFormat, but you entered $thisAmount</b>.</p></div>";
+			}
+
+			$message .= "<div class='alert alert-danger'><p><b>The following fields were left blank or contain invalid values</b></p>";
+			$message .= "<ul>";
+			if(empty($_REQUEST['amount'])) { $message .= "<li>A valid amount value to donate</li>"; }
+
+			if(empty($_REQUEST['emailAddress'])) { $message .= "<li>Your email address</li>"; }
+			if(empty($_REQUEST['firstName'])) { $message .= "<li>Your first name</li>"; }
+			if(empty($_REQUEST['lastName'])) { $message .= "<li>Your last name</li>"; }
+
+			if(isset($_REQUEST['isDedicated']) && ($_REQUEST['isDedicated'] == "on")) {
+				if(empty($_REQUEST['dedicationType'])) { $message .= "<li>The type of dedication you'd like</li>"; }
+				if(empty($_REQUEST['honoreeFirstName'])) { $message .= "<li>A first name for the dedication</li>"; }
+				if(empty($_REQUEST['honoreeLastName'])) { $message .= "<li>A last name for the dedication</li>"; }
+			}
+
+			$message .= "</ul></div>";
+			return ['success' => false, 'message' => $message, 'isPublicFacing'=> true];
+		}
+
+		$donationValue = $_REQUEST['amount'];
+
+		// prep donation for processor
+		$purchaseUnits['items'][] = [
+			'custom_id' => $paymentLibrary->subdomain,
+			'name' => 'Donation to Library',
+			'description' => 'Donation to ' . $library->displayName . ' for ' . numfmt_format_currency($setupCurrencyFormat, $donationValue, $currencyCode),
+			'unit_amount' => [
+				'currency_code' => $currencyCode,
+				'value' => round($donationValue, 2),
+			],
+			'quantity' => 1
+		];
+
+		$purchaseUnits['amount'] = [
+			'currency_code' => $currencyCode,
+			'value' => round($donationValue, 2),
+			'breakdown' => [
+				'item_total' => [
+					'currency_code' => $currencyCode,
+					'value' => round($donationValue, 2),
+				],
+			]
+		];
+
+		$tempDonation = [
+			'firstName' => $_REQUEST['firstName'],
+			'lastName' => $_REQUEST['lastName'],
+			'email' => $_REQUEST['emailAddress'],
+			'isAnonymous' => isset($_REQUEST['isAnonymous']) ? 1 : 0,
+			'donateToLibraryId' => $toLocation,
+			'isDedicated' => isset($_REQUEST['isDedicated']) ? 1 : 0,
+			'comments' => isset($_REQUEST['earmark']) ? $_REQUEST['earmark'] : "",
+			'donationSettingId' => $_REQUEST['settingId']
+		];
+
+		if($tempDonation['isDedicated'] == 1) {
+			$tempDonation['dedication'] = [
+				'type' => $_REQUEST['dedicationType'],
+				'honoreeFirstName' => $_REQUEST['honoreeFirstName'],
+				'honoreeLastName' => $_REQUEST['honoreeLastName'],
+			];
+		}
+
+		require_once ROOT_DIR . '/sys/Account/UserPayment.php';
+		$payment = new UserPayment();
+		$payment->userId = $patronId;
+		$payment->completed = 0;
+		$payment->finesPaid = null;
+		$payment->totalPaid = $donationValue;
+		$payment->paymentType = $paymentType;
+		$payment->transactionDate = $transactionDate;
+		$payment->transactionType = "donation";
+		global $library;
+		$payment->paidFromInstance = $library->subdomain;
+		$paymentId = $payment->insert();
+		$purchaseUnits['custom_id'] = $paymentLibrary->subdomain;
+
+		return [$paymentLibrary, $userLibrary, $payment, $purchaseUnits, $patron, $tempDonation];
+
+	}
+
+	function addDonation($payment, $tempDonation) {
+		require_once ROOT_DIR . '/sys/Donations/Donation.php';
+		$donation = new Donation();
+		$donation->paymentId = $payment->id;
+		$donation->firstName = $tempDonation['firstName'];
+		$donation->lastName = $tempDonation['lastName'];
+		$donation->email = $tempDonation['email'];
+		$donation->anonymous = $tempDonation['isAnonymous'];
+		$donation->dedicate = $tempDonation['isDedicated'];
+		if($tempDonation['isDedicated'] == 1) {
+			$donation->dedicateType = $tempDonation['dedication']['type'];
+			$donation->honoreeFirstName = $tempDonation['dedication']['honoreeFirstName'];
+			$donation->honoreeLastName = $tempDonation['dedication']['honoreeLastName'];
+		}
+		$donation->donateToLibraryId = $tempDonation['donateToLibraryId'];
+		$donation->comments = $tempDonation['comments'];
+		$donation->donationSettingId = $tempDonation['donationSettingId'];
+		$donation->sendEmailToUser = 1;
+		$donation->insert();
+
+		return $donation;
+	}
+
+	/** @noinspection PhpUnused */
 	function createGenericOrder($paymentType = '')
 	{
 		$transactionDate = time();
-		global $configArray;
-		$ils = $configArray['Catalog']['ils'];
 		$user = UserAccount::getLoggedInUser();
 		if ($user == null) {
-			return ['success' => false, 'message' => translate(['text' => 'payment_not_signed_in', 'defaultText' => 'You must be signed in to pay fines, please sign in.'])];
+			return ['success' => false, 'message' => translate(['text' => 'You must be signed in to pay fines, please sign in.', 'isPublicFacing'=> true])];
 		} else {
 			$patronId = $_REQUEST['patronId'];
 
 			$patron = $user->getUserReferredTo($patronId);
 
 			if ($patron == false) {
-				return ['success' => false, 'message' => translate(['text' => 'payment_patron_not_found', 'defaultText' => 'Could not find the patron referred to, please try again.'])];
+				return ['success' => false, 'message' => translate(['text' => 'Could not find the patron referred to, please try again.', 'isPublicFacing'=> true])];
 			}
 			$userLibrary = $patron->getHomeLibrary();
 
-			if (empty($_REQUEST['selectedFine']) && $userLibrary->finesToPay != 0) {
-				return ['success' => false, 'message' => translate(['text' => 'payment_none_selected', 'defaultText' => 'Select at least one fine to pay.'])];
+			global $library;
+			$paymentLibrary = $library;
+			$systemVariables = SystemVariables::getSystemVariables();
+			if ($systemVariables->libraryToUseForPayments == 0){
+				$paymentLibrary = $userLibrary;
+			}
+
+			if (empty($_REQUEST['selectedFine']) && $paymentLibrary->finesToPay != 0) {
+				return ['success' => false, 'message' => translate(['text' => 'Select at least one fine to pay.', 'isPublicFacing'=> true])];
 			}
 			if (isset($_REQUEST['selectedFine'])) {
 				$selectedFines = $_REQUEST['selectedFine'];
@@ -2714,7 +2840,7 @@ class MyAccount_AJAX extends JSON_Action
 			foreach ($fines[$patronId] as $fine) {
 				$finePayment = 0;
 				$addToOrder = false;
-				if ($userLibrary->finesToPay == 0) {
+				if ($paymentLibrary->finesToPay == 0) {
 					$addToOrder = true;
 				} else {
 					foreach ($selectedFines as $fineId => $status) {
@@ -2734,27 +2860,21 @@ class MyAccount_AJAX extends JSON_Action
 						$fineAmount = $_REQUEST['amountToPay'][$fineId];
 						$maxFineAmount = $useOutstanding ? $fine['amountOutstandingVal'] : $fine['amountVal'];
 						if (!is_numeric($fineAmount) || $fineAmount <= 0 || $fineAmount > $maxFineAmount) {
-							return ['success' => false, 'message' => translate(['text' => 'payment_invalid_amount', 'defaultText' => 'Invalid amount entered for fine. Please enter an amount over 0 and less than the total amount owed.'])];
+							return ['success' => false, 'message' => translate(['text' => 'Invalid amount entered for fine. Please enter an amount over 0 and less than the total amount owed.', 'isPublicFacing'=> true])];
 						}
+						$finesPaid .= '|' . $fineAmount;
 						if ($fineAmount != $maxFineAmount) {
 							//Record this is a partially paid fine
-							$finesPaid .= '|' . $fineAmount;
 							$finePayment = 1;
-						} else {
-							if ($ils == 'CarlX') { // CarlX SIP2 Fee Paid requires amount 
-								$finesPaid .= '|' . $fineAmount;
-							}
 						}
 
 					} else {
 						$fineAmount = $useOutstanding ? $fine['amountOutstandingVal'] : $fine['amountVal'];
-						if ($ils == 'CarlX') { // CarlX SIP2 Fee Paid requires amount
-							$finesPaid .= '|' . $fineAmount;
-						}
+						$finesPaid .= '|' . $fineAmount;
 					}
 
 					$purchaseUnits['items'][] = [
-						'custom_id' => $fineId,
+						'custom_id' => $paymentLibrary->subdomain,
 						'name' => StringUtils::trimStringToLengthAtWordBoundary($fine['reason'], 120, true),
 						'description' => StringUtils::trimStringToLengthAtWordBoundary($fine['message'], 120, true),
 						'unit_amount' => [
@@ -2784,8 +2904,8 @@ class MyAccount_AJAX extends JSON_Action
 			}
 
 			//Determine if fines have been paid in the proper order
-			if (!empty($userLibrary->finePaymentOrder)) {
-				$paymentOrder = explode('|', strtolower($userLibrary->finePaymentOrder));
+			if (!empty($paymentLibrary->finePaymentOrder)) {
+				$paymentOrder = explode('|', strtolower($paymentLibrary->finePaymentOrder));
 
 				//Add another category for everything else.
 				$paymentOrder[] = '!!other!!';
@@ -2817,10 +2937,14 @@ class MyAccount_AJAX extends JSON_Action
 						$nextPaymentStatus = $paymentOrder[$nextPaymentType];
 						//We have a problem if a lower priority fine is partially or fully paid and the higher priority is not fully paid
 						if ($lastPaymentStatus != -1 && $lastPaymentStatus != 2 && $nextPaymentStatus >= 1) {
-							return ['success' => false, 'message' => translate(['text' => 'bad_payment_order', 'defaultText' => 'You must pay all fines of type <strong>%1%</strong> before paying other types.', 1 => $lastPaymentType])];
+							return ['success' => false, 'message' => translate(['text' => 'You must pay all fines of type <strong>%1%</strong> before paying other types.', 1 => $lastPaymentType, 'isPublicFacing'=> true])];
 						}
 					}
 				}
+			}
+
+			if ($totalFines < $paymentLibrary->minimumFineAmount) {
+				return ['success' => false, 'message' => translate(['text' => 'You must select at least %1% in fines to pay.', 1 => sprintf('$%01.2f', $paymentLibrary->minimumFineAmount), 'isPublicFacing'=> true])];
 			}
 
 			$purchaseUnits['amount'] = [
@@ -2834,8 +2958,8 @@ class MyAccount_AJAX extends JSON_Action
 				]
 			];
 
-			if ($totalFines < $userLibrary->minimumFineAmount) {
-				return ['success' => false, 'message' => translate(['text' => 'You must select at least %1% in fines to pay.', 1 => sprintf('$%01.2f', $userLibrary->minimumFineAmount)])];
+			if ($totalFines < $paymentLibrary->minimumFineAmount) {
+				return ['success' => false, 'message' => translate(['text' => 'You must select at least %1% in fines to pay.', 1 => sprintf('$%01.2f', $paymentLibrary->minimumFineAmount), 'isPublicFacing'=> true])];
 			}
 
 			require_once ROOT_DIR . '/sys/Account/UserPayment.php';
@@ -2846,99 +2970,252 @@ class MyAccount_AJAX extends JSON_Action
 			$payment->totalPaid = $totalFines;
 			$payment->paymentType = $paymentType;
 			$payment->transactionDate = $transactionDate;
+			$payment->transactionType = "fine";
+			global $library;
+			$payment->paidFromInstance = $library->subdomain;
 			$paymentId = $payment->insert();
-			$purchaseUnits['custom_id'] = $paymentId;
+			$purchaseUnits['custom_id'] = $paymentLibrary->subdomain;
 
-			return [$userLibrary, $payment, $purchaseUnits, $patron];
+			return [$paymentLibrary, $userLibrary, $payment, $purchaseUnits, $patron];
 		}
 	}
 
 	function createPayPalOrder(){
 		global $configArray;
-		list($userLibrary, $payment, $purchaseUnits) = $this->createGenericOrder('paypal');
 
-		require_once ROOT_DIR . '/sys/CurlWrapper.php';
-		$payPalAuthRequest = new CurlWrapper();
-		//Connect to PayPal
-		if ($userLibrary->payPalSandboxMode == 1) {
-			$baseUrl = 'https://api.sandbox.paypal.com';
+		$transactionType = $_REQUEST['type'];
+		if($transactionType == 'donation') {
+			$result = $this->createGenericDonation('paypal');
 		} else {
-			$baseUrl = 'https://api.paypal.com';
+			$result = $this->createGenericOrder('paypal');
 		}
 
-		$clientId = $userLibrary->payPalClientId;
-		$clientSecret = $userLibrary->payPalClientSecret;
-
-		//Get the access token
-		$authInfo = base64_encode("$clientId:$clientSecret");
-		$payPalAuthRequest->addCustomHeaders([
-			"Accept: application/json",
-			"Accept-Language: en_US",
-			"Authorization: Basic $authInfo"
-		], true);
-		$postParams = [
-			'grant_type' => 'client_credentials',
-		];
-
-		$accessTokenUrl = $baseUrl . "/v1/oauth2/token";
-		$accessTokenResults = $payPalAuthRequest->curlPostPage($accessTokenUrl, $postParams);
-		$accessTokenResults = json_decode($accessTokenResults);
-		if (empty($accessTokenResults->access_token)) {
-			return ['success' => false, 'message' => 'Unable to authenticate with PayPal, please try again in a few minutes.'];
+		if (array_key_exists('success', $result) && $result['success'] === false) {
+			return $result;
 		} else {
-			$accessToken = $accessTokenResults->access_token;
+			/** @var Library $paymentLibrary */
+			/** @var Library $userLibrary */
+			/** @var UserPayment $payment */
+			/** @var User $patron */
+			if($transactionType == 'donation') {
+				/** @noinspection PhpUnusedLocalVariableInspection */
+				list($paymentLibrary, $userLibrary, $payment, $purchaseUnits, $patron, $tempDonation) = $result;
+			} else {
+				/** @noinspection PhpUnusedLocalVariableInspection */
+				list($paymentLibrary, $userLibrary, $payment, $purchaseUnits, $patron) = $result;
+			}
+
+			require_once ROOT_DIR . '/sys/ECommerce/PayPalSetting.php';
+			$payPalSettings = new PayPalSetting();
+			$payPalSettings->id = $paymentLibrary->payPalSettingId;
+			if (!$payPalSettings->find(true)){
+				return ['success' => false, 'message' => "PayPal payments are not configured correctly for ."];
+			}
+			require_once ROOT_DIR . '/sys/CurlWrapper.php';
+			$payPalAuthRequest = new CurlWrapper();
+			//Connect to PayPal
+			if ($payPalSettings->sandboxMode == 1) {
+				$baseUrl = 'https://api.sandbox.paypal.com';
+			} else {
+				$baseUrl = 'https://api.paypal.com';
+			}
+
+			$clientId = $payPalSettings->clientId;
+			$clientSecret = $payPalSettings->clientSecret;
+
+			//Get the access token
+			$authInfo = base64_encode("$clientId:$clientSecret");
+			$payPalAuthRequest->addCustomHeaders([
+				"Accept: application/json",
+				"Accept-Language: en_US",
+				"Authorization: Basic $authInfo"
+			], true);
+			$postParams = [
+				'grant_type' => 'client_credentials',
+			];
+
+			$accessTokenUrl = $baseUrl . "/v1/oauth2/token";
+			$accessTokenResults = $payPalAuthRequest->curlPostPage($accessTokenUrl, $postParams);
+			$accessTokenResults = json_decode($accessTokenResults);
+			if (empty($accessTokenResults->access_token)) {
+				return ['success' => false, 'message' => 'Unable to authenticate with PayPal, please try again in a few minutes.'];
+			} else {
+				$accessToken = $accessTokenResults->access_token;
+			}
+
+			global $library;
+			foreach ($purchaseUnits['items'] as &$item){
+				$item['reference_id'] = $payment->id . "|" . $library->subdomain . "|" . ($userLibrary == null ? 'none' : $userLibrary->subdomain) ;
+				$item['invoice_id'] = $payment->id;
+			}
+
+			//Setup the payment request (https://developer.paypal.com/docs/checkout/reference/server-integration/set-up-transaction/)
+			$payPalPaymentRequest = new CurlWrapper();
+			$payPalPaymentRequest->addCustomHeaders([
+				"Accept: application/json",
+				"Content-Type: application/json",
+				"Accept-Language: en_US",
+				"Authorization: Bearer $accessToken",
+				"Prefer: return=representation"
+			], false);
+			$paymentRequestUrl = $baseUrl . '/v2/checkout/orders';
+			$paymentRequestBody = [
+				'intent' => 'CAPTURE',
+				'application_context' => [
+					'brand_name' => $paymentLibrary->displayName,
+					'locale' => 'en-US',
+					'shipping_preferences' => 'NO_SHIPPING',
+					'user_action' => 'PAY_NOW',
+					'return_url' => $configArray['Site']['url'] . '/MyAccount/Fines',
+					'cancel_url' => $configArray['Site']['url'] . '/MyAccount/Fines',
+				],
+				'purchase_units' => [
+					0 => $purchaseUnits,
+				]
+			];
+
+			$paymentResponse = $payPalPaymentRequest->curlPostBodyData($paymentRequestUrl, $paymentRequestBody);
+			$paymentResponse = json_decode($paymentResponse);
+
+			if ($paymentResponse->status != 'CREATED') {
+				return ['success' => false, 'message' => 'Unable to create your order in PayPal.'];
+			}
+
+			//Log the request in the database so we can validate it on return
+			$payment->orderId = $paymentResponse->id;
+			$payment->update();
+
+			if($payment->transactionType == 'donation') {
+				$this->addDonation($payment, $tempDonation);
+			}
+
+			return ['success' => true, 'orderInfo' => $paymentResponse, 'orderID' => $paymentResponse->id];
 		}
-
-		//Setup the payment request (https://developer.paypal.com/docs/checkout/reference/server-integration/set-up-transaction/)
-		$payPalPaymentRequest = new CurlWrapper();
-		$payPalPaymentRequest->addCustomHeaders([
-			"Accept: application/json",
-			"Content-Type: application/json",
-			"Accept-Language: en_US",
-			"Authorization: Bearer $accessToken"
-		], false);
-		$paymentRequestUrl = $baseUrl . '/v2/checkout/orders';
-		$paymentRequestBody = [
-			'intent' => 'CAPTURE',
-			'application_context' => [
-				'brand_name' => $userLibrary->displayName,
-				'locale' => 'en-US',
-				'shipping_preferences' => 'NO_SHIPPING',
-				'user_action' => 'PAY_NOW',
-				'return_url' => $configArray['Site']['url'] . '/MyAccount/PayPalReturn',
-				'cancel_url' => $configArray['Site']['url'] . '/MyAccount/Fines'
-			],
-			'purchase_units' => [
-				0 => $purchaseUnits,
-			]
-		];
-
-		$paymentResponse = $payPalPaymentRequest->curlPostBodyData($paymentRequestUrl, $paymentRequestBody);
-		$paymentResponse = json_decode($paymentResponse);
-
-		if ($paymentResponse->status != 'CREATED') {
-			return ['success' => false, 'message' => 'Unable to create your order in PayPal.'];
-		}
-
-		//Log the request in the database so we can validate it on return
-		$payment->orderId = $paymentResponse->id;
-		$payment->update();
-
-		return ['success' => true, 'orderInfo' => $paymentResponse, 'orderID' => $paymentResponse->id];
 	}
 
 	/** @noinspection PhpUnused */
 	function completePayPalOrder()
 	{
+		global $configArray;
+
 		$orderId = $_REQUEST['orderId'];
 		$patronId = $_REQUEST['patronId'];
+		$transactionType = $_REQUEST['type'];
 
-		//Get the order information
-		require_once ROOT_DIR . '/sys/Account/UserPayment.php';
-		$payment = new UserPayment();
-		$payment->orderId = $orderId;
-		$payment->userId = $patronId;
-		if ($payment->find(true)) {
+		global $library;
+		$paymentLibrary = $library;
+
+		if($transactionType == 'donation') {
+			//Get the order information
+			require_once ROOT_DIR . '/sys/Account/UserPayment.php';
+			$payment = new UserPayment();
+			$payment->orderId = $orderId;
+			$payment->transactionType = 'donation';
+			if($payment->find(true)) {
+				require_once ROOT_DIR . '/sys/Donations/Donation.php';
+				$donation = new Donation();
+				$donation->paymentId = $payment->id;
+				if(!$donation->find(true)) {
+					header("Location: " . $configArray['Site']['url'] . '/Donations/DonationCancelled?type=paypal&payment=' . $payment->id . '&donation=' . $donation->id);
+				}
+			} else {
+				header("Location: " . $configArray['Site']['url'] . '/Donations/DonationCancelled?type=paypal&payment=' . $payment->id);
+			}
+		} else {
+			//Get the order information
+			require_once ROOT_DIR . '/sys/Account/UserPayment.php';
+			$payment = new UserPayment();
+			$payment->orderId = $orderId;
+			$payment->userId = $patronId;
+			if ($payment->find(true)) {
+
+				$user = UserAccount::getLoggedInUser();
+				$patronId = $_REQUEST['patronId'];
+
+				$patron = $user->getUserReferredTo($patronId);
+				$userLibrary = $patron->getHomeLibrary();
+				global $library;
+				$paymentLibrary = $library;
+				$systemVariables = SystemVariables::getSystemVariables();
+				if ($systemVariables->libraryToUseForPayments == 0) {
+					$paymentLibrary = $userLibrary;
+				}
+			}
+		}
+
+		require_once ROOT_DIR . '/sys/ECommerce/PayPalSetting.php';
+		$payPalSettings = new PayPalSetting();
+		$payPalSettings->id = $paymentLibrary->payPalSettingId;
+		if ($payPalSettings->find(true)) {
+			//Get Payment details
+
+			require_once ROOT_DIR . '/sys/CurlWrapper.php';
+			$payPalAuthRequest = new CurlWrapper();
+			//Connect to PayPal
+			if ($payPalSettings->sandboxMode == 1) {
+				$baseUrl = 'https://api.sandbox.paypal.com';
+			} else {
+				$baseUrl = 'https://api.paypal.com';
+			}
+
+			$clientId = $payPalSettings->clientId;
+			$clientSecret = $payPalSettings->clientSecret;
+
+			//Get the access token
+			$authInfo = base64_encode("$clientId:$clientSecret");
+			$payPalAuthRequest->addCustomHeaders([
+				"Accept: application/json",
+				"Accept-Language: en_US",
+				"Authorization: Basic $authInfo"
+			], true);
+			$postParams = [
+				'grant_type' => 'client_credentials',
+			];
+
+			$accessTokenUrl = $baseUrl . "/v1/oauth2/token";
+			$accessTokenResults = $payPalAuthRequest->curlPostPage($accessTokenUrl, $postParams);
+			$accessTokenResults = json_decode($accessTokenResults);
+			if (empty($accessTokenResults->access_token)) {
+				return ['success' => false, 'message' => 'Unable to authenticate with PayPal, please try again in a few minutes.'];
+			} else {
+				$accessToken = $accessTokenResults->access_token;
+			}
+
+			$payPalPaymentRequest = new CurlWrapper();
+			$payPalPaymentRequest->addCustomHeaders([
+				"Accept: application/json",
+				"Content-Type: application/json",
+				"Accept-Language: en_US",
+				"Authorization: Bearer $accessToken",
+				"Prefer: return=representation"
+			], false);
+			$paymentRequestUrl = $baseUrl . '/v2/checkout/orders/' . $payment->orderId;
+
+			$paymentResponse = $payPalPaymentRequest->curlGetPage($paymentRequestUrl);
+			$paymentResponse = json_decode($paymentResponse);
+
+			$purchaseUnits = $paymentResponse->purchase_units;
+			if (!empty($purchaseUnits)) {
+				$firstItem = reset($purchaseUnits);
+				$payments = $firstItem->payments;
+				if (!empty($payments->captures)) {
+					foreach ($payments->captures as $capture) {
+						if ($capture->status == 'COMPLETED') {
+							$paymentTransactionId = $capture->id;
+							$payment->transactionId = $paymentTransactionId;
+							$payment->update();
+							break;
+						}
+					}
+				}
+			}
+		}
+
+		if($transactionType == 'donation') {
+			$payment->completed = 1;
+			$payment->update();
+			return ['success' => true, 'isDonation' => true, 'paymentId' => $payment->id, 'donationId' => $donation->id];
+		} else {
 			if ($payment->completed) {
 				return ['success' => false, 'message' => 'This payment has already been processed'];
 			} else {
@@ -2946,8 +3223,6 @@ class MyAccount_AJAX extends JSON_Action
 				$patron = $user->getUserReferredTo($patronId);
 				return $patron->completeFinePayment($payment);
 			}
-		} else {
-			return ['success' => false, 'message' => 'Unable to find the order you processed, please visit the library with your receipt'];
 		}
 	}
 
@@ -2955,47 +3230,287 @@ class MyAccount_AJAX extends JSON_Action
 	function createMSBOrder()
 	{
 		global $configArray;
-		$result = $this->createGenericOrder('msb');
+
+		$transactionType = $_REQUEST['type'];
+		if($transactionType == 'donation') {
+			$result = $this->createGenericDonation('msb');
+		} else {
+			$result = $this->createGenericOrder('msb');
+		}
 		if (array_key_exists('success', $result) && $result['success'] === false) {
 			return $result;
 		} else {
-			list($userLibrary, $payment, $purchaseUnits) = $result;
-			$paymentRequestUrl = $userLibrary->msbUrl;
+			/** @noinspection PhpUnusedLocalVariableInspection */
+			if($transactionType == 'donation') {
+				list($paymentLibrary, $userLibrary, $payment, $purchaseUnits, $patron, $tempDonation) = $result;
+				$donation = $this->addDonation($payment, $tempDonation);
+			} else {
+				list($paymentLibrary, $userLibrary, $payment, $purchaseUnits) = $result;
+			}
+			$paymentRequestUrl = $paymentLibrary->msbUrl;
 			$paymentRequestUrl .= "?ReferenceID=" . $payment->id;
 			$paymentRequestUrl .= "&PaymentType=CC";
 			$paymentRequestUrl .= "&TotalAmount=" . $payment->totalPaid;
-			$paymentRequestUrl .= "&PaymentRedirectUrl=" . $configArray['Site']['url'] . '/MyAccount/Fines/' . $payment->id;
+			if($transactionType == 'donation') {
+				$paymentRequestUrl .= "&PaymentRedirectUrl=" . $configArray['Site']['url'] . '/Donations/DonationCompleted?type=msb&payment=' . $payment->id . '&donation=' . $donation->id;
+			} else {
+				$paymentRequestUrl .= "&PaymentRedirectUrl=" . $configArray['Site']['url'] . '/MyAccount/Fines/' . $payment->id;
+			}
 			return ['success' => true, 'message' => 'Redirecting to payment processor', 'paymentRequestUrl' => $paymentRequestUrl];
 		}
 	}
 
+	/** @noinspection PhpUnused */
 	function createCompriseOrder() {
 		global $configArray;
-		$result = $this->createGenericOrder('comprise');
+
+		$transactionType = $_REQUEST['type'];
+		if($transactionType == 'donation') {
+			$result = $this->createGenericDonation('comprise');
+		} else {
+			$result = $this->createGenericOrder('comprise');
+		}
+
 		if (array_key_exists('success', $result) && $result['success'] === false) {
 			return $result;
 		} else {
+			global $activeLanguage;
+			$currencyCode = 'USD';
+			$variables = new SystemVariables();
+			if ($variables->find(true)){
+				$currencyCode = $variables->currencyCode;
+			}
+
+			$currencyFormatter = new NumberFormatter( $activeLanguage->locale . '@currency=' . $currencyCode, NumberFormatter::CURRENCY );
+			$currencyFormatter->setSymbol(NumberFormatter::CURRENCY_SYMBOL, '');
+
 			/** @var Library $userLibrary */
+			/** @var UserPayment $payment */
 			/** @var User $patron */
-			list($userLibrary, $payment, $purchaseUnits, $patron) = $result;
+			if($transactionType == 'donation') {
+				list($paymentLibrary, $userLibrary, $payment, $purchaseUnits, $patron, $tempDonation) = $result;
+			} else {
+				list($paymentLibrary, $userLibrary, $payment, $purchaseUnits, $patron) = $result;
+			}
 			require_once ROOT_DIR . '/sys/ECommerce/CompriseSetting.php';
 			$compriseSettings = new CompriseSetting();
-			$compriseSettings->id = $userLibrary->compriseSettingId;
+			$compriseSettings->id = $paymentLibrary->compriseSettingId;
 			if ($compriseSettings->find(true)) {
-				$paymentRequestUrl = 'https://smartpayapi.comprisesmartterminal.com/smartpayapi/websmartpay.dll?GetCreditForm';
+				$paymentRequestUrl = 'https://smartpayapi2.comprisesmartterminal.com/smartpayapi/websmartpay.dll?GetCreditForm';
+				$paymentRequestUrl .= "&LocationID=" . $compriseSettings->username;
 				$paymentRequestUrl .= "&CustomerID=" . $compriseSettings->customerId;
-				$paymentRequestUrl .= "&PatronID=" . $patron->getBarcode();
+				if($transactionType == 'donation') {
+					$paymentRequestUrl .= "&PatronID=Guest";
+				} else {
+					$paymentRequestUrl .= "&PatronID=" . $patron->getBarcode();
+				}
 				$paymentRequestUrl .= '&UserName=' . urlencode($compriseSettings->username);
-				$paymentRequestUrl .= '&Password=' . urlencode($compriseSettings->password);
-				$paymentRequestUrl .= '&Amount=' . $payment->totalPaid;
-				$paymentRequestUrl .= "&URLPostBack=" . urlencode($configArray['Site']['url'] . '/MyAccount/Fines/' . $payment->id);
-				$paymentRequestUrl .= "&URLReturn=" . urlencode($configArray['Site']['url'] . '/MyAccount/Fines');
-				$paymentRequestUrl .= "&URLCancel=" . urlencode($configArray['Site']['url'] . '/MyAccount/CompriseCancel?payment=' . $payment->id);
+				$paymentRequestUrl .= '&Password=' . $compriseSettings->password;
+				$paymentRequestUrl .= '&Amount=' . $currencyFormatter->format($payment->totalPaid);
+				if($transactionType == 'donation') {
+					$donation = $this->addDonation($payment, $tempDonation);
+					$paymentRequestUrl .= "&URLPostBack=" . urlencode($configArray['Site']['url'] . '/Comprise/Complete');
+					$paymentRequestUrl .= "&URLReturn=" . urlencode($configArray['Site']['url'] . '/Donations/DonationCompleted?payment=' . $payment->id);
+					$paymentRequestUrl .= "&URLCancel=" . urlencode($configArray['Site']['url'] . '/Donations/DonationCancelled?payment=' . $payment->id);
+				} else {
+					$paymentRequestUrl .= "&URLPostBack=" . urlencode($configArray['Site']['url'] . '/Comprise/Complete');
+					$paymentRequestUrl .= "&URLReturn=" . urlencode($configArray['Site']['url'] . '/MyAccount/CompriseCompleted?payment=' . $payment->id);
+					$paymentRequestUrl .= "&URLCancel=" . urlencode($configArray['Site']['url'] . '/MyAccount/CompriseCancel?payment=' . $payment->id);
+				}
 				$paymentRequestUrl .= '&INVNUM=' . $payment->id;
+				$paymentRequestUrl .= '&Field1=';
+				$paymentRequestUrl .= '&Field2=';
+				$paymentRequestUrl .= '&Field3=';
+				$paymentRequestUrl .= '&ItemsData=';
 
 				return ['success' => true, 'message' => 'Redirecting to payment processor', 'paymentRequestUrl' => $paymentRequestUrl];
 			}else{
 				return ['success' => false, 'message' => 'Comprise was not properly configured'];
+			}
+		}
+	}
+
+	/** @noinspection PhpUnused */
+	function createProPayOrder() {
+		global $configArray;
+
+		$transactionType = $_REQUEST['type'];
+		if($transactionType == 'donation') {
+			$result = $this->createGenericDonation('propay');
+		} else {
+			$result = $this->createGenericOrder('propay');
+		}
+		if (array_key_exists('success', $result) && $result['success'] === false) {
+			return $result;
+		} else {
+			global $activeLanguage;
+			$currencyCode = 'USD';
+			$variables = new SystemVariables();
+			if ($variables->find(true)){
+				$currencyCode = $variables->currencyCode;
+			}
+
+			$currencyFormatter = new NumberFormatter( $activeLanguage->locale . '@currency=' . $currencyCode, NumberFormatter::CURRENCY );
+			$currencyFormatter->setSymbol(NumberFormatter::CURRENCY_SYMBOL, '');
+
+			/** @var Library $paymentLibrary */
+			/** @var Library $userLibrary */
+			/** @var UserPayment $payment */
+			/** @var User $patron */
+			/** @noinspection PhpUnusedLocalVariableInspection */
+			if($transactionType == 'donation') {
+				list($paymentLibrary, $userLibrary, $payment, $purchaseUnits, $patron, $tempDonation) = $result;
+			} else {
+				list($paymentLibrary, $userLibrary, $payment, $purchaseUnits, $patron) = $result;
+			}
+			require_once ROOT_DIR . '/sys/ECommerce/ProPaySetting.php';
+			$proPaySetting = new ProPaySetting();
+			$proPaySetting->id = $paymentLibrary->proPaySettingId;
+			if ($proPaySetting->find(true)) {
+
+				if($transactionType == 'donation') { $donation = $this->addDonation($payment, $tempDonation); }
+				$curlWrapper = new CurlWrapper();
+				$authorization = $proPaySetting->billerAccountId . ':' . $proPaySetting->authenticationToken;
+				$authorization = 'Basic ' . base64_encode($authorization);
+				$curlWrapper->addCustomHeaders([
+					'User-Agent: Aspen Discovery',
+					'Accept: application/json',
+					'Cache-Control: no-cache',
+					'Content-Type: application/json',
+					'Accept-Encoding: gzip, deflate',
+					'Authorization: ' . $authorization
+				], true);
+
+				//Create the payer if one doesn't exist already.
+				if (empty($patron->proPayPayerAccountId)){
+					$createPayer = new stdClass();
+					$createPayer->EmailAddress = $patron->email;
+					$createPayer->ExternalId = $patron->id;
+					$createPayer->Name = $patron->_fullname;
+
+					//Issue PUT request to
+					if ($proPaySetting->useTestSystem) {
+						$url = 'https://xmltestapi.propay.com/protectpay/Payers/';
+					}else{
+						$url = 'https://api.propay.com/protectpay/Payers/';
+					}
+
+					$createPayerResponse = $curlWrapper->curlSendPage($url, 'PUT', json_encode($createPayer));
+					if ($createPayerResponse && $curlWrapper->getResponseCode() == 200){
+						$jsonResponse = json_decode($createPayerResponse);
+						if($patron != null) {
+							$patron->proPayPayerAccountId = $jsonResponse->ExternalAccountID;
+							$proPayPayerAccountId = null;
+							$patron->update();
+						} else {
+							$proPayPayerAccountId = $jsonResponse->ExternalAccountID;
+						}
+					}
+				}
+
+				if (empty($proPaySetting->merchantProfileId) || $proPaySetting->merchantProfileId == 0){
+					//Create a merchant profile id
+					$createMerchantProfile = new stdClass();
+					$createMerchantProfile->ProfileName = $proPaySetting->name;
+					$createMerchantProfile->PaymentProcessor = 'LegacyProPay';
+					$createMerchantProfile->ProcessorData = [];
+					$certStrField = new stdClass();
+					$certStrField->ProcessorField = 'certStr';
+					$certStrField->Value = $proPaySetting->certStr;
+					$createMerchantProfile->ProcessorData[] = $certStrField;
+					$accountNumField = new stdClass();
+					$accountNumField->ProcessorField = 'accountNum';
+					$accountNumField->Value = $proPaySetting->accountNum;
+					$createMerchantProfile->ProcessorData[] = $accountNumField;
+					$termIdField = new stdClass();
+					$termIdField->ProcessorField = 'termId';
+					$termIdField->Value = $proPaySetting->termId;
+					$createMerchantProfile->ProcessorData[] = $termIdField;
+
+					//Issue PUT request to
+					if ($proPaySetting->useTestSystem) {
+						$url = 'https://xmltestapi.propay.com/protectpay/MerchantProfiles/';
+					}else{
+						$url = 'https://api.propay.com/protectpay/MerchantProfiles/';
+					}
+
+					$createMerchantProfileResponse = $curlWrapper->curlSendPage($url, 'PUT', json_encode($createMerchantProfile));
+					if ($createMerchantProfileResponse && $curlWrapper->getResponseCode() == 200){
+						$jsonResponse = json_decode($createMerchantProfileResponse);
+						$proPaySetting->merchantProfileId = $jsonResponse->ProfileId;
+						$proPaySetting->update();
+					}
+				}
+
+				if (!empty($patron->proPayPayerAccountId) || ($proPayPayerAccountId != null)) {
+					//Create the Hosted Transaction Instance
+					$requestElements = new stdClass();
+					$requestElements->Amount = (int)round($payment->totalPaid * 100);
+					$requestElements->AuthOnly = false;
+					$requestElements->AvsRequirementType = 2;
+					$requestElements->BillerAccountId = $proPaySetting->billerAccountId;
+					$requestElements->CardHolderNameRequirementType = 1;
+					$requestElements->CssUrl = $configArray['Site']['url'] . '/interface/themes/responsive/css/main.css';
+					$requestElements->CurrencyCode = $currencyCode;
+					$requestElements->InvoiceNumber = (string)$payment->id;
+					$requestElements->MerchantProfileId = (int)$proPaySetting->merchantProfileId;
+					$requestElements->PaymentTypeId = "0";
+					if($proPayPayerAccountId) {
+						$requestElements->PayerAccountId = (int)$proPayPayerAccountId;
+					} else {
+						$requestElements->PayerAccountId = (int)$patron->proPayPayerAccountId;
+					}
+					$requestElements->ProcessCard = true;
+					if($transactionType == 'donation') {
+						$requestElements->ReturnURL = $configArray['Site']['url'] . "/ProPay/{$payment->id}/Complete?type=" . $payment->transactionType . "&donation=" . $donation->id;
+					} else {
+						$requestElements->ReturnURL = $configArray['Site']['url'] . "/ProPay/{$payment->id}/Complete?type=" . $payment->transactionType;
+					}
+					$requestElements->SecurityCodeRequirementType = 1;
+					$requestElements->StoreCard = false;
+					if($transactionType == 'donation' && $payment->userId == null) {
+						$requestElements->Name = $donation->firstName . $donation->lastName;
+					} else {
+						$patron->loadContactInformation();
+						$requestElements->Address1 = $patron->_address1;
+						$requestElements->Address2 = $patron->_address2;
+						$requestElements->City = $patron->_city;
+						$requestElements->Name = $patron->_fullname;
+						$requestElements->State = $patron->_state;
+						$requestElements->ZipCode = $patron->_zip;
+					}
+
+					//Issue PUT request to
+					if ($proPaySetting->useTestSystem) {
+						$url = 'https://xmltestapi.propay.com/protectpay/HostedTransactions/';
+					} else {
+						$url = 'https://api.propay.com/protectpay/HostedTransactions/';
+					}
+
+					$response = $curlWrapper->curlSendPage($url, 'PUT', json_encode($requestElements));
+					if ($response && $curlWrapper->getResponseCode() == 200) {
+						$jsonResponse = json_decode($response);
+						$transactionIdentifier = $jsonResponse->HostedTransactionIdentifier;
+
+						$payment->orderId = $transactionIdentifier;
+						$payment->update();
+
+						if ($proPaySetting->useTestSystem) {
+							$paymentRequestUrl = 'https://protectpaytest.propay.com/hpp/v2/' . $transactionIdentifier;
+						} else {
+							$paymentRequestUrl = 'https://protectpay.propay.com/hpp/v2/' . $transactionIdentifier;
+						}
+
+						return ['success' => true, 'message' => 'Redirecting to payment processor', 'paymentRequestUrl' => $paymentRequestUrl];
+					} else {
+						return ['success' => false, 'message' => 'Could not connect to the payment processor'];
+					}
+				}else{
+					return ['success' => false, 'message' => 'Payer Account ID could not be determined.'];
+				}
+
+			}else{
+				return ['success' => false, 'message' => 'ProPay was not properly configured'];
 			}
 		}
 	}
@@ -3007,7 +3522,7 @@ class MyAccount_AJAX extends JSON_Action
 
 		$result = [
 			'success' => false,
-			'message' => 'Unknown Error',
+			'message' => translate(['text'=>'Unknown Error', 'isPublicFacing'=>true]),
 		];
 
 		if ($patronId != UserAccount::getActiveUserId()){
@@ -3028,6 +3543,137 @@ class MyAccount_AJAX extends JSON_Action
 					'success' => true
 				];
 			}
+		}
+
+		return $result;
+	}
+
+	/** @noinspection PhpUnused */
+	function dismissBrowseCategory(){
+		$patronId = $_REQUEST['patronId'];
+		$browseCategoryId = $_REQUEST['browseCategoryId'];
+
+		$result = [
+			'success' => false,
+			'message' => translate(['text'=>'Unknown Error', 'isPublicFacing'=>true]),
+		];
+
+		if ($patronId != UserAccount::getActiveUserId()){
+			$result['message'] = 'Incorrect user information, please login again.';
+		}else{
+			require_once ROOT_DIR . '/sys/Browse/BrowseCategory.php';
+			$browseCategory = new BrowseCategory();
+			$browseCategory->textId = $browseCategoryId;
+			if (!$browseCategory->find(true)){
+				$result['message'] = 'Invalid browse category provided, please try again.';
+			}else{
+				require_once ROOT_DIR . '/sys/Browse/BrowseCategoryDismissal.php';
+				$browseCategoryDismissal = new BrowseCategoryDismissal();
+				$browseCategoryDismissal->browseCategoryId = $browseCategoryId;
+				$browseCategoryDismissal->userId = $patronId;
+				if($browseCategoryDismissal->find(true)) {
+					$result['message'] = "User already dismissed this category.";
+				} else {
+					$browseCategoryDismissal->insert();
+					$browseCategory->numTimesDismissed += 1;
+					$browseCategory->update();
+					$result = [
+						'success' => true
+					];
+				}
+			}
+		}
+
+		return $result;
+	}
+
+	/** @noinspection PhpUnused */
+	function getHiddenBrowseCategories() {
+		global $interface;
+
+		if (isset($_REQUEST['patronId'])) {
+			$patronId = $_REQUEST['patronId'];
+			$interface->assign('patronId', $patronId);
+
+			$hiddenCategories = [];
+			require_once ROOT_DIR . '/sys/Browse/BrowseCategoryDismissal.php';
+			$browseCategoryDismissals = new BrowseCategoryDismissal();
+			$browseCategoryDismissals->userId = $patronId;
+			$browseCategoryDismissals->find();
+			while($browseCategoryDismissals->fetch()) {
+				$hiddenCategories[] = clone($browseCategoryDismissals);
+			}
+
+			if($browseCategoryDismissals->count() > 0) {
+				$categories = [];
+				foreach($hiddenCategories as $hiddenCategory) {
+					require_once ROOT_DIR . '/sys/Browse/BrowseCategory.php';
+					$browseCategory = new BrowseCategory();
+					$browseCategory->textId = $hiddenCategory->browseCategoryId;
+					if($browseCategory->find(true)){
+						$category['id'] = $browseCategory->textId;
+						$category['name'] = $browseCategory->label;
+						$category['description'] = $browseCategory->description;
+						$categories[] = $category;
+					}
+				}
+				$interface->assign('hiddenBrowseCategories', $categories);
+				return array(
+					'title' => 'Hidden browse categories',
+					'modalBody' => $interface->fetch('MyAccount/hiddenBrowseCategories.tpl'),
+					'modalButtons' => '<span class="tool btn btn-primary" onclick="return AspenDiscovery.Account.showBrowseCategory()">Show these Browse Categories</span>'
+				);
+			} else {
+				$interface->assign('message', 'You have no hidden browse categories.');
+				return [
+					'success' => false,
+					'title' => 'Error',
+					'modalBody' => $interface->fetch('MyAccount/hiddenBrowseCategories.tpl'),
+					'message' => 'You have no hidden browse categories.'
+				];
+			}
+		} else {
+			return [
+				'success' => false,
+				'message' => 'You must be logged in to show hidden browse categories.'
+			];
+		}
+	}
+
+	function showBrowseCategory(){
+		$result = [
+			'success' => false,
+			'title' => translate(['text'=>'Show hidden browse categories','isPublicFacing'=>true]),
+			'message' => translate(['text'=>'Sorry your visible browse categories not be updated','isPublicFacing'=>true])
+		];
+
+		$patronId = $_REQUEST['patronId'];
+
+		if (isset($_REQUEST['selected']) && is_array($_REQUEST['selected'])) {
+			$categoriesToShow = $_REQUEST['selected'];
+			foreach ($categoriesToShow as $showThisCategory => $selected){
+				require_once ROOT_DIR . '/sys/Browse/BrowseCategory.php';
+				$browseCategory = new BrowseCategory();
+				$browseCategory->textId = $showThisCategory;
+				if (!$browseCategory->find(true)) {
+					$result['message'] = 'Invalid browse category provided, please try again.';
+				} else {
+					require_once ROOT_DIR . '/sys/Browse/BrowseCategoryDismissal.php';
+					$browseCategoryDismissal = new BrowseCategoryDismissal();
+					$browseCategoryDismissal->browseCategoryId = $browseCategory->textId;
+					$browseCategoryDismissal->userId = $patronId;
+					if ($browseCategoryDismissal->find(true)) {
+						$browseCategoryDismissal->delete();
+						$result = [
+							'success' => true
+						];
+					} else {
+						$result['message'] = "User already had this category visible.";
+					}
+				}
+			}
+		} else {
+			$result['message'] = 'No browse categories were selected';
 		}
 
 		return $result;
@@ -3070,9 +3716,9 @@ class MyAccount_AJAX extends JSON_Action
 		UserList::getUserListsForSaveForm($source, $sourceId);
 
 		return array(
-			'title' => 'Add To List',
+			'title' => translate(['text'=>'Add To List','isPublicFacing'=>true]),
 			'modalBody' => $interface->fetch("MyAccount/saveToList.tpl"),
-			'modalButtons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.Account.saveToList(); return false;'>" . translate("Save To List") . "</button>"
+			'modalButtons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.Account.saveToList(); return false;'>" . translate(['text'=>"Save To List",'isPublicFacing'=>true]) . "</button>"
 		);
 	}
 
@@ -3082,7 +3728,7 @@ class MyAccount_AJAX extends JSON_Action
 
 		if (!UserAccount::isLoggedIn()) {
 			$result['success'] = false;
-			$result['message'] = 'Please login before adding a title to list.';
+			$result['message'] = translate(['text'=>'Please login before adding a title to list.','isPublicFacing'=>true]);
 		}else{
 			require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 			require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
@@ -3096,17 +3742,18 @@ class MyAccount_AJAX extends JSON_Action
 			$userList = new UserList();
 			$listOk = true;
 			if (empty($listId)){
-				$userList->title = "My Favorites";
+				$userList->title = translate(['text'=>"My Favorites",'isPublicFacing'=>true]);
 				$userList->user_id = UserAccount::getActiveUserId();
 				$userList->public = 0;
 				$userList->description = '';
 				$userList->insert();
+				$totalRecords = 0;
 			}else{
 				$userList->id = $listId;
 				$totalRecords = $userList->numValidListItems();
 				if (!$userList->find(true)){
 					$result['success'] = false;
-					$result['message'] = 'Sorry, we could not find that list in the system.';
+					$result['message'] = translate(['text'=>'Sorry, we could not find that list in the system.','isPublicFacing'=>true]);
 					$listOk = false;
 				}
 			}
@@ -3119,15 +3766,15 @@ class MyAccount_AJAX extends JSON_Action
 				$isValid = true;
 				if (!$isValid) {
 					$result['success'] = false;
-					$result['message'] = 'Sorry, that is not a valid entry for the list.';
+					$result['message'] = translate(['text'=>'Sorry, that is not a valid entry for the list.','isPublicFacing'=>true]);
 				}else {
 					if (empty($sourceId) || empty($source)){
 						$result['success'] = false;
-						$result['message'] = 'Unable to add that to a list, not correctly specified.';
+						$result['message'] = translate(['text'=>'Unable to add that to a list, not correctly specified.','isPublicFacing'=>true]);
 					}else {
 						$userListEntry->source = $source;
 						$userListEntry->sourceId = $sourceId;
-						$userListEntry->weight = $totalRecords++;
+						$userListEntry->weight = $totalRecords +1;
 
 						if($userListEntry->source == 'GroupedWork') {
 							require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
@@ -3184,7 +3831,7 @@ class MyAccount_AJAX extends JSON_Action
 							$userObject->update();
 						}
 						$result['success'] = true;
-						$result['message'] = 'This title was saved to your list successfully.';
+						$result['message'] = translate(['text'=>'This title was saved to your list successfully.','isPublicFacing'=>true]);
 					}
 				}
 			}
@@ -3224,9 +3871,9 @@ class MyAccount_AJAX extends JSON_Action
 		$interface->assign('id', $id);
 
 		return array(
-			'title' => translate('Upload a New List Cover'),
+			'title' => translate(['text' => 'Upload a New List Cover', 'isPublicFacing'=>true]),
 			'modalBody' => $interface->fetch("Lists/upload-cover-form.tpl"),
-			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#uploadListCoverForm\").submit()'>" . translate("Upload Cover") . "</button>"
+			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#uploadListCoverForm\").submit()'>" . translate(['text' => "Upload Cover", 'isPublicFacing'=>true]) . "</button>"
 		);
 	}
 
@@ -3290,9 +3937,9 @@ class MyAccount_AJAX extends JSON_Action
 		$interface->assign('id', $id);
 
 		return array(
-			'title' => translate('Upload a New List Cover by URL'),
+			'title' => translate(['text' => 'Upload a New List Cover by URL', 'isPublicFacing'=>true]),
 			'modalBody' => $interface->fetch("Lists/upload-cover-form-url.tpl"),
-			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#uploadListCoverFormByURL\").submit()'>" . translate("Upload Cover") . "</button>"
+			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#uploadListCoverFormByURL\").submit()'>" . translate(['text' => "Upload Cover", 'isPublicFacing'=>true]) . "</button>"
 		);
 	}
 
@@ -3485,10 +4132,14 @@ class MyAccount_AJAX extends JSON_Action
 								require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
 								$userListEntry = new UserListEntry();
 								$userListEntry->id = $listEntryId;
+
 								if ($userListEntry->find(true)) {
 									$interface->assign('listEntry', $userListEntry);
 									$interface->assign('recordDriver', $userListEntry->getRecordDriver());
 								}
+								$userListEntryCount = new UserListEntry();
+								$userListEntryCount->listId = $listId;
+								$interface->assign('maxListPosition', $userListEntryCount->count());
 							}
 						}
 					}
@@ -3496,14 +4147,14 @@ class MyAccount_AJAX extends JSON_Action
 			}
 
 			return array(
-				'title' => 'Edit List Item',
+				'title' => translate(['text'=>'Edit List Item','isPublicFacing'=>true]),
 				'modalBody' => $interface->fetch('MyAccount/editListTitle.tpl'),
-				'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#listEntryEditForm\").submit()'>Save</button>",
+				'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#listEntryEditForm\").submit()'>" . translate(['text'=>'Save','isPublicFacing'=>true]) . "</button>",
 			);
 		} else {
 			return [
 				'success' => false,
-				'message' => 'You must provide the id of the list to email'
+				'message' => translate(['text'=>'You must provide the id of the list to email','isPublicFacing'=>true])
 			];
 		}
 	}
@@ -3513,8 +4164,8 @@ class MyAccount_AJAX extends JSON_Action
 	{
 		$result = [
 			'success' => false,
-			'title' => 'Updating list entry',
-			'message' => 'Sorry your list entry could not be updated'
+			'title' => translate(['text'=>'Updating list entry','isPublicFacing'=>true]),
+			'message' => translate(['text'=>'Sorry your list entry could not be updated','isPublicFacing'=>true])
 		];
 		require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 		require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
@@ -3536,36 +4187,46 @@ class MyAccount_AJAX extends JSON_Action
 			$userListEntry->update();
 
 			if(($position != $userListEntry->weight) && ($position != '')) {
-				$newPosition = $_REQUEST['position'];
-				$currentPosition = $userListEntry->weight;
+				$moveToPosition = $_REQUEST['position'];
+				$moveFromPosition = $userListEntry->weight;
 
-				$desiredPosition = new UserListEntry();
-				$desiredPosition->listId = $_REQUEST['listId'];
-				$desiredPosition->weight = $newPosition;
-				if ($desiredPosition->find(true)){
-					$entriesToSwap = new UserListEntry();
-					$entriesToSwap->listId = $_REQUEST['listId'];
-					$entriesToSwap->find();
-					while ($entriesToSwap->fetch()){
-						if($newPosition > $currentPosition){
-							// move up
-							if ($entriesToSwap->weight < $newPosition) {
-								$entriesToSwap->weight = $entriesToSwap->weight - 1;
-								$entriesToSwap->update();
+				$listEntryMoveTo = new UserListEntry();
+				$listEntryMoveTo->listId = $_REQUEST['listId'];
+				$listEntryMoveTo->weight = $moveToPosition;
+				if ($listEntryMoveTo->find(true)){
+					$listEntry = new UserListEntry();
+					$listEntry->listId = $_REQUEST['listId'];
+					$maxPosition = $listEntry->count();
+					$listEntry->find();
+					while ($listEntry->fetch()){
+						if($listEntry->weight == 1){
+							// update position 1 only if replacing 1
+							if($moveToPosition == 1) {
+								$listEntry->weight = $listEntry->weight + 1;
+								$listEntry->update();
 							}
-						}
-						if($newPosition < $currentPosition){
-							// move down
-							if ($entriesToSwap->weight > $newPosition) {
-								$entriesToSwap->weight = $entriesToSwap->weight + 1;
-								$entriesToSwap->update();
+						} elseif($listEntry->weight == $maxPosition) {
+							// update last position only if replacing
+							if($moveToPosition == $maxPosition){
+								$listEntry->weight = $listEntry->weight - 1;
+								$listEntry->update();
+							}
+						} elseif($moveToPosition > $moveFromPosition){
+							// if item is increasing in weight, move items down by 1
+							if ($listEntry->weight >= $moveToPosition) {
+								$listEntry->weight = $listEntry->weight - 1;
+								$listEntry->update();
+							}
+						} elseif($moveToPosition < $moveFromPosition){
+							// if item is decreasing in weight, move items up by 1
+							if ($listEntry->weight <= $moveToPosition) {
+								$listEntry->weight = $listEntry->weight + 1;
+								$listEntry->update();
 							}
 						}
 					}
-					$desiredPosition->weight = $newPosition - 1;
-					$desiredPosition->update();
 
-					$userListEntry->weight = $newPosition;
+					$userListEntry->weight = $moveToPosition;
 					$userListEntry->update();
 
 					$result['success'] = true;
@@ -3608,7 +4269,7 @@ class MyAccount_AJAX extends JSON_Action
 		}
 
 		if ($result['success']){
-			$result['message'] = 'List item updated successfully';
+			$result['message'] = translate(['text'=>'List item updated successfully','isPublicFacing'=>true]);
 		}
 
 		return $result;
@@ -3618,7 +4279,7 @@ class MyAccount_AJAX extends JSON_Action
 	function updateWeight() {
 		$result = [
 			'success' => false,
-			'message' => 'Unknown error moving list entry'
+			'message' => translate(['text'=>'Unknown error moving list entry','isPublicFacing'=>true])
 		];
 		if (UserAccount::isLoggedIn()) {
 			$user = UserAccount::getLoggedInUser();
@@ -3672,5 +4333,576 @@ class MyAccount_AJAX extends JSON_Action
 			$result['message'] = 'You must be logged in to move a list entry';
 		}
 		return $result;
+	}
+
+	function getSuggestionsSpotlight() {
+		$result = array(
+			'success' => false,
+			'message' => 'Error loading suggestions spotlight.'
+		);
+
+		if (!UserAccount::isLoggedIn()) {
+			$result['message'] = 'You must be logged in to view suggestions.  Please close this dialog and login again.';
+		} else {
+			require_once ROOT_DIR . '/sys/Suggestions.php';
+			require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+			$suggestions = Suggestions::getSuggestions(UserAccount::getActiveUserId());
+			foreach ($suggestions as $index => $suggestionInfo) {
+				$groupedWorkDriver = new GroupedWorkDriver($suggestionInfo['titleInfo']);
+				$result['suggestions'][] = $groupedWorkDriver->getSuggestionSpotlightResult($index);
+			}
+			$result['success'] = true;
+			$result['message'] = '';
+		}
+
+		return $result;
+	}
+
+	function getCurbsidePickupScheduler() {
+		global $interface;
+		global $library;
+
+		$result = array(
+			'success' => false,
+			'message' => 'Error loading curbside pickup scheduler'
+		);
+
+		$user = UserAccount::getActiveUserObj();
+		$interface->assign('patronId', $user->id);
+
+		if (isset($_REQUEST['pickupLocation'])) {
+			require_once ROOT_DIR . '/sys/LibraryLocation/Location.php';
+			$pickupLocation = [];
+			$location = new Location();
+			$location->locationId = $_REQUEST['pickupLocation'];
+			if($location->find(true)) {
+				$pickupLocation['id'] = $location->locationId;
+				$pickupLocation['code'] = $location->code;
+				$pickupLocation['name'] = $location->displayName;
+			}
+		} else {
+			// clear out anything that would load specific data
+			$pickupLocation = "any";
+		}
+		$interface->assign('pickupLocation', $pickupLocation);
+
+		require_once ROOT_DIR . '/sys/CurbsidePickups/CurbsidePickupSetting.php';
+		$curbsidePickupSetting = new CurbsidePickupSetting();
+		$curbsidePickupSetting->id = $library->curbsidePickupSettingId;
+		$curbsidePickupSetting->find();
+		if($curbsidePickupSetting->find(true)){
+			$interface->assign('instructionNewPickup', $curbsidePickupSetting->instructionNewPickup);
+			$interface->assign('useNote', $curbsidePickupSetting->useNote);
+			$interface->assign('noteLabel', $curbsidePickupSetting->noteLabel);
+			$interface->assign('noteInstruction', $curbsidePickupSetting->noteInstruction);
+
+			$pickupSettings = $user->getCatalogDriver()->getCurbsidePickupSettings($user->getHomeLocation()->code);
+
+			$result = array(
+				'success' => true,
+				'title' => translate(['text'=>'Schedule your pickup at ' . $pickupLocation["name"],'isPublicFacing'=>true]),
+				'body'    => $interface->fetch('MyAccount/curbsidePickupsNew.tpl'),
+				'buttons' => "<button class='btn btn-primary' onclick='return AspenDiscovery.Account.createCurbsidePickup();'>".translate(['text'=>'Schedule Pickup',  'isPublicFacing'=>true])."</button>",
+			);
+		} else {
+			// no settings found
+			$result['message'] = "Curbside pickup settings not found.";
+		}
+
+		return $result;
+	}
+
+	function createCurbsidePickup()
+	{
+		global $interface;
+		global $library;
+		$user = UserAccount::getLoggedInUser();
+		$result = array(
+			'success' => false,
+			'title' => translate(['text'=>'Scheduling curbside pickup','isPublicFacing'=>true]),
+			'message' => translate(['text' => 'Error scheduling curbside pickup', 'isPublicFacing'=>true])
+		);
+		if (!$user) {
+			$result['message'] = translate(['text' => 'You must be logged in to schedule a curbside pickup.  Please close this dialog and login again.', 'isPublicFacing'=>true]);
+		} elseif (!empty($_REQUEST['patronId'])) {
+			$patronId = $_REQUEST['patronId'];
+			$patronOwningHold = $user->getUserReferredTo($patronId);
+
+			if ($patronOwningHold == false) {
+				$result['message'] = translate(['text' => 'Sorry, you do not have access to schedule a curbside pickup for this patron.', 'isPublicFacing'=>true]);
+			} else {
+				if (empty($_REQUEST['location']) || empty($_REQUEST['date']) || empty($_REQUEST['time'])) {
+					// We aren't getting all the expected data, so make a log entry & tell user.
+					global $logger;
+					$logger->log('New curbside pickup, pickup library or pickup date/time was not passed in AJAX call.', Logger::LOG_ERROR);
+					$result['message'] = translate(['text' => 'Schedule information about the curbside pickup was not provided.', 'isPublicFacing'=>true]);
+				} else {
+					$pickupLocation = $_REQUEST['location'];
+					$pickupDate = $_REQUEST['date'];
+					$pickupTime = $_REQUEST['time'];
+					if(isset($_REQUEST['note'])) {
+						$pickupNote = $_REQUEST['note'];
+						if($pickupNote == 'undefined') {
+							$pickupNote = null;
+						}
+					}
+
+					$date = $pickupDate . " " . $pickupTime;
+					$pickupDateTime = strtotime($date);
+					$pickupDateTime = date('Y-m-d H:i:s', $pickupDateTime);
+
+					require_once ROOT_DIR . '/sys/CurbsidePickups/CurbsidePickupSetting.php';
+					$curbsidePickupSetting = new CurbsidePickupSetting();
+					$curbsidePickupSetting->id = $library->curbsidePickupSettingId;
+					if($curbsidePickupSetting->find(true)){
+						$interface->assign('contentSuccess', $curbsidePickupSetting->contentSuccess);
+					}
+
+					$result = $patronOwningHold->newCurbsidePickup($pickupLocation, $pickupDateTime, $pickupNote);
+					$interface->assign('scheduleResultMessage', $result['message']);
+					if ($result['success']) {
+						return array(
+							'success' => true,
+							'title'   => translate(['text'=>'Pickup scheduled','isPublicFacing'=>true]),
+							'body'    => $interface->fetch('MyAccount/curbsidePickupsNewSuccess.tpl'),
+						);
+					} else {
+						return array(
+							'title' => translate(['text'=>'Error scheduling curbside pickup','isPublicFacing'=>true]),
+							'message' => translate(['text'=> $result['message'],'isPublicFacing'=>true]),
+						);
+					}
+				}
+			}
+		} else {
+			// We aren't getting all the expected data, so make a log entry & tell user.
+			global $logger;
+			$logger->log('New curbside pickup, no patron Id was passed in AJAX call.', Logger::LOG_ERROR);
+			$result['message'] = translate(['text' => 'No patron was specified.', 'isPublicFacing'=>true]);
+		}
+
+		return $result;
+	}
+
+	function getCancelCurbsidePickup()
+	{
+		$patronId = $_REQUEST['patronId'];
+		$pickupId = $_REQUEST['pickupId'];
+		return array(
+			'title'     => translate(['text'=>'Cancel curbside pickup','isPublicFacing'=>true]),
+			'body'      => translate(['text'=>'Are you sure you want to cancel this curbside pickup?','isPublicFacing'=>true]),
+			'buttons'   => "<span class='btn btn-primary' onclick='AspenDiscovery.Account.cancelCurbsidePickup(\"$patronId\", \"$pickupId\")'>". translate(['text'=>'Yes, cancel pickup','isPublicFacing'=>true]) ."</span>",
+		);
+	}
+
+	function checkInCurbsidePickup()
+	{
+		global $interface;
+		global $library;
+		$results = array(
+			'success' => false,
+			'title' => translate(['text'=>'Checking in curbside pickup','isPublicFacing'=>true]),
+			'message' => translate(['text' => 'Error checking in for curbside pickup', 'isPublicFacing'=>true])
+		);
+
+		if(!isset($_REQUEST['patronId']) || !isset($_REQUEST['pickupId'])) {
+			// We aren't getting all the expected data, so make a log entry & tell user.
+			global $logger;
+			$logger->log('Check-in for curbside pickup, no patron Id and/or pickup Id was passed in AJAX call.', Logger::LOG_ERROR);
+			$results['message'] = translate(['text' => 'No patron or pickup was specified.', 'isPublicFacing'=>true]);
+		} else {
+			$patronId = $_REQUEST['patronId'];
+			$pickupId = $_REQUEST['pickupId'];
+
+			require_once ROOT_DIR . '/sys/CurbsidePickups/CurbsidePickupSetting.php';
+			$curbsidePickupSetting = new CurbsidePickupSetting();
+			$curbsidePickupSetting->id = $library->curbsidePickupSettingId;
+			if($curbsidePickupSetting->find(true)){
+				$interface->assign('contentCheckedIn', $curbsidePickupSetting->contentCheckedIn);
+			}
+
+			$user = UserAccount::getActiveUserObj();
+			$result = $user->getCatalogDriver()->checkInCurbsidePickup($patronId, $pickupId);
+
+			if($result['success']) {
+				$results = array(
+					'success'   => true,
+					'title'     => translate(['text'=>'Check-in successful','isPublicFacing'=>true]),
+					'body'      => $interface->fetch('MyAccount/curbsidePickupsNewSuccess.tpl'),
+				);
+			} else {
+				$results = array(
+					'title' => translate(['text' => 'Error checking in for curbside pickup', 'isPublicFacing'=>true]),
+					'body' => translate(['text'=> $result['message'],'isPublicFacing'=>true]),
+				);
+			}
+		}
+
+		return $results;
+	}
+
+	function cancelCurbsidePickup()
+	{
+		global $interface;
+		$results = array(
+			'success' => false,
+			'title' => translate(['text'=>'Cancel curbside pickup','isPublicFacing'=>true]),
+		);
+
+		if(!isset($_REQUEST['patronId']) || !isset($_REQUEST['pickupId'])) {
+			// We aren't getting all the expected data, so make a log entry & tell user.
+			global $logger;
+			$logger->log('Cancelling curbside pickup, no patron Id and/or pickup Id was passed in AJAX call.', Logger::LOG_ERROR);
+			$results['message'] = translate(['text' => 'No patron or pickup was specified.', 'isPublicFacing'=>true]);
+		} else {
+			$patronId = $_REQUEST['patronId'];
+			$pickupId = $_REQUEST['pickupId'];
+
+			$user = UserAccount::getActiveUserObj();
+			$result = $user->getCatalogDriver()->cancelCurbsidePickup($patronId, $pickupId);
+
+			if($result['success']) {
+				$results = array(
+					'success'   => true,
+					'title'     => translate(['text'=>'Cancel curbside pickup','isPublicFacing'=>true]),
+					'body'      => translate(['text'=> 'Your pickup was cancelled successfully.','isPublicFacing'=>true]),
+				);
+			} else {
+				$results = array(
+					'title' => translate(['text'=>'Cancel curbside pickup','isPublicFacing'=>true]),
+					'body' => translate(['text'=> $result['message'],'isPublicFacing'=>true]),
+				);
+			}
+		}
+
+		return $results;
+	}
+
+	function getCurbsidePickupUnavailableDays() {
+		if (isset($_REQUEST['locationCode'])) {
+			$pickupLocation = $_REQUEST['locationCode'];
+		} else {
+			return array(
+				'title' => translate(['text'=>'Error loading curbside pickup availability','isPublicFacing'=>true]),
+				'body'  => translate(['text'=>"A valid pickup location parameter was not provided.",'isPublicFacing'=>true]),
+			);
+		}
+		$user = UserAccount::getActiveUserObj();
+		$pickupSettings = $user->getCatalogDriver()->getCurbsidePickupSettings($pickupLocation);
+		return $pickupSettings['disabledDays'];
+	}
+
+function getCurbsidePickupAvailableTimes() {
+	if (isset($_REQUEST['locationCode']) && isset($_REQUEST['date'])) {
+		$pickupLocation = $_REQUEST['locationCode'];
+		$pickupDate = $_REQUEST['date'];
+		// check to make sure the date has been sent
+	} else {
+		return array(
+			'title' => translate(['text'=>'Error loading curbside pickup availability','isPublicFacing'=>true]),
+			'body'  => translate(['text'=>"A valid pickup date was not provided.",'isPublicFacing'=>true]),
+		);
+	}
+
+	$days = array(
+		0 => 'Mon',
+		1 => 'Tue',
+		2 => 'Wed',
+		3 => 'Thu',
+		4 => 'Fri',
+		5 => 'Sat',
+		6 => 'Sun',
+	);
+
+	$user = UserAccount::getActiveUserObj();
+	$pickupSettings = $user->getCatalogDriver()->getCurbsidePickupSettings($pickupLocation);
+
+	if($pickupSettings['success'] == true && $pickupSettings['enabled'] == 1) {
+
+		$date = strtotime($pickupDate);
+		$dayOfWeek = date('D', $date);
+		$todayDay = date('D');
+		$now = date('H:i');
+		$allPossibleTimes = $pickupSettings['pickupTimes'][$dayOfWeek];
+
+		// check if max number of patrons are signed up for timeWindow
+		$maxPatrons = $pickupSettings['maxPickupsPerInterval'];
+		$allScheduledPickups = $user->getCatalogDriver()->getAllCurbsidePickups();
+
+		if($allPossibleTimes){
+			$range = range(strtotime($allPossibleTimes['startTime']),strtotime($allPossibleTimes['endTime']),$pickupSettings['interval']*60);
+			$timeWindow = [];
+			foreach($range as $time){
+				$numPickups = 0;
+				$formattedTime = strtotime(date('H:i', $time));
+				if($dayOfWeek == $todayDay) {
+					if($formattedTime > strtotime($now)) {
+						if(!empty($allScheduledPickups['pickups'])) {
+							foreach($allScheduledPickups['pickups'] as $pickup){
+								if($pickupLocation == $pickup->branchcode){
+									$scheduledDate = strtotime($pickup->scheduled_pickup_datetime);
+									$scheduledDay = date('D', $scheduledDate);
+									$scheduledTime = date('H:i', $scheduledDate);
+									if ($dayOfWeek == $scheduledDay) {
+										if ($formattedTime == strtotime($scheduledTime)) {
+											$numPickups += 1;
+										}
+									}
+								}
+							}
+							if($numPickups < $maxPatrons) {
+								$timeWindow[] = date("H:i",$time);
+							}
+						} else {
+							$timeWindow[] = date("H:i",$time);
+						}
+					}
+				} else {
+					if(!empty($allScheduledPickups['pickups'])) {
+						foreach($allScheduledPickups['pickups'] as $pickup){
+							if($pickupLocation == $pickup->branchcode){
+								$scheduledDate = strtotime($pickup->scheduled_pickup_datetime);
+								$scheduledDay = date('D', $scheduledDate);
+								$scheduledTime = date('H:i', $scheduledDate);
+								if ($dayOfWeek == $scheduledDay) {
+									if ($formattedTime == strtotime($scheduledTime)) {
+										$numPickups += 1;
+									}
+								}
+							}
+						}
+						if($numPickups < $maxPatrons) {
+							$timeWindow[] = date("H:i",$time);
+						}
+					} else {
+						$timeWindow[] = date("H:i",$time);
+					}
+				}
+			}
+
+			return $timeWindow;
+		}
+	}
+	return array(
+		'title' => translate(['text'=>'Error','isPublicFacing'=>true]),
+		'body'  => translate(['text'=>"There was an error loading curbside pickup availability",'isPublicFacing'=>true]),
+	);
+}
+
+	/** @noinspection PhpUnused */
+	function get2FAEnrollment() {
+		global $interface;
+
+		// if there were multiple verification methods available, you'd want to fetch them here for display
+
+		$step = $_REQUEST['step'] ?? "register";
+		$mandatoryEnrollment = $_REQUEST['mandatoryEnrollment'] ?? false;
+
+		if($step == "register") {
+
+			function mask($str, $first, $last) {
+				$len = strlen($str);
+				$toShow = $first + $last;
+				return substr($str, 0, $len <= $toShow ? 0 : $first).str_repeat("*", $len - ($len <= $toShow ? 0 : $toShow)).substr($str, $len - $last, $len <= $toShow ? 0 : $last);
+			}
+
+			function mask_email($email) {
+				$mail_parts = explode("@", $email);
+				$domain_parts = explode('.', $mail_parts[1]);
+
+				$mail_parts[0] = mask($mail_parts[0], 2, 1); // show first 2 letters and last 1 letter
+				$domain_parts[0] = mask($domain_parts[0], 2, 1); // same here
+				$mail_parts[1] = implode('.', $domain_parts);
+
+				return implode("@", $mail_parts);
+			}
+
+			$email = null;
+			$user = new User();
+			$user->id = UserAccount::getActiveUserId();
+			if($user->find(true)) {
+				$email = mask_email($user->email);
+			}
+			$interface->assign('emailAddress', $email);
+
+			return array(
+				'success' => true,
+				'title' => translate(['text'=>'Two-Factor Authentication','isPublicFacing'=>true]),
+				'body' => $interface->fetch('MyAccount/2fa/enroll-register.tpl'),
+				'buttons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.Account.show2FAEnrollmentVerify(\"{$mandatoryEnrollment}\"); return false;'>" . translate(['text'=>'Next','isPublicFacing'=>true]) . "</button>",
+			);
+		} elseif($step == "verify") {
+			require_once ROOT_DIR . '/sys/TwoFactorAuthCode.php';
+			$twoFactorAuth = new TwoFactorAuthCode();
+			$twoFactorAuth->createCode();
+
+			$invalid = $_REQUEST['invalid'] ?? false;
+			$alert = null;
+			if($invalid) {
+				$alert = 'The code entered is invalid.';
+			}
+			$interface->assign('alert', $alert);
+			return array(
+				'success' => true,
+				'title' => translate(['text'=>'Two-Factor Authentication','isPublicFacing'=>true]),
+				'body' => $interface->fetch('MyAccount/2fa/enroll-verify.tpl'),
+				'buttons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.Account.verify2FA(\"{$mandatoryEnrollment}\"); return false;'>" . translate(['text'=>'Next','isPublicFacing'=>true]) . "</button>",
+			);
+		} elseif($step == "validate") {
+			require_once ROOT_DIR . '/sys/TwoFactorAuthCode.php';
+			$twoFactorAuth = new TwoFactorAuthCode();
+			$twoFactorAuth->createCode();
+
+			return array(
+				'success' => true,
+				'title' => translate(['text'=>'Two-Factor Authentication','isPublicFacing'=>true]),
+				'body' => $interface->fetch('MyAccount/2fa/enroll-verify.tpl'),
+				'buttons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.Account.verify2FA(\"{$mandatoryEnrollment}\"); return false;'>" . translate(['text'=>'Next','isPublicFacing'=>true]) . "</button>",
+			);
+		} elseif($step == "backup") {
+			require_once ROOT_DIR . '/sys/TwoFactorAuthCode.php';
+			$twoFactorAuth = new TwoFactorAuthCode();
+			$twoFactorAuth->createNewBackups();
+
+			$backupCode = new TwoFactorAuthCode();
+			$backupCodes = $backupCode->getBackups();
+			$interface->assign('backupCodes', $backupCodes);
+
+			return array(
+				'success' => true,
+				'title' => translate(['text'=>'Two-Factor Authentication','isPublicFacing'=>true]),
+				'body' => $interface->fetch('MyAccount/2fa/enroll-backup.tpl'),
+				'buttons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.Account.show2FAEnrollmentSuccess(\"{$mandatoryEnrollment}\"); return false;'>" . translate(['text'=>'Next','isPublicFacing'=>true]) . "</button>",
+			);
+		} elseif($step == "complete") {
+			// update user table to enrolled status
+			$user = new User();
+			$user->id = UserAccount::getActiveUserId();
+			if($user->find(true)){
+				$user->twoFactorStatus = 1;
+				$user->update();
+			}
+			return array(
+				'success' => true,
+				'title' => translate(['text'=>'Two-Factor Authentication','isPublicFacing'=>true]),
+				'body' => $interface->fetch('MyAccount/2fa/enroll-success.tpl'),
+			);
+		} else {
+			return false;
+		}
+	}
+
+	/** @noinspection PhpUnused */
+	function verify2FA() {
+		$code = $_REQUEST['code'] ?? '0';
+		$isLoggingIn = $_REQUEST['loggingIn'] ?? false;
+		require_once ROOT_DIR . '/sys/TwoFactorAuthCode.php';
+		$twoFactorAuth = new TwoFactorAuthCode();
+		if($isLoggingIn) {
+			global $logger;
+			$logger->log("Starting AJAX/2faLogin session: " . session_id(), Logger::LOG_DEBUG);
+			$result = $twoFactorAuth->validateCode($code);
+			if($result['success'] == true) {
+				UserAccount::$isAuthenticated = true;
+				try {
+					UserAccount::login();
+				} catch (UnknownAuthenticationMethodException $e) {
+					$logger->log("Error logging authenticated user in $e",Logger::LOG_DEBUG);
+					return array(
+						'success' => false,
+						'message' => $e->getMessage()
+					);
+				}
+			} else {
+				return $result;
+			}
+		} else {
+			$result = $twoFactorAuth->validateCode($code);
+		}
+
+		return $result;
+	}
+
+	/** @noinspection PhpUnused */
+	function confirmCancel2FA() {
+		global $interface;
+
+		// on submit of button, update user table for (un)enrollment status
+
+		return array(
+			'success' => true,
+			'title' => translate(['text'=>'Disable Two-Factor Authentication','isPublicFacing'=>true]),
+			'body' => $interface->fetch('MyAccount/2fa/unenroll.tpl'),
+			'buttons' => "<button class='tool btn btn-primary' onclick='return AspenDiscovery.Account.cancel2FA();'>Yes, turn off</button>",
+		);
+	}
+
+	/** @noinspection PhpUnused */
+	function cancel2FA() {
+		require_once ROOT_DIR . '/sys/TwoFactorAuthCode.php';
+		$twoFactorAuth = new TwoFactorAuthCode();
+		$twoFactorAuth->deactivate2FA();
+
+		return array(
+			'success' => true,
+			'title' => translate(['text'=>'Disable Two-Factor Authentication','isPublicFacing'=>true]),
+			'body' => translate(['text'=>'Two-factor authentication has been disabled for your account.','isPublicFacing'=>true]),
+		);
+	}
+
+	/** @noinspection PhpUnused */
+	function newBackupCodes() {
+		global $interface;
+
+		require_once ROOT_DIR . '/sys/TwoFactorAuthCode.php';
+		$twoFactorAuth = new TwoFactorAuthCode();
+		$twoFactorAuth->createNewBackups();
+
+		$backupCode = new TwoFactorAuthCode();
+		$backupCodes = $backupCode->getBackups();
+		$interface->assign('backupCodes', $backupCodes);
+
+		return array(
+			'success' => true,
+			'title' => translate(['text'=>'Two-Factor Authentication Backup Codes','isPublicFacing'=>true]),
+			'body' => $interface->fetch('MyAccount/2fa/backupCodes.tpl'),
+		);
+	}
+
+	/** @noinspection PhpUnused */
+	function new2FACode() {
+		require_once ROOT_DIR . '/sys/TwoFactorAuthCode.php';
+		$twoFactorAuth = new TwoFactorAuthCode();
+		$twoFactorAuth->createCode();
+
+		return array(
+			'success' => true,
+			'body' => translate(['text'=>'A new code was sent.','isPublicFacing'=>true]),
+		);
+	}
+
+	/** @noinspection PhpUnused */
+	function auth2FALogin() {
+		global $interface;
+		global $logger;
+		$logger->log("Creating AJAX/2faLogin session: " . session_id(), Logger::LOG_DEBUG);
+
+
+			require_once ROOT_DIR . '/sys/TwoFactorAuthCode.php';
+			$twoFactorAuth = new TwoFactorAuthCode();
+			$twoFactorAuth->createCode();
+
+			$referer = $_REQUEST['referer'] ?? null;
+			$interface->assign('referer', $referer);
+			$name = $_REQUEST['name'] ?? null;
+			$interface->assign('name', $name);
+
+			return array(
+				'success' => true,
+				'title' => translate(['text'=>'Two-Factor Authentication','isPublicFacing'=>true]),
+				'body' => $interface->fetch('MyAccount/2fa/login.tpl'),
+				'buttons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.Account.verify2FALogin(); return false;'>" . translate(['text'=>'Verify','isPublicFacing'=>true]) . "</button>",
+			);
+
 	}
 }

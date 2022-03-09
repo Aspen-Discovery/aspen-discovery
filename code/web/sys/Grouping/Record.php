@@ -29,7 +29,6 @@ class Grouping_Record
 	public $_hasLocalItem = false;
 	public $_holdRatio = 0;
 	public $_shelfLocation = '';
-	public $_bookable = false;
 	public $_holdable = false;
 	public $_itemSummary = [];
 	public $_itemsDisplayedByDefault = null;
@@ -43,6 +42,10 @@ class Grouping_Record
 
 	/** @var  IlsVolumeInfo[] */
 	private $_volumeData;
+
+	//Is the record an OverDrive record?
+	//If so, the number of owned and available copies are already set.
+	private $_isOverDrive = false;
 
 	/**
 	 * Grouping_Record constructor.
@@ -77,12 +80,25 @@ class Grouping_Record
 			$this->physical = $recordDetails[7];
 		}
 
-		if ($this->language == '') {
+		if (empty($this->language)) {
 			$this->language = 'English';
 		}
 		$this->source = $source;
 		$this->_statusInformation = new Grouping_StatusInformation();
 		$this->_statusInformation->setNumHolds($recordDriver != null ? $recordDriver->getNumHolds() : 0);
+		if ($recordDriver != null && $recordDriver instanceof OverDriveRecordDriver){
+			$availability = $recordDriver->getAvailability();
+			if ($availability != null) {
+				$this->_statusInformation->addCopies($availability->copiesOwned);
+				$this->_statusInformation->addAvailableCopies($availability->copiesAvailable);
+				$this->_statusInformation->setAvailableOnline($availability->copiesAvailable > 0);
+			}else{
+				$this->_statusInformation->addCopies(0);
+				$this->_statusInformation->addAvailableCopies(0);
+				$this->_statusInformation->setAvailableOnline(false);
+			}
+			$this->_isOverDrive = true;
+		}
 		$this->_volumeHolds = $recordDriver != null ? $recordDriver->getVolumeHolds($volumeData) : null;
 		$this->_volumeData = $volumeData;
 		if (!empty($volumeData)) {
@@ -92,6 +108,11 @@ class Grouping_Record
 					$this->_volumeData[] = $volumeInfo;
 				}
 			}
+		}
+		if ($recordDriver != null && $recordDriver instanceof SideLoadedRecord){
+			$this->_statusInformation->setIsShowStatus($recordDriver->isShowStatus());
+		}else{
+			$this->_statusInformation->setIsShowStatus(true);
 		}
 	}
 
@@ -105,13 +126,15 @@ class Grouping_Record
 			$this->setIsEContent(true);
 			$this->_statusInformation->setIsEContent(true);
 		}
-		if ($item->available) {
-			if ($item->isEContent) {
-				$this->_statusInformation->setAvailableOnline(true);
-			} else {
-				$this->_statusInformation->setAvailable(true);
+		if ($this->_isOverDrive == false) {
+			if ($item->available) {
+				if ($item->isEContent) {
+					$this->_statusInformation->setAvailableOnline(true);
+				} else {
+					$this->_statusInformation->setAvailable(true);
+				}
+				$this->_statusInformation->addAvailableCopies($item->numCopies);
 			}
-			$this->_statusInformation->addAvailableCopies($item->numCopies);
 		}
 
 		if (!$item->inLibraryUseOnly) {
@@ -121,29 +144,30 @@ class Grouping_Record
 		if ($item->holdable) {
 			$this->_holdable = true;
 		}
-		if ($item->bookable) {
-			$this->_bookable = true;
-		}
-		if ($item->isOrderItem) {
-			$this->addOnOrderCopies($item->numCopies);
-		} else {
-			$this->addCopies($item->numCopies);
-		}
-		$searchLocation = Location::getSearchLocation();
-		if ($searchLocation != null){
-			if ($item->locallyOwned) {
-				$this->_statusInformation->addLocalCopies($item->numCopies);
-				if ($item->available){
-					$this->_statusInformation->addLocalCopies($item->numCopies);
-					$this->_statusInformation->setAvailableHere(true);
-				}
+
+		if ($this->_isOverDrive == false) {
+			if ($item->isOrderItem) {
+				$this->addOnOrderCopies($item->numCopies);
+			} else {
+				$this->addCopies($item->numCopies);
 			}
-		}else{
-			if ($item->libraryOwned) {
-				$this->_statusInformation->addLocalCopies($item->numCopies);
-				if ($item->available){
-					$this->_statusInformation->addAvailableCopies($item->numCopies);
-					$this->_statusInformation->setAvailableLocally(true);
+
+			$searchLocation = Location::getSearchLocation();
+			if ($searchLocation != null) {
+				if ($item->locallyOwned) {
+					$this->_statusInformation->addLocalCopies($item->numCopies);
+					if ($item->available) {
+						$this->_statusInformation->addLocalCopies($item->numCopies);
+						$this->_statusInformation->setAvailableHere(true);
+					}
+				}
+			} else {
+				if ($item->libraryOwned) {
+					$this->_statusInformation->addLocalCopies($item->numCopies);
+					if ($item->available) {
+						$this->_statusInformation->addAvailableCopies($item->numCopies);
+						$this->_statusInformation->setAvailableLocally(true);
+					}
 				}
 			}
 		}
@@ -152,7 +176,7 @@ class Grouping_Record
 
 		if (!empty($this->_volumeData)){
 			foreach ($this->_volumeData as $volumeInfo){
-				if ((strlen($volumeInfo->relatedItems) == 0) || (strpos($volumeInfo->relatedItems, $item->itemId) !== false)) {
+				if ((strlen($volumeInfo->relatedItems) != 0) && (strpos($volumeInfo->relatedItems, $item->itemId) !== false)) {
 					$item->volume = $volumeInfo->displayLabel;
 					$item->volumeId = $volumeInfo->volumeId;
 					$item->volumeOrder = $volumeInfo->displayOrder;
@@ -300,22 +324,6 @@ class Grouping_Record
 	}
 
 	/**
-	 * @return bool
-	 */
-	public function isBookable(): bool
-	{
-		return $this->_bookable;
-	}
-
-	/**
-	 * @param bool $bookable
-	 */
-	public function setBookable(bool $bookable): void
-	{
-		$this->_bookable = $bookable;
-	}
-
-	/**
 	 * @return string
 	 */
 	public function getClass(): string
@@ -446,7 +454,7 @@ class Grouping_Record
 			foreach ($this->_items as $item){
 				$key = $item->getSummaryKey();
 				$itemSummary = $item->getSummary();
-				$this->addItemDetails($key, $itemSummary);
+				$this->addItemDetails($key . $item->itemId, $itemSummary);
 				$this->addItemSummary($key, $itemSummary, $item->groupedStatus);
 			}
 			$this->sortItemDetails();
@@ -506,7 +514,9 @@ class Grouping_Record
 	{
 		if ($this->_allActions == null) {
 			//TODO: Add volume information
-			$this->setActions($this->_driver->getRecordActions($this, $this->getStatusInformation()->isAvailableLocally() || $this->getStatusInformation()->isAvailableOnline(), $this->isHoldable(), $this->isBookable(), []));
+			if ($this->_driver != null) {
+				$this->setActions($this->_driver->getRecordActions($this, $this->getStatusInformation()->isAvailableLocally() || $this->getStatusInformation()->isAvailableOnline(), $this->isHoldable(), []));
+			}
 			
 			$actionsToReturn = $this->_actions;
 			if (empty($this->_actions) && $this->_driver != null){
@@ -567,15 +577,11 @@ class Grouping_Record
 	 */
 	function getHoldRatio(): int
 	{
-		return $this->_holdRatio;
-	}
-
-	/**
-	 * @param int $holdRatio
-	 */
-	function setHoldRatio(int $holdRatio): void
-	{
-		$this->_holdRatio = $holdRatio;
+		if ($this->getCopies() > 0) {
+			return $this->_statusInformation->getNumHolds() / $this->getCopies();
+		}else{
+			return 0;
+		}
 	}
 
 	/**
@@ -605,6 +611,18 @@ class Grouping_Record
 	function getStatusInformation()
 	{
 		return $this->_statusInformation;
+	}
+
+	function isAvailable() {
+		return $this->_statusInformation->isAvailable();
+	}
+
+	function isAvailableOnline() {
+		return $this->_statusInformation->isAvailableOnline();
+	}
+
+	function getGroupedStatus() {
+		return $this->_statusInformation->getGroupedStatus();
 	}
 
 	/**
@@ -637,4 +655,15 @@ class Grouping_Record
 	{
 		return $this->_volumeData;
 	}
+
+	/**
+	 * @return string
+	 */
+	public function getFormat(): string
+	{
+		return $this->format;
+	}
+
+
+
 }

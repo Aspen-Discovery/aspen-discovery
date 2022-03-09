@@ -4,6 +4,7 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -95,6 +96,7 @@ public class StringUtils {
 			} finally {
 				is.close();
 			}
+			buffer = null;
 			return writer.toString();
 		} else {
 			return "";
@@ -268,5 +270,11 @@ public class StringUtils {
 			System.exit(1);
 		}
 		return value;
+	}
+
+	private static Pattern nonAlphaNumerics = Pattern.compile("[^a-z0-9_]");
+	public static String toLowerCaseNoSpecialChars(String originalValue){
+		originalValue = originalValue.toLowerCase();
+		return nonAlphaNumerics.matcher(originalValue).replaceAll("_");
 	}
 }

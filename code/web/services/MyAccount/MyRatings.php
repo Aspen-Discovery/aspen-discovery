@@ -92,7 +92,7 @@ class MyRatings extends MyAccount{
 	{
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'My Account');
-		$breadcrumbs[] = new Breadcrumb('', 'My Ratings');
+		$breadcrumbs[] = new Breadcrumb('', 'Titles You Rated');
 		return $breadcrumbs;
 	}
 }

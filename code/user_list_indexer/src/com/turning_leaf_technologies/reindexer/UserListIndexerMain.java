@@ -156,15 +156,10 @@ public class UserListIndexerMain {
 			}else{
 				logEntry.incErrors("No Settings were found for list indexing");
 			}
-			PreparedStatement loadLastIndexTimeStmt = dbConn.prepareStatement("SELECT * from variables WHERE name = 'last_user_list_index_time'");
-			ResultSet lastIndexTimeRS = loadLastIndexTimeStmt.executeQuery();
-			if (lastIndexTimeRS.next()) {
-				lastReindexTime = lastIndexTimeRS.getLong("value");
-			}
-			lastIndexTimeRS.close();
-			loadLastIndexTimeStmt.close();
+			loadSettingsRS.close();
+			loadSettingsStmt.close();
 		} catch (Exception e) {
-			logEntry.incErrors("Could not load last index time from variables table ", e);
+			logEntry.incErrors("Could not load last index time from list_indexing_settings table ", e);
 		}
 
 		listProcessor = new UserListIndexer(serverName, configIni, dbConn, logger);
@@ -176,7 +171,7 @@ public class UserListIndexerMain {
 		//Remove log entries older than 45 days
 		long earliestLogToKeep = (startTime / 1000) - (60 * 60 * 24 * 45);
 		try {
-			int numDeletions = aspenConn.prepareStatement("DELETE from website_index_log WHERE startTime < " + earliestLogToKeep).executeUpdate();
+			int numDeletions = aspenConn.prepareStatement("DELETE from list_indexing_log WHERE startTime < " + earliestLogToKeep).executeUpdate();
 			logger.info("Deleted " + numDeletions + " old log entries");
 		} catch (SQLException e) {
 			logger.error("Error deleting old log entries", e);

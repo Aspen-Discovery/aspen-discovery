@@ -16,6 +16,7 @@ class UserList extends DataObject
 	public $dateUpdated;
 	public $defaultSort;
 	public $importedFrom;
+	public $nytListModified;
 
 	public static function getSourceListsForBrowsingAndCarousels()
 	{
@@ -49,8 +50,7 @@ class UserList extends DataObject
 		'custom' => 'weight ASC',  // this puts items with no set weight towards the end of the list
 	);
 
-
-    static function getObjectStructure() : array {
+	static function getObjectStructure() : array {
 		return array(
 			'id' => array(
 				'property'=>'id',
@@ -100,6 +100,7 @@ class UserList extends DataObject
 				$this->dateUpdated = time();
 			}
 		}
+		/** @var Memcache $memCache */
 		global $memCache;
 		$memCache->delete('user_list_data_' . UserAccount::getActiveUserId());
 		return parent::insert();
@@ -111,6 +112,7 @@ class UserList extends DataObject
 		$this->dateUpdated = time();
 		$result = parent::update();
 		if ($result) {
+			/** @var Memcache $memCache */
 			global $memCache;
 			$memCache->delete('user_list_data_' . UserAccount::getActiveUserId());
 		}
@@ -118,11 +120,11 @@ class UserList extends DataObject
 		return $result;
 	}
 	function delete($useWhere = false){
-		//TODO: Delete all list entries for the list?
 		$this->deleted = 1;
 		$this->dateUpdated = time();
 		$ret = parent::update();
 
+		/** @var Memcache $memCache */
 		global $memCache;
 		$memCache->delete('user_list_data_' . UserAccount::getActiveUserId());
 		return $ret;
@@ -166,7 +168,7 @@ class UserList extends DataObject
 				'source' => $listEntry->source,
 				'sourceId' => $listEntry->sourceId,
 				'title' => $listEntry->title,
-				'notes' => $listEntry->notes,
+				'notes' => $listEntry->getNotes(),
 				'listEntryId' => $listEntry->id,
 				'listEntry' => $this->cleanListEntry(clone($listEntry)),
 				'weight' => $listEntry->weight,
@@ -190,7 +192,7 @@ class UserList extends DataObject
 		$listEntry->__destruct();
 		$listEntry = null;
 
-		if(($entryPosition != '') || ($entryPosition != null)){
+		if(($interface != null) && (($entryPosition != '') || ($entryPosition != null))){
 			$interface->assign('listEntryCount', $entryPosition);
 		}
 
@@ -232,7 +234,7 @@ class UserList extends DataObject
 		if (!UserAccount::isLoggedIn() || $this->user_id != UserAccount::getActiveUserId()){
 			//Load all bad words.
 			global $library;
-			require_once ROOT_DIR . '/Drivers/marmot_inc/BadWord.php';
+			require_once ROOT_DIR . '/sys/LocalEnrichment/BadWord.php';
 			$badWords = new BadWord();
 
 			//Determine if we should censor bad words or hide the comment completely.
@@ -251,14 +253,18 @@ class UserList extends DataObject
 				$listEntry->notes = $notesText;
 			}else{
 				//Check for bad words in the title or description
-				$titleText = $this->title;
-				if (isset($listEntry->description)){
-					$titleText .= ' ' . $listEntry->description;
+				$titleText = $badWords->censorBadWords($this->title);
+				$this->title = $titleText;
+
+				if (isset($this->description)){
+					if ($badWords->hasBadWords($this->description)){
+						$this->description = '';
+					}
 				}
 				//Filter notes
-				$titleText .= ' ' . $listEntry->notes;
-
-				if ($badWords->hasBadWords($titleText)) return false;
+				if ($badWords->hasBadWords($listEntry->notes)){
+					$listEntry->notes = '';
+				}
 			}
 		}
 		return $listEntry;
@@ -305,6 +311,7 @@ class UserList extends DataObject
 
 		unset($this->listTitles[$this->id]);
 
+		/** @var Memcache $memCache */
 		global $memCache;
 		$memCache->delete('user_list_data_' . UserAccount::getActiveUserId());
 	}
@@ -314,7 +321,7 @@ class UserList extends DataObject
 	/** @noinspection PhpUnused */
 	function getCleanDescription(){
 		if ($this->_cleanDescription == null){
-			$this->_cleanDescription = strip_tags($this->description, '<p><b><em><strong><i><br>');;
+			$this->_cleanDescription = strip_tags($this->description, '<p><b><em><strong><i><br>');
 		}
 		return $this->_cleanDescription;
 	}
@@ -457,6 +464,10 @@ class UserList extends DataObject
 			// use $IDList as the order guide for the html
 			$current = null; // empty out in case we don't find the matching record
 			reset($records);
+			/**
+			 * @var int $docIndex
+			 * @var IndexRecordDriver $recordDriver
+			 */
 			foreach ($records as $docIndex => $recordDriver) {
 				if ($recordDriver->getId() == $currentId['sourceId']) {
 					$recordDriver->setListNotes($currentId['notes']);
@@ -479,6 +490,10 @@ class UserList extends DataObject
 			// use $IDList as the order guide for the html
 			$current = null; // empty out in case we don't find the matching record
 			reset($records);
+			/**
+			 * @var int $docIndex
+			 * @var IndexRecordDriver $recordDriver
+			 */
 			foreach ($records as $docIndex => $recordDriver) {
 				if ($recordDriver->getId() == $currentId['sourceId']) {
 					$current = $recordDriver;
@@ -500,6 +515,10 @@ class UserList extends DataObject
 			// use $IDList as the order guide for the html
 			$current = null; // empty out in case we don't find the matching record
 			reset($records);
+			/**
+			 * @var int $docIndex
+			 * @var IndexRecordDriver $recordDriver
+			 */
 			foreach ($records as $docIndex => $recordDriver) {
 				if ($recordDriver->getId() == $currentId['sourceId']) {
 					$recordDriver->setListNotes($currentId['notes']);
@@ -584,7 +603,15 @@ class UserList extends DataObject
 					if ($record instanceof ListsRecordDriver){
 						$browseRecords[$key] = $record->getFields();
 					}else{
-						$browseRecords[$key] = $record;
+						require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+						$groupedWorkDriver = new GroupedWorkDriver($key);
+						if($groupedWorkDriver->isValid()){
+							$browseRecords[$key]['id'] = $groupedWorkDriver->getPermanentId();
+							$browseRecords[$key]['title_display'] = $groupedWorkDriver->getShortTitle();
+						} else {
+							$browseRecords[$key] = $record;
+						}
+
 					}
 				}
 			}
@@ -626,7 +653,7 @@ class UserList extends DataObject
 			} else {
 				$interface->assign('recordIndex', $listPosition + 1);
 				$interface->assign('resultIndex', $listPosition + $start + 1);
-				$html[$listPosition] = $interface->fetch($recordDriver->getBrowseResult());
+				$html[$listPosition] = $interface->fetch($current->getBrowseResult());
 			}
 		}
 		return $html;
@@ -650,18 +677,8 @@ class UserList extends DataObject
 		 * @var UserListEntry $entry */
 		foreach ($allEntries as $key => $entry){
 			$recordDriver = $entry->getRecordDriver();
-			if ($recordDriver == null){
-				//Don't show this result because it no lonnger exists in teh catalog.
-				/*$results[$key] = [
-					'title' => 'Unhandled Source ' . $entry->source,
-					'author' => '',
-					'formattedTextOnlyTitle' => '<div id="scrollerTitle" class="scrollerTitle"><span class="scrollerTextOnlyListTitle">' . 'Unhandled Source ' . $entry->source . '</span></div>',
-					'formattedTitle' => '<div id="scrollerTitle" class="scrollerTitle"><span class="scrollerTextOnlyListTitle">' . 'Unhandled Source ' . $entry->source . '</span></div>',
-				];*/
-			}else{
-				if ($recordDriver->isValid()){
-					$results[$key] = $recordDriver->getSpotlightResult($collectionSpotlight, $key);
-				}
+			if ($recordDriver != null && $recordDriver->isValid()){
+				$results[$key] = $recordDriver->getSpotlightResult($collectionSpotlight, $key);
 			}
 
 			if (count($results) == $collectionSpotlight->numTitlesToShow){

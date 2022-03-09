@@ -88,6 +88,10 @@ class WebBuilder_PDFs extends ObjectEditor
 				'text' => 'Download PDF',
 				'url' => '/WebBuilder/DownloadPDF?id=' . $existingObject->id,
 			];
+			$objectActions[] = [
+				'text' => 'View Thumbnail',
+				'url' => '/WebBuilder/ViewThumbnail?id=' . $existingObject->id,
+			];
 		}
 		return $objectActions;
 	}

@@ -97,7 +97,6 @@ class CatalogConnection
 	public function patronLogin($username, $password, $parentAccount = null, $validatedViaSSO = false)
 	{
 		global $offlineMode;
-		global $usageByIPAddress;
 
 		$barcodesToTest = array();
 		$barcodesToTest[$username] = $username;
@@ -325,7 +324,7 @@ class CatalogConnection
 				$patron->initialReadingHistoryLoaded = true;
 				$patron->update();
 			}
-			//Do the
+			//Update the reading history based on titles that the patron currently has checked out if we are on the first page.
 			if ($page == 1 && empty($filter)) {
 				$this->updateReadingHistoryBasedOnCurrentCheckouts($patron);
 				$timer->logTime("Finished updating reading history based on current checkouts");
@@ -399,7 +398,7 @@ class CatalogConnection
 	{
 		$result = [
 			'success' => false,
-			'message' => translate('Unknown error')
+			'message' => translate(['text'=>'Unknown Error', 'isPublicFacing'=>true])
 		];
 		if ($action == 'deleteMarked') {
 			//Remove titles from database (do not remove from ILS)
@@ -427,7 +426,7 @@ class CatalogConnection
 				}
 			}
 			$result['success'] = true;
-			$result['message'] = translate(['text' => 'Deleted %1% entries from Reading History.', 1 => $numDeleted]);
+			$result['message'] = translate(['text' => 'Deleted %1% entries from Reading History.', 1 => $numDeleted, 'isPublicFacing'=>true]);
 		} elseif ($action == 'deleteAll') {
 			//Remove all titles from database (do not remove from ILS)
 			$readingHistoryDB = new ReadingHistoryEntry();
@@ -438,7 +437,7 @@ class CatalogConnection
 				$readingHistoryDB->update();
 			}
 			$result['success'] = true;
-			$result['message'] = translate('Deleted all entries from Reading History.');
+			$result['message'] = translate(['text' => 'Deleted all entries from Reading History.', 'isPublicFacing'=>true]);
 		} elseif ($action == 'optOut') {
 			//Delete the reading history (permanently this time since we are opting out)
 			$readingHistoryDB = new ReadingHistoryEntry();
@@ -453,14 +452,14 @@ class CatalogConnection
 			//$patron->initialReadingHistoryLoaded = false;
 			$patron->update();
 			$result['success'] = true;
-			$result['message'] = translate('You have been opted out of tracking Reading History');
+			$result['message'] = translate(['text' => 'You have been opted out of tracking Reading History', 'isPublicFacing'=>true]);
 		} elseif ($action == 'optIn') {
 			//Opt in within Aspen since the ILS does not seem to implement this functionality
 			$patron->trackReadingHistory = true;
 			$patron->update();
 
 			$result['success'] = true;
-			$result['message'] = translate('You have been opted out in to tracking Reading History');
+			$result['message'] = translate(['text' => 'You have been opted out in to tracking Reading History', 'isPublicFacing'=>true]);
 		}
 		if ($this->driver->performsReadingHistoryUpdatesOfILS()) {
 			$this->driver->doReadingHistoryAction($patron, $action, $selectedTitles);
@@ -492,7 +491,7 @@ class CatalogConnection
 		}
 
 		$result['success'] = true;
-		$result['message'] = translate(['text' => 'Deleted %1% entries from Reading History.', 1 => $numDeleted]);
+		$result['message'] = translate(['text' => 'Deleted %1% entries from Reading History.', 1 => $numDeleted, 'isPublicFacing'=>true]);
 
 		return $result;
 	}
@@ -584,11 +583,16 @@ class CatalogConnection
 		return $this->driver->placeItemHold($patron, $recordId, $itemId, $pickupBranch, $cancelDate);
 	}
 
-	function updatePatronInfo($user, $canUpdateContactInfo)
+	function updatePatronInfo($user, $canUpdateContactInfo, $fromMasquerade = false)
 	{
-		return $this->driver->updatePatronInfo($user, $canUpdateContactInfo);
+		return $this->driver->updatePatronInfo($user, $canUpdateContactInfo, $fromMasquerade);
 	}
 
+	/**
+	 * @param User $user
+	 * @param string $homeLibraryCode
+	 * @return array
+	 */
 	function updateHomeLibrary($user, $homeLibraryCode)
 	{
 		$result = $this->driver->updateHomeLibrary($user, $homeLibraryCode);
@@ -603,36 +607,6 @@ class CatalogConnection
 			}
 		}
 		return $result;
-	}
-
-	function bookMaterial($patron, $recordId, $startDate, $startTime = null, $endDate = null, $endTime = null)
-	{
-		return $this->driver->bookMaterial($patron, $recordId, $startDate, $startTime, $endDate, $endTime);
-	}
-
-	function cancelBookedMaterial($patron, $cancelIds)
-	{
-		return $this->driver->cancelBookedMaterial($patron, $cancelIds);
-	}
-
-	function cancelAllBookedMaterial($patron)
-	{
-		return $this->driver->cancelAllBookedMaterial($patron);
-	}
-
-	/**
-	 * @param User $patron
-	 *
-	 * @return array
-	 */
-	function getMyBookings($patron)
-	{
-		$bookings = $this->driver->getMyBookings($patron);
-		foreach ($bookings as &$booking) {
-			$booking['user'] = $patron->getNameAndLibraryLabel();
-			$booking['userId'] = $patron->id;
-		}
-		return $bookings;
 	}
 
 	function selfRegister()
@@ -730,10 +704,11 @@ class CatalogConnection
 	{
 		//Check to see if we need to update the reading history.  Only update every 5 minutes in normal situations.
 		$curTime = time();
-		if (($curTime - $patron->lastReadingHistoryUpdate) < 60 * 5 && !isset($_REQUEST['reload'])){
+		if ((($curTime - $patron->lastReadingHistoryUpdate) < 60 * 5) && !isset($_REQUEST['reload'])){
 			return;
 		}
 
+		require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
 		require_once ROOT_DIR . '/sys/ReadingHistoryEntry.php';
 		//Note, include deleted titles here so they are not added multiple times.
 		$readingHistoryDB = new ReadingHistoryEntry();
@@ -742,12 +717,25 @@ class CatalogConnection
 		$readingHistoryDB->find();
 
 		$activeHistoryTitles = array();
+		global $logger;
 		while ($readingHistoryDB->fetch()) {
 			$historyEntry = [];
 			$historyEntry['source'] = $readingHistoryDB->source;
-			$historyEntry['id'] = $readingHistoryDB->sourceId;
-			$key = strtolower($historyEntry['source'] . ':' . $historyEntry['id']);
-			$activeHistoryTitles[$key] = $historyEntry;
+			$historyEntry['sourceId'] = $readingHistoryDB->sourceId;
+			$historyEntry['ids'] = [];
+			$historyEntry['ids'][] = $readingHistoryDB->id;
+			$key = strtolower($historyEntry['source'] . ':' . $historyEntry['sourceId']);
+			if (array_key_exists($key, $activeHistoryTitles)){
+				if (IPAddress::showDebuggingInformation()){
+					$logger->log("Adding {$readingHistoryDB->id} to active history entry $key.", Logger::LOG_ERROR);
+				}
+				$activeHistoryTitles[$key]['ids'][] = $readingHistoryDB->id;
+			}else{
+				if (IPAddress::showDebuggingInformation()){
+					$logger->log("Adding new record $key, {$readingHistoryDB->id} to active history entries.", Logger::LOG_ERROR);
+				}
+				$activeHistoryTitles[$key] = $historyEntry;
+			}
 		}
 
 		//Update reading history based on current checkouts.  That way it never looks out of date
@@ -769,8 +757,8 @@ class CatalogConnection
 
 				$historyEntryDB->source = $source;
 				$historyEntryDB->sourceId = $sourceId;
-				$historyEntryDB->title = substr($checkout->title, 0, 150);
-				$historyEntryDB->author = isset($checkout->author) ? substr($checkout->author, 0, 75) : "";
+				$historyEntryDB->title = StringUtils::trimStringToLengthAtWordBoundary($checkout->title, 150, true);
+				$historyEntryDB->author = isset($checkout->author) ? StringUtils::trimStringToLengthAtWordBoundary($checkout->author, 75, true) : "";
 				$historyEntryDB->format = substr($checkout->format, 0, 50);
 				$historyEntryDB->checkOutDate = time();
 				if (!$historyEntryDB->insert()) {
@@ -781,19 +769,28 @@ class CatalogConnection
 		}
 
 		//Anything that was still active is now checked in
+		global $logger;
+		if (IPAddress::showDebuggingInformation()){
+			$logger->log("There are " . count($activeHistoryTitles) . " titles that have been checked in.", Logger::LOG_ERROR);
+		}
 		foreach ($activeHistoryTitles as $historyEntry) {
+			if (IPAddress::showDebuggingInformation()){
+				$logger->log("There are " . count($historyEntry['ids']) . " ids for this history entry.", Logger::LOG_ERROR);
+			}
 			//Update even if deleted to make sure code is cleaned up correctly
-			$historyEntryDB = new ReadingHistoryEntry();
-			$historyEntryDB->source = $historyEntry['source'];
-			$historyEntryDB->sourceId = $historyEntry['id'];
-			$historyEntryDB->whereAdd('checkInDate IS NULL');
-			if ($historyEntryDB->find(true)) {
-				$historyEntryDB->checkInDate = time();
-				$numUpdates = $historyEntryDB->update();
-				if ($numUpdates != 1) {
-					global $logger;
-					$key = $historyEntry['source'] . ':' . $historyEntry['id'];
-					$logger->log("Could not update reading history entry $key", Logger::LOG_ERROR);
+			foreach ($historyEntry['ids'] as $id) {
+				$historyEntryDB = new ReadingHistoryEntry();
+				$historyEntryDB->id = $id;
+				if ($historyEntryDB->find(true)) {
+					$historyEntryDB->checkInDate = time();
+					$numUpdates = $historyEntryDB->update();
+					if (IPAddress::showDebuggingInformation()){
+						if ($numUpdates != 1) {
+							$logger->log("Could not update reading history entry $id", Logger::LOG_ERROR);
+						}else{
+							$logger->log("Marked $id as checked in.", Logger::LOG_ERROR);
+						}
+					}
 				}
 			}
 		}
@@ -821,13 +818,6 @@ class CatalogConnection
 	function changeHoldPickupLocation(User $patron, $recordId, $itemToUpdateId, $newPickupLocation)
 	{
 		return $this->driver->changeHoldPickupLocation($patron, $recordId, $itemToUpdateId, $newPickupLocation);
-	}
-
-	public function getBookingCalendar($recordId)
-	{
-		// Graceful degradation -- return null if method not supported by driver.
-		return method_exists($this->driver, 'getBookingCalendar') ?
-			$this->driver->getBookingCalendar($recordId) : null;
 	}
 
 	public function renewCheckout($patron, $recordId, $itemId = null, $itemIndex = null)
@@ -874,7 +864,7 @@ class CatalogConnection
 		}
 	}
 
-	public function placeVolumeHold($patron, $recordId, $volumeId, $pickupBranch)
+	public function placeVolumeHold(User $patron, $recordId, $volumeId, $pickupBranch)
 	{
 		return $this->driver->placeVolumeHold($patron, $recordId, $volumeId, $pickupBranch);
 	}
@@ -906,10 +896,11 @@ class CatalogConnection
 	}
 
 	/**
-	 * Returns one of three values
+	 * Returns one of four values
 	 * - none - No forgot password functionality exists
 	 * - emailResetLink - A link to reset the pin is emailed to the user
 	 * - emailPin - The pin itself is emailed to the user
+	 * - emailAspenResetLink - A link to reset the pin is emailed to the user.  Reset happens within Aspen.
 	 * @return string
 	 */
 	function getForgotPasswordType()
@@ -941,12 +932,82 @@ class CatalogConnection
 			$interface->assign('resendEmail', $_REQUEST['resendEmail']);
 		}
 
-		return $this->driver->getEmailResetPinTemplate();
+		if ($this->getForgotPasswordType() == 'emailAspenResetLink'){
+			return 'aspenEmailResetPinLink.tpl';
+		}else{
+			return $this->driver->getEmailResetPinTemplate();
+		}
 	}
 
 	function processEmailResetPinForm()
 	{
-		return $this->driver->processEmailResetPinForm();
+		if ($this->getForgotPasswordType() == 'emailAspenResetLink') {
+			$result = array(
+				'success' => false,
+				'error' => translate(['text' => "Unknown error sending password reset.", 'isPublicFacing'=>true])
+			);
+
+			//Get the user from the driver
+			if (empty($_REQUEST['reset_username'])){
+				$result['error'] = translate(['text' => "Barcode not provided. You must provide a barcode to use password reset.", 'isPublicFacing'=>true]);
+			}else{
+				$barcode = $_REQUEST['reset_username'];
+				$userToResetPin = new User();
+				$barcodeProperty = $this->accountProfile->loginConfiguration == 'barcode_pin' ? 'cat_username' : 'cat_password';
+				$userToResetPin->$barcodeProperty = $barcode;
+				if (!$userToResetPin->find(true)){
+					$userToResetPin = $this->driver->findNewUser($barcode);
+				}
+				if ($userToResetPin == false){
+					$result['error'] = translate(['text' => "Could not find a patron with that barcode, please contact the library.", 'isPublicFacing'=>true]);
+				}else{
+					if (empty($userToResetPin->email)){
+						$result['error'] = translate(['text' => "That account does not have an email associated with it, please contact the library.", 'isPublicFacing'=>true]);
+					}else{
+						require_once ROOT_DIR . '/sys/Account/PinResetToken.php';
+						$pinResetToken = new PinResetToken();
+						$pinResetToken->userId = $userToResetPin->id;
+						$pinResetToken->generateToken();
+						$pinResetToken->dateIssued = time();
+						if ($pinResetToken->insert()){
+							require_once ROOT_DIR . '/sys/Email/Mailer.php';
+							$mailer = new Mailer();
+
+							global $configArray;
+							$resetUrl = $configArray['Site']['url'] . '/MyAccount/CompletePinReset?token=' . $pinResetToken->token;
+							$subject = translate(['text' => 'Reset PIN', 'isPublicFacing'=> true]);
+							$body = translate(['text' => 'Hi %1%,', 1 => $userToResetPin->firstname, 'isPublicFacing'=> true]);
+							$body .= "\r\n" . translate(['text' => 'It looks like you forgot your PIN. Click on the link or copy/paste the URL below into a browser to reset your password. This link will only work for 60 minutes, after that you’ll have to request a new link.', 'isPublicFacing'=> true]);
+							$body .= "\r\n\r\n" . $resetUrl;
+							$body .= "\r\n" . translate(['text' => 'You can also paste the following code into the page where you generated the reset.', 'isPublicFacing'=> true]);
+							$body .= "\r\n\r\n" . $pinResetToken->token;
+
+							$htmlBody = "<html></html><table><tr><td>" . translate(['text' => 'Hi %1%,', 1 => $userToResetPin->firstname, 'isPublicFacing'=> true]) . '<br/>';
+							$htmlBody .= translate(['text' => 'It looks like you forgot your PIN. Click on the button or copy/paste the URL below into a browser to reset your password. This link will only work for 60 minutes, after that you’ll have to request a new link', 'isPublicFacing'=> true, 1 => $userToResetPin->firstname]) . "</td>";
+							$htmlBody .= "<tr><td style='text-align: center'><a href='{$resetUrl}'>" . translate(['text' => 'CREATE NEW PIN', 'isPublicFacing'=> true]) . '</a></td></tr>';
+							$htmlBody .= '<tr><td></td></tr>';
+							$htmlBody .= "<tr><td style='text-align: center'>" . translate(['text' => 'Reset Token', 'isPublicFacing'=> true]) . '</tr>';
+							$htmlBody .= "<tr><td style='text-align: center'>" . $pinResetToken->token . '</td></tr>';
+							$htmlBody .= '</table></html>';
+
+
+							if ($mailer->send($userToResetPin->email, $subject, $body, null, $htmlBody)){
+								$result['success'] = true;
+								$result['message'] = translate(['text' => "The email with your PIN reset link was sent. Please take click on the link within that email or enter the code below.", 'isPublicFacing'=>true]);
+							}else{
+								$result['error'] = translate(['text' => "The email with your PIN reset link could not be sent, please contact the library.", 'isPublicFacing'=>true]);
+							}
+						}else{
+							$result['error'] = translate(['text' => "Could not generate PIN reset token.", 'isPublicFacing'=>true]);
+						}
+					}
+				}
+			}
+
+			return $result;
+		}else{
+			return $this->driver->processEmailResetPinForm();
+		}
 	}
 
 	function hasMaterialsRequestSupport()
@@ -1030,7 +1091,9 @@ class CatalogConnection
 
 	public function completeFinePayment(User $patron, UserPayment $payment)
 	{
-		return $this->driver->completeFinePayment($patron, $payment);
+		$result = $this->driver->completeFinePayment($patron, $payment);
+		$patron->clearCachedAccountSummaryForSource($this->driver->getIndexingProfile()->name);
+		return $result;
 	}
 
 	public function patronEligibleForHolds(User $patron)
@@ -1074,7 +1137,11 @@ class CatalogConnection
 
 	public function getEmailResetPinResultsTemplate()
 	{
-		return $this->driver->getEmailResetPinResultsTemplate();
+		if ($this->getForgotPasswordType() == 'emailAspenResetLink') {
+			return 'aspenEmailResetPinResults.tpl';
+		}else{
+			return $this->driver->getEmailResetPinResultsTemplate();
+		}
 	}
 
 	function getPasswordPinValidationRules(){
@@ -1136,6 +1203,8 @@ class CatalogConnection
 	public function logout(User $user)
 	{
 		$this->driver->logout($user);
+		$user->lastLoginValidation = 0;
+		$user->update();
 	}
 
 	public function getHoldsReportData($location) {
@@ -1168,5 +1237,44 @@ class CatalogConnection
 
 	public function treatVolumeHoldsAsItemHolds() {
 		return $this->driver->treatVolumeHoldsAsItemHolds();
+	}
+
+	public function getPluginStatus(string $pluginName) {
+		return $this->driver->getPluginStatus($pluginName);
+	}
+
+	public function getCurbsidePickupSettings($locationCode)
+	{
+		return $this->driver->getCurbsidePickupSettings($locationCode);
+	}
+
+	public function hasCurbsidePickups($user)
+	{
+		return $this->driver->hasCurbsidePickups($user);
+	}
+
+	public function getPatronCurbsidePickups($user)
+	{
+		return $this->driver->getPatronCurbsidePickups($user);
+	}
+
+	public function newCurbsidePickup($user, $pickupLocation, $pickupTime, $pickupNote)
+	{
+		return $this->driver->newCurbsidePickup($user, $pickupLocation, $pickupTime, $pickupNote);
+	}
+
+	public function cancelCurbsidePickup($user, $pickupId)
+	{
+		return $this->driver->cancelCurbsidePickup($user, $pickupId);
+	}
+
+	public function checkInCurbsidePickup($user, $pickupId)
+	{
+		return $this->driver->checkInCurbsidePickup($user, $pickupId);
+	}
+
+	public function getAllCurbsidePickups()
+	{
+		return $this->driver->getAllCurbsidePickups();
 	}
 }

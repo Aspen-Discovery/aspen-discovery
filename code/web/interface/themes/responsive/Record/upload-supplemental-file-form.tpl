@@ -5,19 +5,19 @@
 	<div class="form-group">
 		<div class="form-group">
 			<label for="title">
-				{translate text="Title"}<span class="required-input">*</span>
+				{translate text="Title" isAdminFacing=true}<span class="required-input">*</span>
 			</label>
 			<input type="text" class="form-control required" id="title" name="title" maxlength="255">
 		</div>
 		<div class="input-group">
 			<label class="input-group-btn">
 				<span class="btn btn-primary">
-					{translate text="Select File"}&hellip; <input type="file" style="display: none;" name="supplementalFile" id="supplementalFile">
+					{translate text="Select File" isAdminFacing=true}&hellip; <input type="file" style="display: none;" name="supplementalFile" id="supplementalFile">
 				</span>
 			</label>
 			<input type="text" class="form-control" id="selected-file-label" readonly>
 		</div>
-		<small id="supplementalFileHelp" class="form-text text-muted">File must be {$max_file_size}MB or less and must be one of the following types: <br/>.CSV, .DOC, .DOCX, .ODP, .ODS, .ODT, .PPT, .PPTX, .XLS, .XLSX</small>
+		<small id="supplementalFileHelp" class="form-text text-muted">{translate text="File must be %1%MB or less and must be one of the following types: <br/>.CSV, .DOC, .DOCX, .ODP, .ODS, .ODT, .PDF, .PPT, .PPTX, .XLS, .XLSX" 1=$max_file_size isAdminFacing=true}</small>
 	</div>
 </form>
 	<script type="application/javascript">

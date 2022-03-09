@@ -406,7 +406,7 @@ BODY;
 				$searchIndexes = array();
 				if ($searchOptions != null) {
 					foreach ($searchOptions->AvailableSearchCriteria->AvailableSearchFields as $searchField) {
-						$searchIndexes[$searchField->FieldCode] = $searchField->Label;
+						$searchIndexes[$searchField->FieldCode] = translate(['text'=>$searchField->Label, 'isPublicFacing'=>true, 'inAttribute'=>true]);
 					}
 				}
 				global $configArray;
@@ -818,7 +818,7 @@ BODY;
 		$limitList = [];
 		foreach ($limitOptions as $limit => $limitOption){
 			if (array_key_exists($limit, $this->limiters)){
-				$limitIsApplied = $limitOption == 'y';
+				$limitIsApplied = ($this->limiters[$limit]) == 'y' ? 1 : 0;
 			}else{
 				$limitIsApplied = $limitOption['defaultOn'];
 			}

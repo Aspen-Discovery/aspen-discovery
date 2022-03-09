@@ -378,6 +378,21 @@ class File_MARC_Record
     }
     // }}}
 
+	function sortFields(){
+		$sorter = function(File_MARC_Field $a, File_MARC_Field $b) {
+			return strcmp($a->getTag(), $b->getTag());
+		};
+		$fieldsArray = [];
+		foreach ($this->fields as $field){
+			$fieldsArray[] = $field;
+		}
+		uasort($fieldsArray, $sorter);
+		$this->fields = new File_MARC_List();
+		foreach ($fieldsArray as $field){
+			$this->fields->appendNode($field);
+		}
+	}
+
     // {{{ deleteFields()
     /**
      * Delete all occurrences of a field matching a tag name from the record.
@@ -542,6 +557,29 @@ class File_MARC_Record
     }
 
     // }}}
+
+	public function jsonDecode($rawData)
+	{
+		$decodedData = json_decode($rawData);
+		$this->leader = $decodedData->leader;
+		foreach ($decodedData->fields as $dataArray){
+			foreach ($dataArray as $tag => $data) {
+				if ($tag[0] == '0' && $tag[1] == '0') {
+					$controlField = new File_MARC_Control_Field($tag, $data);
+					$this->appendField($controlField);
+				} else {
+					$dataField = new File_MARC_Data_Field($tag, null, $data->ind1, $data->ind2);
+					foreach ($data->subfields as $subfieldDataArray) {
+						foreach ($subfieldDataArray as $subfieldCode => $subfieldData) {
+							$subfield = new File_MARC_Subfield($subfieldCode, $subfieldData);
+							$dataField->appendSubfield($subfield);
+						}
+					}
+					$this->appendField($dataField);
+				}
+			}
+		}
+	}
 
     // {{{ toJSONHash()
     /**

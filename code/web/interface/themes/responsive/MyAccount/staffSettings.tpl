@@ -10,9 +10,9 @@
 				{include file='systemMessages.tpl' messages=$accountMessages}
 			{/if}
 
-			<h1>{translate text='Staff Settings'}</h1>
+			<h1>{translate text='Staff Settings' isPublicFacing=true}</h1>
 			{if $offline}
-				<div class="alert alert-warning">{translate text=offline_notice defaultText="<strong>The library system is currently offline.</strong> We are unable to retrieve information about your account at this time."}</div>
+				<div class="alert alert-warning"><strong>{translate text="The library system is currently offline." isPublicFacing=true}</strong> {translate text="We are unable to retrieve information about your account at this time." isPublicFacing=true}</div>
 			{else}
 {* MDN 7/26/2019 Do not allow access for linked users *}
 {*				{include file="MyAccount/switch-linked-user-form.tpl" label="View Account Settings for" actionPath="/MyAccount/StaffSettings"}*}
@@ -20,13 +20,13 @@
 				{* Display user roles if the user has any roles*}
 				{if count($profile->roles) > 0}
 					<div class="row">
-						<div class="col-tn-12 lead">{translate text="Roles"}</div>
+						<div class="col-tn-12 lead">{translate text="Roles" isPublicFacing=true}</div>
 					</div>
 					<div class="row">
 						<div class="col-tn-12">
 							<ul>
 								{foreach from=$profile->roles item=role}
-									<li>{$role->name} - {$role->description}</li>
+									<li>{translate text=$role->name isStaffFacing=true isAdminEnteredData=true} - {translate text=$role->description isStaffFacing=true isAdminEnteredData=true}</li>
 								{/foreach}
 							</ul>
 						</div>
@@ -38,15 +38,15 @@
 
 					{if $userIsStaff}
 						<div class="row">
-							<div class="col-tn-12 lead">{translate text="General"}</div>
+							<div class="col-tn-12 lead">{translate text="General" isPublicFacing=true}</div>
 						</div>
 						<div class="form-group row">
-							<div class="col-xs-4"><label for="bypassAutoLogout" class="control-label">{translate text='Bypass Automatic Logout'}</label></div>
+							<div class="col-xs-4"><label for="bypassAutoLogout" class="control-label">{translate text='Bypass Automatic Logout' isPublicFacing=true}</label></div>
 							<div class="col-xs-8">
 								{if $edit == true}
 									<input type="checkbox" name="bypassAutoLogout" id="bypassAutoLogout" {if $profile->bypassAutoLogout==1}checked='checked'{/if} data-switch="">
 								{else}
-									{if $profile->bypassAutoLogout==0}{translate text="No"}{else}{translate text="Yes"}{/if}
+									{if $profile->bypassAutoLogout==0} {translate text='No' isPublicFacing=true}{else} {translate text='Yes' isPublicFacing=true}{/if}
 								{/if}
 							</div>
 						</div>
@@ -54,11 +54,11 @@
 
 					{if $profile->hasRole('library_material_requests') && ($materialRequestType == 1)}
 						<div class="row">
-							<div class="lead col-tn-12">{translate text="Materials Request Management"}</div>
+							<div class="lead col-tn-12">{translate text="Materials Request Management" isPublicFacing=true}</div>
 						</div>
 						<div class="form-group row">
 							<div class="col-xs-4">
-								<label for="materialsRequestReplyToAddress" class="control-label">{translate text="Reply-To Email Address"}</label>
+								<label for="materialsRequestReplyToAddress" class="control-label">{translate text="Reply-To Email Address" isPublicFacing=true}</label>
 							</div>
 							<div class="col-xs-8">
 								{if $edit == true}
@@ -70,7 +70,7 @@
 						</div>
 						<div class="form-group row">
 							<div class="col-xs-4">
-								<label for="materialsRequestEmailSignature" class="control-label">{translate text="Email Signature"}</label>
+								<label for="materialsRequestEmailSignature" class="control-label">{translate text="Email Signature" isPublicFacing=true}</label>
 							</div>
 							<div class="col-xs-8">
 								{if $edit == true}
@@ -86,7 +86,7 @@
 					{if !$offline && $edit == true}
 						<div class="form-group">
 							<div class="col-xs-8 col-xs-offset-4">
-								<button type="submit" name="updateStaffSettings" class="btn btn-sm btn-primary">{translate text="Update Settings"}</button>
+								<button type="submit" name="updateStaffSettings" class="btn btn-sm btn-primary">{translate text="Update Settings" isPublicFacing=true}</button>
 							</div>
 						</div>
 					{/if}
@@ -101,7 +101,7 @@
 			{/if}
 		{else}
 			<div class="page">
-				You must sign in to view this information. Click <a href="/MyAccount/Login">here</a> to sign in.
+				{translate text="You must sign in to view this information." isPublicFacing=true}<a href='/MyAccount/Login' class="btn btn-primary">{translate text="Sign In" isPublicFacing=true}</a>
 			</div>
 		{/if}
 	</div>

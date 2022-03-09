@@ -40,38 +40,52 @@ class MarcLoader{
 			return MarcLoader::$loadedMarcRecords[$ilsId];
 		}
 
-		if (array_key_exists($recordType, $indexingProfiles)) {
-			$indexingProfile = $indexingProfiles[$recordType];
-		}elseif (array_key_exists($recordType, $sideLoadSettings)){
-			$indexingProfile = $sideLoadSettings[$recordType];
-		}else{
-			//Try to infer the indexing profile from the module
-			global $activeRecordProfile;
-			if ($activeRecordProfile){
-				$indexingProfile = $activeRecordProfile;
-			}else{
-				$indexingProfile = $indexingProfiles['ils'];
+		require_once ROOT_DIR . '/sys/Indexing/IlsRecord.php';
+		$ilsRecord = new IlsRecord();
+		$ilsRecord->source = $recordType;
+		$ilsRecord->ilsId = $ilsId;
+		$checkFileSystem = true;
+		if ($ilsRecord->find(true)){
+			if (!empty($ilsRecord->sourceData)) {
+				$marcRecord = new File_MARC_Record();
+				$marcRecord->jsonDecode($ilsRecord->sourceData);
+				$checkFileSystem = false;
 			}
 		}
+		if ($checkFileSystem) {
+			if (array_key_exists($recordType, $indexingProfiles)) {
+				$indexingProfile = $indexingProfiles[$recordType];
+			} elseif (array_key_exists($recordType, $sideLoadSettings)) {
+				$indexingProfile = $sideLoadSettings[strtolower($recordType)];
+			} else {
+				//Try to infer the indexing profile from the module
+				global $activeRecordProfile;
+				if ($activeRecordProfile) {
+					$indexingProfile = $activeRecordProfile;
+				} else {
+					$indexingProfile = $indexingProfiles['ils'];
+				}
+			}
 
-		$shortId = str_replace('.', '', $ilsId);
-		if (strlen($shortId) < 9){
-			$shortId = str_pad($shortId, 9, "0", STR_PAD_LEFT);
-		}
-		if ($indexingProfile->createFolderFromLeadingCharacters){
-			$firstChars = substr($shortId, 0, $indexingProfile->numCharsToCreateFolderFrom);
-		}else{
-			$firstChars = substr($shortId, 0, strlen($shortId) - $indexingProfile->numCharsToCreateFolderFrom);
-		}
+			$shortId = str_replace('.', '', $ilsId);
+			if (strlen($shortId) < 9) {
+				$shortId = str_pad($shortId, 9, "0", STR_PAD_LEFT);
+			}
+			if ($indexingProfile->createFolderFromLeadingCharacters) {
+				$firstChars = substr($shortId, 0, $indexingProfile->numCharsToCreateFolderFrom);
+			} else {
+				$firstChars = substr($shortId, 0, strlen($shortId) - $indexingProfile->numCharsToCreateFolderFrom);
+			}
 
-		$individualName = $indexingProfile->individualMarcPath . "/{$firstChars}/{$shortId}.mrc";
-		$marcRecord = false;
-		if (isset($indexingProfile->individualMarcPath)){
-			if (file_exists($individualName)){
-				$rawMarc = file_get_contents($individualName);
-				$marc = new File_MARC($rawMarc, File_MARC::SOURCE_STRING);
-				if (!($marcRecord = $marc->next())) {
-					AspenError::raiseError(new AspenError('Could not load marc record for record ' . $shortId));
+			$individualName = $indexingProfile->individualMarcPath . "/{$firstChars}/{$shortId}.mrc";
+			$marcRecord = false;
+			if (isset($indexingProfile->individualMarcPath)) {
+				if (file_exists($individualName)) {
+					$rawMarc = file_get_contents($individualName);
+					$marc = new File_MARC($rawMarc, File_MARC::SOURCE_STRING);
+					if (!($marcRecord = $marc->next())) {
+						AspenError::raiseError(new AspenError('Could not load marc record for record ' . $shortId));
+					}
 				}
 			}
 		}
@@ -110,10 +124,20 @@ class MarcLoader{
 			$ilsId = $id;
 		}
 
+		require_once ROOT_DIR . '/sys/Indexing/IlsRecord.php';
+		$ilsRecord = new IlsRecord();
+		$ilsRecord->selectAdd();
+		$ilsRecord->selectAdd('lastModified');
+		$ilsRecord->source = $recordType;
+		$ilsRecord->ilsId = $ilsId;
+		$checkFileSystem = true;
+		if ($ilsRecord->find(true)){
+			return $ilsRecord->lastModified;
+		}
 		if (array_key_exists($recordType, $indexingProfiles)) {
 			$indexingProfile = $indexingProfiles[$recordType];
-		}elseif (array_key_exists($recordType, $sideLoadSettings)){
-			$indexingProfile = $sideLoadSettings[$recordType];
+		}elseif (array_key_exists(strtolower($recordType), $sideLoadSettings)){
+			$indexingProfile = $sideLoadSettings[strtolower($recordType)];
 		}else{
 			$indexingProfile = $indexingProfiles['ils'];
 		}
@@ -164,30 +188,47 @@ class MarcLoader{
 			$ilsId = $id;
 		}
 
-		if (array_key_exists($recordType, $indexingProfiles)){
-			$indexingProfile = $indexingProfiles[$recordType];
-		}elseif (array_key_exists($recordType, $sideLoadSettings)){
-			$indexingProfile = $sideLoadSettings[$recordType];
+		require_once ROOT_DIR . '/sys/Indexing/IlsRecord.php';
+		$ilsRecord = new IlsRecord();
+		$ilsRecord->selectAdd();
+		$ilsRecord->selectAdd('id, UNCOMPRESSED_LENGTH(sourceData) as hasMarc');
+		$ilsRecord->ilsId = $ilsId;
+		$ilsRecord->source = $recordType;
+
+		if ($ilsRecord->find(true)){
+			/** @noinspection PhpUndefinedFieldInspection */
+			$hasMarc = $ilsRecord->hasMarc > 0;
 		}else{
-			$indexingProfile = $indexingProfiles['ils'];
+			$hasMarc = false;
 		}
-		$shortId = str_replace('.', '', $ilsId);
-		if (strlen($shortId) < 9){
-			$shortId = str_pad($shortId, 9, "0", STR_PAD_LEFT);
-		}
-		if ($indexingProfile->createFolderFromLeadingCharacters){
-			$firstChars = substr($shortId, 0, $indexingProfile->numCharsToCreateFolderFrom);
-		}else{
-			$firstChars = substr($shortId, 0, strlen($shortId) - $indexingProfile->numCharsToCreateFolderFrom);
-		}
-		$individualName = $indexingProfile->individualMarcPath . "/{$firstChars}/{$shortId}.mrc";
-		if (isset($indexingProfile->individualMarcPath)){
-			$fileExists = file_exists($individualName);
-			global $timer;
-			$timer->logTime('Finished checking if MARC file exists');
-			return $fileExists;
-		}else{
-			return false;
+		if ($hasMarc){
+			return true;
+		}else {
+			if (array_key_exists($recordType, $indexingProfiles)) {
+				$indexingProfile = $indexingProfiles[$recordType];
+			} elseif (array_key_exists(strtolower($recordType), $sideLoadSettings)) {
+				$indexingProfile = $sideLoadSettings[strtolower($recordType)];
+			} else {
+				$indexingProfile = $indexingProfiles['ils'];
+			}
+			$shortId = str_replace('.', '', $ilsId);
+			if (strlen($shortId) < 9) {
+				$shortId = str_pad($shortId, 9, "0", STR_PAD_LEFT);
+			}
+			if ($indexingProfile->createFolderFromLeadingCharacters) {
+				$firstChars = substr($shortId, 0, $indexingProfile->numCharsToCreateFolderFrom);
+			} else {
+				$firstChars = substr($shortId, 0, strlen($shortId) - $indexingProfile->numCharsToCreateFolderFrom);
+			}
+			$individualName = $indexingProfile->individualMarcPath . "/{$firstChars}/{$shortId}.mrc";
+			if (isset($indexingProfile->individualMarcPath)) {
+				$fileExists = file_exists($individualName);
+				global $timer;
+				$timer->logTime('Finished checking if MARC file exists');
+				return $fileExists;
+			} else {
+				return false;
+			}
 		}
 	}
 }

@@ -21,11 +21,11 @@ class SearchSources{
 			case 'genealogy':
 				$searchObject = SearchObjectFactory::initSearchObject('Genealogy');
 				break;
-			case 'islandora':
-				$searchObject = SearchObjectFactory::initSearchObject('Islandora');
-				break;
 			case 'lists':
 				$searchObject = SearchObjectFactory::initSearchObject('Lists');
+				break;
+			case 'course_reserves':
+				$searchObject = SearchObjectFactory::initSearchObject('CourseReserves');
 				break;
 			case 'open_archives':
 				$searchObject = SearchObjectFactory::initSearchObject('OpenArchives');
@@ -82,9 +82,9 @@ class SearchSources{
 
 		$searchGenealogy = array_key_exists('Genealogy', $enabledModules) && $library->enableGenealogy;
 		$repeatCourseReserves = $library->enableCourseReserves == 1;
-		$searchArchive = $library->enableArchive == 1;
 		$searchEbsco = array_key_exists('EBSCO EDS', $enabledModules) && $library->edsSettingsId != -1;
 		$searchOpenArchives = array_key_exists('Open Archives', $enabledModules) && $library->enableOpenArchives == 1;
+		$searchCourseReserves = $library->enableCourseReserves == 2;
 
 		list($enableCombinedResults, $showCombinedResultsFirst, $combinedResultsName) = self::getCombinedSearchSetupParameters($location, $library);
 
@@ -209,21 +209,29 @@ class SearchSources{
 			'hasAdvancedSearch' => false
 		);
 
+		if (array_key_exists('Course Reserves', $enabledModules) && $searchCourseReserves){
+			$searchOptions['course_reserves'] = array(
+				'name' => 'Course Reserves',
+				'description' => 'Course Reserves',
+				'catalogType' => 'course_reserves',
+				'hasAdvancedSearch' => false
+			);
+		}
+
 		if (array_key_exists('Web Indexer', $enabledModules)){
 			require_once ROOT_DIR . '/sys/WebsiteIndexing/WebsiteIndexSetting.php';
 			$websiteSetting = new WebsiteIndexSetting();
-			$websiteSetting->selectAdd(null);
-			$websiteSetting->selectAdd('searchCategory');
-			$websiteSetting->groupBy('searchCategory');
 			$websiteSetting->find();
 			//TODO: Need to deal with searching different collections
 			while ($websiteSetting->fetch()) {
-				$searchOptions['websites'] = array(
-					'name' => $websiteSetting->searchCategory,
-					'description' => $websiteSetting->searchCategory,
-					'catalogType' => 'websites',
-					'hasAdvancedSearch' => false
-				);
+				if ($websiteSetting->isValidForSearching()) {
+					$searchOptions['websites'] = array(
+						'name' => 'Library Website',
+						'description' => 'Library Website',
+						'catalogType' => 'websites',
+						'hasAdvancedSearch' => false
+					);
+				}
 			}
 			//Local search, activate if we have at least one page
 			if ($library->enableWebBuilder) {
@@ -233,15 +241,6 @@ class SearchSources{
 					'catalogType' => 'websites'
 				);
 			}
-		}
-
-		if ($searchArchive){
-			$searchOptions['islandora'] = array(
-				'name' => 'Local Digital Archive',
-				'description' => 'Local Digital Archive for the library',
-				'catalogType' => 'islandora',
-				'hasAdvancedSearch' => false
-			);
 		}
 
 		if ($searchOpenArchives){

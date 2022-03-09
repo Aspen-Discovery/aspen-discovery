@@ -12,55 +12,49 @@
 			{include file='ilsMessages.tpl' messages=$ilsMessages}
 		{/if}
 
-		<h1>{translate text='Checked Out Titles'}</h1>
+		<h1>{translate text='Checked Out Titles' isPublicFacing=true}</h1>
 		{if $libraryHoursMessage}
 			<div class="libraryHours alert alert-success">{$libraryHoursMessage}</div>
 		{/if}
 
 		{if $offline}
-			<div class="alert alert-warning">{translate text=offline_notice defaultText="<strong>The library system is currently offline.</strong> We are unable to retrieve information about your account at this time."}</div>
+			<div class="alert alert-warning"><strong>{translate text="The library system is currently offline." isPublicFacing=true}</strong> {translate text="We are unable to retrieve information about your account at this time." isPublicFacing=true}</div>
 		{else}
 			<ul class="nav nav-tabs" role="tablist" id="checkoutsTab">
-				<li role="presentation"{if $tab=='all'} class="active"{/if}><a href="#all" aria-controls="all" role="tab" data-toggle="tab">{translate text="All"} <span class="badge"><span class="checkouts-placeholder">&nbsp;</span></span></a></li>
-				<li role="presentation"{if $tab=='ils'} class="active"{/if}><a href="#ils" aria-controls="ils" role="tab" data-toggle="tab">{translate text="Physical Materials"} <span class="badge"><span class="ils-checkouts-placeholder">&nbsp;</span></span></a></li>
+				<li role="presentation"{if $tab=='all'} class="active"{/if}><a href="#all" aria-controls="all" role="tab" data-toggle="tab">{translate text="All" isPublicFacing=true} <span class="badge"><span class="checkouts-placeholder">&nbsp;</span></span></a></li>
+				<li role="presentation"{if $tab=='ils'} class="active"{/if}><a href="#ils" aria-controls="ils" role="tab" data-toggle="tab">{translate text="Physical Materials" isPublicFacing=true} <span class="badge"><span class="ils-checkouts-placeholder">&nbsp;</span></span></a></li>
 				{if $user->isValidForEContentSource('overdrive')}
-					<li role="presentation"{if $tab=='overdrive'} class="active"{/if}><a href="#overdrive" aria-controls="overdrive" role="tab" data-toggle="tab">{translate text="OverDrive"} <span class="badge"><span class="overdrive-checkouts-placeholder">&nbsp;</span></span></a></li>
+					<li role="presentation"{if $tab=='overdrive'} class="active"{/if}><a href="#overdrive" aria-controls="overdrive" role="tab" data-toggle="tab">{translate text="OverDrive" isPublicFacing=true} <span class="badge"><span class="overdrive-checkouts-placeholder">&nbsp;</span></span></a></li>
 				{/if}
 				{if $user->isValidForEContentSource('hoopla')}
-					<li role="presentation"{if $tab=='hoopla'} class="active"{/if}><a href="#hoopla" aria-controls="hoopla" role="tab" data-toggle="tab">{translate text="Hoopla"} <span class="badge"><span class="hoopla-checkouts-placeholder">&nbsp;</span></span></a></li>
-				{/if}
-				{if $user->isValidForEContentSource('rbdigital')}
-					<li role="presentation"{if $tab=='rbdigital'} class="active"{/if}><a href="#rbdigital" aria-controls="rbdigital" role="tab" data-toggle="tab">{translate text="RBdigital"} <span class="badge"><span class="rbdigital-checkouts-placeholder">&nbsp;</span></span></a></li>
+					<li role="presentation"{if $tab=='hoopla'} class="active"{/if}><a href="#hoopla" aria-controls="hoopla" role="tab" data-toggle="tab">{translate text="Hoopla" isPublicFacing=true} <span class="badge"><span class="hoopla-checkouts-placeholder">&nbsp;</span></span></a></li>
 				{/if}
 				{if $user->isValidForEContentSource('cloud_library')}
-					<li role="presentation"{if $tab=='cloud_library'} class="active"{/if}><a href="#cloud_library" aria-controls="cloud_library" role="tab" data-toggle="tab">{translate text="Cloud Library"} <span class="badge"><span class="cloud_library-checkouts-placeholder">&nbsp;</span></span></a></li>
+					<li role="presentation"{if $tab=='cloud_library'} class="active"{/if}><a href="#cloud_library" aria-controls="cloud_library" role="tab" data-toggle="tab">{translate text="cloudLibrary" isPublicFacing=true} <span class="badge"><span class="cloud_library-checkouts-placeholder">&nbsp;</span></span></a></li>
 				{/if}
 				{if $user->isValidForEContentSource('axis360')}
-					<li role="presentation"{if $tab=='axis360'} class="active"{/if}><a href="#axis360" aria-controls="axis360" role="tab" data-toggle="tab">{translate text="Axis 360"} <span class="badge"><span class="axis360-checkouts-placeholder">&nbsp;</span></span></a></li>
+					<li role="presentation"{if $tab=='axis360'} class="active"{/if}><a href="#axis360" aria-controls="axis360" role="tab" data-toggle="tab">{translate text="Axis 360" isPublicFacing=true} <span class="badge"><span class="axis360-checkouts-placeholder">&nbsp;</span></span></a></li>
 				{/if}
 			</ul>
 			<div class="refresh-indicator small pull-right">
-				{translate text="Last Loaded <span id='accountLoadTime'>%1%</span>" 1=$profile->getFormattedCheckoutInfoLastLoaded()} <a onclick="return AspenDiscovery.Account.reloadCheckouts();" title="Refresh"><i class="fas fa-sync-alt"></i></a>
+				{translate text="Last Loaded <span id='accountLoadTime'>%1%</span>" 1=$profile->getFormattedCheckoutInfoLastLoaded() isPublicFacing=true} <a onclick="return AspenDiscovery.Account.reloadCheckouts();" title="{translate text="Refresh" isPublicFacing=true inAttribute=true}"><i class="fas fa-sync-alt"></i></a>
 			</div>
 
 			<!-- Tab panes -->
 			<div class="tab-content" id="checkouts">
-				<div role="tabpanel" class="tab-pane{if $tab=='all'} active{/if}" id="all" aria-label="All Checkouts List"><div id="allCheckoutsPlaceholder">{translate text="Loading checkouts from all sources"}</div></div>
-				<div role="tabpanel" class="tab-pane{if $tab=='ils'} active{/if}" id="ils" aria-label="Physical Checkouts List"><div id="ilsCheckoutsPlaceholder">{translate text="Loading checkouts of physical materials"}</div></div>
+				<div role="tabpanel" class="tab-pane{if $tab=='all'} active{/if}" id="all" aria-label="All Checkouts List"><div id="allCheckoutsPlaceholder">{translate text="Loading checkouts from all sources" isPublicFacing=true}</div></div>
+				<div role="tabpanel" class="tab-pane{if $tab=='ils'} active{/if}" id="ils" aria-label="Physical Checkouts List"><div id="ilsCheckoutsPlaceholder">{translate text="Loading checkouts of physical materials" isPublicFacing=true}</div></div>
 				{if $user->isValidForEContentSource('overdrive')}
-					<div role="tabpanel" class="tab-pane{if $tab=='overdrive'} active{/if}" id="overdrive" aria-label="OverDrive Checkouts List"><div id="overdriveCheckoutsPlaceholder">{translate text="Loading checkouts from OverDrive"}</div></div>
+					<div role="tabpanel" class="tab-pane{if $tab=='overdrive'} active{/if}" id="overdrive" aria-label="OverDrive Checkouts List"><div id="overdriveCheckoutsPlaceholder">{translate text="Loading checkouts from OverDrive" isPublicFacing=true}</div></div>
 				{/if}
 				{if $user->isValidForEContentSource('hoopla')}
-					<div role="tabpanel" class="tab-pane{if $tab=='hoopla'} active{/if}" id="hoopla" aria-label="Hoopla Checkouts List"><div id="hooplaCheckoutsPlaceholder">{translate text="Loading checkouts from Hoopla"}</div></div>
-				{/if}
-				{if $user->isValidForEContentSource('rbdigital')}
-					<div role="tabpanel" class="tab-pane{if $tab=='rbdigital'} active{/if}" id="rbdigital" aria-label="RBdigital Checkouts List"><div id="rbdigitalCheckoutsPlaceholder">{translate text="Loading checkouts from RBdigital"}</div></div>
+					<div role="tabpanel" class="tab-pane{if $tab=='hoopla'} active{/if}" id="hoopla" aria-label="Hoopla Checkouts List"><div id="hooplaCheckoutsPlaceholder">{translate text="Loading checkouts from Hoopla" isPublicFacing=true}</div></div>
 				{/if}
 				{if $user->isValidForEContentSource('cloud_library')}
-					<div role="tabpanel" class="tab-pane{if $tab=='cloud_library'} active{/if}" id="cloud_library" aria-label="Cloud Library Checkouts List"><div id="cloud_libraryCheckoutsPlaceholder">{translate text="Loading checkouts from Cloud Library"}</div></div>
+					<div role="tabpanel" class="tab-pane{if $tab=='cloud_library'} active{/if}" id="cloud_library" aria-label="cloudLibrary Checkouts List"><div id="cloud_libraryCheckoutsPlaceholder">{translate text="Loading checkouts from cloudLibrary" isPublicFacing=true}</div></div>
 				{/if}
                 {if $user->isValidForEContentSource('axis360')}
-					<div role="tabpanel" class="tab-pane{if $tab=='axis360'} active{/if}" id="axis360" aria-label="Axis 360 Checkouts List"><div id="axis360CheckoutsPlaceholder">{translate text="Loading checkouts from Axis 360"}</div></div>
+					<div role="tabpanel" class="tab-pane{if $tab=='axis360'} active{/if}" id="axis360" aria-label="Axis 360 Checkouts List"><div id="axis360CheckoutsPlaceholder">{translate text="Loading checkouts from Axis 360" isPublicFacing=true}</div></div>
                 {/if}
 			</div>
 			<script type="text/javascript">
@@ -78,9 +72,6 @@
 					$("a[href='#hoopla']").on('show.bs.tab', function () {
 						AspenDiscovery.Account.loadCheckouts('hoopla');
 					});
-					$("a[href='#rbdigital']").on('show.bs.tab', function () {
-						AspenDiscovery.Account.loadCheckouts('rbdigital');
-					});
 					$("a[href='#cloud_library']").on('show.bs.tab', function () {
 						AspenDiscovery.Account.loadCheckouts('cloud_library');
 					});
@@ -95,6 +86,6 @@
 			</script>
 		{/if}
 	{else}
-		{translate text="login_to_view_account_notice" defaultText="You must sign in to view this information. Click <a href="/MyAccount/Login">here</a> to sign in."}
+		{translate text="You must sign in to view this information." isPublicFacing=true}<a href='/MyAccount/Login' class="btn btn-primary">{translate text="Sign In" isPublicFacing=true}</a>
 	{/if}
 {/strip}

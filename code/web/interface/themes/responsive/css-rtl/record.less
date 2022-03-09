@@ -1,0 +1,110 @@
+//@import (reference) "bootstrap/less/variables.less";
+@import (reference) "variables.less";
+/**
+ * Additional Styling specific to the display of full records.
+ *
+ * If a style is used both within the results list and within a record it should
+ */
+.statVal{
+  padding: 6px 0px 2px;
+}
+
+#list-series.titleScroller{
+  border: 1px solid #949494;
+}
+
+#list-series{
+  margin: 8px 0px;
+}
+
+#list-morelikethis.titleScroller{
+  border: 1px solid #949494;
+}
+
+#list-morelikethis{
+  margin: 8px 0px;
+}
+
+#explore-more-body #list-morelikethis{
+  border: none;
+}
+
+.statusValue.available, .statusValue.here{
+  color:#009900;
+  font-weight: bold;
+}
+.statusValue.nearby{
+  color: #BB0099;
+  font-weight: bold;
+}
+.statusValue.unavailable, .statusValue.checkedOut,.statusValue.checkedout,.statusValue.reserve{
+  color:#cc0000;
+  font-weight: bold;
+}
+#recordCover{
+  position:relative;
+}
+.godeeper {
+  bottom: 4px;
+  float: left;
+  position: absolute;
+  left: -5px;
+  z-index: 2;
+}
+.eContentHolding{
+  width: 100%;
+  border: 1px solid #AAAAAA;
+  border-radius: 3px;
+  margin-bottom: 10px;
+  position: relative;
+  background-color: #fff;
+}
+.eContentHoldingHeader{
+  background-color: #EDEDED;
+  padding: 5px;
+  font-size: 12px;
+}
+.eContentHoldingFormat{
+  font-weight: bold;
+  font-size: 14px;
+}
+.eContentHoldingUsage{
+  font-style: italic;
+  font-size: 12px;
+}
+.eContentHoldingActions{
+  margin: 8px 10px;
+}
+.eContentHoldingNotes{
+  font-size: 11px;
+  margin: 2px 10px;
+}
+.eContentFormatUsage{
+  font-size:11px;
+}
+.hold_result_title_failed{
+  color: @alert-danger-text;
+}
+.hold_result_title_ok{
+  color: @alert-success-text;
+}
+.checkInCell {
+  border: 1px solid #3e63a6;
+  float: right;
+  min-height: 8em;
+  padding: 4px;
+  width: 150px;
+}
+.citation th{
+  vertical-align: top;
+}
+.issue-summary-row {
+  border-bottom: 1px solid;
+  padding-bottom: 5px;
+  padding-top: 5px;
+  margin-bottom: 10px;
+}
+.issue-summary-location {
+  font-size: 13px;
+  font-weight: bold;
+}

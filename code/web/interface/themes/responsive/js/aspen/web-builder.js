@@ -1,4 +1,4 @@
-AspenDiscovery.WebBuilder = (function () {
+AspenDiscovery.WebBuilder = function () {
 	// noinspection JSUnusedGlobalSymbols
 	return {
 		editors: [],
@@ -12,32 +12,39 @@ AspenDiscovery.WebBuilder = (function () {
 				$("#propertyRowsourceId").hide();
 				$('#propertyRowframeHeight').hide();
 				$('#propertyRowimageURL').hide();
+				$('#propertyRowpdfView').hide();
 			}else if (sourceType === 'youtube_video' || sourceType === 'vimeo_video') {
 				$('#propertyRowmarkdown').hide();
 				$('#propertyRowsourceInfo').show();
 				$("#propertyRowsourceId").hide();
 				$('#propertyRowframeHeight').hide();
 				$('#propertyRowimageURL').hide();
+				$('#propertyRowpdfView').hide();
 			}else if (sourceType === 'iframe') {
 				$('#propertyRowmarkdown').hide();
 				$('#propertyRowsourceInfo').show();
 				$("#propertyRowsourceId").hide();
 				$('#propertyRowframeHeight').show();
 				$('#propertyRowimageURL').hide();
+				$('#propertyRowpdfView').hide();
 			}else if (sourceType === 'hours_locations') {
 				$('#propertyRowmarkdown').hide();
 				$('#propertyRowsourceInfo').hide();
 				$("#propertyRowsourceId").hide();
 				$('#propertyRowframeHeight').hide();
 				$('#propertyRowimageURL').hide();
+				$('#propertyRowpdfView').hide();
 			}else {
 				$('#propertyRowmarkdown').hide();
 				$('#propertyRowsourceInfo').hide();
 				$("#propertyRowsourceId").show();
 				$('#propertyRowframeHeight').hide();
 				$('#propertyRowimageURL').hide();
+				$('#propertyRowpdfView').hide();
 				if (sourceType === 'image') {
 					$('#propertyRowimageURL').show();
+				} else if (sourceType === 'pdf') {
+					$('#propertyRowpdfView').show();
 				}
 
 				var url = Globals.path + '/WebBuilder/AJAX?method=getPortalCellValuesForSource&portalCellId=' + portalCellId + '&sourceType=' + sourceType;
@@ -255,6 +262,75 @@ AspenDiscovery.WebBuilder = (function () {
 				modalDialog.modal('show');
 				return false;
 			}
+		},
+
+		updateWebBuilderFields: function () {
+			var requireLogin = $('#requireLogin');
+			if(requireLogin.is(":checked")) {
+				$("#propertyRowallowAccess").show();
+				$("#propertyRowrequireLoginUnlessInLibrary").show();
+			} else {
+				$("#propertyRowallowAccess").hide();
+				$("#propertyRowrequireLoginUnlessInLibrary").hide();
+			}
+
+			$(requireLogin).click(function() {
+				if(requireLogin.is(":checked")){
+					$("#propertyRowallowAccess").show();
+					$("#propertyRowrequireLoginUnlessInLibrary").show();
+				}else{
+					$("#propertyRowallowAccess").hide();
+					$("#propertyRowrequireLoginUnlessInLibrary").hide();
+				}
+			});
+		},
+
+		getWebResource:function (id) {
+			var url = Globals.path + "/WebBuilder/AJAX";
+			var params = {
+				method: "getWebResource",
+				resourceId: id
+			};
+			// noinspection JSUnresolvedFunction
+			$.getJSON(url, params, function(data){
+				if(data.requireLogin) {
+					if(Globals.loggedIn || data.inLibrary) {
+						var params = {
+							method: "trackWebResourceUsage",
+							id: id,
+							authType: Globals.loggedIn ? "user" : "library"
+						};
+						$.getJSON(url, params, function(usage){
+							if(data.openInNewTab) {
+								var newTab = window.open();
+								newTab.location.href = data.url;
+							} else {
+								location.assign(data.url);
+							}
+						})
+					} else {
+						AspenDiscovery.Account.ajaxLogin(null, function(){
+							return AspenDiscovery.Account.getWebResource(id);
+						}, false);
+					}
+				} else {
+					var params = {
+						method: "trackWebResourceUsage",
+						id: id,
+						authType: "none"
+					};
+					$.getJSON(url, params, function(usage){
+						if(data.openInNewTab) {
+							var newTab = window.open();
+							newTab.location.href = data.url;
+						} else {
+							location.assign(data.url);
+						}
+					})
+				}
+			}).fail(AspenDiscovery.ajaxFail);
+
+			return false;
 		}
 	};
-}(AspenDiscovery.WebBuilder || {}));
+}(AspenDiscovery.WebBuilder || {});

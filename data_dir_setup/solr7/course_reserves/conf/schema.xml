@@ -1,0 +1,155 @@
+<?xml version="1.0" ?>
+<schema name="Course Reserves Index" version="1.5">
+	<types>
+		<fieldType name="unchanged_string" class="StrField"/> 
+		<fieldType name="integer" class="IntPointField"/>
+		<fieldType name="long" class="LongPointField"/>
+		<fieldType name="float" class="FloatPointField"/>
+		<fieldType name="date" class="DatePointField"/>
+		<fieldType name="random" class="RandomSortField"/>
+		<fieldType name="text_general" class="solr.TextField" positionIncrementGap="100">
+			<analyzer type="index">
+				<tokenizer class="solr.StandardTokenizerFactory"/>
+				<filter class="solr.ICUFoldingFilterFactory" />
+				<filter class="solr.StopFilterFactory" ignoreCase="true" words="stopwords.txt"  />
+				<filter class="solr.LowerCaseFilterFactory"/>
+			</analyzer>
+			<analyzer type="query">
+				<tokenizer class="solr.StandardTokenizerFactory"/>
+				<filter class="solr.StopFilterFactory" ignoreCase="true" words="stopwords.txt"  />
+				<filter class="solr.SynonymGraphFilterFactory" synonyms="synonyms.txt" ignoreCase="true" expand="true"/>
+				<filter class="solr.LowerCaseFilterFactory"/>
+			</analyzer>
+		</fieldType>
+		<fieldType name="searchable_text" class="solr.TextField" positionIncrementGap="100">
+			<analyzer>
+				<!-- Whitespace tokenizer is needed so the Word Delimiter filter factory works properly
+				 For example, this allows E.T. The Extra-Terrestrial to be handled properly.  #ARL-168
+				-->
+				<tokenizer class="solr.WhitespaceTokenizerFactory"/>
+				<filter class="solr.ICUFoldingFilterFactory" />
+				<filter class="solr.LowerCaseFilterFactory"/>
+				<filter class="solr.WordDelimiterGraphFilterFactory" generateWordParts="1" generateNumberParts="1" catenateWords="1" catenateNumbers="1" catenateAll="0" splitOnCaseChange="1" preserveOriginal="1"/>
+				<filter class="solr.CommonGramsFilterFactory" words="stopwords.txt" ignoreCase="true"/>
+				<filter class="solr.KeywordMarkerFilterFactory" protected="protwords.txt"/>
+				<filter class="solr.SnowballPorterFilterFactory" language="English"/>
+				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
+			</analyzer>
+		</fieldType>
+		<fieldType name="text-exact" class="solr.TextField" sortMissingLast="true" omitNorms="true">
+			<analyzer>
+				<!-- Whitespace tokenizer is needed so the Word Delimiter filter factory works properly
+				 For example, this allows E.T. The Extra-Terrestrial to be handled properly.  #ARL-168
+				-->
+				<tokenizer class="solr.KeywordTokenizerFactory"/>
+				<charFilter class="solr.PatternReplaceCharFilterFactory" pattern="^\s*(.*)\s*$" replacement="aaaa $1 zzzz"/>
+				<filter class="solr.LowerCaseFilterFactory"/>
+				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
+			</analyzer>
+		</fieldType>
+		<fieldType name="text-left" class="solr.TextField" sortMissingLast="true" omitNorms="true">
+			<analyzer>
+				<!-- Whitespace tokenizer is needed so the Word Delimiter filter factory works properly
+				 For example, this allows E.T. The Extra-Terrestrial to be handled properly.  #ARL-168
+				-->
+				<tokenizer class="solr.KeywordTokenizerFactory"/>
+				<filter class="solr.ICUFoldingFilterFactory" />
+				<charFilter class="solr.PatternReplaceCharFilterFactory" pattern="^\s*(.*)\s*$" replacement="aaaa $1"/>
+				<filter class="solr.LowerCaseFilterFactory"/>
+				<filter class="solr.TrimFilterFactory"/>
+				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
+			</analyzer>
+		</fieldType>
+		<!-- Text Field without Stemming, Synonyms, and stop Word removal -->
+		<fieldType name="textProper" class="solr.TextField" positionIncrementGap="100">
+			<analyzer>
+				<tokenizer class="solr.WhitespaceTokenizerFactory"/>
+				<filter class="solr.WordDelimiterGraphFilterFactory" generateWordParts="1" generateNumberParts="1" catenateWords="1" catenateNumbers="1" catenateAll="0" splitOnCaseChange="1" preserveOriginal="1"/>
+				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
+			</analyzer>
+		</fieldType>
+		<fieldType name="callnumber-search" class="solr.TextField">
+			<analyzer>
+				<tokenizer class="solr.WhitespaceTokenizerFactory"/>
+				<filter class="solr.WordDelimiterGraphFilterFactory" generateWordParts="1" generateNumberParts="0" catenateWords="0" catenateNumbers="1" catenateAll="0" splitOnCaseChange="0" splitOnNumerics="1" preserveOriginal="1"/>
+				<filter class="solr.LengthFilterFactory" min="2" max="100"/>
+				<filter class="solr.LowerCaseFilterFactory"/>
+				<filter class="solr.TrimFilterFactory"/>
+			</analyzer>
+		</fieldType>
+		<!-- Text Field without Stemming, Synonyms, and stop Word removal -->
+		<fieldType name="alphaOnlySort" class="solr.TextField" sortMissingLast="true">
+			<analyzer>
+				<tokenizer class="solr.KeywordTokenizerFactory"/>
+				<filter class="solr.LowerCaseFilterFactory"/>
+				<!-- The TrimFilter removes any leading or trailing whitespace -->
+				<filter class="solr.TrimFilterFactory"/>
+				<filter class="solr.PatternReplaceFilterFactory" pattern="([^a-z1-9\s])" replacement="" replace="all"/>
+			</analyzer>
+		</fieldType>
+		<fieldType name="textSpelling" class="solr.TextField">
+			<analyzer>
+				<tokenizer class="solr.WhitespaceTokenizerFactory"/>
+				<filter class="solr.LowerCaseFilterFactory"/>
+				<filter class="solr.WordDelimiterGraphFilterFactory" generateWordParts="1" generateNumberParts="1" catenateWords="1" catenateNumbers="1" catenateAll="0" splitOnCaseChange="1" preserveOriginal="0"/>
+				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
+			</analyzer>
+		</fieldType>
+		<fieldType name="textSuggest" class="solr.TextField" positionIncrementGap="100">
+			<analyzer>
+				<tokenizer class="solr.StandardTokenizerFactory"/>
+				<filter class="solr.LowerCaseFilterFactory"/>
+				<filter class="solr.TrimFilterFactory"/>
+			</analyzer>
+		</fieldType>
+	</types>
+
+	<fields>
+		<!-- Required by Solr 4.x -->
+		<field name="_version_" type="long" indexed="true" stored="true"/>
+		<!-- Core Fields  -->
+		<field name="id" type="unchanged_string" indexed="true" stored="true"/>
+		<field name="recordtype" type="unchanged_string" indexed="true" stored="true"/>
+		<field name="title" type="searchable_text" indexed="true" stored="true"/>
+		<field name="title_display" type="unchanged_string" indexed="false" stored="true"/>
+		<field name="title_sort" type="alphaOnlySort" indexed="true" stored="true"/> <!-- title for sorting -->
+		<field name="instructor" type="searchable_text" indexed="true" stored="false" />
+		<field name="instructor_display" type="unchanged_string" indexed="true" stored="true" multiValued="false"/> <!-- The author to display to the user -->
+		<field name="course_number" type="unchanged_string" indexed="true" stored="true" />
+		<field name="course_title" type="unchanged_string" indexed="true" stored="true" />
+		<field name="library" type="unchanged_string" indexed="true" stored="true" />
+		<field name="table_of_contents" type="searchable_text" indexed="true" stored="true" multiValued="true"/>
+		<field name="table_of_contents_proper" type="textProper" indexed="true" stored="true" multiValued="true"/>
+		<field name="keywords" type="searchable_text" indexed="true" stored="false"/>
+		<field name="num_titles" type="integer" indexed="true" stored="true"/>
+		<field name="popularity" type="integer" indexed="true" stored="false" default="0"/>
+		<field name="date_added" type="date" indexed="true" stored="true" multiValued="false"/>
+		<field name="time_since_added" type="unchanged_string" indexed="true" stored="true" multiValued="true" docValues="true"/>
+		<field name="days_since_added" type="integer" indexed="true" stored="true" multiValued="false"/>
+		<dynamicField name="local_time_since_added_*" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
+		<dynamicField name="local_days_since_added_*" type="integer" indexed="true" stored="true" multiValued="false"/>
+		<field name="scope_has_related_records" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
+
+		<!-- IDs of records that make up the list -->
+		<field name="alternate_ids" type="unchanged_string" indexed="true" stored="false" multiValued="true"/>
+		<!-- Field to get random titles -->
+		<dynamicField name="random*" type="random" indexed="true" stored="true"/>
+
+		<!-- spelling -->
+		<field name="spelling" type="textSpelling" indexed="true" stored="false" multiValued="true"/>
+		<!-- suggestions (for type ahead) -->
+		<field name="title_suggestions" type="textSuggest" indexed="true" stored="true" multiValued="true"/>
+		<field name="instructor_suggestions" type="textSuggest" indexed="true" stored="true" multiValued="true"/>
+		<field name="keyword_suggestions" type="textSuggest" indexed="true" stored="true" multiValued="true"/>
+	</fields>
+
+	<copyField source="title" dest="title_suggestions"/>
+	<copyField source="instructor" dest="instructor_suggestions"/>
+	<copyField source="table_of_contents" dest="keyword_suggestions"/>
+	<copyField source="course_number" dest="keyword_suggestions"/>
+	<copyField source="course_title" dest="keyword_suggestions"/>
+
+	<copyField source="keywords" dest="spelling"/>
+
+	<uniqueKey>id</uniqueKey>
+</schema>

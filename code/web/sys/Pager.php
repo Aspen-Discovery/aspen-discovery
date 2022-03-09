@@ -80,15 +80,15 @@ class Pager
 			$linksText = '<nav aria-label="Page navigation">';
 			if ($this->options['canJumpToPage']){
 				$linksText .= '<div class="form-group">';
-				$linksText .= '<label for="page" class="control-label">'. translate('Go to page') . '&nbsp;</label>';
+				$linksText .= '<label for="page" class="control-label">'. translate(['text' => 'Go to page', 'isPublicFacing'=>true]) . '&nbsp;</label>';
 				$linksText .= '<input type="text" min="1" max="' . $this->_totalPages . '" id="page" name="page" size="2" class="input input-sm">';
-				$linksText .= '<button id="goToPageSubmit" name="goToPageSubmit" class="input-sm" onclick="return AspenDiscovery.changePage();">' . translate('Go') . '</button>';
+				$linksText .= '<button id="goToPageSubmit" name="goToPageSubmit" class="input-sm" onclick="return AspenDiscovery.changePage();">' . translate(['text' => 'Go', 'isPublicFacing'=>true]) . '</button>';
 				$linksText .= '</div>';
 			}
 			$linksText .= '<div class="pagination btn-group btn-group-sm justify-content-end">';
 			if ($this->getCurrentPage() != 1) {
 				$linksText .= $this->renderLink(1) . '[1]</a>';
-				$linksText .= $this->renderLink($this->_currentPage - 1) . '&laquo; ' . translate('Prev') . '</a>';
+				$linksText .= $this->renderLink($this->_currentPage - 1) . '&laquo; ' . translate(['text' => 'Previous', 'isPublicFacing'=>true]) . '</a>';
 			}
 
 			//Print links to pages before and after the current
@@ -113,7 +113,7 @@ class Pager
 				$linksText .= $this->renderLink($i, $active) . "$i</a>";
 			}
 			if ($this->_currentPage != $this->_totalPages) {
-				$linksText .= $this->renderLink($this->_currentPage + 1) . translate('Next') . ' &raquo;</a>';
+				$linksText .= $this->renderLink($this->_currentPage + 1) . translate(['text' => 'Next', 'isPublicFacing'=>true]) . ' &raquo;</a>';
 				$linksText .= $this->renderLink($this->getTotalPages()) . '[' . $this->getTotalPages() . ']</a>';
 			}
 			$linksText .= '</div>';
@@ -134,7 +134,7 @@ class Pager
 					}
 				}
 				$linksText .= '</select>';
-				$linksText .= '<label for="pageSize" class="control-label">'. translate('Per Page') . '&nbsp;</label></div>';
+				$linksText .= '<label for="pageSize" class="control-label">'. translate(['text' => 'Per Page', 'isPublicFacing'=>true]) . '&nbsp;</label></div>';
 			}
 			$linksText .= '</nav>';
 			$links['all'] = $linksText;

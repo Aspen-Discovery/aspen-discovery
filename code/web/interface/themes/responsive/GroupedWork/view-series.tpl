@@ -9,11 +9,14 @@
 	<h1 class="notranslate">
 		{$seriesTitle}
 	</h1>
+	{elseif !empty($error)}
+		<h1>{translate text="Error" isPublicFacing=true}</h1>
+		<div class="alert alert-danger">{$error}</div>
 	{/if}
 	{if $seriesAuthors}
 	<div class="row">
-		<div class="result-label col-tn-3">{translate text="Author"}</div>
-		<div class="col-tn-9 result-value notranslate">
+		<div class="result-label col-sm-4 col-xs-12">{translate text="Author" isPublicFacing=true}</div>
+		<div class="result-value col-sm-8 col-xs-12 notranslate">
 			{foreach from=$seriesAuthors item=author}
 				<span class="sidebarValue">{$author} </span>
 			{/foreach}
@@ -26,7 +29,7 @@
 	<div class="result-head">
 		<div id="searchInfo">
 			{if !$recordCount}
-				<p>{translate text="Sorry, we could not find series information for this title."}</p>
+				<p>{translate text="Sorry, we could not find series information for this title." isPublicFacing=true}</p>
 			{/if}
 		</div>
 	</div>

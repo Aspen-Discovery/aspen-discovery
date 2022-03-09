@@ -7,11 +7,12 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.Locale;
 
 class SymphonyRecordProcessor extends IlsRecordProcessor {
 	private HashSet<String> bibsWithOrders = new HashSet<>();
-	SymphonyRecordProcessor(GroupedWorkIndexer indexer, Connection dbConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
-		super(indexer, dbConn, indexingProfileRS, logger, fullReindex);
+	SymphonyRecordProcessor(GroupedWorkIndexer indexer, String profileType, Connection dbConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
+		super(indexer, profileType, dbConn, indexingProfileRS, logger, fullReindex);
 	}
 
 	protected boolean isItemSuppressed(DataField curItem) {
@@ -49,18 +50,25 @@ class SymphonyRecordProcessor extends IlsRecordProcessor {
 		}else{
 			shelfLocationData = "";
 		}
-		if (shelfLocationData.equalsIgnoreCase("Z-ON-ORDER") || shelfLocationData.equalsIgnoreCase("ON-ORDER")) {
+		if (shelfLocationData.equalsIgnoreCase("Z-ON-ORDER") || shelfLocationData.equalsIgnoreCase("ON-ORDER") || shelfLocationData.equalsIgnoreCase("ONORDER")) {
 			statusFieldData = "On Order";
-		}else if (hasTranslation("item_status", shelfLocationData)){
-			statusFieldData = shelfLocationData;
 		}else {
 			if (statusFieldData == null) {
-				statusFieldData = "ONSHELF";
-			} else {
-				if (!hasTranslation("item_status", statusFieldData.toLowerCase())){
+				if (hasTranslation("item_status", shelfLocationData)){
+					//We are treating the shelf location as a status i.e. DISPLAY
+					statusFieldData = shelfLocationData;
+				}else{
+					statusFieldData = "ONSHELF";
+				}
+			}else{
+				statusFieldData = statusFieldData.toLowerCase();
+				if (hasTranslation("item_status", statusFieldData)){
+					//The status is provided and is in the translation table so we use the status
+					statusFieldData = statusFieldData;
+				}else {
 					if (!shelfLocationData.equalsIgnoreCase(statusFieldData)) {
 						statusFieldData = "Checked Out";
-					}else {
+					}else{
 						statusFieldData = "ONSHELF";
 					}
 				}
@@ -83,11 +91,22 @@ class SymphonyRecordProcessor extends IlsRecordProcessor {
 	protected String getDetailedLocationForItem(ItemInfo itemInfo, DataField itemField, String identifier) {
 		String locationCode = getItemSubfieldData(locationSubfieldIndicator, itemField);
 		String location = translateValue("location", locationCode, identifier);
-		String shelvingLocation = itemInfo.getShelfLocationCode();
-		if (location == null){
-			location = translateValue("shelf_location", shelvingLocation, identifier);
+
+		String status = getItemSubfieldData(statusSubfieldIndicator, itemField);
+		if (status == null || status.equals("CHECKEDOUT") || status.equals("HOLDS") || status.equals("INTRANSIT")) {
+			String shelvingLocation = itemInfo.getShelfLocationCode();
+			if (location == null) {
+				location = translateValue("shelf_location", shelvingLocation, identifier);
+			} else {
+				location += " - " + translateValue("shelf_location", shelvingLocation, identifier);
+			}
 		}else {
-			location += " - " + translateValue("shelf_location", shelvingLocation, identifier);
+			//In this case, the status is the current location of the item.
+			if (location == null) {
+				location = translateValue("shelf_location", status, identifier);
+			} else {
+				location += " - " + translateValue("shelf_location", status, identifier);
+			}
 		}
 		return location;
 	}

@@ -44,8 +44,6 @@ function loadSearchInformation(){
 			//Use a default search source
 			if ($module == 'Person'){
 				$searchSource = 'genealogy';
-			}elseif ($module == 'Archive'){
-				$searchSource = 'islandora';
 			}elseif ($module == 'OpenArchives'){
 				$searchSource = 'open_archives';
 			}elseif ($module == 'List'){
@@ -87,11 +85,11 @@ function loadSearchInformation(){
 	if ($searchLibrary){
 		$solrScope = $searchLibrary->subdomain;
 		$scopeType = 'Library';
-		if (!$searchLibrary->restrictOwningBranchesAndSystems){
+		if ($searchLibrary->isConsortialCatalog){
 			$isGlobalScope = true;
 		}
 	}
-	if ($searchLocation && $searchLibrary->getNumLocationsForLibrary() > 1){
+	if ($searchLocation && $searchLibrary->getNumSearchLocationsForLibrary() > 1){
 		if ($searchLibrary && strtolower($searchLocation->code) == $solrScope){
 			$solrScope .= 'loc';
 		}else{
@@ -145,7 +143,7 @@ function loadSearchInformation(){
 		$sideLoadSetting->orderBy('name');
 		$sideLoadSetting->find();
 		while ($sideLoadSetting->fetch()) {
-			$sideLoadSettings[$sideLoadSetting->name] = clone($sideLoadSetting);
+			$sideLoadSettings[strtolower($sideLoadSetting->name)] = clone($sideLoadSetting);
 		}
 	}catch (PDOException $e){
 		//Ignore, the tables have not been created yet.

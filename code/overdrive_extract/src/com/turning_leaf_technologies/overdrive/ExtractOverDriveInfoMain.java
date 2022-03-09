@@ -18,11 +18,11 @@ import org.ini4j.Ini;
 public class ExtractOverDriveInfoMain {
 	private static Connection dbConn;
 	private static Logger logger;
+	private static String serverName;
 
 	public static void main(String[] args) {
 		boolean extractSingleWork = false;
 		String singleWorkId = null;
-		String serverName;
 		if (args.length == 0) {
 			serverName = StringUtils.getInputFromCommandLine("Please enter the server name");
 			if (serverName.length() == 0) {
@@ -85,7 +85,7 @@ public class ExtractOverDriveInfoMain {
 				logger.error("Error deleting old log entries", e);
 			}
 
-			HashSet<OverDriveSetting> settings = loadSettings();
+			HashSet<OverDriveSetting> settings = loadSettings(extractSingleWork);
 			final int[] numChanges = {0};
 
 			try {
@@ -102,26 +102,36 @@ public class ExtractOverDriveInfoMain {
 				boolean finalExtractSingleWork = extractSingleWork;
 				String finalSingleWorkId = singleWorkId;
 				es.execute(() -> {
-					OverDriveExtractLogEntry logEntry = new OverDriveExtractLogEntry(dbConn, setting, logger);
-					if (!logEntry.saveResults()) {
-						logger.error("Could not save log entry to database, quitting");
-						return;
+					Connection localDBConnection;
+					try {
+						localDBConnection = DriverManager.getConnection(databaseConnectionInfo);
+
+						OverDriveExtractLogEntry logEntry = new OverDriveExtractLogEntry(localDBConnection, setting, logger);
+						if (!logEntry.saveResults()) {
+							logger.error("Could not save log entry to database, quitting");
+							return;
+						}
+
+						ExtractOverDriveInfo extractor = new ExtractOverDriveInfo(setting);
+						if (finalExtractSingleWork) {
+							numChanges[0] += extractor.processSingleWork(finalSingleWorkId, configIni, serverName, localDBConnection, logEntry);
+						} else {
+							numChanges[0] += extractor.extractOverDriveInfo(configIni, serverName, localDBConnection, logEntry);
+						}
+
+						logEntry.setFinished();
+						logger.info("Finished OverDrive extraction");
+						Date endTime = new Date();
+						long elapsedTime = (endTime.getTime() - startTime.getTime()) / 1000;
+						logger.info("Elapsed time " + String.format("%f2", ((float) elapsedTime / 60f)) + " minutes");
+
+						extractor.close();
+
+						localDBConnection.close();
+					} catch (SQLException e) {
+						logger.error("Could not connect to database", e);
+						System.exit(1);
 					}
-
-					ExtractOverDriveInfo extractor = new ExtractOverDriveInfo(setting);
-					if (finalExtractSingleWork) {
-						numChanges[0] += extractor.processSingleWork(finalSingleWorkId, configIni, serverName, dbConn, logEntry);
-					} else {
-						numChanges[0] += extractor.extractOverDriveInfo(configIni, serverName, dbConn, logEntry);
-					}
-
-					logEntry.setFinished();
-					logger.info("Finished OverDrive extraction");
-					Date endTime = new Date();
-					long elapsedTime = (endTime.getTime() - startTime.getTime()) / 1000;
-					logger.info("Elapsed time " + String.format("%f2", ((float) elapsedTime / 60f)) + " minutes");
-
-					extractor.close();
 				});
 			}
 			es.shutdown();
@@ -188,17 +198,21 @@ public class ExtractOverDriveInfoMain {
 		}
 	}
 
-	private static HashSet<OverDriveSetting> loadSettings() {
+	private static HashSet<OverDriveSetting> loadSettings(boolean extractSingleWork) {
 		HashSet<OverDriveSetting> settings = new HashSet<>();
 		try {
 			PreparedStatement getSettingsStmt = dbConn.prepareStatement("SELECT * from overdrive_settings");
 			ResultSet getSettingsRS = getSettingsStmt.executeQuery();
 			while (getSettingsRS.next()) {
-				OverDriveSetting setting = new OverDriveSetting(getSettingsRS);
+				OverDriveSetting setting = new OverDriveSetting(getSettingsRS, serverName);
 				settings.add(setting);
 			}
+			//Clear works to update
+			if (!extractSingleWork) {
+				dbConn.prepareStatement("UPDATE overdrive_settings SET productsToUpdate = ''").executeUpdate();
+			}
 		} catch (SQLException e) {
-			logger.error("Error loading settings from the database");
+			logger.error("Error loading settings from the database", e);
 		}
 		if (settings.size() == 0) {
 			logger.error("Unable to find settings for Axis 360, please add settings to the database");

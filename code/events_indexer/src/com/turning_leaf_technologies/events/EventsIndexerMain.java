@@ -32,7 +32,6 @@ public class EventsIndexerMain {
 		//Get the checksum of the JAR when it was started so we can stop if it has changed.
 		long myChecksumAtStart = JarUtil.getChecksumForJar(logger, processName, "./" + processName + ".jar");
 
-		//noinspection InfiniteLoopStatement
 		while (true) {
 			Date startTime = new Date();
 			Long startTimeForLogging = startTime.getTime() / 1000;

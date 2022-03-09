@@ -35,7 +35,7 @@ class SIPAuthentication implements Authentication {
 					if (preg_match("/^98/", $msg_result)) {
 						$result = $mysip->parseACSStatusResponse($msg_result);
 
-						//  Use result to populate SIP2 setings
+						//  Use result to populate SIP2 settings
 						$mysip->AO = $result['variable']['AO'][0]; /* set AO to value returned */
 						$mysip->AN = $result['variable']['AN'][0]; /* set AN to value returned */
 
@@ -157,28 +157,28 @@ class SIPAuthentication implements Authentication {
 								// Set login cookie for 1 hour
 								$user->password = $password; // Need this for Metalib
 							} else {
-								$user = new AspenError('authentication_error_invalid');
+								$user = new AspenError('Sorry that login information was not recognized, please try again.');
 							}
 						} else {
-							$user = new AspenError('authentication_error_technical');
+							$user = new AspenError('We cannot log you in at this time.  Please try again later.');
 						}
 					} else {
-						$user = new AspenError('authentication_error_technical');
+						$user = new AspenError('We cannot log you in at this time.  Please try again later.');
 					}
 					$mysip->disconnect();
 
 				} else {
-					$user = new AspenError('authentication_error_technical');
+					$user = new AspenError('We cannot log you in at this time.  Please try again later.');
 					global $logger;
 					$logger->log("Unable to connect to SIP server", Logger::LOG_ERROR);
 				}
 			} else {
-				$user = new AspenError('authentication_error_blank');
+				$user = new AspenError('Login information cannot be blank.');
 			}
 			$timer->logTime("Authenticated user in SIP2Authentication");
 			self::$processedUsers[$username] = $user;
 		} else {
-			$user = new AspenError('authentication_error_blank');
+			$user = new AspenError('Login information cannot be blank.');
 		}
 
 		

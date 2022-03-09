@@ -42,7 +42,7 @@ class HooplaDriver extends AbstractEContentDriver{
 
 
 	// $customRequest is for curl, can be 'PUT', 'DELETE', 'POST'
-	private function getAPIResponse($url, $params = null, $customRequest = null, $additionalHeaders = null)
+	private function getAPIResponse($requestType, $url, $params = null, $customRequest = null, $additionalHeaders = null, $dataToSanitize = [])
 	{
 		global $logger;
 		$logger->log('Hoopla API URL :' .$url, Logger::LOG_NOTICE);
@@ -58,11 +58,11 @@ class HooplaDriver extends AbstractEContentDriver{
 			$headers = array_merge($headers, $additionalHeaders);
 		}
 		if (empty($customRequest)) {
+            $customRequest = 'GET';
 			curl_setopt($ch, CURLOPT_HTTPGET, true);
 		} elseif ($customRequest == 'POST') {
 			curl_setopt($ch, CURLOPT_POST, true);
-		}
-		else {
+		} else {
 			curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $customRequest);
 		}
 
@@ -82,7 +82,9 @@ class HooplaDriver extends AbstractEContentDriver{
 		}
 		$json = curl_exec($ch);
 
-		if (!$json && curl_getinfo($ch, CURLINFO_HTTP_CODE) == 401) {
+        ExternalRequestLogEntry::logRequest($requestType, $customRequest, $url, $headers, '', curl_getinfo($ch, CURLINFO_HTTP_CODE), $json,$dataToSanitize);
+
+        if (!$json && curl_getinfo($ch, CURLINFO_HTTP_CODE) == 401) {
 			$logger->log('401 Response in getAPIResponse. Attempting to renew access token', Logger::LOG_WARNING);
 			$this->renewAccessToken();
 			return false;
@@ -123,8 +125,10 @@ class HooplaDriver extends AbstractEContentDriver{
 			curl_setopt($ch, CURLINFO_HEADER_OUT, true);
 		}
 
-		curl_exec($ch);
+		$response = curl_exec($ch);
 		$http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
+        ExternalRequestLogEntry::logRequest('hoopla.returnCheckout', 'DELETE', $url, $headers, '', $http_code, $response,[]);
 
 		curl_close($ch);
 		return $http_code == 204;
@@ -178,7 +182,7 @@ class HooplaDriver extends AbstractEContentDriver{
 	public function getAccountSummary(User $user) : AccountSummary{
 		list($existingId, $summary) = $user->getCachedAccountSummary('hoopla');
 
-		if ($summary === null) {
+		if ($summary === null || isset($_REQUEST['reload'])) {
 			require_once ROOT_DIR . '/sys/User/AccountSummary.php';
 			$summary = new AccountSummary();
 			$summary->userId = $user->id;
@@ -187,7 +191,7 @@ class HooplaDriver extends AbstractEContentDriver{
 			$getPatronStatusURL = $this->getHooplaBasePatronURL($user);
 			if (!empty($getPatronStatusURL)) {
 				$getPatronStatusURL .= '/status';
-				$hooplaPatronStatusResponse = $this->getAPIResponse($getPatronStatusURL);
+				$hooplaPatronStatusResponse = $this->getAPIResponse('hoopla.getAccountSummary',$getPatronStatusURL);
 				if (!empty($hooplaPatronStatusResponse) && !isset($hooplaPatronStatusResponse->message)) {
 					$this->hooplaPatronStatuses[$user->id] = $hooplaPatronStatusResponse;
 
@@ -224,7 +228,7 @@ class HooplaDriver extends AbstractEContentDriver{
 			$hooplaCheckedOutTitlesURL = $this->getHooplaBasePatronURL($patron);
 			if (!empty($hooplaCheckedOutTitlesURL)) {
 				$hooplaCheckedOutTitlesURL  .= '/checkouts/current';
-				$checkOutsResponse = $this->getAPIResponse($hooplaCheckedOutTitlesURL);
+				$checkOutsResponse = $this->getAPIResponse('hoopla.getCheckouts', $hooplaCheckedOutTitlesURL);
 				if (is_array($checkOutsResponse)) {
                     $hooplaPatronStatus = null;
 					foreach ($checkOutsResponse as $checkOut) {
@@ -270,6 +274,7 @@ class HooplaDriver extends AbstractEContentDriver{
 	private function getAccessToken()
 	{
 		if (empty($this->accessToken)) {
+			/** @var Memcache $memCache */
 			global $memCache;
 			$accessToken = $memCache->get(self::memCacheKey);
 			if (empty($accessToken)) {
@@ -305,6 +310,7 @@ class HooplaDriver extends AbstractEContentDriver{
 				curl_setopt($curl, CURLINFO_HEADER_OUT, true);
 			}
 			$response = curl_exec($curl);
+            ExternalRequestLogEntry::logRequest('hoopla.renewAccessToken', 'POST', $url, [], '', curl_getinfo($curl, CURLINFO_HTTP_CODE), $response,[]);
 
 			curl_close($curl);
 
@@ -313,6 +319,7 @@ class HooplaDriver extends AbstractEContentDriver{
 				if (!empty($json->access_token)) {
 					$this->accessToken = $json->access_token;
 
+					/** @var Memcache $memCache */
 					global $memCache;
 					global $configArray;
 					$memCache->set(self::memCacheKey, $this->accessToken, $configArray['Caching']['hoopla_api_access_token']);
@@ -347,48 +354,85 @@ class HooplaDriver extends AbstractEContentDriver{
 
 				$titleId = self::recordIDtoHooplaID($titleId);
 				$checkoutURL      .= '/' . $titleId;
-				$checkoutResponse = $this->getAPIResponse($checkoutURL, array(), 'POST');
+				$checkoutResponse = $this->getAPIResponse('hoopla.checkoutTitle',$checkoutURL, array(), 'POST');
 				if ($checkoutResponse) {
 					if (!empty($checkoutResponse->contentId)) {
 						$this->trackUserUsageOfHoopla($patron);
 						$this->trackRecordCheckout($titleId);
 						$patron->clearCachedAccountSummaryForSource('hoopla');
 						$patron->forceReloadOfCheckouts();
+
+						// Result for API or app use
+						$apiResult = array();
+						$apiResult['title'] = translate(['text'=>'Checked out title', 'isPublicFacing'=>true]);
+						$apiResult['message'] = strip_tags($checkoutResponse->message);
+
 						return array(
 							'success'   => true,
 							'message'   => $checkoutResponse->message,
 							'title'     => $checkoutResponse->title,
 							'HooplaURL' => $checkoutResponse->url,
-							'due'       => $checkoutResponse->due
+							'due'       => $checkoutResponse->due,
+							'api'       => $apiResult,
 						);
 					} else {
+						// Result for API or app use
+						$apiResult = array();
+						$apiResult['title'] = translate(['text'=>'Unable to checkout title', 'isPublicFacing'=>true]);
+						$apiResult['message'] = isset($checkoutResponse->message) ? strip_tags($checkoutResponse->message) : 'An error occurred checking out the Hoopla title.';
+
 						return array(
 							'success' => false,
-							'message' => isset($checkoutResponse->message) ? $checkoutResponse->message : 'An error occurred checking out the Hoopla title.'
+							'message' => isset($checkoutResponse->message) ? $checkoutResponse->message : 'An error occurred checking out the Hoopla title.',
+							'api' => $apiResult
 						);
 					}
 
 				} else {
+					// Result for API or app use
+					$apiResult = array();
+					$apiResult['title'] = translate(['text'=>'Unable to checkout title', 'isPublicFacing'=>true]);
+					$apiResult['message'] = translate(['text'=>'An error occurred checking out the Hoopla title.', 'isPublicFacing'=>true]);
+
 					return array(
 						'success' => false,
-						'message' => 'An error occurred checking out the Hoopla title.'
+						'message' => 'An error occurred checking out the Hoopla title.',
+						'api' => $apiResult
 					);
 				}
 			} elseif (!$this->getHooplaLibraryID($patron)) {
+				// Result for API or app use
+				$apiResult = array();
+				$apiResult['title'] = translate(['text'=>'Unable to checkout title', 'isPublicFacing'=>true]);
+				$apiResult['message'] = translate(['text'=>'Your library does not have Hoopla integration enabled.', 'isPublicFacing'=>true]);
+
 				return array(
 					'success' => false,
-					'message' => 'Your library does not have Hoopla integration enabled.'
+					'message' => 'Your library does not have Hoopla integration enabled.',
+					'api' => $apiResult
 				);
 			} else {
+				// Result for API or app use
+				$apiResult = array();
+				$apiResult['title'] = translate(['text'=>'Unable to checkout title', 'isPublicFacing'=>true]);
+				$apiResult['message'] = translate(['text'=>'There was an error retrieving your library card number.', 'isPublicFacing'=>true]);
+
 				return array(
 					'success' => false,
-					'message' => 'There was an error retrieving your library card number.'
+					'message' => 'There was an error retrieving your library card number.',
+					'api' => $apiResult
 				);
 			}
 		} else {
+			// Result for API or app use
+			$apiResult = array();
+			$apiResult['title'] = translate(['text'=>'Unable to checkout title', 'isPublicFacing'=>true]);
+			$apiResult['message'] = translate(['text'=>'Hoopla integration is not enabled.', 'isPublicFacing'=>true]);
+
 			return array(
 				'success' => false,
-				'message' => 'Hoopla integration is not enabled.'
+				'message' => 'Hoopla integration is not enabled.',
+				'api' => $apiResult
 			);
 		}
 	}
@@ -400,6 +444,7 @@ class HooplaDriver extends AbstractEContentDriver{
      * @return array
      */
 	public function returnCheckout($patron, $hooplaId) {
+		$apiResult = array();
 		if ($this->hooplaEnabled) {
             $returnCheckoutURL = $this->getHooplaBasePatronURL($patron);
 			if (!empty($returnCheckoutURL)) {
@@ -409,32 +454,58 @@ class HooplaDriver extends AbstractEContentDriver{
 				if ($result) {
 					$patron->clearCachedAccountSummaryForSource('hoopla');
 					$patron->forceReloadOfCheckouts();
+
+					// Result for API or app use
+					$apiResult['title'] = translate(['text'=>'Title returned', 'isPublicFacing'=>true]);
+					$apiResult['message'] = translate(['text'=>'The title was successfully returned.', 'isPublicFacing'=>true]);
+
 					return array(
 						'success' => true,
-						'message' => 'The title was successfully returned.'
+						'message' => 'The title was successfully returned.',
+						'api' => $apiResult
 					);
 				} else {
+					// Result for API or app use
+					$apiResult['title'] = translate(['text'=>'Unable to return title', 'isPublicFacing'=>true]);
+					$apiResult['message'] = translate(['text'=>' There was an error returning this title.', 'isPublicFacing'=>true]);
+
 					return array(
 						'success' => false,
-						'message' => 'There was an error returning this title.'
+						'message' => 'There was an error returning this title.',
+						'api' => $apiResult
 					);
 				}
 
 			} elseif (!$this->getHooplaLibraryID($patron)) {
+				// Result for API or app use
+				$apiResult['title'] = translate(['text'=>'Unable to return title', 'isPublicFacing'=>true]);
+				$apiResult['message'] = translate(['text'=>'Your library does not have Hoopla integration enabled.', 'isPublicFacing'=>true]);
+
 				return array(
 					'success' => false,
-					'message' => 'Your library does not have Hoopla integration enabled.'
+					'message' => 'Your library does not have Hoopla integration enabled.',
+					'api' => $apiResult,
 				);
 			} else {
+				// Result for API or app use
+				$apiResult['title'] = translate(['text'=>'Unable to return title', 'isPublicFacing'=>true]);
+				$apiResult['message'] = translate(['text'=>'There was an error retrieving your library card number.', 'isPublicFacing'=>true]);
+
 				return array(
 					'success' => false,
-					'message' => 'There was an error retrieving your library card number.'
+					'message' => 'There was an error retrieving your library card number.',
+					'api' => $apiResult
 				);
 			}
 		} else {
+			// Result for API or app use
+			$apiResult['title'] = translate(['text'=>'Unable to return title', 'isPublicFacing'=>true]);
+			$apiResult['message'] = translate(['text'=>'Hoopla integration is not enabled.', 'isPublicFacing'=>true]);
+
 			return array(
 				'success' => false,
-				'message' => 'Hoopla integration is not enabled.'
+				'message' => 'Hoopla integration is not enabled.',
+				'api' => $apiResult
 			);
 		}
 	}
@@ -492,20 +563,22 @@ class HooplaDriver extends AbstractEContentDriver{
         return [];
     }
 
-    /**
-     * Place Hold
-     *
-     * This is responsible for both placing holds as well as placing recalls.
-     *
-     * @param User $patron The User to place a hold for
-     * @param string $recordId The id of the bib record
-     * @return  array                 An array with the following keys
-     *                                result - true/false
-     *                                message - the message to display (if item holds are required, this is a form to select the item).
-     *                                needsItemLevelHold - An indicator that item level holds are required
-     *                                title - the title of the record the user is placing a hold on
-     * @access  public
-     */
+	/**
+	 * Place Hold
+	 *
+	 * This is responsible for both placing holds as well as placing recalls.
+	 *
+	 * @param User $patron The User to place a hold for
+	 * @param string $recordId The id of the bib record
+	 * @param null $pickupBranch For compatibility
+	 * @param null $cancelDate For compatibility
+	 * @return  array                 An array with the following keys
+	 *                                result - true/false
+	 *                                message - the message to display (if item holds are required, this is a form to select the item).
+	 *                                needsItemLevelHold - An indicator that item level holds are required
+	 *                                title - the title of the record the user is placing a hold on
+	 * @access  public
+	 */
 	function placeHold($patron, $recordId, $pickupBranch = null, $cancelDate = null)
     {
         return [
@@ -514,13 +587,14 @@ class HooplaDriver extends AbstractEContentDriver{
         ];
     }
 
-    /**
-     * Cancels a hold for a patron
-     *
-     * @param User $patron The User to cancel the hold for
-     * @param string $recordId The id of the bib record
-     * @return false|array
-     */
+	/**
+	 * Cancels a hold for a patron
+	 *
+	 * @param User $patron The User to cancel the hold for
+	 * @param string $recordId The id of the bib record
+	 * @param null $cancelId ID to cancel for compatibility
+	 * @return false|array
+	 */
 	function cancelHold($patron, $recordId, $cancelId = null)
     {
         return false;

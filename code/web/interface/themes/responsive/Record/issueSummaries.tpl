@@ -8,37 +8,37 @@
 			<div class='issue-summary-details'>
 				{if $issueSummary.identity}
 					<div class="row">
-						<div class="col-xs-4">{text translate="Identity"}</div>
+						<div class="col-xs-4">{translate text="Identity" isPublicFacing=true}</div>
 						<div class="col-xs-8">{$issueSummary.identity}</div>
 					</div>
 				{/if}
 				{if $issueSummary.callNumber}
 					<div class="row">
-						<div class="col-xs-4">{translate text="Call Number"}</div>
+						<div class="col-xs-4">{translate text="Call Number" isPublicFacing=true}</div>
 						<div class="col-xs-12">{$issueSummary.callNumber}</div>
 					</div>
 				{/if}
 				{if $issueSummary.latestReceived}
 					<div class="row">
-						<div class="col-xs-4">{translate text="Latest Issue Received"}</div>
+						<div class="col-xs-4">{translate text="Latest Issue Received" isPublicFacing=true}</div>
 						<div class="col-xs-8">{$issueSummary.latestReceived}</div>
 					</div>
 				{/if}
 				{if isset($issueSummary.holdingStatement) }
 					<div class="row">
-						<div class="col-xs-4">{translate text="Holdings"}</div>
+						<div class="col-xs-4">{translate text="Holdings" isPublicFacing=true}</div>
 						<div class="col-xs-8">{$issueSummary.holdingStatement}</div>
 					</div>
 				{/if}
 				{if $issueSummary.libHas}
 						<div class="row">
-							<div class="col-xs-4">{translate text="Library Has"}</div>
+							<div class="col-xs-4">{translate text="Library Has" isPublicFacing=true}</div>
 							<div class="col-xs-8">{$issueSummary.libHas}</div>
 						</div>
 				{/if}
 
 				{if !empty($issueSummary.holdings)}
-					<span id='showHoldings-{$smarty.foreach.summaryLoop.iteration}' class='btn btn-xs btn-info'>{translate text="Show Individual Issues"}</span>
+					<span id='showHoldings-{$smarty.foreach.summaryLoop.iteration}' class='btn btn-xs btn-info'>{translate text="Show Individual Issues" isPublicFacing=true}</span>
 					<script	type="text/javascript">
 						$('#showHoldings-{$smarty.foreach.summaryLoop.iteration}').click(function(){literal} { {/literal}
 							if (!$('#showHoldings-{$smarty.foreach.summaryLoop.iteration}').hasClass('expanded')){literal} { {/literal}
@@ -55,7 +55,7 @@
 				{/if}
 				{if $showCheckInGrid && $issueSummary.checkInGridId}
 					&nbsp;
-					<span id='showCheckInGrid-{$smarty.foreach.summaryLoop.iteration}' class='btn btn-xs btn-info'>{translate text="Show Check-in Grid"}</span>
+					<span id='showCheckInGrid-{$smarty.foreach.summaryLoop.iteration}' class='btn btn-xs btn-info'>{translate text="Show Check-in Grid" isPublicFacing=true}</span>
 					<script	type="text/javascript">
 						$('#showCheckInGrid-{$smarty.foreach.summaryLoop.iteration}').click(function(){literal} { {/literal}
 							AspenDiscovery.Account.ajaxLightbox('/{$activeRecordProfileModule}/{$id}/CheckInGrid?lookfor={$issueSummary.checkInGridId}', false);

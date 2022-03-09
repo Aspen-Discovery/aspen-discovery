@@ -1,7 +1,7 @@
 {strip}
 	<div id="page-content" class="col-xs-12">
 
-		<h1>{translate text='Forgotten Password Recovery'}</h1>
+		<h1>{translate text='Forgotten Password Recovery' isPublicFacing=true}</h1>
 
 		{if !empty($error)}
 			<div class="alert alert-warning">{$error}</div>
@@ -11,7 +11,7 @@
 					<input type="hidden" name="uniqueKey" value="{$uniqueKey}">
 				{/if}
 				<div class="form-group">
-					<div class="col-xs-4"><label for="pin1" class="control-label">{translate text='New Password'}:</label></div>
+					<div class="col-xs-4"><label for="pin1" class="control-label">{translate text='New Password' isPublicFacing=true}</label></div>
 					<div class="col-xs-8">
 						<input type="password" name="pin1" id="pin1" value="" minlength="{$pinValidationRules.minLength}" maxlength="{$pinValidationRules.maxLength}" class="form-control required {if $pinValidationRules.onlyDigitsAllowed}digits{/if}">
 					</div>
@@ -20,14 +20,14 @@
 					{/if}
 				</div>
 				<div class="form-group">
-					<div class="col-xs-4"><label for="pin2" class="control-label">{translate text='Re-enter New Password'}:</label></div>
+					<div class="col-xs-4"><label for="pin2" class="control-label">{translate text='Re-enter New Password' isPublicFacing=true}</label></div>
 					<div class="col-xs-8">
 						<input type="password" name="pin2" id="pin2" value="" minlength="{$pinValidationRules.minLength}" maxlength="{$pinValidationRules.maxLength}" class="form-control required {if $pinValidationRules.onlyDigitsAllowed}digits{/if}">
 					</div>
 				</div>
 				<div class="form-group">
 					<div class="col-xs-8 col-xs-offset-4">
-						<input id="passwordRecoverySubmit" name="submit" class="btn btn-primary" type="submit" value="{translate text='Reset My Password' inAttribute=true}">
+						<input id="passwordRecoverySubmit" name="submit" class="btn btn-primary" type="submit" value="{translate text='Reset My Password' inAttribute=true isPublicFacing=true}">
 					</div>
 				</div>
 			</form>

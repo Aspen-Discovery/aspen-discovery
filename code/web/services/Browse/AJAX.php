@@ -37,7 +37,7 @@ class Browse_AJAX extends Action {
 		$interface->assign('searchId', strip_tags($_REQUEST['searchId']));
 
 		return array(
-			'title' => 'Add as Browse Category to Home Page',
+			'title' => translate(['text'=>'Add as Browse Category to Home Page', 'isAdminFacing'=>'true']),
 			'modalBody' => $interface->fetch('Browse/addBrowseCategory.tpl'),
 			'modalButtons' => ""
 		);
@@ -77,9 +77,9 @@ class Browse_AJAX extends Action {
 
 		$interface->assign('searchId', strip_tags($_REQUEST['searchId']));
 		return array(
-			'title' => 'Update Existing Browse Category',
+			'title' => translate(['text'=>'Update Existing Browse Category','isAdminFacing'=>true]),
 			'modalBody' => $interface->fetch('Browse/updateBrowseCategoryForm.tpl'),
-			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#updateBrowseCategory\").submit();'>Update Category</button>"
+			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#updateBrowseCategory\").submit();'>" . translate(['text'=>'Update Category','isAdminFacing'=>true]) . "</button>"
 		);
 	}
 
@@ -100,9 +100,9 @@ class Browse_AJAX extends Action {
 		// Display Page
 		$interface->assign('searchId', strip_tags($_REQUEST['searchId']));
 		return array(
-			'title' => 'Add as New Browse Category',
+			'title' => translate(['text'=>'Add as New Browse Category', 'isAdminFacing'=>'true']),
 			'modalBody' => $interface->fetch('Browse/newBrowseCategoryForm.tpl'),
-			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#createBrowseCategory\").submit();'>Create Category</button>"
+			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#createBrowseCategory\").submit();'>" . translate(['text'=>'Create Category', 'isAdminFacing'=>'true']) . "</button>"
 		);
 	}
 
@@ -130,14 +130,26 @@ class Browse_AJAX extends Action {
 					);
 				}
 			}else{
-				require_once ROOT_DIR . '/sys/UserLists/UserList.php';
-				$listId = $_REQUEST['listId'];
-				$userList = new UserList();
-				$userList->id = $listId;
-				$userList->deleted = "0";
-				if ($userList->find(true)) {
-					$browseCategory->sourceListId = $listId;
-					$browseCategory->source = 'List';
+				if (isset($_REQUEST['listId'])) {
+					require_once ROOT_DIR . '/sys/UserLists/UserList.php';
+					$listId = $_REQUEST['listId'];
+					$userList = new UserList();
+					$userList->id = $listId;
+					$userList->deleted = "0";
+					if ($userList->find(true)) {
+						$browseCategory->sourceListId = $listId;
+						$browseCategory->source = 'List';
+					}
+				}elseif (isset($_REQUEST['reserveId'])) {
+					require_once ROOT_DIR . '/sys/CourseReserves/CourseReserve.php';
+					$listId = $_REQUEST['reserveId'];
+					$userList = new CourseReserve();
+					$userList->id = $listId;
+					$userList->deleted = "0";
+					if ($userList->find(true)) {
+						$browseCategory->sourceCourseReserveId = $listId;
+						$browseCategory->source = 'CourseReserve';
+					}
 				}
 
 			}
@@ -217,7 +229,7 @@ class Browse_AJAX extends Action {
 							'message' => "Sorry, this search is too complex to create a category from."
 					);
 				}
-			}else{
+			}else if (isset($_REQUEST['listId'])){
 				require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 				$listId = $_REQUEST['listId'];
 				$userList = new UserList();
@@ -226,6 +238,17 @@ class Browse_AJAX extends Action {
 				if ($userList->find(true)) {
 					$browseCategory->sourceListId = $listId;
 					$browseCategory->source = 'List';
+				}
+
+			}else{
+				require_once ROOT_DIR . '/sys/CourseReserves/CourseReserve.php';
+				$listId = $_REQUEST['reserveId'];
+				$userList = new CourseReserve();
+				$userList->id = $listId;
+				$userList->deleted = "0";
+				if ($userList->find(true)) {
+					$browseCategory->sourceCourseReserveId = $listId;
+					$browseCategory->source = 'CourseReserve';
 				}
 
 			}
@@ -291,12 +314,28 @@ class Browse_AJAX extends Action {
 	 */
 	private function getBrowseCategory($reload = false) {
 		if ($this->browseCategory && !$reload) return $this->browseCategory;
-
-		require_once ROOT_DIR . '/sys/Browse/BrowseCategory.php';
-		$browseCategory = new BrowseCategory();
-		$browseCategory->textId = $this->textId;
-		$result = $browseCategory->find(true);
-		if ($result) $this->browseCategory = $browseCategory;
+		if(strpos($this->textId,"system_saved_searches_") !== false) {
+			$label = explode('_', $this->textId);
+			$id = $label[3];
+			$searchEntry = new SearchEntry();
+			$searchEntry->id = $id;
+			$result = $searchEntry->find(true);
+			if ($result) $this->browseCategory = $searchEntry;
+		} elseif(strpos($this->textId,"system_user_lists_") !== false) {
+			$label = explode('_', $this->textId);
+			$id = $label[3];
+			require_once ROOT_DIR . '/sys/UserLists/UserList.php';
+			$userList = new UserList();
+			$userList->id = $id;
+			$result = $userList->find(true);
+			if ($result) $this->browseCategory = $userList;
+		} else {
+			require_once ROOT_DIR . '/sys/Browse/BrowseCategory.php';
+			$browseCategory = new BrowseCategory();
+			$browseCategory->textId = $this->textId;
+			$result = $browseCategory->find(true);
+			if ($result) $this->browseCategory = $browseCategory;
+		}
 		return $this->browseCategory;
 	}
 
@@ -314,7 +353,7 @@ class Browse_AJAX extends Action {
 		$interface->assign('browseCategoryId', $this->textId);
 		$result['success'] = true;
 		$result['textId'] = $this->textId;
-		$result['label'] = translate('Recommended for you');
+		$result['label'] = translate(['text' => 'Recommended for you', 'isPublicFacing'=>true]);
 		$result['searchUrl'] = '/MyAccount/SuggestedTitles';
 
 		require_once ROOT_DIR . '/sys/Suggestions.php';
@@ -346,6 +385,7 @@ class Browse_AJAX extends Action {
 	}
 
 	private function getBrowseCategoryResults($pageToLoad = 1){
+		$lastPage = false;
 		if ($this->textId == 'system_recommended_for_you') {
 			return $this->getSuggestionsBrowseCategoryResults($pageToLoad);
 		} else {
@@ -357,8 +397,27 @@ class Browse_AJAX extends Action {
 				global $interface;
 				$interface->assign('browseCategoryId', $this->textId);
 				$result['success'] = true;
-				$result['textId']  = $browseCategory->textId;
-				$result['label']   = $browseCategory->label;
+				if(isset($browseCategory->textId)) {
+					$result['textId']  = $browseCategory->textId;
+				} else {
+					$result['textId']  = $this->textId;
+				}
+
+				if(isset($browseCategory->label)) {
+					$result['label']  = $browseCategory->label;
+				} else {
+					$result['label']  = $browseCategory->title;
+				}
+
+				if(strpos($this->textId,"system_user_lists_") !== false){
+					$browseCategory->source = "userList";
+					$browseCategory->sourceListId = $browseCategory->id;
+				}
+
+				if(strpos($this->textId,"system_saved_searches_") !== false){
+					$browseCategory->source = "SavedSearch";
+					$browseCategory->sourceListId = $browseCategory->id;
+				}
 
 				// User List Browse Category //
 				if ($browseCategory->source == 'List') {
@@ -367,23 +426,72 @@ class Browse_AJAX extends Action {
 					$sourceList->id = $browseCategory->sourceListId;
 					if ($sourceList->find(true)) {
 						$records = $sourceList->getBrowseRecords(($pageToLoad - 1) * self::ITEMS_PER_PAGE, self::ITEMS_PER_PAGE);
+						$preloadedRecords = $sourceList->getBrowseRecords(($pageToLoad) * self::ITEMS_PER_PAGE, self::ITEMS_PER_PAGE);
+						if(empty($preloadedRecords)) {
+							$lastPage = true;
+						}
 					} else {
 						$records = array();
 					}
 					$result['searchUrl'] = '/MyAccount/MyList/' . $browseCategory->sourceListId;
 
 					// Search Browse Category //
-				} else {
-					$searchObject = SearchObjectFactory::initSearchObject($browseCategory->source);
-					$defaultFilterInfo  = $browseCategory->defaultFilter;
-					$defaultFilters     = preg_split('/[\r\n]+/', $defaultFilterInfo);
-					foreach ($defaultFilters as $filter) {
-						$searchObject->addFilter(trim($filter));
+				} elseif ($browseCategory->source == 'userList') {
+					require_once ROOT_DIR . '/sys/UserLists/UserList.php';
+					$sourceList     = new UserList();
+					$sourceListId = $browseCategory->sourceListId;
+					$sourceList->id = $sourceListId;
+					if ($sourceList->find(true)) {
+						$records = $sourceList->getBrowseRecords(($pageToLoad - 1) * self::ITEMS_PER_PAGE, self::ITEMS_PER_PAGE);
+						$preloadedRecords = $sourceList->getBrowseRecords(($pageToLoad) * self::ITEMS_PER_PAGE, self::ITEMS_PER_PAGE);
+						if(empty($preloadedRecords)) {
+							$lastPage = true;
+						}
+					} else {
+						$records = array();
 					}
-					//Set Sorting, this is actually slightly mangled from the category to Solr
-					$searchObject->setSort($browseCategory->getSolrSort());
-					if ($browseCategory->searchTerm != '') {
-						$searchObject->setSearchTerm($browseCategory->searchTerm);
+					$result['searchUrl'] = '/MyAccount/MyList/' . $sourceListId;
+				}  elseif ($browseCategory->source == 'CourseReserve') {
+					require_once ROOT_DIR . '/sys/CourseReserves/CourseReserve.php';
+					$sourceList     = new CourseReserve();
+					$sourceList->id = $browseCategory->sourceCourseReserveId;
+					if ($sourceList->find(true)) {
+						$records = $sourceList->getBrowseRecords(($pageToLoad - 1) * self::ITEMS_PER_PAGE, self::ITEMS_PER_PAGE);
+						$preloadedRecords = $sourceList->getBrowseRecords(($pageToLoad) * self::ITEMS_PER_PAGE, self::ITEMS_PER_PAGE);
+						if(empty($preloadedRecords)) {
+							$lastPage = true;
+						}
+					} else {
+						$records = array();
+					}
+					$result['searchUrl'] = '/CourseReserves/' . $browseCategory->sourceCourseReserveId;
+
+					// Search Browse Category //
+				} else {
+					if(strpos($this->textId,"system_saved_searches_") !== false) {
+						$label = explode('_', $this->textId);
+						$id = $label[3];
+						require_once ROOT_DIR . '/services/Search/History.php';
+						$savedSearch = History::getSavedSearchObject($id);
+						SearchObjectFactory::initSearchObject();
+						$size = strlen($savedSearch['search_object']);
+						$minSO = unserialize($savedSearch['search_object']);
+						$searchObject = SearchObjectFactory::deminify($minSO);
+						$searchObject->getFilterList();
+						$searchObject->displayQuery();
+
+					} else {
+						$searchObject = SearchObjectFactory::initSearchObject($browseCategory->source);
+						$defaultFilterInfo  = $browseCategory->defaultFilter;
+						$defaultFilters     = preg_split('/[\r\n]+/', $defaultFilterInfo);
+						foreach ($defaultFilters as $filter) {
+							$searchObject->addFilter(trim($filter));
+						}
+						//Set Sorting, this is actually slightly mangled from the category to Solr
+						$searchObject->setSort($browseCategory->getSolrSort());
+						if ($browseCategory->searchTerm != '') {
+							$searchObject->setSearchTerm($browseCategory->searchTerm);
+						}
 					}
 
 					//Get titles for the list
@@ -416,6 +524,8 @@ class Browse_AJAX extends Action {
 					$result['searchUrl'] = $searchObject->renderSearchUrl();
 
 					//TODO: Check if last page
+					$searchObject->setPage($pageToLoad + 1);
+					$preloadedRecords = $searchObject->getBrowseRecordHTML();
 
 					// Shutdown the search object
 					$searchObject->close();
@@ -424,10 +534,17 @@ class Browse_AJAX extends Action {
 					$records[] = $interface->fetch('Browse/noResults.tpl');
 				}
 
+				if(isset($preloadedRecords)) {
+					if(count($preloadedRecords) == 0) {
+						$lastPage = true;
+					}
+				}
+
 				$result['records']    = implode('', $records);
 				$result['numRecords'] = count($records);
-			}
 
+			}
+			$result['lastPage'] = $lastPage;
 			return $result;
 		}
 	}
@@ -492,8 +609,13 @@ class Browse_AJAX extends Action {
 		}
 		$response['textId'] = $textId;
 
+		if (UserAccount::isLoggedIn()) {
+			$user = UserAccount::getActiveUserObj();
+			$response['patronId'] = $user->id;
+		}
+
 		$activeCategory = $this->getBrowseCategory(); // load sub-category
-		$response['label']  = translate($this->browseCategory->label);
+		$response['label']  = translate(['text'=>$this->browseCategory->label,'isPublicFacing'=>true]);
 
 		// Get Any Subcategories for the subcategory menu
 		$response['subcategories'] = $this->getSubCategories();
@@ -501,27 +623,51 @@ class Browse_AJAX extends Action {
 		// If this category has subcategories, get the results of a sub-category instead.
 		if (!empty($response['subcategories'])) {
 			$subCategories = $activeCategory->getSubCategories();
+			$subBrowseCategoryLabel = "";
 			// passed URL variable, or first sub-category
 			if (!empty($_REQUEST['subCategoryTextId'])) {
 				$subCategoryTextId = $_REQUEST['subCategoryTextId'];
 			} else {
+				//Get the first sub category
 				foreach ($subCategories as $subCategoryId) {
-					$subCategory = new BrowseCategory();
-					$subCategory->id = $subCategoryId->subCategoryId;
-					//Get the first sub category that is valid for display
-					if ($subCategory->find(true)) {
-						if ($subCategory->isValidForDisplay()){
-							$subCategoryTextId = $subCategory->textId;
-							break;
+					if($subCategoryId->_source == "userList") {
+						require_once ROOT_DIR . '/sys/UserLists/UserList.php';
+						$label = explode('_', $subCategoryId->id);
+						$id = $label[3];
+						$userList = new UserList();
+						$userList->id = $id;
+						if ($userList->find(true)) {
+							if ($userList->numValidListItems() > 0) {
+								$subCategoryTextId = $subCategoryId->id;
+								$subBrowseCategoryLabel = $userList->title;
+								break;
+							}
+						}
+					} elseif($subCategoryId->_source == "savedSearch") {
+						$subCategoryTextId = $subCategoryId->id;
+						$subBrowseCategoryLabel = $subCategoryId->title;
+						break;
+					} else {
+						//Get the first sub category that is valid for display
+						$subCategory = new BrowseCategory();
+						$subCategory->id = $subCategoryId->subCategoryId;
+						if ($subCategory->find(true)) {
+							if ($subCategory->isValidForDisplay()) {
+								$subCategoryTextId = $subCategory->textId;
+								$subBrowseCategoryLabel = $subCategory->label;
+								break;
+							}
 						}
 					}
 				}
 			}
+
 			if (!empty($subCategoryTextId)) {
 				$response['subCategoryTextId'] = $subCategoryTextId;
 
 				// Set the main category label before we fetch the sub-categories main results
-				$response['label']  = translate($this->browseCategory->label);
+				$response['label']  = translate(['text'=>$this->browseCategory->label,'isPublicFacing'=>true, 'isAdminEnteredData'=>true]);
+				$response['subCategoryLabel']  = translate(['text'=>$subBrowseCategoryLabel,'isPublicFacing'=>true, 'isAdminEnteredData'=>true]);
 
 				// Reset Main Category with SubCategory to fetch main results
 				$this->setTextId($subCategoryTextId);
@@ -533,7 +679,11 @@ class Browse_AJAX extends Action {
 		$result = $this->getBrowseCategoryResults();
 
 		// Update Stats
-		$this->upBrowseCategoryCounter();
+		if((strpos($this->textId,"system_saved_searches_") !== false) || (strpos($this->textId,"system_user_lists_") !== false) ){
+			$this->upParentBrowseCategoryCounter();
+		} else {
+			$this->upBrowseCategoryCounter();
+		}
 
 		return array_merge($result, $response);
 	}
@@ -549,11 +699,48 @@ class Browse_AJAX extends Action {
 		}
 	}
 
+	private function upParentBrowseCategoryCounter(){
+		require_once ROOT_DIR . '/sys/Browse/BrowseCategory.php';
+		$parentBrowseCategory = new BrowseCategory();
+
+		if(strpos($this->textId,"system_saved_searches_") !== false) {
+			$browseCategory = new BrowseCategory();
+			$browseCategory->textId = "system_saved_searches";
+			$result = $browseCategory->find(true);
+			if ($result) $parentBrowseCategory = $browseCategory;
+		}
+
+		if(strpos($this->textId,"system_user_lists_") !== false) {
+			$browseCategory = new BrowseCategory();
+			$browseCategory->textId = "system_user_lists";
+			$result = $browseCategory->find(true);
+			if ($result) $parentBrowseCategory = $browseCategory;
+		}
+
+		$parentBrowseCategory->numTimesShown += 1;
+		$parentBrowseCategory->update_stats_only();
+
+	}
+
 	/** @noinspection PhpUnused */
 	function getBrowseSubCategoryInfo(){
-		$subCategoryTextId = isset($_REQUEST['subCategoryTextId']) ? $_REQUEST['subCategoryTextId'] : null;
+
+		if(isset($_REQUEST['textId'])) {
+			if(($_REQUEST['textId'] == "system_saved_searches") || ($_REQUEST['textId'] == "system_user_lists")) {
+				$subCategoryTextId = $_REQUEST['textId'] . "_" . $_REQUEST['subCategoryTextId'];
+			} else {
+				$subCategoryTextId = $_REQUEST['subCategoryTextId'];
+			}
+		} else {
+			$subCategoryTextId = null;
+		}
 		if ($subCategoryTextId == null){
 			return array('success' => false);
+		}
+
+		if (UserAccount::isLoggedIn()) {
+			$user = UserAccount::getActiveUserObj();
+			$result['patronId'] = $user->id;
 		}
 
 		// Get Main Category Info
@@ -561,7 +748,7 @@ class Browse_AJAX extends Action {
 		$this->getBrowseCategory();
 		if ($this->browseCategory) {
 			$result['textId'] = $this->browseCategory->textId;
-			$result['label']  = $this->browseCategory->label;
+			$result['label']  = translate(['text'=>$this->browseCategory->label,'isPublicFacing'=>true, 'isAdminEnteredData'=>true]);
 			$result['subcategories'] = $this->getSubCategories();
 		}
 
@@ -571,7 +758,7 @@ class Browse_AJAX extends Action {
 		$subCategoryResult = $this->getBrowseCategoryResults(); // Get the Browse Results for the Selected Sub Category
 
 		if (isset($subCategoryResult['label'])) {
-			$subCategoryResult['subCategoryLabel'] = $subCategoryResult['label'];
+			$subCategoryResult['subCategoryLabel'] = translate(['text'=>$subCategoryResult['label'],'isPublicFacing'=>true, 'isAdminEnteredData'=>true]);
 //			unset($subCategoryResult['label']);
 		}
 		if (isset($subCategoryResult['textId'])) {
@@ -580,7 +767,11 @@ class Browse_AJAX extends Action {
 		}
 
 		// Update Stats
-		$this->upBrowseCategoryCounter();
+		if((strpos($this->textId,"system_saved_searches_") !== false) || (strpos($this->textId,"system_user_lists_") !== false) ){
+			$this->upParentBrowseCategoryCounter();
+		} else {
+			$this->upBrowseCategoryCounter();
+		}
 
 		$result = (isset($result)) ? array_merge($subCategoryResult, $result) : $subCategoryResult;
 		return $result;

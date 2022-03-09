@@ -4,10 +4,10 @@
 			{if $showCollectionSpotlightTitle || $showViewMoreLink}
 				<div id="list-{$wrapperId}Header" class="titleScrollerHeader">
 					{if $showCollectionSpotlightTitle && !empty($scrollerTitle)}
-						<span class="listTitle resultInformationLabel">{if $scrollerTitle}{$scrollerTitle|escape:"html"}{/if}</span>
+						<span class="listTitle resultInformationLabel">{if $scrollerTitle}{translate text=$scrollerTitle isPublicFacing=true isAdminEnteredData=true}{/if}</span>
 					{/if}
 					{if $showViewMoreLink}
-						<div id="titleScrollerViewMore{$scrollerName}" class="titleScrollerViewMore"><a href="{$fullListLink}">View More</a></div>
+						<div id="titleScrollerViewMore{$scrollerName}" class="titleScrollerViewMore"><a href="{$fullListLink}">{translate text="View More" isPublicFacing=true}</a></div>
 					{/if}
 				</div>
 			{/if}
@@ -15,7 +15,7 @@
 				<div class="scrollerBodyContainer">
 					<div class="scrollerBody" style="display:none"></div>
 					<div class="scrollerLoadingContainer">
-						<img id="scrollerLoadingImage{$scrollerName}" class="scrollerLoading" src="{img filename="loading_large.gif"}" alt="Loading..." />
+						<img id="scrollerLoadingImage{$scrollerName}" class="scrollerLoading" src="{img filename="loading_large.gif"}" alt="{translate text="Loading..." isPublicFacing=true inAttribute=true}" />
 					</div>
 				</div>
 				<div class="clearer"></div>

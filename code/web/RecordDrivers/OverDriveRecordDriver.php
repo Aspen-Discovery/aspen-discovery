@@ -135,12 +135,10 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver
 		$availability = $this->getAvailability();
 		$addCheckoutLink = false;
 		$addPlaceHoldLink = false;
-		foreach ($availability as $availableFrom) {
-			if ($availableFrom->copiesAvailable > 0) {
-				$addCheckoutLink = true;
-			} else {
-				$addPlaceHoldLink = true;
-			}
+		if ($availability->copiesAvailable > 0) {
+			$addCheckoutLink = true;
+		} else {
+			$addPlaceHoldLink = true;
 		}
 		foreach ($items as $key => $item) {
 			$item->links = array();
@@ -148,14 +146,14 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver
 				$checkoutLink = "return AspenDiscovery.OverDrive.checkOutTitle('{$this->getUniqueID()}');";
 				$item->links[] = array(
 					'onclick' => $checkoutLink,
-					'text' => translate('Check Out'),
+					'text' => 'Check Out',
 					'overDriveId' => $this->getUniqueID(),
 					'action' => 'CheckOut'
 				);
 			} else if ($addPlaceHoldLink) {
 				$item->links[] = array(
 					'onclick' => "return AspenDiscovery.OverDrive.placeHold('{$this->getUniqueID()}');",
-					'text' => translate('Place Hold'),
+					'text' => 'Place Hold',
 					'overDriveId' => $this->getUniqueID(),
 					'action' => 'Hold'
 				);
@@ -166,30 +164,10 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver
 		return $items;
 	}
 
-	/**
-	 * @return array
-	 */
-	public function getScopedAvailability()
-	{
-		$availability = array();
-		$availability['mine'] = $this->getAvailability();
-		$availability['other'] = array();
-		$scopingId = $this->getLibraryScopingId();
-		if ($scopingId != -1) {
-			foreach ($availability['mine'] as $key => $availabilityItem) {
-				if ($availabilityItem->libraryId != -1 && $availabilityItem->libraryId != $scopingId) {
-					$availability['other'][$key] = $availability['mine'][$key];
-					unset($availability['mine'][$key]);
-				}
-			}
-		}
-		return $availability;
-	}
-
 	public function getStatusSummary()
 	{
 		$holdings = $this->getHoldings();
-		$scopedAvailability = $this->getScopedAvailability();
+		$availability = $this->getAvailability();
 
 		$holdPosition = 0;
 
@@ -200,14 +178,10 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver
 		$onHold = 0;
 		$wishListSize = 0;
 		$numHolds = 0;
-		if (count($scopedAvailability['mine']) > 0) {
-			foreach ($scopedAvailability['mine'] as $curAvailability) {
-				$availableCopies += $curAvailability->copiesAvailable;
-				$totalCopies += $curAvailability->copiesOwned;
-				if ($curAvailability->numberOfHolds > $numHolds) {
-					$numHolds = $curAvailability->numberOfHolds;
-				}
-			}
+		if ($availability != null) {
+			$availableCopies += $availability->copiesAvailable;
+			$totalCopies += $availability->copiesOwned;
+			$numHolds = $availability->numberOfHolds;
 		}
 
 		//Load status summary
@@ -241,8 +215,8 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver
 
 		//Determine which buttons to show
 		$statusSummary['holdQueueLength'] = $numHolds;
-		$statusSummary['showPlaceHold'] = $availableCopies == 0 && count($scopedAvailability['mine']) > 0;
-		$statusSummary['showCheckout'] = $availableCopies > 0 && count($scopedAvailability['mine']) > 0;
+		$statusSummary['showPlaceHold'] = $availableCopies == 0;
+		$statusSummary['showCheckout'] = $availableCopies > 0;
 		$statusSummary['showAddToWishlist'] = false;
 		$statusSummary['showAccessOnline'] = false;
 
@@ -345,48 +319,24 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver
 	private $availability = null;
 
 	/**
-	 * @return OverDriveAPIProductAvailability[]
+	 * @return OverDriveAPIProductAvailability
 	 */
 	function getAvailability()
 	{
 		global $library;
 		if ($this->availability == null) {
-			$this->availability = array();
 			require_once ROOT_DIR . '/sys/OverDrive/OverDriveAPIProductAvailability.php';
 			$availability = new OverDriveAPIProductAvailability();
 			$availability->productId = $this->overDriveProduct->id;
 			$availability->settingId = $library->getOverdriveScope()->settingId;
 			//Only include shared collection if include digital collection is on
-			$searchLibrary = Library::getSearchLibrary();
-			$searchLocation = Location::getSearchLocation();
-			$includeSharedTitles = true;
-			if ($searchLocation != null) {
-				$includeSharedTitles = $searchLocation->overDriveScopeId != 0;
-			} elseif ($searchLibrary != null) {
-				$includeSharedTitles = $searchLibrary->overDriveScopeId != 0;
-			}
 			$libraryScopingId = $this->getLibraryScopingId();
-			if ($includeSharedTitles) {
-				//$availability->whereAdd('libraryId = -1 OR libraryId = ' . $libraryScopingId);
-			} else {
-				if ($libraryScopingId == -1) {
-					return $this->availability;
-				} else {
-					$availability->whereAdd('libraryId = ' . $libraryScopingId);
-				}
-			}
-			$availability->find();
-			$copiesInLibraryCollection = 0;
-			while ($availability->fetch()) {
-				$this->availability[$availability->libraryId] = clone $availability;
-				if ($availability->libraryId != -1) {
-					if ($availability->shared) {
-						$copiesInLibraryCollection += $availability->copiesOwned;
-					}
-				}
-			}
-			if ($copiesInLibraryCollection > 0) {
-				$this->availability[-1]->copiesOwned -= $copiesInLibraryCollection;
+			//OverDrive availability now returns correct counts for the library including shared items for each library.
+			// Just get the correct availability for with either the library (if available) or the shared collection
+			$availability->whereAdd("libraryId = $libraryScopingId OR libraryId = -1");
+			$availability->orderBy("libraryId DESC");
+			if ($availability->find(true)){
+				$this->availability  = clone $availability;
 			}
 		}
 		return $this->availability;
@@ -619,7 +569,32 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver
 
 	public function getContributors()
 	{
-		return array();
+		$contributors = [];
+		$rawData = $this->getOverDriveMetaData()->getDecodedRawData();
+		foreach ($rawData->creators as $creator){
+			$contributors[$creator->fileAs] = $creator->fileAs;
+		}
+		return $contributors;
+	}
+
+	private $detailedContributors = null;
+	public function getDetailedContributors()
+	{
+		if ($this->detailedContributors == null) {
+			$this->detailedContributors = [];
+			$rawData = $this->getOverDriveMetaData()->getDecodedRawData();
+			foreach ($rawData->creators as $creator){
+				if (!array_key_exists($creator->fileAs, $this->detailedContributors)){
+					$this->detailedContributors[$creator->fileAs] = array(
+						'name' => $creator->fileAs,
+						'title' => '',
+						'roles' => []
+					);
+				}
+				$this->detailedContributors[$creator->fileAs]['roles'][] = $creator->role;
+			}
+		}
+		return $this->detailedContributors;
 	}
 
 	public function getBookcoverUrl($size = 'small', $absolutePath = false)
@@ -672,16 +647,9 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver
 
 		/** @var OverDriveAPIProductFormats[] $holdings */
 		$holdings = $this->getHoldings();
-		$scopedAvailability = $this->getScopedAvailability();
-		$interface->assign('availability', $scopedAvailability['mine']);
-		$interface->assign('availabilityOther', $scopedAvailability['other']);
-		$numberOfHolds = 0;
-		foreach ($scopedAvailability['mine'] as $availability) {
-			if ($availability->numberOfHolds > 0) {
-				$numberOfHolds = $availability->numberOfHolds;
-				break;
-			}
-		}
+		$availability = $this->getAvailability();
+		$interface->assign('availability', $availability);
+		$numberOfHolds = $availability->numberOfHolds;
 		$interface->assign('numberOfHolds', $numberOfHolds);
 		$showAvailability = true;
 		$showAvailabilityOther = true;
@@ -832,33 +800,48 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver
 	}
 
 	protected $_actions = null;
-	public function getRecordActions($relatedRecord, $isAvailable, $isHoldable, $isBookable, $volumeData = null)
+	public function getRecordActions($relatedRecord, $isAvailable, $isHoldable, $volumeData = null)
 	{
 		if ($this->_actions === null) {
 			$this->_actions = array();
-			//Check to see if the title is on hold or checked out to the patron.
-			$loadDefaultActions = true;
-			if (UserAccount::isLoggedIn()) {
-				$user = UserAccount::getActiveUserObj();
-				$this->_actions = array_merge($this->_actions, $user->getCirculatedRecordActions('overdrive', $this->id));
-				$loadDefaultActions = count($this->_actions) == 0;
-			}
+			//Check to see if OverDrive circulation is enabled
+			require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
+			$overDriveDriver = OverDriveDriver::getOverDriveDriver();
+			if (!$overDriveDriver->isCirculationEnabled()){
+				$overDriveMetadata = $this->getOverDriveMetaData();
+				$crossRefId = $overDriveMetadata->getDecodedRawData()->crossRefId;
+				$this->_actions[] = array(
+					'title' => translate(['text'=>'Access Online','isPublicFacing'=>true]),
+					'url' => $overDriveDriver->getProductUrl($crossRefId),
+					'target' => 'blank',
+					'requireLogin' => false,
+					'type' => 'overdrive_access_online'
+				);
+			}else{
+				//Check to see if the title is on hold or checked out to the patron.
+				$loadDefaultActions = true;
+				if (UserAccount::isLoggedIn()) {
+					$user = UserAccount::getActiveUserObj();
+					$this->_actions = array_merge($this->_actions, $user->getCirculatedRecordActions('overdrive', $this->id));
+					$loadDefaultActions = count($this->_actions) == 0;
+				}
 
-			if ($loadDefaultActions) {
-				if ($isAvailable) {
-					$this->_actions[] = array(
-						'title' => 'Check Out OverDrive',
-						'onclick' => "return AspenDiscovery.OverDrive.checkOutTitle('{$this->id}');",
-						'requireLogin' => false,
-						'type' => 'overdrive_checkout'
-					);
-				} else {
-					$this->_actions[] = array(
-						'title' => 'Place Hold OverDrive',
-						'onclick' => "return AspenDiscovery.OverDrive.placeHold('{$this->id}');",
-						'requireLogin' => false,
-						'type' => 'overdrive_hold'
-					);
+				if ($loadDefaultActions) {
+					if ($isAvailable) {
+						$this->_actions[] = array(
+							'title' => translate(['text' => 'Check Out OverDrive', 'isPublicFacing' => true]),
+							'onclick' => "return AspenDiscovery.OverDrive.checkOutTitle('{$this->id}');",
+							'requireLogin' => false,
+							'type' => 'overdrive_checkout'
+						);
+					} else {
+						$this->_actions[] = array(
+							'title' => translate(['text' => 'Place Hold OverDrive', 'isPublicFacing' => true]),
+							'onclick' => "return AspenDiscovery.OverDrive.placeHold('{$this->id}');",
+							'requireLogin' => false,
+							'type' => 'overdrive_hold'
+						);
+					}
 				}
 			}
 
@@ -876,38 +859,39 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver
 			if (!empty($item->sampleUrl_1) && !in_array($item->sampleUrl_1, $previewLinks) && !StringUtils::endsWith($item->sampleUrl_1, '.epub') && !StringUtils::endsWith($item->sampleUrl_1, '.wma')) {
 				$previewLinks[] = $item->sampleUrl_1;
 				$actions[] = array(
-					'title' => 'Preview ' . $item->sampleSource_1,
+					'title' => translate(['text' => 'Preview ' . $item->sampleSource_1, 'isPublicFacing'=>true, 'isAdminEnteredData'=>true]),
 					'onclick' => "return AspenDiscovery.OverDrive.showPreview('{$this->id}', '{$item->id}', '1');",
 					'requireLogin' => false,
 					'type' => 'overdrive_sample',
-					'btnType' => 'btn-info'
+					'btnType' => 'btn-info',
+					'formatId' => $item->id,
+					'sampleNumber' => 1
 				);
 			}
 			if (!empty($item->sampleUrl_2) && !in_array($item->sampleUrl_2, $previewLinks) && !StringUtils::endsWith($item->sampleUrl_2, '.epub') && !StringUtils::endsWith($item->sampleUrl_2, '.wma')) {
 				$previewLinks[] = $item->sampleUrl_2;
 				$actions[] = array(
-					'title' => 'Preview ' . $item->sampleSource_2,
+					'title' => translate(['text' => 'Preview ' . $item->sampleSource_2, 'isPublicFacing'=>true, 'isAdminEnteredData'=>true]),
 					'onclick' => "return AspenDiscovery.OverDrive.showPreview('{$this->id}', '{$item->id}', '2');",
 					'requireLogin' => false,
 					'type' => 'overdrive_sample',
-					'btnType' => 'btn-info'
+					'btnType' => 'btn-info',
+					'formatId' => $item->id,
+					'sampleNumber' => 2
 				);
 			}
 		}
 		return $actions;
 	}
 
-	function getNumHolds()
+	function getNumHolds() : int
 	{
-		$totalHolds = 0;
-		/** @var OverDriveAPIProductAvailability $availabilityInfo */
-		foreach ($this->getAvailability() as $availabilityInfo) {
-			//Holds is set once for everyone so don't add them up.
-			if ($availabilityInfo->numberOfHolds > $totalHolds) {
-				$totalHolds = $availabilityInfo->numberOfHolds;
-			}
+		$availability = $this->getAvailability();
+		if ($availability == null){
+			return 0;
+		}else{
+			return $availability->numberOfHolds;
 		}
-		return $totalHolds;
 	}
 
 	public function getSemanticData()
@@ -931,6 +915,7 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver
 
 			global $interface;
 			$interface->assign('og_title', $this->getTitle());
+			$interface->assign('og_description', $this->getDescriptionFast());
 			$interface->assign('og_type', $this->getGroupedWorkDriver()->getOGType());
 			$interface->assign('og_image', $this->getBookcoverUrl('medium', true));
 			$interface->assign('og_url', $this->getAbsoluteUrl());

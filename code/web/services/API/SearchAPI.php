@@ -9,33 +9,48 @@ class SearchAPI extends Action
 	function launch()
 	{
 		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
-
-		if (!in_array($method, array('getListWidget', 'getCollectionSpotlight', 'getIndexStatus')) && !IPAddress::allowAPIAccessForClientIP()){
-			$this->forbidAPIAccess();
-		}
 		$output = '';
-		if (!empty($method) && method_exists($this, $method)) {
-			if (in_array($method, array('getListWidget', 'getCollectionSpotlight'))) {
-				$output = $this->$method();
-			} else {
-				$jsonOutput = json_encode(array('result' => $this->$method()));
-			}
-			require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
-			APIUsage::incrementStat('SearchAPI', $method);
-		} else {
-			$jsonOutput = json_encode(array('error' => 'invalid_method'));
-		}
 
-		// Set Headers
-		if (isset($jsonOutput)) {
-			header('Content-type: application/json');
-		} else {
-			header('Content-type: text/html');
-		}
-		header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
+		//Set Headers
+		header('Content-type: application/json');
 		header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
 
-		echo isset($jsonOutput) ? $jsonOutput : $output;
+		//Check if user can access API with keys sent from LiDA
+		if (isset($_SERVER['PHP_AUTH_USER'])) {
+			if($this->grantTokenAccess()) {
+				if (in_array($method, array('getAppBrowseCategoryResults', 'getAppActiveBrowseCategories', 'getAppSearchResults'))) {
+					header("Cache-Control: max-age=10800");
+					require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
+					APIUsage::incrementStat('SystemAPI', $method);
+					$jsonOutput = json_encode(array('result' => $this->$method()));
+				} else {
+					$output = json_encode(array('error' => 'invalid_method'));
+				}
+			} else {
+				header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
+				header('HTTP/1.0 401 Unauthorized');
+				$output = json_encode(array('error' => 'unauthorized_access'));
+			}
+			ExternalRequestLogEntry::logRequest('SearchAPI.' . $method, $_SERVER['REQUEST_METHOD'], $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'], getallheaders(), '', $_SERVER['REDIRECT_STATUS'], isset($jsonOutput) ? $jsonOutput : $output, []);
+			echo isset($jsonOutput) ? $jsonOutput : $output;
+		} elseif (IPAddress::allowAPIAccessForClientIP() || in_array($method, ['getListWidget', 'getCollectionSpotlight'])) {
+			header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
+			if (!empty($method) && method_exists($this, $method)) {
+				if (in_array($method, array('getListWidget', 'getCollectionSpotlight'))) {
+					header('Content-type: text/html');
+					$output = $this->$method();
+				} else {
+					$jsonOutput = json_encode(array('result' => $this->$method()));
+				}
+				require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
+				APIUsage::incrementStat('SearchAPI', $method);
+				echo isset($jsonOutput) ? $jsonOutput : $output;
+			} else {
+				echo json_encode(array('error' => 'invalid_method'));
+			}
+		} else {
+			$this->forbidAPIAccess();
+		}
 	}
 
 	// The time intervals in seconds beyond which we consider the status as not current
@@ -48,9 +63,11 @@ class SearchAPI extends Action
 	function getIndexStatus()
 	{
 		require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
+		require_once ROOT_DIR . '/services/API/SystemAPI.php';
 		global $configArray;
 		$checks = [];
 		$serverStats = [];
+		$systemApi = new SystemAPI();
 
 		//Check if solr is running by pinging it
 		/** @var SearchObject_GroupedWorkSearcher $solrSearcher */
@@ -94,6 +111,21 @@ class SearchAPI extends Action
 					$this->addCheck($checks, 'Backup');
 				}
 			}
+		}
+
+		//Check for encryption key
+		$hasKeyFile = $systemApi->doesKeyFileExist();
+		if ($hasKeyFile){
+			$this->addCheck($checks, 'Encryption Key');
+		}else{
+			$this->addCheck($checks, 'Encryption Key', self::STATUS_CRITICAL, "The encryption key does not exist.");
+		}
+
+		$hasPendingUpdates = $systemApi->hasPendingDatabaseUpdates();
+		if ($hasPendingUpdates){
+			$this->addCheck($checks, 'Pending Database Updates', self::STATUS_CRITICAL, "There are pending database updates.");
+		}else{
+			$this->addCheck($checks, 'Pending Database Updates');
 		}
 
 		//Check free disk space
@@ -153,11 +185,17 @@ class SearchAPI extends Action
 			$this->addServerStat($serverStats, '5 minute Load Average', $load[1]);
 			$this->addServerStat($serverStats, '15 minute Load Average', $load[2]);
 			$this->addServerStat($serverStats, 'Load Per CPU', ($load[1] / $numCPUs));
-			if ($load[1] > $numCPUs * 1.5){
+			if ($load[1] > $numCPUs * 2.5){
 				if ($load[0] >= $load[1]){
 					$this->addCheck($checks, 'Load Average', self::STATUS_CRITICAL, "Load is very high {$load[1]} and is increasing");
 				}else{
 					$this->addCheck($checks, 'Load Average', self::STATUS_WARN, "Load is very high {$load[1]}, but it is decreasing");
+				}
+			}elseif ($load[1] > $numCPUs * 1.5){
+				if ($load[0] >= $load[1]){
+					$this->addCheck($checks, 'Load Average', self::STATUS_WARN, "Load is high {$load[1]} and is increasing");
+				}else{
+					$this->addCheck($checks, 'Load Average', self::STATUS_WARN, "Load is high {$load[1]}, but it is decreasing");
 				}
 			}else{
 				$this->addCheck($checks, 'Load Average');
@@ -189,7 +227,12 @@ class SearchAPI extends Action
 			if ($logEntry->numErrors > 0){
 				$this->addCheck($checks, 'Nightly Index', self::STATUS_CRITICAL, 'The last nightly index had errors');
 			}else{
-				$this->addCheck($checks, 'Nightly Index');
+				//Check to see if it's after 8 am and the nightly index is still running.
+				if (empty($logEntry->endTime) && date('H') >= 8 && date('H') < 21){
+					$this->addCheck($checks, 'Nightly Index', self::STATUS_CRITICAL, "Nightly index is still running after 8 am.");
+				}else {
+					$this->addCheck($checks, 'Nightly Index');
+				}
 			}
 		}else{
 			$this->addCheck($checks, 'Nightly Index', self::STATUS_CRITICAL, 'Nightly index has never run');
@@ -219,7 +262,11 @@ class SearchAPI extends Action
 				/** @var BaseLogEntry $logEntry */
 				$logEntry = new $aspenModule->logClassName();
 				$logEntry->orderBy("id DESC");
-				$logEntry->limit(0, 3 * $numSettings);
+				$numEntriesToCheck = 3;
+				if ($aspenModule->name == 'Open Archives'){
+					$numEntriesToCheck = 1;
+				}
+				$logEntry->limit(0, $numEntriesToCheck * $numSettings);
 				$logErrors = 0;
 				$logEntry->find();
 				$numUnfinishedEntries = 0;
@@ -283,6 +330,54 @@ class SearchAPI extends Action
 			}
 		}
 
+		//Check for interface errors in the last hour
+		$aspenError = new AspenError();
+		$aspenError->whereAdd('timestamp > ' . (time() - 60 * 60));
+		$numErrors = $aspenError->count();
+		if ($numErrors > 10){
+			$this->addCheck($checks, 'Interface Errors', self::STATUS_CRITICAL, "$numErrors Interface Errors have occurred in the last hour");
+		}elseif ($numErrors > 1){
+			$this->addCheck($checks, 'Interface Errors', self::STATUS_WARN, "$numErrors Interface Errors have occurred in the last hour");
+		}else{
+			$this->addCheck($checks, 'Interface Errors');
+		}
+
+		//Check for interface errors in the last hour
+		$aspenError = new AspenError();
+		$aspenError->whereAdd('timestamp > ' . (time() - 60 * 60));
+		$numErrors = $aspenError->count();
+		if ($numErrors > 10){
+			$this->addCheck($checks, 'Interface Errors', self::STATUS_CRITICAL, "$numErrors Interface Errors have occurred in the last hour");
+		}elseif ($numErrors > 1){
+			$this->addCheck($checks, 'Interface Errors', self::STATUS_WARN, "$numErrors Interface Errors have occurred in the last hour");
+		}else{
+			$this->addCheck($checks, 'Interface Errors');
+		}
+
+		//Check NYT Log to see if it has errors
+		require_once ROOT_DIR . '/sys/Enrichment/NewYorkTimesSetting.php';
+		$nytSetting = new NewYorkTimesSetting();
+		if ($nytSetting->find(true)){
+			require_once ROOT_DIR . '/sys/UserLists/NYTUpdateLogEntry.php';
+			$nytLog = new NYTUpdateLogEntry();
+			$nytLog->orderBy("id DESC");
+			$nytLog->limit(0, 1);
+
+			if (!$nytLog->find(true)){
+				$this->addCheck($checks, 'NYT Lists', self::STATUS_WARN, "New York Times Lists have not been loaded");
+			}else{
+				$numErrors = 0;
+				if ($nytLog->numErrors > 0){
+					$numErrors++;
+				}
+				if ($numErrors > 0){
+					$this->addCheck($checks, 'NYT Lists', self::STATUS_WARN, "The last log for New York Times Lists had errors");
+				}else{
+					$this->addCheck($checks, 'NYT Lists');
+				}
+			}
+		}
+
 		//Check cron to be sure it doesn't have errors either
 		require_once ROOT_DIR . '/sys/CronLogEntry.php';
 		$cronLogEntry = new CronLogEntry();
@@ -311,6 +406,37 @@ class SearchAPI extends Action
 			$this->addCheck($checks, "Sitemap");
 		}
 
+		//Check third party enrichment to see if it is enabled
+		require_once ROOT_DIR . '/sys/Enrichment/NovelistSetting.php';
+		$novelistSetting = new NovelistSetting();
+		if ($novelistSetting->find(true)){
+			$this->addCheck($checks, "Novelist");
+		}
+
+		require_once ROOT_DIR . '/sys/Enrichment/SyndeticsSetting.php';
+		$syndeticsSetting = new SyndeticsSetting();
+		if ($syndeticsSetting->find(true)){
+			$this->addCheck($checks, "Syndetics");
+		}
+
+		require_once ROOT_DIR . '/sys/Enrichment/ContentCafeSetting.php';
+		$contentCafeSetting = new ContentCafeSetting();
+		if ($contentCafeSetting->find(true)){
+			$this->addCheck($checks, "Content Cafe");
+		}
+
+		require_once ROOT_DIR . '/sys/Enrichment/CoceServerSetting.php';
+		$coceSetting = new CoceServerSetting();
+		if ($coceSetting->find(true)){
+			$this->addCheck($checks, "Coce");
+		}
+
+		require_once ROOT_DIR . '/sys/Enrichment/OMDBSetting.php';
+		$omdbSetting = new OMDBSetting();
+		if ($omdbSetting->find(true)){
+			$this->addCheck($checks, "OMDB");
+		}
+
 		// Unprocessed Offline Holds //
 		$offlineHoldEntry = new OfflineHold();
 		$offlineHoldEntry->status = 'Not Processed';
@@ -332,9 +458,12 @@ class SearchAPI extends Action
 			}
 		}
 
+		global $interface;
+		$gitBranch = $interface->getVariable('gitBranchWithCommit');
 		if ($hasCriticalErrors || $hasWarnings) {
 			$result = array(
 				'aspen_health_status' => $hasCriticalErrors ? self::STATUS_CRITICAL : self::STATUS_WARN, // Critical warnings trump Warnings;
+				'version' => $gitBranch,
 				'message' => "Errors have been found",
 				'checks' => $checks,
 				'serverStats' => $serverStats
@@ -342,6 +471,7 @@ class SearchAPI extends Action
 		} else {
 			$result = array(
 				'aspen_health_status' => self::STATUS_OK,
+				'version' => $gitBranch,
 				'message' => "Everything is current",
 				'checks' => $checks,
 				'serverStats' => $serverStats
@@ -420,6 +550,10 @@ class SearchAPI extends Action
 		// Initialise from the current search globals
 		$searchObject = SearchObjectFactory::initSearchObject();
 		$searchObject->init();
+
+		if (isset($_REQUEST['pageSize']) && is_numeric($_REQUEST['pageSize'])){
+			$searchObject->setLimit($_REQUEST['pageSize']);
+		}
 
 		// Set Interface Variables
 		//   Those we can construct BEFORE the search is executed
@@ -752,6 +886,8 @@ class SearchAPI extends Action
 		global $library;
 		global $locationSingleton;
 		global $configArray;
+		require_once ROOT_DIR . '/services/API/ListAPI.php';
+		$listApi = new ListAPI();
 
 		$includeSubCategories = false;
 		if (isset($_REQUEST['includeSubCategories'])){
@@ -783,13 +919,56 @@ class SearchAPI extends Action
 
 			if ($categoryInformation->find(true)) {
 				if ($categoryInformation->isValidForDisplay()){
-					$categoryResponse = array(
-						'text_id' => $categoryInformation->textId,
-						'display_label' => $categoryInformation->label,
-						'link' => $configArray['Site']['url'] . '?browseCategory=' . $categoryInformation->textId,
-						'source' => $categoryInformation->source,
-					);
-
+					if($categoryInformation->textId == "system_user_lists") {
+						$userLists = $listApi->getUserLists();
+						$categoryResponse['subCategories'] = [];
+						$allUserLists = $userLists['lists'];
+						if(count($allUserLists) > 0) {
+							$categoryResponse = array(
+								'text_id' => $categoryInformation->textId,
+								'display_label' => $categoryInformation->label,
+								'link' => $configArray['Site']['url'] . '?browseCategory=' . $categoryInformation->textId,
+								'source' => $categoryInformation->source,
+							);
+							foreach ($allUserLists as $userList) {
+								if($userList['id'] != "recommendations") {
+									$categoryResponse['subCategories'][] = [
+										'text_id' => $categoryInformation->textId . '_' . $userList['id'],
+										'display_label' => $userList['title'],
+										'source' => "List",
+									];
+								}
+							}
+							$formattedCategories[] = $categoryResponse;
+						}
+					} elseif($categoryInformation->textId == "system_saved_searches") {
+						$savedSearches = $listApi->getSavedSearches();
+						$categoryResponse['subCategories'] = [];
+						$allSearches = $savedSearches['searches'];
+						if(count($allSearches) > 0){
+							$categoryResponse = array(
+								'text_id' => $categoryInformation->textId,
+								'display_label' => $categoryInformation->label,
+								'link' => $configArray['Site']['url'] . '?browseCategory=' . $categoryInformation->textId,
+								'source' => $categoryInformation->source,
+							);
+							foreach ($allSearches as $savedSearch) {
+								$categoryResponse['subCategories'][] = [
+									'text_id' => $categoryInformation->textId . '_' . $savedSearch['id'],
+									'display_label' => $savedSearch['title'],
+									'source' => "SavedSearch",
+								];
+							}
+						}
+						$formattedCategories[] = $categoryResponse;
+					} else {
+						$categoryResponse = array(
+							'text_id' => $categoryInformation->textId,
+							'display_label' => $categoryInformation->label,
+							'link' => $configArray['Site']['url'] . '?browseCategory=' . $categoryInformation->textId,
+							'source' => $categoryInformation->source,
+						);
+					}
 					if ($includeSubCategories) {
 						$subCategories = $categoryInformation->getSubCategories();
 						$categoryResponse['subCategories'] = [];
@@ -799,9 +978,19 @@ class SearchAPI extends Action
 								$temp->id = $subCategory->subCategoryId;
 								if ($temp->find(true)) {
 									if ($temp->isValidForDisplay()) {
+										$parent = new BrowseCategory();
+										$parent->id = $subCategory->browseCategoryId;
+										if ($parent->find(true)){
+											$parentLabel = $parent->label;
+										}
+										if ($parentLabel == $temp->label) {
+											$displayLabel = $temp->label;
+										} else {
+											$displayLabel = $parentLabel.': '.$temp->label;
+										}
 										$categoryResponse['subCategories'][] = [
 											'text_id' => $temp->textId,
-											'display_label' => $temp->label,
+											'display_label' => $displayLabel,
 											'link' => $configArray['Site']['url'] . '?browseCategory=' . $temp->textId . '&subCategory=' . $temp->textId,
 											'source' => $temp->source,
 										];
@@ -826,15 +1015,36 @@ class SearchAPI extends Action
 				/** @var SubBrowseCategories $subCategory */
 				foreach ($activeBrowseCategory->getSubCategories() as $subCategory) {
 					// Get Needed Info about sub-category
-					$temp = new BrowseCategory();
-					$temp->id = $subCategory->subCategoryId;
-					if ($temp->find(true)) {
-						if ($temp->isValidForDisplay()) {
-							$subCategories[] = array('label' => $temp->label, 'textId' => $temp->textId);
+					if($textId == "system_saved_searches") {
+						$label = explode('_', $subCategory->id);
+						$id = $label[3];
+						$temp = new SearchEntry();
+						$temp->id = $id;
+						if ($temp->find(true)) {
+							$subCategories[] = array('label' => $subCategory->label, 'textId' => $temp->id, 'source' => "savedSearch");
 						}
-					}else{
-						global $logger;
-						$logger->log("Did not find subcategory with id {$subCategory->subCategoryId}", Logger::LOG_WARNING);
+					} elseif($textId == "system_user_lists") {
+						$label = explode('_', $subCategory->id);
+						$id = $label[3];
+						$temp = new UserList();
+						$temp->id = $id;
+						$numListItems = $temp->numValidListItems();
+						if ($temp->find(true)) {
+							if($numListItems > 0) {
+								$subCategories[] = array('label' => $temp->title, 'textId' => $temp->id, 'source' => "userList");
+							}
+						}
+					} else {
+						$temp = new BrowseCategory();
+						$temp->id = $subCategory->subCategoryId;
+						if ($temp->find(true)) {
+							if ($temp->isValidForDisplay()) {
+								$subCategories[] = array('label' => $temp->label, 'textId' => $temp->textId);
+							}
+						} else {
+							global $logger;
+							$logger->log("Did not find subcategory with id {$subCategory->subCategoryId}", Logger::LOG_WARNING);
+						}
 					}
 				}
 				return [
@@ -884,7 +1094,7 @@ class SearchAPI extends Action
 				$response['subCategoryTextId'] = $subCategoryTextId;
 
 				// Set the main category label before we fetch the sub-categories main results
-				$response['label']  = translate($mainCategory->label);
+				$response['label']  = translate(['text'=>$mainCategory->label,'isPublicFacing'=>true]);
 
 				$subCategory = $this->getBrowseCategory($subCategoryTextId);
 				if ($subCategory != null){
@@ -945,6 +1155,10 @@ class SearchAPI extends Action
 		$pageSize = isset($_REQUEST['pageSize']) ? $_REQUEST['pageSize'] : self::ITEMS_PER_PAGE;
 		if ($browseCategory->textId == 'system_recommended_for_you') {
 			$this->getSuggestionsBrowseCategoryResults($pageToLoad, $pageSize, $response);
+		} elseif($browseCategory->textId == 'system_saved_searches') {
+			$this->getSavedSearchBrowseCategoryResults($pageToLoad, $pageSize, $response);
+		} elseif($browseCategory->textId == 'system_user_lists') {
+			$this->getUserListBrowseCategoryResults($pageToLoad, $pageSize, $response);
 		} else {
 			if ($browseCategory->source == 'List') {
 				require_once ROOT_DIR . '/sys/UserLists/UserList.php';
@@ -956,6 +1170,18 @@ class SearchAPI extends Action
 					$records = array();
 				}
 				$response['searchUrl'] = '/MyAccount/MyList/' . $browseCategory->sourceListId;
+
+				// Search Browse Category //
+			} elseif ($browseCategory->source == 'CourseReserve') {
+				require_once ROOT_DIR . '/sys/CourseReserves/CourseReserve.php';
+				$sourceList     = new CourseReserve();
+				$sourceList->id = $browseCategory->sourceCourseReserveId;
+				if ($sourceList->find(true)) {
+					$records = $sourceList->getBrowseRecordsRaw(($pageToLoad - 1) * $pageSize, $pageSize);
+				} else {
+					$records = array();
+				}
+				$response['searchUrl'] = '/CourseReserves/' . $browseCategory->sourceCourseReserveId;
 
 				// Search Browse Category //
 			} else {
@@ -1011,16 +1237,15 @@ class SearchAPI extends Action
 		return [];
 	}
 
-	private function getSuggestionsBrowseCategoryResults(int $pageToLoad, int $pageSize, &$response)
+	private function getSuggestionsBrowseCategoryResults(int $pageToLoad, int $pageSize, &$response = [])
 	{
 		if (!UserAccount::isLoggedIn()){
 			$response = [
 				'success' => false,
 				'message' => 'Your session has timed out, please login again to view suggestions'
 			];
-			return;
 		}else{
-			$response['label'] = translate('Recommended for you');
+			$response['label'] = translate(['text' => 'Recommended for you', 'isPublicFacing'=>true]);
 			$response['searchUrl'] = '/MyAccount/SuggestedTitles';
 
 			require_once ROOT_DIR . '/sys/Suggestions.php';
@@ -1044,6 +1269,372 @@ class SearchAPI extends Action
 			$response['records'] = $records;
 			$response['numRecords'] = count($suggestions);
 		}
+		return $response;
+	}
 
+	private function getSavedSearchBrowseCategoryResults(int $pageSize)
+	{
+
+			if (!isset($_REQUEST['username']) || !isset($_REQUEST['password'])) {
+				return array('success' => false, 'message' => 'The username and password must be provided to load saved searches.');
+			}
+
+			$username = $_REQUEST['username'];
+			$password = $_REQUEST['password'];
+			$user = UserAccount::validateAccount($username, $password);
+
+			if ($user == false) {
+				return array('success' => false, 'message' => 'Sorry, we could not find a user with those credentials.');
+			}
+
+			$label = explode('_', $_REQUEST['id']);
+			$id = $label[3];
+			require_once ROOT_DIR . '/services/API/ListAPI.php';
+			$listApi = new ListAPI();
+			$records = $listApi->getSavedSearchTitles($id, $pageSize);
+			$response['items'] = $records;
+
+		return $response;
+	}
+
+	private function getUserListBrowseCategoryResults(int $pageToLoad, int $pageSize)
+	{
+		if (!isset($_REQUEST['username']) || !isset($_REQUEST['password'])) {
+			return array('success' => false, 'message' => 'The username and password must be provided to load lists.');
+		}
+
+		$username = $_REQUEST['username'];
+		$password = $_REQUEST['password'];
+		$user = UserAccount::validateAccount($username, $password);
+
+		if ($user == false) {
+			return array('success' => false, 'message' => 'Sorry, we could not find a user with those credentials.');
+		}
+
+		$label = explode('_', $_REQUEST['id']);
+		$id = $label[3];
+		require_once ROOT_DIR . '/sys/UserLists/UserList.php';
+		$sourceList = new UserList();
+		$sourceList->id = $id;
+		if ($sourceList->find(true)) {
+			$records = $sourceList->getBrowseRecordsRaw(($pageToLoad - 1) * $pageSize, $pageSize);
+		}
+		$response['items'] = $records;
+
+		return $response;
+	}
+
+# ****************************************************************************************************************************
+# * Functions for Aspen LiDA
+# *
+# ****************************************************************************************************************************
+	/** @noinspection PhpUnused */
+	function getAppActiveBrowseCategories(){
+		//Figure out which library or location we are looking at
+		global $library;
+		global $locationSingleton;
+		require_once ROOT_DIR . '/services/API/ListAPI.php';
+		$listApi = new ListAPI();
+
+		$includeSubCategories = false;
+		if (isset($_REQUEST['includeSubCategories'])){
+			$includeSubCategories = ($_REQUEST['includeSubCategories'] == 'true') || ($_REQUEST['includeSubCategories'] == 1);
+		}
+		//Check to see if we have an active location, will be null if we don't have a specific location
+		//based off of url, branch parameter, or IP address
+		$activeLocation = $locationSingleton->getActiveLocation();
+
+		list($username, $password) = $this->loadUsernameAndPassword();
+		$appUser = UserAccount::validateAccount($username, $password);
+
+		//Get a list of browse categories for that library / location
+		/** @var BrowseCategoryGroupEntry[] $browseCategories */
+		if ($activeLocation == null){
+			//We don't have an active location, look at the library
+			$browseCategories = $library->getBrowseCategoryGroup()->getBrowseCategories();
+		}else{
+			//We have a location get data for that
+			$browseCategories = $activeLocation->getBrowseCategoryGroup()->getBrowseCategories();
+		}
+		$formattedCategories = array();
+
+		require_once ROOT_DIR . '/sys/Browse/BrowseCategory.php';
+		//Format for return to the user, we want to return
+		// - the text id of the category
+		// - the display label
+		// - Clickable link to load the category
+		foreach ($browseCategories as $curCategory){
+			$categoryInformation = new BrowseCategory();
+			$categoryInformation->id = $curCategory->browseCategoryId;
+
+			if ($categoryInformation->find(true)) {
+				if ($categoryInformation->isValidForDisplay($appUser) && ($categoryInformation->source == "GroupedWork" || $categoryInformation->source == "List")) {
+					if ($categoryInformation->textId == ("system_saved_searches")) {
+						$savedSearches = $listApi->getSavedSearches();
+						$allSearches = $savedSearches['searches'];
+						$categoryResponse['subCategories'] = [];
+						foreach ($allSearches as $savedSearch) {
+							$categoryResponse['subCategories'][] = [
+								'key' => $categoryInformation->textId . '_' . $savedSearch['id'],
+								'title' => $categoryInformation->label . ': ' . $savedSearch['title'],
+								'source' => "SavedSearch",
+							];
+						}
+					} elseif ($categoryInformation->textId == ("system_user_lists")) {
+						$userLists = $listApi->getUserLists();
+						$categoryResponse['subCategories'] = [];
+						$allUserLists = $userLists['lists'];
+						if (count($allUserLists) > 0) {
+							foreach ($allUserLists as $userList) {
+								if ($userList['id'] != "recommendations") {
+									$categoryResponse['subCategories'][] = [
+										'key' => $categoryInformation->textId . '_' . $userList['id'],
+										'title' => $categoryInformation->label . ': ' . $userList['title'],
+										'source' => "List",
+									];
+								}
+							}
+						}
+					} else {
+						$categoryResponse = array(
+							'key' => $categoryInformation->textId,
+							'title' => $categoryInformation->label,
+							'source' => $categoryInformation->source,
+						);
+						if ($includeSubCategories) {
+							$subCategories = $categoryInformation->getSubCategories();
+							$categoryResponse['subCategories'] = [];
+							if (count($subCategories) > 0) {
+								foreach ($subCategories as $subCategory) {
+									$temp = new BrowseCategory();
+									$temp->id = $subCategory->subCategoryId;
+									if ($temp->find(true)) {
+										if ($temp->isValidForDisplay($appUser)) {
+											if ($temp->source != '') {
+												$parent = new BrowseCategory();
+												$parent->id = $subCategory->browseCategoryId;
+												if ($parent->find(true)) {
+													$parentLabel = $parent->label;
+												}
+												if ($parentLabel == $temp->label) {
+													$displayLabel = $temp->label;
+												} else {
+													$displayLabel = $parentLabel . ': ' . $temp->label;
+												}
+												$categoryResponse['subCategories'][] = [
+													'key' => $temp->textId,
+													'title' => $displayLabel,
+													'source' => $temp->source,
+												];
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+					$formattedCategories[] = $categoryResponse;
+				}
+			}
+		}
+		return $formattedCategories;
+	}
+
+	/** @noinspection PhpUnused */
+	function getAppBrowseCategoryResults(){
+		if (isset($_REQUEST['page']) && is_numeric($_REQUEST['page'])) {
+			$pageToLoad = (int) $_REQUEST['page'];
+		}else{
+			$pageToLoad = 1;
+		}
+		$pageSize = isset($_REQUEST['limit']) ? $_REQUEST['limit'] : self::ITEMS_PER_PAGE;
+		$thisId = $_REQUEST['id'];
+		$response = [];
+
+		if(strpos($thisId,"system_saved_searches") !== false) {
+			$result = $this->getSavedSearchBrowseCategoryResults($pageSize);
+			$response['key'] = $thisId;
+			$response['records'] = $result['items'];
+		} elseif(strpos($thisId,"system_user_lists") !== false) {
+			$result = $this->getUserListBrowseCategoryResults($pageToLoad, $pageSize);
+			$response['key'] = $thisId;
+			$response['records'] = $result['items'];
+		} else {
+			require_once ROOT_DIR . '/sys/Browse/BrowseCategory.php';
+			$browseCategory = new BrowseCategory();
+			$browseCategory->textId = $thisId;
+
+			if ($browseCategory->find(true)) {
+				if ($browseCategory->textId == 'system_recommended_for_you') {
+					$this->getSuggestionsBrowseCategoryResults($pageToLoad, $pageSize);
+				} else {
+					if ($browseCategory->source == 'List') {
+						require_once ROOT_DIR . '/sys/UserLists/UserList.php';
+						$sourceList = new UserList();
+						$sourceList->id = $browseCategory->sourceListId;
+						if ($sourceList->find(true)) {
+							$records = $sourceList->getBrowseRecordsRaw(($pageToLoad - 1) * $pageSize, $pageSize);
+						} else {
+							$records = array();
+						}
+
+						// Search Browse Category //
+					} elseif ($browseCategory->source == 'CourseReserve') {
+						require_once ROOT_DIR . '/sys/CourseReserves/CourseReserve.php';
+						$sourceList = new CourseReserve();
+						$sourceList->id = $browseCategory->sourceCourseReserveId;
+						if ($sourceList->find(true)) {
+							$records = $sourceList->getBrowseRecordsRaw(($pageToLoad - 1) * $pageSize, $pageSize);
+						} else {
+							$records = array();
+						}
+
+						// Search Browse Category //
+					} else {
+						$searchObject = SearchObjectFactory::initSearchObject($browseCategory->source);
+						$defaultFilterInfo = $browseCategory->defaultFilter;
+						$defaultFilters = preg_split('/[\r\n,;]+/', $defaultFilterInfo);
+						foreach ($defaultFilters as $filter) {
+							$searchObject->addFilter(trim($filter));
+						}
+						//Set Sorting, this is actually slightly mangled from the category to Solr
+						$searchObject->setSort($browseCategory->getSolrSort());
+						if ($browseCategory->searchTerm != '') {
+							$searchObject->setSearchTerm($browseCategory->searchTerm);
+						}
+
+						//Get titles for the list
+						$searchObject->setFieldsToReturn('id,title_display');
+						$searchObject->clearFacets();
+						$searchObject->disableSpelling();
+						$searchObject->disableLogging();
+						$searchObject->setLimit($pageSize);
+						$searchObject->setPage($pageToLoad);
+						$searchObject->processSearch();
+
+						// The results to send to LiDA
+						$records = $searchObject->getResultRecordSet();
+
+						// Shutdown the search object
+						$searchObject->close();
+					}
+					$response['key'] = $browseCategory->textId;
+					$response['records'] = $records;
+				}
+			} else {
+				$response = [
+					'success' => false,
+					'message' => 'Browse category not found'
+				];
+			}
+		}
+
+		return $response;
+	}
+
+	/**
+	 * @return array
+	 * @noinspection PhpUnused
+	 */
+	private function loadUsernameAndPassword() : array
+	{
+		if (isset($_REQUEST['username'])) {
+			$username = $_REQUEST['username'];
+		} else {
+			$username = '';
+		}
+		if (isset($_REQUEST['password'])) {
+			$password = $_REQUEST['password'];
+		} else {
+			$password = '';
+		}
+		
+		// check for post request data
+		if (isset($_POST['username']) && isset($_POST['password'])) {
+			$username = $_POST['username'];
+			$password = $_POST['password'];
+		}
+
+		if (is_array($username)) {
+			$username = reset($username);
+		}
+		if (is_array($password)) {
+			$password = reset($password);
+		}
+		return array($username, $password);
+	}
+
+	/** @noinspection PhpUnused */
+	function getAppSearchResults() : array {
+		global $configArray;
+		$results['success'] = true;
+		$results['message'] = '';
+		$searchResults = $this->search();
+
+		$shortname = $_REQUEST['library'];
+		$page = $_REQUEST['page'];
+
+		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+		if (!empty($searchResults['recordSet'])) {
+			$results['count'] = count($searchResults['recordSet']);
+			foreach ($searchResults['recordSet'] as $item) {
+				$groupedWork = new GroupedWorkDriver($item);
+				$author = $item['author_display'];
+
+				$ccode = '';
+				if (isset($item['collection_' . $shortname][0])) {
+					$ccode = $item['collection_' . $shortname][0];
+				}
+
+				$format = '';
+				if (isset($item['format_' . $shortname][0])) {
+					$format = $item['format_' . $shortname][0];
+				}
+				$iconName = $configArray['Site']['url']  . "/bookcover.php?id=" . $item['id'] . "&size=medium&type=grouped_work";
+				$id = $item['id'];
+				if($ccode != '') {
+					$format = $format . ' - ' . $ccode;
+				} else {
+					$format = $format;
+				}
+
+				$summary = utf8_encode(trim(strip_tags($item['display_description'])));
+				$summary = str_replace('&#8211;', ' - ', $summary);
+				$summary = str_replace('&#8212;', ' - ', $summary);
+				$summary = str_replace('&#160;', ' ', $summary);
+				if (empty($summary)) {
+					$summary = 'There is no summary available for this title';
+				}
+
+				$title = ucwords($item['title_display']);
+				unset($itemList);
+
+				$relatedRecords = $groupedWork->getRelatedRecords();
+
+				foreach ($relatedRecords as $relatedRecord) {
+					if (!isset($itemList)) {
+						$itemList[] = array('id' => $relatedRecord->id, 'name' => $relatedRecord->format, 'source' => $relatedRecord->source);
+					} elseif (!in_array($relatedRecord->format, array_column($itemList, 'name'))) {
+						$itemList[] = array('id' => $relatedRecord->id, 'name' => $relatedRecord->format, 'source' => $relatedRecord->source);
+					}
+				}
+
+				if (!empty($itemList)) {
+					$results['items'][] = array('title' => trim($title), 'author' => $author, 'image' => $iconName, 'format' => $format, 'itemList' => $itemList, 'key' => $id, 'summary' => $summary);
+				}
+			}
+		}
+
+		if (empty($results['items'])) {
+			$results['items'] = [];
+			$results['count'] = 0;
+			if($page == 1) {
+				$results['message'] = "No search results found";
+			} else {
+				$results['message'] = "End of results";
+			}
+		}
+
+		return $results;
 	}
 }

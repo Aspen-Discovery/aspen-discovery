@@ -32,7 +32,7 @@ class Grouping_Variation
 		if (is_array($record)){
 			$this->isEcontent = $record['eContentSource'] != null;
 			$this->econtentSource = $record['eContentSource'];
-			$this->language = $record['language'];
+			$this->language = $record['language'] ==  null ? 'Unknown' : $record['language'];
 			$this->databaseId = $record['id'];
 		}else {
 			$this->isEcontent = $record->isEContent();
@@ -41,7 +41,7 @@ class Grouping_Variation
 		}
 		$this->label = $this->econtentSource;
 		if ($this->language != 'English' || !$this->isEcontent) {
-			$this->label = trim($this->econtentSource . ' ' . translate($this->language));
+			$this->label = trim(translate(['text'=>$this->econtentSource,'isPublicFacing'=>true]) . ' ' . translate(['text'=>$this->language,'isPublicFacing'=>true]));
 		}
 		$this->id = trim($this->econtentSource . ' ' . $this->language);
 		$this->_statusInformation = new Grouping_StatusInformation();
@@ -86,6 +86,10 @@ class Grouping_Variation
 	public function getRelatedRecords()
 	{
 		return $this->_records;
+	}
+
+	public function setSortedRelatedRecords($relatedRecords){
+		$this->_records = $relatedRecords;
 	}
 
 	/**
@@ -177,14 +181,14 @@ class Grouping_Variation
 							$driver = RecordDriverFactory::initRecordDriverById($bestRecord->id);
 						}
 						$this->_actions[] = array(
-							'title' => 'View PDF',
+							'title' => translate(['text'=>'View PDF','isPublicFacing'=>true]),
 							'url' => '',
 							'onclick' => "return AspenDiscovery.GroupedWork.selectFileToView('{$driver->getPermanentId()}', 'RecordPDF');",
 							'requireLogin' => false,
 							'type' => 'view_pdfs'
 						);
 						$this->_actions[] = array(
-							'title' => 'Download PDF',
+							'title' => translate(['text'=>'Download PDF','isPublicFacing'=>true]),
 							'url' => '',
 							'onclick' => "return AspenDiscovery.GroupedWork.selectFileDownload('{$driver->getPermanentId()}', 'RecordPDF');",
 							'requireLogin' => false,
@@ -201,7 +205,7 @@ class Grouping_Variation
 							$driver = RecordDriverFactory::initRecordDriverById($bestRecord->id);
 						}
 						$this->_actions[] = array(
-							'title' => 'Download Supplemental File',
+							'title' => translate(['text'=>'Download Supplemental File','isPublicFacing'=>true]),
 							'url' => '',
 							'onclick' => "return AspenDiscovery.GroupedWork.selectFileDownload('{$driver->getPermanentId()}', 'RecordSupplementalFile');",
 							'requireLogin' => false,

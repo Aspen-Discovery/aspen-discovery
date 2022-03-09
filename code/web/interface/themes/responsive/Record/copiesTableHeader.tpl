@@ -9,31 +9,31 @@
 	<tr>
 		{if $showVolume}
 			<th>
-				<strong><u>{translate text="Volume"}</u></strong>
+				<strong><u>{translate text="Volume" isPublicFacing=true}</u></strong>
 			</th>
 		{/if}
 		<th>
-			<strong><u>{translate text="Location"}</u></strong>
+			<strong><u>{translate text="Location" isPublicFacing=true}</u></strong>
 		</th>
 		<th>
-			<strong><u>{translate text="Call Number"}</u></strong>
+			<strong><u>{translate text="Call Number" isPublicFacing=true}</u></strong>
 		</th>
 		{if $hasNote}
 			<th>
-				<strong><u>{translate text="Note"}</u></strong>
+				<strong><u>{translate text="Note" isPublicFacing=true}</u></strong>
 			</th>
 		{/if}
 		<th>
-			<strong><u>{translate text="Status"}</u></strong>
+			<strong><u>{translate text="Status" isPublicFacing=true}</u></strong>
 		</th>
 		{if $hasDueDate && $showItemDueDates}
 			<th>
-				<strong><u>{translate text="Due Date"}</u></strong>
+				<strong><u>{translate text="Due Date" isPublicFacing=true}</u></strong>
 			</th>
 		{/if}
 		{if $showLastCheckIn}
 			<th>
-				<strong><u>{translate text="Last Check-In"}</u></strong>
+				<strong><u>{translate text="Last Check-In" isPublicFacing=true}</u></strong>
 			</th>
 		{/if}
 	</tr>

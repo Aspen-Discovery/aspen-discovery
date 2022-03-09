@@ -16,11 +16,6 @@ class Record_AJAX extends Action
 			// Methods intend to return JSON data
 			if ($method == 'downloadMarc') {
 				echo $this->$method();
-			} else if (in_array($method, array('getBookingCalendar'))) {
-				header('Content-type: text/html');
-				header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
-				header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
-				echo $this->$method();
 			} else {
 				header('Content-type: application/json');
 				header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
@@ -73,8 +68,8 @@ class Record_AJAX extends Action
 			if (!$this->setupHoldForm($recordSource, $rememberHoldPickupLocation, $marcRecord, $locations)){
 				return array(
 					'holdFormBypassed' => false,
-					'title' => 'Unable to place hold',
-					'message' => '<p>This account is not associated with a library, please contact your library.</p>',
+					'title' => translate(['text' => 'Unable to place hold', 'isPublicFacing'=>true]),
+					'message' => '<p>' . translate(['text' => 'This account is not associated with a library, please contact your library.', 'isPublicFacing'=>true]) . '</p>',
 					'success' => false
 				);
 			}
@@ -98,6 +93,14 @@ class Record_AJAX extends Action
 					if (strcasecmp($formatMapValue->format, $format) === 0) {
 						$holdType = $formatMapValue->holdType;
 						break;
+					}
+				}
+				if ($holdType == 'either'){
+					//Check for an override at the library level
+					if ($library->treatBibOrItemHoldsAs == 2){
+						$holdType = 'bib';
+					}elseif ($library->treatBibOrItemHoldsAs == 3){
+						$holdType = 'item';
 					}
 				}
 
@@ -140,13 +143,20 @@ class Record_AJAX extends Action
 					$shortId = $id;
 				}
 				if ($holdType == 'item' && isset($_REQUEST['selectedItem'])) {
-					$results = $user->placeItemHold($id, $_REQUEST['selectedItem'], $user->_homeLocationCode);
+					$results = $user->placeItemHold($id, $_REQUEST['selectedItem'], $user->getPickupLocationCode());
 				} else {
 					if (isset($_REQUEST['volume'])) {
-						$results = $user->placeVolumeHold($shortId, $_REQUEST['volume'], $user->_homeLocationCode);
+						$results = $user->placeVolumeHold($shortId, $_REQUEST['volume'], $user->getPickupLocationCode());
 					} else {
-						$results = $user->placeHold($id, $user->_homeLocationCode);
+						$results = $user->placeHold($id, $user->getPickupLocationCode());
 					}
+				}
+				if ($results['success']){
+					if (empty($results['needsItemLevelHold'])){
+						$results['title'] = translate(['text' => 'Hold Placed Successfully', 'isPublicFacing'=>true]);
+					}
+				}else{
+					$results['title'] = translate(['text' => 'Hold Failed', 'isPublicFacing'=>true]);
 				}
 				$results['holdFormBypassed'] = true;
 
@@ -159,12 +169,17 @@ class Record_AJAX extends Action
 						$pickupLocationName = $pickupLocation->displayName;
 					}
 					if (count($locations) > 1) {
-						$results['message'] .= '<br/>' . translate(['text'=>"When ready, your hold will be available at %1%, you can change your default pickup location <a href='/MyAccount/MyPreferences'>here</a>.", 1=>$pickupLocationName]);
+						$results['message'] .= '<br/>' . translate(['text'=>"When ready, your hold will be available at %1%, you can change your default pickup location <a href='/MyAccount/MyPreferences'>here</a>.", 1=>$pickupLocationName, 'isPublicFacing'=>true]);
 					}else{
-						$results['message'] .= '<br/>' . translate(['text'=>'When ready, your hold will be available at %1%', 1=>$pickupLocationName]);
+						$results['message'] .= '<br/>' . translate(['text'=>'When ready, your hold will be available at %1%', 1=>$pickupLocationName, 'isPublicFacing'=>true]);
 					}
 					$results['message'] = "<div class='alert alert-success'>" . $results['message'] . '</div>';
+				}else{
+					if (isset($results['confirmationNeeded']) && $results['confirmationNeeded'] == true){
+						$results['modalButtons'] = '<a href="#" class="btn btn-primary" onclick="return AspenDiscovery.Record.confirmHold(\'Record\', \'' . $shortId . '\', ' . $results['confirmationId'] . ')">' . translate(['text'=>'Yes, Place Hold','isPublicFacing'=>true]) . '</a>';
+					}
 				}
+
 
 				if ($results['success'] && $library->showWhileYouWait) {
 					$recordDriver = RecordDriverFactory::initRecordDriverById($id);
@@ -177,7 +192,7 @@ class Record_AJAX extends Action
 						$interface->assign('whileYouWaitTitles', $whileYouWaitTitles);
 
 						if (count($whileYouWaitTitles) > 0) {
-							$results['message'] .= "<h3>" . translate("While You Wait") . "</h3>";
+							$results['message'] .= "<h3>" . translate(['text'=>"While You Wait", 'isPublicFacing'=>true]) . "</h3>";
 							$results['message'] .= $interface->fetch('GroupedWork/whileYouWait.tpl');
 						}
 					}
@@ -191,26 +206,26 @@ class Record_AJAX extends Action
 			} else if (count($locations) == 0) {
 				$results = array(
 					'holdFormBypassed' => false,
-					'title' => 'Unable to place hold',
-					'message' => '<p>Sorry, no copies of this title are available to your account.</p>',
+					'title' => translate(['text'=>'Unable to place hold', 'isPublicFacing'=>true]),
+					'message' => '<p>' . translate(['text'=>'Sorry, no copies of this title are available to your account.', 'isPublicFacing'=>true]) . '</p>',
 					'success' => false
 				);
 			} else {
 				$results = array(
 					'holdFormBypassed' => false,
-					'title' => empty($title) ? 'Place Hold' : 'Place Hold on ' . $title,
+					'title' => empty($title) ? translate(['text'=>'Place Hold', 'isPublicFacing'=>true]) : translate(['text'=>'Place Hold on %1%', 1=> $title, 'isPublicFacing'=>true]),
 					'modalBody' => $interface->fetch("Record/hold-popup.tpl"),
 					'success' => true
 				);
 				if ($holdType != 'none') {
-					$results['modalButtons'] = "<button type='submit' name='submit' id='requestTitleButton' class='btn btn-primary' onclick='return AspenDiscovery.Record.submitHoldForm();'>" . translate("Submit Hold Request") . "</button>";
+					$results['modalButtons'] = "<button type='submit' name='submit' id='requestTitleButton' class='btn btn-primary' onclick='return AspenDiscovery.Record.submitHoldForm();'><i class='fas fa-spinner fa-spin hidden' role='status' aria-hidden='true'></i>&nbsp;" . translate(['text' => "Submit Hold Request", 'isPublicFacing'=>true]) . "</button>";
 				}
 			}
 		} else {
 			$results = array(
 				'holdFormBypassed' => false,
-				'title' => 'Please login',
-				'message' => "You must be logged in.  Please close this dialog and login before placing your hold.",
+				'title' => translate(['text'=>'Please login', 'isPublicFacing'=>true]),
+				'message' => translate(['text'=>"You must be logged in.  Please close this dialog and login before placing your hold.", 'isPublicFacing'=>true]),
 				'success' => false
 			);
 		}
@@ -238,14 +253,14 @@ class Record_AJAX extends Action
 			$relatedManifestations = $relatedManifestations[$format[0]];
 			$interface->assign('relatedManifestation', $relatedManifestations);
 			$results = array(
-				'title' => 'Place Hold on Alternate Edition?',
+				'title' => translate(['text' => 'Place Hold on Alternate Edition?', 'isPublicFacing'=>true]),
 				'modalBody' => $interface->fetch('Record/hold-select-edition-popup.tpl'),
 				'modalButtons' => '<a href="#" class="btn btn-primary" onclick="return AspenDiscovery.Record.showPlaceHold(\'Record\', \'' . $recordSource . '\', \'' . $id . '\');">No, place a hold on this edition</a>'
 			);
 		} else {
 			$results = array(
-				'title' => 'Please login',
-				'modalBody' => "You must be logged in.  Please close this dialog and login before placing your hold.",
+				'title' => translate(['text' => 'Please login', 'isPublicFacing'=>true]),
+				'modalBody' => translate(['text' => "You must be logged in.  Please close this dialog and login before placing your hold.", 'isPublicFacing'=>true]),
 				'modalButtons' => ''
 			);
 		}
@@ -307,7 +322,7 @@ class Record_AJAX extends Action
 			$results = array(
 				'title' => 'Select a volume to place a hold on',
 				'modalBody' => $interface->fetch('Record/hold-select-volume-popup.tpl'),
-				'modalButtons' => '<a href="#" class="btn btn-primary" onclick="return AspenDiscovery.Record.placeVolumeHold(\'Record\', \'' . $recordSource . '\', \'' . $id . '\');">' . translate('Place Hold') . '</a>'
+				'modalButtons' => '<a href="#" class="btn btn-primary" onclick="return AspenDiscovery.Record.placeVolumeHold(\'Record\', \'' . $recordSource . '\', \'' . $id . '\');">' . translate(['text' => 'Place Hold', 'isPublicFacing'=>true]) . '</a>'
 			);
 		} else {
 			$results = array(
@@ -317,76 +332,6 @@ class Record_AJAX extends Action
 			);
 		}
 		return $results;
-	}
-
-	/** @noinspection PhpUnused */
-	function getBookMaterialForm($errorMessage = null) : array
-	{
-		global $interface;
-		if (UserAccount::isLoggedIn()) {
-			$id = $_REQUEST['id'];
-
-			require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
-			$marcRecord = new MarcRecordDriver($id);
-			$title = $marcRecord->getTitle();
-			$interface->assign('id', $id);
-			if ($errorMessage) $interface->assign('errorMessage', $errorMessage);
-			$results = array(
-				'title' => 'Schedule ' . $title,
-				'modalBody' => $interface->fetch("Record/book-materials-form.tpl"),
-				'modalButtons' => '<button class="btn btn-primary" onclick="$(\'#bookMaterialForm\').submit()">Schedule Item</button>'
-				// Clicking invokes submit event, which allows the validator to act before calling the ajax handler
-			);
-		} else {
-			$results = array(
-				'title' => 'Please login',
-				'modalBody' => "You must be logged in.  Please close this dialog and login before scheduling this item.",
-				'modalButtons' => ""
-			);
-		}
-		return $results;
-	}
-
-	/** @noinspection PhpUnused */
-	function getBookingCalendar()
-	{
-		$recordId = $_REQUEST['id'];
-		if (strpos($recordId, ':') !== false) list(, $recordId) = explode(':', $recordId, 2); // remove any prefix from the recordId
-		if (!empty($recordId)) {
-			$user = UserAccount::getLoggedInUser();
-			$catalog = $user->getCatalogDriver();
-			return $catalog->getBookingCalendar($recordId);
-		}
-		return null;
-	}
-
-	/** @noinspection PhpUnused */
-	function bookMaterial()
-	{
-		if (!empty($_REQUEST['id'])) {
-			$recordId = $_REQUEST['id'];
-			if (strpos($recordId, ':') !== false) list(, $recordId) = explode(':', $recordId, 2); // remove any prefix from the recordId
-		}
-		if (empty($recordId)) {
-			return array('success' => false, 'message' => 'Item ID is required.');
-		}
-		if (isset($_REQUEST['startDate'])) {
-			$startDate = $_REQUEST['startDate'];
-		} else {
-			return array('success' => false, 'message' => 'Start Date is required.');
-		}
-
-		$startTime = empty($_REQUEST['startTime']) ? null : $_REQUEST['startTime'];
-		$endDate = empty($_REQUEST['endDate']) ? null : $_REQUEST['endDate'];
-		$endTime = empty($_REQUEST['endTime']) ? null : $_REQUEST['endTime'];
-
-		$user = UserAccount::getLoggedInUser();
-		if ($user) { // The user is already logged in
-			return $user->bookMaterial($recordId, $startDate, $startTime, $endDate, $endTime);
-
-		} else {
-			return array('success' => false, 'message' => 'User not logged in.');
-		}
 	}
 
 	function placeHold() : array
@@ -470,9 +415,9 @@ class Record_AJAX extends Action
 						if ($homeLibrary->defaultNotNeededAfterDays <= 0) {
 							$cancelDate = null;
 						} else {
-							//Default to a date 6 months (half a year) in the future.
+							//Default to a date based on the default not needed after days in the library configuration.
 							$nnaDate = time() + $homeLibrary->defaultNotNeededAfterDays * 24 * 60 * 60;
-							$cancelDate = date('m/d/Y', $nnaDate);
+							$cancelDate = date('Y-m-d', $nnaDate);
 						}
 					}
 
@@ -546,7 +491,7 @@ class Record_AJAX extends Action
 							'confirmationNeeded' => $confirmationNeeded,
 						);
 						if ($confirmationNeeded){
-							$results['modalButtons'] = '<a href="#" class="btn btn-primary" onclick="return AspenDiscovery.Record.confirmHold(\'Record\', \'' . $shortId . '\', ' . $return['confirmationId'] . ')">' . translate('Yes, Place Hold') . '</a>';
+							$results['modalButtons'] = '<a href="#" class="btn btn-primary" onclick="return AspenDiscovery.Record.confirmHold(\'Record\', \'' . $shortId . '\', ' . $return['confirmationId'] . ')">' . translate(['text' => 'Yes, Place Hold', 'isPublicFacing'=>true]) . '</a>';
 						}
 						if (isset($_REQUEST['autologout']) && $return['success']) {
 							$masqueradeMode = UserAccount::isUserMasquerading();
@@ -633,7 +578,7 @@ class Record_AJAX extends Action
 				'confirmationNeeded' => $confirmationNeeded,
 			);
 			if ($confirmationNeeded){
-				$results['modalButtons'] = '<a href="#" class="btn btn-primary" onclick="return AspenDiscovery.Record.confirmHold(\'Record\', \'' . $shortId . '\', ' . $return['confirmationId'] . ')">' . translate('Yes, Place Hold') . '</a>';
+				$results['modalButtons'] = '<a href="#" class="btn btn-primary" onclick="return AspenDiscovery.Record.confirmHold(\'Record\', \'' . $shortId . '\', ' . $return['confirmationId'] . ')">' . translate(['text' => 'Yes, Place Hold', 'isPublicFacing'=>true]) . '</a>';
 			}
 		} else {
 			$results = array(
@@ -660,9 +605,9 @@ class Record_AJAX extends Action
 		$interface->assign('max_file_size', SystemUtils::file_upload_max_size() / (1024 * 1024));
 
 		return [
-			'title' => translate('Upload a PDF'),
+			'title' => translate(['text' => 'Upload a PDF', 'isPublicFacing'=>true]),
 			'modalBody' => $interface->fetch("Record/upload-pdf-form.tpl"),
-			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#uploadPDFForm\").submit()'>" . translate("Upload PDF") . "</button>"
+			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#uploadPDFForm\").submit()'>" . translate(['text' => "Upload PDF", 'isPublicFacing'=>true]) . "</button>"
 		];
 	}
 
@@ -681,9 +626,9 @@ class Record_AJAX extends Action
 		$interface->assign('max_file_size', SystemUtils::file_upload_max_size() / (1024 * 1024));
 
 		return [
-			'title' => translate('Upload a Supplemental File'),
+			'title' => translate(['text' => 'Upload a Supplemental File', 'isPublicFacing'=>true]),
 			'modalBody' => $interface->fetch("Record/upload-supplemental-file-form.tpl"),
-			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#uploadSupplementalFileForm\").submit()'>" . translate("Upload File") . "</button>"
+			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#uploadSupplementalFileForm\").submit()'>" . translate(['text' => "Upload File", 'isPublicFacing'=>true]) . "</button>"
 		];
 	}
 
@@ -810,7 +755,7 @@ class Record_AJAX extends Action
 							}elseif ($fileType = 'application/octect-stream'){
 								$fileExtension = $uploadedFile["name"];
 								$fileExtension = strtolower(substr($fileExtension, strrpos($fileExtension, '.') + 1));
-								if (in_array($fileExtension, ['csv', 'doc', 'docx', 'odp', 'ods', 'odt', 'ppt', 'pptx', 'xls', 'xlsx'])){
+								if (in_array($fileExtension, ['csv', 'doc', 'docx', 'odp', 'ods', 'odt', 'pdf', 'ppt', 'pptx', 'xls', 'xlsx'])){
 									$fileOk = true;
 								}
 							}
@@ -836,7 +781,7 @@ class Record_AJAX extends Action
 									$result['message'] = 'Could not save the file on the server';
 								}
 							} else {
-								$result['message'] = "Incorrect file type ($fileType).  Please upload one of the following files: .CSV, .DOC, .DOCX, .ODP, .ODS, .ODT, .PPT, .PPTX, .XLS, .XLSX";
+								$result['message'] = "Incorrect file type ($fileType).  Please upload one of the following files: .CSV, .DOC, .DOCX, .ODP, .ODS, .ODT, .PDF, .PPT, .PPTX, .XLS, .XLSX";
 							}
 						}else{
 							$result['message'] = 'A file with this name already exists. Please rename your file.';
@@ -932,9 +877,9 @@ class Record_AJAX extends Action
 		$interface->assign('validFiles', $validFiles);
 
 		if ($fileType == 'RecordPDF'){
-			$buttonTitle = translate('Download PDF');
+			$buttonTitle = translate(['text' => 'Download PDF', 'isPublicFacing'=>true]);
 		}else{
-			$buttonTitle = translate('Download Supplemental File');
+			$buttonTitle = translate(['text' => 'Download Supplemental File', 'isPublicFacing'=>true]);
 		}
 		return [
 			'title' => 'Select File to download',
@@ -974,9 +919,9 @@ class Record_AJAX extends Action
 		asort($validFiles);
 		$interface->assign('validFiles', $validFiles);
 
-		$buttonTitle = translate('View PDF');
+		$buttonTitle = translate(['text' => 'View PDF', 'isPublicFacing'=>true]);
 		return [
-			'title' => 'Select PDF to View',
+			'title' => translate(['text' => 'Select PDF to View', 'isPublicFacing'=>true]),
 			'modalBody' => $interface->fetch("Record/select-view-file-form.tpl"),
 			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#viewFile\").submit()'>$buttonTitle</button>"
 		];
@@ -1114,6 +1059,16 @@ class Record_AJAX extends Action
 		$interface->assign('showDetailedHoldNoticeInformation', $library->showDetailedHoldNoticeInformation);
 		$interface->assign('treatPrintNoticesAsPhoneNotices', $library->treatPrintNoticesAsPhoneNotices);
 		$interface->assign('allowRememberPickupLocation', $library->allowRememberPickupLocation);
+		$interface->assign('showLogMeOut', $library->showLogMeOutAfterPlacingHolds);
+
+		$activeIP = IPAddress::getActiveIp();
+		$subnet = IPAddress::getIPAddressForIP($activeIP);
+
+		if ($subnet != false) {
+			$interface->assign('logMeOutDefault', $subnet->defaultLogMeOutAfterPlacingHoldOn);
+		} else {
+			$interface->assign('logMeOutDefault', 0);
+		}
 
 		$holdDisclaimers = array();
 		$patronLibrary = $user->getHomeLibrary();
@@ -1167,7 +1122,7 @@ class Record_AJAX extends Action
 			'needsItemLevelHold' => true,
 			'message' => $interface->fetch('Record/item-hold-popup.tpl'),
 			'title' => $return['title'] ?? '',
-			'modalButtons' => "<button type='submit' name='submit' id='requestTitleButton' class='btn btn-primary' onclick='return AspenDiscovery.Record.submitHoldForm();'>" . translate("Submit Hold Request") . "</button>"
+			'modalButtons' => "<button type='submit' name='submit' id='requestTitleButton' class='btn btn-primary' onclick='return AspenDiscovery.Record.submitHoldForm();'>" . translate(['text' => "Submit Hold Request", 'isPublicFacing'=>true]) . "</button>"
 		);
 	}
 }

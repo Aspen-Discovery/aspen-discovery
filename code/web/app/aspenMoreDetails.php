@@ -9,21 +9,22 @@
 # ****************************************************************************************************************************
 # * include the helper file that holds the URL information by client
 # ****************************************************************************************************************************
-include_once 'config.php';
+require_once '../bootstrap.php';
+require_once '../bootstrap_aspen.php';
 
 
 # ****************************************************************************************************************************
 # * grab the passed location parameter, then find the path
 # ****************************************************************************************************************************
-$library      = $_GET['library'];
-$locationInfo = urlPath($library);
-$urlPath      = $locationInfo[0];
-$libraryID    = $locationInfo[2];
+$urlPath = 'https://'.$_SERVER['SERVER_NAME'];
+$shortname = $_GET['library'];
+$libraryId = $_GET['id'];
+$version = $_GET['version'];
 
 # ****************************************************************************************************************************
 # * assemble the login API URL
 # ****************************************************************************************************************************
-$libraryInfo = $urlPath . '/API/SystemAPI?method=getLocationInfo&id=' . $libraryID;
+$libraryInfo = $urlPath . '/API/SystemAPI?method=getLocationInfo&id=' . $libraryId . '&library=' . $shortname . '&version=' . $version;
 
 # ****************************************************************************************************************************
 # * grab the library info
@@ -36,6 +37,14 @@ $jsonData = json_decode(file_get_contents($libraryInfo), true);
 $website = '';
 if (! empty ($jsonData['result']['location']['homeLink'])) {
   $website = $jsonData['result']['location']['homeLink'];
+}
+
+# ****************************************************************************************************************************
+# * grab the library display name
+# ****************************************************************************************************************************
+$displayName = '';
+if (! empty ($jsonData['result']['location']['displayName'])) {
+	$displayName = $jsonData['result']['location']['displayName'];
 }
 
 # ****************************************************************************************************************************
@@ -59,13 +68,31 @@ if (! empty ($jsonData['result']['location']['hoursMessage'])) {
   $todayHours = $jsonData['result']['location']['hoursMessage'];
 }
 
+# ****************************************************************************************************************************
+# * grab the library coordinates
+# ****************************************************************************************************************************
+$latitude = '';
+$longitude = '';
+if (! empty ($jsonData['result']['location']['latitude'])) {
+	$latitude = $jsonData['result']['location']['latitude'];
+	$longitude = $jsonData['result']['location']['longitude'];
+}
+
+# ****************************************************************************************************************************
+# * grab the library address
+# ****************************************************************************************************************************
+$address = '';
+if (! empty ($jsonData['result']['location']['address'])) {
+	$address = $jsonData['result']['location']['address'];
+}
+
 # *********************************************************************************************************************************************
 # * Links for the More Page - unique key is needed to prevent a warning in iOS
 # *********************************************************************************************************************************************
 //$pageLink[] = array('key' => 0, 'title' => "Program Calendar", 'subtitle' => "Programs, Events and Services.", 'path' => "WhatsOn");
 $pageLink[] = array('key' => 1, 'title' => "Contact Us", 'subtitle' => "We're just a click away.", 'path' => "ContactUs");
 //$pageLink[] = array('key' => 2, 'title' => "News", 'subtitle' => "Stay up to date on important Library News.", 'path' => "News");
-$pageLink[] = array('key' => 3, 'title' => "About", 'subtitle' => "Version 1.5.0", 'path' => "null");
+$pageLink[] = array('key' => 3, 'title' => "About", 'subtitle' => $version, 'path' => "null");
 
 # *********************************************************************************************************************************************
 # * WHATS ON
@@ -78,7 +105,7 @@ $whatsOnLink  = 'http://www.bywatersolutions.com';
 # * CONTACT US
 # *********************************************************************************************************************************************
 $contactUsBlurb    = "It's easy to get help and information on any of our services.";
-$contactUsMailLink = "mailto:aspensupport@bywatersolutions.com";
+$contactUsMailLink = "";
 
 # *********************************************************************************************************************************************
 # * NEWS - unique key is needed to prevent warning in iOS
@@ -91,7 +118,7 @@ $news[] = array('key' => 3, 'date' => 'Nov. 11, 2020', 'newsItem' => "News Item 
 # ****************************************************************************************************************************
 # * assemble the data above into an array for json-ing
 # ****************************************************************************************************************************
-$more['universal'] = array('todayHours' => $todayHours, 'phone' => $phone, 'website' => $website, 'catalogue' => $catalogue); 
+$more['universal'] = array('displayName' => $displayName, 'todayHours' => $todayHours, 'phone' => $phone, 'address' => $address, 'latitude' => $latitude, 'longitude' => $longitude, 'website' => $website, 'catalogue' => $catalogue);
 $more['options']   = $pageLink;
 //$more['whatsOn']   = array('button' => $whatsOnButton, 'blurb' => $whatsOnBlurb, 'link' => $whatsOnLink);
 $more['contactUs'] = array('blurb' => $contactUsBlurb, 'email' => $contactUsMailLink);

@@ -1,9 +1,11 @@
 package com.turning_leaf_technologies.reindexer;
 
 import com.opencsv.CSVReader;
+import com.turning_leaf_technologies.indexing.SierraExportFieldMapping;
 import org.apache.logging.log4j.Logger;
 import org.marc4j.marc.DataField;
 import org.marc4j.marc.Record;
+import org.marc4j.marc.Subfield;
 
 import java.io.File;
 import java.io.FileReader;
@@ -15,17 +17,24 @@ import java.util.*;
 class IIIRecordProcessor extends IlsRecordProcessor{
 	private final HashMap<String, ArrayList<OrderInfo>> orderInfoFromExport = new HashMap<>();
 	private String exportPath;
+	private SierraExportFieldMapping exportFieldMapping = null;
 	// A list of status codes that are eligible to show items as checked out.
 	HashSet<String> validCheckedOutStatusCodes = new HashSet<>();
 
-	IIIRecordProcessor(GroupedWorkIndexer indexer, Connection dbConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
-		super(indexer, dbConn, indexingProfileRS, logger, fullReindex);
+	IIIRecordProcessor(GroupedWorkIndexer indexer, String profileType, Connection dbConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
+		super(indexer, profileType, dbConn, indexingProfileRS, logger, fullReindex);
 		try {
 			exportPath = indexingProfileRS.getString("marcPath");
 		}catch (Exception e){
 			logger.error("Unable to load marc path from indexing profile");
 		}
 		validCheckedOutStatusCodes.add("-");
+		loadOrderInformationFromExport();
+		try {
+			exportFieldMapping = SierraExportFieldMapping.loadSierraFieldMappings(dbConn, indexingProfileRS.getLong("id"), logger);
+		}catch (Exception e){
+			logger.error("Unable to load Sierra Export Mappings", e);
+		}
 	}
 
 	protected String getDisplayGroupedStatus(ItemInfo itemInfo, String identifier) {
@@ -176,7 +185,7 @@ class IIIRecordProcessor extends IlsRecordProcessor{
 			return;
 		}
 		itemInfo.setLocationCode(location);
-		itemInfo.setItemIdentifier(orderNumber);
+		itemInfo.setItemIdentifier(orderNumber + "-" + location);
 		itemInfo.setNumCopies(orderItem.getNumCopies());
 		itemInfo.setIsEContent(false);
 		itemInfo.setIsOrderItem();
@@ -217,5 +226,37 @@ class IIIRecordProcessor extends IlsRecordProcessor{
 			available = true;
 		}
 		return available;
+	}
+
+	protected boolean isItemSuppressed(DataField curItem) {
+		if (iCode2Subfield != ' '){
+			Subfield iCode2SubfieldValue = curItem.getSubfield(iCode2Subfield);
+			if (iCode2SubfieldValue != null){
+				String iCode2Value = iCode2SubfieldValue.getData();
+				if (iCode2sToSuppress != null && iCode2sToSuppress.matcher(iCode2Value).matches()){
+					return true;
+				}
+			}
+		}
+		return super.isItemSuppressed(curItem);
+	}
+
+	protected boolean isBibSuppressed(Record record) {
+		if (exportFieldMapping != null){
+			DataField sierraFixedField = record.getDataField(exportFieldMapping.getFixedFieldDestinationField());
+			if (sierraFixedField != null){
+				Subfield bCode3Subfield = sierraFixedField.getSubfield(exportFieldMapping.getBcode3DestinationSubfield());
+				if (bCode3Subfield != null){
+					String bCode3 = bCode3Subfield.getData().toLowerCase().trim();
+					if (bCode3sToSuppress != null && bCode3sToSuppress.matcher(bCode3).matches()){
+						if (logger.isDebugEnabled()) {
+							logger.debug("Bib record is suppressed due to BCode3 " + bCode3);
+						}
+						return true;
+					}
+				}
+			}
+		}
+		return super.isBibSuppressed(record);
 	}
 }

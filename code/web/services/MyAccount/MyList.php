@@ -148,7 +148,7 @@ class MyAccount_MyList extends MyAccount {
 		}else{
 			$sidebar = '';
 		}
-		$this->display('../MyAccount/list.tpl', isset($list->title) ? $list->title : translate('My List'), $sidebar, false);
+		$this->display('../MyAccount/list.tpl', isset($list->title) ? $list->title : translate(['text' => 'My List', 'isPublicFacing'=>true]), $sidebar, false);
 	}
 
 	/**
@@ -246,7 +246,7 @@ class MyAccount_MyList extends MyAccount {
 
 	}
 
-	function bulkAddTitles($list){
+	function bulkAddTitles(UserList $list){
 		$totalRecords = $list->numValidListItems();
 		$numAdded = 0;
 		$notes = array();

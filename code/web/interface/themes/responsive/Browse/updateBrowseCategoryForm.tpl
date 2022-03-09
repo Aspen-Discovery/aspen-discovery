@@ -9,11 +9,11 @@
 			{/if}
 			<input type="hidden" name="method" value="updateBrowseCategory">
 			<div class="form-group">
-				<label for="update-browse-categorySelect" class="control-label">{translate text="Select a browse category"}</label>
+				<label for="update-browse-categorySelect" class="control-label">{translate text="Select a browse category" isAdminFacing=true}</label>
 				<select class="form-control" name="updateBrowseCategorySelect" id="updateBrowseCategorySelect">
 					<option value="null"></option>
 					{foreach from=$browseCategories item="browseCategory" key="resultIndex"}
-							<option value="{$browseCategory->textId}">{$browseCategory->label} ({$browseCategory->textId})</option>
+							<option value="{$browseCategory->textId}">{translate text=$browseCategory->label isAdminFacing=true isAdminEnteredData=true} ({$browseCategory->textId})</option>
 					{/foreach}
 				</select>
 			</div>

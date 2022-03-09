@@ -57,8 +57,8 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 			global $sideLoadSettings;
 			if (array_key_exists($this->profileType, $indexingProfiles)) {
 				$this->indexingProfile = $indexingProfiles[$this->profileType];
-			}else if (array_key_exists($this->profileType, $sideLoadSettings)) {
-				$this->indexingProfile = $sideLoadSettings[$this->profileType];
+			}else if (array_key_exists(strtolower($this->profileType), $sideLoadSettings)) {
+				$this->indexingProfile = $sideLoadSettings[strtolower($this->profileType)];
 			} else {
 				//Try to infer the indexing profile from the module
 				global $activeRecordProfile;
@@ -211,7 +211,9 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 
 		$interface->assign('bookcoverInfo', $this->getBookcoverInfo());
 
-		$interface->assign('marcRecord', $this->getMarcRecord());
+		$marcRecord = $this->getMarcRecord();
+		$marcRecord->sortFields();
+		$interface->assign('marcRecord', $marcRecord);
 
 		$lastMarcModificationTime = MarcLoader::lastModificationTimeForIlsId("{$this->profileType}:{$this->id}");
 		$interface->assign('lastMarcModificationTime', $lastMarcModificationTime);
@@ -527,7 +529,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 	 */
 	public function getTitle()
 	{
-		return $this->getFirstFieldValue('245', array('a', 'b', 'n', 'p'));
+		return $this->getFirstFieldValue('245', array('a', 'b', 'f', 'g', 'n', 'p'));
 	}
 
 	/**
@@ -559,16 +561,18 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 	public function getSortableTitle()
 	{
 		/** @var File_MARC_Data_Field $titleField */
-		$titleField = $this->getMarcRecord()->getField('245');
-		if ($titleField != null) {
-			$subFieldA = $titleField->getSubfield('a');
-			if ($subFieldA != null && $titleField->getSubfield('a') != false) {
-				$untrimmedTitle = $subFieldA->getData();
-				$charsToTrim = $titleField->getIndicator(2);
-				if (is_numeric($charsToTrim)) {
-					return substr($untrimmedTitle, $charsToTrim);
-				} else {
-					return $untrimmedTitle;
+		if ($this->getMarcRecord() != null) {
+			$titleField = $this->getMarcRecord()->getField('245');
+			if ($titleField != null) {
+				$subFieldA = $titleField->getSubfield('a');
+				if ($subFieldA != null && $titleField->getSubfield('a') != false) {
+					$untrimmedTitle = $subFieldA->getData();
+					$charsToTrim = $titleField->getIndicator(2);
+					if (is_numeric($charsToTrim)) {
+						return substr($untrimmedTitle, $charsToTrim);
+					} else {
+						return $untrimmedTitle;
+					}
 				}
 			}
 		}
@@ -728,7 +732,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 
 		if (!$this->getMarcRecord()) {
 			$descriptionArray = array();
-			$description = "Description Not Provided";
+			$description = translate(['text' => "Description Not Provided", 'isPublicFacing'=>true]);
 			$descriptionArray['description'] = $description;
 			return $descriptionArray;
 		}
@@ -796,7 +800,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 				if ($marcDescription != null) {
 					$descriptionArray['description'] = $marcDescription;
 				} else {
-					$description = "Description Not Provided";
+					$description = translate(['text' => "Description Not Provided", 'isPublicFacing'=>true]);
 					$descriptionArray['description'] = $description;
 				}
 			}
@@ -884,7 +888,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 	}
 
 	protected $_actions = null;
-	public function getRecordActions($relatedRecord, $isAvailable, $isHoldable, $isBookable, $volumeData = null)
+	public function getRecordActions($relatedRecord, $isAvailable, $isHoldable, $volumeData = null)
 	{
 		if ($this->_actions === null) {
 			$this->_actions = array();
@@ -933,7 +937,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 					foreach ($relatedRecord->getItems() as $itemDetail) {
 						if ($itemDetail->holdable) {
 							if (!empty($itemDetail->volumeId)) {
-								$holdableVolumes[str_pad($itemDetail->volumeOrder, 10, '0', STR_PAD_LEFT) . $itemDetail->volumeId] = $itemDetail->volume;
+								$holdableVolumes[str_pad($itemDetail->volumeOrder, 10, '0', STR_PAD_LEFT) . $itemDetail->volumeId] = ['volumeName' => $itemDetail->volume, 'volumeId'=>$itemDetail->volumeId];
 							} else {
 								$hasItemsWithoutVolumes = true;
 							}
@@ -942,7 +946,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 					if (count($holdableVolumes) > 3 || $hasItemsWithoutVolumes) {
 						//Show a dialog to enable the patron to select a volume to place a hold on
 						$this->_actions[] = array(
-							'title' => 'Place Hold',
+							'title' => translate(['text' => 'Place Hold', 'isPublicFacing'=>true]),
 							'url' => '',
 							'onclick' => "return AspenDiscovery.Record.showPlaceHoldVolumes('{$this->getModule()}', '$source', '$id');",
 							'requireLogin' => false,
@@ -950,11 +954,11 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 						);
 					} else {
 						ksort($holdableVolumes);
-						foreach ($holdableVolumes as $volumeId => $volumeName) {
+						foreach ($holdableVolumes as $volumeId => $volumeInfo) {
 							$this->_actions[] = array(
-								'title' => 'Hold ' . $volumeName,
+								'title' => translate(['text' => 'Hold %1%', 1=> $volumeInfo['volumeName'], 'isPublicFacing'=>true]),
 								'url' => '',
-								'onclick' => "return AspenDiscovery.Record.showPlaceHold('{$this->getModule()}', '$source', '$id', '$volumeId');",
+								'onclick' => "return AspenDiscovery.Record.showPlaceHold('{$this->getModule()}', '$source', '$id', '{$volumeInfo['volumeId']}');",
 								'requireLogin' => false,
 								'type' => 'ils_hold'
 							);
@@ -962,22 +966,13 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 					}
 				} else {
 					$this->_actions[] = array(
-						'title' => translate('Place Hold'),
+						'title' => translate(['text' => 'Place Hold', 'isPublicFacing'=>true]),
 						'url' => '',
 						'onclick' => "return AspenDiscovery.Record.showPlaceHold('{$this->getModule()}', '$source', '$id');",
 						'requireLogin' => false,
 						'type' => 'ils_hold'
 					);
 				}
-			}
-			if ($isBookable && $library->enableMaterialsBooking) {
-				$this->_actions[] = array(
-					'title' => 'Schedule Item',
-					'url' => '',
-					'onclick' => "return AspenDiscovery.Record.showBookMaterial('{$this->getModule()}', '{$this->getId()}');",
-					'requireLogin' => false,
-					'type' => 'ils_booking'
-				);
 			}
 
 			//Check to see if a PDF has been uploaded for the record
@@ -986,13 +981,13 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 				if (count($uploadedPDFs) == 1) {
 					$recordFile = reset($uploadedPDFs);
 					$this->_actions[] = array(
-						'title' => 'View PDF',
+						'title' => translate(['text' => 'View PDF', 'isPublicFacing'=>true]),
 						'url' => "/Files/{$recordFile->id}/ViewPDF",
 						'requireLogin' => false,
 						'type' => 'view_pdf'
 					);
 					$this->_actions[] = array(
-						'title' => 'Download PDF',
+						'title' => translate(['text' => 'Download PDF', 'isPublicFacing'=>true]),
 						'url' => "/Record/{$this->getId()}/DownloadPDF?fileId={$recordFile->id}",
 						'requireLogin' => false,
 						'type' => 'download_pdf'
@@ -1035,16 +1030,6 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 						'type' => 'download_supplemental_file'
 					);
 				}
-			}
-
-			$archiveLink = GroupedWorkDriver::getArchiveLinkForWork($this->getGroupedWorkId());
-			if ($archiveLink != null) {
-				$this->_actions[] = array(
-					'title' => 'View Online',
-					'url' => $archiveLink,
-					'requireLogin' => false,
-					'type' => 'view_online'
-				);
 			}
 
 			global $timer;
@@ -1289,7 +1274,6 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 				'openByDefault' => true
 		);
 		//Other editions if applicable (only if we aren't the only record!)
-		/** @noinspection DuplicatedCode */
 		$groupedWorkDriver = $this->getGroupedWorkDriver();
 		if ($groupedWorkDriver != null){
 			$relatedRecords = $groupedWorkDriver->getRelatedRecords();
@@ -1342,82 +1326,88 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 		$oclcFastSubjects = array();
 		$localSubjects = array();
 		if ($marcRecord) {
-			if (isset($configArray['Content']['subjectFieldsToShow'])) {
-				$subjectFieldsToShow = $configArray['Content']['subjectFieldsToShow'];
-				$subjectFields = explode(',', $subjectFieldsToShow);
+			$subjectFields = [600,610,611,630,650,651,655,690];
 
-				$lcSubjectTagNumbers = array(600, 610, 611, 630, 650, 651); // Official LC subject Tags (from CMU)
-				foreach ($subjectFields as $subjectField) {
-					/** @var File_MARC_Data_Field[] $marcFields */
-					$marcFields = $marcRecord->getFields($subjectField);
-					if ($marcFields) {
-						foreach ($marcFields as $marcField) {
-							$subject = array();
-							//Determine the type of the subject
-							$type = 'other';
-							if (in_array($subjectField, $lcSubjectTagNumbers) && $marcField->getIndicator(2) == 0) {
+			$lcSubjectTagNumbers = array(600, 610, 611, 630, 650, 651, 655);
+			foreach ($subjectFields as $subjectField) {
+				/** @var File_MARC_Data_Field[] $marcFields */
+				$marcFields = $marcRecord->getFields($subjectField);
+				if ($marcFields) {
+					foreach ($marcFields as $marcField) {
+						$subject = array();
+						//Determine the type of the subject
+						$type = 'other';
+						if (in_array($subjectField, $lcSubjectTagNumbers)){
+							if ($marcField->getIndicator(2) == 0) {
 								$type = 'lc';
 							}
-							$subjectSource = $marcField->getSubfield('2');
-							if ($subjectSource != null) {
-								if (preg_match('/bisac/i', $subjectSource->getData())) {
-									$type = 'bisac';
-								} elseif (preg_match('/fast/i', $subjectSource->getData())) {
-									$type = 'fast';
-								}
-							}
-							if ($marcField->getTag() == '690') {
-								$type = 'local';
-							}
-
-							$search = '';
-							$title = '';
-							foreach ($marcField->getSubFields() as $subField) {
-								/** @var File_MARC_Subfield $subField */
-								if ($subField->getCode() != '2' && $subField->getCode() != '0' && $subField->getCode() != '9') {
-									$subFieldData = $subField->getData();
-									if ($type == 'bisac' && $subField->getCode() == 'a') {
-										$subFieldData = ucwords(strtolower($subFieldData));
-									}
-									$search .= " " . $subFieldData;
-									if (strlen($title) > 0) {
-										$title .= ' -- ';
-									}
-									$title .= $subFieldData;
-								}
-							}
-							$subject[$title] = array(
-									'search' => trim($search),
-									'title' => $title,
-							);
-							switch ($type) {
-								case 'fast' :
-									// Suppress fast subjects by default
-									$oclcFastSubjects[] = $subject;
-									break;
-								case 'local' :
-									$localSubjects[] = $subject;
-									$subjects[] = $subject;
-									break;
-								case 'bisac' :
-									$bisacSubjects[] = $subject;
-									$subjects[] = $subject;
-									break;
-								case 'lc' :
-									$lcSubjects[] = $subject;
-									$subjects[] = $subject;
-									break;
-								case 'other' :
-									$otherSubjects[] = $subject;
-									break;
-								default :
-									$subjects[] = $subject;
-							}
-
 						}
+						$subjectSource = $marcField->getSubfield('2');
+						if ($subjectSource != null) {
+							if ($subjectSource->getData() == 'lcgft') {
+								$type = 'lc';
+							} elseif (preg_match('/bisac/i', $subjectSource->getData())) {
+								$type = 'bisac';
+							} elseif (preg_match('/fast/i', $subjectSource->getData())) {
+								$type = 'fast';
+							}
+						}
+						if ($marcField->getTag() == '690') {
+							$type = 'local';
+						}
+
+						$search = '';
+						$title = '';
+						foreach ($marcField->getSubFields() as $subField) {
+							/** @var File_MARC_Subfield $subField */
+							if ($subField->getCode() != '2' && $subField->getCode() != '0' && $subField->getCode() != '9') {
+								$subFieldData = $subField->getData();
+								if ($type == 'bisac' && $subField->getCode() == 'a') {
+									$subFieldData = ucwords(strtolower($subFieldData));
+								}
+								$search .= " " . $subFieldData;
+								if (strlen($title) > 0) {
+									$title .= ' -- ';
+								}
+								$title .= $subFieldData;
+							}
+						}
+						$search = trim($search);
+						if (strlen($search) == 0){
+							continue;
+						}
+						$subject[$title] = array(
+								'search' => trim($search),
+								'title' => $title,
+						);
+						switch ($type) {
+							case 'fast' :
+								// Suppress fast subjects by default
+								$oclcFastSubjects[] = $subject;
+								break;
+							case 'local' :
+								$localSubjects[] = $subject;
+								$subjects[] = $subject;
+								break;
+							case 'bisac' :
+								$bisacSubjects[] = $subject;
+								$subjects[] = $subject;
+								break;
+							case 'lc' :
+								$lcSubjects[] = $subject;
+								$subjects[] = $subject;
+								break;
+							case 'other' :
+								$otherSubjects[] = $subject;
+								break;
+							default :
+								$subjects[] = $subject;
+						}
+
 					}
 				}
 			}
+			
 			$subjectTitleCompareFunction = function ($subjectArray0, $subjectArray1) {
 				return strcasecmp(key($subjectArray0), key($subjectArray1));
 			};
@@ -1514,7 +1504,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 
 	private $numHolds = -1;
 
-	function getNumHolds()
+	function getNumHolds() : int
 	{
 		if ($this->numHolds != -1) {
 			return $this->numHolds;
@@ -1535,7 +1525,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 				$this->numHolds = 0;
 			}
 		} else {
-			require_once ROOT_DIR . '/Drivers/marmot_inc/IlsHoldSummary.php';
+			require_once ROOT_DIR . '/sys/ILS/IlsHoldSummary.php';
 			$holdSummary = new IlsHoldSummary();
 			$holdSummary->ilsId = $this->getUniqueID();
 			if ($holdSummary->find(true)) {
@@ -1652,6 +1642,20 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 	{
 		if (!$this->copiesInfoLoaded) {
 			$this->copiesInfoLoaded = true;
+			$indexingProfile = $this->getIndexingProfile();
+			if ($indexingProfile instanceof IndexingProfile) {
+				$dueDateFormatPHP = $indexingProfile->dueDateFormat;
+				$dueDateFormatPHP = str_replace('yyyy', 'Y', $dueDateFormatPHP);
+				$dueDateFormatPHP = str_replace('yy', 'y', $dueDateFormatPHP);
+				$dueDateFormatPHP = str_replace('MM', 'm', $dueDateFormatPHP);
+				$dueDateFormatPHP = str_replace('dd', 'd', $dueDateFormatPHP);
+			}
+			$noteTranslationMap = new TranslationMap();
+			$noteTranslationMap->indexingProfileId = $indexingProfile->id;
+			$noteTranslationMap->name = 'note';
+			if (!$noteTranslationMap->find(true)){
+				$noteTranslationMap = null;
+			}
 			//Load copy information from the grouped work rather than from the driver.
 			//Since everyone is using real-time indexing now, the delays are acceptable,
 			// but include when the last index was completed for reference
@@ -1662,7 +1666,6 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 					//Divide the items into sections and create the status summary
 					$this->holdings = $recordFromIndex->getItemDetails();
 					$this->holdingSections = array();
-					$indexingProfile = $this->getIndexingProfile();
 					$itemsFromMarc = [];
 					if (!empty($indexingProfile->noteSubfield) || !empty($indexingProfile->dueDate)){
 						//Get items from the marc record
@@ -1686,23 +1689,50 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 						}
 						if (!empty($indexingProfile->noteSubfield)){
 							//Get the item for the
-							$itemField = $itemsFromMarc[$copyInfo['itemId']];
-							$copyInfo['note'] = '';
-							if (!empty($itemField)) {
-								$noteSubfield = $itemField->getSubfield($indexingProfile->noteSubfield);
-								if (!empty($noteSubfield)) {
-									$copyInfo['note'] = $noteSubfield->getData();
+							if (array_key_exists($copyInfo['itemId'], $itemsFromMarc)) {
+								$itemField = $itemsFromMarc[$copyInfo['itemId']];
+								$copyInfo['note'] = '';
+								if (!empty($itemField)) {
+									$noteSubfield = $itemField->getSubfield($indexingProfile->noteSubfield);
+									if ($noteSubfield != null && !empty($noteSubfield->getData())) {
+										//Check to see if this needs to be translated
+										$note = $noteSubfield->getData();
+										if ($noteTranslationMap != null) {
+
+											foreach ($noteTranslationMap->getTranslationMapValues() as $translationMapValue) {
+												if ($noteTranslationMap->usesRegularExpressions) {
+													if (preg_match('~' . $translationMapValue->value . '~', $note)) {
+														$note = $translationMapValue->translation;
+														break;
+													}
+												} else {
+													if ($translationMapValue->value == $note) {
+														$note = $translationMapValue->translation;
+														break;
+													}
+												}
+											}
+										}
+										$copyInfo['note'] = $note;
+									}
 								}
 							}
 						}
 						if (!empty($indexingProfile->dueDate)){
 							//Get the item for the
-							$itemField = $itemsFromMarc[$copyInfo['itemId']];
-							$copyInfo['dueDate'] = '';
-							if (!empty($itemField)) {
-								$dueDateSubfield = $itemField->getSubfield($indexingProfile->dueDate);
-								if (!empty($dueDateSubfield)) {
-									$copyInfo['dueDate'] = strtotime($dueDateSubfield->getData());
+							if (array_key_exists($copyInfo['itemId'], $itemsFromMarc)) {
+								$itemField = $itemsFromMarc[$copyInfo['itemId']];
+								$copyInfo['dueDate'] = '';
+								if (!empty($itemField)) {
+									$dueDateSubfield = $itemField->getSubfield($indexingProfile->dueDate);
+									if ($dueDateSubfield != null && !empty($dueDateSubfield->getData())) {
+										$dueDateTime = DateTime::createFromFormat($dueDateFormatPHP, $dueDateSubfield->getData());
+										if ($dueDateTime != false) {
+											$copyInfo['dueDate'] = $dueDateTime->getTimestamp();
+										} else {
+											$copyInfo['dueDate'] = strtotime($dueDateSubfield->getData());
+										}
+									}
 								}
 							}
 						}
@@ -1773,7 +1803,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 	public function loadPeriodicalInformation()
 	{
 		$catalogDriver = $this->getCatalogDriver();
-		if (method_exists($catalogDriver, 'getIssueSummaries')) {
+		if ($catalogDriver->hasIssueSummaries()){
 			$issueSummaries = $catalogDriver->getIssueSummaries($this->id);
 			if (count($issueSummaries)) {
 				//Insert copies into the information about the periodicals
@@ -1886,9 +1916,11 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 			//Open graph data (goes in meta tags)
 			global $interface;
 			$interface->assign('og_title', $this->getTitle());
+			$interface->assign('og_description', $this->getDescriptionFast());
 			$interface->assign('og_type', $this->getGroupedWorkDriver()->getOGType());
 			$interface->assign('og_image', $this->getBookcoverUrl('medium', true));
 			$interface->assign('og_url', $this->getAbsoluteUrl());
+			$interface->assign('dc_creator', $this->getPrimaryAuthor());
 			return $semanticData;
 		}else{
 			//AspenError::raiseError('MARC Record did not have an associated record in grouped work ' . $this->getPermanentId());

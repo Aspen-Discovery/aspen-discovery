@@ -60,17 +60,18 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 		}
 
 		// Load sort preferences (or defaults if none in .ini file):
-		if (isset($searchSettings['Sorting'])) {
-			$this->sortOptions = $searchSettings['Sorting'];
-		} else {
-			$this->sortOptions = array(
-				'relevance' => 'sort_relevance',
-				'popularity' => 'sort_popularity',
-				'year' => 'sort_year', 'year asc' => 'sort_year asc',
-				'callnumber' => 'sort_callnumber', 'author' => 'sort_author',
-				'title' => 'sort_title'
-			);
-		}
+		$this->sortOptions = array(
+			'relevance' => 'Best Match',
+			'year desc,title asc' => "Publication Year Desc",
+			'year asc,title asc' => "Publication Year Asc",
+			'author asc,title asc' => "Author",
+			'title' => 'Title',
+			'days_since_added asc' => "Date Purchased Desc",
+			'callnumber_sort' => 'sort_callnumber',
+			'popularity desc' => 'sort_popularity',
+			'rating desc' => 'sort_rating',
+			'total_holds desc' => "Number of Holds"
+		);
 
 		$this->indexEngine->debug = $this->debug;
 		$this->indexEngine->debugSolrQuery = $this->debugSolrQuery;
@@ -208,13 +209,6 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 
 		return true;
 	} // End init()
-
-	public function setDebugging($enableDebug, $enableSolrQueryDebugging)
-	{
-		$this->debug = $enableDebug;
-		$this->debugSolrQuery = $enableDebug && $enableSolrQueryDebugging;
-		$this->getIndexEngine()->setDebugging($enableDebug, $enableSolrQueryDebugging);
-	}
 
 	/**
 	 * Initialise the object for retrieving advanced
@@ -377,7 +371,6 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 				$allWorkIds[] = $this->indexResult['response']['docs'][$x]['id'];
 			}
 			require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
-			GroupedWorkDriver::loadArchiveLinksForWorks($allWorkIds);
 			$timer->logTime('Loaded archive links');
 			for ($x = 0; $x < count($this->indexResult['response']['docs']); $x++) {
 				$memoryWatcher->logMemory("Started loading record information for index $x");
@@ -480,8 +473,10 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 			// It's important to remember here we are talking about on-screen
 			//   sort values, not what is sent to Solr, since this screen
 			//   is really using facet sorting.
-			return array('relevance' => 'sort_author_relevance',
-				'author' => 'sort_author_author');
+			return array(
+				'relevance' => 'sort_author_relevance',
+				'author' => 'sort_author_author'
+			);
 		}
 
 		// Everywhere else -- use normal default behavior
@@ -632,9 +627,29 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 		$filterQuery = $this->hiddenFilters;
 		//Remove any empty filters if we get them
 		//(typically happens when a subdomain has a function disabled that is enabled in the main scope)
+		//Also fix dynamic field names
+		$dynamicFields = $this->loadDynamicFields();
 		foreach ($this->filterList as $field => $filter) {
 			if ($field === '') {
 				unset($this->filterList[$field]);
+			}
+			if (strpos($field, '_') !== false) {
+				$lastUnderscore = strrpos($field, '_');
+				$shortFieldName = substr($field, 0, $lastUnderscore + 1);
+				$oldScope = substr($field, $lastUnderscore + 1);
+				if ($oldScope != $solrScope) {
+					//Correct any dynamic fields
+					foreach ($dynamicFields as $dynamicField) {
+						if ($shortFieldName == $dynamicField) {
+							//This is a dynamic field with the wrong scope
+							if ($field != ($dynamicField . $solrScope)) {
+								unset($this->filterList[$field]);
+								$this->filterList[$dynamicField . $solrScope] = $filter;
+							}
+							break;
+						}
+					}
+				}
 			}
 		}
 
@@ -862,6 +877,9 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 		// The "relevance" sort option is a VuFind reserved word; we need to make
 		// this null in order to achieve the desired effect with Solr:
 		$finalSort = ($this->sort == 'relevance') ? null : $this->sort;
+		if ($finalSort == 'days_since_added asc'){
+			$finalSort = 'local_days_since_added_' . $solrScope . ' asc';
+		}
 
 		// The first record to retrieve:
 		//  (page - 1) * limit = start
@@ -889,7 +907,10 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 		$this->stopQueryTimer();
 
 		// How many results were there?
-		if (!isset($this->indexResult['response']['numFound'])) {
+		if (is_null($this->indexResult)) {
+			//This happens with a timeout
+			$this->resultsTotal = 0;
+		} else if (!isset($this->indexResult['response']['numFound'])) {
 			//An error occurred
 			$this->resultsTotal = 0;
 		} else {
@@ -952,6 +973,7 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 		// Loop through every field returned by the result set
 		$validFields = array_keys($filter);
 
+		/** @var Location $locationSingleton */
 		global $locationSingleton;
 		/** @var Library $currentLibrary */
 		$currentLibrary = Library::getActiveLibrary();
@@ -1036,7 +1058,7 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 				// Initialize the array of data about the current facet:
 				$currentSettings = array();
 				$currentSettings['value'] = $facet[0];
-				$currentSettings['display'] = $translate ? translate($facet[0]) : $facet[0];
+				$currentSettings['display'] = $translate ? translate(['text'=>$facet[0],'isPublicFacing'=>true]) : $facet[0];
 				$currentSettings['count'] = $facet[1];
 				$currentSettings['isApplied'] = false;
 				$currentSettings['url'] = $this->renderLinkWithFilter($field, $facet[0]);
@@ -1102,9 +1124,6 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 							$numValidRelatedLocations++;
 						} else if ($field == 'available_at' && !is_null($additionalAvailableAtLocations) && in_array($facet[0], $additionalAvailableAtLocations)) {
 							$valueKey = '4' . $valueKey;
-							$numValidRelatedLocations++;
-						} elseif ($facet[0] == 'Digital Collection' || $facet[0] == 'OverDrive' || $facet[0] == 'Online') {
-							$valueKey = '5' . $valueKey;
 							$numValidRelatedLocations++;
 						}
 					}
@@ -1207,7 +1226,7 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 		$lookfor = $this->displayQuery();
 		if (count($this->filterList) > 0) {
 			// TODO : better display of filters
-			$interface->assign('lookfor', $lookfor . " (" . translate('with filters') . ")");
+			$interface->assign('lookfor', $lookfor . " (" . translate(['text' => 'with filters', 'isPublicFacing'=>true]) . ")");
 		} else {
 			$interface->assign('lookfor', $lookfor);
 		}
@@ -1414,14 +1433,16 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 		}
 	}
 
-	public function pingServer($failOnError = true)
-	{
-		return $this->indexEngine->pingServer($failOnError);
-	}
-
 	public function getSearchIndexes()
 	{
-		return $this->searchIndexes;
+		return [
+			'Keyword' => translate(['text'=>'Keyword', 'isPublicFacing'=>true, 'inAttribute'=>true]),
+			'Title' => translate(['text'=>'Title', 'isPublicFacing'=>true, 'inAttribute'=>true]),
+			'StartOfTitle' => translate(['text'=>'Start of Title', 'isPublicFacing'=>true, 'inAttribute'=>true]),
+			'Series' => translate(['text'=>'Series', 'isPublicFacing'=>true, 'inAttribute'=>true]),
+			'Author' => translate(['text'=>'Author', 'isPublicFacing'=>true, 'inAttribute'=>true]),
+			'Subject' => translate(['text'=>'Subject', 'isPublicFacing'=>true, 'inAttribute'=>true]),
+		];
 	}
 
 	public function getRecordDriverForResult($record)

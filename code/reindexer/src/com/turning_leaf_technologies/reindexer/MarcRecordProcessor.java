@@ -1,5 +1,6 @@
 package com.turning_leaf_technologies.reindexer;
 
+import com.turning_leaf_technologies.indexing.BaseIndexingSettings;
 import com.turning_leaf_technologies.logging.BaseLogEntry;
 import com.turning_leaf_technologies.marc.MarcUtil;
 import com.turning_leaf_technologies.strings.StringUtils;
@@ -7,6 +8,10 @@ import org.apache.logging.log4j.Logger;
 import org.marc4j.marc.*;
 
 import java.io.File;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -15,6 +20,8 @@ import java.util.regex.PatternSyntaxException;
 abstract class MarcRecordProcessor {
 	protected Logger logger;
 	protected GroupedWorkIndexer indexer;
+	protected BaseIndexingSettings settings;
+	protected String profileType;
 	private static final Pattern mpaaRatingRegex1 = Pattern.compile("(?:.*?)Rated\\s(G|PG-13|PG|R|NC-17|NR|X)(?:.*)", Pattern.CANON_EQ);
 	private static final Pattern mpaaRatingRegex2 = Pattern.compile("(?:.*?)(G|PG-13|PG|R|NC-17|NR|X)\\sRated(?:.*)", Pattern.CANON_EQ);
 	private static final Pattern mpaaRatingRegex3 = Pattern.compile("(?:.*?)MPAA rating:\\s(G|PG-13|PG|R|NC-17|NR|X)(?:.*)", Pattern.CANON_EQ);
@@ -25,15 +32,28 @@ abstract class MarcRecordProcessor {
 	boolean createFolderFromLeadingCharacters;
 	String individualMarcPath;
 	String formatSource;
+	String fallbackFormatField; //Only used for IlsRecordProcessor, but defined here
 	String specifiedFormat;
 	String specifiedFormatCategory;
 	int specifiedFormatBoost;
 	String treatUnknownLanguageAs = null;
 	String treatUndeterminedLanguageAs = null;
 
-	MarcRecordProcessor(GroupedWorkIndexer indexer, Logger logger) {
+	PreparedStatement addRecordToDBStmt;
+	PreparedStatement marcRecordAsSuppressedNoMarcStmt;
+	PreparedStatement getRecordSuppressionInformationStmt;
+
+	MarcRecordProcessor(GroupedWorkIndexer indexer, String profileType, Connection dbConn, Logger logger) {
 		this.indexer = indexer;
 		this.logger = logger;
+		this.profileType = profileType;
+		try {
+			addRecordToDBStmt = dbConn.prepareStatement("INSERT INTO ils_records set ilsId = ?, source = ?, checksum = ?, dateFirstDetected = ?, deleted = 0, suppressed = 0, sourceData = COMPRESS(?), lastModified = ? ON DUPLICATE KEY UPDATE sourceData = VALUES(sourceData), lastModified = VALUES(lastModified)");
+			marcRecordAsSuppressedNoMarcStmt = dbConn.prepareStatement("UPDATE ils_records set suppressedNoMarcAvailable = 1 where source = ? and ilsId = ?");
+			getRecordSuppressionInformationStmt = dbConn.prepareStatement("SELECT suppressedNoMarcAvailable from ils_records where source = ? and ilsId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+		}catch (Exception e){
+			indexer.getLogEntry().incErrors("Error setting up prepared statements for loading MARC from the DB", e);
+		}
 	}
 
 	/**
@@ -44,21 +64,53 @@ abstract class MarcRecordProcessor {
 	 * @param identifier the identifier to load information for
 	 * @param logEntry the log entry to store any errors
 	 */
-	public void processRecord(GroupedWorkSolr groupedWork, String identifier, BaseLogEntry logEntry){
-		Record record = loadMarcRecordFromDisk(identifier, logEntry);
+	public synchronized void processRecord(GroupedWorkSolr groupedWork, String identifier, BaseLogEntry logEntry){
+		//Check to be sure the record is not suppressed
+		boolean isSuppressed = false;
+		try {
+			getRecordSuppressionInformationStmt.setString(1, this.profileType);
+			getRecordSuppressionInformationStmt.setString(2, identifier);
+			ResultSet getRecordSuppressionInformationRS = getRecordSuppressionInformationStmt.executeQuery();
+			if (getRecordSuppressionInformationRS.next()){
+				if (getRecordSuppressionInformationRS.getBoolean("suppressedNoMarcAvailable")){
+					isSuppressed = true;
+				}
+			}
+			getRecordSuppressionInformationRS.close();
+		}catch (Exception e){
+			logEntry.incErrors("Error loading suppression information for record", e);
+		}
+		if (!isSuppressed) {
+			Record record = indexer.loadMarcRecordFromDatabase(this.profileType, identifier, logEntry);
+			if (record == null) {
+				record = loadMarcRecordFromDisk(identifier, logEntry);
+				if (record != null) {
+					indexer.saveMarcRecordToDatabase(settings, identifier, record);
+				} else {
+					try {
+						//We don't have data for this MARC record, mark it as suppressed for not having MARC data
+						marcRecordAsSuppressedNoMarcStmt.setString(1, this.profileType);
+						marcRecordAsSuppressedNoMarcStmt.setString(2, identifier);
+						marcRecordAsSuppressedNoMarcStmt.executeUpdate();
+					} catch (SQLException e) {
+						logEntry.incErrors("Error marking record as suppressed for not having MARC", e);
+					}
+				}
+			}
 
-		if (record != null){
-			try{
-				updateGroupedWorkSolrDataBasedOnMarc(groupedWork, record, identifier);
-			}catch (Exception e) {
-				logger.error("Error updating solr based on marc record", e);
+			if (record != null) {
+				try {
+					updateGroupedWorkSolrDataBasedOnMarc(groupedWork, record, identifier);
+				} catch (Exception e) {
+					logEntry.incErrors("Error updating solr based on marc record", e);
+				}
 			}
 		}
 	}
 
 	private Record loadMarcRecordFromDisk(String identifier, BaseLogEntry logEntry) {
 		String individualFilename = getFileForIlsRecord(identifier);
-		return MarcUtil.readIndividualRecord(new File(individualFilename), logEntry);
+		return MarcUtil.readMarcRecordFromFile(new File(individualFilename), logEntry);
 	}
 
 	private String getFileForIlsRecord(String recordNumber) {
@@ -330,8 +382,8 @@ abstract class MarcRecordProcessor {
 
 	}
 
-	void updateGroupedWorkSolrDataBasedOnStandardMarcData(GroupedWorkSolr groupedWork, Record record, ArrayList<ItemInfo> printItems, String identifier, String format) {
-		loadTitles(groupedWork, record, format);
+	void updateGroupedWorkSolrDataBasedOnStandardMarcData(GroupedWorkSolr groupedWork, Record record, ArrayList<ItemInfo> printItems, String identifier, String format, String formatCategory) {
+		loadTitles(groupedWork, record, format, formatCategory);
 		loadAuthors(groupedWork, record, identifier);
 		loadSubjects(groupedWork, record);
 
@@ -397,7 +449,7 @@ abstract class MarcRecordProcessor {
 			Subfield subfieldA = targetAudience.getSubfield('a');
 			Subfield subfieldB = targetAudience.getSubfield('b');
 			if (subfieldA != null && subfieldB != null){
-				if (subfieldB.getData().equalsIgnoreCase("lexile")){
+				if (subfieldB.getData().toLowerCase().startsWith("lexile")){
 					String lexileValue = subfieldA.getData();
 					if (lexileValue.endsWith("L")){
 						lexileValue = lexileValue.substring(0, lexileValue.length() - 1);
@@ -601,7 +653,10 @@ abstract class MarcRecordProcessor {
 
 	protected void loadLiteraryForms(GroupedWorkSolr groupedWork, Record record, ArrayList<ItemInfo> printItems, String identifier) {
 		//First get the literary Forms from the 008.  These need translation
+		//Now get literary forms from the subjects, these don't need translation
 		LinkedHashSet<String> literaryForms = new LinkedHashSet<>();
+		HashMap<String, Integer> literaryFormsWithCount = new HashMap<>();
+		HashMap<String, Integer> literaryFormsFull = new HashMap<>();
 		try {
 			String leader = record.getLeader().toString();
 
@@ -627,25 +682,26 @@ abstract class MarcRecordProcessor {
 						literaryForms.add(Character.toString(literaryFormChar));
 					}
 				}
-				if (literaryForms.size() == 0) {
-					literaryForms.add(" ");
+				addToMapWithCount(literaryFormsWithCount, indexer.translateSystemCollection("literary_form", literaryForms, identifier), 2);
+				addToMapWithCount(literaryFormsFull, indexer.translateSystemCollection("literary_form_full", literaryForms, identifier), 2);
+			}else if (recordType == 'C' || recordType == 'D' || recordType == 'I' || recordType == 'J'){
+				//Music / Audio
+				if (ohOhEightField != null && ohOhEightField.getData().length() > 31){
+					char position30 = Character.toUpperCase(ohOhEightField.getData().charAt(30));
+					char position31 = Character.toUpperCase(ohOhEightField.getData().charAt(31));
+					if (position30 == 'F' || position31 == 'F'){
+						addToMapWithCount(literaryFormsWithCount, "Fiction", 2);
+						addToMapWithCount(literaryFormsFull, "Fiction", 2);
+					}else{
+						addToMapWithCount(literaryFormsWithCount, "Non Fiction", 2);
+						addToMapWithCount(literaryFormsFull, "Non Fiction", 2);
+					}
 				}
-			} else {
-				literaryForms.add("Unknown");
 			}
 		} catch (Exception e) {
-			logger.error("Unexpected error", e);
+			indexer.getLogEntry().incErrors("Unexpected error loading literary forms", e);
 		}
-		if (literaryForms.size() > 1){
-			//Uh oh, we have a problem
-			logger.warn("Received multiple literary forms for a single marc record");
-		}
-		groupedWork.addLiteraryForms(indexer.translateSystemCollection("literary_form", literaryForms, identifier));
-		groupedWork.addLiteraryFormsFull(indexer.translateSystemCollection("literary_form_full", literaryForms, identifier));
 
-		//Now get literary forms from the subjects, these don't need translation
-		HashMap<String, Integer> literaryFormsWithCount = new HashMap<>();
-		HashMap<String, Integer> literaryFormsFull = new HashMap<>();
 		//Check the subjects
 		Set<String> subjectFormData = MarcUtil.getFieldList(record, "650v:651v");
 		for(String subjectForm : subjectFormData){
@@ -774,11 +830,21 @@ abstract class MarcRecordProcessor {
 		groupedWork.addLiteraryFormsFull(literaryFormsFull);
 	}
 
+	private void addToMapWithCount(HashMap<String, Integer> map, HashSet<String> elementsToAdd, int numberToAdd){
+		for (String elementToAdd : elementsToAdd) {
+			addToMapWithCount(map, elementToAdd, numberToAdd);
+		}
+	}
+
 	private void addToMapWithCount(HashMap<String, Integer> map, String elementToAdd){
+		addToMapWithCount(map, elementToAdd, 1);
+	}
+
+	private void addToMapWithCount(HashMap<String, Integer> map, String elementToAdd, int numberToAdd){
 		if (map.containsKey(elementToAdd)){
-			map.put(elementToAdd, map.get(elementToAdd) + 1);
+			map.put(elementToAdd, map.get(elementToAdd) + numberToAdd);
 		}else{
-			map.put(elementToAdd, 1);
+			map.put(elementToAdd, numberToAdd);
 		}
 	}
 
@@ -882,6 +948,22 @@ abstract class MarcRecordProcessor {
 				groupedWork.setLanguageBoostSpanish(languageBoostVal);
 			}
 		}
+		if (translatedLanguages.size() == 0){
+			translatedLanguages.add(treatUnknownLanguageAs);
+			for (RecordInfo ilsRecord : ilsRecords){
+				ilsRecord.setPrimaryLanguage(treatUnknownLanguageAs);
+			}
+			String languageBoost = indexer.translateSystemValue("language_boost", treatUnknownLanguageAs, identifier);
+			if (languageBoost != null){
+				Long languageBoostVal = Long.parseLong(languageBoost);
+				groupedWork.setLanguageBoost(languageBoostVal);
+			}
+			String languageBoostEs = indexer.translateSystemValue("language_boost_es", treatUnknownLanguageAs, identifier);
+			if (languageBoostEs != null){
+				Long languageBoostVal = Long.parseLong(languageBoostEs);
+				groupedWork.setLanguageBoostSpanish(languageBoostVal);
+			}
+		}
 		groupedWork.setLanguages(translatedLanguages);
 
 		String translationFields = "041b:041d:041h:041j";
@@ -938,14 +1020,12 @@ abstract class MarcRecordProcessor {
 		groupedWork.setAuthorDisplay(displayAuthor);
 	}
 
-	private void loadTitles(GroupedWorkSolr groupedWork, Record record, String format) {
+	private void loadTitles(GroupedWorkSolr groupedWork, Record record, String format, String formatCategory) {
 		//title (full title done by index process by concatenating short and subtitle
 
 		//title short
-		groupedWork.setTitle(MarcUtil.getFirstFieldVal(record, "245a"), MarcUtil.getFirstFieldVal(record, "245abnp"), this.getSortableTitle(record), format);
-		//title sub
-		//MDN 2/6/2016 add np to subtitle #ARL-163
-		groupedWork.setSubTitle(MarcUtil.getFirstFieldVal(record, "245bnp"));
+		String subTitle = MarcUtil.getFirstFieldVal(record, "245bfgnp");
+		groupedWork.setTitle(MarcUtil.getFirstFieldVal(record, "245a"), subTitle, MarcUtil.getFirstFieldVal(record, "245abfgnp"), this.getSortableTitle(record), format, formatCategory);
 		//title full
 		String authorInTitleField = MarcUtil.getFirstFieldVal(record, "245c");
 		String standardAuthorData = MarcUtil.getFirstFieldVal(record, "100abcdq:110ab");
@@ -960,7 +1040,7 @@ abstract class MarcRecordProcessor {
 		}
 
 		//title alt
-		groupedWork.addAlternateTitles(MarcUtil.getFieldList(record, "130adfgklnpst:240a:246abnp:700tnr:730adfgklnpst:740a"));
+		groupedWork.addAlternateTitles(MarcUtil.getFieldList(record, "130adfgklnpst:240a:246abfgnp:700tnr:730adfgklnpst:740a"));
 		//title old
 		groupedWork.addOldTitles(MarcUtil.getFieldList(record, "780ast"));
 		//title new
@@ -997,7 +1077,7 @@ abstract class MarcRecordProcessor {
 	}
 
 	/**
-	 * Get the title (245abnp) from a record, without non-filing chars as specified
+	 * Get the title (245abfgnp) from a record, without non-filing chars as specified
 	 * in 245 2nd indicator, and lower cased.
 	 *
 	 * @return 245a and 245b and 245n and 245p values concatenated, with trailing punctuation removed, and
@@ -1011,9 +1091,9 @@ abstract class MarcRecordProcessor {
 
 		int nonFilingInt = getInd2AsInt(titleField);
 
-		String title = MarcUtil.getFirstFieldVal(record, "245abnp");
+		String title = MarcUtil.getFirstFieldVal(record, "245abfgnp");
 		if (title == null){
-			return null;
+			return "";
 		}
 		title = title.toLowerCase();
 
@@ -1023,7 +1103,7 @@ abstract class MarcRecordProcessor {
 		}
 
 		if (title.length() == 0) {
-			return null;
+			return "";
 		}
 
 		return title;
@@ -1045,7 +1125,7 @@ abstract class MarcRecordProcessor {
 	LinkedHashSet<String> getFormatsFromBib(Record record, RecordInfo recordInfo){
 		LinkedHashSet<String> printFormats = new LinkedHashSet<>();
 		String leader = record.getLeader().toString();
-		char leaderBit;
+		char leaderBit = ' ';
 		ControlField fixedField = (ControlField) record.getVariableField("008");
 
 		// check for music recordings quickly so we can figure out if it is music
@@ -1058,10 +1138,12 @@ abstract class MarcRecordProcessor {
 			}
 		}
 		//Check for braille
-		if (fixedField != null){
-			if (fixedField.getData().length() >= 23){
+		if (fixedField != null && (leaderBit == 'a' || leaderBit == 't' || leaderBit == 'A' || leaderBit == 'T')){
+			if (fixedField.getData().length() > 23){
 				if (fixedField.getData().charAt(23) == 'f'){
 					printFormats.add("Braille");
+				}else if (fixedField.getData().charAt(23) == 'd') {
+					printFormats.add("LargePrint");
 				}
 			}
 		}
@@ -1073,7 +1155,13 @@ abstract class MarcRecordProcessor {
 		getFormatFromSubjects(record, printFormats);
 		getFormatFromTitle(record, printFormats);
 		getFormatFromDigitalFileCharacteristics(record, printFormats);
+		if (printFormats.size() == 0 && fallbackFormatField != null && fallbackFormatField.length() > 0){
+			getFormatFromFallbackField(record, printFormats);
+		}
 		if (printFormats.size() == 0 || printFormats.contains("MusicRecording") || (printFormats.size() == 1 && printFormats.contains("Book"))) {
+			if (printFormats.size() == 1 && printFormats.contains("Book")){
+				printFormats.clear();
+			}
 			//Only get from fixed field information if we don't have anything yet since the cataloging of
 			//fixed fields is not kept up to date reliably.  #D-87
 			getFormatFrom007(record, printFormats);
@@ -1110,6 +1198,11 @@ abstract class MarcRecordProcessor {
 		}
 		return printFormats;
 	}
+
+	protected void getFormatFromFallbackField(Record record, LinkedHashSet<String> printFormats) {
+		//Do nothing by default, this is overridden in IlsRecordProcessor
+	}
+
 	private final HashSet<String> formatsToFilter = new HashSet<>();
 
 	private void getFormatFromDigitalFileCharacteristics(Record record, LinkedHashSet<String> printFormats) {
@@ -1170,6 +1263,16 @@ abstract class MarcRecordProcessor {
 		if (printFormats.contains("GoReader")){
 			printFormats.clear();
 			printFormats.add("GoReader");
+			return;
+		}
+		if (printFormats.contains("VoxBooks")){
+			printFormats.clear();
+			printFormats.add("VoxBooks");
+			return;
+		}
+		if (printFormats.contains("Kit")){
+			printFormats.clear();
+			printFormats.add("Kit");
 			return;
 		}
 		if (printFormats.contains("Video") && printFormats.contains("DVD")){
@@ -1294,7 +1397,7 @@ abstract class MarcRecordProcessor {
 			}else if (titleMedium.contains("ebook")){
 				printFormats.add("eBook");
 			}else if (titleMedium.contains("eaudio")){
-				printFormats.add("eAudio");
+				printFormats.add("eAudiobook");
 			}else if (titleMedium.contains("emusic")){
 				printFormats.add("eMusic");
 			}else if (titleMedium.contains("evideo")){
@@ -1349,7 +1452,7 @@ abstract class MarcRecordProcessor {
 		for (DataField publicationInfo : publicationFields) {
 			for (Subfield publisherSubField : publicationInfo.getSubfields('b')){
 				String sysDetailsValue = publisherSubField.getData().toLowerCase();
-				if (sysDetailsValue.contains("playaway") || sysDetailsValue.contains("findaway")) {
+				if (sysDetailsValue.contains("playaway")) {
 					result.add("Playaway");
 				} else if (sysDetailsValue.contains("go reader")) {
 					result.add("GoReader");
@@ -1380,6 +1483,9 @@ abstract class MarcRecordProcessor {
 	}
 
 	Pattern audioDiscPattern = Pattern.compile(".*\\b(cd|cds|(sound|audio|compact) discs?)\\b.*");
+	Pattern pagesPattern = Pattern.compile("^.*?\\d+\\s+(p\\.|pages).*$");
+	Pattern pagesPattern2 = Pattern.compile("^.*?\\b\\d+\\s+(p\\.|pages)[\\s\\W]*$");
+	Pattern kitPattern = Pattern.compile(".*\\bkit\\b.*");
 	private void getFormatFromPhysicalDescription(Record record, Set<String> result) {
 		List<DataField> physicalDescriptions = MarcUtil.getDataFields(record, "300");
 		for (DataField field : physicalDescriptions) {
@@ -1400,13 +1506,15 @@ abstract class MarcRecordProcessor {
 							result.add("Blu-ray");
 						}
 					} else if (physicalDescriptionData.contains("computer optical disc")) {
-						if (!physicalDescriptionData.matches("^.*?\\d+\\s+(p\\.|pages).*$")){
+						if (!pagesPattern.matcher(physicalDescriptionData).matches()){
 							result.add("Software");
 						}
 					} else if (physicalDescriptionData.contains("sound cassettes")) {
 						result.add("SoundCassette");
 					} else if (physicalDescriptionData.contains("mp3")) {
 						result.add("MP3Disc");
+					} else if (kitPattern.matcher(physicalDescriptionData).matches()) {
+						result.add("Kit");
 					} else if (audioDiscPattern.matcher(physicalDescriptionData).matches()) {
 						//Check to see if there is a subfield e.  If so, this could be a combined format
 						Subfield subfieldE = field.getSubfield('e');
@@ -1415,7 +1523,7 @@ abstract class MarcRecordProcessor {
 						}else{
 							result.add("SoundDisc");
 						}
-					} else if (subfield.getCode() == 'a' && physicalDescriptionData.matches("^.*?\\b\\d+\\s+(p\\.|pages)[\\s\\W]*$")){
+					} else if (subfield.getCode() == 'a' && pagesPattern2.matcher(physicalDescriptionData).matches()){
 						Subfield subfieldE = field.getSubfield('e');
 						if (subfieldE != null && subfieldE.getData().toLowerCase().contains("dvd")){
 							result.add("Book+DVD");
@@ -1426,7 +1534,7 @@ abstract class MarcRecordProcessor {
 						}
 					}
 					//Since this is fairly generic, only use it if we have no other formats yet
-					if (result.size() == 0 && subfield.getCode() == 'f' && physicalDescriptionData.matches("^.*?\\d+\\s+(p\\.|pages).*$")) {
+					if (result.size() == 0 && subfield.getCode() == 'f' && pagesPattern.matcher(physicalDescriptionData).matches()) {
 						result.add("Book");
 					}
 				}

@@ -44,7 +44,7 @@ class MillenniumCheckouts {
 	 * AspenError otherwise.
 	 * @access public
 	 */
-	public function getCheckouts($user, $indexingProfile) {
+	public function getCheckouts(User $user, $indexingProfile) {
 		require_once ROOT_DIR . '/sys/User/Checkout.php';
 		$checkedOutTitles = array();
 		global $timer;
@@ -361,7 +361,7 @@ class MillenniumCheckouts {
 							$msg = ucfirst(strtolower(trim($statusMatches[1])));
 							$title = $this->extract_title_from_row($rowData);
 							if (strcasecmp($title, 'INTERLIBRARY LOAN MATERIAL') === 0){
-								$message = "<p style=\"font-style:italic\">$title</p><p>" . translate('Unable to renew interlibrary loan materials') . "</p>";
+								$message = "<p style=\"font-style:italic\">$title</p><p>" . translate(['text' => 'Unable to renew interlibrary loan materials', 'isPublicFacing'=>true]) . "</p>";
 							}else{
 								$message = "<p style=\"font-style:italic\">$title</p><p>Unable to renew: $msg.</p>";
 							}

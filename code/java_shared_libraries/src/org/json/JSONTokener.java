@@ -278,7 +278,9 @@ public class JSONTokener {
             }
             pos += 1;
         }
-        return new String(chars);
+        String returnVal = new String(chars);
+        chars = null;
+        return returnVal;
     }
 
 

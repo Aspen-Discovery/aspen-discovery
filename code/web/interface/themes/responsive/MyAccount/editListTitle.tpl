@@ -7,19 +7,19 @@
 		{if $listId->defaultSort != 'custom'}<input type="hidden" name="position" value="{if !empty($listEntry->weight)}{$listEntry->weight}{else}0{/if}">{/if}
 		<div>
 			<div class="form-group">
-				<label for="listName" class="col-sm-3">{translate text='List'} </label>
+				<label for="listName" class="col-sm-3">{translate text='List' isPublicFacing=true} </label>
 				<div class="col-sm-9">{$list->title}</div>
 			</div>
 
 			{if $list->defaultSort == 'custom'}
 			<div class="form-group">
-				<label for="listPosition" class="col-sm-3">{translate text='Position'} </label>
-				<div class="col-sm-9"><input type="number" class="form-control" value="{$listEntry->weight}" name="position" min="1"></div>
+				<label for="listPosition" class="col-sm-3">{translate text='Position' isPublicFacing=true} </label>
+				<div class="col-sm-9"><input type="number" class="form-control" value="{$listEntry->weight}" name="position" min="1" max="{$maxListPosition}"></div>
 			</div>
 			{/if}
 
 			<div class="form-group">
-				<label for="listCopy" class="col-sm-3">{translate text='Copy to List'} </label>
+				<label for="listCopy" class="col-sm-3">{translate text='Copy to List' isPublicFacing=true} </label>
 				<div class="col-sm-9">
 					<select class="form-control" name="copyTo">
 						<option value="null"></option>
@@ -33,7 +33,7 @@
 			</div>
 
 			<div class="form-group">
-				<label for="listMove" class="col-sm-3">{translate text='Move to List'} </label>
+				<label for="listMove" class="col-sm-3">{translate text='Move to List' isPublicFacing=true} </label>
 				<div class="col-sm-9">
 					<select class="form-control" name="moveTo">
 						<option value="null"></option>
@@ -48,7 +48,7 @@
 
 
 			<div class="form-group">
-				<label for="listNotes" class="col-sm-3">{translate text='Notes'} </label>
+				<label for="listNotes" class="col-sm-3">{translate text='Notes' isPublicFacing=true} </label>
 				<div class="col-sm-9">
 					<textarea id="listNotes" name="notes" rows="3" cols="50" class="form-control">{$listEntry->notes|escape:"html"}</textarea>
 				</div>

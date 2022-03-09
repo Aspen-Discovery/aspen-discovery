@@ -1,24 +1,26 @@
 {strip}
 <div id="main-content" class="col-tn-12 col-xs-12">
-	{if !empty($error)}
-		<div class="alert alert-danger">{$error}</div>
+	<h1>{translate text='Setup a new administrator' isAdminFacing=true}</h1>
+	{if !empty($errors)}
+		{foreach from=$errors item=error key=barcode}
+			<div class="alert alert-danger">{$barcode}: {$error}</div>
+		{/foreach}
 	{/if}
-	<h1>{translate text='Setup a new administrator'}</h1>
 	<form name="addAdministrator" method="post" enctype="multipart/form-data" class="form-horizontal">
 		<fieldset>
 			<input type="hidden" name="objectAction" value="processNewAdministrator">
 			<div class="row form-group">
-				<label for="login" class="col-sm-2 control-label">{translate text='Barcode'}</label>
+				<label for="login" class="col-sm-2 control-label">{translate text='Barcode(s)' isAdminFacing=true}</label>
 				<div class="col-sm-10">
-					<input type="text" name="login" id="login" class="form-control">
+					<textarea name="login" id="login" class="form-control"></textarea>
 				</div>
 			</div>
-			<div class="alert alert-info">Enter the barcode for the user who should be given administration privileges</div>
+			<div class="alert alert-info">{translate text="Enter the barcode(s) for the user who should be given administration privileges.  To create multiple administrators at once, enter each barcode on it's own line." isAdminFacing=true}</div>
 
 			<div class="form-group">
 				{assign var=property value=$structure.roles}
 				{assign var=propName value=$property.property}
-				<label for='{$propName}' class="control-label">Roles</label>
+				<label for='{$propName}' class="control-label">{translate text="Roles" isAdminFacing=true}</label>
 				<div class="controls">
 					{* Display the list of roles to add *}
 					{if isset($property.listStyle) && $property.listStyle == 'checkbox'}
@@ -38,7 +40,7 @@
 			</div>
 			<div class="form-group">
 				<div class="controls">
-					<input type="submit" name="submit" value="Update User" class="btn btn-primary">  <a href='/Admin/{$toolName}?objectAction=list' class="btn btn-default">Return to List</a>
+					<input type="submit" name="submit" value="{translate text="Update User" inAttribute=true isAdminFacing=true}" class="btn btn-primary">  <a href='/Admin/{$toolName}?objectAction=list' class="btn btn-default"><i class="fas fa-arrow-alt-circle-left"></i> {translate text="Return to List" isAdminFacing=true}</a>
 				</div>
 			</div>
 		</fieldset>

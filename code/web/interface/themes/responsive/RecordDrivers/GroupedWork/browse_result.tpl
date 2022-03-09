@@ -16,7 +16,7 @@
 			</a>
 			{if $showRatings && $browseCategoryRatingsMode != 0}
 				<div class="browse-rating{if $browseCategoryRatingsMode == 2} rater{/if}"
-				{if $browseCategoryRatingsMode == 1} onclick="return AspenDiscovery.GroupedWork.showReviewForm(this, '{$summId}');" style="cursor: pointer"{/if}
+				{if $browseCategoryRatingsMode == 1} onclick="return AspenDiscovery.GroupedWork.showReviewForm(this, '{$summId}');" onkeypress="return AspenDiscovery.GroupedWork.showReviewForm(this, '{$summId}');" style="cursor: pointer" title="{translate text="Write a Review" inAttribute=true isPublicFacing=true}" role="button" tabindex="0" {/if}
 				{if $browseCategoryRatingsMode == 2}
 					{* AJAX rater data fields *}
 					{*{if $ratingData.user}data-user_rating="{$ratingData.user}" {/if}*}{* Don't show user ratings in browse results because the results get cached so shouldn't be particular to a single user.*}

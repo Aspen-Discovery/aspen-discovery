@@ -7,6 +7,11 @@ class SideLoads_UploadMarc extends Admin_Admin
 	function launch()
 	{
 		global $interface;
+
+		//Figure out the maximum upload size
+		require_once ROOT_DIR . '/sys/Utils/SystemUtils.php';
+		$interface->assign('max_file_size', SystemUtils::file_upload_max_size() / (1024 * 1024));
+
 		$id = $_REQUEST['id'];
 		$sideload = new SideLoad();
 		$sideload->id = $id;
@@ -17,6 +22,8 @@ class SideLoads_UploadMarc extends Admin_Admin
 				$uploadedFile = $_FILES['marcFile'];
 				if (isset($uploadedFile["error"]) && $uploadedFile["error"] == 4) {
 					$interface->assign('error', "No MARC file was uploaded");
+				} else if (isset($uploadedFile["error"]) && ($uploadedFile["error"] == UPLOAD_ERR_FORM_SIZE || $uploadedFile["error"] == UPLOAD_ERR_INI_SIZE)) {
+					$interface->assign('error', "The MARC File was too large, compress the file or break it into multiple files");
 				} else if (isset($uploadedFile["error"]) && $uploadedFile["error"] > 0) {
 					$interface->assign('error', "Error in file upload for MARC File");
 				} else {

@@ -9,27 +9,24 @@
 	<div class="row">
 		<div class="col-xs-12">
 			<a href="/GroupedWork/{$recordDriver->getPermanentId()}" class="btn btn-sm btn-default">Go To Grouped Work</a>
-			<button onclick="return AspenDiscovery.GroupedWork.reloadCover('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">Reload Cover</button>
+			<button onclick="return AspenDiscovery.GroupedWork.reloadCover('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">{translate text="Reload Cover" isAdminFacing=true}</button>
 			{if $loggedIn && in_array('Upload Covers', $userPermissions)}
-				<button onclick="return AspenDiscovery.GroupedWork.getUploadCoverForm('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">{translate text="Upload Cover by from Computer"}</button>
-				<button onclick="return AspenDiscovery.GroupedWork.getUploadCoverFormByURL('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">{translate text="Upload Cover by URL"}</button>
+				<button onclick="return AspenDiscovery.GroupedWork.getUploadCoverForm('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">{translate text="Upload Cover by from Computer" isAdminFacing=true}</button>
+				<button onclick="return AspenDiscovery.GroupedWork.getUploadCoverFormByURL('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">{translate text="Upload Cover by URL" isAdminFacing=true}</button>
 			{/if}
-			<button onclick="return AspenDiscovery.GroupedWork.reloadEnrichment('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default" >Reload Enrichment</button>
+			<button onclick="return AspenDiscovery.GroupedWork.reloadEnrichment('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default" >{translate text="Reload Enrichment" isAdminFacing=true}</button>
 			{if $loggedIn && in_array('Force Reindexing of Records', $userPermissions)}
-				<button onclick="return AspenDiscovery.GroupedWork.forceReindex('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">Force Reindex</button>
+				<button onclick="return AspenDiscovery.GroupedWork.forceReindex('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">{translate text="Force Reindex" isAdminFacing=true}</button>
 			{/if}
 			{if $loggedIn && in_array('Set Grouped Work Display Information', $userPermissions)}
-				<button onclick="return AspenDiscovery.GroupedWork.getDisplayInfoForm('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">{translate text="Set Display Info"}</button>
+				<button onclick="return AspenDiscovery.GroupedWork.getDisplayInfoForm('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">{translate text="Set Display Info" isAdminFacing=true}</button>
 			{/if}
 			{if $loggedIn && in_array('Manually Group and Ungroup Works', $userPermissions)}
-				<button onclick="return AspenDiscovery.GroupedWork.getGroupWithForm(this, '{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">Group With Work</button>
-				<button onclick="return AspenDiscovery.GroupedWork.ungroupRecord(this, '{$recordDriver->getIdWithSource()}')" class="btn btn-sm btn-default">Ungroup</button>
+				<button onclick="return AspenDiscovery.GroupedWork.getGroupWithForm(this, '{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">{translate text="Group With Work" isAdminFacing=true}</button>
+				<button onclick="return AspenDiscovery.GroupedWork.ungroupRecord(this, '{$recordDriver->getIdWithSource()}')" class="btn btn-sm btn-default">{translate text="Ungroup" isAdminFacing=true}</button>
 			{/if}
 			{if $loggedIn && in_array('Download MARC Records', $userPermissions)}
-				<a href="/{$recordDriver->getModule()}/{$id|escape:"url"}/AJAX?method=downloadMarc" class="btn btn-sm btn-default">{translate text="Download Marc"}</a>
-			{/if}
-			{if $loggedIn && $enableArchive && in_array('Administer Islandora Archive', $userPermissions)}
-				<button onclick="return AspenDiscovery.GroupedWork.reloadIslandora('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">Clear Islandora Cache</button>
+				<a href="/{$recordDriver->getModule()}/{$id|escape:"url"}/AJAX?method=downloadMarc" class="btn btn-sm btn-default">{translate text="Download Marc" isAdminFacing=true}</a>
 			{/if}
 		</div>
 	</div>
@@ -37,21 +34,21 @@
 
 {include file="RecordDrivers/GroupedWork/grouping-information.tpl"}
 
-<h4>{translate text="Cloud Library Information"}</h4>
+<h4>{translate text="cloudLibrary Information" isPublicFacing=true}</h4>
 <table class="table-striped table table-condensed notranslate">
 	<tr>
-		<th>First Detected</th>
+		<th>{translate text="First Detected" isPublicFacing=true}</th>
 		<td>{$cloudLibraryProduct->dateFirstDetected|date_format:"%b %d, %Y %r"}</td>
 	</tr>
 	<tr>
-		<th>Last Change</th>
+		<th>{translate text="Last Change" isPublicFacing=true}</th>
 		<td>{$cloudLibraryProduct->lastChange|date_format:"%b %d, %Y %r"}</td>
 	</tr>
 </table>
 
 {if $marcRecord}
 	<div id="formattedMarcRecord">
-		<h3>MARC Record</h3>
+		<h3>{translate text="MARC Record" isPublicFacing=true}</h3>
 		<table class="citation" border="0">
 			<tbody>
 			{*Output leader*}

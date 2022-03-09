@@ -104,7 +104,7 @@ class MyAccount_MyPreferences extends MyAccount
 				//Get the list of locations for display in the user interface.
 
 				$locationList = array();
-				$locationList['0'] = "No Alternate Location Selected";
+				$locationList['0'] = translate(['text'=>"No Alternate Location Selected",'isPublicFacing'=>true]);
 				foreach ($pickupLocations as $pickupLocation){
 					if (!is_string($pickupLocation)){
 						$locationList[$pickupLocation->locationId] = $pickupLocation->displayName;

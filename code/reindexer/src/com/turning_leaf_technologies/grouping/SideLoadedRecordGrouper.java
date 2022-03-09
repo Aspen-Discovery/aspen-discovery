@@ -23,7 +23,7 @@ public class SideLoadedRecordGrouper extends BaseMarcRecordGrouper {
 	}
 
 	public String processMarcRecord(Record marcRecord, boolean primaryDataChanged, String originalGroupedWorkId) {
-		RecordIdentifier primaryIdentifier = getPrimaryIdentifierFromMarcRecord(marcRecord, settings.getName());
+		RecordIdentifier primaryIdentifier = getPrimaryIdentifierFromMarcRecord(marcRecord, settings);
 
 		if (primaryIdentifier != null){
 			//Get data for the grouped record

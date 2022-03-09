@@ -6,14 +6,14 @@ import java.util.HashSet;
  * Full data from the API
  */
 class OverDriveRecordInfo {
-	boolean hasMetadataChanges = false;
-	boolean hasAvailabilityChanges = false;
+	boolean hasChanges = false;
 	boolean isNew = false;
 
 	//Data from base title call
 	private String id;
 	private long databaseId = -1;
 	private HashSet<AdvantageCollectionInfo> collections = new HashSet<>();
+	private boolean deleted;
 
 	String getId() {
 		return id;
@@ -35,5 +35,13 @@ class OverDriveRecordInfo {
 
 	void setDatabaseId(long databaseId) {
 		this.databaseId = databaseId;
+	}
+
+	public void setDeleted(boolean deleted) {
+		this.deleted = deleted;
+	}
+
+	public boolean isDeleted() {
+		return deleted;
 	}
 }

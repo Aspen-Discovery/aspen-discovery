@@ -9,7 +9,7 @@ class EBSCO_JSON extends JSON_Action
 		if (!isset($_REQUEST['id'])) {
 			return ['success' => false, 'message' => 'ID was not provided'];
 		}
-		$result = ['success' => false, 'message' => 'Unknown error'];
+		$result = ['success' => false, 'message' => translate(['text'=>'Unknown Error', 'isPublicFacing'=>true])];
 		$id = $_REQUEST['id'];
 
 		require_once ROOT_DIR . '/sys/Ebsco/ResearchStarter.php';

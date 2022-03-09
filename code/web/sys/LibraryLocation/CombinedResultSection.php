@@ -13,9 +13,6 @@ abstract class CombinedResultSection extends DataObject{
 		global $enabledModules;
 		$validResultSources = array();
 		$validResultSources['catalog'] = 'Catalog Results';
-		if (!empty($configArray['Islandora']['repositoryUrl'])){
-			$validResultSources['archive'] = 'Digital Archive';
-		}
 		require_once ROOT_DIR . '/sys/Enrichment/DPLASetting.php';
 		$dplaSetting = new DPLASetting();
 		if ($dplaSetting->find(true)){

@@ -10,7 +10,7 @@
 				<div class="coversColumn col-xs-3 text-center">
 					{if $disableCoverArt != 1}
 						<a href="{$summUrl}" aria-hidden="true">
-							<img src="{$bookCoverUrl}" class="listResultImage img-thumbnail" alt="{translate text='Cover Image' inAttribute=true}">
+							<img src="{$bookCoverUrl}" class="listResultImage img-thumbnail" alt="{translate text='Cover Image' inAttribute=true isPublicFacing=true}">
 						</a>
 					{/if}
 				</div>
@@ -21,7 +21,7 @@
 					<div class="col-xs-12">
 						<span class="result-index">{$resultIndex})</span>&nbsp;
 						<a href="{$summUrl}" class="result-title notranslate">
-							{if !$summTitle|removeTrailingPunctuation}{translate text='Title not available'}{else}{$summTitle|removeTrailingPunctuation|highlight|truncate:180:"..."}{/if}
+							{if !$summTitle|removeTrailingPunctuation} {translate text='Title not available' isPublicFacing=true}{else}{$summTitle|removeTrailingPunctuation|highlight|truncate:180:"..."}{/if}
 							{if $summSubTitle|removeTrailingPunctuation}: {$summSubTitle|removeTrailingPunctuation|highlight|truncate:180:"..."}{/if}
 						</a>
 						{if isset($summScore)}
@@ -32,7 +32,7 @@
 
 				{if $summAuthor}
 					<div class="row">
-						<div class="result-label col-tn-3">Author: </div>
+						<div class="result-label col-tn-3">{translate text="Author" isPublicFacing=true}</div>
 						<div class="result-value col-tn-8 notranslate">
 							{if is_array($summAuthor)}
 								{foreach from=$summAuthor item=author}
@@ -56,10 +56,10 @@
 					{/foreach}
 
 					<div class="result-label col-tn-3">
-						Format{if count($relatedManifestations) > 1}s{/if}:
+                        {if count($relatedManifestations) > 1}{translate text="Formats" isPublicFacing=true}{else}{translate text="Format" isPublicFacing=true}{/if}:
 					</div>
 					<div class="result-value col-tn-8">
-						{implode subject=$relatedManifestations|@array_keys glue=", "}
+						{implode subject=$relatedManifestations|@array_keys glue=", " translate=true isPublicFacing=true}
 					</div>
 
 				</div>
