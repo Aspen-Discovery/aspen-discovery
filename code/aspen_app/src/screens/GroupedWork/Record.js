@@ -29,7 +29,6 @@ const DisplayRecord = (props) => {
 		statusColor = "danger";
 	}
 
-	console.log(loading);
 	return (
 		<Center mt={5} mb={0} bgColor="white" _dark={{ bgColor: "coolGray.900" }} p={3} rounded="8px" width={{base: "100%", lg: "75%"}}>
 			{publisher ? (<Text fontSize={10} bold pb={3}>{edition} {publisher}, {publicationDate}</Text>) : null}

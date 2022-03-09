@@ -27,9 +27,17 @@ export async function getLocationInfo() {
 		version: global.version
 	});
 	if (response.ok) {
-		const profile = response.data.result.location;
-		await AsyncStorage.setItem('@locationInfo', JSON.stringify(profile));
-		console.log("Location profile saved")
+		if(response.data.result.success) {
+			let profile = [];
+			if(typeof response.data.result.location !== 'undefined') {
+				profile = response.data.result.location;
+				console.log("Location profile saved")
+			} else {
+				console.log(response);
+			}
+			await AsyncStorage.setItem('@locationInfo', JSON.stringify(profile));
+			return profile;
+		}
 	} else {
 		console.log(response);
 	}
@@ -47,22 +55,31 @@ export async function getLibraryInfo(libraryId, libraryUrl, timeout) {
 	});
 	const response = await api.get('/SystemAPI?method=getLibraryInfo', {id: libraryId});
 	if (response.ok) {
-		const profile = response.data.result.library;
-
-		global.barcodeStyle = profile.barcodeStyle;
-		global.libraryTheme = profile.themeId;
-		global.quickSearches = profile.quickSearches;
-		global.allowLinkedAccounts = profile.allowLinkedAccounts;
-
-		await AsyncStorage.setItem('@libraryInfo', JSON.stringify(profile));
-		console.log("Library profile saved")
-
-		return profile;
+		if(response.data.result.success) {
+			let profile = [];
+			if(typeof response.data.result.library !== 'undefined') {
+				profile = response.data.result.library;
+				global.barcodeStyle = profile.barcodeStyle;
+				global.libraryTheme = profile.themeId;
+				global.quickSearches = profile.quickSearches;
+				global.allowLinkedAccounts = profile.allowLinkedAccounts;
+				console.log("Library profile saved");
+			} else {
+				global.barcodeStyle = "CODE128";
+				global.libraryTheme = 1;
+				global.quickSearches = [];
+				global.allowLinkedAccounts = 0;
+				console.log(response);
+			}
+			await AsyncStorage.setItem('@libraryInfo', JSON.stringify(profile));
+			return profile;
+		}
+		return response;
 	} else {
 		// no data yet
 		console.log(response);
 		if (_.isUndefined(global.barcodeStyle)) {
-			global.barcodeStyle = 0
+			global.barcodeStyle = "CODE128"
 		}
 	}
 }
@@ -102,8 +119,9 @@ export async function getPickupLocations() {
 	});
 	const response = await api.post('/UserAPI?method=getValidPickupLocations', postBody);
 	if (response.ok) {
+		let locations = [];
 		const data = response.data.result.pickupLocations;
-		const locations = data.map(({displayName, code, locationId}) => ({
+		locations = data.map(({displayName, code, locationId}) => ({
 			key: locationId,
 			locationId: locationId,
 			code: code,
@@ -165,7 +183,7 @@ export async function getLanguages() {
 	});
 	const response = await api.get('/SystemAPI?method=getLanguages');
 	if(response.ok) {
-		if (typeof response.data.result !== "undefined") {
+		if (typeof response.data.result !== 'undefined') {
 			const languages = response.data.result.languages;
 			await AsyncStorage.setItem('@libraryLanguages', JSON.stringify(languages));
 			console.log("Library languages saved")
