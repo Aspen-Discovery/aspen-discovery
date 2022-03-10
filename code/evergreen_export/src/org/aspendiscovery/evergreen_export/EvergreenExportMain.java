@@ -642,21 +642,29 @@ public class EvergreenExportMain {
 			logEntry.saveResults();
 
 			int numRecordsRead = 0;
+			int numRecordsWithErrors = 0;
 			String lastRecordProcessed = "";
 			try {
 				FileInputStream marcFileStream = new FileInputStream(fullExportFile);
 				MarcReader catalogReader = new MarcPermissiveStreamReader(marcFileStream, true, true, indexingProfile.getMarcEncoding());
 				while (catalogReader.hasNext()) {
 					numRecordsRead++;
-					Record curBib = catalogReader.next();
-					RecordIdentifier recordIdentifier = recordGroupingProcessor.getPrimaryIdentifierFromMarcRecord(curBib, indexingProfile);
-					if (recordIdentifier != null) {
-						String recordNumber = recordIdentifier.getIdentifier();
-						lastRecordProcessed = recordNumber;
-						recordNumber = recordNumber.replaceAll("[^\\d]", "");
-						long recordNumberDigits = Long.parseLong(recordNumber);
-						if (recordNumberDigits > maxIdInExport) {
-							maxIdInExport = recordNumberDigits;
+					Record curBib = null;
+					try {
+						curBib = catalogReader.next();
+					}catch (Exception e){
+						numRecordsWithErrors++;
+					}
+					if (curBib != null) {
+						RecordIdentifier recordIdentifier = recordGroupingProcessor.getPrimaryIdentifierFromMarcRecord(curBib, indexingProfile);
+						if (recordIdentifier != null) {
+							String recordNumber = recordIdentifier.getIdentifier();
+							lastRecordProcessed = recordNumber;
+							recordNumber = recordNumber.replaceAll("[^\\d]", "");
+							long recordNumberDigits = Long.parseLong(recordNumber);
+							if (recordNumberDigits > maxIdInExport) {
+								maxIdInExport = recordNumberDigits;
+							}
 						}
 					}
 				}
@@ -664,6 +672,13 @@ public class EvergreenExportMain {
 				logEntry.incErrors("Error loading Evergreen bibs on record " + numRecordsRead + " in profile " + indexingProfile.getName() + " the last record processed was " + lastRecordProcessed + " file " + fullExportFile.getAbsolutePath(), e);
 				logEntry.addNote("Not processing MARC export due to error reading MARC files.");
 				return totalChanges;
+			}
+			if (((float)numRecordsWithErrors / (float)numRecordsRead) > 0.0001){
+				logEntry.incErrors("More than .1% of records had errors, skipping due to the volume of errors in " + indexingProfile.getName() + " file " + fullExportFile.getAbsolutePath());
+				return totalChanges;
+			}else if (numRecordsWithErrors > 0) {
+				logEntry.addNote("There were " + numRecordsWithErrors + " in " + fullExportFile.getAbsolutePath() + " but still processing");
+				logEntry.saveResults();
 			}
 			logEntry.addNote("Full export " + fullExportFile + " contains " + numRecordsRead + " records.");
 			logEntry.saveResults();

@@ -82,8 +82,11 @@ class SymphonyRecordProcessor extends IlsRecordProcessor {
 		boolean available = false;
 		if (itemInfo.getStatusCode().equals("ONSHELF")) {
 			available = true;
-		}else if (this.getDisplayGroupedStatus(itemInfo, itemInfo.getFullRecordIdentifier()).equals("On Shelf")){
-			available = true;
+		}else {
+			String displayGroupedStatus = this.getDisplayGroupedStatus(itemInfo, itemInfo.getFullRecordIdentifier());
+			if (displayGroupedStatus.equals("On Shelf") || displayGroupedStatus.equals("Library Use Only")){
+				available = true;
+			}
 		}
 		return available;
 	}
