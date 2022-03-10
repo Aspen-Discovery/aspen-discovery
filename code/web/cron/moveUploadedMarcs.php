@@ -61,7 +61,7 @@ if (count($files) > 0) {
 		if (filemtime($latestMarcFile['fullPath']) == $latestMarcFileModificationTime && $latestMarcFileSize == filesize($latestMarcFile['fullPath'])){
 			//File is not changing, we can move it.
 			if (rename($latestMarcFile['fullPath'], $marcDestDirName . $latestMarcFile['name'])){
-				echo(date('Y-m-d H:i:s') . " moved full export to dest dir\n");
+				echo(date('Y-m-d H:i:s') . " moved full export to dest dir $marcDestDirName\n");
 			}else{
 				echo(date('Y-m-d H:i:s') . " ERROR could not move full export to dest dir $marcDestDirName\n");
 			}
