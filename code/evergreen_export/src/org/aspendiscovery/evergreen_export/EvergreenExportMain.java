@@ -565,7 +565,6 @@ public class EvergreenExportMain {
 				logger.info("Starting to load changed records from Evergreen using the APIs");
 
 				if (singleWorkId != null) {
-					//TODO: Single work indexing
 					updateBibFromEvergreen(singleWorkId, null, 0, true);
 				} else {
 					long lastExtractTime = 0;
@@ -584,40 +583,6 @@ public class EvergreenExportMain {
 						//Regrouping takes a long time, and we don't need koha DB connection so close it while we regroup
 						MarcRecordGrouper recordGrouper = getRecordGroupingProcessor();
 						recordGrouper.regroupAllRecords(dbConn, indexingProfile, getGroupedWorkIndexer(), logEntry);
-					}
-
-					//Update records
-					boolean allowDeletingExistingRecords = indexingProfile.getLastChangeProcessed() == 0;
-					totalChanges += updateBibsFromEvergreen(lastExtractTime, true);
-					if (!indexingProfile.isRunFullUpdate()) {
-						//Process deleted bibs
-						//TODO: extract deleted bibs
-						//totalChanges += extractDeletedBibs(lastExtractTime);
-					} else {
-						//Loop through remaining records and delete them
-						if (allowDeletingExistingRecords) {
-							logEntry.addNote("Starting to delete records that no longer exist");
-							GroupedWorkIndexer groupedWorkIndexer = getGroupedWorkIndexer();
-							MarcRecordGrouper recordGroupingProcessor = getRecordGroupingProcessor();
-							for (String ilsId : recordGroupingProcessor.getExistingRecords().keySet()) {
-								RemoveRecordFromWorkResult result = recordGroupingProcessor.removeRecordFromGroupedWork(indexingProfile.getName(), ilsId);
-								if (result.permanentId != null) {
-									if (result.reindexWork) {
-										groupedWorkIndexer.processGroupedWork(result.permanentId);
-									} else if (result.deleteWork) {
-										//Delete the work from solr and the database
-										groupedWorkIndexer.deleteRecord(result.permanentId);
-									}
-									logEntry.incDeleted();
-									if (logEntry.getNumDeleted() % 250 == 0) {
-										logEntry.saveResults();
-									}
-								}
-							}
-							logEntry.addNote("Finished deleting records that no longer exist");
-						} else {
-							logEntry.addNote("Skipping deleting records that no longer exist because we skipped some records at the start");
-						}
 					}
 				}
 			} catch (Exception e) {
@@ -696,7 +661,7 @@ public class EvergreenExportMain {
 					}
 				}
 			} catch (Exception e) {
-				logEntry.incErrors("Error loading Symphony bibs on record " + numRecordsRead + " in profile " + indexingProfile.getName() + " the last record processed was " + lastRecordProcessed + " file " + fullExportFile.getAbsolutePath(), e);
+				logEntry.incErrors("Error loading Evergreen bibs on record " + numRecordsRead + " in profile " + indexingProfile.getName() + " the last record processed was " + lastRecordProcessed + " file " + fullExportFile.getAbsolutePath(), e);
 				logEntry.addNote("Not processing MARC export due to error reading MARC files.");
 				return totalChanges;
 			}
@@ -726,7 +691,7 @@ public class EvergreenExportMain {
 			try {
 				FileInputStream marcFileStream = new FileInputStream(curBibFile);
 				MarcReader catalogReader = new MarcPermissiveStreamReader(marcFileStream, true, true, indexingProfile.getMarcEncoding());
-				//Symphony handles bib records with a large number of items by breaking the MARC export into multiple records. The records are always sequential.
+				//Evergreen handles bib records with a large number of items by breaking the MARC export into multiple records. The records are always sequential.
 				//To solve this, we need to track which id we processed last and if the record has already been processed, we will need to append items from the new
 				//record to the old record and then reprocess it.
 				RecordIdentifier lastIdentifier = null;
@@ -817,7 +782,7 @@ public class EvergreenExportMain {
 					logEntry.saveResults();
 				}
 			} catch (Exception e) {
-				logEntry.incErrors("Error loading Symphony bibs on record " + numRecordsRead + " in profile " + indexingProfile.getName() + " the last record processed was " + lastRecordProcessed + " file " + curBibFile.getAbsolutePath(), e);
+				logEntry.incErrors("Error loading Evergreen bibs on record " + numRecordsRead + " in profile " + indexingProfile.getName() + " the last record processed was " + lastRecordProcessed + " file " + curBibFile.getAbsolutePath(), e);
 			}
 		}
 
@@ -889,15 +854,7 @@ public class EvergreenExportMain {
 		String getBibUrl = baseUrl + "/opac/extras/feed/freshmeat/marcxml-full/biblio/import/50";
 		ProcessBibRequestResponse response = processGetBibsRequest(getBibUrl, marcFactory, lastExtractTime, true);
 
-
-
 		return numChanges;
-	}
-
-	private static void processEvergreenBibAndReindex(MarcFactory marcFactory, long lastExtractTime, boolean incrementProductsInLog, ProcessBibRequestResponse response, NodeList bibsPagedRows, int i) {
-		if (incrementProductsInLog) {
-			logEntry.incProducts();
-		}
 	}
 
 	private static ProcessBibRequestResponse processGetBibsRequest(String getBibsRequestUrl, MarcFactory marcFactory, long lastExtractTime, boolean incrementProductsInLog) {
