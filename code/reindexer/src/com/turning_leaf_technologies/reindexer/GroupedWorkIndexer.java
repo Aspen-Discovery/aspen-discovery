@@ -804,7 +804,9 @@ public class GroupedWorkIndexer {
 					logEntry.incErrors("Solr Input document was null for " + groupedWork.getId());
 				}else {
 					UpdateResponse response = updateServer.add(inputDocument);
-					if (response.getException() != null) {
+					if (response == null){
+						logEntry.incErrors("Error adding Solr record for " + groupedWork.getId() + ", the response was null");
+					}else if (response.getException() != null) {
 						logEntry.incErrors("Error adding Solr record for " + groupedWork.getId() + " response: " + response);
 					}
 					//logger.debug("Updated solr \r\n" + inputDocument.toString());
