@@ -85,11 +85,11 @@ export async function getHolds() {
 		let holdsReady = [];
 		let holdsNotReady = [];
 
-		if(typeof items.unavailable !== "undefined") {
+		if(typeof items.unavailable !== 'undefined') {
 			holdsNotReady = Object.values(items.unavailable)
 		}
 
-		if(typeof items.available !== "undefined") {
+		if(typeof items.available !== 'undefined') {
 			holdsReady = Object.values(items.available)
 		}
 
