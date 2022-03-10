@@ -26,18 +26,24 @@ export default class AppContainer extends Component {
 		super(props);
 		this.state = {
 			themeSet: false,
+			themeSetSession: 0,
 		};
 		this.aspenTheme = null;
 	}
 
 	componentDidMount = async () => {
 		await createTheme().then(async response => {
-			this.aspenTheme = response;
-			this.setState({ themeSet: true })
-			this.aspenTheme.colors.primary['baseContrast'] === "#000000" ? this.setState({ statusBar: "dark-content" }) : this.setState({ statusBar: "light-content" })
-			console.log("Theme set from createTheme in App.js");
-			await saveTheme();
+			if(this.state.themeSetSession !== Constants.sessionId) {
+				this.aspenTheme = response;
+				this.setState({ themeSet: true, themeSetSession: Constants.sessionId })
+				this.aspenTheme.colors.primary['baseContrast'] === "#000000" ? this.setState({ statusBar: "dark-content" }) : this.setState({ statusBar: "light-content" })
+				console.log("Theme set from createTheme in App.js");
+				await saveTheme();
+			} else {
+				console.log("Theme previously saved.")
+			}
 		});
+		console.log(this.state.themeSetSession)
 	}
 
 	render() {

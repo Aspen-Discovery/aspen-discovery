@@ -11,12 +11,12 @@ const DisplayRecord = (props) => {
 	const {available, availableOnline, actions, edition, format, publisher, publicationDate, status, copiesMessage, source, id, title, locationCount, locations, showAlert, itemDetails, user} = props;
 
 	let actionCount = 1;
-	if(typeof actions !== "undefined") {
+	if(typeof actions !== 'undefined') {
 		actionCount = _.size(actions);
 	}
 
 	let copyCount = 1;
-	if(typeof itemDetails !== "undefined") {
+	if(typeof itemDetails !== 'undefined') {
 		copyCount = _.size(itemDetails);
 	}
 
@@ -29,7 +29,6 @@ const DisplayRecord = (props) => {
 		statusColor = "danger";
 	}
 
-	console.log(loading);
 	return (
 		<Center mt={5} mb={0} bgColor="white" _dark={{ bgColor: "coolGray.900" }} p={3} rounded="8px" width={{base: "100%", lg: "75%"}}>
 			{publisher ? (<Text fontSize={10} bold pb={3}>{edition} {publisher}, {publicationDate}</Text>) : null}
