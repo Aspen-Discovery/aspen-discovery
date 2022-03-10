@@ -798,29 +798,34 @@ public class GroupedWorkIndexer {
 				if (this.isStoreRecordDetailsInDatabase()) {
 					groupedWork.saveRecordsToDatabase(id);
 				}
+
 				SolrInputDocument inputDocument = groupedWork.getSolrDocument(logEntry);
-				UpdateResponse response = updateServer.add(inputDocument);
-				if (response.getException() != null){
-					logEntry.incErrors("Error adding Solr record for " + groupedWork.getId() + " response: " + response);
-				}
-				//logger.debug("Updated solr \r\n" + inputDocument.toString());
-				//Check to see if we need to automatically reindex this record in the future.
-				HashSet<Long> autoReindexTimes = groupedWork.getAutoReindexTimes();
-				if (autoReindexTimes.size() > 0){
-					for (Long autoReindexTime : autoReindexTimes) {
-						getScheduledWorkStmt.setString(1, groupedWork.getId());
-						getScheduledWorkStmt.setLong(2, autoReindexTime);
-						ResultSet getScheduledWorkRS = getScheduledWorkStmt.executeQuery();
-						if (!getScheduledWorkRS.next()) {
-							try {
-								addScheduledWorkStmt.setString(1, groupedWork.getId());
-								addScheduledWorkStmt.setLong(2, autoReindexTime);
-								addScheduledWorkStmt.executeUpdate();
-							} catch (SQLException sqe) {
-								logEntry.incErrors("Error adding scheduled reindex time", sqe);
+				if (inputDocument == null){
+					logEntry.incErrors("Solr Input document was null for " + groupedWork.getId());
+				}else {
+					UpdateResponse response = updateServer.add(inputDocument);
+					if (response.getException() != null) {
+						logEntry.incErrors("Error adding Solr record for " + groupedWork.getId() + " response: " + response);
+					}
+					//logger.debug("Updated solr \r\n" + inputDocument.toString());
+					//Check to see if we need to automatically reindex this record in the future.
+					HashSet<Long> autoReindexTimes = groupedWork.getAutoReindexTimes();
+					if (autoReindexTimes.size() > 0) {
+						for (Long autoReindexTime : autoReindexTimes) {
+							getScheduledWorkStmt.setString(1, groupedWork.getId());
+							getScheduledWorkStmt.setLong(2, autoReindexTime);
+							ResultSet getScheduledWorkRS = getScheduledWorkStmt.executeQuery();
+							if (!getScheduledWorkRS.next()) {
+								try {
+									addScheduledWorkStmt.setString(1, groupedWork.getId());
+									addScheduledWorkStmt.setLong(2, autoReindexTime);
+									addScheduledWorkStmt.executeUpdate();
+								} catch (SQLException sqe) {
+									logEntry.incErrors("Error adding scheduled reindex time", sqe);
+								}
 							}
+							getScheduledWorkRS.close();
 						}
-						getScheduledWorkRS.close();
 					}
 				}
 
