@@ -247,6 +247,10 @@ public class EvergreenExportMain {
 	private static PreparedStatement addAspenLocationRecordsToIncludeStmt;
 	private static PreparedStatement addAspenLibraryRecordsOwnedStmt;
 	private static PreparedStatement addAspenLibraryRecordsToIncludeStmt;
+	private static PreparedStatement createTranslationMapStmt;
+	private static PreparedStatement getTranslationMapStmt;
+	private static PreparedStatement getExistingValuesForMapStmt;
+	private static PreparedStatement insertTranslationStmt;
 	private static void updateBranchInfo(Connection dbConn) {
 		//Setup our prepared statements
 		try {
@@ -258,11 +262,25 @@ public class EvergreenExportMain {
 			addAspenLocationRecordsToIncludeStmt = dbConn.prepareStatement("INSERT INTO location_records_to_include (locationId, indexingProfileId, location, subLocation, weight) VALUES (?, ?, '.*', '', 1)");
 			addAspenLibraryRecordsOwnedStmt = dbConn.prepareStatement("INSERT INTO library_records_owned (libraryId, indexingProfileId, location, subLocation) VALUES (?, ?, ?, '') ON DUPLICATE KEY UPDATE location = CONCAT(location, '|', VALUES(location))");
 			addAspenLibraryRecordsToIncludeStmt = dbConn.prepareStatement("INSERT INTO library_records_to_include (libraryId, indexingProfileId, location, subLocation, weight) VALUES (?, ?, '.*', '', 1)");
+
+			createTranslationMapStmt = dbConn.prepareStatement("INSERT INTO translation_maps (name, indexingProfileId) VALUES (?, ?)", Statement.RETURN_GENERATED_KEYS);
+			getTranslationMapStmt = dbConn.prepareStatement("SELECT id from translation_maps WHERE name = ? and indexingProfileId = ?");
+			getExistingValuesForMapStmt = dbConn.prepareStatement("SELECT * from translation_map_values where translationMapId = ?");
+			insertTranslationStmt = dbConn.prepareStatement("INSERT INTO translation_map_values (translationMapId, value, translation) VALUES (?, ?, ?)");
 		}catch (Exception e){
 			logEntry.incErrors("Could not setup database statements to update branch information", e);
 			return;
 		}
 
+		Long locationMapId = -1L;
+		HashMap<String, String> existingLocations =new HashMap<>();
+
+		try {
+			locationMapId = getTranslationMapId(createTranslationMapStmt, getTranslationMapStmt, "location");
+			existingLocations = getExistingTranslationMapValues(getExistingValuesForMapStmt, locationMapId);
+		}catch (SQLException e) {
+			logEntry.incErrors("Could not load translation maps ", e);
+		}
 
 		//Get the organization tree
 		String apiUrl = baseUrl +  "/osrf-gateway-v1";
@@ -278,7 +296,7 @@ public class EvergreenExportMain {
 					JSONObject mainPayloadObject = mainPayload.getJSONObject(i);
 					if (mainPayloadObject.has("__p")){
 						JSONArray subPayload = mainPayloadObject.getJSONArray("__p");
-						loadOrganizationalUnit(subPayload, 0, 0);
+						loadOrganizationalUnit(subPayload, 0, 0, locationMapId, existingLocations);
 					}
 				}
 			}
@@ -293,6 +311,10 @@ public class EvergreenExportMain {
 			addAspenLocationRecordsToIncludeStmt.close();
 			addAspenLibraryRecordsOwnedStmt.close();
 			addAspenLibraryRecordsToIncludeStmt.close();
+			createTranslationMapStmt.close();
+			getTranslationMapStmt.close();
+			getExistingValuesForMapStmt.close();
+			insertTranslationStmt.close();
 		}catch (Exception e){
 			logEntry.incErrors("Error closing statements while updating branch info", e);
 		}
@@ -331,7 +353,7 @@ public class EvergreenExportMain {
 		"attr_vals",
 		"hours_of_operation"
 	};
-	private static void loadOrganizationalUnit(JSONArray orgUnitPayload, int level, long parentId) {
+	private static void loadOrganizationalUnit(JSONArray orgUnitPayload, int level, long parentId, long locationMapId, HashMap<String, String> existingLocations) {
 		HashMap<String, Object> mappedOrgUnitField = mapFields(orgUnitPayload, orgUnitFields);
 		if (level == 0){
 			//This is the top level unit, it is not written to Aspen, just process all the children
@@ -340,7 +362,7 @@ public class EvergreenExportMain {
 				JSONObject curObject = children.getJSONObject(i);
 				if (curObject.has("__p")){
 					JSONArray libraryUnitPayload = curObject.getJSONArray("__p");
-					loadOrganizationalUnit(libraryUnitPayload, level +1, 0);
+					loadOrganizationalUnit(libraryUnitPayload, level +1, 0, locationMapId, existingLocations);
 				}
 			}
 		}else if(level == 1){
@@ -376,7 +398,7 @@ public class EvergreenExportMain {
 				JSONObject curObject = children.getJSONObject(i);
 				if (curObject.has("__p")){
 					JSONArray libraryUnitPayload = curObject.getJSONArray("__p");
-					loadOrganizationalUnit(libraryUnitPayload, level +1, libraryId);
+					loadOrganizationalUnit(libraryUnitPayload, level +1, libraryId, locationMapId, existingLocations);
 				}
 			}
 
@@ -385,6 +407,9 @@ public class EvergreenExportMain {
 			try {
 				Integer branchId = (Integer) mappedOrgUnitField.get("id");
 				String shortName = (String) mappedOrgUnitField.get("shortname");
+
+				updateTranslationMap(shortName, (String)mappedOrgUnitField.get("name"), insertTranslationStmt, locationMapId, existingLocations);
+
 				existingAspenLocationStmt.setString(1, shortName);
 				ResultSet existingLocationRS = existingAspenLocationStmt.executeQuery();
 				if (!existingLocationRS.next()){
@@ -609,10 +634,10 @@ public class EvergreenExportMain {
 	private static int updateRecordsUsingMarcExtract(ArrayList<File> exportedMarcFiles, boolean hasFullExportFile, File fullExportFile, Connection dbConn) {
 		int totalChanges = 0;
 		MarcRecordGrouper recordGroupingProcessor = getRecordGroupingProcessor();
-		if (!recordGroupingProcessor.isValid()){
+		if (!recordGroupingProcessor.isValid()) {
 			logEntry.incErrors("Record Grouping Processor was not valid");
 			return totalChanges;
-		}else if (!recordGroupingProcessor.loadExistingTitles(logEntry)){
+		} else if (!recordGroupingProcessor.loadExistingTitles(logEntry)) {
 			return totalChanges;
 		}
 
@@ -637,7 +662,7 @@ public class EvergreenExportMain {
 
 		//Validate that the FullMarcExportRecordIdThreshold has been met if we are running a full export.
 		long maxIdInExport = 0;
-		if (hasFullExportFile){
+		if (hasFullExportFile) {
 			logEntry.addNote("Validating that full export is the correct size");
 			logEntry.saveResults();
 
@@ -652,7 +677,7 @@ public class EvergreenExportMain {
 					Record curBib = null;
 					try {
 						curBib = catalogReader.next();
-					}catch (Exception e){
+					} catch (Exception e) {
 						numRecordsWithErrors++;
 					}
 					if (curBib != null) {
@@ -673,22 +698,22 @@ public class EvergreenExportMain {
 				logEntry.addNote("Not processing MARC export due to error reading MARC files.");
 				return totalChanges;
 			}
-			if (((float)numRecordsWithErrors / (float)numRecordsRead) > 0.0001){
+			if (((float) numRecordsWithErrors / (float) numRecordsRead) > 0.0001) {
 				logEntry.incErrors("More than .1% of records had errors, skipping due to the volume of errors in " + indexingProfile.getName() + " file " + fullExportFile.getAbsolutePath());
 				return totalChanges;
-			}else if (numRecordsWithErrors > 0) {
+			} else if (numRecordsWithErrors > 0) {
 				logEntry.addNote("There were " + numRecordsWithErrors + " in " + fullExportFile.getAbsolutePath() + " but still processing");
 				logEntry.saveResults();
 			}
 			logEntry.addNote("Full export " + fullExportFile + " contains " + numRecordsRead + " records.");
 			logEntry.saveResults();
 
-			if (maxIdInExport < indexingProfile.getFullMarcExportRecordIdThreshold()){
+			if (maxIdInExport < indexingProfile.getFullMarcExportRecordIdThreshold()) {
 				logEntry.incErrors("Full MARC export appears to be truncated, MAX Record ID in the export was " + maxIdInExport + " expected to be greater than or equal to " + indexingProfile.getFullMarcExportRecordIdThreshold());
 				logEntry.addNote("Not processing the full export");
 				exportedMarcFiles.remove(fullExportFile);
 				hasFullExportFile = false;
-			}else{
+			} else {
 				logEntry.addNote("The full export is the correct size.");
 				logEntry.saveResults();
 			}
@@ -1077,5 +1102,62 @@ public class EvergreenExportMain {
 		doc.getDocumentElement().normalize();
 
 		return doc;
+	}
+
+	private static Long getTranslationMapId(PreparedStatement createTranslationMapStmt, PreparedStatement getTranslationMapStmt, String mapName) throws SQLException {
+		Long translationMapId = null;
+		getTranslationMapStmt.setString(1, mapName);
+		getTranslationMapStmt.setLong(2, indexingProfile.getId());
+		ResultSet getTranslationMapRS = getTranslationMapStmt.executeQuery();
+		if (getTranslationMapRS.next()) {
+			translationMapId = getTranslationMapRS.getLong("id");
+		} else {
+			//Map does not exist, create it
+			createTranslationMapStmt.setString(1, mapName);
+			createTranslationMapStmt.setLong(2, indexingProfile.getId());
+			createTranslationMapStmt.executeUpdate();
+			ResultSet generatedIds = createTranslationMapStmt.getGeneratedKeys();
+			if (generatedIds.next()) {
+				translationMapId = generatedIds.getLong(1);
+			}
+		}
+		return translationMapId;
+	}
+
+	private static HashMap<String, String> getExistingTranslationMapValues(PreparedStatement getExistingValuesForMapStmt, Long translationMapId) throws SQLException {
+		HashMap<String, String> existingValues = new HashMap<>();
+		getExistingValuesForMapStmt.setLong(1, translationMapId);
+		ResultSet getExistingValuesForMapRS = getExistingValuesForMapStmt.executeQuery();
+		while (getExistingValuesForMapRS.next()) {
+			existingValues.put(getExistingValuesForMapRS.getString("value").toLowerCase(), getExistingValuesForMapRS.getString("translation"));
+		}
+		return existingValues;
+	}
+
+	private static void updateTranslationMap(String value, String translation, PreparedStatement insertTranslationStmt, Long translationMapId, HashMap<String, String> existingValues) throws SQLException {
+		if (existingValues.containsKey(value.toLowerCase())) {
+			if (translation == null){
+				translation = "";
+			}else {
+				translation = translation.trim();
+			}
+			if (!existingValues.get(value.toLowerCase()).equals(translation)) {
+				logger.warn("Translation for " + value + " has changed from " + existingValues.get(value) + " to " + translation);
+			}
+		} else {
+			if (translation == null) {
+				translation = value;
+			}
+			if (value.length() > 0) {
+				try {
+					insertTranslationStmt.setLong(1, translationMapId);
+					insertTranslationStmt.setString(2, value);
+					insertTranslationStmt.setString(3, translation);
+					insertTranslationStmt.executeUpdate();
+				}catch (SQLException e){
+					logEntry.addNote("Error adding translation map value " + value + " with a translation of " + translation + " e");
+				}
+			}
+		}
 	}
 }
