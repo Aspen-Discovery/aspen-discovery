@@ -580,7 +580,7 @@ class SirsiDynixROA extends HorizonAPI
 				// Error: unable to set barcode number.
 				global $logger;
 				$logger->log('Sirsi Self Registration barcode counter was not found!', Logger::LOG_ERROR);
-				$selfRegResult['Barcode starting index was not found.'];
+				$selfRegResult['message'] = 'Barcode starting index was not found.';
 			};
 		} else {
 			// Error: unable to login in staff user
@@ -2209,17 +2209,19 @@ class SirsiDynixROA extends HorizonAPI
 
 	public function processMessagingSettingsForm(User $patron) : array
 	{
+		/** @noinspection PhpArrayIndexImmediatelyRewrittenInspection */
 		$result = array(
 			'success' => false,
-			'message' => 'Unknown error processing messaging settings.');
+			'message' => 'Unknown error processing messaging settings.'
+		);
 		$staffSessionToken = $this->getStaffSessionToken();
 		$includeFields = urlencode("phoneList{*}");
 		$webServiceURL = $this->getWebServiceURL();
-		$getPhoneListResponse = $this->getWebServiceResponse($webServiceURL . "/user/patron/key/{$patron->username}?includeFields=$includeFields", null, $staffSessionToken);
+		$getPhoneListResponse = $this->getWebServiceResponse('GET', $webServiceURL . "/user/patron/key/$patron->username?includeFields=$includeFields", null, $staffSessionToken);
 
 		for ($i = 1; $i <=5; $i++){
 			$deletePhoneKey = $_REQUEST['phoneNumberDeleted'][$i] == true;
-			if (empty($_REQUEST['phoneNumber'][$i]) && empty($_REQUEST['phoneNumber'][$i])){
+			if (empty($_REQUEST['phoneNumber'][$i])){
 				$deletePhoneKey = true;
 			}
 			$phoneKey = $_REQUEST['phoneNumberKey'][$i];
