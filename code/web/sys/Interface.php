@@ -563,11 +563,15 @@ class UInterface extends Smarty
 
 		$this->assign('showCurbsidePickups', ($library->curbsidePickupSettingId != -1) ? 1 : 0);
 
+		$this->assign('enableReadingHistory', $library->enableReadingHistory);
+		$this->assign('enableSavedSearches', $library->enableSavedSearches);
+		$this->assign('showCitationStyleGuides', $library->showCitationStyleGuides);
+
 		if ($location != null){ // library and location
 			$this->assign('showFavorites', $location->showFavorites && $library->showFavorites);
 			$this->assign('showComments', $location->getGroupedWorkDisplaySettings()->showComments);
 			$this->assign('showEmailThis', $location->showEmailThis && $library->showEmailThis);
-			$this->assign('showStaffView', $location->getGroupedWorkDisplaySettings()->showStaffView);
+			$showStaffView = $location->getGroupedWorkDisplaySettings()->showStaffView;
 			$this->assign('showShareOnExternalSites', $location->showShareOnExternalSites && $library->showShareOnExternalSites);
 			$this->assign('showGoodReadsReviews', $location->getGroupedWorkDisplaySettings()->showGoodReadsReviews);
 			$showHoldButton = (($location->showHoldButton == 1) && ($library->showHoldButton == 1)) ? 1 : 0;
@@ -582,12 +586,17 @@ class UInterface extends Smarty
 			$this->assign('showComments', $library->getGroupedWorkDisplaySettings()->showComments);
 			$this->assign('showEmailThis', $library->showEmailThis);
 			$this->assign('showShareOnExternalSites', $library->showShareOnExternalSites);
-			$this->assign('showStaffView', $library->getGroupedWorkDisplaySettings()->showStaffView);
+			$showStaffView = $library->getGroupedWorkDisplaySettings()->showStaffView;
 			$this->assign('showSimilarTitles', $library->getGroupedWorkDisplaySettings()->showSimilarTitles);
 			$this->assign('showSimilarAuthors', $library->getGroupedWorkDisplaySettings()->showSimilarAuthors);
 			$this->assign('showGoodReadsReviews', $library->getGroupedWorkDisplaySettings()->showGoodReadsReviews);
 			$this->assign('showStandardReviews', $library->getGroupedWorkDisplaySettings()->showStandardReviews);
 		}
+		if ($showStaffView == 2){
+			$showStaffView = UserAccount::isStaff();
+		}
+		$this->assign('showStaffView', $showStaffView);
+
 		if ($showHoldButton == 0){
 			$showHoldButtonInSearchResults = 0;
 		}

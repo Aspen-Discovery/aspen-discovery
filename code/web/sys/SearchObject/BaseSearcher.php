@@ -590,6 +590,73 @@ abstract class SearchObject_BaseSearcher
 		return true;
 	}
 
+	/**
+	 * Initialize the object's search settings for a basic search found in the
+	 * $_REQUEST super global.
+	 *
+	 * @access  public
+	 * @param String $searchIndex
+	 * @param String $searchTerm
+	 * @return  boolean  True if search settings were found, false if not.
+	 */
+	public function initBasicSearchWithIndex($searchIndex, $searchTerm)
+	{
+		require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
+		$searchTerm = StringUtils::removeTrailingPunctuation(trim($searchTerm));
+
+		$type = $searchIndex;
+
+		// Flatten type arrays for backward compatibility:
+		if (is_array($type)) {
+			$type = strip_tags($type[0]);
+		} else {
+			$type = strip_tags($type);
+		}
+
+		//The type should never have punctuation in it (quotes, colons, etc)
+		$type = preg_replace('/[:"\']/', '', $type);
+
+		if (!array_key_exists($type, $this->getSearchIndexes()) && !array_key_exists($type, $this->advancedTypes)){
+			$type = $this->getDefaultIndex();
+		}
+
+		if (strpos($searchTerm, ':') > 0) {
+			$tempSearchInfo = explode(':', $searchTerm);
+			if (count($tempSearchInfo) == 2){
+				//Check for leading and trailing parentheses
+				if (strlen($tempSearchInfo[0]) > 0 && $tempSearchInfo[0][0] == '('){
+					$tempSearchInfo[0] = substr($tempSearchInfo[0], 1);
+				}
+				if (strlen($tempSearchInfo[1]) > 0 && $tempSearchInfo[1][-1] == ')'){
+					$tempSearchInfo[1] = substr($tempSearchInfo[1], 0, -1);
+				}
+
+				if (array_key_exists($tempSearchInfo[0], $this->searchIndexes)) {
+					$type = $tempSearchInfo[0];
+					$searchTerm = $tempSearchInfo[1];
+				}else{
+					$validFields = $this->loadValidFields();
+					$dynamicFields = $this->loadDynamicFields();
+					if (!in_array($tempSearchInfo[0], $validFields) && !in_array($tempSearchInfo[0], $dynamicFields) || array_key_exists($tempSearchInfo[0], $this->advancedTypes)) {
+						$searchTerm = str_replace(':', ' ', $searchTerm);
+					}else{
+						return false;
+					}
+				}
+			}else{
+				//This is an advanced search
+				return false;
+			}
+		}
+
+		$this->searchTerms = array();
+		$this->searchTerms[] = array(
+			'index' => $type,
+			'lookfor' => $searchTerm
+		);
+		return true;
+	}
+
 	public function setSearchTerms($searchTerms)
 	{
 		$this->searchTerms = array();

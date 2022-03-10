@@ -2,7 +2,7 @@
 	{if $loggedIn}
 		{* Setup the accoridon *}
 		<!--suppress HtmlUnknownTarget -->
-		<div id="account-menu" class="dropdown-menu dropdownMenu" aria-labelledby="account-menu-dropdown" aria-label="{translate text="Account Menu" isPublicFacing=true}">
+		<div id="account-menu" class="dropdown-menu dropdownMenu" aria-labelledby="account-menu-dropdown" aria-label="{translate text="Account Menu" isPublicFacing=true inAttribute=true}">
 			<span class="expirationFinesNotice-placeholder"></span>
 			{if $userHasCatalogConnection}
 				<a href="/MyAccount/CheckedOut">
@@ -16,11 +16,13 @@
 					</a>
 				</div>
 
-				<div class="header-menu-option" >
-					<a href="/MyAccount/ReadingHistory">
-						{translate text="Reading History" isPublicFacing=true}
-					</a>
-				</div>
+				{if $enableReadingHistory}
+					<div class="header-menu-option" >
+						<a href="/MyAccount/ReadingHistory">
+							{translate text="Reading History" isPublicFacing=true}
+						</a>
+					</div>
+				{/if}
 				{if $showCurbsidePickups}
 					<div class="header-menu-option">
 						<a href="/MyAccount/CurbsidePickups">{translate text='Curbside Pickups' isPublicFacing=true}</a>
@@ -81,8 +83,10 @@
 			{if $userIsStaff}
 				<div class="header-menu-option" ><a href="/MyAccount/StaffSettings">{translate text='Staff Settings' isPublicFacing=true}</a></div>
 			{/if}
-			{* Only highlight saved searches as active if user is logged in: *}
-			<div class="header-menu-option" ><a href="/Search/History?require_login">{translate text='Search History' isPublicFacing=true}</a></div>
+			{if $enableSavedSearches}
+				{* Only highlight saved searches as active if user is logged in: *}
+				<div class="header-menu-option" ><a href="/Search/History?require_login">{translate text='Search History' isPublicFacing=true}</a></div>
+			{/if}
 
 			{if $allowMasqueradeMode && !$masqueradeMode}
 				{if $canMasquerade}

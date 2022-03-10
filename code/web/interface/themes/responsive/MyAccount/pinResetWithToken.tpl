@@ -11,7 +11,7 @@
 					<div ><a href="/MyAccount/Home" class="btn btn-primary">{translate text='Continue to login' isPublicFacing=true}</a> </div>
 				{else}
 					{if $tokenValid}
-						<form method="post" role="form" action="/MyAccount/CompletePinReset">
+						<form method="post" role="form" action="/MyAccount/CompletePinReset" id="resetPin">
 							<input type='hidden' name='token' id='token' value='{$token}' />
 							<div class="form-group">
 								<div class="col-xs-4"><label for="pin1" class="control-label">{translate text='New %1%' 1=$passwordLabel translateParameters=true isPublicFacing=true}</label></div>
@@ -50,4 +50,9 @@
 			</div>
 		</div>
 	</div>
+	<script type="text/javascript">
+		$(function(){ldelim}
+			$("#resetPin").validate();
+		{rdelim});
+	</script>
 {/strip}

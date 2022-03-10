@@ -1049,7 +1049,7 @@ class Polaris extends AbstractIlsDriver
 			$jsonResponse = json_decode($response);
 			if ($jsonResponse->PAPIErrorCode == 0) {
 				$patron->forceReloadOfHolds();
-				$result['success'] = false;
+				$result['success'] = true;
 				$result['message'] = translate(['text' => 'The hold has been frozen.', 'isPublicFacing' => true]);
 
 				// Result for API or app use
@@ -1248,6 +1248,19 @@ class Polaris extends AbstractIlsDriver
 					$homeBranchCode = strtoupper($homeLibraryLocation->code);
 					$body->RequestPickupBranchID = $homeBranchCode;
 				}
+			}
+
+			if (!$library->allowPatronPhoneNumberUpdates){
+				unset($body->PhoneVoice1);
+				unset($body->PhoneVoice2);
+				unset($body->PhoneVoice3);
+				unset($body->PhoneVoice1Carrier);
+				unset($body->PhoneVoice2Carrier);
+				unset($body->PhoneVoice3Carrier);
+				unset($body->TxtPhoneNumber);
+			}
+			if (!$library->showNoticeTypeInProfile){
+				unset($body->DeliveryOptionID);
 			}
 			$encodedBody = json_encode($body);
 			$response = $this->getWebServiceResponse($polarisUrl, 'PUT', $this->getAccessToken($patron->getBarcode(), $patron->getPasswordOrPin()), $encodedBody, $fromMasquerade || UserAccount::isUserMasquerading());
@@ -1692,13 +1705,14 @@ class Polaris extends AbstractIlsDriver
 		return $results;
 	}
 
-	function getPasswordPinValidationRules(){
-		return [
-			'minLength' => 4,
-			'maxLength' => 14,
-			'onlyDigitsAllowed' => false,
-		];
-	}
+	//Use the values
+//	function getPasswordPinValidationRules(){
+//		return [
+//			'minLength' => 4,
+//			'maxLength' => 14,
+//			'onlyDigitsAllowed' => false,
+//		];
+//	}
 
 	function getPatronUpdateForm($user){
 		$patronUpdateFields = $this->getSelfRegistrationFields('patronUpdate');

@@ -52,6 +52,41 @@ class MaterialsRequest_NewRequest extends Action
 				} else {
 					$request->title = $_REQUEST['lookfor'];
 				}
+			}else{
+				$lastSearchId = -1;
+				if (isset($_REQUEST['searchId'])){
+					$lastSearchId = $_REQUEST['searchId'];
+				}else if (isset($_SESSION['searchId'])){
+					$lastSearchId = $_SESSION['searchId'];
+				}else if (isset($_SESSION['lastSearchId'])){
+					$lastSearchId = $_SESSION['lastSearchId'];
+				}
+				if ($lastSearchId != -1){
+					$searchObj = SearchObjectFactory::initSearchObject();
+					$searchObj->init();
+					$searchObj = $searchObj->restoreSavedSearch($lastSearchId, false, true);
+					if ($searchObj != false) {
+
+						$searchTerms = $searchObj->getSearchTerms();
+						if (is_array($searchTerms)) {
+							if (count($searchTerms) == 1) {
+								if (!isset($searchTerms[0]['index'])) {
+									$request->title = $searchObj->displayQuery();
+								} else if ($searchTerms[0]['index'] == $searchObj->getDefaultIndex()) {
+									$request->title = $searchTerms[0]['lookfor'];
+								} else {
+									if ($searchTerms[0]['index'] == 'Author') {
+										$request->author = $searchTerms[0]['lookfor'];
+									} else {
+										$request->title = $searchTerms[0]['lookfor'];
+									}
+								}
+							}
+						} else {
+							$request->title = $searchTerms;
+						}
+					}
+				}
 			}
 
 			$user = UserAccount::getActiveUserObj();

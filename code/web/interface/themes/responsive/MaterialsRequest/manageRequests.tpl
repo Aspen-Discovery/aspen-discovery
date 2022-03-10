@@ -177,7 +177,7 @@
 					<div id="materialsRequestActions">
 						<div class="row form-group">
 							<div class="col-sm-4">
-								<label for="newAssignee" class="control-label">{translate text="Assign selected to"}</label>
+								<label for="newAssignee" class="control-label">{translate text="Assign selected to" isAdminFacing=true}</label>
 							</div>
 							<div class="col-sm-8">
 								<div class="input-group">
@@ -207,7 +207,7 @@
 									<select name="newStatus" id="newStatus" class="form-control">
 										<option value="unselected">{translate text="Select One" isAdminFacing=true}</option>
 										{foreach from=$availableStatuses item=statusLabel key=status}
-											<option value="{$status}">{translate text="$statusLabel" inAttribute=true}</option>
+											<option value="{$status}">{translate text="$statusLabel"  isAdminFacing=true inAttribute=true}</option>
 										{/foreach}
 									</select>
 									<span class="btn btn-sm btn-primary input-group-addon" onclick="return AspenDiscovery.MaterialsRequest.updateSelectedRequests();">{translate text="Update Selected Requests" isAdminFacing=true}</span>
@@ -219,7 +219,7 @@
 								<input class="btn btn-sm btn-default" type="submit" name="exportSelected" value="{translate text="Export Selected To Excel" inAttribute=true isAdminFacing=true}" onclick="return AspenDiscovery.MaterialsRequest.exportSelectedRequests();">
 								{if in_array('Import Materials Requests', $userPermissions)}
 									{* We don't really want to do this much / ever so it gets a special permission *}
-									<input class="btn btn-sm btn-default" type="submit" name="importRequests" value="{translate text="Import Requests" inAttribute=true isAdminFacing=true} onclick="return AspenDiscovery.MaterialsRequest.showImportRequestForm();">
+									<input class="btn btn-sm btn-default" type="submit" name="importRequests" value="{translate text="Import Requests" inAttribute=true isAdminFacing=true}" onclick="return AspenDiscovery.MaterialsRequest.showImportRequestForm();">
 								{/if}
 							</div>
 						</div>

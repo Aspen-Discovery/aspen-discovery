@@ -626,6 +626,9 @@ class User extends DataObject
 		if (empty($this->created)) {
 			$this->created = date('Y-m-d');
 		}
+		if ($this->pickupLocationId == 0) {
+			$this->pickupLocationId = $this->homeLocationId;
+		}
 		$this->fixFieldLengths();
 		$result = parent::update();
 		$this->saveRoles();
@@ -1645,15 +1648,15 @@ class User extends DataObject
 		}
 
 		if ($success >= 1) {
-			$message = '<div class="alert alert-success">' . $success . ' of ' . $total . ' holds were frozen.</div>';
+			$message = '<div class="alert alert-success">' . translate(['text' => '%1% of %2% holds were frozen', 1 => $success, 2 => $total, 'isPublicFacing' => true, 'inAttribute'=>true]) . '</div>';
 
 			if ($failed >= 1) {
-				$message .= '<div class="alert alert-warning">' . $failed . ' holds failed to freeze.</div>';
+				$message .= '<div class="alert alert-warning">' . translate(['text' => '%1% holds failed to freeze', 1 => $failed, 2 => $total, 'isPublicFacing' => true, 'inAttribute'=>true]).'</div>';
 			}
 
 			$tmpResult['message'] = $message;
 		} else {
-			$tmpResult['message'] = '<div class="alert alert-warning">All holds already frozen</div>';
+			$tmpResult['message'] = '<div class="alert alert-warning">' . translate(['text' => 'All holds already frozen', 'isPublicFacing' => true, 'inAttribute'=>true]) . '</div>';
 		}
 
 		return $tmpResult;
@@ -1710,15 +1713,15 @@ class User extends DataObject
 				}
 
 				if ($success >= 1 ){
-					$message = '<div class="alert alert-success">' . $success . ' of ' . $total . ' holds were thawed.</div>';
+					$message = '<div class="alert alert-success">' . translate(['text' => '%1% of %2% holds were thawed', 1 => $success, 2 => $total, 'isPublicFacing' => true, 'inAttribute'=>true]) . '</div>';
 
 					if ($failed >= 1) {
-						$message .= '<div class="alert alert-warning">' . $failed . ' holds failed to thaw.</div>';
+						$message .= '<div class="alert alert-warning">' . translate(['text' => '%1% holds failed to thaw', 1 => $failed, 'isPublicFacing' => true, 'inAttribute'=>true]) . '</div>';
 					}
 
 					$tmpResult['message'] = $message;
 				} else {
-					$tmpResult['message'] = '<div class="alert alert-warning">All holds already thawed</div>';
+					$tmpResult['message'] = '<div class="alert alert-warning">' . translate(['text' => 'All holds already thawed']) . '</div>';
 				}
 			}
 		} else {
@@ -2392,6 +2395,7 @@ class User extends DataObject
 		$sections['cataloging']->addAction(new AdminAction('Manual Grouping Authorities', 'View a list of all title author/authorities that have been added to Aspen to merge works.', '/Admin/AlternateTitles'), 'Manually Group and Ungroup Works');
 		$sections['cataloging']->addAction(new AdminAction('Author Authorities', 'Create and edit authorities for authors.', '/Admin/AuthorAuthorities'), 'Manually Group and Ungroup Works');
 		$sections['cataloging']->addAction(new AdminAction('Records To Not Group', 'Lists records that should not be grouped.', '/Admin/NonGroupedRecords'), 'Manually Group and Ungroup Works');
+		$sections['cataloging']->addAction(new AdminAction('Search Tests', 'Tests to be run to verify searching is generating optimal results.', '/Admin/GroupedWorkSearchTests'), 'Administer Grouped Work Tests');
 		//$sections['cataloging']->addAction(new AdminAction('Print Barcodes', 'Lists records that should not be grouped.', '/Admin/PrintBarcodes'), 'Print Barcodes');
 
 		$sections['local_enrichment'] = new AdminSection('Local Catalog Enrichment');
@@ -2566,22 +2570,39 @@ class User extends DataObject
 			$sections['course_reserves']->addAction(new AdminAction('Indexing Log', 'View the indexing log for Course Reserves.', '/CourseReserves/IndexingLog'), ['View System Reports', 'View Indexing Logs']);
 		}
 
-		$sections['aspen_help'] = new AdminSection('Aspen Discovery Help');
-		$sections['aspen_help']->addAction(new AdminAction('Help Manual', 'View Help Manual for Aspen Discovery.', '/Admin/HelpManual?page=table_of_contents'), true);
-		$sections['aspen_help']->addAction(new AdminAction('Release Notes', 'View release notes for Aspen Discovery which contain information about new functionality and fixes for each release.', '/Admin/ReleaseNotes'), true);
-		$showSubmitTicket = false;
+		$sections['support'] = new AdminSection('Aspen Discovery Support');
+		$sections['support']->addAction(new AdminAction('Request Tracker Settings', 'Define settings for a Request Tracker support system.', '/Support/RequestTrackerConnections'), 'Administer Request Tracker Connection');
 		try {
-			require_once ROOT_DIR . '/sys/SystemVariables.php';
-			$systemVariables = new SystemVariables();
-			if ($systemVariables->find(true) && !empty($systemVariables->ticketEmail)) {
-				$showSubmitTicket = true;
+			require_once ROOT_DIR . '/sys/Support/RequestTrackerConnection.php';
+			$supportConnections = new RequestTrackerConnection();
+			$hasSupportConnection = false;
+			if ($supportConnections->find(true)){
+				$hasSupportConnection = true;
 			}
-		}catch (Exception $e) {
-			//This happens before the table is setup
+			if ($hasSupportConnection) {
+				$sections['support']->addAction(new AdminAction('View Active Tickets', 'View Active Tickets.', '/Support/ViewTickets'), 'View Active Tickets');
+			}
+			$showSubmitTicket = false;
+			try {
+				require_once ROOT_DIR . '/sys/SystemVariables.php';
+				$systemVariables = new SystemVariables();
+				if ($systemVariables->find(true) && !empty($systemVariables->ticketEmail)) {
+					$showSubmitTicket = true;
+				}
+			}catch (Exception $e) {
+				//This happens before the table is setup
+			}
+			if ($showSubmitTicket) {
+				$sections['support']->addAction(new AdminAction('Submit Ticket', 'Submit a support ticket for assistance with Aspen Discovery.', '/Admin/SubmitTicket'), 'Submit Ticket');
+			}
+			if ($hasSupportConnection) {
+				$sections['support']->addAction(new AdminAction('Set Priorities', 'Set Development Priorities.', '/Support/SetDevelopmentPriorities'), 'Set Development Priorities');
+			}
+		}catch (Exception $e){
+			//This happens before tables are created, ignore
 		}
-		if ($showSubmitTicket) {
-			$sections['aspen_help']->addAction(new AdminAction('Submit Ticket', 'Submit a support ticket for assistance with Aspen Discovery.', '/Admin/SubmitTicket'), 'Submit Ticket');
-		}
+		$sections['support']->addAction(new AdminAction('Help Manual', 'View Help Manual for Aspen Discovery.', '/Admin/HelpManual?page=table_of_contents'), true);
+		$sections['support']->addAction(new AdminAction('Release Notes', 'View release notes for Aspen Discovery which contain information about new functionality and fixes for each release.', '/Admin/ReleaseNotes'), true);
 
 		return $sections;
 	}

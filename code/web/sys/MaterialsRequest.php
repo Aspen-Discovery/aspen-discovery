@@ -51,7 +51,7 @@ class MaterialsRequest extends DataObject
 
 	public function getNumericColumnNames(): array
 	{
-		return ['emailSent', 'holdsCreated'];
+		return ['emailSent', 'holdsCreated', 'assignedTo'];
 	}
 
 	static function getFormats(){

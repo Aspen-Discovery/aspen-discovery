@@ -554,14 +554,15 @@ class Sierra extends Millennium{
 				$curCheckout = new Checkout();
 				$curCheckout->type = 'ils';
 				$curCheckout->source = $this->getIndexingProfile()->name;
-				$curCheckout->sourceId = $checkoutId;
 				$curCheckout->userId = $patron->id;
 				$curCheckout->dueDate = strtotime($entry->dueDate);
 				$curCheckout->checkoutDate = strtotime($entry->outDate);
 				$curCheckout->renewCount = $entry->numberOfRenewals;
 				$curCheckout->canRenew = true;
 				$curCheckout->callNumber = $entry->callNumber;
-				$curCheckout->barcode = $entry->barcode;
+				if (isset($entry->barcode)) {
+					$curCheckout->barcode = $entry->barcode;
+				}
 				$curCheckout->itemId = $itemId;
 				$curCheckout->renewalId = $checkoutId;
 				$curCheckout->renewIndicator = $checkoutId;
@@ -572,6 +573,21 @@ class Sierra extends Millennium{
 					$recordDriver = new MarcRecordDriver((string)$curCheckout->recordId);
 					if ($recordDriver->isValid()){
 						$curCheckout->updateFromRecordDriver($recordDriver);
+						$relatedRecord = $recordDriver->getRelatedRecord();
+						if ($relatedRecord != null) {
+							//Check to see if we have volume info for the item
+							foreach ($relatedRecord->getItems() as $item) {
+								if ($item->itemId == $itemId) {
+									if (!empty($item->volume)) {
+										$curCheckout->volume = $item->volume;
+									}
+									if ($item->callNumber != $curCheckout->callNumber){
+										$curCheckout->callNumber = $item->callNumber;
+									}
+									break;
+								}
+							}
+						}
 					}else{
 						$bibIdShort = substr(str_replace('.b', 'b', $bibId), 0, -1);
 						$getBibResponse = $this->_callUrl('sierra.getBib', $this->accountProfile->vendorOpacUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/bibs/{$bibIdShort}");
@@ -1145,6 +1161,11 @@ class Sierra extends Millennium{
 		return $fines;
 	}
 
+	function showOutstandingFines()
+	{
+		return true;
+	}
+
 	public function completeFinePayment(User $patron, UserPayment $payment){
 		$result = [
 			'success' => false,
@@ -1177,7 +1198,7 @@ class Sierra extends Millennium{
 			$paymentType = 1; //Fully or partially paid, do not waive the remainder
 
 			$tmpPayment = new stdClass();
-			$tmpPayment->amount = (int)((float)$paymentAmount * 100);
+			$tmpPayment->amount = (int)(round((float)$paymentAmount * 100));
 			$tmpPayment->paymentType = $paymentType;
 			$tmpPayment->invoiceNumber = (string)$fineInvoiceNumber;
 			$tmpPayment->initials = 'aspen';
@@ -1348,13 +1369,13 @@ class Sierra extends Millennium{
 		}
 	}
 
-	function getPasswordPinValidationRules(){
-		return [
-			'minLength' => 4,
-			'maxLength' => 60,
-			'onlyDigitsAllowed' => false,
-		];
-	}
+//	function getPasswordPinValidationRules(){
+//		return [
+//			'minLength' => 4,
+//			'maxLength' => 60,
+//			'onlyDigitsAllowed' => false,
+//		];
+//	}
 
 	function updatePin(User $patron, string $oldPin, string $newPin)
 	{
@@ -1374,12 +1395,12 @@ class Sierra extends Millennium{
 			$patron->cat_password = $newPin;
 			$patron->update();
 		}else{
-			$message = 'Unable to update PIN. ';
+			$message = translate(['text'=>'Unable to update PIN. ', 'isPublicFacing'=>true, 'inAttribute'=>true]);
 			if (!empty($this->lastErrorMessage)){
-				$message .= $this->lastErrorMessage;
+				$message .= translate(['text'=>$this->lastErrorMessage, 'isPublicFacing'=>true, 'inAttribute'=>true]);
 			}
 			if (!empty($updatePatronResponse) && !empty($updatePatronResponse->description)){
-				$message .= '<br/>' . $updatePatronResponse->description;
+				$message .= '<br/>' . translate(['text'=>$updatePatronResponse->description, 'isPublicFacing'=>true, 'inAttribute'=>true]);
 			}
 			$result['message'] = $message;
 		}

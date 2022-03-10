@@ -1491,21 +1491,21 @@ class GroupedWorkDriver extends IndexRecordDriver
 			if (isset($_REQUEST['filter'])) {
 				foreach ($_REQUEST['filter'] as $filter) {
 					if (preg_match('/^format_category\w*:"?(.+?)"?$/', $filter, $matches)) {
-						$selectedFormatCategory[] = urldecode($matches[1]);
+						$selectedFormatCategory[] = $matches[1];
 					} elseif (preg_match('/^format\w*:"?(.+?)"?$/', $filter, $matches)) {
-						$selectedFormat[] = urldecode($matches[1]);
+						$selectedFormat[] = $matches[1];
 					} elseif (preg_match('/^availability_toggle\w*:"?(.+?)"?$/', $filter, $matches)) {
 						if ($matches[1] != '"') {
-							$selectedAvailability[] = urldecode($matches[1]);
+							$selectedAvailability[] = $matches[1];
 						}
 					} elseif (preg_match('/^availability_by_format[\w_]*:"?(.+?)"?$/', $filter, $matches)) {
-						$selectedAvailability[] = urldecode($matches[1]);
+						$selectedAvailability[] = $matches[1];
 					} elseif (preg_match('/^available_at[\w_]*:"?(.+?)"?$/', $filter, $matches)) {
-						$selectedDetailedAvailability = urldecode($matches[1]);
+						$selectedDetailedAvailability = $matches[1];
 					} elseif (preg_match('/^econtent_source[\w_]*:"?(.+?)"?$/', $filter, $matches)) {
-						$selectedEcontentSources[] = urldecode($matches[1]);
+						$selectedEcontentSources[] = $matches[1];
 					} elseif (preg_match('/^language:"?(.+?)"?$/', $filter, $matches)) {
-						$selectedLanguages[] = urldecode($matches[1]);
+						$selectedLanguages[] = $matches[1];
 					}
 				}
 			}

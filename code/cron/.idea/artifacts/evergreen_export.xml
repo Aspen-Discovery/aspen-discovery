@@ -5,7 +5,6 @@
       <element id="module-output" name="java_shared_libraries" />
       <element id="module-output" name="evergreen_export" />
       <element id="directory" name="META-INF">
-        <element id="file-copy" path="$PROJECT_DIR$/../koha_export/META-INF/MANIFEST.MF" />
         <element id="file-copy" path="$PROJECT_DIR$/../evergreen_export/META-INF/MANIFEST.MF" />
       </element>
     </root>

@@ -26,7 +26,7 @@
 		<div class="panel-group accordion" id="permissions-table-accordion">
 			{foreach from=$permissions item=sectionPermissions key=sectionName}
 				{assign var=panelId value=$panelId+1}
-				<div class="panel panel-default {if $panelId == 1}active{/if}">
+				<div class="panel panel-default {if $panelId == 1 && count($selectedSections) == 0 || in_array($sectionName, $selectedSections)}active{/if}">
 					<div class="panel-heading" role="tab" id="heading{$panelId}">
 						<h2 class="panel-title">
 							<a role="button" data-toggle="collapse" data-parent="#permissionsTable" href="#permission{$panelId}Group" aria-expanded="true" aria-controls="permission{$panelId}PanelBody">
@@ -34,7 +34,7 @@
 							</a>
 						</h2>
 					</div>
-					<div class="panel-collapse collapse{if $panelId == 1} in{/if}" id="permission{$panelId}Group" role="tabpanel" aria-labelledby="heading{$panelId}">
+					<div class="panel-collapse collapse{if $panelId == 1 && count($selectedSections) == 0 || in_array($sectionName, $selectedSections)} in{/if}" id="permission{$panelId}Group" role="tabpanel" aria-labelledby="heading{$panelId}">
 						<div class="panel-body">
 							<table class="table table-striped table-sticky">
 								<thead>

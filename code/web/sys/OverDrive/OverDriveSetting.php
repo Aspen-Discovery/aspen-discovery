@@ -16,11 +16,18 @@ class OverDriveSetting extends DataObject
 	public $showLibbyPromo;
 	public $allowLargeDeletes;
 	public $numExtractionThreads;
+	public $numRetriesOnError;
+	public $productsToUpdate;
 	public $lastUpdateOfChangedRecords;
 	public $lastUpdateOfAllRecords;
 	public $enableRequestLogging;
 
 	public $_scopes;
+
+	public function getEncryptedFieldNames(): array
+	{
+		return ['clientSecret'];
+	}
 
 	public static function getObjectStructure() : array
 	{
@@ -40,7 +47,9 @@ class OverDriveSetting extends DataObject
 			'allowLargeDeletes' => array('property' => 'allowLargeDeletes', 'type' => 'checkbox', 'label' => 'Allow Large Deletes', 'description' => 'Whether or not Aspen can delete more than 500 records or 5% of the collection', 'default' => 0),
 			'useFulfillmentInterface' => array('property' => 'useFulfillmentInterface', 'type' => 'checkbox', 'label' => 'Enable updated checkout fulfillment interface', 'description' => 'Whether or not to use the updated fulfillment interface', 'default' => 0),
 			'showLibbyPromo' => array('property' => 'showLibbyPromo', 'type' => 'checkbox', 'label' => 'Show Libby promo in checkout fulfillment interface', 'description' => 'Whether or not to show the Libby promo ad in the fulfillment interface', 'default' => 1),
-			'numExtractionThreads' => array('property' => 'numExtractionThreads', 'type' => 'integer', 'label' => 'Num Extraction Threads', 'description' => 'The number of threads to use when extracting from OverDrive', 'canBatchUpdate'=>false, 'default'=>10),
+			'numExtractionThreads' => array('property' => 'numExtractionThreads', 'type' => 'integer', 'label' => 'Num Extraction Threads', 'description' => 'The number of threads to use when extracting from OverDrive', 'canBatchUpdate'=>false, 'default'=>10, 'min'=>1, 'max'=>10),
+			'numRetriesOnError' => array('property' => 'numRetriesOnError', 'type' => 'integer', 'label' => 'Num Retries', 'description' => 'The number of retries to attempt when errors are returned from OverDrive', 'canBatchUpdate'=>false, 'default'=>1, 'min'=>0, 'max'=>5),
+			'productsToUpdate' => array('property'=>'productsToUpdate', 'type'=>'textarea', 'label'=>'Products To Reindex', 'description'=>'A list of products to update on the next index', 'canBatchUpdate'=>false, 'hideInLists'=>true),
 			'lastUpdateOfChangedRecords' => array('property' => 'lastUpdateOfChangedRecords', 'type' => 'timestamp', 'label' => 'Last Update of Changed Records', 'description' => 'The timestamp when just changes were loaded', 'default' => 0),
 			'lastUpdateOfAllRecords' => array('property' => 'lastUpdateOfAllRecords', 'type' => 'timestamp', 'label' => 'Last Update of All Records', 'description' => 'The timestamp when just changes were loaded', 'default' => 0),
 			'enableRequestLogging' => array('property' => 'enableRequestLogging', 'type' => 'checkbox', 'label' => 'Enable Request Logging', 'description' => 'Whether or not request logging is done while extracting from Aspen.', 'default' => 0),

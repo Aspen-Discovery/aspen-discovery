@@ -597,7 +597,11 @@ abstract class Solr
 					}
 
 					// build a string like title:("one two")
-					$searchString = $field . ':(' . $fieldValue . ')';
+					if ($fieldValue[0] != '(') {
+						$searchString = $field . ':(' . $fieldValue . ')';
+					}else{
+						$searchString = $field . ':' . $fieldValue;
+					}
 					//Check to make sure we don't already have this clause.  We will get the same clause if we have a single word and are doing different munges
 					$okToAdd = true;
 					foreach ($clauses as $clause) {
@@ -608,7 +612,7 @@ abstract class Solr
 					}
 					if (!$okToAdd) continue;
 
-					// Add the weight it we have one. Yes, I know, it's redundant code.
+					// Add the weight if we have one. Yes, I know, it's redundant code.
 					$weight = $spec[1];
 					if (!is_null($weight) && $weight && $weight > 0) {
 						$searchString .= '^' . $weight;
@@ -659,8 +663,9 @@ abstract class Solr
 			$tokenized = $this->tokenizeInput($noTrailingPunctuation);
 
 			// Create AND'd and OR'd queries
-			$andQuery = implode(' AND ', $tokenized);
-			$orQuery = implode(' OR ', $tokenized);
+			$tokenizedNoStopWords = $this->removeStopWords($tokenized);
+			$andQuery = implode(' AND ', $tokenizedNoStopWords);
+			$orQuery = implode(' OR ', $tokenizedNoStopWords);
 
 			// Build possible inputs for searching:
 			$values = array();
@@ -710,7 +715,11 @@ abstract class Solr
 			// except that we'll try to do the "one phrase" in quotes if possible.
 			$cleanedQuery = str_replace('“', '"', $lookfor);
 			$cleanedQuery = str_replace('”', '"', $cleanedQuery);
-			$onephrase = strstr($lookfor, '"') ? $cleanedQuery : '"' . $cleanedQuery . '"';
+			if (strlen($cleanedQuery) > 0 && $cleanedQuery[0] == '('){
+				$onephrase = $cleanedQuery;
+			}else{
+				$onephrase = strstr($lookfor, '"') ? $cleanedQuery : '"' . $cleanedQuery . '"';
+			}
 			$values = array(
 				'exact' => $onephrase,
 				'onephrase' => $onephrase,
@@ -720,7 +729,7 @@ abstract class Solr
 				'single_word_removal' => $onephrase,
 				'exact_quoted' => $onephrase,
 				'localized_callnumber' => str_replace(array('"', ':', '/'), ' ', $cleanedQuery),
-				'text_left' => str_replace(array('"', ':', '/'), ' ', $cleanedQuery) . '*',
+				'text_left' => str_replace(array('"', ':', '/'), ' ', $cleanedQuery) ,
 			);
 		}
 
@@ -1065,7 +1074,7 @@ abstract class Solr
 		if (is_array($query)) {
 			echo("Invalid query " . print_r($query, true));
 		}
-		if (preg_match('/\\".+?\\"/', $query)) {
+		if (preg_match('/^\\"[^\\"]+?\\"$/', $query)) {
 			if ($handler == 'Keyword') {
 				$handler = 'KeywordProper';
 			} else if ($handler == 'Author') {
@@ -1415,7 +1424,7 @@ abstract class Solr
 	 * @param Location $searchLocation
 	 * @return array
 	 */
-	public function getScopingFilters(/** @noinspection PhpUnusedParameterInspection */ $searchLibrary, $searchLocation)
+	public function getScopingFilters($searchLibrary, $searchLocation)
 	{
 		return [];
 	}
@@ -1687,6 +1696,14 @@ abstract class Solr
 		if ($method == 'GET') {
 			$result = $this->client->curlGetPage($this->host . "/$queryHandler/?$queryString");
 		} elseif ($method == 'POST') {
+			require_once ROOT_DIR . '/sys/SystemVariables.php';
+			$systemVariables = SystemVariables::getSystemVariables();
+			if ($systemVariables && $systemVariables->solrConnectTimeout > 0) {
+				$this->client->setConnectTimeout($systemVariables->solrConnectTimeout);
+			}
+			if ($systemVariables && $systemVariables->solrQueryTimeout > 0){
+				$this->client->setTimeout($systemVariables->solrQueryTimeout);
+			}
 			$result = $this->client->curlPostPage($this->host . "/$queryHandler/", $queryString);
 		}
 
@@ -2113,6 +2130,30 @@ abstract class Solr
 		$options['hl.fl'] = $highlightFields;
 		$options['hl.simple.pre'] = '{{{{START_HILITE}}}}';
 		$options['hl.simple.post'] = '{{{{END_HILITE}}}}';
+	}
+
+	private static $stopWords = ["a", "an", "and", "are", "as", "at", "be", "but", "by",
+		"for", "if", "in", "into", "is", "it",
+		"no", "not", "of", "on", "or", "such",
+		"that", "the", "their", "then", "there", "these",
+		"they", "this", "to", "was", "will", "with"];
+
+	/**
+	 * @param string[] $tokenized
+	 * @return string[]
+	 */
+	private function removeStopWords(array $tokenized) :array
+	{
+		$tokenizedNoStopWords = [];
+		foreach ($tokenized as $word){
+			if (!in_array($word, Solr::$stopWords)){
+				$tokenizedNoStopWords[] = $word;
+			}
+		}
+		if (count($tokenizedNoStopWords) == 0){
+			return $tokenized;
+		}
+		return $tokenizedNoStopWords;
 	}
 }
 

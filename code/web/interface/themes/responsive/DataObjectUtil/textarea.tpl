@@ -8,14 +8,16 @@
 		toolbar1: 'code | cut copy paste pastetext spellchecker | undo redo searchreplace | image table hr codesample insertdatetime | link anchor ',
 		toolbar2: 'bold italic underline strikethrough | formatselect fontselect fontsizeselect forecolor backcolor',
 		toolbar3: 'numlist bullist toc | alignleft aligncenter alignright | preview visualblocks fullscreen help',
-		menubar: '',
+		toolbar: 'image',
+		menubar:'',
+    		image_advtab: true,
 		images_upload_url: '/WebBuilder/AJAX?method=uploadImageTinyMCE',
 		convert_urls: false,
 		theme: 'modern',
 		valid_elements : '*[*]',
 		extended_valid_elements : [
 			'*[*]',
-			'img[class=img-responsive|src|border=0|alt|title|width|height]'
+			'img[class=img-responsive|*]'
 		]
 	});
 	{/literal}

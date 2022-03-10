@@ -332,7 +332,7 @@ class OverDriveProcessor {
 								JSONArray subjects = rawMetadataDecoded.getJSONArray("subjects");
 								for (int i = 0; i < subjects.length(); i++) {
 									String curSubject = subjects.getJSONObject(i).getString("value");
-									if (curSubject.equals("Comic and Graphic Books")) {
+									if (curSubject.equals("Comic and Graphic Books") && validFormats.contains("eBook")) {
 										validFormats.remove("eBook");
 										validFormats.add("eComic");
 										primaryFormat = "eComic";

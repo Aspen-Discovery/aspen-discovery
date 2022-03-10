@@ -18,11 +18,11 @@ import org.ini4j.Ini;
 public class ExtractOverDriveInfoMain {
 	private static Connection dbConn;
 	private static Logger logger;
+	private static String serverName;
 
 	public static void main(String[] args) {
 		boolean extractSingleWork = false;
 		String singleWorkId = null;
-		String serverName;
 		if (args.length == 0) {
 			serverName = StringUtils.getInputFromCommandLine("Please enter the server name");
 			if (serverName.length() == 0) {
@@ -85,7 +85,7 @@ public class ExtractOverDriveInfoMain {
 				logger.error("Error deleting old log entries", e);
 			}
 
-			HashSet<OverDriveSetting> settings = loadSettings();
+			HashSet<OverDriveSetting> settings = loadSettings(extractSingleWork);
 			final int[] numChanges = {0};
 
 			try {
@@ -198,17 +198,21 @@ public class ExtractOverDriveInfoMain {
 		}
 	}
 
-	private static HashSet<OverDriveSetting> loadSettings() {
+	private static HashSet<OverDriveSetting> loadSettings(boolean extractSingleWork) {
 		HashSet<OverDriveSetting> settings = new HashSet<>();
 		try {
 			PreparedStatement getSettingsStmt = dbConn.prepareStatement("SELECT * from overdrive_settings");
 			ResultSet getSettingsRS = getSettingsStmt.executeQuery();
 			while (getSettingsRS.next()) {
-				OverDriveSetting setting = new OverDriveSetting(getSettingsRS);
+				OverDriveSetting setting = new OverDriveSetting(getSettingsRS, serverName);
 				settings.add(setting);
 			}
+			//Clear works to update
+			if (!extractSingleWork) {
+				dbConn.prepareStatement("UPDATE overdrive_settings SET productsToUpdate = ''").executeUpdate();
+			}
 		} catch (SQLException e) {
-			logger.error("Error loading settings from the database");
+			logger.error("Error loading settings from the database", e);
 		}
 		if (settings.size() == 0) {
 			logger.error("Unable to find settings for Axis 360, please add settings to the database");

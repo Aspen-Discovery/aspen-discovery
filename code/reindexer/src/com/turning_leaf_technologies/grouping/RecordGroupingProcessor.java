@@ -319,7 +319,12 @@ public class RecordGroupingProcessor {
 
 			} else {
 				//Need to insert a new grouped record
-				insertGroupedWorkStmt.setString(1, groupedWork.getTitle());
+				String title = groupedWork.getTitle();
+				if (title.length() > 750){
+					title = title.substring(0, 750);
+					logEntry.addNote("Title for " + primaryIdentifierString + " was truncated");
+				}
+				insertGroupedWorkStmt.setString(1, title);
 				insertGroupedWorkStmt.setString(2, groupedWork.getAuthor());
 				insertGroupedWorkStmt.setString(3, groupedWork.getGroupingCategory());
 				insertGroupedWorkStmt.setString(4, groupedWorkPermanentId);
@@ -340,7 +345,7 @@ public class RecordGroupingProcessor {
 				addPrimaryIdentifierForWorkToDB(groupedWorkId, primaryIdentifier);
 			}
 		} catch (Exception e) {
-			logEntry.incErrors("Error adding grouped record to grouped work ", e);
+			logEntry.incErrors("Error adding grouped record " + primaryIdentifierString + " to grouped work " + groupedWorkPermanentId, e);
 		}
 
 	}

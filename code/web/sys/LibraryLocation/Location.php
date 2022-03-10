@@ -1248,6 +1248,7 @@ class Location extends DataObject
 		if($this->address && empty($this->latitude) && empty($this->longitude)){
 			$address = str_replace("\r\n", ",", $this->address);
 			$address = str_replace(" ", "+", $address);
+			$address = str_replace("#", "", $address);
 
 			require_once ROOT_DIR . '/sys/Enrichment/GoogleApiSetting.php';
 			$googleSettings = new GoogleApiSetting();

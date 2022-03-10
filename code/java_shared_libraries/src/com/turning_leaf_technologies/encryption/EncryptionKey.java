@@ -18,7 +18,11 @@ public class EncryptionKey {
 		try {
 			this.key = Hex.decodeHex(key.toCharArray());
 		} catch (DecoderException e) {
-			logEntry.incErrors("Could not decrypt encryption key", e);
+			if (logEntry != null ) {
+				logEntry.incErrors("Could not decrypt encryption key", e);
+			}else{
+				System.err.println("Could not decrypt encryption key");
+			}
 		}
 	}
 

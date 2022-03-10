@@ -34,8 +34,19 @@ Shows any error that may have recently occurred and at what date and time they o
 #### PHP Information
 Information on Aspen Discovery code.
 
+## How Long Report Information is Stored in Aspen
+For privacy purposes, none of the reporting information available in Aspen is personally identifiable. For example, you may see information that a patron accessed OverDrive, but Aspen will not save information on what they viewed or searched. The various dashboards and logs in Aspen are automatically cleared at varying points. Here is information on how long they are stored:
 
-### Video Tutorial
+- Dashboards like the Usage Dashboard are kept forever from the date of install
+- Dashboards for econtent providers are also forever from the date the econtent provider was connected
+- Usage by IP address is stored for 30 days
+- Indexing logs are stored for 45 days
+- Performance report stored for a month; clears at the beginning of every month
+- Error log clears every 30 days (previously stored forever)
+
+
+
+## Video Tutorial
 
 [![System Reports](/manual/images/System-Admin-System-Reports.jpg)](https://youtu.be/yfmmSB7J_s4)
 

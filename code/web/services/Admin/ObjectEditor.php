@@ -39,13 +39,7 @@ abstract class ObjectEditor extends Admin_Admin
 		$customListActions = $this->customListActions();
 		$interface->assign('customListActions', $customListActions);
 		if (is_null($objectAction) || $objectAction == 'list'){
-			$interface->assign('instructions', $this->getListInstructions());
-			$interface->assign('sortableFields', $this->getSortableFields($structure));
-			$interface->assign('sort', $this->getSort());
-			$filterFields = $this->getFilterFields($structure);
-			$interface->assign('filterFields', $filterFields);
-			$interface->assign('appliedFilters', $this->getAppliedFilters($filterFields));
-			$this->viewExistingObjects();
+			$this->viewExistingObjects($structure);
 		}elseif (($objectAction == 'save' || $objectAction == 'delete')) {
 			$this->editObject($objectAction, $structure);
 		}elseif ($objectAction == 'compare') {
@@ -188,8 +182,15 @@ abstract class ObjectEditor extends Admin_Admin
 		DataObjectUtil::updateFromUI($object, $structure);
 		return DataObjectUtil::validateObject($structure, $object);
 	}
-	function viewExistingObjects(){
+	function viewExistingObjects($structure){
 		global $interface;
+		$interface->assign('instructions', $this->getListInstructions());
+		$interface->assign('sortableFields', $this->getSortableFields($structure));
+		$interface->assign('sort', $this->getSort());
+		$filterFields = $this->getFilterFields($structure);
+		$interface->assign('filterFields', $filterFields);
+		$interface->assign('appliedFilters', $this->getAppliedFilters($filterFields));
+
 		$numObjects = $this->getNumObjects();
 		$page = isset($_REQUEST['page']) ? $_REQUEST['page'] : 1;
 		if (!is_numeric($page)){
@@ -700,7 +701,7 @@ abstract class ObjectEditor extends Admin_Admin
 		return $userHasExistingObjects;
 	}
 
-	private function applyPermissionsToObjectStructure(array $structure)
+	protected function applyPermissionsToObjectStructure(array $structure)
 	{
 		foreach ($structure as $key => &$property){
 			if ($property['type'] == 'section'){

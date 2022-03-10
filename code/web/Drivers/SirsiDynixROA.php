@@ -10,10 +10,19 @@ class SirsiDynixROA extends HorizonAPI
 	private static $logAllAPICalls = false;
 
 	// $customRequest is for curl, can be 'PUT', 'DELETE', 'POST'
-	public function getWebServiceResponse($requestType, $url, $params = null, $sessionToken = null, $customRequest = null, $additionalHeaders = null, $dataToSanitize = [])
+	public function getWebServiceResponse($requestType, $url, $params = null, $sessionToken = null, $customRequest = null, $additionalHeaders = null, $dataToSanitize = [], $workingLibraryId = null)
 	{
 		global $logger;
 		global $library;
+		global $locationSingleton;
+		$physicalLocation = $locationSingleton->getPhysicalLocation();
+
+		if (empty($workingLibraryId)) {
+			$workingLibraryId = $library->ilsCode;
+			if (!empty($physicalLocation)) {
+				$workingLibraryId = $physicalLocation->code;
+			}
+		}
 		$logger->log('WebServiceURL :' . $url, Logger::LOG_NOTICE);
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_URL, $url);
@@ -22,7 +31,7 @@ class SirsiDynixROA extends HorizonAPI
 			'Accept: application/json',
 			'Content-Type: application/json',
 			'SD-Originating-App-Id: Aspen Discovery',
-			'SD-Working-LibraryID: ' . $library->ilsCode,
+			'SD-Working-LibraryID: ' . $workingLibraryId,
 			'x-sirs-clientID: ' . $clientId,
 		);
 		if ($sessionToken != null) {
@@ -703,6 +712,14 @@ class SirsiDynixROA extends HorizonAPI
 
 					list($bibId) = explode(':', $checkout->key);
 					$curCheckout->recordId = 'a' . $bibId;
+					require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+					$recordDriver = RecordDriverFactory::initRecordDriverById($this->getIndexingProfile()->name . ':' . $curCheckout->recordId);
+					if (!$recordDriver->isValid()){
+						$recordDriver = RecordDriverFactory::initRecordDriverById($this->getIndexingProfile()->name . ':' . 'u' . $bibId);
+						if ($recordDriver->isValid()){
+							$curCheckout->recordId = 'u' . $bibId;
+						}
+					}
 					$curCheckout->itemId = $checkout->fields->item->key;
 
 					$curCheckout->dueDate = strtotime($checkout->fields->dueDate);
@@ -714,7 +731,6 @@ class SirsiDynixROA extends HorizonAPI
 					$curCheckout->renewIndicator = $checkout->fields->item->key;
 					$curCheckout->barcode = $checkout->fields->item->fields->barcode;
 
-					$recordDriver = RecordDriverFactory::initRecordDriverById($this->getIndexingProfile()->name . ':' . $curCheckout->recordId);
 					if ($recordDriver->isValid()){
 						$curCheckout->updateFromRecordDriver($recordDriver);
 					}else{
@@ -795,6 +811,15 @@ class SirsiDynixROA extends HorizonAPI
 				$curHold->cancelId = $hold->key;
 				$curHold->position = $hold->fields->queuePosition;
 				$curHold->recordId = 'a' . $bibId;
+				require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+				$recordDriver = RecordDriverFactory::initRecordDriverById($this->getIndexingProfile()->name . ':' . $curHold->recordId);
+				if (!$recordDriver->isValid()){
+					$recordDriver = RecordDriverFactory::initRecordDriverById($this->getIndexingProfile()->name . ':' . 'u' . $bibId);
+					if ($recordDriver->isValid()){
+						$curHold->recordId = 'u' . $bibId;
+					}
+				}
+
 				$curHold->shortId = $bibId;
 				$curPickupBranch = new Location();
 				$curPickupBranch->code = $hold->fields->pickupLibrary->key;
@@ -835,8 +860,6 @@ class SirsiDynixROA extends HorizonAPI
 					$curHold->author = $bibInfo->fields->author;
 				}
 
-				require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
-				$recordDriver = new MarcRecordDriver($curHold->recordId); // This needs the $carlID
 				if ($recordDriver->isValid()){
 					$curHold->updateFromRecordDriver($recordDriver);
 				}
@@ -1000,6 +1023,7 @@ class SirsiDynixROA extends HorizonAPI
 					$holdData['holdType'] = 'COPY';
 				} else {
 					$shortRecordId = str_replace('a', '', $shortId);
+					$shortRecordId = str_replace('u', '', $shortRecordId);
 					$holdData['bib'] = array(
 						'resource' => '/catalog/bib',
 						'key' => $shortRecordId
@@ -1026,7 +1050,21 @@ class SirsiDynixROA extends HorizonAPI
 				}
 				//$holdRecord         = $this->getWebServiceResponse('holdRecordDescribe', $webServiceURL . "/circulation/holdRecord/describe", null, $sessionToken);
 				//$placeHold          = $this->getWebServiceResponse('placeHoldDescribe', $webServiceURL . "/circulation/holdRecord/placeHold/describe", null, $sessionToken);
-				$createHoldResponse = $this->getWebServiceResponse('placeHold', $webServiceURL . "/circulation/holdRecord/placeHold", $holdData, $sessionToken);
+				global $locationSingleton;
+				$physicalLocation = $locationSingleton->getPhysicalLocation();
+
+				if ($library->holdPlacedAt == 0){
+					$workingLibraryId = $library->ilsCode;
+					if (!empty($physicalLocation)) {
+						$workingLibraryId = $physicalLocation->code;
+					}
+				}elseif ($library->holdPlacedAt == 1){
+					$workingLibraryId = $patron->getHomeLocation()->code;
+				}else{
+					$workingLibraryId = $pickupBranch;
+				}
+
+				$createHoldResponse = $this->getWebServiceResponse('placeHold', $webServiceURL . "/circulation/holdRecord/placeHold", $holdData, $sessionToken, null, null, [], $workingLibraryId);
 
 				$hold_result = array();
 				if (isset($createHoldResponse->messageList)) {
@@ -1475,6 +1513,8 @@ class SirsiDynixROA extends HorizonAPI
 			$blockList = $this->getWebServiceResponse('getFines', $webServiceURL . '/user/patron/key/' . $patron->username . '?includeFields=' . $includeFields, null, $sessionToken);
 			// Include Title data if available
 
+			$totalFinesOwed = 0;
+
 			if (!empty($blockList->fields->blockList)) {
 				foreach ($blockList->fields->blockList as $block) {
 					$fine = $block->fields;
@@ -1498,7 +1538,13 @@ class SirsiDynixROA extends HorizonAPI
 						'amountOutstandingVal' => $fine->owed->amount,
 						'date' => $fine->billDate
 					);
+					$totalFinesOwed += $fine->owed->amount;
 				}
+			}
+
+			$accountSummary = $patron->getAccountSummary();
+			if ($accountSummary->totalFines != $totalFinesOwed){
+				$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
 			}
 		}
 		return $fines;
@@ -1885,13 +1931,13 @@ class SirsiDynixROA extends HorizonAPI
 		}
 	}
 
-	function getPasswordPinValidationRules(){
-		return [
-			'minLength' => 4,
-			'maxLength' => 60,
-			'onlyDigitsAllowed' => false,
-		];
-	}
+//	function getPasswordPinValidationRules(){
+//		return [
+//			'minLength' => 4,
+//			'maxLength' => 60,
+//			'onlyDigitsAllowed' => false,
+//		];
+//	}
 
 	/**
 	 * Loads any contact information that is not stored by Aspen Discovery from the ILS. Updates the user object.
@@ -2290,6 +2336,7 @@ class SirsiDynixROA extends HorizonAPI
 
 					foreach ( $getCircHistoryResponse->fields->circHistoryRecordList as $circEntry){
 						$historyEntry = array();
+						$shortId = $circEntry->fields->bib->key;
 						$bibId = 'a' . $circEntry->fields->bib->key;
 						$historyEntry['id'] = $bibId;
 						$historyEntry['shortId'] = $bibId;
@@ -2305,15 +2352,18 @@ class SirsiDynixROA extends HorizonAPI
 						$historyEntry['checkin'] = strtotime($circEntry->fields->checkInDate);
 						if (!empty($historyEntry['recordId'])) {
 							if ($systemVariables->storeRecordDetailsInDatabase){
-                                $getRecordDetailsQuery = 'SELECT permanent_id, indexed_format.format FROM grouped_work_records 
+                                $getRecordDetailsQuery = 'SELECT permanent_id, indexed_format.format, recordIdentifier FROM grouped_work_records 
 								  LEFT JOIN grouped_work ON groupedWorkId = grouped_work.id
 								  LEFT JOIN indexed_record_source ON sourceId = indexed_record_source.id
 								  LEFT JOIN indexed_format on formatId = indexed_format.id
-								  where source = ' . $aspen_db->quote($this->accountProfile->recordSource) . ' and recordIdentifier = ' . $aspen_db->quote($bibId) ;
+								  where source = ' . $aspen_db->quote($this->accountProfile->recordSource) . ' AND (recordIdentifier = ' . $aspen_db->quote('a' . $shortId) . ' OR recordIdentifier = ' . $aspen_db->quote('u' . $shortId) . ')';
 								$results = $aspen_db->query($getRecordDetailsQuery, PDO::FETCH_ASSOC);
 								if ($results){
 									$result = $results->fetch();
 									if ($result) {
+										$historyEntry['id'] = $result['recordIdentifier'];
+										$historyEntry['shortId'] = $result['recordIdentifier'];
+										$historyEntry['recordId'] = $result['recordIdentifier'];
 										$groupedWorkDriver = new GroupedWorkDriver($result['permanent_id']);
 										if ($groupedWorkDriver->isValid()) {
 											$historyEntry['ratingData'] = $groupedWorkDriver->getRatingData();

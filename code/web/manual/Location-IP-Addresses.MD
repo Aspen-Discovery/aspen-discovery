@@ -14,6 +14,8 @@
   - 'Block Access from this IP' gives you the ability to block an IP that is affecting your sites performance
   - 'Allow API Access' allows the defined IP address to use Aspen through an API connection to get information 
 
+- To find your current IP as well as information where Aspen thinks you are, you can navigate to http://_yoursite_/Help/IP. 
+
 ## Video Tutorial
 
 [![IP Addresses](/manual/images/IP-Addresses.jpg)](https://youtu.be/BHVNk5EPBOc)

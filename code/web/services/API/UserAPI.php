@@ -23,7 +23,7 @@ class UserAPI extends Action
 
 		if (isset($_SERVER['PHP_AUTH_USER'])) {
 			if($this->grantTokenAccess()) {
-				if (in_array($method, array('isLoggedIn', 'logout', 'checkoutItem', 'placeHold', 'renewItem', 'renewAll', 'viewOnlineItem', 'changeHoldPickUpLocation', 'getPatronProfile', 'validateAccount', 'getPatronHolds', 'getPatronCheckedOutItems', 'cancelHold', 'activateHold', 'freezeHold', 'returnCheckout', 'updateOverDriveEmail', 'getValidPickupLocations', 'getHiddenBrowseCategories', 'getILSMessages', 'dismissBrowseCategory', 'showBrowseCategory'))) {
+				if (in_array($method, array('isLoggedIn', 'logout', 'login', 'checkoutItem', 'placeHold', 'renewItem', 'renewAll', 'viewOnlineItem', 'changeHoldPickUpLocation', 'getPatronProfile', 'validateAccount', 'getPatronHolds', 'getPatronCheckedOutItems', 'cancelHold', 'activateHold', 'freezeHold', 'returnCheckout', 'updateOverDriveEmail', 'getValidPickupLocations', 'getHiddenBrowseCategories', 'getILSMessages', 'dismissBrowseCategory', 'showBrowseCategory', 'getLinkedAccounts', 'getViewers', 'addAccountLink', 'removeAccountLink', 'saveLanguage'))) {
 					header("Cache-Control: max-age=10800");
 					require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
 					APIUsage::incrementStat('UserAPI', $method);
@@ -374,19 +374,46 @@ class UserAPI extends Action
 				}
 			}
 
+			$linkedUsers = $_REQUEST['linkedUsers'] ?? false;
+
 			$numCheckedOut = 0;
+			$numOverdue = 0;
 			$numHolds = 0;
 			$numHoldsAvailable = 0;
 			$accountSummary = $user->getAccountSummary();
 			$userData->numCheckedOutIls = (int)$accountSummary->numCheckedOut;
 			$userData->numHoldsIls =(int) $accountSummary->getNumHolds();
-			$userData->numHoldsAvailableIls = (int) ($accountSummary->numAvailableHolds == null ? 0 : $accountSummary->numAvailableHolds);
-			$userData->numHoldsRequestedIls = (int) ($accountSummary->numUnavailableHolds == null ? 0 :  $accountSummary->numUnavailableHolds);
+			$userData->numHoldsAvailableIls = (int)($accountSummary->numAvailableHolds == null ? 0 : $accountSummary->numAvailableHolds);
+			$userData->numHoldsRequestedIls = (int)($accountSummary->numUnavailableHolds == null ? 0 :  $accountSummary->numUnavailableHolds);
 			$userData->numOverdue = (int)$accountSummary->numOverdue;
 			$userData->finesVal = (float)$accountSummary->totalFines;
 			$numCheckedOut += $userData->numCheckedOutIls;
 			$numHolds += $userData->numHoldsIls;
 			$numHoldsAvailable += $userData->numHoldsAvailableIls;
+			$numOverdue += $userData->numOverdue;
+
+			$userData->expires = $accountSummary->expiresOn();
+			$userData->expireClose = $accountSummary->isExpirationClose();
+			$userData->expired = $accountSummary->isExpired();
+
+
+			if ($linkedUsers && $user->getLinkedUsers() != null) {
+				/** @var User $user */
+				foreach ($user->getLinkedUsers() as $linkedUser) {
+					$linkedUserSummary = $linkedUser->getCatalogDriver()->getAccountSummary($linkedUser);
+					$userData->finesVal += (int)$linkedUserSummary->totalFines;
+					$userData->numHoldsIls = (int)$linkedUserSummary->getNumHolds();
+					$userData->numCheckedOutIls += (int)$linkedUserSummary->numCheckedOut;
+					$userData->numOverdue += (int)$linkedUserSummary->numOverdue;
+					$userData->numHoldsAvailableIls += (int)($linkedUserSummary->numAvailableHolds == null ? 0 : $linkedUserSummary->numAvailableHolds);
+					$userData->numHoldsRequestedIls += (int)($linkedUserSummary->numUnavailableHolds == null ? 0 : $linkedUserSummary->numUnavailableHolds);
+					$numCheckedOut += (int)$linkedUserSummary->numCheckedOut;
+					$numHolds += (int)$linkedUserSummary->getNumHolds();
+					$numHoldsAvailable += ($linkedUserSummary->numAvailableHolds == null ? 0 : $linkedUserSummary->numAvailableHolds);
+					$numOverdue += (int)$linkedUserSummary->numOverdue;
+				}
+			}
+
 			global $activeLanguage;
 			$currencyCode = 'USD';
 			$variables = new SystemVariables();
@@ -405,9 +432,23 @@ class UserAPI extends Action
 				$userData->numCheckedOutOverDrive = (int)$overDriveSummary->numCheckedOut;
 				$userData->numHoldsOverDrive = (int)$overDriveSummary->getNumHolds();
 				$userData->numHoldsAvailableOverDrive = (int)$overDriveSummary->numAvailableHolds;
-				$numCheckedOut += $userData->numCheckedOutOverDrive;
-				$numHolds += $userData->numHoldsOverDrive;
-				$numHoldsAvailable += $userData->numHoldsAvailableOverDrive;
+				$numCheckedOut += (int)$overDriveSummary->numCheckedOut;
+				$numHolds += (int)$overDriveSummary->getNumHolds();
+				$numHoldsAvailable += (int)$overDriveSummary->numAvailableHolds;
+
+				if ($linkedUsers && $user->getLinkedUsers() != null) {
+					/** @var User $user */
+					foreach ($user->getLinkedUsers() as $linkedUser) {
+						$linkedUserSummary_OverDrive = $driver->getAccountSummary($linkedUser);
+						$userData->numCheckedOutOverDrive += (int)$linkedUserSummary_OverDrive->numCheckedOut;
+						$userData->numHoldsOverDrive += (int)$linkedUserSummary_OverDrive->getNumHolds();
+						$userData->numHoldsAvailableOverDrive += (int)$linkedUserSummary_OverDrive->numAvailableHolds;
+						$numCheckedOut += (int)$linkedUserSummary_OverDrive->numCheckedOut;
+						$numHolds += (int)$linkedUserSummary_OverDrive->getNumHolds();
+						$numHoldsAvailable += (int)$linkedUserSummary_OverDrive->numAvailableHolds;
+					}
+				}
+
 			}
 
 			//Add hoopla data
@@ -416,7 +457,16 @@ class UserAPI extends Action
 				$driver = new HooplaDriver();
 				$hooplaSummary = $driver->getAccountSummary($user);
 				$userData->numCheckedOut_Hoopla = (int)$hooplaSummary->numCheckedOut;
-				$numCheckedOut += $userData->numCheckedOut_Hoopla;
+				$numCheckedOut += (int)$hooplaSummary->numCheckedOut;
+
+				if ($linkedUsers && $user->getLinkedUsers() != null) {
+					/** @var User $user */
+					foreach ($user->getLinkedUsers() as $linkedUser) {
+						$linkedUserSummary_Hoopla = $driver->getAccountSummary($linkedUser);
+						$userData->numCheckedOut_Hoopla += (int)$linkedUserSummary_Hoopla->numCheckedOut;
+						$numCheckedOut += (int)$linkedUserSummary_Hoopla->numCheckedOut;
+					}
+				}
 			}
 
 			//Add cloudLibrary data
@@ -427,9 +477,22 @@ class UserAPI extends Action
 				$userData->numCheckedOut_cloudLibrary = (int)$cloudLibrarySummary->numCheckedOut;
 				$userData->numHolds_cloudLibrary = (int)$cloudLibrarySummary->getNumHolds();
 				$userData->numHoldsAvailable_cloudLibrary = (int)$cloudLibrarySummary->numAvailableHolds;
-				$numCheckedOut += $userData->numCheckedOut_cloudLibrary;
-				$numHolds += $userData->numHolds_cloudLibrary;
-				$numHoldsAvailable += $userData->numHoldsAvailable_cloudLibrary;
+				$numCheckedOut += (int)$cloudLibrarySummary->numCheckedOut;
+				$numHolds += (int)$cloudLibrarySummary->getNumHolds();
+				$numHoldsAvailable += (int)$cloudLibrarySummary->numAvailableHolds;
+
+				if ($linkedUsers && $user->getLinkedUsers() != null) {
+					/** @var User $user */
+					foreach ($user->getLinkedUsers() as $linkedUser) {
+						$linkedUserSummary_cloudLibrary = $driver->getAccountSummary($linkedUser);
+						$userData->numCheckedOut_cloudLibrary += (int)$linkedUserSummary_cloudLibrary->numCheckedOut;
+						$userData->numHolds_cloudLibrary += (int)$linkedUserSummary_cloudLibrary->getNumHolds();
+						$userData->numHoldsAvailable_cloudLibrary += (int)$linkedUserSummary_cloudLibrary->numAvailableHolds;
+						$numCheckedOut += (int)$linkedUserSummary_cloudLibrary->numCheckedOut;
+						$numHolds += (int)$linkedUserSummary_cloudLibrary->getNumHolds();
+						$numHoldsAvailable += (int)$linkedUserSummary_cloudLibrary->numAvailableHolds;
+					}
+				}
 			}
 
 			//Add axis360 data
@@ -440,9 +503,22 @@ class UserAPI extends Action
 				$userData->numCheckedOut_axis360 = (int)$axis360Summary->numCheckedOut;
 				$userData->numHolds_axis360 = (int)$axis360Summary->getNumHolds();
 				$userData->numHoldsAvailable_axis360 = (int)$axis360Summary->numAvailableHolds;
-				$numCheckedOut += $userData->numCheckedOut_axis360;
-				$numHolds += $userData->numHolds_axis360;
-				$numHoldsAvailable += $userData->numHoldsAvailable_axis360;
+				$numCheckedOut += (int)$axis360Summary->numCheckedOut;
+				$numHolds += (int)$axis360Summary->getNumHolds();
+				$numHoldsAvailable += (int)$axis360Summary->numAvailableHolds;
+
+				if ($linkedUsers && $user->getLinkedUsers() != null) {
+					/** @var User $user */
+					foreach ($user->getLinkedUsers() as $linkedUser) {
+						$linkedUserSummary_axis360 = $driver->getAccountSummary($linkedUser);
+						$userData->numCheckedOut_axis360 += (int)$linkedUserSummary_axis360->numCheckedOut;
+						$userData->numHolds_axis360 += (int)$linkedUserSummary_axis360->getNumHolds();
+						$userData->numHoldsAvailable_axis360 += (int)$linkedUserSummary_axis360->numAvailableHolds;
+						$numCheckedOut += (int)$linkedUserSummary_axis360->numCheckedOut;
+						$numHolds += (int)$linkedUserSummary_axis360->getNumHolds();
+						$numHoldsAvailable += (int)$linkedUserSummary_axis360->numAvailableHolds;
+					}
+				}
 			}
 
 			$userData->numCheckedOut = $numCheckedOut;
@@ -578,7 +654,8 @@ class UserAPI extends Action
 			$user = $this->getUserForApiCall();
 			if ($user && !($user instanceof AspenError)) {
 				$source = $_REQUEST['source'] ?? 'all';
-				$allHolds = $user->getHolds(false, 'sortTitle', 'expire', $source);
+				$linkedUsers = $_REQUEST['linkedUsers'] ?? false;
+				$allHolds = $user->getHolds($linkedUsers, 'sortTitle', 'expire', $source);
 				$holdsToReturn = [
 					'available' => [],
 					'unavailable' => [],
@@ -918,7 +995,8 @@ class UserAPI extends Action
 			$user = $this->getUserForApiCall();
 			if ($user && !($user instanceof AspenError)) {
 				$source = $_REQUEST['source'] ?? 'all';
-				$allCheckedOut = $user->getCheckouts(false, $source);
+				$linkedUsers = $_REQUEST['linkedUsers'] ?? false;
+				$allCheckedOut = $user->getCheckouts($linkedUsers, $source);
 				$checkoutsList = [];
 				foreach ($allCheckedOut as $checkoutObj){
 					$checkoutsList[] = $checkoutObj->getArrayForAPIs();
@@ -2604,16 +2682,8 @@ class UserAPI extends Action
 	 */
 	private function loadUsernameAndPassword() : array
 	{
-		if (isset($_REQUEST['username'])) {
-			$username = $_REQUEST['username'];
-		} else {
-			$username = '';
-		}
-		if (isset($_REQUEST['password'])) {
-			$password = $_REQUEST['password'];
-		} else {
-			$password = '';
-		}
+		$username = $_REQUEST['username'] ?? '';
+		$password = $_REQUEST['password'] ?? '';
 
 		// check for post request data
 		if (isset($_POST['username']) && isset($_POST['password'])) {
@@ -2848,6 +2918,161 @@ class UserAPI extends Action
 			$user = UserAccount::validateAccount($username, $password);
 		}
 		return $user;
+	}
+
+	function getLinkedAccounts()
+	{
+		list($username, $password) = $this->loadUsernameAndPassword();
+		$patron = UserAccount::validateAccount($username, $password);
+
+		if ($patron && !($patron instanceof AspenError)) {
+			$linkedAccounts = $patron->getLinkedUsers();
+			$account = [];
+			if (count($linkedAccounts) > 0) {
+				foreach($linkedAccounts as $linkedAccount) {
+					$account[$linkedAccount->id]['displayName'] = $linkedAccount->displayName;
+					$account[$linkedAccount->id]['homeLocation'] = $linkedAccount->getHomeLocation()->displayName;
+					$account[$linkedAccount->id]['barcode'] = $linkedAccount->cat_username;
+					$account[$linkedAccount->id]['id'] = $linkedAccount->id;
+				}
+				return array(
+					'success' => true,
+					'linkedAccounts' => $account
+				);
+			} else {
+				return array('success' => false, 'title' =>  translate(['text' => 'Error', 'isPublicFacing' => true]), 'message' =>  translate(['text' => 'You have no linked accounts', 'isPublicFacing' => true]), 'linkedAccounts' => $account);
+			}
+		} else {
+			return array('success' => false, 'title' =>  translate(['text' => 'Error', 'isPublicFacing' => true]), 'message' => translate(['text' => 'Unable to validate user', 'isPublicFacing' => true]));
+		}
+	}
+
+	function getViewers() {
+		list($username, $password) = $this->loadUsernameAndPassword();
+		$patron = UserAccount::validateAccount($username, $password);
+
+		if ($patron && !($patron instanceof AspenError)) {
+			$viewers = [];
+			require_once ROOT_DIR . '/sys/Account/UserLink.php';
+			$userLink = new UserLink();
+			$userLink->linkedAccountId = $patron->id;
+			$userLink->linkingDisabled = "0";
+			$userLink->find();
+			while($userLink->fetch()) {
+				$linkedUser = new User();
+				$linkedUser->id = $userLink->primaryAccountId;
+				if ($linkedUser->find(true)){
+					if (!$linkedUser->isBlockedAccount($patron->id)) {
+						$viewers[$linkedUser->id]['displayName'] = $linkedUser->displayName;
+						$viewers[$linkedUser->id]['homeLocation'] = $linkedUser->getHomeLocation()->displayName;
+						$viewers[$linkedUser->id]['barcode'] = $linkedUser->cat_username;
+						$viewers[$linkedUser->id]['id'] = $linkedUser->id;
+					}
+				}
+			}
+
+			return array (
+				'success' => true,
+				'viewers' => $viewers,
+			);
+		} else {
+			return array('success' => false, 'title' =>  translate(['text' => 'Error', 'isPublicFacing' => true]), 'message' => translate(['text' => 'Unable to validate user', 'isPublicFacing' => true]));
+		}
+	}
+
+	function addAccountLink()
+	{
+		list($username, $password) = $this->loadUsernameAndPassword();
+
+		$accountToLinkUsername = $_POST['accountToLinkUsername'] ?? '';
+		$accountToLinkPassword = $_POST['accountToLinkPassword'] ?? '';
+
+		$accountToLink = UserAccount::validateAccount($accountToLinkUsername, $accountToLinkPassword);
+		$patron = UserAccount::validateAccount($username, $password);
+
+		if ($patron && !($patron instanceof AspenError)) {
+			if($accountToLink) {
+				if($accountToLink->id != $patron->id) {
+					$addResult = $patron->addLinkedUser($accountToLink);
+					if($addResult === true) {
+						return array(
+							'success' => true,
+							'title' => translate(['text' => 'Accounts linked', 'isPublicFacing' => true]),
+							'message' => translate(['text'=>'Successfully linked accounts.', 'isPublicFacing'=>true])
+						);
+					} else {
+						return array(
+							'success' => false,
+							'title' => translate(['text' => 'Unable to link accounts', 'isPublicFacing' => true]),
+							'message' => translate(['text'=>'Sorry, we could not link to that account.  Accounts cannot be linked if all libraries do not allow account linking.  Please contact your local library if you have questions.', 'isPublicFacing'=>true])
+						);
+					}
+				} else {
+					return array(
+						'success' => false,
+						'title' => translate(['text' => 'Unable to link accounts', 'isPublicFacing' => true]),
+						'message' => translate(['text'=>'You cannot link to yourself.', 'isPublicFacing'=>true])
+					);
+				}
+			} else {
+				return array(
+					'success' => false,
+					'title' => translate(['text' => 'Unable to link accounts', 'isPublicFacing' => true]),
+					'message' => translate(['text'=>'Sorry, we could not find a user with that information to link to.', 'isPublicFacing'=>true])
+				);
+			}
+		} else {
+			return array('success' => false, 'title' =>  translate(['text' =>  translate(['text' => 'Error', 'isPublicFacing' => true]), 'isPublicFacing' => true]), 'message' => translate(['text' => 'Unable to validate user', 'isPublicFacing' => true]));
+		}
+	}
+
+	function removeAccountLink()
+	{
+		list($username, $password) = $this->loadUsernameAndPassword();
+		$patron = UserAccount::validateAccount($username, $password);
+		if ($patron && !($patron instanceof AspenError)) {
+			$accountToRemove = $_REQUEST['idToRemove'];
+			if($patron->removeLinkedUser($accountToRemove)) {
+				return array(
+					'success' => true,
+					'title' => translate(['text' => 'Accounts no longer linked', 'isPublicFacing' => true]),
+					'message' => translate(['text'=>'Successfully removed linked account.', 'isPublicFacing'=>true])
+				);
+			} else {
+				return array(
+					'success' => false,
+					'title' => translate(['text' => 'Unable to unlink accounts', 'isPublicFacing' => true]),
+					'message' => translate(['text'=>'Sorry, we could remove that account.', 'isPublicFacing'=>true])
+				);
+			}
+		} else {
+			return array('success' => false, 'title' =>  translate(['text' =>  translate(['text' => 'Error', 'isPublicFacing' => true]), 'isPublicFacing' => true]), 'message' => translate(['text' => 'Unable to validate user', 'isPublicFacing' => true]));
+		}
+	}
+
+	function saveLanguage()
+	{
+		list($username, $password) = $this->loadUsernameAndPassword();
+		$patron = UserAccount::validateAccount($username, $password);
+		if ($patron && !($patron instanceof AspenError)) {
+			if (isset($_REQUEST['languageCode'])){
+				$patron->interfaceLanguage = $_REQUEST['languageCode'];
+				$patron->update();
+				return array(
+					'success' => true,
+					'title' => translate(['text' => 'Language updated', 'isPublicFacing' => true]),
+					'message' => translate(['text'=> 'Your language preference was updated.', 'isPublicFacing'=>true])
+				);
+			} else {
+				return array(
+					'success' => false,
+					'title' => translate(['text' => 'Unable to update language', 'isPublicFacing' => true]),
+					'message' => translate(['text'=>'A language code was no provided', 'isPublicFacing'=>true])
+				);
+			}
+		} else {
+			return array('success' => false, 'title' =>  translate(['text' =>  translate(['text' => 'Error', 'isPublicFacing' => true]), 'isPublicFacing' => true]), 'message' => translate(['text' => 'Unable to validate user', 'isPublicFacing' => true]));
+		}
 	}
 
 	function getBreadcrumbs() : array

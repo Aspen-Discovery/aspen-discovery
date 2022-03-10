@@ -112,11 +112,13 @@
 									{/if}
 								</ul>
 
-								<div class="myAccountLink">
-									<a href="/MyAccount/ReadingHistory">
-										{translate text="Reading History" isPublicFacing=true} {if !$offline}<span class="badge"><span class="readingHistory-placeholder">??</span></span>{/if}
-									</a>
-								</div>
+								{if $enableReadingHistory}
+									<div class="myAccountLink">
+										<a href="/MyAccount/ReadingHistory">
+											{translate text="Reading History" isPublicFacing=true} {if !$offline}<span class="badge"><span class="readingHistory-placeholder">??</span></span>{/if}
+										</a>
+									</div>
+								{/if}
 								{if $showCurbsidePickups}
 									<div class="myAccountLink" title="Curbside Pickups">
 										<a href="/MyAccount/CurbsidePickups">{translate text='Curbside Pickups' isPublicFacing=true}</a>
@@ -176,8 +178,10 @@
 									<li class="myAccountLink">&nbsp;&nbsp;&raquo;&nbsp;<a href="/MyAccount/StaffSettings">{translate text='Staff Settings' isPublicFacing=true}</a></li>
 								{/if}
 							</ul>
-							{* Only highlight saved searches as active if user is logged in: *}
-							<div class="myAccountLink{if $user && $pageTemplate=="history.tpl"} active{/if}"><a href="/Search/History?require_login">{translate text='Search History' isPublicFacing=true}</a></div>
+							{if $enableSavedSearches}
+								{* Only highlight saved searches as active if user is logged in: *}
+								<div class="myAccountLink{if $user && $pageTemplate=="history.tpl"} active{/if}"><a href="/Search/History?require_login">{translate text='Search History' isPublicFacing=true}</a></div>
+							{/if}
 							{if $allowMasqueradeMode && !$masqueradeMode}
 								{if $canMasquerade}
 									<hr class="menu">

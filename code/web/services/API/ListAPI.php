@@ -303,7 +303,7 @@ class ListAPI extends Action
 		return array('success' => true, 'lists' => $systemLists);
 	}
 
-	private function _getUserListTitles($listId, $numTitlesToShow)
+	private function _getUserListTitles($listId, $numTitlesToShow, $user)
 	{
 		//The list is a patron generated list
 		$list = new UserList();
@@ -359,7 +359,7 @@ class ListAPI extends Action
 			if (isset($listInfo)) {
 				$listId = $listInfo[1];
 			}
-			return $this->_getUserListTitles($listId, $numTitlesToShow);
+			return $this->_getUserListTitles($listId, $numTitlesToShow, $user);
 		} elseif (preg_match('/search:(?<searchID>.*)/', $listId, $searchInfo)) {
 			if (is_numeric($searchInfo[1])) {
 				$titles = $this->getSavedSearchTitles($searchInfo[1], $numTitlesToShow);

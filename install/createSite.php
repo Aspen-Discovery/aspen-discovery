@@ -7,7 +7,7 @@
 echo("This will create the proper directories and configuration files for a new site\r\n");
 $sitename = '';
 while (empty($sitename)) {
-	$sitename = readline("Enter the sitename to be setup (i.e. demo.localhost, library.production) > ");
+	$sitename = readline("Enter the sitename to be setup (e.g., demo.localhost, library.production) > ");
 }
 $cleanSitename = preg_replace('/\W/', '_', $sitename);
 $variables = [
@@ -64,17 +64,17 @@ if (file_exists($siteDir)){
 //Prompt for needed information
 $variables['library'] = '';
 while (empty($variables['library'])) {
-	$variables['library'] = readline("Enter the library or consortium name i.e. Aspen Public Library > ");
+	$variables['library'] = readline("Enter the library or consortium name, e.g., Aspen Public Library > ");
 }
 
 $variables['title'] = '';
 while (empty($variables['title'])) {
-	$variables['title'] = readline("Enter the title of the site, i.e. Aspen Demo (may be same as library name) > ");
+	$variables['title'] = readline("Enter the title of the site, e.g., Aspen Demo (may be same as library name) > ");
 }
 
 $variables['url'] = '';
 while (empty($variables['url'])) {
-	$variables['url'] = readline("Enter the url where the site will be accessed, i.e. https://aspen.turningleaftechnologies.com or http://demo.localhost > ");
+	$variables['url'] = readline("Enter the url where the site will be accessed, e.g., https://aspen.turningleaftechnologies.com or http://demo.localhost > ");
 }
 $variables['servername'] = preg_replace('~https?://~', '', $variables['url']);
 
@@ -88,7 +88,7 @@ if (empty($siteOnWindows) || ($siteOnWindows != 'Y' && $siteOnWindows != 'y')){
 if (!$siteOnWindows) {
 	$linuxOS = '';
 	while (empty($linuxOS) || !in_array($linuxOS, $linuxArray)) {
-		$linuxOS = readline("Enter the name of your Linux OS (i.e. ".implode (" / ", $linuxArray)." ) > ");
+		$linuxOS = readline("Enter the name of your Linux OS (e.g., ".implode (" / ", $linuxArray)." ) > ");
 	}
 }
 
@@ -124,7 +124,7 @@ if ($variables['ils'] == 'Koha'){
 	while (empty($variables['ilsDBPort'])) {
 		$variables['ilsDBPort'] = readline("Database port for Koha > ");
 	}
-	$variables['ilsDBTimezone'] = readline("Database timezone for Koha (i.e. US/Pacific) > ");
+	$variables['ilsDBTimezone'] = readline("Database timezone for Koha (e.g., US/Pacific) > ");
 	if (empty($variables['ilsDBTimezone'])){
 		$variables['ilsDBTimezone'] = 'US/Pacific';
 	}
@@ -158,7 +158,7 @@ while (empty($variables['aspenDBPwd'])) {
 	$variables['aspenDBPwd'] = readline("Database password for {$variables['aspenDBUser']} for Aspen > ");
 }
 
-$variables['timezone'] =  readline("Enter the timezone of the library (i.e. America/Los_Angeles, check http://www.php.net/manual/en/timezones.php) > ");
+$variables['timezone'] =  readline("Enter the timezone of the library (e.g. America/Los_Angeles, check http://www.php.net/manual/en/timezones.php) > ");
 if (empty($variables['timezone'])){
 	$variables['timezone'] = "America/Los_Angeles";
 }

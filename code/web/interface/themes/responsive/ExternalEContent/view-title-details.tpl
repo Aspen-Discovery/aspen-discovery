@@ -76,7 +76,7 @@
 		</div>
 	{/if}
 
-	{include file="GroupedWork/relatedLists.tpl"}
+	{include file="GroupedWork/relatedLists.tpl" isSearchResults=false}
 
 	{include file="GroupedWork/readingHistoryIndicator.tpl"}
 

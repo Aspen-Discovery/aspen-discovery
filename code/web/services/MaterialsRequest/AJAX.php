@@ -416,7 +416,7 @@ class MaterialsRequest_AJAX extends Action{
 		return array(
 			'title' => 'Import Materials Requests',
 			'modalBody' => $interface->fetch("MaterialsRequest/import-requests.tpl"),
-			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#importRequestsForm\").submit()'>Import Requests</button>"
+			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#importRequestsForm\").submit()'>" . translate(['text'=>'Import Requests','isAdminFacing'=>true, 'inAttribute'=>true]) . "</button>"
 		);
 	}
 

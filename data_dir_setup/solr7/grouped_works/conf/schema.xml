@@ -34,6 +34,7 @@
 				<!-- We have not defined words so this is not needed <filter class="solr.KeywordMarkerFilterFactory" protected="protwords.txt"/> -->
 				<filter class="solr.KeywordRepeatFilterFactory" />
 				<filter class="solr.SnowballPorterFilterFactory" language="English"/>
+				<filter class="solr.LowerCaseFilterFactory"/>
 				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
 			</analyzer>
 			<analyzer type="query">
@@ -46,7 +47,9 @@
 				<filter class="solr.WordDelimiterGraphFilterFactory" generateWordParts="1" generateNumberParts="1" catenateWords="1" catenateNumbers="1" catenateAll="0" splitOnCaseChange="1" preserveOriginal="1"/>
 				<!-- We have not defined words so this is not needed <filter class="solr.CommonGramsFilterFactory" words="stopwords.txt" ignoreCase="true"/> -->
 				<!-- We have not defined words so this is not needed <filter class="solr.KeywordMarkerFilterFactory" protected="protwords.txt"/> -->
-				<!-- Don't need to stem the search <filter class="solr.SnowballPorterFilterFactory" language="English"/> -->
+				<!-- Need to stem the search in case the patron doesn't enter stemming in the same order -->
+				<filter class="solr.SnowballPorterFilterFactory" language="English"/>
+				<filter class="solr.LowerCaseFilterFactory"/>
 				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
 			</analyzer>
 		</fieldType>
@@ -60,6 +63,7 @@
 				<filter class="solr.WordDelimiterGraphFilterFactory" generateWordParts="1" generateNumberParts="1" catenateWords="1" catenateNumbers="1" catenateAll="0" splitOnCaseChange="1" preserveOriginal="1"/>
 				<filter class="solr.KeywordRepeatFilterFactory" />
 				<filter class="solr.KStemFilterFactory"/>
+				<filter class="solr.LowerCaseFilterFactory"/>
 				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
 			</analyzer>
 			<analyzer type="query">
@@ -70,7 +74,9 @@
 				<filter class="solr.ICUFoldingFilterFactory"/>
 				<!--				<filter class="solr.SynonymGraphFilterFactory" synonyms="synonyms.txt" ignoreCase="true" expand="true"/>-->
 				<filter class="solr.WordDelimiterGraphFilterFactory" generateWordParts="1" generateNumberParts="1" catenateWords="1" catenateNumbers="1" catenateAll="0" splitOnCaseChange="1" preserveOriginal="1"/>
-				<!-- Don't need to stem the search <filter class="solr.SnowballPorterFilterFactory" language="English"/> -->
+				<filter class="solr.KeywordRepeatFilterFactory" />
+				<filter class="solr.KStemFilterFactory"/>
+				<filter class="solr.LowerCaseFilterFactory"/>
 				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
 			</analyzer>
 		</fieldType>
@@ -83,6 +89,7 @@
 				<filter class="solr.ICUFoldingFilterFactory"/>
 				<filter class="solr.WordDelimiterGraphFilterFactory" generateWordParts="1" generateNumberParts="1" catenateWords="1" catenateNumbers="1" catenateAll="0" splitOnCaseChange="1" preserveOriginal="1"/>
 				<filter class="solr.KeywordRepeatFilterFactory" />
+				<filter class="solr.LowerCaseFilterFactory"/>
 				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
 			</analyzer>
 			<analyzer type="query">
@@ -93,7 +100,7 @@
 				<filter class="solr.ICUFoldingFilterFactory"/>
 				<!--				<filter class="solr.SynonymGraphFilterFactory" synonyms="synonyms.txt" ignoreCase="true" expand="true"/>-->
 				<filter class="solr.WordDelimiterGraphFilterFactory" generateWordParts="1" generateNumberParts="1" catenateWords="1" catenateNumbers="1" catenateAll="0" splitOnCaseChange="1" preserveOriginal="1"/>
-				<!-- Don't need to stem the search <filter class="solr.SnowballPorterFilterFactory" language="English"/> -->
+				<filter class="solr.LowerCaseFilterFactory"/>
 				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
 			</analyzer>
 		</fieldType>
@@ -128,6 +135,7 @@
 			<analyzer>
 				<tokenizer class="solr.WhitespaceTokenizerFactory"/>
 				<filter class="solr.WordDelimiterGraphFilterFactory" generateWordParts="1" generateNumberParts="1" catenateWords="1" catenateNumbers="1" catenateAll="0" splitOnCaseChange="1" preserveOriginal="1"/>
+				<filter class="solr.LowerCaseFilterFactory"/>
 				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
 			</analyzer>
 		</fieldType>

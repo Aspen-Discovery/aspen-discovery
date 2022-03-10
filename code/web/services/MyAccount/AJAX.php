@@ -325,12 +325,12 @@ class MyAccount_AJAX extends JSON_Action
 							if($tmpResult['success']){$success++;}
 						}
 
-						$message = '<div class="alert alert-success">' . $success . ' of ' . $total . ' holds were canceled.</div>';
+						$message = '<div class="alert alert-success">' . translate(['text' => '%1% of %2% holds were cancelled', 1 => $success, 2 => $total, 'isPublicFacing' => true, 'inAttribute'=>true]) . '</div>';
 						$tmpResult['message'] = $message;
 					}
 				}
 			} else {
-				$tmpResult['message'] = 'No holds were selected to canceled';
+				$tmpResult['message'] = translate(['text' => 'No holds were selected to canceled', 'isPublicFacing' => true, 'inAttribute'=>true]);
 			}
 		}
 
@@ -375,12 +375,12 @@ class MyAccount_AJAX extends JSON_Action
 					if($tmpResult['success']){$success++;}
 				}
 
-				$message = '<div class="alert alert-success">' . $success . ' of ' . $total . ' holds were canceled.</div>';
+				$message = '<div class="alert alert-success">' .translate(['text' => '%1% of %2% holds were canceled', 1 => $success, 2 => $total, 'isPublicFacing' => true, 'inAttribute'=>true]) . '</div>';
 				$tmpResult['message'] = $message;
 
 			}
 		} else {
-			$tmpResult['message'] = 'You must be logged in to cancel holds';
+			$tmpResult['message'] = translate(['text' => 'You must be logged in to cancel holds', 'isPublicFacing' => true, 'inAttribute'=>true]);
 		}
 
 		return $tmpResult;
@@ -458,7 +458,7 @@ class MyAccount_AJAX extends JSON_Action
 					if ($patronOwningHold == false) {
 						$tmpResult = array(
 							'success' => false,
-							'message' => 'Sorry, it looks like you don\'t have access to that patron.'
+							'message' => translate(['text' => 'Sorry, it looks like you don\'t have access to that patron.', 'isPublicFacing' => true, 'inAttribute'=>true])
 						);
 					} else {
 						foreach ($allUnavailableHolds as $key) {
@@ -498,13 +498,13 @@ class MyAccount_AJAX extends JSON_Action
 							$failed++;
 						}
 
-						$message = '<div class="alert alert-success">' . $success . ' of ' . $total . ' holds were frozen.</div>';
+						$message = '<div class="alert alert-success">' . translate(['text' => '%1% of %2% holds were frozen', 1 => $success, 2 => $total, 'isPublicFacing' => true, 'inAttribute'=>true]) . '</div>';
 						$tmpResult['message'] = $message;
 
 					}
 				}
 			} else {
-				$tmpResult['message'] = 'No holds were selected to freeze';
+				$tmpResult['message'] =  translate(['text' => 'No holds were selected to freeze', 'isPublicFacing' => true, 'inAttribute'=>true]);
 			}
 		}
 
@@ -622,13 +622,13 @@ class MyAccount_AJAX extends JSON_Action
 							}
 						}
 
-						$message = '<div class="alert alert-success">' . $success . ' of ' . $total . ' holds were thawed.</div>';
+						$message = '<div class="alert alert-success">' . translate(['text' => '%1% of %2% holds were thawed', 1 => $success, 2 => $total, 'isPublicFacing' => true, 'inAttribute'=>true]) . '</div>';
 						$tmpResult['message'] = $message;
 
 					}
 				}
 			} else {
-				$tmpResult['message'] = 'No holds were selected to thaw';
+				$tmpResult['message'] = translate(['text' => 'No holds were selected to thaw', 'isPublicFacing' => true, 'inAttribute'=>true]);
 			}
 		}
 
@@ -1740,7 +1740,7 @@ class MyAccount_AJAX extends JSON_Action
 
 		$allHolds = $user->getHolds(true, $selectedUnavailableSortOption, $selectedAvailableSortOption, $source);
 
-		$showDateWhenSuspending = ($ils == 'Horizon' || $ils == 'CarlX' || $ils == 'Symphony' || $ils == 'Koha');
+		$showDateWhenSuspending = ($ils == 'Horizon' || $ils == 'CarlX' || $ils == 'Symphony' || $ils == 'Koha' || $ils == 'Polaris');
 
 		// Create new PHPExcel object
 		$objPHPExcel = new PHPExcel();
@@ -2238,7 +2238,7 @@ class MyAccount_AJAX extends JSON_Action
 
 				$allowChangeLocation = ($ils == 'Millennium' || $ils == 'Sierra');
 				$interface->assign('allowChangeLocation', $allowChangeLocation);
-				$showDateWhenSuspending = ($ils == 'Horizon' || $ils == 'CarlX' || $ils == 'Symphony' || $ils == 'Koha');
+				$showDateWhenSuspending = ($ils == 'Horizon' || $ils == 'CarlX' || $ils == 'Symphony' || $ils == 'Koha' || $ils == 'Polaris');
 				$interface->assign('showDateWhenSuspending', $showDateWhenSuspending);
 
 				$interface->assign('showPosition', $showPosition);
@@ -3445,7 +3445,7 @@ class MyAccount_AJAX extends JSON_Action
 				if (!empty($patron->proPayPayerAccountId) || ($proPayPayerAccountId != null)) {
 					//Create the Hosted Transaction Instance
 					$requestElements = new stdClass();
-					$requestElements->Amount = (int)($payment->totalPaid * 100);
+					$requestElements->Amount = (int)round($payment->totalPaid * 100);
 					$requestElements->AuthOnly = false;
 					$requestElements->AvsRequirementType = 2;
 					$requestElements->BillerAccountId = $proPaySetting->billerAccountId;
