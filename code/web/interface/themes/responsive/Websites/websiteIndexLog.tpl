@@ -6,8 +6,8 @@
 		<h4>{translate text="Filter by" isAdminFacing=true}</h4>
 
         {include file='Admin/exportLogFilters.tpl'}
-		<div id="websiteExportLogContainer">
-			<table class="logEntryDetails table table-condensed table-hover">
+		<div id="websiteExportLogContainer adminTableRegion">
+			<table class="logEntryDetails table table-condensed table-hover adminTable">
 				<thead>
 					<tr>
 						<th>{translate text="Id" isAdminFacing=true}</th>

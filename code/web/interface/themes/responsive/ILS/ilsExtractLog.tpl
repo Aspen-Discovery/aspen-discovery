@@ -6,8 +6,8 @@
 		</p>
 
         {include file='Admin/exportLogFilters.tpl'}
-		<div>
-			<table class="logEntryDetails table table-bordered table-striped">
+		<div class="adminTableRegion">
+			<table class="logEntryDetails table table-bordered table-striped adminTable">
 				<thead>
 					<tr>
 						<th>{translate text="Id" isAdminFacing=true}</th>

@@ -3,8 +3,8 @@
 		<h1>{translate text="Side Load Processing Log" isAdminFacing=true}</h1>
 
         {include file='Admin/exportLogFilters.tpl'}
-		<div>
-			<table class="logEntryDetails table table-bordered table-striped">
+		<div class="adminTableRegion">
+			<table class="logEntryDetails table table-bordered table-striped adminTable">
 				<thead>
 				<tr>
 					<th>{translate text="Id" isAdminFacing=true}</th>

@@ -3,8 +3,8 @@
 		<h1>{translate text="OverDrive Extract Log" isAdminFacing=true}</h1>
 
         {include file='Admin/exportLogFilters.tpl'}
-		<div>
-			<table class="logEntryDetails table table-bordered table-striped">
+		<div class="adminTableRegion">
+			<table class="logEntryDetails table table-bordered table-striped adminTable">
 				<thead>
 					<tr><th>{translate text="Id" isAdminFacing=true}</th><th>{translate text="Setting ID" isAdminFacing=true}</th><th>{translate text="Started" isAdminFacing=true}</th><th>{translate text="Last Update" isAdminFacing=true}</th><th>{translate text="Finished" isAdminFacing=true}</th><th>{translate text="Elapsed" isAdminFacing=true}</th><th>{translate text="Total Products" isAdminFacing=true}</th><th>{translate text="Num Errors" isAdminFacing=true}</th><th>{translate text="Products Added" isAdminFacing=true}</th><th>{translate text="Products Deleted" isAdminFacing=true}</th><th>{translate text="Products Updated" isAdminFacing=true}</th><th>{translate text="Num Availability Changes" isAdminFacing=true}</th><th>{translate text="Num Metadata Changes" isAdminFacing=true}</th><th>{translate text="Skipped" isAdminFacing=true}</th><th>{translate text="Notes" isAdminFacing=true}</th></tr>
 				</thead>
