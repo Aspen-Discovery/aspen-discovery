@@ -16,6 +16,9 @@
 				</div>
 			</div>
 			<div class="alert alert-info">{translate text="Enter the barcode(s) for the user who should be given administration privileges.  To create multiple administrators at once, enter each barcode on it's own line." isAdminFacing=true}</div>
+			{if $ils == 'Evergreen'}
+				<div class="alert alert-warning">{translate text="Evergreen does not support lookups of patrons by barcode without the password.  Administrators must login prior to granting them Admin access." isAdminFacing=true}</div>
+			{/if}
 
 			<div class="form-group">
 				{assign var=property value=$structure.roles}
