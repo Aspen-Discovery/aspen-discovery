@@ -17,7 +17,7 @@ class WebBuilder_ResourcesList extends Action
 		$libraryWebResource = new LibraryWebResource();
 		$libraryWebResource->libraryId = $library->libraryId;
 		$resource->joinAdd($libraryWebResource, 'INNER', 'libraryWebResource', 'id', 'webResourceId');
-		$resource->limit(1000);
+		$resource->limit(0, 1000);
 		$resource->find();
 		while ($resource->fetch()){
 			$clonedResource = clone $resource;
