@@ -1,6 +1,7 @@
 <?php
 
 require_once ROOT_DIR . '/services/Admin/Admin.php';
+require_once ROOT_DIR . '/sys/Greenhouse/AspenSite.php';
 require_once ROOT_DIR . '/sys/Greenhouse/AspenSiteCache.php';
 
 class Greenhouse_SitesByLocation extends Admin_Admin
@@ -11,19 +12,25 @@ class Greenhouse_SitesByLocation extends Admin_Admin
 
 		$siteMarkers = [];
 		$unlocatedSites = [];
+		$aspenSite = new AspenSite();
+		$allSites = $aspenSite->fetchAll();
 		$siteCache = new AspenSiteCache();
 		$siteCache->find();
 		$numMarkers = 0;
 		$sumLatitude = 0;
 		$sumLongitude = 0;
 		while ($siteCache->fetch()) {
-			if (!empty($siteCache->latitude) && !empty($siteCache->longitude)) {
-				$siteMarkers[] = clone $siteCache;
-				$sumLatitude += $siteCache->latitude;
-				$sumLongitude += $siteCache->longitude;
-				$numMarkers++;
-			}else{
-				$unlocatedSites[] = clone $siteCache;
+			$curSite = $allSites[$siteCache->siteId];
+			if ($curSite->siteType == 0) {
+				if (!empty($siteCache->latitude) && !empty($siteCache->longitude)) {
+					$siteMarkers[$siteCache->id] = clone $siteCache;
+					$siteMarkers[$siteCache->id]->siteName = $allSites[$siteCache->siteId]->name;
+					$sumLatitude += $siteCache->latitude;
+					$sumLongitude += $siteCache->longitude;
+					$numMarkers++;
+				} else {
+					$unlocatedSites[$siteCache->id] = $allSites[$siteCache->siteId]->name . ' - ' . $siteCache->name;
+				}
 			}
 		}
 		$center = [
@@ -31,6 +38,7 @@ class Greenhouse_SitesByLocation extends Admin_Admin
 			'longitude' => $sumLongitude / $numMarkers
 		];
 		$interface->assign('siteMarkers' ,$siteMarkers);
+		asort($unlocatedSites);
 		$interface->assign('unlocatedSites' ,$unlocatedSites);
 		$interface->assign('center' ,$center);
 
