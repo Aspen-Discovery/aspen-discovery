@@ -13,23 +13,30 @@ class Greenhouse_SitesByLocation extends Admin_Admin
 		$siteMarkers = [];
 		$unlocatedSites = [];
 		$aspenSite = new AspenSite();
-		$allSites = $aspenSite->fetchAll();
+		$allSites = [];
+		$aspenSite->find();
+		while ($aspenSite->fetch()){
+			$allSites[$aspenSite->id] = clone($aspenSite);
+		}
 		$siteCache = new AspenSiteCache();
 		$siteCache->find();
 		$numMarkers = 0;
 		$sumLatitude = 0;
 		$sumLongitude = 0;
 		while ($siteCache->fetch()) {
-			$curSite = $allSites[$siteCache->siteId];
-			if ($curSite->siteType == 0) {
-				if (!empty($siteCache->latitude) && !empty($siteCache->longitude)) {
-					$siteMarkers[$siteCache->id] = clone $siteCache;
-					$siteMarkers[$siteCache->id]->siteName = $allSites[$siteCache->siteId]->name;
-					$sumLatitude += $siteCache->latitude;
-					$sumLongitude += $siteCache->longitude;
-					$numMarkers++;
-				} else {
-					$unlocatedSites[$siteCache->id] = $allSites[$siteCache->siteId]->name . ' - ' . $siteCache->name;
+			/** @var AspenSite $curSite */
+			if (array_key_exists($siteCache->siteId, $allSites)){
+				$curSite = $allSites[$siteCache->siteId];
+				if ($curSite->siteType == 0) {
+					if (!empty($siteCache->latitude) && !empty($siteCache->longitude)) {
+						$siteMarkers[$siteCache->id] = clone $siteCache;
+						$siteMarkers[$siteCache->id]->siteName = $allSites[$siteCache->siteId]->name;
+						$sumLatitude += $siteCache->latitude;
+						$sumLongitude += $siteCache->longitude;
+						$numMarkers++;
+					} else {
+						$unlocatedSites[$siteCache->id] = $allSites[$siteCache->siteId]->name . ' - ' . $siteCache->name;
+					}
 				}
 			}
 		}
