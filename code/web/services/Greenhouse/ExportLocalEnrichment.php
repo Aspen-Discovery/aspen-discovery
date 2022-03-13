@@ -123,11 +123,10 @@ class Greenhouse_ExportLocalEnrichment extends Admin_Admin
 		}
 		fclose($exportFileHnd);
 		if ($numObjectsExported > 0){
-			if (strlen($message) > 0){
+			if (strlen($message) > 0) {
 				$message .= '<br/>';
-			}else{
-				$message .= "Exported $numObjectsExported $pluralExportName";
 			}
+			$message .= "Exported $numObjectsExported $pluralExportName";
 		}
 
 		return $message;
