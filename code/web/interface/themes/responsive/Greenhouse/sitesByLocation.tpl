@@ -1,6 +1,6 @@
 {strip}
 	<div class="row">
-		<div class="col-xs-12 col-md-9">
+		<div class="col-xs-12">
 			<h1 id="pageTitle">{$pageTitleShort}</h1>
 		</div>
 	</div>

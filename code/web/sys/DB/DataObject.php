@@ -15,6 +15,7 @@ abstract class DataObject
 	public $__table;
 	public $__primaryKey = 'id';
 	public $__displayNameColumn = null;
+
 	protected $__N;
 	/** @var PDOStatement */
 	private $__queryStmt;
@@ -64,6 +65,14 @@ abstract class DataObject
 	 * @return string[]
 	 */
 	public function getCompressedColumnNames() : array
+	{
+		return [];
+	}
+
+	/**
+	 * @return string[]
+	 */
+	public function getUniquenessFields() : array
 	{
 		return [];
 	}
@@ -890,7 +899,7 @@ abstract class DataObject
 			if ($name[0] != '_'){
 				$return[$name] = $value;
 			}else if ($name[0] == '_' && strlen($name) > 1 && $name[1] != '_') {
-				if ($name != '_data'){
+				if ($name != '_data' && $name != '_changedFields' && $name != '_deleteOnSave'){
 					$return[substr($name, 1)] = $value;
 				}
 			}
@@ -898,7 +907,56 @@ abstract class DataObject
 		return $return;
 	}
 
+	public function getLinksForJSON() : array{
+		return [];
+	}
+
 	public function canActiveUserEdit(){
 		return true;
+	}
+
+	public function getJSONString($includeLinks, $prettyPrint = false){
+		$flags = 0;
+		if ($prettyPrint){
+			$flags = JSON_PRETTY_PRINT;
+		}
+
+		$baseObject = $this->toArray();
+		if ($includeLinks){
+			$links = $this->getLinksForJSON();
+			if (!empty($links)){
+				$baseObject['links'] = $links;
+			}
+		}
+		return json_encode($baseObject, $flags);
+	}
+
+	public function loadFromJSON($jsonData, $mappings){
+		foreach ($jsonData as $property => $value){
+			if ($property == 'links') {
+				//Add links to the object
+				$this->loadLinksFromJSON($value, $mappings);
+			}elseif ($property != $this->getPrimaryKey()){
+				$this->$property = $value;
+			}
+		}
+		//Check to see if there is an existing ID for the object
+		$this->findExistingObjectId();
+	}
+
+	public function loadLinksFromJSON($jsonData, $mappings){
+
+	}
+
+	public function findExistingObjectId(){
+		$thisClass = get_class($this);
+		$tmpObject = new $thisClass();
+		foreach ($this->getUniquenessFields() as $fieldName){
+			$tmpObject->$fieldName = $this->$fieldName;
+		}
+		if ($tmpObject->find(true)){
+			$primaryField = $this->getPrimaryKey();
+			$this->$primaryField = $tmpObject->$primaryField;
+		}
 	}
 }

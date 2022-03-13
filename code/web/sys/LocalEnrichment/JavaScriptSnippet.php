@@ -44,6 +44,14 @@ class JavaScriptSnippet extends DataObject
 	}
 
 	/**
+	 * @return string[]
+	 */
+	public function getUniquenessFields() : array
+	{
+		return ['name'];
+	}
+
+	/**
 	 * Override the update functionality to save related objects
 	 *
 	 * @see DB/DB_DataObject::update()
@@ -84,30 +92,44 @@ class JavaScriptSnippet extends DataObject
 
 	public function __get($name){
 		if ($name == "libraries") {
-			if (!isset($this->_libraries) && $this->id){
-				$this->_libraries = [];
-				$obj = new JavaScriptSnippetLibrary();
-				$obj->javascriptSnippetId = $this->id;
-				$obj->find();
-				while($obj->fetch()){
-					$this->_libraries[$obj->libraryId] = $obj->libraryId;
-				}
-			}
-			return $this->_libraries;
+			return $this->getLibraries();
 		} elseif ($name == "locations") {
-			if (!isset($this->_locations) && $this->id){
-				$this->_locations = [];
-				$obj = new JavaScriptSnippetLocation();
-				$obj->javascriptSnippetId = $this->id;
-				$obj->find();
-				while($obj->fetch()){
-					$this->_locations[$obj->locationId] = $obj->locationId;
-				}
-			}
-			return $this->_locations;
+			return $this->getLocations();
 		}else{
 			return $this->_data[$name];
 		}
+	}
+
+	/**
+	 * @return int[]
+	 */
+	public function getLibraries() : array{
+		if (!isset($this->_libraries) && $this->id){
+			$this->_libraries = [];
+			$obj = new JavaScriptSnippetLibrary();
+			$obj->javascriptSnippetId = $this->id;
+			$obj->find();
+			while($obj->fetch()){
+				$this->_libraries[$obj->libraryId] = $obj->libraryId;
+			}
+		}
+		return $this->_libraries;
+	}
+
+	/**
+	 * @return int[]
+	 */
+	public function getLocations() : array{
+		if (!isset($this->_locations) && $this->id){
+			$this->_locations = [];
+			$obj = new JavaScriptSnippetLocation();
+			$obj->javascriptSnippetId = $this->id;
+			$obj->find();
+			while($obj->fetch()){
+				$this->_locations[$obj->locationId] = $obj->locationId;
+			}
+		}
+		return $this->_locations;
 	}
 
 	public function __set($name, $value){
@@ -156,6 +178,64 @@ class JavaScriptSnippet extends DataObject
 						$obj->delete();
 					}
 				}
+			}
+		}
+	}
+
+	public function getLinksForJSON() : array{
+		$links = [];
+		$allLibraries = Library::getLibraryListAsObjects(false);
+		$allLocations = Location::getLocationListAsObjects(false);
+		$libraries = $this->getLibraries();
+		$locations = $this->getLocations();
+		$links['libraries'] = [];
+		foreach ($libraries as $libraryId){
+			if (array_key_exists($libraryId, $allLibraries)) {
+				$library = $allLibraries[$libraryId];
+				$links['libraries'][$libraryId] = empty($library->subdomain) ? $library->ilsCode : $library->subdomain;
+			}
+		}
+		$links['locations'] = [];
+		foreach ($locations as $locationId){
+			if (array_key_exists($locationId, $allLocations)) {
+				$location = $allLocations[$locationId];
+				$links['locations'][$locationId] = $location->code;
+			}
+		}
+		return $links;
+	}
+
+	public function loadLinksFromJSON($jsonLinks, $mappings){
+		$allLibraries = Library::getLibraryListAsObjects(false);
+		$allLocations = Location::getLocationListAsObjects(false);
+
+		foreach ($jsonLinks as $linkName => $linkData){
+			if ($linkName == 'libraries'){
+				$libraries = [];
+				foreach ($linkData as $subdomain){
+					if (array_key_exists($subdomain, $mappings['libraries'])){
+						$subdomain = $mappings['libraries'][$subdomain];
+					}
+					foreach ($allLibraries as $tmpLibrary){
+						if ($tmpLibrary->subdomain == $subdomain || $tmpLibrary->ilsCode == $subdomain){
+							$libraries[$tmpLibrary->libraryId] = $tmpLibrary->libraryId;
+						}
+					}
+				}
+				$this->_libraries = $libraries;
+			}else if ($linkName == 'locations'){
+				$locations = [];
+				foreach ($linkData as $ilsCode){
+					if (array_key_exists($ilsCode, $mappings['locations'])){
+						$ilsCode = $mappings['locations'][$ilsCode];
+					}
+					foreach ($allLocations as $tmpLocation){
+						if ($tmpLocation->code == $ilsCode){
+							$locations[$tmpLocation->locationId] = $tmpLocation->locationId;
+						}
+					}
+				}
+				$this->_locations = $locations;
 			}
 		}
 	}
