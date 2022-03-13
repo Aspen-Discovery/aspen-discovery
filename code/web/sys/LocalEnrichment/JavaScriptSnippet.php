@@ -1,8 +1,9 @@
 <?php
 
+require_once ROOT_DIR . '/sys/DB/LIbraryLocationLinkedObject.php';
 require_once ROOT_DIR . '/sys/LocalEnrichment/JavaScriptSnippetLibrary.php';
 require_once ROOT_DIR . '/sys/LocalEnrichment/JavaScriptSnippetLocation.php';
-class JavaScriptSnippet extends DataObject
+class JavaScriptSnippet extends DB_LibraryLocationLinkedObject
 {
 	public $__table = 'javascript_snippets';
 	public $id;
@@ -183,26 +184,7 @@ class JavaScriptSnippet extends DataObject
 	}
 
 	public function getLinksForJSON() : array{
-		$links = [];
-		$allLibraries = Library::getLibraryListAsObjects(false);
-		$allLocations = Location::getLocationListAsObjects(false);
-		$libraries = $this->getLibraries();
-		$locations = $this->getLocations();
-		$links['libraries'] = [];
-		foreach ($libraries as $libraryId){
-			if (array_key_exists($libraryId, $allLibraries)) {
-				$library = $allLibraries[$libraryId];
-				$links['libraries'][$libraryId] = empty($library->subdomain) ? $library->ilsCode : $library->subdomain;
-			}
-		}
-		$links['locations'] = [];
-		foreach ($locations as $locationId){
-			if (array_key_exists($locationId, $allLocations)) {
-				$location = $allLocations[$locationId];
-				$links['locations'][$locationId] = $location->code;
-			}
-		}
-		return $links;
+		return parent::getLinksForJSON();
 	}
 
 	public function loadLinksFromJSON($jsonLinks, $mappings){
@@ -238,5 +220,9 @@ class JavaScriptSnippet extends DataObject
 				$this->_locations = $locations;
 			}
 		}
+	}
+
+	public function okToExport(array $selectedFilters) : bool{
+		return true;
 	}
 }

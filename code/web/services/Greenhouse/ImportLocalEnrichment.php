@@ -66,9 +66,9 @@ class Greenhouse_ImportLocalEnrichment extends Admin_Admin
 				} elseif ($element == 'collection_spotlights') {
 
 				} elseif ($element == 'javascript') {
+					require_once ROOT_DIR . '/sys/LocalEnrichment/JavaScriptSnippet.php';
 					$numSnippetsImported = 0;
 					$javascriptFileHnd = fopen($importPath . 'javascript_snippets.json', 'r');
-					require_once ROOT_DIR . '/sys/LocalEnrichment/JavaScriptSnippet.php';
 					$objectLine = fgets($javascriptFileHnd);
 					while ($objectLine){
 						$jsonData = json_decode($objectLine, true);

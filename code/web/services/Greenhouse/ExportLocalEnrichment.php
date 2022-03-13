@@ -32,6 +32,10 @@ class Greenhouse_ExportLocalEnrichment extends Admin_Admin
 			if ($exportDirExists) {
 				$selectedLibraries = $_REQUEST['libraries'];
 				$selectedLocations = $_REQUEST['locations'];
+				$selectedFilters = [
+					'libraries' => $selectedLibraries,
+					'locations' => $selectedLocations
+				];
 				if (count($selectedLibraries) == 0 && count($selectedLocations) == 0) {
 					$message = 'No libraries or locations were selected';
 					$success = false;
@@ -43,41 +47,15 @@ class Greenhouse_ExportLocalEnrichment extends Admin_Admin
 						} elseif ($element == 'collection_spotlights') {
 
 						} elseif ($element == 'javascript') {
-							$numSnippetsExported = 0;
-							$snippetsFileHnd = fopen($exportPath . 'javascript_snippets.json', 'w');
 							require_once ROOT_DIR . '/sys/LocalEnrichment/JavaScriptSnippet.php';
-							$snippets = new JavaScriptSnippet();
-							$snippets->find();
-							while ($snippets->fetch()) {
-								//Make sure we should export this snippet
-								$okToExport = false;
-								foreach ($selectedLibraries as $libraryId) {
-									if (array_key_exists($libraryId, $snippets->getLibraries())) {
-										$okToExport = true;
-										break;
-									}
-								}
-								if (!$okToExport) {
-									foreach ($selectedLocations as $locationId) {
-										if (array_key_exists($locationId, $snippets->getLocations())) {
-											$okToExport = true;
-											break;
-										}
-									}
-								}
-								if ($okToExport) {
-									fwrite($snippetsFileHnd, $snippets->getJSONString(true,false) . "\n");
-									$numSnippetsExported++;
-								}
-							}
-							fclose($snippetsFileHnd);
-							if ($numSnippetsExported > 0){
-								if (strlen($message) > 0){
-									$message .= '<br/>';
-								}else{
-									$message .= "Exported $numSnippetsExported Javascript Snippets";
-								}
-							}
+							$javascriptSnippetsFile = $exportPath . 'javascript_snippets.json';
+							$message = $this->exportObjects('JavaScriptSnippet', 'JavaScript Snippets', $javascriptSnippetsFile, $selectedFilters, $message);
+
+						} elseif ($element == 'placards') {
+							require_once ROOT_DIR . '/sys/LocalEnrichment/Placard.php';
+							$placardFile = $exportPath . 'placards.json';
+							$message = $this->exportObjects('Placard', 'Placards', $placardFile, $selectedFilters, $message);
+
 						} elseif ($element == 'system_messages') {
 
 						}
@@ -95,6 +73,7 @@ class Greenhouse_ExportLocalEnrichment extends Admin_Admin
 				'browse_categories' => 'Browse Categories w/Groups',
 				'collection_spotlights' => 'Collection Spotlights',
 				'javascript' => 'JavaScript',
+				'placards' => 'Placards',
 				'system_messages' => 'System Messages'
 			];
 			$interface->assign('enrichmentElements', $enrichmentElements);
@@ -129,5 +108,28 @@ class Greenhouse_ExportLocalEnrichment extends Admin_Admin
 			}
 		}
 		return false;
+	}
+
+	function exportObjects(string $className, string $pluralExportName, string $exportFile, array $selectedFilters, $message) : string{
+		$numObjectsExported = 0;
+		$exportFileHnd = fopen($exportFile, 'w');
+		$exportObject = new $className();
+		$exportObject->find();
+		while ($exportObject->fetch()){
+			if ($exportObject->okToExport($selectedFilters)){
+				fwrite($exportFileHnd, $exportObject->getJSONString(true, false) . "\n");
+				$numObjectsExported++;
+			}
+		}
+		fclose($exportFileHnd);
+		if ($numObjectsExported > 0){
+			if (strlen($message) > 0){
+				$message .= '<br/>';
+			}else{
+				$message .= "Exported $numObjectsExported $pluralExportName";
+			}
+		}
+
+		return $message;
 	}
 }

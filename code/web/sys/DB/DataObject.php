@@ -959,4 +959,8 @@ abstract class DataObject
 			$this->$primaryField = $tmpObject->$primaryField;
 		}
 	}
+
+	public function okToExport(array $selectedFilters) : bool{
+		return false;
+	}
 }
