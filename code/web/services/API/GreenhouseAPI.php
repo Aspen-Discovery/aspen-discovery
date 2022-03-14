@@ -210,8 +210,8 @@ class GreenhouseAPI extends Action
 
 			$existingCachedValues = new AspenSiteCache();
 			$existingCachedValues->siteId = $aspenSite->id;
-			$existingCachedValues->find();
 			$numRows = $existingCachedValues->count();
+			$existingCachedValues->find();
 			if($numRows >= 1) {
 				// check for forced reload of cache
 				if (isset($_REQUEST['reload']) && $reload) {
