@@ -5,7 +5,7 @@ abstract class DB_LibraryLinkedObject extends DataObject
 	/**
 	 * @return int[]
 	 */
-	public abstract function getLibraries() : array;
+	public abstract function getLibraries() : ?array;
 
 	public function okToExport(array $selectedFilters) : bool{
 		$okToExport = parent::okToExport($selectedFilters);

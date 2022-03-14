@@ -91,7 +91,7 @@ class Placard extends DB_LibraryLocationLinkedObject
 	/**
 	 * @return int[]
 	 */
-	public function getLibraries() : array
+	public function getLibraries() : ?array
 	{
 		if (!isset($this->_libraries) && $this->id){
 			$this->_libraries = [];
@@ -108,7 +108,7 @@ class Placard extends DB_LibraryLocationLinkedObject
 	/**
 	 * @return int[]
 	 */
-	public function getLocations() : array
+	public function getLocations() : ?array
 	{
 		if (!isset($this->_locations) && $this->id){
 			$this->_locations = [];

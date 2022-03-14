@@ -10,8 +10,8 @@ class JavaScriptSnippet extends DB_LibraryLocationLinkedObject
 	public $name;
 	public $snippet;
 
-	private $_libraries;
-	private $_locations;
+	protected $_libraries;
+	protected $_locations;
 
 	public static function getObjectStructure() : array
 	{
@@ -104,7 +104,7 @@ class JavaScriptSnippet extends DB_LibraryLocationLinkedObject
 	/**
 	 * @return int[]
 	 */
-	public function getLibraries() : array{
+	public function getLibraries() : ?array{
 		if (!isset($this->_libraries) && $this->id){
 			$this->_libraries = [];
 			$obj = new JavaScriptSnippetLibrary();
@@ -120,7 +120,7 @@ class JavaScriptSnippet extends DB_LibraryLocationLinkedObject
 	/**
 	 * @return int[]
 	 */
-	public function getLocations() : array{
+	public function getLocations() : ?array{
 		if (!isset($this->_locations) && $this->id){
 			$this->_locations = [];
 			$obj = new JavaScriptSnippetLocation();
@@ -183,15 +183,7 @@ class JavaScriptSnippet extends DB_LibraryLocationLinkedObject
 		}
 	}
 
-	public function getLinksForJSON() : array{
-		return parent::getLinksForJSON();
-	}
-
-	public function loadLinksFromJSON($jsonLinks, $mappings){
-		parent::loadLinksFromJSON($jsonLinks, $mappings);
-	}
-
 	public function okToExport(array $selectedFilters) : bool{
-		return true;
+		return parent::okToExport($selectedFilters);
 	}
 }

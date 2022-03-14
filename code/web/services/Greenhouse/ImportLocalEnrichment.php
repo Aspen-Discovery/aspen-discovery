@@ -74,7 +74,8 @@ class Greenhouse_ImportLocalEnrichment extends Admin_Admin
 					require_once ROOT_DIR . '/sys/LocalEnrichment/Placard.php';
 					$message = $this->importObjects('Placard', 'Placards', $importPath . 'placards.json', $mappings, $overrideExisting, $message);
 				} elseif ($element == 'system_messages') {
-
+					require_once ROOT_DIR . '/sys/LocalEnrichment/SystemMessage.php';
+					$message = $this->importObjects('SystemMessage', 'System Messages', $importPath . 'system_messages.json', $mappings, $overrideExisting, $message);
 				}
 			}
 
@@ -96,6 +97,9 @@ class Greenhouse_ImportLocalEnrichment extends Admin_Admin
 				}
 				if (file_exists($importPath . 'placards.json')){
 					$validEnrichmentToImport['placards'] = 'Placards';
+				}
+				if (file_exists($importPath . 'system_messages.json')){
+					$validEnrichmentToImport['system_messages'] = 'System Messages';
 				}
 			}
 

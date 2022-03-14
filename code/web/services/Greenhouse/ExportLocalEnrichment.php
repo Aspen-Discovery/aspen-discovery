@@ -42,7 +42,7 @@ class Greenhouse_ExportLocalEnrichment extends Admin_Admin
 				} else {
 					$success = true;
 					foreach ($_REQUEST['enrichmentElement'] as $element) {
-						if ($element == 'browse') {
+						if ($element == 'browse_categories') {
 
 						} elseif ($element == 'collection_spotlights') {
 
@@ -57,7 +57,9 @@ class Greenhouse_ExportLocalEnrichment extends Admin_Admin
 							$message = $this->exportObjects('Placard', 'Placards', $placardFile, $selectedFilters, $message);
 
 						} elseif ($element == 'system_messages') {
-
+							require_once  ROOT_DIR . '/sys/LocalEnrichment/SystemMessage.php';
+							$systemMessagesFile = $exportPath . 'system_messages.json';
+							$message = $this->exportObjects('SystemMessage', 'System Messages', $systemMessagesFile, $selectedFilters, $message);
 						}
 					}
 				}

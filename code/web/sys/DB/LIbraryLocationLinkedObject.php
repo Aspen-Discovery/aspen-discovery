@@ -6,7 +6,7 @@ abstract class DB_LibraryLocationLinkedObject extends DB_LibraryLinkedObject
 	/**
 	 * @return int[]
 	 */
-	public abstract function getLocations() : array;
+	public abstract function getLocations() : ?array;
 
 	public function okToExport(array $selectedFilters) : bool{
 		$okToExport = parent::okToExport($selectedFilters);
