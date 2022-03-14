@@ -113,6 +113,7 @@ class Greenhouse_ExportLocalEnrichment extends Admin_Admin
 	function exportObjects(string $className, string $pluralExportName, string $exportFile, array $selectedFilters, $message) : string{
 		$numObjectsExported = 0;
 		$exportFileHnd = fopen($exportFile, 'w');
+		/** @var DataObject $exportObject */
 		$exportObject = new $className();
 		$exportObject->find();
 		while ($exportObject->fetch()){

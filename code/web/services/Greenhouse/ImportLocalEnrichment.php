@@ -29,6 +29,8 @@ class Greenhouse_ImportLocalEnrichment extends Admin_Admin
 			$message = '';
 			$success = true;
 
+			$overrideExisting = $_REQUEST['overrideExisting'];
+
 			//Look for a mapping between old library names and new library names
 			$libraryMappings = [];
 			if (file_exists($importPath . 'library_map.csv')){
@@ -67,25 +69,10 @@ class Greenhouse_ImportLocalEnrichment extends Admin_Admin
 
 				} elseif ($element == 'javascript') {
 					require_once ROOT_DIR . '/sys/LocalEnrichment/JavaScriptSnippet.php';
-					$numSnippetsImported = 0;
-					$javascriptFileHnd = fopen($importPath . 'javascript_snippets.json', 'r');
-					$objectLine = fgets($javascriptFileHnd);
-					while ($objectLine){
-						$jsonData = json_decode($objectLine, true);
-						$snippet = new JavaScriptSnippet();
-						$snippet->loadFromJSON($jsonData, $mappings);
-						$snippet->update();
-
-						$numSnippetsImported++;
-						$objectLine = fgets($javascriptFileHnd);
-					}
-					if ($numSnippetsImported > 0){
-						if (strlen($message) > 0){
-							$message .= '<br/>';
-						}else{
-							$message .= "Imported $numSnippetsImported Javascript Snippets";
-						}
-					}
+					$message = $this->importObjects('JavaScriptSnippet', 'JavaScript Snippets', $importPath . 'javascript_snippets.json', $mappings, $overrideExisting, $message);
+				} elseif ($element == 'placards') {
+					require_once ROOT_DIR . '/sys/LocalEnrichment/Placard.php';
+					$message = $this->importObjects('Placard', 'Placards', $importPath . 'placards.json', $mappings, $overrideExisting, $message);
 				} elseif ($element == 'system_messages') {
 
 				}
@@ -105,7 +92,10 @@ class Greenhouse_ImportLocalEnrichment extends Admin_Admin
 			//Look for the necessary files
 			if ($importDirExists){
 				if (file_exists($importPath . 'javascript_snippets.json')){
-					$validEnrichmentToImport['javascript'] = 'JavaScript';
+					$validEnrichmentToImport['javascript'] = 'JavaScript Snippets';
+				}
+				if (file_exists($importPath . 'placards.json')){
+					$validEnrichmentToImport['placards'] = 'Placards';
 				}
 			}
 
@@ -143,5 +133,41 @@ class Greenhouse_ImportLocalEnrichment extends Admin_Admin
 			}
 		}
 		return false;
+	}
+
+	function importObjects(string $className, string $pluralImportName, string $importFile, array $mappings, string $overrideExisting, string $message) : string{
+		$numObjectsImported = 0;
+
+		if ($overrideExisting == 'deleteAllExisting'){
+			/** @var DataObject $object */
+			$object = new $className();
+			$object->whereAdd($object->getPrimaryKey() . " LIKE '%'");
+			$object->delete(true);
+		}
+		$objectHnd = fopen($importFile, 'r');
+		$objectLine = fgets($objectHnd);
+		while ($objectLine){
+			$jsonData = json_decode($objectLine, true);
+			$object = new $className();
+			$object->loadFromJSON($jsonData, $mappings);
+			if ($overrideExisting == 'keepExisting'){
+				//Only update if we don't have an existing value
+				if (empty($object->getPrimaryKeyObject)){
+					$object->update();
+				}
+			}else{
+				$object->update();
+			}
+
+			$numObjectsImported++;
+			$objectLine = fgets($objectHnd);
+		}
+		if ($numObjectsImported > 0){
+			if (strlen($message) > 0){
+				$message .= '<br/>';
+			}
+			$message .= "Imported $numObjectsImported $pluralImportName";
+		}
+		return $message;
 	}
 }

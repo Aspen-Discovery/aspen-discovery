@@ -933,30 +933,35 @@ abstract class DataObject
 
 	public function loadFromJSON($jsonData, $mappings){
 		foreach ($jsonData as $property => $value){
-			if ($property == 'links') {
-				//Add links to the object
-				$this->loadLinksFromJSON($value, $mappings);
-			}elseif ($property != $this->getPrimaryKey()){
+			if ($property != $this->getPrimaryKey() && $property != 'links'){
 				$this->$property = $value;
 			}
 		}
 		//Check to see if there is an existing ID for the object
 		$this->findExistingObjectId();
+		//Load any links (do after loading the existing object id to handle nested objects)
+		if (array_key_exists('links', $jsonData)){
+			$this->loadLinksFromJSON($jsonData['links'], $mappings);
+		}
 	}
 
 	public function loadLinksFromJSON($jsonData, $mappings){
 
 	}
 
-	public function findExistingObjectId(){
+	public function findExistingObjectId()
+	{
 		$thisClass = get_class($this);
 		$tmpObject = new $thisClass();
-		foreach ($this->getUniquenessFields() as $fieldName){
-			$tmpObject->$fieldName = $this->$fieldName;
-		}
-		if ($tmpObject->find(true)){
-			$primaryField = $this->getPrimaryKey();
-			$this->$primaryField = $tmpObject->$primaryField;
+		$uniquenessFields = $this->getUniquenessFields();
+		if (!empty($uniquenessFields)) {
+			foreach ($this->getUniquenessFields() as $fieldName) {
+				$tmpObject->$fieldName = $this->$fieldName;
+			}
+			if ($tmpObject->find(true)) {
+				$primaryField = $this->getPrimaryKey();
+				$this->$primaryField = $tmpObject->$primaryField;
+			}
 		}
 	}
 

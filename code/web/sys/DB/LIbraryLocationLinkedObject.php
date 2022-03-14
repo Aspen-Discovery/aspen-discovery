@@ -35,4 +35,23 @@ abstract class DB_LibraryLocationLinkedObject extends DB_LibraryLinkedObject
 		}
 		return $links;
 	}
+
+	public function loadLinksFromJSON($jsonLinks, $mappings){
+		parent::loadLinksFromJSON($jsonLinks, $mappings);
+		if (array_key_exists('locations', $jsonLinks)){
+			$allLocations = Location::getLocationListAsObjects(false);
+			$locations = [];
+			foreach ($jsonLinks['locations'] as $ilsCode){
+				if (array_key_exists($ilsCode, $mappings['locations'])){
+					$ilsCode = $mappings['locations'][$ilsCode];
+				}
+				foreach ($allLocations as $tmpLocation) {
+					if ($tmpLocation->code == $ilsCode) {
+						$locations[$tmpLocation->locationId] = $tmpLocation->locationId;
+					}
+				}
+			}
+			$this->_locations = $locations;
+		}
+	}
 }

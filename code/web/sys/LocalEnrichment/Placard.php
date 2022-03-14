@@ -20,10 +20,10 @@ class Placard extends DB_LibraryLocationLinkedObject
 	public $startDate;
 	public $endDate;
 
-	private $_triggers;
-	private $_libraries;
-	private $_locations;
-	private $_languages;
+	protected $_triggers;
+	protected $_libraries;
+	protected $_locations;
+	protected $_languages;
 
 	static function getObjectStructure() : array {
 		$placardTriggerStructure = PlacardTrigger::getObjectStructure();
@@ -408,5 +408,31 @@ class Placard extends DB_LibraryLocationLinkedObject
 		}
 
 		return $links;
+	}
+
+	public function loadLinksFromJSON($jsonLinks, $mappings){
+		parent::loadLinksFromJSON($jsonLinks, $mappings);
+
+		if (array_key_exists('triggers', $jsonLinks)){
+			$triggers = [];
+			foreach ($jsonLinks['triggers'] as $trigger){
+				$triggerObj = new PlacardTrigger();
+				$triggerObj->placardId = $this->id;
+				$triggerObj->loadFromJSON($trigger, $mappings);
+				$triggers[] = $triggerObj;
+			}
+			$this->_triggers = $triggers;
+		}
+		if (array_key_exists('languages', $jsonLinks)){
+			$languages = [];
+			$languageIds = Language::getLanguageIdsByCode();
+			foreach ($jsonLinks['languages'] as $language){
+				if (array_key_exists($language, $languageIds)){
+					$languageId = $languageIds[$language];
+					$languages[$languageId] = $languageId;
+				}
+			}
+			$this->_languages = $languages;
+		}
 	}
 }

@@ -33,4 +33,23 @@ abstract class DB_LibraryLinkedObject extends DataObject
 		}
 		return $links;
 	}
+
+	public function loadLinksFromJSON($jsonLinks, $mappings){
+		parent::loadLinksFromJSON($jsonLinks, $mappings);
+		if (array_key_exists('libraries', $jsonLinks)){
+			$allLibraries = Library::getLibraryListAsObjects(false);
+			$libraries = [];
+			foreach ($jsonLinks['libraries'] as $subdomain){
+				if (array_key_exists($subdomain, $mappings['libraries'])){
+					$subdomain = $mappings['libraries'][$subdomain];
+				}
+				foreach ($allLibraries as $tmpLibrary){
+					if ($tmpLibrary->subdomain == $subdomain || $tmpLibrary->ilsCode == $subdomain){
+						$libraries[$tmpLibrary->libraryId] = $tmpLibrary->libraryId;
+					}
+				}
+			}
+			$this->_libraries = $libraries;
+		}
+	}
 }

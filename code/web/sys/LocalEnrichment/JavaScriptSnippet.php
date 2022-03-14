@@ -188,38 +188,7 @@ class JavaScriptSnippet extends DB_LibraryLocationLinkedObject
 	}
 
 	public function loadLinksFromJSON($jsonLinks, $mappings){
-		$allLibraries = Library::getLibraryListAsObjects(false);
-		$allLocations = Location::getLocationListAsObjects(false);
-
-		foreach ($jsonLinks as $linkName => $linkData){
-			if ($linkName == 'libraries'){
-				$libraries = [];
-				foreach ($linkData as $subdomain){
-					if (array_key_exists($subdomain, $mappings['libraries'])){
-						$subdomain = $mappings['libraries'][$subdomain];
-					}
-					foreach ($allLibraries as $tmpLibrary){
-						if ($tmpLibrary->subdomain == $subdomain || $tmpLibrary->ilsCode == $subdomain){
-							$libraries[$tmpLibrary->libraryId] = $tmpLibrary->libraryId;
-						}
-					}
-				}
-				$this->_libraries = $libraries;
-			}else if ($linkName == 'locations'){
-				$locations = [];
-				foreach ($linkData as $ilsCode){
-					if (array_key_exists($ilsCode, $mappings['locations'])){
-						$ilsCode = $mappings['locations'][$ilsCode];
-					}
-					foreach ($allLocations as $tmpLocation){
-						if ($tmpLocation->code == $ilsCode){
-							$locations[$tmpLocation->locationId] = $tmpLocation->locationId;
-						}
-					}
-				}
-				$this->_locations = $locations;
-			}
-		}
+		parent::loadLinksFromJSON($jsonLinks, $mappings);
 	}
 
 	public function okToExport(array $selectedFilters) : bool{
