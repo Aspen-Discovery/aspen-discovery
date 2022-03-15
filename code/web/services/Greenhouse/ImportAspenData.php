@@ -9,9 +9,11 @@ class Greenhouse_ImportAspenData extends Admin_Admin
 		$importPath = '/data/aspen-discovery/' . $serverName . '/import/';
 		$importDirExists = false;
 		if (!file_exists($importPath)){
-			if (!mkdir($importPath, '0770', true)){
+			if (!mkdir($importPath, 0774, true)){
 				$setupErrors[] = 'Could not create import directory';
 			}else{
+				chgrp($importPath, 'aspen_apache');
+				chmod($importPath, 0774);
 				$importDirExists = true;
 			}
 		}else{
