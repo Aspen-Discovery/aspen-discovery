@@ -910,11 +910,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 				}
 
 				if ($showHoldButton && $interface->getVariable('offline')) {
-					// When in offline mode, only show the hold button if offline-login & offline-holds are allowed
-					global $configArray;
-					if (!$interface->getVariable('enableLoginWhileOffline') || !$configArray['Catalog']['enableOfflineHolds']) {
-						$showHoldButton = false;
-					}
+					$showHoldButton = false;
 				}
 
 				if ($showHoldButton && $isAvailable) {

@@ -15,7 +15,7 @@
 
 			<h1>{translate text='Linked Accounts' isPublicFacing=true}</h1>
 			{if $offline}
-				<div class="alert alert-warning"><strong>{translate text="The library system is currently offline." isPublicFacing=true}</strong> {translate text="We are unable to retrieve information about your account at this time." isPublicFacing=true}</div>
+				<div class="alert alert-warning"><strong>{translate text=$offlineMessage isPublicFacing=true}</strong></div>
 			{else}
 {* MDN 7/26/2019 Do not allow access to linked accounts for linked users *}
 {*                {include file="MyAccount/switch-linked-user-form.tpl" label="View Account Settings for" actionPath="/MyAccount/LinkedAccounts"}*}

@@ -2070,7 +2070,7 @@ class MyAccount_AJAX extends JSON_Action
 		];
 
 		global $offlineMode;
-		if (!$offlineMode) {
+		if (!$offlineMode || $interface->getVariable('enableEContentWhileOffline')) {
 			global $configArray;
 
 			$source = $_REQUEST['source'];
@@ -2154,7 +2154,7 @@ class MyAccount_AJAX extends JSON_Action
 		];
 
 		global $offlineMode;
-		if (!$offlineMode) {
+		if (!$offlineMode || $interface->getVariable('enableEContentWhileOffline')) {
 			global $configArray;
 			global $library;
 

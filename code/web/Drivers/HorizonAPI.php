@@ -390,72 +390,45 @@ abstract class HorizonAPI extends Horizon{
 			$title = $record->getTitle();
 		}
 
-		global $offlineMode;
-		if ($offlineMode){
-			require_once ROOT_DIR . '/sys/OfflineHold.php';
-			$offlineHold = new OfflineHold();
-			$offlineHold->bibId = $recordId;
-			$offlineHold->patronBarcode = $patron->getBarcode();
-			$offlineHold->patronId = $patron->id;
-			$offlineHold->timeEntered = time();
-			$offlineHold->status = 'Not Processed';
-			if ($offlineHold->insert()){
-				//TODO: use bib or bid ??
-				return array(
-					'title'   => $title,
-					'bib'     => $recordId,
-					'success' => true,
-					'message' => 'The circulation system is currently offline.  This hold will be entered for you automatically when the circulation system is online.');
+		if ($type == 'cancel' || $type == 'recall' || $type == 'update') {
+			$result = $this->updateHold($patron, $recordId, $type/*, $title*/);
+			$result['title'] = $title;
+			$result['bid']   = $recordId;
+			return $result;
+
+		} else {
+			if (isset($_REQUEST['pickupBranch'])){
+				$pickupBranch=trim($_REQUEST['pickupBranch']);
 			}else{
-				return array(
-					'title'   => $title,
-					'bib'     => $recordId,
-					'success' => false,
-					'message' => 'The circulation system is currently offline and we could not place this hold.  Please try again later.');
+				$pickupBranch = $patron->homeLocationId;
+			}
+			//create the hold using the web service
+			$createHoldUrl = $configArray['Catalog']['webServiceUrl'] . '/standard/createMyHold?clientID=' . $configArray['Catalog']['clientId'] . '&sessionToken=' . $sessionToken . '&pickupLocation=' . $pickupBranch . '&titleKey=' . $recordId ;
+			if ($itemId){
+				$createHoldUrl .= '&itemKey=' . $itemId;
 			}
 
-		}else{
-			if ($type == 'cancel' || $type == 'recall' || $type == 'update') {
-				$result = $this->updateHold($patron, $recordId, $type/*, $title*/);
-				$result['title'] = $title;
-				$result['bid']   = $recordId;
-				return $result;
+			$createHoldResponse = $this->getWebServiceResponse('placeHold',$createHoldUrl);
 
-			} else {
-				if (isset($_REQUEST['pickupBranch'])){
-					$pickupBranch=trim($_REQUEST['pickupBranch']);
-				}else{
-					$pickupBranch = $patron->homeLocationId;
+			$hold_result = array();
+			if ($createHoldResponse == true){
+				$hold_result['success'] = true;
+				$hold_result['message'] = translate(['text'=>"Your hold was placed successfully.", 'isPublicFacing'=>true]);
+			}else{
+				$hold_result['success'] = false;
+				$hold_result['message'] = translate(['text'=>"Your hold could not be placed.", 'isPublicFacing'=>true]);
+				if (isset($createHoldResponse->message)){
+					$hold_result['message'] .= (string)$createHoldResponse->message;
+				}else if (isset($createHoldResponse->string)){
+					$hold_result['message'] .= (string)$createHoldResponse->string;
 				}
-				//create the hold using the web service
-				$createHoldUrl = $configArray['Catalog']['webServiceUrl'] . '/standard/createMyHold?clientID=' . $configArray['Catalog']['clientId'] . '&sessionToken=' . $sessionToken . '&pickupLocation=' . $pickupBranch . '&titleKey=' . $recordId ;
-				if ($itemId){
-					$createHoldUrl .= '&itemKey=' . $itemId;
-				}
-
-				$createHoldResponse = $this->getWebServiceResponse('placeHold',$createHoldUrl);
-
-				$hold_result = array();
-				if ($createHoldResponse == true){
-					$hold_result['success'] = true;
-					$hold_result['message'] = translate(['text'=>"Your hold was placed successfully.", 'isPublicFacing'=>true]);
-				}else{
-					$hold_result['success'] = false;
-					$hold_result['message'] = translate(['text'=>"Your hold could not be placed.", 'isPublicFacing'=>true]);
-					if (isset($createHoldResponse->message)){
-						$hold_result['message'] .= (string)$createHoldResponse->message;
-					}else if (isset($createHoldResponse->string)){
-						$hold_result['message'] .= (string)$createHoldResponse->string;
-					}
-
-				}
-
-				$hold_result['title']  = $title;
-				$hold_result['bid']    = $recordId;
-				//Clear the patron profile
-				return $hold_result;
 
 			}
+
+			$hold_result['title']  = $title;
+			$hold_result['bid']    = $recordId;
+			//Clear the patron profile
+			return $hold_result;
 		}
 	}
 

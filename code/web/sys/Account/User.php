@@ -973,7 +973,8 @@ class User extends DataObject
 			global $timer;
 			$allCheckedOut = [];
 			//Get checked out titles from the ILS
-			if ($this->hasIlsConnection()) {
+			global $offlineMode;
+			if ($this->hasIlsConnection() && !$offlineMode) {
 				$ilsCheckouts = $this->getCatalogDriver()->getCheckouts($this);
 				$allCheckedOut = $ilsCheckouts;
 				$timer->logTime("Loaded transactions from catalog. {$this->id}");
@@ -1110,8 +1111,9 @@ class User extends DataObject
 			$allHolds = array(
 				'available' => [],
 				'unavailable' => []
-			);;
-			if ($this->hasIlsConnection()) {
+			);
+			global $offlineMode;
+			if ($this->hasIlsConnection() && !$offlineMode) {
 				$ilsHolds = $this->getCatalogDriver()->getHolds($this);
 				if ($ilsHolds instanceof AspenError) {
 					$ilsHolds = array();

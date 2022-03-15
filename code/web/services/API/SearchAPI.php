@@ -437,16 +437,6 @@ class SearchAPI extends Action
 			$this->addCheck($checks, "OMDB");
 		}
 
-		// Unprocessed Offline Holds //
-		$offlineHoldEntry = new OfflineHold();
-		$offlineHoldEntry->status = 'Not Processed';
-		$offlineHolds = $offlineHoldEntry->count();
-		if (!empty($offlineHolds)) {
-			$this->addCheck($checks, "Offline Holds", self::STATUS_CRITICAL, "There are $offlineHolds un-processed offline holds");
-		}else{
-			$this->addCheck($checks, "Offline Holds");
-		}
-
 		$hasCriticalErrors = false;
 		$hasWarnings = false;
 		foreach ($checks as $check){
