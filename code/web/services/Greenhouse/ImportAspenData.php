@@ -1,7 +1,7 @@
 <?php
 
 require_once ROOT_DIR . '/services/Admin/Admin.php';
-class Greenhouse_ImportLocalEnrichment extends Admin_Admin
+class Greenhouse_ImportAspenData extends Admin_Admin
 {
 	function launch(){
 		global $interface;
@@ -81,6 +81,9 @@ class Greenhouse_ImportLocalEnrichment extends Admin_Admin
 					$message = $this->importObjects('BrowseCategoryGroup', 'Browse Category Groups', $importPath . 'browse_categories.json', $mappings, $overrideExisting, $message);
 				} elseif ($element == 'collection_spotlights') {
 
+				} elseif ($element == 'ip_addresses') {
+					require_once ROOT_DIR . '/sys/IP/IPAddress.php';
+					$message = $this->importObjects('IPAddress', 'IP Addresses', $importPath . 'ip_addresses.json', $mappings, $overrideExisting, $message);
 				} elseif ($element == 'javascript') {
 					require_once ROOT_DIR . '/sys/LocalEnrichment/JavaScriptSnippet.php';
 					$message = $this->importObjects('JavaScriptSnippet', 'JavaScript Snippets', $importPath . 'javascript_snippets.json', $mappings, $overrideExisting, $message);
@@ -112,6 +115,9 @@ class Greenhouse_ImportLocalEnrichment extends Admin_Admin
 				if (file_exists($importPath . 'javascript_snippets.json')){
 					$validEnrichmentToImport['javascript'] = 'JavaScript Snippets';
 				}
+				if (file_exists($importPath . 'ip_addresses.json')){
+					$validEnrichmentToImport['ip_addresses'] = 'IP Addresses';
+				}
 				if (file_exists($importPath . 'placards.json')){
 					$validEnrichmentToImport['placards'] = 'Placards';
 				}
@@ -130,7 +136,7 @@ class Greenhouse_ImportLocalEnrichment extends Admin_Admin
 
 		}
 
-		$this->display('importLocalEnrichment.tpl', 'Import Local Enrichment');
+		$this->display('importAspenData.tpl', 'Import Aspen Data');
 	}
 
 	function getBreadcrumbs(): array

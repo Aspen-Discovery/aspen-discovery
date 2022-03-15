@@ -23,18 +23,18 @@
 				<div class="row">
 					<div class="col-xs-12">
 						<div style="margin-bottom: .5em">
-							<p class="h2" style="display: inline; vertical-align: top; margin-right: .25em">{translate text="Select Enrichment to Export" isAdminFacing=true}</p>
+							<p class="h2" style="display: inline; vertical-align: top; margin-right: .25em">{translate text="Select Data to Export" isAdminFacing=true}</p>
 						</div>
 						<div class="form-group checkbox">
-							<label for="selectAllEnrichmentElements">
-								<input type="checkbox" name="selectAllEnrichmentElements" id="selectAllEnrichmentElements" onchange="AspenDiscovery.toggleCheckboxes('.enrichmentElements', '#selectAllEnrichmentElements');">
+							<label for="selectAllDataElements">
+								<input type="checkbox" name="selectAllDataElements" id="selectAllDataElements" onchange="AspenDiscovery.toggleCheckboxes('.dataElements', '#selectAllDataElements');">
 								<strong>{translate text="Select All" isAdminFacing=true}</strong>
 							</label>
 						</div>
 						<div class="checkbox">
-							{foreach from=$enrichmentElements item=propertyName key=propertyValue}
-								<label for="enrichmentElement_{$propertyValue|escape:css}">
-									<input class="enrichmentElement" id="enrichmentElement_{$propertyValue|escape:css}" name='enrichmentElement[]' type="checkbox" value='{$propertyValue}'> {translate text=$propertyName isPublicFacing=$property.isPublicFacing isAdminFacing=true}<br>
+							{foreach from=$dataElements item=propertyName key=propertyValue}
+								<label for="dataElement_{$propertyValue|escape:css}">
+									<input class="dataElement" id="dataElement_{$propertyValue|escape:css}" name='dataElement[]' type="checkbox" value='{$propertyValue}'> {translate text=$propertyName isPublicFacing=$property.isPublicFacing isAdminFacing=true}<br>
 								</label>
 							{/foreach}
 						</div>

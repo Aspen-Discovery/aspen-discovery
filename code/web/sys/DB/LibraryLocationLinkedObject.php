@@ -48,6 +48,7 @@ abstract class DB_LibraryLocationLinkedObject extends DB_LibraryLinkedObject
 				foreach ($allLocations as $tmpLocation) {
 					if ($tmpLocation->code == $ilsCode) {
 						$locations[$tmpLocation->locationId] = $tmpLocation->locationId;
+						break;
 					}
 				}
 			}

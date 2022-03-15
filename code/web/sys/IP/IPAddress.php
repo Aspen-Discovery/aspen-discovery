@@ -23,6 +23,11 @@ class IPAddress extends DataObject
 		return ['isOpac', 'blockAccess', 'allowAPIAccess', 'startIpVal', 'endIpVal'];
 	}
 
+	public function getUniquenessFields(): array
+	{
+		return ['location'];
+	}
+
 	static function getObjectStructure() : array{
 		//Look lookup information for display in the user interface
 		$location = new Location();
@@ -307,5 +312,54 @@ class IPAddress extends DataObject
 			}
 		}
 		return IPAddress::$_logAllQueries;
+	}
+
+	public function toArray(): array
+	{
+		$return = parent::toArray();
+		unset($return['locationid']);
+		return $return;
+	}
+
+	public function getLinksForJSON(): array
+	{
+		$links = parent::getLinksForJSON();
+		$allLocations = Location::getLocationListAsObjects(false);
+		if (array_key_exists($this->locationid, $allLocations)){
+			$location = $allLocations[$this->locationid];
+			$links['locationCode']  = $location->code;
+		}else{
+			$links['locationCode']  = '';
+		}
+		return $links;
+	}
+
+	public function okToExport(array $selectedFilters): bool
+	{
+		$result = parent::okToExport($selectedFilters);
+		if ($this->locationid == -1 || in_array($this->locationid, $selectedFilters['locations'])){
+			return true;
+		}
+		return $result;
+	}
+
+	public function loadEmbeddedLinksFromJSON($jsonData, $mappings, $overrideExisting = 'keepExisting')
+	{
+		parent::loadEmbeddedLinksFromJSON($jsonData, $mappings, $overrideExisting);
+		if (empty($jsonData['locationCode'])){
+			$this->locationid = -1;
+		}else{
+			$allLocations = Location::getLocationListAsObjects(false);
+			$ilsCode = $jsonData['locationCode'];
+			if (array_key_exists($ilsCode, $mappings['locations'])){
+				$ilsCode = $mappings['locations'][$ilsCode];
+			}
+			foreach ($allLocations as $tmpLocation) {
+				if ($tmpLocation->code == $ilsCode) {
+					$this->locationid = $tmpLocation->locationId;
+					break;
+				}
+			}
+		}
 	}
 }

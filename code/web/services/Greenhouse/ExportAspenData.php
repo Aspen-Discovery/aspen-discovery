@@ -1,7 +1,7 @@
 <?php
 
 require_once ROOT_DIR . '/services/Admin/Admin.php';
-class Greenhouse_ExportLocalEnrichment extends Admin_Admin
+class Greenhouse_ExportAspenData extends Admin_Admin
 {
 	function launch(){
 		global $interface;
@@ -41,7 +41,7 @@ class Greenhouse_ExportLocalEnrichment extends Admin_Admin
 					$success = false;
 				} else {
 					$success = true;
-					foreach ($_REQUEST['enrichmentElement'] as $element) {
+					foreach ($_REQUEST['dataElement'] as $element) {
 						if ($element == 'browse_categories') {
 							require_once ROOT_DIR . '/sys/Browse/BrowseCategoryGroup.php';
 							$browseCategoryFile = $exportPath . 'browse_categories.json';
@@ -52,6 +52,10 @@ class Greenhouse_ExportLocalEnrichment extends Admin_Admin
 							require_once ROOT_DIR . '/sys/LocalEnrichment/JavaScriptSnippet.php';
 							$javascriptSnippetsFile = $exportPath . 'javascript_snippets.json';
 							$message = $this->exportObjects('JavaScriptSnippet', 'JavaScript Snippets', $javascriptSnippetsFile, $selectedFilters, $message);
+						} elseif ($element == 'ip_addresses') {
+							require_once ROOT_DIR . '/sys/IP/IPAddress.php';
+							$ipAddressesFile = $exportPath . 'ip_addresses.json';
+							$message = $this->exportObjects('IPAddress', 'IP Addresses', $ipAddressesFile, $selectedFilters, $message);
 
 						} elseif ($element == 'placards') {
 							require_once ROOT_DIR . '/sys/LocalEnrichment/Placard.php';
@@ -73,14 +77,15 @@ class Greenhouse_ExportLocalEnrichment extends Admin_Admin
 
 			$interface->assign('submissionResults', $submissionResults);
 		}else {
-			$enrichmentElements = [
+			$dataElements = [
 				'browse_categories' => 'Browse Categories w/Groups',
 				'collection_spotlights' => 'Collection Spotlights',
+				'ip_addresses' => 'IP Addresses',
 				'javascript' => 'JavaScript',
 				'placards' => 'Placards',
 				'system_messages' => 'System Messages'
 			];
-			$interface->assign('enrichmentElements', $enrichmentElements);
+			$interface->assign('dataElements', $dataElements);
 
 			$libraryList = Library::getLibraryList(false);
 			$locationList = Location::getLocationList(false);
@@ -88,7 +93,7 @@ class Greenhouse_ExportLocalEnrichment extends Admin_Admin
 			$interface->assign('locations', $locationList);
 		}
 
-		$this->display('exportLocalEnrichment.tpl', 'Export Local Enrichment',false);
+		$this->display('exportAspenData.tpl', 'Export Aspen Data',false);
 	}
 
 	function getBreadcrumbs(): array
