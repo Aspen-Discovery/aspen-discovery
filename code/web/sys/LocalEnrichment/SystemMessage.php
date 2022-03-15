@@ -1,5 +1,6 @@
 <?php
 
+require_once ROOT_DIR . '/sys/DB/LibraryLocationLinkedObject.php';
 require_once ROOT_DIR . '/sys/LocalEnrichment/SystemMessageLibrary.php';
 require_once ROOT_DIR . '/sys/LocalEnrichment/SystemMessageLocation.php';
 class SystemMessage extends DB_LibraryLocationLinkedObject

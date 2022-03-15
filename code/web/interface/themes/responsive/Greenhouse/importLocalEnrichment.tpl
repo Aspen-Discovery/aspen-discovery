@@ -34,7 +34,7 @@
 					<div class="row">
 						<div class="col-xs-12">
 							<div style="margin-bottom: .5em">
-								<p class="h2" style="display: inline; vertical-align: top; margin-right: .25em">{translate text="Select Enrichment to Export" isAdminFacing=true}</p>
+								<p class="h2" style="display: inline; vertical-align: top; margin-right: .25em">{translate text="Select Enrichment to Import" isAdminFacing=true}</p>
 							</div>
 							{if count($validEnrichmentToImport) > 1}
 								<div class="form-group checkbox">

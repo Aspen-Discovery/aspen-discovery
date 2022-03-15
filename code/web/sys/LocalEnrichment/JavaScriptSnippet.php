@@ -1,6 +1,6 @@
 <?php
 
-require_once ROOT_DIR . '/sys/DB/LIbraryLocationLinkedObject.php';
+require_once ROOT_DIR . '/sys/DB/LibraryLocationLinkedObject.php';
 require_once ROOT_DIR . '/sys/LocalEnrichment/JavaScriptSnippetLibrary.php';
 require_once ROOT_DIR . '/sys/LocalEnrichment/JavaScriptSnippetLocation.php';
 class JavaScriptSnippet extends DB_LibraryLocationLinkedObject

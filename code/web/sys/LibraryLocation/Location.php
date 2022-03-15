@@ -1424,26 +1424,29 @@ class Location extends DataObject
 		return $locationList;
 	}
 
+	static $locationListAsObjects = null;
 	/**
 	 * @param boolean $restrictByHomeLibrary whether locations for the patron's home library should be returned
 	 * @return Location[]
 	 */
 	static function getLocationListAsObjects(bool $restrictByHomeLibrary): array
 	{
-		$location = new Location();
-		$location->orderBy('displayName');
-		if ($restrictByHomeLibrary) {
-			$homeLibrary = Library::getPatronHomeLibrary();
-			if ($homeLibrary != null) {
-				$location->libraryId = $homeLibrary->libraryId;
+		if (Location::$locationListAsObjects == null) {
+			$location = new Location();
+			$location->orderBy('displayName');
+			if ($restrictByHomeLibrary) {
+				$homeLibrary = Library::getPatronHomeLibrary();
+				if ($homeLibrary != null) {
+					$location->libraryId = $homeLibrary->libraryId;
+				}
+			}
+			$location->find();
+			Location::$locationListAsObjects = [];
+			while ($location->fetch()) {
+				Location::$locationListAsObjects[$location->locationId] = clone $location;
 			}
 		}
-		$location->find();
-		$locationList = [];
-		while ($location->fetch()) {
-			$locationList[$location->locationId] = clone $location;
-		}
-		return $locationList;
+		return Location::$locationListAsObjects;
 	}
 
 	protected $_browseCategoryGroup = null;

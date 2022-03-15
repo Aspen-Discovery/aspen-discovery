@@ -10,6 +10,11 @@ class SubBrowseCategories extends DataObject {
 	public $subCategoryId;    // ID of the browse Category which is the Sub-Category or Child browse category
 	public $_source; //Source of the sub browse category, loaded at runtime, will be browseCategory, userList, or savedSearch
 
+	function getUniquenessFields(): array
+	{
+		return ['browseCategoryId', 'subCategoryId'];
+	}
+
 	static function getObjectStructure() : array{
 		$browseCategoryList = self::listBrowseCategories();
 		return array(
@@ -49,5 +54,39 @@ class SubBrowseCategories extends DataObject {
 
 	function getEditLink(){
 		return '/Admin/BrowseCategories?objectAction=edit&id=' . $this->subCategoryId;
+	}
+
+	public function toArray(): array
+	{
+		$return = parent::toArray();
+		unset($return['browseCategoryId']);
+		unset($return['subCategoryId']);
+		unset($return['source']);
+
+		return $return;
+	}
+
+	public function getLinksForJSON(): array {
+		$links = parent::getLinksForJSON();
+		//Add the subcategory
+		$browseCategory = new BrowseCategory();
+		$browseCategory->id = $this->subCategoryId;
+		if ($browseCategory->find(true)){
+			$links['subCategory'] = $browseCategory->toArray();
+		}
+		return $links;
+	}
+
+	public function loadEmbeddedLinksFromJSON($jsonData, $mappings, $overrideExisting = 'keepExisting')
+	{
+		parent::loadEmbeddedLinksFromJSON($jsonData, $mappings, $overrideExisting);
+		if (isset($jsonData)){
+			if (isset($jsonData['subCategory'])){
+				require_once ROOT_DIR . '/sys/Browse/BrowseCategory.php';
+				$subCategoryObj = new BrowseCategory();
+				$subCategoryObj->loadFromJSON($jsonData['subCategory'], $mappings, $overrideExisting);
+				$this->subCategoryId = $subCategoryObj->id;
+			}
+		}
 	}
 }

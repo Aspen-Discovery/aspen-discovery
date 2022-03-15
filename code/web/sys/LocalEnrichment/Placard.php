@@ -1,6 +1,6 @@
 <?php
 
-require_once ROOT_DIR . '/sys/DB/LIbraryLocationLinkedObject.php';
+require_once ROOT_DIR . '/sys/DB/LibraryLocationLinkedObject.php';
 require_once ROOT_DIR . '/sys/LocalEnrichment/PlacardTrigger.php';
 require_once ROOT_DIR . '/sys/LocalEnrichment/PlacardLibrary.php';
 require_once ROOT_DIR . '/sys/LocalEnrichment/PlacardLocation.php';
@@ -410,8 +410,8 @@ class Placard extends DB_LibraryLocationLinkedObject
 		return $links;
 	}
 
-	public function loadLinksFromJSON($jsonLinks, $mappings){
-		parent::loadLinksFromJSON($jsonLinks, $mappings);
+	public function loadRelatedLinksFromJSON($jsonLinks, $mappings, $overrideExisting = 'keepExisting') : bool{
+		$result = parent::loadRelatedLinksFromJSON($jsonLinks, $mappings);
 
 		if (array_key_exists('triggers', $jsonLinks)){
 			$triggers = [];
@@ -422,6 +422,7 @@ class Placard extends DB_LibraryLocationLinkedObject
 				$triggers[] = $triggerObj;
 			}
 			$this->_triggers = $triggers;
+			$result = true;
 		}
 		if (array_key_exists('languages', $jsonLinks)){
 			$languages = [];
@@ -433,6 +434,8 @@ class Placard extends DB_LibraryLocationLinkedObject
 				}
 			}
 			$this->_languages = $languages;
+			$result = true;
 		}
+		return $result;
 	}
 }

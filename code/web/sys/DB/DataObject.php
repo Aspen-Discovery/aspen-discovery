@@ -899,7 +899,7 @@ abstract class DataObject
 			if ($name[0] != '_'){
 				$return[$name] = $value;
 			}else if ($name[0] == '_' && strlen($name) > 1 && $name[1] != '_') {
-				if ($name != '_data' && $name != '_changedFields' && $name != '_deleteOnSave'){
+				if ($name != '_data' && $name != '_changedFields' && $name != '_deleteOnSave' && !is_object($value)){
 					$return[substr($name, 1)] = $value;
 				}
 			}
@@ -931,22 +931,56 @@ abstract class DataObject
 		return json_encode($baseObject, $flags);
 	}
 
-	public function loadFromJSON($jsonData, $mappings){
+	public function loadFromJSON($jsonData, $mappings, $overrideExisting = 'keepExisting'){
 		foreach ($jsonData as $property => $value){
 			if ($property != $this->getPrimaryKey() && $property != 'links'){
 				$this->$property = $value;
 			}
 		}
+		if (array_key_exists('links', $jsonData)) {
+			$this->loadEmbeddedLinksFromJSON($jsonData['links'], $mappings, $overrideExisting);
+		}
+
 		//Check to see if there is an existing ID for the object
 		$this->findExistingObjectId();
+
+		if ($overrideExisting == 'keepExisting'){
+			//Only update if we don't have an existing value
+			if (empty($this->getPrimaryKeyObject)){
+				$this->update();
+			}
+		}else{
+			$this->update();
+		}
+
 		//Load any links (do after loading the existing object id to handle nested objects)
-		if (array_key_exists('links', $jsonData)){
-			$this->loadLinksFromJSON($jsonData['links'], $mappings);
+		if (array_key_exists('links', $jsonData)) {
+			if ($this->loadRelatedLinksFromJSON($jsonData['links'], $mappings, $overrideExisting)) {
+				$this->update();
+			}
 		}
 	}
 
-	public function loadLinksFromJSON($jsonData, $mappings){
+	/**
+	 * Load embedded links from json (objects where we directly store the id of the object in this object)
+	 * @param $jsonData
+	 * @param $mappings
+	 * @param $overrideExisting keepExisting / updateExisting
+	 * @return void
+	 */
+	public function loadEmbeddedLinksFromJSON($jsonData, $mappings, $overrideExisting = 'keepExisting') {
 
+	}
+
+	/**
+	 * Load related links from json (objects where we there is an intermediary table storing our id and infromation about the other object)
+	 * @param $jsonData
+	 * @param $mappings
+	 * @param $overrideExisting keepExisting / updateExisting
+	 * @return boolean True/False if links were loaded
+	 */
+	public function loadRelatedLinksFromJSON($jsonData, $mappings, $overrideExisting = 'keepExisting') : bool{
+		return false;
 	}
 
 	public function findExistingObjectId()

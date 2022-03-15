@@ -1566,26 +1566,29 @@ class Library extends DataObject
 		return $libraryList;
 	}
 
+	static $libraryListAsObjects = null;
 	/**
 	 * @param boolean $restrictByHomeLibrary whether or not only the patron's home library should be returned
 	 * @return Library[]
 	 */
 	static function getLibraryListAsObjects($restrictByHomeLibrary): array
 	{
-		$library = new Library();
-		$library->orderBy('displayName');
-		if ($restrictByHomeLibrary) {
-			$homeLibrary = Library::getPatronHomeLibrary();
-			if ($homeLibrary != null) {
-				$library->libraryId = $homeLibrary->libraryId;
+		if (Library::$libraryListAsObjects == null) {
+			$library = new Library();
+			$library->orderBy('displayName');
+			if ($restrictByHomeLibrary) {
+				$homeLibrary = Library::getPatronHomeLibrary();
+				if ($homeLibrary != null) {
+					$library->libraryId = $homeLibrary->libraryId;
+				}
+			}
+			$library->find();
+			Library::$libraryListAsObjects = [];
+			while ($library->fetch()) {
+				Library::$libraryListAsObjects[$library->libraryId] = clone $library;
 			}
 		}
-		$library->find();
-		$libraryList = [];
-		while ($library->fetch()) {
-			$libraryList[$library->libraryId] = clone $library;
-		}
-		return $libraryList;
+		return Library::$libraryListAsObjects;
 	}
 
 	/** @var OverDriveScope */

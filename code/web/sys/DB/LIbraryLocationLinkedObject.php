@@ -36,8 +36,8 @@ abstract class DB_LibraryLocationLinkedObject extends DB_LibraryLinkedObject
 		return $links;
 	}
 
-	public function loadLinksFromJSON($jsonLinks, $mappings){
-		parent::loadLinksFromJSON($jsonLinks, $mappings);
+	public function loadRelatedLinksFromJSON($jsonLinks, $mappings, $overrideExisting = 'keepExisting') : bool{
+		$result = parent::loadRelatedLinksFromJSON($jsonLinks, $mappings);
 		if (array_key_exists('locations', $jsonLinks)){
 			$allLocations = Location::getLocationListAsObjects(false);
 			$locations = [];
@@ -52,6 +52,16 @@ abstract class DB_LibraryLocationLinkedObject extends DB_LibraryLinkedObject
 				}
 			}
 			$this->_locations = $locations;
+			$result = true;
 		}
+		return $result;
+	}
+
+	public function toArray() : array
+	{
+		//Unset locations since they will be added as links
+		$return = parent::toArray();
+		unset($return['locations']);
+		return $return;
 	}
 }

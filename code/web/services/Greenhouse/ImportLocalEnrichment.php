@@ -57,14 +57,28 @@ class Greenhouse_ImportLocalEnrichment extends Admin_Admin
 				}
 				fclose($locationMappingsFhnd);
 			}
+			$userMappings = [];
+			if (file_exists($importPath . 'users_map.csv')){
+				$userMappingsFhnd = fopen($importPath . 'users_map.csv', 'r');
+				$mappingLine = fgetcsv($userMappingsFhnd);
+				while ($mappingLine){
+					if (!empty($mappingLine) && count($mappingLine) >= 2) {
+						$userMappings[trim($mappingLine[0])] = trim($mappingLine[1]);
+					}
+					$mappingLine = fgetcsv($userMappingsFhnd);
+				}
+				fclose($userMappingsFhnd);
+			}
 			$mappings = [
 				'libraries' => $libraryMappings,
-				'locations' => $locationMappings
+				'locations' => $locationMappings,
+				'users' => $userMappings,
 			];
 
 			foreach ($_REQUEST['enrichmentElement'] as $element){
 				if ($element == 'browse') {
-
+					require_once ROOT_DIR . '/sys/Browse/BrowseCategoryGroup.php';
+					$message = $this->importObjects('BrowseCategoryGroup', 'Browse Category Groups', $importPath . 'browse_categories.json', $mappings, $overrideExisting, $message);
 				} elseif ($element == 'collection_spotlights') {
 
 				} elseif ($element == 'javascript') {
@@ -92,6 +106,9 @@ class Greenhouse_ImportLocalEnrichment extends Admin_Admin
 			$validEnrichmentToImport = [];
 			//Look for the necessary files
 			if ($importDirExists){
+				if (file_exists($importPath . 'browse_categories.json')){
+					$validEnrichmentToImport['browse'] = 'Browse Categories';
+				}
 				if (file_exists($importPath . 'javascript_snippets.json')){
 					$validEnrichmentToImport['javascript'] = 'JavaScript Snippets';
 				}
@@ -153,15 +170,7 @@ class Greenhouse_ImportLocalEnrichment extends Admin_Admin
 		while ($objectLine){
 			$jsonData = json_decode($objectLine, true);
 			$object = new $className();
-			$object->loadFromJSON($jsonData, $mappings);
-			if ($overrideExisting == 'keepExisting'){
-				//Only update if we don't have an existing value
-				if (empty($object->getPrimaryKeyObject)){
-					$object->update();
-				}
-			}else{
-				$object->update();
-			}
+			$object->loadFromJSON($jsonData, $mappings, $overrideExisting);
 
 			$numObjectsImported++;
 			$objectLine = fgets($objectHnd);

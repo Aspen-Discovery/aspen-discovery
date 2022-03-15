@@ -34,8 +34,8 @@ abstract class DB_LibraryLinkedObject extends DataObject
 		return $links;
 	}
 
-	public function loadLinksFromJSON($jsonLinks, $mappings){
-		parent::loadLinksFromJSON($jsonLinks, $mappings);
+	public function loadRelatedLinksFromJSON($jsonLinks, $mappings, $overrideExisting = 'keepExisting') : bool{
+		$result = parent::loadRelatedLinksFromJSON($jsonLinks, $mappings);
 		if (array_key_exists('libraries', $jsonLinks)){
 			$allLibraries = Library::getLibraryListAsObjects(false);
 			$libraries = [];
@@ -46,10 +46,21 @@ abstract class DB_LibraryLinkedObject extends DataObject
 				foreach ($allLibraries as $tmpLibrary){
 					if ($tmpLibrary->subdomain == $subdomain || $tmpLibrary->ilsCode == $subdomain){
 						$libraries[$tmpLibrary->libraryId] = $tmpLibrary->libraryId;
+						break;
 					}
 				}
 			}
 			$this->_libraries = $libraries;
+			$result = true;
 		}
+		return $result;
+	}
+
+	public function toArray() : array
+	{
+		//Unset libraries since they will be added as links
+		$return = parent::toArray();
+		unset($return['libraries']);
+		return $return;
 	}
 }

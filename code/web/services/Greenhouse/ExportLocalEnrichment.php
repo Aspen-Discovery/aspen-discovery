@@ -43,9 +43,11 @@ class Greenhouse_ExportLocalEnrichment extends Admin_Admin
 					$success = true;
 					foreach ($_REQUEST['enrichmentElement'] as $element) {
 						if ($element == 'browse_categories') {
-
+							require_once ROOT_DIR . '/sys/Browse/BrowseCategoryGroup.php';
+							$browseCategoryFile = $exportPath . 'browse_categories.json';
+							$message = $this->exportObjects('BrowseCategoryGroup', 'Browse Category Groups', $browseCategoryFile, $selectedFilters, $message);
 						} elseif ($element == 'collection_spotlights') {
-
+							$message .= '<br/>Exporting Collection Spotlights has not been implemented yet';
 						} elseif ($element == 'javascript') {
 							require_once ROOT_DIR . '/sys/LocalEnrichment/JavaScriptSnippet.php';
 							$javascriptSnippetsFile = $exportPath . 'javascript_snippets.json';
