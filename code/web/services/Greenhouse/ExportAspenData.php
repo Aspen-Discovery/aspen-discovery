@@ -23,6 +23,8 @@ class Greenhouse_ExportAspenData extends Admin_Admin
 					$message = 'Could not create export directory';
 					$success = false;
 				}else{
+					chgrp($exportPath, 'aspen_apache');
+					chown($exportPath, 'aspen');
 					$exportDirExists = true;
 				}
 			}else{
