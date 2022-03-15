@@ -201,6 +201,9 @@ class Library extends DataObject
 	public /** @noinspection PhpUnused */ $loginFormUsernameLabel;
 	public $loginFormPasswordLabel;
 	public $loginNotes;
+	public $allowLoginToPatronsOfThisLibraryOnly;
+	public $messageForPatronsOfOtherLibraries;
+
 	public $showDetailedHoldNoticeInformation;
 	public $treatPrintNoticesAsPhoneNotices;
 	public /** @noinspection PhpUnused */ $includeDplaResults;
@@ -623,6 +626,8 @@ class Library extends DataObject
 					'loginFormUsernameLabel'  => array('property'=>'loginFormUsernameLabel', 'type'=>'text', 'label'=>'Login Form Username Label', 'description'=>'The label to show for the username when logging in', 'size'=>'100', 'hideInLists' => true, 'default'=>'Your Name'),
 					'loginFormPasswordLabel'  => array('property'=>'loginFormPasswordLabel', 'type'=>'text', 'label'=>'Login Form Password Label', 'description'=>'The label to show for the password when logging in', 'size'=>'100', 'hideInLists' => true, 'default'=>'Library Card Number'),
 					'loginNotes' => array('property' => 'loginNotes', 'type' => 'markdown', 'label' => 'Login Notes', 'description' => 'Additional notes to display under the login fields', 'hideInLists' => true),
+					'allowLoginToPatronsOfThisLibraryOnly' => array('property' => 'allowLoginToPatronsOfThisLibraryOnly', 'type' => 'checkbox', 'label' => 'Allow Login to Patrons of this Library Only', 'description' => 'Whether or not only patrons with a library in this system can login', 'hideInLists' => true, 'default' => 0),
+					'messageForPatronsOfOtherLibraries' => array('property' => 'messageForPatronsOfOtherLibraries', 'type' => 'html', 'label' => 'Message for Patrons of Other Libraries', 'description' => 'A message to show to patrons of other libraries if they are denied access', 'hideInLists' => true),
 				)),
 				'messagesSection' => array('property' => 'messagesSection', 'type' => 'section', 'label' => 'Messages', 'hideInLists' => true, 'permissions' => ['Library ILS Connection'], 'properties' => array(
 					'showOpacNotes' => array('property'=>'showOpacNotes', 'type'=>'checkbox', 'label'=>'Show OPAC Notes', 'description'=>'Whether or not OPAC/Web Notes from the ILS should be shown', 'hideInLists' => true, 'default' => 0),
