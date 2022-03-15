@@ -25,7 +25,7 @@ class IPAddress extends DataObject
 
 	public function getUniquenessFields(): array
 	{
-		return ['location'];
+		return ['ip'];
 	}
 
 	static function getObjectStructure() : array{
@@ -60,7 +60,6 @@ class IPAddress extends DataObject
 
 	function insert(){
 		$this->calcIpRange();
-		/** @var Memcache $memCache */
 		global $memCache;
 		$memCache->deleteStartingWith('ipId_for_ip_');
 		$memCache->deleteStartingWith('location_for_ip_');
@@ -68,13 +67,12 @@ class IPAddress extends DataObject
 	}
 	function update(){
 		$this->calcIpRange();
-		/** @var Memcache $memCache */
 		global $memCache;
 		$memCache->deleteStartingWith('ipId_for_ip_');
 		$memCache->deleteStartingWith('location_for_ip_');
 		return parent::update();
 	}
-	function validateIPAddress(){
+	function validateIPAddress() : array{
 		$calcIpResult = $this->calcIpRange();
 		$errors = [];
 		if (!$calcIpResult) {
@@ -85,7 +83,7 @@ class IPAddress extends DataObject
 			'errors' => $errors
 		];
 	}
-	function calcIpRange(){
+	function calcIpRange() : bool {
 		$ipAddress = $this->ip;
 		$subnet_and_mask = explode('/', $ipAddress);
 		if (count($subnet_and_mask) == 2){
