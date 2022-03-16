@@ -215,14 +215,8 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 					// Get Available Assignees
 					$materialsRequestManagers = new User();
 
-					require_once ROOT_DIR . '/sys/Administration/UserRoles.php';
-					$userRole         = new UserRoles();
-					$userRole->roleId = $rolePermissions->roleId;
+					if ($materialsRequestManagers->query("SELECT id, displayName from user WHERE id IN (SELECT userId FROM user_roles WHERE roleId = {$rolePermissions->roleId}) AND homeLocationId IN (" . implode(', ', $locationsForLibrary) . ")")){
 
-					$materialsRequestManagers->joinAdd($userRole, 'INNER', 'user', 'id', 'userId');
-					$materialsRequestManagers->whereAdd('user.homeLocationId IN (' . implode(', ', $locationsForLibrary) . ')');
-
-					if ($materialsRequestManagers->find()) {
 						while ($materialsRequestManagers->fetch()){
 							$assignees[$materialsRequestManagers->id] = $materialsRequestManagers->displayName;
 						}
