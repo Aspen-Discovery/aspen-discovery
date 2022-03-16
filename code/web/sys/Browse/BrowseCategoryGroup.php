@@ -286,7 +286,7 @@ class BrowseCategoryGroup extends DB_LibraryLocationLinkedObject
 		$links['browseCategories'] = [];
 		//We need to be careful of recursion here, so we will preload 2 levels of categories and sub categories
 		foreach ($browseCategoriesGroupEntries as $browseCategoryGroupEntry){
-			$browseCategoryArray = $browseCategoryGroupEntry->toArray();
+			$browseCategoryArray = $browseCategoryGroupEntry->toArray(false, true);
 			$browseCategoryArray['links'] = $browseCategoryGroupEntry->getLinksForJSON();
 
 			$links['browseCategories'][] = $browseCategoryArray;

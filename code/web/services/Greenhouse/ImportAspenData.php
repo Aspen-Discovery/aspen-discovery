@@ -110,6 +110,9 @@ class Greenhouse_ImportAspenData extends Admin_Admin
 					$message = $this->importObjects('SystemMessage', 'System Messages', $importPath . 'system_messages.json', $mappings, $overrideExisting, $message);
 				} elseif ($element == 'users') {
 					$message = $this->importObjects('User', 'Users', $importPath . 'users.json', $mappings, $overrideExisting, $message);
+				} elseif ($element == 'user_lists') {
+					require_once  ROOT_DIR . '/sys/UserLists/UserList.php';
+					$message = $this->importObjects('UserList', 'User Lists', $importPath . 'user_lists.json', $mappings, $overrideExisting, $message);
 				} elseif ($element == 'user_roles') {
 					require_once  ROOT_DIR . '/sys/Administration/UserRoles.php';
 					$message = $this->importObjects('UserRoles', 'User Roles', $importPath . 'user_roles.json', $mappings, $overrideExisting, $message);
@@ -149,6 +152,9 @@ class Greenhouse_ImportAspenData extends Admin_Admin
 				}
 				if (file_exists($importPath . 'users.json')){
 					$validEnrichmentToImport['users'] = 'Users';
+				}
+				if (file_exists($importPath . 'user_lists.json')){
+					$validEnrichmentToImport['user_lists'] = 'User Lists';
 				}
 				if (file_exists($importPath . 'user_roles.json')){
 					$validEnrichmentToImport['user_roles'] = 'User Roles';

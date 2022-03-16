@@ -39,7 +39,7 @@
 							{if count($validEnrichmentToImport) > 1}
 								<div class="form-group checkbox">
 									<label for="selectAllEnrichmentElements">
-										<input type="checkbox" name="selectAllEnrichmentElements" id="selectAllEnrichmentElements" onchange="AspenDiscovery.toggleCheckboxes('.enrichmentElements', '#selectAllEnrichmentElements');">
+										<input type="checkbox" name="selectAllEnrichmentElements" id="selectAllEnrichmentElements" onchange="AspenDiscovery.toggleCheckboxes('.enrichmentElement', '#selectAllEnrichmentElements');">
 										<strong>{translate text="Select All" isAdminFacing=true}</strong>
 									</label>
 								</div>

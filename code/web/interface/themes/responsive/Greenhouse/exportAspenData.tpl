@@ -27,7 +27,7 @@
 						</div>
 						<div class="form-group checkbox">
 							<label for="selectAllDataElements">
-								<input type="checkbox" name="selectAllDataElements" id="selectAllDataElements" onchange="AspenDiscovery.toggleCheckboxes('.dataElements', '#selectAllDataElements');">
+								<input type="checkbox" name="selectAllDataElements" id="selectAllDataElements" onchange="AspenDiscovery.toggleCheckboxes('.dataElement', '#selectAllDataElements');">
 								<strong>{translate text="Select All" isAdminFacing=true}</strong>
 							</label>
 						</div>

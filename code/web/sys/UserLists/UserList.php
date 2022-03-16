@@ -770,4 +770,78 @@ class UserList extends DataObject
 		ksort($userLists);
 		return $userLists;
 	}
+
+	public function toArray($includeRuntimeProperties = true, $encryptFields = false): array
+	{
+		$return =  parent::toArray($includeRuntimeProperties, $encryptFields);
+		unset($return['user_id']);
+		return $return;
+	}
+
+	public function okToExport(array $selectedFilters) : bool{
+		$okToExport = parent::okToExport($selectedFilters);
+		$user = new User();
+		$user->id = $this->user_id;
+		if ($user->find(true)) {
+			if ($user->homeLocationId == 0 || array_key_exists($user->homeLocationId, $selectedFilters['locations'])) {
+				$okToExport = true;
+			}
+		}
+		return $okToExport;
+	}
+
+	public function getLinksForJSON(): array
+	{
+		$links =  parent::getLinksForJSON();
+		$user = new User();
+		$user->id = $this->user_id;
+		if ($user->find(true)){
+			$links['user'] = $user->username;
+		}
+
+		$userListEntries = [];
+		require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
+		$userListEntry = new UserListEntry();
+		$userListEntry->listId = $this->id;
+		$userListEntry->find();
+		while ($userListEntry->fetch()){
+			$userListEntryArray = $userListEntry->toArray(false, true);
+			$userListEntryArray['links'] = $userListEntry->getLinksForJSON();
+			$userListEntries[] = $userListEntryArray;
+		}
+
+		$links['userListEntries'] = $userListEntries;
+		return $links;
+	}
+
+	public function loadEmbeddedLinksFromJSON($jsonData, $mappings, $overrideExisting = 'keepExisting')
+	{
+		parent::loadEmbeddedLinksFromJSON($jsonData, $mappings, $overrideExisting);
+		if (isset($jsonData['user'])){
+			$username = $jsonData['user'];
+			if (array_key_exists($username, $mappings['users'])){
+				$username = $mappings['users'][$username];
+			}
+			$user = new User();
+			$user->username = $username;
+			if ($user->find(true)){
+				$this->user_id = $user->id;
+			}
+		}
+	}
+
+	public function loadRelatedLinksFromJSON($jsonData, $mappings, $overrideExisting = 'keepExisting'): bool
+	{
+		$result = parent::loadRelatedLinksFromJSON($jsonData, $mappings, $overrideExisting);
+		if (array_key_exists('userListEntries', $jsonData)){
+			foreach ($jsonData['userListEntries'] as $listEntry){
+				require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
+				$userListEntry = new UserListEntry();
+				$userListEntry->listId = $this->id;
+				$userListEntry->loadFromJSON($listEntry, $mappings, $overrideExisting);
+			}
+			$result = true;
+		}
+		return $result;
+	}
 }

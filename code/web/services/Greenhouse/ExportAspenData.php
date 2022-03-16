@@ -76,6 +76,10 @@ class Greenhouse_ExportAspenData extends Admin_Admin
 							require_once  ROOT_DIR . '/sys/Account/User.php';
 							$exportFile = $exportPath . 'users.json';
 							$message = $this->exportObjects('User', 'Users', $exportFile, $selectedFilters, $message);
+						} elseif ($element == 'user_lists') {
+							require_once  ROOT_DIR . '/sys/UserLists/UserList.php';
+							$exportFile = $exportPath . 'user_lists.json';
+							$message = $this->exportObjects('UserList', 'User Lists', $exportFile, $selectedFilters, $message);
 						} elseif ($element == 'user_roles') {
 							require_once  ROOT_DIR . '/sys/Administration/UserRoles.php';
 							$exportFile = $exportPath . 'user_roles.json';
