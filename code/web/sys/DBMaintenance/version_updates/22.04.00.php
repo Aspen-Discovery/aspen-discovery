@@ -36,7 +36,7 @@ function getUpdates22_04_00() : array
 			'sql' => array(
 				"ALTER TABLE `user` ADD COLUMN `hooplaCheckOutConfirmation` TINYINT(1) UNSIGNED NOT NULL DEFAULT 1;"
 			),
-		),
+		), //user_hoopla_confirmation_checkout_prompt2
 		'user_hideResearchStarters' => [
 			'title' => 'User Hide Research Starters - recreate',
 			'description' => 'Recreates column to hide research starters',
@@ -44,7 +44,15 @@ function getUpdates22_04_00() : array
 			'sql' => array(
 				"ALTER TABLE user ADD COLUMN hideResearchStarters TINYINT(1) DEFAULT 0"
 			),
-
-		]
+		], //user_hideResearchStarters
+		'user_role_uniqueness' => [
+			'title' => 'User Role Uniqueness',
+			'description' => 'Update Uniqueness for User Roles',
+			'continueOnError' => true,
+			'sql' => array(
+				"ALTER TABLE user_roles DROP PRIMARY KEY",
+				"ALTER TABLE user_roles ADD COLUMN id INT NOT NULL AUTO_INCREMENT PRIMARY KEY",
+			),
+		], //user_role_uniqueness
 	];
 }

@@ -102,11 +102,17 @@ class Greenhouse_ImportAspenData extends Admin_Admin
 				} elseif ($element == 'placards') {
 					require_once ROOT_DIR . '/sys/LocalEnrichment/Placard.php';
 					$message = $this->importObjects('Placard', 'Placards', $importPath . 'placards.json', $mappings, $overrideExisting, $message);
+				} elseif ($element == 'roles') {
+					require_once ROOT_DIR . '/sys/Administration/Role.php';
+					$message = $this->importObjects('Role', 'Roles', $importPath . 'roles.json', $mappings, $overrideExisting, $message);
 				} elseif ($element == 'system_messages') {
 					require_once ROOT_DIR . '/sys/LocalEnrichment/SystemMessage.php';
 					$message = $this->importObjects('SystemMessage', 'System Messages', $importPath . 'system_messages.json', $mappings, $overrideExisting, $message);
 				} elseif ($element == 'users') {
 					$message = $this->importObjects('User', 'Users', $importPath . 'users.json', $mappings, $overrideExisting, $message);
+				} elseif ($element == 'user_roles') {
+					require_once  ROOT_DIR . '/sys/Administration/UserRoles.php';
+					$message = $this->importObjects('UserRoles', 'User Roles', $importPath . 'user_roles.json', $mappings, $overrideExisting, $message);
 				}
 			}
 
@@ -135,11 +141,17 @@ class Greenhouse_ImportAspenData extends Admin_Admin
 				if (file_exists($importPath . 'placards.json')){
 					$validEnrichmentToImport['placards'] = 'Placards';
 				}
+				if (file_exists($importPath . 'roles.json')){
+					$validEnrichmentToImport['roles'] = 'Roles';
+				}
 				if (file_exists($importPath . 'system_messages.json')){
 					$validEnrichmentToImport['system_messages'] = 'System Messages';
 				}
 				if (file_exists($importPath . 'users.json')){
 					$validEnrichmentToImport['users'] = 'Users';
+				}
+				if (file_exists($importPath . 'user_roles.json')){
+					$validEnrichmentToImport['user_roles'] = 'User Roles';
 				}
 			}
 

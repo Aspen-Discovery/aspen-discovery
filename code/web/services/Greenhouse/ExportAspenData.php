@@ -63,6 +63,10 @@ class Greenhouse_ExportAspenData extends Admin_Admin
 							require_once ROOT_DIR . '/sys/LocalEnrichment/Placard.php';
 							$exportFile = $exportPath . 'placards.json';
 							$message = $this->exportObjects('Placard', 'Placards', $exportFile, $selectedFilters, $message);
+						} elseif ($element == 'roles') {
+							require_once ROOT_DIR . '/sys/Administration/Role.php';
+							$exportFile = $exportPath . 'roles.json';
+							$message = $this->exportObjects('Role', 'Roles', $exportFile, $selectedFilters, $message);
 
 						} elseif ($element == 'system_messages') {
 							require_once  ROOT_DIR . '/sys/LocalEnrichment/SystemMessage.php';
@@ -72,6 +76,10 @@ class Greenhouse_ExportAspenData extends Admin_Admin
 							require_once  ROOT_DIR . '/sys/Account/User.php';
 							$exportFile = $exportPath . 'users.json';
 							$message = $this->exportObjects('User', 'Users', $exportFile, $selectedFilters, $message);
+						} elseif ($element == 'user_roles') {
+							require_once  ROOT_DIR . '/sys/Administration/UserRoles.php';
+							$exportFile = $exportPath . 'user_roles.json';
+							$message = $this->exportObjects('UserRoles', 'User Roles', $exportFile, $selectedFilters, $message);
 						}
 					}
 				}
@@ -89,6 +97,7 @@ class Greenhouse_ExportAspenData extends Admin_Admin
 				'ip_addresses' => 'IP Addresses',
 				'javascript' => 'JavaScript',
 				'placards' => 'Placards',
+				'roles' => 'Roles',
 				'system_messages' => 'System Messages',
 				'users' => 'Users',
 				'user_browse_category_dismissals' => 'User Browse Category Dismissals',
@@ -97,6 +106,7 @@ class Greenhouse_ExportAspenData extends Admin_Admin
 				'user_not_interested' => 'User Not Interested',
 				'user_ratings' => 'User Ratings',
 				'user_reading_history' => 'User Reading History',
+				'user_roles' => 'User Roles',
 				'user_saved_searches' => 'User Saved Searches',
 				'user_system_message_dismissals' => 'User System Message Dismissals',
 			];
