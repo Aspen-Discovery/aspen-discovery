@@ -58,10 +58,10 @@ abstract class DB_LibraryLocationLinkedObject extends DB_LibraryLinkedObject
 		return $result;
 	}
 
-	public function toArray() : array
+	public function toArray($includeRuntimeProperties = true, $encryptFields = false) : array
 	{
 		//Unset locations since they will be added as links
-		$return = parent::toArray();
+		$return = parent::toArray($includeRuntimeProperties, $encryptFields);
 		unset($return['locations']);
 		return $return;
 	}

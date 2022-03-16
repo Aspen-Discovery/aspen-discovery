@@ -382,9 +382,9 @@ class BrowseCategory extends BaseBrowsable
 		return true;
 	}
 
-	public function toArray(): array
+	public function toArray($includeRuntimeProperties = true, $encryptFields = false): array
 	{
-		$return = parent::toArray();
+		$return = parent::toArray($includeRuntimeProperties, $encryptFields);
 		unset ($return['libraryId']);
 		unset ($return['userId']);
 

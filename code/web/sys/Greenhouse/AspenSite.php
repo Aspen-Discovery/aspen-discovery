@@ -165,9 +165,9 @@ class AspenSite extends DataObject
 		return $version;
 	}
 
-	public function toArray(): array
+	public function toArray($includeRuntimeProperties = true, $encryptFields = false): array
 	{
-		$return = parent::toArray();
+		$return = parent::toArray($includeRuntimeProperties, $encryptFields);
 		$return['implementationStatus'] = AspenSite::$_implementationStatuses[$this->implementationStatus];
 		return $return;
 	}

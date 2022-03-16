@@ -77,10 +77,10 @@ class BrowseCategoryGroupEntry extends DataObject
 		return true;
 	}
 
-	public function toArray() : array
+	public function toArray($includeRuntimeProperties = true, $encryptFields = false) : array
 	{
 		//Unset ids for group and browse category since they will be set by links
-		$return = parent::toArray();
+		$return = parent::toArray($includeRuntimeProperties, $encryptFields);
 		unset($return['browseCategoryGroupId']);
 		unset($return['browseCategoryId']);
 		return $return;

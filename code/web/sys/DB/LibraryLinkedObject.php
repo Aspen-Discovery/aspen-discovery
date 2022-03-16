@@ -56,10 +56,10 @@ abstract class DB_LibraryLinkedObject extends DataObject
 		return $result;
 	}
 
-	public function toArray() : array
+	public function toArray($includeRuntimeProperties = true, $encryptFields = false) : array
 	{
 		//Unset libraries since they will be added as links
-		$return = parent::toArray();
+		$return = parent::toArray($includeRuntimeProperties, $encryptFields);
 		unset($return['libraries']);
 		return $return;
 	}

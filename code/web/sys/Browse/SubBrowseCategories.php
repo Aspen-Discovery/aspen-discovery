@@ -56,9 +56,9 @@ class SubBrowseCategories extends DataObject {
 		return '/Admin/BrowseCategories?objectAction=edit&id=' . $this->subCategoryId;
 	}
 
-	public function toArray(): array
+	public function toArray($includeRuntimeProperties = true, $encryptFields = false): array
 	{
-		$return = parent::toArray();
+		$return = parent::toArray($includeRuntimeProperties, $encryptFields);
 		unset($return['browseCategoryId']);
 		unset($return['subCategoryId']);
 		unset($return['source']);

@@ -46,28 +46,32 @@ class Greenhouse_ExportAspenData extends Admin_Admin
 					foreach ($_REQUEST['dataElement'] as $element) {
 						if ($element == 'browse_categories') {
 							require_once ROOT_DIR . '/sys/Browse/BrowseCategoryGroup.php';
-							$browseCategoryFile = $exportPath . 'browse_categories.json';
-							$message = $this->exportObjects('BrowseCategoryGroup', 'Browse Category Groups', $browseCategoryFile, $selectedFilters, $message);
+							$exportFile = $exportPath . 'browse_categories.json';
+							$message = $this->exportObjects('BrowseCategoryGroup', 'Browse Category Groups', $exportFile, $selectedFilters, $message);
 						} elseif ($element == 'collection_spotlights') {
 							$message .= '<br/>Exporting Collection Spotlights has not been implemented yet';
 						} elseif ($element == 'javascript') {
 							require_once ROOT_DIR . '/sys/LocalEnrichment/JavaScriptSnippet.php';
-							$javascriptSnippetsFile = $exportPath . 'javascript_snippets.json';
-							$message = $this->exportObjects('JavaScriptSnippet', 'JavaScript Snippets', $javascriptSnippetsFile, $selectedFilters, $message);
+							$exportFile = $exportPath . 'javascript_snippets.json';
+							$message = $this->exportObjects('JavaScriptSnippet', 'JavaScript Snippets', $exportFile, $selectedFilters, $message);
 						} elseif ($element == 'ip_addresses') {
 							require_once ROOT_DIR . '/sys/IP/IPAddress.php';
-							$ipAddressesFile = $exportPath . 'ip_addresses.json';
-							$message = $this->exportObjects('IPAddress', 'IP Addresses', $ipAddressesFile, $selectedFilters, $message);
+							$exportFile = $exportPath . 'ip_addresses.json';
+							$message = $this->exportObjects('IPAddress', 'IP Addresses', $exportFile, $selectedFilters, $message);
 
 						} elseif ($element == 'placards') {
 							require_once ROOT_DIR . '/sys/LocalEnrichment/Placard.php';
-							$placardFile = $exportPath . 'placards.json';
-							$message = $this->exportObjects('Placard', 'Placards', $placardFile, $selectedFilters, $message);
+							$exportFile = $exportPath . 'placards.json';
+							$message = $this->exportObjects('Placard', 'Placards', $exportFile, $selectedFilters, $message);
 
 						} elseif ($element == 'system_messages') {
 							require_once  ROOT_DIR . '/sys/LocalEnrichment/SystemMessage.php';
-							$systemMessagesFile = $exportPath . 'system_messages.json';
-							$message = $this->exportObjects('SystemMessage', 'System Messages', $systemMessagesFile, $selectedFilters, $message);
+							$exportFile = $exportPath . 'system_messages.json';
+							$message = $this->exportObjects('SystemMessage', 'System Messages', $exportFile, $selectedFilters, $message);
+						} elseif ($element == 'users') {
+							require_once  ROOT_DIR . '/sys/Account/User.php';
+							$exportFile = $exportPath . 'users.json';
+							$message = $this->exportObjects('User', 'Users', $exportFile, $selectedFilters, $message);
 						}
 					}
 				}
@@ -85,7 +89,16 @@ class Greenhouse_ExportAspenData extends Admin_Admin
 				'ip_addresses' => 'IP Addresses',
 				'javascript' => 'JavaScript',
 				'placards' => 'Placards',
-				'system_messages' => 'System Messages'
+				'system_messages' => 'System Messages',
+				'users' => 'Users',
+				'user_browse_category_dismissals' => 'User Browse Category Dismissals',
+				'user_linked_accounts' => 'User Linked Accounts',
+				'user_lists' => 'User Lists',
+				'user_not_interested' => 'User Not Interested',
+				'user_ratings' => 'User Ratings',
+				'user_reading_history' => 'User Reading History',
+				'user_saved_searches' => 'User Saved Searches',
+				'user_system_message_dismissals' => 'User System Message Dismissals',
 			];
 			$interface->assign('dataElements', $dataElements);
 
@@ -129,7 +142,11 @@ class Greenhouse_ExportAspenData extends Admin_Admin
 		$exportObject->find();
 		while ($exportObject->fetch()){
 			if ($exportObject->okToExport($selectedFilters)){
-				fwrite($exportFileHnd, $exportObject->getJSONString(true, false) . "\n");
+				$prettyPrint = false;
+				if (isset($_REQUEST['prettyPrint']) && ($_REQUEST['prettyPrint'] == 'on')){
+					$prettyPrint = true;
+				}
+				fwrite($exportFileHnd, $exportObject->getJSONString(true, $prettyPrint) . "\n");
 				$numObjectsExported++;
 			}
 		}

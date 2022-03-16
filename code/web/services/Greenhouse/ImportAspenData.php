@@ -65,16 +65,26 @@ class Greenhouse_ImportAspenData extends Admin_Admin
 				$mappingLine = fgetcsv($userMappingsFhnd);
 				while ($mappingLine){
 					if (!empty($mappingLine) && count($mappingLine) >= 2) {
-						$userMappings[trim($mappingLine[0])] = trim($mappingLine[1]);
+						$sourceId = $mappingLine[1];
+						$sourceId = str_replace('p', '', $sourceId);
+						$destId = $mappingLine[0];
+						$userMappings[trim($sourceId)] = trim($destId);
 					}
 					$mappingLine = fgetcsv($userMappingsFhnd);
 				}
 				fclose($userMappingsFhnd);
 			}
+			$sourcePassKey = '';
+			if (file_exists($importPath . 'source_passkey.txt')){
+				$sourcePassKeyFhnd = fopen($importPath . 'source_passkey.txt', 'r');
+				$sourcePassKey = trim(fgets($sourcePassKeyFhnd));
+				fclose($sourcePassKeyFhnd);
+			}
 			$mappings = [
 				'libraries' => $libraryMappings,
 				'locations' => $locationMappings,
 				'users' => $userMappings,
+				'passkey' => $sourcePassKey,
 			];
 
 			foreach ($_REQUEST['enrichmentElement'] as $element){
@@ -95,6 +105,8 @@ class Greenhouse_ImportAspenData extends Admin_Admin
 				} elseif ($element == 'system_messages') {
 					require_once ROOT_DIR . '/sys/LocalEnrichment/SystemMessage.php';
 					$message = $this->importObjects('SystemMessage', 'System Messages', $importPath . 'system_messages.json', $mappings, $overrideExisting, $message);
+				} elseif ($element == 'users') {
+					$message = $this->importObjects('User', 'Users', $importPath . 'users.json', $mappings, $overrideExisting, $message);
 				}
 			}
 
@@ -125,6 +137,9 @@ class Greenhouse_ImportAspenData extends Admin_Admin
 				}
 				if (file_exists($importPath . 'system_messages.json')){
 					$validEnrichmentToImport['system_messages'] = 'System Messages';
+				}
+				if (file_exists($importPath . 'users.json')){
+					$validEnrichmentToImport['users'] = 'Users';
 				}
 			}
 

@@ -76,9 +76,19 @@
 						<div class="checkbox">
 	                        {foreach from=$locations item=propertyName key=propertyValue}
 								<label for="locations_{$propertyValue|escape:css}">
-									<input class="locations" id="locations_{$propertyValue|escape:css}" name='locations[]' type="checkbox" value='{$propertyValue}'> {translate text=$propertyName isPublicFacing=$property.isPublicFacing isAdminFacing=true}<br>
+									<input class="locations" id="locations_{$propertyValue|escape:css}" name='locations[]' type="checkbox" value='{$propertyValue}'> {translate text=$propertyName isAdminFacing=true}<br>
 								</label>
 	                        {/foreach}
+						</div>
+					</div>
+				</div>
+
+				<div class="row">
+					<div class="col-xs-12">
+						<div class="form-group">
+							<label for="prettyPrint">
+								<input class="prettyPrint" id="prettyPrint" name='prettyPrint' type="checkbox"> {translate text="Pretty Print (for testing only, will not import)" isAdminFacing=true}<br>
+							</label>
 						</div>
 					</div>
 				</div>

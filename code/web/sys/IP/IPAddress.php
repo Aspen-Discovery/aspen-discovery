@@ -312,9 +312,9 @@ class IPAddress extends DataObject
 		return IPAddress::$_logAllQueries;
 	}
 
-	public function toArray(): array
+	public function toArray($includeRuntimeProperties = true, $encryptFields = false): array
 	{
-		$return = parent::toArray();
+		$return = parent::toArray($includeRuntimeProperties, $encryptFields);
 		unset($return['locationid']);
 		return $return;
 	}

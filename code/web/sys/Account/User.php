@@ -57,7 +57,7 @@ class User extends DataObject
 
 	public $lastLoginValidation;
 
-	public $twoFactorStatus; //Whether or not the user has enrolled
+	public $twoFactorStatus; //Whether the user has enrolled
 	public $twoFactorAuthSettingId; //The settings based on their PType
 
 	public $updateMessage;
@@ -112,11 +112,16 @@ class User extends DataObject
 
 	function getNumericColumnNames() : array
 	{
-		return ['trackReadingHistory', 'hooplaCheckOutConfirmation', 'initialReadingHistoryLoaded', 'updateMessageIsError'];
+		return ['id', 'trackReadingHistory', 'hooplaCheckOutConfirmation', 'initialReadingHistoryLoaded', 'updateMessageIsError'];
 	}
 
 	function getEncryptedFieldNames() : array {
 		return ['password', 'firstname', 'lastname', 'email', 'displayName', 'phone', 'overdriveEmail', 'alternateLibraryCardPassword', $this->getPasswordOrPinField()];
+	}
+
+	public function getUniquenessFields(): array
+	{
+		return ['source', 'username'];
 	}
 
 	function getLists() {
@@ -1623,17 +1628,20 @@ class User extends DataObject
 					} else if ($holdType == 'overdrive') {
 						require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
 						$driver = new OverDriveDriver();
-						$tmpResult = $driver->freezeHold($user, $recordId);
+						$tmpResult = $driver->freezeHold($user, $recordId, null);
 						if ($tmpResult['success']) {
 							$success++;
 						}
-					} else if ($holdType == 'cloud_library') {
-						require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
-						$driver = new CloudLibraryDriver();
-						$tmpResult = $driver->freezeHold($user, $recordId);
-						if ($tmpResult['success']) {
-							$success++;
-						}
+
+					} /** @noinspection PhpStatementHasEmptyBodyInspection */ else
+					  /** @noinspection PhpStatementHasEmptyBodyInspection */ if ($holdType == 'cloud_library') {
+						//Can't freeze cloud library holds
+//						require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
+//						$driver = new CloudLibraryDriver();
+//						$tmpResult = $driver->freezeHold($user, $recordId);
+//						if ($tmpResult['success']) {
+//							$success++;
+//						}
 					} else {
 						$failed++;
 						$tmpResult['message'] = '<div class="alert alert-warning">Hold not available</div>';
@@ -1645,8 +1653,6 @@ class User extends DataObject
 					$tmpResult['message'] = '<div class="alert alert-warning">All holds already frozen</div>';
 				}
 			}
-		} else {
-			$tmpResult['message'] = 'No holds available to freeze.';
 		}
 
 		if ($success >= 1) {
@@ -1658,7 +1664,12 @@ class User extends DataObject
 
 			$tmpResult['message'] = $message;
 		} else {
-			$tmpResult['message'] = '<div class="alert alert-warning">' . translate(['text' => 'All holds already frozen', 'isPublicFacing' => true, 'inAttribute'=>true]) . '</div>';
+			if ($total == 0){
+				$tmpResult['message'] = '<div class="alert alert-warning">' . translate(['text' => 'No holds available to freeze', 'isPublicFacing' => true, 'inAttribute'=>true]) . '</div>';
+			}else{
+				$tmpResult['message'] = '<div class="alert alert-warning">' . translate(['text' => 'All holds already frozen', 'isPublicFacing' => true, 'inAttribute'=>true]) . '</div>';
+			}
+
 		}
 
 		return $tmpResult;
@@ -1698,14 +1709,16 @@ class User extends DataObject
 						$driver = new OverDriveDriver();
 						$tmpResult = $driver->thawHold($user, $recordId);
 						if($tmpResult['success']){$success++;}
-					} else if ($holdType == 'cloud_library') {
-						require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
-						$driver = new CloudLibraryDriver();
-						$tmpResult = $driver->thawHold($user, $recordId);
-						if($tmpResult['success']){$success++;}
+					} /** @noinspection PhpStatementHasEmptyBodyInspection */ else
+					  /** @noinspection PhpStatementHasEmptyBodyInspection */ if ($holdType == 'cloud_library') {
+						//Cloud library holds cannot be frozen
+//						require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
+//						$driver = new CloudLibraryDriver();
+//						$tmpResult = $driver->thawHold($user, $recordId);
+//						if($tmpResult['success']){$success++;}
 					} else {
 						$failed++;
-						$tmpResult['message'] = '<div class="alert alert-warning">Hold not available</div>';
+						//$tmpResult['message'] = '<div class="alert alert-warning">Hold not available</div>';
 					}
 
 				} else if ($canFreeze == 0) {
@@ -1723,11 +1736,11 @@ class User extends DataObject
 
 					$tmpResult['message'] = $message;
 				} else {
-					$tmpResult['message'] = '<div class="alert alert-warning">' . translate(['text' => 'All holds already thawed']) . '</div>';
+					$tmpResult['message'] = '<div class="alert alert-warning">' . translate(['text' => 'All holds already thawed', 'isPublicFacing' => true]) . '</div>';
 				}
 			}
 		} else {
-			$tmpResult['message'] = 'No holds available to thaw.';
+			$tmpResult['message'] = '<div class="alert alert-warning">' . translate(['text' => 'No holds available to thaw.', 'isPublicFacing' => true]) . '</div>';
 		}
 
 		return $tmpResult;
@@ -1786,7 +1799,7 @@ class User extends DataObject
 					}else if (!$renewAllResults['success'] && !$linkedResults['success']){
 						//Append the new message
 
-						array_merge($renewAllResults['message'], $linkedResults['message']);
+						$renewAllResults['message'] = array_merge($renewAllResults['message'], $linkedResults['message']);
 					}
 				}
 			}
@@ -2010,6 +2023,7 @@ class User extends DataObject
 				return false;
 			}
 		}
+		return false;
 	}
 
 	function getMessages(){
@@ -2835,6 +2849,129 @@ class User extends DataObject
 			return true;
 		}
 		return false;
+	}
+
+	public function okToExport(array $selectedFilters) : bool{
+		$okToExport = parent::okToExport($selectedFilters);
+		if ($this->homeLocationId == 0 || array_key_exists($this->homeLocationId, $selectedFilters['locations'])){
+			$okToExport = true;
+		}
+		return $okToExport;
+	}
+
+	public function toArray($includeRuntimeProperties = true, $encryptFields = false): array
+	{
+		$return = parent::toArray($includeRuntimeProperties, $encryptFields);
+		unset($return['homeLocationId']);
+		unset($return['myLocation1Id']);
+		unset($return['myLocation2Id']);
+		unset($return['pickupLocationId']);
+		unset($return['lastListUsed']);
+		unset($return['twoFactorAuthSettingId']);
+		return $return;
+	}
+
+	public function loadObjectPropertiesFromJSON($jsonData, $mappings){
+		$encryptedFields = $this->getEncryptedFieldNames();
+		$sourceEncryptionKey = isset($mappings['passkey']) ? $mappings['passkey'] : '';
+		foreach ($jsonData as $property => $value){
+			if ($property != $this->getPrimaryKey() && $property != 'links'){
+				if (in_array($property, $encryptedFields) && !empty($sourceEncryptionKey)){
+					$value = EncryptionUtils::decryptFieldWithProvidedKey($value, $sourceEncryptionKey);
+				}
+				if ($property == 'username'){
+					if (array_key_exists($value, $mappings['users'])){
+						$value = $mappings['users'][$value];
+					}
+				}
+				$this->$property = $value;
+			}
+		}
+	}
+
+	public function getLinksForJSON(): array
+	{
+		$links = parent::getLinksForJSON();
+		$allLocations = Location::getLocationListAsObjects(false);
+		$links['homeLocationId'] = '';
+		if (array_key_exists($this->homeLocationId, $allLocations)){
+			$links['homeLocationId'] = $allLocations[$this->homeLocationId]->code;
+		}
+		$links['myLocation1Id'] = '';
+		if (array_key_exists($this->myLocation1Id, $allLocations)){
+			$links['myLocation1Id'] = $allLocations[$this->myLocation1Id]->code;
+		}
+		$links['myLocation2Id'] = '';
+		if (array_key_exists($this->myLocation2Id, $allLocations)){
+			$links['myLocation2Id'] = $allLocations[$this->myLocation2Id]->code;
+		}
+		$links['pickupLocationId'] = '';
+		if (array_key_exists($this->pickupLocationId, $allLocations)){
+			$links['pickupLocationId'] = $allLocations[$this->pickupLocationId]->code;
+		}
+		return $links;
+	}
+
+	public function loadEmbeddedLinksFromJSON($jsonData, $mappings, $overrideExisting = 'keepExisting')
+	{
+		parent::loadEmbeddedLinksFromJSON($jsonData, $mappings, $overrideExisting);
+		$allLocations = Location::getLocationListAsObjects(false);
+		if (empty($jsonData['homeLocationId'])){
+			$this->homeLocationId = 0;
+		}else{
+			$code = $jsonData['homeLocationId'];
+			if (array_key_exists($code, $mappings['locations'])){
+				$code = $mappings['locations'][$code];
+			}
+			foreach ($allLocations as $tmpLocation){
+				if ($tmpLocation->code == $code){
+					$this->homeLocationId = $tmpLocation->locationId;
+					break;
+				}
+			}
+		}
+		if (empty($jsonData['myLocation1Id'])){
+			$this->myLocation1Id = 0;
+		}else{
+			$code = $jsonData['myLocation1Id'];
+			if (array_key_exists($code, $mappings['locations'])){
+				$code = $mappings['locations'][$code];
+			}
+			foreach ($allLocations as $tmpLocation){
+				if ($tmpLocation->code == $code){
+					$this->myLocation1Id = $tmpLocation->locationId;
+					break;
+				}
+			}
+		}
+		if (empty($jsonData['myLocation2Id'])){
+			$this->myLocation2Id = 0;
+		}else{
+			$code = $jsonData['myLocation2Id'];
+			if (array_key_exists($code, $mappings['locations'])){
+				$code = $mappings['locations'][$code];
+			}
+			foreach ($allLocations as $tmpLocation){
+				if ($tmpLocation->code == $code){
+					$this->myLocation2Id = $tmpLocation->locationId;
+					break;
+				}
+			}
+		}
+		if (empty($jsonData['pickupLocationId'])){
+			$this->pickupLocationId = 0;
+		}else{
+			$code = $jsonData['pickupLocationId'];
+			if (array_key_exists($code, $mappings['locations'])){
+				$code = $mappings['locations'][$code];
+			}
+			foreach ($allLocations as $tmpLocation){
+				if ($tmpLocation->code == $code){
+					$this->pickupLocationId = $tmpLocation->locationId;
+					break;
+				}
+			}
+		}
 	}
 }
 

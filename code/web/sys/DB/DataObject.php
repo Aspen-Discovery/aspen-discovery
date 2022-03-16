@@ -352,7 +352,7 @@ abstract class DataObject
 
 	public function update(){
 		$primaryKey = $this->__primaryKey;
-		if (empty($this->$primaryKey)){
+		if (empty($this->$primaryKey) && $this->$primaryKey !== "0"){
 			return $this->insert();
 		}
 		global $aspen_db;
@@ -891,14 +891,19 @@ abstract class DataObject
 		}
 	}
 
-	public function toArray() : array
+	public function toArray($includeRuntimeProperties = true, $encryptFields = false) : array
 	{
 		$return = [];
+		$encryptedFields = $this->getEncryptedFieldNames();
 		$properties = get_object_vars($this);
 		foreach ($properties as $name => $value) {
 			if ($name[0] != '_'){
-				$return[$name] = $value;
-			}else if ($name[0] == '_' && strlen($name) > 1 && $name[1] != '_') {
+				if ($encryptFields && in_array($name, $encryptedFields)) {
+					$return[$name] = EncryptionUtils::encryptField($value);
+				}else{
+					$return[$name] = $value;
+				}
+			}else if ($includeRuntimeProperties && $name[0] == '_' && strlen($name) > 1 && $name[1] != '_') {
 				if ($name != '_data' && $name != '_changedFields' && $name != '_deleteOnSave' && !is_object($value)){
 					$return[substr($name, 1)] = $value;
 				}
@@ -921,7 +926,7 @@ abstract class DataObject
 			$flags = JSON_PRETTY_PRINT;
 		}
 
-		$baseObject = $this->toArray();
+		$baseObject = $this->toArray(false, true);
 		if ($includeLinks){
 			$links = $this->getLinksForJSON();
 			if (!empty($links)){
@@ -931,12 +936,22 @@ abstract class DataObject
 		return json_encode($baseObject, $flags);
 	}
 
-	public function loadFromJSON($jsonData, $mappings, $overrideExisting = 'keepExisting'){
+	public function loadObjectPropertiesFromJSON($jsonData, $mappings){
+		$encryptedFields = $this->getEncryptedFieldNames();
+		$sourceEncryptionKey = isset($mappings['passkey']) ? $mappings['passkey'] : '';
 		foreach ($jsonData as $property => $value){
 			if ($property != $this->getPrimaryKey() && $property != 'links'){
+				if (in_array($property, $encryptedFields) && !empty($sourceEncryptionKey)){
+					$value = EncryptionUtils::decryptFieldWithProvidedKey($value, $sourceEncryptionKey);
+				}
 				$this->$property = $value;
 			}
 		}
+	}
+
+	public function loadFromJSON($jsonData, $mappings, $overrideExisting = 'keepExisting'){
+		$this->loadObjectPropertiesFromJSON($jsonData, $mappings);
+
 		if (array_key_exists('links', $jsonData)) {
 			$this->loadEmbeddedLinksFromJSON($jsonData['links'], $mappings, $overrideExisting);
 		}
@@ -989,7 +1004,7 @@ abstract class DataObject
 		$tmpObject = new $thisClass();
 		$uniquenessFields = $this->getUniquenessFields();
 		if (!empty($uniquenessFields)) {
-			foreach ($this->getUniquenessFields() as $fieldName) {
+			foreach ($uniquenessFields as $fieldName) {
 				$tmpObject->$fieldName = $this->$fieldName;
 			}
 			if ($tmpObject->find(true)) {
