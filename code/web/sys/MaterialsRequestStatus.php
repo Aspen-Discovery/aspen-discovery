@@ -85,9 +85,4 @@ class MaterialsRequestStatus extends DataObject {
 			}
 		}
 	}
-
-	public function loadRelatedLinksFromJSON($jsonData, $mappings, $overrideExisting = 'keepExisting') : bool {
-		$result = parent::loadRelatedLinksFromJSON($jsonData, $mappings, $overrideExisting);
-		return $result;
-	}
 }
