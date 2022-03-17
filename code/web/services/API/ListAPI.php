@@ -739,12 +739,7 @@ class ListAPI extends Action
 					$list->description = strip_tags($_REQUEST['description']);
 				}
 				if(isset($_REQUEST['public'])) {
-					$public = $_REQUEST['public'];
-					if($public === "false") {
-						$list->public = 0;
-					} else {
-						$list->public = 1;
-					}
+					$list->public = $_REQUEST['public'] === false ? 0 : 1;
 				}
 				$list->update();
 				return array('success' => true, 'title' => 'Success', 'message' => "Edited list {$list->title} successfully");
