@@ -635,7 +635,7 @@ class ListAPI extends Action
 				return $this->addTitlesToList();
 			}else{
 				//There wasn't anything to add so it worked
-				return array('success' => true, 'listId' => $list->id);
+				return array('success' => true, 'title' => 'Success', 'message' => "List {$list->title} created successfully", 'listId' => $list->id);
 			}
 		} else {
 			return array('success' => false, 'message' => 'Login unsuccessful');
@@ -682,9 +682,9 @@ class ListAPI extends Action
 			$list->find();
 			if ($list->find(true)) {
 				$list->delete();
-				return array('success' => true);
+				return array('success' => true, 'title' => 'Success', 'message' => 'List deleted successfully');
 			}else{
-				return array('success' => false, 'listId' => $list->id, 'listTitle' => $list->title);
+				return array('success' => false, 'title' => 'Error', 'message' => 'List not found', 'listId' => $list->id, 'listTitle' => $list->title);
 			}
 		} else {
 			return array('success' => false, 'message' => 'Login unsuccessful');
@@ -724,14 +724,13 @@ class ListAPI extends Action
 	{
 		list($username, $password) = $this->loadUsernameAndPassword();
 		if (!isset($_REQUEST['id'])) {
-			return array('success' => false, 'message' => 'You must provide the id of the list to be deleted.');
+			return array('success' => false, 'message' => 'You must provide the id of the list to be modified.');
 		}
 		$user = UserAccount::validateAccount($username, $password);
 		if ($user && !($user instanceof AspenError)) {
 			$list = new UserList();
 			$list->id = $_REQUEST['id'];
 			$list->user_id = $user->id;
-			$list->find();
 			if ($list->find(true)) {
 				if(isset($_REQUEST['title'])) {
 					$list->title = $_REQUEST['title'];
@@ -740,12 +739,17 @@ class ListAPI extends Action
 					$list->description = strip_tags($_REQUEST['description']);
 				}
 				if(isset($_REQUEST['public'])) {
-					$list->public = $_REQUEST['public'];
+					$public = $_REQUEST['public'];
+					if($public === "false") {
+						$list->public = 0;
+					} else {
+						$list->public = 1;
+					}
 				}
 				$list->update();
-				return array('success' => true);
+				return array('success' => true, 'title' => 'Success', 'message' => "Edited list {$list->title} successfully");
 			}else{
-				return array('success' => false, 'listId' => $list->id, 'listTitle' => $list->title);
+				return array('success' => false, 'listId' => $list->id, 'listTitle' => $list->title, 'title' => 'Error', 'message' => "List {$list->title} not found");
 			}
 		} else {
 			return array('success' => false, 'message' => 'Login unsuccessful');
