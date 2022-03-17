@@ -98,7 +98,7 @@ class SpringshareLibCalIndexer {
 		}
 	}
 
-	private SimpleDateFormat dateParser = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	private SimpleDateFormat dateParser = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX");
 	private SimpleDateFormat eventDayFormatter = new SimpleDateFormat("yyyy-MM-dd");
 	private SimpleDateFormat eventMonthFormatter = new SimpleDateFormat("yyyy-MM");
 	private SimpleDateFormat eventYearFormatter = new SimpleDateFormat("yyyy");
@@ -107,11 +107,12 @@ class SpringshareLibCalIndexer {
 		GregorianCalendar nextYear = new GregorianCalendar();
 		nextYear.setTime(new Date());
 		nextYear.add(YEAR, 1);
-		JSONArray libCalEvents = getLibCalEvents();
-		if (libCalEvents != null){
+		JSONObject libCalEventsResponse = getLibCalEvents();
+		if (libCalEventsResponse != null){
+			JSONArray libCalEvents = libCalEventsResponse.getJSONArray("events");
 			if (doFullReload) {
 				try {
-					solrUpdateServer.deleteByQuery("type:event AND source:" + this.settingsId);
+					solrUpdateServer.deleteByQuery("type:event_libcal AND source:" + this.settingsId);
 					//3-19-2019 Don't commit so the index does not get cleared during run (but will clear at the end).
 				} catch (HttpSolrClient.RemoteSolrException rse) {
 					logEntry.incErrors("Solr is not running properly, try restarting " + rse.toString());
@@ -129,7 +130,8 @@ class SpringshareLibCalIndexer {
 					checksumCalculator.update(rawResponse.getBytes());
 					long checksum = checksumCalculator.getValue();
 
-					String eventId = curEvent.getString("id");
+					Integer eventIdRaw = curEvent.getInt("id");
+					String eventId = Integer.toString(eventIdRaw);
 					boolean eventExists = false;
 					boolean eventChanged = false;
 					if (existingEvents.containsKey(eventId)){
@@ -148,36 +150,46 @@ class SpringshareLibCalIndexer {
 								}
 							}
 							SolrInputDocument solrDocument = new SolrInputDocument();
-							solrDocument.addField("id", "lc_" + settingsId + "_" + eventId);
+							solrDocument.addField("id", "libcal_" + settingsId + "_" + eventId);
 							solrDocument.addField("identifier", eventId);
-							solrDocument.addField("type", "event");
+							solrDocument.addField("type", "event_libcal");
 							solrDocument.addField("source", settingsId);
-							solrDocument.addField("url", getStringForKey(curEvent, "url"));
-							String eventType = getStringForKey(curEvent, "type");
+							solrDocument.addField("url", curEvent.getJSONObject("url").getString("public"));
+							int boost = 1;
+							/* // "type" does not exist in LibCal as such
+							String eventType = getStringForKeyLibCal(curEvent, "type");
 							//Translate the Event Type
 							int boost = 1;
 							if (eventType == null ){
 								eventType = "Unknown";
-							}else if (eventType.equals("lc_closing")) {
+							}else if (eventType.equals("libcal_closing")) {
 								eventType = "Library Closure";
-							}else if (eventType.equals("lc_event")) {
+							}else if (eventType.equals("libcal_event")) {
 								eventType = "Event";
 								boost = 5;
-							}else if (eventType.equals("lc_reservation")) {
+							}else if (eventType.equals("libcal_reservation")) {
 								eventType = "Reservation";
 								boost = 2;
 							}
 							solrDocument.addField("event_type", eventType);
+							*/
+
 							//Don't index reservations since they are restricted to staff and
-							/*if (eventType != null && eventType.equals("lc_reservation")) {
+							/* // LibCal has space bookings, see https://bywater.libcal.com/admin/api/1.1/endpoint/space_post
+							if (eventType != null && eventType.equals("libcal_reservation")) {
 								continue;
 							}*/
+
 							solrDocument.addField("last_indexed", new Date());
+
+							/* // LibCal events to not have a changed field
 							solrDocument.addField("last_change", getDateForKey(curEvent,"changed"));
-							Date startDate = getDateForKey(curEvent,"start_date");
+							*/
+
+							Date startDate = getDateForKey(curEvent,"start");
 							solrDocument.addField("start_date", startDate);
 							solrDocument.addField("start_date_sort", startDate.getTime() / 1000);
-							Date endDate = getDateForKey(curEvent,"end_date");
+							Date endDate = getDateForKey(curEvent,"end");
 							solrDocument.addField("end_date", endDate);
 
 							//Only add events for the next year
@@ -216,39 +228,47 @@ class SpringshareLibCalIndexer {
 							solrDocument.addField("event_month", eventMonths);
 							solrDocument.addField("event_year", eventYears);
 							solrDocument.addField("title", curEvent.getString("title"));
-							solrDocument.addField("branch", getStringsForKey(curEvent, "branch"));
-							solrDocument.addField("room", getStringsForKey(curEvent, "room"));
-							solrDocument.addField("offsite_address", getStringForKey(curEvent, "offsite_address"));
-							solrDocument.addField("online_address", getStringForKey(curEvent, "online_address"));
-							solrDocument.addField("age_group", getStringsForKey(curEvent, "age_group"));
-							solrDocument.addField("program_type", getStringsForKey(curEvent, "program_type"));
-							HashSet<String> internalCategories =  getStringsForKey(curEvent, "internal_categories");
+							solrDocument.addField("branch", getNameStringForKeyLibCal(curEvent, "campus"));
+							solrDocument.addField("room", getNameStringForKeyLibCal(curEvent, "location"));
+							/* // LibCal events do not have a field for offsite_address
+							solrDocument.addField("offsite_address", getStringForKeyLibCal(curEvent, "offsite_address"));
+							*/
+							solrDocument.addField("online_address", getNameStringForKeyLibCal(curEvent, "online_address"));
+							solrDocument.addField("age_group", getNameStringsForKeyLibCal(curEvent, "audience"));
+							solrDocument.addField("program_type", getNameStringsForKeyLibCal(curEvent, "category"));
+							// TODO: James is not sure that internal_tags is indexing in a useful way 2022 03 16
+							HashSet<String> internalCategories =  getNameStringsForKeyLibCal(curEvent, "internal_tags");
 							if (internalCategories.contains("Featured")){
 								boost += 10;
 							}
 							solrDocument.addField("internal_category", internalCategories);
-							solrDocument.addField("event_state", getStringsForKey(curEvent, "event_state"));
-							HashSet<String> reservationStates = getStringsForKey(curEvent, "reservation_state");
+							solrDocument.addField("event_state", getNameStringsForKeyLibCal(curEvent, "event_state"));
+							/* // TODO: How does LibCal declare a cancellation?
+							HashSet<String> reservationStates = getNameStringsForKeyLibCal(curEvent, "reservation_state");
 							if (reservationStates.contains("Cancelled")){
 								boost -= 10;
 							}
-							solrDocument.addField("reservation_state", getStringsForKey(curEvent, "reservation_state"));
-							solrDocument.addField("registration_required", curEvent.getBoolean("registration_enabled") ? "Yes" : "No");
-							solrDocument.addField("registration_start_date", getDateForKey(curEvent, "registration_start"));
-							solrDocument.addField("registration_end_date",getDateForKey(curEvent,"registration_end"));
+							*/
+							solrDocument.addField("reservation_state", getNameStringsForKeyLibCal(curEvent, "reservation_state"));
+							solrDocument.addField("registration_required", curEvent.getBoolean("registration") ? "Yes" : "No");
+							// TODO : request Springshare build registration start and end date like Library Market Library Calendar
+							// solrDocument.addField("registration_start_date", getDateForKey(curEvent, "registration_start"));
+							// solrDocument.addField("registration_end_date",getDateForKey(curEvent,"registration_end"));
 
-							if (curEvent.get("program_description") instanceof JSONArray) {
-								JSONArray programDescriptions = curEvent.getJSONArray("program_description");
-								if (programDescriptions.length() > 0) {
-									solrDocument.addField("teaser", programDescriptions.toString());
-								}
-							}else{
-								solrDocument.addField("teaser", getStringForKey(curEvent, "program_description"));
-							}
+							// Springshare LibCal does not have teaser / program_description equivalent 2022 03 06
+							//if (curEvent.get("program_description") instanceof JSONArray) {
+							//	JSONArray programDescriptions = curEvent.getJSONArray("program_description");
+							//	if (programDescriptions.length() > 0) {
+							//		solrDocument.addField("teaser", programDescriptions.toString());
+							//	}
+							//}else{
+							//	solrDocument.addField("teaser", getStringForKeyLibCal(curEvent, "program_description"));
+							//}
 
-							solrDocument.addField("description", getStringForKey(curEvent,"description"));
+							solrDocument.addField("description", getNameStringForKeyLibCal(curEvent,"description"));
 
-							solrDocument.addField("image_url", getStringForKey(curEvent, "image"));
+							// TODO: how does Aspen use image_url? It does not look like it actually uses the image...
+							solrDocument.addField("image_url", getNameStringForKeyLibCal(curEvent, "featured_image"));
 
 							solrDocument.addField("library_scopes", librariesToShowFor);
 
@@ -283,7 +303,7 @@ class SpringshareLibCalIndexer {
 					}
 
 				} catch (JSONException e) {
-					logEntry.incErrors("Error getting JSON information from the RSS Feed ", e);
+					logEntry.incErrors("Error getting JSON information ", e);
 				}
 			}
 
@@ -326,15 +346,19 @@ class SpringshareLibCalIndexer {
 		}
 	}
 
-	private String getStringForKey(JSONObject curEvent, String keyName) {
+	// Springshare LibCal has many key/value pairs in which the value is a JSON object
+	// James has not found documentation that defines which key values are expected to be objects
+	// if a key value is empty, it will appear as an empty string, e.g., "campus" : ""
+	// if a key value is not empty, it will often appear as an object consisting of an id integer and name string, e.g., "campus" : { "id" : 777, "name" : "West" }
+	private String getNameStringForKeyLibCal(JSONObject curEvent, String keyName) {
 		if (curEvent.has(keyName)){
 			if (curEvent.isNull(keyName)){
 				return null;
 			}else {
 				if (curEvent.get(keyName) instanceof JSONObject){
 					JSONObject keyObj = curEvent.getJSONObject(keyName);
-					if (keyObj.has(keyName)) {
-						return keyObj.getString(keyName);
+					if (keyObj.has("name")) {
+						return keyObj.getString("name");
 					}else{
 						//noinspection LoopStatementThatDoesntLoop
 						for (String objKey: keyObj.keySet()){
@@ -351,7 +375,7 @@ class SpringshareLibCalIndexer {
 		}
 	}
 
-	private HashSet<String> getStringsForKey(JSONObject curEvent, String keyName) {
+	private HashSet<String> getNameStringsForKeyLibCal(JSONObject curEvent, String keyName) {
 		HashSet<String> values = new HashSet<>();
 		if (!curEvent.isNull(keyName)){
 			if (curEvent.get(keyName) instanceof JSONObject) {
@@ -362,14 +386,16 @@ class SpringshareLibCalIndexer {
 			}else{
 				JSONArray keyArray = curEvent.getJSONArray(keyName);
 				for (int i = 0; i < keyArray.length(); i++){
-					values.add(keyArray.getString(i));
+					if (keyArray.get(i) instanceof JSONObject && keyArray.getJSONObject(i).has("name")) {
+						values.add(keyArray.getJSONObject(i).getString("name"));
+					}
 				}
 			}
 		}
 		return values;
 	}
 
-	private JSONArray getLibCalEvents() {
+	private JSONObject getLibCalEvents() {
 		String apiEventsURL = baseUrl + "1.1/events?cal_id=" + calId;
 		try {
 			CloseableHttpClient httpclient = HttpClients.createDefault();
@@ -402,7 +428,7 @@ class SpringshareLibCalIndexer {
 				HttpEntity entity1 = response1.getEntity();
 				if (status.getStatusCode() == 200) {
 					String response = EntityUtils.toString(entity1);
-					return new JSONArray(response);
+					return new JSONObject(response);
 				}
 			}
 		} catch (Exception e) {
