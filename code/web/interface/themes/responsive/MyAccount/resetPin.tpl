@@ -3,7 +3,11 @@
 
 		<h1>{translate text='Reset My PIN' isPublicFacing=true}</h1>
 		<div class="alert alert-info">
-			{translate text="Please enter a new 4 digit PIN number." isPublicFacing=true}
+			{if $pinValidationRules.onlyDigitsAllowed}
+				{translate text="PINs must be between %1% and %2 digits." isPublicFacing=true}
+			{else}
+				{translate text="PINs must be between %1% and %2 characters." isPublicFacing=true}
+			{/if}
 		</div>
 
 		<form id="resetPin" method="POST" action="/MyAccount/ResetPin" class="form-horizontal">

@@ -149,6 +149,7 @@ class UInterface extends Smarty
 		// Determine Offline Mode
 		global $offlineMode;
 		$offlineMode = false;
+		require_once ROOT_DIR . '/sys/SystemVariables.php';
 		$systemVariables = SystemVariables::getSystemVariables();
 		if (!empty($systemVariables)) {
 			if ($systemVariables->catalogStatus == 2) {

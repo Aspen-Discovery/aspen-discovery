@@ -20,6 +20,99 @@ class Greenhouse_ImportAspenData extends Admin_Admin
 			$importDirExists = true;
 		}
 
+		//All elements in order that they should be processed
+		$elements = [
+			'roles' => [
+				'classFile' => ROOT_DIR . '/sys/Administration/Role.php',
+				'className' => 'Role',
+				'name' => 'Roles'
+			],
+			'users' => [
+				'classFile' => ROOT_DIR . '/sys/Account/User.php',
+				'className' => 'User',
+				'name' => 'Users'
+			],
+			'user_roles' => [
+				'classFile' => ROOT_DIR . '/sys/Administration/UserRoles.php',
+				'className' => 'UserRoles',
+				'name' => 'User Roles'
+			],
+			'user_saved_searches' => [
+				'classFile' => ROOT_DIR . '/sys/SearchEntry.php',
+				'className' => 'SearchEntry', 'name' => 'User Saved Searches'
+			],
+			'user_lists' => [
+				'classFile' => ROOT_DIR . '/sys/UserLists/UserList.php',
+				'className' => 'UserList',
+				'name' => 'User Lists'
+			],
+			'browse_categories' => [
+				'classFile' => ROOT_DIR . '/sys/Browse/BrowseCategoryGroup.php',
+				'className' => 'BrowseCategoryGroup',
+				'name' => 'Browse Category Groups'
+			],
+			'user_browse_category_dismissals' => [
+				'classFile' => ROOT_DIR . '/sys/Browse/BrowseCategoryDismissal.php',
+				'className' => 'BrowseCategoryDismissal',
+				'name' => 'User Browse Category Dismissals'
+			],
+			'user_linked_accounts' => [
+				'classFile' => ROOT_DIR . '/sys/Account/UserLink.php',
+				'className' => 'UserLink',
+				'name' => 'User Linked Accounts'
+			],
+			'user_not_interested' => [
+				'classFile' => ROOT_DIR . '/sys/LocalEnrichment/NotInterested.php',
+				'className' => 'NotInterested',
+				'name' => 'User Not Interested'
+			],
+			'user_reading_history' => [
+				'classFile' => ROOT_DIR . '/sys/ReadingHistoryEntry.php',
+				'className' => 'ReadingHistoryEntry',
+				'name' => 'User Reading History'
+			],
+			'user_work_reviews' => [
+				'classFile' => ROOT_DIR . '/sys/LocalEnrichment/UserWorkReview.php',
+				'className' => 'UserWorkReview',
+				'name' => 'User Reviews \ Ratings'
+			],
+			'ip_addresses' => [
+				'classFile' => ROOT_DIR . '/sys/IP/IPAddress.php',
+				'className' => 'IPAddress',
+				'name' => 'IP Addresses'
+			],
+			'javascript' => [
+				'classFile' => ROOT_DIR . '/sys/LocalEnrichment/JavaScriptSnippet.php',
+				'className' => 'JavaScriptSnippet',
+				'name' => 'JavaScript Snippets'
+			],
+			'placards' => [
+				'classFile' => ROOT_DIR . '/sys/LocalEnrichment/Placard.php',
+				'className' => 'Placard',
+				'name' => 'Placards'
+			],
+			'system_messages' => [
+				'classFile' => ROOT_DIR . '/sys/LocalEnrichment/SystemMessage.php',
+				'className' => 'SystemMessage',
+				'name' => 'System Messages'
+			],
+			'user_system_message_dismissals' => [
+				'classFile' => ROOT_DIR . '/sys/LocalEnrichment/SystemMessageDismissal.php',
+				'className' => 'SystemMessageDismissal',
+				'name' => 'User System Message Dismissals'
+			],
+			'materials_request_statuses' => [
+				'classFile' => ROOT_DIR . '/sys/MaterialsRequestStatus.php',
+				'className' => 'MaterialsRequestStatus',
+				'name' => 'Materials Request Statuses'
+			],
+			'materials_requests' => [
+				'classFile' => ROOT_DIR . '/sys/MaterialsRequest.php',
+				'className' => 'MaterialsRequest',
+				'name' => 'Materials Requests'
+			],
+		];
+
 		if (isset($_REQUEST['submit'])){
 			set_time_limit(0);
 
@@ -102,76 +195,11 @@ class Greenhouse_ImportAspenData extends Admin_Admin
 				'passkey' => $sourcePassKey,
 			];
 
-			foreach ($_REQUEST['enrichmentElement'] as $element){
-				if ($element == 'browse') {
-					require_once ROOT_DIR . '/sys/Browse/BrowseCategoryGroup.php';
-					$className = 'BrowseCategoryGroup'; $pluralImportName = 'Browse Category Groups';
-
-				} elseif ($element == 'ip_addresses') {
-					require_once ROOT_DIR . '/sys/IP/IPAddress.php';
-					$className = 'IPAddress'; $pluralImportName = 'IP Addresses';
-
-				} elseif ($element == 'javascript') {
-					require_once ROOT_DIR . '/sys/LocalEnrichment/JavaScriptSnippet.php';
-					$className = 'JavaScriptSnippet'; $pluralImportName = 'JavaScript Snippets';
-
-				} elseif ($element == 'placards') {
-					require_once ROOT_DIR . '/sys/LocalEnrichment/Placard.php';
-					$className = 'Placard'; $pluralImportName = 'Placards';
-
-				} elseif ($element == 'roles') {
-					require_once ROOT_DIR . '/sys/Administration/Role.php';
-					$className = 'Role'; $pluralImportName = 'Roles';
-
-				} elseif ($element == 'system_messages') {
-					require_once ROOT_DIR . '/sys/LocalEnrichment/SystemMessage.php';
-					$className = 'SystemMessage'; $pluralImportName = 'System Messages';
-
-				} elseif ($element == 'users') {
-					$className = 'User'; $pluralImportName = 'Users';
-
-				} elseif ($element == 'user_browse_category_dismissals') {
-					require_once  ROOT_DIR . '/sys/Browse/BrowseCategoryDismissal.php';
-					$className = 'BrowseCategoryDismissal'; $pluralImportName = 'User Browse Category Dismissals';
-
-				} elseif ($element == 'user_linked_accounts') {
-					require_once  ROOT_DIR . '/sys/Account/UserLink.php';
-					$className = 'UserLink'; $pluralImportName = 'User Linked Accounts';
-
-				} elseif ($element == 'user_lists') {
-					require_once  ROOT_DIR . '/sys/UserLists/UserList.php';
-					$className = 'UserList'; $pluralImportName = 'User Lists';
-
-				} elseif ($element == 'user_not_interested') {
-					require_once  ROOT_DIR . '/sys/LocalEnrichment/NotInterested.php';
-					$className = 'NotInterested'; $pluralImportName = 'User Not Interested';
-
-				} elseif ($element == 'user_reading_history') {
-					require_once  ROOT_DIR . '/sys/ReadingHistoryEntry.php';
-					$className = 'ReadingHistoryEntry'; $pluralImportName = 'User Reading History';
-
-				} elseif ($element == 'user_work_reviews') {
-					require_once  ROOT_DIR . '/sys/LocalEnrichment/UserWorkReview.php';
-					$className = 'UserWorkReview'; $pluralImportName = 'User Reviews \ Ratings';
-
-				} elseif ($element == 'user_saved_searches') {
-					require_once  ROOT_DIR . '/sys/SearchEntry.php';
-					$className = 'SearchEntry'; $pluralImportName = 'User Saved Searches';
-
-				} elseif ($element == 'user_roles') {
-					require_once  ROOT_DIR . '/sys/Administration/UserRoles.php';
-					$className = 'UserRoles'; $pluralImportName = 'User Role';
-
-				} elseif ($element == 'user_system_message_dismissals') {
-					require_once  ROOT_DIR . '/sys/LocalEnrichment/SystemMessageDismissal.php';
-					$className = 'SystemMessageDismissal'; $pluralImportName = 'User System Message Dismissals';
-
-				} else {
-					$message .= "<br/> Unhandled element $element";
-					continue;
+			foreach ($elements as $element => $elementDefinition){
+				if (in_array($element, $_REQUEST['enrichmentElement'])){
+					require_once $elementDefinition['classFile'];
+					$message = $this->importObjects($elementDefinition['className'], $elementDefinition['name'], $importPath . "$element.json", $mappings, $overrideExisting, $message);
 				}
-
-				$message = $this->importObjects($className, $pluralImportName, $importPath . "$element.json", $mappings, $overrideExisting, $message);
 			}
 
 			if (!empty($message)){
@@ -187,50 +215,10 @@ class Greenhouse_ImportAspenData extends Admin_Admin
 			$validEnrichmentToImport = [];
 			//Look for the necessary files
 			if ($importDirExists){
-				if (file_exists($importPath . 'browse_categories.json')){
-					$validEnrichmentToImport['browse'] = 'Browse Categories';
-				}
-				if (file_exists($importPath . 'ip_addresses.json')){
-					$validEnrichmentToImport['ip_addresses'] = 'IP Addresses';
-				}
-				if (file_exists($importPath . 'javascript_snippets.json')){
-					$validEnrichmentToImport['javascript'] = 'JavaScript Snippets';
-				}
-				if (file_exists($importPath . 'placards.json')){
-					$validEnrichmentToImport['placards'] = 'Placards';
-				}
-				if (file_exists($importPath . 'roles.json')){
-					$validEnrichmentToImport['roles'] = 'Roles';
-				}
-				if (file_exists($importPath . 'system_messages.json')){
-					$validEnrichmentToImport['system_messages'] = 'System Messages';
-				}
-				if (file_exists($importPath . 'users.json')){
-					$validEnrichmentToImport['users'] = 'Users';
-				}
-				if (file_exists($importPath . 'user_browse_category_dismissals.json')){
-					$validEnrichmentToImport['user_browse_category_dismissals'] = 'User Browse Category Dismissals';
-				}
-				if (file_exists($importPath . 'user_linked_accounts.json')){
-					$validEnrichmentToImport['user_linked_accounts'] = 'User Linked Accounts';
-				}
-				if (file_exists($importPath . 'user_lists.json')){
-					$validEnrichmentToImport['user_lists'] = 'User Lists';
-				}
-				if (file_exists($importPath . 'user_not_interested.json')){
-					$validEnrichmentToImport['user_not_interested'] = 'User Not Interested';
-				}
-				if (file_exists($importPath . 'user_reading_history.json')){
-					$validEnrichmentToImport['user_reading_history'] = 'User Reading History';
-				}
-				if (file_exists($importPath . 'user_work_reviews.json')){
-					$validEnrichmentToImport['user_work_reviews'] = 'User Reviews \ Ratings';
-				}
-				if (file_exists($importPath . 'user_saved_searches.json')){
-					$validEnrichmentToImport['user_roles'] = 'User Saved Searches';
-				}
-				if (file_exists($importPath . 'user_system_message_dismissals.json')){
-					$validEnrichmentToImport['user_work_reviews'] = 'User System Message Dismissals';
+				foreach ($elements as $element => $elementDefinition){
+					if (file_exists($importPath . $element. '.json')){
+						$validEnrichmentToImport[$element] = $elementDefinition['name'];
+					}
 				}
 			}
 
