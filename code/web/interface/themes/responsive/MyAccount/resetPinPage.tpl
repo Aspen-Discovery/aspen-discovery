@@ -27,6 +27,13 @@
 						<div class="alert alert-success">{$msg}</div>
 					{/foreach}
 				{/if}
+				<div class="alert alert-info">
+					{if $pinValidationRules.onlyDigitsAllowed}
+						{translate text="PINs must be between %1% and %2 digits." isPublicFacing=true}
+					{else}
+						{translate text="PINs must be between %1% and %2 characters." isPublicFacing=true}
+					{/if}
+				</div>
 
 				{* Empty action attribute uses the page loaded. this keeps the selected user patronId in the parameters passed back to server *}
 				<form action="" method="post" class="form-horizontal" id="pinForm">

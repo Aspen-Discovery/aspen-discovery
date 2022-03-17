@@ -11,6 +11,13 @@
 					<div ><a href="/MyAccount/Home" class="btn btn-primary">{translate text='Continue to login' isPublicFacing=true}</a> </div>
 				{else}
 					{if $tokenValid}
+						<div class="alert alert-info">
+							{if $pinValidationRules.onlyDigitsAllowed}
+								{translate text="PINs must be between %1% and %2 digits." isPublicFacing=true}
+							{else}
+								{translate text="PINs must be between %1% and %2 characters." isPublicFacing=true}
+							{/if}
+						</div>
 						<form method="post" role="form" action="/MyAccount/CompletePinReset" id="resetPin">
 							<input type='hidden' name='token' id='token' value='{$token}' />
 							<div class="form-group">

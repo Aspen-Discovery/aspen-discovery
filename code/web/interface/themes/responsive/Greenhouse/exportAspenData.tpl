@@ -34,7 +34,7 @@
 						<div class="checkbox">
 							{foreach from=$dataElements item=propertyName key=propertyValue}
 								<label for="dataElement_{$propertyValue|escape:css}">
-									<input class="dataElement" id="dataElement_{$propertyValue|escape:css}" name='dataElement[]' type="checkbox" value='{$propertyValue}'> {translate text=$propertyName isPublicFacing=$property.isPublicFacing isAdminFacing=true}<br>
+									<input class="dataElement" id="dataElement_{$propertyValue|escape:css}" name='dataElement[]' type="checkbox" value='{$propertyValue}'> {translate text=$propertyName.name isPublicFacing=$property.isPublicFacing isAdminFacing=true}<br>
 								</label>
 							{/foreach}
 						</div>

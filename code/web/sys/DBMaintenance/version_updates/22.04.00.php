@@ -54,5 +54,13 @@ function getUpdates22_04_00() : array
 				"ALTER TABLE user_roles ADD COLUMN id INT NOT NULL AUTO_INCREMENT PRIMARY KEY",
 			),
 		], //user_role_uniqueness
+		'browse_category_times_shown' => [
+			'title' => 'Browse Category Times Shown',
+			'description' => 'Make times shown an int rather than medium int',
+			'continueOnError' => true,
+			'sql' => array(
+				"ALTER TABLE browse_category CHANGE COLUMN numTimesShown numTimesShown INT NOT NULL DEFAULT  0",
+			),
+		], //browse_category_times_shown
 	];
 }

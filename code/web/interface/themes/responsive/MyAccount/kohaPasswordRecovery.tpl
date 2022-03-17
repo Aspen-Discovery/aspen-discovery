@@ -6,6 +6,13 @@
 		{if !empty($error)}
 			<div class="alert alert-warning">{$error}</div>
 		{else}
+			<div class="alert alert-info">
+				{if $pinValidationRules.onlyDigitsAllowed}
+					{translate text="PINs must be between %1% and %2 digits." isPublicFacing=true}
+				{else}
+					{translate text="PINs must be between %1% and %2 characters." isPublicFacing=true}
+				{/if}
+			</div>
 			<form id="passwordRecovery" method="POST" action="/MyAccount/PasswordRecovery" class="form-horizontal">
 				{if $uniqueKey}
 					<input type="hidden" name="uniqueKey" value="{$uniqueKey}">
