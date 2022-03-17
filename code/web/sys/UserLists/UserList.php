@@ -18,6 +18,11 @@ class UserList extends DataObject
 	public $importedFrom;
 	public $nytListModified;
 
+	public function getUniquenessFields(): array
+	{
+		return ['user_id', 'title'];
+	}
+
 	public static function getSourceListsForBrowsingAndCarousels()
 	{
 		$userLists = new UserList();

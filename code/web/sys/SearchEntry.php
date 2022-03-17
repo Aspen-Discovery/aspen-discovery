@@ -15,99 +15,99 @@ class SearchEntry extends DataObject
 	public $searchUrl;
 	public $title;
 
-    /**
-     * Get an array of SearchEntry objects for the specified user.
-     *
-     * @access    public
-     * @param     string $searchUrl
-     * @param     int $sid Session ID of current user.
-     * @param     int $uid User ID of current user (optional).
-     * @return    SearchEntry  Matching SearchEntry objects.
-     */
-    function getSavedSearchByUrl($searchUrl, $sid, $uid = null)
-    {
-        $sql = "SELECT * FROM search WHERE searchUrl = " . $this->escape($searchUrl) . " AND (session_id = " . $this->escape($sid);
-        if ($uid != null) {
-            $sql .= " OR user_id = " . $this->escape($uid);
-        }
-        $sql .= ")";
-
-        $s = new SearchEntry();
-        $s->query($sql);
-        if ($s->getNumResults()) {
-            while ($s->fetch()) {
-                return clone($s);
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * Get an array of SearchEntry objects for the specified user.
-     *
-     * @access    public
-     * @param int $sid Session ID of current user.
-     * @param int $uid User ID of current user (optional).
-     * @return    array                                             Matching SearchEntry objects.
-     */
-	function getSearches($sid, $uid = null)
+	/**
+	 * Get an array of SearchEntry objects for the specified user.
+	 *
+	 * @access    public
+	 * @param string $searchUrl
+	 * @param int $sid Session ID of current user.
+	 * @param int $uid User ID of current user (optional).
+	 * @return    SearchEntry  Matching SearchEntry objects.
+	 */
+	function getSavedSearchByUrl($searchUrl, $sid, $uid = null)
 	{
-			$searches = array();
+		$sql = "SELECT * FROM search WHERE searchUrl = " . $this->escape($searchUrl) . " AND (session_id = " . $this->escape($sid);
+		if ($uid != null) {
+			$sql .= " OR user_id = " . $this->escape($uid);
+		}
+		$sql .= ")";
 
-			$sql = "SELECT * FROM search WHERE (session_id = " . $this->escape($sid);
-			if ($uid != null) {
-					$sql .= " OR user_id = " . $this->escape($uid);
+		$s = new SearchEntry();
+		$s->query($sql);
+		if ($s->getNumResults()) {
+			while ($s->fetch()) {
+				return clone($s);
 			}
-			$sql .= ") ORDER BY id";
+		}
 
-			$s = new SearchEntry();
-			$s->query($sql);
-			if ($s->getNumResults()) {
-					while ($s->fetch()) {
-							$searches[] = clone($s);
-					}
-			}
-
-			return $searches;
+		return null;
 	}
 
-    /**
-     * Get an array of SearchEntry objects for the specified user.
-     *
-     * @access    public
-     * @param string $searchSource
-     * @param int $sid Session ID of current user.
-     * @param int $uid User ID of current user (optional).
-     * @return    array                                             Matching SearchEntry objects.
-     */
-    function getSearchesWithNullUrl($searchSource, $sid, $uid = null)
-    {
-        $searches = array();
+	/**
+	 * Get an array of SearchEntry objects for the specified user.
+	 *
+	 * @access    public
+	 * @param int $sid Session ID of current user.
+	 * @param int $uid User ID of current user (optional).
+	 * @return    array                                             Matching SearchEntry objects.
+	 */
+	function getSearches($sid, $uid = null)
+	{
+		$searches = array();
 
-        $sql = "SELECT * FROM search WHERE searchSource = " . $this->escape($searchSource) . " AND searchUrl is NULL AND (session_id = " . $this->escape($sid);
-        if ($uid != null) {
-            $sql .= " OR user_id = " . $this->escape($uid);
-        }
-        $sql .= ") ORDER BY id";
+		$sql = "SELECT * FROM search WHERE (session_id = " . $this->escape($sid);
+		if ($uid != null) {
+			$sql .= " OR user_id = " . $this->escape($uid);
+		}
+		$sql .= ") ORDER BY id";
 
-        $s = new SearchEntry();
-        $s->query($sql);
-        if ($s->getNumResults()) {
-            while ($s->fetch()) {
-                $searches[] = clone($s);
-            }
-        }
+		$s = new SearchEntry();
+		$s->query($sql);
+		if ($s->getNumResults()) {
+			while ($s->fetch()) {
+				$searches[] = clone($s);
+			}
+		}
 
-        return $searches;
-    }
+		return $searches;
+	}
+
+	/**
+	 * Get an array of SearchEntry objects for the specified user.
+	 *
+	 * @access    public
+	 * @param string $searchSource
+	 * @param int $sid Session ID of current user.
+	 * @param int $uid User ID of current user (optional).
+	 * @return    array                                             Matching SearchEntry objects.
+	 */
+	function getSearchesWithNullUrl($searchSource, $sid, $uid = null)
+	{
+		$searches = array();
+
+		$sql = "SELECT * FROM search WHERE searchSource = " . $this->escape($searchSource) . " AND searchUrl is NULL AND (session_id = " . $this->escape($sid);
+		if ($uid != null) {
+			$sql .= " OR user_id = " . $this->escape($uid);
+		}
+		$sql .= ") ORDER BY id";
+
+		$s = new SearchEntry();
+		$s->query($sql);
+		if ($s->getNumResults()) {
+			while ($s->fetch()) {
+				$searches[] = clone($s);
+			}
+		}
+
+		return $searches;
+	}
 
 	/**
 	 * Get an array of SearchEntry objects representing expired, unsaved searches.
 	 *
-	 * @access	public
-	 * @param	 int				 $daysOld				Age in days of an "expired" search.
-	 * @return	array											 Matching SearchEntry objects.
+	 * @access    public
+	 * @param int $daysOld Age in days of an "expired" search.
+	 * @return    array                                             Matching SearchEntry objects.
 	 */
 	function getExpiredSearches($daysOld = 2)
 	{
@@ -121,10 +121,63 @@ class SearchEntry extends DataObject
 		$s->query($sql);
 		$searches = array();
 		if ($s->getNumResults()) {
-				while ($s->fetch()) {
-					$searches[] = clone($s);
-				}
+			while ($s->fetch()) {
+				$searches[] = clone($s);
+			}
 		}
 		return $searches;
+	}
+
+	public function getUniquenessFields(): array
+	{
+		return ['user_id', 'searchSource', 'searchUrl'];
+	}
+
+	public function okToExport(array $selectedFilters): bool
+	{
+		$okToExport = parent::okToExport($selectedFilters);
+		$user = new User();
+		$user->id = $this->user_id;
+		if ($user->find(true)) {
+			if ($user->homeLocationId == 0 || array_key_exists($user->homeLocationId, $selectedFilters['locations'])) {
+				$okToExport = true;
+			}
+		}
+		return $okToExport;
+	}
+
+	public function toArray($includeRuntimeProperties = true, $encryptFields = false): array
+	{
+		$return =  parent::toArray($includeRuntimeProperties, $encryptFields);
+		unset($return['user_id']);
+		unset($return['session_id']);
+		return $return;
+	}
+
+	public function getLinksForJSON(): array
+	{
+		$links = parent::getLinksForJSON();
+		$user = new User();
+		$user->id = $this->user_id;
+		if ($user->find(true)) {
+			$links['user'] = $user->username;
+		}
+		return $links;
+	}
+
+	public function loadEmbeddedLinksFromJSON($jsonData, $mappings, $overrideExisting = 'keepExisting')
+	{
+		parent::loadEmbeddedLinksFromJSON($jsonData, $mappings, $overrideExisting);
+		if (isset($jsonData['user'])){
+			$username = $jsonData['user'];
+			if (array_key_exists($username, $mappings['users'])){
+				$username = $mappings['users'][$username];
+			}
+			$user = new User();
+			$user->username = $username;
+			if ($user->find(true)){
+				$this->user_id = $user->id;
+			}
+		}
 	}
 }

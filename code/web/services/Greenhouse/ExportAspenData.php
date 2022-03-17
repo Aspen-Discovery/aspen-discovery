@@ -50,15 +50,14 @@ class Greenhouse_ExportAspenData extends Admin_Admin
 							$message = $this->exportObjects('BrowseCategoryGroup', 'Browse Category Groups', $exportFile, $selectedFilters, $message);
 						} elseif ($element == 'collection_spotlights') {
 							$message .= '<br/>Exporting Collection Spotlights has not been implemented yet';
-						} elseif ($element == 'javascript') {
-							require_once ROOT_DIR . '/sys/LocalEnrichment/JavaScriptSnippet.php';
-							$exportFile = $exportPath . 'javascript_snippets.json';
-							$message = $this->exportObjects('JavaScriptSnippet', 'JavaScript Snippets', $exportFile, $selectedFilters, $message);
 						} elseif ($element == 'ip_addresses') {
 							require_once ROOT_DIR . '/sys/IP/IPAddress.php';
 							$exportFile = $exportPath . 'ip_addresses.json';
 							$message = $this->exportObjects('IPAddress', 'IP Addresses', $exportFile, $selectedFilters, $message);
-
+						} elseif ($element == 'javascript') {
+							require_once ROOT_DIR . '/sys/LocalEnrichment/JavaScriptSnippet.php';
+							$exportFile = $exportPath . 'javascript_snippets.json';
+							$message = $this->exportObjects('JavaScriptSnippet', 'JavaScript Snippets', $exportFile, $selectedFilters, $message);
 						} elseif ($element == 'placards') {
 							require_once ROOT_DIR . '/sys/LocalEnrichment/Placard.php';
 							$exportFile = $exportPath . 'placards.json';
@@ -67,7 +66,6 @@ class Greenhouse_ExportAspenData extends Admin_Admin
 							require_once ROOT_DIR . '/sys/Administration/Role.php';
 							$exportFile = $exportPath . 'roles.json';
 							$message = $this->exportObjects('Role', 'Roles', $exportFile, $selectedFilters, $message);
-
 						} elseif ($element == 'system_messages') {
 							require_once  ROOT_DIR . '/sys/LocalEnrichment/SystemMessage.php';
 							$exportFile = $exportPath . 'system_messages.json';
@@ -76,14 +74,42 @@ class Greenhouse_ExportAspenData extends Admin_Admin
 							require_once  ROOT_DIR . '/sys/Account/User.php';
 							$exportFile = $exportPath . 'users.json';
 							$message = $this->exportObjects('User', 'Users', $exportFile, $selectedFilters, $message);
+						} elseif ($element == 'user_browse_category_dismissals') {
+							require_once  ROOT_DIR . '/sys/Browse/BrowseCategoryDismissal.php';
+							$exportFile = $exportPath . 'user_browse_category_dismissals.json';
+							$message = $this->exportObjects('BrowseCategoryDismissal', 'User Browse Category Dismissals', $exportFile, $selectedFilters, $message);
+						} elseif ($element == 'user_linked_accounts') {
+							require_once  ROOT_DIR . '/sys/Account/UserLink.php';
+							$exportFile = $exportPath . 'user_linked_accounts.json';
+							$message = $this->exportObjects('UserLink', 'User Linked Accounts', $exportFile, $selectedFilters, $message);
 						} elseif ($element == 'user_lists') {
 							require_once  ROOT_DIR . '/sys/UserLists/UserList.php';
 							$exportFile = $exportPath . 'user_lists.json';
 							$message = $this->exportObjects('UserList', 'User Lists', $exportFile, $selectedFilters, $message);
+						} elseif ($element == 'user_not_interested') {
+							require_once  ROOT_DIR . '/sys/LocalEnrichment/NotInterested.php';
+							$exportFile = $exportPath . 'user_not_interested.json';
+							$message = $this->exportObjects('NotInterested', 'User Not Interested', $exportFile, $selectedFilters, $message);
+						} elseif ($element == 'user_reading_history') {
+							require_once  ROOT_DIR . '/sys/ReadingHistoryEntry.php';
+							$exportFile = $exportPath . 'user_reading_history.json';
+							$message = $this->exportObjects('ReadingHistoryEntry', 'User Reading History', $exportFile, $selectedFilters, $message);
+						} elseif ($element == 'user_work_reviews') {
+							require_once  ROOT_DIR . '/sys/LocalEnrichment/UserWorkReview.php';
+							$exportFile = $exportPath . 'user_work_reviews.json';
+							$message = $this->exportObjects('UserWorkReview', 'User Reviews \ Ratings', $exportFile, $selectedFilters, $message);
 						} elseif ($element == 'user_roles') {
 							require_once  ROOT_DIR . '/sys/Administration/UserRoles.php';
 							$exportFile = $exportPath . 'user_roles.json';
 							$message = $this->exportObjects('UserRoles', 'User Roles', $exportFile, $selectedFilters, $message);
+						} elseif ($element == 'user_saved_searches') {
+							require_once  ROOT_DIR . '/sys/SearchEntry.php';
+							$exportFile = $exportPath . 'user_saved_searches.json';
+							$message = $this->exportObjects('SearchEntry', 'User Saved Searches', $exportFile, $selectedFilters, $message);
+						} elseif ($element == 'user_system_message_dismissals') {
+							require_once  ROOT_DIR . '/sys/LocalEnrichment/SystemMessageDismissal.php';
+							$exportFile = $exportPath . 'user_system_message_dismissals.json';
+							$message = $this->exportObjects('SystemMessageDismissal', 'User System Message Dismissals', $exportFile, $selectedFilters, $message);
 						}
 					}
 				}
@@ -100,6 +126,7 @@ class Greenhouse_ExportAspenData extends Admin_Admin
 				'collection_spotlights' => 'Collection Spotlights',
 				'ip_addresses' => 'IP Addresses',
 				'javascript' => 'JavaScript',
+				'materials_requests' => 'Materials Requests',
 				'placards' => 'Placards',
 				'roles' => 'Roles',
 				'system_messages' => 'System Messages',
@@ -108,7 +135,7 @@ class Greenhouse_ExportAspenData extends Admin_Admin
 				'user_linked_accounts' => 'User Linked Accounts',
 				'user_lists' => 'User Lists',
 				'user_not_interested' => 'User Not Interested',
-				'user_ratings' => 'User Ratings',
+				'user_work_reviews' => 'User Reviews \ Ratings',
 				'user_reading_history' => 'User Reading History',
 				'user_roles' => 'User Roles',
 				'user_saved_searches' => 'User Saved Searches',

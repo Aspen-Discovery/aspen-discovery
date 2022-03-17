@@ -74,6 +74,20 @@ class Greenhouse_ImportAspenData extends Admin_Admin
 				}
 				fclose($userMappingsFhnd);
 			}
+			$bibMappings = [];
+			if (file_exists($importPath . 'bib_map.csv')){
+				$userMappingsFhnd = fopen($importPath . 'bib_map.csv', 'r');
+				$mappingLine = fgetcsv($userMappingsFhnd);
+				while ($mappingLine){
+					if (!empty($mappingLine) && count($mappingLine) >= 2) {
+						$sourceId = $mappingLine[1];
+						$destId = $mappingLine[0];
+						$userMappings[trim($sourceId)] = trim($destId);
+					}
+					$mappingLine = fgetcsv($userMappingsFhnd);
+				}
+				fclose($userMappingsFhnd);
+			}
 			$sourcePassKey = '';
 			if (file_exists($importPath . 'source_passkey.txt')){
 				$sourcePassKeyFhnd = fopen($importPath . 'source_passkey.txt', 'r');
@@ -84,39 +98,80 @@ class Greenhouse_ImportAspenData extends Admin_Admin
 				'libraries' => $libraryMappings,
 				'locations' => $locationMappings,
 				'users' => $userMappings,
+				'bibs' => $bibMappings,
 				'passkey' => $sourcePassKey,
 			];
 
 			foreach ($_REQUEST['enrichmentElement'] as $element){
 				if ($element == 'browse') {
 					require_once ROOT_DIR . '/sys/Browse/BrowseCategoryGroup.php';
-					$message = $this->importObjects('BrowseCategoryGroup', 'Browse Category Groups', $importPath . 'browse_categories.json', $mappings, $overrideExisting, $message);
-				} elseif ($element == 'collection_spotlights') {
+					$className = 'BrowseCategoryGroup'; $pluralImportName = 'Browse Category Groups';
 
 				} elseif ($element == 'ip_addresses') {
 					require_once ROOT_DIR . '/sys/IP/IPAddress.php';
-					$message = $this->importObjects('IPAddress', 'IP Addresses', $importPath . 'ip_addresses.json', $mappings, $overrideExisting, $message);
+					$className = 'IPAddress'; $pluralImportName = 'IP Addresses';
+
 				} elseif ($element == 'javascript') {
 					require_once ROOT_DIR . '/sys/LocalEnrichment/JavaScriptSnippet.php';
-					$message = $this->importObjects('JavaScriptSnippet', 'JavaScript Snippets', $importPath . 'javascript_snippets.json', $mappings, $overrideExisting, $message);
+					$className = 'JavaScriptSnippet'; $pluralImportName = 'JavaScript Snippets';
+
 				} elseif ($element == 'placards') {
 					require_once ROOT_DIR . '/sys/LocalEnrichment/Placard.php';
-					$message = $this->importObjects('Placard', 'Placards', $importPath . 'placards.json', $mappings, $overrideExisting, $message);
+					$className = 'Placard'; $pluralImportName = 'Placards';
+
 				} elseif ($element == 'roles') {
 					require_once ROOT_DIR . '/sys/Administration/Role.php';
-					$message = $this->importObjects('Role', 'Roles', $importPath . 'roles.json', $mappings, $overrideExisting, $message);
+					$className = 'Role'; $pluralImportName = 'Roles';
+
 				} elseif ($element == 'system_messages') {
 					require_once ROOT_DIR . '/sys/LocalEnrichment/SystemMessage.php';
-					$message = $this->importObjects('SystemMessage', 'System Messages', $importPath . 'system_messages.json', $mappings, $overrideExisting, $message);
+					$className = 'SystemMessage'; $pluralImportName = 'System Messages';
+
 				} elseif ($element == 'users') {
-					$message = $this->importObjects('User', 'Users', $importPath . 'users.json', $mappings, $overrideExisting, $message);
+					$className = 'User'; $pluralImportName = 'Users';
+
+				} elseif ($element == 'user_browse_category_dismissals') {
+					require_once  ROOT_DIR . '/sys/Browse/BrowseCategoryDismissal.php';
+					$className = 'BrowseCategoryDismissal'; $pluralImportName = 'User Browse Category Dismissals';
+
+				} elseif ($element == 'user_linked_accounts') {
+					require_once  ROOT_DIR . '/sys/Account/UserLink.php';
+					$className = 'UserLink'; $pluralImportName = 'User Linked Accounts';
+
 				} elseif ($element == 'user_lists') {
 					require_once  ROOT_DIR . '/sys/UserLists/UserList.php';
-					$message = $this->importObjects('UserList', 'User Lists', $importPath . 'user_lists.json', $mappings, $overrideExisting, $message);
+					$className = 'UserList'; $pluralImportName = 'User Lists';
+
+				} elseif ($element == 'user_not_interested') {
+					require_once  ROOT_DIR . '/sys/LocalEnrichment/NotInterested.php';
+					$className = 'NotInterested'; $pluralImportName = 'User Not Interested';
+
+				} elseif ($element == 'user_reading_history') {
+					require_once  ROOT_DIR . '/sys/ReadingHistoryEntry.php';
+					$className = 'ReadingHistoryEntry'; $pluralImportName = 'User Reading History';
+
+				} elseif ($element == 'user_work_reviews') {
+					require_once  ROOT_DIR . '/sys/LocalEnrichment/UserWorkReview.php';
+					$className = 'UserWorkReview'; $pluralImportName = 'User Reviews \ Ratings';
+
+				} elseif ($element == 'user_saved_searches') {
+					require_once  ROOT_DIR . '/sys/SearchEntry.php';
+					$className = 'SearchEntry'; $pluralImportName = 'User Saved Searches';
+
 				} elseif ($element == 'user_roles') {
 					require_once  ROOT_DIR . '/sys/Administration/UserRoles.php';
-					$message = $this->importObjects('UserRoles', 'User Roles', $importPath . 'user_roles.json', $mappings, $overrideExisting, $message);
+					$className = 'UserRoles'; $pluralImportName = 'User Role';
+
+				} elseif ($element == 'user_system_message_dismissals') {
+					require_once  ROOT_DIR . '/sys/LocalEnrichment/SystemMessageDismissal.php';
+					$className = 'SystemMessageDismissal'; $pluralImportName = 'User System Message Dismissals';
+
+				} else {
+					$message .= "<br/> Unhandled element $element";
+					continue;
 				}
+
+				$message = $this->importObjects($className, $pluralImportName, $importPath . "$element.json", $mappings, $overrideExisting, $message);
 			}
 
 			if (!empty($message)){
@@ -135,11 +190,11 @@ class Greenhouse_ImportAspenData extends Admin_Admin
 				if (file_exists($importPath . 'browse_categories.json')){
 					$validEnrichmentToImport['browse'] = 'Browse Categories';
 				}
-				if (file_exists($importPath . 'javascript_snippets.json')){
-					$validEnrichmentToImport['javascript'] = 'JavaScript Snippets';
-				}
 				if (file_exists($importPath . 'ip_addresses.json')){
 					$validEnrichmentToImport['ip_addresses'] = 'IP Addresses';
+				}
+				if (file_exists($importPath . 'javascript_snippets.json')){
+					$validEnrichmentToImport['javascript'] = 'JavaScript Snippets';
 				}
 				if (file_exists($importPath . 'placards.json')){
 					$validEnrichmentToImport['placards'] = 'Placards';
@@ -153,11 +208,29 @@ class Greenhouse_ImportAspenData extends Admin_Admin
 				if (file_exists($importPath . 'users.json')){
 					$validEnrichmentToImport['users'] = 'Users';
 				}
+				if (file_exists($importPath . 'user_browse_category_dismissals.json')){
+					$validEnrichmentToImport['user_browse_category_dismissals'] = 'User Browse Category Dismissals';
+				}
+				if (file_exists($importPath . 'user_linked_accounts.json')){
+					$validEnrichmentToImport['user_linked_accounts'] = 'User Linked Accounts';
+				}
 				if (file_exists($importPath . 'user_lists.json')){
 					$validEnrichmentToImport['user_lists'] = 'User Lists';
 				}
-				if (file_exists($importPath . 'user_roles.json')){
-					$validEnrichmentToImport['user_roles'] = 'User Roles';
+				if (file_exists($importPath . 'user_not_interested.json')){
+					$validEnrichmentToImport['user_not_interested'] = 'User Not Interested';
+				}
+				if (file_exists($importPath . 'user_reading_history.json')){
+					$validEnrichmentToImport['user_reading_history'] = 'User Reading History';
+				}
+				if (file_exists($importPath . 'user_work_reviews.json')){
+					$validEnrichmentToImport['user_work_reviews'] = 'User Reviews \ Ratings';
+				}
+				if (file_exists($importPath . 'user_saved_searches.json')){
+					$validEnrichmentToImport['user_roles'] = 'User Saved Searches';
+				}
+				if (file_exists($importPath . 'user_system_message_dismissals.json')){
+					$validEnrichmentToImport['user_work_reviews'] = 'User System Message Dismissals';
 				}
 			}
 
@@ -171,7 +244,7 @@ class Greenhouse_ImportAspenData extends Admin_Admin
 
 		}
 
-		$this->display('importAspenData.tpl', 'Import Aspen Data');
+		$this->display('importAspenData.tpl', 'Import Aspen Data', false);
 	}
 
 	function getBreadcrumbs(): array
