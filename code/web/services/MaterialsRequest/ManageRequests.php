@@ -9,7 +9,6 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 
 	function launch()
 	{
-		global $configArray;
 		global $interface;
 
 		//Load status information
@@ -17,6 +16,11 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 		$materialsRequestStatus->orderBy('isDefault DESC, isOpen DESC, description ASC');
 		$homeLibrary = Library::getPatronHomeLibrary();
 		$user = UserAccount::getLoggedInUser();
+		if (is_null($homeLibrary)) {
+			//User does not have a home library, this is likely an admin account.  Use the active library
+			global $library;
+			$homeLibrary = $library;
+		}
 
 		$materialsRequestStatus->libraryId = $homeLibrary->libraryId;
 		$materialsRequestStatus->find();
@@ -60,11 +64,13 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 				$materialRequest = new MaterialsRequest();
 				$materialRequest->id = $requestId;
 				if ($materialRequest->find(true)){
-					$materialRequest->status = $statusToSet;
-					$materialRequest->dateUpdated = time();
-					$materialRequest->update();
+					if ($materialRequest->status != $statusToSet) {
+						$materialRequest->status = $statusToSet;
+						$materialRequest->dateUpdated = time();
+						$materialRequest->update();
 
-					$materialRequest->sendStatusChangeEmail();
+						$materialRequest->sendStatusChangeEmail();
+					}
 				}
 			}
 		}
@@ -119,9 +125,8 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 			$materialsRequests->selectAdd('materials_request.*, status.description as statusLabel, location.displayName as location');
 
 			//Need to limit to only requests submitted for the user's home location
-			$userHomeLibrary = Library::getPatronHomeLibrary();
 			$locations = new Location();
-			$locations->libraryId = $userHomeLibrary->libraryId;
+			$locations->libraryId = $homeLibrary->libraryId;
 			$locations->find();
 			$locationsForLibrary = array();
 			while ($locations->fetch()){

@@ -27,6 +27,11 @@ class PortalCell extends DataObject
 	public $makeCellAccordion;
 	public $pdfView;
 
+	public function getNumericColumnNames(): array
+	{
+		return ['frameHeight'];
+	}
+
 	static function getObjectStructure() : array {
 		$verticalAlignmentOptions = [
 			'flex-start' => 'Top of Row',
