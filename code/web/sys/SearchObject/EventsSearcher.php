@@ -185,11 +185,25 @@ class SearchObject_EventsSearcher extends SearchObject_SolrSearcher
 	{
 		if ($this->facetConfig == null) {
 			$facetConfig = [];
+
+            /*
+            $eventDate = new LibraryFacetSetting();
+            $eventDate->id = count($facetConfig) +1;
+            $eventDate->multiSelect = true;
+            $eventDate->facetName = "event_day_facet";
+            $eventDate->displayName = "Event Date";
+            $eventDate->numEntriesToShowByDefault = 5;
+            $eventDate->translate = true;
+            $eventDate->collapseByDefault = true;
+            $eventDate->useMoreFacetPopup = true;
+            $facetConfig["event_day_facet"] = $eventDate;
+            */
+
 			$ageGroup = new LibraryFacetSetting();
 			$ageGroup->id = count($facetConfig) +1;
 			$ageGroup->multiSelect = true;
 			$ageGroup->facetName = "age_group_facet";
-			$ageGroup->displayName = "Age Group";
+			$ageGroup->displayName = "Age Group/Audience";
 			$ageGroup->numEntriesToShowByDefault = 5;
 			$ageGroup->translate = true;
 			$ageGroup->collapseByDefault = true;
