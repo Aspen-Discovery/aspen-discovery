@@ -59,7 +59,7 @@
 					<div class="col-xs-12">
 						<div class="form-group">
 							<label for="confirmation">{translate text="Enter the server name" isAdminFacing=true}</label>
-							<input class="form-control" type="text" name="confirmation" id="confirmation" />
+							<input class="form-control" type="text" name="confirmation" id="confirmation" autocomplete="off" />
 						</div>
 					</div>
 				</div>
