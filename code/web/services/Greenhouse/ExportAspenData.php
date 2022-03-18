@@ -23,6 +23,21 @@ class Greenhouse_ExportAspenData extends Admin_Admin
 				'className' => 'UserRoles',
 				'name' => 'User Roles'
 			],
+			'user_messages' => [
+				'classFile' => ROOT_DIR . '/sys/Administration/UserMessage.php',
+				'className' => 'UserMessage',
+				'name' => 'User Messages'
+			],
+			'user_payments' => [
+				'classFile' => ROOT_DIR . '/sys/Account/UserPayment.php',
+				'className' => 'UserPayment',
+				'name' => 'User Payments'
+			],
+			'user_staff_settings' => [
+				'classFile' => ROOT_DIR . '/sys/Account/UserStaffSettings.php',
+				'className' => 'UserStaffSettings',
+				'name' => 'User Staff Settings'
+			],
 			'user_saved_searches' => [
 				'classFile' => ROOT_DIR . '/sys/SearchEntry.php',
 				'className' => 'SearchEntry', 'name' => 'User Saved Searches'
@@ -76,6 +91,11 @@ class Greenhouse_ExportAspenData extends Admin_Admin
 				'classFile' => ROOT_DIR . '/sys/LocalEnrichment/Placard.php',
 				'className' => 'Placard',
 				'name' => 'Placards'
+			],
+			'placard_dismissals' => [
+				'classFile' => ROOT_DIR . '/sys/LocalEnrichment/PlacardDismissal.php',
+				'className' => 'PlacardDismissal',
+				'name' => 'Placard Dismissals'
 			],
 			'system_messages' => [
 				'classFile' => ROOT_DIR . '/sys/LocalEnrichment/SystemMessage.php',

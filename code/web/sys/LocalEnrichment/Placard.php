@@ -25,6 +25,11 @@ class Placard extends DB_LibraryLocationLinkedObject
 	protected $_locations;
 	protected $_languages;
 
+	public function getUniquenessFields(): array
+	{
+		return ['title'];
+	}
+
 	static function getObjectStructure() : array {
 		$placardTriggerStructure = PlacardTrigger::getObjectStructure();
 		unset($placardTriggerStructure['placardId']);

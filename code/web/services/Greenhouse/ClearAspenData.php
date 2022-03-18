@@ -59,6 +59,12 @@ class Greenhouse_ClearAspenData extends Admin_Admin
 						$numDeleted = $objectToDelete->delete(true);
 						$message .= translate(['text' => 'Deleted %1% %2% objects', 1=>$numDeleted, 2=>get_class($objectToDelete), 'isAdminFacing'=>true]) . '<br/>';
 
+						require_once ROOT_DIR . '/sys/Indexing/IlsRecord.php';
+						$objectToDelete = new IlsRecord();
+						$objectToDelete->whereAddIn("source", $indexingProfileNames, true);
+						$numDeleted = $objectToDelete->delete(true);
+						$message .= translate(['text' => 'Deleted %1% %2% objects', 1=>$numDeleted, 2=>get_class($objectToDelete), 'isAdminFacing'=>true]) . '<br/>';
+
 						$success = true;
 					}else if ($element == 'userData') {
 						require_once ROOT_DIR . '/sys/Account/User.php';
@@ -93,6 +99,9 @@ class Greenhouse_ClearAspenData extends Admin_Admin
 						$objectToDelete->whereAdd("userId NOT IN ($adminUserIdsString)");
 						$numDeleted = $objectToDelete->delete(true);
 						$message .= translate(['text' => 'Deleted %1% %2% objects', 1=>$numDeleted, 2=>get_class($objectToDelete), 'isAdminFacing'=>true]) . '<br/>';
+
+						require_once ROOT_DIR . '/sys/Browse/BrowseCategoryDismissal.php';
+						$message .= $this->deleteAll('BrowseCategoryDismissal');
 
 						require_once ROOT_DIR . '/sys/Donations/Donation.php';
 						$message .= $this->deleteAll('Donation');

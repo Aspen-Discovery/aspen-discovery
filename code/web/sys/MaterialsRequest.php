@@ -360,32 +360,41 @@ class MaterialsRequest extends DataObject
 				}
 			}
 		}
-		if (isset($jsonData['user'])){
-			$username = $jsonData['user'];
+		if (isset($jsonData['createdBy'])){
+			$username = $jsonData['createdBy'];
 			if (array_key_exists($username, $mappings['users'])){
 				$username = $mappings['users'][$username];
 			}
 			$user = new User();
 			$user->username = $username;
 			if ($user->find(true)){
-				$this->userId = $user->id;
+				$this->createdBy = $user->id;
+			}
+		}
+		if (isset($jsonData['assignedTo'])){
+			$username = $jsonData['assignedTo'];
+			if (array_key_exists($username, $mappings['users'])){
+				$username = $mappings['users'][$username];
+			}
+			$user = new User();
+			$user->username = $username;
+			if ($user->find(true)){
+				$this->assignedTo = $user->id;
+			}
+		}
+		if (isset($jsonData['status'])){
+			$status = $jsonData['status'];
+			$requestStatus = new MaterialsRequestStatus();
+			$requestStatus->libraryId = $this->libraryId;
+			$requestStatus->description = $status;
+			if ($requestStatus->find(true)){
+				$this->status = $requestStatus->id;
 			}
 		}
 	}
 
 	public function loadRelatedLinksFromJSON($jsonData, $mappings, $overrideExisting = 'keepExisting') : bool {
 		$result = parent::loadRelatedLinksFromJSON($jsonData, $mappings, $overrideExisting);
-		if (isset($jsonData['subCategories'])){
-			$subCategories = [];
-			foreach ($jsonData['subCategories'] as $subCategory) {
-				$subCategoryObj = new SubBrowseCategories();
-				$subCategoryObj->browseCategoryId = $this->id;
-				$subCategoryObj->loadFromJSON($subCategory, $mappings, $overrideExisting);
-				$subCategories[$subCategoryObj->id] = $subCategoryObj;
-			}
-			$this->_subBrowseCategories = $subCategories;
-			$result = true;
-		}
 		return $result;
 	}
 }
