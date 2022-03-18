@@ -43,7 +43,7 @@
 							</label>
 						</div>
 						<div class="checkbox">
-							<label for="dataElement_bibData">
+							<label for="dataElement_statistics">
 								<input class="dataElement" id="dataElement_statistics" name='dataElement[]' type="checkbox" value='statistics'> {translate text="Statistics" isPublicFacing=$property.isPublicFacing isAdminFacing=true}<br>
 							</label>
 						</div>
