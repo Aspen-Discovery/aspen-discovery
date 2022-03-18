@@ -1805,25 +1805,6 @@ CREATE TABLE `ils_hold_summary` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `ils_marc_checksums`
---
-
-DROP TABLE IF EXISTS `ils_marc_checksums`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `ils_marc_checksums` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `ilsId` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
-  `checksum` bigint(20) unsigned NOT NULL,
-  `dateFirstDetected` bigint(20) DEFAULT NULL,
-  `source` varchar(50) COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'ils',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `ilsId` (`ilsId`),
-  UNIQUE KEY `source` (`source`,`ilsId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
 -- Table structure for table `ils_record_usage`
 --
 

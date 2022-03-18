@@ -3,8 +3,8 @@
 		<h1>{translate text="Open Archives Extract Log" isAdminFacing=true}</h1>
 
         {include file='Admin/exportLogFilters.tpl'}
-		<div class="adminTableRegion">
-			<table class="logEntryDetails table table-bordered table-striped adminTable">
+		<div class="adminTableRegion fixed-height-table">
+			<table class="adminTable table table-condensed table-hover table-condensed smallText table-sticky">
 				<thead>
 				<tr><th>{translate text="Id" isAdminFacing=true}</th><th>{translate text="Started" isAdminFacing=true}</th><th>{translate text="Last Update" isAdminFacing=true}</th><th>{translate text="Finished" isAdminFacing=true}</th><th>{translate text="Elapsed" isAdminFacing=true}</th><th>{translate text="Collection Name" isAdminFacing=true}</th><th>{translate text="Total Products" isAdminFacing=true}</th><th>{translate text="Num Errors" isAdminFacing=true}</th><th>{translate text="Products Added" isAdminFacing=true}</th><th>{translate text="Products Deleted" isAdminFacing=true}</th><th>{translate text="Products Updated" isAdminFacing=true}</th><th>{translate text="Products Skipped" isAdminFacing=true}</th><th>{translate text="Notes" isAdminFacing=true}</th></tr>
 				</thead>

@@ -3,8 +3,8 @@
 		<h1>{translate text="User List Indexing Log" isAdminFacing=true}</h1>
 
         {include file='Admin/exportLogFilters.tpl'}
-		<div id="exportLogContainer adminTableRegion">
-			<table class="logEntryDetails table table-condensed table-hove adminTabler">
+		<div class="adminTableRegion fixed-height-table">
+			<table class="adminTable table table-condensed table-hover table-condensed smallText table-sticky">
 				<thead>
 					<tr>
 						<th>{translate text="Id" isAdminFacing=true}</th>
