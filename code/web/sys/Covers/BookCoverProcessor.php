@@ -1435,6 +1435,29 @@ class BookCoverProcessor{
 		return false;
 	}
 
+    private function getSpringshareLibCalCover($id) {
+        if (strpos($id, ':') !== false) {
+            list(, $id) = explode(":", $id);
+        }
+        require_once ROOT_DIR . '/RecordDrivers/SpringshareLibCalEventRecordDriver.php';
+        $driver = new SpringshareLibCalEventRecordDriver($id);
+        if ($driver) {
+//			$coverUrl = $driver->getEventCoverUrl();
+//			if ($coverUrl == null) {
+            require_once ROOT_DIR . '/sys/Covers/EventCoverBuilder.php';
+            $coverBuilder = new EventCoverBuilder();
+            $props = [
+                'eventDate' => $driver->getStartDate()
+            ];
+            $coverBuilder->getCover($driver->getTitle(), $this->cacheFile, $props);
+            return $this->processImageURL('default_event', $this->cacheFile, false);
+//			}else{
+//				return $this->processImageURL('springshare_libcal_event', $coverUrl, true);
+//			}
+        }
+        return false;
+    }
+
 	private function getWebPageCover($id)
 	{
 		//Build a cover based on the title of the page

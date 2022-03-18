@@ -8,7 +8,7 @@
  */
 abstract class RecordInterface
 {
-	//Used when displaying a the title as part of a list
+	//Used when displaying the title as part of a list
 	private $listNotes;
 	private $listEntryId;
 	/**

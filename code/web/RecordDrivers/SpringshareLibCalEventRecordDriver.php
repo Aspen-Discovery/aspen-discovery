@@ -83,19 +83,26 @@ class SpringshareLibCalEventRecordDriver extends IndexRecordDriver
 		} else {
 			$bookCoverUrl = '';
 		}
-		$bookCoverUrl .= "/bookcover.php?id={$this->getUniqueID()}&size={$size}&type=library_calendar_event";
+		$bookCoverUrl .= "/bookcover.php?id={$this->getUniqueID()}&size={$size}&type=springshare_libcal_event";
 
 		return $bookCoverUrl;
 	}
 
 	public function getModule() : string
 	{
-		return 'LMLCEvents';
+		return 'SpringshareLibCal'; // TODO: verify module name 2022 03 16 James
 	}
 
 	public function getStaffView()
 	{
-		// TODO: Implement getStaffView() method.
+		// TODO: Implement getStaffView() method 2022 03 16 James
+        global $interface;
+        //$this->getGroupedWorkDriver()->assignGroupedWorkStaffView();
+
+        $interface->assign('bookcoverInfo', $this->getBookcoverInfo());
+        $springshareLibCalRawMetadata = $this->getEventObject()->getDecodedData();
+        $interface->assign('springshareLibCalExtract', $springshareLibCalRawMetadata);
+        return 'RecordDrivers/Events/staff-view.tpl';
 	}
 
 	public function getDescription()
@@ -115,6 +122,12 @@ class SpringshareLibCalEventRecordDriver extends IndexRecordDriver
 	 * @access  public
 	 * @return  string              Unique identifier.
 	 */
+
+    public function getPermanentID()
+    {
+        return $this->getUniqueID();
+    }
+
 	public function getUniqueID()
 	{
 		return $this->fields['id'];
@@ -137,16 +150,12 @@ class SpringshareLibCalEventRecordDriver extends IndexRecordDriver
 
 	function getEventCoverUrl()
 	{
-		$decodedData = $this->getEventObject()->getDecodedData();
-		if (!empty($decodedData->image)){
-			return $decodedData->image;
-		}
-		return null;
+        return $this->fields['image_url'];
 	}
 
 	function getEventObject(){
 		if ($this->eventObject == null){
-			$this->eventObject = new LMLibraryCalendarEvent();
+			$this->eventObject = new SpringshareLibCalEvent();
 			$this->eventObject->externalId = $this->getIdentifier();
 			if (!$this->eventObject->find(true)){
 				$this->eventObject = false;
@@ -183,4 +192,12 @@ class SpringshareLibCalEventRecordDriver extends IndexRecordDriver
 
 		return $result;
 	}
+
+    public function getAudiences() {
+        return $this->fields['age_group'];
+    }
+
+    public function getCategories() {
+        return $this->fields['program_type'];
+    }
 }

@@ -869,7 +869,7 @@ function loadModuleActionId(){
 	global $indexingProfiles;
 	/** SideLoad[] $sideLoadSettings */
 	global $sideLoadSettings;
-	$allRecordModules = "OverDrive|GroupedWork|Record|ExternalEContent|Person|Library|RBdigital|Hoopla|RBdigitalMagazine|CloudLibrary|Files|Axis360|WebBuilder|ProPay|CourseReserves";
+	$allRecordModules = "OverDrive|GroupedWork|Record|ExternalEContent|Person|Library|RBdigital|Hoopla|RBdigitalMagazine|CloudLibrary|Files|Axis360|WebBuilder|ProPay|CourseReserves|Springshare";
 	foreach ($indexingProfiles as $profile){
 		$allRecordModules .= '|' . $profile->recordUrlComponent;
 	}
