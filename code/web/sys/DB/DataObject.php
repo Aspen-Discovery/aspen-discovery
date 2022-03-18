@@ -449,7 +449,24 @@ abstract class DataObject
 		}else{
 			$deleteQuery = 'DELETE from ' . $this->__table . ' WHERE ' . $primaryKey . ' = ' . $aspen_db->quote($this->$primaryKey);
 		}
+		$this->__lastQuery = $deleteQuery;
 
+		$result = $aspen_db->exec($deleteQuery);
+		global $timer;
+		if (IPAddress::logAllQueries()){
+			global $logger;
+			$logger->log($deleteQuery, Logger::LOG_ERROR);
+		}
+		$timer->logTime($deleteQuery);
+		return $result;
+	}
+
+	public function deleteAll(){
+		global $aspen_db;
+		if (!isset($aspen_db)){
+			return false;
+		}
+		$deleteQuery = 'TRUNCATE TABLE ' . $this->__table;
 		$result = $aspen_db->exec($deleteQuery);
 		global $timer;
 		if (IPAddress::logAllQueries()){

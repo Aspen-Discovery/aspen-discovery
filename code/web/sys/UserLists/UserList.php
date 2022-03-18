@@ -129,7 +129,6 @@ class UserList extends DataObject
 		$this->dateUpdated = time();
 		$ret = parent::update();
 
-		/** @var Memcache $memCache */
 		global $memCache;
 		$memCache->delete('user_list_data_' . UserAccount::getActiveUserId());
 		return $ret;
