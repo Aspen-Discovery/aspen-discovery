@@ -1289,7 +1289,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		}
 		String shelfLocation = null;
 		if (itemField != null) {
-			shelfLocation = getItemSubfieldData(locationSubfieldIndicator, itemField);
+			shelfLocation = getItemSubfieldData(shelvingLocationSubfield, itemField);
 		}
 		if (shelfLocation != null && shelfLocation.length() > 0 && !shelfLocation.equals("none")){
 			if (location.length() > 0) {

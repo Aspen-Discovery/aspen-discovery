@@ -12,6 +12,6 @@ public class EvergreenRecordProcessor extends IlsRecordProcessor {
 
 	@Override
 	protected boolean isItemAvailable(ItemInfo itemInfo) {
-		return true;
+		return itemInfo.getStatusCode().equals("Available");
 	}
 }
