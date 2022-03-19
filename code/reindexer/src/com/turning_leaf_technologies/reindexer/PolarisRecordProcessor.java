@@ -24,12 +24,12 @@ public class PolarisRecordProcessor extends IlsRecordProcessor{
 		String locationCode = getItemSubfieldData(locationSubfieldIndicator, itemField);
 		String collectionCode = getItemSubfieldData(collectionSubfield, itemField);
 		if (includeLocationNameInDetailedLocation) {
-			location = translateValue("location", locationCode, identifier);
+			location = translateValue("location", locationCode, identifier, true);
 		}else{
 			location = "";
 		}
 		if (subLocationCode != null && subLocationCode.length() > 0){
-			String translatedSubLocation = translateValue("sub_location", subLocationCode, identifier);
+			String translatedSubLocation = translateValue("sub_location", subLocationCode, identifier, true);
 			if (translatedSubLocation != null && translatedSubLocation.length() > 0) {
 				if (location.length() > 0) {
 					location += " - ";
@@ -38,7 +38,7 @@ public class PolarisRecordProcessor extends IlsRecordProcessor{
 			}
 		}
 		if (collectionCode != null && collectionCode.length() > 0 && !collectionCode.equals(subLocationCode)){
-			String translatedCollection = translateValue("collection", collectionCode, identifier);
+			String translatedCollection = translateValue("collection", collectionCode, identifier, true);
 			if (translatedCollection != null && translatedCollection.length() > 0) {
 				if (location.length() > 0) {
 					location += " - ";
@@ -51,7 +51,7 @@ public class PolarisRecordProcessor extends IlsRecordProcessor{
 			if (location.length() > 0){
 				location += " - ";
 			}
-			location += translateValue("shelf_location", shelvingLocation, identifier);
+			location += translateValue("shelf_location", shelvingLocation, identifier, true);
 		}
 		return location;
 	}
