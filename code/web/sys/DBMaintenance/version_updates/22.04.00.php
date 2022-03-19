@@ -75,7 +75,7 @@ function getUpdates22_04_00() : array
 			'description' => 'Increase Translation Map Value Length',
 			'continueOnError' => true,
 			'sql' => array(
-				"ALTER TABLE translation_map_values CHANGE COLUMN value value varchar(50) COLLATE utf8mb4_general_ci NOT NULL",
+				"ALTER TABLE translation_map_values CHANGE COLUMN value value varchar(255) COLLATE utf8mb4_general_ci NOT NULL",
 			),
 		], //increase_translation_map_value_length
 	];
