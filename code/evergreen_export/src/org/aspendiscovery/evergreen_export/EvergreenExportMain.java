@@ -562,60 +562,22 @@ public class EvergreenExportMain {
 			fullExportFile = latestFile;
 		}
 
-		//Get a list of marc deltas since the last marc record
+		//Get a list of marc deltas since the last marc record, we will actually process all of these since the full export takes so long
 		File marcDeltaPath = new File(marcExportPath.getParentFile() + "/marc_delta");
 		File[] exportedMarcDeltaFiles = marcDeltaPath.listFiles((dir, name) -> name.endsWith("mrc") || name.endsWith("marc"));
 		if (exportedMarcDeltaFiles != null && exportedMarcDeltaFiles.length > 0){
-			for (File exportedMarcDeltaFile : exportedMarcDeltaFiles) {
-				if (exportedMarcDeltaFile.lastModified() / 1000 < lastUpdateFromMarc){
-					if (exportedMarcDeltaFile.delete()){
-						logEntry.addNote("Removed old delta file " + exportedMarcDeltaFile.getAbsolutePath());
-					}
-				}else{
-					if (exportedMarcDeltaFile.lastModified() > latestMarcFile){
-						filesToProcess.add(exportedMarcDeltaFile);
-					}
-				}
-			}
+			filesToProcess.addAll(Arrays.asList(exportedMarcDeltaFiles));
 		}
 
 		if (filesToProcess.size() > 0){
 			//Update all records based on the MARC export
 			logEntry.addNote("Updating based on MARC extract");
 			totalChanges = updateRecordsUsingMarcExtract(filesToProcess, hasFullExportFile, fullExportFile, dbConn);
-		}else {
-			//Process based on API exports
-			try {
-				//Get the time the last extract was done
-				logger.info("Starting to load changed records from Evergreen using the APIs");
-
-				if (singleWorkId != null) {
-					updateBibFromEvergreen(singleWorkId, null, 0, true);
-				} else {
-					long lastExtractTime = 0;
-					if (!indexingProfile.isRunFullUpdate()) {
-						lastExtractTime = indexingProfile.getLastUpdateOfChangedRecords();
-						if (lastExtractTime == 0 || (indexingProfile.getLastUpdateOfAllRecords() > indexingProfile.getLastUpdateOfChangedRecords())) {
-							//Give a small buffer (1 minute to account for server time differences)
-							lastExtractTime = indexingProfile.getLastUpdateOfAllRecords() - 60 * 1000;
-						}
-					} else {
-						getRecordGroupingProcessor().loadExistingTitles(logEntry);
-					}
-
-					//Check to see if we should regroup all records
-					if (indexingProfile.isRegroupAllRecords()) {
-						//Regrouping takes a long time, and we don't need koha DB connection so close it while we regroup
-						MarcRecordGrouper recordGrouper = getRecordGroupingProcessor();
-						recordGrouper.regroupAllRecords(dbConn, indexingProfile, getGroupedWorkIndexer(), logEntry);
-					}
-				}
-			} catch (Exception e) {
-				logEntry.incErrors("Error loading changed records from Evergreen APIs", e);
-				//Don't quit since that keeps the exporter from running continuously
-			}
-			logger.info("Finished loading changed records from Evergreen APIs");
 		}
+
+		//TODO: Process CSV Files
+
+		//TODO: Process ID Files
 
 		return totalChanges;
 	}
@@ -806,7 +768,7 @@ public class EvergreenExportMain {
 							}
 						}
 					}catch (MarcException me){
-						logEntry.incErrors("Error processing individual record  on record " + numRecordsRead + " of " + curBibFile.getAbsolutePath() + " the last record processed was " + lastRecordProcessed + " trying to continue", me);
+						logEntry.incRecordsWithInvalidMarc("Error processing record index " + numRecordsRead + " of " + curBibFile.getAbsolutePath() + " the last record processed was " + lastRecordProcessed + " trying to continue" + me);
 					}
 					if (numRecordsRead % 250 == 0) {
 						logEntry.saveResults();

@@ -62,5 +62,13 @@ function getUpdates22_04_00() : array
 				"ALTER TABLE browse_category CHANGE COLUMN numTimesShown numTimesShown INT NOT NULL DEFAULT  0",
 			),
 		], //browse_category_times_shown
+		'ils_log_add_records_with_invalid_marc' => [
+			'title' => 'ILS Log Records With Invalid MARC',
+			'description' => 'Add Records With Invalid MARC to the ILS Log',
+			'continueOnError' => true,
+			'sql' => array(
+				"ALTER TABLE ils_extract_log ADD COLUMN numRecordsWithInvalidMarc INT(11) NOT NULL DEFAULT 0",
+			),
+		], //ils_log_add_records_with_invalid_marc
 	];
 }
