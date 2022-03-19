@@ -1573,7 +1573,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 				String concatenatedValue = mapName + ":" + value;
 				if (!unableToTranslateWarnings.contains(concatenatedValue)) {
 					if (reportErrors) {
-						logger.warn("Could not translate '" + concatenatedValue + "' in profile " + profileType + " sample record " + identifier);
+						indexer.getLogEntry().addNote("Could not translate '" + concatenatedValue + "' in profile " + profileType + " sample record " + identifier);
 					}
 					unableToTranslateWarnings.add(concatenatedValue);
 				}
