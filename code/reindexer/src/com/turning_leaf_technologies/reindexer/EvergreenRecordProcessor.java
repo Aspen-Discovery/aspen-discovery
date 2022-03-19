@@ -12,6 +12,7 @@ public class EvergreenRecordProcessor extends IlsRecordProcessor {
 
 	@Override
 	protected boolean isItemAvailable(ItemInfo itemInfo) {
-		return itemInfo.getStatusCode().equals("Available");
+		String groupedStatus = getDisplayGroupedStatus(itemInfo, itemInfo.getFullRecordIdentifier());
+		return itemInfo.getStatusCode().equals("Available") || groupedStatus.equals("On Shelf") || groupedStatus.equals("Library Use Only");
 	}
 }
