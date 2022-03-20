@@ -283,9 +283,9 @@ class Greenhouse_ExportAspenData extends Admin_Admin
 			}
 
 			if ($exportDirExists) {
-				$selectedLibraries = $_REQUEST['libraries'];
-				$selectedLocations = $_REQUEST['locations'];
-				$selectedInstances = $_REQUEST['instances'];
+				$selectedLibraries = $_REQUEST['libraries'] ?? [];
+				$selectedLocations = $_REQUEST['locations'] ?? [];
+				$selectedInstances = $_REQUEST['instances'] ?? [];
 				$selectedFilters = [
 					'libraries' => $selectedLibraries,
 					'locations' => $selectedLocations,
