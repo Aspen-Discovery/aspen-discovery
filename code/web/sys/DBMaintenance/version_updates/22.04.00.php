@@ -81,9 +81,7 @@ function getUpdates22_04_00() : array
 					baseUrl VARCHAR(255) NOT NULL,
                     calId SMALLINT NOT NULL,
                     clientId SMALLINT NOT NULL,
-                    clientSecret VARCHAR(36) NOT NULL,
-                    userName VARCHAR(36) NOT NULL,
-                    password VARCHAR(36) NOT NULL
+                    clientSecret VARCHAR(36) NOT NULL
 				) ENGINE INNODB',
             ]
         ], // springshare_libcal_settings

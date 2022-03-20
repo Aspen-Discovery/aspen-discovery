@@ -29,8 +29,6 @@ class SpringshareLibCalSetting extends DataObject
 			'calId' => array('property' => 'calId', 'type' => 'text', 'label' => 'Calendar IDs', 'description' => 'Comma-delimited list of LibCal Calendar IDs. Leave blank to retrieve all public calendars.', 'default' => '', 'maxLength' => 255),
             'clientId' => array('property' => 'clientId', 'type' => 'integer', 'label' => 'Client ID', 'description' => 'Client ID'),
 			'clientSecret' => array('property' => 'clientSecret', 'type' => 'storedPassword', 'label' => 'Client Secret', 'description' => 'Client Secret', 'maxLength' => 36, 'hideInLists' => true),
-			'username' => array('property' => 'username', 'type' => 'text', 'label' => 'Springshare LibCal Admin Username', 'description' => 'Username', 'default'=>'', 'maxLength' => 36),
-			'password' => array('property' => 'password', 'type' => 'storedPassword', 'label' => 'Springshare LibCal Admin Password', 'description' => 'Password', 'maxLength' => 36, 'hideInLists' => true),
 
 			'libraries' => array(
 				'property' => 'libraries',
