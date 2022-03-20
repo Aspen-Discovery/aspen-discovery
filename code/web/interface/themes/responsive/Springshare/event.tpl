@@ -38,8 +38,8 @@
 		<div class="col-sm-8">
 				<h1>{$recordDriver->getTitle()}</h1>
 				<ul>
-					<li>Date: {$recordDriver->getStartDate()|date_format:"%A, %B %e, %Y"}</li>
-					<li>Time: {$recordDriver->getStartDate()|date_format:"%I:%M %p"} - {$recordDriver->getEndDate()|date_format:"%I:%M %p %Z"}</li>
+					<li>Date: {$recordDriver->getStartDateString()|date_format:"%A %B %e, %Y"}</li>
+					<li>Time: {$recordDriver->getStartDateString()|date_format:"%l:%M %p"} to {$recordDriver->getEndDateString()|date_format:"%l:%M %p %Z"}</li>
 					<li>Branch: {$recordDriver->getBranch()}</li>
 				</ul>
 				<a class="btn btn-primary" href="{$recordDriver->getLinkUrl()}">

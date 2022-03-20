@@ -65,6 +65,10 @@ class BookCoverProcessor{
 			if ($this->getLibraryCalendarCover($this->id)) {
 				return true;
 			}
+        } elseif ($this->type == 'springshare_libcal_event') {
+            if ($this->getSpringshareLibCalCover($this->id)) {
+                return true;
+            }
 		} elseif ($this->type == 'webpage' || $this->type == 'WebPage' || $this->type == 'BasicPage' || $this->type == 'WebResource') {
 			if ($this->getWebPageCover($this->id)) {
 				return true;

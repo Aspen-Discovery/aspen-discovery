@@ -142,7 +142,7 @@ class SpringshareLibCalEventRecordDriver extends IndexRecordDriver
 
 	public function getLinkUrl($absolutePath = false)
 	{
-		return $this->fields['url'];
+        return '/Springshare/'.$this->getId().'/Event';
 	}
 
 	private function getType()
@@ -177,17 +177,28 @@ class SpringshareLibCalEventRecordDriver extends IndexRecordDriver
 	}
 
     // TODO: eliminate dependence on smarty formatting of string return value; return unix timestamp instead like Library Market Library Calendar. James 2022 03 20
-	public function getStartDate()
+	public function getStartDate() : ?object
 	{
 		try {
-            return $this->fields['start_date'];
+            $startDate = new DateTime($this->fields['start_date']);
+            $startDate->setTimezone(new DateTimeZone(date_default_timezone_get()));
+            return $startDate;
 		} catch (Exception $e) {
 			return null;
 		}
 	}
 
     // TODO: eliminate dependence on smarty formatting of string return value; return unix timestamp instead like Library Market Library Calendar. James 2022 03 20
-    public function getEndDate()
+    public function getStartDateString()
+    {
+        try {
+            return $this->fields['start_date'];
+        } catch (Exception $e) {
+            return null;
+        }
+    }
+
+    public function getEndDateString()
     {
         try {
             return $this->fields['end_date'];
