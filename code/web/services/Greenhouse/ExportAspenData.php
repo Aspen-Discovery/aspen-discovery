@@ -117,6 +117,11 @@ class Greenhouse_ExportAspenData extends Admin_Admin
 				'className' => 'MaterialsRequest',
 				'name' => 'Materials Requests'
 			],
+			'block_patron_account_links' => [
+				'classFile' => ROOT_DIR . '/sys/Administration/BlockPatronAccountLink',
+				'className' => 'BlockPatronAccountLink',
+				'name' => 'Block Patron Account Links'
+			],
 		];
 
 		if (isset($_REQUEST['submit'])){
