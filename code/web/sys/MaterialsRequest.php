@@ -308,7 +308,7 @@ class MaterialsRequest extends DataObject
 		}
 		return $okToExport;
 	}
-	
+
 	public function toArray($includeRuntimeProperties = true, $encryptFields = false): array
 	{
 		$return = parent::toArray($includeRuntimeProperties, $encryptFields);

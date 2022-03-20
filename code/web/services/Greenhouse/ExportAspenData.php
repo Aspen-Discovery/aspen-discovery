@@ -252,6 +252,16 @@ class Greenhouse_ExportAspenData extends Admin_Admin
 				'className' => 'WebPageUsage',
 				'name' => 'Web Page Usage'
 			],
+			'web_builder_audiences' => [
+				'classFile' => ROOT_DIR . '/sys/WebBuilder/WebBuilderAudience.php',
+				'className' => 'WebBuilderAudience',
+				'name' => 'Web Builder Audiences'
+			],
+			'web_builder_categories' => [
+				'classFile' => ROOT_DIR . '/sys/WebBuilder/WebBuilderCategory.php',
+				'className' => 'WebBuilderCategory',
+				'name' => 'Web Builder Categories'
+			],
 		];
 
 		if (isset($_REQUEST['submit'])){
