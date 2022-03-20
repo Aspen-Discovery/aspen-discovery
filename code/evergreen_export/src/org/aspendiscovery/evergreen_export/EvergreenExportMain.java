@@ -708,8 +708,10 @@ public class EvergreenExportMain {
 								recordGroupingProcessor.removeExistingRecord(recordIdentifier.getIdentifier());
 							}
 							logEntry.incSkipped();
+							lastRecordProcessed = recordIdentifier.getIdentifier();
 						}else {
 							RecordIdentifier recordIdentifier = recordGroupingProcessor.getPrimaryIdentifierFromMarcRecord(curBib, indexingProfile);
+							lastRecordProcessed = recordIdentifier.getIdentifier();
 							boolean deleteRecord = false;
 							if (recordIdentifier == null) {
 								//logger.debug("Record with control number " + curBib.getControlNumber() + " was suppressed or is eContent");
@@ -718,6 +720,7 @@ public class EvergreenExportMain {
 									logger.warn("Bib did not have control number or identifier");
 								}
 							} else if (!recordIdentifier.isSuppressed()) {
+								lastRecordProcessed = recordIdentifier.getIdentifier();
 								String recordNumber = recordIdentifier.getIdentifier();
 								GroupedWorkIndexer.MarcStatus marcStatus;
 								if (lastIdentifier != null && lastIdentifier.equals(recordIdentifier)) {
@@ -742,18 +745,17 @@ public class EvergreenExportMain {
 									}
 								} else {
 									logEntry.incSkipped();
+									lastRecordProcessed = recordIdentifier.getIdentifier();
 								}
 								if (totalChanges > 0 && totalChanges % 5000 == 0) {
 									getGroupedWorkIndexer().commitChanges();
 								}
 								//Mark that the record was processed
 								recordGroupingProcessor.removeExistingRecord(recordIdentifier.getIdentifier());
-								lastRecordProcessed = recordNumber;
 							} else {
 								//Delete the record since it is suppressed
 								deleteRecord = true;
 							}
-							lastIdentifier = recordIdentifier;
 							indexingProfile.setLastChangeProcessed(numRecordsRead);
 							if (deleteRecord) {
 								RemoveRecordFromWorkResult result = recordGroupingProcessor.removeRecordFromGroupedWork(indexingProfile.getName(), recordIdentifier.getIdentifier());

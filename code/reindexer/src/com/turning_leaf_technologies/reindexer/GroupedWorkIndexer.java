@@ -1764,7 +1764,7 @@ public class GroupedWorkIndexer {
 			getExistingItemsForRecordStmt.setLong(1, recordId);
 			ResultSet getExistingItemsForRecordRS = getExistingItemsForRecordStmt.executeQuery();
 			while (getExistingItemsForRecordRS.next()){
-				existingItems.put(getExistingItemsForRecordRS.getString("itemId"), new SavedItemInfo(getExistingItemsForRecordRS));
+				existingItems.put(getExistingItemsForRecordRS.getString("itemId").toLowerCase(), new SavedItemInfo(getExistingItemsForRecordRS));
 			}
 		}catch (SQLException e){
 			logEntry.incErrors("Error loading existing items for record", e);
@@ -1782,7 +1782,7 @@ public class GroupedWorkIndexer {
 	}
 
 	long saveItemForRecord(long recordId, long variationId, ItemInfo itemInfo, HashMap<String, SavedItemInfo> existingItems) {
-		SavedItemInfo savedItem = existingItems.get(itemInfo.getItemIdentifier());
+		SavedItemInfo savedItem = existingItems.get(itemInfo.getItemIdentifier().toLowerCase());
 		long itemId = -1;
 		if (savedItem != null){
 			itemId = savedItem.id;
@@ -1800,97 +1800,112 @@ public class GroupedWorkIndexer {
 			long locationCodeId = this.getLocationCodeId(itemInfo.getLocationCode());
 			long subLocationId = this.getSubLocationCodeId(itemInfo.getSubLocationCode());
 			long groupedStatusId = this.getStatusId(itemInfo.getGroupedStatus());
+			boolean errorsSavingItem = false;
 			if (savedItem == null) {
-				addItemForRecordStmt.setLong(1, recordId);
-				addItemForRecordStmt.setLong(2, variationId);
-				addItemForRecordStmt.setString(3, itemInfo.getItemIdentifier());
-				addItemForRecordStmt.setLong(4, shelfLocationId);
-				addItemForRecordStmt.setLong(5, callNumberId);
-				addItemForRecordStmt.setLong(6, sortableCallNumberId);
-				addItemForRecordStmt.setLong(7, itemInfo.getNumCopies());
-				addItemForRecordStmt.setBoolean(8, itemInfo.isOrderItem());
-				addItemForRecordStmt.setLong(9, statusId);
-				if (itemInfo.getDateAdded() == null) {
-					addItemForRecordStmt.setNull(10, Types.BIGINT);
-				} else {
-					addItemForRecordStmt.setLong(10, itemInfo.getDateAdded().getTime() / 1000);
-				}
-				addItemForRecordStmt.setLong(11, locationCodeId);
-				addItemForRecordStmt.setLong(12, subLocationId);
-				if (itemInfo.getLastCheckinDate() == null) {
-					addItemForRecordStmt.setNull(13, Types.INTEGER);
-				} else {
-					addItemForRecordStmt.setLong(13, itemInfo.getLastCheckinDate().getTime() / 1000);
-				}
-				addItemForRecordStmt.setLong(14, groupedStatusId);
-				addItemForRecordStmt.setBoolean(15, itemInfo.isAvailable());
-				addItemForRecordStmt.setBoolean(16, itemInfo.isHoldable());
-				addItemForRecordStmt.setBoolean(17, itemInfo.isInLibraryUseOnly());
-				addItemForRecordStmt.setString(18, itemInfo.getLocationOwnedScopes());
-				addItemForRecordStmt.setString(19, itemInfo.getLibraryOwnedScopes());
-				addItemForRecordStmt.setString(20, itemInfo.getRecordsIncludedScopes());
-				addItemForRecordStmt.executeUpdate();
-				ResultSet addItemForWorkRS = addItemForRecordStmt.getGeneratedKeys();
-				if (addItemForWorkRS.next()) {
-					itemId = addItemForWorkRS.getLong(1);
-				}
-				SavedItemInfo savedItemInfo = new SavedItemInfo(itemId, recordId, variationId, itemInfo.getItemIdentifier(), shelfLocationId, callNumberId, sortableCallNumberId, itemInfo.getNumCopies(),
-						itemInfo.isOrderItem(), statusId, itemInfo.getDateAdded(), locationCodeId, subLocationId, itemInfo.getLastCheckinDate(), groupedStatusId, itemInfo.isAvailable(),
-						itemInfo.isHoldable(), itemInfo.isInLibraryUseOnly(), itemInfo.getLocationOwnedScopes(), itemInfo.getLibraryOwnedScopes(), itemInfo.getRecordsIncludedScopes());
+				try {
+					addItemForRecordStmt.setLong(1, recordId);
+					addItemForRecordStmt.setLong(2, variationId);
+					addItemForRecordStmt.setString(3, itemInfo.getItemIdentifier());
+					addItemForRecordStmt.setLong(4, shelfLocationId);
+					addItemForRecordStmt.setLong(5, callNumberId);
+					addItemForRecordStmt.setLong(6, sortableCallNumberId);
+					addItemForRecordStmt.setLong(7, itemInfo.getNumCopies());
+					addItemForRecordStmt.setBoolean(8, itemInfo.isOrderItem());
+					addItemForRecordStmt.setLong(9, statusId);
+					if (itemInfo.getDateAdded() == null) {
+						addItemForRecordStmt.setNull(10, Types.BIGINT);
+					} else {
+						addItemForRecordStmt.setLong(10, itemInfo.getDateAdded().getTime() / 1000);
+					}
+					addItemForRecordStmt.setLong(11, locationCodeId);
+					addItemForRecordStmt.setLong(12, subLocationId);
+					if (itemInfo.getLastCheckinDate() == null) {
+						addItemForRecordStmt.setNull(13, Types.INTEGER);
+					} else {
+						addItemForRecordStmt.setLong(13, itemInfo.getLastCheckinDate().getTime() / 1000);
+					}
+					addItemForRecordStmt.setLong(14, groupedStatusId);
+					addItemForRecordStmt.setBoolean(15, itemInfo.isAvailable());
+					addItemForRecordStmt.setBoolean(16, itemInfo.isHoldable());
+					addItemForRecordStmt.setBoolean(17, itemInfo.isInLibraryUseOnly());
+					addItemForRecordStmt.setString(18, itemInfo.getLocationOwnedScopes());
+					addItemForRecordStmt.setString(19, itemInfo.getLibraryOwnedScopes());
+					addItemForRecordStmt.setString(20, itemInfo.getRecordsIncludedScopes());
+					addItemForRecordStmt.executeUpdate();
+					ResultSet addItemForWorkRS = addItemForRecordStmt.getGeneratedKeys();
+					if (addItemForWorkRS.next()) {
+						itemId = addItemForWorkRS.getLong(1);
+					}
+					SavedItemInfo savedItemInfo = new SavedItemInfo(itemId, recordId, variationId, itemInfo.getItemIdentifier(), shelfLocationId, callNumberId, sortableCallNumberId, itemInfo.getNumCopies(),
+							itemInfo.isOrderItem(), statusId, itemInfo.getDateAdded(), locationCodeId, subLocationId, itemInfo.getLastCheckinDate(), groupedStatusId, itemInfo.isAvailable(),
+							itemInfo.isHoldable(), itemInfo.isInLibraryUseOnly(), itemInfo.getLocationOwnedScopes(), itemInfo.getLibraryOwnedScopes(), itemInfo.getRecordsIncludedScopes());
 
-				existingItems.put(itemInfo.getItemIdentifier(), savedItemInfo);
+					existingItems.put(itemInfo.getItemIdentifier().toLowerCase(), savedItemInfo);
+				}catch (SQLException e){
+					logEntry.incErrors("Error adding item " + itemId + " for record " + recordId, e);
+					errorsSavingItem = true;
+				}
 			}else if (savedItem.hasChanged(recordId, variationId, itemInfo.getItemIdentifier(), shelfLocationId, callNumberId, sortableCallNumberId, itemInfo.getNumCopies(),
 					itemInfo.isOrderItem(), statusId, itemInfo.getDateAdded(), locationCodeId, subLocationId, itemInfo.getLastCheckinDate(), groupedStatusId, itemInfo.isAvailable(),
 					itemInfo.isHoldable(), itemInfo.isInLibraryUseOnly(), itemInfo.getLocationOwnedScopes(), itemInfo.getLibraryOwnedScopes(), itemInfo.getRecordsIncludedScopes())){
-				updateItemForRecordStmt.setLong(1, variationId);
-				updateItemForRecordStmt.setLong(2, shelfLocationId);
-				updateItemForRecordStmt.setLong(3, callNumberId);
-				updateItemForRecordStmt.setLong(4, sortableCallNumberId);
-				updateItemForRecordStmt.setLong(5, itemInfo.getNumCopies());
-				updateItemForRecordStmt.setBoolean(6, itemInfo.isOrderItem());
-				updateItemForRecordStmt.setLong(7, statusId);
-				if (itemInfo.getDateAdded() == null) {
-					updateItemForRecordStmt.setNull(8, Types.BIGINT);
-				} else {
-					updateItemForRecordStmt.setLong(8, itemInfo.getDateAdded().getTime() / 1000);
-				}
-				updateItemForRecordStmt.setLong(9, locationCodeId);
-				updateItemForRecordStmt.setLong(10, subLocationId);
-				if (itemInfo.getLastCheckinDate() == null) {
-					updateItemForRecordStmt.setNull(11, Types.INTEGER);
-				} else {
-					updateItemForRecordStmt.setLong(11, itemInfo.getLastCheckinDate().getTime() / 1000);
-				}
-				updateItemForRecordStmt.setLong(12, groupedStatusId);
-				updateItemForRecordStmt.setBoolean(13, itemInfo.isAvailable());
-				updateItemForRecordStmt.setBoolean(14, itemInfo.isHoldable());
-				updateItemForRecordStmt.setBoolean(15, itemInfo.isInLibraryUseOnly());
-				updateItemForRecordStmt.setString(16, itemInfo.getLocationOwnedScopes());
-				updateItemForRecordStmt.setString(17, itemInfo.getLibraryOwnedScopes());
-				updateItemForRecordStmt.setString(18, itemInfo.getRecordsIncludedScopes());
-				updateItemForRecordStmt.setLong(19, itemId);
-				updateItemForRecordStmt.executeUpdate();
-			}
-
-			if (itemInfo.geteContentUrl() != null){
-				addItemUrlStmt.setLong(1, itemId);
-				addItemUrlStmt.setLong(2, -1);
-				addItemUrlStmt.setString(3, itemInfo.geteContentUrl());
-				addItemUrlStmt.executeUpdate();
-
-				//Check to see if we need to save local urls
-				for (ScopingInfo scopingInfo : itemInfo.getScopingInfo().values()) {
-					String localUrl = scopingInfo.getLocalUrl();
-					if (localUrl != null && localUrl.length() > 0 && !localUrl.equals(itemInfo.geteContentUrl())) {
-						addItemUrlStmt.setLong(1, itemId);
-						addItemUrlStmt.setLong(2, scopingInfo.getScope().getId());
-						addItemUrlStmt.setString(3, localUrl);
-						addItemUrlStmt.executeUpdate();
+				try {
+					updateItemForRecordStmt.setLong(1, variationId);
+					updateItemForRecordStmt.setLong(2, shelfLocationId);
+					updateItemForRecordStmt.setLong(3, callNumberId);
+					updateItemForRecordStmt.setLong(4, sortableCallNumberId);
+					updateItemForRecordStmt.setLong(5, itemInfo.getNumCopies());
+					updateItemForRecordStmt.setBoolean(6, itemInfo.isOrderItem());
+					updateItemForRecordStmt.setLong(7, statusId);
+					if (itemInfo.getDateAdded() == null) {
+						updateItemForRecordStmt.setNull(8, Types.BIGINT);
+					} else {
+						updateItemForRecordStmt.setLong(8, itemInfo.getDateAdded().getTime() / 1000);
 					}
+					updateItemForRecordStmt.setLong(9, locationCodeId);
+					updateItemForRecordStmt.setLong(10, subLocationId);
+					if (itemInfo.getLastCheckinDate() == null) {
+						updateItemForRecordStmt.setNull(11, Types.INTEGER);
+					} else {
+						updateItemForRecordStmt.setLong(11, itemInfo.getLastCheckinDate().getTime() / 1000);
+					}
+					updateItemForRecordStmt.setLong(12, groupedStatusId);
+					updateItemForRecordStmt.setBoolean(13, itemInfo.isAvailable());
+					updateItemForRecordStmt.setBoolean(14, itemInfo.isHoldable());
+					updateItemForRecordStmt.setBoolean(15, itemInfo.isInLibraryUseOnly());
+					updateItemForRecordStmt.setString(16, itemInfo.getLocationOwnedScopes());
+					updateItemForRecordStmt.setString(17, itemInfo.getLibraryOwnedScopes());
+					updateItemForRecordStmt.setString(18, itemInfo.getRecordsIncludedScopes());
+					updateItemForRecordStmt.setLong(19, itemId);
+					updateItemForRecordStmt.executeUpdate();
+				}catch (SQLException e){
+					logEntry.incErrors("Error updating item " + itemId + " record " + recordId);
+					errorsSavingItem = true;
 				}
 			}
 
-		} catch (SQLException e) {
+			if (itemInfo.geteContentUrl() != null && ! errorsSavingItem){
+				try {
+					addItemUrlStmt.setLong(1, itemId);
+					addItemUrlStmt.setLong(2, -1);
+					addItemUrlStmt.setString(3, itemInfo.geteContentUrl());
+					addItemUrlStmt.executeUpdate();
+
+					//Check to see if we need to save local urls
+					for (ScopingInfo scopingInfo : itemInfo.getScopingInfo().values()) {
+						String localUrl = scopingInfo.getLocalUrl();
+						if (localUrl != null && localUrl.length() > 0 && !localUrl.equals(itemInfo.geteContentUrl())) {
+							addItemUrlStmt.setLong(1, itemId);
+							addItemUrlStmt.setLong(2, scopingInfo.getScope().getId());
+							addItemUrlStmt.setString(3, localUrl);
+							addItemUrlStmt.executeUpdate();
+						}
+					}
+				}catch (SQLException e){
+					logEntry.incErrors("Error adding url for item " + itemId, e);
+				}
+			}
+
+		} catch (Exception e) {
 			logEntry.incErrors("Error saving grouped work item", e);
 		}
 
