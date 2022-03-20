@@ -255,6 +255,8 @@ class Greenhouse_ExportAspenData extends Admin_Admin
 		];
 
 		if (isset($_REQUEST['submit'])){
+			set_time_limit(0);
+			ini_set('memory_limit','4G');
 			$submissionResults = [
 				'success' => false,
 				'message' => 'Nothing was exported'
