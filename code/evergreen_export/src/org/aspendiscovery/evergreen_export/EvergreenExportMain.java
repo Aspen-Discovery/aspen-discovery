@@ -580,7 +580,7 @@ public class EvergreenExportMain {
 		//Process CSV Files
 		File[] exportedCsvFiles = marcDeltaPath.listFiles((dir, name) -> name.endsWith("csv"));
 		if (exportedCsvFiles != null && exportedCsvFiles.length > 0) {
-			totalChanges += updateItemsUsingCsvFile(exportedCsvFiles, dbConn);
+			totalChanges += updateItemsUsingCsvFile(exportedCsvFiles, lastUpdateFromMarc, dbConn);
 		}
 
 		//Process ID Files
@@ -654,8 +654,9 @@ public class EvergreenExportMain {
 		return numUpdates;
 	}
 
-	private static int updateItemsUsingCsvFile(File[] exportedCsvFiles, Connection dbConn) {
+	private static int updateItemsUsingCsvFile(File[] exportedCsvFiles, long lastUpdateFromMarc, Connection dbConn) {
 		int numUpdates = 0;
+		HashSet<String> bibsToUpdate = new HashSet<>();
 		for(File csvFile : exportedCsvFiles){
 			try {
 				@SuppressWarnings("deprecation")
@@ -663,7 +664,11 @@ public class EvergreenExportMain {
 				String[] rowData = reader.readNext();
 				while (rowData != null){
 					//Currently, columns are: copy id, status, bib id, copy location/current location, deleted
-					//We need the barcode of the item or we need copy id exported as part of the MARC
+					//We will pull the full bib from super cat to get current status.
+					if (rowData.length >= 3) {
+						String bibNumber = rowData[2];
+						bibsToUpdate.add(bibNumber);
+					}
 					rowData = reader.readNext();
 				}
 				reader.close();
@@ -672,6 +677,14 @@ public class EvergreenExportMain {
 				logEntry.incErrors("Error reading CSV file " + csvFile);
 			}
 		}
+		logEntry.addNote("Processing " + bibsToUpdate.size() + " bibs that were marked as changed in the CSV files");
+		logEntry.saveResults();
+		MarcFactory marcFactory = MarcFactory.newInstance();
+		for (String bibToUpdate : bibsToUpdate){
+			numUpdates += updateBibFromEvergreen(bibToUpdate, marcFactory, lastUpdateFromMarc, true);
+		}
+		logEntry.addNote("Finished processing bibs from CSV");
+		logEntry.saveResults();
 		return numUpdates;
 	}
 
