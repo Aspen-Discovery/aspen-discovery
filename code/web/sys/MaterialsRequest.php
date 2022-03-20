@@ -301,6 +301,14 @@ class MaterialsRequest extends DataObject
 		}
 	}
 
+	public function okToExport(array $selectedFilters) : bool{
+		$okToExport = parent::okToExport($selectedFilters);
+		if (in_array($this->libraryId, $selectedFilters['libraries'])){
+			$okToExport = true;
+		}
+		return $okToExport;
+	}
+	
 	public function toArray($includeRuntimeProperties = true, $encryptFields = false): array
 	{
 		$return = parent::toArray($includeRuntimeProperties, $encryptFields);
