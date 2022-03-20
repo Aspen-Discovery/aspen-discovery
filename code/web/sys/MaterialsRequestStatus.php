@@ -48,7 +48,7 @@ class MaterialsRequestStatus extends DataObject {
 
 	public function okToExport(array $selectedFilters) : bool{
 		$okToExport = parent::okToExport($selectedFilters);
-		if (array_key_exists($this->libraryId, $selectedFilters['libraries'])){
+		if (in_array($this->libraryId, $selectedFilters['libraries'])){
 			$okToExport = true;
 		}
 		return $okToExport;
