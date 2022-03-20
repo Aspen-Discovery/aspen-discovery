@@ -19,7 +19,7 @@ class Springshare_Event extends Action {
         */
 
 		// Display Page
-		$this->display('event.tpl', $this->recordDriver->getTitle(), 'Search/home-sidebar.tpl', false);
+		$this->display('event.tpl', $this->recordDriver->getTitle(), null, false);
 	}
 
 	function getBreadcrumbs() : array

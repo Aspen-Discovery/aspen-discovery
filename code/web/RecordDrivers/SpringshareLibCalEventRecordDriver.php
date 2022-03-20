@@ -93,16 +93,23 @@ class SpringshareLibCalEventRecordDriver extends IndexRecordDriver
 		return 'SpringshareLibCal'; // TODO: verify module name 2022 03 16 James
 	}
 
+    public function getMoreDetailsOptions()
+    {
+        global $interface;
+        $moreDetailsOptions = new StdClass();
+        if ($interface->getVariable('showStaffView')){
+            $moreDetailsOptions['staff'] = array(
+                'label' => 'Staff View',
+                'body' => $interface->fetch($this->getStaffView())
+            );
+        }
+        return $moreDetailsOptions;
+    }
+
 	public function getStaffView()
 	{
-		// TODO: Implement getStaffView() method 2022 03 16 James
         global $interface;
-        //$this->getGroupedWorkDriver()->assignGroupedWorkStaffView();
-
-        $interface->assign('bookcoverInfo', $this->getBookcoverInfo());
-        $springshareLibCalRawMetadata = $this->getEventObject()->getDecodedData();
-        $interface->assign('springshareLibCalExtract', $springshareLibCalRawMetadata);
-        return 'RecordDrivers/Events/staff-view.tpl';
+        return $this->getEventObject()->getDecodedData();
 	}
 
 	public function getDescription()
@@ -169,19 +176,27 @@ class SpringshareLibCalEventRecordDriver extends IndexRecordDriver
 		return $this->fields['identifier'];
 	}
 
+    // TODO: eliminate dependence on smarty formatting of string return value; return unix timestamp instead like Library Market Library Calendar. James 2022 03 20
 	public function getStartDate()
 	{
 		try {
-			//Need to specify timezone since we start as a timstamp
-			$startDate = new DateTime($this->fields['start_date']);
-			$startDate->setTimezone(new DateTimeZone(date_default_timezone_get()));
-			return $startDate;
+            return $this->fields['start_date'];
 		} catch (Exception $e) {
 			return null;
 		}
 	}
 
-	public function getSpotlightResult(CollectionSpotlight $collectionSpotlight, string $index){
+    // TODO: eliminate dependence on smarty formatting of string return value; return unix timestamp instead like Library Market Library Calendar. James 2022 03 20
+    public function getEndDate()
+    {
+        try {
+            return $this->fields['end_date'];
+        } catch (Exception $e) {
+            return null;
+        }
+    }
+
+    public function getSpotlightResult(CollectionSpotlight $collectionSpotlight, string $index){
 		$result = parent::getSpotlightResult($collectionSpotlight, $index);
 		if ($collectionSpotlight->style == 'text-list'){
 			global $interface;
@@ -199,5 +214,18 @@ class SpringshareLibCalEventRecordDriver extends IndexRecordDriver
 
     public function getCategories() {
         return $this->fields['program_type'];
+    }
+
+    public function getBranch() {
+        return implode(", ", $this->fields['branch']);
+    }
+
+    public function isRegistrationRequired(): bool
+    {
+        if ($this->fields['registration_required'] == "Yes") {
+            return true;
+        } else {
+            return false;
+        }
     }
 }
