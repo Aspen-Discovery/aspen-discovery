@@ -55,4 +55,13 @@ class AspenUsage extends DataObject
 			'searchesWithErrors'
 		];
 	}
+
+	public function okToExport(array $selectedFilters): bool
+	{
+		$okToExport = parent::okToExport($selectedFilters);
+		if (in_array($this->instance, $selectedFilters['instances'])){
+			$okToExport = true;
+		}
+		return $okToExport;
+	}
 }
