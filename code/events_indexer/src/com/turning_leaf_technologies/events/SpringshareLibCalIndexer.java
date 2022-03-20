@@ -40,8 +40,6 @@ class SpringshareLibCalIndexer {
 	private String calId;
 	private String clientId;
 	private String clientSecret;
-	private String username;
-	private String password;
 	private Connection aspenConn;
 	private EventsIndexerLogEntry logEntry;
 	private HashMap<String, SpringshareLibCalEvent> existingEvents = new HashMap<>();
@@ -55,7 +53,7 @@ class SpringshareLibCalIndexer {
 	//TODO: Update full reload based on settings
 	private boolean doFullReload = true;
 
-	SpringshareLibCalIndexer(long settingsId, String name, String baseUrl, String calId, String clientId, String clientSecret, String username, String password, ConcurrentUpdateSolrClient solrUpdateServer, Connection aspenConn, Logger logger) {
+	SpringshareLibCalIndexer(long settingsId, String name, String baseUrl, String calId, String clientId, String clientSecret, ConcurrentUpdateSolrClient solrUpdateServer, Connection aspenConn, Logger logger) {
 		this.settingsId = settingsId;
 		this.name = name;
 		this.baseUrl = baseUrl;
@@ -65,8 +63,6 @@ class SpringshareLibCalIndexer {
 		this.calId = calId;
 		this.clientId = clientId;
 		this.clientSecret = clientSecret;
-		this.username = username;
-		this.password = password;
 		this.aspenConn = aspenConn;
 		this.solrUpdateServer = solrUpdateServer;
 
