@@ -270,6 +270,7 @@ class Greenhouse_ImportAspenData extends Admin_Admin
 
 		if (isset($_REQUEST['submit'])){
 			set_time_limit(0);
+			ini_set('memory_limit','4G');
 
 			$importResults = [
 				'success' => false,
