@@ -28,6 +28,11 @@ class AspenUsage extends DataObject
 	public $timedOutSearchesWithHighLoad;
 	public $searchesWithErrors;
 
+	public function getUniquenessFields(): array
+	{
+		return ['instance', 'year', 'month'];
+	}
+
 	public function getNumericColumnNames() : array
 	{
 		return [

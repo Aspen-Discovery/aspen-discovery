@@ -85,6 +85,27 @@
 
 				<div class="row">
 					<div class="col-xs-12">
+						<div style="margin-bottom: .5em">
+							<p class="h2" style="display: inline; vertical-align: top; margin-right: .25em">{translate text="Export Data for These Instances" isAdminFacing=true}</p>
+						</div>
+						<div class="form-group checkbox">
+							<label for="selectAllInstances">
+								<input type="checkbox" name="selectAllInstances" id="selectAllInstances" onchange="AspenDiscovery.toggleCheckboxes('.instances', '#selectAllInstances');">
+								<strong>{translate text="Select All" isAdminFacing=true}</strong>
+							</label>
+						</div>
+						<div class="checkbox">
+                            {foreach from=$instances item=propertyName key=propertyValue}
+								<label for="instances_{$propertyValue|escape:css}">
+									<input class="instances" id="instances_{$propertyValue|escape:css}" name='instances[]' type="checkbox" value='{$propertyValue}'> {translate text=$propertyName isAdminFacing=true}<br>
+								</label>
+                            {/foreach}
+						</div>
+					</div>
+				</div>
+
+				<div class="row">
+					<div class="col-xs-12">
 						<div class="form-group">
 							<label for="prettyPrint">
 								<input class="prettyPrint" id="prettyPrint" name='prettyPrint' type="checkbox"> {translate text="Pretty Print (for testing only, will not import)" isAdminFacing=true}<br>

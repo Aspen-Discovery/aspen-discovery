@@ -339,7 +339,11 @@ abstract class DataObject
 			}
 		}
 		$insertQuery .= '(' . $propertyNames . ') VALUES (' . $propertyValues . ');';
-		$response = $aspen_db->exec($insertQuery);
+		try {
+			$response = $aspen_db->exec($insertQuery);
+		}catch (PDOException $e){
+			return new AspenError("Error inserting " . get_class($this) . "<br/>\r\n" . $e->getMessage(), $e->getTrace());
+		}
 		global $timer;
 		if (IPAddress::logAllQueries()){
 			global $logger;
@@ -966,6 +970,12 @@ abstract class DataObject
 		}
 	}
 
+	/**
+	 * @param $jsonData
+	 * @param $mappings
+	 * @param $overrideExisting
+	 * @return AspenError|bool
+	 */
 	public function loadFromJSON($jsonData, $mappings, $overrideExisting = 'keepExisting'){
 		$this->loadObjectPropertiesFromJSON($jsonData, $mappings);
 
@@ -979,18 +989,28 @@ abstract class DataObject
 		if ($overrideExisting == 'keepExisting'){
 			//Only update if we don't have an existing value
 			if (empty($this->getPrimaryKeyObject)){
-				$this->update();
+				$result = $this->update();
+				if ($result instanceof AspenError){
+					return $result;
+				}
 			}
 		}else{
-			$this->update();
+			$result = $this->update();
+			if ($result instanceof AspenError){
+				return $result;
+			}
 		}
 
 		//Load any links (do after loading the existing object id to handle nested objects)
 		if (array_key_exists('links', $jsonData)) {
 			if ($this->loadRelatedLinksFromJSON($jsonData['links'], $mappings, $overrideExisting)) {
-				$this->update();
+				$result = $this->update();
+				if ($result instanceof AspenError){
+					return $result;
+				}
 			}
 		}
+		return true;
 	}
 
 	/**
