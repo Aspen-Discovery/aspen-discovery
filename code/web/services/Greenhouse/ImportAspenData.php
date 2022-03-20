@@ -432,6 +432,8 @@ class Greenhouse_ImportAspenData extends Admin_Admin
 			if ($importResult instanceof AspenError) {
 				$message .= "<br/>Error loading $className " . $importResult->getMessage();
 			}
+			$object->__destruct();
+			$object = null;
 
 			$numObjectsImported++;
 			$objectLine = fgets($objectHnd);
