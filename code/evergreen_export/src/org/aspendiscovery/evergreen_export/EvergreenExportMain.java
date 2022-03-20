@@ -1,8 +1,10 @@
 package org.aspendiscovery.evergreen_export;
 
+import com.opencsv.CSVReader;
 import com.turning_leaf_technologies.config.ConfigUtil;
 import com.turning_leaf_technologies.file.JarUtil;
 import com.turning_leaf_technologies.grouping.MarcRecordGrouper;
+import com.turning_leaf_technologies.grouping.RecordGroupingProcessor;
 import com.turning_leaf_technologies.grouping.RemoveRecordFromWorkResult;
 import com.turning_leaf_technologies.indexing.IlsExtractLogEntry;
 import com.turning_leaf_technologies.indexing.IndexingProfile;
@@ -575,11 +577,102 @@ public class EvergreenExportMain {
 			totalChanges = updateRecordsUsingMarcExtract(filesToProcess, hasFullExportFile, fullExportFile, dbConn);
 		}
 
-		//TODO: Process CSV Files
+		//Process CSV Files
+		File[] exportedCsvFiles = marcDeltaPath.listFiles((dir, name) -> name.endsWith("csv"));
+		if (exportedCsvFiles != null && exportedCsvFiles.length > 0) {
+			totalChanges += updateItemsUsingCsvFile(exportedCsvFiles, dbConn);
+		}
 
-		//TODO: Process ID Files
+		//Process ID Files
+		File[] exportedIdFiles = marcDeltaPath.listFiles((dir, name) -> name.endsWith("ids"));
+		if (exportedIdFiles != null && exportedIdFiles.length > 0){
+			//TODO: If we have multiple files we just need to process the last one.
+			totalChanges += updateItemsBasedOnIds(exportedIdFiles, lastUpdateFromMarc, dbConn);
+		}
 
 		return totalChanges;
+	}
+
+	private static int updateItemsBasedOnIds(File[] exportedIdFiles, long lastUpdateFromMarc, Connection dbConn) {
+		int numUpdates = 0;
+		for(File idsFile : exportedIdFiles){
+			logEntry.addNote("Processing ids file " + idsFile);
+			try {
+				//Get all existing ids in the database
+				PreparedStatement getAllExistingRecordsStmt = dbConn.prepareStatement("SELECT ilsId, deleted FROM ils_records where source = ?;");
+				getAllExistingRecordsStmt.setString(1, indexingProfile.getName());
+				ResultSet existingRecordsRS = getAllExistingRecordsStmt.executeQuery();
+				HashMap<String, Boolean> existingRecords = new HashMap<>();
+				while (existingRecordsRS.next()){
+					existingRecords.put(existingRecordsRS.getString("ilsId"), existingRecordsRS.getBoolean("deleted"));
+				}
+
+				//Read the file to see what has been added or deleted
+				BufferedReader reader = new BufferedReader(new FileReader(idsFile));
+				String id = reader.readLine();
+				HashSet<String> newAndRestoredIds = new HashSet<>();
+				while (id != null){
+					if (existingRecords.containsKey(id)){
+						if (existingRecords.get(id) == Boolean.TRUE){
+							//This was previously deleted
+							newAndRestoredIds.add(id);
+						}
+						existingRecords.remove(id);
+					}else{
+						newAndRestoredIds.add(id);
+					}
+					id = reader.readLine();
+				}
+				logEntry.addNote("There are " + newAndRestoredIds.size() + " new and restored ids and " + existingRecords.size() + " deleted ids");
+				if (newAndRestoredIds.size() <= 1000){
+					MarcFactory marcFactory = MarcFactory.newInstance();
+					for (String idToProcess : newAndRestoredIds) {
+						updateBibFromEvergreen(idToProcess, marcFactory, lastUpdateFromMarc, true);
+					}
+				}else {
+					logEntry.incErrors("There were too many ids to process using the API. Skipping this file");
+				}
+				GroupedWorkIndexer indexer = getGroupedWorkIndexer();
+				RecordGroupingProcessor recordGroupingProcessor = getRecordGroupingProcessor();
+				for (String deletedRecordId : existingRecords.keySet()){
+					RemoveRecordFromWorkResult result = recordGroupingProcessor.removeRecordFromGroupedWork(indexingProfile.getName(), deletedRecordId);
+					if (result.reindexWork){
+						indexer.processGroupedWork(result.permanentId);
+					}else if (result.deleteWork){
+						//Delete the work from solr and the database
+						indexer.deleteRecord(result.permanentId);
+					}
+					existingRecords.remove(deletedRecordId);
+				}
+
+				//After the file has been processed, delete it
+				idsFile.deleteOnExit();
+			}catch (Exception e){
+				logEntry.incErrors("Error reading IDs file " + idsFile);
+			}
+		}
+		return numUpdates;
+	}
+
+	private static int updateItemsUsingCsvFile(File[] exportedCsvFiles, Connection dbConn) {
+		int numUpdates = 0;
+		for(File csvFile : exportedCsvFiles){
+			try {
+				@SuppressWarnings("deprecation")
+				CSVReader reader = new CSVReader(new FileReader(csvFile), '|');
+				String[] rowData = reader.readNext();
+				while (rowData != null){
+					//Currently, columns are: copy id, status, bib id, copy location/current location, deleted
+					//We need the barcode of the item or we need copy id exported as part of the MARC
+					rowData = reader.readNext();
+				}
+				reader.close();
+				//TODO: delete the file after it has been processed.
+			}catch (Exception e){
+				logEntry.incErrors("Error reading CSV file " + csvFile);
+			}
+		}
+		return numUpdates;
 	}
 
 	/**
@@ -785,9 +878,17 @@ public class EvergreenExportMain {
 					logEntry.addNote("Updated " + numRecordsRead + " records");
 					logEntry.saveResults();
 				}
+				//After the file has been processed, delete it
+				curBibFile.deleteOnExit();
 			} catch (Exception e) {
 				logEntry.incErrors("Error loading Evergreen bibs on record " + numRecordsRead + " in profile " + indexingProfile.getName() + " the last record processed was " + lastRecordProcessed + " file " + curBibFile.getAbsolutePath(), e);
+				//Since we had errors, rename it with a .err extension
+				if (!curBibFile.renameTo(new File(curBibFile.toString() + ".err"))){
+					logEntry.incErrors("Could not rename file to error file "+ curBibFile.toString() + ".err");
+				}
 			}
+
+
 		}
 
 		//Loop through remaining records and delete them
@@ -845,7 +946,7 @@ public class EvergreenExportMain {
 	private static int updateBibFromEvergreen(String bibNumber, MarcFactory marcFactory, long lastExtractTime, boolean incrementProductsInLog) {
 		//Get the bib record
 		//noinspection SpellCheckingInspection
-		String getBibUrl = baseUrl + "/opac/extras/supercat/retrieve/marcxml-full/" + bibNumber;
+		String getBibUrl = baseUrl + "/opac/extras/supercat/retrieve/marcxml-full/record/" + bibNumber;
 		ProcessBibRequestResponse response = processGetBibsRequest(getBibUrl, marcFactory, lastExtractTime, incrementProductsInLog);
 		return response.numChanges;
 	}
@@ -932,6 +1033,9 @@ public class EvergreenExportMain {
 											NodeList volumes = curVolumeListElement.getElementsByTagName("volume");
 											for (int k = 0; k < volumes.getLength(); k++) {
 												Element curVolume = (Element) volumes.item(k);
+												//Get the call number
+												String callNumber = curVolume.getAttribute("label");
+
 												//Get all the copies within each volume
 												NodeList copies = curVolume.getElementsByTagName("copies");
 												if (copies.getLength() > 0) {
@@ -944,12 +1048,16 @@ public class EvergreenExportMain {
 															continue;
 														}
 														DataField curItemField = marcFactory.newDataField(indexingProfile.getItemTag(), ' ', ' ');
-														String itemId = curCopy.getAttribute("id");
-														itemId = itemId.substring(itemId.lastIndexOf('/') + 1, itemId.length());
-														curItemField.addSubfield(marcFactory.newSubfield(indexingProfile.getItemRecordNumberSubfield(), itemId));
-														String createDate = curCopy.getAttribute("create_date");
-														createDate = createDate.substring(0, createDate.indexOf("T"));
-														curItemField.addSubfield(marcFactory.newSubfield(indexingProfile.getDateCreatedSubfield(), createDate));
+
+														//item id is not part of the regular MARC export, ignore for now.
+														//String itemId = curCopy.getAttribute("id");
+														//itemId = itemId.substring(itemId.lastIndexOf('/') + 1, itemId.length());
+														//curItemField.addSubfield(marcFactory.newSubfield(indexingProfile.getItemRecordNumberSubfield(), itemId));
+
+														//Created date is not part of regular mar export, ignore for now
+														//String createDate = curCopy.getAttribute("create_date");
+														//createDate = createDate.substring(0, createDate.indexOf("T"));
+														//curItemField.addSubfield(marcFactory.newSubfield(indexingProfile.getDateCreatedSubfield(), createDate));
 														//String holdable = curCopy.getAttribute("holdable");
 														//TODO: Figure out where the holdable flag should go
 														//TODO: Do we need to load circulate, ref, or deposit flags?
@@ -957,6 +1065,14 @@ public class EvergreenExportMain {
 														curItemField.addSubfield(marcFactory.newSubfield(indexingProfile.getBarcodeSubfield(), barcode));
 														String itemType = curCopy.getAttribute("circ_modifier");
 														curItemField.addSubfield(marcFactory.newSubfield(indexingProfile.getITypeSubfield(), itemType));
+
+														curItemField.addSubfield(marcFactory.newSubfield(indexingProfile.getCallNumberSubfield(), callNumber));
+
+														String price = curCopy.getAttribute("price");
+														curItemField.addSubfield(marcFactory.newSubfield('y', price));
+
+														String copyNumber = curCopy.getAttribute("copy_number");
+														curItemField.addSubfield(marcFactory.newSubfield('t', copyNumber));
 
 														for (int m = 0; m < curCopy.getChildNodes().getLength(); m++) {
 															Node curCopySubNode = curCopy.getChildNodes().item(m);
@@ -1015,6 +1131,10 @@ public class EvergreenExportMain {
 								//Reindex the record
 								getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
 							}
+						}
+						if (logEntry.getNumProducts() > 0 && logEntry.getNumProducts() % 250 == 0) {
+							getGroupedWorkIndexer().commitChanges();
+							logEntry.saveResults();
 						}
 						response.numChanges++;
 					}

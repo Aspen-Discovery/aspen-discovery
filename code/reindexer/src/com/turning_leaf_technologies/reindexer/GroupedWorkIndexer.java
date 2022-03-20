@@ -528,7 +528,7 @@ public class GroupedWorkIndexer {
 			//With this commit, we get errors in the log "Previous SolrRequestInfo was not closed!"
 			//Allow auto commit functionality to handle this
 			totalRecordsHandled++;
-			if (totalRecordsHandled % 25 == 0) {
+			if (totalRecordsHandled % 1000 == 0) {
 				updateServer.commit(false, false, true);
 			}
 
@@ -725,7 +725,7 @@ public class GroupedWorkIndexer {
 			}
 			getGroupedWorkInfoRS.close();
 			totalRecordsHandled++;
-			if (totalRecordsHandled % 25 == 0) {
+			if (totalRecordsHandled % 1000 == 0) {
 				updateServer.commit(false, false, true);
 			}
 		} catch (Exception e) {
