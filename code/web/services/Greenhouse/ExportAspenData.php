@@ -173,13 +173,13 @@ class Greenhouse_ExportAspenData extends Admin_Admin
 				'name' => 'User Hoopla Usage'
 			],
 			'ils_record_usage' => [
-				'classFile' => ROOT_DIR . '/sys/ILS/IlsRecordUsage.php',
-				'className' => 'IlsRecordUsage',
+				'classFile' => ROOT_DIR . '/sys/ILS/ILSRecordUsage.php',
+				'className' => 'ILSRecordUsage',
 				'name' => 'ILS Record Usage'
 			],
 			'user_ils_usage' => [
-				'classFile' => ROOT_DIR . '/sys/ILS/UserIlsUsage.php',
-				'className' => 'UserIlsUsage',
+				'classFile' => ROOT_DIR . '/sys/ILS/UserILSUsage.php',
+				'className' => 'UserILSUsage',
 				'name' => 'User ILS Usage'
 			],
 			'side_load_record_usage' => [
@@ -376,6 +376,8 @@ class Greenhouse_ExportAspenData extends Admin_Admin
 				fwrite($exportFileHnd, $exportObject->getJSONString(true, $prettyPrint) . "\n");
 				$numObjectsExported++;
 			}
+			$exportObject->__destruct();
+			$exportObject = null;
 		}
 		fclose($exportFileHnd);
 		chgrp($exportFile, 'aspen_apache');
