@@ -376,9 +376,9 @@ class Greenhouse_ExportAspenData extends Admin_Admin
 				fwrite($exportFileHnd, $exportObject->getJSONString(true, $prettyPrint) . "\n");
 				$numObjectsExported++;
 			}
-			$exportObject->__destruct();
-			$exportObject = null;
 		}
+		$exportObject->__destruct();
+		$exportObject = null;
 		fclose($exportFileHnd);
 		chgrp($exportFile, 'aspen_apache');
 		chmod($exportFile, 0660);
