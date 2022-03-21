@@ -276,7 +276,7 @@ class WebResource extends DB_LibraryLinkedObject
 		$audiencesList = WebBuilderAudience::getAudiences();
 		$audiences = $this->getAudiences();
 		$links['audiences'] = [];
-		foreach ($audiences as $audience){
+		foreach ($audiences as $audience => $audienceObject){
 			$links['audiences'][] = $audiencesList[$audience];
 		}
 		//Categories
