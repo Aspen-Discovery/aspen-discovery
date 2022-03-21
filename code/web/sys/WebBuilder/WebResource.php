@@ -145,7 +145,7 @@ class WebResource extends DB_LibraryLinkedObject
 		return $ret;
 	}
 
-	public function getLibraries() {
+	public function getLibraries() : ?array {
 		if (!isset($this->_libraries) && $this->id){
 			$this->_libraries = array();
 			$libraryLink = new LibraryWebResource();
