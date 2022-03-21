@@ -6,8 +6,9 @@ require_once ROOT_DIR . '/sys/WebBuilder/WebBuilderCategory.php';
 require_once ROOT_DIR . '/sys/WebBuilder/PortalPageAudience.php';
 require_once ROOT_DIR . '/sys/WebBuilder/PortalPageCategory.php';
 require_once ROOT_DIR . '/sys/WebBuilder/PortalPageAccess.php';
+require_once ROOT_DIR . '/sys/DB/LibraryLinkedObject.php';
 
-class PortalPage extends DataObject
+class PortalPage extends DB_LibraryLinkedObject
 {
 	public $__table = 'web_builder_portal_page';
 	public $id;
@@ -23,6 +24,11 @@ class PortalPage extends DataObject
 	private $_audiences;
 	private $_categories;
 	private $_allowAccess;
+
+	public function getUniquenessFields(): array
+	{
+		return ['title', 'urlAlias'];
+	}
 
 	static function getObjectStructure() : array {
 		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Custom Pages'));
@@ -201,7 +207,7 @@ class PortalPage extends DataObject
 		return $ret;
 	}
 
-	public function getLibraries() {
+	public function getLibraries() : ?array {
 		if (!isset($this->_libraries) && $this->id){
 			$this->_libraries = array();
 			$libraryLink = new LibraryPortalPage();
@@ -343,5 +349,95 @@ class PortalPage extends DataObject
 		$link = new PortalPageAccess();
 		$link->portalPageId = $this->id;
 		return $link->delete(true);
+	}
+
+	public function getLinksForJSON() : array{
+		$links = parent::getLinksForJSON();
+		//Audiences
+		$audiencesList = WebBuilderAudience::getAudiences();
+		$audiences = $this->getAudiences();
+		$links['audiences'] = [];
+		foreach ($audiences as $audience){
+			$links['audiences'][] = $audiencesList[$audience];
+		}
+		//Categories
+		$categoriesList = WebBuilderCategory::getCategories();
+		$categories = $this->getCategories();
+		$links['categories'] = [];
+		foreach ($categories as $category){
+			$links['categories'][] = $categoriesList[$audience];
+		}
+		//Allow Access
+		$patronTypeList = PType::getPatronTypeList();
+		$accessList = $this->getAccess();
+		$links['allowAccess'] = [];
+		foreach ($accessList as $accessInfo){
+			$links['allowAccess'] = $patronTypeList[$accessInfo];
+		}
+		//Rows
+		$rows = $this->getRows();
+		$links['rows'] = [];
+		foreach ($rows as $row){
+			$rowArray = $row->toArray(false, true);
+			$rowArray['links'] = $row->getLinksForJSON();
+
+			$links['rows'][] = $rowArray;
+		}
+
+		return $links;
+	}
+
+	public function loadRelatedLinksFromJSON($jsonLinks, $mappings, $overrideExisting = 'keepExisting') : bool
+	{
+		$result = parent::loadRelatedLinksFromJSON($jsonLinks, $mappings, $overrideExisting);
+
+		if (array_key_exists('audiences', $jsonLinks)){
+			$audiences = [];
+			$audiencesList = WebBuilderAudience::getAudiences();
+			$audiencesList = array_flip($audiencesList);
+			foreach ($jsonLinks['audiences'] as $audience){
+				if (array_key_exists($audience, $audiencesList)){
+					$audiences[] = $audiencesList[$audience];
+				}
+			}
+			$this->_audiences = $audiences;
+			$result = true;
+		}
+		if (array_key_exists('categories', $jsonLinks)){
+			$categories = [];
+			$categoriesList = WebBuilderCategory::getCategories();
+			$categoriesList = array_flip($categoriesList);
+			foreach ($jsonLinks['categories'] as $category){
+				if (array_key_exists($category, $categoriesList)){
+					$categories[] = $categoriesList[$category];
+				}
+			}
+			$this->_categories = $categories;
+			$result = true;
+		}
+		if (array_key_exists('allowAccess', $jsonLinks)){
+			$allowAccess = [];
+			$allowAccessList = PType::getPatronTypeList();
+			$allowAccessList = array_flip($allowAccessList);
+			foreach ($jsonLinks['allowAccess'] as $pType){
+				if (array_key_exists($pType, $allowAccessList)){
+					$allowAccess[] = $allowAccessList[$pType];
+				}
+			}
+			$this->_allowAccess = $allowAccess;
+			$result = true;
+		}
+		if (array_key_exists('rows', $jsonLinks)){
+			$rows = [];
+			foreach ($jsonLinks['rows'] as $row){
+				$rowObj = new PortalRow();
+				$rowObj->portalPageId = $this->id;
+				$rowObj->loadFromJSON($row, $mappings, $overrideExisting);
+				$rows[$rowObj->id] = $rowObj;
+			}
+			$this->_rows = $rows;
+			$result = true;
+		}
+		return $result;
 	}
 }

@@ -646,7 +646,7 @@ public class EvergreenExportMain {
 				}
 
 				//After the file has been processed, delete it
-				idsFile.deleteOnExit();
+				idsFile.delete();
 			}catch (Exception e){
 				logEntry.incErrors("Error reading IDs file " + idsFile);
 			}
@@ -892,7 +892,7 @@ public class EvergreenExportMain {
 					logEntry.saveResults();
 				}
 				//After the file has been processed, delete it
-				curBibFile.deleteOnExit();
+				curBibFile.delete();
 			} catch (Exception e) {
 				logEntry.incErrors("Error loading Evergreen bibs on record " + numRecordsRead + " in profile " + indexingProfile.getName() + " the last record processed was " + lastRecordProcessed + " file " + curBibFile.getAbsolutePath(), e);
 				//Since we had errors, rename it with a .err extension
