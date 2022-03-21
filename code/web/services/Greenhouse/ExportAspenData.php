@@ -267,6 +267,11 @@ class Greenhouse_ExportAspenData extends Admin_Admin
 				'className' => 'BasicPage',
 				'name' => 'Web Builder Basic Pages'
 			],
+			'web_builder_custom_pages' => [
+				'classFile' => ROOT_DIR . '/sys/WebBuilder/PortalPage.php',
+				'className' => 'PortalPage',
+				'name' => 'Web Builder Custom Pages'
+			],
 		];
 
 		if (isset($_REQUEST['submit'])){
