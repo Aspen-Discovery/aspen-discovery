@@ -412,23 +412,23 @@ class Evergreen extends AbstractIlsDriver
 			$apiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $request);
 			if ($this->apiCurlWrapper->getResponseCode() == 200){
 				$apiResponse = json_decode($apiResponse);
-				if (isset($apiResponse->payload[0]) && isset($apiResponse->payload[0]->desc)){
+				if (isset($apiResponse->payload[0]->textcode) &&$apiResponse->payload[0]->textcode == 'SUCCESS' ){
+					$result['message'] = translate(['text' => "Your title was renewed successfully.", 'isPublicFacing' => true]);
+					$result['success'] = true;
+
+					// Result for API or app use
+					$result['api']['title'] = translate(['text' => 'Title renewed successfully', 'isPublicFacing' => true]);
+					$result['api']['message'] = translate(['text' => 'Your title was renewed successfully.', 'isPublicFacing' => true]);
+
+					$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
+					$patron->forceReloadOfHolds();
+				}elseif (isset($apiResponse->payload[0]) && isset($apiResponse->payload[0]->desc)){
 					$result['message'] = $apiResponse->payload[0]->desc;
 					$result['api']['message'] = $apiResponse->payload[0]->desc;
 				}elseif (isset($apiResponse->payload[0]) && isset($apiResponse->payload[0]->result->desc)){
 					$result['message'] = $apiResponse->payload[0]->result->desc;
 				}elseif (IPAddress::showDebuggingInformation() && isset($apiResponse->debug)){
 					$result['message'] = $apiResponse->debug;
-				}elseif (isset($apiResponse->payload[0]->textcode) &&$apiResponse->payload[0]->textcode == 'SUCCESS' ){
-					$result['message'] = translate(['text' => "Your hold was placed successfully.", 'isPublicFacing' => true]);
-					$result['success'] = true;
-
-					// Result for API or app use
-					$result['api']['title'] = translate(['text' => 'Hold placed successfully', 'isPublicFacing' => true]);
-					$result['api']['message'] = translate(['text' => 'Your hold was placed successfully.', 'isPublicFacing' => true]);
-
-					$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
-					$patron->forceReloadOfHolds();
 				}
 			}
 
