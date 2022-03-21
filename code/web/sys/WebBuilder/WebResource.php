@@ -284,7 +284,7 @@ class WebResource extends DB_LibraryLinkedObject
 		$categories = $this->getCategories();
 		$links['categories'] = [];
 		foreach ($categories as $category){
-			$links['categories'][] = $categoriesList[$audience];
+			$links['categories'][] = $categoriesList[$category];
 		}
 		return $links;
 	}

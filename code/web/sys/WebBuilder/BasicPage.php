@@ -308,7 +308,7 @@ class BasicPage extends DB_LibraryLinkedObject
 		$categories = $this->getCategories();
 		$links['categories'] = [];
 		foreach ($categories as $category){
-			$links['categories'][] = $categoriesList[$audience];
+			$links['categories'][] = $categoriesList[$category];
 		}
 		//Allow Access
 		$patronTypeList = PType::getPatronTypeList();
