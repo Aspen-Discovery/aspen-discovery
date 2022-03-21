@@ -35,6 +35,12 @@
   - Login
     - You can choose to prevent login for users that have expired
     - 'Login Form Username Label' and 'Login Form Password Label' will display whatever you put within those boxes. This is what borrowers see and are prompted by when they login. 
+  - Messages (For Koha Only)
+    - OPAC note = scroll to opac note under Library Setup after clicking “edit” on user profile
+    - Borrower Notes = in Koha, click “Add Message” then select OPAC
+    - Debarment = tabs at bottom, click ‘add manual restriction’
+        - If ‘show debarment notes’ is off in Aspen, it will still show a generic message, but not the specific comment from Koha.
+        - The generic message is: “Please note: Your account has been frozen. Usually the reason for freezing an account is overdues or damage fees. If your account shows to be clear, please contact the library.” usually this is long overdue/lost          
   - Self Registration 
     - In order to enable self registration you can configure patrons options for self registration and the language they see during the self registration process
     - The default path for the Self Registration page is: /MyAccount/SelfReg
