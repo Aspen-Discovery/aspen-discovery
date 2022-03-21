@@ -191,19 +191,17 @@ class SearchObject_EventsSearcher extends SearchObject_SolrSearcher
 	{
 		if ($this->facetConfig == null) {
 			$facetConfig = [];
-
-            /*
-            $eventDate = new LibraryFacetSetting();
-            $eventDate->id = count($facetConfig) +1;
-            $eventDate->multiSelect = true;
-            $eventDate->facetName = "event_day_facet";
-            $eventDate->displayName = "Event Date";
-            $eventDate->numEntriesToShowByDefault = 5;
-            $eventDate->translate = true;
-            $eventDate->collapseByDefault = true;
-            $eventDate->useMoreFacetPopup = true;
-            $facetConfig["event_day_facet"] = $eventDate;
-            */
+//
+//            $eventDate = new LibraryFacetSetting();
+//            $eventDate->id = count($facetConfig) +1;
+//            $eventDate->multiSelect = false;
+//            $eventDate->facetName = "start_date";
+//            $eventDate->displayName = "Event Date";
+//            $eventDate->numEntriesToShowByDefault = 5;
+//            $eventDate->translate = false;
+//            $eventDate->collapseByDefault = false;
+//            $eventDate->useMoreFacetPopup = false;
+//            $facetConfig["start_date"] = $eventDate;
 
 			$ageGroup = new LibraryFacetSetting();
 			$ageGroup->id = count($facetConfig) +1;
@@ -212,7 +210,7 @@ class SearchObject_EventsSearcher extends SearchObject_SolrSearcher
 			$ageGroup->displayName = "Age Group/Audience";
 			$ageGroup->numEntriesToShowByDefault = 5;
 			$ageGroup->translate = true;
-			$ageGroup->collapseByDefault = true;
+			$ageGroup->collapseByDefault = false;
 			$ageGroup->useMoreFacetPopup = true;
 			$facetConfig["age_group_facet"] = $ageGroup;
 
@@ -223,7 +221,7 @@ class SearchObject_EventsSearcher extends SearchObject_SolrSearcher
 			$programType->displayName = "Program Type";
 			$programType->numEntriesToShowByDefault = 5;
 			$programType->translate = true;
-			$programType->collapseByDefault = true;
+			$programType->collapseByDefault = false;
 			$programType->useMoreFacetPopup = true;
 			$facetConfig["program_type_facet"] = $programType;
 
@@ -234,7 +232,7 @@ class SearchObject_EventsSearcher extends SearchObject_SolrSearcher
 			$branch->displayName = "Branch";
 			$branch->numEntriesToShowByDefault = 5;
 			$branch->translate = false;
-			$branch->collapseByDefault = true;
+			$branch->collapseByDefault = false;
 			$branch->useMoreFacetPopup = true;
 			$facetConfig["branch"] = $branch;
 
