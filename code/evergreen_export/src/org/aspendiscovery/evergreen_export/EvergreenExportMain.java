@@ -568,6 +568,8 @@ public class EvergreenExportMain {
 		File marcDeltaPath = new File(marcExportPath.getParentFile() + "/marc_delta");
 		File[] exportedMarcDeltaFiles = marcDeltaPath.listFiles((dir, name) -> name.endsWith("mrc") || name.endsWith("marc"));
 		if (exportedMarcDeltaFiles != null && exportedMarcDeltaFiles.length > 0){
+			//Sort from oldest to newest
+			Arrays.sort(exportedMarcDeltaFiles, Comparator.comparingLong(File::lastModified));
 			filesToProcess.addAll(Arrays.asList(exportedMarcDeltaFiles));
 		}
 
@@ -580,76 +582,85 @@ public class EvergreenExportMain {
 		//Process CSV Files
 		File[] exportedCsvFiles = marcDeltaPath.listFiles((dir, name) -> name.endsWith("csv"));
 		if (exportedCsvFiles != null && exportedCsvFiles.length > 0) {
+			//Sort from oldest to newest
+			Arrays.sort(exportedCsvFiles, Comparator.comparingLong(File::lastModified));
 			totalChanges += updateItemsUsingCsvFile(exportedCsvFiles, lastUpdateFromMarc, dbConn);
 		}
 
 		//Process ID Files
 		File[] exportedIdFiles = marcDeltaPath.listFiles((dir, name) -> name.endsWith("ids"));
 		if (exportedIdFiles != null && exportedIdFiles.length > 0){
-			//TODO: If we have multiple files we just need to process the last one.
-			totalChanges += updateItemsBasedOnIds(exportedIdFiles, lastUpdateFromMarc, dbConn);
+			//Sort from newest to oldest
+			Arrays.sort(exportedIdFiles, Comparator.comparingLong(File::lastModified).reversed());
+			//Just process the newest 1 file.
+			totalChanges += updateItemsBasedOnIds(exportedIdFiles[0], lastUpdateFromMarc, dbConn);
+			for (int i = 1; i < exportedIdFiles.length; i++) {
+				if (!exportedIdFiles[i].delete()) {
+					logEntry.incErrors("Could not delete old ids file " + exportedIdFiles[i]);
+				}
+			}
 		}
 
 		return totalChanges;
 	}
 
-	private static int updateItemsBasedOnIds(File[] exportedIdFiles, long lastUpdateFromMarc, Connection dbConn) {
+	private static int updateItemsBasedOnIds(File idsFile, long lastUpdateFromMarc, Connection dbConn) {
 		int numUpdates = 0;
-		for(File idsFile : exportedIdFiles){
-			logEntry.addNote("Processing ids file " + idsFile);
-			try {
-				//Get all existing ids in the database
-				PreparedStatement getAllExistingRecordsStmt = dbConn.prepareStatement("SELECT ilsId, deleted FROM ils_records where source = ?;");
-				getAllExistingRecordsStmt.setString(1, indexingProfile.getName());
-				ResultSet existingRecordsRS = getAllExistingRecordsStmt.executeQuery();
-				HashMap<String, Boolean> existingRecords = new HashMap<>();
-				while (existingRecordsRS.next()){
-					existingRecords.put(existingRecordsRS.getString("ilsId"), existingRecordsRS.getBoolean("deleted"));
-				}
+		logEntry.addNote("Processing ids file " + idsFile);
+		try {
+			//Get all existing ids in the database
+			PreparedStatement getAllExistingRecordsStmt = dbConn.prepareStatement("SELECT ilsId, deleted FROM ils_records where source = ?;");
+			getAllExistingRecordsStmt.setString(1, indexingProfile.getName());
+			ResultSet existingRecordsRS = getAllExistingRecordsStmt.executeQuery();
+			HashMap<String, Boolean> existingRecords = new HashMap<>();
+			while (existingRecordsRS.next()){
+				existingRecords.put(existingRecordsRS.getString("ilsId"), existingRecordsRS.getBoolean("deleted"));
+			}
 
-				//Read the file to see what has been added or deleted
-				BufferedReader reader = new BufferedReader(new FileReader(idsFile));
-				String id = reader.readLine();
-				HashSet<String> newAndRestoredIds = new HashSet<>();
-				while (id != null){
-					if (existingRecords.containsKey(id)){
-						if (existingRecords.get(id) == Boolean.TRUE){
-							//This was previously deleted
-							newAndRestoredIds.add(id);
-						}
-						existingRecords.remove(id);
-					}else{
+			//Read the file to see what has been added or deleted
+			BufferedReader reader = new BufferedReader(new FileReader(idsFile));
+			String id = reader.readLine();
+			HashSet<String> newAndRestoredIds = new HashSet<>();
+			while (id != null){
+				if (existingRecords.containsKey(id)){
+					if (existingRecords.get(id) == Boolean.TRUE){
+						//This was previously deleted
 						newAndRestoredIds.add(id);
 					}
-					id = reader.readLine();
+					existingRecords.remove(id);
+				}else{
+					newAndRestoredIds.add(id);
 				}
-				logEntry.addNote("There are " + newAndRestoredIds.size() + " new and restored ids and " + existingRecords.size() + " deleted ids");
-				if (newAndRestoredIds.size() <= 1000){
-					MarcFactory marcFactory = MarcFactory.newInstance();
-					for (String idToProcess : newAndRestoredIds) {
-						updateBibFromEvergreen(idToProcess, marcFactory, lastUpdateFromMarc, true);
-					}
-				}else {
-					logEntry.incErrors("There were too many ids to process using the API. Skipping this file");
-				}
-				GroupedWorkIndexer indexer = getGroupedWorkIndexer();
-				RecordGroupingProcessor recordGroupingProcessor = getRecordGroupingProcessor();
-				for (String deletedRecordId : existingRecords.keySet()){
-					RemoveRecordFromWorkResult result = recordGroupingProcessor.removeRecordFromGroupedWork(indexingProfile.getName(), deletedRecordId);
-					if (result.reindexWork){
-						indexer.processGroupedWork(result.permanentId);
-					}else if (result.deleteWork){
-						//Delete the work from solr and the database
-						indexer.deleteRecord(result.permanentId);
-					}
-					existingRecords.remove(deletedRecordId);
-				}
-
-				//After the file has been processed, delete it
-				idsFile.delete();
-			}catch (Exception e){
-				logEntry.incErrors("Error reading IDs file " + idsFile);
+				id = reader.readLine();
 			}
+			logEntry.addNote("There are " + newAndRestoredIds.size() + " new and restored ids and " + existingRecords.size() + " deleted ids");
+			if (newAndRestoredIds.size() <= 1000){
+				MarcFactory marcFactory = MarcFactory.newInstance();
+				for (String idToProcess : newAndRestoredIds) {
+					updateBibFromEvergreen(idToProcess, marcFactory, lastUpdateFromMarc, true);
+				}
+			}else {
+				logEntry.incErrors("There were too many ids to process using the API. Skipping this file");
+			}
+			GroupedWorkIndexer indexer = getGroupedWorkIndexer();
+			RecordGroupingProcessor recordGroupingProcessor = getRecordGroupingProcessor();
+			for (String deletedRecordId : existingRecords.keySet()){
+				RemoveRecordFromWorkResult result = recordGroupingProcessor.removeRecordFromGroupedWork(indexingProfile.getName(), deletedRecordId);
+				if (result.reindexWork){
+					indexer.processGroupedWork(result.permanentId);
+				}else if (result.deleteWork){
+					//Delete the work from solr and the database
+					indexer.deleteRecord(result.permanentId);
+				}
+				existingRecords.remove(deletedRecordId);
+			}
+
+			//After the file has been processed, delete it
+			if (!idsFile.delete()){
+				logEntry.incErrors("Could not delete ids file " + idsFile);
+			}
+		}catch (Exception e){
+			logEntry.incErrors("Error reading IDs file " + idsFile);
 		}
 		return numUpdates;
 	}
@@ -663,7 +674,7 @@ public class EvergreenExportMain {
 				CSVReader reader = new CSVReader(new FileReader(csvFile), '|');
 				String[] rowData = reader.readNext();
 				while (rowData != null){
-					//Currently, columns are: copy id, status, bib id, copy location/current location, deleted
+					//Currently, columns are: copy id, status, bib id, copy location/current location, deleted, barcode
 					//We will pull the full bib from super cat to get current status.
 					if (rowData.length >= 3) {
 						String bibNumber = rowData[2];
@@ -672,7 +683,8 @@ public class EvergreenExportMain {
 					rowData = reader.readNext();
 				}
 				reader.close();
-				//TODO: delete the file after it has been processed.
+				//delete the file after it has been processed.
+				csvFile.delete();
 			}catch (Exception e){
 				logEntry.incErrors("Error reading CSV file " + csvFile);
 			}
