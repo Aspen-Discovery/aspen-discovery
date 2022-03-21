@@ -40,7 +40,9 @@ class SpringshareLibCalEventRecordDriver extends IndexRecordDriver
 		$interface->assign('id', $this->getId());
 		$interface->assign('bookCoverUrl', $this->getBookcoverUrl('small'));
 		$interface->assign('eventUrl', $this->getLinkUrl());
-		$interface->assign('title', $this->getTitle());
+        $interface->assign('externalUrl', $this->getExternalUrl());
+        $interface->assign('branch', $this->getBranch());
+        $interface->assign('title', $this->getTitle());
 		if (isset($this->fields['description'])) {
 			$interface->assign('description', $this->fields['description']);
 		} else {
@@ -139,6 +141,11 @@ class SpringshareLibCalEventRecordDriver extends IndexRecordDriver
 	{
 		return $this->fields['id'];
 	}
+
+    public function getExternalUrl($absolutePath = false)
+    {
+        return $this->fields['url'];
+    }
 
 	public function getLinkUrl($absolutePath = false)
 	{

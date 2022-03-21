@@ -42,7 +42,7 @@
 					<li>Time: {$recordDriver->getStartDateString()|date_format:"%l:%M %p"} to {$recordDriver->getEndDateString()|date_format:"%l:%M %p %Z"}</li>
 					<li>Branch: {$recordDriver->getBranch()}</li>
 				</ul>
-				<a class="btn btn-primary" href="{$recordDriver->getLinkUrl()}">
+				<a class="btn btn-primary" href="{$recordDriver->getExternalUrl()}" target="_blank">
 					{if $recordDriver->isRegistrationRequired()}
 						{translate text="Register on LibCal" isPublicFacing=true}
 					{else}
