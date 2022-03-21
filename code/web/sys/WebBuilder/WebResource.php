@@ -283,7 +283,7 @@ class WebResource extends DB_LibraryLinkedObject
 		$categoriesList = WebBuilderCategory::getCategories();
 		$categories = $this->getCategories();
 		$links['categories'] = [];
-		foreach ($categories as $category){
+		foreach ($categories as $category => $categoryObject){
 			$links['categories'][] = $categoriesList[$category];
 		}
 		return $links;
