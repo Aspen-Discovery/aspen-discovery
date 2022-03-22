@@ -574,7 +574,8 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	public boolean loadExistingTitles(BaseLogEntry logEntry) {
 		try {
-			if (existingRecords == null) existingRecords = new HashMap<>();
+			//Clear previous records if we load multiple times
+			existingRecords = new HashMap<>();
 			PreparedStatement getAllExistingRecordsStmt = dbConn.prepareStatement("SELECT ilsId, checksum, dateFirstDetected, deleted FROM ils_records where source = ?;");
 			getAllExistingRecordsStmt.setString(1, baseSettings.getName());
 			ResultSet allRecordsRS = getAllExistingRecordsStmt.executeQuery();

@@ -133,6 +133,7 @@ class Library extends DataObject
 	public $showItsHere;
 	public $holdDisclaimer;
 	public $availableHoldDelay;
+	public $holdPlacedAt;
 	public $systemHoldNote;
 	public $systemHoldNoteMasquerade;
 	public $enableMaterialsRequest;
@@ -150,6 +151,7 @@ class Library extends DataObject
 
 	public /** @noinspection PhpUnused */ $publicListsToInclude;
 	public /** @noinspection PhpUnused */ $showWikipediaContent;
+	public $showCitationStyleGuides;
 	public $restrictOwningBranchesAndSystems;
 	public $allowPatronAddressUpdates;
 	public $allowPatronPhoneNumberUpdates;
@@ -175,6 +177,9 @@ class Library extends DataObject
 	public $contactEmail;
 
 	public $allowPinReset;
+	public $minPinLength;
+	public $maxPinLength;
+	public $onlyDigitsAllowedInPin;
 	public $enableForgotPasswordLink;
 	public /** @noinspection PhpUnused */ $preventExpiredCardLogin;
 	public /** @noinspection PhpUnused */ $showLibraryHoursNoticeOnAccountPages;
@@ -196,6 +201,9 @@ class Library extends DataObject
 	public /** @noinspection PhpUnused */ $loginFormUsernameLabel;
 	public $loginFormPasswordLabel;
 	public $loginNotes;
+	public $allowLoginToPatronsOfThisLibraryOnly;
+	public $messageForPatronsOfOtherLibraries;
+
 	public $showDetailedHoldNoticeInformation;
 	public $treatPrintNoticesAsPhoneNotices;
 	public /** @noinspection PhpUnused */ $includeDplaResults;
@@ -222,6 +230,8 @@ class Library extends DataObject
 	public /** @noinspection PhpUnused */ $masqueradeAutomaticTimeoutLength;
 	public $allowMasqueradeMode;
 	public $allowReadingHistoryDisplayInMasqueradeMode;
+	public $enableReadingHistory;
+	public $enableSavedSearches;
 	public /** @noinspection PhpUnused */ $newMaterialsRequestSummary;  // (Text at the top of the Materials Request Form.)
 	public /** @noinspection PhpUnused */ $materialsRequestDaysToPreserve;
 	public $showGroupedHoldCopiesCount;
@@ -485,7 +495,7 @@ class Library extends DataObject
 			'libraryId' => array('property'=>'libraryId', 'type'=>'label', 'label'=>'Library Id', 'description'=>'The unique id of the library within the database', 'uniqueProperty' => true),
 			'subdomain' => array('property'=>'subdomain', 'type'=>'text', 'label'=>'Subdomain', 'description'=>'A unique id to identify the library within the system', 'uniqueProperty' => true, 'forcesReindex' => true, 'required' => true, 'permissions' => ['Library Domain Settings']),
 			'baseUrl' => array('property'=>'baseUrl', 'type'=>'text', 'label'=>'Base URL', 'description'=>'The Base URL for the library instance including the protocol (http or https).', 'permissions' => ['Library Domain Settings'], 'note' => 'Include <code>http://</code> or <code>https://</code> as appropriate'),
-			'displayName' => array('property'=>'displayName', 'type'=>'text', 'label'=>'Display Name', 'description'=>'A name to identify the library within the system', 'size'=>'40', 'uniqueProperty' => true, 'forcesReindex' => true, 'required' => true, 'editPermissions' => ['Library Domain Settings']),
+			'displayName' => array('property'=>'displayName', 'type'=>'text', 'label'=>'Display Name', 'description'=>'A name to identify the library within the system', 'size'=>'40', 'uniqueProperty' => true, 'forcesReindex' => true, 'required' => true, 'maxLength'=>80, 'editPermissions' => ['Library Domain Settings']),
 			'showDisplayNameInHeader' => array('property'=>'showDisplayNameInHeader', 'type'=>'checkbox', 'label'=>'Show Display Name in Header', 'description'=>'Whether or not the display name should be shown in the header next to the logo', 'hideInLists' => true, 'default'=>false, 'permissions' => ['Library Theme Configuration']),
 			'isConsortialCatalog' => array('property' => 'isConsortialCatalog', 'type'=>'checkbox', 'label' => 'Consortial Interface?', 'description' => 'If this library is a consortial view', 'hideInLists' => true, 'permissions' => ['Library Domain Settings'], 'forcesReindex' => true),
 			'createSearchInterface' => array('property' => 'createSearchInterface', 'type' => 'checkbox', 'label' => 'Create Search Interface', 'description' => 'Whether or not a search interface is created.  Things like lockers and drive through windows dow not need search interfaces.', 'forcesReindex' => true, 'editPermissions' => ['Library Domain Settings'], 'default' => true),
@@ -549,6 +559,8 @@ class Library extends DataObject
 				'allowLinkedAccounts' => array('property'=>'allowLinkedAccounts', 'type'=>'checkbox', 'label'=>'Allow Linked Accounts', 'description' => 'Whether or not users can link multiple library cards under a single Aspen Discovery account.', 'hideInLists' => true, 'default' => 1, 'permissions' => ['Library ILS Options']),
 				'showLibraryHoursNoticeOnAccountPages' => array('property'=>'showLibraryHoursNoticeOnAccountPages', 'type'=>'checkbox', 'label'=>'Show Library Hours Notice on Account Pages', 'description'=>'Whether or not the Library Hours notice should be shown at the top of My Account\'s Checked Out, and Holds pages.', 'hideInLists' => true, 'default'=>true, 'permissions' => ['Library ILS Options']),
 				'displayItemBarcode' => array('property'=>'displayItemBarcode', 'type'=>'checkbox', 'label'=>'Display item barcodes in patron checkouts', 'description'=>'Whether or not patrons can see item barcodes to materials they have checked out.', 'hideInLists' => true, 'permissions' => ['Library ILS Connection']),
+				'enableReadingHistory' => array('property'=>'enableReadingHistory', 'type'=>'checkbox', 'label'=>'Enable Reading History', 'description' => 'Whether or not users reading history is shown within Aspen.', 'hideInLists' => true, 'default' => 1, 'permissions' => ['Library ILS Options']),
+				'enableSavedSearches' => array('property'=>'enableSavedSearches', 'type'=>'checkbox', 'label'=>'Enable Saved Searches', 'description' => 'Whether or not users can save searches within Aspen.', 'hideInLists' => true, 'default' => 1, 'permissions' => ['Library ILS Options']),
 				'barcodeSection' => array('property' => 'barcodeSection', 'type' => 'section', 'label' => 'Barcode', 'hideInLists' => true, 'permissions' => ['Library ILS Options'], 'properties' => array(
 					'libraryCardBarcodeStyle' => array('property' => 'libraryCardBarcodeStyle', 'type'=>'enum', 'values'=>$barcodeTypes, 'label'=>'Library Barcode Style', 'description'=>'The style to show for the barcode on the Library Card page', 'hideInLists' => true, 'default' => 'none'),
 					'minBarcodeLength' => array('property'=>'minBarcodeLength', 'type'=>'integer', 'label'=>'Min Barcode Length', 'description'=>'A minimum length the patron barcode is expected to be. Leave as 0 to extra processing of barcodes.', 'hideInLists' => true, 'default'=>0),
@@ -572,7 +584,6 @@ class Library extends DataObject
 					'useAllCapsWhenUpdatingProfile'        => array('property' => 'useAllCapsWhenUpdatingProfile', 'type' => 'checkbox', 'label' => 'Use All Caps When Updating Profile', 'description'=>'Whether or not modifications to the patron profile will be submitted using all caps', 'default'=> 0, 'permissions' => ['Library ILS Options']),
 					'requireNumericPhoneNumbersWhenUpdatingProfile' => array('property' => 'requireNumericPhoneNumbersWhenUpdatingProfile', 'type' => 'checkbox', 'label' => 'Require Numeric Phone Numbers When Updating Profile', 'description'=>'Whether or not modifications to the patron phone numbers will be submitted with numbers only', 'default'=> 0, 'permissions' => ['Library ILS Options']),
 					'bypassReviewQueueWhenUpdatingProfile' => array('property' => 'bypassReviewQueueWhenUpdatingProfile', 'type' => 'checkbox', 'label' => 'Bypass Review Queue Updating Profile', 'description'=>'Whether or not the Koha review queue for patron modifications is bypassed when updates are submitted', 'default'=> 0, 'permissions' => ['Library ILS Connection']),
-					'allowPinReset'                        => array('property'=>'allowPinReset', 'type'=>'checkbox', 'label'=>'Allow PIN Reset', 'description'=>'Whether or not the user can reset their PIN if they forget it.', 'hideInLists' => true, 'default' => 0, 'permissions' => ['Library ILS Connection']),
 					'enableForgotPasswordLink'             => array('property'=>'enableForgotPasswordLink', 'type'=>'checkbox', 'label'=>'Enable Forgot Password Link', 'description'=>'Whether or not the user can click a link to reset their password.', 'hideInLists' => true, 'default' => 1, 'permissions' => ['Library ILS Connection']),
 					'showAlternateLibraryOptionsInProfile' => array('property' => 'showAlternateLibraryOptionsInProfile', 'type'=>'checkbox', 'label'=>'Allow Patrons to Update their Alternate Libraries', 'description'=>'Allow Patrons to See and Change Alternate Library Settings in the Catalog Options Tab in their profile.', 'hideInLists' => true, 'default' => 1, 'permissions' => ['Library ILS Options']),
 					'showWorkPhoneInProfile'               => array('property' => 'showWorkPhoneInProfile', 'type'=>'checkbox', 'label'=>'Show Work Phone in Profile', 'description'=>'Whether or not patrons should be able to change a secondary/work phone number in their profile.', 'hideInLists' => true, 'default' => 0, 'permissions' => ['Library ILS Connection']),
@@ -580,6 +591,12 @@ class Library extends DataObject
 					'showNoticeTypeInProfile'              => array('property' => 'showNoticeTypeInProfile', 'type'=>'checkbox', 'label'=>'Show Notice Type in Profile', 'description'=>'Whether or not patrons should be able to change how they receive notices in their profile.', 'hideInLists' => true, 'default' => 0, 'permissions' => ['Library ILS Connection']),
 					'addSMSIndicatorToPhone'               => array('property' => 'addSMSIndicatorToPhone', 'type'=>'checkbox', 'label'=>'Add SMS Indicator to Primary Phone', 'description'=>'Whether or not add ### TEXT ONLY to the user\'s primary phone number when they opt in to SMS notices.', 'hideInLists' => true, 'default' => 0, 'permissions' => ['Library ILS Connection']),
 					'maxFinesToAllowAccountUpdates'        => array('property' => 'maxFinesToAllowAccountUpdates', 'type'=>'currency', 'displayFormat'=>'%0.2f', 'label'=>'Maximum Fine Amount to Allow Account Updates', 'description'=>'The maximum amount that a patron can owe and still update their account. Any value <= 0 will disable this functionality.', 'hideInLists' => true, 'default' => 10, 'permissions' => ['Library ILS Options'])
+				)),
+				'pinSection' => array('property' => 'pinSection', 'type' => 'section', 'label' => 'PIN / Password', 'hideInLists' => true, 'helpLink'=>'', 'permissions' => ['Library ILS Connection'], 'properties' => array(
+					'allowPinReset'                        => array('property'=>'allowPinReset', 'type'=>'checkbox', 'label'=>'Allow PIN Reset', 'description'=>'Whether or not the user can reset their PIN if they forget it.', 'hideInLists' => true, 'default' => 0, 'permissions' => ['Library ILS Connection']),
+					'minPinLength'                         => array('property'=>'minPinLength', 'type'=>'integer', 'label'=>'Minimum PIN Length', 'description'=>'The minimum PIN length.', 'hideInLists' => true, 'default' => 4, 'permissions' => ['Library ILS Connection']),
+					'maxPinLength'                         => array('property'=>'maxPinLength', 'type'=>'integer', 'label'=>'Maximum PIN Length', 'description'=>'The maximum PIN length.', 'hideInLists' => true, 'default' => 4, 'permissions' => ['Library ILS Connection']),
+					'onlyDigitsAllowedInPin'               => array('property'=>'onlyDigitsAllowedInPin', 'type'=>'checkbox', 'label'=>'Only digits allowed in PIN', 'description'=>'Whether or not the user can use only digits in the PIN.', 'hideInLists' => true, 'default' => 1, 'permissions' => ['Library ILS Connection']),
 				)),
 				'holdsSection' => array('property' => 'holdsSection', 'type' => 'section', 'label' => 'Holds', 'hideInLists' => true, 'helpLink'=>'', 'permissions' => ['Library ILS Connection', 'Library ILS Options'], 'properties' => array(
 					'showHoldButton'                    => array('property'=>'showHoldButton', 'type'=>'checkbox', 'label'=>'Show Hold Button', 'description'=>'Whether or not the hold button is displayed so patrons can place holds on items', 'hideInLists' => true, 'default' => 1),
@@ -598,6 +615,7 @@ class Library extends DataObject
 					'validPickupSystems'                => array('property'=>'validPickupSystems', 'type'=>'text', 'label'=>'Valid Pickup Library Systems', 'description'=>'Additional Library Systems that can be used as pickup locations if the &quot;In System Pickups Only&quot; is on. List the libraries\' subdomains separated by pipes |', 'size'=>'20', 'hideInLists' => true, 'permissions' => ['Library ILS Connection']),
 					'holdDisclaimer'                    => array('property'=>'holdDisclaimer', 'type'=>'textarea', 'label'=>'Hold Disclaimer', 'description'=>'A disclaimer to display to patrons when they are placing a hold on items letting them know that their information may be available to other libraries.  Leave blank to not show a disclaimer.', 'hideInLists' => true,),
 					'availableHoldDelay'                => array('property'=>'availableHoldDelay', 'type'=>'integer', 'label'=>'Delay showing holds available for # of days', 'description'=>'Delay showing holds as a available for a specific number of days to account for shelving time', 'hideInLists' => true, 'default'=>0),
+					'holdPlacedAt'                      => array('property'=>'holdPlacedAt', 'type'=>'enum', 'values'=>[0 => 'Use Active Library Catalog', 1 => 'Use Patron Home Library', 2 => 'Use Pickup Location'], 'label'=>'Hold Placed At (Symphony Only)', 'description'=>'Determines how the hold placed at value should be set when placing holds', 'hideInLists' => true, 'default'=>0),
 					'systemHoldNote'                    => array('property'=>'systemHoldNote', 'type'=>'text', 'label'=>'System Hold Note (Symphony Only)', 'description'=>'A note to automatically add when placing a hold', 'hideInLists' => true, 'maxLength'=>50, 'default'=>''),
 					'systemHoldNoteMasquerade'          => array('property'=>'systemHoldNoteMasquerade', 'type'=>'text', 'label'=>'System Hold Note Masquerade (Symphony Only)', 'description'=>'A note to automatically add when placing a hold when a librarian is Masquerading and places a hold', 'hideInLists' => true, 'maxLength'=>50, 'default'=>''),
 				)),
@@ -608,6 +626,8 @@ class Library extends DataObject
 					'loginFormUsernameLabel'  => array('property'=>'loginFormUsernameLabel', 'type'=>'text', 'label'=>'Login Form Username Label', 'description'=>'The label to show for the username when logging in', 'size'=>'100', 'hideInLists' => true, 'default'=>'Your Name'),
 					'loginFormPasswordLabel'  => array('property'=>'loginFormPasswordLabel', 'type'=>'text', 'label'=>'Login Form Password Label', 'description'=>'The label to show for the password when logging in', 'size'=>'100', 'hideInLists' => true, 'default'=>'Library Card Number'),
 					'loginNotes' => array('property' => 'loginNotes', 'type' => 'markdown', 'label' => 'Login Notes', 'description' => 'Additional notes to display under the login fields', 'hideInLists' => true),
+					'allowLoginToPatronsOfThisLibraryOnly' => array('property' => 'allowLoginToPatronsOfThisLibraryOnly', 'type' => 'checkbox', 'label' => 'Allow Login to Patrons of this Library Only', 'description' => 'Whether or not only patrons with a library in this system can login', 'hideInLists' => true, 'default' => 0),
+					'messageForPatronsOfOtherLibraries' => array('property' => 'messageForPatronsOfOtherLibraries', 'type' => 'html', 'label' => 'Message for Patrons of Other Libraries', 'description' => 'A message to show to patrons of other libraries if they are denied access', 'hideInLists' => true),
 				)),
 				'messagesSection' => array('property' => 'messagesSection', 'type' => 'section', 'label' => 'Messages', 'hideInLists' => true, 'permissions' => ['Library ILS Connection'], 'properties' => array(
 					'showOpacNotes' => array('property'=>'showOpacNotes', 'type'=>'checkbox', 'label'=>'Show OPAC Notes', 'description'=>'Whether or not OPAC/Web Notes from the ILS should be shown', 'hideInLists' => true, 'default' => 0),
@@ -704,6 +724,7 @@ class Library extends DataObject
 					'showFavorites'            => array('property'=>'showFavorites', 'type'=>'checkbox', 'label'=>'Enable User Lists', 'description'=>'Whether or not users can maintain favorites lists', 'hideInLists' => true, 'default' => 1),
 					'showConvertListsFromClassic' => array('property'=>'showConvertListsFromClassic', 'type'=>'checkbox', 'label'=>'Enable Importing Lists From Old Catalog', 'description'=>'Whether or not users can import lists from the ILS', 'hideInLists' => true, 'default' => 0),
 					'showWikipediaContent'     => array('property'=>'showWikipediaContent', 'type'=>'checkbox', 'label'=>'Show Wikipedia Content', 'description'=>'Whether or not Wikipedia content should be shown on author page', 'default'=>'1', 'hideInLists' => true,),
+					'showCitationStyleGuides'     => array('property'=>'showCitationStyleGuides', 'type'=>'checkbox', 'label'=>'Show Citation Style Guides', 'description'=>'Whether or not citations style guides should be shown', 'default'=>'1', 'hideInLists' => true,),
 				]
 			],
 
@@ -973,7 +994,9 @@ class Library extends DataObject
 			unset($structure['ilsSection']['properties']['selfRegistrationSection']['properties']['selfRegistrationTemplate']);
 		}else{
 			unset($structure['ilsSection']['properties']['selfRegistrationSection']['properties']['bypassReviewQueueWhenUpdatingProfile']);
-
+		}
+		if ($ils == 'Evergreen'){
+			unset($structure['ilsSection']['properties']['masqueradeModeSection']);
 		}
 		if (!$configArray['CAS']['enabled']) {
 			unset($structure['casSection']);
@@ -1264,6 +1287,8 @@ class Library extends DataObject
 			$this->treatPrintNoticesAsPhoneNotices = 0;
 			$this->showNoticeTypeInProfile = 0;
 			$this->addSMSIndicatorToPhone = 0;
+		}elseif ($ils == 'Evergreen'){
+			$this->allowMasqueradeMode = 0;
 		}
 		$ret = parent::update();
 		if ($ret !== FALSE ){
@@ -1546,6 +1571,31 @@ class Library extends DataObject
 		return $libraryList;
 	}
 
+	static $libraryListAsObjects = null;
+	/**
+	 * @param boolean $restrictByHomeLibrary whether or not only the patron's home library should be returned
+	 * @return Library[]
+	 */
+	static function getLibraryListAsObjects($restrictByHomeLibrary): array
+	{
+		if (Library::$libraryListAsObjects == null) {
+			$library = new Library();
+			$library->orderBy('displayName');
+			if ($restrictByHomeLibrary) {
+				$homeLibrary = Library::getPatronHomeLibrary();
+				if ($homeLibrary != null) {
+					$library->libraryId = $homeLibrary->libraryId;
+				}
+			}
+			$library->find();
+			Library::$libraryListAsObjects = [];
+			while ($library->fetch()) {
+				Library::$libraryListAsObjects[$library->libraryId] = clone $library;
+			}
+		}
+		return Library::$libraryListAsObjects;
+	}
+
 	/** @var OverDriveScope */
 	private $_overdriveScope = null;
 	public function getOverdriveScope()
@@ -1678,6 +1728,7 @@ class Library extends DataObject
 			'generalContactLink' => $this->generalContactLink,
 			'email' => $this->contactEmail,
 			'themeId' => $this->theme,
+			'allowLinkedAccounts' => $this->allowLinkedAccounts,
 		];
 		if (empty($this->baseUrl)){
 			$apiInfo['baseUrl'] = $configArray['Site']['url'];

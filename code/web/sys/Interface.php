@@ -149,22 +149,17 @@ class UInterface extends Smarty
 		// Determine Offline Mode
 		global $offlineMode;
 		$offlineMode = false;
-		if (!empty($configArray['Catalog']['offline']) && $configArray['Catalog']['offline'] == true){
-			$offlineMode = true;
-			if (isset($configArray['Catalog']['enableLoginWhileOffline'])){
-				$this->assign('enableLoginWhileOffline', $configArray['Catalog']['enableLoginWhileOffline']);
-			}else{
-				$this->assign('enableLoginWhileOffline', false);
-			}
-		}else{
-			if (!empty($configArray['Catalog']['enableLoginWhileOffline'])) {
-				// unless offline login is enabled, don't check the offline mode system variable
-				$offlineModeSystemVariable = new Variable();
-				$offlineModeSystemVariable->get('name', 'offline_mode_when_offline_login_allowed');
-				if ($offlineModeSystemVariable && ($offlineModeSystemVariable->value == 'true' || $offlineModeSystemVariable == '1')) {
-					$this->assign('enableLoginWhileOffline', true);
-					$offlineMode = true;
-				}
+		require_once ROOT_DIR . '/sys/SystemVariables.php';
+		$systemVariables = SystemVariables::getSystemVariables();
+		if (!empty($systemVariables)) {
+			if ($systemVariables->catalogStatus == 2) {
+				$offlineMode = true;
+				$this->assign('enableEContentWhileOffline', true);
+				$this->assign('offlineMessage', $systemVariables->offlineMessage);
+			} else if ($systemVariables->catalogStatus == 1) {
+				$offlineMode = true;
+				$this->assign('enableEContentWhileOffline', false);
+				$this->assign('offlineMessage', $systemVariables->offlineMessage);
 			}
 		}
 		$this->assign('offline', $offlineMode);
@@ -518,6 +513,8 @@ class UInterface extends Smarty
 		}
 		$this->assign('customJavascript', $customJavascript);
 
+		global $offlineMode;
+
 		$this->assign('facebookLink', $library->facebookLink);
 		$this->assign('twitterLink', $library->twitterLink);
 		$this->assign('youtubeLink', $library->youtubeLink);
@@ -526,7 +523,7 @@ class UInterface extends Smarty
 		$this->assign('goodreadsLink', $library->goodreadsLink);
 		$this->assign('tiktokLink', $library->tiktokLink);
 		$this->assign('generalContactLink', $library->generalContactLink);
-		$this->assign('showLoginButton', $library->showLoginButton);
+		$this->assign('showLoginButton', $library->showLoginButton && ($offlineMode == false || $this->getVariable('enableEContentWhileOffline')));
 		$this->assign('showAdvancedSearchbox', $library->showAdvancedSearchbox);
 		$this->assign('enableProspectorIntegration', $library->enableProspectorIntegration);
 		$this->assign('showRatings', $library->getGroupedWorkDisplaySettings()->showRatings);
@@ -563,11 +560,15 @@ class UInterface extends Smarty
 
 		$this->assign('showCurbsidePickups', ($library->curbsidePickupSettingId != -1) ? 1 : 0);
 
+		$this->assign('enableReadingHistory', $library->enableReadingHistory);
+		$this->assign('enableSavedSearches', $library->enableSavedSearches);
+		$this->assign('showCitationStyleGuides', $library->showCitationStyleGuides);
+
 		if ($location != null){ // library and location
 			$this->assign('showFavorites', $location->showFavorites && $library->showFavorites);
 			$this->assign('showComments', $location->getGroupedWorkDisplaySettings()->showComments);
 			$this->assign('showEmailThis', $location->showEmailThis && $library->showEmailThis);
-			$this->assign('showStaffView', $location->getGroupedWorkDisplaySettings()->showStaffView);
+			$showStaffView = $location->getGroupedWorkDisplaySettings()->showStaffView;
 			$this->assign('showShareOnExternalSites', $location->showShareOnExternalSites && $library->showShareOnExternalSites);
 			$this->assign('showGoodReadsReviews', $location->getGroupedWorkDisplaySettings()->showGoodReadsReviews);
 			$showHoldButton = (($location->showHoldButton == 1) && ($library->showHoldButton == 1)) ? 1 : 0;
@@ -582,12 +583,17 @@ class UInterface extends Smarty
 			$this->assign('showComments', $library->getGroupedWorkDisplaySettings()->showComments);
 			$this->assign('showEmailThis', $library->showEmailThis);
 			$this->assign('showShareOnExternalSites', $library->showShareOnExternalSites);
-			$this->assign('showStaffView', $library->getGroupedWorkDisplaySettings()->showStaffView);
+			$showStaffView = $library->getGroupedWorkDisplaySettings()->showStaffView;
 			$this->assign('showSimilarTitles', $library->getGroupedWorkDisplaySettings()->showSimilarTitles);
 			$this->assign('showSimilarAuthors', $library->getGroupedWorkDisplaySettings()->showSimilarAuthors);
 			$this->assign('showGoodReadsReviews', $library->getGroupedWorkDisplaySettings()->showGoodReadsReviews);
 			$this->assign('showStandardReviews', $library->getGroupedWorkDisplaySettings()->showStandardReviews);
 		}
+		if ($showStaffView == 2){
+			$showStaffView = UserAccount::isStaff();
+		}
+		$this->assign('showStaffView', $showStaffView);
+
 		if ($showHoldButton == 0){
 			$showHoldButtonInSearchResults = 0;
 		}

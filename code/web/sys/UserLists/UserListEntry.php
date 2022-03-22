@@ -13,6 +13,11 @@ class UserListEntry extends DataObject{
 	public $importedFrom;
 	public $title;
 
+	public function getUniquenessFields(): array
+	{
+		return ['listId', 'source', 'sourceId'];
+	}
+
 	/**
 	 * @param bool $updateBrowseCategories
 	 * @return bool
@@ -20,7 +25,6 @@ class UserListEntry extends DataObject{
 	function insert($updateBrowseCategories = true)
 	{
 		$result = parent::insert();
-		/** @var Memcache $memCache */
 		global $memCache;
 		$memCache->delete('user_list_data_' . UserAccount::getActiveUserId());
 		return $result;
@@ -33,7 +37,6 @@ class UserListEntry extends DataObject{
 	function update($updateBrowseCategories = true)
 	{
 		$result = parent::update();
-		/** @var Memcache $memCache */
 		global $memCache;
 		$memCache->delete('user_list_data_' . UserAccount::getActiveUserId());
 		return $result;
@@ -47,7 +50,6 @@ class UserListEntry extends DataObject{
 	function delete($useWhere = false, $updateBrowseCategories = true)
 	{
 		$result = parent::delete($useWhere);
-		/** @var Memcache $memCache */
 		global $memCache;
 		$memCache->delete('user_list_data_' . UserAccount::getActiveUserId());
 		return $result;
@@ -64,8 +66,7 @@ class UserListEntry extends DataObject{
 			return $recordDriver;
 		}elseif ($this->source == 'OpenArchives'){
 			require_once ROOT_DIR . '/RecordDrivers/OpenArchivesRecordDriver.php';
-			$recordDriver = new OpenArchivesRecordDriver($this->sourceId);
-			return $recordDriver;
+			return new OpenArchivesRecordDriver($this->sourceId);
 		}elseif ($this->source == 'Lists'){
 			require_once ROOT_DIR . '/RecordDrivers/ListsRecordDriver.php';
 			$recordDriver = new ListsRecordDriver($this->sourceId);
@@ -76,12 +77,10 @@ class UserListEntry extends DataObject{
 			}
 		}elseif ($this->source == 'Genealogy'){
 			require_once ROOT_DIR . '/RecordDrivers/PersonRecord.php';
-			$recordDriver = new PersonRecord($this->sourceId);
-			return $recordDriver;
+			return new PersonRecord($this->sourceId);
 		}elseif ($this->source == 'EbscoEds'){
 			require_once ROOT_DIR . '/RecordDrivers/EbscoRecordDriver.php';
-			$recordDriver = new EbscoRecordDriver($this->sourceId);
-			return $recordDriver;
+			return new EbscoRecordDriver($this->sourceId);
 		}else{
 			return null;
 		}

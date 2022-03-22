@@ -114,6 +114,7 @@
       <w>errorpageurl</w>
       <w>errorurl</w>
       <w>expirationdate</w>
+      <w>fhnd</w>
       <w>fictionprofile</w>
       <w>findagrave</w>
       <w>finesval</w>
@@ -342,6 +343,7 @@
       <w>writeoff</w>
       <w>xbitmap</w>
       <w>xbox</w>
+      <w>xfer</w>
       <w>xlsx</w>
       <w>xpixmap</w>
       <w>xwindowdump</w>

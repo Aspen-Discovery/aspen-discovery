@@ -82,30 +82,33 @@ class SymphonyRecordProcessor extends IlsRecordProcessor {
 		boolean available = false;
 		if (itemInfo.getStatusCode().equals("ONSHELF")) {
 			available = true;
-		}else if (this.getDisplayGroupedStatus(itemInfo, itemInfo.getFullRecordIdentifier()).equals("On Shelf")){
-			available = true;
+		}else {
+			String displayGroupedStatus = this.getDisplayGroupedStatus(itemInfo, itemInfo.getFullRecordIdentifier());
+			if (displayGroupedStatus.equals("On Shelf") || displayGroupedStatus.equals("Library Use Only")){
+				available = true;
+			}
 		}
 		return available;
 	}
 
 	protected String getDetailedLocationForItem(ItemInfo itemInfo, DataField itemField, String identifier) {
 		String locationCode = getItemSubfieldData(locationSubfieldIndicator, itemField);
-		String location = translateValue("location", locationCode, identifier);
+		String location = translateValue("location", locationCode, identifier, true);
 
 		String status = getItemSubfieldData(statusSubfieldIndicator, itemField);
 		if (status == null || status.equals("CHECKEDOUT") || status.equals("HOLDS") || status.equals("INTRANSIT")) {
 			String shelvingLocation = itemInfo.getShelfLocationCode();
 			if (location == null) {
-				location = translateValue("shelf_location", shelvingLocation, identifier);
+				location = translateValue("shelf_location", shelvingLocation, identifier, true);
 			} else {
-				location += " - " + translateValue("shelf_location", shelvingLocation, identifier);
+				location += " - " + translateValue("shelf_location", shelvingLocation, identifier, true);
 			}
 		}else {
 			//In this case, the status is the current location of the item.
 			if (location == null) {
-				location = translateValue("shelf_location", status, identifier);
+				location = translateValue("shelf_location", status, identifier, true);
 			} else {
-				location += " - " + translateValue("shelf_location", status, identifier);
+				location += " - " + translateValue("shelf_location", status, identifier, true);
 			}
 		}
 		return location;

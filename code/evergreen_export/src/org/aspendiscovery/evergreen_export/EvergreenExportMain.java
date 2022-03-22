@@ -1,8 +1,10 @@
 package org.aspendiscovery.evergreen_export;
 
+import com.opencsv.CSVReader;
 import com.turning_leaf_technologies.config.ConfigUtil;
 import com.turning_leaf_technologies.file.JarUtil;
 import com.turning_leaf_technologies.grouping.MarcRecordGrouper;
+import com.turning_leaf_technologies.grouping.RecordGroupingProcessor;
 import com.turning_leaf_technologies.grouping.RemoveRecordFromWorkResult;
 import com.turning_leaf_technologies.indexing.IlsExtractLogEntry;
 import com.turning_leaf_technologies.indexing.IndexingProfile;
@@ -17,6 +19,11 @@ import com.turning_leaf_technologies.strings.StringUtils;
 import org.apache.commons.net.util.Base64;
 import org.apache.logging.log4j.Logger;
 import org.ini4j.Ini;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.marc4j.MarcException;
+import org.marc4j.MarcPermissiveStreamReader;
+import org.marc4j.MarcReader;
 import org.marc4j.marc.*;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -28,9 +35,7 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.sql.*;
 import java.text.SimpleDateFormat;
@@ -137,6 +142,13 @@ public class EvergreenExportMain {
 					}else {
 						logEntry.setIsFullUpdate(indexingProfile.isRunFullUpdate());
 
+						if (!extractSingleWork) {
+							updateBranchInfo(dbConn);
+							logEntry.addNote("Finished updating branch information");
+
+
+						}
+
 						//Update works that have changed since the last index
 						numChanges = updateRecords(singleWorkId);
 					}
@@ -229,6 +241,222 @@ public class EvergreenExportMain {
 		} //Infinite loop
 	}
 
+	private static PreparedStatement existingAspenLocationStmt;
+	private static PreparedStatement existingAspenLibraryStmt;
+	private static PreparedStatement addAspenLibraryStmt;
+	private static PreparedStatement addAspenLocationStmt;
+	private static PreparedStatement addAspenLocationRecordsOwnedStmt;
+	private static PreparedStatement addAspenLocationRecordsToIncludeStmt;
+	private static PreparedStatement addAspenLibraryRecordsOwnedStmt;
+	private static PreparedStatement addAspenLibraryRecordsToIncludeStmt;
+	private static PreparedStatement createTranslationMapStmt;
+	private static PreparedStatement getTranslationMapStmt;
+	private static PreparedStatement getExistingValuesForMapStmt;
+	private static PreparedStatement insertTranslationStmt;
+	private static void updateBranchInfo(Connection dbConn) {
+		//Setup our prepared statements
+		try {
+			existingAspenLocationStmt = dbConn.prepareStatement("SELECT libraryId, locationId, isMainBranch from location where code = ?");
+			existingAspenLibraryStmt = dbConn.prepareStatement("SELECT libraryId from library where ilsCode = ?");
+			addAspenLibraryStmt = dbConn.prepareStatement("INSERT INTO library (subdomain, displayName, ilsCode, browseCategoryGroupId, groupedWorkDisplaySettingId) VALUES (?, ?, ?, 1, 1)", Statement.RETURN_GENERATED_KEYS);
+			addAspenLocationStmt = dbConn.prepareStatement("INSERT INTO location (libraryId, displayName, code, historicCode, browseCategoryGroupId, groupedWorkDisplaySettingId) VALUES (?, ?, ?, ?, -1, -1)", Statement.RETURN_GENERATED_KEYS);
+			addAspenLocationRecordsOwnedStmt = dbConn.prepareStatement("INSERT INTO location_records_owned (locationId, indexingProfileId, location, subLocation) VALUES (?, ?, ?, '')");
+			addAspenLocationRecordsToIncludeStmt = dbConn.prepareStatement("INSERT INTO location_records_to_include (locationId, indexingProfileId, location, subLocation, weight) VALUES (?, ?, '.*', '', 1)");
+			addAspenLibraryRecordsOwnedStmt = dbConn.prepareStatement("INSERT INTO library_records_owned (libraryId, indexingProfileId, location, subLocation) VALUES (?, ?, ?, '') ON DUPLICATE KEY UPDATE location = CONCAT(location, '|', VALUES(location))");
+			addAspenLibraryRecordsToIncludeStmt = dbConn.prepareStatement("INSERT INTO library_records_to_include (libraryId, indexingProfileId, location, subLocation, weight) VALUES (?, ?, '.*', '', 1)");
+
+			createTranslationMapStmt = dbConn.prepareStatement("INSERT INTO translation_maps (name, indexingProfileId) VALUES (?, ?)", Statement.RETURN_GENERATED_KEYS);
+			getTranslationMapStmt = dbConn.prepareStatement("SELECT id from translation_maps WHERE name = ? and indexingProfileId = ?");
+			getExistingValuesForMapStmt = dbConn.prepareStatement("SELECT * from translation_map_values where translationMapId = ?");
+			insertTranslationStmt = dbConn.prepareStatement("INSERT INTO translation_map_values (translationMapId, value, translation) VALUES (?, ?, ?)");
+		}catch (Exception e){
+			logEntry.incErrors("Could not setup database statements to update branch information", e);
+			return;
+		}
+
+		Long locationMapId = -1L;
+		HashMap<String, String> existingLocations =new HashMap<>();
+
+		try {
+			locationMapId = getTranslationMapId(createTranslationMapStmt, getTranslationMapStmt, "location");
+			existingLocations = getExistingTranslationMapValues(getExistingValuesForMapStmt, locationMapId);
+		}catch (SQLException e) {
+			logEntry.incErrors("Could not load translation maps ", e);
+		}
+
+		//Get the organization tree
+		String apiUrl = baseUrl +  "/osrf-gateway-v1";
+		String params = "service=open-ils.actor&method=open-ils.actor.org_tree.retrieve";
+		HashMap<String, String> headers = new HashMap<>();
+
+		WebServiceResponse response = NetworkUtils.postToURL(apiUrl, params, "application/x-www-form-urlencoded", null, logger);
+		if (response.isSuccess()){
+			JSONObject orgData = response.getJSONResponse();
+			if (orgData.has("payload")){
+				JSONArray mainPayload = orgData.getJSONArray("payload");
+				for (int i = 0; i < mainPayload.length(); i++){
+					JSONObject mainPayloadObject = mainPayload.getJSONObject(i);
+					if (mainPayloadObject.has("__p")){
+						JSONArray subPayload = mainPayloadObject.getJSONArray("__p");
+						loadOrganizationalUnit(subPayload, 0, 0, locationMapId, existingLocations);
+					}
+				}
+			}
+		}
+
+		try {
+			existingAspenLocationStmt.close();
+			existingAspenLibraryStmt.close();
+			addAspenLibraryStmt.close();
+			addAspenLocationStmt.close();
+			addAspenLocationRecordsOwnedStmt.close();
+			addAspenLocationRecordsToIncludeStmt.close();
+			addAspenLibraryRecordsOwnedStmt.close();
+			addAspenLibraryRecordsToIncludeStmt.close();
+			createTranslationMapStmt.close();
+			getTranslationMapStmt.close();
+			getExistingValuesForMapStmt.close();
+			insertTranslationStmt.close();
+		}catch (Exception e){
+			logEntry.incErrors("Error closing statements while updating branch info", e);
+		}
+
+	}
+
+	static String[] orgUnitFields = new String[]{"children",
+		"billing_address",
+		"holds_address",
+		"id",
+		"ill_address",
+		"mailing_address",
+		"name",
+		"ou_type",
+		"parent_ou",
+		"shortname",
+		"email",
+		"phone",
+		"opac_visible",
+		"fiscal_calendar",
+		"users",
+		"closed_dates",
+		"circulations",
+		"settings",
+		"addresses",
+		"checkins",
+		"workstations",
+		"fund_alloc_pcts",
+		"copy_location_orders",
+		"atc_prev_dests",
+		"resv_requests",
+		"resv_pickups",
+		"rsrc_types",
+		"resources",
+		"rsrc_attrs",
+		"attr_vals",
+		"hours_of_operation"
+	};
+	private static void loadOrganizationalUnit(JSONArray orgUnitPayload, int level, long parentId, long locationMapId, HashMap<String, String> existingLocations) {
+		HashMap<String, Object> mappedOrgUnitField = mapFields(orgUnitPayload, orgUnitFields);
+		if (level == 0){
+			//This is the top level unit, it is not written to Aspen, just process all the children
+			JSONArray children = (JSONArray) mappedOrgUnitField.get("children");
+			for (int i = 0; i < children.length(); i++){
+				JSONObject curObject = children.getJSONObject(i);
+				if (curObject.has("__p")){
+					JSONArray libraryUnitPayload = curObject.getJSONArray("__p");
+					loadOrganizationalUnit(libraryUnitPayload, level +1, 0, locationMapId, existingLocations);
+				}
+			}
+		}else if(level == 1){
+			//This is a library, add it into the system.
+			long libraryId = 0;
+			try {
+				String shortName = (String) mappedOrgUnitField.get("shortname");
+				existingAspenLibraryStmt.setString(1, shortName);
+				ResultSet existingLibraryRS = existingAspenLibraryStmt.executeQuery();
+				if (!existingLibraryRS.next()) {
+					addAspenLibraryStmt.setString(1, shortName);
+					addAspenLibraryStmt.setString(2, (String)mappedOrgUnitField.get("name"));
+					addAspenLibraryStmt.setString(3, shortName);
+					addAspenLibraryStmt.executeUpdate();
+					ResultSet addAspenLibraryRS = addAspenLibraryStmt.getGeneratedKeys();
+					if (addAspenLibraryRS.next()){
+						libraryId = addAspenLibraryRS.getLong(1);
+					}
+
+					//Add records to include for the library
+					addAspenLibraryRecordsToIncludeStmt.setLong(1, libraryId);
+					addAspenLibraryRecordsToIncludeStmt.setLong(2, indexingProfile.getId());
+					addAspenLibraryRecordsToIncludeStmt.executeUpdate();
+				}else{
+					libraryId = existingLibraryRS.getLong("libraryId");
+				}
+			}catch (Exception e){
+				logEntry.incErrors("Error adding library " + mappedOrgUnitField.get("shortname") + " to Aspen", e);
+			}
+
+			JSONArray children = (JSONArray) mappedOrgUnitField.get("children");
+			for (int i = 0; i < children.length(); i++){
+				JSONObject curObject = children.getJSONObject(i);
+				if (curObject.has("__p")){
+					JSONArray libraryUnitPayload = curObject.getJSONArray("__p");
+					loadOrganizationalUnit(libraryUnitPayload, level +1, libraryId, locationMapId, existingLocations);
+				}
+			}
+
+		}else if(level == 2){
+			//This is a branch, add it to the system
+			try {
+				Integer branchId = (Integer) mappedOrgUnitField.get("id");
+				String shortName = (String) mappedOrgUnitField.get("shortname");
+
+				updateTranslationMap(shortName, (String)mappedOrgUnitField.get("name"), insertTranslationStmt, locationMapId, existingLocations);
+
+				existingAspenLocationStmt.setString(1, shortName);
+				ResultSet existingLocationRS = existingAspenLocationStmt.executeQuery();
+				if (!existingLocationRS.next()){
+					addAspenLocationStmt.setLong(1, parentId);
+					addAspenLocationStmt.setString(2, StringUtils.trimTo(60, (String)mappedOrgUnitField.get("name")));
+					addAspenLocationStmt.setString(3, shortName);
+					addAspenLocationStmt.setInt(4, branchId);
+
+					addAspenLocationStmt.executeUpdate();
+					ResultSet addAspenLocationRS = addAspenLocationStmt.getGeneratedKeys();
+					if (addAspenLocationRS.next()){
+						long locationId = addAspenLocationRS.getLong(1);
+
+						//Add records owned for the location
+						addAspenLocationRecordsOwnedStmt.setLong(1, locationId);
+						addAspenLocationRecordsOwnedStmt.setLong(2, indexingProfile.getId());
+						addAspenLocationRecordsOwnedStmt.setString(3, shortName);
+						addAspenLocationRecordsOwnedStmt.executeUpdate();
+
+						//Add records owned for the library, since we have multiple locations defined by ID, we will add separate rows for each.
+						addAspenLibraryRecordsOwnedStmt.setLong(1, parentId);
+						addAspenLibraryRecordsOwnedStmt.setLong(2, indexingProfile.getId());
+						addAspenLibraryRecordsOwnedStmt.setString(3, shortName);
+						addAspenLibraryRecordsOwnedStmt.executeUpdate();
+
+						//Add records to include for the location
+						addAspenLocationRecordsToIncludeStmt.setLong(1, locationId);
+						addAspenLocationRecordsToIncludeStmt.setLong(2, indexingProfile.getId());
+						addAspenLocationRecordsToIncludeStmt.executeUpdate();
+					}
+				}
+			}catch (Exception e){
+				logEntry.incErrors("Error adding branch " + mappedOrgUnitField.get("shortname") + " to Aspen", e);
+			}
+		}
+	}
+
+	private static HashMap<String, Object> mapFields(JSONArray orgUnitPayload, String[] orgUnitFields) {
+		HashMap<String, Object> mappedFields = new HashMap<>();
+		for (int i = 0; i < orgUnitPayload.length(); i++){
+			mappedFields.put(orgUnitFields[i], orgUnitPayload.get(i));
+		}
+		return mappedFields;
+	}
+
 	private static void disconnectDatabase() {
 		try {
 			//Close the connection
@@ -292,73 +520,450 @@ public class EvergreenExportMain {
 	}
 
 	private static int updateRecords(String singleWorkId) {
+		//Check to see if we should regroup all existing records
+		try {
+			if (indexingProfile.isRegroupAllRecords()) {
+				MarcRecordGrouper recordGrouper = getRecordGroupingProcessor();
+				recordGrouper.regroupAllRecords(dbConn, indexingProfile, getGroupedWorkIndexer(), logEntry);
+			}
+		}catch (Exception e){
+			logEntry.incErrors("Error regrouping all records", e);
+		}
+
 		int totalChanges = 0;
 
-		try {
-			//Get the time the last extract was done
-			logger.info("Starting to load changed records from Evergreen using the APIs");
-
-			if (singleWorkId != null){
-				//TODO: Single work indexing
-				updateBibFromEvergreen(singleWorkId, null, 0, true);
-			}else {
-				long lastExtractTime = 0;
-				if (!indexingProfile.isRunFullUpdate()) {
-					lastExtractTime = indexingProfile.getLastUpdateOfChangedRecords();
-					if (lastExtractTime == 0 || (indexingProfile.getLastUpdateOfAllRecords() > indexingProfile.getLastUpdateOfChangedRecords())) {
-						//Give a small buffer (1 minute to account for server time differences)
-						lastExtractTime = indexingProfile.getLastUpdateOfAllRecords() - 60 * 1000 ;
+		//Get the last export from MARC time
+		long lastUpdateFromMarc = indexingProfile.getLastUpdateFromMarcExport();
+		//These are all the full exports, we only want one full export to be processed
+		File marcExportPath = new File(indexingProfile.getMarcPath());
+		File[] exportedMarcFiles = marcExportPath.listFiles((dir, name) -> name.endsWith("mrc") || name.endsWith("marc"));
+		ArrayList<File> filesToProcess = new ArrayList<>();
+		File latestFile = null;
+		long latestMarcFile = 0;
+		boolean hasFullExportFile = false;
+		File fullExportFile = null;
+		if (exportedMarcFiles != null && exportedMarcFiles.length > 0){
+			for (File exportedMarcFile : exportedMarcFiles) {
+				//Remove any files that are older than the last time we processed files.
+				if (exportedMarcFile.lastModified() / 1000 < lastUpdateFromMarc){
+					if (exportedMarcFile.delete()){
+						logEntry.addNote("Removed old file " + exportedMarcFile.getAbsolutePath());
 					}
-				} else {
-					getRecordGroupingProcessor().loadExistingTitles(logEntry);
-				}
-
-				//Check to see if we should regroup all records
-				if (indexingProfile.isRegroupAllRecords()){
-					//Regrouping takes a long time, and we don't need koha DB connection so close it while we regroup
-					MarcRecordGrouper recordGrouper = getRecordGroupingProcessor();
-					recordGrouper.regroupAllRecords(dbConn, indexingProfile, getGroupedWorkIndexer(), logEntry);
-				}
-
-				//Update records
-				boolean allowDeletingExistingRecords = indexingProfile.getLastChangeProcessed() == 0;
-				totalChanges += updateBibsFromEvergreen(lastExtractTime, true);
-				if (!indexingProfile.isRunFullUpdate()) {
-					//Process deleted bibs
-					//TODO: extract deleted bibs
-					//totalChanges += extractDeletedBibs(lastExtractTime);
-				} else {
-					//Loop through remaining records and delete them
-					if (allowDeletingExistingRecords) {
-						logEntry.addNote("Starting to delete records that no longer exist");
-						GroupedWorkIndexer groupedWorkIndexer = getGroupedWorkIndexer();
-						MarcRecordGrouper recordGroupingProcessor = getRecordGroupingProcessor();
-						for (String ilsId : recordGroupingProcessor.getExistingRecords().keySet()) {
-							RemoveRecordFromWorkResult result = recordGroupingProcessor.removeRecordFromGroupedWork(indexingProfile.getName(), ilsId);
-							if (result.permanentId != null) {
-								if (result.reindexWork) {
-									groupedWorkIndexer.processGroupedWork(result.permanentId);
-								} else if (result.deleteWork) {
-									//Delete the work from solr and the database
-									groupedWorkIndexer.deleteRecord(result.permanentId);
-								}
-								logEntry.incDeleted();
-								if (logEntry.getNumDeleted() % 250 == 0) {
-									logEntry.saveResults();
-								}
-							}
-						}
-						logEntry.addNote("Finished deleting records that no longer exist");
-					}else{
-						logEntry.addNote("Skipping deleting records that no longer exist because we skipped some records at the start");
+				}else{
+					if (exportedMarcFile.lastModified() / 1000 > latestMarcFile){
+						latestMarcFile = exportedMarcFile.lastModified();
+						latestFile = exportedMarcFile;
 					}
 				}
 			}
-		} catch (Exception e) {
-			logEntry.incErrors("Error loading changed records from Evergreen APIs", e);
-			//Don't quit since that keeps the exporter from running continuously
 		}
-		logger.info("Finished loading changed records from Evergreen APIs");
+
+		if (latestFile != null) {
+			filesToProcess.add(latestFile);
+			hasFullExportFile = true;
+			fullExportFile = latestFile;
+		}
+
+		//Get a list of marc deltas since the last marc record, we will actually process all of these since the full export takes so long
+		File marcDeltaPath = new File(marcExportPath.getParentFile() + "/marc_delta");
+		File[] exportedMarcDeltaFiles = marcDeltaPath.listFiles((dir, name) -> name.endsWith("mrc") || name.endsWith("marc"));
+		if (exportedMarcDeltaFiles != null && exportedMarcDeltaFiles.length > 0){
+			//Sort from oldest to newest
+			Arrays.sort(exportedMarcDeltaFiles, Comparator.comparingLong(File::lastModified));
+			filesToProcess.addAll(Arrays.asList(exportedMarcDeltaFiles));
+		}
+
+		if (filesToProcess.size() > 0){
+			//Update all records based on the MARC export
+			logEntry.addNote("Updating based on MARC extract");
+			totalChanges = updateRecordsUsingMarcExtract(filesToProcess, hasFullExportFile, fullExportFile, dbConn);
+		}
+
+		//Process CSV Files
+		File[] exportedCsvFiles = marcDeltaPath.listFiles((dir, name) -> name.endsWith("csv"));
+		if (exportedCsvFiles != null && exportedCsvFiles.length > 0) {
+			//Sort from oldest to newest
+			Arrays.sort(exportedCsvFiles, Comparator.comparingLong(File::lastModified));
+			totalChanges += updateItemsUsingCsvFile(exportedCsvFiles, lastUpdateFromMarc, dbConn);
+		}
+
+		//Process ID Files
+		File[] exportedIdFiles = marcDeltaPath.listFiles((dir, name) -> name.endsWith("ids"));
+		if (exportedIdFiles != null && exportedIdFiles.length > 0){
+			//Sort from newest to oldest
+			Arrays.sort(exportedIdFiles, Comparator.comparingLong(File::lastModified).reversed());
+			//Just process the newest 1 file.
+			totalChanges += updateItemsBasedOnIds(exportedIdFiles[0], lastUpdateFromMarc, dbConn);
+			for (int i = 1; i < exportedIdFiles.length; i++) {
+				if (!exportedIdFiles[i].delete()) {
+					logEntry.incErrors("Could not delete old ids file " + exportedIdFiles[i]);
+				}
+			}
+		}
+
+		return totalChanges;
+	}
+
+	private static int updateItemsBasedOnIds(File idsFile, long lastUpdateFromMarc, Connection dbConn) {
+		int numUpdates = 0;
+		logEntry.addNote("Processing ids file " + idsFile);
+		try {
+			//Get all existing ids in the database
+			PreparedStatement getAllExistingRecordsStmt = dbConn.prepareStatement("SELECT ilsId, deleted FROM ils_records where source = ?;");
+			getAllExistingRecordsStmt.setString(1, indexingProfile.getName());
+			ResultSet existingRecordsRS = getAllExistingRecordsStmt.executeQuery();
+			HashMap<String, Boolean> existingRecords = new HashMap<>();
+			while (existingRecordsRS.next()){
+				existingRecords.put(existingRecordsRS.getString("ilsId"), existingRecordsRS.getBoolean("deleted"));
+			}
+
+			//Read the file to see what has been added or deleted
+			BufferedReader reader = new BufferedReader(new FileReader(idsFile));
+			String id = reader.readLine();
+			HashSet<String> newAndRestoredIds = new HashSet<>();
+			while (id != null){
+				if (existingRecords.containsKey(id)){
+					if (existingRecords.get(id) == Boolean.TRUE){
+						//This was previously deleted
+						newAndRestoredIds.add(id);
+					}
+					existingRecords.remove(id);
+				}else{
+					newAndRestoredIds.add(id);
+				}
+				id = reader.readLine();
+			}
+			logEntry.addNote("There are " + newAndRestoredIds.size() + " new and restored ids and " + existingRecords.size() + " deleted ids");
+			if (newAndRestoredIds.size() <= 1000){
+				MarcFactory marcFactory = MarcFactory.newInstance();
+				for (String idToProcess : newAndRestoredIds) {
+					updateBibFromEvergreen(idToProcess, marcFactory, lastUpdateFromMarc, true);
+				}
+			}else {
+				logEntry.incErrors("There were too many ids to process using the API. Skipping this file");
+			}
+			GroupedWorkIndexer indexer = getGroupedWorkIndexer();
+			RecordGroupingProcessor recordGroupingProcessor = getRecordGroupingProcessor();
+			for (String deletedRecordId : existingRecords.keySet()){
+				RemoveRecordFromWorkResult result = recordGroupingProcessor.removeRecordFromGroupedWork(indexingProfile.getName(), deletedRecordId);
+				if (result.reindexWork){
+					indexer.processGroupedWork(result.permanentId);
+				}else if (result.deleteWork){
+					//Delete the work from solr and the database
+					indexer.deleteRecord(result.permanentId);
+				}
+				existingRecords.remove(deletedRecordId);
+			}
+
+			//After the file has been processed, delete it
+			if (!idsFile.delete()){
+				logEntry.incErrors("Could not delete ids file " + idsFile);
+			}
+		}catch (Exception e){
+			logEntry.incErrors("Error reading IDs file " + idsFile);
+		}
+		return numUpdates;
+	}
+
+	private static int updateItemsUsingCsvFile(File[] exportedCsvFiles, long lastUpdateFromMarc, Connection dbConn) {
+		int numUpdates = 0;
+		HashSet<String> bibsToUpdate = new HashSet<>();
+		for(File csvFile : exportedCsvFiles){
+			try {
+				@SuppressWarnings("deprecation")
+				CSVReader reader = new CSVReader(new FileReader(csvFile), '|');
+				String[] rowData = reader.readNext();
+				while (rowData != null){
+					//Currently, columns are: copy id, status, bib id, copy location/current location, deleted, barcode
+					//We will pull the full bib from super cat to get current status.
+					if (rowData.length >= 3) {
+						String bibNumber = rowData[2];
+						bibsToUpdate.add(bibNumber);
+					}
+					rowData = reader.readNext();
+				}
+				reader.close();
+				//delete the file after it has been processed.
+				csvFile.delete();
+			}catch (Exception e){
+				logEntry.incErrors("Error reading CSV file " + csvFile);
+			}
+		}
+		logEntry.addNote("Processing " + bibsToUpdate.size() + " bibs that were marked as changed in the CSV files");
+		logEntry.saveResults();
+		MarcFactory marcFactory = MarcFactory.newInstance();
+		for (String bibToUpdate : bibsToUpdate){
+			numUpdates += updateBibFromEvergreen(bibToUpdate, marcFactory, lastUpdateFromMarc, true);
+		}
+		logEntry.addNote("Finished processing bibs from CSV");
+		logEntry.saveResults();
+		return numUpdates;
+	}
+
+	/**
+	 * Updates Aspen using the MARC export or exports provided.
+	 * To see which records are deleted it needs to get a list of all records that are already in the database
+	 * so it can detect what has been deleted.
+	 *
+	 * @param exportedMarcFiles - An array of files to process
+	 * @param hasFullExportFile - Whether or not we are including a full export.  We will only delete records if we have a full export.
+	 * @param fullExportFile
+	 * @param dbConn            - Connection to the Aspen database
+	 * @return - total number of changes that were found
+	 */
+	private static int updateRecordsUsingMarcExtract(ArrayList<File> exportedMarcFiles, boolean hasFullExportFile, File fullExportFile, Connection dbConn) {
+		int totalChanges = 0;
+		MarcRecordGrouper recordGroupingProcessor = getRecordGroupingProcessor();
+		if (!recordGroupingProcessor.isValid()) {
+			logEntry.incErrors("Record Grouping Processor was not valid");
+			return totalChanges;
+		} else if (!recordGroupingProcessor.loadExistingTitles(logEntry)) {
+			return totalChanges;
+		}
+
+		//Make sure that none of the files are still changing
+		for (File curBibFile : exportedMarcFiles) {
+			//Make sure the file is not currently changing.
+			boolean isFileChanging = true;
+			long lastSizeCheck = curBibFile.length();
+			while (isFileChanging) {
+				try {
+					Thread.sleep(5000); //Wait 5 seconds
+				} catch (InterruptedException e) {
+					logEntry.incErrors("Error checking if a file is still changing", e);
+				}
+				if (lastSizeCheck == curBibFile.length()) {
+					isFileChanging = false;
+				} else {
+					lastSizeCheck = curBibFile.length();
+				}
+			}
+		}
+
+		//Validate that the FullMarcExportRecordIdThreshold has been met if we are running a full export.
+		long maxIdInExport = 0;
+		if (hasFullExportFile) {
+			logEntry.addNote("Validating that full export is the correct size");
+			logEntry.saveResults();
+
+			int numRecordsRead = 0;
+			int numRecordsWithErrors = 0;
+			String lastRecordProcessed = "";
+			try {
+				FileInputStream marcFileStream = new FileInputStream(fullExportFile);
+				MarcReader catalogReader = new MarcPermissiveStreamReader(marcFileStream, true, true, indexingProfile.getMarcEncoding());
+				while (catalogReader.hasNext()) {
+					numRecordsRead++;
+					Record curBib = null;
+					try {
+						curBib = catalogReader.next();
+					} catch (Exception e) {
+						numRecordsWithErrors++;
+					}
+					if (curBib != null) {
+						RecordIdentifier recordIdentifier = recordGroupingProcessor.getPrimaryIdentifierFromMarcRecord(curBib, indexingProfile);
+						if (recordIdentifier != null) {
+							String recordNumber = recordIdentifier.getIdentifier();
+							lastRecordProcessed = recordNumber;
+							recordNumber = recordNumber.replaceAll("[^\\d]", "");
+							long recordNumberDigits = Long.parseLong(recordNumber);
+							if (recordNumberDigits > maxIdInExport) {
+								maxIdInExport = recordNumberDigits;
+							}
+						}
+					}
+				}
+			} catch (Exception e) {
+				logEntry.incErrors("Error loading Evergreen bibs on record " + numRecordsRead + " in profile " + indexingProfile.getName() + " the last record processed was " + lastRecordProcessed + " file " + fullExportFile.getAbsolutePath(), e);
+				logEntry.addNote("Not processing MARC export due to error reading MARC files.");
+				return totalChanges;
+			}
+			if (((float) numRecordsWithErrors / (float) numRecordsRead) > 0.0001) {
+				logEntry.incErrors("More than .1% of records had errors, skipping due to the volume of errors in " + indexingProfile.getName() + " file " + fullExportFile.getAbsolutePath());
+				return totalChanges;
+			} else if (numRecordsWithErrors > 0) {
+				logEntry.addNote("There were " + numRecordsWithErrors + " in " + fullExportFile.getAbsolutePath() + " but still processing");
+				logEntry.saveResults();
+			}
+			logEntry.addNote("Full export " + fullExportFile + " contains " + numRecordsRead + " records.");
+			logEntry.saveResults();
+
+			if (maxIdInExport < indexingProfile.getFullMarcExportRecordIdThreshold()) {
+				logEntry.incErrors("Full MARC export appears to be truncated, MAX Record ID in the export was " + maxIdInExport + " expected to be greater than or equal to " + indexingProfile.getFullMarcExportRecordIdThreshold());
+				logEntry.addNote("Not processing the full export");
+				exportedMarcFiles.remove(fullExportFile);
+				hasFullExportFile = false;
+			} else {
+				logEntry.addNote("The full export is the correct size.");
+				logEntry.saveResults();
+			}
+		}
+
+		GroupedWorkIndexer reindexer = getGroupedWorkIndexer();
+		for (File curBibFile : exportedMarcFiles) {
+			logEntry.addNote("Processing file " + curBibFile.getAbsolutePath());
+
+			String lastRecordProcessed = "";
+			if (hasFullExportFile && curBibFile.equals(fullExportFile) && indexingProfile.getLastChangeProcessed() > 0){
+				logEntry.addNote("Skipping the first " + indexingProfile.getLastChangeProcessed() + " records because they were processed previously see (Last Record ID Processed for the Indexing Profile).");
+			}
+			int numRecordsRead = 0;
+			try {
+				FileInputStream marcFileStream = new FileInputStream(curBibFile);
+				MarcReader catalogReader = new MarcPermissiveStreamReader(marcFileStream, true, true, indexingProfile.getMarcEncoding());
+				//Evergreen handles bib records with a large number of items by breaking the MARC export into multiple records. The records are always sequential.
+				//To solve this, we need to track which id we processed last and if the record has already been processed, we will need to append items from the new
+				//record to the old record and then reprocess it.
+				RecordIdentifier lastIdentifier = null;
+				while (catalogReader.hasNext()) {
+					logEntry.incProducts();
+					try{
+						Record curBib = catalogReader.next();
+						numRecordsRead++;
+						if (hasFullExportFile && curBibFile.equals(fullExportFile) && (numRecordsRead < indexingProfile.getLastChangeProcessed())) {
+							RecordIdentifier recordIdentifier = recordGroupingProcessor.getPrimaryIdentifierFromMarcRecord(curBib, indexingProfile);
+							if (recordIdentifier != null) {
+								recordGroupingProcessor.removeExistingRecord(recordIdentifier.getIdentifier());
+							}
+							logEntry.incSkipped();
+							lastRecordProcessed = recordIdentifier.getIdentifier();
+						}else {
+							RecordIdentifier recordIdentifier = recordGroupingProcessor.getPrimaryIdentifierFromMarcRecord(curBib, indexingProfile);
+							lastRecordProcessed = recordIdentifier.getIdentifier();
+							boolean deleteRecord = false;
+							if (recordIdentifier == null) {
+								//logger.debug("Record with control number " + curBib.getControlNumber() + " was suppressed or is eContent");
+								String controlNumber = curBib.getControlNumber();
+								if (controlNumber == null) {
+									logger.warn("Bib did not have control number or identifier");
+								}
+							} else if (!recordIdentifier.isSuppressed()) {
+								lastRecordProcessed = recordIdentifier.getIdentifier();
+								String recordNumber = recordIdentifier.getIdentifier();
+								GroupedWorkIndexer.MarcStatus marcStatus;
+								if (lastIdentifier != null && lastIdentifier.equals(recordIdentifier)) {
+									marcStatus = reindexer.appendItemsToExistingRecord(indexingProfile, curBib, recordNumber);
+								} else {
+									marcStatus = reindexer.saveMarcRecordToDatabase(indexingProfile, recordNumber, curBib);
+								}
+
+								if (marcStatus != GroupedWorkIndexer.MarcStatus.UNCHANGED || indexingProfile.isRunFullUpdate()) {
+									String permanentId = recordGroupingProcessor.processMarcRecord(curBib, marcStatus != GroupedWorkIndexer.MarcStatus.UNCHANGED, null);
+									if (permanentId == null) {
+										//Delete the record since it is suppressed
+										deleteRecord = true;
+									} else {
+										if (marcStatus == GroupedWorkIndexer.MarcStatus.NEW) {
+											logEntry.incAdded();
+										} else {
+											logEntry.incUpdated();
+										}
+										getGroupedWorkIndexer().processGroupedWork(permanentId);
+										totalChanges++;
+									}
+								} else {
+									logEntry.incSkipped();
+									lastRecordProcessed = recordIdentifier.getIdentifier();
+								}
+								if (totalChanges > 0 && totalChanges % 5000 == 0) {
+									getGroupedWorkIndexer().commitChanges();
+								}
+								//Mark that the record was processed
+								recordGroupingProcessor.removeExistingRecord(recordIdentifier.getIdentifier());
+							} else {
+								//Delete the record since it is suppressed
+								deleteRecord = true;
+							}
+							indexingProfile.setLastChangeProcessed(numRecordsRead);
+							if (deleteRecord) {
+								RemoveRecordFromWorkResult result = recordGroupingProcessor.removeRecordFromGroupedWork(indexingProfile.getName(), recordIdentifier.getIdentifier());
+								if (result.reindexWork) {
+									getGroupedWorkIndexer().processGroupedWork(result.permanentId);
+								} else if (result.deleteWork) {
+									//Delete the work from solr and the database
+									getGroupedWorkIndexer().deleteRecord(result.permanentId);
+								}
+								logEntry.incDeleted();
+								totalChanges++;
+							}
+						}
+					}catch (MarcException me){
+						logEntry.incRecordsWithInvalidMarc("Error processing record index " + numRecordsRead + " of " + curBibFile.getAbsolutePath() + " the last record processed was " + lastRecordProcessed + " trying to continue" + me);
+					}
+					if (numRecordsRead % 250 == 0) {
+						logEntry.saveResults();
+						indexingProfile.updateLastChangeProcessed(dbConn, logEntry);
+					}
+				}
+				marcFileStream.close();
+
+				if (hasFullExportFile){
+					indexingProfile.setLastChangeProcessed(0);
+					indexingProfile.updateLastChangeProcessed(dbConn, logEntry);
+					logEntry.addNote("Updated " + numRecordsRead + " records");
+					logEntry.saveResults();
+				}
+				//After the file has been processed, delete it
+				curBibFile.delete();
+			} catch (Exception e) {
+				logEntry.incErrors("Error loading Evergreen bibs on record " + numRecordsRead + " in profile " + indexingProfile.getName() + " the last record processed was " + lastRecordProcessed + " file " + curBibFile.getAbsolutePath(), e);
+				//Since we had errors, rename it with a .err extension
+				if (!curBibFile.renameTo(new File(curBibFile.toString() + ".err"))){
+					logEntry.incErrors("Could not rename file to error file "+ curBibFile.toString() + ".err");
+				}
+			}
+
+
+		}
+
+		//Loop through remaining records and delete them
+		if (hasFullExportFile) {
+			logEntry.addNote("Deleting " + recordGroupingProcessor.getExistingRecords().size() + " records that were not contained in the export");
+			for (String identifier : recordGroupingProcessor.getExistingRecords().keySet()) {
+				RemoveRecordFromWorkResult result = recordGroupingProcessor.removeRecordFromGroupedWork(indexingProfile.getName(), identifier);
+				if (result.reindexWork){
+					getGroupedWorkIndexer().processGroupedWork(result.permanentId);
+				}else if (result.deleteWork){
+					//Delete the work from solr and the database
+					getGroupedWorkIndexer().deleteRecord(result.permanentId);
+				}
+				logEntry.incDeleted();
+				totalChanges++;
+				if (logEntry.getNumDeleted() % 250 == 0){
+					logEntry.saveResults();
+				}
+			}
+			logEntry.saveResults();
+
+			try {
+				PreparedStatement updateMarcExportStmt = dbConn.prepareStatement("UPDATE indexing_profiles set fullMarcExportRecordIdThreshold = ? where id = ?");
+				updateMarcExportStmt.setLong(1, maxIdInExport);
+				updateMarcExportStmt.setLong(2, indexingProfile.getId());
+				updateMarcExportStmt.executeUpdate();
+			}catch (Exception e){
+				logEntry.incErrors("Error updating lastUpdateFromMarcExport", e);
+			}
+		}
+
+		try {
+			PreparedStatement updateMarcExportStmt = dbConn.prepareStatement("UPDATE indexing_profiles set lastUpdateFromMarcExport = ? where id = ?");
+			updateMarcExportStmt.setLong(1, startTimeForLogging);
+			updateMarcExportStmt.setLong(2, indexingProfile.getId());
+			updateMarcExportStmt.executeUpdate();
+		}catch (Exception e){
+			logEntry.incErrors("Error updating lastUpdateFromMarcExport", e);
+		}
+
+		if (hasFullExportFile && indexingProfile.isRunFullUpdate()){
+			//Disable runFullUpdate
+			try {
+				PreparedStatement updateIndexingProfileStmt = dbConn.prepareStatement("UPDATE indexing_profiles set runFullUpdate = 0 where id = ?");
+				updateIndexingProfileStmt.setLong(1, indexingProfile.getId());
+				updateIndexingProfileStmt.executeUpdate();
+			}catch (Exception e){
+				logEntry.incErrors("Error updating disabling runFullUpdate", e);
+			}
+		}
 
 		return totalChanges;
 	}
@@ -366,7 +971,7 @@ public class EvergreenExportMain {
 	private static int updateBibFromEvergreen(String bibNumber, MarcFactory marcFactory, long lastExtractTime, boolean incrementProductsInLog) {
 		//Get the bib record
 		//noinspection SpellCheckingInspection
-		String getBibUrl = baseUrl + "/opac/extras/supercat/retrieve/marcxml-full/" + bibNumber;
+		String getBibUrl = baseUrl + "/opac/extras/supercat/retrieve/marcxml-full/record/" + bibNumber;
 		ProcessBibRequestResponse response = processGetBibsRequest(getBibUrl, marcFactory, lastExtractTime, incrementProductsInLog);
 		return response.numChanges;
 	}
@@ -379,15 +984,7 @@ public class EvergreenExportMain {
 		String getBibUrl = baseUrl + "/opac/extras/feed/freshmeat/marcxml-full/biblio/import/50";
 		ProcessBibRequestResponse response = processGetBibsRequest(getBibUrl, marcFactory, lastExtractTime, true);
 
-
-
 		return numChanges;
-	}
-
-	private static void processEvergreenBibAndReindex(MarcFactory marcFactory, long lastExtractTime, boolean incrementProductsInLog, ProcessBibRequestResponse response, NodeList bibsPagedRows, int i) {
-		if (incrementProductsInLog) {
-			logEntry.incProducts();
-		}
 	}
 
 	private static ProcessBibRequestResponse processGetBibsRequest(String getBibsRequestUrl, MarcFactory marcFactory, long lastExtractTime, boolean incrementProductsInLog) {
@@ -461,6 +1058,9 @@ public class EvergreenExportMain {
 											NodeList volumes = curVolumeListElement.getElementsByTagName("volume");
 											for (int k = 0; k < volumes.getLength(); k++) {
 												Element curVolume = (Element) volumes.item(k);
+												//Get the call number
+												String callNumber = curVolume.getAttribute("label");
+
 												//Get all the copies within each volume
 												NodeList copies = curVolume.getElementsByTagName("copies");
 												if (copies.getLength() > 0) {
@@ -473,12 +1073,16 @@ public class EvergreenExportMain {
 															continue;
 														}
 														DataField curItemField = marcFactory.newDataField(indexingProfile.getItemTag(), ' ', ' ');
-														String itemId = curCopy.getAttribute("id");
-														itemId = itemId.substring(itemId.lastIndexOf('/') + 1, itemId.length());
-														curItemField.addSubfield(marcFactory.newSubfield(indexingProfile.getItemRecordNumberSubfield(), itemId));
-														String createDate = curCopy.getAttribute("create_date");
-														createDate = createDate.substring(0, createDate.indexOf("T"));
-														curItemField.addSubfield(marcFactory.newSubfield(indexingProfile.getDateCreatedSubfield(), createDate));
+
+														//item id is not part of the regular MARC export, ignore for now.
+														//String itemId = curCopy.getAttribute("id");
+														//itemId = itemId.substring(itemId.lastIndexOf('/') + 1, itemId.length());
+														//curItemField.addSubfield(marcFactory.newSubfield(indexingProfile.getItemRecordNumberSubfield(), itemId));
+
+														//Created date is not part of regular mar export, ignore for now
+														//String createDate = curCopy.getAttribute("create_date");
+														//createDate = createDate.substring(0, createDate.indexOf("T"));
+														//curItemField.addSubfield(marcFactory.newSubfield(indexingProfile.getDateCreatedSubfield(), createDate));
 														//String holdable = curCopy.getAttribute("holdable");
 														//TODO: Figure out where the holdable flag should go
 														//TODO: Do we need to load circulate, ref, or deposit flags?
@@ -486,6 +1090,14 @@ public class EvergreenExportMain {
 														curItemField.addSubfield(marcFactory.newSubfield(indexingProfile.getBarcodeSubfield(), barcode));
 														String itemType = curCopy.getAttribute("circ_modifier");
 														curItemField.addSubfield(marcFactory.newSubfield(indexingProfile.getITypeSubfield(), itemType));
+
+														curItemField.addSubfield(marcFactory.newSubfield(indexingProfile.getCallNumberSubfield(), callNumber));
+
+														String price = curCopy.getAttribute("price");
+														curItemField.addSubfield(marcFactory.newSubfield('y', price));
+
+														String copyNumber = curCopy.getAttribute("copy_number");
+														curItemField.addSubfield(marcFactory.newSubfield('t', copyNumber));
 
 														for (int m = 0; m < curCopy.getChildNodes().getLength(); m++) {
 															Node curCopySubNode = curCopy.getChildNodes().item(m);
@@ -545,6 +1157,10 @@ public class EvergreenExportMain {
 								getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
 							}
 						}
+						if (logEntry.getNumProducts() > 0 && logEntry.getNumProducts() % 250 == 0) {
+							getGroupedWorkIndexer().commitChanges();
+							logEntry.saveResults();
+						}
 						response.numChanges++;
 					}
 				} catch (Exception e) {
@@ -595,5 +1211,62 @@ public class EvergreenExportMain {
 		doc.getDocumentElement().normalize();
 
 		return doc;
+	}
+
+	private static Long getTranslationMapId(PreparedStatement createTranslationMapStmt, PreparedStatement getTranslationMapStmt, String mapName) throws SQLException {
+		Long translationMapId = null;
+		getTranslationMapStmt.setString(1, mapName);
+		getTranslationMapStmt.setLong(2, indexingProfile.getId());
+		ResultSet getTranslationMapRS = getTranslationMapStmt.executeQuery();
+		if (getTranslationMapRS.next()) {
+			translationMapId = getTranslationMapRS.getLong("id");
+		} else {
+			//Map does not exist, create it
+			createTranslationMapStmt.setString(1, mapName);
+			createTranslationMapStmt.setLong(2, indexingProfile.getId());
+			createTranslationMapStmt.executeUpdate();
+			ResultSet generatedIds = createTranslationMapStmt.getGeneratedKeys();
+			if (generatedIds.next()) {
+				translationMapId = generatedIds.getLong(1);
+			}
+		}
+		return translationMapId;
+	}
+
+	private static HashMap<String, String> getExistingTranslationMapValues(PreparedStatement getExistingValuesForMapStmt, Long translationMapId) throws SQLException {
+		HashMap<String, String> existingValues = new HashMap<>();
+		getExistingValuesForMapStmt.setLong(1, translationMapId);
+		ResultSet getExistingValuesForMapRS = getExistingValuesForMapStmt.executeQuery();
+		while (getExistingValuesForMapRS.next()) {
+			existingValues.put(getExistingValuesForMapRS.getString("value").toLowerCase(), getExistingValuesForMapRS.getString("translation"));
+		}
+		return existingValues;
+	}
+
+	private static void updateTranslationMap(String value, String translation, PreparedStatement insertTranslationStmt, Long translationMapId, HashMap<String, String> existingValues) throws SQLException {
+		if (existingValues.containsKey(value.toLowerCase())) {
+			if (translation == null){
+				translation = "";
+			}else {
+				translation = translation.trim();
+			}
+			if (!existingValues.get(value.toLowerCase()).equals(translation)) {
+				logger.warn("Translation for " + value + " has changed from " + existingValues.get(value) + " to " + translation);
+			}
+		} else {
+			if (translation == null) {
+				translation = value;
+			}
+			if (value.length() > 0) {
+				try {
+					insertTranslationStmt.setLong(1, translationMapId);
+					insertTranslationStmt.setString(2, value);
+					insertTranslationStmt.setString(3, translation);
+					insertTranslationStmt.executeUpdate();
+				}catch (SQLException e){
+					logEntry.addNote("Error adding translation map value " + value + " with a translation of " + translation + " e");
+				}
+			}
+		}
 	}
 }

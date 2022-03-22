@@ -37,6 +37,18 @@ class Language extends DataObject
 		return $languageList;
 	}
 
+	public static function getLanguageIdsByCode() : array
+	{
+		$language = new Language();
+		$language->orderBy('displayName');
+		$language->find();
+		$languageList = [];
+		while ($language->fetch()) {
+			$languageList[$language->code] = $language->id;
+		}
+		return $languageList;
+	}
+
 	public function getNumericColumnNames() : array
 	{
 		return ['id', 'weight'];

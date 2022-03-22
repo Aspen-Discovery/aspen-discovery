@@ -157,7 +157,7 @@ global $configArray;
 
 //Get the name of the active instance
 //$inLibrary, is used to pre-select auto-logout on place hold forms;
-// to hide the remember me option on login pages;
+// to hide the "remember me" option on login pages;
 // and to show the Location in the page footer
 if ($locationSingleton->getIPLocation() != null){
 	$interface->assign('inLibrary', true);
@@ -515,8 +515,9 @@ if (!$isAJAX){
 			$systemMessage = new SystemMessage();
 			$systemMessage->id = -1;
 			$systemMessage->dismissable = 0;
-			$systemMessage->setPreFormattedMessage("<p class='alert alert-warning'><strong>The library system is currently offline.</strong> We are unable to retrieve information about your account at this time.</p>");
-			$interface->assign('systemMessage', $systemMessage);
+			$systemMessage->message =  $interface->getVariable('offlineMessage');
+			$systemMessage->messageStyle = 'danger';
+			$systemMessages[] = $systemMessage;
 		}
 		//Set System Message after translator has been setup
 		if (strlen($library->systemMessage) > 0) {

@@ -910,11 +910,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 				}
 
 				if ($showHoldButton && $interface->getVariable('offline')) {
-					// When in offline mode, only show the hold button if offline-login & offline-holds are allowed
-					global $configArray;
-					if (!$interface->getVariable('enableLoginWhileOffline') || !$configArray['Catalog']['enableOfflineHolds']) {
-						$showHoldButton = false;
-					}
+					$showHoldButton = false;
 				}
 
 				if ($showHoldButton && $isAvailable) {
@@ -937,7 +933,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 					foreach ($relatedRecord->getItems() as $itemDetail) {
 						if ($itemDetail->holdable) {
 							if (!empty($itemDetail->volumeId)) {
-								$holdableVolumes[str_pad($itemDetail->volumeOrder, 10, '0', STR_PAD_LEFT) . $itemDetail->volumeId] = $itemDetail->volume;
+								$holdableVolumes[str_pad($itemDetail->volumeOrder, 10, '0', STR_PAD_LEFT) . $itemDetail->volumeId] = ['volumeName' => $itemDetail->volume, 'volumeId'=>$itemDetail->volumeId];
 							} else {
 								$hasItemsWithoutVolumes = true;
 							}
@@ -954,11 +950,11 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 						);
 					} else {
 						ksort($holdableVolumes);
-						foreach ($holdableVolumes as $volumeId => $volumeName) {
+						foreach ($holdableVolumes as $volumeId => $volumeInfo) {
 							$this->_actions[] = array(
-								'title' => translate(['text' => 'Hold %1%', 1=> $volumeName, 'isPublicFacing'=>true]),
+								'title' => translate(['text' => 'Hold %1%', 1=> $volumeInfo['volumeName'], 'isPublicFacing'=>true]),
 								'url' => '',
-								'onclick' => "return AspenDiscovery.Record.showPlaceHold('{$this->getModule()}', '$source', '$id', '$volumeId');",
+								'onclick' => "return AspenDiscovery.Record.showPlaceHold('{$this->getModule()}', '$source', '$id', '{$volumeInfo['volumeId']}');",
 								'requireLogin' => false,
 								'type' => 'ils_hold'
 							);

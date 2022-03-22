@@ -10,6 +10,11 @@ class BrowseCategoryGroupEntry extends DataObject
 	public $browseCategoryGroupId;
 	public $browseCategoryId;
 
+	function getUniquenessFields(): array
+	{
+		return ['browseCategoryGroupId', 'browseCategoryId'];
+	}
+
 	static function getObjectStructure() : array{
 		//Load Groups for lookup values
 		$groups = new BrowseCategoryGroup();
@@ -51,9 +56,10 @@ class BrowseCategoryGroupEntry extends DataObject
 		return '/Admin/BrowseCategories?objectAction=edit&id=' . $this->browseCategoryId;
 	}
 
-	private $_browseCategory = null;
+	protected $_browseCategory = null;
 	function getBrowseCategory(){
 		if ($this->_browseCategory == null){
+			require_once ROOT_DIR . '/sys/Browse/BrowseCategory.php';
 			$this->_browseCategory = new BrowseCategory();
 			$this->_browseCategory->id = $this->browseCategoryId;
 			if (!$this->_browseCategory->find(true)){
@@ -69,5 +75,37 @@ class BrowseCategoryGroupEntry extends DataObject
 		}
 		//Don't need to limit for the library since the user will need Administer Library Browse Categories to even view them.
 		return true;
+	}
+
+	public function toArray($includeRuntimeProperties = true, $encryptFields = false) : array
+	{
+		//Unset ids for group and browse category since they will be set by links
+		$return = parent::toArray($includeRuntimeProperties, $encryptFields);
+		unset($return['browseCategoryGroupId']);
+		unset($return['browseCategoryId']);
+		return $return;
+	}
+
+	public function getLinksForJSON() : array {
+		$links = parent::getLinksForJSON();
+		$browseCategory = $this->getBrowseCategory();
+		$browseCategoryArray = $browseCategory->toArray();
+		$browseCategoryArray['links'] = $browseCategory->getLinksForJSON();
+		$links['browseCategory'] = $browseCategoryArray;
+		return $links;
+	}
+
+	public function loadEmbeddedLinksFromJSON($jsonData, $mappings, $overrideExisting = 'keepExisting') : bool
+	{
+		$result = parent::loadRelatedLinksFromJSON($jsonData, $mappings, $overrideExisting);
+		if (array_key_exists('browseCategory', $jsonData)) {
+			require_once ROOT_DIR . '/sys/Browse/BrowseCategory.php';
+			$browseCategory = new BrowseCategory();
+			$browseCategory->loadFromJSON($jsonData['browseCategory'], $mappings, $overrideExisting);
+			$this->browseCategoryId = $browseCategory->id;
+
+			$result = true;
+		}
+		return $result;
 	}
 }

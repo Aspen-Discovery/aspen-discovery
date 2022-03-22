@@ -5,7 +5,7 @@ require_once ROOT_DIR . '/sys/WebBuilder/WebBuilderCategory.php';
 require_once ROOT_DIR . '/sys/WebBuilder/WebResourceAudience.php';
 require_once ROOT_DIR . '/sys/WebBuilder/WebResourceCategory.php';
 
-class WebResource extends DataObject
+class WebResource extends DB_LibraryLinkedObject
 {
 	public $__table = 'web_builder_resource';
 	public $id;
@@ -145,7 +145,7 @@ class WebResource extends DataObject
 		return $ret;
 	}
 
-	public function getLibraries() {
+	public function getLibraries() : ?array {
 		if (!isset($this->_libraries) && $this->id){
 			$this->_libraries = array();
 			$libraryLink = new LibraryWebResource();
@@ -268,5 +268,55 @@ class WebResource extends DataObject
 		$link = new WebResourceCategory();
 		$link->webResourceId = $this->id;
 		return $link->delete(true);
+	}
+
+	public function getLinksForJSON() : array{
+		$links = parent::getLinksForJSON();
+		//Audiences
+		$audiencesList = WebBuilderAudience::getAudiences();
+		$audiences = $this->getAudiences();
+		$links['audiences'] = [];
+		foreach ($audiences as $audience => $audienceObject){
+			$links['audiences'][] = $audiencesList[$audience];
+		}
+		//Categories
+		$categoriesList = WebBuilderCategory::getCategories();
+		$categories = $this->getCategories();
+		$links['categories'] = [];
+		foreach ($categories as $category => $categoryObject){
+			$links['categories'][] = $categoriesList[$category];
+		}
+		return $links;
+	}
+
+	public function loadRelatedLinksFromJSON($jsonLinks, $mappings, $overrideExisting = 'keepExisting') : bool
+	{
+		$result = parent::loadRelatedLinksFromJSON($jsonLinks, $mappings, $overrideExisting);
+
+		if (array_key_exists('audiences', $jsonLinks)){
+			$audiences = [];
+			$audiencesList = WebBuilderAudience::getAudiences();
+			$audiencesList = array_flip($audiencesList);
+			foreach ($jsonLinks['audiences'] as $audience){
+				if (array_key_exists($audience, $audiencesList)){
+					$audiences[] = $audiencesList[$audience];
+				}
+			}
+			$this->_audiences = $audiences;
+			$result = true;
+		}
+		if (array_key_exists('categories', $jsonLinks)){
+			$categories = [];
+			$categoriesList = WebBuilderCategory::getCategories();
+			$categoriesList = array_flip($categoriesList);
+			foreach ($jsonLinks['categories'] as $category){
+				if (array_key_exists($category, $categoriesList)){
+					$categories[] = $categoriesList[$category];
+				}
+			}
+			$this->_categories = $categories;
+			$result = true;
+		}
+		return $result;
 	}
 }

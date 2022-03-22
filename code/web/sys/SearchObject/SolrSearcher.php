@@ -894,6 +894,11 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
 		$this->initBasicSearch($searchTerm);
 	}
 
+	public function setSearchTermWithIndex($searchIndex, $searchTerm)
+	{
+		$this->initBasicSearchWithIndex($searchIndex, $searchTerm);
+	}
+
 	public function getSpotlightResults(CollectionSpotlight $spotlight){
 		$spotlightResults = [];
 		for ($x = 0; $x < count($this->indexResult['response']['docs']); $x++) {

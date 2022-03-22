@@ -1,6 +1,7 @@
 <?php
 
 require_once ROOT_DIR . '/sys/DB/DataObject.php';
+require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
 
 class UserList extends DataObject
 {
@@ -17,6 +18,11 @@ class UserList extends DataObject
 	public $defaultSort;
 	public $importedFrom;
 	public $nytListModified;
+
+	public function getUniquenessFields(): array
+	{
+		return ['id'];
+	}
 
 	public static function getSourceListsForBrowsingAndCarousels()
 	{
@@ -38,7 +44,7 @@ class UserList extends DataObject
 
 	public function getNumericColumnNames() : array
 	{
-		return ['user_id', 'public', 'deleted', 'searchable'];
+		return ['id', 'user_id', 'public', 'deleted', 'searchable'];
 	}
 
 	// Used by FavoriteHandler as well//
@@ -124,7 +130,6 @@ class UserList extends DataObject
 		$this->dateUpdated = time();
 		$ret = parent::update();
 
-		/** @var Memcache $memCache */
 		global $memCache;
 		$memCache->delete('user_list_data_' . UserAccount::getActiveUserId());
 		return $ret;
@@ -769,5 +774,90 @@ class UserList extends DataObject
 		}
 		ksort($userLists);
 		return $userLists;
+	}
+
+	public function toArray($includeRuntimeProperties = true, $encryptFields = false): array
+	{
+		$return =  parent::toArray($includeRuntimeProperties, $encryptFields);
+		unset($return['user_id']);
+		return $return;
+	}
+
+	public function okToExport(array $selectedFilters) : bool{
+		$okToExport = parent::okToExport($selectedFilters);
+		$user = new User();
+		$user->id = $this->user_id;
+		if ($user->find(true)) {
+			if ($user->homeLocationId == 0 || array_key_exists($user->homeLocationId, $selectedFilters['locations'])) {
+				$okToExport = true;
+			}
+		}
+		return $okToExport;
+	}
+
+	public function getLinksForJSON(): array
+	{
+		$links =  parent::getLinksForJSON();
+		$user = new User();
+		$user->id = $this->user_id;
+		if ($user->find(true)){
+			$links['user'] = $user->username;
+		}
+
+		$userListEntries = [];
+		require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
+		$userListEntry = new UserListEntry();
+		$userListEntry->listId = $this->id;
+		$userListEntry->find();
+		while ($userListEntry->fetch()){
+			$userListEntryArray = $userListEntry->toArray(false, true);
+			$userListEntryArray['links'] = $userListEntry->getLinksForJSON();
+			$userListEntries[] = $userListEntryArray;
+		}
+
+		$links['userListEntries'] = $userListEntries;
+		return $links;
+	}
+
+	public function loadObjectPropertiesFromJSON($jsonData, $mappings)
+	{
+		parent::loadObjectPropertiesFromJSON($jsonData, $mappings);
+		//Need to load ID for lists since we link to a list based on the id
+		$this->id = (int)$jsonData['id'];
+	}
+
+	public function loadEmbeddedLinksFromJSON($jsonData, $mappings, $overrideExisting = 'keepExisting')
+	{
+		parent::loadEmbeddedLinksFromJSON($jsonData, $mappings, $overrideExisting);
+		if (isset($jsonData['user'])){
+			$username = $jsonData['user'];
+			if (array_key_exists($username, $mappings['users'])){
+				$username = $mappings['users'][$username];
+			}
+			$user = new User();
+			$user->username = $username;
+			if ($user->find(true)){
+				$this->user_id = $user->id;
+			}
+		}
+	}
+
+	public function loadRelatedLinksFromJSON($jsonData, $mappings, $overrideExisting = 'keepExisting'): bool
+	{
+		$result = parent::loadRelatedLinksFromJSON($jsonData, $mappings, $overrideExisting);
+		if (array_key_exists('userListEntries', $jsonData)){
+			//Remove any list entries that we already have for this list
+			$tmpListEntry = new UserListEntry();
+			$tmpListEntry->listId = $this->id;
+			$tmpListEntry->delete(true);
+			foreach ($jsonData['userListEntries'] as $listEntry){
+				require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
+				$userListEntry = new UserListEntry();
+				$userListEntry->listId = $this->id;
+				$userListEntry->loadFromJSON($listEntry, $mappings, $overrideExisting);
+			}
+			$result = true;
+		}
+		return $result;
 	}
 }

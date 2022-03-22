@@ -15,7 +15,7 @@
 
 			<h1>{translate text='Reset PIN/Password' isPublicFacing=true}</h1>
 			{if $offline}
-				<div class="alert alert-warning"><strong>{translate text="The library system is currently offline." isPublicFacing=true}</strong> {translate text="We are unable to retrieve information about your account at this time." isPublicFacing=true}</div>
+				<div class="alert alert-warning"><strong>{translate text=$offlineMessage isPublicFacing=true}</strong></div>
 			{else}
 				{if !empty($profileUpdateErrors)}
 					{foreach from=$profileUpdateErrors item=errorMsg}
@@ -27,6 +27,13 @@
 						<div class="alert alert-success">{$msg}</div>
 					{/foreach}
 				{/if}
+				<div class="alert alert-info">
+					{if $pinValidationRules.onlyDigitsAllowed}
+						{translate text="PINs must be between %1% and %2 digits." isPublicFacing=true}
+					{else}
+						{translate text="PINs must be between %1% and %2 characters." isPublicFacing=true}
+					{/if}
+				</div>
 
 				{* Empty action attribute uses the page loaded. this keeps the selected user patronId in the parameters passed back to server *}
 				<form action="" method="post" class="form-horizontal" id="pinForm">
@@ -40,13 +47,13 @@
 					<div class="form-group">
 						<div class="col-xs-4"><label for="pin1" class="control-label">{translate text='New %1%' 1=$passwordLabel translateParameters=true isPublicFacing=true}</label></div>
 						<div class="col-xs-8">
-							<input type="password" name="pin1" id="pin1" value="" size="{$pinValidationRules.minLength}" maxlength="{$pinValidationRules.maxLength}" class="form-control required {if $pinValidationRules.onlyDigitsAllowed}digits{/if}">
+							<input type="password" name="pin1" id="pin1" value="" minlength="{$pinValidationRules.minLength}" maxlength="{$pinValidationRules.maxLength}" class="form-control required {if $pinValidationRules.onlyDigitsAllowed}digits{/if}">
 						</div>
 					</div>
 					<div class="form-group">
 						<div class="col-xs-4"><label for="pin2" class="control-label">{translate text='Re-enter New %1%' 1=$passwordLabel translateParameters=true isPublicFacing=true}</label></div>
 						<div class="col-xs-8">
-								<input type="password" name="pin2" id="pin2" value="" size="{$pinValidationRules.minLength}" maxlength="{$pinValidationRules.maxLength}" class="form-control required {if $pinValidationRules.onlyDigitsAllowed}digits{/if}">
+								<input type="password" name="pin2" id="pin2" value="" minlength="{$pinValidationRules.minLength}" maxlength="{$pinValidationRules.maxLength}" class="form-control required {if $pinValidationRules.onlyDigitsAllowed}digits{/if}">
 						</div>
 					</div>
 					<div class="form-group">

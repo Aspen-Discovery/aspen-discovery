@@ -22,8 +22,8 @@ class GoogleApiSetting extends DataObject
 			'googleAnalyticsLinkingId' => array('property' => 'googleAnalyticsLinkingId', 'type' => 'text', 'label' => 'Google Analytics Linking ID', 'description' => 'The Google analytics Linking ID to use'),
 			'googleAnalyticsLinkedProperties' => array('property' => 'googleAnalyticsLinkedProperties', 'type' => 'textarea', 'label' => 'Google Analytics Linked Properties (one per line)', 'description' => 'The Google analytics properties to link to'),
 			'googleAnalyticsDomainName' => array('property' => 'googleAnalyticsDomainName', 'type' => 'text', 'label' => 'Google Analytics Domain Name', 'description' => 'The Google analytics domain name to use'),
-			'googleBooksKey' => array('property' => 'googleBooksKey', 'type' => 'text', 'label' => 'Google Books Key', 'description' => 'The Google books API key to use'),
-			'googleMapsKey' => array('property' => 'googleMapsKey', 'type' => 'storedPassword', 'label' => 'Google Maps Key', 'description' => 'The Google maps API key to use'),
+			'googleBooksKey' => array('property' => 'googleBooksKey', 'type' => 'storedPassword', 'label' => 'Google Books Key', 'description' => 'The Google books API key to use', 'hideInLists' => true),
+			'googleMapsKey' => array('property' => 'googleMapsKey', 'type' => 'storedPassword', 'label' => 'Google Maps Key', 'description' => 'The Google maps API key to use', 'hideInLists' => true),
 		);
 	}
 }

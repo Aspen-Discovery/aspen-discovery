@@ -8,7 +8,7 @@
 			{if $formField->fieldType == 'format'}
 				{assign var="materialRequestTableColumnName" value=$formField->fieldType}
 				<div class="row form-group">
-					<label class="control-label col-sm-3" for="format">{translate text=$formField->fieldLabel isPublicFacing=true isAdminEnteredData=true} <span class="requiredIndicator">*</span></label>
+					<label class="control-label col-sm-3" for="format">{translate text=$formField->fieldLabel isPublicFacing=true isAdminEnteredData=true} <span class="label label-danger" style="margin-left: .5em">{translate text="Required" isPublicFacing=true}</span></label>
 					<div class="request_detail_field_value col-sm-9">
 
 						<select name="format" class="required form-control" id="format" onchange="AspenDiscovery.MaterialsRequest.setFieldVisibility();">
@@ -25,7 +25,7 @@
 
 				{* Article Fields *}
 				<div class="form-group specialFormatField articleField">
-					<label for="magazineTitle" class="col-sm-3 control-label">{translate text='Magazine/Journal Title' isPublicFacing=true} <span class="requiredIndicator">*</span> </label>
+					<label for="magazineTitle" class="col-sm-3 control-label">{translate text='Magazine/Journal Title' isPublicFacing=true} <span class="label label-danger" style="margin-left: .5em">{translate text="Required" isPublicFacing=true}</span></label>
 					<div class="col-sm-9">
 						<input name="magazineTitle" id="magazineTitle" size="90" maxlength="255" class="required form-control" value="{$materialsRequest->magazineTitle}">
 					</div>
@@ -144,8 +144,8 @@
 			{elseif $formField->fieldType == 'title'}
 				{assign var="materialRequestTableColumnName" value=$formField->fieldType}
 				<div class="row form-group">
-					<label id="titleLabel" for="{$materialRequestTableColumnName}" class="control-label col-sm-3">{translate text=$formField->fieldLabel isPublicFacing=true isAdminEnteredData=true} <span class='requiredIndicator'>*</span></label>
-					<label id="articleTitleLabel" for="{$materialRequestTableColumnName}" class="control-label col-sm-3">{translate text="Article Title" isPublicFacing=true} <span class='requiredIndicator'>*</span></label>
+					<label id="titleLabel" for="{$materialRequestTableColumnName}" class="control-label col-sm-3">{translate text=$formField->fieldLabel isPublicFacing=true isAdminEnteredData=true} <span class="label label-danger" style="margin-left: .5em">{translate text="Required" isPublicFacing=true}</span></label>
+					<label id="articleTitleLabel" for="{$materialRequestTableColumnName}" class="control-label col-sm-3">{translate text="Article Title" isPublicFacing=true} <span class="label label-danger" style="margin-left: .5em">{translate text="Required" isPublicFacing=true}</span></label>
 					<div class="request_detail_field_value col-sm-9">
 						<input name="{$materialRequestTableColumnName}" id="{$materialRequestTableColumnName}" size="90" maxlength="255" class="required form-control" value="{$materialsRequest->$materialRequestTableColumnName}">
 					</div>

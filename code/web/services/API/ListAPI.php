@@ -145,14 +145,14 @@ class ListAPI extends Action
 			return array('success' => false, 'message' => 'The username and password must be provided to load lists.');
 		}
 
-        $username = $_REQUEST['username'];
-        $password = $_REQUEST['password'];
+		list($username, $password) = $this->loadUsernameAndPassword();
         $user = UserAccount::validateAccount($username, $password);
 
 		if ($user == false) {
 			return array('success' => false, 'message' => 'Sorry, we could not find a user with those credentials.');
 		}
 
+		global $configArray;
 		$userId = $user->id;
 
 		$list = new UserList();
@@ -170,19 +170,24 @@ class ListAPI extends Action
 					'public' => $list->public == 1,
 					'created' => $list->created,
 					'dateUpdated' => $list->dateUpdated,
+					'cover' => $configArray['Site']['url']  . "/bookcover.php?type=list&id={$list->id}&size=medium"
 				);
 			}
 		}
-		require_once(ROOT_DIR . '/sys/Suggestions.php');
-		$suggestions = Suggestions::getSuggestions($userId);
-		if (count($suggestions) > 0) {
-			$results[] = array(
-				'id' => 'recommendations',
-				'title' => 'User Recommendations',
-				'description' => 'Personalized Recommendations based on ratings.',
-				'numTitles' => count($suggestions),
-				'public' => false,
-			);
+
+		$includeSuggestions = $_REQUEST['includeSuggestions'] ?? true;
+		if($includeSuggestions) {
+			require_once(ROOT_DIR . '/sys/Suggestions.php');
+			$suggestions = Suggestions::getSuggestions($userId);
+			if (count($suggestions) > 0) {
+				$results[] = array(
+					'id' => 'recommendations',
+					'title' => 'User Recommendations',
+					'description' => 'Personalized Recommendations based on ratings.',
+					'numTitles' => count($suggestions),
+					'public' => false,
+				);
+			}
 		}
 		return array('success' => true, 'lists' => $results);
 	}
@@ -303,8 +308,10 @@ class ListAPI extends Action
 		return array('success' => true, 'lists' => $systemLists);
 	}
 
-	private function _getUserListTitles($listId, $numTitlesToShow)
+	private function _getUserListTitles($listId, $numTitlesToShow, $user)
 	{
+		global $configArray;
+		$listTitles = [];
 		//The list is a patron generated list
 		$list = new UserList();
 		$list->id = $listId;
@@ -320,7 +327,19 @@ class ListAPI extends Action
 
 			$titles = $list->getListRecords(0, $numTitlesToShow, false, 'summary');
 
-			return array('success' => true, 'listName' => $list->title, 'listDescription' => $list->description, 'titles' => $titles);
+			foreach($titles as $title) {
+				$imageUrl = $configArray['Site']['url'] . "/bookcover.php?id=" . $title['id'];
+				$smallImageUrl = $imageUrl . "&size=small";
+				$imageUrl .= "&size=medium";
+				$listTitles[] = array(
+					'id' => $title['id'],
+					'image' => $imageUrl,
+					'small_image' => $smallImageUrl,
+					'title' => $title['title'],
+					'author' => $title['author'],
+				);
+			}
+			return array('success' => true, 'listTitle' => $list->title, 'listDescription' => $list->description, 'titles' => $listTitles);
 		} else {
 			return array('success' => false, 'message' => 'The specified list could not be found.');
 		}
@@ -336,6 +355,7 @@ class ListAPI extends Action
 	 */
 	function getListTitles($listId = NULL, $numTitlesToShow = 25)
 	{
+		global $configArray;
 		if (!$listId) {
 			if (!isset($_REQUEST['id'])) {
 				return array('success' => false, 'message' => 'The id of the list to load must be provided as the id parameter.');
@@ -343,12 +363,15 @@ class ListAPI extends Action
 			$listId = $_REQUEST['id'];
 		}
 
-		if (isset($_REQUEST['username']) && isset($_REQUEST['password'])) {
-			$username = $_REQUEST['username'];
-			$password = $_REQUEST['password'];
+		list($username, $password) = $this->loadUsernameAndPassword();
+		if(!empty($username)) {
 			$user = UserAccount::validateAccount($username, $password);
 		} else {
 			$user = UserAccount::getLoggedInUser();
+		}
+
+		if (isset($_REQUEST['numTitles'])) {
+			$numTitlesToShow = $_REQUEST['numTitles'];
 		}
 
 		if (!is_numeric($numTitlesToShow)) {
@@ -359,7 +382,7 @@ class ListAPI extends Action
 			if (isset($listInfo)) {
 				$listId = $listInfo[1];
 			}
-			return $this->_getUserListTitles($listId, $numTitlesToShow);
+			return $this->_getUserListTitles($listId, $numTitlesToShow, $user);
 		} elseif (preg_match('/search:(?<searchID>.*)/', $listId, $searchInfo)) {
 			if (is_numeric($searchInfo[1])) {
 				$titles = $this->getSavedSearchTitles($searchInfo[1], $numTitlesToShow);
@@ -397,7 +420,7 @@ class ListAPI extends Action
 					$suggestions = Suggestions::getSuggestions($userId);
 					$titles = array();
 					foreach ($suggestions as $id => $suggestion) {
-						$imageUrl = "/bookcover.php?id=" . $id;
+						$imageUrl = $configArray['Site']['url']  .  "/bookcover.php?id=" . $id;
 						if (isset($suggestion['titleInfo']['issn'])) {
 							$imageUrl .= "&issn=" . $suggestion['titleInfo']['issn'];
 						}
@@ -416,9 +439,8 @@ class ListAPI extends Action
 							'id' => $id,
 							'image' => $imageUrl,
 							'small_image' => $smallImageUrl,
-							'title' => $suggestion['titleInfo']['title'],
-							'author' => $suggestion['titleInfo']['author'],
-
+							'title' => $suggestion['titleInfo']['title_display'],
+							'author' => $suggestion['titleInfo']['author_display']
 						);
 					}
 					return array('success' => true, 'listTitle' => $systemList['title'], 'listDescription' => $systemList['description'], 'titles' => $titles);
@@ -595,8 +617,7 @@ class ListAPI extends Action
 	 */
 	function createList()
 	{
-		$username = $_REQUEST['username'];
-		$password = $_REQUEST['password'];
+		list($username, $password) = $this->loadUsernameAndPassword();
 		if (!isset($_REQUEST['title'])) {
 			return array('success' => false, 'message' => 'You must provide the title of the list to be created.');
 		}
@@ -614,7 +635,116 @@ class ListAPI extends Action
 				return $this->addTitlesToList();
 			}else{
 				//There wasn't anything to add so it worked
-				return array('success' => true, 'listId' => $list->id);
+				return array('success' => true, 'title' => 'Success', 'message' => "List {$list->title} created successfully", 'listId' => $list->id);
+			}
+		} else {
+			return array('success' => false, 'message' => 'Login unsuccessful');
+		}
+	}
+
+	/**
+	 * Delete a User list for the user.
+	 *
+	 * Parameters:
+	 * <ul>
+	 * <li>username - The barcode of the user.  Can be truncated to the last 7 or 9 digits.</li>
+	 * <li>password - The pin number for the user. </li>
+	 * <li>id    - The id of the list to delete.</li>
+	 * </ul>
+	 *
+	 * Returns:
+	 * <ul>
+	 * <li>success - true if the list was found and deleted. false if the list was not found or login unsuccessful</li>
+	 * </ul>
+	 *
+	 * Sample Call:
+	 * <code>
+	 * https://aspenurl/API/ListAPI?method=deleteList&username=userbarcode&password=userpin&id=42
+	 * </code>
+	 *
+	 * Sample Response:
+	 * <code>
+	 * {"result":{"success":true}}
+	 * </code>
+	 * @noinspection PhpUnused
+	 */
+	function deleteList()
+	{
+		list($username, $password) = $this->loadUsernameAndPassword();
+		if (!isset($_REQUEST['id'])) {
+			return array('success' => false, 'message' => 'You must provide the id of the list to be deleted.');
+		}
+		$user = UserAccount::validateAccount($username, $password);
+		if ($user && !($user instanceof AspenError)) {
+			$list = new UserList();
+			$list->id = $_REQUEST['id'];
+			$list->user_id = $user->id;
+			$list->find();
+			if ($list->find(true)) {
+				$list->delete();
+				return array('success' => true, 'title' => 'Success', 'message' => 'List deleted successfully');
+			}else{
+				return array('success' => false, 'title' => 'Error', 'message' => 'List not found', 'listId' => $list->id, 'listTitle' => $list->title);
+			}
+		} else {
+			return array('success' => false, 'message' => 'Login unsuccessful');
+		}
+	}
+
+	/**
+	 * Edit an existing User list for the user.
+	 *
+	 * Parameters:
+	 * <ul>
+	 * <li>username - The barcode of the user.  Can be truncated to the last 7 or 9 digits.</li>
+	 * <li>password - The pin number for the user. </li>
+	 * <li>id    - The id of the list to modify.</li>
+	 * <li>title    - The updated title for the list (optional).</li>
+	 * <li>description - A updated description for the list (optional).</li>
+	 * <li>public   - The updated public/private status for the list (optional).</li>
+	 * </ul>
+	 *
+	 * Returns:
+	 * <ul>
+	 * <li>success - true if the list was found and modified. false if the list was not found or login unsuccessful</li>
+	 * </ul>
+	 *
+	 * Sample Call:
+	 * <code>
+	 * https://aspenurl/API/ListAPI?method=editList&username=userbarcode&password=userpin&id=42
+	 * </code>
+	 *
+	 * Sample Response:
+	 * <code>
+	 * {"result":{"success":true}}
+	 * </code>
+	 * @noinspection PhpUnused
+	 */
+	function editList()
+	{
+		list($username, $password) = $this->loadUsernameAndPassword();
+		if (!isset($_REQUEST['id'])) {
+			return array('success' => false, 'message' => 'You must provide the id of the list to be modified.');
+		}
+		$user = UserAccount::validateAccount($username, $password);
+		if ($user && !($user instanceof AspenError)) {
+			$list = new UserList();
+			$list->id = $_REQUEST['id'];
+			$list->user_id = $user->id;
+			if ($list->find(true)) {
+				if(isset($_REQUEST['title'])) {
+					$list->title = $_REQUEST['title'];
+				}
+				if(isset($_REQUEST['description'])) {
+					$list->description = strip_tags($_REQUEST['description']);
+				}
+				if(isset($_REQUEST['public'])) {
+					$list->public = $_REQUEST['public'] === false ? 0 : 1;
+				}
+				$list->update();
+				return array('success' => true, 'title' => 'Success', 'message' => "Edited list {$list->title} successfully");
+			}else{
+				return array('success' => false, 'listId' => $list->id, 'listTitle' => $list->title, 'title' => 'Error', 'message' => "List {$list->title} not found");
 			}
 		} else {
 			return array('success' => false, 'message' => 'Login unsuccessful');
@@ -645,18 +775,17 @@ class ListAPI extends Action
 	 *
 	 * Sample Call:
 	 * <code>
-	 * https://aspenurl/API/ListAPI?method=createList&username=userbarcode&password=userpin&title=Test+List&description=Test&public=0
+	 * https://aspenurl/API/ListAPI?method=addTitlesToList&username=userbarcode&password=userpin&listId=42&recordIds=53254
 	 * </code>
 	 *
 	 * Sample Response:
 	 * <code>
-	 * {"result":{"success":true,"listId":"1688"}}
+	 * {"result":{"success":true,"listId":"1688","numAdded":"1"}}
 	 * </code>
 	 */
 	function addTitlesToList()
 	{
-		$username = $_REQUEST['username'];
-		$password = $_REQUEST['password'];
+		list($username, $password) = $this->loadUsernameAndPassword();
 		if (!isset($_REQUEST['listId'])) {
 			return array('success' => false, 'message' => 'You must provide the listId to add titles to.');
 		}
@@ -715,6 +844,84 @@ class ListAPI extends Action
 	}
 
 	/**
+	 * Remove titles from a user list.
+	 *
+	 * Parameters:
+	 * <ul>
+	 * <li>username - The barcode of the user.  Can be truncated to the last 7 or 9 digits.</li>
+	 * <li>password - The pin number for the user. </li>
+	 * <li>listId   - The id of the list to remove items from.</li>
+	 * <li>recordIds - The id of the record(s) to remove from the list.</li>
+	 * </ul>
+	 *
+	 * Returns:
+	 * <ul>
+	 * <li>success - true if the account is valid and the titles could be added to the list, false if the username or password were incorrect or the list could not be created.</li>
+	 * <li>listId - the id of the list that titles were added to.</li>
+	 * <li>numRemoved - the number of titles that were removed from the list.</li>
+	 * </ul>
+	 *
+	 * Sample Call:
+	 * <code>
+	 * https://aspenurl/API/ListAPI?method=removeTitlesFromList&username=userbarcode&password=userpin&title=Test+List&listId=42&recordIds=
+	 * </code>
+	 *
+	 * Sample Response:
+	 * <code>
+	 * {"result":{"success":true,"listId":"1688"}}
+	 * </code>
+	 */
+	function removeTitlesFromList()
+	{
+		list($username, $password) = $this->loadUsernameAndPassword();
+		if (!isset($_REQUEST['listId'])) {
+			return array('success' => false, 'message' => 'You must provide the listId to remove titles from.');
+		}
+		$recordIds = array();
+		if (!isset($_REQUEST['recordIds'])) {
+			return array('success' => false, 'message' => 'You must provide one or more records to remove from the list.');
+		} else if (!is_array($_REQUEST['recordIds'])) {
+			$recordIds[] = $_REQUEST['recordIds'];
+		} else {
+			$recordIds = $_REQUEST['recordIds'];
+		}
+		$user = UserAccount::validateAccount($username, $password);
+		if ($user && !($user instanceof AspenError)) {
+			$list = new UserList();
+			$list->id = $_REQUEST['listId'];
+			$list->user_id = $user->id;
+			if (!$list->find(true)) {
+				return array('success' => false, 'message' => 'Unable to find the list to remove titles from.');
+			} else {
+				$numRemoved = 0;
+				foreach ($recordIds as $id) {
+					require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
+					$userListEntry = new UserListEntry();
+					$userListEntry->listId = $list->id;
+					if (preg_match("/^[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}|[A-Z0-9_-]+:[A-Z0-9_-]+$/i", $id)) {
+						$userListEntry->source = 'GroupedWork';
+						$userListEntry->sourceId = $id;
+
+						$existingEntry = false;
+						if ($userListEntry->find(true)) {
+							$userListEntry->delete();
+						} else {
+							return array('success' => false, 'message' => 'Unable to find record to remove from the list.');
+						}
+
+						$numRemoved++;
+					}
+				}
+				return array('success' => true, 'listId' => $list->id, 'numRemoved' => $numRemoved);
+			}
+
+
+		} else {
+			return array('success' => false, 'message' => 'Login unsuccessful');
+		}
+	}
+
+	/**
 	 * Clears all titles on a list given a list id
 	 *
 	 * Parameters:
@@ -742,8 +949,7 @@ class ListAPI extends Action
 	 */
 	function clearListTitles()
 	{
-		$username = $_REQUEST['username'];
-		$password = $_REQUEST['password'];
+		list($username, $password) = $this->loadUsernameAndPassword();
 		if (!isset($_REQUEST['listId'])) {
 			return array('success' => false, 'message' => 'You must provide the listId to clear titles from.');
 		}
@@ -1056,6 +1262,30 @@ class ListAPI extends Action
 		}
 
 		return $results;
+	}
+
+	/**
+	 * @return array
+	 * @noinspection PhpUnused
+	 */
+	private function loadUsernameAndPassword() : array
+	{
+		$username = $_REQUEST['username'] ?? '';
+		$password = $_REQUEST['password'] ?? '';
+
+		// check for post request data
+		if (isset($_POST['username']) && isset($_POST['password'])) {
+			$username = $_POST['username'];
+			$password = $_POST['password'];
+		}
+
+		if (is_array($username)) {
+			$username = reset($username);
+		}
+		if (is_array($password)) {
+			$password = reset($password);
+		}
+		return array($username, $password);
 	}
 
 	function getBreadcrumbs() : array

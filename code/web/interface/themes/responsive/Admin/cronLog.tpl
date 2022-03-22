@@ -2,8 +2,8 @@
 	<div id="main-content" class="col-md-12">
 		<h1>{translate text='Cron Log' isAdminFacing=true}</h1>
 		
-		<div id="econtentAttachLogContainer">
-			<table class="logEntryDetails table table-hover table-condensed" aria-label="Cron Log">
+		<div class="adminTableRegion fixed-height-table">
+			<table class="adminTable table table-condensed table-hover table-condensed smallText table-sticky" aria-label="Cron Log">
 				<thead>
 					<tr><th>{translate text='Id' isAdminFacing=true}</th><th>{translate text='Started' isAdminFacing=true}</th><th>{translate text='Finished' isAdminFacing=true}</th><th>{translate text='Elapsed' isAdminFacing=true}</th><th>{translate text='Processes Run' isAdminFacing=true}</th><th>{translate text='Num Errors' isAdminFacing=true}</th><th>{translate text='Had Errors?' isAdminFacing=true}</th><th>{translate text='Notes' isAdminFacing=true}</th></tr>
 				</thead>

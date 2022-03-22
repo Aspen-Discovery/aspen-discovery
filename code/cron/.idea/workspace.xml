@@ -88,6 +88,8 @@
       <recent name="C:\web\aspen-discovery\install" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\web\aspen-discovery\data_dir_setup\solr7\grouped_works\lib" />
+      <recent name="C:\web\aspen-discovery\sites\default\solr-7.6.0\server\lib" />
       <recent name="C:\web\aspen-discovery\code\reindexer" />
       <recent name="C:\web\aspen-discovery\code\cron" />
       <recent name="C:\web\aspen-discovery\code" />
@@ -111,7 +113,6 @@
       <recent name="com.turning_leaf_technologies.util" />
       <recent name="com.turning_leaf_technogies.axis360" />
       <recent name="" />
-      <recent name="com.turning_leaf_technologies.reindexer" />
       <recent name="com.turning_leaf_technologies.indexing" />
     </key>
   </component>
@@ -577,6 +578,10 @@
         <watch expression="record.hashCode()" />
       </configuration>
     </watches-manager>
+  </component>
+  <component name="XSLT-Support.FileAssociations.UIState">
+    <expand />
+    <select />
   </component>
   <component name="antWorkspaceConfiguration">
     <option name="IS_AUTOSCROLL_TO_SOURCE" value="false" />

@@ -109,6 +109,9 @@ public class ItemInfo{
 		if (itemIdentifier == null || itemIdentifier.length() == 0) {
 			return recordInfo.getRecordIdentifier() + "-" + recordInfo.getRelatedItems().indexOf(this);
 		}else {
+			if (itemIdentifier.length() > 255){
+				itemIdentifier = itemIdentifier.substring(0, 255).trim();
+			}
 			return itemIdentifier;
 		}
 	}

@@ -29,7 +29,11 @@ public class EncryptionUtils {
 					encryptionKey.put(serverName, new EncryptionKey(keyParts[0].trim(), keyParts[1].trim(), logEntry));
 					reader.close();
 				} catch (IOException e) {
-					logEntry.incErrors("Could not read encryption key", e);
+					if (logEntry != null ) {
+						logEntry.incErrors("Could not read encryption key", e);
+					}else{
+						System.err.println("Could not read encryption key");
+					}
 					encryptionKey.put(serverName, null);
 				}
 			}else {

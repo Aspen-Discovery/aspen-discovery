@@ -23,16 +23,23 @@ class BrowseCategory extends BaseBrowsable
 	public $numTitlesClickedOn;
 	public $numTimesDismissed;
 
-	private $_subBrowseCategories;
+	protected $_subBrowseCategories;
 
 	function getNumericColumnNames() : array
 	{
 		return ['id', 'sourceListId', 'sourceCourseReserveId', 'userId'];
 	}
 
-	/*
-	returns both valid and invalid categories
-	*/
+	function getUniquenessFields(): array
+	{
+		return ['textId'];
+	}
+
+	/**
+	 * Note, may return invalid categories
+	 *
+	 * @return SubBrowseCategories[]
+	 */
 	public function getSubCategories()
 	{
 		global $module;
@@ -374,4 +381,89 @@ class BrowseCategory extends BaseBrowsable
 		//Don't need to limit for the library since the user will need Administer Library Browse Categories to even view them.
 		return true;
 	}
+
+	public function toArray($includeRuntimeProperties = true, $encryptFields = false): array
+	{
+		$return = parent::toArray($includeRuntimeProperties, $encryptFields);
+		unset ($return['libraryId']);
+		unset ($return['userId']);
+
+		return $return;
+	}
+
+	public function getLinksForJSON(): array
+	{
+		$links = parent::getLinksForJSON();
+		//library
+		$allLibraries = Library::getLibraryListAsObjects(false);
+		if (array_key_exists($this->libraryId, $allLibraries)) {
+			$library = $allLibraries[$this->libraryId];
+			$links['library'] = empty($library->subdomain) ? $library->ilsCode : $library->subdomain;
+		}
+		//user
+		$user = new User();
+		$user->id = $this->userId;
+		if ($user->find(true)){
+			$links['user'] = $user->username;
+		}
+		//sub browse categories
+		$subCategories = $this->getSubCategories();
+		if (count($subCategories) > 0){
+			$links['subCategories'] = [];
+			foreach ($subCategories as $subCategory){
+				$subCategoryArray = $subCategory->toArray();
+				$subCategoryArray['links'] = $subCategory->getLinksForJSON();
+				$links['subCategories'][] = $subCategoryArray;
+			}
+		}
+
+		return $links;
+	}
+
+	public function loadEmbeddedLinksFromJSON($jsonData, $mappings, $overrideExisting = 'keepExisting')
+	{
+		parent::loadEmbeddedLinksFromJSON($jsonData, $mappings, $overrideExisting = 'keepExisting');
+
+		if (isset($jsonData['library'])){
+			$allLibraries = Library::getLibraryListAsObjects(false);
+			$subdomain = $jsonData['library'];
+			if (array_key_exists($subdomain, $mappings['libraries'])){
+				$subdomain = $mappings['libraries'][$subdomain];
+			}
+			foreach ($allLibraries as $tmpLibrary){
+				if ($tmpLibrary->subdomain == $subdomain || $tmpLibrary->ilsCode == $subdomain){
+					$this->libraryId = $tmpLibrary->libraryId;
+					break;
+				}
+			}
+		}
+		if (isset($jsonData['user'])){
+			$username = $jsonData['user'];
+			if (array_key_exists($username, $mappings['users'])){
+				$username = $mappings['users'][$username];
+			}
+			$user = new User();
+			$user->username = $username;
+			if ($user->find(true)){
+				$this->userId = $user->id;
+			}
+		}
+	}
+
+	public function loadRelatedLinksFromJSON($jsonData, $mappings, $overrideExisting = 'keepExisting') : bool {
+		$result = parent::loadRelatedLinksFromJSON($jsonData, $mappings, $overrideExisting);
+		if (isset($jsonData['subCategories'])){
+			$subCategories = [];
+			foreach ($jsonData['subCategories'] as $subCategory) {
+				$subCategoryObj = new SubBrowseCategories();
+				$subCategoryObj->browseCategoryId = $this->id;
+				$subCategoryObj->loadFromJSON($subCategory, $mappings, $overrideExisting);
+				$subCategories[$subCategoryObj->id] = $subCategoryObj;
+			}
+			$this->_subBrowseCategories = $subCategories;
+			$result = true;
+		}
+		return $result;
+	}
+
 }

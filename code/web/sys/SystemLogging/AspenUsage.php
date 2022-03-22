@@ -24,6 +24,14 @@ class AspenUsage extends DataObject
 	public $ebscoEdsSearches;
 	public $blockedRequests;
 	public $blockedApiRequests;
+	public $timedOutSearches;
+	public $timedOutSearchesWithHighLoad;
+	public $searchesWithErrors;
+
+	public function getUniquenessFields(): array
+	{
+		return ['instance', 'year', 'month'];
+	}
 
 	public function getNumericColumnNames() : array
 	{
@@ -41,7 +49,19 @@ class AspenUsage extends DataObject
 			'openArchivesSearches',
 			'userListSearches',
 			'websiteSearches',
-			'eventsSearches'
+			'eventsSearches',
+			'timedOutSearches',
+			'timedOutSearchesWithHighLoad',
+			'searchesWithErrors'
 		];
+	}
+
+	public function okToExport(array $selectedFilters): bool
+	{
+		$okToExport = parent::okToExport($selectedFilters);
+		if (in_array($this->instance, $selectedFilters['instances'])){
+			$okToExport = true;
+		}
+		return $okToExport;
 	}
 }

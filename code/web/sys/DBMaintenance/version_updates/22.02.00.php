@@ -76,5 +76,12 @@ function getUpdates22_02_00() : array
 				"ALTER TABLE library ADD COLUMN systemHoldNoteMasquerade VARCHAR(50) DEFAULT ''",
 			]
 		], //library_systemHoldNotes
+		'cached_values_engine' => array(
+			'title' => 'Cached Values Engine',
+			'description' => 'Change storage engine to InnoDB for cached values table',
+			'sql' => array(
+				'ALTER TABLE `cached_values` ENGINE = InnoDB',
+			)
+		),
 	];
 }

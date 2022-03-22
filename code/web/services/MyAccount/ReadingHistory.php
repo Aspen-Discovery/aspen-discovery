@@ -9,6 +9,18 @@ class ReadingHistory extends MyAccount
 	{
 		global $interface;
 		global $library;
+
+		if (!$library->enableReadingHistory){
+			//User shouldn't get here
+			$module = 'Error';
+			$action = 'Handle404';
+			$interface->assign('module','Error');
+			$interface->assign('action','Handle404');
+			require_once ROOT_DIR . "/services/Error/Handle404.php";
+			$actionClass = new Error_Handle404();
+			$actionClass->launch();
+			die();
+		}
 		$interface->assign('showRatings', $library->getGroupedWorkDisplaySettings()->showRatings);
 
 		global $offlineMode;

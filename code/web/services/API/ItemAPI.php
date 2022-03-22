@@ -36,7 +36,7 @@ class ItemAPI extends Action {
 
 		if (isset($_SERVER['PHP_AUTH_USER'])) {
 			if($this->grantTokenAccess()) {
-				if ($method == 'getAppGroupedWork') {
+				if (in_array($method, array('getAppGroupedWork', 'getItemDetails'))) {
 					header("Cache-Control: max-age=10800");
 					require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
 					APIUsage::incrementStat('ItemAPI', $method);
@@ -804,6 +804,24 @@ class ItemAPI extends Action {
 			return $itemData;
 		}
 
+	}
+
+	function getItemDetails() {
+		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+
+		$groupedWorkId = $_REQUEST['recordId'];
+		$format = $_REQUEST['format'];
+
+		$recordDriver = new GroupedWorkDriver($groupedWorkId);
+
+		$relatedManifestation = null;
+		foreach($recordDriver->getRelatedManifestations() as $relatedManifestation){
+			if($relatedManifestation->format == $format) {
+				break;
+			}
+		}
+
+		return $relatedManifestation->getItemSummary();
 	}
 
 }

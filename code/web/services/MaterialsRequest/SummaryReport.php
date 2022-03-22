@@ -79,6 +79,11 @@ class MaterialsRequest_SummaryReport extends Admin_Admin {
 		if (UserAccount::userHasPermission('View Materials Requests Reports')){
 			//Need to limit to only requests submitted for the user's home location
 			$userHomeLibrary = Library::getPatronHomeLibrary();
+			if (is_null($userHomeLibrary)) {
+				//User does not have a home library, this is likely an admin account.  Use the active library
+				global $library;
+				$userHomeLibrary = $library;
+			}
 			$locations = new Location();
 			$locations->libraryId = $userHomeLibrary->libraryId;
 			$locations->find();
@@ -117,20 +122,10 @@ class MaterialsRequest_SummaryReport extends Admin_Admin {
 			$materialsRequest->joinAdd(new MaterialsRequestStatus(), 'INNER', 'status', 'status', 'id');
 			$materialsRequest->joinAdd(new User(), 'INNER', 'user', 'createdBy', 'id');
 			$materialsRequest->selectAdd();
-			$materialsRequest->selectAdd('COUNT(materials_request.id) as numRequests,description');
+			$materialsRequest->selectAdd('COUNT(materials_request.id) as numRequests, description as description');
 			$materialsRequest->whereAdd('dateUpdated >= ' . $periodStart->getTimestamp() . ' AND dateUpdated < ' . $periodEnd->getTimestamp());
 			if (UserAccount::userHasPermission('View Materials Requests Reports')){
-				//Need to limit to only requests submitted for the user's home location
-				$userHomeLibrary = Library::getPatronHomeLibrary();
-				$locations = new Location();
-				$locations->libraryId = $userHomeLibrary->libraryId;
-				$locations->find();
-				$locationsForLibrary = array();
-				while ($locations->fetch()){
-					$locationsForLibrary[] = $locations->locationId;
-				}
-
-				$materialsRequest->whereAdd('user.homeLocationId IN (' . implode(', ', $locationsForLibrary) . ')');
+				$materialsRequest->whereAdd('user.homeLocationId IN (' . $locationsToRestrictTo . ')');
 			}
 			$materialsRequest->groupBy('status');
 			$materialsRequest->orderBy('status');

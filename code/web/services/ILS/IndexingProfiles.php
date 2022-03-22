@@ -31,6 +31,27 @@ class ILS_IndexingProfiles extends ObjectEditor
 					$this->display('marcFiles.tpl', 'Marc Files');
 				}
 			}
+		} else if ($objectAction == 'loadDefaultBibFormatMappings') {
+			$id = $_REQUEST['id'];
+			$interface->assign('id', $id);
+			$indexProfile = new IndexingProfile();
+			if ($indexProfile->get($id) && !empty($indexProfile->marcPath)) {
+				$defaultFormatMapValues = getTranslationMap('format');
+				$defaultFormatBoostMapValues = getTranslationMap('format_boost');
+				$defaultFormatCategoryMapValues = getTranslationMap('format_category');
+				foreach ($defaultFormatMapValues as $originalValue => $mappedValue) {
+					$formatMapValue = new FormatMapValue();
+					$formatMapValue->value = $originalValue;
+					$formatMapValue->indexingProfileId = $indexProfile->id;
+					if (!$formatMapValue->find(true)) {
+						$formatMapValue->format = $mappedValue;
+						$formatMapValue->formatCategory = $defaultFormatCategoryMapValues[$originalValue] ?? 'Other';
+						$formatMapValue->formatBoost = $defaultFormatBoostMapValues[$originalValue] ?? 1;
+						$formatMapValue->insert();
+					}
+				}
+			}
+			parent::launch();
 		} else {
 			parent::launch();
 		}
@@ -113,6 +134,10 @@ class ILS_IndexingProfiles extends ObjectEditor
 			$actions[] = array(
 				'text' => 'View MARC files',
 				'url' => '/ILS/IndexingProfiles?objectAction=viewMarcFiles&id=' . $existingObject->id,
+			);
+			$actions[] = array(
+				'text' => 'Load Default Bib Format Mappings',
+				'url' => '/ILS/IndexingProfiles?objectAction=loadDefaultBibFormatMappings&id=' . $existingObject->id,
 			);
 		}
 

@@ -40,7 +40,6 @@ function getTranslationMap($name)
 {
 	//Check to see if there is a domain name based sub-folder for he configuration
 	global $serverName;
-	/** @var Memcache $memCache */
 	global $memCache;
 	$mapValues = $memCache->get('translation_map_' . $serverName . '_' . $name);
 	if ($mapValues != false && $mapValues != null && !isset($_REQUEST['reload'])) {
@@ -362,7 +361,10 @@ function updateConfigForScoping($configArray)
 									$library = $Library;
 									$timer->logTime("found the library based on the default");
 								} else {
-									echo("Could not determine the correct library to use for this install");
+									//Just grab the first library sorted alphabetically by subdomain
+									$library = new Library();
+									$library->orderBy('subdomain');
+									$library->find(true);
 								}
 							}
 						}
@@ -373,6 +375,16 @@ function updateConfigForScoping($configArray)
 	}
 
 	$timer->logTime('found library and location');
+	if ($library == null) {
+		$Library = new Library();
+		$Library->isDefault = 1;
+		$Library->find();
+		if ($Library->getNumResults() == 1) {
+			$Library->fetch();
+			$library = $Library;
+		}
+	}
+
 	if ($library == null) {
 		echo("Could not find the active library, please review configuration settings");
 		die();

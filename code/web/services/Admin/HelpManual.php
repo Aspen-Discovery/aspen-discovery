@@ -44,7 +44,7 @@ class Admin_HelpManual extends Action
 		$breadcrumbs = [];
 		if (UserAccount::isLoggedIn() && count(UserAccount::getActivePermissions()) > 0) {
 			$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
-			$breadcrumbs[] = new Breadcrumb('/Admin/Home#aspen_help', 'Aspen Discovery Help');
+			$breadcrumbs[] = new Breadcrumb('/Admin/Home#support', 'Aspen Discovery Support');
 		}
 		$breadcrumbs[] = new Breadcrumb('/Admin/HelpManual?page=table_of_contents', 'Table of Contents');
 		return $breadcrumbs;
@@ -52,7 +52,7 @@ class Admin_HelpManual extends Action
 
 	function getActiveAdminSection() : string
 	{
-		return 'aspen_help';
+		return 'support';
 	}
 
 	function canView() : bool

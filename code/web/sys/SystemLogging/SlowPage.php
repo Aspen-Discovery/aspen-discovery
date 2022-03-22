@@ -15,6 +15,11 @@ class SlowPage extends DataObject
 	public $timesSlower; //2 second to 4 second
 	public $timesVerySlow; //4+ seconds
 
+	public function getUniquenessFields(): array
+	{
+		return ['module','action','year', 'month'];
+	}
+
 	function setSlowness(float $elapsedTime)
 	{
 		if ($elapsedTime < 0.5){
@@ -28,5 +33,10 @@ class SlowPage extends DataObject
 		}else{
 			$this->timesVerySlow++;
 		}
+	}
+
+	public function okToExport(array $selectedFilters): bool
+	{
+		return true;
 	}
 }

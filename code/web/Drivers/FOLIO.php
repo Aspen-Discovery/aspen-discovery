@@ -365,6 +365,9 @@ class FOLIO extends AbstractIlsDriver
 	 */
 	function placeHold($patron, $recordId, $pickupBranch = null, $cancelDate = null)
 	{
+		// title-level holds are currently implemented through the same API
+		// as item-level holds, just without an item Id.
+		return placeItemHold($patron, $recordId, '', $pickupBranch, $cancelDate);
 	}
 
 	/**
@@ -396,16 +399,44 @@ class FOLIO extends AbstractIlsDriver
 
 	function freezeHold($patron, $recordId, $itemToFreezeId, $dateToReactivate)
 	{
-
+		return array(
+			'success' => false,
+			'message' => 'Freezing holds not implemented for this ILS');
 	}
 
 	function thawHold($patron, $recordId, $itemToThawId)
 	{
-
+		return array(
+			'success' => false,
+			'message' => 'Thawing holds not implemented for this ILS');
 	}
 
 	function changeHoldPickupLocation($patron, $recordId, $itemToUpdateId, $newPickupLocation)
 	{
+		global $logger;
+		$hold = $this->makeRequest('GET', '/circulation/requests/' . $recordId);
+		$hold = json_decode($hold, true);
+
+		$hold['pickupServicePointId'] = $newPickupLocation;
+
+		$response = $this->makeRequest('PUT', '/circulation/requests/' . $recordId, json_encode($hold));
+
+		$responseCode = $this->apiCurlWrapper->getResponseCode();
+		if ($responseCode == '204') {
+			$message = 'Pickup Location Updated!';
+			$success = true;
+		} else {
+			$errorMsg = json_decode($response);
+			$message = $errorMsg->errors[0]->message;
+			$success = false;
+		}
+
+		$logger->log($message, Logger::LOG_ERROR);
+		return array(
+			'itemId' => $itemToUpdateId,
+			'success' => $success,
+			'message' => $message
+		);
 
 	}
 

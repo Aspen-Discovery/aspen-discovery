@@ -170,7 +170,8 @@ class UserAccount
 
 				$loadDefaultPermissions = false;
 				try{
-					UserAccount::$userPermissions = UserAccount::getActiveUserObj()->getPermissions();
+					$activeUser = UserAccount::getActiveUserObj();
+					UserAccount::$userPermissions = $activeUser->getPermissions();
 				}catch (Exception $e){
 					$loadDefaultPermissions = true;
 				}
@@ -529,9 +530,11 @@ class UserAccount
 					$cardExpired = new AspenError('Your library card has expired. Please contact your local library to have your library card renewed.');
 					$usageByIPAddress->numFailedLoginAttempts++;
 					return $cardExpired;
+				}elseif ($library->allowLoginToPatronsOfThisLibraryOnly && ($tempUser->getHomeLibrary() != null && ($tempUser->getHomeLibrary()->libraryId != $library->libraryId))){
+					$disallowedMessage = empty($library->messageForPatronsOfOtherLibraries) ? 'Sorry, this catalog can only be accessed by patrons of ' . $library->displayName : $library->messageForPatronsOfOtherLibraries;
+					return new AspenError($disallowedMessage);
 				}
 
-				/** @var Memcache $memCache */
 				global $memCache;
 				global $serverName;
 				global $configArray;
@@ -815,6 +818,26 @@ class UserAccount
 				$tmpUser = $catalogConnectionInstance->driver->findNewUser($patronBarcode);
 				if (!empty($tmpUser) && !($tmpUser instanceof AspenError)) {
 					return $tmpUser;
+				}
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Used to determine if the active user is a staff member (has Aspen privileges or is marked as staff in the PType).
+	 * @return bool
+	 */
+	public static function isStaff(){
+		if (UserAccount::isLoggedIn()) {
+			if (count(UserAccount::getActiveRoles()) > 0) {
+				return true;
+			} else {
+				require_once ROOT_DIR . '/sys/Account/PType.php';
+				$pType = new PType();
+				$pType->pType = UserAccount::getUserPType();
+				if ($pType->find(true)) {
+					return $pType->isStaff;
 				}
 			}
 		}

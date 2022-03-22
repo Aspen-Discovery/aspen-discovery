@@ -14,6 +14,11 @@ class PType extends DataObject
 	public $isStaff;
 	public $twoFactorAuthSettingId;
 
+	public function getNumericColumnNames(): array
+	{
+		return ['isStaff', 'maxHolds', 'restrictMasquerade'];
+	}
+
 	static function getObjectStructure() : array
 	{
 		$roles = [];

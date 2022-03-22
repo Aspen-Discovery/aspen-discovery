@@ -907,7 +907,10 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 		$this->stopQueryTimer();
 
 		// How many results were there?
-		if (!isset($this->indexResult['response']['numFound'])) {
+		if (is_null($this->indexResult)) {
+			//This happens with a timeout
+			$this->resultsTotal = 0;
+		} else if (!isset($this->indexResult['response']['numFound'])) {
 			//An error occurred
 			$this->resultsTotal = 0;
 		} else {

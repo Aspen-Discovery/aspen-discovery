@@ -11,7 +11,14 @@
 					<div ><a href="/MyAccount/Home" class="btn btn-primary">{translate text='Continue to login' isPublicFacing=true}</a> </div>
 				{else}
 					{if $tokenValid}
-						<form method="post" role="form" action="/MyAccount/CompletePinReset">
+						<div class="alert alert-info">
+							{if $pinValidationRules.onlyDigitsAllowed}
+								{translate text="PINs must be between %1% and %2 digits." isPublicFacing=true}
+							{else}
+								{translate text="PINs must be between %1% and %2 characters." isPublicFacing=true}
+							{/if}
+						</div>
+						<form method="post" role="form" action="/MyAccount/CompletePinReset" id="resetPin">
 							<input type='hidden' name='token' id='token' value='{$token}' />
 							<div class="form-group">
 								<div class="col-xs-4"><label for="pin1" class="control-label">{translate text='New %1%' 1=$passwordLabel translateParameters=true isPublicFacing=true}</label></div>
@@ -50,4 +57,9 @@
 			</div>
 		</div>
 	</div>
+	<script type="text/javascript">
+		$(function(){ldelim}
+			$("#resetPin").validate();
+		{rdelim});
+	</script>
 {/strip}

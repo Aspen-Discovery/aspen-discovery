@@ -10,7 +10,7 @@
 		<div class="grid-col grid-col--1"></div>
 		<div class="grid-col grid-col--2"></div>
 		<!-- items -->
-		<div class="adminSection grid-item" id="{$sectionId}">
+		<div class="adminSection grid-item" id="greenhouse-main">
 			<div class="adminPanel">
 				<div class="adminSectionLabel row"><div class="col-tn-12">{translate text=Greenhouse isAdminFacing=true}</div></div>
 				<div class="adminSectionActions row">
@@ -53,6 +53,58 @@
 							</div>
 							<div class="col-tn-10 col-xs-11 col-sm-10 col-md-11">
 								<div class="adminActionLabel"><a href="/Greenhouse/ExternalRequestLog">{translate text="External Request Log"  isAdminFacing=true}</a></div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="adminSection grid-item" id="greenhouse-stats-reports">
+			<div class="adminPanel">
+				<div class="adminSectionLabel row"><div class="col-tn-12">{translate text="Greenhouse Stats/Reports" isAdminFacing=true}</div></div>
+				<div class="adminSectionActions row">
+					<div class="col-tn-12">
+						<div class="adminAction row">
+							<div class="col-tn-2 col-xs-1 col-sm-2 col-md-1 adminActionLabel">
+								<a href="/Greenhouse/SitesByLocation" title="{translate text="Sites By Location" inAttribute="true" isAdminFacing=true}"><i class="fas fa-chevron-circle-right fa"></i></a>
+							</div>
+							<div class="col-tn-10 col-xs-11 col-sm-10 col-md-11">
+								<div class="adminActionLabel"><a href="/Greenhouse/SitesByLocation">{translate text="Sites By Location"  isAdminFacing=true}</a></div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="adminSection grid-item" id="greenhouse-stats-reports">
+			<div class="adminPanel">
+				<div class="adminSectionLabel row"><div class="col-tn-12">{translate text="Data Export / Import " isAdminFacing=true}</div></div>
+				<div class="adminSectionActions row">
+					<div class="col-tn-12">
+						<div class="adminAction row">
+							<div class="col-tn-2 col-xs-1 col-sm-2 col-md-1 adminActionLabel">
+								<a href="/Greenhouse/ExportAspenData" title="{translate text="Export Aspen Data" inAttribute="true" isAdminFacing=true}"><i class="fas fa-chevron-circle-right fa"></i></a>
+							</div>
+							<div class="col-tn-10 col-xs-11 col-sm-10 col-md-11">
+								<div class="adminActionLabel"><a href="/Greenhouse/ExportAspenData">{translate text="Export Aspen Data"  isAdminFacing=true}</a></div>
+							</div>
+						</div>
+						<div class="adminAction row">
+							<div class="col-tn-2 col-xs-1 col-sm-2 col-md-1 adminActionLabel">
+								<a href="/Greenhouse/ImportAspenData" title="{translate text="Import Aspen Data" inAttribute="true" isAdminFacing=true}"><i class="fas fa-chevron-circle-right fa"></i></a>
+							</div>
+							<div class="col-tn-10 col-xs-11 col-sm-10 col-md-11">
+								<div class="adminActionLabel"><a href="/Greenhouse/ImportAspenData">{translate text="Import Aspen Data"  isAdminFacing=true}</a></div>
+							</div>
+						</div>
+						<div class="adminAction row">
+							<div class="col-tn-2 col-xs-1 col-sm-2 col-md-1 adminActionLabel">
+								<a href="/Greenhouse/ClearAspenData" title="{translate text="Clear Aspen Data" inAttribute="true" isAdminFacing=true}"><i class="fas fa-chevron-circle-right fa"></i></a>
+							</div>
+							<div class="col-tn-10 col-xs-11 col-sm-10 col-md-11">
+								<div class="adminActionLabel"><a href="/Greenhouse/ClearAspenData">{translate text="Clear Aspen Data"  isAdminFacing=true}</a></div>
 							</div>
 						</div>
 					</div>

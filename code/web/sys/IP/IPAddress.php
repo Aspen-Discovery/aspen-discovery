@@ -23,6 +23,11 @@ class IPAddress extends DataObject
 		return ['isOpac', 'blockAccess', 'allowAPIAccess', 'startIpVal', 'endIpVal'];
 	}
 
+	public function getUniquenessFields(): array
+	{
+		return ['ip'];
+	}
+
 	static function getObjectStructure() : array{
 		//Look lookup information for display in the user interface
 		$location = new Location();
@@ -40,7 +45,7 @@ class IPAddress extends DataObject
 			'location' => array('property'=>'location', 'type'=>'text', 'label'=>'Display Name', 'description'=>'Descriptive information for the IP Address for internal use'),
 			'locationid' => array('property'=>'locationid', 'type'=>'enum', 'values'=>$locationLookupList, 'label'=>'Location', 'description'=>'The Location which this IP address maps to'),
 			'isOpac' => array('property' => 'isOpac', 'type' => 'checkbox', 'label' => 'Treat as a Public OPAC', 'description' => 'This IP address will be treated as a public OPAC with autologout features turned on.', 'default' => true),
-			'defaultLogMeOutAfterPlacingHoldOn' => array('property' => 'defaultLogMeOutAfterPlacingHoldOn', 'type' => 'checkbox', 'label' => 'Default "Log me out" checkbox on when placing a hold', 'description' => 'this is so freaking stupid', 'default' => true),
+			'defaultLogMeOutAfterPlacingHoldOn' => array('property' => 'defaultLogMeOutAfterPlacingHoldOn', 'type' => 'checkbox', 'label' => 'Default "Log me out" checkbox on when placing a hold', 'description' => 'Whether or not the log me out checkbox is defaulted on or off. Turning this off is useful for minimizing patron disruption, but you should be sure to have a way to automatically logout patron sessions on shared computers.', 'default' => true),
 			'blockAccess' => array('property' => 'blockAccess', 'type' => 'checkbox', 'label' => 'Block Access from this IP', 'description' => 'Traffic from this IP will not be allowed to use Aspen.', 'default' => false),
 			'allowAPIAccess' => array('property' => 'allowAPIAccess', 'type' => 'checkbox', 'label' => 'Allow API Access', 'description' => 'Traffic from this IP will be allowed to use Aspen APIs.', 'default' => false),
 			'showDebuggingInformation' => array('property' => 'showDebuggingInformation', 'type' => 'checkbox', 'label' => 'Show Debugging Information', 'description' => 'Traffic from this IP will have debugging information emitted for it.', 'default' => false),
@@ -55,7 +60,6 @@ class IPAddress extends DataObject
 
 	function insert(){
 		$this->calcIpRange();
-		/** @var Memcache $memCache */
 		global $memCache;
 		$memCache->deleteStartingWith('ipId_for_ip_');
 		$memCache->deleteStartingWith('location_for_ip_');
@@ -63,13 +67,12 @@ class IPAddress extends DataObject
 	}
 	function update(){
 		$this->calcIpRange();
-		/** @var Memcache $memCache */
 		global $memCache;
 		$memCache->deleteStartingWith('ipId_for_ip_');
 		$memCache->deleteStartingWith('location_for_ip_');
 		return parent::update();
 	}
-	function validateIPAddress(){
+	function validateIPAddress() : array{
 		$calcIpResult = $this->calcIpRange();
 		$errors = [];
 		if (!$calcIpResult) {
@@ -80,7 +83,7 @@ class IPAddress extends DataObject
 			'errors' => $errors
 		];
 	}
-	function calcIpRange(){
+	function calcIpRange() : bool {
 		$ipAddress = $this->ip;
 		$subnet_and_mask = explode('/', $ipAddress);
 		if (count($subnet_and_mask) == 2){
@@ -307,5 +310,54 @@ class IPAddress extends DataObject
 			}
 		}
 		return IPAddress::$_logAllQueries;
+	}
+
+	public function toArray($includeRuntimeProperties = true, $encryptFields = false): array
+	{
+		$return = parent::toArray($includeRuntimeProperties, $encryptFields);
+		unset($return['locationid']);
+		return $return;
+	}
+
+	public function getLinksForJSON(): array
+	{
+		$links = parent::getLinksForJSON();
+		$allLocations = Location::getLocationListAsObjects(false);
+		if (array_key_exists($this->locationid, $allLocations)){
+			$location = $allLocations[$this->locationid];
+			$links['locationCode']  = $location->code;
+		}else{
+			$links['locationCode']  = '';
+		}
+		return $links;
+	}
+
+	public function okToExport(array $selectedFilters): bool
+	{
+		$result = parent::okToExport($selectedFilters);
+		if ($this->locationid == -1 || in_array($this->locationid, $selectedFilters['locations'])){
+			return true;
+		}
+		return $result;
+	}
+
+	public function loadEmbeddedLinksFromJSON($jsonData, $mappings, $overrideExisting = 'keepExisting')
+	{
+		parent::loadEmbeddedLinksFromJSON($jsonData, $mappings, $overrideExisting);
+		if (empty($jsonData['locationCode'])){
+			$this->locationid = -1;
+		}else{
+			$allLocations = Location::getLocationListAsObjects(false);
+			$ilsCode = $jsonData['locationCode'];
+			if (array_key_exists($ilsCode, $mappings['locations'])){
+				$ilsCode = $mappings['locations'][$ilsCode];
+			}
+			foreach ($allLocations as $tmpLocation) {
+				if ($tmpLocation->code == $ilsCode) {
+					$this->locationid = $tmpLocation->locationId;
+					break;
+				}
+			}
+		}
 	}
 }

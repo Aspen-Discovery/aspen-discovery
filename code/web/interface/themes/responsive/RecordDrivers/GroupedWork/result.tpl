@@ -185,7 +185,7 @@
 
 				{/if}
 
-				{include file="GroupedWork/relatedLists.tpl"}
+				{include file="GroupedWork/relatedLists.tpl" isSearchResults=true}
 
 				{include file="GroupedWork/readingHistoryIndicator.tpl"}
 

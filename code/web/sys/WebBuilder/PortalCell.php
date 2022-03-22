@@ -27,6 +27,16 @@ class PortalCell extends DataObject
 	public $makeCellAccordion;
 	public $pdfView;
 
+	public function getUniquenessFields(): array
+	{
+		return ['portalRowId', 'weight'];
+	}
+
+	public function getNumericColumnNames(): array
+	{
+		return ['frameHeight'];
+	}
+
 	static function getObjectStructure() : array {
 		$verticalAlignmentOptions = [
 			'flex-start' => 'Top of Row',

@@ -192,3 +192,8 @@ code/web/.idea/dataSources.local.xml
 code/web/.idea/php.xml
 code/web/.idea/workspace.xml
 code/aspen_app/app-configs/app.lida.json
+code/aspen_app/app-configs/app.lida-production.json
+code/web/cron/fetchMarc.ini
+code/cron/.idea/*
+code/web/.idea/*
+code/aspen_app/.idea/*

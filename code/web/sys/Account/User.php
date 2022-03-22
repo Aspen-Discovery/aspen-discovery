@@ -57,7 +57,7 @@ class User extends DataObject
 
 	public $lastLoginValidation;
 
-	public $twoFactorStatus; //Whether or not the user has enrolled
+	public $twoFactorStatus; //Whether the user has enrolled
 	public $twoFactorAuthSettingId; //The settings based on their PType
 
 	public $updateMessage;
@@ -112,11 +112,16 @@ class User extends DataObject
 
 	function getNumericColumnNames() : array
 	{
-		return ['trackReadingHistory', 'hooplaCheckOutConfirmation', 'initialReadingHistoryLoaded', 'updateMessageIsError'];
+		return ['id', 'trackReadingHistory', 'hooplaCheckOutConfirmation', 'initialReadingHistoryLoaded', 'updateMessageIsError'];
 	}
 
 	function getEncryptedFieldNames() : array {
 		return ['password', 'firstname', 'lastname', 'email', 'displayName', 'phone', 'overdriveEmail', 'alternateLibraryCardPassword', $this->getPasswordOrPinField()];
+	}
+
+	public function getUniquenessFields(): array
+	{
+		return ['source', 'username'];
 	}
 
 	function getLists() {
@@ -626,6 +631,9 @@ class User extends DataObject
 		if (empty($this->created)) {
 			$this->created = date('Y-m-d');
 		}
+		if ($this->pickupLocationId == 0) {
+			$this->pickupLocationId = $this->homeLocationId;
+		}
 		$this->fixFieldLengths();
 		$result = parent::update();
 		$this->saveRoles();
@@ -970,7 +978,8 @@ class User extends DataObject
 			global $timer;
 			$allCheckedOut = [];
 			//Get checked out titles from the ILS
-			if ($this->hasIlsConnection()) {
+			global $offlineMode;
+			if ($this->hasIlsConnection() && !$offlineMode) {
 				$ilsCheckouts = $this->getCatalogDriver()->getCheckouts($this);
 				$allCheckedOut = $ilsCheckouts;
 				$timer->logTime("Loaded transactions from catalog. {$this->id}");
@@ -1107,8 +1116,9 @@ class User extends DataObject
 			$allHolds = array(
 				'available' => [],
 				'unavailable' => []
-			);;
-			if ($this->hasIlsConnection()) {
+			);
+			global $offlineMode;
+			if ($this->hasIlsConnection() && !$offlineMode) {
 				$ilsHolds = $this->getCatalogDriver()->getHolds($this);
 				if ($ilsHolds instanceof AspenError) {
 					$ilsHolds = array();
@@ -1618,17 +1628,20 @@ class User extends DataObject
 					} else if ($holdType == 'overdrive') {
 						require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
 						$driver = new OverDriveDriver();
-						$tmpResult = $driver->freezeHold($user, $recordId);
+						$tmpResult = $driver->freezeHold($user, $recordId, null);
 						if ($tmpResult['success']) {
 							$success++;
 						}
-					} else if ($holdType == 'cloud_library') {
-						require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
-						$driver = new CloudLibraryDriver();
-						$tmpResult = $driver->freezeHold($user, $recordId);
-						if ($tmpResult['success']) {
-							$success++;
-						}
+
+					} /** @noinspection PhpStatementHasEmptyBodyInspection */ else
+					  /** @noinspection PhpStatementHasEmptyBodyInspection */ if ($holdType == 'cloud_library') {
+						//Can't freeze cloud library holds
+//						require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
+//						$driver = new CloudLibraryDriver();
+//						$tmpResult = $driver->freezeHold($user, $recordId);
+//						if ($tmpResult['success']) {
+//							$success++;
+//						}
 					} else {
 						$failed++;
 						$tmpResult['message'] = '<div class="alert alert-warning">Hold not available</div>';
@@ -1640,20 +1653,23 @@ class User extends DataObject
 					$tmpResult['message'] = '<div class="alert alert-warning">All holds already frozen</div>';
 				}
 			}
-		} else {
-			$tmpResult['message'] = 'No holds available to freeze.';
 		}
 
 		if ($success >= 1) {
-			$message = '<div class="alert alert-success">' . $success . ' of ' . $total . ' holds were frozen.</div>';
+			$message = '<div class="alert alert-success">' . translate(['text' => '%1% of %2% holds were frozen', 1 => $success, 2 => $total, 'isPublicFacing' => true, 'inAttribute'=>true]) . '</div>';
 
 			if ($failed >= 1) {
-				$message .= '<div class="alert alert-warning">' . $failed . ' holds failed to freeze.</div>';
+				$message .= '<div class="alert alert-warning">' . translate(['text' => '%1% holds failed to freeze', 1 => $failed, 2 => $total, 'isPublicFacing' => true, 'inAttribute'=>true]).'</div>';
 			}
 
 			$tmpResult['message'] = $message;
 		} else {
-			$tmpResult['message'] = '<div class="alert alert-warning">All holds already frozen</div>';
+			if ($total == 0){
+				$tmpResult['message'] = '<div class="alert alert-warning">' . translate(['text' => 'No holds available to freeze', 'isPublicFacing' => true, 'inAttribute'=>true]) . '</div>';
+			}else{
+				$tmpResult['message'] = '<div class="alert alert-warning">' . translate(['text' => 'All holds already frozen', 'isPublicFacing' => true, 'inAttribute'=>true]) . '</div>';
+			}
+
 		}
 
 		return $tmpResult;
@@ -1693,14 +1709,16 @@ class User extends DataObject
 						$driver = new OverDriveDriver();
 						$tmpResult = $driver->thawHold($user, $recordId);
 						if($tmpResult['success']){$success++;}
-					} else if ($holdType == 'cloud_library') {
-						require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
-						$driver = new CloudLibraryDriver();
-						$tmpResult = $driver->thawHold($user, $recordId);
-						if($tmpResult['success']){$success++;}
+					} /** @noinspection PhpStatementHasEmptyBodyInspection */ else
+					  /** @noinspection PhpStatementHasEmptyBodyInspection */ if ($holdType == 'cloud_library') {
+						//Cloud library holds cannot be frozen
+//						require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
+//						$driver = new CloudLibraryDriver();
+//						$tmpResult = $driver->thawHold($user, $recordId);
+//						if($tmpResult['success']){$success++;}
 					} else {
 						$failed++;
-						$tmpResult['message'] = '<div class="alert alert-warning">Hold not available</div>';
+						//$tmpResult['message'] = '<div class="alert alert-warning">Hold not available</div>';
 					}
 
 				} else if ($canFreeze == 0) {
@@ -1710,19 +1728,19 @@ class User extends DataObject
 				}
 
 				if ($success >= 1 ){
-					$message = '<div class="alert alert-success">' . $success . ' of ' . $total . ' holds were thawed.</div>';
+					$message = '<div class="alert alert-success">' . translate(['text' => '%1% of %2% holds were thawed', 1 => $success, 2 => $total, 'isPublicFacing' => true, 'inAttribute'=>true]) . '</div>';
 
 					if ($failed >= 1) {
-						$message .= '<div class="alert alert-warning">' . $failed . ' holds failed to thaw.</div>';
+						$message .= '<div class="alert alert-warning">' . translate(['text' => '%1% holds failed to thaw', 1 => $failed, 'isPublicFacing' => true, 'inAttribute'=>true]) . '</div>';
 					}
 
 					$tmpResult['message'] = $message;
 				} else {
-					$tmpResult['message'] = '<div class="alert alert-warning">All holds already thawed</div>';
+					$tmpResult['message'] = '<div class="alert alert-warning">' . translate(['text' => 'All holds already thawed', 'isPublicFacing' => true]) . '</div>';
 				}
 			}
 		} else {
-			$tmpResult['message'] = 'No holds available to thaw.';
+			$tmpResult['message'] = '<div class="alert alert-warning">' . translate(['text' => 'No holds available to thaw.', 'isPublicFacing' => true]) . '</div>';
 		}
 
 		return $tmpResult;
@@ -1781,7 +1799,7 @@ class User extends DataObject
 					}else if (!$renewAllResults['success'] && !$linkedResults['success']){
 						//Append the new message
 
-						array_merge($renewAllResults['message'], $linkedResults['message']);
+						$renewAllResults['message'] = array_merge($renewAllResults['message'], $linkedResults['message']);
 					}
 				}
 			}
@@ -2005,6 +2023,7 @@ class User extends DataObject
 				return false;
 			}
 		}
+		return false;
 	}
 
 	function getMessages(){
@@ -2319,18 +2338,6 @@ class User extends DataObject
 		$sections['system_admin']->addAction(new AdminAction('Variables', 'Variables set by the Aspen Discovery itself as part of background processes.', '/Admin/Variables'), 'Administer System Variables');
 		$sections['system_admin']->addAction(new AdminAction('System Variables', 'Settings for Aspen Discovery that apply to all libraries on this installation.', '/Admin/SystemVariables'), 'Administer System Variables');
 
-		if (UserAccount::getActiveUserObj()->source == 'admin' && UserAccount::getActiveUserObj()->cat_username == 'aspen_admin') {
-			require_once ROOT_DIR . '/sys/SystemVariables.php';
-			$systemVariables = SystemVariables::getSystemVariables();
-			$sections['greenhouse'] = new AdminSection('Aspen Greenhouse');
-			if (!empty($systemVariables->greenhouseUrl)) {
-				$sections['greenhouse']->addAction(new AdminAction('Site Listing', 'Manage Site Listings in the Greenhouse', $systemVariables->greenhouseUrl . '/Greenhouse/Sites'), 'Run Database Maintenance');
-				$sections['greenhouse']->addAction(new AdminAction('Site Status', 'Site Statuses for the Greenhouse', $systemVariables->greenhouseUrl . '/Greenhouse/SiteStatus'), 'Run Database Maintenance');
-				$sections['greenhouse']->addAction(new AdminAction('Update Center', 'Check version status for sites in the Greenhouse', $systemVariables->greenhouseUrl . '/Greenhouse/UpdateCenter'), 'Run Database Maintenance');
-				$sections['greenhouse']->addAction(new AdminAction('Settings', 'Settings for the Greenhouse', $systemVariables->greenhouseUrl . '/Greenhouse/Settings'), 'Run Database Maintenance');
-			}
-		}
-
 		$sections['system_reports'] = new AdminSection('System Reports');
 		$sections['system_reports']->addAction(new AdminAction('Site Status', 'View Status of Aspen Discovery.', '/Admin/SiteStatus'), 'View System Reports');
 		$sections['system_reports']->addAction(new AdminAction('Usage Dashboard', 'Usage Report for Aspen Discovery.', '/Admin/UsageDashboard'), ['View Dashboards', 'View System Reports']);
@@ -2339,9 +2346,6 @@ class User extends DataObject
 		$sections['system_reports']->addAction(new AdminAction('Nightly Index Log', 'Nightly indexing log for Aspen Discovery.  The nightly index updates all records if needed.', '/Admin/ReindexLog'), ['View System Reports', 'View Indexing Logs']);
 		$sections['system_reports']->addAction(new AdminAction('Cron Log', 'View Cron Log. The cron process handles periodic cleanup tasks and updates reading history for users.', '/Admin/CronLog'), 'View System Reports');
 		$sections['system_reports']->addAction(new AdminAction('Performance Report', 'View Aspen Performance Report.', '/Admin/PerformanceReport'), 'View System Reports');
-		if (UserAccount::getActiveUserObj()->source == 'admin' && UserAccount::getActiveUserObj()->cat_username == 'aspen_admin') {
-			$sections['system_reports']->addAction(new AdminAction('External Request Log', 'View External Request Logs', '/Greenhouse/ExternalRequestLog'), 'Run Database Maintenance');
-		}
 		$sections['system_reports']->addAction(new AdminAction('Error Log', 'View Aspen Error Log.', '/Admin/ErrorReport'), 'View System Reports');
 		$sections['system_reports']->addAction(new AdminAction('PHP Information', 'Display configuration information for PHP on the server.', '/Admin/PHPInfo'), 'View System Reports');
 
@@ -2407,6 +2411,7 @@ class User extends DataObject
 		$sections['cataloging']->addAction(new AdminAction('Manual Grouping Authorities', 'View a list of all title author/authorities that have been added to Aspen to merge works.', '/Admin/AlternateTitles'), 'Manually Group and Ungroup Works');
 		$sections['cataloging']->addAction(new AdminAction('Author Authorities', 'Create and edit authorities for authors.', '/Admin/AuthorAuthorities'), 'Manually Group and Ungroup Works');
 		$sections['cataloging']->addAction(new AdminAction('Records To Not Group', 'Lists records that should not be grouped.', '/Admin/NonGroupedRecords'), 'Manually Group and Ungroup Works');
+		$sections['cataloging']->addAction(new AdminAction('Search Tests', 'Tests to be run to verify searching is generating optimal results.', '/Admin/GroupedWorkSearchTests'), 'Administer Grouped Work Tests');
 		//$sections['cataloging']->addAction(new AdminAction('Print Barcodes', 'Lists records that should not be grouped.', '/Admin/PrintBarcodes'), 'Print Barcodes');
 
 		$sections['local_enrichment'] = new AdminSection('Local Catalog Enrichment');
@@ -2581,22 +2586,39 @@ class User extends DataObject
 			$sections['course_reserves']->addAction(new AdminAction('Indexing Log', 'View the indexing log for Course Reserves.', '/CourseReserves/IndexingLog'), ['View System Reports', 'View Indexing Logs']);
 		}
 
-		$sections['aspen_help'] = new AdminSection('Aspen Discovery Help');
-		$sections['aspen_help']->addAction(new AdminAction('Help Manual', 'View Help Manual for Aspen Discovery.', '/Admin/HelpManual?page=table_of_contents'), true);
-		$sections['aspen_help']->addAction(new AdminAction('Release Notes', 'View release notes for Aspen Discovery which contain information about new functionality and fixes for each release.', '/Admin/ReleaseNotes'), true);
-		$showSubmitTicket = false;
+		$sections['support'] = new AdminSection('Aspen Discovery Support');
+		$sections['support']->addAction(new AdminAction('Request Tracker Settings', 'Define settings for a Request Tracker support system.', '/Support/RequestTrackerConnections'), 'Administer Request Tracker Connection');
 		try {
-			require_once ROOT_DIR . '/sys/SystemVariables.php';
-			$systemVariables = new SystemVariables();
-			if ($systemVariables->find(true) && !empty($systemVariables->ticketEmail)) {
-				$showSubmitTicket = true;
+			require_once ROOT_DIR . '/sys/Support/RequestTrackerConnection.php';
+			$supportConnections = new RequestTrackerConnection();
+			$hasSupportConnection = false;
+			if ($supportConnections->find(true)){
+				$hasSupportConnection = true;
 			}
-		}catch (Exception $e) {
-			//This happens before the table is setup
+			if ($hasSupportConnection) {
+				$sections['support']->addAction(new AdminAction('View Active Tickets', 'View Active Tickets.', '/Support/ViewTickets'), 'View Active Tickets');
+			}
+			$showSubmitTicket = false;
+			try {
+				require_once ROOT_DIR . '/sys/SystemVariables.php';
+				$systemVariables = new SystemVariables();
+				if ($systemVariables->find(true) && !empty($systemVariables->ticketEmail)) {
+					$showSubmitTicket = true;
+				}
+			}catch (Exception $e) {
+				//This happens before the table is setup
+			}
+			if ($showSubmitTicket) {
+				$sections['support']->addAction(new AdminAction('Submit Ticket', 'Submit a support ticket for assistance with Aspen Discovery.', '/Admin/SubmitTicket'), 'Submit Ticket');
+			}
+			if ($hasSupportConnection) {
+				$sections['support']->addAction(new AdminAction('Set Priorities', 'Set Development Priorities.', '/Support/SetDevelopmentPriorities'), 'Set Development Priorities');
+			}
+		}catch (Exception $e){
+			//This happens before tables are created, ignore
 		}
-		if ($showSubmitTicket) {
-			$sections['aspen_help']->addAction(new AdminAction('Submit Ticket', 'Submit a support ticket for assistance with Aspen Discovery.', '/Admin/SubmitTicket'), 'Submit Ticket');
-		}
+		$sections['support']->addAction(new AdminAction('Help Manual', 'View Help Manual for Aspen Discovery.', '/Admin/HelpManual?page=table_of_contents'), true);
+		$sections['support']->addAction(new AdminAction('Release Notes', 'View release notes for Aspen Discovery which contain information about new functionality and fixes for each release.', '/Admin/ReleaseNotes'), true);
 
 		return $sections;
 	}
@@ -2827,6 +2849,129 @@ class User extends DataObject
 			return true;
 		}
 		return false;
+	}
+
+	public function okToExport(array $selectedFilters) : bool{
+		$okToExport = parent::okToExport($selectedFilters);
+		if ($this->homeLocationId == 0 || array_key_exists($this->homeLocationId, $selectedFilters['locations'])){
+			$okToExport = true;
+		}
+		return $okToExport;
+	}
+
+	public function toArray($includeRuntimeProperties = true, $encryptFields = false): array
+	{
+		$return = parent::toArray($includeRuntimeProperties, $encryptFields);
+		unset($return['homeLocationId']);
+		unset($return['myLocation1Id']);
+		unset($return['myLocation2Id']);
+		unset($return['pickupLocationId']);
+		unset($return['lastListUsed']);
+		unset($return['twoFactorAuthSettingId']);
+		return $return;
+	}
+
+	public function loadObjectPropertiesFromJSON($jsonData, $mappings){
+		$encryptedFields = $this->getEncryptedFieldNames();
+		$sourceEncryptionKey = isset($mappings['passkey']) ? $mappings['passkey'] : '';
+		foreach ($jsonData as $property => $value){
+			if ($property != $this->getPrimaryKey() && $property != 'links'){
+				if (in_array($property, $encryptedFields) && !empty($sourceEncryptionKey)){
+					$value = EncryptionUtils::decryptFieldWithProvidedKey($value, $sourceEncryptionKey);
+				}
+				if ($property == 'username'){
+					if (array_key_exists($value, $mappings['users'])){
+						$value = $mappings['users'][$value];
+					}
+				}
+				$this->$property = $value;
+			}
+		}
+	}
+
+	public function getLinksForJSON(): array
+	{
+		$links = parent::getLinksForJSON();
+		$allLocations = Location::getLocationListAsObjects(false);
+		$links['homeLocationId'] = '';
+		if (array_key_exists($this->homeLocationId, $allLocations)){
+			$links['homeLocationId'] = $allLocations[$this->homeLocationId]->code;
+		}
+		$links['myLocation1Id'] = '';
+		if (array_key_exists($this->myLocation1Id, $allLocations)){
+			$links['myLocation1Id'] = $allLocations[$this->myLocation1Id]->code;
+		}
+		$links['myLocation2Id'] = '';
+		if (array_key_exists($this->myLocation2Id, $allLocations)){
+			$links['myLocation2Id'] = $allLocations[$this->myLocation2Id]->code;
+		}
+		$links['pickupLocationId'] = '';
+		if (array_key_exists($this->pickupLocationId, $allLocations)){
+			$links['pickupLocationId'] = $allLocations[$this->pickupLocationId]->code;
+		}
+		return $links;
+	}
+
+	public function loadEmbeddedLinksFromJSON($jsonData, $mappings, $overrideExisting = 'keepExisting')
+	{
+		parent::loadEmbeddedLinksFromJSON($jsonData, $mappings, $overrideExisting);
+		$allLocations = Location::getLocationListAsObjects(false);
+		if (empty($jsonData['homeLocationId'])){
+			$this->homeLocationId = 0;
+		}else{
+			$code = $jsonData['homeLocationId'];
+			if (array_key_exists($code, $mappings['locations'])){
+				$code = $mappings['locations'][$code];
+			}
+			foreach ($allLocations as $tmpLocation){
+				if ($tmpLocation->code == $code){
+					$this->homeLocationId = $tmpLocation->locationId;
+					break;
+				}
+			}
+		}
+		if (empty($jsonData['myLocation1Id'])){
+			$this->myLocation1Id = 0;
+		}else{
+			$code = $jsonData['myLocation1Id'];
+			if (array_key_exists($code, $mappings['locations'])){
+				$code = $mappings['locations'][$code];
+			}
+			foreach ($allLocations as $tmpLocation){
+				if ($tmpLocation->code == $code){
+					$this->myLocation1Id = $tmpLocation->locationId;
+					break;
+				}
+			}
+		}
+		if (empty($jsonData['myLocation2Id'])){
+			$this->myLocation2Id = 0;
+		}else{
+			$code = $jsonData['myLocation2Id'];
+			if (array_key_exists($code, $mappings['locations'])){
+				$code = $mappings['locations'][$code];
+			}
+			foreach ($allLocations as $tmpLocation){
+				if ($tmpLocation->code == $code){
+					$this->myLocation2Id = $tmpLocation->locationId;
+					break;
+				}
+			}
+		}
+		if (empty($jsonData['pickupLocationId'])){
+			$this->pickupLocationId = 0;
+		}else{
+			$code = $jsonData['pickupLocationId'];
+			if (array_key_exists($code, $mappings['locations'])){
+				$code = $mappings['locations'][$code];
+			}
+			foreach ($allLocations as $tmpLocation){
+				if ($tmpLocation->code == $code){
+					$this->pickupLocationId = $tmpLocation->locationId;
+					break;
+				}
+			}
+		}
 	}
 }
 

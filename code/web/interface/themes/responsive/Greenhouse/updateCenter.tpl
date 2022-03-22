@@ -18,6 +18,7 @@
 				<tr>
 					<th>{translate text="Name" isAdminFacing=true}</th>
 					<th>{translate text="Version" isAdminFacing=true}</th>
+					<th>{translate text="Site Type" isAdminFacing=true}</th>
 					<th>{translate text="Implementation Status" isAdminFacing=true}</th>
 					<th>{translate text="Hosting" isAdminFacing=true}</th>
 					<th>{translate text="Full Update" isAdminFacing=true}</th>
@@ -32,6 +33,9 @@
 						</td>
 						<td>
 							{$site->version}
+						</td>
+						<td>
+                            {translate text=$site->getSiteTypeName() isAdminFacing=true}
 						</td>
 						<td>
 							{translate text=$site->getImplementationStatusName() isAdminFacing=true}

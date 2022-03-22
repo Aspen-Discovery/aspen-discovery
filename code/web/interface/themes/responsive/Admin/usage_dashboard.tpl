@@ -436,6 +436,84 @@
 					</div>
 				</div>
 			</div>
+
+			<div class="dashboardCategory col-sm-6">
+				<div class="row">
+					<div class="col-sm-10 col-sm-offset-1">
+						<h3 class="dashboardCategoryLabel">{translate text="Searches With Errors" isAdminFacing=true} <a href="/Admin/UsageGraphs?stat=searchesWithErrors&instance={$selectedInstance}" title="{translate text="Errors Graph" inAttribute="true" isAdminFacing=true}"><i class="fas fa-chart-line"></i></a></h3>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-tn-6">
+						<div class="dashboardLabel">{translate text="This Month" isAdminFacing=true}</div>
+						<div class="dashboardValue">{$aspenUsageThisMonth.totalSearchesWithErrors|number_format}</div>
+					</div>
+					<div class="col-tn-6">
+						<div class="dashboardLabel">{translate text="Last Month" isAdminFacing=true}</div>
+						<div class="dashboardValue">{$aspenUsageLastMonth.totalSearchesWithErrors|number_format}</div>
+					</div>
+					<div class="col-tn-6">
+						<div class="dashboardLabel">{translate text="This Year" isAdminFacing=true}</div>
+						<div class="dashboardValue">{$aspenUsageThisYear.totalSearchesWithErrors|number_format}</div>
+					</div>
+					<div class="col-tn-6">
+						<div class="dashboardLabel">{translate text="All Time" isAdminFacing=true}</div>
+						<div class="dashboardValue">{$aspenUsageAllTime.totalSearchesWithErrors|number_format}</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="dashboardCategory col-sm-6">
+				<div class="row">
+					<div class="col-sm-10 col-sm-offset-1">
+						<h3 class="dashboardCategoryLabel">{translate text="Timed Out Searches" isAdminFacing=true} <a href="/Admin/UsageGraphs?stat=timedOutSearches&instance={$selectedInstance}" title="{translate text="Errors Graph" inAttribute="true" isAdminFacing=true}"><i class="fas fa-chart-line"></i></a></h3>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-tn-6">
+						<div class="dashboardLabel">{translate text="This Month" isAdminFacing=true}</div>
+						<div class="dashboardValue">{$aspenUsageThisMonth.totalTimedOutSearches|number_format}</div>
+					</div>
+					<div class="col-tn-6">
+						<div class="dashboardLabel">{translate text="Last Month" isAdminFacing=true}</div>
+						<div class="dashboardValue">{$aspenUsageLastMonth.totalTimedOutSearches|number_format}</div>
+					</div>
+					<div class="col-tn-6">
+						<div class="dashboardLabel">{translate text="This Year" isAdminFacing=true}</div>
+						<div class="dashboardValue">{$aspenUsageThisYear.totalTimedOutSearches|number_format}</div>
+					</div>
+					<div class="col-tn-6">
+						<div class="dashboardLabel">{translate text="All Time" isAdminFacing=true}</div>
+						<div class="dashboardValue">{$aspenUsageAllTime.totalTimedOutSearches|number_format}</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="dashboardCategory col-sm-6">
+				<div class="row">
+					<div class="col-sm-10 col-sm-offset-1">
+						<h3 class="dashboardCategoryLabel">{translate text="Timed Out Searches Under High Load" isAdminFacing=true} <a href="/Admin/UsageGraphs?stat=timedOutSearchesWithHighLoad&instance={$selectedInstance}" title="{translate text="Errors Graph" inAttribute="true" isAdminFacing=true}"><i class="fas fa-chart-line"></i></a></h3>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-tn-6">
+						<div class="dashboardLabel">{translate text="This Month" isAdminFacing=true}</div>
+						<div class="dashboardValue">{$aspenUsageThisMonth.totalTimedOutSearchesWithHighLoad|number_format}</div>
+					</div>
+					<div class="col-tn-6">
+						<div class="dashboardLabel">{translate text="Last Month" isAdminFacing=true}</div>
+						<div class="dashboardValue">{$aspenUsageLastMonth.totalTimedOutSearchesWithHighLoad|number_format}</div>
+					</div>
+					<div class="col-tn-6">
+						<div class="dashboardLabel">{translate text="This Year" isAdminFacing=true}</div>
+						<div class="dashboardValue">{$aspenUsageThisYear.totalTimedOutSearchesWithHighLoad|number_format}</div>
+					</div>
+					<div class="col-tn-6">
+						<div class="dashboardLabel">{translate text="All Time" isAdminFacing=true}</div>
+						<div class="dashboardValue">{$aspenUsageAllTime.totalTimedOutSearchesWithHighLoad|number_format}</div>
+					</div>
+				</div>
+			</div>
 		</div>
 
 		{if $webResourceUsage|@count > 0}

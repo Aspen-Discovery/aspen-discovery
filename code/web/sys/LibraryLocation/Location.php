@@ -1248,6 +1248,7 @@ class Location extends DataObject
 		if($this->address && empty($this->latitude) && empty($this->longitude)){
 			$address = str_replace("\r\n", ",", $this->address);
 			$address = str_replace(" ", "+", $address);
+			$address = str_replace("#", "", $address);
 
 			require_once ROOT_DIR . '/sys/Enrichment/GoogleApiSetting.php';
 			$googleSettings = new GoogleApiSetting();
@@ -1421,6 +1422,31 @@ class Location extends DataObject
 			$locationList[$location->locationId] = $location->displayName;
 		}
 		return $locationList;
+	}
+
+	static $locationListAsObjects = null;
+	/**
+	 * @param boolean $restrictByHomeLibrary whether locations for the patron's home library should be returned
+	 * @return Location[]
+	 */
+	static function getLocationListAsObjects(bool $restrictByHomeLibrary): array
+	{
+		if (Location::$locationListAsObjects == null) {
+			$location = new Location();
+			$location->orderBy('displayName');
+			if ($restrictByHomeLibrary) {
+				$homeLibrary = Library::getPatronHomeLibrary();
+				if ($homeLibrary != null) {
+					$location->libraryId = $homeLibrary->libraryId;
+				}
+			}
+			$location->find();
+			Location::$locationListAsObjects = [];
+			while ($location->fetch()) {
+				Location::$locationListAsObjects[$location->locationId] = clone $location;
+			}
+		}
+		return Location::$locationListAsObjects;
 	}
 
 	protected $_browseCategoryGroup = null;

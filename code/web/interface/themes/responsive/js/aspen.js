@@ -5769,7 +5769,7 @@ AspenDiscovery.Account = (function(){
 							}
 						});
 					} else {
-						loginErrorElem.text(response.result.message).show();
+						loginErrorElem.html(response.result.message).show();
 					}
 				}, 'json').fail(function(){
 					loginErrorElem.text("There was an error processing your login, please try again.").show();
@@ -5792,7 +5792,7 @@ AspenDiscovery.Account = (function(){
 						if (response.result === true) {
 							AspenDiscovery.showMessage(response.title, response.message ? response.message : "Successfully linked the account.", true, true);
 						} else {
-							loginErrorElem.text(response.message);
+							loginErrorElem.html(response.message);
 							loginErrorElem.show();
 						}
 					},
@@ -12967,7 +12967,6 @@ AspenDiscovery.WebBuilder = function () {
 		},
 
 		getWebResource:function (id) {
-			var newTab = window.open();
 			var url = Globals.path + "/WebBuilder/AJAX";
 			var params = {
 				method: "getWebResource",
@@ -12984,6 +12983,7 @@ AspenDiscovery.WebBuilder = function () {
 						};
 						$.getJSON(url, params, function(usage){
 							if(data.openInNewTab) {
+								var newTab = window.open();
 								newTab.location.href = data.url;
 							} else {
 								location.assign(data.url);
@@ -13002,6 +13002,7 @@ AspenDiscovery.WebBuilder = function () {
 					};
 					$.getJSON(url, params, function(usage){
 						if(data.openInNewTab) {
+							var newTab = window.open();
 							newTab.location.href = data.url;
 						} else {
 							location.assign(data.url);
