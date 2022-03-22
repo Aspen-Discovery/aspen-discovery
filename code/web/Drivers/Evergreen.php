@@ -969,6 +969,8 @@ class Evergreen extends AbstractIlsDriver
 	public function patronLogin($username, $password, $validatedViaSSO)
 	{
 		//return parent::patronLogin($username, $password, $validatedViaSSO);
+		$username = trim($username);
+		$password = trim($password);
 		$session = $this->validatePatronAndGetAuthToken($username, $password);
 		if ($session['userValid']){
 			$userData = $this->fetchSession($session['authToken']);
