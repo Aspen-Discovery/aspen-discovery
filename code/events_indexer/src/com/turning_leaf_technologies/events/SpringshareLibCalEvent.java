@@ -3,7 +3,7 @@ package com.turning_leaf_technologies.events;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-class LibraryCalendarEvent {
+class SpringshareLibCalEvent {
 	private long id;
 	private long settingsId;
 	private String externalId;
@@ -11,7 +11,7 @@ class LibraryCalendarEvent {
 	private long rawChecksum;
 	private boolean deleted;
 
-	LibraryCalendarEvent(ResultSet existingEventsRS) throws SQLException{
+	SpringshareLibCalEvent(ResultSet existingEventsRS) throws SQLException{
 		this.id = existingEventsRS.getLong("id");
 		this.settingsId = existingEventsRS.getLong("settingsId");
 		this.externalId = existingEventsRS.getString("externalId");

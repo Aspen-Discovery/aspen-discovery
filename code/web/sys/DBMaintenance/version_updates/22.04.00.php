@@ -62,6 +62,45 @@ function getUpdates22_04_00() : array
 				"ALTER TABLE browse_category CHANGE COLUMN numTimesShown numTimesShown INT NOT NULL DEFAULT  0",
 			),
 		], //browse_category_times_shown
+        'permissions_create_events_springshare' => [
+            'title' => 'Alters permissions for Events',
+            'description' => 'Create permissions for Springshare LibCal; update permissions for LibraryMarket LibraryCalendar',
+            'sql' => [
+                "UPDATE permissions SET name = 'Administer LibraryMarket LibraryCalendar Settings', description = 'Allows the user to administer integration with LibraryMarket LibraryCalendar for all libraries.' WHERE name = 'Administer Library Calendar Settings'",
+                "INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES ('Events', 'Administer Springshare LibCal Settings', 'Events', 20, 'Allows the user to administer integration with Springshare LibCal for all libraries.')",
+                "INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer Springshare LibCal Settings'))"
+            ]
+        ], // permissions_create_events_springshare
+        'springshare_libcal_settings' => [
+            'title' => 'Define events settings for Springshare LibCal integration',
+            'description' => 'Initial setup of the Springshare LibCal integration',
+            'sql' => [
+                'CREATE TABLE IF NOT EXISTS springshare_libcal_settings (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					name VARCHAR(100) NOT NULL UNIQUE,
+					baseUrl VARCHAR(255) NOT NULL,
+                    calId SMALLINT NOT NULL,
+                    clientId SMALLINT NOT NULL,
+                    clientSecret VARCHAR(36) NOT NULL
+				) ENGINE INNODB',
+            ]
+        ], // springshare_libcal_settings
+        'springshare_libcal_events' => [
+            'title' => 'Springshare LibCal Events Data' ,
+            'description' => 'Setup tables to store events data for Springshare LibCal',
+            'sql' => [
+                'CREATE TABLE IF NOT EXISTS springshare_libcal_events (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					settingsId INT NOT NULL,
+					externalId varchar(36) NOT NULL,
+					title varchar(255) NOT NULL,
+					rawChecksum BIGINT,
+					rawResponse MEDIUMTEXT,
+					deleted TINYINT default 0,
+					UNIQUE (settingsId, externalId)
+				)'
+            ]
+        ], // springshare_libcal_events
 		'ils_log_add_records_with_invalid_marc' => [
 			'title' => 'ILS Log Records With Invalid MARC',
 			'description' => 'Add Records With Invalid MARC to the ILS Log',

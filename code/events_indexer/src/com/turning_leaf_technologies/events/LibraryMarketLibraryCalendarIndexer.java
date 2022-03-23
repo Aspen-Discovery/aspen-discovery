@@ -30,7 +30,7 @@ import java.util.zip.CRC32;
 
 import static java.util.Calendar.YEAR;
 
-class LibraryCalendarIndexer {
+class LibraryMarketLibraryCalendarIndexer {
 	private long settingsId;
 	private String name;
 	private String baseUrl;
@@ -40,7 +40,7 @@ class LibraryCalendarIndexer {
 	private String password;
 	private Connection aspenConn;
 	private EventsIndexerLogEntry logEntry;
-	private HashMap<String, LibraryCalendarEvent> existingEvents = new HashMap<>();
+	private HashMap<String, LibraryMarketLibraryCalendarEvent> existingEvents = new HashMap<>();
 	private HashSet<String> librariesToShowFor = new HashSet<>();
 	private static CRC32 checksumCalculator = new CRC32();
 
@@ -51,7 +51,7 @@ class LibraryCalendarIndexer {
 	//TODO: Update full reload based on settings
 	private boolean doFullReload = true;
 
-	LibraryCalendarIndexer(long settingsId, String name, String baseUrl, String clientId, String clientSecret, String username, String password, ConcurrentUpdateSolrClient solrUpdateServer, Connection aspenConn, Logger logger) {
+	LibraryMarketLibraryCalendarIndexer(long settingsId, String name, String baseUrl, String clientId, String clientSecret, String username, String password, ConcurrentUpdateSolrClient solrUpdateServer, Connection aspenConn, Logger logger) {
 		this.settingsId = settingsId;
 		this.name = name;
 		this.baseUrl = baseUrl;
@@ -62,7 +62,7 @@ class LibraryCalendarIndexer {
 		this.aspenConn = aspenConn;
 		this.solrUpdateServer = solrUpdateServer;
 
-		logEntry = new EventsIndexerLogEntry("Library Calendar " + name, aspenConn, logger);
+		logEntry = new EventsIndexerLogEntry("LibraryMarket LibraryCalendar " + name, aspenConn, logger);
 
 		try {
 			addEventStmt = aspenConn.prepareStatement("INSERT INTO lm_library_calendar_events SET settingsId = ?, externalId = ?, title = ?, rawChecksum =?, rawResponse = ?, deleted = 0 ON DUPLICATE KEY UPDATE title = VALUES(title), rawChecksum = VALUES(rawChecksum), rawResponse = VALUES(rawResponse), deleted = 0", Statement.RETURN_GENERATED_KEYS);
@@ -88,11 +88,11 @@ class LibraryCalendarIndexer {
 			eventsStmt.setLong(1, this.settingsId);
 			ResultSet existingEventsRS = eventsStmt.executeQuery();
 			while (existingEventsRS.next()) {
-				LibraryCalendarEvent event = new LibraryCalendarEvent(existingEventsRS);
+				LibraryMarketLibraryCalendarEvent event = new LibraryMarketLibraryCalendarEvent(existingEventsRS);
 				existingEvents.put(event.getExternalId(), event);
 			}
 		} catch (SQLException e) {
-			logEntry.incErrors("Error loading existing events for Library Calendar " + name, e);
+			logEntry.incErrors("Error loading existing events for LibraryMarket LibraryCalendar " + name, e);
 		}
 	}
 
@@ -109,7 +109,7 @@ class LibraryCalendarIndexer {
 		if (rssFeed != null){
 			if (doFullReload) {
 				try {
-					solrUpdateServer.deleteByQuery("type:library_calendar AND source:" + this.settingsId);
+					solrUpdateServer.deleteByQuery("type:event AND source:" + this.settingsId);
 					//3-19-2019 Don't commit so the index does not get cleared during run (but will clear at the end).
 				} catch (HttpSolrClient.RemoteSolrException rse) {
 					logEntry.incErrors("Solr is not running properly, try restarting " + rse.toString());
@@ -148,7 +148,7 @@ class LibraryCalendarIndexer {
 							SolrInputDocument solrDocument = new SolrInputDocument();
 							solrDocument.addField("id", "lc_" + settingsId + "_" + eventId);
 							solrDocument.addField("identifier", eventId);
-							solrDocument.addField("type", "library_calendar");
+							solrDocument.addField("type", "event");
 							solrDocument.addField("source", settingsId);
 							solrDocument.addField("url", getStringForKey(curEvent, "url"));
 							String eventType = getStringForKey(curEvent, "type");
@@ -285,7 +285,7 @@ class LibraryCalendarIndexer {
 				}
 			}
 
-			for(LibraryCalendarEvent eventInfo : existingEvents.values()){
+			for(LibraryMarketLibraryCalendarEvent eventInfo : existingEvents.values()){
 				try {
 					deleteEventStmt.setLong(1, eventInfo.getId());
 					deleteEventStmt.executeUpdate();
