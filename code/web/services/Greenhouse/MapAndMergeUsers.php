@@ -327,6 +327,9 @@ class MapAndMergeUsers extends Admin_Admin
 							$result['numUserStaffSettingsMoved']++;
 						}
 
+						$newUser->delete();
+						$originalUser->username = $newUsername;
+
 						$result['numUsersMerged']++;
 					}catch (Exception $e){
 						$result['errors'][] = "Error moving user data from new User {$newUser->id} to original User {$originalUser->id} $e";
@@ -348,6 +351,10 @@ class MapAndMergeUsers extends Admin_Admin
 		}
 
 		//Now that the updates have been made, clear sessions
+		if ($result['numUserUpdated'] > 0 || $result['numUsersMerged'] > 0){
+			$session = new Session();
+			$session->deleteAll();
+		}
 
 		return $result;
 	}
