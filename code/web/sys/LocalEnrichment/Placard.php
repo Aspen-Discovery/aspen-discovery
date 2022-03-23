@@ -134,7 +134,6 @@ class Placard extends DB_LibraryLocationLinkedObject
 			return $this->getLocations();
 		} elseif ($name == 'triggers') {
 			$this->getTriggers();
-			/** @noinspection PhpUndefinedFieldInspection */
 			return $this->_triggers;
 		} elseif ($name == 'languages') {
 			$this->getLanguages();
@@ -150,7 +149,6 @@ class Placard extends DB_LibraryLocationLinkedObject
 		}elseif ($name == "locations") {
 			$this->_locations = $value;
 		}elseif ($name == 'triggers') {
-			/** @noinspection PhpUndefinedFieldInspection */
 			$this->_triggers = $value;
 		}elseif ($name == 'languages') {
 			$this->_languages = $value;
@@ -256,7 +254,7 @@ class Placard extends DB_LibraryLocationLinkedObject
 	/**
 	 * @return int[]
 	 */
-	public function getLanguages() : array{
+	public function getLanguages() : ?array{
 		if (!isset($this->_languages) && $this->id) {
 			$this->_languages = [];
 			$language = new PlacardLanguage();
