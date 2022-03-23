@@ -50,6 +50,42 @@
 					<dt>{translate text="Num Don't Show Again Moved" isAdminFacing=true}</dt>
 					<dd>{$mergeResults.numNotInterestedMoved}</dd>
 				</dl>
+				<dl>
+					<dt>{translate text="Num Linked Primary Users Moved" isAdminFacing=true}</dt>
+					<dd>{$mergeResults.numLinkedPrimaryUsersMoved}</dd>
+				</dl>
+				<dl>
+					<dt>{translate text="Num Linked Users Moved" isAdminFacing=true}</dt>
+					<dd>{$mergeResults.numLinkedUsersMoved}</dd>
+				</dl>
+				<dl>
+					<dt>{translate text="Num Saved Searches Moved" isAdminFacing=true}</dt>
+					<dd>{$mergeResults.numSavedSearchesMoved}</dd>
+				</dl>
+				<dl>
+					<dt>{translate text="Num System Message Dismissals Moved" isAdminFacing=true}</dt>
+					<dd>{$mergeResults.numSystemMessageDismissalsMoved}</dd>
+				</dl>
+				<dl>
+					<dt>{translate text="Num Placard Dismissals Moved" isAdminFacing=true}</dt>
+					<dd>{$mergeResults.numPlacardDismissalsMoved}</dd>
+				</dl>
+				<dl>
+					<dt>{translate text="Num Materials Request Created By Moved" isAdminFacing=true}</dt>
+					<dd>{$mergeResults.numMaterialsRequestsAssignmentsMoved}</dd>
+				</dl>
+				<dl>
+					<dt>{translate text="Num User Messages Moved" isAdminFacing=true}</dt>
+					<dd>{$mergeResults.numUserMessagesMoved}</dd>
+				</dl>
+				<dl>
+					<dt>{translate text="Num User Payments Moved" isAdminFacing=true}</dt>
+					<dd>{$mergeResults.numUserPaymentsMoved}</dd>
+				</dl>
+				<dl>
+					<dt>{translate text="Num User Staff Settings Moved" isAdminFacing=true}</dt>
+					<dd>{$mergeResults.numUserStaffSettingsMoved}</dd>
+				</dl>
 			</div>
 		</div>
     {else}

@@ -71,6 +71,16 @@ class MapAndMergeUsers extends Admin_Admin
 			'numReadingHistoryEntriesMoved' => 0,
 			'numRolesMoved' => 0,
 			'numNotInterestedMoved' => 0,
+			'numLinkedPrimaryUsersMoved' => 0,
+			'numLinkedUsersMoved' => 0,
+			'numSavedSearchesMoved' => 0,
+			'numSystemMessageDismissalsMoved' => 0,
+			'numPlacardDismissalsMoved' => 0,
+			'numMaterialsRequestsMoved' => 0,
+			'numMaterialsRequestsAssignmentsMoved' => 0,
+			'numUserMessagesMoved' => 0,
+			'numUserPaymentsMoved' => 0,
+			'numUserStaffSettingsMoved' => 0,
 		];
 		set_time_limit(0);
 		ini_set('memory_limit', '4G');
@@ -175,6 +185,136 @@ class MapAndMergeUsers extends Admin_Admin
 						$clonedUserNotInterested->__destruct();
 						$clonedUserNotInterested = null;
 						$result['numNotInterestedMoved']++;
+					}
+
+					require_once ROOT_DIR . '/sys/Account/UserLink.php';
+					$userLink = new UserLink();
+					$userLink->primaryAccountId = $newUser->id;
+					$userLink->find();
+					while ($userLink->fetch()){
+						$clonedUserLink = clone $userLink;
+						$clonedUserLink->primaryAccountId = $originalUser->id;
+						$clonedUserLink->update();
+						$clonedUserLink->__destruct();
+						$clonedUserLink = null;
+						$result['numLinkedPrimaryUsersMoved']++;
+					}
+
+					require_once ROOT_DIR . '/sys/Account/UserLink.php';
+					$userLink = new UserLink();
+					$userLink->linkedAccountId = $newUser->id;
+					$userLink->find();
+					while ($userLink->fetch()){
+						$clonedUserLink = clone $userLink;
+						$clonedUserLink->linkedAccountId = $originalUser->id;
+						$clonedUserLink->update();
+						$clonedUserLink->__destruct();
+						$clonedUserLink = null;
+						$result['numLinkedUsersMoved']++;
+					}
+
+					require_once ROOT_DIR . '/sys/SearchEntry.php';
+					$savedSearches = new SearchEntry();
+					$savedSearches->user_id = $newUser->id;
+					$savedSearches->find();
+					while ($savedSearches->fetch()){
+						$clonedSavedSearch = clone $savedSearches;
+						$clonedSavedSearch->user_id = $originalUser->id;
+						$clonedSavedSearch->update();
+						$clonedSavedSearch->__destruct();
+						$clonedSavedSearch = null;
+						$result['numSavedSearchesMoved']++;
+					}
+
+					require_once ROOT_DIR . '/sys/LocalEnrichment/SystemMessageDismissal.php';
+					$systemMessageDismissals = new SystemMessageDismissal();
+					$systemMessageDismissals->userId = $newUser->id;
+					$systemMessageDismissals->find();
+					while ($systemMessageDismissals->fetch()){
+						$clonedSystemMessageDismissals = clone $systemMessageDismissals;
+						$clonedSystemMessageDismissals->userId = $originalUser->id;
+						$clonedSystemMessageDismissals->update();
+						$clonedSystemMessageDismissals->__destruct();
+						$clonedSystemMessageDismissals = null;
+						$result['numSystemMessageDismissalsMoved']++;
+					}
+
+					require_once ROOT_DIR . '/sys/LocalEnrichment/PlacardDismissal.php';
+					$placardDismissals = new PlacardDismissal();
+					$placardDismissals->userId = $newUser->id;
+					$placardDismissals->find();
+					while ($placardDismissals->fetch()){
+						$clonedPlacardDismissals = clone $placardDismissals;
+						$clonedPlacardDismissals->userId = $originalUser->id;
+						$clonedPlacardDismissals->update();
+						$clonedPlacardDismissals->__destruct();
+						$clonedPlacardDismissals = null;
+						$result['numPlacardDismissalsMoved']++;
+					}
+
+					require_once ROOT_DIR . '/sys/MaterialsRequest.php';
+					$materialsRequests = new MaterialsRequest();
+					$materialsRequests->createdBy = $newUser->id;
+					$materialsRequests->find();
+					while ($materialsRequests->fetch()){
+						$clonedMaterialsRequests = clone $materialsRequests;
+						$clonedMaterialsRequests->createdBy = $originalUser->id;
+						$clonedMaterialsRequests->update();
+						$clonedMaterialsRequests->__destruct();
+						$clonedMaterialsRequests = null;
+						$result['numMaterialsRequestsMoved']++;
+					}
+
+					require_once ROOT_DIR . '/sys/MaterialsRequest.php';
+					$materialsRequests = new MaterialsRequest();
+					$materialsRequests->assignedTo = $newUser->id;
+					$materialsRequests->find();
+					while ($materialsRequests->fetch()){
+						$clonedMaterialsRequests = clone $materialsRequests;
+						$clonedMaterialsRequests->assignedTo = $originalUser->id;
+						$clonedMaterialsRequests->update();
+						$clonedMaterialsRequests->__destruct();
+						$clonedMaterialsRequests = null;
+						$result['numMaterialsRequestsAssignmentsMoved']++;
+					}
+
+					require_once ROOT_DIR . '/sys/Account/UserMessage.php';
+					$userMessages = new UserMessage();
+					$userMessages->userId = $newUser->id;
+					$userMessages->find();
+					while ($userMessages->fetch()){
+						$clonedUserMessages = clone $userMessages;
+						$clonedUserMessages->userId = $originalUser->id;
+						$clonedUserMessages->update();
+						$clonedUserMessages->__destruct();
+						$clonedUserMessages = null;
+						$result['numUserMessagesMoved']++;
+					}
+
+					require_once ROOT_DIR . '/sys/Account/UserPayment.php';
+					$userPayments = new UserPayment();
+					$userPayments->userId = $newUser->id;
+					$userPayments->find();
+					while ($userPayments->fetch()){
+						$clonedUserPayments = clone $userPayments;
+						$clonedUserPayments->userId = $originalUser->id;
+						$clonedUserPayments->update();
+						$clonedUserPayments->__destruct();
+						$clonedUserPayments = null;
+						$result['numUserPaymentsMoved']++;
+					}
+
+					require_once ROOT_DIR . '/sys/Account/UserStaffSettings.php';
+					$userStaffSettings = new UserStaffSettings();
+					$userStaffSettings->userId = $newUser->id;
+					$userStaffSettings->find();
+					while ($userStaffSettings->fetch()){
+						$clonedUserStaffSettings = clone $userStaffSettings;
+						$clonedUserStaffSettings->userId = $originalUser->id;
+						$clonedUserStaffSettings->update();
+						$clonedUserStaffSettings->__destruct();
+						$clonedUserStaffSettings = null;
+						$result['numUserStaffSettingsMoved']++;
 					}
 
 					$result['numUsersMerged']++;
