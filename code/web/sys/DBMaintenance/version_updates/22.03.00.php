@@ -54,48 +54,127 @@ function getUpdates22_03_00() : array
 				'ALTER TABLE grouped_work_test_search ADD COLUMN notes VARCHAR(500)',
 			]
 		], //search_test_notes
-        'permissions_create_events_springshare' => [
-            'title' => 'Alters permissions for Events',
-            'description' => 'Create permissions for Springshare LibCal; update permissions for LibraryMarket LibraryCalendar',
-            'sql' => [
-                "UPDATE permissions SET name = 'Administer LibraryMarket LibraryCalendar Settings', description = 'Allows the user to administer integration with LibraryMarket LibraryCalendar for all libraries.' WHERE name = 'Administer Library Calendar Settings'",
-                "INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES ('Events', 'Administer Springshare LibCal Settings', 'Events', 20, 'Allows the user to administer integration with Springshare LibCal for all libraries.')",
-                "INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer Springshare LibCal Settings'))"
-            ]
-        ], // permissions_create_events_springshare
-        'springshare_libcal_settings' => [
-            'title' => 'Define events settings for Springshare LibCal integration',
-            'description' => 'Initial setup of the Springshare LibCal integration',
-            'sql' => [
-                'CREATE TABLE IF NOT EXISTS springshare_libcal_settings (
-					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-					name VARCHAR(100) NOT NULL UNIQUE,
-					baseUrl VARCHAR(255) NOT NULL,
-                    calId VARCHAR(255) NOT NULL,
-                    clientId INT NOT NULL,
-                    clientSecret VARCHAR(36) NOT NULL,
-                    userName VARCHAR(36) NOT NULL,
-                    password VARCHAR(36) NOT NULL
+		'search_test_search_index_multiple_terms' => [
+			'title' => 'Search Test add index and multiple terms',
+			'description' => 'Add search index and allow multiple terms per result ',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE grouped_work_test_search DROP INDEX searchTerm',
+				"ALTER TABLE grouped_work_test_search ADD COLUMN searchIndex VARCHAR(40) DEFAULT 'Keyword'",
+				'ALTER TABLE grouped_work_test_search CHANGE COLUMN searchTerm searchTerm TEXT COLLATE utf8_bin',
+				'ALTER TABLE grouped_work_test_search CHANGE COLUMN notes notes TEXT',
+			]
+		], //search_test_search_index_multiple_terms
+		'search_test_description' => [
+			'title' => 'Add description to search tests',
+			'description' => 'Add description to search tests',
+			'sql' => [
+				'ALTER TABLE grouped_work_test_search ADD COLUMN description TEXT',
+			]
+		], //search_test_notes
+		'library_enableReadingHistory' => [
+			'title' => 'Library - Enable Reading History',
+			'description' => 'Add an option for if reading history should be enabled for a library',
+			'sql' => [
+				'ALTER TABLE library add COLUMN enableReadingHistory TINYINT(1) DEFAULT 1'
+			]
+		], //library_enableReadingHistory
+		'library_citationOptions' => [
+			'title' => 'Library - Citation Options',
+			'description' => 'Add options for the display of Citation Style Guides',
+			'sql' => [
+				'ALTER TABLE library ADD COLUMN showCitationStyleGuides TINYINT(1) DEFAULT 1'
+			]
+		], //library_citationOptions
+		'addVersionToCachedGreenhouseData' => [
+			'title' => 'Add Version to Cached Greenhouse Data',
+			'description' => 'Add Aspen Discovery version to cached Greenhouse data to share with LiDA',
+			'sql' => [
+				'ALTER TABLE greenhouse_cache ADD COLUMN version VARCHAR(25)',
+			]
+		], //addVersionToCachedGreenhouseData
+		'pinResetRules' => [
+			'title' => 'PIN Reset Rules',
+			'description' => 'Define ruled for PINs to be used during the reset process',
+			'sql' => [
+				'ALTER TABLE library ADD column minPinLength INT default 4',
+				'ALTER TABLE library ADD column maxPinLength INT default 6',
+				'ALTER TABLE library ADD column onlyDigitsAllowedInPin INT default 1',
+				'setPinResetRulesByILS'
+			]
+		], //pinResetRules
+		'library_enableSavedSearches' => [
+			'title' => 'Library - Enable Saved Searches',
+			'description' => 'Add an option for if saved searches should be enabled for a library',
+			'sql' => [
+				'ALTER TABLE library add COLUMN enableSavedSearches TINYINT(1) DEFAULT 1'
+			]
+		], //library_enableSavedSearches
+		'support_connection' => [
+			'title' => 'Support - Request Tracker connection',
+			'description' => 'Allow Libraries to define connection to request tracker their development priorities',
+			'continueOnError' => true,
+			'sql' => [
+				'CREATE TABLE IF NOT EXISTS request_tracker_connection (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, 
+					baseUrl VARCHAR(255),
+					activeTicketFeed TEXT
 				) ENGINE INNODB',
-            ]
-        ], // springshare_libcal_settings
-        'springshare_libcal_events' => [
-            'title' => 'Springshare LibCal Events Data' ,
-            'description' => 'Setup tables to store events data for Springshare LibCal',
-            'sql' => [
-                'CREATE TABLE IF NOT EXISTS springshare_libcal_events (
-					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-					settingsId INT NOT NULL,
-					externalId VARCHAR(36) NOT NULL,
-					title VARCHAR(255) NOT NULL,
-					rawChecksum BIGINT,
-					rawResponse MEDIUMTEXT,
-					deleted TINYINT DEFAULT 0,
-					UNIQUE (settingsId, externalId)
-				)'
-            ]
-        ], // springshare_libcal_events
+				'CREATE TABLE IF NOT EXISTS development_priorities (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, 
+					priority1 VARCHAR(50),
+					priority2 VARCHAR(50),
+					priority3 VARCHAR(50)
+				) ENGINE INNODB',
+				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES ('Aspen Discovery Support', 'Administer Request Tracker Connection', '', 10, 'Allows configuration of connection to the support system.')",
+				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES ('Aspen Discovery Support', 'View Active Tickets', '', 20, 'Allows display of active tickets within the support system.')",
+				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES ('Aspen Discovery Support', 'Set Development Priorities', '', 30, 'Allows setting of priorities for development.')",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer Request Tracker Connection'))",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='View Active Tickets'))",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Set Development Priorities'))",
+			]
+		], //support_connection
+		'greenhouse_contact_and_go_live' => [
+			'title' => 'Greenhouse contact and go live fields',
+			'description' => 'Add additional greenhouse fields',
+			'sql' => [
+				'ALTER TABLE aspen_sites add COLUMN contractSigningDate DATE',
+				'ALTER TABLE aspen_sites add COLUMN goLiveDate DATE',
+				'ALTER TABLE aspen_sites add COLUMN contactFrequency TINYINT DEFAULT 3',
+				'ALTER TABLE aspen_sites add COLUMN lastContacted DATE',
+				'ALTER TABLE aspen_sites add COLUMN nextMeetingDate DATE',
+				'ALTER TABLE aspen_sites add COLUMN nextMeetingPerson VARCHAR(50)',
+			]
+		], //greenhouse_contact_and_go_live
+		'library_holdPlacedAt' => [
+			'title' => 'Library - Hold Placed At',
+			'description' => 'Add an option for where the hold was placed to library settings',
+			'sql' => [
+				'ALTER TABLE library add COLUMN holdPlacedAt TINYINT(1) DEFAULT 0'
+			]
+		], //library_holdPlacedAt
+	];
+}
 
+function setPinResetRulesByILS(){
+	$ils = '';
+	$accountProfiles = new AccountProfile();
+	$accountProfiles->find();
+	while ($accountProfiles->fetch()){
+		if ($accountProfiles->ils != 'na'){
+			$ils = $accountProfiles->ils;
+		}
+	}
+	$library = new Library();
+	if ($ils == 'polaris'){
+		$update = 'UPDATE library set maxPinLength = 14, onlyDigitsAllowedInPin = 0';
+		$library->query($update);
+	}elseif ($ils == 'sierra'){
+		$update = 'UPDATE library set maxPinLength = 60, onlyDigitsAllowedInPin = 0';
+		$library->query($update);
+	}elseif ($ils == 'symphony'){
+		$update = 'UPDATE library set maxPinLength = 60, onlyDigitsAllowedInPin = 0';
+		$library->query($update);
+	}
 
-    ];
 }
