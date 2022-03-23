@@ -1,6 +1,7 @@
 package com.turning_leaf_technologies.marc;
 
 import com.mysql.cj.util.LRUCache;
+import com.turning_leaf_technologies.indexing.IlsExtractLogEntry;
 import com.turning_leaf_technologies.logging.BaseLogEntry;
 import com.turning_leaf_technologies.util.MaxSizeHashMap;
 import org.apache.logging.log4j.Logger;
@@ -592,8 +593,19 @@ public class MarcUtil {
 				streamReader = null;
 				return marcRecord;
 			}catch (MarcException me){
-				//Could not read the marc record, there likely was not a record in the file, but ignore and use the permissive read.
-				logEntry.incErrors("Could not read MARC for " + identifier, me);
+				if (logEntry instanceof IlsExtractLogEntry) {
+					IlsExtractLogEntry ilsExtractLogEntry = (IlsExtractLogEntry) logEntry;
+					ilsExtractLogEntry.incRecordsWithInvalidMarc("Could not read MARC for " + identifier + " " + me);
+				}else{
+					logEntry.incErrors("Could not read MARC for " + identifier, me);
+				}
+			}catch (NullPointerException npe){
+				if (logEntry instanceof IlsExtractLogEntry){
+					IlsExtractLogEntry ilsExtractLogEntry = (IlsExtractLogEntry) logEntry;
+					ilsExtractLogEntry.incRecordsWithInvalidMarc("Null pointer exception reading MARC for " + identifier + " " + npe);
+				}else {
+					logEntry.incErrors("Null pointer exception reading MARC for " + identifier, npe);
+				}
 			}
 			streamReader = null;
 			marcFileStream.close();

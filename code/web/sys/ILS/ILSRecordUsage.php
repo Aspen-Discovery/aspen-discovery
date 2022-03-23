@@ -14,4 +14,18 @@ class ILSRecordUsage extends DataObject
 	public $pdfDownloadCount;
 	public $supplementalFileDownloadCount;
 	public $pdfViewCount;
+
+	public function getUniquenessFields(): array
+	{
+		return ['instance','indexingProfileId', 'recordId','year', 'month'];
+	}
+
+	public function okToExport(array $selectedFilters): bool
+	{
+		$okToExport = parent::okToExport($selectedFilters);
+		if (in_array($this->instance, $selectedFilters['instances'])){
+			$okToExport = true;
+		}
+		return $okToExport;
+	}
 }

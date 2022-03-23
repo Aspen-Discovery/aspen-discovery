@@ -41,10 +41,13 @@ class MyAccount_MyList extends MyAccount {
 
 		//If the list does not exist, create a new My Favorites List
 		if (!$list->find(true)){
-			$list = new UserList();
-			$list->user_id = UserAccount::getActiveUserId();
-			$list->public = false;
-			$list->title = "My Favorites";
+			global $interface;
+			$interface->assign('module','Error');
+			$interface->assign('action','Handle404');
+			require_once ROOT_DIR . "/services/Error/Handle404.php";
+			$actionClass = new Error_Handle404();
+			$actionClass->launch();
+			die();
 		}
 
 		// Ensure user has privileges to view the list

@@ -13,6 +13,11 @@ class UserListEntry extends DataObject{
 	public $importedFrom;
 	public $title;
 
+	public function getUniquenessFields(): array
+	{
+		return ['listId', 'source', 'sourceId'];
+	}
+
 	/**
 	 * @param bool $updateBrowseCategories
 	 * @return bool

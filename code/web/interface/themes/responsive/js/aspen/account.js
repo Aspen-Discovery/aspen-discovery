@@ -150,7 +150,7 @@ AspenDiscovery.Account = (function(){
 				document.body.style.cursor = "default";
 				if (data.success){
 					$('#accountLoadTime').html(data.checkoutInfoLastLoaded);
-					$("#" + source + "CheckoutsPlaceholder").html(data.holds);
+					$("#" + source + "CheckoutsPlaceholder").html(data.checkouts);
 				}else{
 					$("#" + source + "CheckoutsPlaceholder").html(data.message);
 				}

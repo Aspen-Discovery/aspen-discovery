@@ -101,5 +101,21 @@ function getUpdates22_04_00() : array
 				)'
             ]
         ], // springshare_libcal_events
+		'ils_log_add_records_with_invalid_marc' => [
+			'title' => 'ILS Log Records With Invalid MARC',
+			'description' => 'Add Records With Invalid MARC to the ILS Log',
+			'continueOnError' => true,
+			'sql' => array(
+				"ALTER TABLE ils_extract_log ADD COLUMN numRecordsWithInvalidMarc INT(11) NOT NULL DEFAULT 0",
+			),
+		], //ils_log_add_records_with_invalid_marc
+		'increase_translation_map_value_length' => [
+			'title' => 'Increase Translation Map Value Length',
+			'description' => 'Increase Translation Map Value Length',
+			'continueOnError' => true,
+			'sql' => array(
+				"ALTER TABLE translation_map_values CHANGE COLUMN value value varchar(255) COLLATE utf8mb4_general_ci NOT NULL",
+			),
+		], //increase_translation_map_value_length
 	];
 }

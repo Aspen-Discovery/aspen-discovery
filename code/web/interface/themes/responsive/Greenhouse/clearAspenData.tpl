@@ -38,6 +38,11 @@
 							</label>
 						</div>
 						<div class="checkbox">
+							<label for="dataElement_userLists">
+								<input class="dataElement" id="dataElement_userLists" name='dataElement[]' type="checkbox" value='userLists'> {translate text="User Lists" isPublicFacing=$property.isPublicFacing isAdminFacing=true}<br>
+							</label>
+						</div>
+						<div class="checkbox">
 							<label for="dataElement_bibData">
 								<input class="dataElement" id="dataElement_bibData" name='dataElement[]' type="checkbox" value='bibData'> {translate text="Bib Data" isPublicFacing=$property.isPublicFacing isAdminFacing=true}<br>
 							</label>

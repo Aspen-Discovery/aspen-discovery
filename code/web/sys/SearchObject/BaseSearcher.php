@@ -311,7 +311,9 @@ abstract class SearchObject_BaseSearcher
 				if (is_object($facetConfig[$field])){
 					$translate = $facetConfig[$field]->translate;
 				}else{
-					$translate = in_array($field, $facetConfig['translated_facets']);
+					if (!empty($facetConfig['translated_facets'])) {
+						$translate = in_array($field, $facetConfig['translated_facets']);
+					}
 				}
 			}
 

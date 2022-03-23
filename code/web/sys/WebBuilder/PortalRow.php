@@ -14,6 +14,11 @@ class PortalRow extends DataObject
 
 	private $_cells;
 
+	public function getUniquenessFields(): array
+	{
+		return ['portalPageId', 'weight'];
+	}
+
 	static function getObjectStructure() : array {
 		$portalCellStructure = PortalCell::getObjectStructure();
 
@@ -210,5 +215,43 @@ class PortalRow extends DataObject
 				$cell->update();
 			}
 		}
+	}
+
+	public function toArray($includeRuntimeProperties = true, $encryptFields = false): array
+	{
+		$return = parent::toArray($includeRuntimeProperties, $encryptFields);
+		unset($return['portalPageId']);
+		return $return;
+	}
+
+	public function getLinksForJSON(): array
+	{
+		$links = parent::getLinksForJSON();
+		$cells = $this->getCells();
+		$links['cells'] = [];
+		foreach ($cells as $cell){
+			$cellArray = $cell->toArray(false, true);
+			$cellArray['links'] = $cell->getLinksForJSON();
+
+			$links['cells'][] = $cellArray;
+		}
+		return $links;
+	}
+	
+	public function loadRelatedLinksFromJSON($jsonData, $mappings, $overrideExisting = 'keepExisting'): bool
+	{
+		$result = parent::loadRelatedLinksFromJSON($jsonData, $mappings, $overrideExisting);
+		if (array_key_exists('cells', $jsonData)){
+			$cells = [];
+			foreach ($jsonData['cells'] as $cell){
+				$cellObj = new PortalCell();
+				$cellObj->portalRowId = $this->id;
+				$cellObj->loadFromJSON($cell, $mappings, $overrideExisting);
+				$cells[$cellObj->id] = $cellObj;
+				$result = true;
+			}
+			$this->_cells = $cells;
+		}
+		return $result;
 	}
 }

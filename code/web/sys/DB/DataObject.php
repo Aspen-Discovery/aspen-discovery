@@ -339,7 +339,11 @@ abstract class DataObject
 			}
 		}
 		$insertQuery .= '(' . $propertyNames . ') VALUES (' . $propertyValues . ');';
-		$response = $aspen_db->exec($insertQuery);
+		try {
+			$response = $aspen_db->exec($insertQuery);
+		}catch (PDOException $e){
+			return new AspenError("Error inserting " . get_class($this) . "<br/>\r\n" . $e->getMessage(), $e->getTrace());
+		}
 		global $timer;
 		if (IPAddress::logAllQueries()){
 			global $logger;
@@ -467,6 +471,7 @@ abstract class DataObject
 			return false;
 		}
 		$deleteQuery = 'TRUNCATE TABLE ' . $this->__table;
+		$this->__lastQuery = $deleteQuery;
 		$result = $aspen_db->exec($deleteQuery);
 		global $timer;
 		if (IPAddress::logAllQueries()){
@@ -966,6 +971,12 @@ abstract class DataObject
 		}
 	}
 
+	/**
+	 * @param $jsonData
+	 * @param $mappings
+	 * @param $overrideExisting
+	 * @return AspenError|bool
+	 */
 	public function loadFromJSON($jsonData, $mappings, $overrideExisting = 'keepExisting'){
 		$this->loadObjectPropertiesFromJSON($jsonData, $mappings);
 
@@ -974,23 +985,35 @@ abstract class DataObject
 		}
 
 		//Check to see if there is an existing ID for the object
-		$this->findExistingObjectId();
+		if (!$this->findExistingObjectId()){
+			return new AspenError('Could not insert object ' . (string)$this);
+		}
 
 		if ($overrideExisting == 'keepExisting'){
 			//Only update if we don't have an existing value
-			if (empty($this->getPrimaryKeyObject)){
-				$this->update();
+			if (empty($this->getPrimaryKeyValue())){
+				$result = $this->update();
+				if ($result instanceof AspenError){
+					return $result;
+				}
 			}
 		}else{
-			$this->update();
+			$result = $this->update();
+			if ($result instanceof AspenError){
+				return $result;
+			}
 		}
 
 		//Load any links (do after loading the existing object id to handle nested objects)
 		if (array_key_exists('links', $jsonData)) {
 			if ($this->loadRelatedLinksFromJSON($jsonData['links'], $mappings, $overrideExisting)) {
-				$this->update();
+				$result = $this->update();
+				if ($result instanceof AspenError){
+					return $result;
+				}
 			}
 		}
+		return true;
 	}
 
 	/**
@@ -1015,7 +1038,12 @@ abstract class DataObject
 		return false;
 	}
 
-	public function findExistingObjectId()
+	/**
+	 * Looks for an existing id for the object.  If the primary key is the unique field, it will insert the object
+	 *  to avoid errors in future processing.  Returns false if the insert fails.
+	 * @return bool
+	 */
+	public function findExistingObjectId() : bool
 	{
 		$thisClass = get_class($this);
 		$tmpObject = new $thisClass();
@@ -1026,9 +1054,18 @@ abstract class DataObject
 			}
 			if ($tmpObject->find(true)) {
 				$primaryField = $this->getPrimaryKey();
-				$this->$primaryField = $tmpObject->$primaryField;
+				$this->$primaryField = $tmpObject->getPrimaryKeyValue();
+			}else{
+				$primaryField = $this->getPrimaryKey();
+				if (count($uniquenessFields) == 1 && $uniquenessFields[0] == $primaryField){
+					//We tricked Aspen, we are filling out the primary key, but it doesn't actually exist.
+					if (!$this->insert()){
+						return false;
+					}
+				}
 			}
 		}
+		return true;
 	}
 
 	public function okToExport(array $selectedFilters) : bool{

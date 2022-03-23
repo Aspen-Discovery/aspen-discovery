@@ -24,7 +24,7 @@ class Greenhouse_ExportAspenData extends Admin_Admin
 				'name' => 'User Roles'
 			],
 			'user_messages' => [
-				'classFile' => ROOT_DIR . '/sys/Administration/UserMessage.php',
+				'classFile' => ROOT_DIR . '/sys/Account/UserMessage.php',
 				'className' => 'UserMessage',
 				'name' => 'User Messages'
 			],
@@ -117,9 +117,171 @@ class Greenhouse_ExportAspenData extends Admin_Admin
 				'className' => 'MaterialsRequest',
 				'name' => 'Materials Requests'
 			],
+			'block_patron_account_links' => [
+				'classFile' => ROOT_DIR . '/sys/Administration/BlockPatronAccountLink.php',
+				'className' => 'BlockPatronAccountLink',
+				'name' => 'Block Patron Account Links'
+			],
+			'axis_360_record_usage' => [
+				'classFile' => ROOT_DIR . '/sys/Axis360/Axis360RecordUsage.php',
+				'className' => 'Axis360RecordUsage',
+				'name' => 'Axis 360 Record Usage'
+			],
+			'user_axis_360_usage' => [
+				'classFile' => ROOT_DIR . '/sys/Axis360/UserAxis360Usage.php',
+				'className' => 'UserAxis360Usage',
+				'name' => 'User Axis 360 Usage'
+			],
+			'cloud_library_record_usage' => [
+				'classFile' => ROOT_DIR . '/sys/CloudLibrary/CloudLibraryRecordUsage.php',
+				'className' => 'CloudLibraryRecordUsage',
+				'name' => 'Cloud Library Record Usage'
+			],
+			'user_cloud_library_usage' => [
+				'classFile' => ROOT_DIR . '/sys/CloudLibrary/UserCloudLibraryUsage.php',
+				'className' => 'UserCloudLibraryUsage',
+				'name' => 'User Cloud Library Usage'
+			],
+			'ebsco_eds_record_usage' => [
+				'classFile' => ROOT_DIR . '/sys/Ebsco/EbscoEdsRecordUsage.php',
+				'className' => 'EbscoEdsRecordUsage',
+				'name' => 'EBSCO EDS Record Usage'
+			],
+			'user_ebsco_eds_usage' => [
+				'classFile' => ROOT_DIR . '/sys/Ebsco/UserEbscoEdsUsage.php',
+				'className' => 'UserEbscoEdsUsage',
+				'name' => 'User EBSCO EDS Usage'
+			],
+			'events_usage' => [
+				'classFile' => ROOT_DIR . '/sys/Events/EventsUsage.php',
+				'className' => 'EventsUsage',
+				'name' => 'Events Usage'
+			],
+			'user_events_usage' => [
+				'classFile' => ROOT_DIR . '/sys/Events/UserEventsUsage.php',
+				'className' => 'UserEventsUsage',
+				'name' => 'User Events Usage'
+			],
+			'hoopla_record_usage' => [
+				'classFile' => ROOT_DIR . '/sys/Hoopla/HooplaRecordUsage.php',
+				'className' => 'HooplaRecordUsage',
+				'name' => 'Hoopla Record Usage'
+			],
+			'user_hoopla_usage' => [
+				'classFile' => ROOT_DIR . '/sys/Hoopla/UserHooplaUsage.php',
+				'className' => 'UserHooplaUsage',
+				'name' => 'User Hoopla Usage'
+			],
+			'ils_record_usage' => [
+				'classFile' => ROOT_DIR . '/sys/ILS/ILSRecordUsage.php',
+				'className' => 'ILSRecordUsage',
+				'name' => 'ILS Record Usage'
+			],
+			'user_ils_usage' => [
+				'classFile' => ROOT_DIR . '/sys/ILS/UserILSUsage.php',
+				'className' => 'UserILSUsage',
+				'name' => 'User ILS Usage'
+			],
+			'side_load_record_usage' => [
+				'classFile' => ROOT_DIR . '/sys/Indexing/SideLoadedRecordUsage.php',
+				'className' => 'SideLoadedRecordUsage',
+				'name' => 'Side Loaded Record Usage'
+			],
+			'user_side_load_usage' => [
+				'classFile' => ROOT_DIR . '/sys/Indexing/UserSideLoadUsage.php',
+				'className' => 'UserSideLoadUsage',
+				'name' => 'User Side Load Usage'
+			],
+			'open_archives_record_usage' => [
+				'classFile' => ROOT_DIR . '/sys/OpenArchives/OpenArchivesRecordUsage.php',
+				'className' => 'OpenArchivesRecordUsage',
+				'name' => 'Open Archives Record Usage'
+			],
+			'user_open_archives_usage' => [
+				'classFile' => ROOT_DIR . '/sys/OpenArchives/UserOpenArchivesUsage.php',
+				'className' => 'UserOpenArchivesUsage',
+				'name' => 'User Open Archives Usage'
+			],
+			'overdrive_record_usage' => [
+				'classFile' => ROOT_DIR . '/sys/OverDrive/OverDriveRecordUsage.php',
+				'className' => 'OverDriveRecordUsage',
+				'name' => 'OverDrive Record Usage'
+			],
+			'user_overdrive_usage' => [
+				'classFile' => ROOT_DIR . '/sys/OverDrive/UserOverDriveUsage.php',
+				'className' => 'UserOverDriveUsage',
+				'name' => 'User OverDrive Usage'
+			],
+			'api_usage' => [
+				'classFile' => ROOT_DIR . '/sys/SystemLogging/APIUsage.php',
+				'className' => 'APIUsage',
+				'name' => 'API Usage'
+			],
+			'aspen_usage' => [
+				'classFile' => ROOT_DIR . '/sys/SystemLogging/AspenUsage.php',
+				'className' => 'AspenUsage',
+				'name' => 'Aspen Usage'
+			],
+			'slow_ajax_request' => [
+				'classFile' => ROOT_DIR . '/sys/SystemLogging/SlowAjaxRequest.php',
+				'className' => 'SlowAjaxRequest',
+				'name' => 'Slow AJAX Requests'
+			],
+			'slow_page' => [
+				'classFile' => ROOT_DIR . '/sys/SystemLogging/SlowPage.php',
+				'className' => 'SlowPage',
+				'name' => 'Page Performance'
+			],
+			'usage_by_ip' => [
+				'classFile' => ROOT_DIR . '/sys/SystemLogging/UsageByIPAddress.php',
+				'className' => 'UsageByIPAddress',
+				'name' => 'Usage by IP Address'
+			],
+			'web_resource_usage' => [
+				'classFile' => ROOT_DIR . '/sys/WebBuilder/WebResourceUsage.php',
+				'className' => 'WebResourceUsage',
+				'name' => 'Web Resource Usage'
+			],
+			'user_website_usage' => [
+				'classFile' => ROOT_DIR . '/sys/WebsiteIndexing/UserWebsiteUsage.php',
+				'className' => 'UserWebsiteUsage',
+				'name' => 'User Website Usage'
+			],
+			'web_page_usage' => [
+				'classFile' => ROOT_DIR . '/sys/WebsiteIndexing/WebPageUsage.php',
+				'className' => 'WebPageUsage',
+				'name' => 'Web Page Usage'
+			],
+			'web_builder_audiences' => [
+				'classFile' => ROOT_DIR . '/sys/WebBuilder/WebBuilderAudience.php',
+				'className' => 'WebBuilderAudience',
+				'name' => 'Web Builder Audiences'
+			],
+			'web_builder_categories' => [
+				'classFile' => ROOT_DIR . '/sys/WebBuilder/WebBuilderCategory.php',
+				'className' => 'WebBuilderCategory',
+				'name' => 'Web Builder Categories'
+			],
+			'web_resources' => [
+				'classFile' => ROOT_DIR . '/sys/WebBuilder/WebResource.php',
+				'className' => 'WebResource',
+				'name' => 'Web Builder Resources'
+			],
+			'web_builder_basic_page' => [
+				'classFile' => ROOT_DIR . '/sys/WebBuilder/BasicPage.php',
+				'className' => 'BasicPage',
+				'name' => 'Web Builder Basic Pages'
+			],
+			'web_builder_custom_pages' => [
+				'classFile' => ROOT_DIR . '/sys/WebBuilder/PortalPage.php',
+				'className' => 'PortalPage',
+				'name' => 'Web Builder Custom Pages'
+			],
 		];
 
 		if (isset($_REQUEST['submit'])){
+			set_time_limit(0);
+			ini_set('memory_limit','4G');
 			$submissionResults = [
 				'success' => false,
 				'message' => 'Nothing was exported'
@@ -146,11 +308,13 @@ class Greenhouse_ExportAspenData extends Admin_Admin
 			}
 
 			if ($exportDirExists) {
-				$selectedLibraries = $_REQUEST['libraries'];
-				$selectedLocations = $_REQUEST['locations'];
+				$selectedLibraries = $_REQUEST['libraries'] ?? [];
+				$selectedLocations = $_REQUEST['locations'] ?? [];
+				$selectedInstances = $_REQUEST['instances'] ?? [];
 				$selectedFilters = [
 					'libraries' => $selectedLibraries,
-					'locations' => $selectedLocations
+					'locations' => $selectedLocations,
+					'instances' => $selectedInstances,
 				];
 				if (count($selectedLibraries) == 0 && count($selectedLocations) == 0) {
 					$message = 'No libraries or locations were selected';
@@ -178,6 +342,22 @@ class Greenhouse_ExportAspenData extends Admin_Admin
 			$locationList = Location::getLocationList(false);
 			$interface->assign('libraries', $libraryList);
 			$interface->assign('locations', $locationList);
+
+			//Get a list of all instances
+			$statsInstance = new AspenUsage();
+			$statsInstance->selectAdd(null);
+			$statsInstance->selectAdd("DISTINCT(instance) as instance");
+			$statsInstance->orderBy('instance');
+			$statsInstance->find();
+			$allInstances = [];
+			if ($statsInstance->getNumResults() > 1) {
+				while ($statsInstance->fetch()) {
+					if (!empty($statsInstance->instance)) {
+						$allInstances[$statsInstance->instance] = $statsInstance->instance;
+					}
+				}
+			}
+			$interface->assign('instances', $allInstances);
 		}
 
 		$this->display('exportAspenData.tpl', 'Export Aspen Data',false);
@@ -222,6 +402,8 @@ class Greenhouse_ExportAspenData extends Admin_Admin
 				$numObjectsExported++;
 			}
 		}
+		$exportObject->__destruct();
+		$exportObject = null;
 		fclose($exportFileHnd);
 		chgrp($exportFile, 'aspen_apache');
 		chmod($exportFile, 0660);

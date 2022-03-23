@@ -19,6 +19,11 @@ class Greenhouse_ClearAspenData extends Admin_Admin
 			}else{
 				set_time_limit(0);
 				$message = '';
+				//Get a list of all admin users so we can preserve data for them.
+				$adminLists = new User();
+				$adminListIds = $adminLists->fetchAll('id');
+				$adminListIdsString = implode(',', $adminListIds);
+
 				foreach ($_REQUEST['dataElement'] as $element){
 					if ($element == 'bibData') {
 						require_once ROOT_DIR . '/sys/ILS/IlsVolumeInfo.php';
@@ -30,7 +35,7 @@ class Greenhouse_ClearAspenData extends Admin_Admin
 						$indexingProfileNames = $indexingProfile->fetchAll('id', 'name');
 
 							require_once ROOT_DIR . '/sys/Indexing/IndexedRecordSource.php';
-						$indexedRecordSource = new \sys\Indexing\IndexedRecordSource();
+						$indexedRecordSource = new IndexedRecordSource();
 						$indexedRecordSource->whereAddIn("source", $indexingProfileNames, true);
 						$indexedSourceIds = $indexedRecordSource->fetchAll('id');
 						$indexedSourceIdsStr = implode(', ', $indexedSourceIds);
@@ -127,22 +132,6 @@ class Greenhouse_ClearAspenData extends Admin_Admin
 						require_once ROOT_DIR . '/sys/User/Hold.php';
 						$message .= $this->deleteAll('Hold');
 
-						require_once ROOT_DIR . '/sys/UserLists/UserList.php';
-						$objectToDelete = new UserList();
-						$numDeleted = $objectToDelete->query("DELETE FROM user_list WHERE user_id NOT IN ($adminUserIdsString)");
-						$message .= translate(['text' => 'Deleted %1% %2% objects', 1=>$numDeleted, 2=>get_class($objectToDelete), 'isAdminFacing'=>true]) . '<br/>';
-
-						//Get a list of all admin users so we can preserve data for them.
-						$adminLists = new User();
-						$adminListIds = $adminLists->fetchAll('id');
-						$adminListIdsString = implode(',', $adminListIds);
-
-						require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
-						$objectToDelete = new UserListEntry();
-						$objectToDelete->whereAdd("listId NOT IN ($adminUserIdsString)");
-						$numDeleted = $objectToDelete->delete(true);
-						$message .= translate(['text' => 'Deleted %1% %2% objects', 1=>$numDeleted, 2=>get_class($objectToDelete), 'isAdminFacing'=>true]) . '<br/>';
-
 						require_once ROOT_DIR . '/sys/MaterialsRequest.php';
 						$message .= $this->deleteAll('MaterialsRequest');
 
@@ -156,6 +145,12 @@ class Greenhouse_ClearAspenData extends Admin_Admin
 						$message .= translate(['text' => 'Deleted %1% %2% objects', 1=>$numDeleted, 2=>get_class($objectToDelete), 'isAdminFacing'=>true]) . '<br/>';
 
 						$success = true;
+					}else if ($element == 'userLists') {
+						require_once ROOT_DIR . '/sys/UserLists/UserList.php';
+						$message .= $this->deleteAll('UserList');
+
+						require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
+						$message .= $this->deleteAll('UserListEntry');
 					}else if ($element == 'statistics'){
 						require_once ROOT_DIR . '/sys/Axis360/Axis360RecordUsage.php';
 						$message .= $this->deleteAll('Axis360RecordUsage');
@@ -356,8 +351,9 @@ class Greenhouse_ClearAspenData extends Admin_Admin
 		return false;
 	}
 
-	private function deleteAll(string $className)
+	private function deleteAll(string $className) : string
 	{
+		/** @var DataObject $objectToDelete */
 		$objectToDelete = new $className();
 		$numDeleted = $objectToDelete->deleteAll();
 		return translate(['text' => 'Deleted %1% %2% objects', 1=>$numDeleted, 2=>get_class($objectToDelete), 'isAdminFacing'=>true]) . '<br/>';
