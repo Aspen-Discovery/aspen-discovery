@@ -85,6 +85,13 @@ function getUpdates22_04_00() : array
 				) ENGINE INNODB',
 			]
 		], // springshare_libcal_settings
+		'springshare_libcal_settings_multiple_calId' => [
+			'title' => 'Allow multiple calendar ids to be defined for libcal settings',
+			'description' => 'Allow multiple calendar ids to be defined for libcal settings',
+			'sql' => [
+				'ALTER TABLE springshare_libcal_settings CHANGE calId calId VARCHAR(50) DEFAULT ""',
+			]
+		], // springshare_libcal_settings
 		'springshare_libcal_events' => [
 			'title' => 'Springshare LibCal Events Data' ,
 			'description' => 'Setup tables to store events data for Springshare LibCal',

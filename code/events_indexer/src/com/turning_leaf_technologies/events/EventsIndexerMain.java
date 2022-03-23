@@ -74,8 +74,6 @@ public class EventsIndexerMain {
 							eventsSitesRS.getString("calId"),
 							eventsSitesRS.getString("clientId"),
 							eventsSitesRS.getString("clientSecret"),
-							eventsSitesRS.getString("username"),
-							eventsSitesRS.getString("password"),
 							solrUpdateServer, aspenConn, logger);
 					indexer.indexEvents();
 				}
