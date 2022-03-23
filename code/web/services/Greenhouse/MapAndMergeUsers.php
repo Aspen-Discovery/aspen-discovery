@@ -351,7 +351,7 @@ class MapAndMergeUsers extends Admin_Admin
 		}
 
 		//Now that the updates have been made, clear sessions
-		if ($result['numUserUpdated'] > 0 || $result['numUsersMerged'] > 0){
+		if ($result['numUsersUpdated'] > 0 || $result['numUsersMerged'] > 0){
 			$session = new Session();
 			$session->deleteAll();
 		}
