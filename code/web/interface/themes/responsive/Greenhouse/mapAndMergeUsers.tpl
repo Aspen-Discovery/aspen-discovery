@@ -87,6 +87,18 @@
 					<dd>{$mergeResults.numUserStaffSettingsMoved}</dd>
 				</dl>
 			</div>
+			{if count($mergeResults.errors) > 0}
+				<div class="col-xs-12">
+					<h2>Errors</h2>
+				</div>
+				<div class="col-xs-12">
+					{foreach from=$mergeResults.errors item=error}
+						<div class="alert alert-danger">
+							{$error}
+						</div>
+					{/foreach}
+				</div>
+			{/if}
 		</div>
     {else}
 		<div class="row">
