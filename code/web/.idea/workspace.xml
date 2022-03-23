@@ -3,49 +3,21 @@
   <component name="AnalysisUIOptions">
     <option name="SCOPE_TYPE" value="3" />
   </component>
-  <component name="AutoImportSettings">
-    <option name="autoReloadType" value="SELECTIVE" />
-  </component>
   <component name="ChangeListManager">
     <list default="true" id="64b30edf-4a70-42c6-b752-8518712fb864" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/../events_indexer/src/com/turning_leaf_technologies/events/LibraryMarketLibraryCalendarEvent.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../events_indexer/src/com/turning_leaf_technologies/events/SpringshareLibCalIndexer.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/RecordDrivers/SpringshareLibCalEventRecordDriver.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/services/Events/SpringshareLibCalSettings.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/sys/Events/SpringshareLibCalEvent.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/sys/Events/SpringshareLibCalSetting.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../axis_360_export/axis_360_export.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../axis_360_export/axis_360_export.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../carlx_export/carlx_export.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../carlx_export/carlx_export.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../cloud_library_export/cloud_library_export.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../cloud_library_export/cloud_library_export.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../course_reserves_indexer/course_reserves_indexer.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../course_reserves_indexer/course_reserves_indexer.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../cron/.idea/runConfigurations.xml" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/../cron/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../cron/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../cron/cron.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../cron/cron.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../events_indexer/events_indexer.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../events_indexer/events_indexer.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../events_indexer/src/com/turning_leaf_technologies/events/EventsIndexerMain.java" beforeDir="false" afterPath="$PROJECT_DIR$/../events_indexer/src/com/turning_leaf_technologies/events/EventsIndexerMain.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../events_indexer/src/com/turning_leaf_technologies/events/LibraryCalendarEvent.java" beforeDir="false" afterPath="$PROJECT_DIR$/../events_indexer/src/com/turning_leaf_technologies/events/SpringshareLibCalEvent.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../events_indexer/src/com/turning_leaf_technologies/events/LibraryCalendarIndexer.java" beforeDir="false" afterPath="$PROJECT_DIR$/../events_indexer/src/com/turning_leaf_technologies/events/LibraryMarketLibraryCalendarIndexer.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../evergreen_export/evergreen_export.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../evergreen_export/evergreen_export.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../hoopla_export/hoopla_export.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../hoopla_export/hoopla_export.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../horizon_export/horizon_export.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../horizon_export/horizon_export.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../koha_export/koha_export.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../koha_export/koha_export.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../marc4j/marc4j-turningleaftech.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../marc4j/marc4j-turningleaftech.jar" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../oai_indexer/oai_indexer.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../oai_indexer/oai_indexer.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../overdrive_extract/overdrive_extract.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../overdrive_extract/overdrive_extract.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../polaris_export/polaris_export.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../polaris_export/polaris_export.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../reindexer/reindexer.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../reindexer/reindexer.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../sideload_processing/sideload_processing.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../sideload_processing/sideload_processing.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../sierra_export_api/sierra_export_api.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../sierra_export_api/sierra_export_api.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../symphony_export/symphony_export.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../symphony_export/symphony_export.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../user_list_indexer/user_list_indexer.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../user_list_indexer/user_list_indexer.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/manual/table_of_contents.MD" beforeDir="false" afterPath="$PROJECT_DIR$/manual/table_of_contents.MD" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/services/Events/LMLibraryCalendarSettings.php" beforeDir="false" afterPath="$PROJECT_DIR$/services/Events/LMLibraryCalendarSettings.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sys/Account/User.php" beforeDir="false" afterPath="$PROJECT_DIR$/sys/Account/User.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sys/Administration/Role.php" beforeDir="false" afterPath="$PROJECT_DIR$/sys/Administration/Role.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sys/DBMaintenance/version_updates/22.03.00.php" beforeDir="false" afterPath="$PROJECT_DIR$/sys/DBMaintenance/version_updates/22.03.00.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sys/Events/LMLibraryCalendarSetting.php" beforeDir="false" afterPath="$PROJECT_DIR$/sys/Events/LMLibraryCalendarSetting.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web_indexer/web_indexer.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../web_indexer/web_indexer.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../install/aspen.sql" beforeDir="false" afterPath="$PROJECT_DIR$/../../install/aspen.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../oai_indexer/src/com/turning_leaf_technologies/oai/OaiIndexerMain.java" beforeDir="false" afterPath="$PROJECT_DIR$/../oai_indexer/src/com/turning_leaf_technologies/oai/OaiIndexerMain.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../sideload_processing/src/com/turning_leaf_technologies/sideloading/SideLoadingMain.java" beforeDir="false" afterPath="$PROJECT_DIR$/../sideload_processing/src/com/turning_leaf_technologies/sideloading/SideLoadingMain.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources.local.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources.local.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Drivers/Koha.php" beforeDir="false" afterPath="$PROJECT_DIR$/Drivers/Koha.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/interface/themes/responsive/MyAccount/kohaPasswordRecovery.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/interface/themes/responsive/MyAccount/kohaPasswordRecovery.tpl" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/interface/themes/responsive/MyAccount/pinResetWithToken.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/interface/themes/responsive/MyAccount/pinResetWithToken.tpl" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/interface/themes/responsive/MyAccount/resetPin.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/interface/themes/responsive/MyAccount/resetPin.tpl" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/interface/themes/responsive/MyAccount/resetPinPage.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/interface/themes/responsive/MyAccount/resetPinPage.tpl" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/interface/themes/responsive/js/aspen/account.js" beforeDir="false" afterPath="$PROJECT_DIR$/interface/themes/responsive/js/aspen/account.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/AJAX/JSON.php" beforeDir="false" afterPath="$PROJECT_DIR$/services/AJAX/JSON.php" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -76,22 +48,22 @@
     </file-type-list>
   </component>
   <component name="HighlightingSettingsPerFile">
-    <setting file="file://$PROJECT_DIR$/sys/SearchObject/SearchObjectFactory.php" root0="FORCE_HIGHLIGHTING" root1="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/interface/themes/responsive/MyAccount/cancelHold.tpl" root0="FORCE_HIGHLIGHTING" root1="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/sys/Account/User.php" root0="FORCE_HIGHLIGHTING" root1="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/sys/Grouping/GroupedWorkMoreDetails.php" root0="FORCE_HIGHLIGHTING" root1="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/interface/themes/responsive/MyAccount/ilsHold.tpl" root0="FORCE_HIGHLIGHTING" root1="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/sys/Grouping/Item.php" root0="FORCE_HIGHLIGHTING" root1="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/sys/ConfigArray.php" root0="FORCE_HIGHLIGHTING" root1="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/Drivers/HooplaDriver.php" root0="FORCE_HIGHLIGHTING" root1="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/Drivers/AbstractIlsDriver.php" root0="FORCE_HIGHLIGHTING" root1="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/sys/User/Hold.php" root0="FORCE_HIGHLIGHTING" root1="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/Drivers/AbstractEContentDriver.php" root0="FORCE_HIGHLIGHTING" root1="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/RecordDrivers/GroupedWorkDriver.php" root0="FORCE_HIGHLIGHTING" root1="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/Drivers/AbstractDriver.php" root0="FORCE_HIGHLIGHTING" root1="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Drivers/Koha.php" root0="FORCE_HIGHLIGHTING" root1="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/services/MyAccount/AJAX.php" root0="FORCE_HIGHLIGHTING" root1="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/sys/Account/User.php" root0="FORCE_HIGHLIGHTING" root1="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/sys/ConfigArray.php" root0="FORCE_HIGHLIGHTING" root1="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/sys/SearchObject/SearchObjectFactory.php" root0="FORCE_HIGHLIGHTING" root1="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Drivers/AbstractIlsDriver.php" root0="FORCE_HIGHLIGHTING" root1="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Drivers/AbstractDriver.php" root0="FORCE_HIGHLIGHTING" root1="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/sys/Grouping/GroupedWorkMoreDetails.php" root0="FORCE_HIGHLIGHTING" root1="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/sys/User/Hold.php" root0="FORCE_HIGHLIGHTING" root1="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/interface/themes/responsive/js/aspen/account.js" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/interface/themes/responsive/MyAccount/cancelHold.tpl" root0="FORCE_HIGHLIGHTING" root1="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/RecordDrivers/GroupedWorkDriver.php" root0="FORCE_HIGHLIGHTING" root1="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/interface/themes/responsive/MyAccount/ilsHold.tpl" root0="FORCE_HIGHLIGHTING" root1="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Drivers/HooplaDriver.php" root0="FORCE_HIGHLIGHTING" root1="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/sys/Grouping/Item.php" root0="FORCE_HIGHLIGHTING" root1="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Drivers/AbstractEContentDriver.php" root0="FORCE_HIGHLIGHTING" root1="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/services/MyAccount/AJAX.php" root0="FORCE_HIGHLIGHTING" root1="FORCE_HIGHLIGHTING" />
   </component>
   <component name="JsBowerSettings">
     <node-interpreter value="project" />
@@ -173,6 +145,9 @@
       <server host="catalog.vokal.localhost" id="6887d857-743d-4db4-9f73-6e1f243248e9" name="catalog.vokal.localhost" />
       <server host="carnegie.localhost" id="9d1f4e87-aadb-48d0-b280-b795e7c377c7" name="carnegie.localhost" />
       <server host="brownell-aspen.vokal.localhost" id="7d06cd8f-d1f0-4db6-ab00-40cf89cc77f5" name="brownell-aspen.vokal.localhost" />
+      <server host="portercounty.evergreen.local" id="3ec5270c-f48b-471b-a571-8fe0754cd582" name="portercounty.evergreen.local" />
+      <server host="wvls.localhost" id="216ce007-7748-4731-a1ba-4a31df38e6cf" name="wvls.localhost" />
+      <server host="cdoc.localhost" id="8ef13de8-3d38-43db-bb10-c5a1bad83418" name="cdoc.localhost" />
     </servers>
   </component>
   <component name="PhpWebServerValidation" path_to_validation_script="C:\web\aspen-discovery\code\web" selected_validation_type="LOCAL" web_path_to_validation_script="http://basinlibraries.localhost" />
@@ -195,7 +170,7 @@
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/interface/themes/responsive/Error" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/release_notes" />
     <property name="list.type.of.created.stylesheet" value="CSS" />
     <property name="node.js.detected.package.eslint" value="true" />
     <property name="node.js.detected.package.jscs" value="true" />
@@ -217,11 +192,11 @@
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\web\aspen-discovery\code\web\release_notes" />
       <recent name="C:\web\aspen-discovery\code\web\interface\themes\responsive\Error" />
       <recent name="C:\web\aspen-discovery\code\web\services\Admin" />
       <recent name="C:\web\aspen-discovery\code\web\services\MyAccount" />
       <recent name="C:\web\aspen-discovery\code\web\manual" />
-      <recent name="C:\web\aspen-discovery\code\web\sys\DBMaintenance\version_updates" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="C:\web\aspen-discovery\code\web\services\Support" />
@@ -283,7 +258,7 @@
     <configuration name="mergeJavascript" type="PhpLocalRunConfigurationType" factoryName="PHP Console" path="$PROJECT_DIR$/interface/themes/responsive/js/merge_javascript.php">
       <CommandLine workingDirectory="$PROJECT_DIR$/interface/themes/responsive/js/">
         <PhpTestInterpreterSettings>
-          <option name="interpreterName" value="PHP" />
+          <option name="interpreterName" value="PHP 7.3" />
         </PhpTestInterpreterSettings>
       </CommandLine>
       <method v="2" />
@@ -324,6 +299,7 @@
       <item itemvalue="PHP Script.updateWidgetsWithSavedSearches" />
     </list>
   </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="project-level" UseSingleDictionary="true" transferred="true" />
   <component name="StructureViewFactory">
     <option name="ACTIVE_ACTIONS" value=",ALPHA_COMPARATOR,Show Fields" />
   </component>
@@ -391,8 +367,15 @@
       <workItem from="1626329765019" duration="27902000" />
       <workItem from="1627170212124" duration="793000" />
       <workItem from="1629723241292" duration="1399000" />
+      <workItem from="1647264107761" duration="42125000" />
+      <workItem from="1647351381864" duration="1346000" />
+      <workItem from="1647356947153" duration="17320000" />
+      <workItem from="1647397701146" duration="141856000" />
     </task>
     <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
     <option name="TAB_STATES">
@@ -406,6 +389,40 @@
     </option>
   </component>
   <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="php">
+          <url>file://$PROJECT_DIR$/services/Admin/Administrators.php</url>
+          <line>143</line>
+          <option name="timeStamp" value="2325" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="php">
+          <url>file://$PROJECT_DIR$/services/WebBuilder/ResourcesList.php</url>
+          <line>20</line>
+          <option name="timeStamp" value="2326" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="php">
+          <url>file://$PROJECT_DIR$/services/API/GreenhouseAPI.php</url>
+          <line>222</line>
+          <option name="timeStamp" value="2332" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="php">
+          <url>file://$PROJECT_DIR$/sys/Browse/BrowseCategoryGroup.php</url>
+          <line>169</line>
+          <option name="timeStamp" value="2353" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="php">
+          <url>file://$PROJECT_DIR$/sys/DB/DataObject.php</url>
+          <line>1002</line>
+          <option name="timeStamp" value="2388" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="php">
+          <url>file://$PROJECT_DIR$/sys/DB/DataObject.php</url>
+          <line>988</line>
+          <option name="timeStamp" value="2395" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
     <watches-manager>
       <configuration name="index.php">
         <watch expression="$locationSingleton" />
