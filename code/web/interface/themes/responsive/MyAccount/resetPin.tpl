@@ -4,9 +4,9 @@
 		<h1>{translate text='Reset My PIN' isPublicFacing=true}</h1>
 		<div class="alert alert-info">
 			{if $pinValidationRules.onlyDigitsAllowed}
-				{translate text="PINs must be between %1% and %2 digits." isPublicFacing=true}
+				{translate text="PINs must be between %1% and %2% digits." isPublicFacing=true 1=$pinValidationRules.minLength 2=$pinValidationRules.maxLength}
 			{else}
-				{translate text="PINs must be between %1% and %2 characters." isPublicFacing=true}
+				{translate text="PINs must be between %1% and %2% characters." isPublicFacing=true 1=$pinValidationRules.minLength 2=$pinValidationRules.maxLength}
 			{/if}
 		</div>
 

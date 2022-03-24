@@ -13,9 +13,9 @@
 					{if $tokenValid}
 						<div class="alert alert-info">
 							{if $pinValidationRules.onlyDigitsAllowed}
-								{translate text="PINs must be between %1% and %2 digits." isPublicFacing=true}
+								{translate text="PINs must be between %1% and %2% digits." isPublicFacing=true 1=$pinValidationRules.minLength 2=$pinValidationRules.maxLength}
 							{else}
-								{translate text="PINs must be between %1% and %2 characters." isPublicFacing=true}
+								{translate text="PINs must be between %1% and %2% characters." isPublicFacing=true 1=$pinValidationRules.minLength 2=$pinValidationRules.maxLength}
 							{/if}
 						</div>
 						<form method="post" role="form" action="/MyAccount/CompletePinReset" id="resetPin">
@@ -32,11 +32,13 @@
 										<input type="password" name="pin2" id="pin2" value="" size="{$pinValidationRules.minLength}" maxlength="{$pinValidationRules.maxLength}" class="form-control required {if $pinValidationRules.onlyDigitsAllowed}digits{/if}">
 								</div>
 							</div>
-							<div class="form-group">
-								<div class="col-xs-8 col-xs-offset-4">
-									<button type="submit" name="update" class="btn btn-primary">{translate text="Update" isPublicFacing=true}</button>
+							{if !isset($showSubmitButton) || $showSubmitButton == true}
+								<div class="form-group">
+									<div class="col-xs-8 col-xs-offset-4">
+										<button type="submit" name="update" class="btn btn-primary">{translate text="Update" isPublicFacing=true}</button>
+									</div>
 								</div>
-							</div>
+							{/if}
 							<script type="text/javascript">
 								{* input classes  'required', 'digits' are validation rules for the validation plugin *}
 								{literal}

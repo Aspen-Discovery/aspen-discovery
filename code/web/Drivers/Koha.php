@@ -672,6 +672,44 @@ class Koha extends AbstractIlsDriver
 							return $newUser;
 						}
 					}else{
+						//Check to see if the patron password has expired, this is not available on all systems.
+						if (isset($authenticationResponse->code) && $authenticationResponse->code == 'PasswordExpired') {
+							try {
+								$patronId = $lookupUserRow['borrowernumber'];
+
+								/** @noinspection SqlResolve */
+								$sql = "SELECT password_expiration_date from borrowers where cardnumber = '$barcode' OR userId = '$barcode'";
+								$passwordExpirationResult = mysqli_query($this->dbConnection, $sql);
+								if ($passwordExpirationResult->num_rows > 0) {
+									$passwordExpirationRow = $passwordExpirationResult->fetch_assoc();
+									if (!empty($passwordExpirationRow['password_expiration_date'])) {
+										$passwordExpirationTime = date_create($passwordExpirationRow['password_expiration_date']);
+										if ($passwordExpirationTime->getTimestamp() < date_create('now')->getTimestamp()) {
+											//PatronId is the borrower number, need to get the actual user id
+											$user = new User();
+											$user->username = $patronId;
+											if (!$user->find(true)){
+												$this->findNewUser($barcode);
+											}
+
+											require_once ROOT_DIR . '/sys/Account/PinResetToken.php';
+											$pinResetToken = new PinResetToken();
+											$pinResetToken->userId = $user->id;
+											$pinResetToken->generateToken();
+											$pinResetToken->dateIssued = time();
+											$resetToken = '';
+											if ($pinResetToken->insert()) {
+												$resetToken = $pinResetToken->token;
+											}
+											require_once ROOT_DIR . '/sys/Account/ExpiredPasswordError.php';
+											return new ExpiredPasswordError($patronId, $passwordExpirationRow['password_expiration_date'], $resetToken);
+										}
+									}
+								}
+							} catch (Exception $e) {
+								//This happens if password expiration is not enabled
+							}
+						}
 						//Check to see if the user has reached the maximum number of login attempts
 						$maxLoginAttempts = $this->getKohaSystemPreference('FailedLoginAttempts');
 						if (!empty($maxLoginAttempts) && $maxLoginAttempts <= $lookupUserRow['login_attempts']){
@@ -4221,9 +4259,11 @@ class Koha extends AbstractIlsDriver
 
 	function getPasswordPinValidationRules(){
 		global $library;
+		$minPasswordLength = max($this->getKohaSystemPreference('minPasswordLength'), $library->minPinLength);
+		$maxPasswordLength = max($library->maxPinLength, $minPasswordLength);
 		return [
-			'minLength' => max($this->getKohaSystemPreference('minPasswordLength'), $library->minPinLength),
-			'maxLength' => $library->maxPinLength,
+			'minLength' => $minPasswordLength,
+			'maxLength' => $maxPasswordLength,
 			'onlyDigitsAllowed' => $library->onlyDigitsAllowedInPin,
 		];
 	}

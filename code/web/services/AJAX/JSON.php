@@ -175,12 +175,36 @@ class AJAX_JSON extends Action {
 
 				$interface->assign('user', $user); // PLB Assignment Needed before error checking?
 				if (!$user || ($user instanceof AspenError)){
+					// Expired Card Notice
+					if ($user instanceof ExpiredPasswordError) {
+						$interface->assign('token', $user->resetToken);
+						$interface->assign('tokenValid', true);
+						$interface->assign('userID', $user->userId);
+						$interface->assign('showSubmitButton', false);
+
+						$catalog = CatalogFactory::getCatalogConnectionInstance();
+						$pinValidationRules = $catalog->getPasswordPinValidationRules();
+						$interface->assign('pinValidationRules', $pinValidationRules);
+
+						return array(
+							'success' => false,
+							'title' => translate(['text' => 'Error', 'isPublicFacing'=>true]),
+							'body' => $interface->fetch('MyAccount/pinResetWithTokenPopup.tpl'),
+							'message' => translate(['text' => 'Your PIN has expired.', 'isPublicFacing'=>true]),
+							'buttons' => '<button class="btn btn-primary" type="submit" name="submit" onclick="$(\'#resetPin\').submit();">' . translate(['text' => 'Reset My PIN', 'isPublicFacing'=>true]) . '</button>',
+							'passwordExpired' => true,
+							'enroll2FA' => false,
+						);
+					}
 
 					// Expired Card Notice
 					if ($user && $user->getMessage() == 'Your library card has expired. Please contact your local library to have your library card renewed.') {
 						return array(
 							'success' => false,
-							'message' => translate(['text' => 'Your library card has expired. Please contact your local library to have your library card renewed.', 'isPublicFacing'=>true])
+							'message' => translate(['text' => 'Your library card has expired. Please contact your local library to have your library card renewed.', 'isPublicFacing'=>true]),
+							'enroll2FA' => false,
+							'has2FA' => false,
+							'passwordExpired' => false,
 						);
 					}
 
@@ -188,7 +212,9 @@ class AJAX_JSON extends Action {
 					if($user && $user->getMessage() == 'You must enroll into two-factor authentication before logging in.') {
 						return array(
 							'success' => false,
-							'enroll2FA' => true
+							'enroll2FA' => true,
+							'has2FA' => false,
+							'passwordExpired' => false,
 						);
 					}
 
@@ -196,7 +222,9 @@ class AJAX_JSON extends Action {
 					if ($user && $user->getMessage() == 'You must authenticate before logging in. Please provide the 6-digit code that was emailed to you.') {
 						return array(
 							'success' => false,
-							'has2FA' => true
+							'enroll2FA' => false,
+							'has2FA' => true,
+							'passwordExpired' => false,
 						);
 					}
 

@@ -30,7 +30,7 @@ class CompletePinReset extends Action
 		$catalog = CatalogFactory::getCatalogConnectionInstance(null, null);
 		$pinValidationRules = $catalog->getPasswordPinValidationRules();
 		$interface->assign('pinValidationRules', $pinValidationRules);
-		if (isset($_REQUEST['update']) && $tokenValid) {
+		if ((isset($_REQUEST['update']) || (isset($_REQUEST['pin1']) && isset($_REQUEST['pin2']))) && $tokenValid) {
 			$userToResetPinFor = new User();
 			$userToResetPinFor->id = $pinResetToken->userId;
 			if ($userToResetPinFor->find(true)){
