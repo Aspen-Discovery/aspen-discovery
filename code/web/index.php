@@ -284,7 +284,17 @@ if ($isLoggedIn) {
         AspenError::raiseError("Error authenticating patron " . $e->getMessage());
     }
     $timer->logTime('Login the user');
-	if ($user instanceof AspenError) {
+	require_once ROOT_DIR . '/sys/Account/ExpiredPasswordError.php';
+	if ($user instanceof ExpiredPasswordError) {
+		$_REQUEST['token'] =  $user->resetToken;
+
+		require_once ROOT_DIR . '/services/MyAccount/CompletePinReset.php';
+		$launchAction = new MyAccount_CompletePinReset();
+		$launchAction->setPinExpired(true);
+		$launchAction->launch();
+
+		exit();
+	}elseif ($user instanceof AspenError) {
 		require_once ROOT_DIR . '/services/MyAccount/Login.php';
 		$launchAction = new MyAccount_Login();
 		$error_msg    = translate(['text'=>$user->getMessage(),'isPublicFacing'=>true]);

@@ -6,6 +6,9 @@
 				{if !empty($error)}
 					<div class="alert alert-danger">{$error}</div>
 				{/if}
+				{if $pinExpired}
+					<div class="alert alert-warning">{translate text="Your PIN has expired, enter a new PIN below." isPublicFacing=true}</div>
+				{/if}
 				{if !empty($result) && $result.success}
 					<div class="alert alert-success">{translate text='Your PIN has been reset.' isPublicFacing=true}</div>
 					<div ><a href="/MyAccount/Home" class="btn btn-primary">{translate text='Continue to login' isPublicFacing=true}</a> </div>
