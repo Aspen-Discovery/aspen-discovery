@@ -339,11 +339,11 @@ abstract class DataObject
 			}
 		}
 		$insertQuery .= '(' . $propertyNames . ') VALUES (' . $propertyValues . ');';
-		try {
+		//try {
 			$response = $aspen_db->exec($insertQuery);
-		}catch (PDOException $e){
-			return new AspenError("Error inserting " . get_class($this) . "<br/>\r\n" . $e->getMessage(), $e->getTrace());
-		}
+		//}catch (PDOException $e){
+		//	return new AspenError("Error inserting " . get_class($this) . "<br/>\r\n" . $e->getMessage(), $e->getTrace());
+		//}
 		global $timer;
 		if (IPAddress::logAllQueries()){
 			global $logger;
