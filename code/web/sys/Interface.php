@@ -647,7 +647,7 @@ class UInterface extends Smarty
 		}
 
 		//Determine whether or not to display materials request to patrons
-		$this->assign('displayMaterialsRequest', $library->displayMaterialsRequestToPublic);
+		$this->assign('displayMaterialsRequest', $library->displayMaterialsRequestToPublic || UserAccount::isStaff());
 
 		//Determine whether or not donations functionality should be enabled
 		$enableDonationsModule = false;

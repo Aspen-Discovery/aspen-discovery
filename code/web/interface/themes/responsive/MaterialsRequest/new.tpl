@@ -4,6 +4,8 @@
 		<div id="materialsRequest">
 			{if $offline}
 				<div class="alert alert-warning"><strong>{translate text=$offlineMessage isPublicFacing=true}</strong></div>
+			{elseif !$displayMaterialsRequestToPublic}
+				<div class="alert alert-warning">{translate text="The materials request system is not currently available.  Please check back later." isPublicFacing=true}</div>
 			{else}
 				<div class="materialsRequestExplanation alert alert-info">
 					{if empty($newMaterialsRequestSummary)}
