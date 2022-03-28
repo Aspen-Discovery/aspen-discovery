@@ -70,6 +70,14 @@ class Greenhouse_ClearAspenData extends Admin_Admin
 						$numDeleted = $objectToDelete->delete(true);
 						$message .= translate(['text' => 'Deleted %1% %2% objects', 1=>$numDeleted, 2=>get_class($objectToDelete), 'isAdminFacing'=>true]) . '<br/>';
 
+						//Finally clear solr data
+						$solrSearcher = SearchObjectFactory::initSearchObject('GroupedWork');
+						/** @var Solr $index */
+						$index = $solrSearcher->getIndexEngine();
+						if ($index->deleteAllRecords()) {
+							$message .= translate(['text' => 'Cleared Solr Index', 'isAdminFacing'=>true]) . '<br/>';
+						}
+
 						$success = true;
 					}else if ($element == 'userData') {
 						require_once ROOT_DIR . '/sys/Account/User.php';

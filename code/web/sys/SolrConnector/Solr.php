@@ -1514,11 +1514,25 @@ abstract class Solr
 	 */
 	function deleteRecord($id)
 	{
-		if ($this->debugSolrQuery) {
-			echo "<pre>Delete Record: $id</pre>\n";
+		$body = "<delete><id>$id</id></delete>";
+
+		$result = $this->_update($body);
+		if ($result instanceof AspenError) {
+			AspenError::raiseError($result);
 		}
 
-		$body = "<delete><id>$id</id></delete>";
+		return $result;
+	}
+
+	/**
+	 * Delete All Records from Database
+	 *
+	 * @return    boolean
+	 * @access    public
+	 */
+	function deleteAllRecords()
+	{
+		$body = "<delete><query>*:*</query></delete>";
 
 		$result = $this->_update($body);
 		if ($result instanceof AspenError) {
@@ -1726,19 +1740,11 @@ abstract class Solr
 
 		$this->pingServer();
 
-		if ($this->debugSolrQuery) {
-			echo "<pre>POST: ";
-			print_r($this->host . "/update/");
-			echo "XML:\n";
-			print_r($xml);
-			echo "</pre>\n";
-		}
-
 		// Set up XML
 		$this->client->addCustomHeaders(['Content-Type: text/xml; charset=utf-8'], false);
 
 		// Send Request
-		$result = $this->client->curlPostBodyData($this->host . "/update/", $xml, false);
+		$result = $this->client->curlPostBodyData($this->host . "/update?commit=true", $xml, false);
 		$responseCode = $this->client->getResponseCode();
 
 		if ($responseCode == 500 || $responseCode == 400) {
