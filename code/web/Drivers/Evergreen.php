@@ -807,6 +807,10 @@ class Evergreen extends AbstractIlsDriver
 			],
 		];
 
+		if (strpos($recordId, ':') !== false){
+			list(,$recordId) = explode(':', $recordId);
+		}
+
 		$authToken = $this->getAPIAuthToken($patron);
 		if ($authToken != null){
 			$evergreenUrl = $this->accountProfile->patronApiUrl . '/osrf-gateway-v1';
@@ -1150,7 +1154,8 @@ class Evergreen extends AbstractIlsDriver
 		$evergreenUrl = $this->accountProfile->patronApiUrl . '/opac/extras/supercat/retrieve/atom/record/' . $recordId;
 		$superCatResult = $this->apiCurlWrapper->curlGetPage($evergreenUrl);
 		if ($this->apiCurlWrapper->getResponseCode() == 200){
-			return simplexml_load_string($evergreenUrl);
+			$bibParsed = simplexml_load_string($superCatResult);
+			return $bibParsed;
 		}else{
 			return null;
 		}
