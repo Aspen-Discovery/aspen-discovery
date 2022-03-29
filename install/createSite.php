@@ -232,9 +232,13 @@ echo("Setting up data and log directories\r\n");
 $dataDir = '/data/aspen-discovery/' . $sitename;
 if (!file_exists($dataDir)){
 	mkdir($dataDir, 0775, true);
+	chgrp($dataDir, 'aspen_apache');
+	chmod($dataDir, 0775);
 }
 if (!file_exists('/data/aspen-discovery/accelerated_reader')){
-	mkdir('/data/aspen-discovery/accelerated_reader', 0770, true);
+	mkdir('/data/aspen-discovery/accelerated_reader', 0775, true);
+	chgrp('/data/aspen-discovery/accelerated_reader', 'aspen_apache');
+	chmod('/data/aspen-discovery/accelerated_reader', 0775);
 }
 recursive_copy($installDir . '/data_dir_setup', $dataDir);
 if (!$runningOnWindows){

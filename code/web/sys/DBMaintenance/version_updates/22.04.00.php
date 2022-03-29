@@ -124,5 +124,38 @@ function getUpdates22_04_00() : array
 				"ALTER TABLE translation_map_values CHANGE COLUMN value value varchar(255) COLLATE utf8mb4_general_ci NOT NULL",
 			),
 		], //increase_translation_map_value_length
+		'fix_sideload_permissions' => [
+			'title' => 'Fix sideload permissions',
+			'description' => 'Fix permissions so sideload files can be uploaded properly',
+			'sql' => [
+				'fixSideLoadPermissions_22_04'
+			]
+		],
 	];
+}
+
+function fixSideLoadPermissions_22_04(&$update){
+	global $sitename;
+	//Make sure we have the
+	chgrp("/data/aspen-discovery/$sitename", 'aspen_apache');
+	chmod("/data/aspen-discovery/$sitename", 775);
+	require_once ROOT_DIR . '/sys/Indexing/SideLoad.php';
+	$sideLoads = new SideLoad();
+	$sideLoads->find();
+	$numSideLoadsUpdated = 0;
+	while ($sideLoads->fetch()){
+		if (!file_exists($sideLoads->marcPath)) {
+			mkdir($sideLoads->marcPath, 0775, true);
+		}
+		chgrp($sideLoads->marcPath, 'aspen_apache');
+		chmod($sideLoads->marcPath, 0775);
+		if (!file_exists($sideLoads->individualMarcPath)) {
+			mkdir($sideLoads->individualMarcPath, 0775, true);
+		}
+		chgrp($sideLoads->individualMarcPath, 'aspen_apache');
+		chmod($sideLoads->individualMarcPath, 0775);
+		$numSideLoadsUpdated++;
+	}
+	$update['success'] = true;
+	$update['status'] = translate(['text' => 'Update succeeded, updated %1% sideloads', 1=> $numSideLoadsUpdated, 'isAdminFacing'=>true]);
 }
