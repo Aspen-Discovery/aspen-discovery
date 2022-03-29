@@ -5,8 +5,7 @@ if [ -z "$1" ]
     echo "Please provide the server name to update as the first argument."
 fi
 echo "Updating $1"
-sudo chown aspen:aspen_apache /data/aspen-discovery/$1
-sudo chmod g+w /data/aspen-discovery/$1
+
 cp -r solr7 /data/aspen-discovery/$1
 sudo chown -R solr:aspen /data/aspen-discovery/$1/solr7
 
