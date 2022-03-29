@@ -164,13 +164,13 @@ class SideLoad extends DataObject
 		$ret = parent::insert();
 		if ($ret !== FALSE) {
 			if (!file_exists($this->marcPath)) {
-				chgrp($this->marcPath, 'aspen_apache');
 				mkdir($this->marcPath, 0775, true);
+				chgrp($this->marcPath, 'aspen_apache');
 				chmod($this->marcPath, 0775);
 			}
 			if (!file_exists($this->individualMarcPath)) {
-				chgrp($this->individualMarcPath, 'aspen_apache');
 				mkdir($this->individualMarcPath, 0775, true);
+				chgrp($this->individualMarcPath, 'aspen_apache');
 				chmod($this->individualMarcPath, 0775);
 			}
 

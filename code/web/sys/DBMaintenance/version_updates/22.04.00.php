@@ -143,12 +143,19 @@ function fixSideLoadPermissions_22_04(&$update){
 	$sideLoads = new SideLoad();
 	$sideLoads->find();
 	$numSideLoadsUpdated = 0;
+	$status = '';
 	while ($sideLoads->fetch()){
 		if (!file_exists($sideLoads->marcPath)) {
-			mkdir($sideLoads->marcPath, 0775, true);
+			if (!mkdir($sideLoads->marcPath, 0775, true)){
+				$status .= 'Could not create marc path ' . $sideLoads->marcPath . '<br/>';
+			}
 		}
-		chgrp($sideLoads->marcPath, 'aspen_apache');
-		chmod($sideLoads->marcPath, 0775);
+		if (!@chgrp($sideLoads->marcPath, 'aspen_apache')){
+			$status .= 'Could not set group to aspen_apache for ' . $sideLoads->marcPath . '<br/>';
+		}
+		if (!@chmod($sideLoads->marcPath, 0775)){
+			$status .= 'Could not set permissions for ' . $sideLoads->marcPath . '<br/>';
+		}
 		if (!file_exists($sideLoads->individualMarcPath)) {
 			mkdir($sideLoads->individualMarcPath, 0775, true);
 		}
@@ -156,6 +163,13 @@ function fixSideLoadPermissions_22_04(&$update){
 		chmod($sideLoads->individualMarcPath, 0775);
 		$numSideLoadsUpdated++;
 	}
-	$update['success'] = true;
-	$update['status'] = translate(['text' => 'Update succeeded, updated %1% sideloads', 1=> $numSideLoadsUpdated, 'isAdminFacing'=>true]);
+
+	if (strlen($status) == 0){
+		$update['success'] = true;
+		$update['status'] = translate(['text' => 'Update succeeded, updated %1% sideloads', 1=> $numSideLoadsUpdated, 'isAdminFacing'=>true]);
+	}else{
+		$update['success'] = false;
+		$update['status'] = $status;
+	}
+
 }
