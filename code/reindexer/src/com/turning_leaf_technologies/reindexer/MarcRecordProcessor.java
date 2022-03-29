@@ -744,7 +744,7 @@ abstract class MarcRecordProcessor {
 			}else if (subjectForm.equalsIgnoreCase("Poetry")
 					|| subjectForm.equalsIgnoreCase("Juvenile Poetry")
 					){
-				addToMapWithCount(literaryFormsWithCount, "Fiction");
+				addToMapWithCount(literaryFormsWithCount, "Non Fiction");
 				addToMapWithCount(literaryFormsFull, "Poetry");
 			}else if (subjectForm.equalsIgnoreCase("Humor")
 					|| subjectForm.equalsIgnoreCase("Juvenile Humor")

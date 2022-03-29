@@ -42,8 +42,8 @@ public class KohaExportMain {
 	private static Long startTimeForLogging;
 	private static IlsExtractLogEntry logEntry;
 
+	private static boolean extractSingleWork = false;
 	public static void main(String[] args) {
-		boolean extractSingleWork = false;
 		String singleWorkId = null;
 		if (args.length == 0) {
 			serverName = StringUtils.getInputFromCommandLine("Please enter the server name");
@@ -1299,7 +1299,7 @@ public class KohaExportMain {
 						logEntry.incAdded();
 					}else{
 						//No change has been made, we could skip this
-						if (!indexingProfile.isRunFullUpdate()){
+						if (!indexingProfile.isRunFullUpdate() && !extractSingleWork){
 							logEntry.incSkipped();
 							return;
 						}else{
