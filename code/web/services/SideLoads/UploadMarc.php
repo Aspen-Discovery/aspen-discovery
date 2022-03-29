@@ -65,10 +65,20 @@ class SideLoads_UploadMarc extends Admin_Admin
 						}
 						fclose($out_file);
 						gzclose($file);
+						$filesInSideLoadDir = scandir($uploadPath);
+						foreach ($filesInSideLoadDir as $file){
+							$fullFileName = $uploadPath . '/' . $file;
+							if (is_file($fullFileName)){
+								chgrp($fullFileName, 'aspen_apache');
+								chmod($fullFileName, 0664);
+							}
+						}
 						$interface->assign('message', "The file was uploaded and unzipped successfully");
 					} else {
 						$copyResult = copy($uploadedFile["tmp_name"], $destFullPath);
 						if ($copyResult) {
+							chgrp($destFullPath, 'aspen_apache');
+							chmod($destFullPath, 0774);
 							$interface->assign('message', "The file was uploaded successfully");
 						} else {
 							$interface->assign('error', "Could not copy the file to $uploadPath");
