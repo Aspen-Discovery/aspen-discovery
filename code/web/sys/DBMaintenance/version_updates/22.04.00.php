@@ -156,11 +156,12 @@ function fixSideLoadPermissions_22_04(&$update){
 		if (!@chmod($sideLoads->marcPath, 0775)){
 			$status .= 'Could not set permissions for ' . $sideLoads->marcPath . '<br/>';
 		}
+		//Don't bother showing errors for individual marc paths since they are no longer really used
 		if (!file_exists($sideLoads->individualMarcPath)) {
-			mkdir($sideLoads->individualMarcPath, 0775, true);
+			@mkdir($sideLoads->individualMarcPath, 0775, true);
 		}
-		chgrp($sideLoads->individualMarcPath, 'aspen_apache');
-		chmod($sideLoads->individualMarcPath, 0775);
+		@chgrp($sideLoads->individualMarcPath, 'aspen_apache');
+		@chmod($sideLoads->individualMarcPath, 0775);
 		$numSideLoadsUpdated++;
 	}
 
