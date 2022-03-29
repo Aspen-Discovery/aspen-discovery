@@ -135,14 +135,14 @@ function getUpdates22_04_00() : array
 }
 
 function fixSideLoadPermissions_22_04(&$update){
-	global $sitename;
+	global $serverName;
 	//Make sure we have the
 	$status = '';
-	if (!@chgrp("/data/aspen-discovery/$sitename", 'aspen_apache')){
-		$status .= "Could not set group to aspen_apache for /data/aspen-discovery/$sitename, update manually.<br/>";
+	if (!@chgrp("/data/aspen-discovery/$serverName", 'aspen_apache')){
+		$status .= "Could not set group to aspen_apache for /data/aspen-discovery/$serverName, update manually.<br/>";
 	}
-	if (!@chmod("/data/aspen-discovery/$sitename", 775)){
-		$status .= "Could not set permissions for /data/aspen-discovery/$sitename, update manually.<br/>";
+	if (!@chmod("/data/aspen-discovery/$serverName", 775)){
+		$status .= "Could not set permissions for /data/aspen-discovery/$serverName, update manually.<br/>";
 	}
 	require_once ROOT_DIR . '/sys/Indexing/SideLoad.php';
 	$sideLoads = new SideLoad();
