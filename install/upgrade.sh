@@ -25,7 +25,7 @@ if [ -f "/usr/local/aspen-discovery/install/upgrade_$2.sh" ]; then
 fi
 
 sudo chown aspen:aspen_apache /data/aspen-discovery/$1
-sudo chmod g+w /data/aspen-discovery/$1
+sudo chmod 775 /data/aspen-discovery/$1
 
 echo "Run database maintenance, and then press return when done"
 # shellcheck disable=SC2034
