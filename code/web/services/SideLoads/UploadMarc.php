@@ -47,6 +47,14 @@ class SideLoads_UploadMarc extends Admin_Admin
 							// extract it to the path we determined above
 							$zip->extractTo($uploadPath);
 							$zip->close();
+							$filesInSideLoadDir = scandir($uploadPath);
+							foreach ($filesInSideLoadDir as $file){
+								$fullFileName = $uploadPath . '/' . $file;
+								if (is_file($fullFileName)){
+									chgrp($fullFileName, 'aspen_apache');
+									chmod($fullFileName, 0664);
+								}
+							}
 							$interface->assign('message', "File uploaded and unzipped");
 						} else {
 							$interface->assign('error', "Could not unzip the file");
