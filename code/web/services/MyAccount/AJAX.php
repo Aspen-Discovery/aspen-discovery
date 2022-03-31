@@ -3516,6 +3516,51 @@ class MyAccount_AJAX extends JSON_Action
 	}
 
 	/** @noinspection PhpUnused */
+	function createXPressPayOrder() {
+		global $configArray;
+
+		$transactionType = $_REQUEST['type'];
+		if($transactionType == 'donation') {
+			$result = $this->createGenericDonation('xpresspay');
+		} else {
+			$result = $this->createGenericOrder('xpresspay');
+		}
+		if (array_key_exists('success', $result) && $result['success'] === false) {
+			return $result;
+		} else {
+			/** @noinspection PhpUnusedLocalVariableInspection */
+			if($transactionType == 'donation') {
+				list($paymentLibrary, $userLibrary, $payment, $purchaseUnits, $patron, $tempDonation) = $result;
+				$donation = $this->addDonation($payment, $tempDonation);
+			} else {
+				list($paymentLibrary, $userLibrary, $payment, $purchaseUnits, $patron) = $result;
+			}
+
+			require_once ROOT_DIR . '/sys/ECommerce/XpressPaySetting.php';
+			$xpressPaySettings = new XpressPaySetting();
+			$xpressPaySettings->id = $paymentLibrary->xpressPaySettingId;
+			if (!$xpressPaySettings->find(true)){
+				return ['success' => false, 'message' => "Xpress-pay payments are not configured correctly for ."];
+			}
+
+			$patron->loadContactInformation();
+			$baseUrl = 'https://pay.xpress-pay.com/';
+			$paymentRequestUrl = $baseUrl . "?pk=" . $xpressPaySettings->paymentTypeCode;
+			$paymentRequestUrl .= "&l1=" . $payment->id;
+			$paymentRequestUrl .= "&l2=" . $patron->_fullname;
+			$paymentRequestUrl .= "&a=" . $payment->totalPaid;
+			$paymentRequestUrl .= "&n=" . $patron->_fullname;
+			$paymentRequestUrl .= "&addr=" . $patron->_address1;
+			$paymentRequestUrl .= "&z=" . $patron->_zip;
+			$paymentRequestUrl .= "&e=" . $patron->email;
+			$paymentRequestUrl .= "&p=" . $patron->phone;
+			$paymentRequestUrl .= "&uid=" . $payment->id;
+
+			return ['success' => true, 'message' => 'Redirecting to payment processor', 'paymentRequestUrl' => $paymentRequestUrl];
+		}
+	}
+
+	/** @noinspection PhpUnused */
 	function dismissPlacard(){
 		$patronId = $_REQUEST['patronId'];
 		$placardId = $_REQUEST['placardId'];

@@ -130,7 +130,22 @@ function getUpdates22_04_00() : array
 			'sql' => [
 				'fixSideLoadPermissions_22_04'
 			]
-		],
+		], //fix_sideload_permissions
+		'xpressPay_settings' => [
+			'title' => 'Add settings for Xpress-pay',
+			'description' => 'Add settings for Xpress-pay integration',
+			'continueOnError' => true,
+			'sql' => array(
+				"CREATE TABLE IF NOT EXISTS xpresspay_settings (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, 
+					name VARCHAR(50) UNIQUE,
+					paymentTypeCode VARCHAR(20)
+				) ENGINE INNODB",
+				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES ('eCommerce', 'Administer Xpress-pay', '', 10, 'Controls if the user can change Xpress-pay settings. <em>This has potential security and cost implications.</em>')",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer Xpress-pay'))",
+				"ALTER TABLE library ADD COLUMN xpressPaySettingId INT(11) DEFAULT -1"
+			),
+		], //xpressPay_settings
 	];
 }
 

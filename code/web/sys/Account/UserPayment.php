@@ -300,6 +300,81 @@ class UserPayment extends DataObject
 		return $result;
 	}
 
+
+
+	public static function completeXpressPayPayment($queryParams){
+		$success = false;
+		$error = '';
+		$message = '';
+		if (empty($queryParams['l1'])) {
+			$error = 'No Payment ID was provided, could not complete the payment';
+		}else{
+			$paymentId = $queryParams['l1'];
+			$userPayment = new UserPayment();
+			$userPayment->id = $paymentId;
+			if ($userPayment->find(true)){
+				if ($userPayment->error || $userPayment->completed || $userPayment->cancelled){
+					$userPayment->error = true;
+					$userPayment->message .= "This payment has already been completed. ";
+				}else{
+					$amountPaid = $queryParams['totalAmount'];
+					$transactionId = $queryParams['transactionId'];
+					$paymentType = $queryParams['paymentType']; // card or echeck
+					if ($amountPaid != $userPayment->totalPaid){
+						$userPayment->message = "Payment amount did not match, was $userPayment->totalPaid, paid $amountPaid. ";
+						$userPayment->totalPaid = $amountPaid;
+					}
+
+					//Check to see if we have a donation for this payment
+					require_once ROOT_DIR . '/sys/Donations/Donation.php';
+					$donation = new Donation();
+					$donation->paymentId = $userPayment->id;
+					if($donation->find(true)) {
+						$success = true;
+						$message = 'Your donation payment has been completed. ';
+						$userPayment->message .= "Donation payment completed, TransactionId = $transactionId, TotalAmount = $amountPaid, PaymentType = $paymentType. ";
+					} else {
+						$user = new User();
+						$user->id = $userPayment->userId;
+						if ($user->find(true)){
+							$finePaymentCompleted = $user->completeFinePayment($userPayment);
+							if ($finePaymentCompleted['success']) {
+								$success = true;
+								$message = 'Your payment has been completed. ';
+								$userPayment->message .= "Payment completed, TransactionId = $transactionId, TotalAmount = $amountPaid, PaymentType = $paymentType. ";
+							} else {
+								$userPayment->error = true;
+								$userPayment->message .= $finePaymentCompleted['message'];
+							}
+						}else{
+							$userPayment->error = true;
+							$userPayment->message .= "Could not find user to mark the fine paid in the ILS. ";
+						}
+					}
+					$userPayment->completed = true;
+
+				}
+
+				$userPayment->update();
+				if ($userPayment->error){
+					$error = $userPayment->message;
+				}else{
+					$message = $userPayment->message;
+				}
+			}else{
+				$error = 'Incorrect Payment ID provided';
+				global $logger;
+				$logger->log('Incorrect Payment ID provided', Logger::LOG_ERROR);
+			}
+		}
+		$result = [
+			'success' => $success,
+			'message' => $success ? $message : $error
+		];
+
+		return $result;
+	}
+
 	public function toArray($includeRuntimeProperties = true, $encryptFields = false): array
 	{
 		$return =  parent::toArray($includeRuntimeProperties, $encryptFields);

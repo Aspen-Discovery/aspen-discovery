@@ -1223,6 +1223,8 @@ AspenDiscovery.Account = (function(){
 							orderInfo = response.paymentRequestUrl;
 						} else if(paymentType === 'ProPay') {
 							orderInfo = response.paymentRequestUrl;
+						} else if(paymentType === 'XpressPay') {
+							orderInfo = response.paymentRequestUrl;
 						}
 					}
 				}
@@ -1254,6 +1256,15 @@ AspenDiscovery.Account = (function(){
 
 		createProPayOrder: function(finesFormId, transactionType) {
 			var url = this.createGenericOrder(finesFormId, 'ProPay', transactionType);
+			if (url === false) {
+				// Do nothing; there was an error that should be displayed
+			} else {
+				window.location.href = url;
+			}
+		},
+
+		createXpressPayOrder: function(finesFormId, transactionType) {
+			var url = this.createGenericOrder(finesFormId, 'XpressPay', transactionType);
 			if (url === false) {
 				// Do nothing; there was an error that should be displayed
 			} else {
