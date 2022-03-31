@@ -3,11 +3,11 @@ require_once ROOT_DIR . '/services/Admin/Admin.php';
 require_once ROOT_DIR . '/sys/Support/Ticket.php';
 class Greenhouse_TicketsCreatedByMonth extends Admin_Admin
 {
-
+	//TODO: Only show tickets created since Feb/March 2022 since we aren't loading all closed tickets.
 	function launch()
 	{
 		global $interface;
-		$title = 'Tickets Created By Day (last month)';
+		$title = 'Tickets Created By Month';
 
 		$dataSeries = [];
 		$columnLabels = [];
