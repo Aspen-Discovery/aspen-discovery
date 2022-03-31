@@ -131,6 +131,73 @@ function getUpdates22_04_00() : array
 				'fixSideLoadPermissions_22_04'
 			]
 		],
+		'ticket_creation' => [
+			'title' => 'Ticket Table Creation',
+			'description' => 'Setup tables to handle tracking tickets within Aspen Greenhouse',
+			'sql' => [
+				'CREATE TABLE IF NOT EXISTS ticket_status_feed (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, 
+					name VARCHAR(50) NOT NULL UNIQUE,
+					rssFeed TEXT
+				) ENGINE INNODB',
+				'CREATE TABLE IF NOT EXISTS ticket_queue_feed (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, 
+					name VARCHAR(50) NOT NULL UNIQUE,
+					rssFeed TEXT
+				) ENGINE INNODB',
+				'CREATE TABLE IF NOT EXISTS ticket_severity_feed (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, 
+					name VARCHAR(50) NOT NULL UNIQUE,
+					rssFeed TEXT
+				) ENGINE INNODB',
+				'CREATE TABLE IF NOT EXISTS ticket_component_feed (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, 
+					name VARCHAR(50) NOT NULL UNIQUE,
+					rssFeed TEXT
+				) ENGINE INNODB',
+				'CREATE TABLE IF NOT EXISTS ticket (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, 
+					ticketId VARCHAR(20) NOT NULL UNIQUE ,
+					displayUrl VARCHAR(500),
+					title TEXT,
+					description TEXT, 
+					dateCreated INT NOT NULL, 
+					requestingPartner INT,
+					status VARCHAR(50),
+					queue VARCHAR(50),
+					severity VARCHAR(50),
+					partnerPriority INT DEFAULT 0,
+					partnerPriorityChangeDate INT,
+					dateClosed INT,
+					developmentTaskId INT
+				) ENGINE INNODB',
+				'CREATE TABLE IF NOT EXISTS ticket_stats (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, 
+					year INT(4) NOT NULL,
+					month INT(2) NOT NULL,
+					day INT(2) NOT NULL,
+					status VARCHAR(50),
+					queue VARCHAR(50),
+					severity VARCHAR(50),
+					count INT DEFAULT 0,
+					UNIQUE (year, month, day, status, queue, severity, count)
+				) ENGINE INNODB',
+				'CREATE TABLE IF NOT EXISTS development_task (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, 
+					name VARCHAR(255) NOT NULL UNIQUE,
+					description MEDIUMTEXT,
+					releaseId INT,
+					weight INT,
+					status VARCHAR(50),
+					assignedTo INT
+				) ENGINE INNODB',
+				'CREATE TABLE IF NOT EXISTS aspen_release (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, 
+					name VARCHAR(10) NOT NULL UNIQUE,
+					releaseDate INT
+				) ENGINE INNODB',
+			],
+		],
 	];
 }
 

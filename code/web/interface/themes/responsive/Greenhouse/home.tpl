@@ -78,6 +78,74 @@
 			</div>
 		</div>
 
+		<div class="adminSection grid-item" id="greenhouse-ticketing">
+			<div class="adminPanel">
+				<div class="adminSectionLabel row"><div class="col-tn-12">{translate text="Ticketing" isAdminFacing=true}</div></div>
+				<div class="adminSectionActions row">
+					<div class="col-tn-12">
+						<div class="adminAction row">
+							<div class="col-tn-2 col-xs-1 col-sm-2 col-md-1 adminActionLabel">
+								<a href="/Greenhouse/Tickets" title="{translate text="Tickets" inAttribute="true" isAdminFacing=true}"><i class="fas fa-chevron-circle-right fa"></i></a>
+							</div>
+							<div class="col-tn-10 col-xs-11 col-sm-10 col-md-11">
+								<div class="adminActionLabel"><a href="/Greenhouse/Tickets">{translate text="Tickets"  isAdminFacing=true}</a></div>
+							</div>
+						</div>
+						<div class="adminAction row">
+							<div class="col-tn-2 col-xs-1 col-sm-2 col-md-1 adminActionLabel">
+								<a href="/Greenhouse/TicketStatuses" title="{translate text="Ticket Statuses" inAttribute="true" isAdminFacing=true}"><i class="fas fa-chevron-circle-right fa"></i></a>
+							</div>
+							<div class="col-tn-10 col-xs-11 col-sm-10 col-md-11">
+								<div class="adminActionLabel"><a href="/Greenhouse/TicketStatuses">{translate text="Ticket Statuses"  isAdminFacing=true}</a></div>
+							</div>
+						</div>
+						<div class="adminAction row">
+							<div class="col-tn-2 col-xs-1 col-sm-2 col-md-1 adminActionLabel">
+								<a href="/Greenhouse/TicketQueues" title="{translate text="Ticket Queues" inAttribute="true" isAdminFacing=true}"><i class="fas fa-chevron-circle-right fa"></i></a>
+							</div>
+							<div class="col-tn-10 col-xs-11 col-sm-10 col-md-11">
+								<div class="adminActionLabel"><a href="/Greenhouse/TicketQueues">{translate text="Ticket Queues"  isAdminFacing=true}</a></div>
+							</div>
+						</div>
+						<div class="adminAction row">
+							<div class="col-tn-2 col-xs-1 col-sm-2 col-md-1 adminActionLabel">
+								<a href="/Greenhouse/TicketSeverities" title="{translate text="Ticket Severities" inAttribute="true" isAdminFacing=true}"><i class="fas fa-chevron-circle-right fa"></i></a>
+							</div>
+							<div class="col-tn-10 col-xs-11 col-sm-10 col-md-11">
+								<div class="adminActionLabel"><a href="/Greenhouse/TicketSeverities">{translate text="Ticket Severities"  isAdminFacing=true}</a></div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="adminSection grid-item" id="greenhouse-ticket-stats">
+			<div class="adminPanel">
+				<div class="adminSectionLabel row"><div class="col-tn-12">{translate text="Ticket Stats" isAdminFacing=true}</div></div>
+				<div class="adminSectionActions row">
+					<div class="col-tn-12">
+						<div class="adminAction row">
+							<div class="col-tn-2 col-xs-1 col-sm-2 col-md-1 adminActionLabel">
+								<a href="/Greenhouse/TicketsCreatedByDay" title="{translate text="Tickets Created By Day" inAttribute="true" isAdminFacing=true}"><i class="fas fa-chevron-circle-right fa"></i></a>
+							</div>
+							<div class="col-tn-10 col-xs-11 col-sm-10 col-md-11">
+								<div class="adminActionLabel"><a href="/Greenhouse/TicketsCreatedByDay">{translate text="Tickets Created By Day"  isAdminFacing=true}</a></div>
+							</div>
+						</div>
+						<div class="adminAction row">
+							<div class="col-tn-2 col-xs-1 col-sm-2 col-md-1 adminActionLabel">
+								<a href="/Greenhouse/TicketsCreatedByMonth" title="{translate text="Tickets Created By Month" inAttribute="true" isAdminFacing=true}"><i class="fas fa-chevron-circle-right fa"></i></a>
+							</div>
+							<div class="col-tn-10 col-xs-11 col-sm-10 col-md-11">
+								<div class="adminActionLabel"><a href="/Greenhouse/TicketsCreatedByMonth">{translate text="Tickets Created By Month"  isAdminFacing=true}</a></div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
 		<div class="adminSection grid-item" id="greenhouse-stats-reports">
 			<div class="adminPanel">
 				<div class="adminSectionLabel row"><div class="col-tn-12">{translate text="Data Export / Import " isAdminFacing=true}</div></div>
