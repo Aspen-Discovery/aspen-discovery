@@ -141,6 +141,22 @@
 								<div class="adminActionLabel"><a href="/Greenhouse/TicketsCreatedByMonth">{translate text="Tickets Created By Month"  isAdminFacing=true}</a></div>
 							</div>
 						</div>
+						<div class="adminAction row">
+							<div class="col-tn-2 col-xs-1 col-sm-2 col-md-1 adminActionLabel">
+								<a href="/Greenhouse/TicketsClosedByDay" title="{translate text="Tickets Closed By Day" inAttribute="true" isAdminFacing=true}"><i class="fas fa-chevron-circle-right fa"></i></a>
+							</div>
+							<div class="col-tn-10 col-xs-11 col-sm-10 col-md-11">
+								<div class="adminActionLabel"><a href="/Greenhouse/TicketsClosedByDay">{translate text="Tickets Closed By Day"  isAdminFacing=true}</a></div>
+							</div>
+						</div>
+						<div class="adminAction row">
+							<div class="col-tn-2 col-xs-1 col-sm-2 col-md-1 adminActionLabel">
+								<a href="/Greenhouse/TicketsClosedByMonth" title="{translate text="Tickets Closed By Month" inAttribute="true" isAdminFacing=true}"><i class="fas fa-chevron-circle-right fa"></i></a>
+							</div>
+							<div class="col-tn-10 col-xs-11 col-sm-10 col-md-11">
+								<div class="adminActionLabel"><a href="/Greenhouse/TicketsClosedByMonth">{translate text="Tickets Closed By Month"  isAdminFacing=true}</a></div>
+							</div>
+						</div>
 					</div>
 				</div>
 			</div>
