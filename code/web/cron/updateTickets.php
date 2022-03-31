@@ -63,6 +63,7 @@ while ($ticketSeverityFeeds->fetch()){
 //Update partner priorities
 require_once ROOT_DIR . '/sys/Greenhouse/AspenSite.php';
 $aspenSite = new AspenSite();
+$aspenSite->siteType = 0;
 $aspenSite->find();
 while ($aspenSite->fetch()){
 	if (!empty($aspenSite->baseUrl)){
