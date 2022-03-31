@@ -192,7 +192,9 @@ function getTicket($ticketInfo) : Ticket {
 		$ticket->description = $ticketInfo['description'];
 		$ticket->displayUrl = $ticketInfo['link'];
 		$ticket->dateCreated = strtotime($ticketInfo['dateCreated']);
-		$ticket->insert();
+		if (!$ticket->insert()){
+			echo("Could not create ticket " . $ticket->getLastError());
+		}
 		return $ticket;
 	}
 }
