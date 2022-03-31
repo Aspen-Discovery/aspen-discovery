@@ -7,7 +7,7 @@ class Greenhouse_TicketsCreatedByDay extends Admin_Admin
 	function launch()
 	{
 		global $interface;
-		$title = 'Tickets Created By Day (last month)';
+		$title = 'Tickets Created By Day (last 30 days)';
 
 		$dataSeries = [];
 		$columnLabels = [];
@@ -19,8 +19,9 @@ class Greenhouse_TicketsCreatedByDay extends Admin_Admin
 		while ($ticketQueueFeeds->fetch()){
 			$dataSeries[$ticketQueueFeeds->name] = GraphingUtils::getDataSeriesArray(count($dataSeries));
 		}
+		$dataSeries['Total']  = GraphingUtils::getDataSeriesArray(count($dataSeries));
 
-		$lastMonth = strtotime("first day of previous month");
+		$lastMonth = strtotime("now -30days");
 
 		$tickets = new Ticket();
 		$tickets->groupBy('year, month, day, queue');
@@ -35,7 +36,7 @@ class Greenhouse_TicketsCreatedByDay extends Admin_Admin
 		$tickets->find();
 		while ($tickets->fetch()){
 			/** @noinspection PhpUndefinedFieldInspection */
-			$curPeriod = "{$tickets->day}-{$tickets->month}-{$tickets->year}";
+			$curPeriod = "{$tickets->month}-{$tickets->day}-{$tickets->year}";
 			if (!in_array($curPeriod, $columnLabels)) {
 				$columnLabels[] = $curPeriod;
 			}
@@ -51,6 +52,7 @@ class Greenhouse_TicketsCreatedByDay extends Admin_Admin
 				}
 				/** @noinspection PhpUndefinedFieldInspection */
 				$dataSeries[$tickets->queue]['data'][$curPeriod] = $tickets->numTickets;
+				$dataSeries['Total']['data'][$curPeriod] += $tickets->numTickets;
 			}
 
 		}

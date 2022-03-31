@@ -19,6 +19,7 @@ class Greenhouse_TicketsClosedByMonth extends Admin_Admin
 		while ($ticketQueueFeeds->fetch()){
 			$dataSeries[$ticketQueueFeeds->name] = GraphingUtils::getDataSeriesArray(count($dataSeries));
 		}
+		$dataSeries['Total']  = GraphingUtils::getDataSeriesArray(count($dataSeries));
 
 		$tickets = new Ticket();
 		$tickets->groupBy('year, month, queue');
@@ -48,6 +49,8 @@ class Greenhouse_TicketsClosedByMonth extends Admin_Admin
 				}
 				/** @noinspection PhpUndefinedFieldInspection */
 				$dataSeries[$tickets->queue]['data'][$curPeriod] = $tickets->numTickets;
+				/** @noinspection PhpUndefinedFieldInspection */
+				$dataSeries['Total']['data'][$curPeriod] += $tickets->numTickets;
 			}
 
 		}
