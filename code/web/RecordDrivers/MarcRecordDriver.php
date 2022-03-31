@@ -1868,7 +1868,8 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 					if (!strpos($url, '://')){
 						$url = 'http://' . $url;
 					}
-					if (!strpos($url, 'http://')){
+					if (strpos($url, 'http://') === 0 || strpos($url, 'https://') === 0){
+					//if (!strpos($url, 'http://')){
 						if ($field->getSubfield('y') != null) {
 							$title = $field->getSubfield('y')->getData();
 						} else if ($field->getSubfield('3') != null) {
