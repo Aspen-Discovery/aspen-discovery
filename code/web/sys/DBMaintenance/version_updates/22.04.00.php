@@ -197,7 +197,14 @@ function getUpdates22_04_00() : array
 					releaseDate INT
 				) ENGINE INNODB',
 			],
-		],
+		], //ticket_creation
+		'aspenSite_activeTicketFeed' => [
+			'title' => 'Aspen Site - Active Ticket Feed',
+			'description' => 'Add Active Ticket Feed to Aspen Site',
+			'sql' => [
+				"ALTER TABLE aspen_sites add COLUMN activeTicketFeed VARCHAR(255) DEFAULT''",
+			]
+		], //aspenSite_activeTicketFeed
 	];
 }
 

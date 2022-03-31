@@ -60,6 +60,87 @@ while ($ticketSeverityFeeds->fetch()){
 
 //Update all tickets from partner feeds
 
+//Update partner priorities
+require_once ROOT_DIR . '/sys/Greenhouse/AspenSite.php';
+$aspenSite = new AspenSite();
+$aspenSite->find();
+while ($aspenSite->fetch()){
+	if (!empty($aspenSite->baseUrl)){
+		$priority1Ticket = -1;
+		$priority2Ticket = -1;
+		$priority3Ticket = -1;
+		$prioritiesUrl = $aspenSite->baseUrl . '/API/SystemAPI?method=getDevelopmentPriorities';
+		$prioritiesData = file_get_contents($prioritiesUrl);
+		if ($prioritiesData){
+			$prioritiesData = json_decode($prioritiesData);
+			//Get existing priorities for the partner
+			if ($prioritiesData->result->success){
+				$priority1Ticket = $prioritiesData->result->priorities->priority1->id;
+				$priority2Ticket = $prioritiesData->result->priorities->priority2->id;
+				$priority3Ticket = $prioritiesData->result->priorities->priority3->id;
+			}
+		}
+		//Get a list of all tickets for the partner
+		if (!empty($aspenSite->activeTicketFeed)){
+			$ticketsInFeed = getTicketInfoFromFeed($ticketSeverityFeeds->rssFeed);
+			foreach ($ticketsInFeed as $ticketInfo) {
+				$ticket = getTicket($ticketInfo);
+				$ticket->requestingPartner = $aspenSite->id;
+				$newPriority = -1;
+				if ($ticket->ticketId == $priority1Ticket){
+					$newPriority = 1;
+				}elseif ($ticket->ticketId == $priority2Ticket){
+					$newPriority = 2;
+				}elseif ($ticket->ticketId == $priority3Ticket){
+					$newPriority = 3;
+				}
+				if ($newPriority != $ticket->partnerPriority){
+					$ticket->partnerPriority = $newPriority;
+					$ticket->partnerPriorityChangeDate = time();
+				}
+				$ticket->update();
+			}
+		}else{
+			if ($priority1Ticket != -1){
+				$ticket = new Ticket();
+				$ticket->ticketId = $priority1Ticket;
+				if ($ticket->find(true)){
+					$ticket->requestingPartner = $aspenSite->id;
+					if ($ticket->partnerPriority != 1){
+						$ticket->partnerPriority = 1;
+						$ticket->partnerPriorityChangeDate = time();
+					}
+					$ticket->update();
+				}
+			}
+			if ($priority2Ticket != -1){
+				$ticket = new Ticket();
+				$ticket->ticketId = $priority2Ticket;
+				if ($ticket->find(true)){
+					$ticket->requestingPartner = $aspenSite->id;
+					if ($ticket->partnerPriority != 2){
+						$ticket->partnerPriority = 2;
+						$ticket->partnerPriorityChangeDate = time();
+					}
+					$ticket->update();
+				}
+			}
+			if ($priority3Ticket != -1){
+				$ticket = new Ticket();
+				$ticket->ticketId = $priority3Ticket;
+				if ($ticket->find(true)){
+					$ticket->requestingPartner = $aspenSite->id;
+					if ($ticket->partnerPriority != 3){
+						$ticket->partnerPriority = 3;
+						$ticket->partnerPriorityChangeDate = time();
+					}
+					$ticket->update();
+				}
+			}
+		}
+	}
+}
+
 
 //Update stats for today
 //require_once ROOT_DIR . '/sys/Support/TicketStats.php';

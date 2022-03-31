@@ -26,6 +26,7 @@ class AspenSite extends DataObject
 	public $lastContacted;
 	public $nextMeetingDate;
 	public $nextMeetingPerson;
+	public $activeTicketFeed;
 
 	public static $_siteTypes = [0 => 'Library Partner', 1 => 'Library Partner Test', 2 => 'Demo', 3 => 'Test'];
 	public static $_implementationStatuses = [0 => 'Installing', 1 => 'Implementing', 2 => 'Soft Launch', 3 => 'Production', 4 => 'Retired'];
@@ -49,6 +50,7 @@ class AspenSite extends DataObject
 			'appAccess' => ['property'=>'appAccess', 'type'=>'enum', 'values' => AspenSite::$_appAccess, 'label'=>'App Access Level', 'description'=>'The level of access to the Aspen app that the library has', 'required' => true, 'default' => 0],
 			'ils' => ['property'=>'ils', 'type'=>'enum', 'values' => AspenSite::$_validIls, 'label'=>'ILS', 'description'=>'The ils used by the library', 'required' => true, 'default' => 0],
 			'operatingSystem' => ['property'=>'operatingSystem', 'type'=>'text', 'label'=>'Operating System', 'description'=>'What operating system the site is on', 'maxLength'=>75, 'required' => false],
+			'activeTicketFeed' => ['property'=>'activeTicketFeed', 'type'=>'url', 'label'=>'Active Ticket Feed', 'description'=>'The URL to get a list of all active tickets for an instance', 'maxLength'=>255, 'required' => false],
 			'contactFrequency' => ['property'=>'contactFrequency', 'type'=>'enum', 'values' => AspenSite::$_contactFrequency, 'label'=>'Contact Frequency', 'description'=>'How often we want to contact the library', 'required' => true, 'default' => 3],
 			'lastContacted' => ['property' => 'lastContacted', 'type'=>'date', 'label'=>'Last Contacted', 'description'=>'When the library was last contacted.', 'hideInLists' => false],
 			'nextMeetingDate' => ['property' => 'nextMeetingDate', 'type'=>'date', 'label'=>'Next Meeting Date', 'description'=>'When we want to talk to the library next.', 'hideInLists' => false],
