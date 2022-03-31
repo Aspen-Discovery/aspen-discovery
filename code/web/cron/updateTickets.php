@@ -192,8 +192,12 @@ function getTicket($ticketInfo) : Ticket {
 		$ticket->description = $ticketInfo['description'];
 		$ticket->displayUrl = $ticketInfo['link'];
 		$ticket->dateCreated = strtotime($ticketInfo['dateCreated']);
-		if (!$ticket->insert()){
-			echo("Could not create ticket " . $ticket->getLastError());
+		try {
+			if (!$ticket->insert()) {
+				echo("Could not create ticket $ticket->ticketId " . $ticket->getLastError());
+			}
+		}catch (PDOException $e){
+			echo("Could not create ticket $ticket->ticketId " . $e);
 		}
 		return $ticket;
 	}
