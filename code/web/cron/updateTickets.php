@@ -193,25 +193,29 @@ function getTicketInfoFromFeed($name, $feedUrl) : array{
 		fwrite(STDOUT, " No data found \n");
 		return [];
 	}else {
-		$rssData = new SimpleXMLElement($rssDataRaw);
-		$ns = $rssData->getNamespaces(true);
 		$activeTickets = [];
-		if (!empty($rssData->item)) {
-			foreach ($rssData->item as $item) {
-				$matches = [];
-				preg_match('/.*id=(\d+)/', $item->link, $matches);
-				$dcData = $item->children($ns['dc']);
-				$activeTickets[$matches[1]] = [
-					'id' => $matches[1],
-					'title' => (string)$item->title,
-					'description' => (string)$item->description,
-					'link' => (string)$item->link,
-					'dateCreated' => (string)$dcData->date,
-				];
+		try {
+			$rssData = new SimpleXMLElement($rssDataRaw);
+			$ns = $rssData->getNamespaces(true);
+			if (!empty($rssData->item)) {
+				foreach ($rssData->item as $item) {
+					$matches = [];
+					preg_match('/.*id=(\d+)/', $item->link, $matches);
+					$dcData = $item->children($ns['dc']);
+					$activeTickets[$matches[1]] = [
+						'id' => $matches[1],
+						'title' => (string)$item->title,
+						'description' => (string)$item->description,
+						'link' => (string)$item->link,
+						'dateCreated' => (string)$dcData->date,
+					];
+				}
+				fwrite(STDOUT, "  Found " . count($rssData->item) . " \n");
+			} else {
+				fwrite(STDOUT, "  Found 0 \n");
 			}
-			fwrite(STDOUT, "  Found " . count($rssData->item) . " \n");
-		}else{
-			fwrite(STDOUT, "  Found 0 \n");
+		}catch (Exception $e){
+			fwrite(STDOUT, " Could not parse data \n");
 		}
 		return $activeTickets;
 	}
