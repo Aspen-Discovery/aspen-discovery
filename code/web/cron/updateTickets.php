@@ -208,8 +208,8 @@ function getTicketInfoFromFeed($name, $feedUrl) : array{
 					'link' => (string)$item->link,
 					'dateCreated' => (string)$dcData->date,
 				];
-
-				fwrite(STDOUT, "  Found " . count($rssData->item) . " \n");}
+			}
+			fwrite(STDOUT, "  Found " . count($rssData->item) . " \n");
 		}else{
 			fwrite(STDOUT, "  Found 0 \n");
 		}
