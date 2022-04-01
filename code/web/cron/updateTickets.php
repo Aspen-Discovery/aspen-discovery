@@ -13,8 +13,12 @@ while ($ticketStatusFeeds->fetch()){
 	foreach ($ticketsInFeed as $ticketInfo) {
 		$ticket = getTicket($ticketInfo);
 		$ticket->status = $ticketStatusFeeds->name;
-		$ticket->update();
-		$openTicketsFound[$ticket->ticketId] = $ticket->ticketId;
+		try {
+			$ticket->update();
+			$openTicketsFound[$ticket->ticketId] = $ticket->ticketId;
+		}catch (PDOException $e) {
+			echo("Could not update ticket $ticket->ticketId " . $ticket->getLastError());
+		}
 	}
 }
 //There are too many closed tickets to get an RSS feed, we need to just mark anything closed we don't see.
@@ -25,7 +29,11 @@ while ($ticket->fetch()){
 	if (!in_array($ticket->ticketId, $openTicketsFound)){
 		$ticket->status = 'Closed';
 		$ticket->dateClosed = time();
-		$ticket->update();
+		try{
+			$ticket->update();
+		}catch (PDOException $e) {
+			echo("Could not update ticket $ticket->ticketId " . $ticket->getLastError());
+		}
 	}
 }
 
@@ -38,7 +46,11 @@ while ($ticketQueueFeeds->fetch()){
 	foreach ($ticketsInFeed as $ticketInfo) {
 		$ticket = getTicket($ticketInfo);
 		$ticket->queue = $ticketQueueFeeds->name;
-		$ticket->update();
+		try{
+			$ticket->update();
+		}catch (PDOException $e) {
+			echo("Could not update ticket $ticket->ticketId " . $ticket->getLastError());
+		}
 	}
 }
 
@@ -51,7 +63,11 @@ while ($ticketSeverityFeeds->fetch()){
 	foreach ($ticketsInFeed as $ticketInfo) {
 		$ticket = getTicket($ticketInfo);
 		$ticket->severity = $ticketSeverityFeeds->name;
-		$ticket->update();
+		try{
+			$ticket->update();
+		}catch (PDOException $e) {
+			echo("Could not update ticket $ticket->ticketId " . $ticket->getLastError());
+		}
 	}
 }
 
@@ -99,7 +115,11 @@ while ($aspenSite->fetch()){
 					$ticket->partnerPriority = $newPriority;
 					$ticket->partnerPriorityChangeDate = time();
 				}
-				$ticket->update();
+				try{
+					$ticket->update();
+				}catch (PDOException $e) {
+					echo("Could not update ticket $ticket->ticketId " . $ticket->getLastError());
+				}
 			}
 		}else{
 			if ($priority1Ticket != -1){
@@ -111,7 +131,11 @@ while ($aspenSite->fetch()){
 						$ticket->partnerPriority = 1;
 						$ticket->partnerPriorityChangeDate = time();
 					}
-					$ticket->update();
+					try{
+						$ticket->update();
+					}catch (PDOException $e) {
+						echo("Could not update ticket $ticket->ticketId " . $ticket->getLastError());
+					}
 				}
 			}
 			if ($priority2Ticket != -1){
@@ -123,7 +147,11 @@ while ($aspenSite->fetch()){
 						$ticket->partnerPriority = 2;
 						$ticket->partnerPriorityChangeDate = time();
 					}
-					$ticket->update();
+					try{
+						$ticket->update();
+					}catch (PDOException $e) {
+						echo("Could not update ticket $ticket->ticketId " . $ticket->getLastError());
+					}
 				}
 			}
 			if ($priority3Ticket != -1){
@@ -135,7 +163,11 @@ while ($aspenSite->fetch()){
 						$ticket->partnerPriority = 3;
 						$ticket->partnerPriorityChangeDate = time();
 					}
-					$ticket->update();
+					try{
+						$ticket->update();
+					}catch (PDOException $e) {
+						echo("Could not update ticket $ticket->ticketId " . $ticket->getLastError());
+					}
 				}
 			}
 		}
