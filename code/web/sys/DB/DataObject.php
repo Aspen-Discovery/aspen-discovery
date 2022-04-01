@@ -1071,4 +1071,8 @@ abstract class DataObject
 	public function okToExport(array $selectedFilters) : bool{
 		return false;
 	}
+
+	public function getAdditionalListActions() : array {
+		return [];
+	}
 }

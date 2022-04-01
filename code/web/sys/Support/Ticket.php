@@ -68,4 +68,36 @@ class Ticket extends DataObject
 			'dateClosed' => array('property' => 'dateClosed', 'type' => 'timestamp', 'label' => 'Date Closed', 'description' => 'When the ticket was closed', 'required' => false, 'readOnly'=>true),
 		];
 	}
+
+	function getAdditionalObjectActions($existingObject) : array{
+		$objectActions = array();
+
+		if ($existingObject != null && $existingObject instanceof Ticket) {
+			require_once ROOT_DIR . '/sys/Support/RequestTrackerConnection.php';
+			$rtConnection = new RequestTrackerConnection();
+			if ($rtConnection->find(true)) {
+
+				$objectActions[] = array(
+					'text' => 'Open in RT',
+					'url' => $rtConnection->baseUrl . '/Ticket/Display.html?id=' . $existingObject->ticketId,
+				);
+			}
+		}
+		return $objectActions;
+	}
+
+	function getAdditionalListActions() : array{
+		$objectActions = array();
+
+		require_once ROOT_DIR . '/sys/Support/RequestTrackerConnection.php';
+		$rtConnection = new RequestTrackerConnection();
+		if ($rtConnection->find(true)) {
+
+			$objectActions[] = array(
+				'text' => 'Open in RT',
+				'url' => $rtConnection->baseUrl . '/Ticket/Display.html?id=' . $this->ticketId,
+			);
+		}
+		return $objectActions;
+	}
 }
