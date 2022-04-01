@@ -79,7 +79,7 @@ while ($ticketSeverityFeeds->fetch()){
 //Update partner priorities
 require_once ROOT_DIR . '/sys/Greenhouse/AspenSite.php';
 $aspenSite = new AspenSite();
-$aspenSite->siteType = 0;
+$aspenSite->siteType = "0";
 $aspenSite->find();
 while ($aspenSite->fetch()){
 	if (!empty($aspenSite->baseUrl)){
@@ -99,7 +99,7 @@ while ($aspenSite->fetch()){
 		}
 		//Get a list of all tickets for the partner
 		if (!empty($aspenSite->activeTicketFeed)){
-			$ticketsInFeed = getTicketInfoFromFeed($aspenSite->name, $ticketSeverityFeeds->rssFeed);
+			$ticketsInFeed = getTicketInfoFromFeed($aspenSite->name, $aspenSite->activeTicketFeed);
 			foreach ($ticketsInFeed as $ticketInfo) {
 				$ticket = getTicket($ticketInfo);
 				$ticket->requestingPartner = $aspenSite->id;
