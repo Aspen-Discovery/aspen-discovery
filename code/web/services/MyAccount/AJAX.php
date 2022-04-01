@@ -2178,8 +2178,8 @@ class MyAccount_AJAX extends JSON_Action
 				$interface->assign('allowFreezeHolds', true);
 
 				$ils = $configArray['Catalog']['ils'];
-				$showPosition = ($ils == 'Horizon' || $ils == 'Koha' || $ils == 'Symphony' || $ils == 'CarlX' || 'Polaris');
-				$suspendRequiresReactivationDate = ($ils == 'Horizon' || $ils == 'CarlX' || $ils == 'Symphony' || $ils == 'Koha');
+				$showPosition = ($ils == 'Horizon' || $ils == 'Koha' || $ils == 'Symphony' || $ils == 'CarlX' || $ils == 'Polaris');
+				$suspendRequiresReactivationDate = ($ils == 'Horizon' || $ils == 'CarlX' || $ils == 'Symphony' || $ils == 'Koha' || $ils == 'Polaris');
 				$interface->assign('suspendRequiresReactivationDate', $suspendRequiresReactivationDate);
 				$showPlacedColumn = ($ils == 'Symphony');
 				$interface->assign('showPlacedColumn', $showPlacedColumn);
