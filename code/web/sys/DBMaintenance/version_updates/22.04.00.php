@@ -209,7 +209,7 @@ function getUpdates22_04_00() : array
 			'title' => 'Aspen Site - Active Ticket Feed increase length',
 			'description' => 'Increase length Active Ticket Feed in Aspen Site',
 			'sql' => [
-				"ALTER TABLE aspen_sites CHANGE COLUMN activeTicketFeed activeTicketFeed VARCHAR(512) DEFAULT''",
+				"ALTER TABLE aspen_sites CHANGE COLUMN activeTicketFeed activeTicketFeed VARCHAR(1000) DEFAULT''",
 			]
 		], //aspenSite_activeTicketFeed2
 	];
