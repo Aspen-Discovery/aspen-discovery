@@ -80,6 +80,6 @@ class Greenhouse_Tickets extends ObjectEditor
 
 	function getDefaultSort(): string
 	{
-		return 'ticketId';
+		return 'ticketId desc';
 	}
 }
