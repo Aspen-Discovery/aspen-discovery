@@ -187,8 +187,10 @@ die;
 
 function getTicketInfoFromFeed($feedUrl) : array{
 	$rssDataRaw = @file_get_contents($feedUrl);
+	fwrite(STDOUT, "Loading $feedUrl \n");
 	if ($rssDataRaw == false){
 		echo("Could not load data from $feedUrl \r\n");
+		fwrite(STDOUT, " No data found \n");
 		return [];
 	}else {
 		$rssData = new SimpleXMLElement($rssDataRaw);
@@ -227,9 +229,11 @@ function getTicket($ticketInfo) : Ticket {
 		try {
 			if (!$ticket->insert()) {
 				echo("Could not create ticket $ticket->ticketId " . $ticket->getLastError());
+				fwrite(STDOUT, "Could not create ticket $ticket->ticketId " . $ticket->getLastError() . "\n");
 			}
 		}catch (PDOException $e){
 			echo("Could not create ticket $ticket->ticketId " . $e);
+			fwrite(STDOUT, "Could not create ticket $ticket->ticketId " . $e . "\n");
 		}
 		return $ticket;
 	}
