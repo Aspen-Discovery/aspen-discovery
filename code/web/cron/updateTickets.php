@@ -9,7 +9,7 @@ $openTicketsFound = [];
 $ticketStatusFeeds = new TicketStatusFeed();
 $ticketStatusFeeds->find();
 while ($ticketStatusFeeds->fetch()){
-	$ticketsInFeed = getTicketInfoFromFeed($ticketStatusFeeds->rssFeed);
+	$ticketsInFeed = getTicketInfoFromFeed('Status ' . $ticketStatusFeeds->name, $ticketStatusFeeds->rssFeed);
 	foreach ($ticketsInFeed as $ticketInfo) {
 		$ticket = getTicket($ticketInfo);
 		$ticket->status = $ticketStatusFeeds->name;
@@ -42,7 +42,7 @@ require_once ROOT_DIR . '/sys/Support/TicketQueueFeed.php';
 $ticketQueueFeeds = new TicketQueueFeed();
 $ticketQueueFeeds->find();
 while ($ticketQueueFeeds->fetch()){
-	$ticketsInFeed = getTicketInfoFromFeed($ticketQueueFeeds->rssFeed);
+	$ticketsInFeed = getTicketInfoFromFeed('Queue ' . $ticketQueueFeeds->name, $ticketQueueFeeds->rssFeed);
 	foreach ($ticketsInFeed as $ticketInfo) {
 		$ticket = getTicket($ticketInfo);
 		$ticket->queue = $ticketQueueFeeds->name;
@@ -59,7 +59,7 @@ require_once ROOT_DIR . '/sys/Support/TicketSeverityFeed.php';
 $ticketSeverityFeeds = new TicketSeverityFeed();
 $ticketSeverityFeeds->find();
 while ($ticketSeverityFeeds->fetch()){
-	$ticketsInFeed = getTicketInfoFromFeed($ticketSeverityFeeds->rssFeed);
+	$ticketsInFeed = getTicketInfoFromFeed('Severity ' . $ticketSeverityFeeds->name, $ticketSeverityFeeds->rssFeed);
 	foreach ($ticketsInFeed as $ticketInfo) {
 		$ticket = getTicket($ticketInfo);
 		$ticket->severity = $ticketSeverityFeeds->name;
@@ -99,7 +99,7 @@ while ($aspenSite->fetch()){
 		}
 		//Get a list of all tickets for the partner
 		if (!empty($aspenSite->activeTicketFeed)){
-			$ticketsInFeed = getTicketInfoFromFeed($ticketSeverityFeeds->rssFeed);
+			$ticketsInFeed = getTicketInfoFromFeed($aspenSite->name, $ticketSeverityFeeds->rssFeed);
 			foreach ($ticketsInFeed as $ticketInfo) {
 				$ticket = getTicket($ticketInfo);
 				$ticket->requestingPartner = $aspenSite->id;
@@ -185,9 +185,9 @@ while ($aspenSite->fetch()){
 
 die;
 
-function getTicketInfoFromFeed($feedUrl) : array{
+function getTicketInfoFromFeed($name, $feedUrl) : array{
 	$rssDataRaw = @file_get_contents($feedUrl);
-	fwrite(STDOUT, "Loading $feedUrl \n");
+	fwrite(STDOUT, "Loading $name - $feedUrl \n");
 	if ($rssDataRaw == false){
 		echo("Could not load data from $feedUrl \r\n");
 		fwrite(STDOUT, " No data found \n");
@@ -208,7 +208,10 @@ function getTicketInfoFromFeed($feedUrl) : array{
 					'link' => (string)$item->link,
 					'dateCreated' => (string)$dcData->date,
 				];
-			}
+
+				fwrite(STDOUT, "  Found " . count($rssData->item) . " \n");}
+		}else{
+			fwrite(STDOUT, "  Found 0 \n");
 		}
 		return $activeTickets;
 	}
