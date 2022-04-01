@@ -202,16 +202,24 @@ function getUpdates22_04_00() : array
 			'title' => 'Aspen Site - Active Ticket Feed',
 			'description' => 'Add Active Ticket Feed to Aspen Site',
 			'sql' => [
-				"ALTER TABLE aspen_sites add COLUMN activeTicketFeed VARCHAR(255) DEFAULT''",
+				"ALTER TABLE aspen_sites add COLUMN activeTicketFeed VARCHAR(255) DEFAULT ''",
 			]
 		], //aspenSite_activeTicketFeed
 		'aspenSite_activeTicketFeed2' => [
 			'title' => 'Aspen Site - Active Ticket Feed increase length',
 			'description' => 'Increase length Active Ticket Feed in Aspen Site',
 			'sql' => [
-				"ALTER TABLE aspen_sites CHANGE COLUMN activeTicketFeed activeTicketFeed VARCHAR(1000) DEFAULT''",
+				"ALTER TABLE aspen_sites CHANGE COLUMN activeTicketFeed activeTicketFeed VARCHAR(1000) DEFAULT ''",
 			]
 		], //aspenSite_activeTicketFeed2
+		'library_nameAndDobUpdates' => [
+			'title' => 'Aspen Site - Active Ticket Feed increase length',
+			'description' => 'Increase length Active Ticket Feed in Aspen Site',
+			'sql' => [
+				"ALTER TABLE library ADD COLUMN allowNameUpdates TINYINT(1) DEFAULT 1",
+				"ALTER TABLE library ADD COLUMN allowDateOfBirthUpdates TINYINT(1) DEFAULT 1",
+			]
+		], //library_nameAndDobUpdates
 	];
 }
 

@@ -3136,6 +3136,32 @@ class Koha extends AbstractIlsDriver
 					}
 				}
 			}
+			if (!$library->allowDateOfBirthUpdates){
+				if (array_key_exists('identitySection', $patronUpdateFields)) {
+					if (array_key_exists('borrower_dateofbirth', $patronUpdateFields['identitySection']['properties'])) {
+						$patronUpdateFields['identitySection']['properties']['borrower_dateofbirth']['readOnly'] = true;
+					}
+				}
+			}
+			if (!$library->allowNameUpdates){
+				if (array_key_exists('identitySection', $patronUpdateFields)) {
+					if (array_key_exists('borrower_title', $patronUpdateFields['identitySection']['properties'])) {
+						$patronUpdateFields['identitySection']['properties']['borrower_title']['readOnly'] = true;
+					}
+					if (array_key_exists('borrower_surname', $patronUpdateFields['identitySection']['properties'])) {
+						$patronUpdateFields['identitySection']['properties']['borrower_surname']['readOnly'] = true;
+					}
+					if (array_key_exists('borrower_firstname', $patronUpdateFields['identitySection']['properties'])) {
+						$patronUpdateFields['identitySection']['properties']['borrower_firstname']['readOnly'] = true;
+					}
+					if (array_key_exists('borrower_initials', $patronUpdateFields['identitySection']['properties'])) {
+						$patronUpdateFields['identitySection']['properties']['borrower_initials']['readOnly'] = true;
+					}
+					if (array_key_exists('borrower_othernames', $patronUpdateFields['identitySection']['properties'])) {
+						$patronUpdateFields['identitySection']['properties']['borrower_othernames']['readOnly'] = true;
+					}
+				}
+			}
 		}
 
 		$interface->assign('submitUrl', '/MyAccount/ContactInformation');
