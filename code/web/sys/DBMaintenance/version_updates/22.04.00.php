@@ -220,6 +220,15 @@ function getUpdates22_04_00() : array
 				"ALTER TABLE library ADD COLUMN allowDateOfBirthUpdates TINYINT(1) DEFAULT 1",
 			]
 		], //library_nameAndDobUpdates
+		'reloadBadWords' => [
+			'title' => 'Reload Bad Words',
+			'description' => 'Reload the Bad Words List to remove some common words that should not be filtered',
+			'continueOnError' => true,
+			'sql' => [
+				'TRUNCATE TABLE bad_words',
+				'importBadWords',
+			]
+		], //reloadBadWords
 		'permissions_bad_words' => [
 			'title' => 'Create Bad Words Permissions',
 			'description' => 'Create permissions for administration of bad words',
