@@ -88,9 +88,10 @@ public class PolarisExportMain {
 	private static Set<String> bibIdsUpdatedDuringContinuous;
 	private static Set<Long> itemIdsUpdatedDuringContinuous;
 
+	private static String singleWorkId = null;
+
 	public static void main(String[] args) {
 		boolean extractSingleWork = false;
-		String singleWorkId = null;
 		if (args.length == 0) {
 			serverName = StringUtils.getInputFromCommandLine("Please enter the server name");
 			if (serverName.length() == 0) {
@@ -1164,8 +1165,10 @@ public class PolarisExportMain {
 							logEntry.incAdded();
 						}else{
 							//No change has been made, we could skip this
-							if (!indexingProfile.isRunFullUpdate()){
+							if (!indexingProfile.isRunFullUpdate() && singleWorkId == null){
 								logEntry.incSkipped();
+							}else{
+								logEntry.incUpdated();
 							}
 						}
 
@@ -1316,7 +1319,12 @@ public class PolarisExportMain {
 							DataField itemField = marcFactory.newDataField(indexingProfile.getItemTag(), ' ', ' ');
 							updateItemField(marcFactory, curItem, itemField, indexingProfile.getItemRecordNumberSubfield(), "ItemRecordID");
 							updateItemField(marcFactory, curItem, itemField, indexingProfile.getBarcodeSubfield(), "Barcode");
-							updateItemField(marcFactory, curItem, itemField, indexingProfile.getCallNumberSubfield(), "CallNumber");
+							String callNumber = getItemFieldData(curItem, "CallNumber").trim();
+							String designation = getItemFieldData(curItem, "Designation").trim();
+							if (designation.length() > 0){
+								callNumber = callNumber + " " + designation;
+							}
+							itemField.addSubfield(marcFactory.newSubfield(indexingProfile.getCallNumberSubfield(), callNumber));
 							updateItemField(marcFactory, curItem, itemField, indexingProfile.getLocationSubfield(), "LocationID");
 							updateItemField(marcFactory, curItem, itemField, indexingProfile.getCollectionSubfield(), "CollectionName");
 							updateItemField(marcFactory, curItem, itemField, indexingProfile.getShelvingLocationSubfield(), "ShelfLocation");
@@ -1499,7 +1507,7 @@ public class PolarisExportMain {
 		if (method.equals("GET")) {
 			return NetworkUtils.getURL(fullUrl, logger, headers);
 		}else{
-			return NetworkUtils.postToURL(fullUrl, postData, contentType, null, logger, null, 10000, 60000, StandardCharsets.UTF_8, headers);
+			return NetworkUtils.postToURL(fullUrl, postData, contentType, null, logger, null, 10000, 60000, StandardCharsets.UTF_8, headers, !serverName.contains(".localhost"));
 		}
 	}
 
