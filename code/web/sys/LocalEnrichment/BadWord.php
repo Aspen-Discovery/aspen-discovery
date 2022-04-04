@@ -39,7 +39,7 @@ class BadWord extends DataObject
 		return $badWordsList;
 	}
 
-	function censorBadWords(?string $search, string $replacement = '***') : string{
+	function censorBadWords(?string $search, string $replacement = '***') : ?string{
 		if ($search == null){
 			return $search;
 		}
