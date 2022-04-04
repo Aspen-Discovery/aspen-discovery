@@ -220,6 +220,14 @@ function getUpdates22_04_00() : array
 				"ALTER TABLE library ADD COLUMN allowDateOfBirthUpdates TINYINT(1) DEFAULT 1",
 			]
 		], //library_nameAndDobUpdates
+		'permissions_bad_words' => [
+			'title' => 'Create Bad Words Permissions',
+			'description' => 'Create permissions for administration of bad words',
+			'sql' => [
+				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES ('Local Enrichment', 'Administer Bad Words', '', 65, 'Allows the user to administer bad words list.')",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer Bad Words'))"
+			]
+		], // permissions_bad_words
 	];
 }
 
