@@ -1723,6 +1723,7 @@ class Library extends DataObject
 	public function getApiInfo() : array
 	{
 		global $configArray;
+		global $interface;
 		$apiInfo = [
 			'libraryId' => $this->libraryId,
 			'isDefault' => $this->isDefault,
@@ -1740,6 +1741,17 @@ class Library extends DataObject
 			'email' => $this->contactEmail,
 			'themeId' => $this->theme,
 			'allowLinkedAccounts' => $this->allowLinkedAccounts,
+			'allowUserLists' => $this->showFavorites,
+			'showHoldButton' => $this->showHoldButton,
+			'allowFreezeHolds' => $this->allowFreezeHolds,
+			'showCardExpiration' => $this->showCardExpirationDate,
+			'showCardExpirationWarnings' => $this->showExpirationWarnings,
+			'enableReadingHistory' => $this->enableReadingHistory,
+			'enableSavedSearches' => $this->enableSavedSearches,
+			'allowPinReset' => $this->allowPinReset,
+			'allowProfileUpdates' => $this->allowProfileUpdates,
+			'showShareOnExternalSites' => $this->showShareOnExternalSites,
+			'discoveryVersion' => $interface->getVariable('gitBranchWithCommit')
 		];
 		if (empty($this->baseUrl)){
 			$apiInfo['baseUrl'] = $configArray['Site']['url'];
