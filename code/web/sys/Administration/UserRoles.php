@@ -34,7 +34,7 @@ class UserRoles extends DataObject
 		$user = new User();
 		$user->id = $this->userId;
 		if ($user->find(true)){
-			$links['user'] = $user->username;
+			$links['user'] = $user->cat_username;
 		}
 		$role = new Role();
 		$role->roleId = $this->roleId;
@@ -50,11 +50,8 @@ class UserRoles extends DataObject
 		parent::loadEmbeddedLinksFromJSON($jsonData, $mappings, $overrideExisting);
 		if (array_key_exists('user', $jsonData)){
 			$username = $jsonData['user'];
-			if (array_key_exists($username, $mappings['users'])){
-				$username = $mappings['users'][$username];
-			}
 			$user = new User();
-			$user->username = $username;
+			$user->cat_username = $username;
 			if ($user->find(true)){
 				$this->userId = $user->id;
 			}

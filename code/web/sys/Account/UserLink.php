@@ -56,12 +56,12 @@ class UserLink extends DataObject{
 		$user = new User();
 		$user->id = $this->primaryAccountId;
 		if ($user->find(true)) {
-			$links['primaryAccount'] = $user->username;
+			$links['primaryAccount'] = $user->cat_username;
 		}
 		$user = new User();
 		$user->id = $this->linkedAccountId;
 		if ($user->find(true)) {
-			$links['linkedAccount'] = $user->username;
+			$links['linkedAccount'] = $user->cat_username;
 		}
 		return $links;
 	}
@@ -71,21 +71,15 @@ class UserLink extends DataObject{
 		parent::loadEmbeddedLinksFromJSON($jsonData, $mappings, $overrideExisting);
 		if (isset($jsonData['primaryAccount'])){
 			$username = $jsonData['primaryAccount'];
-			if (array_key_exists($username, $mappings['users'])){
-				$username = $mappings['users'][$username];
-			}
 			$user = new User();
-			$user->username = $username;
+			$user->cat_username = $username;
 			if ($user->find(true)){
 				$this->primaryAccountId = $user->id;
 			}
 
 			$username = $jsonData['linkedAccount'];
-			if (array_key_exists($username, $mappings['users'])){
-				$username = $mappings['users'][$username];
-			}
 			$user = new User();
-			$user->username = $username;
+			$user->cat_username = $username;
 			if ($user->find(true)){
 				$this->linkedAccountId = $user->id;
 			}
