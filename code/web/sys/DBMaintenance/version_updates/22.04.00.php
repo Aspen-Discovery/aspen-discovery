@@ -237,6 +237,16 @@ function getUpdates22_04_00() : array
 				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer Bad Words'))"
 			]
 		], // permissions_bad_words
+		'hoopla_title_exclusion_updates' => [
+			'title' => 'Hoopla Title Exclusion Updates',
+			'description' => 'Move Hoopla title exclusion rules to scopes and add the ability to hide regardless of availability',
+			'continueOnError' => true,
+			'sql' => [
+				"ALTER TABLE hoopla_scopes ADD COLUMN excludeTitlesWithCopiesFromOtherVendors TINYINT(4) DEFAULT 0",
+				"UPDATE hoopla_scopes SET excludeTitlesWithCopiesFromOtherVendors = (SELECT excludeTitlesWithCopiesFromOtherVendors FROM hoopla_settings WHERE hoopla_settings.id = hoopla_scopes.settingId)",
+				"ALTER TABLE hoopla_settings DROP COLUMN excludeTitlesWithCopiesFromOtherVendors",
+			]
+		], // hoopla_title_exclusion_updates
 	];
 }
 
