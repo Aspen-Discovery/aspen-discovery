@@ -455,10 +455,8 @@ class Greenhouse_ImportAspenData extends Admin_Admin
 			/** @var DataObject $object */
 			$object = new $className();
 			$importResult = $object->loadFromJSON($jsonData, $mappings, $overrideExisting);
-			if ($importResult instanceof AspenError) {
-				$message .= "<br/>Error loading $className " . $importResult->getMessage();
-			}elseif ($importResult == false){
-				$message .= "<br/>Error loading $className " . $object;
+			if ($importResult == false){
+				$message .= "<br/>Error loading $className " . $object . "<br/>&nbsp;&nbsp;{$object->getLastError()}";
 			}else{
 				$numObjectsImported++;
 			}
