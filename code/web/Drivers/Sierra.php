@@ -370,17 +370,15 @@ class Sierra extends Millennium{
 			}
 			$curHold->status    = $status;
 			if(isset($curHold->holdQueueLength)) {
-				if(isset($curHold->position) && ((int)$curHold->position <= 2 && (int)$curHold->holdQueueLength >= 2)) {
-					$freezeable = false;
-					// if the patron is the only person on wait list hold can't be frozen
-				} elseif(isset($curHold->position) && ($curHold->position == 1 && (int)$curHold->holdQueueLength == 1)) {
+				// if the patron is the only person on wait list hold can't be frozen
+				if(isset($curHold->position) && ($curHold->position == 1 && (int)$curHold->holdQueueLength == 1)) {
 					$freezeable = false;
 					// if there is no priority set but queueLength = 1
 				} elseif(!isset($curHold->position) && $curHold->holdQueueLength == 1) {
 					$freezeable = false;
 				}
 			}
-			$curHold->canFreeze = $freezeable;
+			$curHold->canFreeze = $freezeable || $curHold->frozen;
 			$curHold->cancelable = $cancelable;
 			$curHold->locationUpdateable = $updatePickup;
 			$curHold->available = $available;
