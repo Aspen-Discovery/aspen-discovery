@@ -441,6 +441,10 @@ class CloudLibraryDriver extends AbstractEContentDriver
 	{
 		$result = ['success' => false, 'message' => translate(['text'=>'Unknown Error', 'isPublicFacing'=>true])];
 
+		// Result for API or app use
+		$result['api']['title'] = translate(['text'=>'Unknown Error', 'isPublicFacing'=>true]);
+		$result['api']['message'] = translate(['text'=>'Unable to checkout title at this time. Please try again later.', 'isPublicFacing'=>true]);
+
 		$settings = $this->getSettings($patron);
 		$patronId = str_replace(' ', '', $patron->getBarcode());
 		$password = $patron->getPasswordOrPin();

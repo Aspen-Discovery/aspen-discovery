@@ -145,6 +145,10 @@
 									{include file="MyAccount/comprisePayments.tpl"}
 								{elseif $finePaymentType == 5}
 									{include file="MyAccount/proPayPayments.tpl"}
+								{elseif $finePaymentType == 6}
+									{include file="MyAccount/xpressPayPayments.tpl"}
+                                {elseif $finePaymentType == 7}
+                                    {include file="MyAccount/worldPayPayments.tpl"}
 								{/if}
 							{else}
 								<p>{translate text="Fines and fees can be paid online when you owe more than %1%." 1=$minimumFineAmount|formatCurrency isPublicFacing=true}</p>

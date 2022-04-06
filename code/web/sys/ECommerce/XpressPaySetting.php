@@ -1,16 +1,14 @@
 <?php
 
 /**
- * Class WorldPaySetting - Store settings for FIS WorldPay
+ * Class XpressPaySetting - Store settings for Xpress-Pay
  */
-class WorldPaySetting extends DataObject
+class XpressPaySetting extends DataObject
 {
-	public $__table = 'worldpay_settings';
+	public $__table = 'xpresspay_settings';
 	public $id;
 	public $name;
-	public $merchantCode;
-	public $settleCode;
-	public $paymentSite;
+	public $paymentTypeCode;
 
 	private $_libraries;
 
@@ -20,9 +18,7 @@ class WorldPaySetting extends DataObject
 		$structure = array(
 			'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id'),
 			'name' => array('property' => 'name', 'type' => 'text', 'label' => 'Name', 'description' => 'A name for the settings', 'maxLength' => 50),
-			'merchantCode' => array('property' => 'merchantCode', 'type' => 'text', 'label' => 'Merchant Code', 'description' => 'The Merchant Code provided by FIS', 'maxLength' => 20),
-			'settleCode' => array('property' => 'settleCode', 'type' => 'text', 'label' => 'Settle Code', 'description' => 'The Settle Code provided by FIS', 'maxLength' => 20),
-			'paymentSite' => array('property' => 'paymentSite', 'type' => 'text', 'label' => 'Payment Site URL', 'description' => 'The Payment Site URL provided by FIS', 'maxLength' => 255),
+			'paymentTypeCode' => array('property' => 'paymentTypeCode', 'type' => 'text', 'label' => 'Payment Type Code', 'description' => 'The payment type code provided by Systems East', 'maxLength' => 20),
 
 			'libraries' => array(
 				'property' => 'libraries',
@@ -52,7 +48,7 @@ class WorldPaySetting extends DataObject
 			if (!isset($this->_libraries) && $this->id){
 				$this->_libraries = [];
 				$obj = new Library();
-				$obj->worldPaySettingId = $this->id;
+				$obj->xpressPaySettingId = $this->id;
 				$obj->find();
 				while($obj->fetch()){
 					$this->_libraries[$obj->libraryId] = $obj->libraryId;
@@ -99,16 +95,16 @@ class WorldPaySetting extends DataObject
 				$library->find(true);
 				if (in_array($libraryId, $this->_libraries)){
 					//We want to apply the scope to this library
-					if ($library->worldPaySettingId != $this->id){
+					if ($library->xpressPaySettingId != $this->id){
 						$library->finePaymentType = 6;
-						$library->worldPaySettingId = $this->id;
+						$library->xpressPaySettingId = $this->id;
 						$library->update();
 					}
 				}else{
 					//It should not be applied to this scope. Only change if it was applied to the scope
-					if ($library->worldPaySettingId == $this->id){
+					if ($library->xpressPaySettingId == $this->id){
 						if ($library->finePaymentType == 6) {$library->finePaymentType = 0;}
-						$library->worldPaySettingId = -1;
+						$library->xpressPaySettingId = -1;
 						$library->update();
 					}
 				}
