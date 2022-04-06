@@ -463,6 +463,8 @@ class Sierra extends Millennium{
 			$readingHistoryEnabled = $readingHistoryEnabledResponse->readingHistoryActivation;
 		}
 		$readingHistoryTitles = array();
+
+		//Sierra does not report reading history enabled properly so we should always get it.
 		if (true || $readingHistoryEnabled){
 			$numProcessed = 0;
 			$totalToProcess = 1000;
@@ -499,9 +501,23 @@ class Sierra extends Millennium{
 							//get title and author by looking up the bib
 							$getBibResponse = $this->_callUrl('sierra.getBib', $this->accountProfile->vendorOpacUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/bibs/{$curTitle['shortId']}");
 							if ($getBibResponse){
-								$curTitle['title'] = $getBibResponse->title;
-								$curTitle['author'] = $getBibResponse->author;
-								$curTitle['format'] = isset($getBibResponse->materialType->value) ? $getBibResponse->materialType->value : 'Unknown';
+								if (isset($getBibResponse->deleted) && $getBibResponse->deleted == true){
+									$curTitle['title'] = 'Deleted from catalog';
+									$curTitle['author'] = 'Unknown';
+									$curTitle['format'] = 'Unknown';
+								}else{
+									if (isset($getBibResponse->title)) {
+										$curTitle['title'] = $getBibResponse->title;
+									}else{
+										$curTitle['title'] = 'Unknown';
+									}
+									if (isset($getBibResponse->author)) {
+										$curTitle['author'] = $getBibResponse->author;
+									}else{
+										$curTitle['author'] = 'Unknown';
+									}
+									$curTitle['format'] = isset($getBibResponse->materialType->value) ? $getBibResponse->materialType->value : 'Unknown';
+								}
 							}else{
 								$curTitle['title'] = 'Unknown';
 								$curTitle['author'] = 'Unknown';

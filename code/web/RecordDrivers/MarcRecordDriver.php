@@ -205,6 +205,9 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 			$shortId = str_replace('CARL', '', $this->id);
 			$shortId = ltrim($shortId, '0');
 			$interface->assign('staffClientUrl', $configArray['Catalog']['staffClientUrl'] . '/Items/' . $shortId);
+		}elseif ($configArray['Catalog']['ils'] == 'Evergreen'){
+			$interface->assign('classicId', $this->id);
+			$interface->assign('classicUrl', $configArray['Catalog']['url'] . '/eg/opac/record/' . $this->id);
 		}
 
 		$this->getGroupedWorkDriver()->assignGroupedWorkStaffView();

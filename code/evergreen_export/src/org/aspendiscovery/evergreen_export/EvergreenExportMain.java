@@ -11,12 +11,10 @@ import com.turning_leaf_technologies.indexing.IndexingProfile;
 import com.turning_leaf_technologies.indexing.IndexingUtils;
 import com.turning_leaf_technologies.indexing.RecordIdentifier;
 import com.turning_leaf_technologies.logging.LoggingUtil;
-import com.turning_leaf_technologies.marc.MarcUtil;
 import com.turning_leaf_technologies.net.NetworkUtils;
 import com.turning_leaf_technologies.net.WebServiceResponse;
 import com.turning_leaf_technologies.reindexer.GroupedWorkIndexer;
 import com.turning_leaf_technologies.strings.StringUtils;
-import org.apache.commons.net.util.Base64;
 import org.apache.logging.log4j.Logger;
 import org.ini4j.Ini;
 import org.json.JSONArray;
@@ -146,11 +144,15 @@ public class EvergreenExportMain {
 							updateBranchInfo(dbConn);
 							logEntry.addNote("Finished updating branch information");
 
+							//Update works that have changed since the last index
+							numChanges = updateRecords();
+						}else{
+							MarcFactory marcFactory = MarcFactory.newInstance();
+							numChanges = updateBibFromEvergreen(singleWorkId, marcFactory, true);
 
 						}
 
-						//Update works that have changed since the last index
-						numChanges = updateRecords(singleWorkId);
+
 					}
 				}else{
 					logEntry.incErrors("Could not load account profile.");
@@ -519,7 +521,7 @@ public class EvergreenExportMain {
 		}
 	}
 
-	private static int updateRecords(String singleWorkId) {
+	private static int updateRecords() {
 		//Check to see if we should regroup all existing records
 		try {
 			if (indexingProfile.isRegroupAllRecords()) {
@@ -587,6 +589,7 @@ public class EvergreenExportMain {
 			totalChanges += updateItemsUsingCsvFile(exportedCsvFiles, lastUpdateFromMarc, dbConn);
 		}
 
+
 		//Process ID Files
 		File[] exportedIdFiles = marcDeltaPath.listFiles((dir, name) -> name.endsWith("ids"));
 		if (exportedIdFiles != null && exportedIdFiles.length > 0){
@@ -637,7 +640,7 @@ public class EvergreenExportMain {
 			if (newAndRestoredIds.size() <= 1000){
 				MarcFactory marcFactory = MarcFactory.newInstance();
 				for (String idToProcess : newAndRestoredIds) {
-					updateBibFromEvergreen(idToProcess, marcFactory, lastUpdateFromMarc, true);
+					updateBibFromEvergreen(idToProcess, marcFactory, true);
 				}
 			}else {
 				logEntry.incErrors("There were too many ids to process using the API. Skipping this file");
@@ -693,7 +696,7 @@ public class EvergreenExportMain {
 		logEntry.saveResults();
 		MarcFactory marcFactory = MarcFactory.newInstance();
 		for (String bibToUpdate : bibsToUpdate){
-			numUpdates += updateBibFromEvergreen(bibToUpdate, marcFactory, lastUpdateFromMarc, true);
+			numUpdates += updateBibFromEvergreen(bibToUpdate, marcFactory, true);
 		}
 		logEntry.addNote("Finished processing bibs from CSV");
 		logEntry.saveResults();
@@ -968,11 +971,11 @@ public class EvergreenExportMain {
 		return totalChanges;
 	}
 
-	private static int updateBibFromEvergreen(String bibNumber, MarcFactory marcFactory, long lastExtractTime, boolean incrementProductsInLog) {
+	private static int updateBibFromEvergreen(String bibNumber, MarcFactory marcFactory, boolean incrementProductsInLog) {
 		//Get the bib record
 		//noinspection SpellCheckingInspection
 		String getBibUrl = baseUrl + "/opac/extras/supercat/retrieve/marcxml-full/record/" + bibNumber;
-		ProcessBibRequestResponse response = processGetBibsRequest(getBibUrl, marcFactory, lastExtractTime, incrementProductsInLog);
+		ProcessBibRequestResponse response = processGetBibsRequest(getBibUrl, marcFactory, incrementProductsInLog);
 		return response.numChanges;
 	}
 
@@ -982,12 +985,12 @@ public class EvergreenExportMain {
 		MarcFactory marcFactory = MarcFactory.newInstance();
 
 		String getBibUrl = baseUrl + "/opac/extras/feed/freshmeat/marcxml-full/biblio/import/50";
-		ProcessBibRequestResponse response = processGetBibsRequest(getBibUrl, marcFactory, lastExtractTime, true);
+		ProcessBibRequestResponse response = processGetBibsRequest(getBibUrl, marcFactory, true);
 
 		return numChanges;
 	}
 
-	private static ProcessBibRequestResponse processGetBibsRequest(String getBibsRequestUrl, MarcFactory marcFactory, long lastExtractTime, boolean incrementProductsInLog) {
+	private static ProcessBibRequestResponse processGetBibsRequest(String getBibsRequestUrl, MarcFactory marcFactory, boolean incrementProductsInLog) {
 		if (incrementProductsInLog) {
 			logEntry.incProducts();
 		}
