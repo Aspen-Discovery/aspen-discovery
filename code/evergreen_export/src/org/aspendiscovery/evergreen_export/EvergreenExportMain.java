@@ -263,17 +263,17 @@ public class EvergreenExportMain {
 						}
 					}
 					try {
-						PreparedStatement getExistingVolumes = dbConn.prepareStatement("SELECT volumeId from ils_volume_info", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-						HashSet<String> existingVolumes = new HashSet<>();
+						PreparedStatement getExistingVolumes = dbConn.prepareStatement("SELECT id, volumeId from ils_volume_info", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+						HashMap<String, Long> existingVolumes = new HashMap<>();
 						ResultSet existingVolumesRS = getExistingVolumes.executeQuery();
 						while (existingVolumesRS.next()) {
-							existingVolumes.add(existingVolumesRS.getString("volumeId"));
+							existingVolumes.put(existingVolumesRS.getString("volumeId"), existingVolumesRS.getLong("id"));
 						}
 						existingVolumesRS.close();
 
-						PreparedStatement updateVolumeStmt = dbConn.prepareStatement("UPDATE ils_volume_info SET displayLabel = ?, relatedItems = ?, displayOrder = ? WHERE volumeId = ?");
+						PreparedStatement updateVolumeStmt = dbConn.prepareStatement("UPDATE ils_volume_info SET recordId =?, displayLabel = ?, relatedItems = ?, displayOrder = ? WHERE id = ?");
 						PreparedStatement addVolumeStmt = dbConn.prepareStatement("INSERT INTO ils_volume_info (recordId, volumeId, displayLabel, relatedItems, displayOrder) VALUES (?,?,?,?, ?) ON DUPLICATE KEY update recordId = VALUES(recordId), displayLabel = VALUES(displayLabel), relatedItems = VALUES(relatedItems), displayOrder = VALUES(displayOrder)");
-						PreparedStatement deleteVolumeStmt = dbConn.prepareStatement("DELETE from ils_volume_info where volumeId = ?");
+						PreparedStatement deleteVolumeStmt = dbConn.prepareStatement("DELETE from ils_volume_info where id = ?");
 
 						TreeMap<String, VolumeInfo> volumes = new TreeMap<>();
 
@@ -313,14 +313,16 @@ public class EvergreenExportMain {
 						int numVolumes = 0;
 						for (String volumeId : volumes.keySet()) {
 							VolumeInfo volumeInfo = volumes.get(volumeId);
-							if (existingVolumes.contains(volumeInfo.volumeIdentifier)) {
+							if (existingVolumes.containsKey(volumeInfo.volumeIdentifier)) {
+								long existingVolumeId = existingVolumes.get(volumeInfo.volumeIdentifier);
 								//Update the volume information
-								updateVolumeStmt.setString(1, volumeInfo.volume);
-								updateVolumeStmt.setString(2, volumeInfo.getRelatedItemsAsString());
-								updateVolumeStmt.setLong(3, ++numVolumes);
-								updateVolumeStmt.setString(4, volumeInfo.volumeIdentifier);
+								updateVolumeStmt.setString(1, volumeInfo.bibNumber);
+								updateVolumeStmt.setString(2, volumeInfo.volume);
+								updateVolumeStmt.setString(3, volumeInfo.getRelatedItemsAsString());
+								updateVolumeStmt.setLong(4, ++numVolumes);
+								updateVolumeStmt.setLong(5, existingVolumeId);
 								updateVolumeStmt.executeUpdate();
-								existingVolumes.remove(volumeId);
+								existingVolumes.remove(volumeInfo.volumeIdentifier);
 								numUpdated++;
 							} else {
 								//Add the volume
@@ -335,8 +337,8 @@ public class EvergreenExportMain {
 						}
 						//Remove any leftover volumes
 						long numVolumesDeleted = 0;
-						for (String existingVolume : existingVolumes) {
-							deleteVolumeStmt.setString(1, existingVolume);
+						for (Long existingVolume : existingVolumes.values()) {
+							deleteVolumeStmt.setLong(1, existingVolume);
 							deleteVolumeStmt.executeUpdate();
 							numVolumesDeleted++;
 						}

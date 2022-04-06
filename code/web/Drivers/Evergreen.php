@@ -817,9 +817,22 @@ class Evergreen extends AbstractIlsDriver
 						$curHold->source = $this->getIndexingProfile()->name;
 
 						$curHold->sourceId = $holdInfo['id'];
-						//TODO: If the hold_type is P the target will be the part so we will need to lookup the bib record based on the part
-
-						$curHold->recordId = $holdInfo['target'];
+						//If the hold_type is P the target will be the part so we will need to lookup the bib record based on the part
+						if ($holdInfo['hold_type'] == 'P'){
+							require_once ROOT_DIR . '/sys/ILS/IlsVolumeInfo.php';
+							$volumeInfo = new IlsVolumeInfo();
+							$volumeInfo->volumeId = $holdInfo['target'];
+							if ($volumeInfo->find(true)){
+								$curHold->volume = $volumeInfo->displayLabel;
+								if (strpos($volumeInfo->recordId, ':') > 0) {
+									list (, $curHold->recordId) = explode(':', $volumeInfo->recordId);
+								}else{
+									$curHold->recordId = $volumeInfo->recordId;
+								}
+							}
+						}else{
+							$curHold->recordId = $holdInfo['target'];
+						}
 						$curHold->cancelId = $holdInfo['id'];
 
 						//TODO: Validate if these are accurate
