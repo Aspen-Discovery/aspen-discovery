@@ -7,6 +7,7 @@ import org.marc4j.marc.DataField;
 import org.marc4j.marc.Record;
 import org.marc4j.marc.Subfield;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
@@ -34,9 +35,10 @@ public class EvergreenRecordProcessor extends IlsRecordProcessor {
 		File supplementalDirectory = new File(marcPath + "/../supplemental");
 		if (supplementalDirectory.exists()){
 			try {
-				CSVReader barcodeActiveDatesReader = new CSVReader(new FileReader(marcPath + "/../supplemental/barcodes_active_dates.csv"));
-				String[] curValues = barcodeActiveDatesReader.readNext();
-				while (curValues != null){
+				BufferedReader barcodeActiveDatesReader = new BufferedReader(new FileReader(marcPath + "/../supplemental/barcode_active_dates.csv"));
+				String curValuesStr = barcodeActiveDatesReader.readLine();
+				while (curValuesStr != null){
+					String[] curValues = curValuesStr.split("\\|");
 					String barcode = curValues[0];
 					if (curValues.length >= 2){
 						String date = curValues[1].trim();
@@ -44,7 +46,7 @@ public class EvergreenRecordProcessor extends IlsRecordProcessor {
 							barcodeCreatedByDates.put(barcode, date);
 						}
 					}
-					curValues = barcodeActiveDatesReader.readNext();
+					curValuesStr = barcodeActiveDatesReader.readLine();
 				}
 				barcodeActiveDatesReader.close();
 			}catch (IOException e){
