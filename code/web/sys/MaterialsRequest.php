@@ -370,9 +370,6 @@ class MaterialsRequest extends DataObject
 		}
 		if (isset($jsonData['createdBy'])){
 			$username = $jsonData['createdBy'];
-			if (array_key_exists($username, $mappings['users'])){
-				$username = $mappings['users'][$username];
-			}
 			$user = new User();
 			$user->username = $username;
 			if ($user->find(true)){
@@ -381,9 +378,6 @@ class MaterialsRequest extends DataObject
 		}
 		if (isset($jsonData['assignedTo'])){
 			$username = $jsonData['assignedTo'];
-			if (array_key_exists($username, $mappings['users'])){
-				$username = $mappings['users'][$username];
-			}
 			$user = new User();
 			$user->username = $username;
 			if ($user->find(true)){

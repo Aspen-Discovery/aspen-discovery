@@ -235,7 +235,7 @@ class Placard extends DB_LibraryLocationLinkedObject
 	}
 
 	/**
-	 * @return Trigger[]
+	 * @return PlacardTrigger[]
 	 */
 	public function getTriggers() : ?array{
 		if (!isset($this->_triggers) && $this->id) {

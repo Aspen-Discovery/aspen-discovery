@@ -154,19 +154,129 @@ function getUpdates22_04_00() : array
 				"ALTER TABLE worldpay_settings ADD COLUMN paymentSite VARCHAR(255) NOT NULL DEFAULT 0",
 			),
 		], //add_worldpay_settings
+		],
+		'ticket_creation' => [
+			'title' => 'Ticket Table Creation',
+			'description' => 'Setup tables to handle tracking tickets within Aspen Greenhouse',
+			'sql' => [
+				'CREATE TABLE IF NOT EXISTS ticket_status_feed (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, 
+					name VARCHAR(50) NOT NULL UNIQUE,
+					rssFeed TEXT
+				) ENGINE INNODB',
+				'CREATE TABLE IF NOT EXISTS ticket_queue_feed (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, 
+					name VARCHAR(50) NOT NULL UNIQUE,
+					rssFeed TEXT
+				) ENGINE INNODB',
+				'CREATE TABLE IF NOT EXISTS ticket_severity_feed (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, 
+					name VARCHAR(50) NOT NULL UNIQUE,
+					rssFeed TEXT
+				) ENGINE INNODB',
+				'CREATE TABLE IF NOT EXISTS ticket_component_feed (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, 
+					name VARCHAR(50) NOT NULL UNIQUE,
+					rssFeed TEXT
+				) ENGINE INNODB',
+				'CREATE TABLE IF NOT EXISTS ticket (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, 
+					ticketId VARCHAR(20) NOT NULL UNIQUE ,
+					displayUrl VARCHAR(500),
+					title TEXT,
+					description TEXT, 
+					dateCreated INT NOT NULL, 
+					requestingPartner INT,
+					status VARCHAR(50),
+					queue VARCHAR(50),
+					severity VARCHAR(50),
+					partnerPriority INT DEFAULT 0,
+					partnerPriorityChangeDate INT,
+					dateClosed INT,
+					developmentTaskId INT
+				) ENGINE INNODB',
+				'CREATE TABLE IF NOT EXISTS ticket_stats (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, 
+					year INT(4) NOT NULL,
+					month INT(2) NOT NULL,
+					day INT(2) NOT NULL,
+					status VARCHAR(50),
+					queue VARCHAR(50),
+					severity VARCHAR(50),
+					count INT DEFAULT 0,
+					UNIQUE (year, month, day, status, queue, severity, count)
+				) ENGINE INNODB',
+				'CREATE TABLE IF NOT EXISTS development_task (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, 
+					name VARCHAR(255) NOT NULL UNIQUE,
+					description MEDIUMTEXT,
+					releaseId INT,
+					weight INT,
+					status VARCHAR(50),
+					assignedTo INT
+				) ENGINE INNODB',
+				'CREATE TABLE IF NOT EXISTS aspen_release (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, 
+					name VARCHAR(10) NOT NULL UNIQUE,
+					releaseDate INT
+				) ENGINE INNODB',
+			],
+		], //ticket_creation
+		'aspenSite_activeTicketFeed' => [
+			'title' => 'Aspen Site - Active Ticket Feed',
+			'description' => 'Add Active Ticket Feed to Aspen Site',
+			'sql' => [
+				"ALTER TABLE aspen_sites add COLUMN activeTicketFeed VARCHAR(255) DEFAULT ''",
+			]
+		], //aspenSite_activeTicketFeed
+		'aspenSite_activeTicketFeed2' => [
+			'title' => 'Aspen Site - Active Ticket Feed increase length',
+			'description' => 'Increase length Active Ticket Feed in Aspen Site',
+			'sql' => [
+				"ALTER TABLE aspen_sites CHANGE COLUMN activeTicketFeed activeTicketFeed VARCHAR(1000) DEFAULT ''",
+			]
+		], //aspenSite_activeTicketFeed2
+		'library_nameAndDobUpdates' => [
+			'title' => 'Aspen Site - Active Ticket Feed increase length',
+			'description' => 'Increase length Active Ticket Feed in Aspen Site',
+			'sql' => [
+				"ALTER TABLE library ADD COLUMN allowNameUpdates TINYINT(1) DEFAULT 1",
+				"ALTER TABLE library ADD COLUMN allowDateOfBirthUpdates TINYINT(1) DEFAULT 1",
+			]
+		], //library_nameAndDobUpdates
+		'reloadBadWords' => [
+			'title' => 'Reload Bad Words',
+			'description' => 'Reload the Bad Words List to remove some common words that should not be filtered',
+			'continueOnError' => true,
+			'sql' => [
+				'TRUNCATE TABLE bad_words',
+				'importBadWords',
+			]
+		], //reloadBadWords
+		'permissions_bad_words' => [
+			'title' => 'Create Bad Words Permissions',
+			'description' => 'Create permissions for administration of bad words',
+			'sql' => [
+				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES ('Local Enrichment', 'Administer Bad Words', '', 65, 'Allows the user to administer bad words list.')",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer Bad Words'))"
+			]
+		], // permissions_bad_words
+		'hoopla_title_exclusion_updates' => [
+			'title' => 'Hoopla Title Exclusion Updates',
+			'description' => 'Move Hoopla title exclusion rules to scopes and add the ability to hide regardless of availability',
+			'continueOnError' => true,
+			'sql' => [
+				"ALTER TABLE hoopla_scopes ADD COLUMN excludeTitlesWithCopiesFromOtherVendors TINYINT(4) DEFAULT 0",
+				"UPDATE hoopla_scopes SET excludeTitlesWithCopiesFromOtherVendors = (SELECT excludeTitlesWithCopiesFromOtherVendors FROM hoopla_settings WHERE hoopla_settings.id = hoopla_scopes.settingId)",
+				"ALTER TABLE hoopla_settings DROP COLUMN excludeTitlesWithCopiesFromOtherVendors",
+			]
+		], // hoopla_title_exclusion_updates
 	];
 }
 
 function fixSideLoadPermissions_22_04(&$update){
-	global $serverName;
 	//Make sure we have the
 	$status = '';
-	if (!@chgrp("/data/aspen-discovery/$serverName", 'aspen_apache')){
-		$status .= "Could not set group to aspen_apache for /data/aspen-discovery/$serverName, update manually.<br/>";
-	}
-	if (!@chmod("/data/aspen-discovery/$serverName", 775)){
-		$status .= "Could not set permissions for /data/aspen-discovery/$serverName, update manually.<br/>";
-	}
 	require_once ROOT_DIR . '/sys/Indexing/SideLoad.php';
 	$sideLoads = new SideLoad();
 	$sideLoads->find();

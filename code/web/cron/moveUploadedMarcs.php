@@ -138,3 +138,36 @@ if (count($files) > 0) {
 		}
 	}
 }
+
+//Copy supplemental files
+$supplementalDirName = "/home/$copyFrom/supplemental/";
+$supplementalDestDirName = "/xfer/$copyTo/supplemental/";
+if (!is_dir($supplementalDirName)) {
+	die(date('Y-m-d H:i:s') . " Could not find supplemental directory at $supplementalDirName, skipping \n");
+}
+if (!is_dir($supplementalDestDirName)){
+	die(date('Y-m-d H:i:s') . " Could not find destination supplemental directory at $supplementalDestDirName \n");
+}
+//Want all supplemental files, not just the latest
+$files = scandir($supplementalDirName);
+if (count($files) > 0) {
+	foreach ($files as $file) {
+		if ($file != '.' && $file != '..' && is_file($supplementalDirName . $file)) {
+			echo(date('Y-m-d H:i:s') . " found supplemental file " . $supplementalDirName . $file . "\n");
+			//make sure the file is not still changing.  If it is, skip for now
+			$lastModificationTime = filemtime($supplementalDirName . $file);
+			$lastFileSize = filesize($supplementalDirName . $file);
+			sleep(2);
+			if (filemtime($supplementalDirName . $file) == $lastModificationTime && $lastFileSize == filesize($supplementalDirName . $file)){
+				//File is not changing, we can move it.
+				if (rename($supplementalDirName . $file, $supplementalDestDirName . $file)){
+					echo(date('Y-m-d H:i:s') . " moved supplemental file to dest dir\n");
+				}else{
+					echo(date('Y-m-d H:i:s') . " ERROR could not move supplemental file to dest dir $supplementalDestDirName\n");
+				}
+			}else{
+				echo(date('Y-m-d H:i:s') . " supplemental file is still changing\n");
+			}
+		}
+	}
+}

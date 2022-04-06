@@ -398,7 +398,6 @@ class UserAPI extends Action
 
 
 			if ($linkedUsers && $user->getLinkedUsers() != null) {
-				/** @var User $user */
 				foreach ($user->getLinkedUsers() as $linkedUser) {
 					$linkedUserSummary = $linkedUser->getCatalogDriver()->getAccountSummary($linkedUser);
 					$userData->finesVal += (int)$linkedUserSummary->totalFines;

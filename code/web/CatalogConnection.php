@@ -993,7 +993,7 @@ class CatalogConnection
 
 							if ($mailer->send($userToResetPin->email, $subject, $body, null, $htmlBody)){
 								$result['success'] = true;
-								$result['message'] = translate(['text' => "The email with your PIN reset link was sent. Please take click on the link within that email or enter the code below.", 'isPublicFacing'=>true]);
+								$result['message'] = translate(['text' => "The email with your PIN reset link was sent. Please click on the link within that email or enter the code below.", 'isPublicFacing'=>true]);
 							}else{
 								$result['error'] = translate(['text' => "The email with your PIN reset link could not be sent, please contact the library.", 'isPublicFacing'=>true]);
 							}

@@ -370,17 +370,15 @@ class Sierra extends Millennium{
 			}
 			$curHold->status    = $status;
 			if(isset($curHold->holdQueueLength)) {
-				if(isset($curHold->position) && ((int)$curHold->position <= 2 && (int)$curHold->holdQueueLength >= 2)) {
-					$freezeable = false;
-					// if the patron is the only person on wait list hold can't be frozen
-				} elseif(isset($curHold->position) && ($curHold->position == 1 && (int)$curHold->holdQueueLength == 1)) {
+				// if the patron is the only person on wait list hold can't be frozen
+				if(isset($curHold->position) && ($curHold->position == 1 && (int)$curHold->holdQueueLength == 1)) {
 					$freezeable = false;
 					// if there is no priority set but queueLength = 1
 				} elseif(!isset($curHold->position) && $curHold->holdQueueLength == 1) {
 					$freezeable = false;
 				}
 			}
-			$curHold->canFreeze = $freezeable;
+			$curHold->canFreeze = $freezeable || $curHold->frozen;
 			$curHold->cancelable = $cancelable;
 			$curHold->locationUpdateable = $updatePickup;
 			$curHold->available = $available;
@@ -465,6 +463,8 @@ class Sierra extends Millennium{
 			$readingHistoryEnabled = $readingHistoryEnabledResponse->readingHistoryActivation;
 		}
 		$readingHistoryTitles = array();
+
+		//Sierra does not report reading history enabled properly so we should always get it.
 		if (true || $readingHistoryEnabled){
 			$numProcessed = 0;
 			$totalToProcess = 1000;
@@ -501,9 +501,23 @@ class Sierra extends Millennium{
 							//get title and author by looking up the bib
 							$getBibResponse = $this->_callUrl('sierra.getBib', $this->accountProfile->vendorOpacUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/bibs/{$curTitle['shortId']}");
 							if ($getBibResponse){
-								$curTitle['title'] = $getBibResponse->title;
-								$curTitle['author'] = $getBibResponse->author;
-								$curTitle['format'] = isset($getBibResponse->materialType->value) ? $getBibResponse->materialType->value : 'Unknown';
+								if (isset($getBibResponse->deleted) && $getBibResponse->deleted == true){
+									$curTitle['title'] = 'Deleted from catalog';
+									$curTitle['author'] = 'Unknown';
+									$curTitle['format'] = 'Unknown';
+								}else{
+									if (isset($getBibResponse->title)) {
+										$curTitle['title'] = $getBibResponse->title;
+									}else{
+										$curTitle['title'] = 'Unknown';
+									}
+									if (isset($getBibResponse->author)) {
+										$curTitle['author'] = $getBibResponse->author;
+									}else{
+										$curTitle['author'] = 'Unknown';
+									}
+									$curTitle['format'] = isset($getBibResponse->materialType->value) ? $getBibResponse->materialType->value : 'Unknown';
+								}
 							}else{
 								$curTitle['title'] = 'Unknown';
 								$curTitle['author'] = 'Unknown';

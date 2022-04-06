@@ -19,22 +19,26 @@ class WebBuilder_ResourcesList extends Action
 		$resource->joinAdd($libraryWebResource, 'INNER', 'libraryWebResource', 'id', 'webResourceId');
 		$resource->limit(0, 1000);
 		$resource->find();
-		while ($resource->fetch()){
+		$allResources = $resource->fetchAll();
+		$numLoaded = 0;
+		foreach ($allResources as $resource){
 			$clonedResource = clone $resource;
-			if ($resource->featured) {
+			if ($clonedResource->featured) {
 				$featuredResources[] = $clonedResource;
 			}
-			foreach ($resource->getCategories() as $category) {
+			foreach ($clonedResource->getCategories() as $category) {
 				if (!array_key_exists($category->name, $resourcesByCategory)) {
 					$resourcesByCategory[$category->name] = [];
 				}
 				$resourcesByCategory[$category->name][] = $clonedResource;
 			}
+			$numLoaded++;
 		}
 		ksort($resourcesByCategory);
 		global $interface;
 		$interface->assign('resourcesByCategory', $resourcesByCategory);
 		$interface->assign('featuredResources', $featuredResources);
+		$interface->assign('numLoaded', $numLoaded);
 
 		$this->display('resourcesList.tpl', 'Research & Learn', '');
 	}

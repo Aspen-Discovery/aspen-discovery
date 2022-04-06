@@ -265,6 +265,9 @@ abstract class DataObject
 		}
 	}
 
+	/**
+	 * @return false|int
+	 */
 	public function insert(){
 		global $aspen_db;
 		if (!isset($aspen_db)){
@@ -339,11 +342,12 @@ abstract class DataObject
 			}
 		}
 		$insertQuery .= '(' . $propertyNames . ') VALUES (' . $propertyValues . ');';
-		//try {
+		try {
 			$response = $aspen_db->exec($insertQuery);
-		//}catch (PDOException $e){
-		//	return new AspenError("Error inserting " . get_class($this) . "<br/>\r\n" . $e->getMessage(), $e->getTrace());
-		//}
+		}catch (PDOException $e){
+			$this->setLastError("Error inserting " . get_class($this) . "<br/>\n" . $e->getMessage() . "<br/>\n" . $e->getTraceAsString());
+			$response = false;
+		}
 		global $timer;
 		if (IPAddress::logAllQueries()){
 			global $logger;
@@ -354,6 +358,9 @@ abstract class DataObject
 		return $response;
 	}
 
+	/**
+	 * @return false|int
+	 */
 	public function update(){
 		$primaryKey = $this->__primaryKey;
 		if (empty($this->$primaryKey) && $this->$primaryKey !== "0"){
@@ -420,7 +427,12 @@ abstract class DataObject
 		}
 		$updateQuery .= ' SET ' . $updates . ' WHERE ' . $primaryKey . ' = ' . $aspen_db->quote($this->$primaryKey);
 		$this->__lastQuery = $updateQuery;
-		$response = $aspen_db->exec($updateQuery);
+		try {
+			$response = $aspen_db->exec($updateQuery);
+		}catch (PDOException $e) {
+			$this->setLastError("Error updating " . get_class($this) . "<br/>\n" . $e->getMessage() . "<br/>\n" . $e->getTraceAsString());
+			$response = false;
+		}
 		global $timer;
 		if (IPAddress::logAllQueries()){
 			global $logger;
@@ -975,7 +987,7 @@ abstract class DataObject
 	 * @param $jsonData
 	 * @param $mappings
 	 * @param $overrideExisting
-	 * @return AspenError|bool
+	 * @return bool
 	 */
 	public function loadFromJSON($jsonData, $mappings, $overrideExisting = 'keepExisting'){
 		$this->loadObjectPropertiesFromJSON($jsonData, $mappings);
@@ -986,21 +998,21 @@ abstract class DataObject
 
 		//Check to see if there is an existing ID for the object
 		if (!$this->findExistingObjectId()){
-			return new AspenError('Could not insert object ' . (string)$this);
+			$this->setLastError('Could not insert object ' . $this . ' could not find existing object id');
 		}
 
 		if ($overrideExisting == 'keepExisting'){
 			//Only update if we don't have an existing value
 			if (empty($this->getPrimaryKeyValue())){
 				$result = $this->update();
-				if ($result instanceof AspenError){
-					return $result;
+				if ($result === false){
+					return false;
 				}
 			}
 		}else{
 			$result = $this->update();
-			if ($result instanceof AspenError){
-				return $result;
+			if ($result === false){
+				return false;
 			}
 		}
 
@@ -1008,8 +1020,8 @@ abstract class DataObject
 		if (array_key_exists('links', $jsonData)) {
 			if ($this->loadRelatedLinksFromJSON($jsonData['links'], $mappings, $overrideExisting)) {
 				$result = $this->update();
-				if ($result instanceof AspenError){
-					return $result;
+				if ($result === false){
+					return false;
 				}
 			}
 		}
@@ -1031,7 +1043,7 @@ abstract class DataObject
 	 * Load related links from json (objects where we there is an intermediary table storing our id and infromation about the other object)
 	 * @param $jsonData
 	 * @param $mappings
-	 * @param $overrideExisting keepExisting / updateExisting
+	 * @param $overrideExisting - keepExisting / updateExisting
 	 * @return boolean True/False if links were loaded
 	 */
 	public function loadRelatedLinksFromJSON($jsonData, $mappings, $overrideExisting = 'keepExisting') : bool{
@@ -1070,5 +1082,9 @@ abstract class DataObject
 
 	public function okToExport(array $selectedFilters) : bool{
 		return false;
+	}
+
+	public function getAdditionalListActions() : array {
+		return [];
 	}
 }

@@ -1773,6 +1773,10 @@ public class GroupedWorkSolr implements Cloneable {
 
 	/**
 	 * Removes any hoopla records where the equivalent format exists in another eContent format with APIs
+	 *
+	 * 0 = do not remove settings
+	 * 1 = remove only if the other record is available
+	 * 2 = remove regardless of if the other record is available
 	 */
 	void removeRedundantHooplaRecords() {
 		if (relatedRecords.size() > 1) {
@@ -1788,36 +1792,64 @@ public class GroupedWorkSolr implements Cloneable {
 			if (otherRecordsAsArray.size() == 0 || hooplaRecordsAsArray.size() == 0){
 				return;
 			}
+			// record 1 is a hoopla record
+			// record 2 is not a hoopla record.
+
 			for (RecordInfo record1 : hooplaRecordsAsArray) {
 				//This is a candidate for removal
 				for (RecordInfo record2 : otherRecordsAsArray) {
 					//Make sure we have the same format
 					if (record1.getPrimaryFormat().equals(record2.getPrimaryFormat()) && record1.getPrimaryLanguage().equals(record2.getPrimaryLanguage())) {
-						//Remove the hoopla record from any scope where there is an available replacement
-						for (ItemInfo curItem2 : record2.getRelatedItems()){
-							if (curItem2.isAvailable()){
-								for (ItemInfo curItem1 : record1.getRelatedItems()){
-									for (String scopeName : curItem2.getScopingInfo().keySet()) {
-										curItem1.getScopingInfo().remove(scopeName);
-									}
-								}
-								boolean changeMade = true;
-								while (changeMade){
-									changeMade = false;
-									for (ItemInfo curItem1 : record1.getRelatedItems()){
-										if (curItem1.getScopingInfo().size() == 0){
-											record1.getRelatedItems().remove(curItem1);
-											changeMade = true;
-											break;
+
+						//Loop through all the scopes to see if we should remove the hoopla record from that scope.
+						for (ItemInfo curItem1 : record1.getRelatedItems()){
+							HashSet<String> scopesToRemove = new HashSet<>();
+							for (ScopingInfo item1Scope : curItem1.getScopingInfo().values()) {
+								String item1ScopeName = item1Scope.getScope().getScopeName();
+								//Get information about the scope so we can determine how this scope should be processed.
+								boolean removeScope = false;
+								switch (item1Scope.getScope().getHooplaScope().getExcludeTitlesWithCopiesFromOtherVendors()) {
+									case 0:
+										//Don't remove items that have the same record someplace else
+										break;
+									case 1:
+										//Remove if there is an available copy for the scope
+										for (ItemInfo curItem2 : record2.getRelatedItems()){
+											if (curItem2.getScopingInfo().containsKey(item1ScopeName)){
+												if (curItem2.isAvailable()){
+													scopesToRemove.add(item1ScopeName);
+													break;
+												}
+											}
 										}
-									}
+										break;
+									case 2:
+										//Remove if there is another copy in the scope (does not have to be available)
+										for (ItemInfo curItem2 : record2.getRelatedItems()){
+											if (curItem2.getScopingInfo().containsKey(item1ScopeName)){
+												scopesToRemove.add(item1ScopeName);
+												break;
+											}
+										}
+										break;
 								}
-								if (record1.getRelatedItems().size() == 0){
-									relatedRecords.remove(record1.getFullIdentifier());
-								}
+							}
+							for (String scopeToRemove : scopesToRemove){
+								curItem1.getScopingInfo().remove(scopeToRemove);
+							}
+
+							//Remove the item entirely if it is no longer valid for any scope
+							if (curItem1.getScopingInfo().size() == 0){
+								record1.getRelatedItems().remove(curItem1);
+								break;
 							}
 						}
 					}
+				}
+
+				//Remove the record entirely if it has no related items
+				if (record1.getRelatedItems().size() == 0){
+					relatedRecords.remove(record1.getFullIdentifier());
 				}
 			}
 		}

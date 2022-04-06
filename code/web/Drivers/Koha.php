@@ -2439,6 +2439,7 @@ class Koha extends AbstractIlsDriver
 			if (!empty($extendedAttributes)) {
 				$borrowerAttributes = [];
 				foreach ($extendedAttributes as $attribute) {
+					$authorizedValues = [];
 					foreach ($attribute['authorized_values'] as $key => $value) {
 						$authorizedValues[$key] = $value;
 					}
@@ -3079,6 +3080,86 @@ class Koha extends AbstractIlsDriver
 					}
 				}else{
 					$fieldValue['readOnly'] = true;
+				}
+			}
+		}else{
+			//Restrict certain sections based on ASpen settings
+			if (!$library->allowPatronPhoneNumberUpdates){
+				if (array_key_exists('contactInformationSection', $patronUpdateFields)){
+					if (array_key_exists('borrower_phone', $patronUpdateFields['contactInformationSection']['properties'])){
+						$patronUpdateFields['contactInformationSection']['properties']['borrower_phone']['readOnly'] = true;
+					}
+				}
+				if (array_key_exists('additionalContactInformationSection', $patronUpdateFields)) {
+					if (array_key_exists('borrower_phonepro', $patronUpdateFields['additionalContactInformationSection']['properties'])) {
+						$patronUpdateFields['additionalContactInformationSection']['properties']['borrower_phonepro']['readOnly'] = true;
+					}
+					if (array_key_exists('borrower_mobile', $patronUpdateFields['additionalContactInformationSection']['properties'])) {
+						$patronUpdateFields['additionalContactInformationSection']['properties']['borrower_mobile']['readOnly'] = true;
+					}
+					if (array_key_exists('borrower_fax', $patronUpdateFields['additionalContactInformationSection']['properties'])) {
+						$patronUpdateFields['additionalContactInformationSection']['properties']['borrower_fax']['readOnly'] = true;
+					}
+					if (array_key_exists('borrower_fax', $patronUpdateFields['additionalContactInformationSection']['properties'])) {
+						$patronUpdateFields['additionalContactInformationSection']['properties']['borrower_fax']['readOnly'] = true;
+					}
+				}
+				if (array_key_exists('alternateAddressSection', $patronUpdateFields)) {
+					if (array_key_exists('borrower_B_phone', $patronUpdateFields['alternateAddressSection']['properties'])) {
+						$patronUpdateFields['additionalContactInformationSection']['properties']['borrower_B_phone']['readOnly'] = true;
+					}
+				}
+				if (array_key_exists('alternateContactSection', $patronUpdateFields)) {
+					if (array_key_exists('borrower_altcontactphone', $patronUpdateFields['alternateContactSection']['properties'])) {
+						$patronUpdateFields['alternateContactSection']['properties']['borrower_altcontactphone']['readOnly'] = true;
+					}
+				}
+			}
+			if (!$library->allowPatronAddressUpdates){
+				if (array_key_exists('mainAddressSection', $patronUpdateFields)){
+					foreach ($patronUpdateFields['mainAddressSection']['properties'] as &$property){
+						$property['readOnly'] = true;
+					}
+				}
+				if (array_key_exists('alternateAddressSection', $patronUpdateFields)){
+					foreach ($patronUpdateFields['alternateAddressSection']['properties'] as &$property){
+						if (!in_array($property['property'], ['borrower_B_phone', 'borrower_B_email', 'borrower_contactnote'])){
+							$property['readOnly'] = true;
+						}
+					}
+				}
+				if (array_key_exists('alternateContactSection', $patronUpdateFields)){
+					foreach ($patronUpdateFields['alternateContactSection']['properties'] as &$property){
+						if (!in_array($property['property'], ['borrower_altcontactsurname', 'borrower_altcontactfirstname', 'borrower_altcontactphone'])) {
+							$property['readOnly'] = true;
+						}
+					}
+				}
+			}
+			if (!$library->allowDateOfBirthUpdates){
+				if (array_key_exists('identitySection', $patronUpdateFields)) {
+					if (array_key_exists('borrower_dateofbirth', $patronUpdateFields['identitySection']['properties'])) {
+						$patronUpdateFields['identitySection']['properties']['borrower_dateofbirth']['readOnly'] = true;
+					}
+				}
+			}
+			if (!$library->allowNameUpdates){
+				if (array_key_exists('identitySection', $patronUpdateFields)) {
+					if (array_key_exists('borrower_title', $patronUpdateFields['identitySection']['properties'])) {
+						$patronUpdateFields['identitySection']['properties']['borrower_title']['readOnly'] = true;
+					}
+					if (array_key_exists('borrower_surname', $patronUpdateFields['identitySection']['properties'])) {
+						$patronUpdateFields['identitySection']['properties']['borrower_surname']['readOnly'] = true;
+					}
+					if (array_key_exists('borrower_firstname', $patronUpdateFields['identitySection']['properties'])) {
+						$patronUpdateFields['identitySection']['properties']['borrower_firstname']['readOnly'] = true;
+					}
+					if (array_key_exists('borrower_initials', $patronUpdateFields['identitySection']['properties'])) {
+						$patronUpdateFields['identitySection']['properties']['borrower_initials']['readOnly'] = true;
+					}
+					if (array_key_exists('borrower_othernames', $patronUpdateFields['identitySection']['properties'])) {
+						$patronUpdateFields['identitySection']['properties']['borrower_othernames']['readOnly'] = true;
+					}
 				}
 			}
 		}

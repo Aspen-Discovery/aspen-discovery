@@ -50,7 +50,7 @@ class UserILSUsage extends DataObject
 		$user = new User();
 		$user->id = $this->userId;
 		if ($user->find(true)){
-			$links['user'] = $user->username;
+			$links['user'] = $user->cat_username;
 		}
 		return $links;
 	}
@@ -60,11 +60,8 @@ class UserILSUsage extends DataObject
 		parent::loadEmbeddedLinksFromJSON($jsonData, $mappings, $overrideExisting);
 		if (isset($jsonData['user'])){
 			$username = $jsonData['user'];
-			if (array_key_exists($username, $mappings['users'])){
-				$username = $mappings['users'][$username];
-			}
 			$user = new User();
-			$user->username = $username;
+			$user->cat_username = $username;
 			if ($user->find(true)){
 				$this->userId = $user->id;
 			}

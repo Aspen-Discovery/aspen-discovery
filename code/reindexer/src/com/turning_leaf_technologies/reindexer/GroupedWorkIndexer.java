@@ -130,8 +130,6 @@ public class GroupedWorkIndexer {
 	private PreparedStatement updateRecordInDBStmt;
 	private final CRC32 checksumCalculator = new CRC32();
 
-	private boolean removeRedundantHooplaRecords = false;
-
 	private boolean storeRecordDetailsInSolr = false;
 	private boolean storeRecordDetailsInDatabase = true;
 
@@ -253,17 +251,6 @@ public class GroupedWorkIndexer {
 			logEntry.incErrors("Could not load statements to get identifiers ", e);
 			this.okToIndex = false;
 			return;
-		}
-
-		//Check hoopla settings to see if we need to remove redundant records
-		try{
-			PreparedStatement getHooplaSettingsStmt = dbConn.prepareStatement("SELECT excludeTitlesWithCopiesFromOtherVendors from hoopla_settings");
-			ResultSet getHooplaSettingsRS = getHooplaSettingsStmt.executeQuery();
-			if (getHooplaSettingsRS.next()) {
-				removeRedundantHooplaRecords = getHooplaSettingsRS.getBoolean("excludeTitlesWithCopiesFromOtherVendors");
-			}
-		}catch (Exception e){
-			logEntry.incErrors("Error loading Hoopla Settings", e);
 		}
 
 		//Initialize the updateServer and solr server
@@ -776,9 +763,7 @@ public class GroupedWorkIndexer {
 
 		if (numPrimaryIdentifiers > 0) {
 			//Strip out any hoopla records that have the same format as another econtent record with apis
-			if (removeRedundantHooplaRecords) {
-				groupedWork.removeRedundantHooplaRecords();
-			}
+			groupedWork.removeRedundantHooplaRecords();
 
 			//Load local enrichment for the work
 			loadLocalEnrichment(groupedWork);

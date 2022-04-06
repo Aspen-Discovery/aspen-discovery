@@ -20,6 +20,7 @@ if (!$sftpConnection){
 //Copy Files
 copyFiles($sshConnection, $sftpConnection, $config['SFTP_Server']['remoteDir'] . '/marc', $config['SFTP_Server']['localDir'] . '/marc');
 copyFiles($sshConnection, $sftpConnection, $config['SFTP_Server']['remoteDir'] . '/marc_delta', $config['SFTP_Server']['localDir'] . '/marc_delta');
+copyFiles($sshConnection, $sftpConnection, $config['SFTP_Server']['remoteDir'] . '/supplemental', $config['SFTP_Server']['localDir'] . '/supplemental');
 
 ssh2_disconnect($sshConnection);
 

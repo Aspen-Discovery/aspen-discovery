@@ -6,17 +6,12 @@ import com.turning_leaf_technologies.file.JarUtil;
 import com.turning_leaf_technologies.grouping.MarcRecordGrouper;
 import com.turning_leaf_technologies.grouping.RecordGroupingProcessor;
 import com.turning_leaf_technologies.grouping.RemoveRecordFromWorkResult;
-import com.turning_leaf_technologies.indexing.IlsExtractLogEntry;
-import com.turning_leaf_technologies.indexing.IndexingProfile;
-import com.turning_leaf_technologies.indexing.IndexingUtils;
-import com.turning_leaf_technologies.indexing.RecordIdentifier;
+import com.turning_leaf_technologies.indexing.*;
 import com.turning_leaf_technologies.logging.LoggingUtil;
-import com.turning_leaf_technologies.marc.MarcUtil;
 import com.turning_leaf_technologies.net.NetworkUtils;
 import com.turning_leaf_technologies.net.WebServiceResponse;
 import com.turning_leaf_technologies.reindexer.GroupedWorkIndexer;
 import com.turning_leaf_technologies.strings.StringUtils;
-import org.apache.commons.net.util.Base64;
 import org.apache.logging.log4j.Logger;
 import org.ini4j.Ini;
 import org.json.JSONArray;
@@ -146,11 +141,14 @@ public class EvergreenExportMain {
 							updateBranchInfo(dbConn);
 							logEntry.addNote("Finished updating branch information");
 
+							exportVolumes(dbConn);
 
+							//Update works that have changed since the last index
+							numChanges = updateRecords();
+						}else{
+							MarcFactory marcFactory = MarcFactory.newInstance();
+							numChanges = updateBibFromEvergreen(singleWorkId, marcFactory, true);
 						}
-
-						//Update works that have changed since the last index
-						numChanges = updateRecords(singleWorkId);
 					}
 				}else{
 					logEntry.incErrors("Could not load account profile.");
@@ -239,6 +237,134 @@ public class EvergreenExportMain {
 				}
 			}
 		} //Infinite loop
+	}
+
+	private static void exportVolumes(Connection dbConn) {
+		File supplementalDirectory = new File(indexingProfile.getMarcPath() + "/../supplemental");
+		if (supplementalDirectory.exists()){
+			File partsFile = new File(indexingProfile.getMarcPath() + "/../supplemental/parts.csv");
+			if (partsFile.exists()) {
+				long lastVolumeTimeStamp = indexingProfile.getLastVolumeExportTimestamp();
+				long fileTimeStamp = partsFile.lastModified();
+				if ((fileTimeStamp / 1000) > lastVolumeTimeStamp) {
+					logEntry.addNote("Checking to see if the volume file is still changing");
+					logEntry.saveResults();
+					boolean fileChanging = true;
+					while (fileChanging) {
+						fileChanging = false;
+						try {
+							Thread.sleep(1000);
+						} catch (InterruptedException e) {
+							logger.debug("Thread interrupted while checking if volume file is changing");
+						}
+						if (fileTimeStamp != partsFile.lastModified()) {
+							fileTimeStamp = partsFile.lastModified();
+							fileChanging = true;
+						}
+					}
+					try {
+						PreparedStatement getExistingVolumes = dbConn.prepareStatement("SELECT id, volumeId from ils_volume_info", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+						HashMap<String, Long> existingVolumes = new HashMap<>();
+						ResultSet existingVolumesRS = getExistingVolumes.executeQuery();
+						while (existingVolumesRS.next()) {
+							existingVolumes.put(existingVolumesRS.getString("volumeId"), existingVolumesRS.getLong("id"));
+						}
+						existingVolumesRS.close();
+
+						PreparedStatement updateVolumeStmt = dbConn.prepareStatement("UPDATE ils_volume_info SET recordId =?, displayLabel = ?, relatedItems = ?, displayOrder = ? WHERE id = ?");
+						PreparedStatement addVolumeStmt = dbConn.prepareStatement("INSERT INTO ils_volume_info (recordId, volumeId, displayLabel, relatedItems, displayOrder) VALUES (?,?,?,?, ?) ON DUPLICATE KEY update recordId = VALUES(recordId), displayLabel = VALUES(displayLabel), relatedItems = VALUES(relatedItems), displayOrder = VALUES(displayOrder)");
+						PreparedStatement deleteVolumeStmt = dbConn.prepareStatement("DELETE from ils_volume_info where id = ?");
+
+						TreeMap<String, VolumeInfo> volumes = new TreeMap<>();
+
+						BufferedReader partsReader = new BufferedReader(new FileReader(partsFile));
+						String curValuesStr = partsReader.readLine();
+						while (curValuesStr != null) {
+							String[] curValues = curValuesStr.split("\\|");
+							if (curValues.length >= 4) {
+								String bibID = indexingProfile.getName() + ":" + curValues[0];
+								String partLabel = curValues[1];
+								String internalPartId = curValues[2];
+								String itemBarcode = curValues[3];
+
+								String volumeIdentifier = bibID + ":" + partLabel.toLowerCase() + ":" + internalPartId;
+
+								VolumeInfo volumeInfo = volumes.get(volumeIdentifier);
+								if (volumeInfo == null) {
+									volumeInfo = new VolumeInfo();
+									volumeInfo.bibNumber = bibID;
+									volumeInfo.volume = partLabel;
+									volumeInfo.volumeIdentifier = internalPartId;
+									volumes.put(volumeIdentifier, volumeInfo);
+								}
+								volumeInfo.relatedItems.add(itemBarcode);
+							}
+							curValuesStr = partsReader.readLine();
+						}
+
+						partsReader.close();
+
+						logEntry.addNote("Saving " + volumes.size() + " volumes");
+						logEntry.saveResults();
+
+						//Save volumes
+						int numUpdated = 0;
+						int numAdded = 0;
+						int numVolumes = 0;
+						for (String volumeId : volumes.keySet()) {
+							VolumeInfo volumeInfo = volumes.get(volumeId);
+							if (existingVolumes.containsKey(volumeInfo.volumeIdentifier)) {
+								long existingVolumeId = existingVolumes.get(volumeInfo.volumeIdentifier);
+								//Update the volume information
+								updateVolumeStmt.setString(1, volumeInfo.bibNumber);
+								updateVolumeStmt.setString(2, volumeInfo.volume);
+								updateVolumeStmt.setString(3, volumeInfo.getRelatedItemsAsString());
+								updateVolumeStmt.setLong(4, ++numVolumes);
+								updateVolumeStmt.setLong(5, existingVolumeId);
+								updateVolumeStmt.executeUpdate();
+								existingVolumes.remove(volumeInfo.volumeIdentifier);
+								numUpdated++;
+							} else {
+								//Add the volume
+								addVolumeStmt.setString(1, volumeInfo.bibNumber);
+								addVolumeStmt.setString(2, volumeInfo.volumeIdentifier);
+								addVolumeStmt.setString(3, volumeInfo.volume);
+								addVolumeStmt.setString(4, volumeInfo.getRelatedItemsAsString());
+								addVolumeStmt.setLong(5, ++numVolumes);
+								addVolumeStmt.executeUpdate();
+								numAdded++;
+							}
+						}
+						//Remove any leftover volumes
+						long numVolumesDeleted = 0;
+						for (Long existingVolume : existingVolumes.values()) {
+							deleteVolumeStmt.setLong(1, existingVolume);
+							deleteVolumeStmt.executeUpdate();
+							numVolumesDeleted++;
+						}
+
+						logEntry.addNote("Added " + numAdded + ", updated " + numUpdated + ", and deleted " + numVolumesDeleted + " volumes");
+						logEntry.saveResults();
+
+						deleteVolumeStmt.close();
+						addVolumeStmt.close();
+						updateVolumeStmt.close();
+
+						//Update the indexing profile to store the last volume time change
+						PreparedStatement updateLastVolumeExportTimeStmt = dbConn.prepareStatement("UPDATE indexing_profiles set lastVolumeExportTimestamp = ? where id = ?");
+						updateLastVolumeExportTimeStmt.setLong(1, fileTimeStamp / 1000);
+						updateLastVolumeExportTimeStmt.setLong(2, indexingProfile.getId());
+						updateLastVolumeExportTimeStmt.executeUpdate();
+					} catch (IOException e) {
+						logEntry.incErrors("Error reading part information", e);
+					} catch (SQLException e2) {
+						logEntry.incErrors("SQL Error reading parts and storing as volumes", e2);
+					}
+				}
+			}
+		}else{
+			logEntry.addNote("Supplemental directory did not exist");
+		}
 	}
 
 	private static PreparedStatement existingAspenLocationStmt;
@@ -519,7 +645,7 @@ public class EvergreenExportMain {
 		}
 	}
 
-	private static int updateRecords(String singleWorkId) {
+	private static int updateRecords() {
 		//Check to see if we should regroup all existing records
 		try {
 			if (indexingProfile.isRegroupAllRecords()) {
@@ -587,6 +713,7 @@ public class EvergreenExportMain {
 			totalChanges += updateItemsUsingCsvFile(exportedCsvFiles, lastUpdateFromMarc, dbConn);
 		}
 
+
 		//Process ID Files
 		File[] exportedIdFiles = marcDeltaPath.listFiles((dir, name) -> name.endsWith("ids"));
 		if (exportedIdFiles != null && exportedIdFiles.length > 0){
@@ -637,7 +764,7 @@ public class EvergreenExportMain {
 			if (newAndRestoredIds.size() <= 1000){
 				MarcFactory marcFactory = MarcFactory.newInstance();
 				for (String idToProcess : newAndRestoredIds) {
-					updateBibFromEvergreen(idToProcess, marcFactory, lastUpdateFromMarc, true);
+					updateBibFromEvergreen(idToProcess, marcFactory, true);
 				}
 			}else {
 				logEntry.incErrors("There were too many ids to process using the API. Skipping this file");
@@ -693,7 +820,7 @@ public class EvergreenExportMain {
 		logEntry.saveResults();
 		MarcFactory marcFactory = MarcFactory.newInstance();
 		for (String bibToUpdate : bibsToUpdate){
-			numUpdates += updateBibFromEvergreen(bibToUpdate, marcFactory, lastUpdateFromMarc, true);
+			numUpdates += updateBibFromEvergreen(bibToUpdate, marcFactory, true);
 		}
 		logEntry.addNote("Finished processing bibs from CSV");
 		logEntry.saveResults();
@@ -968,11 +1095,11 @@ public class EvergreenExportMain {
 		return totalChanges;
 	}
 
-	private static int updateBibFromEvergreen(String bibNumber, MarcFactory marcFactory, long lastExtractTime, boolean incrementProductsInLog) {
+	private static int updateBibFromEvergreen(String bibNumber, MarcFactory marcFactory, boolean incrementProductsInLog) {
 		//Get the bib record
 		//noinspection SpellCheckingInspection
 		String getBibUrl = baseUrl + "/opac/extras/supercat/retrieve/marcxml-full/record/" + bibNumber;
-		ProcessBibRequestResponse response = processGetBibsRequest(getBibUrl, marcFactory, lastExtractTime, incrementProductsInLog);
+		ProcessBibRequestResponse response = processGetBibsRequest(getBibUrl, marcFactory, incrementProductsInLog);
 		return response.numChanges;
 	}
 
@@ -982,12 +1109,12 @@ public class EvergreenExportMain {
 		MarcFactory marcFactory = MarcFactory.newInstance();
 
 		String getBibUrl = baseUrl + "/opac/extras/feed/freshmeat/marcxml-full/biblio/import/50";
-		ProcessBibRequestResponse response = processGetBibsRequest(getBibUrl, marcFactory, lastExtractTime, true);
+		ProcessBibRequestResponse response = processGetBibsRequest(getBibUrl, marcFactory, true);
 
 		return numChanges;
 	}
 
-	private static ProcessBibRequestResponse processGetBibsRequest(String getBibsRequestUrl, MarcFactory marcFactory, long lastExtractTime, boolean incrementProductsInLog) {
+	private static ProcessBibRequestResponse processGetBibsRequest(String getBibsRequestUrl, MarcFactory marcFactory, boolean incrementProductsInLog) {
 		if (incrementProductsInLog) {
 			logEntry.incProducts();
 		}

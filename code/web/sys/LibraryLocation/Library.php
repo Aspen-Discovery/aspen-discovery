@@ -153,6 +153,8 @@ class Library extends DataObject
 	public /** @noinspection PhpUnused */ $showWikipediaContent;
 	public $showCitationStyleGuides;
 	public $restrictOwningBranchesAndSystems;
+	public $allowNameUpdates;
+	public $allowDateOfBirthUpdates;
 	public $allowPatronAddressUpdates;
 	public $allowPatronPhoneNumberUpdates;
 	public $useAllCapsWhenUpdatingProfile;
@@ -588,6 +590,8 @@ class Library extends DataObject
 					'patronNameDisplayStyle'               => array('property'=>'patronNameDisplayStyle', 'type'=>'enum', 'values'=>array('firstinitial_lastname'=>'First Initial. Last Name', 'lastinitial_firstname'=>'First Name Last Initial.'), 'label'=>'Patron Display Name Style', 'description'=>'How to generate the patron display name', 'permissions' => ['Library ILS Options']),
 					'allowProfileUpdates'                  => array('property'=>'allowProfileUpdates', 'type'=>'checkbox', 'label'=>'Allow Profile Updates', 'description'=>'Whether or not the user can update their own profile.', 'hideInLists' => true, 'default' => 1, 'readonly' => false, 'permissions' => ['Library ILS Connection']),
 					'allowUsernameUpdates'                 => array('property'=>'allowUsernameUpdates', 'type'=>'checkbox', 'label'=>'Allow Patrons to Update Their Username', 'description'=>'Whether or not the user can update their username.', 'hideInLists' => true, 'default' => 0, 'readonly' => false, 'permissions' => ['Library ILS Connection']),
+					'allowNameUpdates'            => array('property' => 'allowNameUpdates', 'type'=>'checkbox', 'label'=>'Allow Patrons to Update Their Name (Setting applies to Koha only)', 'description'=>'Whether or not patrons should be able to update their name in their profile.', 'hideInLists' => true, 'default' => 1, 'readOnly' => false, 'permissions' => ['Library ILS Connection']),
+					'allowDateOfBirthUpdates'            => array('property' => 'allowDateOfBirthUpdates', 'type'=>'checkbox', 'label'=>'Allow Patrons to Update Their Date of Birth (Setting applies to Koha only)', 'description'=>'Whether or not patrons should be able to update their date of birth in their profile.', 'hideInLists' => true, 'default' => 1, 'readOnly' => false, 'permissions' => ['Library ILS Connection']),
 					'allowPatronAddressUpdates'            => array('property' => 'allowPatronAddressUpdates', 'type'=>'checkbox', 'label'=>'Allow Patrons to Update Their Address', 'description'=>'Whether or not patrons should be able to update their own address in their profile.', 'hideInLists' => true, 'default' => 1, 'readOnly' => false, 'permissions' => ['Library ILS Connection']),
 					'allowPatronPhoneNumberUpdates'        => array('property' => 'allowPatronPhoneNumberUpdates', 'type'=>'checkbox', 'label'=>'Allow Patrons to Update Their Phone Number', 'description'=>'Whether or not patrons should be able to update their own phone number in their profile.', 'hideInLists' => true, 'default' => 1, 'readOnly' => false, 'permissions' => ['Library ILS Connection']),
 					'allowHomeLibraryUpdates'              => array('property'=>'allowHomeLibraryUpdates', 'type'=>'checkbox', 'label'=>'Allow Patrons to Update Their Home Library', 'description'=>'Whether or not the user can update their home library.', 'hideInLists' => true, 'default' => 1, 'readonly' => false, 'permissions' => ['Library ILS Options']),
