@@ -6,10 +6,7 @@ import com.turning_leaf_technologies.file.JarUtil;
 import com.turning_leaf_technologies.grouping.MarcRecordGrouper;
 import com.turning_leaf_technologies.grouping.RecordGroupingProcessor;
 import com.turning_leaf_technologies.grouping.RemoveRecordFromWorkResult;
-import com.turning_leaf_technologies.indexing.IlsExtractLogEntry;
-import com.turning_leaf_technologies.indexing.IndexingProfile;
-import com.turning_leaf_technologies.indexing.IndexingUtils;
-import com.turning_leaf_technologies.indexing.RecordIdentifier;
+import com.turning_leaf_technologies.indexing.*;
 import com.turning_leaf_technologies.logging.LoggingUtil;
 import com.turning_leaf_technologies.net.NetworkUtils;
 import com.turning_leaf_technologies.net.WebServiceResponse;
@@ -144,15 +141,14 @@ public class EvergreenExportMain {
 							updateBranchInfo(dbConn);
 							logEntry.addNote("Finished updating branch information");
 
+							exportVolumes(dbConn);
+
 							//Update works that have changed since the last index
 							numChanges = updateRecords();
 						}else{
 							MarcFactory marcFactory = MarcFactory.newInstance();
 							numChanges = updateBibFromEvergreen(singleWorkId, marcFactory, true);
-
 						}
-
-
 					}
 				}else{
 					logEntry.incErrors("Could not load account profile.");
@@ -241,6 +237,132 @@ public class EvergreenExportMain {
 				}
 			}
 		} //Infinite loop
+	}
+
+	private static void exportVolumes(Connection dbConn) {
+		File supplementalDirectory = new File(indexingProfile.getMarcPath() + "/../supplemental");
+		if (supplementalDirectory.exists()){
+			File partsFile = new File(indexingProfile.getMarcPath() + "/../supplemental/parts.csv");
+			if (partsFile.exists()) {
+				long lastVolumeTimeStamp = indexingProfile.getLastVolumeExportTimestamp();
+				long fileTimeStamp = partsFile.lastModified();
+				if ((fileTimeStamp / 1000) > lastVolumeTimeStamp) {
+					logEntry.addNote("Checking to see if the volume file is still changing");
+					logEntry.saveResults();
+					boolean fileChanging = true;
+					while (fileChanging) {
+						fileChanging = false;
+						try {
+							Thread.sleep(1000);
+						} catch (InterruptedException e) {
+							logger.debug("Thread interrupted while checking if volume file is changing");
+						}
+						if (fileTimeStamp != partsFile.lastModified()) {
+							fileTimeStamp = partsFile.lastModified();
+							fileChanging = true;
+						}
+					}
+					try {
+						PreparedStatement getExistingVolumes = dbConn.prepareStatement("SELECT volumeId from ils_volume_info", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+						HashSet<String> existingVolumes = new HashSet<>();
+						ResultSet existingVolumesRS = getExistingVolumes.executeQuery();
+						while (existingVolumesRS.next()) {
+							existingVolumes.add(existingVolumesRS.getString("volumeId"));
+						}
+						existingVolumesRS.close();
+
+						PreparedStatement updateVolumeStmt = dbConn.prepareStatement("UPDATE ils_volume_info SET displayLabel = ?, relatedItems = ?, displayOrder = ? WHERE volumeId = ?");
+						PreparedStatement addVolumeStmt = dbConn.prepareStatement("INSERT INTO ils_volume_info (recordId, volumeId, displayLabel, relatedItems, displayOrder) VALUES (?,?,?,?, ?) ON DUPLICATE KEY update recordId = VALUES(recordId), displayLabel = VALUES(displayLabel), relatedItems = VALUES(relatedItems), displayOrder = VALUES(displayOrder)");
+						PreparedStatement deleteVolumeStmt = dbConn.prepareStatement("DELETE from ils_volume_info where volumeId = ?");
+
+						TreeMap<String, VolumeInfo> volumes = new TreeMap<>();
+
+						BufferedReader partsReader = new BufferedReader(new FileReader(partsFile));
+						String curValuesStr = partsReader.readLine();
+						while (curValuesStr != null) {
+							String[] curValues = curValuesStr.split("\\|");
+							if (curValues.length >= 4) {
+								String bibID = indexingProfile.getName() + ":" + curValues[0];
+								String partLabel = curValues[1];
+								String internalPartId = curValues[2];
+								String itemBarcode = curValues[3];
+
+								String volumeIdentifier = bibID + ":" + partLabel.toLowerCase() + ":" + internalPartId;
+
+								VolumeInfo volumeInfo = volumes.get(volumeIdentifier);
+								if (volumeInfo == null) {
+									volumeInfo = new VolumeInfo();
+									volumeInfo.bibNumber = bibID;
+									volumeInfo.volume = partLabel;
+									volumeInfo.volumeIdentifier = internalPartId;
+									volumes.put(volumeIdentifier, volumeInfo);
+								}
+								volumeInfo.relatedItems.add(itemBarcode);
+							}
+							curValuesStr = partsReader.readLine();
+						}
+
+						partsReader.close();
+
+						logEntry.addNote("Saving " + volumes.size() + " volumes");
+						logEntry.saveResults();
+
+						//Save volumes
+						int numUpdated = 0;
+						int numAdded = 0;
+						int numVolumes = 0;
+						for (String volumeId : volumes.keySet()) {
+							VolumeInfo volumeInfo = volumes.get(volumeId);
+							if (existingVolumes.contains(volumeInfo.volumeIdentifier)) {
+								//Update the volume information
+								updateVolumeStmt.setString(1, volumeInfo.volume);
+								updateVolumeStmt.setString(2, volumeInfo.getRelatedItemsAsString());
+								updateVolumeStmt.setLong(3, ++numVolumes);
+								updateVolumeStmt.setString(4, volumeInfo.volumeIdentifier);
+								updateVolumeStmt.executeUpdate();
+								existingVolumes.remove(volumeId);
+								numUpdated++;
+							} else {
+								//Add the volume
+								addVolumeStmt.setString(1, volumeInfo.bibNumber);
+								addVolumeStmt.setString(2, volumeInfo.volumeIdentifier);
+								addVolumeStmt.setString(3, volumeInfo.volume);
+								addVolumeStmt.setString(4, volumeInfo.getRelatedItemsAsString());
+								addVolumeStmt.setLong(5, ++numVolumes);
+								addVolumeStmt.executeUpdate();
+								numAdded++;
+							}
+						}
+						//Remove any leftover volumes
+						long numVolumesDeleted = 0;
+						for (String existingVolume : existingVolumes) {
+							deleteVolumeStmt.setString(1, existingVolume);
+							deleteVolumeStmt.executeUpdate();
+							numVolumesDeleted++;
+						}
+
+						logEntry.addNote("Added " + numAdded + ", updated " + numUpdated + ", and deleted " + numVolumesDeleted + " volumes");
+						logEntry.saveResults();
+
+						deleteVolumeStmt.close();
+						addVolumeStmt.close();
+						updateVolumeStmt.close();
+
+						//Update the indexing profile to store the last volume time change
+						PreparedStatement updateLastVolumeExportTimeStmt = dbConn.prepareStatement("UPDATE indexing_profiles set lastVolumeExportTimestamp = ? where id = ?");
+						updateLastVolumeExportTimeStmt.setLong(1, fileTimeStamp / 1000);
+						updateLastVolumeExportTimeStmt.setLong(2, indexingProfile.getId());
+						updateLastVolumeExportTimeStmt.executeUpdate();
+					} catch (IOException e) {
+						logEntry.incErrors("Error reading part information", e);
+					} catch (SQLException e2) {
+						logEntry.incErrors("SQL Error reading parts and storing as volumes", e2);
+					}
+				}
+			}
+		}else{
+			logEntry.addNote("Supplemental directory did not exist");
+		}
 	}
 
 	private static PreparedStatement existingAspenLocationStmt;
