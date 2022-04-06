@@ -146,6 +146,14 @@ function getUpdates22_04_00() : array
 				"ALTER TABLE library ADD COLUMN xpressPaySettingId INT(11) DEFAULT -1"
 			),
 		], //xpressPay_settings
+		'add_worldpay_settings' => [
+			'title' => 'Add additional FIS WorldPay Settings',
+			'description' => 'Add additional FIS WorldPay Settings',
+			'continueOnError' => true,
+			'sql' => array(
+				"ALTER TABLE worldpay_settings ADD COLUMN paymentSite VARCHAR(255) NOT NULL DEFAULT 0",
+			),
+		], //add_worldpay_settings
 	];
 }
 

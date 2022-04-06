@@ -6474,6 +6474,8 @@ AspenDiscovery.Account = (function(){
 							orderInfo = response.paymentRequestUrl;
 						} else if(paymentType === 'XpressPay') {
 							orderInfo = response.paymentRequestUrl;
+						} else if(paymentType === 'WorldPay') {
+							orderInfo = response.paymentId;
 						}
 					}
 				}
@@ -6492,6 +6494,10 @@ AspenDiscovery.Account = (function(){
 
 		createPayPalOrder: function(finesFormId, transactionType) {
 			return this.createGenericOrder(finesFormId, 'PayPal', transactionType);
+		},
+
+		createWorldPayOrder: function(finesFormId, transactionType) {
+			return this.createGenericOrder(finesFormId, 'WorldPay', transactionType);
 		},
 
 		createCompriseOrder: function(finesFormId, transactionType) {

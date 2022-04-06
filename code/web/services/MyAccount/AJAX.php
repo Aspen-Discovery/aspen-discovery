@@ -3516,6 +3516,29 @@ class MyAccount_AJAX extends JSON_Action
 	}
 
 	/** @noinspection PhpUnused */
+	function createWorldPayOrder() {
+		$transactionType = $_REQUEST['type'];
+		if($transactionType == 'donation') {
+			$result = $this->createGenericDonation('worldpay');
+		} else {
+			$result = $this->createGenericOrder('worldpay');
+		}
+
+		if (array_key_exists('success', $result) && $result['success'] === false) {
+			return $result;
+		} else {
+			if($transactionType == 'donation') {
+				list($paymentLibrary, $userLibrary, $payment, $purchaseUnits, $patron, $tempDonation) = $result;
+				$donation = $this->addDonation($payment, $tempDonation);
+			} else {
+				list($paymentLibrary, $userLibrary, $payment, $purchaseUnits, $patron) = $result;
+			}
+
+			return ['success' => true, 'paymentId' => $payment->id];
+		}
+	}
+
+	/** @noinspection PhpUnused */
 	function createXPressPayOrder() {
 		global $configArray;
 
