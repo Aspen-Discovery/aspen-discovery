@@ -154,7 +154,6 @@ function getUpdates22_04_00() : array
 				"ALTER TABLE worldpay_settings ADD COLUMN paymentSite VARCHAR(255) NOT NULL DEFAULT 0",
 			),
 		], //add_worldpay_settings
-		],
 		'ticket_creation' => [
 			'title' => 'Ticket Table Creation',
 			'description' => 'Setup tables to handle tracking tickets within Aspen Greenhouse',
