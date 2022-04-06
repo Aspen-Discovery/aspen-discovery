@@ -34,7 +34,7 @@ public class EvergreenRecordProcessor extends IlsRecordProcessor {
 		File supplementalDirectory = new File(marcPath + "/../supplemental");
 		if (supplementalDirectory.exists()){
 			try {
-				CSVReader barcodeActiveDatesReader = new CSVReader(new FileReader(marcPath + "/../supplemental/barcodes_active_dates.csv"));
+				CSVReader barcodeActiveDatesReader = new CSVReader(new FileReader(marcPath + "/../supplemental/barcode_active_dates.csv"));
 				String[] curValues = barcodeActiveDatesReader.readNext();
 				while (curValues != null){
 					String barcode = curValues[0];
