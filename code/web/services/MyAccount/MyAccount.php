@@ -32,6 +32,8 @@ abstract class MyAccount extends Action
 					$customAccountMessages->whereAdd("showOn = 1 OR showOn = 3");
 				} elseif ($action == 'Fines') {
 					$customAccountMessages->whereAdd("showOn = 1 OR showOn = 4");
+				} elseif ($action == 'ContactInformation') {
+					$customAccountMessages->whereAdd("showOn = 1 OR showOn = 5");
 				} else {
 					$customAccountMessages->showOn = 1;
 				}
