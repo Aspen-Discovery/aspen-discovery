@@ -369,8 +369,8 @@ class HooplaDriver extends AbstractEContentDriver{
 
 						return array(
 							'success'   => true,
-							'message'   => $checkoutResponse->message,
-							'title'     => $checkoutResponse->title,
+							'message'   => translate(['text'=>$checkoutResponse->message, 'isPublicFacing'=>true]),
+							'title'     => translate(['text'=> $checkoutResponse->title, 'isPublicFacing'=>true]),
 							'HooplaURL' => $checkoutResponse->url,
 							'due'       => $checkoutResponse->due,
 							'api'       => $apiResult,
@@ -383,7 +383,7 @@ class HooplaDriver extends AbstractEContentDriver{
 
 						return array(
 							'success' => false,
-							'message' => isset($checkoutResponse->message) ? $checkoutResponse->message : 'An error occurred checking out the Hoopla title.',
+							'message' => isset($checkoutResponse->message) ? translate(['text'=>$checkoutResponse->message, 'isPublicFacing'=>true]) : 'An error occurred checking out the Hoopla title.',
 							'api' => $apiResult
 						);
 					}
