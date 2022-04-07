@@ -266,7 +266,7 @@ abstract class DataObject
 	}
 
 	/**
-	 * @return false|int
+	 * @return int|bool
 	 */
 	public function insert(){
 		global $aspen_db;
@@ -359,12 +359,13 @@ abstract class DataObject
 	}
 
 	/**
-	 * @return false|int
+	 * @return int|bool
 	 */
 	public function update(){
 		$primaryKey = $this->__primaryKey;
 		if (empty($this->$primaryKey) && $this->$primaryKey !== "0"){
-			return $this->insert();
+			$result = $this->insert();
+			return $result;
 		}
 		global $aspen_db;
 		if (!isset($aspen_db)){
@@ -432,6 +433,10 @@ abstract class DataObject
 		}catch (PDOException $e) {
 			$this->setLastError("Error updating " . get_class($this) . "<br/>\n" . $e->getMessage() . "<br/>\n" . $e->getTraceAsString());
 			$response = false;
+		}
+		if ($response === false){
+			$errorInfo = $aspen_db->errorInfo();
+			$this->setLastError("Error updating " . get_class($this) . "<br/>\n" . $errorInfo . "<br/>");
 		}
 		global $timer;
 		if (IPAddress::logAllQueries()){

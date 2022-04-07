@@ -499,6 +499,14 @@ class Evergreen extends AbstractIlsDriver
 	/**
 	 * @inheritDoc
 	 */
+	public function placeVolumeHold(User $patron, $recordId, $volumeId, $pickupBranch) {
+		return $this->placeItemHold($patron, $recordId, $volumeId, $pickupBranch);
+	}
+
+
+	/**
+	 * @inheritDoc
+	 */
 	function placeItemHold(User $patron, $recordId, $itemId, $pickupBranch, $cancelDate = null)
 	{
 		$hold_result = [

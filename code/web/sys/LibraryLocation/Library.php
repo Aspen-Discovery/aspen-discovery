@@ -104,6 +104,7 @@ class Library extends DataObject
 	public $payPalSettingId;
 	public $proPaySettingId;
 	public $worldPaySettingId;
+	public $xpressPaySettingId;
 
 	public /** @noinspection PhpUnused */ $repeatSearchOption;
 	public /** @noinspection PhpUnused */ $repeatInOnlineCollection;
@@ -417,6 +418,16 @@ class Library extends DataObject
 			$worldPaySettings[$worldPaySetting->id] = $worldPaySetting->name;
 		}
 
+		require_once ROOT_DIR . '/sys/ECommerce/XpressPaySetting.php';
+		$xpressPaySetting = new XpressPaySetting();
+		$xpressPaySetting->orderBy('name');
+		$xpressPaySettings = [];
+		$xpressPaySetting->find();
+		$xpressPaySettings[-1] = 'none';
+		while ($xpressPaySetting->fetch()){
+			$xpressPaySettings[$xpressPaySetting->id] = $xpressPaySetting->name;
+		}
+
 		require_once ROOT_DIR . '/sys/Hoopla/HooplaScope.php';
 		$hooplaScope = new HooplaScope();
 		$hooplaScope->orderBy('name');
@@ -659,7 +670,7 @@ class Library extends DataObject
 			)),
 
 			'ecommerceSection' => array('property'=>'ecommerceSection', 'type' => 'section', 'label' =>'Fines/e-commerce', 'hideInLists' => true, 'helpLink'=>'', 'permissions' => ['Library eCommerce Options'], 'properties' => array(
-				'finePaymentType' => array('property'=>'finePaymentType', 'type'=>'enum', 'label'=>'Show E-Commerce Link', 'values' => array(0 => 'No Payment', 1 => 'Link to ILS', 4 => 'Comprise SMARTPAY', 6 => 'FIS WorldPay', 3 => 'MSB', 2 => 'PayPal', 5 => 'ProPay'), 'description'=>'Whether or not users should be allowed to pay fines', 'hideInLists' => true,),
+				'finePaymentType' => array('property'=>'finePaymentType', 'type'=>'enum', 'label'=>'Show E-Commerce Link', 'values' => array(0 => 'No Payment', 1 => 'Link to ILS', 4 => 'Comprise SMARTPAY', 7 => 'FIS WorldPay', 3 => 'MSB', 2 => 'PayPal', 5 => 'ProPay', 6 => 'Xpress-pay'), 'description'=>'Whether or not users should be allowed to pay fines', 'hideInLists' => true,),
 				'finesToPay' => array('property'=>'finesToPay', 'type'=>'enum', 'label'=>'Which fines should be paid', 'values' => array(0 => 'All Fines', 1 => 'Selected Fines', 2 => 'Partial payment of selected fines'), 'description'=>'The fines that should be paid', 'hideInLists' => true,),
 				'finePaymentOrder' => array('property'=>'finePaymentOrder', 'type'=>'text', 'label'=>'Fine Payment Order by type (separated with pipes)', 'description'=>'The order fines should be paid in separated by pipes', 'hideInLists' => true, 'default' => 'default', 'size' => 80),
 				'payFinesLink' => array('property'=>'payFinesLink', 'type'=>'text', 'label'=>'Pay Fines Link', 'description'=>'The link to pay fines.  Leave as default to link to classic (should have eCommerce link enabled)', 'hideInLists' => true, 'default' => 'default', 'size' => 80),
@@ -671,6 +682,7 @@ class Library extends DataObject
 				'worldPaySettingId'  => array('property' => 'worldPaySettingId', 'type' => 'enum', 'values' => $worldPaySettings, 'label' => 'FIS World Pay Settings', 'description' => 'The FIS WolrdPay settings to use', 'hideInLists' => true, 'default' => -1),
 				'payPalSettingId'  => array('property' => 'payPalSettingId', 'type' => 'enum', 'values' => $payPalSettings, 'label' => 'PayPal Settings', 'description' => 'The PayPal settings to use', 'hideInLists' => true, 'default' => -1),
 				'proPaySettingId'  => array('property' => 'proPaySettingId', 'type' => 'enum', 'values' => $proPaySettings, 'label' => 'ProPay Settings', 'description' => 'The ProPay settings to use', 'hideInLists' => true, 'default' => -1),
+				'xpressPaySettingId'  => array('property' => 'xpressPaySettingId', 'type' => 'enum', 'values' => $xpressPaySettings, 'label' => 'Xpress-pay Settings', 'description' => 'The Xpress-pay settings to use', 'hideInLists' => true, 'default' => -1),
 				'msbUrl' => array('property'=>'msbUrl', 'type'=>'text', 'label'=>'MSB URL', 'description'=>'The MSB payment form URL and path (but NOT the query or parameters)', 'hideInLists' => true, 'default'=>'', 'size'=>80),
 				'symphonyPaymentType' => array('property'=>'symphonyPaymentType', 'type'=>'text', 'label'=>'Symphony Payment Type', 'description'=>'Payment type to use when adding transactions to Symphony.', 'hideInLists' => true, 'default' => '', 'maxLength' => 8),
 				//'symphonyPaymentPolicy' => array('property'=>'symphonyPaymentPolicy', 'type'=>'text', 'label'=>'Symphony Payment Policy', 'description'=>'Payment policy to use when adding transactions to Symphony.', 'hideInLists' => true, 'default' => '', 'maxLength' => 8),
@@ -1319,6 +1331,7 @@ class Library extends DataObject
 		// Do this last so that everything else can update even if we get an error here
 		$deleteCheck = $this->saveMaterialsRequestFormats();
 		if ($deleteCheck instanceof AspenError) {
+			$this->setLastError($deleteCheck->getMessage());
 			$ret = false;
 		}
 
@@ -1406,7 +1419,7 @@ class Library extends DataObject
 				if ($object->_deleteOnSave == true){
 					$deleteCheck = $object->delete();
 					if (!$deleteCheck) {
-						$errorString = 'Materials Request(s) are present for the format "' . $object->format . '".';
+						$errorString = "Cannot delete {$object->format} because Materials Request(s) are present for the format.";
 						return new AspenError($errorString);
 					}
 				}else{
@@ -1716,6 +1729,7 @@ class Library extends DataObject
 	public function getApiInfo() : array
 	{
 		global $configArray;
+		global $interface;
 		$apiInfo = [
 			'libraryId' => $this->libraryId,
 			'isDefault' => $this->isDefault,
@@ -1733,6 +1747,17 @@ class Library extends DataObject
 			'email' => $this->contactEmail,
 			'themeId' => $this->theme,
 			'allowLinkedAccounts' => $this->allowLinkedAccounts,
+			'allowUserLists' => $this->showFavorites,
+			'showHoldButton' => $this->showHoldButton,
+			'allowFreezeHolds' => $this->allowFreezeHolds,
+			'showCardExpiration' => $this->showCardExpirationDate,
+			'showCardExpirationWarnings' => $this->showExpirationWarnings,
+			'enableReadingHistory' => $this->enableReadingHistory,
+			'enableSavedSearches' => $this->enableSavedSearches,
+			'allowPinReset' => $this->allowPinReset,
+			'allowProfileUpdates' => $this->allowProfileUpdates,
+			'showShareOnExternalSites' => $this->showShareOnExternalSites,
+			'discoveryVersion' => $interface->getVariable('gitBranchWithCommit')
 		];
 		if (empty($this->baseUrl)){
 			$apiInfo['baseUrl'] = $configArray['Site']['url'];

@@ -72,6 +72,32 @@ class MyAccount_Fines extends MyAccount
 						$interface->assign('finePaymentResult', $finePaymentResult);
 					}
 				}
+
+				// FIS WorldPay data
+				if($userLibrary->finePaymentType == 7) {
+					$aspenUrl = $configArray['Site']['url'];
+					$interface->assign('aspenUrl', $aspenUrl);
+
+					global $library;
+					require_once ROOT_DIR . '/sys/ECommerce/WorldPaySetting.php';
+					$worldPaySettings = new WorldPaySetting();
+					$worldPaySettings->id = $library->worldPaySettingId;
+
+					$merchantCode = 0;
+					$settleCode = 0;
+					$paymentSite = "";
+
+					if($worldPaySettings->find(true)){
+						$merchantCode = $worldPaySettings->merchantCode;
+						$settleCode = $worldPaySettings->settleCode;
+						$paymentSite = $worldPaySettings->paymentSite;
+					}
+
+					$interface->assign('settleCode', $settleCode);
+					$interface->assign('merchantCode', $merchantCode);
+					$interface->assign('paymentSite', $paymentSite);
+				}
+
 				$interface->assign('finesToPay', $userLibrary->finesToPay);
 				$interface->assign('userFines', $fines);
 
