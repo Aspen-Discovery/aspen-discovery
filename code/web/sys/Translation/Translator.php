@@ -100,7 +100,6 @@ class Translator
 						$translationTerm->isMetadata = $isMetadata;
 						$translationTerm->isAdminEnteredData = $isAdminEnteredData;
 						$translationTerm->lastUpdate = time();
-						$termTooLong = true;
 						try {
 							if ($translationTerm->insert() !== false) {
 								$termTooLong = false;
