@@ -104,6 +104,7 @@ class Library extends DataObject
 	public $payPalSettingId;
 	public $proPaySettingId;
 	public $worldPaySettingId;
+	public $xpressPaySettingId;
 
 	public /** @noinspection PhpUnused */ $repeatSearchOption;
 	public /** @noinspection PhpUnused */ $repeatInOnlineCollection;
@@ -1330,6 +1331,7 @@ class Library extends DataObject
 		// Do this last so that everything else can update even if we get an error here
 		$deleteCheck = $this->saveMaterialsRequestFormats();
 		if ($deleteCheck instanceof AspenError) {
+			$this->setLastError($deleteCheck->getMessage());
 			$ret = false;
 		}
 
@@ -1417,7 +1419,7 @@ class Library extends DataObject
 				if ($object->_deleteOnSave == true){
 					$deleteCheck = $object->delete();
 					if (!$deleteCheck) {
-						$errorString = 'Materials Request(s) are present for the format "' . $object->format . '".';
+						$errorString = "Cannot delete {$object->format} because Materials Request(s) are present for the format.";
 						return new AspenError($errorString);
 					}
 				}else{

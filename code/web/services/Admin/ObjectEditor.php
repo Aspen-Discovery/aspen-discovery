@@ -291,8 +291,8 @@ abstract class ObjectEditor extends Admin_Admin
 					if ($validationResults['validatedOk']) {
 						$ret = $curObject->update();
 						if ($ret === false) {
-							if ($curObject->_lastError) {
-								$errorDescription = $curObject->_lastError->getUserInfo();
+							if ($curObject->getLastError()) {
+								$errorDescription = $curObject->getLastError();
 							} else {
 								$errorDescription = translate(['text'=>'Unknown Error', 'isPublicFacing'=>true]);
 							}
