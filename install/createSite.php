@@ -203,6 +203,13 @@ if (!$siteOnWindows){
 	exec('sudo timedatectl set-timezone "'. $variables['timezone'] . '"');
 }
 
+if (!$siteOnWindows) {
+	$tmpDir = '/tmp';
+	if (!file_exists($tmpDir)) {
+		mkdir($tmpDir);
+	}
+}
+
 //Import the database
 if ($clearExisting) {
 	echo("Removing existing database\r\n");
