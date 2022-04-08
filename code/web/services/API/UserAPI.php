@@ -2739,27 +2739,76 @@ class UserAPI extends Action
 		$browseCategoryId = $_REQUEST['browseCategoryId'];
 		$user = UserAccount::validateAccount($username, $password);
 		if ($user && !($user instanceof AspenError)) {
-			require_once ROOT_DIR . '/sys/Browse/BrowseCategory.php';
-			$browseCategory = new BrowseCategory();
-			$browseCategory->textId = $browseCategoryId;
-			if (!$browseCategory->find(true)){
-				$result['message'] = translate(['text' => 'Invalid browse category provided, please try again', 'isPublicFacing' => true]);
-			}else{
-				require_once ROOT_DIR . '/sys/Browse/BrowseCategoryDismissal.php';
-				$browseCategoryDismissal = new BrowseCategoryDismissal();
-				$browseCategoryDismissal->browseCategoryId = $browseCategoryId;
-				$browseCategoryDismissal->userId = $patronId;
-				if($browseCategoryDismissal->find(true)) {
-					$result['message'] = translate(['text' => 'You already dismissed this browse category', 'isPublicFacing' => true]);
+			if(strpos($browseCategoryId, "system_saved_searches") !== false) {
+				$label = explode('_', $browseCategoryId);
+				$id = $label[3];
+				$searchEntry = new SearchEntry();
+				$searchEntry->id = $id;
+				if(!$searchEntry->find(true)) {
+					$result['message'] = translate(['text' => 'Invalid browse category provided, please try again', 'isPublicFacing' => true]);
 				} else {
-					$browseCategoryDismissal->insert();
-					$browseCategory->numTimesDismissed += 1;
-					$browseCategory->update();
-					$result = [
-						'success' => true,
-						'title' => translate(['text' => 'Preferences updated', 'isPublicFacing' => true]),
-						'message' => translate(['text' => 'Browse category has been hidden', 'isPublicFacing' => true])
-					];
+					require_once ROOT_DIR . '/sys/Browse/BrowseCategoryDismissal.php';
+					$browseCategoryDismissal = new BrowseCategoryDismissal();
+					$browseCategoryDismissal->browseCategoryId = $browseCategoryId;
+					$browseCategoryDismissal->userId = $patronId;
+					if($browseCategoryDismissal->find(true)) {
+						$result['message'] = translate(['text' => 'You already dismissed this browse category', 'isPublicFacing' => true]);
+					} else {
+						$browseCategoryDismissal->insert();
+						$result = [
+							'success' => true,
+							'title' => translate(['text' => 'Preferences updated', 'isPublicFacing' => true]),
+							'message' => translate(['text' => 'Browse category has been hidden', 'isPublicFacing' => true])
+						];
+					}
+				}
+			} elseif(strpos($browseCategoryId, "system_user_lists") !== false) {
+				$label = explode('_', $browseCategoryId);
+				$id = $label[3];
+				require_once ROOT_DIR . '/sys/UserLists/UserList.php';
+				$userList = new UserList();
+				$userList->id = $id;
+				if(!$userList->find(true)) {
+					$result['message'] = translate(['text' => 'Invalid browse category provided, please try again', 'isPublicFacing' => true]);
+				} else {
+					require_once ROOT_DIR . '/sys/Browse/BrowseCategoryDismissal.php';
+					$browseCategoryDismissal = new BrowseCategoryDismissal();
+					$browseCategoryDismissal->browseCategoryId = $browseCategoryId;
+					$browseCategoryDismissal->userId = $patronId;
+					if($browseCategoryDismissal->find(true)) {
+						$result['message'] = translate(['text' => 'You already dismissed this browse category', 'isPublicFacing' => true]);
+					} else {
+						$browseCategoryDismissal->insert();
+						$result = [
+							'success' => true,
+							'title' => translate(['text' => 'Preferences updated', 'isPublicFacing' => true]),
+							'message' => translate(['text' => 'Browse category has been hidden', 'isPublicFacing' => true])
+						];
+					}
+				}
+			} else {
+				require_once ROOT_DIR . '/sys/Browse/BrowseCategory.php';
+				$browseCategory = new BrowseCategory();
+				$browseCategory->textId = $browseCategoryId;
+				if (!$browseCategory->find(true)){
+					$result['message'] = translate(['text' => 'Invalid browse category provided, please try again', 'isPublicFacing' => true]);
+				}else{
+					require_once ROOT_DIR . '/sys/Browse/BrowseCategoryDismissal.php';
+					$browseCategoryDismissal = new BrowseCategoryDismissal();
+					$browseCategoryDismissal->browseCategoryId = $browseCategoryId;
+					$browseCategoryDismissal->userId = $patronId;
+					if($browseCategoryDismissal->find(true)) {
+						$result['message'] = translate(['text' => 'You already dismissed this browse category', 'isPublicFacing' => true]);
+					} else {
+						$browseCategoryDismissal->insert();
+						$browseCategory->numTimesDismissed += 1;
+						$browseCategory->update();
+						$result = [
+							'success' => true,
+							'title' => translate(['text' => 'Preferences updated', 'isPublicFacing' => true]),
+							'message' => translate(['text' => 'Browse category has been hidden', 'isPublicFacing' => true])
+						];
+					}
 				}
 			}
 		} else {
@@ -2783,25 +2832,74 @@ class UserAPI extends Action
 		$browseCategoryId = $_REQUEST['browseCategoryId'];
 		$user = UserAccount::validateAccount($username, $password);
 		if ($user && !($user instanceof AspenError)) {
-			require_once ROOT_DIR . '/sys/Browse/BrowseCategory.php';
-			$browseCategory = new BrowseCategory();
-			$browseCategory->textId = $browseCategoryId;
-			if (!$browseCategory->find(true)){
-				$result['message'] = translate(['text' => 'Invalid browse category provided, please try again', 'isPublicFacing' => true]);
-			}else{
-				require_once ROOT_DIR . '/sys/Browse/BrowseCategoryDismissal.php';
-				$browseCategoryDismissal = new BrowseCategoryDismissal();
-				$browseCategoryDismissal->browseCategoryId = $browseCategoryId;
-				$browseCategoryDismissal->userId = $patronId;
-				if($browseCategoryDismissal->find(true)) {
-					$browseCategoryDismissal->delete();
-					$result = [
-						'success' => true,
-						'title' => translate(['text' => 'Preferences updated', 'isPublicFacing' => true]),
-						'message' => translate(['text' => 'Browse category will be visible again', 'isPublicFacing' => true])
-					];
+			if(strpos($browseCategoryId, "system_saved_searches") !== false) {
+				$label = explode('_', $browseCategoryId);
+				$id = $label[3];
+				$searchEntry = new SearchEntry();
+				$searchEntry->id = $id;
+				if(!$searchEntry->find(true)) {
+					$result['message'] = translate(['text' => 'Invalid browse category provided, please try again', 'isPublicFacing' => true]);
 				} else {
-					$result['message'] = translate(['text' => 'You already have this browse category visible', 'isPublicFacing' => true]);
+					require_once ROOT_DIR . '/sys/Browse/BrowseCategoryDismissal.php';
+					$browseCategoryDismissal = new BrowseCategoryDismissal();
+					$browseCategoryDismissal->browseCategoryId = $browseCategoryId;
+					$browseCategoryDismissal->userId = $patronId;
+					if($browseCategoryDismissal->find(true)) {
+						$browseCategoryDismissal->delete();
+						$result = [
+							'success' => true,
+							'title' => translate(['text' => 'Preferences updated', 'isPublicFacing' => true]),
+							'message' => translate(['text' => 'Browse category will be visible again', 'isPublicFacing' => true])
+						];
+					} else {
+						$result['message'] = translate(['text' => 'You already have this browse category visible', 'isPublicFacing' => true]);
+					}
+				}
+			} elseif(strpos($browseCategoryId, "system_user_lists") !== false) {
+				$label = explode('_', $browseCategoryId);
+				$id = $label[3];
+				require_once ROOT_DIR . '/sys/UserLists/UserList.php';
+				$userList = new UserList();
+				$userList->id = $id;
+				if(!$userList->find(true)) {
+					$result['message'] = translate(['text' => 'Invalid browse category provided, please try again', 'isPublicFacing' => true]);
+				} else {
+					require_once ROOT_DIR . '/sys/Browse/BrowseCategoryDismissal.php';
+					$browseCategoryDismissal = new BrowseCategoryDismissal();
+					$browseCategoryDismissal->browseCategoryId = $browseCategoryId;
+					$browseCategoryDismissal->userId = $patronId;
+					if($browseCategoryDismissal->find(true)) {
+						$browseCategoryDismissal->delete();
+						$result = [
+							'success' => true,
+							'title' => translate(['text' => 'Preferences updated', 'isPublicFacing' => true]),
+							'message' => translate(['text' => 'Browse category will be visible again', 'isPublicFacing' => true])
+						];
+					} else {
+						$result['message'] = translate(['text' => 'You already have this browse category visible', 'isPublicFacing' => true]);
+					}
+				}
+			} else {
+				require_once ROOT_DIR . '/sys/Browse/BrowseCategory.php';
+				$browseCategory = new BrowseCategory();
+				$browseCategory->textId = $browseCategoryId;
+				if (!$browseCategory->find(true)){
+					$result['message'] = translate(['text' => 'Invalid browse category provided, please try again', 'isPublicFacing' => true]);
+				}else{
+					require_once ROOT_DIR . '/sys/Browse/BrowseCategoryDismissal.php';
+					$browseCategoryDismissal = new BrowseCategoryDismissal();
+					$browseCategoryDismissal->browseCategoryId = $browseCategoryId;
+					$browseCategoryDismissal->userId = $patronId;
+					if($browseCategoryDismissal->find(true)) {
+						$browseCategoryDismissal->delete();
+						$result = [
+							'success' => true,
+							'title' => translate(['text' => 'Preferences updated', 'isPublicFacing' => true]),
+							'message' => translate(['text' => 'Browse category will be visible again', 'isPublicFacing' => true])
+						];
+					} else {
+						$result['message'] = translate(['text' => 'You already have this browse category visible', 'isPublicFacing' => true]);
+					}
 				}
 			}
 		}
