@@ -857,4 +857,24 @@ class UserList extends DataObject
 		}
 		return $result;
 	}
+
+	public function isDismissed() {
+		require_once ROOT_DIR . '/sys/Browse/BrowseCategoryDismissal.php';
+		if (UserAccount::isLoggedIn()){
+			$savedSearchDismissal = new BrowseCategoryDismissal();
+			$savedSearchDismissal->browseCategoryId = "system_user_lists_" . $this->id;
+			$savedSearchDismissal->userId = UserAccount::getActiveUserId();
+			if($savedSearchDismissal->find(true)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public function isValidForDisplay() {
+		if ($this->isDismissed()){
+			return false;
+		}
+		return true;
+	}
 }

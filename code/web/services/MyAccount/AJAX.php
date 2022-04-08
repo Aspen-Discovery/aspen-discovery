@@ -3815,7 +3815,7 @@ class MyAccount_AJAX extends JSON_Action
 							$result['message'] = "User already had this category visible.";
 						}
 					}
-				} elseif(strpos($showThisCategory, "system_saved_searches") !== false) {
+				} elseif(strpos($showThisCategory, "system_user_lists") !== false) {
 					$label = explode('_', $showThisCategory);
 					$id = $label[3];
 					require_once ROOT_DIR . '/sys/UserLists/UserList.php';
