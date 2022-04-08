@@ -3724,14 +3724,39 @@ class MyAccount_AJAX extends JSON_Action
 			if($browseCategoryDismissals->count() > 0) {
 				$categories = [];
 				foreach($hiddenCategories as $hiddenCategory) {
-					require_once ROOT_DIR . '/sys/Browse/BrowseCategory.php';
-					$browseCategory = new BrowseCategory();
-					$browseCategory->textId = $hiddenCategory->browseCategoryId;
-					if($browseCategory->find(true)){
-						$category['id'] = $browseCategory->textId;
-						$category['name'] = $browseCategory->label;
-						$category['description'] = $browseCategory->description;
-						$categories[] = $category;
+					if(strpos($hiddenCategory->browseCategoryId, "system_saved_searches") !== false) {
+						$label = explode('_', $hiddenCategory->browseCategoryId);
+						$id = $label[3];
+						$searchEntry = new SearchEntry();
+						$searchEntry->id = $id;
+						if($searchEntry->find(true)) {
+							$category['id'] = $hiddenCategory->browseCategoryId;
+							$category['name'] = $searchEntry->title ?? 'Your Saved Searches';
+							$category['description'] = "";
+							$categories[] = $category;
+						}
+					} elseif (strpos($hiddenCategory->browseCategoryId, "system_user_lists") !== false) {
+						$label = explode('_', $hiddenCategory->browseCategoryId);
+						$id = $label[3];
+						require_once ROOT_DIR . '/sys/UserLists/UserList.php';
+						$sourceList = new UserList();
+						$sourceList->id = $id;
+						if ($sourceList->find(true)) {
+							$category['id'] = $hiddenCategory->browseCategoryId;
+							$category['name'] = $sourceList->title ?? 'Your Lists';
+							$category['description'] = $sourceList->description;
+							$categories[] = $category;
+						}
+					} else {
+						require_once ROOT_DIR . '/sys/Browse/BrowseCategory.php';
+						$browseCategory = new BrowseCategory();
+						$browseCategory->textId = $hiddenCategory->browseCategoryId;
+						if($browseCategory->find(true)){
+							$category['id'] = $browseCategory->textId;
+							$category['name'] = $browseCategory->label;
+							$category['description'] = $browseCategory->description;
+							$categories[] = $category;
+						}
 					}
 				}
 				$interface->assign('hiddenBrowseCategories', $categories);

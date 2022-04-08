@@ -55,7 +55,7 @@ class BrowseCategory extends BaseBrowsable
 					$SearchEntry->find();
 					$count = 0;
 					do {
-						if($SearchEntry->title) {
+						if($SearchEntry->title && $SearchEntry->isValidForDisplay()) {
 							$count++;
 							$searchId = $SearchEntry->id;
 							$this->_subBrowseCategories[$searchId] = clone($SearchEntry);

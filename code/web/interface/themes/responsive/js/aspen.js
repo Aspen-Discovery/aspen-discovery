@@ -9118,6 +9118,7 @@ AspenDiscovery.Browse = (function(){
 						selectedBrowseCategory: data.textId,
 						subBrowseCategory: subCategoryTextId
 					};
+
 					var label = 'Browse Catalog - ';
 					if (data.label) {
 						label += data.label;
@@ -9139,7 +9140,11 @@ AspenDiscovery.Browse = (function(){
 					}
 
 					$('.selected-browse-dismiss').removeAttr('onclick');
-					$('.selected-browse-dismiss').attr('onclick', 'AspenDiscovery.Account.dismissBrowseCategory("'+data.patronId+'","'+subCategoryTextId+'")');
+					if(data.textId === "system_user_lists" || data.textId === "system_saved_searches") {
+						$('.selected-browse-dismiss').attr('onclick', 'AspenDiscovery.Account.dismissBrowseCategory("'+data.patronId+'","'+ data.textId + "_" + subCategoryTextId+'")');
+					} else {
+						$('.selected-browse-dismiss').attr('onclick', 'AspenDiscovery.Account.dismissBrowseCategory("'+data.patronId+'","'+subCategoryTextId+'")');
+					}
 
 					var newSubCategoryLabel = data.subCategoryLabel; // get label from corresponding button
 					// Set the new browse category label (below the carousel)
