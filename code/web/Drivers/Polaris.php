@@ -240,6 +240,9 @@ class Polaris extends AbstractIlsDriver
 					$curCheckout->author = $itemOut->Author;
 					$curCheckout->formats = [$itemOut->FormatDescription];
 					$curCheckout->callNumber = $itemOut->CallNumber;
+					if (!empty($itemOut->Designation)){
+						$curCheckout->callNumber .= ' ' . $itemOut->Designation;
+					}
 
 					require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
 					$recordDriver = new MarcRecordDriver((string)$curCheckout->recordId);
@@ -488,6 +491,9 @@ class Polaris extends AbstractIlsDriver
 				$curHold->title = $holdInfo->Title;
 				$curHold->author = $holdInfo->Author;
 				$curHold->callNumber = $holdInfo->CallNumber;
+				if (!empty($holdInfo->Designation)){
+					$curHold->callNumber .= ' ' . $holdInfo->Designation;
+				}
 				$curPickupBranch = new Location();
 				$curPickupBranch->code = $holdInfo->PickupBranchID;
 				if ($curPickupBranch->find(true)) {
