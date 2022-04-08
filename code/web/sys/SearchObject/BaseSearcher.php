@@ -2026,15 +2026,15 @@ abstract class SearchObject_BaseSearcher
 		$token = strtok($input, ' ');
 		while ($token) {
 			// find bracketed tokens
-			if ($token{0} == '(') {
+			if ($token[0] == '(') {
 				$token .= ' ' . strtok(')') . ')';
 			}
 			// find double quoted tokens
-			if ($token{0} == '"') {
+			if ($token[0] == '"') {
 				$token .= ' ' . strtok('"') . '"';
 			}
 			// find single quoted tokens
-			if ($token{0} == "'") {
+			if ($token[0] == "'") {
 				$token .= ' ' . strtok("'") . "'";
 			}
 			$tokens[] = $token;
