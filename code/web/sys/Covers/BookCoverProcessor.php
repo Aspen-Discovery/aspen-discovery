@@ -679,6 +679,15 @@ class BookCoverProcessor{
 			$imageChecksum = md5($image);
 			if ($imageChecksum == 'e89e0e364e83c0ecfba5da41007c9a2c'){
 				return false;
+			}elseif ($imageChecksum == 'f017f94ed618a86d0fa7cecd7112ab7e'){
+				//Syndetics Unbound default image at medium size
+				return false;
+			}elseif ($imageChecksum == 'dadde13fdb5f3775cdbdd25f34c0389b'){
+				//Syndetics Unbound default image at small size
+				return false;
+			}elseif ($imageChecksum == 'c6ddaf338cf667df0bf60045f05146db'){
+				//Syndetics Unbound default image at large size
+				return false;
 			}
 
 			$this->log("Processing url $url to $finalFile", Logger::LOG_DEBUG);
