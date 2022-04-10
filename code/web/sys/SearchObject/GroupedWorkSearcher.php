@@ -980,7 +980,11 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 		$activeLocationFacet = null;
 		$activeLocation = $locationSingleton->getActiveLocation();
 		if (!is_null($activeLocation)) {
-			$activeLocationFacet = $activeLocation->facetLabel;
+			if (empty($activeLocation->facetLabel)){
+				$activeLocationFacet = $activeLocation->displayName;
+			}else{
+				$activeLocationFacet = $activeLocation->facetLabel;
+			}
 		}
 		$relatedLocationFacets = null;
 		$relatedHomeLocationFacets = null;
@@ -1146,7 +1150,7 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 						'url' => null,
 					);
 			}
-			if (!$foundBranch && $doBranchProcessing && !is_null($activeLocationFacet)) {
+			if (!$foundBranch && $doBranchProcessing && !empty($activeLocationFacet)) {
 				$list[$field]['list']['1' . $activeLocationFacet] =
 					array(
 						'value' => $activeLocationFacet,
