@@ -169,7 +169,7 @@ class SearchAPI extends Action
 			$this->addServerStat($serverStats, 'Percent Memory In Use', $percentMemoryUsage);
 			if ($freeMem < 1000000000){
 				$this->addCheck($checks, 'Memory Usage', self::STATUS_CRITICAL, "Less than 1GB ($freeMem) of available memory exists, increase available resources");
-			}elseif ($percentMemoryUsage > 95){
+			}elseif ($percentMemoryUsage > 95 && $freeMem < 2500000000){
 				$this->addCheck($checks, 'Memory Usage', self::STATUS_CRITICAL, "{$percentMemoryUsage}% of total memory is in use, increase available resources");
 			}else{
 				$this->addCheck($checks, 'Memory Usage');
