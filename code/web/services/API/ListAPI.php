@@ -162,16 +162,18 @@ class ListAPI extends Action
 		$results = array();
 		if ($list->getNumResults() > 0) {
 			while ($list->fetch()) {
-				$results[] = array(
-					'id' => $list->id,
-					'title' => $list->title,
-					'description' => $list->description,
-					'numTitles' => $list->numValidListItems(),
-					'public' => $list->public == 1,
-					'created' => $list->created,
-					'dateUpdated' => $list->dateUpdated,
-					'cover' => $configArray['Site']['url']  . "/bookcover.php?type=list&id={$list->id}&size=medium"
-				);
+				if($list->isValidForDisplay()) {
+					$results[] = array(
+						'id' => $list->id,
+						'title' => $list->title,
+						'description' => $list->description,
+						'numTitles' => $list->numValidListItems(),
+						'public' => $list->public == 1,
+						'created' => $list->created,
+						'dateUpdated' => $list->dateUpdated,
+						'cover' => $configArray['Site']['url']  . "/bookcover.php?type=list&id={$list->id}&size=medium"
+					);
+				}
 			}
 		}
 
@@ -544,16 +546,19 @@ class ListAPI extends Action
 		}
 
 		$result = [];
-		$searchEntry = new SearchEntry();
-		$savedSearchLists = $searchEntry->getSearches(session_id(), $userId);
+		$SearchEntry = new SearchEntry();
+		$SearchEntry->user_id = UserAccount::getActiveUserId();
+		$SearchEntry->saved = "1";
+		$SearchEntry->orderBy('created desc');
+		$SearchEntry->find();
 
-		foreach($savedSearchLists as $savedSearchList) {
-			if($savedSearchList->title && $savedSearchList->saved == 1) {
+		while($SearchEntry->fetch()) {
+			if($SearchEntry->title && $SearchEntry->isValidForDisplay()) {
 				$savedSearch = array(
-					'id' => $savedSearchList->id,
-					'title' => $savedSearchList->title,
-					'created' => $savedSearchList->created,
-					'searchUrl' => $savedSearchList->searchUrl,
+					'id' => $SearchEntry->id,
+					'title' => $SearchEntry->title,
+					'created' => $SearchEntry->created,
+					'searchUrl' => $SearchEntry->searchUrl,
 				);
 				$result[] = $savedSearch;
 			}
