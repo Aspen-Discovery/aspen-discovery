@@ -440,7 +440,7 @@ class GreenhouseAPI extends Action
 					$libraryLocation->version = $aspenSite->version;
 					$libraryLocation->libraryId = $findLibrary->libraryId;
 					$libraryLocation->locationId = $findLibrary->locationId;
-					if (isset($findLibrary->name)) {
+					if (!isset($findLibrary->name)) {
 						$libraryLocation->name = $findLibrary->locationName;
 					} else {
 						$libraryLocation->name = $findLibrary->name;
