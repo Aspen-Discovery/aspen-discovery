@@ -5,8 +5,7 @@ import {completeAction} from "./Record";
 
 const SelectPickupLocation = (props) => {
 
-	const {locations, label, action, record, patron, showAlert} = props;
-
+	const {locations, label, action, record, patron, showAlert, libraryUrl} = props;
 	const [loading, setLoading] = React.useState(false);
 	const [showModal, setShowModal] = useState(false);
 	let [value, setValue] = React.useState("");
@@ -44,9 +43,9 @@ const SelectPickupLocation = (props) => {
 								isLoadingText="Placing hold..."
 								onPress={async () => {
 									setLoading(true);
-									await completeAction(record, action, patron, "", "", value).then(response => {
+									await completeAction(record, action, patron, "", "", value, libraryUrl).then(response => {
 										setLoading(false);
-										showAlert(response)
+										setShowModal(false);
 									});
 									setShowModal(false);
 								}}

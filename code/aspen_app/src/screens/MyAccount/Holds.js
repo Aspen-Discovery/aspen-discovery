@@ -1,6 +1,6 @@
 import React, {Component, useState} from "react";
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {RefreshControl} from "react-native";
+import {RefreshControl, ScrollView} from "react-native";
 import {
 	Actionsheet,
 	Avatar,
@@ -17,7 +17,8 @@ import {
 	Text,
 	useDisclose,
 	HStack,
-	VStack
+	VStack,
+	IconButton
 } from "native-base";
 import {Ionicons, MaterialCommunityIcons, MaterialIcons} from "@expo/vector-icons";
 import moment from "moment";
@@ -27,10 +28,11 @@ import {GLOBALS} from "../../util/globals";
 // custom components and helper files
 import {translate} from '../../translations/translations';
 import {loadingSpinner} from "../../components/loadingSpinner";
-import {getHolds} from '../../util/loadPatron';
+import {getCheckedOutItems, getHolds, getProfile} from '../../util/loadPatron';
 import {cancelHold, changeHoldPickUpLocation, freezeHold, thawHold} from '../../util/accountActions';
 import {getPickupLocations} from '../../util/loadLibrary';
 import {getTranslation, getTranslations} from "../../translations/TranslationService";
+import {userContext} from "../../context/user";
 
 export default class Holds extends Component {
 
@@ -63,22 +65,10 @@ export default class Holds extends Component {
 				changePickUpLocation: "Change Pickup Location"
 			}
 		};
-		getPickupLocations();
-		getHolds();
-		this.loadUser();
+		//this._fetchHolds();
+		this._pickupLocations();
 		this.loadPickupLocations();
-		this.loadLibrary();
 		this.loadHolds();
-		this.loadTranslations();
-	}
-
-	loadUser = async () => {
-		const tmp = await AsyncStorage.getItem('@patronProfile');
-		const profile = JSON.parse(tmp);
-		this.setState({
-			user: profile,
-			isLoading: false,
-		})
 	}
 
 	loadHolds = async () => {
@@ -96,15 +86,6 @@ export default class Holds extends Component {
 		})
 	}
 
-	loadLibrary = async () => {
-		const tmp = await AsyncStorage.getItem('@patronLibrary');
-		const profile = JSON.parse(tmp);
-		this.setState({
-			library: profile,
-			isLoading: false,
-		})
-	}
-
 	loadPickupLocations = async () => {
 		const tmp = await AsyncStorage.getItem('@pickupLocations');
 		const locations = JSON.parse(tmp);
@@ -114,30 +95,29 @@ export default class Holds extends Component {
 		})
 	}
 
-	loadTranslations = async () => {
-		const tmp = await AsyncStorage.getItem('@libraryLanguages');
-		let languages = JSON.parse(tmp);
-		languages = _.values(languages);
-		languages.map(async (language) => {
-			const tmp = await AsyncStorage.getItem(language.code);
-		})
+	_pickupLocations = async () => {
+		this.setState({
+			isLoading: true,
+		});
+
+		const { route } = this.props;
+		const libraryUrl = route.params?.libraryUrl ?? 'null';
+
+		await getPickupLocations(libraryUrl).then(r => this.loadPickupLocations())
 	}
 
 	componentDidMount = async () => {
 		this.setState({
-			isLoading: false,
+			isLoading: true,
 		})
 
-		await this.loadUser();
+		//await this._fetchHolds();
+		await this._pickupLocations();
 		await this.loadHolds();
-		await this.loadLibrary();
 		await this.loadPickupLocations();
-		await this.loadTranslations();
 
 		this.interval = setInterval(() => {
 			this.loadHolds();
-			this.loadUser();
-			this.loadTranslations();
 		}, 1000)
 
 		return () => clearInterval(this.interval)
@@ -147,13 +127,24 @@ export default class Holds extends Component {
 		clearInterval(this.interval);
 	}
 
+	_fetchHolds = async () => {
+		this.setState({
+			isLoading: true,
+		});
+
+		const { route } = this.props;
+		const libraryUrl = route.params?.libraryUrl ?? 'null';
+
+		await getHolds(libraryUrl).then(r => this.loadHolds())
+	}
+
 	// Handles opening the GroupedWork screen with the item data
-	openGroupedWork = (item) => {
-		this.props.navigation.navigate("GroupedWork", {item});
+	openGroupedWork = (item, libraryUrl) => {
+		this.props.navigation.navigate("GroupedWork", {item: item, libraryUrl: libraryUrl});
 	};
 
 	// Renders the hold items on the screen
-	renderHoldItem = (item) => {
+	renderHoldItem = (item, libraryUrl) => {
 		return (
 			<HoldItem
 				data={item}
@@ -162,6 +153,7 @@ export default class Holds extends Component {
 				locations={this.state.locations}
 				openGroupedWork={this.openGroupedWork}
 				translations={this.state.translation}
+				libraryUrl={libraryUrl}
 			/>
 		);
 	}
@@ -169,7 +161,7 @@ export default class Holds extends Component {
 	// Triggers a screen refresh
 	_onRefresh() {
 		this.setState({isRefreshing: true}, () => {
-			this.loadHolds().then(() => {
+			this._fetchHolds().then(() => {
 				this.setState({isRefreshing: false});
 			});
 		});
@@ -185,28 +177,33 @@ export default class Holds extends Component {
 		);
 	};
 
+	static contextType = userContext;
+
 	render() {
 		const {holds} = this.state;
+		const user = this.context.user;
+		const location = this.context.location;
+		const library = this.context.library;
 
 		if (this.state.isLoading) {
 			return (loadingSpinner(this.state.loadingMessage));
 		}
 
 		return (
-			<Box h="100%">
+			<ScrollView style={{ marginBottom: 80 }}>
+			<Box>
 				<FlatList
 					data={holds}
 					ListEmptyComponent={this._listEmptyComponent()}
-					renderItem={({item}) => this.renderHoldItem(item)}
-					keyExtractor={(item) => item.id}
-					refreshControl={
-						<RefreshControl
-							refreshing={this.state.isRefreshing}
-							onRefresh={this._onRefresh.bind(this)}
-						/>
-					}
+					renderItem={({item}) => this.renderHoldItem(item, library.baseUrl)}
+					keyExtractor={(item) => item.id.concat("_", item.position)}
 				/>
+				<Center pt={5} pb={5}>
+					<IconButton _icon={{ as: MaterialIcons, name: "refresh", color: "coolGray.500" }} onPress={() => {this._fetchHolds()}}
+					/>
+				</Center>
 			</Box>
+			</ScrollView>
 		);
 	}
 }
@@ -214,7 +211,7 @@ export default class Holds extends Component {
 function HoldItem(props) {
 	let expirationDate;
 	let availableDate;
-	const {onPressItem, data, navigation, locations, forceScreenReload, openGroupedWork, translations} = props;
+	const {onPressItem, data, navigation, locations, forceScreenReload, openGroupedWork, translations, libraryUrl} = props;
 	const {isOpen, onOpen, onClose} = useDisclose();
 
 	const [loading, setLoading] = useState(false);
@@ -351,7 +348,7 @@ function HoldItem(props) {
 						<Actionsheet.Item
 							startIcon={<Icon as={MaterialIcons} name="search" color="trueGray.400" mr="1" size="6"/>}
 							onPress={() => {
-								openGroupedWork(data.groupedWorkId);
+								openGroupedWork(data.groupedWorkId, libraryUrl);
 								onClose(onClose);
 							}}>
 							{translations.viewItemDetails}
@@ -365,9 +362,10 @@ function HoldItem(props) {
 							startIcon={<Icon as={MaterialIcons} name="cancel" color="trueGray.400" mr="1" size="6"/>}
 							onPress={() => {
 								setLoading(true);
-								cancelHold(data.cancelId, data.recordId, data.source).then(r => {
+								cancelHold(data.cancelId, data.recordId, data.source, libraryUrl).then(r => {
 									onClose(onClose);
 									setLoading(false);
+									getProfile();
 								});
 							}}
 						>
@@ -384,14 +382,14 @@ function HoldItem(props) {
 								if (data.frozen === true) {
 									setThaw(true);
 									setLoadingText("Thawing...");
-									thawHold(data.cancelId, data.recordId, data.source).then(r => {
+									thawHold(data.cancelId, data.recordId, data.source, libraryUrl).then(r => {
 										onClose(onClose);
 										setThaw(false);
 									});
 								} else {
 									setFreeze(true);
 									setLoadingText("Freezing...");
-									freezeHold(data.cancelId, data.recordId, data.source).then(r => {
+									freezeHold(data.cancelId, data.recordId, data.source, libraryUrl).then(r => {
 										onClose(onClose);
 										setFreeze(false);
 									});
@@ -404,7 +402,7 @@ function HoldItem(props) {
 
 					{updateLocation ?
 						<SelectPickupLocation locations={locations} onClose={onClose}
-						                      currentPickupId={data.pickupLocationId} holdId={data.cancelId} label={translations.changePickUpLocation}/>
+						                      currentPickupId={data.pickupLocationId} holdId={data.cancelId} label={translations.changePickUpLocation} libraryUrl={libraryUrl}/>
 						: ""}
 
 				</Actionsheet.Content>
@@ -415,7 +413,7 @@ function HoldItem(props) {
 
 const SelectPickupLocation = (props) => {
 
-	const {locations, label, onClose, currentPickupId, holdId} = props;
+	const {locations, label, onClose, currentPickupId, holdId, libraryUrl} = props;
 
 	const [loading, setLoading] = useState(false);
 	const [showModal, setShowModal] = useState(false);
@@ -462,7 +460,7 @@ const SelectPickupLocation = (props) => {
 								isLoadingText="Updating..."
 								onPress={() => {
 									setLoading(true);
-									changeHoldPickUpLocation(holdId, value).then(r => {
+									changeHoldPickUpLocation(holdId, value, libraryUrl).then(r => {
 											setShowModal(false);
 											onClose(onClose);
 											setLoading(false);

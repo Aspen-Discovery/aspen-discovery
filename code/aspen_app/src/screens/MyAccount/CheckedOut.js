@@ -1,6 +1,6 @@
 import React, {Component, useState} from "react";
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {RefreshControl} from "react-native";
+import {RefreshControl, ScrollView} from "react-native";
 import {
 	Actionsheet,
 	Avatar,
@@ -15,7 +15,8 @@ import {
 	Text,
 	useDisclose,
 	HStack,
-	VStack
+	VStack,
+	IconButton
 } from "native-base";
 import {MaterialIcons} from "@expo/vector-icons";
 import moment from "moment";
@@ -25,7 +26,7 @@ import * as WebBrowser from 'expo-web-browser';
 import {translate} from '../../translations/translations';
 import {loadingSpinner} from "../../components/loadingSpinner";
 import {loadError} from "../../components/loadError";
-import {getCheckedOutItems} from '../../util/loadPatron';
+import {getCheckedOutItems, getProfile} from '../../util/loadPatron';
 import {
 	isLoggedIn,
 	renewAllCheckouts,
@@ -34,6 +35,7 @@ import {
 	viewOnlineItem,
 	viewOverDriveItem
 } from '../../util/accountActions';
+import {userContext} from "../../context/user";
 
 export default class CheckedOut extends Component {
 	constructor() {
@@ -47,15 +49,8 @@ export default class CheckedOut extends Component {
 			user: [],
 			checkouts: []
 		};
-	}
-
-	loadUser = async () => {
-		const tmp = await AsyncStorage.getItem('@patronProfile');
-		const profile = JSON.parse(tmp);
-		this.setState({
-			user: profile,
-			isLoading: false,
-		})
+		//this._fetchCheckouts();
+		this.loadCheckouts();
 	}
 
 	loadCheckouts = async () => {
@@ -72,7 +67,7 @@ export default class CheckedOut extends Component {
 			isLoading: false,
 		});
 
-		await this.loadUser();
+		await this._fetchCheckouts();
 		await this.loadCheckouts();
 
 		this.interval = setInterval(() => {
@@ -89,44 +84,31 @@ export default class CheckedOut extends Component {
 
 	// grabs the items checked out to the account
 	_fetchCheckouts = async () => {
-
 		this.setState({
 			isLoading: true,
 		});
 
-		const forceReload = this.state.isRefreshing;
+		const { route } = this.props;
+		const libraryUrl = route.params?.libraryUrl ?? 'null';
 
-		await getCheckedOutItems(forceReload).then(response => {
-			if (response === "TIMEOUT_ERROR") {
-				this.setState({
-					hasError: true,
-					error: translate('error.timeout'),
-					isLoading: false,
-				});
-			} else {
-				this.setState({
-					data: response,
-					hasError: false,
-					error: null,
-					isLoading: false,
-				});
-			}
-		})
+		await getCheckedOutItems(libraryUrl).then(r => this.loadCheckouts());
 	}
 
 	// renders the items on the screen
-	renderNativeItem = (item) => {
+	renderNativeItem = (item, library) => {
 		return (
 			<CheckedOutItem
 				data={item}
+				navigation={this.props.navigation}
 				openWebsite={this.openWebsite}
 				openGroupedWork={this.openGroupedWork}
+				libraryUrl={library.baseUrl}
 			/>
 		);
 	};
 
-	openGroupedWork = (item) => {
-		this.props.navigation.navigate("GroupedWork", {item});
+	openGroupedWork = (item, libraryUrl) => {
+		this.props.navigation.navigate("GroupedWork", {item: item, libraryUrl: libraryUrl});
 	};
 
 	openWebsite = async (url) => {
@@ -189,16 +171,20 @@ export default class CheckedOut extends Component {
 
 	_onRefresh = () => {
 		this.setState({isRefreshing: true}, () => {
-			this._fetchCheckouts().then(() => {
+			getCheckedOutItems().then(() => {
 				this.setState({isRefreshing: false});
 			});
 		});
 	}
 
+	static contextType = userContext;
 
 	render() {
 
-		const {checkouts, user} = this.state;
+		const {checkouts} = this.state;
+		const user = this.context.user;
+		const location = this.context.location;
+		const library = this.context.library;
 
 		if (this.state.isLoading) {
 			return (loadingSpinner());
@@ -209,8 +195,9 @@ export default class CheckedOut extends Component {
 		}
 
 		return (
-			<Box h="100%">
-				{user.numCheckedOut > 0 ?
+			<ScrollView style={{ marginBottom: 80 }}>
+			<Box>
+				{user.numCheckedOut && user.numCheckedOut > 0 ?
 					<Center pt={3} pb={3}>
 						<Button
 							isLoading={this.state.renewingAll}
@@ -219,7 +206,7 @@ export default class CheckedOut extends Component {
 							colorScheme="primary"
 							onPress={() => {
 								this.setState({renewingAll: true})
-								renewAllCheckouts().then(r => {
+								renewAllCheckouts(library.baseUrl).then(r => {
 									this.setState({renewingAll: false})
 								})
 							}}
@@ -232,16 +219,15 @@ export default class CheckedOut extends Component {
 				<FlatList
 					data={checkouts}
 					ListEmptyComponent={this._listEmptyComponent()}
-					renderItem={({item}) => this.renderNativeItem(item)}
+					renderItem={({item}) => this.renderNativeItem(item, library)}
 					keyExtractor={(item) => item.recordId}
-					refreshControl={
-						<RefreshControl
-							refreshing={this.state.isRefreshing}
-							onRefresh={this._onRefresh.bind(this)}
-						/>
-					}
 				/>
+				<Center pt={5} pb={5}>
+					<IconButton _icon={{ as: MaterialIcons, name: "refresh", color: "coolGray.500" }} onPress={() => {this._fetchCheckouts()}}
+					/>
+				</Center>
 			</Box>
+			</ScrollView>
 		);
 
 	}
@@ -252,7 +238,7 @@ function CheckedOutItem(props) {
 	const [access, setAccess] = useState(false);
 	const [returning, setReturn] = useState(false);
 	const [renewing, setRenew] = useState(false);
-	const {openWebsite, data, renewItem, openGroupedWork} = props;
+	const {openWebsite, data, renewItem, openGroupedWork, libraryUrl} = props;
 	const {isOpen, onOpen, onClose} = useDisclose();
 	const dueDate = moment.unix(data.dueDate);
 	var itemDueOn = moment(dueDate).format("MMM D, YYYY");
@@ -356,7 +342,7 @@ function CheckedOutItem(props) {
 						<Actionsheet.Item
 							startIcon={<Icon as={MaterialIcons} name="search" color="trueGray.400" mr="1" size="6"/>}
 							onPress={() => {
-								openGroupedWork(data.groupedWorkId);
+								openGroupedWork(data.groupedWorkId, libraryUrl);
 								onClose(onClose);
 							}}>
 							{translate('grouped_work.view_item_details')}
@@ -371,7 +357,7 @@ function CheckedOutItem(props) {
 							startIcon={<Icon as={MaterialIcons} name="autorenew" color="trueGray.400" mr="1" size="6"/>}
 							onPress={() => {
 								setRenew(true);
-								renewCheckout(data.barcode, data.recordId, data.source, data.itemId).then(r => {
+								renewCheckout(data.barcode, data.recordId, data.source, data.itemId, libraryUrl).then(r => {
 									setRenew(false);
 									onClose(onClose)
 								});
@@ -388,7 +374,7 @@ function CheckedOutItem(props) {
 							startIcon={<Icon as={MaterialIcons} name="book" color="trueGray.400" mr="1" size="6"/>}
 							onPress={() => {
 								setAccess(true);
-								viewOverDriveItem(data.userId, formatId, data.overDriveId).then(r => {
+								viewOverDriveItem(data.userId, formatId, data.overDriveId, libraryUrl).then(r => {
 									setAccess(false);
 									onClose(onClose)
 								});
@@ -404,7 +390,7 @@ function CheckedOutItem(props) {
 							startIcon={<Icon as={MaterialIcons} name="book" color="trueGray.400" mr="1" size="6"/>}
 							onPress={() => {
 								setAccess(true);
-								viewOnlineItem(data.userId, data.recordId, data.source, data.accessOnlineUrl).then(r => {
+								viewOnlineItem(data.userId, data.recordId, data.source, data.accessOnlineUrl, libraryUrl).then(r => {
 									setAccess(false);
 									onClose(onClose);
 								});
@@ -420,9 +406,10 @@ function CheckedOutItem(props) {
 							startIcon={<Icon as={MaterialIcons} name="logout" color="trueGray.400" mr="1" size="6"/>}
 							onPress={() => {
 								setReturn(true);
-								returnCheckout(data.userId, data.recordId, data.source, data.overDriveId).then(r => {
+								returnCheckout(data.userId, data.recordId, data.source, data.overDriveId, libraryUrl).then(r => {
 									setReturn(false);
 									onClose(onClose);
+									getProfile(libraryUrl);
 								});
 							}}>
 							{translate('checkouts.return_now')}
@@ -436,9 +423,10 @@ function CheckedOutItem(props) {
 							startIcon={<Icon as={MaterialIcons} name="logout" color="trueGray.400" mr="1" size="6"/>}
 							onPress={() => {
 								setReturn(true);
-								returnCheckout(data.userId, data.recordId, data.source, data.overDriveId).then(r => {
+								returnCheckout(data.userId, data.recordId, data.source, data.overDriveId, libraryUrl).then(r => {
 									setReturn(false);
 									onClose(onClose);
+									getProfile(libraryUrl);
 								});
 							}}>
 							{translate('checkouts.return_now')}

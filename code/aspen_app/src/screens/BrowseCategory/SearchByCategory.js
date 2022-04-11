@@ -22,25 +22,25 @@ import {MaterialIcons} from "@expo/vector-icons";
 import { translate } from '../../translations/translations';
 import { loadingSpinner } from "../../components/loadingSpinner";
 import { loadError } from "../../components/loadError";
-import { searchResults } from "../../util/search";
+import {categorySearchResults, searchResults} from "../../util/search";
 import _ from "lodash";
 import {getLists, removeTitlesFromList} from "../../util/loadPatron";
-import AddToList from "./AddToList";
+import AddToList from "../Search/AddToList";
 import {userContext} from "../../context/user";
 
-export default class Results extends Component {
+export default class SearchByCategory extends Component {
 	constructor() {
 		super();
 		this.state = {
-            isLoading: true,
-            isLoadingMore: false,
-            data: [],
-            searchMessage: null,
-            page: 1,
-            hasError: false,
-            error: null,
-            refreshing: false,
-            filtering: false,
+			isLoading: true,
+			isLoadingMore: false,
+			data: [],
+			searchMessage: null,
+			page: 1,
+			hasError: false,
+			error: null,
+			refreshing: false,
+			filtering: false,
 			endOfResults: false,
 			dataMessage: null
 		};
@@ -58,62 +58,63 @@ export default class Results extends Component {
 	};
 
 	_fetchResults = async () => {
-	    const { page } = this.state;
+		const { page } = this.state;
 		const { navigation, route } = this.props;
-		const givenSearch = route.params?.searchTerm ?? '%20';
+		const category = route.params?.category ?? '';
 		const libraryUrl = route.params?.libraryUrl ?? '';
-        const searchTerm = givenSearch.replace(/" "/g, "%20");
 
-        await searchResults(searchTerm, 100, page, libraryUrl).then(response => {
-            if(response.ok) {
-				console.log(response.data);
-                if(response.data.result.count > 0) {
-                    this.setState((prevState, nextProps) => ({
-                        data:
-                            page === 1
-                                ? Array.from(response.data.result.items)
-                                : [...this.state.data, ...response.data.result.items],
-                        isLoading: false,
-                        isLoadingMore: false,
-                        refreshing: false
-                    }));
-                } else {
-	                if(page === 1 && response.data.result.count === 0) {
-                    /* No search results were found */
-                        this.setState({
-                            hasError: true,
-                            error: response.data.result.message,
-                            isLoading: false,
-                            isLoadingMore: false,
-                            refreshing: false,
-                            dataMessage: response.data.result.message,
-                        });
-                    } else {
-                        /* Tried to fetch next page, but end of results */
-                        this.setState({
-                            isLoading: false,
-                            isLoadingMore: false,
-                            refreshing: false,
-                            dataMessage: response.data.result.message,
-	                        endOfResults: true,
-                        });
-                    }
-                }
-            }
-        })
+		await categorySearchResults(category, 25, page, libraryUrl).then(response => {
+			if(response.ok) {
+				let records = response.data.result.records;
+
+				console.log(records.length);
+				if(records.length > 0) {
+					this.setState((prevState, nextProps) => ({
+						data:
+							page === 1
+								? Array.from(response.data.result.records)
+								: [...this.state.data, ...response.data.result.records],
+						isLoading: false,
+						isLoadingMore: false,
+						refreshing: false
+					}));
+				} else {
+					if(page === 1 && records.length === 0) {
+						/* No search results were found */
+						this.setState({
+							hasError: true,
+							error: response.data.result.message,
+							isLoading: false,
+							isLoadingMore: false,
+							refreshing: false,
+							dataMessage: response.data.result.message,
+						});
+					} else {
+						/* Tried to fetch next page, but end of results */
+						this.setState({
+							isLoading: false,
+							isLoadingMore: false,
+							refreshing: false,
+							dataMessage: response.data.result.message,
+							endOfResults: true,
+						});
+					}
+				}
+			}
+		})
 
 	}
 
 	_handleLoadMore = () => {
-	    this.setState(
-	        (prevState, nextProps) => ({
-	            page: prevState.page + 1,
-	            isLoadingMore: true
-	        }),
-	        () => {
-	            this._fetchResults();
-	        }
-	    )
+		this.setState(
+			(prevState, nextProps) => ({
+				page: prevState.page + 1,
+				isLoadingMore: true
+			}),
+			() => {
+				this._fetchResults();
+			}
+		)
 	};
 
 	renderItem = (item, library) => {
@@ -149,21 +150,21 @@ export default class Results extends Component {
 		}));
 	};
 
-    // this one shouldn't probably ever load with the catches in the render, but just in case
+	// this one shouldn't probably ever load with the catches in the render, but just in case
 	_listEmptyComponent = () => {
 		const { navigation, route } = this.props;
 		return (
-            <Center flex={1}>
-                <Heading pt={5}>{translate('search.no_results')}</Heading>
-                <Text bold w="75%" textAlign="center">{route.params?.searchTerm}</Text>
-                <Button mt={3} onPress={() => navigation.dispatch(CommonActions.goBack())}>{translate('search.new_search_button')}</Button>
-            </Center>
+			<Center flex={1}>
+				<Heading pt={5}>{translate('search.no_results')}</Heading>
+				<Text bold w="75%" textAlign="center">{route.params?.searchTerm}</Text>
+				<Button mt={3} onPress={() => navigation.dispatch(CommonActions.goBack())}>{translate('search.new_search_button')}</Button>
+			</Center>
 		);
 	};
 
 	_renderFooter = () => {
-	    if(!this.state.isLoadingMore) return null;
-	    return ( loadingSpinner() );
+		if(!this.state.isLoadingMore) return null;
+		return ( loadingSpinner() );
 	}
 
 	static contextType = userContext;
@@ -180,18 +181,18 @@ export default class Results extends Component {
 		}
 
 		if (this.state.hasError && !this.state.dataMessage) {
-            return ( loadError(this.state.error, this._fetchResults) );
+			return ( loadError(this.state.error, this._fetchResults) );
 		}
 
-        if (this.state.hasError && this.state.dataMessage) {
-            return (
-                <Center flex={1}>
-                    <Heading pt={5}>{translate('search.no_results')}</Heading>
-                    <Text bold w="75%" textAlign="center">{route.params?.searchTerm}</Text>
-                    <Button mt={3} onPress={() => navigation.dispatch(CommonActions.goBack())}>{translate('search.new_search_button')}</Button>
-                </Center>
-            );
-        }
+		if (this.state.hasError && this.state.dataMessage) {
+			return (
+				<Center flex={1}>
+					<Heading pt={5}>{translate('search.no_results')}</Heading>
+					<Text bold w="75%" textAlign="center">{route.params?.searchTerm}</Text>
+					<Button mt={3} onPress={() => navigation.dispatch(CommonActions.goBack())}>{translate('search.new_search_button')}</Button>
+				</Center>
+			);
+		}
 
 		return (
 			<Box>

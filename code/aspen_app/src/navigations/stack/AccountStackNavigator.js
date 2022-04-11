@@ -7,10 +7,10 @@ import Holds from "../../screens/MyAccount/Holds";
 import GroupedWork from "../../screens/GroupedWork/GroupedWork";
 import Settings_HomeScreen from "../../screens/MyAccount/Settings/HomeScreen";
 import LinkedAccounts from "../../screens/MyAccount/Settings/LinkedAccounts/LinkedAccounts";
-import AppHeader from "../AppHeader";
 import Profile from "../../screens/MyAccount/Profile/Profile";
 import Preferences from "../../screens/MyAccount/Settings/Preferences";
-
+import MyLists from "../../screens/MyAccount/Lists/MyLists";
+import MyList from "../../screens/MyAccount/Lists/MyList";
 
 const AccountStackNavigator = () => {
 	const Stack = createNativeStackNavigator();
@@ -19,7 +19,6 @@ const AccountStackNavigator = () => {
 			initialRouteName="AccountScreen"
 			screenOptions={{
 				headerShown: true,
-				backBehavior: "history",
 				headerBackTitleVisible: false,
 			}}
 		>
@@ -62,6 +61,23 @@ const AccountStackNavigator = () => {
 				name="LinkedAccounts"
 				component={LinkedAccounts}
 				options={{ title: "Linked Accounts" }}
+			/>
+			<Stack.Screen
+				name="Lists"
+				component={MyLists}
+				options={{ title: "Lists" }}
+			/>
+			<Stack.Screen
+				name="List"
+				component={MyList}
+				options={({ route }) => ({ title: route.params.name })}
+			/>
+			<Stack.Screen
+				name="ItemDetails"
+				component={GroupedWork}
+				options={{
+					title: translate('grouped_work.title') ,
+				}}
 			/>
 		</Stack.Navigator>
 	)

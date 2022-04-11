@@ -1,14 +1,22 @@
 import React from "react";
 import {Button, Center, HStack, Text, VStack, Badge } from "native-base";
-import {checkoutItem, openCheckouts, openSideLoad, overDriveSample, placeHold} from "../../util/recordActions";
+import {
+	checkoutItem,
+	getItemDetails,
+	openCheckouts,
+	openSideLoad,
+	overDriveSample,
+	placeHold
+} from "../../util/recordActions";
 import SelectPickupLocation from "./SelectPickupLocation";
 import ShowItemDetails from "./CopyDetails";
 import _ from "lodash";
+import {getProfile} from "../../util/loadPatron";
 
 const DisplayRecord = (props) => {
 
 	const [loading, setLoading] = React.useState(false);
-	const {available, availableOnline, actions, edition, format, publisher, publicationDate, status, copiesMessage, source, id, title, locationCount, locations, showAlert, itemDetails, user} = props;
+	const {available, availableOnline, actions, edition, format, publisher, publicationDate, status, copiesMessage, source, id, title, locationCount, locations, showAlert, itemDetails, user, groupedWorkId, library} = props;
 
 	let actionCount = 1;
 	if(typeof actions !== 'undefined') {
@@ -29,6 +37,8 @@ const DisplayRecord = (props) => {
 		statusColor = "danger";
 	}
 
+	let libraryUrl = library.baseUrl;
+
 	return (
 		<Center mt={5} mb={0} bgColor="white" _dark={{ bgColor: "coolGray.900" }} p={3} rounded="8px" width={{base: "100%", lg: "75%"}}>
 			{publisher ? (<Text fontSize={10} bold pb={3}>{edition} {publisher}, {publicationDate}</Text>) : null}
@@ -36,7 +46,7 @@ const DisplayRecord = (props) => {
 				<VStack space={1} alignItems="center" maxW="40%" flex={1}>
 					<Badge colorScheme={statusColor} rounded="4px" _text={{fontSize: 14}} mb={.5}>{status}</Badge>
 					{copiesMessage ? (<Text fontSize={8} textAlign="center" italic={1} maxW="75%">{copiesMessage}</Text>) : null}
-					{source === "ils" && itemDetails ? <ShowItemDetails data={itemDetails} title={title} /> : null}
+					{source === "ils" && itemDetails ? <ShowItemDetails id={groupedWorkId} format={format} title={title} libraryUrl={libraryUrl}/> : null}
 				</VStack>
 				<Button.Group maxW="50%" direction={actionCount > 1 ? "column" : "row"} alignItems="stretch">
 					{actions.map((thisAction) => {
@@ -49,6 +59,7 @@ const DisplayRecord = (props) => {
 									patronId = {user.id}
 									formatId = {thisAction.formatId}
 									sampleNumber = {thisAction.sampleNumber}
+									libraryUrl = {libraryUrl}
 								/>
 							)
 						} else if (thisAction.type === "ils_hold") {
@@ -65,6 +76,7 @@ const DisplayRecord = (props) => {
 									locationCount = {locationCount}
 									locations = {locations}
 									showAlert = {showAlert}
+									libraryUrl = {libraryUrl}
 								/>
 							)
 						} else if (thisAction.title === "Access Online") {
@@ -72,6 +84,7 @@ const DisplayRecord = (props) => {
 								<SideLoad
 									actionUrl = {thisAction.url}
 									actionLabel = {thisAction.title}
+									libraryUrl = {libraryUrl}
 								/>
 							)
 						} else if (thisAction.title === "Checked Out to You") {
@@ -86,7 +99,7 @@ const DisplayRecord = (props) => {
 								        isLoadingText="Checking out title..."
 								        style={{flex: 1, flexWrap: 'wrap'}} onPress={async () => {
 									setLoading(true);
-									await completeAction(id, thisAction.type, user.id).then(response => {
+									await completeAction(id, thisAction.type, user.id, null, null, null, libraryUrl).then(response => {
 										showAlert(response);
 										setLoading(false);
 									})
@@ -103,7 +116,7 @@ const DisplayRecord = (props) => {
 const ILS = (props) => {
 	const [loading, setLoading] = React.useState(false);
 
-	if (props.locationCount > 1) {
+	if (props.locationCount && props.locationCount > 1) {
 		return (
 			<SelectPickupLocation
 				locations={props.locations}
@@ -113,6 +126,7 @@ const ILS = (props) => {
 				patron={props.patronId}
 				showAlert={props.showAlert}
 				preferredLocation={props.pickupLocation}
+				libraryUrl={props.libraryUrl}
 			/>
 		)
 	} else {
@@ -127,7 +141,10 @@ const ILS = (props) => {
 				isLoadingText="Placing hold..."
 		        onPress={async () => {
 			        setLoading(true);
-					await completeAction(props.id, props.actionType, props.patronId, null, null, props.locations[0].code).then(response => {setLoading(false);props.showAlert(response)})
+					completeAction(props.id, props.actionType, props.patronId, null, null, props.locations[0].code, props.libraryUrl).then(response => {
+						setLoading(false);
+						props.showAlert(response)
+					})
 				}}>{props.actionLabel}</Button>
 		);
 	}
@@ -146,7 +163,10 @@ const OverDriveSample = (props) => {
             isLoadingText="Opening..."
 	        onPress={() => {
 		        setLoading(true);
-		        completeAction(props.id, props.actionType, props.patronId, props.formatId, props.sampleNumber).then(r => setLoading(false))
+		        completeAction(props.id, props.actionType, props.patronId, props.formatId, props.sampleNumber, null, props.libraryUrl).then(r => {
+			        setLoading(false);
+					//getProfile();
+		        })
 	        }}
 		>{props.actionLabel}</Button>
 	)
@@ -187,13 +207,13 @@ const CheckedOutToYou = (props) => {
 }
 
 // complete the action on the item, i.e. checkout, hold, or view sample
-export async function completeAction(id, actionType, patronId, formatId = null, sampleNumber = null, pickupBranch = null) {
+export async function completeAction(id, actionType, patronId, formatId = null, sampleNumber = null, pickupBranch = null, libraryUrl) {
 	const recordId = id.split(":");
 	const source = recordId[0];
 	const itemId = recordId[1];
 
 	if (actionType.includes("checkout")) {
-		return await checkoutItem(itemId, source, patronId);
+		return await checkoutItem(libraryUrl, itemId, source, patronId);
 	} else if (actionType.includes("hold")) {
 
 		if (!global.overdriveEmail && global.promptForOverdriveEmail === 1 && source === "overdrive") {
@@ -206,11 +226,11 @@ export async function completeAction(id, actionType, patronId, formatId = null, 
 			getPromptForOverdriveEmail['promptForOverdriveEmail'] = global.promptForOverdriveEmail;
 			return getPromptForOverdriveEmail;
 		} else {
-			return await placeHold(itemId, source, patronId, pickupBranch);
+			return await placeHold(libraryUrl, itemId, source, patronId, pickupBranch);
 		}
 
 	} else if (actionType.includes("sample")) {
-		return await overDriveSample(formatId, itemId, sampleNumber);
+		return await overDriveSample(libraryUrl, formatId, itemId, sampleNumber);
 	}
 }
 
