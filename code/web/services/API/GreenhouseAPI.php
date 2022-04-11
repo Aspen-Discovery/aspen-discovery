@@ -205,33 +205,35 @@ class GreenhouseAPI extends Action
 		$aspenSite = new AspenSite();
 		$aspenSite->find();
 		while($aspenSite->fetch()) {
-			//See if we need to reload the cache
-			$reloadCache = false;
-
-			$existingCachedValues = new AspenSiteCache();
-			$existingCachedValues->siteId = $aspenSite->id;
-			$numRows = $existingCachedValues->count();
-			$existingCachedValues->find();
-			if($numRows >= 1) {
-				// check for forced reload of cache
-				if (isset($_REQUEST['reload']) && $reload) {
-					$reloadCache = true;
-				} else {
-					//Check to see when the cache was last set
-					$existingCachedValues->fetch();
-					if ((time() - $existingCachedValues->lastUpdated) > (24.5 * 60 * 60)) {
-						$reloadCache = true;
-					}
-				}
-			}else {
-				$reloadCache = true;
-			}
-			if ($reloadCache) {
-				$this->setLibraryCache($aspenSite);
-			}
-
 			//Now see if we should return this for use in LiDA
-			if (($aspenSite->appAccess == 1) || ($aspenSite->appAccess == 3)) {
+			if($aspenSite->implementationStatus == 1 || $aspenSite->implementationStatus == 2|| $aspenSite->implementationStatus == 3) {
+				// Check the implementation status to make sure it's eligible for LiDA
+				if($aspenSite->appAccess == 1 || $aspenSite->appAccess == 3) {
+				//See if we need to reload the cache
+				$reloadCache = false;
+
+				$existingCachedValues = new AspenSiteCache();
+				$existingCachedValues->siteId = $aspenSite->id;
+				$numRows = $existingCachedValues->count();
+				$existingCachedValues->find();
+				if($numRows >= 1) {
+					// check for forced reload of cache
+					if (isset($_REQUEST['reload']) && $reload) {
+						$reloadCache = true;
+					} else {
+						//Check to see when the cache was last set
+						$existingCachedValues->fetch();
+						if ((time() - $existingCachedValues->lastUpdated) > (24.5 * 60 * 60)) {
+							$reloadCache = true;
+						}
+					}
+				}else {
+					$reloadCache = true;
+				}
+				if ($reloadCache) {
+					$this->setLibraryCache($aspenSite);
+				}
+
 				$libraryLocation = new AspenSiteCache();
 				$libraryLocation->siteId = $aspenSite->id;
 				$libraryLocation->find();
@@ -260,6 +262,7 @@ class GreenhouseAPI extends Action
 						}
 					}
 				}
+			}
 			}
 		}
 		if(!empty($return['libraries'])) {
@@ -437,7 +440,7 @@ class GreenhouseAPI extends Action
 					$libraryLocation->version = $aspenSite->version;
 					$libraryLocation->libraryId = $findLibrary->libraryId;
 					$libraryLocation->locationId = $findLibrary->locationId;
-					if (is_null($findLibrary->name)) {
+					if (isset($findLibrary->name)) {
 						$libraryLocation->name = $findLibrary->locationName;
 					} else {
 						$libraryLocation->name = $findLibrary->name;
