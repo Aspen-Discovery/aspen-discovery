@@ -407,7 +407,19 @@ class OverDriveDriver extends AbstractEContentDriver{
 			}
 
 			if (!empty($method)){
-				$response = $this->apiCurlWrapper->curlSendPage($url, $method);
+				if($postParams != null) {
+					$jsonData = array('fields' => array());
+					foreach ($postParams as $key => $value){
+						$jsonData['fields'][] = array(
+							'name' => $key,
+							'value' => $value
+						);
+					}
+					$postData = json_encode($jsonData);
+					$response = $this->apiCurlWrapper->curlSendPage($url, $method, $postData);
+				} else {
+					$response = $this->apiCurlWrapper->curlSendPage($url, $method);
+				}
 				ExternalRequestLogEntry::logRequest('overdrive.callPatronUrl_' . $methodName, $method, $url, $this->apiCurlWrapper->getHeaders(), false, $this->apiCurlWrapper->getResponseCode(), $response, []);
 			}
 

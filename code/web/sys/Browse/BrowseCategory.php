@@ -55,7 +55,7 @@ class BrowseCategory extends BaseBrowsable
 					$SearchEntry->find();
 					$count = 0;
 					do {
-						if($SearchEntry->title) {
+						if($SearchEntry->title && $SearchEntry->isValidForDisplay()) {
 							$count++;
 							$searchId = $SearchEntry->id;
 							$this->_subBrowseCategories[$searchId] = clone($SearchEntry);
@@ -72,15 +72,18 @@ class BrowseCategory extends BaseBrowsable
 					$lists->user_id = UserAccount::getActiveUserId();
 					$lists->deleted = "0";
 					$lists->orderBy('dateUpdated desc');
-					$lists->limit(0,5);
 					$lists->find();
-					while ($lists->fetch()) {
-						$id = $lists->id;
-						$this->_subBrowseCategories[$id] = clone($lists);
-						$this->_subBrowseCategories[$id]->id = $this->textId . '_' . $id;
-						$this->_subBrowseCategories[$id]->label = $lists->title;
-						$this->_subBrowseCategories[$id]->_source = "userList";
-					}
+					$count = 0;
+					do {
+						if($lists->isValidForDisplay()) {
+							$count++;
+							$id = $lists->id;
+							$this->_subBrowseCategories[$id] = clone($lists);
+							$this->_subBrowseCategories[$id]->id = $this->textId . '_' . $id;
+							$this->_subBrowseCategories[$id]->label = $lists->title;
+							$this->_subBrowseCategories[$id]->_source = "userList";
+						}
+					} while ($lists->fetch() && $count < 5);
 				} else {
 					$subCategory = new SubBrowseCategories();
 					$subCategory->browseCategoryId = $this->id;

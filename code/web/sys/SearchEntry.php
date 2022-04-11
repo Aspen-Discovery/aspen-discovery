@@ -177,4 +177,24 @@ class SearchEntry extends DataObject
 			}
 		}
 	}
+
+	public function isDismissed() {
+		require_once ROOT_DIR . '/sys/Browse/BrowseCategoryDismissal.php';
+		if (UserAccount::isLoggedIn()){
+			$savedSearchDismissal = new BrowseCategoryDismissal();
+			$savedSearchDismissal->browseCategoryId = "system_saved_searches_" . $this->id;
+			$savedSearchDismissal->userId = UserAccount::getActiveUserId();
+			if($savedSearchDismissal->find(true)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public function isValidForDisplay() {
+		if ($this->isDismissed()){
+			return false;
+		}
+		return true;
+	}
 }
