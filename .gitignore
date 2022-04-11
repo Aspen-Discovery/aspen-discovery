@@ -197,3 +197,4 @@ code/web/cron/fetchMarc.ini
 code/cron/.idea/*
 code/web/.idea/*
 code/aspen_app/.idea/*
+install/createSite.ini
