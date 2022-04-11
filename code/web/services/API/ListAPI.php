@@ -162,16 +162,18 @@ class ListAPI extends Action
 		$results = array();
 		if ($list->getNumResults() > 0) {
 			while ($list->fetch()) {
-				$results[] = array(
-					'id' => $list->id,
-					'title' => $list->title,
-					'description' => $list->description,
-					'numTitles' => $list->numValidListItems(),
-					'public' => $list->public == 1,
-					'created' => $list->created,
-					'dateUpdated' => $list->dateUpdated,
-					'cover' => $configArray['Site']['url']  . "/bookcover.php?type=list&id={$list->id}&size=medium"
-				);
+				if($list->isValidForDisplay()) {
+					$results[] = array(
+						'id' => $list->id,
+						'title' => $list->title,
+						'description' => $list->description,
+						'numTitles' => $list->numValidListItems(),
+						'public' => $list->public == 1,
+						'created' => $list->created,
+						'dateUpdated' => $list->dateUpdated,
+						'cover' => $configArray['Site']['url']  . "/bookcover.php?type=list&id={$list->id}&size=medium"
+					);
+				}
 			}
 		}
 
