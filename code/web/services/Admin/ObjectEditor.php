@@ -625,6 +625,7 @@ abstract class ObjectEditor extends Admin_Admin
 					'fieldName' => $fieldName,
 					'filterType' => $value,
 					'filterValue' => isset($_REQUEST['filterValue'][$fieldName]) ? $_REQUEST['filterValue'][$fieldName] : '',
+					'filterValue2' => isset($_REQUEST['filterValue2'][$fieldName]) ? $_REQUEST['filterValue2'][$fieldName] : '',
 					'field' => $filterFields[$fieldName]
 				];
 			}
@@ -642,7 +643,7 @@ abstract class ObjectEditor extends Admin_Admin
 			}elseif ($filter['filterType'] == 'startsWith'){
 				$object->whereAdd($fieldName . ' like ' . $object->escape($filter['filterValue'] . '%'));
 			}elseif ($filter['filterType'] == 'beforeTime'){
-				$fieldValue = strtotime($filter['filterValue']);
+				$fieldValue = strtotime($filter['filterValue2']);
 				if ($fieldValue !== false) {
 					$object->whereAdd($fieldName . ' < ' . $fieldValue);
 				}
@@ -650,6 +651,15 @@ abstract class ObjectEditor extends Admin_Admin
 				$fieldValue = strtotime($filter['filterValue']);
 				if ($fieldValue !== false) {
 					$object->whereAdd($fieldName . ' > ' . $fieldValue);
+				}
+			}elseif ($filter['filterType'] == 'betweenTimes'){
+				$fieldValue = strtotime($filter['filterValue']);
+				if ($fieldValue !== false) {
+					$object->whereAdd($fieldName . ' > ' . $fieldValue);
+				}
+				$fieldValue2 = strtotime($filter['filterValue2']);
+				if ($fieldValue2 !== false) {
+					$object->whereAdd($fieldName . ' < ' . $fieldValue2);
 				}
 			}
 		}
