@@ -141,6 +141,7 @@ class MyAccount_MyList extends MyAccount {
 		//Set the default sort (for people other than the list editor to match what the editor does)
 		if ($userCanEdit && $activeSort != $list->defaultSort){
 			$list->defaultSort = $activeSort;
+			$list->fixWeights();
 			$list->update();
 		}
 

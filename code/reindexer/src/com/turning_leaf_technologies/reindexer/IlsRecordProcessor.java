@@ -997,11 +997,10 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 
 		itemInfo.setAvailable(available);
 
-
-		itemInfo.setInLibraryUseOnly(determineLibraryUseOnly(itemInfo));
-
 		itemInfo.setDetailedStatus(displayStatus);
 		itemInfo.setGroupedStatus(groupedDisplayStatus);
+
+		itemInfo.setInLibraryUseOnly(determineLibraryUseOnly(itemInfo));
 
 		String itemLocation = itemInfo.getLocationCode();
 		String itemSublocation = itemInfo.getSubLocationCode();
@@ -1035,7 +1034,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	}
 
 	protected boolean determineLibraryUseOnly(ItemInfo itemInfo) {
-		if (inLibraryUseOnlyStatuses.contains(itemInfo.getStatusCode())){
+		if (inLibraryUseOnlyStatuses.contains(itemInfo.getStatusCode()) || itemInfo.getGroupedStatus().equals("Library Use Only")){
 			return true;
 		}
 		String format = itemInfo.getFormat();

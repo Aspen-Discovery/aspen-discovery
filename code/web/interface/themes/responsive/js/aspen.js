@@ -8507,6 +8507,19 @@ AspenDiscovery.Admin = (function(){
 			}
 			return false;
 		},
+		setDateFilterFieldVisibility: function (propertyName){
+			var selectedValue = $('#filterType_' + propertyName).val();
+			if (selectedValue === 'afterTime'){
+				$('#filterValue_' + propertyName).show();
+				$('#filterValue2_' + propertyName).val('').hide();
+			}else if (selectedValue === 'beforeTime'){
+				$('#filterValue_' + propertyName).val('').hide();
+				$('#filterValue2_' + propertyName).show();
+			}else{
+				$('#filterValue_' + propertyName).show();
+				$('#filterValue2_' + propertyName).show();
+			}
+		},
 	};
 }(AspenDiscovery.Admin || {}));
 AspenDiscovery.Authors = (function () {
