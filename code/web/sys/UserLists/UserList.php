@@ -869,11 +869,13 @@ class UserList extends DataObject
 		return false;
 	}
 
-	public function isValidForDisplay() {
-		if ($this->isDismissed()){
+	public function isValidForDisplay()
+	{
+		if ($this->isDismissed()) {
 			return false;
 		}
 		return true;
+	}
 
 	public function fixWeights(){
 		$changeMade = false;
