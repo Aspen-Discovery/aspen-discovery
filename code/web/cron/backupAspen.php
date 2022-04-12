@@ -27,10 +27,12 @@ if (!file_exists("/data/aspen-discovery/$serverName/sql_backup")){
 }
 
 //tar and gzip them
-exec("tar -czf /data/aspen-discovery/$serverName/sql_backup/aspen.$curDateTime.tar.gz -C /tmp $serverName.$curDateTime.*");
+exec("cd /tmp;tar -czf /data/aspen-discovery/$serverName/sql_backup/aspen.$curDateTime.tar.gz $serverName.$curDateTime.*");
 
 //Cleanup the files
 foreach ($allTables as $table){
-	$exportFile = "/tmp/$serverName.$table.$curDateTime.sql";
-	unlink($exportFile);
+	$exportFile = "/tmp/$serverName.$curDateTime.$table.sql";
+	if (file_exists($exportFile)){
+		unlink($exportFile);
+	}
 }
