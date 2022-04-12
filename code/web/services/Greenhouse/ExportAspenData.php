@@ -418,7 +418,7 @@ class Greenhouse_ExportAspenData extends Admin_Admin
 		$exportObject = null;
 		fclose($exportFileHnd);
 		chgrp($exportFile, 'aspen_apache');
-		chmod($exportFile, 0660);
+		chmod($exportFile, 0666);
 
 		if ($numObjectsExported > 0){
 			if (strlen($message) > 0) {
