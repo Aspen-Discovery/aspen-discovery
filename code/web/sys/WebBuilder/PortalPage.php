@@ -18,12 +18,12 @@ class PortalPage extends DB_LibraryLinkedObject
 	public $requireLoginUnlessInLibrary;
 	public $lastUpdate;
 
-	private $_rows;
+	protected $_rows;
 
-	private $_libraries;
-	private $_audiences;
-	private $_categories;
-	private $_allowAccess;
+	protected $_libraries;
+	protected $_audiences;
+	protected $_categories;
+	protected $_allowAccess;
 
 	public function getUniquenessFields(): array
 	{

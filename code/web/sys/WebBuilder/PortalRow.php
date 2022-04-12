@@ -12,7 +12,7 @@ class PortalRow extends DataObject
 	public $portalPageId;
 	public /** @noinspection PhpUnused */ $rowTitle;
 
-	private $_cells;
+	protected $_cells;
 
 	public function getUniquenessFields(): array
 	{
