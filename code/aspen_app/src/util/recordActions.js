@@ -2,13 +2,14 @@ import React from "react";
 import {create} from 'apisauce';
 import * as WebBrowser from 'expo-web-browser';
 import _ from "lodash";
-
+import * as Sentry from 'sentry-expo';
 
 // custom components and helper files
 import {createAuthTokens, getHeaders, postData} from "./apiAuth";
 import {translate} from "../translations/translations";
 import {getCheckedOutItems, getHolds, getProfile} from "./loadPatron";
 import {popToast} from "../components/loadError";
+import {GLOBALS} from "./globals";
 
 /**
  * Fetch information for GroupedWork
@@ -18,10 +19,10 @@ import {popToast} from "../components/loadError";
  *     <li>itemId - the GroupedWork id for the record</li>
  * </ul>
  **/
-export async function getGroupedWork(itemId) {
+export async function getGroupedWork(libraryUrl, itemId) {
 	const api = create({
-		baseURL: global.libraryUrl + '/API',
-		timeout: global.timeoutSlow,
+		baseURL: libraryUrl + '/API',
+		timeout: GLOBALS.timeoutSlow,
 		headers: getHeaders(),
 		auth: createAuthTokens()
 	});
@@ -30,6 +31,7 @@ export async function getGroupedWork(itemId) {
 		return response.data;
 	} else {
 		popToast(translate('error.no_server_connection'), translate('error.no_library_connection'), "warning");
+		console.log(response);
 	}
 }
 
@@ -42,32 +44,33 @@ export async function getGroupedWork(itemId) {
  *     <li>source - the source of the item, i.e. ils, hoopla, overdrive. If left empty, Aspen assumes ils.</li>
  *     <li>patronId - the id for the patron</li>
  * </ul>
+ * @param {string} libraryUrl
  * @param {number} itemId
  * @param {string} source
  * @param {number} patronId
  **/
-export async function checkoutItem(itemId, source, patronId) {
+export async function checkoutItem(libraryUrl, itemId, source, patronId) {
 	const postBody = await postData();
 	const api = create({
-		baseURL: global.libraryUrl + '/API',
-		timeout: global.timeoutAverage,
+		baseURL: libraryUrl + '/API',
+		timeout: GLOBALS.timeoutAverage,
 		headers: getHeaders(),
 		auth: createAuthTokens(),
 		params: {itemId: itemId, itemSource: source, patronId: patronId}
 	});
 	const response = await api.post('/UserAPI?method=checkoutItem', postBody);
-
+	console.log(response);
 	if (response.ok) {
 		const responseData = response.data;
 		const results = responseData.result;
 
 		// reload patron data in the background
-		await getProfile(true);
-		await getCheckedOutItems(true);
+		await getCheckedOutItems(libraryUrl);
 
 		return results;
 	} else {
 		popToast(translate('error.no_server_connection'), translate('error.no_library_connection'), "warning");
+		console.log(response);
 	}
 }
 
@@ -82,36 +85,36 @@ export async function checkoutItem(itemId, source, patronId) {
  *     <li>pickupBranch - the location id for where the hold will be picked up at</li>
  * </ul>
  **/
-export async function placeHold(itemId, source, patronId, pickupBranch) {
+export async function placeHold(libraryUrl, itemId, source, patronId, pickupBranch) {
 	const postBody = await postData();
 	const api = create({
-		baseURL: global.libraryUrl + '/API',
-		timeout: global.timeoutAverage,
+		baseURL: libraryUrl + '/API',
+		timeout: GLOBALS.timeoutAverage,
 		headers: getHeaders(),
 		auth: createAuthTokens(),
 		params: {itemId: itemId, itemSource: source, patronId: patronId, pickupBranch: pickupBranch}
 	});
 	const response = await api.post('/UserAPI?method=placeHold', postBody);
 	if (response.ok) {
-		//console.log(response);
+		console.log(response);
 		const responseData = response.data;
 		const results = responseData.result;
 
 		// reload patron data in the background
-		await getProfile(true);
-		await getHolds(true);
+		await getHolds(libraryUrl);
 
 		return results;
 	} else {
 		popToast(translate('error.no_server_connection'), translate('error.no_library_connection'), "warning");
+		console.log(response);
 	}
 }
 
-export async function overDriveSample(formatId, itemId, sampleNumber) {
+export async function overDriveSample(libraryUrl, formatId, itemId, sampleNumber) {
 	const postBody = await postData();
 	const api = create({
-		baseURL: global.libraryUrl + '/API',
-		timeout: global.timeoutAverage,
+		baseURL: libraryUrl + '/API',
+		timeout: GLOBALS.timeoutAverage,
 		headers: getHeaders(),
 		auth: createAuthTokens(),
 		params: {
@@ -155,6 +158,7 @@ export async function overDriveSample(formatId, itemId, sampleNumber) {
 
 	} else {
 		popToast(translate('error.no_server_connection'), translate('error.no_library_connection'), "warning");
+		console.log(response);
 	}
 }
 
@@ -188,6 +192,7 @@ export async function openSideLoad(redirectUrl) {
 			});
 	} else {
 		popToast(translate('error.no_open_resource'), translate('error.no_valid_url'), "warning");
+		console.log(response);
 	}
 }
 
@@ -195,19 +200,21 @@ export function openCheckouts() {
 	navigation.navigate("CheckedOut");
 }
 
-export async function getItemDetails(id, format) {
+export async function getItemDetails(libraryUrl, id, format) {
 	const postBody = await postData();
 	const api = create({
-		baseURL: global.libraryUrl + '/API',
-		timeout: global.timeoutAverage,
+		baseURL: libraryUrl + '/API',
+		timeout: GLOBALS.timeoutAverage,
 		headers: getHeaders(),
 		auth: createAuthTokens(),
 		params: {recordId: id, format: format}
 	});
 	const response = await api.post('/ItemAPI?method=getItemDetails', postBody);
 	if (response.ok) {
+		//console.log(response);
 		return _.values(response.data);
 	} else {
 		popToast(translate('error.no_server_connection'), translate('error.no_library_connection'), "warning");
+		console.log(response);
 	}
 }

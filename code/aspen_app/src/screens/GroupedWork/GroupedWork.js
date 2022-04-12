@@ -26,6 +26,9 @@ import {loadError} from "../../components/loadError";
 import {getGroupedWork, getItemDetails} from "../../util/recordActions";
 import {getPickupLocations} from "../../util/loadLibrary";
 import {updateOverDriveEmail} from "../../util/accountActions";
+import {AddToListFromItem} from "./AddToList";
+import {userContext} from "../../context/user";
+import {getProfile} from "../../util/loadPatron";
 
 export default class GroupedWork extends Component {
 	constructor() {
@@ -47,22 +50,12 @@ export default class GroupedWork extends Component {
 			status: null,
 			alert: false,
 			shouldReload: false,
-			user: [],
 		};
 		this.locations = [];
 	}
 
-	loadUser = async () => {
-		const tmp = await AsyncStorage.getItem('@patronProfile');
-		const profile = JSON.parse(tmp);
-		this.setState({
-			user: profile,
-			isLoading: false,
-		})
-	}
-
-	authorSearch = (author) => {
-		this.props.navigation.push("SearchResults", {searchTerm: author});
+	authorSearch = (author, libraryUrl) => {
+		this.props.navigation.push("SearchResults", {searchTerm: author, libraryUrl: libraryUrl});
 	};
 
 	openCheckouts = () => {
@@ -72,9 +65,6 @@ export default class GroupedWork extends Component {
 	componentDidMount = async () => {
 		await this._fetchItemData();
 		await this._fetchLocations();
-		await this.loadUser();
-
-		this.setState({patronId: global.patronId});
 	};
 
 	_fetchItemData = async () => {
@@ -82,8 +72,9 @@ export default class GroupedWork extends Component {
 		this.setState({isLoading: true});
 		const { navigation, route } = this.props;
 		const givenItem = route.params?.item ?? 'null';
+		const libraryUrl = route.params?.libraryUrl ?? 'null';
 
-		await getGroupedWork(givenItem).then(response => {
+		await getGroupedWork(libraryUrl, givenItem).then(response => {
 			if (response === "TIMEOUT_ERROR") {
 				this.setState({
 					hasError: true,
@@ -116,40 +107,26 @@ export default class GroupedWork extends Component {
 			}
 		})
 
-		await this.loadItemDetails();
+		await this.loadItemDetails(libraryUrl);
 	}
 
 	_fetchLocations = async () => {
-		await getPickupLocations().then(response => {
-			if (response === "TIMEOUT_ERROR") {
-				this.setState({
-					hasError: true,
-					error: translate('error.timeout'),
-					isLoading: false,
-				});
-			} else {
 
-				try {
-					this.setState({
-						locations: response,
-						hasError: false,
-						error: null,
-						isLoading: false,
-					});
+		const { navigation, route } = this.props;
+		const libraryUrl = route.params?.libraryUrl ?? 'null';
 
-				} catch (error) {
-					this.setState({
-						hasError: true,
-						error: translate('error.no_data'),
-						isLoading: false,
-					})
-				}
-			}
+		await getPickupLocations(libraryUrl).then(response => {
+			this.setState({
+				locations: response,
+				hasError: false,
+				error: null,
+				isLoading: false,
+			});
 		})
 	}
 
 	// shows the author information on the screen and allows the link to be clickable. hides it if there is no author.
-	showAuthor = () => {
+	showAuthor = (libraryUrl) => {
 		if (this.state.data.author) {
 			return (
 				<Button
@@ -161,7 +138,7 @@ export default class GroupedWork extends Component {
 						fontWeight: "600",
 					}}
 					leftIcon={<Icon as={MaterialIcons} name="search" size="xs" mr="-1"/>}
-					onPress={() => this.authorSearch(this.state.data.author)}
+					onPress={() => this.authorSearch(this.state.data.author, libraryUrl)}
 				>
 					{this.state.data.author}
 				</Button>
@@ -252,8 +229,8 @@ export default class GroupedWork extends Component {
 		})
 	}
 
-	loadItemDetails = async () => {
-		await getItemDetails(this.state.groupedWorkId, this.state.format).then(response =>{
+	loadItemDetails = async (libraryUrl) => {
+		await getItemDetails(libraryUrl, this.state.groupedWorkId, this.state.format).then(response =>{
 			this.setState({
 				itemDetails: response,
 			});
@@ -268,7 +245,13 @@ export default class GroupedWork extends Component {
 		this.setState({promptForOverdriveEmail: remember});
 	}
 
+	static contextType = userContext;
+
 	render() {
+		const user = this.context.user;
+		const location = this.context.location;
+		const library = this.context.library;
+
 		if (this.state.isLoading) {
 			return (loadingSpinner());
 		}
@@ -288,7 +271,7 @@ export default class GroupedWork extends Component {
 		}
 
 		return (
-			<ScrollView>
+			<ScrollView style={{ marginBottom: 80 }}>
 				<Box h={{base: 125, lg: 200}} w="100%" bgColor="warmGray.200" _dark={{ bgColor: "coolGray.900" }} zIndex={-1} position="absolute" left={0}
 				     top={0}></Box>
 				<Box flex={1} safeArea={5}>
@@ -301,7 +284,7 @@ export default class GroupedWork extends Component {
 						<Text fontSize={{base: "lg", lg: "2xl"}} bold pt={5} alignText="center">
 							{this.state.data.title} {this.state.data.subtitle}
 						</Text>
-						{this.showAuthor()}
+						{this.showAuthor(library.baseUrl)}
 						{ratingCount > 0 ?
 							<Rating imageSize={20} readonly count={ratingCount}
 							        startingValue={ratingAverage} type='custom' tintColor="white"
@@ -317,18 +300,20 @@ export default class GroupedWork extends Component {
 
 					{this.state.variations ? <Manifestation data={this.state.variations} format={this.state.format}
 					                                          language={this.state.language}
-					                                          patronId={this.state.patronId}
+					                                          patronId={user.id}
 					                                          locations={this.state.locations}
 					                                          showAlert={this.showAlert}
 					                                          itemDetails={this.state.itemDetails}
 					                                          groupedWorkId={this.state.groupedWorkId}
 					                                          groupedWorkTitle={this.state.groupedWorkTitle}
-					                                          user={this.state.user}
+					                                          user={user}
+					                                          library={library}
 					                                          openCheckouts={this.openCheckouts}/> : null}
 
 					<Text mt={5} mb={5} fontSize={{base: "md", lg: "lg"}} lineHeight={{base: "22px", lg: "26px"}}>
 						{this.state.data.description}
 					</Text>
+					<AddToListFromItem user={user} item={this.state.groupedWorkId} libraryUrl={library.baseUrl} />
 				</Box>
 				<Center>
 					<AlertDialog
@@ -344,7 +329,13 @@ export default class GroupedWork extends Component {
 							</AlertDialog.Body>
 							<AlertDialog.Footer>
 								{this.state.alertAction ?
-									<Button onPress={() => this.props.navigation.navigate("AccountTab", {screen: this.state.alertNavigateTo})}>
+									<Button onPress={() => {
+										this.setState({alert: false})
+										this.props.navigation.navigate("AccountScreenTab", {
+											screen: this.state.alertNavigateTo,
+											params: {libraryUrl: library.baseUrl}
+										})
+									}}>
 										{this.state.alertAction}
 									</Button>
 									: null}
@@ -390,8 +381,9 @@ export default class GroupedWork extends Component {
 								<Button colorScheme="primary" variant="ghost"
 								        onPress={this.hidePrompt}>{translate('general.close_window')}</Button>
 								<Button onPress={async () => {
-									await updateOverDriveEmail(this.state.promptItemId, this.state.promptSource, this.state.promptPatronId, this.state.overdriveEmail, this.state.promptForOverdriveEmail).then(response => {
-										this.showAlert(response)
+									await updateOverDriveEmail(this.state.promptItemId, this.state.promptSource, this.state.promptPatronId, this.state.overdriveEmail, this.state.promptForOverdriveEmail, library.baseUrl).then(response => {
+										this.showAlert(response);
+										//getProfile();
 									})
 								}}>{translate('holds.place_hold')}</Button>
 							</Button.Group>

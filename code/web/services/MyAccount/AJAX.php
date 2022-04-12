@@ -3725,17 +3725,36 @@ class MyAccount_AJAX extends JSON_Action
 				$categories = [];
 				foreach($hiddenCategories as $hiddenCategory) {
 					if(strpos($hiddenCategory->browseCategoryId, "system_saved_searches") !== false) {
+						$parentLabel = "";
+						require_once ROOT_DIR . '/sys/Browse/BrowseCategory.php';
+						$savedSearchesBrowseCategory = new BrowseCategory();
+						$savedSearchesBrowseCategory->textId = "system_saved_searches";
+						if($savedSearchesBrowseCategory->find(true)) {
+							$parentLabel = $savedSearchesBrowseCategory->label . ": ";
+						}
+
 						$label = explode('_', $hiddenCategory->browseCategoryId);
 						$id = $label[3];
 						$searchEntry = new SearchEntry();
 						$searchEntry->id = $id;
 						if($searchEntry->find(true)) {
 							$category['id'] = $hiddenCategory->browseCategoryId;
-							$category['name'] = $searchEntry->title ?? 'Your Saved Searches';
+							$category['name'] = $parentLabel;
+							if($searchEntry->title) {
+								$category['name'] = $parentLabel . $searchEntry->title;
+							}
 							$category['description'] = "";
 							$categories[] = $category;
 						}
 					} elseif (strpos($hiddenCategory->browseCategoryId, "system_user_lists") !== false) {
+						$parentLabel = "";
+						require_once ROOT_DIR . '/sys/Browse/BrowseCategory.php';
+						$userListsBrowseCategory = new BrowseCategory();
+						$userListsBrowseCategory->textId = "system_user_lists";
+						if($userListsBrowseCategory->find(true)) {
+							$parentLabel = $userListsBrowseCategory->label . ": ";
+						}
+
 						$label = explode('_', $hiddenCategory->browseCategoryId);
 						$id = $label[3];
 						require_once ROOT_DIR . '/sys/UserLists/UserList.php';
@@ -3743,7 +3762,10 @@ class MyAccount_AJAX extends JSON_Action
 						$sourceList->id = $id;
 						if ($sourceList->find(true)) {
 							$category['id'] = $hiddenCategory->browseCategoryId;
-							$category['name'] = $sourceList->title ?? 'Your Lists';
+							$category['name'] = $parentLabel;
+							if($sourceList->title) {
+								$category['name'] = $parentLabel . $sourceList->title;
+							}
 							$category['description'] = $sourceList->description;
 							$categories[] = $category;
 						}

@@ -2927,37 +2927,84 @@ class UserAPI extends Action
 				$hiddenCategories[] = clone($browseCategoryDismissals);
 			}
 
-			if($browseCategoryDismissals->count() > 0) {
+			if($hiddenCategories > 0) {
 				$categories = [];
 				foreach($hiddenCategories as $hiddenCategory) {
-					require_once ROOT_DIR . '/sys/Browse/BrowseCategory.php';
-					$browseCategory = new BrowseCategory();
-					$browseCategory->textId = $hiddenCategory->browseCategoryId;
-					if($browseCategory->find(true)){
-						$categoryResponse = array(
-							'id' => $browseCategory->textId,
-							'name' => $browseCategory->label
-						);
-						$subCategories = $browseCategory->getSubCategories();
-						$categoryResponse['subCategories'] = [];
-						if (count($subCategories) > 0) {
-							foreach ($subCategories as $subCategory) {
-								$tempA = new BrowseCategory();
-								$tempA->id = $subCategory->subCategoryId;
-								if($tempA->find(true)) {
-									$tempB = new BrowseCategoryDismissal();
-									$tempB->userId = $user->id;
-									$tempB->browseCategoryId = $tempA->textId;
-									if($tempB->find(true)){
-										$categoryResponse['subCategories'][] = [
-											'id' => $tempA->textId,
-											'name' => $browseCategory->label . ': ' . $tempA->label,
-										];
+					if(strpos($hiddenCategory->browseCategoryId, "system_saved_searches") !== false) {
+						$parentLabel = "";
+						require_once ROOT_DIR . '/sys/Browse/BrowseCategory.php';
+						$savedSearchesBrowseCategory = new BrowseCategory();
+						$savedSearchesBrowseCategory->textId = "system_saved_searches";
+						if($savedSearchesBrowseCategory->find(true)) {
+							$parentLabel = $savedSearchesBrowseCategory->label . ": ";
+						}
+
+						$label = explode('_', $hiddenCategory->browseCategoryId);
+						$id = $label[3];
+						$searchEntry = new SearchEntry();
+						$searchEntry->id = $id;
+						if($searchEntry->find(true)) {
+							$category['id'] = $hiddenCategory->browseCategoryId;
+							$category['name'] = $parentLabel;
+							if($searchEntry->title) {
+								$category['name'] = $parentLabel . $searchEntry->title;
+							}
+							$categories[] = $category;
+						}
+					} elseif(strpos($hiddenCategory->browseCategoryId, "system_user_lists") !== false) {
+						$parentLabel = "";
+						require_once ROOT_DIR . '/sys/Browse/BrowseCategory.php';
+						$userListsBrowseCategory = new BrowseCategory();
+						$userListsBrowseCategory->textId = "system_user_lists";
+						if($userListsBrowseCategory->find(true)) {
+							$parentLabel = $userListsBrowseCategory->label . ": ";
+						}
+
+						$label = explode('_', $hiddenCategory->browseCategoryId);
+						$id = $label[3];
+						require_once ROOT_DIR . '/sys/UserLists/UserList.php';
+						$sourceList = new UserList();
+						$sourceList->id = $id;
+						if ($sourceList->find(true)) {
+							$category['id'] = $hiddenCategory->browseCategoryId;
+							$category['name'] = $parentLabel;
+							if($sourceList->title) {
+								$category['name'] = $parentLabel . $sourceList->title;
+							}
+							$categories[] = $category;
+						}
+					} else {
+						require_once ROOT_DIR . '/sys/Browse/BrowseCategory.php';
+						$browseCategory = new BrowseCategory();
+						$browseCategory->textId = $hiddenCategory->browseCategoryId;
+						if($browseCategory->find(true)){
+							$categoryResponse = array(
+								'id' => $browseCategory->textId,
+								'name' => $browseCategory->label
+							);
+
+							$subCategories = $browseCategory->getSubCategories();
+							$categoryResponse['subCategories'] = [];
+							if (count($subCategories) > 0) {
+								foreach ($subCategories as $subCategory) {
+									$tempA = new BrowseCategory();
+									$tempA->id = $subCategory->subCategoryId;
+									if($tempA->find(true)) {
+										$tempB = new BrowseCategoryDismissal();
+										$tempB->userId = $user->id;
+										$tempB->browseCategoryId = $tempA->textId;
+										if($tempB->find(true)){
+											$categoryResponse['subCategories'][] = [
+												'id' => $tempA->textId,
+												'name' => $browseCategory->label . ': ' . $tempA->label,
+											];
+										}
 									}
 								}
 							}
+
+							$categories[] = $categoryResponse;
 						}
-						$categories[] = $categoryResponse;
 					}
 				}
 				$result = [

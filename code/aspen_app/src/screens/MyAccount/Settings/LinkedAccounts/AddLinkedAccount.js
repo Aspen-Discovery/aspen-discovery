@@ -3,10 +3,11 @@ import {Button, Center, Modal, FormControl, Input, Icon} from "native-base";
 import {MaterialCommunityIcons} from "@expo/vector-icons";
 import {addLinkedAccount} from "../../../../util/accountActions";
 import {translate} from "../../../../translations/translations";
+import {getProfile} from "../../../../util/loadPatron";
 
 // custom components and helper files
 
-const AddLinkedAccount = () => {
+const AddLinkedAccount = (props) => {
 	const [loading, setLoading] = useState(false);
 	const [showModal, setShowModal] = useState(false);
 	const [showPassword, setShowPassword] = useState(false);
@@ -63,12 +64,15 @@ const AddLinkedAccount = () => {
 							<Button
 								isLoading={loading}
 								isLoadingText="Adding..."
-								onPress={async () => {
-								setLoading(true);
-								await addLinkedAccount(user, password)
-								setShowModal(false);
-								setLoading(false);
-							}}>{translate('linked_accounts.add')}</Button>
+								onPress={
+									async () => {
+										setLoading(true);
+										await addLinkedAccount(user, password, props.libraryUrl).then(r => {
+											setShowModal(false);
+											setLoading(false);
+										})
+									}
+								}>{translate('linked_accounts.add')}</Button>
 						</Button.Group>
 					</Modal.Footer>
 				</Modal.Content>

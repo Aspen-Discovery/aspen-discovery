@@ -7,7 +7,7 @@ import DisplayRecord from "./Record";
 
 const Manifestation = (props) => {
 
-	const {data, format, language, locations, showAlert, groupedWorkTitle, itemDetails, user} = props;
+	const {data, format, language, locations, showAlert, groupedWorkTitle, itemDetails, user, groupedWorkId, library} = props;
 	const arrayToSearch = data.[`${format}`];
 
 	const locationCount = locations.length;
@@ -55,6 +55,8 @@ const Manifestation = (props) => {
 				showAlert = {showAlert}
 				itemDetails = {itemDetails}
 				user = {user}
+				groupedWorkId = {groupedWorkId}
+				library = {library}
 			/>
 		)
 	})

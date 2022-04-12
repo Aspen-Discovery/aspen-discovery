@@ -4,8 +4,10 @@ import {Center, Flex, Image, Text} from "native-base";
 import Barcode from "react-native-barcode-expo";
 import Constants from 'expo-constants';
 import _ from "lodash";
+import moment from "moment";
 
 // custom components and helper files
+import {userContext} from "../../../context/user";
 import {translate} from '../../../translations/translations';
 import {loadingSpinner} from "../../../components/loadingSpinner";
 import {loadError} from "../../../components/loadError";
@@ -88,16 +90,39 @@ export default class LibraryCard extends Component {
 		});
 	};
 
-	render() {
-		const barcodeStyle = this.state.library.barcodeStyle;
-		const logo = Constants.manifest.extra.libraryCardLogo;
+	static contextType = userContext;
 
-		let barcodeValue = "UNKNOWN";
-		if(this.state.user.cat_username) {
-			barcodeValue = this.state.user.cat_username;
+	render() {
+		const user = this.context.user;
+		const location = this.context.location;
+		const library = this.context.library;
+
+		const barcodeStyle = library.barcodeStyle;
+
+		console.log(barcodeStyle);
+
+		let doesNotExpire = false;
+		if(user.expired && user.expired === 0) {
+			const now = moment().format("MMM D, YYYY");
+			const isExpired = moment(user.expires).isBefore(now);
+			if(isExpired) {
+				doesNotExpire = true;
+			}
 		}
 
-		if (this.state.isLoading || this.state.user.cat_username === "") {
+		let icon;
+		if(library.logoApp) {
+			icon = library.logoApp;
+		} else {
+			icon = library.favicon;
+		}
+
+		let barcodeValue = "UNKNOWN";
+		if(user.cat_username) {
+			barcodeValue = user.cat_username;
+		}
+
+		if (this.state.isLoading || user.cat_username === "") {
 			return (loadingSpinner());
 		}
 
@@ -105,25 +130,25 @@ export default class LibraryCard extends Component {
 			return (loadError(this.state.error));
 		}
 
-		if(_.isNull(this.state.barcodeStyle)) {
+		if(_.isNull(barcodeStyle)) {
 			return (
 				<Center flex={1} px={3}>
 					<Flex direction="column" bg="white" maxW="90%" px={8} py={5} borderRadius={20}>
 						<Center>
 							<Flex direction="row">
 								<Image
-									source={{uri: logo}}
+									source={{uri: icon}}
 									fallbackSource={require("../../../themes/default/aspenLogo.png")}
 									w={42} h={42} alt={translate('user_profile.library_card')}/>
 								<Text bold ml={3} mt={2} fontSize="lg" color="darkText">
-									{this.state.location.name}
+									{location.displayName}
 								</Text>
 							</Flex>
 						</Center>
 						<Center pt={8}>
-							<Text pb={2} color="darkText">{this.state.user.displayName}</Text>
-							<Text color="darkText" bold fontSize="xl">{this.state.user.cat_username}</Text>
-							{this.state.user.expires ? (<Text color="darkText" fontSize={10}>Expires on {this.state.user.expires}</Text>) : null}
+							<Text pb={2} color="darkText">{user.displayName}</Text>
+							<Text color="darkText" bold fontSize="xl">{user.cat_username}</Text>
+							{user.expires && !doesNotExpire ? (<Text color="darkText" fontSize={10}>Expires on {user.expires}</Text>) : null}
 						</Center>
 					</Flex>
 				</Center>
@@ -136,18 +161,18 @@ export default class LibraryCard extends Component {
 					<Center>
 						<Flex direction="row">
 							<Image
-								source={{uri: logo}}
+								source={{uri: icon}}
 								fallbackSource={require("../../../themes/default/aspenLogo.png")}
 								w={42} h={42} alt={translate('user_profile.library_card')}/>
 							<Text bold ml={3} mt={2} fontSize="lg" color="darkText">
-								{this.state.location.name}
+								{location.displayName}
 							</Text>
 						</Flex>
 					</Center>
 					<Center pt={8}>
 						<Barcode value={barcodeValue} format={barcodeStyle}
 						         text={barcodeValue} background="warmGray.100" />
-						{this.state.user.expires ? (<Text color="darkText" fontSize={10} pt={2}>Expires on {this.state.user.expires}</Text>) : null}
+						{user.expires && !doesNotExpire ? (<Text color="darkText" fontSize={10} pt={2}>Expires on {user.expires}</Text>) : null}
 					</Center>
 				</Flex>
 			</Center>
