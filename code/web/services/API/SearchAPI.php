@@ -1354,12 +1354,18 @@ class SearchAPI extends Action
 		// - the display label
 		// - Clickable link to load the category
 		foreach ($browseCategories as $curCategory){
+			$categoryResponse = [];
 			$categoryInformation = new BrowseCategory();
 			$categoryInformation->id = $curCategory->browseCategoryId;
 
 			if ($categoryInformation->find(true)) {
 				if ($categoryInformation->isValidForDisplay($appUser) && ($categoryInformation->source == "GroupedWork" || $categoryInformation->source == "List")) {
 					if ($categoryInformation->textId == ("system_saved_searches")) {
+						$categoryResponse = array(
+							'key' => $categoryInformation->textId,
+							'title' => $categoryInformation->label,
+							'source' => $categoryInformation->source,
+						);
 						$savedSearches = $listApi->getSavedSearches();
 						$allSearches = $savedSearches['searches'];
 						$categoryResponse['subCategories'] = [];
@@ -1371,6 +1377,11 @@ class SearchAPI extends Action
 							];
 						}
 					} elseif ($categoryInformation->textId == ("system_user_lists")) {
+						$categoryResponse = array(
+							'key' => $categoryInformation->textId,
+							'title' => $categoryInformation->label,
+							'source' => $categoryInformation->source,
+						);
 						$userLists = $listApi->getUserLists();
 						$categoryResponse['subCategories'] = [];
 						$allUserLists = $userLists['lists'];
@@ -1385,6 +1396,12 @@ class SearchAPI extends Action
 								}
 							}
 						}
+					} elseif ($categoryInformation->textId == ("system_recommended_for_you")) {
+						$categoryResponse = array(
+							'key' => $categoryInformation->textId,
+							'title' => $categoryInformation->label,
+							'source' => $categoryInformation->source,
+						);
 					} else {
 						$categoryResponse = array(
 							'key' => $categoryInformation->textId,

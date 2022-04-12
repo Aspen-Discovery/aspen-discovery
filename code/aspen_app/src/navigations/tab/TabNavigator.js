@@ -50,7 +50,6 @@ export default function TabNavigator() {
 				tabBarBackground: () => (
 					<BlurView tint={tabBarBackgroundColor} intensity={100} style={{flex: 1, padding: 20}} />
 				),
-				backBehavior: 'history'
 			})}
 		>
 			<Tab.Screen
@@ -58,7 +57,7 @@ export default function TabNavigator() {
 				component={BrowseStackNavigator}
 				options={{
 					tabBarLabel: translate('navigation.home'),
-					unmountOnBlur: true,
+					unmountOnBlur: false,
 				}}
 				screenOptions={{
 					headerShown: false,
