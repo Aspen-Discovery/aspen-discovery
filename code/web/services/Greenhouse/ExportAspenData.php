@@ -330,6 +330,7 @@ class Greenhouse_ExportAspenData extends Admin_Admin
 								$selectedLocations[] = $location->locationId;
 							}
 						}
+						$selectedFilters['locations'] = $selectedLocations;
 					}
 					$success = true;
 					foreach ($elements as $element => $elementDefinition){
