@@ -2,9 +2,10 @@
 require_once __DIR__ . '/../bootstrap.php';
 
 set_time_limit(0);
-global $aspen_db;
-global $serverName;
 global $configArray;
+global $serverName;
+
+global $aspen_db;
 
 $dbUser = $configArray['Database']['database_user'];
 $dbPassword = $configArray['Database']['database_password'];
@@ -15,7 +16,7 @@ $listTablesStmt = $aspen_db->query("SHOW TABLES");
 $allTables = $listTablesStmt->fetchAll(PDO::FETCH_COLUMN);
 $curDateTime = date('ymdHis');
 foreach ($allTables as $table){
-	$exportFile = "/tmp/$serverName.$table.$curDateTime.sql";
+	$exportFile = "/tmp/$serverName.$curDateTime.$table.sql";
 	$createTableStmt = $aspen_db->query("SHOW CREATE TABLE $table");
 	$createTableString = $createTableStmt->fetch();
 	$dumpCommand = "mysqldump -u$dbUser -p$dbPassword $dbName $table > $exportFile";
@@ -26,7 +27,7 @@ if (!file_exists("/data/aspen-discovery/$serverName/sql_backup")){
 }
 
 //tar and gzip them
-exec("tar -czf /data/aspen-discovery/$serverName/sql_backup/aspen.$curDateTime.tar.gz -C /tmp $serverName.*.$curDateTime.sql");
+exec("tar -czf /data/aspen-discovery/$serverName/sql_backup/aspen.$curDateTime.tar.gz -C /tmp $serverName.$curDateTime.*");
 
 //Cleanup the files
 foreach ($allTables as $table){
