@@ -32,7 +32,7 @@ class UserHooplaUsage extends DataObject
 		$user = new User();
 		$user->id = $this->userId;
 		if ($user->find(true)) {
-			if ($user->homeLocationId == 0 || array_key_exists($user->homeLocationId, $selectedFilters['locations'])) {
+			if ($user->homeLocationId == 0 || in_array($user->homeLocationId, $selectedFilters['locations'])) {
 				$okToExport = true;
 			}
 		}
