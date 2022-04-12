@@ -29,6 +29,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	char statusSubfieldIndicator;
 	Pattern statusesToSuppressPattern = null;
 	private Pattern nonHoldableStatuses;
+	protected boolean treatLibraryUseOnlyGroupedStatusesAsAvailable;
 	char shelvingLocationSubfield;
 	char collectionSubfield;
 	private char dueDateSubfield;
@@ -167,6 +168,8 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			}catch (Exception e){
 				indexer.getLogEntry().incErrors("Could not load non holdable statuses", e);
 			}
+
+			treatLibraryUseOnlyGroupedStatusesAsAvailable = indexingProfileRS.getBoolean("treatLibraryUseOnlyGroupedStatusesAsAvailable");
 
 			dueDateSubfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "dueDate");
 			String dueDateFormat = indexingProfileRS.getString("dueDateFormat");

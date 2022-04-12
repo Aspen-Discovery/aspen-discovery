@@ -15,7 +15,7 @@ public class PolarisRecordProcessor extends IlsRecordProcessor{
 	@Override
 	protected boolean isItemAvailable(ItemInfo itemInfo) {
 		String displayGroupedStatus = this.getDisplayGroupedStatus(itemInfo, itemInfo.getFullRecordIdentifier());
-		return itemInfo.getStatusCode().equalsIgnoreCase("in") || displayGroupedStatus.equals("On Shelf") || displayGroupedStatus.equals("Library Use Only");
+		return itemInfo.getStatusCode().equalsIgnoreCase("in") || displayGroupedStatus.equals("On Shelf") || (treatLibraryUseOnlyGroupedStatusesAsAvailable && displayGroupedStatus.equals("Library Use Only"));
 	}
 
 	protected String getDetailedLocationForItem(ItemInfo itemInfo, DataField itemField, String identifier) {

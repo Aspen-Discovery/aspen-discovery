@@ -4429,6 +4429,7 @@ class MyAccount_AJAX extends JSON_Action
 									if ($moveToPosition > $moveFromPosition) {
 										// if item is increasing in weight, move items down by 1
 										$listEntry->weight = $listEntry->weight - 1;
+										$listEntry->update();
 									} elseif ($moveToPosition < $moveFromPosition) {
 										$listEntry->weight = $listEntry->weight + 1;
 										$listEntry->update();
