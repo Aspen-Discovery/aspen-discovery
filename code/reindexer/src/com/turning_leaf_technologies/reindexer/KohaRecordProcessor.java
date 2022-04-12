@@ -167,7 +167,8 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 
 	@Override
 	protected boolean isItemAvailable(ItemInfo itemInfo) {
-		return !inTransitItems.contains(itemInfo.getItemIdentifier()) && (itemInfo.getDetailedStatus().equals("On Shelf") || itemInfo.getDetailedStatus().equals("Library Use Only"));
+		String displayGroupedStatus = getDisplayGroupedStatus(itemInfo, itemInfo.getFullRecordIdentifier());
+		return !inTransitItems.contains(itemInfo.getItemIdentifier()) && (itemInfo.getDetailedStatus().equals("On Shelf") || (treatLibraryUseOnlyGroupedStatusesAsAvailable && itemInfo.getGroupedStatus().equals("Library Use Only")));
 	}
 
 	@Override

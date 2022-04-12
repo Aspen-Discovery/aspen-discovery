@@ -222,7 +222,8 @@ class IIIRecordProcessor extends IlsRecordProcessor{
 				available = true;
 			}
 		}
-		if (!available && this.getDisplayGroupedStatus(itemInfo, itemInfo.getFullRecordIdentifier()).equals("On Shelf")){
+		String displayGroupedStatus = this.getDisplayGroupedStatus(itemInfo, itemInfo.getFullRecordIdentifier());
+		if (!available && (displayGroupedStatus.equals("On Shelf") || (treatLibraryUseOnlyGroupedStatusesAsAvailable && displayGroupedStatus.equals("Library Use Only")))){
 			available = true;
 		}
 		return available;
