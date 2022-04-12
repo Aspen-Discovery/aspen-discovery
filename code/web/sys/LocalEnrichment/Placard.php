@@ -397,6 +397,7 @@ class Placard extends DB_LibraryLocationLinkedObject
 		$links['triggers'] = [];
 		foreach ($triggers as $trigger){
 			$triggerArray = $trigger->toArray();
+			unset ($triggerArray['placardId']);
 			$links['triggers'][] = $triggerArray;
 		}
 		//Languages
@@ -421,6 +422,8 @@ class Placard extends DB_LibraryLocationLinkedObject
 			foreach ($jsonLinks['triggers'] as $trigger){
 				$triggerObj = new PlacardTrigger();
 				$triggerObj->placardId = $this->id;
+				//Make sure we don't overwrite the placard id we just set
+				unset($trigger['placardId']);
 				$triggerObj->loadFromJSON($trigger, $mappings);
 				$triggers[] = $triggerObj;
 			}
