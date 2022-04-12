@@ -11,8 +11,10 @@ import {createAuthTokens, getHeaders, postData} from "./apiAuth";
 import {popAlert} from "../components/loadError";
 import {userContext} from "../context/user";
 
-export async function getProfile() {
-	const [user, updateProfile] = useContext(userContext);
+export async function getProfile(reload = false, url = "") {
+	//const {value} = useContext(userContext);
+	//console.log(value);
+
 	let postBody = await postData();
 
 	let libraryUrl;
@@ -27,19 +29,15 @@ export async function getProfile() {
 			baseURL: libraryUrl + '/API',
 			timeout: GLOBALS.timeoutAverage,
 			headers: getHeaders(true),
-			auth: createAuthTokens()
+			auth: createAuthTokens(),
+			params: {reload: reload}
 		});
 		const response = await api.post('/UserAPI?method=getPatronProfile&linkedUsers=true', postBody);
+		//console.log(response);
 		if(response.ok) {
 			if(response.data.result && response.data.result.profile) {
-				try {
-					updateProfile(response.data.result.profile);
-					console.log("User profile updated");
-				} catch(e) {
-					console.log(e)
-				}
-
 				await getILSMessages(libraryUrl);
+				return response.data.result.profile;
 			}
 		} else {
 			//console.log(response);
@@ -48,7 +46,8 @@ export async function getProfile() {
 }
 
 export async function reloadProfile(libraryUrl) {
-	const [user, updateProfile] = useContext(userContext);
+	const {user, setUser} = React.useContext(userContext);
+
 	let postBody = await postData();
 
 	const api = create({
@@ -61,7 +60,11 @@ export async function reloadProfile(libraryUrl) {
 	console.log(response);
 	if(response.ok) {
 		if(response.data.result && response.data.result.profile) {
-			updateProfile(response.data.result.profile);
+			const newUserData = {
+				...user,
+				user: response.data.result.profile
+			}
+			setUser(newUserData);
 			console.log("User profile forcefully updated");
 			await getILSMessages(libraryUrl);
 		}
@@ -208,7 +211,7 @@ export async function getPatronBrowseCategories(libraryUrl, patronId = null) {
 			categories.map(function (category, index, array) {
 				const subCategories = category['subCategories'];
 
-				if (subCategories.length !== 0) {
+				if (typeof subCategories !== "undefined" && subCategories.length !== 0) {
 					subCategories.forEach(item => activeCategories.push({
 						'key': item.key,
 						'title': item.title

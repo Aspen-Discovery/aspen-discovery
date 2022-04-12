@@ -8,7 +8,7 @@ import {DisplayMessage} from "../../../../components/Notifications";
 import _ from "lodash";
 import {removeLinkedAccount} from "../../../../util/accountActions";
 import {loadingSpinner} from "../../../../components/loadingSpinner";
-import {getLinkedAccounts, getLists, getProfile, getViewers} from "../../../../util/loadPatron";
+import {getLinkedAccounts, getViewers} from "../../../../util/loadPatron";
 import {translate} from "../../../../translations/translations";
 import {ScrollView} from "react-native";
 import {userContext} from "../../../../context/user";

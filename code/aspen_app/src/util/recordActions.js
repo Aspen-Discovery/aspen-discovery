@@ -7,7 +7,7 @@ import * as Sentry from 'sentry-expo';
 // custom components and helper files
 import {createAuthTokens, getHeaders, postData} from "./apiAuth";
 import {translate} from "../translations/translations";
-import {getCheckedOutItems, getHolds, getProfile} from "./loadPatron";
+import {getCheckedOutItems, getHolds} from "./loadPatron";
 import {popToast} from "../components/loadError";
 import {GLOBALS} from "./globals";
 
@@ -96,7 +96,6 @@ export async function placeHold(libraryUrl, itemId, source, patronId, pickupBran
 	});
 	const response = await api.post('/UserAPI?method=placeHold', postBody);
 	if (response.ok) {
-		console.log(response);
 		const responseData = response.data;
 		const results = responseData.result;
 

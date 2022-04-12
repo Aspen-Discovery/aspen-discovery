@@ -46,6 +46,7 @@ const SelectPickupLocation = (props) => {
 									await completeAction(record, action, patron, "", "", value, libraryUrl).then(response => {
 										setLoading(false);
 										setShowModal(false);
+										showAlert(response);
 									});
 									setShowModal(false);
 								}}
