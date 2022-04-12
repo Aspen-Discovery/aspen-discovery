@@ -6,15 +6,15 @@ if "%1"=="restart" goto restart
 goto restart
 
 :start
-../default/solr-7.6.0/bin/solr start -m 2g -p {solrPort} -s "C:\data\aspen-discovery\slo.localhost\solr7" -d "c:\web\aspen-discovery\sites\default\solr-7.6.0\server"
+../default/solr-7.6.0/bin/solr start -m 2g -p 8131 -s "C:\data\aspen-discovery\slo.localhost\solr7" -d "c:\web\aspen-discovery\sites\default\solr-7.6.0\server"
 goto done
 
 :stop
-../default/solr-7.6.0/bin/solr stop -p {solrPort}
+../default/solr-7.6.0/bin/solr stop -p 8131
 goto done
 
 :restart
-../default/solr-7.6.0/bin/solr restart -m 2g -p {solrPort} -s "C:\data\aspen-discovery\slo.localhost\solr7" -d "c:\web\aspen-discovery\sites\default\solr-7.6.0\server"
+../default/solr-7.6.0/bin/solr restart -m 2g -p 8131 -s "C:\data\aspen-discovery\slo.localhost\solr7" -d "c:\web\aspen-discovery\sites\default\solr-7.6.0\server"
 goto done
 
 :usage
