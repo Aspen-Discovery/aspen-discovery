@@ -849,6 +849,7 @@ class UserList extends DataObject
 				require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
 				$userListEntry = new UserListEntry();
 				$userListEntry->listId = $this->id;
+				unset($listEntry['listId']);
 				$userListEntry->loadFromJSON($listEntry, $mappings, $overrideExisting);
 			}
 			$result = true;

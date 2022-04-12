@@ -432,6 +432,7 @@ class PortalPage extends DB_LibraryLinkedObject
 			foreach ($jsonLinks['rows'] as $row){
 				$rowObj = new PortalRow();
 				$rowObj->portalPageId = $this->id;
+				unset($row['portalPageId']);
 				$rowObj->loadFromJSON($row, $mappings, $overrideExisting);
 				$rows[$rowObj->id] = $rowObj;
 			}

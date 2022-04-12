@@ -320,6 +320,17 @@ class Greenhouse_ExportAspenData extends Admin_Admin
 					$message = 'No libraries or locations were selected';
 					$success = false;
 				} else {
+					//If no locations are selected, export all data for the selected libraries
+					if (count($selectedLocations) == 0){
+						foreach ($selectedLibraries as $libraryId){
+							$location = new Location();
+							$location->libraryId = $libraryId;
+							$location->find();
+							while ($location->fetch()){
+								$selectedLocations[] = $location->locationId;
+							}
+						}
+					}
 					$success = true;
 					foreach ($elements as $element => $elementDefinition){
 						if (in_array($element, $_REQUEST['dataElement'])){
