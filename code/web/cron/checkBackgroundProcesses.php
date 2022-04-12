@@ -9,15 +9,14 @@ if ($configArray['System']['operatingSystem'] == 'windows'){
 	$processRegEx = '/.*?java\s+-jar\s(.*?)\.jar.*?\s+(\d+)/ix';
 	$processIdIndex = 2;
 	$processNameIndex = 1;
-	$solrRegex = "/{$serverName}\\\\solr7/ix";
+	$solrRegex = "/$serverName\\\\solr7/ix";
 	$nightlyReindexRegex = "/.*?java\s+-jar\sreindexer\.jar\s+$serverName\s+nightly/ix";
 }else{
 	exec("ps -ef | grep java", $processes);
 	$processRegEx = '/(\d+)\s+.*?\d{2}:\d{2}:\d{2}\sjava\s-jar\s(.*?)\.jar\s' . $serverName . '/ix';
 	$processIdIndex = 1;
 	$processNameIndex = 2;
-	$solrRegex = "/{$serverName}\/solr7/ix";
-	/** @noinspection SpellCheckingInspection */
+	$solrRegex = "/$serverName\/solr7/ix";
 	$nightlyReindexRegex = '/(\d+)\s+.*?\d{2}:\d{2}:\d{2}\sjava\s-jar\sreindexer\.jar\s' . $serverName . '\snightly/ix';
 }
 
@@ -47,16 +46,16 @@ foreach ($processes as $processInfo){
 }
 
 if (!$solrRunning){
-	$results .= "Solr is not running for {$serverName}\r\n";
+	$results .= "Solr is not running for $serverName\r\n";
 	if ($configArray['System']['operatingSystem'] == 'windows') {
-		$solrCmd = "/web/aspen-discovery/sites/{$serverName}/{$serverName}.bat start";
+		$solrCmd = "/web/aspen-discovery/sites/$serverName/$serverName.bat start";
 	}else{
-		if (!file_exists("/usr/local/aspen-discovery/sites/{$serverName}/{$serverName}.sh")){
-			$results .= "/usr/local/aspen-discovery/sites/{$serverName}/{$serverName}.sh does not exist";
-		}elseif (!is_executable("/usr/local/aspen-discovery/sites/{$serverName}/{$serverName}.sh")){
-			$results .= "/usr/local/aspen-discovery/sites/{$serverName}/{$serverName}.sh is not executable";
+		if (!file_exists("/usr/local/aspen-discovery/sites/$serverName/$serverName.sh")){
+			$results .= "/usr/local/aspen-discovery/sites/$serverName/$serverName.sh does not exist";
+		}elseif (!is_executable("/usr/local/aspen-discovery/sites/$serverName/$serverName.sh")){
+			$results .= "/usr/local/aspen-discovery/sites/$serverName/$serverName.sh is not executable";
 		}
-		$solrCmd = "/usr/local/aspen-discovery/sites/{$serverName}/{$serverName}.sh start";
+		$solrCmd = "/usr/local/aspen-discovery/sites/$serverName/$serverName.sh start";
 	}
 	exec($solrCmd);
 	$results .= "Started solr using command \r\n$solrCmd\r\n";
@@ -87,15 +86,15 @@ if (!$nightlyReindexRunning && $solrRunning) {
 			$local = substr($local, 0, strrpos($local, '/'));
 			$processPath = $local . '/' . $backgroundProcess;
 			if (file_exists($processPath)) {
-				if (file_exists($processPath . "/{$backgroundProcess}.jar")) {
-					execInBackground("cd $processPath; java -jar {$backgroundProcess}.jar $serverName");
+				if (file_exists($processPath . "/$backgroundProcess.jar")) {
+					execInBackground("cd $processPath; java -jar $backgroundProcess.jar $serverName");
 					//Don't send an error message when successfully starting a process.
 					//$results .= "Restarted '{$aspenModule->name}'\r\n";
 				} else {
-					$results .= "Could not automatically restart {$backgroundProcess}, the jar $processPath/{$backgroundProcess}.jar did not exist\r\n";
+					$results .= "Could not automatically restart $backgroundProcess, the jar $processPath/$backgroundProcess.jar did not exist\r\n";
 				}
 			} else {
-				$results .= "Could not automatically restart {$backgroundProcess}, the directory $processPath did not exist\r\n";
+				$results .= "Could not automatically restart $backgroundProcess, the directory $processPath did not exist\r\n";
 			}
 		}
 	}
