@@ -11,7 +11,7 @@ public class FolioRecordProcessor extends IlsRecordProcessor {
 	}
 
 	@Override
-	protected boolean isItemAvailable(ItemInfo itemInfo) {
+	protected boolean isItemAvailable(ItemInfo itemInfo, String displayStatus, String groupedStatus) {
 		return true;
 	}
 }

@@ -278,6 +278,13 @@ function getUpdates22_04_00() : array
 				'ALTER TABLE accelerated_reading_settings ADD COLUMN updateFrequency TINYINT DEFAULT 0',
 			]
 		], //ar_update_frequency
+		'treatLibraryUseOnlyGroupedStatusesAsAvailable' => [
+			'title' => 'Indexing Profiles - treatLibraryUseOnlyGroupedStatusesAsAvailable',
+			'description' => 'Add option in Indexing Profiles to choose if the Library Use Only Grouped Status is treated as available',
+			'sql' => [
+				'ALTER TABLE indexing_profiles ADD COLUMN treatLibraryUseOnlyGroupedStatusesAsAvailable TINYINT DEFAULT 1',
+			]
+		], //treatLibraryUseOnlyGroupedStatusesAsAvailable
 	];
 }
 

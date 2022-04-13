@@ -29,6 +29,7 @@ public class IndexingProfile extends BaseIndexingSettings {
 	private char lastCheckinDateSubfield;
 	private char locationSubfield;
 	private char itemStatusSubfield;
+	private boolean treatLibraryUseOnlyGroupedStatusesAsAvailable;
 	private char iTypeSubfield;
 	private char collectionSubfield;
 	private char shelvingLocationSubfield;
@@ -73,6 +74,7 @@ public class IndexingProfile extends BaseIndexingSettings {
 		this.setLastCheckinFormat(indexingProfileRS.getString("lastCheckinFormat"));
 		this.setLocationSubfield(getCharFromRecordSet(indexingProfileRS,"location"));
 		this.setItemStatusSubfield(getCharFromRecordSet(indexingProfileRS,"status"));
+		this.setTreatLibraryUseOnlyGroupedStatusesAsAvailable(indexingProfileRS.getBoolean("treatLibraryUseOnlyGroupedStatusesAsAvailable"));
 		this.setDueDateSubfield(getCharFromRecordSet(indexingProfileRS,"dueDate"));
 		this.setDueDateFormat(indexingProfileRS.getString("dueDateFormat"));
 		this.setDateCreatedSubfield(getCharFromRecordSet(indexingProfileRS,"dateCreated"));
@@ -588,5 +590,13 @@ public class IndexingProfile extends BaseIndexingSettings {
 
 	public String getFallbackFormatField() {
 		return fallbackFormatField;
+	}
+
+	public void setTreatLibraryUseOnlyGroupedStatusesAsAvailable(boolean treatLibraryUseOnlyGroupedStatusesAsAvailable) {
+		this.treatLibraryUseOnlyGroupedStatusesAsAvailable = treatLibraryUseOnlyGroupedStatusesAsAvailable;
+	}
+
+	public boolean getTreatLibraryUseOnlyGroupedStatusesAsAvailable() {
+		return treatLibraryUseOnlyGroupedStatusesAsAvailable;
 	}
 }
