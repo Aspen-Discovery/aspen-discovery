@@ -29,7 +29,7 @@ export default class AppContainer extends Component {
 			hasLoaded: false,
 		};
 		this.aspenTheme = null;
-		this.login();
+		//this.login();
 	}
 
 	componentDidMount = async () => {
@@ -46,17 +46,20 @@ export default class AppContainer extends Component {
 		});
 
 		this.interval = setInterval(async () => {
-			//console.log("Looking for a user token...");
+			console.log("Looking for a user token...");
 			let userToken;
 			try {
-				userToken = await AsyncStorage.getItem('@userToken');
+				//userToken = await AsyncStorage.getItem('@userToken');
+				userToken = await SecureStore.getItemAsync("userToken");
 			} catch (e) {
 				console.log(e);
 			}
 
+			console.log(userToken);
+
 			if(userToken) {
-				//console.log("USER TOKEN FOUND");
-				//console.log("Trying to run async login...");
+				console.log("USER TOKEN FOUND");
+				console.log("Trying to run async login...");
 				this.login(userToken);
 			}
 		}, 1000);
@@ -69,7 +72,7 @@ export default class AppContainer extends Component {
 	}
 
 	async login(userToken) {
-		//console.log("Running login function with user token: " + userToken);
+		console.log("Running login function with user token: " + userToken);
 		if (userToken) {
 			let libraryUrl;
 			let libName;
@@ -81,7 +84,7 @@ export default class AppContainer extends Component {
 			}
 
 			if (libraryUrl) {
-				//console.log("Connecting to " + libName + " using " + libraryUrl);
+				console.log("Connecting to " + libName + " using " + libraryUrl);
 				let postBody = await postData();
 				const api = create({
 					baseURL: libraryUrl + '/API',
@@ -171,11 +174,13 @@ export default class AppContainer extends Component {
 			location: this.state.location,
 		}
 
-		//console.log(this.state.user);
+		const user = this.state.user;
+		const library = this.state.library;
+		const location = this.state.location;
 
 		if(this.state.themeSet) {
 			return (
-				<userContext.Provider value={value}>
+				<userContext.Provider value={{ user, library, location }}>
 				<SSRProvider>
 					<NativeBaseProvider theme={this.aspenTheme}>
 						<StatusBar barStyle={this.state.statusBar} />

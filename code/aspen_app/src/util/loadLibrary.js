@@ -162,7 +162,7 @@ export async function getBrowseCategories(libraryUrl) {
 			items.map(function (category, index, array) {
 				const subCategories = category['subCategories'];
 
-				if (subCategories.length !== 0) {
+				if (typeof subCategories !== "undefined" && subCategories.length !== 0) {
 					subCategories.forEach(item => allCategories.push({
 						'key': item.key,
 						'title': item.title,
@@ -171,7 +171,7 @@ export async function getBrowseCategories(libraryUrl) {
 					allCategories.push({'key': category.key, 'title': category.title});
 				}
 			});
-			console.log(allCategories);
+			//console.log(allCategories);
 			return allCategories;
 		} else {
 			console.log(response);

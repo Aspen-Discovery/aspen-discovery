@@ -28,7 +28,6 @@ import {getPickupLocations} from "../../util/loadLibrary";
 import {updateOverDriveEmail} from "../../util/accountActions";
 import {AddToListFromItem} from "./AddToList";
 import {userContext} from "../../context/user";
-import {getProfile} from "../../util/loadPatron";
 
 export default class GroupedWork extends Component {
 	constructor() {
@@ -383,7 +382,6 @@ export default class GroupedWork extends Component {
 								<Button onPress={async () => {
 									await updateOverDriveEmail(this.state.promptItemId, this.state.promptSource, this.state.promptPatronId, this.state.overdriveEmail, this.state.promptForOverdriveEmail, library.baseUrl).then(response => {
 										this.showAlert(response);
-										//getProfile();
 									})
 								}}>{translate('holds.place_hold')}</Button>
 							</Button.Group>

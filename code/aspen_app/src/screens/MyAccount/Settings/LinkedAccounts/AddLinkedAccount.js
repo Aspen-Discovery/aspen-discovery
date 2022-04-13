@@ -3,7 +3,6 @@ import {Button, Center, Modal, FormControl, Input, Icon} from "native-base";
 import {MaterialCommunityIcons} from "@expo/vector-icons";
 import {addLinkedAccount} from "../../../../util/accountActions";
 import {translate} from "../../../../translations/translations";
-import {getProfile} from "../../../../util/loadPatron";
 
 // custom components and helper files
 
