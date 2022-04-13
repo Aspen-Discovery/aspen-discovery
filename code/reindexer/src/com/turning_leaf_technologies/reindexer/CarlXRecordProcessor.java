@@ -27,8 +27,7 @@ class CarlXRecordProcessor extends IlsRecordProcessor {
 	}
 
 	@Override
-	protected boolean isItemAvailable(ItemInfo itemInfo) {
-		String groupedStatus = getDisplayGroupedStatus(itemInfo, itemInfo.getFullRecordIdentifier());
+	protected boolean isItemAvailable(ItemInfo itemInfo, String displayStatus, String groupedStatus) {
 		return groupedStatus.equals("On Shelf") || (treatLibraryUseOnlyGroupedStatusesAsAvailable && groupedStatus.equals("Library Use Only"));
 	}
 
