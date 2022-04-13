@@ -3162,7 +3162,10 @@ class Koha extends AbstractIlsDriver
 
 				$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
 
-				header("Refresh: 0;");
+				return [
+					'success' => true,
+					'message' => 'deleted your requests'
+				];
 
 			}
 		} else {
