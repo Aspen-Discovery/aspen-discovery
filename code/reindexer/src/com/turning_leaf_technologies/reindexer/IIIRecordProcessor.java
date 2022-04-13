@@ -212,7 +212,7 @@ class IIIRecordProcessor extends IlsRecordProcessor{
 	}
 
 	@Override
-	protected boolean isItemAvailable(ItemInfo itemInfo) {
+	protected boolean isItemAvailable(ItemInfo itemInfo, String displayStatus, String groupedStatus) {
 		boolean available = false;
 		String status = itemInfo.getStatusCode();
 		String dueDate = itemInfo.getDueDate() == null ? "" : itemInfo.getDueDate();
@@ -222,8 +222,7 @@ class IIIRecordProcessor extends IlsRecordProcessor{
 				available = true;
 			}
 		}
-		String displayGroupedStatus = this.getDisplayGroupedStatus(itemInfo, itemInfo.getFullRecordIdentifier());
-		if (!available && (displayGroupedStatus.equals("On Shelf") || (treatLibraryUseOnlyGroupedStatusesAsAvailable && displayGroupedStatus.equals("Library Use Only")))){
+		if (!available && (groupedStatus.equals("On Shelf") || (treatLibraryUseOnlyGroupedStatusesAsAvailable && groupedStatus.equals("Library Use Only")))){
 			available = true;
 		}
 		return available;

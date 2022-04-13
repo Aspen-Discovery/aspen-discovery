@@ -987,12 +987,14 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	}
 
 	private void loadScopeInfoForPrintIlsItem(GroupedWorkSolr groupedWork, RecordInfo recordInfo, TreeSet<String> audiences, String audiencesAsString, ItemInfo itemInfo, Record record) {
-		//Determine Availability
-		boolean available = isItemAvailable(itemInfo);
-
-		//Determine which scopes have access to this record
+		//Determine status, need to do this before determining if it is available since that is part of the check.
 		String displayStatus = getDisplayStatus(itemInfo, recordInfo.getRecordIdentifier());
 		String groupedDisplayStatus = getDisplayGroupedStatus(itemInfo, recordInfo.getRecordIdentifier());
+
+		//Determine Availability
+		boolean available = isItemAvailable(itemInfo, displayStatus, groupedDisplayStatus);
+
+		//Determine which scopes have access to this record
 		String overiddenStatus = getOverriddenStatus(itemInfo, true);
 		if (overiddenStatus != null && !overiddenStatus.equals("On Shelf") && !overiddenStatus.equals("Library Use Only") && !overiddenStatus.equals("Available Online")){
 			available = false;
@@ -1308,7 +1310,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		return getItemSubfieldData(statusSubfieldIndicator, itemField);
 	}
 
-	protected abstract boolean isItemAvailable(ItemInfo itemInfo);
+	protected abstract boolean isItemAvailable(ItemInfo itemInfo, String displayStatus, String groupedStatus);
 
 	String getItemSubfieldData(char subfieldIndicator, DataField itemField) {
 		if (subfieldIndicator == ' '){
