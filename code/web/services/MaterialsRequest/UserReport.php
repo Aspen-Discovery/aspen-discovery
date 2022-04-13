@@ -16,6 +16,11 @@ class MaterialsRequest_UserReport extends Admin_Admin {
 		$materialsRequestStatus = new MaterialsRequestStatus();
 		$materialsRequestStatus->orderBy('isDefault DESC, isOpen DESC, description ASC');
 		$homeLibrary = Library::getPatronHomeLibrary();
+		if (is_null($homeLibrary)) {
+			//User does not have a home library, this is likely an admin account.  Use the active library
+			global $library;
+			$homeLibrary = $library;
+		}
 		$materialsRequestStatus->libraryId = $homeLibrary->libraryId;
 
 		$materialsRequestStatus->find();
@@ -42,12 +47,11 @@ class MaterialsRequest_UserReport extends Admin_Admin {
 		$materialsRequest->joinAdd(new MaterialsRequestStatus(), 'INNER', 'status', 'status', 'id');
 		$materialsRequest->selectAdd();
 		$materialsRequest->selectAdd('COUNT(materials_request.id) as numRequests');
-		$materialsRequest->selectAdd('user.id as userId, createdBy, status, description');
+		$materialsRequest->selectAdd('user.id as userId, createdBy, status, description as description');
 		if (UserAccount::userHasPermission('View Materials Requests Reports')){
 			//Need to limit to only requests submitted for the user's home location
-			$userHomeLibrary = Library::getPatronHomeLibrary();
 			$locations = new Location();
-			$locations->libraryId = $userHomeLibrary->libraryId;
+			$locations->libraryId = $homeLibrary->libraryId;
 			$locations->find();
 			$locationsForLibrary = array();
 			while ($locations->fetch()){

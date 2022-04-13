@@ -311,7 +311,9 @@ abstract class SearchObject_BaseSearcher
 				if (is_object($facetConfig[$field])){
 					$translate = $facetConfig[$field]->translate;
 				}else{
-					$translate = in_array($field, $facetConfig['translated_facets']);
+					if (!empty($facetConfig['translated_facets'])) {
+						$translate = in_array($field, $facetConfig['translated_facets']);
+					}
 				}
 			}
 
@@ -2024,15 +2026,15 @@ abstract class SearchObject_BaseSearcher
 		$token = strtok($input, ' ');
 		while ($token) {
 			// find bracketed tokens
-			if ($token{0} == '(') {
+			if ($token[0] == '(') {
 				$token .= ' ' . strtok(')') . ')';
 			}
 			// find double quoted tokens
-			if ($token{0} == '"') {
+			if ($token[0] == '"') {
 				$token .= ' ' . strtok('"') . '"';
 			}
 			// find single quoted tokens
-			if ($token{0} == "'") {
+			if ($token[0] == "'") {
 				$token .= ' ' . strtok("'") . "'";
 			}
 			$tokens[] = $token;

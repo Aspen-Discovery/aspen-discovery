@@ -29,7 +29,7 @@ class CarlXRecordProcessor extends IlsRecordProcessor {
 	@Override
 	protected boolean isItemAvailable(ItemInfo itemInfo) {
 		String groupedStatus = getDisplayGroupedStatus(itemInfo, itemInfo.getFullRecordIdentifier());
-		return groupedStatus.equals("On Shelf") || groupedStatus.equals("Library Use Only");
+		return groupedStatus.equals("On Shelf") || (treatLibraryUseOnlyGroupedStatusesAsAvailable && groupedStatus.equals("Library Use Only"));
 	}
 
 	@Override
@@ -75,13 +75,13 @@ class CarlXRecordProcessor extends IlsRecordProcessor {
 
 	protected String getDetailedLocationForItem(ItemInfo itemInfo, DataField itemField, String identifier) {
 		String locationCode = getItemSubfieldData(locationSubfieldIndicator, itemField);
-		String location = translateValue("location", locationCode, identifier);
+		String location = translateValue("location", locationCode, identifier, true);
 		String shelvingLocation = getItemSubfieldData(shelvingLocationSubfield, itemField);
 		if (shelvingLocation != null && !shelvingLocation.equals(locationCode)){
 			if (location == null){
-				location = translateValue("shelf_location", shelvingLocation, identifier);
+				location = translateValue("shelf_location", shelvingLocation, identifier, true);
 			}else {
-				location += " - " + translateValue("shelf_location", shelvingLocation, identifier);
+				location += " - " + translateValue("shelf_location", shelvingLocation, identifier, true);
 			}
 		}
 		return location;
@@ -202,7 +202,7 @@ class CarlXRecordProcessor extends IlsRecordProcessor {
 			}
 		}
 
-		HashSet<String> translatedAudiences = translateCollection("target_audience", targetAudiences, identifier);
+		HashSet<String> translatedAudiences = translateCollection("target_audience", targetAudiences, identifier, true);
 		groupedWork.addTargetAudiences(translatedAudiences);
 		groupedWork.addTargetAudiencesFull(translatedAudiences);
 	}

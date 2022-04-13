@@ -42,8 +42,8 @@ public class KohaExportMain {
 	private static Long startTimeForLogging;
 	private static IlsExtractLogEntry logEntry;
 
+	private static boolean extractSingleWork = false;
 	public static void main(String[] args) {
-		boolean extractSingleWork = false;
 		String singleWorkId = null;
 		if (args.length == 0) {
 			serverName = StringUtils.getInputFromCommandLine("Please enter the server name");
@@ -1014,10 +1014,10 @@ public class KohaExportMain {
 
 			Timestamp lastExtractTimestamp = new Timestamp(lastKohaExtractTime * 1000);
 
-			HashSet<String> changedBibIds = new HashSet<>();
+			TreeMap<Long, String> changedBibIds = new TreeMap<>();
 
 			if (singleWorkId != null){
-				changedBibIds.add(singleWorkId);
+				changedBibIds.put(Long.parseLong(singleWorkId), singleWorkId);
 			}else {
 				//Check to see if we should regroup all records
 				if (indexingProfile.isRegroupAllRecords()){
@@ -1043,7 +1043,7 @@ public class KohaExportMain {
 
 				ResultSet getChangedBibsFromKohaRS = getChangedBibsFromKohaStmt.executeQuery();
 				while (getChangedBibsFromKohaRS.next()) {
-					changedBibIds.add(getChangedBibsFromKohaRS.getString("biblionumber"));
+					changedBibIds.put(getChangedBibsFromKohaRS.getLong("biblionumber"), getChangedBibsFromKohaRS.getString("biblionumber"));
 				}
 
 				//Get a list of changed bibs by biblio_metadata timestamp as well
@@ -1056,7 +1056,7 @@ public class KohaExportMain {
 					ResultSet getChangedBibMetadataFromKohaRS = getChangedBibMetadataFromKohaStmt.executeQuery();
 					int numRecordsWithChangedMetadata = 0;
 					while (getChangedBibMetadataFromKohaRS.next()) {
-						if (changedBibIds.add(getChangedBibMetadataFromKohaRS.getString("biblionumber"))){
+						if (changedBibIds.put(getChangedBibMetadataFromKohaRS.getLong("biblionumber"), getChangedBibMetadataFromKohaRS.getString("biblionumber")) == null){
 							numRecordsWithChangedMetadata++;
 						}
 					}
@@ -1073,7 +1073,7 @@ public class KohaExportMain {
 					ResultSet getZebraQueueBibsToReindexRS = getZebraQueueBibsToReindexStmt.executeQuery();
 					int numRecordsToForceReindex = 0;
 					while (getZebraQueueBibsToReindexRS.next()) {
-						if (changedBibIds.add(getZebraQueueBibsToReindexRS.getString("biblio_auth_number"))){
+						if (changedBibIds.put(getZebraQueueBibsToReindexRS.getLong("biblio_auth_number"), getZebraQueueBibsToReindexRS.getString("biblio_auth_number")) == null){
 							numRecordsToForceReindex++;
 						}
 					}
@@ -1088,7 +1088,7 @@ public class KohaExportMain {
 
 				ResultSet itemChangeRS = getChangedItemsFromKohaStmt.executeQuery();
 				while (itemChangeRS.next()) {
-					changedBibIds.add(itemChangeRS.getString("biblionumber"));
+					changedBibIds.put(itemChangeRS.getLong("biblionumber"), itemChangeRS.getString("biblionumber"));
 				}
 
 				//Items that have been deleted do not update the bib as changed so get that list as well
@@ -1097,7 +1097,7 @@ public class KohaExportMain {
 
 				ResultSet itemDeletedRS = getDeletedItemsFromKohaStmt.executeQuery();
 				while (itemDeletedRS.next()) {
-					changedBibIds.add(itemDeletedRS.getString("biblionumber"));
+					changedBibIds.put(itemDeletedRS.getLong("biblionumber"), itemDeletedRS.getString("biblionumber"));
 				}
 			}
 
@@ -1108,7 +1108,7 @@ public class KohaExportMain {
 			if (singleWorkId == null && indexingProfile.getLastChangeProcessed() > 0){
 				logEntry.addNote("Skipping the first " + indexingProfile.getLastChangeProcessed() + " records because they were processed previously see (Last Record ID Processed for the Indexing Profile).");
 			}
-			for (String curBibId : changedBibIds) {
+			for (String curBibId : changedBibIds.values()) {
 				logEntry.setCurrentId(curBibId);
 				if ((singleWorkId != null) || (numProcessed >= indexingProfile.getLastChangeProcessed())) {
 					//Update the marc record
@@ -1299,9 +1299,12 @@ public class KohaExportMain {
 						logEntry.incAdded();
 					}else{
 						//No change has been made, we could skip this
-						if (!indexingProfile.isRunFullUpdate()){
+						if (!indexingProfile.isRunFullUpdate() && !extractSingleWork){
 							logEntry.incSkipped();
 							return;
+						}else{
+							//Make sure we mark that it is updated if we are running a full update
+							logEntry.incUpdated();
 						}
 					}
 

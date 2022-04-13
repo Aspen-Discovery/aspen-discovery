@@ -205,6 +205,9 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 			$shortId = str_replace('CARL', '', $this->id);
 			$shortId = ltrim($shortId, '0');
 			$interface->assign('staffClientUrl', $configArray['Catalog']['staffClientUrl'] . '/Items/' . $shortId);
+		}elseif ($configArray['Catalog']['ils'] == 'Evergreen'){
+			$interface->assign('classicId', $this->id);
+			$interface->assign('classicUrl', $configArray['Catalog']['url'] . '/eg/opac/record/' . $this->id);
 		}
 
 		$this->getGroupedWorkDriver()->assignGroupedWorkStaffView();
@@ -910,11 +913,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 				}
 
 				if ($showHoldButton && $interface->getVariable('offline')) {
-					// When in offline mode, only show the hold button if offline-login & offline-holds are allowed
-					global $configArray;
-					if (!$interface->getVariable('enableLoginWhileOffline') || !$configArray['Catalog']['enableOfflineHolds']) {
-						$showHoldButton = false;
-					}
+					$showHoldButton = false;
 				}
 
 				if ($showHoldButton && $isAvailable) {
@@ -1872,7 +1871,8 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 					if (!strpos($url, '://')){
 						$url = 'http://' . $url;
 					}
-					if (!strpos($url, 'http://')){
+					if (strpos($url, 'http://') === 0 || strpos($url, 'https://') === 0){
+					//if (!strpos($url, 'http://')){
 						if ($field->getSubfield('y') != null) {
 							$title = $field->getSubfield('y')->getData();
 						} else if ($field->getSubfield('3') != null) {

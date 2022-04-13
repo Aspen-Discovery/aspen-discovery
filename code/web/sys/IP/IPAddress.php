@@ -23,6 +23,11 @@ class IPAddress extends DataObject
 		return ['isOpac', 'blockAccess', 'allowAPIAccess', 'startIpVal', 'endIpVal'];
 	}
 
+	public function getUniquenessFields(): array
+	{
+		return ['ip'];
+	}
+
 	static function getObjectStructure() : array{
 		//Look lookup information for display in the user interface
 		$location = new Location();
@@ -55,7 +60,6 @@ class IPAddress extends DataObject
 
 	function insert(){
 		$this->calcIpRange();
-		/** @var Memcache $memCache */
 		global $memCache;
 		$memCache->deleteStartingWith('ipId_for_ip_');
 		$memCache->deleteStartingWith('location_for_ip_');
@@ -63,13 +67,12 @@ class IPAddress extends DataObject
 	}
 	function update(){
 		$this->calcIpRange();
-		/** @var Memcache $memCache */
 		global $memCache;
 		$memCache->deleteStartingWith('ipId_for_ip_');
 		$memCache->deleteStartingWith('location_for_ip_');
 		return parent::update();
 	}
-	function validateIPAddress(){
+	function validateIPAddress() : array{
 		$calcIpResult = $this->calcIpRange();
 		$errors = [];
 		if (!$calcIpResult) {
@@ -80,7 +83,7 @@ class IPAddress extends DataObject
 			'errors' => $errors
 		];
 	}
-	function calcIpRange(){
+	function calcIpRange() : bool {
 		$ipAddress = $this->ip;
 		$subnet_and_mask = explode('/', $ipAddress);
 		if (count($subnet_and_mask) == 2){
@@ -307,5 +310,54 @@ class IPAddress extends DataObject
 			}
 		}
 		return IPAddress::$_logAllQueries;
+	}
+
+	public function toArray($includeRuntimeProperties = true, $encryptFields = false): array
+	{
+		$return = parent::toArray($includeRuntimeProperties, $encryptFields);
+		unset($return['locationid']);
+		return $return;
+	}
+
+	public function getLinksForJSON(): array
+	{
+		$links = parent::getLinksForJSON();
+		$allLocations = Location::getLocationListAsObjects(false);
+		if (array_key_exists($this->locationid, $allLocations)){
+			$location = $allLocations[$this->locationid];
+			$links['locationCode']  = $location->code;
+		}else{
+			$links['locationCode']  = '';
+		}
+		return $links;
+	}
+
+	public function okToExport(array $selectedFilters): bool
+	{
+		$result = parent::okToExport($selectedFilters);
+		if ($this->locationid == -1 || in_array($this->locationid, $selectedFilters['locations'])){
+			return true;
+		}
+		return $result;
+	}
+
+	public function loadEmbeddedLinksFromJSON($jsonData, $mappings, $overrideExisting = 'keepExisting')
+	{
+		parent::loadEmbeddedLinksFromJSON($jsonData, $mappings, $overrideExisting);
+		if (empty($jsonData['locationCode'])){
+			$this->locationid = -1;
+		}else{
+			$allLocations = Location::getLocationListAsObjects(false);
+			$ilsCode = $jsonData['locationCode'];
+			if (array_key_exists($ilsCode, $mappings['locations'])){
+				$ilsCode = $mappings['locations'][$ilsCode];
+			}
+			foreach ($allLocations as $tmpLocation) {
+				if ($tmpLocation->code == $ilsCode) {
+					$this->locationid = $tmpLocation->locationId;
+					break;
+				}
+			}
+		}
 	}
 }

@@ -24,6 +24,9 @@ if [ -f "/usr/local/aspen-discovery/install/upgrade_$2.sh" ]; then
   /usr/local/aspen-discovery/install/upgrade_$2.sh
 fi
 
+sudo chown aspen:aspen_apache /data/aspen-discovery/$1
+sudo chmod 775 /data/aspen-discovery/$1
+
 echo "Run database maintenance, and then press return when done"
 # shellcheck disable=SC2034
 read waitOver

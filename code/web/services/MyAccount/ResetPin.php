@@ -16,7 +16,7 @@ class ResetPin extends Action{
 		}
 
 		$catalog = CatalogFactory::getCatalogConnectionInstance();
-		if (isset($_REQUEST['submit'])){
+		if (isset($_REQUEST['pin1']) && isset($_REQUEST['pin2'])){
 			$driver = $catalog->driver;
 			if ($catalog->checkFunction('resetPin')) {
 				$newPin        = trim($_REQUEST['pin1']);

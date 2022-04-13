@@ -15,6 +15,7 @@ abstract class DataObject
 	public $__table;
 	public $__primaryKey = 'id';
 	public $__displayNameColumn = null;
+
 	protected $__N;
 	/** @var PDOStatement */
 	private $__queryStmt;
@@ -64,6 +65,14 @@ abstract class DataObject
 	 * @return string[]
 	 */
 	public function getCompressedColumnNames() : array
+	{
+		return [];
+	}
+
+	/**
+	 * @return string[]
+	 */
+	public function getUniquenessFields() : array
 	{
 		return [];
 	}
@@ -256,6 +265,9 @@ abstract class DataObject
 		}
 	}
 
+	/**
+	 * @return int|bool
+	 */
 	public function insert(){
 		global $aspen_db;
 		if (!isset($aspen_db)){
@@ -330,7 +342,12 @@ abstract class DataObject
 			}
 		}
 		$insertQuery .= '(' . $propertyNames . ') VALUES (' . $propertyValues . ');';
-		$response = $aspen_db->exec($insertQuery);
+		try {
+			$response = $aspen_db->exec($insertQuery);
+		}catch (PDOException $e){
+			$this->setLastError("Error inserting " . get_class($this) . "<br/>\n" . $e->getMessage() . "<br/>\n" . $e->getTraceAsString());
+			$response = false;
+		}
 		global $timer;
 		if (IPAddress::logAllQueries()){
 			global $logger;
@@ -341,10 +358,14 @@ abstract class DataObject
 		return $response;
 	}
 
+	/**
+	 * @return int|bool
+	 */
 	public function update(){
 		$primaryKey = $this->__primaryKey;
-		if (empty($this->$primaryKey)){
-			return $this->insert();
+		if (empty($this->$primaryKey) && $this->$primaryKey !== "0"){
+			$result = $this->insert();
+			return $result;
 		}
 		global $aspen_db;
 		if (!isset($aspen_db)){
@@ -407,7 +428,16 @@ abstract class DataObject
 		}
 		$updateQuery .= ' SET ' . $updates . ' WHERE ' . $primaryKey . ' = ' . $aspen_db->quote($this->$primaryKey);
 		$this->__lastQuery = $updateQuery;
-		$response = $aspen_db->exec($updateQuery);
+		try {
+			$response = $aspen_db->exec($updateQuery);
+		}catch (PDOException $e) {
+			$this->setLastError("Error updating " . get_class($this) . "<br/>\n" . $e->getMessage() . "<br/>\n" . $e->getTraceAsString());
+			$response = false;
+		}
+		if ($response === false){
+			$errorInfo = $aspen_db->errorInfo();
+			$this->setLastError("Error updating " . get_class($this) . "<br/>\n" . $errorInfo . "<br/>");
+		}
 		global $timer;
 		if (IPAddress::logAllQueries()){
 			global $logger;
@@ -440,7 +470,25 @@ abstract class DataObject
 		}else{
 			$deleteQuery = 'DELETE from ' . $this->__table . ' WHERE ' . $primaryKey . ' = ' . $aspen_db->quote($this->$primaryKey);
 		}
+		$this->__lastQuery = $deleteQuery;
 
+		$result = $aspen_db->exec($deleteQuery);
+		global $timer;
+		if (IPAddress::logAllQueries()){
+			global $logger;
+			$logger->log($deleteQuery, Logger::LOG_ERROR);
+		}
+		$timer->logTime($deleteQuery);
+		return $result;
+	}
+
+	public function deleteAll(){
+		global $aspen_db;
+		if (!isset($aspen_db)){
+			return false;
+		}
+		$deleteQuery = 'TRUNCATE TABLE ' . $this->__table;
+		$this->__lastQuery = $deleteQuery;
 		$result = $aspen_db->exec($deleteQuery);
 		global $timer;
 		if (IPAddress::logAllQueries()){
@@ -638,7 +686,11 @@ abstract class DataObject
 				if (count($this->__joins) > 0){
 					$where .= $this->__table . '.' . $name . ' = ' . $aspen_db->quote($value);
 				}else{
-					$where .= $name . ' = ' . $aspen_db->quote($value);
+					if (in_array($name, $this->getNumericColumnNames()) && is_numeric($value)){
+						$where .= $name . ' = ' . $value;
+					}else{
+						$where .= $name . ' = ' . $aspen_db->quote($value);
+					}
 				}
 
 			}
@@ -878,15 +930,20 @@ abstract class DataObject
 		}
 	}
 
-	public function toArray() : array
+	public function toArray($includeRuntimeProperties = true, $encryptFields = false) : array
 	{
 		$return = [];
+		$encryptedFields = $this->getEncryptedFieldNames();
 		$properties = get_object_vars($this);
 		foreach ($properties as $name => $value) {
 			if ($name[0] != '_'){
-				$return[$name] = $value;
-			}else if ($name[0] == '_' && strlen($name) > 1 && $name[1] != '_') {
-				if ($name != '_data'){
+				if ($encryptFields && in_array($name, $encryptedFields)) {
+					$return[$name] = EncryptionUtils::encryptField($value);
+				}else{
+					$return[$name] = $value;
+				}
+			}else if ($includeRuntimeProperties && $name[0] == '_' && strlen($name) > 1 && $name[1] != '_') {
+				if ($name != '_data' && $name != '_changedFields' && $name != '_deleteOnSave' && !is_object($value)){
 					$return[substr($name, 1)] = $value;
 				}
 			}
@@ -894,7 +951,145 @@ abstract class DataObject
 		return $return;
 	}
 
+	public function getLinksForJSON() : array{
+		return [];
+	}
+
 	public function canActiveUserEdit(){
 		return true;
+	}
+
+	public function getJSONString($includeLinks, $prettyPrint = false){
+		$flags = 0;
+		if ($prettyPrint){
+			$flags = JSON_PRETTY_PRINT;
+		}
+
+		$baseObject = $this->toArray(false, true);
+		if ($includeLinks){
+			$links = $this->getLinksForJSON();
+			if (!empty($links)){
+				$baseObject['links'] = $links;
+			}
+		}
+		return json_encode($baseObject, $flags);
+	}
+
+	public function loadObjectPropertiesFromJSON($jsonData, $mappings){
+		$encryptedFields = $this->getEncryptedFieldNames();
+		$sourceEncryptionKey = isset($mappings['passkey']) ? $mappings['passkey'] : '';
+		foreach ($jsonData as $property => $value){
+			if ($property != $this->getPrimaryKey() && $property != 'links'){
+				if (in_array($property, $encryptedFields) && !empty($sourceEncryptionKey)){
+					$value = EncryptionUtils::decryptFieldWithProvidedKey($value, $sourceEncryptionKey);
+				}
+				$this->$property = $value;
+			}
+		}
+	}
+
+	/**
+	 * @param $jsonData
+	 * @param $mappings
+	 * @param $overrideExisting
+	 * @return bool
+	 */
+	public function loadFromJSON($jsonData, $mappings, $overrideExisting = 'keepExisting'){
+		$this->loadObjectPropertiesFromJSON($jsonData, $mappings);
+
+		if (array_key_exists('links', $jsonData)) {
+			$this->loadEmbeddedLinksFromJSON($jsonData['links'], $mappings, $overrideExisting);
+		}
+
+		//Check to see if there is an existing ID for the object
+		if (!$this->findExistingObjectId()){
+			$this->setLastError('Could not insert object ' . $this . ' could not find existing object id');
+		}
+
+		if ($overrideExisting == 'keepExisting'){
+			//Only update if we don't have an existing value
+			if (empty($this->getPrimaryKeyValue())){
+				$result = $this->update();
+				if ($result === false){
+					return false;
+				}
+			}
+		}else{
+			$result = $this->update();
+			if ($result === false){
+				return false;
+			}
+		}
+
+		//Load any links (do after loading the existing object id to handle nested objects)
+		if (array_key_exists('links', $jsonData)) {
+			if ($this->loadRelatedLinksFromJSON($jsonData['links'], $mappings, $overrideExisting)) {
+				$result = $this->update();
+				if ($result === false){
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+
+	/**
+	 * Load embedded links from json (objects where we directly store the id of the object in this object)
+	 * @param $jsonData
+	 * @param $mappings
+	 * @param $overrideExisting keepExisting / updateExisting
+	 * @return void
+	 */
+	public function loadEmbeddedLinksFromJSON($jsonData, $mappings, $overrideExisting = 'keepExisting') {
+
+	}
+
+	/**
+	 * Load related links from json (objects where we there is an intermediary table storing our id and infromation about the other object)
+	 * @param $jsonData
+	 * @param $mappings
+	 * @param $overrideExisting - keepExisting / updateExisting
+	 * @return boolean True/False if links were loaded
+	 */
+	public function loadRelatedLinksFromJSON($jsonData, $mappings, $overrideExisting = 'keepExisting') : bool{
+		return false;
+	}
+
+	/**
+	 * Looks for an existing id for the object.  If the primary key is the unique field, it will insert the object
+	 *  to avoid errors in future processing.  Returns false if the insert fails.
+	 * @return bool
+	 */
+	public function findExistingObjectId() : bool
+	{
+		$thisClass = get_class($this);
+		$tmpObject = new $thisClass();
+		$uniquenessFields = $this->getUniquenessFields();
+		if (!empty($uniquenessFields)) {
+			foreach ($uniquenessFields as $fieldName) {
+				$tmpObject->$fieldName = $this->$fieldName;
+			}
+			if ($tmpObject->find(true)) {
+				$primaryField = $this->getPrimaryKey();
+				$this->$primaryField = $tmpObject->getPrimaryKeyValue();
+			}else{
+				$primaryField = $this->getPrimaryKey();
+				if (count($uniquenessFields) == 1 && $uniquenessFields[0] == $primaryField){
+					//We tricked Aspen, we are filling out the primary key, but it doesn't actually exist.
+					if (!$this->insert()){
+						return false;
+					}
+				}
+			}
+		}
+		return true;
+	}
+
+	public function okToExport(array $selectedFilters) : bool{
+		return false;
+	}
+
+	public function getAdditionalListActions() : array {
+		return [];
 	}
 }

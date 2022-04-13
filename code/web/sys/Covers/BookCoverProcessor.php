@@ -65,6 +65,10 @@ class BookCoverProcessor{
 			if ($this->getLibraryCalendarCover($this->id)) {
 				return true;
 			}
+        } elseif ($this->type == 'springshare_libcal_event') {
+            if ($this->getSpringshareLibCalCover($this->id)) {
+                return true;
+            }
 		} elseif ($this->type == 'webpage' || $this->type == 'WebPage' || $this->type == 'BasicPage' || $this->type == 'WebResource') {
 			if ($this->getWebPageCover($this->id)) {
 				return true;
@@ -674,6 +678,15 @@ class BookCoverProcessor{
 			//Make sure we don't get an image not found cover
 			$imageChecksum = md5($image);
 			if ($imageChecksum == 'e89e0e364e83c0ecfba5da41007c9a2c'){
+				return false;
+			}elseif ($imageChecksum == 'f017f94ed618a86d0fa7cecd7112ab7e'){
+				//Syndetics Unbound default image at medium size
+				return false;
+			}elseif ($imageChecksum == 'dadde13fdb5f3775cdbdd25f34c0389b'){
+				//Syndetics Unbound default image at small size
+				return false;
+			}elseif ($imageChecksum == 'c6ddaf338cf667df0bf60045f05146db'){
+				//Syndetics Unbound default image at large size
 				return false;
 			}
 
@@ -1434,6 +1447,29 @@ class BookCoverProcessor{
 		}
 		return false;
 	}
+
+    private function getSpringshareLibCalCover($id) {
+        if (strpos($id, ':') !== false) {
+            list(, $id) = explode(":", $id);
+        }
+        require_once ROOT_DIR . '/RecordDrivers/SpringshareLibCalEventRecordDriver.php';
+        $driver = new SpringshareLibCalEventRecordDriver($id);
+        if ($driver) {
+//			$coverUrl = $driver->getEventCoverUrl();
+//			if ($coverUrl == null) {
+            require_once ROOT_DIR . '/sys/Covers/EventCoverBuilder.php';
+            $coverBuilder = new EventCoverBuilder();
+            $props = [
+                'eventDate' => $driver->getStartDate()
+            ];
+            $coverBuilder->getCover($driver->getTitle(), $this->cacheFile, $props);
+            return $this->processImageURL('default_event', $this->cacheFile, false);
+//			}else{
+//				return $this->processImageURL('springshare_libcal_event', $coverUrl, true);
+//			}
+        }
+        return false;
+    }
 
 	private function getWebPageCover($id)
 	{

@@ -1040,7 +1040,6 @@ class GroupedWorkDriver extends IndexRecordDriver
 	 */
 	public function getListEntry($listId = null, $allowEdit = true)
 	{
-		global $configArray;
 		global $interface;
 		global $timer;
 

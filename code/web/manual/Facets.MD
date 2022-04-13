@@ -11,7 +11,7 @@ You can customize your facets, including which facets are included in search and
 - **AR Interest Level**: Renaissance Learning based off ISBN- we get a weekly download- automatically taken care of in Aspen
 - **AR Point Value**:	Renaissance Learning based off ISBN- we get a weekly download- automatically taken care of in Aspen
 - **AR Reading Level**: Renaissance Learning based off ISBN- we get a weekly download- automatically taken care of in Aspen
-- **Added in the Last**:	First date that the grouped work is added to the catalog; you can do it location specific for a library system/consortium but there is sometimes issues with econtent dates and shared eresource collections
+- **Added in the Last**:	First date that the grouped work is added to the catalog; you can do it location specific for a library system/consortium but there is sometimes issues with econtent dates and shared eresource collections. Added in the last should exlude re-ordered copies of items already owned. Generally, Aspen is looking at date created to determine this information. Re-orders might still appear if they are the only item on a bib. 
 - **[Audience Facet](/Admin/HelpManual?page=Audience-Facets)** Click for more detailed information
 - **Author**:	100 a,b,c,d,q or 110ab
 - **Available At**:Listing by physical location it is available at

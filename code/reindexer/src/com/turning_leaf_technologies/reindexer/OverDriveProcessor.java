@@ -581,7 +581,7 @@ class OverDriveProcessor {
 				}
 
 				if (curSubject.contains("Poetry")) {
-					Util.addToMapWithCount(literaryForm, "Fiction");
+					Util.addToMapWithCount(literaryForm, "Non Fiction");
 					Util.addToMapWithCount(literaryFormFull, "Poetry");
 				} else if (curSubject.contains("Essays")) {
 					Util.addToMapWithCount(literaryForm, "Non Fiction");

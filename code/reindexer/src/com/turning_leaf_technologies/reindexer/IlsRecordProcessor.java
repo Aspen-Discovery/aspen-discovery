@@ -29,6 +29,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	char statusSubfieldIndicator;
 	Pattern statusesToSuppressPattern = null;
 	private Pattern nonHoldableStatuses;
+	protected boolean treatLibraryUseOnlyGroupedStatusesAsAvailable;
 	char shelvingLocationSubfield;
 	char collectionSubfield;
 	private char dueDateSubfield;
@@ -93,6 +94,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	protected boolean suppressRecordsWithNoCollection = true;
 
 	private PreparedStatement loadHoldsStmt;
+	private PreparedStatement addTranslationMapValueStmt;
 
 	IlsRecordProcessor(GroupedWorkIndexer indexer, String curType, Connection dbConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
 		super(indexer, curType, dbConn, logger);
@@ -166,6 +168,8 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			}catch (Exception e){
 				indexer.getLogEntry().incErrors("Could not load non holdable statuses", e);
 			}
+
+			treatLibraryUseOnlyGroupedStatusesAsAvailable = indexingProfileRS.getBoolean("treatLibraryUseOnlyGroupedStatusesAsAvailable");
 
 			dueDateSubfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "dueDate");
 			String dueDateFormat = indexingProfileRS.getString("dueDateFormat");
@@ -256,6 +260,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			hideNotCodedLiteraryForm = indexingProfileRS.getBoolean("hideNotCodedLiteraryForm");
 
 			loadHoldsStmt = dbConn.prepareStatement("SELECT ilsId, numHolds from ils_hold_summary where ilsId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			addTranslationMapValueStmt = dbConn.prepareStatement("INSERT INTO translation_map_values (translationMapId, value, translation) VALUES (?, ?, ?)");
 
 			loadTranslationMapsForProfile(dbConn, indexingProfileRS.getLong("id"));
 
@@ -287,7 +292,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		getTranslationMapsStmt.setLong(1, id);
 		ResultSet translationsMapRS = getTranslationMapsStmt.executeQuery();
 		while (translationsMapRS.next()){
-			TranslationMap map = new TranslationMap(profileType, translationsMapRS.getString("name"), translationsMapRS.getBoolean("usesRegularExpressions"), logger);
+			TranslationMap map = new TranslationMap(profileType, translationsMapRS.getLong("id"), translationsMapRS.getString("name"), translationsMapRS.getBoolean("usesRegularExpressions"), logger);
 			long translationMapId = translationsMapRS.getLong("id");
 			getTranslationMapValuesStmt.setLong(1, translationMapId);
 			ResultSet translationMapValuesRS = getTranslationMapValuesStmt.executeQuery();
@@ -695,16 +700,16 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			itemSublocation = "";
 		}
 		if (itemSublocation.length() > 0){
-			itemInfo.setSubLocation(translateValue("sub_location", itemSublocation, identifier));
+			itemInfo.setSubLocation(translateValue("sub_location", itemSublocation, identifier, true));
 		}
 		itemInfo.setITypeCode(getItemSubfieldData(iTypeSubfield, itemField));
-		itemInfo.setIType(translateValue("itype", getItemSubfieldData(iTypeSubfield, itemField), identifier));
+		itemInfo.setIType(translateValue("itype", getItemSubfieldData(iTypeSubfield, itemField), identifier, true));
 		loadItemCallNumber(record, itemField, itemInfo);
 		itemInfo.setItemIdentifier(getItemSubfieldData(itemRecordNumberSubfieldIndicator, itemField));
 		itemInfo.setShelfLocation(getShelfLocationForItem(itemField, identifier));
 		itemInfo.setDetailedLocation(getDetailedLocationForItem(itemInfo, itemField, identifier));
 
-		itemInfo.setCollection(translateValue("collection", getItemSubfieldData(collectionSubfield, itemField), identifier));
+		itemInfo.setCollection(translateValue("collection", getItemSubfieldData(collectionSubfield, itemField), identifier, true));
 
 		Subfield eContentSubfield = itemField.getSubfield(eContentSubfieldIndicator);
 		if (eContentSubfield != null){
@@ -841,7 +846,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		}
 		itemInfo.setSubLocationCode(itemSublocation);
 		if (itemSublocation.length() > 0){
-			itemInfo.setSubLocation(translateValue("sub_location", itemSublocation, recordInfo.getRecordIdentifier()));
+			itemInfo.setSubLocation(translateValue("sub_location", itemSublocation, recordInfo.getRecordIdentifier(), true));
 		}else{
 			itemInfo.setSubLocation("");
 		}
@@ -857,7 +862,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		getDueDate(itemField, itemInfo);
 
 		itemInfo.setITypeCode(getItemSubfieldData(iTypeSubfield, itemField));
-		itemInfo.setIType(translateValue("itype", getItemSubfieldData(iTypeSubfield, itemField), recordInfo.getRecordIdentifier()));
+		itemInfo.setIType(translateValue("itype", getItemSubfieldData(iTypeSubfield, itemField), recordInfo.getRecordIdentifier(), true));
 
 		itemInfo.setVolumeField(getItemSubfieldData(volumeSubfield, itemField));
 
@@ -866,7 +871,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 
 		loadItemCallNumber(record, itemField, itemInfo);
 
-		itemInfo.setCollection(translateValue("collection", getItemSubfieldData(collectionSubfield, itemField), recordInfo.getRecordIdentifier()));
+		itemInfo.setCollection(translateValue("collection", getItemSubfieldData(collectionSubfield, itemField), recordInfo.getRecordIdentifier(), true));
 
 		if (lastCheckInFormatter != null) {
 			String lastCheckInDate = getItemSubfieldData(lastCheckInSubfield, itemField);
@@ -995,11 +1000,10 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 
 		itemInfo.setAvailable(available);
 
-
-		itemInfo.setInLibraryUseOnly(determineLibraryUseOnly(itemInfo));
-
 		itemInfo.setDetailedStatus(displayStatus);
 		itemInfo.setGroupedStatus(groupedDisplayStatus);
+
+		itemInfo.setInLibraryUseOnly(determineLibraryUseOnly(itemInfo));
 
 		String itemLocation = itemInfo.getLocationCode();
 		String itemSublocation = itemInfo.getSubLocationCode();
@@ -1033,7 +1037,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	}
 
 	protected boolean determineLibraryUseOnly(ItemInfo itemInfo) {
-		if (inLibraryUseOnlyStatuses.contains(itemInfo.getStatusCode())){
+		if (inLibraryUseOnlyStatuses.contains(itemInfo.getStatusCode()) || itemInfo.getGroupedStatus().equals("Library Use Only")){
 			return true;
 		}
 		String format = itemInfo.getFormat();
@@ -1272,7 +1276,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		if (shelfLocation == null || shelfLocation.length() == 0 || shelfLocation.equals("none")){
 			return "";
 		}else {
-			return translateValue("shelf_location", shelfLocation, identifier);
+			return translateValue("shelf_location", shelfLocation, identifier, true);
 		}
 	}
 
@@ -1280,7 +1284,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		String location;
 		if (includeLocationNameInDetailedLocation) {
 			String locationCode = getItemSubfieldData(locationSubfieldIndicator, itemField);
-			location = translateValue("location", locationCode, identifier);
+			location = translateValue("location", locationCode, identifier, true);
 			if (location == null){
 				location = "";
 			}
@@ -1289,13 +1293,13 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		}
 		String shelfLocation = null;
 		if (itemField != null) {
-			shelfLocation = getItemSubfieldData(locationSubfieldIndicator, itemField);
+			shelfLocation = getItemSubfieldData(shelvingLocationSubfield, itemField);
 		}
 		if (shelfLocation != null && shelfLocation.length() > 0 && !shelfLocation.equals("none")){
 			if (location.length() > 0) {
 				location += " - ";
 			}
-			location += translateValue("shelf_location", shelfLocation, identifier);
+			location += translateValue("shelf_location", shelfLocation, identifier, true);
 		}
 		return location;
 	}
@@ -1534,7 +1538,11 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	}
 
 	public String translateValue(String mapName, String value, String identifier){
-		return translateValue(mapName, value, identifier, true);
+		return translateValue(mapName, value, identifier, true, false);
+	}
+
+	public String translateValue(String mapName, String value, String identifier, boolean addMissingValues){
+		return translateValue(mapName, value, identifier, true, addMissingValues);
 	}
 
 	boolean hasTranslation(String mapName, String value) {
@@ -1548,7 +1556,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	}
 
 	HashSet<String> unableToTranslateWarnings = new HashSet<>();
-	public String translateValue(String mapName, String value, String identifier, boolean reportErrors){
+	public String translateValue(String mapName, String value, String identifier, boolean reportErrors, boolean addMissingValues){
 		if (value == null){
 			return null;
 		}
@@ -1569,13 +1577,27 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 					unableToTranslateWarnings.add("unable_to_find_" + mapName);
 				}
 			} else {
-				//Check to see if this is translated based off of regular expression
-				String concatenatedValue = mapName + ":" + value;
-				if (!unableToTranslateWarnings.contains(concatenatedValue)) {
-					if (reportErrors) {
-						logger.warn("Could not translate '" + concatenatedValue + "' in profile " + profileType + " sample record " + identifier);
+				if (addMissingValues){
+					TranslationMap translationMap = translationMaps.get(mapName);
+					translationMap.addValue(value, value);
+					try {
+						addTranslationMapValueStmt.setLong(1, translationMap.getId());
+						addTranslationMapValueStmt.setString(2, lowerCaseValue);
+						addTranslationMapValueStmt.setString(3, value);
+						addTranslationMapValueStmt.executeUpdate();
+					}catch (SQLException e){
+						indexer.getLogEntry().incErrors("Unable to add missing translation map value " + value + " to " + mapName);
 					}
-					unableToTranslateWarnings.add(concatenatedValue);
+					return value;
+				}else {
+					//Check to see if this is translated based off of regular expression
+					String concatenatedValue = mapName + ":" + value;
+					if (!unableToTranslateWarnings.contains(concatenatedValue)) {
+						if (reportErrors) {
+							indexer.getLogEntry().addNote("Could not translate '" + concatenatedValue + "' in profile " + profileType + " sample record " + identifier);
+						}
+						unableToTranslateWarnings.add(concatenatedValue);
+					}
 				}
 			}
 		}
@@ -1583,9 +1605,13 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	}
 
 	HashSet<String> translateCollection(String mapName, Set<String> values, String identifier) {
+		return translateCollection(mapName, values, identifier, false);
+	}
+
+	HashSet<String> translateCollection(String mapName, Set<String> values, String identifier, boolean addMissingValues) {
 		HashSet<String> translatedValues = new HashSet<>();
 		for (String value : values){
-			String translatedValue = translateValue(mapName, value, identifier);
+			String translatedValue = translateValue(mapName, value, identifier, addMissingValues);
 			if (translatedValue != null){
 				translatedValues.add(translatedValue);
 			}
@@ -1627,7 +1653,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 					}
 				}
 			}
-			HashSet<String> translatedAudiences = translateCollection("audience", targetAudiences, identifier);
+			HashSet<String> translatedAudiences = translateCollection("audience", targetAudiences, identifier, true);
 
 			if (!treatUnknownAudienceAs.equals("Unknown") && translatedAudiences.contains("Unknown")) {
 				translatedAudiences.remove("Unknown");
@@ -1650,7 +1676,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 				Subfield subfield = printItem.getMarcField().getSubfield(literaryFormSubfield);
 				if (subfield != null){
 					if (subfield.getData() != null){
-						String translatedValue = translateValue("literary_form", subfield.getData(), identifier);
+						String translatedValue = translateValue("literary_form", subfield.getData(), identifier, true);
 						if (translatedValue != null) {
 							groupedWork.addLiteraryForm(translatedValue);
 							groupedWork.addLiteraryFormFull(translatedValue);

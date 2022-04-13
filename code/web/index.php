@@ -157,7 +157,7 @@ global $configArray;
 
 //Get the name of the active instance
 //$inLibrary, is used to pre-select auto-logout on place hold forms;
-// to hide the remember me option on login pages;
+// to hide the "remember me" option on login pages;
 // and to show the Location in the page footer
 if ($locationSingleton->getIPLocation() != null){
 	$interface->assign('inLibrary', true);
@@ -284,7 +284,17 @@ if ($isLoggedIn) {
         AspenError::raiseError("Error authenticating patron " . $e->getMessage());
     }
     $timer->logTime('Login the user');
-	if ($user instanceof AspenError) {
+	require_once ROOT_DIR . '/sys/Account/ExpiredPasswordError.php';
+	if ($user instanceof ExpiredPasswordError) {
+		$_REQUEST['token'] =  $user->resetToken;
+
+		require_once ROOT_DIR . '/services/MyAccount/CompletePinReset.php';
+		$launchAction = new MyAccount_CompletePinReset();
+		$launchAction->setPinExpired(true);
+		$launchAction->launch();
+
+		exit();
+	}elseif ($user instanceof AspenError) {
 		require_once ROOT_DIR . '/services/MyAccount/Login.php';
 		$launchAction = new MyAccount_Login();
 		$error_msg    = translate(['text'=>$user->getMessage(),'isPublicFacing'=>true]);
@@ -515,8 +525,9 @@ if (!$isAJAX){
 			$systemMessage = new SystemMessage();
 			$systemMessage->id = -1;
 			$systemMessage->dismissable = 0;
-			$systemMessage->setPreFormattedMessage("<p class='alert alert-warning'><strong>The library system is currently offline.</strong> We are unable to retrieve information about your account at this time.</p>");
-			$interface->assign('systemMessage', $systemMessage);
+			$systemMessage->message =  $interface->getVariable('offlineMessage');
+			$systemMessage->messageStyle = 'danger';
+			$systemMessages[] = $systemMessage;
 		}
 		//Set System Message after translator has been setup
 		if (strlen($library->systemMessage) > 0) {
@@ -868,7 +879,7 @@ function loadModuleActionId(){
 	global $indexingProfiles;
 	/** SideLoad[] $sideLoadSettings */
 	global $sideLoadSettings;
-	$allRecordModules = "OverDrive|GroupedWork|Record|ExternalEContent|Person|Library|RBdigital|Hoopla|RBdigitalMagazine|CloudLibrary|Files|Axis360|WebBuilder|ProPay|CourseReserves";
+	$allRecordModules = "OverDrive|GroupedWork|Record|ExternalEContent|Person|Library|RBdigital|Hoopla|RBdigitalMagazine|CloudLibrary|Files|Axis360|WebBuilder|ProPay|CourseReserves|Springshare";
 	foreach ($indexingProfiles as $profile){
 		$allRecordModules .= '|' . $profile->recordUrlComponent;
 	}

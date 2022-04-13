@@ -45,10 +45,6 @@ class MaterialsRequest extends DataObject
 	public $assignedTo;
 	public $staffComments;
 
-	//Dynamic properties setup by joins
-	public $numRequests;
-	public $description;
-
 	public function getNumericColumnNames(): array
 	{
 		return ['emailSent', 'holdsCreated', 'assignedTo'];
@@ -117,7 +113,6 @@ class MaterialsRequest extends DataObject
 		if (MaterialsRequest::$materialsRequestEnabled != null && $forceReload == false){
 			return MaterialsRequest::$materialsRequestEnabled;
 		}
-		global $configArray;
 		global $library;
 
 		$enableAspenMaterialsRequest = true;
@@ -125,9 +120,11 @@ class MaterialsRequest extends DataObject
 			$enableAspenMaterialsRequest = false;
 		}else if (UserAccount::isLoggedIn()){
 			$homeLibrary = Library::getPatronHomeLibrary();
-			if (is_null($homeLibrary)){
-				$enableAspenMaterialsRequest = false;
-			}else if ($homeLibrary->enableMaterialsRequest != 1){
+			if (is_null($homeLibrary)) {
+				//User does not have a home library, this is likely an admin account.  Use the active library
+				$homeLibrary = $library;
+			}
+			if ($homeLibrary->enableMaterialsRequest != 1){
 				$enableAspenMaterialsRequest = false;
 			}else if ($homeLibrary->libraryId != $library->libraryId){
 				$enableAspenMaterialsRequest = false;
@@ -302,5 +299,104 @@ class MaterialsRequest extends DataObject
 		}else{
 			return '';
 		}
+	}
+
+	public function okToExport(array $selectedFilters) : bool{
+		$okToExport = parent::okToExport($selectedFilters);
+		if (in_array($this->libraryId, $selectedFilters['libraries'])){
+			$okToExport = true;
+		}
+		return $okToExport;
+	}
+
+	public function toArray($includeRuntimeProperties = true, $encryptFields = false): array
+	{
+		$return = parent::toArray($includeRuntimeProperties, $encryptFields);
+		unset ($return['libraryId']);
+		unset ($return['createdBy']);
+		unset ($return['assignedTo']);
+
+		return $return;
+	}
+
+	public function getLinksForJSON(): array
+	{
+		$links = parent::getLinksForJSON();
+		//library
+		$allLibraries = Library::getLibraryListAsObjects(false);
+		if (array_key_exists($this->libraryId, $allLibraries)) {
+			$library = $allLibraries[$this->libraryId];
+			$links['library'] = empty($library->subdomain) ? $library->ilsCode : $library->subdomain;
+		}
+		//created  by
+		$user = new User();
+		$user->id = $this->createdBy;
+		if ($user->find(true)){
+			$links['createdBy'] = $user->username;
+		}
+		//assigned to
+		$user = new User();
+		$user->id = $this->assignedTo;
+		if ($user->find(true)){
+			$links['assignedTo'] = $user->username;
+		}
+		//Status
+		$materialsRequestStatus = new MaterialsRequestStatus();
+		$materialsRequestStatus->libraryId = $this->libraryId;
+		$materialsRequestStatus->id = $this->status;
+		if ($materialsRequestStatus->find(true)){
+			$links['status'] = $materialsRequestStatus->description;
+		}
+
+		return $links;
+	}
+
+	public function loadEmbeddedLinksFromJSON($jsonData, $mappings, $overrideExisting = 'keepExisting')
+	{
+		parent::loadEmbeddedLinksFromJSON($jsonData, $mappings, $overrideExisting = 'keepExisting');
+
+		if (isset($jsonData['library'])){
+			$allLibraries = Library::getLibraryListAsObjects(false);
+			$subdomain = $jsonData['library'];
+			if (array_key_exists($subdomain, $mappings['libraries'])){
+				$subdomain = $mappings['libraries'][$subdomain];
+			}
+			foreach ($allLibraries as $tmpLibrary){
+				if ($tmpLibrary->subdomain == $subdomain || $tmpLibrary->ilsCode == $subdomain){
+					$this->libraryId = $tmpLibrary->libraryId;
+					break;
+				}
+			}
+		}
+		if (isset($jsonData['createdBy'])){
+			$username = $jsonData['createdBy'];
+			$user = new User();
+			$user->username = $username;
+			if ($user->find(true)){
+				$this->createdBy = $user->id;
+			}
+		}
+		if (isset($jsonData['assignedTo'])){
+			$username = $jsonData['assignedTo'];
+			$user = new User();
+			$user->username = $username;
+			if ($user->find(true)){
+				$this->assignedTo = $user->id;
+			}
+		}
+		if (isset($jsonData['status'])){
+			$status = $jsonData['status'];
+			$requestStatus = new MaterialsRequestStatus();
+			$requestStatus->libraryId = $this->libraryId;
+			$requestStatus->description = $status;
+			if ($requestStatus->find(true)){
+				$this->status = $requestStatus->id;
+			}
+		}
+	}
+
+	public function loadRelatedLinksFromJSON($jsonData, $mappings, $overrideExisting = 'keepExisting') : bool {
+		$result = parent::loadRelatedLinksFromJSON($jsonData, $mappings, $overrideExisting);
+		return $result;
 	}
 }

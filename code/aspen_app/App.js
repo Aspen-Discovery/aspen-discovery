@@ -1,25 +1,21 @@
 import React, {Component} from "react";
-import Constants from 'expo-constants';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as SecureStore from 'expo-secure-store';
+import Constants from "expo-constants";
 import {NativeBaseProvider, StatusBar} from "native-base";
 import {SSRProvider} from "@react-aria/ssr";
-import * as Sentry from 'sentry-expo';
 import App from "./src/components/navigation";
 import {createTheme, saveTheme} from "./src/themes/theme";
+import {userContext} from "./src/context/user";
+import {create} from 'apisauce';
 
 import { LogBox } from 'react-native';
-LogBox.ignoreLogs(['Warning: ...']); // Ignore log notification by message
+import {createAuthTokens, getHeaders, postData} from "./src/util/apiAuth";
+import {GLOBALS} from "./src/util/globals";
+
+// Hide log error/warning popups in simulator (useful for demoing)
+//LogBox.ignoreLogs(['Warning: ...']); // Ignore log notification by message
 LogBox.ignoreAllLogs();//Ignore all log notifications
-
-if (!__DEV__) {
-	Sentry.init({
-		dsn: Constants.manifest.extra.sentryDSN,
-		enableInExpoDevelopment: true,
-		enableAutoSessionTracking: false,
-		sessionTrackingIntervalMillis: 10000,
-		debug: true, // If `true`, Sentry will try to print out useful debugging information if something goes wrong with sending the event. Set it to `false` in production
-	});
-}
-
 
 export default class AppContainer extends Component {
 	constructor(props) {
@@ -27,8 +23,13 @@ export default class AppContainer extends Component {
 		this.state = {
 			themeSet: false,
 			themeSetSession: 0,
+			user: {},
+			library: {},
+			location: {},
+			hasLoaded: false,
 		};
 		this.aspenTheme = null;
+		this.login();
 	}
 
 	componentDidMount = async () => {
@@ -43,27 +44,156 @@ export default class AppContainer extends Component {
 				console.log("Theme previously saved.")
 			}
 		});
-		console.log(this.state.themeSetSession)
+
+		this.interval = setInterval(async () => {
+			//console.log("Looking for a user token...");
+			let userToken;
+			try {
+				userToken = await AsyncStorage.getItem('@userToken');
+			} catch (e) {
+				console.log(e);
+			}
+
+			if(userToken) {
+				//console.log("USER TOKEN FOUND");
+				//console.log("Trying to run async login...");
+				this.login(userToken);
+			}
+		}, 1000);
+
+		return () => clearInterval(this.interval);
+	}
+
+	componentWillUnmount() {
+		clearInterval(this.interval);
+	}
+
+	async login(userToken) {
+		//console.log("Running login function with user token: " + userToken);
+		if (userToken) {
+			let libraryUrl;
+			let libName;
+			try {
+				libraryUrl = await AsyncStorage.getItem('@pathUrl');
+				libName = await AsyncStorage.getItem('@libName');
+			} catch (e) {
+				console.log(e);
+			}
+
+			if (libraryUrl) {
+				//console.log("Connecting to " + libName + " using " + libraryUrl);
+				let postBody = await postData();
+				const api = create({
+					baseURL: libraryUrl + '/API',
+					timeout: GLOBALS.timeoutAverage,
+					headers: getHeaders(true),
+					auth: createAuthTokens()
+				});
+
+				const patronProfile = await AsyncStorage.getItem('@patronProfile');
+				if(patronProfile === null) {
+					console.log("fetching getPatronProfile...");
+					const response = await api.post('/UserAPI?method=getPatronProfile&linkedUsers=true', postBody);
+					if (response.ok) {
+						let data = [];
+						if (response.data.result.profile) {
+							data = response.data.result.profile;
+							this.setState({user: data});
+						}
+						await AsyncStorage.setItem('@patronProfile', JSON.stringify(data));
+					}
+				}
+
+				let libraryId;
+				let librarySolrScope;
+				let locationId;
+				try {
+					libraryId = await SecureStore.getItemAsync('library');
+					librarySolrScope = await SecureStore.getItemAsync('solrScope');
+					locationId = await SecureStore.getItemAsync('locationId');
+				} catch (e) {
+					console.log(e);
+				}
+
+				if(libraryId) {
+					const api = create({
+						baseURL: libraryUrl + '/API',
+						timeout: GLOBALS.timeoutAverage,
+						headers: getHeaders(),
+						auth: createAuthTokens()
+					});
+
+					const libraryProfile = await AsyncStorage.getItem('@libraryInfo');
+					if(libraryProfile === null) {
+						console.log("fetching getLibraryInfo...");
+						const response = await api.get('/SystemAPI?method=getLibraryInfo', {id: libraryId});
+						if(response.ok) {
+							let data = [];
+							if(response.data.result.library) {
+								data = response.data.result.library;
+								this.setState({library: data});
+							}
+							await AsyncStorage.setItem('@libraryInfo', JSON.stringify(data));
+						}
+					}
+				}
+
+				if(locationId) {
+					const api = create({
+						baseURL: libraryUrl + '/API',
+						timeout: GLOBALS.timeoutAverage,
+						headers: getHeaders(),
+						auth: createAuthTokens()
+					});
+
+					const locationProfile = await AsyncStorage.getItem('@locationInfo');
+					if(locationProfile === null) {
+						console.log("fetching getLocationInfo...");
+						const response = await api.get('/SystemAPI?method=getLocationInfo', {id: locationId, library: librarySolrScope, version: Constants.manifest.version});
+						if(response.ok) {
+							let data = [];
+							if(response.data.result.location) {
+								data = response.data.result.location;
+								this.setState({location: data});
+							}
+							await AsyncStorage.setItem('@locationInfo', JSON.stringify(data));
+						}
+					}
+				}
+			}
+		}
 	}
 
 	render() {
+		const value = {
+			user: this.state.user,
+			library: this.state.library,
+			location: this.state.location,
+		}
+
+		//console.log(this.state.user);
+
 		if(this.state.themeSet) {
 			return (
+				<userContext.Provider value={value}>
 				<SSRProvider>
 					<NativeBaseProvider theme={this.aspenTheme}>
 						<StatusBar barStyle={this.state.statusBar} />
 						<App/>
 					</NativeBaseProvider>
 				</SSRProvider>
+				</userContext.Provider>
 			);
 		} else {
 			return (
+				<userContext.Provider value={value}>
 				<SSRProvider>
 					<NativeBaseProvider>
 						<StatusBar barStyle="dark-content"/>
 						<App/>
 					</NativeBaseProvider>
 				</SSRProvider>
+				</userContext.Provider>
 			);
 		}
 	}

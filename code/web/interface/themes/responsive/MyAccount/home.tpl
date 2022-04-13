@@ -16,49 +16,48 @@
 				<h2>{translate text='Account Summary' isPublicFacing=true}</h2>
 				{if $offline}
 					<div>
-						<div class="alert alert-warning"><strong>{translate text="The library system is currently offline." isPublicFacing=true}</strong> {translate text="We are unable to retrieve information about your account at this time." isPublicFacing=true}</div>
-					</div>
-				{else}
-					<div class="row">
-						<div class="col-tn-6">
-							<div class="btn btn-block btn-default">
-								<a href="/MyAccount/CheckedOut">
-									<div class="dashboardLabel">{translate text="Checked Out" isPublicFacing=true}</div>
-									<div class="dashboardValue"><span class="checkouts-placeholder"><img src="/images/loading.gif" alt="loading"></span></div>
-								</a>
-							</div>
-						</div>
-						<div class="col-tn-6">
-							<div class="btn btn-block btn-default">
-								<a href="/MyAccount/CheckedOut">
-									<div class="dashboardLabel">{translate text="Overdue" isPublicFacing=true}</div>
-									<div class="dashboardValue"><span class="ils-overdue-placeholder"><img src="/images/loading.gif" alt="loading"></span></div>
-								</a>
-							</div>
-						</div>
-					</div>
-					<div class="row">
-						<div class="col-sm-12">&nbsp;</div>
-					</div>
-					<div class="row">
-						<div class="col-tn-6">
-							<div class="btn btn-block btn-default">
-								<a href="/MyAccount/Holds">
-									<div class="dashboardLabel">{translate text="Holds" isPublicFacing=true}</div>
-									<div class="dashboardValue"><span class="holds-placeholder"><img src="/images/loading.gif" alt="loading"></span></div>
-								</a>
-							</div>
-						</div>
-						<div class="col-tn-6">
-							<div class="btn btn-block btn-default">
-								<a href="/MyAccount/Holds">
-									<div class="dashboardLabel">{translate text="Ready For Pickup" isPublicFacing=true}</div>
-									<div class="dashboardValue"><span class="ils-available-holds-placeholder"><img src="/images/loading.gif" alt="loading"></span></div>
-								</a>
-							</div>
-						</div>
+						<div class="alert alert-warning"><strong>{translate text=$offlineMessage isPublicFacing=true}</strong></div>
 					</div>
 				{/if}
+				<div class="row">
+					<div class="col-tn-6">
+						<div class="btn btn-block btn-default">
+							<a href="/MyAccount/CheckedOut">
+								<div class="dashboardLabel">{translate text="Checked Out" isPublicFacing=true}</div>
+								<div class="dashboardValue"><span class="checkouts-placeholder"><img src="/images/loading.gif" alt="loading"></span></div>
+							</a>
+						</div>
+					</div>
+					<div class="col-tn-6">
+						<div class="btn btn-block btn-default">
+							<a href="/MyAccount/CheckedOut">
+								<div class="dashboardLabel">{translate text="Overdue" isPublicFacing=true}</div>
+								<div class="dashboardValue"><span class="ils-overdue-placeholder"><img src="/images/loading.gif" alt="loading"></span></div>
+							</a>
+						</div>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-sm-12">&nbsp;</div>
+				</div>
+				<div class="row">
+					<div class="col-tn-6">
+						<div class="btn btn-block btn-default">
+							<a href="/MyAccount/Holds">
+								<div class="dashboardLabel">{translate text="Holds" isPublicFacing=true}</div>
+								<div class="dashboardValue"><span class="holds-placeholder"><img src="/images/loading.gif" alt="loading"></span></div>
+							</a>
+						</div>
+					</div>
+					<div class="col-tn-6">
+						<div class="btn btn-block btn-default">
+							<a href="/MyAccount/Holds">
+								<div class="dashboardLabel">{translate text="Ready For Pickup" isPublicFacing=true}</div>
+								<div class="dashboardValue"><span class="ils-available-holds-placeholder"><img src="/images/loading.gif" alt="loading"></span></div>
+							</a>
+						</div>
+					</div>
+				</div>
 			{/if}
 			{if $showRatings}
 				<h2>{translate text='Recommended for you' isPublicFacing=true}</h2>

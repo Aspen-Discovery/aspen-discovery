@@ -31,7 +31,7 @@ import {translate} from "../../translations/translations";
 import {AuthContext} from "../../components/navigation";
 import {getHeaders, problemCodeMap} from "../../util/apiAuth";
 import {popToast} from "../../components/loadError";
-
+import {GLOBALS} from "../../util/globals";
 
 export default class Login extends Component {
 
@@ -98,7 +98,7 @@ export default class Login extends Component {
 		if(Constants.manifest.slug === "aspen-lida") { baseApiUrl = Constants.manifest.extra.greenhouse; } else { baseApiUrl = Constants.manifest.extra.apiUrl; }
 		const api = create({
 			baseURL: baseApiUrl + '/API',
-			timeout: 5000,
+			timeout: 100000,
 			headers: getHeaders(),
 		});
 		const response = await api.get('/GreenhouseAPI?method=' + method, {
@@ -106,6 +106,7 @@ export default class Login extends Component {
 			longitude: global.longitude,
 			release_channel: global.releaseChannel
 		});
+		//console.log(response);
 		if (response.ok) {
 			let res = response.data;
 			if(Constants.manifest.slug === "aspen-lida") {
@@ -339,7 +340,7 @@ export default class Login extends Component {
 					: null }
 					<Center>{isBeta ? <Badge rounded={5}
 					                         mt={5}>{translate('app.beta')}</Badge> : null}</Center>
-					<Center><Text mt={5} fontSize={{base: "xs", lg: "sm"}} color="coolGray.600">v{Constants.manifest.version} [b{Constants.nativeAppVersion}] p0</Text></Center>
+					<Center><Text mt={5} fontSize={{base: "xs", lg: "sm"}} color="coolGray.600">v{Constants.manifest.version} b[{Constants.nativeAppVersion}] p[{GLOBALS.appPatch}]</Text></Center>
 				</KeyboardAvoidingView>
 			</Box>
 		);
@@ -434,10 +435,15 @@ const GetLoginForm = (props) => {
 					size={{base: "md", lg: "lg"}}
 					color="#30373b"
 					isLoading={loading}
-					isLoadingText="Submitting..."
+					isLoadingText="Logging in..."
 					onPress={() => {
 						setLoading(true);
-						signIn({ valueUser, valueSecret, libraryUrl, patronsLibrary})
+						signIn({ valueUser, valueSecret, libraryUrl, patronsLibrary});
+						setTimeout(
+							function () {
+								setLoading(false);
+							}.bind(this), 1500
+						);
 					}}
 				>
 					{translate('general.login')}

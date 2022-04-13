@@ -240,6 +240,9 @@ class Polaris extends AbstractIlsDriver
 					$curCheckout->author = $itemOut->Author;
 					$curCheckout->formats = [$itemOut->FormatDescription];
 					$curCheckout->callNumber = $itemOut->CallNumber;
+					if (!empty($itemOut->Designation)){
+						$curCheckout->callNumber .= ' ' . $itemOut->Designation;
+					}
 
 					require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
 					$recordDriver = new MarcRecordDriver((string)$curCheckout->recordId);
@@ -488,6 +491,9 @@ class Polaris extends AbstractIlsDriver
 				$curHold->title = $holdInfo->Title;
 				$curHold->author = $holdInfo->Author;
 				$curHold->callNumber = $holdInfo->CallNumber;
+				if (!empty($holdInfo->Designation)){
+					$curHold->callNumber .= ' ' . $holdInfo->Designation;
+				}
 				$curPickupBranch = new Location();
 				$curPickupBranch->code = $holdInfo->PickupBranchID;
 				if ($curPickupBranch->find(true)) {
@@ -541,89 +547,54 @@ class Polaris extends AbstractIlsDriver
 			$title = $record->getTitle();
 		}
 
-		global $offlineMode;
-		if ($offlineMode) {
-			require_once ROOT_DIR . '/sys/OfflineHold.php';
-			$offlineHold                = new OfflineHold();
-			$offlineHold->bibId         = $shortId;
-			$offlineHold->patronBarcode = $patron->getBarcode();
-			$offlineHold->patronId      = $patron->id;
-			$offlineHold->timeEntered   = time();
-			$offlineHold->status        = 'Not Processed';
-			if ($offlineHold->insert()) {
-				$result['title'] = $title;
-				$result['bib'] = $shortId;
-				$result['success'] = true;
-				$result['message'] = translate(['text' => 'The circulation system is currently offline.  This hold will be entered for you automatically when the circulation system is online.', 'isPublicFacing' => true]);
-
-				// Result for API or app use
-				$result['api']['title'] = translate(['text'=>'Hold placed successfully', 'isPublicFacing'=>true]);
-				$result['api']['message'] = translate(['text'=>'The circulation system is currently offline.  This hold will be entered for you automatically when the circulation system is online.', 'isPublicFacing'=>true]);
-
-				return $result;
-			} else {
-				$result['title'] = $title;
-				$result['bib'] = $shortId;
-				$result['success'] = false;
-				$result['message'] = translate(['text' => 'The circulation system is currently offline and we could not place this hold.  Please try again later.', 'isPublicFacing' => true]);
-
-				// Result for API or app use
-				$result['api']['title'] = translate(['text'=>'Unable to place hold', 'isPublicFacing'=>true]);
-				$result['api']['message'] = translate(['text'=>'The circulation system is currently offline and we could not place this hold.  Please try again later.', 'isPublicFacing'=>true]);
-
-				return $result;
-			}
-
-		} else {
-			$polarisUrl = "/PAPIService/REST/public/v1/1033/100/1/holdrequest";
-			$body = new stdClass();
-			$body->PatronID = (int)$patron->username;
-			$body->BibID = (int)$shortId;
-			if (!empty($itemId)) {
-				//Check to see if we also have a volume
-				$relatedRecord = $record->getRelatedRecord();
-				foreach ($relatedRecord->getItems() as $item){
-					if ($item->itemId == $itemId){
-						if (!empty($item->volume)) {
-							//Volume holds just need the volume
-							$body->VolumeNumber = $item->volume;
-						}else{
-							$marcRecord = $record->getMarcRecord();
-							//If we place a hold on just an item, we need a barcode for the item rather than the record number
-							/** @var File_MARC_Data_Field[] $marcItems */
-							$marcItems = $marcRecord->getFields($this->getIndexingProfile()->itemTag);
-							foreach ($marcItems as $marcItem) {
-								$itemSubField = $marcItem->getSubfield($this->getIndexingProfile()->itemRecordNumber);
-								if ($itemSubField->getData() == $itemId){
-									$barcodeSubfield = $marcItem->getSubfield($this->getIndexingProfile()->barcode);
-									if ($barcodeSubfield != null) {
-										$body->ItemBarcode = $barcodeSubfield->getData();
-										break;
-									}
+		$polarisUrl = "/PAPIService/REST/public/v1/1033/100/1/holdrequest";
+		$body = new stdClass();
+		$body->PatronID = (int)$patron->username;
+		$body->BibID = (int)$shortId;
+		if (!empty($itemId)) {
+			//Check to see if we also have a volume
+			$relatedRecord = $record->getRelatedRecord();
+			foreach ($relatedRecord->getItems() as $item){
+				if ($item->itemId == $itemId){
+					if (!empty($item->volume)) {
+						//Volume holds just need the volume
+						$body->VolumeNumber = $item->volume;
+					}else{
+						$marcRecord = $record->getMarcRecord();
+						//If we place a hold on just an item, we need a barcode for the item rather than the record number
+						/** @var File_MARC_Data_Field[] $marcItems */
+						$marcItems = $marcRecord->getFields($this->getIndexingProfile()->itemTag);
+						foreach ($marcItems as $marcItem) {
+							$itemSubField = $marcItem->getSubfield($this->getIndexingProfile()->itemRecordNumber);
+							if ($itemSubField->getData() == $itemId){
+								$barcodeSubfield = $marcItem->getSubfield($this->getIndexingProfile()->barcode);
+								if ($barcodeSubfield != null) {
+									$body->ItemBarcode = $barcodeSubfield->getData();
+									break;
 								}
 							}
 						}
-						break;
 					}
+					break;
 				}
 			}
-			$body->PickupOrgID = (int)$pickupBranch;
-			//Need to set the Workstation
-			$body->WorkstationID = $this->getWorkstationID($patron);
-			//Get the ID of the staff user
-			$staffUserInfo = $this->getStaffUserInfo();
-			$body->UserID = (int)$staffUserInfo['polarisId'];
-			$body->RequestingOrgID = (int)$patron->getHomeLocationCode();
-			$encodedBody = json_encode($body);
-			$response = $this->getWebServiceResponse($polarisUrl, 'POST', '', $encodedBody);
-			ExternalRequestLogEntry::logRequest('polaris.placeHold', 'POST', $this->getWebServiceURL() . $polarisUrl, $this->apiCurlWrapper->getHeaders(), $encodedBody, $this->lastResponseCode, $response, []);
-			$hold_result = $this->processHoldRequestResponse($response, $patron);
-
-			$hold_result['title'] = $title;
-			$hold_result['bid']   = $shortId;
-
-			return $hold_result;
 		}
+		$body->PickupOrgID = (int)$pickupBranch;
+		//Need to set the Workstation
+		$body->WorkstationID = $this->getWorkstationID($patron);
+		//Get the ID of the staff user
+		$staffUserInfo = $this->getStaffUserInfo();
+		$body->UserID = (int)$staffUserInfo['polarisId'];
+		$body->RequestingOrgID = (int)$patron->getHomeLocationCode();
+		$encodedBody = json_encode($body);
+		$response = $this->getWebServiceResponse($polarisUrl, 'POST', '', $encodedBody);
+		ExternalRequestLogEntry::logRequest('polaris.placeHold', 'POST', $this->getWebServiceURL() . $polarisUrl, $this->apiCurlWrapper->getHeaders(), $encodedBody, $this->lastResponseCode, $response, []);
+		$hold_result = $this->processHoldRequestResponse($response, $patron);
+
+		$hold_result['title'] = $title;
+		$hold_result['bid']   = $shortId;
+
+		return $hold_result;
 	}
 
 	public function placeVolumeHold(User $patron, $recordId, $volumeId, $pickupBranch)

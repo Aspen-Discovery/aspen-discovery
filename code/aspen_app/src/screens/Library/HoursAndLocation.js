@@ -17,8 +17,8 @@ const HoursAndLocation = (props) => {
 					<HStack space={3} alignItems="center">
 						<Icon as={MaterialIcons} name="schedule" size="sm" mt={0.3} mr={-1}/>
 						<Text fontSize="lg" bold>{translate('library_contact.today_hours')}</Text>
-						<Text>{description}</Text>
 					</HStack>
+					<Text>{description}</Text>
 					<Text alignText="center" mt={2} italic>{hoursMessage}</Text>
 				</Center>
 			</Box>

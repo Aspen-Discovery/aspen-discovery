@@ -169,7 +169,7 @@ class SearchAPI extends Action
 			$this->addServerStat($serverStats, 'Percent Memory In Use', $percentMemoryUsage);
 			if ($freeMem < 1000000000){
 				$this->addCheck($checks, 'Memory Usage', self::STATUS_CRITICAL, "Less than 1GB ($freeMem) of available memory exists, increase available resources");
-			}elseif ($percentMemoryUsage > 95){
+			}elseif ($percentMemoryUsage > 95 && $freeMem < 2500000000){
 				$this->addCheck($checks, 'Memory Usage', self::STATUS_CRITICAL, "{$percentMemoryUsage}% of total memory is in use, increase available resources");
 			}else{
 				$this->addCheck($checks, 'Memory Usage');
@@ -435,16 +435,6 @@ class SearchAPI extends Action
 		$omdbSetting = new OMDBSetting();
 		if ($omdbSetting->find(true)){
 			$this->addCheck($checks, "OMDB");
-		}
-
-		// Unprocessed Offline Holds //
-		$offlineHoldEntry = new OfflineHold();
-		$offlineHoldEntry->status = 'Not Processed';
-		$offlineHolds = $offlineHoldEntry->count();
-		if (!empty($offlineHolds)) {
-			$this->addCheck($checks, "Offline Holds", self::STATUS_CRITICAL, "There are $offlineHolds un-processed offline holds");
-		}else{
-			$this->addCheck($checks, "Offline Holds");
 		}
 
 		$hasCriticalErrors = false;
@@ -1364,12 +1354,18 @@ class SearchAPI extends Action
 		// - the display label
 		// - Clickable link to load the category
 		foreach ($browseCategories as $curCategory){
+			$categoryResponse = [];
 			$categoryInformation = new BrowseCategory();
 			$categoryInformation->id = $curCategory->browseCategoryId;
 
 			if ($categoryInformation->find(true)) {
 				if ($categoryInformation->isValidForDisplay($appUser) && ($categoryInformation->source == "GroupedWork" || $categoryInformation->source == "List")) {
 					if ($categoryInformation->textId == ("system_saved_searches")) {
+						$categoryResponse = array(
+							'key' => $categoryInformation->textId,
+							'title' => $categoryInformation->label,
+							'source' => $categoryInformation->source,
+						);
 						$savedSearches = $listApi->getSavedSearches();
 						$allSearches = $savedSearches['searches'];
 						$categoryResponse['subCategories'] = [];
@@ -1381,6 +1377,11 @@ class SearchAPI extends Action
 							];
 						}
 					} elseif ($categoryInformation->textId == ("system_user_lists")) {
+						$categoryResponse = array(
+							'key' => $categoryInformation->textId,
+							'title' => $categoryInformation->label,
+							'source' => $categoryInformation->source,
+						);
 						$userLists = $listApi->getUserLists();
 						$categoryResponse['subCategories'] = [];
 						$allUserLists = $userLists['lists'];
@@ -1395,6 +1396,12 @@ class SearchAPI extends Action
 								}
 							}
 						}
+					} elseif ($categoryInformation->textId == ("system_recommended_for_you")) {
+						$categoryResponse = array(
+							'key' => $categoryInformation->textId,
+							'title' => $categoryInformation->label,
+							'source' => $categoryInformation->source,
+						);
 					} else {
 						$categoryResponse = array(
 							'key' => $categoryInformation->textId,

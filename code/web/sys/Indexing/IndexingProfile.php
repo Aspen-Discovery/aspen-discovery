@@ -57,6 +57,7 @@ class IndexingProfile extends DataObject
 	public $status;
 	public /** @noinspection PhpUnused */ $nonHoldableStatuses;
 	public /** @noinspection PhpUnused */ $statusesToSuppress;
+	public /** @noinspection PhpUnused */ $treatLibraryUseOnlyGroupedStatusesAsAvailable;
 	public /** @noinspection PhpUnused */ $totalCheckouts;
 	public /** @noinspection PhpUnused */ $lastYearCheckouts;
 	public /** @noinspection PhpUnused */ $yearToDateCheckouts;
@@ -182,6 +183,7 @@ class IndexingProfile extends DataObject
 				'status' => array('property' => 'status', 'type' => 'text', 'label' => 'Status', 'maxLength' => 1, 'description' => 'Subfield for status', 'forcesReindex' => true),
 				'nonHoldableStatuses' => array('property' => 'nonHoldableStatuses', 'type' => 'text', 'label' => 'Non Holdable Statuses', 'maxLength' => 255, 'description' => 'A regular expression for any statuses that should not allow holds', 'forcesReindex' => true),
 				'statusesToSuppress' => array('property' => 'statusesToSuppress', 'type' => 'text', 'label' => 'Statuses To Suppress', 'maxLength' => 100, 'description' => 'A regular expression for any statuses that should be suppressed', 'forcesReindex' => true),
+				'treatLibraryUseOnlyGroupedStatusesAsAvailable' => array('property' => 'treatLibraryUseOnlyGroupedStatusesAsAvailable', 'type' => 'checkbox', 'label' => 'Treat Library Use Only Grouped Statuses As Available', 'description' => 'Should items that have a grouped status of Library Use Only be treated as Available', 'forcesReindex' => true, 'default'=>1),
 				'totalCheckouts' => array('property' => 'totalCheckouts', 'type' => 'text', 'label' => 'Total Checkouts', 'maxLength' => 1, 'description' => 'Subfield for total checkouts', 'forcesReindex' => true),
 				'lastYearCheckouts' => array('property' => 'lastYearCheckouts', 'type' => 'text', 'label' => 'Last Year Checkouts', 'maxLength' => 1, 'description' => 'Subfield for checkouts done last year', 'forcesReindex' => true),
 				'yearToDateCheckouts' => array('property' => 'yearToDateCheckouts', 'type' => 'text', 'label' => 'Year To Date', 'maxLength' => 1, 'description' => 'Subfield for checkouts so far this year', 'forcesReindex' => true),

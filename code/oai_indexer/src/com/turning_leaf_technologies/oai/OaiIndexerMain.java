@@ -241,7 +241,7 @@ public class OaiIndexerMain {
 							try {
 								oaiUrl = baseUrl + "?verb=ListRecords&resumptionToken=" + URLEncoder.encode(resumptionToken, "UTF-8");
 							} catch (UnsupportedEncodingException e) {
-								logger.error("Error encoding resumption token", e);
+								logEntry.incErrors("Error encoding resumption token", e);
 								return;
 							}
 						} else {
@@ -258,7 +258,7 @@ public class OaiIndexerMain {
 								try {
 									oaiUrl += "&set=" + URLEncoder.encode(oaiSet, "UTF8");
 								} catch (UnsupportedEncodingException e) {
-									logger.error("Error encoding resumption token", e);
+									logEntry.incErrors("Error encoding resumption token", e);
 									return;
 								}
 							}
@@ -306,7 +306,7 @@ public class OaiIndexerMain {
 								}
 							}
 						} catch (Exception e) {
-							logger.error("Error parsing OAI data ", e);
+							logEntry.incErrors("Error parsing OAI data ", e);
 						}
 						logEntry.saveResults();
 					}
@@ -320,9 +320,9 @@ public class OaiIndexerMain {
 			}
 		}
 
-		logger.info("Loaded " + numRecordsLoaded + " records from " + collectionName + ".");
+		logEntry.addNote("Loaded " + numRecordsLoaded + " records from " + collectionName + ".");
 		if (numRecordsSkipped > 0) {
-			logger.info("Skipped " + numRecordsSkipped + " records from " + collectionName + ".");
+			logEntry.addNote("Skipped " + numRecordsSkipped + " records from " + collectionName + ".");
 		}
 
 		if (existingRecords.size() > 0) {
@@ -333,7 +333,7 @@ public class OaiIndexerMain {
 						idsToDelete.add(existingOAIRecord.id);
 					}
 				}
-				logger.info("Deleted " + idsToDelete.size() + " records from " + collectionName + ".");
+				logEntry.addNote("Deleted " + idsToDelete.size() + " records from " + collectionName + ".");
 				for (Long idToDelete : idsToDelete) {
 					deleteOpenArchivesRecord.setLong(1, idToDelete);
 					deleteOpenArchivesRecord.executeUpdate();
@@ -352,7 +352,7 @@ public class OaiIndexerMain {
 		try {
 			updateServer.commit(true, true, false);
 		} catch (Exception e) {
-			logger.error("Error in final commit", e);
+			logEntry.incErrors("Error in final commit", e);
 		}
 
 		//Update that we indexed the collection

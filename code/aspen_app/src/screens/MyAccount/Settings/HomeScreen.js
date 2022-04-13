@@ -1,18 +1,15 @@
 import React, {Component} from "react";
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {Box, FlatList, HStack, Switch, Text, VStack, Pressable} from "native-base";
-import _ from "lodash";
+import {Box, FlatList, HStack, Switch, Text, ScrollView} from "native-base";
 
 // custom components and helper files
-import {translate} from '../../../translations/translations';
-import {loadingSpinner} from "../../../components/loadingSpinner";
 import {loadError} from "../../../components/loadError";
-import {getActiveBrowseCategories} from "../../../util/loadLibrary";
-import {getHiddenBrowseCategories, getPatronBrowseCategories} from "../../../util/loadPatron";
+import {getPatronBrowseCategories} from "../../../util/loadPatron";
 import {dismissBrowseCategory, showBrowseCategory} from "../../../util/accountActions";
+import {userContext} from "../../../context/user";
+import {loadingSpinner} from "../../../components/loadingSpinner";
 
 export default class Settings_HomeScreen extends Component {
-
 	constructor(props) {
 		super(props);
 		this.state = {
@@ -22,22 +19,21 @@ export default class Settings_HomeScreen extends Component {
 			hasUpdated: false,
 			isRefreshing: false,
 			browseCategories: [],
-			user: [],
 			patronCategories: [],
 		};
-		getPatronBrowseCategories();
-		this.loadUser();
+		//getPatronBrowseCategories();
 		this.loadBrowseCategories();
 	}
 
 	// store the values into the state
 	componentDidMount = async () => {
 		this.setState({
-			isLoading: false,
+			isLoading: true,
 		});
 
-		await this.loadUser();
-		await this.loadBrowseCategories();
+		await this.loadBrowseCategories().then(r => {
+			this.setState({ isLoading: false });
+		});
 
 		this.interval = setInterval(() => {
 			this.loadBrowseCategories();
@@ -51,66 +47,70 @@ export default class Settings_HomeScreen extends Component {
 		clearInterval(this.interval);
 	}
 
-
-	loadUser = async () => {
-		const tmp = await AsyncStorage.getItem('@patronProfile');
-		const profile = JSON.parse(tmp);
-		this.setState({
-			user: profile,
-			isLoading: false,
-		})
-	}
-
 	loadBrowseCategories = async () => {
-		const tmp = await AsyncStorage.getItem('@patronBrowseCategories');
-		const items = JSON.parse(tmp);
-		this.setState({
-			patronCategories: items,
-			isLoading: false,
+		const { route } = this.props;
+		const libraryUrl = route.params?.libraryUrl ?? 'null';
+		const patronId = route.params?.patronId ?? 'null';
+
+		await getPatronBrowseCategories(libraryUrl, patronId).then(res => {
+			this.setState({
+				patronCategories: res,
+				isLoading: false,
+			})
 		})
 	}
 
 	// Update the status of the browse category when the toggle switch is flipped
-	updateToggle = async (item) => {
+	updateToggle = async (item, user, libraryUrl) => {
 		if (item.isHidden === true) {
-			await showBrowseCategory(item.key);
+			await showBrowseCategory(libraryUrl, item.key, user);
 		} else {
-			await dismissBrowseCategory(item.key, this.state.user.id);
+			await dismissBrowseCategory(libraryUrl, item.key, user);
 		}
 	};
 
 
-	renderNativeItem = (item) => {
+	renderNativeItem = (item, patronId, libraryUrl) => {
 		return (
 			<Box borderBottomWidth="1" _dark={{ borderColor: "gray.600" }} borderColor="coolGray.200" pl="4" pr="5" py="2">
 				<HStack space={3} alignItems="center" justifyContent="space-between" pb={1}>
 					<Text isTruncated bold maxW="80%" fontSize={{base: "lg", lg: "xl"}}>{item.title}</Text>
-					{item.isHidden ? <Switch size={{base: "md", lg: "lg"}} onValueChange={() => this.updateToggle(item)}/> :
-						<Switch size={{base: "md", lg: "lg"}} onValueChange={() => this.updateToggle(item)} defaultIsChecked/>}
+					{item.isHidden ? <Switch size={{base: "md", lg: "lg"}} onValueChange={() => this.updateToggle(item, patronId, libraryUrl)}/> :
+						<Switch size={{base: "md", lg: "lg"}} onValueChange={() => this.updateToggle(item, patronId, libraryUrl)} defaultIsChecked/>}
 				</HStack>
 			</Box>
 		);
 	};
 
-	render() {
+	static contextType = userContext;
 
-		const {user, patronCategories} = this.state;
+	render() {
+		const {patronCategories} = this.state;
+		const user = this.context.user;
+		const location = this.context.location;
+		const library = this.context.library;
+
+		if (this.state.isLoading === true) {
+			return (loadingSpinner());
+		}
 
 		if (this.state.hasError) {
 			return (loadError(this.state.error));
 		}
 
 		if (!patronCategories) {
-			return (loadError("No categories"));
+			return (loadError("Unable to load browse categories"));
 		}
 
 		return (
+			<ScrollView style={{ marginBottom: 80 }}>
 			<Box>
 				<FlatList
 					data={patronCategories}
-					renderItem={({item}) => this.renderNativeItem(item)}
+					renderItem={({item}) => this.renderNativeItem(item, user.id, library.baseUrl)}
 				/>
 			</Box>
+			</ScrollView>
 		);
 	}
 }

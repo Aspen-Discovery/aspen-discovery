@@ -1,11 +1,12 @@
 <?php
 
+require_once ROOT_DIR . '/sys/DB/LibraryLocationLinkedObject.php';
 require_once ROOT_DIR . '/sys/LocalEnrichment/PlacardTrigger.php';
 require_once ROOT_DIR . '/sys/LocalEnrichment/PlacardLibrary.php';
 require_once ROOT_DIR . '/sys/LocalEnrichment/PlacardLocation.php';
 require_once ROOT_DIR . '/sys/LocalEnrichment/PlacardLanguage.php';
 
-class Placard extends DataObject
+class Placard extends DB_LibraryLocationLinkedObject
 {
 	public $__table = 'placards';
 	public $id;
@@ -19,9 +20,15 @@ class Placard extends DataObject
 	public $startDate;
 	public $endDate;
 
-	private $_libraries;
-	private $_locations;
-	private $_languages;
+	protected $_triggers;
+	protected $_libraries;
+	protected $_locations;
+	protected $_languages;
+
+	public function getUniquenessFields(): array
+	{
+		return ['title'];
+	}
 
 	static function getObjectStructure() : array {
 		$placardTriggerStructure = PlacardTrigger::getObjectStructure();
@@ -86,33 +93,48 @@ class Placard extends DataObject
 		];
 	}
 
+	/**
+	 * @return int[]
+	 */
+	public function getLibraries() : ?array
+	{
+		if (!isset($this->_libraries) && $this->id){
+			$this->_libraries = [];
+			$obj = new PlacardLibrary();
+			$obj->placardId = $this->id;
+			$obj->find();
+			while($obj->fetch()){
+				$this->_libraries[$obj->libraryId] = $obj->libraryId;
+			}
+		}
+		return $this->_libraries;
+	}
+
+	/**
+	 * @return int[]
+	 */
+	public function getLocations() : ?array
+	{
+		if (!isset($this->_locations) && $this->id){
+			$this->_locations = [];
+			$obj = new PlacardLocation();
+			$obj->placardId = $this->id;
+			$obj->find();
+			while($obj->fetch()){
+				$this->_locations[$obj->locationId] = $obj->locationId;
+			}
+		}
+		return $this->_locations;
+	}
+
 	public function __get($name){
 		if ($name == "libraries") {
-			if (!isset($this->_libraries) && $this->id){
-				$this->_libraries = [];
-				$obj = new PlacardLibrary();
-				$obj->placardId = $this->id;
-				$obj->find();
-				while($obj->fetch()){
-					$this->_libraries[$obj->libraryId] = $obj->libraryId;
-				}
-			}
-			return $this->_libraries;
+			return $this->getLibraries();
 		} elseif ($name == "locations") {
-			if (!isset($this->_locations) && $this->id){
-				$this->_locations = [];
-				$obj = new PlacardLocation();
-				$obj->placardId = $this->id;
-				$obj->find();
-				while($obj->fetch()){
-					$this->_locations[$obj->locationId] = $obj->locationId;
-				}
-			}
-			return $this->_locations;
+			return $this->getLocations();
 		} elseif ($name == 'triggers') {
 			$this->getTriggers();
-			/** @noinspection PhpUndefinedFieldInspection */
-			return $this->triggers;
+			return $this->_triggers;
 		} elseif ($name == 'languages') {
 			$this->getLanguages();
 			return $this->_languages;
@@ -127,8 +149,7 @@ class Placard extends DataObject
 		}elseif ($name == "locations") {
 			$this->_locations = $value;
 		}elseif ($name == 'triggers') {
-			/** @noinspection PhpUndefinedFieldInspection */
-			$this->triggers = $value;
+			$this->_triggers = $value;
 		}elseif ($name == 'languages') {
 			$this->_languages = $value;
 		}else{
@@ -195,9 +216,9 @@ class Placard extends DataObject
 	}
 
 	public function saveTriggers(){
-		if (isset ($this->triggers) && is_array($this->triggers)) {
+		if (isset ($this->_triggers) && is_array($this->_triggers)) {
 			/** @var PlacardTrigger $trigger */
-			foreach ($this->triggers as $trigger) {
+			foreach ($this->_triggers as $trigger) {
 				if ($trigger->_deleteOnSave == true) {
 					$trigger->delete();
 				} else {
@@ -209,25 +230,31 @@ class Placard extends DataObject
 					}
 				}
 			}
-			unset($this->triggers);
+			unset($this->_triggers);
 		}
 	}
 
-	public function getTriggers(){
-		if (!isset($this->triggers) && $this->id) {
-			$this->triggers = [];
+	/**
+	 * @return PlacardTrigger[]
+	 */
+	public function getTriggers() : ?array{
+		if (!isset($this->_triggers) && $this->id) {
+			$this->_triggers = [];
 			$trigger = new PlacardTrigger();
 			$trigger->placardId = $this->id;
 			$trigger->orderBy('triggerWord');
 			$trigger->find();
 			while ($trigger->fetch()) {
-				$this->triggers[$trigger->id] = clone($trigger);
+				$this->_triggers[$trigger->id] = clone($trigger);
 			}
 		}
-		return $this->triggers;
+		return $this->_triggers;
 	}
 
-	public function getLanguages(){
+	/**
+	 * @return int[]
+	 */
+	public function getLanguages() : ?array{
 		if (!isset($this->_languages) && $this->id) {
 			$this->_languages = [];
 			$language = new PlacardLanguage();
@@ -361,5 +388,57 @@ class Placard extends DataObject
 			return false;
 		}
 		return true;
+	}
+
+	public function getLinksForJSON() : array{
+		$links = parent::getLinksForJSON();
+		//Triggers
+		$triggers = $this->getTriggers();
+		$links['triggers'] = [];
+		foreach ($triggers as $trigger){
+			$triggerArray = $trigger->toArray();
+			$links['triggers'][] = $triggerArray;
+		}
+		//Languages
+		$languages = $this->getLanguages();
+		$links['languages'] = [];
+		foreach ($languages as $languageId){
+			$language = new Language();
+			$language->id = $languageId;
+			if ($language->find(true)){
+				$links['languages'][] = $language->code;
+			}
+		}
+
+		return $links;
+	}
+
+	public function loadRelatedLinksFromJSON($jsonLinks, $mappings, $overrideExisting = 'keepExisting') : bool{
+		$result = parent::loadRelatedLinksFromJSON($jsonLinks, $mappings);
+
+		if (array_key_exists('triggers', $jsonLinks)){
+			$triggers = [];
+			foreach ($jsonLinks['triggers'] as $trigger){
+				$triggerObj = new PlacardTrigger();
+				$triggerObj->placardId = $this->id;
+				$triggerObj->loadFromJSON($trigger, $mappings);
+				$triggers[] = $triggerObj;
+			}
+			$this->_triggers = $triggers;
+			$result = true;
+		}
+		if (array_key_exists('languages', $jsonLinks)){
+			$languages = [];
+			$languageIds = Language::getLanguageIdsByCode();
+			foreach ($jsonLinks['languages'] as $language){
+				if (array_key_exists($language, $languageIds)){
+					$languageId = $languageIds[$language];
+					$languages[$languageId] = $languageId;
+				}
+			}
+			$this->_languages = $languages;
+			$result = true;
+		}
+		return $result;
 	}
 }

@@ -40,7 +40,6 @@ function getTranslationMap($name)
 {
 	//Check to see if there is a domain name based sub-folder for he configuration
 	global $serverName;
-	/** @var Memcache $memCache */
 	global $memCache;
 	$mapValues = $memCache->get('translation_map_' . $serverName . '_' . $name);
 	if ($mapValues != false && $mapValues != null && !isset($_REQUEST['reload'])) {

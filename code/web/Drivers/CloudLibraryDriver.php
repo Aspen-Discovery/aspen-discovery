@@ -441,6 +441,10 @@ class CloudLibraryDriver extends AbstractEContentDriver
 	{
 		$result = ['success' => false, 'message' => translate(['text'=>'Unknown Error', 'isPublicFacing'=>true])];
 
+		// Result for API or app use
+		$result['api']['title'] = translate(['text'=>'Unknown Error', 'isPublicFacing'=>true]);
+		$result['api']['message'] = translate(['text'=>'Unable to checkout title at this time. Please try again later.', 'isPublicFacing'=>true]);
+
 		$settings = $this->getSettings($patron);
 		$patronId = str_replace(' ', '', $patron->getBarcode());
 		$password = $patron->getPasswordOrPin();
@@ -637,7 +641,7 @@ class CloudLibraryDriver extends AbstractEContentDriver
 		$patronId = str_replace(' ', '', $user->getBarcode());
 		$apiPath = "/cirrus/library/{$settings->libraryId}/patron/$patronId";
 		$authenticationResponse = $this->callCloudLibraryUrl($settings, $apiPath);
-        ExternalRequestLogEntry::logRequest('cloudLibrary.checkAuthentication', 'GET', $settings->apiUrl . $apiPath, $this->curlWrapper->getHeaders(), '', $this->curlWrapper->getResponseCode(), $authenticationResponse, ['password' => $password]);
+        ExternalRequestLogEntry::logRequest('cloudLibrary.checkAuthentication', 'GET', $settings->apiUrl . $apiPath, $this->curlWrapper->getHeaders(), '', $this->curlWrapper->getResponseCode(), $authenticationResponse, ['password' => $user->getPasswordOrPin()]);
 		/** @var SimpleXMLElement $authentication */
 		$authentication = simplexml_load_string($authenticationResponse);
 		if ($authentication->result == 'SUCCESS'){

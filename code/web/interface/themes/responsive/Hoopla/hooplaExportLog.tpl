@@ -33,8 +33,8 @@
 				</div>
 			</div>
 		</form>
-		<div id="exportLogContainer">
-			<table class="logEntryDetails table table-condensed table-hover">
+		<div class="adminTableRegion fixed-height-table">
+			<table class="adminTable table table-condensed table-hover table-condensed smallText table-sticky">
 				<thead>
 					<tr>
 						<th>{translate text="Id" isAdminFacing=true}</th>

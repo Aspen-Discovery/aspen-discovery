@@ -20,6 +20,8 @@ class SystemVariables extends DataObject
 	public $libraryToUseForPayments;
 	public $solrConnectTimeout;
 	public $solrQueryTimeout;
+	public $catalogStatus;
+	public $offlineMessage;
 
 	static function getObjectStructure() : array {
 		return [
@@ -39,6 +41,8 @@ class SystemVariables extends DataObject
 			'libraryToUseForPayments' => ['property'=>'libraryToUseForPayments','type'=>'enum','values'=>[0=>'Patron Home Library', 1=>'Active Catalog'], 'label'=>'Library to use for fine payments', 'description'=>'What library settings should be used when making fine payments', 'default'=>0],
 			'solrConnectTimeout' => ['property' => 'solrConnectTimeout', 'type' => 'integer', 'label' => 'Solr Connect Timeout in seconds', 'required'=> true, 'default' => 2, 'min'=>1],
 			'solrQueryTimeout' => ['property' => 'solrQueryTimeout', 'type' => 'integer', 'label' => 'Solr Query Timeout in seconds', 'required'=> true, 'default' => 10, 'min'=>1],
+			'catalogStatus' => ['property' => 'catalogStatus', 'type' => 'enum', 'values' => [0=>'Catalog Online', 1=> 'Catalog Offline, no login allowed', 2 => 'Catalog Offline, login allowed with eContent active'], 'label' => 'Catalog Online/Offline', 'description' => 'Allows Aspen to be placed in offline mode for use during migrations and upgrade processes', 'default'=>0],
+			'offlineMessage' => ['property' => 'offlineMessage', 'type' => 'html', 'label' => 'Offline Message', 'description' => 'A message to be displayed while Aspen is offline.', 'default'=>'The catalog is down for maintenance, please check back later.', 'hideInLists' => true],
 		];
 	}
 

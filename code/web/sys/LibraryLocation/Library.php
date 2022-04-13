@@ -104,6 +104,7 @@ class Library extends DataObject
 	public $payPalSettingId;
 	public $proPaySettingId;
 	public $worldPaySettingId;
+	public $xpressPaySettingId;
 
 	public /** @noinspection PhpUnused */ $repeatSearchOption;
 	public /** @noinspection PhpUnused */ $repeatInOnlineCollection;
@@ -153,6 +154,8 @@ class Library extends DataObject
 	public /** @noinspection PhpUnused */ $showWikipediaContent;
 	public $showCitationStyleGuides;
 	public $restrictOwningBranchesAndSystems;
+	public $allowNameUpdates;
+	public $allowDateOfBirthUpdates;
 	public $allowPatronAddressUpdates;
 	public $allowPatronPhoneNumberUpdates;
 	public $useAllCapsWhenUpdatingProfile;
@@ -201,6 +204,9 @@ class Library extends DataObject
 	public /** @noinspection PhpUnused */ $loginFormUsernameLabel;
 	public $loginFormPasswordLabel;
 	public $loginNotes;
+	public $allowLoginToPatronsOfThisLibraryOnly;
+	public $messageForPatronsOfOtherLibraries;
+
 	public $showDetailedHoldNoticeInformation;
 	public $treatPrintNoticesAsPhoneNotices;
 	public /** @noinspection PhpUnused */ $includeDplaResults;
@@ -412,6 +418,16 @@ class Library extends DataObject
 			$worldPaySettings[$worldPaySetting->id] = $worldPaySetting->name;
 		}
 
+		require_once ROOT_DIR . '/sys/ECommerce/XpressPaySetting.php';
+		$xpressPaySetting = new XpressPaySetting();
+		$xpressPaySetting->orderBy('name');
+		$xpressPaySettings = [];
+		$xpressPaySetting->find();
+		$xpressPaySettings[-1] = 'none';
+		while ($xpressPaySetting->fetch()){
+			$xpressPaySettings[$xpressPaySetting->id] = $xpressPaySetting->name;
+		}
+
 		require_once ROOT_DIR . '/sys/Hoopla/HooplaScope.php';
 		$hooplaScope = new HooplaScope();
 		$hooplaScope->orderBy('name');
@@ -575,6 +591,8 @@ class Library extends DataObject
 					'patronNameDisplayStyle'               => array('property'=>'patronNameDisplayStyle', 'type'=>'enum', 'values'=>array('firstinitial_lastname'=>'First Initial. Last Name', 'lastinitial_firstname'=>'First Name Last Initial.'), 'label'=>'Patron Display Name Style', 'description'=>'How to generate the patron display name', 'permissions' => ['Library ILS Options']),
 					'allowProfileUpdates'                  => array('property'=>'allowProfileUpdates', 'type'=>'checkbox', 'label'=>'Allow Profile Updates', 'description'=>'Whether or not the user can update their own profile.', 'hideInLists' => true, 'default' => 1, 'readonly' => false, 'permissions' => ['Library ILS Connection']),
 					'allowUsernameUpdates'                 => array('property'=>'allowUsernameUpdates', 'type'=>'checkbox', 'label'=>'Allow Patrons to Update Their Username', 'description'=>'Whether or not the user can update their username.', 'hideInLists' => true, 'default' => 0, 'readonly' => false, 'permissions' => ['Library ILS Connection']),
+					'allowNameUpdates'            => array('property' => 'allowNameUpdates', 'type'=>'checkbox', 'label'=>'Allow Patrons to Update Their Name (Setting applies to Koha only)', 'description'=>'Whether or not patrons should be able to update their name in their profile.', 'hideInLists' => true, 'default' => 1, 'readOnly' => false, 'permissions' => ['Library ILS Connection']),
+					'allowDateOfBirthUpdates'            => array('property' => 'allowDateOfBirthUpdates', 'type'=>'checkbox', 'label'=>'Allow Patrons to Update Their Date of Birth (Setting applies to Koha only)', 'description'=>'Whether or not patrons should be able to update their date of birth in their profile.', 'hideInLists' => true, 'default' => 1, 'readOnly' => false, 'permissions' => ['Library ILS Connection']),
 					'allowPatronAddressUpdates'            => array('property' => 'allowPatronAddressUpdates', 'type'=>'checkbox', 'label'=>'Allow Patrons to Update Their Address', 'description'=>'Whether or not patrons should be able to update their own address in their profile.', 'hideInLists' => true, 'default' => 1, 'readOnly' => false, 'permissions' => ['Library ILS Connection']),
 					'allowPatronPhoneNumberUpdates'        => array('property' => 'allowPatronPhoneNumberUpdates', 'type'=>'checkbox', 'label'=>'Allow Patrons to Update Their Phone Number', 'description'=>'Whether or not patrons should be able to update their own phone number in their profile.', 'hideInLists' => true, 'default' => 1, 'readOnly' => false, 'permissions' => ['Library ILS Connection']),
 					'allowHomeLibraryUpdates'              => array('property'=>'allowHomeLibraryUpdates', 'type'=>'checkbox', 'label'=>'Allow Patrons to Update Their Home Library', 'description'=>'Whether or not the user can update their home library.', 'hideInLists' => true, 'default' => 1, 'readonly' => false, 'permissions' => ['Library ILS Options']),
@@ -623,6 +641,8 @@ class Library extends DataObject
 					'loginFormUsernameLabel'  => array('property'=>'loginFormUsernameLabel', 'type'=>'text', 'label'=>'Login Form Username Label', 'description'=>'The label to show for the username when logging in', 'size'=>'100', 'hideInLists' => true, 'default'=>'Your Name'),
 					'loginFormPasswordLabel'  => array('property'=>'loginFormPasswordLabel', 'type'=>'text', 'label'=>'Login Form Password Label', 'description'=>'The label to show for the password when logging in', 'size'=>'100', 'hideInLists' => true, 'default'=>'Library Card Number'),
 					'loginNotes' => array('property' => 'loginNotes', 'type' => 'markdown', 'label' => 'Login Notes', 'description' => 'Additional notes to display under the login fields', 'hideInLists' => true),
+					'allowLoginToPatronsOfThisLibraryOnly' => array('property' => 'allowLoginToPatronsOfThisLibraryOnly', 'type' => 'checkbox', 'label' => 'Allow Login to Patrons of this Library Only', 'description' => 'Whether or not only patrons with a library in this system can login', 'hideInLists' => true, 'default' => 0),
+					'messageForPatronsOfOtherLibraries' => array('property' => 'messageForPatronsOfOtherLibraries', 'type' => 'html', 'label' => 'Message for Patrons of Other Libraries', 'description' => 'A message to show to patrons of other libraries if they are denied access', 'hideInLists' => true),
 				)),
 				'messagesSection' => array('property' => 'messagesSection', 'type' => 'section', 'label' => 'Messages', 'hideInLists' => true, 'permissions' => ['Library ILS Connection'], 'properties' => array(
 					'showOpacNotes' => array('property'=>'showOpacNotes', 'type'=>'checkbox', 'label'=>'Show OPAC Notes', 'description'=>'Whether or not OPAC/Web Notes from the ILS should be shown', 'hideInLists' => true, 'default' => 0),
@@ -650,7 +670,7 @@ class Library extends DataObject
 			)),
 
 			'ecommerceSection' => array('property'=>'ecommerceSection', 'type' => 'section', 'label' =>'Fines/e-commerce', 'hideInLists' => true, 'helpLink'=>'', 'permissions' => ['Library eCommerce Options'], 'properties' => array(
-				'finePaymentType' => array('property'=>'finePaymentType', 'type'=>'enum', 'label'=>'Show E-Commerce Link', 'values' => array(0 => 'No Payment', 1 => 'Link to ILS', 4 => 'Comprise SMARTPAY', 6 => 'FIS WorldPay', 3 => 'MSB', 2 => 'PayPal', 5 => 'ProPay'), 'description'=>'Whether or not users should be allowed to pay fines', 'hideInLists' => true,),
+				'finePaymentType' => array('property'=>'finePaymentType', 'type'=>'enum', 'label'=>'Show E-Commerce Link', 'values' => array(0 => 'No Payment', 1 => 'Link to ILS', 4 => 'Comprise SMARTPAY', 7 => 'FIS WorldPay', 3 => 'MSB', 2 => 'PayPal', 5 => 'ProPay', 6 => 'Xpress-pay'), 'description'=>'Whether or not users should be allowed to pay fines', 'hideInLists' => true,),
 				'finesToPay' => array('property'=>'finesToPay', 'type'=>'enum', 'label'=>'Which fines should be paid', 'values' => array(0 => 'All Fines', 1 => 'Selected Fines', 2 => 'Partial payment of selected fines'), 'description'=>'The fines that should be paid', 'hideInLists' => true,),
 				'finePaymentOrder' => array('property'=>'finePaymentOrder', 'type'=>'text', 'label'=>'Fine Payment Order by type (separated with pipes)', 'description'=>'The order fines should be paid in separated by pipes', 'hideInLists' => true, 'default' => 'default', 'size' => 80),
 				'payFinesLink' => array('property'=>'payFinesLink', 'type'=>'text', 'label'=>'Pay Fines Link', 'description'=>'The link to pay fines.  Leave as default to link to classic (should have eCommerce link enabled)', 'hideInLists' => true, 'default' => 'default', 'size' => 80),
@@ -662,6 +682,7 @@ class Library extends DataObject
 				'worldPaySettingId'  => array('property' => 'worldPaySettingId', 'type' => 'enum', 'values' => $worldPaySettings, 'label' => 'FIS World Pay Settings', 'description' => 'The FIS WolrdPay settings to use', 'hideInLists' => true, 'default' => -1),
 				'payPalSettingId'  => array('property' => 'payPalSettingId', 'type' => 'enum', 'values' => $payPalSettings, 'label' => 'PayPal Settings', 'description' => 'The PayPal settings to use', 'hideInLists' => true, 'default' => -1),
 				'proPaySettingId'  => array('property' => 'proPaySettingId', 'type' => 'enum', 'values' => $proPaySettings, 'label' => 'ProPay Settings', 'description' => 'The ProPay settings to use', 'hideInLists' => true, 'default' => -1),
+				'xpressPaySettingId'  => array('property' => 'xpressPaySettingId', 'type' => 'enum', 'values' => $xpressPaySettings, 'label' => 'Xpress-pay Settings', 'description' => 'The Xpress-pay settings to use', 'hideInLists' => true, 'default' => -1),
 				'msbUrl' => array('property'=>'msbUrl', 'type'=>'text', 'label'=>'MSB URL', 'description'=>'The MSB payment form URL and path (but NOT the query or parameters)', 'hideInLists' => true, 'default'=>'', 'size'=>80),
 				'symphonyPaymentType' => array('property'=>'symphonyPaymentType', 'type'=>'text', 'label'=>'Symphony Payment Type', 'description'=>'Payment type to use when adding transactions to Symphony.', 'hideInLists' => true, 'default' => '', 'maxLength' => 8),
 				//'symphonyPaymentPolicy' => array('property'=>'symphonyPaymentPolicy', 'type'=>'text', 'label'=>'Symphony Payment Policy', 'description'=>'Payment policy to use when adding transactions to Symphony.', 'hideInLists' => true, 'default' => '', 'maxLength' => 8),
@@ -989,7 +1010,9 @@ class Library extends DataObject
 			unset($structure['ilsSection']['properties']['selfRegistrationSection']['properties']['selfRegistrationTemplate']);
 		}else{
 			unset($structure['ilsSection']['properties']['selfRegistrationSection']['properties']['bypassReviewQueueWhenUpdatingProfile']);
-
+		}
+		if ($ils == 'Evergreen'){
+			unset($structure['ilsSection']['properties']['masqueradeModeSection']);
 		}
 		if (!$configArray['CAS']['enabled']) {
 			unset($structure['casSection']);
@@ -1280,6 +1303,8 @@ class Library extends DataObject
 			$this->treatPrintNoticesAsPhoneNotices = 0;
 			$this->showNoticeTypeInProfile = 0;
 			$this->addSMSIndicatorToPhone = 0;
+		}elseif ($ils == 'Evergreen'){
+			$this->allowMasqueradeMode = 0;
 		}
 		$ret = parent::update();
 		if ($ret !== FALSE ){
@@ -1306,6 +1331,7 @@ class Library extends DataObject
 		// Do this last so that everything else can update even if we get an error here
 		$deleteCheck = $this->saveMaterialsRequestFormats();
 		if ($deleteCheck instanceof AspenError) {
+			$this->setLastError($deleteCheck->getMessage());
 			$ret = false;
 		}
 
@@ -1393,7 +1419,7 @@ class Library extends DataObject
 				if ($object->_deleteOnSave == true){
 					$deleteCheck = $object->delete();
 					if (!$deleteCheck) {
-						$errorString = 'Materials Request(s) are present for the format "' . $object->format . '".';
+						$errorString = "Cannot delete {$object->format} because Materials Request(s) are present for the format.";
 						return new AspenError($errorString);
 					}
 				}else{
@@ -1562,6 +1588,31 @@ class Library extends DataObject
 		return $libraryList;
 	}
 
+	static $libraryListAsObjects = null;
+	/**
+	 * @param boolean $restrictByHomeLibrary whether or not only the patron's home library should be returned
+	 * @return Library[]
+	 */
+	static function getLibraryListAsObjects($restrictByHomeLibrary): array
+	{
+		if (Library::$libraryListAsObjects == null) {
+			$library = new Library();
+			$library->orderBy('displayName');
+			if ($restrictByHomeLibrary) {
+				$homeLibrary = Library::getPatronHomeLibrary();
+				if ($homeLibrary != null) {
+					$library->libraryId = $homeLibrary->libraryId;
+				}
+			}
+			$library->find();
+			Library::$libraryListAsObjects = [];
+			while ($library->fetch()) {
+				Library::$libraryListAsObjects[$library->libraryId] = clone $library;
+			}
+		}
+		return Library::$libraryListAsObjects;
+	}
+
 	/** @var OverDriveScope */
 	private $_overdriveScope = null;
 	public function getOverdriveScope()
@@ -1678,6 +1729,7 @@ class Library extends DataObject
 	public function getApiInfo() : array
 	{
 		global $configArray;
+		global $interface;
 		$apiInfo = [
 			'libraryId' => $this->libraryId,
 			'isDefault' => $this->isDefault,
@@ -1695,6 +1747,17 @@ class Library extends DataObject
 			'email' => $this->contactEmail,
 			'themeId' => $this->theme,
 			'allowLinkedAccounts' => $this->allowLinkedAccounts,
+			'allowUserLists' => $this->showFavorites,
+			'showHoldButton' => $this->showHoldButton,
+			'allowFreezeHolds' => $this->allowFreezeHolds,
+			'showCardExpiration' => $this->showCardExpirationDate,
+			'showCardExpirationWarnings' => $this->showExpirationWarnings,
+			'enableReadingHistory' => $this->enableReadingHistory,
+			'enableSavedSearches' => $this->enableSavedSearches,
+			'allowPinReset' => $this->allowPinReset,
+			'allowProfileUpdates' => $this->allowProfileUpdates,
+			'showShareOnExternalSites' => $this->showShareOnExternalSites,
+			'discoveryVersion' => $interface->getVariable('gitBranchWithCommit')
 		];
 		if (empty($this->baseUrl)){
 			$apiInfo['baseUrl'] = $configArray['Site']['url'];

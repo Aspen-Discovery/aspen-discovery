@@ -13,7 +13,6 @@ class MaterialsRequest_Submit extends Action
 
 	function launch()
 	{
-		global $configArray;
 		global $interface;
 		global $library;
 
@@ -48,6 +47,9 @@ class MaterialsRequest_Submit extends Action
 				$materialsRequest->createdBy = UserAccount::getActiveUserId();
 				$statusQuery = new MaterialsRequestStatus();
 				$homeLibrary = Library::getPatronHomeLibrary();
+				if (is_null($homeLibrary)){
+					$homeLibrary = $library;
+				}
 				$statusQuery->libraryId = $homeLibrary->libraryId;
 				$statusQuery->isOpen = 1;
 				$materialsRequest->joinAdd($statusQuery, 'INNER', 'status', 'status', 'id');

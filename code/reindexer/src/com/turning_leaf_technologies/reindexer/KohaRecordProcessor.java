@@ -167,7 +167,8 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 
 	@Override
 	protected boolean isItemAvailable(ItemInfo itemInfo) {
-		return !inTransitItems.contains(itemInfo.getItemIdentifier()) && (itemInfo.getDetailedStatus().equals("On Shelf") || itemInfo.getDetailedStatus().equals("Library Use Only"));
+		String displayGroupedStatus = getDisplayGroupedStatus(itemInfo, itemInfo.getFullRecordIdentifier());
+		return !inTransitItems.contains(itemInfo.getItemIdentifier()) && (itemInfo.getDetailedStatus().equals("On Shelf") || (treatLibraryUseOnlyGroupedStatusesAsAvailable && itemInfo.getGroupedStatus().equals("Library Use Only")));
 	}
 
 	@Override
@@ -628,12 +629,12 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 			location = "";
 		}
 		if (subLocationCode != null && subLocationCode.length() > 0){
-			String translatedSubLocation = translateValue("sub_location", subLocationCode, identifier);
+			String translatedSubLocation = translateValue("sub_location", subLocationCode, identifier, true);
 			if (translatedSubLocation != null && translatedSubLocation.length() > 0) {
 				if (location.length() > 0) {
 					location += " - ";
 				}
-				location += translateValue("sub_location", subLocationCode, identifier);
+				location += translateValue("sub_location", subLocationCode, identifier, true);
 			}
 		}
 		String shelvingLocation = getItemSubfieldData(shelvingLocationSubfield, itemField);
@@ -641,7 +642,7 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 			if (location.length() > 0){
 				location += " - ";
 			}
-			location += translateValue("shelf_location", shelvingLocation, identifier);
+			location += translateValue("shelf_location", shelvingLocation, identifier, true);
 		}
 		return location;
 	}
