@@ -1,25 +1,16 @@
 import React, {Component, useState} from "react";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as SecureStore from 'expo-secure-store';
-import { DrawerContentScrollView } from "@react-navigation/drawer";
-import { Container, Badge, VStack, Box, Text, HStack, Icon, Pressable, Divider, Image, Button, Modal, HamburgerIcon, Menu } from 'native-base';
+import {DrawerContentScrollView} from "@react-navigation/drawer";
+import {Badge, Box, Button, Container, Divider, HStack, Icon, Image, Menu, Pressable, Text, VStack} from 'native-base';
 import {MaterialIcons} from "@expo/vector-icons";
 import {translate} from "../../translations/translations";
 import {UseColorMode} from "../../themes/theme";
 import {AuthContext} from "../../components/navigation";
 import _ from "lodash";
 import {showILSMessage} from "../../components/Notifications";
-import {
-	getCheckedOutItems,
-	getHolds,
-	getILSMessages,
-	getLists,
-	getPatronBrowseCategories,
-	reloadProfile
-} from "../../util/loadPatron";
-import {getBrowseCategories, getLanguages, getPickupLocations} from "../../util/loadLibrary";
+import {getCheckedOutItems, getHolds, getILSMessages, getProfile, reloadProfile} from "../../util/loadPatron";
 import {setGlobalVariables} from "../../util/setVariables";
-import {GLOBALS} from "../../util/globals";
 import {saveLanguage} from "../../util/accountActions";
 import {userContext} from "../../context/user";
 
@@ -105,12 +96,24 @@ export class DrawerContent extends Component {
 		}
 	}
 
+	checkContext = async (context) => {
+		console.log(context.user);
+		if(_.isEmpty(context.user)) {
+			await AsyncStorage.removeItem('@userToken');
+			await AsyncStorage.removeItem('@pathUrl');
+			await SecureStore.deleteItemAsync("userToken");
+			await AsyncStorage.removeItem('@patronProfile');
+			await AsyncStorage.removeItem('@libraryInfo');
+			await AsyncStorage.removeItem('@locationInfo');
+			this.props.navigation.navigate("Login");
+		}
+	}
+
 	componentDidMount = async () => {
 		this.setState({
 			isLoading: false,
 		});
 
-		//await this.loadILSMessages();
 		//await this.loadLanguages();
 
 		this.interval = setInterval(() => {
@@ -138,18 +141,10 @@ export class DrawerContent extends Component {
 		)
 	}
 
-	logoutUser = async () => {
-		const keys = ['@libraryHomeLink', '@libraryAddress', '@libraryPhone',
-			'@libraryEmail', '@libraryShowHours', '@libraryHoursMessage',
-			'@libraryHours', '@libraryLatitude', '@libraryLongitude',
-			'@patronProfile', '@patronLibrary', '@libraryInfo', '@locationInfo',
-			'@appSettings', '@pickupLocations', '@browseCategories', '@ILSMessages',
-			'@patronCheckouts', '@patronHolds', '@patronHoldsNotReady', '@patronHoldsReady',
-			'@linkedAccounts', '@viewerAccounts'];
-
-		await AsyncStorage.multiRemove(keys);
-		await SecureStore.deleteItemAsync("userToken");
-		//this.props.navigation.navigate("Permissions");
+	handleRefreshProfile = async () => {
+		await getProfile(true).then(response => {
+			this.context.user = response;
+		})
 	}
 
 	static contextType = userContext;
@@ -159,10 +154,6 @@ export class DrawerContent extends Component {
 		const user = this.context.user;
 		const location = this.context.location;
 		const library = this.context.library;
-
-		if(_.isEmpty(user) || typeof user.displayName === "undefined") {
-			this.logoutUser();
-		}
 
 		if(this.state.asyncLoaded === false && library.baseUrl !== null) {
 			this.bootstrapAsync(library.baseUrl);
@@ -174,7 +165,9 @@ export class DrawerContent extends Component {
 		} else {
 			icon = library.favicon;
 		}
-		//console.log(this.context);
+
+		//console.log(this.context.library);
+
 		return (
 			<DrawerContentScrollView>
 				<VStack space="4" my="2" mx="1" divider={<Divider/>}>
@@ -276,16 +269,16 @@ export class DrawerContent extends Component {
 										</HStack>
 									</Pressable>
 								) : null}
-								<Pressable px="2" py="3" onPress={() => {
-									this.handleNavigation('AccountScreenTab', 'Preferences', library.baseUrl)
-								}}>
-									<HStack space="1" alignItems="center">
-										<Icon as={MaterialIcons} name="chevron-right" size="7"/>
-										<Text fontWeight="500">
-											{translate('user_profile.preferences')}
-										</Text>
-									</HStack>
-								</Pressable>
+								{library.allowUserLists ? (
+									<Pressable px="2" py="3" onPress={() => {this.handleNavigation('AccountScreenTab', 'Preferences', library.baseUrl)}}>
+										<HStack space="1" alignItems="center">
+											<Icon as={MaterialIcons} name="chevron-right" size="7"/>
+											<Text fontWeight="500">
+												{translate('user_profile.preferences')}
+											</Text>
+										</HStack>
+									</Pressable>
+								): null}
 							</VStack>
 						</VStack>
 					</VStack>
@@ -294,7 +287,7 @@ export class DrawerContent extends Component {
 							<LogOutButton/>
 						</HStack>
 						<UseColorMode/>
-						<ReloadProfileButton libraryUrl={library.baseUrl} />
+						<Button size="xs" colorScheme="tertiary" onPress={() => this.handleRefreshProfile(library.libraryUrl)} variant="ghost" leftIcon={<Icon as={MaterialIcons} name="refresh" size="xs" />}>Refresh Account</Button>
 					</VStack>
 				</VStack>
 			</DrawerContentScrollView>
@@ -348,6 +341,5 @@ function getLanguageDisplayName(code, languages) {
 	result = _.values(result[0]);
 	return result[2];
 }
-
 
 export default DrawerContent

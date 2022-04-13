@@ -3,7 +3,6 @@ import {Box, Divider, HStack, Pressable, Button, Text, Heading, FlatList, Avatar
 import * as WebBrowser from 'expo-web-browser';
 
 // custom components and helper files
-import {getProfile} from "../../../util/loadPatron";
 import {translate} from "../../../translations/translations";
 import {userContext} from "../../../context/user";
 

@@ -103,10 +103,14 @@ export default function App() {
 				if (update.isAvailable) {
 					try {
 						await Updates.fetchUpdateAsync().then(async r => {
-							dispatch({type: 'SIGN_OUT', token: null});
+							await SecureStore.deleteItemAsync("userToken");
+							await AsyncStorage.removeItem('@userToken');
+							await AsyncStorage.removeItem('@patronProfile');
+							await AsyncStorage.removeItem('@libraryInfo');
+							await AsyncStorage.removeItem('@locationInfo');
+							await AsyncStorage.removeItem('@pathUrl');
 							await Updates.reloadAsync();
 						});
-						// ... notify user of update ...
 					} catch (e) {
 						console.log(e);
 						Sentry.Native.captureException(e);
@@ -123,21 +127,6 @@ export default function App() {
 			await getPermissions();
 			await setAppDetails();
 
-			console.log("Checking version information...");
-			let storedVersion = await AsyncStorage.getItem('@lastStoredVersion');
-			if(!storedVersion) {
-				// Version data not found, log user out
-				await AsyncStorage.removeItem('@userToken');
-				dispatch({ type: 'SIGN_OUT', token: null });
-			}
-
-			if(storedVersion && (storedVersion < GLOBALS.appVersion)) {
-				// Version found but out of date, log user out to update
-				await AsyncStorage.removeItem('@userToken');
-				console.log("Version found but out of date!");
-				dispatch({ type: 'SIGN_OUT', token: null });
-			}
-
 			console.log("Checking existing session...");
 			let userToken;
 			try {
@@ -145,8 +134,6 @@ export default function App() {
 				userToken = await AsyncStorage.getItem('@userToken');
 			} catch(e) {
 				// Restoring token failed
-				await AsyncStorage.removeItem('@userToken');
-				dispatch({ type: 'SIGN_OUT', token: null });
 				console.log(e);
 			}
 			console.log("Session OK!")
@@ -167,12 +154,12 @@ export default function App() {
 					postBody.append('password', data.valueSecret);
 					const api = create({
 						baseURL: data.libraryUrl + '/API',
-						timeout: 5000,
+						timeout: 6000,
 						headers: getHeaders(true),
 						auth: createAuthTokens()
 					});
 					const response = await api.post('/UserAPI?method=validateAccount', postBody);
-					console.log(response);
+					//console.log(response);
 					if (response.ok) {
 						let result = false;
 						if(response.data.result) {
@@ -222,7 +209,7 @@ export default function App() {
 								}
 
 								console.log("at Login: " + userToken);
-								await AsyncStorage.setItem('@userToken', userToken);
+								//await AsyncStorage.setItem('@userToken', userToken);
 
 								try {
 									await AsyncStorage.setItem('@userToken', userToken);
@@ -243,8 +230,6 @@ export default function App() {
 									await SecureStore.setItemAsync("discoveryVersion", patronsLibrary['version']);
 									await AsyncStorage.setItem("@lastStoredVersion", Constants.manifest.version);
 									await AsyncStorage.setItem("@patronLibrary", JSON.stringify(patronsLibrary));
-									//await getProfile();
-									//await getProfile(patronsLibrary['baseUrl']);
 									dispatch( {type: 'SIGN_IN', token: userToken});
 
 								} catch(e) {

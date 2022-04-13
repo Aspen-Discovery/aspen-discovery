@@ -86,6 +86,13 @@ export default class Holds extends Component {
 		})
 	}
 
+	_fetchHolds = async () => {
+		const { route } = this.props;
+		const libraryUrl = route.params?.libraryUrl ?? 'null';
+
+		await getHolds(libraryUrl).then(r => this.loadHolds());
+	}
+
 	loadPickupLocations = async () => {
 		const tmp = await AsyncStorage.getItem('@pickupLocations');
 		const locations = JSON.parse(tmp);
@@ -111,13 +118,13 @@ export default class Holds extends Component {
 			isLoading: true,
 		})
 
-		//await this._fetchHolds();
+		await this._fetchHolds();
 		await this._pickupLocations();
 		await this.loadHolds();
 		await this.loadPickupLocations();
 
 		this.interval = setInterval(() => {
-			this.loadHolds();
+			this._fetchHolds();
 		}, 1000)
 
 		return () => clearInterval(this.interval)
@@ -125,17 +132,6 @@ export default class Holds extends Component {
 
 	componentWillUnmount() {
 		clearInterval(this.interval);
-	}
-
-	_fetchHolds = async () => {
-		this.setState({
-			isLoading: true,
-		});
-
-		const { route } = this.props;
-		const libraryUrl = route.params?.libraryUrl ?? 'null';
-
-		await getHolds(libraryUrl).then(r => this.loadHolds())
 	}
 
 	// Handles opening the GroupedWork screen with the item data
@@ -365,7 +361,6 @@ function HoldItem(props) {
 								cancelHold(data.cancelId, data.recordId, data.source, libraryUrl).then(r => {
 									onClose(onClose);
 									setLoading(false);
-									getProfile();
 								});
 							}}
 						>

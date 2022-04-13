@@ -13,6 +13,7 @@ import LibraryCardStackNavigator from "../stack/LibraryCardStackNavigator";
 import AccountStackNavigator from "../stack/AccountStackNavigator";
 import MoreStackNavigator from "../stack/MoreStackNavigator";
 import DrawerNavigator from "../drawer/DrawerNavigator";
+import Login from "../../screens/Auth/Login";
 
 export default function TabNavigator() {
 	const Tab = createBottomTabNavigator();
@@ -93,6 +94,13 @@ export default function TabNavigator() {
 			<Tab.Screen
 				name="AccountScreenTab"
 				component={AccountStackNavigator}
+				options={{
+					tabBarButton: () => null,
+				}}
+			/>
+			<Tab.Screen
+				name="Login"
+				component={Login}
 				options={{
 					tabBarButton: () => null,
 				}}

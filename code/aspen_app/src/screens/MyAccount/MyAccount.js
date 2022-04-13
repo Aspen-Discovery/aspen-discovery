@@ -9,7 +9,7 @@ import * as WebBrowser from 'expo-web-browser';
 import {translate} from "../../translations/translations";
 import {loadingSpinner} from "../../components/loadingSpinner";
 import {loadError} from "../../components/loadError";
-import {getILSMessages, getProfile} from '../../util/loadPatron';
+import {getILSMessages} from '../../util/loadPatron';
 import {showILSMessage} from '../../components/Notifications';
 
 export default class MyAccount extends Component {
@@ -62,34 +62,8 @@ export default class MyAccount extends Component {
 			thisPatron: global.patron + "'s",
 		});
 
-		await this._fetchProfile();
 		await this._fetchILSMessages();
 	};
-
-	_fetchProfile = async () => {
-
-		this.setState({
-			isLoading: true,
-		});
-
-		const forceReload = this.state.isRefreshing;
-
-		await getProfile(true).then(response => {
-			if (response === "TIMEOUT_ERROR") {
-				this.setState({
-					hasError: true,
-					error: translate('error.timeout'),
-					isLoading: false,
-				});
-			} else {
-				this.setState({
-					hasError: false,
-					error: null,
-					isLoading: false,
-				});
-			}
-		})
-	}
 
 	_fetchILSMessages = async () => {
 
