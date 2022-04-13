@@ -2895,35 +2895,105 @@ class Koha extends AbstractIlsDriver
 		if (empty($user->cat_password)) {
 			return ['success' => false, 'message' => 'Unable to place materials request in masquerade mode'];
 		}
-		$loginResult = $this->loginToKohaOpac($user);
-		if (!$loginResult['success']) {
-			return ['success' => false, 'message' => 'Unable to login to Koha'];
-		} else {
-			$postFields = [
-				'title' => $_REQUEST['title'],
-				'author' => $_REQUEST['author'],
-				'copyrightdate' => $_REQUEST['copyrightdate'],
-				'isbn' => $_REQUEST['isbn'],
-				'publishercode' => $_REQUEST['publishercode'],
-				'collectiontitle' => $_REQUEST['collectiontitle'],
-				'place' => $_REQUEST['place'],
-				'quantity' => $_REQUEST['quantity'],
-				'itemtype' => $_REQUEST['itemtype'],
-				'branchcode' => $_REQUEST['branchcode'],
-				'note' => $_REQUEST['note'],
-				'patronreason' => $_REQUEST['patronreason'],
-				'negcap' => '',
-				'suggested_by_anyone' => 0,
-				'op' => 'add_confirm'
+		if($this->getKohaVersion() > 21.05) {
+			$result = [
+				'success' => false,
+				'message' => 'Unknown error processing materials requests.'
 			];
-			$catalogUrl = $this->accountProfile->vendorOpacUrl;
-			$submitSuggestionResponse = $this->postToKohaPage($catalogUrl . '/cgi-bin/koha/opac-suggestions.pl', $postFields);
-			if (preg_match('%<div class="alert alert-error">(.*?)</div>%s', $submitSuggestionResponse, $matches)) {
-				return ['success' => false, 'message' => $matches[1]];
-			} elseif (preg_match('/Your purchase suggestions/', $submitSuggestionResponse)) {
-				return ['success' => true, 'message' => 'Successfully submitted your request'];
+			$oauthToken = $this->getOAuthToken();
+			if ($oauthToken == false) {
+				return [
+					'success' => false,
+					'message' => translate(['text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.', 'isPublicFacing'=>true])
+				];
 			} else {
-				return ['success' => false, 'message' => 'Unknown error submitting request'];
+				$postFields = [
+					'title' => $_REQUEST['title'],
+					'author' => $_REQUEST['author'],
+					'copyright_date' => null,
+					'isbn' => $_REQUEST['isbn'],
+					'publisher_code' => $_REQUEST['publishercode'],
+					'collection_title' => $_REQUEST['collectiontitle'],
+					'publication_place' => $_REQUEST['place'],
+					'quantity' => $_REQUEST['quantity'],
+					'item_type' => $_REQUEST['itemtype'],
+					'library_id' => $_REQUEST['branchcode'],
+					'note' => $_REQUEST['note'],
+					'patron_reason' => $_REQUEST['patronreason'],
+					'suggested_by' => $user->username,
+					'status' => 'ASKED'
+				];
+
+				if(!empty($_REQUEST['copyrightdate'])) {
+					$postFields['copyright_date'] = $_REQUEST['copyrightdate'];
+				}
+
+				$apiUrl = $this->getWebServiceURL() . "/api/v1/suggestions";
+				$this->apiCurlWrapper->addCustomHeaders([
+					'Authorization: Bearer ' . $oauthToken,
+					'User-Agent: Aspen Discovery',
+					'Accept: */*',
+					'Cache-Control: no-cache',
+					'Content-Type: application/json;charset=UTF-8',
+					'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
+				], true);
+				$postParams = json_encode($postFields);
+				$response = $this->apiCurlWrapper->curlSendPage($apiUrl, 'POST', $postParams);
+				ExternalRequestLogEntry::logRequest('koha.processMaterialsRequestForm', 'PUT', $apiUrl, $this->apiCurlWrapper->getHeaders(), '', $this->apiCurlWrapper->getResponseCode(), $response, []);
+				if ($this->apiCurlWrapper->getResponseCode() != 201) {
+					if (strlen($response) > 0) {
+						$jsonResponse = json_decode($response);
+						if ($jsonResponse) {
+							if (!empty($jsonResponse->error)) {
+								$result['messages'][] = $jsonResponse->error;
+							}else{
+								foreach ($jsonResponse->errors as $error) {
+									$result['messages'][] = $error->message;
+								}
+							}
+						} else {
+							$result['messages'][] = $response;
+						}
+					} else {
+						$result['messages'][] = "Error {$this->apiCurlWrapper->getResponseCode()} updating your account.";
+					}
+				} else {
+					$result['success'] = true;
+					$result['messages'][] = 'Successfully submitted your request.';
+				}
+			}
+			return $result;
+		} else {
+			$loginResult = $this->loginToKohaOpac($user);
+			if (!$loginResult['success']) {
+				return ['success' => false, 'message' => 'Unable to login to Koha'];
+			} else {
+				$postFields = [
+					'title' => $_REQUEST['title'],
+					'author' => $_REQUEST['author'],
+					'copyrightdate' => $_REQUEST['copyrightdate'],
+					'isbn' => $_REQUEST['isbn'],
+					'publishercode' => $_REQUEST['publishercode'],
+					'collectiontitle' => $_REQUEST['collectiontitle'],
+					'place' => $_REQUEST['place'],
+					'quantity' => $_REQUEST['quantity'],
+					'itemtype' => $_REQUEST['itemtype'],
+					'branchcode' => $_REQUEST['branchcode'],
+					'note' => $_REQUEST['note'],
+					'patronreason' => $_REQUEST['patronreason'],
+					'negcap' => '',
+					'suggested_by_anyone' => 0,
+					'op' => 'add_confirm'
+				];
+				$catalogUrl = $this->accountProfile->vendorOpacUrl;
+				$submitSuggestionResponse = $this->postToKohaPage($catalogUrl . '/cgi-bin/koha/opac-suggestions.pl', $postFields);
+				if (preg_match('%<div class="alert alert-error">(.*?)</div>%s', $submitSuggestionResponse, $matches)) {
+					return ['success' => false, 'message' => $matches[1]];
+				} elseif (preg_match('/Your purchase suggestions/', $submitSuggestionResponse)) {
+					return ['success' => true, 'message' => 'Successfully submitted your request'];
+				} else {
+					return ['success' => false, 'message' => 'Unknown error submitting request'];
+				}
 			}
 		}
 	}
@@ -2944,44 +3014,113 @@ class Koha extends AbstractIlsDriver
 
 	function getMaterialsRequests(User $user)
 	{
-		$this->initDatabaseConnection();
-		/** @noinspection SqlResolve */
-		$sql = "SELECT * FROM suggestions where suggestedby = {$user->username}";
-		$results = mysqli_query($this->dbConnection, $sql);
-		$allRequests = [];
-		while ($curRow = $results->fetch_assoc()) {
-			$managedBy = $curRow['managedby'];
-			/** @noinspection SqlResolve */
-			$userSql = "SELECT firstname, surname FROM borrowers where borrowernumber = " . mysqli_escape_string($this->dbConnection, $managedBy);
-			$userResults = mysqli_query($this->dbConnection, $userSql);
-			if ($userResults && $userResult = $userResults->fetch_assoc()) {
-				$managedByStr = $userResult['firstname'] . ' ' . $userResult['surname'];
-			} else {
-				$managedByStr = '';
-			}
-			$request = [];
-			$request['id'] = $curRow['suggestionid'];
-			$request['summary'] = $curRow['title'];
-			if (!empty($curRow['itemtype'])) {
-				$request['summary'] .= ' - ' . $curRow['itemtype'];
-			}
-			if (!empty($curRow['author'])) {
-				$request['summary'] .= '<br/>' . $curRow['author'];
-			}
-			if (!empty($curRow['copyrightdate'])) {
-				$request['summary'] .= '<br/>' . $curRow['copyrightdate'];
-			}
-			$request['suggestedOn'] = $curRow['suggesteddate'];
-			$request['note'] = $curRow['note'];
-			$request['managedBy'] = $managedByStr;
-			$request['status'] = translate(['text'=>ucwords(strtolower($curRow['STATUS'])), 'isPublicFacing'=>true]);
-			if (!empty($curRow['reason'])) {
-				$request['status'] .= ' (' . $curRow['reason'] . ')';
-			}
-			$allRequests[] = $request;
-		}
+		if($this->getKohaVersion() > 21.05) {
+			$result = [
+				'success' => false,
+				'message' => 'Unknown error loading materials requests.'
+			];
 
-		return $allRequests;
+			$allRequests = [];
+			$oauthToken = $this->getOAuthToken();
+			if ($oauthToken == false) {
+				return [
+					'success' => false,
+					'message' => translate(['text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.', 'isPublicFacing'=>true])
+				];
+			} else {
+				$apiUrl = $this->getWebServiceURL() . "/api/v1/suggestions?q={\"suggested_by\":$user->username}";
+				$this->apiCurlWrapper->addCustomHeaders([
+					'Authorization: Bearer ' . $oauthToken,
+					'User-Agent: Aspen Discovery',
+					'Accept: */*',
+					'Cache-Control: no-cache',
+					'Content-Type: application/json;charset=UTF-8',
+					'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
+				], true);
+				$response = $this->apiCurlWrapper->curlGetPage($apiUrl);
+				ExternalRequestLogEntry::logRequest('koha.getMaterialRequests', 'GET', $apiUrl, $this->apiCurlWrapper->getHeaders(), '', $this->apiCurlWrapper->getResponseCode(), $response, []);
+
+				if(!$response) {
+					return $result;
+				} else {
+					$materialRequests = json_decode($response, false);
+					foreach($materialRequests as $materialRequest) {
+						$managedBy = $materialRequest->managed_by;
+						/** @noinspection SqlResolve */
+						$userSql = "SELECT firstname, surname FROM borrowers where borrowernumber = " . mysqli_escape_string($this->dbConnection, $managedBy);
+						$userResults = mysqli_query($this->dbConnection, $userSql);
+						if ($userResults && $userResult = $userResults->fetch_assoc()) {
+							$managedByStr = $userResult['firstname'] . ' ' . $userResult['surname'];
+						} else {
+							$managedByStr = '';
+						}
+
+						$request = [];
+						$request['id'] = $materialRequest->suggestion_id;
+						$request['summary'] = $materialRequest->title;
+						if (!empty($materialRequest->item_type)) {
+							$request['summary'] .= ' - ' . $materialRequest->item_type;
+						}
+						if (!empty($materialRequest->author)) {
+							$request['summary'] .= '<br/>' . $materialRequest->author;
+						}
+						if (!empty($materialRequest->copyright_date)) {
+							$request['summary'] .= '<br/>' . $materialRequest->copyright_date;
+						}
+						$request['suggestedOn'] = $materialRequest->suggestion_date;
+						$request['note'] = $materialRequest->note;
+						$request['managedBy'] = $managedByStr;
+						$request['status'] = translate(['text' => ucwords(strtolower($materialRequest->status)), 'isPublicFacing' => true]);
+						if (!empty($materialRequest->reason)) {
+							$request['status'] .= ' (' . $materialRequest->reason . ')';
+						}
+						$allRequests[] = $request;
+					}
+
+
+					return $allRequests;
+				}
+			}
+		} else {
+			$this->initDatabaseConnection();
+			/** @noinspection SqlResolve */
+			$sql = "SELECT * FROM suggestions where suggestedby = {$user->username}";
+			$results = mysqli_query($this->dbConnection, $sql);
+			$allRequests = [];
+			while ($curRow = $results->fetch_assoc()) {
+				$managedBy = $curRow['managedby'];
+				/** @noinspection SqlResolve */
+				$userSql = "SELECT firstname, surname FROM borrowers where borrowernumber = " . mysqli_escape_string($this->dbConnection, $managedBy);
+				$userResults = mysqli_query($this->dbConnection, $userSql);
+				if ($userResults && $userResult = $userResults->fetch_assoc()) {
+					$managedByStr = $userResult['firstname'] . ' ' . $userResult['surname'];
+				} else {
+					$managedByStr = '';
+				}
+				$request = [];
+				$request['id'] = $curRow['suggestionid'];
+				$request['summary'] = $curRow['title'];
+				if (!empty($curRow['itemtype'])) {
+					$request['summary'] .= ' - ' . $curRow['itemtype'];
+				}
+				if (!empty($curRow['author'])) {
+					$request['summary'] .= '<br/>' . $curRow['author'];
+				}
+				if (!empty($curRow['copyrightdate'])) {
+					$request['summary'] .= '<br/>' . $curRow['copyrightdate'];
+				}
+				$request['suggestedOn'] = $curRow['suggesteddate'];
+				$request['note'] = $curRow['note'];
+				$request['managedBy'] = $managedByStr;
+				$request['status'] = translate(['text'=>ucwords(strtolower($curRow['STATUS'])), 'isPublicFacing'=>true]);
+				if (!empty($curRow['reason'])) {
+					$request['status'] .= ' (' . $curRow['reason'] . ')';
+				}
+				$allRequests[] = $request;
+			}
+
+			return $allRequests;
+		}
 	}
 
 	function getMaterialsRequestsPage(User $user)
@@ -2999,24 +3138,54 @@ class Koha extends AbstractIlsDriver
 
 	function deleteMaterialsRequests(User $patron)
 	{
-		$this->loginToKohaOpac($patron);
+		if($this->getKohaVersion() > 21.05) {
+			$oauthToken = $this->getOAuthToken();
+			if ($oauthToken == false) {
+				return [
+					'success' => false,
+					'message' => translate(['text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.', 'isPublicFacing'=>true])
+				];
+			} else {
+				$suggestionId = $_REQUEST['delete_field'];
+				$apiUrl = $this->getWebServiceURL() . "/api/v1/suggestions/{$suggestionId}";
+				$this->apiCurlWrapper->addCustomHeaders([
+					'Authorization: Bearer ' . $oauthToken,
+					'User-Agent: Aspen Discovery',
+					'Accept: */*',
+					'Cache-Control: no-cache',
+					'Content-Type: application/json;charset=UTF-8',
+					'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
+				], true);
+				$response = $this->apiCurlWrapper->curlSendPage($apiUrl, 'DELETE', '');
 
-		$catalogUrl = $this->accountProfile->vendorOpacUrl;
-		$this->getKohaPage($catalogUrl . '/cgi-bin/koha/opac-suggestions.pl');
+				ExternalRequestLogEntry::logRequest('koha.deleteMaterialsRequests', 'DELETE', $apiUrl, $this->apiCurlWrapper->getHeaders(), '', $this->apiCurlWrapper->getResponseCode(), $response, []);
 
-		$postFields = [
-			'op' => 'delete_confirm',
-			'delete_field' => $_REQUEST['delete_field']
-		];
-		$this->postToKohaPage($catalogUrl . '/cgi-bin/koha/opac-suggestions.pl', $postFields);
+				$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
 
-		$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
+				header("Refresh: 0;");
 
-		return [
-			'success' => true,
-			'message' => 'deleted your requests'
-		];
+			}
+		} else {
+			$this->loginToKohaOpac($patron);
+
+			$catalogUrl = $this->accountProfile->vendorOpacUrl;
+			$this->getKohaPage($catalogUrl . '/cgi-bin/koha/opac-suggestions.pl');
+
+			$postFields = [
+				'op' => 'delete_confirm',
+				'delete_field' => $_REQUEST['delete_field']
+			];
+			$this->postToKohaPage($catalogUrl . '/cgi-bin/koha/opac-suggestions.pl', $postFields);
+
+			$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
+
+			return [
+				'success' => true,
+				'message' => 'deleted your requests'
+			];
+		}
 	}
+
 
 	/**
 	 * Gets a form to update contact information within the ILS.
