@@ -11,7 +11,6 @@ import {
 import SelectPickupLocation from "./SelectPickupLocation";
 import ShowItemDetails from "./CopyDetails";
 import _ from "lodash";
-import {getProfile} from "../../util/loadPatron";
 
 const DisplayRecord = (props) => {
 
@@ -144,6 +143,7 @@ const ILS = (props) => {
 					completeAction(props.id, props.actionType, props.patronId, null, null, props.locations[0].code, props.libraryUrl).then(response => {
 						setLoading(false);
 						props.showAlert(response)
+						console.log(response);
 					})
 				}}>{props.actionLabel}</Button>
 		);
@@ -165,7 +165,6 @@ const OverDriveSample = (props) => {
 		        setLoading(true);
 		        completeAction(props.id, props.actionType, props.patronId, props.formatId, props.sampleNumber, null, props.libraryUrl).then(r => {
 			        setLoading(false);
-					//getProfile();
 		        })
 	        }}
 		>{props.actionLabel}</Button>

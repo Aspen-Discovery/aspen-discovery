@@ -409,7 +409,6 @@ function CheckedOutItem(props) {
 								returnCheckout(data.userId, data.recordId, data.source, data.overDriveId, libraryUrl).then(r => {
 									setReturn(false);
 									onClose(onClose);
-									getProfile(libraryUrl);
 								});
 							}}>
 							{translate('checkouts.return_now')}
@@ -426,7 +425,6 @@ function CheckedOutItem(props) {
 								returnCheckout(data.userId, data.recordId, data.source, data.overDriveId, libraryUrl).then(r => {
 									setReturn(false);
 									onClose(onClose);
-									getProfile(libraryUrl);
 								});
 							}}>
 							{translate('checkouts.return_now')}

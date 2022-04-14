@@ -206,6 +206,8 @@ class Library extends DataObject
 	public $loginNotes;
 	public $allowLoginToPatronsOfThisLibraryOnly;
 	public $messageForPatronsOfOtherLibraries;
+	public $preventLogin;
+	public $preventLoginMessage;
 
 	public $showDetailedHoldNoticeInformation;
 	public $treatPrintNoticesAsPhoneNotices;
@@ -636,6 +638,8 @@ class Library extends DataObject
 				)),
 				'loginSection' => array('property' => 'loginSection', 'type' => 'section', 'label' => 'Login', 'hideInLists' => true, 'permissions' => ['Library ILS Connection', 'Library ILS Options'], 'properties' => array(
 					'showLoginButton'         => array('property'=>'showLoginButton', 'type'=>'checkbox', 'label'=>'Show Login Button', 'description'=>'Whether or not the login button is displayed so patrons can login to the site', 'hideInLists' => true, 'default' => 1),
+					'preventLogin' => array('property'=>'preventLogin', 'type'=>'checkbox', 'label'=>'Prevent Login for Patrons of this Library', 'description'=>'Patrons of this library will not be allowed to login (useful in consortial catalogs to prevent access in other interfaces).', 'hideInLists' => true, 'default' => 0),
+					'preventLoginMessage' => array('property' => 'preventLoginMessage', 'type' => 'html', 'label' => 'Prevented Login Message', 'description' => 'A message to show to patrons for patrons of this library if they are prevented from logging in', 'hideInLists' => true),
 					'preventExpiredCardLogin' => array('property'=>'preventExpiredCardLogin', 'type'=>'checkbox', 'label'=>'Prevent Login for Expired Cards', 'description'=>'Users with expired cards will not be allowed to login. They will receive an expired card notice instead.', 'hideInLists' => true, 'default' => 0),
 					'defaultRememberMe' => array('property' => 'defaultRememberMe', 'type' => 'checkbox', 'label' => 'Check "Remember Me" by default when outside the library', 'description' => 'Whether or not to check the "Remember Me" option by default when logging in outside the library', 'hideInLists' => true, 'default' => 0),
 					'loginFormUsernameLabel'  => array('property'=>'loginFormUsernameLabel', 'type'=>'text', 'label'=>'Login Form Username Label', 'description'=>'The label to show for the username when logging in', 'size'=>'100', 'hideInLists' => true, 'default'=>'Your Name'),
