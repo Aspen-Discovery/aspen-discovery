@@ -1474,7 +1474,7 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 	 * @param string[] $notInterestedTitles
 	 * @return    array                            An array of query results
 	 */
-	function getMoreLikeThese($ids, $page = 1, $limit = 25, $notInterestedTitles = [])
+	function getMoreLikeThese($ids, $page = 1, $limit = 25, array $notInterestedTitles = [])
 	{
 		return $this->indexEngine->getMoreLikeThese($ids, $this->getFieldsToReturn(), $page, $limit, $notInterestedTitles);
 	}

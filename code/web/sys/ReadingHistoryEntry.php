@@ -52,12 +52,12 @@ class ReadingHistoryEntry extends DataObject
 		return $links;
 	}
 
-	public function loadFromJSON($jsonData, $mappings, $overrideExisting = 'keepExisting')
+	public function loadFromJSON($jsonData, $mappings, $overrideExisting = 'keepExisting'): bool
 	{
-		parent::loadFromJSON($jsonData, $mappings, $overrideExisting);
-		if (array_key_exists($this->sourceId, $mappings['bibs'])){
-			$this->sourceId = $mappings['bibs'][$this->sourceId];
+		if (array_key_exists($jsonData['sourceId'], $mappings['bibs'])){
+			$jsonData['sourceId'] = $mappings['bibs'][$this->sourceId];
 		}
+		return parent::loadFromJSON($jsonData, $mappings, $overrideExisting);
 	}
 
 	public function loadEmbeddedLinksFromJSON($jsonData, $mappings, $overrideExisting = 'keepExisting')

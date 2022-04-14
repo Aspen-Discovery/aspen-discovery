@@ -31,11 +31,14 @@ class UserWebsiteUsage extends DataObject
 		if (in_array($this->instance, $selectedFilters['instances'])){
 			$okToExport = true;
 		}
-		$user = new User();
-		$user->id = $this->userId;
-		if ($user->find(true)) {
-			if ($user->homeLocationId == 0 || in_array($user->homeLocationId, $selectedFilters['locations'])) {
-				$okToExport = true;
+		if ($okToExport) {
+			$okToExport = false;
+			$user = new User();
+			$user->id = $this->userId;
+			if ($user->find(true)) {
+				if ($user->homeLocationId == 0 || in_array($user->homeLocationId, $selectedFilters['locations'])) {
+					$okToExport = true;
+				}
 			}
 		}
 		return $okToExport;
