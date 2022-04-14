@@ -406,6 +406,8 @@ class Greenhouse_ImportAspenData extends Admin_Admin
 				foreach ($elements as $element => $elementDefinition){
 					if (file_exists($importPath . $element. '.json')){
 						$validEnrichmentToImport[$element] = $elementDefinition['name'];
+					}elseif ($element == 'uploaded_images' && file_exists($importPath . 'uploaded_images.tar.gz')){
+						$validEnrichmentToImport[$element] = $elementDefinition['name'];
 					}
 				}
 			}
@@ -495,5 +497,9 @@ class Greenhouse_ImportAspenData extends Admin_Admin
 		if (file_exists("/data/aspen-discovery/$serverName/import/uploaded_covers.tar.gz")){
 			exec("tar -xzf /data/aspen-discovery/$serverName/import/uploaded_covers.tar.gz -C /data/aspen-discovery/$serverName/images/original");
 		}
+
+		$message .= "Imported Uploaded Files";
+
+		return $message;
 	}
 }
