@@ -277,6 +277,9 @@ class Greenhouse_ExportAspenData extends Admin_Admin
 				'className' => 'PortalPage',
 				'name' => 'Web Builder Custom Pages'
 			],
+			'uploaded_images' => [
+				'name' => 'Uploaded Images'
+			],
 		];
 
 		if (isset($_REQUEST['submit'])){
@@ -335,8 +338,12 @@ class Greenhouse_ExportAspenData extends Admin_Admin
 					$success = true;
 					foreach ($elements as $element => $elementDefinition){
 						if (in_array($element, $_REQUEST['dataElement'])){
-							require_once $elementDefinition['classFile'];
-							$message = $this->exportObjects($elementDefinition['className'], $elementDefinition['name'], $exportPath .  $element . '.json', $selectedFilters, $message);
+							if ($element == 'uploaded_images'){
+								$message = $this->exportImages($message);
+							}else {
+								require_once $elementDefinition['classFile'];
+								$message = $this->exportObjects($elementDefinition['className'], $elementDefinition['name'], $exportPath . $element . '.json', $selectedFilters, $message);
+							}
 						}
 					}
 				}
@@ -426,6 +433,31 @@ class Greenhouse_ExportAspenData extends Admin_Admin
 			}
 			$message .= "Exported $numObjectsExported $pluralExportName";
 		}
+
+		return $message;
+	}
+
+	private function exportImages($message)
+	{
+		global $configArray;
+		global $serverName;
+		//files directory
+		if ($configArray['System']['operatingSystem'] == 'windows'){
+			$output = [];
+			exec("cd c:/web/aspen-discovery/code/web/files/; tar -czf c:/data/aspen-discovery/$serverName/export/uploaded_images.tar.gz c:/web/aspen-discovery/code/web/files/*", $output);
+		}else{
+			$output = [];
+			exec("cd /usr/local/aspen-discovery/code/web/files; tar -czf /data/aspen-discovery/$serverName/export/uploaded_images.tar.gz *", $output);
+		}
+
+		//uploaded covers
+		if ($configArray['System']['operatingSystem'] == 'windows') {
+			$output = [];
+			exec("cd c:/data/aspen-discovery/$serverName/images/original/; tar -czf c:/data/aspen-discovery/$serverName/export/uploaded_covers.tar.gz cd c:/data/aspen-discovery/$serverName/images/original/*", $output);
+		}else{
+			exec("cd /data/aspen-discovery/$serverName/images/original; tar -czf /data/aspen-discovery/$serverName/export/uploaded_covers.tar.gz *", $output);
+		}
+		$message .= "Exported Uploaded Files";
 
 		return $message;
 	}

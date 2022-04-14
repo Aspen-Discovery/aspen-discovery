@@ -291,6 +291,9 @@ class Greenhouse_ImportAspenData extends Admin_Admin
 				'className' => 'PortalPage',
 				'name' => 'Web Builder Custom Pages'
 			],
+			'uploaded_images' => [
+				'name' => 'Uploaded Images'
+			],
 		];
 
 		if (isset($_REQUEST['submit'])){
@@ -378,8 +381,12 @@ class Greenhouse_ImportAspenData extends Admin_Admin
 
 			foreach ($elements as $element => $elementDefinition){
 				if (in_array($element, $_REQUEST['enrichmentElement'])){
-					require_once $elementDefinition['classFile'];
-					$message = $this->importObjects($elementDefinition['className'], $elementDefinition['name'], $importPath . "$element.json", $mappings, $overrideExisting, $message);
+					if ($element == 'uploaded_images'){
+						$message = $this->importImages($message);
+					}else {
+						require_once $elementDefinition['classFile'];
+						$message = $this->importObjects($elementDefinition['className'], $elementDefinition['name'], $importPath . "$element.json", $mappings, $overrideExisting, $message);
+					}
 				}
 			}
 
@@ -472,5 +479,21 @@ class Greenhouse_ImportAspenData extends Admin_Admin
 			$message .= "Imported $numObjectsImported $pluralImportName";
 		}
 		return $message;
+	}
+
+	private function importImages($message)
+	{
+		global $configArray;
+		global $serverName;
+		if (file_exists("/data/aspen-discovery/$serverName/import/uploaded_images.tar.gz")){
+			if ($configArray['System']['operatingSystem'] == 'windows') {
+				exec("tar -xzf /data/aspen-discovery/$serverName/import/uploaded_images.tar.gz -C /web/aspen-discovery/code/web/files");
+			}else{
+				exec("tar -xzf /data/aspen-discovery/$serverName/import/uploaded_images.tar.gz -C /usr/local/aspen-discovery/code/web/files");
+			}
+		}
+		if (file_exists("/data/aspen-discovery/$serverName/import/uploaded_covers.tar.gz")){
+			exec("tar -xzf /data/aspen-discovery/$serverName/import/uploaded_covers.tar.gz -C /data/aspen-discovery/$serverName/images/original");
+		}
 	}
 }
