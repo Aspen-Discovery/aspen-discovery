@@ -7,6 +7,12 @@ class MapAndMergeUsers extends UserMerger
 		parent::launch();
 		global $interface;
 
+		if ($this->importDirExists) {
+			if (!file_exists($this->importPath . 'users_map.csv')) {
+				$this->setupErrors[] = "users_map.csv file did not exist in $this->importPath";
+			}
+		}
+
 		if ($this->importDirExists && isset($_REQUEST['submit'])) {
 			$results = $this->remapAndMergeUsers($this->importPath);
 			$interface->assign('mergeResults', $results);
