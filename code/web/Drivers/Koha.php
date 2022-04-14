@@ -13,6 +13,8 @@ class Koha extends AbstractIlsDriver
 	private $apiCurlWrapper;
 	/** @var CurlWrapper */
 	private $opacCurlWrapper;
+	/** @var CurlWrapper */
+	private $delApiCurlWrapper;
 
 	static $fineTypeTranslations = [
 		'A' => 'Account management fee',
@@ -944,12 +946,15 @@ class Koha extends AbstractIlsDriver
 		$this->curlWrapper = new CurlWrapper();
 		$this->apiCurlWrapper = new CurlWrapper();
 		$this->apiCurlWrapper->setTimeout(30);
+		$this->delApiCurlWrapper = new CurlWrapper();
+		$this->delApiCurlWrapper->setTimeout(30);
 	}
 
 	function __destruct()
 	{
 		$this->curlWrapper = null;
 		$this->apiCurlWrapper = null;
+		$this->delApiCurlWrapper = null;
 
 		//Cleanup any connections we have to other systems
 		$this->closeDatabaseConnection();
@@ -3148,7 +3153,7 @@ class Koha extends AbstractIlsDriver
 			} else {
 				$suggestionId = $_REQUEST['delete_field'];
 				$apiUrl = $this->getWebServiceURL() . "/api/v1/suggestions/{$suggestionId}";
-				$this->apiCurlWrapper->addCustomHeaders([
+				$this->delApiCurlWrapper->addCustomHeaders([
 					'Authorization: Bearer ' . $oauthToken,
 					'User-Agent: Aspen Discovery',
 					'Accept: */*',
@@ -3156,9 +3161,9 @@ class Koha extends AbstractIlsDriver
 					'Content-Type: application/json;charset=UTF-8',
 					'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
 				], true);
-				$response = $this->apiCurlWrapper->curlSendPage($apiUrl, 'DELETE', '');
+				$response = $this->delApiCurlWrapper->curlSendPage($apiUrl, 'DELETE', '');
 
-				ExternalRequestLogEntry::logRequest('koha.deleteMaterialsRequests', 'DELETE', $apiUrl, $this->apiCurlWrapper->getHeaders(), '', $this->apiCurlWrapper->getResponseCode(), $response, []);
+				ExternalRequestLogEntry::logRequest('koha.deleteMaterialsRequests', 'DELETE', $apiUrl, $this->delApiCurlWrapper->getHeaders(), '', $this->delApiCurlWrapper->getResponseCode(), $response, []);
 
 				$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
 
