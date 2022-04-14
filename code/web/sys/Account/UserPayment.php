@@ -389,8 +389,6 @@ class UserPayment extends DataObject
 					$userPayment->message .= "This payment has already been completed. ";
 				}else{
 					$amountPaid = $queryParams['TransactionAmount'];
-					$transactionId = $queryParams['AuthorizationCode'];
-					$paymentType = $queryParams['PaymentMethodCode'];
 					if ($amountPaid != $userPayment->totalPaid){
 						$userPayment->message = "Payment amount did not match, was $userPayment->totalPaid, paid $amountPaid. ";
 						$userPayment->totalPaid = $amountPaid;
@@ -403,7 +401,7 @@ class UserPayment extends DataObject
 					if($donation->find(true)) {
 						$success = true;
 						$message = 'Your donation payment has been completed. ';
-						$userPayment->message .= "Donation payment completed, TransactionId = $transactionId, TotalAmount = $amountPaid, PaymentType = $paymentType. ";
+						$userPayment->message .= "Donation payment completed, PaymentId = $paymentId, TotalAmount = $amountPaid. ";
 					} else {
 						$user = new User();
 						$user->id = $userPayment->userId;
@@ -412,7 +410,7 @@ class UserPayment extends DataObject
 							if ($finePaymentCompleted['success']) {
 								$success = true;
 								$message = 'Your payment has been completed. ';
-								$userPayment->message .= "Payment completed, TransactionId = $transactionId, TotalAmount = $amountPaid, PaymentType = $paymentType. ";
+								$userPayment->message .= "Payment completed, PaymentId = $paymentId, TotalAmount = $amountPaid. ";
 							} else {
 								$userPayment->error = true;
 								$userPayment->message .= $finePaymentCompleted['message'];
