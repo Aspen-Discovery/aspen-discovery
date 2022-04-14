@@ -377,10 +377,10 @@ class UserPayment extends DataObject
 		$success = false;
 		$error = '';
 		$message = '';
-		if (empty($queryParams['TransactionId'])) {
-			$error = 'No Transaction ID was provided, could not complete the payment';
+		if (empty($queryParams['PaymentId'])) {
+			$error = 'No Payment ID was provided, could not complete the payment';
 		}else{
-			$paymentId = $queryParams['TransactionId'];
+			$paymentId = $queryParams['PaymentId'];
 			$userPayment = new UserPayment();
 			$userPayment->id = $paymentId;
 			if ($userPayment->find(true)){
@@ -388,9 +388,9 @@ class UserPayment extends DataObject
 					$userPayment->error = true;
 					$userPayment->message .= "This payment has already been completed. ";
 				}else{
-					$amountPaid = $queryParams['totalAmount'];
-					$transactionId = $queryParams['transactionId'];
-					$paymentType = $queryParams['paymentType']; // card or echeck
+					$amountPaid = $queryParams['TransactionAmount'];
+					$transactionId = $queryParams['AuthorizationCode'];
+					$paymentType = $queryParams['PaymentMethodCode'];
 					if ($amountPaid != $userPayment->totalPaid){
 						$userPayment->message = "Payment amount did not match, was $userPayment->totalPaid, paid $amountPaid. ";
 						$userPayment->totalPaid = $amountPaid;
