@@ -9,7 +9,7 @@
 	<input type="hidden" name="BillingPostalCode" value="{$profile->_zip}" />
 	<input type="hidden" name="BillingPhone" value="{$profile->phone}" />
 	<input type="hidden" name="BillingEmail" value="{$profile->email}" />
-	<input type="hidden" name="PaymentAmount" id="{$userId}FineAmount" value="0.00" />
+	<input type="hidden" name="PaymentAmount" id="{$userId}FineAmount" value="{$fineTotalsVal.$userId}" />
 	<input type="hidden" name="PaymentMethod" value="CreditOrDebit" />
 	<input type="hidden" name="ReturnUrl" id="{$userId}ReturnUrl" value="{$aspenUrl}/MyAccount/WorldPayCompleted?payment=" />
 	<input type="hidden" name="CancelUrl" id="{$userId}CancelUrl" value="{$aspenUrl}/MyAccount/WorldPayCancel?payment=" />
