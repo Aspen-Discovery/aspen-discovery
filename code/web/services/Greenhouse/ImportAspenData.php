@@ -277,12 +277,12 @@ class Greenhouse_ImportAspenData extends Admin_Admin
 				'name' => 'Web Builder Categories'
 			],
 			'web_builder_file_uploads' => [
-				'classFile' => ROOT_DIR . '/sys/WebBuilder/FileUpload.php',
+				'classFile' => ROOT_DIR . '/sys/File/FileUpload.php',
 				'className' => 'FileUpload',
 				'name' => 'Web Builder File Uploads (PDFS etc)'
 			],
 			'web_builder_images' => [
-				'classFile' => ROOT_DIR . '/sys/WebBuilder/ImageUpload.php',
+				'classFile' => ROOT_DIR . '/sys/File/ImageUpload.php',
 				'className' => 'ImageUpload',
 				'name' => 'Web Builder Images'
 			],
