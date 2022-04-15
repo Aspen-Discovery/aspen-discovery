@@ -118,4 +118,9 @@ class ImageUpload extends DataObject
 			}
 		}
 	}
+
+	public function okToExport(array $selectedFilters): bool
+	{
+		return true;
+	}
 }
