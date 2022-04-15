@@ -23,12 +23,6 @@ abstract class UserMerger extends Admin_Admin
 		}else{
 			$this->importDirExists = true;
 		}
-
-		if ($this->importDirExists) {
-			if (!file_exists($this->importPath . 'users_map.csv')) {
-				$this->setupErrors[] = "users_map.csv file did not exist in $this->importPath";
-			}
-		}
 	}
 
 	function getActiveAdminSection() : string

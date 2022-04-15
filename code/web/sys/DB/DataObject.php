@@ -994,7 +994,7 @@ abstract class DataObject
 	 * @param $overrideExisting
 	 * @return bool
 	 */
-	public function loadFromJSON($jsonData, $mappings, $overrideExisting = 'keepExisting'){
+	public function loadFromJSON($jsonData, $mappings, $overrideExisting = 'keepExisting') : bool{
 		$this->loadObjectPropertiesFromJSON($jsonData, $mappings);
 
 		if (array_key_exists('links', $jsonData)) {
