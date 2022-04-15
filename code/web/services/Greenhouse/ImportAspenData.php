@@ -507,8 +507,8 @@ class Greenhouse_ImportAspenData extends Admin_Admin
 		if (file_exists("/data/aspen-discovery/$serverName/import/uploaded_covers.tar.gz")){
 			exec("tar -xzf /data/aspen-discovery/$serverName/import/uploaded_covers.tar.gz -C /data/aspen-discovery/$serverName/images/original");
 		}
-		if (file_exists("/data/aspen-discovery/$serverName/import/uploaded_web_builder_images.tar.gz")){
-			exec("tar -xzf /data/aspen-discovery/$serverName/import/uploaded_web_builder_images.tar.gz -C /data/aspen-discovery/$serverName/uploads/web_builder_image");
+		if (file_exists("/data/aspen-discovery/$serverName/import/uploaded_files.tar.gz")){
+			exec("tar -xzf /data/aspen-discovery/$serverName/import/uploaded_files.tar.gz -C /data/aspen-discovery/$serverName/uploads");
 		}
 
 		$message .= "Imported Uploaded Files";
