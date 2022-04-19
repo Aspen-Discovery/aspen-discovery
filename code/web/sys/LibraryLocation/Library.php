@@ -914,7 +914,7 @@ class Library extends DataObject
 				'type' => 'oneToMany',
 				'label' => 'Holidays',
 				'renderAsHeading' => true,
-				'description' => 'Holidays',
+				'description' => 'Holidays (automatically loaded from Koha)',
 				'keyThis' => 'libraryId',
 				'keyOther' => 'libraryId',
 				'subObjectType' => 'Holiday',
@@ -1014,9 +1014,6 @@ class Library extends DataObject
 			unset($structure['ilsSection']['properties']['selfRegistrationSection']['properties']['selfRegistrationTemplate']);
 		}else{
 			unset($structure['ilsSection']['properties']['selfRegistrationSection']['properties']['bypassReviewQueueWhenUpdatingProfile']);
-		}
-		if ($ils == 'Evergreen'){
-			unset($structure['ilsSection']['properties']['masqueradeModeSection']);
 		}
 		if (!$configArray['CAS']['enabled']) {
 			unset($structure['casSection']);
@@ -1307,8 +1304,6 @@ class Library extends DataObject
 			$this->treatPrintNoticesAsPhoneNotices = 0;
 			$this->showNoticeTypeInProfile = 0;
 			$this->addSMSIndicatorToPhone = 0;
-		}elseif ($ils == 'Evergreen'){
-			$this->allowMasqueradeMode = 0;
 		}
 		$ret = parent::update();
 		if ($ret !== FALSE ){
