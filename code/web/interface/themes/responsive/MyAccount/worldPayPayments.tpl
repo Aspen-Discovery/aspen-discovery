@@ -21,9 +21,7 @@
 	<div class="row">
 		<div class="col-tn-12 col-sm-8 col-md-6 col-lg -3">
 			<div id="msb-button-container{$userId}">
-				{if $finesToPay == 2}<button type="submit" id="{$userId}PayFines" class="btn btn-sm btn-primary">{if $payFinesLinkText}{$payFinesLinkText}{else}{translate text = 'Go to payment form' isPublicFacing=true}{/if}</button>
-				{else}<button type="submit" class="btn btn-sm btn-primary">{if $payFinesLinkText}{$payFinesLinkText}{else}{translate text = 'Go to payment form' isPublicFacing=true}{/if}</button>
-                {/if}
+				<button type="submit" id="{$userId}PayFines" class="btn btn-sm btn-primary">{if $payFinesLinkText}{$payFinesLinkText}{else}{translate text = 'Go to payment form' isPublicFacing=true}{/if}</button>
 			</div>
 		</div>
 	</div>
