@@ -36,6 +36,7 @@ class PlacardDismissal extends DataObject
 		if ($user->find(true)){
 			$links['user'] = $user->cat_username;
 		}
+		require_once ROOT_DIR . '/sys/LocalEnrichment/Placard.php';
 		$placard = new Placard();
 		$placard->id = $this->placardId;
 		if ($placard->find(true)){
