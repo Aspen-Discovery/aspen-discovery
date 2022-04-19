@@ -17,7 +17,9 @@
 	<input type="hidden" name="UserPart1" value="{$profile->firstname}" />
 	<input type="hidden" name="UserPart2" value="{$profile->lastname}" />
 	<input type="hidden" name="UserPart3" value="{$profile->cat_username}" />
-	<input type="hidden" name="LineItems" id="{$userId}LineItems" value="[]"/>
+	{if $useLineItems}
+		<input type="hidden" name="LineItems" id="{$userId}LineItems" value="[]"/>
+	{/if}
 	<div class="row">
 		<div class="col-tn-12 col-sm-8 col-md-6 col-lg -3">
 			<div id="msb-button-container{$userId}">
@@ -27,14 +29,59 @@
 	</div>
 
 	<script>
+	$(document).ready(function () {ldelim}
+		$('#fines{$userId}').attr('action', '{$paymentSite}');
+	{rdelim});
+	</script>
+	<script>
 		$(document).ready(function () {ldelim}
-			$('#fines{$userId}').attr('action', '{$paymentSite}');
 			$('formattedTotal{$userId}').change(function(){ldelim}
-				var fineAmount = document.getElementById("formattedTotal{$userId}").text;
-				console.log(fineAmount);
+				document.getElementById("{$userId}FineAmount").value = document.getElementById("formattedTotal{$userId}").text;
 			{rdelim})
 		{rdelim});
 	</script>
+	{if $finesToPay == 1}
+		<script>
+			$('#fines{$userId}').submit(function() {ldelim}
+				var totalFineAmt = 0;
+				var totalOutstandingAmt = 0;
+				var lineItems = "";
+				var lineItemNum = 0;
+				$("#fines{$userId} .selectedFine:checked").each(
+					function() {ldelim}
+						lineItemNum += 1;
+						var fineId = $(this).data('fine_id');
+						var fineDescription = $(this).attr("aria-label");
+						var fineAmount =  $(this).data('fine_amt');
+						var lineItem = "["+lineItemNum+"*"+fineId+"*"+fineDescription+"*"+fineAmount+"]";
+						totalFineAmt += fineAmount * 1;
+						totalOutstandingAmt += fineAmount * 1;
+						if(lineItems === '') {ldelim}
+							lineItems = lineItems.concat(lineItem);
+                            {rdelim} else {ldelim}
+							lineItems = lineItems.concat(",", lineItem);
+                            {rdelim}
+                        {rdelim}
+				);
+				document.getElementById("{$userId}FineAmount").value = totalFineAmt;
+                {if $useLineItems}
+				document.getElementById("{$userId}LineItems").value = lineItems;
+				{/if}
+
+				var paymentId = AspenDiscovery.Account.createWorldPayOrder('#fines{$userId}', '#formattedTotal{$userId}', 'fine');
+				var returnUrl = document.getElementById("{$userId}ReturnUrl").value;
+				var cancelUrl = document.getElementById("{$userId}CancelUrl").value;
+
+				returnUrl = returnUrl.concat(paymentId);
+				cancelUrl = cancelUrl.concat(paymentId);
+
+				document.getElementById("{$userId}CancelUrl").value = cancelUrl;
+				document.getElementById("{$userId}ReturnUrl").value = returnUrl;
+
+                {rdelim});
+		</script>
+	{/if}
+    {if $finesToPay == 2}
 	<script>
 		$('#fines{$userId}').submit(function() {ldelim}
 			var totalFineAmt = 0;
@@ -72,6 +119,7 @@
 
             {rdelim});
 	</script>
+    {/if}
 {/strip}
 
 
