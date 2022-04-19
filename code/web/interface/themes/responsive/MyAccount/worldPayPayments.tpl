@@ -17,7 +17,9 @@
 	<input type="hidden" name="UserPart1" value="{$profile->firstname}" />
 	<input type="hidden" name="UserPart2" value="{$profile->lastname}" />
 	<input type="hidden" name="UserPart3" value="{$profile->cat_username}" />
-	<input type="hidden" name="LineItems" id="{$userId}LineItems" value="[]"/>
+	{if $useLineItems}
+		<input type="hidden" name="LineItems" id="{$userId}LineItems" value="[]"/>
+	{/if}
 	<div class="row">
 		<div class="col-tn-12 col-sm-8 col-md-6 col-lg -3">
 			<div id="msb-button-container{$userId}">
@@ -62,7 +64,9 @@
                         {rdelim}
 				);
 				document.getElementById("{$userId}FineAmount").value = totalFineAmt;
+                {if $useLineItems}
 				document.getElementById("{$userId}LineItems").value = lineItems;
+				{/if}
 
 				var paymentId = AspenDiscovery.Account.createWorldPayOrder('#fines{$userId}', '#formattedTotal{$userId}', 'fine');
 				var returnUrl = document.getElementById("{$userId}ReturnUrl").value;
