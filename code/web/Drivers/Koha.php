@@ -746,6 +746,19 @@ class Koha extends AbstractIlsDriver
 			$user->username = $userFromDb['borrowernumber'];
 			if ($user->find(true)) {
 				$userExistsInDB = true;
+			}else{
+				//Check to see if the barcode exists since barcodes must be unique.
+				//This only happens during migrations or if the library reissues the barcode to a new user (i.e. if they lost their card somehow)
+				$user = new User();
+				//Get the unique user id from Millennium
+				$user->source = $this->accountProfile->name;
+				$user->cat_username = $userFromDb['cardnumber'];
+				if ($user->find(true)){
+					$user->username = $userFromDb['borrowernumber'];
+					$userExistsInDB = true;
+				}else{
+					$user->username = $userFromDb['borrowernumber'];
+				}
 			}
 
 			$forceDisplayNameUpdate = false;
