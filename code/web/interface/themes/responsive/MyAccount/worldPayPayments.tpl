@@ -13,7 +13,7 @@
 	<input type="hidden" name="PaymentMethod" value="CreditOrDebit" />
 	<input type="hidden" name="ReturnUrl" id="{$userId}ReturnUrl" value="{$aspenUrl}/MyAccount/WorldPayCompleted?payment=" />
 	<input type="hidden" name="CancelUrl" id="{$userId}CancelUrl" value="{$aspenUrl}/MyAccount/WorldPayCancel?payment=" />
-	<input type="hidden" name="PostUrl" value="{$aspenUrl}/MyAccount/Fines/" />
+	<input type="hidden" name="PostUrl" value="{$aspenUrl}/MyAccount/WorldPayCompleted?payment=" />
 	<input type="hidden" name="UserPart1" value="{$profile->firstname}" />
 	<input type="hidden" name="UserPart2" value="{$profile->lastname}" />
 	<input type="hidden" name="UserPart3" value="{$profile->cat_username}" />

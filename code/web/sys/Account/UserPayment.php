@@ -373,14 +373,13 @@ class UserPayment extends DataObject
 		return $result;
 	}
 
-	public static function completeWorldPayPayment($queryParams){
+	public static function completeWorldPayPayment($queryParams, $paymentId){
 		$success = false;
 		$error = '';
 		$message = '';
-		if (empty($queryParams['PaymentId'])) {
+		if (empty($params['payment'])) {
 			$error = 'No Payment ID was provided, could not complete the payment';
 		}else{
-			$paymentId = $queryParams['PaymentId'];
 			$userPayment = new UserPayment();
 			$userPayment->id = $paymentId;
 			if ($userPayment->find(true)){
@@ -388,7 +387,9 @@ class UserPayment extends DataObject
 					$userPayment->error = true;
 					$userPayment->message .= "This payment has already been completed. ";
 				}else{
-					$amountPaid = $queryParams['TransactionAmount'];
+					$amountPaid = $queryParams['TotalPaymentAmount'];
+					$transactionId = $queryParams['TransactionId'];
+					$userPayment->transactionId = $transactionId;
 					if ($amountPaid != $userPayment->totalPaid){
 						$userPayment->message = "Payment amount did not match, was $userPayment->totalPaid, paid $amountPaid. ";
 						$userPayment->totalPaid = $amountPaid;
@@ -401,7 +402,7 @@ class UserPayment extends DataObject
 					if($donation->find(true)) {
 						$success = true;
 						$message = 'Your donation payment has been completed. ';
-						$userPayment->message .= "Donation payment completed, PaymentId = $paymentId, TotalAmount = $amountPaid. ";
+						$userPayment->message .= "Donation payment completed, PaymentId = $paymentId, TotalAmount = $amountPaid, TransactionId = $transactionId";
 					} else {
 						$user = new User();
 						$user->id = $userPayment->userId;
@@ -410,7 +411,7 @@ class UserPayment extends DataObject
 							if ($finePaymentCompleted['success']) {
 								$success = true;
 								$message = 'Your payment has been completed. ';
-								$userPayment->message .= "Payment completed, PaymentId = $paymentId, TotalAmount = $amountPaid. ";
+								$userPayment->message .= "Payment completed, PaymentId = $paymentId, TotalAmount = $amountPaid, TransactionId = $transactionId ";
 							} else {
 								$userPayment->error = true;
 								$userPayment->message .= $finePaymentCompleted['message'];
