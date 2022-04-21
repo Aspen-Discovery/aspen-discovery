@@ -13,7 +13,7 @@
 	<input type="hidden" name="PaymentMethod" value="CreditOrDebit" />
 	<input type="hidden" name="ReturnUrl" id="{$userId}ReturnUrl" value="{$aspenUrl}/MyAccount/WorldPayCompleted?payment=" />
 	<input type="hidden" name="CancelUrl" id="{$userId}CancelUrl" value="{$aspenUrl}/MyAccount/WorldPayCancel?payment=" />
-	<input type="hidden" name="PostUrl" value="{$aspenUrl}/WorldPay/Complete?payment=" />
+	<input type="hidden" name="PostUrl" id="{$userId}PostUrl" value="{$aspenUrl}/WorldPay/Complete?payment=" />
 	<input type="hidden" name="UserPart1" value="{$profile->firstname}" />
 	<input type="hidden" name="UserPart2" value="{$profile->lastname}" />
 	<input type="hidden" name="UserPart3" value="{$profile->cat_username}" />
@@ -110,12 +110,15 @@
 			var paymentId = AspenDiscovery.Account.createWorldPayOrder('#fines{$userId}', '#formattedTotal{$userId}', 'fine');
 			var returnUrl = document.getElementById("{$userId}ReturnUrl").value;
 			var cancelUrl = document.getElementById("{$userId}CancelUrl").value;
+			var postUrl = document.getElementById("{$userId}PostUrl").value;
 
 			returnUrl = returnUrl.concat(paymentId);
 			cancelUrl = cancelUrl.concat(paymentId);
+			postUrl = postUrl.concat(paymentId);
 
 			document.getElementById("{$userId}CancelUrl").value = cancelUrl;
 			document.getElementById("{$userId}ReturnUrl").value = returnUrl;
+			document.getElementById("{$userId}PostUrl").value = postUrl;
 
             {rdelim});
 	</script>
