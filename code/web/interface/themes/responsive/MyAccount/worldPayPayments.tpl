@@ -71,12 +71,15 @@
 				var paymentId = AspenDiscovery.Account.createWorldPayOrder('#fines{$userId}', '#formattedTotal{$userId}', 'fine');
 				var returnUrl = document.getElementById("{$userId}ReturnUrl").value;
 				var cancelUrl = document.getElementById("{$userId}CancelUrl").value;
+				var postUrl = document.getElementById("{$userId}PostUrl").value;
 
 				returnUrl = returnUrl.concat(paymentId);
 				cancelUrl = cancelUrl.concat(paymentId);
+				postUrl = postUrl.concat(paymentId);
 
 				document.getElementById("{$userId}CancelUrl").value = cancelUrl;
 				document.getElementById("{$userId}ReturnUrl").value = returnUrl;
+				document.getElementById("{$userId}PostUrl").value = postUrl;
 
                 {rdelim});
 		</script>
