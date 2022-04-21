@@ -377,7 +377,7 @@ class UserPayment extends DataObject
 		$success = false;
 		$error = '';
 		$message = '';
-		if (empty($params['payment'])) {
+		if (empty($paymentId)) {
 			$error = 'No Payment ID was provided, could not complete the payment';
 		}else{
 			$userPayment = new UserPayment();
