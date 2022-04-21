@@ -105,7 +105,11 @@
                     {rdelim}
 			);
 			document.getElementById("{$userId}FineAmount").value = totalFineAmt;
+
+            {if $useLineItems}
 			document.getElementById("{$userId}LineItems").value = lineItems;
+            {/if}
+
 
 			var paymentId = AspenDiscovery.Account.createWorldPayOrder('#fines{$userId}', '#formattedTotal{$userId}', 'fine');
 			var returnUrl = document.getElementById("{$userId}ReturnUrl").value;
