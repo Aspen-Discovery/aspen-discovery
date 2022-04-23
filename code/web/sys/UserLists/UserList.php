@@ -786,7 +786,7 @@ class UserList extends DataObject
 		$user = new User();
 		$user->id = $this->user_id;
 		if ($user->find(true)) {
-			if ($user->homeLocationId == 0 || array_key_exists($user->homeLocationId, $selectedFilters['locations'])) {
+			if ($user->homeLocationId == 0 || in_array($user->homeLocationId, $selectedFilters['locations'])) {
 				$okToExport = true;
 			}
 		}
@@ -849,6 +849,7 @@ class UserList extends DataObject
 				require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
 				$userListEntry = new UserListEntry();
 				$userListEntry->listId = $this->id;
+				unset($listEntry['listId']);
 				$userListEntry->loadFromJSON($listEntry, $mappings, $overrideExisting);
 			}
 			$result = true;

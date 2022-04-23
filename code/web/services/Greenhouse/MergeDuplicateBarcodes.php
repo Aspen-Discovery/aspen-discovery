@@ -49,28 +49,36 @@ class MergeDuplicateBarcodes extends UserMerger
 					$row['usernames'] = $tmpUser->username;
 				}
 
+				$oldUser = clone($tmpUser);
+				$newUser = null;
 				$loginResult = $catalog->patronLogin($tmpUser->cat_username, $tmpUser->cat_password);
-				if ($loginResult instanceof User && $loginResult->username == $tmpUser->username){
-					$newUser = $tmpUser;
+				if ($loginResult instanceof User){
+					//We got a good user
+					if ($loginResult->username != $tmpUser->username){
+						//The internal ILS ID has changed
+						$newUser = $loginResult;
+					}
 				}else{
-					$oldUser = $tmpUser;
+					$loginResult = $catalog->findNewUser($tmpUser->cat_username);
+					if ($loginResult instanceof User){
+						if ($loginResult->username != $tmpUser->username){
+							//The internal ILS ID has changed
+							$newUser = $loginResult;
+						}
+					}
 				}
-			}
-			if ($oldUser == null || $newUser == null){
-				$row['oldUser'] = $oldUser;
-				$row['oldUserId'] = is_null($oldUser) ? 'none' : $oldUser->username;
-				$row['newUser'] = $newUser;
-				$row['newUserId'] = is_null($newUser) ? 'none' : $newUser->username;
-			}else{
-				$row['oldUser'] = $oldUser;
-				$row['oldUserId'] = $oldUser->username;
-				$row['newUser'] = $newUser;
-				$row['newUserId'] = $newUser->username;
 
-				//Merge the records
-				$mergeResults['numUsersUpdated']++;
+				if ($oldUser != null && $newUser != null){
+					$row['oldUser'] = $oldUser;
+					$row['oldUserId'] = $oldUser->username;
+					$row['newUser'] = $newUser;
+					$row['newUserId'] = $newUser->username;
 
-				$this->mergeUsers($oldUser, $newUser, $mergeResults);
+					//Merge the records
+					$mergeResults['numUsersUpdated']++;
+
+					$this->mergeUsers($oldUser, $newUser, $mergeResults);
+				}
 			}
 		}
 		$interface->assign('barcodesWithDuplicates', $allBarcodesWithDuplicates);

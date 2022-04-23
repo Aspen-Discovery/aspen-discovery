@@ -44,15 +44,6 @@ export default class BrowseCategoryHome extends Component {
 
 
 	loadBrowseCategories = async (libraryUrl) => {
-		let patron = "";
-		try {
-			const tmp = await AsyncStorage.getItem('@patronProfile');
-			patron = JSON.parse(tmp);
-			patron = patron.id;
-		} catch (e) {
-			console.log(e);
-		}
-
 		if(patron && this.state.categoriesLoaded === false) {
 			await getBrowseCategories(libraryUrl).then(response => {
 				this.setState({
@@ -101,7 +92,7 @@ export default class BrowseCategoryHome extends Component {
 		console.log("Trying to hide category...");
 		this.setState({isLoading: true });
 		await dismissBrowseCategory(libraryUrl, categoryId, patronId).then(async r => {
-			await getPatronBrowseCategories(libraryUrl, patronId).then(response => {
+			await getBrowseCategories(libraryUrl).then(response => {
 				this.setState({
 					browseCategories: response,
 					isLoading: false
@@ -114,7 +105,7 @@ export default class BrowseCategoryHome extends Component {
 
 	onRefreshCategories = async (libraryUrl, patronId) => {
 		this.setState({isLoading: true});
-		await getPatronBrowseCategories(libraryUrl, patronId).then(response => {
+		await getBrowseCategories(libraryUrl).then(response => {
 			this.setState({
 				browseCategories: response,
 				isLoading: false,
@@ -183,7 +174,7 @@ export default class BrowseCategoryHome extends Component {
 		const location = this.context.location;
 		const library = this.context.library;
 
-		console.log(this.state.browseCategories);
+		//console.log(this.state.browseCategories);
 
 		if (this.state.isLoading === true || this.state.browseCategories === "null") {
 			return (loadingSpinner());

@@ -173,6 +173,14 @@ class CatalogConnection
 	}
 
 	/**
+	 * @param string $patronBarcode
+	 * @return bool|User
+	 */
+	public function findNewUser(string $patronBarcode){
+		return $this->driver->findNewUser($patronBarcode);
+	}
+
+	/**
 	 * @param User $user
 	 */
 	public function updateUserWithAdditionalRuntimeInformation($user)

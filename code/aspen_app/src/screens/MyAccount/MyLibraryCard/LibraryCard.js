@@ -157,7 +157,7 @@ export default class LibraryCard extends Component {
 
 		return (
 			<Center flex={1} px={3}>
-				<Flex direction="column" bg="white" maxW="90%" px={8} py={5} borderRadius={20}>
+				<Flex direction="column" bg="white" maxW="95%" px={8} py={5} borderRadius={20}>
 					<Center>
 						<Flex direction="row">
 							<Image

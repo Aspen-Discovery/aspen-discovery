@@ -4,7 +4,6 @@ import {Ionicons} from "@expo/vector-icons";
 
 // custom components and helper files
 import {translate} from "../../translations/translations";
-import {getProfile} from '../../util/loadPatron';
 
 export default class Summary extends Component {
 	constructor() {
@@ -31,30 +30,7 @@ export default class Summary extends Component {
 			thisPatron: global.patron + "'s",
 		});
 
-		await this._fetchProfile();
-
 	};
-
-	_fetchProfile = async () => {
-
-		await getProfile().then(response => {
-			if (response === "TIMEOUT_ERROR") {
-				this.setState({
-					hasError: true,
-					error: "Connection to the library timed out.",
-					isLoading: false,
-				});
-			} else {
-
-				this.setState({
-					data: response,
-					hasError: false,
-					error: null,
-					isLoading: false,
-				});
-			}
-		})
-	}
 
 	render() {
 

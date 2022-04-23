@@ -33,11 +33,11 @@ export async function removeData() {
 		SecureStore.deleteItemAsync("userToken");
 		SecureStore.deleteItemAsync("logo");
 		SecureStore.deleteItemAsync("favicon");
-		try {
-			await AsyncStorage.multiRemove(keys);
-		} catch (e) {
-			console.log(e);
-		}
+		await AsyncStorage.removeItem('@userToken');
+		await AsyncStorage.removeItem('@patronProfile');
+		await AsyncStorage.removeItem('@libraryInfo');
+		await AsyncStorage.removeItem('@locationInfo');
+		await AsyncStorage.removeItem('@pathUrl');
 		//await AsyncStorage.clear();
 		global.promptForOverdriveEmail = "";
 		global.overdriveEmail = "";
@@ -101,8 +101,11 @@ export async function removeDataOnly() {
 		SecureStore.deleteItemAsync("userToken");
 		SecureStore.deleteItemAsync("logo");
 		SecureStore.deleteItemAsync("favicon");
-		await AsyncStorage.multiRemove(keys);
-		await AsyncStorage.clear();
+		await AsyncStorage.removeItem('@userToken');
+		await AsyncStorage.removeItem('@patronProfile');
+		await AsyncStorage.removeItem('@libraryInfo');
+		await AsyncStorage.removeItem('@locationInfo');
+		await AsyncStorage.removeItem('@pathUrl');
 		global.promptForOverdriveEmail = "";
 		global.overdriveEmail = "";
 		global.patronId = "";

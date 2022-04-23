@@ -21,7 +21,7 @@ class UserLink extends DataObject{
 		$user = new User();
 		$user->id = $this->primaryAccountId;
 		if ($user->find(true)) {
-			if ($user->homeLocationId == 0 || array_key_exists($user->homeLocationId, $selectedFilters['locations'])) {
+			if ($user->homeLocationId == 0 || in_array($user->homeLocationId, $selectedFilters['locations'])) {
 				$primaryAccountOkToExport = true;
 			}
 		}
@@ -30,7 +30,7 @@ class UserLink extends DataObject{
 		$user = new User();
 		$user->id = $this->linkedAccountId;
 		if ($user->find(true)) {
-			if ($user->homeLocationId == 0 || array_key_exists($user->homeLocationId, $selectedFilters['locations'])) {
+			if ($user->homeLocationId == 0 || in_array($user->homeLocationId, $selectedFilters['locations'])) {
 				$linkedAccountOkToExport = true;
 			}
 		}

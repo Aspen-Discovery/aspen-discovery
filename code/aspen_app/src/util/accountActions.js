@@ -10,7 +10,7 @@ import * as Sentry from 'sentry-expo';
 import {createAuthTokens, getHeaders, postData, problemCodeMap} from "./apiAuth";
 import {translate} from "../translations/translations";
 import {popAlert, popToast} from "../components/loadError";
-import {getCheckedOutItems, getHolds, getLinkedAccounts, getPatronBrowseCategories, getProfile} from './loadPatron';
+import {getCheckedOutItems, getHolds, getLinkedAccounts, getPatronBrowseCategories} from './loadPatron';
 import {getActiveBrowseCategories, getBrowseCategories} from "./loadLibrary";
 import {GLOBALS} from "./globals";
 
@@ -63,7 +63,6 @@ export async function renewCheckout(barcode, recordId, source, itemId, libraryUr
 				popAlert(result.title, result.message, "success");
 				const forceReload = true;
 				await getCheckedOutItems(forceReload);
-				//await getProfile(true);
 			} else {
 				popAlert(result.title, result.message, "error");
 			}
@@ -71,7 +70,6 @@ export async function renewCheckout(barcode, recordId, source, itemId, libraryUr
 			if (result.success === true) {
 				popAlert(result.title, result.message, "success");
 				await getCheckedOutItems();
-				//await getProfile(true);
 			} else {
 				popAlert(result.title, result.message, "error");
 			}
@@ -292,7 +290,6 @@ export async function freezeHold(cancelId, recordId, source, libraryUrl) {
 		if (result.success === true) {
 			popAlert("Hold frozen", result.message, "success");
 			// reload patron data in the background
-			//await getProfile(true);
 			await getHolds(true);
 		} else {
 			popAlert("Unable to freeze hold", result.message, "error");
@@ -328,7 +325,6 @@ export async function thawHold(cancelId, recordId, source, libraryUrl) {
 		if (result.success === true) {
 			popAlert("Hold thawed", result.message, "success");
 			// reload patron data in the background
-			//await getProfile(true);
 			await getHolds(true);
 		} else {
 			popAlert("Unable to thaw hold", result.message, "error");
@@ -363,7 +359,6 @@ export async function cancelHold(cancelId, recordId, source, libraryUrl) {
 		if (result.success === true) {
 			popAlert(result.title, result.message, "success");
 			// reload patron data in the background
-			//await getProfile(true);
 			await getHolds(true);
 		} else {
 			popAlert(result.title, result.message, "error");
@@ -393,7 +388,6 @@ export async function changeHoldPickUpLocation(holdId, newLocation, libraryUrl) 
 		if (result.success === true) {
 			popAlert(result.title, result.message, "success");
 			// reload patron data in the background
-			//await getProfile(true);
 			await getHolds(true);
 		} else {
 			popAlert(result.title, result.message, "error");
@@ -426,7 +420,6 @@ export async function updateOverDriveEmail(itemId, source, patronId, overdriveEm
 		const responseData = response.data;
 		const result = responseData.result;
 		// reload patron data in the background
-		//await getProfile(true);
 		return result;
 	} else {
 		popToast(translate('error.no_server_connection'), translate('error.no_library_connection'), "warning");

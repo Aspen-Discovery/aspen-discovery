@@ -123,6 +123,8 @@ class Polaris extends AbstractIlsDriver
 			}
 		}
 
+		//TODO: Implement /public/1/patron/{PatronBarcode}/messages (Ticket 95499) - Also implement marking as read
+
 		return $messages;
 	}
 

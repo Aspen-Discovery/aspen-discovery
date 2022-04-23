@@ -21,7 +21,7 @@ class PlacardDismissal extends DataObject
 		$user = new User();
 		$user->id = $this->userId;
 		if ($user->find(true)) {
-			if ($user->homeLocationId == 0 || array_key_exists($user->homeLocationId, $selectedFilters['locations'])) {
+			if ($user->homeLocationId == 0 || in_array($user->homeLocationId, $selectedFilters['locations'])) {
 				$okToExport = true;
 			}
 		}
@@ -36,6 +36,7 @@ class PlacardDismissal extends DataObject
 		if ($user->find(true)){
 			$links['user'] = $user->cat_username;
 		}
+		require_once ROOT_DIR . '/sys/LocalEnrichment/Placard.php';
 		$placard = new Placard();
 		$placard->id = $this->placardId;
 		if ($placard->find(true)){
