@@ -767,19 +767,19 @@ public class EvergreenExportMain {
 					updateBibFromEvergreen(idToProcess, marcFactory, true);
 				}
 			}else {
-				logEntry.incErrors("There were too many ids to process using the API. Skipping this file");
+				logEntry.incErrors("There were too many ids to process using the API. Not processing new and restored ids. ");
 			}
 			GroupedWorkIndexer indexer = getGroupedWorkIndexer();
 			RecordGroupingProcessor recordGroupingProcessor = getRecordGroupingProcessor();
 			for (String deletedRecordId : existingRecords.keySet()){
 				RemoveRecordFromWorkResult result = recordGroupingProcessor.removeRecordFromGroupedWork(indexingProfile.getName(), deletedRecordId);
+				getGroupedWorkIndexer().markIlsRecordAsDeleted(indexingProfile.getName(), deletedRecordId);
 				if (result.reindexWork){
 					indexer.processGroupedWork(result.permanentId);
 				}else if (result.deleteWork){
 					//Delete the work from solr and the database
 					indexer.deleteRecord(result.permanentId);
 				}
-				existingRecords.remove(deletedRecordId);
 			}
 
 			//After the file has been processed, delete it
@@ -787,7 +787,7 @@ public class EvergreenExportMain {
 				logEntry.incErrors("Could not delete ids file " + idsFile);
 			}
 		}catch (Exception e){
-			logEntry.incErrors("Error reading IDs file " + idsFile);
+			logEntry.incErrors("Error reading IDs file " + idsFile, e);
 		}
 		return numUpdates;
 	}
