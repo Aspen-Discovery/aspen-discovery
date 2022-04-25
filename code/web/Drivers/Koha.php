@@ -3032,7 +3032,8 @@ class Koha extends AbstractIlsDriver
 
 	function getMaterialsRequests(User $user)
 	{
-		if($this->getKohaVersion() > 21.05) {
+		//Just use the database to get the requests
+		if(false && $this->getKohaVersion() > 21.05) {
 			$result = [
 				'success' => false,
 				'message' => 'Unknown error loading materials requests.'
