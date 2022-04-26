@@ -780,14 +780,6 @@ public class EvergreenExportMain {
 				}
 			}
 			logEntry.addNote("There are " + newIds.size() + " new and " + restoredIds.size() + " restored ids and " + deletedIds.size() + " deleted ids");
-			if (newIds.size() <= 1000){
-				MarcFactory marcFactory = MarcFactory.newInstance();
-				for (String idToProcess : newIds) {
-					updateBibFromEvergreen(idToProcess, marcFactory, true);
-				}
-			}else {
-				logEntry.incErrors("There were too many new ids to process using the API. Not processing new ids. ");
-			}
 
 			logEntry.addNote("Restoring previously deleted ids");
 			logEntry.saveResults();
@@ -813,6 +805,19 @@ public class EvergreenExportMain {
 			}
 			logEntry.addNote("Restored " + restoredIds.size() + " records");
 			logEntry.saveResults();
+
+			logEntry.addNote("Processing new ids");
+			logEntry.saveResults();
+			MarcFactory marcFactory = MarcFactory.newInstance();
+			int numAdded = 0;
+			for (String idToProcess : newIds) {
+				updateBibFromEvergreen(idToProcess, marcFactory, true);
+				numAdded++;
+				if (numAdded >= 1000){
+					logEntry.addNote("Only processing the first 1000 new ids to ensure performance");
+					break;
+				}
+			}
 
 			for (String deletedRecordId : deletedIds){
 				RemoveRecordFromWorkResult result = recordGroupingProcessor.removeRecordFromGroupedWork(indexingProfile.getName(), deletedRecordId);
