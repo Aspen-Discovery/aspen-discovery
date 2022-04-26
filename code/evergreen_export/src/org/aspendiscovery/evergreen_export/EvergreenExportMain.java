@@ -716,7 +716,7 @@ public class EvergreenExportMain {
 
 
 		//Process ID Files
-		File[] exportedIdFiles = marcDeltaPath.listFiles((dir, name) -> name.endsWith("ids"));
+		File[] exportedIdFiles = marcDeltaPath.listFiles((dir, name) -> (name.endsWith("ids") && name.startsWith("all")));
 		if (exportedIdFiles != null && exportedIdFiles.length > 0){
 			//Sort from newest to oldest
 			Arrays.sort(exportedIdFiles, Comparator.comparingLong(File::lastModified).reversed());
@@ -725,6 +725,16 @@ public class EvergreenExportMain {
 			for (int i = 1; i < exportedIdFiles.length; i++) {
 				if (!exportedIdFiles[i].delete()) {
 					logEntry.incErrors("Could not delete old ids file " + exportedIdFiles[i]);
+				}
+			}
+		}
+
+		File[] exportedDeletedIdFiles = marcDeltaPath.listFiles((dir, name) -> (name.endsWith("ids") && name.startsWith("incremental_deleted")));
+		if (exportedDeletedIdFiles != null && exportedDeletedIdFiles.length > 0){
+			//For now we don't care about these since we process the all ids file, just delete them.
+			for (int i = 1; i < exportedDeletedIdFiles.length; i++) {
+				if (!exportedDeletedIdFiles[i].delete()) {
+					logEntry.incErrors("Could not delete old ids file " + exportedDeletedIdFiles[i]);
 				}
 			}
 		}
@@ -748,30 +758,49 @@ public class EvergreenExportMain {
 			//Read the file to see what has been added or deleted
 			BufferedReader reader = new BufferedReader(new FileReader(idsFile));
 			String id = reader.readLine();
-			HashSet<String> newAndRestoredIds = new HashSet<>();
+			HashSet<String> newIds = new HashSet<>();
+			HashSet<String> restoredIds = new HashSet<>();
 			while (id != null){
 				if (existingRecords.containsKey(id)){
 					if (existingRecords.get(id) == Boolean.TRUE){
 						//This was previously deleted
-						newAndRestoredIds.add(id);
+						restoredIds.add(id);
 					}
 					existingRecords.remove(id);
 				}else{
-					newAndRestoredIds.add(id);
+					newIds.add(id);
 				}
 				id = reader.readLine();
 			}
-			logEntry.addNote("There are " + newAndRestoredIds.size() + " new and restored ids and " + existingRecords.size() + " deleted ids");
-			if (newAndRestoredIds.size() <= 1000){
+			logEntry.addNote("There are " + newIds.size() + " new and " + restoredIds.size() + " restored ids and " + existingRecords.size() + " deleted ids");
+			if (newIds.size() <= 1000){
 				MarcFactory marcFactory = MarcFactory.newInstance();
-				for (String idToProcess : newAndRestoredIds) {
+				for (String idToProcess : newIds) {
 					updateBibFromEvergreen(idToProcess, marcFactory, true);
 				}
 			}else {
-				logEntry.incErrors("There were too many ids to process using the API. Not processing new and restored ids. ");
+				logEntry.incErrors("There were too many new ids to process using the API. Not processing new ids. ");
 			}
+
+			logEntry.addNote("Restoring previously deleted ids");
+			logEntry.saveResults();
 			GroupedWorkIndexer indexer = getGroupedWorkIndexer();
 			RecordGroupingProcessor recordGroupingProcessor = getRecordGroupingProcessor();
+			for (String restoredRecordId : restoredIds) {
+				getGroupedWorkIndexer().markIlsRecordAsRestored(indexingProfile.getName(), restoredRecordId);
+				Record currentMarcRecord = getGroupedWorkIndexer().loadMarcRecordFromDatabase(indexingProfile.getName(), restoredRecordId, logEntry);
+				if (currentMarcRecord != null) {
+					String groupedWorkId = groupEvergreenRecord(currentMarcRecord);
+					if (groupedWorkId != null) {
+						//Reindex the record
+						getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
+						logEntry.incAdded();
+					}
+				}
+			}
+			logEntry.addNote("Restored " + restoredIds.size() + " records");
+			logEntry.saveResults();
+
 			for (String deletedRecordId : existingRecords.keySet()){
 				RemoveRecordFromWorkResult result = recordGroupingProcessor.removeRecordFromGroupedWork(indexingProfile.getName(), deletedRecordId);
 				getGroupedWorkIndexer().markIlsRecordAsDeleted(indexingProfile.getName(), deletedRecordId);
