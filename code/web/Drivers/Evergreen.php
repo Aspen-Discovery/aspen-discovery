@@ -938,8 +938,10 @@ class Evergreen extends AbstractIlsDriver
 					$cancelDate = date( DateTime::ISO8601, $sixMonthsFromNow);
 				}else{
 					//Default to a date 6 months (half a year) in the future.
-					$nnaDate = time() + $library->defaultNotNeededAfterDays * 24 * 60 * 60;
-					$cancelDate = date( DateTime::ISO8601, $nnaDate);
+					if ($library->defaultNotNeededAfterDays > 0) {
+						$nnaDate = time() + $library->defaultNotNeededAfterDays * 24 * 60 * 60;
+						$cancelDate = date(DateTime::ISO8601, $nnaDate);
+					}
 				}
 			}
 			$namedParams = [
@@ -949,9 +951,11 @@ class Evergreen extends AbstractIlsDriver
 				"email_notify" => 't',
 //				"request_lib" =>  (int)$pickupBranch,
 //				"request_time" => date( DateTime::ISO8601),
-				"expire_time" => $cancelDate,
 //				"frozen" => 'f'
 			];
+			if ($cancelDate != null){
+				$namedParams['expire_time'] = $cancelDate;
+			}
 
 			$request = 'service=open-ils.circ&method=open-ils.circ.holds.test_and_create.batch';
 			$request .= '&param=' . json_encode($authToken);
