@@ -783,6 +783,7 @@ public class EvergreenExportMain {
 				}
 				logEntry.incDeleted();
 			}
+			reader.close();
 
 			//After the file has been processed, delete it
 			if (!idsFile.delete()){
