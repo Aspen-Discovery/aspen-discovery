@@ -148,7 +148,13 @@
 		table#studentReportTable thead {
 			display: none !important;
 		}
-
+		/* Chromium + Safari */
+		/* fix for "Print Pages" */
+		@supports (not (-moz-appearance: none)) {
+			tr.overdueSlipContainer {
+				display: block;
+			}
+		}
 	}
 </style>
 {/literal}
