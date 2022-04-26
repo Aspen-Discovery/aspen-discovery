@@ -8,6 +8,7 @@ import com.turning_leaf_technologies.grouping.RecordGroupingProcessor;
 import com.turning_leaf_technologies.grouping.RemoveRecordFromWorkResult;
 import com.turning_leaf_technologies.indexing.*;
 import com.turning_leaf_technologies.logging.LoggingUtil;
+import com.turning_leaf_technologies.marc.MarcUtil;
 import com.turning_leaf_technologies.net.NetworkUtils;
 import com.turning_leaf_technologies.net.WebServiceResponse;
 import com.turning_leaf_technologies.reindexer.GroupedWorkIndexer;
@@ -780,11 +781,12 @@ public class EvergreenExportMain {
 					//Delete the work from solr and the database
 					indexer.deleteRecord(result.permanentId);
 				}
+				logEntry.incDeleted();
 			}
 
 			//After the file has been processed, delete it
 			if (!idsFile.delete()){
-				logEntry.incErrors("Could not delete ids file " + idsFile);
+				logEntry.incErrors("Could not delete ids file " + idsFile + " after processing.");
 			}
 		}catch (Exception e){
 			logEntry.incErrors("Error reading IDs file " + idsFile, e);
@@ -794,7 +796,8 @@ public class EvergreenExportMain {
 
 	private static int updateItemsUsingCsvFile(File[] exportedCsvFiles, long lastUpdateFromMarc, Connection dbConn) {
 		int numUpdates = 0;
-		HashSet<String> bibsToUpdate = new HashSet<>();
+		HashSet<String> bibsToUpdateViaAPI = new HashSet<>();
+		MarcFactory marcFactory = MarcFactory.newInstance();
 		for(File csvFile : exportedCsvFiles){
 			try {
 				@SuppressWarnings("deprecation")
@@ -803,9 +806,89 @@ public class EvergreenExportMain {
 				while (rowData != null){
 					//Currently, columns are: copy id, status, bib id, copy location/current location, deleted, barcode
 					//We will pull the full bib from super cat to get current status.
-					if (rowData.length >= 3) {
+					if (rowData.length >= 6) {
 						String bibNumber = rowData[2];
-						bibsToUpdate.add(bibNumber);
+						Record currentMarcRecord = getGroupedWorkIndexer().loadMarcRecordFromDatabase(indexingProfile.getName(), bibNumber, logEntry);
+
+						boolean updateWithAPI = true;
+						if (currentMarcRecord != null) {
+							//Find the proper item record for this
+							List<DataField> itemFields = MarcUtil.getDataFields(currentMarcRecord, indexingProfile.getItemTag());
+							for (DataField itemField : itemFields) {
+								Subfield itemBarcode = itemField.getSubfield(indexingProfile.getBarcodeSubfield());
+								if (itemBarcode != null) {
+									String barcodeForRow = rowData[5];
+									if (barcodeForRow.equals(itemBarcode.getData())) {
+										updateWithAPI = false;
+										if (rowData[3].equals("t")) {
+											//This item has been deleted
+											currentMarcRecord.removeVariableField(itemField);
+										} else {
+											//Update values
+											//We ignore copy id since it does not normally export
+											String status = rowData[1];
+											Subfield statusSubfield = itemField.getSubfield(indexingProfile.getItemStatusSubfield());
+											if (status == null) {
+												if (statusSubfield != null) {
+													itemField.removeSubfield(statusSubfield);
+												}
+											} else {
+												if (statusSubfield == null) {
+													statusSubfield = marcFactory.newSubfield(indexingProfile.getItemStatusSubfield(), status);
+													itemField.addSubfield(statusSubfield);
+												} else {
+													statusSubfield.setData(status);
+												}
+											}
+
+											String shelvingLocation = rowData[3];
+											Subfield shelvingLocationSubfield = itemField.getSubfield(indexingProfile.getShelvingLocationSubfield());
+											if (shelvingLocation == null) {
+												if (shelvingLocationSubfield != null) {
+													itemField.removeSubfield(shelvingLocationSubfield);
+												}
+											} else {
+												if (shelvingLocationSubfield == null) {
+													shelvingLocationSubfield = marcFactory.newSubfield(indexingProfile.getShelvingLocationSubfield(), shelvingLocation);
+													itemField.addSubfield(shelvingLocationSubfield);
+												} else {
+													shelvingLocationSubfield.setData(shelvingLocation);
+												}
+											}
+										}
+										//Once we process, we can skip the rest of the items
+										break;
+									}
+								}
+							}
+						}
+
+						if (updateWithAPI) {
+							bibsToUpdateViaAPI.add(bibNumber);
+						}else{
+							//mark the item for reindexing
+							GroupedWorkIndexer.MarcStatus saveMarcResult = getGroupedWorkIndexer().saveMarcRecordToDatabase(indexingProfile, bibNumber, currentMarcRecord);
+							if (saveMarcResult == GroupedWorkIndexer.MarcStatus.CHANGED) {
+								logEntry.incUpdated();
+							} else if (saveMarcResult == GroupedWorkIndexer.MarcStatus.NEW) {
+								logEntry.incAdded();
+							} else {
+								//No change has been made, we could skip this
+								if (!indexingProfile.isRunFullUpdate()) {
+									//TODO: Actually skip re-processing the record?
+									rowData = reader.readNext();
+									logEntry.incSkipped();
+									continue;
+								}
+							}
+
+							//Regroup the record
+							String groupedWorkId = groupEvergreenRecord(currentMarcRecord);
+							if (groupedWorkId != null) {
+								//Reindex the record
+								getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
+							}
+						}
 					}
 					rowData = reader.readNext();
 				}
@@ -813,13 +896,12 @@ public class EvergreenExportMain {
 				//delete the file after it has been processed.
 				csvFile.delete();
 			}catch (Exception e){
-				logEntry.incErrors("Error reading CSV file " + csvFile);
+				logEntry.incErrors("Error reading CSV file " + csvFile, e);
 			}
 		}
-		logEntry.addNote("Processing " + bibsToUpdate.size() + " bibs that were marked as changed in the CSV files");
+		logEntry.addNote("Processing " + bibsToUpdateViaAPI.size() + " bibs that were marked as changed in the CSV files");
 		logEntry.saveResults();
-		MarcFactory marcFactory = MarcFactory.newInstance();
-		for (String bibToUpdate : bibsToUpdate){
+		for (String bibToUpdate : bibsToUpdateViaAPI){
 			numUpdates += updateBibFromEvergreen(bibToUpdate, marcFactory, true);
 		}
 		logEntry.addNote("Finished processing bibs from CSV");
