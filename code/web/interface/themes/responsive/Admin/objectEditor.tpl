@@ -31,7 +31,7 @@
 			<div class="col-xs-12">
 				<div class="btn-group-sm">
 					{foreach from=$additionalObjectActions item=action}
-						<a class="btn btn-default"{if $action.url} href='{$action.url}'{/if}{if $action.onclick} onclick="{$action.onclick}"{/if}>{translate text=$action.text isAdminFacing=true}</a>
+						<a class="btn btn-default"{if $action.url} href='{$action.url}'{/if}{if $action.onclick} onclick="{$action.onclick}"{/if} {if $action.target == "_blank"}target="_blank" {/if} >{if $action.target == "_blank"}<i class="fas fa-external-link-alt"></i> {/if} {translate text=$action.text isAdminFacing=true}</a>
 					{/foreach}
 				</div>
 			</div>

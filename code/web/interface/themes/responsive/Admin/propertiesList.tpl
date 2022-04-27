@@ -168,7 +168,7 @@
 								{/if}
 								{if $dataItem->getAdditionalListActions()}
 									{foreach from=$dataItem->getAdditionalListActions() item=action}
-										<a href='{$action.url}' class="btn btn-default btn-sm" aria-label="{$action.text} for Item {$id}">{translate text=$action.text isAdminFacing=true}</a>
+										<a href='{$action.url}' class="btn btn-default btn-sm" aria-label="{$action.text} for Item {$id}" {if $action.target == "_blank"}target="_blank" {/if}>{if $action.target == "_blank"}<i class="fas fa-external-link-alt"></i> {/if} {translate text=$action.text isAdminFacing=true}</a>
 									{/foreach}
 								{/if}
 								{if $dataItem->canActiveUserEdit()}
