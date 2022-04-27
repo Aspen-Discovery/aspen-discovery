@@ -707,8 +707,13 @@ class ListAPI extends Action
 			$list->user_id = $user->id;
 			$list->find();
 			if ($list->find(true)) {
-				$list->delete();
-				return array('success' => true, 'title' => 'Success', 'message' => 'List deleted successfully');
+				$userCanEdit = $user->canEditList($list);
+				if ($userCanEdit) {
+					$list->delete();
+					return array('success' => true, 'title' => 'Success', 'message' => 'List deleted successfully');
+				}else{
+					return array('success' => true, 'title' => 'Success', 'message' => "Sorry you don't have permissions to delete this list.");
+				}
 			}else{
 				return array('success' => false, 'title' => 'Error', 'message' => 'List not found', 'listId' => $list->id, 'listTitle' => $list->title);
 			}
