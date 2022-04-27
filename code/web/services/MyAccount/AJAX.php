@@ -4257,20 +4257,24 @@ class MyAccount_AJAX extends JSON_Action
 			foreach ($itemsToRemove as $listId => $selected) {
 				$list = new UserList();
 				$list->id = $listId;
-
-				//Perform an action on the list, but verify that the user has permission to do so.
-				$userCanEdit = false;
-				$userObj = UserAccount::getActiveUserObj();
-				if ($userObj != false){
-					$userCanEdit = $userObj->canEditList($list);
-				}
-				if ($userCanEdit) {
-					$list->find();
-					$list->delete();
-					$result['success'] = true;
-					$result['message'] = 'Selected lists deleted successfully';
-				} else {
+				if ($list->find(true)){
+					//Perform an action on the list, but verify that the user has permission to do so.
+					$userCanEdit = false;
+					$userObj = UserAccount::getActiveUserObj();
+					if ($userObj != false){
+						$userCanEdit = $userObj->canEditList($list);
+					}
+					if ($userCanEdit) {
+						$list->delete();
+						$result['success'] = true;
+						$result['message'] = 'Selected lists deleted successfully';
+					} else {
+						$result['message'] = 'You do not have permissions to delete that list';
+						$result['success'] = false;
+					}
+				}else{
 					$result['success'] = false;
+					$result['message'] = 'Could not find the list to delete';
 				}
 			}
 		}
