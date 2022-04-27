@@ -50,6 +50,7 @@ class Library extends DataObject
 	public $showInSelectInterface;
 	public $showDisplayNameInHeader;
 	public $headerText;
+	public $footerText;
 	public $systemMessage;
 
 	public $generateSitemap;
@@ -544,6 +545,7 @@ class Library extends DataObject
 				'homeLink' => array('property'=>'homeLink', 'type'=>'text', 'label'=>'Home Link', 'description'=>'The location to send the user when they click on the home button or logo.  Use default or blank to go back to the Aspen Discovery home location.', 'size'=>'40', 'hideInLists' => true, 'editPermissions' => ['Library Contact Settings']),
 				'additionalCss' => array('property'=>'additionalCss', 'type'=>'textarea', 'label'=>'Additional CSS', 'description'=>'Extra CSS to apply to the site.  Will apply to all pages.', 'hideInLists' => true, 'permissions' => ['Library Theme Configuration']),
 				'headerText' => array('property'=>'headerText', 'type'=>'html', 'label'=>'Header Text', 'description'=>'Optional Text to display in the header, between the logo and the log in/out buttons.  Will apply to all pages.', 'allowableTags' => '<p><em><i><strong><b><a><ul><ol><li><h1><h2><h3><h4><h5><h6><h7><pre><code><hr><table><tbody><tr><th><td><caption><img><br><div><span><sub><sup>', 'hideInLists' => true, 'editPermissions' => ['Library Theme Configuration']),
+				'footerText' => array('property'=>'footerText', 'type'=>'html', 'label'=>'Footer Text', 'description'=>'Optional Text to display in the footer above the footer logo if displayed.  Will apply to all pages.', 'allowableTags' => '<p><em><i><strong><b><a><ul><ol><li><h1><h2><h3><h4><h5><h6><h7><pre><code><hr><table><tbody><tr><th><td><caption><img><br><div><span><sub><sup>', 'hideInLists' => true, 'editPermissions' => ['Library Theme Configuration']),
 			)),
 
 			// Contact Links //
