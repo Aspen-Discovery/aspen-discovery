@@ -15,12 +15,12 @@
 			</div>
 			<div class="col-tn-12 col-sm-3 col-md-4 text-center" id="footer-branding">
 				{if !empty($footerText)}
-					<div>
+					<div id="footer-custom-text">
 						{$footerText}
 					</div>
 				{/if}
 				{if !empty($footerLogo)}
-					<div>
+					<div id='footer-branding-image'>
 					{if $footerLogoLink}
 						<a href="{$footerLogoLink}">
 					{/if}
