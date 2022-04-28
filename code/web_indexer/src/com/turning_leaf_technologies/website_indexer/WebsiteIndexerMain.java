@@ -152,7 +152,7 @@ public class WebsiteIndexerMain {
 							try {
 								WebPage page = new WebPage(websitePagesRS);
 								//noinspection unused
-								UpdateResponse deleteResponse = solrUpdateServer.deleteByQuery("id:" + page.getId() + " AND website_name:\"" + websiteName + "\"");
+								UpdateResponse deleteResponse = solrUpdateServer.deleteByQuery("id:\"WebPage:" + page.getId() + "\" AND website_name:\"" + websiteName + "\"");
 								deletePageStmt.setLong(1, page.getId());
 								deletePageStmt.executeUpdate();
 								logEntry.incDeleted();
@@ -167,6 +167,15 @@ public class WebsiteIndexerMain {
 								logEntry.incErrors("Error updating solr after deleting pages for " + websiteName, e );
 							}
 							logEntry.setFinished();
+						}else{
+							//Just clean up anything that may have been left behind
+							try {
+								//noinspection unused
+								UpdateResponse deleteResponse = solrUpdateServer.deleteByQuery("website_name:\"" + websiteName + "\"");
+								solrUpdateServer.commit(true, true, false);
+							}catch (Exception e){
+								logger.error("Error deleting all pages for website " + websiteName, e );
+							}
 						}
 					} catch (SQLException e) {
 						if (logEntry == null){
