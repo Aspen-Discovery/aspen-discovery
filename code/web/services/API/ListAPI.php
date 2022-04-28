@@ -547,9 +547,9 @@ class ListAPI extends Action
 		}
 	}
 
-	function getSavedSearches() : array
+	function getSavedSearches($userId = null) : array
 	{
-		$userId = null;
+
 		if (!UserAccount::isLoggedIn()){
 			if (!isset($_REQUEST['username']) || !isset($_REQUEST['password'])) {
 				return array('success' => false, 'message' => 'The username and password must be provided to load saved searches.');
@@ -563,12 +563,18 @@ class ListAPI extends Action
 				return array('success' => false, 'message' => 'Sorry, we could not find a user with those credentials.');
 			}
 
-			$userId = $user->id;
+			$id = $user->id;
+		}
+
+		if($userId) {
+			$id = $userId;
+		} else {
+			$id = UserAccount::getActiveUserId();
 		}
 
 		$result = [];
 		$SearchEntry = new SearchEntry();
-		$SearchEntry->user_id = UserAccount::getActiveUserId();
+		$SearchEntry->user_id = $id;
 		$SearchEntry->saved = "1";
 		$SearchEntry->orderBy('created desc');
 		$SearchEntry->find();
