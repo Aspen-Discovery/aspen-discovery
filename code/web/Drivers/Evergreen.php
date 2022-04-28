@@ -867,6 +867,7 @@ class Evergreen extends AbstractIlsDriver
 							$curHold->cancelable = false;
 							$curHold->expirationDate = strtotime($holdInfo['shelf_expire_time']);
 							$curHold->status = "Ready to Pickup";
+							$curHold->available = true;
 						}elseif (!empty($holdInfo['transit'])){
 							$curHold->status = 'In Transit';
 						}else{
