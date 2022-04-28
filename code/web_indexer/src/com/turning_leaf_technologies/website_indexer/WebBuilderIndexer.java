@@ -126,6 +126,7 @@ class WebBuilderIndexer {
 				String id = getResourcesRS.getString("id");
 				solrDocument.addField("id", "WebResource:" + id);
 				solrDocument.addField("recordtype", "WebResource");
+				solrDocument.addField("settingId", -1);
 				solrDocument.addField("website_name", "Library Website");
 				solrDocument.addField("search_category", "Website");
 				String url = "/WebBuilder/WebResource?id=" + id;
@@ -197,6 +198,7 @@ class WebBuilderIndexer {
 				String id = getBasicPagesRS.getString("id");
 				solrDocument.addField("id", "BasicPage:" + id);
 				solrDocument.addField("recordtype", "BasicPage");
+				solrDocument.addField("settingId", -1);
 				solrDocument.addField("website_name", "Library Website");
 				solrDocument.addField("search_category", "Website");
 				String url = getBasicPagesRS.getString("urlAlias");
@@ -263,6 +265,7 @@ class WebBuilderIndexer {
 				//Load portal information
 				String id = getPortalPagesRS.getString("id");
 				solrDocument.addField("id", "PortalPage:" + id);
+				solrDocument.addField("settingId", -1);
 				solrDocument.addField("recordtype", "PortalPage");
 				solrDocument.addField("website_name", "Library Website");
 				solrDocument.addField("search_category", "Website");
