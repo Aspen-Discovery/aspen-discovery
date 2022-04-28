@@ -198,7 +198,7 @@ public class WebsiteIndexerMain {
 				if ((numBasicPages > 0) || (numResources > 0)){
 					boolean fullReload = true;
 					WebsiteIndexLogEntry logEntry = createDbLogEntry("Web Builder Content", startTime, aspenConn);
-					WebBuilderIndexer indexer = new WebBuilderIndexer(fullReload, logEntry, aspenConn, solrUpdateServer);
+					WebBuilderIndexer indexer = new WebBuilderIndexer(configIni, logEntry, aspenConn, solrUpdateServer);
 					indexer.indexContent();
 					logEntry.setFinished();
 				}
