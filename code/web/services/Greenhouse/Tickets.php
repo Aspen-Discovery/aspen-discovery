@@ -24,6 +24,34 @@ class Greenhouse_Tickets extends ObjectEditor
 		return false;
 	}
 
+	public function getFilterFields($structure){
+		$filterFields = parent::getFilterFields($structure);
+
+		$filterFields['showClosedTickets'] = array('property' => 'showClosedTickets', 'type' => 'checkbox', 'label' => 'Show Closed Tickets', 'description' => 'Whether or not closed tickets are shown', 'readOnly'=>true);
+		ksort($filterFields);
+		return $filterFields;
+	}
+
+	function applyFilter(DataObject $object, string $fieldName, array $filter){
+		if ($fieldName == 'showClosedTickets'){
+			if ($filter['filterValue'] == false){
+				$object->whereAdd('status <> "Closed"');
+			}
+		}else{
+			parent::applyFilter($object, $fieldName, $filter);
+		}
+	}
+
+	function getDefaultFilters(array $filterFields) : array{
+		return ['showClosedTickets' => [
+			'fieldName' => 'showClosedTickets',
+			'filterType' => 'checkbox',
+			'filterValue' => false,
+			'filterValue2' => null,
+			'field' => $filterFields['showClosedTickets']
+		]];
+	}
+
 	function getActiveAdminSection(): string
 	{
 		return 'greenhouse';

@@ -50,6 +50,7 @@ class Library extends DataObject
 	public $showInSelectInterface;
 	public $showDisplayNameInHeader;
 	public $headerText;
+	public $footerText;
 	public $systemMessage;
 
 	public $generateSitemap;
@@ -206,6 +207,8 @@ class Library extends DataObject
 	public $loginNotes;
 	public $allowLoginToPatronsOfThisLibraryOnly;
 	public $messageForPatronsOfOtherLibraries;
+	public $preventLogin;
+	public $preventLoginMessage;
 
 	public $showDetailedHoldNoticeInformation;
 	public $treatPrintNoticesAsPhoneNotices;
@@ -542,6 +545,7 @@ class Library extends DataObject
 				'homeLink' => array('property'=>'homeLink', 'type'=>'text', 'label'=>'Home Link', 'description'=>'The location to send the user when they click on the home button or logo.  Use default or blank to go back to the Aspen Discovery home location.', 'size'=>'40', 'hideInLists' => true, 'editPermissions' => ['Library Contact Settings']),
 				'additionalCss' => array('property'=>'additionalCss', 'type'=>'textarea', 'label'=>'Additional CSS', 'description'=>'Extra CSS to apply to the site.  Will apply to all pages.', 'hideInLists' => true, 'permissions' => ['Library Theme Configuration']),
 				'headerText' => array('property'=>'headerText', 'type'=>'html', 'label'=>'Header Text', 'description'=>'Optional Text to display in the header, between the logo and the log in/out buttons.  Will apply to all pages.', 'allowableTags' => '<p><em><i><strong><b><a><ul><ol><li><h1><h2><h3><h4><h5><h6><h7><pre><code><hr><table><tbody><tr><th><td><caption><img><br><div><span><sub><sup>', 'hideInLists' => true, 'editPermissions' => ['Library Theme Configuration']),
+				'footerText' => array('property'=>'footerText', 'type'=>'html', 'label'=>'Footer Text', 'description'=>'Optional Text to display in the footer above the footer logo if displayed.  Will apply to all pages.', 'allowableTags' => '<p><em><i><strong><b><a><ul><ol><li><h1><h2><h3><h4><h5><h6><h7><pre><code><hr><table><tbody><tr><th><td><caption><img><br><div><span><sub><sup>', 'hideInLists' => true, 'editPermissions' => ['Library Theme Configuration']),
 			)),
 
 			// Contact Links //
@@ -636,6 +640,8 @@ class Library extends DataObject
 				)),
 				'loginSection' => array('property' => 'loginSection', 'type' => 'section', 'label' => 'Login', 'hideInLists' => true, 'permissions' => ['Library ILS Connection', 'Library ILS Options'], 'properties' => array(
 					'showLoginButton'         => array('property'=>'showLoginButton', 'type'=>'checkbox', 'label'=>'Show Login Button', 'description'=>'Whether or not the login button is displayed so patrons can login to the site', 'hideInLists' => true, 'default' => 1),
+					'preventLogin' => array('property'=>'preventLogin', 'type'=>'checkbox', 'label'=>'Prevent Login for Patrons of this Library', 'description'=>'Patrons of this library will not be allowed to login (useful in consortial catalogs to prevent access in other interfaces).', 'hideInLists' => true, 'default' => 0),
+					'preventLoginMessage' => array('property' => 'preventLoginMessage', 'type' => 'html', 'label' => 'Prevented Login Message', 'description' => 'A message to show to patrons for patrons of this library if they are prevented from logging in', 'hideInLists' => true),
 					'preventExpiredCardLogin' => array('property'=>'preventExpiredCardLogin', 'type'=>'checkbox', 'label'=>'Prevent Login for Expired Cards', 'description'=>'Users with expired cards will not be allowed to login. They will receive an expired card notice instead.', 'hideInLists' => true, 'default' => 0),
 					'defaultRememberMe' => array('property' => 'defaultRememberMe', 'type' => 'checkbox', 'label' => 'Check "Remember Me" by default when outside the library', 'description' => 'Whether or not to check the "Remember Me" option by default when logging in outside the library', 'hideInLists' => true, 'default' => 0),
 					'loginFormUsernameLabel'  => array('property'=>'loginFormUsernameLabel', 'type'=>'text', 'label'=>'Login Form Username Label', 'description'=>'The label to show for the username when logging in', 'size'=>'100', 'hideInLists' => true, 'default'=>'Your Name'),
@@ -910,7 +916,7 @@ class Library extends DataObject
 				'type' => 'oneToMany',
 				'label' => 'Holidays',
 				'renderAsHeading' => true,
-				'description' => 'Holidays',
+				'description' => 'Holidays (automatically loaded from Koha)',
 				'keyThis' => 'libraryId',
 				'keyOther' => 'libraryId',
 				'subObjectType' => 'Holiday',
@@ -1010,9 +1016,6 @@ class Library extends DataObject
 			unset($structure['ilsSection']['properties']['selfRegistrationSection']['properties']['selfRegistrationTemplate']);
 		}else{
 			unset($structure['ilsSection']['properties']['selfRegistrationSection']['properties']['bypassReviewQueueWhenUpdatingProfile']);
-		}
-		if ($ils == 'Evergreen'){
-			unset($structure['ilsSection']['properties']['masqueradeModeSection']);
 		}
 		if (!$configArray['CAS']['enabled']) {
 			unset($structure['casSection']);
@@ -1303,8 +1306,6 @@ class Library extends DataObject
 			$this->treatPrintNoticesAsPhoneNotices = 0;
 			$this->showNoticeTypeInProfile = 0;
 			$this->addSMSIndicatorToPhone = 0;
-		}elseif ($ils == 'Evergreen'){
-			$this->allowMasqueradeMode = 0;
 		}
 		$ret = parent::update();
 		if ($ret !== FALSE ){

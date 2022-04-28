@@ -481,7 +481,7 @@ AspenDiscovery.Account = (function(){
 					referer = "/MyAccount/Home";
 				} else if ((module === "Search") && (action === "Home")) {
 					referer = "/MyAccount/Home";
-				} else if ((module === "MyAccount") && (action === "InitiateResetPin" || $action === 'CompletePinReset')) {
+				} else if ((module === "MyAccount") && (action === "InitiateResetPin" || action === 'CompletePinReset')) {
 					referer = "/MyAccount/Home";
 				} else {
 					referer = window.location;

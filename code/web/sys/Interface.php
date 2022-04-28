@@ -609,6 +609,9 @@ class UInterface extends Smarty
 		if (!empty($location->headerText)){
 			$this->assign('headerText', $location->headerText);
 		}
+		if (!empty($library->footerText)){
+			$this->assign('footerText', $library->footerText);
+		}
 		$this->assign('showHoldButton', $showHoldButton);
 		$this->assign('showHoldButtonInSearchResults', $showHoldButtonInSearchResults);
 		$this->assign('showNotInterested', true);

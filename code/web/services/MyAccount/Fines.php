@@ -86,16 +86,19 @@ class MyAccount_Fines extends MyAccount
 					$merchantCode = 0;
 					$settleCode = 0;
 					$paymentSite = "";
+					$useLineItems = 0;
 
 					if($worldPaySettings->find(true)){
 						$merchantCode = $worldPaySettings->merchantCode;
 						$settleCode = $worldPaySettings->settleCode;
 						$paymentSite = $worldPaySettings->paymentSite;
+						$useLineItems = $worldPaySettings->useLineItems;
 					}
 
 					$interface->assign('settleCode', $settleCode);
 					$interface->assign('merchantCode', $merchantCode);
 					$interface->assign('paymentSite', $paymentSite);
+					$interface->assign('useLineItems', $useLineItems);
 				}
 
 				$interface->assign('finesToPay', $userLibrary->finesToPay);

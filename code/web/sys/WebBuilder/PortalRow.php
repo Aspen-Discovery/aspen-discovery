@@ -12,7 +12,7 @@ class PortalRow extends DataObject
 	public $portalPageId;
 	public /** @noinspection PhpUnused */ $rowTitle;
 
-	private $_cells;
+	protected $_cells;
 
 	public function getUniquenessFields(): array
 	{
@@ -246,6 +246,7 @@ class PortalRow extends DataObject
 			foreach ($jsonData['cells'] as $cell){
 				$cellObj = new PortalCell();
 				$cellObj->portalRowId = $this->id;
+				unset($cell['portalRowId']);
 				$cellObj->loadFromJSON($cell, $mappings, $overrideExisting);
 				$cells[$cellObj->id] = $cellObj;
 				$result = true;

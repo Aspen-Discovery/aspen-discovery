@@ -552,10 +552,10 @@ class Evergreen extends AbstractIlsDriver
 				'patronid' => (int)$patron->username,
 				"pickup_lib" => (int)$pickupBranch,
 				"hold_type" => 'P',
-//				"email_notify" => $patron->email,
+				"email_notify" => $patron->email,
 //				"request_lib" =>  (int)$pickupBranch,
 //				"request_time" => date( DateTime::ISO8601),
-//				"expire_time" => $cancelDate,
+				"expire_time" => $cancelDate,
 //				"frozen" => 'f'
 			];
 
@@ -863,11 +863,15 @@ class Evergreen extends AbstractIlsDriver
 								$curHold->status .= ' until ' . date("m/d/Y", strtotime($holdInfo['thaw_date']));
 							}
 							$curHold->locationUpdateable = true;
-						}elseif (!empty($holdInfo['transit'])){
-							$curHold->status = 'In Transit';
+						}elseif (!empty($holdInfo['shelf_time'])){
+							$curHold->cancelable = false;
+							$curHold->expirationDate = strtotime($holdInfo['shelf_expire_time']);
+							$curHold->status = "Ready to Pickup";
 						}elseif (!empty($holdInfo['capture_time'])){
 							$curHold->cancelable = false;
 							$curHold->status = "Ready to Pickup";
+						}elseif (!empty($holdInfo['transit'])){
+							$curHold->status = 'In Transit';
 						}else{
 							$curHold->status = "Pending";
 							$curHold->canFreeze = $patron->getHomeLibrary()->allowFreezeHolds;
@@ -934,20 +938,24 @@ class Evergreen extends AbstractIlsDriver
 					$cancelDate = date( DateTime::ISO8601, $sixMonthsFromNow);
 				}else{
 					//Default to a date 6 months (half a year) in the future.
-					$nnaDate = time() + $library->defaultNotNeededAfterDays * 24 * 60 * 60;
-					$cancelDate = date( DateTime::ISO8601, $nnaDate);
+					if ($library->defaultNotNeededAfterDays > 0) {
+						$nnaDate = time() + $library->defaultNotNeededAfterDays * 24 * 60 * 60;
+						$cancelDate = date(DateTime::ISO8601, $nnaDate);
+					}
 				}
 			}
 			$namedParams = [
 				'patronid' => (int)$patron->username,
 				"pickup_lib" => (int)$pickupBranch,
 				"hold_type" => 'T',
-//				"email_notify" => $patron->email,
+				"email_notify" => 't',
 //				"request_lib" =>  (int)$pickupBranch,
 //				"request_time" => date( DateTime::ISO8601),
-//				"expire_time" => $cancelDate,
 //				"frozen" => 'f'
 			];
+			if ($cancelDate != null){
+				$namedParams['expire_time'] = $cancelDate;
+			}
 
 			$request = 'service=open-ils.circ&method=open-ils.circ.holds.test_and_create.batch';
 			$request .= '&param=' . json_encode($authToken);
@@ -1122,6 +1130,65 @@ class Evergreen extends AbstractIlsDriver
 		}else{
 			return null;
 		}
+	}
+
+	private function getStaffUserInfo()
+	{
+		if (!array_key_exists($this->accountProfile->staffUsername, Evergreen::$accessTokensForUsers)) {
+			$evergreenUrl = $this->accountProfile->patronApiUrl . '/osrf-gateway-v1';
+
+			$session = array(
+				'userValid' => false,
+				'authToken' => false,
+			);
+
+			$headers  = array(
+				'Content-Type: application/x-www-form-urlencoded',
+			);
+			$this->apiCurlWrapper->addCustomHeaders($headers, false);
+
+			$params = [
+				'service' => 'open-ils.auth',
+				'method' => 'open-ils.auth.login',
+				'param' => json_encode([
+					'password' => (string)$this->accountProfile->staffPassword,
+					'type' => 'persist',
+					'org' => null,
+					'identifier' => (string)$this->accountProfile->staffUsername,
+				]),
+			];
+
+			$apiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $params);
+
+			if ($this->apiCurlWrapper->getResponseCode() == 200){
+				$apiResponse = json_decode($apiResponse);
+				$session['userValid'] = true;
+				$session['authToken'] = $apiResponse->payload[0]->payload->authtoken;
+
+				Evergreen::$accessTokensForUsers[$this->accountProfile->staffUsername] = $session;
+			} else {
+				Evergreen::$accessTokensForUsers[$this->accountProfile->staffUsername] = false;
+			}
+		}
+		return Evergreen::$accessTokensForUsers[$this->accountProfile->staffUsername];
+	}
+
+	public function findNewUser($patronBarcode)
+	{
+		$sessionInfo = $this->getStaffUserInfo();
+		$evergreenUrl = $this->accountProfile->patronApiUrl . '/osrf-gateway-v1';
+		$headers  = array(
+			'Content-Type: application/x-www-form-urlencoded',
+		);
+		$this->apiCurlWrapper->addCustomHeaders($headers, false);
+		$params = [
+			'service' => 'open-ils.auth',
+			'method' => 'open-ils.auth.session.retrieve',
+			'param' => json_encode($sessionInfo['authToken']),
+		];
+
+		//For Evergreen, this can only be called when initiating masquerade
+		return false;
 	}
 
 	private function loadPatronInformation($userData, $username, $password) {

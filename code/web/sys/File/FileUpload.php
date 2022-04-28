@@ -56,4 +56,9 @@ class FileUpload extends DataObject
 			die();
 		}
 	}
+
+	public function okToExport(array $selectedFilters): bool
+	{
+		return true;
+	}
 }

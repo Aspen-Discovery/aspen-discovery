@@ -2856,7 +2856,7 @@ class User extends DataObject
 
 	public function okToExport(array $selectedFilters) : bool{
 		$okToExport = parent::okToExport($selectedFilters);
-		if ($this->homeLocationId == 0 || array_key_exists($this->homeLocationId, $selectedFilters['locations'])){
+		if ($this->homeLocationId == 0 || in_array($this->homeLocationId, $selectedFilters['locations'])){
 			$okToExport = true;
 		}
 		return $okToExport;

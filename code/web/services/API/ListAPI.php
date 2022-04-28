@@ -15,6 +15,27 @@ class ListAPI extends Action
 			$this->forbidAPIAccess();
 		}
 
+		if (isset($_SERVER['PHP_AUTH_USER'])) {
+			if($this->grantTokenAccess()) {
+				if (in_array($method, array('getUserLists', 'getListTitles', 'createList', 'deleteList', 'editList', 'addTitlesToList', 'removeTitlesFromList', 'clearListTitles'))) {
+					$result = [
+						'result' => $this->$method()
+					];
+					$output = json_encode($result);
+					header("Cache-Control: max-age=10800");
+					require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
+					APIUsage::incrementStat('SystemAPI', $method);
+				} else {
+					$output = json_encode(array('error' => 'invalid_method'));
+				}
+			} else {
+				header('HTTP/1.0 401 Unauthorized');
+				$output = json_encode(array('error' => 'unauthorized_access'));
+			}
+			ExternalRequestLogEntry::logRequest('ListAPI.' . $method, $_SERVER['REQUEST_METHOD'], $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'], getallheaders(), '', $_SERVER['REDIRECT_STATUS'], $output, []);
+			echo $output;
+		}
+
 		if (!in_array($method, ['getSavedSearchTitles', 'getCacheInfoForListId', 'getSystemListTitles']) && method_exists($this, $method)) {
 			if ($method == 'getRSSFeed') {
 				header('Content-type: text/xml');
@@ -692,8 +713,13 @@ class ListAPI extends Action
 			$list->user_id = $user->id;
 			$list->find();
 			if ($list->find(true)) {
-				$list->delete();
-				return array('success' => true, 'title' => 'Success', 'message' => 'List deleted successfully');
+				$userCanEdit = $user->canEditList($list);
+				if ($userCanEdit) {
+					$list->delete();
+					return array('success' => true, 'title' => 'Success', 'message' => 'List deleted successfully');
+				}else{
+					return array('success' => true, 'title' => 'Success', 'message' => "Sorry you don't have permissions to delete this list.");
+				}
 			}else{
 				return array('success' => false, 'title' => 'Error', 'message' => 'List not found', 'listId' => $list->id, 'listTitle' => $list->title);
 			}

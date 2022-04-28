@@ -18,12 +18,12 @@ class PortalPage extends DB_LibraryLinkedObject
 	public $requireLoginUnlessInLibrary;
 	public $lastUpdate;
 
-	private $_rows;
+	protected $_rows;
 
-	private $_libraries;
-	private $_audiences;
-	private $_categories;
-	private $_allowAccess;
+	protected $_libraries;
+	protected $_audiences;
+	protected $_categories;
+	protected $_allowAccess;
 
 	public function getUniquenessFields(): array
 	{
@@ -432,6 +432,7 @@ class PortalPage extends DB_LibraryLinkedObject
 			foreach ($jsonLinks['rows'] as $row){
 				$rowObj = new PortalRow();
 				$rowObj->portalPageId = $this->id;
+				unset($row['portalPageId']);
 				$rowObj->loadFromJSON($row, $mappings, $overrideExisting);
 				$rows[$rowObj->id] = $rowObj;
 			}

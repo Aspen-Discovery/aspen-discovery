@@ -27,7 +27,7 @@ class ReadingHistoryEntry extends DataObject
 		$user = new User();
 		$user->id = $this->userId;
 		if ($user->find(true)) {
-			if ($user->homeLocationId == 0 || array_key_exists($user->homeLocationId, $selectedFilters['locations'])) {
+			if ($user->homeLocationId == 0 || in_array($user->homeLocationId, $selectedFilters['locations'])) {
 				$okToExport = true;
 			}
 		}
@@ -52,12 +52,12 @@ class ReadingHistoryEntry extends DataObject
 		return $links;
 	}
 
-	public function loadFromJSON($jsonData, $mappings, $overrideExisting = 'keepExisting')
+	public function loadFromJSON($jsonData, $mappings, $overrideExisting = 'keepExisting'): bool
 	{
-		parent::loadFromJSON($jsonData, $mappings, $overrideExisting);
-		if (array_key_exists($this->sourceId, $mappings['bibs'])){
-			$this->sourceId = $mappings['bibs'][$this->sourceId];
+		if (array_key_exists($jsonData['sourceId'], $mappings['bibs'])){
+			$jsonData['sourceId'] = $mappings['bibs'][$this->sourceId];
 		}
+		return parent::loadFromJSON($jsonData, $mappings, $overrideExisting);
 	}
 
 	public function loadEmbeddedLinksFromJSON($jsonData, $mappings, $overrideExisting = 'keepExisting')

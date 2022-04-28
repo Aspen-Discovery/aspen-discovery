@@ -8,6 +8,7 @@ import com.turning_leaf_technologies.grouping.RecordGroupingProcessor;
 import com.turning_leaf_technologies.grouping.RemoveRecordFromWorkResult;
 import com.turning_leaf_technologies.indexing.*;
 import com.turning_leaf_technologies.logging.LoggingUtil;
+import com.turning_leaf_technologies.marc.MarcUtil;
 import com.turning_leaf_technologies.net.NetworkUtils;
 import com.turning_leaf_technologies.net.WebServiceResponse;
 import com.turning_leaf_technologies.reindexer.GroupedWorkIndexer;
@@ -715,7 +716,7 @@ public class EvergreenExportMain {
 
 
 		//Process ID Files
-		File[] exportedIdFiles = marcDeltaPath.listFiles((dir, name) -> name.endsWith("ids"));
+		File[] exportedIdFiles = marcDeltaPath.listFiles((dir, name) -> (name.endsWith("ids") && name.startsWith("all")));
 		if (exportedIdFiles != null && exportedIdFiles.length > 0){
 			//Sort from newest to oldest
 			Arrays.sort(exportedIdFiles, Comparator.comparingLong(File::lastModified).reversed());
@@ -724,6 +725,16 @@ public class EvergreenExportMain {
 			for (int i = 1; i < exportedIdFiles.length; i++) {
 				if (!exportedIdFiles[i].delete()) {
 					logEntry.incErrors("Could not delete old ids file " + exportedIdFiles[i]);
+				}
+			}
+		}
+
+		File[] exportedDeletedIdFiles = marcDeltaPath.listFiles((dir, name) -> (name.endsWith("ids") && name.startsWith("incremental_deleted")));
+		if (exportedDeletedIdFiles != null && exportedDeletedIdFiles.length > 0){
+			//For now we don't care about these since we process the all ids file, just delete them.
+			for (int i = 1; i < exportedDeletedIdFiles.length; i++) {
+				if (!exportedDeletedIdFiles[i].delete()) {
+					logEntry.incErrors("Could not delete old ids file " + exportedDeletedIdFiles[i]);
 				}
 			}
 		}
@@ -747,54 +758,95 @@ public class EvergreenExportMain {
 			//Read the file to see what has been added or deleted
 			BufferedReader reader = new BufferedReader(new FileReader(idsFile));
 			String id = reader.readLine();
-			HashSet<String> newAndRestoredIds = new HashSet<>();
+			HashSet<String> newIds = new HashSet<>();
+			HashSet<String> restoredIds = new HashSet<>();
+			HashSet<String> deletedIds = new HashSet<>();
 			while (id != null){
 				if (existingRecords.containsKey(id)){
 					if (existingRecords.get(id) == Boolean.TRUE){
 						//This was previously deleted
-						newAndRestoredIds.add(id);
+						restoredIds.add(id);
 					}
 					existingRecords.remove(id);
 				}else{
-					newAndRestoredIds.add(id);
+					newIds.add(id);
 				}
 				id = reader.readLine();
 			}
-			logEntry.addNote("There are " + newAndRestoredIds.size() + " new and restored ids and " + existingRecords.size() + " deleted ids");
-			if (newAndRestoredIds.size() <= 1000){
-				MarcFactory marcFactory = MarcFactory.newInstance();
-				for (String idToProcess : newAndRestoredIds) {
-					updateBibFromEvergreen(idToProcess, marcFactory, true);
+			//Check the existing records to see what hasn't been deleted already
+			for (String existingRecord : existingRecords.keySet()){
+				if (existingRecords.get(id) == Boolean.FALSE){
+					deletedIds.add(id);
 				}
-			}else {
-				logEntry.incErrors("There were too many ids to process using the API. Skipping this file");
 			}
+			logEntry.addNote("There are " + newIds.size() + " new and " + restoredIds.size() + " restored ids and " + deletedIds.size() + " deleted ids");
+
+			logEntry.addNote("Restoring previously deleted ids");
+			logEntry.saveResults();
 			GroupedWorkIndexer indexer = getGroupedWorkIndexer();
 			RecordGroupingProcessor recordGroupingProcessor = getRecordGroupingProcessor();
-			for (String deletedRecordId : existingRecords.keySet()){
+			int numRestored = 0;
+			for (String restoredRecordId : restoredIds) {
+				indexer.markIlsRecordAsRestored(indexingProfile.getName(), restoredRecordId);
+				Record currentMarcRecord = indexer.loadMarcRecordFromDatabase(indexingProfile.getName(), restoredRecordId, logEntry);
+				if (currentMarcRecord != null) {
+					String groupedWorkId = groupEvergreenRecord(currentMarcRecord);
+					if (groupedWorkId != null) {
+						//Reindex the record
+						indexer.processGroupedWork(groupedWorkId);
+						logEntry.incAdded();
+						numRestored++;
+						if (numRestored > 0 && numRestored % 250 == 0) {
+							indexer.commitChanges();
+							logEntry.saveResults();
+						}
+					}
+				}
+			}
+			logEntry.addNote("Restored " + restoredIds.size() + " records");
+			logEntry.saveResults();
+
+			logEntry.addNote("Processing new ids");
+			logEntry.saveResults();
+			MarcFactory marcFactory = MarcFactory.newInstance();
+			int numAdded = 0;
+			for (String idToProcess : newIds) {
+				updateBibFromEvergreen(idToProcess, marcFactory, true);
+				numAdded++;
+				if (numAdded >= 1000){
+					logEntry.addNote("Only processing the first 1000 new ids to ensure performance");
+					break;
+				}
+			}
+
+			for (String deletedRecordId : deletedIds){
 				RemoveRecordFromWorkResult result = recordGroupingProcessor.removeRecordFromGroupedWork(indexingProfile.getName(), deletedRecordId);
+				indexer.markIlsRecordAsDeleted(indexingProfile.getName(), deletedRecordId);
 				if (result.reindexWork){
 					indexer.processGroupedWork(result.permanentId);
 				}else if (result.deleteWork){
 					//Delete the work from solr and the database
 					indexer.deleteRecord(result.permanentId);
 				}
-				existingRecords.remove(deletedRecordId);
+				logEntry.incDeleted();
 			}
+			reader.close();
 
 			//After the file has been processed, delete it
 			if (!idsFile.delete()){
-				logEntry.incErrors("Could not delete ids file " + idsFile);
+				logEntry.incErrors("Could not delete ids file " + idsFile + " after processing.");
 			}
 		}catch (Exception e){
-			logEntry.incErrors("Error reading IDs file " + idsFile);
+			logEntry.incErrors("Error reading IDs file " + idsFile, e);
 		}
 		return numUpdates;
 	}
 
 	private static int updateItemsUsingCsvFile(File[] exportedCsvFiles, long lastUpdateFromMarc, Connection dbConn) {
 		int numUpdates = 0;
-		HashSet<String> bibsToUpdate = new HashSet<>();
+		HashSet<String> bibsToUpdateViaAPI = new HashSet<>();
+		MarcFactory marcFactory = MarcFactory.newInstance();
+		GroupedWorkIndexer indexer = getGroupedWorkIndexer();
 		for(File csvFile : exportedCsvFiles){
 			try {
 				@SuppressWarnings("deprecation")
@@ -803,9 +855,89 @@ public class EvergreenExportMain {
 				while (rowData != null){
 					//Currently, columns are: copy id, status, bib id, copy location/current location, deleted, barcode
 					//We will pull the full bib from super cat to get current status.
-					if (rowData.length >= 3) {
+					if (rowData.length >= 6) {
 						String bibNumber = rowData[2];
-						bibsToUpdate.add(bibNumber);
+						Record currentMarcRecord = indexer.loadMarcRecordFromDatabase(indexingProfile.getName(), bibNumber, logEntry);
+
+						boolean updateWithAPI = true;
+						if (currentMarcRecord != null) {
+							//Find the proper item record for this
+							List<DataField> itemFields = MarcUtil.getDataFields(currentMarcRecord, indexingProfile.getItemTag());
+							for (DataField itemField : itemFields) {
+								Subfield itemBarcode = itemField.getSubfield(indexingProfile.getBarcodeSubfield());
+								if (itemBarcode != null) {
+									String barcodeForRow = rowData[5];
+									if (barcodeForRow.equals(itemBarcode.getData())) {
+										updateWithAPI = false;
+										if (rowData[3].equals("t")) {
+											//This item has been deleted
+											currentMarcRecord.removeVariableField(itemField);
+										} else {
+											//Update values
+											//We ignore copy id since it does not normally export
+											String status = rowData[1];
+											Subfield statusSubfield = itemField.getSubfield(indexingProfile.getItemStatusSubfield());
+											if (status == null) {
+												if (statusSubfield != null) {
+													itemField.removeSubfield(statusSubfield);
+												}
+											} else {
+												if (statusSubfield == null) {
+													statusSubfield = marcFactory.newSubfield(indexingProfile.getItemStatusSubfield(), status);
+													itemField.addSubfield(statusSubfield);
+												} else {
+													statusSubfield.setData(status);
+												}
+											}
+
+											String shelvingLocation = rowData[3];
+											Subfield shelvingLocationSubfield = itemField.getSubfield(indexingProfile.getShelvingLocationSubfield());
+											if (shelvingLocation == null) {
+												if (shelvingLocationSubfield != null) {
+													itemField.removeSubfield(shelvingLocationSubfield);
+												}
+											} else {
+												if (shelvingLocationSubfield == null) {
+													shelvingLocationSubfield = marcFactory.newSubfield(indexingProfile.getShelvingLocationSubfield(), shelvingLocation);
+													itemField.addSubfield(shelvingLocationSubfield);
+												} else {
+													shelvingLocationSubfield.setData(shelvingLocation);
+												}
+											}
+										}
+										//Once we process, we can skip the rest of the items
+										break;
+									}
+								}
+							}
+						}
+
+						if (updateWithAPI) {
+							bibsToUpdateViaAPI.add(bibNumber);
+						}else{
+							//mark the item for reindexing
+							GroupedWorkIndexer.MarcStatus saveMarcResult = indexer.saveMarcRecordToDatabase(indexingProfile, bibNumber, currentMarcRecord);
+							if (saveMarcResult == GroupedWorkIndexer.MarcStatus.CHANGED) {
+								logEntry.incUpdated();
+							} else if (saveMarcResult == GroupedWorkIndexer.MarcStatus.NEW) {
+								logEntry.incAdded();
+							} else {
+								//No change has been made, we could skip this
+								if (!indexingProfile.isRunFullUpdate()) {
+									//TODO: Actually skip re-processing the record?
+									rowData = reader.readNext();
+									logEntry.incSkipped();
+									continue;
+								}
+							}
+
+							//Regroup the record
+							String groupedWorkId = groupEvergreenRecord(currentMarcRecord);
+							if (groupedWorkId != null) {
+								//Reindex the record
+								indexer.processGroupedWork(groupedWorkId);
+							}
+						}
 					}
 					rowData = reader.readNext();
 				}
@@ -813,13 +945,12 @@ public class EvergreenExportMain {
 				//delete the file after it has been processed.
 				csvFile.delete();
 			}catch (Exception e){
-				logEntry.incErrors("Error reading CSV file " + csvFile);
+				logEntry.incErrors("Error reading CSV file " + csvFile, e);
 			}
 		}
-		logEntry.addNote("Processing " + bibsToUpdate.size() + " bibs that were marked as changed in the CSV files");
+		logEntry.addNote("Processing " + bibsToUpdateViaAPI.size() + " bibs that were marked as changed in the CSV files");
 		logEntry.saveResults();
-		MarcFactory marcFactory = MarcFactory.newInstance();
-		for (String bibToUpdate : bibsToUpdate){
+		for (String bibToUpdate : bibsToUpdateViaAPI){
 			numUpdates += updateBibFromEvergreen(bibToUpdate, marcFactory, true);
 		}
 		logEntry.addNote("Finished processing bibs from CSV");
@@ -926,7 +1057,7 @@ public class EvergreenExportMain {
 			}
 		}
 
-		GroupedWorkIndexer reindexer = getGroupedWorkIndexer();
+		GroupedWorkIndexer indexer = getGroupedWorkIndexer();
 		for (File curBibFile : exportedMarcFiles) {
 			logEntry.addNote("Processing file " + curBibFile.getAbsolutePath());
 
@@ -969,9 +1100,9 @@ public class EvergreenExportMain {
 								String recordNumber = recordIdentifier.getIdentifier();
 								GroupedWorkIndexer.MarcStatus marcStatus;
 								if (lastIdentifier != null && lastIdentifier.equals(recordIdentifier)) {
-									marcStatus = reindexer.appendItemsToExistingRecord(indexingProfile, curBib, recordNumber);
+									marcStatus = indexer.appendItemsToExistingRecord(indexingProfile, curBib, recordNumber);
 								} else {
-									marcStatus = reindexer.saveMarcRecordToDatabase(indexingProfile, recordNumber, curBib);
+									marcStatus = indexer.saveMarcRecordToDatabase(indexingProfile, recordNumber, curBib);
 								}
 
 								if (marcStatus != GroupedWorkIndexer.MarcStatus.UNCHANGED || indexingProfile.isRunFullUpdate()) {
@@ -985,7 +1116,7 @@ public class EvergreenExportMain {
 										} else {
 											logEntry.incUpdated();
 										}
-										getGroupedWorkIndexer().processGroupedWork(permanentId);
+										indexer.processGroupedWork(permanentId);
 										totalChanges++;
 									}
 								} else {
@@ -993,7 +1124,7 @@ public class EvergreenExportMain {
 									lastRecordProcessed = recordIdentifier.getIdentifier();
 								}
 								if (totalChanges > 0 && totalChanges % 5000 == 0) {
-									getGroupedWorkIndexer().commitChanges();
+									indexer.commitChanges();
 								}
 								//Mark that the record was processed
 								recordGroupingProcessor.removeExistingRecord(recordIdentifier.getIdentifier());
@@ -1005,10 +1136,10 @@ public class EvergreenExportMain {
 							if (deleteRecord) {
 								RemoveRecordFromWorkResult result = recordGroupingProcessor.removeRecordFromGroupedWork(indexingProfile.getName(), recordIdentifier.getIdentifier());
 								if (result.reindexWork) {
-									getGroupedWorkIndexer().processGroupedWork(result.permanentId);
+									indexer.processGroupedWork(result.permanentId);
 								} else if (result.deleteWork) {
 									//Delete the work from solr and the database
-									getGroupedWorkIndexer().deleteRecord(result.permanentId);
+									indexer.deleteRecord(result.permanentId);
 								}
 								logEntry.incDeleted();
 								totalChanges++;
@@ -1031,7 +1162,9 @@ public class EvergreenExportMain {
 					logEntry.saveResults();
 				}
 				//After the file has been processed, delete it
-				curBibFile.delete();
+				if (!curBibFile.delete()){
+					logEntry.incErrors("Could not delete " + curBibFile);
+				}
 			} catch (Exception e) {
 				logEntry.incErrors("Error loading Evergreen bibs on record " + numRecordsRead + " in profile " + indexingProfile.getName() + " the last record processed was " + lastRecordProcessed + " file " + curBibFile.getAbsolutePath(), e);
 				//Since we had errors, rename it with a .err extension
@@ -1049,10 +1182,10 @@ public class EvergreenExportMain {
 			for (String identifier : recordGroupingProcessor.getExistingRecords().keySet()) {
 				RemoveRecordFromWorkResult result = recordGroupingProcessor.removeRecordFromGroupedWork(indexingProfile.getName(), identifier);
 				if (result.reindexWork){
-					getGroupedWorkIndexer().processGroupedWork(result.permanentId);
+					indexer.processGroupedWork(result.permanentId);
 				}else if (result.deleteWork){
 					//Delete the work from solr and the database
-					getGroupedWorkIndexer().deleteRecord(result.permanentId);
+					indexer.deleteRecord(result.permanentId);
 				}
 				logEntry.incDeleted();
 				totalChanges++;

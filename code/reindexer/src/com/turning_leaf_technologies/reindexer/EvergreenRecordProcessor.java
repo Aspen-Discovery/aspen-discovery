@@ -18,7 +18,6 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 
 public class EvergreenRecordProcessor extends IlsRecordProcessor {
 	HashMap<String, String> barcodeCreatedByDates = new HashMap<>();
@@ -35,20 +34,25 @@ public class EvergreenRecordProcessor extends IlsRecordProcessor {
 		File supplementalDirectory = new File(marcPath + "/../supplemental");
 		if (supplementalDirectory.exists()){
 			try {
-				BufferedReader barcodeActiveDatesReader = new BufferedReader(new FileReader(marcPath + "/../supplemental/barcode_active_dates.csv"));
-				String curValuesStr = barcodeActiveDatesReader.readLine();
-				while (curValuesStr != null){
-					String[] curValues = curValuesStr.split("\\|");
-					String barcode = curValues[0];
-					if (curValues.length >= 2){
-						String date = curValues[1].trim();
-						if (date.length() > 0){
-							barcodeCreatedByDates.put(barcode, date);
+				File barcodeActiveDatesFile = new File(marcPath + "/../supplemental/barcode_active_dates.csv");
+				if (barcodeActiveDatesFile.exists()){
+					BufferedReader barcodeActiveDatesReader = new BufferedReader(new FileReader(marcPath + "/../supplemental/barcode_active_dates.csv"));
+					String curValuesStr = barcodeActiveDatesReader.readLine();
+					while (curValuesStr != null){
+						String[] curValues = curValuesStr.split("\\|");
+						String barcode = curValues[0];
+						if (curValues.length >= 2){
+							String date = curValues[1].trim();
+							if (date.length() > 0){
+								barcodeCreatedByDates.put(barcode, date);
+							}
 						}
+						curValuesStr = barcodeActiveDatesReader.readLine();
 					}
-					curValuesStr = barcodeActiveDatesReader.readLine();
+					barcodeActiveDatesReader.close();
+				}else{
+					indexer.getLogEntry().incErrors("Error barcode_active_dates.csv did not exist within " + marcPath);
 				}
-				barcodeActiveDatesReader.close();
 			}catch (IOException e){
 				indexer.getLogEntry().incErrors("Error reading barcode active dates", e);
 			}
