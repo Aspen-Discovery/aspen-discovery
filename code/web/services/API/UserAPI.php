@@ -23,7 +23,7 @@ class UserAPI extends Action
 
 		if (isset($_SERVER['PHP_AUTH_USER'])) {
 			if($this->grantTokenAccess()) {
-				if (in_array($method, array('isLoggedIn', 'logout', 'login', 'checkoutItem', 'placeHold', 'renewItem', 'renewAll', 'viewOnlineItem', 'changeHoldPickUpLocation', 'getPatronProfile', 'validateAccount', 'getPatronHolds', 'getPatronCheckedOutItems', 'cancelHold', 'activateHold', 'freezeHold', 'returnCheckout', 'updateOverDriveEmail', 'getValidPickupLocations', 'getHiddenBrowseCategories', 'getILSMessages', 'dismissBrowseCategory', 'showBrowseCategory', 'getLinkedAccounts', 'getViewers', 'addAccountLink', 'removeAccountLink', 'saveLanguage'))) {
+				if (in_array($method, array('isLoggedIn', 'logout', 'login', 'checkoutItem', 'placeHold', 'renewItem', 'renewAll', 'viewOnlineItem', 'changeHoldPickUpLocation', 'getPatronProfile', 'validateAccount', 'getPatronHolds', 'getPatronCheckedOutItems', 'cancelHold', 'activateHold', 'freezeHold', 'returnCheckout', 'updateOverDriveEmail', 'getValidPickupLocations', 'getHiddenBrowseCategories', 'getILSMessages', 'dismissBrowseCategory', 'showBrowseCategory', 'getLinkedAccounts', 'getViewers', 'addAccountLink', 'removeAccountLink', 'saveLanguage', 'initMasquerade'))) {
 					header("Cache-Control: max-age=10800");
 					require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
 					APIUsage::incrementStat('UserAPI', $method);
@@ -1046,6 +1046,8 @@ class UserAPI extends Action
 				return $this->returnCloudLibraryItem();
 			} else if ($source == 'axis360') {
 				return $this->returnAxis360Item();
+			} else {
+				return array('success' => false, 'message' => 'Invalid source');
 			}
 		} else {
 			return array('success' => false, 'message' => 'Login unsuccessful');
@@ -1072,6 +1074,8 @@ class UserAPI extends Action
 				return $this->openCloudLibraryItem();
 			} else if ($source == 'axis360') {
 				return $this->openAxis360Item();
+			} else {
+				return array('success' => false, 'message' => 'Invalid source');
 			}
 		} else {
 			return array('success' => false, 'message' => 'Login unsuccessful when trying to view online checkout');
@@ -1164,6 +1168,8 @@ class UserAPI extends Action
 				return $this->renewCloudLibraryItem();
 			} else if ($source == 'axis360') {
 				return $this->renewAxis360Item();
+			} else {
+				return array('success' => false, 'message' => 'Invalid source');
 			}
 
 		} else {
@@ -1320,6 +1326,8 @@ class UserAPI extends Action
 					return $this->placeCloudLibraryHold();
 				} else if ($source == 'axis360') {
 					return $this->placeAxis360Hold();
+				} else {
+					return array('success' => false, 'message' => 'Invalid source');
 				}
 			}else{
 				return array('success' => false, 'message' => 'Sorry, holds are not currently allowed.');
@@ -2274,6 +2282,8 @@ class UserAPI extends Action
 				return $this->cancelCloudLibraryHold();
 			} else if ($source == 'axis360') {
 				return $this->cancelAxis360Hold();
+			} else {
+				return array('success' => false, 'message' => 'Invalid source');
 			}
 		} else {
 			return array('success' => false, 'title' => 'Error', 'message' => 'Unable to validate user');
@@ -2335,6 +2345,8 @@ class UserAPI extends Action
 				return $this->freezeOverDriveHold();
 			} else if ($source == 'axis360') {
 				return $this->freezeAxis360Hold();
+			} else {
+				return array('success' => false, 'message' => 'Invalid source');
 			}
 
 		} else {
@@ -2408,6 +2420,8 @@ class UserAPI extends Action
 				return $this->activateOverDriveHold();
 			} else if ($source == 'axis360') {
 				return $this->activateAxis360Hold();
+			} else {
+				return array('success' => false, 'message' => 'Invalid source');
 			}
 		} else {
 			return array('success' => false, 'title' => 'Error', 'message' => 'Unable to validate user');
@@ -3222,5 +3236,184 @@ class UserAPI extends Action
 	function getBreadcrumbs() : array
 	{
 		return [];
+	}
+
+	function initMasquerade() {
+		global $library;
+		if (!empty($library) && $library->allowMasqueradeMode) {
+			if (!empty($_REQUEST['cardNumber'])) {
+				//$logger->log("Masquerading as " . $_REQUEST['cardNumber'], Logger::LOG_ERROR);
+				$libraryCard = trim($_REQUEST['cardNumber']);
+				global $guidingUser;
+				if (empty($guidingUser)) {
+					$user = UserAccount::getLoggedInUser();
+					if ($user && $user->canMasquerade()) {
+						//Check to see if the user already exists in the database
+						$foundExistingUser = false;
+						$accountProfile = new AccountProfile();
+						$accountProfile->find();
+						$masqueradedUser = null;
+						while ($accountProfile->fetch()){
+							$masqueradedUser = new User();
+							$masqueradedUser->source = $accountProfile->name;
+							if ($accountProfile->loginConfiguration == 'barcode_pin') {
+								$masqueradedUser->cat_username = $libraryCard;
+							} else {
+								$masqueradedUser->cat_password = $libraryCard;
+							}
+							if ($masqueradedUser->find(true)) {
+								if ($masqueradedUser->id == $user->id) {
+									return array(
+										'success' => false,
+										'error' => translate(['text'=>'No need to masquerade as yourself.', 'isAdminFacing'=>true])
+									);
+								}
+								$foundExistingUser = true;
+								break;
+							}else{
+								$masqueradedUser = null;
+							}
+						}
+
+						if (!$foundExistingUser) {
+							// Test for a user that hasn't logged into Aspen Discovery before
+							$masqueradedUser = UserAccount::findNewUser($libraryCard);
+							if (!$masqueradedUser) {
+								return array(
+									'success' => false,
+									'error' => translate(['text'=>'Invalid User', 'isAdminFacing'=>true])
+								);
+							}
+						}
+
+						// Now that we have found the masqueraded User, check Masquerade Levels
+						if ($masqueradedUser) {
+							//Check for errors
+							$masqueradedUserPType = new PType();
+							$masqueradedUserPType->pType = $masqueradedUser->patronType;
+							$isRestrictedUser = true;
+							if ($masqueradedUserPType->find(true)) {
+								if ($masqueradedUserPType->restrictMasquerade == 0) {
+									$isRestrictedUser = false;
+								}
+							}
+							if (UserAccount::userHasPermission('Masquerade as any user')) {
+								//The user can masquerade as anyone, no additional checks needed
+							}elseif (UserAccount::userHasPermission('Masquerade as unrestricted patron types')) {
+								if ($isRestrictedUser) {
+									return array(
+										'success' => false,
+										'error' => translate(['text'=>'Cannot masquerade as patrons of this type.', 'isAdminFacing'=>true])
+									);
+								}
+							}elseif (UserAccount::userHasPermission('Masquerade as patrons with same home library') || UserAccount::userHasPermission('Masquerade as unrestricted patrons with same home library')) {
+								$guidingUserLibrary = $user->getHomeLibrary();
+								if (!$guidingUserLibrary) {
+									return array(
+										'success' => false,
+										'error' => translate(['text'=>'Could not determine your home library.', 'isAdminFacing'=>true])
+									);
+								}
+								$masqueradedUserLibrary = $masqueradedUser->getHomeLibrary();
+								if (!$masqueradedUserLibrary) {
+									return array(
+										'success' => false,
+										'error' => translate(['text'=>'Could not determine the patron\'s home library.', 'isAdminFacing'=>true])
+									);
+								}
+								if ($guidingUserLibrary->libraryId != $masqueradedUserLibrary->libraryId) {
+									return array(
+										'success' => false,
+										'error' => translate(['text'=>'You do not have the same home library as the patron.', 'isAdminFacing'=>true])
+									);
+								}
+								if ($isRestrictedUser && !UserAccount::userHasPermission('Masquerade as patrons with same home library')) {
+									return array(
+										'success' => false,
+										'error' => translate(['text'=>'Cannot masquerade as patrons of this type.', 'isAdminFacing'=>true])
+									);
+								}
+							}elseif (UserAccount::userHasPermission('Masquerade as patrons with same home location') || UserAccount::userHasPermission('Masquerade as unrestricted patrons with same home location')) {
+								if (empty($user->homeLocationId)) {
+									return array(
+										'success' => false,
+										'error'   => translate(['text'=>'Could not determine your home library branch.', 'isAdminFacing'=>true])
+									);
+								}
+								if (empty($masqueradedUser->homeLocationId)) {
+									return array(
+										'success' => false,
+										'error'   => translate(['text'=>'Could not determine the patron\'s home library branch.', 'isAdminFacing'=>true])
+									);
+								}
+								if ($user->homeLocationId != $masqueradedUser->homeLocationId) {
+									return array(
+										'success' => false,
+										'error'   => translate(['text'=>'You do not have the same home library branch as the patron.', 'isAdminFacing'=>true])
+									);
+								}
+								if ($isRestrictedUser && !UserAccount::userHasPermission('Masquerade as patrons with same home location')) {
+									return array(
+										'success' => false,
+										'error' => translate(['text'=>'Cannot masquerade as patrons of this type.', 'isAdminFacing'=>true])
+									);
+								}
+							}
+
+							//Setup the guiding user and masqueraded user
+							global $guidingUser;
+							$guidingUser = $user;
+							$user = $masqueradedUser;
+							if (!empty($user) && !($user instanceof AspenError)){
+								if ($user->lastLoginValidation < (time() - 15 * 60)) {
+									$user->loadContactInformation();
+								}
+
+								@session_start(); // (suppress notice if the session is already started)
+								$_SESSION['guidingUserId'] = $guidingUser->id;
+								$_SESSION['activeUserId'] = $user->id;
+								@session_write_close();
+								//TODO: For calls from LiDA we would need the entire patron profile
+								return array(
+									'success' => true,
+									'activeUserId' => $user->id,
+								);
+							} else {
+								unset($_SESSION['guidingUserId']);
+								return array(
+									'success' => false,
+									'error'   => translate(['text'=>'Failed to initiate masquerade as specified user.', 'isAdminFacing'=>true])
+								);
+							}
+						} else {
+							return array(
+								'success' => false,
+								'error'   => translate(['text'=>'Could not load user to masquerade as.', 'isAdminFacing'=>true])
+							);
+						}
+					} else {
+						return array(
+							'success' => false,
+							'error'   => $user ? translate(['text'=>'You are not allowed to Masquerade.', 'isAdminFacing'=>true]) : translate(['text'=>'Your session has expired, please sign in again.', 'isAdminFacing'=>true])
+						);
+					}
+				} else {
+					return array(
+						'success' => false,
+						'error'   => translate(['text'=>'Already Masquerading.', 'isAdminFacing'=>true])
+					);
+				}
+			} else {
+				return array(
+					'success' => false,
+					'error'   => translate(['text'=>'Please enter a valid Library Card Number.', 'isAdminFacing'=>true])
+				);
+			}
+		} else {
+			return array(
+				'success' => false,
+				'error'   => translate(['text'=>'Masquerade Mode is not allowed.', 'isAdminFacing'=>true])
+			);
+		}
 	}
 }
