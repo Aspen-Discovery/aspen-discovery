@@ -606,8 +606,8 @@ class Sierra extends Millennium{
 						$bibIdShort = substr(str_replace('.b', 'b', $bibId), 0, -1);
 						$getBibResponse = $this->_callUrl('sierra.getBib', $this->accountProfile->vendorOpacUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/bibs/{$bibIdShort}");
 						if ($getBibResponse){
-							$curCheckout->title = $getBibResponse->title;
-							$curCheckout->author = $getBibResponse->author;
+							$curCheckout->title = isset($getBibResponse->title) ? $getBibResponse->title : 'Unknown';
+							$curCheckout->author = isset($getBibResponse->author) ? $getBibResponse->author : 'Unknown';
 							$curCheckout->formats = [isset($getBibResponse->materialType->value) ? $getBibResponse->materialType->value : 'Unknown'];
 						}else{
 							$curCheckout->title = 'Unknown';
