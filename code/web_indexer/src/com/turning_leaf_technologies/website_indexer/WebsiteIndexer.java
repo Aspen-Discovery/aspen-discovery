@@ -35,6 +35,7 @@ class WebsiteIndexer {
 	private final String siteUrlShort;
 	private final boolean fullReload;
 	private final long maxPagesToIndex;
+	private final long crawlDelay;
 	private final WebsiteIndexLogEntry logEntry;
 	private final Logger logger;
 	private final Connection aspenConn;
@@ -53,7 +54,7 @@ class WebsiteIndexer {
 
 	private final ConcurrentUpdateSolrClient solrUpdateServer;
 
-	WebsiteIndexer(Long websiteId, String websiteName, String searchCategory, String initialUrl, String pageTitleExpression, String descriptionExpression, String pathsToExclude, long maxPagesToIndex, HashSet<String> scopesToInclude, boolean fullReload, WebsiteIndexLogEntry logEntry, Connection aspenConn, ConcurrentUpdateSolrClient solrUpdateServer, Logger logger) {
+	WebsiteIndexer(Long websiteId, String websiteName, String searchCategory, String initialUrl, String pageTitleExpression, String descriptionExpression, String pathsToExclude, long maxPagesToIndex, long crawlDelay, HashSet<String> scopesToInclude, boolean fullReload, WebsiteIndexLogEntry logEntry, Connection aspenConn, ConcurrentUpdateSolrClient solrUpdateServer, Logger logger) {
 		this.websiteId = websiteId;
 		this.websiteName = websiteName;
 		this.searchCategory = searchCategory;
@@ -65,6 +66,7 @@ class WebsiteIndexer {
 		this.siteUrlShort = siteUrl.replaceAll("http[s]?://", "");
 		this.scopesToInclude = scopesToInclude;
 		this.maxPagesToIndex = maxPagesToIndex;
+		this.crawlDelay = crawlDelay;
 
 		this.logEntry = logEntry;
 		this.logger = logger;
@@ -105,7 +107,7 @@ class WebsiteIndexer {
 		}
 
 		try {
-			addPageToStmt = aspenConn.prepareStatement("INSERT INTO website_pages SET websiteId = ?, url = ?, checksum = ?, deleted = 0, firstDetected = ? ON DUPLICATE KEY UPDATE checksum = VALUES(checksum), deleted = 0", Statement.RETURN_GENERATED_KEYS);
+			addPageToStmt = aspenConn.prepareStatement("INSERT INTO website_pages SET websiteId = ?, url = ?, checksum = ?, deleted = 0, deleteReason = '', firstDetected = ? ON DUPLICATE KEY UPDATE checksum = VALUES(checksum), deleted = 0", Statement.RETURN_GENERATED_KEYS);
 			deletePageStmt = aspenConn.prepareStatement("UPDATE website_pages SET deleted = 1, deleteReason = ? where id = ?");
 		} catch (Exception e) {
 			logEntry.incErrors("Error setting up statements ", e);
@@ -162,6 +164,13 @@ class WebsiteIndexer {
 			}
 			if (allLinks.size() > this.maxPagesToIndex){
 				logEntry.incErrors("Error processing website, found more than " + this.maxPagesToIndex + " links in the site");
+			}
+			if (crawlDelay > 0){
+				try {
+					Thread.sleep(crawlDelay * 1000);
+				} catch (InterruptedException e) {
+					logEntry.incErrors("Thread was interrupted while processing crawlDelay", e);
+				}
 			}
 		}
 

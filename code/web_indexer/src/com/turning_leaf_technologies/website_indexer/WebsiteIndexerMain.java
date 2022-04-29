@@ -65,6 +65,7 @@ public class WebsiteIndexerMain {
 					String pathsToExclude = sitesToIndexRS.getString("pathsToExclude");
 					long lastFetched = sitesToIndexRS.getLong("lastIndexed");
 					long maxPagesToIndex = sitesToIndexRS.getLong("maxPagesToIndex");
+					long crawlDelay = sitesToIndexRS.getLong("crawlDelay");
 					boolean fullReload = false;
 					boolean needsIndexing = false;
 					long currentTime = new Date().getTime() / 1000;
@@ -121,7 +122,7 @@ public class WebsiteIndexerMain {
 						}
 
 						WebsiteIndexLogEntry logEntry = createDbLogEntry(websiteName, startTime, aspenConn);
-						WebsiteIndexer indexer = new WebsiteIndexer(websiteId, websiteName, searchCategory, siteUrl, pageTitleExpression, descriptionExpression, pathsToExclude, maxPagesToIndex, scopesToInclude, fullReload, logEntry, aspenConn, solrUpdateServer, logger);
+						WebsiteIndexer indexer = new WebsiteIndexer(websiteId, websiteName, searchCategory, siteUrl, pageTitleExpression, descriptionExpression, pathsToExclude, maxPagesToIndex, crawlDelay, scopesToInclude, fullReload, logEntry, aspenConn, solrUpdateServer, logger);
 						indexer.spiderWebsite();
 
 						updateLastIndexedStmt.setLong(1, currentTime);
