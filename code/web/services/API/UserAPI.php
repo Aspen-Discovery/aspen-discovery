@@ -2976,6 +2976,12 @@ class UserAPI extends Action
 			if (!$user->find(true)) {
 				$user = false;
 			}
+		} else if (isset($_REQUEST['userId'])) {
+			$user = new User();
+			$user->id = $_REQUEST['userId'];
+			if (!$user->find(true)) {
+				$user = false;
+			}
 		} else if (isset($_REQUEST['id'])) {
 			$user = new User();
 			$user->id = $_REQUEST['id'];
