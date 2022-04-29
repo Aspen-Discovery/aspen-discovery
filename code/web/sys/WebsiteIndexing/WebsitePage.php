@@ -22,10 +22,10 @@ class WebsitePage extends DataObject
 		}
 		return [
 			'id' => ['property'=>'id', 'type'=>'label', 'label'=>'Id', 'description'=>'The unique id'],
-			'websiteId' => ['property'=>'websiteId', 'type'=>'enum', 'values'=>$websites, 'label'=>'Website', 'description'=>'The Website for the page', 'required' => true],
-			'url' => ['property'=>'url', 'type'=>'url', 'label'=>'Page URL', 'description'=>'The URL to the page', 'maxLength'=>255, 'required' => true],
-			'deleted' => ['property'=>'deleted', 'type'=>'checkbox', 'label'=>'Deleted?', 'description'=>'Whether or not the page is deleted.', 'required' => false],
-			'deleteReason' => ['property'=>'deleteReason', 'type'=>'text', 'label'=>'Deletion Reason', 'description'=>'The reason the page was deleted', 'maxLength'=>255, 'required' => false],
+			'websiteId' => ['property'=>'websiteId', 'type'=>'enum', 'values'=>$websites, 'label'=>'Website', 'description'=>'The Website for the page', 'required' => true, 'readOnly' => true],
+			'url' => ['property'=>'url', 'type'=>'url', 'label'=>'Page URL', 'description'=>'The URL to the page', 'maxLength'=>255, 'required' => true, 'readOnly' => true],
+			'deleted' => ['property'=>'deleted', 'type'=>'checkbox', 'label'=>'Deleted?', 'description'=>'Whether or not the page is deleted.', 'required' => false, 'readOnly' => true],
+			'deleteReason' => ['property'=>'deleteReason', 'type'=>'text', 'label'=>'Deletion Reason', 'description'=>'The reason the page was deleted', 'maxLength'=>255, 'required' => false, 'readOnly' => true],
 		];
 	}
 
