@@ -1492,6 +1492,8 @@ class Millennium extends AbstractIlsDriver
 	private function getListTitlesFromWebPAC($patron, $listId, ?array $currentListTitles, UserList $newList, &$results, $title)
 	{
 		//Get a list of all titles within the list to be imported
+		//Increase the timeout for the page to load large lists
+		$this->curlWrapper->setTimeout(120);
 		$listDetailsPage = $this->_fetchPatronInfoPage($patron, 'mylists?listNum=' . $listId);
 		//Get the table for the details
 		$listsDetailsMatches = [];
