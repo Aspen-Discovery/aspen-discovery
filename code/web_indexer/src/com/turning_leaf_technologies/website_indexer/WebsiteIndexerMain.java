@@ -152,7 +152,7 @@ public class WebsiteIndexerMain {
 							try {
 								WebPage page = new WebPage(websitePagesRS);
 								//noinspection unused
-								UpdateResponse deleteResponse = solrUpdateServer.deleteByQuery("id:" + page.getId() + " AND website_name:\"" + websiteName + "\"");
+								UpdateResponse deleteResponse = solrUpdateServer.deleteByQuery("id:\"WebPage:" + page.getId() + "\" AND settingId:" + websiteId);
 								deletePageStmt.setLong(1, page.getId());
 								deletePageStmt.executeUpdate();
 								logEntry.incDeleted();
@@ -195,12 +195,28 @@ public class WebsiteIndexerMain {
 				}
 				getResourcesRS.close();
 				getResourcesStmt.close();
-				if ((numBasicPages > 0) || (numResources > 0)){
-					boolean fullReload = true;
+				PreparedStatement getPortalPagesStmt = aspenConn.prepareStatement("SELECT count(*) as numPortalPages from web_builder_portal_page");
+				ResultSet getPortalPagesRS = getPortalPagesStmt.executeQuery();
+				int numPortalPages = 0;
+				if (getPortalPagesRS.next()){
+					numPortalPages = getPortalPagesRS.getInt("numPortalPages");
+				}
+				getPortalPagesRS.close();
+				getPortalPagesStmt.close();
+				if ((numBasicPages > 0) || (numResources > 0) || (numPortalPages > 0)){
 					WebsiteIndexLogEntry logEntry = createDbLogEntry("Web Builder Content", startTime, aspenConn);
-					WebBuilderIndexer indexer = new WebBuilderIndexer(fullReload, logEntry, aspenConn, solrUpdateServer);
+					WebBuilderIndexer indexer = new WebBuilderIndexer(configIni, logEntry, aspenConn, solrUpdateServer);
 					indexer.indexContent();
 					logEntry.setFinished();
+				}
+
+				//Clean up anything that does not have a setting Id
+				try {
+					//noinspection unused
+					UpdateResponse deleteResponse = solrUpdateServer.deleteByQuery("-settingId:[* TO *]");
+					solrUpdateServer.commit(true, true, false);
+				}catch (Exception e){
+					logger.error("Error deleting all content without a settingId", e );
 				}
 
 			} catch (SQLException e) {

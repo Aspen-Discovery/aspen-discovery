@@ -134,6 +134,9 @@ class SearchObject_WebsitesSearcher extends SearchObject_SolrSearcher
 		}elseif ($current['recordtype'] == 'BasicPage'){
 			require_once ROOT_DIR . '/RecordDrivers/BasicPageRecordDriver.php';
 			return new BasicPageRecordDriver($current);
+		}elseif ($current['recordtype'] == 'PortalPage'){
+			require_once ROOT_DIR . '/RecordDrivers/PortalPageRecordDriver.php';
+			return new PortalPageRecordDriver($current);
 		}else{
 			AspenError::raiseError("Unknown type of Website result {$current['recordtype']}");
 		}
@@ -171,6 +174,29 @@ class SearchObject_WebsitesSearcher extends SearchObject_SolrSearcher
 	{
 		if ($this->facetConfig == null) {
 			$facetConfig = [];
+
+			$websiteNameFacet = new LibraryFacetSetting();
+			$websiteNameFacet->id = count($facetConfig) +1;
+			$websiteNameFacet->multiSelect = true;
+			$websiteNameFacet->facetName = "website_name";
+			$websiteNameFacet->displayName = "Site Name";
+			$websiteNameFacet->numEntriesToShowByDefault = 5;
+			$websiteNameFacet->translate = true;
+			$websiteNameFacet->collapseByDefault = true;
+			$websiteNameFacet->useMoreFacetPopup = true;
+			$facetConfig["website_name"] = $websiteNameFacet;
+
+			$searchCategoryFacet = new LibraryFacetSetting();
+			$searchCategoryFacet->id = count($facetConfig) +1;
+			$searchCategoryFacet->multiSelect = true;
+			$searchCategoryFacet->facetName = "search_category";
+			$searchCategoryFacet->displayName = "Website Type";
+			$searchCategoryFacet->numEntriesToShowByDefault = 5;
+			$searchCategoryFacet->translate = true;
+			$searchCategoryFacet->collapseByDefault = true;
+			$searchCategoryFacet->useMoreFacetPopup = true;
+			$facetConfig["search_category"] = $searchCategoryFacet;
+
 			$audienceFacet = new LibraryFacetSetting();
 			$audienceFacet->id = count($facetConfig) +1;
 			$audienceFacet->multiSelect = true;

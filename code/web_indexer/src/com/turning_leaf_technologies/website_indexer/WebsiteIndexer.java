@@ -131,7 +131,7 @@ class WebsiteIndexer {
 	void spiderWebsite() {
 		if (fullReload) {
 			try {
-				solrUpdateServer.deleteByQuery("website_name:\"" + websiteName + "\"");
+				solrUpdateServer.deleteByQuery("settingId:" + websiteId);
 				//3-19-2019 Don't commit so the index does not get cleared during run (but will clear at the end).
 			} catch (HttpSolrClient.RemoteSolrException rse) {
 				logEntry.addNote("Solr is not running properly, try restarting " + rse);
@@ -174,7 +174,7 @@ class WebsiteIndexer {
 						deletePageStmt.setLong(2, curPage.getId());
 						deletePageStmt.executeUpdate();
 						logEntry.incDeleted();
-						solrUpdateServer.deleteByQuery("id:" + curPage.getId() + "AND website_name:\"" + websiteName + "\"");
+						solrUpdateServer.deleteByQuery("id:\"WebPage:" + curPage.getId() + "\" AND settingId:" + websiteId );
 					}
 				} catch (Exception e) {
 					logEntry.incErrors("Error deleting page");
@@ -365,6 +365,7 @@ class WebsiteIndexer {
 							SolrInputDocument solrDocument = new SolrInputDocument();
 							solrDocument.addField("id", "WebPage:" + page.getId());
 							solrDocument.addField("recordtype", "WebPage");
+							solrDocument.addField("settingId", websiteId);
 							solrDocument.addField("website_name", websiteName);
 							solrDocument.addField("search_category", searchCategory);
 							solrDocument.addField("source_url", pageToProcess);
@@ -388,7 +389,7 @@ class WebsiteIndexer {
 						deletePageStmt.setString(1, "Received " + status.getStatusCode() + " error code");
 						deletePageStmt.setLong(2, existingPage.getId());
 						deletePageStmt.executeUpdate();
-						solrUpdateServer.deleteByQuery("id:" + existingPage.getId() + "AND website_name:\"" + websiteName + "\"");
+						solrUpdateServer.deleteByQuery("id:\"WebPage:" + existingPage.getId() + "\" AND settingId:" + websiteId);
 						existingPages.remove(pageToProcess);
 					}
 				}

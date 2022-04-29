@@ -33,7 +33,6 @@ class MyAccount_Masquerade extends MyAccount
 
 	static function endMasquerade() {
 		if (UserAccount::isLoggedIn()) {
-			/** @var User $guidingUser */
 			global $guidingUser;
 			global $masqueradeMode;
 			@session_start();  // (suppress notice if the session is already started)

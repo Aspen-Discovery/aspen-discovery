@@ -7,8 +7,17 @@ class WebBuilder_PortalPage extends Action
 
 	function __construct()
 	{
+		parent::__construct();
+
 		//Make sure the user has permission to access the page
 		$userCanAccess = $this->canView();
+
+		if (!$userCanAccess && isset($_REQUEST['raw'])){
+			//Check to see if this IP is ok for API calls
+			If (IPAddress::allowAPIAccessForClientIP()){
+				$userCanAccess = true;
+			}
+		}
 
 		if (!$userCanAccess){
 			$this->display('noPermission.tpl', 'Access Error', '');
@@ -38,7 +47,12 @@ class WebBuilder_PortalPage extends Action
 
 		$interface->assign('rows', $this->page->getRows());
 
-		$this->display('portalPage.tpl', $this->page->title, '', false);
+		if (isset($_REQUEST['raw']) && $_REQUEST['raw'] == 'true'){
+			echo $interface->fetch('WebBuilder/portalPage.tpl');
+			exit();
+		}else{
+			$this->display('portalPage.tpl', $this->page->title, '', false);
+		}
 	}
 
 	function canView() : bool
