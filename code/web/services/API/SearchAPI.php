@@ -1281,9 +1281,10 @@ class SearchAPI extends Action
 				return array('success' => false, 'message' => 'Sorry, we could not find a user with those credentials.');
 			}
 
-			$label = explode('_', $_REQUEST['id']);
 			if($id) {
 				$label = explode('_', $id);
+			} else {
+				$label = explode('_', $_REQUEST['id']);
 			}
 			$id = $label[3];
 			require_once ROOT_DIR . '/services/API/ListAPI.php';
@@ -1307,9 +1308,11 @@ class SearchAPI extends Action
 		if ($user == false) {
 			return array('success' => false, 'message' => 'Sorry, we could not find a user with those credentials.');
 		}
-		$label = explode('_', $_REQUEST['id']);
+
 		if($id) {
 			$label = explode('_',$id);
+		} else {
+			$label = explode('_', $_REQUEST['id']);
 		}
 		$id = $label[3];
 		require_once ROOT_DIR . '/sys/UserLists/UserList.php';
@@ -1501,9 +1504,10 @@ class SearchAPI extends Action
 			$pageToLoad = 1;
 		}
 		$pageSize = isset($_REQUEST['limit']) ? $_REQUEST['limit'] : self::ITEMS_PER_PAGE;
-		$thisId = $_REQUEST['id'];
 		if($id) {
 			$thisId = $id;
+		} else {
+			$thisId = $_REQUEST['id'];
 		}
 		$response = [];
 
