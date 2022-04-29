@@ -24,5 +24,12 @@ function getUpdates22_05_00() : array
 				'UPDATE website_indexing_settings set lastIndexed = 0',
 			]
 		], //force_website_reindex_22_05
+		'website_crawlDelay' => [
+			'title' => 'Website Crawl Delay',
+			'description' => 'Add a crawl delay to slow down indexing pages',
+			'sql' => [
+				'ALTER TABLE website_indexing_settings ADD COLUMN crawlDelay INT DEFAULT 10',
+			]
+		], //website_crawlDelay
 	];
 }
