@@ -40,17 +40,10 @@ class WebsiteSolrConnector extends Solr
 	public function getScopingFilters($searchLibrary, $searchLocation)
 	{
 		global $solrScope;
+		//For websites we only scope based on library, not location
+
 		$filter = [];
-		if (!$solrScope) {
-			//MDN: This does happen when called within migration tools
-			if (isset($searchLocation)) {
-				$filter[] = "scope_has_related_records:" . strtolower($searchLocation->code);
-			} elseif (isset($searchLibrary)) {
-				$filter[] = "scope_has_related_records:" . strtolower($searchLibrary->subdomain);
-			}
-		} else {
-			$filter[] = "scope_has_related_records:". strtolower($solrScope);
-		}
+		$filter[] = "scope_has_related_records:" . strtolower($searchLibrary->subdomain);
 		return $filter;
 	}
 }
