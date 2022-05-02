@@ -8,7 +8,7 @@ class XpressPay_Complete extends Action
 		$error = '';
 		$message = '';
 		if (empty($_REQUEST['l1'])) {
-			$error = 'No Payment ID was provided, could not cancel the payment';
+			$error = 'No Payment ID was provided, could not complete the payment';
 		}else{
 			require_once ROOT_DIR . '/sys/Account/UserPayment.php';
 			$result = UserPayment::completeXpressPayPayment($_POST);
