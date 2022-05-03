@@ -731,6 +731,8 @@ class Koha extends AbstractIlsDriver
 	private function loadPatronInfoFromDB($patronId, $password)
 	{
 		global $timer;
+		global $logger;
+
 		/** @noinspection SqlResolve */
 		$sql = "SELECT borrowernumber, cardnumber, surname, firstname, streetnumber, streettype, address, address2, city, state, zipcode, country, email, phone, mobile, categorycode, dateexpiry, password, userid, branchcode, opacnote, privacy from borrowers where borrowernumber = $patronId";
 
@@ -745,6 +747,9 @@ class Koha extends AbstractIlsDriver
 			$user->source = $this->accountProfile->name;
 			$user->username = $userFromDb['borrowernumber'];
 			if ($user->find(true)) {
+				if (IPAddress::showDebuggingInformation()){
+					$logger->log("User found in loadPatronInfoFromDB {$userFromDb['borrowernumber']}", Logger::LOG_ERROR);
+				}
 				$userExistsInDB = true;
 			}else{
 				//Check to see if the barcode exists since barcodes must be unique.
@@ -754,8 +759,7 @@ class Koha extends AbstractIlsDriver
 				$user->source = $this->accountProfile->name;
 				$user->cat_username = $userFromDb['cardnumber'];
 				if ($user->find(true)){
-					global $logger;
-					$logger->log("User found, but username has changed, updating from $user->username to {$userFromDb['borrowernumber']}", Logger::LOG_WARNING);
+					$logger->log("User found, but username has changed, updating from $user->username to {$userFromDb['borrowernumber']}", Logger::LOG_ERROR);
 					$user->username = $userFromDb['borrowernumber'];
 					$userExistsInDB = true;
 				}else{
@@ -5096,5 +5100,22 @@ class Koha extends AbstractIlsDriver
 			}
 		}
 		return $result;
+	}
+
+	function validateUniqueId(User $user){
+		$this->initDatabaseConnection();
+		//By default, do nothing, this should be overridden for ILSs that use masquerade
+		$escapedBarcode = mysqli_escape_string($this->dbConnection, $user->cat_username);
+		$sql = "SELECT borrowernumber, cardnumber, userId from borrowers where cardnumber = '$escapedBarcode' OR userId = '$escapedBarcode'";
+		$lookupUserResult = mysqli_query($this->dbConnection, $sql);
+		if ($lookupUserResult->num_rows > 0) {
+			$lookupUserRow = $lookupUserResult->fetch_assoc();
+			if ($lookupUserRow['borrowernumber'] != $user->username){
+				global $logger;
+				$logger->log("Updating unique id for user from $user->username to {$lookupUserRow['borrowernumber']}", Logger::LOG_WARNING);
+				$user->username = $lookupUserRow['borrowernumber'];
+				$user->update();
+			}
+		}
 	}
 }

@@ -155,6 +155,7 @@ class MyAccount_Masquerade extends MyAccount
 							if (!empty($user) && !($user instanceof AspenError)){
 								if ($user->lastLoginValidation < (time() - 15 * 60)) {
 									$user->loadContactInformation();
+									$user->validateUniqueId();
 								}
 
 								@session_start(); // (suppress notice if the session is already started)
