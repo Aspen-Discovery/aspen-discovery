@@ -1296,7 +1296,7 @@ class CatalogConnection
 		return $this->driver->getHoldNotificationTemplate();
 	}
 
-	public function validateUniqueId(){
-		return $this->driver->validateUniqueId();
+	public function validateUniqueId(User $user){
+		return $this->driver->validateUniqueId($user);
 	}
 }
