@@ -11713,6 +11713,8 @@ AspenDiscovery.Record = (function(){
 					params['holdType'] = 'item';
 				}
 			}
+			params = this.loadHoldNotificationOptions(params);
+
 			$.getJSON(Globals.path + "/" + module +  "/" + id + "/AJAX", params, function(data){
 				if (data.success){
 					if (data.needsItemLevelHold){
@@ -11733,6 +11735,46 @@ AspenDiscovery.Record = (function(){
 					AspenDiscovery.showMessage(data.title, data.message, false, false);
 				}
 			}).fail(AspenDiscovery.ajaxFail);
+		},
+
+		loadHoldNotificationOptions: function (params){
+			var emailNotification = $('#emailNotification');
+			if (emailNotification.length > 0){
+				if (emailNotification.is(':checked')){
+					params['emailNotification'] = 'on';
+				}else{
+					params['emailNotification'] = 'off';
+				}
+			}
+			var phoneNotification = $('#phoneNotification');
+			if (phoneNotification.length > 0){
+				if (phoneNotification.is(':checked')){
+					params['phoneNotification'] = 'on';
+				}else{
+					params['phoneNotification'] = 'off';
+				}
+			}
+			var phoneNumber = $('#phoneNumber');
+			if (phoneNumber.length > 0){
+				params['phoneNumber'] = phoneNumber.val();
+			}
+			var smsNotification = $('#smsNotification');
+			if (smsNotification.length > 0){
+				if (smsNotification.is(':checked')){
+					params['smsNotification'] = 'on';
+				}else{
+					params['smsNotification'] = 'off';
+				}
+			}
+			var smsNumber = $('#smsNumber');
+			if (smsNumber.length > 0){
+				params['smsNumber'] = smsNumber.val();
+			}
+			var smsCarrier = $('#smsCarrier');
+			if (smsCarrier.length > 0){
+				params['smsCarrier'] =$("#smsCarrier option:selected").val();
+			}
+			return params;
 		},
 
 		placeVolumeHold: function(){
@@ -11769,6 +11811,7 @@ AspenDiscovery.Record = (function(){
 					params['holdType'] = 'volume';
 				}
 			}
+			params = this.loadHoldNotificationOptions(params);
 			$.getJSON(Globals.path + "/" + module +  "/" + id + "/AJAX", params, function(data){
 				if (data.success){
 					if (data.needsItemLevelHold){

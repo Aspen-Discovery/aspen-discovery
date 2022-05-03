@@ -1031,8 +1031,15 @@ class Record_AJAX extends Action
 		}
 		$interface->assign('mustPickupAtHoldingBranch', $mustPickupAtHoldingBranch);
 
+		//Check to see if we need to prompt for hold notifications
+		$promptForHoldNotifications = $user->getCatalogDriver()->isPromptForHoldNotifications();
+		$interface->assign('promptForHoldNotifications', $promptForHoldNotifications);
+		if ($promptForHoldNotifications) {
+			$interface->assign('holdNotificationTemplate', $user->getCatalogDriver()->getHoldNotificationTemplate());
+		}
+
 		global $library;
-		if (!$multipleAccountPickupLocations && $library->allowRememberPickupLocation) {
+		if (!$multipleAccountPickupLocations && !$promptForHoldNotifications && $library->allowRememberPickupLocation) {
 			//If the patron's preferred pickup location is not valid then force them to pick a new location
 			$preferredPickupLocationIsValid = false;
 			foreach ($locations as $location){
@@ -1058,7 +1065,7 @@ class Record_AJAX extends Action
 		$interface->assign('defaultNotNeededAfterDays', $library->defaultNotNeededAfterDays);
 		$interface->assign('showDetailedHoldNoticeInformation', $library->showDetailedHoldNoticeInformation);
 		$interface->assign('treatPrintNoticesAsPhoneNotices', $library->treatPrintNoticesAsPhoneNotices);
-		$interface->assign('allowRememberPickupLocation', $library->allowRememberPickupLocation);
+		$interface->assign('allowRememberPickupLocation', $library->allowRememberPickupLocation && !$promptForHoldNotifications);
 		$interface->assign('showLogMeOut', $library->showLogMeOutAfterPlacingHolds);
 
 		$activeIP = IPAddress::getActiveIp();
