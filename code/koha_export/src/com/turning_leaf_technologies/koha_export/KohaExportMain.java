@@ -1010,6 +1010,9 @@ public class KohaExportMain {
 			long lastKohaExtractTime = indexingProfile.getLastUpdateOfChangedRecords();
 			if (lastKohaExtractTime == 0) {
 				lastKohaExtractTime = new Date().getTime() / 1000 - 24 * 60 * 60;
+			}else{
+				//Give a one-minute buffer to account for server time differences.
+				lastKohaExtractTime -= 60;
 			}
 
 			Timestamp lastExtractTimestamp = new Timestamp(lastKohaExtractTime * 1000);
