@@ -754,6 +754,8 @@ class Koha extends AbstractIlsDriver
 				$user->source = $this->accountProfile->name;
 				$user->cat_username = $userFromDb['cardnumber'];
 				if ($user->find(true)){
+					global $logger;
+					$logger->log("User found, but username has changed, updating from $user->username to {$userFromDb['borrowernumber']}", Logger::LOG_WARNING);
 					$user->username = $userFromDb['borrowernumber'];
 					$userExistsInDB = true;
 				}else{
