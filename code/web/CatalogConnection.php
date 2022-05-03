@@ -1297,6 +1297,6 @@ class CatalogConnection
 	}
 
 	public function validateUniqueId(User $user){
-		return $this->driver->validateUniqueId($user);
+		$this->driver->validateUniqueId($user);
 	}
 }
