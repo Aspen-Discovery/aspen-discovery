@@ -2976,6 +2976,12 @@ class User extends DataObject
 			}
 		}
 	}
+
+	function validateUniqueId(){
+		if ($this->getCatalogDriver() != null){
+			$this->getCatalogDriver()->validateUniqueId($this);
+		}
+	}
 }
 
 function modifiedEmpty($var) {

@@ -1811,7 +1811,7 @@ class Polaris extends AbstractIlsDriver
 		if ($type == 'selfReg' && $library && $library->promptForBirthDateInSelfReg){
 			$birthDateMin = date('Y-m-d', strtotime('-113 years'));
 			$birthDateMax = date('Y-m-d', strtotime('-13 years'));
-			$fields['personalInformationSection']['properties'] = array('property'=>'birthDate', 'type'=>'date', 'label'=>'Date of Birth (MM-DD-YYYY)', 'min'=>$birthDateMin, 'max'=>$birthDateMax, 'maxLength' => 10, 'required' => true);
+			$fields['personalInformationSection']['properties']['birthDate'] = array('property'=>'birthDate', 'type'=>'date', 'label'=>'Date of Birth (MM-DD-YYYY)', 'min'=>$birthDateMin, 'max'=>$birthDateMax, 'maxLength' => 10, 'required' => true);
 		}
 		$fields['nameOnIdentificationSection'] = array('property' => 'nameOnIdentificationSection', 'type' => 'section', 'label' => 'Name on Identification', 'hideInLists' => true, 'expandByDefault' => true, 'properties' => [
 			'firstNameOnIdentification' => array('property' => 'firstNameOnIdentification', 'type' => 'text', 'label' => 'First Name', 'description' => 'The first name on your ID', 'maxLength' => 25, 'required' => false, 'readOnly' => ($type == 'patronUpdate')),

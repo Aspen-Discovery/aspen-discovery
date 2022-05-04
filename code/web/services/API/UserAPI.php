@@ -23,7 +23,7 @@ class UserAPI extends Action
 
 		if (isset($_SERVER['PHP_AUTH_USER'])) {
 			if($this->grantTokenAccess()) {
-				if (in_array($method, array('isLoggedIn', 'logout', 'login', 'checkoutItem', 'placeHold', 'renewItem', 'renewAll', 'viewOnlineItem', 'changeHoldPickUpLocation', 'getPatronProfile', 'validateAccount', 'getPatronHolds', 'getPatronCheckedOutItems', 'cancelHold', 'activateHold', 'freezeHold', 'returnCheckout', 'updateOverDriveEmail', 'getValidPickupLocations', 'getHiddenBrowseCategories', 'getILSMessages', 'dismissBrowseCategory', 'showBrowseCategory', 'getLinkedAccounts', 'getViewers', 'addAccountLink', 'removeAccountLink', 'saveLanguage', 'initMasquerade'))) {
+				if (in_array($method, array('isLoggedIn', 'logout', 'login', 'checkoutItem', 'placeHold', 'renewItem', 'renewAll', 'viewOnlineItem', 'changeHoldPickUpLocation', 'getPatronProfile', 'validateAccount', 'getPatronHolds', 'getPatronCheckedOutItems', 'cancelHold', 'activateHold', 'freezeHold', 'returnCheckout', 'updateOverDriveEmail', 'getValidPickupLocations', 'getHiddenBrowseCategories', 'getILSMessages', 'dismissBrowseCategory', 'showBrowseCategory', 'getLinkedAccounts', 'getViewers', 'addAccountLink', 'removeAccountLink', 'saveLanguage', 'initMasquerade', 'endMasquerade'))) {
 					header("Cache-Control: max-age=10800");
 					require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
 					APIUsage::incrementStat('UserAPI', $method);
@@ -3280,6 +3280,7 @@ class UserAPI extends Action
 							if (!empty($user) && !($user instanceof AspenError)){
 								if ($user->lastLoginValidation < (time() - 15 * 60)) {
 									$user->loadContactInformation();
+									$user->validateUniqueId();
 								}
 
 								@session_start(); // (suppress notice if the session is already started)
@@ -3328,5 +3329,26 @@ class UserAPI extends Action
 				'error'   => translate(['text'=>'Masquerade Mode is not allowed.', 'isAdminFacing'=>true])
 			);
 		}
+	}
+
+	function endMasquerade() {
+		if (UserAccount::isLoggedIn()) {
+			global $guidingUser;
+			global $masqueradeMode;
+			@session_start();  // (suppress notice if the session is already started)
+			unset($_SESSION['guidingUserId']);
+			$masqueradeMode = false;
+			if ($guidingUser) {
+				$_REQUEST['username'] = $guidingUser->getBarcode();
+				$_REQUEST['password'] = $guidingUser->getPasswordOrPin();
+				$user = UserAccount::login();
+				if ($user && !($user instanceof AspenError)) {
+					return array('success' => true);
+				}else{
+					UserAccount::softLogout();
+				}
+			}
+		}
+		return array('success' => false);
 	}
 }
