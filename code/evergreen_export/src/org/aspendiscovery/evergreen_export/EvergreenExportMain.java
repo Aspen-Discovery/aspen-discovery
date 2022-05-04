@@ -1281,7 +1281,7 @@ public class EvergreenExportMain {
 								Element curElement = (Element)curChild;
 								switch (curElement.getTagName()) {
 									case "leader":
-										String leader = curElement.getTextContent().trim();
+										String leader = curElement.getTextContent();
 										marcRecord.setLeader(marcFactory.newLeader(leader));
 										break;
 									case "controlfield": {
