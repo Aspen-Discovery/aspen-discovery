@@ -56,6 +56,9 @@ class Record_AJAX extends Action
 		if (UserAccount::isLoggedIn()) {
 			$user = UserAccount::getLoggedInUser();
 			$id = $_REQUEST['id'];
+			if (strpos($id, ':') > 0){
+				list(,$id) = explode(':', $id);
+			}
 			$recordSource = $_REQUEST['recordSource'];
 			$interface->assign('recordSource', $recordSource);
 			if (isset($_REQUEST['volume'])) {
