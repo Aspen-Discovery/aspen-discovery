@@ -1285,4 +1285,18 @@ class CatalogConnection
 	{
 		return $this->driver->getAllCurbsidePickups();
 	}
+
+	public function isPromptForHoldNotifications() : bool
+	{
+		return $this->driver->isPromptForHoldNotifications();
+	}
+
+	public function getHoldNotificationTemplate() : ?string
+	{
+		return $this->driver->getHoldNotificationTemplate();
+	}
+
+	public function validateUniqueId(User $user){
+		$this->driver->validateUniqueId($user);
+	}
 }
