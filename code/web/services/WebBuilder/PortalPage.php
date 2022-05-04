@@ -57,60 +57,18 @@ class WebBuilder_PortalPage extends Action
 
 	function canView() : bool
 	{
-		global $locationSingleton;
 		require_once ROOT_DIR . '/sys/WebBuilder/PortalPageAccess.php';
 		require_once ROOT_DIR . '/sys/Account/PType.php';
 		require_once ROOT_DIR . '/sys/WebBuilder/PortalPage.php';
 
-		$requireLogin = 0;
-		$allowInLibrary = 0;
 		$id = strip_tags($_REQUEST['id']);
 		$page = new PortalPage();
 		$page->id = $id;
 		$page->find();
-		while($page->fetch()){
-			$requireLogin = $page->requireLogin;
-			$allowInLibrary = $page->requireLoginUnlessInLibrary;
-		}
-
-		$activeLibrary = $locationSingleton->getActiveLocation();
-		$user = UserAccount::getLoggedInUser();
-		if($requireLogin){
-			if($allowInLibrary && $activeLibrary != null) {
-				return true;
-			}
-			if(!$user) {
-				return false;
-			}
-			else {
-				$userPatronType = $user->patronType;
-
-				if ($userPatronType == NULL) {
-					return true;
-				} elseif (empty($page->getAccess())){
-					//No patron types defined, everyone can access
-					return true;
-				} else {
-					$patronType = new pType();
-					$patronType->pType = $userPatronType;
-					if ($patronType->find(true)){
-						$patronTypeId = $patronType->id;
-					}else{
-						return false;
-					}
-
-					$patronTypeLink = new PortalPageAccess();
-					$patronTypeLink->portalPageId = $id;
-					$patronTypeLink->patronTypeId = $patronTypeId;
-					if ($patronTypeLink->find(true)) {
-						return true;
-					} else {
-						return false;
-					}
-				}
-			}
-		} else {
-			return true;
+		if($page->fetch(true)){
+			return $page->canView();
+		}else{
+			return false;
 		}
 
 	}

@@ -441,4 +441,97 @@ class PortalPage extends DB_LibraryLinkedObject
 		}
 		return $result;
 	}
+
+	function canView() : bool
+	{
+		global $locationSingleton;
+		$requireLogin = $this->requireLogin;
+		$allowInLibrary = $this->requireLoginUnlessInLibrary;
+
+		$activeLibrary = $locationSingleton->getActiveLocation();
+		$user = UserAccount::getLoggedInUser();
+		if($requireLogin){
+			if($allowInLibrary && $activeLibrary != null) {
+				return true;
+			}
+			if(!$user) {
+				return false;
+			}
+			else {
+				$userPatronType = $user->patronType;
+
+				if ($userPatronType == NULL) {
+					return true;
+				} elseif (empty($this->getAccess())){
+					//No patron types defined, everyone can access
+					return true;
+				} else {
+					$patronType = new pType();
+					$patronType->pType = $userPatronType;
+					if ($patronType->find(true)){
+						$patronTypeId = $patronType->id;
+					}else{
+						return false;
+					}
+
+					$patronTypeLink = new PortalPageAccess();
+					$patronTypeLink->portalPageId = $this->id;
+					$patronTypeLink->patronTypeId = $patronTypeId;
+					if ($patronTypeLink->find(true)) {
+						return true;
+					} else {
+						return false;
+					}
+				}
+			}
+		} else {
+			return true;
+		}
+	}
+
+	public function getHiddenReason() : string{
+		global $locationSingleton;
+		$requireLogin = $this->requireLogin;
+		$allowInLibrary = $this->requireLoginUnlessInLibrary;
+
+		$activeLibrary = $locationSingleton->getActiveLocation();
+		$user = UserAccount::getLoggedInUser();
+		if($requireLogin){
+			if($allowInLibrary && $activeLibrary != null) {
+				return '';
+			}
+			if(!$user) {
+				return translate(['text'=>'You must be logged in to view this page.', 'isPublicFacing'=>true]);
+			}
+			else {
+				$userPatronType = $user->patronType;
+
+				if ($userPatronType == NULL) {
+					return '';
+				} elseif (empty($this->getAccess())){
+					//No patron types defined, everyone can access
+					return '';
+				} else {
+					$patronType = new pType();
+					$patronType->pType = $userPatronType;
+					if ($patronType->find(true)){
+						$patronTypeId = $patronType->id;
+					}else{
+						return translate(['text'=>'Could not determine the type of user for you.', 'isPublicFacing'=>true]);
+					}
+
+					$patronTypeLink = new PortalPageAccess();
+					$patronTypeLink->portalPageId = $this->id;
+					$patronTypeLink->patronTypeId = $patronTypeId;
+					if ($patronTypeLink->find(true)) {
+						return '';
+					} else {
+						return translate(['text'=>"We're sorry, but it looks like you don't have access to this page..", 'isPublicFacing'=>true]);
+					}
+				}
+			}
+		} else {
+			return '';
+		}
+	}
 }

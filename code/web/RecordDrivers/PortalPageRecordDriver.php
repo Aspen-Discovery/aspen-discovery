@@ -76,10 +76,36 @@ class PortalPageRecordDriver extends IndexRecordDriver
 
 	public function getDescription()
 	{
-		if (isset($this->fields['description'])) {
-			return strip_tags($this->fields['description']);
+		$portalPage = $this->getPortalPage();
+		if ($portalPage != null && $portalPage->canView()) {
+			if (isset($this->fields['description'])) {
+				return strip_tags($this->fields['description']);
+			}else{
+				return '';
+			}
 		}else{
-			return '';
+			if ($portalPage != null){
+				return $portalPage->getHiddenReason();
+			}else{
+				return '';
+			}
+		}
+	}
+
+	private $portalPage;
+	private function getPortalPage() : ?PortalPage {
+		if ($this->portalPage == null) {
+			require_once ROOT_DIR . '/sys/WebBuilder/PortalPage.php';
+			$this->portalPage = new PortalPage();
+			list(,$id) = explode(':',$this->getId());
+			$this->portalPage->id = $id;
+			if ($this->portalPage->find(true)) {
+				return $this->portalPage;
+			} else {
+				return null;
+			}
+		}else{
+			return $this->portalPage;
 		}
 	}
 
