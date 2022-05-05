@@ -2970,6 +2970,13 @@ class UserAPI extends Action
 	 */
 	protected function getUserForApiCall()
 	{
+		if(isset($_SERVER['Version'])) {
+			if(strpos($_SERVER['Version'],"v22.04.00") !== false){
+				list($username, $password) = $this->loadUsernameAndPassword();
+				return UserAccount::validateAccount($username, $password);
+			}
+		}
+
 		if (isset($_REQUEST['patronId'])) {
 			$user = new User();
 			$user->username = $_REQUEST['patronId'];
