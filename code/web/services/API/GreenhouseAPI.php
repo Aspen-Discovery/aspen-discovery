@@ -278,17 +278,19 @@ class GreenhouseAPI extends Action
 
 	/** @noinspection PhpUnused */
 	public function findDistance($userLongitude, $userLatitude, $libraryLongitude, $libraryLatitude, $unit) {
-		$theta = ($userLongitude - $libraryLongitude);
-		$distance = sin(deg2rad($userLatitude)) * sin(deg2rad($libraryLatitude)) + cos(deg2rad($userLatitude)) * cos(deg2rad($libraryLatitude)) * cos(deg2rad($theta));
+		$distance = 99999;
+		if(is_numeric($libraryLatitude) && is_numeric($libraryLongitude)) {
+			$theta = ($userLongitude - $libraryLongitude);
+			$distance = sin(deg2rad($userLatitude)) * sin(deg2rad($libraryLatitude)) + cos(deg2rad($userLatitude)) * cos(deg2rad($libraryLatitude)) * cos(deg2rad($theta));
 
-		$distance = acos($distance);
-		$distance = rad2deg($distance);
-		$distance = $distance * 60 * 1.1515;
-		if ($unit == "Km") {
-			$distance = $distance * 1.609344;
+			$distance = acos($distance);
+			$distance = rad2deg($distance);
+			$distance = $distance * 60 * 1.1515;
+			if ($unit == "Km") {
+				$distance = $distance * 1.609344;
+			}
+			$distance = round($distance, 2);
 		}
-		$distance = round($distance, 2);
-
 		return $distance;
 	}
 
