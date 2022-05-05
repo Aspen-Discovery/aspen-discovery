@@ -2970,11 +2970,10 @@ class UserAPI extends Action
 	 */
 	protected function getUserForApiCall()
 	{
-		if(isset($_SERVER['Version'])) {
-			if(strpos($_SERVER['Version'],"v22.04.00") !== false){
-				list($username, $password) = $this->loadUsernameAndPassword();
-				return UserAccount::validateAccount($username, $password);
-			}
+
+		if($this->getLiDAVersion() == "v22.04.00") {
+			list($username, $password) = $this->loadUsernameAndPassword();
+			return UserAccount::validateAccount($username, $password);
 		}
 
 		if (isset($_REQUEST['patronId'])) {
@@ -3000,6 +2999,16 @@ class UserAPI extends Action
 			$user = UserAccount::validateAccount($username, $password);
 		}
 		return $user;
+	}
+
+	function getLiDAVersion() {
+		foreach (getallheaders() as $name => $value) {
+			if($name == 'Version') {
+				$version = explode(' ', $value);
+				return $version[0];
+			}
+		}
+		return 0;
 	}
 
 	function getLinkedAccounts()
