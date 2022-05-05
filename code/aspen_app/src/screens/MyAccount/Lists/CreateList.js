@@ -58,7 +58,9 @@ const CreateList = (props) => {
 							<Button variant="outline" onPress={() => setShowModal(false)}>Cancel</Button>
 							<Button
 								isLoading={loading}
+								isLoadingText="Creating List..."
 								onPress={async () => {
+									setLoading(true);
 									await createList(title, description, access, props.libraryUrl).then(res =>{
 										let status = "success"
 										if(!res.success) {

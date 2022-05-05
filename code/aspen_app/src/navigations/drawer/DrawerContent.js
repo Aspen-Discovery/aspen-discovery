@@ -9,7 +9,7 @@ import {UseColorMode} from "../../themes/theme";
 import {AuthContext} from "../../components/navigation";
 import _ from "lodash";
 import {showILSMessage} from "../../components/Notifications";
-import {getCheckedOutItems, getHolds, getILSMessages, getProfile, reloadProfile} from "../../util/loadPatron";
+import {getILSMessages, getProfile, reloadProfile} from "../../util/loadPatron";
 import {setGlobalVariables} from "../../util/setVariables";
 import {saveLanguage} from "../../util/accountActions";
 import {userContext} from "../../context/user";
@@ -45,12 +45,21 @@ export class DrawerContent extends Component {
 	}
 
 	loadILSMessages = async () => {
-		const tmp = await AsyncStorage.getItem('@ILSMessages');
-		const content = JSON.parse(tmp);
-		this.setState({
-			messages: content,
-			isLoading: false,
-		})
+		let libraryUrl;
+		try {
+			libraryUrl = await AsyncStorage.getItem('@pathUrl');
+		} catch (e) {
+			console.log(e);
+		}
+
+		if(libraryUrl) {
+			await getILSMessages(libraryUrl).then(response => {
+				this.setState({
+					messages: response,
+					isLoading: false,
+				})
+			})
+		}
 	}
 
 	loadLanguages = async () => {
@@ -78,14 +87,14 @@ export class DrawerContent extends Component {
 					//await setGlobalVariables()
 					//await getLanguages(libraryUrl);
 					//await getBrowseCategories(libraryUrl);
-					await getCheckedOutItems(libraryUrl);
-					await getHolds(libraryUrl);
-					await getILSMessages(libraryUrl);
+					//await getCheckedOutItems(libraryUrl);
+					//await getHolds(libraryUrl);
+					//await getILSMessages(libraryUrl);
 					//await getPickupLocations(libraryUrl);
 					//await getPatronBrowseCategories(libraryUrl);
 					//await getLists(libraryUrl);
 
-					await this.loadILSMessages();
+					await this.loadILSMessages(libraryUrl);
 					//await this.loadLanguages();
 
 					this.setState({
@@ -97,7 +106,6 @@ export class DrawerContent extends Component {
 	}
 
 	checkContext = async (context) => {
-		console.log(context.user);
 		if(_.isEmpty(context.user)) {
 			await AsyncStorage.removeItem('@userToken');
 			await AsyncStorage.removeItem('@pathUrl');
@@ -118,8 +126,9 @@ export class DrawerContent extends Component {
 
 		this.interval = setInterval(() => {
 			this.loadILSMessages();
+			this.loadProfile();
 			//this.loadLanguages();
-		}, 1000)
+		}, 300000)
 
 		return () => clearInterval(this.interval);
 
@@ -133,6 +142,12 @@ export class DrawerContent extends Component {
 		this.props.navigation.navigate(stack, {screen: screen, params: {libraryUrl: libraryUrl}});
 	};
 
+	loadProfile = async () => {
+		await getProfile().then(response => {
+			this.context.user = response;
+		})
+	}
+
 	displayILSMessages = (messages) => {
 		return (
 			messages.map((item) => {
@@ -141,9 +156,14 @@ export class DrawerContent extends Component {
 		)
 	}
 
-	handleRefreshProfile = async () => {
-		await getProfile(true).then(response => {
+	handleRefreshProfile = async (libraryUrl) => {
+		await reloadProfile(libraryUrl).then(response => {
 			this.context.user = response;
+		});
+		await getILSMessages(libraryUrl).then(response => {
+			this.setState({
+				messages: response,
+			})
 		})
 	}
 
@@ -170,7 +190,7 @@ export class DrawerContent extends Component {
 
 		return (
 			<DrawerContentScrollView>
-				<VStack space="4" my="2" mx="1" divider={<Divider/>}>
+				<VStack space="4" my="2" mx="1">
 					<Box px="4">
 						<HStack space={3} alignItems="center">
 							<Image
@@ -184,7 +204,7 @@ export class DrawerContent extends Component {
 							<Box>
 								{user ? (<Text bold fontSize="14">{user.displayName}</Text>) : null}
 
-								{library ? (<Text fontSize="12" fontWeight="500">{location.displayName}</Text>) : null}
+								{library ? (<Text fontSize="12" fontWeight="500">{library.displayName}</Text>) : null}
 								<HStack space={1} alignItems="center">
 									<Icon as={MaterialIcons} name="credit-card" size="xs"/>
 									{user ? (<Text fontSize="12" fontWeight="500">{user.cat_username}</Text>) : null}
@@ -194,6 +214,8 @@ export class DrawerContent extends Component {
 					</Box>
 
 					{messages ? this.displayILSMessages(messages) : null}
+
+					<Divider />
 
 					<VStack divider={<Divider/>} space="4">
 						<VStack>
@@ -234,7 +256,7 @@ export class DrawerContent extends Component {
 								) : null}
 							</Pressable>
 
-					<Pressable px="2" py="3" rounded="md" onPress={() => {
+							<Pressable px="2" py="3" rounded="md" onPress={() => {
 								this.handleNavigation('AccountScreenTab', 'Lists', library.baseUrl)
 							}}>
 								<HStack space="1" alignItems="center">
@@ -287,7 +309,7 @@ export class DrawerContent extends Component {
 							<LogOutButton/>
 						</HStack>
 						<UseColorMode/>
-						<Button size="xs" colorScheme="tertiary" onPress={() => this.handleRefreshProfile(library.libraryUrl)} variant="ghost" leftIcon={<Icon as={MaterialIcons} name="refresh" size="xs" />}>Refresh Account</Button>
+						<Button size="xs" colorScheme="tertiary" onPress={() => this.handleRefreshProfile(library.baseUrl)} variant="ghost" leftIcon={<Icon as={MaterialIcons} name="refresh" size="xs" />}>Refresh Account</Button>
 					</VStack>
 				</VStack>
 			</DrawerContentScrollView>

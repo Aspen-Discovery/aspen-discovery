@@ -11,9 +11,10 @@ import Constants from "expo-constants";
 import {create} from 'apisauce';
 import * as Sentry from 'sentry-expo';
 
-import LoadingScreen from "./splash";
+import Splash from "./splash";
 import Login from "../screens/Auth/Login";
 
+import LoadingScreen from "../screens/Auth/Loading";
 import AccountDrawer from "../navigations/drawer/DrawerNavigator";
 import {translate} from "../translations/translations";
 import {createAuthTokens, getHeaders, postData} from "../util/apiAuth";
@@ -39,14 +40,6 @@ Sentry.init({
 	environment: Updates.releaseChannel,
 	release: Constants.manifest.version,
 	dist: GLOBALS.appPatch,
-
-	integrations: [
-		new Sentry.Native.ReactNativeTracing({
-			// Pass instrumentation to be used as `routingInstrumentation`
-			routingInstrumentation,
-			// ...
-		}),
-	],
 });
 
 
@@ -103,12 +96,6 @@ export default function App() {
 				if (update.isAvailable) {
 					try {
 						await Updates.fetchUpdateAsync().then(async r => {
-							await SecureStore.deleteItemAsync("userToken");
-							await AsyncStorage.removeItem('@userToken');
-							await AsyncStorage.removeItem('@patronProfile');
-							await AsyncStorage.removeItem('@libraryInfo');
-							await AsyncStorage.removeItem('@locationInfo');
-							await AsyncStorage.removeItem('@pathUrl');
 							await Updates.reloadAsync();
 						});
 					} catch (e) {
@@ -221,9 +208,12 @@ export default function App() {
 									// save variables in the Secure Store to access later on
 									await SecureStore.setItemAsync("patronName", patronName);
 									await SecureStore.setItemAsync("library", patronsLibrary['libraryId']);
+									await AsyncStorage.setItem("@libraryId", patronsLibrary['libraryId']);
 									await SecureStore.setItemAsync("libraryName", patronsLibrary['name']);
 									await SecureStore.setItemAsync("locationId", patronsLibrary['locationId']);
+									await AsyncStorage.setItem("@locationId", patronsLibrary['locationId']);
 									await SecureStore.setItemAsync("solrScope", patronsLibrary['solrScope']);
+									await AsyncStorage.setItem("@solrScope", patronsLibrary['solrScope']);
 									await SecureStore.setItemAsync("pathUrl", data.libraryUrl);
 									await SecureStore.setItemAsync("logo", patronsLibrary['logo']);
 									await SecureStore.setItemAsync("favicon", patronsLibrary['favicon']);
@@ -273,23 +263,11 @@ export default function App() {
 		<AuthContext.Provider value={authContext}>
 			<NavigationContainer theme={navigationTheme}
 			                     ref={navigationRef}
-			                     onReady={() => {
-				                     // Register the navigation container with the instrumentation
-				                     routingInstrumentation.registerNavigationContainer(navigation);
-			                     }}
 			>
 				<Stack.Navigator
 					screenOptions={{ headerShown: false }}
 				>
-					{state.isLoading ? (
-						<Stack.Screen
-							name="Splash"
-							component={LoadingScreen}
-							options={{
-								headerShown: false,
-							}}
-						/>
-					) : state.userToken == null ? (
+					{state.userToken == null ? (
 						// No token found, user isn't signed in
 						<Stack.Screen
 							name="Login"

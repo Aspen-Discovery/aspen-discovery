@@ -13,18 +13,8 @@ export default class Search extends Component {
 		super();
 		this.state = {
 			isLoading: true,
-			library: [],
 			searchTerm: "",
 		};
-	}
-
-	loadLibrary = async () => {
-		const tmp = await AsyncStorage.getItem('@libraryInfo');
-		const profile = JSON.parse(tmp);
-		this.setState({
-			library: profile,
-			isLoading: false,
-		})
 	}
 
 	componentDidMount = async () => {
@@ -32,7 +22,6 @@ export default class Search extends Component {
 			isLoading: false,
 		});
 
-		await this.loadLibrary();
 	};
 
 	initiateSearch = async () => {

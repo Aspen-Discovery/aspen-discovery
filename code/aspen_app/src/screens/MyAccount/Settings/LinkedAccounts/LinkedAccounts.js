@@ -121,7 +121,7 @@ export default class LinkedAccounts extends Component {
 		}
 
 		return (
-			<ScrollView style={{ marginBottom: 80 }}>
+			<ScrollView>
 			<Box flex={1} safeArea={5}>
 				<DisplayMessage type="info" message="Linked accounts allow you to easily maintain multiple accounts for the library so you can see all of your information in one place. Information from linked accounts will appear when you view your checkouts, holds, etc. in the main account." />
 				<Heading fontSize="lg" pb={2}>Additional accounts to manage</Heading>

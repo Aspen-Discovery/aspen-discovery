@@ -22,12 +22,10 @@ export const AddToListFromItem = (props) => {
 		<Center>
 			<Button onPress={
 				async () => {
-					await getLists(libraryUrl);
-					await AsyncStorage.getItem('@patronLists').then(response => {
-						const items = JSON.parse(response);
-						setLists(items);
+					await getLists(libraryUrl).then(response => {
+						setLists(response);
 						setShowUseExistingModal(true);
-					})
+					});
 				}
 			} colorScheme="tertiary" leftIcon={<Icon as={MaterialIcons} name="bookmark" size="xs" mr="-1"/>}>
 				Add to list</Button>

@@ -1,14 +1,17 @@
 import React, {useState} from "react";
-import {Button, FormControl, Modal, Radio} from "native-base";
+import {Button, FormControl, Modal, Select, CheckIcon} from "native-base";
 import {translate} from "../../translations/translations";
 import {completeAction} from "./Record";
 
 const SelectPickupLocation = (props) => {
 
-	const {locations, label, action, record, patron, showAlert, libraryUrl} = props;
+	const {locations, label, action, record, patron, showAlert, libraryUrl, linkedAccounts, linkedAccountsCount, user} = props;
 	const [loading, setLoading] = React.useState(false);
 	const [showModal, setShowModal] = useState(false);
-	let [value, setValue] = React.useState("");
+	let [location, setLocation] = React.useState("");
+	let [activeAccount, setActiveAccount] = React.useState(user.id);
+
+	const availableAccounts = Object.values(linkedAccounts);
 
 	return (
 		<>
@@ -18,20 +21,48 @@ const SelectPickupLocation = (props) => {
 					<Modal.CloseButton/>
 					<Modal.Header>{label}</Modal.Header>
 					<Modal.Body>
+						{linkedAccountsCount > 0 ? (
+							<FormControl>
+								<FormControl.Label>Place hold for account</FormControl.Label>
+								<Select
+									name="linkedAccount"
+									selectedValue={activeAccount}
+									minWidth="200"
+									accessibilityLabel="Select an account to place hold for"
+									_selectedItem={{
+										bg: "tertiary.300",
+										endIcon: <CheckIcon size="5" />
+									}}
+									mt={1}
+									mb={3}
+									onValueChange={itemValue => setActiveAccount(itemValue)}
+								>
+									<Select.Item label={user.displayName} value={patron}/>
+									{availableAccounts.map((item, index) => {
+										return <Select.Item label={item.displayName} value={item.id}/>;
+									})}
+								</Select>
+							</FormControl>
+						) : null}
 						<FormControl>
 							<FormControl.Label>{translate('pickup_locations.text')}</FormControl.Label>
-							<Radio.Group
+							<Select
 								name="pickupLocations"
-								value={value}
-								onChange={(nextValue) => {
-									setValue(nextValue);
+								selectedValue={location}
+								minWidth="200"
+								accessibilityLabel="Select a Pickup Location"
+								_selectedItem={{
+									bg: "tertiary.300",
+									endIcon: <CheckIcon size="5"/>
 								}}
-								mt="1"
+								mt={1}
+								mb={2}
+								onValueChange={itemValue => setLocation(itemValue)}
 							>
 								{locations.map((item, index) => {
-									return <Radio value={item.code} my={1}>{item.name}</Radio>;
+									return <Select.Item label={item.name} value={item.code}/>;
 								})}
-							</Radio.Group>
+							</Select>
 						</FormControl>
 					</Modal.Body>
 					<Modal.Footer>
@@ -43,7 +74,7 @@ const SelectPickupLocation = (props) => {
 								isLoadingText="Placing hold..."
 								onPress={async () => {
 									setLoading(true);
-									await completeAction(record, action, patron, "", "", value, libraryUrl).then(response => {
+									await completeAction(record, action, activeAccount, "", "", location, libraryUrl).then(response => {
 										setLoading(false);
 										setShowModal(false);
 										showAlert(response);

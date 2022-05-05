@@ -90,7 +90,10 @@ export default class Holds extends Component {
 		const { route } = this.props;
 		const libraryUrl = route.params?.libraryUrl ?? 'null';
 
-		await getHolds(libraryUrl).then(r => this.loadHolds());
+		await getHolds(libraryUrl).then(r => {
+			console.log(r);
+			this.loadHolds()
+		});
 	}
 
 	loadPickupLocations = async () => {
@@ -124,7 +127,7 @@ export default class Holds extends Component {
 		await this.loadPickupLocations();
 
 		this.interval = setInterval(() => {
-			this._fetchHolds();
+			this.loadHolds();
 		}, 1000)
 
 		return () => clearInterval(this.interval)
@@ -186,7 +189,7 @@ export default class Holds extends Component {
 		}
 
 		return (
-			<ScrollView style={{ marginBottom: 80 }}>
+			<ScrollView>
 			<Box>
 				<FlatList
 					data={holds}
@@ -358,7 +361,7 @@ function HoldItem(props) {
 							startIcon={<Icon as={MaterialIcons} name="cancel" color="trueGray.400" mr="1" size="6"/>}
 							onPress={() => {
 								setLoading(true);
-								cancelHold(data.cancelId, data.recordId, data.source, libraryUrl).then(r => {
+								cancelHold(data.cancelId, data.recordId, data.source, libraryUrl, data.userId).then(r => {
 									onClose(onClose);
 									setLoading(false);
 								});
@@ -377,14 +380,14 @@ function HoldItem(props) {
 								if (data.frozen === true) {
 									setThaw(true);
 									setLoadingText("Thawing...");
-									thawHold(data.cancelId, data.recordId, data.source, libraryUrl).then(r => {
+									thawHold(data.cancelId, data.recordId, data.source, libraryUrl, data.userId).then(r => {
 										onClose(onClose);
 										setThaw(false);
 									});
 								} else {
 									setFreeze(true);
 									setLoadingText("Freezing...");
-									freezeHold(data.cancelId, data.recordId, data.source, libraryUrl).then(r => {
+									freezeHold(data.cancelId, data.recordId, data.source, libraryUrl, data.userId).then(r => {
 										onClose(onClose);
 										setFreeze(false);
 									});

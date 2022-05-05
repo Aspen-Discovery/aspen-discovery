@@ -32,55 +32,13 @@ export default class LibraryCard extends Component {
 				name: "",
 			},
 		};
-		this.loadUser();
-		this.loadLocation();
-		this.loadLibrary();
 	}
-
-	loadUser = async () => {
-		const tmp = await AsyncStorage.getItem('@patronProfile');
-		const profile = JSON.parse(tmp);
-		this.setState({
-			user: profile,
-			isLoading: false,
-		})
-	}
-
-	loadLocation = async () => {
-		const tmp = await AsyncStorage.getItem('@patronLibrary');
-		const profile = JSON.parse(tmp);
-		this.setState({
-			location: profile,
-			isLoading: false,
-		})
-	}
-
-	loadLibrary = async () => {
-		const tmp = await AsyncStorage.getItem('@libraryInfo');
-		const profile = JSON.parse(tmp);
-		console.log(profile);
-		if(typeof profile.barcodeStyle !== null){
-			this.setState({
-				library: profile,
-				isLoading: false,
-			})
-		} else {
-			this.setState({
-				isLoading: false,
-			})
-		}
-	}
-
 
 	// store the values into the state
 	componentDidMount = async () => {
 		this.setState({
 			isLoading: false,
 		});
-
-		await this.loadUser();
-		await this.loadLocation();
-		await this.loadLibrary();
 	};
 
 
@@ -97,9 +55,9 @@ export default class LibraryCard extends Component {
 		const location = this.context.location;
 		const library = this.context.library;
 
-		const barcodeStyle = library.barcodeStyle;
+		let barcodeStyle = _.toString(library.barcodeStyle);
 
-		console.log(barcodeStyle);
+		console.log(library);
 
 		let doesNotExpire = false;
 		if(user.expired && user.expired === 0) {
@@ -130,7 +88,7 @@ export default class LibraryCard extends Component {
 			return (loadError(this.state.error));
 		}
 
-		if(_.isNull(barcodeStyle)) {
+		if(_.isNull(barcodeStyle) || this.state.barcodeStyleInvalid) {
 			return (
 				<Center flex={1} px={3}>
 					<Flex direction="column" bg="white" maxW="90%" px={8} py={5} borderRadius={20}>
@@ -141,7 +99,7 @@ export default class LibraryCard extends Component {
 									fallbackSource={require("../../../themes/default/aspenLogo.png")}
 									w={42} h={42} alt={translate('user_profile.library_card')}/>
 								<Text bold ml={3} mt={2} fontSize="lg" color="darkText">
-									{location.displayName}
+									{library.displayName}
 								</Text>
 							</Flex>
 						</Center>
@@ -165,13 +123,13 @@ export default class LibraryCard extends Component {
 								fallbackSource={require("../../../themes/default/aspenLogo.png")}
 								w={42} h={42} alt={translate('user_profile.library_card')}/>
 							<Text bold ml={3} mt={2} fontSize="lg" color="darkText">
-								{location.displayName}
+								{library.displayName}
 							</Text>
 						</Flex>
 					</Center>
 					<Center pt={8}>
 						<Barcode value={barcodeValue} format={barcodeStyle}
-						         text={barcodeValue} background="warmGray.100" />
+						         text={barcodeValue} background="warmGray.100" onError={() => this.invalidFormat()}/>
 						{user.expires && !doesNotExpire ? (<Text color="darkText" fontSize={10} pt={2}>Expires on {user.expires}</Text>) : null}
 					</Center>
 				</Flex>
