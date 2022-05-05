@@ -1281,7 +1281,7 @@ public class EvergreenExportMain {
 								Element curElement = (Element)curChild;
 								switch (curElement.getTagName()) {
 									case "leader":
-										String leader = curElement.getTextContent().trim();
+										String leader = curElement.getTextContent();
 										marcRecord.setLeader(marcFactory.newLeader(leader));
 										break;
 									case "controlfield": {
@@ -1424,7 +1424,7 @@ public class EvergreenExportMain {
 						response.numChanges++;
 					}
 				} catch (Exception e) {
-					logEntry.incErrors("Unable to parse document for paged bibs response", e);
+					logEntry.incErrors("Unable to parse document for get bibs response " + getBibsRequestUrl, e);
 					response.doneLoading = true;
 				}
 			} else {
