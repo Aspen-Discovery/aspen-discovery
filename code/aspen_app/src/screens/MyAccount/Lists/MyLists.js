@@ -20,36 +20,28 @@ export default class MyLists extends Component {
 			lists: []
 		};
 		this._fetchLists();
-		this.loadLists();
-	}
-
-	loadLists = async () => {
-		const tmp = await AsyncStorage.getItem('@patronLists');
-		const items = JSON.parse(tmp);
-		this.setState({
-			lists: items,
-			isLoading: false,
-		})
 	}
 
 	_fetchLists = async () => {
-		this.setState({
-			isLoading: true,
-		});
-
 		const { route } = this.props;
 		const libraryUrl = route.params?.libraryUrl ?? 'null';
 
-		await getLists(libraryUrl).then(r => this.loadLists())
+		await getLists(libraryUrl).then(response =>
+			this.setState({
+				lists: response
+			})
+		);
 	}
 
 	componentDidMount = async () => {
-
-		await this._fetchLists();
-		await this.loadLists();
+		await this._fetchLists().then(r => {
+			this.setState({
+				isLoading: false
+			})
+		});
 
 		this.interval = setInterval(() => {
-			this.loadLists();
+			this._fetchLists();
 		}, 1000)
 		return () => clearInterval(this.interval)
 
@@ -64,7 +56,7 @@ export default class MyLists extends Component {
 		let lastUpdated = moment.unix(item.dateUpdated);
 		lastUpdated = moment(lastUpdated).format("MMM D, YYYY");
 		let privacy = "Private";
-		if(item.public === true) {
+		if(item.public === 1) {
 			privacy = "Public";
 		}
 		if(item.id !== "recommendations") {
@@ -117,7 +109,7 @@ export default class MyLists extends Component {
 		}
 
 		return (
-			<ScrollView style={{ marginBottom: 80 }}>
+			<ScrollView>
 			<Box safeArea={2} h="100%">
 				<CreateList libraryUrl={library.baseUrl} />
 				<FlatList

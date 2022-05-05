@@ -8,6 +8,7 @@ import {getPatronBrowseCategories} from "../../../util/loadPatron";
 import {dismissBrowseCategory, showBrowseCategory} from "../../../util/accountActions";
 import {userContext} from "../../../context/user";
 import {loadingSpinner} from "../../../components/loadingSpinner";
+import {getBrowseCategories} from "../../../util/loadLibrary";
 
 export default class Settings_HomeScreen extends Component {
 	constructor(props) {
@@ -63,9 +64,17 @@ export default class Settings_HomeScreen extends Component {
 	// Update the status of the browse category when the toggle switch is flipped
 	updateToggle = async (item, user, libraryUrl) => {
 		if (item.isHidden === true) {
-			await showBrowseCategory(libraryUrl, item.key, user);
+			await showBrowseCategory(libraryUrl, item.key, user).then(async res => {
+				await getBrowseCategories(libraryUrl).then(response => {
+					this.context.browseCategories = response;
+				})
+			});
 		} else {
-			await dismissBrowseCategory(libraryUrl, item.key, user);
+			await dismissBrowseCategory(libraryUrl, item.key, user).then(async res => {
+				await getBrowseCategories(libraryUrl).then(response => {
+					this.context.browseCategories = response;
+				})
+			});
 		}
 	};
 
@@ -89,6 +98,7 @@ export default class Settings_HomeScreen extends Component {
 		const user = this.context.user;
 		const location = this.context.location;
 		const library = this.context.library;
+		const browseCategories = this.context.browseCategories;
 
 		if (this.state.isLoading === true) {
 			return (loadingSpinner());
@@ -103,7 +113,7 @@ export default class Settings_HomeScreen extends Component {
 		}
 
 		return (
-			<ScrollView style={{ marginBottom: 80 }}>
+			<ScrollView>
 			<Box>
 				<FlatList
 					data={patronCategories}

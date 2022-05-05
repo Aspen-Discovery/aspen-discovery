@@ -22,13 +22,12 @@ const AddToList = (props) => {
 		<Center>
 			<IconButton onPress={
 				async () => {
-					await AsyncStorage.getItem('@patronLists').then(response => {
-						const items = JSON.parse(response);
-						setLists(items);
+					await getLists(libraryUrl).then(response => {
+						setLists(response);
 						setShowUseExistingModal(true);
-					})
+					});
 				}
-			} icon={<Icon as={MaterialIcons} name="bookmark"/>} _icon={{size: "xs", color: "gray.600"}} style={{ justifyContent: "flex-end", textAlign: "right", alignSelf: "top" }}/>
+			} icon={<Icon as={MaterialIcons} name="bookmark"/>} _icon={{size: "xs", color: "gray.600"}} style={{ justifyContent: "flex-end", textAlign: "right" }}/>
 			<Modal isOpen={showUseExistingModal} onClose={() => setShowUseExistingModal(false)} size="full">
 				<Modal.Content maxWidth="90%" bg="white" _dark={{bg: "coolGray.800"}}>
 					<Modal.CloseButton />

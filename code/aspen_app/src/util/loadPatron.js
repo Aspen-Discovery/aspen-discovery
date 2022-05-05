@@ -36,7 +36,6 @@ export async function getProfile(reload = false, url = "") {
 		//console.log(response);
 		if(response.ok) {
 			if(response.data.result && response.data.result.profile) {
-				await getILSMessages(libraryUrl);
 				return response.data.result.profile;
 			}
 		} else {
@@ -46,8 +45,6 @@ export async function getProfile(reload = false, url = "") {
 }
 
 export async function reloadProfile(libraryUrl) {
-	const {user, setUser} = React.useContext(userContext);
-
 	let postBody = await postData();
 
 	const api = create({
@@ -60,13 +57,11 @@ export async function reloadProfile(libraryUrl) {
 	console.log(response);
 	if(response.ok) {
 		if(response.data.result && response.data.result.profile) {
-			const newUserData = {
-				...user,
-				user: response.data.result.profile
-			}
-			setUser(newUserData);
+			const profile = response.data.result.profile;
 			console.log("User profile forcefully updated");
-			await getILSMessages(libraryUrl);
+			await reloadCheckedOutItems(libraryUrl);
+			await reloadHolds(libraryUrl);
+			return profile;
 		}
 	} else {
 		//console.log(response);
@@ -101,6 +96,7 @@ export async function getILSMessages(libraryUrl) {
 				console.log(e);
 			}
 		}
+		return messages;
 		//console.log("User ILS messages saved");
 	} else {
 		//console.log(response);
@@ -108,6 +104,29 @@ export async function getILSMessages(libraryUrl) {
 }
 
 export async function getCheckedOutItems(libraryUrl) {
+	const postBody = await postData();
+	const api = create({
+		baseURL: libraryUrl + '/API',
+		timeout: GLOBALS.timeoutSlow,
+		headers: getHeaders(true),
+		params: {source: 'all', linkedUsers: 'true'},
+		auth: createAuthTokens()
+	});
+
+	const response = await api.post('/UserAPI?method=getPatronCheckedOutItems', postBody);
+	if (response.ok) {
+		let items = response.data.result.checkedOutItems;
+		items = _.sortBy(items, ['daysUntilDue', 'title'])
+		await AsyncStorage.setItem('@patronCheckouts', JSON.stringify(items));
+		return items;
+		//console.log("User checkouts saved");
+	} else {
+		console.log(response);
+	}
+
+}
+
+export async function reloadCheckedOutItems(libraryUrl) {
 	const postBody = await postData();
 	const api = create({
 		baseURL: libraryUrl + '/API',
@@ -127,10 +146,53 @@ export async function getCheckedOutItems(libraryUrl) {
 	} else {
 		console.log(response);
 	}
-
 }
 
 export async function getHolds(libraryUrl) {
+	let response;
+	const postBody = await postData();
+	const api = create({
+		baseURL: libraryUrl + '/API',
+		timeout: GLOBALS.timeoutSlow,
+		headers: getHeaders(true),
+		params: {source: 'all', linkedUsers: 'true'},
+		auth: createAuthTokens()
+	});
+	response = await api.post('/UserAPI?method=getPatronHolds', postBody);
+	if (response.ok) {
+		//console.log(response.data);
+		const items = response.data.result.holds;
+		let holds;
+		let holdsReady = [];
+		let holdsNotReady = [];
+
+		if(typeof items !== "undefined") {
+			if(typeof items.unavailable !== 'undefined') {
+				holdsNotReady = Object.values(items.unavailable)
+			}
+
+			if(typeof items.available !== 'undefined') {
+				holdsReady = Object.values(items.available)
+			}
+		}
+
+		holds = holdsReady.concat(holdsNotReady);
+		//console.log(holds);
+
+		await AsyncStorage.setItem('@patronHolds', JSON.stringify(holds));
+		await AsyncStorage.setItem('@patronHoldsNotReady', JSON.stringify(holdsNotReady));
+		await AsyncStorage.setItem('@patronHoldsReady', JSON.stringify(holdsReady));
+		return {
+			"holds": holds,
+			"holdsReady": holdsReady,
+			"holdsNotReady": holdsNotReady
+		};
+	} else {
+		console.log(response);
+	}
+}
+
+export async function reloadHolds(libraryUrl) {
 	let response;
 	const postBody = await postData();
 	const api = create({
@@ -142,17 +204,20 @@ export async function getHolds(libraryUrl) {
 	});
 	response = await api.post('/UserAPI?method=getPatronHolds', postBody);
 	if (response.ok) {
+		//console.log(response.data);
 		const items = response.data.result.holds;
 		let holds;
 		let holdsReady = [];
 		let holdsNotReady = [];
 
-		if(typeof items.unavailable !== 'undefined') {
-			holdsNotReady = Object.values(items.unavailable)
-		}
+		if(typeof items !== "undefined") {
+			if(typeof items.unavailable !== 'undefined') {
+				holdsNotReady = Object.values(items.unavailable)
+			}
 
-		if(typeof items.available !== 'undefined') {
-			holdsReady = Object.values(items.available)
+			if(typeof items.available !== 'undefined') {
+				holdsReady = Object.values(items.available)
+			}
 		}
 
 		holds = holdsReady.concat(holdsNotReady);
@@ -161,12 +226,15 @@ export async function getHolds(libraryUrl) {
 		await AsyncStorage.setItem('@patronHolds', JSON.stringify(holds));
 		await AsyncStorage.setItem('@patronHoldsNotReady', JSON.stringify(holdsNotReady));
 		await AsyncStorage.setItem('@patronHoldsReady', JSON.stringify(holdsReady));
-		return holds;
+		return {
+			"holds": holds,
+			"holdsReady": holdsReady,
+			"holdsNotReady": holdsNotReady
+		};
 	} else {
 		console.log(response);
 	}
 }
-
 export async function getPatronBrowseCategories(libraryUrl, patronId = null) {
 
 	if(!patronId) {
@@ -184,7 +252,6 @@ export async function getPatronBrowseCategories(libraryUrl, patronId = null) {
 			baseURL: libraryUrl + '/API',
 			timeout: GLOBALS.timeoutAverage,
 			headers: getHeaders(true),
-			params: {patronId: patronId},
 			auth: createAuthTokens()
 		});
 		const responseHiddenCategories = await api.post('/UserAPI?method=getHiddenBrowseCategories', postBody);
@@ -218,6 +285,17 @@ export async function getPatronBrowseCategories(libraryUrl, patronId = null) {
 					}))
 				} else {
 					activeCategories.push({'key': category.key, 'title': category.title});
+					if (typeof subCategories != "undefined") {
+						if (subCategories.length !== 0) {
+							subCategories.forEach(item => activeCategories.push({
+								'key': item.key,
+								'title': item.title
+							}))
+						} else {
+							activeCategories.push({'key': category.key, 'title': category.title});
+						}
+
+					}
 				}
 			});
 
@@ -228,7 +306,7 @@ export async function getPatronBrowseCategories(libraryUrl, patronId = null) {
 		}
 
 		browseCategories = _.uniqBy(browseCategories, 'key');
-		//browseCategories = _.sortBy(browseCategories, 'title');
+		browseCategories = _.sortBy(browseCategories, 'title');
 		await AsyncStorage.setItem('@patronBrowseCategories', JSON.stringify(browseCategories));
 		return browseCategories;
 	}
@@ -240,7 +318,6 @@ export async function getHiddenBrowseCategories(libraryUrl, patronId) {
 		baseURL: libraryUrl + '/API',
 		timeout: GLOBALS.timeoutAverage,
 		headers: getHeaders(true),
-		params: {patronId: patronId},
 		auth: createAuthTokens()
 	});
 	const response = await api.post('/UserAPI?method=getHiddenBrowseCategories', postBody);
@@ -279,6 +356,7 @@ export async function getLinkedAccounts(libraryUrl) {
 		} catch (e) {
 			console.log(e);
 		}
+		return accounts;
 		//console.log("Linked accounts saved")
 	} else {
 		console.log(response);
@@ -320,13 +398,8 @@ export async function getLists(libraryUrl) {
 		let lists = [];
 		if(response.data.result.success) {
 			lists = response.data.result.lists;
-			try {
-				await AsyncStorage.setItem('@patronLists', JSON.stringify(lists));
-			} catch (e) {
-				console.log(e);
-			}
-			return lists;
 		}
+		return lists;
 	} else {
 		console.log(response);
 	}
@@ -474,9 +547,9 @@ export async function deleteList(listId, libraryUrl) {
 		params: {id: listId}
 	});
 	const response = await api.post('/ListAPI?method=deleteList', postBody);
+	console.log(response);
 	if(response.ok) {
-		console.log(response.data);
-		await getLists(libraryUrl);
+
 		return response.data.result;
 	} else {
 		console.log(response);

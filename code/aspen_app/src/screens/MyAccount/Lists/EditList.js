@@ -2,9 +2,11 @@ import React, {useState} from "react";
 import {Button, Center, Modal, Stack, Text, Icon, FormControl, Input, TextArea, Heading, Radio, AlertDialog } from "native-base";
 import {MaterialIcons} from "@expo/vector-icons";
 import {clearListTitles, deleteList, editList} from "../../../util/loadPatron";
+import {popAlert} from "../../../components/loadError";
 
 const EditList = (props) => {
 	const { data, listId, navigation, libraryUrl } = props;
+	console.log(listId);
 	const [showModal, setShowModal] = useState(false);
 	const [loading, setLoading] = useState(false);
 	const [title, setTitle] = useState(null);
@@ -112,8 +114,21 @@ const DeleteList = (props) => {
 								onPress={
 									() => {
 										setLoading(true);
-										deleteList(listId, libraryUrl).then(r => setLoading(false));
-										navigation.navigate("AccountScreenTab", {screen: "Lists"})
+										deleteList(listId, libraryUrl).then(res => {
+											setLoading(false)
+											let status = "success"
+											if(res.success === false) {
+												status = "danger";
+												setIsOpen(!isOpen);
+												popAlert("Unable to delete list", res.message, status);
+											} else {
+												popAlert("List deleted", res.message, status);
+												navigation.navigate("AccountScreenTab", {
+													screen: "Lists",
+													params: {libraryUrl: libraryUrl}
+												})
+											}
+										});
 									}
 								}
 							>

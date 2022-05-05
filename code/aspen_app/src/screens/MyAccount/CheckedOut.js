@@ -195,7 +195,7 @@ export default class CheckedOut extends Component {
 		}
 
 		return (
-			<ScrollView style={{ marginBottom: 80 }}>
+			<ScrollView>
 			<Box>
 				{user.numCheckedOut && user.numCheckedOut > 0 ?
 					<Center pt={3} pb={3}>
@@ -244,6 +244,8 @@ function CheckedOutItem(props) {
 	var itemDueOn = moment(dueDate).format("MMM D, YYYY");
 
 	var label = translate('checkouts.access_online', {source: data.checkoutSource});
+
+	console.log(data);
 
 	if (data.checkoutSource === "OverDrive") {
 
@@ -364,6 +366,22 @@ function CheckedOutItem(props) {
 							}}>
 							{translate('checkouts.renew')}
 						</Actionsheet.Item>
+						: null
+					}
+
+					{data.autoRenewError ? (
+							<Actionsheet.Item>
+								{data.autoRenewError}
+							</Actionsheet.Item>
+						)
+						: null
+					}
+
+					{data.renewError ? (
+							<Actionsheet.Item>
+								{data.renewError}
+							</Actionsheet.Item>
+						)
 						: null
 					}
 

@@ -90,6 +90,8 @@ export default class More extends Component {
 		const location = this.context.location;
 		const library = this.context.library;
 
+		console.log(library);
+
 		return (
 			<Box>
 				<FlatList
@@ -100,7 +102,7 @@ export default class More extends Component {
 
 				<Center mt={5}>
 					<Text mt={10} fontSize="xs" bold>Aspen LiDA <Text color="coolGray.600" _dark={{ color: "warmGray.400" }}>{GLOBALS.appVersion} b[{GLOBALS.appBuild}] p[{GLOBALS.appPatch}]</Text></Text>
-					{global.aspen ? (<Text fontSize="xs" bold>Aspen Discovery <Text color="coolGray.600" _dark={{ color: "warmGray.400" }}>{global.aspen}</Text></Text>) : null}
+					{library.discoveryVersion ? (<Text fontSize="xs" bold>Aspen Discovery <Text color="coolGray.600" _dark={{ color: "warmGray.400" }}>{library.discoveryVersion}</Text></Text>) : null}
 				</Center>
 			</Box>
 		);

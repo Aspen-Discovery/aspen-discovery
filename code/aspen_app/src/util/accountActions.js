@@ -10,9 +10,17 @@ import * as Sentry from 'sentry-expo';
 import {createAuthTokens, getHeaders, postData, problemCodeMap} from "./apiAuth";
 import {translate} from "../translations/translations";
 import {popAlert, popToast} from "../components/loadError";
-import {getCheckedOutItems, getHolds, getLinkedAccounts, getPatronBrowseCategories} from './loadPatron';
+import {
+	getCheckedOutItems,
+	getHolds,
+	getLinkedAccounts,
+	getPatronBrowseCategories,
+	reloadCheckedOutItems,
+	reloadHolds
+} from './loadPatron';
 import {getActiveBrowseCategories, getBrowseCategories} from "./loadLibrary";
 import {GLOBALS} from "./globals";
+import {userContext} from "../context/user";
 
 
 export async function isLoggedIn(pathUrl) {
@@ -61,15 +69,14 @@ export async function renewCheckout(barcode, recordId, source, itemId, libraryUr
 		if (source === "ils") {
 			if (result.success === true) {
 				popAlert(result.title, result.message, "success");
-				const forceReload = true;
-				await getCheckedOutItems(forceReload);
+				await reloadCheckedOutItems(libraryUrl);
 			} else {
 				popAlert(result.title, result.message, "error");
 			}
 		} else {
 			if (result.success === true) {
 				popAlert(result.title, result.message, "success");
-				await getCheckedOutItems();
+				await reloadCheckedOutItems(libraryUrl);
 			} else {
 				popAlert(result.title, result.message, "error");
 			}
@@ -97,6 +104,7 @@ export async function renewAllCheckouts(libraryUrl) {
 
 		if (result.success === true) {
 			popAlert(result.title, result.renewalMessage[0], "success");
+			await reloadCheckedOutItems(libraryUrl);
 		} else {
 			popAlert(result.title, result.renewalMessage[0], "error");
 		}
@@ -120,7 +128,7 @@ export async function returnCheckout(userId, id, source, overDriveId, libraryUrl
 		timeout: GLOBALS.timeoutFast,
 		headers: getHeaders(),
 		auth: createAuthTokens(),
-		params: {id: itemId, patronId: userId, itemSource: source}
+		params: {id: itemId, userId: userId, itemSource: source}
 	});
 	const response = await api.post('/UserAPI?method=returnCheckout', postBody);
 
@@ -130,7 +138,7 @@ export async function returnCheckout(userId, id, source, overDriveId, libraryUrl
 
 		if (result.success === true) {
 			popAlert(result.title, result.message, "success");
-			await getCheckedOutItems();
+			await reloadCheckedOutItems(libraryUrl);
 		} else {
 			popAlert(result.title, result.message, "error");
 		}
@@ -150,7 +158,7 @@ export async function viewOnlineItem(userId, id, source, accessOnlineUrl, librar
 			timeout: GLOBALS.timeoutFast,
 			headers: getHeaders(),
 			auth: createAuthTokens(),
-			params: {patronId: userId, itemId: id, itemSource: source}
+			params: {userId: userId, itemId: id, itemSource: source}
 		});
 		const response = await api.post('/UserAPI?method=viewOnlineItem', postBody);
 
@@ -222,7 +230,7 @@ export async function viewOverDriveItem(userId, formatId, overDriveId, libraryUr
 		timeout: GLOBALS.timeoutFast,
 		headers: getHeaders(),
 		auth: createAuthTokens(),
-		params: {patronId: userId, overDriveId: overDriveId, formatId: formatId, itemSource: "overdrive"}
+		params: {userId: userId, overDriveId: overDriveId, formatId: formatId, itemSource: "overdrive"}
 	});
 	const response = await api.post('/UserAPI?method=viewOnlineItem', postBody);
 
@@ -262,7 +270,7 @@ export async function viewOverDriveItem(userId, formatId, overDriveId, libraryUr
 }
 
 /* ACTIONS ON HOLDS */
-export async function freezeHold(cancelId, recordId, source, libraryUrl) {
+export async function freezeHold(cancelId, recordId, source, libraryUrl, patronId) {
 	const postBody = await postData();
 
 	const today = moment();
@@ -278,7 +286,7 @@ export async function freezeHold(cancelId, recordId, source, libraryUrl) {
 			recordId: recordId,
 			itemSource: source,
 			reactivationDate: reactivationDate,
-			patronId: global.patronId
+			userId: patronId
 		}
 	});
 	const response = await api.post('/UserAPI?method=freezeHold', postBody);
@@ -290,7 +298,7 @@ export async function freezeHold(cancelId, recordId, source, libraryUrl) {
 		if (result.success === true) {
 			popAlert("Hold frozen", result.message, "success");
 			// reload patron data in the background
-			await getHolds(true);
+			await reloadHolds(libraryUrl);
 		} else {
 			popAlert("Unable to freeze hold", result.message, "error");
 		}
@@ -300,7 +308,7 @@ export async function freezeHold(cancelId, recordId, source, libraryUrl) {
 	}
 }
 
-export async function thawHold(cancelId, recordId, source, libraryUrl) {
+export async function thawHold(cancelId, recordId, source, libraryUrl, patronId) {
 	const postBody = await postData();
 
 	const api = create({
@@ -313,7 +321,7 @@ export async function thawHold(cancelId, recordId, source, libraryUrl) {
 			holdId: cancelId,
 			recordId: recordId,
 			itemSource: source,
-			patronId: global.patronId
+			userId: patronId
 		}
 	});
 	const response = await api.post('/UserAPI?method=activateHold', postBody);
@@ -325,7 +333,7 @@ export async function thawHold(cancelId, recordId, source, libraryUrl) {
 		if (result.success === true) {
 			popAlert("Hold thawed", result.message, "success");
 			// reload patron data in the background
-			await getHolds(true);
+			await reloadHolds(libraryUrl);
 		} else {
 			popAlert("Unable to thaw hold", result.message, "error");
 		}
@@ -335,7 +343,7 @@ export async function thawHold(cancelId, recordId, source, libraryUrl) {
 	}
 }
 
-export async function cancelHold(cancelId, recordId, source, libraryUrl) {
+export async function cancelHold(cancelId, recordId, source, libraryUrl, patronId) {
 	const postBody = await postData();
 	const api = create({
 		baseURL: libraryUrl + '/API',
@@ -347,7 +355,7 @@ export async function cancelHold(cancelId, recordId, source, libraryUrl) {
 			cancelId: cancelId,
 			recordId: recordId,
 			itemSource: source,
-			patronId: global.patronId
+			userId: patronId
 		}
 	});
 	const response = await api.post('/UserAPI?method=cancelHold', postBody);
@@ -359,7 +367,7 @@ export async function cancelHold(cancelId, recordId, source, libraryUrl) {
 		if (result.success === true) {
 			popAlert(result.title, result.message, "success");
 			// reload patron data in the background
-			await getHolds(true);
+			await reloadHolds(libraryUrl);
 		} else {
 			popAlert(result.title, result.message, "error");
 		}
@@ -388,7 +396,7 @@ export async function changeHoldPickUpLocation(holdId, newLocation, libraryUrl) 
 		if (result.success === true) {
 			popAlert(result.title, result.message, "success");
 			// reload patron data in the background
-			await getHolds(true);
+			await reloadHolds(libraryUrl);
 		} else {
 			popAlert(result.title, result.message, "error");
 		}
@@ -435,17 +443,13 @@ export async function dismissBrowseCategory(libraryUrl, browseCategoryId, patron
 		timeout: GLOBALS.timeoutAverage,
 		headers: getHeaders(true),
 		auth: createAuthTokens(),
-		params: {patronId: patronId, browseCategoryId: browseCategoryId}
+		params: {browseCategoryId: browseCategoryId}
 	});
 	const response = await api.post('/UserAPI?method=dismissBrowseCategory', postBody);
-	console.log(response);
+	//console.log(response);
 	if (response.ok) {
 		const fetchedData = response.data;
 		const result = fetchedData.result;
-		//console.log(response);
-		await getPatronBrowseCategories(libraryUrl, patronId);
-		//await getBrowseCategories(libraryUrl);
-
 		if (result.success === false) {
 			popAlert(result.title, result.message, "error");
 		} else {
@@ -467,7 +471,7 @@ export async function showBrowseCategory(libraryUrl, browseCategoryId, patronId)
 		timeout: GLOBALS.timeoutAverage,
 		headers: getHeaders(true),
 		auth: createAuthTokens(),
-		params: {patronId: patronId, browseCategoryId: browseCategoryId}
+		params: {browseCategoryId: browseCategoryId}
 	});
 	const response = await api.post('/UserAPI?method=showBrowseCategory', postBody);
 

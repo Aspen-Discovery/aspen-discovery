@@ -11,11 +11,12 @@ import {
 import SelectPickupLocation from "./SelectPickupLocation";
 import ShowItemDetails from "./CopyDetails";
 import _ from "lodash";
+import SelectLinkedAccount from "./SelectLinkedAccount";
 
 const DisplayRecord = (props) => {
 
 	const [loading, setLoading] = React.useState(false);
-	const {available, availableOnline, actions, edition, format, publisher, publicationDate, status, copiesMessage, source, id, title, locationCount, locations, showAlert, itemDetails, user, groupedWorkId, library} = props;
+	const {available, availableOnline, actions, edition, format, publisher, publicationDate, status, copiesMessage, source, id, title, locationCount, locations, showAlert, itemDetails, user, groupedWorkId, library, linkedAccounts, openHolds, openCheckouts} = props;
 
 	let actionCount = 1;
 	if(typeof actions !== 'undefined') {
@@ -25,6 +26,11 @@ const DisplayRecord = (props) => {
 	let copyCount = 1;
 	if(typeof itemDetails !== 'undefined') {
 		copyCount = _.size(itemDetails);
+	}
+
+	let linkedAccountsCount = 0;
+	if(typeof linkedAccounts !== 'undefined') {
+		linkedAccountsCount = _.size(linkedAccounts);
 	}
 
 	let statusColor;
@@ -37,6 +43,8 @@ const DisplayRecord = (props) => {
 	}
 
 	let libraryUrl = library.baseUrl;
+
+	console.log(actions);
 
 	return (
 		<Center mt={5} mb={0} bgColor="white" _dark={{ bgColor: "coolGray.900" }} p={3} rounded="8px" width={{base: "100%", lg: "75%"}}>
@@ -76,6 +84,9 @@ const DisplayRecord = (props) => {
 									locations = {locations}
 									showAlert = {showAlert}
 									libraryUrl = {libraryUrl}
+									user = {user}
+									linkedAccounts = {linkedAccounts}
+									linkedAccountsCount = {linkedAccountsCount}
 								/>
 							)
 						} else if (thisAction.title === "Access Online") {
@@ -86,23 +97,27 @@ const DisplayRecord = (props) => {
 									libraryUrl = {libraryUrl}
 								/>
 							)
-						} else if (thisAction.title === "Checked Out to You") {
+						} else if (thisAction.url === "/MyAccount/CheckedOut") {
 							return (
-								<CheckedOutToYou />
+								<CheckedOutToYou title={thisAction.title} openCheckouts={openCheckouts} />
+							)
+						} else if (thisAction.url === "/MyAccount/Holds") {
+							return (
+								<OnHoldForYou title={thisAction.title} openHolds={openHolds} />
 							)
 						} else {
 							return (
-								<Button size={{base: "md", lg: "lg"}} colorScheme="primary" variant="solid"
-								        _text={{padding: 0, textAlign: "center"}}
-								        isLoading={loading}
-								        isLoadingText="Checking out title..."
-								        style={{flex: 1, flexWrap: 'wrap'}} onPress={async () => {
-									setLoading(true);
-									await completeAction(id, thisAction.type, user.id, null, null, null, libraryUrl).then(response => {
-										showAlert(response);
-										setLoading(false);
-									})
-								}}>{thisAction.title}</Button>
+								<CheckOutEContent
+									action = {completeAction}
+									title = {thisAction.title}
+									actionType = {thisAction.type}
+									id = {id}
+									libraryUrl = {libraryUrl}
+									user = {user}
+									showAlert = {showAlert}
+									linkedAccounts = {linkedAccounts}
+									linkedAccountsCount = {linkedAccountsCount}
+								/>
 							);
 						}
 					})}
@@ -110,6 +125,29 @@ const DisplayRecord = (props) => {
 			</HStack>
 		</Center>
 	)
+}
+
+const CheckOutEContent = (props) => {
+	const [loading, setLoading] = React.useState(false);
+	if(props.linkedAccountsCount > 0) {
+		return (
+			<SelectLinkedAccount action={props.actionType} id={props.id} user={props.user} linkedAccounts={props.linkedAccounts} title={props.title} libraryUrl={props.libraryUrl} showAlert={props.showAlert} />
+		)
+	} else {
+		return (
+			<Button size={{base: "md", lg: "lg"}} colorScheme="primary" variant="solid"
+			        _text={{padding: 0, textAlign: "center"}}
+			        isLoading={loading}
+			        isLoadingText="Checking out title..."
+			        style={{flex: 1, flexWrap: 'wrap'}} onPress={async () => {
+				setLoading(true);
+				completeAction(props.id, props.actionType, props.user.id, null, null, null, props.libraryUrl).then(response => {
+					props.showAlert(response);
+					setLoading(false);
+				})
+			}}>{props.title}</Button>
+		)
+	}
 }
 
 const ILS = (props) => {
@@ -126,6 +164,9 @@ const ILS = (props) => {
 				showAlert={props.showAlert}
 				preferredLocation={props.pickupLocation}
 				libraryUrl={props.libraryUrl}
+				linkedAccounts = {props.linkedAccounts}
+				linkedAccountsCount = {props.linkedAccountsCount}
+				user = {props.user}
 			/>
 		)
 	} else {
@@ -200,7 +241,22 @@ const CheckedOutToYou = (props) => {
 		        isLoadingText="Loading..."
 		        style={{flex: 1, flexWrap: 'wrap'}} onPress={() => {
 			setLoading(true);
-			openCheckouts()
+			props.openCheckouts()
+		}}>{props.title}</Button>
+	)
+}
+
+const OnHoldForYou = (props) => {
+	const [loading, setLoading] = React.useState(false);
+
+	return (
+		<Button size={{base: "md", lg: "lg"}} colorScheme="primary" variant="solid"
+		        _text={{padding: 0, textAlign: "center"}}
+		        isLoading={loading}
+		        isLoadingText="Loading..."
+		        style={{flex: 1, flexWrap: 'wrap'}} onPress={() => {
+			setLoading(true);
+			props.openHolds()
 		}}>{props.title}</Button>
 	)
 }
