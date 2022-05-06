@@ -4009,7 +4009,7 @@ class Koha extends AbstractIlsDriver
 						}
 					} else {
 						$result['message'] = "Error {$this->apiCurlWrapper->getResponseCode()} updating your payment, please visit the library with your receipt.";
-						$logger->log("Unable to authenticate with Koha while completing fine payment response code: {$this->apiCurlWrapper->getResponseCode()}", Logger::LOG_ERROR);
+						$logger->log("Error updating payment withiin Koha response code: {$this->apiCurlWrapper->getResponseCode()}", Logger::LOG_ERROR);
 					}
 					$allPaymentsSucceed = false;
 				}

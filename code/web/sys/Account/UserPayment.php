@@ -336,9 +336,9 @@ class UserPayment extends DataObject
 						$user->id = $userPayment->userId;
 						if ($user->find(true)){
 							global $logger;
-							$logger->log("Request Vars : " . print_r($_REQUEST, true), Logger::LOG_WARNING);
+							$logger->log("Request Vars : " . print_r($_REQUEST, true), Logger::LOG_ERROR);
 							global $logger;
-							$logger->log("POST Vars : " . print_r($_POST, true), Logger::LOG_WARNING);
+							$logger->log("POST Vars : " . print_r($_POST, true), Logger::LOG_ERROR);
 							$finePaymentCompleted = $user->completeFinePayment($userPayment);
 							if ($finePaymentCompleted['success']) {
 								$success = true;
