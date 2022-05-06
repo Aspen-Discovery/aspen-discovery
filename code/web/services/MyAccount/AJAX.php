@@ -3221,6 +3221,8 @@ class MyAccount_AJAX extends JSON_Action
 			} else {
 				$user = UserAccount::getActiveUserObj();
 				$patron = $user->getUserReferredTo($patronId);
+				//If the payment does not complete in the ILS, add information to the payment for tracking
+				//Also send an email to email admin that it was completed in paypal, but not the ILS
 				return $patron->completeFinePayment($payment);
 			}
 		}
