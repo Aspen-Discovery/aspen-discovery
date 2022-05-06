@@ -31,5 +31,12 @@ function getUpdates22_05_00() : array
 				'ALTER TABLE website_indexing_settings ADD COLUMN crawlDelay INT DEFAULT 10',
 			]
 		], //website_crawlDelay
+		'paypal_error_email' => [
+			'title' => 'PayPal Error Email',
+			'description' => 'Add Error Email to PayPal settings',
+			'sql' => [
+				"ALTER TABLE paypal_settings ADD COLUMN errorEmail VARCHAR(128) DEFAULT ''",
+			]
+		], //paypal_error_email
 	];
 }

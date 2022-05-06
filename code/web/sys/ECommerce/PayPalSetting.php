@@ -10,6 +10,7 @@ class PayPalSetting extends DataObject
 	public $showPayLater;
 	public $clientId;
 	public $clientSecret;
+	public $errorEmail;
 
 	private $_libraries;
 
@@ -23,6 +24,7 @@ class PayPalSetting extends DataObject
 			'showPayLater' => array('property'=>'showPayLater', 'type'=>'checkbox', 'label'=>'Show Pay Later', 'description'=>'Whether or not to allow users to use the Pay Later Option', 'hideInLists' => false, 'default'=>false),
 			'clientId' => array('property'=>'clientId', 'type'=>'text', 'label'=>'ClientID', 'description'=>'The Client ID to use when paying fines.', 'hideInLists' => true, 'default' => '', 'size' => 80),
 			'clientSecret' => array('property'=>'clientSecret', 'type'=>'storedPassword', 'label'=>'Client Secret', 'description'=>'The Client Secret to use when paying fines.', 'hideInLists' => true, 'default' => '', 'size' => 80),
+			'errorEmail' => array('property'=>'errorEmail', 'type'=>'email', 'label'=>'Error Email', 'description'=>'Email to send errors to if the payment cannot be completed in the ILS.', 'hideInLists' => true, 'default' => '', 'size' => 128),
 
 			'libraries' => array(
 				'property' => 'libraries',

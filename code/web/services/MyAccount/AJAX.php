@@ -3221,9 +3221,26 @@ class MyAccount_AJAX extends JSON_Action
 			} else {
 				$user = UserAccount::getActiveUserObj();
 				$patron = $user->getUserReferredTo($patronId);
-				//If the payment does not complete in the ILS, add information to the payment for tracking
-				//Also send an email to email admin that it was completed in paypal, but not the ILS
-				return $patron->completeFinePayment($payment);
+
+				$result = $patron->completeFinePayment($payment);
+				if ($result['success'] == false){
+					//If the payment does not complete in the ILS, add information to the payment for tracking
+					//Also send an email to admin that it was completed in paypal, but not the ILS
+					$payment->message .= 'Fine Payment was not completed within the ILS. ' . $result['message'];
+					$payment->update();
+
+					if (!empty($payPalSettings->errorEmail)){
+						require_once ROOT_DIR . '/sys/Email/Mailer.php';
+						$mail = new Mailer();
+						$subject = 'Error updating ILS after PayPal Payment';
+						$body = "There was an error updating payment $payment->id within the ILS for patron with barcode {$user->getBarcode()}. The payment should either be voided or the ILS should be updated.";
+						global $configArray;
+						$baseUrl = $configArray['Site']['url'];
+						$htmlBody = "There was an error updating payment <a href='$baseUrl/Admin/eCommerceReport?objectAction=edit&id=$payment->id'>$payment->id</a> within the ILS for patron with barcode {$user->getBarcode()}. The payment should either be voided or the ILS should be updated.";
+						$mail->send($payPalSettings->errorEmail, $subject, $body, null, $htmlBody);
+					}
+				}
+				return $result;
 			}
 		}
 	}
