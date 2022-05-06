@@ -15,6 +15,7 @@ apt-get install -y php7.3-xml
 apt-get install -y bind9 bind9utils
 apt-get install -y php7.3-intl
 apt-get install -y php7.3-mbstring
+apt-get install -y php7.3-pgsql
 service apache2 start
 systemctl enable apache2
 # New PHP ini file
