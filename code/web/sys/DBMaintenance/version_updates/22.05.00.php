@@ -38,5 +38,19 @@ function getUpdates22_05_00() : array
 				"ALTER TABLE paypal_settings ADD COLUMN errorEmail VARCHAR(128) DEFAULT ''",
 			]
 		], //paypal_error_email
+		'open_archives_deleted_collections' => [
+			'title' => 'Open Archives Deleted Collections',
+			'description' => 'Add a flag to collections when they are deleted',
+			'sql' => [
+				"ALTER TABLE open_archives_collection ADD COLUMN deleted TINYINT(1) DEFAULT 0",
+			]
+		], //open_archives_deleted_collections
+		'open_archives_reindex_all_collections_22_05' => [
+			'title' => 'Open Archives Reindex all Collections',
+			'description' => 'Reindex all open archives collections',
+			'sql' => [
+				"UPDATE open_archives_collection SET lastFetched = 0",
+			]
+		], //open_archives_deleted_collections
 	];
 }
