@@ -1613,6 +1613,8 @@ class UserAPI extends Action
 	{
 		if(isset($_REQUEST['overDriveId'])) {
 			$overDriveId = $_REQUEST['overDriveId'];
+		} elseif (isset($_REQUEST['itemId'])) {
+			$overDriveId = $_REQUEST['itemId'];
 		} else {
 			$overDriveId = $_REQUEST['id'];
 		}
@@ -1850,16 +1852,16 @@ class UserAPI extends Action
 
 	function returnCloudLibraryItem() : array
 	{
-		$id = $_REQUEST['id'];
+		$cloudLibraryId = $_REQUEST['itemId'] ?? $_REQUEST['id'];
 		$user = $this->getUserForApiCall();
 
 		if ($user && !($user instanceof AspenError)) {
 			require_once ROOT_DIR . '/RecordDrivers/CloudLibraryRecordDriver.php';
-			$this->recordDriver = new CloudLibraryRecordDriver($id);
+			$this->recordDriver = new CloudLibraryRecordDriver($cloudLibraryId);
 
 			require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
 			$driver = new CloudLibraryDriver();
-			$result = $driver->returnCheckout($user, $id);
+			$result = $driver->returnCheckout($user, $cloudLibraryId);
 			return array('success' => $result['success'], 'title' => $result['api']['title'], 'message' => $result['api']['message']);
 		} else {
 			return array('success' => false, 'title' => 'Error', 'message' => 'Unable to validate user');
@@ -1934,7 +1936,8 @@ class UserAPI extends Action
 
 	function returnHooplaItem() : array
 	{
-		$titleId = $_REQUEST['id'];
+
+		$titleId = $_REQUEST['itemId'] ?? $_REQUEST['id'];
 
 		$user = $this->getUserForApiCall();
 		if ($user && !($user instanceof AspenError)) {
@@ -2093,7 +2096,7 @@ class UserAPI extends Action
 
 	function returnAxis360Item() : array
 	{
-		$id = $_REQUEST['id'];
+		$id = $_REQUEST['itemId'] ?? $_REQUEST['id'];
 
 		$user = $this->getUserForApiCall();
 
