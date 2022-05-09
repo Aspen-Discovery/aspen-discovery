@@ -106,7 +106,7 @@ class OpenArchivesCollection extends DataObject
 	{
 		$this->clearLibraries();
 		$this->clearLocations();
-		return $this->update();
+		return parent::delete($useWhere);
 	}
 
 	public function getLibraries() {
