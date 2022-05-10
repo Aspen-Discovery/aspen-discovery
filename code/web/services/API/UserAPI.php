@@ -3017,7 +3017,7 @@ class UserAPI extends Action
 		global $logger;
 		$logger->log(print_r(getallheaders(), true), Logger::LOG_WARNING);
 		foreach (getallheaders() as $name => $value) {
-			if($name == 'version') {
+			if($name == 'version' || $name == 'Version') {
 				$logger->log("version " . $value, Logger::LOG_WARNING);
 				$version = explode(' ', $value);
 				return $version[0];
