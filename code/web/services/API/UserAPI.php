@@ -2978,7 +2978,7 @@ class UserAPI extends Action
 		$LiDAVersion = $this->getLiDAVersion();
 		$logger->log("Found LiDA " . $LiDAVersion, Logger::LOG_WARNING);
 
-		if($this->getLiDAVersion() == "v22.04.00") {
+		if($this->getLiDAVersion() === "v22.04.00") {
 			list($username, $password) = $this->loadUsernameAndPassword();
 			$logger->log("Found LiDA v22.04.00, loaded user from POST " . $username, Logger::LOG_WARNING);
 			return UserAccount::validateAccount($username, $password);
@@ -3017,8 +3017,8 @@ class UserAPI extends Action
 		global $logger;
 		$logger->log(print_r(getallheaders(), true), Logger::LOG_WARNING);
 		foreach (getallheaders() as $name => $value) {
-			if($name == 'Version') {
-				$logger->log("Version " . $value, Logger::LOG_WARNING);
+			if($name == 'version') {
+				$logger->log("version " . $value, Logger::LOG_WARNING);
 				$version = explode(' ', $value);
 				return $version[0];
 			}
