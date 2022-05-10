@@ -2974,8 +2974,13 @@ class UserAPI extends Action
 	protected function getUserForApiCall()
 	{
 
+		global $logger;
+		$LiDAVersion = $this->getLiDAVersion();
+		$logger->log("Found LiDA " . $LiDAVersion, Logger::LOG_WARNING);
+
 		if($this->getLiDAVersion() == "v22.04.00") {
 			list($username, $password) = $this->loadUsernameAndPassword();
+			$logger->log("Found LiDA v22.04.00, loaded user from POST " . $username, Logger::LOG_WARNING);
 			return UserAccount::validateAccount($username, $password);
 		}
 
@@ -2985,21 +2990,25 @@ class UserAPI extends Action
 			if (!$user->find(true)) {
 				$user = false;
 			}
+			$logger->log("Loaded user from patronId " . $_REQUEST['patronId'], Logger::LOG_WARNING);
 		} else if (isset($_REQUEST['userId'])) {
 			$user = new User();
 			$user->id = $_REQUEST['userId'];
 			if (!$user->find(true)) {
 				$user = false;
 			}
+			$logger->log("Loaded user from userId " . $_REQUEST['userId'], Logger::LOG_WARNING);
 		} else if (isset($_REQUEST['id'])) {
 			$user = new User();
 			$user->id = $_REQUEST['id'];
 			if (!$user->find(true)) {
 				$user = false;
 			}
+			$logger->log("Loaded user from id " . $_REQUEST['id'], Logger::LOG_WARNING);
 		} else {
 			list($username, $password) = $this->loadUsernameAndPassword();
 			$user = UserAccount::validateAccount($username, $password);
+			$logger->log("Loaded user from POST " . $user->id, Logger::LOG_WARNING);
 		}
 		return $user;
 	}
