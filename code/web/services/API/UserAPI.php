@@ -3014,8 +3014,11 @@ class UserAPI extends Action
 	}
 
 	function getLiDAVersion() {
+		global $logger;
+		$logger->log(getallheaders(), Logger::LOG_WARNING);
 		foreach (getallheaders() as $name => $value) {
 			if($name == 'Version') {
+				$logger->log("Version " . $value, Logger::LOG_WARNING);
 				$version = explode(' ', $value);
 				return $version[0];
 			}
