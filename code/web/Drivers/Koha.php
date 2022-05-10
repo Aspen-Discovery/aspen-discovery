@@ -3866,7 +3866,7 @@ class Koha extends AbstractIlsDriver
 				} else {
 					/** @noinspection SpellCheckingInspection */
 					if ($key == 'SMSnumber') {
-						$getParams[] = urlencode($key) . '=' . urlencode(preg_replace('/\\D/', '', $value));
+						$getParams[] = urlencode($key) . '=' . urlencode(preg_replace('/[-&\\#,()$~%.:*?<>{}\sa-zA-z]/', '', $value));
 					}else{
 						$getParams[] = urlencode($key) . '=' . urlencode($value);
 					}
