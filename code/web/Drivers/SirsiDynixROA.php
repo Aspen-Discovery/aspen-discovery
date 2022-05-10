@@ -1085,9 +1085,14 @@ class SirsiDynixROA extends HorizonAPI
 			$itemToHold = $relatedItems[0];
 			return $this->placeSirsiHold($patron, $recordId, $itemToHold, $volumeId, $pickupBranch);
 		}else{
-			return array(
+			return [
 				'success' => false,
-				'message' => 'Sorry, we could not find the specified volume, it may have been deleted.');
+				'message' => 'Sorry, we could not find the specified volume, it may have been deleted.',
+				'api' => [
+					'title' => 'Unable to place hold',
+					'message' => 'Sorry, we could not find the specified volume, it may have been deleted.'
+				]
+			];
 		}
 	}
 

@@ -657,7 +657,11 @@ class Polaris extends AbstractIlsDriver
 		}
 		$result = [
 			'success' => false,
-			'message' => 'Unknown error confirming the hold'
+			'message' => 'Unknown error confirming the hold',
+			'api' => [
+				'title' => 'Unable to place hold',
+				'message' => 'Unknown error confirming the hold'
+			]
 		];
 		require_once ROOT_DIR . '/sys/ILS/HoldRequestConfirmation.php';
 		$holdRequestConfirmation = new HoldRequestConfirmation();
@@ -681,6 +685,7 @@ class Polaris extends AbstractIlsDriver
 
 		}else{
 			$result['message'] = 'Could not find information about the hold to be confirmed, it may have been confirmed already';
+			$result['api']['message'] = 'Could not find information about the hold to be confirmed, it may have been confirmed already';
 		}
 		return $result;
 	}
