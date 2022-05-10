@@ -2973,14 +2973,8 @@ class UserAPI extends Action
 	 */
 	protected function getUserForApiCall()
 	{
-
-		global $logger;
-		$LiDAVersion = $this->getLiDAVersion();
-		$logger->log("Found LiDA " . $LiDAVersion, Logger::LOG_WARNING);
-
 		if($this->getLiDAVersion() === "v22.04.00") {
 			list($username, $password) = $this->loadUsernameAndPassword();
-			$logger->log("Found LiDA v22.04.00, loaded user from POST " . $username, Logger::LOG_WARNING);
 			return UserAccount::validateAccount($username, $password);
 		}
 
@@ -2990,35 +2984,30 @@ class UserAPI extends Action
 			if (!$user->find(true)) {
 				$user = false;
 			}
-			$logger->log("Loaded user from patronId " . $_REQUEST['patronId'], Logger::LOG_WARNING);
 		} else if (isset($_REQUEST['userId'])) {
 			$user = new User();
 			$user->id = $_REQUEST['userId'];
 			if (!$user->find(true)) {
 				$user = false;
 			}
-			$logger->log("Loaded user from userId " . $_REQUEST['userId'], Logger::LOG_WARNING);
 		} else if (isset($_REQUEST['id'])) {
 			$user = new User();
 			$user->id = $_REQUEST['id'];
 			if (!$user->find(true)) {
 				$user = false;
 			}
-			$logger->log("Loaded user from id " . $_REQUEST['id'], Logger::LOG_WARNING);
 		} else {
 			list($username, $password) = $this->loadUsernameAndPassword();
 			$user = UserAccount::validateAccount($username, $password);
-			$logger->log("Loaded user from POST " . $user->id, Logger::LOG_WARNING);
 		}
 		return $user;
 	}
 
 	function getLiDAVersion() {
 		global $logger;
-		$logger->log(print_r(getallheaders(), true), Logger::LOG_WARNING);
+		//$logger->log(print_r(getallheaders(), true), Logger::LOG_WARNING);
 		foreach (getallheaders() as $name => $value) {
 			if($name == 'version' || $name == 'Version') {
-				$logger->log("version " . $value, Logger::LOG_WARNING);
 				$version = explode(' ', $value);
 				return $version[0];
 			}
