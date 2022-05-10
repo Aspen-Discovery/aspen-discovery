@@ -12,11 +12,12 @@ import SelectPickupLocation from "./SelectPickupLocation";
 import ShowItemDetails from "./CopyDetails";
 import _ from "lodash";
 import SelectLinkedAccount from "./SelectLinkedAccount";
+import SelectVolumeHold from "./SelectVolumeHold";
 
 const DisplayRecord = (props) => {
 
 	const [loading, setLoading] = React.useState(false);
-	const {available, availableOnline, actions, edition, format, publisher, publicationDate, status, copiesMessage, source, id, title, locationCount, locations, showAlert, itemDetails, user, groupedWorkId, library, linkedAccounts, openHolds, openCheckouts} = props;
+	const {available, availableOnline, actions, edition, format, publisher, publicationDate, status, copiesMessage, source, id, title, locationCount, locations, showAlert, itemDetails, user, groupedWorkId, library, linkedAccounts, openHolds, openCheckouts, majorityOfItemsHaveVolumes, volumes} = props;
 
 	let actionCount = 1;
 	if(typeof actions !== 'undefined') {
@@ -87,6 +88,8 @@ const DisplayRecord = (props) => {
 									user = {user}
 									linkedAccounts = {linkedAccounts}
 									linkedAccountsCount = {linkedAccountsCount}
+									majorityOfItemsHaveVolumes = {majorityOfItemsHaveVolumes}
+									volumes = {volumes}
 								/>
 							)
 						} else if (thisAction.title === "Access Online") {
@@ -167,27 +170,46 @@ const ILS = (props) => {
 				linkedAccounts = {props.linkedAccounts}
 				linkedAccountsCount = {props.linkedAccountsCount}
 				user = {props.user}
+				majorityOfItemsHaveVolumes = {props.majorityOfItemsHaveVolumes}
+				volumes = {props.volumes}
 			/>
 		)
 	} else {
-		return (
-			<Button
-				size={{base: "md", lg: "lg"}}
-		        colorScheme="primary"
-		        variant="solid"
-		        _text={{padding: 0, textAlign: "center"}}
-		        style={{flex: 1, flexWrap: 'wrap'}}
-				isLoading={loading}
-				isLoadingText="Placing hold..."
-		        onPress={async () => {
-			        setLoading(true);
-					completeAction(props.id, props.actionType, props.patronId, null, null, props.locations[0].code, props.libraryUrl).then(response => {
-						setLoading(false);
-						props.showAlert(response)
-						console.log(response);
-					})
-				}}>{props.actionLabel}</Button>
-		);
+		if(props.majorityOfItemsHaveVolumes) {
+			return (
+				<SelectVolumeHold
+					label={props.actionLabel}
+					action={props.actionType}
+					record={props.id}
+					patron={props.patronId}
+					showAlert={props.showAlert}
+					libraryUrl={props.libraryUrl}
+					linkedAccounts = {props.linkedAccounts}
+					linkedAccountsCount = {props.linkedAccountsCount}
+					user = {props.user}
+					volumes = {props.volumes}
+				/>
+			)
+		} else {
+			return (
+				<Button
+					size={{base: "md", lg: "lg"}}
+					colorScheme="primary"
+					variant="solid"
+					_text={{padding: 0, textAlign: "center"}}
+					style={{flex: 1, flexWrap: 'wrap'}}
+					isLoading={loading}
+					isLoadingText="Placing hold..."
+					onPress={async () => {
+						setLoading(true);
+						completeAction(props.id, props.actionType, props.patronId, null, null, props.locations[0].code, props.libraryUrl).then(response => {
+							setLoading(false);
+							props.showAlert(response)
+							console.log(response);
+						})
+					}}>{props.actionLabel}</Button>
+			);
+		}
 	}
 }
 
@@ -262,7 +284,7 @@ const OnHoldForYou = (props) => {
 }
 
 // complete the action on the item, i.e. checkout, hold, or view sample
-export async function completeAction(id, actionType, patronId, formatId = null, sampleNumber = null, pickupBranch = null, libraryUrl) {
+export async function completeAction(id, actionType, patronId, formatId = null, sampleNumber = null, pickupBranch = null, libraryUrl, volumeId = null) {
 	const recordId = id.split(":");
 	const source = recordId[0];
 	const itemId = recordId[1];
@@ -271,7 +293,9 @@ export async function completeAction(id, actionType, patronId, formatId = null, 
 		return await checkoutItem(libraryUrl, itemId, source, patronId);
 	} else if (actionType.includes("hold")) {
 
-		if (!global.overdriveEmail && global.promptForOverdriveEmail === 1 && source === "overdrive") {
+		if(volumeId) {
+			return await placeHold(libraryUrl, itemId, source, patronId, pickupBranch, volumeId);
+		} else if (!global.overdriveEmail && global.promptForOverdriveEmail === 1 && source === "overdrive") {
 			const getPromptForOverdriveEmail = [];
 			getPromptForOverdriveEmail['getPrompt'] = true;
 			getPromptForOverdriveEmail['itemId'] = itemId;
