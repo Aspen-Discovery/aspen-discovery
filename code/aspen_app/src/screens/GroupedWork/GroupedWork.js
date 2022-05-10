@@ -30,11 +30,11 @@ import {getPickupLocations} from "../../util/loadLibrary";
 import {updateOverDriveEmail} from "../../util/accountActions";
 import {AddToListFromItem} from "./AddToList";
 import {userContext} from "../../context/user";
-import {getLinkedAccounts} from "../../util/loadPatron";
+import {getLinkedAccounts, getProfile} from "../../util/loadPatron";
 
 export default class GroupedWork extends Component {
-	constructor() {
-		super();
+	constructor(props, context) {
+		super(props, context);
 		this.state = {
 			isLoading: true,
 			locations: [],
@@ -234,6 +234,14 @@ export default class GroupedWork extends Component {
 		);
 	}
 
+	// Trigger a context refresh
+	updateProfile = async () => {
+		console.log("Getting new profile data from item details...");
+		await getProfile().then(response => {
+			this.context.user = response;
+		});
+	}
+
 	cancelRef = () => {
 		useEffect(() => {
 			React.useRef();
@@ -288,7 +296,14 @@ export default class GroupedWork extends Component {
 			ratingAverage = this.state.ratingData.average;
 		}
 
-		console.log(this.state.data);
+		let discoveryVersion = "22.04.00";
+		if(library.discoveryVersion) {
+			let version = library.discoveryVersion;
+			version = version.split(" ");
+			discoveryVersion = version[0];
+		}
+
+		//console.log(this.state.data);
 
 		return (
 			<ScrollView>
@@ -331,6 +346,8 @@ export default class GroupedWork extends Component {
 					                                          user={user}
 					                                          library={library}
 					                                          linkedAccounts={this.state.linkedAccounts}
+					                                          discoveryVersion={discoveryVersion}
+					                                          updateProfile={this.updateProfile}
 					                                          openHolds={this.openHolds}
 					                                          openCheckouts={this.openCheckouts}/> : null}
 

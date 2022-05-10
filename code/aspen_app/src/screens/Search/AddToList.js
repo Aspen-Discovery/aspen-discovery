@@ -6,13 +6,13 @@ import {addTitlesToList, createListFromTitle, getLists} from "../../util/loadPat
 import _ from "lodash";
 import {popAlert} from "../../components/loadError";
 
-const AddToList = (props) => {
-	const { item, libraryUrl } = props;
+export const AddToList = (props) => {
+	const { item, libraryUrl, lastListUsed } = props;
 	const [showUseExistingModal, setShowUseExistingModal] = useState(false);
 	const [showCreateNewModal, setShowCreateNewModal] = useState(false);
 	const [loading, setLoading] = useState(false);
 	const [lists, setLists] = useState([]);
-	const [listId, setListId] = useState(0);
+	const [listId, setListId] = useState(lastListUsed);
 
 	const [title, setTitle] = React.useState('');
 	const [description, setDescription] = React.useState('');
@@ -39,7 +39,7 @@ const AddToList = (props) => {
 							{!_.isUndefined(lists)  ? (
 								<Box>
 									<FormControl.Label>Choose a List</FormControl.Label>
-									<Select onValueChange={(itemValue) => {setListId(itemValue)}}>
+									<Select selectedValue={listId} onValueChange={(itemValue) => {setListId(itemValue)}}>
 										{lists.map((item, index) => {
 											return (<Select.List value={item.id} label={item.title} />);
 										})}

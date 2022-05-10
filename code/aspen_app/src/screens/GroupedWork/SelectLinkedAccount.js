@@ -1,9 +1,10 @@
 import React, {useState} from "react";
 import {Button, Center, Modal, FormControl, Select, Heading, CheckIcon } from "native-base";
 import {completeAction} from "./Record";
+import {getProfile} from "../../util/loadPatron";
 
 const SelectLinkedAccount = (props) => {
-	const {user, linkedAccounts, id, action, libraryUrl, showAlert} = props;
+	const {user, linkedAccounts, id, action, libraryUrl, showAlert, updateProfile} = props;
 	const [loading, setLoading] = React.useState(false);
 	const [showModal, setShowModal] = useState(false);
 
@@ -47,13 +48,17 @@ const SelectLinkedAccount = (props) => {
 					</Modal.Body>
 					<Modal.Footer>
 						<Button.Group>
-							<Button variant="outline" onPress={() => setShowModal(false)}>Cancel</Button>
+							<Button variant="outline" onPress={() => {
+								setShowModal(false)
+								setLoading(false)
+							}
+							}>Cancel</Button>
 							<Button
 								isLoading={loading}
-								isLoadingText="Checking out..."
 								onPress={async () => {
 									setLoading(true);
 									await completeAction(id, action, activeAccount, null, null, null, libraryUrl).then(response =>{
+										updateProfile();
 										showAlert(response);
 										setLoading(false);
 									});
