@@ -347,16 +347,32 @@ class ListAPI extends Action
 
 			$titles = $list->getListRecords(0, $numTitlesToShow, false, 'summary');
 
+			$isLida = $this->checkIfLiDA();
+
 			foreach($titles as $title) {
-				$imageUrl = $configArray['Site']['url'] . "/bookcover.php?id=" . $title['id'];
+				$imageUrl = "/bookcover.php?id=" . $title['id'];
 				$smallImageUrl = $imageUrl . "&size=small";
 				$imageUrl .= "&size=medium";
+
+				if($isLida) {
+					$imageUrl = $configArray['Site']['url'] . "/bookcover.php?id=" . $title['id'];
+					$smallImageUrl = $imageUrl . "&size=small";
+					$imageUrl .= "&size=medium";
+				}
+
 				$listTitles[] = array(
 					'id' => $title['id'],
 					'image' => $imageUrl,
 					'small_image' => $smallImageUrl,
 					'title' => $title['title'],
 					'author' => $title['author'],
+					'shortId' => $title['shortId'],
+					'recordType' => $title['recordType'],
+					'titleURL' => $title['titleURL'],
+					'description' => $title['description'],
+					'length' => $title['length'],
+					'publisher' => $title['publisher'],
+					'ratingData' => $title['ratingData'],
 				);
 			}
 			return array('success' => true, 'listTitle' => $list->title, 'listDescription' => $list->description, 'titles' => $listTitles);
@@ -1324,6 +1340,17 @@ class ListAPI extends Action
 			$password = reset($password);
 		}
 		return array($username, $password);
+	}
+
+	function checkIfLiDA() {
+		foreach (getallheaders() as $name => $value) {
+			if($name == 'User-Agent' || $name == 'user-agent') {
+				if(strpos($value->browseCategoryId, "Aspen LiDA") !== false) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 
 	function getBreadcrumbs() : array
