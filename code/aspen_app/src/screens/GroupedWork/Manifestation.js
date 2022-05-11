@@ -60,6 +60,8 @@ const Manifestation = (props) => {
 				linkedAccounts = {linkedAccounts}
 				openCheckouts = {openCheckouts}
 				openHolds = {openHolds}
+				majorityOfItemsHaveVolumes = {item.majorityOfItemsHaveVolumes}
+				volumes = {item.volumes}
 				discoveryVersion = {discoveryVersion}
 				updateProfile = {updateProfile}
 			/>

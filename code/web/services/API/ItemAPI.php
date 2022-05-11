@@ -609,10 +609,21 @@ class ItemAPI extends Action {
 						$groupedStatus = $relatedRecord->getGroupedStatus();
 						$isEContent = $relatedRecord->isEContent();
 
+						$numItemsWithVolumes = 0;
+						$numItemsWithoutVolumes = 0;
 						$items = $relatedRecord->getItems();
 						foreach ($items as $item) {
 							$shelfLocation = $item->shelfLocation;
 							$callNumber = $item->callNumber;
+
+							if (empty($item->volume)){
+								$numItemsWithoutVolumes++;
+							}else{
+								$numItemsWithVolumes++;
+							}
+
+							$hasItemsWithoutVolumes = $numItemsWithoutVolumes > 0;
+							$majorityOfItemsHaveVolumes = $numItemsWithVolumes > $numItemsWithoutVolumes;
 
 							if($item->eContentSource == "Hoopla") {
 								require_once ROOT_DIR . '/RecordDrivers/HooplaRecordDriver.php';
@@ -670,6 +681,7 @@ class ItemAPI extends Action {
 							}
 						}
 
+						$recordVolumes = $relatedRecord->getVolumeData();
 
 						$holdable = $relatedRecord->isHoldable();
 						$record = array(
@@ -690,6 +702,9 @@ class ItemAPI extends Action {
 							'publicationDate' => $publicationDate,
 							'physical' => $physical,
 							'action' => $actions,
+							'hasItemsWithoutVolumes' => $hasItemsWithoutVolumes,
+							'majorityOfItemsHaveVolumes' => $majorityOfItemsHaveVolumes,
+							'volumes' => $recordVolumes,
 						);
 						$records[] = $record;
 

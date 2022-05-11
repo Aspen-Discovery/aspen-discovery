@@ -205,6 +205,13 @@ class UInterface extends Smarty
 			$user = UserAccount::getActiveUserObj();
 			//Figure out if we should show a link to pay fines.
 			$homeLibrary = Library::getLibraryForLocation($user->homeLocationId);
+
+			$systemVariables = SystemVariables::getSystemVariables();
+			if ($systemVariables->libraryToUseForPayments == 1){
+				global $library;
+				$homeLibrary = $library;
+			}
+
 			if ($homeLibrary != null) {
 				$finePaymentType = isset($homeLibrary) ? $homeLibrary->finePaymentType : 0;
 

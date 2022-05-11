@@ -86,14 +86,14 @@ export async function checkoutItem(libraryUrl, itemId, source, patronId) {
  *     <li>pickupBranch - the location id for where the hold will be picked up at</li>
  * </ul>
  **/
-export async function placeHold(libraryUrl, itemId, source, patronId, pickupBranch) {
+export async function placeHold(libraryUrl, itemId, source, patronId, pickupBranch, volumeId = null) {
 	const postBody = await postData();
 	const api = create({
 		baseURL: libraryUrl + '/API',
 		timeout: GLOBALS.timeoutAverage,
 		headers: getHeaders(true),
 		auth: createAuthTokens(),
-		params: {itemId: itemId, itemSource: source, userId: patronId, pickupBranch: pickupBranch}
+		params: {itemId: itemId, itemSource: source, userId: patronId, pickupBranch: pickupBranch, volume: volumeId}
 	});
 	const response = await api.post('/UserAPI?method=placeHold', postBody);
 	console.log(response);
