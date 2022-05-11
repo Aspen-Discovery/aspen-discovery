@@ -25,6 +25,7 @@ import {create} from 'apisauce';
 import {Ionicons, MaterialIcons} from "@expo/vector-icons";
 import _ from "lodash";
 import Constants from "expo-constants";
+import * as Updates from "expo-updates";
 
 // custom components and helper files
 import {translate} from "../../translations/translations";
@@ -56,8 +57,10 @@ export default class Login extends Component {
 		this.filteredLibraries = [];
 
 		// check for beta release channel
-		if (global.releaseChannel === 'beta') {
+		if (Updates.releaseChannel === 'beta') {
 			this.setState({isBeta: true});
+		} else if (Updates.releaseChannel === 'dev') {
+			this.setState({isBeta: true})
 		}
 	}
 
@@ -96,15 +99,24 @@ export default class Login extends Component {
 		let baseApiUrl;
 		if(Constants.manifest.slug === "aspen-lida") { method = "getLibraries"; } else { method = "getLibrary"; }
 		if(Constants.manifest.slug === "aspen-lida") { baseApiUrl = Constants.manifest.extra.greenhouse; } else { baseApiUrl = Constants.manifest.extra.apiUrl; }
+
+		let latitude = 0;
+		let longitude = 0;
+		try {
+			latitude = await SecureStore.getItemAsync("latitude");
+			longitude = await SecureStore.getItemAsync("longitude");
+		} catch(e) {
+			console.log(e);
+		}
 		const api = create({
 			baseURL: baseApiUrl + '/API',
 			timeout: 100000,
 			headers: getHeaders(),
 		});
 		const response = await api.get('/GreenhouseAPI?method=' + method, {
-			latitude: global.latitude,
-			longitude: global.longitude,
-			release_channel: global.releaseChannel
+			latitude: latitude,
+			longitude: longitude,
+			release_channel: Updates.releaseChannel
 		});
 		//console.log(response);
 		if (response.ok) {
@@ -148,7 +160,7 @@ export default class Login extends Component {
 			headers: getHeaders(),
 		});
 		const response = await api.get('/GreenhouseAPI?method=getLibraries', {
-			release_channel: global.releaseChannel
+			release_channel: Updates.releaseChannel
 		});
 		if(response.ok) {
 			let results = response.data;

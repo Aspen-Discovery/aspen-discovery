@@ -185,16 +185,19 @@ export default class AppContainer extends Component {
 				}
 
 
+				let discoveryVersion = "22.04.00";
+				if (this.state.library.discoveryVersion) {
+					let version = this.state.library.discoveryVersion;
+					version = version.split(" ");
+					discoveryVersion = version[0];
+				}
+
+				console.log(discoveryVersion);
+
 				if(_.isEmpty(this.state.browseCategories)) {
-					let discoveryVersion = "22.04.00";
-					if (this.state.library.discoveryVersion) {
-						let version = this.state.library.discoveryVersion;
-						version = version.split(" ");
-						discoveryVersion = version[0];
-					}
 
 					if (discoveryVersion >= "22.05.00") {
-						await getBrowseCategories(libraryUrl).then(response => {
+						await getBrowseCategories(libraryUrl, discoveryVersion).then(response => {
 							this.setState({
 								browseCategories: response,
 							})

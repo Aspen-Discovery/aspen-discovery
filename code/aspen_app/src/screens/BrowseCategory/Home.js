@@ -28,8 +28,8 @@ import DisplayBrowseCategory from "./Category";
 
 export default class BrowseCategoryHome extends PureComponent {
 	static contextType = userContext;
-	constructor() {
-		super();
+	constructor(props, context) {
+		super(props, context);
 		this.state = {
 			data: [],
 			page: 1,
@@ -67,11 +67,19 @@ export default class BrowseCategoryHome extends PureComponent {
 	}
 
 	componentDidMount = async () => {
+		let discoveryVersion = "22.04.00";
+		if(this.context.library.discoveryVersion) {
+			let version = this.context.library.discoveryVersion;
+			version = version.split(" ");
+			discoveryVersion = version[0];
+		}
 
 		this.setState({
 			categoriesLoaded: false,
 			isLoading: false,
+			discoveryVersion: discoveryVersion,
 		})
+
 
 /*		let libraryUrl = "";
 		try {
@@ -118,13 +126,20 @@ export default class BrowseCategoryHome extends PureComponent {
 			await getPickupLocations(libraryUrl);
 			await getLists(libraryUrl);
 			await getILSMessages(libraryUrl);
-			await getBrowseCategories(libraryUrl).then(response => {
-				this.context.browseCategories = response;
-			})
 			//await getPatronBrowseCategories(libraryUrl);
 		}
 
-		return () => clearTimeout(buttonDelay);
+/*		this.interval = setInterval(async () => {
+			this.setState({checkingForUpdates: true})
+			await getBrowseCategories(libraryUrl).then(response => {
+				this.context.browseCategories = response;
+				this.setState({
+					checkingForUpdates: false,
+				})
+			})
+		}, 10000)*/
+
+		console.log(this.state.discoveryVersion);
 	}
 
 	componentWillUnmount() {
@@ -132,10 +147,9 @@ export default class BrowseCategoryHome extends PureComponent {
 	}
 
 	onHideCategory = async (libraryUrl, categoryId, patronId) => {
-		console.log("Trying to hide category...");
 		this.setState({isLoading: true });
-		await dismissBrowseCategory(libraryUrl, categoryId, patronId).then(async res => {
-			await getBrowseCategories(libraryUrl).then(response => {
+		await dismissBrowseCategory(libraryUrl, categoryId, patronId, this.state.discoveryVersion).then(async res => {
+			await getBrowseCategories(libraryUrl, this.state.discoveryVersion).then(response => {
 				this.context.browseCategories = response;
 				this.setState({
 					isLoading: false,
@@ -149,6 +163,7 @@ export default class BrowseCategoryHome extends PureComponent {
 
 		await getBrowseCategories(libraryUrl).then(response => {
 			this.context.browseCategories = response;
+			console.log(response);
 			this.setState({
 				isLoading: false,
 			})
@@ -261,6 +276,8 @@ export default class BrowseCategoryHome extends PureComponent {
 		const library = this.context.library;
 		const browseCategories = this.context.browseCategories;
 
+		console.log(browseCategories);
+
 		let discoveryVersion = "22.04.00";
 		if(library.discoveryVersion) {
 			let version = library.discoveryVersion;
@@ -345,20 +362,6 @@ export default class BrowseCategoryHome extends PureComponent {
 const ButtonOptions = (props) => {
 	const {onPressSettings, onRefreshCategories, libraryUrl, patronId} = props;
 	const [isLoading, setLoading] = React.useState(true);
-
-	React.useEffect(()=>{
-		const timeout = setTimeout(() => {
-			setLoading (false);
-		}, 5000);
-
-		return () => {
-			clearTimeout(timeout);
-		};
-	},[]);
-
-	if(isLoading) {
-		return null
-	}
 
 	return <Box>
 		<Button size="md" colorScheme="primary" onPress={() => {

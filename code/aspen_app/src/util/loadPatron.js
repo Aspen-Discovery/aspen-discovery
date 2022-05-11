@@ -1,4 +1,4 @@
-import React, {useContext} from "react";
+import React, {useContext, useState, useEffect} from "react";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as SecureStore from 'expo-secure-store';
 import {create} from 'apisauce';
@@ -12,7 +12,6 @@ import {popAlert} from "../components/loadError";
 import {userContext} from "../context/user";
 
 export async function getProfile(reload = false, url = "") {
-	//const {value} = useContext(userContext);
 	//console.log(value);
 
 	let postBody = await postData();
@@ -54,7 +53,7 @@ export async function reloadProfile(libraryUrl) {
 		auth: createAuthTokens()
 	});
 	const response = await api.post('/UserAPI?method=getPatronProfile&reload&linkedUsers=true', postBody);
-	console.log(response);
+	//console.log(response);
 	if(response.ok) {
 		if(response.data.result && response.data.result.profile) {
 			const profile = response.data.result.profile;
@@ -256,17 +255,21 @@ export async function getPatronBrowseCategories(libraryUrl, patronId = null) {
 		});
 		const responseHiddenCategories = await api.post('/UserAPI?method=getHiddenBrowseCategories', postBody);
 		if(responseHiddenCategories.ok) {
-			const categories = responseHiddenCategories.data.result.categories;
 			const hiddenCategories = [];
-			if (_.isArray(categories) === true) {
-				if (categories.length > 0) {
-					categories.map(function (category, index, array) {
-						hiddenCategories.push({'key': category.id, 'title': category.name, 'isHidden': true});
-					});
+
+			if(typeof responseHiddenCategories.data.result !== "undefined") {
+				const categories = responseHiddenCategories.data.result.categories;
+				if (_.isArray(categories) === true) {
+					if (categories.length > 0) {
+						categories.map(function (category, index, array) {
+							hiddenCategories.push({'key': category.id, 'title': category.name, 'isHidden': true});
+						});
+					}
 				}
+				//console.log(hiddenCategories);
 			}
-			//console.log(hiddenCategories);
 			browseCategories = browseCategories.concat(hiddenCategories);
+
 		} else {
 			console.log(responseHiddenCategories);
 		}

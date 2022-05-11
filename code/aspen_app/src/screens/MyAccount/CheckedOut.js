@@ -26,7 +26,7 @@ import * as WebBrowser from 'expo-web-browser';
 import {translate} from '../../translations/translations';
 import {loadingSpinner} from "../../components/loadingSpinner";
 import {loadError} from "../../components/loadError";
-import {getCheckedOutItems, getProfile} from '../../util/loadPatron';
+import {getCheckedOutItems, getProfile, reloadProfile} from '../../util/loadPatron';
 import {
 	isLoggedIn,
 	renewAllCheckouts,
@@ -38,8 +38,8 @@ import {
 import {userContext} from "../../context/user";
 
 export default class CheckedOut extends Component {
-	constructor() {
-		super();
+	constructor(props, context) {
+		super(props, context);
 		this.state = {
 			isLoading: true,
 			hasError: false,
@@ -47,7 +47,7 @@ export default class CheckedOut extends Component {
 			isRefreshing: false,
 			renewingAll: false,
 			user: [],
-			checkouts: []
+			checkouts: [],
 		};
 		//this._fetchCheckouts();
 		this.loadCheckouts();
@@ -63,8 +63,17 @@ export default class CheckedOut extends Component {
 	}
 
 	componentDidMount = async () => {
+		let discoveryVersion = "22.04.00";
+		if(this.context.library.discoveryVersion) {
+			let version = this.context.library.discoveryVersion;
+			version = version.split(" ");
+			discoveryVersion = version[0];
+		}
+
+
 		this.setState({
 			isLoading: false,
+			discoveryVersion: discoveryVersion,
 		});
 
 		await this._fetchCheckouts();
@@ -95,7 +104,7 @@ export default class CheckedOut extends Component {
 	}
 
 	// renders the items on the screen
-	renderNativeItem = (item, library) => {
+	renderNativeItem = (item, library, user, updateProfile) => {
 		return (
 			<CheckedOutItem
 				data={item}
@@ -103,6 +112,9 @@ export default class CheckedOut extends Component {
 				openWebsite={this.openWebsite}
 				openGroupedWork={this.openGroupedWork}
 				libraryUrl={library.baseUrl}
+				user={user}
+				updateProfile={updateProfile}
+				discoveryVersion={this.state.discoveryVersion}
 			/>
 		);
 	};
@@ -169,12 +181,12 @@ export default class CheckedOut extends Component {
 		);
 	};
 
-	_onRefresh = () => {
-		this.setState({isRefreshing: true}, () => {
-			getCheckedOutItems().then(() => {
-				this.setState({isRefreshing: false});
+	// Trigger a context refresh
+	updateProfile = async () => {
+			console.log("Getting new profile data from checkouts...");
+			await getProfile().then(response => {
+				this.context.user = response;
 			});
-		});
 	}
 
 	static contextType = userContext;
@@ -219,7 +231,7 @@ export default class CheckedOut extends Component {
 				<FlatList
 					data={checkouts}
 					ListEmptyComponent={this._listEmptyComponent()}
-					renderItem={({item}) => this.renderNativeItem(item, library)}
+					renderItem={({item}) => this.renderNativeItem(item, library, user, this.updateProfile)}
 					keyExtractor={(item) => item.recordId}
 				/>
 				<Center pt={5} pb={5}>
@@ -238,14 +250,12 @@ function CheckedOutItem(props) {
 	const [access, setAccess] = useState(false);
 	const [returning, setReturn] = useState(false);
 	const [renewing, setRenew] = useState(false);
-	const {openWebsite, data, renewItem, openGroupedWork, libraryUrl} = props;
+	const {openWebsite, data, renewItem, openGroupedWork, libraryUrl, user, updateProfile, discoveryVersion} = props;
 	const {isOpen, onOpen, onClose} = useDisclose();
 	const dueDate = moment.unix(data.dueDate);
 	var itemDueOn = moment(dueDate).format("MMM D, YYYY");
 
 	var label = translate('checkouts.access_online', {source: data.checkoutSource});
-
-	console.log(data);
 
 	if (data.checkoutSource === "OverDrive") {
 
@@ -272,6 +282,15 @@ function CheckedOutItem(props) {
 
 	}
 
+	let allowLinkedAccountAction = true;
+	if(discoveryVersion < "22.05.00") {
+		if(data.userId !== user.id) {
+			allowLinkedAccountAction = false;
+		}
+	}
+
+	console.log(allowLinkedAccountAction);
+
 
 	// check that title ends in / first
 	if (data.title) {
@@ -289,6 +308,8 @@ function CheckedOutItem(props) {
 			var author = author.substring(0, author.lastIndexOf(','));
 		}
 	}
+
+	//console.log(data);
 
 
 
@@ -352,14 +373,15 @@ function CheckedOutItem(props) {
 						: null
 					}
 
-					{data.canRenew ?
+					{data.canRenew && allowLinkedAccountAction ?
 						<Actionsheet.Item
 							isLoading={renewing}
 							isLoadingText="Renewing..."
 							startIcon={<Icon as={MaterialIcons} name="autorenew" color="trueGray.400" mr="1" size="6"/>}
 							onPress={() => {
 								setRenew(true);
-								renewCheckout(data.barcode, data.recordId, data.source, data.itemId, libraryUrl).then(r => {
+								renewCheckout(data.barcode, data.recordId, data.source, data.itemId, libraryUrl, data.userId).then(r => {
+									updateProfile();
 									setRenew(false);
 									onClose(onClose)
 								});
@@ -424,7 +446,8 @@ function CheckedOutItem(props) {
 							startIcon={<Icon as={MaterialIcons} name="logout" color="trueGray.400" mr="1" size="6"/>}
 							onPress={() => {
 								setReturn(true);
-								returnCheckout(data.userId, data.recordId, data.source, data.overDriveId, libraryUrl).then(r => {
+								returnCheckout(data.userId, data.recordId, data.source, data.overDriveId, libraryUrl, discoveryVersion).then(r => {
+									updateProfile();
 									setReturn(false);
 									onClose(onClose);
 								});
@@ -433,14 +456,15 @@ function CheckedOutItem(props) {
 						</Actionsheet.Item>
 						: null}
 
-					{data.canReturnEarly ?
+					{data.canReturnEarly && allowLinkedAccountAction ?
 						<Actionsheet.Item
 							isLoading={returning}
 							isLoadingText="Returning..."
 							startIcon={<Icon as={MaterialIcons} name="logout" color="trueGray.400" mr="1" size="6"/>}
 							onPress={() => {
 								setReturn(true);
-								returnCheckout(data.userId, data.recordId, data.source, data.overDriveId, libraryUrl).then(r => {
+								returnCheckout(data.userId, data.recordId, data.source, data.overDriveId, libraryUrl, discoveryVersion).then(r => {
+									updateProfile();
 									setReturn(false);
 									onClose(onClose);
 								});

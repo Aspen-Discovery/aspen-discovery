@@ -2973,8 +2973,7 @@ class UserAPI extends Action
 	 */
 	protected function getUserForApiCall()
 	{
-
-		if($this->getLiDAVersion() == "v22.04.00") {
+		if($this->getLiDAVersion() === "v22.04.00") {
 			list($username, $password) = $this->loadUsernameAndPassword();
 			return UserAccount::validateAccount($username, $password);
 		}
@@ -3005,8 +3004,10 @@ class UserAPI extends Action
 	}
 
 	function getLiDAVersion() {
+		global $logger;
+		//$logger->log(print_r(getallheaders(), true), Logger::LOG_WARNING);
 		foreach (getallheaders() as $name => $value) {
-			if($name == 'Version') {
+			if($name == 'version' || $name == 'Version') {
 				$version = explode(' ', $value);
 				return $version[0];
 			}
