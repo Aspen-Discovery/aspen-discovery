@@ -18,7 +18,9 @@ import {
 	useDisclose,
 	HStack,
 	VStack,
-	IconButton
+	IconButton,
+	Select,
+	CheckIcon
 } from "native-base";
 import {Ionicons, MaterialCommunityIcons, MaterialIcons} from "@expo/vector-icons";
 import moment from "moment";
@@ -28,7 +30,7 @@ import {GLOBALS} from "../../util/globals";
 // custom components and helper files
 import {translate} from '../../translations/translations';
 import {loadingSpinner} from "../../components/loadingSpinner";
-import {getCheckedOutItems, getHolds, getProfile} from '../../util/loadPatron';
+import {getCheckedOutItems, getHolds, getProfile, reloadProfile} from '../../util/loadPatron';
 import {cancelHold, changeHoldPickUpLocation, freezeHold, thawHold} from '../../util/accountActions';
 import {getPickupLocations} from '../../util/loadLibrary';
 import {getTranslation, getTranslations} from "../../translations/TranslationService";
@@ -36,8 +38,8 @@ import {userContext} from "../../context/user";
 
 export default class Holds extends Component {
 
-	constructor(props) {
-		super(props);
+	constructor(props, context) {
+		super(props, context);
 		this.state = {
 			isLoading: true,
 			hasError: false,
@@ -46,9 +48,11 @@ export default class Holds extends Component {
 			locations: null,
 			forceReload: true,
 			holds: [],
+			isUpdating: false,
 			user: {
 				interfaceLanguage: "en",
 			},
+			library: this.context.library,
 			holdsNotReady: [],
 			holdsReady: [],
 			translation: {
@@ -117,8 +121,16 @@ export default class Holds extends Component {
 	}
 
 	componentDidMount = async () => {
+		let discoveryVersion = "22.04.00";
+		if(this.context.library.discoveryVersion) {
+			let version = this.context.library.discoveryVersion;
+			version = version.split(" ");
+			discoveryVersion = version[0];
+		}
+
 		this.setState({
 			isLoading: true,
+			discoveryVersion: version[0],
 		})
 
 		await this._fetchHolds();
@@ -143,7 +155,7 @@ export default class Holds extends Component {
 	};
 
 	// Renders the hold items on the screen
-	renderHoldItem = (item, libraryUrl) => {
+	renderHoldItem = (item, libraryUrl, user, updateProfile) => {
 		return (
 			<HoldItem
 				data={item}
@@ -153,16 +165,18 @@ export default class Holds extends Component {
 				openGroupedWork={this.openGroupedWork}
 				translations={this.state.translation}
 				libraryUrl={libraryUrl}
+				userProfile={user}
+				updateProfile = {updateProfile}
+				discoveryVersion={this.state.discoveryVersion}
 			/>
 		);
 	}
 
-	// Triggers a screen refresh
-	_onRefresh() {
-		this.setState({isRefreshing: true}, () => {
-			this._fetchHolds().then(() => {
-				this.setState({isRefreshing: false});
-			});
+	// Trigger a context refresh
+	updateProfile = async () => {
+		console.log("Getting new profile data from holds...");
+		await getProfile().then(response => {
+			this.context.user = response;
 		});
 	}
 
@@ -194,7 +208,7 @@ export default class Holds extends Component {
 				<FlatList
 					data={holds}
 					ListEmptyComponent={this._listEmptyComponent()}
-					renderItem={({item}) => this.renderHoldItem(item, library.baseUrl)}
+					renderItem={({item}) => this.renderHoldItem(item, library.baseUrl, user, this.updateProfile)}
 					keyExtractor={(item) => item.id.concat("_", item.position)}
 				/>
 				<Center pt={5} pb={5}>
@@ -210,7 +224,7 @@ export default class Holds extends Component {
 function HoldItem(props) {
 	let expirationDate;
 	let availableDate;
-	const {onPressItem, data, navigation, locations, forceScreenReload, openGroupedWork, translations, libraryUrl} = props;
+	const {onPressItem, data, navigation, locations, forceScreenReload, openGroupedWork, translations, libraryUrl, updateProfile, discoveryVersion, userProfile} = props;
 	const {isOpen, onOpen, onClose} = useDisclose();
 
 	const [loading, setLoading] = useState(false);
@@ -271,6 +285,15 @@ function HoldItem(props) {
 			var author = author.substring(0, author.lastIndexOf(','));
 		}
 	}
+
+	let allowLinkedAccountAction = true;
+	if(discoveryVersion < "22.05.00") {
+		if(data.userId !== userProfile.id) {
+			allowLinkedAccountAction = false;
+		}
+	}
+
+	console.log(allowLinkedAccountAction);
 
 	var source = data.source;
 	var holdSource = data.holdSource;
@@ -354,7 +377,7 @@ function HoldItem(props) {
 						</Actionsheet.Item>
 						: ""
 					}
-					{cancelable ?
+					{cancelable && allowLinkedAccountAction ?
 						<Actionsheet.Item
 							isLoading={loading}
 							isLoadingText="Cancelling..."
@@ -362,6 +385,7 @@ function HoldItem(props) {
 							onPress={() => {
 								setLoading(true);
 								cancelHold(data.cancelId, data.recordId, data.source, libraryUrl, data.userId).then(r => {
+									updateProfile();
 									onClose(onClose);
 									setLoading(false);
 								});
@@ -370,7 +394,7 @@ function HoldItem(props) {
 							{translations.cancelHold}
 						</Actionsheet.Item>
 						: ""}
-					{data.allowFreezeHolds ?
+					{data.allowFreezeHolds && allowLinkedAccountAction ?
 						<Actionsheet.Item
 							isLoading={data.frozen === true ? thaw : freeze}
 							isLoadingText={loadingText}
@@ -381,6 +405,7 @@ function HoldItem(props) {
 									setThaw(true);
 									setLoadingText("Thawing...");
 									thawHold(data.cancelId, data.recordId, data.source, libraryUrl, data.userId).then(r => {
+										updateProfile();
 										onClose(onClose);
 										setThaw(false);
 									});
@@ -388,6 +413,7 @@ function HoldItem(props) {
 									setFreeze(true);
 									setLoadingText("Freezing...");
 									freezeHold(data.cancelId, data.recordId, data.source, libraryUrl, data.userId).then(r => {
+										updateProfile();
 										onClose(onClose);
 										setFreeze(false);
 									});
@@ -398,8 +424,9 @@ function HoldItem(props) {
 						</Actionsheet.Item>
 						: ""}
 
-					{updateLocation ?
+					{updateLocation && allowLinkedAccountAction ?
 						<SelectPickupLocation locations={locations} onClose={onClose}
+						                      userId = {data.userId}
 						                      currentPickupId={data.pickupLocationId} holdId={data.cancelId} label={translations.changePickUpLocation} libraryUrl={libraryUrl}/>
 						: ""}
 
@@ -411,11 +438,21 @@ function HoldItem(props) {
 
 const SelectPickupLocation = (props) => {
 
-	const {locations, label, onClose, currentPickupId, holdId, libraryUrl} = props;
+	const {locations, label, onClose, currentPickupId, holdId, libraryUrl, userId} = props;
+
+	let pickupLocation = _.findIndex(locations, function(o) { return o.locationId == currentPickupId; });
+	pickupLocation = _.nth(locations, pickupLocation);
+	let pickupLocationCode = _.get(pickupLocation, 'code', '');
+	pickupLocation = currentPickupId.concat("_", pickupLocationCode);
+	// 									const locationId = item.locationId;
+	// 									const code = item.code;
+	// 									const id = locationId.concat("_", code);
+	console.log("Current pickup: " + currentPickupId);
+	console.log(locations);
 
 	const [loading, setLoading] = useState(false);
 	const [showModal, setShowModal] = useState(false);
-	let [value, setValue] = React.useState(currentPickupId);
+	let [location, setLocation] = React.useState(pickupLocation);
 
 	return (
 		<>
@@ -432,21 +469,26 @@ const SelectPickupLocation = (props) => {
 					<Modal.Body>
 						<FormControl>
 							<FormControl.Label>{translate('pickup_locations.select_new_pickup')}</FormControl.Label>
-							<Radio.Group
+							<Select
 								name="pickupLocations"
-								value={value}
-								onChange={(nextValue) => {
-									setValue(nextValue);
+								selectedValue={location}
+								minWidth="200"
+								accessibilityLabel="Select a new pickup location"
+								_selectedItem={{
+									bg: "tertiary.300",
+									endIcon: <CheckIcon size="5" />
 								}}
-								mt="1"
+								mt={1}
+								mb={3}
+								onValueChange={itemValue => setLocation(itemValue)}
 							>
 								{locations.map((item, index) => {
 									const locationId = item.locationId;
 									const code = item.code;
 									const id = locationId.concat("_", code);
-									return <Radio value={id} my={1}>{item.name}</Radio>;
+									return <Select.Item value={id} label={item.name}/>;
 								})}
-							</Radio.Group>
+							</Select>
 						</FormControl>
 					</Modal.Body>
 					<Modal.Footer>
@@ -458,7 +500,7 @@ const SelectPickupLocation = (props) => {
 								isLoadingText="Updating..."
 								onPress={() => {
 									setLoading(true);
-									changeHoldPickUpLocation(holdId, value, libraryUrl).then(r => {
+									changeHoldPickUpLocation(holdId, location, libraryUrl, userId).then(r => {
 											setShowModal(false);
 											onClose(onClose);
 											setLoading(false);

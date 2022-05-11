@@ -51,7 +51,6 @@ export async function getGroupedWork(libraryUrl, itemId) {
  * @param {number} patronId
  **/
 export async function checkoutItem(libraryUrl, itemId, source, patronId) {
-	let user = React.useContext(userContext);
 	const postBody = await postData();
 	const api = create({
 		baseURL: libraryUrl + '/API',
@@ -68,9 +67,6 @@ export async function checkoutItem(libraryUrl, itemId, source, patronId) {
 
 		// reload patron data in the background
 		await getCheckedOutItems(libraryUrl);
-		await getProfile().then(response => {
-			user = response;
-		})
 
 		return results;
 	} else {
@@ -120,7 +116,7 @@ export async function overDriveSample(libraryUrl, formatId, itemId, sampleNumber
 	const api = create({
 		baseURL: libraryUrl + '/API',
 		timeout: GLOBALS.timeoutAverage,
-		headers: getHeaders(),
+		headers: getHeaders(true),
 		auth: createAuthTokens(),
 		params: {
 			overDriveId: itemId,
