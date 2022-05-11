@@ -95,6 +95,14 @@ class Admin_Locations extends ObjectEditor
 		return UserAccount::userHasPermission(['Administer All Locations', 'Administer Home Library Locations', 'Administer Home Location']);
 	}
 
+	function canAddNew(){
+		return UserAccount::userHasPermission(['Administer All Locations']);
+	}
+
+	function canDelete(){
+		return UserAccount::userHasPermission(['Administer All Locations']);
+	}
+
 	protected function getDefaultRecordsPerPage()
 	{
 		return 250;

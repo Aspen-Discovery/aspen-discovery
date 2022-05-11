@@ -3,11 +3,11 @@ import {Center, Text, VStack} from "native-base";
 
 // custom components and helper files
 import {translate} from '../../translations/translations';
-import DisplayRecord from "./Record";
+import DisplayRecord, {Record} from "./Record";
 
 const Manifestation = (props) => {
 
-	const {data, format, language, locations, showAlert, groupedWorkTitle, itemDetails, user, groupedWorkId, library} = props;
+	const {data, format, language, locations, showAlert, groupedWorkTitle, itemDetails, user, groupedWorkId, library, linkedAccounts, openHolds, openCheckouts, discoveryVersion, updateProfile} = props;
 	const arrayToSearch = data.[`${format}`];
 
 	const locationCount = locations.length;
@@ -37,7 +37,7 @@ const Manifestation = (props) => {
 
 	return match.map((item, index) => {
 		return (
-			<DisplayRecord
+			<Record
 				available = {item.available}
 				availableOnline = {item.availableOnline}
 				actions = {item.action}
@@ -57,6 +57,11 @@ const Manifestation = (props) => {
 				user = {user}
 				groupedWorkId = {groupedWorkId}
 				library = {library}
+				linkedAccounts = {linkedAccounts}
+				openCheckouts = {openCheckouts}
+				openHolds = {openHolds}
+				discoveryVersion = {discoveryVersion}
+				updateProfile = {updateProfile}
 			/>
 		)
 	})

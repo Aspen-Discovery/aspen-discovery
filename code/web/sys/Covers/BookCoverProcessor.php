@@ -69,7 +69,7 @@ class BookCoverProcessor{
             if ($this->getSpringshareLibCalCover($this->id)) {
                 return true;
             }
-		} elseif ($this->type == 'webpage' || $this->type == 'WebPage' || $this->type == 'BasicPage' || $this->type == 'WebResource') {
+		} elseif ($this->type == 'webpage' || $this->type == 'WebPage' || $this->type == 'BasicPage' || $this->type == 'WebResource' || $this->type == 'PortalPage') {
 			if ($this->getWebPageCover($this->id)) {
 				return true;
 			}
@@ -1484,6 +1484,9 @@ class BookCoverProcessor{
 		}elseif ($this->type == 'BasicPage'){
 			require_once ROOT_DIR . '/RecordDrivers/BasicPageRecordDriver.php';
 			$recordDriver = new BasicPageRecordDriver($this->type . ':' . $id);
+		}elseif ($this->type == 'PortalPage'){
+			require_once ROOT_DIR . '/RecordDrivers/PortalPageRecordDriver.php';
+			$recordDriver = new PortalPageRecordDriver($this->type . ':' . $id);
 		}elseif ($this->type == 'WebResource') {
 			require_once ROOT_DIR . '/RecordDrivers/WebResourceRecordDriver.php';
 			$recordDriver = new WebResourceRecordDriver($this->type . ':' . $id);

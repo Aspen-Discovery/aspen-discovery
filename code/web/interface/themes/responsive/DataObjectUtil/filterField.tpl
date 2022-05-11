@@ -9,7 +9,7 @@
 	{else}
 		{assign var=appliedFilter value=''}
 	{/if}
-	{if $filterField.type == 'text' || $filterField.type == 'label'}
+	{if $filterField.type == 'text' || $filterField.type == 'label' || $filterField.type == 'url'}
 		<div class="col-xs-3">
 			{assign var=label value='Type of filtering for '+$filterField.label}
 			<select name="filterType[{$filterField.property}]" class="form-control form-control-sm filterType" aria-label="{translate text=$label inAttribute=true isAdminFacing=true}">

@@ -11,9 +11,6 @@ class ListAPI extends Action
 	function launch()
 	{
 		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
-		if ($method != 'getRSSFeed' && !IPAddress::allowAPIAccessForClientIP()){
-			$this->forbidAPIAccess();
-		}
 
 		if (isset($_SERVER['PHP_AUTH_USER'])) {
 			if($this->grantTokenAccess()) {
@@ -34,30 +31,34 @@ class ListAPI extends Action
 			}
 			ExternalRequestLogEntry::logRequest('ListAPI.' . $method, $_SERVER['REQUEST_METHOD'], $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'], getallheaders(), '', $_SERVER['REDIRECT_STATUS'], $output, []);
 			echo $output;
-		}
-
-		if (!in_array($method, ['getSavedSearchTitles', 'getCacheInfoForListId', 'getSystemListTitles']) && method_exists($this, $method)) {
-			if ($method == 'getRSSFeed') {
-				header('Content-type: text/xml');
-				header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
-				header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
-				$xml = '<?xml version="1.0" encoding="UTF-8"?' . ">\n";
-				$xml .= $this->$method();
-
-				echo $xml;
-
-			} else {
-				header('Content-type: application/json');
-				header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
-				header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
-				$output = json_encode(array('result' => $this->$method()));
-
-				echo $output;
-			}
-			require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
-			APIUsage::incrementStat('ListAPI', $method);
 		} else {
-			echo json_encode(array('error' => 'invalid_method'));
+			if ($method != 'getRSSFeed' && !IPAddress::allowAPIAccessForClientIP()){
+				$this->forbidAPIAccess();
+			}
+
+			if (!in_array($method, ['getSavedSearchTitles', 'getCacheInfoForListId', 'getSystemListTitles']) && method_exists($this, $method)) {
+				if ($method == 'getRSSFeed') {
+					header('Content-type: text/xml');
+					header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
+					header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
+					$xml = '<?xml version="1.0" encoding="UTF-8"?' . ">\n";
+					$xml .= $this->$method();
+
+					echo $xml;
+
+				} else {
+					header('Content-type: application/json');
+					header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
+					header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
+					$output = json_encode(array('result' => $this->$method()));
+
+					echo $output;
+				}
+				require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
+				APIUsage::incrementStat('ListAPI', $method);
+			} else {
+				echo json_encode(array('error' => 'invalid_method'));
+			}
 		}
 	}
 
@@ -162,10 +163,6 @@ class ListAPI extends Action
 	 */
 	function getUserLists()
 	{
-		if (!isset($_REQUEST['username']) || !isset($_REQUEST['password'])) {
-			return array('success' => false, 'message' => 'The username and password must be provided to load lists.');
-		}
-
 		list($username, $password) = $this->loadUsernameAndPassword();
         $user = UserAccount::validateAccount($username, $password);
 
@@ -547,9 +544,9 @@ class ListAPI extends Action
 		}
 	}
 
-	function getSavedSearches() : array
+	function getSavedSearches($userId = null) : array
 	{
-		$userId = null;
+
 		if (!UserAccount::isLoggedIn()){
 			if (!isset($_REQUEST['username']) || !isset($_REQUEST['password'])) {
 				return array('success' => false, 'message' => 'The username and password must be provided to load saved searches.');
@@ -563,12 +560,18 @@ class ListAPI extends Action
 				return array('success' => false, 'message' => 'Sorry, we could not find a user with those credentials.');
 			}
 
-			$userId = $user->id;
+			$id = $user->id;
+		}
+
+		if($userId) {
+			$id = $userId;
+		} else {
+			$id = UserAccount::getActiveUserId();
 		}
 
 		$result = [];
 		$SearchEntry = new SearchEntry();
-		$SearchEntry->user_id = UserAccount::getActiveUserId();
+		$SearchEntry->user_id = $id;
 		$SearchEntry->saved = "1";
 		$SearchEntry->orderBy('created desc');
 		$SearchEntry->find();
@@ -707,8 +710,13 @@ class ListAPI extends Action
 			$list->user_id = $user->id;
 			$list->find();
 			if ($list->find(true)) {
-				$list->delete();
-				return array('success' => true, 'title' => 'Success', 'message' => 'List deleted successfully');
+				$userCanEdit = $user->canEditList($list);
+				if ($userCanEdit) {
+					$list->delete();
+					return array('success' => true, 'title' => 'Success', 'message' => 'List deleted successfully');
+				}else{
+					return array('success' => true, 'title' => 'Success', 'message' => "Sorry you don't have permissions to delete this list.");
+				}
 			}else{
 				return array('success' => false, 'title' => 'Error', 'message' => 'List not found', 'listId' => $list->id, 'listTitle' => $list->title);
 			}
@@ -765,7 +773,11 @@ class ListAPI extends Action
 					$list->description = strip_tags($_REQUEST['description']);
 				}
 				if(isset($_REQUEST['public'])) {
-					$list->public = $_REQUEST['public'] === false ? 0 : 1;
+					if($_REQUEST['public'] == false) {
+						$list->public = 0;
+					} else {
+						$list->public = 1;
+					}
 				}
 				$list->update();
 				return array('success' => true, 'title' => 'Success', 'message' => "Edited list {$list->title} successfully");

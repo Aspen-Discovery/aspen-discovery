@@ -4501,6 +4501,7 @@ var Globals = (function () {
 		hasCloudLibraryConnection: false,
 		hasHooplaConnection: false,
 		hasOverDriveConnection: false,
+		isPrint: false,
 		loadingTitle: 'Loading',
 		loadingBody: 'Loading, please wait',
 		requestFailedTitle: 'Request Failed',
@@ -11712,6 +11713,8 @@ AspenDiscovery.Record = (function(){
 					params['holdType'] = 'item';
 				}
 			}
+			params = this.loadHoldNotificationOptions(params);
+
 			$.getJSON(Globals.path + "/" + module +  "/" + id + "/AJAX", params, function(data){
 				if (data.success){
 					if (data.needsItemLevelHold){
@@ -11732,6 +11735,46 @@ AspenDiscovery.Record = (function(){
 					AspenDiscovery.showMessage(data.title, data.message, false, false);
 				}
 			}).fail(AspenDiscovery.ajaxFail);
+		},
+
+		loadHoldNotificationOptions: function (params){
+			var emailNotification = $('#emailNotification');
+			if (emailNotification.length > 0){
+				if (emailNotification.is(':checked')){
+					params['emailNotification'] = 'on';
+				}else{
+					params['emailNotification'] = 'off';
+				}
+			}
+			var phoneNotification = $('#phoneNotification');
+			if (phoneNotification.length > 0){
+				if (phoneNotification.is(':checked')){
+					params['phoneNotification'] = 'on';
+				}else{
+					params['phoneNotification'] = 'off';
+				}
+			}
+			var phoneNumber = $('#phoneNumber');
+			if (phoneNumber.length > 0){
+				params['phoneNumber'] = phoneNumber.val();
+			}
+			var smsNotification = $('#smsNotification');
+			if (smsNotification.length > 0){
+				if (smsNotification.is(':checked')){
+					params['smsNotification'] = 'on';
+				}else{
+					params['smsNotification'] = 'off';
+				}
+			}
+			var smsNumber = $('#smsNumber');
+			if (smsNumber.length > 0){
+				params['smsNumber'] = smsNumber.val();
+			}
+			var smsCarrier = $('#smsCarrier');
+			if (smsCarrier.length > 0){
+				params['smsCarrier'] =$("#smsCarrier option:selected").val();
+			}
+			return params;
 		},
 
 		placeVolumeHold: function(){
@@ -11768,6 +11811,7 @@ AspenDiscovery.Record = (function(){
 					params['holdType'] = 'volume';
 				}
 			}
+			params = this.loadHoldNotificationOptions(params);
 			$.getJSON(Globals.path + "/" + module +  "/" + id + "/AJAX", params, function(data){
 				if (data.success){
 					if (data.needsItemLevelHold){
@@ -11936,48 +11980,38 @@ AspenDiscovery.Record = (function(){
 		}
 	};
 }(AspenDiscovery.Record || {}));
-AspenDiscovery.Responsive = (function(){
-	$(function(){
-		// auto adjust the height of the search box
-		// (Only side bar search box for now)
-		$('#lookfor', '#home-page-search').on( 'keyup', function (event ){
-			$(this).height( 0 );
-			if (this.scrollHeight < 32){
-				$(this).height( 18 );
-			}else{
-				$(this).height( this.scrollHeight );
-			}
-		}).keyup(); //This keyup triggers the resize
-
-		$('#lookfor').on( 'keydown', function (event ){
-			if (event.which === 13 || event.which === 10){
-				event.preventDefault();
-				event.stopPropagation();
-				$("#searchForm").submit();
-				return false;
-			}
-		}).on( 'keypress', function (event ){
-			if (event.which === 13 || event.which === 10){
-				event.preventDefault();
-				event.stopPropagation();
-				return false;
-			}
-		})
+$(document).ready(function(){
+	$('#lookfor').on( 'keydown', function (event ){
+		if (event.which === 13 || event.which === 10){
+			event.preventDefault();
+			event.stopPropagation();
+			$("#searchForm").submit();
+			return false;
+		}
+	}).on( 'keypress', function (event ){
+		if (event.which === 13 || event.which === 10){
+			event.preventDefault();
+			event.stopPropagation();
+			return false;
+		}
 	});
 
 	try{
 		var mediaQueryList = window.matchMedia('print');
-		mediaQueryList.addListener(function(mql) {
-			AspenDiscovery.Responsive.isPrint = mql.matches;
-		});
+		mediaQueryList.addEventListener("change",setIsPrint);
+
+		function setIsPrint() {
+			Globals.isPrint = this.checkNative();
+		}
 	}catch(err){
 		//For now, just ignore this error.
 	}
 
 	window.onbeforeprint = function() {
-		AspenDiscovery.Responsive.isPrint = true;
-	};
-}(AspenDiscovery.Responsive || {}));
+		Globals.isPrint = true;
+	}
+
+});
 AspenDiscovery.ResultsList = (function(){
 	return {
 		statusList: [],
@@ -13011,6 +13045,11 @@ AspenDiscovery.WebBuilder = function () {
 				resourceId: id
 			};
 			// noinspection JSUnresolvedFunction
+			var newTab = window.open("", '_blank');
+			if (newTab==null) {
+				return ;
+			}
+
 			$.getJSON(url, params, function(data){
 				if(data.requireLogin) {
 					if(Globals.loggedIn || data.inLibrary) {
@@ -13021,8 +13060,7 @@ AspenDiscovery.WebBuilder = function () {
 						};
 						$.getJSON(url, params, function(usage){
 							if(data.openInNewTab) {
-								var newTab = window.open();
-								newTab.location.href = data.url;
+								newTab.location.href = data.url
 							} else {
 								location.assign(data.url);
 							}
@@ -13040,8 +13078,7 @@ AspenDiscovery.WebBuilder = function () {
 					};
 					$.getJSON(url, params, function(usage){
 						if(data.openInNewTab) {
-							var newTab = window.open();
-							newTab.location.href = data.url;
+							newTab.location.href = data.url
 						} else {
 							location.assign(data.url);
 						}

@@ -7,9 +7,10 @@ import * as Sentry from 'sentry-expo';
 // custom components and helper files
 import {createAuthTokens, getHeaders, postData} from "./apiAuth";
 import {translate} from "../translations/translations";
-import {getCheckedOutItems, getHolds} from "./loadPatron";
+import {getCheckedOutItems, getHolds, getProfile} from "./loadPatron";
 import {popToast} from "../components/loadError";
 import {GLOBALS} from "./globals";
+import {userContext} from "../context/user";
 
 /**
  * Fetch information for GroupedWork
@@ -54,9 +55,9 @@ export async function checkoutItem(libraryUrl, itemId, source, patronId) {
 	const api = create({
 		baseURL: libraryUrl + '/API',
 		timeout: GLOBALS.timeoutAverage,
-		headers: getHeaders(),
+		headers: getHeaders(true),
 		auth: createAuthTokens(),
-		params: {itemId: itemId, itemSource: source, patronId: patronId}
+		params: {itemId: itemId, itemSource: source, userId: patronId}
 	});
 	const response = await api.post('/UserAPI?method=checkoutItem', postBody);
 	console.log(response);
@@ -90,11 +91,12 @@ export async function placeHold(libraryUrl, itemId, source, patronId, pickupBran
 	const api = create({
 		baseURL: libraryUrl + '/API',
 		timeout: GLOBALS.timeoutAverage,
-		headers: getHeaders(),
+		headers: getHeaders(true),
 		auth: createAuthTokens(),
-		params: {itemId: itemId, itemSource: source, patronId: patronId, pickupBranch: pickupBranch}
+		params: {itemId: itemId, itemSource: source, userId: patronId, pickupBranch: pickupBranch}
 	});
 	const response = await api.post('/UserAPI?method=placeHold', postBody);
+	console.log(response);
 	if (response.ok) {
 		const responseData = response.data;
 		const results = responseData.result;
@@ -114,7 +116,7 @@ export async function overDriveSample(libraryUrl, formatId, itemId, sampleNumber
 	const api = create({
 		baseURL: libraryUrl + '/API',
 		timeout: GLOBALS.timeoutAverage,
-		headers: getHeaders(),
+		headers: getHeaders(true),
 		auth: createAuthTokens(),
 		params: {
 			overDriveId: itemId,
@@ -204,7 +206,7 @@ export async function getItemDetails(libraryUrl, id, format) {
 	const api = create({
 		baseURL: libraryUrl + '/API',
 		timeout: GLOBALS.timeoutAverage,
-		headers: getHeaders(),
+		headers: getHeaders(true),
 		auth: createAuthTokens(),
 		params: {recordId: id, format: format}
 	});

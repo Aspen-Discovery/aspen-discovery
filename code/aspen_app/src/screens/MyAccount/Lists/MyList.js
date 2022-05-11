@@ -85,7 +85,7 @@ export default class MyList extends Component {
 	// renders the items on the screen
 	renderItem = (item, libraryUrl) => {
 		return (
-			<Pressable borderBottomWidth="1" _dark={{ borderColor: "gray.600" }} borderColor="coolGray.200" pl="4" pr="5" py="2" onPress={() => this.openItem(item.id, library.baseUrl)}>
+			<Pressable borderBottomWidth="1" _dark={{ borderColor: "gray.600" }} borderColor="coolGray.200" pl="4" pr="5" py="2" onPress={() => this.openItem(item.id, this.state.libraryUrl)}>
 				<HStack space={3} justifyContent="flex-start" alignItems="flex-start">
 					<Avatar source={{ uri: item.image }} alt={item.title} borderRadius="md" size={{base: "80px", lg: "120px"}} />
 					<VStack w="65%">
@@ -93,15 +93,15 @@ export default class MyList extends Component {
 						{item.author ? <Text _dark={{ color: "warmGray.50" }} color="coolGray.800" fontSize="xs">{translate('grouped_work.by')} {item.author}</Text> : null }
 					</VStack>
 					<IconButton icon={<Icon as={MaterialIcons} name="delete" />} _icon={{size: "xs", color: "gray.600"}} onPress={() => {
-						removeTitlesFromList(this.state.id, item.id, libraryUrl)
-					}} style={{ justifyContent: "flex-end", textAlign: "right", alignSelf: "top" }}/>
+						removeTitlesFromList(this.state.id, item.id, this.state.libraryUrl)
+					}} style={{ justifyContent: "flex-end", textAlign: "right" }}/>
 				</HStack>
 			</Pressable>
 		)
 	};
 
 	openItem = (id, libraryUrl) => {
-		this.props.navigation.navigate("AccountScreenTab", {screen: 'ItemDetails', params: {item: id, libraryUrl: libraryUrl}});
+		this.props.navigation.navigate("AccountScreenTab", {screen: 'GroupedWork', params: {item: id, libraryUrl: this.state.libraryUrl}});
 	};
 
 	_listEmpty = () => {
@@ -121,18 +121,20 @@ export default class MyList extends Component {
 		const user = this.context.user;
 		const location = this.context.location;
 		const library = this.context.library;
+		const { route } = this.props;
+		const givenListId = route.params?.list ?? 0;
 
 		if (this.state.isLoading) {
 			return (loadingSpinner());
 		}
 
 		return (
-			<ScrollView style={{ marginBottom: 80 }}>
+			<ScrollView>
 			<Box safeArea={2}>
-				<EditList data={this.state.listDetails} listId={this.state.id} navigation={this.props.navigation} libraryUrl={library.baseUrl}/>
+				<EditList data={this.state.listDetails} listId={givenListId} navigation={this.props.navigation} libraryUrl={this.state.libraryUrl}/>
 				<FlatList
 					data={this.state.list}
-					renderItem={({ item }) => this.renderItem(item, library.baseUrl)}
+					renderItem={({ item }) => this.renderItem(item, this.state.libraryUrl)}
 					keyExtractor={(item) => item.id}
 				/>
 			</Box>

@@ -1,18 +1,19 @@
-import React from "react";
+import React, {useState} from "react";
 import { createDrawerNavigator } from "@react-navigation/drawer";
 import { useToken, useColorModeValue } from 'native-base';
 
 import {DrawerContent} from "./DrawerContent";
 import TabNavigator from "../tab/TabNavigator";
+import LoadingScreen from "../../screens/Auth/Loading";
 
 const Drawer = createDrawerNavigator();
 
 function AccountDrawer() {
-	const screenBackgroundColor = useToken("colors", useColorModeValue("warmGray.50", "coolGray.800"))
+	const screenBackgroundColor = useToken("colors", useColorModeValue("warmGray.50", "coolGray.800"));
 
 	return (
 		<Drawer.Navigator
-			initialRouteName="Tabs"
+			initialRouteName="LoadingScreen"
 			screenOptions={{
 				drawerType: "front",
 				drawerHideStatusBarOnOpen: true,
@@ -24,6 +25,11 @@ function AccountDrawer() {
 			}}
 			drawerContent={(props) => <DrawerContent {...props} />}
 		>
+			<Drawer.Screen
+				name="LoadingScreen"
+				component={LoadingScreen}
+				options={{animationEnabled: false, header: () => null}}
+			/>
 			<Drawer.Screen
 				name="Tabs"
 				component={TabNavigator}

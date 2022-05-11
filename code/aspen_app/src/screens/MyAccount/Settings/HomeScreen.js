@@ -8,10 +8,11 @@ import {getPatronBrowseCategories} from "../../../util/loadPatron";
 import {dismissBrowseCategory, showBrowseCategory} from "../../../util/accountActions";
 import {userContext} from "../../../context/user";
 import {loadingSpinner} from "../../../components/loadingSpinner";
+import {getBrowseCategories} from "../../../util/loadLibrary";
 
 export default class Settings_HomeScreen extends Component {
-	constructor(props) {
-		super(props);
+	constructor(props, context) {
+		super(props, context);
 		this.state = {
 			isLoading: true,
 			hasError: false,
@@ -27,9 +28,17 @@ export default class Settings_HomeScreen extends Component {
 
 	// store the values into the state
 	componentDidMount = async () => {
+		let discoveryVersion = "22.04.00";
+		if(this.context.library.discoveryVersion) {
+			let version = this.context.library.discoveryVersion;
+			version = version.split(" ");
+			discoveryVersion = version[0];
+		}
+
 		this.setState({
 			isLoading: true,
-		});
+			discoveryVersion: discoveryVersion,
+		})
 
 		await this.loadBrowseCategories().then(r => {
 			this.setState({ isLoading: false });
@@ -63,20 +72,38 @@ export default class Settings_HomeScreen extends Component {
 	// Update the status of the browse category when the toggle switch is flipped
 	updateToggle = async (item, user, libraryUrl) => {
 		if (item.isHidden === true) {
-			await showBrowseCategory(libraryUrl, item.key, user);
+			await showBrowseCategory(libraryUrl, item.key, user, this.state.discoveryVersion).then(async res => {
+				await getPatronBrowseCategories(libraryUrl, patronId).then(res => {
+					this.setState({
+						patronCategories: res,
+					})
+				})
+				await getBrowseCategories(libraryUrl, this.state.discoveryVersion).then(response => {
+					this.context.browseCategories = response;
+				})
+			});
 		} else {
-			await dismissBrowseCategory(libraryUrl, item.key, user);
+			await dismissBrowseCategory(libraryUrl, item.key, user, this.state.discoveryVersion).then(async res => {
+				await getPatronBrowseCategories(libraryUrl, patronId).then(res => {
+					this.setState({
+						patronCategories: res,
+					})
+				})
+				await getBrowseCategories(libraryUrl, this.state.discoveryVersion).then(response => {
+					this.context.browseCategories = response;
+				})
+			});
 		}
 	};
 
 
-	renderNativeItem = (item, patronId, libraryUrl) => {
+	renderNativeItem = (item, patronId, libraryUrl, browseCategories) => {
 		return (
 			<Box borderBottomWidth="1" _dark={{ borderColor: "gray.600" }} borderColor="coolGray.200" pl="4" pr="5" py="2">
 				<HStack space={3} alignItems="center" justifyContent="space-between" pb={1}>
 					<Text isTruncated bold maxW="80%" fontSize={{base: "lg", lg: "xl"}}>{item.title}</Text>
-					{item.isHidden ? <Switch size={{base: "md", lg: "lg"}} onValueChange={() => this.updateToggle(item, patronId, libraryUrl)}/> :
-						<Switch size={{base: "md", lg: "lg"}} onValueChange={() => this.updateToggle(item, patronId, libraryUrl)} defaultIsChecked/>}
+					{item.isHidden ? <Switch size={{base: "md", lg: "lg"}} onValueChange={() => this.updateToggle(item, patronId, libraryUrl, browseCategories)}/> :
+						<Switch size={{base: "md", lg: "lg"}} onValueChange={() => this.updateToggle(item, patronId, libraryUrl, browseCategories)} defaultIsChecked/>}
 				</HStack>
 			</Box>
 		);
@@ -89,6 +116,7 @@ export default class Settings_HomeScreen extends Component {
 		const user = this.context.user;
 		const location = this.context.location;
 		const library = this.context.library;
+		const browseCategories = this.context.browseCategories;
 
 		if (this.state.isLoading === true) {
 			return (loadingSpinner());
@@ -103,11 +131,11 @@ export default class Settings_HomeScreen extends Component {
 		}
 
 		return (
-			<ScrollView style={{ marginBottom: 80 }}>
+			<ScrollView>
 			<Box>
 				<FlatList
 					data={patronCategories}
-					renderItem={({item}) => this.renderNativeItem(item, user.id, library.baseUrl)}
+					renderItem={({item}) => this.renderNativeItem(item, user.id, library.baseUrl, browseCategories)}
 				/>
 			</Box>
 			</ScrollView>

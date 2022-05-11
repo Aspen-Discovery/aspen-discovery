@@ -4,23 +4,35 @@
 class XpressPay_Complete extends Action
 {
 	public function launch(){
-		global $logger;
-		$logger->log("Completing Xpress-pay Payment", Logger::LOG_ERROR);
+		global $interface;
+		$error = '';
+		$message = '';
 
-		require_once ROOT_DIR . '/sys/Account/UserPayment.php';
-		$result = UserPayment::completeXpressPayPayment($_REQUEST);
+		if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+			if (empty($_REQUEST['l1'])) {
+				$error = 'No Payment ID was provided, could not complete the payment';
+			}else{
+				require_once ROOT_DIR . '/sys/Account/UserPayment.php';
+				$result = UserPayment::completeXpressPayPayment($_REQUEST);
+				if ($result['success']){
+					$message = $result['message'];
+				}else {
+					$error = $result['message'];
+				}
+			}
+		}
 
-		header('Content-type: application/json');
-		header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
-		header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
-
-		$logger->log(print_r($result, true), Logger::LOG_ERROR);
-		echo json_encode($result);
-		die();
+		$interface->assign('error', $error);
+		$interface->assign('message', $message);
+		$this->display('paymentCompleted.tpl', 'Payment Completed');
 	}
 
 	function getBreadcrumbs() : array
 	{
-		return [];
+		$breadcrumbs = [];
+		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'My Account');
+		$breadcrumbs[] = new Breadcrumb('/MyAccount/Fines', 'My Fines');
+		$breadcrumbs[] = new Breadcrumb('', 'Payment Completed');
+		return $breadcrumbs;
 	}
 }

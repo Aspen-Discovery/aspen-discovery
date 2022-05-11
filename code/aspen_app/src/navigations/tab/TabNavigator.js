@@ -46,11 +46,9 @@ export default function TabNavigator() {
 					fontWeight: '400'
 				},
 				tabBarStyle: {
-					position: 'absolute',
+					backgroundColor: tabBarBackgroundColor,
+					elevation: 0
 				},
-				tabBarBackground: () => (
-					<BlurView tint={tabBarBackgroundColor} intensity={100} style={{flex: 1, padding: 20}} />
-				),
 			})}
 		>
 			<Tab.Screen
@@ -58,7 +56,7 @@ export default function TabNavigator() {
 				component={BrowseStackNavigator}
 				options={{
 					tabBarLabel: translate('navigation.home'),
-					unmountOnBlur: false,
+					unmountOnBlur: true,
 				}}
 				screenOptions={{
 					headerShown: false,

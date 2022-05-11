@@ -6,13 +6,13 @@ import {addTitlesToList, createListFromTitle, getLists} from "../../util/loadPat
 import _ from "lodash";
 import {popAlert} from "../../components/loadError";
 
-const AddToList = (props) => {
-	const { item, libraryUrl } = props;
+export const AddToList = (props) => {
+	const { item, libraryUrl, lastListUsed } = props;
 	const [showUseExistingModal, setShowUseExistingModal] = useState(false);
 	const [showCreateNewModal, setShowCreateNewModal] = useState(false);
 	const [loading, setLoading] = useState(false);
 	const [lists, setLists] = useState([]);
-	const [listId, setListId] = useState(0);
+	const [listId, setListId] = useState(lastListUsed);
 
 	const [title, setTitle] = React.useState('');
 	const [description, setDescription] = React.useState('');
@@ -22,13 +22,12 @@ const AddToList = (props) => {
 		<Center>
 			<IconButton onPress={
 				async () => {
-					await AsyncStorage.getItem('@patronLists').then(response => {
-						const items = JSON.parse(response);
-						setLists(items);
+					await getLists(libraryUrl).then(response => {
+						setLists(response);
 						setShowUseExistingModal(true);
-					})
+					});
 				}
-			} icon={<Icon as={MaterialIcons} name="bookmark"/>} _icon={{size: "xs", color: "gray.600"}} style={{ justifyContent: "flex-end", textAlign: "right", alignSelf: "top" }}/>
+			} icon={<Icon as={MaterialIcons} name="bookmark"/>} _icon={{size: "xs", color: "gray.600"}} style={{ justifyContent: "flex-end", textAlign: "right" }}/>
 			<Modal isOpen={showUseExistingModal} onClose={() => setShowUseExistingModal(false)} size="full">
 				<Modal.Content maxWidth="90%" bg="white" _dark={{bg: "coolGray.800"}}>
 					<Modal.CloseButton />
@@ -40,7 +39,7 @@ const AddToList = (props) => {
 							{!_.isUndefined(lists)  ? (
 								<Box>
 									<FormControl.Label>Choose a List</FormControl.Label>
-									<Select onValueChange={(itemValue) => {setListId(itemValue)}}>
+									<Select selectedValue={listId} onValueChange={(itemValue) => {setListId(itemValue)}}>
 										{lists.map((item, index) => {
 											return (<Select.List value={item.id} label={item.title} />);
 										})}

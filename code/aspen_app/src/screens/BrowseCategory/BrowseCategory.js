@@ -23,6 +23,9 @@ const BrowseCategory = (props) => {
 			const newItems = await getBrowseCategoryResults(categoryKey, 25, 1);
 			setShouldFetch(false);
 			setItems(newItems);
+			//sleep(1000);
+			//console.log(newItems);
+
 		};
 		fetch();
 		setInitialLoad(true);
@@ -65,7 +68,7 @@ async function getBrowseCategoryResults(categoryKey, limit = 25, page) {
 	const postBody = await postData();
 	const api = create({
 		baseURL: libraryUrl + '/API',
-		timeout: 60000,
+		timeout: 10000,
 		headers: getHeaders(true),
 		auth: createAuthTokens(),
 		params: {limit: limit, id: categoryKey, page: page}
@@ -96,6 +99,14 @@ async function getBrowseCategoryResults(categoryKey, limit = 25, page) {
 		}
 	}
 
+}
+
+function sleep(milliseconds) {
+	const date = Date.now();
+	let currentDate = null;
+	do {
+		currentDate = Date.now();
+	} while (currentDate - date < milliseconds);
 }
 
 export default BrowseCategory;

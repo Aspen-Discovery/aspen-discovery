@@ -78,7 +78,8 @@ export default class Contact extends Component {
 		return (
 			<Box safeArea={5}>
 				<Center>
-					<Heading mb={2}>{location.displayName}</Heading>
+					<Heading>{library.displayName}</Heading>
+					<Text mb={2}>{location.displayName}</Text>
 					{location.showInLocationsAndHoursList === "1" ?
 						<HoursAndLocation hoursMessage={location.hoursMessage} hours={location.hours}
 						                  description={location.description}/> : null}

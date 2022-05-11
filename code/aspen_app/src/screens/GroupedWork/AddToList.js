@@ -8,11 +8,12 @@ import {popAlert} from "../../components/loadError";
 
 export const AddToListFromItem = (props) => {
 	const { user, item, libraryUrl } = props;
+	const lastListUsed = user.lastListUsed;
 	const [showUseExistingModal, setShowUseExistingModal] = useState(false);
 	const [showCreateNewModal, setShowCreateNewModal] = useState(false);
 	const [loading, setLoading] = useState(false);
 	const [lists, setLists] = useState([]);
-	const [listId, setListId] = useState(0);
+	const [listId, setListId] = useState(lastListUsed);
 
 	const [title, setTitle] = React.useState('');
 	const [description, setDescription] = React.useState('');
@@ -22,12 +23,10 @@ export const AddToListFromItem = (props) => {
 		<Center>
 			<Button onPress={
 				async () => {
-					await getLists(libraryUrl);
-					await AsyncStorage.getItem('@patronLists').then(response => {
-						const items = JSON.parse(response);
-						setLists(items);
+					await getLists(libraryUrl).then(response => {
+						setLists(response);
 						setShowUseExistingModal(true);
-					})
+					});
 				}
 			} colorScheme="tertiary" leftIcon={<Icon as={MaterialIcons} name="bookmark" size="xs" mr="-1"/>}>
 				Add to list</Button>
@@ -42,7 +41,7 @@ export const AddToListFromItem = (props) => {
 							{!_.isUndefined(lists)  ? (
 								<Box>
 									<FormControl.Label>Choose a List</FormControl.Label>
-									<Select onValueChange={(itemValue) => {setListId(itemValue)}}>
+									<Select selectedValue={listId} onValueChange={(itemValue) => {setListId(itemValue)}}>
 										{lists.map((item, index) => {
 											return (<Select.List value={item.id} label={item.title} />);
 										})}

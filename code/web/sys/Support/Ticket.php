@@ -80,6 +80,7 @@ class Ticket extends DataObject
 				$objectActions[] = array(
 					'text' => 'Open in RT',
 					'url' => $rtConnection->baseUrl . '/Ticket/Display.html?id=' . $existingObject->ticketId,
+					'target' => '_blank'
 				);
 			}
 		}
@@ -96,6 +97,7 @@ class Ticket extends DataObject
 			$objectActions[] = array(
 				'text' => 'Open in RT',
 				'url' => $rtConnection->baseUrl . '/Ticket/Display.html?id=' . $this->ticketId,
+				'target' => '_blank'
 			);
 		}
 		return $objectActions;

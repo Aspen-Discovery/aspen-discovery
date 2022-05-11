@@ -13,9 +13,11 @@ import {
 	ScrollView,
 	Stack,
 	Text,
-	Icon
+	Icon,
+	Image
 } from "native-base";
 import {Rating} from "react-native-elements";
+import CachedImage from 'expo-cached-image'
 import ExpoFastImage from 'expo-fast-image';
 
 // custom components and helper files
@@ -28,13 +30,15 @@ import {getPickupLocations} from "../../util/loadLibrary";
 import {updateOverDriveEmail} from "../../util/accountActions";
 import {AddToListFromItem} from "./AddToList";
 import {userContext} from "../../context/user";
+import {getLinkedAccounts, getProfile} from "../../util/loadPatron";
 
 export default class GroupedWork extends Component {
-	constructor() {
-		super();
+	constructor(props, context) {
+		super(props, context);
 		this.state = {
 			isLoading: true,
 			locations: [],
+			linkedAccounts: 0,
 			hasError: false,
 			error: null,
 			items: [],
@@ -51,6 +55,8 @@ export default class GroupedWork extends Component {
 			shouldReload: false,
 		};
 		this.locations = [];
+		this._fetchLocations();
+		this._fetchLinkedAccounts();
 	}
 
 	authorSearch = (author, libraryUrl) => {
@@ -61,14 +67,22 @@ export default class GroupedWork extends Component {
 		this.props.navigation.navigate("CheckedOut");
 	};
 
+	openHolds = () => {
+		this.props.navigation.navigate("Holds");
+	};
+
 	componentDidMount = async () => {
 		await this._fetchItemData();
 		await this._fetchLocations();
+		await this._fetchLinkedAccounts();
 	};
 
 	_fetchItemData = async () => {
 
-		this.setState({isLoading: true});
+		this.setState({
+			isLoading: true
+		});
+
 		const { navigation, route } = this.props;
 		const givenItem = route.params?.item ?? 'null';
 		const libraryUrl = route.params?.libraryUrl ?? 'null';
@@ -78,7 +92,6 @@ export default class GroupedWork extends Component {
 				this.setState({
 					hasError: true,
 					error: translate('error.timeout'),
-					isLoading: false,
 				});
 			} else {
 				try {
@@ -94,13 +107,11 @@ export default class GroupedWork extends Component {
 						groupedWorkTitle: response.title,
 						hasError: false,
 						error: null,
-						isLoading: false,
 					});
 				} catch (error) {
 					this.setState({
 						hasError: true,
 						error: translate('error.no_data'),
-						isLoading: false,
 					})
 				}
 			}
@@ -110,18 +121,25 @@ export default class GroupedWork extends Component {
 	}
 
 	_fetchLocations = async () => {
+		const tmp = await AsyncStorage.getItem('@pickupLocations');
+		const locations = JSON.parse(tmp);
+		this.setState({
+			locations: locations,
+			hasError: false,
+			error: null,
+		})
+	}
 
+	_fetchLinkedAccounts = async () => {
 		const { navigation, route } = this.props;
 		const libraryUrl = route.params?.libraryUrl ?? 'null';
 
-		await getPickupLocations(libraryUrl).then(response => {
+		await getLinkedAccounts(libraryUrl).then(response => {
 			this.setState({
-				locations: response,
-				hasError: false,
-				error: null,
-				isLoading: false,
-			});
-		})
+				linkedAccounts: response,
+				numLinkedAccounts:  Object.keys(response).length,
+			})
+		});
 	}
 
 	// shows the author information on the screen and allows the link to be clickable. hides it if there is no author.
@@ -216,6 +234,14 @@ export default class GroupedWork extends Component {
 		);
 	}
 
+	// Trigger a context refresh
+	updateProfile = async () => {
+		console.log("Getting new profile data from item details...");
+		await getProfile().then(response => {
+			this.context.user = response;
+		});
+	}
+
 	cancelRef = () => {
 		useEffect(() => {
 			React.useRef();
@@ -232,6 +258,7 @@ export default class GroupedWork extends Component {
 		await getItemDetails(libraryUrl, this.state.groupedWorkId, this.state.format).then(response =>{
 			this.setState({
 				itemDetails: response,
+				isLoading: false,
 			});
 		})
 	}
@@ -269,16 +296,27 @@ export default class GroupedWork extends Component {
 			ratingAverage = this.state.ratingData.average;
 		}
 
+		let discoveryVersion = "22.04.00";
+		if(library.discoveryVersion) {
+			let version = library.discoveryVersion;
+			version = version.split(" ");
+			discoveryVersion = version[0];
+		}
+
+		//console.log(this.state.data);
+
 		return (
-			<ScrollView style={{ marginBottom: 80 }}>
+			<ScrollView>
 				<Box h={{base: 125, lg: 200}} w="100%" bgColor="warmGray.200" _dark={{ bgColor: "coolGray.900" }} zIndex={-1} position="absolute" left={0}
 				     top={0}></Box>
 				<Box flex={1} safeArea={5}>
 					<Center mt={5}>
 						<Box w={{base: 200, lg: 300}} h={{base: 250, lg: 350}} shadow={3}>
-							<ExpoFastImage cacheKey={this.state.data.id} uri={this.state.data.cover}
-							               alt={this.state.data.title} resizeMode="contain"
-							               style={{width: '100%', height: '100%', borderRadius: 4}}/>
+							<Image
+								alt={this.state.data.title}
+								source={{ uri:  this.state.data.cover }}
+								style={{width: '100%', height: '100%', borderRadius: 4}}
+							/>
 						</Box>
 						<Text fontSize={{base: "lg", lg: "2xl"}} bold pt={5} alignText="center">
 							{this.state.data.title} {this.state.data.subtitle}
@@ -307,6 +345,10 @@ export default class GroupedWork extends Component {
 					                                          groupedWorkTitle={this.state.groupedWorkTitle}
 					                                          user={user}
 					                                          library={library}
+					                                          linkedAccounts={this.state.linkedAccounts}
+					                                          discoveryVersion={discoveryVersion}
+					                                          updateProfile={this.updateProfile}
+					                                          openHolds={this.openHolds}
 					                                          openCheckouts={this.openCheckouts}/> : null}
 
 					<Text mt={5} mb={5} fontSize={{base: "md", lg: "lg"}} lineHeight={{base: "22px", lg: "26px"}}>

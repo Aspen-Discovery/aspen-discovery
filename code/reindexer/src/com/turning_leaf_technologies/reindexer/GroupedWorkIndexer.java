@@ -80,7 +80,8 @@ public class GroupedWorkIndexer {
 	private PreparedStatement updateScopeStmt;
 	private PreparedStatement removeScopeStmt;
 
-	private PreparedStatement marcIlsRecordAsDeletedStmt;
+	private PreparedStatement markIlsRecordAsDeletedStmt;
+	private PreparedStatement markIlsRecordAsRestoredStmt;
 	private PreparedStatement getExistingRecordsForWorkStmt;
 	private PreparedStatement addRecordForWorkStmt;
 	private PreparedStatement updateRecordForWorkStmt;
@@ -193,7 +194,8 @@ public class GroupedWorkIndexer {
 			markScheduledWorkProcessedStmt = dbConn.prepareStatement("UPDATE grouped_work_scheduled_index set processed = 1 where id = ?");
 			addScheduledWorkStmt = dbConn.prepareStatement("INSERT INTO grouped_work_scheduled_index (permanent_id, indexAfter) VALUES (?, ?)");
 
-			marcIlsRecordAsDeletedStmt = dbConn.prepareStatement("UPDATE ils_records set deleted = 1, dateDeleted = ? where source = ? and ilsId = ?");
+			markIlsRecordAsDeletedStmt = dbConn.prepareStatement("UPDATE ils_records set deleted = 1, dateDeleted = ? where source = ? and ilsId = ?");
+			markIlsRecordAsRestoredStmt = dbConn.prepareStatement("UPDATE ils_records set deleted = 0, dateDeleted = null where source = ? and ilsId = ?");
 			getExistingScopesStmt = dbConn.prepareStatement("SELECT * from scope", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			addScopeStmt = dbConn.prepareStatement("INSERT INTO scope (name, isLibraryScope, isLocationScope) VALUES (?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
 			updateScopeStmt = dbConn.prepareStatement("UPDATE scope set isLibraryScope = ?, isLocationScope = ? WHERE id = ?");
@@ -1988,10 +1990,20 @@ public class GroupedWorkIndexer {
 
 	public void markIlsRecordAsDeleted(String name, String existingIdentifier) {
 		try {
-			marcIlsRecordAsDeletedStmt.setLong(1, new Date().getTime() / 1000);
-			marcIlsRecordAsDeletedStmt.setString(2, name);
-			marcIlsRecordAsDeletedStmt.setString(3, existingIdentifier);
-			marcIlsRecordAsDeletedStmt.executeUpdate();
+			markIlsRecordAsDeletedStmt.setLong(1, new Date().getTime() / 1000);
+			markIlsRecordAsDeletedStmt.setString(2, name);
+			markIlsRecordAsDeletedStmt.setString(3, existingIdentifier);
+			markIlsRecordAsDeletedStmt.executeUpdate();
+		}catch (Exception e) {
+			logEntry.incErrors("Could not mark ils record as deleted", e);
+		}
+	}
+
+	public void markIlsRecordAsRestored(String name, String existingIdentifier){
+		try {
+			markIlsRecordAsRestoredStmt.setString(1, name);
+			markIlsRecordAsRestoredStmt.setString(2, existingIdentifier);
+			markIlsRecordAsRestoredStmt.executeUpdate();
 		}catch (Exception e) {
 			logEntry.incErrors("Could not mark ils record as deleted", e);
 		}

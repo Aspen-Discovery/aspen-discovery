@@ -2,16 +2,23 @@ import React, {Component} from "react";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as SecureStore from 'expo-secure-store';
 import Constants from "expo-constants";
-import {NativeBaseProvider, StatusBar} from "native-base";
+import {NativeBaseProvider, StatusBar, HStack, Center, Spinner} from "native-base";
 import {SSRProvider} from "@react-aria/ssr";
 import App from "./src/components/navigation";
 import {createTheme, saveTheme} from "./src/themes/theme";
 import {userContext} from "./src/context/user";
 import {create} from 'apisauce';
+import * as SplashScreen from "expo-splash-screen";
+import _ from "lodash";
 
 import { LogBox } from 'react-native';
 import {createAuthTokens, getHeaders, postData} from "./src/util/apiAuth";
 import {GLOBALS} from "./src/util/globals";
+
+import { enableScreens } from 'react-native-screens';
+import {getPatronBrowseCategories} from "./src/util/loadPatron";
+import {getBrowseCategories} from "./src/util/loadLibrary";
+enableScreens();
 
 // Hide log error/warning popups in simulator (useful for demoing)
 //LogBox.ignoreLogs(['Warning: ...']); // Ignore log notification by message
@@ -23,9 +30,10 @@ export default class AppContainer extends Component {
 		this.state = {
 			themeSet: false,
 			themeSetSession: 0,
-			user: {},
-			library: {},
-			location: {},
+			user: [],
+			library: [],
+			location: [],
+			browseCategories: [],
 			hasLoaded: false,
 		};
 		this.aspenTheme = null;
@@ -33,6 +41,7 @@ export default class AppContainer extends Component {
 	}
 
 	componentDidMount = async () => {
+		this.setState({ appReady: false });
 		await createTheme().then(async response => {
 			if(this.state.themeSetSession !== Constants.sessionId) {
 				this.aspenTheme = response;
@@ -46,12 +55,13 @@ export default class AppContainer extends Component {
 		});
 
 		this.interval = setInterval(async () => {
-			console.log("Looking for a user token...");
+			let count = 0;
 			let userToken;
+
 			try {
-				//userToken = await AsyncStorage.getItem('@userToken');
-				userToken = await SecureStore.getItemAsync("userToken");
-			} catch (e) {
+				userToken = await AsyncStorage.getItem('@userToken');
+				//userToken = await SecureStore.getItemAsync("userToken");
+			} catch(e) {
 				console.log(e);
 			}
 
@@ -59,10 +69,21 @@ export default class AppContainer extends Component {
 
 			if(userToken) {
 				console.log("USER TOKEN FOUND");
-				console.log("Trying to run async login...");
-				this.login(userToken);
+				if(_.isEmpty(this.state.user) || !_.isEmpty(this.state.library) || !_.isEmpty(this.state.location) || !_.isEmpty(this.state.browseCategories)) {
+					console.log("Trying to run async login...");
+					await this.login(userToken);
+				}
+			} else {
+				if(!_.isEmpty(this.state.user) || !_.isEmpty(this.state.library) || !_.isEmpty(this.state.location) || !_.isEmpty(this.state.browseCategories)) {
+					this.setState({
+						user: [],
+						library: [],
+						location: [],
+						browseCategories: [],
+					})
+				}
 			}
-		}, 1000);
+		}, 5000);
 
 		return () => clearInterval(this.interval);
 	}
@@ -72,19 +93,25 @@ export default class AppContainer extends Component {
 	}
 
 	async login(userToken) {
-		console.log("Running login function with user token: " + userToken);
+		//console.log("Running login function with user token: " + userToken);
 		if (userToken) {
 			let libraryUrl;
+			let libraryId;
+			let librarySolrScope;
+			let locationId;
 			let libName;
 			try {
 				libraryUrl = await AsyncStorage.getItem('@pathUrl');
 				libName = await AsyncStorage.getItem('@libName');
+				libraryId = await AsyncStorage.getItem('@libraryId');
+				librarySolrScope = await AsyncStorage.getItem('@solrScope');
+				locationId = await AsyncStorage.getItem('@locationId');
 			} catch (e) {
 				console.log(e);
 			}
 
 			if (libraryUrl) {
-				console.log("Connecting to " + libName + " using " + libraryUrl);
+				//console.log("Connecting to " + libName + " using " + libraryUrl);
 				let postBody = await postData();
 				const api = create({
 					baseURL: libraryUrl + '/API',
@@ -93,29 +120,18 @@ export default class AppContainer extends Component {
 					auth: createAuthTokens()
 				});
 
-				const patronProfile = await AsyncStorage.getItem('@patronProfile');
-				if(patronProfile === null) {
-					console.log("fetching getPatronProfile...");
+				//const patronProfile = await AsyncStorage.getItem('@patronProfile');
+				if (_.isEmpty(this.state.user)) {
+					//console.log("fetching getPatronProfile...");
 					const response = await api.post('/UserAPI?method=getPatronProfile&linkedUsers=true', postBody);
 					if (response.ok) {
 						let data = [];
 						if (response.data.result.profile) {
 							data = response.data.result.profile;
 							this.setState({user: data});
+							//console.log("patron loaded into context");
 						}
-						await AsyncStorage.setItem('@patronProfile', JSON.stringify(data));
 					}
-				}
-
-				let libraryId;
-				let librarySolrScope;
-				let locationId;
-				try {
-					libraryId = await SecureStore.getItemAsync('library');
-					librarySolrScope = await SecureStore.getItemAsync('solrScope');
-					locationId = await SecureStore.getItemAsync('locationId');
-				} catch (e) {
-					console.log(e);
 				}
 
 				if(libraryId) {
@@ -126,22 +142,25 @@ export default class AppContainer extends Component {
 						auth: createAuthTokens()
 					});
 
-					const libraryProfile = await AsyncStorage.getItem('@libraryInfo');
-					if(libraryProfile === null) {
-						console.log("fetching getLibraryInfo...");
+					//const libraryProfile = await AsyncStorage.getItem('@libraryInfo');
+					if(_.isEmpty(this.state.library)) {
+						//console.log("fetching getLibraryInfo...");
 						const response = await api.get('/SystemAPI?method=getLibraryInfo', {id: libraryId});
 						if(response.ok) {
 							let data = [];
 							if(response.data.result.library) {
 								data = response.data.result.library;
 								this.setState({library: data});
+								//await AsyncStorage.setItem('@libraryInfo', JSON.stringify(this.state.library));
+								//console.log("library loaded into context");
 							}
-							await AsyncStorage.setItem('@libraryInfo', JSON.stringify(data));
 						}
 					}
+
 				}
 
-				if(locationId) {
+
+				if(locationId && librarySolrScope) {
 					const api = create({
 						baseURL: libraryUrl + '/API',
 						timeout: GLOBALS.timeoutAverage,
@@ -149,38 +168,67 @@ export default class AppContainer extends Component {
 						auth: createAuthTokens()
 					});
 
-					const locationProfile = await AsyncStorage.getItem('@locationInfo');
-					if(locationProfile === null) {
-						console.log("fetching getLocationInfo...");
+					//const locationProfile = await AsyncStorage.getItem('@locationInfo');
+					if(_.isEmpty(this.state.location)) {
+						//console.log("fetching getLocationInfo...");
 						const response = await api.get('/SystemAPI?method=getLocationInfo', {id: locationId, library: librarySolrScope, version: Constants.manifest.version});
 						if(response.ok) {
 							let data = [];
 							if(response.data.result.location) {
 								data = response.data.result.location;
 								this.setState({location: data});
+								//await AsyncStorage.setItem('@locationInfo', JSON.stringify(data));
+								//console.log("location loaded into context");
 							}
-							await AsyncStorage.setItem('@locationInfo', JSON.stringify(data));
 						}
 					}
 				}
+
+
+				let discoveryVersion = "22.04.00";
+				if (this.state.library.discoveryVersion) {
+					let version = this.state.library.discoveryVersion;
+					version = version.split(" ");
+					discoveryVersion = version[0];
+				}
+
+				console.log(discoveryVersion);
+
+				if(_.isEmpty(this.state.browseCategories)) {
+
+					if (discoveryVersion >= "22.05.00") {
+						await getBrowseCategories(libraryUrl, discoveryVersion).then(response => {
+							this.setState({
+								browseCategories: response,
+							})
+						})
+					} else {
+						await getPatronBrowseCategories(libraryUrl, this.state.user.id).then(response => {
+							this.setState({
+								browseCategories: response,
+							})
+						})
+					}
+				}
+
+
+				await AsyncStorage.setItem('@patronProfile', JSON.stringify(this.state.user));
+				await AsyncStorage.setItem('@libraryInfo', JSON.stringify(this.state.library));
+				await AsyncStorage.setItem('@locationInfo', JSON.stringify(this.state.location));
+
 			}
 		}
 	}
 
 	render() {
-		const value = {
-			user: this.state.user,
-			library: this.state.library,
-			location: this.state.location,
-		}
-
 		const user = this.state.user;
 		const library = this.state.library;
 		const location = this.state.location;
+		const browseCategories = this.state.browseCategories;
 
 		if(this.state.themeSet) {
 			return (
-				<userContext.Provider value={{ user, library, location }}>
+				<userContext.Provider value={{ user, library, location, browseCategories }}>
 				<SSRProvider>
 					<NativeBaseProvider theme={this.aspenTheme}>
 						<StatusBar barStyle={this.state.statusBar} />
@@ -191,15 +239,27 @@ export default class AppContainer extends Component {
 			);
 		} else {
 			return (
-				<userContext.Provider value={value}>
+				<userContext.Provider value={{ user, library, location, browseCategories }}>
 				<SSRProvider>
 					<NativeBaseProvider>
 						<StatusBar barStyle="dark-content"/>
-						<App/>
+						<Center flex={1}>
+							<HStack>
+								<Spinner size="lg" accessibilityLabel="Loading..."/>
+							</HStack>
+						</Center>
 					</NativeBaseProvider>
 				</SSRProvider>
 				</userContext.Provider>
 			);
 		}
 	}
+}
+
+function sleep(milliseconds) {
+	const date = Date.now();
+	let currentDate = null;
+	do {
+		currentDate = Date.now();
+	} while (currentDate - date < milliseconds);
 }

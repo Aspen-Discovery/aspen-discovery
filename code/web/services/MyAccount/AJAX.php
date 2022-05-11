@@ -3221,7 +3221,26 @@ class MyAccount_AJAX extends JSON_Action
 			} else {
 				$user = UserAccount::getActiveUserObj();
 				$patron = $user->getUserReferredTo($patronId);
-				return $patron->completeFinePayment($payment);
+
+				$result = $patron->completeFinePayment($payment);
+				if ($result['success'] == false){
+					//If the payment does not complete in the ILS, add information to the payment for tracking
+					//Also send an email to admin that it was completed in paypal, but not the ILS
+					$payment->message .= 'Fine Payment was not completed within the ILS. ' . $result['message'];
+					$payment->update();
+
+					if (!empty($payPalSettings->errorEmail)){
+						require_once ROOT_DIR . '/sys/Email/Mailer.php';
+						$mail = new Mailer();
+						$subject = 'Error updating ILS after PayPal Payment';
+						$body = "There was an error updating payment $payment->id within the ILS for patron with barcode {$user->getBarcode()}. The payment should either be voided or the ILS should be updated.";
+						global $configArray;
+						$baseUrl = $configArray['Site']['url'];
+						$htmlBody = "There was an error updating payment <a href='$baseUrl/Admin/eCommerceReport?objectAction=edit&id=$payment->id'>$payment->id</a> within the ILS for patron with barcode {$user->getBarcode()}. The payment should either be voided or the ILS should be updated.";
+						$mail->send($payPalSettings->errorEmail, $subject, $body, null, $htmlBody);
+					}
+				}
+				return $result;
 			}
 		}
 	}
@@ -4252,28 +4271,32 @@ class MyAccount_AJAX extends JSON_Action
 		require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 		require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
 
-			if (isset($_REQUEST['selected'])){
-					$itemsToRemove = $_REQUEST['selected'];
-					foreach ($itemsToRemove as $listId => $selected) {
-						$list = new UserList();
-						$list->id = $listId;
-
-						//Perform an action on the list, but verify that the user has permission to do so.
-						$userCanEdit = false;
-						$userObj = UserAccount::getActiveUserObj();
-						if ($userObj != false){
-							$userCanEdit = $userObj->canEditList($list);
-						}
-						if ($userCanEdit) {
-							$list->find();
-							$list->delete();
-							$result['success'] = true;
-							$result['message'] = 'Selected lists deleted successfully';
-						} else {
-							$result['success'] = false;
-						}
+		if (isset($_REQUEST['selected'])){
+			$itemsToRemove = $_REQUEST['selected'];
+			foreach ($itemsToRemove as $listId => $selected) {
+				$list = new UserList();
+				$list->id = $listId;
+				if ($list->find(true)){
+					//Perform an action on the list, but verify that the user has permission to do so.
+					$userCanEdit = false;
+					$userObj = UserAccount::getActiveUserObj();
+					if ($userObj != false){
+						$userCanEdit = $userObj->canEditList($list);
 					}
+					if ($userCanEdit) {
+						$list->delete();
+						$result['success'] = true;
+						$result['message'] = 'Selected lists deleted successfully';
+					} else {
+						$result['message'] = 'You do not have permissions to delete that list';
+						$result['success'] = false;
+					}
+				}else{
+					$result['success'] = false;
+					$result['message'] = 'Could not find the list to delete';
+				}
 			}
+		}
 
 		return $result;
 	}

@@ -3,18 +3,18 @@ package com.turning_leaf_technologies.website_indexer;
 import com.turning_leaf_technologies.strings.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 import org.apache.http.HttpEntity;
-import org.apache.http.StatusLine;
 import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
 import org.apache.http.entity.ContentType;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.solr.client.solrj.impl.ConcurrentUpdateSolrClient;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.common.SolrInputDocument;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.nodes.Node;
+import org.jsoup.select.Elements;
 
 import java.io.IOException;
 import java.sql.*;
@@ -35,6 +35,7 @@ class WebsiteIndexer {
 	private final String siteUrlShort;
 	private final boolean fullReload;
 	private final long maxPagesToIndex;
+	private final long crawlDelay;
 	private final WebsiteIndexLogEntry logEntry;
 	private final Logger logger;
 	private final Connection aspenConn;
@@ -53,7 +54,7 @@ class WebsiteIndexer {
 
 	private final ConcurrentUpdateSolrClient solrUpdateServer;
 
-	WebsiteIndexer(Long websiteId, String websiteName, String searchCategory, String initialUrl, String pageTitleExpression, String descriptionExpression, String pathsToExclude, long maxPagesToIndex, HashSet<String> scopesToInclude, boolean fullReload, WebsiteIndexLogEntry logEntry, Connection aspenConn, ConcurrentUpdateSolrClient solrUpdateServer, Logger logger) {
+	WebsiteIndexer(Long websiteId, String websiteName, String searchCategory, String initialUrl, String pageTitleExpression, String descriptionExpression, String pathsToExclude, long maxPagesToIndex, long crawlDelay, HashSet<String> scopesToInclude, boolean fullReload, WebsiteIndexLogEntry logEntry, Connection aspenConn, ConcurrentUpdateSolrClient solrUpdateServer, Logger logger) {
 		this.websiteId = websiteId;
 		this.websiteName = websiteName;
 		this.searchCategory = searchCategory;
@@ -65,6 +66,7 @@ class WebsiteIndexer {
 		this.siteUrlShort = siteUrl.replaceAll("http[s]?://", "");
 		this.scopesToInclude = scopesToInclude;
 		this.maxPagesToIndex = maxPagesToIndex;
+		this.crawlDelay = crawlDelay;
 
 		this.logEntry = logEntry;
 		this.logger = logger;
@@ -105,7 +107,7 @@ class WebsiteIndexer {
 		}
 
 		try {
-			addPageToStmt = aspenConn.prepareStatement("INSERT INTO website_pages SET websiteId = ?, url = ?, checksum = ?, deleted = 0, firstDetected = ? ON DUPLICATE KEY UPDATE checksum = VALUES(checksum), deleted = 0", Statement.RETURN_GENERATED_KEYS);
+			addPageToStmt = aspenConn.prepareStatement("INSERT INTO website_pages SET websiteId = ?, url = ?, checksum = ?, deleted = 0, deleteReason = '', firstDetected = ? ON DUPLICATE KEY UPDATE checksum = VALUES(checksum), deleted = 0", Statement.RETURN_GENERATED_KEYS);
 			deletePageStmt = aspenConn.prepareStatement("UPDATE website_pages SET deleted = 1, deleteReason = ? where id = ?");
 		} catch (Exception e) {
 			logEntry.incErrors("Error setting up statements ", e);
@@ -131,7 +133,7 @@ class WebsiteIndexer {
 	void spiderWebsite() {
 		if (fullReload) {
 			try {
-				solrUpdateServer.deleteByQuery("website_name:\"" + websiteName + "\"");
+				solrUpdateServer.deleteByQuery("settingId:" + websiteId);
 				//3-19-2019 Don't commit so the index does not get cleared during run (but will clear at the end).
 			} catch (HttpSolrClient.RemoteSolrException rse) {
 				logEntry.addNote("Solr is not running properly, try restarting " + rse);
@@ -163,6 +165,13 @@ class WebsiteIndexer {
 			if (allLinks.size() > this.maxPagesToIndex){
 				logEntry.incErrors("Error processing website, found more than " + this.maxPagesToIndex + " links in the site");
 			}
+			if (crawlDelay > 0){
+				try {
+					Thread.sleep(crawlDelay * 1000);
+				} catch (InterruptedException e) {
+					logEntry.incErrors("Thread was interrupted while processing crawlDelay", e);
+				}
+			}
 		}
 
 		//If we are not doing a full reload, remove any pages that we didn't find on this go round.
@@ -174,7 +183,7 @@ class WebsiteIndexer {
 						deletePageStmt.setLong(2, curPage.getId());
 						deletePageStmt.executeUpdate();
 						logEntry.incDeleted();
-						solrUpdateServer.deleteByQuery("id:" + curPage.getId() + "AND website_name:\"" + websiteName + "\"");
+						solrUpdateServer.deleteByQuery("id:\"WebPage:" + curPage.getId() + "\" AND settingId:" + websiteId );
 					}
 				} catch (Exception e) {
 					logEntry.incErrors("Error deleting page");
@@ -191,14 +200,11 @@ class WebsiteIndexer {
 
 	private void processPage(String pageToProcess) {
 		try {
-			CloseableHttpClient httpclient = HttpClients.createDefault();
-			pageToProcess = pageToProcess.replaceAll("\\s", "%20");
 			logger.info("Processing page " + pageToProcess);
-			HttpGet httpGet = new HttpGet(pageToProcess);
+			org.jsoup.Connection connection = Jsoup.connect(pageToProcess).ignoreContentType(true).ignoreHttpErrors(true);
+			Document document = connection.get();
 			try{
-				CloseableHttpResponse response1 = httpclient.execute(httpGet);
-				StatusLine status = response1.getStatusLine();
-				if (status.getStatusCode() == 200) {
+				if (connection.response().statusCode() == 200) {
 					logger.info("Got successful response");
 					WebPage page;
 					if (existingPages.containsKey(pageToProcess)) {
@@ -207,9 +213,13 @@ class WebsiteIndexer {
 						page = new WebPage(pageToProcess);
 					}
 
-					HttpEntity entity1 = response1.getEntity();
-					ContentType contentType = ContentType.getOrDefault(entity1);
-					String mimeType = contentType.getMimeType();
+					String contentType = connection.response().contentType();
+					String mimeType = contentType;
+					if (mimeType == null){
+						mimeType = "Unknown";
+					}else if (contentType.indexOf(";") > 0) {
+						mimeType = contentType.substring(0, contentType.indexOf(";"));
+					}
 					if (!mimeType.equals("text/html")) {
 						logger.info("Non HTML page, skipping");
 						//TODO: Index PDFs
@@ -220,27 +230,25 @@ class WebsiteIndexer {
 					} else {
 						// do something useful with the response body
 						// and ensure it is fully consumed
-						String response = EntityUtils.toString(entity1);
-						//Strip out javascript
-						response = response.replaceAll("(?is)<script(.*?)>(.*?)</script>", "");
-						//Strip out styles
-						response = response.replaceAll("(?is)<style(.*?)>(.*?)</style>", "");
+						document.select("script,.hidden,style").remove();
+						removeComments(document);
+						String response = document.html();
 						page.setPageContents(response);
 
 						//Extract the title
 						try {
 							boolean titleFound = false;
 							if (pageTitleExpression != null){
-								Matcher titleMatcher = pageTitleExpression.matcher(response);
+								Matcher titleMatcher = pageTitleExpression.matcher(document.html());
 								if (titleMatcher.find()) {
 									page.setTitle(titleMatcher.group(1));
 									titleFound = true;
 								}
 							}
 							if (!titleFound) {
-								Matcher titleMatcher = titlePattern.matcher(response);
-								if (titleMatcher.find()) {
-									page.setTitle(titleMatcher.group(1));
+								String title = document.title();
+								if (title.length() > 0) {
+									page.setTitle(title);
 								} else {
 									page.setTitle("Title not provided");
 								}
@@ -250,71 +258,68 @@ class WebsiteIndexer {
 						}
 
 						//Extract the related links
-						try {
-							Matcher regexMatcher = linkPattern.matcher(response);
-							while (regexMatcher.find()) {
-								for (int i = 1; i <= regexMatcher.groupCount(); i++) {
-									String linkUrl = regexMatcher.group(1).trim();
-									if (linkUrl.contains("&#x")){
-										linkUrl = StringEscapeUtils.unescapeHtml4(linkUrl);
-									}
-									if (linkUrl.contains("#")) {
-										linkUrl = linkUrl.substring(0, linkUrl.lastIndexOf("#"));
-									}
-									//TODO: DO we want to trim off parameters always, this could be a setting?
-									if (linkUrl.contains("?")) {
-										linkUrl = linkUrl.substring(0, linkUrl.lastIndexOf("?"));
-									}
-									if (linkUrl.endsWith("/")) {
-										linkUrl = linkUrl.substring(0, linkUrl.length() - 1);
-									}
-									if (linkUrl.length() == 0 || linkUrl.startsWith(".")) {
-										continue;
-									}
-									if (linkUrl.startsWith("http://")) {
-										if (!linkUrl.startsWith(initialUrl)) {
-											continue;
-										}
-									} else if (linkUrl.startsWith("https://")) {
-										if (!linkUrl.startsWith(initialUrl)) {
-											continue;
-										}
-									} else if (linkUrl.startsWith("mailto:") || linkUrl.startsWith("tel:") || linkUrl.startsWith("javascript:")) {
-										continue;
-									} else if (linkUrl.contains("/..") || linkUrl.contains("../")) {
-										//Ignore relative paths for now
-										continue;
-									} else if (linkUrl.startsWith(siteUrlShort)) {
-										linkUrl = "https://" + linkUrl;
-									} else {
-										if (!linkUrl.startsWith("/")) {
-											linkUrl = "/" + linkUrl;
-										}
-										linkUrl = siteUrl + linkUrl;
-									}
-									if (!linkUrl.startsWith(initialUrl)) {
-										continue;
-									}
-									//Make sure that we shouldn't be ignoring the path.
-									boolean includePath = true;
-									for (Pattern curPattern : pathsToExcludePatterns){
-										if (curPattern.matcher(linkUrl).matches()){
-											includePath = false;
-										}
-									}
-									if (includePath && !allLinks.containsKey(linkUrl)) {
-										page.getLinks().add(linkUrl);
-										allLinks.put(linkUrl, false);
-										//There are too many pages to process, quit
-										if (allLinks.size() > maxPagesToIndex){
-											return;
-										}
-										logEntry.incNumPages();
-									}
+						Elements documentLinks = document.getElementsByTag("a");
+
+						for(Element link: documentLinks) {
+							String linkUrl = link.attr("abs:href");
+
+							if (linkUrl.contains("&#x")){
+								linkUrl = StringEscapeUtils.unescapeHtml4(linkUrl);
+							}
+							if (linkUrl.contains("#")) {
+								linkUrl = linkUrl.substring(0, linkUrl.lastIndexOf("#"));
+							}
+							//TODO: DO we want to trim off parameters always, this could be a setting?
+							if (linkUrl.contains("?")) {
+								linkUrl = linkUrl.substring(0, linkUrl.lastIndexOf("?"));
+							}
+							if (linkUrl.endsWith("/")) {
+								linkUrl = linkUrl.substring(0, linkUrl.length() - 1);
+							}
+							if (linkUrl.length() == 0 || linkUrl.startsWith(".")) {
+								continue;
+							}
+							if (linkUrl.startsWith("http://")) {
+								if (!linkUrl.startsWith(initialUrl)) {
+									continue;
+								}
+							} else if (linkUrl.startsWith("https://")) {
+								if (!linkUrl.startsWith(initialUrl)) {
+									continue;
+								}
+							} else if (linkUrl.startsWith("mailto:") || linkUrl.startsWith("tel:") || linkUrl.startsWith("javascript:")) {
+								continue;
+							} else if (linkUrl.contains("/..") || linkUrl.contains("../")) {
+								//Ignore relative paths for now
+								continue;
+							} else if (linkUrl.startsWith(siteUrlShort)) {
+								linkUrl = "https://" + linkUrl;
+							} else {
+								if (!linkUrl.startsWith("/")) {
+									linkUrl = "/" + linkUrl;
+								}
+								linkUrl = siteUrl + linkUrl;
+							}
+
+							if (!linkUrl.startsWith(initialUrl)) {
+								continue;
+							}
+							//Make sure that we shouldn't be ignoring the path.
+							boolean includePath = true;
+							for (Pattern curPattern : pathsToExcludePatterns){
+								if (curPattern.matcher(linkUrl).matches()){
+									includePath = false;
 								}
 							}
-						} catch (PatternSyntaxException ex) {
-							logEntry.incErrors("Error in pattern ", ex);
+							if (includePath && !allLinks.containsKey(linkUrl)) {
+								page.getLinks().add(linkUrl);
+								allLinks.put(linkUrl, false);
+								//There are too many pages to process, quit
+								if (allLinks.size() > maxPagesToIndex){
+									return;
+								}
+								logEntry.incNumPages();
+							}
 						}
 
 						//Get the description
@@ -328,14 +333,18 @@ class WebsiteIndexer {
 									descriptionFound = true;
 								}
 							}
+							//If we don't have a description, see if there is a main section
 							if (!descriptionFound){
-								Matcher bodyMatcher = bodyPattern.matcher(response);
-								if (bodyMatcher.find()) {
-									description = bodyMatcher.group(1);
+								Elements mainNodes = document.getElementsByTag("main");
+								if (mainNodes.size() > 0){
+									Element mainNode = mainNodes.get(0);
+									description = mainNode.text();
+									descriptionFound = true;
 								}
 							}
-							//Strip comments from the description
-							description = description.replaceAll("(?is)<!--(.*?)-->", "");
+							if (!descriptionFound){
+								description = document.body().text();
+							}
 						} catch (PatternSyntaxException ex) {
 							logEntry.incErrors("Error in pattern ", ex);
 						}
@@ -365,6 +374,7 @@ class WebsiteIndexer {
 							SolrInputDocument solrDocument = new SolrInputDocument();
 							solrDocument.addField("id", "WebPage:" + page.getId());
 							solrDocument.addField("recordtype", "WebPage");
+							solrDocument.addField("settingId", websiteId);
 							solrDocument.addField("website_name", websiteName);
 							solrDocument.addField("search_category", searchCategory);
 							solrDocument.addField("source_url", pageToProcess);
@@ -385,13 +395,14 @@ class WebsiteIndexer {
 					logger.info("Got error processing the page");
 					WebPage existingPage = existingPages.get(pageToProcess);
 					if (existingPage != null && !existingPage.isDeleted()){
-						deletePageStmt.setString(1, "Received " + status.getStatusCode() + " error code");
+						deletePageStmt.setString(1, "Received " + connection.response().statusCode() + " error code");
 						deletePageStmt.setLong(2, existingPage.getId());
 						deletePageStmt.executeUpdate();
-						solrUpdateServer.deleteByQuery("id:" + existingPage.getId() + "AND website_name:\"" + websiteName + "\"");
+						solrUpdateServer.deleteByQuery("id:\"WebPage:" + existingPage.getId() + "\" AND settingId:" + websiteId);
 						existingPages.remove(pageToProcess);
 					}
 				}
+
 			}catch (ClientProtocolException e2){
 				logEntry.incErrors("Client ProtocolException loading " + pageToProcess, e2);
 			}catch (IOException e1){
@@ -401,6 +412,18 @@ class WebsiteIndexer {
 			logEntry.addNote("Invalid path provided " + pageToProcess + " " + e);
 		} catch (Exception e) {
 			logEntry.incErrors("Error parsing page " + pageToProcess, e);
+		}
+	}
+
+	private static void removeComments(Node node) {
+		for (int i = 0; i < node.childNodeSize();) {
+			Node child = node.childNode(i);
+			if (child.nodeName().equals("#comment"))
+				child.remove();
+			else {
+				removeComments(child);
+				i++;
+			}
 		}
 	}
 }
