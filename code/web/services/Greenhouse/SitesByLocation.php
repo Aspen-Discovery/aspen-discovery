@@ -28,7 +28,7 @@ class Greenhouse_SitesByLocation extends Admin_Admin
 			if (array_key_exists($siteCache->siteId, $allSites)){
 				$curSite = $allSites[$siteCache->siteId];
 				if ($curSite->siteType == 0) {
-					if (!empty($siteCache->latitude) && !empty($siteCache->longitude)) {
+					if (!empty($siteCache->latitude) && !empty($siteCache->longitude) && is_numeric($siteCache->latitude) && is_numeric($siteCache->longitude)) {
 						$siteMarkers[$siteCache->id] = clone $siteCache;
 						$siteMarkers[$siteCache->id]->siteName = $allSites[$siteCache->siteId]->name;
 						$sumLatitude += $siteCache->latitude;
